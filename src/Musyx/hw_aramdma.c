@@ -1,3 +1,4 @@
+#define ARAM_STORE_DATA_IMPL
 #include "musyx/musyx_priv.h"
 #include "Dolphin/ar.h"
 #include "Dolphin/os.h"
@@ -183,33 +184,55 @@ size_t aramGetUserBytes(size_t addr)
   return addr - 0x500;
 }
 
-void *aramStoreData(void *src, unsigned long len)
+typedef struct ARAMInfo
 {
-  unsigned long addr=0;    // r26
-  void *buffer;          // r27
-  unsigned long blkSize; // r30
+  u32 base;  // 0x0
+  u32 top;   // 0x4
+  u32 write; // 0x8
+} ARAMInfo;
+
+// 98.8%: only callee-saved register numbering differs (src/addr/ai/len swapped around inlined aramUploadData)
+void *aramStoreData(void *srcIn, unsigned long len, ARAMInfo *ai)
+{
+  unsigned long addr;    // r25
+  void *buffer;          // r30
+  unsigned long blkSize; // r29
+  void *src = srcIn;
   len = (len + 31) & ~31;
 
-  // addr = aramWrite;
+  if (ai->base == ARGetBaseAddress() + 0x500)
+  {
+    if (ai->write + len > aramStream)
+    {
+      return NULL;
+    }
+  }
+  else if (ai->write + len > ai->top)
+  {
+    return NULL;
+  }
+
+  addr = ai->write;
   if (aramUploadCallback == NULL)
   {
-
     DCFlushRange(src, len);
-    // aramUploadData(src, aramWrite, len, 0, NULL, 0);
-    // aramWrite += len;
+    aramUploadData(src, ai->write, len, 0, NULL, 0);
+    ai->write += len;
     return (void *)addr;
   }
 
   while (len != 0)
   {
-    blkSize = len >= aramUploadChunkSize ? aramUploadChunkSize : len;
+    aramSyncTransferQueue();
+    blkSize = len;
+    if (len >= aramUploadChunkSize) blkSize = aramUploadChunkSize;
     buffer = (void *)aramUploadCallback((u32)src, blkSize);
 
     DCFlushRange(buffer, blkSize);
-    // aramUploadData(buffer, aramWrite, blkSize, 0, NULL, 0);
+    aramUploadData(buffer, ai->write, blkSize, 0, NULL, 0);
     len -= blkSize;
-    // aramWrite += blkSize;
-    src = (void *)((u32)src + blkSize);
+    ai->write += blkSize;
+    src = (u8 *)src + blkSize;
   }
 
   return (void *)addr;

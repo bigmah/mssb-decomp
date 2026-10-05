@@ -1136,7 +1136,10 @@ typedef void* (*ARAMUploadCallback)(u32, u32);
 u32 aramGetStreamBufferAddress(u8 id, u32* len);
 void aramUploadData(void* mram, u32 aram, u32 len, u32 highPrio, void (*callback)(u32), u32 user);
 void aramFreeStreamBuffer(u8 id);
+#ifndef ARAM_STORE_DATA_IMPL
+/* real definition takes a third ARAMInfo* parameter; callers in the original pass only two */
 void* aramStoreData(void* src, u32 len);
+#endif
 void aramRemoveData(void *aram, u32 len, void *aramWrite);
 u8 aramAllocateStreamBuffer(u32 len);
 u32 macStart(u16 macid, u8 priority, u8 maxVoices, u32 allocId, u8 key, u8 vol, u8 panning, u8 midi,

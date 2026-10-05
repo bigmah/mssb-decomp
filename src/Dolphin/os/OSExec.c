@@ -162,21 +162,23 @@ typedef struct
     u32 _14;
     void *_18;
 } _1C_Struct;
-static void __OSBootDolSimple(u32 v, u32 b, void *start, void *end, int argc, u32 count, ArgsStruct *argv)
+// 97%: stack frame is 8 bytes short at the bottom and 4 bytes short between the final DVD block and _c_LOOKATME
+void __OSBootDolSimple(u32 v, u32 b, void *start, void *end, int argc, u32 count, ArgsStruct *argv)
 {
     _1C_Struct *src;
     DVDCommandBlock bloc;
+    struct {
+        void (*appInit)(void *);
+        int (*appMain)(void *, void *, void *);
+        void *(*appClose)(void);
+        u32 addr;
+        u32 length;
+        u32 offset;
+        u32 pad;
+    } _c_LOOKATME;
+    DVDCommandBlock bloc2;
     _1C_Struct *src2;
     ApploaderStruct *allocated;
-    struct {
-        u32 _00;
-        u32 _04;
-        u32 _08;
-        u32 _0C;
-        u32 _10;
-        u32 _14;
-        u32 _1C;
-    }_c_LOOKATME;
     int ret;
 
     int interrupts;
@@ -226,29 +228,27 @@ static void __OSBootDolSimple(u32 v, u32 b, void *start, void *end, int argc, u3
         }
     }
 
-    src2 = (_1C_Struct *)OSAllocFromArenaLo(0x20, 0x20);
-    ReadDisc(src2, 0x20, GetApploaderPosition());
+    argv = (ArgsStruct *)OSAllocFromArenaLo(0x20, 0x20);
+    ReadDisc(argv, 0x20, GetApploaderPosition());
 
-    ReadDisc(APPLOADER_ADDR, ROUND_UP(src2->_14, 32), GetApploaderPosition() + 0x20);
-    ICInvalidateRange(APPLOADER_ADDR, ROUND_UP(src2->_14, 32));
+    ReadDisc(APPLOADER_ADDR, ROUND_UP(argv->_00[5], 32), GetApploaderPosition() + 0x20);
+    ICInvalidateRange(APPLOADER_ADDR, ROUND_UP(argv->_00[5], 32));
 
-    if (strncmp((char *)src2, "2004/02/01", 10) > 0 ? 1 : 0)
+    if (strncmp((char *)argv, "2004/02/01", 10) > 0 ? 1 : 0)
     {
         if (v + 0x10000 == 0xffff)
         {
             DVDCommandBlock block2;
-            DVDCommandBlock bloc;
-            int *alloc;
             int thisCachedApploaderAddr = CachedApploaderAddr;
             switch (thisCachedApploaderAddr)
             {
             case 0:
                 if (OS_APPLOADER_ADDR)
                 {
-                    argv = (void *)OSAllocFromArenaLo(0x40, 0x20);
-                    DVDReadAbsAsyncPrio(&bloc, argv, 0x40, OS_APPLOADER_ADDR, 0, 0);
+                    v = (u32)OSAllocFromArenaLo(0x40, 0x20);
+                    DVDReadAbsAsyncPrio(&block2, (void *)v, 0x40, OS_APPLOADER_ADDR, 0, 0);
 
-                    while (DVDGetCommandBlockStatus(&bloc))
+                    while (DVDGetCommandBlockStatus(&block2))
                     {
                         if (!DVDCheckDisk())
                         {
@@ -256,7 +256,7 @@ static void __OSBootDolSimple(u32 v, u32 b, void *start, void *end, int argc, u3
                         }
                     }
 
-                    CachedApploaderAddr = OS_APPLOADER_ADDR + ((u32 *)argv)[0xe];
+                    CachedApploaderAddr = OS_APPLOADER_ADDR + ((u32 *)v)[0xe];
                 }
                 else
                 {
@@ -264,24 +264,24 @@ static void __OSBootDolSimple(u32 v, u32 b, void *start, void *end, int argc, u3
                 }
                 thisCachedApploaderAddr = CachedApploaderAddr;
             }
-            argv = (ArgsStruct *)(thisCachedApploaderAddr + argv->_00[5]);
-            argv = (ArgsStruct *)(((u32 *)argv) + 8);
+            v = thisCachedApploaderAddr + argv->_00[5];
+            v += 0x20;
         }
         src->_08 = v;
-        ((unk3ParamFunc)argv->_00[4])(&_c_LOOKATME._04, &_c_LOOKATME._04, &_c_LOOKATME._04);
+        ((unk3ParamFunc)argv->_00[4])(&_c_LOOKATME.appInit, &_c_LOOKATME.appMain, &_c_LOOKATME.appClose);
 
         src2 = OSAllocFromArenaLo(sizeof(_1C_Struct), 1);
-        memcpy(src2, argv, sizeof(_1C_Struct));
+        memcpy(src2, src, sizeof(_1C_Struct));
 
         OS_RESET_CODE = (u32)src2;
 
-        ((unk1ParamFunc)_c_LOOKATME._04)(OSReport);
+        ((unk1ParamFunc)_c_LOOKATME.appInit)(OSReport);
 
         OSSetArenaLo(src2);
-        while (((unk3ParamFunc)_c_LOOKATME._00)(&_c_LOOKATME._04, &_c_LOOKATME._08, &_c_LOOKATME._0C))
+        while (((unk3ParamFunc)_c_LOOKATME.appMain)(&_c_LOOKATME.addr, &_c_LOOKATME.length, &_c_LOOKATME.offset))
         {
             DVDCommandBlock v;
-            DVDReadAbsAsyncPrio(&v, (void *)_c_LOOKATME._04, (u32)_c_LOOKATME._08, (u32)_c_LOOKATME._0C, 0, 0);
+            DVDReadAbsAsyncPrio(&v, (void *)_c_LOOKATME.addr, (u32)_c_LOOKATME.length, (u32)_c_LOOKATME.offset, 0, 0);
             while (DVDGetCommandBlockStatus(&v))
             {
                 if (!DVDCheckDisk())
@@ -293,7 +293,7 @@ static void __OSBootDolSimple(u32 v, u32 b, void *start, void *end, int argc, u3
 
         {
             _1C_Struct *s ;
-            ret = ((unk0ParamFunc)_c_LOOKATME._08)();
+            ret = ((unk0ParamFunc)_c_LOOKATME.appClose)();
 
             s = OSAllocFromArenaLo(sizeof(_1C_Struct), 1);
             memcpy(s, src, sizeof(_1C_Struct));
@@ -310,13 +310,13 @@ static void __OSBootDolSimple(u32 v, u32 b, void *start, void *end, int argc, u3
     BOOT_REGION_UNK = 1;
     {
         int newAppPos = GetApploaderPosition() + 0x20 + argv->_00[5];
-        DVDReadAbsAsyncPrio(&bloc, (void *)OS_BOOTROM_ADDR, ROUND_UP(argv->_00[6], 32), newAppPos, 0, 0);
-    }
-    while (DVDGetCommandBlockStatus(&bloc))
-    {
-        if (!DVDCheckDisk())
+        DVDReadAbsAsyncPrio(&bloc2, (void *)OS_BOOTROM_ADDR, ROUND_UP(argv->_00[6], 32), newAppPos, 0, 0);
+        while (DVDGetCommandBlockStatus(&bloc2))
         {
-            __OSDoHotReset(0);
+            if (!DVDCheckDisk())
+            {
+                __OSDoHotReset(0);
+            }
         }
     }
 
