@@ -1,5 +1,7 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
+#include "Dolphin/stl.h"
+extern u8 lbl_3_data_19024[];
 
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
 extern u32 lbl_3_data_19018[];
@@ -87,8 +89,10 @@ u32* fn_3_E64A8(void) {
 }
 
 // .text:0x000E6528 size:0x50 mapped:0x807255BC
-void fn_3_E6528(void) {
-    return;
+void fn_3_E6528(u8* p) {
+    memcpy(p + 0xA4, *(void**)(p + 0xB4), 4);
+    *(void**)(p + 0xBC) = lbl_3_data_19024 + 0x64;
+    p[0xC2] = 0;
 }
 
 // .text:0x000E6578 size:0xC0 mapped:0x8072560C

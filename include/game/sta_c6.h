@@ -12,7 +12,7 @@ void fn_3_E5E70(void);
 void fn_3_E5FEC(void);
 void fn_3_E6410(void);
 u32* fn_3_E64A8(void);
-void fn_3_E6528(void);
+void fn_3_E6528(u8* p);
 void fn_3_E6578(void);
 void fn_3_E6638(u8* a);
 void fn_3_E6684(void);

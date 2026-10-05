@@ -1,6 +1,8 @@
 #include "game/sta_c2.h"
 #include "header_rep_data.h"
 #include "Dolphin/mtx.h"
+#pragma dont_inline on
+extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern f64 lbl_3_rodata_2800;
 extern void AnimateActorBones(void*);
 
@@ -100,13 +102,20 @@ void fn_3_CDFA4(void) {
 }
 
 // .text:0x000CE56C size:0x378 mapped:0x8070D600
-void fn_3_CE56C(void) {
+void fn_3_CE56C(u32 a, u8 b) {
     return;
 }
 
 // .text:0x000CE8E4 size:0x70 mapped:0x8070D978
 void fn_3_CE8E4(void) {
-    return;
+    u32 i = 0;
+    do {
+        u32 r = fn_80033A24(fn_3_CDFA4, 0x80, 0, 0x15, 1, 0);
+        if (r != 0) {
+            fn_3_CE56C(r, (u8)i);
+        }
+        i++;
+    } while (i < 4);
 }
 
 // .text:0x000CE954 size:0x268 mapped:0x8070D9E8
