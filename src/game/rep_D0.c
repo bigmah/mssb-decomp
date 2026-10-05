@@ -10,7 +10,10 @@
 #pragma dont_inline on
 Vec lbl_3_data_1F8 = {0.0f, 1.0f, 0.0f};
 Vec lbl_3_data_204 = {0.0f, 0.0f, 0.0f};
-extern void makeLookAtMatrix(TriangleCollisionStruct*, VecSrcDst*, Vec*, Vec*);
+Vec lbl_3_data_210 = {0.0f, 1.0f, 0.0f};
+Vec lbl_3_data_21C = {0.0f, 0.0f, 0.0f};
+extern u8 lbl_3_common_bss_350E4[];
+extern void makeLookAtMatrix(void*, VecSrcDst*, Vec*, Vec*);
 
 // .text:0x000008D4 size:0x40
 BALL_COLLISION_TYPE fn_3_8D4(VecSrcDst* inVec, CollisionStruct* outCollision) {
@@ -56,11 +59,6 @@ done:
     return ret;
 }
 
-// .text:0x00000A6C size:0x384 mapped:0x8063FB00
-BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStruct* outCollision, Vec* v) {
-    return;
-}
-
 #pragma dont_inline off
 extern f32 lbl_3_rodata_124;
 extern f64 lbl_3_rodata_128;
@@ -82,6 +80,78 @@ static inline f32 sqrtLocal(f32 x) {
     } else {
         return x;
     }
+}
+
+// .text:0x00000A6C size:0x384 mapped:0x8063FB00
+// 95%: orig does not hoist &tc into a callee-saved reg in the second loop (we use r27, fp lands in r29 instead of r27)
+BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStruct* outCollision, Vec* v) {
+    u8 flags[256];
+    TriangleCollisionStruct tc;
+    Vec d[4];
+    Mtx m2;
+    Mtx m1;
+    Vec a;
+    Vec b;
+    u32 list;
+    u32 n;
+    u32 allOut;
+    u8* fp;
+    u32 c;
+    s32 t;
+    f32 dist;
+    memset(flags, 1, *(s16*)(lbl_3_common_bss_350E4 + 0x64));
+    n = *(s16*)(lbl_3_common_bss_350E4 + 0x64);
+    fp = flags;
+    allOut = 1;
+    while (n--) {
+        fn_3_B85DC(n, &a, &b);
+        PSVECSubtract(&inVec->src, &a, &d[0]);
+        PSVECSubtract(&b, &inVec->src, &d[1]);
+        PSVECSubtract(&inVec->dst, &a, &d[2]);
+        PSVECSubtract(&b, &inVec->dst, &d[3]);
+        if (!((((*(s32*)&d[0].x & *(s32*)&d[2].x) | (*(s32*)&d[1].x & *(s32*)&d[3].x)) & 0x80000000)) &&
+            !((((*(s32*)&d[0].y & *(s32*)&d[2].y) | (*(s32*)&d[1].y & *(s32*)&d[3].y)) & 0x80000000)) &&
+            !((((*(s32*)&d[0].z & *(s32*)&d[2].z) | (*(s32*)&d[1].z & *(s32*)&d[3].z)) & 0x80000000))) {
+            allOut = 0;
+            *fp = 0;
+        }
+        fp++;
+    }
+    if (allOut != 0) {
+        return BALL_COLLISION_TYPE_NONE;
+    }
+    makeLookAtMatrix(m1, inVec, &lbl_3_data_210, &inVec->dst);
+    dist = sqrtLocal(PSVECSquareDistance(&inVec->dst, &inVec->src));
+    tc.distance = dist;
+    fp = flags;
+    n = *(s16*)(lbl_3_common_bss_350E4 + 0x64);
+    tc.collisionDistance = dist;
+    tc.collisionType = 0;
+    while (n--) {
+        if (*fp++ == 0) {
+            c = fn_3_B85A8(n, &list);
+            while (c--) {
+                t = fn_3_B91C8(g_d_GameSettings.StadiumID, ((u32*)list)[c], (s32)tc.mtx1);
+                if (t != 0) {
+                    PSMTXConcat(m1, tc.mtx1, tc.mtx1);
+                    if (checkTriangleCollisions(&tc, *(TriangleGroup**)(t + 8))) {
+                        *(u32*)v = ((u32*)list)[c];
+                    }
+                }
+            }
+        }
+    }
+    if (tc.collisionType != 0) {
+        PSMTXCopy(m1, tc.mtx1);
+        PSMTXInverse(tc.mtx1, m2);
+        lbl_3_data_21C.z = -tc.collisionDistance;
+        PSMTXMultVec(m2, &lbl_3_data_21C, &outCollision->position);
+        PSMTXTranspose(tc.mtx1, m2);
+        PSMTXMultVec(m2, &tc.normal, &outCollision->normal);
+        PSVECNormalize(&outCollision->normal, &outCollision->normal);
+        return tc.collisionType;
+    }
+    return BALL_COLLISION_TYPE_NONE;
 }
 
 // .text:0x00000DF0 size:0x2F0 mapped:0x8063FE84
@@ -149,7 +219,7 @@ BALL_COLLISION_TYPE didCollideWithBoundingBoxes(VecSrcDst* inVec, CollisionStruc
 }
 
 // .text:0x000010E0 size:0x3C4 mapped:0x80640174
-bool checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGroup* _triangleGroup) {
+int checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGroup* _triangleGroup) {
 #define O_GROUP ((TriangleGroup*)_triangleGroup)
 #define O_TRI ((CollisionTriangle*)_triangleGroup)
 
@@ -159,7 +229,7 @@ bool checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGro
     u32 didVecPassTriangle;
     u32 isBackwardsTriangle;
 
-    bool ret = false;
+    int ret = 0;
     f32 d;
     while (true) {
         bool isList;
@@ -187,7 +257,7 @@ bool checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGro
                     d = -VECDotProduct(&dist[2], &tri[00]) / dist[2].z;
                     if (d >= 0.f && collisionData->collisionDistance > d) {
                         collisionData->collisionDistance = d;
-                        ret = true;
+                        ret = 1;
                         collisionData->collisionType = O_TRI[2].collisionType;
                         collisionData->normal = dist[2];
                     }
@@ -228,7 +298,7 @@ bool checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGro
                             collisionData->normal.y = -dist[2].y;
                             collisionData->normal.z = -dist[2].z;
                         }
-                        ret = true;
+                        ret = 1;
                     }
                 }
                 tri[00] = tri[01];

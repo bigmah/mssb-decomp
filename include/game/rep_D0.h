@@ -75,6 +75,6 @@ BALL_COLLISION_TYPE checkCollision(VecSrcDst* inVec, CollisionStruct* outCollisi
 BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStruct* outCollision, Vec* v);
 BALL_COLLISION_TYPE didCollideWithBoundingBoxes(VecSrcDst* inVec, CollisionStruct* outCollision, CollisionBox* boxes,
                                                 s16 boxCount);
-bool checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGroup* TriangleGroup);
+int checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGroup* TriangleGroup);
 
 #endif // !__GAME_rep_D0_H_
