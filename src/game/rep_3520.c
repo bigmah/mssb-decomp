@@ -6,6 +6,8 @@
 #include "static/UnknownHomes_Static.h"
 extern u8 lbl_3_data_21AF0[];
 extern s16 lbl_3_bss_B702;
+extern f32 lbl_3_rodata_35D0;
+extern f32 lbl_3_data_21A48[];
 
 // .text:0x00133200 size:0x120 mapped:0x80772294
 void fn_3_133200(void) {
@@ -94,8 +96,17 @@ void fn_3_135600(void) {
 }
 
 // .text:0x0013564C size:0x4C mapped:0x807746E0
-void fn_3_13564C(void) {
-    return;
+int fn_3_13564C(f32 x, f32 y) {
+    if (x >= lbl_3_rodata_35D0) {
+        if (y >= lbl_3_rodata_35D0) {
+            return 0;
+        }
+        return 3;
+    }
+    if (y >= lbl_3_rodata_35D0) {
+        return 1;
+    }
+    return 2;
 }
 
 // .text:0x00135698 size:0x60 mapped:0x8077472C
