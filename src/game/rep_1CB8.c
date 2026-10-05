@@ -12,8 +12,23 @@ void fn_3_B79AC(void) {
 }
 
 // .text:0x000B7C2C size:0xB0 mapped:0x806F6CC0
-void fn_3_B7C2C(void) {
-    return;
+int fn_3_B7C2C(Vec* a, Vec* b) {
+    VecSrcDst p;
+    CollisionStruct c;
+    u32 t;
+    p.src.x = a->x;
+    p.src.y = -a->y;
+    p.src.z = a->z;
+    p.dst.x = b->x;
+    p.dst.y = -b->y;
+    p.dst.z = b->z;
+    t = checkCollision(&p, &c, 0, 0);
+    t &= 0x7F;
+    if (t == 2 || t == 3 || t == 4 || t == 5 || t == 7 || t == 8 || t == 11) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 // .text:0x000B7CDC size:0x90 mapped:0x806F6D70
