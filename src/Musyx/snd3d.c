@@ -766,63 +766,126 @@ void StartContinousEmitters()
     SND_EMITTER *em; // r31
     f32 dv;          // r63
 
-    for (i = 0; i < startGroupNum; ++i)
+    if (s3dFlag4)
     {
-
-        for (sl = startGroup[i].list; sl != NULL; sl = sl->next)
+        for (i = 0; i < startGroupNum; ++i)
         {
-            if ((startGroup[i].running != NULL) &&
-                !(((s3dUseMaxVoices != '\0' && ((startGroup[i].id & 0x80000000) != 0)) &&
-                   (startGroup[i].numRunning < startGroup[i].list->em->maxVoices))))
+            for (sl = startGroup[i].list; sl != NULL; sl = sl->next)
             {
-
-                dv = sl->vol - (startGroup[i].running)->vol;
-                if (dv <= 0.08f)
+                if ((startGroup[i].running != NULL) &&
+                    !(((s3dUseMaxVoices != '\0' && ((startGroup[i].id & 0x80000000) != 0)) &&
+                       (startGroup[i].numRunning < startGroup[i].list->em->maxVoices))))
                 {
-                    continue;
-                }
-                else if (dv <= 0.15f)
-                {
-                    if (++sl->em->VolLevelCnt < 20)
+                    dv = sl->vol - (startGroup[i].running)->vol;
+                    if (dv <= 0.08f)
                     {
                         continue;
+                    }
+                    else if (dv <= 0.15f)
+                    {
+                        if (++sl->em->VolLevelCnt < 20)
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        sl->em->VolLevelCnt = 0;
+                    }
+                }
+                em = sl->em;
+
+                if ((em->vid = synthFXStart(em->fxid, GetEmitterKey(em), 127, 64, em->studio,
+                                            (em->flags & 0x10) != 0)) == -1)
+                {
+                    if (!(em->flags & 0x2))
+                    {
+                        em->flags |= 0x40000;
+                        em->flags &= ~0x20000;
                     }
                 }
                 else
                 {
-                    sl->em->VolLevelCnt = 0;
-                }
-            }
-            em = sl->em;
-
-            if ((em->vid =
-                     synthFXStart(em->fxid, GetEmitterKey(em), 127, 64, em->studio,
-                                  (em->flags & 0x10) != 0)) == -1)
-            {
-            set_flags:
-                if (!(em->flags & 0x2))
-                {
-                    em->flags |= 0x40000;
+                    if (!(em->flags & 0x20))
+                    {
+                        em->flags |= 0x100000;
+                        em->fade = 0.f;
+                    }
+                    else
+                    {
+                        em->fade = 1.f;
+                    }
+                    SetFXParameters(em, sl->vol, sl->xPan, sl->yPan, sl->zPan, sl->pitch, sl->unk18);
                     em->flags &= ~0x20000;
+                    ++startGroup[i].numRunning;
+                    if (startGroup[i].running != NULL)
+                    {
+                        startGroup[i].running = startGroup[i].running->next;
+                    }
                 }
             }
-            else
+        }
+    }
+    else
+    {
+        for (i = 0; i < startGroupNum; ++i)
+        {
+            for (sl = startGroup[i].list; sl != NULL; sl = sl->next)
             {
-                if (!(em->flags & 0x20))
+                if ((startGroup[i].running != NULL) &&
+                    !(((s3dUseMaxVoices != '\0' && ((startGroup[i].id & 0x80000000) != 0)) &&
+                       (startGroup[i].numRunning < startGroup[i].list->em->maxVoices))))
                 {
-                    em->flags |= 0x100000;
-                    em->fade = 0.f;
+                    dv = sl->vol - (startGroup[i].running)->vol;
+                    if (dv <= 0.08f)
+                    {
+                        continue;
+                    }
+                    else if (dv <= 0.15f)
+                    {
+                        if (++sl->em->VolLevelCnt < 20)
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        sl->em->VolLevelCnt = 0;
+                    }
+
+                    voiceKillSound(startGroup[i].running->em->vid);
+                    startGroup[i].running = startGroup[i].running->next;
+                    --startGroup[i].numRunning;
+                }
+                em = sl->em;
+
+                if ((em->vid = synthFXStart(em->fxid, GetEmitterKey(em), 127, 64, em->studio,
+                                            (em->flags & 0x10) != 0)) == -1)
+                {
+                    if (!(em->flags & 0x2))
+                    {
+                        em->flags |= 0x40000;
+                        em->flags &= ~0x20000;
+                    }
                 }
                 else
                 {
-                    em->fade = 1.f;
-                }
-                SetFXParameters(em, sl->vol, sl->xPan, sl->yPan, sl->zPan, sl->pitch, sl->unk18);
-                em->flags &= ~0x20000;
-                ++startGroup[i].numRunning;
-                if (startGroup[i].running != NULL)
-                {
-                    startGroup[i].running = startGroup[i].running->next;
+                    if (!(em->flags & 0x20))
+                    {
+                        em->flags |= 0x100000;
+                        em->fade = 0.f;
+                    }
+                    else
+                    {
+                        em->fade = 1.f;
+                    }
+                    SetFXParameters(em, sl->vol, sl->xPan, sl->yPan, sl->zPan, sl->pitch, sl->unk18);
+                    em->flags &= ~0x20000;
+                    ++startGroup[i].numRunning;
+                    if (startGroup[i].running != NULL)
+                    {
+                        startGroup[i].running = startGroup[i].running->next;
+                    }
                 }
             }
         }

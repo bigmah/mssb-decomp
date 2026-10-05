@@ -76,6 +76,16 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Low-byte read-modify-write:** `w = v | (w & ~0xFF)` gives `rlwimi r0, r4, 0, 24, 31`; the other operand order gives swapped operands.
 - **Float literal vs. extern rodata:** comparing against a literal (`0.17f`) instead of the extern rodata symbol can fix `lfs` scheduling; loading an extern float into a local first fixes others.
 - **`switch` on an `s8`** reproduced an odd `beq`/`b` shape; `*(s16*)(p+off) += 1` matched where `x = *p; if (x < N) *p = x + 1` did not.
+- **Musyx units are an OLDER MusyX than the reference source.** Before matching, compare field offsets in the asm with the header structs (`SND_EMITTER` has no `room`, `SND_LISTENER` has no `room` and an extra float at +0x8C, `FX_GROUP` is 0xC with a refcount, `CHANNEL_DEFAULTS` is 9 bytes `#pragma pack(1)`, `VS_BUFFER` is 0x2C, `SND_PARAMETER.ctrl` is u16, `dataAddSampleReference` takes a 2nd pointer arg). A struct fix often turns 99.9% functions into matches. Functions the reference has but the asm doesn't (rooms, doors) can be deleted.
+- **Static-name noise:** `key$604` vs `key$618`, `...bss.0` vs `vidList` and `DATA` vs `lbl_803CDxxx` in `fndiff` do not stop `report.json` from counting a match. Only trust the report. `.bss` splits in the middle of Musyx cause a cyclic link-order error (only `.sbss`/`.sdata2` splits worked); add `.sbss`/`.sdata2` splits and rename `lbl_...` in `symbols.txt` to the static's name.
+- **A `(u8)` cast on the compare operand** (`x != (u8)(v & 0x7f)`) changed instruction scheduling and fixed `inpSetMidiCtrl`. Try it when only two instructions are swapped.
+- **Same inline helper at two call sites gets separate register allocation**, which is how the original has duplicated blocks (`GetEmitterKey` in `AddEmitter`/`s3dHandle`/`StartContinousEmitters`). A helper with a different declaration order of its locals fixes the pointer/counter register swap.
+- **Two identical loops over different variables** (`macHandle`): use separate locals (`sv`/`sv2`) to get the separate registers.
+- **`dolsqrtf` (from `stl/math.h`)** gives the inline `frsqrte` sequence with the `vf32` round-trip; implicit `sqrtf` becomes a bl returning int.
+- **Float clamp:** `clip3FFF(f32)` that compares the float against 16383.f before converting; `x < lo ? lo : (x > hi ? hi : x)` for signed clamps (`bgt` then `mr` shape).
+- **`fmuls` operand order** follows how the product is split: `sScale = a * b; x += (s32)(sScale * c)` fixed `mcmdSetADSR`; `(a*b)*c` in one expression did not.
+- **LE byte reads** (`lbz`/`rlwimi` chains, or `lhz` + `srawi`/`rlwimi` for u16) come from `p[0] | p[1] << 8 | ...` and `(v >> 8) | (v << 8)` macros (inline functions are blocked by `dont_inline on`).
+- **Inline call before optimisation:** if the original CSEs an index/field across an inlined static call (`voiceSetPriority`), it was a macro or hand-merged code, not an inline function.
 - **Still unsolved:** nested early returns that compile to `bge L; b L` (fn_3_15521C, fn_3_150010, fn_3_14DC80, fn_3_14CB28); pooled float constants in float-heavy functions.
 
 Add new patterns to this list as we find them.
