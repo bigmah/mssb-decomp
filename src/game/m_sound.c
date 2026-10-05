@@ -3,6 +3,9 @@
 
 extern u8 lbl_3_common_bss_34C58[];
 extern u8 lbl_3_common_bss_32B20[];
+extern u8 lbl_3_data_8D70[];
+extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
+extern u8 lbl_3_common_bss_32B20[];
 extern void sndRemoveListener(void*);
 
 #include "static/UnknownHomes_Static.h"
@@ -39,8 +42,10 @@ void fn_3_8B890(void) {
 }
 
 // .text:0x0008B964 size:0x58 mapped:0x806CA9F8
-void fn_3_8B964(void) {
-    return;
+void fn_3_8B964(void* a, void* b, void* c) {
+    if (*(u32*)(lbl_3_common_bss_32B20 + 8) != 0) {
+        sndUpdateListener(lbl_3_common_bss_32B20, a, b, c, lbl_3_data_8D70, 0x7F, 0);
+    }
 }
 
 // .text:0x0008B9BC size:0xA4 mapped:0x806CAA50
