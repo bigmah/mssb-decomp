@@ -117,8 +117,8 @@ void fn_3_BD758(void) {
 }
 
 // .text:0x000BD7D0 size:0x8 mapped:0x806FC864
-void fn_3_BD7D0(void) {
-    return;
+s32 fn_3_BD7D0(void) {
+    return 1;
 }
 
 // .text:0x000BD7D8 size:0x4 mapped:0x806FC86C
