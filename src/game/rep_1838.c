@@ -374,21 +374,25 @@ int RandomInt_Game(int max) {
 
 // .text:0x0009EE24 size:0x94 mapped:0x806DDEB8
 int random_fn_3_9EE24(int max) {
-    int absMax;
-    int ret, r2;
-    absMax = ABS(max);
+    int r2;
+    int sign;
+    sign = max;
+    if (max < 0) {
+        max = -max;
+    }
 
-    if (absMax <= 1) {
+    if (max <= 1) {
         return 0;
     }
-    ret = unkSimulationRelatedStruct._00 + g_d_GameSettings.FrameCountWhileNotAtMainMenu +
-          (g_d_GameSettings.FrameCountWhileNotAtMainMenu >> 1) - g_Ball.StaticRandomInt1 +
-          ((u8)g_Ball.StaticRandomInt2) + (unkSimulationRelatedStruct._00 / absMax);
-    unkSimulationRelatedStruct._00 = ret;
-    ret %= (u32)absMax;
-    r2 = ABS(ret);
+    unkSimulationRelatedStruct._00 = unkSimulationRelatedStruct._00 + g_d_GameSettings.FrameCountWhileNotAtMainMenu +
+                                     (g_d_GameSettings.FrameCountWhileNotAtMainMenu >> 1) - g_Ball.StaticRandomInt1 +
+                                     ((u8)g_Ball.StaticRandomInt2) + (unkSimulationRelatedStruct._00 / max);
+    r2 = unkSimulationRelatedStruct._00 % (u32)max;
+    if (r2 < 0) {
+        r2 = -r2;
+    }
 
-    if (max < 0) {
+    if (sign < 0) {
         return -r2;
     } else {
         return r2;
