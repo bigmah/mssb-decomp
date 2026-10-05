@@ -24,6 +24,7 @@ extern u8 lbl_3_data_196B4[];
 
 extern u8 lbl_3_common_bss_350E4[];
 
+extern u8 lbl_3_bss_AE80[];
 extern u8 lbl_3_data_1963F;
 extern u8 lbl_3_data_19640;
 
@@ -115,8 +116,17 @@ void fn_3_E6638(u8* a) {
 }
 
 // .text:0x000E6684 size:0x98 mapped:0x80725718
-void fn_3_E6684(void) {
-    return;
+void fn_3_E6684(u8* p) {
+    u32* o;
+    s32 i;
+    for (i = 0; i < 3; i++) {
+        o = (*(u32***)(**(u8***)(p + 0x74) + 0x18))[i];
+        if (lbl_3_bss_AE80[i + 1] != 0) {
+            o[0x14 / 4] = o[0x18 / 4];
+        } else {
+            o[0x14 / 4] = 0;
+        }
+    }
 }
 
 // .text:0x000E671C size:0x7C mapped:0x807257B0
