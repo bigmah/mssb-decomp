@@ -4,6 +4,8 @@
 extern u8* lbl_3_common_bss_1323C;
 extern void changeScene(s32, s32);
 extern u8 g_GameLogic[];
+extern u8 g_Fielders[];
+extern u8 lbl_8036E548[];
 
 // .text:0x00021C90 size:0x154 mapped:0x80660D24
 void fn_3_21C90(void) {
@@ -21,8 +23,25 @@ void fn_3_21F14(void) {
 }
 
 // .text:0x0002273C size:0xE0 mapped:0x806617D0
-void fn_3_2273C(void) {
-    return;
+s32 fn_3_2273C(void) {
+    u8* f = g_Fielders;
+    u8** r = (u8**)lbl_8036E548;
+    u8* p;
+    s32 i;
+    for (i = 0; i < 9; i++) {
+        if (f[0x218] == 0) {
+            p = r[0x2C50 / 4];
+            if (p == 0) {
+                return 1;
+            }
+            if (*(s16*)(p + 0x68) == 0) {
+                return 1;
+            }
+        }
+        f += 0x268;
+        r++;
+    }
+    return 0;
 }
 
 // .text:0x0002281C size:0x34 mapped:0x806618B0
