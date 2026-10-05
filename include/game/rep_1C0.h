@@ -3,6 +3,12 @@
 
 #include "mssbTypes.h"
 
+u32 setFanObjPtr(void);
+void fn_3_35E4(u32 val);
+void fn_3_35F0(void);
+void fn_3_3638(void);
+void fn_3_3818(void);
+void fn_3_38E8(void);
 void fn_3_3904(void);
 void fn_3_3BE8(void);
 void fn_3_3EE8(void);

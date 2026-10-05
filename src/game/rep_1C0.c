@@ -1,6 +1,38 @@
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
 
+extern u32 lbl_3_bss_18[];
+
+// .text:0x000035D4 size:0x10
+u32 setFanObjPtr(void) {
+    return lbl_3_bss_18[0];
+}
+
+// .text:0x000035E4 size:0xC
+void fn_3_35E4(u32 val) {
+    lbl_3_bss_18[0] = val;
+}
+
+// .text:0x000035F0 size:0x48
+void fn_3_35F0(void) {
+    return;
+}
+
+// .text:0x00003638 size:0x1E0
+void fn_3_3638(void) {
+    return;
+}
+
+// .text:0x00003818 size:0xD0
+void fn_3_3818(void) {
+    return;
+}
+
+// .text:0x000038E8 size:0x1C
+void fn_3_38E8(void) {
+    return;
+}
+
 // .text:0x00003904 size:0x2E4 mapped:0x80642998
 void fn_3_3904(void) {
     return;
