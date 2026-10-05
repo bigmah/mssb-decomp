@@ -4,14 +4,14 @@
 
 #include <float.h>
 
-extern float powf(float, float);
+extern double pow(double, double);
 
 static u32 adsrGetIndex(ADSR_VARS* adsr) {
   s32 i = 193 - ((adsr->currentIndex + 0x8000) >> 16);
   return i < 0 ? 0 : i;
 }
 
-u32 adsrConvertTimeCents(long tc) { return 1000.f * powf(2.f, 1.2715658e-08f * tc); }
+u32 adsrConvertTimeCents(long tc) { return 1000.f * (f32)pow(2.0, 1.2715658e-08f * tc); }
 
 u32 salChangeADSRState(ADSR_VARS* adsr) {
   u32 VoiceDone; // r30
