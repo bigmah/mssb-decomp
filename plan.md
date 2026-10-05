@@ -27,9 +27,7 @@ Matched % is what moves the badges. Linked files are what really proves the deco
 ## Workflow for one function
 
 1. **Pick a target** (see Phases). Start from small leaf functions, which don't call other unmatched code.
-2. **Get a first draft in C.**
-   - Generate a context file: `python3 tools/decompctx.py src/game/rep_XXXX.c` (or use the `.ctx` that ninja writes into `build/`).
-   - Run m2c on the function's assembly (`build/GYQE01/game/asm/...` or `dtk elf disasm` output), or create a decomp.me scratch. The compiler preset is `mwcc_247_107`, and `objdiff.json` lists the exact flags for each unit.
+2. **Get a first draft in C:** `python3 tools/fnstart.py <fn>` prints the original asm, an m2c draft using the unit's headers as context, and the current diff. For decomp.me, generate a context with `python3 tools/decompctx.py src/game/rep_XXXX.c -I include -I include/stl`. The compiler preset is `mwcc_247_107`, and `objdiff.json` lists the exact flags for each unit.
 3. **Iterate locally:**
    - `python3 tools/fndiff.py <fn>` rebuilds just that unit and prints an instruction diff, or `MATCH`.
    - `python3 tools/fnvariants.py <fn> v1.c v2.c ... --also caller1,caller2` scores several candidate definitions at once (including callers that inline it) and restores the file afterwards.
@@ -52,12 +50,15 @@ Add new patterns to this list as we find them.
 
 ## Phases
 
-### Phase 0: Tooling (mostly done)
+### Phase 0: Tooling (done)
 - [x] Local build working on macOS arm64 (wibo, no Wine).
-- [x] `tools/fndiff.py`, `tools/fnvariants.py`.
-- [ ] Install m2c locally (`pip install` from github.com/matt-kempster/m2c) and add a small wrapper that feeds it one function plus the unit's ctx.
-- [ ] Get the objdiff GUI set up for whoever is doing visual diffing.
-- [ ] Optional: a script that lists the "next best targets" from `report.json` (smallest unmatched leaf functions, and files closest to complete).
+- [x] `tools/setup.py`: one-command bootstrap for a clone or worktree (tools, orig files, m2c, build).
+- [x] `tools/fnstart.py`: asm + m2c draft (with header context) + current diff for any function.
+- [x] `tools/fndiff.py`, `tools/fnvariants.py`: per-function diff and variant scoring.
+- [x] `tools/next_targets.py`: ranks functions/units to work on next.
+- [x] `tools/claim.py`: unit claims shared across worktrees, for parallel agents.
+- [x] `AGENTS.md`: agent workflow and definition of done.
+- [ ] Optional: objdiff GUI for humans doing visual diffing.
 
 ### Phase 1: First linked game file
 Goal: the first `game/*.c` objects switched to `Matching`.
