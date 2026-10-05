@@ -5,6 +5,7 @@ extern u8* lbl_3_common_bss_1323C;
 extern void changeScene(s32, s32);
 extern u8 g_GameLogic[];
 extern u8 g_Fielders[];
+extern u8 lbl_3_data_2398[];
 extern u8 lbl_8036E548[];
 
 // .text:0x00021C90 size:0x154 mapped:0x80660D24
@@ -58,7 +59,12 @@ s32 fn_3_2281C(s32 i) {
 
 // .text:0x00022850 size:0xF4 mapped:0x806618E4
 void fn_3_22850(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 0x21; i++) {
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x38) = 0;
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x3C) = 0;
+    }
+    (&lbl_3_common_bss_1323C)[0][0x27B] = 0;
 }
 
 // .text:0x00022944 size:0x4 mapped:0x806619D8
@@ -68,7 +74,13 @@ void fn_3_22944(void) {
 
 // .text:0x00022948 size:0xD8 mapped:0x806619DC
 void fn_3_22948(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 0x21; i++) {
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x34) = 0;
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x38) = 0;
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x3C) = 0;
+    }
+    (&lbl_3_common_bss_1323C)[0][0x27B] = 0;
 }
 
 // .text:0x00022A20 size:0x9C mapped:0x80661AB4
