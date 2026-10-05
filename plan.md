@@ -57,7 +57,17 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **`while (n--)` empty delay loops:** `for (i = 13; i != 0; i--) {}` gives `li r0,13; mtctr r0; bdnz`.
 - **A `.sdata2`/`.rodata` symbol used by a function needs a split** (`.sdata2 start:... end:...` in `splits.txt`) before the report counts it as matched (see `Musyx/snd_math.c`).
 - **Bitfield flags:** `rlwimi r0, r4, 7, 24, 24` on a byte is a `u8 f : 1;` member (msb). Use a small typedef'd struct with padding up to the byte.
-- **Known blocker: float constant pooling.** Functions that use several `.rodata` floats get a single pooled base register in our build (`...@l` held in a saved register), while the original does `lis`/`lfs` per constant. No source form found yet; skip float-heavy functions with many constants for now. A single `extern f32 lbl_3_rodata_XXXX;` constant works fine.
+- **Known blocker: float constant pooling.** Functions that use several `.rodata` floats get a single pooled base register in our build (`...@l` held in a saved register), while the original does `lis`/`lfs` per constant. No source form found yet; skip float-heavy functions with many constants for now. A single `extern f32 lbl_3_rodata_XXXX;` constant works fine. Declaring every constant as its own `extern const f32/f64` (real symbol names) avoids the pooling in some functions; a local `M12 id = lbl_3_rodata_XXXX;` copy works for identity matrices.
+- **Float compare against 0:** `if (v)` emits `fcmpu f1,f0` (call result first) like the original; `v != 0.0f` swaps the operands. `x / 2.0` gives `fmul f0,f1,f0` where `x * 0.5` doesn't.
+- **`#pragma dont_inline on` blocks `inline` callees too:** with `-inline deferred`, `dolsqrtf2` stays a `bl` until the pragma is removed. Check that before blaming float constants.
+- **Pointer-array loops:** `((u8**)sym)[i + OFF/4]` (indexed by the loop counter) or `u8* b = sym; ... b += 4` reproduces the original's `lwz OFF(rN)` / `addi rN,rN,4` shapes.
+- **Declaration order matters:** the order of local declarations changes saved-register assignment and stack layout (earlier-declared locals get higher stack addresses). Permute it; a small hill-climb script helps.
+- **Replace a struct with separate locals** declared in reverse memory order, plus `u32 pad` before/after for the frame size, when the compiler hoists member addresses (`__OSBootDolSimple`).
+- **`a ? b : c` min** in place of `x = a; if (a >= b) x = b;` changes register allocation (`aramStoreData`).
+- **Reuse one local** for an index and a later loop counter, or write `q[0x34] = i = 0;`, to keep the original's register sharing.
+- **Calling a stub the original calls with no args:** cast it `((void(*)(void))f)()` so `r3` stays stale.
+- **A function inlined into its caller must land in the same commit** as the caller's match (`fn_3_6BEA4` and `fn_3_6C1D8`).
+- **`fndiff` line counts do not track the objdiff score;** trust `build/GYQE01/report.json`. A `DATA` vs `lbl_...` name difference in `fndiff` is noise if the report says 100%.
 - **`(s8)`/`s8` params:** `extsb r3, r3` on a loaded byte argument comes from `*(s8*)(base + off)`, not `(s8)base[off]`.
 - **`base + idx*4` with a big field offset, base hoisted before the shift:** write `p = ((u8**)(sym + 0x2C50))[idx];` (cast base+offset, then index) instead of `*(u8**)(sym + idx*4 + 0x2C50)`.
 - **Unused-looking float arg in a callee:** if the original multiplies a constant into f1 and the constant sits in f2, the callee takes `(.., f32 a, f32 b)` and is passed the constant as 2nd float. Cast the call: `((void (*)(int, int, f32, f32))fn)(...)`.
