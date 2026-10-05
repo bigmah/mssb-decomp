@@ -56,7 +56,7 @@ void fn_3_13974C(void);
 void fn_3_139808(void);
 void fn_3_139CA0(void);
 void fn_3_139F84(void);
-void fn_3_13A048(void);
+void fn_3_13A048(int i, int j);
 void fn_3_13A0AC(void);
 void fn_3_13A724(void);
 void fn_3_13A89C(void);

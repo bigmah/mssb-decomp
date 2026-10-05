@@ -1,5 +1,6 @@
 #include "game/rep_3520.h"
 #include "header_rep_data.h"
+#include "stl/math.h"
 #pragma dont_inline on
 
 
@@ -8,6 +9,11 @@ extern u8 lbl_3_data_21AF0[];
 extern s16 lbl_3_bss_B702;
 extern f32 lbl_3_rodata_35D0;
 extern f32 lbl_3_data_21A48[];
+extern f32 lbl_3_rodata_35D8;
+extern f32 lbl_3_rodata_35DC;
+extern f32 lbl_3_rodata_3638;
+extern s16 lbl_3_data_21A3C[];
+extern s16 lbl_3_data_21A04[];
 
 // .text:0x00133200 size:0x120 mapped:0x80772294
 void fn_3_133200(void) {
@@ -326,8 +332,17 @@ void fn_3_139F84(void) {
 }
 
 // .text:0x0013A048 size:0x64 mapped:0x807790DC
-void fn_3_13A048(void) {
-    return;
+void fn_3_13A048(int i, int j) {
+    s16* arr = (s16*)(g_Minigame + 0x1890);
+    s16 v = arr[j];
+    s16 c = lbl_3_data_21A04[7];
+    if (v < c) {
+        arr[i] += v;
+        arr[j] = 0;
+    } else {
+        arr[i] += c;
+        arr[j] -= c;
+    }
 }
 
 // .text:0x0013A0AC size:0x678 mapped:0x80779140

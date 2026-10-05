@@ -3,6 +3,8 @@
 
 extern f32 lbl_3_data_2262C;
 extern f32 lbl_3_data_22650[];
+extern u8 lbl_3_data_22670[];
+extern u8 lbl_3_data_2265C[];
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
 void fn_3_116840(void) {
@@ -17,6 +19,7 @@ void fn_3_1169D0(void) {
 // .text:0x00116B38 size:0x3C mapped:0x80755BCC
 extern u8 g_Minigame[];
 extern u8 lbl_8036E548[];
+typedef struct { u8 pad[0x34]; void* p; u8 pad2[0x90 - 0x38]; } Ent90;
 extern f32 fn_800B4A94(void* p);
 
 void fn_3_116B38(void) {
@@ -214,7 +217,6 @@ void fn_3_11A210(void) {
 }
 
 // .text:0x0011A350 size:0x3C mapped:0x807593E4
-typedef struct { u8 pad[0x34]; void* p; u8 pad2[0x90 - 0x38]; } Ent90;
 u32 fn_3_11A350(int i) {
     Ent90* base = *(Ent90**)(lbl_8036E548 + 0x68);
     return fn_800B4A94(base[i].p);
