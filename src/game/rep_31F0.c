@@ -35,6 +35,12 @@ extern void minigamesSetSomePointers(void);
 extern void minigamesGXStuff(void);
 extern void minigamesSetSomePointers2(void);
 extern int rand();
+extern u8 lbl_3_data_18C48[];
+extern u8 lbl_8037169C[];
+extern s32 fn_3_6C938(s32, s32);
+extern void fn_3_FBD70(void);
+extern void fn_3_FBD58(void);
+extern void changeScene(s32, s32);
 
 // .text:0x00110634 size:0x3D0 mapped:0x8074F6C8
 void fn_3_110634(void) {
@@ -125,7 +131,32 @@ void fn_3_111C5C(void) {
 
 // .text:0x00111F80 size:0xF0 mapped:0x80751014
 void fn_3_111F80(void) {
-    return;
+    u8* gl = g_GameLogic;
+    switch (gl[0x125]) {
+    case 0:
+        changeScene(1, 6);
+        gl[0x125] = 1;
+        break;
+    case 1: {
+        s32 t = *(u16*)(gl + 0xFC);
+        if (t >= *(s16*)(lbl_3_data_18C48 + 4) ||
+            (t >= *(s16*)(lbl_3_data_18C48 + 2) && fn_3_6C938(1, 0x1100) != 0)) {
+            changeScene(3, 6);
+            gl[0x125] = 2;
+        }
+        break;
+    }
+    case 2:
+        if (lbl_8037169C[0x13] != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+            gl[0x125] = 3;
+        }
+        break;
+    case 3:
+        fn_3_5A6D4(7);
+        break;
+    }
 }
 
 // .text:0x00112070 size:0x70 mapped:0x80751104
