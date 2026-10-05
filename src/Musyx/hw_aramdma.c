@@ -191,7 +191,6 @@ typedef struct ARAMInfo
   u32 write; // 0x8
 } ARAMInfo;
 
-// 98.8%: only callee-saved register numbering differs (src/addr/ai/len swapped around inlined aramUploadData)
 void *aramStoreData(void *srcIn, unsigned long len, ARAMInfo *ai)
 {
   void *buffer;          // r30
