@@ -2,11 +2,20 @@
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1F58.h"
+#include "game/rep_3AE8.h"
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_common_bss_35154[];
 extern f32 lbl_3_rodata_2388;
+extern f32 lbl_3_rodata_2378;
+extern f32 lbl_3_rodata_235C;
+extern f64 lbl_3_rodata_2380;
+extern u8 lbl_3_data_17D08[];
+extern u8 lbl_3_data_17D10[];
+#include "Dolphin/mtx.h"
+#include "stl/fdlibm.h"
+extern void* memcpy(void*, const void*, u32);
 
 // .text:0x000CABF0 size:0x210 mapped:0x80709C84
 void fn_3_CABF0(void) {
@@ -62,7 +71,48 @@ void fn_3_CAE00(void) {
 
 // .text:0x000CAF9C size:0x214 mapped:0x8070A030
 void fn_3_CAF9C(void) {
-    return;
+    Vec a;
+    Vec b;
+    Vec c;
+    u8* q;
+    s32 n;
+    s32 i;
+    u8** slot;
+    q = fn_800B0A5C_insertQueue(fn_3_CAE00, 1);
+    *(u16*)(q + 0x30) = 0;
+    q[0x33] = g_Pitcher.rosterID;
+    memcpy(&a, &g_Pitcher, 0xC);
+    memcpy(&b, &g_Pitcher.ballVelocity, 0xC);
+    memcpy(&c, &g_Pitcher.pitchCurveVeloV1, 0xC);
+    n = *(s32*)(lbl_3_data_17D08 + 4);
+    while (n-- != 0) {
+        ((void (*)(Vec*, Vec*, Vec*, int))fn_3_15C024)(&a, &b, &c, 0);
+    }
+    *(f32*)(q + 0x14) = a.x;
+    *(f32*)(q + 0x18) = -a.y;
+    *(f32*)(q + 0x1C) = a.z;
+    a.x = a.x - g_Pitcher.ballCurrentPosition.x;
+    a.y = a.y - g_Pitcher.ballCurrentPosition.y;
+    a.z = a.z - g_Pitcher.ballCurrentPosition.z;
+    a.y = -a.y;
+    PSVECNormalize(&a, &a);
+    b.x = lbl_3_rodata_2378; b.y = 0.0f; b.z = 0.0f;
+    PSVECCrossProduct(&b, &a, (Vec*)(q + 0x20));
+    *(f32*)(q + 0x2C) = acos(PSVECDotProduct(&b, &a)) / 2.0;
+    if (PSVECMag((Vec*)(q + 0x20))) {
+        PSVECNormalize((Vec*)(q + 0x20), (Vec*)(q + 0x20));
+        PSVECScale((Vec*)(q + 0x20), sin(*(f32*)(q + 0x2C)), (Vec*)(q + 0x20));
+    }
+    *(f32*)(q + 0x2C) = cos(*(f32*)(q + 0x2C));
+    q[0x34] = i = 0;
+    slot = (u8**)lbl_3_data_17D10;
+    for (; i < 2; slot++, i++) {
+        if (*slot == 0) {
+            ((u8**)lbl_3_data_17D10)[i] = q;
+            q[0x32] = i;
+            break;
+        }
+    }
 }
 
 // .text:0x000CB1B0 size:0x84 mapped:0x8070A244
