@@ -11,3 +11,9 @@ void fn_3_C9590(void) {
     return;
 }
 
+extern u8 lbl_3_bss_9F34;
+
+// .text:0x000C9734 size:0x10
+void fn_3_C9734(void) {
+    lbl_3_bss_9F34 = 2;
+}
