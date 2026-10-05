@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 
+void manageStadiumLoading(void);
 void manageLoadingState(void);
 
 #endif // !__GAME_rep_60_H_
