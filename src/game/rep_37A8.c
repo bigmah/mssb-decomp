@@ -151,8 +151,20 @@ void fn_3_1439EC(void) {
 }
 
 // .text:0x00143FAC size:0x80 mapped:0x80783040
-void fn_3_143FAC(void) {
-    return;
+typedef struct { u8 pad0[0x1A]; s16 f1A; u8 pad1C[0x0E]; u8 st; u8 pad2B[0x0D]; } MgEnt;
+void fn_3_143FAC(s32 x) {
+    MgEnt *e = (MgEnt*)g_Minigame;
+    s32 i;
+    if (g_Minigame[0x1CA2] == 2) {
+        for (i = 0; i < 3; i++) {
+            if (e->st == 2) {
+                e->st = 3;
+                e->f1A = 0;
+            }
+            e++;
+        }
+    }
+    ((void (*)(s32))fn_3_1439EC)(x);
 }
 
 // .text:0x0014402C size:0x210 mapped:0x807830C0
