@@ -50,7 +50,7 @@ void fn_3_14CB28(void);
 void fn_3_14CBB4(void);
 void fn_3_14CD40(void);
 void fn_3_14CECC(void);
-void fn_3_14D2C0(void);
+void fn_3_14D2C0(u8* p);
 void fn_3_14D318(void);
 void fn_3_14D44C(void);
 void fn_3_14D6D4(u8* p);

@@ -1,5 +1,7 @@
 #include "game/rep_3880.h"
 #include "header_rep_data.h"
+
+extern u8 lbl_8036E548[];
 #include "static/UnknownHomes_Static.h"
 
 
@@ -257,8 +259,14 @@ void fn_3_14CECC(void) {
 }
 
 // .text:0x0014D2C0 size:0x58 mapped:0x8078C354
-void fn_3_14D2C0(void) {
-    return;
+void fn_3_14D2C0(u8* p) {
+    u8** arr = *(u8***)(*(u8**)(lbl_8036E548 + 0x68) + (p[0x45] + 0x10) * 0x90 + 0x34);
+    u8* e;
+    arr = *(u8***)((u8*)arr + 0x18);
+    e = arr[p[0x46]];
+    *(f32*)(p + 4) = *(f32*)(*(u8**)(e + 0xEC) + 0xC);
+    *(f32*)(p + 8) = *(f32*)(*(u8**)(e + 0xEC) + 0x1C);
+    *(f32*)(p + 0xC) = *(f32*)(*(u8**)(e + 0xEC) + 0x2C);
 }
 
 // .text:0x0014D318 size:0x134 mapped:0x8078C3AC
