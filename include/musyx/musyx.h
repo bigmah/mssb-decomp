@@ -117,7 +117,7 @@ typedef struct SND_FMATRIX {
 } SND_FMATRIX;
 
 typedef struct SND_PARAMETER {
-  u8 ctrl;
+  u16 ctrl;
   union {
     u8 value7;
     u16 value14;
@@ -184,7 +184,6 @@ typedef struct SND_DOOR {
 typedef struct SND_LISTENER {
   struct SND_LISTENER* next;
   struct SND_LISTENER* prev;
-  SND_ROOM* room;
 
   u32 flags;
   SND_FVECTOR pos;
@@ -198,6 +197,7 @@ typedef struct SND_LISTENER {
   f32 surroundDisBack;
   f32 soundSpeed;
   f32 vol;
+  f32 unk8C;
 } SND_LISTENER;
 
 #define SND_LISTENER_DEFAULT 0x00000000
@@ -206,8 +206,6 @@ typedef struct SND_LISTENER {
 typedef struct SND_EMITTER {
   struct SND_EMITTER* next;
   struct SND_EMITTER* prev;
-  SND_ROOM* room;
-
   SND_PARAMETER_INFO* paraInfo;
 
   u32 flags;

@@ -445,9 +445,11 @@ typedef struct CTRL_DEST {
 } CTRL_DEST;
 
 typedef struct SND_VIRTUALSAMPLE_INFO {
-  // total size: 0x14
+  // total size: 0x1c
   u16 smpID;  // offset 0x0, size 0x2
   u16 instID; // offset 0x2, size 0x2
+  u32 pubID;
+  u32 numInst;
   union vsData {
     struct vsUpdate {
       // total size: 0x10
@@ -456,11 +458,12 @@ typedef struct SND_VIRTUALSAMPLE_INFO {
       u32 off2; // offset 0x8, size 0x4
       u32 len2; // offset 0xC, size 0x4
     } update;
+    u32 extra;
   } data;
 } SND_VIRTUALSAMPLE_INFO;
 
 typedef struct VS_BUFFER {
-  // total size: 0x24
+  // total size: 0x2c
   u8 state;                    // offset 0x0, size 0x1
   u8 hwId;                     // offset 0x1, size 0x1
   u8 smpType;                  // offset 0x2, size 0x1
@@ -472,14 +475,14 @@ typedef struct VS_BUFFER {
 } VS_BUFFER;
 
 typedef struct _VS {
-  // total size: 0x950
+  // total size: 0xb50
   u8 numBuffers;              // offset 0x0, size 0x1
   u32 bufferLength;           // offset 0x4, size 0x4
-  VS_BUFFER streamBuffer[64]; // offset 0x8, size 0x900
-  u8 voices[64];              // offset 0x908, size 0x40
-  u16 nextInstID;             // offset 0x948, size 0x2
+  VS_BUFFER streamBuffer[64]; // offset 0x8, size 0xb00
+  u8 voices[64];              // offset 0xb08, size 0x40
+  u16 nextInstID;             // offset 0xb48, size 0x2
   u32 (*callback)(u8,
-                  SND_VIRTUALSAMPLE_INFO*); // offset 0x94C, size 0x4
+                  SND_VIRTUALSAMPLE_INFO*); // offset 0xb4C, size 0x4
 } VS;
 
 extern VS vs;
@@ -795,10 +798,15 @@ extern SYNTH_VOICE* synthVoice;
 extern DSPvoice* dspVoice;
 typedef s32 (*SND_COMPARE)(void*, void*);
 
+#pragma push
+#pragma pack(1)
 typedef struct CHANNEL_DEFAULTS {
-  // total size: 0x1
-  u8 pbRange; // offset 0x0, size 0x1
+  // total size: 0x9
+  u8 pbRange;           // offset 0x0, size 0x1
+  u32 lpfLowerFrqBound; // offset 0x1, size 0x4
+  u32 lpfUpperFrqBound; // offset 0x5, size 0x4
 } CHANNEL_DEFAULTS;
+#pragma pop
 
 typedef struct FX_TAB {
   // total size: 0xA
@@ -820,10 +828,12 @@ typedef struct FX_DATA {
 } FX_DATA;
 
 typedef struct FX_GROUP {
-  // total size: 0x8
+  // total size: 0xC
   u16 gid;       // offset 0x0, size 0x2
   u16 fxNum;     // offset 0x2, size 0x2
-  FX_TAB* fxTab; // offset 0x4, size 0x4
+  u16 refCnt;    // offset 0x4, size 0x2
+  u16 pad;       // offset 0x6, size 0x2
+  FX_TAB* fxTab; // offset 0x8, size 0x4
 } FX_GROUP;
 
 typedef struct PAGE {
@@ -887,8 +897,8 @@ u32 dataInsertCurve(u16 cid, void* curvedata);
 u32 dataRemoveCurve(u16 sid);
 s32 dataGetSample(u16 sid, SAMPLE_INFO* newsmp);
 void* dataGetCurve(u16 cid);
-u32 dataAddSampleReference(u16 sid);
-u32 dataRemoveSampleReference(u16 sid);
+u32 dataAddSampleReference(u16 sid, void* smpData);
+u32 dataRemoveSampleReference(u16 sid, void* smpData);
 u32 dataInsertKeymap(u16 cid, void* keymapdata);
 u32 dataRemoveKeymap(u16 sid);
 u32 dataInsertLayer(u16 cid, void* layerdata, u16 size);
@@ -944,6 +954,7 @@ void voiceKill(u32 vi);
 extern u64 synthRealTime;
 u32 synthGetTicksPerSecond(SYNTH_VOICE* svoice);
 void synthKillVoicesByMacroReferences(u16* ref);
+void synthKillVoicesBySampleReferences(u16* ref);
 void synthExit();
 u16 sndRand(void);
 s16 sndSin(u16 angle);
@@ -1157,6 +1168,7 @@ void sndProfStartPMC(SND_PROFILE_DATA* info);
 
 void vidRemoveVoiceReferences(SYNTH_VOICE* svoice);
 u32 vidMakeNew(SYNTH_VOICE* svoice, u32 isMaster);
+u32 vidGetPublicId(u32 id);
 u32 vidMakeRoot(SYNTH_VOICE* svoice);
 
 u32 adsrHandleLowPrecision(ADSR_VARS* adsr, u16* adsr_start, u16* adsr_delta);

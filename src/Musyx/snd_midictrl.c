@@ -35,6 +35,9 @@ static CHANNEL_DEFAULTS inpChannelDefaults[8][16];
 
 static CHANNEL_DEFAULTS inpFXChannelDefaults[64];
 
+static u32 inpLpfUpperDefault;
+static u32 inpLpfLowerDefault;
+
 inline bool32 GetGlobalFlagSet(u8 chan, u8 midiSet, s32 flag) {
   return (flag & inpGlobalMIDIDirtyFlags[midiSet][chan]) != 0;
 }
@@ -78,6 +81,7 @@ void inpSetRPNHi(u8 set, u8 channel, u8 value) {
   u16 rpn;  // r28
   u32 i;    // r31
   u8 range; // r29
+  u32 frq;
 
   rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
   switch (rpn) {
@@ -92,12 +96,57 @@ void inpSetRPNHi(u8 set, u8 channel, u8 value) {
       }
     }
     break;
+  case 0x7F7D:
+    frq = (inpChannelDefaults[set][channel].lpfLowerFrqBound & 0x1FF) | (value << 9);
+    inpChannelDefaults[set][channel].lpfLowerFrqBound = frq;
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfLowerFrqBoundary = frq;
+      }
+    }
+    break;
+  case 0x7F7E:
+    frq = (inpChannelDefaults[set][channel].lpfUpperFrqBound & 0x1FF) | (value << 9);
+    inpChannelDefaults[set][channel].lpfUpperFrqBound = frq;
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfUpperFrqBoundary = frq;
+      }
+    }
+    break;
   default:
     break;
   }
 }
 
-void inpSetRPNLo(u8 set, u8 channel, u8 value) {}
+static void inpSetRPNLo(u8 set, u8 channel, u8 value) {
+  u16 rpn;
+  u32 i;
+  u32 frq;
+  u32 frq2;
+
+  rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
+  switch (rpn) {
+  case 0x7F7D:
+    frq = (inpChannelDefaults[set][channel].lpfLowerFrqBound & 0xFE00) | (value << 2);
+    inpChannelDefaults[set][channel].lpfLowerFrqBound = frq;
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfLowerFrqBoundary = frq;
+      }
+    }
+    break;
+  case 0x7F7E:
+    frq2 = (inpChannelDefaults[set][channel].lpfUpperFrqBound & 0xFE00) | (value << 2);
+    inpChannelDefaults[set][channel].lpfUpperFrqBound = frq2;
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfUpperFrqBoundary = frq2;
+      }
+    }
+    break;
+  }
+}
 
 void inpSetRPNDec(u8 set, u8 channel) {
   u16 rpn;  // r28
@@ -119,6 +168,26 @@ void inpSetRPNDec(u8 set, u8 channel) {
       }
     }
     break;
+  case 0x7F7D:
+    if (inpChannelDefaults[set][channel].lpfLowerFrqBound != 0) {
+      --inpChannelDefaults[set][channel].lpfLowerFrqBound;
+    }
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfLowerFrqBoundary = inpChannelDefaults[set][channel].lpfLowerFrqBound;
+      }
+    }
+    break;
+  case 0x7F7E:
+    if (inpChannelDefaults[set][channel].lpfUpperFrqBound != 0) {
+      --inpChannelDefaults[set][channel].lpfUpperFrqBound;
+    }
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfUpperFrqBoundary = inpChannelDefaults[set][channel].lpfUpperFrqBound;
+      }
+    }
+    break;
   default:
     break;
   }
@@ -136,12 +205,31 @@ void inpSetRPNInc(u8 set, u8 channel) {
     if (range < 24) {
       ++range;
     }
-
     inpChannelDefaults[set][channel].pbRange = range;
     for (i = 0; i < synthInfo.voiceNum; ++i) {
       if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
         synthVoice[i].pbUpperKeyRange = range;
         synthVoice[i].pbLowerKeyRange = range;
+      }
+    }
+    break;
+  case 0x7F7D:
+    if (inpChannelDefaults[set][channel].lpfLowerFrqBound != 0x3FFF) {
+      ++inpChannelDefaults[set][channel].lpfLowerFrqBound;
+    }
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfLowerFrqBoundary = inpChannelDefaults[set][channel].lpfLowerFrqBound;
+      }
+    }
+    break;
+  case 0x7F7E:
+    if (inpChannelDefaults[set][channel].lpfUpperFrqBound != 0x3FFF) {
+      ++inpChannelDefaults[set][channel].lpfUpperFrqBound;
+    }
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfUpperFrqBoundary = inpChannelDefaults[set][channel].lpfUpperFrqBound;
       }
     }
     break;
@@ -152,6 +240,7 @@ void inpSetRPNInc(u8 set, u8 channel) {
 
 void inpSetMidiCtrl(u8 ctrl, u8 channel, u8 set, u8 value) {
   u32 i;
+  u32 changed;
   if (channel == 0xFF) {
     return;
   }
@@ -160,48 +249,65 @@ void inpSetMidiCtrl(u8 ctrl, u8 channel, u8 set, u8 value) {
     switch (ctrl) {
     case 6:
       inpSetRPNHi(set, channel, value);
+      changed = 1;
       break;
     case 38:
       inpSetRPNLo(set, channel, value);
+      changed = 1;
       break;
     case 96:
       inpSetRPNDec(set, channel);
+      changed = 1;
       break;
     case 97:
       inpSetRPNInc(set, channel);
+      changed = 1;
+      break;
+    default:
+      changed = midi_ctrl[set][channel][ctrl] != (u8)(value & 0x7f);
       break;
     }
 
     midi_ctrl[set][channel][ctrl] = value & 0x7f;
-    for (i = 0; i < synthInfo.voiceNum; ++i) {
-      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].midiDirtyFlags = 0x1fff;
-        synthKeyStateUpdate(&synthVoice[i]);
+    if (changed) {
+      for (i = 0; i < synthInfo.voiceNum; ++i) {
+        if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+          synthVoice[i].midiDirtyFlags = 0x7fff;
+          synthKeyStateUpdate(&synthVoice[i]);
+        }
       }
+      inpGlobalMIDIDirtyFlags[set][channel] = 0xff;
     }
-    inpGlobalMIDIDirtyFlags[set][channel] = 0xff;
-
   } else {
     switch (ctrl) {
     case 6:
       inpSetRPNHi(set, channel, value);
+      changed = 1;
       break;
     case 38:
       inpSetRPNLo(set, channel, value);
+      changed = 1;
       break;
     case 96:
       inpSetRPNDec(set, channel);
+      changed = 1;
       break;
     case 97:
       inpSetRPNInc(set, channel);
+      changed = 1;
+      break;
+    default:
+      changed = fx_ctrl[channel][ctrl] != (u8)(value & 0x7f);
       break;
     }
 
     fx_ctrl[channel][ctrl] = value & 0x7f;
-    for (i = 0; i < synthInfo.voiceNum; ++i) {
-      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].midiDirtyFlags = 0x1fff;
-        synthKeyStateUpdate(&synthVoice[i]);
+    if (changed) {
+      for (i = 0; i < synthInfo.voiceNum; ++i) {
+        if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+          synthVoice[i].midiDirtyFlags = 0x7fff;
+          synthKeyStateUpdate(&synthVoice[i]);
+        }
       }
     }
   }
@@ -329,6 +435,8 @@ void inpResetChannelDefaults(u8 midi, u8 midiSet) {
   channelDefaults =
       midiSet != 0xFF ? &inpChannelDefaults[midiSet][midi] : &inpFXChannelDefaults[midi];
   channelDefaults->pbRange = 2;
+  channelDefaults->lpfLowerFrqBound = inpLpfLowerDefault;
+  channelDefaults->lpfUpperFrqBound = inpLpfUpperDefault;
 }
 
 void inpAddCtrl(CTRL_DEST* dest, u8 ctrl, long scale, u8 comb, u32 isVar) {
@@ -388,57 +496,159 @@ u8 inpGetMidiLastNote(u8 midi, u8 midiSet) {
 }
 
 static u16 _GetInputValue(SYNTH_VOICE* svoice, CTRL_DEST* inp, u8 midi, u8 midiSet) {
-  u32 i;     // r26
-  u32 value; // r29
-  u8 ctrl;   // r28
-  s32 tmp;   // r31
-  s32 vtmp;  // r30
-  u32 sign;  // r25
+  u32 value;
+  u32 i;
+  u8 ctrl;
+  s32 tmp;
+  s32 vtmp;
+  u32 sign;
 
   for (value = 0, i = 0; i < inp->numSource; ++i) {
     if (inp->source[i].combine & 0x10) {
       tmp = (svoice != NULL ? varGet(svoice, 0, inp->source[i].midiCtrl) : 0);
-    } else {
-      ctrl = inp->source[i].midiCtrl;
-      if (ctrl == 128 || ctrl == 1 || ctrl == 10 || ctrl == 160 || ctrl == 161 || ctrl == 131) {
-        switch (ctrl) {
-        case 160:
-        case 161:
-          if (svoice != NULL) {
-            tmp = svoice->lfo[ctrl - 160].value << 1;
-            svoice->lfoUsedByInput[ctrl - 160] = 1;
-          } else {
-            tmp = 0;
-          }
-          break;
-        default:
-          tmp = inpGetMidiCtrl(ctrl, midi, midiSet) - 0x2000;
-          break;
-        }
-      } else if (ctrl == 163) {
-        tmp = svoice != NULL ? svoice->orgVolume >> 9 : 0;
-      } else if (ctrl < 163) {
-        if (ctrl < 162) {
-          tmp = inpGetMidiCtrl(ctrl, midi, midiSet);
-        } else if (svoice == NULL) {
-          tmp = 0;
-        } else {
-          tmp = svoice->orgNote << 7;
-        }
-      } else if (ctrl > 164) {
+      goto signedPath;
+    }
+
+    ctrl = inp->source[i].midiCtrl;
+    if (ctrl == 128 || ctrl == 1 || ctrl == 10 || ctrl == 160 || ctrl == 161 || ctrl == 131) {
+      switch (ctrl) {
+      case 160:
+      case 161:
         if (svoice != NULL) {
-          tmp = (synthRealTime - svoice->macStartTime) << 8;
-          if (tmp > 0x3fff) {
-            tmp = 0x3fff;
+          tmp = svoice->lfo[ctrl - 160].value << 1;
+          svoice->lfoUsedByInput[ctrl - 160] = 1;
+        } else {
+          tmp = 0;
+        }
+        break;
+      default:
+        tmp = inpGetMidiCtrl(ctrl, midi, midiSet) - 0x2000;
+        break;
+      }
+
+    signedPath:
+      tmp = (tmp * (inp->source[i].scale >> 1)) >> 15;
+      tmp = tmp < -0x2000 ? -0x2000 : (tmp > 0x1FFF ? 0x1FFF : tmp);
+
+      switch (inp->source[i].combine & 0xF) {
+      case 0:
+        value = tmp + 0x2000;
+        sign = 1;
+        break;
+      case 1:
+        if (sign) {
+          vtmp = (s32)value + tmp;
+          vtmp -= 0x2000;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          tmp = value + tmp;
+          if (tmp > 0x3FFF) {
+            value = 0x3FFF;
+          } else {
+            value = tmp < 0 ? 0 : tmp;
+          }
+        }
+        break;
+      case 2:
+        if (sign) {
+          vtmp = (((s32)value - 0x2000) * tmp) >> 13;
+        } else {
+          vtmp = (tmp * value) >> 13;
+          sign = 1;
+        }
+        tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+        value = tmp + 0x2000;
+        break;
+      case 3:
+        if (sign) {
+          vtmp = (s32)value - 0x2000 - tmp;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          tmp = value - tmp;
+          if (tmp > 0x3FFF) {
+            value = 0x3FFF;
+          } else {
+            value = tmp < 0 ? 0 : tmp;
+          }
+        }
+        break;
+      }
+    } else {
+      switch (ctrl) {
+      case 162:
+        tmp = svoice != NULL ? svoice->orgNote << 7 : 0;
+        break;
+      case 163:
+        tmp = svoice != NULL ? svoice->orgVolume >> 9 : 0;
+        break;
+      case 164:
+        if (svoice != NULL) {
+          tmp = (synthRealTime - svoice->macStartTime) >> 8;
+          if (tmp > 0x3FFF) {
+            tmp = 0x3FFF;
           }
 
           svoice->timeUsedByInput = 1;
         } else {
           tmp = 0;
         }
+        break;
+      default:
+        tmp = inpGetMidiCtrl(ctrl, midi, midiSet);
+        break;
       }
 
-      tmp = (tmp * inp->source[i].scale / 2) >> 15;
+      tmp = (tmp * (inp->source[i].scale >> 1)) >> 15;
+      if (tmp > 0x3FFF) {
+        tmp = 0x3FFF;
+      }
+
+      switch (inp->source[i].combine & 0xF) {
+      case 0:
+        value = tmp;
+        sign = 0;
+        break;
+      case 1:
+        if (sign) {
+          vtmp = (s32)value + tmp;
+          vtmp -= 0x2000;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          value += tmp;
+          value = value > 0x3FFF ? 0x3FFF : value;
+        }
+        break;
+      case 2:
+        if (sign) {
+          vtmp = (tmp * ((s32)value - 0x2000)) >> 14;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          vtmp = (value * tmp) >> 14;
+          value = 0x3FFF;
+          if ((u32)vtmp <= 0x3FFF) {
+            value = vtmp;
+          }
+        }
+        break;
+      case 3:
+        if (sign) {
+          vtmp = (s32)value - 0x2000 - tmp;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          tmp = value - tmp;
+          if (tmp > 0x3FFF) {
+            value = 0x3FFF;
+          } else {
+            value = tmp < 0 ? 0 : tmp;
+          }
+        }
+        break;
+      }
     }
   }
 
@@ -496,6 +706,14 @@ u16 inpGetPostAuxB(SYNTH_VOICE* svoice) {
 
 u16 inpGetTremolo(SYNTH_VOICE* svoice) {
   return GetInputValue(svoice, &svoice->inpTremolo, 0x1000);
+}
+
+u16 inpGetFilterSwitch(SYNTH_VOICE* svoice) {
+  return GetInputValue(svoice, &svoice->inpFilterSwitch, 0x2000);
+}
+
+u16 inpGetFilterParameter(SYNTH_VOICE* svoice) {
+  return GetInputValue(svoice, &svoice->inpFilterParameter, 0x4000);
 }
 
 u16 inpGetAuxA(u8 studio, u8 index, u8 midi, u8 midiSet) {
@@ -560,8 +778,16 @@ void inpInit(SYNTH_VOICE* svoice) {
     svoice->inpDoppler.source[0].scale = 0x10000;
     svoice->inpDoppler.numSource = 1;
     svoice->inpTremolo.numSource = 0;
+    svoice->inpFilterSwitch.source[0].midiCtrl = 79;
+    svoice->inpFilterSwitch.source[0].combine = 0;
+    svoice->inpFilterSwitch.source[0].scale = 0x10000;
+    svoice->inpFilterSwitch.numSource = 1;
+    svoice->inpFilterParameter.source[0].midiCtrl = 31;
+    svoice->inpFilterParameter.source[0].combine = 0;
+    svoice->inpFilterParameter.source[0].scale = 0x10000;
+    svoice->inpFilterParameter.numSource = 1;
 
-    svoice->midiDirtyFlags = 0x1fff;
+    svoice->midiDirtyFlags = 0x7fff;
     svoice->lfoUsedByInput[0] = 0;
     svoice->lfoUsedByInput[1] = 0;
     svoice->timeUsedByInput = 0;
@@ -575,6 +801,9 @@ void inpInit(SYNTH_VOICE* svoice) {
 
     inpResetGlobalMIDIDirtyFlags();
   }
+
+  inpLpfLowerDefault = 0x50;
+  inpLpfUpperDefault = 0x3E80;
 }
 
 u8 inpTranslateExCtrl(u8 ctrl) {

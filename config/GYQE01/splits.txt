@@ -801,17 +801,21 @@ Musyx/synth_vsamples.c:
 
 Musyx/s_data.c:
 	.text       start:0x800D2E54 end:0x800D3A34
+	.sbss       start:0x803CC328 end:0x803CC338
 
 Musyx/hw_dspctrl.c:
 	.text       start:0x800D3A34 end:0x800D70A4
-	.sbss       start:0x803CC330 end:0x803CC378
+	.sbss       start:0x803CC338 end:0x803CC378
 
 Musyx/hw_volconv.c:
 	.text       start:0x800D70A4 end:0x800D7794
 	.data       start:0x80114E38 end:0x80115060
+	.sdata2     start:0x803CD1C0 end:0x803CD1F8
 
 Musyx/snd3d.c:
 	.text       start:0x800D7794 end:0x800D9C10
+	.sbss       start:0x803CC378 end:0x803CC398
+	.sdata2     start:0x803CD1F8 end:0x803CD248
 
 Musyx/snd_init.c:
 	.text       start:0x800D9C10 end:0x800D9D7C
@@ -822,6 +826,7 @@ Musyx/snd_math.c:
 
 Musyx/snd_midictrl.c:
 	.text       start:0x800DA13C end:0x800DC44C
+	.sbss       start:0x803CC398 end:0x803CC3A0
 
 Musyx/snd_service.c:
 	.text       start:0x800DC44C end:0x800DC720

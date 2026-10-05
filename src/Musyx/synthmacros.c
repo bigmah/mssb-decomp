@@ -1,6 +1,17 @@
 #include "musyx/musyx_priv.h"
 #include "musyx/seq.h"
 #include "musyx/synth.h"
+#include "musyx/synth_dbtab.h"
+
+extern u32 dspARIndexTab[129];
+extern f32 lbl_803CD178;
+
+#define rdLE16(p) ((u16)((*(u16*)(p) >> 8) | (*(u16*)(p) << 8)))
+#define rdLE32(p) (((u8*)(p))[0] | (((u8*)(p))[1] << 8) | (((u8*)(p))[2] << 16) | (((u8*)(p))[3] << 24))
+
+extern f32 lbl_803CD158;
+extern f32 lbl_803CD15C;
+extern f32 lbl_803CD160;
 
 static u8 DebugMacroSteps = 0;
 
@@ -507,6 +518,7 @@ static void mcmdStartSample(SYNTH_VOICE* svoice, MSTEP* cstep) {
                        (svoice->cFlags & 0x80000000000) == 0, svoice->itdMode);
 
   svoice->sInfo = newsmp.info;
+  svoice->sampleId = smp;
 
   if (svoice->playFrq != -1) {
     DoSetPitch(svoice);
@@ -617,23 +629,52 @@ static void DoSetPitch(SYNTH_VOICE* svoice) {
   };
 
   frq = svoice->playFrq & 0xFFFFFF;
-  ofrq = svoice->sInfo & 0xFFFFFF;
+  of = svoice->sInfo;
+  ofrq = of & 0xFFFFFF;
 
   if (ofrq == frq) {
-    svoice->curNote = svoice->sInfo >> 24;
+    svoice->curNote = of >> 24;
+    svoice->curDetune = 0;
   } else if (ofrq < frq) {
     f = (frq << 12) / ofrq;
-    for (no = 0; no < 11 && (1 << ((no + 1) & 0x3f)) < (f >> 12); ++no) {
+    for (no = 0; no < 11; ++no) {
+      if ((f >> 12) < (1 << (no + 1))) {
+        break;
+      }
     }
 
-    f /= (1 << (no & 0x3f));
+    f /= (1 << no);
 
-    for (i = 11; f <= kf[i]; i--) {
-
+    i = 11;
+    while (f <= kf[i]) {
+      i--;
     }
 
-    svoice->curNote = (svoice->sInfo >> 24) + no * 12 + i;
-    svoice->curDetune = (no - kf[i]) * 100 / (kf[i + 1] - kf[i]);
+    svoice->curNote = (of >> 24) + no * 12 + i;
+    svoice->curDetune = ((f - kf[i]) * 100) / (kf[i + 1] - kf[i]);
+  } else {
+    f = (ofrq << 12) / frq;
+    for (no = 0; no < 11; ++no) {
+      if ((f >> 12) < (1 << (no + 1))) {
+        break;
+      }
+    }
+
+    f /= (1 << no);
+
+    i = 11;
+    while (f <= kf[i]) {
+      i--;
+    }
+
+    key = no * 12 + i;
+    if (key > (of >> 24)) {
+      svoice->curDetune = 0;
+      svoice->curNote = 0;
+    } else {
+      svoice->curNote = (of >> 24) - key;
+      svoice->curDetune = ((kf[i] - f) * 100) / (kf[i + 1] - kf[i]);
+    }
   }
 }
 #pragma dont_inline reset
@@ -653,6 +694,34 @@ static void mcmdSetADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
   s32 ascale;          // r29
   s32 dscale;          // r28
   float sScale;        // r63
+
+  if ((adsr_ptr = dataGetCurve(cstep->para[0] >> 8)) != NULL) {
+    if (cstep->para[0] >> 24 == 0) {
+      adsr.data.linear.atime = rdLE16((u8*)adsr_ptr + 0);
+      adsr.data.linear.dtime = rdLE16((u8*)adsr_ptr + 2);
+      adsr.data.linear.slevel = rdLE16((u8*)adsr_ptr + 4);
+      adsr.data.linear.rtime = rdLE16((u8*)adsr_ptr + 6);
+      hwSetADSR(svoice->id & 0xFF, &adsr, 0);
+    } else {
+      sScale = dspDLSVolTab[rdLE16((u8*)adsr_ptr + 8) >> 5];
+      adsr.data.dls.atime = rdLE32((u8*)adsr_ptr + 0);
+      adsr.data.dls.dtime = rdLE32((u8*)adsr_ptr + 4);
+      adsr.data.dls.slevel = lbl_803CD158 * sScale;
+      adsr.data.dls.rtime = rdLE16((u8*)adsr_ptr + 0xA);
+      ascale = rdLE32((u8*)adsr_ptr + 0xC);
+      dscale = rdLE32((u8*)adsr_ptr + 0x10);
+      if (ascale != 0x80000000) {
+        sScale = lbl_803CD15C * svoice->orgVolume;
+        adsr.data.dls.atime += (s32)(sScale * ascale);
+      }
+      if (dscale != 0x80000000) {
+        sScale = lbl_803CD160 * svoice->orgNote;
+        adsr.data.dls.dtime += (s32)(sScale * dscale);
+      }
+      hwSetADSR(svoice->id & 0xFF, &adsr, 1);
+    }
+    svoice->cFlags |= 0x100;
+  }
 }
 #pragma dont_inline reset
 
@@ -674,6 +743,19 @@ static s32 midi2TimeTab[128] = {
 static void mcmdSetADSRFromCtrl(SYNTH_VOICE* svoice, MSTEP* cstep) {
   float sScale;   // r63
   ADSR_INFO adsr; // r1+0x10
+
+  sScale = dspDLSVolTab[inpGetMidiCtrl(cstep->para[0] >> 24, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.atime =
+      dspARIndexTab[inpGetMidiCtrl((cstep->para[0] >> 8) & 0xFF, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.dtime =
+      dspARIndexTab[inpGetMidiCtrl((cstep->para[0] >> 16) & 0xFF, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.slevel = 193 - dspScale2IndexTab[(u32)(lbl_803CD178 * sScale)];
+  adsr.data.dls.rtime =
+      dspARIndexTab[inpGetMidiCtrl(cstep->para[1] & 0xFF, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.ascale = 0x80000000;
+  adsr.data.dls.dscale = 0x80000000;
+  hwSetADSR(svoice->id & 0xFF, &adsr, 2);
+  svoice->cFlags |= 0x100;
 }
 
 static void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
@@ -682,6 +764,47 @@ static void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
   u32 sl;              // r28
   s32 ascale;          // r27
   s32 dscale;          // r26
+  float sScale;
+  s32 atime;
+  s32 dtime;
+  u16 rtime;
+
+  if ((adsr_ptr = dataGetCurve(cstep->para[0] >> 8)) != NULL) {
+    svoice->pitchADSRRange = (s8)cstep->para[1] << 8;
+    if (svoice->pitchADSRRange >= 0) {
+      svoice->pitchADSRRange += ((s8)(cstep->para[1] >> 8) << 8) / 100;
+    } else {
+      svoice->pitchADSRRange -= ((s8)(cstep->para[1] >> 8) << 8) / 100;
+    }
+
+    atime = rdLE32((u8*)adsr_ptr + 0);
+    dtime = rdLE32((u8*)adsr_ptr + 4);
+    sl = rdLE16((u8*)adsr_ptr + 8);
+    rtime = rdLE16((u8*)adsr_ptr + 0xA);
+    ascale = rdLE32((u8*)adsr_ptr + 0xC);
+    dscale = rdLE32((u8*)adsr_ptr + 0x10);
+    if (ascale != 0x80000000) {
+      sScale = lbl_803CD15C * svoice->orgVolume;
+      atime += (s32)(sScale * ascale);
+    }
+    if (dscale != 0x80000000) {
+      sScale = lbl_803CD160 * svoice->orgNote;
+      dtime += (s32)(sScale * dscale);
+    }
+
+    svoice->pitchADSR.mode = 1;
+    svoice->pitchADSR.data.dls.aMode = 0;
+    svoice->pitchADSR.data.dls.aTime = adsrConvertTimeCents(atime);
+    svoice->pitchADSR.data.dls.dTime = adsrConvertTimeCents(dtime);
+    sl = (sl >> 2) & 0x3FFF;
+    if (sl > 0x3FF) {
+      sl = 0x3FF;
+    }
+    svoice->pitchADSR.data.dls.sLevel = 193 - dspScale2IndexTab[sl];
+    svoice->pitchADSR.data.dls.rTime = rtime;
+    adsrSetup(&svoice->pitchADSR);
+    svoice->cFlags |= 0x20000000000;
+  }
 }
 #pragma dont_inline reset
 
@@ -853,6 +976,37 @@ static void mcmdRandomKey(SYNTH_VOICE* svoice, MSTEP* cstep) {
   s32 i1;    // r28
   s32 i2;    // r27
   u8 detune; // r26
+
+  if (((cstep->para[1] >> 8) & 0xFF) == 0) {
+    k1 = cstep->para[0] >> 8;
+    k2 = cstep->para[0] >> 24;
+    if (k1 > k2) {
+      t = k1;
+      k1 = k2;
+      k2 = t;
+    }
+  } else {
+    i1 = svoice->curNote - ((cstep->para[0] >> 8) & 0xFF);
+    i2 = svoice->curNote + (cstep->para[0] >> 24);
+    k1 = i1 < 0 ? 0 : (i1 > 127 ? 127 : i1);
+    k2 = i2 < 0 ? 0 : (i2 > 127 ? 127 : i2);
+  }
+
+  if ((u8)cstep->para[1] != 0) {
+    detune = (sndRand() & 0xFFFF) % 201 - 100;
+  } else {
+    detune = cstep->para[0] >> 16;
+  }
+
+  cstep->para[0] = 0x19 | (detune << 16) | ((k1 + (sndRand() & 0xFFFF) % (k2 - k1 + 1)) << 8);
+  cstep->para[1] = 0;
+  svoice->curNote = (u16)(cstep->para[0] >> 8) & 0x7f;
+  svoice->curDetune = (s8)(cstep->para[0] >> 0x10);
+  if (voiceIsLastStarted(svoice) != 0) {
+    inpSetMidiLastNote(svoice->midi, svoice->midiSet, svoice->curNote & 0xff);
+  }
+  cstep->para[0] = 4;
+  mcmdWait(svoice, cstep);
 }
 #pragma dont_inline reset
 
@@ -939,6 +1093,14 @@ static void mcmdDopplerSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
 
 static void mcmdTremoloSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
   SelectSource(svoice, &svoice->inpTremolo, cstep, 0x10000000, 0x1000);
+}
+
+static void mcmdFilterSwitchSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+  SelectSource(svoice, &svoice->inpFilterSwitch, cstep, 0x40, 0x2000);
+}
+
+static void mcmdFilterParameterSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+  SelectSource(svoice, &svoice->inpFilterParameter, cstep, 0x800, 0x4000);
 }
 
 static void mcmdAuxAFXSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
@@ -1230,6 +1392,8 @@ static void macHandleActive(SYNTH_VOICE* svoice) {
     channelDefaults = inpGetChannelDefaults(svoice->midi, svoice->midiSet);
     svoice->pbLowerKeyRange = channelDefaults->pbRange;
     svoice->pbUpperKeyRange = channelDefaults->pbRange;
+    svoice->lpfLowerFrqBoundary = channelDefaults->lpfLowerFrqBound;
+    svoice->lpfUpperFrqBoundary = channelDefaults->lpfUpperFrqBound;
     svoice->revVolScale = 128;
     svoice->revVolOffset = 0;
     svoice->loop = 0;
@@ -1251,6 +1415,7 @@ static void macHandleActive(SYNTH_VOICE* svoice) {
     svoice->trapEventAny = 0;
     svoice->sInfo = -1;
     svoice->playFrq = -1;
+    svoice->sampleId = 0xFFFF;
     svoice->pbLast = 0x2000;
     svoice->curOutputVolume = 0;
     svoice->cFlags &= 8;
@@ -1520,6 +1685,8 @@ void macHandle(u32 deltaTime) {
   SYNTH_VOICE* sv;     // r31
   SYNTH_VOICE* nextSv; // r30
   u64 w;               // r28
+  SYNTH_VOICE* sv2;
+  SYNTH_VOICE* nextSv2;
 
   for (sv = macTimeQueueRoot; sv != NULL && sv->wait <= macRealTime;) {
     nextSv = sv->nextTimeQueueMacro;
@@ -1529,13 +1696,13 @@ void macHandle(u32 deltaTime) {
     sv = nextSv;
   }
 
-  sv = macActiveMacroRoot;
-  for (; sv != NULL; sv = sv->nextMacActive) {
-    if (HasHWEventTrap(sv) != 0) {
-      CheckHWEventTrap(sv);
+  for (sv2 = macActiveMacroRoot; sv2 != NULL; sv2 = nextSv2) {
+    nextSv2 = sv2->nextMacActive;
+    if (HasHWEventTrap(sv2) != 0) {
+      CheckHWEventTrap(sv2);
     }
 
-    macHandleActive(sv);
+    macHandleActive(sv2);
   }
   macRealTime += deltaTime;
 }

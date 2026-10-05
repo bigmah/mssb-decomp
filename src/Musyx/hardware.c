@@ -574,7 +574,7 @@ static u32 convert_length(u32 len, u8 type)
   return len;
 }
 
-void hwSaveSample(void *header, void *data)
+void hwSaveSample(void *header, void *data, void *extra)
 {
   u32 len = ((u32 *)*((u32 *)header))[1] & 0xFFFFFF;
   u8 type = ((u32 *)*((u32 *)header))[1] >> 0x18;
