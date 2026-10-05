@@ -1,6 +1,10 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_8036E548[];
+
+extern void fn_3_BDF74(void);
+
 extern void fn_3_C39C8(void);
 extern void fn_3_CE8E4(void);
 extern void fn_3_F8ABC(void);
@@ -63,7 +67,8 @@ void fn_3_BBF94(void) {
 
 // .text:0x000BC224 size:0x38 mapped:0x806FB2B8
 void fn_3_BC224(void) {
-    return;
+    fn_80034CEC(*(void**)lbl_3_common_bss_35154);
+    *(u32*)lbl_3_common_bss_35154 = 0;
 }
 
 // .text:0x000BC25C size:0x18 mapped:0x806FB2F0
@@ -148,8 +153,8 @@ void fn_3_BD7D8(void) {
 }
 
 // .text:0x000BD7DC size:0x30 mapped:0x806FC870
-void fn_3_BD7DC(void) {
-    return;
+void fn_3_BD7DC(u32 a) {
+    fn_800BD670(*(void**)(lbl_8036E548 + 0x70), a);
 }
 
 // .text:0x000BD80C size:0xCC mapped:0x806FC8A0
@@ -184,7 +189,8 @@ void fn_3_BDF74(void) {
 
 // .text:0x000BE140 size:0x34 mapped:0x806FD1D4
 void fn_3_BE140(void) {
-    return;
+    u8* p = fn_800B0A5C_insertQueue(fn_3_BDF74, 3);
+    *(s16*)(p + 0x10) = 2;
 }
 
 // .text:0x000BE174 size:0x60 mapped:0x806FD208
