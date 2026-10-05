@@ -1,6 +1,9 @@
 #include "game/rep_540.h"
 #include "header_rep_data.h"
 
+extern f32 lbl_3_rodata_590;
+extern void fn_3_27648(void);
+
 extern s16 g_RunningLogic;
 extern void fn_3_59918(s32, s32);
 
@@ -38,7 +41,21 @@ void fn_3_65F4(void) {
 
 // .text:0x00006620 size:0x74 mapped:0x806456B4
 void fn_3_6620(void) {
-    return;
+    if (g_Ball[0x1BF3] == 0) {
+        g_Ball[0x1BF3] = 1;
+        g_Ball[0x1BF4] = 1;
+        *(s16*)(g_Ball + 0x1BBC) = 0;
+        g_Ball[0x1BC1] = 0;
+        g_Ball[0x1BE7] = 0;
+        g_Ball[0x1BE5] = 0;
+        g_Ball[0x1BF1] = 1;
+        g_Ball[0x1BEB] = 0;
+        g_Ball[0x1BED] = 0;
+        *(f32*)(g_Ball + 0x324) = lbl_3_rodata_590;
+        *(f32*)(g_Ball + 0x328) = lbl_3_rodata_590;
+        *(f32*)(g_Ball + 0x32C) = lbl_3_rodata_590;
+        fn_3_27648();
+    }
 }
 
 // .text:0x00006694 size:0x5A4 mapped:0x80645728
