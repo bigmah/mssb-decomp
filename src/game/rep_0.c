@@ -1,4 +1,5 @@
 #include "game/rep_0.h"
+#include "Dolphin/stl.h"
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
@@ -6,12 +7,61 @@
 
 
 extern u8 lbl_3_bss_10[];
+extern u8* lbl_3_bss_4;
+extern u8 lbl_3_data_0[];
+extern u8 lbl_80354720[];
+extern u8 lbl_803C6CF8[];
+extern s32 ARAMTransfer(void*, int, int, int);
 extern void** lbl_803CC1B8;
 #define PAD_BTN (*(u16*)((u8*)&lbl_803C77B8 + 4))
 
 // .text:0x00000000 size:0x258
 void maybeProcessTeamData(void) {
-    return;
+    s32 teams[2];
+    u8* src;
+    u8* e;
+    s32 i, j, t;
+    teams[0] = g_d_GameSettings.maybeHomeAway;
+    teams[1] = g_d_GameSettings.maybeHomeAway2;
+    switch (lbl_3_bss_10[0]) {
+    case 0:
+        lbl_3_bss_4 = (u8*)ARAMTransfer(lbl_3_data_0, 0, 1, 0);
+        lbl_3_bss_10[0]++;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            lbl_3_bss_10[0]++;
+        }
+        break;
+    case 2:
+        memcpy(&inMemRoster[0], lbl_3_bss_4 + teams[0] * 0x5A0, 0x5A0);
+        memcpy(&inMemRoster[1], lbl_3_bss_4 + teams[1] * 0x5A0, 0x5A0);
+        lbl_3_bss_10[0]++;
+        break;
+    case 3:
+        for (t = 0; t < 2; t++) {
+            src = lbl_3_bss_4 + teams[t] * 0x48 + 0x4380;
+            for (i = 0; i < 9; i++) {
+                e = lbl_80354720 + t * 0x24 + i * 4;
+                e[0] = i;
+                e[1] = 10;
+                e[2] = 10;
+                e[3] = 0;
+                for (j = 0; j < 9; j++) {
+                    if (i == src[j]) {
+                        break;
+                    }
+                }
+                if (j < 9) {
+                    e[1] = j;
+                    e[2] = src[j + 9];
+                    e[3] = 1;
+                }
+            }
+        }
+        lbl_3_bss_10[0]++;
+        break;
+    }
 }
 
 // .text:0x00000258 size:0x20C
