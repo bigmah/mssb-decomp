@@ -1,5 +1,7 @@
 #include "game/rep_4138.h"
 #include "header_rep_data.h"
+#include "Dolphin/stl.h"
+#include "static/UnknownHomes_Static.h"
 
 extern s32 lbl_3_bss_D6F0[];
 extern u8 g_Scores[];
@@ -49,4 +51,19 @@ extern u8 lbl_3_bss_D6EC;
 // .text:0x0016E328 size:0x10
 void fn_3_16E328(void) {
     lbl_3_bss_D6EC = 1;
+}
+
+extern u8 lbl_3_bss_D6E0[];
+extern void fn_3_16E1EC(void);
+
+// .text:0x0016E338 size:0x6C
+void fn_3_16E338(u16* p, s32 i) {
+    u8* b = lbl_3_bss_D6E0;
+    if (p != NULL && p[0] - 1 >= i) {
+        *(u16**)(b + 4) = p;
+        *(s32*)(b + 8) = i;
+        b[0xC] = 0;
+        memset(b + 0x10, 0, 0x18);
+        fn_800B0A5C_insertQueue(fn_3_16E1EC, 5);
+    }
 }
