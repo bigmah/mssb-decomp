@@ -478,7 +478,31 @@ void fn_3_D4E00(void) {
 
 // .text:0x000D501C size:0x100 mapped:0x807140B0
 void fn_3_D501C(f32* p) {
-    return;
+    f32* q;
+    f32 one;
+    u32 i;
+    if (p != NULL) {
+        memset(p, 0, 0x40);
+        one = lbl_3_rodata_2698;
+        q = p;
+        for (i = 0; i < 8; i++, q += 16) {
+            if (i == 7) {
+                q[0] = lbl_3_data_188E0;
+                q[2] = 0.504375f;
+                *(s32*)(q + 15) = 1;
+            } else {
+                if (i == 0) {
+                    *(s32*)(q + 15) = 1;
+                }
+                q[0] = lbl_3_data_188E0;
+                q[2] = 0.504375f;
+            }
+            q[1] = one / q[0];
+            memset(q + 3, 0, 0x18);
+            memset(q + 9, 0, 0xC);
+            memset(q + 12, 0, 0xC);
+        }
+    }
 }
 
 // .text:0x000D511C size:0x2A4 mapped:0x807141B0
