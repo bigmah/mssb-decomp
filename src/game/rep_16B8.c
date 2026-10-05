@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_F390[];
+extern u8 lbl_3_data_E278[];
+extern u16 lbl_3_data_E200[];
+extern u8 lbl_3_common_bss_37400[];
 extern u8 fn_3_ED574[];
 extern u8 lbl_80371C30[];
 extern u8 lbl_3_data_BF6C[];
@@ -177,12 +180,24 @@ void fn_3_95000(void) {
 
 // .text:0x00095098 size:0x8C mapped:0x806D412C
 void fn_3_95098(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || (*(u8**)(lbl_80371C30 + *(u16*)((u8*)p + 0x14) * 8))[0x69] == 2) {
+        fn_800B0A5C_insertQueue(fn_3_95000, 2);
+        lbl_3_common_bss_32724[0xB3] = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x00095124 size:0x90 mapped:0x806D41B8
 void fn_3_95124(void) {
-    return;
+    u8* p;
+    fn_80034E20(p = lbl_803CC1B8[0], lbl_3_data_E278);
+    {
+        u8** t = (u8**)lbl_80371C30;
+        s32 v = lbl_3_data_E200[lbl_3_common_bss_37400[0x46]];
+        ((s32*)t[*(u16*)(p + 0x14) * 2 + 4])[0x5C / 4] = v << 16;
+    }
+    *(void**)lbl_803CC1B8[0] = fn_3_95098;
 }
 
 // .text:0x000951B4 size:0x128 mapped:0x806D4248
