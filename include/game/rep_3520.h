@@ -9,7 +9,7 @@ void fn_3_13334C(void);
 void fn_3_1344BC(void);
 void fn_3_1345AC(void);
 void fn_3_134658(void);
-void fn_3_134908(void);
+s32 fn_3_134908(s16* a, s16* b);
 void fn_3_134918(void);
 void fn_3_13493C(void);
 void fn_3_134C80(void);
