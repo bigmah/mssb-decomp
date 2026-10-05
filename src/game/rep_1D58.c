@@ -5,6 +5,74 @@ extern u8 lbl_3_data_11168[];
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_bss_1910[];
 extern f32 lbl_3_rodata_1DD0[];
+extern f32 lbl_3_rodata_1DB4[];
+extern f32 lbl_3_rodata_1DC0;
+extern f32 lbl_3_rodata_1DC4;
+extern f32 lbl_3_rodata_1DC8;
+extern f64 cos(f64);
+extern f64 sin(f64);
+extern int rand(void);
+extern void fn_3_8BBC4(void);
+extern f32 lbl_3_data_11178[];
+typedef struct { f32 x, y, z; } V3;
+
+typedef struct DspObj DspObj;
+struct DspObj {
+    u8 pad0[0x14];
+    void* w14;
+    u8 pad18[0x4C];
+    void* w64;
+    void* w68;
+    u8 pad6C[8];
+    DspObj* child;
+    u8 pad78[4];
+    void* w7C;
+    u8 pad80[0x6C];
+    void* wEC;
+    u8 padF0[0x10];
+    DspObj* next;
+};
+extern u32 lbl_3_bss_190C;
+extern u8 g_d_GameSettings[];
+extern void PSMTXMultVec(void*, void*, void*);
+extern void fn_8003A548(void*);
+extern void* fn_800BF068();
+extern u8 g_Ball[];
+typedef struct StadW78 {
+    u8 pad[0x78];
+    s32 w78;
+} StadW78;
+typedef struct StadObj78 {
+    u8 pad[0x78];
+    s32 w78;
+    u8 pad7C[0xE8 - 0x7C];
+} StadObj78;
+extern s32 fn_3_C823C(s32, s32);
+extern s32 fn_3_E4BE8(s32, s32);
+extern s32 fn_3_F6504(s32, s32);
+extern s32 fn_3_E751C(s32, s32);
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_8036E548[];
+extern void* memset(void*, int, u32);
+extern u8 lbl_3_data_10ACC[];
+extern s32 ARAMTransfer(void*, int, int, int);
+extern void* lbl_3_bss_9940;
+extern u8 lbl_3_bss_1901;
+extern void minigamesSetSomePointers(void);
+extern void minigamesGXStuff(void);
+extern void minigamesSetSomePointers2(void);
+extern void fn_8001B200(void);
+extern void fn_800B4278(void*);
+extern void fn_3_C1964(void);
+extern void fn_3_16E328(void);
+extern void fn_800528B4(void);
+extern void fn_8001E474(void);
+extern void CTRLBuildMatrix(u32, void*);
+extern void PSMTXConcat(void*, void*, void*);
+extern void DOSetWorldMatrix(void*, void*);
+extern void DOVARenderSkin(void*, void*, void*, void*, int, int);
+extern void fn_8003A8A0();
 extern f32 lbl_3_rodata_1DD4;
 extern u8 lbl_3_common_bss_350E4[];
 extern u32 lbl_3_bss_1904;
@@ -18,9 +86,45 @@ extern void GXSetTevAlphaOp(int, int, int, int, int, int);
 extern void fn_800ACFB0(u32);
 extern void* _OSAllocFromHeap(s32, s32);
 
+typedef struct StadExtra {
+    f32 a, b, c;
+    s32 d, e;
+    s16 i;
+    u8 f, g, h;
+} StadExtra;
+typedef struct StadEnt {
+    u8 pad[0xE8];
+    StadExtra* extra;
+} StadEnt;
+typedef struct StadHdr {
+    u8 pad0[6];
+    u16 count;
+    u8 pad8[0x10];
+    StadEnt** list;
+} StadHdr;
+extern f32 lbl_3_rodata_1DCC;
+extern f32 lbl_3_rodata_1DDC;
+
+typedef struct StadObj {
+    u8 pad0[0x80];
+    void (*fn)(int, int, void*);
+    u8 pad84[0xE8 - 0x84];
+} StadObj;
+typedef struct StadObjList {
+    StadObj* objs;
+    u8 pad4[0x2C];
+    s32 count;
+} StadObjList;
+
 // .text:0x000B7FC8 size:0x108 mapped:0x806F705C
-void fn_3_B7FC8(void) {
-    return;
+void fn_3_B7FC8(void* a, void* b) {
+    V3 v = *(V3*)lbl_3_rodata_1DB4;
+    f32 ang;
+    ang = lbl_3_rodata_1DC0 * lbl_3_data_11178[rand() % 5];
+    v.x = lbl_3_rodata_1DC4 * (f32)cos(ang) + v.x;
+    v.y = v.y + lbl_3_rodata_1DC8;
+    v.z = lbl_3_rodata_1DC4 * (f32)sin(ang) + v.z;
+    ((void (*)(void*, V3*, int, void*))fn_3_8BBC4)(a, &v, 0, b);
 }
 
 // .text:0x000B80D0 size:0xB4 mapped:0x806F7164
@@ -35,8 +139,31 @@ void fn_3_B80D0(void) {
 }
 
 // .text:0x000B8184 size:0xF8 mapped:0x806F7218
-void fn_3_B8184(void) {
-    return;
+void fn_3_B8184(void* pp, void* cam) {
+    f32 m2[12];
+    f32 m[12];
+    DspObj* o;
+    DspObj* n;
+    CTRLBuildMatrix(lbl_3_bss_190C, m);
+    if (!(m[7] > lbl_3_rodata_1DCC) || g_d_GameSettings[9] != 1) {
+        PSMTXConcat(cam, m, m2);
+        o = *(DspObj**)pp;
+        n = o->child;
+        if (o->w14 != 0) {
+            if (o->w7C != 0) {
+                fn_8003A8A0(o->w14, m2, 1);
+            } else {
+                DOVARenderSkin(o->w14, m2, o->w64, o->w68, 0, 0);
+            }
+        }
+        while (n != 0) {
+            if (n->w14 != 0) {
+                DOSetWorldMatrix(n->w14, n->wEC);
+                fn_8003A8A0(n->w14, m2, 0);
+            }
+            n = n->next;
+        }
+    }
 }
 
 // .text:0x000B827C size:0x10 mapped:0x806F7310
@@ -53,7 +180,28 @@ void fn_3_B828C(u32 val) {
 
 // .text:0x000B8298 size:0x17C mapped:0x806F732C
 void fn_3_B8298(void) {
-    return;
+    s32 off;
+    u32 i;
+    u8* c;
+    void* pp;
+    u8* e;
+    switch (g_d_GameSettings[9]) {
+        case 3:
+            fn_8003A548(fn_3_B80D0);
+            break;
+    }
+    c = lbl_3_common_bss_350E4;
+    i = 0;
+    off = 0;
+    for (; i < *(u32*)(c + 0x30); i++) {
+        e = *(u8**)c + off;
+        if (((e[0x90] >> 7) & 1) && *(void**)(e + 0x74) != 0 && e[0x9A] != 0) {
+            lbl_3_bss_190C = (u32)e;
+            fn_3_B8184(*(void**)(e + 0x74), *(u8**)((u8*)fn_800BF068() + 0x14) + 0x40);
+        }
+        off += 0xE8;
+    }
+    fn_8003A548(0);
 }
 
 // .text:0x000B8414 size:0x50 mapped:0x806F74A8
@@ -63,8 +211,46 @@ void fn_3_B8414(void* a, void* b) {
 }
 
 // .text:0x000B8464 size:0x110 mapped:0x806F74F8
-void fn_3_B8464(void) {
-    return;
+void fn_3_B8464(void* mtx, void* obj) {
+    f32 out[3];
+    u16 cnt;
+    s32 n;
+    u8* p = *(u8**)((u8*)obj + 8);
+    while (1) {
+        cnt = *(u16*)(p + 2);
+        if (cnt == 0) {
+            break;
+        }
+        if (p[1] != 0) {
+            n = cnt + 2;
+        } else {
+            n = cnt * 3;
+        }
+        p += 4;
+        do {
+            PSMTXMultVec(mtx, p, out);
+            p += 0x10;
+            if (lbl_3_bss_1910[0] > out[0]) {
+                lbl_3_bss_1910[0] = out[0];
+            }
+            if (lbl_3_bss_1910[1] > out[1]) {
+                lbl_3_bss_1910[1] = out[1];
+            }
+            if (lbl_3_bss_1910[2] > out[2]) {
+                lbl_3_bss_1910[2] = out[2];
+            }
+            if (lbl_3_bss_1910[3] < out[0]) {
+                lbl_3_bss_1910[3] = out[0];
+            }
+            if (lbl_3_bss_1910[4] < out[1]) {
+                lbl_3_bss_1910[4] = out[1];
+            }
+            if (lbl_3_bss_1910[5] < out[2]) {
+                lbl_3_bss_1910[5] = out[2];
+            }
+            n--;
+        } while (n != 0);
+    }
 }
 
 // .text:0x000B8574 size:0x34 mapped:0x806F7608
@@ -137,13 +323,54 @@ void fn_3_B9124(void) {
 }
 
 // .text:0x000B916C size:0x5C mapped:0x806F8200
-int processStadiumObjectFunction(int, void*, int, void*) {
-    return;
+void processStadiumObjectFunction(int stadium, void* a, int b, void* c) {
+    StadObjList* l = (StadObjList*)lbl_3_common_bss_350E4;
+    s32 i = (s32)a;
+    if (i < l->count) {
+        void (*f)(int, int, void*) = l->objs[i].fn;
+        if (f != 0) {
+            f(i, b, c);
+        }
+    }
 }
 
 // .text:0x000B91C8 size:0x1D4 mapped:0x806F825C
-void fn_3_B91C8(void) {
-    return;
+s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
+    s32 idx = idx0;
+    if (type == 1) {
+        return fn_3_C823C(idx, arg);
+    }
+    if (type == 2) {
+        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+            return 0;
+        }
+        CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
+        return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
+    }
+    if (type == 3) {
+        if ((g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+            return 0;
+        }
+        return fn_3_E4BE8(idx, arg);
+    }
+    if (type == 4) {
+        if ((*(s16*)(g_Ball + 0x1B7A) >= 2) | (g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+            return 0;
+        }
+        CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
+        return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
+    }
+    if (type == 5) {
+        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+            return 0;
+        }
+        return fn_3_F6504(idx, arg);
+    }
+    if (type == 6) {
+        return fn_3_E751C(idx, arg);
+    }
+    CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
+    return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
 }
 
 // .text:0x000B939C size:0x28 mapped:0x806F8430
@@ -193,7 +420,63 @@ void fn_3_B9534(void) {
 
 // .text:0x000B95EC size:0x1DC mapped:0x806F8680
 void fn_3_B95EC(void) {
-    return;
+    u8 n;
+    u8* c;
+    u8* d;
+    minigamesSetSomePointers();
+    minigamesGXStuff();
+    minigamesSetSomePointers2();
+    if (lbl_3_bss_9940 != 0) {
+        ((void (*)(void))lbl_3_bss_9940)();
+        lbl_3_bss_9940 = 0;
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        fn_8001B200();
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x14) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x14));
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x48) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x48));
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x4) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x4));
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x0) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x0));
+        }
+        d = lbl_8036E548;
+        if (*(u32*)(d + 0x6C) != 0) {
+            n = lbl_3_common_bss_350E4[0x6D];
+            while (n != 0) {
+                fn_800B4278(*(void**)(*(u8**)(d + 0x6C) + n * 0x90 - 0x5C));
+                n--;
+            }
+            fn_800ACFB0(*(u32*)(d + 0x6C));
+            *(u32*)(d + 0x6C) = 0;
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x34) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x34));
+        }
+        c = lbl_3_common_bss_350E4;
+        n = 4;
+        while (n != 0) {
+            if (((u32*)(c + 0x1C))[n] != 0) {
+                fn_800ACFB0(((u32*)(c + 0x1C))[n]);
+            }
+            n--;
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x38) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x38));
+        }
+        lbl_8036E548[0x3088] = 0;
+        fn_3_C1964();
+        fn_3_16E328();
+        fn_800528B4();
+        fn_8001E474();
+        lbl_3_bss_1901 = 0;
+        memset(lbl_3_common_bss_350E4, 0, 0x70);
+        lbl_3_bss_1901 = 1;
+    }
 }
 
 // .text:0x000B97C8 size:0x14 mapped:0x806F885C
@@ -211,8 +494,30 @@ void fn_3_B97DC(void) {
 }
 
 // .text:0x000B98E8 size:0xFC mapped:0x806F897C
-void fn_3_B98E8(void) {
-    return;
+void fn_3_B98E8(void* p) {
+    StadHdr** pp = (StadHdr**)p;
+    f32 one;
+    f32 zero;
+    s32 off;
+    u32 i;
+    zero = lbl_3_rodata_1DCC;
+    one = lbl_3_rodata_1DDC;
+    i = 0;
+    off = 0;
+    for (; i < (*pp)->count; i++) {
+        StadEnt* e = *(StadEnt**)((u8*)(*pp)->list + off);
+        e->extra = _OSAllocFromHeap(0x20, 0x1C);
+        off += 4;
+        e->extra->a = zero;
+        e->extra->b = zero;
+        e->extra->c = one;
+        e->extra->d = 0;
+        e->extra->e = 0;
+        e->extra->f = 0;
+        e->extra->g = 1;
+        e->extra->h = 1;
+        e->extra->i = 0;
+    }
 }
 
 // .text:0x000B99E4 size:0x1D0 mapped:0x806F8A78
@@ -221,8 +526,38 @@ void fn_3_B99E4(void) {
 }
 
 // .text:0x000B9BB4 size:0x1B4 mapped:0x806F8C48
-void fn_3_B9BB4(void) {
-    return;
+s32 fn_3_B9BB4(u32 type) {
+    if ((s32)lbl_803C6CF8[0x715] == 1) {
+    switch (type) {
+        case 0:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC, 0, 0, 0);
+            break;
+        case 1:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x10, 0, 0, 0);
+            break;
+        case 2:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x20, 0, 0, 0);
+            break;
+        case 3:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x30, 0, 0, 0);
+            break;
+        case 4:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x40, 0, 0, 0);
+            break;
+        case 5:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x50, 0, 0, 0);
+            break;
+        case 6:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x60, 0, 0, 0);
+            break;
+        default:
+            return -1;
+    }
+    fn_800B0A5C_insertQueue(fn_3_B99E4, 0);
+    lbl_3_common_bss_350E4[0x6A] = 1;
+    return 1;
+    }
+    return 0;
 }
 
 // .text:0x000B9D68 size:0x250 mapped:0x806F8DFC
