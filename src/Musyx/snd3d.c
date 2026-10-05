@@ -573,14 +573,15 @@ unsigned long sndRemoveListener(SND_LISTENER *li)
 
 typedef struct START_LIST
 {
-    // total size: 0x1C
+    // total size: 0x20
     struct START_LIST *next; // offset 0x0, size 0x4
     f32 vol;                 // offset 0x4, size 0x4
     f32 xPan;                // offset 0x8, size 0x4
     f32 yPan;                // offset 0xC, size 0x4
     f32 zPan;                // offset 0x10, size 0x4
     f32 pitch;               // offset 0x14, size 0x4
-    SND_EMITTER *em;         // offset 0x18, size 0x4
+    f32 unk18;               // offset 0x18, size 0x4
+    SND_EMITTER *em;         // offset 0x1C, size 0x4
 } START_LIST;
 
 typedef struct RUN_LIST
@@ -602,7 +603,7 @@ typedef struct START_GROUP
 
 static START_GROUP startGroup[64];  // size: 0x400
 static u8 startGroupNum;            // size: 0x1
-static START_LIST startListNum[64]; // size: 0x700
+static START_LIST startListNum[64]; // size: 0x800
 static u8 startListNumnum;          // size: 0x1
 static RUN_LIST runList[64];        // size: 0x300
 static u8 runListNum;               // size: 0x1
@@ -663,7 +664,7 @@ void AddRunningEmitter(SND_EMITTER *em, f32 vol)
     runList[runListNum++].vol = vol;
 }
 
-bool32 AddStartingEmitter(SND_EMITTER *em, f32 vol, f32 xPan, f32 yPan, f32 zPan, f32 pitch)
+bool32 AddStartingEmitter(SND_EMITTER *em, f32 vol, f32 xPan, f32 yPan, f32 zPan, f32 pitch, f32 unk18)
 {
     long i;         // r30
     START_LIST *sl; // r29
@@ -717,6 +718,7 @@ bool32 AddStartingEmitter(SND_EMITTER *em, f32 vol, f32 xPan, f32 yPan, f32 zPan
 
     startListNum[startListNumnum].em = em;
     startListNum[startListNumnum].pitch = pitch;
+    startListNum[startListNumnum].unk18 = unk18;
     startListNum[startListNumnum].xPan = xPan;
     startListNum[startListNumnum].yPan = yPan;
     startListNum[startListNumnum].zPan = zPan;
@@ -848,7 +850,7 @@ void s3dHandle()
 
                 if (em->flags & 1)
                 {
-                    if (AddStartingEmitter(em, vol, xPan, yPan, zPan, pitch))
+                    if (AddStartingEmitter(em, vol, xPan, yPan, zPan, pitch, 0.f))
                     {
                         continue;
                     }
