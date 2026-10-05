@@ -236,7 +236,15 @@ void fn_3_128A38(void) {
 
 // .text:0x00128B90 size:0x88 mapped:0x80767C24
 void fn_3_128B90(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    u16* tb = (u16*)lbl_3_data_B140;
+    u32 i = g_Minigame[0x1A2A];
+    u16 v = tb[i * 2];
+    *(u16*)(lbl_3_data_B0E0 + 2) = v;
+    *(u16*)(lbl_3_data_B0E0 + 0x22) = tb[i * 2 + 1];
+    fn_80034E20(q, lbl_3_data_B0E0);
+    *(s16*)(q + 0x1C) = 1;
+    *(void**)lbl_803CC1B8 = fn_3_128A38;
 }
 
 // .text:0x00128C18 size:0x758 mapped:0x80767CAC
