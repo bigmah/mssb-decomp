@@ -5,6 +5,11 @@ extern u8 g_Batter[];
 extern u8 g_d_GameSettings[];
 extern u8 g_Minigame[];
 extern u8 g_Pitcher[];
+extern u8 g_Camera[];
+extern u8 lbl_3_common_bss_3223C[];
+extern u8 lbl_3_common_bss_35154[];
+extern f32 game_atan2(f32 x, f32 y);
+extern void fn_3_BE174(s32 a, f32 x, f32 y, f32 z);
 extern u8 g_Ball[];
 extern u8 g_GameLogic[];
 extern void fn_3_CB344(int who, u8 a);
@@ -80,6 +85,7 @@ void fn_3_6A414(void) {
     return;
 }
 
+#pragma dont_inline on
 // .text:0x0006A83C size:0x174 mapped:0x806A98D0
 void fn_3_6A83C(void) {
     f32 v[3];
@@ -109,6 +115,7 @@ void fn_3_6A83C(void) {
         }
     }
 }
+#pragma dont_inline reset
 
 // .text:0x0006A9B0 size:0xE8 mapped:0x806A9A44
 void fn_3_6A9B0(void) {
@@ -167,8 +174,62 @@ void fn_3_6AB30(void) {
     fn_80011578();
 }
 
+static inline void fn_3_6A9B0_i(void) {
+    s32 who;
+    if (g_d_GameSettings[0x11]) {
+        who = ((MiniCtl_F80*)(g_Minigame + 0x18CC))[0].characterIndex[*(s8*)(g_Minigame + 0x1905)];
+    } else {
+        who = 9;
+    }
+    if (g_Batter[0x9D] == 1) {
+        if (*(s16*)(g_Batter + 0x74) == 1) {
+            fn_3_C1770(who);
+            lbl_3_common_bss_32724[0xC9] = 1;
+            return;
+        }
+        {
+            f32 k = 100.0f;
+            f32 x = *(f32*)(g_Batter + 0x58);
+            f32 y = *(f32*)(g_Batter + 0x5C);
+            x = k * x;
+            y = k * y;
+            fn_3_C1344(who, x >= k, x, y, k);
+        }
+        return;
+    }
+    if (lbl_3_common_bss_32724[0xC9] != 0) {
+        fn_3_C11CC(who, 1);
+        lbl_3_common_bss_32724[0xC9] = 0;
+    }
+}
+
 // .text:0x0006AB58 size:0x368 mapped:0x806A9BEC
 void fn_3_6AB58(void) {
-    return;
+    s32 mode;
+    *(f32*)(lbl_3_common_bss_3223C + 4) =
+        game_atan2(*(f32*)(g_Camera + 0x2854) - *(f32*)(g_Camera + 0x2848), *(f32*)(g_Camera + 0x284C) - *(f32*)(g_Camera + 0x2840));
+    fn_3_6AA98();
+    fn_3_6A9B0_i();
+    fn_3_6A83C();
+    ((void (*)(void))fn_3_6A414)();
+    fn_3_6A300();
+    if (*(s16*)(g_Ball + 0x1B66) == 0 && (*(u32*)(lbl_3_common_bss_35154 + 0x3AC) & 3) == 0) {
+        if (g_Batter[0xA2] != 0 || g_Batter[0xA0] != 0) {
+            mode = 4;
+        } else if (g_Batter[0x8B] == 3) {
+            mode = 0;
+        } else if (g_Batter[0x97] != 0) {
+            mode = 3;
+        } else if (g_Batter[0x92] == 2) {
+            mode = 2;
+        } else {
+            mode = 1;
+        }
+        if (g_Batter[0x7B] == 0) {
+            fn_3_BE174(mode, *(f32*)(g_Batter + 0x24), -*(f32*)(g_Batter + 0x28), *(f32*)(g_Batter + 0x2C));
+        } else {
+            fn_3_BE174(mode, -*(f32*)(g_Batter + 0x24), -*(f32*)(g_Batter + 0x28), *(f32*)(g_Batter + 0x2C));
+        }
+    }
 }
 
