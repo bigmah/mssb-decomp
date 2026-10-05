@@ -12,8 +12,10 @@ void fn_3_6A300(void) {
 }
 
 // .text:0x0006A400 size:0x14 mapped:0x806A9494
+extern u8 lbl_3_common_bss_32724[];
+
 void fn_3_6A400(void) {
-    return;
+    lbl_3_common_bss_32724[0xD4] = 0;
 }
 
 // .text:0x0006A414 size:0x428 mapped:0x806A94A8
