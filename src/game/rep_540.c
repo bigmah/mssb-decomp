@@ -146,7 +146,32 @@ void fn_3_9FA4(void) {
 
 // .text:0x0000A020 size:0xD0 mapped:0x806490B4
 void fn_3_A020(void) {
-    return;
+    s32 done;
+    if (g_Ball[0x1BD1] == 0) {
+        g_Ball[0x1BD1] = 2;
+        done = 0;
+        *(f32*)(g_Ball + 0x1A3C) = *(f32*)(g_Ball + 0);
+        *(f32*)(g_Ball + 0x1A40) = *(f32*)(g_Ball + 4);
+        *(f32*)(g_Ball + 0x1A44) = *(f32*)(g_Ball + 8);
+        *(s16*)(g_Ball + 0x1B7A) = -1;
+        g_Ball[0x1BC6] = 1;
+        if (g_FieldingLogic[0x110] != 1) {
+            g_FieldingLogic[0x110] = 1;
+            g_Strikes = g_Strikes + 1;
+            if (g_Strikes >= 3) {
+                if (g_Ball[0x1BCF] != 0) {
+                    g_Ball[0x1BD3] = 1;
+                    fn_3_88D88(0);
+                    done = 1;
+                } else {
+                    g_Strikes = 2;
+                }
+            }
+        }
+        if (done == 0) {
+            fn_3_59918(3, 0);
+        }
+    }
 }
 
 // .text:0x0000A0F0 size:0xA8 mapped:0x80649184
