@@ -496,57 +496,159 @@ u8 inpGetMidiLastNote(u8 midi, u8 midiSet) {
 }
 
 static u16 _GetInputValue(SYNTH_VOICE* svoice, CTRL_DEST* inp, u8 midi, u8 midiSet) {
-  u32 i;     // r26
-  u32 value; // r29
-  u8 ctrl;   // r28
-  s32 tmp;   // r31
-  s32 vtmp;  // r30
-  u32 sign;  // r25
+  u32 value;
+  u32 i;
+  u8 ctrl;
+  s32 tmp;
+  s32 vtmp;
+  u32 sign;
 
   for (value = 0, i = 0; i < inp->numSource; ++i) {
     if (inp->source[i].combine & 0x10) {
       tmp = (svoice != NULL ? varGet(svoice, 0, inp->source[i].midiCtrl) : 0);
-    } else {
-      ctrl = inp->source[i].midiCtrl;
-      if (ctrl == 128 || ctrl == 1 || ctrl == 10 || ctrl == 160 || ctrl == 161 || ctrl == 131) {
-        switch (ctrl) {
-        case 160:
-        case 161:
-          if (svoice != NULL) {
-            tmp = svoice->lfo[ctrl - 160].value << 1;
-            svoice->lfoUsedByInput[ctrl - 160] = 1;
-          } else {
-            tmp = 0;
-          }
-          break;
-        default:
-          tmp = inpGetMidiCtrl(ctrl, midi, midiSet) - 0x2000;
-          break;
-        }
-      } else if (ctrl == 163) {
-        tmp = svoice != NULL ? svoice->orgVolume >> 9 : 0;
-      } else if (ctrl < 163) {
-        if (ctrl < 162) {
-          tmp = inpGetMidiCtrl(ctrl, midi, midiSet);
-        } else if (svoice == NULL) {
-          tmp = 0;
-        } else {
-          tmp = svoice->orgNote << 7;
-        }
-      } else if (ctrl > 164) {
+      goto signedPath;
+    }
+
+    ctrl = inp->source[i].midiCtrl;
+    if (ctrl == 128 || ctrl == 1 || ctrl == 10 || ctrl == 160 || ctrl == 161 || ctrl == 131) {
+      switch (ctrl) {
+      case 160:
+      case 161:
         if (svoice != NULL) {
-          tmp = (synthRealTime - svoice->macStartTime) << 8;
-          if (tmp > 0x3fff) {
-            tmp = 0x3fff;
+          tmp = svoice->lfo[ctrl - 160].value << 1;
+          svoice->lfoUsedByInput[ctrl - 160] = 1;
+        } else {
+          tmp = 0;
+        }
+        break;
+      default:
+        tmp = inpGetMidiCtrl(ctrl, midi, midiSet) - 0x2000;
+        break;
+      }
+
+    signedPath:
+      tmp = (tmp * (inp->source[i].scale >> 1)) >> 15;
+      tmp = tmp < -0x2000 ? -0x2000 : (tmp > 0x1FFF ? 0x1FFF : tmp);
+
+      switch (inp->source[i].combine & 0xF) {
+      case 0:
+        value = tmp + 0x2000;
+        sign = 1;
+        break;
+      case 1:
+        if (sign) {
+          vtmp = (s32)value + tmp;
+          vtmp -= 0x2000;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          tmp = value + tmp;
+          if (tmp > 0x3FFF) {
+            value = 0x3FFF;
+          } else {
+            value = tmp < 0 ? 0 : tmp;
+          }
+        }
+        break;
+      case 2:
+        if (sign) {
+          vtmp = (((s32)value - 0x2000) * tmp) >> 13;
+        } else {
+          vtmp = (tmp * value) >> 13;
+          sign = 1;
+        }
+        tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+        value = tmp + 0x2000;
+        break;
+      case 3:
+        if (sign) {
+          vtmp = (s32)value - 0x2000 - tmp;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          tmp = value - tmp;
+          if (tmp > 0x3FFF) {
+            value = 0x3FFF;
+          } else {
+            value = tmp < 0 ? 0 : tmp;
+          }
+        }
+        break;
+      }
+    } else {
+      switch (ctrl) {
+      case 162:
+        tmp = svoice != NULL ? svoice->orgNote << 7 : 0;
+        break;
+      case 163:
+        tmp = svoice != NULL ? svoice->orgVolume >> 9 : 0;
+        break;
+      case 164:
+        if (svoice != NULL) {
+          tmp = (synthRealTime - svoice->macStartTime) >> 8;
+          if (tmp > 0x3FFF) {
+            tmp = 0x3FFF;
           }
 
           svoice->timeUsedByInput = 1;
         } else {
           tmp = 0;
         }
+        break;
+      default:
+        tmp = inpGetMidiCtrl(ctrl, midi, midiSet);
+        break;
       }
 
-      tmp = (tmp * inp->source[i].scale / 2) >> 15;
+      tmp = (tmp * (inp->source[i].scale >> 1)) >> 15;
+      if (tmp > 0x3FFF) {
+        tmp = 0x3FFF;
+      }
+
+      switch (inp->source[i].combine & 0xF) {
+      case 0:
+        value = tmp;
+        sign = 0;
+        break;
+      case 1:
+        if (sign) {
+          vtmp = (s32)value + tmp;
+          vtmp -= 0x2000;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          value += tmp;
+          value = value > 0x3FFF ? 0x3FFF : value;
+        }
+        break;
+      case 2:
+        if (sign) {
+          vtmp = (tmp * ((s32)value - 0x2000)) >> 14;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          vtmp = (value * tmp) >> 14;
+          value = 0x3FFF;
+          if ((u32)vtmp <= 0x3FFF) {
+            value = vtmp;
+          }
+        }
+        break;
+      case 3:
+        if (sign) {
+          vtmp = (s32)value - 0x2000 - tmp;
+          tmp = vtmp < -0x2000 ? -0x2000 : (vtmp > 0x1FFF ? 0x1FFF : vtmp);
+          value = tmp + 0x2000;
+        } else {
+          tmp = value - tmp;
+          if (tmp > 0x3FFF) {
+            value = 0x3FFF;
+          } else {
+            value = tmp < 0 ? 0 : tmp;
+          }
+        }
+        break;
+      }
     }
   }
 
