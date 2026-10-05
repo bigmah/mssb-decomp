@@ -1,6 +1,19 @@
 #include "game/sta_c5.h"
 #include "header_rep_data.h"
+#include "Dolphin/os.h"
+extern u8 lbl_3_common_bss_350E4[];
+extern char lbl_3_rodata_2DB8[];
+extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
+#include "C3/control.h"
+extern f32 lbl_3_rodata_2DEC;
+extern u8 lbl_8036E548[];
+extern u8 lbl_3_bss_B55C[];
+extern u8 lbl_803CBBC0[];
+extern u8 lbl_3_data_1BA5C[];
+extern void fn_800BDA24(s32);
+extern void fn_800B0A14_removeQueue(void*);
+extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
 extern u32 lbl_3_bss_B154[];
 extern void fn_3_B97DC(void*, u32);
@@ -58,7 +71,16 @@ void fn_3_EEE3C(void) {
 
 // .text:0x000EEF24 size:0x80 mapped:0x8072DFB8
 void fn_3_EEF24(void) {
-    return;
+    if (lbl_8036E548[0x3088] == 0) {
+        fn_800B0A14_removeQueue(lbl_8036E548);
+        return;
+    }
+    if (lbl_8036E548[0x307E] != 0) {
+        fn_800BDA24(*(s32*)lbl_3_bss_B55C);
+        fn_3_EE388();
+        fn_3_EEB94();
+        fn_800A7D4C(1, lbl_3_data_1BA5C + lbl_803CBBC0[0] * 8);
+    }
 }
 
 // .text:0x000EEFA4 size:0x2C mapped:0x8072E038
@@ -107,8 +129,18 @@ void fn_3_EF7B4(void) {
 }
 
 // .text:0x000EF800 size:0x90 mapped:0x8072E894
-void fn_3_EF800(void) {
-    return;
+void fn_3_EF800(u8* p) {
+    typedef struct { u8 pad[0x90]; u8 f : 1; u8 rest : 7; } FObj;
+    if (p[0xC7] == 0) {
+        CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), lbl_3_rodata_2DEC, *(f32*)(p + 0xA8));
+        return;
+    }
+    if (p[0xC7] % 6 == 0) {
+        ((FObj*)p)->f = 0;
+    } else {
+        ((FObj*)p)->f = 1;
+    }
+    p[0xC7]--;
 }
 
 // .text:0x000EF890 size:0xA0 mapped:0x8072E924
@@ -234,8 +266,11 @@ void fn_3_F38D4(void) {
 }
 
 // .text:0x000F3A04 size:0x58 mapped:0x80732A98
-void fn_3_F3A04(void) {
-    return;
+void fn_3_F3A04(u8* p) {
+    u32 i;
+    u16 n = *(u16*)(*(u8**)(*(u8**)(p + 0x74)) + 6);
+    for (i = 0; i < n; i++) {
+    }
 }
 
 // .text:0x000F3A5C size:0x84 mapped:0x80732AF0
@@ -323,8 +358,16 @@ void fn_3_F5C30(void) {
 }
 
 // .text:0x000F5E78 size:0x84 mapped:0x80734F0C
-void fn_3_F5E78(void) {
-    return;
+s32 fn_3_F5E78(u8 id) {
+    u32 n = *(u32*)(lbl_3_common_bss_350E4 + 0x30);
+    u8* e = *(u8**)(lbl_3_common_bss_350E4 + 0x14) + n * 8;
+    for (; n != 0; e -= 8, n--) {
+        if (id == *(s32*)(e - 4)) {
+            return n - 1;
+        }
+    }
+    OSPanic(lbl_3_rodata_2DB8, 0x637, lbl_3_rodata_2F10);
+    return 0;
 }
 
 // .text:0x000F5EFC size:0x2C mapped:0x80734F90

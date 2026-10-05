@@ -1,5 +1,9 @@
 #include "game/rep_8C8.h"
 #include "header_rep_data.h"
+#include "game/UnknownHomes_Game.h"
+#include "game/rep_1838.h"
+extern u8 lbl_3_data_1AAC[];
+extern u8 lbl_3_data_1AB0[];
 
 // .text:0x0001E4B8 size:0x26C mapped:0x8065D54C
 void fn_3_1E4B8(void) {
@@ -63,7 +67,11 @@ void fn_3_20064(void) {
 
 // .text:0x00020188 size:0x9C mapped:0x8065F21C
 void fn_3_20188(void) {
-    return;
+    if (*(u8*)((u8*)&g_AiLogic + 0x6D) != 0xFF && RandomInt_Game(0x64) < (s32)lbl_3_data_1AAC[*(u8*)((u8*)&g_AiLogic + 0x55)]) {
+        *(u8*)((u8*)&g_AiLogic + 0x5E) = *(u8*)((u8*)&g_AiLogic + 0x6D);
+        return;
+    }
+    *(u8*)((u8*)&g_AiLogic + 0x5E) = RandomIndexFromWeights(lbl_3_data_1AB0 + *(u8*)((u8*)&g_Pitcher + 0x149) * 3, 3);
 }
 
 // .text:0x00020224 size:0x83C mapped:0x8065F2B8

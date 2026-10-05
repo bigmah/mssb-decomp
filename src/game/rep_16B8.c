@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_F390[];
+extern u8 lbl_3_data_E160[];
 extern u8 lbl_3_data_E21C[];
 extern u8 lbl_3_data_E2F8[];
 extern u8 lbl_3_data_E278[];
@@ -26,6 +27,7 @@ extern u8 lbl_3_data_C1EC[];
 extern void* lbl_803CC1B8[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 g_GameLogic[];
+extern u8 g_Stats[];
 #include "static/UnknownHomes_Static.h"
 
 // .text:0x00091520 size:0x540 mapped:0x806D05B4
@@ -48,7 +50,6 @@ void fn_3_91A60(void) {
 void fn_3_91AC8(void) {
     return;
 }
-
 // .text:0x00091B50 size:0x4C mapped:0x806D0BE4
 void fn_3_91B50(void) {
     fn_80034E20(lbl_803CC1B8[0], lbl_3_data_F350);
@@ -57,7 +58,23 @@ void fn_3_91B50(void) {
 
 // .text:0x00091B9C size:0xD4 mapped:0x806D0C30
 void fn_3_91B9C(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] == 0) {
+        u32 idx = *(u16*)((u8*)p + 0x14);
+        u8** t = (u8**)lbl_80371C30;
+        if ((*(u32*)(t[idx * 2] + 0x5C) >> 16) >= 0x4B) {
+            u8* q = t[idx * 2 + 2];
+            *(u32*)(q + 0x54) |= 2;
+        }
+        if ((g_Stats[0x36] == 0 && g_Stats[0x39] == 0) || g_GameLogic[0x11E] == 3 || g_GameLogic[0x11E] == 0xB || g_GameLogic[0x11E] == 0xE) {
+            goto call;
+        }
+    } else {
+call:
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        lbl_3_common_bss_32724[0xB0] = 0;
+        lbl_3_common_bss_32724[0xB1] = 0;
+    }
 }
 
 // .text:0x00091C70 size:0x5C mapped:0x806D0D04
@@ -242,7 +259,21 @@ void fn_3_9538C(void) {
 
 // .text:0x000953FC size:0xC8 mapped:0x806D4490
 void fn_3_953FC(void) {
-    return;
+    u8* p;
+    fn_80034E20(p = lbl_803CC1B8[0], lbl_3_data_E160);
+    {
+        u8** t = (u8**)lbl_80371C30;
+        s32 v = lbl_3_data_E200[lbl_3_common_bss_37400[0x46]];
+        ((s32*)t[*(u16*)(p + 0x14) * 2 + 4])[0x5C / 4] = v << 16;
+    }
+    {
+        u8** t = (u8**)lbl_80371C30;
+        s32 v = lbl_3_data_E200[lbl_3_common_bss_37400[0x46]];
+        ((s32*)t[*(u16*)(p + 0x14) * 2 + 6])[0x5C / 4] = v << 16;
+    }
+    lbl_3_common_bss_32724[0xB4] = 0;
+    lbl_3_common_bss_32724[0xB3] = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_9538C;
 }
 
 // .text:0x000954C4 size:0x58 mapped:0x806D4558
