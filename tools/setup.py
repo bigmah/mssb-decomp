@@ -78,6 +78,7 @@ def orig_ok() -> bool:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
     parser.add_argument("--iso", help="path to the GYQE01 disc image (iso/ciso/rvz)")
+    parser.add_argument("--from-iso", action="store_true", help="always extract from the ISO, even in a worktree")
     parser.add_argument("--no-build", action="store_true", help="skip the final ninja build")
     args = parser.parse_args()
 
@@ -88,12 +89,16 @@ def main() -> None:
     # it writes enough of build.ninja to download dtk first.
     subprocess.run([sys.executable, "configure.py"], cwd=ROOT)
     if not DTK.exists():
-        run(["ninja", "build/tools/dtk"])
+        # Exits non-zero (it also tries to regenerate build.ninja, which needs
+        # the RELs) but still downloads dtk.
+        subprocess.run(["ninja", "build/tools/dtk"], cwd=ROOT)
+    if not DTK.exists():
+        sys.exit("failed to download dtk")
 
     # 2. original files
-    if not orig_ok():
+    if args.from_iso or not orig_ok():
         main_orig = main_checkout() / "orig" / "GYQE01"
-        if main_orig != ORIG and all((main_orig / r).exists() for r in NEEDED):
+        if not args.from_iso and main_orig != ORIG and all((main_orig / r).exists() for r in NEEDED):
             print(f"copying original files from {main_orig}")
             for rel in NEEDED:
                 (ORIG / rel).parent.mkdir(parents=True, exist_ok=True)
