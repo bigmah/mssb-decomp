@@ -194,8 +194,16 @@ void fn_3_BE140(void) {
 }
 
 // .text:0x000BE174 size:0x60 mapped:0x806FD208
-void fn_3_BE174(void) {
-    return;
+void fn_3_BE174(s32 a, f32 x, f32 y, f32 z) {
+    *(f32*)(lbl_3_common_bss_35154 + 0x41C) = x;
+    *(u32*)(lbl_3_common_bss_35154 + 0x3AC) |= 1;
+    *(f32*)(lbl_3_common_bss_35154 + 0x420) = y;
+    *(f32*)(lbl_3_common_bss_35154 + 0x424) = z;
+    lbl_3_common_bss_35154[0x419] = a;
+    if (a == 4) {
+        u8* p = fn_800B0A5C_insertQueue(fn_3_BDF74, 3);
+        *(s16*)(p + 0x10) = 2;
+    }
 }
 
 // .text:0x000BE1D4 size:0xE24 mapped:0x806FD268
