@@ -86,7 +86,15 @@ s32 fn_3_100018(void) {
 
 // .text:0x00100038 size:0x44 mapped:0x8073F0CC
 void fn_3_100038(void) {
-    return;
+    if (*(u32*)(lbl_3_common_bss_DE94 + 0x118) > *(u32*)(lbl_3_common_bss_DE94 + 0x11C)) {
+        if (lbl_3_common_bss_DE94[0x9B1] == 0) {
+            *(u32*)(lbl_3_common_bss_DE94 + 0x118) = *(u32*)(lbl_3_common_bss_DE94 + 0x11C);
+        } else {
+            *(u32*)(lbl_3_common_bss_DE94 + 0x118) = 0;
+        }
+    } else {
+        *(u32*)(lbl_3_common_bss_DE94 + 0x118) += 0x10000;
+    }
 }
 
 // .text:0x0010007C size:0x5C mapped:0x8073F110
