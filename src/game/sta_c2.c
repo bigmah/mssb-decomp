@@ -1,5 +1,7 @@
 #include "game/sta_c2.h"
 #include "header_rep_data.h"
+#include "Dolphin/mtx.h"
+extern f64 lbl_3_rodata_2800;
 extern void AnimateActorBones(void*);
 
 // .text:0x000CB8A8 size:0x1F4 mapped:0x8070A93C
@@ -331,8 +333,11 @@ void fn_3_D233C(void) {
 }
 
 // .text:0x000D249C size:0x4C mapped:0x80711530
-void fn_3_D249C(void) {
-    return;
+s32 fn_3_D249C(u8* p) {
+    Vec v;
+    u8* o = *(u8**)(p + 0xC4);
+    PSVECSubtract((Vec*)(o + 0x1CC), (Vec*)(o + 0xC), &v);
+    return PSVECMag(&v) > lbl_3_rodata_2800;
 }
 
 // .text:0x000D24E8 size:0x74 mapped:0x8071157C
