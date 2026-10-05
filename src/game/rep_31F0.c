@@ -36,6 +36,13 @@ extern void minigamesGXStuff(void);
 extern void minigamesSetSomePointers2(void);
 extern int rand();
 extern u8 lbl_3_data_21448[];
+extern u8 lbl_3_data_217A4[];
+extern u8 lbl_3_data_2139C[];
+extern u8 lbl_3_data_213A4[];
+extern u8 g_Pitcher[];
+extern int RandomIndexFromWeights(u8* weights, int count);
+extern void fn_3_750C4(u8);
+extern u8 lbl_3_data_21448[];
 extern u8 g_Pitcher[];
 extern void changeScene(s32, s32);
 extern u8 lbl_3_data_18C48[];
@@ -111,7 +118,39 @@ void fn_3_111738(void) {
 
 // .text:0x001118B4 size:0x1D4 mapped:0x80750948
 void fn_3_1118B4(void) {
-    return;
+    s32 lim = *(s16*)(lbl_3_data_21448 + 6);
+    u8 flag = 1;
+    s32 sel;
+    u8 mode = g_Minigame[0x1A2A];
+    s32 isMode3 = mode == 3;
+    s32 k;
+    if (isMode3) {
+        lim = *(s16*)(lbl_3_data_217A4 + 0xC);
+    }
+    if (!isMode3) {
+        flag = g_Minigame[0x1DF4];
+    }
+    if (*(s16*)(g_Pitcher + 0x120) > lim && flag != 0) {
+        if (g_Minigame[0x1A2A] == 3) {
+            g_Minigame[0x1ACA] = *(s16*)(lbl_3_data_217A4 + 0x12);
+        } else if ((sel = g_Minigame[0x1DF5]) < 3) {
+            if (sel < 2) {
+                k = sel * 2;
+                k += RandomIndexFromWeights(lbl_3_data_213A4 + g_Minigame[0x1AC9] * 5 + k, 2);
+            } else {
+                k = 4;
+            }
+            g_Minigame[0x1ACA] = lbl_3_data_2139C[k] + rand() % 7 - 3;
+        } else if (sel == 3) {
+            g_Minigame[0x1AD5] = 1;
+            k = RandomIndexFromWeights(lbl_3_data_213A4 + g_Minigame[0x1AC9] * 5, 5);
+            g_Minigame[0x1ACA] = lbl_3_data_2139C[k] + rand() % 7 - 3;
+        } else {
+            g_Pitcher[0x164] = 1;
+            g_Pitcher[0x165] = 1;
+        }
+        fn_3_750C4(2);
+    }
 }
 
 // .text:0x00111A88 size:0x3C mapped:0x80750B1C
