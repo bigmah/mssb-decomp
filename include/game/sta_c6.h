@@ -14,7 +14,7 @@ void fn_3_E6410(void);
 void fn_3_E64A8(void);
 void fn_3_E6528(void);
 void fn_3_E6578(void);
-void fn_3_E6638(void);
+void fn_3_E6638(u8* a);
 void fn_3_E6684(void);
 void fn_3_E671C(void);
 void fn_3_E6798(void);
