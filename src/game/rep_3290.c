@@ -1,6 +1,10 @@
 #include "game/rep_3290.h"
 #include "header_rep_data.h"
 
+extern u8 g_Minigame[];
+extern void fn_3_1500C8(void);
+#pragma dont_inline on
+
 // .text:0x001133C4 size:0x338 mapped:0x80752458
 void fn_3_1133C4(void) {
     return;
@@ -58,7 +62,16 @@ void fn_3_1149B8(void) {
 
 // .text:0x00114A2C size:0x5C mapped:0x80753AC0
 void fn_3_114A2C(void) {
-    return;
+    u8 v = g_Minigame[0x1A7F];
+    if (v == 0) {
+        fn_3_114384();
+        fn_3_1500C8();
+    } else if (v == 1) {
+        fn_3_114204();
+    } else if (v == 2) {
+        fn_3_113F14();
+        fn_3_113D20();
+    }
 }
 
 // .text:0x00114A88 size:0x538 mapped:0x80753B1C
