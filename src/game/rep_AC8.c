@@ -529,8 +529,19 @@ void fn_3_3B764(void) {
 }
 
 // .text:0x0003B99C size:0x48 mapped:0x8067AA30
+extern u8 g_Minigame[];
+extern u8 g_FieldingLogic[];
+extern s16 lbl_3_bss_170;
+
 void fn_3_3B99C(void) {
-    return;
+    if (g_Minigame[0x1A2A] == 5) {
+        return;
+    }
+    if (!(*(u16*)(g_FieldingLogic + 0x14A) & 0x100)) {
+        return;
+    }
+    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 2;
+    **(s16**)(g_FieldingLogic + 0x8C) = lbl_3_bss_170;
 }
 
 // .text:0x0003B9E4 size:0x46C mapped:0x8067AA78
