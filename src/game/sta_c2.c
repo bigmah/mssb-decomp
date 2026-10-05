@@ -1,5 +1,14 @@
 #include "game/sta_c2.h"
 #include "header_rep_data.h"
+#include "Dolphin/mtx.h"
+#pragma dont_inline on
+extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
+extern f64 lbl_3_rodata_2800;
+extern f32 lbl_3_rodata_2664;
+extern u8 g_Fielders[];
+extern s32 fn_3_9FB8C(f32, f32);
+extern void fn_3_253A4(s8, s16);
+extern void AnimateActorBones(void*);
 
 // .text:0x000CB8A8 size:0x1F4 mapped:0x8070A93C
 void fn_3_CB8A8(void) {
@@ -7,8 +16,21 @@ void fn_3_CB8A8(void) {
 }
 
 // .text:0x000CBA9C size:0x60 mapped:0x8070AB30
-void fn_3_CBA9C(void) {
-    return;
+void fn_3_CBA9C(u8* p) {
+    u8* x;
+    u32* q;
+    x = **(u8***)(p + 0x74);
+    x = **(u8***)(x + 0x18);
+    x = *(u8**)(x + 0x14);
+    x = *(u8**)(x + 0x10);
+    q = *(u32**)(x + 4);
+    if (p[0xCA] == 0) {
+        q[0x74 / 4] = q[0x74 / 4] & 0xFFFFE000;
+        q[0x74 / 4] = q[0x74 / 4] | 3;
+    } else {
+        q[0x74 / 4] = q[0x74 / 4] & 0xFFFFE000;
+        q[0x74 / 4] = q[0x74 / 4] | 2;
+    }
 }
 
 // .text:0x000CBAFC size:0x11C mapped:0x8070AB90
@@ -84,13 +106,20 @@ void fn_3_CDFA4(void) {
 }
 
 // .text:0x000CE56C size:0x378 mapped:0x8070D600
-void fn_3_CE56C(void) {
+void fn_3_CE56C(u32 a, u8 b) {
     return;
 }
 
 // .text:0x000CE8E4 size:0x70 mapped:0x8070D978
 void fn_3_CE8E4(void) {
-    return;
+    u32 i = 0;
+    do {
+        u32 r = fn_80033A24(fn_3_CDFA4, 0x80, 0, 0x15, 1, 0);
+        if (r != 0) {
+            fn_3_CE56C(r, (u8)i);
+        }
+        i++;
+    } while (i < 4);
 }
 
 // .text:0x000CE954 size:0x268 mapped:0x8070D9E8
@@ -169,8 +198,8 @@ void fn_3_CFA88(void) {
 }
 
 // .text:0x000CFA8C size:0x28 mapped:0x8070EB20
-void fn_3_CFA8C(void) {
-    return;
+void fn_3_CFA8C(void* p) {
+    AnimateActorBones(*(void**)(*(u8**)((u8*)p + 0x74)));
 }
 
 // .text:0x000CFAB4 size:0x90 mapped:0x8070EB48
@@ -279,8 +308,21 @@ void fn_3_D196C(void) {
 }
 
 // .text:0x000D1AC4 size:0x60 mapped:0x80710B58
-void fn_3_D1AC4(void) {
-    return;
+void fn_3_D1AC4(u8* p) {
+    u8* x;
+    u32* q;
+    x = **(u8***)(p + 0x74);
+    x = **(u8***)(x + 0x18);
+    x = *(u8**)(x + 0x14);
+    x = *(u8**)(x + 0x10);
+    q = *(u32**)(x + 4);
+    if (p[0xCA] == 0) {
+        q[0x74 / 4] = q[0x74 / 4] & 0xFFFFE000;
+        q[0x74 / 4] = q[0x74 / 4] | 3;
+    } else {
+        q[0x74 / 4] = q[0x74 / 4] & 0xFFFFE000;
+        q[0x74 / 4] = q[0x74 / 4] | 2;
+    }
 }
 
 // .text:0x000D1B24 size:0x408 mapped:0x80710BB8
@@ -304,13 +346,21 @@ void fn_3_D233C(void) {
 }
 
 // .text:0x000D249C size:0x4C mapped:0x80711530
-void fn_3_D249C(void) {
-    return;
+s32 fn_3_D249C(u8* p) {
+    Vec v;
+    u8* o = *(u8**)(p + 0xC4);
+    PSVECSubtract((Vec*)(o + 0x1CC), (Vec*)(o + 0xC), &v);
+    return PSVECMag(&v) > lbl_3_rodata_2800;
 }
 
 // .text:0x000D24E8 size:0x74 mapped:0x8071157C
-void fn_3_D24E8(void) {
-    return;
+void fn_3_D24E8(u8* p, s32 idx0) {
+    s8 idx = idx0;
+    Vec v;
+    PSVECSubtract((Vec*)(g_Fielders + idx * 0x268), (Vec*)(p + 0xA0), &v);
+    v.y = lbl_3_rodata_2664;
+    PSVECNormalize(&v, &v);
+    fn_3_253A4(idx, fn_3_9FB8C(v.x, v.z));
 }
 
 // .text:0x000D255C size:0x128 mapped:0x807115F0

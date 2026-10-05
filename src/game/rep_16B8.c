@@ -2,6 +2,14 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_F390[];
+extern u8 lbl_3_data_E21C[];
+extern u8 lbl_3_data_E2F8[];
+extern u8 lbl_3_data_E278[];
+extern u16 lbl_3_data_E200[];
+extern u8 lbl_3_common_bss_37400[];
+extern u8 fn_3_ED574[];
+extern u8 lbl_80371C30[];
+extern u8 lbl_3_data_BF6C[];
 
 extern u8 lbl_3_data_E0E0[];
 
@@ -27,7 +35,13 @@ void fn_3_91520(void) {
 
 // .text:0x00091A60 size:0x68 mapped:0x806D0AF4
 void fn_3_91A60(void) {
-    return;
+    u16* o;
+    fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_BF6C);
+    o[0xC] = 0;
+    o[0xE] = 0;
+    o[0xF] = 0;
+    o[0x10] = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_91520;
 }
 
 // .text:0x00091AC8 size:0x88 mapped:0x806D0B5C
@@ -134,7 +148,10 @@ void fn_3_94760(void) {
 
 // .text:0x000948B8 size:0x78 mapped:0x806D394C
 void fn_3_948B8(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] != 0x17 || (*(u8**)(lbl_80371C30 + *(u16*)((u8*)p + 0x14) * 8))[0x69] == 2) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x00094930 size:0x4C mapped:0x806D39C4
@@ -160,17 +177,37 @@ void fn_3_94E68(void) {
 
 // .text:0x00095000 size:0x98 mapped:0x806D4094
 void fn_3_95000(void) {
-    return;
+    u8* p;
+    fn_80034E20(p = lbl_803CC1B8[0], lbl_3_data_E2F8);
+    {
+        u8** t = (u8**)lbl_80371C30;
+        s32 v = lbl_3_data_E200[lbl_3_common_bss_37400[0x46]];
+        ((s32*)t[*(u16*)(p + 0x14) * 2 + 4])[0x5C / 4] = v << 16;
+    }
+    *(u16*)(p + 0x1C) = lbl_3_common_bss_37400[0x46];
+    *(void**)lbl_803CC1B8[0] = fn_3_94E68;
 }
 
 // .text:0x00095098 size:0x8C mapped:0x806D412C
 void fn_3_95098(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || (*(u8**)(lbl_80371C30 + *(u16*)((u8*)p + 0x14) * 8))[0x69] == 2) {
+        fn_800B0A5C_insertQueue(fn_3_95000, 2);
+        lbl_3_common_bss_32724[0xB3] = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x00095124 size:0x90 mapped:0x806D41B8
 void fn_3_95124(void) {
-    return;
+    u8* p;
+    fn_80034E20(p = lbl_803CC1B8[0], lbl_3_data_E278);
+    {
+        u8** t = (u8**)lbl_80371C30;
+        s32 v = lbl_3_data_E200[lbl_3_common_bss_37400[0x46]];
+        ((s32*)t[*(u16*)(p + 0x14) * 2 + 4])[0x5C / 4] = v << 16;
+    }
+    *(void**)lbl_803CC1B8[0] = fn_3_95098;
 }
 
 // .text:0x000951B4 size:0x128 mapped:0x806D4248
@@ -180,12 +217,27 @@ void fn_3_951B4(void) {
 
 // .text:0x000952DC size:0xB0 mapped:0x806D4370
 void fn_3_952DC(void) {
-    return;
+    u8* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0xB5] != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    fn_80034E20(p, lbl_3_data_E21C);
+    if (lbl_3_common_bss_37400[0x47] == 1) {
+        u8** t = (u8**)lbl_80371C30;
+        *(s16*)(t[*(u16*)(p + 0x14) * 2] + 0x64) = 0x5A;
+    }
+    lbl_3_common_bss_32724[0xB5] = 1;
+    *(void**)lbl_803CC1B8[0] = fn_3_951B4;
 }
 
 // .text:0x0009538C size:0x70 mapped:0x806D4420
 void fn_3_9538C(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] != 0x16) {
+        fn_800B0A5C_insertQueue(fn_3_95000, 2);
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x000953FC size:0xC8 mapped:0x806D4490
@@ -209,7 +261,10 @@ void fn_3_9551C(void) {
 
 // .text:0x00095568 size:0x64 mapped:0x806D45FC
 void fn_3_95568(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || (*(u8**)(lbl_80371C30 + *(u16*)((u8*)p + 0x14) * 8))[0x69] == 2) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x000955CC size:0x54 mapped:0x806D4660
@@ -242,7 +297,12 @@ void fn_3_9669C(void) {
 
 // .text:0x00096914 size:0x78 mapped:0x806D59A8
 void fn_3_96914(void) {
-    return;
+    if (lbl_3_common_bss_32724[0xC7] == 0 && g_GameLogic[0x12D] != 0) {
+        fn_800B0A5C_insertQueue(fn_3_9669C, 2);
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            fn_800B0A5C_insertQueue(fn_3_ED574, 2);
+        }
+    }
 }
 
 // .text:0x0009698C size:0x318 mapped:0x806D5A20

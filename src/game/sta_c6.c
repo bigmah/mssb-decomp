@@ -1,5 +1,7 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
+#include "Dolphin/stl.h"
+extern u8 lbl_3_data_19024[];
 
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
 extern u32 lbl_3_data_19018[];
@@ -22,6 +24,7 @@ extern u8 lbl_3_data_196B4[];
 
 extern u8 lbl_3_common_bss_350E4[];
 
+extern u8 lbl_3_bss_AE80[];
 extern u8 lbl_3_data_1963F;
 extern u8 lbl_3_data_19640;
 
@@ -54,8 +57,20 @@ void fn_3_E5CBC(void) {
 }
 
 // .text:0x000E5E14 size:0x5C mapped:0x80724EA8
-void fn_3_E5E14(void) {
-    return;
+s32 fn_3_E5E14(u8* p) {
+    switch ((u8)((s32)(*(u8**)(p + 4))[6] >> 4)) {
+    case 0:
+    case 3:
+        return 2;
+    case 5:
+        return 4;
+    case 1:
+    case 2:
+    case 4:
+        return 3;
+    default:
+        return 0;
+    }
 }
 
 // .text:0x000E5E70 size:0x17C mapped:0x80724F04
@@ -69,8 +84,16 @@ void fn_3_E5FEC(void) {
 }
 
 // .text:0x000E6410 size:0x98 mapped:0x807254A4
-void fn_3_E6410(void) {
-    return;
+void fn_3_E6410(u8* p) {
+    u32* list[3];
+    u32** w = list;
+    s32 i;
+    for (i = 0; i < 3; i++) {
+        if (*(u32**)(p + 0xAC) != &lbl_3_data_19018[i]) {
+            *w++ = &lbl_3_data_19018[i];
+        }
+    }
+    *(u32**)(p + 0xA8) = list[rand() % 2];
 }
 
 // .text:0x000E64A8 size:0x80 mapped:0x8072553C
@@ -87,8 +110,10 @@ u32* fn_3_E64A8(void) {
 }
 
 // .text:0x000E6528 size:0x50 mapped:0x807255BC
-void fn_3_E6528(void) {
-    return;
+void fn_3_E6528(u8* p) {
+    memcpy(p + 0xA4, *(void**)(p + 0xB4), 4);
+    *(void**)(p + 0xBC) = lbl_3_data_19024 + 0x64;
+    p[0xC2] = 0;
 }
 
 // .text:0x000E6578 size:0xC0 mapped:0x8072560C
@@ -111,8 +136,17 @@ void fn_3_E6638(u8* a) {
 }
 
 // .text:0x000E6684 size:0x98 mapped:0x80725718
-void fn_3_E6684(void) {
-    return;
+void fn_3_E6684(u8* p) {
+    u32* o;
+    s32 i;
+    for (i = 0; i < 3; i++) {
+        o = (*(u32***)(**(u8***)(p + 0x74) + 0x18))[i];
+        if (lbl_3_bss_AE80[i + 1] != 0) {
+            o[0x14 / 4] = o[0x18 / 4];
+        } else {
+            o[0x14 / 4] = 0;
+        }
+    }
 }
 
 // .text:0x000E671C size:0x7C mapped:0x807257B0

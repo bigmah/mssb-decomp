@@ -4,6 +4,10 @@
 extern u8 g_GameLogic[];
 extern void AnimateActorBones(void*);
 typedef struct { u8 pad[0x90]; u8 f : 1; } BF90;
+#include "Dolphin/GX/GXBump.h"
+#include "Dolphin/GX/GXTexture.h"
+extern GXTexObj lbl_3_bss_9F4C;
+extern void fn_3_B9510(s32);
 
 // .text:0x000C9878 size:0x180 mapped:0x8070890C
 void fn_3_C9878(void) {
@@ -34,7 +38,14 @@ void fn_3_C9A60(void* a_) {
 
 // .text:0x000C9AC8 size:0x94 mapped:0x80708B5C
 void fn_3_C9AC8(void) {
-    return;
+    fn_3_B9510(0);
+    fn_3_B9510(1);
+    GXLoadTexObj(&lbl_3_bss_9F4C, 7);
+    GXSetIndTexOrder(0, 0, 7);
+    GXSetNumIndStages(1);
+    GXSetIndTexCoordScale(0, 0, 0);
+    GXSetTevIndWarp(0, 0, 0, 0, 1);
+    GXSetTevIndWarp(1, 0, 0, 0, 1);
 }
 
 // .text:0x000C9B5C size:0x138 mapped:0x80708BF0
