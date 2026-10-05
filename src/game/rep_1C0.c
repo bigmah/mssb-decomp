@@ -1,6 +1,9 @@
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_803CBBC0;
+extern u32 lbl_3_data_A10[];
+
 extern u32 lbl_3_bss_18[];
 
 // .text:0x000035D4 size:0x10
@@ -29,8 +32,8 @@ void fn_3_3818(void) {
 }
 
 // .text:0x000038E8 size:0x1C
-void fn_3_38E8(void) {
-    return;
+void fn_3_38E8(u32 a) {
+    lbl_3_data_A10[lbl_803CBBC0] = a;
 }
 
 // .text:0x00003904 size:0x2E4 mapped:0x80642998
