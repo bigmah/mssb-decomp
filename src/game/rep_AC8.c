@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 
 extern u8 g_Ball[];
+extern u8 g_Fielders[];
+extern f32 lbl_3_rodata_1498;
+#pragma dont_inline on
 
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
 void fn_3_251E4(void) {
@@ -360,7 +363,8 @@ void fn_3_334EC(void) {
 
 // .text:0x00033D9C size:0x34 mapped:0x80672E30
 void fn_3_33D9C(void) {
-    return;
+    fn_3_49F40(6, 7);
+    fn_3_49F40(8, 6);
 }
 
 // .text:0x00033DD0 size:0x418 mapped:0x80672E64
@@ -484,8 +488,13 @@ void fn_3_39EB0(void) {
 }
 
 // .text:0x0003A1FC size:0x38 mapped:0x80679290
-void fn_3_3A1FC(void) {
-    return;
+void fn_3_3A1FC(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (*(s16*)(f + 0x1B6) != 0) {
+        *(f32*)(f + 0x50) = *(f32*)(f + 0x54);
+    } else {
+        *(f32*)(f + 0x50) = lbl_3_rodata_1498;
+    }
 }
 
 // .text:0x0003A234 size:0x350 mapped:0x806792C8
@@ -666,7 +675,8 @@ void fn_3_40C04(void) {
 
 // .text:0x00040D54 size:0x34 mapped:0x8067FDE8
 void fn_3_40D54(void) {
-    return;
+    fn_3_49F40(6, 7);
+    fn_3_49F40(8, 6);
 }
 
 // .text:0x00040D88 size:0x424 mapped:0x8067FE1C
@@ -840,7 +850,7 @@ void fn_3_49F3C(void) {
 }
 
 // .text:0x00049F40 size:0x1E4 mapped:0x80688FD4
-void fn_3_49F40(void) {
+void fn_3_49F40(int a, int b) {
     return;
 }
 

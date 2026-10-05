@@ -8,6 +8,7 @@ extern u8 lbl_8036E548[];
 
 
 extern u8 g_Minigame[];
+extern int rand(void);
 extern u8 lbl_3_bss_B894[];
 extern void* memset(void*, int, unsigned long);
 #pragma dont_inline on
@@ -58,8 +59,8 @@ void fn_3_148254(void) {
 }
 
 // .text:0x001483D4 size:0x48 mapped:0x80787468
-void fn_3_1483D4(void) {
-    return;
+u8 fn_3_1483D4(void) {
+    return rand() % 5 == 0;
 }
 
 // .text:0x0014841C size:0xAD4 mapped:0x807874B0
@@ -520,13 +521,15 @@ void fn_3_151204(void) {
 }
 
 // .text:0x00151694 size:0x7C mapped:0x80790728
-void fn_3_151694(void) {
+void fn_3_151694(u32 a, u32 b) {
     return;
 }
 
 // .text:0x00151710 size:0x50 mapped:0x807907A4
-void fn_3_151710(void) {
-    return;
+void fn_3_151710(u32 a, u32 b) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 2 && a != 0) {
+        fn_3_151694(a, b);
+    }
 }
 
 // .text:0x00151760 size:0x38 mapped:0x807907F4
