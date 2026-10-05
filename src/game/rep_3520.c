@@ -198,7 +198,13 @@ void fn_3_135E98(void) {
 
 // .text:0x00135F4C size:0xA8 mapped:0x80774FE0
 void fn_3_135F4C(void) {
-    return;
+    s16 t = *(s16*)&G8[0x1D62] + 1;
+    *(s16*)&G8[0x1D62] = t;
+    *(f32*)&G8[0x1D48] = (f32)t / (f32)lbl_3_data_21A60;
+    fn_3_135C18();
+    if (*(s16*)&G8[0x1D62] >= lbl_3_data_21A60) {
+        G8[0x1D72] = 2;
+    }
 }
 
 // .text:0x00135FF4 size:0x54 mapped:0x80775088
