@@ -10,7 +10,7 @@ u32 fn_3_B827C(void);
 void fn_3_B828C(u32 val);
 void fn_3_B8298(void);
 void fn_3_B8414(void* a, void* b);
-void fn_3_B8464(void);
+void fn_3_B8464(void* mtx, void* obj);
 void fn_3_B8574(void);
 u32 fn_3_B85A8(int idx, u32* out);
 void fn_3_B85DC(s32 i, void* a, void* b);

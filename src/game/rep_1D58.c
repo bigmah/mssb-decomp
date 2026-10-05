@@ -34,6 +34,7 @@ struct DspObj {
 };
 extern u32 lbl_3_bss_190C;
 extern u8 g_d_GameSettings[];
+extern void PSMTXMultVec(void*, void*, void*);
 extern void CTRLBuildMatrix(u32, void*);
 extern void PSMTXConcat(void*, void*, void*);
 extern void DOSetWorldMatrix(void*, void*);
@@ -156,8 +157,46 @@ void fn_3_B8414(void* a, void* b) {
 }
 
 // .text:0x000B8464 size:0x110 mapped:0x806F74F8
-void fn_3_B8464(void) {
-    return;
+void fn_3_B8464(void* mtx, void* obj) {
+    f32 out[3];
+    u16 cnt;
+    s32 n;
+    u8* p = *(u8**)((u8*)obj + 8);
+    while (1) {
+        cnt = *(u16*)(p + 2);
+        if (cnt == 0) {
+            break;
+        }
+        if (p[1] != 0) {
+            n = cnt + 2;
+        } else {
+            n = cnt * 3;
+        }
+        p += 4;
+        do {
+            PSMTXMultVec(mtx, p, out);
+            p += 0x10;
+            if (lbl_3_bss_1910[0] > out[0]) {
+                lbl_3_bss_1910[0] = out[0];
+            }
+            if (lbl_3_bss_1910[1] > out[1]) {
+                lbl_3_bss_1910[1] = out[1];
+            }
+            if (lbl_3_bss_1910[2] > out[2]) {
+                lbl_3_bss_1910[2] = out[2];
+            }
+            if (lbl_3_bss_1910[3] < out[0]) {
+                lbl_3_bss_1910[3] = out[0];
+            }
+            if (lbl_3_bss_1910[4] < out[1]) {
+                lbl_3_bss_1910[4] = out[1];
+            }
+            if (lbl_3_bss_1910[5] < out[2]) {
+                lbl_3_bss_1910[5] = out[2];
+            }
+            n--;
+        } while (n != 0);
+    }
 }
 
 // .text:0x000B8574 size:0x34 mapped:0x806F7608
