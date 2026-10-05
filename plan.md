@@ -76,6 +76,12 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Low-byte read-modify-write:** `w = v | (w & ~0xFF)` gives `rlwimi r0, r4, 0, 24, 31`; the other operand order gives swapped operands.
 - **Float literal vs. extern rodata:** comparing against a literal (`0.17f`) instead of the extern rodata symbol can fix `lfs` scheduling; loading an extern float into a local first fixes others.
 - **`switch` on an `s8`** reproduced an odd `beq`/`b` shape; `*(s16*)(p+off) += 1` matched where `x = *p; if (x < N) *p = x + 1` did not.
+- **`add rN, base, off; lwz 8(rN)` (displacement after the add) for `tbl[idx*8 + 8]`:** write `u8* e = tbl; e += idx * 8; p = *(u8**)(e + 8);` (separate pointer, `+=`), not a single expression. Likewise `u8* e = g_X; e += *(s8*)(e + 0x1904) * 2; *(s16*)(e + 0x1898)` re-materializes the base like the original (fn_3_120F5C, fn_3_11F778).
+- **Float constant compare via bool value:** a `cntlzw/srwi./beq` for `x == 2` is `if ((u32)__cntlzw(2 - x) >> 5)` (fn_3_120FF8).
+- **Stubs called with fewer args than the real function:** call through a cast (`((void (*)(void))fn_800B0A14_removeQueue)()`), and pass only the args the original sets up (stale `r4` in `fn_80035CA4(5)`).
+- **Pointer induction loops:** `while (k-- != 0) p = *(u8**)(obj + 8 + k * 4);` gives the `subi r30, r30, 4` induction pointer.
+- **Shared scratchpad dir:** parallel agents share one scratchpad directory; use a private subdirectory for variant files or `a.c` gets clobbered.
+- **Inlined state-queue check (`fn_3_12536C`):** the leaf `fn_3_12536C` is inlined into `fn_3_11F508`-style functions; its return type must be `u32` so the caller emits `cmplwi`.
 - **Still unsolved:** nested early returns that compile to `bge L; b L` (fn_3_15521C, fn_3_150010, fn_3_14DC80, fn_3_14CB28); pooled float constants in float-heavy functions.
 
 Add new patterns to this list as we find them.
