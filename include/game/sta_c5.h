@@ -33,7 +33,7 @@ void fn_3_F1448(void);
 void fn_3_F1518(void);
 void fn_3_F1674(void);
 void fn_3_F1750(void);
-void fn_3_F18A4(void);
+void fn_3_F18A4(u8* p);
 void fn_3_F193C(void);
 void fn_3_F1E2C(void);
 void fn_3_F22FC(void);

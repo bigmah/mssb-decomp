@@ -9,6 +9,9 @@ extern char lbl_3_rodata_2F10[];
 extern f32 lbl_3_rodata_2DEC;
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_B55C[];
+extern u8 lbl_3_bss_B218[];
+extern void fn_800B4CA0(void*, f32);
+extern void AnimateActorBones(void*);
 extern u8 lbl_3_bss_AEE0[];
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_3_data_1BA5C[];
@@ -223,8 +226,14 @@ void fn_3_F1750(void) {
 }
 
 // .text:0x000F18A4 size:0x98 mapped:0x80730938
-void fn_3_F18A4(void) {
-    return;
+void fn_3_F18A4(u8* p) {
+    u8* o = *(u8**)(lbl_8036E548 + 0x6C) + lbl_3_bss_B218[0] * 0x90 + 0x34;
+    *(u8**)(p + 0x74) = o;
+    *(f32*)(o + 0x5C) = 0.0f;
+    o[0x59] = 1;
+    fn_800B4CA0(*(void**)o, *(f32*)(o + 0x5C));
+    *(f32*)(p + 0xB4) += 180.0;
+    AnimateActorBones(*(void**)o);
 }
 
 // .text:0x000F193C size:0x4F0 mapped:0x807309D0
