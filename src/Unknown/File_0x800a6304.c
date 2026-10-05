@@ -28,16 +28,22 @@ void fn_800A6304(void)
     }
 }
 
-// ~98%: instruction order of count2++/stores differs (original stores _00 before _04); register numbering of new_val/base differs
+// 97%: register numbering of new_val/base differs (orig: base r6, new_val r5)
 u32 fn_800A6354(u32 param_1)
 {
     u32 new_val;
+
     param_1 = ALIGN_NEXT(param_1, 32);
+
     new_val = data_803C6780.values2[data_803C6780.count2]._00 - param_1;
+
     data_803C6780.count2++;
-    data_803C6780.values2[data_803C6780.count2]._04 = param_1;
+
     data_803C6780.values2[data_803C6780.count2]._00 = new_val;
+    data_803C6780.values2[data_803C6780.count2]._04 = param_1;
+
     data_803C6780.tempValue = new_val - (data_803C6780.values1[data_803C6780.count1]._00 + data_803C6780.values1[data_803C6780.count1]._04);
+
     return data_803C6780.values2[data_803C6780.count2]._00;
 }
 
