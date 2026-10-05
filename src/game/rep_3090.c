@@ -1,6 +1,8 @@
 #include "game/rep_3090.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_80366158[];
+
 extern u8* lbl_3_common_bss_DE94;
 
 // .text:0x000FC448 size:0x4F0 mapped:0x8073B4DC
@@ -98,8 +100,17 @@ void fn_3_100038(void) {
 }
 
 // .text:0x0010007C size:0x5C mapped:0x8073F110
-void fn_3_10007C(void) {
-    return;
+s32 fn_3_10007C(void) {
+    u8* p = lbl_3_common_bss_DE94;
+    if (p[0x9AB] == 1) {
+        if (*(s32*)(p + 0x14) != 0) {
+            lbl_80366158[0x28] = 1;
+            return 0;
+        }
+        lbl_80366158[0x28] = 0;
+        return 1;
+    }
+    return 1;
 }
 
 // .text:0x001000D8 size:0x1BEC mapped:0x8073F16C

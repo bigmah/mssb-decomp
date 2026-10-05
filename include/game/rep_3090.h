@@ -20,7 +20,7 @@ void fn_3_FDA1C(void);
 void fn_3_FDB30(void);
 s32 fn_3_100018(void);
 void fn_3_100038(void);
-void fn_3_10007C(void);
+s32 fn_3_10007C(void);
 void fn_3_1000D8(void);
 void fn_3_101CC4(void);
 void fn_3_103C30(void);
