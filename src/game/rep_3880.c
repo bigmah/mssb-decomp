@@ -256,8 +256,19 @@ void fn_3_14D44C(void) {
 }
 
 // .text:0x0014D6D4 size:0x3C mapped:0x8078C768
-void fn_3_14D6D4(void) {
-    return;
+extern u8 lbl_3_common_bss_32724[];
+
+void fn_3_14D6D4(u8* p) {
+    *(u32*)(p + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
+    p = *(u8**)(p + 0xC);
+    do {
+        p[0x46] = 0;
+        p[0x45] = 0;
+        p[0x44] = 0;
+        *(s16*)(p + 0x4A) = 0;
+        p[0x4E] = 0;
+        p = *(u8**)p;
+    } while (p != NULL);
 }
 
 // .text:0x0014D710 size:0x570 mapped:0x8078C7A4

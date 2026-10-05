@@ -53,7 +53,7 @@ void fn_3_14CECC(void);
 void fn_3_14D2C0(void);
 void fn_3_14D318(void);
 void fn_3_14D44C(void);
-void fn_3_14D6D4(void);
+void fn_3_14D6D4(u8* p);
 void fn_3_14D710(void);
 void fn_3_14DC80(void);
 void fn_3_14DCE0(void);
