@@ -10,7 +10,11 @@ extern u8* lbl_803CC1B8;
 extern u8 lbl_3_data_281F0[];
 extern u8 lbl_3_data_283F0[];
 extern u8 lbl_3_data_28410[];
-extern u8* lbl_3_bss_B9B8[];
+typedef struct {
+    u8 pad[0x14];
+    u8 f14, f15, f16, f17;
+} Q3D50;
+extern Q3D50* lbl_3_bss_B9B8[];
 extern void* memcpy(void*, const void*, u32);
 extern void fn_8002C2D0(Vec*, Vec*, void*);
 
@@ -80,16 +84,15 @@ void fn_3_160578(void) {
 
 // .text:0x00160814 size:0xDC mapped:0x8079F8A8
 void fn_3_160814(s32 a) {
-    u8* q;
+    Q3D50* q;
     u8 t;
     if (*(s16*)(lbl_3_common_bss_35154 + 0x464) == 0) {
         q = fn_800B0A5C_insertQueue(fn_3_160578, (u16)(*(u16*)(lbl_803CC1B8 + 0x12) + 1));
         lbl_3_bss_B9B8[0] = q;
-        q[0x14] = (a == 4);
-        lbl_3_bss_B9B8[0][0x15] = 0;
-        lbl_3_bss_B9B8[0][0x16] = *(u32*)(lbl_3_data_283F0 + lbl_3_bss_B9B8[0][0x14] * 0x10);
-        lbl_3_bss_B9B8[0][0x17] = 0;
-        t = lbl_3_bss_B9B8[0][0x14];
+        q->f14 = (a == 4);
+        {int i = lbl_3_bss_B9B8[0]->f14; lbl_3_bss_B9B8[0]->f15 = 0; lbl_3_bss_B9B8[0]->f16 = *(u32*)(lbl_3_data_283F0 + i * 0x10);}
+        lbl_3_bss_B9B8[0]->f17 = 0;
+        t = lbl_3_bss_B9B8[0]->f14;
         ((s16*)(lbl_3_common_bss_35154 + 0x47A))[t != 0] = *(u32*)(lbl_3_data_28410 + t * 4);
     }
 }
