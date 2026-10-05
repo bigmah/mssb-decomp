@@ -5,6 +5,10 @@ extern u8 g_Ball[];
 extern u8 g_FieldingLogic[];
 extern f32 g_Runners;
 extern u8 g_Fielders[];
+extern u8 g_GameLogic[];
+extern u8 lbl_3_data_4900[];
+extern int checkFieldingStat(int, int, int);
+extern void playSoundEffect(int);
 extern f32 lbl_3_rodata_1A0C;
 extern f32 lbl_3_rodata_1A10;
 extern f32 lbl_3_rodata_198C;
@@ -300,8 +304,17 @@ void fn_3_A9984(void) {
 }
 
 // .text:0x000A9C74 size:0xAC mapped:0x806E8D08
-void fn_3_A9C74(void) {
-    return;
+void fn_3_A9C74(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int r = checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 5);
+    if (f[0x1F8] >= 3) {
+        f[0x215] = lbl_3_data_4900[r * 3 + 1];
+    } else {
+        f[0x215] = lbl_3_data_4900[r * 3];
+    }
+    if (r != 0 && *(s16*)(g_FieldingLogic + 0xC4) >= 0) {
+        playSoundEffect(0x1A8);
+    }
 }
 
 // .text:0x000A9D20 size:0xD1C mapped:0x806E8DB4

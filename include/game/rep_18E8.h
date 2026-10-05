@@ -53,7 +53,7 @@ void fn_3_A89D4(void);
 void fn_3_A9354(void);
 void fn_3_A96FC(void);
 void fn_3_A9984(void);
-void fn_3_A9C74(void);
+void fn_3_A9C74(int);
 void fn_3_A9D20(void);
 void fn_3_AAA3C(void);
 int fn_3_AABF8(void);
