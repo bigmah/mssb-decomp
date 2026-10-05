@@ -499,32 +499,27 @@ bool32 dataInsertMacro(u16 mid, void *macroaddr)
     }
   }
 
-  if (dataMacTotal < 2048)
+  for (i = 0; i < 512; ++i)
   {
-    for (i = 0; i < 512; ++i)
+    if (dataMacMainTab[i].subTabIndex > base)
     {
-      if (dataMacMainTab[i].subTabIndex > base)
-      {
-        dataMacMainTab[i].subTabIndex++;
-      }
+      dataMacMainTab[i].subTabIndex++;
     }
-
-    i = dataMacTotal - 1;
-    for (; i >= pos; --i)
-    {
-      dataMacSubTabmem[i + 1] = dataMacSubTabmem[i];
-    }
-
-    dataMacSubTabmem[pos].id = mid;
-    dataMacSubTabmem[pos].data = macroaddr;
-    dataMacSubTabmem[pos].refCount = 1;
-    dataMacMainTab[main].num++;
-    dataMacTotal++;
-    hwEnableIrq();
-    return TRUE;
   }
+
+  i = dataMacTotal - 1;
+  for (; i >= pos; --i)
+  {
+    dataMacSubTabmem[i + 1] = dataMacSubTabmem[i];
+  }
+
+  dataMacSubTabmem[pos].id = mid;
+  dataMacSubTabmem[pos].data = macroaddr;
+  dataMacSubTabmem[pos].refCount = 1;
+  dataMacMainTab[main].num++;
+  dataMacTotal++;
   hwEnableIrq();
-  return FALSE;
+  return TRUE;
 }
 
 bool32 dataRemoveMacro(u16 mid)
