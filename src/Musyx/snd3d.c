@@ -6,11 +6,10 @@ static u8 s3dCallCnt;
 static SND_EMITTER *s3dEmitterRoot;
 static SND_LISTENER *s3dListenerRoot;
 static SND_ROOM *s3dRoomRoot;
-static SND_DOOR *s3dDoorRoot;
-static u32 snd_used_studios;
 static u8 snd_base_studio;
 static u8 snd_max_studios;
 static u8 s3dUseMaxVoices;
+static u8 s3dFlag4;
 
 static void CalcEmitter(struct SND_EMITTER *em, f32 *vol, f32 *doppler, f32 *xPan, f32 *yPan,
                         f32 *zPan)
@@ -935,52 +934,16 @@ void s3dHandle()
     CheckDoorStatus();
 }
 
-void sndSetup3DStudios(unsigned char first, unsigned char num)
-{
-    snd_base_studio = first;
-    snd_max_studios = num;
-}
-
-void sndGet3DParameters(SND_3DINFO *info, SND_FVECTOR *pos, SND_FVECTOR *dir, f32 maxDis, f32 comp,
-                        u8 maxVol, u8 minVol, SND_ROOM *room)
-{
-    f32 xPan;  // r1+0x34
-    f32 yPan;  // r1+0x30
-    f32 zPan;  // r1+0x2C
-    f32 cvol;  // r1+0x28
-    f32 pitch; // r1+0x24
-    static SND_EMITTER em;
-    hwDisableIrq();
-
-    em.flags = 8;
-    em.pos = *pos;
-    em.dir = *dir;
-    em.maxDis = maxDis;
-    em.maxVol = maxVol / 127.f;
-    em.minVol = minVol / 127.f;
-    em.volPush = comp;
-    em.room = room;
-
-    CalcEmitter(&em, &cvol, &pitch, &xPan, &yPan, &zPan);
-    info->vol = clip127(cvol * 127.f);
-    info->pan = clip127((xPan + 1.f) * 64.f);
-    info->span = clip127((1.f - zPan) * 64.f);
-    info->doppler = clip3FFF(pitch * 8192.f);
-
-    hwEnableIrq();
-}
-
 void s3dInit(u32 flags)
 {
     s3dEmitterRoot = 0;
     s3dListenerRoot = 0;
     s3dRoomRoot = 0;
-    s3dDoorRoot = 0;
-    snd_used_studios = 0;
     snd_base_studio = 1;
     snd_max_studios = 3;
     s3dCallCnt = 0;
     s3dUseMaxVoices = ((flags & 2) != 0);
+    s3dFlag4 = ((flags & 4) != 0);
 }
 
 void s3dExit() {}
