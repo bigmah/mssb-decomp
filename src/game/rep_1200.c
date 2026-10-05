@@ -4,6 +4,9 @@
 #pragma dont_inline on
 
 extern u8 g_Pitcher[];
+extern u8 g_GameLogic[];
+extern s32 g_Scores;
+extern void fn_3_6EBB4(s32);
 extern u8 g_Ball[];
 typedef struct {
     int strikes, balls, outs, storedOuts, f10, f14;
@@ -256,7 +259,17 @@ void fn_3_753E8(int a) {
 
 // .text:0x00075434 size:0x84 mapped:0x806B44C8
 void fn_3_75434(void) {
-    return;
+    fn_3_6EBB4(*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0x10) * 0x50 + 0x3C));
+    g_Pitcher[0x13E] = 0;
+    *(s16*)(g_Pitcher + 0x120) = 0;
+    g_Pitcher[0x159] = 0;
+    g_Pitcher[0x15A] = 0;
+    *(f32*)(g_Pitcher + 0x8C) = lbl_3_data_446C[0];
+    *(f32*)(g_Pitcher + 0x90) = lbl_3_data_446C[1];
+    g_Pitcher[0x15E] = 0;
+    if (g_Scores == 1) {
+        g_Pitcher[0x173] = 1;
+    }
 }
 
 // .text:0x000754B8 size:0xA8 mapped:0x806B454C
