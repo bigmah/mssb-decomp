@@ -5,6 +5,30 @@ extern u8 lbl_3_data_11168[];
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_bss_1910[];
 extern f32 lbl_3_rodata_1DD0[];
+
+typedef struct DspObj DspObj;
+struct DspObj {
+    u8 pad0[0x14];
+    void* w14;
+    u8 pad18[0x4C];
+    void* w64;
+    void* w68;
+    u8 pad6C[8];
+    DspObj* child;
+    u8 pad78[4];
+    void* w7C;
+    u8 pad80[0x6C];
+    void* wEC;
+    u8 padF0[0x10];
+    DspObj* next;
+};
+extern u32 lbl_3_bss_190C;
+extern u8 g_d_GameSettings[];
+extern void CTRLBuildMatrix(u32, void*);
+extern void PSMTXConcat(void*, void*, void*);
+extern void DOSetWorldMatrix(void*, void*);
+extern void DOVARenderSkin(void*, void*, void*, void*, int, int);
+extern void fn_8003A8A0();
 extern f32 lbl_3_rodata_1DD4;
 extern u8 lbl_3_common_bss_350E4[];
 extern u32 lbl_3_bss_1904;
@@ -65,8 +89,31 @@ void fn_3_B80D0(void) {
 }
 
 // .text:0x000B8184 size:0xF8 mapped:0x806F7218
-void fn_3_B8184(void) {
-    return;
+void fn_3_B8184(void* pp, void* cam) {
+    f32 m2[12];
+    f32 m[12];
+    DspObj* o;
+    DspObj* n;
+    CTRLBuildMatrix(lbl_3_bss_190C, m);
+    if (!(m[7] > lbl_3_rodata_1DCC) || g_d_GameSettings[9] != 1) {
+        PSMTXConcat(cam, m, m2);
+        o = *(DspObj**)pp;
+        n = o->child;
+        if (o->w14 != 0) {
+            if (o->w7C != 0) {
+                fn_8003A8A0(o->w14, m2, 1);
+            } else {
+                DOVARenderSkin(o->w14, m2, o->w64, o->w68, 0, 0);
+            }
+        }
+        while (n != 0) {
+            if (n->w14 != 0) {
+                DOSetWorldMatrix(n->w14, n->wEC);
+                fn_8003A8A0(n->w14, m2, 0);
+            }
+            n = n->next;
+        }
+    }
 }
 
 // .text:0x000B827C size:0x10 mapped:0x806F7310

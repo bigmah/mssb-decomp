@@ -5,7 +5,7 @@
 
 void fn_3_B7FC8(void);
 void fn_3_B80D0(void);
-void fn_3_B8184(void);
+void fn_3_B8184(void* pp, void* cam);
 u32 fn_3_B827C(void);
 void fn_3_B828C(u32 val);
 void fn_3_B8298(void);
