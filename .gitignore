@@ -34,3 +34,6 @@ compile_commands.json
 # Miscellaneous
 /*.txt
 *.exe
+
+# Local Python env (m2c), created by tools/setup.py
+.venv/
