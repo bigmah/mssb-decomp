@@ -1,7 +1,13 @@
 #include "game/rep_E08.h"
 #include "header_rep_data.h"
 
+#pragma dont_inline on
+
 extern u8 g_Fielders[];
+extern u8 g_Runners[];
+extern u8 g_d_GameSettings[];
+extern u8 g_Minigame[];
+extern u8 lbl_3_common_bss_321A0[];
 extern u8 g_Ball[];
 extern u8 g_FieldingLogic[];
 extern u8 lbl_8036E548[];
@@ -104,18 +110,36 @@ void fn_3_62E70(void) {
 }
 
 // .text:0x000631AC size:0x6C8 mapped:0x806A2240
-void fn_3_631AC(void) {
+void fn_3_631AC(s32 a) {
     return;
 }
 
 // .text:0x00063874 size:0x1C4 mapped:0x806A2908
-void fn_3_63874(void) {
+void fn_3_63874(s32 a) {
     return;
 }
 
 // .text:0x00063A38 size:0xC0 mapped:0x806A2ACC
+typedef struct { u8 d[0x154]; } E08Run;
+typedef struct { u8 d[0x20]; } E08C;
 void fn_3_63A38(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        u8* r = ((E08Run*)g_Runners)[i].d;
+        u8* c = ((E08C*)lbl_3_common_bss_321A0)[i].d;
+        c[0x1C] = c[0x1B];
+        if (g_d_GameSettings[0x11] == 0 || (s8)g_Minigame[0x18FC + i] >= 0) {
+            if (r[0x123] == 0) {
+                c[0x1B] = 0;
+            } else {
+                c[0x1B] = 3;
+                *(f32*)c = *(f32*)(r + 0x84);
+                c[0x1D] = r[0x137];
+                fn_3_63874(i);
+                fn_3_631AC(i);
+            }
+        }
+    }
 }
 
 // .text:0x00063AF8 size:0x10E4 mapped:0x806A2B8C
