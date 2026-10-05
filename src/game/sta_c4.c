@@ -1,6 +1,13 @@
 #include "game/sta_c4.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_3_bss_B5D4;
+
+// .text:0x000F8444 size:0x10
+void fn_3_F8444(void) {
+    lbl_3_bss_B5D4 = 1;
+}
+
 // .text:0x000F8524 size:0x8C mapped:0x807375B8
 void fn_3_F8524(void) {
     return;

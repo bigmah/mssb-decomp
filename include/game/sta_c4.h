@@ -27,5 +27,6 @@ void fn_3_FA3C0(void);
 void fn_3_FA58C(void);
 void fn_3_FB3D8(void);
 void fn_3_FBBA0(void);
+void fn_3_F8444(void);
 
 #endif // !__GAME_sta_c4_H_
