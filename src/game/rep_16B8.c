@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_F390[];
+extern u8 fn_3_ED574[];
 extern u8 lbl_80371C30[];
 extern u8 lbl_3_data_BF6C[];
 
@@ -142,7 +143,10 @@ void fn_3_94760(void) {
 
 // .text:0x000948B8 size:0x78 mapped:0x806D394C
 void fn_3_948B8(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] != 0x17 || (*(u8**)(lbl_80371C30 + *(u16*)((u8*)p + 0x14) * 8))[0x69] == 2) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x00094930 size:0x4C mapped:0x806D39C4
@@ -257,7 +261,12 @@ void fn_3_9669C(void) {
 
 // .text:0x00096914 size:0x78 mapped:0x806D59A8
 void fn_3_96914(void) {
-    return;
+    if (lbl_3_common_bss_32724[0xC7] == 0 && g_GameLogic[0x12D] != 0) {
+        fn_800B0A5C_insertQueue(fn_3_9669C, 2);
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            fn_800B0A5C_insertQueue(fn_3_ED574, 2);
+        }
+    }
 }
 
 // .text:0x0009698C size:0x318 mapped:0x806D5A20
