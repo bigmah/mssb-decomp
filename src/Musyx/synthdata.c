@@ -406,12 +406,15 @@ bool32 dataInsertFX(u16 gid, struct FX_TAB *fx, u16 fxNum)
   {
   }
 
-  if (i == dataFXGroupNum && dataFXGroupNum < 128)
+  if (i == dataFXGroupNum)
   {
+    if (dataFXGroupNum < 128)
+    {
     hwDisableIrq();
     dataFXGroups[dataFXGroupNum].gid = gid;
     dataFXGroups[dataFXGroupNum].fxNum = fxNum;
     dataFXGroups[dataFXGroupNum].fxTab = fx;
+    dataFXGroups[dataFXGroupNum].refCnt = 1;
 
     for (i = 0; i < fxNum; ++i, ++fx)
     {
@@ -421,6 +424,11 @@ bool32 dataInsertFX(u16 gid, struct FX_TAB *fx, u16 fxNum)
     dataFXGroupNum++;
     hwEnableIrq();
     return TRUE;
+    }
+  }
+  else
+  {
+    ++dataFXGroups[i].refCnt;
   }
   return FALSE;
 }
@@ -436,14 +444,18 @@ bool32 dataRemoveFX(u16 gid)
 
   if (i != dataFXGroupNum)
   {
-    hwDisableIrq();
-    for (j = i + 1; j < dataFXGroupNum; j++)
+    --dataFXGroups[i].refCnt;
+    if (dataFXGroups[i].refCnt == 0)
     {
-      dataFXGroups[j - 1] = dataFXGroups[j];
-    }
+      hwDisableIrq();
+      for (j = i + 1; j < dataFXGroupNum; j++)
+      {
+        dataFXGroups[j - 1] = dataFXGroups[j];
+      }
 
-    --dataFXGroupNum;
-    hwEnableIrq();
+      --dataFXGroupNum;
+      hwEnableIrq();
+    }
     return TRUE;
   }
   return FALSE;
