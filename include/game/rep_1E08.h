@@ -13,7 +13,7 @@ void fn_3_BBBC4(void);
 void fn_3_BBF94(void);
 void fn_3_BC224(void);
 void fn_3_BC25C(void);
-void fn_3_BC274(void);
+s32 fn_3_BC274(u8* a, u8* b, u8* c);
 void fn_3_BC2DC(void);
 void fn_3_BC6D8(void);
 void fn_3_BC850(void);
