@@ -109,8 +109,11 @@ void fn_3_B91C8(void) {
 }
 
 // .text:0x000B939C size:0x28 mapped:0x806F8430
+extern u8 lbl_3_common_bss_350E4[];
+extern u8 g_GameLogic[];
+
 void fn_3_B939C(void) {
-    return;
+    lbl_3_common_bss_350E4[0x6C] = (g_GameLogic[0x11E] == 2);
 }
 
 // .text:0x000B93C4 size:0x4 mapped:0x806F8458
