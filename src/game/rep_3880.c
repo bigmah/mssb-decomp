@@ -348,7 +348,22 @@ void fn_3_14E7C0(u32 a) {
 
 // .text:0x0014E810 size:0x84 mapped:0x8078D8A4
 void fn_3_14E810(void) {
-    return;
+    u32 i = 0;
+    do {
+        u8* p = fn_800339F0(0, 0x1E);
+        if (p != NULL) {
+            u8* q = *(u8**)(p + 0xC);
+            s32 v = (s8)i + 1;
+            do {
+                if (q[0x4C] == v) {
+                    *(s16*)(q + 0x4A) = 0;
+                }
+                q = *(u8**)q;
+            } while (q != NULL);
+        }
+        i++;
+    } while (i < 4);
+    pitchingMachinePitching(0x1E);
 }
 
 // .text:0x0014E894 size:0x8C mapped:0x8078D928
