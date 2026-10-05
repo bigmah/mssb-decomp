@@ -98,7 +98,7 @@ void fn_3_1531A4(void);
 void fn_3_1534C0(void);
 void fn_3_1536A8(void);
 void fn_3_153E8C(void);
-void fn_3_153F8C(void);
+void fn_3_153F8C(void* h, u32 a, u32 b, u32 c);
 void fn_3_1540E4(u32 a, u32 b, u32 c);
 void fn_3_1541C4(u32 a, u32 b, u32 c);
 void fn_3_154214(void);

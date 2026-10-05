@@ -4,6 +4,7 @@
 extern u8 lbl_3_data_26C94[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_26D5C[];
+extern u8 lbl_3_data_26BDC[];
 
 extern u8 lbl_8036E548[];
 #include "static/UnknownHomes_Static.h"
@@ -667,13 +668,30 @@ void fn_3_153E8C(void) {
 }
 
 // .text:0x00153F8C size:0x158 mapped:0x80793020
-void fn_3_153F8C(void) {
+void fn_3_153F8C(void* h, u32 a, u32 b, u32 c) {
     return;
 }
 
 // .text:0x001540E4 size:0xE0 mapped:0x80793178
 void fn_3_1540E4(u32 a, u32 b, u32 c) {
-    return;
+    u8* p;
+    u8* h = fn_800339F0(0, 0x1C);
+    if (h != NULL) {
+        fn_3_153F8C(h, a, b, c);
+        return;
+    }
+    h = fn_80033A24(fn_3_151F2C, 0x80, 0, *(int*)lbl_3_data_26BDC * 0xF, 1, 0x1C);
+    if (h != NULL) {
+        p = *(u8**)(h + 0xC);
+        do {
+            *(s16*)(p + 0x4A) = 0;
+            p[0x4C] = 0;
+            p[0x4F] = 0xFF;
+            p = *(u8**)p;
+        } while (p != NULL);
+        fn_3_153F8C(h, a, b, c);
+        memset(lbl_3_bss_B894, 0, 0xF);
+    }
 }
 
 // .text:0x001541C4 size:0x50 mapped:0x80793258
