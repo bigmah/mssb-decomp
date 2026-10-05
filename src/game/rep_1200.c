@@ -44,8 +44,11 @@ void fn_3_703EC(void) {
 }
 
 // .text:0x00070680 size:0x38 mapped:0x806AF714
-void fn_3_70680(void) {
-    return;
+int fn_3_70680(f32 v) {
+    if (v >= *(f32*)(g_Pitcher + 0x7C) && v <= *(f32*)(g_Pitcher + 0x80)) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000706B8 size:0xB0 mapped:0x806AF74C

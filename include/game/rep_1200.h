@@ -11,7 +11,7 @@ void fn_3_6FDA0(void);
 void fn_3_6FFC4(void);
 void fn_3_70280(void);
 void fn_3_703EC(void);
-void fn_3_70680(void);
+int fn_3_70680(f32 v);
 void fn_3_706B8(void);
 void fn_3_70768(void);
 void fn_3_70838(void);
