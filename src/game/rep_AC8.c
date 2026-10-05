@@ -3,6 +3,9 @@
 
 extern u8 g_Ball[];
 extern u8 g_Fielders[];
+extern u8 g_FieldingLogic[];
+extern u8 lbl_3_data_3C40[];
+extern u8 lbl_3_data_4930[];
 extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_1498;
 #pragma dont_inline on
@@ -289,8 +292,25 @@ void fn_3_30214(void) {
 }
 
 // .text:0x00030564 size:0xB8 mapped:0x8066F5F8
-void fn_3_30564(void) {
-    return;
+int fn_3_30564(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (f[0x25E] == 3) {
+        f32 k = *(f32*)(lbl_3_data_4930 + 0x38);
+        *(f32*)(f + 0x150) = *(f32*)(f + 0x150) * k;
+        *(f32*)(f + 0x158) = *(f32*)(f + 0x158) * k;
+        *(f32*)(f + 0x0) = *(f32*)(f + 0x0) + *(f32*)(f + 0x150);
+        *(f32*)(f + 0x8) = *(f32*)(f + 0x8) + *(f32*)(f + 0x158);
+        *(f32*)(f + 0x14) = *(f32*)(f + 0x0);
+        *(f32*)(f + 0x1C) = *(f32*)(f + 0x8);
+        f[0x1F0] = 1;
+    } else if (f[0x25E] == 4) {
+        *(f32*)(f + 0x50) = lbl_3_rodata_1498;
+        f[0x25F] = f[0x25F] - 1;
+        if (f[0x25F] == 0) {
+            f[0x25E] = 0;
+        }
+    }
+    return 1;
 }
 
 // .text:0x0003061C size:0x29C mapped:0x8066F6B0
@@ -421,13 +441,20 @@ void fn_3_361D8(void) {
 }
 
 // .text:0x000365D0 size:0xA8 mapped:0x80675664
-void fn_3_365D0(void) {
-    return;
+int fn_3_365D0(int a, int b, int c, f32 x, f32 y) {
+    int r = fn_3_36678(b, c, x, y, 1);
+    if (r == -1) {
+        return a;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xB0) < 0) {
+        return fn_3_36678(a, r, x, y, 1);
+    }
+    return fn_3_36678(a, r, x, y, 0);
 }
 
 // .text:0x00036678 size:0xA9C mapped:0x8067570C
-void fn_3_36678(void) {
-    return;
+int fn_3_36678(int a, int b, f32 x, f32 y, int c) {
+    return 0;
 }
 
 // .text:0x00037114 size:0x2F8 mapped:0x806761A8
@@ -556,7 +583,6 @@ void fn_3_3B764(void) {
 }
 
 // .text:0x0003B99C size:0x48 mapped:0x8067AA30
-extern u8 g_FieldingLogic[];
 extern s16 lbl_3_bss_170;
 
 void fn_3_3B99C(void) {
@@ -637,8 +663,8 @@ void fn_3_3D6AC(void) {
 }
 
 // .text:0x0003D7D4 size:0x3A4 mapped:0x8067C868
-void fn_3_3D7D4(void) {
-    return;
+s16 fn_3_3D7D4(void) {
+    return 0;
 }
 
 // .text:0x0003DB78 size:0x7D4 mapped:0x8067CC0C
