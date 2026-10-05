@@ -51,4 +51,6 @@ void fn_3_C823C(void);
 void fn_3_C82B4(void);
 void fn_3_C8650(void);
 
+void fn_3_C1964(void);
+
 #endif // !__GAME_rep_1FD8_H_
