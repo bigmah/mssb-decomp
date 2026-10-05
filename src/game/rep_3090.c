@@ -1,7 +1,11 @@
 #include "game/rep_3090.h"
 #include "header_rep_data.h"
+#include "Dolphin/mtxext.h"
 
 extern u8 lbl_80366158[];
+extern Vec lbl_3_data_21004;
+extern Vec lbl_3_data_20FF8;
+extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
 
@@ -159,18 +163,21 @@ void fn_3_1048E0(void) {
 }
 
 // .text:0x00104A3C size:0x4C mapped:0x80743AD0
-void fn_3_104A3C(void) {
-    return;
+void fn_3_104A3C(void* dst, void* mtx) {
+    PSMTX44MultVec(mtx, &lbl_3_data_21004, dst);
+    PSVECNormalize(dst, dst);
 }
 
 // .text:0x00104A88 size:0x4C mapped:0x80743B1C
-void fn_3_104A88(void) {
-    return;
+void fn_3_104A88(void* dst, void* mtx) {
+    PSMTX44MultVec(mtx, &lbl_3_data_20FF8, dst);
+    PSVECNormalize(dst, dst);
 }
 
 // .text:0x00104AD4 size:0x4C mapped:0x80743B68
-void fn_3_104AD4(void) {
-    return;
+void fn_3_104AD4(void* dst, void* mtx) {
+    PSMTX44MultVec(mtx, &lbl_3_data_20FEC, dst);
+    PSVECNormalize(dst, dst);
 }
 
 // .text:0x00104B20 size:0x1C mapped:0x80743BB4
