@@ -345,13 +345,33 @@ void fn_3_14E894(void) {
 }
 
 // .text:0x0014E920 size:0x68 mapped:0x8078D9B4
-void fn_3_14E920(void) {
-    return;
+void fn_3_14E920(s8 a) {
+    u8* p = fn_800339F0(0, 0x1E);
+    if (p != NULL) {
+        u8* q = *(u8**)(p + 0xC);
+        s32 v = a + 1;
+        do {
+            if (q[0x4C] == v) {
+                *(s16*)(q + 0x4A) = 0;
+            }
+            q = *(u8**)q;
+        } while (q != NULL);
+    }
 }
 
 // .text:0x0014E988 size:0x68 mapped:0x8078DA1C
-void fn_3_14E988(void) {
-    return;
+void fn_3_14E988(s8 a) {
+    u8* p = fn_800339F0(0, 0x1E);
+    if (p != NULL) {
+        u8* q = *(u8**)(p + 0xC);
+        s32 v = a + 1;
+        do {
+            if (q[0x4C] == v) {
+                *(s16*)(q + 0x4A) = 0;
+            }
+            q = *(u8**)q;
+        } while (q != NULL);
+    }
 }
 
 // .text:0x0014E9F0 size:0x104 mapped:0x8078DA84
