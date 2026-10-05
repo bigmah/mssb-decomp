@@ -1,9 +1,9 @@
-#include "musyx/assert.h"
 #include "musyx/hardware.h"
 #include "musyx/musyx_priv.h"
 
 static SDIR_TAB dataSmpSDirs[128];
-static u16 dataSmpSDirNum;
+static u16 dataSmpDirNum;
+static SDIR_DATA *dataSmpCurDir;
 static DATA_TAB dataCurveTab[2048];
 static u16 dataCurveNum;
 static DATA_TAB dataKeymapTab[256];
@@ -257,50 +257,35 @@ bool32 dataRemoveCurve(u16 sid)
 
 bool32 dataInsertSDir(SDIR_DATA *sdir, void *smp_data)
 {
-  s32 i;        // r31
-  SDIR_DATA *s; // r25
-  u16 n;        // r27
-  u16 j;        // r29
-  u16 k;        // r26
-  for (i = 0; i < dataSmpSDirNum && dataSmpSDirs[i].data != sdir; ++i)
+  s32 i;
+  SDIR_DATA *s;
+  u16 n;
+  u16 j;
+
+  for (i = 0; i < dataSmpDirNum && dataSmpSDirs[i].data != sdir; ++i)
     ;
 
-  if (i == dataSmpSDirNum)
+  dataSmpCurDir = sdir;
+  if (i == dataSmpDirNum)
   {
-    if (dataSmpSDirNum < 128)
+    if (dataSmpDirNum < 128)
     {
+      hwDisableIrq();
       n = 0;
       for (s = sdir; s->id != 0xffff; ++s)
       {
         ++n;
       }
 
-      hwDisableIrq();
       for (j = 0; j < n; ++j)
       {
-        for (i = 0; i < dataSmpSDirNum; ++i)
-        {
-          for (k = 0; k < dataSmpSDirs[i].numSmp; ++k)
-          {
-            if (sdir[j].id == dataSmpSDirs[i].data[k].id)
-              goto found_id;
-          }
-        }
-      found_id:
-        if (i != dataSmpSDirNum)
-        {
-          sdir[j].ref_cnt = 0xffff;
-        }
-        else
-        {
-          sdir[j].ref_cnt = 0;
-        }
+        sdir[j].ref_cnt = 0;
       }
 
-      dataSmpSDirs[dataSmpSDirNum].data = sdir;
-      dataSmpSDirs[dataSmpSDirNum].numSmp = n;
-      dataSmpSDirs[dataSmpSDirNum].base = smp_data;
-      ++dataSmpSDirNum;
+      dataSmpSDirs[dataSmpDirNum].data = sdir;
+      dataSmpSDirs[dataSmpDirNum].numSmp = n;
+      dataSmpSDirs[dataSmpDirNum].base = smp_data;
+      ++dataSmpDirNum;
       hwEnableIrq();
       return 1;
     }
@@ -315,71 +300,33 @@ bool32 dataInsertSDir(SDIR_DATA *sdir, void *smp_data)
 
 bool32 dataRemoveSDir(struct SDIR_DATA *sdir)
 {
-  long i;          // r28
-  long j;          // r30
-  long index;      // r27
-  SDIR_DATA *data; // r31
+  long i;
+  long j;
+  SDIR_DATA *data;
 
-  index = 0;
-  for (; index < dataSmpSDirNum && dataSmpSDirs[index].data != sdir; ++index)
+  i = 0;
+  for (; i < dataSmpDirNum && dataSmpSDirs[i].data != sdir; ++i)
   {
   }
 
-  if (index != dataSmpSDirNum)
+  if (i != dataSmpDirNum)
   {
-
     hwDisableIrq();
 
     for (data = sdir; data->id != 0xFFFF; ++data)
     {
-      if (data->ref_cnt != 0xFFFF && data->ref_cnt != 0)
+      if (data->ref_cnt != 0)
         break;
     }
 
     if (data->id == 0xFFFF)
     {
-      data = sdir;
-
-      for (data = sdir; data->id != 0xFFFF; ++data)
-      {
-        if (data->ref_cnt != 0xFFFF)
-        {
-          for (i = 0; i < dataSmpSDirNum; ++i)
-          {
-            if (dataSmpSDirs[i].data == sdir)
-              continue;
-            for (j = 0; j < dataSmpSDirs[i].numSmp; ++j)
-            {
-              if (data->id == dataSmpSDirs[i].data[j].id &&
-                  dataSmpSDirs[i].data[j].ref_cnt == 0xFFFF)
-              {
-                dataSmpSDirs[i].data[j].ref_cnt = 0;
-                break;
-              }
-            }
-
-            if (j != dataSmpSDirs[i].numSmp)
-            {
-              break;
-            }
-          }
-        }
-        else
-        {
-        }
-      }
-      data = sdir;
-      for (; data->id != 0xFFFF; ++data)
-      {
-        data->ref_cnt = 0;
-      }
-
-      for (j = index + 1; j < dataSmpSDirNum; ++j)
+      for (j = i + 1; j < dataSmpDirNum; ++j)
       {
         dataSmpSDirs[j - 1] = dataSmpSDirs[j];
       }
 
-      --dataSmpSDirNum;
+      --dataSmpDirNum;
       hwEnableIrq();
       return TRUE;
     }
@@ -389,55 +336,59 @@ bool32 dataRemoveSDir(struct SDIR_DATA *sdir)
   return FALSE;
 }
 
-bool32 dataAddSampleReference(u16 sid)
+bool32 dataAddSampleReference(u16 sid, void *smpData)
 {
-  u32 i;                 // r29
-  SAMPLE_HEADER *header; // r1+0xC
-  SDIR_DATA *data;       // r30
-  SDIR_DATA *sdir;       // r31
+  u32 i;
+  SAMPLE_HEADER *header;
+  SDIR_DATA *data;
+  SDIR_DATA *sdir;
+  SDIR_TAB *tab;
 
-  data = NULL;
   sdir = NULL;
-  for (i = 0; i < dataSmpSDirNum; ++i)
+  for (i = 0; i < dataSmpDirNum; ++i)
   {
     for (data = dataSmpSDirs[i].data; data->id != 0xFFFF; ++data)
     {
-      if (data->id == sid && data->ref_cnt != 0xFFFF)
+      if (data->id == sid)
       {
-        sdir = data;
-        goto done;
+        if (data->ref_cnt != 0)
+        {
+          ++data->ref_cnt;
+          return TRUE;
+        }
+        if (dataSmpCurDir == dataSmpSDirs[i].data)
+        {
+          sdir = data;
+          tab = &dataSmpSDirs[i];
+        }
+        break;
       }
     }
   }
-done:
 
-  if (sdir->ref_cnt == 0)
-  {
-    sdir->addr = (void *)(sdir->offset + (s32)dataSmpSDirs[i].base);
-    header = &sdir->header;
-    hwSaveSample(&header, &sdir->addr);
-  }
-
+  sdir->addr = (void *)(sdir->offset + (u32)tab->base);
+  header = &sdir->header;
+  hwSaveSample(&header, &sdir->addr, smpData);
   sdir->ref_cnt = 1;
   return TRUE;
 }
 
-bool32 dataRemoveSampleReference(u16 sid)
+bool32 dataRemoveSampleReference(u16 sid, void *smpData)
 {
-  u32 i;           // r30
-  SDIR_DATA *sdir; // r31
+  u32 i;
+  SDIR_DATA *sdir;
 
-  for (i = 0; i < dataSmpSDirNum; ++i)
+  for (i = 0; i < dataSmpDirNum; ++i)
   {
     for (sdir = dataSmpSDirs[i].data; sdir->id != 0xFFFF; ++sdir)
     {
-      if (sdir->id == sid && sdir->ref_cnt != 0xFFFF)
+      if (sdir->id == sid && sdir->ref_cnt != 0)
       {
         --sdir->ref_cnt;
 
         if (sdir->ref_cnt == 0)
         {
-          hwRemoveSample(&sdir->header, sdir->addr, 0);
+          hwRemoveSample(&sdir->header, sdir->addr, smpData);
         }
 
         return TRUE;
@@ -643,7 +594,7 @@ long dataGetSample(u16 sid, SAMPLE_INFO *newsmp)
 
   key.id = sid;
 
-  for (i = 0; i < dataSmpSDirNum; ++i)
+  for (i = 0; i < dataSmpDirNum; ++i)
   {
     if ((result = sndBSearch(&key, dataSmpSDirs[i].data, dataSmpSDirs[i].numSmp, sizeof(SDIR_DATA),
                              smpcmp)) != NULL)
@@ -743,7 +694,7 @@ void dataInit(u32 smpBase, u32 smpLength)
 {
   long i; // r31
 
-  dataSmpSDirNum = 0;
+  dataSmpDirNum = 0;
   dataCurveNum = 0;
   dataKeymapNum = 0;
   dataLayerNum = 0;

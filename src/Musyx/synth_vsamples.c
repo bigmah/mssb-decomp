@@ -51,32 +51,43 @@ void vsFreeBuffer(u8 bufferIndex) {
 }
 
 u32 vsSampleStartNotify(u32 voice) {
-  u8 sb;    // r29
-  u8 i;     // r28
-  u32 addr; // r27
+  u8 sb;
+  u8 i;
+  u32 addr;
+  u32 pid;
+  u32 v = voice & 0xFF;
 
   for (i = 0; i < vs.numBuffers; ++i) {
-    if (vs.streamBuffer[i].state != 0 && vs.streamBuffer[i].voice == voice) {
+    if (vs.streamBuffer[i].state != 0 && vs.streamBuffer[i].voice == v) {
       vsFreeBuffer(i);
     }
   }
 
-  sb = vs.voices[voice] = vsAllocateBuffer();
+  sb = vsAllocateBuffer();
+  vs.voices[v] = sb;
   if (sb != 0xFF) {
-    addr = aramGetStreamBufferAddress(vs.voices[voice], 0);
-    hwSetVirtualSampleLoopBuffer(voice, (void*)addr, vs.bufferLength);
-    vs.streamBuffer[sb].info.smpID = hwGetSampleID(voice);
+    addr = aramGetStreamBufferAddress(vs.voices[v], 0);
+    hwSetVirtualSampleLoopBuffer(v, (void*)addr, vs.bufferLength);
+    vs.streamBuffer[sb].info.smpID = hwGetSampleID(v);
     vs.streamBuffer[sb].info.instID = vsNewInstanceID();
-    vs.streamBuffer[sb].smpType = hwGetSampleType(voice);
-    vs.streamBuffer[sb].voice = voice;
-    if (vs.callback != NULL) {
-      vs.callback(0, &vs.streamBuffer[sb].info);
-
-      return (vs.streamBuffer[sb].info.instID << 8) | voice;
+    pid = vidGetPublicId(voice);
+    vs.streamBuffer[sb].info.pubID = pid;
+    if (vs.streamBuffer[sb].info.pubID != 0xFFFFFFFF) {
+      vs.streamBuffer[sb].info.numInst = seqGetInstancesForVoice(vs.streamBuffer[sb].info.pubID);
+    } else {
+      vs.streamBuffer[sb].info.numInst = 0xFFFFFFFF;
     }
-    hwSetVirtualSampleLoopBuffer(voice, 0, 0);
+    vs.streamBuffer[sb].info.data.extra = hwGetSampleExtraData(v);
+    vs.streamBuffer[sb].smpType = hwGetSampleType(v);
+    vs.streamBuffer[sb].voice = v;
+    if (vs.callback != NULL && vs.callback(0, &vs.streamBuffer[sb].info) == 0) {
+      return (vs.streamBuffer[sb].info.instID << 8) | v;
+    }
+    hwSetVirtualSampleLoopBuffer(v, 0, 0);
+    vs.streamBuffer[sb].state = 0;
+    vs.voices[vs.streamBuffer[sb].voice] = 0xFF;
   } else {
-    hwSetVirtualSampleLoopBuffer(voice, 0, 0);
+    hwSetVirtualSampleLoopBuffer(v, 0, 0);
   }
 
   return 0xFFFFFFFF;

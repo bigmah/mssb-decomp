@@ -448,8 +448,8 @@ typedef struct SND_VIRTUALSAMPLE_INFO {
   // total size: 0x1c
   u16 smpID;  // offset 0x0, size 0x2
   u16 instID; // offset 0x2, size 0x2
-  u32 unk4;
-  u32 unk8;
+  u32 pubID;
+  u32 numInst;
   union vsData {
     struct vsUpdate {
       // total size: 0x10
@@ -458,6 +458,7 @@ typedef struct SND_VIRTUALSAMPLE_INFO {
       u32 off2; // offset 0x8, size 0x4
       u32 len2; // offset 0xC, size 0x4
     } update;
+    u32 extra;
   } data;
 } SND_VIRTUALSAMPLE_INFO;
 
@@ -822,10 +823,11 @@ typedef struct FX_DATA {
 } FX_DATA;
 
 typedef struct FX_GROUP {
-  // total size: 0x8
+  // total size: 0xC
   u16 gid;       // offset 0x0, size 0x2
   u16 fxNum;     // offset 0x2, size 0x2
-  FX_TAB* fxTab; // offset 0x4, size 0x4
+  u32 unk4;      // offset 0x4, size 0x4
+  FX_TAB* fxTab; // offset 0x8, size 0x4
 } FX_GROUP;
 
 typedef struct PAGE {
@@ -889,8 +891,8 @@ u32 dataInsertCurve(u16 cid, void* curvedata);
 u32 dataRemoveCurve(u16 sid);
 s32 dataGetSample(u16 sid, SAMPLE_INFO* newsmp);
 void* dataGetCurve(u16 cid);
-u32 dataAddSampleReference(u16 sid);
-u32 dataRemoveSampleReference(u16 sid);
+u32 dataAddSampleReference(u16 sid, void* smpData);
+u32 dataRemoveSampleReference(u16 sid, void* smpData);
 u32 dataInsertKeymap(u16 cid, void* keymapdata);
 u32 dataRemoveKeymap(u16 sid);
 u32 dataInsertLayer(u16 cid, void* layerdata, u16 size);
