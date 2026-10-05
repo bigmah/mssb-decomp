@@ -1,5 +1,7 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
+extern f32 lbl_3_data_4A34[];
+typedef struct { f32 x, z; } P2;
 
 extern f32 lbl_3_rodata_1498;
 
@@ -12,6 +14,7 @@ extern u8 g_Scores[];
 
 extern u8 g_Batter[];
 extern u8 g_Runners[];
+extern int g_Strikes[];
 extern u8 g_Practice[];
 extern u8 g_RunningLogic[];
 extern u8 g_Minigame[];
@@ -111,9 +114,14 @@ void fn_3_7FED4(void) {
 }
 
 // .text:0x0007FFD0 size:0x58 mapped:0x806BF064
-void fn_3_7FFD0(void) {
-    return;
+#pragma fp_contract off
+void fn_3_7FFD0(f32* out, int a, int b, f32 t) {
+    f32* T = lbl_3_data_4A34;
+    out[0] = t * (T[b * 2] - T[a * 2]) + T[a * 2];
+    out[2] = t * (T[b * 2 + 1] - T[a * 2 + 1]) + T[a * 2 + 1];
+    out[1] = 0.0f;
 }
+#pragma fp_contract on
 
 // .text:0x00080028 size:0x109C mapped:0x806BF0BC
 void fn_3_80028(void) {
@@ -370,8 +378,25 @@ void fn_3_88D88(void) {
 }
 
 // .text:0x00088F98 size:0x90 mapped:0x806C802C
+typedef struct { u8 b[0x154]; } RunnerT;
 void fn_3_88F98(void) {
-    return;
+    int i;
+    RunnerT* rs = (RunnerT*)g_Runners;
+    for (i = 0; i < 4; i++) {
+        if (i == 0) {
+            fn_3_85EF4(i, 1);
+        }
+        if (i == 0) {
+            rs[i].b[0x12A] = 1;
+        } else {
+            rs[i].b[0x12A] = 0;
+            if (g_Strikes[3] < 2) {
+                rs[i].b[0x128] = 1;
+            } else {
+                rs[i].b[0x128] = 0;
+            }
+        }
+    }
 }
 
 // .text:0x00089028 size:0xF4 mapped:0x806C80BC
