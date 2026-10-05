@@ -5,6 +5,7 @@ extern u8 g_Ball[];
 extern u8 g_FieldingLogic[];
 extern f32 g_Runners;
 extern u8 g_Fielders[];
+extern void fn_3_52F4C(s16, f32, f32);
 extern u8 g_GameLogic[];
 extern u8 lbl_3_data_4900[];
 extern int checkFieldingStat(int, int, int);
@@ -170,8 +171,16 @@ void fn_3_A3CC0(void) {
 }
 
 // .text:0x000A4158 size:0x90 mapped:0x806E31EC
-void fn_3_A4158(void) {
-    return;
+void fn_3_A4158(int i) {
+    u8* r = (u8*)&g_Runners + i * 0x154;
+    if (r[0x137] == 2) {
+        fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), *(f32*)(r + 0), *(f32*)(r + 8));
+    } else {
+        f32 s = *(f32*)(r + 0x38);
+        f32 a = *(f32*)(r + 0x18) * s;
+        f32 b = *(f32*)(r + 0x1C) * s;
+        fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), 2.0f * a + *(f32*)(r + 0), 2.0f * b + *(f32*)(r + 8));
+    }
 }
 
 // .text:0x000A41E8 size:0x4B8 mapped:0x806E327C

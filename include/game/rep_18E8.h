@@ -27,7 +27,7 @@ void fn_3_A384C(void);
 void fn_3_A3B30(void);
 void fn_3_A3C00(void);
 void fn_3_A3CC0(void);
-void fn_3_A4158(void);
+void fn_3_A4158(int);
 void fn_3_A41E8(void);
 void fn_3_A46A0(void);
 void fn_3_A4A10(void);
