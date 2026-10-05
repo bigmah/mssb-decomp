@@ -1,6 +1,8 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
 
+extern f32 lbl_3_rodata_1498;
+
 #pragma dont_inline on
 
 extern u8 inMemRoster[];
@@ -416,7 +418,15 @@ void fn_3_8A4E4(void) {
 
 // .text:0x0008A5A4 size:0x74 mapped:0x806C9638
 void fn_3_8A5A4(void) {
-    return;
+    s8 i;
+    for (i = 0; i < 4; i++) {
+        u8* r = g_Runners + i * 0x154;
+        *(s16*)(r + 0xE0) = -1;
+        r[0x121] = 10;
+        r[0x122] = 30;
+        *(f32*)(r + 0xBC) = lbl_3_rodata_1498;
+        r[0x14C] = 0;
+    }
 }
 
 // .text:0x0008A618 size:0x19C mapped:0x806C96AC
