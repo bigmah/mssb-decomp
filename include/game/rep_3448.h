@@ -29,7 +29,7 @@ void fn_3_124738(void);
 void fn_3_124CE0(void);
 void fn_3_12536C(void);
 void fn_3_125424(void);
-void fn_3_125480(void);
+s32 fn_3_125480(u8* a);
 void fn_3_1254F8(void);
 void fn_3_125604(void);
 void fn_3_125850(void);

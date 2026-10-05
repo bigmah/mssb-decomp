@@ -1,6 +1,8 @@
 #include "game/rep_3448.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_80371C30[];
+
 // .text:0x0011EC28 size:0x404 mapped:0x8075DCBC
 void fn_3_11EC28(void) {
     return;
@@ -132,8 +134,23 @@ void fn_3_125424(void) {
 }
 
 // .text:0x00125480 size:0x78 mapped:0x80764514
-void fn_3_125480(void) {
-    return;
+s32 fn_3_125480(u8* a) {
+    u8* e;
+    u32 i;
+    u16 n = *(u16*)(a + 0x16);
+    for (i = 0; i < n; i++) {
+        e = *(u8**)(lbl_80371C30 + ((*(u16*)(a + 0x14) + i) << 3));
+        if (e[0x68] == 1) {
+            if (e[0x69] != 2) {
+                return 1;
+            }
+        } else if (e[0x68] == 4) {
+            if ((*(u32*)(e + 0x5C) >> 16) != 0) {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x001254F8 size:0x10C mapped:0x8076458C
