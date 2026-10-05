@@ -1,6 +1,8 @@
 #include "game/rep_1200.h"
 #include "header_rep_data.h"
 
+extern u8 g_Pitcher[];
+
 // .text:0x0006F6CC size:0x7C mapped:0x806AE760
 void fn_3_6F6CC(void) {
     return;
@@ -150,7 +152,19 @@ void fn_3_73FAC(void) {
 
 // .text:0x000740D0 size:0x58 mapped:0x806B3164
 void fn_3_740D0(void) {
-    return;
+    u8 v = g_Pitcher[0x148];
+    g_Pitcher[0x174] = v;
+    switch (v) {
+    case 1:
+        g_Pitcher[0x150] = 0x10;
+        break;
+    case 2:
+        g_Pitcher[0x150] = 0x11;
+        break;
+    case 3:
+        g_Pitcher[0x150] = 0x12;
+        break;
+    }
 }
 
 // .text:0x00074128 size:0x99C mapped:0x806B31BC
@@ -174,7 +188,6 @@ void fn_3_75090(void) {
 }
 
 // .text:0x000750C4 size:0x18 mapped:0x806B4158
-extern u8 g_Pitcher[];
 
 void fn_3_750C4(u8 v) {
     g_Pitcher[0x13E] = v;
