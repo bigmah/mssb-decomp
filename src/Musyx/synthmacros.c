@@ -735,6 +735,47 @@ static void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
   u32 sl;              // r28
   s32 ascale;          // r27
   s32 dscale;          // r26
+  float sScale;
+  s32 atime;
+  s32 dtime;
+  u16 rtime;
+
+  if ((adsr_ptr = dataGetCurve(cstep->para[0] >> 8)) != NULL) {
+    svoice->pitchADSRRange = (s8)cstep->para[1] << 8;
+    if (svoice->pitchADSRRange >= 0) {
+      svoice->pitchADSRRange += ((s8)(cstep->para[1] >> 8) << 8) / 100;
+    } else {
+      svoice->pitchADSRRange -= ((s8)(cstep->para[1] >> 8) << 8) / 100;
+    }
+
+    atime = rdLE32((u8*)adsr_ptr + 0);
+    dtime = rdLE32((u8*)adsr_ptr + 4);
+    sl = rdLE16((u8*)adsr_ptr + 8);
+    rtime = rdLE16((u8*)adsr_ptr + 0xA);
+    ascale = rdLE32((u8*)adsr_ptr + 0xC);
+    dscale = rdLE32((u8*)adsr_ptr + 0x10);
+    if (ascale != 0x80000000) {
+      sScale = lbl_803CD15C * svoice->orgVolume;
+      atime += (s32)(sScale * ascale);
+    }
+    if (dscale != 0x80000000) {
+      sScale = lbl_803CD160 * svoice->orgNote;
+      dtime += (s32)(sScale * dscale);
+    }
+
+    svoice->pitchADSR.mode = 1;
+    svoice->pitchADSR.data.dls.aMode = 0;
+    svoice->pitchADSR.data.dls.aTime = adsrConvertTimeCents(atime);
+    svoice->pitchADSR.data.dls.dTime = adsrConvertTimeCents(dtime);
+    sl = (sl >> 2) & 0x3FFF;
+    if (sl > 0x3FF) {
+      sl = 0x3FF;
+    }
+    svoice->pitchADSR.data.dls.sLevel = 193 - dspScale2IndexTab[sl];
+    svoice->pitchADSR.data.dls.rTime = rtime;
+    adsrSetup(&svoice->pitchADSR);
+    svoice->cFlags |= 0x20000000000;
+  }
 }
 #pragma dont_inline reset
 
@@ -906,6 +947,37 @@ static void mcmdRandomKey(SYNTH_VOICE* svoice, MSTEP* cstep) {
   s32 i1;    // r28
   s32 i2;    // r27
   u8 detune; // r26
+
+  if (((cstep->para[1] >> 8) & 0xFF) == 0) {
+    k1 = cstep->para[0] >> 8;
+    k2 = cstep->para[0] >> 24;
+    if (k1 > k2) {
+      t = k1;
+      k1 = k2;
+      k2 = t;
+    }
+  } else {
+    i1 = svoice->curNote - ((cstep->para[0] >> 8) & 0xFF);
+    i2 = svoice->curNote + (cstep->para[0] >> 24);
+    k1 = i1 < 0 ? 0 : (i1 > 127 ? 127 : i1);
+    k2 = i2 < 0 ? 0 : (i2 > 127 ? 127 : i2);
+  }
+
+  if ((u8)cstep->para[1] != 0) {
+    detune = (sndRand() & 0xFFFF) % 201 - 100;
+  } else {
+    detune = cstep->para[0] >> 16;
+  }
+
+  cstep->para[0] = 0x19 | (detune << 16) | ((k1 + (sndRand() & 0xFFFF) % (k2 - k1 + 1)) << 8);
+  cstep->para[1] = 0;
+  svoice->curNote = (u16)(cstep->para[0] >> 8) & 0x7f;
+  svoice->curDetune = (s8)(cstep->para[0] >> 0x10);
+  if (voiceIsLastStarted(svoice) != 0) {
+    inpSetMidiLastNote(svoice->midi, svoice->midiSet, svoice->curNote & 0xff);
+  }
+  cstep->para[0] = 4;
+  mcmdWait(svoice, cstep);
 }
 #pragma dont_inline reset
 
