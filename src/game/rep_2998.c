@@ -123,10 +123,18 @@ u8 fn_3_E2B70(u8* a) {
 }
 
 // .text:0x000E2E78 size:0xD4 mapped:0x80721F0C
-void fn_3_E2E78(void) {
-    return;
+void fn_3_E2E78(u8* a) {
+    if (a[0xC5] == 0) {
+        a[0xC8] = 0;
+        a[0xC4] = 0;
+    } else {
+        *(f32*)(a + 0xB4) = *(f32*)(a + 0xB4) - 1.0857142857142859 / a[0xC6];
+        *(f32*)(a + 0xA4) = -(1.2 * *(f32*)(a + 0xB4));
+        CTRLSetTranslation((Control*)a, *(f32*)(a + 0xA0), -*(f32*)(a + 0xA4), *(f32*)(a + 0xA8));
+        CTRLSetScale((Control*)a, *(f32*)(a + 0xB4), *(f32*)(a + 0xB4), *(f32*)(a + 0xB4));
+        a[0xC5] -= 1;
+    }
 }
-
 // .text:0x000E2F4C size:0xF8 mapped:0x80721FE0
 void fn_3_E2F4C(void) {
     return;
