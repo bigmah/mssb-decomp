@@ -233,7 +233,24 @@ void fn_3_14C904(void) {
 
 // .text:0x0014CA00 size:0x98 mapped:0x8078BA94
 void fn_3_14CA00(void) {
-    return;
+    u32 i = 0;
+    do {
+        u8* h = (u8*)fn_800339F0(0, 0x20);
+        if (h != 0) {
+            u8* n = *(u8**)(h + 0xC);
+            do {
+                if (n[0x45] == (s8)i) {
+                    n[0x44] = 0;
+                    n[0x45] = 0xFF;
+                    *(s16*)(n + 0x4A) = 0;
+                    n[0x4C] = 0;
+                }
+                n = *(u8**)n;
+            } while (n != 0);
+        }
+        i++;
+    } while (i < 0xF);
+    pitchingMachinePitching(0x20);
 }
 
 // .text:0x0014CA98 size:0x1C mapped:0x8078BB2C
