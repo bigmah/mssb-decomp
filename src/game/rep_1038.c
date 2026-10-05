@@ -12,8 +12,14 @@ void fn_3_6C000(void) {
 }
 
 // .text:0x0006C0E0 size:0x28 mapped:0x806AB174
+extern u8 lbl_3_common_bss_32724[];
+
 void fn_3_6C0E0(void) {
-    return;
+    *(s16*)(lbl_3_common_bss_32724 + 0x90) = -1;
+    *(s16*)(lbl_3_common_bss_32724 + 0x92) = 0;
+    lbl_3_common_bss_32724[0xA9] = 0;
+    lbl_3_common_bss_32724[0xD3] = 0;
+    lbl_3_common_bss_32724[0xB5] = 0;
 }
 
 // .text:0x0006C108 size:0x34 mapped:0x806AB19C
