@@ -389,8 +389,11 @@ void fn_3_D53C0(void) {
 }
 
 // .text:0x000D5444 size:0x2C mapped:0x807144D8
-void fn_3_D5444(void) {
-    return;
+s32 fn_3_D5444(u32* a, u32* b) {
+    if (*a < *b) {
+        return -1;
+    }
+    return *a > *b;
 }
 
 // .text:0x000D5470 size:0x24 mapped:0x80714504

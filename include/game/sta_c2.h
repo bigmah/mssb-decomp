@@ -80,7 +80,7 @@ void fn_3_D4E00(void);
 void fn_3_D501C(void);
 void fn_3_D511C(void);
 void fn_3_D53C0(void);
-void fn_3_D5444(void);
+s32 fn_3_D5444(u32* a, u32* b);
 s32 fn_3_D5470(f32* a, f32* b);
 void fn_3_D5494(void);
 void fn_3_D55EC(void);
