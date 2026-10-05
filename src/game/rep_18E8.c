@@ -1,6 +1,11 @@
 #include "game/rep_18E8.h"
 #include "header_rep_data.h"
 
+extern u8 g_Ball[];
+extern u8 g_FieldingLogic[];
+extern f32 lbl_3_rodata_1998;
+extern f32 lbl_3_rodata_19B8;
+
 // .text:0x000A009C size:0x1C68 mapped:0x806DF130
 void fn_3_A009C(void) {
     return;
@@ -87,13 +92,22 @@ void fn_3_A36BC(void) {
 }
 
 // .text:0x000A372C size:0x3C mapped:0x806E27C0
-void fn_3_A372C(void) {
-    return;
+int fn_3_A372C(void) {
+    f32 x = *(f32*)(g_Ball + 0);
+    f32 z = *(f32*)(g_Ball + 8);
+    if (z < lbl_3_rodata_1998 + x && z < lbl_3_rodata_1998 - x) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000A3768 size:0x54 mapped:0x806E27FC
-void fn_3_A3768(void) {
-    return;
+int fn_3_A3768(void) {
+    s16 v = *(s16*)(g_Ball + 0x1B80);
+    if (v >= 0x380 && v < 0x640 && g_Ball[0x1BBE] <= 1 && *(f32*)(g_Ball + 8) > lbl_3_rodata_19B8 + *(f32*)(g_Ball + 0)) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000A37BC size:0x90 mapped:0x806E2850
@@ -287,7 +301,20 @@ void fn_3_AAFF0(void) {
 
 // .text:0x000AB554 size:0x5C mapped:0x806EA5E8
 void fn_3_AB554(void) {
-    return;
+    s16 v;
+    if (g_FieldingLogic[0x10D] == 0) {
+        return;
+    }
+    v = *(s16*)(g_Ball + 0x1B6E);
+    if (v >= 0 && v < 0x28) {
+        if (*(s16*)(g_FieldingLogic + 0xC4) < 0) {
+            return;
+        }
+        g_FieldingLogic[0x10C] = 1;
+        g_FieldingLogic[0x10D] = 0;
+    } else {
+        g_FieldingLogic[0x10D] = 0;
+    }
 }
 
 // .text:0x000AB5B0 size:0x820 mapped:0x806EA644
