@@ -1,6 +1,12 @@
 #include "game/rep_3448.h"
 #include "header_rep_data.h"
 
+extern u8 g_Scores[];
+extern u8 g_GameLogic[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_3_common_bss_34C90[];
+extern s16 lbl_3_data_21672;
+extern u8 lbl_3_data_21654[];
 extern u8 lbl_3_data_B140[];
 extern u8 lbl_3_data_B0E0[];
 
@@ -78,8 +84,18 @@ void fn_3_12089C(void) {
 }
 
 // .text:0x00120F5C size:0x9C mapped:0x8075FFF0
-void fn_3_120F5C(void) {
-    return;
+// near-match: original re-materializes g_Minigame address (r4) in second half
+s32 fn_3_120F5C(void) {
+    s16 mult = 1;
+    if (g_Minigame[0x1909] != 0 || g_Minigame[0x1A3C] != 0 || g_Minigame[0x1A2B] != 3) {
+        if (*(s32*)g_Scores == g_Scores[0xAA]) {
+            mult = lbl_3_data_21672;
+        }
+    }
+    if (g_Minigame[0x1A89] == 1) {
+        return *(s16*)(lbl_3_data_21654 + 0x14) * mult;
+    }
+    return *(s16*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) * 2 + 0x1898) * mult;
 }
 
 // .text:0x00120FF8 size:0x30C mapped:0x8076008C
@@ -148,8 +164,26 @@ void fn_3_124CE0(void) {
 }
 
 // .text:0x0012536C size:0xB8 mapped:0x80764400
-void fn_3_12536C(void) {
-    return;
+s32 fn_3_12536C(void) {
+    if (lbl_3_common_bss_32724[0x96] != 0 || lbl_3_common_bss_32724[0xB7] != 0) {
+        return 1;
+    }
+    if (g_GameLogic[0x11E] == 0xF) {
+        return 1;
+    }
+    if (g_Minigame[0x1A3B] != 0) {
+        u8 v = lbl_3_common_bss_34C90[0x1D2];
+        if (v == 7 || v == 9) {
+            return 1;
+        }
+        if (v == 0xD) {
+            return 1;
+        }
+    }
+    if (g_GameLogic[0x11E] == 0xE && *(u16*)(g_GameLogic + 0xFC) == 0) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x00125424 size:0x5C mapped:0x807644B8
