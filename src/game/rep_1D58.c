@@ -51,6 +51,11 @@ extern s32 fn_3_C823C(s32, s32);
 extern s32 fn_3_E4BE8(s32, s32);
 extern s32 fn_3_F6504(s32, s32);
 extern s32 fn_3_E751C(s32, s32);
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_8036E548[];
+extern u8 lbl_3_data_10ACC[];
+extern s32 ARAMTransfer(void*, int, int, int);
 extern void CTRLBuildMatrix(u32, void*);
 extern void PSMTXConcat(void*, void*, void*);
 extern void DOSetWorldMatrix(void*, void*);
@@ -453,8 +458,38 @@ void fn_3_B99E4(void) {
 }
 
 // .text:0x000B9BB4 size:0x1B4 mapped:0x806F8C48
-void fn_3_B9BB4(void) {
-    return;
+s32 fn_3_B9BB4(u32 type) {
+    if ((s32)lbl_803C6CF8[0x715] == 1) {
+    switch (type) {
+        case 0:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC, 0, 0, 0);
+            break;
+        case 1:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x10, 0, 0, 0);
+            break;
+        case 2:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x20, 0, 0, 0);
+            break;
+        case 3:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x30, 0, 0, 0);
+            break;
+        case 4:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x40, 0, 0, 0);
+            break;
+        case 5:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x50, 0, 0, 0);
+            break;
+        case 6:
+            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x60, 0, 0, 0);
+            break;
+        default:
+            return -1;
+    }
+    fn_800B0A5C_insertQueue(fn_3_B99E4, 0);
+    lbl_3_common_bss_350E4[0x6A] = 1;
+    return 1;
+    }
+    return 0;
 }
 
 // .text:0x000B9D68 size:0x250 mapped:0x806F8DFC
