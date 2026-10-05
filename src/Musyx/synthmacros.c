@@ -507,6 +507,7 @@ static void mcmdStartSample(SYNTH_VOICE* svoice, MSTEP* cstep) {
                        (svoice->cFlags & 0x80000000000) == 0, svoice->itdMode);
 
   svoice->sInfo = newsmp.info;
+  svoice->sampleId = smp;
 
   if (svoice->playFrq != -1) {
     DoSetPitch(svoice);
