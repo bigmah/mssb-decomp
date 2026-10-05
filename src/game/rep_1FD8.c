@@ -123,8 +123,20 @@ void fn_3_C4068(void) {
 }
 
 // .text:0x000C40EC size:0x60 mapped:0x80703180
-void fn_3_C40EC(void) {
-    return;
+void fn_3_C40EC(u8* a) {
+    u8* p = **(u8***)(a + 0x74);
+    p = *(u8**)(p + 0x18);
+    p = *(u8**)(p + 4);
+    p = *(u8**)(p + 0x14);
+    p = *(u8**)(p + 0x10);
+    p = *(u8**)(p + 4);
+    if (a[0xA9] != 6) {
+        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        *(u32*)(p + 4) = *(u32*)(p + 4) | 0x19;
+    } else {
+        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        *(u32*)(p + 4) = *(u32*)(p + 4) | 0x1A;
+    }
 }
 
 // .text:0x000C414C size:0x158 mapped:0x807031E0
@@ -213,8 +225,22 @@ void fn_3_C71CC(void) {
 }
 
 // .text:0x000C7444 size:0x58 mapped:0x807064D8
-void fn_3_C7444(void) {
-    return;
+void fn_3_C7444(u8* a) {
+    u8* p = **(u8***)(a + 0x74);
+    p = *(u8**)(p + 0x18);
+    p = *(u8**)(p + 0x34);
+    p = *(u8**)(p + 0x14);
+    p = *(u8**)(p + 0x10);
+    p = *(u8**)(p + 4);
+    switch (*(s8*)(a + 0xB0)) {
+    case 0:
+        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        *(u32*)(p + 4) = *(u32*)(p + 4) | 2;
+        break;
+    default:
+        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        break;
+    }
 }
 
 // .text:0x000C749C size:0x11C mapped:0x80706530
