@@ -51,7 +51,16 @@ void fn_3_99BDC(void) {
 
 // .text:0x00099C88 size:0x74 mapped:0x806D8D1C
 void fn_3_99C88(void) {
-    return;
+    u8* p = lbl_803CC1B8;
+    u8 v;
+    if (lbl_3_common_bss_32724[0x96] == 0 && (v = lbl_3_common_bss_32724[0xA7]) != 0) {
+        u32* o = *(u32**)(lbl_80371C30 + *(u16*)(p + 0x14) * 8);
+        u32 w = o[0x58 / 4];
+        w = v | (w & ~0xFF);
+        o[0x58 / 4] = w;
+    } else {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x00099CFC size:0x114 mapped:0x806D8D90
