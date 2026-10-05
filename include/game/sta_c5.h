@@ -75,4 +75,6 @@ void fn_3_F6C60(void);
 void fn_3_F6FCC(void);
 void fn_3_F6FDC(void);
 
+s32 fn_3_EE0BC(u32 v);
+
 #endif // !__GAME_sta_c5_H_

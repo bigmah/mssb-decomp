@@ -1,5 +1,20 @@
 #include "game/sta_c5.h"
 #include "header_rep_data.h"
+
+s32 fn_3_EE0BC(u32 v) {
+    switch ((v >> 4) & 0xF) {
+    case 0:
+    case 1:
+        return 1;
+    case 2:
+    case 3:
+        return 2;
+    case 4:
+        return 4;
+    default:
+        return 0;
+    }
+}
 #include "Dolphin/GX/GXPixel.h"
 
 // .text:0x000EE100 size:0x288 mapped:0x8072D194
