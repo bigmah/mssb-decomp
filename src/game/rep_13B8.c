@@ -1,6 +1,9 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
 
+extern u8 g_Batter[];
+extern u8 g_Runners[];
+
 // .text:0x0007D79C size:0x184 mapped:0x806BC830
 void fn_3_7D79C(void) {
     return;
@@ -323,7 +326,10 @@ void fn_3_89028(void) {
 
 // .text:0x0008911C size:0x20 mapped:0x806C81B0
 void fn_3_8911C(void) {
-    return;
+    g_Runners[0x133] = 0;
+    g_Runners[0x287] = 0;
+    g_Runners[0x3DB] = 0;
+    g_Runners[0x52F] = 0;
 }
 
 // .text:0x0008913C size:0x728 mapped:0x806C81D0
@@ -362,8 +368,10 @@ void fn_3_8A350(void) {
 }
 
 // .text:0x0008A4C8 size:0x1C mapped:0x806C955C
+
 void fn_3_8A4C8(void) {
-    return;
+    *(f32*)g_Runners = *(f32*)g_Batter;
+    *(f32*)(g_Runners + 8) = *(f32*)(g_Batter + 4);
 }
 
 // .text:0x0008A4E4 size:0xC0 mapped:0x806C9578
