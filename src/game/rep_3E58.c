@@ -1,6 +1,9 @@
 #include "game/rep_3E58.h"
 #include "header_rep_data.h"
 
+#include "static/UnknownHomes_Static.h"
+extern void fn_3_16689C(void);
+
 // .text:0x001666B0 size:0x1EC mapped:0x807A5744
 void fn_3_1666B0(void) {
     return;
@@ -13,7 +16,7 @@ void fn_3_16689C(void) {
 
 // .text:0x0016696C size:0x30 mapped:0x807A5A00
 void fn_3_16696C(void) {
-    return;
+    fn_800B0A5C_insertQueue(fn_3_16689C, 0xFFFA);
 }
 
 // .text:0x0016699C size:0x294 mapped:0x807A5A30
