@@ -18,6 +18,17 @@ extern void GXSetTevAlphaOp(int, int, int, int, int, int);
 extern void fn_800ACFB0(u32);
 extern void* _OSAllocFromHeap(s32, s32);
 
+typedef struct StadObj {
+    u8 pad0[0x80];
+    void (*fn)(int, int, void*);
+    u8 pad84[0xE8 - 0x84];
+} StadObj;
+typedef struct StadObjList {
+    StadObj* objs;
+    u8 pad4[0x2C];
+    s32 count;
+} StadObjList;
+
 // .text:0x000B7FC8 size:0x108 mapped:0x806F705C
 void fn_3_B7FC8(void) {
     return;
@@ -137,8 +148,15 @@ void fn_3_B9124(void) {
 }
 
 // .text:0x000B916C size:0x5C mapped:0x806F8200
-int processStadiumObjectFunction(int, void*, int, void*) {
-    return;
+void processStadiumObjectFunction(int stadium, void* a, int b, void* c) {
+    StadObjList* l = (StadObjList*)lbl_3_common_bss_350E4;
+    s32 i = (s32)a;
+    if (i < l->count) {
+        void (*f)(int, int, void*) = l->objs[i].fn;
+        if (f != 0) {
+            f(i, b, c);
+        }
+    }
 }
 
 // .text:0x000B91C8 size:0x1D4 mapped:0x806F825C
