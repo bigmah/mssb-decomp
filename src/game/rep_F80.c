@@ -1,6 +1,12 @@
 #include "game/rep_F80.h"
 #include "header_rep_data.h"
 
+extern u8 g_Batter[];
+extern u8 lbl_3_common_bss_32220[];
+extern void fn_3_C07A0(void);
+extern void fn_3_C0770(void);
+extern void fn_3_C07B0(void);
+
 // .text:0x0006A2A4 size:0x5C mapped:0x806A9338
 void fn_3_6A2A4(void) {
     return;
@@ -35,7 +41,22 @@ void fn_3_6A9B0(void) {
 
 // .text:0x0006AA98 size:0x98 mapped:0x806A9B2C
 void fn_3_6AA98(void) {
-    return;
+    if (*(s16*)(g_Batter + 0x62) == 2 || *(s16*)(g_Batter + 0x62) == 3 || *(s16*)(g_Batter + 0x62) == 6) {
+        return;
+    }
+    {
+        u8 t = lbl_3_common_bss_32220[0xA];
+        if (t == 0) {
+            return;
+        }
+        if (t == 3 || t == 4) {
+            fn_3_C07A0();
+        } else if (t == 9) {
+            fn_3_C0770();
+        } else if (*(s16*)(lbl_3_common_bss_32220 + 2) == 2 && t == 2) {
+            fn_3_C07B0();
+        }
+    }
 }
 
 // .text:0x0006AB30 size:0x28 mapped:0x806A9BC4
