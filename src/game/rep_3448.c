@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 extern u8 g_Scores[];
+extern u8 lbl_3_data_24CE4[];
 extern u8 lbl_3_data_246E4[];
 extern u8 lbl_3_data_24D44[];
 extern u8 g_Batter[];
@@ -160,7 +161,51 @@ void fn_3_11F778(void) {
 
 // .text:0x0011FA58 size:0x358 mapped:0x8075EAEC
 void fn_3_11FA58(void) {
-    return;
+    u8** tbl;
+    u8* q = lbl_803CC1B8;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (*(u16*)(q + 0x1C)) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_24CE4);
+        *(u16*)(q + 0x1C) = 1;
+        break;
+    case 1:
+        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x5C) = (g_Batter[0x7B] == 0) << 16;
+        tbl = (u8**)(lbl_80371C30 + 8);
+        (*(u8**)((u8*)tbl + *(u16*)(q + 0x14) * 8))[0x68] = 0;
+        *(u32*)(*(u8**)((u8*)tbl + *(u16*)(q + 0x14) * 8) + 0x5C) = 0;
+        if (g_GameLogic[0x11E] == 2 && g_Minigame[0x1ADB] != 0) {
+            s16 s = *(s16*)(g_Minigame + 0x1DF4);
+            if (s > 0) {
+                u32 n;
+                *(s16*)(g_Minigame + 0x1DF4) = 0;
+                n = s;
+                if ((u32)s > 0x270F) {
+                    n = 0x270F;
+                }
+                fn_800363D8(q, 1, 4, 0x11B, n >= 0x3E8 ? (n % 10000) / 1000 : 10);
+                fn_800363D8(q, 1, 3, 0x11B, n >= 0x64 ? (n % 1000) / 100 : 10);
+                fn_800363D8(q, 1, 2, 0x11B, n >= 0xA ? (n % 100) / 10 : 10);
+                fn_800363D8(q, 1, 1, 0x11B, n % 10);
+                (*(u8**)((u8*)tbl + *(u16*)(q + 0x14) * 8))[0x68] = 1;
+                *(u16*)(q + 0x1C) = 2;
+            }
+        }
+        break;
+    case 2:
+        {
+        u8* e = lbl_80371C30;
+        e += *(u16*)(q + 0x14) * 8;
+        if ((*(u8**)(e + 8))[0x69] == 2 && g_GameLogic[0x11E] != 2) {
+            *(u16*)(q + 0x1C) = 1;
+        }
+        }
+        break;
+    }
 }
 
 // .text:0x0011FDB0 size:0x4BC mapped:0x8075EE44
