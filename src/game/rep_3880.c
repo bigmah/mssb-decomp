@@ -4,6 +4,7 @@
 extern u8 lbl_3_data_26C94[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_26D5C[];
+extern u8 lbl_3_data_21770[];
 extern u8 lbl_3_data_26E9C[];
 extern void* fn_800337CC(void*, int, int, void*);
 extern s8 lbl_3_bss_B85C[];
@@ -441,8 +442,14 @@ void fn_3_14D2C0(u8* p) {
 }
 
 // .text:0x0014D318 size:0x134 mapped:0x8078C3AC
-void fn_3_14D318(void) {
-    return;
+void fn_3_14D318(u8* a) {
+    f32* q = (f32*)(g_Minigame + a[0x45] * 0x34 + 0x860);
+    f32* d = (f32*)lbl_3_data_21770; f32 h = 0.5f;
+    *(f32*)(a + 4) = q[0];
+    *(f32*)(a + 8) = -(d[3] * h + q[1]);
+    *(f32*)(a + 0xC) = q[2];
+    *(f32*)(a + 4) = *(f32*)(a + 4) + (rand() % 100 - 50) / 100.0;
+    *(f32*)(a + 8) = *(f32*)(a + 8) + (rand() % 100 - 50) / 100.0;
 }
 
 // .text:0x0014D44C size:0x288 mapped:0x8078C4E0
