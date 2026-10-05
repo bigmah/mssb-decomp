@@ -22,7 +22,7 @@ void fn_3_C3A38(void);
 void fn_3_C3C2C(void);
 void fn_3_C3E94(void);
 void fn_3_C3F70(void);
-void fn_3_C4068(void);
+void fn_3_C4068(u8* a);
 void fn_3_C40EC(u8* a);
 void fn_3_C414C(void);
 void fn_3_C42A4(void);

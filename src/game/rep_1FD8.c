@@ -4,6 +4,7 @@
 #include "static/UnknownHomes_Static.h"
 extern void fn_3_C2644(void);
 extern u8* lbl_3_bss_9D98;
+extern u32 lbl_3_bss_9D84;
 extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
@@ -128,8 +129,29 @@ void fn_3_C3F70(void) {
 }
 
 // .text:0x000C4068 size:0x84 mapped:0x807030FC
-void fn_3_C4068(void) {
-    return;
+void fn_3_C4068(u8* a) {
+    u8* p = **(u8***)(a + 0x74);
+    u32 n;
+    u32 v;
+    u16 t;
+    p = *(u8**)(p + 0x18);
+    p = *(u8**)(p + 4);
+    p = *(u8**)(p + 0x14);
+    p = *(u8**)(p + 0x10);
+    p = *(u8**)(p + 4);
+    n = lbl_3_bss_9D84;
+    t = *(u32*)(p + 4) & 0x1FFF;
+    lbl_3_bss_9D84 = n + 1;
+    v = t;
+    if (n > 4) {
+        v = t + 1;
+        if ((u16)v > 0x13) {
+            v = 4;
+        }
+        lbl_3_bss_9D84 = 0;
+    }
+    *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+    *(u32*)(p + 4) = *(u32*)(p + 4) | (u16)v;
 }
 
 // .text:0x000C40EC size:0x60 mapped:0x80703180
