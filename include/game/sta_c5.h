@@ -20,7 +20,7 @@ void fn_3_EF3D4(u8* p, u8 idx);
 void fn_3_EF408(void);
 void fn_3_EF55C(void);
 void fn_3_EF7B4(void);
-void fn_3_EF800(void);
+void fn_3_EF800(u8* p);
 void fn_3_EF890(void);
 void fn_3_EF930(void);
 void fn_3_EFB54(void);

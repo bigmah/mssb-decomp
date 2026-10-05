@@ -5,6 +5,8 @@ extern u8 lbl_3_common_bss_350E4[];
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
+#include "C3/control.h"
+extern f32 lbl_3_rodata_2DEC;
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_B55C[];
 extern u8 lbl_803CBBC0[];
@@ -127,8 +129,18 @@ void fn_3_EF7B4(void) {
 }
 
 // .text:0x000EF800 size:0x90 mapped:0x8072E894
-void fn_3_EF800(void) {
-    return;
+void fn_3_EF800(u8* p) {
+    typedef struct { u8 pad[0x90]; u8 f : 1; u8 rest : 7; } FObj;
+    if (p[0xC7] == 0) {
+        CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), lbl_3_rodata_2DEC, *(f32*)(p + 0xA8));
+        return;
+    }
+    if (p[0xC7] % 6 == 0) {
+        ((FObj*)p)->f = 0;
+    } else {
+        ((FObj*)p)->f = 1;
+    }
+    p[0xC7]--;
 }
 
 // .text:0x000EF890 size:0xA0 mapped:0x8072E924
