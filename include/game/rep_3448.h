@@ -6,7 +6,7 @@
 void fn_3_11EC28(void);
 void fn_3_11F02C(void);
 void fn_3_11F480(void);
-void fn_3_11F4B4(void);
+void fn_3_11F4B4(s32 idx, s32 flag);
 void fn_3_11F508(void);
 void fn_3_11F778(void);
 void fn_3_11FA58(void);

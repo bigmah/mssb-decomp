@@ -6,6 +6,7 @@ extern u8 lbl_3_data_B0E0[];
 
 extern u8 lbl_3_data_91BC[];
 extern u8 g_Minigame[];
+extern u8 lbl_3_data_21884[];
 
 extern u8* lbl_803CC1B8;
 extern void fn_80034E20(void*, void*);
@@ -25,12 +26,25 @@ void fn_3_11F02C(void) {
 
 // .text:0x0011F480 size:0x34 mapped:0x8075E514
 void fn_3_11F480(void) {
-    return;
+    u8* p = g_Minigame;
+    u32 i;
+    if (p[0x1A2A] == 4) {
+        i = 0;
+        do {
+            *(s16*)(p + 0x1DF4) = *(s16*)(p + 0x1890);
+            i++;
+            p += 2;
+        } while (i < 4);
+    }
 }
 
 // .text:0x0011F4B4 size:0x54 mapped:0x8075E548
-void fn_3_11F4B4(void) {
-    return;
+void fn_3_11F4B4(s32 idx, s32 flag) {
+    u8* p = g_Minigame;
+    if (p[0x1A2A] == 4) {
+        u8* q = p + idx * 2;
+        *(s16*)(q + 0x1DF4) += lbl_3_data_21884[(flag != 0 ? 2 : 0) * 2 + 1];
+    }
 }
 
 // .text:0x0011F508 size:0x270 mapped:0x8075E59C
