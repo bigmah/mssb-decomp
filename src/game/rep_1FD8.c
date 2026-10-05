@@ -4,6 +4,13 @@
 #include "static/UnknownHomes_Static.h"
 extern void fn_3_C2644(void);
 extern u8* lbl_3_bss_9D98;
+extern u8* lbl_3_common_bss_350E4[];
+extern void fn_3_B8184(void);
+extern void fn_3_B828C(void*);
+extern void fn_800BF058(void*);
+extern void fn_800BDF70(void*);
+extern u32 lbl_3_bss_9D84;
+extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
 
@@ -40,7 +47,23 @@ void fn_3_C2310(void) {
 
 // .text:0x000C23E0 size:0xC0 mapped:0x80701474
 void fn_3_C23E0(void) {
-    return;
+    u8* c;
+    int i;
+    u8** base;
+    fn_800BF058(fn_3_B8184);
+    base = lbl_3_common_bss_350E4;
+    for (i = 0; i < *(int*)((u8*)base + 0x30); i++) {
+        c = *base + i * 0xE8;
+        fn_3_B828C(c);
+        if (i >= 1 && i < 11) {
+            if ((c[0x90] >> 7) & 1) {
+                if (*(u8**)(c + 0x74) != 0) {
+                    (*(u8**)*(u8**)(c + 0x74))[0x98] = c[0x93] | 6;
+                    fn_800BDF70(*(u8**)(c + 0x74));
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000C24A0 size:0x1A4 mapped:0x80701534
@@ -88,13 +111,22 @@ void fn_3_C30F0(void) {
 }
 
 // .text:0x000C366C size:0x35C mapped:0x80702700
-void fn_3_C366C(void) {
+#pragma dont_inline on
+void fn_3_C366C(u32 a, u8 b) {
     return;
 }
+#pragma dont_inline reset
 
 // .text:0x000C39C8 size:0x70 mapped:0x80702A5C
 void fn_3_C39C8(void) {
-    return;
+    u32 i = 0;
+    do {
+        u32 r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
+        if (r != 0) {
+            fn_3_C366C(r, i);
+        }
+        i++;
+    } while (i < 6);
 }
 
 // .text:0x000C3A38 size:0x1F4 mapped:0x80702ACC
@@ -118,13 +150,46 @@ void fn_3_C3F70(void) {
 }
 
 // .text:0x000C4068 size:0x84 mapped:0x807030FC
-void fn_3_C4068(void) {
-    return;
+void fn_3_C4068(u8* a) {
+    u8* p = **(u8***)(a + 0x74);
+    u32 n;
+    u32 v;
+    u16 t;
+    p = *(u8**)(p + 0x18);
+    p = *(u8**)(p + 4);
+    p = *(u8**)(p + 0x14);
+    p = *(u8**)(p + 0x10);
+    p = *(u8**)(p + 4);
+    n = lbl_3_bss_9D84;
+    t = *(u32*)(p + 4) & 0x1FFF;
+    lbl_3_bss_9D84 = n + 1;
+    v = t;
+    if (n > 4) {
+        v = t + 1;
+        if ((u16)v > 0x13) {
+            v = 4;
+        }
+        lbl_3_bss_9D84 = 0;
+    }
+    *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+    *(u32*)(p + 4) = *(u32*)(p + 4) | (u16)v;
 }
 
 // .text:0x000C40EC size:0x60 mapped:0x80703180
-void fn_3_C40EC(void) {
-    return;
+void fn_3_C40EC(u8* a) {
+    u8* p = **(u8***)(a + 0x74);
+    p = *(u8**)(p + 0x18);
+    p = *(u8**)(p + 4);
+    p = *(u8**)(p + 0x14);
+    p = *(u8**)(p + 0x10);
+    p = *(u8**)(p + 4);
+    if (a[0xA9] != 6) {
+        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        *(u32*)(p + 4) = *(u32*)(p + 4) | 0x19;
+    } else {
+        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        *(u32*)(p + 4) = *(u32*)(p + 4) | 0x1A;
+    }
 }
 
 // .text:0x000C414C size:0x158 mapped:0x807031E0
@@ -213,8 +278,22 @@ void fn_3_C71CC(void) {
 }
 
 // .text:0x000C7444 size:0x58 mapped:0x807064D8
-void fn_3_C7444(void) {
-    return;
+void fn_3_C7444(u8* a) {
+    u8* p = **(u8***)(a + 0x74);
+    p = *(u8**)(p + 0x18);
+    p = *(u8**)(p + 0x34);
+    p = *(u8**)(p + 0x14);
+    p = *(u8**)(p + 0x10);
+    p = *(u8**)(p + 4);
+    switch (*(s8*)(a + 0xB0)) {
+    case 0:
+        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        *(u32*)(p + 4) = *(u32*)(p + 4) | 2;
+        break;
+    default:
+        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        break;
+    }
 }
 
 // .text:0x000C749C size:0x11C mapped:0x80706530

@@ -2,6 +2,17 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_data_1146C[];
+extern void fn_80034E20(void*, void*, void*);
+extern u8* lbl_803CC1B8;
+extern void* (*lbl_3_data_11390[])(void*);
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_3_data_11380[];
+extern s32 ARAMTransfer(void*, int, int, int);
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+extern void fn_8006C43C(int);
+extern void fn_8006C3F0(int);
+extern void fn_8003A688(f32, f32);
 
 extern void fn_3_BDF74(void);
 
@@ -18,6 +29,9 @@ void fn_3_C0770(void) {
 }
 
 extern u8 lbl_3_common_bss_35154[];
+extern void minigamesSetSomePointers(void);
+extern void fn_3_C0854(void);
+extern void fn_3_CABB4(void);
 
 extern u8 lbl_3_bss_995C;
 
@@ -139,7 +153,13 @@ void fn_3_BD6AC(void) {
 
 // .text:0x000BD758 size:0x78 mapped:0x806FC7EC
 void fn_3_BD758(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    void* r;
+    if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
+        lbl_3_common_bss_35154[0x418] = 0;
+        r = lbl_3_data_11390[*(u16*)(q + 0x14)](*(void**)(lbl_3_common_bss_35154 + *(u16*)(q + 0x16) * 4 + 0x40C));
+        fn_800B0A14_removeQueue(r);
+    }
 }
 
 // .text:0x000BD7D0 size:0x8 mapped:0x806FC864
@@ -164,7 +184,8 @@ void fn_3_BD80C(void) {
 
 // .text:0x000BD8D8 size:0x24 mapped:0x806FC96C
 void fn_3_BD8D8(void) {
-    return;
+    *(void**)(lbl_8036E548 + 0x3070) = fn_3_BD80C;
+    *(void**)(lbl_8036E548 + 0x3074) = fn_3_BD7DC;
 }
 
 // .text:0x000BD8FC size:0x3A8 mapped:0x806FC990
@@ -213,7 +234,12 @@ void fn_3_BE1D4(void) {
 
 // .text:0x000BEFF8 size:0x78 mapped:0x806FE08C
 void fn_3_BEFF8(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    *(u8**)lbl_3_common_bss_35154 = q;
+    fn_80034E20(q, lbl_3_data_1146C, lbl_3_common_bss_35154);
+    *(s16*)(q + 0x18) = 0;
+    *(void**)lbl_803CC1B8 = fn_3_BE1D4;
+    *(u32*)(lbl_3_common_bss_35154 + 0x3AC) = 0;
 }
 
 // .text:0x000BF070 size:0xE8 mapped:0x806FE104
@@ -234,13 +260,27 @@ void fn_3_BF158(void) {
 }
 
 // .text:0x000BF1AC size:0x60 mapped:0x806FE240
+#pragma opt_unroll_loops off
 void fn_3_BF1AC(void) {
-    return;
+    int i;
+    u8* p;
+    minigamesSetSomePointers();
+    fn_3_C0854();
+    fn_3_CABB4();
+    p = lbl_8036E548 + 0x1DD0;
+    i = 12;
+    do {
+        *(u32*)(p + 0xC60) = 0;
+        p -= 0x27C;
+    } while (i-- != 0);
+    lbl_3_common_bss_35154[0x479] = 1;
 }
+#pragma opt_unroll_loops reset
 
 // .text:0x000BF20C size:0x2C mapped:0x806FE2A0
 void fn_3_BF20C(void) {
-    return;
+    fn_8006C43C(0);
+    fn_8006C3F0(0);
 }
 
 // .text:0x000BF238 size:0x488 mapped:0x806FE2CC
@@ -254,8 +294,14 @@ void fn_3_BF6C0(void) {
 }
 
 // .text:0x000BF878 size:0x80 mapped:0x806FE90C
-void fn_3_BF878(void) {
-    return;
+int fn_3_BF878(void) {
+    if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
+        *(s32*)(lbl_3_common_bss_35154 + 8) = ARAMTransfer(lbl_3_data_11380, 0, 0, 0);
+        fn_800B0A5C_insertQueue(fn_3_BF6C0, 0);
+        lbl_3_common_bss_35154[0x3B0] = 1;
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000BF8F8 size:0x244 mapped:0x806FE98C
