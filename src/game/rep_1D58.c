@@ -8,6 +8,13 @@ extern f32 lbl_3_rodata_1DD0[];
 extern f32 lbl_3_rodata_1DD4;
 extern u8 lbl_3_common_bss_350E4[];
 extern u32 lbl_3_bss_1904;
+extern void GXSetBlendMode(int, int, int, int);
+extern void GXSetNumTevStages(int);
+extern void GXSetTevOrder(int, int, int, int);
+extern void GXSetTevColorIn(int, int, int, int, int);
+extern void GXSetTevColorOp(int, int, int, int, int, int);
+extern void GXSetTevAlphaIn(int, int, int, int, int);
+extern void GXSetTevAlphaOp(int, int, int, int, int, int);
 extern void fn_800ACFB0(u32);
 extern void* _OSAllocFromHeap(s32, s32);
 
@@ -18,7 +25,13 @@ void fn_3_B7FC8(void) {
 
 // .text:0x000B80D0 size:0xB4 mapped:0x806F7164
 void fn_3_B80D0(void) {
-    return;
+    GXSetBlendMode(1, 4, 5, 0);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorIn(0, 0xA, 0xF, 0xF, 0xF);
+    GXSetTevColorOp(0, 0, 0, 0, 1, 0);
+    GXSetTevAlphaIn(0, 4, 7, 7, 7);
+    GXSetTevAlphaOp(0, 0, 0, 0, 1, 0);
 }
 
 // .text:0x000B8184 size:0xF8 mapped:0x806F7218
@@ -66,8 +79,10 @@ u32 fn_3_B85A8(int idx, u32* out) {
 }
 
 // .text:0x000B85DC size:0x7C mapped:0x806F7670
-void fn_3_B85DC(void) {
-    return;
+void fn_3_B85DC(s32 i, void* a, void* b) {
+    u8* c = lbl_3_common_bss_350E4;
+    memcpy(a, *(u8**)(c + 0x48) + i * 0x18, 0xC);
+    memcpy(b, *(u8**)(c + 0x48) + (i * 2 + 1) * 0xC, 0xC);
 }
 
 // .text:0x000B8658 size:0x24 mapped:0x806F76EC
