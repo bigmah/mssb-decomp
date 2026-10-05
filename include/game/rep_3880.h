@@ -40,7 +40,7 @@ void fn_3_14C348(u32 a, u32 b);
 void fn_3_14C398(void);
 void fn_3_14C3BC(void);
 void fn_3_14C4C8(void);
-void fn_3_14C79C(void);
+void fn_3_14C79C(u8* a);
 void fn_3_14C830(void);
 void fn_3_14C904(void);
 void fn_3_14CA00(void);

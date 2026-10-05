@@ -2,6 +2,8 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_26C94[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_3_data_26D5C[];
 
 extern u8 lbl_8036E548[];
 #include "static/UnknownHomes_Static.h"
@@ -217,8 +219,21 @@ void fn_3_14C4C8(void) {
 }
 
 // .text:0x0014C79C size:0x94 mapped:0x8078B830
-void fn_3_14C79C(void) {
-    return;
+void fn_3_14C79C(u8* a) {
+    u8* p;
+    f32 f;
+    *(u32*)(a + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
+    p = *(u8**)(a + 0xC);
+    p[0x4D] = *(u32*)lbl_3_data_26D5C;
+    p[0x4E] = 0;
+    *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26D5C + 8);
+    f = *(s32*)(lbl_3_data_26D5C + 0x10) / 100000.0f;
+    *(f32*)(p + 0x3C) = f;
+    *(f32*)(p + 0x38) = f;
+    p[0x43] = *(s32*)(lbl_3_data_26D5C + 0x1C);
+    p[0x42] = 0xFF;
+    p[0x41] = 0xFF;
+    p[0x40] = 0xFF;
 }
 
 // .text:0x0014C830 size:0xD4 mapped:0x8078B8C4
@@ -320,7 +335,6 @@ void fn_3_14D44C(void) {
 }
 
 // .text:0x0014D6D4 size:0x3C mapped:0x8078C768
-extern u8 lbl_3_common_bss_32724[];
 
 void fn_3_14D6D4(u8* p) {
     *(u32*)(p + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
@@ -393,6 +407,7 @@ void fn_3_14E810(void) {
 }
 
 // .text:0x0014E894 size:0x8C mapped:0x8078D928
+// 99%: orig has `li r30,0; mr r31,r30` for zero store reg
 void fn_3_14E894(void) {
     return;
 }
