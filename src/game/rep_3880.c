@@ -380,8 +380,11 @@ void fn_3_14D710(s8 a) {
 }
 
 // .text:0x0014DC80 size:0x60 mapped:0x8078CD14
-void fn_3_14DC80(void) {
-    return;
+void fn_3_14DC80(s8 a) {
+    if (g_d_GameSettings.GameModeSelected != 7 || g_Minigame[0x1A2A] != 3 || a >= 0xF || a < 0) {
+        return;
+    }
+    fn_3_14D710(a);
 }
 
 // .text:0x0014DCE0 size:0x24 mapped:0x8078CD74
@@ -773,8 +776,11 @@ void fn_3_154C7C(u32 a, u32 b, u32 c) {
 }
 
 // .text:0x0015521C size:0x48 mapped:0x807942B0
-void fn_3_15521C(void) {
-    return;
+void fn_3_15521C(u32 a, u32 b, u32 c) {
+    if (g_d_GameSettings.GameModeSelected != 7 || b == 0 || c == 0) {
+        return;
+    }
+    fn_3_154C7C(a, b, c);
 }
 
 // .text:0x00155264 size:0x24 mapped:0x807942F8
