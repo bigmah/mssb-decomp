@@ -567,22 +567,6 @@ static void SetFXParameters(SND_EMITTER *const em, f32 vol, f32 xPan, f32 yPan, 
     synthFXSetCtrl(vid, 10, clip127((1.f + xPan) * 64.f));
     synthFXSetCtrl(vid, 131, clip127((1.f - zPan) * 64.f));
     synthFXSetCtrl14(vid, 132, clip3FFF(doppler * 8192.f));
-
-    if (em->paraInfo != NULL)
-    {
-        pPtr = em->paraInfo->paraArray;
-        for (i = 0; i < em->paraInfo->numPara; ++pPtr, ++i)
-        {
-            if (pPtr->ctrl < 0x40 || pPtr->ctrl == 0x80 || pPtr->ctrl == 0x84)
-            {
-                synthFXSetCtrl14(vid, pPtr->ctrl, (pPtr->paraData).value14);
-            }
-            else
-            {
-                synthFXSetCtrl(vid, pPtr->ctrl, (pPtr->paraData).value7);
-            }
-        }
-    }
 }
 
 static void EmitterShutdown(SND_EMITTER *em)
@@ -727,7 +711,6 @@ static SND_VOICEID AddEmitter(SND_EMITTER *em_buffer, SND_FVECTOR *pos, SND_FVEC
 
         em->prev = NULL;
         s3dEmitterRoot = em;
-        em->paraInfo = para;
         em->vid = -1;
         em->VolLevelCnt = 0;
         em->flags |= 0x30000;
