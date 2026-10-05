@@ -1,6 +1,10 @@
 #include "game/kinoko.h"
 #include "header_rep_data.h"
 
+// .text:0x001695A0 size:0x4
+void fn_3_1695A0(void) {
+}
+
 // .text:0x00169600 size:0x204 mapped:0x807A8694
 void fn_3_169600(void) {
     return;
