@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_8036E548[];
+extern void fn_8006C43C(int);
+extern void fn_8006C3F0(int);
+extern void fn_8003A688(f32, f32);
 
 extern void fn_3_BDF74(void);
 
@@ -164,7 +167,8 @@ void fn_3_BD80C(void) {
 
 // .text:0x000BD8D8 size:0x24 mapped:0x806FC96C
 void fn_3_BD8D8(void) {
-    return;
+    *(void**)(lbl_8036E548 + 0x3070) = fn_3_BD80C;
+    *(void**)(lbl_8036E548 + 0x3074) = fn_3_BD7DC;
 }
 
 // .text:0x000BD8FC size:0x3A8 mapped:0x806FC990
@@ -240,7 +244,8 @@ void fn_3_BF1AC(void) {
 
 // .text:0x000BF20C size:0x2C mapped:0x806FE2A0
 void fn_3_BF20C(void) {
-    return;
+    fn_8006C43C(0);
+    fn_8006C3F0(0);
 }
 
 // .text:0x000BF238 size:0x488 mapped:0x806FE2CC
