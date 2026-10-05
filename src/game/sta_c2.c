@@ -1,5 +1,9 @@
 #include "game/sta_c2.h"
 #include "header_rep_data.h"
+#include "Dolphin/os.h"
+extern u8 lbl_3_common_bss_350E4[];
+extern char lbl_3_rodata_286C[];
+extern char lbl_3_rodata_2878[];
 #include "Dolphin/mtx.h"
 #pragma dont_inline on
 extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
@@ -434,8 +438,16 @@ void fn_3_D511C(void) {
 }
 
 // .text:0x000D53C0 size:0x84 mapped:0x80714454
-void fn_3_D53C0(void) {
-    return;
+s32 fn_3_D53C0(u8 id) {
+    u32 n = *(u32*)(lbl_3_common_bss_350E4 + 0x30);
+    u8* e = *(u8**)(lbl_3_common_bss_350E4 + 0x14) + n * 8;
+    for (; n != 0; e -= 8, n--) {
+        if (id == *(s32*)(e - 4)) {
+            return n - 1;
+        }
+    }
+    OSPanic(lbl_3_rodata_286C, 0x863, lbl_3_rodata_2878);
+    return 0;
 }
 
 // .text:0x000D5444 size:0x2C mapped:0x807144D8
