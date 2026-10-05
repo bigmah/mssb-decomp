@@ -10,9 +10,18 @@ extern void fn_3_BF1AC(void);
 extern void fn_3_CABB4(void);
 extern void fn_80011578(void);
 
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_8036E548[];
+
 // .text:0x0006A2A4 size:0x5C mapped:0x806A9338
-void fn_3_6A2A4(void) {
-    return;
+void fn_3_6A2A4(s8 idx) {
+    u8* e = *(u8**)(lbl_8036E548 + 0x64) + (idx - 0x1F) * 0x90 + 0x34;
+    lbl_3_common_bss_32724[0xD4] = 1;
+    e[0x5B] = 2;
+    *(f32*)(e + 0x5C) = 0.0f;
+    e[0x59] = 1;
+    *(f32*)(e + 0x54) = 1.0f;
+    e[0x5A] = 1;
 }
 
 // .text:0x0006A300 size:0x100 mapped:0x806A9394
@@ -21,7 +30,6 @@ void fn_3_6A300(void) {
 }
 
 // .text:0x0006A400 size:0x14 mapped:0x806A9494
-extern u8 lbl_3_common_bss_32724[];
 
 void fn_3_6A400(void) {
     lbl_3_common_bss_32724[0xD4] = 0;
