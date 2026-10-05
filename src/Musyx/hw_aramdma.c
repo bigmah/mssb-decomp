@@ -194,10 +194,10 @@ typedef struct ARAMInfo
 // 98.8%: only callee-saved register numbering differs (src/addr/ai/len swapped around inlined aramUploadData)
 void *aramStoreData(void *srcIn, unsigned long len, ARAMInfo *ai)
 {
-  unsigned long addr;    // r25
   void *buffer;          // r30
-  unsigned long blkSize; // r29
   void *src = srcIn;
+  unsigned long addr;    // r25
+  unsigned long blkSize; // r29
   len = (len + 31) & ~31;
 
   if (ai->base == ARGetBaseAddress() + 0x500)
@@ -224,8 +224,7 @@ void *aramStoreData(void *srcIn, unsigned long len, ARAMInfo *ai)
   while (len != 0)
   {
     aramSyncTransferQueue();
-    blkSize = len;
-    if (len >= aramUploadChunkSize) blkSize = aramUploadChunkSize;
+    blkSize = len >= aramUploadChunkSize ? aramUploadChunkSize : len;
     buffer = (void *)aramUploadCallback((u32)src, blkSize);
 
     DCFlushRange(buffer, blkSize);
