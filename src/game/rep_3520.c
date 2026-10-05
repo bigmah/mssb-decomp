@@ -1,6 +1,10 @@
 #include "game/rep_3520.h"
 #include "header_rep_data.h"
 
+#include "static/UnknownHomes_Static.h"
+extern u8 lbl_3_data_21AF0[];
+extern s16 lbl_3_bss_B702;
+
 // .text:0x00133200 size:0x120 mapped:0x80772294
 void fn_3_133200(void) {
     return;
@@ -184,7 +188,8 @@ void fn_3_1370A0(void) {
 
 // .text:0x001371E8 size:0x3C mapped:0x8077627C
 void fn_3_1371E8(void) {
-    return;
+    lbl_3_bss_B702 = *(s16*)lbl_3_data_21AF0;
+    fn_800528AC((fn_800528AC_parameter)fn_3_1370A0);
 }
 
 // .text:0x00137224 size:0x1BC mapped:0x807762B8
