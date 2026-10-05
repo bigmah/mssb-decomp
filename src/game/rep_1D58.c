@@ -18,6 +18,25 @@ extern void GXSetTevAlphaOp(int, int, int, int, int, int);
 extern void fn_800ACFB0(u32);
 extern void* _OSAllocFromHeap(s32, s32);
 
+typedef struct StadExtra {
+    f32 a, b, c;
+    s32 d, e;
+    s16 i;
+    u8 f, g, h;
+} StadExtra;
+typedef struct StadEnt {
+    u8 pad[0xE8];
+    StadExtra* extra;
+} StadEnt;
+typedef struct StadHdr {
+    u8 pad0[6];
+    u16 count;
+    u8 pad8[0x10];
+    StadEnt** list;
+} StadHdr;
+extern f32 lbl_3_rodata_1DCC;
+extern f32 lbl_3_rodata_1DDC;
+
 typedef struct StadObj {
     u8 pad0[0x80];
     void (*fn)(int, int, void*);
@@ -229,8 +248,30 @@ void fn_3_B97DC(void) {
 }
 
 // .text:0x000B98E8 size:0xFC mapped:0x806F897C
-void fn_3_B98E8(void) {
-    return;
+void fn_3_B98E8(void* p) {
+    StadHdr** pp = (StadHdr**)p;
+    f32 one;
+    f32 zero;
+    s32 off;
+    u32 i;
+    zero = lbl_3_rodata_1DCC;
+    one = lbl_3_rodata_1DDC;
+    i = 0;
+    off = 0;
+    for (; i < (*pp)->count; i++) {
+        StadEnt* e = *(StadEnt**)((u8*)(*pp)->list + off);
+        e->extra = _OSAllocFromHeap(0x20, 0x1C);
+        off += 4;
+        e->extra->a = zero;
+        e->extra->b = zero;
+        e->extra->c = one;
+        e->extra->d = 0;
+        e->extra->e = 0;
+        e->extra->f = 0;
+        e->extra->g = 1;
+        e->extra->h = 1;
+        e->extra->i = 0;
+    }
 }
 
 // .text:0x000B99E4 size:0x1D0 mapped:0x806F8A78

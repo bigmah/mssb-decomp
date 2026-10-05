@@ -34,7 +34,7 @@ void fn_3_B9534(void);
 void fn_3_B95EC(void);
 void fn_3_B97C8(void* p);
 void fn_3_B97DC(void);
-void fn_3_B98E8(void);
+void fn_3_B98E8(void* p);
 void fn_3_B99E4(void);
 void fn_3_B9BB4(void);
 void fn_3_B9D68(void);
