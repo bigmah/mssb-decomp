@@ -17,13 +17,15 @@ void fn_3_B8184(void) {
 }
 
 // .text:0x000B827C size:0x10 mapped:0x806F7310
-void fn_3_B827C(void) {
-    return;
+u32 lbl_3_bss_190C;
+
+u32 fn_3_B827C(void) {
+    return lbl_3_bss_190C;
 }
 
 // .text:0x000B828C size:0xC mapped:0x806F7320
-void fn_3_B828C(void) {
-    return;
+void fn_3_B828C(u32 val) {
+    lbl_3_bss_190C = val;
 }
 
 // .text:0x000B8298 size:0x17C mapped:0x806F732C
