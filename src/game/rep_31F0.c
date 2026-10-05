@@ -18,6 +18,11 @@ extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
 
 extern void fn_3_5A6D4(s32);
+extern u8 g_Runners[];
+extern u8 g_Ball[];
+extern u8 lbl_3_common_bss_32220[];
+extern f32 lbl_3_rodata_3268;
+extern f32 shortAngleToRad(s16);
 extern u8 g_Scores[];
 extern void fn_3_10AD48(void);
 extern void fn_3_10F550(s32, s32);
@@ -58,7 +63,18 @@ void fn_3_111038(void) {
 
 // .text:0x001111D0 size:0x80 mapped:0x80750264
 void fn_3_1111D0(void) {
-    return;
+    s32 a;
+    u8* r = g_Runners;
+    if (lbl_3_common_bss_32220[8] == 4) {
+        a = *(s16*)(g_Ball + 0x1B9C);
+        if (a < 0x200) {
+            a = 0x200;
+        }
+        if (a > 0x600) {
+            a = 0x600;
+        }
+        *(f32*)(r + 0x30) = -shortAngleToRad(a) - lbl_3_rodata_3268;
+    }
 }
 
 // .text:0x00111250 size:0x64 mapped:0x807502E4
