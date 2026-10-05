@@ -35,6 +35,9 @@ extern void minigamesSetSomePointers(void);
 extern void minigamesGXStuff(void);
 extern void minigamesSetSomePointers2(void);
 extern int rand();
+extern u8 lbl_3_data_21448[];
+extern u8 g_Pitcher[];
+extern void changeScene(s32, s32);
 extern u8 lbl_3_data_18C48[];
 extern u8 lbl_8037169C[];
 extern s32 fn_3_6C938(s32, s32);
@@ -121,7 +124,39 @@ void fn_3_111A88(void) {
 
 // .text:0x00111AC4 size:0x198 mapped:0x80750B58
 void fn_3_111AC4(void) {
-    return;
+    u8* mg = g_Minigame;
+    u8 st = mg[0x190B];
+    if (st == 0) {
+        if (g_Pitcher[0x13E] == 4) {
+            if (mg[0x1A2D] >= mg[0x1A2F]) {
+                mg[0x190B] = 1;
+                mg[0x1912] = 1;
+            }
+            g_Minigame[*(s8*)(g_Minigame + 0x1905) * 2 + 0x1ACC] = 0;
+            fn_3_155288();
+        }
+    } else {
+        if (st == 1) {
+            mg[0x190B] = 2;
+            *(s16*)(g_GameLogic + 0x100) = *(s16*)lbl_3_data_21448;
+        }
+        *(s16*)(g_GameLogic + 0x100) -= 1;
+        if (g_Minigame[0x1912] != 0 &&
+            (g_Minigame[0x1909] == 0 ||
+             (g_Minigame[0x1909] != 0 && g_Minigame[0x190C] + 1 >= g_Minigame[0x1906] && *(s32*)g_Scores >= g_Scores[0xAA])) &&
+            g_Minigame[0x1A37] == 0 && *(s16*)(g_GameLogic + 0x100) == 0x43) {
+            sndFXStartEx(0x1BE, lbl_800EFBA4[7], 0x3F, 0);
+        }
+        if (*(s16*)(g_GameLogic + 0x100) == 7) {
+            changeScene(3, 6);
+        }
+        if (*(s16*)(g_GameLogic + 0x100) <= 0) {
+            g_GameLogic[0x12B] = 1;
+            g_GameLogic[0x12C] = 1;
+            g_GameLogic[0x12E] = 1;
+            fn_3_5A6D4(8);
+        }
+    }
 }
 
 // .text:0x00111C5C size:0x324 mapped:0x80750CF0
