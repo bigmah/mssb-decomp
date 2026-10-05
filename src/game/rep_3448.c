@@ -70,7 +70,6 @@ void fn_3_11F4B4(s32 idx, s32 flag) {
 }
 
 // .text:0x0011F508 size:0x270 mapped:0x8075E59C
-// near-match (8 lines): case 2 table index register order
 void fn_3_11F508(void) {
     u8** tbl;
     u8* q = lbl_803CC1B8;
@@ -100,15 +99,18 @@ void fn_3_11F508(void) {
         }
         break;
     case 2:
-        if ((*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8 + 8))[0x69] == 2 && g_GameLogic[0x11E] != 2) {
+        {
+        u8* e = lbl_80371C30;
+        e += *(u16*)(q + 0x14) * 8;
+        if ((*(u8**)(e + 8))[0x69] == 2 && g_GameLogic[0x11E] != 2) {
             *(u16*)(q + 0x1C) = 1;
+        }
         }
         break;
     }
 }
 
 // .text:0x0011F778 size:0x2E0 mapped:0x8075E80C
-// near-match (8 lines): case 2 table index register order (same as fn_3_11F508)
 void fn_3_11F778(void) {
     u8** tbl;
     u8* q = lbl_803CC1B8;
@@ -144,8 +146,12 @@ void fn_3_11F778(void) {
         }
         break;
     case 2:
-        if ((*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8 + 8))[0x69] == 2 && g_GameLogic[0x11E] != 2) {
+        {
+        u8* e = lbl_80371C30;
+        e += *(u16*)(q + 0x14) * 8;
+        if ((*(u8**)(e + 8))[0x69] == 2 && g_GameLogic[0x11E] != 2) {
             *(u16*)(q + 0x1C) = 1;
+        }
         }
         break;
     }
