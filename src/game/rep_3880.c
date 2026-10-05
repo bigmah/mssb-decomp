@@ -319,8 +319,25 @@ void fn_3_14CAB4(s8 a) {
 }
 
 // .text:0x0014CB28 size:0x8C mapped:0x8078BBBC
-void fn_3_14CB28(void) {
-    return;
+void fn_3_14CB28(s8 a) {
+    u8* p; s32 id;
+    if (a >= 0xF || a < 0) {
+        return;
+    }
+    p = fn_800339F0(0, 0x20);
+    if (p != NULL) {
+        p = *(u8**)(p + 0xC);
+        id = a;
+        do {
+            if (p[0x45] == id) {
+                p[0x44] = 0;
+                p[0x45] = 0xFF;
+                *(s16*)(p + 0x4A) = 0;
+                p[0x4C] = 0;
+            }
+            p = *(u8**)p;
+        } while (p != NULL);
+    }
 }
 
 // .text:0x0014CBB4 size:0x18C mapped:0x8078BC48
