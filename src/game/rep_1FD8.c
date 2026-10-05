@@ -3,6 +3,7 @@
 
 #include "static/UnknownHomes_Static.h"
 extern void fn_3_C2644(void);
+extern void CTRLBuildMatrix(void*);
 extern u8* lbl_3_bss_9D98;
 extern u8* lbl_3_common_bss_350E4[];
 extern void fn_3_B8184(void);
@@ -322,8 +323,14 @@ void fn_3_C805C(void) {
 }
 
 // .text:0x000C823C size:0x78 mapped:0x807072D0
-void fn_3_C823C(void) {
-    return;
+typedef struct { u8 _0[0x78]; s32 f78; u8 _7C[0xA9 - 0x7C]; u8 fA9; u8 _AA[0xE8 - 0xAA]; } C823CEnt;
+s32 fn_3_C823C(s32 idx, f32* out) {
+    C823CEnt* p = *(C823CEnt**)&lbl_3_common_bss_350E4 + idx;
+    CTRLBuildMatrix(p);
+    if (p->fA9 == 5) {
+        out[7] = -0.002f;
+    }
+    return (*(C823CEnt**)&lbl_3_common_bss_350E4 + idx)->f78;
 }
 
 // .text:0x000C82B4 size:0x39C mapped:0x80707348
