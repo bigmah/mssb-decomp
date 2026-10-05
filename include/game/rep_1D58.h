@@ -22,7 +22,7 @@ void fn_3_B902C(void);
 void fn_3_B908C(void);
 void fn_3_B9124(void);
 void processStadiumObjectFunction(int, void*, int, void*);
-void fn_3_B91C8(void);
+s32 fn_3_B91C8(s32 type, s32 idx, s32 arg);
 void fn_3_B939C(void);
 void fn_3_B93C4(void);
 void fn_3_B93C8(void);

@@ -37,6 +37,20 @@ extern u8 g_d_GameSettings[];
 extern void PSMTXMultVec(void*, void*, void*);
 extern void fn_8003A548(void*);
 extern void* fn_800BF068();
+extern u8 g_Ball[];
+typedef struct StadW78 {
+    u8 pad[0x78];
+    s32 w78;
+} StadW78;
+typedef struct StadObj78 {
+    u8 pad[0x78];
+    s32 w78;
+    u8 pad7C[0xE8 - 0x7C];
+} StadObj78;
+extern s32 fn_3_C823C(s32, s32);
+extern s32 fn_3_E4BE8(s32, s32);
+extern s32 fn_3_F6504(s32, s32);
+extern s32 fn_3_E751C(s32, s32);
 extern void CTRLBuildMatrix(u32, void*);
 extern void PSMTXConcat(void*, void*, void*);
 extern void DOSetWorldMatrix(void*, void*);
@@ -304,8 +318,42 @@ void processStadiumObjectFunction(int stadium, void* a, int b, void* c) {
 }
 
 // .text:0x000B91C8 size:0x1D4 mapped:0x806F825C
-void fn_3_B91C8(void) {
-    return;
+s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
+    s32 idx = idx0;
+    if (type == 1) {
+        return fn_3_C823C(idx, arg);
+    }
+    if (type == 2) {
+        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+            return 0;
+        }
+        CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
+        return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
+    }
+    if (type == 3) {
+        if ((g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+            return 0;
+        }
+        return fn_3_E4BE8(idx, arg);
+    }
+    if (type == 4) {
+        if ((*(s16*)(g_Ball + 0x1B7A) >= 2) | (g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+            return 0;
+        }
+        CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
+        return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
+    }
+    if (type == 5) {
+        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+            return 0;
+        }
+        return fn_3_F6504(idx, arg);
+    }
+    if (type == 6) {
+        return fn_3_E751C(idx, arg);
+    }
+    CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
+    return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
 }
 
 // .text:0x000B939C size:0x28 mapped:0x806F8430
