@@ -2,6 +2,10 @@
 #include "header_rep_data.h"
 
 extern u8 g_Fielders[];
+extern u8 g_Ball[];
+extern u8 g_FieldingLogic[];
+extern u8 lbl_8036E548[];
+extern u8 g_UnkAnimation_31EAC[];
 extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
 
 // .text:0x00060768 size:0x9C mapped:0x8069F7FC
@@ -65,13 +69,24 @@ void fn_3_62CA8(void) {
 }
 
 // .text:0x00062D44 size:0xC0 mapped:0x806A1DD8
-void fn_3_62D44(void) {
-    return;
+void fn_3_62D44(s32 i) {
+    u8 t;
+    u8* f = g_Fielders + i * 0x268;
+    u8* e = g_UnkAnimation_31EAC + i * 0x54;
+    t = f[0x1E5];
+    e[0x41] = 0;
+    if (t == 2) {
+        e[0x41] = 1;
+    } else if (t == 3) {
+        e[0x41] = 2;
+    }
+    if (f[0x256] != 0 && *(s16*)(g_Ball + 0x1B7A) == 0 && *(f32*)(f + 0x248) < *(f32*)(f + 0xE8) &&
+        *(s16*)(g_Ball + 0x1B60) < 0x78 && *(f32*)(g_Ball + 0x19D4) > 5.0f && g_FieldingLogic[0x144] != 0) {
+        e[0x45] = 1;
+    }
 }
 
 // .text:0x00062E04 size:0x24 mapped:0x806A1E98
-extern u8 g_UnkAnimation_31EAC[];
-
 void fn_3_62E04(s32 i) {
     u8* e = g_UnkAnimation_31EAC + i * 0x54;
     *(s16*)(e + 0x3A) = *(s16*)(e + 0x38);
