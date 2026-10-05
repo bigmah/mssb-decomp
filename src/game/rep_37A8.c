@@ -16,6 +16,11 @@ extern void changeScene(s32, s32);
 extern void* memset(void*, s32, u32);
 extern s16 RandomInt_Game_Range(s16, s16);
 extern s16 lbl_3_data_21EAC[];
+extern u8 lbl_80366158[];
+extern s32 lbl_3_bss_B7E4;
+extern u8 lbl_3_bss_B800[];
+extern s8 lbl_3_data_266A4;
+extern void DCFlushRange(void*, u32);
 
 // .text:0x00141C44 size:0x48
 void fn_3_141C44(void) {
@@ -33,7 +38,30 @@ void fn_3_141C8C(void) {
 
 // .text:0x00141F30 size:0x100 mapped:0x80780FC4
 void fn_3_141F30(void) {
-    return;
+    s32 v;
+    u8* p;
+    s32 n;
+    s32 i;
+    lbl_3_bss_B7E4 = lbl_3_bss_B7E4 + (lbl_80366158[0x28] == 0);
+    if (!(lbl_3_bss_B7E4 & 1)) {
+        p = lbl_3_bss_B800;
+        v = p[0];
+        v += lbl_3_data_266A4 * 2;
+        if (v > 0xFF) {
+            v = 0xFF;
+        } else if (v < 0) {
+            v = 0;
+        }
+        for (i = 16; i != 0; i--) {
+            *p = v;
+            p += 2;
+        }
+        DCFlushRange(lbl_3_bss_B800, 0x40);
+        n = v + lbl_3_data_266A4 * 2;
+        if (n > 0xFF || n < 0) {
+            lbl_3_data_266A4 *= -1;
+        }
+    }
 }
 
 // .text:0x00142030 size:0x58 mapped:0x807810C4
