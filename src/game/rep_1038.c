@@ -22,8 +22,10 @@ void fn_3_6C108(void) {
 }
 
 // .text:0x0006C13C size:0x14 mapped:0x806AB1D0
+extern u8 g_Scores[];
+
 void fn_3_6C13C(void) {
-    return;
+    g_Scores[0xC3] = 0;
 }
 
 // .text:0x0006C150 size:0x88 mapped:0x806AB1E4
