@@ -302,8 +302,13 @@ void fn_3_F5EFC(void) {
 }
 
 // .text:0x000F5F28 size:0x24 mapped:0x80734FBC
-void fn_3_F5F28(void) {
-    return;
+s32 fn_3_F5F28(f32* a, f32* b) {
+    f32 x = *a;
+    f32 y = *b;
+    if (x < y) {
+        return -1;
+    }
+    return x > y;
 }
 
 // .text:0x000F5F4C size:0x138 mapped:0x80734FE0
