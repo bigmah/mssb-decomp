@@ -643,6 +643,39 @@ void synthKillVoicesByMacroReferences(u16* ref) {
   }
 }
 
+void synthKillVoicesBySampleReferences(u16* ref) {
+  u32 i;  // r31
+  u16 id; // r29
+
+  for (i = 0; i < synthInfo.voiceNum; ++i) {
+    if (synthVoice[i].addr == NULL && synthVoice[i].block == 0) {
+      voiceKill(i);
+    }
+  }
+
+  while (*ref != 0xFFFF) {
+    if ((*ref & 0x8000)) {
+      id = *ref & 0x3fff;
+      while (id <= ref[1]) {
+        for (i = 0; i < synthInfo.voiceNum; ++i) {
+          if (synthVoice[i].addr != NULL && id == synthVoice[i].sampleId) {
+            voiceKill(i);
+          }
+        }
+        ++id;
+      }
+      ref += 2;
+    } else {
+      for (i = 0; i < synthInfo.voiceNum; ++i) {
+        if (synthVoice[i].addr != NULL && *ref == synthVoice[i].sampleId) {
+          voiceKill(i);
+        }
+      }
+      ++ref;
+    }
+  }
+}
+
 u32 voiceIsLastStarted(SYNTH_VOICE* svoice) {
   u32 i; // r31
 
