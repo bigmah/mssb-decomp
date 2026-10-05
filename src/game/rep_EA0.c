@@ -1,6 +1,8 @@
 #include "game/rep_EA0.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_8036E548[];
+
 // .text:0x0006750C size:0xAC mapped:0x806A65A0
 void fn_3_6750C(void) {
     return;
@@ -48,7 +50,18 @@ void fn_3_68BB4(void) {
 
 // .text:0x000690FC size:0x70 mapped:0x806A8190
 void fn_3_690FC(void) {
-    return;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x26] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x4E] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x76] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x9E] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0xEE] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x116] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x13E] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x166] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x18E] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x1B6] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x206] = 0;
+    (*(u8**)(lbl_8036E548 + 0x2D90))[0x22E] = 0;
 }
 
 // .text:0x0006916C size:0x18 mapped:0x806A8200
