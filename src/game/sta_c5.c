@@ -5,6 +5,13 @@ extern u8 lbl_3_common_bss_350E4[];
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
+extern u8 lbl_8036E548[];
+extern u8 lbl_3_bss_B55C[];
+extern u8 lbl_803CBBC0[];
+extern u8 lbl_3_data_1BA5C[];
+extern void fn_800BDA24(s32);
+extern void fn_800B0A14_removeQueue(void*);
+extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
 extern u32 lbl_3_bss_B154[];
 extern void fn_3_B97DC(void*, u32);
@@ -62,7 +69,16 @@ void fn_3_EEE3C(void) {
 
 // .text:0x000EEF24 size:0x80 mapped:0x8072DFB8
 void fn_3_EEF24(void) {
-    return;
+    if (lbl_8036E548[0x3088] == 0) {
+        fn_800B0A14_removeQueue(lbl_8036E548);
+        return;
+    }
+    if (lbl_8036E548[0x307E] != 0) {
+        fn_800BDA24(*(s32*)lbl_3_bss_B55C);
+        fn_3_EE388();
+        fn_3_EEB94();
+        fn_800A7D4C(1, lbl_3_data_1BA5C + lbl_803CBBC0[0] * 8);
+    }
 }
 
 // .text:0x000EEFA4 size:0x2C mapped:0x8072E038
