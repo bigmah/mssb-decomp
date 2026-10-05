@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 extern u8 g_Pitcher[];
+extern f32 lbl_3_data_446C[];
 
 // .text:0x0006F6CC size:0x7C mapped:0x806AE760
 void fn_3_6F6CC(void) {
@@ -208,8 +209,16 @@ void fn_3_751B4(void) {
 }
 
 // .text:0x000753E8 size:0x4C mapped:0x806B447C
-void fn_3_753E8(void) {
-    return;
+void fn_3_753E8(int a) {
+    g_Pitcher[0x13E] = 0;
+    *(s16*)(g_Pitcher + 0x120) = 0;
+    if (a == 0) {
+        g_Pitcher[0x159] = 0;
+        g_Pitcher[0x15A] = 0;
+    }
+    *(f32*)(g_Pitcher + 0x8C) = lbl_3_data_446C[0];
+    *(f32*)(g_Pitcher + 0x90) = lbl_3_data_446C[1];
+    g_Pitcher[0x15E] = 0;
 }
 
 // .text:0x00075434 size:0x84 mapped:0x806B44C8
