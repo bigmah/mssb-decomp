@@ -44,6 +44,7 @@ BALL_COLLISION_TYPE checkCollision(VecSrcDst* inVec, CollisionStruct* outCollisi
                 ret = BALL_COLLISION_TYPE_NONE;
             } else {
                 processStadiumObjectFunction(g_d_GameSettings.StadiumID, v, ret, outCollision);
+                goto done;
             }
         }
     }
@@ -51,6 +52,7 @@ BALL_COLLISION_TYPE checkCollision(VecSrcDst* inVec, CollisionStruct* outCollisi
         ret = didCollideWithBoundingBoxes(inVec, outCollision, g_UNK_StadiumDetails.pCollisionBoxes,
                                           g_UNK_StadiumDetails.numCollisionBoxes);
     }
+done:
     return ret;
 }
 
