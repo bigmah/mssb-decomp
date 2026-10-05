@@ -1,6 +1,18 @@
 #include "game/rep_16B8.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_3_data_E0E0[];
+
+extern u8 lbl_3_data_F350[];
+
+extern u8 lbl_3_data_F3F0[];
+
+extern u8 lbl_3_data_E120[];
+
+extern void fn_80034E20(void*, void*);
+extern void playSoundEffect(s32);
+extern u8 lbl_3_data_C1EC[];
+
 extern void* lbl_803CC1B8[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 g_GameLogic[];
@@ -23,7 +35,8 @@ void fn_3_91AC8(void) {
 
 // .text:0x00091B50 size:0x4C mapped:0x806D0BE4
 void fn_3_91B50(void) {
-    return;
+    fn_80034E20(lbl_803CC1B8[0], lbl_3_data_F350);
+    *(void**)lbl_803CC1B8[0] = fn_3_91AC8;
 }
 
 // .text:0x00091B9C size:0xD4 mapped:0x806D0C30
@@ -122,7 +135,8 @@ void fn_3_948B8(void) {
 
 // .text:0x00094930 size:0x4C mapped:0x806D39C4
 void fn_3_94930(void) {
-    return;
+    fn_80034E20(lbl_803CC1B8[0], lbl_3_data_F3F0);
+    *(void**)lbl_803CC1B8[0] = fn_3_948B8;
 }
 
 // .text:0x0009497C size:0x248 mapped:0x806D3A10
@@ -185,7 +199,8 @@ void fn_3_954C4(void) {
 
 // .text:0x0009551C size:0x4C mapped:0x806D45B0
 void fn_3_9551C(void) {
-    return;
+    fn_80034E20(lbl_803CC1B8[0], lbl_3_data_E120);
+    *(void**)lbl_803CC1B8[0] = fn_3_954C4;
 }
 
 // .text:0x00095568 size:0x64 mapped:0x806D45FC
@@ -195,7 +210,9 @@ void fn_3_95568(void) {
 
 // .text:0x000955CC size:0x54 mapped:0x806D4660
 void fn_3_955CC(void) {
-    return;
+    fn_80034E20(lbl_803CC1B8[0], lbl_3_data_E0E0);
+    playSoundEffect(0x1A9);
+    *(void**)lbl_803CC1B8[0] = fn_3_95568;
 }
 
 // .text:0x00095620 size:0x350 mapped:0x806D46B4
@@ -205,7 +222,8 @@ void fn_3_95620(void) {
 
 // .text:0x00095970 size:0x4C mapped:0x806D4A04
 void fn_3_95970(void) {
-    return;
+    fn_80034E20(lbl_803CC1B8[0], lbl_3_data_C1EC);
+    *(void**)lbl_803CC1B8[0] = fn_3_95620;
 }
 
 // .text:0x000959BC size:0xCE0 mapped:0x806D4A50
