@@ -4,6 +4,8 @@
 extern u8* lbl_3_common_bss_1323C;
 extern void changeScene(s32, s32);
 extern u8 g_GameLogic[];
+extern u8 g_Scores[];
+extern u8 g_Batter[];
 extern u8 g_Fielders[];
 extern void fn_80052798(s32);
 extern u8 lbl_3_data_2398[];
@@ -85,8 +87,14 @@ void fn_3_22948(void) {
 }
 
 // .text:0x00022A20 size:0x9C mapped:0x80661AB4
-void fn_3_22A20(void) {
-    return;
+s32 fn_3_22A20(void) {
+    s16 x; s16 y; s16* sc;
+    if (g_Batter[0x78] != 0) {
+        sc = (s16*)(g_Scores + 4); x = sc[*(s32*)(g_GameLogic + 0xC) * 0x13]; y = sc[*(s32*)(g_GameLogic + 0x10) * 0x13];
+        return x >= y;
+    }
+    sc = (s16*)(g_Scores + 4); x = sc[*(s32*)(g_GameLogic + 0xC) * 0x13]; y = sc[*(s32*)(g_GameLogic + 0x10) * 0x13];
+    return (u32)__cntlzw(x >= y) >> 5;
 }
 
 // .text:0x00022ABC size:0x154 mapped:0x80661B50

@@ -11,7 +11,7 @@ s32 fn_3_2281C(s32 i);
 void fn_3_22850(void);
 void fn_3_22944(void);
 void fn_3_22948(void);
-void fn_3_22A20(void);
+s32 fn_3_22A20(void);
 void fn_3_22ABC(void);
 void fn_3_22C10(void);
 void fn_3_22C20(void);
