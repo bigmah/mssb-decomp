@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 extern f32 lbl_3_rodata_590;
+extern f32 lbl_3_rodata_608;
 extern f32 lbl_3_rodata_59C;
 extern f32 lbl_3_rodata_5F8;
 extern f64 lbl_3_rodata_600;
@@ -176,8 +177,31 @@ void fn_3_B940(void) {
 }
 
 // .text:0x0000BBBC size:0x98 mapped:0x8064AC50
-void fn_3_BBBC(void) {
-    return;
+s32 fn_3_BBBC(f32* out, s32 n, s32 step, f32 x, f32 z) {
+    f32 best = lbl_3_rodata_608;
+    s32 i;
+    s32 found = -1;
+    for (i = 0; i < n; i += step) {
+        f32 dx = *(f32*)(g_Ball + i * 16 + 0x354) - x;
+        f32 dz = *(f32*)(g_Ball + i * 16 + 0x35C) - z;
+        f32 d = dx * dx + dz * dz;
+        if (d < best) {
+            best = d;
+            found = i;
+        } else {
+            break;
+        }
+    }
+    if (found < 0) {
+        return -1;
+    }
+    {
+        u8* e = g_Ball + found * 16;
+        out[0] = *(f32*)(e + 0x354);
+        out[1] = *(f32*)(e + 0x358);
+        out[2] = *(f32*)(e + 0x35C);
+    }
+    return found;
 }
 
 // .text:0x0000BC54 size:0x124 mapped:0x8064ACE8

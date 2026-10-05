@@ -27,7 +27,7 @@ void fn_3_A83C(void);
 void fn_3_A970(void);
 void fn_3_B440(void);
 void fn_3_B940(void);
-void fn_3_BBBC(void);
+s32 fn_3_BBBC(f32* out, s32 n, s32 step, f32 x, f32 z);
 void fn_3_BC54(void);
 void fn_3_BD78(void);
 void fn_3_C034(void);
