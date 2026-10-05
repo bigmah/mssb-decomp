@@ -95,6 +95,9 @@ void vidRemoveVoiceReferences(SYNTH_VOICE* svoice) {
     vidRemove(&svoice->vidList);
   } else if (svoice->child != 0xFFFFFFFF) {
     svoice->vidList->root = svoice->child;
+    if (svoice->vidList != svoice->vidMasterList) {
+      svoice->vidMasterList->root = svoice->child;
+    }
     synthVoice[svoice->child & 0xFF].parent = 0xFFFFFFFF;
     synthVoice[svoice->child & 0xFF].vidMasterList = svoice->vidMasterList;
     if (svoice->vidList != svoice->vidMasterList) {
