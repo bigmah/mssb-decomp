@@ -1,5 +1,9 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
+
+extern void fn_3_C39C8(void);
+extern void fn_3_CE8E4(void);
+extern void fn_3_F8ABC(void);
 #include "static/UnknownHomes_Static.h"
 
 extern s16 lbl_3_bss_9952;
@@ -205,7 +209,14 @@ void fn_3_BF070(void) {
 
 // .text:0x000BF158 size:0x54 mapped:0x806FE1EC
 void fn_3_BF158(void) {
-    return;
+    u8 v = g_d_GameSettings.StadiumID;
+    if (v == 1) {
+        fn_3_C39C8();
+    } else if (v == 2) {
+        fn_3_CE8E4();
+    } else if (v == 4) {
+        fn_3_F8ABC();
+    }
 }
 
 // .text:0x000BF1AC size:0x60 mapped:0x806FE240
