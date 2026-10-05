@@ -123,8 +123,9 @@ u32 vidMakeNew(SYNTH_VOICE* svoice, u32 isMaster) {
   VID_LIST* vl;  // r31
 
   vid = get_newvid();
-  lvl = NULL;
+retry:
   nvl = vidRoot;
+  lvl = NULL;
 
   while (nvl != NULL) {
     if (nvl->vid > vid) {
@@ -133,6 +134,9 @@ u32 vidMakeNew(SYNTH_VOICE* svoice, u32 isMaster) {
 
     if (nvl->vid == vid) {
       vid = get_newvid();
+      if (vid < nvl->vid) {
+        goto retry;
+      }
     }
 
     lvl = nvl;
