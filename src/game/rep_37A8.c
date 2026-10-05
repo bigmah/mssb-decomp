@@ -65,8 +65,8 @@ void fn_3_141F30(void) {
 }
 
 // .text:0x00142030 size:0x58 mapped:0x807810C4
-void fn_3_142030(void) {
-    return;
+s32 fn_3_142030(s32 a, s32 b, s32 c) {
+    return (b / 4) * 4 * c + (a / 4) * 4 * 4 + (b % 4) * 4 + a % 4;
 }
 
 // .text:0x00142088 size:0x1D4 mapped:0x8078111C
