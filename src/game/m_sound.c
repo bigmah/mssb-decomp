@@ -1,9 +1,19 @@
 #include "game/m_sound.h"
 #include "header_rep_data.h"
+
+extern u8 lbl_3_common_bss_34C58[];
+
+#include "static/UnknownHomes_Static.h"
+extern void* lbl_3_bss_1768;
+extern void fn_3_8B094(void);
 #include "musyx/musyx.h"
 
 void fn_3_902FC(void) {
     sndVolume(0, 10, 0xFF);
+}
+
+void fn_3_8B2E4(void) {
+    lbl_3_bss_1768 = fn_800B0A5C_insertQueue(fn_3_8B094, 0);
 }
 
 // .text:0x0008B718 size:0xC4 mapped:0x806CA7AC
@@ -98,7 +108,11 @@ void fn_3_8DA80(void) {
 
 // .text:0x0008F1C8 size:0x54 mapped:0x806CE25C
 void fn_3_8F1C8(void) {
-    return;
+    *(s16*)(lbl_3_common_bss_34C58 + 0x20) = -1;
+    *(s16*)(lbl_3_common_bss_34C58 + 0x22) = -1;
+    lbl_3_common_bss_34C58[0x29] = 0;
+    lbl_3_common_bss_34C58[0x2A] = 0;
+    lbl_3_bss_1768 = fn_800B0A5C_insertQueue(fn_3_8B094, 0);
 }
 
 // .text:0x0008F21C size:0x9F0 mapped:0x806CE2B0

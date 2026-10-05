@@ -32,4 +32,6 @@ void fn_3_90150(void);
 
 void fn_3_902FC(void);
 
+void fn_3_8B2E4(void);
+
 #endif // !__GAME_m_sound_H_
