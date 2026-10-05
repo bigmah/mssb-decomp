@@ -76,6 +76,11 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Low-byte read-modify-write:** `w = v | (w & ~0xFF)` gives `rlwimi r0, r4, 0, 24, 31`; the other operand order gives swapped operands.
 - **Float literal vs. extern rodata:** comparing against a literal (`0.17f`) instead of the extern rodata symbol can fix `lfs` scheduling; loading an extern float into a local first fixes others.
 - **`switch` on an `s8`** reproduced an odd `beq`/`b` shape; `*(s16*)(p+off) += 1` matched where `x = *p; if (x < N) *p = x + 1` did not.
+- **Float literal instead of extern rodata (fixes prologue scheduling and constant reuse):** `CTRLSetScale(c, 0.2f, 0.2f, 0.2f); a[0xB4] = 0.2f;` matched where `extern f32 lbl_3_rodata_2B28` did not (fn_3_E45A8, fn_3_E45F0, fn_3_E2034, fn_3_13D5E8 with `100.0f`). Look up the value in the `.obj lbl_3_rodata_XXXX` block of `build/GYQE01/game/asm/...`. Works when a function uses one or two distinct constants; with 3+ the literals get pooled again, so use externs there. Declaring an unused `extern const f32` for a rodata symbol can break a *different* function that uses the same literal.
+- **`2.5 >= PSVECMag(&v)`** (constant on the left) gives `fcmpo f0,f1; cror eq,gt,eq`; `PSVECMag(&v) <= 2.5` gives the swapped form.
+- **Bottom-tested update order in `for` headers:** `for (...; i++, a += 0xC, b += 2, c += 1)` vs another order changes where the `addi`s are scheduled (fn_3_13F6C8). Try all 24 permutations with `fnvariants`.
+- **Do-while with two pointers advancing at different strides** (`u8* m` +1 and `s16* sp` +1): declaring the pointer locals in a different order changes which one gets r4/r5; permute declaration order with a script.
+- **`#pragma dont_inline on` also stops `static inline` helpers from inlining** in the same file region; to inline a helper, put `#pragma dont_inline off` around it AND its callers, and even then CW may not inline a body this large.
 - **Still unsolved:** nested early returns that compile to `bge L; b L` (fn_3_15521C, fn_3_150010, fn_3_14DC80, fn_3_14CB28); pooled float constants in float-heavy functions.
 
 Add new patterns to this list as we find them.

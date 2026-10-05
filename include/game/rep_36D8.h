@@ -9,7 +9,7 @@ s32 fn_3_13D5E8(f32* a, f32* b);
 void fn_3_13D618(void);
 s32 fn_3_13DA20(f32* a, f32* b);
 void fn_3_13DA50(void);
-void fn_3_13DC48(void);
+void fn_3_13DC48(s8 idx, f32 ang, f32* out1, f32* out2);
 f32 fn_3_13DDE0(f32 a, f32 b, u8 mode);
 void fn_3_13DEA4(void);
 void fn_3_13DFBC(void);
