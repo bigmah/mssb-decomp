@@ -2,6 +2,13 @@
 #include "header_rep_data.h"
 
 extern u8 g_Scores[];
+extern u8 lbl_3_data_91FC[];
+extern u8 lbl_800EF808[];
+extern u8 lbl_800EFBA4[];
+extern void fn_800363D8(void*, int, int, int, s32);
+extern void fn_800362F0(void*, int);
+extern void fn_3_90064(int);
+extern u32 sndFXStartEx(int, u8, u8, u8);
 extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_23894[];
 extern u8 lbl_3_data_238F4[];
@@ -253,7 +260,61 @@ void fn_3_1254F8(void) {
 
 // .text:0x00125604 size:0x24C mapped:0x80764698
 void fn_3_125604(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    if (g_Minigame[0x1A40] == 0) {
+        u16 t = *(u16*)(q + 0x18);
+        if (t < 0xFFFE) {
+            *(u16*)(q + 0x18) = t + 1;
+        } else {
+            *(u16*)(q + 0x18) = 0xFFFF;
+        }
+        t = *(u16*)(q + 0x1C);
+        if (t == 0) {
+            u8* m = g_Minigame;
+            if (m[0x1A41] != 0) {
+                *(s16*)(m + 0x1A28) -= 1;
+                if (*(s16*)(m + 0x1A28) <= 0) {
+                    *(u16*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x64) = *(u16*)(lbl_3_data_91FC + m[0x1A41] * 2);
+                    *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x54) |= 2;
+                    (*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8))[0x68] = 1;
+                    *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x5C) = 0;
+                    if (m[0x1A41] == 4) {
+                        fn_800363D8(q, 0, 1, 0x13C, *(s32*)g_Scores - 1);
+                        fn_3_90064(0x2F8);
+                    }
+                    *(u16*)(q + 0x1C) = m[0x1A41];
+                    *(u16*)(q + 0x18) = 0;
+                    g_Minigame[0x1A42] = 1;
+                    m[0x1A41] = 0;
+                }
+            }
+        } else {
+            if ((*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8))[0x69] == 2) {
+                if (t == 4) {
+                    fn_800362F0(q, 0);
+                }
+                *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x54) &= ~2;
+                g_Minigame[0x1A42] = 0;
+                g_Minigame[0x1A41] = 0;
+                *(u16*)(q + 0x1C) = 0;
+            }
+            t = *(u16*)(q + 0x1C);
+            if (t == 2) {
+                if (*(u16*)(q + 0x18) == 0x46) {
+                    sndFXStartEx(0x1BD, lbl_800EFBA4[6], 0x3F, 0);
+                    return;
+                }
+            } else if (t == 1) {
+                if (*(u16*)(q + 0x18) == 1 && lbl_800EF808[0x398] == 1) {
+                    fn_3_90064(0x2EE);
+                    return;
+                }
+            }
+        }
+    } else {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 
 // .text:0x00125850 size:0x70 mapped:0x807648E4
