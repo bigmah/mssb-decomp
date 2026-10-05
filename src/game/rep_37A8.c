@@ -72,8 +72,19 @@ void fn_3_142C18(void) {
 }
 
 // .text:0x00142CA8 size:0x10C mapped:0x80781D3C
+typedef struct { u8 pad0[0x1890]; s16 a[4]; u8 pad1[0x1B58 - 0x1898]; u8 b[4][10]; } MgArr2;
+
 void fn_3_142CA8(void) {
-    return;
+    MgArr2* m = (MgArr2*)g_Minigame;
+    s32 i;
+    s32 j;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 10; j++) {
+            m->a[i] += m->b[i][j];
+            m->b[i][j] = 0;
+        }
+        g_Minigame[0x1B80 + i] = 0;
+    }
 }
 
 // .text:0x00142DB4 size:0x31C mapped:0x80781E48
