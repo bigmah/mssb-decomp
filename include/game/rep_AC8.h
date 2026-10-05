@@ -26,7 +26,7 @@ void fn_3_2A288(void);
 void fn_3_2A69C(void);
 int fn_3_2ACD8(int, int);
 void fn_3_2AD68(void);
-void fn_3_2B5C0(void);
+void fn_3_2B5C0(int);
 void fn_3_2B694(void);
 int fn_3_2BB04(int);
 void fn_3_2C238(int, int, int, int, int);

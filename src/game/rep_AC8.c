@@ -3,6 +3,8 @@
 
 extern u8 g_Ball[];
 extern u8 g_Fielders[];
+extern int fn_3_9FB8C(f32 x, f32 y);
+extern int fn_3_9FCA4(s16 a, s16 b);
 extern u8 g_FieldingLogic[];
 extern u8 lbl_3_data_3C40[];
 extern u8 lbl_3_data_4930[];
@@ -67,6 +69,8 @@ void fn_3_27648(void) {
 
 // .text:0x00027738 size:0x2C mapped:0x806667CC
 extern u8 g_Fielders[];
+extern int fn_3_9FB8C(f32 x, f32 y);
+extern int fn_3_9FCA4(s16 a, s16 b);
 
 void fn_3_27738(s32 i) {
     u8* f = g_Fielders + i * 0x268;
@@ -140,8 +144,20 @@ void fn_3_2AD68(void) {
 }
 
 // .text:0x0002B5C0 size:0xD4 mapped:0x8066A654
-void fn_3_2B5C0(void) {
-    return;
+void fn_3_2B5C0(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 a;
+    s16 d;
+    f[0x261] = 0;
+    a = fn_3_9FB8C(*(f32*)g_Ball - *(f32*)f, *(f32*)(g_Ball + 8) - *(f32*)(f + 8));
+    d = fn_3_9FCA4(a, fn_3_9FB8C(*(f32*)(f + 0x21C) - *(f32*)f, *(f32*)(f + 0x224) - *(f32*)(f + 8)));
+    if (d < -0x500 || d > 0x500) {
+        f[0x261] = 3;
+    } else if (d < -0x200) {
+        f[0x261] = 1;
+    } else if (d > 0x200) {
+        f[0x261] = 2;
+    }
 }
 
 // .text:0x0002B694 size:0x470 mapped:0x8066A728
