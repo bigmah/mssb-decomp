@@ -142,7 +142,11 @@ void fn_3_CEBBC(void) {
 
 // .text:0x000CEC98 size:0x98 mapped:0x8070DD2C
 void fn_3_CEC98(void) {
-    return;
+    s32 k = (g_Ball[0x1BE5] != 0) + 8;
+    lbl_3_bss_A898[k] = 1;
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x48) = *(f32*)(g_Ball + 0);
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x4C) = -*(f32*)(g_Ball + 4);
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x50) = *(f32*)(g_Ball + 8);
 }
 
 // .text:0x000CED30 size:0x4 mapped:0x8070DDC4
