@@ -1,9 +1,22 @@
 #include "game/rep_2998.h"
 #include "header_rep_data.h"
 
+extern f32 lbl_3_rodata_2A54;
+extern f32 lbl_3_rodata_2A58;
+extern void fn_800B4CA0(void*, f32);
+extern void AnimateActorBones(void*);
+
 // .text:0x000E1FA8 size:0x8C mapped:0x8072103C
-void fn_3_E1FA8(void) {
-    return;
+void fn_3_E1FA8(u8* a) {
+    u8* d = *(u8**)(a + 0x74);
+    void* o = *(void**)d;
+    if (*(f32*)(d + 0x5C) + *(f32*)(d + 0x54) > lbl_3_rodata_2A54) {
+        *(f32*)(d + 0x5C) = lbl_3_rodata_2A58;
+        d[0x59] = 1;
+        fn_800B4CA0(o, *(f32*)(d + 0x5C));
+    }
+    AnimateActorBones(o);
+    *(f32*)(d + 0x5C) = *(f32*)(d + 0x5C) + *(f32*)(d + 0x54);
 }
 
 // .text:0x000E2034 size:0xE4 mapped:0x807210C8

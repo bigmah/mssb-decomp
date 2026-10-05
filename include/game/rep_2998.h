@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_E1FA8(void);
+void fn_3_E1FA8(u8* a);
 void fn_3_E2034(void);
 void fn_3_E2118(void);
 void fn_3_E22A4(void);
