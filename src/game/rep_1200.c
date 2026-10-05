@@ -112,8 +112,10 @@ void fn_3_736CC(void) {
 }
 
 // .text:0x00073718 size:0x14 mapped:0x806B27AC
+extern u8 g_Ball[];
+
 void fn_3_73718(void) {
-    return;
+    *(s16*)(g_Ball + 0x1B6A) = -1;
 }
 
 // .text:0x0007372C size:0x124 mapped:0x806B27C0
