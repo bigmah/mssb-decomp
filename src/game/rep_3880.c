@@ -238,7 +238,23 @@ void fn_3_14C79C(u8* a) {
 
 // .text:0x0014C830 size:0xD4 mapped:0x8078B8C4
 void fn_3_14C830(void) {
-    return;
+    u8* a = fn_80033A24(fn_3_14C4C8, 0x80, 0, *(int*)(lbl_3_data_26D5C + 4), 1, 0xA);
+    u8* p;
+    f32 f;
+    if (a != NULL) {
+        *(u32*)(a + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
+        p = *(u8**)(a + 0xC);
+        p[0x4D] = *(u32*)lbl_3_data_26D5C;
+        p[0x4E] = 0;
+        *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26D5C + 8);
+        f = *(s32*)(lbl_3_data_26D5C + 0x10) / 100000.0f;
+        *(f32*)(p + 0x3C) = f;
+        *(f32*)(p + 0x38) = f;
+        p[0x43] = *(s32*)(lbl_3_data_26D5C + 0x1C);
+        p[0x42] = 0xFF;
+        p[0x41] = 0xFF;
+        p[0x40] = 0xFF;
+    }
 }
 
 // .text:0x0014C904 size:0xFC mapped:0x8078B998
