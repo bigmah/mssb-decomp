@@ -12,8 +12,14 @@ void fn_3_13C7BC(void) {
 }
 
 // .text:0x0013D578 size:0x70 mapped:0x8077C60C
-void fn_3_13D578(void) {
-    return;
+u32 fn_3_13D578(s8 a) {
+ u8* m = g_Minigame; s16* sp=(s16*)g_Minigame; s16* tp=(s16*)(g_Minigame+0x1890+a*2); s8 i=0;
+ do {
+     s8 t = *(s8*)(m + 0x18CC);
+        if (t >= 0 && t < 4 && *(s16*)((u8*)sp + 0x1890) > *tp) { return 1; }
+        i++; m += 1; sp += 1;
+    } while (i < 4);
+    return 0;
 }
 
 // .text:0x0013D5E8 size:0x30 mapped:0x8077C67C

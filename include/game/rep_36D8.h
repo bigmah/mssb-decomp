@@ -4,7 +4,7 @@
 #include "mssbTypes.h"
 
 void fn_3_13C7BC(void);
-void fn_3_13D578(void);
+u32 fn_3_13D578(s8 a);
 s32 fn_3_13D5E8(f32* a, f32* b);
 void fn_3_13D618(void);
 s32 fn_3_13DA20(f32* a, f32* b);
