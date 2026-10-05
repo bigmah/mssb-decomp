@@ -1,6 +1,17 @@
 #include "musyx/musyx_priv.h"
 #include "musyx/seq.h"
 #include "musyx/synth.h"
+#include "musyx/synth_dbtab.h"
+
+extern u32 dspARIndexTab[129];
+extern f32 lbl_803CD178;
+
+#define rdLE16(p) ((u16)((*(u16*)(p) >> 8) | (*(u16*)(p) << 8)))
+#define rdLE32(p) (((u8*)(p))[0] | (((u8*)(p))[1] << 8) | (((u8*)(p))[2] << 16) | (((u8*)(p))[3] << 24))
+
+extern f32 lbl_803CD158;
+extern f32 lbl_803CD15C;
+extern f32 lbl_803CD160;
 
 static u8 DebugMacroSteps = 0;
 
@@ -654,6 +665,34 @@ static void mcmdSetADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
   s32 ascale;          // r29
   s32 dscale;          // r28
   float sScale;        // r63
+
+  if ((adsr_ptr = dataGetCurve(cstep->para[0] >> 8)) != NULL) {
+    if (cstep->para[0] >> 24 == 0) {
+      adsr.data.linear.atime = rdLE16((u8*)adsr_ptr + 0);
+      adsr.data.linear.dtime = rdLE16((u8*)adsr_ptr + 2);
+      adsr.data.linear.slevel = rdLE16((u8*)adsr_ptr + 4);
+      adsr.data.linear.rtime = rdLE16((u8*)adsr_ptr + 6);
+      hwSetADSR(svoice->id & 0xFF, &adsr, 0);
+    } else {
+      sScale = dspDLSVolTab[rdLE16((u8*)adsr_ptr + 8) >> 5];
+      adsr.data.dls.atime = rdLE32((u8*)adsr_ptr + 0);
+      adsr.data.dls.dtime = rdLE32((u8*)adsr_ptr + 4);
+      adsr.data.dls.slevel = lbl_803CD158 * sScale;
+      adsr.data.dls.rtime = rdLE16((u8*)adsr_ptr + 0xA);
+      ascale = rdLE32((u8*)adsr_ptr + 0xC);
+      dscale = rdLE32((u8*)adsr_ptr + 0x10);
+      if (ascale != 0x80000000) {
+        sScale = lbl_803CD15C * svoice->orgVolume;
+        adsr.data.dls.atime += (s32)(sScale * ascale);
+      }
+      if (dscale != 0x80000000) {
+        sScale = lbl_803CD160 * svoice->orgNote;
+        adsr.data.dls.dtime += (s32)(sScale * dscale);
+      }
+      hwSetADSR(svoice->id & 0xFF, &adsr, 1);
+    }
+    svoice->cFlags |= 0x100;
+  }
 }
 #pragma dont_inline reset
 
@@ -675,6 +714,19 @@ static s32 midi2TimeTab[128] = {
 static void mcmdSetADSRFromCtrl(SYNTH_VOICE* svoice, MSTEP* cstep) {
   float sScale;   // r63
   ADSR_INFO adsr; // r1+0x10
+
+  sScale = dspDLSVolTab[inpGetMidiCtrl(cstep->para[0] >> 24, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.atime =
+      dspARIndexTab[inpGetMidiCtrl((cstep->para[0] >> 8) & 0xFF, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.dtime =
+      dspARIndexTab[inpGetMidiCtrl((cstep->para[0] >> 16) & 0xFF, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.slevel = 193 - dspScale2IndexTab[(u32)(lbl_803CD178 * sScale)];
+  adsr.data.dls.rtime =
+      dspARIndexTab[inpGetMidiCtrl(cstep->para[1] & 0xFF, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.ascale = 0x80000000;
+  adsr.data.dls.dscale = 0x80000000;
+  hwSetADSR(svoice->id & 0xFF, &adsr, 2);
+  svoice->cFlags |= 0x100;
 }
 
 static void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
@@ -940,6 +992,14 @@ static void mcmdDopplerSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
 
 static void mcmdTremoloSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
   SelectSource(svoice, &svoice->inpTremolo, cstep, 0x10000000, 0x1000);
+}
+
+static void mcmdFilterSwitchSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+  SelectSource(svoice, &svoice->inpFilterSwitch, cstep, 0x40, 0x2000);
+}
+
+static void mcmdFilterParameterSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+  SelectSource(svoice, &svoice->inpFilterParameter, cstep, 0x800, 0x4000);
 }
 
 static void mcmdAuxAFXSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
@@ -1231,6 +1291,8 @@ static void macHandleActive(SYNTH_VOICE* svoice) {
     channelDefaults = inpGetChannelDefaults(svoice->midi, svoice->midiSet);
     svoice->pbLowerKeyRange = channelDefaults->pbRange;
     svoice->pbUpperKeyRange = channelDefaults->pbRange;
+    svoice->lpfLowerFrqBoundary = channelDefaults->lpfLowerFrqBound;
+    svoice->lpfUpperFrqBoundary = channelDefaults->lpfUpperFrqBound;
     svoice->revVolScale = 128;
     svoice->revVolOffset = 0;
     svoice->loop = 0;
@@ -1252,6 +1314,7 @@ static void macHandleActive(SYNTH_VOICE* svoice) {
     svoice->trapEventAny = 0;
     svoice->sInfo = -1;
     svoice->playFrq = -1;
+    svoice->sampleId = 0xFFFF;
     svoice->pbLast = 0x2000;
     svoice->curOutputVolume = 0;
     svoice->cFlags &= 8;
