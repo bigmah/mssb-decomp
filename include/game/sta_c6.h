@@ -3,8 +3,8 @@
 
 #include "mssbTypes.h"
 
-void fn_3_E59B4(void);
-void fn_3_E5A1C(void);
+void fn_3_E59B4(u8* a);
+void fn_3_E5A1C(u8* a);
 void fn_3_E5A84(void);
 void fn_3_E5CBC(void);
 void fn_3_E5E14(void);

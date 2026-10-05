@@ -1,5 +1,15 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
+
+extern f32 lbl_3_rodata_2B9C;
+extern f32 lbl_3_rodata_2BA0;
+
+extern f32 lbl_3_rodata_2B90;
+extern f32 lbl_3_rodata_2B94;
+extern f32 lbl_3_rodata_2B98;
+extern f32 fn_800B4C40(void*);
+extern void fn_800B4CA0(void*, f32);
+extern void AnimateActorBones(void*);
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_3_common_bss_350E4[];
@@ -13,13 +23,21 @@ extern u8 lbl_3_data_1963F;
 extern u8 lbl_3_data_19640;
 
 // .text:0x000E59B4 size:0x68 mapped:0x80724A48
-void fn_3_E59B4(void) {
-    return;
+void fn_3_E59B4(u8* a) {
+    void* o = **(void***)(a + 0x74);
+    if (lbl_3_rodata_2B90 + fn_800B4C40(o) > lbl_3_rodata_2B94) {
+        fn_800B4CA0(o, lbl_3_rodata_2B98);
+    }
+    AnimateActorBones(o);
 }
 
 // .text:0x000E5A1C size:0x68 mapped:0x80724AB0
-void fn_3_E5A1C(void) {
-    return;
+void fn_3_E5A1C(u8* a) {
+    void* o = **(void***)(a + 0x74);
+    if (lbl_3_rodata_2B90 + fn_800B4C40(o) > lbl_3_rodata_2B9C) {
+        fn_800B4CA0(o, lbl_3_rodata_2BA0);
+    }
+    AnimateActorBones(o);
 }
 
 // .text:0x000E5A84 size:0x238 mapped:0x80724B18
