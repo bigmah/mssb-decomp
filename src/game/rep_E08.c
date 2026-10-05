@@ -1,6 +1,9 @@
 #include "game/rep_E08.h"
 #include "header_rep_data.h"
 
+extern u8 g_Fielders[];
+extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
+
 // .text:0x00060768 size:0x9C mapped:0x8069F7FC
 void fn_3_60768(void) {
     return;
@@ -77,7 +80,7 @@ void fn_3_62E04(s32 i) {
 
 // .text:0x00062E28 size:0x48 mapped:0x806A1EBC
 void fn_3_62E28(void) {
-    return;
+    AnimateCharacter(1, 0x3D, 1, 1, 1, 0, g_Fielders[0x42F], 0);
 }
 
 // .text:0x00062E70 size:0x33C mapped:0x806A1F04
