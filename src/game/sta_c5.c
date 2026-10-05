@@ -286,8 +286,14 @@ void fn_3_F3A04(u8* p) {
 }
 
 // .text:0x000F3A5C size:0x84 mapped:0x80732AF0
-void fn_3_F3A5C(void) {
-    return;
+void fn_3_F3A5C(u8* p, f32 x, f32 y, f32 z, f32 r) {
+    *(f32*)(p + 0xA0) = x;
+    *(f32*)(p + 0xA4) = y;
+    *(f32*)(p + 0xA8) = z;
+    *(f32*)(p + 0xB4) = r;
+    p[0] = 0;
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetRotation((Control*)p, 0.0f, r, 0.0f);
 }
 
 // .text:0x000F3AE0 size:0xD0 mapped:0x80732B74
