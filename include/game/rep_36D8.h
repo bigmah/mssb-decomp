@@ -4,18 +4,18 @@
 #include "mssbTypes.h"
 
 void fn_3_13C7BC(void);
-void fn_3_13D578(void);
-void fn_3_13D5E8(void);
+u32 fn_3_13D578(s8 a);
+s32 fn_3_13D5E8(f32* a, f32* b);
 void fn_3_13D618(void);
-void fn_3_13DA20(void);
+s32 fn_3_13DA20(f32* a, f32* b);
 void fn_3_13DA50(void);
-void fn_3_13DC48(void);
-void fn_3_13DDE0(void);
+void fn_3_13DC48(s8 idx, f32 ang, f32* out1, f32* out2);
+f32 fn_3_13DDE0(f32 a, f32 b, u8 mode);
 void fn_3_13DEA4(void);
 void fn_3_13DFBC(void);
-void fn_3_13E174(void);
-void fn_3_13E21C(void);
-void fn_3_13E3A4(void);
+void fn_3_13E174(u8 a);
+void fn_3_13E21C(u8* a);
+void fn_3_13E3A4(u8* a);
 void fn_3_13E670(void);
 void fn_3_13E6D4(void);
 void fn_3_13E7D4(void);
