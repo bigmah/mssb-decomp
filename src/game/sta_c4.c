@@ -1,6 +1,8 @@
 #include "game/sta_c4.h"
 #include "header_rep_data.h"
 #pragma dont_inline on
+extern void* lbl_803CC1B8;
+extern void fn_800B0A14_removeQueue(void*);
 extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 
 #include "Dolphin/GX/GXBump.h"
@@ -85,7 +87,14 @@ void fn_3_F9164(void) {
 
 // .text:0x000F92FC size:0x50 mapped:0x80738390
 void fn_3_F92FC(void) {
-    return;
+    typedef struct { u8 pad[0x90]; u8 a : 2; u8 f : 1; u8 b : 5; } FlagObj;
+    typedef struct { u8 pad[0x10]; s16 cnt; FlagObj* obj; } StateObj;
+    StateObj* st = (StateObj*)lbl_803CC1B8;
+    if (st->cnt-- == 0) {
+        FlagObj* o = st->obj;
+        o->f = 1;
+        fn_800B0A14_removeQueue(o);
+    }
 }
 
 // .text:0x000F934C size:0x2F0 mapped:0x807383E0
