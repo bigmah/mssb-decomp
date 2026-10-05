@@ -8,6 +8,8 @@ extern u8* lbl_803CC1B8;
 extern void* (*lbl_3_data_11390[])(void*);
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_3_data_11380[];
+extern s32 lbl_3_data_17000[];
+extern f32 lbl_3_rodata_1EC4;
 extern s32 ARAMTransfer(void*, int, int, int);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_8006C43C(int);
@@ -91,8 +93,8 @@ void fn_3_BC25C(void) {
 }
 
 // .text:0x000BC274 size:0x68 mapped:0x806FB308
-void fn_3_BC274(void) {
-    return;
+s32 fn_3_BC274(u8* a, u8* b, u8* c) {
+    return (*(f32*)(b + 4) - *(f32*)(c + 4)) < (f32)lbl_3_data_17000[*(s8*)(a + 0x252)] / lbl_3_rodata_1EC4;
 }
 
 // .text:0x000BC2DC size:0x3FC mapped:0x806FB370

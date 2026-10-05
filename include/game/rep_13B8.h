@@ -71,7 +71,7 @@ void fn_3_8911C(void);
 void fn_3_8913C(void);
 void fn_3_89864(s32 i, s32 d);
 void fn_3_898BC(s32 i, s32 j);
-void fn_3_89914(void);
+void fn_3_89914(s32 a, s32 b);
 void fn_3_899BC(void);
 void fn_3_8A1D8(void);
 void fn_3_8A350(void);
