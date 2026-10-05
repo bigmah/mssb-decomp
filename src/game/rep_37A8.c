@@ -6,6 +6,17 @@ extern u8 g_Minigame[];
 
 #include "static/UnknownHomes_Static.h"
 extern void fn_3_141C8C(void);
+extern u8 lbl_3_bss_B7C1[];
+extern void fn_800B993C(void);
+
+// .text:0x00141C44 size:0x48
+void fn_3_141C44(void) {
+    lbl_3_bss_B7C1[0] += 1;
+    if (lbl_3_bss_B7C1[0] >= 6) {
+        lbl_3_bss_B7C1[0] = 0;
+        fn_800B993C();
+    }
+}
 
 // .text:0x00141C8C size:0x2A4 mapped:0x80780D20
 void fn_3_141C8C(void) {
