@@ -43,8 +43,12 @@ void fn_3_C2644(void) {
 }
 
 // .text:0x000C2974 size:0x18 mapped:0x80701A08
+extern u8 lbl_3_bss_9DE7;
+extern u8 lbl_3_bss_9D82;
+
 void fn_3_C2974(void) {
-    return;
+    lbl_3_bss_9DE7 = 1;
+    lbl_3_bss_9D82 = 1;
 }
 
 // .text:0x000C298C size:0x114 mapped:0x80701A20
