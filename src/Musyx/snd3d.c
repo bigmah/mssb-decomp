@@ -318,6 +318,31 @@ bool32 sndCheckEmitter(SND_EMITTER *em)
     return FALSE;
 }
 
+static u8 GetEmitterKey(SND_EMITTER *em)
+{
+    u8 i;
+    SND_PARAMETER *pPtr;
+    u8 key;
+
+    if (em->paraInfo == NULL)
+    {
+        key = 0xFF;
+    }
+    else
+    {
+        pPtr = em->paraInfo->paraArray;
+        for (i = 0; i < em->paraInfo->numPara; ++pPtr, ++i)
+        {
+            if (pPtr->ctrl == 0x8000)
+            {
+                return pPtr->paraData.value7;
+            }
+        }
+        key = 0xFF;
+    }
+    return key;
+}
+
 static SND_VOICEID AddEmitter(SND_EMITTER *em_buffer, SND_FVECTOR *pos, SND_FVECTOR *dir,
                               f32 maxDis, f32 comp, u32 flags, u16 fxid, u32 groupid, u8 maxVol,
                               u8 minVol, SND_ROOM *room, SND_PARAMETER_INFO *para, u8 studio)
@@ -357,24 +382,7 @@ static SND_VOICEID AddEmitter(SND_EMITTER *em_buffer, SND_FVECTOR *pos, SND_FVEC
             return -1;
         }
 
-        if (em->paraInfo == NULL)
-        {
-            key = 0xFF;
-        }
-        else
-        {
-            pPtr = em->paraInfo->paraArray;
-            for (i = 0; i < em->paraInfo->numPara; ++i, ++pPtr)
-            {
-                if (pPtr->ctrl == 0x8000)
-                {
-                    key = pPtr->paraData.value7;
-                    goto found;
-                }
-            }
-            key = 0xFF;
-        found:;
-        }
+        key = GetEmitterKey(em);
 
         em->vid = synthFXStart(em->fxid, key, 127, 64, em->studio, (em->flags & 0x10) != 0);
         if (em->vid == -1)
@@ -788,8 +796,8 @@ void StartContinousEmitters()
             em = sl->em;
 
             if ((em->vid =
-                     synthFXStart(em->fxid, 127, 64, em->studio,
-                                  (em->flags & 0x10) != 0, 0)) == -1)
+                     synthFXStart(em->fxid, GetEmitterKey(em), 127, 64, em->studio,
+                                  (em->flags & 0x10) != 0)) == -1)
             {
             set_flags:
                 if (!(em->flags & 0x2))
@@ -871,7 +879,7 @@ void s3dHandle()
 
                 if (em->flags & 1)
                 {
-                    if (AddStartingEmitter(em, vol, xPan, yPan, zPan, pitch, 0.f))
+                    if (AddStartingEmitter(em, vol, xPan, yPan, zPan, pitch, filter))
                     {
                         continue;
                     }
@@ -879,8 +887,8 @@ void s3dHandle()
                 else
                 {
                     if ((em->vid =
-                             synthFXStart(em->fxid, 127, 64, em->studio,
-                                          (em->flags & 0x10) != 0, 0)) == -1)
+                             synthFXStart(em->fxid, GetEmitterKey(em), 127, 64, em->studio,
+                                          (em->flags & 0x10) != 0)) == -1)
                     {
 
                     derp:
