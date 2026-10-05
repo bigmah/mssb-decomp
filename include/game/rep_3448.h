@@ -27,7 +27,7 @@ void fn_3_123EBC(void);
 void fn_3_1243A4(void);
 void fn_3_124738(void);
 void fn_3_124CE0(void);
-s32 fn_3_12536C(void);
+u32 fn_3_12536C(void);
 s32 fn_3_125424(u8* a, s32 i, u32 v);
 s32 fn_3_125480(u8* a);
 void fn_3_1254F8(void);

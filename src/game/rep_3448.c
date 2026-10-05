@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 
 extern u8 g_Scores[];
+extern u8 g_Batter[];
+extern u8 lbl_3_data_24DA4[];
+extern u8 lbl_3_data_21798[];
 extern u8 lbl_3_data_91FC[];
 extern u8 lbl_800EF808[];
 extern u8 lbl_800EFBA4[];
@@ -66,8 +69,41 @@ void fn_3_11F4B4(s32 idx, s32 flag) {
 }
 
 // .text:0x0011F508 size:0x270 mapped:0x8075E59C
+// near-match (8 lines): case 2 table index register order
 void fn_3_11F508(void) {
-    return;
+    u8** tbl;
+    u8* q = lbl_803CC1B8;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (*(u16*)(q + 0x1C)) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_24DA4);
+        *(u16*)(q + 0x1C) = 1;
+        break;
+    case 1:
+        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x5C) = (g_Batter[0x7B] == 0) << 16;
+        tbl = (u8**)(lbl_80371C30 + 8);
+        (*(u8**)((u8*)tbl + *(u16*)(q + 0x14) * 8))[0x68] = 0;
+        *(u32*)(*(u8**)((u8*)tbl + *(u16*)(q + 0x14) * 8) + 0x5C) = 0;
+        if (g_GameLogic[0x11E] == 2 && g_Minigame[0x1ADB] != 0 && *(s16*)(g_Minigame + 0x18A2) != 0) {
+            u32 v = lbl_3_data_21798[6];
+            if (v > 9) {
+                v = 9;
+            }
+            fn_800363D8(q, 1, 2, 0x12F, v % 10);
+            (*(u8**)((u8*)tbl + *(u16*)(q + 0x14) * 8))[0x68] = 1;
+            *(u16*)(q + 0x1C) = 2;
+        }
+        break;
+    case 2:
+        if ((*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8 + 8))[0x69] == 2 && g_GameLogic[0x11E] != 2) {
+            *(u16*)(q + 0x1C) = 1;
+        }
+        break;
+    }
 }
 
 // .text:0x0011F778 size:0x2E0 mapped:0x8075E80C
@@ -176,7 +212,7 @@ void fn_3_124CE0(void) {
 }
 
 // .text:0x0012536C size:0xB8 mapped:0x80764400
-s32 fn_3_12536C(void) {
+u32 fn_3_12536C(void) {
     if (lbl_3_common_bss_32724[0x96] != 0 || lbl_3_common_bss_32724[0xB7] != 0) {
         return 1;
     }
