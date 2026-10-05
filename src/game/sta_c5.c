@@ -9,10 +9,11 @@ extern char lbl_3_rodata_2F10[];
 extern f32 lbl_3_rodata_2DEC;
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_B55C[];
+extern u8 lbl_3_bss_AEE0[];
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_3_data_1BA5C[];
 extern void fn_800BDA24(s32);
-extern void fn_800B0A14_removeQueue(void*);
+extern void fn_800B0A14_removeQueue();
 extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
 extern u32 lbl_3_bss_B154[];
@@ -154,13 +155,24 @@ void fn_3_EF930(void) {
 }
 
 // .text:0x000EFB54 size:0x630 mapped:0x8072EBE8
-void fn_3_EFB54(void) {
+void fn_3_EFB54(u8* p) {
     return;
 }
 
 // .text:0x000F0184 size:0xA0 mapped:0x8072F218
 void fn_3_F0184(void) {
-    return;
+    u32 i;
+    if (lbl_3_bss_AEE0[8] != 0) {
+        fn_800B0A14_removeQueue();
+        lbl_3_bss_AEE0[8] = 0;
+        return;
+    }
+    for (i = 0; i < lbl_3_bss_AEE0[0x33C]; i++) {
+        u8* e = *(u8**)lbl_3_common_bss_350E4 + (i + lbl_3_bss_AEE0[0x33B]) * 0xE8;
+        if (e != NULL && e[0xC6] == 3) {
+            fn_3_EFB54(e);
+        }
+    }
 }
 
 // .text:0x000F0224 size:0x608 mapped:0x8072F2B8
