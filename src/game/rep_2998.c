@@ -39,8 +39,28 @@ void fn_3_E2118(void) {
 }
 
 // .text:0x000E22A4 size:0x80 mapped:0x80721338
-void fn_3_E22A4(void) {
-    return;
+void fn_3_E22A4(u8* a) {
+    u8* p = *(u8**)(a + 0x74);
+    u8 st;
+    u8 v;
+    u32* r;
+    p = *(u8**)p;
+    p = *(u8**)(p + 0x10);
+    p = *(u8**)(p + 0x10);
+    p = *(u8**)p;
+    p = *(u8**)(p + 0x10);
+    r = *(u32**)(p + 4);
+    r[1] &= ~0x1FFF;
+    st = a[0xC4];
+    if (st != 0) {
+        v = a[0xC8] + 1;
+        if (st == 1 || st == 5) {
+            if (a[0xC5] % 2 == 0) {
+                v = 0;
+            }
+        }
+        r[1] |= v;
+    }
 }
 
 // .text:0x000E2324 size:0x2AC mapped:0x807213B8
