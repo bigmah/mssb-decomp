@@ -1,5 +1,6 @@
 #include "game/rep_AC8.h"
 #include "header_rep_data.h"
+extern s16 radToShortAngle(f32 v);
 
 extern u8 g_Ball[];
 extern u8 g_Fielders[];
@@ -8,6 +9,7 @@ extern int fn_3_9FCA4(s16 a, s16 b);
 extern u8 g_FieldingLogic[];
 extern u8 lbl_3_data_3C40[];
 extern u8 lbl_3_data_4930[];
+extern s16 lbl_3_data_49DC[];
 extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_1498;
 #pragma dont_inline on
@@ -28,8 +30,19 @@ void fn_3_25648(void) {
 }
 
 // .text:0x00025844 size:0x94 mapped:0x806648D8
-void fn_3_25844(void) {
-    return;
+void fn_3_25844(int i, int j) {
+    u8* f = g_Fielders + i * 0x268;
+    if (f[0x20F] == 0) {
+        *(s16*)(f + 0x1BC) = radToShortAngle(*(f32*)(f + 0x48));
+        f[0x20F] = 1;
+        *(s16*)(f + 0x1B8) = 0;
+        *(s16*)(f + 0x1BA) = lbl_3_data_49DC[j + 0x1D];
+        f[0x252] = 0;
+        f[0x203] = 0;
+        f[0x205] = 0;
+        f[0x207] = 0;
+        f[0x1EE] = 0;
+    }
 }
 
 // .text:0x000258D8 size:0x190 mapped:0x8066496C
@@ -453,11 +466,30 @@ void fn_3_33088(void) {
 
 // .text:0x00033458 size:0x94 mapped:0x806724EC
 void fn_3_33458(void) {
-    return;
+    u8* f;
+    s16 i;
+    fn_3_334EC(1);
+    fn_3_33088();
+    f = g_Fielders + *(s16*)(g_FieldingLogic + 0xB2) * 0x268;
+    i = *(s16*)(g_FieldingLogic + 0xB2);
+    if (i != -1) {
+        f[0x1D3] = 0x16;
+        if (*(int*)(lbl_3_data_3C40 + 0xB0) >= 0) {
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0xB0);
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
+    fn_3_4C9C8();
+    fn_3_47778();
+    fn_3_4A124();
 }
 
 // .text:0x000334EC size:0x8B0 mapped:0x80672580
-void fn_3_334EC(void) {
+void fn_3_334EC(int a) {
     return;
 }
 
@@ -968,8 +1000,30 @@ void fn_3_49C18(void) {
 }
 
 // .text:0x00049EA8 size:0x94 mapped:0x80688F3C
-void fn_3_49EA8(void) {
-    return;
+void fn_3_49EA8(int i) {
+    u8* p = g_FieldingLogic + i;
+    s32 off;
+    u8* f;
+    p += 0xF8;
+    if (*p != 9) {
+        off = i * 0x268;
+        f = g_Fielders + off;
+        *(s16*)(f + 0x18C) = 7;
+        if (i != -1) {
+            f[0x1D3] = 0xE;
+            if (*(int*)(lbl_3_data_3C40 + 0x70) >= 0) {
+                *p = *(int*)(lbl_3_data_3C40 + 0x70);
+            }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+        }
+        f = g_Fielders + off;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x190) = -1;
+    }
 }
 
 // .text:0x00049F3C size:0x4 mapped:0x80688FD0
