@@ -54,8 +54,20 @@ extern s32 fn_3_E751C(s32, s32);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_8036E548[];
+extern void* memset(void*, int, u32);
 extern u8 lbl_3_data_10ACC[];
 extern s32 ARAMTransfer(void*, int, int, int);
+extern void* lbl_3_bss_9940;
+extern u8 lbl_3_bss_1901;
+extern void minigamesSetSomePointers(void);
+extern void minigamesGXStuff(void);
+extern void minigamesSetSomePointers2(void);
+extern void fn_8001B200(void);
+extern void fn_800B4278(void*);
+extern void fn_3_C1964(void);
+extern void fn_3_16E328(void);
+extern void fn_800528B4(void);
+extern void fn_8001E474(void);
 extern void CTRLBuildMatrix(u32, void*);
 extern void PSMTXConcat(void*, void*, void*);
 extern void DOSetWorldMatrix(void*, void*);
@@ -408,7 +420,63 @@ void fn_3_B9534(void) {
 
 // .text:0x000B95EC size:0x1DC mapped:0x806F8680
 void fn_3_B95EC(void) {
-    return;
+    u8 n;
+    u8* c;
+    u8* d;
+    minigamesSetSomePointers();
+    minigamesGXStuff();
+    minigamesSetSomePointers2();
+    if (lbl_3_bss_9940 != 0) {
+        ((void (*)(void))lbl_3_bss_9940)();
+        lbl_3_bss_9940 = 0;
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        fn_8001B200();
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x14) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x14));
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x48) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x48));
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x4) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x4));
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x0) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x0));
+        }
+        d = lbl_8036E548;
+        if (*(u32*)(d + 0x6C) != 0) {
+            n = lbl_3_common_bss_350E4[0x6D];
+            while (n != 0) {
+                fn_800B4278(*(void**)(*(u8**)(d + 0x6C) + n * 0x90 - 0x5C));
+                n--;
+            }
+            fn_800ACFB0(*(u32*)(d + 0x6C));
+            *(u32*)(d + 0x6C) = 0;
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x34) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x34));
+        }
+        c = lbl_3_common_bss_350E4;
+        n = 4;
+        while (n != 0) {
+            if (((u32*)(c + 0x1C))[n] != 0) {
+                fn_800ACFB0(((u32*)(c + 0x1C))[n]);
+            }
+            n--;
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4 + 0x38) != 0) {
+            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x38));
+        }
+        lbl_8036E548[0x3088] = 0;
+        fn_3_C1964();
+        fn_3_16E328();
+        fn_800528B4();
+        fn_8001E474();
+        lbl_3_bss_1901 = 0;
+        memset(lbl_3_common_bss_350E4, 0, 0x70);
+        lbl_3_bss_1901 = 1;
+    }
 }
 
 // .text:0x000B97C8 size:0x14 mapped:0x806F885C
