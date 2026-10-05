@@ -117,8 +117,18 @@ void fn_3_2A69C(void) {
 }
 
 // .text:0x0002ACD8 size:0x90 mapped:0x80669D6C
-void fn_3_2ACD8(void) {
-    return;
+int fn_3_2ACD8(int i, int j) {
+    u8* f = g_Fielders + i * 0x268;
+    if (j < 1) {
+        return 0;
+    }
+    if (fn_3_2BB04(i) != 0) {
+        return 1;
+    }
+    *(f32*)(f + 0x14) = *(f32*)(g_Ball + j * 16 + 0x354);
+    *(f32*)(f + 0x1C) = *(f32*)(g_Ball + j * 16 + 0x35C);
+    f[0x216] = 1;
+    return 0;
 }
 
 // .text:0x0002AD68 size:0x858 mapped:0x80669DFC
@@ -137,8 +147,8 @@ void fn_3_2B694(void) {
 }
 
 // .text:0x0002BB04 size:0x734 mapped:0x8066AB98
-void fn_3_2BB04(void) {
-    return;
+int fn_3_2BB04(int i) {
+    return 0;
 }
 
 // .text:0x0002C238 size:0xB8 mapped:0x8066B2CC
