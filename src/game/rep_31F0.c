@@ -152,7 +152,15 @@ void fn_3_1120E0(void) {
 
 // .text:0x00112128 size:0x7C mapped:0x807511BC
 void fn_3_112128(void) {
-    return;
+    g_Minigame[0x190C] += 1;
+    if (g_Minigame[0x1909] == 0) {
+        fn_3_5A6D4(0xF);
+    } else if (g_Minigame[0x190C] >= g_Minigame[0x1906]) {
+        fn_3_5A6D4(0x19);
+    } else {
+        fn_3_5A6D4(7);
+    }
+    lbl_3_common_bss_32724[0xB7] = 1;
 }
 
 // .text:0x001121A4 size:0x8C mapped:0x80751238
