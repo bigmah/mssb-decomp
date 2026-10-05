@@ -10,6 +10,10 @@ extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern u8 g_Fielders[];
+extern u8 g_Ball[];
+extern u8 lbl_80371C30[];
+extern u8 lbl_3_bss_A898[];
+extern u8* lbl_3_bss_A8A4;
 extern s32 fn_3_9FB8C(f32, f32);
 extern void fn_3_253A4(s8, s16);
 extern void AnimateActorBones(void*);
@@ -243,7 +247,11 @@ void fn_3_D0284(void) {
 
 // .text:0x000D0490 size:0x98 mapped:0x8070F524
 void fn_3_D0490(void) {
-    return;
+    s32 k = (g_Ball[0x1BE5] != 0) + 2;
+    lbl_3_bss_A898[k] = 1;
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x48) = *(f32*)(g_Ball + 0);
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x4C) = -*(f32*)(g_Ball + 4);
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x50) = *(f32*)(g_Ball + 8);
 }
 
 // .text:0x000D0528 size:0x4 mapped:0x8070F5BC
