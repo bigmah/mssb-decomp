@@ -418,5 +418,6 @@ f32 RandomF32_Game_Range(f32 a, f32 b) {
 
 // .text:0x0009EAE4 size:0xE8 mapped:0x806DDB78
 f32 RandomF32_UNK_Range(f32 a, f32 b) {
-    return random_fn_3_9EE24((int)((b - a) * 1000.f) + 1) * (1.f / 1000.f) + a;
+    int n = (int)((b - a) * 1000.f) + 1;
+    return random_fn_3_9EE24(n) * (1.f / 1000.f) + a;
 }
