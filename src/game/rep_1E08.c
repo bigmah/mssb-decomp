@@ -21,6 +21,9 @@ void fn_3_C0770(void) {
 }
 
 extern u8 lbl_3_common_bss_35154[];
+extern void minigamesSetSomePointers(void);
+extern void fn_3_C0854(void);
+extern void fn_3_CABB4(void);
 
 extern u8 lbl_3_bss_995C;
 
@@ -238,9 +241,22 @@ void fn_3_BF158(void) {
 }
 
 // .text:0x000BF1AC size:0x60 mapped:0x806FE240
+#pragma opt_unroll_loops off
 void fn_3_BF1AC(void) {
-    return;
+    int i;
+    u8* p;
+    minigamesSetSomePointers();
+    fn_3_C0854();
+    fn_3_CABB4();
+    p = lbl_8036E548 + 0x1DD0;
+    i = 12;
+    do {
+        *(u32*)(p + 0xC60) = 0;
+        p -= 0x27C;
+    } while (i-- != 0);
+    lbl_3_common_bss_35154[0x479] = 1;
 }
+#pragma opt_unroll_loops reset
 
 // .text:0x000BF20C size:0x2C mapped:0x806FE2A0
 void fn_3_BF20C(void) {
