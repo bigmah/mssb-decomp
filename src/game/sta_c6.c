@@ -1,6 +1,9 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
 
+#include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
+extern u32 lbl_3_data_19018[];
+
 extern f32 lbl_3_rodata_2B9C;
 extern f32 lbl_3_rodata_2BA0;
 
@@ -71,8 +74,16 @@ void fn_3_E6410(void) {
 }
 
 // .text:0x000E64A8 size:0x80 mapped:0x8072553C
-void fn_3_E64A8(void) {
-    return;
+u32* fn_3_E64A8(void) {
+    u8 v = rand() % 3;
+    switch (v) {
+    case 0:
+        return lbl_3_data_19018;
+    case 1:
+        return lbl_3_data_19018 + 1;
+    default:
+        return lbl_3_data_19018 + 2;
+    }
 }
 
 // .text:0x000E6528 size:0x50 mapped:0x807255BC
@@ -105,8 +116,23 @@ void fn_3_E6684(void) {
 }
 
 // .text:0x000E671C size:0x7C mapped:0x807257B0
-void fn_3_E671C(void) {
-    return;
+void fn_3_E671C(u8* a) {
+    u8* o = **(u8***)(a + 0x74);
+    u8* t;
+    t = ((u8**)*(u8**)(o + 0x18))[0];
+    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+    t = ((u8**)*(u8**)(o + 0x18))[1];
+    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+    t = ((u8**)*(u8**)(o + 0x18))[2];
+    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+    t = ((u8**)*(u8**)(o + 0x18))[3];
+    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+    t = ((u8**)*(u8**)(o + 0x18))[4];
+    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+    t = ((u8**)*(u8**)(o + 0x18))[5];
+    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+    t = ((u8**)*(u8**)(o + 0x18))[6];
+    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
 }
 
 // .text:0x000E6798 size:0x5C mapped:0x8072582C
