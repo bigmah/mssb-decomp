@@ -53,7 +53,9 @@ void fn_3_22ABC(void) {
 
 // .text:0x00022C10 size:0x10 mapped:0x80661CA4
 void fn_3_22C10(void) {
-    return;
+    int i;
+    for (i = 13; i != 0; i--) {
+    }
 }
 
 // .text:0x00022C20 size:0x4B4 mapped:0x80661CB4
