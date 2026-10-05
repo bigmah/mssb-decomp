@@ -1,5 +1,7 @@
 #include "game/rep_940.h"
 #include "header_rep_data.h"
+#include "game/UnknownHomes_Game.h"
+extern f32 lbl_3_rodata_990;
 
 // .text:0x00020CEC size:0x164 mapped:0x8065FD80
 void fn_3_20CEC(void) {
@@ -38,6 +40,9 @@ void fn_3_21768(void) {
 
 // .text:0x000219A0 size:0x2C mapped:0x80660A34
 void fn_3_219A0(void) {
-    return;
+    g_AiLogic.nStarPitchesThrownThisAB = 0;
+    g_AiLogic.aIMoundLocationX = lbl_3_rodata_990;
+    g_AiLogic.aIMoundLocationIndex = 2;
+    g_AiLogic.always0_AIPickoffRelated = 0;
 }
 
