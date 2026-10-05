@@ -119,7 +119,34 @@ void inpSetRPNHi(u8 set, u8 channel, u8 value) {
   }
 }
 
-void inpSetRPNLo(u8 set, u8 channel, u8 value) {}
+static void inpSetRPNLo(u8 set, u8 channel, u8 value) {
+  u16 rpn;
+  u32 i;
+  u32 frq;
+  u32 frq2;
+
+  rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
+  switch (rpn) {
+  case 0x7F7D:
+    frq = (inpChannelDefaults[set][channel].lpfLowerFrqBound & 0xFE00) | (value << 2);
+    inpChannelDefaults[set][channel].lpfLowerFrqBound = frq;
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfLowerFrqBoundary = frq;
+      }
+    }
+    break;
+  case 0x7F7E:
+    frq2 = (inpChannelDefaults[set][channel].lpfUpperFrqBound & 0xFE00) | (value << 2);
+    inpChannelDefaults[set][channel].lpfUpperFrqBound = frq2;
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfUpperFrqBoundary = frq2;
+      }
+    }
+    break;
+  }
+}
 
 void inpSetRPNDec(u8 set, u8 channel) {
   u16 rpn;  // r28
@@ -213,6 +240,7 @@ void inpSetRPNInc(u8 set, u8 channel) {
 
 void inpSetMidiCtrl(u8 ctrl, u8 channel, u8 set, u8 value) {
   u32 i;
+  u32 changed;
   if (channel == 0xFF) {
     return;
   }
@@ -221,48 +249,65 @@ void inpSetMidiCtrl(u8 ctrl, u8 channel, u8 set, u8 value) {
     switch (ctrl) {
     case 6:
       inpSetRPNHi(set, channel, value);
+      changed = 1;
       break;
     case 38:
       inpSetRPNLo(set, channel, value);
+      changed = 1;
       break;
     case 96:
       inpSetRPNDec(set, channel);
+      changed = 1;
       break;
     case 97:
       inpSetRPNInc(set, channel);
+      changed = 1;
+      break;
+    default:
+      changed = midi_ctrl[set][channel][ctrl] != (u8)(value & 0x7f);
       break;
     }
 
     midi_ctrl[set][channel][ctrl] = value & 0x7f;
-    for (i = 0; i < synthInfo.voiceNum; ++i) {
-      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].midiDirtyFlags = 0x1fff;
-        synthKeyStateUpdate(&synthVoice[i]);
+    if (changed) {
+      for (i = 0; i < synthInfo.voiceNum; ++i) {
+        if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+          synthVoice[i].midiDirtyFlags = 0x7fff;
+          synthKeyStateUpdate(&synthVoice[i]);
+        }
       }
+      inpGlobalMIDIDirtyFlags[set][channel] = 0xff;
     }
-    inpGlobalMIDIDirtyFlags[set][channel] = 0xff;
-
   } else {
     switch (ctrl) {
     case 6:
       inpSetRPNHi(set, channel, value);
+      changed = 1;
       break;
     case 38:
       inpSetRPNLo(set, channel, value);
+      changed = 1;
       break;
     case 96:
       inpSetRPNDec(set, channel);
+      changed = 1;
       break;
     case 97:
       inpSetRPNInc(set, channel);
+      changed = 1;
+      break;
+    default:
+      changed = fx_ctrl[channel][ctrl] != (u8)(value & 0x7f);
       break;
     }
 
     fx_ctrl[channel][ctrl] = value & 0x7f;
-    for (i = 0; i < synthInfo.voiceNum; ++i) {
-      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].midiDirtyFlags = 0x1fff;
-        synthKeyStateUpdate(&synthVoice[i]);
+    if (changed) {
+      for (i = 0; i < synthInfo.voiceNum; ++i) {
+        if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+          synthVoice[i].midiDirtyFlags = 0x7fff;
+          synthKeyStateUpdate(&synthVoice[i]);
+        }
       }
     }
   }
