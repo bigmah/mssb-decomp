@@ -6,6 +6,7 @@ extern f32 lbl_3_rodata_59C;
 extern f32 lbl_3_rodata_5F8;
 extern f64 lbl_3_rodata_600;
 extern u8 g_Ball[];
+extern u8 g_d_GameSettings[];
 extern void fn_3_27648(void);
 
 extern s16 g_RunningLogic;
@@ -125,7 +126,18 @@ void fn_3_9E84(void) {
 
 // .text:0x00009FA4 size:0x7C mapped:0x80649038
 void fn_3_9FA4(void) {
-    return;
+    if (g_Ball[0x1BD1] == 0) {
+        *(f32*)(g_Ball + 0x1A3C) = *(f32*)(g_Ball + 0);
+        *(f32*)(g_Ball + 0x1A40) = *(f32*)(g_Ball + 4);
+        *(f32*)(g_Ball + 0x1A44) = *(f32*)(g_Ball + 8);
+        g_Ball[0x1BD1] = 1;
+        *(s16*)(g_Ball + 0x1BA4) = 1;
+        *(s16*)(g_Ball + 0x1B7A) = 1;
+        g_Ball[0x1BC6] = 1;
+        if (g_d_GameSettings[7] != 6) {
+            fn_3_59918(0xF, 0);
+        }
+    }
 }
 
 // .text:0x0000A020 size:0xD0 mapped:0x806490B4
