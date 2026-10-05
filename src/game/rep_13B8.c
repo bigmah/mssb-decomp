@@ -1,6 +1,8 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
 
+#pragma dont_inline on
+
 extern u8 inMemRoster[];
 extern u8 g_GameLogic[];
 
@@ -217,8 +219,17 @@ void fn_3_85A70(void) {
 }
 
 // .text:0x00085C44 size:0x6C mapped:0x806C4CD8
-void fn_3_85C44(void) {
-    return;
+void fn_3_85C44(s32 i, s32 d) {
+    u8* r = g_Runners + i * 0x154;
+    if (r[0x13E] == 1 && r[0x140] >= 2 && d != 1) {
+        return;
+    }
+    if (d == -1) {
+        if (r[0x124] == *(s16*)(r + 0xE6)) {
+            d = 0;
+        }
+    }
+    fn_3_85EF4(i, d);
 }
 
 // .text:0x00085CB0 size:0x244 mapped:0x806C4D44
@@ -227,7 +238,7 @@ void fn_3_85CB0(void) {
 }
 
 // .text:0x00085EF4 size:0x158 mapped:0x806C4F88
-void fn_3_85EF4(void) {
+void fn_3_85EF4(s32 i, s32 d) {
     return;
 }
 
