@@ -1,7 +1,10 @@
 #include "game/rep_1200.h"
 #include "header_rep_data.h"
 
+#pragma dont_inline on
+
 extern u8 g_Pitcher[];
+extern u8 g_Ball[];
 typedef struct {
     int strikes, balls, outs, storedOuts, f10, f14;
     s16 runner[3];
@@ -131,7 +134,6 @@ void fn_3_736CC(void) {
 }
 
 // .text:0x00073718 size:0x14 mapped:0x806B27AC
-extern u8 g_Ball[];
 
 void fn_3_73718(void) {
     *(s16*)(g_Ball + 0x1B6A) = -1;
@@ -166,7 +168,18 @@ void fn_3_73DE8(void) {
 
 // .text:0x00073F2C size:0x80 mapped:0x806B2FC0
 void fn_3_73F2C(void) {
-    return;
+    if (*(s16*)(g_Pitcher + 0x11E) < 0x7FFE) {
+        *(s16*)(g_Pitcher + 0x11E) += 1;
+    } else {
+        *(s16*)(g_Pitcher + 0x11E) = 0x7FFF;
+    }
+    if (*(s16*)(g_Ball + 0x1B68) < 0x7FFE) {
+        *(s16*)(g_Ball + 0x1B68) += 1;
+    } else {
+        *(s16*)(g_Ball + 0x1B68) = 0x7FFF;
+    }
+    g_Pitcher[0x166] = 0;
+    fn_3_71248();
 }
 
 // .text:0x00073FAC size:0x124 mapped:0x806B3040
