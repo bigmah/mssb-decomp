@@ -22,8 +22,15 @@ void fn_3_2273C(void) {
 }
 
 // .text:0x0002281C size:0x34 mapped:0x806618B0
-void fn_3_2281C(void) {
-    return;
+extern u8 lbl_8036E548[];
+
+s32 fn_3_2281C(s32 i) {
+    u8** arr = (u8**)(lbl_8036E548 + 0x2C50);
+    u8* p = arr[i];
+    if (p == NULL) {
+        return 1;
+    }
+    return *(s16*)(p + 0x68) == 0;
 }
 
 // .text:0x00022850 size:0xF4 mapped:0x806618E4
