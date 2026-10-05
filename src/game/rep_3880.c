@@ -4,6 +4,7 @@
 extern u8 lbl_3_data_26C94[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_26D5C[];
+extern s8 lbl_3_bss_B85C[];
 extern void fn_80033794(void*);
 extern u8 lbl_3_data_26BDC[];
 
@@ -101,8 +102,14 @@ void fn_3_149BA8(void) {
 }
 
 // .text:0x0014A070 size:0xF4 mapped:0x80789104
-void fn_3_14A070(void) {
-    return;
+void fn_3_14A070(s32* src, s32 n) {
+    u32 i;
+    lbl_3_bss_B85C[0] = -1;
+    lbl_3_bss_B85C[1] = -1;
+    lbl_3_bss_B85C[2] = -1;
+    lbl_3_bss_B85C[3] = -1;
+    if (n > 4 || n == 0 || src == NULL) { return; }
+    for (i = 0; i < (u32)n; i++) { lbl_3_bss_B85C[i] = src[i]; }
 }
 
 // .text:0x0014A164 size:0x24 mapped:0x807891F8
