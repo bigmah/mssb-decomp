@@ -629,23 +629,52 @@ static void DoSetPitch(SYNTH_VOICE* svoice) {
   };
 
   frq = svoice->playFrq & 0xFFFFFF;
-  ofrq = svoice->sInfo & 0xFFFFFF;
+  of = svoice->sInfo;
+  ofrq = of & 0xFFFFFF;
 
   if (ofrq == frq) {
-    svoice->curNote = svoice->sInfo >> 24;
+    svoice->curNote = of >> 24;
+    svoice->curDetune = 0;
   } else if (ofrq < frq) {
     f = (frq << 12) / ofrq;
-    for (no = 0; no < 11 && (1 << ((no + 1) & 0x3f)) < (f >> 12); ++no) {
+    for (no = 0; no < 11; ++no) {
+      if ((f >> 12) < (1 << (no + 1))) {
+        break;
+      }
     }
 
-    f /= (1 << (no & 0x3f));
+    f /= (1 << no);
 
-    for (i = 11; f <= kf[i]; i--) {
-
+    i = 11;
+    while (f <= kf[i]) {
+      i--;
     }
 
-    svoice->curNote = (svoice->sInfo >> 24) + no * 12 + i;
-    svoice->curDetune = (no - kf[i]) * 100 / (kf[i + 1] - kf[i]);
+    svoice->curNote = (of >> 24) + no * 12 + i;
+    svoice->curDetune = ((f - kf[i]) * 100) / (kf[i + 1] - kf[i]);
+  } else {
+    f = (ofrq << 12) / frq;
+    for (no = 0; no < 11; ++no) {
+      if ((f >> 12) < (1 << (no + 1))) {
+        break;
+      }
+    }
+
+    f /= (1 << no);
+
+    i = 11;
+    while (f <= kf[i]) {
+      i--;
+    }
+
+    key = no * 12 + i;
+    if (key > (of >> 24)) {
+      svoice->curDetune = 0;
+      svoice->curNote = 0;
+    } else {
+      svoice->curNote = (of >> 24) - key;
+      svoice->curDetune = ((kf[i] - f) * 100) / (kf[i + 1] - kf[i]);
+    }
   }
 }
 #pragma dont_inline reset
@@ -1656,6 +1685,8 @@ void macHandle(u32 deltaTime) {
   SYNTH_VOICE* sv;     // r31
   SYNTH_VOICE* nextSv; // r30
   u64 w;               // r28
+  SYNTH_VOICE* sv2;
+  SYNTH_VOICE* nextSv2;
 
   for (sv = macTimeQueueRoot; sv != NULL && sv->wait <= macRealTime;) {
     nextSv = sv->nextTimeQueueMacro;
@@ -1665,13 +1696,13 @@ void macHandle(u32 deltaTime) {
     sv = nextSv;
   }
 
-  sv = macActiveMacroRoot;
-  for (; sv != NULL; sv = sv->nextMacActive) {
-    if (HasHWEventTrap(sv) != 0) {
-      CheckHWEventTrap(sv);
+  for (sv2 = macActiveMacroRoot; sv2 != NULL; sv2 = nextSv2) {
+    nextSv2 = sv2->nextMacActive;
+    if (HasHWEventTrap(sv2) != 0) {
+      CheckHWEventTrap(sv2);
     }
 
-    macHandleActive(sv);
+    macHandleActive(sv2);
   }
   macRealTime += deltaTime;
 }
