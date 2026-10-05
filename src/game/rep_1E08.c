@@ -1,5 +1,8 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
+typedef struct { f32 x, y; } V2f;
+extern V2f lbl_3_data_111C8[];
+extern void fn_8003A688(f32, f32);
 
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_data_1146C[];
@@ -31,6 +34,9 @@ void fn_3_C0770(void) {
 }
 
 extern u8 lbl_3_common_bss_35154[];
+extern u8 g_Ball[];
+extern u8 g_Pitcher[];
+extern void fn_3_15BAA0(int);
 extern void minigamesSetSomePointers(void);
 extern void fn_3_C0854(void);
 extern void fn_3_CABB4(void);
@@ -108,8 +114,8 @@ void fn_3_BC6D8(void) {
 }
 
 // .text:0x000BC850 size:0x38 mapped:0x806FB8E4
-void fn_3_BC850(void) {
-    return;
+void fn_3_BC850(int a, int i) {
+    fn_8003A688(lbl_3_data_111C8[i].x, lbl_3_data_111C8[i].y);
 }
 
 // .text:0x000BC888 size:0x198 mapped:0x806FB91C
@@ -149,8 +155,31 @@ void fn_3_BD504(void) {
 }
 
 // .text:0x000BD6AC size:0xAC mapped:0x806FC740
-void fn_3_BD6AC(void) {
-    return;
+void fn_3_BD6AC(int a, f32 x, f32 y, f32 z) {
+    u8* c = lbl_3_common_bss_35154;
+    int v;
+    c[0x466] = 1;
+    *(f32*)(c + 0x440) = x;
+    *(f32*)(c + 0x444) = y;
+    *(f32*)(c + 0x448) = z;
+    *(s16*)(c + 0x464) = 0;
+    if (a != 0) {
+        v = g_Ball[0x1BE7];
+        switch (v) {
+        case 0xB:
+        case 0xC:
+            fn_3_15BAA0(v == 0xC);
+            break;
+        }
+    } else {
+        v = g_Pitcher[0x165];
+        switch (v) {
+        case 0xB:
+        case 0xC:
+            fn_3_15BAA0(v == 0xC);
+            break;
+        }
+    }
 }
 
 // .text:0x000BD758 size:0x78 mapped:0x806FC7EC
