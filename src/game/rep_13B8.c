@@ -12,6 +12,8 @@ extern u8 g_Scores[];
 
 extern u8 g_Batter[];
 extern u8 g_Runners[];
+extern u8 g_Practice[];
+extern u8 g_RunningLogic[];
 extern u8 g_Minigame[];
 
 // .text:0x0007D79C size:0x184 mapped:0x806BC830
@@ -413,8 +415,24 @@ void fn_3_898BC(s32 i, s32 j) {
 }
 
 // .text:0x00089914 size:0xA8 mapped:0x806C89A8
-void fn_3_89914(void) {
-    return;
+void fn_3_89914(s32 a, s32 b) {
+    u8* ra = g_Runners + a * 0x154;
+    u8* rb = g_Runners + b * 0x154;
+    if (a >= 0 && a <= 3) {
+        if (*(u8*)(g_GameLogic + 0x121) == 0xF && a == 0) {
+            *(s16*)(rb + 0xE0) = *(u8*)(g_Practice + 0x1EF);
+        } else {
+            *(s16*)(rb + 0xE0) = *(s16*)(ra + 0xE0);
+            *(u8*)(rb + 0x11C) = *(u8*)(ra + 0x11C);
+            *(u8*)(rb + 0x131) = *(u8*)(ra + 0x131);
+            *(s16*)(rb + 0xFC) = *(s16*)(ra + 0xFC);
+        }
+        { u8* q = g_RunningLogic; q += a * 2; *(s16*)(q + 6) = b; }
+        return;
+    }
+    *(s16*)(rb + 0xE0) = -1;
+    *(u8*)(rb + 0x131) = 0;
+    *(s16*)(rb + 0xFC) = -1;
 }
 
 // .text:0x000899BC size:0x81C mapped:0x806C8A50
