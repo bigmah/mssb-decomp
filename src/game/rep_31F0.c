@@ -18,6 +18,14 @@ extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
 
 extern void fn_3_5A6D4(s32);
+extern u8 g_GameLogic[];
+extern void fn_8003A540(s32, u8*);
+extern void fn_3_DE4FC(void);
+extern void fn_3_155288(void);
+extern void minigamesSetSomePointers(void);
+extern void minigamesGXStuff(void);
+extern void minigamesSetSomePointers2(void);
+extern int rand();
 
 // .text:0x00110634 size:0x3D0 mapped:0x8074F6C8
 void fn_3_110634(void) {
@@ -51,7 +59,15 @@ void fn_3_1111D0(void) {
 
 // .text:0x00111250 size:0x64 mapped:0x807502E4
 void fn_3_111250(void) {
-    return;
+    g_GameLogic[0x12B] = 1;
+    g_GameLogic[0x12C] = 1;
+    g_GameLogic[0x12E] = 1;
+    fn_8003A540(0, g_GameLogic);
+    if (g_Minigame[0x1912] == 1) {
+        fn_3_5A6D4(8);
+        return;
+    }
+    fn_3_5A6D4(0);
 }
 
 // .text:0x001112B4 size:0x484 mapped:0x80750348
@@ -70,8 +86,6 @@ void fn_3_1118B4(void) {
 }
 
 // .text:0x00111A88 size:0x3C mapped:0x80750B1C
-extern u8 g_GameLogic[];
-
 void fn_3_111A88(void) {
     g_GameLogic[0x12B] = 1;
     g_GameLogic[0x12C] = 1;
@@ -96,7 +110,13 @@ void fn_3_111F80(void) {
 
 // .text:0x00112070 size:0x70 mapped:0x80751104
 void fn_3_112070(void) {
-    return;
+    fn_3_DE4FC();
+    fn_3_5A6D4(14);
+    *(s16*)(g_Minigame + 0x18A6) = rand() % 30 + 15;
+    fn_3_155288();
+    minigamesSetSomePointers();
+    minigamesGXStuff();
+    minigamesSetSomePointers2();
 }
 
 // .text:0x001120E0 size:0x48 mapped:0x80751174
