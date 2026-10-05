@@ -76,6 +76,16 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Low-byte read-modify-write:** `w = v | (w & ~0xFF)` gives `rlwimi r0, r4, 0, 24, 31`; the other operand order gives swapped operands.
 - **Float literal vs. extern rodata:** comparing against a literal (`0.17f`) instead of the extern rodata symbol can fix `lfs` scheduling; loading an extern float into a local first fixes others.
 - **`switch` on an `s8`** reproduced an odd `beq`/`b` shape; `*(s16*)(p+off) += 1` matched where `x = *p; if (x < N) *p = x + 1` did not.
+- **`fndiff` MATCH can hide branch-target differences.** It ignores label names, so a branch that jumps to the wrong place still prints MATCH (`fn_3_A0F0` had `done == 0` outside the `if`). Always confirm 100.0 in `build/GYQE01/report.json` (fuzzy_match_percent) before committing.
+- **Struct-array deref after a call:** `((T**)sym)[0][idx].field` (T = padded struct of the element size) gives `lwz r0,sym@l; add r3,r0,off; lwz field(r3)` (`fn_3_B91C8`). `*(u8**)sym + off` and `((T*)(...))->field` give `addi/lwzx` instead. Also `((u32*)(c + 0x1C))[n]` (not `c[n*4+0x1C]`) keeps the displacement on the load (`fn_3_B95EC`).
+- **Return type matters for register choice:** `processStadiumObjectFunction` only matched as `void` (an `int` return burned r3 as a live value).
+- **Stale argument registers:** a callee the original calls with a stale r3 (e.g. `fn_800BF068`) must be declared with `()` and called with no args. Params that the original never reads should still be named in the definition (C needs names).
+- **A function in the same unit is inlined into its callers** and its body shows up there (`fn_3_B8184` into `fn_3_B8298`; `fn_3_A0F0` into `fn_3_BC54`). Match the small one first, then write the caller as a plain call.
+- **Return-shape trick:** `if (cond) { ...; if (!(a || b)) return; } helper();` produced the single shared tail (`bne L` into one inlined copy) for `fn_3_BC54`; `if (x) helper(); else helper();` duplicated the inline.
+- **Loop counter registers:** declaring `s32 off; u32 i;` and assigning `i = 0; off = 0;` after the float setup (not in the declaration) fixed which saved reg got which (`fn_3_B98E8`). Declaring a float local first gives it the higher f-reg (f31).
+- **Countdown `for (i = N; i != 0; i--)`** gives `mtctr/bdnz` for big N (`fn_3_A83C` first loop), but a trip count of 3 is fully unrolled whatever the pragma; do-while forms give `subic.` instead. Unsolved.
+- **Compiler-unrolled copy loops:** `for (i = 0; i < 0x3C; i++) { copy 3 floats }` reproduces the 8x unrolled ctr loop with the `cmpwi r6,0x3c; bge` guard (`fn_3_F9F8`).
+- **Constants reloaded per use (no CSE across stores):** with `extern f32` constants the compiler sometimes keeps one in a register across stores to `g_Ball[]` (`fn_3_9B74` stuck), while `fn_3_BC54` reloaded as in the original. Untangled cause not found; float literals instead give the pooled-base blocker.
 - **Still unsolved:** nested early returns that compile to `bge L; b L` (fn_3_15521C, fn_3_150010, fn_3_14DC80, fn_3_14CB28); pooled float constants in float-heavy functions.
 
 Add new patterns to this list as we find them.
