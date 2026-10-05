@@ -12,416 +12,6 @@ static u8 snd_base_studio;
 static u8 snd_max_studios;
 static u8 s3dUseMaxVoices;
 
-static void UpdateRoomDistances()
-{
-    SND_ROOM *r;      // r30
-    SND_LISTENER *li; // r31
-    f32 distance;     // r63
-    u32 n;            // r29
-    SND_FVECTOR d;    // r1+0x8
-
-    for (n = 0, li = s3dListenerRoot; li != NULL; li = li->next, ++n)
-        ;
-
-    if (n != 0)
-    {
-        for (r = s3dRoomRoot; r != NULL; r = r->next)
-        {
-            if (r->studio != 0xFF)
-            {
-                distance = 0.f;
-                for (li = s3dListenerRoot; li != NULL; li = li->next)
-                {
-                    d.x = r->pos.x - li->pos.x;
-                    d.y = r->pos.y - li->pos.y;
-                    d.z = r->pos.z - li->pos.z;
-                    distance += d.x * d.x + d.y * d.y + d.z * d.z;
-                }
-
-                r->distance = distance / n;
-            }
-        }
-    }
-}
-
-static void CheckRoomStatus()
-{
-    SND_LISTENER *li;   // r30
-    SND_EMITTER *em;    // r28
-    SND_ROOM *r;        // r27
-    SND_ROOM *max_room; // r29
-    SND_ROOM *room;     // r31
-    SND_FVECTOR d;      // r1+0x8
-    f32 distance;       // r63
-    f32 maxDis;         // r62
-    u32 li_num;         // r25
-    u32 i;              // r26
-    u32 mask;           // r23
-    u8 has_listener;    // r24
-
-    UpdateRoomDistances();
-
-    for (li_num = 0, li = s3dListenerRoot; li != NULL; li = li->next, ++li_num)
-        ;
-
-    if (li_num != 0)
-    {
-        for (room = s3dRoomRoot; room != NULL; room = room->next)
-        {
-            if (room->studio == 0xff)
-            {
-                distance = 0.f;
-                for (li = s3dListenerRoot; li != NULL; li = li->next)
-                {
-                    d.x = room->pos.x - li->pos.x;
-                    d.y = room->pos.y - li->pos.y;
-                    d.z = room->pos.z - li->pos.z;
-                    distance += d.x * d.x + d.y * d.y + d.z * d.z;
-                }
-
-                distance = distance / li_num;
-
-                has_listener = FALSE;
-                for (li = s3dListenerRoot; li != NULL; li = li->next)
-                {
-                    if (li->room == room)
-                    {
-                        has_listener = TRUE;
-                        break;
-                    }
-                }
-
-                mask = ~(-1 << snd_max_studios);
-
-                if (mask != (snd_used_studios & mask))
-                {
-                    for (i = 0; i < snd_max_studios; ++i)
-                    {
-                        if (!(snd_used_studios & (1 << i)))
-                        {
-                            break;
-                        }
-                    }
-
-                    snd_used_studios |= (1 << i);
-                    room->studio = i + snd_base_studio;
-                }
-                else
-                {
-                    maxDis = -1.f;
-
-                    for (r = s3dRoomRoot; r != NULL; r = r->next)
-                    {
-                        if (r->studio != 0xFF && maxDis < r->distance)
-                        {
-                            maxDis = r->distance;
-                            max_room = r;
-                        }
-                    }
-
-                    if (has_listener || maxDis > distance)
-                    {
-
-                        for (em = s3dEmitterRoot; em != NULL; em = em->next)
-                        {
-                            if (em->room == max_room)
-                            {
-                                synthSendKeyOff(em->vid);
-                                em->flags |= 0x80000;
-                                em->vid = -1;
-                            }
-                        }
-
-                        if (max_room->deActivateReverb != NULL)
-                        {
-                            max_room->deActivateReverb(max_room->studio);
-                        }
-
-                        synthDeactivateStudio(max_room->studio);
-                        room->studio = max_room->studio;
-                        max_room->studio = 0xff;
-                        max_room->flags = 0;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                room->distance = distance;
-                room->curMVol = has_listener ? 0x7f0000 : 0;
-
-                if (room->curMVol * 1.2014794e-07f >= 0.5)
-                {
-                    synthActivateStudio(room->studio, TRUE, SND_STUDIO_TYPE_STD);
-                }
-                else
-                {
-                    synthActivateStudio(room->studio, FALSE, SND_STUDIO_TYPE_STD);
-                }
-
-                if (room->activateReverb != NULL)
-                {
-                    room->activateReverb(room->studio, room->user);
-                }
-            }
-            else
-            {
-                if (room->flags & 0x80000000)
-                {
-                    room->curMVol += 0x40000;
-                    if (room->curMVol >= 0x7F0000)
-                    {
-                        room->curMVol = 0x7F0000;
-                        room->flags &= ~0x80000000;
-                    }
-
-                    if (room->curMVol * 1.2014794e-07f >= 0.5)
-                    {
-                        synthActivateStudio(room->studio, TRUE, SND_STUDIO_TYPE_STD);
-                    }
-                    else
-                    {
-                        synthActivateStudio(room->studio, FALSE, SND_STUDIO_TYPE_STD);
-                    }
-                }
-
-                if ((room->flags & 0x40000000) != 0)
-                {
-                    room->curMVol = room->curMVol - 0x40000;
-                    if ((int)room->curMVol >= 0)
-                    {
-                        room->curMVol = 0;
-                        room->flags &= ~0x40000000;
-                    }
-                    if (room->curMVol * 1.2014794e-07f >= 0.5)
-                    {
-                        synthActivateStudio(room->studio, TRUE, SND_STUDIO_TYPE_STD);
-                    }
-                    else
-                    {
-                        synthActivateStudio(room->studio, FALSE, SND_STUDIO_TYPE_STD);
-                    }
-                }
-            }
-        }
-    }
-}
-
-bool32 sndAddRoom(SND_ROOM *room, SND_FVECTOR *pos, void (*activateReverb)(u8 studio, void *user),
-                void (*deActivateReverb)(u8 studio))
-{
-    if (sndActive)
-    {
-        hwDisableIrq();
-
-        if ((room->next = s3dRoomRoot) != NULL)
-        {
-            room->next->prev = room;
-        }
-
-        room->prev = NULL;
-        s3dRoomRoot = room;
-        room->flags = 0;
-        room->studio = 0xff;
-        room->activateReverb = activateReverb;
-        room->deActivateReverb = deActivateReverb;
-        room->pos = *pos;
-
-        hwEnableIrq();
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-bool32 sndRemoveRoom(SND_ROOM *room)
-{
-    if (sndActive)
-    {
-        hwDisableIrq();
-        if (room->prev != NULL)
-        {
-            room->prev->next = room->next;
-        }
-        else
-        {
-            s3dRoomRoot = room->next;
-        }
-
-        if (room->next != NULL)
-        {
-            room->next->prev = room->prev;
-        }
-
-        if (room->studio != 0xFF)
-        {
-            snd_used_studios &= ~(1 << room->studio - snd_base_studio);
-
-            if (room->deActivateReverb)
-            {
-                room->deActivateReverb(room->studio);
-            }
-
-            synthDeactivateStudio(room->studio);
-        }
-
-        room->flags = 0;
-        hwEnableIrq();
-
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-bool32 sndUpdateRoom(SND_ROOM *room, SND_FVECTOR *pos)
-{
-
-    if (sndActive)
-    {
-        hwDisableIrq();
-        room->pos = *pos;
-        hwEnableIrq();
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-static void AddListener2Room(SND_ROOM *room)
-{
-    if (room->flags & 0x80000000)
-    {
-        return;
-    }
-
-    if (room->curMVol != 0)
-    {
-        return;
-    }
-
-    room->flags |= 0x80000000;
-}
-
-static void RemoveListenerFromRoom(SND_ROOM *room)
-{
-    u32 n;            // r30
-    SND_LISTENER *li; // r31
-
-    for (n = 0, li = s3dListenerRoot; li != NULL; li = li->next)
-    {
-        if (li->room == room)
-        {
-            ++n;
-        }
-    }
-
-    if (n == 1)
-    {
-        room->flags &= ~0x80000000;
-        room->flags |= 0x40000000;
-    }
-}
-
-static void CalcDoorParameters(SND_DOOR *door)
-{
-    f32 f; // r1+0xC
-    f32 v; // r63
-    v = door->open;
-    f = (1.f - door->open) * door->dampen;
-    door->input.volA = door->fxVol * v;
-    door->input.volB = 0;
-    door->input.vol = v * 127.f;
-}
-
-static void CheckDoorStatus()
-{
-    SND_DOOR *door; // r31
-
-    for (door = s3dDoorRoot; door != NULL; door = door->next)
-    {
-        if (!(door->flags & 0x80000000))
-        {
-            if (door->a->studio != 0xFF)
-            {
-                if (door->b->studio != 0xFF)
-                {
-                    CalcDoorParameters(door);
-                    if (door->flags & 1)
-                    {
-                        door->input.srcStudio = door->b->studio;
-                        synthAddStudioInput(door->a->studio, &door->input);
-                    }
-                    else
-                    {
-                        door->input.srcStudio = door->a->studio;
-                        synthAddStudioInput(door->b->studio, &door->input);
-                    }
-
-                    door->flags |= 0x80000000;
-                }
-            }
-        }
-        else if (door->a->studio == 0xFF || door->b->studio == 0xFF)
-        {
-            if ((door->a->studio != 0xFF && door->a->studio == door->destStudio) ||
-                (door->b->studio != 0xFF && door->b->studio == door->destStudio))
-            {
-                synthRemoveStudioInput(door->destStudio, &door->input);
-            }
-
-            door->flags &= ~0x80000000;
-        }
-        else
-        {
-            CalcDoorParameters(door);
-        }
-    }
-}
-
-bool32 sndAddDoor(SND_DOOR *door, SND_ROOM *a, SND_ROOM *b, SND_FVECTOR *pos, f32 dampen, f32 open,
-                unsigned char fxVol, s16 filterCoef[4], u32 flags)
-{
-
-    hwDisableIrq();
-
-    if ((door->next = s3dDoorRoot) != NULL)
-    {
-        door->next->prev = door;
-    }
-
-    door->prev = NULL;
-    s3dDoorRoot = door;
-    door->pos = *pos;
-    door->open = open;
-    door->dampen = dampen;
-    door->fxVol = fxVol;
-    door->a = a;
-    door->b = b;
-    door->flags = flags;
-    hwEnableIrq();
-    return 1;
-}
-
-bool32 sndRemoveDoor(SND_DOOR *door)
-{
-    hwDisableIrq();
-    if (door->prev != NULL)
-    {
-        door->prev->next = door->next;
-    }
-    else
-    {
-        s3dDoorRoot = door->next;
-    }
-    if (door->next != NULL)
-    {
-        door->next->prev = door->prev;
-    }
-    hwEnableIrq();
-    return 1;
-}
-
 static void CalcEmitter(struct SND_EMITTER *em, f32 *vol, f32 *doppler, f32 *xPan, f32 *yPan,
                         f32 *zPan)
 {
@@ -592,11 +182,8 @@ static void EmitterShutdown(SND_EMITTER *em)
     }
 }
 
-bool32 sndUpdateEmitter(SND_EMITTER *em, SND_FVECTOR *pos, SND_FVECTOR *dir, u8 maxVol,
-                      SND_ROOM *room)
+bool32 sndUpdateEmitter(SND_EMITTER *em, SND_FVECTOR *pos, SND_FVECTOR *dir, u8 maxVol)
 {
-    u32 id; // r29
-
     if (sndActive)
     {
         hwDisableIrq();
@@ -609,27 +196,6 @@ bool32 sndUpdateEmitter(SND_EMITTER *em, SND_FVECTOR *pos, SND_FVECTOR *dir, u8 
             em->minVol = em->maxVol;
         }
 
-        if (em->room != room)
-        {
-            if (em->vid != -1)
-            {
-                if (room->studio != 0xFF)
-                {
-                    if ((id = vidGetInternalId(em->vid)) != -1)
-                    {
-                        hwChangeStudio(id & 0xFF, room->studio);
-                    }
-                }
-                else
-                {
-                    synthSendKeyOff(em->vid);
-                    em->flags |= 0x80000;
-                    em->vid = -1;
-                }
-            }
-
-            em->room = room;
-        }
         hwEnableIrq();
         return TRUE;
     }
@@ -920,7 +486,7 @@ static void MakeListenerMatrix(SND_LISTENER *li)
 }
 
 unsigned long sndUpdateListener(SND_LISTENER *li, SND_FVECTOR *pos, SND_FVECTOR *dir,
-                                SND_FVECTOR *heading, SND_FVECTOR *up, u8 vol, SND_ROOM *room)
+                                SND_FVECTOR *heading, SND_FVECTOR *up, u8 vol)
 {
     if (sndActive)
     {
@@ -933,20 +499,6 @@ unsigned long sndUpdateListener(SND_LISTENER *li, SND_FVECTOR *pos, SND_FVECTOR 
         MakeListenerMatrix(li);
         li->vol = vol / 127.f;
 
-        if (room != li->room)
-        {
-            if (li->room != NULL)
-            {
-                RemoveListenerFromRoom(li->room);
-            }
-
-            li->room = room;
-            if (room != NULL)
-            {
-                AddListener2Room(li->room);
-            }
-        }
-
         hwEnableIrq();
         return TRUE;
     }
@@ -954,12 +506,10 @@ unsigned long sndUpdateListener(SND_LISTENER *li, SND_FVECTOR *pos, SND_FVECTOR 
     return FALSE;
 }
 
-unsigned long sndAddListenerEx(SND_LISTENER *li, SND_FVECTOR *pos, SND_FVECTOR *dir,
-                               SND_FVECTOR *heading, SND_FVECTOR *up, f32 front_sur, f32 back_sur,
-                               f32 soundSpeed, f32 volPosOffset, unsigned long flags,
-                               unsigned char vol, SND_ROOM *room)
+unsigned long sndAddListener(SND_LISTENER *li, SND_FVECTOR *pos, SND_FVECTOR *dir,
+                             SND_FVECTOR *heading, SND_FVECTOR *up, f32 front_sur, f32 back_sur,
+                             f32 soundSpeed, unsigned long flags, unsigned char vol, f32 *unk)
 {
-
     if (sndActive)
     {
         hwDisableIrq();
@@ -977,14 +527,17 @@ unsigned long sndAddListenerEx(SND_LISTENER *li, SND_FVECTOR *pos, SND_FVECTOR *
         li->surroundDisFront = front_sur;
         li->surroundDisBack = back_sur;
         li->soundSpeed = soundSpeed;
-        li->volPosOff = volPosOffset;
+        li->volPosOff = 0.f;
         MakeListenerMatrix(li);
         li->flags = flags;
         li->vol = vol / 127.f;
-        li->room = room;
-        if (room != NULL)
+        if (unk != NULL)
         {
-            AddListener2Room(room);
+            li->unk8C = *unk;
+        }
+        else
+        {
+            li->unk8C = 1.f;
         }
         hwEnableIrq();
         return TRUE;
@@ -993,26 +546,11 @@ unsigned long sndAddListenerEx(SND_LISTENER *li, SND_FVECTOR *pos, SND_FVECTOR *
     return FALSE;
 }
 
-unsigned long sndAddListener(SND_LISTENER *li, SND_FVECTOR *pos, SND_FVECTOR *dir,
-                             SND_FVECTOR *heading, SND_FVECTOR *up, f32 front_sur, f32 back_sur,
-                             f32 soundSpeed, unsigned long flags, unsigned char vol,
-                             SND_ROOM *room)
-{
-    return sndAddListenerEx(li, pos, dir, heading, up, front_sur, back_sur, soundSpeed, 0.f, flags,
-                            vol, room);
-}
-
 unsigned long sndRemoveListener(SND_LISTENER *li)
 {
     if (sndActive)
     {
-
         hwDisableIrq();
-
-        if (li->room != NULL)
-        {
-            RemoveListenerFromRoom(li->room);
-        }
 
         if (li->next != NULL)
         {

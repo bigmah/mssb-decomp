@@ -184,7 +184,6 @@ typedef struct SND_DOOR {
 typedef struct SND_LISTENER {
   struct SND_LISTENER* next;
   struct SND_LISTENER* prev;
-  SND_ROOM* room;
 
   u32 flags;
   SND_FVECTOR pos;
@@ -198,6 +197,7 @@ typedef struct SND_LISTENER {
   f32 surroundDisBack;
   f32 soundSpeed;
   f32 vol;
+  f32 unk8C;
 } SND_LISTENER;
 
 #define SND_LISTENER_DEFAULT 0x00000000
