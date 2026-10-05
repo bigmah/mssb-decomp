@@ -1,5 +1,6 @@
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
+#pragma dont_inline on
 
 extern u8 lbl_803CBBC0;
 extern u32 lbl_3_data_A10[];
@@ -88,7 +89,7 @@ void fn_3_567C(void) {
 
 // .text:0x00005BAC size:0x20 mapped:0x80644C40
 void fn_3_5BAC(void) {
-    return;
+    fn_3_567C();
 }
 
 // .text:0x00005BCC size:0x24 mapped:0x80644C60
