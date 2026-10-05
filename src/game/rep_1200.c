@@ -1,9 +1,8 @@
 #include "game/rep_1200.h"
 #include "header_rep_data.h"
 
-#pragma dont_inline on
-
 extern u8 g_Pitcher[];
+extern u8 g_Minigame[];
 extern u8 g_GameLogic[];
 extern s32 g_Scores;
 extern void fn_3_6EBB4(s32);
@@ -66,8 +65,21 @@ int fn_3_70680(f32 v) {
 }
 
 // .text:0x000706B8 size:0xB0 mapped:0x806AF74C
-void fn_3_706B8(void) {
-    return;
+void fn_3_706B8(int idx) {
+    f32 t;
+    f32 x;
+    f32 y;
+    if (g_Minigame[0x1A2A] != 2) {
+        t = (*(f32*)(g_Pitcher + 0x84 + idx * 4) - *(f32*)(g_Pitcher + 8)) / (*(f32*)(g_Pitcher + 0x14) - *(f32*)(g_Pitcher + 8));
+        x = t * (*(f32*)(g_Pitcher + 0xC) - *(f32*)(g_Pitcher + 0)) + *(f32*)(g_Pitcher + 0);
+        y = t * (*(f32*)(g_Pitcher + 0x10) - *(f32*)(g_Pitcher + 4)) + *(f32*)(g_Pitcher + 4);
+        *(f32*)(g_Pitcher + 0x54) = x;
+        *(f32*)(g_Pitcher + 0x58) = y;
+        if (fn_3_70680(x)) {
+            g_Pitcher[0x156] = 1;
+            g_Pitcher[0x157] = 1;
+        }
+    }
 }
 
 // .text:0x00070768 size:0xD0 mapped:0x806AF7FC
@@ -100,10 +112,12 @@ void fn_3_70EF4(void) {
     return;
 }
 
+#pragma dont_inline on
 // .text:0x00071248 size:0x1520 mapped:0x806B02DC
 void fn_3_71248(void) {
     return;
 }
+#pragma dont_inline reset
 
 // .text:0x00072768 size:0x540 mapped:0x806B17FC
 void fn_3_72768(void) {

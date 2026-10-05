@@ -12,7 +12,7 @@ void fn_3_6FFC4(void);
 void fn_3_70280(void);
 void fn_3_703EC(void);
 int fn_3_70680(f32 v);
-void fn_3_706B8(void);
+void fn_3_706B8(int idx);
 void fn_3_70768(void);
 void fn_3_70838(void);
 void fn_3_709B4(void);
