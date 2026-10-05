@@ -13,10 +13,21 @@ extern void fn_800B4AFC(void*, s32);
 
 #include "C3/control.h"
 extern Vec lbl_3_rodata_2A48;
+extern f32 lbl_3_rodata_2B20;
+extern f32 lbl_3_rodata_2B24;
 extern f32 lbl_3_rodata_2A60;
 extern f32 lbl_3_rodata_2A64;
 extern u8 g_Ball[];
 extern double acos(double);
+extern double sin(double);
+extern double cos(double);
+extern f32 lbl_3_rodata_2AC0;
+extern f64 lbl_3_rodata_2AB8;
+extern f64 lbl_3_rodata_2A98;
+extern f64 lbl_3_rodata_2AC8;
+extern f64 lbl_3_rodata_2AD0;
+extern u8 lbl_800E8754[];
+extern void fn_3_CB7E8(f32, f32, f32);
 extern f32 lbl_3_rodata_2B28;
 
 extern f32 lbl_3_rodata_2A54;
@@ -149,11 +160,24 @@ void fn_3_E2E78(u8* a) {
     }
 }
 // .text:0x000E2F4C size:0xF8 mapped:0x80721FE0
-void fn_3_E2F4C(void) {
-    return;
-}
-
-// .text:0x000E3044 size:0x240 mapped:0x807220D8
+void fn_3_E2F4C(u8* a) {
+    f32 ang;
+    f32 x;
+    f32 sc;
+    f32 d54 = *(f32*)(*(u8**)(a + 0x74) + 0x54);
+    f32 b8 = *(f32*)(a + 0xB8);
+    if (b8 >= lbl_3_rodata_2AB8) {
+        b8 = b8 - d54;
+        if (b8 < lbl_3_rodata_2AB8) {
+            if (lbl_800E8754[4] != 0) {
+                ang = lbl_3_rodata_2AC0 * -*(f32*)(a + 0xB0);
+                x = *(f32*)(a + 0xB4) * (lbl_3_rodata_2A98 * (f32)sin(ang)) + *(f32*)(a + 0xA0);
+                sc = *(volatile f32*)(a + 0xB4);
+                fn_3_CB7E8(x, lbl_3_rodata_2AC8 * sc, sc * (lbl_3_rodata_2AD0 * (f32)cos(ang)) + *(f32*)(a + 0xA8));
+            }
+        }
+    }
+}// .text:0x000E3044 size:0x240 mapped:0x807220D8
 void fn_3_E3044(void) {
     return;
 }
@@ -221,16 +245,21 @@ void fn_3_E45F0(u8* a) {
 }
 
 // .text:0x000E4658 size:0x108 mapped:0x807236EC
-void fn_3_E4658(void) {
-    return;
-}
-
-// .text:0x000E4760 size:0x170 mapped:0x807237F4
-void fn_3_E4760(void) {
-    return;
-}
-
-// .text:0x000E48D0 size:0x168 mapped:0x80723964
+void fn_3_E4658(u8* a) {
+    u8* r;
+    f32* t = (f32*)lbl_3_data_18ED0;
+    f32* p;
+    a[0] = 0;
+    p = t + a[0x9C] * 7;
+    CTRLSetTranslation((Control*)a, t[a[0x9C] * 7], lbl_3_rodata_2B20 + p[1], p[2]);
+    PSVECScale((Vec*)(lbl_3_data_18ED0 + a[0x9C] * 0x1C), lbl_3_rodata_2B24, (Vec*)(a + 0xA0));
+    *(f32*)(a + 0xA4) = *(f32*)(a + 0xA4) - lbl_3_rodata_2B20;
+    r = lbl_3_data_18ED0 + 0xC;
+    CTRLSetRotation((Control*)a, lbl_3_rodata_2A5C, *(f32*)(r + a[0x9C] * 0x1C), lbl_3_rodata_2A5C);
+    *(f32*)(a + 0xB0) = *(f32*)(r + a[0x9C] * 0x1C);
+    CTRLSetScale((Control*)a, lbl_3_rodata_2B28, lbl_3_rodata_2B28, lbl_3_rodata_2B28);
+    *(f32*)(a + 0xB4) = lbl_3_rodata_2B28;
+}// .text:0x000E48D0 size:0x168 mapped:0x80723964
 void fn_3_E48D0(void) {
     return;
 }
