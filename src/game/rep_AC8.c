@@ -3,6 +3,7 @@
 
 extern u8 g_Ball[];
 extern u8 g_Fielders[];
+extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_1498;
 #pragma dont_inline on
 
@@ -217,7 +218,14 @@ void fn_3_2E87C(void) {
 
 // .text:0x0002EA24 size:0x64 mapped:0x8066DAB8
 void fn_3_2EA24(void) {
-    return;
+    int i;
+    for (i = 0; i < 4; i++) {
+        if (*(s8*)(g_Minigame + 0x18F8 + i) >= 0) {
+            fn_3_55EEC(*(s8*)(g_Minigame + 0x18F8 + i));
+        }
+    }
+    fn_3_2E41C();
+    fn_3_313B0();
 }
 
 // .text:0x0002EA88 size:0x43C mapped:0x8066DB1C
@@ -538,7 +546,6 @@ void fn_3_3B764(void) {
 }
 
 // .text:0x0003B99C size:0x48 mapped:0x8067AA30
-extern u8 g_Minigame[];
 extern u8 g_FieldingLogic[];
 extern s16 lbl_3_bss_170;
 
@@ -564,8 +571,15 @@ void fn_3_3BE50(void) {
 }
 
 // .text:0x0003C1A8 size:0x78 mapped:0x8067B23C
-void fn_3_3C1A8(void) {
-    return;
+void fn_3_3C1A8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (f[0x1EC] == 0 && fn_3_53130(i) == 0) {
+        *(f32*)(f + 0x50) = lbl_3_rodata_1498;
+        f[0x1E3] = 1;
+        f[0x1D5] = 0;
+        *(f32*)(f + 0x14) = *(f32*)(f + 0x0);
+        *(f32*)(f + 0x1C) = *(f32*)(f + 0x8);
+    }
 }
 
 // .text:0x0003C220 size:0x50 mapped:0x8067B2B4
@@ -1081,7 +1095,7 @@ void fn_3_55CC4(void) {
 }
 
 // .text:0x00055EEC size:0x1258 mapped:0x80694F80
-void fn_3_55EEC(void) {
+void fn_3_55EEC(int a) {
     return;
 }
 
