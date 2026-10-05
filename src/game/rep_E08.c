@@ -4,6 +4,10 @@
 #pragma dont_inline on
 
 extern u8 g_Fielders[];
+extern u8 g_Ball[];
+extern u8 g_FieldingLogic[];
+extern u8 g_Pitcher[];
+extern u8 g_UnkThrowing_31ACC[];
 extern u8 g_Runners[];
 extern u8 g_d_GameSettings[];
 extern u8 g_Minigame[];
@@ -65,8 +69,45 @@ void fn_3_62904(void) {
 }
 
 // .text:0x00062B50 size:0x158 mapped:0x806A1BE4
+#define BALL_S (*(s16*)(g_Ball + 0x1B78))
+#define FL_C4 (*(s16*)(g_FieldingLogic + 0xC4))
+#define THR_E (g_UnkThrowing_31ACC[0xE])
 void fn_3_62B50(void) {
-    return;
+    s16 bs = BALL_S;
+    if (bs < 0) {
+        THR_E = 0;
+        return;
+    }
+    if (FL_C4 < 0) {
+        THR_E = 0;
+        return;
+    }
+    if (THR_E == 0) {
+        g_FieldingLogic[0x10A] = 0;
+        *(f32*)(g_UnkThrowing_31ACC + 0) = *(f32*)(g_Ball + 0x19EC);
+        *(f32*)(g_UnkThrowing_31ACC + 4) = *(f32*)(g_Ball + 0x19F0);
+        *(f32*)(g_UnkThrowing_31ACC + 8) = *(f32*)(g_Ball + 0x19F4);
+        if (g_FieldingLogic[0x107] == 1 && bs == 0 && (FL_C4 == 1 || FL_C4 == 2 || FL_C4 == 3) &&
+            *(s16*)(g_Pitcher + 0x12E) != 4 && *(s16*)(g_Pitcher + 0x12E) != -1) {
+            THR_E = 7;
+            return;
+        }
+        if (g_FieldingLogic[0x106] == 8) {
+            THR_E = 3;
+        } else if (g_FieldingLogic[0x106] == 9) {
+            THR_E = 4;
+        } else if (g_FieldingLogic[0x106] == 10) {
+            if (bs == 3) {
+                THR_E = 5;
+            } else {
+                THR_E = 6;
+            }
+        } else if (g_FieldingLogic[0x109] != 0) {
+            THR_E = 2;
+        } else {
+            THR_E = 1;
+        }
+    }
 }
 
 // .text:0x00062CA8 size:0x9C mapped:0x806A1D3C
