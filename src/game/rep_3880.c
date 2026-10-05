@@ -9,6 +9,9 @@ extern u8 lbl_8036E548[];
 
 extern u8 g_Minigame[];
 extern int rand(void);
+extern void* fn_80033A24(void*, int, int, int, int, int);
+extern u8 lbl_3_data_26E24[];
+extern u8 lbl_3_data_26C3C[];
 extern u8 lbl_3_bss_B894[];
 extern void* memset(void*, int, unsigned long);
 #pragma dont_inline on
@@ -144,13 +147,16 @@ void fn_3_14B3F4(void) {
 }
 
 // .text:0x0014B53C size:0x3F0 mapped:0x8078A5D0
-void fn_3_14B53C(void) {
+void fn_3_14B53C(void* p, u32 a, u32 b) {
     return;
 }
 
 // .text:0x0014B92C size:0x74 mapped:0x8078A9C0
 void fn_3_14B92C(u32 a, u32 b) {
-    return;
+    void* p = fn_80033A24(fn_3_14AC40, 0x80, 0, *(int*)(lbl_3_data_26E24 + 8), 1, 0x23);
+    if (p != 0) {
+        fn_3_14B53C(p, a, b);
+    }
 }
 
 // .text:0x0014B9A0 size:0x50 mapped:0x8078AA34
@@ -516,13 +522,16 @@ void fn_3_151068(void) {
 }
 
 // .text:0x00151204 size:0x490 mapped:0x80790298
-void fn_3_151204(void) {
+void fn_3_151204(void* p, u32 a, u32 b) {
     return;
 }
 
 // .text:0x00151694 size:0x7C mapped:0x80790728
 void fn_3_151694(u32 a, u32 b) {
-    return;
+    void* p = fn_80033A24(fn_3_150940, 0x80, 0, *(int*)(lbl_3_data_26C3C + 4) + *(int*)(lbl_3_data_26C3C + 0x24), 1, 0x1D);
+    if (p != 0) {
+        fn_3_151204(p, a, b);
+    }
 }
 
 // .text:0x00151710 size:0x50 mapped:0x807907A4
@@ -719,8 +728,10 @@ void fn_3_157570(void) {
 }
 
 // .text:0x00157588 size:0x68 mapped:0x8079661C
-void fn_3_157588(void) {
-    return;
+void fn_3_157588(int n) {
+    u8* p = fn_80033A24(fn_3_15767C, 0x80, 0, (n + 6) / 7, 1, 0x28);
+    lbl_3_bss_B850 = p;
+    p[0x18] = 0;
 }
 
 // .text:0x001575F0 size:0x8C mapped:0x80796684
