@@ -23,9 +23,9 @@ typedef struct _CollisionBox {
 
 typedef struct _UNK_StadiumCollision {
     void* _00;
-    artificial_padding(0, 0x70a, void*);
-    s16 numCollisionBoxes;
+    artificial_padding(0, 0x778, void*);
     CollisionBox* pCollisionBoxes;
+    s16 numCollisionBoxes;
 } UNK_StadiumCollision; // size: 0x780
 
 typedef struct _TriangleCollisionStruct {
