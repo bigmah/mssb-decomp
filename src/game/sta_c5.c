@@ -6,6 +6,10 @@ extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
 #include "C3/control.h"
+#include "Dolphin/vec.h"
+typedef struct { Vec v; f32 pad[2]; } V14;
+extern V14 lbl_3_data_1B884[];
+extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_B55C[];
@@ -350,7 +354,7 @@ void fn_3_F46A0(void) {
 }
 
 // .text:0x000F4BA0 size:0xAC mapped:0x80733C34
-void fn_3_F4BA0(void) {
+void fn_3_F4BA0(u8* p) {
     return;
 }
 
@@ -360,8 +364,17 @@ void fn_3_F4C4C(void) {
 }
 
 // .text:0x000F4D00 size:0xAC mapped:0x80733D94
-void fn_3_F4D00(void) {
-    return;
+void fn_3_F4D00(u8* p) {
+    Vec d;
+    Vec tgt;
+    PSVECAdd((Vec*)(p + 0xA8), (Vec*)(p + 0xB4), (Vec*)(p + 0xA8));
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA8), -*(f32*)(p + 0xAC), *(f32*)(p + 0xB0));
+    tgt.x = lbl_3_data_1B884[p[0x9C]].v.x;
+    tgt.y = lbl_3_data_1B884[p[0x9C]].v.y;
+    tgt.z = lbl_3_data_1B884[p[0x9C]].v.z;
+    PSVECSubtract(&tgt, (Vec*)(p + 0xA8), &d);
+    *(f32*)(p + 0xB4) = 0.2f * d.x;
+    *(f32*)(p + 0xBC) = 0.2f * d.z;
 }
 
 // .text:0x000F4DAC size:0x210 mapped:0x80733E40
