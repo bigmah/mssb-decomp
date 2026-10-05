@@ -1,6 +1,12 @@
 #include "game/rep_3448.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_3_data_B140[];
+extern u8 lbl_3_data_B0E0[];
+
+extern u8 lbl_3_data_91BC[];
+extern u8 g_Minigame[];
+
 extern u8* lbl_803CC1B8;
 extern void fn_80034E20(void*, void*);
 extern u8 lbl_3_data_A9F8[];
@@ -133,8 +139,19 @@ void fn_3_12536C(void) {
 }
 
 // .text:0x00125424 size:0x5C mapped:0x807644B8
-void fn_3_125424(void) {
-    return;
+s32 fn_3_125424(u8* a, s32 i, u32 v) {
+    u8* e = *(u8**)(lbl_80371C30 + ((*(u16*)(a + 0x14) + i) << 3));
+    u32 x = *(u32*)(e + 0x5C) >> 16;
+    if (x < v) {
+        e[0x68] = 1;
+        return 0;
+    }
+    if (x > v) {
+        e[0x68] = 4;
+        return 0;
+    }
+    e[0x68] = 0;
+    return 1;
 }
 
 // .text:0x00125480 size:0x78 mapped:0x80764514
@@ -169,7 +186,13 @@ void fn_3_125604(void) {
 
 // .text:0x00125850 size:0x70 mapped:0x807648E4
 void fn_3_125850(void) {
-    return;
+    u8* p = lbl_803CC1B8;
+    fn_80034E20(p, lbl_3_data_91BC);
+    g_Minigame[0x1A42] = 0;
+    *(s16*)(p + 0x18) = 0;
+    *(s16*)(p + 0x1A) = 0;
+    *(s16*)(p + 0x1C) = 0;
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_3_125604;
 }
 
 // .text:0x001258C0 size:0xD44 mapped:0x80764954
