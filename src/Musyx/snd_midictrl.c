@@ -125,7 +125,6 @@ void inpSetRPNDec(u8 set, u8 channel) {
   u16 rpn;  // r28
   u32 i;    // r31
   u8 range; // r30
-  u32* p;
 
   rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
   switch (rpn) {
@@ -143,24 +142,22 @@ void inpSetRPNDec(u8 set, u8 channel) {
     }
     break;
   case 0x7F7D:
-    p = &inpChannelDefaults[set][channel].lpfLowerFrqBound;
-    if (*p != 0) {
-      --*p;
+    if (inpChannelDefaults[set][channel].lpfLowerFrqBound != 0) {
+      --inpChannelDefaults[set][channel].lpfLowerFrqBound;
     }
     for (i = 0; i < synthInfo.voiceNum; ++i) {
       if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].lpfLowerFrqBoundary = *p;
+        synthVoice[i].lpfLowerFrqBoundary = inpChannelDefaults[set][channel].lpfLowerFrqBound;
       }
     }
     break;
   case 0x7F7E:
-    p = &inpChannelDefaults[set][channel].lpfUpperFrqBound;
-    if (*p != 0) {
-      --*p;
+    if (inpChannelDefaults[set][channel].lpfUpperFrqBound != 0) {
+      --inpChannelDefaults[set][channel].lpfUpperFrqBound;
     }
     for (i = 0; i < synthInfo.voiceNum; ++i) {
       if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].lpfUpperFrqBoundary = *p;
+        synthVoice[i].lpfUpperFrqBoundary = inpChannelDefaults[set][channel].lpfUpperFrqBound;
       }
     }
     break;
@@ -173,7 +170,6 @@ void inpSetRPNInc(u8 set, u8 channel) {
   u16 rpn;  // r28
   u32 i;    // r31
   u8 range; // r30
-  u32* p;
 
   rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
   switch (rpn) {
@@ -191,24 +187,22 @@ void inpSetRPNInc(u8 set, u8 channel) {
     }
     break;
   case 0x7F7D:
-    p = &inpChannelDefaults[set][channel].lpfLowerFrqBound;
-    if (*p != 0x3FFF) {
-      ++*p;
+    if (inpChannelDefaults[set][channel].lpfLowerFrqBound != 0x3FFF) {
+      ++inpChannelDefaults[set][channel].lpfLowerFrqBound;
     }
     for (i = 0; i < synthInfo.voiceNum; ++i) {
       if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].lpfLowerFrqBoundary = *p;
+        synthVoice[i].lpfLowerFrqBoundary = inpChannelDefaults[set][channel].lpfLowerFrqBound;
       }
     }
     break;
   case 0x7F7E:
-    p = &inpChannelDefaults[set][channel].lpfUpperFrqBound;
-    if (*p != 0x3FFF) {
-      ++*p;
+    if (inpChannelDefaults[set][channel].lpfUpperFrqBound != 0x3FFF) {
+      ++inpChannelDefaults[set][channel].lpfUpperFrqBound;
     }
     for (i = 0; i < synthInfo.voiceNum; ++i) {
       if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].lpfUpperFrqBoundary = *p;
+        synthVoice[i].lpfUpperFrqBoundary = inpChannelDefaults[set][channel].lpfUpperFrqBound;
       }
     }
     break;
