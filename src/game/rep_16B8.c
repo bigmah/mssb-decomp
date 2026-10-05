@@ -1,6 +1,11 @@
 #include "game/rep_16B8.h"
 #include "header_rep_data.h"
 
+extern void* lbl_803CC1B8[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 g_GameLogic[];
+#include "static/UnknownHomes_Static.h"
+
 // .text:0x00091520 size:0x540 mapped:0x806D05B4
 void fn_3_91520(void) {
     return;
@@ -33,7 +38,10 @@ void fn_3_91C70(void) {
 
 // .text:0x00091CCC size:0x50 mapped:0x806D0D60
 void fn_3_91CCC(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || lbl_3_common_bss_32724[0xCD] != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x00091D1C size:0x130 mapped:0x806D0DB0
@@ -83,7 +91,10 @@ void fn_3_93D5C(void) {
 
 // .text:0x0009413C size:0x58 mapped:0x806D31D0
 void fn_3_9413C(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] != 9) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x00094194 size:0x574 mapped:0x806D3228
@@ -93,7 +104,10 @@ void fn_3_94194(void) {
 
 // .text:0x00094708 size:0x58 mapped:0x806D379C
 void fn_3_94708(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x125] > 9) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x00094760 size:0x158 mapped:0x806D37F4
@@ -163,7 +177,10 @@ void fn_3_953FC(void) {
 
 // .text:0x000954C4 size:0x58 mapped:0x806D4558
 void fn_3_954C4(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] != 0x16) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x0009551C size:0x4C mapped:0x806D45B0
