@@ -12,6 +12,7 @@ extern u8 g_Scores[];
 
 extern u8 g_Batter[];
 extern u8 g_Runners[];
+extern u8 g_Minigame[];
 
 // .text:0x0007D79C size:0x184 mapped:0x806BC830
 void fn_3_7D79C(void) {
@@ -29,13 +30,15 @@ void fn_3_7D9DC(void) {
 }
 
 // .text:0x0007DB30 size:0x1F4 mapped:0x806BCBC4
-void fn_3_7DB30(void) {
+void fn_3_7DB30(int a) {
     return;
 }
 
 // .text:0x0007DD24 size:0x48 mapped:0x806BCDB8
-void fn_3_7DD24(void) {
-    return;
+void fn_3_7DD24(int a) {
+    if (g_GameLogic[0x11E] == 2 && g_Minigame[0x190B] == 0) {
+        fn_3_7DB30(a);
+    }
 }
 
 // .text:0x0007DD6C size:0x550 mapped:0x806BCE00
