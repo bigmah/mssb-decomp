@@ -4,8 +4,8 @@
 #include "mssbTypes.h"
 
 void fn_3_C9878(void);
-void fn_3_C99F8(void);
-void fn_3_C9A60(void);
+void fn_3_C99F8(void* a);
+void fn_3_C9A60(void* a);
 void fn_3_C9AC8(void);
 void fn_3_C9B5C(void);
 void fn_3_C9C94(void);
