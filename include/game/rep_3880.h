@@ -6,7 +6,7 @@
 void fn_3_14737C(void);
 void fn_3_147778(void* n, void* a);
 void fn_3_147C00(void* arg);
-void fn_3_147CFC(void);
+void fn_3_147CFC(void* arg);
 void fn_3_147DFC(void);
 void fn_3_147E20(void);
 void fn_3_147F94(void);
