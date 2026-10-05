@@ -9,6 +9,7 @@ extern f32 lbl_3_rodata_1A0C;
 extern f32 lbl_3_rodata_1A10;
 extern f32 lbl_3_rodata_198C;
 extern f32 lbl_3_rodata_19F0;
+extern f32 lbl_3_rodata_1994;
 extern f32 lbl_3_rodata_1998;
 extern f32 lbl_3_rodata_19B8;
 
@@ -125,8 +126,22 @@ int fn_3_A3768(void) {
 }
 
 // .text:0x000A37BC size:0x90 mapped:0x806E2850
-void fn_3_A37BC(void) {
-    return;
+int fn_3_A37BC(void) {
+    u8* b = g_Ball;
+    s16 v = *(s16*)(b + 0x1B80);
+    if (v < 0x398) {
+        return 0;
+    }
+    if (*(f32*)(b + 0x1A0C) < lbl_3_rodata_1994) {
+        return 1;
+    }
+    if (v < 0x400 && *(f32*)(b + 8) + *(f32*)(b + 0) > lbl_3_rodata_1998) {
+        return 1;
+    }
+    if (*(f32*)(b + 8) - *(f32*)(b + 0) > lbl_3_rodata_1998) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000A384C size:0x2E4 mapped:0x806E28E0

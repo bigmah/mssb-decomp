@@ -22,7 +22,7 @@ void fn_3_A3374(void);
 int fn_3_A36BC(void);
 int fn_3_A372C(void);
 int fn_3_A3768(void);
-void fn_3_A37BC(void);
+int fn_3_A37BC(void);
 void fn_3_A384C(void);
 void fn_3_A3B30(void);
 void fn_3_A3C00(void);
