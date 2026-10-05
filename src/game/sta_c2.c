@@ -1,6 +1,7 @@
 #include "game/sta_c2.h"
 #include "header_rep_data.h"
 #include "Dolphin/os.h"
+#include "Dolphin/stl.h"
 extern u8 lbl_3_common_bss_350E4[];
 extern char lbl_3_rodata_286C[];
 extern char lbl_3_rodata_2878[];
@@ -11,6 +12,9 @@ extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
+extern f32 lbl_3_data_188E0;
+extern f32 lbl_3_rodata_2694;
+extern f32 lbl_3_rodata_2698;
 extern u8 lbl_80371C30[];
 extern u8 lbl_3_bss_A898[];
 extern u8* lbl_3_bss_A8A4;
@@ -62,8 +66,28 @@ void fn_3_CC1D4(void) {
 }
 
 // .text:0x000CC354 size:0xE4 mapped:0x8070B3E8
-void fn_3_CC354(void) {
-    return;
+void fn_3_CC354(f32* p) {
+    f32* q;
+    f32 one;
+    u32 i;
+    if (p != NULL) {
+        one = lbl_3_rodata_2698;
+        q = p;
+        for (i = 0; i < 4; i++, q += 16) {
+            if (i == 3) {
+                q[0] = lbl_3_data_188E0;
+                q[2] = 0.504375f;
+                *(s32*)(q + 15) = 1;
+            } else {
+                q[0] = lbl_3_data_188E0;
+                q[2] = 0.504375f;
+            }
+            q[1] = one / q[0];
+            memset(q + 3, 0, 0x18);
+            memset(q + 9, 0, 0xC);
+            memset(q + 12, 0, 0xC);
+        }
+    }
 }
 
 // .text:0x000CC438 size:0x18C mapped:0x8070B4CC
@@ -453,7 +477,7 @@ void fn_3_D4E00(void) {
 }
 
 // .text:0x000D501C size:0x100 mapped:0x807140B0
-void fn_3_D501C(void) {
+void fn_3_D501C(f32* p) {
     return;
 }
 
