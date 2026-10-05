@@ -339,8 +339,10 @@ typedef struct DSPvoice {
   u16 srcCoefSelect;
   u16 itdShiftL;
   u16 itdShiftR;
-  u32 FILLER;
-  u8 FILLER2[2];
+  u8 lowPassType;
+  u8 FILLER_D5;
+  u16 lowPassA;
+  u16 lowPassB;
   u8 singleOffset;
   struct {
     u32 posHi;
@@ -1134,10 +1136,13 @@ typedef void* (*ARAMUploadCallback)(u32, u32);
 u32 aramGetStreamBufferAddress(u8 id, u32* len);
 void aramUploadData(void* mram, u32 aram, u32 len, u32 highPrio, void (*callback)(u32), u32 user);
 void aramFreeStreamBuffer(u8 id);
+#ifndef ARAM_STORE_DATA_IMPL
+/* real definition takes a third ARAMInfo* parameter; callers in the original pass only two */
 void* aramStoreData(void* src, u32 len);
+#endif
 void aramRemoveData(void *aram, u32 len, void *aramWrite);
 u8 aramAllocateStreamBuffer(u32 len);
-u32 macStart(u16 macid, u8 priority, u8 maxVoices, u16 allocId, u8 key, u8 vol, u8 panning, u8 midi,
+u32 macStart(u16 macid, u8 priority, u8 maxVoices, u32 allocId, u8 key, u8 vol, u8 panning, u8 midi,
              u8 midiSet, u8 section, u16 step, u16 trackid, u8 new_vid, u8 vGroup, u8 studio,
              u32 itd);
 void macHandle(u32 deltaTime);
