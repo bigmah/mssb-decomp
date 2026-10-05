@@ -1,6 +1,10 @@
 #include "game/rep_A00.h"
 #include "header_rep_data.h"
 
+extern u8* lbl_3_common_bss_1323C;
+extern void changeScene(s32, s32);
+extern u8 g_GameLogic[];
+
 // .text:0x00021C90 size:0x154 mapped:0x80660D24
 void fn_3_21C90(void) {
     return;
@@ -97,7 +101,17 @@ void fn_3_240F8(void) {
 
 // .text:0x00024598 size:0x98 mapped:0x8066362C
 void fn_3_24598(void) {
-    return;
+    if (*(s16*)(lbl_3_common_bss_1323C + 0x23C) < 0x7FFE) {
+        *(s16*)(lbl_3_common_bss_1323C + 0x23C) += 1;
+    } else {
+        *(s16*)(lbl_3_common_bss_1323C + 0x23C) = 0x7FFF;
+    }
+    if (*(s16*)(lbl_3_common_bss_1323C + 0x23C) == *(s16*)(lbl_3_common_bss_1323C + 0x23E) - 7) {
+        changeScene(3, 6);
+    }
+    if (*(s16*)(lbl_3_common_bss_1323C + 0x23C) == *(s16*)(lbl_3_common_bss_1323C + 0x23E)) {
+        g_GameLogic[0x125] += 1;
+    }
 }
 
 // .text:0x00024630 size:0xD8 mapped:0x806636C4
