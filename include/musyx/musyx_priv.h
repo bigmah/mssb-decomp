@@ -448,6 +448,8 @@ typedef struct SND_VIRTUALSAMPLE_INFO {
   // total size: 0x1c
   u16 smpID;  // offset 0x0, size 0x2
   u16 instID; // offset 0x2, size 0x2
+  u32 unk4;
+  u32 unk8;
   union vsData {
     struct vsUpdate {
       // total size: 0x10
@@ -456,7 +458,6 @@ typedef struct SND_VIRTUALSAMPLE_INFO {
       u32 off2; // offset 0x8, size 0x4
       u32 len2; // offset 0xC, size 0x4
     } update;
-    u32 pad[6];
   } data;
 } SND_VIRTUALSAMPLE_INFO;
 
