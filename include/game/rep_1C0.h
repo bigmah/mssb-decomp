@@ -6,7 +6,7 @@
 u32 setFanObjPtr(void);
 void fn_3_35E4(u32 val);
 void fn_3_35F0(void);
-void fn_3_3638(void);
+void fn_3_3638(u8* obj);
 void fn_3_3818(void);
 void fn_3_38E8(u32 a);
 void fn_3_3904(void);
@@ -14,7 +14,7 @@ void fn_3_3BE8(void);
 void fn_3_3EE8(void);
 void fn_3_42CC(void);
 void fn_3_4984(void);
-void fn_3_4A38(void);
+void fn_3_4A38(u8 a);
 void fn_3_4F90(void);
 void fn_3_53E0(u16* in, s16* a, s16* b, s16* c, s16* d, s16* e);
 void fn_3_5518(void);

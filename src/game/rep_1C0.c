@@ -5,6 +5,11 @@
 #include "Dolphin/mtx.h"
 #pragma dont_inline on
 
+typedef struct { u8 b[14]; } Tbl14;
+extern u8 lbl_3_rodata_214[];
+extern void CTRLBuildMatrix(void*, void*);
+extern void DOVARender(void*, void*, int, int);
+extern s32 fn_800B7D3C(void*, f32*, void*);
 extern u8 lbl_803CBBC0;
 extern u32 lbl_3_data_A10[];
 
@@ -41,8 +46,60 @@ void fn_3_35F0(void) {
 }
 
 // .text:0x00003638 size:0x1E0
-void fn_3_3638(void) {
-    return;
+// near-match (16 lines): saved regs e/tbl swapped
+void fn_3_3638(u8* obj) {
+    u8* e;
+    u8* pA;
+    u8* pB;
+    u8* tbl;
+    s32 i;
+    u8* m26;
+    u8* hdr;
+    Mtx m;
+    f32 pts[24];
+    i = 0;
+    pA = obj + 8;
+    pB = obj + 0x38;
+    hdr = *(u8**)(obj + 0x68);
+    tbl = *(u8**)(hdr + 0x10);
+    e = hdr;
+    for (i = 0; i < *(u16*)(hdr + 6); i++, e += 0x1C) {
+        u16 idx = *(u16*)(e + 0x34);
+        if (idx != 0xFFFF) {
+            m26 = *(u8**)(*(u8**)(tbl + 0x10) + idx * 8);
+            CTRLBuildMatrix(*(void**)(e + 0x20), m26 + 0x18);
+            PSMTXConcat((void*)pA, (void*)(m26 + 0x18), (void*)(m26 + 0x18));
+            PSMTXConcat((void*)pB, (void*)(m26 + 0x18), m);
+#define F(o) (*(f32*)(m26 + o))
+            pts[0] = F(0x58); pts[1] = F(0x60); pts[2] = F(0x64);
+            pts[3] = F(0x54); pts[4] = F(0x60); pts[5] = F(0x64);
+            pts[6] = F(0x54); pts[7] = F(0x60); pts[8] = F(0x68);
+            pts[9] = F(0x58); pts[10] = F(0x60); pts[11] = F(0x68);
+            pts[12] = F(0x58); pts[13] = F(0x5C); pts[14] = F(0x64);
+            pts[15] = F(0x54); pts[16] = F(0x5C); pts[17] = F(0x64);
+            pts[18] = F(0x54); pts[19] = F(0x5C); pts[20] = F(0x68);
+            pts[21] = F(0x58); pts[22] = F(0x5C); pts[23] = F(0x68);
+            if (fn_800B7D3C(*(void**)(obj + 0x6C), pts, m)) {
+                if (*(u16*)(e + 0x3A) & 1) {
+                    GXSetZMode(1, 7, 1);
+                } else {
+                    GXSetZMode(1, 3, 1);
+                }
+                switch (*(u16*)(e + 0x3A) & 6) {
+                case 2:
+                    GXSetBlendMode(1, 1, 1, 0);
+                    break;
+                case 4:
+                    GXSetBlendMode(1, 2, 0, 0);
+                    break;
+                default:
+                    GXSetBlendMode(1, 4, 5, 0);
+                    break;
+                }
+                DOVARender(m26, (void*)pB, 0, 0);
+            }
+        }
+    }
 }
 
 // .text:0x00003818 size:0xD0
@@ -98,7 +155,7 @@ void fn_3_4984(void) {
 }
 
 // .text:0x00004A38 size:0x558 mapped:0x80643ACC
-void fn_3_4A38(void) {
+void fn_3_4A38(u8 a) {
     return;
 }
 
@@ -132,8 +189,32 @@ void fn_3_53E0(u16* in, s16* a, s16* b, s16* c, s16* d, s16* e) {
 }
 
 // .text:0x00005518 size:0x164 mapped:0x806445AC
+// near-match (6 lines): saved reg assignment sd/off swapped
 void fn_3_5518(void) {
-    return;
+    u8* sd;
+    s16 tbl[7];
+    Mtx44 proj;
+    Mtx mtx;
+    s32 off;
+    void* tex;
+    *(Tbl14*)tbl = *(Tbl14*)lbl_3_rodata_214;
+    sd = *(u8**)g_UNK_StadiumDetails;
+    off = tbl[g_d_GameSettings.StadiumID] << 5;
+    GXSetZMode(1, 7, 1);
+    GXSetScissor(0, 0, 0x280, 0x1C0);
+    C_MTXOrtho(proj, lbl_3_rodata_504, lbl_3_rodata_524, lbl_3_rodata_504, lbl_3_rodata_528, lbl_3_rodata_52C, lbl_3_rodata_530);
+    GXSetProjection(proj, 1);
+    GXSetCullMode(0);
+    PSMTXIdentity(mtx);
+    GXLoadPosMtxImm(mtx, 0);
+    GXSetCurrentMtx(0);
+    GXSetTexCopySrc(0, 0, 0x200, 0x1E0);
+    GXSetTexCopyDst(0x200, 0x1E0, 0x20, 0);
+    fn_3_4A38(g_d_GameSettings.StadiumID);
+    tex = *(void**)(sd + off);
+    GXDrawDone();
+    GXCopyTex(tex, 1);
+    GXPixModeSync();
 }
 
 // .text:0x0000567C size:0x530 mapped:0x80644710
