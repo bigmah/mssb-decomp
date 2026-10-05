@@ -4,6 +4,11 @@
 #pragma dont_inline on
 
 extern u8 g_Minigame[];
+extern u8 lbl_3_data_21804[];
+extern void fn_3_157DB8(s16);
+extern u8 lbl_3_data_218BC[];
+extern void fn_3_14C904(u8*, s32);
+extern void fn_3_90064(s32);
 extern u8 lbl_3_data_2188C[];
 extern s16 lbl_3_data_218A8;
 extern f64 lbl_3_rodata_3760;
@@ -82,10 +87,28 @@ void fn_3_13DC48(void) {
 }
 
 // .text:0x0013DDE0 size:0xC4 mapped:0x8077CE74
-void fn_3_13DDE0(void) {
-    return;
+f32 fn_3_13DDE0(f32 a, f32 b, u8 mode) {
+    if (a < 0.0f) {
+        a += 4.0f;
+    } else if (a >= 4.0f) {
+        a -= 4.0f;
+    }
+    if (b < 0.0f) {
+        b += 4.0f;
+    } else if (b >= 4.0f) {
+        b -= 4.0f;
+    }
+    if (mode == 1) {
+        if (a > b) {
+            return (4.0f + b) - a;
+        }
+        return b - a;
+    }
+    if (a < b) {
+        return (4.0f + a) - b;
+    }
+    return a - b;
 }
-
 // .text:0x0013DEA4 size:0x118 mapped:0x8077CF38
 void fn_3_13DEA4(void) {
     u8* m;
@@ -284,10 +307,44 @@ void fn_3_140484(void) {
 
 // .text:0x001405D8 size:0x11C mapped:0x8077F66C
 void fn_3_1405D8(void) {
-    return;
-}
-
-// .text:0x001406F4 size:0x2B8 mapped:0x8077F788
+    s16* tbl;
+    u8 sel;
+    s16 i;
+    s16 rnd;
+    u8* m = g_Minigame;
+    s16 v = *(s16*)(m + 0x1AFA);
+    s16 t;
+    if (v <= 1) {
+        if (m[0x1909] != 0) {
+            sel = 4;
+        } else {
+            sel = m[0x1A2B];
+        }
+        rnd = RandomInt_Game_Range(0, 1000);
+        *(s16*)(g_Minigame + 0x1B06) = 0;
+        tbl = (s16*)(lbl_3_data_21804 + sel * 0x12);
+        do {
+            i = *(s16*)(g_Minigame + 0x1B06);
+            t = i + 1;
+            *(s16*)(g_Minigame + 0x1B06) = t;
+            rnd -= tbl[i];
+        } while (rnd > 0 && tbl[t] >= 0);
+        t = *(s16*)(g_Minigame + 0x1B06) * 0x78;
+        *(s16*)(g_Minigame + 0x1B06) = t;
+        t = t - 0x30;
+        *(s16*)(g_Minigame + 0x1B06) = t;
+        fn_3_157DB8(t);
+    } else {
+        *(s16*)(m + 0x1AF8) = 0xE00;
+        if (v >= *(s16*)(m + 0x1B06)) {
+            m[0x1B19] = 1;
+            *(s16*)(m + 0x1AFA) = 0;
+            *(f32*)(m + 0x1AF0) = ((f32*)lbl_3_data_218BC)[3];
+            fn_3_14C904(lbl_3_data_218BC, 1);
+            fn_3_90064(0x2E0);
+        }
+    }
+}// .text:0x001406F4 size:0x2B8 mapped:0x8077F788
 void fn_3_1406F4(void) {
     return;
 }

@@ -8,7 +8,19 @@ extern u8 lbl_3_data_18ED0[];
 
 extern u32 lbl_3_bss_AE18;
 extern void fn_3_B97DC(void*, u32);
-extern u8* lbl_3_common_bss_350E4;
+typedef struct {
+    u8* arr;
+    u8 pad0[0x30 - 4];
+    s32 count;
+    u8 pad1[0x3C - 0x34];
+    u8* p3C;
+    u8* p40;
+    u8* p44;
+    u8* p48;
+    u8 pad2[0x64 - 0x4C];
+    s16 s64;
+} E4EF4Ctl;
+extern E4EF4Ctl lbl_3_common_bss_350E4;
 extern void fn_800B4AFC(void*, s32);
 
 #include "C3/control.h"
@@ -19,6 +31,9 @@ extern f32 lbl_3_rodata_2A60;
 extern f32 lbl_3_rodata_2A64;
 extern u8 g_Ball[];
 extern double acos(double);
+extern void* _OSAllocFromHeap(s32, u32);
+extern void* memset(void*, int, u32);
+extern void fn_3_E4CB0(s32*, s32*);
 extern double sin(double);
 extern double cos(double);
 extern f32 lbl_3_rodata_2AC0;
@@ -247,11 +262,9 @@ void fn_3_E45F0(u8* a) {
 // .text:0x000E4658 size:0x108 mapped:0x807236EC
 void fn_3_E4658(u8* a) {
     u8* r;
-    f32* t = (f32*)lbl_3_data_18ED0;
-    f32* p;
+    f32* tbl = (f32*)lbl_3_data_18ED0;
     a[0] = 0;
-    p = t + a[0x9C] * 7;
-    CTRLSetTranslation((Control*)a, t[a[0x9C] * 7], lbl_3_rodata_2B20 + p[1], p[2]);
+    CTRLSetTranslation((Control*)a, *(f32*)((u8*)tbl + a[0x9C] * 0x1C), lbl_3_rodata_2B20 + *(f32*)((u8*)tbl + a[0x9C] * 0x1C + 4), *(f32*)((u8*)tbl + a[0x9C] * 0x1C + 8));
     PSVECScale((Vec*)(lbl_3_data_18ED0 + a[0x9C] * 0x1C), lbl_3_rodata_2B24, (Vec*)(a + 0xA0));
     *(f32*)(a + 0xA4) = *(f32*)(a + 0xA4) - lbl_3_rodata_2B20;
     r = lbl_3_data_18ED0 + 0xC;
@@ -259,11 +272,7 @@ void fn_3_E4658(u8* a) {
     *(f32*)(a + 0xB0) = *(f32*)(r + a[0x9C] * 0x1C);
     CTRLSetScale((Control*)a, lbl_3_rodata_2B28, lbl_3_rodata_2B28, lbl_3_rodata_2B28);
     *(f32*)(a + 0xB4) = lbl_3_rodata_2B28;
-}// .text:0x000E48D0 size:0x168 mapped:0x80723964
-void fn_3_E48D0(void) {
-    return;
 }
-
 // .text:0x000E4A38 size:0x1B0 mapped:0x80723ACC
 void fn_3_E4A38(void) {
     return;
@@ -272,12 +281,12 @@ void fn_3_E4A38(void) {
 // .text:0x000E4BE8 size:0xC8 mapped:0x80723C7C
 typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } E4BE8Ctl;
 static inline u32 e4be8_get78(s32 idx) {
-    return ((E4BE8Ctl*)lbl_3_common_bss_350E4)[idx].f78;
+    return ((E4BE8Ctl*)lbl_3_common_bss_350E4.arr)[idx].f78;
 }
 u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]) {
     Mtx tmp;
     u8* c;
-    c = (u8*)&((E4BE8Ctl*)lbl_3_common_bss_350E4)[idx];
+    c = (u8*)&((E4BE8Ctl*)lbl_3_common_bss_350E4.arr)[idx];
     CTRLBuildMatrix((Control*)c, m);
     if (c[0x9D] == 0) {
         if (c[0xC8] == 0 || c[0xC4] == 0 || c[0xC4] == 5 || c[0xC4] == 4) {
@@ -287,12 +296,33 @@ u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]) {
         PSMTXConcat(m, tmp, m);
     }
     return e4be8_get78(idx);
-}// .text:0x000E4EF4 size:0xD0 mapped:0x80723F88
-void fn_3_E4EF4(void) {
+}
+
+// .text:0x000E4CB0 size:0x244 mapped:0x80723D44
+void fn_3_E4CB0(s32* a, s32* b) {
     return;
 }
 
-// .text:0x000E4FC4 size:0x8B8 mapped:0x80724058
+// .text:0x000E4EF4 size:0xD0 mapped:0x80723F88
+void fn_3_E4EF4(void) {
+    s32 spC;
+    s32 sp8;
+    E4EF4Ctl* c = &lbl_3_common_bss_350E4;
+    s32 n = c->count;
+    s32 size = n * 2 + n * 4 + n * 0x18 + n * 4;
+    if (c->p48 == NULL) {
+        u8* p = _OSAllocFromHeap(4, size);
+        c->p48 = p;
+        lbl_3_common_bss_350E4.p3C = p + c->count * 0x18;
+        lbl_3_common_bss_350E4.p44 = lbl_3_common_bss_350E4.p3C + c->count * 4;
+        lbl_3_common_bss_350E4.p40 = lbl_3_common_bss_350E4.p44 + c->count * 4;
+    }
+    memset(c->p48, 0, size);
+    spC = 0;
+    sp8 = 0;
+    fn_3_E4CB0(&spC, &sp8);
+    lbl_3_common_bss_350E4.s64 = spC;
+}// .text:0x000E4FC4 size:0x8B8 mapped:0x80724058
 void fn_3_E4FC4(void) {
     return;
 }

@@ -29,7 +29,7 @@ void fn_3_E4760(void);
 void fn_3_E48D0(void);
 void fn_3_E4A38(void);
 u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]);
-void fn_3_E4CB0(void);
+void fn_3_E4CB0(s32* a, s32* b);
 void fn_3_E4EF4(void);
 void fn_3_E4FC4(void);
 
