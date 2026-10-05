@@ -2,6 +2,10 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_11168[];
+extern f32 lbl_3_bss_1910[];
+extern f32 lbl_3_rodata_1DD0[];
+extern f32 lbl_3_rodata_1DD4;
+extern u8 lbl_3_common_bss_350E4[];
 
 // .text:0x000B7FC8 size:0x108 mapped:0x806F705C
 void fn_3_B7FC8(void) {
@@ -51,8 +55,9 @@ void fn_3_B8574(void) {
 }
 
 // .text:0x000B85A8 size:0x34 mapped:0x806F763C
-void fn_3_B85A8(void) {
-    return;
+u32 fn_3_B85A8(int idx, u32* out) {
+    *out = *(u32*)(lbl_3_common_bss_350E4 + 0x44) + (*(u16*)(*(u8**)(lbl_3_common_bss_350E4 + 0x40) + idx * 2)) * 4;
+    return (*(u32**)(lbl_3_common_bss_350E4 + 0x3C))[idx];
 }
 
 // .text:0x000B85DC size:0x7C mapped:0x806F7670
