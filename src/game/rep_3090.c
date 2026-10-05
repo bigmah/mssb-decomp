@@ -1,6 +1,8 @@
 #include "game/rep_3090.h"
 #include "header_rep_data.h"
 
+extern u8* lbl_3_common_bss_DE94;
+
 // .text:0x000FC448 size:0x4F0 mapped:0x8073B4DC
 void fn_3_FC448(void) {
     return;
@@ -62,8 +64,8 @@ void fn_3_FD670(void) {
 }
 
 // .text:0x000FD9FC size:0x20 mapped:0x8073CA90
-void fn_3_FD9FC(void) {
-    return;
+s32 fn_3_FD9FC(void) {
+    return *(s32*)(lbl_3_common_bss_DE94 + 0x18) == 1;
 }
 
 // .text:0x000FDA1C size:0x114 mapped:0x8073CAB0
@@ -77,8 +79,9 @@ void fn_3_FDB30(void) {
 }
 
 // .text:0x00100018 size:0x20 mapped:0x8073F0AC
-void fn_3_100018(void) {
-    return;
+
+s32 fn_3_100018(void) {
+    return *(u8*)(lbl_3_common_bss_DE94 + 0x9B6) == 1;
 }
 
 // .text:0x00100038 size:0x44 mapped:0x8073F0CC
@@ -227,8 +230,13 @@ void fn_3_106270(void) {
 }
 
 // .text:0x0010698C size:0x24 mapped:0x80745A20
-void fn_3_10698C(void) {
-    return;
+s32 fn_3_10698C(u32* p) {
+    s32 n = 0;
+    while (*p != 0) {
+        p++;
+        n++;
+    }
+    return n;
 }
 
 // .text:0x001069B0 size:0x10 mapped:0x80745A44
