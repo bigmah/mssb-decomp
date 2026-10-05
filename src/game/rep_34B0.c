@@ -17,6 +17,15 @@ extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
 
 extern void fn_3_5A6D4(s32);
+extern u8 lbl_3_data_21798[];
+extern u8 lbl_803CBC3C[];
+extern u8 lbl_3_common_bss_32234[];
+extern u8 lbl_3_common_bss_32724[];
+extern void fn_3_F578(void);
+extern void fn_3_753E8(s32);
+extern void fn_3_6EBB4(s32);
+extern void setBatterContactConstants(void);
+extern s32 someAnimationIndFunction(void);
 extern u8 g_Minigame[];
 extern u8 g_Scores[];
 extern void fn_3_10F550(s32, s32);
@@ -168,7 +177,39 @@ void fn_3_131C88(void) {
 
 // .text:0x00131EC4 size:0x138 mapped:0x80770F58
 void fn_3_131EC4(void) {
-    return;
+    u8* gl = g_GameLogic;
+    u8* mg;
+    switch (gl[0x125]) {
+    case 0:
+        mg = g_Minigame;
+        mg[0x1905] = mg[0x18E0 + mg[0x190C]];
+        gl[0x12B] = 1;
+        mg[0x1A2D] = 0;
+        mg[0x1912] = 0;
+        if (mg[0x1909] == 0) {
+            mg[0x1A2E] = lbl_3_data_21798[mg[0x1A2B]];
+        } else {
+            mg[0x1A2E] = lbl_3_data_21798[4];
+        }
+        fn_3_F578();
+        fn_3_753E8(0);
+        fn_3_6EBB4(-1);
+        setBatterContactConstants();
+        setInMemBatterConstants(*(s8*)(mg + 0x1905));
+        lbl_803CBC3C[2] = 0;
+        gl[0x125] += 1;
+        break;
+    case 1:
+        if (someAnimationIndFunction() != 0) {
+            lbl_3_common_bss_32234[1] = 1;
+            gl[0x125] += 1;
+        }
+        break;
+    default:
+        lbl_3_common_bss_32724[0xB6] = 1;
+        fn_3_5A6D4(0);
+        break;
+    }
 }
 
 // .text:0x00131FFC size:0x80 mapped:0x80771090
