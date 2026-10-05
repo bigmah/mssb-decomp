@@ -6,6 +6,7 @@ extern u8 lbl_3_data_18ED0[];
 
 extern u32 lbl_3_bss_AE18;
 extern void fn_3_B97DC(void*, u32);
+extern void fn_800B4AFC(void*, s32);
 
 #include "C3/control.h"
 extern f32 lbl_3_rodata_2B28;
@@ -69,10 +70,16 @@ void fn_3_E2324(void) {
 }
 
 // .text:0x000E25D0 size:0x9C mapped:0x80721664
-void fn_3_E25D0(void) {
-    return;
+void fn_3_E25D0(u8* a, u32 b) {
+    *(u32*)(a + 0xAC) = ((u32*)&lbl_3_bss_AE18)[b];
+    fn_3_B97DC(*(void**)(a + 0x74), *(u32*)(a + 0xAC));
+    if (b != 0 && b != 2 && b != 3) {
+        (*(u8**)(a + 0x74))[0x5B] = 2;
+        fn_800B4AFC(**(void***)(a + 0x74), (*(u8**)(a + 0x74))[0x5B] & 1);
+    }
+    *(f32*)(a + 0xB8) = *(f32*)(*(u8**)(a + 0x74) + 0x5C);
+    a[0xCB] = b;
 }
-
 // .text:0x000E266C size:0x270 mapped:0x80721700
 void fn_3_E266C(void) {
     return;

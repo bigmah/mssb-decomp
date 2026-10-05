@@ -8,7 +8,7 @@ void fn_3_E2034(void);
 void fn_3_E2118(void);
 void fn_3_E22A4(u8* a);
 void fn_3_E2324(void);
-void fn_3_E25D0(void);
+void fn_3_E25D0(u8* a, u32 b);
 void fn_3_E266C(void);
 void fn_3_E28DC(void);
 void fn_3_E29B4(void);
