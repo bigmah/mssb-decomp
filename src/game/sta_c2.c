@@ -394,8 +394,13 @@ void fn_3_D5444(void) {
 }
 
 // .text:0x000D5470 size:0x24 mapped:0x80714504
-void fn_3_D5470(void) {
-    return;
+s32 fn_3_D5470(f32* a, f32* b) {
+    f32 x = *a;
+    f32 y = *b;
+    if (x < y) {
+        return -1;
+    }
+    return x > y;
 }
 
 // .text:0x000D5494 size:0x158 mapped:0x80714528
