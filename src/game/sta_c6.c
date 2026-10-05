@@ -1,5 +1,11 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
+#include "static/UnknownHomes_Static.h"
+
+extern u8 lbl_3_common_bss_350E4[];
+#pragma dont_inline on
+
+extern u8 lbl_3_data_196B4[];
 
 extern u8 lbl_3_common_bss_350E4[];
 
@@ -86,8 +92,18 @@ void fn_3_E671C(void) {
 }
 
 // .text:0x000E6798 size:0x5C mapped:0x8072582C
-void fn_3_E6798(void) {
-    return;
+void fn_3_E6798(u8* a) {
+    u8* o = **(u8***)(a + 0x74);
+    s32 i;
+    for (i = 0; i < 7; i++) {
+        if (lbl_3_data_196B4[i] != 0) {
+            u8* t = ((u8**)*(u8**)(o + 0x18))[i];
+            *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+        } else {
+            u8* t = ((u8**)*(u8**)(o + 0x18))[i];
+            *(u32*)(t + 0x14) = 0;
+        }
+    }
 }
 
 // .text:0x000E67F4 size:0xB4 mapped:0x80725888
@@ -151,13 +167,16 @@ void fn_3_E7A2C(void) {
 }
 
 // .text:0x000E7B20 size:0xFA8 mapped:0x80726BB4
-void fn_3_E7B20(void) {
-    return;
+u8 fn_3_E7B20(void* a, void* b) {
+    return 0;
 }
 
 // .text:0x000E8AC8 size:0x5C mapped:0x80727B5C
-void fn_3_E8AC8(void) {
-    return;
+s32 fn_3_E8AC8(void) {
+    if (g_d_GameSettings.StadiumID != 6) {
+        return 0;
+    }
+    return fn_3_E7B20(*(void**)(lbl_3_common_bss_350E4 + 0x38), *(void**)(lbl_3_common_bss_350E4 + 0x34)) != 0;
 }
 
 // .text:0x000E8B24 size:0x5F8 mapped:0x80727BB8

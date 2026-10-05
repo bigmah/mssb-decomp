@@ -17,7 +17,7 @@ void fn_3_E6578(void);
 void fn_3_E6638(u8* a);
 void fn_3_E6684(void);
 void fn_3_E671C(void);
-void fn_3_E6798(void);
+void fn_3_E6798(u8* a);
 void fn_3_E67F4(void);
 void fn_3_E68A8(void);
 void fn_3_E698C(void);
@@ -30,8 +30,8 @@ void fn_3_E7424(void);
 void fn_3_E751C(void);
 void fn_3_E763C(void);
 void fn_3_E7A2C(void);
-void fn_3_E7B20(void);
-void fn_3_E8AC8(void);
+u8 fn_3_E7B20(void* a, void* b);
+s32 fn_3_E8AC8(void);
 void fn_3_E8B24(void);
 
 #endif // !__GAME_sta_c6_H_
