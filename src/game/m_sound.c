@@ -1,7 +1,26 @@
 #include "game/m_sound.h"
 #include "header_rep_data.h"
 
-extern u8 lbl_3_common_bss_34C58[];
+typedef struct SndState34C58 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+    s32 unk1C;
+    u8 pad20[8];
+    u8 unk28;
+    u8 pad29[6];
+    u8 unk2F;
+    u8 pad30[3];
+    u8 unk33;
+} SndState34C58;
+extern SndState34C58 lbl_3_common_bss_34C58;
+#define S34C58 lbl_3_common_bss_34C58
+#define B34C58 ((u8*)&lbl_3_common_bss_34C58)
+extern s32 lbl_3_bss_1780[];
 extern u8 lbl_3_common_bss_32B20[];
 extern u8 lbl_3_data_8D70[];
 extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
@@ -115,10 +134,10 @@ void fn_3_8DA80(void) {
 
 // .text:0x0008F1C8 size:0x54 mapped:0x806CE25C
 void fn_3_8F1C8(void) {
-    *(s16*)(lbl_3_common_bss_34C58 + 0x20) = -1;
-    *(s16*)(lbl_3_common_bss_34C58 + 0x22) = -1;
-    lbl_3_common_bss_34C58[0x29] = 0;
-    lbl_3_common_bss_34C58[0x2A] = 0;
+    *(s16*)(B34C58 + 0x20) = -1;
+    *(s16*)(B34C58 + 0x22) = -1;
+    B34C58[0x29] = 0;
+    B34C58[0x2A] = 0;
     lbl_3_bss_1768 = fn_800B0A5C_insertQueue(fn_3_8B094, 0);
 }
 
@@ -129,14 +148,14 @@ void fn_3_8F21C(void) {
 
 // .text:0x0008FC0C size:0x74 mapped:0x806CECA0
 void fn_3_8FC0C(void) {
-    lbl_3_common_bss_34C58[0x26] = 0;
-    if (*(u32*)(lbl_3_common_bss_34C58 + 0x10) != 0xFFFFFFFF) {
-        sndFXKeyOff(*(u32*)(lbl_3_common_bss_34C58 + 0x10));
-        *(s32*)(lbl_3_common_bss_34C58 + 0x10) = -1;
+    B34C58[0x26] = 0;
+    if (*(u32*)(B34C58 + 0x10) != 0xFFFFFFFF) {
+        sndFXKeyOff(*(u32*)(B34C58 + 0x10));
+        *(s32*)(B34C58 + 0x10) = -1;
     }
-    if (*(u32*)(lbl_3_common_bss_34C58 + 0x14) != 0xFFFFFFFF) {
-        sndFXKeyOff(*(u32*)(lbl_3_common_bss_34C58 + 0x14));
-        *(s32*)(lbl_3_common_bss_34C58 + 0x14) = -1;
+    if (*(u32*)(B34C58 + 0x14) != 0xFFFFFFFF) {
+        sndFXKeyOff(*(u32*)(B34C58 + 0x14));
+        *(s32*)(B34C58 + 0x14) = -1;
     }
 }
 
@@ -147,7 +166,17 @@ void fn_3_8FC80(void) {
 
 // .text:0x0008FF18 size:0x44 mapped:0x806CEFAC
 void fn_3_8FF18(void) {
-    return;
+    S34C58.unkC = -1;
+    S34C58.unk10 = -1;
+    S34C58.unk14 = -1;
+    S34C58.unk18 = -1;
+    S34C58.unk1C = -1;
+    S34C58.unk28 = 0;
+    lbl_3_bss_1780[0] = -1;
+    S34C58.unk4 = -1;
+    S34C58.unk8 = -1;
+    S34C58.unk2F = 0;
+    S34C58.unk33 = 0;
 }
 
 // .text:0x0008FF5C size:0x108 mapped:0x806CEFF0
