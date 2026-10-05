@@ -16,7 +16,7 @@ void fn_3_690FC(void);
 void fn_3_6916C(void);
 void fn_3_69184(void);
 void fn_3_692E0(void);
-void fn_3_695F8(void);
+void fn_3_695F8(s32 flag);
 void fn_3_697CC(void);
 
 #endif // !__GAME_rep_EA0_H_

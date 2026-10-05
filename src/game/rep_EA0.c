@@ -3,6 +3,11 @@
 
 extern u8 lbl_8036E548[];
 extern u8 g_Batter[];
+extern u8 g_Ball[];
+extern u8 g_Pitcher[];
+extern u8 lbl_3_common_bss_350E4[];
+extern void fn_8001D148(s32, f32, f32, f32);
+extern f32 lbl_3_data_6830[];
 extern u8 g_GameLogic[];
 extern u8 g_Practice[];
 extern u8 g_Stats[];
@@ -152,8 +157,41 @@ void fn_3_692E0(void) {
 }
 
 // .text:0x000695F8 size:0x1D4 mapped:0x806A868C
-void fn_3_695F8(void) {
-    return;
+void fn_3_695F8(s32 flag) {
+    u8* p = *(u8**)(lbl_8036E548 + 0x2D90);
+    s32 t;
+    p[0x4E] = 0;
+    *(f32*)(p + 0x2C) = *(f32*)g_Ball;
+    *(f32*)(p + 0x30) = -*(f32*)(g_Ball + 0x340) - 0.04f;
+    *(f32*)(p + 0x34) = *(f32*)(g_Ball + 8);
+    if (g_Ball[0x1BEB] != 0) {
+        if (*(s16*)(g_Ball + 0x1B66) & 1) {
+            *(f32*)(p + 0x2C) = *(f32*)(g_Ball + 0x1A80);
+            *(f32*)(p + 0x34) = *(f32*)(g_Ball + 0x1A88);
+        }
+    } else if (g_Pitcher[0x166] == 1 && (*(s16*)(g_Pitcher + 0x11E) & 1)) {
+        *(f32*)(p + 0x2C) = *(f32*)g_Pitcher + *(f32*)(g_Pitcher + 0xD4) - *(f32*)(g_Pitcher + 0xE8);
+    }
+    if (g_Ball[0x1BEF] != 0) {
+        *(f32*)(p + 0x2C) = *(f32*)(g_Ball + 0x1B38);
+        *(f32*)(p + 0x30) = -*(f32*)(g_Ball + 0x1B3C);
+        *(f32*)(p + 0x34) = *(f32*)(g_Ball + 0x1B40);
+    }
+    if (g_Ball[0x1BF2] != 0) {
+        *(f32*)(p + 0x2C) = *(f32*)(lbl_3_common_bss_350E4 + 0x4C);
+        *(f32*)(p + 0x34) = *(f32*)(lbl_3_common_bss_350E4 + 0x54);
+    }
+    if (g_d_GameSettings[7] == 6) {
+        fn_8001D148(1, lbl_3_data_6830[1], lbl_3_rodata_F24, lbl_3_data_6830[1]);
+    } else {
+        fn_8001D148(1, lbl_3_data_6830[0], lbl_3_rodata_F24, lbl_3_data_6830[0]);
+    }
+    if (flag != 0) {
+        t = *(s32*)(g_Ball + 0x1B44) & 0x7F;
+        if (t == 1 || t == 6 || (u32)(t - 9) <= 1 || (t >= 0x70 && t < 0x79)) {
+            p[0x4E] = 1;
+        }
+    }
 }
 
 // .text:0x000697CC size:0x994 mapped:0x806A8860
