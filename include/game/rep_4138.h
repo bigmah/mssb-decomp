@@ -10,4 +10,6 @@ void fn_3_16E328(void);
 
 void fn_3_16E2FC(u16* p, s32 i);
 
+void fn_3_16E1A0(void);
+
 #endif // !__GAME_rep_4138_H_

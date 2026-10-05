@@ -1,6 +1,20 @@
 #include "game/rep_4138.h"
 #include "header_rep_data.h"
 
+extern s32 lbl_3_bss_D6F0[];
+extern u8 g_Scores[];
+extern u8 g_Strikes[];
+
+void fn_3_16E1A0(void) {
+    s32* o = lbl_3_bss_D6F0;
+    o[0] = *(s16*)(g_Scores + 0x2A);
+    o[1] = *(s16*)(g_Scores + 4);
+    o[2] = *(s32*)g_Scores;
+    o[3] = *(s32*)g_Strikes;
+    o[4] = *(s32*)(g_Strikes + 4);
+    o[5] = *(s32*)(g_Strikes + 8);
+}
+
 extern u16* lbl_3_bss_D6E4;
 extern s32 lbl_3_bss_D6E8;
 
