@@ -89,8 +89,13 @@ void setInMemBatterConstants(int rosterID) {
 }
 
 // .text:0x0006E1D4 size:0x78 mapped:0x806AD268
-void fn_3_6E1D4(void) {
-    return;
+extern u8 lbl_3_data_4744[];
+extern s32 LERPToNewRange_Float(s32 v, s32 lo, s32 hi, s32 a, s32 b);
+
+u8 fn_3_6E1D4(u8 v) {
+    s32 lo = (v / 10) * 10;
+    s32 hi = lo + 10;
+    return LERPToNewRange_Float(v, lo, hi, lbl_3_data_4744[lo / 10], lbl_3_data_4744[hi / 10]);
 }
 
 // .text:0x0006E24C size:0x968 mapped:0x806AD2E0
