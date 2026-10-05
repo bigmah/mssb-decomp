@@ -122,7 +122,15 @@ void fn_3_8F21C(void) {
 
 // .text:0x0008FC0C size:0x74 mapped:0x806CECA0
 void fn_3_8FC0C(void) {
-    return;
+    lbl_3_common_bss_34C58[0x26] = 0;
+    if (*(u32*)(lbl_3_common_bss_34C58 + 0x10) != 0xFFFFFFFF) {
+        sndFXKeyOff(*(u32*)(lbl_3_common_bss_34C58 + 0x10));
+        *(s32*)(lbl_3_common_bss_34C58 + 0x10) = -1;
+    }
+    if (*(u32*)(lbl_3_common_bss_34C58 + 0x14) != 0xFFFFFFFF) {
+        sndFXKeyOff(*(u32*)(lbl_3_common_bss_34C58 + 0x14));
+        *(s32*)(lbl_3_common_bss_34C58 + 0x14) = -1;
+    }
 }
 
 // .text:0x0008FC80 size:0x298 mapped:0x806CED14
