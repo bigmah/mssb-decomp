@@ -120,18 +120,20 @@ void streamHandle() {
 void streamCorrectLoops() {}
 
 void streamKill(u32 voice) {
-  STREAM_INFO* si = &streamInfo[voice];
-  switch (si->state) {
-  case 1:
-  case 2:
-    if (si->state == 2) {
-      voiceUnblock(si->voice);
+  u32 i;
+  for (i = 0; i < 64; ++i) {
+    STREAM_INFO* si = &streamInfo[i];
+    if (si->state == 1 || si->state == 2) {
+      u32 v = si->voice;
+      if (v == voice) {
+        if (si->state == 2) {
+          voiceUnblock(v);
+        }
+        si->state = 3;
+        si->updateFunction(NULL, 0, NULL, 0, (void*)si->user);
+        return;
+      }
     }
-    si->state = 3;
-    si->updateFunction(NULL, 0, NULL, 0, (void*)si->user);
-    break;
-  default:
-    break;
   }
 }
 
