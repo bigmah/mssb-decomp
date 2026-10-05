@@ -2,8 +2,14 @@
 #include "header_rep_data.h"
 
 extern u8 g_Batter[];
+extern u8 g_d_GameSettings[];
+extern u8 g_Minigame[];
+typedef struct { s8 characterIndex[4]; u8 pad[0x12]; } MiniCtl_F80;
 extern u8 lbl_3_common_bss_32220[];
 extern void fn_3_C07A0(void);
+extern void fn_3_C1770(s8 who);
+extern void fn_3_C11CC(s8 who, int a);
+extern void fn_3_C1344(s8 who, int a, f32 x, f32 y, f32 z);
 extern void fn_3_C0770(void);
 extern void fn_3_C07B0(void);
 extern void fn_3_BF1AC(void);
@@ -26,7 +32,34 @@ void fn_3_6A2A4(s8 idx) {
 
 // .text:0x0006A300 size:0x100 mapped:0x806A9394
 void fn_3_6A300(void) {
-    return;
+    u8* p;
+    u8* d;
+    if (lbl_3_common_bss_32724[0xD4] == 0) {
+        return;
+    }
+    p = *(u8**)(lbl_8036E548 + 0x2C74);
+    if (g_d_GameSettings[7] == 6) {
+        p = ((u8**)(lbl_8036E548 + 0x2C50))[*(s8*)(g_Minigame + 0x1905)];
+    }
+    {
+        s8 t = *(s8*)(p + 0x252);
+        if (t == 0x30) {
+            d = *(u8**)(lbl_8036E548 + 0x2D90) + 0x2A8;
+        } else if (t == 0x31) {
+            d = *(u8**)(lbl_8036E548 + 0x2D90) + 0x2D0;
+        } else if (t == 0x32) {
+            d = *(u8**)(lbl_8036E548 + 0x2D90) + 0x2F8;
+        } else {
+            d = *(u8**)(lbl_8036E548 + 0x2D90) + 0x320;
+        }
+    }
+    d[0x26] = 1;
+    *(f32*)(d + 4) = *(f32*)(p + 0x34);
+    *(f32*)(d + 8) = -*(f32*)(p + 0x38);
+    *(f32*)(d + 0xC) = *(f32*)(p + 0x3C);
+    *(f32*)(d + 0x10) = *(f32*)(p + 0x40);
+    *(f32*)(d + 0x14) = -*(f32*)(p + 0x44);
+    *(f32*)(d + 0x18) = *(f32*)(p + 0x48);
 }
 
 // .text:0x0006A400 size:0x14 mapped:0x806A9494
@@ -46,8 +79,34 @@ void fn_3_6A83C(void) {
 }
 
 // .text:0x0006A9B0 size:0xE8 mapped:0x806A9A44
+// 99%: missing extsb r3,r3 after the lbz of who (s8 load elided)
 void fn_3_6A9B0(void) {
-    return;
+    s8 who;
+    if (g_d_GameSettings[0x11]) {
+        who = ((MiniCtl_F80*)(g_Minigame + 0x18CC))[0].characterIndex[*(s8*)(g_Minigame + 0x1905)];
+    } else {
+        who = 9;
+    }
+    if (g_Batter[0x9D] == 1) {
+        if (*(s16*)(g_Batter + 0x74) == 1) {
+            fn_3_C1770(who);
+            lbl_3_common_bss_32724[0xC9] = 1;
+            return;
+        }
+        {
+            f32 k = 100.0f;
+            f32 y = *(f32*)(g_Batter + 0x5C);
+            f32 x = *(f32*)(g_Batter + 0x58);
+            x = k * x;
+            y = k * y;
+            fn_3_C1344(who, x >= k, x, y, k);
+        }
+        return;
+    }
+    if (lbl_3_common_bss_32724[0xC9] != 0) {
+        fn_3_C11CC(who, 1);
+        lbl_3_common_bss_32724[0xC9] = 0;
+    }
 }
 
 // .text:0x0006AA98 size:0x98 mapped:0x806A9B2C
