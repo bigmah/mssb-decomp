@@ -1,6 +1,8 @@
 #include "game/rep_3290.h"
 #include "header_rep_data.h"
 
+extern void* memset(void*, s32, u32);
+
 extern u8 g_Minigame[];
 extern void fn_3_1500C8(void);
 #pragma dont_inline on
@@ -17,7 +19,7 @@ void fn_3_1136FC(void) {
 
 // .text:0x0011391C size:0x34 mapped:0x807529B0
 void fn_3_11391C(void) {
-    return;
+    memset(g_Minigame + 0x1D7C, 0, 0x78);
 }
 
 // .text:0x00113950 size:0xF8 mapped:0x807529E4
