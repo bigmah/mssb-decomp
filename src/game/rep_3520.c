@@ -1,5 +1,7 @@
 #include "game/rep_3520.h"
 #include "header_rep_data.h"
+#pragma dont_inline on
+
 
 #include "static/UnknownHomes_Static.h"
 extern u8 lbl_3_data_21AF0[];
@@ -238,8 +240,19 @@ void fn_3_1382E0(void) {
 }
 
 // .text:0x00138448 size:0x6C mapped:0x807774DC
-void fn_3_138448(void) {
-    return;
+void fn_3_138448(u8* a) {
+    if (g_Minigame[0x72A] == 0) {
+        s16* t = (s16*)(a + 0x3A);
+        if (*t < 0x7FFE) {
+            *t += 1;
+        } else {
+            *t = 0x7FFF;
+        }
+        if (*(s16*)(a + 0x3A) >= *(s16*)(a + 0x38)) {
+            a[0x3E] = 0;
+            fn_3_1384B4();
+        }
+    }
 }
 
 // .text:0x001384B4 size:0x5F0 mapped:0x80777548

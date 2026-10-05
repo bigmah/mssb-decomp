@@ -47,7 +47,7 @@ void fn_3_137DE4(void);
 void fn_3_137F14(void);
 void fn_3_13802C(void);
 void fn_3_1382E0(void);
-void fn_3_138448(void);
+void fn_3_138448(u8* a);
 void fn_3_1384B4(void);
 void fn_3_138AA4(void);
 void fn_3_1391C0(void);
