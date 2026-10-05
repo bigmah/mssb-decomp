@@ -6,7 +6,7 @@
 void fn_3_C0854(void);
 void fn_3_C095C(void);
 void fn_3_C0AD8(void);
-void fn_3_C0C4C(void);
+void fn_3_C0C4C(s32 idx);
 void fn_3_C0CE8(u8 v, f32 x, f32 y, f32 z);
 void fn_3_C0D10(void);
 void fn_3_C0DD8(void);
