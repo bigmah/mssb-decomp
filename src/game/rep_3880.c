@@ -2,6 +2,10 @@
 #include "header_rep_data.h"
 #include "static/UnknownHomes_Static.h"
 
+
+extern u8 g_Minigame[];
+#pragma dont_inline on
+
 // .text:0x0014737C size:0x3FC mapped:0x80786410
 void fn_3_14737C(void) {
     return;
@@ -138,13 +142,15 @@ void fn_3_14B53C(void) {
 }
 
 // .text:0x0014B92C size:0x74 mapped:0x8078A9C0
-void fn_3_14B92C(void) {
+void fn_3_14B92C(u32 a, u32 b) {
     return;
 }
 
 // .text:0x0014B9A0 size:0x50 mapped:0x8078AA34
-void fn_3_14B9A0(void) {
-    return;
+void fn_3_14B9A0(u32 a, u32 b) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 3 && b != 0) {
+        fn_3_14B92C(a, b);
+    }
 }
 
 // .text:0x0014B9F0 size:0x50 mapped:0x8078AA84
@@ -163,13 +169,15 @@ void fn_3_14BCB0(void) {
 }
 
 // .text:0x0014BECC size:0x47C mapped:0x8078AF60
-void fn_3_14BECC(void) {
+void fn_3_14BECC(u32 a, u32 b) {
     return;
 }
 
 // .text:0x0014C348 size:0x50 mapped:0x8078B3DC
-void fn_3_14C348(void) {
-    return;
+void fn_3_14C348(u32 a, u32 b) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 2 && a != 0) {
+        fn_3_14BECC(a, b);
+    }
 }
 
 // .text:0x0014C398 size:0x24 mapped:0x8078B42C
@@ -297,13 +305,15 @@ void fn_3_14DF6C(void) {
 }
 
 // .text:0x0014E234 size:0x58C mapped:0x8078D2C8
-void fn_3_14E234(void) {
+void fn_3_14E234(u32 a) {
     return;
 }
 
 // .text:0x0014E7C0 size:0x50 mapped:0x8078D854
-void fn_3_14E7C0(void) {
-    return;
+void fn_3_14E7C0(u32 a) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 6 && a != 0) {
+        fn_3_14E234(a);
+    }
 }
 
 // .text:0x0014E810 size:0x84 mapped:0x8078D8A4
@@ -497,13 +507,15 @@ void fn_3_153F8C(void) {
 }
 
 // .text:0x001540E4 size:0xE0 mapped:0x80793178
-void fn_3_1540E4(void) {
+void fn_3_1540E4(u32 a, u32 b, u32 c) {
     return;
 }
 
 // .text:0x001541C4 size:0x50 mapped:0x80793258
-void fn_3_1541C4(void) {
-    return;
+void fn_3_1541C4(u32 a, u32 b, u32 c) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 4 && c != 0) {
+        fn_3_1540E4(a, b, c);
+    }
 }
 
 // .text:0x00154214 size:0x24 mapped:0x807932A8
@@ -527,7 +539,7 @@ void fn_3_1549F0(void) {
 }
 
 // .text:0x00154C7C size:0x5A0 mapped:0x80793D10
-void fn_3_154C7C(void) {
+void fn_3_154C7C(u32 a, u32 b, u32 c) {
     return;
 }
 
