@@ -80,8 +80,15 @@ void fn_3_7FD90(void) {
 }
 
 // .text:0x0007FEA8 size:0x2C mapped:0x806BEF3C
-void fn_3_7FEA8(void) {
-    return;
+void fn_3_7FEA8(s32 i, s32 v) {
+    u8* r = g_Runners + i * 0x154;
+    if (*(s16*)(r + 0xE0) < 0) {
+        return;
+    }
+    if (v == 0) {
+        return;
+    }
+    r[0x135] = v;
 }
 
 // .text:0x0007FED4 size:0xFC mapped:0x806BEF68
