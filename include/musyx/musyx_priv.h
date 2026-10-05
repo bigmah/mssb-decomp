@@ -193,6 +193,7 @@ typedef struct _PB {
   _PBSRC src;             // offset 0xA6, size 0xE
   _PBADPCMLOOP adpcmLoop; // offset 0xB4, size 0x6
   u16 streamLoopCnt;      // offset 0xBA, size 0x2
+  u16 pad[4];
 } _PB;
 
 typedef struct SAMPLE_INFO {
@@ -1020,6 +1021,7 @@ void salCalcVolume(u8 voltab_index, SAL_VOLINFO* vi, f32 vol, u32 pan, u32 span,
                    u32 itd, u32 dpl2);
 void salReconnectVoice(DSPvoice* dsp_vptr, u8 studio);
 void* salMalloc(u32 len);
+void* salMallocPhysical(u32 len);
 void salFree(void* addr);
 
 #define SAL_MAX_STUDIONUM 8
@@ -1078,6 +1080,9 @@ typedef struct STREAM_INFO {
 #if MUSY_VERSION <= MUSY_VERSION_CHECK(1, 5, 3)
   u8 hwStreamHandle;
   u32 nextStreamHandle;
+#endif
+#if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 0)
+  u32 padEnd;
 #endif
 } STREAM_INFO;
 
