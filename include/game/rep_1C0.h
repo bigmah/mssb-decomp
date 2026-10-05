@@ -20,7 +20,7 @@ void fn_3_53E0(void);
 void fn_3_5518(void);
 void fn_3_567C(void);
 void fn_3_5BAC(void);
-void fn_3_5BCC(void);
+void fn_3_5BCC(u8* p);
 void fn_3_5BF0(void);
 void fn_3_5C68(void);
 

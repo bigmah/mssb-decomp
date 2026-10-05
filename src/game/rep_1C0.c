@@ -89,8 +89,10 @@ void fn_3_5BAC(void) {
 }
 
 // .text:0x00005BCC size:0x24 mapped:0x80644C60
-void fn_3_5BCC(void) {
-    return;
+extern void fn_80052694(void* p);
+
+void fn_3_5BCC(u8* p) {
+    fn_80052694(*(void**)(p + 8));
 }
 
 // .text:0x00005BF0 size:0x78 mapped:0x80644C84
