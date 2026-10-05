@@ -2,6 +2,13 @@
 #include "header_rep_data.h"
 
 extern u8 g_Pitcher[];
+typedef struct {
+    int strikes, balls, outs, storedOuts, f10, f14;
+    s16 runner[3];
+    s16 f1E;
+    u8 f20, f21;
+} StrikesT;
+extern StrikesT g_Strikes;
 extern f32 lbl_3_data_446C[];
 
 // .text:0x0006F6CC size:0x7C mapped:0x806AE760
@@ -114,7 +121,13 @@ void fn_3_735A8(void) {
 
 // .text:0x000736CC size:0x4C mapped:0x806B2760
 void fn_3_736CC(void) {
-    return;
+    int i;
+    for (i = 0; i < 3; i++) {
+        if (g_Strikes.runner[i] == -1) {
+            g_Strikes.runner[i] = 0;
+            return;
+        }
+    }
 }
 
 // .text:0x00073718 size:0x14 mapped:0x806B27AC
@@ -131,7 +144,14 @@ void fn_3_7372C(void) {
 
 // .text:0x00073850 size:0x58 mapped:0x806B28E4
 void fn_3_73850(void) {
-    return;
+    int i;
+    g_Strikes.outs = g_Strikes.outs + 1;
+    for (i = 0; i < 3; i++) {
+        if (g_Strikes.runner[i] == -1) {
+            g_Strikes.runner[i] = 0;
+            return;
+        }
+    }
 }
 
 // .text:0x000738A8 size:0x540 mapped:0x806B293C
