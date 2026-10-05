@@ -208,8 +208,11 @@ void fn_3_14CA00(void) {
 }
 
 // .text:0x0014CA98 size:0x1C mapped:0x8078BB2C
-void fn_3_14CA98(void) {
-    return;
+void fn_3_14CA98(u8* p) {
+    p[0x44] = 0;
+    p[0x45] = 0xFF;
+    *(s16*)(p + 0x4A) = 0;
+    p[0x4C] = 0;
 }
 
 // .text:0x0014CAB4 size:0x74 mapped:0x8078BB48

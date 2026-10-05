@@ -44,7 +44,7 @@ void fn_3_14C79C(void);
 void fn_3_14C830(void);
 void fn_3_14C904(void);
 void fn_3_14CA00(void);
-void fn_3_14CA98(void);
+void fn_3_14CA98(u8* p);
 void fn_3_14CAB4(void);
 void fn_3_14CB28(void);
 void fn_3_14CBB4(void);
