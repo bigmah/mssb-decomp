@@ -1,5 +1,6 @@
 #include "game/sta_c4.h"
 #include "header_rep_data.h"
+#include "Dolphin/GX/GXPixel.h"
 
 extern u8 lbl_3_bss_B5D4;
 
@@ -30,7 +31,7 @@ void fn_3_F8ABC(void) {
 
 // .text:0x000F8B04 size:0x2C mapped:0x80737B98
 void fn_3_F8B04(void) {
-    return;
+    GXSetZMode(1, 3, 0);
 }
 
 // .text:0x000F8B30 size:0x4 mapped:0x80737BC4
