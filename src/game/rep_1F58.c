@@ -1,6 +1,8 @@
 #include "game/rep_1F58.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_3_common_bss_35154[];
+
 // .text:0x000C0854 size:0x108 mapped:0x806FF8E8
 void fn_3_C0854(void) {
     return;
@@ -22,8 +24,12 @@ void fn_3_C0C4C(void) {
 }
 
 // .text:0x000C0CE8 size:0x28 mapped:0x806FFD7C
-void fn_3_C0CE8(int, f32, f32, f32) {
-    return;
+void fn_3_C0CE8(u8 v, f32 x, f32 y, f32 z) {
+    *(f32*)(lbl_3_common_bss_35154 + 0x434) = x;
+    *(f32*)(lbl_3_common_bss_35154 + 0x438) = y;
+    *(f32*)(lbl_3_common_bss_35154 + 0x43C) = z;
+    lbl_3_common_bss_35154[0x467] = v;
+    *(u32*)(lbl_3_common_bss_35154 + 0x3AC) |= 0x100;
 }
 
 // .text:0x000C0D10 size:0xC8 mapped:0x806FFDA4
