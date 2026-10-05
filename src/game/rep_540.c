@@ -7,8 +7,12 @@ void fn_3_6530(void) {
 }
 
 // .text:0x000065A8 size:0x20 mapped:0x8064563C
+extern u8 g_Ball[];
+
 void fn_3_65A8(void) {
-    return;
+    if (g_Ball[0x1BC9] == 2) {
+        g_Ball[0x1BC9] = 1;
+    }
 }
 
 // .text:0x000065C8 size:0x2C mapped:0x8064565C
