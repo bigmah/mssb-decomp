@@ -139,8 +139,28 @@ void fn_3_81AB8(int i) {
 }
 
 // .text:0x00081AEC size:0xDC mapped:0x806C0B80
-void fn_3_81AEC(void) {
-    return;
+void fn_3_81AEC(int i) {
+    u8* r = g_Runners + i * 0x154;
+    s16 n;
+    f32 v;
+    if (*(s16*)(r + 0x10C) < 0x7FFE) {
+        *(s16*)(r + 0x10C) = *(s16*)(r + 0x10C) + 1;
+    } else {
+        *(s16*)(r + 0x10C) = 0x7FFF;
+    }
+    n = *(s16*)(r + 0x10E);
+    if (n <= 0) {
+        r[0x133] = 2;
+        *(f32*)(r + 0xA4) = lbl_3_rodata_1498;
+    } else {
+        v = *(f32*)(r + 0xBC) + *(f32*)(r + 0x54);
+        v -= *(f32*)(r + 0x68);
+        v /= (f32)n;
+        *(f32*)(r + 0xA4) = v;
+        *(f32*)(r + 0x68) = *(f32*)(r + 0x68) + v;
+        *(f32*)(r + 0x64) = (f32)r[0x124] + *(f32*)(r + 0x68);
+        *(s16*)(r + 0x10E) = *(s16*)(r + 0x10E) - 1;
+    }
 }
 
 // .text:0x00081BC8 size:0x2E4 mapped:0x806C0C5C
