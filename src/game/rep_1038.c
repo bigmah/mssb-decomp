@@ -8,8 +8,34 @@ void fn_3_6BEA4(void) {
 }
 
 // .text:0x0006C000 size:0xE0 mapped:0x806AB094
+extern u8 lbl_8036E548[];
+extern u8 g_Practice[];
+extern u8 g_Minigame[];
+extern f32 lbl_3_data_18DD4[];
+
 void fn_3_6C000(void) {
-    return;
+    int i;
+    u8* p;
+    u8* q;
+    *(s16*)(lbl_8036E548 + 0x2D68) = -1;
+    for (i = 0; i < 13; i++) {
+        p = ((u8**)lbl_8036E548)[i + 0xB14];
+        if (p != NULL) {
+            p[0x25D] = 0;
+        }
+    }
+    if (g_Practice[0x195] != 6 && g_Practice[0x195] > 1 && (q = *(u8**)(lbl_8036E548 + 0x2C74)) != NULL
+        && g_Minigame[0x1A13] == 0 && *(s8*)(g_Minigame + 0x19EA) >= 0 && *(s8*)(g_Minigame + 0x19EF) != 0
+        && *(s8*)(g_Minigame + 0x19DA) >= 0) {
+        f32* d = lbl_3_data_18DD4;
+        q[0x25D] = 1;
+        *(f32*)(q + 0x34) = d[0];
+        *(f32*)(q + 0x38) = -d[1];
+        *(f32*)(q + 0x3C) = d[2];
+        *(f32*)(q + 0x40) = 0.0f;
+        *(f32*)(q + 0x44) = 0.0f;
+        *(f32*)(q + 0x48) = 0.0f;
+    }
 }
 
 // .text:0x0006C0E0 size:0x28 mapped:0x806AB174
