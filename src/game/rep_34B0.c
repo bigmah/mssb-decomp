@@ -17,6 +17,30 @@ extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
 
 extern void fn_3_5A6D4(s32);
+extern f32 lbl_3_data_21770[];
+extern f32 lbl_3_rodata_351C[];
+extern f32 lbl_3_rodata_3518;
+extern void fn_8004C108(f32*, s32);
+extern void fn_3_90064(s32);
+extern u8 lbl_3_data_18C48[];
+extern u8 lbl_8037169C[];
+extern void changeScene(s32, s32);
+extern s32 fn_3_6C938(s32, s32);
+extern void fn_3_FBD70(void);
+extern void fn_3_FBD58(void);
+extern u8 lbl_3_data_21798[];
+extern u8 lbl_803CBC3C[];
+extern u8 lbl_3_common_bss_32234[];
+extern u8 lbl_3_common_bss_32724[];
+extern void fn_3_F578(void);
+extern void fn_3_753E8(s32);
+extern void fn_3_6EBB4(s32);
+extern void setBatterContactConstants(void);
+extern s32 someAnimationIndFunction(void);
+extern u8 g_Minigame[];
+extern u8 g_Scores[];
+extern void fn_3_10F550(s32, s32);
+extern void fn_3_10AD48(void);
 
 // .text:0x0012E8FC size:0x214 mapped:0x8076D990
 void fn_3_12E8FC(void) {
@@ -59,8 +83,31 @@ void fn_3_12F624(void) {
 }
 
 // .text:0x0012F9D4 size:0xF0 mapped:0x8076EA68
-void fn_3_12F9D4(void) {
-    return;
+void fn_3_12F9D4(s32 idx) {
+    f32 v[3];
+    f32* a = (f32*)(g_Minigame + idx * 0x34 + 0x860);
+    a[1] += lbl_3_data_21770[1];
+    if (a[1] < a[4]) {
+        a[1] = a[4];
+        if (a[7] != a[4]) {
+            f32 z = a[2];
+            f32 y = a[1];
+            f32 x = a[0];
+            v[1] = y;
+            v[2] = z;
+            v[0] = x;
+            v[1] = -v[1];
+            v[2] = v[2] - lbl_3_rodata_351C[0];
+            if (y <= lbl_3_rodata_3518) {
+                fn_8004C108(v, 1);
+                fn_3_90064(0x2E4);
+            } else {
+                fn_8004C108(v, 0);
+                fn_3_90064(0x2E5);
+            }
+        }
+        *((u8*)a + 0x30) = 2;
+    }
 }
 
 // .text:0x0012FAC4 size:0x2A8 mapped:0x8076EB58
@@ -133,7 +180,32 @@ void fn_3_131114(void) {
 
 // .text:0x0013119C size:0xF0 mapped:0x80770230
 void fn_3_13119C(void) {
-    return;
+    u8* gl = g_GameLogic;
+    switch (gl[0x125]) {
+    case 0:
+        changeScene(1, 6);
+        gl[0x125] = 1;
+        break;
+    case 1: {
+        s32 t = *(u16*)(gl + 0xFC);
+        if (t >= *(s16*)(lbl_3_data_18C48 + 4) ||
+            (t >= *(s16*)(lbl_3_data_18C48 + 2) && fn_3_6C938(1, 0x1100) != 0)) {
+            changeScene(3, 6);
+            gl[0x125] = 2;
+        }
+        break;
+    }
+    case 2:
+        if (lbl_8037169C[0x13] != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+            gl[0x125] = 3;
+        }
+        break;
+    case 3:
+        fn_3_5A6D4(7);
+        break;
+    }
 }
 
 // .text:0x0013128C size:0x48 mapped:0x80770320
@@ -164,12 +236,54 @@ void fn_3_131C88(void) {
 
 // .text:0x00131EC4 size:0x138 mapped:0x80770F58
 void fn_3_131EC4(void) {
-    return;
+    u8* gl = g_GameLogic;
+    u8* mg;
+    switch (gl[0x125]) {
+    case 0:
+        mg = g_Minigame;
+        mg[0x1905] = mg[0x18E0 + mg[0x190C]];
+        gl[0x12B] = 1;
+        mg[0x1A2D] = 0;
+        mg[0x1912] = 0;
+        if (mg[0x1909] == 0) {
+            mg[0x1A2E] = lbl_3_data_21798[mg[0x1A2B]];
+        } else {
+            mg[0x1A2E] = lbl_3_data_21798[4];
+        }
+        fn_3_F578();
+        fn_3_753E8(0);
+        fn_3_6EBB4(-1);
+        setBatterContactConstants();
+        setInMemBatterConstants(*(s8*)(mg + 0x1905));
+        lbl_803CBC3C[2] = 0;
+        gl[0x125] += 1;
+        break;
+    case 1:
+        if (someAnimationIndFunction() != 0) {
+            lbl_3_common_bss_32234[1] = 1;
+            gl[0x125] += 1;
+        }
+        break;
+    default:
+        lbl_3_common_bss_32724[0xB6] = 1;
+        fn_3_5A6D4(0);
+        break;
+    }
 }
 
 // .text:0x00131FFC size:0x80 mapped:0x80771090
 void fn_3_131FFC(void) {
-    return;
+    *(s32*)g_Scores += 1;
+    g_Minigame[0x190C] = 0;
+    if (g_Minigame[0x1909] == 0) {
+        fn_3_5A6D4(7);
+        return;
+    }
+    fn_3_10F550(4, 0);
+    if (*(s32*)g_Scores == 1) {
+        fn_3_10AD48();
+    }
+    fn_3_5A6D4(7);
 }
 
 // .text:0x0013207C size:0x40 mapped:0x80771110

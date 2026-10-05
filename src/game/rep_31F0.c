@@ -18,6 +18,23 @@ extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
 
 extern void fn_3_5A6D4(s32);
+extern u8 g_Runners[];
+extern u8 g_Ball[];
+extern u8 lbl_3_common_bss_32220[];
+extern f32 lbl_3_rodata_3268;
+extern f32 shortAngleToRad(s16);
+extern u8 g_Scores[];
+extern void fn_3_10AD48(void);
+extern void fn_3_10F550(s32, s32);
+extern u8 lbl_3_common_bss_32724[];
+extern u8 g_GameLogic[];
+extern void fn_8003A540(s32, u8*);
+extern void fn_3_DE4FC(void);
+extern void fn_3_155288(void);
+extern void minigamesSetSomePointers(void);
+extern void minigamesGXStuff(void);
+extern void minigamesSetSomePointers2(void);
+extern int rand();
 
 // .text:0x00110634 size:0x3D0 mapped:0x8074F6C8
 void fn_3_110634(void) {
@@ -46,12 +63,31 @@ void fn_3_111038(void) {
 
 // .text:0x001111D0 size:0x80 mapped:0x80750264
 void fn_3_1111D0(void) {
-    return;
+    s32 a;
+    u8* r = g_Runners;
+    if (lbl_3_common_bss_32220[8] == 4) {
+        a = *(s16*)(g_Ball + 0x1B9C);
+        if (a < 0x200) {
+            a = 0x200;
+        }
+        if (a > 0x600) {
+            a = 0x600;
+        }
+        *(f32*)(r + 0x30) = -shortAngleToRad(a) - lbl_3_rodata_3268;
+    }
 }
 
 // .text:0x00111250 size:0x64 mapped:0x807502E4
 void fn_3_111250(void) {
-    return;
+    g_GameLogic[0x12B] = 1;
+    g_GameLogic[0x12C] = 1;
+    g_GameLogic[0x12E] = 1;
+    fn_8003A540(0, g_GameLogic);
+    if (g_Minigame[0x1912] == 1) {
+        fn_3_5A6D4(8);
+        return;
+    }
+    fn_3_5A6D4(0);
 }
 
 // .text:0x001112B4 size:0x484 mapped:0x80750348
@@ -70,8 +106,6 @@ void fn_3_1118B4(void) {
 }
 
 // .text:0x00111A88 size:0x3C mapped:0x80750B1C
-extern u8 g_GameLogic[];
-
 void fn_3_111A88(void) {
     g_GameLogic[0x12B] = 1;
     g_GameLogic[0x12C] = 1;
@@ -96,7 +130,13 @@ void fn_3_111F80(void) {
 
 // .text:0x00112070 size:0x70 mapped:0x80751104
 void fn_3_112070(void) {
-    return;
+    fn_3_DE4FC();
+    fn_3_5A6D4(14);
+    *(s16*)(g_Minigame + 0x18A6) = rand() % 30 + 15;
+    fn_3_155288();
+    minigamesSetSomePointers();
+    minigamesGXStuff();
+    minigamesSetSomePointers2();
 }
 
 // .text:0x001120E0 size:0x48 mapped:0x80751174
@@ -143,7 +183,17 @@ void fn_3_112450(void) {
 
 // .text:0x00112558 size:0x78 mapped:0x807515EC
 void fn_3_112558(void) {
-    return;
+    *(s32*)g_Scores += 1;
+    g_Minigame[0x190C] = 0;
+    if (g_Minigame[0x1909] == 0) {
+        fn_3_5A6D4(7);
+        return;
+    }
+    if (*(s32*)g_Scores == 1) {
+        fn_3_10AD48();
+    }
+    fn_3_5A6D4(7);
+    fn_3_10F550(4, 0);
 }
 
 // .text:0x001125D0 size:0x40 mapped:0x80751664
