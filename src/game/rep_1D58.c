@@ -1,6 +1,8 @@
 #include "game/rep_1D58.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_3_data_11168[];
+
 // .text:0x000B7FC8 size:0x108 mapped:0x806F705C
 void fn_3_B7FC8(void) {
     return;
@@ -137,8 +139,8 @@ void fn_3_B950C(void) {
 }
 
 // .text:0x000B9510 size:0x14 mapped:0x806F85A4
-void fn_3_B9510(void) {
-    return;
+void fn_3_B9510(s32 i) {
+    lbl_3_data_11168[i] = 1;
 }
 
 // .text:0x000B9524 size:0x10 mapped:0x806F85B8

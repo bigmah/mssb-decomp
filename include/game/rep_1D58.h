@@ -28,7 +28,7 @@ void fn_3_B93C4(void);
 void fn_3_B93C8(void);
 void fn_3_B93CC(void);
 void fn_3_B950C(void);
-void fn_3_B9510(void);
+void fn_3_B9510(s32 i);
 void fn_3_B9524(void);
 void fn_3_B9534(void);
 void fn_3_B95EC(void);
