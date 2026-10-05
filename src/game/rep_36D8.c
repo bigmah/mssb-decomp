@@ -3,7 +3,6 @@
 
 #pragma dont_inline on
 
-extern f32 lbl_3_rodata_3728;
 extern u8 g_Minigame[];
 extern u8 lbl_3_data_2188C[];
 extern s16 lbl_3_data_218A8;
@@ -53,7 +52,7 @@ u32 fn_3_13D578(s8 a) {
 
 // .text:0x0013D5E8 size:0x30 mapped:0x8077C67C
 s32 fn_3_13D5E8(f32* a, f32* b) {
-    f32 c = lbl_3_rodata_3728;
+    f32 c = 100.0f;
     f32 y = *b;
     f32 x = *a;
     return (s32)(c * x - c * y);
@@ -66,7 +65,7 @@ void fn_3_13D618(void) {
 
 // .text:0x0013DA20 size:0x30 mapped:0x8077CAB4
 s32 fn_3_13DA20(f32* a, f32* b) {
-    f32 c = lbl_3_rodata_3728;
+    f32 c = 100.0f;
     f32 y = *b;
     f32 x = *a;
     return (s32)(c * x - c * y);
