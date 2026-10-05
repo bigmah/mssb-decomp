@@ -13,7 +13,7 @@ void fn_3_13DC48(void);
 void fn_3_13DDE0(void);
 void fn_3_13DEA4(void);
 void fn_3_13DFBC(void);
-void fn_3_13E174(void);
+void fn_3_13E174(u8 a);
 void fn_3_13E21C(u8* a);
 void fn_3_13E3A4(u8* a);
 void fn_3_13E670(void);

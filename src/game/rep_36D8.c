@@ -5,6 +5,10 @@
 
 extern f32 lbl_3_rodata_3728;
 extern u8 g_Minigame[];
+extern u8 lbl_3_data_218BC[];
+extern s32 lbl_3_bss_B798[];
+extern f32 lbl_3_bss_B794;
+#include "static/UnknownHomes_Static.h"
 
 // .text:0x0013C7BC size:0xDBC mapped:0x8077B850
 void fn_3_13C7BC(void) {
@@ -69,10 +73,21 @@ void fn_3_13DFBC(void) {
 }
 
 // .text:0x0013E174 size:0xA8 mapped:0x8077D208
-void fn_3_13E174(void) {
-    return;
+void fn_3_13E174(u8 a) {
+    switch (a) {
+    case 0:
+        lbl_3_bss_B798[0] = (s32)((f32*)lbl_3_data_218BC)[12];
+        lbl_3_bss_B794 = ((f32*)lbl_3_data_218BC)[14];
+        break;
+    case 1:
+        lbl_3_bss_B798[0] = (s32)((f32*)lbl_3_data_218BC)[13];
+        lbl_3_bss_B794 = ((f32*)lbl_3_data_218BC)[15];
+        break;
+    default:
+        return;
+    }
+    fn_800528AC((fn_800528AC_parameter)fn_3_13DFBC);
 }
-
 // .text:0x0013E21C size:0x188 mapped:0x8077D2B0
 void fn_3_13E21C(u8* a) {
     return;
