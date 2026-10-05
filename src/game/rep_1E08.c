@@ -1,6 +1,12 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_3_bss_995C;
+
+void fn_3_C07A0(void) {
+    lbl_3_bss_995C = 3;
+}
+
 // .text:0x000BA538 size:0x2BC mapped:0x806F95CC
 void fn_3_BA538(void) {
     return;
@@ -97,8 +103,10 @@ void fn_3_BD434(void) {
 }
 
 // .text:0x000BD4F0 size:0x14 mapped:0x806FC584
+extern u8 lbl_3_common_bss_35154[];
+
 void fn_3_BD4F0(void) {
-    return;
+    lbl_3_common_bss_35154[0x466] = 0;
 }
 
 // .text:0x000BD504 size:0x1A8 mapped:0x806FC598

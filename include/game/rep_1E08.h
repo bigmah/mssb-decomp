@@ -51,4 +51,6 @@ void fn_3_BFB3C(void);
 void fn_3_BFDA4(void);
 void fn_3_C0134(void);
 
+void fn_3_C07A0(void);
+
 #endif // !__GAME_rep_1E08_H_
