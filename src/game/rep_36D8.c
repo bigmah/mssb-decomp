@@ -204,9 +204,40 @@ void fn_3_13F484(void) {
 
 // .text:0x0013F6C8 size:0x11C mapped:0x8077E75C
 void fn_3_13F6C8(void) {
-    return;
+    u8* d;
+    u32 i;
+    u8* a;
+    u8* b;
+    u8* c;
+    u8* fl;
+    s16 t;
+    if (g_Minigame[0x190B] == 0) {
+        fn_3_13F484();
+        fn_3_13EA30();
+        d = lbl_3_data_2188C;
+        a = g_Minigame + 0xB4;
+        b = g_Minigame + 0x1E;
+        c = g_Minigame + 0xF;
+        fl = g_Minigame + 0x193A;
+        for (i = 15; i < 0x23; i++, a += 0xC, b += 2, c += 1) {
+            if (fl != NULL) {
+                PSVECAdd((Vec*)(a + 0xCD0), (Vec*)(a + 0x1180), (Vec*)(a + 0xCD0));
+                *(f32*)(a + 0x1184) = *(f32*)(a + 0x1184) + ((f32*)d)[4];
+                if (*(f32*)(a + 0xCD4) < lbl_3_rodata_3760) {
+                    *(f32*)(a + 0xCD4) = lbl_3_rodata_3768;
+                    *(f32*)(a + 0x1180) = *(f32*)(a + 0x1180) * ((f32*)d)[5];
+                    *(f32*)(a + 0x1188) = *(f32*)(a + 0x1188) * ((f32*)d)[5];
+                    *(f32*)(a + 0x1184) = *(f32*)(a + 0x1184) * -((f32*)d)[6];
+                }
+                t = *(s16*)(b + 0x17C8) + 1;
+                *(s16*)(b + 0x17C8) = t;
+                if (t >= lbl_3_data_218A8) {
+                    c[0x193A] = 0;
+                }
+            }
+        }
+    }
 }
-
 // .text:0x0013F7E4 size:0xE0 mapped:0x8077E878
 void fn_3_13F7E4(void) {
     u8* m = g_Minigame;
@@ -310,9 +341,41 @@ void fn_3_1410F0(void) {
 
 // .text:0x001412BC size:0x128 mapped:0x80780350
 void fn_3_1412BC(void) {
-    return;
+    u8* e;
+    u8* m;
+    u8* p3;
+    u8* p2;
+    u8* p1;
+    s8 i;
+    int idx;
+    e = g_Minigame + 0x1DCC;
+    memset(g_Minigame + 0x1D7C, 0, 0x78);
+    m = g_Minigame;
+    p2 = lbl_3_data_2197C;
+    p3 = lbl_3_data_21944;
+    p1 = lbl_3_data_2194C;
+    i = 0;
+    do {
+        idx = m[0x18DC];
+        *(s16*)e = RandomInt_Game_Range(((s16*)p1)[idx * 2], ((s16*)p1)[idx * 2 + 1]);
+        if (RandomInt_Game(100) < *(s8*)(p2 + idx)) {
+            if (*(s8*)(lbl_3_data_21980 + idx) < 8) {
+                e[6] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21980 + idx), 8);
+            } else {
+                e[6] = 8;
+            }
+        } else {
+            e[6] = 0x7F;
+        }
+        e[5] = 2;
+        e[7] = RandomInt_Game_Range(*(s8*)(p3 + idx * 2), *(s8*)(p3 + idx * 2 + 1));
+        i++;
+        e += 8;
+        m++;
+    } while (i < 4);
+    changeScene(1, 6);
+    fn_3_5A6D4(2);
 }
-
 // .text:0x001413E4 size:0xC8 mapped:0x80780478
 void fn_3_1413E4(void) {
     u8* g;
