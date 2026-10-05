@@ -187,6 +187,21 @@ u32 vidGetInternalId(u32 vid) {
   return 0xffffffff;
 }
 
+u32 vidGetPublicId(u32 id) {
+  VID_LIST* vl;
+  u32 vid;
+
+  for (vl = vidRoot; vl != NULL; vl = vl->next) {
+    for (vid = vl->root; vid != 0xFFFFFFFF; vid = synthVoice[vid & 0xFF].child) {
+      if (vid == id) {
+        return vl->vid;
+      }
+    }
+  }
+
+  return 0xFFFFFFFF;
+}
+
 static void voiceInitPrioSort() {
   u32 i;
 

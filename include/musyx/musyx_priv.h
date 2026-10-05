@@ -1162,6 +1162,7 @@ void sndProfStartPMC(SND_PROFILE_DATA* info);
 
 void vidRemoveVoiceReferences(SYNTH_VOICE* svoice);
 u32 vidMakeNew(SYNTH_VOICE* svoice, u32 isMaster);
+u32 vidGetPublicId(u32 id);
 u32 vidMakeRoot(SYNTH_VOICE* svoice);
 
 u32 adsrHandleLowPrecision(ADSR_VARS* adsr, u16* adsr_start, u16* adsr_delta);
