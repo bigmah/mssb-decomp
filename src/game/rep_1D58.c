@@ -5,6 +5,16 @@ extern u8 lbl_3_data_11168[];
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_bss_1910[];
 extern f32 lbl_3_rodata_1DD0[];
+extern f32 lbl_3_rodata_1DB4[];
+extern f32 lbl_3_rodata_1DC0;
+extern f32 lbl_3_rodata_1DC4;
+extern f32 lbl_3_rodata_1DC8;
+extern f64 cos(f64);
+extern f64 sin(f64);
+extern int rand(void);
+extern void fn_3_8BBC4(void);
+extern f32 lbl_3_data_11178[];
+typedef struct { f32 x, y, z; } V3;
 
 typedef struct DspObj DspObj;
 struct DspObj {
@@ -73,8 +83,14 @@ typedef struct StadObjList {
 } StadObjList;
 
 // .text:0x000B7FC8 size:0x108 mapped:0x806F705C
-void fn_3_B7FC8(void) {
-    return;
+void fn_3_B7FC8(void* a, void* b) {
+    V3 v = *(V3*)lbl_3_rodata_1DB4;
+    f32 ang;
+    ang = lbl_3_rodata_1DC0 * lbl_3_data_11178[rand() % 5];
+    v.x = lbl_3_rodata_1DC4 * (f32)cos(ang) + v.x;
+    v.y = v.y + lbl_3_rodata_1DC8;
+    v.z = lbl_3_rodata_1DC4 * (f32)sin(ang) + v.z;
+    ((void (*)(void*, V3*, int, void*))fn_3_8BBC4)(a, &v, 0, b);
 }
 
 // .text:0x000B80D0 size:0xB4 mapped:0x806F7164
