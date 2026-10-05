@@ -1,6 +1,9 @@
 #include "game/rep_31F0.h"
 #include "header_rep_data.h"
 
+#include "musyx/musyx.h"
+extern u8 lbl_800EFBA4[];
+
 extern void setInMemBatterConstants(s32);
 extern void fn_3_F1DC(void);
 extern void fn_3_751B4(void);
@@ -23,7 +26,7 @@ void fn_3_110634(void) {
 
 // .text:0x00110A04 size:0x34 mapped:0x8074FA98
 void fn_3_110A04(void) {
-    return;
+    memset(g_Minigame + 0x1D7C, 0, 0x78);
 }
 
 // .text:0x00110A38 size:0x9C mapped:0x8074FACC
@@ -145,7 +148,8 @@ void fn_3_112558(void) {
 
 // .text:0x001125D0 size:0x40 mapped:0x80751664
 void fn_3_1125D0(void) {
-    return;
+    sndFXStartEx(0x1BD, lbl_800EFBA4[6], 0x3F, 0);
+    fn_3_5A6D4(6);
 }
 
 // .text:0x00112610 size:0x2D8 mapped:0x807516A4
