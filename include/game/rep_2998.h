@@ -21,7 +21,7 @@ void fn_3_E3668(void);
 void fn_3_E3764(void);
 void fn_3_E3914(void);
 void fn_3_E3B88(void);
-void fn_3_E4554(void);
+void fn_3_E4554(u8* a);
 void fn_3_E45A8(void);
 void fn_3_E45F0(void);
 void fn_3_E4658(void);

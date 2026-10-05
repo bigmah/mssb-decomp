@@ -1,6 +1,15 @@
 #include "game/rep_2998.h"
 #include "header_rep_data.h"
 
+extern f32 lbl_3_rodata_2A5C;
+extern u8 lbl_3_data_18ED0[];
+
+extern u32 lbl_3_bss_AE18;
+extern void fn_3_B97DC(void*, u32);
+
+#include "C3/control.h"
+extern f32 lbl_3_rodata_2B28;
+
 extern f32 lbl_3_rodata_2A54;
 extern f32 lbl_3_rodata_2A58;
 extern void fn_800B4CA0(void*, f32);
@@ -105,8 +114,11 @@ void fn_3_E3B88(void) {
 }
 
 // .text:0x000E4554 size:0x54 mapped:0x807235E8
-void fn_3_E4554(void) {
-    return;
+void fn_3_E4554(u8* a) {
+    *(u32*)(a + 0xAC) = lbl_3_bss_AE18;
+    fn_3_B97DC(*(void**)(a + 0x74), *(u32*)(a + 0xAC));
+    *(f32*)(a + 0xB8) = *(f32*)(*(u8**)(a + 0x74) + 0x5C);
+    a[0xCB] = 0;
 }
 
 // .text:0x000E45A8 size:0x48 mapped:0x8072363C
