@@ -88,6 +88,10 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Do-while with two pointers advancing at different strides** (`u8* m` +1 and `s16* sp` +1): declaring the pointer locals in a different order changes which one gets r4/r5; permute declaration order with a script.
 - **`#pragma dont_inline on` also stops `static inline` helpers from inlining** in the same file region; to inline a helper, put `#pragma dont_inline off` around it AND its callers, and even then CW may not inline a body this large.
 - **Still unsolved:** nested early returns that compile to `bge L; b L` (fn_3_15521C, fn_3_150010, fn_3_14DC80, fn_3_14CB28); pooled float constants in float-heavy functions.
+- **Brute-force expression/statement orderings:** when only scheduling or operand order differs, generate dozens of variants (term order, grouping, statement permutations) into files and score them all with `fnvariants.py`; this found `fn_3_142030`, `fn_3_1118B4` (`tbl[k] + rand() % 7 - 3`) quickly.
+- **Callee-passthrough arg:** if the original's first `lis` lands in r4 (r3 left untouched), the function takes an unused-looking arg that it forwards to its tail call (`void f(s32 x) { ...; ((void(*)(s32))g)(x); }`, `fn_3_143FAC`).
+- **Redundant `beq L; beq L` pair:** write the condition as `a == 0 || (a != 0 && ...)` (`fn_3_111AC4`).
+- **Nested fixed loops fully unrolled with `cmpwi r0,0xa` leftovers:** plain nested `for` over a typedef'd struct with `s16 a[4]; u8 b[4][10]` matched (`fn_3_142CA8`).
 
 Add new patterns to this list as we find them.
 

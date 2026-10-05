@@ -16,6 +16,11 @@ extern void changeScene(s32, s32);
 extern void* memset(void*, s32, u32);
 extern s16 RandomInt_Game_Range(s16, s16);
 extern s16 lbl_3_data_21EAC[];
+extern u8 lbl_80366158[];
+extern s32 lbl_3_bss_B7E4;
+extern u8 lbl_3_bss_B800[];
+extern s8 lbl_3_data_266A4;
+extern void DCFlushRange(void*, u32);
 
 // .text:0x00141C44 size:0x48
 void fn_3_141C44(void) {
@@ -33,12 +38,35 @@ void fn_3_141C8C(void) {
 
 // .text:0x00141F30 size:0x100 mapped:0x80780FC4
 void fn_3_141F30(void) {
-    return;
+    s32 v;
+    u8* p;
+    s32 n;
+    s32 i;
+    lbl_3_bss_B7E4 = lbl_3_bss_B7E4 + (lbl_80366158[0x28] == 0);
+    if (!(lbl_3_bss_B7E4 & 1)) {
+        p = lbl_3_bss_B800;
+        v = p[0];
+        v += lbl_3_data_266A4 * 2;
+        if (v > 0xFF) {
+            v = 0xFF;
+        } else if (v < 0) {
+            v = 0;
+        }
+        for (i = 16; i != 0; i--) {
+            *p = v;
+            p += 2;
+        }
+        DCFlushRange(lbl_3_bss_B800, 0x40);
+        n = v + lbl_3_data_266A4 * 2;
+        if (n > 0xFF || n < 0) {
+            lbl_3_data_266A4 *= -1;
+        }
+    }
 }
 
 // .text:0x00142030 size:0x58 mapped:0x807810C4
-void fn_3_142030(void) {
-    return;
+s32 fn_3_142030(s32 a, s32 b, s32 c) {
+    return (b / 4) * 4 * c + (a / 4) * 4 * 4 + (b % 4) * 4 + a % 4;
 }
 
 // .text:0x00142088 size:0x1D4 mapped:0x8078111C
@@ -72,8 +100,19 @@ void fn_3_142C18(void) {
 }
 
 // .text:0x00142CA8 size:0x10C mapped:0x80781D3C
+typedef struct { u8 pad0[0x1890]; s16 a[4]; u8 pad1[0x1B58 - 0x1898]; u8 b[4][10]; } MgArr2;
+
 void fn_3_142CA8(void) {
-    return;
+    MgArr2* m = (MgArr2*)g_Minigame;
+    s32 i;
+    s32 j;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 10; j++) {
+            m->a[i] += m->b[i][j];
+            m->b[i][j] = 0;
+        }
+        g_Minigame[0x1B80 + i] = 0;
+    }
 }
 
 // .text:0x00142DB4 size:0x31C mapped:0x80781E48
@@ -112,8 +151,20 @@ void fn_3_1439EC(void) {
 }
 
 // .text:0x00143FAC size:0x80 mapped:0x80783040
-void fn_3_143FAC(void) {
-    return;
+typedef struct { u8 pad0[0x1A]; s16 f1A; u8 pad1C[0x0E]; u8 st; u8 pad2B[0x0D]; } MgEnt;
+void fn_3_143FAC(s32 x) {
+    MgEnt *e = (MgEnt*)g_Minigame;
+    s32 i;
+    if (g_Minigame[0x1CA2] == 2) {
+        for (i = 0; i < 3; i++) {
+            if (e->st == 2) {
+                e->st = 3;
+                e->f1A = 0;
+            }
+            e++;
+        }
+    }
+    ((void (*)(s32))fn_3_1439EC)(x);
 }
 
 // .text:0x0014402C size:0x210 mapped:0x807830C0

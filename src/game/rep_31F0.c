@@ -35,6 +35,22 @@ extern void minigamesSetSomePointers(void);
 extern void minigamesGXStuff(void);
 extern void minigamesSetSomePointers2(void);
 extern int rand();
+extern u8 lbl_3_data_21448[];
+extern u8 lbl_3_data_217A4[];
+extern u8 lbl_3_data_2139C[];
+extern u8 lbl_3_data_213A4[];
+extern u8 g_Pitcher[];
+extern int RandomIndexFromWeights(u8* weights, int count);
+extern void fn_3_750C4(u8);
+extern u8 lbl_3_data_21448[];
+extern u8 g_Pitcher[];
+extern void changeScene(s32, s32);
+extern u8 lbl_3_data_18C48[];
+extern u8 lbl_8037169C[];
+extern s32 fn_3_6C938(s32, s32);
+extern void fn_3_FBD70(void);
+extern void fn_3_FBD58(void);
+extern void changeScene(s32, s32);
 
 // .text:0x00110634 size:0x3D0 mapped:0x8074F6C8
 void fn_3_110634(void) {
@@ -102,7 +118,39 @@ void fn_3_111738(void) {
 
 // .text:0x001118B4 size:0x1D4 mapped:0x80750948
 void fn_3_1118B4(void) {
-    return;
+    s32 lim = *(s16*)(lbl_3_data_21448 + 6);
+    u8 flag = 1;
+    s32 sel;
+    u8 mode = g_Minigame[0x1A2A];
+    s32 isMode3 = mode == 3;
+    s32 k;
+    if (isMode3) {
+        lim = *(s16*)(lbl_3_data_217A4 + 0xC);
+    }
+    if (!isMode3) {
+        flag = g_Minigame[0x1DF4];
+    }
+    if (*(s16*)(g_Pitcher + 0x120) > lim && flag != 0) {
+        if (g_Minigame[0x1A2A] == 3) {
+            g_Minigame[0x1ACA] = *(s16*)(lbl_3_data_217A4 + 0x12);
+        } else if ((sel = g_Minigame[0x1DF5]) < 3) {
+            if (sel < 2) {
+                k = sel * 2;
+                k += RandomIndexFromWeights(lbl_3_data_213A4 + g_Minigame[0x1AC9] * 5 + k, 2);
+            } else {
+                k = 4;
+            }
+            g_Minigame[0x1ACA] = lbl_3_data_2139C[k] + rand() % 7 - 3;
+        } else if (sel == 3) {
+            g_Minigame[0x1AD5] = 1;
+            k = RandomIndexFromWeights(lbl_3_data_213A4 + g_Minigame[0x1AC9] * 5, 5);
+            g_Minigame[0x1ACA] = lbl_3_data_2139C[k] + rand() % 7 - 3;
+        } else {
+            g_Pitcher[0x164] = 1;
+            g_Pitcher[0x165] = 1;
+        }
+        fn_3_750C4(2);
+    }
 }
 
 // .text:0x00111A88 size:0x3C mapped:0x80750B1C
@@ -115,7 +163,39 @@ void fn_3_111A88(void) {
 
 // .text:0x00111AC4 size:0x198 mapped:0x80750B58
 void fn_3_111AC4(void) {
-    return;
+    u8* mg = g_Minigame;
+    u8 st = mg[0x190B];
+    if (st == 0) {
+        if (g_Pitcher[0x13E] == 4) {
+            if (mg[0x1A2D] >= mg[0x1A2F]) {
+                mg[0x190B] = 1;
+                mg[0x1912] = 1;
+            }
+            g_Minigame[*(s8*)(g_Minigame + 0x1905) * 2 + 0x1ACC] = 0;
+            fn_3_155288();
+        }
+    } else {
+        if (st == 1) {
+            mg[0x190B] = 2;
+            *(s16*)(g_GameLogic + 0x100) = *(s16*)lbl_3_data_21448;
+        }
+        *(s16*)(g_GameLogic + 0x100) -= 1;
+        if (g_Minigame[0x1912] != 0 &&
+            (g_Minigame[0x1909] == 0 ||
+             (g_Minigame[0x1909] != 0 && g_Minigame[0x190C] + 1 >= g_Minigame[0x1906] && *(s32*)g_Scores >= g_Scores[0xAA])) &&
+            g_Minigame[0x1A37] == 0 && *(s16*)(g_GameLogic + 0x100) == 0x43) {
+            sndFXStartEx(0x1BE, lbl_800EFBA4[7], 0x3F, 0);
+        }
+        if (*(s16*)(g_GameLogic + 0x100) == 7) {
+            changeScene(3, 6);
+        }
+        if (*(s16*)(g_GameLogic + 0x100) <= 0) {
+            g_GameLogic[0x12B] = 1;
+            g_GameLogic[0x12C] = 1;
+            g_GameLogic[0x12E] = 1;
+            fn_3_5A6D4(8);
+        }
+    }
 }
 
 // .text:0x00111C5C size:0x324 mapped:0x80750CF0
@@ -125,7 +205,32 @@ void fn_3_111C5C(void) {
 
 // .text:0x00111F80 size:0xF0 mapped:0x80751014
 void fn_3_111F80(void) {
-    return;
+    u8* gl = g_GameLogic;
+    switch (gl[0x125]) {
+    case 0:
+        changeScene(1, 6);
+        gl[0x125] = 1;
+        break;
+    case 1: {
+        s32 t = *(u16*)(gl + 0xFC);
+        if (t >= *(s16*)(lbl_3_data_18C48 + 4) ||
+            (t >= *(s16*)(lbl_3_data_18C48 + 2) && fn_3_6C938(1, 0x1100) != 0)) {
+            changeScene(3, 6);
+            gl[0x125] = 2;
+        }
+        break;
+    }
+    case 2:
+        if (lbl_8037169C[0x13] != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+            gl[0x125] = 3;
+        }
+        break;
+    case 3:
+        fn_3_5A6D4(7);
+        break;
+    }
 }
 
 // .text:0x00112070 size:0x70 mapped:0x80751104
@@ -152,7 +257,15 @@ void fn_3_1120E0(void) {
 
 // .text:0x00112128 size:0x7C mapped:0x807511BC
 void fn_3_112128(void) {
-    return;
+    g_Minigame[0x190C] += 1;
+    if (g_Minigame[0x1909] == 0) {
+        fn_3_5A6D4(0xF);
+    } else if (g_Minigame[0x190C] >= g_Minigame[0x1906]) {
+        fn_3_5A6D4(0x19);
+    } else {
+        fn_3_5A6D4(7);
+    }
+    lbl_3_common_bss_32724[0xB7] = 1;
 }
 
 // .text:0x001121A4 size:0x8C mapped:0x80751238
