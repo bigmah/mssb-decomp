@@ -35,6 +35,9 @@ static CHANNEL_DEFAULTS inpChannelDefaults[8][16];
 
 static CHANNEL_DEFAULTS inpFXChannelDefaults[64];
 
+static u32 inpLpfUpperDefault;
+static u32 inpLpfLowerDefault;
+
 inline bool32 GetGlobalFlagSet(u8 chan, u8 midiSet, s32 flag) {
   return (flag & inpGlobalMIDIDirtyFlags[midiSet][chan]) != 0;
 }
@@ -78,6 +81,7 @@ void inpSetRPNHi(u8 set, u8 channel, u8 value) {
   u16 rpn;  // r28
   u32 i;    // r31
   u8 range; // r29
+  u32 frq;
 
   rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
   switch (rpn) {
@@ -92,6 +96,24 @@ void inpSetRPNHi(u8 set, u8 channel, u8 value) {
       }
     }
     break;
+  case 0x7F7D:
+    frq = (inpChannelDefaults[set][channel].lpfLowerFrqBound & 0x1FF) | (value << 9);
+    inpChannelDefaults[set][channel].lpfLowerFrqBound = frq;
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfLowerFrqBoundary = frq;
+      }
+    }
+    break;
+  case 0x7F7E:
+    frq = (inpChannelDefaults[set][channel].lpfUpperFrqBound & 0x1FF) | (value << 9);
+    inpChannelDefaults[set][channel].lpfUpperFrqBound = frq;
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfUpperFrqBoundary = frq;
+      }
+    }
+    break;
   default:
     break;
   }
@@ -103,6 +125,7 @@ void inpSetRPNDec(u8 set, u8 channel) {
   u16 rpn;  // r28
   u32 i;    // r31
   u8 range; // r30
+  u32* p;
 
   rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
   switch (rpn) {
@@ -119,6 +142,28 @@ void inpSetRPNDec(u8 set, u8 channel) {
       }
     }
     break;
+  case 0x7F7D:
+    p = &inpChannelDefaults[set][channel].lpfLowerFrqBound;
+    if (*p != 0) {
+      --*p;
+    }
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfLowerFrqBoundary = *p;
+      }
+    }
+    break;
+  case 0x7F7E:
+    p = &inpChannelDefaults[set][channel].lpfUpperFrqBound;
+    if (*p != 0) {
+      --*p;
+    }
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfUpperFrqBoundary = *p;
+      }
+    }
+    break;
   default:
     break;
   }
@@ -128,6 +173,7 @@ void inpSetRPNInc(u8 set, u8 channel) {
   u16 rpn;  // r28
   u32 i;    // r31
   u8 range; // r30
+  u32* p;
 
   rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
   switch (rpn) {
@@ -136,12 +182,33 @@ void inpSetRPNInc(u8 set, u8 channel) {
     if (range < 24) {
       ++range;
     }
-
     inpChannelDefaults[set][channel].pbRange = range;
     for (i = 0; i < synthInfo.voiceNum; ++i) {
       if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
         synthVoice[i].pbUpperKeyRange = range;
         synthVoice[i].pbLowerKeyRange = range;
+      }
+    }
+    break;
+  case 0x7F7D:
+    p = &inpChannelDefaults[set][channel].lpfLowerFrqBound;
+    if (*p != 0x3FFF) {
+      ++*p;
+    }
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfLowerFrqBoundary = *p;
+      }
+    }
+    break;
+  case 0x7F7E:
+    p = &inpChannelDefaults[set][channel].lpfUpperFrqBound;
+    if (*p != 0x3FFF) {
+      ++*p;
+    }
+    for (i = 0; i < synthInfo.voiceNum; ++i) {
+      if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
+        synthVoice[i].lpfUpperFrqBoundary = *p;
       }
     }
     break;
@@ -329,6 +396,8 @@ void inpResetChannelDefaults(u8 midi, u8 midiSet) {
   channelDefaults =
       midiSet != 0xFF ? &inpChannelDefaults[midiSet][midi] : &inpFXChannelDefaults[midi];
   channelDefaults->pbRange = 2;
+  channelDefaults->lpfLowerFrqBound = inpLpfLowerDefault;
+  channelDefaults->lpfUpperFrqBound = inpLpfUpperDefault;
 }
 
 void inpAddCtrl(CTRL_DEST* dest, u8 ctrl, long scale, u8 comb, u32 isVar) {
@@ -498,6 +567,14 @@ u16 inpGetTremolo(SYNTH_VOICE* svoice) {
   return GetInputValue(svoice, &svoice->inpTremolo, 0x1000);
 }
 
+u16 inpGetFilterSwitch(SYNTH_VOICE* svoice) {
+  return GetInputValue(svoice, &svoice->inpFilterSwitch, 0x2000);
+}
+
+u16 inpGetFilterParameter(SYNTH_VOICE* svoice) {
+  return GetInputValue(svoice, &svoice->inpFilterParameter, 0x4000);
+}
+
 u16 inpGetAuxA(u8 studio, u8 index, u8 midi, u8 midiSet) {
   static u32 dirtyMask[4] = {0x80000001, 0x80000002, 0x80000004, 0x80000008};
   return GetGlobalInputValue(&inpAuxA[studio][index], dirtyMask[index], midi, midiSet);
@@ -560,8 +637,16 @@ void inpInit(SYNTH_VOICE* svoice) {
     svoice->inpDoppler.source[0].scale = 0x10000;
     svoice->inpDoppler.numSource = 1;
     svoice->inpTremolo.numSource = 0;
+    svoice->inpFilterSwitch.source[0].midiCtrl = 79;
+    svoice->inpFilterSwitch.source[0].combine = 0;
+    svoice->inpFilterSwitch.source[0].scale = 0x10000;
+    svoice->inpFilterSwitch.numSource = 1;
+    svoice->inpFilterParameter.source[0].midiCtrl = 31;
+    svoice->inpFilterParameter.source[0].combine = 0;
+    svoice->inpFilterParameter.source[0].scale = 0x10000;
+    svoice->inpFilterParameter.numSource = 1;
 
-    svoice->midiDirtyFlags = 0x1fff;
+    svoice->midiDirtyFlags = 0x7fff;
     svoice->lfoUsedByInput[0] = 0;
     svoice->lfoUsedByInput[1] = 0;
     svoice->timeUsedByInput = 0;
@@ -575,6 +660,9 @@ void inpInit(SYNTH_VOICE* svoice) {
 
     inpResetGlobalMIDIDirtyFlags();
   }
+
+  inpLpfLowerDefault = 0x50;
+  inpLpfUpperDefault = 0x3E80;
 }
 
 u8 inpTranslateExCtrl(u8 ctrl) {

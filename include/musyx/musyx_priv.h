@@ -798,10 +798,15 @@ extern SYNTH_VOICE* synthVoice;
 extern DSPvoice* dspVoice;
 typedef s32 (*SND_COMPARE)(void*, void*);
 
+#pragma push
+#pragma pack(1)
 typedef struct CHANNEL_DEFAULTS {
-  // total size: 0x1
-  u8 pbRange; // offset 0x0, size 0x1
+  // total size: 0x9
+  u8 pbRange;           // offset 0x0, size 0x1
+  u32 lpfLowerFrqBound; // offset 0x1, size 0x4
+  u32 lpfUpperFrqBound; // offset 0x5, size 0x4
 } CHANNEL_DEFAULTS;
+#pragma pop
 
 typedef struct FX_TAB {
   // total size: 0xA
