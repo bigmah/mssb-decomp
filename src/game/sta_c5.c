@@ -254,8 +254,11 @@ void fn_3_F38D4(void) {
 }
 
 // .text:0x000F3A04 size:0x58 mapped:0x80732A98
-void fn_3_F3A04(void) {
-    return;
+void fn_3_F3A04(u8* p) {
+    u32 i;
+    u16 n = *(u16*)(*(u8**)(*(u8**)(p + 0x74)) + 6);
+    for (i = 0; i < n; i++) {
+    }
 }
 
 // .text:0x000F3A5C size:0x84 mapped:0x80732AF0
