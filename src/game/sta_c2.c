@@ -215,8 +215,21 @@ void fn_3_CFA8C(void* p) {
 }
 
 // .text:0x000CFAB4 size:0x90 mapped:0x8070EB48
-void fn_3_CFAB4(void) {
-    return;
+void fn_3_CFAB4(u8* p, u8* q) {
+    u8* r = *(u8**)(*(u8**)(q + 0x20) + 0xA4);
+    f32 t;
+    *(f32*)(p + 4) = *(f32*)(p + 0x1C);
+    *(f32*)(p + 8) = *(f32*)(p + 0x20);
+    *(f32*)(p + 0xC) = *(f32*)(p + 0x24);
+    t = 3.0 * *(f32*)(r + 0xBC);
+    *(f32*)(p + 0x3C) = t;
+    *(f32*)(p + 0x38) = t;
+    p[0x42] = 0xFF;
+    p[0x41] = 0xFF;
+    p[0x40] = 0xFF;
+    p[0x43] = 255.0 * *(f32*)(r + 0xBC);
+    *(s16*)(p + 0x4A) = 0x1E;
+    *(s16*)(p + 0x48) = 0;
 }
 
 // .text:0x000CFB44 size:0x214 mapped:0x8070EBD8
