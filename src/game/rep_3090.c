@@ -203,8 +203,17 @@ void fn_3_105C28(void) {
 }
 
 // .text:0x00105C84 size:0x58 mapped:0x80744D18
-void fn_3_105C84(void) {
-    return;
+void fn_3_105C84(u8* p) {
+    u32* a = (u32*)(p + 8);
+    u32* q;
+    s16 i = 0;
+    *a += (u32)p;
+    q = a;
+    for (; i < *(s16*)(p + 6); i++) {
+        q[1] += (u32)p;
+        q++;
+    }
+    *(u32*)(lbl_3_common_bss_DE94 + 0x11C) = *(u16*)(p + 4) << 16;
 }
 
 // .text:0x00105CDC size:0x124 mapped:0x80744D70
