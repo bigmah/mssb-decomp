@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 
 extern f32 lbl_3_rodata_590;
+extern f32 lbl_3_rodata_5E4;
+extern f32 lbl_3_rodata_5D4;
+extern int fn_3_B7DD8(f32, f32);
 extern f32 lbl_3_rodata_608;
 extern f32 lbl_3_rodata_59C;
 extern f32 lbl_3_rodata_5F8;
@@ -282,7 +285,18 @@ s32 fn_3_BBBC(f32* out, s32 n, s32 step, f32 x, f32 z) {
 
 // .text:0x0000BC54 size:0x124 mapped:0x8064ACE8
 void fn_3_BC54(void) {
-    return;
+    f32 v;
+    if (fn_3_B7DD8(*(f32*)(g_Ball + 0), *(f32*)(g_Ball + 8)) == 0) {
+        if (*(f32*)(g_Ball + 0) > lbl_3_rodata_590) {
+            v = *(f32*)(g_Ball + 8) - *(f32*)(g_Ball + 0);
+        } else {
+            v = *(f32*)(g_Ball + 8) + *(f32*)(g_Ball + 0);
+        }
+        if (!(v < lbl_3_rodata_5E4 || *(f32*)(g_Ball + 0x1A14) < lbl_3_rodata_5D4)) {
+            return;
+        }
+    }
+    fn_3_A0F0();
 }
 
 // .text:0x0000BD78 size:0x2BC mapped:0x8064AE0C
