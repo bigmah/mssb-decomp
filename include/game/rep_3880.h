@@ -102,7 +102,7 @@ void fn_3_153F8C(void* h, u32 a, u32 b, u32 c);
 void fn_3_1540E4(u32 a, u32 b, u32 c);
 void fn_3_1541C4(u32 a, u32 b, u32 c);
 void fn_3_154214(void);
-void fn_3_154238(void);
+void fn_3_154238(s16 id);
 void fn_3_1542F4(void);
 void fn_3_1549F0(void);
 void fn_3_154C7C(u32 a, u32 b, u32 c);

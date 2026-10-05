@@ -4,6 +4,7 @@
 extern u8 lbl_3_data_26C94[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_26D5C[];
+extern void fn_80033794(void*);
 extern u8 lbl_3_data_26BDC[];
 
 extern u8 lbl_8036E548[];
@@ -707,8 +708,45 @@ void fn_3_154214(void) {
 }
 
 // .text:0x00154238 size:0xBC mapped:0x807932CC
-void fn_3_154238(void) {
-    return;
+typedef struct {
+    u8 pad0[0xC];
+    u8* head;
+    u8 pad[0x14 - 0x10];
+    u16 hi : 4;
+    u16 cnt : 12;
+} H154238;
+
+void fn_3_154238(s16 id) {
+    u8* p;
+    u8** link;
+    u8* first;
+    u8* last;
+    H154238* h = fn_800339F0(0, 0x27);
+    if (h != NULL) {
+        p = h->head;
+        link = &h->head;
+        last = NULL;
+        first = NULL;
+        do {
+            if (*(s16*)(p + 0x18) == id) {
+                *link = *(u8**)p;
+                if (last != NULL) {
+                    *(u8**)last = p;
+                } else {
+                    first = p;
+                }
+                *(u8**)p = NULL;
+                last = p;
+                h->cnt--;
+            } else {
+                link = (u8**)p;
+            }
+            p = *link;
+        } while (p != NULL);
+        if (first != NULL) {
+            fn_80033794(first);
+        }
+    }
 }
 
 // .text:0x001542F4 size:0x6FC mapped:0x80793388
