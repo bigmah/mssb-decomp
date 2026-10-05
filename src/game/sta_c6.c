@@ -72,8 +72,16 @@ void fn_3_E5FEC(void) {
 }
 
 // .text:0x000E6410 size:0x98 mapped:0x807254A4
-void fn_3_E6410(void) {
-    return;
+void fn_3_E6410(u8* p) {
+    u32* list[3];
+    u32** w = list;
+    s32 i;
+    for (i = 0; i < 3; i++) {
+        if (*(u32**)(p + 0xAC) != &lbl_3_data_19018[i]) {
+            *w++ = &lbl_3_data_19018[i];
+        }
+    }
+    *(u32**)(p + 0xA8) = list[rand() % 2];
 }
 
 // .text:0x000E64A8 size:0x80 mapped:0x8072553C

@@ -10,7 +10,7 @@ void fn_3_E5CBC(void);
 void fn_3_E5E14(void);
 void fn_3_E5E70(void);
 void fn_3_E5FEC(void);
-void fn_3_E6410(void);
+void fn_3_E6410(u8* p);
 u32* fn_3_E64A8(void);
 void fn_3_E6528(u8* p);
 void fn_3_E6578(void);
