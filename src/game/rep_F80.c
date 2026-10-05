@@ -14,9 +14,9 @@ extern int getAnimRelatedCoordinates(int who, int a, void* out);
 typedef struct { s8 characterIndex[4]; u8 pad[0x12]; } MiniCtl_F80;
 extern u8 lbl_3_common_bss_32220[];
 extern void fn_3_C07A0(void);
-extern void fn_3_C1770(s8 who);
-extern void fn_3_C11CC(s8 who, int a);
-extern void fn_3_C1344(s8 who, int a, f32 x, f32 y, f32 z);
+extern void fn_3_C1770(int who);
+extern void fn_3_C11CC(int who, int a);
+extern void fn_3_C1344(int who, int a, f32 x, f32 y, f32 z);
 extern void fn_3_C0770(void);
 extern void fn_3_C07B0(void);
 extern void fn_3_BF1AC(void);
@@ -111,9 +111,8 @@ void fn_3_6A83C(void) {
 }
 
 // .text:0x0006A9B0 size:0xE8 mapped:0x806A9A44
-// 99%: missing extsb r3,r3 after the lbz of who (s8 load elided)
 void fn_3_6A9B0(void) {
-    s8 who;
+    s32 who;
     if (g_d_GameSettings[0x11]) {
         who = ((MiniCtl_F80*)(g_Minigame + 0x18CC))[0].characterIndex[*(s8*)(g_Minigame + 0x1905)];
     } else {
