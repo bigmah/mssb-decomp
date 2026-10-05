@@ -4,6 +4,13 @@
 extern u8 g_Batter[];
 extern u8 g_d_GameSettings[];
 extern u8 g_Minigame[];
+extern u8 g_Pitcher[];
+extern u8 g_Ball[];
+extern u8 g_GameLogic[];
+extern void fn_3_CB344(int who, u8 a);
+extern void fn_3_CB234(int who, int a);
+extern void fn_3_CB284(int who, s16 a, f32 f);
+extern int getAnimRelatedCoordinates(int who, int a, void* out);
 typedef struct { s8 characterIndex[4]; u8 pad[0x12]; } MiniCtl_F80;
 extern u8 lbl_3_common_bss_32220[];
 extern void fn_3_C07A0(void);
@@ -75,7 +82,32 @@ void fn_3_6A414(void) {
 
 // .text:0x0006A83C size:0x174 mapped:0x806A98D0
 void fn_3_6A83C(void) {
-    return;
+    f32 v[3];
+    s32 who = 0;
+    if (*(s16*)(g_Pitcher + 0x11E) <= 0) {
+        lbl_3_common_bss_32724[0xC8] = 0;
+        return;
+    }
+    if (lbl_3_common_bss_32724[0xC8] < 2) {
+        if (g_d_GameSettings[0x11] != 0) {
+            who = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        }
+        if (*(s16*)(g_Pitcher + 0x11E) >= 0 && (g_Pitcher[0x161] != 0 || g_Pitcher[0x15F] != 0)) {
+            if (lbl_3_common_bss_32724[0xC8] == 0) {
+                fn_3_CB344(who, g_Pitcher[0x165]);
+                lbl_3_common_bss_32724[0xC8] = 1;
+            }
+            if (lbl_3_common_bss_32724[0xC8] == 1) {
+                if (*(s16*)(g_Ball + 0x1B68) == 1 || g_GameLogic[0x11E] != 1) {
+                    fn_3_CB234(who, 1);
+                    lbl_3_common_bss_32724[0xC8] = 2;
+                    return;
+                }
+                getAnimRelatedCoordinates(who, g_Pitcher[0x141] != 0 ? 0x14 : 0x1A, v);
+                fn_3_CB284(who, *(s16*)(g_Pitcher + 0x126), *(f32*)(g_Pitcher + 0xE4));
+            }
+        }
+    }
 }
 
 // .text:0x0006A9B0 size:0xE8 mapped:0x806A9A44
