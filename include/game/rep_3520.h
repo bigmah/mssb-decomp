@@ -19,7 +19,7 @@ void fn_3_1354BC(void);
 void fn_3_135520(void);
 void fn_3_135600(void);
 int fn_3_13564C(f32 x, f32 y);
-void fn_3_135698(void);
+int fn_3_135698(u8* a, u8* b);
 void fn_3_1356F8(void);
 void fn_3_1357A4(void);
 void fn_3_13583C(void);

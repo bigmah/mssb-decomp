@@ -110,8 +110,20 @@ int fn_3_13564C(f32 x, f32 y) {
 }
 
 // .text:0x00135698 size:0x60 mapped:0x8077472C
-void fn_3_135698(void) {
-    return;
+int fn_3_135698(u8* a, u8* b) {
+    u8 fa = a[0x11];
+    if (fa != 0 && b[0x11] == 0) {
+        return -1;
+    }
+    if (fa == 0 && b[0x11] != 0) {
+        return 1;
+    }
+    {
+        if (*(f32*)a < *(f32*)b) {
+            return -1;
+        }
+        return *(f32*)a > *(f32*)b;
+    }
 }
 
 // .text:0x001356F8 size:0xAC mapped:0x8077478C

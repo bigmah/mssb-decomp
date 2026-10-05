@@ -17,6 +17,7 @@ void fn_3_1169D0(void) {
 // .text:0x00116B38 size:0x3C mapped:0x80755BCC
 extern u8 g_Minigame[];
 extern u8 lbl_8036E548[];
+extern f32 fn_800B4A94(void* p);
 
 void fn_3_116B38(void) {
     return;
@@ -213,8 +214,10 @@ void fn_3_11A210(void) {
 }
 
 // .text:0x0011A350 size:0x3C mapped:0x807593E4
-void fn_3_11A350(void) {
-    return;
+typedef struct { u8 pad[0x34]; void* p; u8 pad2[0x90 - 0x38]; } Ent90;
+u32 fn_3_11A350(int i) {
+    Ent90* base = *(Ent90**)(lbl_8036E548 + 0x68);
+    return fn_800B4A94(base[i].p);
 }
 
 // .text:0x0011A38C size:0x7C mapped:0x80759420
