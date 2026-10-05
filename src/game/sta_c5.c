@@ -355,7 +355,16 @@ void fn_3_F46A0(void) {
 
 // .text:0x000F4BA0 size:0xAC mapped:0x80733C34
 void fn_3_F4BA0(u8* p) {
-    return;
+    Vec tgt;
+    Vec d;
+    PSVECAdd((Vec*)(p + 0xA8), (Vec*)(p + 0xB4), (Vec*)(p + 0xA8));
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA8), -*(f32*)(p + 0xAC), *(f32*)(p + 0xB0));
+    tgt.x = lbl_3_data_1B884[p[0x9C]].v.x;
+    tgt.y = lbl_3_data_1B884[p[0x9C]].v.y;
+    tgt.z = lbl_3_data_1B884[p[0x9C]].v.z;
+    PSVECSubtract(&tgt, (Vec*)(p + 0xA8), &d);
+    *(f32*)(p + 0xB4) = 0.2f * d.x;
+    *(f32*)(p + 0xBC) = 0.2f * d.z;
 }
 
 // .text:0x000F4C4C size:0xB4 mapped:0x80733CE0
