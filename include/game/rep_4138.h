@@ -8,4 +8,6 @@ void fn_3_16D9B0(void);
 void fn_3_16DB6C(void);
 void fn_3_16E328(void);
 
+void fn_3_16E2FC(u16* p, s32 i);
+
 #endif // !__GAME_rep_4138_H_

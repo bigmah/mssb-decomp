@@ -1,6 +1,20 @@
 #include "game/rep_4138.h"
 #include "header_rep_data.h"
 
+extern u16* lbl_3_bss_D6E4;
+extern s32 lbl_3_bss_D6E8;
+
+void fn_3_16E2FC(u16* p, s32 i) {
+    if (p == NULL) {
+        return;
+    }
+    if (p[0] - 1 < i) {
+        return;
+    }
+    lbl_3_bss_D6E4 = p;
+    lbl_3_bss_D6E8 = i;
+}
+
 // .text:0x0016D810 size:0x1A0 mapped:0x807AC8A4
 void fn_3_16D810(void) {
     return;
