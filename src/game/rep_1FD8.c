@@ -4,6 +4,11 @@
 #include "static/UnknownHomes_Static.h"
 extern void fn_3_C2644(void);
 extern u8* lbl_3_bss_9D98;
+extern u8* lbl_3_common_bss_350E4[];
+extern void fn_3_B8184(void);
+extern void fn_3_B828C(void*);
+extern void fn_800BF058(void*);
+extern void fn_800BDF70(void*);
 extern u32 lbl_3_bss_9D84;
 extern u32 fn_80033A24(void*, int, int, int, int, int);
 
@@ -42,7 +47,23 @@ void fn_3_C2310(void) {
 
 // .text:0x000C23E0 size:0xC0 mapped:0x80701474
 void fn_3_C23E0(void) {
-    return;
+    u8* c;
+    int i;
+    u8** base;
+    fn_800BF058(fn_3_B8184);
+    base = lbl_3_common_bss_350E4;
+    for (i = 0; i < *(int*)((u8*)base + 0x30); i++) {
+        c = *base + i * 0xE8;
+        fn_3_B828C(c);
+        if (i >= 1 && i < 11) {
+            if ((c[0x90] >> 7) & 1) {
+                if (*(u8**)(c + 0x74) != 0) {
+                    (*(u8**)*(u8**)(c + 0x74))[0x98] = c[0x93] | 6;
+                    fn_800BDF70(*(u8**)(c + 0x74));
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000C24A0 size:0x1A4 mapped:0x80701534
