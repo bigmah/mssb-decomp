@@ -4,6 +4,8 @@
 extern u8 lbl_3_data_26C94[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_26D5C[];
+extern u8 lbl_3_data_26E9C[];
+extern void* fn_800337CC(void*, int, int, void*);
 extern s8 lbl_3_bss_B85C[];
 extern void fn_80033794(void*);
 extern u8 lbl_3_data_26BDC[];
@@ -21,19 +23,48 @@ extern u8 lbl_3_bss_B894[];
 extern void* memset(void*, int, unsigned long);
 #pragma dont_inline on
 
+typedef struct {
+    u8 pad0[0xC];
+    u8* head;
+    u8 pad[0x14 - 0x10];
+    u16 hi : 4;
+    u16 cnt : 12;
+} H154238;
+
 // .text:0x0014737C size:0x3FC mapped:0x80786410
 void fn_3_14737C(void) {
     return;
 }
 
 // .text:0x00147778 size:0x488 mapped:0x8078680C
-void fn_3_147778(void) {
+void fn_3_147778(void* n, void* a) {
     return;
 }
 
 // .text:0x00147C00 size:0xFC mapped:0x80786C94
-void fn_3_147C00(void) {
-    return;
+void fn_3_147C00(void* arg) {
+    u8 buf[0x5C];
+    u8* h = fn_800339F0(0, 0x26);
+    u8* n;
+    u8* p;
+    H154238* hh;
+    if (h != NULL) {
+        n = fn_800337CC(buf, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1, lbl_3_data_26E9C);
+        if (n != NULL) {
+            fn_3_147778(n, arg);
+            p = *(u8**)(h + 0xC);
+            while (*(u8**)p != NULL) {
+                p = *(u8**)p;
+            }
+            *(u8**)p = *(u8**)(n + 0xC);
+            ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+        }
+    } else {
+        n = fn_80033A24(fn_3_14737C, 0x80, 0, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1, 0x26);
+        if (n != NULL) {
+            fn_3_147778(n, arg);
+        }
+    }
 }
 
 // .text:0x00147CFC size:0x100 mapped:0x80786D90
@@ -755,13 +786,6 @@ void fn_3_154214(void) {
 }
 
 // .text:0x00154238 size:0xBC mapped:0x807932CC
-typedef struct {
-    u8 pad0[0xC];
-    u8* head;
-    u8 pad[0x14 - 0x10];
-    u16 hi : 4;
-    u16 cnt : 12;
-} H154238;
 
 void fn_3_154238(s16 id) {
     u8* p;
