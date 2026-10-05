@@ -16,7 +16,7 @@ void fn_3_42CC(void);
 void fn_3_4984(void);
 void fn_3_4A38(void);
 void fn_3_4F90(void);
-void fn_3_53E0(void);
+void fn_3_53E0(u16* in, s16* a, s16* b, s16* c, s16* d, s16* e);
 void fn_3_5518(void);
 void fn_3_567C(void);
 void fn_3_5BAC(void);

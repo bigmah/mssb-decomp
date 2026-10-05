@@ -108,8 +108,27 @@ void fn_3_4F90(void) {
 }
 
 // .text:0x000053E0 size:0x138 mapped:0x80644474
-void fn_3_53E0(void) {
-    return;
+void fn_3_53E0(u16* in, s16* a, s16* b, s16* c, s16* d, s16* e) {
+    u16 v = *in;
+    if (!(v & 0x4000)) {
+        if (v & 0x8000) {
+            u16 w = v & 0x7FFF;
+            *e = w / 2116;
+            w = w % 2116;
+            *a = w % 46;
+            *b = (w / 46) * 22;
+            *a = *a * 22;
+            *c = 22;
+            *d = 22;
+        } else {
+            *a = v % 92;
+            *b = (v / 92) * 22;
+            *a = (*a % 2 + (*a / 2) * 2) * 11;
+            *c = 11;
+            *d = 22;
+            *e = 0;
+        }
+    }
 }
 
 // .text:0x00005518 size:0x164 mapped:0x806445AC
