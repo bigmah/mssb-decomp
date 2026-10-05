@@ -5,6 +5,12 @@
 
 extern f32 lbl_3_rodata_3728;
 extern u8 g_Minigame[];
+extern u8 g_GameLogic[];
+extern u8 lbl_3_data_21278[];
+extern void changeScene(s32, s32);
+extern void fn_3_7DD6C(void);
+extern void fn_3_10F550(s32, s32);
+extern void fn_3_5A6D4(s32);
 extern u8 lbl_3_data_218BC[];
 extern s32 lbl_3_bss_B798[];
 extern f32 lbl_3_bss_B794;
@@ -203,9 +209,26 @@ void fn_3_1412BC(void) {
 
 // .text:0x001413E4 size:0xC8 mapped:0x80780478
 void fn_3_1413E4(void) {
-    return;
+    u8* g;
+    fn_3_7DD6C();
+    g = g_GameLogic;
+    switch (g[0x125]) {
+    case 0:
+        fn_3_10F550(2, lbl_3_data_21278[0]);
+        changeScene(1, 6);
+        *(s16*)(g_GameLogic + 0xFE) = 0;
+        g_GameLogic[0x125] = 1;
+        break;
+    case 1:
+        if (*(u16*)(g + 0xFE) > lbl_3_data_21278[0] + lbl_3_data_21278[1]) {
+            g[0x125] = 2;
+        }
+        break;
+    case 2:
+        fn_3_5A6D4(0);
+        break;
+    }
 }
-
 // .text:0x001414AC size:0x580 mapped:0x80780540
 void fn_3_1414AC(void) {
     return;
