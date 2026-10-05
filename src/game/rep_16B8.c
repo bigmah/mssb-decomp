@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_F390[];
+extern u8 lbl_3_data_E160[];
 extern u8 lbl_3_data_E21C[];
 extern u8 lbl_3_data_E2F8[];
 extern u8 lbl_3_data_E278[];
@@ -258,7 +259,21 @@ void fn_3_9538C(void) {
 
 // .text:0x000953FC size:0xC8 mapped:0x806D4490
 void fn_3_953FC(void) {
-    return;
+    u8* p;
+    fn_80034E20(p = lbl_803CC1B8[0], lbl_3_data_E160);
+    {
+        u8** t = (u8**)lbl_80371C30;
+        s32 v = lbl_3_data_E200[lbl_3_common_bss_37400[0x46]];
+        ((s32*)t[*(u16*)(p + 0x14) * 2 + 4])[0x5C / 4] = v << 16;
+    }
+    {
+        u8** t = (u8**)lbl_80371C30;
+        s32 v = lbl_3_data_E200[lbl_3_common_bss_37400[0x46]];
+        ((s32*)t[*(u16*)(p + 0x14) * 2 + 6])[0x5C / 4] = v << 16;
+    }
+    lbl_3_common_bss_32724[0xB4] = 0;
+    lbl_3_common_bss_32724[0xB3] = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_9538C;
 }
 
 // .text:0x000954C4 size:0x58 mapped:0x806D4558
