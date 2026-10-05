@@ -1,0 +1,110 @@
+# Plan: matching the rest of Mario Superstar Baseball
+
+## Where we are (2026-10-05)
+
+| Module | Code | Matched | Unmatched functions by size (≤64B / ≤256B / ≤1KB / >1KB) |
+|---|---|---|---|
+| `main.dol` SDK, MSL, Runtime, TRK | 230 KB | 99.5% | ~5 left |
+| `main.dol` MusyX | 128 KB | 55.6% | 90 left, many at 95%+ |
+| `main.dol` game code (unsplit `auto_*`) | 549 KB | 0% | 241 / 316 / 332 / 153 |
+| `game.rel` | 1.5 MB | 3.1% (148 / 2406) | 211 / 625 / 1002 / 420 |
+| `menus.rel` | 618 KB | 0% | 240 / 293 / 569 / 131 |
+| `challenge.rel` | 171 KB | 0% | 68 / 96 / 137 / 48 |
+
+Overall: **~11% of code matched, 0 game files linked.**
+
+Most of `src/game/*.c` already exists, but almost all of it is **stubs** (`void fn_3_XXXX(void) { return; }`) with the address and size in a comment. So the file layout is done; the bodies are not. About 640 `game.rel` functions are not in any source file yet (`game/auto_*` units).
+
+The libraries are almost finished, so **nearly all remaining work is MSSB's own game code (~2.8 MB)**, written by Namco in C and built with `GC/2.6 -O4,p -inline deferred`.
+
+## What "progress" means here
+
+- **Matched** (decomp.dev "matched" %): a function compiles to the same bytes as the original.
+- **Linked**: an object is marked `Matching` in `configure.py` and goes into the real build. A file can only be linked when **every** function and data item in it matches.
+
+Matched % is what moves the badges. Linked files are what really proves the decomp. So **finish files, not just functions**: once a file is down to one or two stragglers, prioritize those stragglers.
+
+## Workflow for one function
+
+1. **Pick a target** (see Phases). Start from small leaf functions, which don't call other unmatched code.
+2. **Get a first draft in C.**
+   - Generate a context file: `python3 tools/decompctx.py src/game/rep_XXXX.c` (or use the `.ctx` that ninja writes into `build/`).
+   - Run m2c on the function's assembly (`build/GYQE01/game/asm/...` or `dtk elf disasm` output), or create a decomp.me scratch. The compiler preset is `mwcc_247_107`, and `objdiff.json` lists the exact flags for each unit.
+3. **Iterate locally:**
+   - `python3 tools/fndiff.py <fn>` rebuilds just that unit and prints an instruction diff, or `MATCH`.
+   - `python3 tools/fnvariants.py <fn> v1.c v2.c ... --also caller1,caller2` scores several candidate definitions at once (including callers that inline it) and restores the file afterwards.
+   - Or use the objdiff GUI pointed at the repo root, which rebuilds automatically on save.
+4. **Check that nothing regressed.** Run a full `ninja`, then confirm the `game:` function count went up, and that `config/GYQE01/build.sha1` still reports `4 files OK`.
+5. **Commit one function per commit**, with the message `match <function_name>`.
+
+### Matching patterns we've already hit
+
+These came up repeatedly in `rep_1838.c`. Try them first when a diff is only register order or branch shape:
+
+- **Register swaps:** copy a parameter into a local before modifying it (`s16 a = ang;`), or modify the parameter in place and keep a separate copy (`sign = max; if (max < 0) max = -max;`).
+- **`ABS(x)` vs `if (x < 0) x = -x;`:** both can produce the branch-free `srawi/xor/subf` sequence, but they give different register allocation. Try both.
+- **Argument shape decides inlined code.** When a function is inlined, how the caller builds the argument matters. `f(max - min + 1)` gave the branch-free abs, while `int n = ... + 1; f(n)` gave the branching (`addic.`) version.
+- **Inlining couples functions.** Small functions in the same file get inlined into their callers (`-inline deferred`), so changing one function's body changes every caller's code. Always score callers with `--also`. A "match" that breaks a caller is not a gain.
+- **Write the result straight to the global** (`g.x = g.x + ...; r = g.x % n;`) instead of using a temp, when the original stores the value and then reuses the register.
+- **Symbol names must agree.** A header `extern` name and `symbols.txt` have to use the same name. Otherwise the diff shows a relocation mismatch even when the code is right. Rename in `symbols.txt` when the header name is better.
+
+Add new patterns to this list as we find them.
+
+## Phases
+
+### Phase 0: Tooling (mostly done)
+- [x] Local build working on macOS arm64 (wibo, no Wine).
+- [x] `tools/fndiff.py`, `tools/fnvariants.py`.
+- [ ] Install m2c locally (`pip install` from github.com/matt-kempster/m2c) and add a small wrapper that feeds it one function plus the unit's ctx.
+- [ ] Get the objdiff GUI set up for whoever is doing visual diffing.
+- [ ] Optional: a script that lists the "next best targets" from `report.json` (smallest unmatched leaf functions, and files closest to complete).
+
+### Phase 1: First linked game file
+Goal: the first `game/*.c` objects switched to `Matching`.
+
+1. `rep_1838.c` is 26 / 27. Only `fn_3_9F79C` is left (99.2%; float register allocation around the inlined `dolsqrtf2`). After that, check the file's data/rodata also match, then flip it to `Matching`.
+2. Clear the other 95–99% functions: `game_batter.c` (`calculateBallHorizontalAngleHit`, `calculateBuntHorizontalAngle`, `batterInBoxMovement`) and `rep_720.c` (`fn_3_1C1B0`, `fn_3_197E8`).
+3. Learn from flipping a file to `Matching`: which data or rodata issues block linking, and whether more `splits.txt` work is needed. Write it down here.
+
+### Phase 2: Shared types (the multiplier)
+Every function gets easier once the big structs are right. Before mass decompiling:
+
+- Build out the core structs in `include/` (`g_Ball`, `g_d_GameSettings`, batter/pitcher/fielder/runner state, `g_Practice`, team/roster data). Use field offsets from matched functions plus asm accesses.
+- **Borrow knowledge from the MSSB modding community.** Project Rio (MSSB netplay and stats) and similar groups document many RAM addresses and struct fields. Translate those into names in `symbols.txt` and struct fields. REL addresses are relocated, so use the `mapped:` addresses in the stub comments (and `tools/cvt_rel_addr_to_mapped_addr.py`) to line them up with Dolphin RAM addresses.
+- Name functions as their purpose becomes clear, even before they match. Names spread to every caller.
+- Check the demo builds (`US_DEMO`, `JP_DEMO`) for strings, asserts or symbols that leaked names.
+
+### Phase 3: `game.rel` file by file
+- Work on **one file at a time** so files reach "linked". Within a file, do the leaf functions first, then the functions that call them.
+- Order files by size and depth: the smallest stub files first (many `rep_*.c` have only a handful of functions), and the 1K+ functions last.
+- Turn `game/auto_*` units into real source files as we reach them. `docs/splits.md` covers adding a split. Look at the `rep_*` naming in `config/GYQE01/game/splits.txt` for how existing files were cut.
+- Rough size: about 2,250 functions. ~830 are 256 bytes or less, and these should go quickly once the types are good.
+
+### Phase 4: Game code in `main.dol`
+- 549 KB / ~1,040 functions currently sit in ~880 `auto_*` units. Many already have meaningful names (`FillRosterPos`, `characterSelectScreen`, `Custom_SetState`).
+- First split them into source files by address range, following natural boundaries (where alignment padding, string tables and `.ctors` show a new file starts). Then match them the same way as `game.rel`.
+- This code is probably the core engine (memory, file loading, controller/state helpers) that the RELs call. Matching it early gives names and types to all three RELs.
+
+### Phase 5: `challenge.rel`, then `menus.rel`
+- `challenge.rel` is the smallest module (349 functions). It's a realistic target for **the first fully matched module**, and it reuses game types.
+- `menus.rel` has many small UI functions and should go faster once the shared types exist.
+
+### Phase 6: Finish the libraries
+- **MusyX:** 17 files are not matching. Compare against existing MusyX decomps (the PrimeDecomp projects ship matching MusyX sources). First pin down MSSB's exact MusyX version, then import the matching implementations.
+- **Remaining SDK pieces:** `os` (one file), `C3/control`, and the two `Unknown/` files.
+- These are mechanical, and good for days when the game code is stuck.
+
+## Picking work day to day
+
+1. Any function at ≥95% in a file that's close to complete.
+2. Small leaf functions (≤256 B) in the file currently in progress.
+3. Struct/naming work whenever a function is blocked on unknown types.
+4. Library cleanup (MusyX/SDK) as filler.
+
+Don't spend more than about 30–45 minutes on a single register-allocation fight. Leave a `// 99%: <what's wrong>` note above the function and move on; the pattern often becomes obvious after a few more functions.
+
+## Coordination
+
+- This is a fork of `roeming/mssb-dtk`. Check upstream regularly for new matches and renamed symbols, and rebase so we don't duplicate work.
+- Send finished work upstream as small PRs (one file or a few functions per PR).
+- If upstream or the community has a Discord, ask about known compiler-flag quirks (for example per-file `-inline` or `-fp_contract` overrides) before fighting them alone.
