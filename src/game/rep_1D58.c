@@ -2,6 +2,21 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_11168[];
+extern void* memcpy(void*, const void*, u32);
+extern f32 lbl_3_bss_1910[];
+extern f32 lbl_3_rodata_1DD0[];
+extern f32 lbl_3_rodata_1DD4;
+extern u8 lbl_3_common_bss_350E4[];
+extern u32 lbl_3_bss_1904;
+extern void GXSetBlendMode(int, int, int, int);
+extern void GXSetNumTevStages(int);
+extern void GXSetTevOrder(int, int, int, int);
+extern void GXSetTevColorIn(int, int, int, int, int);
+extern void GXSetTevColorOp(int, int, int, int, int, int);
+extern void GXSetTevAlphaIn(int, int, int, int, int);
+extern void GXSetTevAlphaOp(int, int, int, int, int, int);
+extern void fn_800ACFB0(u32);
+extern void* _OSAllocFromHeap(s32, s32);
 
 // .text:0x000B7FC8 size:0x108 mapped:0x806F705C
 void fn_3_B7FC8(void) {
@@ -10,7 +25,13 @@ void fn_3_B7FC8(void) {
 
 // .text:0x000B80D0 size:0xB4 mapped:0x806F7164
 void fn_3_B80D0(void) {
-    return;
+    GXSetBlendMode(1, 4, 5, 0);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorIn(0, 0xA, 0xF, 0xF, 0xF);
+    GXSetTevColorOp(0, 0, 0, 0, 1, 0);
+    GXSetTevAlphaIn(0, 4, 7, 7, 7);
+    GXSetTevAlphaOp(0, 0, 0, 0, 1, 0);
 }
 
 // .text:0x000B8184 size:0xF8 mapped:0x806F7218
@@ -36,8 +57,9 @@ void fn_3_B8298(void) {
 }
 
 // .text:0x000B8414 size:0x50 mapped:0x806F74A8
-void fn_3_B8414(void) {
-    return;
+void fn_3_B8414(void* a, void* b) {
+    memcpy(a, lbl_3_bss_1910, 0xC);
+    memcpy(b, lbl_3_bss_1910 + 3, 0xC);
 }
 
 // .text:0x000B8464 size:0x110 mapped:0x806F74F8
@@ -51,13 +73,16 @@ void fn_3_B8574(void) {
 }
 
 // .text:0x000B85A8 size:0x34 mapped:0x806F763C
-void fn_3_B85A8(void) {
-    return;
+u32 fn_3_B85A8(int idx, u32* out) {
+    *out = *(u32*)(lbl_3_common_bss_350E4 + 0x44) + (*(u16*)(*(u8**)(lbl_3_common_bss_350E4 + 0x40) + idx * 2)) * 4;
+    return (*(u32**)(lbl_3_common_bss_350E4 + 0x3C))[idx];
 }
 
 // .text:0x000B85DC size:0x7C mapped:0x806F7670
-void fn_3_B85DC(void) {
-    return;
+void fn_3_B85DC(s32 i, void* a, void* b) {
+    u8* c = lbl_3_common_bss_350E4;
+    memcpy(a, *(u8**)(c + 0x48) + i * 0x18, 0xC);
+    memcpy(b, *(u8**)(c + 0x48) + (i * 2 + 1) * 0xC, 0xC);
 }
 
 // .text:0x000B8658 size:0x24 mapped:0x806F76EC
@@ -87,17 +112,28 @@ void fn_3_B8C08(void) {
 
 // .text:0x000B902C size:0x60 mapped:0x806F80C0
 void fn_3_B902C(void) {
-    return;
+    if (lbl_3_bss_1904 != 0) {
+        memcpy(*(void**)lbl_3_common_bss_350E4, (void*)lbl_3_bss_1904, *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
+        fn_800ACFB0(lbl_3_bss_1904);
+        lbl_3_bss_1904 = 0;
+    }
 }
 
 // .text:0x000B908C size:0x98 mapped:0x806F8120
 void fn_3_B908C(void) {
-    return;
+    if (lbl_3_bss_1904 == 0) {
+        u8* c = lbl_3_common_bss_350E4;
+        lbl_3_bss_1904 = (u32)_OSAllocFromHeap(0x20, *(s32*)(c + 0x30) * 0xE8);
+        memcpy((void*)lbl_3_bss_1904, *(void**)lbl_3_common_bss_350E4, *(s32*)(c + 0x30) * 0xE8);
+    }
+    memcpy(*(void**)lbl_3_common_bss_350E4, *(void**)(lbl_3_common_bss_350E4 + 4), *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
+    *(s16*)(lbl_3_common_bss_350E4 + 0x66) = *(s16*)(lbl_3_common_bss_350E4 + 0x68);
 }
 
 // .text:0x000B9124 size:0x48 mapped:0x806F81B8
 void fn_3_B9124(void) {
-    return;
+    memcpy(*(void**)(lbl_3_common_bss_350E4 + 4), *(void**)lbl_3_common_bss_350E4, *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
+    *(s16*)(lbl_3_common_bss_350E4 + 0x68) = *(s16*)(lbl_3_common_bss_350E4 + 0x66);
 }
 
 // .text:0x000B916C size:0x5C mapped:0x806F8200

@@ -1,10 +1,18 @@
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
+#pragma dont_inline on
 
 extern u8 lbl_803CBBC0;
 extern u32 lbl_3_data_A10[];
 
 extern u32 lbl_3_bss_18[];
+extern f32 lbl_3_rodata_520[];
+extern f32 lbl_3_rodata_538[];
+extern u8 g_UNK_StadiumDetails[];
+extern u32 fn_80009028(void);
+typedef struct { u8 r, g, b, a; } GXColorX;
+extern void GXSetCopyClear(GXColorX c, u32 z);
+extern void SetFog(u8, s32*, f32, f32, f32, f32);
 
 // .text:0x000035D4 size:0x10
 u32 setFanObjPtr(void) {
@@ -18,7 +26,9 @@ void fn_3_35E4(u32 val) {
 
 // .text:0x000035F0 size:0x48
 void fn_3_35F0(void) {
-    return;
+    if (fn_80009028() == 0) {
+        GXSetCopyClear(*(GXColorX*)(g_UNK_StadiumDetails + 0x76C), 0xFFFFFF);
+    }
 }
 
 // .text:0x00003638 size:0x1E0
@@ -88,7 +98,7 @@ void fn_3_567C(void) {
 
 // .text:0x00005BAC size:0x20 mapped:0x80644C40
 void fn_3_5BAC(void) {
-    return;
+    fn_3_567C();
 }
 
 // .text:0x00005BCC size:0x24 mapped:0x80644C60
@@ -100,7 +110,13 @@ void fn_3_5BCC(u8* p) {
 
 // .text:0x00005BF0 size:0x78 mapped:0x80644C84
 void fn_3_5BF0(void) {
-    return;
+    s32 col;
+    u8* d = g_UNK_StadiumDetails;
+    if (lbl_3_bss_18[0] != 0) {
+        ((void (*)(void))lbl_3_bss_18[0])();
+    }
+    col = *(s32*)(d + 0x714);
+    SetFog(d[0x717], &col, *(f32*)(d + 0x718), *(f32*)(d + 0x71C), lbl_3_rodata_520[0], lbl_3_rodata_538[0]);
 }
 
 // .text:0x00005C68 size:0x1F8 mapped:0x80644CFC

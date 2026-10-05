@@ -4,6 +4,10 @@
 extern u8* lbl_3_common_bss_1323C;
 extern void changeScene(s32, s32);
 extern u8 g_GameLogic[];
+extern u8 g_Fielders[];
+extern void fn_80052798(s32);
+extern u8 lbl_3_data_2398[];
+extern u8 lbl_8036E548[];
 
 // .text:0x00021C90 size:0x154 mapped:0x80660D24
 void fn_3_21C90(void) {
@@ -21,8 +25,25 @@ void fn_3_21F14(void) {
 }
 
 // .text:0x0002273C size:0xE0 mapped:0x806617D0
-void fn_3_2273C(void) {
-    return;
+s32 fn_3_2273C(void) {
+    u8* f = g_Fielders;
+    u8** r = (u8**)lbl_8036E548;
+    u8* p;
+    s32 i;
+    for (i = 0; i < 9; i++) {
+        if (f[0x218] == 0) {
+            p = r[0x2C50 / 4];
+            if (p == 0) {
+                return 1;
+            }
+            if (*(s16*)(p + 0x68) == 0) {
+                return 1;
+            }
+        }
+        f += 0x268;
+        r++;
+    }
+    return 0;
 }
 
 // .text:0x0002281C size:0x34 mapped:0x806618B0
@@ -39,7 +60,12 @@ s32 fn_3_2281C(s32 i) {
 
 // .text:0x00022850 size:0xF4 mapped:0x806618E4
 void fn_3_22850(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 0x21; i++) {
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x38) = 0;
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x3C) = 0;
+    }
+    (&lbl_3_common_bss_1323C)[0][0x27B] = 0;
 }
 
 // .text:0x00022944 size:0x4 mapped:0x806619D8
@@ -49,7 +75,13 @@ void fn_3_22944(void) {
 
 // .text:0x00022948 size:0xD8 mapped:0x806619DC
 void fn_3_22948(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 0x21; i++) {
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x34) = 0;
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x38) = 0;
+        *(s32*)(lbl_3_data_2398 + i * 0x40 + 0x3C) = 0;
+    }
+    (&lbl_3_common_bss_1323C)[0][0x27B] = 0;
 }
 
 // .text:0x00022A20 size:0x9C mapped:0x80661AB4
@@ -116,7 +148,12 @@ void fn_3_24598(void) {
 
 // .text:0x00024630 size:0xD8 mapped:0x806636C4
 void fn_3_24630(void) {
-    return;
+    s32 i;
+    fn_80052798(1);
+    for (i = 0; i < 13; i++) {
+        (&lbl_3_common_bss_1323C)[0][0x261 + i] = 0;
+    }
+    (&lbl_3_common_bss_1323C)[0][0x25C] = 0;
 }
 
 // .text:0x00024708 size:0x2E0 mapped:0x8066379C
