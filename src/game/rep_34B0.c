@@ -1,6 +1,8 @@
 #include "game/rep_34B0.h"
 #include "header_rep_data.h"
 
+extern void fn_3_5A6D4(s32);
+
 // .text:0x0012E8FC size:0x214 mapped:0x8076D990
 void fn_3_12E8FC(void) {
     return;
@@ -77,8 +79,15 @@ void fn_3_1307D0(void) {
 }
 
 // .text:0x00130A80 size:0x4C mapped:0x8076FB14
+extern u8 g_Minigame[];
+extern u8 g_GameLogic[];
+
 void fn_3_130A80(void) {
-    return;
+    *(s16*)(g_Minigame + 0x18A4) = -1;
+    g_GameLogic[0x12B] = 1;
+    g_GameLogic[0x12C] = 1;
+    g_GameLogic[0x12E] = 1;
+    fn_3_5A6D4(8);
 }
 
 // .text:0x00130ACC size:0x1A0 mapped:0x8076FB60
@@ -102,8 +111,14 @@ void fn_3_13119C(void) {
 }
 
 // .text:0x0013128C size:0x48 mapped:0x80770320
+extern u8 g_Scores[];
+
 void fn_3_13128C(void) {
-    return;
+    if (*(s32*)g_Scores >= g_Scores[0xAA]) {
+        fn_3_5A6D4(0xF);
+    } else {
+        fn_3_5A6D4(6);
+    }
 }
 
 // .text:0x001312D4 size:0x26C mapped:0x80770368
