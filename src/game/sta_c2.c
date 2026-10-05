@@ -57,8 +57,10 @@ void fn_3_CCC24(void) {
 }
 
 // .text:0x000CD958 size:0x10 mapped:0x8070C9EC
+extern u8 lbl_3_bss_A81C;
+
 void fn_3_CD958(void) {
-    return;
+    lbl_3_bss_A81C = 1;
 }
 
 // .text:0x000CD968 size:0x1E0 mapped:0x8070C9FC
