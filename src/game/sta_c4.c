@@ -1,5 +1,10 @@
 #include "game/sta_c4.h"
 #include "header_rep_data.h"
+
+#include "Dolphin/GX/GXBump.h"
+#include "Dolphin/GX/GXTexture.h"
+extern GXTexObj lbl_3_bss_B640;
+extern void fn_3_B9510(s32);
 #include "Dolphin/GX/GXPixel.h"
 
 extern u8 lbl_3_bss_B5D4;
@@ -41,7 +46,12 @@ void fn_3_F8B30(void) {
 
 // .text:0x000F8B34 size:0x74 mapped:0x80737BC8
 void fn_3_F8B34(void) {
-    return;
+    fn_3_B9510(0);
+    GXLoadTexObj(&lbl_3_bss_B640, 7);
+    GXSetIndTexOrder(0, 0, 7);
+    GXSetNumIndStages(1);
+    GXSetIndTexCoordScale(0, 0, 0);
+    GXSetTevIndWarp(0, 0, 0, 0, 1);
 }
 
 // .text:0x000F8BA8 size:0x158 mapped:0x80737C3C
