@@ -7,6 +7,9 @@ extern f32 lbl_3_rodata_59C;
 extern f32 lbl_3_rodata_5F8;
 extern f64 lbl_3_rodata_600;
 extern u8 g_Ball[];
+extern u8 g_FieldingLogic[];
+extern s32 g_Strikes;
+extern void fn_3_88D88(s32);
 extern u8 g_d_GameSettings[];
 extern void fn_3_27648(void);
 
@@ -148,7 +151,26 @@ void fn_3_A020(void) {
 
 // .text:0x0000A0F0 size:0xA8 mapped:0x80649184
 void fn_3_A0F0(void) {
-    return;
+    s32 done;
+    *(s16*)(g_Ball + 0x1B7A) = -1;
+    g_Ball[0x1BC6] = 1;
+    done = 0;
+    if (g_FieldingLogic[0x110] != 1) {
+        g_FieldingLogic[0x110] = 1;
+        g_Strikes = g_Strikes + 1;
+        if (g_Strikes >= 3) {
+            if (g_Ball[0x1BCF] != 0) {
+                g_Ball[0x1BD3] = 1;
+                fn_3_88D88(0);
+                done = 1;
+            } else {
+                g_Strikes = 2;
+            }
+        }
+    }
+    if (done == 0) {
+        fn_3_59918(3, 0);
+    }
 }
 
 // .text:0x0000A198 size:0x6A4 mapped:0x8064922C
