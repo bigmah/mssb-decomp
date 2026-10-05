@@ -4,6 +4,7 @@
 #include "static/UnknownHomes_Static.h"
 extern void fn_3_C2644(void);
 extern u8* lbl_3_bss_9D98;
+extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
 
@@ -88,13 +89,22 @@ void fn_3_C30F0(void) {
 }
 
 // .text:0x000C366C size:0x35C mapped:0x80702700
-void fn_3_C366C(void) {
+#pragma dont_inline on
+void fn_3_C366C(u32 a, u8 b) {
     return;
 }
+#pragma dont_inline reset
 
 // .text:0x000C39C8 size:0x70 mapped:0x80702A5C
 void fn_3_C39C8(void) {
-    return;
+    u32 i = 0;
+    do {
+        u32 r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
+        if (r != 0) {
+            fn_3_C366C(r, i);
+        }
+        i++;
+    } while (i < 6);
 }
 
 // .text:0x000C3A38 size:0x1F4 mapped:0x80702ACC
