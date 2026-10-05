@@ -18,6 +18,10 @@ extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
 
 extern void fn_3_5A6D4(s32);
+extern u8 g_Scores[];
+extern void fn_3_10AD48(void);
+extern void fn_3_10F550(s32, s32);
+extern u8 lbl_3_common_bss_32724[];
 extern u8 g_GameLogic[];
 extern void fn_8003A540(s32, u8*);
 extern void fn_3_DE4FC(void);
@@ -163,7 +167,17 @@ void fn_3_112450(void) {
 
 // .text:0x00112558 size:0x78 mapped:0x807515EC
 void fn_3_112558(void) {
-    return;
+    *(s32*)g_Scores += 1;
+    g_Minigame[0x190C] = 0;
+    if (g_Minigame[0x1909] == 0) {
+        fn_3_5A6D4(7);
+        return;
+    }
+    if (*(s32*)g_Scores == 1) {
+        fn_3_10AD48();
+    }
+    fn_3_5A6D4(7);
+    fn_3_10F550(4, 0);
 }
 
 // .text:0x001125D0 size:0x40 mapped:0x80751664
