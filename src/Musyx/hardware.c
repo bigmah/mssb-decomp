@@ -18,6 +18,11 @@ u8 salNumVoices;
 u8 salMaxStudioNum;
 SND_HOOKS2 salHooks;
 u8 salTimeOffset;
+extern f32 lbl_803CD270;
+extern f32 lbl_803CD274;
+extern f32 lbl_803CD278;
+f32 sndCos(f32 x);
+f32 sndSqrt(f32 x);
 void hwSetTimeOffset(u8 offset);
 void hwEnableCompressor(void);
 
@@ -271,6 +276,8 @@ u8 hwGetSampleType(u32 voice) { return dspVoice[voice].smp_info.compType; }
 
 u16 hwGetSampleID(u32 voice) { return dspVoice[voice].smp_id; }
 
+void *hwGetSampleExtraData(u32 voice) { return dspVoice[voice].smp_info.extraData; }
+
 void hwSetStreamLoopPS(u32 voice, u8 ps) { dspVoice[voice].streamLoopPS = ps; }
 
 void hwStart(u32 v, u8 studio)
@@ -314,6 +321,55 @@ void hwSetPolyPhaseFilter(unsigned long v, unsigned char salCoefSel)
   struct DSPvoice *dsp_vptr = &dspVoice[v];
   dsp_vptr->srcCoefSelect = dspCoefSel[salCoefSel];
   dsp_vptr->changed[0] |= 0x80;
+}
+
+void hwLowPassFrqToCoef(u32 frq, u16 *_a0, u16 *_b1)
+{
+  f32 a0;
+  f32 b1;
+  f32 x;
+  f32 t;
+
+  x = lbl_803CD270 - sndCos((lbl_803CD274 * (f32)frq) / lbl_803CD278);
+  if (x > 1.0f)
+  {
+    t = sndSqrt(x * x - 1.0f) - x;
+  }
+  else
+  {
+    t = -1.0f;
+  }
+  b1 = (t > 1.0f) ? 1.0f : ((t < -1.0f) ? -1.0f : t);
+  a0 = 1.0f + b1;
+  *_a0 = 32768.0f * a0;
+  *_b1 = 32768.0f * -b1;
+}
+
+void hwSetFilter(u32 v, u8 mode, u16 coefA, u16 coefB)
+{
+  DSPvoice *dsp_vptr = &dspVoice[v];
+
+  if (dsp_vptr->lowPassType == 0)
+  {
+    if (mode == 1)
+    {
+      dsp_vptr->lowPassType = 1;
+      dsp_vptr->lowPassA = coefA;
+      dsp_vptr->lowPassB = coefB;
+      dsp_vptr->changed[0] |= 0xC00;
+    }
+  }
+  else if (mode == 1)
+  {
+    dsp_vptr->lowPassA = coefA;
+    dsp_vptr->lowPassB = coefB;
+    dsp_vptr->changed[0] |= 0x800;
+  }
+  else
+  {
+    dsp_vptr->lowPassType = 0;
+    dsp_vptr->changed[0] |= 0x400;
+  }
 }
 
 static void SetupITD(DSPvoice *dsp_vptr, u8 pan)

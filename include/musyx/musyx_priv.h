@@ -339,8 +339,10 @@ typedef struct DSPvoice {
   u16 srcCoefSelect;
   u16 itdShiftL;
   u16 itdShiftR;
-  u32 FILLER;
-  u8 FILLER2[2];
+  u8 lowPassType;
+  u8 FILLER_D5;
+  u16 lowPassA;
+  u16 lowPassB;
   u8 singleOffset;
   struct {
     u32 posHi;
