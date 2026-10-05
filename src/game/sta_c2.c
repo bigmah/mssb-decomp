@@ -4,6 +4,10 @@
 #pragma dont_inline on
 extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern f64 lbl_3_rodata_2800;
+extern f32 lbl_3_rodata_2664;
+extern u8 g_Fielders[];
+extern s32 fn_3_9FB8C(f32, f32);
+extern void fn_3_253A4(s8, s16);
 extern void AnimateActorBones(void*);
 
 // .text:0x000CB8A8 size:0x1F4 mapped:0x8070A93C
@@ -350,8 +354,13 @@ s32 fn_3_D249C(u8* p) {
 }
 
 // .text:0x000D24E8 size:0x74 mapped:0x8071157C
-void fn_3_D24E8(void) {
-    return;
+void fn_3_D24E8(u8* p, s32 idx0) {
+    s8 idx = idx0;
+    Vec v;
+    PSVECSubtract((Vec*)(g_Fielders + idx * 0x268), (Vec*)(p + 0xA0), &v);
+    v.y = lbl_3_rodata_2664;
+    PSVECNormalize(&v, &v);
+    fn_3_253A4(idx, fn_3_9FB8C(v.x, v.z));
 }
 
 // .text:0x000D255C size:0x128 mapped:0x807115F0
