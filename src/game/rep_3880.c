@@ -236,8 +236,20 @@ void fn_3_14CA98(u8* p) {
 }
 
 // .text:0x0014CAB4 size:0x74 mapped:0x8078BB48
-void fn_3_14CAB4(void) {
-    return;
+void fn_3_14CAB4(s8 a) {
+    u8* p = fn_800339F0(0, 0x20);
+    if (p != NULL) {
+        u8* q = *(u8**)(p + 0xC);
+        do {
+            if (q[0x45] == a) {
+                q[0x44] = 0;
+                q[0x45] = 0xFF;
+                *(s16*)(q + 0x4A) = 0;
+                q[0x4C] = 0;
+            }
+            q = *(u8**)q;
+        } while (q != NULL);
+    }
 }
 
 // .text:0x0014CB28 size:0x8C mapped:0x8078BBBC
