@@ -36,7 +36,7 @@ void fn_3_CF72C(void);
 void fn_3_CF92C(void);
 void fn_3_CF930(void);
 void fn_3_CFA88(void);
-void fn_3_CFA8C(void);
+void fn_3_CFA8C(void* p);
 void fn_3_CFAB4(void);
 void fn_3_CFB44(void);
 void fn_3_CFD58(void);

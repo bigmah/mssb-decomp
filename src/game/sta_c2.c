@@ -1,5 +1,6 @@
 #include "game/sta_c2.h"
 #include "header_rep_data.h"
+extern void AnimateActorBones(void*);
 
 // .text:0x000CB8A8 size:0x1F4 mapped:0x8070A93C
 void fn_3_CB8A8(void) {
@@ -169,8 +170,8 @@ void fn_3_CFA88(void) {
 }
 
 // .text:0x000CFA8C size:0x28 mapped:0x8070EB20
-void fn_3_CFA8C(void) {
-    return;
+void fn_3_CFA8C(void* p) {
+    AnimateActorBones(*(void**)(*(u8**)((u8*)p + 0x74)));
 }
 
 // .text:0x000CFAB4 size:0x90 mapped:0x8070EB48
