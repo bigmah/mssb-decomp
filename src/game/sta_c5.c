@@ -1,5 +1,9 @@
 #include "game/sta_c5.h"
 #include "header_rep_data.h"
+#include "Dolphin/os.h"
+extern u8 lbl_3_common_bss_350E4[];
+extern char lbl_3_rodata_2DB8[];
+extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
 typedef struct { f32 a, b, c; } V3w;
 extern u32 lbl_3_bss_B154[];
@@ -323,8 +327,16 @@ void fn_3_F5C30(void) {
 }
 
 // .text:0x000F5E78 size:0x84 mapped:0x80734F0C
-void fn_3_F5E78(void) {
-    return;
+s32 fn_3_F5E78(u8 id) {
+    u32 n = *(u32*)(lbl_3_common_bss_350E4 + 0x30);
+    u8* e = *(u8**)(lbl_3_common_bss_350E4 + 0x14) + n * 8;
+    for (; n != 0; e -= 8, n--) {
+        if (id == *(s32*)(e - 4)) {
+            return n - 1;
+        }
+    }
+    OSPanic(lbl_3_rodata_2DB8, 0x637, lbl_3_rodata_2F10);
+    return 0;
 }
 
 // .text:0x000F5EFC size:0x2C mapped:0x80734F90
