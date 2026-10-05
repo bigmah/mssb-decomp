@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 extern f32 lbl_3_data_2262C;
+extern f32 lbl_3_data_22650[];
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
 void fn_3_116840(void) {
@@ -149,8 +150,11 @@ void fn_3_1194FC(void) {
 }
 
 // .text:0x00119854 size:0x24 mapped:0x807588E8
-void fn_3_119854(void) {
-    return;
+f32 fn_3_119854(u8 i) {
+    if (i > 2) {
+        i = 2;
+    }
+    return lbl_3_data_22650[i];
 }
 
 // .text:0x00119878 size:0xBC mapped:0x8075890C

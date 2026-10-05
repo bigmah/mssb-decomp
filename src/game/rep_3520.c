@@ -272,7 +272,14 @@ void fn_3_1391C0(void) {
 
 // .text:0x00139700 size:0x4C mapped:0x80778794
 void fn_3_139700(void) {
-    return;
+    u8* m = g_Minigame;
+    if (m[0xBAC] != 0) {
+        if (m[0x190B] != 0) {
+            m[0xBAC] = 0;
+            return;
+        }
+        fn_3_1391C0();
+    }
 }
 
 // .text:0x0013974C size:0xBC mapped:0x807787E0

@@ -30,7 +30,7 @@ void fn_3_1192B8(void);
 void fn_3_119468(s32 i);
 void fn_3_1194AC(void);
 void fn_3_1194FC(void);
-void fn_3_119854(void);
+f32 fn_3_119854(u8 i);
 void fn_3_119878(void);
 void fn_3_119934(void);
 void fn_3_119C34(void);
