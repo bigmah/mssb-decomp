@@ -16,3 +16,9 @@ void fn_3_16DB6C(void) {
     return;
 }
 
+extern u8 lbl_3_bss_D6EC;
+
+// .text:0x0016E328 size:0x10
+void fn_3_16E328(void) {
+    lbl_3_bss_D6EC = 1;
+}
