@@ -1,10 +1,21 @@
 #include "game/rep_1FD8.h"
 #include "header_rep_data.h"
 
+#include "static/UnknownHomes_Static.h"
+extern void fn_3_C2644(void);
+extern u8* lbl_3_bss_9D98;
+
 extern u32 lbl_3_bss_9D9C;
 
 void fn_3_C1964(void) {
     lbl_3_bss_9D9C = 1;
+}
+
+void fn_3_C1974(u8* a) {
+    u8* p = fn_800B0A5C_insertQueue(fn_3_C2644, 4);
+    *(s16*)(p + 0x10) = 0;
+    lbl_3_bss_9D98 = a + 0x3C4;
+    lbl_3_bss_9D9C = 0;
 }
 
 // .text:0x000C19C8 size:0x250 mapped:0x80700A5C

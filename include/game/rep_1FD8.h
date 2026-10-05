@@ -53,4 +53,6 @@ void fn_3_C8650(void);
 
 void fn_3_C1964(void);
 
+void fn_3_C1974(u8* a);
+
 #endif // !__GAME_rep_1FD8_H_
