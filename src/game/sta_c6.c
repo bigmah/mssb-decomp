@@ -1,6 +1,11 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
 
+extern u8 lbl_3_common_bss_350E4[];
+
+extern u8 lbl_3_data_1963F;
+extern u8 lbl_3_data_19640;
+
 // .text:0x000E59B4 size:0x68 mapped:0x80724A48
 void fn_3_E59B4(void) {
     return;
@@ -112,7 +117,7 @@ void fn_3_E6D90(void) {
 
 // .text:0x000E7350 size:0x14 mapped:0x807263E4
 void fn_3_E7350(void) {
-    return;
+    lbl_3_data_1963F = lbl_3_data_19640;
 }
 
 // .text:0x000E7364 size:0x24 mapped:0x807263F8
