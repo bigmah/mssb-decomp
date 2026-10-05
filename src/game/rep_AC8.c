@@ -322,8 +322,10 @@ void fn_3_323A4(void) {
 }
 
 // .text:0x000327F4 size:0x1C mapped:0x80671888
-void fn_3_327F4(void) {
-    return;
+extern u8 g_Ball[];
+
+s32 fn_3_327F4(void) {
+    return g_Ball[0x1BC4] == 1;
 }
 
 // .text:0x00032810 size:0x194 mapped:0x806718A4

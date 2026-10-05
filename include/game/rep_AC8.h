@@ -67,7 +67,7 @@ void fn_3_31A3C(void);
 void fn_3_31C50(void);
 void fn_3_32090(void);
 void fn_3_323A4(void);
-void fn_3_327F4(void);
+s32 fn_3_327F4(void);
 void fn_3_32810(void);
 void fn_3_329A4(void);
 void fn_3_33088(void);
