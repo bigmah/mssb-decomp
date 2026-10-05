@@ -297,9 +297,41 @@ void fn_3_1320BC(void) {
     return;
 }
 
+static inline void mgStep_1323CC(s32 idx) {
+    f32 v[3];
+    f32* a = (f32*)(g_Minigame + idx * 0x34 + 0x860);
+    a[1] += lbl_3_data_21770[1];
+    if (a[1] < a[4]) {
+        a[1] = a[4];
+        if (a[7] != a[4]) {
+            f32 x = a[0];
+            f32 y = a[1];
+            f32 z = a[2];
+            v[1] = y;
+            v[0] = x;
+            v[2] = z;
+            v[1] = -v[1];
+            v[2] = v[2] - lbl_3_rodata_351C[0];
+            if (y <= lbl_3_rodata_3518) {
+                fn_8004C108(v, 1);
+                fn_3_90064(0x2E4);
+            } else {
+                fn_8004C108(v, 0);
+                fn_3_90064(0x2E5);
+            }
+        }
+        *((u8*)a + 0x30) = 2;
+    }
+}
+
 // .text:0x001323CC size:0x11C mapped:0x80771460
 void fn_3_1323CC(void) {
-    return;
+    u32 i;
+    for (i = 0; i < 15; i++) {
+        if (g_Minigame[i * 0x34 + 0x890] == 1) {
+            mgStep_1323CC(i);
+        }
+    }
 }
 
 // .text:0x001324E8 size:0x9F4 mapped:0x8077157C
