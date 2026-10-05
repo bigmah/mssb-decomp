@@ -1,4 +1,6 @@
 #include "game/rep_3520.h"
+#include "game/rep_1838.h"
+#include "game/UnknownHomes_Game.h"
 #include "header_rep_data.h"
 #include "stl/math.h"
 #pragma dont_inline on
@@ -14,6 +16,9 @@ extern f32 lbl_3_rodata_35DC;
 extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
 extern s16 lbl_3_data_21A04[];
+extern s16 lbl_3_data_21A44;
+extern s16 lbl_3_data_21A60;
+extern f32 lbl_3_rodata_3644;
 
 // .text:0x00133200 size:0x120 mapped:0x80772294
 void fn_3_133200(void) {
@@ -21,13 +26,13 @@ void fn_3_133200(void) {
 }
 
 // .text:0x00133320 size:0x2C mapped:0x807723B4
-extern u8 g_Minigame[];
+#define G8 ((u8*)&g_Minigame)
 
 #pragma opt_unroll_loops off
 void fn_3_133320(void) {
     s8 i = 0;
     do {
-        g_Minigame[0x1DC8 + i] = 0;
+        G8[0x1DC8 + i] = 0;
         i++;
     } while (i < 4);
 }
@@ -87,8 +92,14 @@ void fn_3_1350BC(void) {
 }
 
 // .text:0x001354BC size:0x64 mapped:0x80774550
-void fn_3_1354BC(void) {
-    return;
+int fn_3_1354BC(int idx, f32 x, f32 y) {
+    u8* p = G8 + (idx << 6);
+    f32 ax = fabs(*(f32*)&p[0xBB0] - x);
+    f32 ay = fabs(*(f32*)&p[0xBB8] - y);
+    if (ax <= lbl_3_rodata_35D8 && ay <= lbl_3_rodata_35DC) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x00135520 size:0xE0 mapped:0x807745B4
@@ -97,8 +108,11 @@ void fn_3_135520(void) {
 }
 
 // .text:0x00135600 size:0x4C mapped:0x80774694
-void fn_3_135600(void) {
-    return;
+void fn_3_135600(f32* outX, f32* outY, f32 x, f32 y) {
+    f32 dy = y - lbl_3_data_21A48[2];
+    f32 dx = x - lbl_3_data_21A48[0];
+    *outX = dx * *(f32*)&G8[0x1DF0] - dy * *(f32*)&G8[0x1DEC];
+    *outY = dx * *(f32*)&G8[0x1DEC] + dy * *(f32*)&G8[0x1DF0];
 }
 
 // .text:0x0013564C size:0x4C mapped:0x807746E0
@@ -164,12 +178,22 @@ void fn_3_135C18(void) {
 
 // .text:0x00135E38 size:0x60 mapped:0x80774ECC
 void fn_3_135E38(void) {
-    return;
+    fn_3_135C18();
+    if ((u32)(*(s16*)((u8*)lbl_3_data_21A3C + G8[0x1D73] * 4 - 2) * 0x3C) == *(u32*)&G8[0x17C0]) {
+        G8[0x1D72] = 3;
+        *(s16*)&G8[0x1D62] = 0;
+    }
 }
 
 // .text:0x00135E98 size:0xB4 mapped:0x80774F2C
 void fn_3_135E98(void) {
-    return;
+    s16 t = *(s16*)&G8[0x1D62] + 1;
+    *(s16*)&G8[0x1D62] = t;
+    *(f32*)&G8[0x1D48] = lbl_3_rodata_3644 - (f32)t / (f32)lbl_3_data_21A60;
+    fn_3_135C18();
+    if (*(s16*)&G8[0x1D62] >= lbl_3_data_21A60) {
+        G8[0x1D72] = 0;
+    }
 }
 
 // .text:0x00135F4C size:0xA8 mapped:0x80774FE0
@@ -179,12 +203,22 @@ void fn_3_135F4C(void) {
 
 // .text:0x00135FF4 size:0x54 mapped:0x80775088
 void fn_3_135FF4(void) {
-    return;
+    if ((u32)(*(s16*)((u8*)lbl_3_data_21A3C + G8[0x1D73] * 4) * 0x3C) == *(u32*)&G8[0x17C0]) {
+        G8[0x1D72] = 1;
+        *(s16*)&G8[0x1D62] = 0;
+        *(f32*)&G8[0x1D48] = lbl_3_rodata_35D0;
+        G8[0x1D73] = G8[0x1D73] + 1;
+    }
 }
 
 // .text:0x00136048 size:0x74 mapped:0x807750DC
 void fn_3_136048(void) {
-    return;
+    s32 i;
+    s16* a = (s16*)&g_Minigame;
+    for (i = 0; i < 4; i++) {
+        a[0xEB2 + i] += lbl_3_data_21A44;
+        a[0xEB2 + i] = fn_3_9FE6C_normalizeAngle(a[0xEB2 + i]);
+    }
 }
 
 // .text:0x001360BC size:0x164 mapped:0x80775150
@@ -270,7 +304,7 @@ void fn_3_1382E0(void) {
 
 // .text:0x00138448 size:0x6C mapped:0x807774DC
 void fn_3_138448(u8* a) {
-    if (g_Minigame[0x72A] == 0) {
+    if (G8[0x72A] == 0) {
         s16* t = (s16*)(a + 0x3A);
         if (*t < 0x7FFE) {
             *t += 1;
@@ -301,7 +335,7 @@ void fn_3_1391C0(void) {
 
 // .text:0x00139700 size:0x4C mapped:0x80778794
 void fn_3_139700(void) {
-    u8* m = g_Minigame;
+    u8* m = G8;
     if (m[0xBAC] != 0) {
         if (m[0x190B] != 0) {
             m[0xBAC] = 0;
@@ -333,7 +367,7 @@ void fn_3_139F84(void) {
 
 // .text:0x0013A048 size:0x64 mapped:0x807790DC
 void fn_3_13A048(int i, int j) {
-    s16* arr = (s16*)(g_Minigame + 0x1890);
+    s16* arr = (s16*)(G8 + 0x1890);
     s16 v = arr[j];
     s16 c = lbl_3_data_21A04[7];
     if (v < c) {
@@ -371,8 +405,12 @@ void fn_3_13ACB4(void) {
 }
 
 // .text:0x0013ADC0 size:0x5C mapped:0x80779E54
-void fn_3_13ADC0(void) {
-    return;
+void fn_3_13ADC0(f32* out, f32* a, f32* b) {
+    f32 d = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]);
+    d = d * lbl_3_rodata_3638;
+    out[0] = a[0] - d * b[0];
+    out[1] = a[1] - d * b[1];
+    out[2] = a[2] - d * b[2];
 }
 
 // .text:0x0013AE1C size:0x1C8 mapped:0x80779EB0
