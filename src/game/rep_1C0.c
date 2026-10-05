@@ -18,6 +18,9 @@ extern f32 lbl_3_rodata_520[];
 extern f32 lbl_3_rodata_538[];
 extern u8 g_UNK_StadiumDetails[];
 extern u32 fn_80009028(void);
+extern s32 fn_800527BC(void);
+extern void fn_80052694(void*);
+extern s32 fn_80052734(s32);
 extern void SetFog(u8, s32*, f32, f32, f32, f32);
 
 // .text:0x000035D4 size:0x10
@@ -44,7 +47,15 @@ void fn_3_3638(void) {
 
 // .text:0x00003818 size:0xD0
 void fn_3_3818(void) {
-    return;
+    s32 i;
+    if (lbl_3_data_A10[lbl_803CBBC0 == 0] != 0) {
+        i = fn_800527BC() - 1;
+        do {
+            fn_80052694((void*)i);
+            ((void (*)(s32, s32, s32))lbl_3_data_A10[lbl_803CBBC0 == 0])(fn_80052734(i) + 0x40, 0, 0);
+        } while (i-- != 0);
+        lbl_3_data_A10[lbl_803CBBC0 == 0] = 0;
+    }
 }
 
 // .text:0x000038E8 size:0x1C
@@ -117,7 +128,6 @@ void fn_3_5BAC(void) {
 }
 
 // .text:0x00005BCC size:0x24 mapped:0x80644C60
-extern void fn_80052694(void* p);
 
 void fn_3_5BCC(u8* p) {
     fn_80052694(*(void**)(p + 8));
