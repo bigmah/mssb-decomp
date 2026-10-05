@@ -1,5 +1,10 @@
 #include "game/m_sound.h"
 #include "header_rep_data.h"
+#include "musyx/musyx.h"
+
+void fn_3_902FC(void) {
+    sndVolume(0, 10, 0xFF);
+}
 
 // .text:0x0008B718 size:0xC4 mapped:0x806CA7AC
 void fn_3_8B718(void) {
