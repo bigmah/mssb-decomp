@@ -220,13 +220,14 @@ f32 fn_3_9FAA4(f32 x, f32 y) {
 // .text:0x0009F9C8 size:0xDC mapped:0x806DEA5C
 void getComponentsFromSAng(s16 ang, f32* x, f32* y) {
     f32 v;
-    if (ang < 0) {
-        ang += SANG_ANG_360;
+    s16 a = ang;
+    if (a < 0) {
+        a += SANG_ANG_360;
     }
-    if (ang >= SANG_ANG_360) {
-        ang -= SANG_ANG_360;
+    if (a >= SANG_ANG_360) {
+        a -= SANG_ANG_360;
     }
-    v = (ang * 2) * PI / (f32)SANG_ANG_360;
+    v = (a * 2) * PI / (f32)SANG_ANG_360;
     if (v > PI) {
         v = -(TAU - v);
     }
