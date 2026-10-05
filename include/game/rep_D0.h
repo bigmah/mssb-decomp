@@ -74,7 +74,7 @@ typedef enum _BALL_COLLISION_TYPE {
 BALL_COLLISION_TYPE checkCollision(VecSrcDst* inVec, CollisionStruct* outCollision, int collisionCheckType, BOOL useBallCoords);
 BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStruct* outCollision, Vec* v);
 BALL_COLLISION_TYPE didCollideWithBoundingBoxes(VecSrcDst* inVec, CollisionStruct* outCollision, CollisionBox* boxes,
-                                                int boxCount);
+                                                s16 boxCount);
 bool checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGroup* TriangleGroup);
 
 #endif // !__GAME_rep_D0_H_

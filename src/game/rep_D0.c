@@ -5,7 +5,12 @@
 #include "static/UnknownHomes_Static.h"
 #include "game/rep_1D58.h"
 
+
+
 #pragma dont_inline on
+Vec lbl_3_data_1F8 = {0.0f, 1.0f, 0.0f};
+Vec lbl_3_data_204 = {0.0f, 0.0f, 0.0f};
+extern void makeLookAtMatrix(TriangleCollisionStruct*, VecSrcDst*, Vec*, Vec*);
 
 // .text:0x000008D4 size:0x40
 BALL_COLLISION_TYPE fn_3_8D4(VecSrcDst* inVec, CollisionStruct* outCollision) {
@@ -54,10 +59,91 @@ BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStru
     return;
 }
 
+#pragma dont_inline off
+extern f32 lbl_3_rodata_124;
+extern f64 lbl_3_rodata_128;
+extern f64 lbl_3_rodata_130;
+extern f64 lbl_3_rodata_138;
+
+static inline f32 sqrtLocal(f32 x) {
+    if (x > lbl_3_rodata_124) {
+        f64 xd = (f64)x;
+        f64 guess = __frsqrte(xd);
+        guess = lbl_3_rodata_128 * guess * (lbl_3_rodata_130 - guess * guess * xd);
+        guess = lbl_3_rodata_128 * guess * (lbl_3_rodata_130 - guess * guess * xd);
+        guess = lbl_3_rodata_128 * guess * (lbl_3_rodata_130 - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (x < lbl_3_rodata_138) {
+        return NAN;
+    } else if (isnan(x)) {
+        return NAN;
+    } else {
+        return x;
+    }
+}
+
 // .text:0x00000DF0 size:0x2F0 mapped:0x8063FE84
 BALL_COLLISION_TYPE didCollideWithBoundingBoxes(VecSrcDst* inVec, CollisionStruct* outCollision, CollisionBox* boxes,
-                                                int boxCount) {
-    return;
+                                                s16 boxCount) {
+    u8 flags[256];
+    TriangleCollisionStruct tc;
+    Vec d[4];
+    Mtx m;
+    int n;
+    int i;
+    u32 allOut;
+    AABB_Box* bb;
+    u8* fp;
+    CollisionBox* cb;
+    f32 dist;
+    n = boxCount;
+    bb = boxes->boundingBox;
+    memset(flags, 1, n);
+    i = n;
+    fp = flags;
+    allOut = 1;
+    do {
+        PSVECSubtract(&inVec->src, &bb->a, &d[0]);
+        PSVECSubtract(&bb->b, &inVec->src, &d[1]);
+        PSVECSubtract(&inVec->dst, &bb->a, &d[2]);
+        PSVECSubtract(&bb->b, &inVec->dst, &d[3]);
+        if (!((((*(s32*)&d[0].x & *(s32*)&d[2].x) | (*(s32*)&d[1].x & *(s32*)&d[3].x)) & 0x80000000)) &&
+            !((((*(s32*)&d[0].y & *(s32*)&d[2].y) | (*(s32*)&d[1].y & *(s32*)&d[3].y)) & 0x80000000)) &&
+            !((((*(s32*)&d[0].z & *(s32*)&d[2].z) | (*(s32*)&d[1].z & *(s32*)&d[3].z)) & 0x80000000))) {
+            allOut = 0;
+            *fp = 0;
+        }
+        fp++;
+        i--;
+        bb++;
+    } while (i != 0);
+    if (allOut != 0) {
+        return BALL_COLLISION_TYPE_NONE;
+    }
+    makeLookAtMatrix(&tc, inVec, &lbl_3_data_1F8, &inVec->dst);
+    dist = sqrtLocal(PSVECSquareDistance(&inVec->dst, &inVec->src));
+    tc.distance = dist;
+    fp = flags;
+    cb = boxes + 1;
+    tc.collisionDistance = dist;
+    tc.collisionType = 0;
+    do {
+        if (*fp++ == 0) {
+            checkTriangleCollisions(&tc, (TriangleGroup*)cb->boundingBox);
+        }
+        n--;
+        cb++;
+    } while (n != 0);
+    if (tc.collisionType != 0) {
+        PSMTXInverse((f32(*)[4])&tc, m);
+        lbl_3_data_204.z = -tc.collisionDistance;
+        PSMTXMultVec(m, &lbl_3_data_204, &outCollision->position);
+        PSMTXTranspose((f32(*)[4])&tc, m);
+        PSMTXMultVec(m, &tc.normal, &outCollision->normal);
+        PSVECNormalize(&outCollision->normal, &outCollision->normal);
+        return tc.collisionType;
+    }
+    return BALL_COLLISION_TYPE_NONE;
 }
 
 // .text:0x000010E0 size:0x3C4 mapped:0x80640174
