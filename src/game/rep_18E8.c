@@ -135,10 +135,11 @@ int fn_3_A37BC(void) {
     if (*(f32*)(b + 0x1A0C) < lbl_3_rodata_1994) {
         return 1;
     }
-    if (v < 0x400 && *(f32*)(b + 8) + *(f32*)(b + 0) > lbl_3_rodata_1998) {
-        return 1;
-    }
-    if (*(f32*)(b + 8) - *(f32*)(b + 0) > lbl_3_rodata_1998) {
+    if (v < 0x400) {
+        if (*(f32*)(b + 8) + *(f32*)(b + 0) > lbl_3_rodata_1998) {
+            return 1;
+        }
+    } else if (*(f32*)(b + 8) - *(f32*)(b + 0) > lbl_3_rodata_1998) {
         return 1;
     }
     return 0;
