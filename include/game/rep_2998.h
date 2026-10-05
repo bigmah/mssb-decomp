@@ -4,7 +4,7 @@
 #include "mssbTypes.h"
 
 void fn_3_E1FA8(u8* a);
-void fn_3_E2034(void);
+void fn_3_E2034(u8* a);
 void fn_3_E2118(void);
 void fn_3_E22A4(u8* a);
 void fn_3_E2324(void);
@@ -28,7 +28,7 @@ void fn_3_E4658(void);
 void fn_3_E4760(void);
 void fn_3_E48D0(void);
 void fn_3_E4A38(void);
-void fn_3_E4BE8(void);
+u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]);
 void fn_3_E4CB0(void);
 void fn_3_E4EF4(void);
 void fn_3_E4FC4(void);

@@ -6,9 +6,15 @@ extern u8 lbl_3_data_18ED0[];
 
 extern u32 lbl_3_bss_AE18;
 extern void fn_3_B97DC(void*, u32);
+extern u8* lbl_3_common_bss_350E4;
 extern void fn_800B4AFC(void*, s32);
 
 #include "C3/control.h"
+extern Vec lbl_3_rodata_2A48;
+extern f32 lbl_3_rodata_2A60;
+extern f32 lbl_3_rodata_2A64;
+extern u8 g_Ball[];
+extern double acos(double);
 extern f32 lbl_3_rodata_2B28;
 
 extern f32 lbl_3_rodata_2A54;
@@ -30,10 +36,24 @@ void fn_3_E1FA8(u8* a) {
 }
 
 // .text:0x000E2034 size:0xE4 mapped:0x807210C8
-void fn_3_E2034(void) {
-    return;
+void fn_3_E2034(u8* a) {
+    Vec v2;
+    Vec v1;
+    f32 r;
+    v1 = lbl_3_rodata_2A48;
+    PSVECSubtract((Vec*)g_Ball, (Vec*)(a + 0xA0), &v2);
+    v2.y = lbl_3_rodata_2A5C;
+    PSVECNormalize(&v2, &v2);
+    PSVECNormalize(&v1, &v1);
+    r = lbl_3_rodata_2A60 * (f32)acos(PSVECDotProduct(&v2, &v1));
+    if (v2.x < lbl_3_rodata_2A5C) {
+        r = lbl_3_rodata_2A64 - r;
+    }
+    {
+        *(f32*)(a + 0xB0) = -r;
+        CTRLSetRotation((Control*)a, 0.0f, *(f32*)(a + 0xB0), 0.0f);
+    }
 }
-
 // .text:0x000E2118 size:0x18C mapped:0x807211AC
 void fn_3_E2118(void) {
     return;
@@ -150,14 +170,14 @@ void fn_3_E4554(u8* a) {
 
 // .text:0x000E45A8 size:0x48 mapped:0x8072363C
 void fn_3_E45A8(u8* a) {
-    CTRLSetScale((Control*)a, lbl_3_rodata_2B28, lbl_3_rodata_2B28, lbl_3_rodata_2B28);
-    *(f32*)(a + 0xB4) = lbl_3_rodata_2B28;
+    CTRLSetScale((Control*)a, 0.2f, 0.2f, 0.2f);
+    *(f32*)(a + 0xB4) = 0.2f;
 }
 
 // .text:0x000E45F0 size:0x68 mapped:0x80723684
 void fn_3_E45F0(u8* a) {
     f32* t = (f32*)(lbl_3_data_18ED0 + 0xC);
-    CTRLSetRotation((Control*)a, lbl_3_rodata_2A5C, t[a[0x9C] * 7], lbl_3_rodata_2A5C);
+    CTRLSetRotation((Control*)a, 0.0f, t[a[0x9C] * 7], 0.0f);
     *(f32*)(a + 0xB0) = t[a[0x9C] * 7];
 }
 
@@ -182,16 +202,24 @@ void fn_3_E4A38(void) {
 }
 
 // .text:0x000E4BE8 size:0xC8 mapped:0x80723C7C
-void fn_3_E4BE8(void) {
-    return;
+typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } E4BE8Ctl;
+static inline u32 e4be8_get78(s32 idx) {
+    return ((E4BE8Ctl*)lbl_3_common_bss_350E4)[idx].f78;
 }
-
-// .text:0x000E4CB0 size:0x244 mapped:0x80723D44
-void fn_3_E4CB0(void) {
-    return;
-}
-
-// .text:0x000E4EF4 size:0xD0 mapped:0x80723F88
+u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]) {
+    Mtx tmp;
+    u8* c;
+    c = (u8*)&((E4BE8Ctl*)lbl_3_common_bss_350E4)[idx];
+    CTRLBuildMatrix((Control*)c, m);
+    if (c[0x9D] == 0) {
+        if (c[0xC8] == 0 || c[0xC4] == 0 || c[0xC4] == 5 || c[0xC4] == 4) {
+            return 0;
+        }
+        PSMTXCopy(*(void**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(c + 0x74)) + 0x18) + 0x40) + 0xEC), tmp);
+        PSMTXConcat(m, tmp, m);
+    }
+    return e4be8_get78(idx);
+}// .text:0x000E4EF4 size:0xD0 mapped:0x80723F88
 void fn_3_E4EF4(void) {
     return;
 }
