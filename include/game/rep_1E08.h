@@ -45,7 +45,7 @@ void fn_3_BF1AC(void);
 void fn_3_BF20C(void);
 void fn_3_BF238(void);
 void fn_3_BF6C0(void);
-void fn_3_BF878(void);
+int fn_3_BF878(void);
 void fn_3_BF8F8(void);
 void fn_3_BFB3C(void);
 void fn_3_BFDA4(void);

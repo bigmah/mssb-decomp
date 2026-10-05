@@ -2,6 +2,12 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_8036E548[];
+extern u8* lbl_803CC1B8;
+extern void* (*lbl_3_data_11390[])(void*);
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_3_data_11380[];
+extern s32 ARAMTransfer(void*, int, int, int);
+extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_8006C43C(int);
 extern void fn_8006C3F0(int);
 extern void fn_8003A688(f32, f32);
@@ -145,7 +151,13 @@ void fn_3_BD6AC(void) {
 
 // .text:0x000BD758 size:0x78 mapped:0x806FC7EC
 void fn_3_BD758(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    void* r;
+    if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
+        lbl_3_common_bss_35154[0x418] = 0;
+        r = lbl_3_data_11390[*(u16*)(q + 0x14)](*(void**)(lbl_3_common_bss_35154 + *(u16*)(q + 0x16) * 4 + 0x40C));
+        fn_800B0A14_removeQueue(r);
+    }
 }
 
 // .text:0x000BD7D0 size:0x8 mapped:0x806FC864
@@ -275,8 +287,14 @@ void fn_3_BF6C0(void) {
 }
 
 // .text:0x000BF878 size:0x80 mapped:0x806FE90C
-void fn_3_BF878(void) {
-    return;
+int fn_3_BF878(void) {
+    if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
+        *(s32*)(lbl_3_common_bss_35154 + 8) = ARAMTransfer(lbl_3_data_11380, 0, 0, 0);
+        fn_800B0A5C_insertQueue(fn_3_BF6C0, 0);
+        lbl_3_common_bss_35154[0x3B0] = 1;
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000BF8F8 size:0x244 mapped:0x806FE98C
