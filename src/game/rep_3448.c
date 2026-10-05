@@ -178,7 +178,6 @@ void fn_3_12089C(void) {
 }
 
 // .text:0x00120F5C size:0x9C mapped:0x8075FFF0
-// near-match: original re-materializes g_Minigame address (r4) in second half
 s32 fn_3_120F5C(void) {
     s16 mult = 1;
     if (g_Minigame[0x1909] != 0 || g_Minigame[0x1A3C] != 0 || g_Minigame[0x1A2B] != 3) {
@@ -189,7 +188,11 @@ s32 fn_3_120F5C(void) {
     if (g_Minigame[0x1A89] == 1) {
         return *(s16*)(lbl_3_data_21654 + 0x14) * mult;
     }
-    return *(s16*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) * 2 + 0x1898) * mult;
+    {
+        u8* e = g_Minigame;
+        e += *(s8*)(e + 0x1904) * 2;
+        return *(s16*)(e + 0x1898) * mult;
+    }
 }
 
 // .text:0x00120FF8 size:0x30C mapped:0x8076008C
