@@ -7,9 +7,17 @@ void fn_3_133200(void) {
 }
 
 // .text:0x00133320 size:0x2C mapped:0x807723B4
+extern u8 g_Minigame[];
+
+#pragma opt_unroll_loops off
 void fn_3_133320(void) {
-    return;
+    s8 i = 0;
+    do {
+        g_Minigame[0x1DC8 + i] = 0;
+        i++;
+    } while (i < 4);
 }
+#pragma opt_unroll_loops reset
 
 // .text:0x0013334C size:0x1170 mapped:0x807723E0
 void fn_3_13334C(void) {
