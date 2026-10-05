@@ -563,8 +563,10 @@ void hwEnableHRTF()
 }
 void hwDisableHRTF() { dspHRTFOn = FALSE; }
 
+extern u32 lbl_803CC35C;
 void hwEnableCompressor(void)
 {
+  lbl_803CC35C = 1;
 }
 
 u32 hwGetVirtualSampleID(u32 v)
