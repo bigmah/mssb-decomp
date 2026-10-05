@@ -9,9 +9,9 @@
 
 // .text:0x000008D4 size:0x40
 BALL_COLLISION_TYPE fn_3_8D4(VecSrcDst* inVec, CollisionStruct* outCollision) {
-    if (g_UNK_StadiumDetails.pCollisionBoxes != NULL) {
-        return didCollideWithBoundingBoxes(inVec, outCollision, g_UNK_StadiumDetails.pCollisionBoxes,
-                                           g_UNK_StadiumDetails.numCollisionBoxes);
+    if (g_UNK_StadiumDetails.pCollisionBoxes2 != NULL) {
+        return didCollideWithBoundingBoxes(inVec, outCollision, g_UNK_StadiumDetails.pCollisionBoxes2,
+                                           g_UNK_StadiumDetails.numCollisionBoxes2);
     }
     return BALL_COLLISION_TYPE_NONE;
 }
@@ -20,25 +20,25 @@ BALL_COLLISION_TYPE fn_3_8D4(VecSrcDst* inVec, CollisionStruct* outCollision) {
 BALL_COLLISION_TYPE checkCollision(VecSrcDst* inVec, CollisionStruct* outCollision, int collisionCheckType,
                                    BOOL useBallCoords) {
     VecSrcDst p;
-    Vec v;
+    int* v;
     BALL_COLLISION_TYPE ret = 0;
     if (collisionCheckType) {
         if (useBallCoords && (g_d_GameSettings.StadiumID == STADIUM_ID_WARIO_PALACE ||
                               g_d_GameSettings.StadiumID == STADIUM_ID_YOHSI_PARK ||
                               g_d_GameSettings.StadiumID == STADIUM_ID_DK_JUNGLE)) {
-            memcpy(&p.src, &g_Ball.AtBat_Contact_BallPos, sizeof(p.src));
-            memcpy(&p.dst, &g_Ball.pastCoordinates[4], sizeof(p.dst));
+            memcpy(&p.dst, &g_Ball.AtBat_Contact_BallPos, sizeof(p.dst));
+            memcpy(&p.src, &g_Ball.pastCoordinates[4], sizeof(p.src));
             p.src.y *= -1.f;
             p.dst.y *= -1.f;
         } else {
             memcpy(&p, inVec, sizeof(p));
         }
-        ret = checkStatiumHazardCollisions(&p, outCollision, &v);
+        ret = checkStatiumHazardCollisions(&p, outCollision, (Vec*)&v);
         if (ret) {
             if (collisionCheckType == 2 && (ret & BALL_COLLISION_TYPE_FOUL)) {
                 ret = BALL_COLLISION_TYPE_NONE;
             } else {
-                ret = processStadiumObjectFunction(g_d_GameSettings.StadiumID, ((int**)&v)[0], ret, outCollision);
+                processStadiumObjectFunction(g_d_GameSettings.StadiumID, v, ret, outCollision);
             }
         }
     }
