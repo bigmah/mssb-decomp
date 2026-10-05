@@ -67,8 +67,12 @@ void fn_3_62D44(void) {
 }
 
 // .text:0x00062E04 size:0x24 mapped:0x806A1E98
-void fn_3_62E04(void) {
-    return;
+extern u8 g_UnkAnimation_31EAC[];
+
+void fn_3_62E04(s32 i) {
+    u8* e = g_UnkAnimation_31EAC + i * 0x54;
+    *(s16*)(e + 0x3A) = *(s16*)(e + 0x38);
+    *(s16*)(e + 0x38) = 0;
 }
 
 // .text:0x00062E28 size:0x48 mapped:0x806A1EBC
@@ -132,8 +136,12 @@ void fn_3_668BC(void) {
 }
 
 // .text:0x00067130 size:0x1C mapped:0x806A61C4
+extern u8 lbl_3_common_bss_32220[];
+
 void fn_3_67130(void) {
-    return;
+    lbl_3_common_bss_32220[8] = 0;
+    lbl_3_common_bss_32220[0xB] = 0;
+    *(s16*)(lbl_3_common_bss_32220 + 4) = 0;
 }
 
 // .text:0x0006714C size:0x394 mapped:0x806A61E0

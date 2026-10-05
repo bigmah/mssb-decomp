@@ -16,7 +16,7 @@ void fn_3_62904(void);
 void fn_3_62B50(void);
 void fn_3_62CA8(void);
 void fn_3_62D44(void);
-void fn_3_62E04(void);
+void fn_3_62E04(s32 i);
 void fn_3_62E28(void);
 void fn_3_62E70(void);
 void fn_3_631AC(void);
