@@ -412,7 +412,8 @@ int RandomInt_Game_Range(int min, int max) {
 
 // .text:0x0009EBCC size:0x150 mapped:0x806DDC60
 f32 RandomF32_Game_Range(f32 a, f32 b) {
-    return RandomInt_Game((int)((b - a) * 1000.f) + 1) * (1.f / 1000.f) + a;
+    int n = (int)((b - a) * 1000.f) + 1;
+    return RandomInt_Game(n) * (1.f / 1000.f) + a;
 }
 
 // .text:0x0009EAE4 size:0xE8 mapped:0x806DDB78
