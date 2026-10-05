@@ -1,5 +1,6 @@
 #include "game/sta_c5.h"
 #include "header_rep_data.h"
+#include "Dolphin/GX/GXPixel.h"
 
 // .text:0x000EE100 size:0x288 mapped:0x8072D194
 void fn_3_EE100(void) {
@@ -43,7 +44,7 @@ void fn_3_EEF24(void) {
 
 // .text:0x000EEFA4 size:0x2C mapped:0x8072E038
 void fn_3_EEFA4(void) {
-    return;
+    GXSetZMode(1, 3, 0);
 }
 
 // .text:0x000EEFD0 size:0x4 mapped:0x8072E064
@@ -242,8 +243,12 @@ void fn_3_F42A0(void) {
 }
 
 // .text:0x000F466C size:0x30 mapped:0x80733700
+extern void fn_3_27648(void);
+extern u8 g_FieldingLogic[];
+
 void fn_3_F466C(void) {
-    return;
+    fn_3_27648();
+    g_FieldingLogic[0x13B] = 1;
 }
 
 // .text:0x000F469C size:0x4 mapped:0x80733730
@@ -297,8 +302,11 @@ void fn_3_F5E78(void) {
 }
 
 // .text:0x000F5EFC size:0x2C mapped:0x80734F90
-void fn_3_F5EFC(void) {
-    return;
+s32 fn_3_F5EFC(u32* a, u32* b) {
+    if (*a < *b) {
+        return -1;
+    }
+    return *a > *b;
 }
 
 // .text:0x000F5F28 size:0x24 mapped:0x80734FBC
