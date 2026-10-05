@@ -147,8 +147,15 @@ void fn_3_F0FA4(void) {
 }
 
 // .text:0x000F13F8 size:0x50 mapped:0x8073048C
-void fn_3_F13F8(void) {
-    return;
+void fn_3_F13F8(u8* p) {
+    u8* o = **(u8***)(p + 0x74);
+    u32 i;
+    for (i = 0; i < *(u16*)(o + 6); i++) {
+        u8* e = (*(u8***)(o + 0x18))[i];
+        e[0x60] = 0;
+        e[0xA4] = 0;
+    }
+    (*(u8**)(p + 0x74))[0x58] = 0;
 }
 
 // .text:0x000F1448 size:0xD0 mapped:0x807304DC
