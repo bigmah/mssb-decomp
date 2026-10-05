@@ -1,6 +1,8 @@
 #include "game/rep_AC8.h"
 #include "header_rep_data.h"
 
+extern u8 g_Ball[];
+
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
 void fn_3_251E4(void) {
     return;
@@ -57,8 +59,12 @@ void fn_3_27648(void) {
 }
 
 // .text:0x00027738 size:0x2C mapped:0x806667CC
-void fn_3_27738(void) {
-    return;
+extern u8 g_Fielders[];
+
+void fn_3_27738(s32 i) {
+    u8* f = g_Fielders + i * 0x268;
+    f[0x25B] = 1;
+    g_Ball[0x1BF0] = 0;
 }
 
 // .text:0x00027764 size:0xFC mapped:0x806667F8
@@ -322,7 +328,6 @@ void fn_3_323A4(void) {
 }
 
 // .text:0x000327F4 size:0x1C mapped:0x80671888
-extern u8 g_Ball[];
 
 s32 fn_3_327F4(void) {
     return g_Ball[0x1BC4] == 1;
