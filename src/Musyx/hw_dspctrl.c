@@ -65,15 +65,15 @@ u32 salInitDspCtrl(u8 numVoices, u8 numStudios, u32 defaultStudioDPL2) {
 
   MUSY_ASSERT(salMaxStudioNum <= SAL_MAX_STUDIONUM);
   dspARAMZeroBuffer = aramGetZeroBuffer();
-  if ((dspCmdList = salMalloc(1024 * sizeof(u16))) != NULL) {
+  if ((dspCmdList = salMallocPhysical(1024 * sizeof(u16))) != NULL) {
     MUSY_DEBUG("Allocated dspCmdList.\n\n");
-    if ((dspSurround = salMalloc(160 * sizeof(long))) != NULL) {
+    if ((dspSurround = salMallocPhysical(160 * sizeof(long))) != NULL) {
       MUSY_DEBUG("Allocated surround buffer.\n\n");
       memset(dspSurround, 0, 160 * sizeof(long));
       DCFlushRange(dspSurround, 160 * sizeof(long));
       if ((dspVoice = salMalloc(salNumVoices * sizeof(DSPvoice))) != NULL) {
         MUSY_DEBUG("Allocated HW voice array.\n\n");
-        if ((dspITDBuffer = salMalloc(salNumVoices * 64)) != NULL) {
+        if ((dspITDBuffer = salMallocPhysical(salNumVoices * 64)) != NULL) {
           MUSY_DEBUG("Allocated ITD buffers for voice array.\n\n");
           DCInvalidateRange(dspITDBuffer, salNumVoices * 64);
           itdPtr = (u32)dspITDBuffer;
@@ -86,9 +86,9 @@ u32 salInitDspCtrl(u8 numVoices, u8 numStudios, u32 defaultStudioDPL2) {
             dspVoice[i].lastUpdate.vol = 0xff;
             dspVoice[i].lastUpdate.volA = 0xff;
             dspVoice[i].lastUpdate.volB = 0xff;
-            dspVoice[i].pb = salMalloc(sizeof(_PB));
+            dspVoice[i].pb = salMallocPhysical(sizeof(_PB));
             memset(dspVoice[i].pb, 0, sizeof(_PB));
-            dspVoice[i].patchData = salMalloc(0x80);
+            dspVoice[i].patchData = salMallocPhysical(0x80);
             dspVoice[i].pb->currHi = ((u32)dspVoice[i].pb >> 16);
             dspVoice[i].pb->currLo = (u16)dspVoice[i].pb;
             dspVoice[i].pb->update.dataHi = ((u32)dspVoice[i].patchData >> 16);
@@ -110,11 +110,11 @@ u32 salInitDspCtrl(u8 numVoices, u8 numStudios, u32 defaultStudioDPL2) {
           for (i = 0; i < salMaxStudioNum; ++i) {
             MUSY_DEBUG("Initializing studio %d...\n", i);
             dspStudio[i].state = 0;
-            if ((dspStudio[i].spb = (_SPB*)salMalloc(sizeof(_SPB))) == NULL) {
+            if ((dspStudio[i].spb = (_SPB*)salMallocPhysical(sizeof(_SPB))) == NULL) {
               return FALSE;
             }
 
-            if ((dspStudio[i].main[0] = (void*)salMalloc(0x3c00)) == NULL) {
+            if ((dspStudio[i].main[0] = (void*)salMallocPhysical(0x3c00)) == NULL) {
               return FALSE;
             }
 
@@ -140,7 +140,7 @@ u32 salInitDspCtrl(u8 numVoices, u8 numStudios, u32 defaultStudioDPL2) {
           salActivateStudio(
               0, 1, defaultStudioDPL2 != FALSE ? SND_STUDIO_TYPE_RESERVED0 : SND_STUDIO_TYPE_STD);
           MUSY_DEBUG("Default studio is active.\n\n");
-          if ((dspHrtfHistoryBuffer = salMalloc(0x100)) == NULL) {
+          if ((dspHrtfHistoryBuffer = salMallocPhysical(0x100)) == NULL) {
             return FALSE;
           }
 
