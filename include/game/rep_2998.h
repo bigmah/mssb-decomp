@@ -10,7 +10,7 @@ void fn_3_E22A4(u8* a);
 void fn_3_E2324(void);
 void fn_3_E25D0(u8* a, u32 b);
 void fn_3_E266C(void);
-void fn_3_E28DC(void);
+u32 fn_3_E28DC(u8* a);
 void fn_3_E29B4(void);
 u8 fn_3_E2B70(u8* a);
 void fn_3_E2E78(u8* a);

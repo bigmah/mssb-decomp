@@ -108,10 +108,23 @@ void fn_3_E266C(void) {
 }
 
 // .text:0x000E28DC size:0xD8 mapped:0x80721970
-void fn_3_E28DC(void) {
-    return;
+u32 fn_3_E28DC(u8* a) {
+    Vec v1;
+    Vec v2;
+    v1 = *(Vec*)(a + 0xA0);
+    PSVECSubtract((Vec*)g_Ball, &v1, &v2);
+    v2.y = 0.0f;
+    if (2.5 >= PSVECMag(&v2)) {
+        *(u32*)(a + 0xAC) = ((u32*)&lbl_3_bss_AE18)[6];
+        fn_3_B97DC(*(void**)(a + 0x74), *(u32*)(a + 0xAC));
+        (*(u8**)(a + 0x74))[0x5B] = 2;
+        fn_800B4AFC(**(void***)(a + 0x74), (*(u8**)(a + 0x74))[0x5B] & 1);
+        *(f32*)(a + 0xB8) = *(f32*)(*(u8**)(a + 0x74) + 0x5C);
+        a[0xCB] = 6;
+        return 1;
+    }
+    return 0;
 }
-
 // .text:0x000E29B4 size:0x1BC mapped:0x80721A48
 void fn_3_E29B4(void) {
     return;
