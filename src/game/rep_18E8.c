@@ -167,8 +167,12 @@ void fn_3_A63E4(void) {
 }
 
 // .text:0x000A67E8 size:0x28 mapped:0x806E587C
-void fn_3_A67E8(void) {
-    return;
+extern s32 lbl_3_bss_1838[];
+extern s32 lbl_3_bss_1828[];
+
+void fn_3_A67E8(s32 i) {
+    lbl_3_bss_1838[i] = 9;
+    lbl_3_bss_1828[i] = -1;
 }
 
 // .text:0x000A6810 size:0x2AC mapped:0x806E58A4
