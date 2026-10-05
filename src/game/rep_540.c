@@ -2,6 +2,10 @@
 #include "header_rep_data.h"
 
 extern f32 lbl_3_rodata_590;
+extern f32 lbl_3_rodata_59C;
+extern f32 lbl_3_rodata_5F8;
+extern f64 lbl_3_rodata_600;
+extern u8 g_Ball[];
 extern void fn_3_27648(void);
 
 extern s16 g_RunningLogic;
@@ -13,8 +17,6 @@ void fn_3_6530(void) {
 }
 
 // .text:0x000065A8 size:0x20 mapped:0x8064563C
-extern u8 g_Ball[];
-
 void fn_3_65A8(void) {
     if (g_Ball[0x1BC9] == 2) {
         g_Ball[0x1BC9] = 1;
@@ -198,7 +200,10 @@ void fn_3_D9EC(void) {
 
 // .text:0x0000DBD0 size:0x78 mapped:0x8064CC64
 void fn_3_DBD0(void) {
-    return;
+    f32 t = lbl_3_rodata_59C - (f32)*(s16*)(g_Ball + 0x1B58) / lbl_3_rodata_5F8;
+    *(f32*)(g_Ball + 0x318) = *(f32*)(g_Ball + 0x318) * t;
+    *(f32*)(g_Ball + 0x31C) = *(f32*)(g_Ball + 0x31C) * t;
+    *(f32*)(g_Ball + 0x320) = *(f32*)(g_Ball + 0x320) * t;
 }
 
 // .text:0x0000DC48 size:0x68C mapped:0x8064CCDC
