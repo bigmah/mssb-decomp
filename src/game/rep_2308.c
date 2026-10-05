@@ -10,16 +10,63 @@ extern u8 lbl_3_common_bss_35154[];
 extern f32 lbl_3_rodata_2388;
 extern f32 lbl_3_rodata_2378;
 extern f32 lbl_3_rodata_235C;
+extern f32 lbl_3_rodata_2360;
 extern f64 lbl_3_rodata_2380;
-extern u8 lbl_3_data_17D08[];
+extern s32 lbl_3_data_17D08;
 extern u8 lbl_3_data_17D10[];
 #include "Dolphin/mtx.h"
 #include "stl/fdlibm.h"
 extern void* memcpy(void*, const void*, u32);
 
 // .text:0x000CABF0 size:0x210 mapped:0x80709C84
-void fn_3_CABF0(void) {
-    return;
+extern void ACTSetAnimation(void*, void*, int, u16, f32, f32);
+extern void fn_80024DB0(void*);
+extern void fn_80024FA4(void*, u32, void*, int);
+extern void fn_8005268C(void);
+extern u8* fn_80052734(void);
+extern void fn_800B4C04(void*, f32);
+extern void fn_800B4CA0(void*, f32);
+extern void fn_800BDA24(void*);
+extern void fn_800BDA94(void*, Mtx, void*);
+
+void fn_3_CABF0(u8* p) {
+    Mtx m;
+    u32 b[3];
+    u8* a[3];
+    f32 sc;
+    u8* r31;
+    u8* o;
+    s32 i;
+    sc = (f32)lbl_3_data_17D08 / 100000.0f;
+    r31 = *(u8**)(lbl_3_common_bss_35154 + 0x10) + 0xC4;
+    b[0] = *(u32*)(lbl_3_common_bss_35154 + 0xF8);
+    a[0] = lbl_3_common_bss_35154 + 0xD8;
+    b[1] = *(u32*)(lbl_3_common_bss_35154 + 0x154);
+    a[1] = lbl_3_common_bss_35154 + 0x134;
+    b[2] = *(u32*)(lbl_3_common_bss_35154 + 0x1B0);
+    a[2] = lbl_3_common_bss_35154 + 0x190;
+    PSMTXQuat(m, (Quaternion*)(p + 0x14));
+    PSMTXScaleApply(m, m, sc, sc, sc);
+    PSMTXTransApply(m, m, *(f32*)(p + 8), *(f32*)(p + 0xC), *(f32*)(p + 0x10));
+    fn_8005268C();
+    PSMTXConcat((f32(*)[4])(fn_80052734() + 0x40), m, m);
+    i = 2;
+    do {
+        u8* t = a[i];
+        *(f32*)t = 0.0f;
+        *(u16*)(t + 0xC) = 0;
+        *(f32*)(t + 4) = *(u32*)(p + 0x24);
+        fn_80024DB0(t);
+        fn_80024FA4(r31, b[i], a[i], -1);
+    } while (i-- != 0);
+    (*(u8**)r31)[0x99] = 1;
+    ACTSetAnimation(*(void**)r31, *(void**)(r31 + 4), 0, *(u16*)(r31 + 0xE), 0.0f, *(f32*)(r31 + 0x60));
+    fn_800B4CA0(*(void**)r31, *(u32*)(p + 0x24));
+    fn_800B4C04(*(void**)r31, lbl_3_rodata_2360);
+    fn_800BDA24(r31);
+    o = *(u8**)r31;
+    o[0x98] = 0xFF;
+    fn_800BDA94(r31, m, o);
 }
 
 // .text:0x000CAE00 size:0x19C mapped:0x80709E94
@@ -84,7 +131,7 @@ void fn_3_CAF9C(void) {
     memcpy(&a, &g_Pitcher, 0xC);
     memcpy(&b, &g_Pitcher.ballVelocity, 0xC);
     memcpy(&c, &g_Pitcher.pitchCurveVeloV1, 0xC);
-    n = *(s32*)(lbl_3_data_17D08 + 4);
+    n = ((s32*)&lbl_3_data_17D08)[1];
     while (n-- != 0) {
         ((void (*)(Vec*, Vec*, Vec*, int))fn_3_15C024)(&a, &b, &c, 0);
     }
