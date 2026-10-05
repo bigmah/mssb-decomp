@@ -1,5 +1,13 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
+#include "static/UnknownHomes_Static.h"
+
+extern s16 lbl_3_bss_9952;
+
+void fn_3_C0770(void) {
+    pitchingMachinePitching(0x10);
+    lbl_3_bss_9952 = 0;
+}
 
 extern u8 lbl_3_common_bss_35154[];
 
