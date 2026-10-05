@@ -407,8 +407,7 @@ int random_fn_3_9EE24(int max) {
 
 // .text:0x0009ED1C size:0x108 mapped:0x806DDDB0
 int RandomInt_Game_Range(int min, int max) {
-    int diff = max - min + 1;
-    return RandomInt_Game(diff) + min;
+    return RandomInt_Game(max - min + 1) + min;
 }
 
 // .text:0x0009EBCC size:0x150 mapped:0x806DDC60
