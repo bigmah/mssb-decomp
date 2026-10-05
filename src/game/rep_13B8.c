@@ -1,6 +1,9 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
 
+extern u8 inMemRoster[];
+extern u8 g_GameLogic[];
+
 extern u8 g_Scores[];
 
 extern u8 g_Batter[];
@@ -359,8 +362,13 @@ void fn_3_89864(s32 i, s32 d) {
 }
 
 // .text:0x000898BC size:0x58 mapped:0x806C8950
-void fn_3_898BC(void) {
-    return;
+void fn_3_898BC(s32 i, s32 j) {
+    u8* r = g_Runners + i * 0x154;
+    *(s16*)(r + 0xE0) = j;
+    r[0x11C] = inMemRoster[*(s32*)(g_GameLogic + 4) * 0x5A0 + j * 0xA0 + 0x26];
+    if (r[0x11C] == 2) {
+        r[0x11C] = 0;
+    }
 }
 
 // .text:0x00089914 size:0xA8 mapped:0x806C89A8
