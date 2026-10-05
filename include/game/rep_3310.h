@@ -27,7 +27,7 @@ void fn_3_11897C(void);
 void fn_3_1189C8(void);
 void fn_3_118B18(void);
 void fn_3_1192B8(void);
-void fn_3_119468(void);
+void fn_3_119468(s32 i);
 void fn_3_1194AC(void);
 void fn_3_1194FC(void);
 void fn_3_119854(void);

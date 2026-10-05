@@ -12,6 +12,9 @@ void fn_3_1169D0(void) {
 }
 
 // .text:0x00116B38 size:0x3C mapped:0x80755BCC
+extern u8 g_Minigame[];
+extern u8 lbl_8036E548[];
+
 void fn_3_116B38(void) {
     return;
 }
@@ -122,8 +125,15 @@ void fn_3_1192B8(void) {
 }
 
 // .text:0x00119468 size:0x44 mapped:0x807584FC
-void fn_3_119468(void) {
-    return;
+extern void fn_3_14225C(void);
+
+typedef struct { u8 p[0x34]; u8* o; u8 q[0x58]; } E90;
+void fn_3_119468(s32 i) {
+    E90* arr = *(E90**)(lbl_8036E548 + 0x68);
+    u8* o = arr[i].o;
+    if (o[0x98] & 9) {
+        fn_3_14225C();
+    }
 }
 
 // .text:0x001194AC size:0x50 mapped:0x80758540
