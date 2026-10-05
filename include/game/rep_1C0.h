@@ -23,5 +23,7 @@ void fn_3_5BAC(void);
 void fn_3_5BCC(u8* p);
 void fn_3_5BF0(void);
 void fn_3_5C68(void);
+void fn_3_5E60(void);
+void fn_3_64DC(void);
 
 #endif // !__GAME_rep_1C0_H_

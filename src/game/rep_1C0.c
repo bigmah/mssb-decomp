@@ -1,5 +1,6 @@
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
+#include "static/UnknownHomes_Static.h"
 #pragma dont_inline on
 
 extern u8 lbl_803CBBC0;
@@ -124,3 +125,25 @@ void fn_3_5C68(void) {
     return;
 }
 
+
+extern u8 lbl_8036E548[];
+extern void fn_80035CA4(int);
+extern void fn_800BCDBC(void*);
+extern void fn_800ACFB0(void*);
+
+// .text:0x00005E60 size:0x60
+void fn_3_5E60(void) {
+    u8* b = lbl_8036E548;
+    u8* p = *(u8**)(b + 4);
+    fn_80035CA4(5);
+    fn_800BCDBC(p + *(s32*)(p + 0x10));
+    fn_800BCDBC(p + *(s32*)(p + 0xC));
+    fn_800ACFB0(*(void**)(b + 4));
+}
+
+extern u8 lbl_3_data_7EC[];
+extern s32 ARAMTransfer(void*, int, int, int);
+// .text:0x000064DC size:0x54
+void fn_3_64DC(void) {
+    ARAMTransfer(lbl_3_data_7EC + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 0, 0);
+}
