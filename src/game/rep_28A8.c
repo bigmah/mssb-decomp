@@ -1,6 +1,20 @@
 #include "game/rep_28A8.h"
 #include "header_rep_data.h"
 
+extern void fn_3_6EBB4(s32);
+extern void fn_3_F1DC(void);
+extern void fn_3_751B4(void);
+extern void setDefaultInMemBatter(void);
+extern void fn_3_58870(void);
+extern void fn_3_1DEB8(void);
+extern void fn_3_BF1AC(void);
+extern void Set_803cb848(s32);
+extern void fn_3_BF158(void);
+extern u8 g_Minigame[];
+extern u8 g_GameLogic[];
+extern u8 g_FieldingLogic[];
+extern u8 unkSimulationRelatedStruct[];
+
 // .text:0x000D9EA0 size:0x7A0 mapped:0x80718F34
 void fn_3_D9EA0(void) {
     return;
@@ -88,7 +102,19 @@ void fn_3_DDD60(void) {
 
 // .text:0x000DDF1C size:0x84 mapped:0x8071CFB0
 void fn_3_DDF1C(void) {
-    return;
+    fn_3_6EBB4(*(s8*)(g_Minigame + 0x1904));
+    fn_3_F1DC();
+    fn_3_751B4();
+    setDefaultInMemBatter();
+    fn_3_58870();
+    fn_3_1DEB8();
+    fn_3_BF1AC();
+    Set_803cb848(1);
+    fn_3_BF158();
+    *(s16*)(g_FieldingLogic + 0xAE) = 0;
+    g_GameLogic[0x126] = 0;
+    unkSimulationRelatedStruct[5] = 0;
+    unkSimulationRelatedStruct[6] = 4;
 }
 
 // .text:0x000DDFA0 size:0x368 mapped:0x8071D034
