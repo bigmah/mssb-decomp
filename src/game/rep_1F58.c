@@ -2,6 +2,10 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_common_bss_35154[];
+extern u8 lbl_3_bss_9D20[];
+extern u8 lbl_3_bss_9D40[];
+extern void GXInitTexObj(void* obj, void* img, u16 w, u16 h, int fmt, int ws, int wt, int mip);
+extern void GXInitTexObjLOD(void* obj, int minF, int maxF, f32 minLOD, f32 maxLOD, f32 bias, int biasClamp, int edgeLOD, int maxAniso);
 
 // .text:0x000C0854 size:0x108 mapped:0x806FF8E8
 void fn_3_C0854(void) {
@@ -44,7 +48,8 @@ void fn_3_C0DD8(void) {
 
 // .text:0x000C0F8C size:0x78 mapped:0x80700020
 void fn_3_C0F8C(void) {
-    return;
+    GXInitTexObj(lbl_3_bss_9D20, lbl_3_bss_9D40, 4, 4, 6, 0, 0, 0);
+    GXInitTexObjLOD(lbl_3_bss_9D20, 1, 1, 0.0f, 0.0f, 0.0f, 0, 0, 0);
 }
 
 // .text:0x000C1004 size:0x1C8 mapped:0x80700098
