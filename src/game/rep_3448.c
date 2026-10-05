@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 extern u8 g_Scores[];
+extern u8 lbl_3_data_246E4[];
 extern u8 lbl_3_data_24D44[];
 extern u8 g_Batter[];
 extern u8 lbl_3_data_24DA4[];
@@ -196,8 +197,70 @@ s32 fn_3_120F5C(void) {
 }
 
 // .text:0x00120FF8 size:0x30C mapped:0x8076008C
+// near-match (~15 lines): case 1 base reg r5/r6 swap; case 2 compare emitted as subfic/cntlzw in original
 void fn_3_120FF8(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    u32 v;
+    u8* o;
+    u8* t;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (*(u16*)(q + 0x1C)) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_246E4);
+        {
+            u8* e = lbl_80371C30;
+            e += *(u16*)(q + 0x14) * 8;
+            *(u32*)(*(u8**)(e + 0x10) + 0x5C) = 0xD0000;
+        }
+        *(u16*)(q + 0x1E) = *(u16*)(q + 0x20) = g_Scores[0xAA];
+        *(u16*)(q + 0x1C) = 1;
+        break;
+    case 1:
+        if (g_GameLogic[0x11E] == 7) {
+            *(u16*)(q + 0x1E) = g_Scores[0xAA] - (*(s32*)g_Scores - 1);
+        }
+        v = *(u16*)(q + 0x1E);
+        if (v > 9) {
+            v = 9;
+        }
+        fn_800363D8(q, 1, 1, 0x14E, v % 10);
+        o = *(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8);
+        if ((*(u32*)(o + 0x5C) >> 16) < 10) {
+            o[0x68] = 1;
+        } else if ((*(u32*)(o + 0x5C) >> 16) > 10) {
+            o[0x68] = 4;
+        } else {
+            o[0x68] = 0;
+        }
+        if (*(u16*)(q + 0x20) != *(u16*)(q + 0x1E)) {
+            if (*(u16*)(q + 0x20) < *(u16*)(q + 0x1E)) {
+                t = lbl_80371C30 + 0x10;
+                (*(u8**)(t + *(u16*)(q + 0x14) * 8))[0x68] = 1;
+                *(u32*)(*(u8**)(t + *(u16*)(q + 0x14) * 8) + 0x5C) = 0;
+            } else if (*(u16*)(q + 0x20) - *(u16*)(q + 0x1E) == 2) {
+                u8* b = lbl_80371C30;
+                t = b + 0x18;
+                (*(u8**)(t + *(u16*)(q + 0x14) * 8))[0x68] = 1;
+                *(u32*)(*(u8**)(t + *(u16*)(q + 0x14) * 8) + 0x5C) = 0;
+                (*(u8**)(b + *(u16*)(q + 0x14) * 8))[0x68] = 1;
+                *(u16*)(q + 0x1C) = 2;
+            }
+            *(u16*)(q + 0x20) = *(u16*)(q + 0x1E);
+        }
+        break;
+    case 2:
+        o = *(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8);
+        v = o[0x69] == 2;
+        if (v) {
+            *(u32*)(o + 0x5C) = 0xA0000;
+            *(u16*)(q + 0x1C) = 1;
+        }
+        break;
+    }
 }
 
 // .text:0x00121304 size:0x604 mapped:0x80760398
