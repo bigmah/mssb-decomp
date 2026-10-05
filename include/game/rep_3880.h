@@ -69,7 +69,7 @@ void fn_3_14E9F0(void);
 void fn_3_14EAF4(void);
 void fn_3_14ED24(void);
 void fn_3_14F3CC(void);
-void fn_3_14F544(void);
+void fn_3_14F544(u8* a);
 void fn_3_14F5A4(void);
 void fn_3_14F8D0(u8* a);
 void fn_3_14F930(s8 a);

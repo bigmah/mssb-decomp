@@ -448,8 +448,13 @@ void fn_3_14F3CC(void) {
 }
 
 // .text:0x0014F544 size:0x60 mapped:0x8078E5D8
-void fn_3_14F544(void) {
-    return;
+void fn_3_14F544(u8* a) {
+    f32 f;
+    *(s16*)(a + 0x4A) = *(s32*)(lbl_3_data_26C94 + 0x1C);
+    a[0x43] = *(s32*)(lbl_3_data_26C94 + 0x14);
+    f = *(s32*)(lbl_3_data_26C94 + 8) / 100000.0f;
+    *(f32*)(a + 0x3C) = f;
+    *(f32*)(a + 0x38) = f;
 }
 
 // .text:0x0014F5A4 size:0x32C mapped:0x8078E638
