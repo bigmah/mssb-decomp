@@ -4,16 +4,17 @@
 #pragma dont_inline on
 
 extern u8 g_Fielders[];
+extern u8 g_Runners[];
+extern u8 g_Minigame[];
+extern u8 g_GameLogic[];
+extern u8 lbl_3_data_7870[];
+extern u8 lbl_3_common_bss_321A0[];
+
 extern u8 g_Ball[];
 extern u8 g_FieldingLogic[];
 extern u8 g_Pitcher[];
 extern u8 g_UnkThrowing_31ACC[];
-extern u8 g_Runners[];
 extern u8 g_d_GameSettings[];
-extern u8 g_Minigame[];
-extern u8 lbl_3_common_bss_321A0[];
-extern u8 g_Ball[];
-extern u8 g_FieldingLogic[];
 extern u8 lbl_8036E548[];
 extern u8 g_UnkAnimation_31EAC[];
 extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
@@ -157,7 +158,75 @@ void fn_3_631AC(s32 a) {
 
 // .text:0x00063874 size:0x1C4 mapped:0x806A2908
 void fn_3_63874(s32 a) {
-    return;
+    u8* r = g_Runners + a * 0x154;
+    u8* c = lbl_3_common_bss_321A0 + (a << 5);
+    u8 t;
+    if (g_GameLogic[0x121] == 6 && g_Minigame[a + 0x1B15] == 1) {
+        c[0x1B] = 0x11;
+        return;
+    }
+    if (r[0x129] != 0) {
+        c[0x1B] = 1;
+        return;
+    }
+    if (r[0x13A] != 0) {
+        c[0x1B] = 8;
+        return;
+    }
+    t = r[0x140];
+    if (t >= 2) {
+        if (t == 2) {
+            c[0x1B] = 9;
+            return;
+        }
+        c[0x1B] = 0xA;
+        return;
+    }
+    t = r[0x142];
+    if (t >= 2) {
+        if (t == 2) {
+            c[0x1B] = 0xB;
+            return;
+        }
+        c[0x1B] = 0xC;
+        return;
+    }
+    t = r[0x145];
+    if (t == 1) {
+        c[0x1B] = 0xD;
+        return;
+    }
+    if (t != 0) {
+        c[0x1B] = 0xE;
+        return;
+    }
+    t = r[0x133];
+    if (t == 1) {
+        c[0x1B] = 0xF;
+        return;
+    }
+    if (t == 2) {
+        c[0x1B] = 0x10;
+        return;
+    }
+    if (r[0x147] != 0) {
+        c[0x1B] = 5;
+        return;
+    }
+    t = r[0x137];
+    if (t == 1 || t == 3) {
+        if (r[0x148] != 0 && *(s16*)(r + 0x112) < *(s16*)(lbl_3_data_7870 + *(s16*)(r + 0xE2) * 6)) {
+            c[0x1B] = 7;
+            return;
+        }
+        c[0x1B] = 2;
+        return;
+    }
+    if (*(s16*)(r + 0xE6) >= 0) {
+        c[0x1B] = 3;
+        return;
+    }
+    c[0x1B] = 4;
 }
 
 // .text:0x00063A38 size:0xC0 mapped:0x806A2ACC
