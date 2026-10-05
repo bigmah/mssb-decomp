@@ -1155,8 +1155,19 @@ void fn_3_5372C(void) {
 }
 
 // .text:0x00053EE8 size:0x60 mapped:0x80692F7C
-void fn_3_53EE8(void) {
-    return;
+void fn_3_53EE8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (i != -1) {
+        f[0x1D3] = 0x13;
+        if (*(int*)(lbl_3_data_3C40 + 0x98) >= 0) {
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x98);
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
 }
 
 // .text:0x00053F48 size:0x570 mapped:0x80692FDC
