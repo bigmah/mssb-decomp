@@ -4,7 +4,7 @@
 #include "mssbTypes.h"
 
 void fn_3_CB8A8(void);
-void fn_3_CBA9C(void);
+void fn_3_CBA9C(u8* p);
 void fn_3_CBAFC(void);
 void fn_3_CBC18(void);
 void fn_3_CBF80(void);
@@ -58,7 +58,7 @@ void fn_3_D141C(void);
 void fn_3_D173C(void);
 void fn_3_D1848(void);
 void fn_3_D196C(void);
-void fn_3_D1AC4(void);
+void fn_3_D1AC4(u8* p);
 void fn_3_D1B24(void);
 void fn_3_D1F2C(void);
 void fn_3_D2220(void);
