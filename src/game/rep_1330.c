@@ -2,6 +2,19 @@
 #include "header_rep_data.h"
 #include "Dolphin/stl.h"
 
+extern u8 g_Stats[];
+extern u8 lbl_3_common_bss_34C58[];
+extern u32 lbl_3_bss_1748[];
+extern void fn_3_FBD70(void);
+extern void fn_3_FBD58(void);
+extern void fn_3_1CBCC(void);
+extern void fn_80052798(s32);
+extern void fn_3_8C07C(void);
+extern void fn_3_675B8(s32);
+extern void fn_3_BF1AC(void);
+extern void fn_3_BF158(void);
+extern void fn_3_B902C(void);
+extern void sndFXKeyOff(u32);
 extern u8 g_ReplayCopies[];
 extern u8 g_GameLogic[];
 extern u8 g_Strikes[];
@@ -22,6 +35,51 @@ extern u8 lbl_3_common_bss_32220[];
 extern u8 g_UnkThrowing_31ACC[];
 extern u8 g_UnkAnimation_31EAC[];
 extern u8 lbl_3_common_bss_321A0[];
+
+// .text:0x0007C1FC size:0x2E8
+void fn_3_7C1FC(s32 flag) {
+    u8* st = g_Stats;
+    st[0x36] = 0;
+    st[0x39] = 0;
+    memcpy(g_GameLogic, g_ReplayCopies, 0x158);
+    memcpy(g_Strikes, g_ReplayCopies + 0x158, 0x24);
+    memcpy(g_Scores, g_ReplayCopies + 0x17c, 0xc8);
+    memcpy(g_Ball, g_ReplayCopies + 0x244, 0x1bf8);
+    memcpy(g_Pitcher, g_ReplayCopies + 0x1e3c, 0x178);
+    memcpy(g_Batter, g_ReplayCopies + 0x1fb4, 0xb0);
+    memcpy(g_AiLogic, g_ReplayCopies + 0x2064, 0xbc);
+    memcpy(g_FieldingLogic, g_ReplayCopies + 0x2120, 0x150);
+    memcpy(g_RunningLogic, g_ReplayCopies + 0x2270, 0x20);
+    memcpy(g_Fielders, g_ReplayCopies + 0x2290, 0x15a8);
+    memcpy(g_Runners, g_ReplayCopies + 0x3838, 0x550);
+    memcpy(lbl_803537E4, g_ReplayCopies + 0x4128, 0x2ac);
+    memcpy(lbl_803535C8, g_ReplayCopies + 0x43d4, 0x21c);
+    memcpy(lbl_3_common_bss_32234, g_ReplayCopies + 0x3d88, 0x6);
+    memcpy(lbl_3_common_bss_32230, g_ReplayCopies + 0x3d8e, 0x4);
+    memcpy(lbl_3_common_bss_32220, g_ReplayCopies + 0x3d92, 0xe);
+    memcpy(g_UnkThrowing_31ACC, g_ReplayCopies + 0x3da0, 0x14);
+    memcpy(g_UnkAnimation_31EAC, g_ReplayCopies + 0x3db4, 0x2f4);
+    memcpy(lbl_3_common_bss_321A0, g_ReplayCopies + 0x40a8, 0x80);
+    if (g_Stats[0x3C] != 2 && st[0x3C] != 0xD) {
+        fn_3_FBD70();
+        if (flag != 0) {
+            fn_3_FBD58();
+            fn_3_1CBCC();
+        }
+    }
+    fn_80052798(1);
+    lbl_3_common_bss_34C58[0x2A] = 1;
+    *(s16*)(lbl_3_common_bss_34C58 + 0x24) = 1;
+    fn_3_8C07C();
+    lbl_3_common_bss_34C58[0x33] = 2;
+    fn_3_675B8(0);
+    fn_3_BF1AC();
+    fn_3_BF158();
+    fn_3_B902C();
+    if (lbl_3_bss_1748[0] != 0) {
+        sndFXKeyOff(lbl_3_bss_1748[0]);
+    }
+}
 
 // .text:0x0007C4E4 size:0x2C8 mapped:0x806BB578
 void fn_3_7C4E4(void) {

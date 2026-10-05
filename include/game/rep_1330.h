@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 
+void fn_3_7C1FC(s32 flag);
 void fn_3_7C4E4(void);
 void fn_3_7C7AC(void);
 
