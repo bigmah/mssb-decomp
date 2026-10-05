@@ -1,5 +1,9 @@
 #include "game/sta_c5.h"
 #include "header_rep_data.h"
+#pragma dont_inline on
+typedef struct { f32 a, b, c; } V3w;
+extern u32 lbl_3_bss_B154[];
+extern void fn_3_B97DC(void*, u32);
 
 s32 fn_3_EE0BC(u32 v) {
     switch ((v >> 4) & 0xF) {
@@ -83,8 +87,8 @@ void fn_3_EF21C(void) {
 }
 
 // .text:0x000EF3D4 size:0x34 mapped:0x8072E468
-void fn_3_EF3D4(void) {
-    return;
+void fn_3_EF3D4(u8* p, u8 idx) {
+    fn_3_B97DC(*(void**)(p + 0x74), lbl_3_bss_B154[idx]);
 }
 
 // .text:0x000EF408 size:0x154 mapped:0x8072E49C
