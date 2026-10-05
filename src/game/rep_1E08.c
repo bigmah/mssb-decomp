@@ -2,6 +2,8 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_data_1146C[];
+extern void fn_80034E20(void*, void*, void*);
 extern u8* lbl_803CC1B8;
 extern void* (*lbl_3_data_11390[])(void*);
 extern u8 lbl_803C6CF8[];
@@ -232,7 +234,12 @@ void fn_3_BE1D4(void) {
 
 // .text:0x000BEFF8 size:0x78 mapped:0x806FE08C
 void fn_3_BEFF8(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    *(u8**)lbl_3_common_bss_35154 = q;
+    fn_80034E20(q, lbl_3_data_1146C, lbl_3_common_bss_35154);
+    *(s16*)(q + 0x18) = 0;
+    *(void**)lbl_803CC1B8 = fn_3_BE1D4;
+    *(u32*)(lbl_3_common_bss_35154 + 0x3AC) = 0;
 }
 
 // .text:0x000BF070 size:0xE8 mapped:0x806FE104
