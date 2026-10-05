@@ -2,6 +2,8 @@
 #include "header_rep_data.h"
 
 extern f32 lbl_3_rodata_590;
+extern u8 g_Minigame[];
+extern u8 lbl_3_data_450C[];
 extern f32 lbl_3_rodata_5E4;
 extern f32 lbl_3_rodata_5D4;
 extern int fn_3_B7DD8(f32, f32);
@@ -364,7 +366,26 @@ void fn_3_F7B8(void) {
 
 // .text:0x0000F9F8 size:0x1B0 mapped:0x8064EA8C
 void fn_3_F9F8(void) {
-    return;
+    s32 i;
+    *(f32*)(g_Ball + 0) = *(f32*)(lbl_3_data_450C + 0);
+    *(f32*)(g_Ball + 4) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 8) = *(f32*)(lbl_3_data_450C + 4);
+    if (g_Minigame[0x1A2A] == 6) {
+        *(f32*)(g_Ball + 0) = lbl_3_rodata_590;
+        *(f32*)(g_Ball + 8) = lbl_3_rodata_590;
+        *(f32*)(g_Ball + 4) = lbl_3_rodata_59C;
+    }
+    for (i = 0; i < 0x3C; i++) {
+        *(f32*)(g_Ball + i * 12 + 0x3C) = *(f32*)(g_Ball + 0);
+        *(f32*)(g_Ball + i * 12 + 0x40) = *(f32*)(g_Ball + 4);
+        *(f32*)(g_Ball + i * 12 + 0x44) = *(f32*)(g_Ball + 8);
+    }
+    *(f32*)(g_Ball + 0x318) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x324) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x31C) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x328) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x320) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x32C) = lbl_3_rodata_590;
 }
 
 // .text:0x0000FBA8 size:0x3A4 mapped:0x8064EC3C
