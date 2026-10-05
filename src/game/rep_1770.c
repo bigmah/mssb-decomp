@@ -1,6 +1,18 @@
 #include "game/rep_1770.h"
 #include "header_rep_data.h"
 
+#include "static/UnknownHomes_Static.h"
+extern u8 lbl_3_common_bss_32724[];
+
+extern u8 lbl_3_data_D258[];
+extern u8 g_Minigame[];
+
+extern u8* lbl_803CC1B8;
+extern u8 lbl_80371C30[];
+extern void fn_80034E20(void*, void*);
+extern u8 lbl_3_data_D378[];
+extern u8 g_Batter[];
+
 // .text:0x000993A8 size:0x3C4 mapped:0x806D843C
 void fn_3_993A8(void) {
     return;
@@ -8,7 +20,15 @@ void fn_3_993A8(void) {
 
 // .text:0x0009976C size:0xAC mapped:0x806D8800
 void fn_3_9976C(void) {
-    return;
+    u8* p = lbl_803CC1B8;
+    fn_80034E20(p, lbl_3_data_D378);
+    if (g_Batter[0x7B] != 0) {
+        *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) << 3)) + 0x5C) = 0;
+    } else {
+        *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) << 3)) + 0x5C) = 0x10000;
+    }
+    *(s16*)(p + 0x1C) = 0;
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_3_993A8;
 }
 
 // .text:0x00099818 size:0x3C4 mapped:0x806D88AC
@@ -18,7 +38,15 @@ void fn_3_99818(void) {
 
 // .text:0x00099BDC size:0xAC mapped:0x806D8C70
 void fn_3_99BDC(void) {
-    return;
+    u8* p = lbl_803CC1B8;
+    fn_80034E20(p, lbl_3_data_D258);
+    if (g_Minigame[0x1A2A] == 2) {
+        *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) << 3)) + 0x5C) = 0x30000;
+    } else {
+        *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) << 3)) + 0x5C) = 0x20000;
+    }
+    *(s16*)(p + 0x1C) = 0;
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_3_99818;
 }
 
 // .text:0x00099C88 size:0x74 mapped:0x806D8D1C
