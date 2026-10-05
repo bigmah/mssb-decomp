@@ -10,6 +10,15 @@ extern void fn_3_1DEB8(void);
 extern void fn_3_BF1AC(void);
 extern void Set_803cb848(s32);
 extern void fn_3_BF158(void);
+extern void fn_3_AFD80(s32);
+extern void fn_3_5A6D4(s32);
+extern void fn_3_2EA24(void);
+extern void fn_3_2E87C(void);
+extern void fn_3_FBD70(void);
+extern void fn_3_FBD58(void);
+extern void fn_3_1DD48(void*);
+extern struct { u8 pad[0xC]; s16 n; } lbl_3_common_bss_34C90;
+extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
 extern u8 g_GameLogic[];
 extern u8 g_FieldingLogic[];
@@ -62,7 +71,19 @@ void fn_3_DCC80(void) {
 
 // .text:0x000DCED0 size:0x74 mapped:0x8071BF64
 void fn_3_DCED0(void) {
-    return;
+    s16* p = &lbl_3_common_bss_34C90.n;
+    if (*p < 0x7FFE) {
+        *p += 1;
+    } else {
+        *p = 0x7FFF;
+    }
+    lbl_803CBC3C = 1;
+    if (*p > 0x3C) {
+        fn_3_AFD80(1);
+        fn_3_5A6D4(0xB);
+        return;
+    }
+    fn_3_2EA24();
 }
 
 // .text:0x000DCF44 size:0xBC mapped:0x8071BFD8
@@ -82,7 +103,20 @@ void fn_3_DD1A8(void) {
 
 // .text:0x000DD37C size:0x80 mapped:0x8071C410
 void fn_3_DD37C(void) {
-    return;
+    if (g_Minigame[0x19CE] != 0) {
+        fn_3_FBD70();
+        fn_3_FBD58();
+    }
+    g_GameLogic[0x12B] = 1;
+    g_GameLogic[0x12C] = 1;
+    g_GameLogic[0x12E] = 1;
+    fn_3_1DD48(g_GameLogic);
+    if (g_Minigame[0x1912] == 0) {
+        fn_3_2E87C();
+        fn_3_5A6D4(0);
+        return;
+    }
+    fn_3_5A6D4(8);
 }
 
 // .text:0x000DD3FC size:0x5A8 mapped:0x8071C490
