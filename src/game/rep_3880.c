@@ -1,5 +1,6 @@
 #include "game/rep_3880.h"
 #include "header_rep_data.h"
+#include "static/UnknownHomes_Static.h"
 
 // .text:0x0014737C size:0x3FC mapped:0x80786410
 void fn_3_14737C(void) {
@@ -23,7 +24,7 @@ void fn_3_147CFC(void) {
 
 // .text:0x00147DFC size:0x24 mapped:0x80786E90
 void fn_3_147DFC(void) {
-    return;
+    pitchingMachinePitching(0x25);
 }
 
 // .text:0x00147E20 size:0x174 mapped:0x80786EB4

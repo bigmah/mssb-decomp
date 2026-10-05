@@ -61,6 +61,7 @@ extern void fn_800528AC(fn_800528AC_parameter);
 extern camera_803c639c_s* fn_80052768_getCamera(int);
 extern int fn_8001C67C_animation(int, int);
 extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
+extern void pitchingMachinePitching(u8);
 
 typedef struct {
     /* 0x00 */ u16 _00;
