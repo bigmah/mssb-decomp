@@ -35,6 +35,8 @@ struct DspObj {
 extern u32 lbl_3_bss_190C;
 extern u8 g_d_GameSettings[];
 extern void PSMTXMultVec(void*, void*, void*);
+extern void fn_8003A548(void*);
+extern void* fn_800BF068();
 extern void CTRLBuildMatrix(u32, void*);
 extern void PSMTXConcat(void*, void*, void*);
 extern void DOSetWorldMatrix(void*, void*);
@@ -147,7 +149,28 @@ void fn_3_B828C(u32 val) {
 
 // .text:0x000B8298 size:0x17C mapped:0x806F732C
 void fn_3_B8298(void) {
-    return;
+    s32 off;
+    u32 i;
+    u8* c;
+    void* pp;
+    u8* e;
+    switch (g_d_GameSettings[9]) {
+        case 3:
+            fn_8003A548(fn_3_B80D0);
+            break;
+    }
+    c = lbl_3_common_bss_350E4;
+    i = 0;
+    off = 0;
+    for (; i < *(u32*)(c + 0x30); i++) {
+        e = *(u8**)c + off;
+        if (((e[0x90] >> 7) & 1) && *(void**)(e + 0x74) != 0 && e[0x9A] != 0) {
+            lbl_3_bss_190C = (u32)e;
+            fn_3_B8184(*(void**)(e + 0x74), *(u8**)((u8*)fn_800BF068() + 0x14) + 0x40);
+        }
+        off += 0xE8;
+    }
+    fn_8003A548(0);
 }
 
 // .text:0x000B8414 size:0x50 mapped:0x806F74A8
