@@ -6,6 +6,10 @@
 
 static STREAM_INFO streamInfo[64];
 static u32 nextPublicID = 0;
+static struct {
+  u8 a;
+  u32 b;
+} streamUnk294;
 static u8 streamCallDelay = 0;
 static u8 streamCallCnt = 0;
 
@@ -17,6 +21,8 @@ void streamInit() {
     streamInfo[i].state = 0;
   }
   nextPublicID = 0;
+  streamUnk294.a = 0;
+  streamUnk294.b = 0;
 }
 
 #if MUSY_VERSION >= MUSY_VERSION_CHECK(1, 5, 4)

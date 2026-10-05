@@ -773,6 +773,7 @@ Musyx/snd_synthapi.c:
 
 Musyx/stream.c:
 	.text       start:0x800C87AC end:0x800C9324
+	.sbss       start:0x803CC290 end:0x803CC2A0
 	.sdata2     start:0x803CD140 end:0x803CD158
 
 Musyx/synthdata.c:
