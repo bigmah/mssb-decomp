@@ -52,8 +52,11 @@ void fn_3_690FC(void) {
 }
 
 // .text:0x0006916C size:0x18 mapped:0x806A8200
+extern u8 lbl_3_common_bss_32724[];
+
 void fn_3_6916C(void) {
-    return;
+    lbl_3_common_bss_32724[0xCB] = 0;
+    lbl_3_common_bss_32724[0xCC] = 0;
 }
 
 // .text:0x00069184 size:0x15C mapped:0x806A8218
