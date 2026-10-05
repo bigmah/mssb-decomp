@@ -8,6 +8,9 @@ extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
+extern void* memset(void*, s32, u32);
+extern f32 lbl_3_rodata_30FC;
+#pragma dont_inline on
 
 // .text:0x000FC448 size:0x4F0 mapped:0x8073B4DC
 void fn_3_FC448(void) {
@@ -51,7 +54,11 @@ void fn_3_FD408(void) {
 
 // .text:0x000FD4DC size:0x40 mapped:0x8073C570
 void fn_3_FD4DC(void) {
-    return;
+    u8* p = lbl_3_common_bss_DE94;
+    if ((*(u32*)(p + 0x118) >> 16) == 0) {
+        *(u32*)(p + 0x20) = *(u32*)(p + 0x124);
+    }
+    fn_3_FCF24();
 }
 
 // .text:0x000FD51C size:0x8C mapped:0x8073C5B0
@@ -211,8 +218,15 @@ void fn_3_105ACC(void) {
 }
 
 // .text:0x00105BD8 size:0x50 mapped:0x80744C6C
-void fn_3_105BD8(void) {
-    return;
+void fn_3_105BD8(u8* p) {
+    f32 v;
+    memset(p, 0, 0x88);
+    v = lbl_3_rodata_30FC;
+    *(f32*)(p + 0x3C) = v;
+    *(f32*)(p + 0x28) = v;
+    *(f32*)(p + 0x14) = v;
+    *(f32*)(p + 0x00) = v;
+    *(f32*)(p + 0x40) = v;
 }
 
 // .text:0x00105C28 size:0x5C mapped:0x80744CBC

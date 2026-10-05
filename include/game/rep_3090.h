@@ -39,7 +39,7 @@ void fn_3_1054CC(void);
 void fn_3_1054D0(void);
 void fn_3_105A10(void);
 void fn_3_105ACC(void);
-void fn_3_105BD8(void);
+void fn_3_105BD8(u8* p);
 void fn_3_105C28(void);
 void fn_3_105C84(u8* p);
 void fn_3_105CDC(void);
