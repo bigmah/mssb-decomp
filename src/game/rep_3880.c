@@ -8,6 +8,8 @@ extern u8 lbl_8036E548[];
 
 
 extern u8 g_Minigame[];
+extern u8 lbl_3_bss_B894[];
+extern void* memset(void*, int, unsigned long);
 #pragma dont_inline on
 
 // .text:0x0014737C size:0x3FC mapped:0x80786410
@@ -529,12 +531,14 @@ void fn_3_151710(void) {
 
 // .text:0x00151760 size:0x38 mapped:0x807907F4
 void fn_3_151760(void) {
-    return;
+    memset(lbl_3_bss_B894, 0, 0xF);
+    pitchingMachinePitching(0x1C);
 }
 
 // .text:0x00151798 size:0x38 mapped:0x8079082C
 void fn_3_151798(void) {
-    return;
+    memset(lbl_3_bss_B894, 0, 0xF);
+    pitchingMachinePitching(0x1C);
 }
 
 // .text:0x001517D0 size:0x228 mapped:0x80790864

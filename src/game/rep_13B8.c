@@ -126,8 +126,13 @@ void fn_3_81190(void) {
 }
 
 // .text:0x00081AB8 size:0x34 mapped:0x806C0B4C
-void fn_3_81AB8(void) {
-    return;
+void fn_3_81AB8(int i) {
+    u8* r = g_Runners + i * 0x154;
+    r[0x137] = 2;
+    r[0x136] = 2;
+    *(f32*)(r + 0x84) = lbl_3_rodata_1498;
+    *(f32*)(r + 0xA4) = lbl_3_rodata_1498;
+    *(f32*)(r + 0xB0) = lbl_3_rodata_1498;
 }
 
 // .text:0x00081AEC size:0xDC mapped:0x806C0B80
