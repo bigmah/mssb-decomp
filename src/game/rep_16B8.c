@@ -2,6 +2,8 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_F390[];
+extern u8 lbl_80371C30[];
+extern u8 lbl_3_data_BF6C[];
 
 extern u8 lbl_3_data_E0E0[];
 
@@ -27,7 +29,13 @@ void fn_3_91520(void) {
 
 // .text:0x00091A60 size:0x68 mapped:0x806D0AF4
 void fn_3_91A60(void) {
-    return;
+    u16* o;
+    fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_BF6C);
+    o[0xC] = 0;
+    o[0xE] = 0;
+    o[0xF] = 0;
+    o[0x10] = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_91520;
 }
 
 // .text:0x00091AC8 size:0x88 mapped:0x806D0B5C
@@ -185,7 +193,11 @@ void fn_3_952DC(void) {
 
 // .text:0x0009538C size:0x70 mapped:0x806D4420
 void fn_3_9538C(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] != 0x16) {
+        fn_800B0A5C_insertQueue(fn_3_95000, 2);
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x000953FC size:0xC8 mapped:0x806D4490
@@ -209,7 +221,10 @@ void fn_3_9551C(void) {
 
 // .text:0x00095568 size:0x64 mapped:0x806D45FC
 void fn_3_95568(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] != 0 || (*(u8**)(lbl_80371C30 + *(u16*)((u8*)p + 0x14) * 8))[0x69] == 2) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
 }
 
 // .text:0x000955CC size:0x54 mapped:0x806D4660
