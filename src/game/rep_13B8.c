@@ -1,6 +1,8 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
 
+extern u8 g_Scores[];
+
 extern u8 g_Batter[];
 extern u8 g_Runners[];
 
@@ -345,8 +347,15 @@ void fn_3_8913C(void) {
 }
 
 // .text:0x00089864 size:0x58 mapped:0x806C88F8
-void fn_3_89864(void) {
-    return;
+void fn_3_89864(s32 i, s32 d) {
+    u8* r = g_Runners + i * 0x154;
+    r[0x125] += d;
+    r[0x126] = (r[0x125] + 1) & 3;
+    if (r[0x125] < 4) {
+        return;
+    }
+    r[0x123] = 3;
+    *(s16*)(g_Scores + 0x9C) += 1;
 }
 
 // .text:0x000898BC size:0x58 mapped:0x806C8950
