@@ -1,6 +1,11 @@
 #include "game/rep_36D8.h"
 #include "header_rep_data.h"
 
+#pragma dont_inline on
+
+extern f32 lbl_3_rodata_3728;
+extern u8 g_Minigame[];
+
 // .text:0x0013C7BC size:0xDBC mapped:0x8077B850
 void fn_3_13C7BC(void) {
     return;
@@ -12,8 +17,11 @@ void fn_3_13D578(void) {
 }
 
 // .text:0x0013D5E8 size:0x30 mapped:0x8077C67C
-void fn_3_13D5E8(void) {
-    return;
+s32 fn_3_13D5E8(f32* a, f32* b) {
+    f32 c = lbl_3_rodata_3728;
+    f32 y = *b;
+    f32 x = *a;
+    return (s32)(c * x - c * y);
 }
 
 // .text:0x0013D618 size:0x408 mapped:0x8077C6AC
@@ -22,8 +30,11 @@ void fn_3_13D618(void) {
 }
 
 // .text:0x0013DA20 size:0x30 mapped:0x8077CAB4
-void fn_3_13DA20(void) {
-    return;
+s32 fn_3_13DA20(f32* a, f32* b) {
+    f32 c = lbl_3_rodata_3728;
+    f32 y = *b;
+    f32 x = *a;
+    return (s32)(c * x - c * y);
 }
 
 // .text:0x0013DA50 size:0x1F8 mapped:0x8077CAE4
@@ -57,18 +68,26 @@ void fn_3_13E174(void) {
 }
 
 // .text:0x0013E21C size:0x188 mapped:0x8077D2B0
-void fn_3_13E21C(void) {
+void fn_3_13E21C(u8* a) {
     return;
 }
 
 // .text:0x0013E3A4 size:0x2CC mapped:0x8077D438
-void fn_3_13E3A4(void) {
+void fn_3_13E3A4(u8* a) {
     return;
 }
 
 // .text:0x0013E670 size:0x64 mapped:0x8077D704
 void fn_3_13E670(void) {
-    return;
+    u8* m = g_Minigame;
+    if (m[0x190B] != 0) {
+        *(s8*)(m + 0x1D74) = -1;
+        m[0xCCE] = 0;
+    } else if (m[0xCCE] != 0) {
+        fn_3_13E21C(m + 0xCB0);
+    } else {
+        fn_3_13E3A4(m + 0xCB0);
+    }
 }
 
 // .text:0x0013E6D4 size:0x100 mapped:0x8077D768

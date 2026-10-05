@@ -142,13 +142,16 @@ void fn_3_E4554(u8* a) {
 }
 
 // .text:0x000E45A8 size:0x48 mapped:0x8072363C
-void fn_3_E45A8(void) {
-    return;
+void fn_3_E45A8(u8* a) {
+    CTRLSetScale((Control*)a, lbl_3_rodata_2B28, lbl_3_rodata_2B28, lbl_3_rodata_2B28);
+    *(f32*)(a + 0xB4) = lbl_3_rodata_2B28;
 }
 
 // .text:0x000E45F0 size:0x68 mapped:0x80723684
-void fn_3_E45F0(void) {
-    return;
+void fn_3_E45F0(u8* a) {
+    f32* t = (f32*)(lbl_3_data_18ED0 + 0xC);
+    CTRLSetRotation((Control*)a, lbl_3_rodata_2A5C, t[a[0x9C] * 7], lbl_3_rodata_2A5C);
+    *(f32*)(a + 0xB0) = t[a[0x9C] * 7];
 }
 
 // .text:0x000E4658 size:0x108 mapped:0x807236EC
