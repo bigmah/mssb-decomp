@@ -346,14 +346,18 @@ static u8 static_clamp(int v, int min, int max) {
 // .text:0x0009EEB8 size:0xF4 mapped:0x806DDF4C
 int RandomInt_Game(int max) {
     int ret;
-    int absmax = ABS(max);
+    int sign;
+    sign = max;
+    if (max < 0) {
+        max = -max;
+    }
 
-    if (absmax <= 1) {
+    if (max <= 1) {
         return 0;
     }
 
     g_Ball.StaticRandomInt1 = g_Ball.StaticRandomInt1 - ((u8)g_Ball.StaticRandomInt2) +
-                              g_Ball.StaticRandomInt2 / absmax + g_Ball.totalFramesAtPlay;
+                              g_Ball.StaticRandomInt2 / max + g_Ball.totalFramesAtPlay;
 
     if (g_d_GameSettings.GameModeSelected == GAME_TYPE_PRACTICE && g_Practice.instructionNumber >= 0) {
         return 0;
@@ -363,9 +367,11 @@ int RandomInt_Game(int max) {
         g_Ball.StaticRandomInt1 += rand();
     }
 
-    ret = g_Ball.StaticRandomInt1 % absmax;
-    ret = ABS(ret);
-    if (max < 0) {
+    ret = g_Ball.StaticRandomInt1 % max;
+    if (ret < 0) {
+        ret = -ret;
+    }
+    if (sign < 0) {
         return -ret;
     } else {
         return ret;
