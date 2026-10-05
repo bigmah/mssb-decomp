@@ -611,7 +611,7 @@ long dataGetSample(u16 sid, SAMPLE_INFO *newsmp)
     if ((result = sndBSearch(&key, dataSmpSDirs[i].data, dataSmpSDirs[i].numSmp, sizeof(SDIR_DATA),
                              smpcmp)) != NULL)
     {
-      if (result->ref_cnt != 0xFFFF)
+      if (result->ref_cnt != 0)
       {
         sheader = &result->header;
         newsmp->info = sheader->info;
@@ -625,6 +625,10 @@ long dataGetSample(u16 sid, SAMPLE_INFO *newsmp)
         if (result->extraData)
         {
           newsmp->extraData = (void *)((u32) & (dataSmpSDirs[i].data)->id + result->extraData);
+        }
+        else
+        {
+          newsmp->extraData = NULL;
         }
         return 0;
       }
