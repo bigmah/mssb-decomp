@@ -1,5 +1,8 @@
 #include "game/rep_37A8.h"
 #include "header_rep_data.h"
+#pragma dont_inline on
+
+extern u8 g_Minigame[];
 
 #include "static/UnknownHomes_Static.h"
 extern void fn_3_141C8C(void);
@@ -65,13 +68,18 @@ void fn_3_1430D0(void) {
 }
 
 // .text:0x00143358 size:0x3BC mapped:0x807823EC
-void fn_3_143358(void) {
+void fn_3_143358(s32 i) {
     return;
 }
 
 // .text:0x00143714 size:0x5C mapped:0x807827A8
 void fn_3_143714(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 0x28; i++) {
+        if (g_Minigame[0xCE + i * 0x28] != 0) {
+            fn_3_143358(i);
+        }
+    }
 }
 
 // .text:0x00143770 size:0x27C mapped:0x80782804
