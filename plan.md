@@ -176,3 +176,9 @@ Don't spend more than about 30–45 minutes on a single register-allocation figh
 - This is a fork of `roeming/mssb-dtk`. Check upstream regularly for new matches and renamed symbols, and rebase so we don't duplicate work.
 - Send finished work upstream as small PRs (one file or a few functions per PR).
 - If upstream or the community has a Discord, ask about known compiler-flag quirks (for example per-file `-inline` or `-fp_contract` overrides) before fighting them alone.
+- **A near-match with only register swaps may hide a control-flow difference.** `checkCollision` was stuck on r28/r29/r30 swaps until the `b L` after `processStadiumObjectFunction` was noticed: that branch goes to the function's end, so write `goto done;` (return label) instead of falling through to the next `if`.
+- **Several `||` compares of one `x & mask` merge into subi/cmplwi ranges**; the original's unmerged `cmplwi r0,N / beq` chain came from `t = f(); t &= 0x7F; if (t==2||t==3||...) return 1; else return 0;` with an explicit `else` (`fn_3_B7C2C`).
+- **Inlined `dolsqrtf2` in a file that has `#pragma dont_inline on`:** put the pragma `off` from the sqrt user to the end of the file (re-enabling `on` afterwards undoes the inlining) and keep earlier callers under `on` so they do not inline the big function. Use an `s16` parameter when the prologue has `extsh r28, r6` (`didCollideWithBoundingBoxes`).
+- **`...rodata.0@ha` base-register pooling appears when an inlined helper uses float literals** (0.5/3.0/0.0). To get the original's separate `lis/lfd` per constant, write the helper with `extern f32/f64 lbl_3_rodata_xxx` operands instead of literals.
+- **`int` vs `bool` returns:** callers compare with `cmpwi` only if the callee prototype returns `int`; for `checkTriangleCollisions` the local `ret` had to be `int` (not `bool`) for the callee to keep matching.
+- **`__abs(x)`** gives the branch-free `srawi/xor/subf` abs (plain `abs` becomes a `bl`).
