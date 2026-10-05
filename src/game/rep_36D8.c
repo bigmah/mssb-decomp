@@ -5,6 +5,7 @@
 
 extern f32 lbl_3_rodata_3728;
 extern u8 g_Minigame[];
+extern u8 g_Runners[];
 extern u8 g_GameLogic[];
 extern u8 lbl_3_data_21278[];
 extern void changeScene(s32, s32);
@@ -149,9 +150,29 @@ void fn_3_13F6C8(void) {
 
 // .text:0x0013F7E4 size:0xE0 mapped:0x8077E878
 void fn_3_13F7E4(void) {
-    return;
+    u8* m = g_Minigame;
+    u8* p;
+    s16* q;
+    s32 i;
+    if (m[0x1B19] != 1) {
+        return;
+    }
+    if (*(s16*)(m + 0x1AFA) <= 0) {
+        *(s16*)(m + 0x1AFE) = 0;
+        *(s16*)(m + 0x1B00) = 0;
+        *(s16*)(m + 0x1B02) = 0;
+        *(s16*)(m + 0x1B04) = 0;
+    }
+    for (p = g_Minigame, q = (s16*)g_Minigame, i = 0; i < 4; p++, q++, i++) {
+        s8 r = *(s8*)(p + 0x1900);
+        if (r >= 0) {
+            u8 st = g_Runners[r * 0x154 + 0x137];
+            if (st == 1 || st == 3) {
+                *(s16*)((u8*)q + 0x1AFE) += 1;
+            }
+        }
+    }
 }
-
 // .text:0x0013F8C4 size:0x360 mapped:0x8077E958
 void fn_3_13F8C4(void) {
     return;
