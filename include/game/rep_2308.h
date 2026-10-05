@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_CABF0(void);
+void fn_3_CABF0(u8* p);
 void fn_3_CAE00(void);
 void fn_3_CAF9C(void);
 void fn_3_CB1B0(int a, u8 b, int c);

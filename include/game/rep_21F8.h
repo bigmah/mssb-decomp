@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_C937C(void);
+int fn_3_C937C(void);
 void fn_3_C9590(u8*, s32, f32*, f32);
 void fn_3_C9734(void);
 
