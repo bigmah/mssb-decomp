@@ -5,6 +5,7 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_3_common_bss_35154[];
+extern u8* lbl_803CC1B8;
 extern f32 lbl_3_rodata_2438;
 extern f32 lbl_3_rodata_243C;
 
@@ -27,7 +28,22 @@ void fn_3_CB7D4(void) {
 }
 
 // .text:0x000CB7E8 size:0xC0 mapped:0x8070A87C
-void fn_3_CB7E8(void) {
-    return;
+void fn_3_CB7E8(f32 x, f32 y, f32 z) {
+    u8* b = lbl_3_common_bss_35154;
+    *(f32*)(b + 0x3E8) = x;
+    *(f32*)(b + 0x3EC) = y;
+    *(f32*)(b + 0x3F0) = z;
+    *(f32*)(b + 0x3FC) = 0.0f;
+    *(f32*)(b + 0x3F8) = 0.0f;
+    *(f32*)(b + 0x3F4) = 0.0f;
+    *(s16*)(b + 0x404) = 0x50;
+    b[0x40A] = 1;
+    *(u32*)(b + 0x3AC) |= 4;
+    fn_800B0A5C_insertQueue(fn_3_CB738, (u16)(*(u16*)(lbl_803CC1B8 + 0x12) + 1));
+    playSoundEffect(0x19D);
+    if (g_GameLogic.TeamStars[g_GameLogic.teamBatting] < 5) {
+        g_GameLogic.TeamStars[g_GameLogic.teamBatting]++;
+    }
+    g_GameLogic.stadiumStarObtained = 1;
 }
 
