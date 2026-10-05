@@ -23,8 +23,11 @@ void fn_3_6C0E0(void) {
 }
 
 // .text:0x0006C108 size:0x34 mapped:0x806AB19C
+extern void fn_3_B93C8(s32);
+
 void fn_3_6C108(void) {
-    return;
+    fn_3_B93C8(1);
+    lbl_3_common_bss_32724[0xAE] = 0;
 }
 
 // .text:0x0006C13C size:0x14 mapped:0x806AB1D0
