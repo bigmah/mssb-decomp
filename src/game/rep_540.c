@@ -196,9 +196,9 @@ void fn_3_A020(void) {
                     g_Strikes = 2;
                 }
             }
-        }
-        if (done == 0) {
-            fn_3_59918(3, 0);
+            if (done == 0) {
+                fn_3_59918(3, 0);
+            }
         }
     }
 }
@@ -221,9 +221,9 @@ void fn_3_A0F0(void) {
                 g_Strikes = 2;
             }
         }
-    }
-    if (done == 0) {
-        fn_3_59918(3, 0);
+        if (done == 0) {
+            fn_3_59918(3, 0);
+        }
     }
 }
 
