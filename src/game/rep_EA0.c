@@ -4,11 +4,29 @@
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_200[];
 extern f32 lbl_3_rodata_F20;
+extern f32 lbl_3_rodata_F24;
+extern u8 lbl_3_data_6880[];
+extern s32 lbl_3_bss_169C;
+typedef struct { s32 a; f32 b; f32 c; s32 d; } E6880;
 extern u8 lbl_3_common_bss_32724[];
 
 // .text:0x0006750C size:0xAC mapped:0x806A65A0
-void fn_3_6750C(void) {
-    return;
+void fn_3_6750C(s32 base) {
+    E6880* e = (E6880*)(lbl_3_data_6880 + 0x10);
+    s32 i;
+    for (i = 0; i < 11; i++, e++) {
+        e->a = base + (e->a << 5) + 4;
+        if (lbl_3_rodata_F20 == e->c) {
+            e->c = lbl_3_rodata_F24;
+        } else {
+            e->c = e->c / e->b;
+        }
+        e->d = e->d * 60 / 100;
+        if (e->d < 2) {
+            e->d = 2;
+        }
+    }
+    lbl_3_bss_169C = 0;
 }
 
 // .text:0x000675B8 size:0x68 mapped:0x806A664C
