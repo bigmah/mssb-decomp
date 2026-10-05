@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_common_bss_35154[];
+extern u8 lbl_3_data_17260[];
+extern u8* lbl_3_data_174A0[];
+extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern u8 lbl_3_bss_9D20[];
 extern u8 lbl_3_bss_9D40[];
 extern void GXInitTexObj(void* obj, void* img, u16 w, u16 h, int fmt, int ws, int wt, int mip);
@@ -23,8 +26,18 @@ void fn_3_C0AD8(void) {
 }
 
 // .text:0x000C0C4C size:0x9C mapped:0x806FFCE0
-void fn_3_C0C4C(void) {
-    return;
+void fn_3_C0C4C(s32 i) {
+    u8* p = fn_800B0A5C_insertQueue(fn_3_C0AD8, 1);
+    *(s32*)(p + 0x14) = 0;
+    *(s32*)(p + 0x1C) = *(s16*)(lbl_3_data_17260 + i * 32);
+    p[0x20] = 0;
+    for (i = 0; i < 2; i++) {
+        if (lbl_3_data_174A0[i] == 0) {
+            lbl_3_data_174A0[i] = p;
+            *(s32*)(p + 0x18) = i;
+            break;
+        }
+    }
 }
 
 // .text:0x000C0CE8 size:0x28 mapped:0x806FFD7C
