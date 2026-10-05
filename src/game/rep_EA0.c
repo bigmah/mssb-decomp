@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_bss_200[];
+extern f32 lbl_3_rodata_F20;
+extern u8 lbl_3_common_bss_32724[];
 
 // .text:0x0006750C size:0xAC mapped:0x806A65A0
 void fn_3_6750C(void) {
@@ -9,8 +12,15 @@ void fn_3_6750C(void) {
 }
 
 // .text:0x000675B8 size:0x68 mapped:0x806A664C
-void fn_3_675B8(void) {
-    return;
+void fn_3_675B8(u16 n) {
+    u8* b = lbl_3_bss_200;
+    if (n == 0) {
+        lbl_3_common_bss_32724[0xCC] = 0;
+        *(f32*)(b + 0x14A8) = lbl_3_rodata_F20;
+        return;
+    }
+    *(s32*)(b + 0xC) = n;
+    *(f32*)(b + 0x14A4) = *(f32*)(b + 0x14A8) / (f32)n;
 }
 
 // .text:0x00067620 size:0x298 mapped:0x806A66B4
