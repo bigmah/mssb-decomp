@@ -73,7 +73,7 @@ void fn_3_14F544(u8* a);
 void fn_3_14F5A4(void);
 void fn_3_14F8D0(u8* a);
 void fn_3_14F930(s8 a);
-void fn_3_150010(void);
+void fn_3_150010(s8 a);
 void fn_3_150070(void);
 void fn_3_1500C8(void);
 void fn_3_150120(void);

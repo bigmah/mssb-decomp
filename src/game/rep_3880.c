@@ -524,8 +524,9 @@ void fn_3_14F930(s8 a) {
 }
 
 // .text:0x00150010 size:0x60 mapped:0x8078F0A4
-void fn_3_150010(void) {
-    return;
+void fn_3_150010(s8 a) {
+    if (g_d_GameSettings.GameModeSelected != 7 || g_Minigame[0x1A2A] != 6 || a > 4 || a < 0) { return; }
+    fn_3_14F930(a);
 }
 
 // .text:0x00150070 size:0x58 mapped:0x8078F104
