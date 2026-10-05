@@ -1079,6 +1079,9 @@ typedef struct STREAM_INFO {
   u8 hwStreamHandle;
   u32 nextStreamHandle;
 #endif
+#if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 0)
+  u32 padEnd;
+#endif
 } STREAM_INFO;
 
 #if MUSY_VERSION >= MUSY_VERSION_CHECK(1, 5, 4)
