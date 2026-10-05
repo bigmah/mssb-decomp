@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/stl.h"
 
 extern u8 lbl_3_data_2709C[];
 
@@ -13,9 +14,36 @@ typedef struct {
 } T5D6C;
 extern T5D6C lbl_3_data_5D6C[];
 
+typedef struct {
+    u8 pad[0x38];
+    s32 _38;
+    u8 pad2[0xC];
+} T26F78;
+extern T26F78 lbl_3_data_26F78[];
+extern void fn_8002CDD0(VecXYZ*);
+extern void fn_8002DC68(VecXYZ*);
+
+void fn_3_15C024(VecXYZ* pos, VecXYZ* vel, VecXYZ* add, int flag);
+
 // .text:0x0015B79C size:0x304 mapped:0x8079A830
-void fn_3_15B79C(void) {
-    return;
+// 99%: inlined fn_3_15C024 picks f0/f4 instead of f1/f0 for vel.x/vel.y in the air-resistance block
+void fn_3_15B79C(int flag) {
+    VecXYZ pos;
+    VecXYZ vel;
+    VecXYZ add;
+    f32 limit = (f32)lbl_3_data_26F78[flag]._38 / 100000.0f;
+    memcpy(&pos, &g_Pitcher, sizeof(VecXYZ));
+    memcpy(&vel, &g_Pitcher.ballVelocity, sizeof(VecXYZ));
+    memcpy(&add, &g_Pitcher.pitchCurveVeloV1, sizeof(VecXYZ));
+    while (pos.z > limit) {
+        fn_3_15C024(&pos, &vel, &add, 1);
+    }
+    pos.y = -pos.y;
+    if (flag) {
+        fn_8002CDD0(&pos);
+    } else {
+        fn_8002DC68(&pos);
+    }
 }
 
 // .text:0x0015BAA0 size:0x560 mapped:0x8079AB34
