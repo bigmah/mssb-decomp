@@ -1,5 +1,7 @@
 #include "game/sta_c4.h"
 #include "header_rep_data.h"
+#pragma dont_inline on
+extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 
 #include "Dolphin/GX/GXBump.h"
 #include "Dolphin/GX/GXTexture.h"
@@ -31,7 +33,9 @@ void fn_3_F8878(void) {
 
 // .text:0x000F8ABC size:0x48 mapped:0x80737B50
 void fn_3_F8ABC(void) {
-    return;
+    if (fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F) != 0) {
+        fn_3_F8878();
+    }
 }
 
 // .text:0x000F8B04 size:0x2C mapped:0x80737B98
