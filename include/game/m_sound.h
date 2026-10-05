@@ -31,6 +31,14 @@ void fn_3_90064(void);
 void fn_3_90150(void);
 
 void fn_3_902FC(void);
+u32 fn_3_90220(s32 idx, s32 off);
+u32 playSoundEffect(s32 id);
+void fn_3_90328(s32 vol);
+void fn_3_903B8(void);
+void fn_3_90434(void);
+u32 fn_3_9056C(s32 idx);
+void fn_3_90674(s32 idx);
+void fn_3_906FC(void);
 
 void fn_3_8B2E4(void);
 

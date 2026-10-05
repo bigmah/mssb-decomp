@@ -194,3 +194,81 @@ void fn_3_90150(void) {
     return;
 }
 
+
+extern u16 lbl_3_data_8168[];
+extern u8 lbl_3_data_8530[];
+extern u8 lbl_3_data_8338[];
+extern u32 sndSeqGetValid(u32);
+extern u32 sndSeqPlayEx(u16 sgid, u16 sid, void* arrfile, void* para, u8 studio);
+extern u32* lbl_3_bss_1774;
+extern u8 lbl_3_data_88E0[];
+extern u8 lbl_3_data_830C[];
+extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
+
+// .text:0x00090220 size:0x74 mapped:0x806CF2B4
+u32 fn_3_90220(s32 idx, s32 off) {
+    u8* tbl = lbl_3_data_8530;
+    u8 ctrl = tbl[off + 0x180];
+    u32 vid = sndFXStartEx(off + lbl_3_data_8168[idx], tbl[off], 0x3F, 0);
+    sndFXCtrl(vid, 0x5B, ctrl);
+    return vid;
+}
+
+// .text:0x00090294 size:0x68 mapped:0x806CF328
+u32 playSoundEffect(s32 id) {
+    u32 vid = sndFXStartEx(id, lbl_3_data_8338[id * 2 - 0x2A2], 0x3F, 0);
+    sndFXCtrl(vid, 0x5B, lbl_3_data_8338[id * 2 - 0x2A1]);
+    return vid;
+}
+
+// .text:0x00090328 size:0x90 mapped:0x806CF3BC
+void fn_3_90328(s32 vol) {
+    if (vol < 0) {
+        vol = 3000;
+    }
+    {
+        SndState34C58* s = &S34C58;
+        if (sndSeqGetValid(s->unk4)) {
+            sndSeqVolume(0, vol, s->unk4, 1);
+        }
+    }
+    {
+        SndState34C58* s = &S34C58;
+        if (sndSeqGetValid(s->unk8)) {
+            sndSeqVolume(0, vol, s->unk8, 1);
+        }
+    }
+}
+
+// .text:0x000903B8 size:0x7C mapped:0x806CF44C
+void fn_3_903B8(void) {
+    SndState34C58* s = &S34C58;
+    if (sndSeqGetValid(s->unk4)) {
+        sndSeqVolume(0, 0xA0, s->unk4, 1);
+    }
+    s = &S34C58;
+    if (sndSeqGetValid(s->unk8)) {
+        sndSeqVolume(0, 0xA0, s->unk8, 1);
+    }
+}
+
+// .text:0x00090674 size:0x88 mapped:0x806CF708
+void fn_3_90674(s32 idx) {
+    u16* e = (u16*)(lbl_3_data_88E0 + idx * 6);
+    S34C58.unk4 = sndSeqPlayEx(e[0], e[1], (void*)lbl_3_bss_1774[idx], 0, 0);
+    sndSeqVolume(lbl_3_data_830C[idx * 2], 0, S34C58.unk4, 0);
+}
+
+// .text:0x000906FC size:0x58 mapped:0x806CF790
+void fn_3_906FC(void) {
+    u32* p;
+    u32 base;
+    s32 i;
+    base = S34C58.unk0;
+    p = (u32*)base;
+    for (i = 0; i < (g_d_GameSettings.GameModeSelected == 2 ? 1 : 0x14); i++) {
+        *p += base;
+        p++;
+    }
+    lbl_3_bss_1774 = (u32*)base;
+}
