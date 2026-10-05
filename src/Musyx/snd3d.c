@@ -759,11 +759,14 @@ bool32 AddStartingEmitter(SND_EMITTER *em, f32 vol, f32 xPan, f32 yPan, f32 zPan
     return TRUE;
 }
 
+extern int synthCheckFXRealloc(unsigned short fid);
+
+// 95.8%: only the second (else) loop differs: orig has i=r24, em=r26 there (first loop is i=r26, em=r24)
 void StartContinousEmitters()
 {
-    long i;          // r30
-    START_LIST *sl;  // r29
     SND_EMITTER *em; // r31
+    START_LIST *sl;  // r29
+    long i;          // r30
     f32 dv;          // r63
 
     if (s3dFlag4)
@@ -833,8 +836,7 @@ void StartContinousEmitters()
             for (sl = startGroup[i].list; sl != NULL; sl = sl->next)
             {
                 if ((startGroup[i].running != NULL) &&
-                    !(((s3dUseMaxVoices != '\0' && ((startGroup[i].id & 0x80000000) != 0)) &&
-                       (startGroup[i].numRunning < startGroup[i].list->em->maxVoices))))
+                    (s3dUseMaxVoices == 0 || synthCheckFXRealloc(startGroup[i].list->em->fxid) != 0))
                 {
                     dv = sl->vol - (startGroup[i].running)->vol;
                     if (dv <= 0.08f)
