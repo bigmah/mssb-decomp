@@ -2,10 +2,33 @@
 #include "musyx/musyx_priv.h"
 #include "musyx/synth.h"
 
-static GSTACK gs[128];
-static s16 sp;
+typedef struct DATA_STACK {
+  struct DATA_STACK* prev; // offset 0x0
+  s32 unk4;                // offset 0x4
+  s16 sp;                  // offset 0x8
+  GSTACK gs[128];          // offset 0xC
+  u32 aramBase;            // offset 0x60C
+  u32 aramEnd;             // offset 0x610
+  u32 aramCur;             // offset 0x614
+} DATA_STACK;
 
-void dataInitStack() { sp = 0; }
+static DATA_STACK dataStack0;
+static s32 dataStackNum;
+static DATA_STACK* dataStackCur;
+static DATA_STACK* dataStackRoot;
+
+void dataInitStack(u32 aramBase, u32 aramSize) {
+  dataStackRoot = NULL;
+  dataStack0.unk4 = -2;
+  dataStack0.sp = 0;
+  dataStack0.aramBase = aramBase;
+  dataStack0.aramCur = aramBase;
+  dataStack0.aramEnd = aramBase + aramSize;
+  dataStack0.prev = NULL;
+  dataStackRoot = &dataStack0;
+  dataStackNum = 0;
+  dataStackCur = &dataStack0;
+}
 
 static MEM_DATA* GetPoolAddr(u16 id, MEM_DATA* m) {
   while (m->nextOff != 0xFFFFFFFF) {
@@ -85,9 +108,9 @@ static void InsertData(u16 id, void* data, u8 dataType, u32 remove) {
     break;
   case 1:
     if (!remove) {
-      dataAddSampleReference(id, 0);
+      dataAddSampleReference(id, &dataStackCur->aramBase);
     } else {
-      dataRemoveSampleReference(id, 0);
+      dataRemoveSampleReference(id, &dataStackCur->aramBase);
     }
     break;
   }
@@ -183,14 +206,14 @@ void sndSetSampleDataUploadCallback(void* (*callback)(unsigned long, unsigned lo
 u32 sndPushGroup(void* prj_data, u16 gid, void* samples, void* sdir, void* pool) {
   GROUP_DATA* g; // r31
 
-  if (sndActive && sp < 128) {
+  if (sndActive && dataStackCur->sp < 128) {
     g = prj_data;
 
     while (g->nextOff != 0xFFFFFFFF) {
       if (g->id == gid) {
-        gs[sp].gAddr = g;
-        gs[sp].prjAddr = prj_data;
-        gs[sp].sdirAddr = sdir;
+        dataStackCur->gs[dataStackCur->sp].gAddr = g;
+        dataStackCur->gs[dataStackCur->sp].prjAddr = prj_data;
+        dataStackCur->gs[dataStackCur->sp].sdirAddr = sdir;
         InsertSamples((u16*)((u8*)prj_data + g->sampleOff), samples, sdir);
         InsertMacros((u16*)((u8*)prj_data + g->macroOff), pool);
         InsertCurves((u16*)((u8*)prj_data + g->curveOff), pool);
@@ -200,7 +223,7 @@ u32 sndPushGroup(void* prj_data, u16 gid, void* samples, void* sdir, void* pool)
           InsertFXTab(gid, (FX_DATA*)((u8*)prj_data + g->data.song.normpageOff));
         }
         hwSyncSampleMem();
-        ++sp;
+        ++dataStackCur->sp;
         return 1;
       }
 
@@ -230,9 +253,9 @@ unsigned long sndPopGroup() {
   void* prj;
   struct FX_DATA* fd;
 
-  g = gs[--sp].gAddr;
-  prj = gs[sp].prjAddr;
-  sdir = gs[sp].sdirAddr;
+  g = dataStackCur->gs[--dataStackCur->sp].gAddr;
+  prj = dataStackCur->gs[dataStackCur->sp].prjAddr;
+  sdir = dataStackCur->gs[dataStackCur->sp].sdirAddr;
   hwDisableIrq();
 
   if (g->type == 1) {
@@ -243,6 +266,7 @@ unsigned long sndPopGroup() {
   }
 
   synthKillVoicesByMacroReferences((u16*)((u8*)prj + g->macroOff));
+  synthKillVoicesBySampleReferences((u16*)((u8*)prj + g->sampleOff));
   hwEnableIrq();
   RemoveSamples((u16*)((u8*)prj + g->sampleOff), sdir);
   RemoveMacros((u16*)((u8*)prj + g->macroOff));
@@ -278,45 +302,94 @@ u32 seqPlaySong(u16 sgid, u16 sid, void* arrfile, SND_PLAYPARA* para, u8 irq_cal
   MIDISETUP* midiSetup;
   u32 seqId;
   void* prj;
+  DATA_STACK* stk;
 
-  for (i = 0; i < sp; ++i) {
-    if (sgid != gs[i].gAddr->id) {
-      continue;
-    }
-
-    if (gs[i].gAddr->type == 0) {
-      g = gs[i].gAddr;
-      prj = gs[i].prjAddr;
-      norm = (PAGE*)((u32)prj + g->data.song.normpageOff);
-      drum = (PAGE*)((u32)prj + g->data.song.drumpageOff);
-      midiSetup = (MIDISETUP*)((u32)prj + g->data.song.midiSetupOff);
-      while (midiSetup->songId != 0xFFFF) {
-        if (midiSetup->songId == sid) {
-          if (irq_call != 0) {
-            seqId = seqStartPlay(norm, drum, midiSetup, arrfile, para, studio, sgid);
-          } else {
-            hwDisableIrq();
-            seqId = seqStartPlay(norm, drum, midiSetup, arrfile, para, studio, sgid);
-            hwEnableIrq();
-          }
-          return seqId;
-        }
-
-        ++midiSetup;
+  for (stk = dataStackRoot; stk != NULL; stk = stk->prev) {
+    for (i = 0; i < stk->sp; ++i) {
+      if (stk->gs[i].gAddr->id != sgid) {
+        continue;
       }
 
-      MUSY_DEBUG("Song ID=%d is not in group ID=%d.", sid, sgid);
-      return 0xffffffff;
-    } else {
-      MUSY_DEBUG("Group ID=%d is no songgroup.", sgid);
-      return 0xffffffff;
+      if (stk->gs[i].gAddr->type == 0) {
+        g = stk->gs[i].gAddr;
+        prj = stk->gs[i].prjAddr;
+        norm = (PAGE*)((u32)prj + g->data.song.normpageOff);
+        drum = (PAGE*)((u32)prj + g->data.song.drumpageOff);
+        midiSetup = (MIDISETUP*)((u32)prj + g->data.song.midiSetupOff);
+        while (midiSetup->songId != 0xFFFF) {
+          if (midiSetup->songId == sid) {
+            if (irq_call != 0) {
+              seqId = seqStartPlay(norm, drum, midiSetup, arrfile, para, studio, sgid);
+            } else {
+              hwDisableIrq();
+              seqId = seqStartPlay(norm, drum, midiSetup, arrfile, para, studio, sgid);
+              hwEnableIrq();
+            }
+            return seqId;
+          }
+
+          ++midiSetup;
+        }
+
+        return 0xffffffff;
+      } else {
+        return 0xffffffff;
+      }
     }
   }
 
-  MUSY_DEBUG("Group ID=%d is not on soundstack.", sgid);
+  return 0xffffffff;
+}
+
+/* Inlined copy of seqPlaySong used by sndSeqPlayEx. */
+static inline u32 seqPlaySongInline(u16 sgid, u16 sid, void* arrfile, SND_PLAYPARA* para, u8 irq_call,
+                                    u8 studio) {
+  int i;
+  GROUP_DATA* g;
+  PAGE* norm;
+  PAGE* drum;
+  MIDISETUP* midiSetup;
+  u32 seqId;
+  void* prj;
+  DATA_STACK* stk;
+
+  for (stk = dataStackRoot; stk != NULL; stk = stk->prev) {
+    for (i = 0; i < stk->sp; ++i) {
+      if (stk->gs[i].gAddr->id != sgid) {
+        continue;
+      }
+
+      if (stk->gs[i].gAddr->type == 0) {
+        g = stk->gs[i].gAddr;
+        prj = stk->gs[i].prjAddr;
+        norm = (PAGE*)((u32)prj + g->data.song.normpageOff);
+        drum = (PAGE*)((u32)prj + g->data.song.drumpageOff);
+        midiSetup = (MIDISETUP*)((u32)prj + g->data.song.midiSetupOff);
+        while (midiSetup->songId != 0xFFFF) {
+          if (midiSetup->songId == sid) {
+            if (irq_call != 0) {
+              seqId = seqStartPlay(norm, drum, midiSetup, arrfile, para, studio, sgid);
+            } else {
+              hwDisableIrq();
+              seqId = seqStartPlay(norm, drum, midiSetup, arrfile, para, studio, sgid);
+              hwEnableIrq();
+            }
+            return seqId;
+          }
+
+          ++midiSetup;
+        }
+
+        return 0xffffffff;
+      } else {
+        return 0xffffffff;
+      }
+    }
+  }
+
   return 0xffffffff;
 }
 
 u32 sndSeqPlayEx(u16 sgid, u16 sid, void* arrfile, SND_PLAYPARA* para, u8 studio) {
-  return seqPlaySong(sgid, sid, arrfile, para, 0, studio);
+  return seqPlaySongInline(sgid, sid, arrfile, para, 0, studio);
 }

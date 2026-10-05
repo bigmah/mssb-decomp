@@ -801,10 +801,11 @@ Musyx/synth_vsamples.c:
 
 Musyx/s_data.c:
 	.text       start:0x800D2E54 end:0x800D3A34
+	.sbss       start:0x803CC328 end:0x803CC338
 
 Musyx/hw_dspctrl.c:
 	.text       start:0x800D3A34 end:0x800D70A4
-	.sbss       start:0x803CC330 end:0x803CC378
+	.sbss       start:0x803CC338 end:0x803CC378
 
 Musyx/hw_volconv.c:
 	.text       start:0x800D70A4 end:0x800D7794

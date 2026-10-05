@@ -949,6 +949,7 @@ void voiceKill(u32 vi);
 extern u64 synthRealTime;
 u32 synthGetTicksPerSecond(SYNTH_VOICE* svoice);
 void synthKillVoicesByMacroReferences(u16* ref);
+void synthKillVoicesBySampleReferences(u16* ref);
 void synthExit();
 u16 sndRand(void);
 s16 sndSin(u16 angle);
