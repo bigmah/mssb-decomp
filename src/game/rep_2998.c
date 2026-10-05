@@ -1,6 +1,8 @@
 #include "game/rep_2998.h"
 #include "header_rep_data.h"
 
+#pragma dont_inline on
+
 extern f32 lbl_3_rodata_2A5C;
 extern u8 lbl_3_data_18ED0[];
 
@@ -116,7 +118,7 @@ void fn_3_E29B4(void) {
 }
 
 // .text:0x000E2B70 size:0x308 mapped:0x80721C04
-void fn_3_E2B70(void) {
+u8 fn_3_E2B70(u8* a) {
     return;
 }
 
@@ -136,15 +138,31 @@ void fn_3_E3044(void) {
 }
 
 // .text:0x000E3284 size:0x3E4 mapped:0x80722318
-void fn_3_E3284(void) {
+void fn_3_E3284(u8* a) {
     return;
 }
 
 // .text:0x000E3668 size:0xFC mapped:0x807226FC
-void fn_3_E3668(void) {
-    return;
+void fn_3_E3668(u8* a) {
+    Vec v1;
+    Vec v2;
+    f32 r;
+    if (fn_3_E2B70(a)) {
+        fn_3_E3284(a);
+        return;
+    }
+    v1 = lbl_3_rodata_2A48;
+    PSVECSubtract((Vec*)g_Ball, (Vec*)(a + 0xA0), &v2);
+    v2.y = lbl_3_rodata_2A5C;
+    PSVECNormalize(&v2, &v2);
+    PSVECNormalize(&v1, &v1);
+    r = lbl_3_rodata_2A60 * (f32)acos(PSVECDotProduct(&v2, &v1));
+    if (v2.x < lbl_3_rodata_2A5C) {
+        r = lbl_3_rodata_2A64 - r;
+    }
+    *(f32*)(a + 0xB0) = -r;
+    CTRLSetRotation((Control*)a, 0.0f, *(f32*)(a + 0xB0), 0.0f);
 }
-
 // .text:0x000E3764 size:0x1B0 mapped:0x807227F8
 void fn_3_E3764(void) {
     return;
