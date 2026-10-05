@@ -37,7 +37,7 @@ void fn_3_74128(void);
 void fn_3_74AC4(void);
 void fn_3_74D0C(void);
 void fn_3_75090(void);
-void fn_3_750C4(void);
+void fn_3_750C4(u8 v);
 void fn_3_750DC(void);
 void fn_3_751B4(void);
 void fn_3_753E8(void);

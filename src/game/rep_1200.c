@@ -174,8 +174,11 @@ void fn_3_75090(void) {
 }
 
 // .text:0x000750C4 size:0x18 mapped:0x806B4158
-void fn_3_750C4(void) {
-    return;
+extern u8 g_Pitcher[];
+
+void fn_3_750C4(u8 v) {
+    g_Pitcher[0x13E] = v;
+    *(s16*)(g_Pitcher + 0x120) = 0;
 }
 
 // .text:0x000750DC size:0xD8 mapped:0x806B4170
