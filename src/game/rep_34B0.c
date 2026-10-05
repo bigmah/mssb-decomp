@@ -17,6 +17,11 @@ extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
 
 extern void fn_3_5A6D4(s32);
+extern f32 lbl_3_data_21770[];
+extern f32 lbl_3_rodata_351C[];
+extern f32 lbl_3_rodata_3518;
+extern void fn_8004C108(f32*, s32);
+extern void fn_3_90064(s32);
 extern u8 lbl_3_data_18C48[];
 extern u8 lbl_8037169C[];
 extern void changeScene(s32, s32);
@@ -78,8 +83,31 @@ void fn_3_12F624(void) {
 }
 
 // .text:0x0012F9D4 size:0xF0 mapped:0x8076EA68
-void fn_3_12F9D4(void) {
-    return;
+void fn_3_12F9D4(s32 idx) {
+    f32 v[3];
+    f32* a = (f32*)(g_Minigame + idx * 0x34 + 0x860);
+    a[1] += lbl_3_data_21770[1];
+    if (a[1] < a[4]) {
+        a[1] = a[4];
+        if (a[7] != a[4]) {
+            f32 z = a[2];
+            f32 y = a[1];
+            f32 x = a[0];
+            v[1] = y;
+            v[2] = z;
+            v[0] = x;
+            v[1] = -v[1];
+            v[2] = v[2] - lbl_3_rodata_351C[0];
+            if (y <= lbl_3_rodata_3518) {
+                fn_8004C108(v, 1);
+                fn_3_90064(0x2E4);
+            } else {
+                fn_8004C108(v, 0);
+                fn_3_90064(0x2E5);
+            }
+        }
+        *((u8*)a + 0x30) = 2;
+    }
 }
 
 // .text:0x0012FAC4 size:0x2A8 mapped:0x8076EB58
