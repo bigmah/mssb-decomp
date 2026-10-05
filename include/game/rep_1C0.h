@@ -25,5 +25,6 @@ void fn_3_5BF0(void);
 void fn_3_5C68(void);
 void fn_3_5E60(void);
 void fn_3_64DC(void);
+s16 fn_3_6424(u8* base, u8** out);
 
 #endif // !__GAME_rep_1C0_H_

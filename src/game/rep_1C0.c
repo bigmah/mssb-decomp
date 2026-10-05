@@ -1,18 +1,23 @@
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/GX.h"
+#include "Dolphin/mtx.h"
 #pragma dont_inline on
 
 extern u8 lbl_803CBBC0;
 extern u32 lbl_3_data_A10[];
 
 extern u32 lbl_3_bss_18[];
+extern f32 lbl_3_rodata_504;
+extern f32 lbl_3_rodata_524;
+extern f32 lbl_3_rodata_528;
+extern f32 lbl_3_rodata_52C;
+extern f32 lbl_3_rodata_530;
 extern f32 lbl_3_rodata_520[];
 extern f32 lbl_3_rodata_538[];
 extern u8 g_UNK_StadiumDetails[];
 extern u32 fn_80009028(void);
-typedef struct { u8 r, g, b, a; } GXColorX;
-extern void GXSetCopyClear(GXColorX c, u32 z);
 extern void SetFog(u8, s32*, f32, f32, f32, f32);
 
 // .text:0x000035D4 size:0x10
@@ -28,7 +33,7 @@ void fn_3_35E4(u32 val) {
 // .text:0x000035F0 size:0x48
 void fn_3_35F0(void) {
     if (fn_80009028() == 0) {
-        GXSetCopyClear(*(GXColorX*)(g_UNK_StadiumDetails + 0x76C), 0xFFFFFF);
+        GXSetCopyClear(*(GXColor*)(g_UNK_StadiumDetails + 0x76C), 0xFFFFFF);
     }
 }
 
@@ -69,7 +74,16 @@ void fn_3_42CC(void) {
 
 // .text:0x00004984 size:0xB4 mapped:0x80643A18
 void fn_3_4984(void) {
-    return;
+    Mtx mtx;
+    Mtx44 proj;
+    GXSetZMode(1, 7, 1);
+    GXSetScissor(0, 0, 0x280, 0x1C0);
+    C_MTXOrtho(proj, lbl_3_rodata_504, lbl_3_rodata_524, lbl_3_rodata_504, lbl_3_rodata_528, lbl_3_rodata_52C, lbl_3_rodata_530);
+    GXSetProjection(proj, 1);
+    GXSetCullMode(0);
+    PSMTXIdentity(mtx);
+    GXLoadPosMtxImm(mtx, 0);
+    GXSetCurrentMtx(0);
 }
 
 // .text:0x00004A38 size:0x558 mapped:0x80643ACC
@@ -146,4 +160,18 @@ extern s32 ARAMTransfer(void*, int, int, int);
 // .text:0x000064DC size:0x54
 void fn_3_64DC(void) {
     ARAMTransfer(lbl_3_data_7EC + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 0, 0);
+}
+
+// .text:0x00006424 size:0xB8
+// near-match: prologue register allocation (r5/r0/r6) differs
+s16 fn_3_6424(u8* base, u8** out) {
+    s16 n = *(u16*)base;
+    u32* p = (u32*)(base + 4);
+    s32 i;
+    *out = (u8*)p;
+    for (i = n; i >= 0; i--) {
+        *p += (u32)base;
+        p++;
+    }
+    return n;
 }
