@@ -13,7 +13,7 @@ void fn_3_169D00(u8* base, u32* cnt);
 void fn_3_169E70(u8* base);
 void fn_3_16A07C(void);
 void fn_3_16B488(void* out, s8 id);
-void fn_3_16B5B4(void);
+void fn_3_16B5B4(u8* out, s8 id, int t);
 void fn_3_16B884(void);
 void fn_3_16C394(s8 a);
 
