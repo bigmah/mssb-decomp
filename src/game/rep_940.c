@@ -1,6 +1,7 @@
 #include "game/rep_940.h"
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
+#include "game/rep_1200.h"
 extern f32 lbl_3_rodata_990;
 extern f32 lbl_3_rodata_994;
 extern f32 lbl_3_rodata_998;
@@ -95,6 +96,7 @@ void fn_3_20EEC(void) {
 }
 
 // .text:0x00020FB0 size:0x2F0 mapped:0x80660044
+#pragma dont_inline on
 void fn_3_20FB0(void) {
     return;
 }
@@ -103,10 +105,40 @@ void fn_3_20FB0(void) {
 void fn_3_212A0(void) {
     return;
 }
+#pragma dont_inline reset
 
 // .text:0x000215AC size:0x1BC mapped:0x80660640
 void fn_3_215AC(void) {
-    return;
+    f32 d;
+    f32 b;
+    f32 a;
+    f32 s;
+    if (g_Pitcher.currentStateFrameCounter == 1) {
+        fn_3_20EEC();
+    }
+    if (g_Pitcher.currentStateFrameCounter >= 0x1E && (a = g_AiLogic.aIMoundLocationX) != (b = g_Pitcher.pitcher.x)) {
+        d = a - b;
+        if (d > lbl_3_rodata_990) {
+            if (d <= lbl_3_data_4474[2]) {
+                g_Pitcher.pitcher.x = a;
+            } else {
+                g_Pitcher.pitcher.x = b + lbl_3_data_4474[2];
+            }
+        } else {
+            s = lbl_3_data_4474[2];
+            if (d >= -s) {
+                g_Pitcher.pitcher.x = a;
+            } else {
+                g_Pitcher.pitcher.x = b - s;
+            }
+        }
+    }
+    if (g_Pitcher.currentStateFrameCounter >= *(s16*)&g_AiLogic.AIFrameToBeginPitch && g_Batter.beginningOfABAnimationOccuring == 0) {
+        fn_3_212A0();
+        fn_3_20FB0();
+        fn_3_750C4(2);
+        *((u8*)&g_Stats + 0x38) = 1;
+    }
 }
 
 // .text:0x00021768 size:0x238 mapped:0x806607FC
