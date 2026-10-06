@@ -11,6 +11,7 @@ extern u8 g_Minigame[];
 extern u8 lbl_3_common_bss_35154[];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_3_data_28508[];
+extern u8 lbl_3_data_28558[];
 extern s32 lbl_803CBD0C;
 extern s32 fn_8001B728(s32, s32, void*);
 extern void fn_80026998(void*);
@@ -109,7 +110,39 @@ void fn_3_166E04(void) {
 
 // .text:0x00166FCC size:0x1AC mapped:0x807A6060
 void fn_3_166FCC(void) {
-    return;
+    u8* st = lbl_803CC1B8;
+    u8* o;
+    s16 c;
+    u8 v[0xC];
+    u8 buf[0x50];
+    s8 id;
+    if (*((u8*)&g_d_GameSettings + 0x55) != 0 || lbl_3_common_bss_35154[0x479] != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (g_GameLogic[0x11E] != 2) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    c = *(s16*)(*(u8**)(st + 0x14) + 0x62);
+    if (c == 0x26 || c == 0x27) {
+        id = (s8)lbl_3_data_28558[(u32)rand() % 0x17];
+        o = *(u8**)(st + 0x14);
+        memset(v, 0, 0xC);
+        memcpy(buf, lbl_3_data_28508, 0x50);
+        *(s32*)buf = lbl_803CBD0C;
+        if (fn_8001B728(*(s8*)(o + 0x254), id, v) == 0) {
+            memset(v, 0, 0xC);
+            fn_8001B728(*(s8*)(o + 0x254), 4, v);
+        }
+        memcpy(buf + 0x40, v, 0xC);
+        buf[0x4C] = rand() % 256;
+        buf[0x4D] = rand() % 256;
+        buf[0x4E] = rand() % 256;
+        fn_80026998(buf);
+    } else {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 
 // .text:0x00167178 size:0x358 mapped:0x807A620C
