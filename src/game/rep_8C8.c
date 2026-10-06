@@ -4,6 +4,7 @@
 #include "game/rep_1838.h"
 #pragma dont_inline on
 extern s32 fn_3_B0CF4(void);
+extern u8 lbl_3_data_1ABC[];
 extern u8 lbl_3_data_1AAC[];
 extern u8 lbl_3_data_1AB0[];
 
@@ -82,7 +83,30 @@ void fn_3_1FF48(void) {
 
 // .text:0x00020064 size:0x124 mapped:0x8065F0F8
 void fn_3_20064(void) {
-    return;
+    u8 t;
+    g_AiLogic.batterAITrackBallPoorlyOffset = 0.0f;
+    if (g_Pitcher.starPitchType == 0) {
+        t = g_Pitcher.TypeOfPitch;
+        if (t == 0) {
+            g_AiLogic.batterAISwingEarly1OrLate2 = 0;
+        } else if (g_AiLogic.batterAIPitchGuessed != t) {
+            if (t == 1) {
+                if (RandomInt_Game(0x64) < (s32)(lbl_3_data_1ABC + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty]) {
+                    g_AiLogic.batterAISwingEarly1OrLate2 = 0;
+                } else {
+                    g_AiLogic.batterAISwingEarly1OrLate2 = 1;
+                }
+            } else {
+                if (RandomInt_Game(0x64) < (s32)(lbl_3_data_1ABC + g_Batter.characterClass * 4 + g_AiLogic.aIBatterDifficulty)[0x10]) {
+                    g_AiLogic.batterAISwingEarly1OrLate2 = 0;
+                } else {
+                    g_AiLogic.batterAISwingEarly1OrLate2 = 2;
+                }
+            }
+        } else {
+            g_AiLogic.batterAISwingEarly1OrLate2 = 0;
+        }
+    }
 }
 
 // .text:0x00020188 size:0x9C mapped:0x8065F21C
