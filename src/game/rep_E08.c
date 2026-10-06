@@ -21,7 +21,17 @@ extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
 
 // .text:0x00060768 size:0x9C mapped:0x8069F7FC
 void fn_3_60768(void) {
-    return;
+    int i;
+    for (i = 0; i < 4; i++) {
+        u8* e = *(u8**)(lbl_8036E548 + 0x60) + i * 0x90;
+        *(s32*)(e + 0x38) = 0;
+        *(s16*)(e + 0x42) = 0;
+        *(f32*)(e + 0x90) = 0.0f;
+        e[0x8C] = 1;
+        e[0x8D] = 0;
+        e[0x8E] = 0;
+        *(f32*)(e + 0x94) = 0.0f;
+    }
 }
 
 // .text:0x00060804 size:0x294 mapped:0x8069F898
