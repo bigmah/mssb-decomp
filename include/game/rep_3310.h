@@ -43,7 +43,7 @@ void fn_3_119F6C(void);
 void fn_3_11A20C(void);
 void fn_3_11A210(void);
 u32 fn_3_11A350(int i);
-void fn_3_11A38C(void);
+void fn_3_11A38C(s32 i, s16 h);
 void fn_3_11A408(void);
 void fn_3_11A92C(void);
 void fn_3_11AB2C(void);
