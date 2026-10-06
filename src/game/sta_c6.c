@@ -1,6 +1,7 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
 #include "Dolphin/stl.h"
+#include "Dolphin/os.h"
 extern u8 lbl_3_data_19024[];
 
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
@@ -21,6 +22,9 @@ extern u8 lbl_3_common_bss_350E4[];
 #pragma dont_inline on
 
 extern u8 lbl_3_data_196B4[];
+extern u8 lbl_8036E548[];
+extern char lbl_3_rodata_2BB0[];
+extern char lbl_3_rodata_2BBC[];
 
 extern u8 lbl_3_common_bss_350E4[];
 
@@ -118,8 +122,27 @@ void fn_3_E6528(u8* p) {
 }
 
 // .text:0x000E6578 size:0xC0 mapped:0x8072560C
-void fn_3_E6578(void) {
-    return;
+void fn_3_E6578(u8* a) {
+    u8** p;
+    u8* q;
+    u8* r;
+
+    p = *(u8***)(a + 0x9C);
+    if (p == NULL) {
+        return;
+    }
+    q = *(u8**)(*(u8**)(*(u8**)(*p + 0x18) + 4) + 0x14);
+    r = *(u8**)(q + 8);
+    if ((*(u8**)(*(u8**)(q + 0x10) + 4))[0x20] != 3) {
+        OSPanic(lbl_3_rodata_2BB0, 0x713, lbl_3_rodata_2BBC);
+    }
+    if (a[0xC1] == 2) {
+        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 1;
+    } else if (a[0xC1] == 10) {
+        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 0;
+    } else {
+        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 4;
+    }
 }
 
 // .text:0x000E6638 size:0x4C mapped:0x807256CC
@@ -186,8 +209,23 @@ void fn_3_E6798(u8* a) {
 }
 
 // .text:0x000E67F4 size:0xB4 mapped:0x80725888
+typedef struct { u8 pad[0x34]; u8 sub[0x5C]; } E67F4B;
 void fn_3_E67F4(void) {
-    return;
+    u32 i;
+    void* o;
+    u8* e;
+    u8* b;
+
+    for (i = 0; i < 7; i++) {
+        lbl_3_data_196B4[i] = 0;
+        b = *(u8**)(lbl_8036E548 + 0x6C);
+        o = *(void**)(b + i * 0x90 + 0x934);
+        e = ((E67F4B*)b)[i + 0x10].sub;
+        *(f32*)(e + 0x5C) = 20.0f;
+        e[0x59] = 1;
+        fn_800B4CA0(o, *(f32*)(*(u8**)(lbl_8036E548 + 0x6C) + i * 0x90 + 0x990));
+        AnimateActorBones(o);
+    }
 }
 
 // .text:0x000E68A8 size:0xE4 mapped:0x8072593C
@@ -196,8 +234,22 @@ void fn_3_E68A8(void) {
 }
 
 // .text:0x000E698C size:0xBC mapped:0x80725A20
-void fn_3_E698C(void) {
-    return;
+void fn_3_E698C(u8* a) {
+    void* o;
+    f32 t;
+    u8 idx;
+    void* tmp;
+
+    o = tmp = **(void***)(a + 0x74);
+    t = fn_800B4C40(tmp);
+    idx = a[0xC1] - 0x10;
+    if (lbl_3_data_196B4[idx] == 0) {
+        fn_800B4CA0(o, 0.0f);
+        AnimateActorBones(o);
+    }
+    if (lbl_3_data_196B4[idx] != 0 && t <= 60.0f) {
+        AnimateActorBones(o);
+    }
 }
 
 // .text:0x000E6A48 size:0x348 mapped:0x80725ADC
