@@ -15,10 +15,22 @@ typedef struct {
 } StrikesT;
 extern StrikesT g_Strikes;
 extern f32 lbl_3_data_446C[];
+extern u8 g_Runners[];
+extern void fn_3_5C69C(int);
 
 // .text:0x0006F6CC size:0x7C mapped:0x806AE760
-void fn_3_6F6CC(void) {
-    return;
+int fn_3_6F6CC(void) {
+    int i;
+    u8* r = g_Runners + 0x154;
+    for (i = 0; i < 3; i++) {
+        if (r[0x123] == 1 && *(f32*)(r + 0x68) > 0.5f) {
+            *(s16*)(g_Pitcher + 0x12E) = 4;
+            fn_3_5C69C(0);
+            return 1;
+        }
+        r += 0x154;
+    }
+    return 0;
 }
 
 // .text:0x0006F748 size:0x2E0 mapped:0x806AE7DC
