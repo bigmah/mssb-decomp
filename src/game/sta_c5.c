@@ -220,8 +220,17 @@ void fn_3_F13F8(u8* p) {
 }
 
 // .text:0x000F1448 size:0xD0 mapped:0x807304DC
-void fn_3_F1448(void) {
-    return;
+typedef struct { f32 a, b, c, d, e, f; } E18;
+extern E18 lbl_3_data_1B9A4[];
+void fn_3_F1448(u8* a) {
+    *(f32*)(a + 0xA0) = lbl_3_data_1B9A4[a[0x9C]].a;
+    *(f32*)(a + 0xA4) = lbl_3_data_1B9A4[a[0x9C]].b;
+    *(f32*)(a + 0xA8) = lbl_3_data_1B9A4[a[0x9C]].c;
+    *(f32*)(a + 0xAC) = -lbl_3_data_1B9A4[a[0x9C]].d;
+    a[0] = 0;
+    CTRLSetTranslation((Control*)a, *(f32*)(a + 0xA0), -*(f32*)(a + 0xA4), *(f32*)(a + 0xA8));
+    CTRLSetRotation((Control*)a, 0.0f, *(f32*)(a + 0xAC), 0.0f);
+    CTRLSetScale((Control*)a, 1.0f, 1.0f, 1.0f);
 }
 
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
