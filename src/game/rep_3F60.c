@@ -31,8 +31,31 @@ void fn_3_168DFC(void) {
     return;
 }
 
+extern u8 lbl_8036E548[];
+extern u8* lbl_803CC1B8;
+extern s32 lbl_3_data_28680[];
+extern u16 lbl_3_data_2891E;
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+extern void getAnimRelatedCoordinates(s32, s32, void*);
+
 // .text:0x00168FA0 size:0x120 mapped:0x807A8034
-void fn_3_168FA0(void) {
-    return;
+void fn_3_168FA0(s32 a, s32 b) {
+    u8* q;
+    if (((u32*)(lbl_8036E548 + 0x2C50))[a] != 0) {
+        q = fn_800B0A5C_insertQueue(fn_3_168DFC, (u16)(*(u16*)(lbl_803CC1B8 + 0x12) + 1));
+        q[0x29] = a;
+        *(s16*)(q + 0x24) = 0;
+        *(f32*)(q + 0x20) = (f32)lbl_3_data_28680[0x34 / 4] / 100000.0f;
+        getAnimRelatedCoordinates(a, lbl_3_data_2891E, q + 0x14);
+        if (b != 0) {
+            q[0x2A] = 1;
+            q[0x28] = 3;
+            q[0x2B] = 6;
+        } else {
+            q[0x2A] = 0;
+            q[0x28] = 2;
+            q[0x2B] = 5;
+        }
+    }
 }
 

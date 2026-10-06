@@ -9,6 +9,6 @@ void fn_3_16892C(void);
 void fn_3_168A6C(void);
 void fn_3_168CD8(void);
 void fn_3_168DFC(void);
-void fn_3_168FA0(void);
+void fn_3_168FA0(s32 a, s32 b);
 
 #endif // !__GAME_rep_3F60_H_
