@@ -11,6 +11,10 @@ extern char lbl_3_rodata_2F10[];
 #include "Dolphin/vec.h"
 typedef struct { Vec v; f32 pad[2]; } V14;
 extern V14 lbl_3_data_1B884[];
+typedef struct { f32 a, b, c, d, e, f; } T18;
+extern T18 lbl_3_data_1B9A4[];
+extern f32 lbl_3_rodata_2D5C;
+extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
 extern u8 lbl_8036E548[];
@@ -213,8 +217,15 @@ void fn_3_F13F8(u8* p) {
 }
 
 // .text:0x000F1448 size:0xD0 mapped:0x807304DC
-void fn_3_F1448(void) {
-    return;
+void fn_3_F1448(u8* p) {
+    *(f32*)(p + 0xA0) = lbl_3_data_1B9A4[p[0x9C]].a;
+    *(f32*)(p + 0xA4) = lbl_3_data_1B9A4[p[0x9C]].b;
+    *(f32*)(p + 0xA8) = lbl_3_data_1B9A4[p[0x9C]].c;
+    *(f32*)(p + 0xAC) = -lbl_3_data_1B9A4[p[0x9C]].d;
+    p[0] = 0;
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetRotation((Control*)p, 0.0f, *(f32*)(p + 0xAC), 0.0f);
+    CTRLSetScale((Control*)p, lbl_3_rodata_2D50, lbl_3_rodata_2D50, lbl_3_rodata_2D50);
 }
 
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
