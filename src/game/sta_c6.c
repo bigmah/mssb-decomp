@@ -1,6 +1,7 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
 #include "Dolphin/stl.h"
+#include "Dolphin/os.h"
 extern u8 lbl_3_data_19024[];
 
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
@@ -22,6 +23,8 @@ extern u8 lbl_3_common_bss_350E4[];
 
 extern u8 lbl_3_data_196B4[];
 extern u8 lbl_8036E548[];
+extern char lbl_3_rodata_2BB0[];
+extern char lbl_3_rodata_2BBC[];
 
 extern u8 lbl_3_common_bss_350E4[];
 
@@ -119,8 +122,27 @@ void fn_3_E6528(u8* p) {
 }
 
 // .text:0x000E6578 size:0xC0 mapped:0x8072560C
-void fn_3_E6578(void) {
-    return;
+void fn_3_E6578(u8* a) {
+    u8** p;
+    u8* q;
+    u8* r;
+
+    p = *(u8***)(a + 0x9C);
+    if (p == NULL) {
+        return;
+    }
+    q = *(u8**)(*(u8**)(*(u8**)(*p + 0x18) + 4) + 0x14);
+    r = *(u8**)(q + 8);
+    if ((*(u8**)(*(u8**)(q + 0x10) + 4))[0x20] != 3) {
+        OSPanic(lbl_3_rodata_2BB0, 0x713, lbl_3_rodata_2BBC);
+    }
+    if (a[0xC1] == 2) {
+        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 1;
+    } else if (a[0xC1] == 10) {
+        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 0;
+    } else {
+        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 4;
+    }
 }
 
 // .text:0x000E6638 size:0x4C mapped:0x807256CC
