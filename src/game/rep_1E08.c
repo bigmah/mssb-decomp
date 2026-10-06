@@ -133,7 +133,7 @@ void fn_3_BC6D8(void) {
 
 // .text:0x000BC850 size:0x38 mapped:0x806FB8E4
 void fn_3_BC850(int a, int i) {
-    fn_8003A688(lbl_3_data_111C8[i].x, lbl_3_data_111C8[i].y);
+    ((void (*)(int, f32, f32))fn_8003A688)(a, lbl_3_data_111C8[i].x, lbl_3_data_111C8[i].y);
 }
 
 // .text:0x000BC888 size:0x198 mapped:0x806FB91C
