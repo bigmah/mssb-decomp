@@ -82,7 +82,15 @@ void fn_3_26A74(void) {
 
 // .text:0x00027648 size:0xF0 mapped:0x806666DC
 void fn_3_27648(void) {
-    return;
+    u8* f = g_Fielders;
+    int i;
+    for (i = 0; i < 9; i++) {
+        if (f[0x252] != 0) {
+            f[0x25B] = 1;
+            g_Ball[0x1BF0] = 0;
+        }
+        f += 0x268;
+    }
 }
 
 // .text:0x00027738 size:0x2C mapped:0x806667CC
