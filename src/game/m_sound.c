@@ -26,6 +26,9 @@ extern u8 lbl_3_data_8D70[];
 extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
 extern u8 lbl_3_common_bss_32B20[];
 extern void sndRemoveListener(void*);
+extern void fn_800A86B4(int);
+extern void fn_800A88C0(void);
+extern void fn_800A8B78(void);
 extern void OSPanic(const char*, int, const char*, ...);
 extern char lbl_3_rodata_1590[];
 extern char lbl_3_rodata_15DC[];
@@ -358,6 +361,30 @@ void fn_3_903B8(void) {
     if (sndSeqGetValid(s->unk8)) {
         sndSeqVolume(0, 0xA0, s->unk8, 1);
     }
+}
+
+// .text:0x00090434 size:0x138
+void fn_3_90434(void) {
+    SndState34C58* s;
+    s32 i;
+    fn_800A86B4(3);
+    fn_800A88C0();
+    fn_800A8B78();
+    s = &S34C58;
+    if (sndSeqGetValid(s->unk4)) {
+        sndSeqVolume(0, 0, s->unk4, 1);
+    }
+    s = &S34C58;
+    if (sndSeqGetValid(s->unk8)) {
+        sndSeqVolume(0, 0, s->unk8, 1);
+    }
+    for (i = 0; i < 3; i++) {
+        if (*(u32*)(B34C58 + 0xC + i * 4) != 0xFFFFFFFF) {
+            sndFXKeyOff(*(u32*)(B34C58 + 0xC + i * 4));
+            *(s32*)(B34C58 + 0xC + i * 4) = -1;
+        }
+    }
+    fn_3_8BDF4();
 }
 
 // .text:0x00090674 size:0x88 mapped:0x806CF708
