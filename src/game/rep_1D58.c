@@ -89,6 +89,11 @@ extern void GXSetTevAlphaIn(int, int, int, int, int);
 extern void GXSetTevAlphaOp(int, int, int, int, int, int);
 extern void fn_800ACFB0(u32);
 extern void* _OSAllocFromHeap(s32, s32);
+extern void ACTSetAnimation(void*, void*, int, u16, f32, f32);
+extern void fn_800B4BC8(void*, int);
+extern void fn_800B4CA0(void*, f32);
+extern void fn_800B4C04(void*, f32);
+extern void fn_800B4AFC(void*, s32);
 
 typedef struct StadExtra {
     f32 a, b, c;
@@ -504,8 +509,37 @@ void fn_3_B97C8(void* p) {
 }
 
 // .text:0x000B97DC size:0x10C mapped:0x806F8870
-void fn_3_B97DC(void) {
-    return;
+void fn_3_B97DC(u8* p, u32 f) {
+    if (p == NULL || f == 0) {
+        return;
+    }
+    *(u32*)(p + 4) = f;
+    *(u16*)(p + 0xE) = 0;
+    *(f32*)(p + 0x5C) = 0.0f;
+    p[0x58] = 1;
+    p[0x59] = (f != 0);
+    p[0x5A] = (f != 0);
+    *(f32*)(p + 0x60) = 0.0f;
+    p[0x5B] = 3;
+    *(f32*)(p + 0x5C) = 0.0f;
+    p[0x59] = 1;
+    *(f32*)(p + 0x54) = 1.0f;
+    p[0x5A] = 1;
+    *(u32*)(p + 0x68) = 0;
+    p[0x58] = 1;
+    if (p[0x58] != 0) {
+        ACTSetAnimation(*(void**)p, *(void**)(p + 4), 0, *(u16*)(p + 0xE), 0.0f, *(f32*)(p + 0x60));
+        fn_800B4BC8(*(void**)p, 1);
+    }
+    if (p[0x59] != 0) {
+        fn_800B4CA0(*(void**)p, *(f32*)(p + 0x5C));
+    }
+    if (p[0x5A] != 0) {
+        fn_800B4C04(*(void**)p, *(f32*)(p + 0x54));
+    }
+    if (p[0x5B] & 1) {
+        fn_800B4AFC(*(void**)p, p[0x5B] & 1);
+    }
 }
 
 // .text:0x000B98E8 size:0xFC mapped:0x806F897C

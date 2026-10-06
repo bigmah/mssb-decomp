@@ -33,7 +33,7 @@ void fn_3_B9524(void);
 void* fn_3_B9534(u32 w, u32 h, void* tex);
 void fn_3_B95EC(void);
 void fn_3_B97C8(void* p);
-void fn_3_B97DC(void);
+void fn_3_B97DC(u8* p, u32 f);
 void fn_3_B98E8(void* p);
 void fn_3_B99E4(void);
 s32 fn_3_B9BB4(u32 type);
