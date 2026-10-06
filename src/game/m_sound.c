@@ -26,6 +26,8 @@ extern u8 lbl_3_data_8D70[];
 extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
 extern u8 lbl_3_common_bss_32B20[];
 extern void sndRemoveListener(void*);
+extern void* fn_80052734(int);
+#include "Dolphin/mtx.h"
 extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32, u8, void*);
 extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
@@ -58,8 +60,24 @@ void fn_3_8B2E4(void) {
 }
 
 // .text:0x0008B718 size:0xC4 mapped:0x806CA7AC
-void fn_3_8B718(void) {
-    return;
+void fn_3_8B718(f32* a, f32* b, f32* c) {
+    u8* cam = fn_80052734(0);
+    if (a != NULL) {
+        a[0] = *(f32*)(cam + 0x70);
+        a[1] = *(f32*)(cam + 0x74);
+        a[2] = *(f32*)(cam + 0x78);
+    }
+    if (b != NULL) {
+        b[0] = 0.0f;
+        b[1] = 0.0f;
+        b[2] = 0.0f;
+    }
+    if (c != NULL) {
+        PSVECSubtract((Vec*)(cam + 0x7C), (Vec*)(cam + 0x70), (Vec*)c);
+        if (PSVECMag((Vec*)c)) {
+            PSVECNormalize((Vec*)c, (Vec*)c);
+        }
+    }
 }
 
 // .text:0x0008B7DC size:0x28 mapped:0x806CA870
