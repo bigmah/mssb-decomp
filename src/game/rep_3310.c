@@ -5,6 +5,8 @@ extern f32 lbl_3_data_2262C;
 extern f32 lbl_3_data_22650[];
 extern u8 lbl_3_data_22670[];
 extern u8 lbl_3_data_2265C[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_8036E548[];
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
 void fn_3_116840(void) {
@@ -173,7 +175,22 @@ void fn_3_119934(void) {
 
 // .text:0x00119C34 size:0x74 mapped:0x80758CC8
 void fn_3_119C34(void) {
-    return;
+    u8* p = *(u8**)(lbl_8036E548 + 0x68);
+    s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
+    s8 t;
+    *(s32*)(p + 0x11A8) = v;
+    *(s16*)(p + 0x11B2) = 1;
+    t = v != 0;
+    *(f32*)(p + 0x1200) = 0.0f;
+    *(u8*)(p + 0x11FC) = 1;
+    *(u8*)(p + 0x11FD) = t;
+    *(u8*)(p + 0x11FE) = t;
+    *(f32*)(p + 0x1204) = 0.0f;
+    *(f32*)(p + 0x11F8) = 1.0f;
+    *(u8*)(p + 0x11FE) = 1;
+    *(f32*)(p + 0x1200) = 0.0f;
+    *(u8*)(p + 0x11FD) = 1;
+    *(u8*)(p + 0x11FF) = 2;
 }
 
 // .text:0x00119CA8 size:0x80 mapped:0x80758D3C
