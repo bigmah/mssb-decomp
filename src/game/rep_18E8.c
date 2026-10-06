@@ -3,7 +3,18 @@
 
 extern u8 g_Ball[];
 extern u8 g_FieldingLogic[];
-extern f32 g_Runners;
+typedef struct {
+    /*0x000*/ f32 x;
+    /*0x004*/ u8 pad004[0x64 - 0x4];
+    /*0x064*/ f32 fractionalBasesRan;
+    /*0x068*/ f32 percentTowardsNextBase;
+    /*0x06C*/ u8 pad06C[0xE6 - 0x6C];
+    /*0x0E6*/ s16 unkE6;
+    /*0x0E8*/ u8 pad0E8[0x123 - 0xE8];
+    /*0x123*/ u8 status;
+    /*0x124*/ u8 pad124[0x154 - 0x124];
+} RunnerT;
+extern RunnerT g_Runners[];
 extern u8 g_Fielders[];
 extern void fn_3_52F4C(s16, f32, f32);
 extern u8 g_GameLogic[];
@@ -21,6 +32,8 @@ extern f32 lbl_3_rodata_19F0;
 extern f32 lbl_3_rodata_1994;
 extern f32 lbl_3_rodata_1998;
 extern f32 lbl_3_rodata_19B8;
+extern f32 lbl_3_rodata_1978;
+extern f32 lbl_3_rodata_193C;
 
 // .text:0x000A009C size:0x1C68 mapped:0x806DF130
 void fn_3_A009C(void) {
@@ -28,8 +41,29 @@ void fn_3_A009C(void) {
 }
 
 // .text:0x000A1D04 size:0x9C mapped:0x806E0D98
-void fn_3_A1D04(void) {
-    return;
+s32 fn_3_A1D04(void) {
+    f32 prev = lbl_3_rodata_1978;
+    s32 prevIdx;
+    RunnerT* r = &g_Runners[3];
+    s32 i;
+    for (i = 3; i >= 0; r--, i--) {
+        if (r->status == 1) {
+            f32 cur = r->fractionalBasesRan;
+            f32 d = cur - prev;
+            if (d < lbl_3_rodata_193C) {
+                d = -d;
+            }
+            if (d < 0.35f) {
+                if (g_Runners[prevIdx].unkE6 < 0) {
+                    return prevIdx;
+                }
+                return i;
+            }
+            prev = cur;
+            prevIdx = i;
+        }
+    }
+    return -1;
 }
 
 // .text:0x000A1DA0 size:0x19C mapped:0x806E0E34
@@ -108,7 +142,7 @@ int fn_3_A36BC(void) {
     f32 x;
     if (z < lbl_3_rodata_1A0C && z > lbl_3_rodata_1A10) {
         x = *(f32*)(g_Ball + 0);
-        if (z < lbl_3_rodata_198C + x && z > x - lbl_3_rodata_198C && x > g_Runners) {
+        if (z < lbl_3_rodata_198C + x && z > x - lbl_3_rodata_198C && x > g_Runners[0].x) {
             return 1;
         }
     }
