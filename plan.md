@@ -107,7 +107,12 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **`fmuls` operand order** follows how the product is split: `sScale = a * b; x += (s32)(sScale * c)` fixed `mcmdSetADSR`; `(a*b)*c` in one expression did not.
 - **LE byte reads** (`lbz`/`rlwimi` chains, or `lhz` + `srawi`/`rlwimi` for u16) come from `p[0] | p[1] << 8 | ...` and `(v >> 8) | (v << 8)` macros (inline functions are blocked by `dont_inline on`).
 - **Inline call before optimisation:** if the original CSEs an index/field across an inlined static call (`voiceSetPriority`), it was a macro or hand-merged code, not an inline function.
-- **Still unsolved:** nested early returns that compile to `bge L; b L` (fn_3_15521C, fn_3_150010, fn_3_14DC80, fn_3_14CB28); pooled float constants in float-heavy functions.
+- **Nested early returns `bge L; b L` SOLVED:** write the guard as one early-return `if (a != 7 || b != 6 || x > 4 || x < 0) { return; } call();` (fn_3_150010, fn_3_14DC80, fn_3_15521C, fn_3_14CB28, fn_3_14A070 `if (n > 4 || n == 0 || src == NULL) return;`). Positive `&&` guards wrapping the body give `beq L` instead; use the positive form only when the original has plain `bne L` (fn_3_14C904).
+- **Dead stack copy of a rodata triple (fn_3_FD51C):** `V3U v = *(V3U*)rodata; *(V3U*)(p+0xC) = v;` reproduces lwz once + both stores + the stack store. A `u32 t[3]` dead copy is optimized away.
+- **Float constants as locals fix scheduling (fn_3_14D318):** `f32* d = (f32*)data; f32 h = 0.5f; ... d[3] * h` matched where the bare literal did not.
+- **`(u32)rand() % 23`** gives `mulhwu`, `rand() % 23` gives signed `mulhw`.
+- **Struct with bitfield for list refcount (fn_3_154238):** `typedef struct { u8 pad0[0xC]; u8* head; u8 pad[4]; u16 hi:4; u16 cnt:12; } H;` then `h->cnt--`; keep `link = &h->head` for the unlink pointer.
+- **Still unsolved:** pooled float constants in float-heavy functions (fn_3_148EF0, fn_3_14C3BC); `divwu` by 7 (fn_3_1575F0, fn_3_15730C: `n / 7` gives mulhwu); fn_3_FCE38/FCEB0 (out-of-line loop init blocks); fn_3_14E894 (99%, `li r30,0; mr r31,r30` zero reg).
 - **Brute-force expression/statement orderings:** when only scheduling or operand order differs, generate dozens of variants (term order, grouping, statement permutations) into files and score them all with `fnvariants.py`; this found `fn_3_142030`, `fn_3_1118B4` (`tbl[k] + rand() % 7 - 3`) quickly.
 - **Callee-passthrough arg:** if the original's first `lis` lands in r4 (r3 left untouched), the function takes an unused-looking arg that it forwards to its tail call (`void f(s32 x) { ...; ((void(*)(s32))g)(x); }`, `fn_3_143FAC`).
 - **Redundant `beq L; beq L` pair:** write the condition as `a == 0 || (a != 0 && ...)` (`fn_3_111AC4`).

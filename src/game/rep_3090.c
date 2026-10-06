@@ -8,6 +8,9 @@ extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
+extern u32 lbl_3_rodata_30EC[];
+extern u8 g_Camera[];
+extern s16 lbl_3_bss_B67A;
 extern void* memset(void*, s32, u32);
 extern f32 lbl_3_rodata_30FC;
 #pragma dont_inline on
@@ -62,8 +65,27 @@ void fn_3_FD4DC(void) {
 }
 
 // .text:0x000FD51C size:0x8C mapped:0x8073C5B0
-void fn_3_FD51C(void) {
-    return;
+typedef struct { u32 a, b, c; } V3U;
+
+void fn_3_FD51C(s32 i) {
+    u8* c = g_Camera + i * 0x9BC;
+    u8* p;
+    V3U v = *(V3U*)lbl_3_rodata_30EC;
+    *(u32*)(c + 0x140) = 0;
+    *(u32*)(c + 0x144) = 0;
+    p = c + 0x13C;
+    *(V3U*)(p + 0xC) = v;
+    *(u32*)(p + 0x1C) = 0;
+    *(u32*)(p + 0x20) = 0;
+    *(u32*)(p + 0x24) = 0;
+    *(u32*)(p + 0x28) = 0;
+    *(f32*)(p + 0x2C) = 0.0f;
+    *(u32*)(p + 0x30) = 0;
+    *(u32*)(p + 0x34) = 0;
+    *(u32*)(p + 0x38) = 0;
+    *(u32*)(p + 0x3C) = 0;
+    *(u32*)(p + 0x40) = 0;
+    *(f32*)(p + 0x44) = 0.0f;
 }
 
 // .text:0x000FD5A8 size:0xC8 mapped:0x8073C63C
@@ -259,13 +281,39 @@ void fn_3_105E00(void) {
 }
 
 // .text:0x00106014 size:0xC4 mapped:0x807450A8
-void fn_3_106014(void) {
-    return;
+void fn_3_106014(f32 x, f32 y, f32 z) {
+    Vec* t = *(Vec**)(((u8**)&lbl_3_common_bss_DE94)[0] + 0x98);
+    s16* n = &lbl_3_bss_B67A;
+    s16 c;
+    Vec* e;
+    c = *n;
+    if (c == 0) {
+        t[*n].x = x;
+        t[*n].y = y;
+        t[*n].z = z;
+        *n += 1;
+        return;
+    }
+    e = (Vec*)((u8*)t + c * 0xC);
+    if (x != e[-1].x && y != e[-1].y && z != e[-1].z) {
+        t[c].x = x;
+        t[*n].y = y;
+        t[*n].z = z;
+        if (*n < 1000) {
+            *n += 1;
+        }
+    }
 }
 
 // .text:0x001060D8 size:0xA4 mapped:0x8074516C
 void fn_3_1060D8(void) {
-    return;
+    u8* p = *(u8**)(((u8**)&lbl_3_common_bss_DE94)[0] + 0x98);
+    s32 i;
+    lbl_3_bss_B67A = 0;
+    for (i = 0; i < 1000; i++) {
+        *(f32*)(p + 0) = *(f32*)(p + 4) = *(f32*)(p + 8) = -1000.0f;
+        p += 0xC;
+    }
 }
 
 // .text:0x0010617C size:0xF4 mapped:0x80745210
