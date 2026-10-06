@@ -238,7 +238,10 @@ void fn_3_74D0C(void) {
 
 // .text:0x00075090 size:0x34 mapped:0x806B4124
 void fn_3_75090(void) {
-    return;
+    fn_3_750C4(1);
+    *(f32*)(g_Ball + 0) = *(f32*)(g_Pitcher + 0);
+    *(f32*)(g_Ball + 4) = *(f32*)(g_Pitcher + 4);
+    *(f32*)(g_Ball + 8) = *(f32*)(g_Pitcher + 8);
 }
 
 // .text:0x000750C4 size:0x18 mapped:0x806B4158
