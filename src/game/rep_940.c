@@ -8,12 +8,16 @@ extern f32 lbl_3_rodata_994;
 extern f32 lbl_3_rodata_998;
 extern f32 lbl_3_data_4474[];
 extern u8 lbl_3_data_190C[];
+extern u8 lbl_3_data_18DC[];
+extern u8 lbl_3_data_18E0[];
+extern f32 lbl_3_data_18F0[];
+extern f32 lbl_3_rodata_9AC;
 extern u8 lbl_3_data_1880[];
 extern u8 lbl_3_data_1924[];
 extern s16 lbl_3_data_1934[];
 extern u8 lbl_3_common_bss_37400[];
 extern u8 g_RunningLogic[];
-extern s16 RandomInt_Game_Range(s16, s16);
+extern int RandomInt_Game_Range(int, int);
 extern int RandomInt_Game(int);
 
 
@@ -107,7 +111,62 @@ void fn_3_20EEC(void) {
 // .text:0x00020FB0 size:0x2F0 mapped:0x80660044
 #pragma dont_inline on
 void fn_3_20FB0(void) {
-    return;
+    u8 t;
+    s32 tries;
+    s32 pick;
+    s32 r;
+    s32 m;
+    s32 i;
+    if (g_AiLogic.aiPitchCurveType == 0) {
+        g_AiLogic.aiPitchCurveType = 3;
+        if (g_AiLogic.pitcherAIPitchDownTheMiddleInd != 0) {
+            g_AiLogic.aiPitchCurveType = 1;
+        }
+    }
+    if (g_AiLogic.aiPitchCurveType == 1) {
+        g_AiLogic.aiPitchCurveEndingX = lbl_3_rodata_990;
+    } else if (g_AiLogic.aiPitchCurveType == 2) {
+        g_AiLogic.aiPitchCurveEndingX = lbl_3_rodata_9AC * (f32)RandomInt_Game_Range(-10, 10);
+    } else if (g_AiLogic.aiPitchCurveType == 3) {
+        tries = 0;
+        if (RandomInt_Game(100) < lbl_3_data_18DC[g_AiLogic._49]) {
+            while (1) {
+                pick = g_AiLogic.aIMoundLocationIndex + RandomInt_Game(3);
+                if (g_AiLogic.aIPitchDesiredEndingLocIndex == pick && tries < 2) {
+                    tries++;
+                    continue;
+                }
+                break;
+            }
+        } else {
+            while (1) {
+                r = RandomInt_Game(4);
+                m = g_AiLogic.aIMoundLocationIndex;
+                for (i = 0; i < 7; i++) {
+                    if (i == m || i == m + 1 || i == m + 2) {
+                        continue;
+                    }
+                    if (r == 0) {
+                        break;
+                    }
+                    r--;
+                }
+                pick = i;
+                if (g_AiLogic.aIPitchDesiredEndingLocIndex == pick && tries < 2) {
+                    tries++;
+                    continue;
+                }
+                break;
+            }
+        }
+        g_AiLogic.aIPitchDesiredEndingLocIndex = pick;
+        g_AiLogic.aiPitchCurveEndingX = lbl_3_data_18F0[pick];
+    }
+    g_AiLogic.pitchAIDelayCurveStart = 0;
+    t = (lbl_3_data_18E0 + g_Pitcher.charClass * 4)[g_AiLogic._49];
+    if (t < RandomInt_Game(100)) {
+        g_AiLogic.pitchAIDelayCurveStart = 1;
+    }
 }
 
 // .text:0x000212A0 size:0x30C mapped:0x80660334
