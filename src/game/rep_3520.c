@@ -1,5 +1,6 @@
 #include "game/rep_3520.h"
 #include "game/rep_1838.h"
+#include "game/rep_540.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/stl.h"
 #include "game/UnknownHomes_Game.h"
@@ -19,6 +20,7 @@ extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
 extern s16 lbl_3_data_21A04[];
 extern s16 lbl_3_data_21A44;
+extern u8 lbl_3_data_219B8[];
 extern u8 lbl_3_data_21278[];
 extern void fn_3_10F550(s32, u8);
 extern void fn_3_5A6D4(s32);
@@ -158,6 +160,7 @@ int fn_3_135698(u8* a, u8* b) {
     }
 }
 
+// 99%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_13BB30
 // .text:0x001356F8 size:0xAC mapped:0x8077478C
 void fn_3_1356F8(void) {
     u8* q = G8 + 0x1DCC;
@@ -177,7 +180,6 @@ void fn_3_1356F8(void) {
         }
         *(f32*)q = v;
         q += 8;
-        g++;
     }
 }
 
@@ -391,7 +393,18 @@ void fn_3_139700(void) {
 
 // .text:0x0013974C size:0xBC mapped:0x807787E0
 void fn_3_13974C(void) {
-    return;
+    u32 i;
+    for (i = 0; i < 100; i++) {
+        if (G8[0x193A + i] == 3) {
+            ((s16*)G8)[0xBE4 + i]++;
+            PSVECAdd((Vec*)(G8 + i * 12 + 0xCD0), (Vec*)(G8 + i * 12 + 0x1180), (Vec*)(G8 + i * 12 + 0xCD0));
+            *(f32*)(G8 + i * 12 + 0x1184) += *(f32*)(lbl_3_data_219B8 + 0x2C);
+            if (*(f32*)(G8 + i * 12 + 0x1184) < lbl_3_rodata_35D0) {
+                G8[0x193A + i] = 0;
+                G8[0x1D6C]--;
+            }
+        }
+    }
 }
 
 // .text:0x00139808 size:0x498 mapped:0x8077889C
@@ -477,9 +490,32 @@ void fn_3_13B9C4(void) {
     return;
 }
 
+// 99%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_1356F8
 // .text:0x0013BB30 size:0xC4 mapped:0x8077ABC4
 void fn_3_13BB30(void) {
-    return;
+    u32 i;
+    u8 st;
+    u8* q;
+    u8* g;
+    f32 v;
+    fn_3_F1DC();
+    q = G8 + 0x1DCC;
+    memset(g_Minigame._1D7C, 0, 0x78);
+    g = G8;
+    for (i = 0; i < 4; i++) {
+        st = g[0x18DC];
+        *(s16*)(q + 4) = -1;
+        if (RandomInt_Game(100) < (s8)lbl_3_data_21B88[st]) {
+            v = lbl_3_rodata_35FC;
+        } else {
+            v = lbl_3_rodata_3600;
+        }
+        *(f32*)q = v;
+        q += 8;
+        g++;
+    }
+    changeScene(1, 6);
+    fn_3_5A6D4(2);
 }
 
 // .text:0x0013BBF4 size:0xC4 mapped:0x8077AC88
