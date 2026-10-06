@@ -281,8 +281,28 @@ void fn_3_105E00(void) {
 }
 
 // .text:0x00106014 size:0xC4 mapped:0x807450A8
-void fn_3_106014(void) {
-    return;
+void fn_3_106014(f32 x, f32 y, f32 z) {
+    Vec* t = *(Vec**)(((u8**)&lbl_3_common_bss_DE94)[0] + 0x98);
+    s16* n = &lbl_3_bss_B67A;
+    s16 c;
+    Vec* e;
+    c = *n;
+    if (c == 0) {
+        t[*n].x = x;
+        t[*n].y = y;
+        t[*n].z = z;
+        *n += 1;
+        return;
+    }
+    e = (Vec*)((u8*)t + c * 0xC);
+    if (x != e[-1].x && y != e[-1].y && z != e[-1].z) {
+        t[c].x = x;
+        t[*n].y = y;
+        t[*n].z = z;
+        if (*n < 1000) {
+            *n += 1;
+        }
+    }
 }
 
 // .text:0x001060D8 size:0xA4 mapped:0x8074516C

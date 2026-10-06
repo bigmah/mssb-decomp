@@ -44,7 +44,7 @@ void fn_3_105C28(void);
 void fn_3_105C84(u8* p);
 void fn_3_105CDC(void);
 void fn_3_105E00(void);
-void fn_3_106014(void);
+void fn_3_106014(f32 x, f32 y, f32 z);
 void fn_3_1060D8(void);
 void fn_3_10617C(void);
 void fn_3_106270(void);
