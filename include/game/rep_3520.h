@@ -23,7 +23,7 @@ int fn_3_13564C(f32 x, f32 y);
 int fn_3_135698(u8* a, u8* b);
 void fn_3_1356F8(void);
 void fn_3_1357A4(f32* out, Vec* dir);
-void fn_3_13583C(void);
+void fn_3_13583C(f32* out);
 void fn_3_135924(void);
 void fn_3_135A64(void);
 void fn_3_135C18(void);

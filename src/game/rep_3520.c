@@ -251,8 +251,23 @@ void fn_3_1357A4(f32* out, Vec* dir) {
 }
 
 // .text:0x0013583C size:0xE8 mapped:0x807748D0
-void fn_3_13583C(void) {
-    return;
+void fn_3_13583C(f32* out) {
+    Vec c = *(Vec*)lbl_3_rodata_35B8;
+    Vec d;
+    if (out != NULL) {
+        PSVECSubtract((Vec*)out, &c, &d);
+        d.y = lbl_3_rodata_35D0;
+        if (PSVECMag(&d) <= lbl_3_rodata_363C) {
+            Vec v;
+            Vec base = *(Vec*)lbl_3_rodata_35C4;
+            if (out != NULL) {
+                PSVECNormalize(&d, &v);
+                PSVECScale(&v, lbl_3_rodata_363C, &v);
+                out[0] = base.x + v.x;
+                out[2] = base.z + v.z;
+            }
+        }
+    }
 }
 
 // .text:0x00135924 size:0x140 mapped:0x807749B8
