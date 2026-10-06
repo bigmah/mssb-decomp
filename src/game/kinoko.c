@@ -140,6 +140,11 @@ typedef struct {
 extern RibEnt lbl_3_bss_BAE0[];
 extern void PSVECAdd(void*, void*, void*);
 extern void PSVECScale(void*, void*, f32);
+extern f32 PSVECMag(void*);
+extern void PSVECNormalize(void*, void*);
+extern void PSVECSubtract(void*, void*, void*);
+extern void PSVECCrossProduct(void*, void*, void*);
+extern void* memcpy(void*, void*, u32);
 extern void fn_3_16A07C(void);
 extern void* memset(void*, s32, u32);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -298,9 +303,70 @@ void fn_3_169D00(u8* base, u32* cnt) {
     }
 }
 
-// .text:0x00169E70 size:0x20C mapped:0x807A8F04
-void fn_3_169E70(void) {
-    return;
+extern f32 lbl_3_rodata_4028;
+extern f32 lbl_3_rodata_402C;
+extern f32 lbl_3_rodata_4034;
+extern f32 lbl_3_rodata_4038;
+extern f32 lbl_3_rodata_403C;
+
+// .text:0x00169E70 size:0x20C
+void fn_3_169E70(u8* base) {
+    f32 a[3];
+    f32 b[3];
+    f32 c[3];
+    f32 d[3];
+    f32 e[3];
+    u8* cam = fn_80052768_getCamera(0);
+    u8* p = base;
+    u32 i = 0;
+    f32 m;
+    do {
+        if (p[0x2A] != 0) {
+            a[0] = *(f32*)(cam + 0x60);
+            a[1] = *(f32*)(cam + 0x64);
+            a[2] = *(f32*)(cam + 0x68);
+            m = PSVECMag(a);
+            if (m == lbl_3_rodata_4028) {
+                a[0] = lbl_3_rodata_4028;
+                a[1] = lbl_3_rodata_4028;
+                a[2] = lbl_3_rodata_4034;
+            } else {
+                PSVECNormalize(a, a);
+            }
+            if (i == 0) {
+                memcpy(b, p, 0xC);
+            } else {
+                memcpy(b, base + (i - 1) * 0x2C, 0xC);
+            }
+            if (i == 0x18) {
+                memcpy(c, p, 0xC);
+            } else {
+                memcpy(c, base + (i + 1) * 0x2C, 0xC);
+            }
+            PSVECSubtract(b, c, d);
+            m = PSVECMag(d);
+            if (m == lbl_3_rodata_4028) {
+                d[2] = lbl_3_rodata_4028;
+                d[1] = lbl_3_rodata_4028;
+                d[0] = lbl_3_rodata_4034;
+            }
+            PSVECNormalize(d, d);
+            PSVECCrossProduct(d, a, e);
+            m = PSVECMag(e);
+            if (m == lbl_3_rodata_4028) {
+                e[2] = lbl_3_rodata_4028;
+                e[1] = lbl_3_rodata_4028;
+                e[0] = lbl_3_rodata_402C;
+            }
+            PSVECNormalize(e, e);
+            PSVECScale(e, p + 0xC, lbl_3_rodata_4038);
+            PSVECScale(e, p + 0x18, lbl_3_rodata_403C);
+            PSVECAdd(p + 0xC, p, p + 0xC);
+            PSVECAdd(p + 0x18, p, p + 0x18);
+        }
+        i++;
+        p += 0x2C;
+    } while (i < 0x19);
 }
 
 // .text:0x0016A07C size:0x140C mapped:0x807A9110
