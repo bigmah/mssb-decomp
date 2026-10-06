@@ -4,6 +4,15 @@
 extern void* memset(void*, s32, u32);
 
 extern u8 g_Minigame[];
+extern s16 lbl_3_data_21654[];
+extern u8 lbl_3_data_21694[];
+extern u8 lbl_3_data_216B0[];
+extern u8 lbl_3_data_216B8[];
+extern s32 RandomInt_Game(s32);
+extern s32 RandomInt_Game_Range(s32, s32);
+extern f32 lbl_3_data_21634[];
+extern f32 lbl_3_data_219B8[];
+extern s16 lbl_3_data_2167C[];
 extern f32 lbl_3_data_21674;
 typedef struct { f32 x, y, z; } Vec3_3290;
 typedef struct { u8 pad0[0x18]; Vec3_3290 vel; } PitcherVel_3290;
@@ -20,7 +29,60 @@ void fn_3_1133C4(void) {
 
 // .text:0x001136FC size:0x220 mapped:0x80752790
 void fn_3_1136FC(void) {
-    return;
+    u8* p;
+    u8 d;
+    s8 i;
+    s16 lo;
+    u8* g;
+    s16 hi;
+    s8 k;
+    g = g_Minigame;
+    i = 0;
+    lo = 0;
+    hi = 0x7FFF;
+    p = g;
+    k = 0;
+    d = g[(s8)g[0x1904] + 0x18DC];
+    do {
+        u8* e = g + p[0x1A82] * 0x2C;
+        lo += *(s16*)(e + 0x750);
+        if (e[0x755] == 2) {
+            k = i;
+            i++;
+            break;
+        }
+        i++;
+        p++;
+    } while (i < 7);
+    if (i < 7) {
+        s16 w = *(s16*)(g_Minigame + g_Minigame[0x1A82 + i] * 0x2C + 0x750);
+        hi = lo + w - 1;
+    }
+    if (RandomInt_Game(0x64) < (s8)(lbl_3_data_21694 + d * 7)[k]) {
+        s8* q = (s8*)lbl_3_data_216B0 + d * 2;
+        s16 r = RandomInt_Game_Range(*(s8*)(lbl_3_data_216B0 + d * 2), q[1]);
+        lo += r;
+        hi += r;
+    }
+    if (lo <= lbl_3_data_21654[2] && lbl_3_data_21654[2] <= hi) {
+        g[0x1DCE] = 0;
+    } else if (lo <= lbl_3_data_21654[3] && lbl_3_data_21654[3] <= hi) {
+        g[0x1DCE] = 3;
+    } else if (hi >= lbl_3_data_21654[0] && lo <= lbl_3_data_21654[1]) {
+        g[0x1DCE] = 2;
+        if (lo < lbl_3_data_21654[0]) {
+            lo = lbl_3_data_21654[0];
+        }
+        if (hi > lbl_3_data_21654[1]) {
+            hi = lbl_3_data_21654[1];
+        }
+        *(s16*)(g + 0x1DCC) = RandomInt_Game_Range(lo, hi);
+    } else {
+        g[0x1DCE] = 1;
+    }
+    if (g[0x1DCE] == 0 && RandomInt_Game(0x64) < (s8)lbl_3_data_216B8[d]) {
+        g[0x1DCE] = 1;
+    }
 }
 
 // .text:0x0011391C size:0x34 mapped:0x807529B0
@@ -30,7 +92,33 @@ void fn_3_11391C(void) {
 
 // .text:0x00113950 size:0xF8 mapped:0x807529E4
 void fn_3_113950(void) {
-    return;
+    u8* p6 = g_Minigame;
+    s16* p7 = (s16*)g_Minigame;
+    f32* p8 = (f32*)g_Minigame;
+    f32 g = lbl_3_data_21634[2];
+    f32 fl = lbl_3_data_219B8[0xE];
+    f32 bn = lbl_3_data_21634[3];
+    f32 dm = lbl_3_data_21634[4];
+    s16 mx = lbl_3_data_2167C[4];
+    s32 i;
+    for (i = 0; i < 100; i++, p6++, p7++, p8 += 3) {
+        if (p6[0x193A] != 0) {
+            p7[0xBE4] = p7[0xBE4] + 1;
+            p8[0x334] = p8[0x334] + p8[0x460];
+            p8[0x335] = p8[0x335] + p8[0x461];
+            p8[0x336] = p8[0x336] + p8[0x462];
+            p8[0x461] = p8[0x461] - g;
+            if (p8[0x335] < fl) {
+                p8[0x335] = fl;
+                p8[0x461] = -p8[0x461] * bn;
+                p8[0x460] = p8[0x460] * dm;
+                p8[0x462] = p8[0x462] * dm;
+            }
+            if (p7[0xBE4] > mx) {
+                p6[0x193A] = 0;
+            }
+        }
+    }
 }
 
 // .text:0x00113A48 size:0x2D8 mapped:0x80752ADC
@@ -70,17 +158,18 @@ void fn_3_114384(void) {
 // .text:0x001149B8 size:0x74 mapped:0x80753A4C
 typedef struct { u8 pad[0x72C]; MgEnt_3290 e[1]; } MgBase_3290;
 int fn_3_1149B8(u8* a, u8* b) {
-    MgBase_3290* m = (MgBase_3290*)g_Minigame;
-    MgEnt_3290* ea = &m->e[*a];
-    MgEnt_3290* eb = &m->e[*b];
-    u8 sa = m->e[*a].s28;
-    if (sa == 3 && eb->s28 != 3) {
+    u8* pa = (u8*)&g_Minigame + *a * 0x2C;
+    u8* ea = pa + 0x72C;
+    u8 sa = pa[0x754];
+    u8* eb = (u8*)&g_Minigame + *b * 0x2C;
+    eb += 0x72C;
+    if (sa == 3 && eb[0x28] != 3) {
         return -1;
     }
-    if (sa != 3 && eb->s28 == 3) {
+    if (sa != 3 && eb[0x28] == 3) {
         return 1;
     }
-    return ea->s2a - eb->s2a;
+    return ea[0x2A] - eb[0x2A];
 }
 
 // .text:0x00114A2C size:0x5C mapped:0x80753AC0

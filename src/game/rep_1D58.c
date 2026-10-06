@@ -4,6 +4,10 @@
 extern u8 lbl_3_data_11168[];
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_bss_1910[];
+extern u8 lbl_3_bss_1940[];
+extern void GXInitTexObj(void*, void*, u16, u16, int, int, int, int);
+extern void GXInitTexObjLOD(void*, int, int, int, int, int, f32, f32, f32);
+extern f32 lbl_3_rodata_1DCC;
 extern f32 lbl_3_rodata_1DD0[];
 extern f32 lbl_3_rodata_1DB4[];
 extern f32 lbl_3_rodata_1DC0;
@@ -85,6 +89,11 @@ extern void GXSetTevAlphaIn(int, int, int, int, int);
 extern void GXSetTevAlphaOp(int, int, int, int, int, int);
 extern void fn_800ACFB0(u32);
 extern void* _OSAllocFromHeap(s32, s32);
+extern void ACTSetAnimation(void*, void*, int, u16, f32, f32);
+extern void fn_800B4BC8(void*, int);
+extern void fn_800B4CA0(void*, f32);
+extern void fn_800B4C04(void*, f32);
+extern void fn_800B4AFC(void*, s32);
 
 typedef struct StadExtra {
     f32 a, b, c;
@@ -102,7 +111,7 @@ typedef struct StadHdr {
     u8 pad8[0x10];
     StadEnt** list;
 } StadHdr;
-extern f32 lbl_3_rodata_1DCC;
+
 extern f32 lbl_3_rodata_1DDC;
 
 typedef struct StadObj {
@@ -255,7 +264,12 @@ void fn_3_B8464(void* mtx, void* obj) {
 
 // .text:0x000B8574 size:0x34 mapped:0x806F7608
 void fn_3_B8574(void) {
-    return;
+    lbl_3_bss_1910[0] = 10000.0f;
+    lbl_3_bss_1910[1] = 10000.0f;
+    lbl_3_bss_1910[2] = 10000.0f;
+    lbl_3_bss_1910[3] = -10000.0f;
+    lbl_3_bss_1910[4] = -10000.0f;
+    lbl_3_bss_1910[5] = -10000.0f;
 }
 
 // .text:0x000B85A8 size:0x34 mapped:0x806F763C
@@ -414,8 +428,14 @@ void fn_3_B9524(void) {
 }
 
 // .text:0x000B9534 size:0xB8 mapped:0x806F85C8
-void fn_3_B9534(void) {
-    return;
+void* fn_3_B9534(u32 w, u32 h, void* tex) {
+    if (lbl_3_bss_1902 != 0 || tex == 0) {
+        return 0;
+    }
+    lbl_3_bss_1902 = 1;
+    GXInitTexObj(tex, lbl_3_bss_1940, (u16)w, (u16)h, 3, 1, 1, 0);
+    GXInitTexObjLOD(tex, 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
+    return lbl_3_bss_1940;
 }
 
 // .text:0x000B95EC size:0x1DC mapped:0x806F8680
@@ -489,8 +509,37 @@ void fn_3_B97C8(void* p) {
 }
 
 // .text:0x000B97DC size:0x10C mapped:0x806F8870
-void fn_3_B97DC(void) {
-    return;
+void fn_3_B97DC(u8* p, u32 f) {
+    if (p == NULL || f == 0) {
+        return;
+    }
+    *(u32*)(p + 4) = f;
+    *(u16*)(p + 0xE) = 0;
+    *(f32*)(p + 0x5C) = 0.0f;
+    p[0x58] = 1;
+    p[0x59] = (f != 0);
+    p[0x5A] = (f != 0);
+    *(f32*)(p + 0x60) = 0.0f;
+    p[0x5B] = 3;
+    *(f32*)(p + 0x5C) = 0.0f;
+    p[0x59] = 1;
+    *(f32*)(p + 0x54) = 1.0f;
+    p[0x5A] = 1;
+    *(u32*)(p + 0x68) = 0;
+    p[0x58] = 1;
+    if (p[0x58] != 0) {
+        ACTSetAnimation(*(void**)p, *(void**)(p + 4), 0, *(u16*)(p + 0xE), 0.0f, *(f32*)(p + 0x60));
+        fn_800B4BC8(*(void**)p, 1);
+    }
+    if (p[0x59] != 0) {
+        fn_800B4CA0(*(void**)p, *(f32*)(p + 0x5C));
+    }
+    if (p[0x5A] != 0) {
+        fn_800B4C04(*(void**)p, *(f32*)(p + 0x54));
+    }
+    if (p[0x5B] & 1) {
+        fn_800B4AFC(*(void**)p, p[0x5B] & 1);
+    }
 }
 
 // .text:0x000B98E8 size:0xFC mapped:0x806F897C
