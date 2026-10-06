@@ -2,11 +2,20 @@
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1200.h"
+#include "static/UnknownHomes_Static.h"
 extern f32 lbl_3_rodata_990;
 extern f32 lbl_3_rodata_994;
 extern f32 lbl_3_rodata_998;
 extern f32 lbl_3_data_4474[];
 extern u8 lbl_3_data_190C[];
+extern u8 lbl_3_data_1880[];
+extern u8 lbl_3_data_1924[];
+extern s16 lbl_3_data_1934[];
+extern u8 lbl_3_common_bss_37400[];
+extern u8 g_RunningLogic[];
+extern s16 RandomInt_Game_Range(s16, s16);
+extern int RandomInt_Game(int);
+
 
 // .text:0x00020CEC size:0x164 mapped:0x8065FD80
 s32 fn_3_20CEC(f32 k) {
@@ -143,7 +152,48 @@ void fn_3_215AC(void) {
 
 // .text:0x00021768 size:0x238 mapped:0x806607FC
 void fn_3_21768(void) {
-    return;
+    int r;
+    g_AiLogic.pitcherAIPitchDownTheMiddleInd = 0;
+    if (g_d_GameSettings.GameModeSelected == 2) {
+        if (g_Practice.practiceType_2 == 1) {
+            g_AiLogic.pitcherAIPitchDownTheMiddleInd = 1;
+        } else if (g_Practice.practiceType_2 == 2) {
+            g_AiLogic.pitcherAIPitchDownTheMiddleInd = 1;
+        } else if (g_Practice.practiceType_2 == 3) {
+            g_AiLogic.pitcherAIPitchDownTheMiddleInd = 1;
+        } else if (g_Practice.practiceLevel == 4) {
+            g_AiLogic.pitcherAIPitchDownTheMiddleInd = 1;
+        }
+    }
+    if (g_AiLogic.pitcherAIPitchDownTheMiddleInd != 0) {
+        g_AiLogic.aiPitchCurveEndingX = lbl_3_rodata_990;
+    }
+    g_AiLogic._49 = lbl_3_data_1880[g_GameLogic.AIDifficulty0Special3Weak[g_GameLogic.awayTeamBattingInd_battingTeam]];
+    if (g_AiLogic.pitcherAIPitchDownTheMiddleInd != 0) {
+        g_AiLogic.AIFrameToBeginPitch = lbl_3_data_1934[2];
+    } else {
+        g_AiLogic.AIFrameToBeginPitch = RandomInt_Game_Range(lbl_3_data_1934[0], lbl_3_data_1934[1]);
+    }
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && *(u8*)(lbl_3_common_bss_37400 + 0x46) != 0 && g_Pitcher.nPitchesThisAB == 0) {
+        g_AiLogic.AIFrameToBeginPitch = lbl_3_data_1934[1] + 0x3C;
+    }
+    if (g_AiLogic.pitcherAIPitchDownTheMiddleInd == 0) {
+        g_AiLogic.aIPitcherPickOffInd = 0;
+        if (*(s16*)(g_RunningLogic + 2) != 1 && *(s16*)(g_RunningLogic + 2) != 0x1111) {
+            if (g_AiLogic.always0_AIPickoffRelated != 0) {
+                r = 5;
+            } else {
+                r = (lbl_3_data_1924 + g_Pitcher.charClass * 4)[g_AiLogic._49];
+            }
+            if (RandomInt_Game(100) < r) {
+                g_AiLogic.aIPitcherPickOffInd = 1;
+            }
+        }
+    }
+    g_AiLogic.aiPitchCurveType = 0;
+    g_AiLogic.aiPitchDirectionInput = 0;
+    g_AiLogic.pitchAIDelayCurveStart = 0;
+    g_AiLogic.aIPerfectCharge = 0;
 }
 
 // .text:0x000219A0 size:0x2C mapped:0x80660A34
