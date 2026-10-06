@@ -3,6 +3,15 @@
 #include "Dolphin/os.h"
 extern u8 lbl_3_common_bss_350E4[];
 extern u8 g_Ball[];
+extern u8 g_d_GameSettings[];
+extern u8 lbl_3_data_8404[];
+extern u8 lbl_3_data_84B8[];
+extern u16 lbl_3_data_81DC[];
+extern u32 sndFXStartEx(int, u8, u8, u8);
+extern void sndFXCtrl(int, int, u8);
+extern void fn_3_65A8(void);
+extern void fn_3_27648(void);
+extern u8 g_FieldingLogic[];
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
@@ -222,7 +231,24 @@ void fn_3_F1518(void) {
 
 // .text:0x000F1674 size:0xDC mapped:0x80730708
 void fn_3_F1674(void) {
-    return;
+    u32 stad = g_d_GameSettings[9];
+    u8 v;
+    u32 h;
+    if (g_d_GameSettings[7] == 6) {
+        v = lbl_3_data_84B8[10];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + 10];
+    }
+    h = sndFXStartEx((u16)(lbl_3_data_81DC[stad] + 5), v, 0x3F, 0);
+    if (g_d_GameSettings[7] == 6) {
+        v = lbl_3_data_84B8[11];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + 11];
+    }
+    sndFXCtrl(h, 0x5B, v);
+    fn_3_65A8();
+    fn_3_27648();
+    g_FieldingLogic[0x13B] = 1;
 }
 
 // .text:0x000F1750 size:0x154 mapped:0x807307E4
