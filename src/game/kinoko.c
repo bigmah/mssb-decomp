@@ -112,7 +112,15 @@ void fn_3_1695A4(s32 a, u8 flag) {
 }
 
 extern u8 lbl_3_data_28928[];
-extern u8 lbl_3_bss_BAE0[];
+typedef struct {
+    void* p[8];
+    f32 v[3];
+    u8 flag;
+    u8 pad[3];
+} RibEnt;
+extern RibEnt lbl_3_bss_BAE0[];
+extern void PSVECAdd(void*, void*, void*);
+extern void PSVECScale(void*, void*, f32);
 extern void fn_3_16A07C(void);
 extern void* memset(void*, s32, u32);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -175,9 +183,30 @@ void fn_3_169984(void) {
     return;
 }
 
-// .text:0x00169D00 size:0x170 mapped:0x807A8D94
-void fn_3_169D00(void) {
-    return;
+// .text:0x00169D00 size:0x170
+void fn_3_169D00(u8* base, u32* cnt) {
+    u8* p = base + 0x420;
+    u8* q;
+    u32 i = 0x18;
+    while (i != 0 && *cnt < 0x95) {
+        if (p[0x2A] != 0) {
+            q = base + (i - 1) * 0x2C;
+            PSVECAdd(p, q, lbl_3_bss_BAE0[*cnt].v);
+            PSVECScale(lbl_3_bss_BAE0[*cnt].v, lbl_3_bss_BAE0[*cnt].v, 0.5f);
+            lbl_3_bss_BAE0[*cnt].p[0] = q + 0xC;
+            lbl_3_bss_BAE0[*cnt].p[1] = q + 0x24;
+            lbl_3_bss_BAE0[*cnt].p[2] = q + 0x18;
+            lbl_3_bss_BAE0[*cnt].p[3] = q + 0x24;
+            lbl_3_bss_BAE0[*cnt].p[4] = p + 0x18;
+            lbl_3_bss_BAE0[*cnt].p[5] = p + 0x24;
+            lbl_3_bss_BAE0[*cnt].p[6] = p + 0xC;
+            lbl_3_bss_BAE0[*cnt].p[7] = p + 0x24;
+            lbl_3_bss_BAE0[*cnt].flag = 1;
+            *cnt += 1;
+        }
+        p -= 0x2C;
+        i--;
+    }
 }
 
 // .text:0x00169E70 size:0x20C mapped:0x807A8F04
