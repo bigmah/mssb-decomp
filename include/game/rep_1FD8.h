@@ -6,7 +6,7 @@
 void fn_3_C19C8(void);
 void fn_3_C1C18(void);
 void fn_3_C2244(void);
-void fn_3_C2310(void);
+void fn_3_C2310(void* pp, void* cam);
 void fn_3_C23E0(void);
 void fn_3_C24A0(void);
 void fn_3_C2644(void);

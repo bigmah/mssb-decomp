@@ -14,6 +14,26 @@ extern u32 lbl_3_bss_9D84;
 extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
+extern u32 lbl_3_bss_9D94;
+typedef struct DspObj2 DspObj2;
+struct DspObj2 {
+    u8 pad0[0x14];
+    void* w14;
+    u8 pad18[0x4C];
+    void* w64;
+    void* w68;
+    u8 pad6C[8];
+    DspObj2* child;
+    u8 pad78[4];
+    void* w7C;
+    u8 pad80[0x6C];
+    void* wEC;
+    u8 padF0[0x10];
+    DspObj2* next;
+};
+extern void DOSetWorldMatrix(void*, void*);
+extern void DOVARenderSkin(void*, void*, void*, void*, int, int);
+extern void fn_8003A8A0();
 extern u32 lbl_3_bss_9D88;
 extern u16 lbl_3_data_177F0;
 
@@ -44,8 +64,29 @@ void fn_3_C2244(void) {
 }
 
 // .text:0x000C2310 size:0xD0 mapped:0x807013A4
-void fn_3_C2310(void) {
-    return;
+void fn_3_C2310(void* pp, void* cam) {
+    Mtx m2;
+    Mtx m;
+    DspObj2* o;
+    DspObj2* n;
+    ((void (*)(u32, void*))CTRLBuildMatrix)(lbl_3_bss_9D94, m);
+    PSMTXConcat((f32 (*)[4])cam, m, m2);
+    o = *(DspObj2**)pp;
+    n = o->child;
+    if (o->w14 != 0) {
+        if (o->w7C != 0) {
+            fn_8003A8A0(o->w14, m2, 1);
+        } else {
+            DOVARenderSkin(o->w14, m2, o->w64, o->w68, 0, 0);
+        }
+    }
+    while (n != 0) {
+        if (n->w14 != 0) {
+            DOSetWorldMatrix(n->w14, n->wEC);
+            fn_8003A8A0(n->w14, m2, 0);
+        }
+        n = n->next;
+    }
 }
 
 // .text:0x000C23E0 size:0xC0 mapped:0x80701474
