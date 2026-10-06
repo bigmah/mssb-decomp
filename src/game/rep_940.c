@@ -8,6 +8,12 @@ extern f32 lbl_3_rodata_994;
 extern f32 lbl_3_rodata_998;
 extern f32 lbl_3_data_4474[];
 extern u8 lbl_3_data_190C[];
+extern u8 lbl_3_data_1888[];
+extern u8 lbl_3_data_18A8[];
+extern u8 lbl_3_data_18B4[];
+extern u8 lbl_3_data_18C4[];
+extern s8 lbl_3_data_18D8[];
+extern u8 g_Scores[];
 extern u8 lbl_3_data_18DC[];
 extern u8 lbl_3_data_18E0[];
 extern f32 lbl_3_data_18F0[];
@@ -171,7 +177,54 @@ void fn_3_20FB0(void) {
 
 // .text:0x000212A0 size:0x30C mapped:0x80660334
 void fn_3_212A0(void) {
-    return;
+    s32 f;
+    s32 t;
+    g_AiLogic.aIPitchType = 0;
+    if (g_d_GameSettings.GameModeSelected != 2) {
+        if (g_d_GameSettings.minigamesEnabled == 0) {
+            u8 stars = g_GameLogic.TeamStars[g_GameLogic.teamFielding];
+            if (stars != 0) {
+                f = 0;
+                if (*(s32*)g_Scores >= g_Scores[0xAA] && (u8*)g_Scores + g_GameLogic.awayTeamBattingInd_battingTeam * 0x26 + 4 > (u8*)g_Scores + g_GameLogic.homeTeamBattingInd_fieldingTeam * 0x26 + 4 && g_Strikes.outs >= 2) {
+                    f = 1;
+                } else if (*(s32*)g_Scores >= g_Scores[0xAB] && g_Scores[0xAD] != 0 && g_Strikes.outs >= 2) {
+                    f = 1;
+                } else if (*(s16*)(g_RunningLogic + 2) == 0x101 || *(s16*)(g_RunningLogic + 2) == 0x1101 || *(s16*)(g_RunningLogic + 2) == 0x1111) {
+                    f = 1;
+                }
+                if (f != 0) {
+                    t = (lbl_3_data_18C4 + stars * 4)[g_AiLogic._49 - 4];
+                    if (g_AiLogic.nStarPitchesThrownThisAB != 0) {
+                        t += lbl_3_data_18D8[0];
+                    } else if (g_Strikes.strikes != 0) {
+                        t += g_Strikes.strikes * lbl_3_data_18D8[1];
+                    }
+                    if (RandomInt_Game(100) < t) {
+                        g_AiLogic.aIPitchType = 2;
+                        g_Pitcher.starPitchInd = 1;
+                        return;
+                    }
+                }
+            }
+        }
+        if (*(s16*)g_RunningLogic == 1 || *(s16*)g_RunningLogic == 0x1101 || *(s16*)g_RunningLogic == 0x1111 || *(s16*)g_RunningLogic == 0x1001) {
+            t = (lbl_3_data_1888 + g_Pitcher.charClass * 4)[g_AiLogic._49];
+        } else {
+            t = (lbl_3_data_1888 + g_Pitcher.charClass * 4)[g_AiLogic._49 + 0x10];
+        }
+        if (RandomInt_Game(100) < t) {
+            g_AiLogic.aIPitchType = 1;
+            if (RandomInt_Game(100) < (lbl_3_data_18B4 + g_Pitcher.charClass * 4)[g_AiLogic._49]) {
+                g_AiLogic.aIPitchType = 3;
+                g_Pitcher.TypeOfPitch = 2;
+                return;
+            }
+            t = (lbl_3_data_18A8 + g_Strikes.strikes * 4)[g_AiLogic._49];
+            if (RandomInt_Game(100) < t) {
+                g_AiLogic.aIPerfectCharge = 1;
+            }
+        }
+    }
 }
 #pragma dont_inline reset
 
