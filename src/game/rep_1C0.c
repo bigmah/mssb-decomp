@@ -276,9 +276,9 @@ void fn_3_64DC(void) {
 // near-match: prologue register allocation (r5/r0/r6) differs
 s16 fn_3_6424(u8* base, u8** out) {
     s16 n = *(u16*)base;
-    u32* p = (u32*)(base + 4);
+    u32* p;
     s32 i;
-    *out = (u8*)p;
+    p = (u32*)(*out = base + 4);
     for (i = n; i >= 0; i--) {
         *p += (u32)base;
         p++;
