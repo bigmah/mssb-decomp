@@ -5,7 +5,7 @@
 
 void fn_3_168414(void);
 void fn_3_168704(void);
-void fn_3_16892C(void);
+void fn_3_16892C(u8* p, f32 f, s32 b);
 void fn_3_168A6C(void);
 void fn_3_168CD8(u8* p, f32 f);
 void fn_3_168DFC(void);
