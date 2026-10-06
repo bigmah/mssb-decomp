@@ -22,6 +22,9 @@ extern u8 g_Runners[];
 extern u8 g_Ball[];
 extern u8 lbl_3_common_bss_32220[];
 extern f32 lbl_3_rodata_3268;
+extern f32 lbl_3_rodata_324C;
+extern f32 lbl_3_rodata_3250;
+extern f32 lbl_3_rodata_3254;
 extern f32 shortAngleToRad(s16);
 extern u8 g_Scores[];
 extern void fn_3_10AD48(void);
@@ -63,8 +66,15 @@ void fn_3_110A04(void) {
 }
 
 // .text:0x00110A38 size:0x9C mapped:0x8074FACC
-void fn_3_110A38(void) {
-    return;
+s32 fn_3_110A38(void) {
+    if (g_Pitcher[0x164] != 0) {
+        switch (g_Pitcher[0x165]) {
+        case 1:
+            return 20;
+        }
+        return 20;
+    }
+    return (s32)(lbl_3_rodata_3250 * ((f32)g_Minigame[0x1ACA] - lbl_3_rodata_3254) + lbl_3_rodata_324C);
 }
 
 // .text:0x00110AD4 size:0x564 mapped:0x8074FB68

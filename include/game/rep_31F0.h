@@ -5,7 +5,7 @@
 
 void fn_3_110634(void);
 void fn_3_110A04(void);
-void fn_3_110A38(void);
+s32 fn_3_110A38(void);
 void fn_3_110AD4(void);
 void fn_3_111038(void);
 void fn_3_1111D0(void);
