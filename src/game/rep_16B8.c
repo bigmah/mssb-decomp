@@ -48,7 +48,14 @@ void fn_3_91A60(void) {
 
 // .text:0x00091AC8 size:0x88 mapped:0x806D0B5C
 void fn_3_91AC8(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] == 0 && g_Stats[0x36] == 0) {
+        if (g_GameLogic[0x11E] == 2 || g_GameLogic[0x11E] == 1) {
+            return;
+        }
+    }
+    fn_800B0A14_removeQueue(fn_80034CEC(p));
+    lbl_3_common_bss_32724[0xB2] = 0;
 }
 // .text:0x00091B50 size:0x4C mapped:0x806D0BE4
 void fn_3_91B50(void) {
