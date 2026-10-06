@@ -272,7 +272,29 @@ void fn_3_13583C(f32* out) {
 
 // .text:0x00135924 size:0x140 mapped:0x807749B8
 void fn_3_135924(void) {
-    return;
+    u32 i;
+    for (i = 0; i < 100; i++) {
+        if (G8[0x193A + i] == 1) {
+            if (((f32*)(G8 + i * 12 + 0xCD0))[1] < lbl_3_rodata_35FC) {
+                Vec d;
+                Vec c = *(Vec*)lbl_3_rodata_35B8;
+                if ((f32*)(G8 + i * 12 + 0xCD0) != NULL) {
+                    PSVECSubtract((Vec*)(G8 + i * 12 + 0xCD0), &c, &d);
+                    d.y = lbl_3_rodata_35D0;
+                    if (PSVECMag(&d) <= lbl_3_rodata_363C) {
+                        Vec v;
+                        Vec base = *(Vec*)lbl_3_rodata_35C4;
+                        if ((f32*)(G8 + i * 12 + 0xCD0) != NULL) {
+                            PSVECNormalize(&d, &v);
+                            PSVECScale(&v, lbl_3_rodata_363C, &v);
+                            ((f32*)(G8 + i * 12 + 0xCD0))[0] = base.x + v.x;
+                            ((f32*)(G8 + i * 12 + 0xCD0))[2] = base.z + v.z;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // .text:0x00135A64 size:0x1B4 mapped:0x80774AF8
