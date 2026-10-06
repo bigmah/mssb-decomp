@@ -35,6 +35,9 @@ extern f32 lbl_3_rodata_1998;
 extern f32 lbl_3_rodata_19B8;
 extern f32 lbl_3_rodata_1978;
 extern f32 lbl_3_rodata_193C;
+static s32 lbl_3_bss_1858[42];
+static s32 lbl_3_bss_1838[8];
+static s32 lbl_3_bss_1828[4];
 static u32 lbl_3_bss_1824;
 static s32 lbl_3_bss_1820;
 static s32 lbl_3_bss_181C;
@@ -130,8 +133,25 @@ void fn_3_A2FD8(void) {
 }
 
 // .text:0x000A31E8 size:0xD0 mapped:0x806E227C
-void fn_3_A31E8(void) {
-    return;
+int fn_3_A31E8(void) {
+    s32 idx;
+    if (!(lbl_3_bss_1824 & 0x1000)) {
+        return 0;
+    }
+    if (lbl_3_bss_1804 & 0x1000) {
+        if (fn_3_A46A0(lbl_3_bss_1808[3])) {
+            return 1;
+        }
+    }
+    if (lbl_3_bss_1800 & 0x1000) {
+        idx = lbl_3_bss_1808[3];
+        if (g_Runners[idx].percentTowardsNextBase >= 0.2f && lbl_3_bss_1858[idx] <= 6) {
+            if (fn_3_A46A0(idx)) {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x000A32B8 size:0xBC mapped:0x806E234C
@@ -313,8 +333,6 @@ void fn_3_A63E4(void) {
 }
 
 // .text:0x000A67E8 size:0x28 mapped:0x806E587C
-extern s32 lbl_3_bss_1838[];
-extern s32 lbl_3_bss_1828[];
 
 void fn_3_A67E8(s32 i) {
     lbl_3_bss_1838[i] = 9;
