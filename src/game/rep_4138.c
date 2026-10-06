@@ -70,8 +70,43 @@ void fn_3_16D9B0(void) {
 }
 
 // .text:0x0016DB6C size:0x458 mapped:0x807ACC00
-void fn_3_16DB6C(void) {
+#pragma dont_inline on
+void fn_3_16DB6C(u8 i) {
     return;
+}
+#pragma dont_inline reset
+
+// .text:0x0016DFC4 size:0x1DC
+void fn_3_16DFC4(void) {
+    u32 i;
+    GXSetZMode(1, 3, 0);
+    GXSetCullMode(0);
+    GXSetBlendMode(1, 4, 1, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xD, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xD, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(0, 1, 1, 4);
+    GXSetTevColorIn(0, 8, 0xA, 0xF, 0xF);
+    GXSetTevAlphaIn(0, 4, 5, 7, 7);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, 0);
+    GXSetCurrentMtx(0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, 0);
+    fn_80033B58(lbl_3_bss_D6E4, lbl_3_bss_D6E8, 0, 0);
+    i = 0;
+    do {
+        fn_3_16DB6C(i);
+        i += 1;
+    } while (i < 6U);
 }
 
 extern u8 lbl_3_bss_D6EC;
