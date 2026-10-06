@@ -9,6 +9,7 @@ extern u8 lbl_3_data_22670[];
 extern u8 lbl_3_data_2265C[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_8036E548[];
+typedef struct Z90 { u8 pad[0x34]; u8* a; u8 pad2[0x90 - 0x38]; } Z90;
 extern f32 lbl_3_data_21A48[];
 extern void fn_8001D0D0(int, f32);
 extern f32 shortAngleToRad(s16 ang);
@@ -48,8 +49,17 @@ void fn_3_116B74(void) {
 }
 
 // .text:0x0011741C size:0x78 mapped:0x807564B0
-void fn_3_11741C(void) {
-    return;
+void fn_3_11741C(s32 i) {
+    u8* t = (*(Z90**)(lbl_8036E548 + 0x68))[i].a;
+    s32 off;
+    s32 k;
+    s32 v = g_Minigame[0xCCE] == 1 ? 0 : 2;
+    for (k = 0, off = 0; k < *(u16*)(t + 6); k++, off += 4) {
+        u8* q = *(u8**)(*(u8**)(t + 0x18) + off);
+        q = *(u8**)(q + 0x14);
+        q = *(u8**)(q + 8);
+        *(s16*)(*(u8**)(q + 0xC) + 0x20) = v;
+    }
 }
 
 // .text:0x00117494 size:0xF4 mapped:0x80756528
