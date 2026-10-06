@@ -68,12 +68,12 @@ void fn_3_7EA68(void) {
 }
 
 // .text:0x0007EBD4 size:0x128 mapped:0x806BDC68
-void fn_3_7EBD4(void) {
+void fn_3_7EBD4(int i) {
     return;
 }
 
 // .text:0x0007ECFC size:0x5DC mapped:0x806BDD90
-void fn_3_7ECFC(void) {
+void fn_3_7ECFC(int i) {
     return;
 }
 
@@ -83,13 +83,28 @@ void fn_3_7F2D8(void) {
 }
 
 // .text:0x0007F494 size:0x530 mapped:0x806BE528
-void fn_3_7F494(void) {
+void fn_3_7F494(int i) {
     return;
 }
 
 // .text:0x0007F9C4 size:0xB4 mapped:0x806BEA58
-void fn_3_7F9C4(void) {
-    return;
+void fn_3_7F9C4(int i) {
+    u8* r = g_Runners + i * 0x154;
+    if (r[0x145] != 0) {
+        r[0x13E] = 0;
+        r[0x13A] = 0;
+        return;
+    }
+    fn_3_7ECFC(i);
+    fn_3_7F494(i);
+    if (g_GameLogic[0x121] != 6) {
+        if (i == 0 && r[0x126] == 1) {
+            fn_3_7F2D8();
+        } else if (r[0x13E] == 1) {
+            r[0x13E] = 0;
+        }
+        fn_3_7EBD4(i);
+    }
 }
 
 // .text:0x0007FA78 size:0x318 mapped:0x806BEB0C
