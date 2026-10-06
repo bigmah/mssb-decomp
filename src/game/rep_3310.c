@@ -122,8 +122,19 @@ void fn_3_118164(void) {
 }
 
 // .text:0x00118358 size:0xA4 mapped:0x807573EC
-void fn_3_118358(void) {
-    return;
+extern void* memset(void* dst, int c, u32 n);
+extern void PSMTXMultVec(void* m, void* src, void* dst);
+
+void fn_3_118358(s32 i, f32* v) {
+    u8* o = *(u8**)(*(u8**)(*(u8**)(*(u8**)(lbl_8036E548 + 0x68) + (i + 0x82) * 0x90 + 0x34) + 0x18) + 0x44);
+    if (i < 0 || i > 2) {
+        return;
+    }
+    if (v != NULL) {
+        memset(v, 0, 0xC);
+        PSMTXMultVec(*(void**)(o + 0xEC), v, v);
+        v[1] *= -1.0f;
+    }
 }
 
 // .text:0x001183FC size:0x10C mapped:0x80757490
