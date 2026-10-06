@@ -12,7 +12,7 @@ void fn_3_FCF20(void);
 void fn_3_FCF24(void);
 void fn_3_FD408(void);
 void fn_3_FD4DC(void);
-void fn_3_FD51C(void);
+void fn_3_FD51C(s32 i);
 void fn_3_FD5A8(void);
 void fn_3_FD670(void);
 s32 fn_3_FD9FC(void);

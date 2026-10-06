@@ -8,6 +8,8 @@ extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
+extern u32 lbl_3_rodata_30EC[];
+extern u8 g_Camera[];
 extern s16 lbl_3_bss_B67A;
 extern void* memset(void*, s32, u32);
 extern f32 lbl_3_rodata_30FC;
@@ -63,8 +65,27 @@ void fn_3_FD4DC(void) {
 }
 
 // .text:0x000FD51C size:0x8C mapped:0x8073C5B0
-void fn_3_FD51C(void) {
-    return;
+typedef struct { u32 a, b, c; } V3U;
+
+void fn_3_FD51C(s32 i) {
+    u8* c = g_Camera + i * 0x9BC;
+    u8* p;
+    V3U v = *(V3U*)lbl_3_rodata_30EC;
+    *(u32*)(c + 0x140) = 0;
+    *(u32*)(c + 0x144) = 0;
+    p = c + 0x13C;
+    *(V3U*)(p + 0xC) = v;
+    *(u32*)(p + 0x1C) = 0;
+    *(u32*)(p + 0x20) = 0;
+    *(u32*)(p + 0x24) = 0;
+    *(u32*)(p + 0x28) = 0;
+    *(f32*)(p + 0x2C) = 0.0f;
+    *(u32*)(p + 0x30) = 0;
+    *(u32*)(p + 0x34) = 0;
+    *(u32*)(p + 0x38) = 0;
+    *(u32*)(p + 0x3C) = 0;
+    *(u32*)(p + 0x40) = 0;
+    *(f32*)(p + 0x44) = 0.0f;
 }
 
 // .text:0x000FD5A8 size:0xC8 mapped:0x8073C63C
