@@ -26,6 +26,12 @@ extern u8 lbl_3_data_8D70[];
 extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
 extern u8 lbl_3_common_bss_32B20[];
 extern void sndRemoveListener(void*);
+extern void OSPanic(const char*, int, const char*, ...);
+extern char lbl_3_rodata_1590[];
+extern char lbl_3_rodata_15DC[];
+extern char lbl_3_rodata_15EC[];
+extern u16 lbl_3_data_81FC[];
+extern u8 lbl_3_data_84F4[];
 extern void* fn_80052734(int);
 #include "Dolphin/mtx.h"
 extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32, u8, void*);
@@ -272,8 +278,20 @@ void fn_3_8FF5C(void) {
 }
 
 // .text:0x00090064 size:0xEC mapped:0x806CF0F8
-void fn_3_90064(void) {
-    return;
+void fn_3_90064(s32 id) {
+    s32 i;
+    if (g_d_GameSettings.GameModeSelected != 7) {
+        OSPanic(lbl_3_rodata_1590, 0x402, lbl_3_rodata_15DC);
+    }
+    for (i = 0; i < 0x39; i++) {
+        if (id == lbl_3_data_81FC[i]) {
+            break;
+        }
+    }
+    if (i == 0x39) {
+        OSPanic(lbl_3_rodata_1590, 0x40D, lbl_3_rodata_15EC);
+    }
+    sndFXStartEx((u16)id, lbl_3_data_84F4[i], 0x3F, 0);
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4

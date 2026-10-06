@@ -27,7 +27,7 @@ void fn_3_8FC0C(void);
 void fn_3_8FC80(void);
 void fn_3_8FF18(void);
 void fn_3_8FF5C(void);
-void fn_3_90064(void);
+void fn_3_90064(s32 id);
 void fn_3_90150(void);
 
 void fn_3_902FC(void);
