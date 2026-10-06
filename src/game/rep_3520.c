@@ -20,6 +20,12 @@ extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
 extern s16 lbl_3_data_21A04[];
 extern s16 lbl_3_data_21A44;
+extern f32 lbl_3_data_21AF4;
+extern f64 lbl_3_rodata_3668;
+extern f64 lbl_3_rodata_35E0;
+extern f32 lbl_3_rodata_365C;
+extern void fn_800528B4(void);
+extern int rand();
 extern void fn_3_90064(s32);
 extern f32 lbl_3_data_21A64;
 extern s16 lbl_3_data_21A90[];
@@ -387,8 +393,24 @@ void fn_3_136EA4(void) {
 }
 
 // .text:0x001370A0 size:0x148 mapped:0x80776134
-void fn_3_1370A0(void) {
-    return;
+void fn_3_1370A0(u8* o) {
+    Vec sp8;
+    Mtx m;
+    memset(&sp8, 0, sizeof(Vec));
+    sp8.y = lbl_3_data_21AF4 * (lbl_3_rodata_3668 * ((f64)((f32)rand() / lbl_3_rodata_365C) - lbl_3_rodata_35E0));
+    PSMTXInverse((f32(*)[4])(o + 0x40), m);
+    PSMTXMultVecSR(m, &sp8, &sp8);
+    *(f32*)(o + 0x70) += sp8.x;
+    *(f32*)(o + 0x74) += sp8.y;
+    *(f32*)(o + 0x78) += sp8.z;
+    *(f32*)(o + 0x7C) += sp8.x;
+    *(f32*)(o + 0x80) += sp8.y;
+    *(f32*)(o + 0x84) += sp8.z;
+    lbl_3_bss_B702--;
+    if (lbl_3_bss_B702 <= 0) {
+        lbl_3_bss_B702 = 0;
+        fn_800528B4();
+    }
 }
 
 // .text:0x001371E8 size:0x3C mapped:0x8077627C
