@@ -27,6 +27,7 @@ extern u8 lbl_3_common_bss_350E4[];
 extern u8 lbl_3_bss_AE80[];
 extern u8 lbl_3_data_1963F;
 extern u8 lbl_3_data_19640;
+extern u8 lbl_3_bss_AEAC;
 
 // .text:0x000E59B4 size:0x68 mapped:0x80724A48
 void fn_3_E59B4(u8* a) {
@@ -241,8 +242,57 @@ void fn_3_E763C(void) {
 }
 
 // .text:0x000E7A2C size:0xF4 mapped:0x80726AC0
-void fn_3_E7A2C(void) {
-    return;
+void fn_3_E7A2C(u8* o) {
+    *(void**)(o + 0x7C) = 0;
+    *(void**)(o + 0x80) = 0;
+    *(void**)(o + 0x84) = 0;
+    *(void**)(o + 0x88) = 0;
+    switch (o[0xC1]) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+        *(void**)(o + 0x80) = fn_3_E7364;
+        *(void**)(o + 0x84) = fn_3_E6D90;
+        lbl_3_bss_AEAC++;
+        break;
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+        *(void**)(o + 0x7C) = fn_3_E698C;
+        *(void**)(o + 0x84) = fn_3_E68A8;
+        break;
+    case 23:
+        *(void**)(o + 0x84) = fn_3_E6798;
+        *(void**)(o + 0x88) = fn_3_E671C;
+        break;
+    case 24:
+        *(void**)(o + 0x84) = fn_3_E6684;
+        *(void**)(o + 0x88) = fn_3_E6638;
+        break;
+    case 26:
+        *(void**)(o + 0x7C) = fn_3_E59B4;
+        break;
+    case 25:
+        *(void**)(o + 0x7C) = fn_3_E5A1C;
+        break;
+    }
 }
 
 // .text:0x000E7B20 size:0xFA8 mapped:0x80726BB4
