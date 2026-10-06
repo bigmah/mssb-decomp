@@ -26,7 +26,6 @@ extern void fn_8002DC68(VecXYZ*);
 void fn_3_15C024(VecXYZ* pos, VecXYZ* vel, VecXYZ* add, int flag);
 
 // .text:0x0015B79C size:0x304 mapped:0x8079A830
-// 99%: inlined fn_3_15C024 picks f0/f4 instead of f1/f0 for vel.x/vel.y in the air-resistance block
 void fn_3_15B79C(int flag) {
     VecXYZ pos;
     VecXYZ vel;
@@ -70,8 +69,8 @@ void fn_3_15C024(VecXYZ* pos, VecXYZ* vel, VecXYZ* add, int flag) {
     if (pos->z <= g_Pitcher.pitchZ_whenAirResistanceStarts) {
         t = vel->z - vel->z * g_Pitcher.airResistance_veloAdj;
         if (t < -0.05f) {
-            vel->x = vel->x - vel->x * g_Pitcher.airResistance_veloAdj;
-            vel->y = vel->y - vel->y * g_Pitcher.airResistance_veloAdj;
+            vel->x -= vel->x * g_Pitcher.airResistance_veloAdj;
+            vel->y -= vel->y * g_Pitcher.airResistance_veloAdj;
             vel->z = t;
         }
     }
