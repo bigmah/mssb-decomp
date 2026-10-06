@@ -25,7 +25,7 @@ void fn_3_60768(void) {
 }
 
 // .text:0x00060804 size:0x294 mapped:0x8069F898
-void fn_3_60804(void) {
+void fn_3_60804(s32 a, s32 b) {
     return;
 }
 
@@ -45,8 +45,32 @@ void fn_3_60E90(void) {
 }
 
 // .text:0x00061148 size:0xE0 mapped:0x806A01DC
-void fn_3_61148(void) {
-    return;
+u32 fn_3_61148(s32 i) {
+    u8* e = g_UnkAnimation_31EAC + i * 0x54;
+    s32 k = i;
+    u8* o;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            u8* m = g_Minigame;
+            m += *(s8*)(m + 0x1904);
+            k = *(s8*)(m + 0x18CC);
+        } else {
+            k = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    o = ((u8**)(lbl_8036E548 + 0x2C50))[k];
+    if (o == NULL) {
+        return 0;
+    }
+    if (e[0x43] != 0) {
+        if (*(s16*)(o + 0x68) <= 0) {
+            e[0x43] = 0;
+            fn_3_60804(i, 0);
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x00061228 size:0x31C mapped:0x806A02BC

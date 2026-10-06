@@ -4,11 +4,11 @@
 #include "mssbTypes.h"
 
 void fn_3_60768(void);
-void fn_3_60804(void);
+void fn_3_60804(s32 a, s32 b);
 void fn_3_60A98(void);
 void fn_3_60D80(void);
 void fn_3_60E90(void);
-void fn_3_61148(void);
+u32 fn_3_61148(s32 i);
 void fn_3_61228(void);
 void fn_3_61544(void);
 void fn_3_61B64(void);

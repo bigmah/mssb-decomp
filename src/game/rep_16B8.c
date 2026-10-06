@@ -28,6 +28,8 @@ extern void* lbl_803CC1B8[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 g_GameLogic[];
 extern u8 g_Stats[];
+extern u8 g_Ball[];
+extern u8 g_UnkSound_32718[];
 #include "static/UnknownHomes_Static.h"
 
 // .text:0x00091520 size:0x540 mapped:0x806D05B4
@@ -48,7 +50,14 @@ void fn_3_91A60(void) {
 
 // .text:0x00091AC8 size:0x88 mapped:0x806D0B5C
 void fn_3_91AC8(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x96] == 0 && g_Stats[0x36] == 0) {
+        if (g_GameLogic[0x11E] == 2 || g_GameLogic[0x11E] == 1) {
+            return;
+        }
+    }
+    fn_800B0A14_removeQueue(fn_80034CEC(p));
+    lbl_3_common_bss_32724[0xB2] = 0;
 }
 // .text:0x00091B50 size:0x4C mapped:0x806D0BE4
 void fn_3_91B50(void) {
@@ -189,7 +198,26 @@ void fn_3_94BC4(void) {
 
 // .text:0x00094E68 size:0x198 mapped:0x806D3EFC
 void fn_3_94E68(void) {
-    return;
+    u8* p = lbl_803CC1B8[0];
+    u8 g;
+    if (lbl_3_common_bss_32724[0x96] == 0 && (*(u16*)(p + 0x1C) == lbl_3_common_bss_37400[0x46] || lbl_3_common_bss_37400[0x47] == 2) &&
+        (g = g_GameLogic[0x11E]) != 3 && (g != 8 || lbl_3_common_bss_37400[0x47] == 0) && (g != 0 || lbl_3_common_bss_37400[0x47] != 2)) {
+        if (g_Stats[0x36] != 0) {
+            u8* t = lbl_80371C30;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8) + 0x54) &= ~2;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8 + 8) + 0x54) &= ~2;
+        } else if (g <= 1 || g == 2) {
+            u8* t = lbl_80371C30;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8) + 0x54) |= 2;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8 + 8) + 0x54) |= 2;
+        } else {
+            u8* t = lbl_80371C30;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8) + 0x54) &= ~2;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8 + 8) + 0x54) &= ~2;
+        }
+        return;
+    }
+    fn_800B0A14_removeQueue(fn_80034CEC(p));
 }
 
 // .text:0x00095000 size:0x98 mapped:0x806D4094
@@ -229,7 +257,26 @@ void fn_3_95124(void) {
 
 // .text:0x000951B4 size:0x128 mapped:0x806D4248
 void fn_3_951B4(void) {
-    return;
+    void* p = lbl_803CC1B8[0];
+    if (g_Ball[0x1BD1] == 1) {
+        if (g_GameLogic[0x11E] == 0x14) {
+            (*(u8**)(lbl_80371C30 + *(u16*)((u8*)p + 0x14) * 8))[0x68] = 1;
+        }
+        if (g_GameLogic[0x11E] == 2 || g_GameLogic[0x11E] == 0x14) {
+            return;
+        }
+    } else {
+        if (g_UnkSound_32718[7] == 0 || g_GameLogic[0x11E] == 1) {
+            (*(u8**)(lbl_80371C30 + *(u16*)((u8*)p + 0x14) * 8))[0x68] = 1;
+        }
+        if (lbl_3_common_bss_32724[0x96] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x42) != 0) {
+            if (g_GameLogic[0x11E] == 1 || g_GameLogic[0x11E] == 2) {
+                return;
+            }
+        }
+    }
+    lbl_3_common_bss_32724[0xB4] = 0;
+    fn_800B0A14_removeQueue(fn_80034CEC(p));
 }
 
 // .text:0x000952DC size:0xB0 mapped:0x806D4370
