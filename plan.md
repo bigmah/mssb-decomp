@@ -124,6 +124,9 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Fixed 4/9-element loops over a struct array get fully unrolled by the compiler** when written as `for (i = 0; i < N; i++) { ...; r += 0x154; }` with a `u8* r` pointer (fn_3_27648, fn_3_86DFC); `for (i = 0; i < 4; i++) { RunnerT* r = &((RunnerT*)g_Runners)[i]; }` with `typedef struct { u8 b[0x154]; } RunnerT;` fixes the pointer-induction form (fn_3_88F98).
 - **Float literal for the constant used once or twice, `extern f32` for the rest** (fn_3_A4158 `2.0f`, fn_3_BB07C `100000.0f`/`0.0f`); declare the float locals in the order `f32 s; f32 a; f32 c;` to get f31/f30 right.
 - **Still unsolved (hoisted global address):** `lis rX, g_Fielders@ha` scheduled before `mr r30, r3` when a function keeps its index across a call (`fn_3_483CC`, `fn_3_7F9C4`).
+- **`-inline deferred` reads `#pragma dont_inline` at end of file**, not where the caller is: `#pragma dont_inline off` ... `on` around one caller does nothing. To get a same-file function inlined (`fn_3_145FF4` into `fn_3_1461A4`), remove the file's `dont_inline on` and call the remaining stubs through a cast, `((void (*)(s32))fn_3_14402C)(i)`, which is never inlined (`rep_37A8.c`). `__attribute__((never_inline))`/`__declspec(noinline)` are not supported.
+- **`addi r0, rX, g@l; mr rN, r0` instead of `addi rN, rX, g@l`:** comes from `p = g_Minigame;` followed by `p++`/`p += 0x38` in the loop. Indexing the array by the counter instead (`((T*)g_Minigame)[i].f`) gives the direct `addi` (fn_3_145FF4). Unsolved when a second pointer already advances explicitly (fn_3_142C18, fn_3_146928, 97%).
+- **Fields of the second entry of a struct array:** `p = g_Minigame + 0x38; p[0x2A] = 1; ...` instead of absolute `g_Minigame[0x62]` fixed the base register (r11 vs r9) in fn_3_14423C. A `-1` byte store needs `((s8*)p)[k] = -1` (`li -1`, not `li 0xff`).
 
 Add new patterns to this list as we find them.
 
