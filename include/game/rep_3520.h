@@ -32,7 +32,7 @@ void fn_3_135E98(void);
 void fn_3_135F4C(void);
 void fn_3_135FF4(void);
 void fn_3_136048(void);
-void fn_3_1360BC(void);
+void fn_3_1360BC(int p);
 void fn_3_136220(void);
 void fn_3_13688C(void);
 void fn_3_136CF4(void);
