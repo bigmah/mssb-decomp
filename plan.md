@@ -125,6 +125,10 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Float literal for the constant used once or twice, `extern f32` for the rest** (fn_3_A4158 `2.0f`, fn_3_BB07C `100000.0f`/`0.0f`); declare the float locals in the order `f32 s; f32 a; f32 c;` to get f31/f30 right.
 - **Still unsolved (hoisted global address):** `lis rX, g_Fielders@ha` scheduled before `mr r30, r3` when a function keeps its index across a call (`fn_3_483CC`, `fn_3_7F9C4`).
 
+- **Stack Vec slots 16 bytes apart (fn_3_105A10):** when `memcpy`'d Vec temporaries sit at 0x8/0x18/0x28, declare them as 16-byte structs (`Quaternion`) instead of `Vec`.
+- **`cmplw rCnt, rI; ble` vs `cmplw rI, rCnt; bge`:** write the compare with the loaded field on the left (`if (*(u32*)(d + 0x3C) > i)`) (fn_3_FD408).
+- **Still unsolved (rep_3090):** fn_3_104B20 (3-float copy, original allocates f2/f1/f0 in load order; every local/statement order gives f1/f2/f0); fn_3_FD5A8 (two camera inits, original keeps `c+0x13C` in r9 and `g_Camera+0x9BC` in r8 like an inlined `fn_3_FD51C(0); fn_3_FD51C(1)`, but `dont_inline` blocks inlining; the `Vec up = {0,1,0}` initializer is the per-function rodata triple).
+
 Add new patterns to this list as we find them.
 
 ## Phases
