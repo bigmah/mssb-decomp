@@ -194,8 +194,24 @@ void fn_3_119C34(void) {
 }
 
 // .text:0x00119CA8 size:0x80 mapped:0x80758D3C
-void fn_3_119CA8(void) {
-    return;
+void fn_3_119CA8(s32 i) {
+    u8* p = *(u8**)(lbl_8036E548 + 0x68);
+    u8* e = p + i * 0x90 + 0x34;
+    s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
+    s8 t;
+    *(s32*)(e + 4) = v;
+    *(s16*)(e + 0xE) = 0;
+    t = v != 0;
+    *(f32*)(e + 0x5C) = 0.0f;
+    *(u8*)(e + 0x58) = 1;
+    *(u8*)(e + 0x59) = t;
+    *(u8*)(e + 0x5A) = t;
+    *(f32*)(e + 0x60) = 0.0f;
+    *(f32*)(e + 0x54) = 1.0f;
+    *(u8*)(e + 0x5A) = 1;
+    *(f32*)(e + 0x5C) = 0.0f;
+    *(u8*)(e + 0x59) = 1;
+    *(u8*)(e + 0x5B) = 2;
 }
 
 // .text:0x00119D28 size:0xC mapped:0x80758DBC

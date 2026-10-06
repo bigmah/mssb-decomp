@@ -34,7 +34,7 @@ f32 fn_3_119854(u8 i);
 void fn_3_119878(void);
 void fn_3_119934(void);
 void fn_3_119C34(void);
-void fn_3_119CA8(void);
+void fn_3_119CA8(s32 i);
 f32 fn_3_119D28(void);
 void fn_3_119D34(void);
 void fn_3_119E30(void);
