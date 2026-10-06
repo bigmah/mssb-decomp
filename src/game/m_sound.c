@@ -38,6 +38,19 @@ void fn_3_902FC(void) {
     sndVolume(0, 10, 0xFF);
 }
 
+// .text:0x0008B258 size:0x8C
+s32 fn_3_8B258(u8 a, u8 b, u8 c) {
+    u8 w;
+    if (((u8**)&lbl_3_bss_1768)[0] == NULL || (w = ((u8**)&lbl_3_bss_1768)[0][0x14], ((u8**)&lbl_3_bss_1768)[0][0x15] == (u32)(u8)((w + 1) % 14))) {
+        return 0;
+    }
+    ((u8**)&lbl_3_bss_1768)[0][0x14] = (u32)(u8)((w + 1) % 14);
+    ((u8**)&lbl_3_bss_1768)[0][w * 3 + 0x16] = b;
+    ((u8**)&lbl_3_bss_1768)[0][w * 3 + 0x17] = a;
+    ((u8**)&lbl_3_bss_1768)[0][w * 3 + 0x18] = c;
+    return 1;
+}
+
 void fn_3_8B2E4(void) {
     lbl_3_bss_1768 = fn_800B0A5C_insertQueue(fn_3_8B094, 0);
 }
