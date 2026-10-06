@@ -374,9 +374,43 @@ void fn_3_16A07C(void) {
     return;
 }
 
+extern const f32 lbl_3_rodata_4040;
+extern const f64 lbl_3_rodata_4048;
+extern u8 lbl_3_data_2A308[][4];
+
 // .text:0x0016B5B4 size:0x2D0 mapped:0x807AA648
-void fn_3_16B5B4(void) {
-    return;
+void fn_3_16B5B4(u8* out, s8 id, int t) {
+    f64 k1;
+    f32 k = (f32)t / lbl_3_rodata_4040;
+    k1 = lbl_3_rodata_4048 - k;
+    out[0x24] = k1 * lbl_3_data_2A308[out[0x28]][0] + k * lbl_3_data_2A308[out[0x29]][0];
+    out[0x25] = k1 * lbl_3_data_2A308[out[0x28]][1] + k * lbl_3_data_2A308[out[0x29]][1];
+    out[0x26] = k1 * lbl_3_data_2A308[out[0x28]][2] + k * lbl_3_data_2A308[out[0x29]][2];
+    out[0x27] = k1 * lbl_3_data_2A308[out[0x28]][3] + k * lbl_3_data_2A308[out[0x29]][3];
+    out[0x2A] = 1;
+    if (out == NULL) {
+        OSPanic(lbl_3_rodata_4050, 0x11C, lbl_3_rodata_405C);
+    }
+    memset(out, 0, 0xC);
+    if (fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], id, out) == 0) {
+        switch (id) {
+        case 28:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x1E, out);
+            break;
+        case 32:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x22, out);
+            break;
+        case 7:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 5, out);
+            break;
+        case 18:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x13, out);
+            break;
+        case 24:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x19, out);
+            break;
+        }
+    }
 }
 
 // .text:0x0016B884 size:0xB10 mapped:0x807AA918
