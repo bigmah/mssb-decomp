@@ -14,6 +14,11 @@ extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
+extern void fn_8005268C(void);
+extern u8* fn_80052734(void);
+extern f64 cos(f64);
+extern f64 sin(f64);
+extern f32 lbl_3_rodata_27F0;
 extern Vec lbl_3_rodata_25F8;
 extern f32 lbl_3_rodata_2658[];
 typedef struct { u8 pad[0x20]; f32 a, b, c, d; u8 pad2[4]; } T34;
@@ -385,8 +390,31 @@ void fn_3_D141C(void) {
 }
 
 // .text:0x000D173C size:0x10C mapped:0x807107D0
-void fn_3_D173C(void) {
-    return;
+void fn_3_D173C(u8* p) {
+    Mtx b;
+    Mtx a;
+    s32 off;
+    u32 i;
+    fn_8005268C();
+    PSMTXInverse((f32(*)[4])(fn_80052734() + 0x40), b);
+    PSMTXIdentity(a);
+    a[0][0] = cos(lbl_3_rodata_27F0);
+    a[0][2] = -(f32)sin(lbl_3_rodata_27F0);
+    a[2][0] = sin(lbl_3_rodata_27F0);
+    a[2][2] = cos(lbl_3_rodata_27F0);
+    PSMTXConcat(b, a, b);
+    i = 0;
+    off = 0;
+    b[2][3] = 0.0f;
+    b[1][3] = 0.0f;
+    b[0][3] = 0.0f;
+    while (i < *(u16*)(**(u8***)(p + 0x74) + 6)) {
+        u8* o = *(u8**)(*(u8**)(**(u8***)(p + 0x74) + 0x18) + off);
+        f32 (*m)[4] = *(f32(**)[4])(o + 0xEC);
+        PSMTXConcat(b, m, m);
+        off += 4;
+        i++;
+    }
 }
 
 // .text:0x000D1848 size:0x124 mapped:0x807108DC
