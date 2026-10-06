@@ -5,6 +5,23 @@
 void fn_3_1695A0(void) {
 }
 
+extern u8 lbl_3_bss_BA00[];
+extern void fn_80011604(s32, void*);
+extern void fn_3_16917C(void);
+
+// .text:0x001695A4 size:0x5C
+void fn_3_1695A4(s32 a, u8 flag) {
+    u8* p = lbl_3_bss_BA00;
+    if (flag == 0) {
+        *(u8**)p = p + 0xA0;
+        *(u8**)(p + 4) = p + 0x2C;
+    } else {
+        *(u8**)p = p + 0x60;
+        *(u8**)(p + 4) = p + 0xC;
+    }
+    fn_80011604(a, fn_3_16917C);
+}
+
 // .text:0x00169600 size:0x204 mapped:0x807A8694
 void fn_3_169600(void) {
     return;
