@@ -40,7 +40,7 @@ void fn_3_1054D0(void);
 void fn_3_105A10(void);
 void fn_3_105ACC(void);
 void fn_3_105BD8(u8* p);
-void fn_3_105C28(void);
+u32 fn_3_105C28(u8* p, u32 key);
 void fn_3_105C84(u8* p);
 void fn_3_105CDC(void);
 void fn_3_105E00(void);

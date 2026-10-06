@@ -252,8 +252,29 @@ void fn_3_105BD8(u8* p) {
 }
 
 // .text:0x00105C28 size:0x5C mapped:0x80744CBC
-void fn_3_105C28(void) {
-    return;
+u32 fn_3_105C28(u8* p, u32 key) {
+    u32 hi;
+    u32 res;
+    u16 n;
+    u16* tbl;
+    u16* e;
+    u32 lo;
+    u16* last;
+    res = 0;
+    hi = key >> 16;
+    tbl = *(u16**)(p + 8);
+    lo = (u16)key;
+    n = tbl[0];
+    e = tbl + 2;
+    do {
+        last = e;
+        if (e[0] == hi && lo == 0) {
+            res = e[1];
+        }
+        if (*(e += 2) > hi) break;
+        n--;
+    } while (n != 0);
+    return res | (last[1] << 16);
 }
 
 // .text:0x00105C84 size:0x58 mapped:0x80744D18
