@@ -3,6 +3,7 @@
 #include "game/UnknownHomes_Game.h"
 extern f32 lbl_3_rodata_990;
 extern f32 lbl_3_data_4474[];
+extern u8 lbl_3_data_190C[];
 
 // .text:0x00020CEC size:0x164 mapped:0x8065FD80
 void fn_3_20CEC(void) {
@@ -32,7 +33,24 @@ void fn_3_20E50(void) {
 
 // .text:0x00020EEC size:0xC4 mapped:0x8065FF80
 void fn_3_20EEC(void) {
-    return;
+    s32 idx;
+    f32 lo;
+    f32 hi;
+    f32 step;
+    f32 fi;
+    if (g_AiLogic.pitcherAIPitchDownTheMiddleInd != 0) {
+        g_AiLogic.aIMoundLocationX = lbl_3_rodata_990;
+        return;
+    }
+    idx = RandomIndexFromWeights(lbl_3_data_190C + g_Pitcher.charClass * 6, 6);
+    if (idx != 5) {
+        g_AiLogic.aIMoundLocationIndex = idx;
+        hi = lbl_3_data_4474[1];
+        lo = lbl_3_data_4474[0];
+        step = hi - lo;
+        step = step / 5.0f;
+        g_AiLogic.aIMoundLocationX = step * (f32)idx + lo;
+    }
 }
 
 // .text:0x00020FB0 size:0x2F0 mapped:0x80660044
