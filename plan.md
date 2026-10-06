@@ -129,6 +129,8 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **`cmplw rCnt, rI; ble` vs `cmplw rI, rCnt; bge`:** write the compare with the loaded field on the left (`if (*(u32*)(d + 0x3C) > i)`) (fn_3_FD408).
 - **Still unsolved (rep_3090):** fn_3_104B20 (3-float copy, original allocates f2/f1/f0 in load order; every local/statement order gives f1/f2/f0); fn_3_FD5A8 (two camera inits, original keeps `c+0x13C` in r9 and `g_Camera+0x9BC` in r8 like an inlined `fn_3_FD51C(0); fn_3_FD51C(1)`, but `dont_inline` blocks inlining; the `Vec up = {0,1,0}` initializer is the per-function rodata triple).
 
+- **`lwz r3, 0(r3); mr r29, r3; bl f` (value loaded into r3, then copied to a saved reg):** go through a second local, `o = tmp = **(void***)(a + 0x74); t = f(tmp);`. Plain `o = ...; f(o)` and `f(o = ...)` give `lwz r29; mr r3, r29` (fn_3_E698C).
+
 Add new patterns to this list as we find them.
 
 ## Phases
