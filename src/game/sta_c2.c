@@ -14,6 +14,10 @@ extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
+extern Vec lbl_3_rodata_2640;
+extern Vec lbl_3_rodata_264C;
+extern Vec lbl_3_rodata_24E8[];
+extern u8 lbl_3_bss_A8A8[];
 typedef struct { u8 b[9]; } B9;
 extern B9 lbl_3_rodata_2544;
 extern B9 lbl_3_rodata_2550;
@@ -62,8 +66,19 @@ void fn_3_CBA9C(u8* p) {
 }
 
 // .text:0x000CBAFC size:0x11C mapped:0x8070AB90
-void fn_3_CBAFC(void) {
-    return;
+void fn_3_CBAFC(u8* p) {
+    u8* c = *(u8**)(p + 0xC4);
+    Mtx m;
+    Vec axis = lbl_3_rodata_2640;
+    Vec dir = lbl_3_rodata_264C;
+    Vec v;
+    PSMTXRotAxisRad(m, &axis, 0.017453292f * *(f32*)(p + 0xC0));
+    PSMTXMultVec(m, lbl_3_rodata_24E8, &v);
+    PSVECAdd(&v, (Vec*)(p + 0xA0), &v);
+    v.y += 4.5;
+    *(Vec*)(c + 0xCC) = v;
+    *(Vec*)(c + 0xD8) = *(Vec*)(c + 0xCC);
+    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 4, &dir, p);
 }
 
 // .text:0x000CBC18 size:0x368 mapped:0x8070ACAC
@@ -455,7 +470,7 @@ void fn_3_D1B24(void) {
 }
 
 // .text:0x000D1F2C size:0x2F4 mapped:0x80710FC0
-void fn_3_D1F2C(void) {
+void fn_3_D1F2C(u8* a, u8* b, s32 n, Vec* d, u8* p) {
     return;
 }
 

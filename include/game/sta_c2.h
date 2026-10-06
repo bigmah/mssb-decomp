@@ -2,10 +2,11 @@
 #define __GAME_sta_c2_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/vec.h"
 
 void fn_3_CB8A8(void);
 void fn_3_CBA9C(u8* p);
-void fn_3_CBAFC(void);
+void fn_3_CBAFC(u8* p);
 void fn_3_CBC18(void);
 void fn_3_CBF80(void);
 void fn_3_CC1D4(void);
@@ -60,7 +61,7 @@ void fn_3_D1848(void);
 void fn_3_D196C(void);
 void fn_3_D1AC4(u8* p);
 void fn_3_D1B24(void);
-void fn_3_D1F2C(void);
+void fn_3_D1F2C(u8* a, u8* b, s32 n, Vec* d, u8* p);
 void fn_3_D2220(void);
 void fn_3_D233C(void);
 s32 fn_3_D249C(u8* p);
