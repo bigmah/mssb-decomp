@@ -346,8 +346,22 @@ void fn_3_F3A5C(u8* p, f32 x, f32 y, f32 z, f32 r) {
 }
 
 // .text:0x000F3AE0 size:0xD0 mapped:0x80732B74
-void fn_3_F3AE0(void) {
-    return;
+void fn_3_F3AE0(u8* a) {
+    f32 t;
+    f32 x;
+    f32 z;
+    *(f32*)(a + 0xAC) = lbl_3_data_1B884[a[0x9C]].v.x;
+    *(f32*)(a + 0xB0) = lbl_3_data_1B884[a[0x9C]].v.z;
+    z = *(f32*)(a + 0xB0);
+    x = *(f32*)(a + 0xAC);
+    t = -lbl_3_data_1B884[a[0x9C]].pad[0];
+    *(f32*)(a + 0xA0) = x;
+    *(f32*)(a + 0xA4) = 10.0f;
+    *(f32*)(a + 0xA8) = z;
+    *(f32*)(a + 0xB4) = t;
+    a[0] = 0;
+    CTRLSetTranslation((Control*)a, *(f32*)(a + 0xA0), -*(f32*)(a + 0xA4), *(f32*)(a + 0xA8));
+    CTRLSetRotation((Control*)a, 0.0f, t, 0.0f);
 }
 
 // .text:0x000F3BB0 size:0x120 mapped:0x80732C44
