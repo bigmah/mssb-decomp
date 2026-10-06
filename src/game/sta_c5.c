@@ -283,8 +283,13 @@ void fn_3_F31E0(void) {
 }
 
 // .text:0x000F37BC size:0x118 mapped:0x80732850
-void fn_3_F37BC(void) {
-    return;
+u32 fn_3_F37BC(u32 n, u32 k) {
+    u32 r = 1;
+    u32 i;
+    for (i = 1; i <= k; i++) {
+        r = r * (n - i + 1) / i;
+    }
+    return r;
 }
 
 // .text:0x000F38D4 size:0x130 mapped:0x80732968
