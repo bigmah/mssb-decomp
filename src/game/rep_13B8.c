@@ -14,6 +14,11 @@ extern u8 g_Scores[];
 
 extern u8 g_Batter[];
 extern u8 g_Runners[];
+extern u8 g_Ball[];
+extern u8 g_Fielders[];
+extern u8 g_d_GameSettings[];
+extern u8 lbl_3_common_bss_37400[];
+extern void fn_3_161588(int, s16);
 extern u8 g_FieldingLogic[];
 extern int g_Strikes[];
 extern u8 g_Practice[];
@@ -320,7 +325,28 @@ void fn_3_86EF8(void) {
 
 // .text:0x000870AC size:0x110 mapped:0x806C6140
 void fn_3_870AC(void) {
-    return;
+    u8* r;
+    g_Runners[0x130] = 0;
+    g_Runners[0x284] = 0;
+    g_Runners[0x3D8] = 0;
+    g_Runners[0x52C] = 0;
+    if ((g_FieldingLogic[0x111] == 2 || g_FieldingLogic[0x111] == 4) && *(s16*)(g_FieldingLogic + 0xE8) >= 0) {
+        r = g_Runners + *(s16*)(g_FieldingLogic + 0xE8) * 0x154;
+        if (r[0x123] == 1) {
+            r[0x130] = 1;
+        }
+        if (*(s16*)(g_FieldingLogic + 0xEC) < 5 && r[0x13A] != 0) {
+            r[0x130] = 2;
+        }
+        if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(s32*)(g_GameLogic + 8)) {
+            {
+                u8* f;
+                f = g_Fielders;
+                f += *(s16*)(g_Ball + 0x1B78) * 0x268;
+                fn_3_161588(6, *(s16*)(f + 0x178));
+            }
+        }
+    }
 }
 
 // .text:0x000871BC size:0x110 mapped:0x806C6250
