@@ -3,6 +3,12 @@
 #include "Dolphin/os.h"
 extern u8 lbl_3_common_bss_350E4[];
 extern u8 g_Ball[];
+extern u8 g_GameLogic[];
+extern u8 g_d_GameSettings[];
+extern u8 lbl_3_data_81DC[];
+extern void fn_3_8B890(s32);
+extern void fn_3_8BA60(s32, s32, s32);
+extern s32 fn_3_8BBC4(s32, s32, s32, s32);
 typedef struct { u8 pad[0x78]; s32 w78; u8 pad2[0xE8 - 0x7C]; } StadObj78;
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
@@ -32,6 +38,28 @@ extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
 extern u32 lbl_3_bss_B154[];
 extern void fn_3_B97DC(void*, u32);
+
+void fn_3_EDFAC(void) {
+    u8* st = lbl_3_bss_AEE0;
+    if (g_GameLogic[0x11E] != 0x21) {
+        if (g_GameLogic[0x11E] == 0xB) {
+            if (st[0x27C] == 0) {
+                fn_3_8B890(*(s32*)(st + 0x1C));
+                fn_3_8B890(*(s32*)(st + 0x18));
+                st[0x27C] = 1;
+            }
+        } else {
+            if (st[0x27C] != 0) {
+                *(s32*)(st + 0x1C) = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 6, 0, 0, 4);
+                *(s32*)(st + 0x18) = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 7, 0, 0, 5);
+                st[0x27C] = 0;
+                return;
+            }
+            fn_3_8BA60(*(s32*)(st + 0x1C), 0, 0);
+            fn_3_8BA60(*(s32*)(st + 0x18), 0, 0);
+        }
+    }
+}
 
 s32 fn_3_EE0BC(u32 v) {
     switch ((v >> 4) & 0xF) {
