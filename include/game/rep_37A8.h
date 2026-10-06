@@ -21,7 +21,7 @@ void fn_3_143714(void);
 void fn_3_143770(void);
 void fn_3_1439EC(void);
 void fn_3_143FAC(s32);
-void fn_3_14402C(void);
+void fn_3_14402C(s32 idx);
 void fn_3_14423C(void);
 void fn_3_14443C(void);
 void fn_3_14471C(void);

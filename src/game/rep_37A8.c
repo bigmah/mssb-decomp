@@ -21,6 +21,9 @@ extern s32 lbl_3_bss_B7E4;
 extern u8 lbl_3_bss_B800[];
 extern s8 lbl_3_data_266A4;
 extern void DCFlushRange(void*, u32);
+extern void fn_3_157570(void);
+extern void fn_3_DE4FC(void);
+extern void fn_3_154214(void);
 
 // .text:0x00141C44 size:0x48
 void fn_3_141C44(void) {
@@ -168,7 +171,7 @@ void fn_3_143FAC(s32 x) {
 }
 
 // .text:0x0014402C size:0x210 mapped:0x807830C0
-void fn_3_14402C(void) {
+void fn_3_14402C(s32 idx) {
     return;
 }
 
@@ -218,8 +221,33 @@ void fn_3_145EB8(void) {
 }
 
 // .text:0x00145FF4 size:0x1B0 mapped:0x80785088
+typedef struct { u8 pad0[0x1C]; s16 b; u8 pad1[0x2A - 0x1E]; u8 a; u8 c; u8 pad2[0x38 - 0x2C]; } MgPl38;
+typedef struct { u8 pad0[0x193A]; u8 state[50]; u8 pad1[0x1BB6 - 0x193A - 50]; s8 slot[50]; } Mg145F;
+
 void fn_3_145FF4(void) {
-    return;
+    u32 i;
+    fn_3_157570();
+    fn_3_DE4FC();
+    if (g_Minigame[0x1A2B] <= 2 && g_Minigame[0x1909] == 0) {
+        if (g_Minigame[0x18E8 + *(s8*)(g_Minigame + 0x1908)] == 1 && g_Minigame[0x19A8] == 0) {
+            g_Minigame[0x1A37] = 1;
+        } else {
+            g_Minigame[0x1A37] = 2;
+        }
+    }
+    fn_3_5A6D4(0xE);
+    for (i = 0; i < 50; i++) {
+        ((Mg145F*)g_Minigame)->state[i] = 0;
+        ((Mg145F*)g_Minigame)->slot[i] = -1;
+    }
+    *(s16*)(g_Minigame + 0x1B4C) = 0x3C;
+    for (i = 0; i < 3; i++) {
+        fn_3_14402C(i);
+        ((MgPl38*)g_Minigame)[i].a = 2;
+        ((MgPl38*)g_Minigame)[i].b = 1;
+        ((MgPl38*)g_Minigame)[i].c = 0;
+    }
+    fn_3_154214();
 }
 
 // .text:0x001461A4 size:0x264 mapped:0x80785238
