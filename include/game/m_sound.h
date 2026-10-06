@@ -40,6 +40,7 @@ u32 fn_3_9056C(s32 idx);
 void fn_3_90674(s32 idx);
 void fn_3_906FC(void);
 
+u32 fn_3_8B258(u8 b, u8 a, u8 c);
 void fn_3_8B2E4(void);
 
 #endif // !__GAME_m_sound_H_

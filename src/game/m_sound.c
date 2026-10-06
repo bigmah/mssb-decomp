@@ -34,6 +34,28 @@ extern void* lbl_3_bss_1768;
 extern void fn_3_8B094(void);
 #include "musyx/musyx.h"
 
+typedef struct SndQ1768 {
+    u8 pad[0x14];
+    u8 head;
+    u8 tail;
+    struct { u8 a, b, c; } e[14];
+} SndQ1768;
+
+// .text:0x0008B258 size:0x8C mapped:0x806CA2EC
+u32 fn_3_8B258(u8 b, u8 a, u8 c) {
+    SndQ1768** pp = (SndQ1768**)&lbl_3_bss_1768;
+    u8 cur;
+    u8 next;
+    if (*pp == NULL || (cur = (*pp)->head, (*pp)->tail == (next = (cur + 1) % 14))) {
+        return 0;
+    }
+    (*pp)->head = next;
+    (*pp)->e[cur].a = a;
+    (*pp)->e[cur].b = b;
+    (*pp)->e[cur].c = c;
+    return 1;
+}
+
 void fn_3_902FC(void) {
     sndVolume(0, 10, 0xFF);
 }
@@ -104,12 +126,6 @@ void fn_3_8BE8C(void) {
 }
 
 // .text:0x0008C07C size:0x88 mapped:0x806CB110
-typedef struct SndQ1768 {
-    u8 pad[0x14];
-    u8 head;
-    u8 tail;
-    struct { u8 a, b, c; } e[14];
-} SndQ1768;
 void fn_3_8C07C(void) {
     SndQ1768** pp = (SndQ1768**)&lbl_3_bss_1768;
     u8 cur;
