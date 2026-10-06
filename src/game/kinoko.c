@@ -2,17 +2,48 @@
 #include "header_rep_data.h"
 #pragma dont_inline on
 
+extern u8* lbl_3_bss_BA00[];
+extern u8 lbl_80366158[];
+extern s32 lbl_3_bss_BA08[];
+extern s8 lbl_3_data_2A330;
+extern s32 fn_800247E4(s32, s32, s32, s32);
+extern void DCFlushRange(void*, u32);
+
+// .text:0x0016943C size:0x164
+void fn_3_16943C(void) {
+    s32 v;
+    s32 i;
+    s32 t;
+    lbl_3_bss_BA08[0] += (lbl_80366158[0x28] == 0);
+    if ((lbl_3_bss_BA08[0] & 1) == 0) {
+        v = lbl_3_bss_BA00[0][fn_800247E4(0, 0, 4, 4)];
+        v += lbl_3_data_2A330 * 2;
+        if (v > 0xFF) {
+            v = 0xFF;
+        } else if (v < 0) {
+            v = 0;
+        }
+        for (i = 0; i < 32; i += 2) {
+            lbl_3_bss_BA00[0][i] = v;
+        }
+        DCFlushRange(lbl_3_bss_BA00[0], 4);
+        t = v + lbl_3_data_2A330 * 2;
+        if (t > 0xFF || t < 0) {
+            lbl_3_data_2A330 *= -1;
+        }
+    }
+}
+
 // .text:0x001695A0 size:0x4
 void fn_3_1695A0(void) {
 }
 
-extern u8 lbl_3_bss_BA00[];
 extern void fn_80011604(s32, void*);
 extern void fn_3_16917C(void);
 
 // .text:0x001695A4 size:0x5C
 void fn_3_1695A4(s32 a, u8 flag) {
-    u8* p = lbl_3_bss_BA00;
+    u8* p = (u8*)lbl_3_bss_BA00;
     if (flag == 0) {
         *(u8**)p = p + 0xA0;
         *(u8**)(p + 4) = p + 0x2C;
