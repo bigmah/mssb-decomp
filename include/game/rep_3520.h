@@ -8,7 +8,7 @@ void fn_3_133200(void);
 void fn_3_133320(void);
 void fn_3_13334C(void);
 void fn_3_1344BC(void);
-void fn_3_1345AC(void);
+s16 fn_3_1345AC(s16 a, s16 b, s32 c);
 void fn_3_134658(void);
 s32 fn_3_134908(s16* a, s16* b);
 s32 fn_3_134918(f32* a, f32* b);
