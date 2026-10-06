@@ -19,6 +19,10 @@ extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
 extern s16 lbl_3_data_21A04[];
 extern s16 lbl_3_data_21A44;
+extern u8 lbl_3_data_21278[];
+extern void fn_3_10F550(s32, u8);
+extern void fn_3_5A6D4(s32);
+extern void changeScene(s32, s32);
 extern s8 lbl_3_data_21B88[];
 extern f32 lbl_3_rodata_35FC;
 extern f32 lbl_3_rodata_3600;
@@ -480,7 +484,22 @@ void fn_3_13BB30(void) {
 
 // .text:0x0013BBF4 size:0xC4 mapped:0x8077AC88
 void fn_3_13BBF4(void) {
-    return;
+    switch (g_GameLogic._125) {
+    case 0:
+        fn_3_10F550(2, lbl_3_data_21278[0]);
+        changeScene(1, 6);
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        g_GameLogic._125 = 1;
+        break;
+    case 1:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > lbl_3_data_21278[0] + lbl_3_data_21278[1]) {
+            g_GameLogic._125 = 2;
+        }
+        break;
+    case 2:
+        fn_3_5A6D4(0);
+        break;
+    }
 }
 
 // .text:0x0013BCB8 size:0x7AC mapped:0x8077AD4C
