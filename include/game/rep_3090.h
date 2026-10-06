@@ -37,7 +37,7 @@ void fn_3_104B20(void);
 void fn_3_104B3C(void);
 void fn_3_1054CC(void);
 void fn_3_1054D0(void);
-void fn_3_105A10(void);
+void fn_3_105A10(f32* out, f32* a, f32* b, f32 t);
 void fn_3_105ACC(void);
 void fn_3_105BD8(u8* p);
 u32 fn_3_105C28(u8* p, u32 key);
