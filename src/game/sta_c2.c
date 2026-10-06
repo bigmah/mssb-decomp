@@ -13,6 +13,9 @@ extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
+typedef struct { u8 pad[0x20]; f32 a, b, c, d; u8 pad2[4]; } T34;
+extern T34 lbl_3_data_18364[];
+extern s16 fn_3_B7F70(s32);
 extern f32 lbl_3_data_188E0;
 extern f32 lbl_3_rodata_2694;
 extern f32 lbl_3_rodata_2698;
@@ -318,8 +321,21 @@ void fn_3_D0534(void) {
 }
 
 // .text:0x000D0854 size:0xC4 mapped:0x8070F8E8
-void fn_3_D0854(void) {
-    return;
+f32 fn_3_D0854(u8* p) {
+    f32 a;
+    f32 b;
+    if ((s8)p[0xD0] > 0) {
+        T34* t = lbl_3_data_18364;
+        t += p[0x9C];
+        a = t->a;
+        b = t->b;
+    } else {
+        T34* t = lbl_3_data_18364;
+        t += p[0x9C];
+        a = t->c;
+        b = t->d;
+    }
+    return a + b * (fn_3_B7F70(0x3E8) / 1000.0);
 }
 
 // .text:0x000D0918 size:0x6EC mapped:0x8070F9AC
