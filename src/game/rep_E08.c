@@ -21,7 +21,17 @@ extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
 
 // .text:0x00060768 size:0x9C mapped:0x8069F7FC
 void fn_3_60768(void) {
-    return;
+    int i;
+    for (i = 0; i < 4; i++) {
+        u8* e = *(u8**)(lbl_8036E548 + 0x60) + i * 0x90;
+        *(s32*)(e + 0x38) = 0;
+        *(s16*)(e + 0x42) = 0;
+        *(f32*)(e + 0x90) = 0.0f;
+        e[0x8C] = 1;
+        e[0x8D] = 0;
+        e[0x8E] = 0;
+        *(f32*)(e + 0x94) = 0.0f;
+    }
 }
 
 // .text:0x00060804 size:0x294 mapped:0x8069F898
@@ -136,8 +146,28 @@ void fn_3_62B50(void) {
 }
 
 // .text:0x00062CA8 size:0x9C mapped:0x806A1D3C
-void fn_3_62CA8(void) {
-    return;
+void fn_3_62CA8(int i) {
+    u8 t;
+    u8* o;
+    u8* f;
+    u8* a = g_UnkAnimation_31EAC + i * 0x54;
+    f = g_Fielders + i * 0x268;
+    o = ((u8**)(lbl_8036E548 + 0x2C50))[i];
+    if (a[0x4C] == 0) {
+        t = f[0x252];
+        a[0x4C] = t;
+        *(s16*)(a + 0x4A) = *(s16*)(f + 0x24C);
+        if (t == 1 || t == 2) {
+            a[0x4E] = f[0x253];
+        }
+        if (a[0x4C] != 0) {
+            a[0x4D] = a[0x4C];
+        }
+    }
+    if (o != NULL && *(s16*)(o + 0x62) == 0x24) {
+        a[0x4C] = 0;
+        a[0x4F] = 0;
+    }
 }
 
 // .text:0x00062D44 size:0xC0 mapped:0x806A1DD8
