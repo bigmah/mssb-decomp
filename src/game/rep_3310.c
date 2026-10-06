@@ -44,8 +44,13 @@ extern u8 g_d_GameSettings[];
 typedef struct { u8 pad[0x34]; void* p; u8 pad2[0x90 - 0x38]; } Ent90;
 extern f32 fn_800B4A94(void* p);
 
+typedef struct { u8 pad[0x26]; u8 f; u8 pad2[1]; } E28;
 void fn_3_116B38(void) {
-    return;
+    s32 i = 2;
+    if (g_Minigame[0x1A2A] == 3) {
+        i = 0x1F;
+    }
+    ((E28*)*(u8**)(lbl_8036E548 + 0x2D94))[i].f = 0;
 }
 
 // .text:0x00116B74 size:0x8A8 mapped:0x80755C08
