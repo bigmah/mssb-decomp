@@ -194,3 +194,9 @@ Don't spend more than about 30–45 minutes on a single register-allocation figh
 - **`...rodata.0@ha` base-register pooling appears when an inlined helper uses float literals** (0.5/3.0/0.0). To get the original's separate `lis/lfd` per constant, write the helper with `extern f32/f64 lbl_3_rodata_xxx` operands instead of literals.
 - **`int` vs `bool` returns:** callers compare with `cmpwi` only if the callee prototype returns `int`; for `checkTriangleCollisions` the local `ret` had to be `int` (not `bool`) for the callee to keep matching.
 - **`__abs(x)`** gives the branch-free `srawi/xor/subf` abs (plain `abs` becomes a `bl`).
+- **Direct `lwz r0, sym@l(rN)` (no `addi`) for a pointer stored in a global array/struct:** read it as `*(T**)&sym` (`T* p = *(T**)&sym + idx;`), not `sym[0]`/`sym.field`. Keeps the CSE'd `idx*size` register and matched `fn_3_C823C`.
+- **Stub callee inlined into a matched caller (`bl` vanished):** a `return;` stub in the same file gets inlined. Add `#pragma dont_inline on` at the top (kinoko.c) so the call stays.
+- **Float compare operand order (`fcmpu f1,f2`):** `if (0.0f_extern == PSVECMag(v))` and `if (PSVECMag(v) == z)` both emit `fcmpu z,mag`. Store first: `m = PSVECMag(v); if (m == z)` flips it (`fn_3_169E70`).
+- **`s8` args to int-prototyped callees (`lbz r3; extsb r3,r3`):** declare the callee params `s32` and the local/param `s8`; that reproduces the explicit extsb at each call (`fn_3_16B488`).
+- **Statement order vs. register choice:** two independent stores (`x = -1; y = 0;`) swapping order fixed `li r0/r4` allocation (`fn_3_169600`). Try swapping before restructuring.
+- **Locals declared in an order that decides r27..r31:** when pointer/index locals come out permuted, add `u8* q;` as a separate declaration assigned later (not `u8* q = ...` inside the loop) (`fn_3_169D00`).
