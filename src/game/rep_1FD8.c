@@ -15,6 +15,24 @@ extern u32 lbl_3_bss_9D84;
 extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
+extern void GXClearVtxDesc(void);
+extern void GXSetVtxDesc(int, int);
+extern void GXSetVtxAttrFmt(int, int, int, int, int);
+extern void GXSetChanCtrl(int, int, int, int, int, int, int);
+extern void GXSetNumChans(int);
+extern void GXSetNumTexGens(int);
+extern void GXSetCullMode(int);
+extern void GXSetProjection(void*, int);
+extern void GXLoadPosMtxImm(void*, int);
+extern void GXSetCurrentMtx(int);
+extern void GXSetNumTevStages(int);
+extern void GXSetTevOrder(int, int, int, int);
+extern void GXSetTevColorIn(int, int, int, int, int);
+extern void GXSetTevColorOp(int, int, int, int, int, int);
+extern void GXSetTevAlphaIn(int, int, int, int, int);
+extern void GXSetTevAlphaOp(int, int, int, int, int, int);
+extern void fn_8005268C(void);
+extern u8* fn_80052734(void);
 extern Vec lbl_3_rodata_2080;
 extern f32 lbl_3_rodata_2178;
 extern void* memset(void*, int, u32);
@@ -323,7 +341,28 @@ void fn_3_C48D0(void) {
 
 // .text:0x000C4B80 size:0x174 mapped:0x80703C14
 void fn_3_C4B80(void) {
-    return;
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxDesc(0xD, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetVtxAttrFmt(0, 0xD, 1, 4, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(0);
+    GXSetTevColorIn(0, 0xF, 0xA, 8, 0xF);
+    GXSetTevAlphaIn(0, 7, 5, 4, 7);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    fn_8005268C();
+    GXSetProjection(fn_80052734(), 0);
+    fn_8005268C();
+    GXLoadPosMtxImm(fn_80052734() + 0x40, 0);
+    GXSetCurrentMtx(0);
 }
 
 // .text:0x000C4CF4 size:0x20C mapped:0x80703D88
