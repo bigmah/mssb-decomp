@@ -15,6 +15,9 @@ typedef struct {
 } StrikesT;
 extern StrikesT g_Strikes;
 extern f32 lbl_3_data_446C[];
+extern const f32 lbl_3_rodata_1250;
+extern const f32 lbl_3_rodata_1258;
+extern const f32 lbl_3_rodata_12A8;
 extern u8 g_Runners[];
 extern void fn_3_5C69C(int);
 
@@ -111,7 +114,13 @@ void fn_3_709B4(void) {
 
 // .text:0x00070AEC size:0xA8 mapped:0x806AFB80
 void fn_3_70AEC(void) {
-    return;
+    f32 t;
+    if (g_Pitcher[0x153] != 0) {
+        *(f32*)(g_Pitcher + 0xD4) = lbl_3_rodata_1258;
+        return;
+    }
+    t = *(s16*)(g_Ball + 0x1B68) - *(s16*)(g_Pitcher + 0x122) * lbl_3_rodata_1250;
+    *(f32*)(g_Pitcher + 0xD4) = *(f32*)(g_Pitcher + 0xCC) - (t * (*(f32*)(g_Pitcher + 0xD0) * t)) / lbl_3_rodata_12A8;
 }
 
 // .text:0x00070B94 size:0x360 mapped:0x806AFC28
