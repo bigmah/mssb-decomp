@@ -1,5 +1,7 @@
 #include "game/rep_3520.h"
 #include "game/rep_1838.h"
+#include "Dolphin/mtx.h"
+#include "Dolphin/stl.h"
 #include "game/UnknownHomes_Game.h"
 #include "header_rep_data.h"
 #include "stl/math.h"
@@ -17,6 +19,12 @@ extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
 extern s16 lbl_3_data_21A04[];
 extern s16 lbl_3_data_21A44;
+extern s8 lbl_3_data_21B88[];
+extern f32 lbl_3_rodata_35FC;
+extern f32 lbl_3_rodata_3600;
+extern f32 lbl_3_rodata_363C;
+extern f32 lbl_3_rodata_35C4[];
+extern f32 lbl_3_rodata_35B8[];
 extern s16 lbl_3_data_21A60;
 extern f32 lbl_3_rodata_3644;
 
@@ -148,12 +156,38 @@ int fn_3_135698(u8* a, u8* b) {
 
 // .text:0x001356F8 size:0xAC mapped:0x8077478C
 void fn_3_1356F8(void) {
-    return;
+    u8* q = G8 + 0x1DCC;
+    u8* g;
+    f32 v;
+    u8 st;
+    u32 i;
+    memset(G8 + 0x1D7C, 0, 0x78);
+    g = G8;
+    for (i = 0; i < 4; i++) {
+        st = g[0x18DC];
+        *(s16*)(q + 4) = -1;
+        if (RandomInt_Game(100) < (s8)lbl_3_data_21B88[st]) {
+            v = lbl_3_rodata_35FC;
+        } else {
+            v = lbl_3_rodata_3600;
+        }
+        *(f32*)q = v;
+        q += 8;
+        g++;
+    }
 }
 
 // .text:0x001357A4 size:0x98 mapped:0x80774838
-void fn_3_1357A4(void) {
-    return;
+void fn_3_1357A4(f32* out, Vec* dir) {
+    Vec base = *(Vec*)lbl_3_rodata_35C4;
+    Vec v;
+    if (out == NULL || dir == NULL) {
+        return;
+    }
+    PSVECNormalize(dir, &v);
+    PSVECScale(&v, lbl_3_rodata_363C, &v);
+    out[0] = base.x + v.x;
+    out[2] = base.z + v.z;
 }
 
 // .text:0x0013583C size:0xE8 mapped:0x807748D0

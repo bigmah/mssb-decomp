@@ -2,6 +2,7 @@
 #define __GAME_rep_3520_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/mtx.h"
 
 void fn_3_133200(void);
 void fn_3_133320(void);
@@ -21,7 +22,7 @@ void fn_3_135600(f32* outX, f32* outY, f32 x, f32 y);
 int fn_3_13564C(f32 x, f32 y);
 int fn_3_135698(u8* a, u8* b);
 void fn_3_1356F8(void);
-void fn_3_1357A4(void);
+void fn_3_1357A4(f32* out, Vec* dir);
 void fn_3_13583C(void);
 void fn_3_135924(void);
 void fn_3_135A64(void);
