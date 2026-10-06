@@ -75,7 +75,6 @@ void fn_3_BB07C(f32* out, f32 deg) {
     a = lbl_3_rodata_1EC0 * deg;
     s = sin(a);
     c = cos(a);
-    
     out[4] = (s * (f32)lbl_3_data_170D8[1]) / 100000.0f;
     out[5] = (c * (f32)lbl_3_data_170D8[1]) / 100000.0f;
     out[6] = 0.0f;
