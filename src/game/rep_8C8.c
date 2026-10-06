@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1838.h"
+#pragma dont_inline on
+extern s32 fn_3_B0CF4(void);
+extern u8 lbl_3_data_1ABC[];
 extern u8 lbl_3_data_1AAC[];
 extern u8 lbl_3_data_1AB0[];
 
@@ -11,13 +14,31 @@ void fn_3_1E4B8(void) {
 }
 
 // .text:0x0001E724 size:0xD0 mapped:0x8065D7B8
-void fn_3_1E724(void) {
-    return;
+s32 fn_3_1E724(void) {
+    if (*((u8*)&g_GameLogic + 0x121) == 0xD) {
+        return fn_3_B0CF4() != 0;
+    }
+    if (*((u8*)&g_AiLogic + 0x58) != 1) {
+        return 0;
+    }
+    if (*((u8*)&g_AiLogic + 0x65) != 0) {
+        return 0;
+    }
+    if (*(s16*)((u8*)&g_Ball + 0x1B68) <= 0) {
+        return 1;
+    }
+    if (*(s16*)((u8*)&g_Pitcher + 0x132) == *((u8*)&g_AiLogic + 0x5D)) {
+        if (fn_3_1E7F4() == 0) {
+            *((u8*)&g_AiLogic + 0x65) = 1;
+            return 0;
+        }
+    }
+    return 1;
 }
 
 // .text:0x0001E7F4 size:0x2B4 mapped:0x8065D888
-void fn_3_1E7F4(void) {
-    return;
+s32 fn_3_1E7F4(void) {
+    return 0;
 }
 
 // .text:0x0001EAA8 size:0x53C mapped:0x8065DB3C
@@ -62,7 +83,30 @@ void fn_3_1FF48(void) {
 
 // .text:0x00020064 size:0x124 mapped:0x8065F0F8
 void fn_3_20064(void) {
-    return;
+    u8 t;
+    g_AiLogic.batterAITrackBallPoorlyOffset = 0.0f;
+    if (g_Pitcher.starPitchType == 0) {
+        t = g_Pitcher.TypeOfPitch;
+        if (t == 0) {
+            g_AiLogic.batterAISwingEarly1OrLate2 = 0;
+        } else if (g_AiLogic.batterAIPitchGuessed != t) {
+            if (t == 1) {
+                if (RandomInt_Game(0x64) < (s32)(lbl_3_data_1ABC + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty]) {
+                    g_AiLogic.batterAISwingEarly1OrLate2 = 0;
+                } else {
+                    g_AiLogic.batterAISwingEarly1OrLate2 = 1;
+                }
+            } else {
+                if (RandomInt_Game(0x64) < (s32)(lbl_3_data_1ABC + g_Batter.characterClass * 4 + g_AiLogic.aIBatterDifficulty)[0x10]) {
+                    g_AiLogic.batterAISwingEarly1OrLate2 = 0;
+                } else {
+                    g_AiLogic.batterAISwingEarly1OrLate2 = 2;
+                }
+            }
+        } else {
+            g_AiLogic.batterAISwingEarly1OrLate2 = 0;
+        }
+    }
 }
 
 // .text:0x00020188 size:0x9C mapped:0x8065F21C

@@ -14,7 +14,7 @@ void fn_3_9A8A4(void);
 void fn_3_9B108(void);
 void fn_3_9B320(void);
 void fn_3_9B7F4(void);
-void fn_3_9BEE0(void);
+void fn_3_9BEE0(u8* p);
 void fn_3_9C014(void);
 void fn_3_9C28C(void);
 

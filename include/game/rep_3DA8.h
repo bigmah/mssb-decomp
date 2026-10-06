@@ -4,5 +4,6 @@
 #include "mssbTypes.h"
 
 void fn_3_16230C(void);
+void fn_3_164554(void);
 
 #endif // !__GAME_rep_3DA8_H_
