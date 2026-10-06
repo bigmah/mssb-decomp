@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 #include "Dolphin/os.h"
 extern u8 lbl_3_common_bss_350E4[];
+extern u8 g_Ball[];
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
@@ -448,8 +449,28 @@ void fn_3_F6084(void) {
 }
 
 // .text:0x000F6504 size:0xC4 mapped:0x80735598
-void fn_3_F6504(void) {
-    return;
+typedef struct { u8 pad[0x78]; s32 w78; u8 pad7C[0xE8 - 0x7C]; } Ctl78;
+s32 fn_3_F6504(s32 idx, Mtx m) {
+    u8* c = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+    u8 t = c[0x9D];
+    if (t == 2) {
+        if (c[0xC6] < 3 && g_Ball[0x1BC9] != 1) {
+            CTRLBuildMatrix((Control*)c, m);
+        } else {
+            return 0;
+        }
+    } else if (t == 0) {
+        if (c[0xC1] == 2) {
+            return 0;
+        }
+        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+            return 0;
+        }
+        CTRLBuildMatrix((Control*)c, m);
+    } else {
+        CTRLBuildMatrix((Control*)c, m);
+    }
+    return (*(Ctl78**)lbl_3_common_bss_350E4 + idx)->w78;
 }
 
 // .text:0x000F65C8 size:0x100 mapped:0x8073565C
