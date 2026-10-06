@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
+#include "Dolphin/vec.h"
 extern u8 lbl_3_common_bss_350E4[];
 extern char lbl_3_rodata_286C[];
 extern char lbl_3_rodata_2878[];
@@ -160,8 +161,14 @@ void fn_3_CE954(void) {
 }
 
 // .text:0x000CEBBC size:0xDC mapped:0x8070DC50
-void fn_3_CEBBC(void) {
-    return;
+extern void fn_800528C0(f32,f32,f32,s16*,s16*);
+void fn_3_CEBBC(f32* v, s32 k) {
+    s16 a;
+    s16 b;
+    fn_800528C0(v[0], v[1], v[2], &a, &b);
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x48) = a;
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x4C) = b;
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x50) = 0.0f;
 }
 
 // .text:0x000CEC98 size:0x98 mapped:0x8070DD2C

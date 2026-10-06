@@ -22,7 +22,7 @@ void fn_3_CDFA4(void);
 void fn_3_CE56C(u32 a, u8 b);
 void fn_3_CE8E4(void);
 void fn_3_CE954(void);
-void fn_3_CEBBC(void);
+void fn_3_CEBBC(f32* v, s32 k);
 void fn_3_CEC98(void);
 void fn_3_CED30(void);
 void fn_3_CED34(void);
