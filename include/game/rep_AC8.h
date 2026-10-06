@@ -15,7 +15,7 @@ void fn_3_26664(void);
 void fn_3_26A74(void);
 void fn_3_27648(void);
 void fn_3_27738(s32 i);
-void fn_3_27764(void);
+void fn_3_27764(int);
 void fn_3_27860(void);
 void fn_3_27D68(void);
 void fn_3_27FF4(void);
