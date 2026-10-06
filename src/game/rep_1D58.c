@@ -255,7 +255,12 @@ void fn_3_B8464(void* mtx, void* obj) {
 
 // .text:0x000B8574 size:0x34 mapped:0x806F7608
 void fn_3_B8574(void) {
-    return;
+    lbl_3_bss_1910[0] = 10000.0f;
+    lbl_3_bss_1910[1] = 10000.0f;
+    lbl_3_bss_1910[2] = 10000.0f;
+    lbl_3_bss_1910[3] = -10000.0f;
+    lbl_3_bss_1910[4] = -10000.0f;
+    lbl_3_bss_1910[5] = -10000.0f;
 }
 
 // .text:0x000B85A8 size:0x34 mapped:0x806F763C
