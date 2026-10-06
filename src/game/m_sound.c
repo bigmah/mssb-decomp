@@ -37,6 +37,7 @@ extern u16 lbl_3_data_81FC[];
 extern u8 lbl_3_data_84F4[];
 extern void* fn_80052734(int);
 #include "Dolphin/mtx.h"
+extern Vec lbl_3_rodata_1558;
 extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32, u8, void*);
 extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
@@ -151,7 +152,17 @@ void fn_3_8BDF4(void) {
 
 // .text:0x0008BE8C size:0x1F0 mapped:0x806CAF20
 void fn_3_8BE8C(void) {
-    return;
+    Vec pos = lbl_3_rodata_1558;
+    s32 i;
+    for (i = 0; i < 100; i++) {
+        lbl_3_common_bss_32B20[0x1FD0 + i] = 0xFF;
+        lbl_3_common_bss_32B20[0x2034 + i] = 0;
+        lbl_3_common_bss_32B20[0x2098 + i] = 0;
+    }
+    lbl_3_common_bss_32B20[0x20FC] = 0xFF;
+    lbl_3_common_bss_32B20[0x20FD] = 0;
+    fn_3_8B9BC(&pos);
+    fn_3_8B804();
 }
 
 // .text:0x0008C07C size:0x88 mapped:0x806CB110
