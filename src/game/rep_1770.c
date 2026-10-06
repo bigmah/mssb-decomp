@@ -11,6 +11,9 @@ extern u8* lbl_803CC1B8;
 extern u8 lbl_80371C30[];
 extern void fn_80034E20(void*, void*);
 extern u8 lbl_3_data_D378[];
+extern u8 lbl_3_data_D4F8[];
+extern u8 g_Pitcher[];
+extern void playSoundEffect(int);
 extern u8 g_Batter[];
 
 // .text:0x000993A8 size:0x3C4 mapped:0x806D843C
@@ -65,7 +68,33 @@ void fn_3_99C88(void) {
 
 // .text:0x00099CFC size:0x114 mapped:0x806D8D90
 void fn_3_99CFC(void) {
-    return;
+    u8* p = lbl_803CC1B8;
+    fn_80034E20(p, lbl_3_data_D4F8);
+    if (!(g_Batter[0xAB] & 1)) {
+        u8* e = lbl_80371C30;
+        u32* o;
+        e += *(u16*)(p + 0x14) << 3;
+        o = *(u32**)(e + 0x18);
+        o[0x54 / 4] &= ~2;
+    }
+    if (!(g_Batter[0xAB] & 2)) {
+        u8* e = lbl_80371C30;
+        u32* o;
+        e += *(u16*)(p + 0x14) << 3;
+        o = *(u32**)(e + 0x10);
+        o[0x54 / 4] &= ~2;
+    }
+    if (!(g_Batter[0xAB] & 4)) {
+        u8* e = lbl_80371C30;
+        u32* o;
+        e += *(u16*)(p + 0x14) << 3;
+        o = *(u32**)(e + 0x8);
+        o[0x54 / 4] &= ~2;
+    }
+    if (g_Pitcher[0x159] == 0 && g_Pitcher[0x15A] == 0) {
+        playSoundEffect(0x1AB);
+    }
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_3_99C88;
 }
 
 // .text:0x00099E10 size:0xA94 mapped:0x806D8EA4
