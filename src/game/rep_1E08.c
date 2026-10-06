@@ -13,6 +13,11 @@ extern u8 lbl_803C6CF8[];
 extern u8 lbl_3_data_11380[];
 extern s32 lbl_3_data_17000[];
 extern f32 lbl_3_rodata_1EC4;
+extern f64 sin(f64);
+extern f64 cos(f64);
+extern s32 lbl_3_data_170D8[];
+extern f32 lbl_3_rodata_1EC0;
+extern f32 lbl_3_rodata_1E68;
 extern s32 ARAMTransfer(void*, int, int, int);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_8006C43C(int);
@@ -34,6 +39,11 @@ void fn_3_C0770(void) {
 }
 
 extern u8 lbl_3_common_bss_35154[];
+extern u8 lbl_3_data_12354[];
+extern f32 lbl_3_rodata_1F18;
+extern f32 lbl_3_rodata_1F1C;
+extern f32 lbl_3_rodata_1F20;
+extern f32 lbl_3_rodata_1E64;
 extern u8 g_Ball[];
 extern u8 g_Pitcher[];
 extern void fn_3_15BAA0(int);
@@ -58,8 +68,17 @@ void fn_3_BA7F4(void) {
 }
 
 // .text:0x000BB07C size:0xE0 mapped:0x806FA110
-void fn_3_BB07C(void) {
-    return;
+void fn_3_BB07C(f32* out, f32 deg) {
+    f32 s;
+    f32 a;
+    f32 c;
+    a = lbl_3_rodata_1EC0 * deg;
+    s = sin(a);
+    c = cos(a);
+    
+    out[4] = (s * (f32)lbl_3_data_170D8[1]) / 100000.0f;
+    out[5] = (c * (f32)lbl_3_data_170D8[1]) / 100000.0f;
+    out[6] = 0.0f;
 }
 
 // .text:0x000BB15C size:0x2F8 mapped:0x806FA1F0
@@ -139,8 +158,32 @@ void fn_3_BD1D8(void) {
 }
 
 // .text:0x000BD434 size:0xBC mapped:0x806FC4C8
-void fn_3_BD434(void) {
-    return;
+void fn_3_BD434(int a, int b) {
+    u8* p = lbl_3_data_12354 + (a + b * 7) * 0xA0;
+    u8* c = lbl_3_common_bss_35154;
+    int n;
+    u8* c2;
+    u8* q;
+    *(u8**)(c + 0x3B8) = p;
+    n = 0;
+    *(s32*)(c + 0x3CC) = 0x1518;
+    *(s32*)(c + 0x3C8) = 0;
+    *(f32*)(c + 0x3D0) = lbl_3_rodata_1F18;
+    *(f32*)(c + 0x3D4) = lbl_3_rodata_1F1C;
+    *(f32*)(c + 0x3D8) = lbl_3_rodata_1E64;
+    while (p[0xE] < 4) {
+        p += 0x10;
+        n++;
+    }
+    c2 = lbl_3_common_bss_35154;
+    c2[0x3E0] = 1;
+    n *= 0x10;
+    q = *(u8**)(c + 0x3B8);
+    *(f32*)(c2 + 0x3BC) = *(f32*)(q + n);
+    q += n;
+    *(f32*)(c2 + 0x3C0) = *(f32*)(q + 4);
+    *(f32*)(c2 + 0x3C4) = *(f32*)(q + 8);
+    *(f32*)(c2 + 0x3DC) = lbl_3_rodata_1F20;
 }
 
 // .text:0x000BD4F0 size:0x14 mapped:0x806FC584

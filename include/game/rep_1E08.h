@@ -5,7 +5,7 @@
 
 void fn_3_BA538(void);
 void fn_3_BA7F4(void);
-void fn_3_BB07C(void);
+void fn_3_BB07C(f32*, f32);
 void fn_3_BB15C(void);
 void fn_3_BB454(void);
 void fn_3_BB7F4(void);
@@ -21,7 +21,7 @@ void fn_3_BC888(void);
 void fn_3_BCA20(void);
 void fn_3_BD1D4(void);
 void fn_3_BD1D8(void);
-void fn_3_BD434(void);
+void fn_3_BD434(int, int);
 void fn_3_BD4F0(void);
 void fn_3_BD504(void);
 void fn_3_BD6AC(int, f32, f32, f32);
