@@ -134,6 +134,9 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **`g_Runners` as a typed struct array:** `extern RunnerT g_Runners[];` (local typedef padded to 0x154) and `g_Runners[idx].field` gives the original `addi base; mulli; add` order, where `(u8*)&g_Runners + idx*0x154` gave `addi r0`/swapped regs (fn_3_A1D04, fn_3_A32B8). For a backwards loop use `RunnerT* r = &g_Runners[3]; for (i = 3; i >= 0; r--, i--)`.
 
 - **`lwz r3, 0(r3); mr r29, r3; bl f` (value loaded into r3, then copied to a saved reg):** go through a second local, `o = tmp = **(void***)(a + 0x74); t = f(tmp);`. Plain `o = ...; f(o)` and `f(o = ...)` give `lwz r29; mr r3, r29` (fn_3_E698C).
+- **`-inline deferred` reads `#pragma dont_inline` at end of file**, not where the caller is: `#pragma dont_inline off` ... `on` around one caller does nothing. To get a same-file function inlined (`fn_3_145FF4` into `fn_3_1461A4`), remove the file's `dont_inline on` and call the remaining stubs through a cast, `((void (*)(s32))fn_3_14402C)(i)`, which is never inlined (`rep_37A8.c`). `__attribute__((never_inline))`/`__declspec(noinline)` are not supported.
+- **`addi r0, rX, g@l; mr rN, r0` instead of `addi rN, rX, g@l`:** comes from `p = g_Minigame;` followed by `p++`/`p += 0x38` in the loop. Indexing the array by the counter instead (`((T*)g_Minigame)[i].f`) gives the direct `addi` (fn_3_145FF4). Unsolved when a second pointer already advances explicitly (fn_3_142C18, fn_3_146928, 97%).
+- **Fields of the second entry of a struct array:** `p = g_Minigame + 0x38; p[0x2A] = 1; ...` instead of absolute `g_Minigame[0x62]` fixed the base register (r11 vs r9) in fn_3_14423C. A `-1` byte store needs `((s8*)p)[k] = -1` (`li -1`, not `li 0xff`).
 
 Add new patterns to this list as we find them.
 
