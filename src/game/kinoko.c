@@ -22,6 +22,23 @@ extern void GXSetTevColorOp(s32, s32, s32, s32, s32, s32);
 extern void GXSetTevAlphaIn(s32, s32, s32, s32, s32);
 extern void GXSetTevAlphaOp(s32, s32, s32, s32, s32, s32);
 
+extern void GXSetZMode(s32, s32, s32);
+extern void GXSetBlendMode(s32, s32, s32, s32);
+extern void GXSetCullMode(s32);
+extern void GXClearVtxDesc(void);
+extern void GXSetVtxDesc(s32, s32);
+extern void GXSetVtxAttrFmt(s32, s32, s32, s32, s32);
+extern void GXSetChanCtrl(s32, s32, s32, s32, s32, s32, s32);
+extern void GXSetNumChans(s32);
+extern void GXSetNumTexGens(s32);
+extern void GXSetNumTevStages(s32);
+extern void GXSetTevOp(s32, s32);
+extern void GXLoadPosMtxImm(void*, s32);
+extern void GXSetCurrentMtx(s32);
+extern void GXSetProjection(void*, s32);
+extern s32 fn_8005268C(void);
+extern u8* fn_80052768_getCamera(s32);
+
 // .text:0x0016917C size:0x2C0
 void fn_3_16917C(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
     KinokoCtl* c = &lbl_3_bss_BA00;
@@ -173,9 +190,29 @@ void fn_3_169600(void) {
     return;
 }
 
-// .text:0x00169804 size:0x180 mapped:0x807A8898
+// .text:0x00169804 size:0x180
 void fn_3_169804(void) {
-    return;
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 1, 0);
+    GXSetCullMode(2);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevColorIn(0, 0xF, 0xF, 0xF, 0xA);
+    GXSetTevAlphaIn(0, 7, 7, 7, 5);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetTevOp(0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C()) + 0x40, 0);
+    GXSetCurrentMtx(0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C()), 0);
 }
 
 // .text:0x00169984 size:0x37C mapped:0x807A8A18
