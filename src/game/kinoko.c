@@ -1,5 +1,6 @@
 #include "game/kinoko.h"
 #include "header_rep_data.h"
+#pragma dont_inline on
 
 // .text:0x001695A0 size:0x4
 void fn_3_1695A0(void) {
@@ -20,6 +21,23 @@ void fn_3_1695A4(s32 a, u8 flag) {
         *(u8**)(p + 4) = p + 0xC;
     }
     fn_80011604(a, fn_3_16917C);
+}
+
+extern u8 lbl_3_data_28928[];
+extern u8 lbl_3_bss_BAE0[];
+extern void fn_3_16A07C(void);
+extern void* memset(void*, s32, u32);
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+
+// .text:0x0016C394 size:0x7C
+void fn_3_16C394(s8 a) {
+    memset(lbl_3_data_28928, 0, 0x19E0);
+    memset(lbl_3_bss_BAE0, 0, 0x1BF0);
+    lbl_3_data_28928[0x19DC] = a;
+    lbl_3_data_28928[0x19DD] = 1;
+    *(s32*)(lbl_3_data_28928 + 0x19D4) = 1;
+    fn_3_16B884();
+    fn_800B0A5C_insertQueue(fn_3_16A07C, 0);
 }
 
 // .text:0x00169600 size:0x204 mapped:0x807A8694

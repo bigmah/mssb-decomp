@@ -13,5 +13,6 @@ void fn_3_16A07C(void);
 void fn_3_16B488(void);
 void fn_3_16B5B4(void);
 void fn_3_16B884(void);
+void fn_3_16C394(s8 a);
 
 #endif // !__GAME_kinoko_H_
