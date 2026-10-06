@@ -132,8 +132,8 @@ void fn_3_EF55C(void) {
 }
 
 // .text:0x000EF7B4 size:0x4C mapped:0x8072E848
-void fn_3_EF7B4(void) {
-    return;
+u32 fn_3_EF7B4(V3i v, s32 x) {
+    return ((u8 (*)(V3i, s32))fn_3_EF55C)(v, x) != 0;
 }
 
 // .text:0x000EF800 size:0x90 mapped:0x8072E894
