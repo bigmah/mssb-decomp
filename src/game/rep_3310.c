@@ -1,4 +1,6 @@
 #include "game/rep_3310.h"
+#include "game/rep_1D58.h"
+#include "game/rep_1C0.h"
 #include "header_rep_data.h"
 
 extern f32 lbl_3_data_2262C;
@@ -7,6 +9,14 @@ extern u8 lbl_3_data_22670[];
 extern u8 lbl_3_data_2265C[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_8036E548[];
+extern u8 g_d_GameSettings[];
+extern void minigamesSetSomePointers(void);
+extern void minigamesGXStuff(void);
+extern void minigamesSetSomePointers2(void);
+extern void fn_80035B50(int);
+extern void fn_80018B38(void);
+extern void fn_3_909B0(void);
+extern void fn_3_9081C(void);
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
 void fn_3_116840(void) {
@@ -21,6 +31,7 @@ void fn_3_1169D0(void) {
 // .text:0x00116B38 size:0x3C mapped:0x80755BCC
 extern u8 g_Minigame[];
 extern u8 lbl_8036E548[];
+extern u8 g_d_GameSettings[];
 typedef struct { u8 pad[0x34]; void* p; u8 pad2[0x90 - 0x38]; } Ent90;
 extern f32 fn_800B4A94(void* p);
 
@@ -328,7 +339,20 @@ void fn_3_11CD00(void) {
 
 // .text:0x0011CF04 size:0x80 mapped:0x8075BF98
 void fn_3_11CF04(void) {
-    return;
+    if (g_d_GameSettings[7] != 6) {
+        *(s16*)(lbl_8036E548 + 0x3078) = 0;
+    }
+    lbl_8036E548[0x307E] = 0;
+    minigamesSetSomePointers();
+    minigamesGXStuff();
+    minigamesSetSomePointers2();
+    fn_80035B50(0xD);
+    fn_3_B95EC();
+    fn_3_5E60();
+    fn_80018B38();
+    fn_3_909B0();
+    fn_3_9081C();
+    fn_80035B50(0x11);
 }
 
 // .text:0x0011CF84 size:0x22C mapped:0x8075C018
