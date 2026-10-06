@@ -4,6 +4,10 @@
 extern u8 lbl_3_data_11168[];
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_bss_1910[];
+extern u8 lbl_3_bss_1940[];
+extern void GXInitTexObj(void*, void*, u16, u16, int, int, int, int);
+extern void GXInitTexObjLOD(void*, int, int, int, int, int, f32, f32, f32);
+extern f32 lbl_3_rodata_1DCC;
 extern f32 lbl_3_rodata_1DD0[];
 extern f32 lbl_3_rodata_1DB4[];
 extern f32 lbl_3_rodata_1DC0;
@@ -102,7 +106,7 @@ typedef struct StadHdr {
     u8 pad8[0x10];
     StadEnt** list;
 } StadHdr;
-extern f32 lbl_3_rodata_1DCC;
+
 extern f32 lbl_3_rodata_1DDC;
 
 typedef struct StadObj {
@@ -419,8 +423,14 @@ void fn_3_B9524(void) {
 }
 
 // .text:0x000B9534 size:0xB8 mapped:0x806F85C8
-void fn_3_B9534(void) {
-    return;
+void* fn_3_B9534(u32 w, u32 h, void* tex) {
+    if (lbl_3_bss_1902 != 0 || tex == 0) {
+        return 0;
+    }
+    lbl_3_bss_1902 = 1;
+    GXInitTexObj(tex, lbl_3_bss_1940, (u16)w, (u16)h, 3, 1, 1, 0);
+    GXInitTexObjLOD(tex, 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
+    return lbl_3_bss_1940;
 }
 
 // .text:0x000B95EC size:0x1DC mapped:0x806F8680
