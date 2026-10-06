@@ -26,6 +26,8 @@ extern u8 lbl_3_data_8D70[];
 extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
 extern u8 lbl_3_common_bss_32B20[];
 extern void sndRemoveListener(void*);
+extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32, u8, void*);
+extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
 extern void sndRemoveEmitter(void*);
 
@@ -91,8 +93,17 @@ void fn_3_8B964(void* a, void* b, void* c) {
 }
 
 // .text:0x0008B9BC size:0xA4 mapped:0x806CAA50
-void fn_3_8B9BC(void) {
-    return;
+void fn_3_8B9BC(void* pos) {
+    f32 head[3];
+    f32 dir[3];
+    head[0] = 0.0f;
+    head[1] = 0.0f;
+    head[2] = -1.0f;
+    dir[0] = 0.0f;
+    dir[1] = 0.0f;
+    dir[2] = 0.0f;
+    sndRemoveListener(lbl_3_common_bss_32B20);
+    sndAddListener(lbl_3_common_bss_32B20, pos, dir, head, lbl_3_data_8D70, lbl_3_data_88AC, lbl_3_data_88AC, lbl_3_data_88AC, 1, 0x7F, 0);
 }
 
 // .text:0x0008BA60 size:0x164 mapped:0x806CAAF4
