@@ -21,6 +21,7 @@ extern u8 lbl_3_common_bss_350E4[];
 #pragma dont_inline on
 
 extern u8 lbl_3_data_196B4[];
+extern u8 lbl_8036E548[];
 
 extern u8 lbl_3_common_bss_350E4[];
 
@@ -186,8 +187,23 @@ void fn_3_E6798(u8* a) {
 }
 
 // .text:0x000E67F4 size:0xB4 mapped:0x80725888
+typedef struct { u8 pad[0x34]; u8 sub[0x5C]; } E67F4B;
 void fn_3_E67F4(void) {
-    return;
+    u32 i;
+    void* o;
+    u8* e;
+    u8* b;
+
+    for (i = 0; i < 7; i++) {
+        lbl_3_data_196B4[i] = 0;
+        b = *(u8**)(lbl_8036E548 + 0x6C);
+        o = *(void**)(b + i * 0x90 + 0x934);
+        e = ((E67F4B*)b)[i + 0x10].sub;
+        *(f32*)(e + 0x5C) = 20.0f;
+        e[0x59] = 1;
+        fn_800B4CA0(o, *(f32*)(*(u8**)(lbl_8036E548 + 0x6C) + i * 0x90 + 0x990));
+        AnimateActorBones(o);
+    }
 }
 
 // .text:0x000E68A8 size:0xE4 mapped:0x8072593C
