@@ -117,7 +117,18 @@ void fn_3_12FAC4(void) {
 
 // .text:0x0012FD6C size:0x118 mapped:0x8076EE00
 void fn_3_12FD6C(void) {
-    return;
+    s32 i;
+    u8* p;
+    for (i = 0; i < 15; i++) {
+        p = g_Minigame + i * 0x34;
+        if (p[0x890] != 0) {
+            *(f32*)(p + 0x878) = *(f32*)(p + 0x860);
+            *(f32*)(p + 0x87C) = *(f32*)(p + 0x864);
+            *(f32*)(p + 0x880) = *(f32*)(p + 0x868);
+            p[0x890] = 1;
+        }
+        *(s16*)(p + 0x88C) = 0;
+    }
 }
 
 // .text:0x0012FE84 size:0x150 mapped:0x8076EF18
