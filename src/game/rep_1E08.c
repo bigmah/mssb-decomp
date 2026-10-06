@@ -57,6 +57,15 @@ void fn_3_C07A0(void) {
     lbl_3_bss_995C = 3;
 }
 
+extern int fn_80033928(int);
+extern void* fn_80033A24(void*, int, int, int, int, int);
+
+void fn_3_C07B0(void) {
+    if (fn_80033928(0x10) != 0 || fn_80033A24(fn_3_C0134, 0x80, 0, 0, 0, 0x10) != NULL) {
+        lbl_3_bss_995C = 0;
+    }
+}
+
 // .text:0x000BA538 size:0x2BC mapped:0x806F95CC
 void fn_3_BA538(void) {
     return;

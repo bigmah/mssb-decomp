@@ -55,7 +55,7 @@ u32 vsSampleStartNotify(u32 voice) {
   u8 i;
   u32 addr;
   u32 pid;
-  u32 v = (u8)voice;
+  u8 v = voice & 0xFF;
   u8 w;
 
   for (i = 0; i < vs.numBuffers; ++i) {
