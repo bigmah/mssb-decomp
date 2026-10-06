@@ -124,6 +124,8 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Fixed 4/9-element loops over a struct array get fully unrolled by the compiler** when written as `for (i = 0; i < N; i++) { ...; r += 0x154; }` with a `u8* r` pointer (fn_3_27648, fn_3_86DFC); `for (i = 0; i < 4; i++) { RunnerT* r = &((RunnerT*)g_Runners)[i]; }` with `typedef struct { u8 b[0x154]; } RunnerT;` fixes the pointer-induction form (fn_3_88F98).
 - **Float literal for the constant used once or twice, `extern f32` for the rest** (fn_3_A4158 `2.0f`, fn_3_BB07C `100000.0f`/`0.0f`); declare the float locals in the order `f32 s; f32 a; f32 c;` to get f31/f30 right.
 - **Still unsolved (hoisted global address):** `lis rX, g_Fielders@ha` scheduled before `mr r30, r3` when a function keeps its index across a call (`fn_3_483CC`, `fn_3_7F9C4`).
+- **Loops with several induction pointers (`addi r28,g@l; li r27,0; ... li r29,0`, no `mr`):** index with the counter only (`g_Minigame + i * 0x28 + 0xA8`, `base + i * 0x28`) and let CW strength-reduce. Hand-written `m += 0x28; off += 0x28` pointers gave an extra `addi r0; mr r28,r0` (`fn_3_11874C`).
+- **`blt end; cmpwi 2; ble body; b end` range guard:** `if (i < 0 || i > 2) return;` (fn_3_118358); `switch` and nested `if`s gave other shapes.
 
 Add new patterns to this list as we find them.
 
