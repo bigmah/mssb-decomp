@@ -4,6 +4,9 @@ extern s16 radToShortAngle(f32 v);
 
 extern u8 g_Ball[];
 extern u8 g_Fielders[];
+extern u8 g_GameLogic[];
+extern u8 g_Practice[];
+extern u8 g_d_GameSettings[];
 extern int fn_3_9FB8C(f32 x, f32 y);
 extern int fn_3_9FCA4(s16 a, s16 b);
 extern u8 g_FieldingLogic[];
@@ -697,8 +700,32 @@ void fn_3_3A584(void) {
 }
 
 // .text:0x0003AAF8 size:0xF8 mapped:0x80679B8C
-void fn_3_3AAF8(void) {
-    return;
+void fn_3_3AAF8(int i) {
+    u8* f;
+    int v;
+    u8* l;
+    f = g_Fielders + i * 0x268;
+    v = lbl_3_bss_170;
+    l = g_FieldingLogic;
+    if (l[0x10E] != 0) {
+        v = -1;
+    }
+    *(s16*)(f + 0x19E) = v;
+    if (g_GameLogic[*(s32*)(g_GameLogic + 0x10) + 0x144] == 0 && v >= 0 && *(s16*)(f + 0x1A0) > 0xA) {
+        *(s16*)(g_FieldingLogic + 0xCC) = -1;
+    }
+    if (v >= 0) {
+        u8* t = *(u8**)(g_FieldingLogic + 0x70);
+        u8 k = t[0x1A];
+        if (k != 3 && k != 4) {
+            if (*(u16*)(g_FieldingLogic + 0x14A) & 0x200) {
+                *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0xC) = 0;
+            }
+            if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0 && g_Practice[0x1C5] != 0) {
+                *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0xC) = 0;
+            }
+        }
+    }
 }
 
 // .text:0x0003ABF0 size:0xD0 mapped:0x80679C84
