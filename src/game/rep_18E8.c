@@ -1,6 +1,8 @@
 #include "game/rep_18E8.h"
 #include "header_rep_data.h"
 
+#pragma dont_inline on
+
 extern u8 g_Ball[];
 extern u8 g_FieldingLogic[];
 typedef struct {
@@ -19,9 +21,6 @@ extern u8 g_Fielders[];
 extern void fn_3_52F4C(s16, f32, f32);
 extern u8 g_GameLogic[];
 extern u8 g_Scores[];
-extern s32 lbl_3_bss_181C;
-extern s32 lbl_3_bss_1800;
-extern s32 lbl_3_bss_1808[];
 extern u8 lbl_3_data_4900[];
 extern int checkFieldingStat(int, int, int);
 extern void playSoundEffect(int);
@@ -34,6 +33,13 @@ extern f32 lbl_3_rodata_1998;
 extern f32 lbl_3_rodata_19B8;
 extern f32 lbl_3_rodata_1978;
 extern f32 lbl_3_rodata_193C;
+static u32 lbl_3_bss_1824;
+static s32 lbl_3_bss_1820;
+static s32 lbl_3_bss_181C;
+static s32 lbl_3_bss_1808[5];
+static u32 lbl_3_bss_1804;
+static u32 lbl_3_bss_1800;
+static s32 lbl_3_bss_17F8[2];
 
 // .text:0x000A009C size:0x1C68 mapped:0x806DF130
 void fn_3_A009C(void) {
@@ -127,8 +133,25 @@ void fn_3_A31E8(void) {
 }
 
 // .text:0x000A32B8 size:0xBC mapped:0x806E234C
-void fn_3_A32B8(void) {
-    return;
+int fn_3_A32B8(void) {
+    s32 idx;
+    if (!(lbl_3_bss_1824 & 0x1000)) {
+        return 0;
+    }
+    if (lbl_3_bss_1804 & 0x1000) {
+        if (fn_3_A46A0(lbl_3_bss_1808[3])) {
+            return 1;
+        }
+    }
+    if (lbl_3_bss_1800 & 0x1000) {
+        idx = lbl_3_bss_1808[3];
+        if (g_Runners[idx].percentTowardsNextBase >= 0.2f) {
+            if (fn_3_A46A0(idx)) {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x000A3374 size:0x348 mapped:0x806E2408
@@ -240,8 +263,8 @@ void fn_3_A41E8(void) {
 }
 
 // .text:0x000A46A0 size:0x370 mapped:0x806E3734
-void fn_3_A46A0(void) {
-    return;
+int fn_3_A46A0(s32 i) {
+    return 0;
 }
 
 // .text:0x000A4A10 size:0x540 mapped:0x806E3AA4
