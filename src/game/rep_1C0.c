@@ -46,15 +46,14 @@ void fn_3_35F0(void) {
 }
 
 // .text:0x00003638 size:0x1E0
-// near-match (16 lines): saved regs e/tbl swapped
 void fn_3_3638(u8* obj) {
     u8* e;
     u8* pA;
     u8* pB;
-    u8* tbl;
     s32 i;
-    u8* m26;
     u8* hdr;
+    u8* m26;
+    u8* tbl;
     Mtx m;
     f32 pts[24];
     i = 0;
@@ -63,7 +62,7 @@ void fn_3_3638(u8* obj) {
     hdr = *(u8**)(obj + 0x68);
     tbl = *(u8**)(hdr + 0x10);
     e = hdr;
-    for (i = 0; i < *(u16*)(hdr + 6); i++, e += 0x1C) {
+    for (i = 0; i < *(u16*)(hdr + 6); e += 0x1C, i++) {
         u16 idx = *(u16*)(e + 0x34);
         if (idx != 0xFFFF) {
             m26 = *(u8**)(*(u8**)(tbl + 0x10) + idx * 8);
