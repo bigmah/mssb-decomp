@@ -20,6 +20,8 @@ extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
 extern s16 lbl_3_data_21A04[];
 extern s16 lbl_3_data_21A44;
+extern f32 lbl_3_data_21A64;
+extern s16 lbl_3_data_21A90[];
 typedef struct { f32 x, y, z; u8 pad[0x268 - 12]; } FS;
 extern FS g_Fielders[];
 extern s16 lbl_3_data_21B8C[];
@@ -410,13 +412,28 @@ void fn_3_1379A0(void) {
 }
 
 // .text:0x00137B10 size:0x1E8 mapped:0x80776BA4
-void fn_3_137B10(void) {
-    return;
+u8 fn_3_137B10(u8* o) {
+    return 0;
 }
 
 // .text:0x00137CF8 size:0xEC mapped:0x80776D8C
-void fn_3_137CF8(void) {
-    return;
+void fn_3_137CF8(u8* o) {
+    u32 t;
+    s16* row;
+    int lo;
+    PSVECAdd((Vec*)o, (Vec*)(o + 0xC), (Vec*)o);
+    if (fn_3_137B10(o) == 0 && *(f32*)(o + 4) >= lbl_3_data_21A64) {
+        t = *(u32*)&G8[0x17C0] / 60 / 20;
+        if (t > 3) {
+            t = 3;
+        }
+        o[0x3D] = 0;
+        *(s16*)(o + 0x3A) = 0;
+        row = lbl_3_data_21A90 + G8[0x1A2B] * 8;
+        lo = row[t * 2];
+        t = random_fn_3_9EE24((row[t * 2 + 1] - lo) * 60);
+        *(s16*)(o + 0x38) = t + lo * 60;
+    }
 }
 
 // .text:0x00137DE4 size:0x130 mapped:0x80776E78
