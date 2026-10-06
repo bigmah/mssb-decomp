@@ -9,6 +9,11 @@ extern u8 lbl_3_data_22670[];
 extern u8 lbl_3_data_2265C[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_8036E548[];
+extern u8 g_GameLogic[];
+extern u8 g_Pitcher[];
+extern u8 lbl_80366158[];
+extern s16 lbl_3_data_217A4[];
+extern void fn_3_90064(s32);
 typedef struct Z90 { u8 pad[0x34]; u8* a; u8 pad2[0x90 - 0x38]; } Z90;
 extern f32 lbl_3_data_21A48[];
 extern void fn_8001D0D0(int, f32);
@@ -254,7 +259,31 @@ f32 fn_3_119D28(void) {
 
 // .text:0x00119D34 size:0xFC mapped:0x80758DC8
 void fn_3_119D34(void) {
-    return;
+    u8* q = *(u8**)(lbl_8036E548 + 0x2D94) + 0x4D8;
+    q[0x26] = 1;
+    fn_3_11A92C(q, 0x1F);
+    if (lbl_80366158[0x28] == 0 && g_GameLogic[0x11E] == 1 && *(s16*)(g_Pitcher + 0x11E) == lbl_3_data_217A4[7]) {
+        {
+
+        u8* p = *(u8**)(lbl_8036E548 + 0x68);
+        s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
+        s8 t;
+        *(s32*)(p + 0x11A8) = v;
+        *(s16*)(p + 0x11B2) = 1;
+        t = v != 0;
+        *(f32*)(p + 0x1200) = 0.0f;
+        *(u8*)(p + 0x11FC) = 1;
+        *(u8*)(p + 0x11FD) = t;
+        *(u8*)(p + 0x11FE) = t;
+        *(f32*)(p + 0x1204) = 0.0f;
+        *(f32*)(p + 0x11F8) = 1.0f;
+        *(u8*)(p + 0x11FE) = 1;
+        *(f32*)(p + 0x1200) = 0.0f;
+        *(u8*)(p + 0x11FD) = 1;
+        *(u8*)(p + 0x11FF) = 2;
+}
+        fn_3_90064(0x2E6);
+    }
 }
 
 // .text:0x00119E30 size:0xB0 mapped:0x80758EC4
@@ -315,9 +344,11 @@ void fn_3_11A408(void) {
 }
 
 // .text:0x0011A92C size:0x200 mapped:0x807599C0
-void fn_3_11A92C(void) {
+#pragma dont_inline on
+void fn_3_11A92C(u8* q, s32 n) {
     return;
 }
+#pragma dont_inline reset
 
 // .text:0x0011AB2C size:0x140 mapped:0x80759BC0
 void fn_3_11AB2C(void) {
