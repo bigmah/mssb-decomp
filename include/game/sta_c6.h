@@ -24,7 +24,7 @@ void fn_3_E698C(void);
 void fn_3_E6A48(void);
 void fn_3_E6D90(void);
 void fn_3_E7350(void);
-void fn_3_E7364(void);
+void fn_3_E7364(s32 i);
 void fn_3_E7388(void);
 void fn_3_E7424(void);
 void fn_3_E751C(void);
