@@ -94,7 +94,8 @@ void fn_3_8BBC4(void) {
 
 // .text:0x0008BDF4 size:0x98 mapped:0x806CAE88
 void fn_3_8BDF4(void) {
-    return;
+    fn_3_8B804();
+    fn_3_8B7DC();
 }
 
 // .text:0x0008BE8C size:0x1F0 mapped:0x806CAF20
