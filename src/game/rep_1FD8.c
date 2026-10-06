@@ -14,6 +14,9 @@ extern u32 lbl_3_bss_9D84;
 extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
+extern u8 g_GameLogic[];
+extern u8 g_Minigame[];
+extern u8* lbl_803CC1B8;
 extern u32 lbl_3_bss_9D94;
 typedef struct DspObj2 DspObj2;
 struct DspObj2 {
@@ -131,7 +134,31 @@ void fn_3_C2974(void) {
 
 // .text:0x000C298C size:0x114 mapped:0x80701A20
 void fn_3_C298C(void) {
-    return;
+    u8* e = lbl_803CC1B8;
+    u32 i;
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        if (g_GameLogic[0x11E] == 0xB || g_GameLogic[0x11E] >= 0x22) {
+            if (g_Minigame[0x1A40] != 0 && g_Minigame[0x1A38] == 0) {
+                ((void (*)(void))fn_800B0A14_removeQueue)();
+            }
+        }
+    } else if (g_GameLogic[0x128] != 0 || g_d_GameSettings.__0x20padding[1] != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
+    i = 0;
+    do {
+        u8* o = *(u8**)(e + 0x14);
+        if (o == NULL || *(u32*)(o + 8) == 0) {
+            u32 r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
+            *(u32*)(e + 0x14) = r;
+            r = *(u32*)(e + 0x14);
+            if (r != 0) {
+                fn_3_C366C(r, i);
+            }
+        }
+        i++;
+        e += 4;
+    } while (i < 6);
 }
 
 // .text:0x000C2AA0 size:0x1E0 mapped:0x80701B34
