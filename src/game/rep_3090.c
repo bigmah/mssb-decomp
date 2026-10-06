@@ -8,6 +8,7 @@ extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
+extern s16 lbl_3_bss_B67A;
 extern void* memset(void*, s32, u32);
 extern f32 lbl_3_rodata_30FC;
 #pragma dont_inline on
@@ -265,7 +266,13 @@ void fn_3_106014(void) {
 
 // .text:0x001060D8 size:0xA4 mapped:0x8074516C
 void fn_3_1060D8(void) {
-    return;
+    u8* p = *(u8**)(((u8**)&lbl_3_common_bss_DE94)[0] + 0x98);
+    s32 i;
+    lbl_3_bss_B67A = 0;
+    for (i = 0; i < 1000; i++) {
+        *(f32*)(p + 0) = *(f32*)(p + 4) = *(f32*)(p + 8) = -1000.0f;
+        p += 0xC;
+    }
 }
 
 // .text:0x0010617C size:0xF4 mapped:0x80745210
