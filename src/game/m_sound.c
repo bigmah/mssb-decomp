@@ -93,8 +93,25 @@ void fn_3_8BE8C(void) {
 }
 
 // .text:0x0008C07C size:0x88 mapped:0x806CB110
+typedef struct SndQ1768 {
+    u8 pad[0x14];
+    u8 head;
+    u8 tail;
+    struct { u8 a, b, c; } e[14];
+} SndQ1768;
 void fn_3_8C07C(void) {
-    return;
+    SndQ1768** pp = (SndQ1768**)&lbl_3_bss_1768;
+    u8 cur;
+    u8 next;
+    if (*pp != NULL) {
+        cur = (*pp)->head;
+        if ((*pp)->tail != (next = (cur + 1) % 14)) {
+            (*pp)->head = next;
+            (*pp)->e[cur].a = 0;
+            (*pp)->e[cur].b = 4;
+            (*pp)->e[cur].c = 0;
+        }
+    }
 }
 
 // .text:0x0008C104 size:0x1D8 mapped:0x806CB198
@@ -203,6 +220,8 @@ extern u32 sndSeqPlayEx(u16 sgid, u16 sid, void* arrfile, void* para, u8 studio)
 extern u32* lbl_3_bss_1774;
 extern u8 lbl_3_data_88E0[];
 extern u8 lbl_3_data_830C[];
+extern u8 lbl_3_data_8148[];
+extern u8 lbl_800EF808[];
 extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
 
 // .text:0x00090220 size:0x74 mapped:0x806CF2B4
@@ -271,4 +290,31 @@ void fn_3_906FC(void) {
         p++;
     }
     lbl_3_bss_1774 = (u32*)base;
+}
+
+// .text:0x0009056C size:0x108 mapped:0x806CF600
+typedef struct { u16 a, b, c; } SeqEnt6;
+typedef struct { u8 v, pad; } SeqVol2;
+u32 fn_3_9056C(s32 idx) {
+    u8* d = lbl_3_data_8148;
+    SeqEnt6* e;
+    SndState34C58* s;
+    u8 vol;
+    u32 seq;
+    if (g_d_GameSettings.GameModeSelected != 2) {
+        e = &((SeqEnt6*)(d + 0x798))[idx];
+    } else {
+        e = &((SeqEnt6*)(d + 0x80C))[idx];
+    }
+    s = &S34C58;
+    if (sndSeqGetValid(s->unk8)) {
+        sndSeqVolume(0, 0, s->unk8, 1);
+        return 0;
+    }
+    seq = sndSeqPlayEx(e->a, e->b, (void*)lbl_3_bss_1774[idx], 0, 0);
+    vol = ((SeqVol2*)(d + 0x1C4))[idx].v;
+    s->unk8 = seq;
+    lbl_800EF808[0x391] = vol;
+    sndSeqVolume(vol, 0, seq, 0);
+    return 1;
 }
