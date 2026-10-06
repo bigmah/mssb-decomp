@@ -11,6 +11,8 @@ extern void fn_3_B9510(s32);
 extern char lbl_3_rodata_22EC[];
 extern char lbl_3_rodata_22F8[];
 extern u8* lbl_3_bss_9F48;
+extern u32 lbl_3_bss_9F3C;
+extern void DCFlushRange(void*, u32);
 extern u32 fn_3_B9534(s32, s32, void*);
 extern s32 fn_800247E4(u32, u32, s32, s32);
 extern u32 rand();
@@ -56,8 +58,35 @@ void fn_3_C9AC8(void) {
 }
 
 // .text:0x000C9B5C size:0x138 mapped:0x80708BF0
-void fn_3_C9B5C(void) {
-    return;
+void fn_3_C9B5C(void* a_) {
+    BF90* a = a_;
+    u32 y;
+    u32 x;
+    s8 prev;
+    if (g_GameLogic[0x11E] == 1 || g_GameLogic[0x11E] == 0) {
+        a->f = 0;
+        return;
+    }
+    a->f = 1;
+    if (lbl_3_bss_9F3C < 3) {
+        lbl_3_bss_9F3C++;
+        return;
+    }
+    for (y = 0; y < 0x80; y++) {
+        for (x = 0; x < 0x40; x++) {
+            if (x == 0) {
+                prev = (s8)lbl_3_bss_9F48[fn_800247E4(y, 0x3F, 0x80, 2)];
+            }
+            {
+                s32 o = fn_800247E4(y, x, 0x80, 2);
+                s32 t = (s8)lbl_3_bss_9F48[o];
+                lbl_3_bss_9F48[o] = prev;
+                prev = t;
+            }
+        }
+    }
+    lbl_3_bss_9F3C = 0;
+    DCFlushRange(lbl_3_bss_9F48, 0x4000);
 }
 
 // .text:0x000C9C94 size:0x120 mapped:0x80708D28
