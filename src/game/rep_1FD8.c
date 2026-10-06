@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/vec.h"
 extern void fn_3_C2644(void);
 extern void CTRLBuildMatrix(void*);
 extern u8* lbl_3_bss_9D98;
@@ -14,6 +15,11 @@ extern u32 lbl_3_bss_9D84;
 extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
+extern Vec lbl_3_rodata_2080;
+extern f32 lbl_3_rodata_2178;
+extern void* memset(void*, int, u32);
+extern s32 fn_8001B728(s32, s32, void*);
+extern void fn_3_25844(u32, int);
 extern u8 g_GameLogic[];
 extern u8 g_Minigame[];
 extern u8* lbl_803CC1B8;
@@ -351,8 +357,27 @@ void fn_3_C597C(void) {
 }
 
 // .text:0x000C5CE0 size:0xFC mapped:0x80704D74
-void fn_3_C5CE0(void) {
-    return;
+u32 fn_3_C5CE0(u8* a) {
+    Vec pos = lbl_3_rodata_2080;
+    Vec d;
+    u32 i;
+    f32 lim;
+    if (g_GameLogic[0x11E] == 2 && g_GameLogic[0x138] != 0) {
+        return 0;
+    }
+    i = 0;
+    lim = lbl_3_rodata_2178;
+    do {
+        memset(&pos, 0, 0xC);
+        fn_8001B728(i, 4, &pos);
+        PSVECSubtract(&pos, (Vec*)(a + 0x9C), &d);
+        if (PSVECMag(&d) <= lim) {
+            fn_3_25844(i, 1);
+            return 1;
+        }
+        i++;
+    } while (i < 9);
+    return 0;
 }
 
 // .text:0x000C5DDC size:0x480 mapped:0x80704E70
