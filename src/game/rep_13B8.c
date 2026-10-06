@@ -14,6 +14,7 @@ extern u8 g_Scores[];
 
 extern u8 g_Batter[];
 extern u8 g_Runners[];
+extern u8 g_FieldingLogic[];
 extern int g_Strikes[];
 extern u8 g_Practice[];
 extern u8 g_RunningLogic[];
@@ -299,7 +300,17 @@ void fn_3_8679C(void) {
 
 // .text:0x00086DFC size:0xFC mapped:0x806C5E90
 void fn_3_86DFC(void) {
-    return;
+    u8* r = g_Runners;
+    int i;
+    for (i = 0; i < 4; i++) {
+        if (r[0x123] != 0) {
+            if (g_FieldingLogic[0x107] == 1 && r[0x14E] != 0 && *(s16*)(r + 0xE0) >= 0) {
+                r[0x135] = 1;
+            }
+            r[0x14E] = 0;
+        }
+        r += 0x154;
+    }
 }
 
 // .text:0x00086EF8 size:0x1B4 mapped:0x806C5F8C
