@@ -5,9 +5,31 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u8 aILevel[4];
+extern f32 runnerVelocityLookup[];
+extern f32 lbl_3_data_4BC4[];
+extern s16 lbl_3_data_4C54[];
+extern const f32 lbl_3_rodata_11D8;
+extern const f32 lbl_3_rodata_11DC;
+extern const f32 lbl_3_rodata_11E0;
+
 // .text:0x0006D6D4 size:0x290 mapped:0x806AC768
-void fn_3_6D6D4(void) {
-    return;
+void fn_3_6D6D4(int idx) {
+    InMemRunnerType* r = &g_Runners[idx];
+    s32 lo = r->speed / 10;
+    s32 base = lo * 10;
+    s32 hi = base + 10;
+    r->maximumBaseVelocity = LinearInterpolateToNewRange(r->speed, base, hi,
+                                                         runnerVelocityLookup[base / 10],
+                                                         runnerVelocityLookup[hi / 10]);
+    r->baseAcceleration = LinearInterpolateToNewRange(r->speed, lbl_3_rodata_11D8, lbl_3_rodata_11DC, lbl_3_data_4BC4[0], lbl_3_data_4BC4[1]);
+    r->baseAccelerationWhileChaingingDirection =
+        LinearInterpolateToNewRange(r->speed, lbl_3_rodata_11D8, lbl_3_rodata_11DC, lbl_3_data_4BC4[2], lbl_3_data_4BC4[3]);
+    r->maxMashVeloAdjustment = LinearInterpolateToNewRange(r->speed, lbl_3_rodata_11D8, lbl_3_rodata_11DC, lbl_3_data_4BC4[4], lbl_3_data_4BC4[5]);
+    r->percentAddedPerMash =
+        lbl_3_rodata_11E0 / LinearInterpolateToNewRange(r->speed, lbl_3_rodata_11D8, lbl_3_rodata_11DC, lbl_3_data_4BC4[6], lbl_3_data_4BC4[7]);
+    r->stamina_MashPercentTakenAwayPerFrame =
+        lbl_3_rodata_11E0 / LinearInterpolateToNewRange(r->speed, lbl_3_rodata_11D8, lbl_3_rodata_11DC, lbl_3_data_4BC4[8], lbl_3_data_4BC4[9]);
+    r->FramesUntilNotSprinting = lbl_3_data_4C54[7];
 }
 
 // .text:0x0006D964 size:0x4FC mapped:0x806AC9F8

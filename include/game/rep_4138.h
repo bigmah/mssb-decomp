@@ -5,7 +5,8 @@
 
 void fn_3_16D810(void);
 void fn_3_16D9B0(void);
-void fn_3_16DB6C(void);
+void fn_3_16DB6C(u8 i);
+void fn_3_16DFC4(void);
 void fn_3_16E328(void);
 
 void fn_3_16E2FC(u16* p, s32 i);
