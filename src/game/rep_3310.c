@@ -9,6 +9,9 @@ extern u8 lbl_3_data_22670[];
 extern u8 lbl_3_data_2265C[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_8036E548[];
+extern f32 lbl_3_data_21A48[];
+extern void fn_8001D0D0(int, f32);
+extern f32 shortAngleToRad(s16 ang);
 extern u8 g_d_GameSettings[];
 extern void minigamesSetSomePointers(void);
 extern void minigamesGXStuff(void);
@@ -66,7 +69,16 @@ void fn_3_1179EC(void) {
 
 // .text:0x00117AE4 size:0x94 mapped:0x80756B78
 void fn_3_117AE4(void) {
-    return;
+    u8* p = *(u8**)(lbl_8036E548 + 0x2D94);
+    f32 z = 0.0f;
+    p[0x243E] = 1;
+    *(f32*)(p + 0x241C) = lbl_3_data_21A48[0];
+    *(f32*)(p + 0x2424) = lbl_3_data_21A48[2];
+    *(f32*)(p + 0x2420) = z;
+    *(f32*)(p + 0x2428) = z;
+    *(f32*)(p + 0x2430) = z;
+    *(f32*)(p + 0x242C) = shortAngleToRad(0x1000 - *(s16*)(g_Minigame + 0x1D64));
+    fn_8001D0D0(0xE7, 3.0f);
 }
 
 // .text:0x00117B78 size:0x450 mapped:0x80756C0C
