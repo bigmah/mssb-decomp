@@ -20,6 +20,11 @@ extern void fn_3_1DD48(void*);
 extern struct { u8 pad[0xC]; s16 n; } lbl_3_common_bss_34C90;
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
+extern u8 g_Ball[];
+extern u8 g_Fielders[];
+extern s32 fn_3_E5924(void);
+extern void fn_3_59918(s32, s32);
+extern void fn_3_A0F0(void);
 extern u8 g_GameLogic[];
 extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
@@ -41,7 +46,38 @@ void fn_3_DA834(void) {
 
 // .text:0x000DC240 size:0x140 mapped:0x8071B2D4
 void fn_3_DC240(void) {
-    return;
+    g_Minigame[0x1920] = g_Minigame[0x19C9];
+    if (fn_3_E5924() != 0) {
+        if (g_Minigame[0x19CF] == 0) {
+            g_Minigame[0x1920] = 0xC;
+        }
+        if (g_Minigame[0x19CF] > 0x3C) {
+            g_Minigame[0x19CE] = 1;
+            return;
+        }
+        if (g_Minigame[0x19CF] < 0xFE) {
+            g_Minigame[0x19CF] = g_Minigame[0x19CF] + 1;
+            return;
+        }
+        g_Minigame[0x19CF] = 0xFF;
+        return;
+    }
+    if (g_Minigame[0x1920] == 2 || g_Ball[0x1BD3] != 0) {
+        if (g_Ball[0x1BD3] == 0) {
+            fn_3_59918(1, 0);
+        }
+        g_Minigame[0x19C6] = g_Minigame[0x1904];
+        if (*(s16*)(g_Ball + 0x1B78) >= 0) {
+            g_Minigame[0x19C6] = g_Fielders[*(s16*)(g_Ball + 0x1B78) * 0x268 + 0x20D];
+        }
+    } else {
+        u8 st = g_Minigame[0x1920];
+        if (st == 1) {
+            fn_3_A0F0();
+        } else if (st == 6) {
+            fn_3_59918(0xF, 0);
+        }
+    }
 }
 
 // .text:0x000DC380 size:0x224 mapped:0x8071B414
