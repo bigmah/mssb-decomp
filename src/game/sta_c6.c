@@ -212,8 +212,22 @@ void fn_3_E68A8(void) {
 }
 
 // .text:0x000E698C size:0xBC mapped:0x80725A20
-void fn_3_E698C(void) {
-    return;
+void fn_3_E698C(u8* a) {
+    void* o;
+    f32 t;
+    u8 idx;
+    void* tmp;
+
+    o = tmp = **(void***)(a + 0x74);
+    t = fn_800B4C40(tmp);
+    idx = a[0xC1] - 0x10;
+    if (lbl_3_data_196B4[idx] == 0) {
+        fn_800B4CA0(o, 0.0f);
+        AnimateActorBones(o);
+    }
+    if (lbl_3_data_196B4[idx] != 0 && t <= 60.0f) {
+        AnimateActorBones(o);
+    }
 }
 
 // .text:0x000E6A48 size:0x348 mapped:0x80725ADC
