@@ -14,6 +14,7 @@ extern V14 lbl_3_data_1B884[];
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_bss_B219[];
 extern u8 lbl_3_bss_B55C[];
 extern u8 lbl_3_bss_B218[];
 extern void fn_800B4CA0(void*, f32);
@@ -334,8 +335,26 @@ void fn_3_F3AE0(u8* p) {
 }
 
 // .text:0x000F3BB0 size:0x120 mapped:0x80732C44
-void fn_3_F3BB0(void) {
-    return;
+void fn_3_F3BB0(u8* p) {
+    typedef struct { u8 pad[0x90]; u8 f : 1; u8 rest : 7; } FObj;
+    f32 rot, x, z;
+    *(f32*)(p + 0xAC) = lbl_3_data_1B884[p[0x9C]].v.x;
+    *(f32*)(p + 0xB0) = lbl_3_data_1B884[p[0x9C]].v.z;
+    z = *(f32*)(p + 0xB0);
+    x = *(f32*)(p + 0xAC);
+    rot = -lbl_3_data_1B884[p[0x9C]].pad[0];
+    *(f32*)(p + 0xA0) = x;
+    *(f32*)(p + 0xA4) = 10.0f;
+    *(f32*)(p + 0xA8) = z;
+    *(f32*)(p + 0xB4) = rot;
+    p[0] = 0;
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetRotation((Control*)p, 0.0f, rot, 0.0f);
+    p[0xC1] = 0;
+    ((FObj*)p)->f = 1;
+    *(u8**)(p + 0x74) = *(u8**)(lbl_8036E548 + 0x6C) + (lbl_3_bss_B219[0] + p[0x9C]) * 0x90 + 0x34;
+    p[0xC4] = 0;
+    p[0x99] = 1;
 }
 
 // .text:0x000F3CD0 size:0x22C mapped:0x80732D64

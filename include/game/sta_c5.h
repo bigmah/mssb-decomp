@@ -48,7 +48,7 @@ void fn_3_F38D4(void);
 void fn_3_F3A04(u8* p);
 void fn_3_F3A5C(u8* p, f32 x, f32 y, f32 z, f32 r);
 void fn_3_F3AE0(u8* p);
-void fn_3_F3BB0(void);
+void fn_3_F3BB0(u8* p);
 void fn_3_F3CD0(void);
 void fn_3_F3EFC(void);
 void fn_3_F42A0(void);
