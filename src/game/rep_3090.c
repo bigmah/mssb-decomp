@@ -52,8 +52,18 @@ void fn_3_FCF24(void) {
 }
 
 // .text:0x000FD408 size:0xD4 mapped:0x8073C49C
-void fn_3_FD408(void) {
-    return;
+typedef struct { Vec pos; f32 u; f32 v; u8 pad[0x2C]; } PathPt;
+void fn_3_FD408(u32 i, void* out, f32* uv) {
+    u8* d = lbl_3_common_bss_DE94;
+    if (*(u32*)(d + 0x3C) > i) {
+        memcpy(out, &(*(PathPt**)(d + 0x34))[i], 12);
+        uv[0] = (*(PathPt**)(d + 0x34))[i].u;
+        uv[1] = (*(PathPt**)(d + 0x34))[i].v;
+    } else {
+        memcpy(out, &(*(PathPt**)(d + 0x34))[*(u32*)(d + 0x3C) - 1], 12);
+        uv[0] = (*(PathPt**)(d + 0x34))[*(u32*)(d + 0x3C) - 1].u;
+        uv[1] = (*(PathPt**)(d + 0x34))[*(u32*)(d + 0x3C) - 1].v;
+    }
 }
 
 // .text:0x000FD4DC size:0x40 mapped:0x8073C570

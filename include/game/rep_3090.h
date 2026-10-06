@@ -10,7 +10,7 @@ void fn_3_FCEAC(void);
 void fn_3_FCEB0(void);
 void fn_3_FCF20(void);
 void fn_3_FCF24(void);
-void fn_3_FD408(void);
+void fn_3_FD408(u32 i, void* out, f32* uv);
 void fn_3_FD4DC(void);
 void fn_3_FD51C(s32 i);
 void fn_3_FD5A8(void);
