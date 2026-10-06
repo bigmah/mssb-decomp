@@ -14,6 +14,10 @@ extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
+typedef struct { u8 b[9]; } B9;
+extern B9 lbl_3_rodata_2544;
+extern B9 lbl_3_rodata_2550;
+extern u8 lbl_8036E548[];
 extern void fn_8005268C(void);
 extern u8* fn_80052734(void);
 extern f64 cos(f64);
@@ -489,8 +493,27 @@ void fn_3_D255C(void) {
 }
 
 // .text:0x000D2684 size:0x108 mapped:0x80711718
-void fn_3_D2684(void) {
-    return;
+u8* fn_3_D2684(u8* p) {
+    Vec d;
+    B9 a = lbl_3_rodata_2544;
+    B9 b = lbl_3_rodata_2550;
+    u8* t;
+    u32 i;
+    if (*(f32*)(p + 0xA0) > 0.0f) {
+        t = a.b;
+    } else {
+        t = b.b;
+    }
+        for (i = 0; i < 4; i++) {
+        u8* o = *(u8**)(lbl_8036E548 + t[i] * 4 + 0x2C50);
+        if (o != NULL) {
+            PSVECSubtract((Vec*)(p + 0xA0), (Vec*)(o + 0x34), &d);
+            if (PSVECMag(&d) <= 12.5f) {
+                return o + 0x34;
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x000D278C size:0x280 mapped:0x80711820
