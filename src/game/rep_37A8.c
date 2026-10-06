@@ -21,6 +21,11 @@ extern s32 lbl_3_bss_B7E4;
 extern u8 lbl_3_bss_B800[];
 extern s8 lbl_3_data_266A4;
 extern void DCFlushRange(void*, u32);
+extern u8 lbl_3_data_21E68[];
+typedef struct { s16 lo; s16 hi; s16 lim; } MgWin;
+extern MgWin lbl_3_data_21DC8[][2];
+extern u8 lbl_3_data_21E10[];
+extern u8 lbl_3_data_21D1C[];
 extern void fn_3_157570(void);
 extern void fn_3_DE4FC(void);
 extern void fn_3_154214(void);
@@ -177,7 +182,65 @@ void fn_3_14402C(s32 idx) {
 
 // .text:0x0014423C size:0x200 mapped:0x807832D0
 void fn_3_14423C(void) {
-    return;
+    u8* g = g_Minigame;
+    s32 lo;
+    s32 hi;
+    s32 n;
+    u8* p;
+    if (g[0x190B] != 0) {
+        return;
+    }
+    if (g[0x1CA3] != 0) {
+        if (g[0x62] == 2 && *(s16*)(g + 0x50) >= lbl_3_data_21DC8[g[0x1A2B]][g[0x1CA4] - 1].lim * 60) {
+            g[0x62] = 3;
+            g[0x66] = 0;
+            *(s16*)(g + 0x52) = 0;
+        }
+        return;
+    }
+    if (g[0x1CA4] >= 2) {
+        return;
+    }
+    if (g[0x1909] == 0) {
+        lo = lbl_3_data_21DC8[g[0x1A2B]][g[0x1CA4]].lo * 60;
+        hi = lbl_3_data_21DC8[g[0x1A2B]][g[0x1CA4]].hi * 60;
+    } else {
+        lo = lbl_3_data_21DC8[4][g[0x1CA4]].lo * 60;
+        hi = lbl_3_data_21DC8[4][g[0x1CA4]].hi * 60;
+    }
+    if (*(u32*)(g_Minigame + 0x17C0) < lo || *(u32*)(g_Minigame + 0x17C0) > hi) {
+        g_Minigame[0x1CA2] = 0;
+        return;
+    }
+    for (n = 0; n < 3; n++) {
+        if (g_Minigame[n * 0x38 + 0x2A] != 0) {
+            break;
+        }
+    }
+    if (n < 3) {
+        if (g_Minigame[0x1CA2] == 0) {
+            g_Minigame[0x1CA2] = 2;
+        }
+        return;
+    }
+    p = g_Minigame + 0x38;
+    p[0x2A] = 1;
+    p[0x2B] = 1;
+    p[0x2C] = 4;
+    p[0x2D] = lbl_3_data_21E10[g[0x1CA4] + 4];
+    *(s16*)(p + 0x18) = 0;
+    *(s16*)(p + 0x1A) = 0;
+    *(s16*)(p + 0x1C) = *(s16*)(lbl_3_data_21E68 + 0xA);
+    *(s16*)(p + 0x20) = 0;
+    p[0x2E] = 0;
+    *(f32*)(p + 0x4) = *(f32*)(lbl_3_data_21D1C + 0xC);
+    ((s8*)p)[0x2F] = -1;
+    ((s8*)p)[0x30] = -1;
+    ((s8*)p)[0x31] = -1;
+    ((s8*)p)[0x32] = -1;
+    g[0x1CA3] = 1;
+    g_Minigame[0x1CA2] = 0;
+    g[0x1CA4]++;
 }
 
 // .text:0x0014443C size:0x2E0 mapped:0x807834D0
