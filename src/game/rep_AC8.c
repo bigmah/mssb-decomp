@@ -486,8 +486,8 @@ void fn_3_33458(void) {
     s16 i;
     fn_3_334EC(1);
     fn_3_33088();
-    f = g_Fielders + *(s16*)(g_FieldingLogic + 0xB2) * 0x268;
     i = *(s16*)(g_FieldingLogic + 0xB2);
+    f = g_Fielders + i * 0x268;
     if (i != -1) {
         f[0x1D3] = 0x16;
         if (*(int*)(lbl_3_data_3C40 + 0xB0) >= 0) {
