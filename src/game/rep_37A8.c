@@ -1,6 +1,5 @@
 #include "game/rep_37A8.h"
 #include "header_rep_data.h"
-#pragma dont_inline on
 
 extern u8 g_Minigame[];
 
@@ -21,6 +20,8 @@ extern s32 lbl_3_bss_B7E4;
 extern u8 lbl_3_bss_B800[];
 extern s8 lbl_3_data_266A4;
 extern void DCFlushRange(void*, u32);
+extern u8 lbl_800EFBA4[];
+extern s32 sndFXStartEx(s32, u8, u8, u8);
 extern u8 lbl_3_data_21E68[];
 typedef struct { s16 lo; s16 hi; s16 lim; } MgWin;
 extern MgWin lbl_3_data_21DC8[][2];
@@ -143,7 +144,7 @@ void fn_3_143714(void) {
     s32 i;
     for (i = 0; i < 0x28; i++) {
         if (g_Minigame[0xCE + i * 0x28] != 0) {
-            fn_3_143358(i);
+            ((void (*)(s32))fn_3_143358)(i);
         }
     }
 }
@@ -305,7 +306,7 @@ void fn_3_145FF4(void) {
     }
     *(s16*)(g_Minigame + 0x1B4C) = 0x3C;
     for (i = 0; i < 3; i++) {
-        fn_3_14402C(i);
+        ((void (*)(s32))fn_3_14402C)(i);
         ((MgPl38*)g_Minigame)[i].a = 2;
         ((MgPl38*)g_Minigame)[i].b = 1;
         ((MgPl38*)g_Minigame)[i].c = 0;
@@ -315,7 +316,24 @@ void fn_3_145FF4(void) {
 
 // .text:0x001461A4 size:0x264 mapped:0x80785238
 void fn_3_1461A4(void) {
-    return;
+    if (g_Minigame[0x190B] == 0) {
+        if (*(u32*)(g_Minigame + 0x17C4) == 0) {
+            g_Minigame[0x190B] = 1;
+            fn_3_10F550(3, 0);
+            sndFXStartEx(0x1BE, lbl_800EFBA4[7], 0x3F, 0);
+        }
+        return;
+    }
+    if (g_Minigame[0x190B] == 1) {
+        g_Minigame[0x190B] = 2;
+        *(s16*)(g_GameLogic + 0x100) = *(s16*)(lbl_3_data_21E68 + 0x22);
+    }
+    if (--*(s16*)(g_GameLogic + 0x100) == 7) {
+        changeScene(3, 6);
+    }
+    if (*(s16*)(g_GameLogic + 0x100) <= 0) {
+        fn_3_145FF4();
+    }
 }
 
 // .text:0x00146408 size:0x520 mapped:0x8078549C
