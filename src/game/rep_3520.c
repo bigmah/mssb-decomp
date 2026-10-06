@@ -20,6 +20,7 @@ extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
 extern s16 lbl_3_data_21A04[];
 extern s16 lbl_3_data_21A44;
+extern void fn_3_90064(s32);
 extern f32 lbl_3_data_21A64;
 extern s16 lbl_3_data_21A90[];
 typedef struct { f32 x, y, z; u8 pad[0x268 - 12]; } FS;
@@ -442,8 +443,30 @@ void fn_3_137DE4(void) {
 }
 
 // .text:0x00137F14 size:0x118 mapped:0x80776FA8
-void fn_3_137F14(void) {
-    return;
+void fn_3_137F14(u8* o) {
+    if (G8[0x72A] != 0) {
+        *(f32*)(o + 0x10) = (&lbl_3_data_21A64)[5];
+        o[0x3D] = 5;
+        *(s16*)(o + 0x3A) = 0;
+    } else {
+        if (o[0x3E] != 0) {
+            o[0x3F]++;
+            if (o[0x3F] >= 10) {
+                fn_3_90064(0x303);
+                o[0x3E] = 0;
+            }
+        }
+        if (*(s16*)(o + 0x3A) < 0x7FFE) {
+            (*(s16*)(o + 0x3A))++;
+        } else {
+            *(s16*)(o + 0x3A) = 0x7FFF;
+        }
+        if (fn_3_137B10(o) == 0 && (f32) * (s16*)(o + 0x3A) >= (&lbl_3_data_21A64)[6]) {
+            *(f32*)(o + 0x10) = (&lbl_3_data_21A64)[5];
+            o[0x3D] = 5;
+            *(s16*)(o + 0x3A) = 0;
+        }
+    }
 }
 
 // .text:0x0013802C size:0x2B4 mapped:0x807770C0
