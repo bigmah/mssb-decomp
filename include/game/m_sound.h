@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_8B718(f32* a, f32* b, void* c);
+void fn_3_8B718(f32* a, f32* b, f32* c);
 void fn_3_8B7DC(void);
 void fn_3_8B804(void);
 void fn_3_8B890(void);
@@ -27,7 +27,7 @@ void fn_3_8FC0C(void);
 void fn_3_8FC80(void);
 void fn_3_8FF18(void);
 void fn_3_8FF5C(void);
-void fn_3_90064(void);
+void fn_3_90064(s32 id);
 void fn_3_90150(void);
 
 void fn_3_902FC(void);
@@ -40,7 +40,7 @@ u32 fn_3_9056C(s32 idx);
 void fn_3_90674(s32 idx);
 void fn_3_906FC(void);
 
-u32 fn_3_8B258(u8 b, u8 a, u8 c);
+s32 fn_3_8B258(u8 a, u8 b, u8 c);
 void fn_3_8B2E4(void);
 
 #endif // !__GAME_m_sound_H_

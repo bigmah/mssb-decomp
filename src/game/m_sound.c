@@ -26,7 +26,20 @@ extern u8 lbl_3_data_8D70[];
 extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
 extern u8 lbl_3_common_bss_32B20[];
 extern void sndRemoveListener(void*);
+extern void fn_800A86B4(int);
+extern void fn_800A88C0(void);
+extern void fn_800A8B78(void);
+extern void OSPanic(const char*, int, const char*, ...);
+extern char lbl_3_rodata_1590[];
+extern char lbl_3_rodata_15DC[];
+extern char lbl_3_rodata_15EC[];
+extern u16 lbl_3_data_81FC[];
+extern u8 lbl_3_data_84F4[];
+extern void* fn_80052734(int);
+#include "Dolphin/mtx.h"
+extern Vec lbl_3_rodata_1558;
 extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32, u8, void*);
+extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
 extern void sndRemoveEmitter(void*);
 
@@ -34,34 +47,22 @@ extern void sndRemoveEmitter(void*);
 extern void* lbl_3_bss_1768;
 extern void fn_3_8B094(void);
 #include "musyx/musyx.h"
-#include "Dolphin/mtx.h"
-extern u8* fn_80052734(s32);
-extern f32 lbl_3_data_88AC[];
-
-typedef struct SndQ1768 {
-    u8 pad[0x14];
-    u8 head;
-    u8 tail;
-    struct { u8 a, b, c; } e[14];
-} SndQ1768;
-
-// .text:0x0008B258 size:0x8C mapped:0x806CA2EC
-u32 fn_3_8B258(u8 b, u8 a, u8 c) {
-    SndQ1768** pp = (SndQ1768**)&lbl_3_bss_1768;
-    u8 cur;
-    u8 next;
-    if (*pp == NULL || (cur = (*pp)->head, (*pp)->tail == (next = (cur + 1) % 14))) {
-        return 0;
-    }
-    (*pp)->head = next;
-    (*pp)->e[cur].a = a;
-    (*pp)->e[cur].b = b;
-    (*pp)->e[cur].c = c;
-    return 1;
-}
 
 void fn_3_902FC(void) {
     sndVolume(0, 10, 0xFF);
+}
+
+// .text:0x0008B258 size:0x8C
+s32 fn_3_8B258(u8 a, u8 b, u8 c) {
+    u8 w;
+    if (((u8**)&lbl_3_bss_1768)[0] == NULL || (w = ((u8**)&lbl_3_bss_1768)[0][0x14], ((u8**)&lbl_3_bss_1768)[0][0x15] == (u32)(u8)((w + 1) % 14))) {
+        return 0;
+    }
+    ((u8**)&lbl_3_bss_1768)[0][0x14] = (u32)(u8)((w + 1) % 14);
+    ((u8**)&lbl_3_bss_1768)[0][w * 3 + 0x16] = b;
+    ((u8**)&lbl_3_bss_1768)[0][w * 3 + 0x17] = a;
+    ((u8**)&lbl_3_bss_1768)[0][w * 3 + 0x18] = c;
+    return 1;
 }
 
 void fn_3_8B2E4(void) {
@@ -69,13 +70,12 @@ void fn_3_8B2E4(void) {
 }
 
 // .text:0x0008B718 size:0xC4 mapped:0x806CA7AC
-void fn_3_8B718(f32* a, f32* b, void* cv) {
-    Vec* c = cv;
-    u8* p = fn_80052734(0);
+void fn_3_8B718(f32* a, f32* b, f32* c) {
+    u8* cam = fn_80052734(0);
     if (a != NULL) {
-        a[0] = *(f32*)(p + 0x70);
-        a[1] = *(f32*)(p + 0x74);
-        a[2] = *(f32*)(p + 0x78);
+        a[0] = *(f32*)(cam + 0x70);
+        a[1] = *(f32*)(cam + 0x74);
+        a[2] = *(f32*)(cam + 0x78);
     }
     if (b != NULL) {
         b[0] = 0.0f;
@@ -83,9 +83,9 @@ void fn_3_8B718(f32* a, f32* b, void* cv) {
         b[2] = 0.0f;
     }
     if (c != NULL) {
-        PSVECSubtract((Vec*)(p + 0x7C), (Vec*)(p + 0x70), c);
-        if (PSVECMag(c)) {
-            PSVECNormalize(c, c);
+        PSVECSubtract((Vec*)(cam + 0x7C), (Vec*)(cam + 0x70), (Vec*)c);
+        if (PSVECMag((Vec*)c)) {
+            PSVECNormalize((Vec*)c, (Vec*)c);
         }
     }
 }
@@ -131,7 +131,7 @@ void fn_3_8B9BC(void* pos) {
     dir[1] = 0.0f;
     dir[2] = 0.0f;
     sndRemoveListener(lbl_3_common_bss_32B20);
-    sndAddListener(lbl_3_common_bss_32B20, pos, dir, head, lbl_3_data_8D70, lbl_3_data_88AC[0], lbl_3_data_88AC[0], lbl_3_data_88AC[0], 1, 0x7F, 0);
+    sndAddListener(lbl_3_common_bss_32B20, pos, dir, head, lbl_3_data_8D70, lbl_3_data_88AC, lbl_3_data_88AC, lbl_3_data_88AC, 1, 0x7F, 0);
 }
 
 // .text:0x0008BA60 size:0x164 mapped:0x806CAAF4
@@ -152,10 +152,26 @@ void fn_3_8BDF4(void) {
 
 // .text:0x0008BE8C size:0x1F0 mapped:0x806CAF20
 void fn_3_8BE8C(void) {
-    return;
+    Vec pos = lbl_3_rodata_1558;
+    s32 i;
+    for (i = 0; i < 100; i++) {
+        lbl_3_common_bss_32B20[0x1FD0 + i] = 0xFF;
+        lbl_3_common_bss_32B20[0x2034 + i] = 0;
+        lbl_3_common_bss_32B20[0x2098 + i] = 0;
+    }
+    lbl_3_common_bss_32B20[0x20FC] = 0xFF;
+    lbl_3_common_bss_32B20[0x20FD] = 0;
+    fn_3_8B9BC(&pos);
+    fn_3_8B804();
 }
 
 // .text:0x0008C07C size:0x88 mapped:0x806CB110
+typedef struct SndQ1768 {
+    u8 pad[0x14];
+    u8 head;
+    u8 tail;
+    struct { u8 a, b, c; } e[14];
+} SndQ1768;
 void fn_3_8C07C(void) {
     SndQ1768** pp = (SndQ1768**)&lbl_3_bss_1768;
     u8 cur;
@@ -192,32 +208,30 @@ void fn_3_8C5C8(void) {
 }
 
 // .text:0x0008CD74 size:0xC4C mapped:0x806CBE08
-#pragma dont_inline on
 void fn_3_8CD74(void) {
     return;
 }
-#pragma dont_inline reset
 
 // .text:0x0008D9C0 size:0xC0 mapped:0x806CCA54
 void fn_3_8D9C0(void) {
     f32 pos[3];
-    f32 vel[3];
+    f32 up[3];
     Vec dir;
-    u8* p;
-    fn_3_8CD74();
-    p = fn_80052734(0);
-    pos[0] = *(f32*)(p + 0x70);
-    pos[1] = *(f32*)(p + 0x74);
-    pos[2] = *(f32*)(p + 0x78);
-    vel[0] = 0.0f;
-    vel[1] = 0.0f;
-    vel[2] = 0.0f;
-    PSVECSubtract((Vec*)(p + 0x7C), (Vec*)(p + 0x70), &dir);
+    u8* cam;
+    ((void (*)(void))fn_3_8CD74)();
+    cam = fn_80052734(0);
+    pos[0] = *(f32*)(cam + 0x70);
+    pos[1] = *(f32*)(cam + 0x74);
+    pos[2] = *(f32*)(cam + 0x78);
+    up[0] = 0.0f;
+    up[1] = 0.0f;
+    up[2] = 0.0f;
+    PSVECSubtract((Vec*)(cam + 0x7C), (Vec*)(cam + 0x70), &dir);
     if (PSVECMag(&dir)) {
         PSVECNormalize(&dir, &dir);
     }
     if (*(u32*)(lbl_3_common_bss_32B20 + 8) != 0) {
-        sndUpdateListener(lbl_3_common_bss_32B20, pos, vel, &dir, lbl_3_data_8D70, 0x7F, 0);
+        sndUpdateListener(lbl_3_common_bss_32B20, pos, up, &dir, lbl_3_data_8D70, 0x7F, 0);
     }
 }
 
@@ -279,8 +293,20 @@ void fn_3_8FF5C(void) {
 }
 
 // .text:0x00090064 size:0xEC mapped:0x806CF0F8
-void fn_3_90064(void) {
-    return;
+void fn_3_90064(s32 id) {
+    s32 i;
+    if (g_d_GameSettings.GameModeSelected != 7) {
+        OSPanic(lbl_3_rodata_1590, 0x402, lbl_3_rodata_15DC);
+    }
+    for (i = 0; i < 0x39; i++) {
+        if (id == lbl_3_data_81FC[i]) {
+            break;
+        }
+    }
+    if (i == 0x39) {
+        OSPanic(lbl_3_rodata_1590, 0x40D, lbl_3_rodata_15EC);
+    }
+    sndFXStartEx((u16)id, lbl_3_data_84F4[i], 0x3F, 0);
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4
@@ -346,6 +372,30 @@ void fn_3_903B8(void) {
     if (sndSeqGetValid(s->unk8)) {
         sndSeqVolume(0, 0xA0, s->unk8, 1);
     }
+}
+
+// .text:0x00090434 size:0x138
+void fn_3_90434(void) {
+    SndState34C58* s;
+    s32 i;
+    fn_800A86B4(3);
+    fn_800A88C0();
+    fn_800A8B78();
+    s = &S34C58;
+    if (sndSeqGetValid(s->unk4)) {
+        sndSeqVolume(0, 0, s->unk4, 1);
+    }
+    s = &S34C58;
+    if (sndSeqGetValid(s->unk8)) {
+        sndSeqVolume(0, 0, s->unk8, 1);
+    }
+    for (i = 0; i < 3; i++) {
+        if (*(u32*)(B34C58 + 0xC + i * 4) != 0xFFFFFFFF) {
+            sndFXKeyOff(*(u32*)(B34C58 + 0xC + i * 4));
+            *(s32*)(B34C58 + 0xC + i * 4) = -1;
+        }
+    }
+    fn_3_8BDF4();
 }
 
 // .text:0x00090674 size:0x88 mapped:0x806CF708
