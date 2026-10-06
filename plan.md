@@ -125,6 +125,9 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Float literal for the constant used once or twice, `extern f32` for the rest** (fn_3_A4158 `2.0f`, fn_3_BB07C `100000.0f`/`0.0f`); declare the float locals in the order `f32 s; f32 a; f32 c;` to get f31/f30 right.
 - **Still unsolved (hoisted global address):** `lis rX, g_Fielders@ha` scheduled before `mr r30, r3` when a function keeps its index across a call (`fn_3_483CC`, `fn_3_7F9C4`).
 
+- **Pooled `.bss` base register (`addi r31, r3, lbl_3_bss_17F8@l` then `lwz 0x2c(r31)`, `addi r3,r31,0x10; lwz 0xc(r3)`) is the TU's own statics, SOLVED (fn_3_A32B8, fn_3_A31E8 in rep_18E8):** define the unit's bss objects as `static` in the .c file, declared in **reverse address order** (CW lays them out last-declared-first), with the right sizes (split a dtk symbol like `lbl_3_bss_1800` size 8 into two scalars `1800`/`1804` when the original folds both offsets into `lwz 8(r31)`/`lwz 0xc(r31)`; arrays get the `addi`+`lwz` form). `fndiff` shows `...bss.0` vs `DATA`, but report.json counts it 100%.
+- **`g_Runners` as a typed struct array:** `extern RunnerT g_Runners[];` (local typedef padded to 0x154) and `g_Runners[idx].field` gives the original `addi base; mulli; add` order, where `(u8*)&g_Runners + idx*0x154` gave `addi r0`/swapped regs (fn_3_A1D04, fn_3_A32B8). For a backwards loop use `RunnerT* r = &g_Runners[3]; for (i = 3; i >= 0; r--, i--)`.
+
 Add new patterns to this list as we find them.
 
 ## Phases
