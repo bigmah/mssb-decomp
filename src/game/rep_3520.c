@@ -20,6 +20,8 @@ extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
 extern s16 lbl_3_data_21A04[];
 extern s16 lbl_3_data_21A44;
+typedef struct { f32 x, y, z; u8 pad[0x268 - 12]; } FS;
+extern FS g_Fielders[];
 extern s16 lbl_3_data_21B8C[];
 extern u8 lbl_3_data_219B8[];
 extern u8 lbl_3_data_21278[];
@@ -59,8 +61,18 @@ void fn_3_13334C(void) {
 }
 
 // .text:0x001344BC size:0xF0 mapped:0x80773550
-void fn_3_1344BC(void) {
-    return;
+// ~99%: r6/r7 swap (g_Fielders base reg) only
+int fn_3_1344BC(int a, int b) {
+    u8* tbl = G8 + 0x18F8;
+    u8* fz = (u8*)g_Fielders + 8;
+    int ib = (s8)tbl[b] * 0x268;
+    int ia = (s8)tbl[a] * 0x268;
+    f32 dxb = *(f32*)((u8*)g_Fielders + ib) - lbl_3_data_21A48[0];
+    f32 dzb = *(f32*)(fz + ib) - lbl_3_data_21A48[2];
+    f32 angA = atan2(*(f32*)(fz + ia) - lbl_3_data_21A48[2], *(f32*)((u8*)g_Fielders + ia) - lbl_3_data_21A48[0]);
+    s16 sb = radToShortAngle(atan2(dzb, dxb));
+    s16 sa = radToShortAngle(angA);
+    return fn_3_9FCA4(sa, sb) >= 0;
 }
 
 // .text:0x001345AC size:0xAC mapped:0x80773640
@@ -126,8 +138,41 @@ int fn_3_1354BC(int idx, f32 x, f32 y) {
 }
 
 // .text:0x00135520 size:0xE0 mapped:0x807745B4
-void fn_3_135520(void) {
-    return;
+int fn_3_135520(f32 x, f32 y, f32 r) {
+    if (x >= lbl_3_rodata_35D0) {
+        if (y >= lbl_3_rodata_35D0) {
+            if (y <= r) {
+                return 1;
+            }
+            if (x <= r) {
+                return 2;
+            }
+        } else {
+            if (x <= r) {
+                return 1;
+            }
+            if (y >= -r) {
+                return 2;
+            }
+        }
+    } else {
+        if (y >= lbl_3_rodata_35D0) {
+            if (x >= -r) {
+                return 1;
+            }
+            if (y <= r) {
+                return 2;
+            }
+        } else {
+            if (y >= -r) {
+                return 1;
+            }
+            if (x >= -r) {
+                return 2;
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x00135600 size:0x4C mapped:0x80774694

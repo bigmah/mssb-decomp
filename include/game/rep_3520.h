@@ -7,7 +7,7 @@
 void fn_3_133200(void);
 void fn_3_133320(void);
 void fn_3_13334C(void);
-void fn_3_1344BC(void);
+int fn_3_1344BC(int a, int b);
 s16 fn_3_1345AC(s16 a, s16 b, s32 c);
 void fn_3_134658(void);
 s32 fn_3_134908(s16* a, s16* b);
@@ -17,7 +17,7 @@ void fn_3_134C80(void);
 void fn_3_134D4C(void);
 void fn_3_1350BC(void);
 int fn_3_1354BC(int idx, f32 x, f32 y);
-void fn_3_135520(void);
+int fn_3_135520(f32 x, f32 y, f32 r);
 void fn_3_135600(f32* outX, f32* outY, f32 x, f32 y);
 int fn_3_13564C(f32 x, f32 y);
 int fn_3_135698(u8* a, u8* b);
