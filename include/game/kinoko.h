@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 
+void fn_3_16917C(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2);
 void fn_3_16943C(void);
 void fn_3_1695A4(s32 a, u8 flag);
 void fn_3_169600(void);

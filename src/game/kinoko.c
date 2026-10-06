@@ -2,12 +2,70 @@
 #include "header_rep_data.h"
 #pragma dont_inline on
 
-extern u8* lbl_3_bss_BA00[];
-extern u8 lbl_80366158[];
+typedef struct {
+    u8* buf;
+    void* tex;
+    s32 cnt;
+} KinokoCtl;
+extern KinokoCtl lbl_3_bss_BA00;
 extern s32 lbl_3_bss_BA08[];
+extern u8 lbl_80366158[];
 extern s8 lbl_3_data_2A330;
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void DCFlushRange(void*, u32);
+
+extern void GXLoadTexObj(void*, s32);
+extern void GXSetTexCoordGen2(s32, s32, s32, s32, s32, s32);
+extern void GXSetTevOrder(s32, s32, s32, s32);
+extern void GXSetTevColorIn(s32, s32, s32, s32, s32);
+extern void GXSetTevColorOp(s32, s32, s32, s32, s32, s32);
+extern void GXSetTevAlphaIn(s32, s32, s32, s32, s32);
+extern void GXSetTevAlphaOp(s32, s32, s32, s32, s32, s32);
+
+// .text:0x0016917C size:0x2C0
+void fn_3_16917C(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
+    KinokoCtl* c = &lbl_3_bss_BA00;
+    s32 v;
+    s32 i;
+    s32 t;
+    c->cnt += (lbl_80366158[0x28] == 0);
+    if ((c->cnt & 1) == 0) {
+        v = c->buf[fn_800247E4(0, 0, 4, 4)];
+        v += lbl_3_data_2A330 * 2;
+        if (v > 0xFF) {
+            v = 0xFF;
+        } else if (v < 0) {
+            v = 0;
+        }
+        for (i = 0; i < 32; i += 2) {
+            c->buf[i] = v;
+        }
+        DCFlushRange(c->buf, 4);
+        t = v + lbl_3_data_2A330 * 2;
+        if (t > 0xFF || t < 0) {
+            lbl_3_data_2A330 *= -1;
+        }
+    }
+    GXLoadTexObj(c->tex, *map);
+    GXSetTexCoordGen2(*coord, 1, 4, 0x3C, 0, 0x7D);
+    GXSetTevOrder(*stage, *coord, *map, 0xFF);
+    if (c->buf == (u8*)c + 0xA0) {
+        GXSetTevColorIn(*stage, 0, 8, 9, 0xF);
+        GXSetTevColorOp(*stage, 0, 0, 0, 1, 0);
+        GXSetTevAlphaIn(*stage, 7, 7, 7, 0);
+        GXSetTevAlphaOp(*stage, 0, 0, 0, 1, 0);
+    } else {
+        GXSetTevColorIn(*stage, 0xF, 8, 9, 0);
+        GXSetTevColorOp(*stage, 0, 0, 0, 1, 0);
+        GXSetTevAlphaIn(*stage, 7, 7, 7, 0);
+        GXSetTevAlphaOp(*stage, 0, 0, 0, 1, 0);
+    }
+    *stage += 1;
+    *coord += 1;
+    *map += 1;
+    *c1 += 1;
+    *c2 += 1;
+}
 
 // .text:0x0016943C size:0x164
 void fn_3_16943C(void) {
@@ -16,7 +74,7 @@ void fn_3_16943C(void) {
     s32 t;
     lbl_3_bss_BA08[0] += (lbl_80366158[0x28] == 0);
     if ((lbl_3_bss_BA08[0] & 1) == 0) {
-        v = lbl_3_bss_BA00[0][fn_800247E4(0, 0, 4, 4)];
+        v = lbl_3_bss_BA00.buf[fn_800247E4(0, 0, 4, 4)];
         v += lbl_3_data_2A330 * 2;
         if (v > 0xFF) {
             v = 0xFF;
@@ -24,9 +82,9 @@ void fn_3_16943C(void) {
             v = 0;
         }
         for (i = 0; i < 32; i += 2) {
-            lbl_3_bss_BA00[0][i] = v;
+            lbl_3_bss_BA00.buf[i] = v;
         }
-        DCFlushRange(lbl_3_bss_BA00[0], 4);
+        DCFlushRange(lbl_3_bss_BA00.buf, 4);
         t = v + lbl_3_data_2A330 * 2;
         if (t > 0xFF || t < 0) {
             lbl_3_data_2A330 *= -1;
@@ -39,11 +97,10 @@ void fn_3_1695A0(void) {
 }
 
 extern void fn_80011604(s32, void*);
-extern void fn_3_16917C(void);
 
 // .text:0x001695A4 size:0x5C
 void fn_3_1695A4(s32 a, u8 flag) {
-    u8* p = (u8*)lbl_3_bss_BA00;
+    u8* p = (u8*)&lbl_3_bss_BA00;
     if (flag == 0) {
         *(u8**)p = p + 0xA0;
         *(u8**)(p + 4) = p + 0x2C;
