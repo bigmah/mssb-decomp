@@ -193,7 +193,25 @@ void fn_3_8CD74(void) {
 
 // .text:0x0008D9C0 size:0xC0 mapped:0x806CCA54
 void fn_3_8D9C0(void) {
-    return;
+    f32 pos[3];
+    f32 up[3];
+    Vec dir;
+    u8* cam;
+    ((void (*)(void))fn_3_8CD74)();
+    cam = fn_80052734(0);
+    pos[0] = *(f32*)(cam + 0x70);
+    pos[1] = *(f32*)(cam + 0x74);
+    pos[2] = *(f32*)(cam + 0x78);
+    up[0] = 0.0f;
+    up[1] = 0.0f;
+    up[2] = 0.0f;
+    PSVECSubtract((Vec*)(cam + 0x7C), (Vec*)(cam + 0x70), &dir);
+    if (PSVECMag(&dir)) {
+        PSVECNormalize(&dir, &dir);
+    }
+    if (*(u32*)(lbl_3_common_bss_32B20 + 8) != 0) {
+        sndUpdateListener(lbl_3_common_bss_32B20, pos, up, &dir, lbl_3_data_8D70, 0x7F, 0);
+    }
 }
 
 // .text:0x0008DA80 size:0x1748 mapped:0x806CCB14
