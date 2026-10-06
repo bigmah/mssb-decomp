@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/vec.h"
 extern void fn_3_C2644(void);
 extern void CTRLBuildMatrix(void*);
 extern u8* lbl_3_bss_9D98;
@@ -14,6 +15,61 @@ extern u32 lbl_3_bss_9D84;
 extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
+extern u8 lbl_3_data_8404[];
+extern u8 lbl_3_data_84B8[];
+extern u16 lbl_3_data_81DC[];
+extern u32 sndFXStartEx(int, u8, u8, u8);
+extern void sndFXCtrl(int, int, u8);
+extern u8 g_Ball[];
+extern f32 lbl_3_rodata_20F4;
+extern void GXClearVtxDesc(void);
+extern void GXSetVtxDesc(int, int);
+extern void GXSetVtxAttrFmt(int, int, int, int, int);
+extern void GXSetChanCtrl(int, int, int, int, int, int, int);
+extern void GXSetNumChans(int);
+extern void GXSetNumTexGens(int);
+extern void GXSetCullMode(int);
+extern void GXSetProjection(void*, int);
+extern void GXLoadPosMtxImm(void*, int);
+extern void GXSetCurrentMtx(int);
+extern void GXSetNumTevStages(int);
+extern void GXSetTevOrder(int, int, int, int);
+extern void GXSetTevColorIn(int, int, int, int, int);
+extern void GXSetTevColorOp(int, int, int, int, int, int);
+extern void GXSetTevAlphaIn(int, int, int, int, int);
+extern void GXSetTevAlphaOp(int, int, int, int, int, int);
+extern void fn_8005268C(void);
+extern u8* fn_80052734(void);
+extern Vec lbl_3_rodata_2080;
+extern f32 lbl_3_rodata_2178;
+extern void* memset(void*, int, u32);
+extern s32 fn_8001B728(s32, s32, void*);
+extern void fn_3_25844(u32, int);
+extern u8 g_GameLogic[];
+extern u8 g_Minigame[];
+extern u8* lbl_803CC1B8;
+extern u32 lbl_3_bss_9D94;
+typedef struct DspObj2 DspObj2;
+struct DspObj2 {
+    u8 pad0[0x14];
+    void* w14;
+    u8 pad18[0x4C];
+    void* w64;
+    void* w68;
+    u8 pad6C[8];
+    DspObj2* child;
+    u8 pad78[4];
+    void* w7C;
+    u8 pad80[0x6C];
+    void* wEC;
+    u8 padF0[0x10];
+    DspObj2* next;
+};
+extern void DOSetWorldMatrix(void*, void*);
+extern void DOVARenderSkin(void*, void*, void*, void*, int, int);
+extern void fn_8003A8A0();
+extern u32 lbl_3_bss_9D88;
+extern u16 lbl_3_data_177F0;
 
 void fn_3_C1964(void) {
     lbl_3_bss_9D9C = 1;
@@ -42,8 +98,29 @@ void fn_3_C2244(void) {
 }
 
 // .text:0x000C2310 size:0xD0 mapped:0x807013A4
-void fn_3_C2310(void) {
-    return;
+void fn_3_C2310(void* pp, void* cam) {
+    Mtx m2;
+    Mtx m;
+    DspObj2* o;
+    DspObj2* n;
+    ((void (*)(u32, void*))CTRLBuildMatrix)(lbl_3_bss_9D94, m);
+    PSMTXConcat((f32 (*)[4])cam, m, m2);
+    o = *(DspObj2**)pp;
+    n = o->child;
+    if (o->w14 != 0) {
+        if (o->w7C != 0) {
+            fn_8003A8A0(o->w14, m2, 1);
+        } else {
+            DOVARenderSkin(o->w14, m2, o->w64, o->w68, 0, 0);
+        }
+    }
+    while (n != 0) {
+        if (n->w14 != 0) {
+            DOSetWorldMatrix(n->w14, n->wEC);
+            fn_8003A8A0(n->w14, m2, 0);
+        }
+        n = n->next;
+    }
 }
 
 // .text:0x000C23E0 size:0xC0 mapped:0x80701474
@@ -88,7 +165,31 @@ void fn_3_C2974(void) {
 
 // .text:0x000C298C size:0x114 mapped:0x80701A20
 void fn_3_C298C(void) {
-    return;
+    u8* e = lbl_803CC1B8;
+    u32 i;
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        if (g_GameLogic[0x11E] == 0xB || g_GameLogic[0x11E] >= 0x22) {
+            if (g_Minigame[0x1A40] != 0 && g_Minigame[0x1A38] == 0) {
+                ((void (*)(void))fn_800B0A14_removeQueue)();
+            }
+        }
+    } else if (g_GameLogic[0x128] != 0 || g_d_GameSettings.__0x20padding[1] != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
+    i = 0;
+    do {
+        u8* o = *(u8**)(e + 0x14);
+        if (o == NULL || *(u32*)(o + 8) == 0) {
+            u32 r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
+            *(u32*)(e + 0x14) = r;
+            r = *(u32*)(e + 0x14);
+            if (r != 0) {
+                fn_3_C366C(r, i);
+            }
+        }
+        i++;
+        e += 4;
+    } while (i < 6);
 }
 
 // .text:0x000C2AA0 size:0x1E0 mapped:0x80701B34
@@ -146,8 +247,35 @@ void fn_3_C3E94(void) {
 }
 
 // .text:0x000C3F70 size:0xF8 mapped:0x80703004
-void fn_3_C3F70(void) {
-    return;
+void fn_3_C3F70(u8* a) {
+    u8* t = **(u8***)(a + 0x74);
+    u8* q;
+    u32 i;
+    u32 j;
+    u8* e;
+    if (lbl_3_bss_9D88++ > 4) {
+        if (++lbl_3_data_177F0 > 0x13) {
+            lbl_3_data_177F0 = 4;
+        }
+        lbl_3_bss_9D88 = 0;
+    }
+    if (lbl_3_bss_9D88 != 0) {
+        return;
+    }
+    for (i = 0; i < *(u16*)(t + 6); i++) {
+        e = ((u8**)*(u8**)(t + 0x18))[i];
+        e = *(u8**)(e + 0x14);
+        if (e != NULL) {
+            q = *(u8**)(*(u8**)(e + 0x10) + 4);
+            for (j = 0; j < *(u16*)(*(u8**)(e + 0x10) + 8); j++) {
+                if (q[0] == 1) {
+                    *(u32*)(q + 4) = *(u32*)(q + 4) & ~0x1FFF;
+                    *(u32*)(q + 4) = *(u32*)(q + 4) | lbl_3_data_177F0;
+                }
+                q += 0x10;
+            }
+        }
+    }
 }
 
 // .text:0x000C4068 size:0x84 mapped:0x807030FC
@@ -220,7 +348,28 @@ void fn_3_C48D0(void) {
 
 // .text:0x000C4B80 size:0x174 mapped:0x80703C14
 void fn_3_C4B80(void) {
-    return;
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxDesc(0xD, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetVtxAttrFmt(0, 0xD, 1, 4, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(0);
+    GXSetTevColorIn(0, 0xF, 0xA, 8, 0xF);
+    GXSetTevAlphaIn(0, 7, 5, 4, 7);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    fn_8005268C();
+    GXSetProjection(fn_80052734(), 0);
+    fn_8005268C();
+    GXLoadPosMtxImm(fn_80052734() + 0x40, 0);
+    GXSetCurrentMtx(0);
 }
 
 // .text:0x000C4CF4 size:0x20C mapped:0x80703D88
@@ -254,8 +403,27 @@ void fn_3_C597C(void) {
 }
 
 // .text:0x000C5CE0 size:0xFC mapped:0x80704D74
-void fn_3_C5CE0(void) {
-    return;
+u32 fn_3_C5CE0(u8* a) {
+    Vec pos = lbl_3_rodata_2080;
+    Vec d;
+    u32 i;
+    f32 lim;
+    if (g_GameLogic[0x11E] == 2 && g_GameLogic[0x138] != 0) {
+        return 0;
+    }
+    i = 0;
+    lim = lbl_3_rodata_2178;
+    do {
+        memset(&pos, 0, 0xC);
+        fn_8001B728(i, 4, &pos);
+        PSVECSubtract(&pos, (Vec*)(a + 0x9C), &d);
+        if (PSVECMag(&d) <= lim) {
+            fn_3_25844(i, 1);
+            return 1;
+        }
+        i++;
+    } while (i < 9);
+    return 0;
 }
 
 // .text:0x000C5DDC size:0x480 mapped:0x80704E70
@@ -264,8 +432,37 @@ void fn_3_C5DDC(void) {
 }
 
 // .text:0x000C625C size:0x174 mapped:0x807052F0
-void fn_3_C625C(void) {
-    return;
+u32 fn_3_C625C(u8* a) {
+    Vec pos = *(Vec*)(a + 0x9C);
+    Vec d;
+    u32 stad;
+    u8 v;
+    u32 h;
+    if (g_Ball[0x1BC9] == 1) {
+        return 0;
+    }
+    if ((g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+        return 0;
+    }
+    pos.y *= lbl_3_rodata_20F4;
+    PSVECSubtract((Vec*)g_Ball, &pos, &d);
+    if (PSVECMag(&d) <= lbl_3_rodata_2178) {
+        stad = g_d_GameSettings.StadiumID;
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            v = lbl_3_data_84B8[4];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 4];
+        }
+        h = sndFXStartEx((u16)(lbl_3_data_81DC[stad] + 2), v, 0x3F, 0);
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            v = lbl_3_data_84B8[5];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 5];
+        }
+        sndFXCtrl(h, 0x5B, v);
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000C63D0 size:0xDFC mapped:0x80705464

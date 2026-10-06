@@ -220,3 +220,12 @@ Don't spend more than about 30–45 minutes on a single register-allocation figh
 - **Missing stubs:** some units lack a stub for a function (`fn_3_EDFAC` in `sta_c5.c`); fndiff says "not found in our build". Add it in address order.
 - **Stale-r3 result:** `sndFXCtrl(vid, 0x5B, x)` after `sndFXStartEx(...)` passes the first call result.
 - **Identical copy-pasted prologues** (`fn_3_F3AE0`/`F3BB0`) are separate bodies; load `z`/`x` into locals right after the stores to reproduce hoisted `lfs` order.
+
+- **Index a pointer array with the loop counter instead of a manual byte offset:** `((u8**)*(u8**)(t + 0x18))[i]` lets the compiler build the strength-reduced `addi rN,rN,4` induction register (the `off += 4` version gives the right code with two registers swapped) (`fn_3_C3F70`).
+- **Pointer-global deref + element field:** `(*(T**)&lbl_3_common_bss_350E4 + idx)->field` (T padded to the element size) gives `lwz r0, sym@l(r3); add r3,r0,off; lwz field(r3)` where `*(u8**)sym + idx*N + off` gives `addi/lwzx` (`fn_3_F6504`).
+- **Cloned render/matrix helpers:** when a function looks like an already-matched sibling (`fn_3_B8184` vs `fn_3_C2310`), copy the matched body and only change the constants/globals. Use `Mtx` locals and a `(f32 (*)[4])` cast for `PSMTXConcat`; declare the callee prototypes only if they do not clash with `Dolphin/mtx.h`.
+- **`h = sndFXStartEx(...); sndFXCtrl(h, 0x5B, v);`:** the original passes the first call's return value (r3) straight through as the first argument of the second call. Declare `sndFXCtrl(int, int, u8)`. A `u32 stad` (not `u8`) avoids the extra `clrlslwi` on `stad * 2`.
+- **A local `u32 i` loop counter passed to a `u8` parameter** gives `clrlwi r4,r30,24` at the call and a bare `cmplwi` in the loop test (`fn_3_C298C`); a `u8 i` gives the opposite.
+- **Struct copy of a rodata constant plus `memset`:** `Vec pos = lbl_3_rodata_2080;` copies with three `lwz/stw`, and `PSVECMag(&d) <= lim` (limit loaded into a local first) gives `fcmpo f1,f31; cror eq,lt,eq` (`fn_3_C5CE0`).
+- **Float loads scheduled early:** reading `x`, `z` into locals (`z` first) before the stores moved the `lfs` above the stores in `fn_3_F3AE0`. A unused-size struct pad must be referenced (wrap it in a struct with the Control) or the compiler drops it and the frame size changes (`fn_3_F65C8`).
+- **Stale-register calls:** the GX setup functions (`fn_3_C4B80`) match as plain `int`-prototyped externs, and `fn_80052734()+0x40` is passed straight to `GXLoadPosMtxImm`.

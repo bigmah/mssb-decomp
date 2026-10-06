@@ -7,6 +7,10 @@ extern f32 g_Runners;
 extern u8 g_Fielders[];
 extern void fn_3_52F4C(s16, f32, f32);
 extern u8 g_GameLogic[];
+extern u8 g_Scores[];
+extern s32 lbl_3_bss_181C;
+extern s32 lbl_3_bss_1800;
+extern s32 lbl_3_bss_1808[];
 extern u8 lbl_3_data_4900[];
 extern int checkFieldingStat(int, int, int);
 extern void playSoundEffect(int);
@@ -157,7 +161,20 @@ void fn_3_A384C(void) {
 
 // .text:0x000A3B30 size:0xD0 mapped:0x806E2BC4
 void fn_3_A3B30(void) {
-    return;
+    s32 diff;
+    diff = *(s16*)((u8*)((s16*)(g_Scores + 4)) + *(s32*)(g_GameLogic + 0xC) * 0x26) - *(s16*)((u8*)((s16*)(g_Scores + 4)) + *(s32*)(g_GameLogic + 0x10) * 0x26);
+    lbl_3_bss_181C = 0;
+    if (*(s32*)g_Scores >= g_Scores[0xAA] && g_Scores[0xAD] != 0 && diff == 0) {
+        lbl_3_bss_181C = 3;
+        return;
+    }
+    if (*(s32*)g_Scores >= g_Scores[0xAA] - 1 && diff <= 1 && diff >= -1) {
+        lbl_3_bss_181C = 2;
+        return;
+    }
+    if (*(s32*)g_Scores >= g_Scores[0xAA] - 4 && diff <= 1 && diff >= -3) {
+        lbl_3_bss_181C = 1;
+    }
 }
 
 // .text:0x000A3C00 size:0xC0 mapped:0x806E2C94
