@@ -15,6 +15,13 @@ extern u32 lbl_3_bss_9D84;
 extern u32 fn_80033A24(void*, int, int, int, int, int);
 
 extern u32 lbl_3_bss_9D9C;
+extern u8 lbl_3_data_8404[];
+extern u8 lbl_3_data_84B8[];
+extern u16 lbl_3_data_81DC[];
+extern u32 sndFXStartEx(int, u8, u8, u8);
+extern void sndFXCtrl(int, int, u8);
+extern u8 g_Ball[];
+extern f32 lbl_3_rodata_20F4;
 extern void GXClearVtxDesc(void);
 extern void GXSetVtxDesc(int, int);
 extern void GXSetVtxAttrFmt(int, int, int, int, int);
@@ -425,8 +432,37 @@ void fn_3_C5DDC(void) {
 }
 
 // .text:0x000C625C size:0x174 mapped:0x807052F0
-void fn_3_C625C(void) {
-    return;
+u32 fn_3_C625C(u8* a) {
+    Vec pos = *(Vec*)(a + 0x9C);
+    Vec d;
+    u32 stad;
+    u8 v;
+    u32 h;
+    if (g_Ball[0x1BC9] == 1) {
+        return 0;
+    }
+    if ((g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+        return 0;
+    }
+    pos.y *= lbl_3_rodata_20F4;
+    PSVECSubtract((Vec*)g_Ball, &pos, &d);
+    if (PSVECMag(&d) <= lbl_3_rodata_2178) {
+        stad = g_d_GameSettings.StadiumID;
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            v = lbl_3_data_84B8[4];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 4];
+        }
+        h = sndFXStartEx((u16)(lbl_3_data_81DC[stad] + 2), v, 0x3F, 0);
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            v = lbl_3_data_84B8[5];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 5];
+        }
+        sndFXCtrl(h, 0x5B, v);
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000C63D0 size:0xDFC mapped:0x80705464

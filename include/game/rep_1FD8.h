@@ -38,7 +38,7 @@ void fn_3_C56E8(void);
 void fn_3_C597C(void);
 u32 fn_3_C5CE0(u8* a);
 void fn_3_C5DDC(void);
-void fn_3_C625C(void);
+u32 fn_3_C625C(u8* a);
 void fn_3_C63D0(void);
 void fn_3_C71CC(void);
 void fn_3_C7444(u8* a);
