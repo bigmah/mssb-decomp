@@ -200,3 +200,5 @@ Don't spend more than about 30–45 minutes on a single register-allocation figh
 - **`s8` args to int-prototyped callees (`lbz r3; extsb r3,r3`):** declare the callee params `s32` and the local/param `s8`; that reproduces the explicit extsb at each call (`fn_3_16B488`).
 - **Statement order vs. register choice:** two independent stores (`x = -1; y = 0;`) swapping order fixed `li r0/r4` allocation (`fn_3_169600`). Try swapping before restructuring.
 - **Locals declared in an order that decides r27..r31:** when pointer/index locals come out permuted, add `u8* q;` as a separate declaration assigned later (not `u8* q = ...` inside the loop) (`fn_3_169D00`).
+
+- **Data addressed via one section-base register (`fn_3_168704`, `fn_3_168DFC`):** the original TU defines the `lbl_3_data_285A8` area itself as separate `.data` objects, so it keeps one base register and emits `addi rX,r31,off; lbzx`. `extern` declarations give `lbzu` or one `lis` per symbol. Probably needs the data split into this unit in `splits.txt` before it can match.
