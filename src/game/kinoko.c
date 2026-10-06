@@ -22,6 +22,8 @@ extern void GXSetTevColorOp(s32, s32, s32, s32, s32, s32);
 extern void GXSetTevAlphaIn(s32, s32, s32, s32, s32);
 extern void GXSetTevAlphaOp(s32, s32, s32, s32, s32, s32);
 
+extern void GXInitTexObj(void*, void*, s32, s32, s32, s32, s32, s32);
+extern void GXInitTexObjLOD(void*, s32, s32, f32, f32, f32, s32, s32, s32);
 extern void GXSetZMode(s32, s32, s32);
 extern void GXSetBlendMode(s32, s32, s32, s32);
 extern void GXSetCullMode(s32);
@@ -185,9 +187,59 @@ void fn_3_16B488(void* out, s8 id) {
     }
 }
 
-// .text:0x00169600 size:0x204 mapped:0x807A8694
+// .text:0x00169600 size:0x204
 void fn_3_169600(void) {
-    return;
+    u8* base = (u8*)&lbl_3_bss_BA00;
+    u32 i;
+    u32 j;
+    u32 idx;
+    u8* p;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            idx = fn_800247E4(j, i, 4, 4);
+            if (idx < 0x20) {
+                p = base + 0xA0;
+                p += idx;
+                p[2] = 0xFF;
+                p[0] = 0xFF;
+                p[3] = 0x9B;
+                p[1] = 0x9B;
+            } else {
+                p = base + 0xA0;
+                p += idx;
+                p[2] = 0;
+                p[0] = 0;
+                p[3] = 0xFF;
+                p[1] = 0xFF;
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            idx = fn_800247E4(j, i, 4, 4);
+            if (idx < 0x20) {
+                p = base + 0x60;
+                p += idx;
+                p[2] = 0xFF;
+                p[0] = 0xFF;
+                p[3] = 0;
+                p[1] = 0;
+            } else {
+                p = base + 0x60;
+                p += idx;
+                p[2] = 0x9B;
+                p[0] = 0x9B;
+                p[3] = 0xFF;
+                p[1] = 0xFF;
+            }
+        }
+    }
+    GXInitTexObj(base + 0x2C, base + 0xA0, 4, 4, 6, 1, 1, 0);
+    GXInitTexObjLOD(base + 0x2C, 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
+    GXInitTexObj(base + 0xC, base + 0x60, 4, 4, 6, 1, 1, 0);
+    GXInitTexObjLOD(base + 0xC, 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
+    lbl_3_data_2A330 = -1;
+    *(s32*)(base + 8) = 0;
 }
 
 // .text:0x00169804 size:0x180
