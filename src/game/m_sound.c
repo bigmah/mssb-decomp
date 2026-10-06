@@ -26,6 +26,8 @@ extern u8 lbl_3_data_8D70[];
 extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
 extern u8 lbl_3_common_bss_32B20[];
 extern void sndRemoveListener(void*);
+extern u32 sndCheckEmitter(void*);
+extern void sndRemoveEmitter(void*);
 
 #include "static/UnknownHomes_Static.h"
 extern void* lbl_3_bss_1768;
@@ -52,7 +54,15 @@ void fn_3_8B7DC(void) {
 
 // .text:0x0008B804 size:0x8C mapped:0x806CA898
 void fn_3_8B804(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 100; i++) {
+        if (lbl_3_common_bss_32B20[0x2034 + i] != 0) {
+            if (sndCheckEmitter(lbl_3_common_bss_32B20 + 0x90 + i * 0x50) != 0) {
+                sndRemoveEmitter(lbl_3_common_bss_32B20 + 0x90 + i * 0x50);
+            }
+            lbl_3_common_bss_32B20[0x2034 + i] = 0;
+        }
+    }
 }
 
 // .text:0x0008B890 size:0xD4 mapped:0x806CA924
