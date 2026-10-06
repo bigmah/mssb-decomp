@@ -4,6 +4,12 @@
 extern void* memset(void*, s32, u32);
 
 extern u8 g_Minigame[];
+extern s16 lbl_3_data_21654[];
+extern u8 lbl_3_data_21694[];
+extern u8 lbl_3_data_216B0[];
+extern u8 lbl_3_data_216B8[];
+extern s32 RandomInt_Game(s32);
+extern s32 RandomInt_Game_Range(s32, s32);
 extern f32 lbl_3_data_21634[];
 extern f32 lbl_3_data_219B8[];
 extern s16 lbl_3_data_2167C[];
@@ -23,7 +29,60 @@ void fn_3_1133C4(void) {
 
 // .text:0x001136FC size:0x220 mapped:0x80752790
 void fn_3_1136FC(void) {
-    return;
+    u8* p;
+    u8 d;
+    s8 i;
+    s16 lo;
+    u8* g;
+    s16 hi;
+    s8 k;
+    g = g_Minigame;
+    i = 0;
+    lo = 0;
+    hi = 0x7FFF;
+    p = g;
+    k = 0;
+    d = g[(s8)g[0x1904] + 0x18DC];
+    do {
+        u8* e = g + p[0x1A82] * 0x2C;
+        lo += *(s16*)(e + 0x750);
+        if (e[0x755] == 2) {
+            k = i;
+            i++;
+            break;
+        }
+        i++;
+        p++;
+    } while (i < 7);
+    if (i < 7) {
+        s16 w = *(s16*)(g_Minigame + g_Minigame[0x1A82 + i] * 0x2C + 0x750);
+        hi = lo + w - 1;
+    }
+    if (RandomInt_Game(0x64) < (s8)(lbl_3_data_21694 + d * 7)[k]) {
+        s8* q = (s8*)lbl_3_data_216B0 + d * 2;
+        s16 r = RandomInt_Game_Range(*(s8*)(lbl_3_data_216B0 + d * 2), q[1]);
+        lo += r;
+        hi += r;
+    }
+    if (lo <= lbl_3_data_21654[2] && lbl_3_data_21654[2] <= hi) {
+        g[0x1DCE] = 0;
+    } else if (lo <= lbl_3_data_21654[3] && lbl_3_data_21654[3] <= hi) {
+        g[0x1DCE] = 3;
+    } else if (hi >= lbl_3_data_21654[0] && lo <= lbl_3_data_21654[1]) {
+        g[0x1DCE] = 2;
+        if (lo < lbl_3_data_21654[0]) {
+            lo = lbl_3_data_21654[0];
+        }
+        if (hi > lbl_3_data_21654[1]) {
+            hi = lbl_3_data_21654[1];
+        }
+        *(s16*)(g + 0x1DCC) = RandomInt_Game_Range(lo, hi);
+    } else {
+        g[0x1DCE] = 1;
+    }
+    if (g[0x1DCE] == 0 && RandomInt_Game(0x64) < (s8)lbl_3_data_216B8[d]) {
+        g[0x1DCE] = 1;
+    }
 }
 
 // .text:0x0011391C size:0x34 mapped:0x807529B0
