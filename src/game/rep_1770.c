@@ -15,6 +15,8 @@ extern u8 lbl_3_data_D4F8[];
 extern u8 g_Pitcher[];
 extern void playSoundEffect(int);
 extern u8 g_Batter[];
+extern s32 g_Strikes[];
+extern void fn_8003649C(void*, s32, s32, s32, s32);
 
 // .text:0x000993A8 size:0x3C4 mapped:0x806D843C
 void fn_3_993A8(void) {
@@ -123,8 +125,44 @@ void fn_3_9B7F4(void) {
 }
 
 // .text:0x0009BEE0 size:0x134 mapped:0x806DAF74
-void fn_3_9BEE0(void) {
-    return;
+void fn_3_9BEE0(u8* p) {
+    s32 target = g_Strikes[2];
+    s32 i;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        target = g_Minigame[0x190D] - g_Minigame[0x1910];
+    }
+    for (i = 0; i < 7; i++) {
+        s32 state = 3;
+        if (g_d_GameSettings.GameModeSelected == 6 && i >= 5) {
+            break;
+        }
+        if (i < 2) {
+            if (*(u16*)(p + 0x1C) == g_Strikes[0]) {
+                continue;
+            }
+            if (g_Strikes[0] >= i + 1) {
+                state = 0;
+            }
+        } else if (i < 5) {
+            if (*(u16*)(p + 0x1E) == g_Strikes[1]) {
+                continue;
+            }
+            if (g_Strikes[1] >= i - 1) {
+                state = 1;
+            }
+        } else {
+            if (*(u16*)(p + 0x20) == target) {
+                continue;
+            }
+            if (target >= i - 4) {
+                state = 2;
+            }
+        }
+        fn_8003649C(p, i + 1, i + 1, 0x107, state);
+    }
+    *(u16*)(p + 0x1C) = g_Strikes[0];
+    *(u16*)(p + 0x1E) = g_Strikes[1];
+    *(u16*)(p + 0x20) = target;
 }
 
 // .text:0x0009C014 size:0x278 mapped:0x806DB0A8
