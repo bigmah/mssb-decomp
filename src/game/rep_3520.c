@@ -438,8 +438,29 @@ void fn_3_137CF8(u8* o) {
 }
 
 // .text:0x00137DE4 size:0x130 mapped:0x80776E78
-void fn_3_137DE4(void) {
-    return;
+void fn_3_137DE4(u8* o) {
+    u32 t;
+    s16* row;
+    int lo;
+    PSVECAdd((Vec*)o, (Vec*)(o + 0xC), (Vec*)o);
+    PSVECAdd((Vec*)(o + 0x18), (Vec*)(o + 0x24), (Vec*)(o + 0x18));
+    if (*(s16*)(o + 0x3A) < 0x7FFE) {
+        (*(s16*)(o + 0x3A))++;
+    } else {
+        *(s16*)(o + 0x3A) = 0x7FFF;
+    }
+    if ((f32) * (s16*)(o + 0x3A) >= (&lbl_3_data_21A64)[7]) {
+        t = *(u32*)&G8[0x17C0] / 60 / 20;
+        if (t > 3) {
+            t = 3;
+        }
+        o[0x3D] = 0;
+        *(s16*)(o + 0x3A) = 0;
+        row = lbl_3_data_21A90 + G8[0x1A2B] * 8;
+        lo = row[t * 2];
+        t = random_fn_3_9EE24((row[t * 2 + 1] - lo) * 60);
+        *(s16*)(o + 0x38) = t + lo * 60;
+    }
 }
 
 // .text:0x00137F14 size:0x118 mapped:0x80776FA8
