@@ -198,7 +198,26 @@ void fn_3_94BC4(void) {
 
 // .text:0x00094E68 size:0x198 mapped:0x806D3EFC
 void fn_3_94E68(void) {
-    return;
+    u8* p = lbl_803CC1B8[0];
+    u8 g;
+    if (lbl_3_common_bss_32724[0x96] == 0 && (*(u16*)(p + 0x1C) == lbl_3_common_bss_37400[0x46] || lbl_3_common_bss_37400[0x47] == 2) &&
+        (g = g_GameLogic[0x11E]) != 3 && (g != 8 || lbl_3_common_bss_37400[0x47] == 0) && (g != 0 || lbl_3_common_bss_37400[0x47] != 2)) {
+        if (g_Stats[0x36] != 0) {
+            u8* t = lbl_80371C30;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8) + 0x54) &= ~2;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8 + 8) + 0x54) &= ~2;
+        } else if (g <= 1 || g == 2) {
+            u8* t = lbl_80371C30;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8) + 0x54) |= 2;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8 + 8) + 0x54) |= 2;
+        } else {
+            u8* t = lbl_80371C30;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8) + 0x54) &= ~2;
+            *(u32*)(*(u8**)(t + *(u16*)(p + 0x14) * 8 + 8) + 0x54) &= ~2;
+        }
+        return;
+    }
+    fn_800B0A14_removeQueue(fn_80034CEC(p));
 }
 
 // .text:0x00095000 size:0x98 mapped:0x806D4094
