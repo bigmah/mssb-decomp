@@ -202,3 +202,7 @@ Don't spend more than about 30–45 minutes on a single register-allocation figh
 - **Locals declared in an order that decides r27..r31:** when pointer/index locals come out permuted, add `u8* q;` as a separate declaration assigned later (not `u8* q = ...` inside the loop) (`fn_3_169D00`).
 
 - **Data addressed via one section-base register (`fn_3_168704`, `fn_3_168DFC`):** the original TU defines the `lbl_3_data_285A8` area itself as separate `.data` objects, so it keeps one base register and emits `addi rX,r31,off; lbzx`. `extern` declarations give `lbzu` or one `lis` per symbol. Probably needs the data split into this unit in `splits.txt` before it can match.
+- **By-value struct args:** a 12-byte struct copied to the stack and passed by address is a by-value struct parameter forwarded to the callee (`fn_3_EF7B4(V3i v, s32 x)`); declare unused-looking extra params since they shift scratch regs.
+- **Missing stubs:** some units lack a stub for a function (`fn_3_EDFAC` in `sta_c5.c`); fndiff says "not found in our build". Add it in address order.
+- **Stale-r3 result:** `sndFXCtrl(vid, 0x5B, x)` after `sndFXStartEx(...)` passes the first call result.
+- **Identical copy-pasted prologues** (`fn_3_F3AE0`/`F3BB0`) are separate bodies; load `z`/`x` into locals right after the stores to reproduce hoisted `lfs` order.
