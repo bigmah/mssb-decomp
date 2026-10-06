@@ -8,7 +8,7 @@ void fn_3_C095C(void);
 void fn_3_C0AD8(void);
 void fn_3_C0C4C(s32 idx);
 void fn_3_C0CE8(u8 v, f32 x, f32 y, f32 z);
-void fn_3_C0D10(void);
+void fn_3_C0D10(s32 i, u8 v1, u8 v2, u8 v3, u8 v4);
 void fn_3_C0DD8(void);
 void fn_3_C0F8C(void);
 void fn_3_C1004(void);

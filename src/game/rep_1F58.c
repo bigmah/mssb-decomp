@@ -16,6 +16,8 @@ extern u8 lbl_80366158[];
 extern void fn_800A7D4C(int, void*);
 extern void fn_800B0A14_removeQueue(void*);
 extern u8 lbl_3_bss_9D40[];
+extern void* memcpy(void*, const void*, u32);
+extern void DCStoreRange(void*, u32);
 extern void GXInitTexObj(void* obj, void* img, u16 w, u16 h, int fmt, int ws, int wt, int mip);
 extern void GXInitTexObjLOD(void* obj, int minF, int maxF, f32 minLOD, f32 maxLOD, f32 bias, int biasClamp, int edgeLOD, int maxAniso);
 
@@ -77,8 +79,23 @@ void fn_3_C0CE8(u8 v, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x000C0D10 size:0xC8 mapped:0x806FFDA4
-void fn_3_C0D10(void) {
-    return;
+void fn_3_C0D10(s32 i, u8 v1, u8 v2, u8 v3, u8 v4) {
+    s32 o = i * 16;
+    s32 o2;
+    u8* q;
+    lbl_3_bss_9D40[o] = v4;
+    lbl_3_bss_9D40[1 + o] = v1;
+    *(u16*)&lbl_3_bss_9D40[o + 2] = *(u16*)&lbl_3_bss_9D40[o];
+    *(u32*)&lbl_3_bss_9D40[o + 4] = *(u32*)&lbl_3_bss_9D40[o];
+    memcpy(&lbl_3_bss_9D40[o + 8], &lbl_3_bss_9D40[o], 8);
+    o2 = o + 0x20;
+    q = lbl_3_bss_9D40 + o2;
+    *q = v2;
+    lbl_3_bss_9D40[1 + o2] = v3;
+    *(u16*)&lbl_3_bss_9D40[o + 0x22] = *(u16*)q;
+    *(u32*)&lbl_3_bss_9D40[o + 0x24] = *(u32*)q;
+    memcpy(&lbl_3_bss_9D40[o + 0x28], q, 8);
+    DCStoreRange(lbl_3_bss_9D40, 0x40);
 }
 
 // .text:0x000C0DD8 size:0x1B4 mapped:0x806FFE6C
