@@ -14,7 +14,9 @@ typedef struct {
     /*0x0E6*/ s16 unkE6;
     /*0x0E8*/ u8 pad0E8[0x123 - 0xE8];
     /*0x123*/ u8 status;
-    /*0x124*/ u8 pad124[0x154 - 0x124];
+    /*0x124*/ u8 pad124[0x137 - 0x124];
+    /*0x137*/ u8 unk137;
+    /*0x138*/ u8 pad138[0x154 - 0x138];
 } RunnerT;
 extern RunnerT g_Runners[];
 extern u8 g_Fielders[];
@@ -236,7 +238,20 @@ void fn_3_A3B30(void) {
 
 // .text:0x000A3C00 size:0xC0 mapped:0x806E2C94
 void fn_3_A3C00(void) {
-    return;
+    s32 i;
+    lbl_3_bss_1800 = 0;
+    for (i = 0; i < 4; i++) {
+        if (lbl_3_bss_1808[i] >= 0) {
+            u8 v = g_Runners[lbl_3_bss_1808[i]].unk137;
+            if (v == 1) {
+                lbl_3_bss_1800 |= 1 << (i * 4);
+            } else if (v == 3) {
+                lbl_3_bss_1800 |= 2 << (i * 4);
+            } else if (v == 2) {
+                lbl_3_bss_1800 |= 4 << (i * 4);
+            }
+        }
+    }
 }
 
 // .text:0x000A3CC0 size:0x498 mapped:0x806E2D54
