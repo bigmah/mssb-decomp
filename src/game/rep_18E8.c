@@ -5,6 +5,11 @@ extern u8 g_Ball[];
 extern u8 g_FieldingLogic[];
 extern f32 g_Runners;
 extern u8 g_Fielders[];
+extern void fn_3_52F4C(s16, f32, f32);
+extern u8 g_GameLogic[];
+extern u8 lbl_3_data_4900[];
+extern int checkFieldingStat(int, int, int);
+extern void playSoundEffect(int);
 extern f32 lbl_3_rodata_1A0C;
 extern f32 lbl_3_rodata_1A10;
 extern f32 lbl_3_rodata_198C;
@@ -135,10 +140,11 @@ int fn_3_A37BC(void) {
     if (*(f32*)(b + 0x1A0C) < lbl_3_rodata_1994) {
         return 1;
     }
-    if (v < 0x400 && *(f32*)(b + 8) + *(f32*)(b + 0) > lbl_3_rodata_1998) {
-        return 1;
-    }
-    if (*(f32*)(b + 8) - *(f32*)(b + 0) > lbl_3_rodata_1998) {
+    if (v < 0x400) {
+        if (*(f32*)(b + 8) + *(f32*)(b + 0) > lbl_3_rodata_1998) {
+            return 1;
+        }
+    } else if (*(f32*)(b + 8) - *(f32*)(b + 0) > lbl_3_rodata_1998) {
         return 1;
     }
     return 0;
@@ -165,8 +171,16 @@ void fn_3_A3CC0(void) {
 }
 
 // .text:0x000A4158 size:0x90 mapped:0x806E31EC
-void fn_3_A4158(void) {
-    return;
+void fn_3_A4158(int i) {
+    u8* r = (u8*)&g_Runners + i * 0x154;
+    if (r[0x137] == 2) {
+        fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), *(f32*)(r + 0), *(f32*)(r + 8));
+    } else {
+        f32 s = *(f32*)(r + 0x38);
+        f32 a = *(f32*)(r + 0x18) * s;
+        f32 b = *(f32*)(r + 0x1C) * s;
+        fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), 2.0f * a + *(f32*)(r + 0), 2.0f * b + *(f32*)(r + 8));
+    }
 }
 
 // .text:0x000A41E8 size:0x4B8 mapped:0x806E327C
@@ -299,8 +313,17 @@ void fn_3_A9984(void) {
 }
 
 // .text:0x000A9C74 size:0xAC mapped:0x806E8D08
-void fn_3_A9C74(void) {
-    return;
+void fn_3_A9C74(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int r = checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 5);
+    if (f[0x1F8] >= 3) {
+        f[0x215] = lbl_3_data_4900[r * 3 + 1];
+    } else {
+        f[0x215] = lbl_3_data_4900[r * 3];
+    }
+    if (r != 0 && *(s16*)(g_FieldingLogic + 0xC4) >= 0) {
+        playSoundEffect(0x1A8);
+    }
 }
 
 // .text:0x000A9D20 size:0xD1C mapped:0x806E8DB4

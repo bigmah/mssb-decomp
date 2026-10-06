@@ -118,6 +118,13 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Redundant `beq L; beq L` pair:** write the condition as `a == 0 || (a != 0 && ...)` (`fn_3_111AC4`).
 - **Nested fixed loops fully unrolled with `cmpwi r0,0xa` leftovers:** plain nested `for` over a typedef'd struct with `s16 a[4]; u8 b[4][10]` matched (`fn_3_142CA8`).
 
+- **`bge L; b L` nested early returns (fn_3_BD6AC):** `if (v < 0xD) { if (v >= 0xB) call(); }` and the `return`-style forms all give `blt`; `switch (v) { case 0xB: case 0xC: call(v == 0xC); break; }` produces the original `bge L; b L` shape.
+- **Brute-force declaration/initialisation order with a script** (all permutations of local declarations x init statements, scored with `fndiff`): fixed `fn_3_3AAF8`, `fn_3_33458`, `fn_3_A3B30`-style register swaps. Plain `u8* f; s16 i;` (decls first, then assign) beats `u8* f = ...` initialisers.
+- **Second struct-array access that the original re-materialises:** `u8* f; f = g_Fielders; f += idx * 0x268;` (or `f = g_Runners; f += ...`) stops the compiler from CSE-ing with an earlier `g_Fielders + off` (`fn_3_870AC`: arg `*(s16*)(f + 0x178)` after `f += *(s16*)(g_Ball + 0x1B78) * 0x268`).
+- **Fixed 4/9-element loops over a struct array get fully unrolled by the compiler** when written as `for (i = 0; i < N; i++) { ...; r += 0x154; }` with a `u8* r` pointer (fn_3_27648, fn_3_86DFC); `for (i = 0; i < 4; i++) { RunnerT* r = &((RunnerT*)g_Runners)[i]; }` with `typedef struct { u8 b[0x154]; } RunnerT;` fixes the pointer-induction form (fn_3_88F98).
+- **Float literal for the constant used once or twice, `extern f32` for the rest** (fn_3_A4158 `2.0f`, fn_3_BB07C `100000.0f`/`0.0f`); declare the float locals in the order `f32 s; f32 a; f32 c;` to get f31/f30 right.
+- **Still unsolved (hoisted global address):** `lis rX, g_Fielders@ha` scheduled before `mr r30, r3` when a function keeps its index across a call (`fn_3_483CC`, `fn_3_7F9C4`).
+
 Add new patterns to this list as we find them.
 
 ## Phases
