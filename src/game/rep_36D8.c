@@ -191,8 +191,8 @@ void fn_3_13E670(void) {
 
 // .text:0x0013E6D4 size:0x100 mapped:0x8077D768
 void fn_3_13E6D4(void) {
-    u32 i;
     s16 t;
+    u32 i;
     for (i = 15; i < 0x23; i++) {
         if (g_Minigame + 0x193A != NULL) {
             PSVECAdd((Vec*)(g_Minigame + 0xCD0 + i * 12), (Vec*)(g_Minigame + 0x1180 + i * 12), (Vec*)(g_Minigame + 0xCD0 + i * 12));
@@ -210,9 +210,6 @@ void fn_3_13E6D4(void) {
             }
         }
     }
-}// .text:0x0013E7D4 size:0x25C mapped:0x8077D868
-void fn_3_13E7D4(void) {
-    return;
 }
 
 // .text:0x0013EA30 size:0x214 mapped:0x8077DAC4
