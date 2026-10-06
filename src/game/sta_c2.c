@@ -3,6 +3,7 @@
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 #include "Dolphin/vec.h"
+#include "C3/control.h"
 extern u8 lbl_3_common_bss_350E4[];
 extern char lbl_3_rodata_286C[];
 extern char lbl_3_rodata_2878[];
@@ -13,6 +14,8 @@ extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
+extern Vec lbl_3_rodata_25F8;
+extern f32 lbl_3_rodata_2658[];
 typedef struct { u8 pad[0x20]; f32 a, b, c, d; u8 pad2[4]; } T34;
 extern T34 lbl_3_data_18364[];
 extern s16 fn_3_B7F70(s32);
@@ -344,8 +347,21 @@ void fn_3_D0918(void) {
 }
 
 // .text:0x000D1004 size:0x10C mapped:0x80710098
-void fn_3_D1004(void) {
-    return;
+void fn_3_D1004(u8* p, f32 x, f32 y, f32 z, f32 r, f32 sc) {
+    u8* c = *(u8**)(*(u8**)(**(u8***)(p + 0x74) + 0x18) + 0xC);
+    Vec axis = lbl_3_rodata_25F8;
+    Quaternion q;
+    *(f32*)(p + 0xA0) = x;
+    *(f32*)(p + 0xA4) = y;
+    *(f32*)(p + 0xA8) = z;
+    *(f32*)(p + 0xC0) = sc;
+    p[0] = 0;
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetRotation((Control*)p, 0.0f, r, 0.0f);
+    C_QUATRotAxisRad(&q, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSQUATMultiply(&q, (Quaternion*)(p + 0xAC), &q);
+    PSQUATNormalize(&q, &q);
+    CTRLSetQuat((Control*)(c + 0x1C), q.x, q.y, q.z, q.w);
 }
 
 // .text:0x000D1110 size:0x16C mapped:0x807101A4
