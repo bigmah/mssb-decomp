@@ -192,13 +192,33 @@ void fn_3_8C5C8(void) {
 }
 
 // .text:0x0008CD74 size:0xC4C mapped:0x806CBE08
+#pragma dont_inline on
 void fn_3_8CD74(void) {
     return;
 }
+#pragma dont_inline reset
 
 // .text:0x0008D9C0 size:0xC0 mapped:0x806CCA54
 void fn_3_8D9C0(void) {
-    return;
+    f32 pos[3];
+    f32 vel[3];
+    Vec dir;
+    u8* p;
+    fn_3_8CD74();
+    p = fn_80052734(0);
+    pos[0] = *(f32*)(p + 0x70);
+    pos[1] = *(f32*)(p + 0x74);
+    pos[2] = *(f32*)(p + 0x78);
+    vel[0] = 0.0f;
+    vel[1] = 0.0f;
+    vel[2] = 0.0f;
+    PSVECSubtract((Vec*)(p + 0x7C), (Vec*)(p + 0x70), &dir);
+    if (PSVECMag(&dir)) {
+        PSVECNormalize(&dir, &dir);
+    }
+    if (*(u32*)(lbl_3_common_bss_32B20 + 8) != 0) {
+        sndUpdateListener(lbl_3_common_bss_32B20, pos, vel, &dir, lbl_3_data_8D70, 0x7F, 0);
+    }
 }
 
 // .text:0x0008DA80 size:0x1748 mapped:0x806CCB14
