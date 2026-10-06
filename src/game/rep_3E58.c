@@ -10,6 +10,13 @@ extern u8 g_GameLogic[];
 extern u8 g_Minigame[];
 extern u8 lbl_3_common_bss_35154[];
 extern u8* lbl_803CC1B8;
+extern u8 lbl_3_data_28508[];
+extern s32 lbl_803CBD0C;
+extern s32 fn_8001B728(s32, s32, void*);
+extern void fn_80026998(void*);
+extern int rand(void);
+extern void* memset(void*, int, u32);
+extern void* memcpy(void*, const void*, u32);
 
 // .text:0x001666B0 size:0x1EC mapped:0x807A5744
 void fn_3_1666B0(void) {
@@ -49,8 +56,21 @@ void fn_3_16699C(void) {
 }
 
 // .text:0x00166C30 size:0x110 mapped:0x807A5CC4
-void fn_3_166C30(void) {
-    return;
+void fn_3_166C30(u8* obj, s8 id) {
+    u8 v[0xC];
+    u8 buf[0x50];
+    memset(v, 0, 0xC);
+    memcpy(buf, lbl_3_data_28508, 0x50);
+    *(s32*)buf = lbl_803CBD0C;
+    if (fn_8001B728(*(s8*)(obj + 0x254), id, v) == 0) {
+        memset(v, 0, 0xC);
+        fn_8001B728(*(s8*)(obj + 0x254), 4, v);
+    }
+    memcpy(buf + 0x40, v, 0xC);
+    buf[0x4C] = rand() % 256;
+    buf[0x4D] = rand() % 256;
+    buf[0x4E] = rand() % 256;
+    fn_80026998(buf);
 }
 
 // .text:0x00166D40 size:0xC4 mapped:0x807A5DD4
