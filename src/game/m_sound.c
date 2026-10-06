@@ -33,6 +33,9 @@ extern void sndRemoveEmitter(void*);
 extern void* lbl_3_bss_1768;
 extern void fn_3_8B094(void);
 #include "musyx/musyx.h"
+#include "Dolphin/mtx.h"
+extern u8* fn_80052734(s32);
+extern f32 lbl_3_data_88AC[];
 
 typedef struct SndQ1768 {
     u8 pad[0x14];
@@ -65,8 +68,25 @@ void fn_3_8B2E4(void) {
 }
 
 // .text:0x0008B718 size:0xC4 mapped:0x806CA7AC
-void fn_3_8B718(void) {
-    return;
+void fn_3_8B718(f32* a, f32* b, void* cv) {
+    Vec* c = cv;
+    u8* p = fn_80052734(0);
+    if (a != NULL) {
+        a[0] = *(f32*)(p + 0x70);
+        a[1] = *(f32*)(p + 0x74);
+        a[2] = *(f32*)(p + 0x78);
+    }
+    if (b != NULL) {
+        b[0] = 0.0f;
+        b[1] = 0.0f;
+        b[2] = 0.0f;
+    }
+    if (c != NULL) {
+        PSVECSubtract((Vec*)(p + 0x7C), (Vec*)(p + 0x70), c);
+        if (PSVECMag(c)) {
+            PSVECNormalize(c, c);
+        }
+    }
 }
 
 // .text:0x0008B7DC size:0x28 mapped:0x806CA870
