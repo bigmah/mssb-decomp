@@ -216,3 +216,7 @@ Don't spend more than about 30–45 minutes on a single register-allocation figh
 - **Signed `% 2^n` shape:** `slwi r0,x,32-n; srwi r4,x,31; subf; rotlwi n; add` is `(s32)rand() % 2^n` (so `slwi 30 / rotlwi 2` is `% 4`, not `% 2`). Declare `rand` as `u32 rand()` and cast to `s32` (`fn_3_C9C94`).
 - **Two float rodata constants pooled via one `addi` base (`lis r4; addi r5,r4; lfs 0(r5)`):** use float literals (`0.5f`, `0.0f`) instead of extern symbols; with the externs the registers swapped (`fn_3_C9C94`). A `s8` temp loaded from a byte needs `s8 prev` (an `s32` gives a different extsb placement) (`fn_3_C9B5C`).
 - **Search loop `do { if (v == *q) break; q -= 0x10; } while (k-- != 0);`** reproduces the `k = 1 .. -1` loop, but `fn_3_C0854`/`fn_3_C11CC` still differ in saved-register order and `lis` rematerialization of the data base; unsolved.
+- **By-value struct args:** a 12-byte struct copied to the stack and passed by address is a by-value struct parameter forwarded to the callee (`fn_3_EF7B4(V3i v, s32 x)`); declare unused-looking extra params since they shift scratch regs.
+- **Missing stubs:** some units lack a stub for a function (`fn_3_EDFAC` in `sta_c5.c`); fndiff says "not found in our build". Add it in address order.
+- **Stale-r3 result:** `sndFXCtrl(vid, 0x5B, x)` after `sndFXStartEx(...)` passes the first call result.
+- **Identical copy-pasted prologues** (`fn_3_F3AE0`/`F3BB0`) are separate bodies; load `z`/`x` into locals right after the stores to reproduce hoisted `lfs` order.
