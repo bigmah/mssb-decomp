@@ -157,6 +157,8 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **One `fctiwz` but several `stfd`/`lwz` pairs (fn_3_111038):** each distinct conversion expression gets its own stack temp, sharing the fctiwz. `arr[i] = f; cur[i] += (s16)f; call(f)` gave the original's 0x20 / 0x28 / 0x28 slots; using `(s32)f` twice CSEs the second `lwz` away.
 - **`slwi rX, idx, 1` reused for a byte array (`[idx*2]`) and an s16 array (`[idx]`):** CW won't CSE the two; take `s32 off = idx * 2;` and use it for both (`*(s16*)((u8*)s16arr + off)`). Mixing a `MgStruct* mg = (MgStruct*)g_Minigame` local with fresh `((MgStruct*)g_Minigame)->x` accesses reproduces the original's re-materialised `lis/addi` base registers.
 - **Stub callee in a file without `dont_inline on`:** when the caller must still inline another same-file function (`fn_3_1111D0` into `fn_3_111738`), call the remaining stubs through a cast, `((void (*)(void))fn_3_110AD4)()`.
+- **`beq L; blr` before the body (instead of `bnelr`) for an `A || (B && !C)` guard:** write it as an early return, `if (!(A || (B && C == 0))) { return; } body;` (fn_3_3ABF0). `if (A || ...) { body }` and nested-`if` forms gave `bnelr`.
+- **Loop with two float constant stores and a `li r0,N` ctr scheduled after the first `lfs`:** float literals (`10000.0f`, `0.0f`) instead of the `extern f32` rodata symbols fixed the scheduling (fn_3_39DC4).
 
 Add new patterns to this list as we find them.
 
