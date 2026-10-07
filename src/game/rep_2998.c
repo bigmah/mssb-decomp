@@ -308,8 +308,7 @@ void fn_3_E4EF4(void) {
     s32 spC;
     s32 sp8;
     E4EF4Ctl* c = &lbl_3_common_bss_350E4;
-    s32 n = c->count;
-    s32 size = n * 2 + n * 4 + n * 0x18 + n * 4;
+    s32 size = (c->count << 1) + (c->count << 2) + (c->count << 2) + c->count * 0x18;
     if (c->p48 == NULL) {
         u8* p = _OSAllocFromHeap(4, size);
         c->p48 = p;
