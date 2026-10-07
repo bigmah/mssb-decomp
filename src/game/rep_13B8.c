@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 extern f32 lbl_3_data_4A34[];
 extern u8 lbl_3_data_4B58[];
+extern int fn_3_52560(int, f32, f32);
 extern s16 lbl_3_data_21904[];
 typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
@@ -346,8 +347,31 @@ void fn_3_85EF4(s32 i, s32 d) {
 }
 
 // .text:0x0008604C size:0xCC mapped:0x806C50E0
-void fn_3_8604C(void) {
-    return;
+int fn_3_8604C(int* out) {
+    int i;
+    int best;
+    int j;
+    int t;
+    best = 9999;
+    for (i = 0; i < 9; i++) {
+        if (g_FieldingLogic[i + 0xF8] == 1 || g_FieldingLogic[i + 0xF8] == 0xA || g_FieldingLogic[i + 0xF8] == 0xB) {
+            for (j = 1; j < 0x78; j += 5) {
+                t = fn_3_52560(i, *(f32*)(g_Ball + j * 0x10 + 0x354), *(f32*)(g_Ball + j * 0x10 + 0x35C));
+                if (t < j + 0xF) {
+                    break;
+                }
+            }
+            if (j >= 0x78) {
+                if (best >= 0x78) {
+                    best = 0x78;
+                }
+            } else if (best > t) {
+                best = t;
+                *out = i;
+            }
+        }
+    }
+    return best;
 }
 
 // .text:0x00086118 size:0x684 mapped:0x806C51AC
