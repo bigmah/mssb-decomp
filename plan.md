@@ -286,3 +286,9 @@ Don't spend more than about 30–45 minutes on a single register-allocation figh
 - **Stale argument to a stub:** `((void (*)(u8*))fn_3_14C904)(p)` leaves `r4` holding the earlier `li r4,1` (`fn_3_1405D8`). `i = *(s16*)q; ...; *(s16*)q = ++i; ... tbl[i]` keeps `addi` unextended and does `extsh` only at the index use.
 - **Two pointer copies of the same address:** `u32* p; *out = base + 4; p = (u32*)(base + 4);` gives `addi r0; mr r6,r0` (`fn_3_6424`).
 - **`targsupp.c` cannot be split into separate `ASM` functions:** `-func_align 16` pads each, so the shasum fails. The `entry` labels inside one function are why the four TRK stubs show 0% in the report; leave it.
+- **Index with the loop counter, not a walked pointer:** `((RunnerT*)g_Runners)[i]` with `int i` matched where pointer walking gave `stfsu` and an `s8` counter didn't unroll (`fn_3_8A4E4`, `fn_3_8604C`).
+- **`*(p += OFF)`** gives a load with an offset followed by `addi` on the pointer (`fn_3_49EA8`). Re-deriving `g_Fielders` per access via a padded `typedef struct { u8 b[0x268]; } FldT;` array also matched.
+- **Typed struct pointer for a section-relative .bss static:** keeps the base in its saved register across a call; `u8*` reloaded the address (`fn_3_8C4F0`).
+- **`crclr cr1eq` before a `bl` with no float args:** declare the callee variadic (`extern void f(void* p, s32 n, ...);`). A `()` declaration does not emit it (rep_3310).
+- **u32→f32 of a zero that wasn't folded** (`lis 0x4330`/`lfd`/`fsubs`): store 0 to the u16 field, then read it back into the float field, before any later store (`fn_3_11AB2C`).
+- **Known open shape (rep_3310 `fn_3_11897C` and friends):** `lwz r4,0x68(r4); addi r0,r4,0x34; lwzx r3,r8,r0` (base+0x34 computed first, then an indexed load). About 30 forms only gave `add; lwz 0x34` or `addi idx; lwzx`.
