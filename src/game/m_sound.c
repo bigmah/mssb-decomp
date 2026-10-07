@@ -329,9 +329,10 @@ extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
 
 // .text:0x00090220 size:0x74 mapped:0x806CF2B4
 u32 fn_3_90220(s32 idx, s32 off) {
-    u8* tbl = lbl_3_data_8530;
-    u8 ctrl = tbl[off + 0x180];
-    u32 vid = sndFXStartEx(off + lbl_3_data_8168[idx], tbl[off], 0x3F, 0);
+    u32 id = off + lbl_3_data_8168[idx];
+    u32 vol = lbl_3_data_8530[off];
+    u32 ctrl = lbl_3_data_8530[off + 0x180];
+    u32 vid = sndFXStartEx(id, vol, 0x3F, 0);
     sndFXCtrl(vid, 0x5B, ctrl);
     return vid;
 }
