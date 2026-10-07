@@ -138,13 +138,15 @@ void fn_3_1350BC(void) {
 
 // .text:0x001354BC size:0x64 mapped:0x80774550
 int fn_3_1354BC(int idx, f32 x, f32 y) {
-    u8* p = G8 + (idx << 6);
-    f32 ax = fabs(*(f32*)&p[0xBB0] - x);
-    f32 ay = fabs(*(f32*)&p[0xBB8] - y);
-    if (ax <= lbl_3_rodata_35D8 && ay <= lbl_3_rodata_35DC) {
-        return 1;
+    int r = 0;
+    f64 ax = fabs(((f32*)(G8 + 0xBB0))[idx * 16] - x);
+    f64 ay = fabs(((f32*)(G8 + 0xBB8))[idx * 16] - y);
+    f32 fx = ax;
+    f32 fy = ay;
+    if (fx <= lbl_3_rodata_35D8 && fy <= lbl_3_rodata_35DC) {
+        r = 1;
     }
-    return 0;
+    return r;
 }
 
 // .text:0x00135520 size:0xE0 mapped:0x807745B4
