@@ -12,6 +12,14 @@ extern void fn_3_B9510(s32);
 #include "Dolphin/GX/GXPixel.h"
 
 extern u8 lbl_3_bss_B5D4;
+extern u8 g_GameLogic[];
+extern u8 g_d_GameSettings[];
+extern u8 lbl_3_data_81DC[];
+extern s32 lbl_3_bss_B574[];
+extern u8 lbl_3_bss_B664;
+extern void fn_3_8B890(s32);
+extern void fn_3_8BA60(s32, s32, s32);
+extern s32 fn_3_8BBC4(s32, s32, s32, s32);
 extern const f32 lbl_3_rodata_2FB8[3];
 extern const f32 lbl_3_rodata_2FC4;
 extern const f64 lbl_3_rodata_2FC8;
@@ -21,6 +29,21 @@ extern const f32 lbl_3_rodata_2FD4;
 // .text:0x000F8444 size:0x10
 void fn_3_F8444(void) {
     lbl_3_bss_B5D4 = 1;
+}
+
+// .text:0x000F8454 size:0xD0
+void fn_3_F8454(void) {
+    if (g_GameLogic[0x11E] == 0xB) {
+        if (lbl_3_bss_B664 == 0) {
+            fn_3_8B890(lbl_3_bss_B574[0]);
+            lbl_3_bss_B664 = 1;
+        }
+    } else if (lbl_3_bss_B664 != 0) {
+        lbl_3_bss_B574[0] = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 3, 0, 0, 2);
+        lbl_3_bss_B664 = 0;
+    } else {
+        fn_3_8BA60(lbl_3_bss_B574[0], 0, 0);
+    }
 }
 
 // .text:0x000F8524 size:0x8C mapped:0x807375B8
