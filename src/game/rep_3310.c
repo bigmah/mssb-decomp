@@ -33,6 +33,8 @@ extern void* lbl_803CC1B8[];
 extern u8 lbl_80371C30[];
 extern u8 lbl_3_data_69D0[];
 extern void fn_80024DB0(void*);
+extern void* fn_80034CEC(void*);
+extern void fn_800B0A14_removeQueue(void*);
 extern void fn_80024FA4(void*, u32, void*, int);
 extern void CTRLSetTranslation(void* c, f32 x, f32 y, f32 z);
 extern void CTRLSetRotation(void* c, f32 x, f32 y, f32 z);
@@ -281,7 +283,23 @@ void fn_3_1183FC(void) {
 
 // .text:0x00118508 size:0x10C mapped:0x8075759C
 void fn_3_118508(void) {
-    return;
+    u8* p = lbl_803CC1B8[0];
+    u8* m;
+    s32 i;
+    if (g_GameLogic[0x11E] == 0xF) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        return;
+    }
+    for (i = 0, m = g_Minigame; i < 0x28; m += 0x28, i++) {
+        if (m[0xCE] == 0) {
+            *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x54) &= ~2;
+        } else {
+            *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x54) |= 2;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x48) = *(f32*)(m + 0xA8);
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x4C) = -*(f32*)(m + 0xAC);
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x50) = *(f32*)(m + 0xB0);
+        }
+    }
 }
 
 // .text:0x00118614 size:0x138 mapped:0x807576A8
