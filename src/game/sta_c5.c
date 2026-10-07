@@ -227,6 +227,8 @@ void fn_3_EF800(u8* p) {
     p[0xC7]--;
 }
 
+// 90%: body is fn_3_F13F8 inlined + CTRLSetScale(p, 2.0f, 0.1f, 2.0f) + p[0xC6]=6, p[0xC7]=0x4B;
+// hand-inlined loop gives i/off zero regs swapped (orig: li r6 = i; mr r8,r6 = off). Needs real inlining (file has dont_inline on).
 // .text:0x000EF890 size:0xA0 mapped:0x8072E924
 void fn_3_EF890(void) {
     return;

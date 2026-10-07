@@ -150,6 +150,11 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Still unsolved (rep_3310):** `addi r0, rBase, 0x34; lwzx rD, rIdx, r0` (offset added to the base, then indexed); ~40 source forms all fold 0x34 into the displacement or onto the index (fn_3_11897C, fn_3_1194AC, fn_3_11881C, fn_3_119E30, fn_3_119EE0). fn_3_119878 is written but has the `p`/`g_Minigame` base pointers swapped (r5/r6).
 - **Still unsolved (fn_3_14E894):** `s8 c = i;` before the call gets it to a 2-line diff, but the `li r30,0; mr r31,r30` zero register comes out as a separate `li r31,0` in every form tried (~200 variants).
 
+- **Hoisted struct-element address before stores (fn_3_F65C8):** when the original computes `base + idx*0xE8` (lwz base, mulli, add) before some stores but loads the field after them, take the element pointer in a local at the top (`StadObj78* so = &((StadObj78**)sym)[0][idx];` ... `o = so->w78;`).
+- **Stack `Control` bigger than the header's (fn_3_F65C8):** frame 0x90 with Mtx at 0x8 and Control at 0x38 needed `struct { Control c; u8 pad[0x14]; } c;` declared before `Mtx m;`.
+- **Float operand order (fn_3_F4C4C):** `f32 a = -x; a = K * a;` gave `fmuls f31, fK, fNeg` where `K * -x` and `-x * K` did not; `c = cos(a); y = K * -c;` fixed the second one.
+- **Same-file helper inlined in the original (fn_3_EF890 = fn_3_F13F8 inlined):** hand-copying the helper body gives a different zero/induction register order; unsolved while the file has `dont_inline on`.
+
 Add new patterns to this list as we find them.
 
 ## Phases
