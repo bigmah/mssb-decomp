@@ -1,6 +1,7 @@
 #include "game/rep_3090.h"
 #include "header_rep_data.h"
 #include "Dolphin/mtxext.h"
+#include "Dolphin/GX.h"
 
 extern u8 lbl_80366158[];
 extern Vec lbl_3_data_21004;
@@ -431,6 +432,7 @@ void fn_3_105C84(u8* p) {
 
 // .text:0x00105CDC size:0x124 mapped:0x80744D70
 void fn_3_105CDC(void) {
+    extern void fn_3_105E00(s16, s16, s32, s32);
     Vec* arr = *(Vec**)(lbl_3_common_bss_DE94 + 0x98);
     s32 i;
     for (i = 0; i < 1000; i++) {
@@ -452,8 +454,43 @@ void fn_3_105CDC(void) {
 }
 
 // .text:0x00105E00 size:0x214 mapped:0x80744E94
-void fn_3_105E00(s16 x, s16 y, s32 a, s32 b) {
-    return;
+extern const f32 lbl_3_rodata_3188;
+extern const f32 lbl_3_rodata_318C;
+extern const f32 lbl_3_rodata_3190;
+void fn_3_105E00(s32 x, s32 y, s32 a, s32 b) {
+    Mtx44 proj;
+    Mtx mv;
+    s16 x1 = x + a;
+    s16 y1 = y + b;
+    C_MTXOrtho(proj, lbl_3_rodata_30F8, lbl_3_rodata_3188, lbl_3_rodata_30F8, lbl_3_rodata_318C, lbl_3_rodata_30F8, lbl_3_rodata_3190);
+    GXSetProjection(proj, GX_ORTHOGRAPHIC);
+    PSMTXIdentity(mv);
+    GXLoadPosMtxImm(mv, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetColorUpdate(GX_TRUE);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_S16, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGB, GX_RGBA8, 0);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetChanCtrl(GX_ALPHA0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_COPY);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition2s16(x, y);
+    GXColor4u8(0, 0xFF, 0, 0xC8);
+    GXPosition2s16(x1, y);
+    GXColor4u8(0, 0xFF, 0, 0xC8);
+    GXPosition2s16(x1, y1);
+    GXColor4u8(0, 0xFF, 0, 0xC8);
+    GXPosition2s16(x, y1);
+    GXColor4u8(0, 0xFF, 0, 0xC8);
 }
 
 // .text:0x00106014 size:0xC4 mapped:0x807450A8
@@ -548,3 +585,6 @@ void fn_3_106BA0(void) {
     return;
 }
 
+// -inline deferred reads this at end of file: lets the GXFifo.h inlines (defined
+// before the dont_inline on above) inline; functions defined under "on" do not.
+#pragma dont_inline off
