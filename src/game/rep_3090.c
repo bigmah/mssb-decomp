@@ -14,6 +14,9 @@ extern s16 lbl_3_bss_B67A;
 extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_rodata_30FC;
+extern u8 lbl_8036E548[];
+extern void** fn_800111D8(void*);
+extern void fn_800B2C44(void*, u16, Vec*);
 #pragma dont_inline on
 
 // .text:0x000FC448 size:0x4F0 mapped:0x8073B4DC
@@ -357,8 +360,29 @@ void fn_3_1060D8(void) {
 }
 
 // .text:0x0010617C size:0xF4 mapped:0x80745210
-void fn_3_10617C(void) {
-    return;
+s32 fn_3_10617C(s32 idx, s32 j, Vec* out) {
+    u8* obj;
+    Vec v;
+
+    obj = ((u8**)(lbl_8036E548 + 0x2C50))[idx];
+    if (obj == NULL) {
+        return 0;
+    }
+    j = ((u16*)(obj + 0x162))[j];
+    if (j == 0xFFFF) {
+        out->x = 0.0f;
+        out->y = 0.0f;
+        out->z = 0.0f;
+        return 0;
+    }
+    fn_800B2C44(*fn_800111D8(obj), j, &v);
+    out->x = v.x;
+    out->y = v.y;
+    out->z = v.z;
+    out->x += *(f32*)(obj + 0x34);
+    out->y += *(f32*)(obj + 0x38);
+    out->z += *(f32*)(obj + 0x3C);
+    return 1;
 }
 
 // .text:0x00106270 size:0x71C mapped:0x80745304
