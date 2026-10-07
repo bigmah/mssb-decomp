@@ -8,6 +8,10 @@ extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
+extern u8* g_pCamera;
+extern f32 fn_3_9FEA8(f32);
+extern f64 cos(f64);
+extern f64 sin(f64);
 extern u32 lbl_3_rodata_30EC[];
 extern u8 g_Camera[];
 extern s16 lbl_3_bss_B67A;
@@ -250,8 +254,37 @@ void fn_3_104338(void) {
 }
 
 // .text:0x001045A8 size:0x198 mapped:0x8074363C
+#define CAMF(off) (*(f32*)(g_pCamera + (off)))
 void fn_3_1045A8(void) {
-    return;
+    f32 sinPitch;
+    f32 cosYaw;
+    f32 yaw;
+    f32 pitch;
+    f32 dist;
+    f32 sinYaw;
+    f32 dx, dy, dz;
+
+    pitch = fn_3_9FEA8(CAMF(0x2874));
+    dist = 20.0f * (f32)cos(pitch);
+    sinPitch = (f32)sin(pitch);
+    yaw = fn_3_9FEA8(CAMF(0x2870));
+    cosYaw = (f32)cos(yaw);
+    sinYaw = (f32)sin(yaw);
+    dx = cosYaw * dist;
+    dy = 20.0f * sinPitch;
+    dz = sinYaw * dist;
+    CAMF(0x2858) += cosYaw * CAMF(0x287C);
+    CAMF(0x2860) += sinYaw * CAMF(0x287C);
+    CAMF(0x2858) += sinYaw * CAMF(0x2880);
+    CAMF(0x2860) -= cosYaw * CAMF(0x2880);
+    CAMF(0x284C) = dx + CAMF(0x2858);
+    CAMF(0x2850) = dy + CAMF(0x285C);
+    CAMF(0x2854) = dz + CAMF(0x2860);
+    CAMF(0x2840) = CAMF(0x2858);
+    CAMF(0x2844) = CAMF(0x285C);
+    CAMF(0x2848) = CAMF(0x2860);
+    CAMF(0x287C) = 0.0f;
+    CAMF(0x2880) = 0.0f;
 }
 
 // .text:0x00104740 size:0x1A0 mapped:0x807437D4
