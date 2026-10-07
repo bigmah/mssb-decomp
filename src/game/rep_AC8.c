@@ -21,6 +21,7 @@ extern f32 lbl_3_rodata_B8C;
 extern f32 lbl_3_rodata_B64;
 extern f32 lbl_3_rodata_C00;
 extern s16 lbl_3_bss_170;
+extern u8 g_Controls[];
 extern s16 lbl_3_data_484C[];
 extern f32 lbl_3_rodata_B70;
 #pragma dont_inline on
@@ -461,7 +462,26 @@ void fn_3_313B0(void) {
 
 // .text:0x00031594 size:0xE4 mapped:0x80670628
 void fn_3_31594(void) {
-    return;
+    u8* in;
+    s16* p;
+    int i;
+    in = g_Controls + ((int*)(g_GameLogic + 0xEC))[*(int*)(g_GameLogic + 8)] * 0x10;
+    p = &lbl_3_bss_170 + 0x13;
+    for (i = 0x13; i != 0; i--) {
+        p[0] = p[-1];
+        p--;
+    }
+    if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0) {
+        in = g_Practice + *(int*)(g_GameLogic + 8) * 0x10;
+    }
+    *(u16*)(g_FieldingLogic + 0x148) = *(u16*)(in + 4);
+    *(u16*)(g_FieldingLogic + 0x14A) = *(u16*)(in + 6);
+    *(u16*)(g_FieldingLogic + 0x14C) = *(u16*)(in + 8);
+    for (i = 0; i < 9; i++) {
+        fn_3_55EEC(i);
+    }
+    fn_3_30D74();
+    fn_3_313B0();
 }
 
 // .text:0x00031678 size:0x3C4 mapped:0x8067070C
