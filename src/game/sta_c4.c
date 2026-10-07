@@ -17,6 +17,9 @@ extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_81DC[];
 extern s32 lbl_3_bss_B574[];
 extern u8 lbl_3_bss_B664;
+extern u8* lbl_3_bss_B628[];
+extern u8 lbl_80371C30[];
+extern void fn_800528C0(f32, f32, f32, s16*, s16*);
 extern void fn_3_8B890(s32);
 extern void fn_3_8BA60(s32, s32, s32);
 extern s32 fn_3_8BBC4(s32, s32, s32, s32);
@@ -117,8 +120,13 @@ void fn_3_F8E20(void) {
 }
 
 // .text:0x000F9088 size:0xDC mapped:0x8073811C
-void fn_3_F9088(void) {
-    return;
+void fn_3_F9088(f32* pos, s32 idx) {
+    s16 x;
+    s16 y;
+    fn_800528C0(pos[0], pos[1], pos[2], &x, &y);
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_B628[0] + 0x14) + idx) * 8) + 0x48) = x;
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_B628[0] + 0x14) + idx) * 8) + 0x4C) = y;
+    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_B628[0] + 0x14) + idx) * 8) + 0x50) = 0.0f;
 }
 
 // .text:0x000F9164 size:0x198 mapped:0x807381F8

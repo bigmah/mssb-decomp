@@ -13,7 +13,7 @@ void fn_3_F8B34(void);
 void fn_3_F8BA8(void);
 void fn_3_F8D00(void);
 void fn_3_F8E20(void);
-void fn_3_F9088(void);
+void fn_3_F9088(f32* pos, s32 idx);
 void fn_3_F9164(void);
 void fn_3_F92FC(void);
 void fn_3_F934C(void);
