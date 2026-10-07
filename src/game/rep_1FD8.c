@@ -77,6 +77,9 @@ typedef struct Rep1FD8Ent {
 } Rep1FD8Ent;
 extern Rep1FD8Ent lbl_3_data_17804[];
 extern u8 lbl_803CBBC0[];
+extern u8* lbl_3_bss_9E50[];
+extern u8 lbl_80371C30[];
+extern void fn_800528C0(f32, f32, f32, s16*, s16*);
 extern u32 lbl_3_bss_9D90;
 extern void fn_800A7D4C(int, Rep1FD8Ent*);
 
@@ -261,8 +264,13 @@ void fn_3_C3C2C(void) {
 }
 
 // .text:0x000C3E94 size:0xDC mapped:0x80702F28
-void fn_3_C3E94(void) {
-    return;
+void fn_3_C3E94(f32* pos, s32 idx) {
+    s16 x;
+    s16 y;
+    fn_800528C0(pos[0], pos[1], pos[2], &x, &y);
+    *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x48) = x;
+    *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x4C) = y;
+    *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x50) = 0.0f;
 }
 
 // .text:0x000C3F70 size:0xF8 mapped:0x80703004

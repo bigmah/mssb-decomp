@@ -20,7 +20,7 @@ void fn_3_C366C(u32 a, u8 b);
 void fn_3_C39C8(void);
 void fn_3_C3A38(void);
 void fn_3_C3C2C(void);
-void fn_3_C3E94(void);
+void fn_3_C3E94(f32* pos, s32 idx);
 void fn_3_C3F70(u8* a);
 void fn_3_C4068(u8* a);
 void fn_3_C40EC(u8* a);
