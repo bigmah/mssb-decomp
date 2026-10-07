@@ -672,8 +672,27 @@ void fn_3_B98E8(void* p) {
 }
 
 // .text:0x000B99E4 size:0x1D0 mapped:0x806F8A78
+typedef struct LitPos {
+    f32 x, y, z;
+    u32 color;
+} LitPos;
+extern u8 lbl_800F7478[];
+extern void (*lbl_3_data_10AB0[])(void*);
+extern void fn_3_35E4(u32 val);
+extern void fn_80023B90(void*, LitPos*);
+extern void LITAlloc(void**);
+extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
+extern void LITInitPos(void*, f32, f32, f32);
+extern void LITInitColor(void*, u32*);
+extern void fn_8001B214(void (*)(void));
+extern void fn_800B0A14_removeQueue(void);
+
 void fn_3_B99E4(void) {
-    return;
+    if ((s32)lbl_803C6CF8[0x715] == 1) {
+        lbl_3_common_bss_350E4[0x6A] = 0;
+        fn_3_B9FB8(g_d_GameSettings[9], *(void**)(lbl_8036E548 + 8));
+        fn_800B0A14_removeQueue();
+    }
 }
 
 // .text:0x000B9BB4 size:0x1B4 mapped:0x806F8C48
@@ -717,20 +736,6 @@ void fn_3_B9D68(void) {
 }
 
 // .text:0x000B9FB8 size:0x198 mapped:0x806F904C
-typedef struct LitPos {
-    f32 x, y, z;
-    u32 color;
-} LitPos;
-extern u8 lbl_800F7478[];
-extern void (*lbl_3_data_10AB0[])(void*);
-extern void fn_3_35E4(u32 val);
-extern void fn_80023B90(void*, LitPos*);
-extern void LITAlloc(void**);
-extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
-extern void LITInitPos(void*, f32, f32, f32);
-extern void LITInitColor(void*, u32*);
-extern void fn_8001B214(void (*)(void));
-
 void fn_3_B9FB8(u32 type, void* p) {
     LitPos pos;
     void* lit;
