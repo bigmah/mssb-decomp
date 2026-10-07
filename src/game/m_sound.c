@@ -208,8 +208,60 @@ void fn_3_8C07C(void) {
 }
 
 // .text:0x0008C104 size:0x1D8 mapped:0x806CB198
-void fn_3_8C104(void) {
-    return;
+extern u8 lbl_800E88A4[][2];
+extern u8 g_GameLogic[];
+void fn_3_8C104(s32 v) {
+    u8 b;
+    u32 a;
+    u32 j = 0;
+    if (lbl_800EF808[0x398] == 0) {
+        return;
+    }
+    if (v == -2) {
+        j = 1;
+    }
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        a = 9;
+        b = lbl_800E88A4[9][j];
+    } else if (g_GameLogic[0x11E] == 0x24) {
+        a = 7;
+        b = lbl_800E88A4[7][j];
+    } else if (*(s16*)(B34C58 + 0x20) == 0x16) {
+        a = 6;
+        b = lbl_800E88A4[6][j];
+    } else if (*(s16*)(B34C58 + 0x20) == 0x17) {
+        a = 0xE;
+        b = lbl_800E88A4[0xE][j];
+    } else if (g_GameLogic[0x11E] == 0xE) {
+        a = 7;
+        b = lbl_800E88A4[7][j];
+    } else if (g_GameLogic[0x11E] == 0x17) {
+        a = 8;
+        b = lbl_800E88A4[8][j];
+    } else {
+        a = g_d_GameSettings.StadiumID;
+        b = lbl_800E88A4[a][j];
+    }
+    if (v >= 0) {
+        b = v;
+    }
+    {
+        SndQ1768** pp = (SndQ1768**)&lbl_3_bss_1768;
+        u8 cur;
+        u8 next;
+        if (*pp != NULL) {
+            cur = (*pp)->head;
+            if ((*pp)->tail != (next = (cur + 1) % 14)) {
+                (*pp)->head = next;
+                (*pp)->e[cur].a = a;
+                (*pp)->e[cur].b = 0;
+                (*pp)->e[cur].c = b;
+            }
+        }
+    }
+    if ((u8)b == 0) {
+        fn_800A8878(b, b);
+    }
 }
 
 // .text:0x0008C2DC size:0x214 mapped:0x806CB370
