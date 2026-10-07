@@ -27,6 +27,45 @@ extern s32 fn_800247E4(u32, u32, s32, s32);
 extern u32 rand();
 extern void OSPanic(const char*, int, const char*, ...);
 
+extern u8 g_d_GameSettings[];
+extern u16 lbl_3_data_81DC[];
+typedef struct { u8 pad0[8]; s32 h0; s32 h1; u8 pad1[0x24]; u8 flag; } S9F38;
+extern S9F38 lbl_3_bss_9F38;
+extern void fn_3_8B890(s32);
+extern void fn_3_8BA60(s32, s32, s32);
+extern s32 fn_3_8BBC4(s32, s32, s32, s32);
+extern void fn_3_B7FC8(void);
+
+// .text:0x000C9744 size:0x134
+void fn_3_C9744(void) {
+    S9F38* s = &lbl_3_bss_9F38;
+    u8* gs = g_d_GameSettings;
+    if (gs[7] != 2 && g_GameLogic[0x11E] != 0x21) {
+        if (g_GameLogic[0x11E] == 0xB) {
+            if (s->flag == 0) {
+                fn_3_8B890(s->h0);
+                if (gs[7] != 7) {
+                    fn_3_8B890(s->h1);
+                }
+                s->flag = 1;
+            }
+        } else {
+            if (s->flag != 0) {
+                s->h0 = fn_3_8BBC4(lbl_3_data_81DC[gs[9]] + 1, 0, 0, 1);
+                if (gs[7] != 7) {
+                    s->h1 = ((s32(*)(void*, void*))fn_3_B7FC8)((void*)lbl_3_data_81DC[gs[9]], NULL);
+                }
+                s->flag = 0;
+            } else {
+                fn_3_8BA60(s->h0, 0, 0);
+                if (gs[7] != 7) {
+                    fn_3_8BA60(s->h1, 0, 0);
+                }
+            }
+        }
+    }
+}
+
 // .text:0x000C9878 size:0x180 mapped:0x8070890C
 void fn_3_C9878(void) {
     u8* p = *(u8**)(lbl_3_common_bss_350E4 + 0x10);
