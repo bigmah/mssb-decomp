@@ -383,20 +383,20 @@ void fn_3_136048(void) {
 
 // .text:0x001360BC size:0x164 mapped:0x80775150
 void fn_3_1360BC(int p) {
-    s16 n = *(s16*)((u8*)lbl_3_data_21B20 + 6);
     s16* pts;
+    int n;
     u8* f;
     int i;
     int k;
-    G8[0x1DF4 + p] = 1;
     f = (u8*)g_Fielders + (s8)G8[0x18F8 + p] * 0x268;
+    G8[0x1DF4 + p] = 1;
     pts = (s16*)(G8 + 0x1890) + p;
+    n = *(s16*)((u8*)lbl_3_data_21B20 + 6);
     if (*pts < n) {
         n = *pts;
     }
     if (n != 0) {
-        k = 0;
-        for (i = 0; i < 0x32; i++) {
+        for (i = 0, k = 0; i < 0x32; i++) {
             if (G8[0x193A + i] == 0) {
                 *(f32*)(G8 + i * 12 + 0xCD0) = *(f32*)(f + 0);
                 *(f32*)(G8 + i * 12 + 0xCD4) = *(f32*)(f + 4);
