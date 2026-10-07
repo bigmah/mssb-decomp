@@ -319,8 +319,10 @@ void fn_3_135C18(void) {
 
 // .text:0x00135E38 size:0x60 mapped:0x80774ECC
 void fn_3_135E38(void) {
+    s32 t;
     fn_3_135C18();
-    if ((u32)(*(s16*)((u8*)lbl_3_data_21A3C + G8[0x1D73] * 4 - 2) * 0x3C) == *(u32*)&G8[0x17C0]) {
+    t = lbl_3_data_21A3C[G8[0x1D73] * 2 - 1] * 0x3C;
+    if (t == *(u32*)&G8[0x17C0]) {
         G8[0x1D72] = 3;
         *(s16*)&G8[0x1D62] = 0;
     }
