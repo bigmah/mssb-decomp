@@ -22,6 +22,7 @@ extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
 #include "C3/control.h"
 #include "Dolphin/vec.h"
+#include "C3/geoPalette.h"
 typedef struct { Vec v; f32 pad[2]; } V14;
 extern V14 lbl_3_data_1B884[];
 typedef struct { f32 a, b, c, d, e, f; } T18;
@@ -30,10 +31,23 @@ extern f32 lbl_3_rodata_2D5C;
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
+extern f32 lbl_3_rodata_2DDC;
+extern f32 lbl_3_rodata_2E88;
+extern f64 sin(f64);
+extern f64 cos(f64);
+extern u8 lbl_803C5090[];
+extern void fn_8003A144(u8*, u8*);
+extern s32 fn_80039AB4(void);
+extern void SetDisplayStateTexture(s32, s32, s32);
+extern s32 fn_8005268C(void);
+extern u8* fn_80052734(s32);
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_B219[];
 extern u8 lbl_3_bss_B55C[];
 extern u8 lbl_3_bss_B218[];
+extern u8 lbl_3_bss_B21A;
+extern void fn_3_B8414(void* a, void* b);
+extern void fn_3_B8464(void* mtx, void* obj);
 extern void fn_800B4CA0(void*, f32);
 extern void AnimateActorBones(void*);
 extern u8 lbl_3_bss_AEE0[];
@@ -116,7 +130,27 @@ void fn_3_EECF4(void) {
 
 // .text:0x000EEE3C size:0xE8 mapped:0x8072DED0
 void fn_3_EEE3C(void) {
-    return;
+    u8* b = *(u8**)lbl_3_bss_B55C;
+    u8* o = *(u8**)b;
+    Vec v;
+    lbl_803C5090[0x1D] = 1;
+    fn_8003A144(lbl_803C5090, b);
+    SetDisplayStateTexture(fn_80039AB4(), 0, 0);
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 5, 0);
+    o = *(u8**)(o + 0x74);
+    while (o != NULL) {
+        v.x = *(f32*)(*(u8**)(o + 0xEC) + 0xC);
+        v.y = *(f32*)(*(u8**)(o + 0xEC) + 0x1C);
+        v.z = *(f32*)(*(u8**)(o + 0xEC) + 0x2C);
+        ((void (*)(Vec*))fn_3_EE96C)(&v);
+        if (*(u8**)(o + 0x14) != NULL) {
+            DOSetWorldMatrix(*(struct DODisplayObj**)(o + 0x14), *(MtxPtr*)(o + 0xEC));
+            ((void (*)(u8*, u8*))fn_3_EE67C)(*(u8**)(o + 0x14), fn_80052734(fn_8005268C()) + 0x40);
+        }
+        o = *(u8**)(o + 0x100);
+        GXSetTevDirect(0);
+    }
 }
 
 // .text:0x000EEF24 size:0x80 mapped:0x8072DFB8
@@ -193,6 +227,8 @@ void fn_3_EF800(u8* p) {
     p[0xC7]--;
 }
 
+// 90%: body is fn_3_F13F8 inlined + CTRLSetScale(p, 2.0f, 0.1f, 2.0f) + p[0xC6]=6, p[0xC7]=0x4B;
+// hand-inlined loop gives i/off zero regs swapped (orig: li r6 = i; mr r8,r6 = off). Needs real inlining (file has dont_inline on).
 // .text:0x000EF890 size:0xA0 mapped:0x8072E924
 void fn_3_EF890(void) {
     return;
@@ -468,8 +504,15 @@ void fn_3_F4BA0(u8* p) {
 }
 
 // .text:0x000F4C4C size:0xB4 mapped:0x80733CE0
-void fn_3_F4C4C(void) {
-    return;
+void fn_3_F4C4C(u8* p) {
+    f32 a = -*(f32*)(p + 0xC0);
+    f32 c;
+    a = lbl_3_rodata_2DDC * a;
+    *(f32*)(p + 0xB4) = lbl_3_rodata_2E88 * (f32)sin(a);
+    *(f32*)(p + 0xB8) = 0.0f;
+    c = cos(a);
+    *(f32*)(p + 0xBC) = lbl_3_rodata_2E88 * -c;
+    PSVECScale((Vec*)(p + 0xB4), -1.0f, (Vec*)(p + 0xB4));
 }
 
 // .text:0x000F4D00 size:0xAC mapped:0x80733D94
@@ -569,8 +612,22 @@ s32 fn_3_F6504(s32 idx, s32 arg) {
 }
 
 // .text:0x000F65C8 size:0x100 mapped:0x8073565C
-void fn_3_F65C8(void) {
-    return;
+void fn_3_F65C8(s32* n) {
+    struct { Control c; u8 pad[0x14]; } c;
+    Mtx m;
+    u16 k;
+    StadObj78* so = &((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21A];
+    void* o;
+    k = (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n - 1] + (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n - 1];
+    (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n] = k;
+    (*(u32**)(lbl_3_common_bss_350E4 + 0x44))[k] = lbl_3_bss_B21A;
+    (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
+    o = (void*)so->w78;
+    c.c.type = 0;
+    CTRLBuildMatrix(&c.c, m);
+    fn_3_B8464(m, o);
+    fn_3_B8414(*(u8**)(lbl_3_common_bss_350E4 + 0x48) + *n * 0x18, *(u8**)(lbl_3_common_bss_350E4 + 0x48) + (*n * 2 + 1) * 0xC);
+    (*n)++;
 }
 
 // .text:0x000F66C8 size:0x270 mapped:0x8073575C
