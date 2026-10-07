@@ -38,6 +38,9 @@ extern u8 lbl_3_data_84F4[];
 extern void* fn_80052734(int);
 #include "Dolphin/mtx.h"
 extern Vec lbl_3_rodata_1558;
+extern Vec lbl_3_rodata_1564;
+extern Vec lbl_3_rodata_1570;
+extern void sndUpdateEmitter(void*, Vec*, Vec*, u8, void*);
 extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32, u8, void*);
 extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
@@ -116,8 +119,18 @@ void fn_3_8B804(void) {
 }
 
 // .text:0x0008B890 size:0xD4 mapped:0x806CA924
-void fn_3_8B890(void) {
-    return;
+void fn_3_8B890(s32 i) {
+    u8* em;
+    if (i < 0 || i >= 100 || lbl_3_common_bss_32B20[0x2034 + i] == 0) {
+        return;
+    }
+    em = lbl_3_common_bss_32B20 + 0x90 + i * 0x50;
+    if (sndCheckEmitter(em) != 0) {
+        Vec pos = lbl_3_rodata_1564;
+        Vec dir = lbl_3_rodata_1570;
+        sndUpdateEmitter(em, &pos, &dir, 0, 0);
+        sndRemoveEmitter(em);
+    }
 }
 
 // .text:0x0008B964 size:0x58 mapped:0x806CA9F8

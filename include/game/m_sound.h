@@ -6,7 +6,7 @@
 void fn_3_8B718(f32* a, f32* b, f32* c);
 void fn_3_8B7DC(void);
 void fn_3_8B804(void);
-void fn_3_8B890(void);
+void fn_3_8B890(s32 i);
 void fn_3_8B964(void* a, void* b, void* c);
 void fn_3_8B9BC(void* pos);
 void fn_3_8BA60(void);
