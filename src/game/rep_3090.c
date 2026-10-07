@@ -8,12 +8,19 @@ extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
+extern u8* g_pCamera;
+extern f32 fn_3_9FEA8(f32);
+extern f64 cos(f64);
+extern f64 sin(f64);
 extern u32 lbl_3_rodata_30EC[];
 extern u8 g_Camera[];
 extern s16 lbl_3_bss_B67A;
 extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_rodata_30FC;
+extern const f32 lbl_3_rodata_30F8;
+extern const f32 lbl_3_rodata_3158;
+extern const f32 lbl_3_rodata_315C;
 extern u8 lbl_8036E548[];
 extern void** fn_800111D8(void*);
 extern void fn_800B2C44(void*, u16, Vec*);
@@ -108,7 +115,27 @@ void fn_3_FD51C(s32 i) {
 
 // .text:0x000FD5A8 size:0xC8 mapped:0x8073C63C
 void fn_3_FD5A8(void) {
-    return;
+    s32 i;
+    V3U v = *(V3U*)lbl_3_rodata_30EC;
+    for (i = 0; i < 2; i++) {
+        u8* c = g_Camera + i * 0x9BC;
+        u8* p;
+        *(u32*)(c + 0x140) = 0;
+        *(u32*)(c + 0x144) = 0;
+        p = c + 0x13C;
+        *(V3U*)(p + 0xC) = v;
+        *(u32*)(p + 0x1C) = 0;
+        *(u32*)(p + 0x20) = 0;
+        *(u32*)(p + 0x24) = 0;
+        *(u32*)(p + 0x28) = 0;
+        *(f32*)(p + 0x2C) = 0.0f;
+        *(u32*)(p + 0x30) = 0;
+        *(u32*)(p + 0x34) = 0;
+        *(u32*)(p + 0x38) = 0;
+        *(u32*)(p + 0x3C) = 0;
+        *(u32*)(p + 0x40) = 0;
+        *(f32*)(p + 0x44) = 0.0f;
+    }
 }
 
 // .text:0x000FD670 size:0x38C mapped:0x8073C704
@@ -230,13 +257,63 @@ void fn_3_104338(void) {
 }
 
 // .text:0x001045A8 size:0x198 mapped:0x8074363C
+#define CAMF(off) (*(f32*)(g_pCamera + (off)))
 void fn_3_1045A8(void) {
-    return;
+    f32 sinPitch;
+    f32 cosYaw;
+    f32 yaw;
+    f32 pitch;
+    f32 dist;
+    f32 sinYaw;
+    f32 dx, dy, dz;
+
+    pitch = fn_3_9FEA8(CAMF(0x2874));
+    dist = 20.0f * (f32)cos(pitch);
+    sinPitch = (f32)sin(pitch);
+    yaw = fn_3_9FEA8(CAMF(0x2870));
+    cosYaw = (f32)cos(yaw);
+    sinYaw = (f32)sin(yaw);
+    dx = cosYaw * dist;
+    dy = 20.0f * sinPitch;
+    dz = sinYaw * dist;
+    CAMF(0x2858) += cosYaw * CAMF(0x287C);
+    CAMF(0x2860) += sinYaw * CAMF(0x287C);
+    CAMF(0x2858) += sinYaw * CAMF(0x2880);
+    CAMF(0x2860) -= cosYaw * CAMF(0x2880);
+    CAMF(0x284C) = dx + CAMF(0x2858);
+    CAMF(0x2850) = dy + CAMF(0x285C);
+    CAMF(0x2854) = dz + CAMF(0x2860);
+    CAMF(0x2840) = CAMF(0x2858);
+    CAMF(0x2844) = CAMF(0x285C);
+    CAMF(0x2848) = CAMF(0x2860);
+    CAMF(0x287C) = 0.0f;
+    CAMF(0x2880) = 0.0f;
 }
 
 // .text:0x00104740 size:0x1A0 mapped:0x807437D4
+#define DEF(off) (*(f32*)(lbl_3_common_bss_DE94 + (off)))
 void fn_3_104740(void) {
-    return;
+    if (lbl_3_common_bss_DE94[0x9A7] == 2) {
+        DEF(0xC4) = lbl_3_rodata_3158 + CAMF(0x284C);
+        DEF(0xC8) = lbl_3_rodata_3158 + CAMF(0x2850);
+        DEF(0xCC) = lbl_3_rodata_3158 + CAMF(0x2854);
+        DEF(0xD0) = lbl_3_rodata_315C + CAMF(0x284C);
+        DEF(0xD4) = lbl_3_rodata_315C + CAMF(0x2850);
+        DEF(0xD8) = lbl_3_rodata_315C + CAMF(0x2854);
+    } else {
+        DEF(0xC4) = lbl_3_rodata_3158 + CAMF(0x2870);
+        DEF(0xC8) = lbl_3_rodata_3158 + CAMF(0x2874);
+        DEF(0xCC) = lbl_3_rodata_30F8;
+        DEF(0xD0) = lbl_3_rodata_3158 + CAMF(0x2870);
+        DEF(0xD4) = lbl_3_rodata_3158 + CAMF(0x2874);
+        DEF(0xD8) = lbl_3_rodata_30F8;
+    }
+    DEF(0xAC) = CAMF(0x2840);
+    DEF(0xB0) = CAMF(0x2844);
+    DEF(0xB4) = CAMF(0x2848);
+    DEF(0xB8) = lbl_3_rodata_3158 + CAMF(0x2840);
+    DEF(0xBC) = lbl_3_rodata_3158 + CAMF(0x2844);
+    DEF(0xC0) = lbl_3_rodata_3158 + CAMF(0x2848);
 }
 
 // .text:0x001048E0 size:0x15C mapped:0x80743974
@@ -354,11 +431,28 @@ void fn_3_105C84(u8* p) {
 
 // .text:0x00105CDC size:0x124 mapped:0x80744D70
 void fn_3_105CDC(void) {
-    return;
+    Vec* arr = *(Vec**)(lbl_3_common_bss_DE94 + 0x98);
+    s32 i;
+    for (i = 0; i < 1000; i++) {
+        Vec* v = &arr[i];
+        s32 x, z;
+        if (-1000.0 == v->x || -1000.0 == v->y || -1000.0 == v->z) {
+            continue;
+        }
+        x = (s32)v->x * 320 + 320;
+        z = (s32)v->z * 224 + 224;
+        if (i == 135) {
+            i = 135;
+        }
+        if (i == 5) {
+            i = 5;
+        }
+        fn_3_105E00(x / 50 + 150, -z / 50 + 400, 2, 2);
+    }
 }
 
 // .text:0x00105E00 size:0x214 mapped:0x80744E94
-void fn_3_105E00(void) {
+void fn_3_105E00(s16 x, s16 y, s32 a, s32 b) {
     return;
 }
 
