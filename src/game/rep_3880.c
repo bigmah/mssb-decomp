@@ -21,6 +21,7 @@ extern void* fn_80033A24(void*, int, int, int, int, int);
 extern u8 lbl_3_data_26E24[];
 extern u8 lbl_3_data_26C3C[];
 extern u8 lbl_3_bss_B894[];
+extern u8* lbl_3_bss_B850;
 extern void* memset(void*, int, unsigned long);
 #pragma dont_inline on
 
@@ -925,8 +926,24 @@ void fn_3_156D04(void) {
 }
 
 // .text:0x0015730C size:0xA0 mapped:0x807963A0
-void fn_3_15730C(void) {
-    return;
+void fn_3_15730C(u32 n, f32 x, f32 y, f32 z) {
+    u8* p = ((u8**)&lbl_3_bss_B850)[0];
+    f32* v;
+    if (p != NULL) {
+        p = *(u8**)(p + 0xC);
+        while (n >= 7) {
+            p = *(u8**)p;
+            n -= 7;
+        }
+        v = (f32*)(p + n * 0xC + 4);
+    } else {
+        v = NULL;
+    }
+    if (v != NULL) {
+        v[0] = x;
+        v[1] = y;
+        v[2] = z;
+    }
 }
 
 // .text:0x001573AC size:0x1C4 mapped:0x80796440
@@ -949,8 +966,17 @@ void fn_3_157588(int n) {
 }
 
 // .text:0x001575F0 size:0x8C mapped:0x80796684
-void fn_3_1575F0(void) {
-    return;
+void* fn_3_1575F0(u32 n) {
+    u8* p = ((u8**)&lbl_3_bss_B850)[0];
+    if (p != NULL) {
+        p = *(u8**)(p + 0xC);
+        while (n >= 7) {
+            p = *(u8**)p;
+            n -= 7;
+        }
+        return p + n * 0xC + 4;
+    }
+    return NULL;
 }
 
 // .text:0x0015767C size:0x27C mapped:0x80796710
