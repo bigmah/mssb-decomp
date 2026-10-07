@@ -8,6 +8,13 @@ typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
 
 extern f32 lbl_3_rodata_1498;
+extern const f32 lbl_3_rodata_1408;
+extern const f32 lbl_3_rodata_140C;
+extern const f32 lbl_3_rodata_1410;
+extern const f32 lbl_3_rodata_1414;
+typedef struct { f32 x, z; } XZ13B8;
+extern XZ13B8 lbl_3_data_4A54[2][13];
+extern void running_roundBasePosition(f32 frame, XZ13B8* outPos, XZ13B8* points, int count);
 extern const f64 lbl_3_rodata_1488;
 extern const f32 lbl_3_rodata_143C;
 extern const f32 lbl_3_rodata_1490;
@@ -156,8 +163,30 @@ void fn_3_7FEA8(s32 i, s32 v) {
 }
 
 // .text:0x0007FED4 size:0xFC mapped:0x806BEF68
-void fn_3_7FED4(void) {
-    return;
+void fn_3_7FED4(f32* out, f32 dist, f32 frame) {
+    XZ13B8 pos;
+    int idx;
+    int count;
+    if (dist < lbl_3_rodata_1408) {
+        idx = 0;
+        count = 4;
+    } else if (dist < lbl_3_rodata_140C) {
+        idx = 3;
+        count = 4;
+    } else if (dist < lbl_3_rodata_1410) {
+        idx = 6;
+        count = 4;
+    } else if (g_GameLogic[0x121] == 6) {
+        idx = 9;
+        count = 4;
+    } else {
+        idx = 9;
+        count = 3;
+    }
+    running_roundBasePosition(frame, &pos, &lbl_3_data_4A54[g_GameLogic[0x121] == 6][idx], count);
+    out[0] = pos.x;
+    out[2] = pos.z;
+    out[1] = lbl_3_rodata_1414;
 }
 
 // .text:0x0007FFD0 size:0x58 mapped:0x806BF064
