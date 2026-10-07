@@ -19,6 +19,8 @@ extern u8 lbl_8036E548[];
 
 
 extern u8 g_Minigame[];
+extern u8 lbl_3_data_26CB8[];
+extern s32 fn_8001B728(s32, s32, void*);
 extern int rand(void);
 extern void* fn_80033A24(void*, int, int, int, int, int);
 extern u8 lbl_3_data_26E24[];
@@ -573,8 +575,25 @@ void fn_3_14E988(s8 a) {
 }
 
 // .text:0x0014E9F0 size:0x104 mapped:0x8078DA84
-void fn_3_14E9F0(void) {
-    return;
+void fn_3_14E9F0(u8* a) {
+    Vec v;
+    if (a[0x4C] < 5) {
+        u8 k = lbl_3_data_26CB8[(u32)rand() % 23];
+        v.z = 0.0f;
+        v.y = 0.0f;
+        v.x = 0.0f;
+        if (fn_8001B728(a[0x4C] - 1, k, &v) == 0) {
+            memset(&v, 0, 0xC);
+            fn_8001B728(a[0x4C] - 1, 4, &v);
+        }
+    } else {
+        v.x = *(f32*)(g_Minigame + 0x6E8);
+        v.y = -*(f32*)(g_Minigame + 0x6EC);
+        v.z = *(f32*)(g_Minigame + 0x6F0);
+    }
+    *(f32*)(a + 4) += v.x;
+    *(f32*)(a + 8) += v.y;
+    *(f32*)(a + 0xC) += v.z;
 }
 
 // .text:0x0014EAF4 size:0x230 mapped:0x8078DB88
