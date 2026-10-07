@@ -862,7 +862,7 @@ void fn_3_3D6AC(void) {
 }
 
 // .text:0x0003D7D4 size:0x3A4 mapped:0x8067C868
-s16 fn_3_3D7D4(void) {
+s16 fn_3_3D7D4(int i) {
     return 0;
 }
 
@@ -1063,8 +1063,23 @@ void fn_3_480B8(void) {
 }
 
 // .text:0x000483CC size:0xB4 mapped:0x80687460
-void fn_3_483CC(void) {
-    return;
+void fn_3_483CC(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
+    f[0x1D7] = 2;
+    if (i != -1) {
+        f[0x1D3] = 0xE;
+        if (*(int*)(lbl_3_data_3C40 + 0x70) >= 0) {
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x70);
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
+    f[0x1D6] = 0;
+    *(s16*)(g_FieldingLogic + 0xBE) = -1;
 }
 
 // .text:0x00048480 size:0x5D4 mapped:0x80687514
@@ -1092,13 +1107,15 @@ void fn_3_49C18(void) {
     return;
 }
 
+typedef struct { u8 b[0x268]; } FldT;
+
 // .text:0x00049EA8 size:0x94 mapped:0x80688F3C
 void fn_3_49EA8(int i) {
-    u8* p = g_FieldingLogic + i;
+    u8* p;
     s32 off;
     u8* f;
-    p += 0xF8;
-    if (*p != 9) {
+    p = g_FieldingLogic + i;
+    if (*(p += 0xF8) != 9) {
         off = i * 0x268;
         f = g_Fielders + off;
         *(s16*)(f + 0x18C) = 7;
@@ -1113,9 +1130,8 @@ void fn_3_49EA8(int i) {
             *(s16*)(f + 0x1AC) = 0;
             f[0x1FF] = 0;
         }
-        f = g_Fielders + off;
-        f[0x1D6] = 0;
-        *(s16*)(f + 0x190) = -1;
+        ((FldT*)g_Fielders)[i].b[0x1D6] = 0;
+        *(s16*)(((FldT*)g_Fielders)[i].b + 0x190) = -1;
     }
 }
 
@@ -1180,8 +1196,17 @@ void fn_3_4D20C(void) {
 }
 
 // .text:0x0004DB84 size:0x90 mapped:0x8068CC18
-void fn_3_4DB84(void) {
-    return;
+int fn_3_4DB84(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (0.0f == *(f32*)(g_Ball + 0x1A18) && 0.0f == *(f32*)(g_Ball + 0x1A1C)) {
+        return 0;
+    }
+    if ((-(*(f32*)(g_Ball + 0x1A18) * *(f32*)(g_Ball + 0x0)) - *(f32*)(g_Ball + 0x1A1C) * *(f32*)(g_Ball + 0x8)) +
+            (*(f32*)(g_Ball + 0x1A18) * *(f32*)(f + 0x0) + *(f32*)(g_Ball + 0x1A1C) * *(f32*)(f + 0x8)) >
+        0.0f) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x0004DC14 size:0x5A8 mapped:0x8068CCA8
