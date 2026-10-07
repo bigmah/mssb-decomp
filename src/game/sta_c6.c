@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 #include "Dolphin/stl.h"
 #include "Dolphin/os.h"
+#include "C3/control.h"
 extern u8 lbl_3_data_19024[];
 
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
@@ -29,6 +30,15 @@ extern char lbl_3_rodata_2BBC[];
 extern u8 lbl_3_common_bss_350E4[];
 
 extern u8 lbl_3_bss_AE80[];
+extern u8* lbl_3_bss_AEB4[];
+typedef struct { f32 x, y, z; } E751CV;
+extern E751CV lbl_3_data_19644[];
+extern f32 lbl_3_data_19698[];
+extern s32 fn_8005268C(void);
+extern u8* fn_80052734(s32);
+extern u8 fn_800B3C04(s32, void*, void*);
+extern void fn_800BDA24(void*);
+extern void fn_800BDA94(void*, void*);
 extern u8 lbl_3_data_1963F;
 extern u8 lbl_3_data_19640;
 extern u8 lbl_3_bss_AEAC;
@@ -229,8 +239,21 @@ void fn_3_E67F4(void) {
 }
 
 // .text:0x000E68A8 size:0xE4 mapped:0x8072593C
-void fn_3_E68A8(void) {
-    return;
+typedef struct { u8 pad[0x74]; void** p74; u8 pad2[0x24]; void** p9C; } E68A8S;
+void fn_3_E68A8(u8* a) {
+    E68A8S* s = (E68A8S*)a;
+    void* o = *s->p9C;
+    f32 t = fn_800B4C40(*s->p74) - *(f32*)((u8*)s->p74 + 0x54);
+    if (t < 0.0f) {
+        t = 0.0f;
+    }
+    if (s->p9C != NULL) {
+        memcpy((u8*)s->p9C + 0x10, s, 0x44);
+        fn_800B4CA0(o, t);
+        fn_800BDA24(s->p9C);
+        ((u8*)*s->p9C)[0x98] = fn_800B3C04(0, *s->p9C, fn_80052734(fn_8005268C()) + 0x40);
+        fn_800BDA94(s->p9C, (u8*)fn_80052768_getCamera(fn_8005268C()) + 0x40);
+    }
 }
 
 // .text:0x000E698C size:0xBC mapped:0x80725A20
@@ -274,18 +297,60 @@ void fn_3_E7364(s32 i) {
 }
 
 // .text:0x000E7388 size:0x9C mapped:0x8072641C
-void fn_3_E7388(void) {
-    return;
+typedef struct { u8 pad[0x90]; u8 f : 1; u8 pad2[0x57]; } E8F;
+typedef struct E7388Pair { f32 f; s32 i; } E7388Pair;
+typedef struct { E8F* arr; u8 pad[0x2C]; s32 count; } E7388G;
+void fn_3_E7388(s32 unused, E7388Pair* out) {
+    E8F* e;
+    E7388Pair* p = out;
+    s32 i;
+    e = &((E7388G*)lbl_3_common_bss_350E4)->arr[((E7388G*)lbl_3_common_bss_350E4)->count - 1];
+    i = ((E7388G*)lbl_3_common_bss_350E4)->count - 1;
+    do {
+        if (!e->f) {
+            p->i = i;
+            p++;
+        }
+        e--;
+    } while (i-- != 0);
+    e = &((E7388G*)lbl_3_common_bss_350E4)->arr[((E7388G*)lbl_3_common_bss_350E4)->count - 1];
+    i = ((E7388G*)lbl_3_common_bss_350E4)->count - 1;
+    p = out + ((E7388G*)lbl_3_common_bss_350E4)->count;
+    do {
+        if (e->f) {
+            p--;
+            p->i = i;
+            p->f = 1.0f;
+        }
+        e--;
+    } while (i-- != 0);
 }
 
 // .text:0x000E7424 size:0xF8 mapped:0x807264B8
+// 90%: needs this unit's .bss (AE50..AEE0) defined as statics; the AE80 u8[4] array is addressed as addi r8,base,0x30.
+// Draft: s = AE50; if (g_GameLogic.gameStatus == 1 || == 0) { s38++; s[0x30..0x33] = g_Minigame._1914.._1917 != 0;
+// *(s8*)&1963F = *(s8*)&19640 = -1; } s[0x2C] = s[0x2B]; s[0x2B] = g_Minigame.toyFieldBallStateResult;
+// s34 += lbl_80366158[0x28] == 0; if (s[0x2C] != s[0x2B]) s34 = 0; s[1] = 0;
 void fn_3_E7424(void) {
     return;
 }
 
 // .text:0x000E751C size:0x120 mapped:0x807265B0
-void fn_3_E751C(void) {
-    return;
+typedef struct { f32 x, y, z, r, pad; } E751CP;
+s32 fn_3_E751C(s32 idx, Mtx m) {
+    Control c;
+    u8* o;
+    c.type = 0;
+    o = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+    if (o[0xC1] <= 7) {
+        CTRLSetTranslation(&c, ((E751CP**)lbl_3_bss_AEB4)[0][idx].x, -0.04f, ((E751CP**)lbl_3_bss_AEB4)[0][idx].z);
+        CTRLSetRotation(&c, 0.0f, (*(E751CP**)lbl_3_bss_AEB4)[idx].r, 0.0f);
+    } else {
+        CTRLSetTranslation(&c, lbl_3_data_19644[o[0xC3]].x, -0.04f, lbl_3_data_19644[o[0xC3]].z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[o[0xC3]], 0.0f);
+    }
+    CTRLBuildMatrix(&c, m);
+    return *(s32*)(o + 0x78);
 }
 
 // .text:0x000E763C size:0x3F0 mapped:0x807266D0
