@@ -25,6 +25,7 @@ extern u8 g_Practice[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_803CBC3C[];
 extern int fn_8001C920(s16);
+extern void fn_3_89864(s32 i, s32 d);
 typedef struct {
     u8 pad0[0x24];
     s16 charID;
@@ -170,7 +171,39 @@ void fn_3_7310C(void) {
 
 // .text:0x000735A8 size:0x124 mapped:0x806B263C
 void fn_3_735A8(void) {
-    return;
+    int i;
+    u8* r;
+    int stop = 0;
+    if (g_Pitcher[0x14E] == 3) {
+        r = g_Runners + 0x154;
+        for (i = 1; i < 4; i++) {
+            if (r[0x123] == 1 || r[0x123] == 5) {
+                if (stop == 0) {
+                    r[0x125] = i;
+                    fn_3_89864(i, 1);
+                } else {
+                    r[0x125] = r[0x124];
+                    r[0x126] = (r[0x125] + 1) & 3;
+                }
+            } else {
+                stop = 1;
+            }
+            r += 0x154;
+        }
+    } else {
+        r = g_Runners + 0x154;
+        for (i = 1; i < 4; i++) {
+            if (r[0x123] != 1 && r[0x123] != 5) {
+                break;
+            }
+            if (i == r[0x125]) {
+                fn_3_89864(i, 1);
+            }
+            r += 0x154;
+        }
+    }
+    g_Runners[0x125] = 1;
+    g_Runners[0x126] = 2;
 }
 
 // .text:0x000736CC size:0x4C mapped:0x806B2760
