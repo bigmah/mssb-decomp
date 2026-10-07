@@ -29,6 +29,11 @@ extern char lbl_3_rodata_2BBC[];
 extern u8 lbl_3_common_bss_350E4[];
 
 extern u8 lbl_3_bss_AE80[];
+extern s32 fn_8005268C(void);
+extern u8* fn_80052734(s32);
+extern u8 fn_800B3C04(s32, void*, void*);
+extern void fn_800BDA24(void*);
+extern void fn_800BDA94(void*, void*);
 extern u8 lbl_3_data_1963F;
 extern u8 lbl_3_data_19640;
 extern u8 lbl_3_bss_AEAC;
@@ -229,8 +234,21 @@ void fn_3_E67F4(void) {
 }
 
 // .text:0x000E68A8 size:0xE4 mapped:0x8072593C
-void fn_3_E68A8(void) {
-    return;
+typedef struct { u8 pad[0x74]; void** p74; u8 pad2[0x24]; void** p9C; } E68A8S;
+void fn_3_E68A8(u8* a) {
+    E68A8S* s = (E68A8S*)a;
+    void* o = *s->p9C;
+    f32 t = fn_800B4C40(*s->p74) - *(f32*)((u8*)s->p74 + 0x54);
+    if (t < 0.0f) {
+        t = 0.0f;
+    }
+    if (s->p9C != NULL) {
+        memcpy((u8*)s->p9C + 0x10, s, 0x44);
+        fn_800B4CA0(o, t);
+        fn_800BDA24(s->p9C);
+        ((u8*)*s->p9C)[0x98] = fn_800B3C04(0, *s->p9C, fn_80052734(fn_8005268C()) + 0x40);
+        fn_800BDA94(s->p9C, (u8*)fn_80052768_getCamera(fn_8005268C()) + 0x40);
+    }
 }
 
 // .text:0x000E698C size:0xBC mapped:0x80725A20

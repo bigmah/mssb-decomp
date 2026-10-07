@@ -19,7 +19,7 @@ void fn_3_E6684(u8* p);
 void fn_3_E671C(u8* a);
 void fn_3_E6798(u8* a);
 void fn_3_E67F4(void);
-void fn_3_E68A8(void);
+void fn_3_E68A8(u8* a);
 void fn_3_E698C(u8* a);
 void fn_3_E6A48(void);
 void fn_3_E6D90(void);
