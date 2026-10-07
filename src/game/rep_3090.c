@@ -17,6 +17,10 @@ extern f32 lbl_3_rodata_30FC;
 extern u8 lbl_8036E548[];
 extern void** fn_800111D8(void*);
 extern void fn_800B2C44(void*, u16, Vec*);
+extern u8* lbl_803CC1B8;
+extern u8 g_Fielders[];
+extern u8 LoadModel(void*);
+extern void fn_800B0A14_removeQueue(void*);
 #pragma dont_inline on
 
 // .text:0x000FC448 size:0x4F0 mapped:0x8073B4DC
@@ -117,9 +121,44 @@ s32 fn_3_FD9FC(void) {
     return *(s32*)(lbl_3_common_bss_DE94 + 0x18) == 1;
 }
 
+typedef struct { u8 pad[0x218]; u8 f; u8 pad2[0x268 - 0x219]; } FDA1CT;
+
 // .text:0x000FDA1C size:0x114 mapped:0x8073CAB0
 void fn_3_FDA1C(void) {
-    return;
+    u8* p = lbl_803CC1B8;
+    u16 i;
+    u8* model;
+
+    switch (*(s16*)(p + 0x22)) {
+    case 0:
+        *(s16*)(p + 0x22) = 1;
+        break;
+    case 1:
+        i = *(u16*)(p + 0x1E);
+        model = ((u8**)(lbl_8036E548 + 0x2C50))[i];
+        if (((FDA1CT*)g_Fielders)[i].f == 0) {
+            if (i < 9) {
+                *(u16*)(p + 0x1E) = i + 1;
+                *(s16*)(p + 0x22) = 0;
+            } else {
+                *(s16*)(p + 0x22) = 2;
+            }
+        } else if (model == NULL || LoadModel(model)) {
+            if (*(u16*)(p + 0x1E) < 9) {
+                *(u16*)(p + 0x1E) = *(u16*)(p + 0x1E) + 1;
+                *(s16*)(p + 0x22) = 0;
+            } else {
+                *(s16*)(p + 0x22) = 2;
+            }
+        }
+        break;
+    case 2:
+        model = *(u8**)(p + 0xC);
+        *(s16*)(model + 0x10) = 1;
+        fn_800B0A14_removeQueue(model);
+        *(s16*)(p + 0x22) = 0;
+        break;
+    }
 }
 
 // .text:0x000FDB30 size:0x24E8 mapped:0x8073CBC4
