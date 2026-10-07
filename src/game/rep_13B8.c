@@ -8,6 +8,9 @@ typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
 
 extern f32 lbl_3_rodata_1498;
+extern const f64 lbl_3_rodata_1488;
+extern const f32 lbl_3_rodata_143C;
+extern const f32 lbl_3_rodata_1490;
 
 #pragma dont_inline on
 
@@ -308,8 +311,26 @@ void fn_3_85074(void) {
 }
 
 // .text:0x00085744 size:0xFC mapped:0x806C47D8
-void fn_3_85744(void) {
-    return;
+void fn_3_85744(int i) {
+    u8* r = g_Runners + i * 0x154;
+    if (*(f32*)(r + 0x64) > lbl_3_rodata_1488) {
+        return;
+    }
+    if (*(f32*)(r + 0x38) < lbl_3_rodata_143C && g_Ball[0x1BC9] == 3) {
+        r[0x12B] = 0;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xC4) == 5 || *(s16*)(g_FieldingLogic + 0xC4) == 6 ||
+        *(s16*)(g_FieldingLogic + 0xC4) == r[0x125]) {
+        if (*(f32*)(r + 0x68) >= lbl_3_rodata_1490 && r[0x137] == 1 && g_Ball[0x1BBE] <= 3) {
+            r[0x12B] = 0;
+        }
+    }
+    if (*(s16*)(r + 0xE6) >= 0 && r[0x13E] == 2) {
+        r[0x12B] = 1;
+        if (lbl_3_rodata_1498 == *(f32*)(r + 0x84)) {
+            r[0x12B] = 0;
+        }
+    }
 }
 
 // .text:0x00085840 size:0x230 mapped:0x806C48D4

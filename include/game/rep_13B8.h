@@ -40,7 +40,7 @@ void fn_3_842E4(void);
 void fn_3_846C8(void);
 void fn_3_84AD0(void);
 void fn_3_85074(void);
-void fn_3_85744(void);
+void fn_3_85744(int i);
 void fn_3_85840(void);
 void fn_3_85A70(void);
 void fn_3_85C44(s32 i, s32 d);
