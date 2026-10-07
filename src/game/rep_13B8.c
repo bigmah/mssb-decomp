@@ -4,6 +4,7 @@ extern f32 lbl_3_data_4A34[];
 extern u8 lbl_3_data_4B58[];
 extern int fn_3_52560(int, f32, f32);
 extern s16 lbl_3_data_21904[];
+extern const f32 lbl_3_rodata_1430;
 extern s16 lbl_3_data_4C54[];
 typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
@@ -103,7 +104,57 @@ void fn_3_7EA68(void) {
 
 // .text:0x0007EBD4 size:0x128 mapped:0x806BDC68
 void fn_3_7EBD4(int i) {
-    return;
+    u8* r = g_Runners + i * 0x154;
+    if (g_GameLogic[0x11E] == 1) {
+        return;
+    }
+    if (r[0x123] == 2) {
+        if (r[0x145] != 0) {
+            return;
+        }
+        if (r[0x13A] != 0) {
+            if (r[0x13C] == 3) {
+                r[0x13A] = 0;
+                r[0x13C] = 0;
+            } else {
+                return;
+            }
+        }
+        if (*(s16*)(r + 0xEE) == 2) {
+            u8 c = r[0x140];
+            if (c != 0) {
+                if (c == 3) {
+                    r[0x13E] = 0;
+                    r[0x140] = 0;
+                } else {
+                    return;
+                }
+            } else {
+                if (!(*(f32*)(r + 0x68) < lbl_3_rodata_1430)) {
+                    if (r[0x137] != 2) {
+                        return;
+                    }
+                }
+            }
+        }
+        r[0x145] = 1;
+        r[0x146] = 0;
+        r[0x140] = 0;
+    } else {
+        if (g_Strikes[2] < 3) {
+            return;
+        }
+        if (r[0x13A] != 0) {
+            if (r[0x13C] == 3) {
+                r[0x13A] = 0;
+                r[0x13C] = 0;
+            } else {
+                return;
+            }
+        }
+        r[0x145] = 1;
+        r[0x146] = 0;
+    }
 }
 
 // .text:0x0007ECFC size:0x5DC mapped:0x806BDD90
