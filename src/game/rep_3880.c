@@ -16,9 +16,14 @@ extern f32 fn_3_119854(u8 i);
 
 extern u8 lbl_8036E548[];
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/GX.h"
 
 
 extern u8 g_Minigame[];
+extern u8 lbl_3_data_26E00[];
+extern f32 fn_3_119D28(void);
+extern u8 lbl_3_data_26CB8[];
+extern s32 fn_8001B728(s32, s32, void*);
 extern int rand(void);
 extern void* fn_80033A24(void*, int, int, int, int, int);
 extern u8 lbl_3_data_26E24[];
@@ -113,7 +118,23 @@ void fn_3_147E20(void) {
 
 // .text:0x00147F94 size:0x14C mapped:0x80787028
 void fn_3_147F94(void) {
-    return;
+    GXSetZMode(1, 7, 1);
+    GXSetBlendMode(1, 4, 5, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevColorIn(0, 0xF, 0xF, 0xF, 0xA);
+    GXSetTevAlphaIn(0, 7, 7, 7, 5);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetTevOp(0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
 }
 
 // .text:0x001480E0 size:0x174 mapped:0x80787174
@@ -213,8 +234,26 @@ void fn_3_14B248(void) {
 }
 
 // .text:0x0014B3F4 size:0x148 mapped:0x8078A488
-void fn_3_14B3F4(void) {
-    return;
+void fn_3_14B3F4(u8* a) {
+    f32* p;
+    f32* q;
+    f32 t;
+    f32 s;
+    s32 d = *(s16*)(a + 0x34) - *(s16*)(a + 0x36);
+    f32 len = *(f32*)(a + 0x30);
+    if ((f32)d < len) {
+        p = (f32*)lbl_3_data_26E00;
+        q = (f32*)(lbl_3_data_26E00 + 0xC);
+        t = (f32)d / len;
+    } else {
+        p = (f32*)(lbl_3_data_26E00 + 0xC);
+        q = (f32*)(lbl_3_data_26E00 + 0x18);
+        t = (f32)d / ((f32)*(s16*)(a + 0x34) - len);
+    }
+    s = fn_3_119D28();
+    *(f32*)(a + 0x24) = s * (p[0] * (1.0f - t) + q[0] * t) + *(f32*)(a + 0x18);
+    *(f32*)(a + 0x28) = s * (p[1] * (1.0f - t) + q[1] * t) + *(f32*)(a + 0x1C);
+    *(f32*)(a + 0x2C) = s * (p[2] * (1.0f - t) + q[2] * t) + *(f32*)(a + 0x20);
 }
 
 // .text:0x0014B53C size:0x3F0 mapped:0x8078A5D0
@@ -573,8 +612,25 @@ void fn_3_14E988(s8 a) {
 }
 
 // .text:0x0014E9F0 size:0x104 mapped:0x8078DA84
-void fn_3_14E9F0(void) {
-    return;
+void fn_3_14E9F0(u8* a) {
+    Vec v;
+    if (a[0x4C] < 5) {
+        u8 k = lbl_3_data_26CB8[(u32)rand() % 23];
+        v.z = 0.0f;
+        v.y = 0.0f;
+        v.x = 0.0f;
+        if (fn_8001B728(a[0x4C] - 1, k, &v) == 0) {
+            memset(&v, 0, 0xC);
+            fn_8001B728(a[0x4C] - 1, 4, &v);
+        }
+    } else {
+        v.x = *(f32*)(g_Minigame + 0x6E8);
+        v.y = -*(f32*)(g_Minigame + 0x6EC);
+        v.z = *(f32*)(g_Minigame + 0x6F0);
+    }
+    *(f32*)(a + 4) += v.x;
+    *(f32*)(a + 8) += v.y;
+    *(f32*)(a + 0xC) += v.z;
 }
 
 // .text:0x0014EAF4 size:0x230 mapped:0x8078DB88
