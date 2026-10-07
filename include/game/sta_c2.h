@@ -57,7 +57,7 @@ void fn_3_D127C(void);
 void fn_3_D1280(void);
 void fn_3_D141C(void);
 void fn_3_D173C(u8* p);
-void fn_3_D1848(void);
+void fn_3_D1848(u8* arg);
 void fn_3_D196C(void);
 void fn_3_D1AC4(u8* p);
 void fn_3_D1B24(void);

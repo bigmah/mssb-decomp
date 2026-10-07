@@ -47,6 +47,7 @@ extern u8 lbl_80366158[];
 extern const f64 lbl_3_rodata_2738;
 extern const f64 lbl_3_rodata_2740;
 extern const f64 lbl_3_rodata_2748;
+extern void fn_800B4CA0(void*, f32);
 
 // .text:0x000CB8A8 size:0x1F4 mapped:0x8070A93C
 void fn_3_CB8A8(void) {
@@ -469,8 +470,51 @@ void fn_3_D173C(u8* p) {
 }
 
 // .text:0x000D1848 size:0x124 mapped:0x807108DC
-void fn_3_D1848(void) {
-    return;
+typedef struct {
+    u8 pad0[0x74];
+    u8* act;
+    u8 pad78[0x18];
+    u8 flag : 1;
+    u8 flagRest : 7;
+    u8 pad91[0xB];
+    u8 idx;
+    u8 pad9D[3];
+    f32 a0;
+    f32 a4;
+    u8* a8;
+    u8 ac;
+} D1848T;
+
+void fn_3_D1848(u8* arg) {
+    D1848T* s = (D1848T*)arg;
+    u8* act = s->act;
+    if (*s->a8 != 0) {
+        if (s->flag) {
+            s->flag = 0;
+            s->ac = (s->idx % 3) * 30;
+            s->a0 = 0.0f;
+            *(f32*)(act + 0x5C) = s->a0;
+            act[0x59] = 1;
+            fn_800B4CA0(*(void**)act, *(f32*)(act + 0x5C));
+        }
+        return;
+    }
+    if (s->ac != 0) {
+        if (s->flag) {
+            s->flag = 0;
+        }
+        s->ac--;
+        return;
+    }
+    if (!s->flag) {
+        s->flag = 1;
+    }
+    s->a0 = s->a0 + s->a4;
+    if (s->a0 > 100.0f) {
+        s->a0 = s->a0 - 100.0f;
+        s->ac = 90;
+    }
+    AnimateActorBones(*(void**)act);
 }
 
 // .text:0x000D196C size:0x158 mapped:0x80710A00
