@@ -26,6 +26,10 @@ extern void fn_80035B50(int);
 extern void fn_80018B38(void);
 extern void fn_3_909B0(void);
 extern void fn_3_9081C(void);
+extern void fn_800BDC88(void* p, u16 a, u16 b, u32 c, s32 d, s32 e);
+extern void fn_800BD548(void* p, s32 n, ...);
+extern void CTRLSetTranslation(void* c, f32 x, f32 y, f32 z);
+extern void CTRLSetRotation(void* c, f32 x, f32 y, f32 z);
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
 void fn_3_116840(void) {
@@ -477,7 +481,13 @@ void fn_3_11D1B0(void) {
 }
 
 // .text:0x0011D2C8 size:0xE4 mapped:0x8075C35C
-void fn_3_11D2C8(void) {
-    return;
+void fn_3_11D2C8(s32 idx, s32 start, s32 count, s32 a, s32 b) {
+    s32 k;
+    for (k = start; k < start + count; k++) {
+        fn_800BDC88(*(u8**)(lbl_8036E548 + 0x68), (u16)k, (u16)k, *(u32*)(lbl_8036E548 + idx * 0xC + 0x2DA0), a, b);
+        fn_800BD548(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x34, 4, *(u32*)(lbl_8036E548 + 0xAC), *(u32*)(lbl_8036E548 + 0xB0), *(u32*)(lbl_8036E548 + 0xB4), *(u32*)(lbl_8036E548 + 0xB8));
+        CTRLSetTranslation(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
+    }
 }
 
