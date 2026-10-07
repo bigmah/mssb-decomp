@@ -4,7 +4,6 @@
 #pragma dont_inline on
 
 extern f32 lbl_3_rodata_2A5C;
-extern u8 lbl_3_data_18ED0[];
 
 extern u32 lbl_3_bss_AE18;
 extern void fn_3_B97DC(void*, u32);
@@ -24,8 +23,10 @@ extern E4EF4Ctl lbl_3_common_bss_350E4;
 extern void fn_800B4AFC(void*, s32);
 
 #include "C3/control.h"
+typedef struct { Vec pos; f32 rot; u8 pad[0xC]; } Ent18ED0;
+extern Ent18ED0 lbl_3_data_18ED0[];
 extern Vec lbl_3_rodata_2A48;
-extern f32 lbl_3_rodata_2B20;
+extern const f32 lbl_3_rodata_2B20;
 extern f32 lbl_3_rodata_2B24;
 extern f32 lbl_3_rodata_2A60;
 extern f32 lbl_3_rodata_2A64;
@@ -252,6 +253,10 @@ void fn_3_E4554(u8* a) {
     a[0xCB] = 0;
 }
 
+// With -inline deferred the dont_inline state at the END of the file decides
+// inlining for the whole unit; fn_3_E4658 inlines fn_3_E45F0/fn_3_E45A8, so
+// inlining is back on from here. Stubs called later must be asm (see fn_3_E4CB0).
+#pragma dont_inline off
 // .text:0x000E45A8 size:0x48 mapped:0x8072363C
 void fn_3_E45A8(u8* a) {
     CTRLSetScale((Control*)a, 0.2f, 0.2f, 0.2f);
@@ -260,25 +265,20 @@ void fn_3_E45A8(u8* a) {
 
 // .text:0x000E45F0 size:0x68 mapped:0x80723684
 void fn_3_E45F0(u8* a) {
-    f32* t = (f32*)(lbl_3_data_18ED0 + 0xC);
-    CTRLSetRotation((Control*)a, 0.0f, t[a[0x9C] * 7], 0.0f);
-    *(f32*)(a + 0xB0) = t[a[0x9C] * 7];
+    CTRLSetRotation((Control*)a, 0.0f, lbl_3_data_18ED0[a[0x9C]].rot, 0.0f);
+    *(f32*)(a + 0xB0) = lbl_3_data_18ED0[a[0x9C]].rot;
 }
 
 // .text:0x000E4658 size:0x108 mapped:0x807236EC
 void fn_3_E4658(u8* a) {
-    u8* r;
-    f32* tbl = (f32*)lbl_3_data_18ED0;
     a[0] = 0;
-    CTRLSetTranslation((Control*)a, *(f32*)((u8*)tbl + a[0x9C] * 0x1C), lbl_3_rodata_2B20 + *(f32*)((u8*)tbl + a[0x9C] * 0x1C + 4), *(f32*)((u8*)tbl + a[0x9C] * 0x1C + 8));
-    PSVECScale((Vec*)(lbl_3_data_18ED0 + a[0x9C] * 0x1C), lbl_3_rodata_2B24, (Vec*)(a + 0xA0));
+    CTRLSetTranslation((Control*)a, lbl_3_data_18ED0[a[0x9C]].pos.x, lbl_3_rodata_2B20 + lbl_3_data_18ED0[a[0x9C]].pos.y, lbl_3_data_18ED0[a[0x9C]].pos.z);
+    PSVECScale(&lbl_3_data_18ED0[a[0x9C]].pos, lbl_3_rodata_2B24, (Vec*)(a + 0xA0));
     *(f32*)(a + 0xA4) = *(f32*)(a + 0xA4) - lbl_3_rodata_2B20;
-    r = lbl_3_data_18ED0 + 0xC;
-    CTRLSetRotation((Control*)a, lbl_3_rodata_2A5C, *(f32*)(r + a[0x9C] * 0x1C), lbl_3_rodata_2A5C);
-    *(f32*)(a + 0xB0) = *(f32*)(r + a[0x9C] * 0x1C);
-    CTRLSetScale((Control*)a, lbl_3_rodata_2B28, lbl_3_rodata_2B28, lbl_3_rodata_2B28);
-    *(f32*)(a + 0xB4) = lbl_3_rodata_2B28;
+    fn_3_E45F0(a);
+    fn_3_E45A8(a);
 }
+
 // .text:0x000E4A38 size:0x1B0 mapped:0x80723ACC
 void fn_3_E4A38(void) {
     return;
@@ -305,8 +305,10 @@ u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]) {
 }
 
 // .text:0x000E4CB0 size:0x244 mapped:0x80723D44
-void fn_3_E4CB0(s32* a, s32* b) {
-    return;
+// asm stub: a C stub would be inlined into fn_3_E4EF4
+asm void fn_3_E4CB0(s32* a, s32* b) {
+    nofralloc
+    blr
 }
 
 // .text:0x000E4EF4 size:0xD0 mapped:0x80723F88
