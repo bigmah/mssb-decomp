@@ -165,6 +165,7 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Repeat a common subexpression instead of a local (fn_3_14B3F4):** writing `(1.0f - t)` in each of three lerps (CW CSEs it) gave the original f3/f4/f5 allocation; a `u = 1.0f - t` local did not. Likewise `d = *(s16*)(a+0x34) - *(s16*)(a+0x36)` with the 0x34 field re-read later (no `s16 n` local) gave the original load order.
 - **`beq L; blr` before the body (instead of `bnelr`) for an `A || (B && !C)` guard:** write it as an early return, `if (!(A || (B && C == 0))) { return; } body;` (fn_3_3ABF0). `if (A || ...) { body }` and nested-`if` forms gave `bnelr`.
 - **Loop with two float constant stores and a `li r0,N` ctr scheduled after the first `lfs`:** float literals (`10000.0f`, `0.0f`) instead of the `extern f32` rodata symbols fixed the scheduling (fn_3_39DC4).
+- **Float args loaded before the pointer args' `addi r3/r4, r1, N` (no `mr r5, r3` copy of the incoming pointer):** the callee takes the floats *first* in its prototype (`fn_800528C0(f32, f32, f32, s16*, s16*)`); GPRs and FPRs are assigned independently, so the registers are the same but CW evaluates args in source order (fn_3_F9088).
 
 Add new patterns to this list as we find them.
 
