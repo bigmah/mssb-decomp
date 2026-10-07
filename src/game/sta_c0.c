@@ -8,11 +8,20 @@ typedef struct { u8 pad[0x90]; u8 f : 1; } BF90;
 #include "Dolphin/GX/GXTexture.h"
 extern GXTexObj lbl_3_bss_9F4C;
 extern void fn_3_B9510(s32);
-extern char lbl_3_rodata_22EC[];
-extern char lbl_3_rodata_22F8[];
 extern u8* lbl_3_bss_9F48;
+extern u8 lbl_3_common_bss_350E4[];
+extern u8 g_Stats[];
+extern Vec lbl_3_rodata_22D8;
+extern void GXSetZCompLoc(u8);
+extern s32 fn_8005268C(void);
+extern u8* fn_80052734(s32);
+extern void PSVECSubtract(const Vec*, const Vec*, Vec*);
+extern f32 PSVECMag(const Vec*);
+extern f32 PSVECDotProduct(const Vec*, const Vec*);
 extern u32 lbl_3_bss_9F3C;
 extern void DCFlushRange(void*, u32);
+extern char lbl_3_rodata_22EC[];
+extern char lbl_3_rodata_22F8[];
 extern u32 fn_3_B9534(s32, s32, void*);
 extern s32 fn_800247E4(u32, u32, s32, s32);
 extern u32 rand();
@@ -20,7 +29,54 @@ extern void OSPanic(const char*, int, const char*, ...);
 
 // .text:0x000C9878 size:0x180 mapped:0x8070890C
 void fn_3_C9878(void) {
-    return;
+    u8* p = *(u8**)(lbl_3_common_bss_350E4 + 0x10);
+    Vec diff;
+    Vec dir = lbl_3_rodata_22D8;
+    s32 idx;
+    u8 flag;
+    u8* r;
+    u8* q;
+    s32 i;
+    s32 gl;
+    f32 lim;
+    if (p != NULL) {
+        GXSetZCompLoc(0);
+        idx = fn_8005268C();
+        gl = g_GameLogic[0x11E];
+        if (gl != 0xB) {
+            if (gl < 0xB) {
+                if (gl == 3) {
+                    goto zero;
+                }
+                goto check;
+            }
+            if (gl >= 0x18 || gl < 0x13) {
+            check:
+                if (g_Stats[0x36] == 0) {
+                    u8* t = fn_80052734(idx);
+                    PSVECSubtract((Vec*)(t + 0x7C), (Vec*)(t + 0x70), &diff);
+                    diff.y = 0.0f;
+                    lim = *(f32*)(p + 0x1C) * PSVECMag(&diff);
+                    flag = PSVECDotProduct(&diff, &dir) > lim;
+                } else {
+                    goto zero;
+                }
+            } else {
+                goto zero;
+            }
+        } else {
+        zero:
+            flag = 0;
+        }
+        q = p + idx * 0xC;
+        r = q + flag;
+        for (i = 0; i < p[0x20]; i++) {
+            *(s16*)(*(u8**)(p + 0x18) + (q[0] << 5) + 0x1C) = r[1];
+            *(s16*)(*(u8**)(p + 0x18) + (q[3] << 5) + 0x1C) = r[4];
+            q += 6;
+            r += 6;
+        }
+    }
 }
 
 // .text:0x000C99F8 size:0x68 mapped:0x80708A8C
