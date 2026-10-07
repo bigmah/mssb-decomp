@@ -29,7 +29,7 @@ void fn_3_CED30(void);
 void fn_3_CED34(void);
 void fn_3_CED38(void);
 void fn_3_CED3C(void);
-void fn_3_CED40(void);
+void fn_3_CED40(u8* p, s32 a);
 void fn_3_CEE5C(void);
 void fn_3_CEFA8(void);
 void fn_3_CF278(void);

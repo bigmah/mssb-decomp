@@ -41,6 +41,11 @@ extern u8* lbl_3_bss_A8A4;
 extern s32 fn_3_9FB8C(f32, f32);
 extern void fn_3_253A4(s8, s16);
 extern void AnimateActorBones(void*);
+extern void fn_8003403C(u8*, f32, f32);
+extern void fn_80033CC8(u8*, s32);
+extern u8 lbl_80366158[];
+extern const f64 lbl_3_rodata_2738;
+extern const f64 lbl_3_rodata_2740;
 
 // .text:0x000CB8A8 size:0x1F4 mapped:0x8070A93C
 void fn_3_CB8A8(void) {
@@ -231,8 +236,21 @@ void fn_3_CED3C(void) {
 }
 
 // .text:0x000CED40 size:0x11C mapped:0x8070DDD4
-void fn_3_CED40(void) {
-    return;
+void fn_3_CED40(u8* p, s32 a) {
+    fn_8003403C(p, *(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+    fn_80033CC8(p, a);
+    if (lbl_80366158[0x28] == 0) {
+        if (-*(s16*)(p + 0x48) < 5) {
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + lbl_3_rodata_2738;
+            *(f32*)(p + 0x3C) = *(f32*)(p + 0x3C) + lbl_3_rodata_2738;
+            p[0x43] = p[0x43] + lbl_3_rodata_2740;
+        } else {
+            p[0x43] = p[0x43] - 4;
+        }
+        *(f32*)(p + 0x4) = *(f32*)(p + 0x4) + *(f32*)(p + 0x10);
+        *(f32*)(p + 0x8) = *(f32*)(p + 0x8) + *(f32*)(p + 0x14);
+        *(f32*)(p + 0xC) = *(f32*)(p + 0xC) + *(f32*)(p + 0x18);
+    }
 }
 
 // .text:0x000CEE5C size:0x14C mapped:0x8070DEF0
