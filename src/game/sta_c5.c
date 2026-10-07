@@ -22,6 +22,7 @@ extern char lbl_3_rodata_2F10[];
 #pragma dont_inline on
 #include "C3/control.h"
 #include "Dolphin/vec.h"
+#include "C3/geoPalette.h"
 typedef struct { Vec v; f32 pad[2]; } V14;
 extern V14 lbl_3_data_1B884[];
 typedef struct { f32 a, b, c, d, e, f; } T18;
@@ -34,6 +35,12 @@ extern f32 lbl_3_rodata_2DDC;
 extern f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
 extern f64 cos(f64);
+extern u8 lbl_803C5090[];
+extern void fn_8003A144(u8*, u8*);
+extern s32 fn_80039AB4(void);
+extern void SetDisplayStateTexture(s32, s32, s32);
+extern s32 fn_8005268C(void);
+extern u8* fn_80052734(s32);
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_B219[];
 extern u8 lbl_3_bss_B55C[];
@@ -120,7 +127,27 @@ void fn_3_EECF4(void) {
 
 // .text:0x000EEE3C size:0xE8 mapped:0x8072DED0
 void fn_3_EEE3C(void) {
-    return;
+    u8* b = *(u8**)lbl_3_bss_B55C;
+    u8* o = *(u8**)b;
+    Vec v;
+    lbl_803C5090[0x1D] = 1;
+    fn_8003A144(lbl_803C5090, b);
+    SetDisplayStateTexture(fn_80039AB4(), 0, 0);
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 5, 0);
+    o = *(u8**)(o + 0x74);
+    while (o != NULL) {
+        v.x = *(f32*)(*(u8**)(o + 0xEC) + 0xC);
+        v.y = *(f32*)(*(u8**)(o + 0xEC) + 0x1C);
+        v.z = *(f32*)(*(u8**)(o + 0xEC) + 0x2C);
+        ((void (*)(Vec*))fn_3_EE96C)(&v);
+        if (*(u8**)(o + 0x14) != NULL) {
+            DOSetWorldMatrix(*(struct DODisplayObj**)(o + 0x14), *(MtxPtr*)(o + 0xEC));
+            ((void (*)(u8*, u8*))fn_3_EE67C)(*(u8**)(o + 0x14), fn_80052734(fn_8005268C()) + 0x40);
+        }
+        o = *(u8**)(o + 0x100);
+        GXSetTevDirect(0);
+    }
 }
 
 // .text:0x000EEF24 size:0x80 mapped:0x8072DFB8
