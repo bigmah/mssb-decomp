@@ -4,12 +4,13 @@
 #pragma dont_inline on
 
 extern f32 lbl_3_rodata_2A5C;
-extern u8 lbl_3_data_18ED0[];
 
 extern u32 lbl_3_bss_AE18;
 extern void fn_3_B97DC(void*, u32);
+extern void fn_3_65F4(void);
+typedef struct { u8 pad[0x74]; u8*** p74; u32 f78; u8 pad3[0x9D-0x7C]; u8 f9D; u8 pad4[0xC4-0x9E]; u8 fC4; u8 pad5[3]; u8 fC8; u8 pad2[0xE8 - 0xC9]; } E4BE8Ctl;
 typedef struct {
-    u8* arr;
+    E4BE8Ctl* arr;
     u8 pad0[0x30 - 4];
     s32 count;
     u8 pad1[0x3C - 0x34];
@@ -24,8 +25,10 @@ extern E4EF4Ctl lbl_3_common_bss_350E4;
 extern void fn_800B4AFC(void*, s32);
 
 #include "C3/control.h"
+typedef struct { Vec pos; f32 rot; u8 pad[0xC]; } Ent18ED0;
+extern Ent18ED0 lbl_3_data_18ED0[];
 extern Vec lbl_3_rodata_2A48;
-extern f32 lbl_3_rodata_2B20;
+extern const f32 lbl_3_rodata_2B20;
 extern f32 lbl_3_rodata_2B24;
 extern f32 lbl_3_rodata_2A60;
 extern f32 lbl_3_rodata_2A64;
@@ -178,21 +181,27 @@ void fn_3_E2E78(u8* a) {
 void fn_3_E2F4C(u8* a) {
     f32 ang;
     f32 x;
+    f32 c;
+    f32 s;
     f32 sc;
-    f32 d54 = *(f32*)(*(u8**)(a + 0x74) + 0x54);
     f32 b8 = *(f32*)(a + 0xB8);
+    f32 d54 = *(f32*)(*(u8**)(a + 0x74) + 0x54);
     if (b8 >= lbl_3_rodata_2AB8) {
-        b8 = b8 - d54;
-        if (b8 < lbl_3_rodata_2AB8) {
+        if (b8 - d54 < lbl_3_rodata_2AB8) {
             if (lbl_800E8754[4] != 0) {
-                ang = lbl_3_rodata_2AC0 * -*(f32*)(a + 0xB0);
-                x = *(f32*)(a + 0xB4) * (lbl_3_rodata_2A98 * (f32)sin(ang)) + *(f32*)(a + 0xA0);
-                sc = *(volatile f32*)(a + 0xB4);
-                fn_3_CB7E8(x, lbl_3_rodata_2AC8 * sc, sc * (lbl_3_rodata_2AD0 * (f32)cos(ang)) + *(f32*)(a + 0xA8));
+                ang = -*(f32*)(a + 0xB0);
+                ang = lbl_3_rodata_2AC0 * ang;
+                s = sin(ang);
+                x = *(f32*)(a + 0xB4) * (lbl_3_rodata_2A98 * s) + *(f32*)(a + 0xA0);
+                c = cos(ang);
+                sc = *(f32*)(a + 0xB4);
+                fn_3_CB7E8(x, lbl_3_rodata_2AC8 * sc, sc * (lbl_3_rodata_2AD0 * c) + *(f32*)(a + 0xA8));
             }
         }
     }
-}// .text:0x000E3044 size:0x240 mapped:0x807220D8
+}
+
+// .text:0x000E3044 size:0x240 mapped:0x807220D8
 void fn_3_E3044(void) {
     return;
 }
@@ -238,6 +247,11 @@ void fn_3_E3B88(void) {
     return;
 }
 
+// A callee is inlined only if dont_inline is off both where it is defined and
+// at the end of the file (-inline deferred). fn_3_E4658/fn_3_E4760 inline the
+// functions below, so inlining stays on from here to the end; stubs that are
+// called later must be asm (see fn_3_E4CB0) or they get inlined.
+#pragma dont_inline off
 // .text:0x000E4554 size:0x54 mapped:0x807235E8
 void fn_3_E4554(u8* a) {
     *(u32*)(a + 0xAC) = lbl_3_bss_AE18;
@@ -254,53 +268,64 @@ void fn_3_E45A8(u8* a) {
 
 // .text:0x000E45F0 size:0x68 mapped:0x80723684
 void fn_3_E45F0(u8* a) {
-    f32* t = (f32*)(lbl_3_data_18ED0 + 0xC);
-    CTRLSetRotation((Control*)a, 0.0f, t[a[0x9C] * 7], 0.0f);
-    *(f32*)(a + 0xB0) = t[a[0x9C] * 7];
+    CTRLSetRotation((Control*)a, 0.0f, lbl_3_data_18ED0[a[0x9C]].rot, 0.0f);
+    *(f32*)(a + 0xB0) = lbl_3_data_18ED0[a[0x9C]].rot;
 }
 
 // .text:0x000E4658 size:0x108 mapped:0x807236EC
 void fn_3_E4658(u8* a) {
-    u8* r;
-    f32* tbl = (f32*)lbl_3_data_18ED0;
     a[0] = 0;
-    CTRLSetTranslation((Control*)a, *(f32*)((u8*)tbl + a[0x9C] * 0x1C), lbl_3_rodata_2B20 + *(f32*)((u8*)tbl + a[0x9C] * 0x1C + 4), *(f32*)((u8*)tbl + a[0x9C] * 0x1C + 8));
-    PSVECScale((Vec*)(lbl_3_data_18ED0 + a[0x9C] * 0x1C), lbl_3_rodata_2B24, (Vec*)(a + 0xA0));
+    CTRLSetTranslation((Control*)a, lbl_3_data_18ED0[a[0x9C]].pos.x, lbl_3_rodata_2B20 + lbl_3_data_18ED0[a[0x9C]].pos.y, lbl_3_data_18ED0[a[0x9C]].pos.z);
+    PSVECScale(&lbl_3_data_18ED0[a[0x9C]].pos, lbl_3_rodata_2B24, (Vec*)(a + 0xA0));
     *(f32*)(a + 0xA4) = *(f32*)(a + 0xA4) - lbl_3_rodata_2B20;
-    r = lbl_3_data_18ED0 + 0xC;
-    CTRLSetRotation((Control*)a, lbl_3_rodata_2A5C, *(f32*)(r + a[0x9C] * 0x1C), lbl_3_rodata_2A5C);
-    *(f32*)(a + 0xB0) = *(f32*)(r + a[0x9C] * 0x1C);
-    CTRLSetScale((Control*)a, lbl_3_rodata_2B28, lbl_3_rodata_2B28, lbl_3_rodata_2B28);
-    *(f32*)(a + 0xB4) = lbl_3_rodata_2B28;
+    fn_3_E45F0(a);
+    fn_3_E45A8(a);
 }
+
+// .text:0x000E4760 size:0x170 mapped:0x807237F4
+void fn_3_E4760(u8* a) {
+    fn_3_E4658(a);
+    fn_3_E4554(a);
+    a[0xC5] = 0;
+    a[0xC4] = 0;
+    a[0xC7] = 0;
+    a[0xC8] = 0;
+    if (a[0xCA] != 0) {
+        fn_3_65F4();
+        a[0xCA] = 0;
+        *(f32*)(a + 0xC0) = 0.0f;
+    }
+    a[0xC9] = 0;
+}
+
 // .text:0x000E4A38 size:0x1B0 mapped:0x80723ACC
 void fn_3_E4A38(void) {
     return;
 }
 
 // .text:0x000E4BE8 size:0xC8 mapped:0x80723C7C
-typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } E4BE8Ctl;
-static inline u32 e4be8_get78(s32 idx) {
-    return ((E4BE8Ctl*)lbl_3_common_bss_350E4.arr)[idx].f78;
+static inline E4BE8Ctl* e4be8_ctl(s32 idx) {
+    return &lbl_3_common_bss_350E4.arr[idx];
 }
 u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]) {
     Mtx tmp;
-    u8* c;
-    c = (u8*)&((E4BE8Ctl*)lbl_3_common_bss_350E4.arr)[idx];
+    E4BE8Ctl* c = e4be8_ctl(idx);
     CTRLBuildMatrix((Control*)c, m);
-    if (c[0x9D] == 0) {
-        if (c[0xC8] == 0 || c[0xC4] == 0 || c[0xC4] == 5 || c[0xC4] == 4) {
+    if (c->f9D == 0) {
+        if (c->fC8 == 0 || c->fC4 == 0 || c->fC4 == 5 || c->fC4 == 4) {
             return 0;
         }
-        PSMTXCopy(*(void**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(c + 0x74)) + 0x18) + 0x40) + 0xEC), tmp);
+        PSMTXCopy(*(void**)(*(u8**)(*(u8**)((u8*)(*c->p74) + 0x18) + 0x40) + 0xEC), tmp);
         PSMTXConcat(m, tmp, m);
     }
-    return e4be8_get78(idx);
+    return lbl_3_common_bss_350E4.arr[idx].f78;
 }
 
 // .text:0x000E4CB0 size:0x244 mapped:0x80723D44
-void fn_3_E4CB0(s32* a, s32* b) {
-    return;
+// asm stub: a C stub would be inlined into fn_3_E4EF4
+asm void fn_3_E4CB0(s32* a, s32* b) {
+    nofralloc
+    blr
 }
 
 // .text:0x000E4EF4 size:0xD0 mapped:0x80723F88
