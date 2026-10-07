@@ -122,8 +122,36 @@ void fn_3_1112B4(void) {
 }
 
 // .text:0x00111738 size:0x17C mapped:0x807507CC
+extern void ballPhysica(void);
+extern void fn_3_6C854(s32, s32);
+extern void fn_3_8F21C(void);
+extern u8 lbl_3_data_21438[];
+
+// g_Minigame +0x18CC: minigameControlStruct[0].characterIndex[]
+typedef struct { u8 pad[0x18CC]; s8 characterIndex[0x40]; } MgCI;
+
 void fn_3_111738(void) {
-    return;
+    s32 i;
+    ballPhysica();
+    fn_3_1111D0();
+    if (g_Ball[0x1BEE] != 0 && g_Ball[0x1BD1] == 1 &&
+        (*(f32*)(g_Ball + 0x1A00) > *(f32*)(lbl_3_data_21438 + 0xC) || g_Minigame[0x1AD4] != 0)) {
+        ((void (*)(void))fn_3_110AD4)();
+        g_Minigame[0x1AD7] = 1;
+    }
+    for (i = 0; i < 10; i++) {
+        if (g_Minigame[0x1A96 + i] != 0) {
+            g_Minigame[0x1A96 + i]--;
+            if (g_Minigame[0x1A96 + i] == 0) {
+                fn_3_6C854(((MgCI*)g_Minigame)->characterIndex[*(s8*)(g_Minigame + 0x1905)], 0);
+            }
+        }
+    }
+    if (g_Ball[0x1BD1] == 2) {
+        g_Minigame[0x1AD7] = 1;
+    }
+    fn_3_8F21C();
+    ((void (*)(void))fn_3_1112B4)();
 }
 
 // .text:0x001118B4 size:0x1D4 mapped:0x80750948
