@@ -406,8 +406,41 @@ void fn_3_B93C8(void) {
 }
 
 // .text:0x000B93CC size:0x140 mapped:0x806F8460
+extern u8 lbl_80366158[];
+extern void fn_800638CC(void);
+typedef struct StadObjFn {
+    u8 pad[0x7C];
+    void (*fn)(struct StadObjFn*);
+    u8 pad80[0xE8 - 0x80];
+} StadObjFn;
+
 void fn_3_B93CC(void) {
-    return;
+    s32 i;
+    if (g_d_GameSettings[0x55] == 0) {
+        if (g_GameLogic[0x11E] == 0) {
+            *(s16*)(lbl_3_common_bss_350E4 + 0x66) = rand();
+        }
+        if (lbl_80366158[0x28] != 0) {
+            if (g_d_GameSettings[7] == 2 && *(void**)(lbl_3_common_bss_350E4 + 0x1C) != NULL) {
+                (*(void (**)(void))(lbl_3_common_bss_350E4 + 0x1C))();
+            }
+        } else {
+            if (*(void**)(lbl_3_common_bss_350E4 + 0x18) != NULL) {
+                (*(void (**)(void))(lbl_3_common_bss_350E4 + 0x18))();
+            }
+            if (*(void**)(lbl_3_common_bss_350E4 + 0x1C) != NULL) {
+                (*(void (**)(void))(lbl_3_common_bss_350E4 + 0x1C))();
+            }
+            if (g_GameLogic[0x11E] == 0) {
+                fn_800638CC();
+            }
+            for (i = 0; i < *(s32*)(lbl_3_common_bss_350E4 + 0x30); i++) {
+                if (((StadObjFn**)lbl_3_common_bss_350E4)[0][i].fn != NULL) {
+                    ((StadObjFn**)lbl_3_common_bss_350E4)[0][i].fn(&((StadObjFn**)lbl_3_common_bss_350E4)[0][i]);
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000B950C size:0x4 mapped:0x806F85A0
