@@ -124,6 +124,8 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Fixed 4/9-element loops over a struct array get fully unrolled by the compiler** when written as `for (i = 0; i < N; i++) { ...; r += 0x154; }` with a `u8* r` pointer (fn_3_27648, fn_3_86DFC); `for (i = 0; i < 4; i++) { RunnerT* r = &((RunnerT*)g_Runners)[i]; }` with `typedef struct { u8 b[0x154]; } RunnerT;` fixes the pointer-induction form (fn_3_88F98).
 - **Float literal for the constant used once or twice, `extern f32` for the rest** (fn_3_A4158 `2.0f`, fn_3_BB07C `100000.0f`/`0.0f`); declare the float locals in the order `f32 s; f32 a; f32 c;` to get f31/f30 right.
 - **Still unsolved (hoisted global address):** `lis rX, g_Fielders@ha` scheduled before `mr r30, r3` when a function keeps its index across a call (`fn_3_483CC`, `fn_3_7F9C4`).
+- **`lbzu` on a byte reached by a signed index (fn_3_7D920):** `s8 k = *(s8*)(g + i + 0x18FC); if (g[k + 0x1B15] == 2) ... g[k + 0x1B15] = 3;` (the indexed access repeated) gives `add r7, base, k; lbzu 0x1b15(r7)`. A `u8* st = &g[k + 0x1B15]` pointer gives the swapped `add` operands, and a struct gives `addi` with no `lbzu`.
+- **Lerp with `fmuls` before both `fadds` (fn_3_7FFD0):** use a local array `f32 d[2]; d[0] = b.x - a.x; d[1] = b.z - a.z; d[0] *= t; d[1] *= t; out[0] = d[0] + a.x; ...` under `#pragma fp_contract off`. Two scalar locals gave an f4/f5 swap.
 
 Add new patterns to this list as we find them.
 
