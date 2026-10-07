@@ -117,7 +117,7 @@ void fn_3_156218(void);
 void fn_3_156548(void);
 void fn_3_156970(void);
 void fn_3_156D04(void);
-void fn_3_15730C(void);
+void fn_3_15730C(u32 n, f32 x, f32 y, f32 z);
 void fn_3_1573AC(void);
 void fn_3_157570(void);
 void fn_3_157588(int);

@@ -116,6 +116,7 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Brute-force expression/statement orderings:** when only scheduling or operand order differs, generate dozens of variants (term order, grouping, statement permutations) into files and score them all with `fnvariants.py`; this found `fn_3_142030`, `fn_3_1118B4` (`tbl[k] + rand() % 7 - 3`) quickly.
 - **Callee-passthrough arg:** if the original's first `lis` lands in r4 (r3 left untouched), the function takes an unused-looking arg that it forwards to its tail call (`void f(s32 x) { ...; ((void(*)(s32))g)(x); }`, `fn_3_143FAC`).
 - **Redundant `beq L; beq L` pair:** write the condition as `a == 0 || (a != 0 && ...)` (`fn_3_111AC4`).
+- **`li r0,7; divwu` + unrolled `lwz r6,0(r6)` x8 ctr loop is a loop, not a division:** `while (n >= 7) { p = *(u8**)p; n -= 7; }` makes CW compute the trip count with `divwu` (fn_3_1575F0, fn_3_15730C). An inlined helper with an early `return NULL` must be written as `if (p != NULL) {...; return x;} return NULL;` to get `beq` to the tail.
 - **Nested fixed loops fully unrolled with `cmpwi r0,0xa` leftovers:** plain nested `for` over a typedef'd struct with `s16 a[4]; u8 b[4][10]` matched (`fn_3_142CA8`).
 
 - **`bge L; b L` nested early returns (fn_3_BD6AC):** `if (v < 0xD) { if (v >= 0xB) call(); }` and the `return`-style forms all give `blt`; `switch (v) { case 0xB: case 0xC: call(v == 0xC); break; }` produces the original `bge L; b L` shape.
