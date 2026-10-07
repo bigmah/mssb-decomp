@@ -108,7 +108,27 @@ void fn_3_FD51C(s32 i) {
 
 // .text:0x000FD5A8 size:0xC8 mapped:0x8073C63C
 void fn_3_FD5A8(void) {
-    return;
+    s32 i;
+    V3U v = *(V3U*)lbl_3_rodata_30EC;
+    for (i = 0; i < 2; i++) {
+        u8* c = g_Camera + i * 0x9BC;
+        u8* p;
+        *(u32*)(c + 0x140) = 0;
+        *(u32*)(c + 0x144) = 0;
+        p = c + 0x13C;
+        *(V3U*)(p + 0xC) = v;
+        *(u32*)(p + 0x1C) = 0;
+        *(u32*)(p + 0x20) = 0;
+        *(u32*)(p + 0x24) = 0;
+        *(u32*)(p + 0x28) = 0;
+        *(f32*)(p + 0x2C) = 0.0f;
+        *(u32*)(p + 0x30) = 0;
+        *(u32*)(p + 0x34) = 0;
+        *(u32*)(p + 0x38) = 0;
+        *(u32*)(p + 0x3C) = 0;
+        *(u32*)(p + 0x40) = 0;
+        *(f32*)(p + 0x44) = 0.0f;
+    }
 }
 
 // .text:0x000FD670 size:0x38C mapped:0x8073C704
