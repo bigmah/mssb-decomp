@@ -20,6 +20,17 @@ extern const f32 lbl_3_rodata_1258;
 extern const f32 lbl_3_rodata_12A8;
 extern u8 g_Runners[];
 extern void fn_3_5C69C(int);
+extern u8 g_d_GameSettings[];
+extern u8 g_Practice[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_803CBC3C[];
+extern int fn_8001C920(s16);
+typedef struct {
+    u8 pad0[0x24];
+    s16 charID;
+    u8 pad26[0xA0 - 0x26];
+} RosterEntry;
+extern RosterEntry inMemRoster[2][9];
 extern f32 lbl_3_data_5E98[];
 extern f32 lbl_3_data_5F90[];
 
@@ -276,8 +287,19 @@ void fn_3_750C4(u8 v) {
 }
 
 // .text:0x000750DC size:0xD8 mapped:0x806B4170
-void fn_3_750DC(void) {
-    return;
+int fn_3_750DC(void) {
+    s16 id = inMemRoster[*(s32*)(g_GameLogic + 8)][*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0x10) * 0x50 + 0x3C)].charID;
+    if (g_d_GameSettings[7] == 2 && g_Practice[0x193] != 4) {
+        id = *(s16*)(g_Pitcher + 0x11A);
+    }
+    if (lbl_3_common_bss_32724[0x9C] == 0) {
+        lbl_803CBC3C[1] = 0;
+        lbl_3_common_bss_32724[0x9C] = 1;
+    }
+    if (lbl_3_common_bss_32724[0x9C] == 1 && fn_8001C920(id)) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000751B4 size:0x234 mapped:0x806B4248
