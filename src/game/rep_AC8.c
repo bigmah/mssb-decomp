@@ -1092,13 +1092,15 @@ void fn_3_49C18(void) {
     return;
 }
 
+typedef struct { u8 b[0x268]; } FldT;
+
 // .text:0x00049EA8 size:0x94 mapped:0x80688F3C
 void fn_3_49EA8(int i) {
-    u8* p = g_FieldingLogic + i;
+    u8* p;
     s32 off;
     u8* f;
-    p += 0xF8;
-    if (*p != 9) {
+    p = g_FieldingLogic + i;
+    if (*(p += 0xF8) != 9) {
         off = i * 0x268;
         f = g_Fielders + off;
         *(s16*)(f + 0x18C) = 7;
@@ -1113,9 +1115,8 @@ void fn_3_49EA8(int i) {
             *(s16*)(f + 0x1AC) = 0;
             f[0x1FF] = 0;
         }
-        f = g_Fielders + off;
-        f[0x1D6] = 0;
-        *(s16*)(f + 0x190) = -1;
+        ((FldT*)g_Fielders)[i].b[0x1D6] = 0;
+        *(s16*)(((FldT*)g_Fielders)[i].b + 0x190) = -1;
     }
 }
 
