@@ -30,6 +30,10 @@ extern f32 lbl_3_rodata_2D5C;
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
+extern f32 lbl_3_rodata_2DDC;
+extern f32 lbl_3_rodata_2E88;
+extern f64 sin(f64);
+extern f64 cos(f64);
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_B219[];
 extern u8 lbl_3_bss_B55C[];
@@ -468,8 +472,15 @@ void fn_3_F4BA0(u8* p) {
 }
 
 // .text:0x000F4C4C size:0xB4 mapped:0x80733CE0
-void fn_3_F4C4C(void) {
-    return;
+void fn_3_F4C4C(u8* p) {
+    f32 a = -*(f32*)(p + 0xC0);
+    f32 c;
+    a = lbl_3_rodata_2DDC * a;
+    *(f32*)(p + 0xB4) = lbl_3_rodata_2E88 * (f32)sin(a);
+    *(f32*)(p + 0xB8) = 0.0f;
+    c = cos(a);
+    *(f32*)(p + 0xBC) = lbl_3_rodata_2E88 * -c;
+    PSVECScale((Vec*)(p + 0xB4), -1.0f, (Vec*)(p + 0xB4));
 }
 
 // .text:0x000F4D00 size:0xAC mapped:0x80733D94
