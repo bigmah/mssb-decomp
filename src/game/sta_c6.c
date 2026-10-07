@@ -297,8 +297,33 @@ void fn_3_E7364(s32 i) {
 }
 
 // .text:0x000E7388 size:0x9C mapped:0x8072641C
-void fn_3_E7388(void) {
-    return;
+typedef struct { u8 pad[0x90]; u8 f : 1; u8 pad2[0x57]; } E8F;
+typedef struct E7388Pair { f32 f; s32 i; } E7388Pair;
+typedef struct { E8F* arr; u8 pad[0x2C]; s32 count; } E7388G;
+void fn_3_E7388(s32 unused, E7388Pair* out) {
+    E8F* e;
+    E7388Pair* p = out;
+    s32 i;
+    e = &((E7388G*)lbl_3_common_bss_350E4)->arr[((E7388G*)lbl_3_common_bss_350E4)->count - 1];
+    i = ((E7388G*)lbl_3_common_bss_350E4)->count - 1;
+    do {
+        if (!e->f) {
+            p->i = i;
+            p++;
+        }
+        e--;
+    } while (i-- != 0);
+    e = &((E7388G*)lbl_3_common_bss_350E4)->arr[((E7388G*)lbl_3_common_bss_350E4)->count - 1];
+    i = ((E7388G*)lbl_3_common_bss_350E4)->count - 1;
+    p = out + ((E7388G*)lbl_3_common_bss_350E4)->count;
+    do {
+        if (e->f) {
+            p--;
+            p->i = i;
+            p->f = 1.0f;
+        }
+        e--;
+    } while (i-- != 0);
 }
 
 // .text:0x000E7424 size:0xF8 mapped:0x807264B8
