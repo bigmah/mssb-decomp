@@ -7,6 +7,7 @@ extern f32 lbl_3_rodata_2A5C;
 
 extern u32 lbl_3_bss_AE18;
 extern void fn_3_B97DC(void*, u32);
+extern void fn_3_65F4(void);
 typedef struct { u8 pad[0x74]; u8*** p74; u32 f78; u8 pad3[0x9D-0x7C]; u8 f9D; u8 pad4[0xC4-0x9E]; u8 fC4; u8 pad5[3]; u8 fC8; u8 pad2[0xE8 - 0xC9]; } E4BE8Ctl;
 typedef struct {
     E4BE8Ctl* arr;
@@ -246,6 +247,11 @@ void fn_3_E3B88(void) {
     return;
 }
 
+// A callee is inlined only if dont_inline is off both where it is defined and
+// at the end of the file (-inline deferred). fn_3_E4658/fn_3_E4760 inline the
+// functions below, so inlining stays on from here to the end; stubs that are
+// called later must be asm (see fn_3_E4CB0) or they get inlined.
+#pragma dont_inline off
 // .text:0x000E4554 size:0x54 mapped:0x807235E8
 void fn_3_E4554(u8* a) {
     *(u32*)(a + 0xAC) = lbl_3_bss_AE18;
@@ -254,10 +260,6 @@ void fn_3_E4554(u8* a) {
     a[0xCB] = 0;
 }
 
-// With -inline deferred the dont_inline state at the END of the file decides
-// inlining for the whole unit; fn_3_E4658 inlines fn_3_E45F0/fn_3_E45A8, so
-// inlining is back on from here. Stubs called later must be asm (see fn_3_E4CB0).
-#pragma dont_inline off
 // .text:0x000E45A8 size:0x48 mapped:0x8072363C
 void fn_3_E45A8(u8* a) {
     CTRLSetScale((Control*)a, 0.2f, 0.2f, 0.2f);
@@ -278,6 +280,22 @@ void fn_3_E4658(u8* a) {
     *(f32*)(a + 0xA4) = *(f32*)(a + 0xA4) - lbl_3_rodata_2B20;
     fn_3_E45F0(a);
     fn_3_E45A8(a);
+}
+
+// .text:0x000E4760 size:0x170 mapped:0x807237F4
+void fn_3_E4760(u8* a) {
+    fn_3_E4658(a);
+    fn_3_E4554(a);
+    a[0xC5] = 0;
+    a[0xC4] = 0;
+    a[0xC7] = 0;
+    a[0xC8] = 0;
+    if (a[0xCA] != 0) {
+        fn_3_65F4();
+        a[0xCA] = 0;
+        *(f32*)(a + 0xC0) = 0.0f;
+    }
+    a[0xC9] = 0;
 }
 
 // .text:0x000E4A38 size:0x1B0 mapped:0x80723ACC
