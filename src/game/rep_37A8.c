@@ -105,8 +105,24 @@ void fn_3_1428F0(void) {
 }
 
 // .text:0x00142C18 size:0x90 mapped:0x80781CAC
+typedef struct { s16 lo; s16 hi; } MgRange;
+
+// 97%: q/m saved registers swapped (r28/r29); this form matches the inlined copy in fn_3_146928
 void fn_3_142C18(void) {
-    return;
+    u8* q;
+    s8 i;
+    u8 idx;
+
+    q = g_Minigame + 0x1DCC;
+    memset(g_Minigame + 0x1D7C, 0, 0x78);
+    i = 0;
+    do {
+        idx = g_Minigame[0x18DC + i];
+        q[3] = 1;
+        *(s16*)q = RandomInt_Game_Range(((MgRange*)lbl_3_data_21EAC)[idx].lo, ((MgRange*)lbl_3_data_21EAC)[idx].hi);
+        i++;
+        q += 4;
+    } while (i < 4);
 }
 
 // .text:0x00142CA8 size:0x10C mapped:0x80781D3C
@@ -273,6 +289,8 @@ void fn_3_1453BC(void) {
 // .text:0x00145AD0 size:0xC8 mapped:0x80784B64
 typedef struct { f32 x; f32 y; f32 z; } MgV3;
 
+// 97%: volatile regs allocated differently (k r7 vs r8); this form matches the inlined copy in fn_3_145EB8.
+// ((f32*)(g_Minigame + 0xCD0))[p * 3] stores match this function but break fn_3_145EB8.
 void fn_3_145AD0(s32 p) {
     s8 t;
     s32 k;
@@ -373,7 +391,9 @@ void fn_3_146408(void) {
 
 // .text:0x00146928 size:0xA4 mapped:0x807859BC
 void fn_3_146928(void) {
-    return;
+    fn_3_142C18();
+    changeScene(1, 6);
+    fn_3_5A6D4(2);
 }
 
 // .text:0x001469CC size:0xC4 mapped:0x80785A60

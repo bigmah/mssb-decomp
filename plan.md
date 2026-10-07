@@ -141,6 +141,8 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **`lbzu` on a byte reached by a signed index (fn_3_7D920):** `s8 k = *(s8*)(g + i + 0x18FC); if (g[k + 0x1B15] == 2) ... g[k + 0x1B15] = 3;` (the indexed access repeated) gives `add r7, base, k; lbzu 0x1b15(r7)`. A `u8* st = &g[k + 0x1B15]` pointer gives the swapped `add` operands, and a struct gives `addi` with no `lbzu`.
 - **Lerp with `fmuls` before both `fadds` (fn_3_7FFD0):** use a local array `f32 d[2]; d[0] = b.x - a.x; d[1] = b.z - a.z; d[0] *= t; d[1] *= t; out[0] = d[0] + a.x; ...` under `#pragma fp_contract off`. Two scalar locals gave an f4/f5 swap.
 
+- **Callers that inline a same-file function are the easier match:** fn_3_145EB8 (inlines fn_3_145AD0) and fn_3_146928 (inlines fn_3_142C18) matched with plain calls while the callees themselves stay at ~97% on register allocation. Score callee variants with `--also <caller>` and keep the form the caller needs.
+
 Add new patterns to this list as we find them.
 
 ## Phases
