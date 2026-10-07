@@ -1181,8 +1181,17 @@ void fn_3_4D20C(void) {
 }
 
 // .text:0x0004DB84 size:0x90 mapped:0x8068CC18
-void fn_3_4DB84(void) {
-    return;
+int fn_3_4DB84(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (0.0f == *(f32*)(g_Ball + 0x1A18) && 0.0f == *(f32*)(g_Ball + 0x1A1C)) {
+        return 0;
+    }
+    if ((-(*(f32*)(g_Ball + 0x1A18) * *(f32*)(g_Ball + 0x0)) - *(f32*)(g_Ball + 0x1A1C) * *(f32*)(g_Ball + 0x8)) +
+            (*(f32*)(g_Ball + 0x1A18) * *(f32*)(f + 0x0) + *(f32*)(g_Ball + 0x1A1C) * *(f32*)(f + 0x8)) >
+        0.0f) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x0004DC14 size:0x5A8 mapped:0x8068CCA8
