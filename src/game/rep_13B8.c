@@ -123,8 +123,13 @@ void fn_3_7FED4(void) {
 #pragma fp_contract off
 void fn_3_7FFD0(f32* out, int a, int b, f32 t) {
     f32* T = lbl_3_data_4A34;
-    out[0] = t * (T[b * 2] - T[a * 2]) + T[a * 2];
-    out[2] = t * (T[b * 2 + 1] - T[a * 2 + 1]) + T[a * 2 + 1];
+    f32 d[2];
+    d[0] = T[b * 2] - T[a * 2];
+    d[1] = T[b * 2 + 1] - T[a * 2 + 1];
+    d[0] *= t;
+    d[1] *= t;
+    out[0] = d[0] + T[a * 2];
+    out[2] = d[1] + T[a * 2 + 1];
     out[1] = 0.0f;
 }
 #pragma fp_contract on
