@@ -18,6 +18,9 @@ extern s16 lbl_3_bss_B67A;
 extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_rodata_30FC;
+extern const f32 lbl_3_rodata_30F8;
+extern const f32 lbl_3_rodata_3158;
+extern const f32 lbl_3_rodata_315C;
 extern u8 lbl_8036E548[];
 extern void** fn_800111D8(void*);
 extern void fn_800B2C44(void*, u16, Vec*);
@@ -288,8 +291,29 @@ void fn_3_1045A8(void) {
 }
 
 // .text:0x00104740 size:0x1A0 mapped:0x807437D4
+#define DEF(off) (*(f32*)(lbl_3_common_bss_DE94 + (off)))
 void fn_3_104740(void) {
-    return;
+    if (lbl_3_common_bss_DE94[0x9A7] == 2) {
+        DEF(0xC4) = lbl_3_rodata_3158 + CAMF(0x284C);
+        DEF(0xC8) = lbl_3_rodata_3158 + CAMF(0x2850);
+        DEF(0xCC) = lbl_3_rodata_3158 + CAMF(0x2854);
+        DEF(0xD0) = lbl_3_rodata_315C + CAMF(0x284C);
+        DEF(0xD4) = lbl_3_rodata_315C + CAMF(0x2850);
+        DEF(0xD8) = lbl_3_rodata_315C + CAMF(0x2854);
+    } else {
+        DEF(0xC4) = lbl_3_rodata_3158 + CAMF(0x2870);
+        DEF(0xC8) = lbl_3_rodata_3158 + CAMF(0x2874);
+        DEF(0xCC) = lbl_3_rodata_30F8;
+        DEF(0xD0) = lbl_3_rodata_3158 + CAMF(0x2870);
+        DEF(0xD4) = lbl_3_rodata_3158 + CAMF(0x2874);
+        DEF(0xD8) = lbl_3_rodata_30F8;
+    }
+    DEF(0xAC) = CAMF(0x2840);
+    DEF(0xB0) = CAMF(0x2844);
+    DEF(0xB4) = CAMF(0x2848);
+    DEF(0xB8) = lbl_3_rodata_3158 + CAMF(0x2840);
+    DEF(0xBC) = lbl_3_rodata_3158 + CAMF(0x2844);
+    DEF(0xC0) = lbl_3_rodata_3158 + CAMF(0x2848);
 }
 
 // .text:0x001048E0 size:0x15C mapped:0x80743974
