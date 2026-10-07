@@ -45,6 +45,9 @@ extern u8 lbl_8036E548[];
 extern u8 lbl_3_bss_B219[];
 extern u8 lbl_3_bss_B55C[];
 extern u8 lbl_3_bss_B218[];
+extern u8 lbl_3_bss_B21A;
+extern void fn_3_B8414(void* a, void* b);
+extern void fn_3_B8464(void* mtx, void* obj);
 extern void fn_800B4CA0(void*, f32);
 extern void AnimateActorBones(void*);
 extern u8 lbl_3_bss_AEE0[];
@@ -607,8 +610,22 @@ s32 fn_3_F6504(s32 idx, s32 arg) {
 }
 
 // .text:0x000F65C8 size:0x100 mapped:0x8073565C
-void fn_3_F65C8(void) {
-    return;
+void fn_3_F65C8(s32* n) {
+    struct { Control c; u8 pad[0x14]; } c;
+    Mtx m;
+    u16 k;
+    StadObj78* so = &((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21A];
+    void* o;
+    k = (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n - 1] + (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n - 1];
+    (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n] = k;
+    (*(u32**)(lbl_3_common_bss_350E4 + 0x44))[k] = lbl_3_bss_B21A;
+    (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
+    o = (void*)so->w78;
+    c.c.type = 0;
+    CTRLBuildMatrix(&c.c, m);
+    fn_3_B8464(m, o);
+    fn_3_B8414(*(u8**)(lbl_3_common_bss_350E4 + 0x48) + *n * 0x18, *(u8**)(lbl_3_common_bss_350E4 + 0x48) + (*n * 2 + 1) * 0xC);
+    (*n)++;
 }
 
 // .text:0x000F66C8 size:0x270 mapped:0x8073575C
