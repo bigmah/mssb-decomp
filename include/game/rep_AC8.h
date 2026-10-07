@@ -102,7 +102,7 @@ void fn_3_3A1FC(int);
 void fn_3_3A234(void);
 void fn_3_3A584(void);
 void fn_3_3AAF8(int);
-void fn_3_3ABF0(void);
+void fn_3_3ABF0(int i);
 void fn_3_3ACC0(void);
 void fn_3_3AE34(void);
 void fn_3_3B370(void);
