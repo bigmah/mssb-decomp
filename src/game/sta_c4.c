@@ -12,6 +12,11 @@ extern void fn_3_B9510(s32);
 #include "Dolphin/GX/GXPixel.h"
 
 extern u8 lbl_3_bss_B5D4;
+extern const f32 lbl_3_rodata_2FB8[3];
+extern const f32 lbl_3_rodata_2FC4;
+extern const f64 lbl_3_rodata_2FC8;
+extern const f32 lbl_3_rodata_2FD0;
+extern const f32 lbl_3_rodata_2FD4;
 
 // .text:0x000F8444 size:0x10
 void fn_3_F8444(void) {
@@ -19,8 +24,21 @@ void fn_3_F8444(void) {
 }
 
 // .text:0x000F8524 size:0x8C mapped:0x807375B8
-void fn_3_F8524(void) {
-    return;
+void fn_3_F8524(u8* p) {
+    if (p[0x4F] < 0x2A) {
+        *(f32*)(p + 0x14) = lbl_3_rodata_2FC4;
+        *(f32*)(p + 0x4) = lbl_3_rodata_2FB8[0];
+        *(f32*)(p + 0x8) = lbl_3_rodata_2FB8[1] - lbl_3_rodata_2FC8;
+        *(f32*)(p + 0xC) = lbl_3_rodata_2FB8[2];
+        *(f32*)(p + 0x38) = lbl_3_rodata_2FD0;
+        *(f32*)(p + 0x3C) = lbl_3_rodata_2FD4;
+    }
+    p[0x42] = 0xFF;
+    p[0x41] = 0xFF;
+    p[0x40] = 0xFF;
+    p[0x43] = 0xFF;
+    *(s16*)(p + 0x4A) = 0x80;
+    *(s16*)(p + 0x48) = 0;
 }
 
 // .text:0x000F85B0 size:0x2C8 mapped:0x80737644
