@@ -31,7 +31,8 @@ void running_roundBasePosition(f32 frame, VecXZ* outPos, VecXZ* points, int coun
         valuesZ[i] = points[i].z;
     }
     fn_3_1B24(valuesX, valuesZ, timings, curveX, curveZ, count);
-    fn_3_19B0_(frame, outPos, valuesX, valuesZ, timings, curveX, curveZ, count);
+    outPos->x = fn_3_14A4(frame, timings, valuesX, curveX, count);
+    outPos->z = fn_3_14A4(frame, timings, valuesZ, curveZ, count);
 }
 
 inline void fn_3_1B24_inline(f32* values, f32* timings, f32* curve, s32 count)
