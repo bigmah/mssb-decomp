@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 #include "Dolphin/stl.h"
 #include "Dolphin/os.h"
+#include "C3/control.h"
 extern u8 lbl_3_data_19024[];
 
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
@@ -29,6 +30,10 @@ extern char lbl_3_rodata_2BBC[];
 extern u8 lbl_3_common_bss_350E4[];
 
 extern u8 lbl_3_bss_AE80[];
+extern u8* lbl_3_bss_AEB4[];
+typedef struct { f32 x, y, z; } E751CV;
+extern E751CV lbl_3_data_19644[];
+extern f32 lbl_3_data_19698[];
 extern s32 fn_8005268C(void);
 extern u8* fn_80052734(s32);
 extern u8 fn_800B3C04(s32, void*, void*);
@@ -302,8 +307,21 @@ void fn_3_E7424(void) {
 }
 
 // .text:0x000E751C size:0x120 mapped:0x807265B0
-void fn_3_E751C(void) {
-    return;
+typedef struct { f32 x, y, z, r, pad; } E751CP;
+s32 fn_3_E751C(s32 idx, Mtx m) {
+    Control c;
+    u8* o;
+    c.type = 0;
+    o = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+    if (o[0xC1] <= 7) {
+        CTRLSetTranslation(&c, ((E751CP**)lbl_3_bss_AEB4)[0][idx].x, -0.04f, ((E751CP**)lbl_3_bss_AEB4)[0][idx].z);
+        CTRLSetRotation(&c, 0.0f, (*(E751CP**)lbl_3_bss_AEB4)[idx].r, 0.0f);
+    } else {
+        CTRLSetTranslation(&c, lbl_3_data_19644[o[0xC3]].x, -0.04f, lbl_3_data_19644[o[0xC3]].z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[o[0xC3]], 0.0f);
+    }
+    CTRLBuildMatrix(&c, m);
+    return *(s32*)(o + 0x78);
 }
 
 // .text:0x000E763C size:0x3F0 mapped:0x807266D0
