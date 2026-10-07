@@ -32,6 +32,8 @@ extern void fn_80034E20(void*, void*);
 extern void* lbl_803CC1B8[];
 extern u8 lbl_80371C30[];
 extern u8 lbl_3_data_69D0[];
+extern void fn_80024DB0(void*);
+extern void fn_80024FA4(void*, u32, void*, int);
 extern void CTRLSetTranslation(void* c, f32 x, f32 y, f32 z);
 extern void CTRLSetRotation(void* c, f32 x, f32 y, f32 z);
 
@@ -423,8 +425,31 @@ void fn_3_11A92C(u8* q, s32 n) {
 #pragma dont_inline reset
 
 // .text:0x0011AB2C size:0x140 mapped:0x80759BC0
+typedef struct { u8 b : 1; u8 r : 7; } BF1;
 void fn_3_11AB2C(void) {
-    return;
+    s32 n = 2;
+    u8* e;
+    u8* t;
+    if (g_d_GameSettings[7] == 2) {
+        n = 0;
+    }
+    e = *(u8**)(lbl_8036E548 + 0x2D94) + n * 0x28;
+    if (e != NULL) {
+        e[0x26] = 1;
+        fn_3_11A92C(e, n);
+        if (g_Pitcher[0x13E] >= 2 && lbl_80366158[0x28] == 0) {
+            t = lbl_3_common_bss_32724 + 0x10;
+            if (t != NULL) {
+                ((BF1*)(lbl_3_common_bss_32724 + 0x21))->b = 1;
+            }
+            fn_80024DB0(t);
+            fn_80024FA4(*(u8**)(lbl_8036E548 + 0x68) + n * 0x90 + 0x34, *(u32*)(lbl_3_common_bss_32724 + 0x30), t, -1);
+        } else if (g_Pitcher[0x13E] < 2 && *(s16*)(lbl_3_common_bss_32724 + 0x1E) == 0) {
+            *(u16*)(lbl_3_common_bss_32724 + 0x1C) = 0;
+            *(f32*)(lbl_3_common_bss_32724 + 0x10) = *(u16*)(lbl_3_common_bss_32724 + 0x1C);
+            *(s16*)(lbl_3_common_bss_32724 + 0x1E) = 1;
+        }
+    }
 }
 
 // .text:0x0011AC6C size:0xAF0 mapped:0x80759D00
