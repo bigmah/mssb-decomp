@@ -296,8 +296,77 @@ s32 fn_3_B8658(f32* a, f32* b) {
 }
 
 // .text:0x000B867C size:0x1AC mapped:0x806F7710
-void fn_3_B867C(void) {
-    return;
+typedef struct SortEnt {
+    f32 z;
+    s32 idx;
+} SortEnt;
+typedef struct StadVisObj {
+    u8 pad0[0x90];
+    u8 visible : 1;
+    u8 b6 : 1;
+    u8 sorted : 1;
+    u8 b4 : 5;
+    u8 pad91[0xE8 - 0x91];
+} StadVisObj;
+typedef struct StadObjList2 {
+    StadVisObj* objs;
+    u8 pad4[0x2C];
+    s32 count;
+    u8 pad34[0x6C - 0x34];
+    u8 flag6C;
+} StadObjList2;
+extern void CTRLGetTranslation(void*, f32*, f32*, f32*);
+extern void* fn_800ACF34(s32, s32);
+extern void fn_800ACF14(void*);
+extern void fn_800C07BC(void*, void*, s32, s32, s32 (*)(f32*, f32*));
+
+void fn_3_B867C(void* mtx, SortEnt* out) {
+    StadObjList2* c = (StadObjList2*)lbl_3_common_bss_350E4;
+    V3 v;
+    StadVisObj* obj;
+    s32 i;
+    s32 k;
+    s32 n;
+    void* tmp;
+    if (c->flag6C != 0) {
+        n = 0;
+        obj = &c->objs[c->count - 1];
+        i = c->count - 1;
+        do {
+            if (!obj->visible) {
+                out[n].z = -512.0f;
+                out[n].idx = i;
+                n++;
+            }
+            obj--;
+        } while (i-- != 0);
+        k = c->count;
+        i = c->count - 1;
+        obj = &((StadObjList2*)lbl_3_common_bss_350E4)->objs[i];
+        do {
+            if (obj->visible) {
+                if (obj->sorted) {
+                    CTRLGetTranslation(obj, &v.x, &v.y, &v.z);
+                    PSMTXMultVec(mtx, &v, &v);
+                    k--;
+                    out[k].z = v.z;
+                    out[k].idx = i;
+                } else {
+                    out[n].z = -512.0f;
+                    out[n].idx = i;
+                    n++;
+                }
+            }
+            obj--;
+        } while (i-- != 0);
+        tmp = fn_800ACF34(0x20, (c->count - k) * 8);
+        fn_800C07BC(out + k, tmp, c->count - k, 8, fn_3_B8658);
+        fn_800ACF14(tmp);
+    } else {
+        for (i = 0; i < c->count; i++) {
+            out[i].idx = i;
+        }
+    }
 }
 
 // .text:0x000B8828 size:0x3E0 mapped:0x806F78BC

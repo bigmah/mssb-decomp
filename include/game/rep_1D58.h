@@ -15,7 +15,7 @@ void fn_3_B8574(void);
 u32 fn_3_B85A8(int idx, u32* out);
 void fn_3_B85DC(s32 i, void* a, void* b);
 s32 fn_3_B8658(f32* a, f32* b);
-void fn_3_B867C(void);
+void fn_3_B867C(void* mtx, struct SortEnt* out);
 void fn_3_B8828(void);
 void fn_3_B8C08(void);
 void fn_3_B902C(void);
