@@ -350,7 +350,9 @@ void fn_3_135F4C(void) {
 
 // .text:0x00135FF4 size:0x54 mapped:0x80775088
 void fn_3_135FF4(void) {
-    if ((u32)(*(s16*)((u8*)lbl_3_data_21A3C + G8[0x1D73] * 4) * 0x3C) == *(u32*)&G8[0x17C0]) {
+    u8 i = G8[0x1D73];
+    u32 t = *(s16*)((u8*)lbl_3_data_21A3C + i * 4) * 0x3C;
+    if (t == *(u32*)&G8[0x17C0]) {
         G8[0x1D72] = 1;
         *(s16*)&G8[0x1D62] = 0;
         *(f32*)&G8[0x1D48] = lbl_3_rodata_35D0;
