@@ -20,6 +20,8 @@ extern const f32 lbl_3_rodata_1258;
 extern const f32 lbl_3_rodata_12A8;
 extern u8 g_Runners[];
 extern void fn_3_5C69C(int);
+extern f32 lbl_3_data_5E98[];
+extern f32 lbl_3_data_5F90[];
 
 // .text:0x0006F6CC size:0x7C mapped:0x806AE760
 int fn_3_6F6CC(void) {
@@ -313,7 +315,32 @@ void fn_3_75434(void) {
 
 // .text:0x000754B8 size:0xA8 mapped:0x806B454C
 void fn_3_754B8(void) {
-    return;
+    f32 h;
+    f32 a;
+    f32 b;
+    f32 c;
+    f32 d;
+    g_Pitcher[0x13E] = 0;
+    *(s16*)(g_Pitcher + 0x120) = 0;
+    *(f32*)(g_Pitcher + 0xAC) = lbl_3_data_5F90[0];
+    *(f32*)(g_Pitcher + 0xBC) = lbl_3_data_5F90[1];
+    h = lbl_3_rodata_1250;
+    a = lbl_3_data_5E98[0];
+    b = lbl_3_data_5E98[1];
+    c = lbl_3_data_5E98[2];
+    d = lbl_3_data_5E98[3];
+    *(f32*)(g_Pitcher + 0x74) = h * (a + b);
+    *(f32*)(g_Pitcher + 0x78) = h * (c + d);
+    *(f32*)(g_Pitcher + 0x7C) = a;
+    *(f32*)(g_Pitcher + 0x80) = b;
+    *(f32*)(g_Pitcher + 0x84) = c;
+    *(f32*)(g_Pitcher + 0x88) = d;
+    *(f32*)(g_Pitcher + 0x8C) = lbl_3_data_446C[0];
+    *(f32*)(g_Pitcher + 0x90) = lbl_3_data_446C[1];
+    *(s16*)(g_Pitcher + 0x126) = 100;
+    *(s16*)(g_Pitcher + 0x128) = 100;
+    *(s16*)(g_Pitcher + 0x12A) = 100;
+    g_Pitcher[0x173] = 1;
 }
 
 // .text:0x00075560 size:0x45C mapped:0x806B45F4
