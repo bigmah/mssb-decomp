@@ -26,6 +26,16 @@ extern void fn_80035B50(int);
 extern void fn_80018B38(void);
 extern void fn_3_909B0(void);
 extern void fn_3_9081C(void);
+extern void fn_800BDC88(void* p, u16 a, u16 b, u32 c, s32 d, s32 e);
+extern void fn_800BD548(void* p, s32 n, ...);
+extern void fn_80034E20(void*, void*);
+extern void* lbl_803CC1B8[];
+extern u8 lbl_80371C30[];
+extern u8 lbl_3_data_69D0[];
+extern void fn_80024DB0(void*);
+extern void fn_80024FA4(void*, u32, void*, int);
+extern void CTRLSetTranslation(void* c, f32 x, f32 y, f32 z);
+extern void CTRLSetRotation(void* c, f32 x, f32 y, f32 z);
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
 void fn_3_116840(void) {
@@ -170,7 +180,13 @@ void fn_3_118508(void) {
 
 // .text:0x00118614 size:0x138 mapped:0x807576A8
 void fn_3_118614(void) {
-    return;
+    u8* p;
+    s32 i;
+    fn_80034E20(p = lbl_803CC1B8[0], lbl_3_data_69D0);
+    for (i = 0; i < 0x28; i++) {
+        *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x5C) = 0x20000;
+    }
+    *(void**)lbl_803CC1B8[0] = fn_3_118508;
 }
 
 // .text:0x0011874C size:0xD0 mapped:0x807577E0
@@ -409,8 +425,31 @@ void fn_3_11A92C(u8* q, s32 n) {
 #pragma dont_inline reset
 
 // .text:0x0011AB2C size:0x140 mapped:0x80759BC0
+typedef struct { u8 b : 1; u8 r : 7; } BF1;
 void fn_3_11AB2C(void) {
-    return;
+    s32 n = 2;
+    u8* e;
+    u8* t;
+    if (g_d_GameSettings[7] == 2) {
+        n = 0;
+    }
+    e = *(u8**)(lbl_8036E548 + 0x2D94) + n * 0x28;
+    if (e != NULL) {
+        e[0x26] = 1;
+        fn_3_11A92C(e, n);
+        if (g_Pitcher[0x13E] >= 2 && lbl_80366158[0x28] == 0) {
+            t = lbl_3_common_bss_32724 + 0x10;
+            if (t != NULL) {
+                ((BF1*)(lbl_3_common_bss_32724 + 0x21))->b = 1;
+            }
+            fn_80024DB0(t);
+            fn_80024FA4(*(u8**)(lbl_8036E548 + 0x68) + n * 0x90 + 0x34, *(u32*)(lbl_3_common_bss_32724 + 0x30), t, -1);
+        } else if (g_Pitcher[0x13E] < 2 && *(s16*)(lbl_3_common_bss_32724 + 0x1E) == 0) {
+            *(u16*)(lbl_3_common_bss_32724 + 0x1C) = 0;
+            *(f32*)(lbl_3_common_bss_32724 + 0x10) = *(u16*)(lbl_3_common_bss_32724 + 0x1C);
+            *(s16*)(lbl_3_common_bss_32724 + 0x1E) = 1;
+        }
+    }
 }
 
 // .text:0x0011AC6C size:0xAF0 mapped:0x80759D00
@@ -477,7 +516,13 @@ void fn_3_11D1B0(void) {
 }
 
 // .text:0x0011D2C8 size:0xE4 mapped:0x8075C35C
-void fn_3_11D2C8(void) {
-    return;
+void fn_3_11D2C8(s32 idx, s32 start, s32 count, s32 a, s32 b) {
+    s32 k;
+    for (k = start; k < start + count; k++) {
+        fn_800BDC88(*(u8**)(lbl_8036E548 + 0x68), (u16)k, (u16)k, *(u32*)(lbl_8036E548 + idx * 0xC + 0x2DA0), a, b);
+        fn_800BD548(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x34, 4, *(u32*)(lbl_8036E548 + 0xAC), *(u32*)(lbl_8036E548 + 0xB0), *(u32*)(lbl_8036E548 + 0xB4), *(u32*)(lbl_8036E548 + 0xB8));
+        CTRLSetTranslation(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
+    }
 }
 
