@@ -21,6 +21,8 @@ extern f32 lbl_3_rodata_B8C;
 extern f32 lbl_3_rodata_B64;
 extern f32 lbl_3_rodata_C00;
 extern s16 lbl_3_bss_170;
+extern s16 lbl_3_data_484C[];
+extern f32 lbl_3_rodata_B70;
 #pragma dont_inline on
 
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
@@ -757,8 +759,29 @@ void fn_3_3AAF8(int i) {
 }
 
 // .text:0x0003ABF0 size:0xD0 mapped:0x80679C84
-void fn_3_3ABF0(void) {
-    return;
+void fn_3_3ABF0(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 c = *(s16*)(g_FieldingLogic + 0xB0);
+    u8* cf = g_Fielders + c * 0x268;
+    u8* g;
+    if (*(s16*)(g_Ball + 0x1B66) < lbl_3_data_484C[0]) {
+        return;
+    }
+    if (g_FieldingLogic[0x139] != 0) {
+        return;
+    }
+    if (!((cf[0x256] == 1 && ((f32*)(f + 0x84))[c] < lbl_3_rodata_B70) || (cf[0x252] != 0 && cf[0x25B] == 0))) {
+        return;
+    }
+    g = g_Fielders;
+    g += i * 0x268;
+    *(f32*)(g + 0x14) = *(f32*)(f + 0x0);
+    *(f32*)(g + 0x18) = *(f32*)(f + 0x4);
+    *(f32*)(g + 0x1C) = *(f32*)(f + 0x8);
+    *(f32*)(g + 0x30) = lbl_3_rodata_B20;
+    *(f32*)(g + 0x34) = lbl_3_rodata_B20;
+    *(f32*)(g + 0x50) = lbl_3_rodata_B20;
+    *(f32*)(g + 0x68) = lbl_3_rodata_B20;
 }
 
 // .text:0x0003ACC0 size:0x174 mapped:0x80679D54
