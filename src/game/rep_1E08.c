@@ -273,8 +273,30 @@ void fn_3_BDCA4(void) {
 }
 
 // .text:0x000BDE14 size:0x160 mapped:0x806FCEA8
+extern const f32 lbl_3_rodata_1F38;
+extern const f32 lbl_3_rodata_1EB0;
+extern const f64 lbl_3_rodata_1F40;
+extern int rand(void);
+extern void* memcpy(void*, const void*, u32);
+extern BOOL getAnimRelatedCoordinates(int, int, void*);
+extern u8 lbl_3_data_A3C[];
+extern u8 lbl_3_data_11620[];
+typedef struct { u8 pad[0x4C]; V2f pts[0x60]; V2f pts2[0x60]; } BDE14T;
 void fn_3_BDE14(void) {
-    return;
+    u8* q;
+    BDE14T* p;
+    int i;
+    f32 a;
+    q = fn_800B0A5C_insertQueue(fn_3_BDCA4, 3);
+    getAnimRelatedCoordinates(0, 7, q + 0x14);
+    *(s32*)(q + 0x20) = lbl_3_data_A3C[1] - 2;
+    *(BDE14T**)(q + 0x24) = p = (BDE14T*)lbl_3_data_11620;
+    for (i = 0; i < 0x60; i++) {
+        a = (lbl_3_rodata_1F38 * (f32)rand()) / lbl_3_rodata_1EB0;
+        p->pts[i].x = lbl_3_rodata_1F40 * cos(a);
+        p->pts[i].y = lbl_3_rodata_1F40 * sin(a);
+    }
+    memcpy(lbl_3_data_11620 + 0x398, lbl_3_data_11620 + 0x4C, 0x300);
 }
 
 // .text:0x000BDF74 size:0x1CC mapped:0x806FD008
