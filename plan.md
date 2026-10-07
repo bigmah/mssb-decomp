@@ -112,7 +112,7 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Float constants as locals fix scheduling (fn_3_14D318):** `f32* d = (f32*)data; f32 h = 0.5f; ... d[3] * h` matched where the bare literal did not.
 - **`(u32)rand() % 23`** gives `mulhwu`, `rand() % 23` gives signed `mulhw`.
 - **Struct with bitfield for list refcount (fn_3_154238):** `typedef struct { u8 pad0[0xC]; u8* head; u8 pad[4]; u16 hi:4; u16 cnt:12; } H;` then `h->cnt--`; keep `link = &h->head` for the unlink pointer.
-- **Still unsolved:** pooled float constants in float-heavy functions (fn_3_148EF0, fn_3_14C3BC); `divwu` by 7 (fn_3_1575F0, fn_3_15730C: `n / 7` gives mulhwu); fn_3_FCE38/FCEB0 (out-of-line loop init blocks); fn_3_14E894 (99%, `li r30,0; mr r31,r30` zero reg).
+- **Still unsolved:** pooled float constants in float-heavy functions (fn_3_148EF0, fn_3_14C3BC); fn_3_FCE38/FCEB0 (out-of-line loop init blocks); fn_3_14E894 (99%, `li r30,0; mr r31,r30` zero reg).
 - **Brute-force expression/statement orderings:** when only scheduling or operand order differs, generate dozens of variants (term order, grouping, statement permutations) into files and score them all with `fnvariants.py`; this found `fn_3_142030`, `fn_3_1118B4` (`tbl[k] + rand() % 7 - 3`) quickly.
 - **Callee-passthrough arg:** if the original's first `lis` lands in r4 (r3 left untouched), the function takes an unused-looking arg that it forwards to its tail call (`void f(s32 x) { ...; ((void(*)(s32))g)(x); }`, `fn_3_143FAC`).
 - **Redundant `beq L; beq L` pair:** write the condition as `a == 0 || (a != 0 && ...)` (`fn_3_111AC4`).
@@ -142,6 +142,13 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Lerp with `fmuls` before both `fadds` (fn_3_7FFD0):** use a local array `f32 d[2]; d[0] = b.x - a.x; d[1] = b.z - a.z; d[0] *= t; d[1] *= t; out[0] = d[0] + a.x; ...` under `#pragma fp_contract off`. Two scalar locals gave an f4/f5 swap.
 
 - **Callers that inline a same-file function are the easier match:** fn_3_145EB8 (inlines fn_3_145AD0) and fn_3_146928 (inlines fn_3_142C18) matched with plain calls while the callees themselves stay at ~97% on register allocation. Score callee variants with `--also <caller>` and keep the form the caller needs.
+
+- **`n = *p++; p++;` vs `n = *p; p += 2;`:** the post-increment form kept the table pointer in one register (fn_3_105C28). When only the register assignment is off, brute-force every local declaration order with `fnvariants` (720 orders at ~0.15 s each is fine).
+- **Assign a lookup result back into the parameter:** `j = ((u16*)(obj + 0x162))[j];` instead of a new local fixed the register order (fn_3_10617C).
+- **Bool flag type matters:** `u8 flag = i != 0;` gave the original registers where `u32`/`s32` didn't (fn_3_153F8C).
+- **A spare `li r5,0` before a call is not necessarily a third argument:** it can be a zero reused for earlier stores; passing only 2 args matched (fn_3_1536A8 call in fn_3_153F8C).
+- **Still unsolved (rep_3310):** `addi r0, rBase, 0x34; lwzx rD, rIdx, r0` (offset added to the base, then indexed); ~40 source forms all fold 0x34 into the displacement or onto the index (fn_3_11897C, fn_3_1194AC, fn_3_11881C, fn_3_119E30, fn_3_119EE0). fn_3_119878 is written but has the `p`/`g_Minigame` base pointers swapped (r5/r6).
+- **Still unsolved (fn_3_14E894):** `s8 c = i;` before the call gets it to a 2-line diff, but the `li r30,0; mr r31,r30` zero register comes out as a separate `li r31,0` in every form tried (~200 variants).
 
 Add new patterns to this list as we find them.
 
