@@ -216,7 +216,7 @@ static void voiceInitPrioSort() {
   voicePrioSortRootListRoot = 0xffff;
 }
 
-void voiceRemovePriority(const SYNTH_VOICE* svoice) {
+void voiceRemovePriority(SYNTH_VOICE* svoice) {
   SYNTH_VOICELIST* vps = &voicePrioSortVoices[svoice->id & 0xFF]; // r31
   SYNTH_ROOTLIST* rps;                                            // r30
   if (vps->user != 1) {
