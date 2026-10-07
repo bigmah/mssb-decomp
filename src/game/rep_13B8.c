@@ -8,6 +8,16 @@ typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
 
 extern f32 lbl_3_rodata_1498;
+extern const f32 lbl_3_rodata_1408;
+extern const f32 lbl_3_rodata_140C;
+extern const f32 lbl_3_rodata_1410;
+extern const f32 lbl_3_rodata_1414;
+typedef struct { f32 x, z; } XZ13B8;
+extern XZ13B8 lbl_3_data_4A54[2][13];
+extern void running_roundBasePosition(f32 frame, XZ13B8* outPos, XZ13B8* points, int count);
+extern const f64 lbl_3_rodata_1488;
+extern const f32 lbl_3_rodata_143C;
+extern const f32 lbl_3_rodata_1490;
 
 #pragma dont_inline on
 
@@ -153,8 +163,30 @@ void fn_3_7FEA8(s32 i, s32 v) {
 }
 
 // .text:0x0007FED4 size:0xFC mapped:0x806BEF68
-void fn_3_7FED4(void) {
-    return;
+void fn_3_7FED4(f32* out, f32 dist, f32 frame) {
+    XZ13B8 pos;
+    int idx;
+    int count;
+    if (dist < lbl_3_rodata_1408) {
+        idx = 0;
+        count = 4;
+    } else if (dist < lbl_3_rodata_140C) {
+        idx = 3;
+        count = 4;
+    } else if (dist < lbl_3_rodata_1410) {
+        idx = 6;
+        count = 4;
+    } else if (g_GameLogic[0x121] == 6) {
+        idx = 9;
+        count = 4;
+    } else {
+        idx = 9;
+        count = 3;
+    }
+    running_roundBasePosition(frame, &pos, &lbl_3_data_4A54[g_GameLogic[0x121] == 6][idx], count);
+    out[0] = pos.x;
+    out[2] = pos.z;
+    out[1] = lbl_3_rodata_1414;
 }
 
 // .text:0x0007FFD0 size:0x58 mapped:0x806BF064
@@ -258,6 +290,7 @@ void fn_3_82670(void) {
 }
 
 // .text:0x00082F80 size:0xFC mapped:0x806C2014
+// ~70%: second block float regs rotated (zero/step/-lim); see plan.md float loop note
 void fn_3_82F80(void) {
     return;
 }
@@ -308,8 +341,26 @@ void fn_3_85074(void) {
 }
 
 // .text:0x00085744 size:0xFC mapped:0x806C47D8
-void fn_3_85744(void) {
-    return;
+void fn_3_85744(int i) {
+    u8* r = g_Runners + i * 0x154;
+    if (*(f32*)(r + 0x64) > lbl_3_rodata_1488) {
+        return;
+    }
+    if (*(f32*)(r + 0x38) < lbl_3_rodata_143C && g_Ball[0x1BC9] == 3) {
+        r[0x12B] = 0;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xC4) == 5 || *(s16*)(g_FieldingLogic + 0xC4) == 6 ||
+        *(s16*)(g_FieldingLogic + 0xC4) == r[0x125]) {
+        if (*(f32*)(r + 0x68) >= lbl_3_rodata_1490 && r[0x137] == 1 && g_Ball[0x1BBE] <= 3) {
+            r[0x12B] = 0;
+        }
+    }
+    if (*(s16*)(r + 0xE6) >= 0 && r[0x13E] == 2) {
+        r[0x12B] = 1;
+        if (lbl_3_rodata_1498 == *(f32*)(r + 0x84)) {
+            r[0x12B] = 0;
+        }
+    }
 }
 
 // .text:0x00085840 size:0x230 mapped:0x806C48D4
@@ -518,7 +569,25 @@ void fn_3_88F98(void) {
 
 // .text:0x00089028 size:0xF4 mapped:0x806C80BC
 void fn_3_89028(void) {
-    return;
+    int i;
+    for (i = 0; i < 4; i++) {
+        ((RunnerT*)g_Runners)[i].b[0x133] = 0;
+    }
+    for (i = 1; i < 4; i++) {
+        ((RunnerT*)g_Runners)[i].b[0x12A] = 0;
+        ((RunnerT*)g_Runners)[i].b[0x128] = 0;
+        if (((RunnerT*)g_Runners)[i].b[0x123] == 1) {
+            fn_3_85EF4(i, 1);
+        }
+    }
+    if (g_Strikes[1] >= 4) {
+        g_Runners[0x123] = 5;
+    } else if (g_FieldingLogic[0x107] == 4) {
+        g_Runners[0x123] = 1;
+        fn_3_85EF4(0, 1);
+    } else {
+        g_Runners[0x123] = 4;
+    }
 }
 
 // .text:0x0008911C size:0x20 mapped:0x806C81B0
