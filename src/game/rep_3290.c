@@ -156,20 +156,16 @@ void fn_3_114384(void) {
 }
 
 // .text:0x001149B8 size:0x74 mapped:0x80753A4C
-typedef struct { u8 pad[0x72C]; MgEnt_3290 e[1]; } MgBase_3290;
 int fn_3_1149B8(u8* a, u8* b) {
-    u8* pa = (u8*)&g_Minigame + *a * 0x2C;
-    u8* ea = pa + 0x72C;
-    u8 sa = pa[0x754];
-    u8* eb = (u8*)&g_Minigame + *b * 0x2C;
-    eb += 0x72C;
-    if (sa == 3 && eb[0x28] != 3) {
+    MgEnt_3290* ea = (MgEnt_3290*)(g_Minigame + 0x72C + *a * 0x2C);
+    MgEnt_3290* eb = (MgEnt_3290*)(g_Minigame + 0x72C + *b * 0x2C);
+    if (ea->s28 == 3 && eb->s28 != 3) {
         return -1;
     }
-    if (sa != 3 && eb[0x28] == 3) {
+    if (ea->s28 != 3 && eb->s28 == 3) {
         return 1;
     }
-    return ea[0x2A] - eb[0x2A];
+    return ea->s2a - eb->s2a;
 }
 
 // .text:0x00114A2C size:0x5C mapped:0x80753AC0
