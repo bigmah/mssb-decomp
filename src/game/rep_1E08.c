@@ -268,8 +268,28 @@ void fn_3_BD8FC(void) {
 }
 
 // .text:0x000BDCA4 size:0x170 mapped:0x806FCD38
+extern u8 lbl_803CBBC0;
+extern f32 lbl_3_rodata_1E84;
+extern u8 lbl_80366158[];
+extern void fn_800A7D4C(int, void*);
+typedef struct { u8 pad[8]; Mtx m; f32 x, y, z; s32 n; f32 s; u8 pad2[0x34C - 0x4C]; } BDCA4E;
 void fn_3_BDCA4(void) {
-    return;
+    u8* o = lbl_803CC1B8;
+    if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154[0x479] != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    *(s32*)(o + 0x20) -= (lbl_80366158[0x28] != 2);
+    (*(BDCA4E**)(o + 0x24))[lbl_803CBBC0].s = lbl_3_rodata_1E84 / fn_80052768_getCamera(0)->zoom;
+    (*(BDCA4E**)(o + 0x24))[lbl_803CBBC0].x = *(f32*)(o + 0x14);
+    (*(BDCA4E**)(o + 0x24))[lbl_803CBBC0].y = *(f32*)(o + 0x18);
+    (*(BDCA4E**)(o + 0x24))[lbl_803CBBC0].z = *(f32*)(o + 0x1C);
+    (*(BDCA4E**)(o + 0x24))[lbl_803CBBC0].n = *(s32*)(o + 0x20);
+    PSMTXCopy(*(Mtx*)((u8*)fn_80052768_getCamera(0) + 0x40), (*(BDCA4E**)(o + 0x24))[lbl_803CBBC0].m);
+    fn_800A7D4C(0, &(*(BDCA4E**)(o + 0x24))[lbl_803CBBC0]);
+    if (*(s32*)(o + 0x20) == 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 
 // .text:0x000BDE14 size:0x160 mapped:0x806FCEA8
