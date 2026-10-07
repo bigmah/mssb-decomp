@@ -179,6 +179,7 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Statement order picks `addi`+`stfs 0(rX)` or `stfs sym@l(rX)` for a global float (fn_3_8C2DC):** permute the stores in a block; `g176C = k / d; flag = 1; g1764 = hi;` gave the direct stores.
 - **Clamp with a separate converted temp (fn_3_8FC80):** `r = (s32)y; v = r; if (r > tbl[3]) v = tbl[3]; v -= tbl[2]; f = (f32)v / (f32)(tbl[3] - tbl[2]);` (re-read the table, no `max` local) gives `mr r8,r3; ble; mr r8,r0`. Also `(u32)x == 0xFFFFFFFF` gives `addis r0,r3,1; cmplwi r0,0xffff`, `!(a < K)` gives a plain `bge` (no `cror`), and a matched function defined later (`playSoundEffect`) inlines into the caller as a plain call.
 - **Still unsolved (m_sound):** `fn_3_9056C` and `fn_3_90150` address `.data` through one base register (`addi r30, lbl_3_data_8148@l`); `e = (T*)(d + 0x798); e += idx;` fixes the `addi; add` order, but `addi r4,r30,0x1c4; lbzx` stays folded into `add; lbz 0x1c4`. These probably need the `.data` split into this unit. `fn_3_8BA60` is right except the int-to-float magic constant: we load it with `addi; lfd 0(rX)`, the original with `lfd sym@l(rX)`.
+- **`neg/or/srwi 31; addi 2` index (fn_3_C749C):** `i = x ? 3 : 2;` and `i = (x != 0) + 2;` emit the same instructions but allocate `i` / `i*0xC` to different registers; try both. Statement order (flag store before the Vec stores) also mattered even though the scheduler moved the stores.
 
 Add new patterns to this list as we find them.
 
