@@ -82,6 +82,7 @@ void inpSetRPNHi(u8 set, u8 channel, u8 value) {
   u32 i;    // r31
   u8 range; // r29
   u32 frq;
+  u32 frq2;
 
   rpn = (midi_ctrl[set][channel][100]) | (midi_ctrl[set][channel][101] << 8);
   switch (rpn) {
@@ -106,11 +107,11 @@ void inpSetRPNHi(u8 set, u8 channel, u8 value) {
     }
     break;
   case 0x7F7E:
-    frq = (inpChannelDefaults[set][channel].lpfUpperFrqBound & 0x1FF) | (value << 9);
-    inpChannelDefaults[set][channel].lpfUpperFrqBound = frq;
+    frq2 = (inpChannelDefaults[set][channel].lpfUpperFrqBound & 0x1FF) | (value << 9);
+    inpChannelDefaults[set][channel].lpfUpperFrqBound = frq2;
     for (i = 0; i < synthInfo.voiceNum; ++i) {
       if (set == synthVoice[i].midiSet && channel == synthVoice[i].midi) {
-        synthVoice[i].lpfUpperFrqBoundary = frq;
+        synthVoice[i].lpfUpperFrqBoundary = frq2;
       }
     }
     break;
