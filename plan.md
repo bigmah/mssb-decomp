@@ -138,6 +138,8 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **`-inline deferred` reads `#pragma dont_inline` at end of file**, not where the caller is: `#pragma dont_inline off` ... `on` around one caller does nothing. To get a same-file function inlined (`fn_3_145FF4` into `fn_3_1461A4`), remove the file's `dont_inline on` and call the remaining stubs through a cast, `((void (*)(s32))fn_3_14402C)(i)`, which is never inlined (`rep_37A8.c`). `__attribute__((never_inline))`/`__declspec(noinline)` are not supported.
 - **`addi r0, rX, g@l; mr rN, r0` instead of `addi rN, rX, g@l`:** comes from `p = g_Minigame;` followed by `p++`/`p += 0x38` in the loop. Indexing the array by the counter instead (`((T*)g_Minigame)[i].f`) gives the direct `addi` (fn_3_145FF4). Unsolved when a second pointer already advances explicitly (fn_3_142C18, fn_3_146928, 97%).
 - **Fields of the second entry of a struct array:** `p = g_Minigame + 0x38; p[0x2A] = 1; ...` instead of absolute `g_Minigame[0x62]` fixed the base register (r11 vs r9) in fn_3_14423C. A `-1` byte store needs `((s8*)p)[k] = -1` (`li -1`, not `li 0xff`).
+- **`lbzu` on a byte reached by a signed index (fn_3_7D920):** `s8 k = *(s8*)(g + i + 0x18FC); if (g[k + 0x1B15] == 2) ... g[k + 0x1B15] = 3;` (the indexed access repeated) gives `add r7, base, k; lbzu 0x1b15(r7)`. A `u8* st = &g[k + 0x1B15]` pointer gives the swapped `add` operands, and a struct gives `addi` with no `lbzu`.
+- **Lerp with `fmuls` before both `fadds` (fn_3_7FFD0):** use a local array `f32 d[2]; d[0] = b.x - a.x; d[1] = b.z - a.z; d[0] *= t; d[1] *= t; out[0] = d[0] + a.x; ...` under `#pragma fp_contract off`. Two scalar locals gave an f4/f5 swap.
 
 Add new patterns to this list as we find them.
 

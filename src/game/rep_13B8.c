@@ -1,6 +1,7 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
 extern f32 lbl_3_data_4A34[];
+extern s16 lbl_3_data_21904[];
 typedef struct { f32 x, z; } P2;
 
 extern f32 lbl_3_rodata_1498;
@@ -31,8 +32,27 @@ void fn_3_7D79C(void) {
 }
 
 // .text:0x0007D920 size:0xBC mapped:0x806BC9B4
-void fn_3_7D920(void) {
-    return;
+void fn_3_7D920(int i) {
+    u8* r = g_Runners + i * 0x154;
+    s8 k = *(s8*)(g_Minigame + i + 0x18FC);
+    if (g_Minigame[k + 0x1B15] == 2) {
+        if (g_Minigame[0x1B19] == 0) {
+            g_Minigame[k + 0x1B15] = 3;
+            *(s16*)(r + 0x108) = 0;
+        }
+        return;
+    }
+    if (*(s16*)(r + 0x108) < lbl_3_data_21904[1]) {
+        *(f32*)(r + 0x0) += *(f32*)(r + 0x18);
+        *(f32*)(r + 0x8) += *(f32*)(r + 0x20);
+    } else {
+        g_Minigame[k + 0x1B15] = 2;
+    }
+    if (*(s16*)(r + 0x108) < 0x7FFE) {
+        *(s16*)(r + 0x108) += 1;
+    } else {
+        *(s16*)(r + 0x108) = 0x7FFF;
+    }
 }
 
 // .text:0x0007D9DC size:0x154 mapped:0x806BCA70
@@ -138,8 +158,13 @@ void fn_3_7FED4(void) {
 #pragma fp_contract off
 void fn_3_7FFD0(f32* out, int a, int b, f32 t) {
     f32* T = lbl_3_data_4A34;
-    out[0] = t * (T[b * 2] - T[a * 2]) + T[a * 2];
-    out[2] = t * (T[b * 2 + 1] - T[a * 2 + 1]) + T[a * 2 + 1];
+    f32 d[2];
+    d[0] = T[b * 2] - T[a * 2];
+    d[1] = T[b * 2 + 1] - T[a * 2 + 1];
+    d[0] *= t;
+    d[1] *= t;
+    out[0] = d[0] + T[a * 2];
+    out[2] = d[1] + T[a * 2 + 1];
     out[1] = 0.0f;
 }
 #pragma fp_contract on
