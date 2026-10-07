@@ -7,8 +7,9 @@ extern f32 lbl_3_rodata_2A5C;
 
 extern u32 lbl_3_bss_AE18;
 extern void fn_3_B97DC(void*, u32);
+typedef struct { u8 pad[0x74]; u8*** p74; u32 f78; u8 pad3[0x9D-0x7C]; u8 f9D; u8 pad4[0xC4-0x9E]; u8 fC4; u8 pad5[3]; u8 fC8; u8 pad2[0xE8 - 0xC9]; } E4BE8Ctl;
 typedef struct {
-    u8* arr;
+    E4BE8Ctl* arr;
     u8 pad0[0x30 - 4];
     s32 count;
     u8 pad1[0x3C - 0x34];
@@ -285,23 +286,21 @@ void fn_3_E4A38(void) {
 }
 
 // .text:0x000E4BE8 size:0xC8 mapped:0x80723C7C
-typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } E4BE8Ctl;
-static inline u32 e4be8_get78(s32 idx) {
-    return ((E4BE8Ctl*)lbl_3_common_bss_350E4.arr)[idx].f78;
+static inline E4BE8Ctl* e4be8_ctl(s32 idx) {
+    return &lbl_3_common_bss_350E4.arr[idx];
 }
 u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]) {
     Mtx tmp;
-    u8* c;
-    c = (u8*)&((E4BE8Ctl*)lbl_3_common_bss_350E4.arr)[idx];
+    E4BE8Ctl* c = e4be8_ctl(idx);
     CTRLBuildMatrix((Control*)c, m);
-    if (c[0x9D] == 0) {
-        if (c[0xC8] == 0 || c[0xC4] == 0 || c[0xC4] == 5 || c[0xC4] == 4) {
+    if (c->f9D == 0) {
+        if (c->fC8 == 0 || c->fC4 == 0 || c->fC4 == 5 || c->fC4 == 4) {
             return 0;
         }
-        PSMTXCopy(*(void**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(c + 0x74)) + 0x18) + 0x40) + 0xEC), tmp);
+        PSMTXCopy(*(void**)(*(u8**)(*(u8**)((u8*)(*c->p74) + 0x18) + 0x40) + 0xEC), tmp);
         PSMTXConcat(m, tmp, m);
     }
-    return e4be8_get78(idx);
+    return lbl_3_common_bss_350E4.arr[idx].f78;
 }
 
 // .text:0x000E4CB0 size:0x244 mapped:0x80723D44
