@@ -15,6 +15,7 @@ extern s16 lbl_3_bss_B702;
 extern f32 lbl_3_rodata_35D0;
 extern f32 lbl_3_data_21A48[];
 extern f32 lbl_3_rodata_35D8;
+extern f32 lbl_3_rodata_3620;
 extern f32 lbl_3_rodata_35DC;
 extern f32 lbl_3_rodata_3638;
 extern s16 lbl_3_data_21A3C[];
@@ -122,13 +123,17 @@ void fn_3_13493C(void) {
 }
 
 // .text:0x00134C80 size:0xCC mapped:0x80773D14
-void fn_3_134C80(void) {
-    return;
+int fn_3_134C80(u32 a, u32 b, u32 c, f32 x, f32 y) {
+    if (G8[0x1D72] != 0 && a != (s8)G8[0x1D6D] && (c == ((b + 1) & 3) || c == ((b + 2) & 3))) {
+        return 1;
+    }
+    return !!fn_3_134D4C(lbl_3_data_21A48[0], lbl_3_data_21A48[2], lbl_3_rodata_3620,
+                         g_Fielders[(s8)G8[a + 0x18F8]].x, g_Fielders[(s8)G8[a + 0x18F8]].z, x, y);
 }
 
 // .text:0x00134D4C size:0x370 mapped:0x80773DE0
-void fn_3_134D4C(void) {
-    return;
+int fn_3_134D4C(f32 ax, f32 az, f32 r, f32 bx, f32 bz, f32 x, f32 y) {
+    return 0;
 }
 
 // .text:0x001350BC size:0x400 mapped:0x80774150
@@ -138,13 +143,15 @@ void fn_3_1350BC(void) {
 
 // .text:0x001354BC size:0x64 mapped:0x80774550
 int fn_3_1354BC(int idx, f32 x, f32 y) {
-    u8* p = G8 + (idx << 6);
-    f32 ax = fabs(*(f32*)&p[0xBB0] - x);
-    f32 ay = fabs(*(f32*)&p[0xBB8] - y);
-    if (ax <= lbl_3_rodata_35D8 && ay <= lbl_3_rodata_35DC) {
-        return 1;
+    int r = 0;
+    f64 ax = fabs(((f32*)(G8 + 0xBB0))[idx * 16] - x);
+    f64 ay = fabs(((f32*)(G8 + 0xBB8))[idx * 16] - y);
+    f32 fx = ax;
+    f32 fy = ay;
+    if (fx <= lbl_3_rodata_35D8 && fy <= lbl_3_rodata_35DC) {
+        r = 1;
     }
-    return 0;
+    return r;
 }
 
 // .text:0x00135520 size:0xE0 mapped:0x807745B4
@@ -376,20 +383,20 @@ void fn_3_136048(void) {
 
 // .text:0x001360BC size:0x164 mapped:0x80775150
 void fn_3_1360BC(int p) {
-    s16 n = *(s16*)((u8*)lbl_3_data_21B20 + 6);
     s16* pts;
+    int n;
     u8* f;
     int i;
     int k;
-    G8[0x1DF4 + p] = 1;
     f = (u8*)g_Fielders + (s8)G8[0x18F8 + p] * 0x268;
+    G8[0x1DF4 + p] = 1;
     pts = (s16*)(G8 + 0x1890) + p;
+    n = *(s16*)((u8*)lbl_3_data_21B20 + 6);
     if (*pts < n) {
         n = *pts;
     }
     if (n != 0) {
-        k = 0;
-        for (i = 0; i < 0x32; i++) {
+        for (i = 0, k = 0; i < 0x32; i++) {
             if (G8[0x193A + i] == 0) {
                 *(f32*)(G8 + i * 12 + 0xCD0) = *(f32*)(f + 0);
                 *(f32*)(G8 + i * 12 + 0xCD4) = *(f32*)(f + 4);
