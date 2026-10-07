@@ -199,7 +199,41 @@ void fn_3_DE308(void) {
 
 // .text:0x000DE4FC size:0x114 mapped:0x8071D590
 void fn_3_DE4FC(void) {
-    return;
+    s32 i;
+    s32 j;
+    s16 score;
+    s32 rank;
+    s32 n;
+
+    g_Minigame[0x18E8] = 0;
+    g_Minigame[0x18EC] = 0;
+    g_Minigame[0x18E9] = 0;
+    g_Minigame[0x18ED] = 0;
+    g_Minigame[0x18EA] = 0;
+    g_Minigame[0x18EE] = 0;
+    g_Minigame[0x18EB] = 0;
+    g_Minigame[0x18EF] = 0;
+    for (i = 0; i < g_Minigame[0x1906]; i++) {
+        rank = 1;
+        score = *(s16*)(g_Minigame + 0x1890 + i * 2);
+        for (j = 0; j < g_Minigame[0x1906]; j++) {
+            if (*(s16*)(g_Minigame + 0x1890 + j * 2) > score) {
+                rank++;
+            }
+        }
+        g_Minigame[0x18E8 + i] = rank;
+        g_Minigame[0x18EC + i] = rank;
+    }
+    for (n = 0; n < 4; n++) {
+        if (g_Minigame[0x18E8 + n] > 1) {
+            break;
+        }
+    }
+    if (n >= 4 && g_Minigame[0x1906] > 1) {
+        g_Minigame[0x19A8] = 1;
+    } else {
+        g_Minigame[0x19A8] = 0;
+    }
 }
 
 // .text:0x000DE610 size:0x134 mapped:0x8071D6A4
