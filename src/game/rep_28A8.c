@@ -17,7 +17,7 @@ extern void fn_3_2E87C(void);
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
 extern void fn_3_1DD48(void*);
-extern struct { u8 pad[0xC]; s16 n; } lbl_3_common_bss_34C90;
+extern struct { u8 pad[0xC]; s16 n; u8 pad2[0x1C4]; u8 b1D2; } lbl_3_common_bss_34C90;
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
 extern u8 g_Ball[];
@@ -237,8 +237,31 @@ void fn_3_DE4FC(void) {
 }
 
 // .text:0x000DE610 size:0x134 mapped:0x8071D6A4
+extern u8 g_Pitcher[];
+extern s32 g_Strikes[];
+
 void fn_3_DE610(void) {
-    return;
+    g_Minigame[0x199F] = 0;
+    if (g_Minigame[0x19A6] != 0) {
+        g_Minigame[0x19A6]--;
+        if (g_Pitcher[0x14E] == 2 || g_Pitcher[0x14E] == 3) {
+            g_Minigame[0x19A6] = 3;
+        }
+    }
+    g_Strikes[2] = 0;
+    g_Strikes[3] = 0;
+    g_Minigame[0x19A5] = 1;
+    if (((s8)g_Minigame[0x1905] != (s8)g_Minigame[0x19C6] || g_Minigame[0x18E8 + (s8)g_Minigame[0x1905]] == 1) &&
+        *(s16*)(g_Minigame + 0x19B6) >= *(s16*)(g_Minigame + 0x19B4)) {
+        lbl_3_common_bss_34C90.b1D2 = 0;
+        fn_3_5A6D4(0xE);
+        return;
+    }
+    if (*(s16*)(g_Minigame + 0x19B6) < *(s16*)(g_Minigame + 0x19B4) && (*(s16*)(g_Minigame + 0x19B6) % 10) == 0) {
+        fn_3_5A6D4(3);
+        return;
+    }
+    fn_3_5A6D4(7);
 }
 
 // .text:0x000DE744 size:0x44C mapped:0x8071D7D8
