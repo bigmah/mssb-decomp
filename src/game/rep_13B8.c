@@ -518,7 +518,25 @@ void fn_3_88F98(void) {
 
 // .text:0x00089028 size:0xF4 mapped:0x806C80BC
 void fn_3_89028(void) {
-    return;
+    int i;
+    for (i = 0; i < 4; i++) {
+        ((RunnerT*)g_Runners)[i].b[0x133] = 0;
+    }
+    for (i = 1; i < 4; i++) {
+        ((RunnerT*)g_Runners)[i].b[0x12A] = 0;
+        ((RunnerT*)g_Runners)[i].b[0x128] = 0;
+        if (((RunnerT*)g_Runners)[i].b[0x123] == 1) {
+            fn_3_85EF4(i, 1);
+        }
+    }
+    if (g_Strikes[1] >= 4) {
+        g_Runners[0x123] = 5;
+    } else if (g_FieldingLogic[0x107] == 4) {
+        g_Runners[0x123] = 1;
+        fn_3_85EF4(0, 1);
+    } else {
+        g_Runners[0x123] = 4;
+    }
 }
 
 // .text:0x0008911C size:0x20 mapped:0x806C81B0
