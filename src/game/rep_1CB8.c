@@ -32,8 +32,22 @@ int fn_3_B7C2C(Vec* a, Vec* b) {
 }
 
 // .text:0x000B7CDC size:0x90 mapped:0x806F6D70
-void fn_3_B7CDC(void) {
-    return;
+int fn_3_B7CDC(f32 a, f32 b) {
+    VecSrcDst p;
+    CollisionStruct c;
+    u32 t;
+    p.src.x = a;
+    p.src.y = -100.0f;
+    p.src.z = b;
+    p.dst.x = a;
+    p.dst.y = 100.0f;
+    p.dst.z = b;
+    t = checkCollision(&p, &c, 0, 0);
+    t &= 0x7F;
+    if (t == 1 || t == 6 || t == 9 || t == 10 || t == 50) {
+        return 0;
+    }
+    return 1;
 }
 
 // .text:0x000B7D6C size:0x6C mapped:0x806F6E00
