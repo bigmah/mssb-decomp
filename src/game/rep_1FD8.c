@@ -70,6 +70,15 @@ extern void DOVARenderSkin(void*, void*, void*, void*, int, int);
 extern void fn_8003A8A0();
 extern u32 lbl_3_bss_9D88;
 extern u16 lbl_3_data_177F0;
+typedef struct Rep1FD8Ent {
+    u8 pad0[8];
+    Mtx m;
+    void* w38;
+} Rep1FD8Ent;
+extern Rep1FD8Ent lbl_3_data_17804[];
+extern u8 lbl_803CBBC0[];
+extern u32 lbl_3_bss_9D90;
+extern void fn_800A7D4C(int, Rep1FD8Ent*);
 
 void fn_3_C1964(void) {
     lbl_3_bss_9D9C = 1;
@@ -94,7 +103,17 @@ void fn_3_C1C18(void) {
 
 // .text:0x000C2244 size:0xCC mapped:0x807012D8
 void fn_3_C2244(void) {
-    return;
+    u8* p = lbl_803CC1B8;
+    if (*(s32*)&lbl_3_bss_9D9C != 0) {
+        lbl_3_bss_9D90 = 0;
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (p[0x2A] != 0) {
+        fn_800A7D4C(1, &lbl_3_data_17804[lbl_803CBBC0[0]]);
+        PSMTXCopy((MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40), lbl_3_data_17804[lbl_803CBBC0[0]].m);
+        lbl_3_data_17804[lbl_803CBBC0[0]].w38 = p;
+    }
 }
 
 // .text:0x000C2310 size:0xD0 mapped:0x807013A4
