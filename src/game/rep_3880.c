@@ -949,8 +949,17 @@ void fn_3_157588(int n) {
 }
 
 // .text:0x001575F0 size:0x8C mapped:0x80796684
-void fn_3_1575F0(void) {
-    return;
+void* fn_3_1575F0(u32 n) {
+    u8* p = ((u8**)&lbl_3_bss_B850)[0];
+    if (p != NULL) {
+        p = *(u8**)(p + 0xC);
+        while (n >= 7) {
+            p = *(u8**)p;
+            n -= 7;
+        }
+        return p + n * 0xC + 4;
+    }
+    return NULL;
 }
 
 // .text:0x0015767C size:0x27C mapped:0x80796710
