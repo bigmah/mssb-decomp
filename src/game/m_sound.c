@@ -42,6 +42,10 @@ extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32,
 extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
 extern void sndRemoveEmitter(void*);
+extern u8 lbl_3_bss_1760[];
+typedef struct Snd1760 { u8 pad0; u8 on; u8 pad2[0xE]; u8 lo; u8 hi; } Snd1760;
+extern u16 fn_800A8864(void);
+extern void fn_800A8878(u8, u8);
 
 #include "static/UnknownHomes_Static.h"
 extern void* lbl_3_bss_1768;
@@ -198,8 +202,27 @@ void fn_3_8C2DC(void) {
 }
 
 // .text:0x0008C4F0 size:0xD8 mapped:0x806CB584
-void fn_3_8C4F0(void) {
-    return;
+s32 fn_3_8C4F0(u32 div, u8 lim) {
+    Snd1760* st = (Snd1760*)lbl_3_bss_1760;
+    u16 v;
+    u8 hi;
+    u8 lo;
+    v = fn_800A8864();
+    S34C58.unk2F = 0;
+    hi = (v >> 8) & 0xFF;
+    lo = v & 0xFF;
+    if (st->on == 0) {
+        st->on = 1;
+        st->hi = hi / div;
+        st->lo = lo / div;
+    }
+    if ((s16)(hi - st->hi) <= lim || div == 1) {
+        st->on = 0;
+        fn_800A8878(lim, lim);
+        return 0;
+    }
+    fn_800A8878(hi - st->hi, lo - st->lo);
+    return 1;
 }
 
 // .text:0x0008C5C8 size:0x7AC mapped:0x806CB65C
