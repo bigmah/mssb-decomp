@@ -187,10 +187,12 @@ int fn_3_135520(f32 x, f32 y, f32 r) {
 
 // .text:0x00135600 size:0x4C mapped:0x80774694
 void fn_3_135600(f32* outX, f32* outY, f32 x, f32 y) {
-    f32 dy = y - lbl_3_data_21A48[2];
-    f32 dx = x - lbl_3_data_21A48[0];
-    *outX = dx * *(f32*)&G8[0x1DF0] - dy * *(f32*)&G8[0x1DEC];
-    *outY = dx * *(f32*)&G8[0x1DEC] + dy * *(f32*)&G8[0x1DF0];
+    f32* d = lbl_3_data_21A48;
+    u8* g = G8;
+    f32 dy = y - d[2];
+    f32 dx = x - d[0];
+    *outX = dx * *(f32*)&g[0x1DF0] - dy * *(f32*)&g[0x1DEC];
+    *outY = dx * *(f32*)&g[0x1DEC] + dy * *(f32*)&g[0x1DF0];
 }
 
 // .text:0x0013564C size:0x4C mapped:0x807746E0
