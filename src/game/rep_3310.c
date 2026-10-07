@@ -83,8 +83,29 @@ void fn_3_11741C(s32 i) {
 }
 
 // .text:0x00117494 size:0xF4 mapped:0x80756528
+extern const f32 lbl_3_rodata_33C0;
+extern const f32 lbl_3_rodata_33C4;
+extern const f32 lbl_3_rodata_33C8;
+
 void fn_3_117494(void) {
-    return;
+    u8* g = g_Minigame;
+    u8* p = *(u8**)(lbl_8036E548 + 0x2D94);
+    p[0x252E] = 0;
+    p[0xFEE] = 0;
+    *(void**)(p + 0x2508) = NULL;
+    if (g[0xCCE] != 0 && (*(s16*)(g + 0xCCC) > 0x3C || *(s16*)(g + 0xCCC) % 2 != 0)) {
+        p[0x252E] = 1;
+        *(void**)(p + 0x2508) = fn_3_11741C;
+        *(f32*)(p + 0x250C) = *(f32*)(g + 0xCB0);
+        *(f32*)(p + 0x2510) = -*(f32*)(g + 0xCB4);
+        *(f32*)(p + 0x2514) = *(f32*)(g + 0xCB8);
+        fn_8001D0D0(0xED, lbl_3_rodata_33C0);
+        p[0xFEE] = 1;
+        *(f32*)(p + 0xFCC) = *(f32*)(g + 0xCB0);
+        *(f32*)(p + 0xFD0) = lbl_3_rodata_33C4;
+        *(f32*)(p + 0xFD4) = *(f32*)(g + 0xCB8);
+        fn_8001D0D0(0x65, lbl_3_rodata_33C8);
+    }
 }
 
 // .text:0x00117588 size:0x464 mapped:0x8075661C
