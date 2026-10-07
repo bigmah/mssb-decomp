@@ -112,6 +112,9 @@ void fn_3_706B8(int idx) {
 }
 
 // .text:0x00070768 size:0xD0 mapped:0x806AF7FC
+// 98.9%: int fn_3_70768(f32* out, int flag, f32 lim), a do/while trajectory step loop;
+// all matches except the final lerp `*out = px + (x - px) * (1.0f - (y - lim) / (y - py))`
+// (needs a `t = ...; *out = px + t;` split to avoid fmadds), whose regs (f4/f1/f0) never matched.
 void fn_3_70768(void) {
     return;
 }
