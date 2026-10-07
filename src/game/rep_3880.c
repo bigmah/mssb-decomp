@@ -16,6 +16,7 @@ extern f32 fn_3_119854(u8 i);
 
 extern u8 lbl_8036E548[];
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/GX.h"
 
 
 extern u8 g_Minigame[];
@@ -117,7 +118,23 @@ void fn_3_147E20(void) {
 
 // .text:0x00147F94 size:0x14C mapped:0x80787028
 void fn_3_147F94(void) {
-    return;
+    GXSetZMode(1, 7, 1);
+    GXSetBlendMode(1, 4, 5, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevColorIn(0, 0xF, 0xF, 0xF, 0xA);
+    GXSetTevAlphaIn(0, 7, 7, 7, 5);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetTevOp(0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
 }
 
 // .text:0x001480E0 size:0x174 mapped:0x80787174
