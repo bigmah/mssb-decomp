@@ -82,9 +82,51 @@ void fn_3_110AD4(void) {
     return;
 }
 
+extern u8 g_d_GameSettings[];
+extern u8 lbl_3_common_bss_37400[];
+extern u8 lbl_3_data_213EC[];
+extern void fn_3_1608F0(s32, s32, u8);
+
+// g_Minigame: Bomb-omb Derby fields
+typedef struct {
+    u8 pad0[0x1890];
+    s16 curPoints[4];
+    s16 latestPoints[4];
+    u8 pad1[0x1905 - 0x18A0];
+    s8 rosterID;
+    u8 pad2[0x1A8E - 0x1906];
+    s16 hitPower[4];
+    u8 pad3[0x1ACC - 0x1A96];
+    u8 hrStreak[8];
+    u8 pad4;
+    u8 kingBomb;
+} MgBOD;
+
 // .text:0x00111038 size:0x198 mapped:0x807500CC
 void fn_3_111038(void) {
-    return;
+    MgBOD* mg = (MgBOD*)g_Minigame;
+    s16 dist = *(s16*)(g_Ball + 0x1B9E);
+    u8 cnt;
+    s32 off;
+    f32 f;
+    (g_Minigame + 0x1ACC)[mg->rosterID * 2]++;
+    if (mg->hitPower[mg->rosterID] < dist) {
+        mg->hitPower[mg->rosterID] = dist;
+    }
+    f = dist;
+    off = mg->rosterID * 2;
+    cnt = (g_Minigame + 0x1ACC)[off];
+    if (cnt > 1) {
+        f += *(s16*)(lbl_3_data_213EC + 0x10) * cnt;
+    }
+    if (((MgBOD*)g_Minigame)->kingBomb != 0) {
+        f += *(s16*)(lbl_3_data_213EC + 0xE);
+    }
+    *(s16*)((u8*)((MgBOD*)g_Minigame)->latestPoints + off) = f;
+    ((MgBOD*)g_Minigame)->curPoints[mg->rosterID] += (s16)f;
+    if (g_d_GameSettings[8] == 0 && mg->rosterID == *(s16*)(lbl_3_common_bss_37400 + 0x40)) {
+        fn_3_1608F0(0, f, ((MgBOD*)g_Minigame)->kingBomb);
+    }
 }
 
 // .text:0x001111D0 size:0x80 mapped:0x80750264
