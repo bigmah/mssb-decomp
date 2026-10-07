@@ -4,6 +4,7 @@ extern f32 lbl_3_data_4A34[];
 extern u8 lbl_3_data_4B58[];
 extern int fn_3_52560(int, f32, f32);
 extern s16 lbl_3_data_21904[];
+extern s16 lbl_3_data_4C54[];
 typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
 
@@ -146,8 +147,32 @@ void fn_3_7FA78(void) {
 }
 
 // .text:0x0007FD90 size:0x118 mapped:0x806BEE24
-void fn_3_7FD90(void) {
-    return;
+void fn_3_7FD90(int i) {
+    u8* r = g_Runners + i * 0x154;
+    int v;
+    if ((r[0x145] == 0 || r[0x146] == 0) && r[0x13A] == 0) {
+        if (*(s16*)(r + 0x112) >= lbl_3_data_4C54[3] || (r[0x137] != 1 && r[0x137] != 3)) {
+            u8 s = r[0x135];
+            if (s != 0) {
+                if (g_GameLogic[0x121] == 6) {
+                    if (r[0x123] == 1) {
+                        r[0x136] = s;
+                    }
+                } else {
+                    if ((i != 0 || r[0x126] != 1) && r[0x123] == 1) {
+                        r[0x136] = s;
+                    }
+                    if (r[0x136] == 3 && r[0x128] != 3 && *(s16*)(r + 0xE6) >= 0) {
+                        r[0x136] = 0;
+                    }
+                }
+            }
+        }
+        v = ((int (*)(void))fn_3_7FA78)();
+        if (v != 0) {
+            r[0x136] = v;
+        }
+    }
 }
 
 // .text:0x0007FEA8 size:0x2C mapped:0x806BEF3C
