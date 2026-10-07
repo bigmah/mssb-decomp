@@ -290,6 +290,7 @@ void fn_3_82670(void) {
 }
 
 // .text:0x00082F80 size:0xFC mapped:0x806C2014
+// ~70%: second block float regs rotated (zero/step/-lim); see plan.md float loop note
 void fn_3_82F80(void) {
     return;
 }
