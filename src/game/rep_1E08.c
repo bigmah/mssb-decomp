@@ -147,8 +147,45 @@ void fn_3_BC850(int a, int i) {
 }
 
 // .text:0x000BC888 size:0x198 mapped:0x806FB91C
+extern f32 lbl_3_bss_9964;
+extern f32 lbl_3_data_12CB4;
+extern void fn_8003A550(s32, Vec*, Vec*, s32);
+extern BOOL getAnimRelatedCoordinates(int, int, void*);
 void fn_3_BC888(void) {
-    return;
+    Mtx m;
+    Vec c;
+    Vec v;
+    u8* o;
+    s32 i;
+    s32 k;
+    for (i = 0; i < 13; i++) {
+        o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+        if (o != NULL) {
+            if (o[0x25D] == 0) {
+                o[0x279] = 0;
+            } else {
+                PSMTXRotRad(m, 'Y', *(f32*)(o + 0x44));
+                v.x = lbl_3_bss_9964;
+                v.y = lbl_3_rodata_1E68;
+                v.z = lbl_3_data_12CB4;
+                PSMTXMultVec(m, &v, &v);
+                k = o[0x276] & 0x14;
+                if (k == 0x10 && (o[0x275] & 0x7F) == 6) {
+                    getAnimRelatedCoordinates(i, 0x22, &c);
+                    c.y = 0.0f;
+                    fn_8003A550(i, &c, &v, !o[0x25A]);
+                }
+                o[0x279] = (k == 4);
+                k = o[0x276] & 0xA;
+                if (k == 8 && (o[0x275] & 0x7F) == 6) {
+                    getAnimRelatedCoordinates(i, 0x1E, &c);
+                    c.y = 0.0f;
+                    fn_8003A550(i, &c, &v, o[0x25A]);
+                }
+                o[0x279] |= (k == 2) << 1;
+            }
+        }
+    }
 }
 
 // .text:0x000BCA20 size:0x7B4 mapped:0x806FBAB4
