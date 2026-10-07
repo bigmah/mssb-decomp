@@ -225,7 +225,39 @@ void fn_3_73718(void) {
 
 // .text:0x0007372C size:0x124 mapped:0x806B27C0
 void fn_3_7372C(void) {
-    return;
+    int i;
+    u8* r;
+    int stop = 0;
+    if (g_Pitcher[0x14E] == 3) {
+        r = g_Runners + 0x154;
+        for (i = 1; i < 4; i++) {
+            if (r[0x123] == 1 || r[0x123] == 5) {
+                if (stop == 0) {
+                    r[0x125] = i;
+                    fn_3_89864(i, 1);
+                } else {
+                    r[0x125] = r[0x124];
+                    r[0x126] = (r[0x125] + 1) & 3;
+                }
+            } else {
+                stop = 1;
+            }
+            r += 0x154;
+        }
+    } else {
+        r = g_Runners + 0x154;
+        for (i = 1; i < 4; i++) {
+            if (r[0x123] != 1 && r[0x123] != 5) {
+                break;
+            }
+            if (i == r[0x125]) {
+                fn_3_89864(i, 1);
+            }
+            r += 0x154;
+        }
+    }
+    g_Runners[0x125] = 1;
+    g_Runners[0x126] = 2;
 }
 
 // .text:0x00073850 size:0x58 mapped:0x806B28E4
