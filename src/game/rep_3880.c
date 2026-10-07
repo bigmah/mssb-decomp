@@ -10,6 +10,9 @@ extern void* fn_800337CC(void*, int, int, void*);
 extern s8 lbl_3_bss_B85C[];
 extern void fn_80033794(void*);
 extern u8 lbl_3_data_26BDC[];
+extern u8 lbl_3_data_26BEC[];
+extern f32 lbl_3_rodata_3A18;
+extern f32 fn_3_119854(u8 i);
 
 extern u8 lbl_8036E548[];
 #include "static/UnknownHomes_Static.h"
@@ -774,8 +777,26 @@ void fn_3_1536A8(void) {
 }
 
 // .text:0x00153E8C size:0x100 mapped:0x80792F20
-void fn_3_153E8C(void) {
-    return;
+void fn_3_153E8C(u8* obj, f32* pos, u8 b, u8 c, u8 d) {
+    f32 r;
+    *(s16*)(obj + 0x48) = (d != 0) * *(s32*)(lbl_3_data_26BEC + 0xC) + (s32)(d * *(s32*)(lbl_3_data_26BDC + 0xC)) / *(s32*)lbl_3_data_26BDC;
+    obj[0x4D] = c == 4;
+    obj[0x4E] = 0;
+    obj[0x4F] = b;
+    obj[0x42] = 0xFF;
+    obj[0x41] = 0xFF;
+    obj[0x40] = 0xFF;
+    obj[0x43] = *(s32*)(lbl_3_data_26BDC + 4);
+    *(f32*)(obj + 0x1C) = pos[0];
+    if (obj[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    *(f32*)(obj + 0x20) = -pos[1] - lbl_3_rodata_3A18 * r;
+    *(f32*)(obj + 0x24) = pos[2];
+    obj[0x45] = 0;
+    obj[0x44] = 0;
 }
 
 // .text:0x00153F8C size:0x158 mapped:0x80793020
