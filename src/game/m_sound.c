@@ -46,6 +46,9 @@ extern u8 lbl_3_bss_1760[];
 typedef struct Snd1760 { u8 pad0; u8 on; u8 pad2[0xE]; u8 lo; u8 hi; } Snd1760;
 extern u16 fn_800A8864(void);
 extern void fn_800A8878(u8, u8);
+extern s32 fn_3_1650C(int* outX, int* outY, s32 r5, f32 pX, f32 pY, f32 pZ);
+extern u8 lbl_3_data_8338[];
+extern u8 lbl_800EF808[];
 
 #include "static/UnknownHomes_Static.h"
 extern void* lbl_3_bss_1768;
@@ -311,8 +314,24 @@ void fn_3_8FF18(void) {
 }
 
 // .text:0x0008FF5C size:0x108 mapped:0x806CEFF0
-void fn_3_8FF5C(void) {
-    return;
+u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z) {
+    int sx;
+    int sy;
+    u32 pan = 0x3F;
+    u32 vid;
+    if (lbl_800EF808[0x396] == 1) {
+        fn_3_1650C(&sx, &sy, 1, x, -y, z);
+        if (sx < 0) {
+            pan = 0;
+        } else if (sx > 640) {
+            pan = 0x7F;
+        } else {
+            pan = (s32)(127.0f * ((f32)sx / 640.0f));
+        }
+    }
+    vid = sndFXStartEx(id, lbl_3_data_8338[id * 2 - 0x2A2], pan, 0);
+    sndFXCtrl(vid, 0x5B, lbl_3_data_8338[id * 2 - 0x2A1]);
+    return vid;
 }
 
 // .text:0x00090064 size:0xEC mapped:0x806CF0F8
