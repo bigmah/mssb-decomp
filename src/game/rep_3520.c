@@ -633,19 +633,28 @@ void fn_3_139CA0(void) {
 
 // .text:0x00139F84 size:0xC4 mapped:0x80779018
 void fn_3_139F84(void) {
-    u32 i = 0;
+    u32 i;
+    u8* a;
+    s16* b;
+    u8* c;
     fn_3_139CA0();
     fn_3_139808();
-    for (; i < 100; i++) {
-        if (G8[0x193A + i] == 3) {
-            ((s16*)G8)[0xBE4 + i]++;
-            PSVECAdd((Vec*)(G8 + i * 12 + 0xCD0), (Vec*)(G8 + i * 12 + 0x1180), (Vec*)(G8 + i * 12 + 0xCD0));
-            *(f32*)(G8 + i * 12 + 0x1184) += *(f32*)(lbl_3_data_219B8 + 0x2C);
-            if (*(f32*)(G8 + i * 12 + 0x1184) < lbl_3_rodata_35D0) {
-                G8[0x193A + i] = 0;
+    a = G8;
+    b = (s16*)G8;
+    c = G8;
+    for (i = 0; i < 100; i++) {
+        if (a[0x193A] == 3) {
+            b[0xBE4]++;
+            PSVECAdd((Vec*)(c + 0xCD0), (Vec*)(c + 0x1180), (Vec*)(c + 0xCD0));
+            *(f32*)(c + 0x1184) += *(f32*)(lbl_3_data_219B8 + 0x2C);
+            if (*(f32*)(c + 0x1184) < lbl_3_rodata_35D0) {
+                a[0x193A] = 0;
                 G8[0x1D6C]--;
             }
         }
+        a++;
+        b++;
+        c += 12;
     }
 }
 
