@@ -10,6 +10,6 @@ int fn_3_B7CDC(f32 a, f32 b);
 int fn_3_B7D6C(f32 a, f32 b);
 int fn_3_B7DD8(f32 a, f32 b);
 int fn_3_B7E10(f32 a, f32 b);
-void fn_3_B7E44(void);
+int fn_3_B7E44(s16 a, f32 y);
 
 #endif // !__GAME_rep_1CB8_H_

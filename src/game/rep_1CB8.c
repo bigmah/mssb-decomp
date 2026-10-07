@@ -3,6 +3,8 @@
 
 extern f32 lbl_3_data_4444[];
 extern f32 lbl_3_rodata_1D3C;
+extern f32 lbl_3_rodata_1D48;
+extern f32 lbl_3_rodata_1D4C;
 extern f32 lbl_3_rodata_1D08;
 extern f32 lbl_3_rodata_1D38;
 
@@ -73,7 +75,17 @@ int fn_3_B7E10(f32 a, f32 b) {
 }
 
 // .text:0x000B7E44 size:0xAC mapped:0x806F6ED8
-void fn_3_B7E44(void) {
-    return;
+int fn_3_B7E44(s16 a, f32 y) {
+    f32 t;
+    s16 d;
+    if (a < 0x1E0 || a > 0x620) {
+        return 0;
+    }
+    d = 0x200 - __abs(a - 0x400);
+    t = 0.06 * d;
+    if (lbl_3_rodata_1D48 + t < y) {
+        return 2;
+    }
+    return lbl_3_rodata_1D4C + t < y;
 }
 
