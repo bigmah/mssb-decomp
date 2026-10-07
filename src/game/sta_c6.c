@@ -327,6 +327,10 @@ void fn_3_E7388(s32 unused, E7388Pair* out) {
 }
 
 // .text:0x000E7424 size:0xF8 mapped:0x807264B8
+// 90%: needs this unit's .bss (AE50..AEE0) defined as statics; the AE80 u8[4] array is addressed as addi r8,base,0x30.
+// Draft: s = AE50; if (g_GameLogic.gameStatus == 1 || == 0) { s38++; s[0x30..0x33] = g_Minigame._1914.._1917 != 0;
+// *(s8*)&1963F = *(s8*)&19640 = -1; } s[0x2C] = s[0x2B]; s[0x2B] = g_Minigame.toyFieldBallStateResult;
+// s34 += lbl_80366158[0x28] == 0; if (s[0x2C] != s[0x2B]) s34 = 0; s[1] = 0;
 void fn_3_E7424(void) {
     return;
 }
