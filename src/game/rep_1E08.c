@@ -410,8 +410,33 @@ void fn_3_BDE14(void) {
 }
 
 // .text:0x000BDF74 size:0x1CC mapped:0x806FD008
+typedef struct { u8 pad[0x6E4]; V2f pts[0x60]; } BDF74T;
 void fn_3_BDF74(void) {
-    return;
+    u8* o = lbl_803CC1B8;
+    BDF74T* p;
+    int i;
+    f32 a;
+    if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154[0x479] != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (*(s16*)(o + 0x10) != 0) {
+        *(s16*)(o + 0x10) -= 1;
+        return;
+    }
+    *(f32*)(o + 0x14) = *(f32*)(g_Ball + 0x354);
+    *(f32*)(o + 0x18) = -*(f32*)(g_Ball + 0x358);
+    *(f32*)(o + 0x1C) = *(f32*)(g_Ball + 0x35C);
+    *(s32*)(o + 0x20) = lbl_3_data_A3C[1] - 2;
+    p = (BDF74T*)lbl_3_data_11620;
+    *(u8**)(o + 0x24) = lbl_3_data_11620 + 0x698;
+    for (i = 0; i < 0x60; i++) {
+        a = (lbl_3_rodata_1F38 * (f32)rand()) / lbl_3_rodata_1EB0;
+        p->pts[i].x = lbl_3_rodata_1F40 * cos(a);
+        p->pts[i].y = lbl_3_rodata_1F40 * sin(a);
+    }
+    memcpy(lbl_3_data_11620 + 0xA30, lbl_3_data_11620 + 0x6E4, 0x300);
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_3_BDCA4;
 }
 
 // .text:0x000BE140 size:0x34 mapped:0x806FD1D4
