@@ -166,32 +166,24 @@ void fn_3_BD1D8(void) {
 }
 
 // .text:0x000BD434 size:0xBC mapped:0x806FC4C8
+typedef struct { f32 x, y, z; u8 pad; u8 pad1; u8 e; u8 pad2; } BD434E;
+typedef struct { u8 pad[0x3B8]; BD434E* p; f32 x, y, z; s32 c8; s32 cc; f32 d0, d4, d8, dc; u8 e0; } BD434S;
+#define G (*(BD434S*)lbl_3_common_bss_35154)
 void fn_3_BD434(int a, int b) {
-    u8* p = lbl_3_data_12354 + (a + b * 7) * 0xA0;
-    u8* c = lbl_3_common_bss_35154;
     int n;
-    u8* c2;
-    u8* q;
-    *(u8**)(c + 0x3B8) = p;
-    n = 0;
-    *(s32*)(c + 0x3CC) = 0x1518;
-    *(s32*)(c + 0x3C8) = 0;
-    *(f32*)(c + 0x3D0) = lbl_3_rodata_1F18;
-    *(f32*)(c + 0x3D4) = lbl_3_rodata_1F1C;
-    *(f32*)(c + 0x3D8) = lbl_3_rodata_1E64;
-    while (p[0xE] < 4) {
-        p += 0x10;
-        n++;
+    G.p = (BD434E*)(lbl_3_data_12354 + (a + b * 7) * 0xA0);
+    G.cc = 0x1518;
+    G.c8 = 0;
+    G.d0 = lbl_3_rodata_1F18;
+    G.d4 = lbl_3_rodata_1F1C;
+    G.d8 = lbl_3_rodata_1E64;
+    for (n = 0; G.p[n].e < 4; n++) {
     }
-    c2 = lbl_3_common_bss_35154;
-    c2[0x3E0] = 1;
-    n *= 0x10;
-    q = *(u8**)(c + 0x3B8);
-    *(f32*)(c2 + 0x3BC) = *(f32*)(q + n);
-    q += n;
-    *(f32*)(c2 + 0x3C0) = *(f32*)(q + 4);
-    *(f32*)(c2 + 0x3C4) = *(f32*)(q + 8);
-    *(f32*)(c2 + 0x3DC) = lbl_3_rodata_1F20;
+    G.e0 = 1;
+    G.x = G.p[n].x;
+    G.y = G.p[n].y;
+    G.z = G.p[n].z;
+    G.dc = lbl_3_rodata_1F20;
 }
 
 // .text:0x000BD4F0 size:0x14 mapped:0x806FC584
