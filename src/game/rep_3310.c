@@ -114,8 +114,29 @@ void fn_3_117588(void) {
 }
 
 // .text:0x001179EC size:0xF8 mapped:0x80756A80
+extern const f32 lbl_3_rodata_33DC;
+
 void fn_3_1179EC(void) {
-    return;
+    u8* e;
+    f32* v;
+    u32 i;
+    for (i = 0; i < 4; i++) {
+        e = *(u8**)(lbl_8036E548 + 0x2D94) + (i + 0xE9) * 0x28;
+        v = (f32*)(g_Minigame + i * 0x40 + 0xBB0);
+        e[0x26] = 0;
+        *(void**)e = NULL;
+        if (g_Minigame[i * 0x40 + 0xBED] != 0) {
+            e[0x26] = 1;
+            *(f32*)(e + 4) = v[0];
+            *(f32*)(e + 8) = -v[1];
+            *(f32*)(e + 0xC) = v[2];
+            *(f32*)(e + 0x10) = lbl_3_rodata_33DC * v[6];
+            *(f32*)(e + 0x14) = lbl_3_rodata_33DC * v[7];
+            *(f32*)(e + 0x18) = lbl_3_rodata_33DC * v[8];
+            fn_8001D0D0(i + 0xE9, lbl_3_rodata_33C0);
+            *(void**)e = fn_3_117588;
+        }
+    }
 }
 
 // .text:0x00117AE4 size:0x94 mapped:0x80756B78
