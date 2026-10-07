@@ -374,11 +374,28 @@ void fn_3_105C84(u8* p) {
 
 // .text:0x00105CDC size:0x124 mapped:0x80744D70
 void fn_3_105CDC(void) {
-    return;
+    Vec* arr = *(Vec**)(lbl_3_common_bss_DE94 + 0x98);
+    s32 i;
+    for (i = 0; i < 1000; i++) {
+        Vec* v = &arr[i];
+        s32 x, z;
+        if (-1000.0 == v->x || -1000.0 == v->y || -1000.0 == v->z) {
+            continue;
+        }
+        x = (s32)v->x * 320 + 320;
+        z = (s32)v->z * 224 + 224;
+        if (i == 135) {
+            i = 135;
+        }
+        if (i == 5) {
+            i = 5;
+        }
+        fn_3_105E00(x / 50 + 150, -z / 50 + 400, 2, 2);
+    }
 }
 
 // .text:0x00105E00 size:0x214 mapped:0x80744E94
-void fn_3_105E00(void) {
+void fn_3_105E00(s16 x, s16 y, s32 a, s32 b) {
     return;
 }
 
