@@ -17,6 +17,9 @@ extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_81DC[];
 extern s32 lbl_3_bss_B574[];
 extern u8 lbl_3_bss_B664;
+extern u8 lbl_3_bss_B630[];
+extern const f32 lbl_3_rodata_3064;
+extern void AnimateActorBones(void*);
 extern u8* lbl_3_bss_B628[];
 extern u8 lbl_80371C30[];
 extern void fn_800528C0(f32, f32, f32, s16*, s16*);
@@ -172,8 +175,27 @@ void fn_3_F9B9C(void) {
 }
 
 // .text:0x000F9D94 size:0xE4 mapped:0x80738E28
-void fn_3_F9D94(void) {
-    return;
+void fn_3_F9D94(u8* o) {
+    typedef struct { u8 pad[0x90]; u8 a : 1; u8 b : 1; u8 c : 6; } FlagObj90;
+    u8** anim = *(u8***)(o + 0x74);
+    s32 i;
+    if (*(f32*)(o + 0x9C) >= *(f32*)(*(u8**)(*(u8**)(anim[1] + 4) + 4) + *(u16*)((u8*)anim + 0xE) * 0x10)) {
+        ((FlagObj90*)o)->a = 0;
+        *(u32*)(o + 0x74) = 0;
+        *(u32*)(o + 0x78) = 0;
+        *(u32*)(o + 0x7C) = 0;
+        *(u32*)(o + 0x80) = 0;
+        ((FlagObj90*)o)->b = 0;
+        for (i = 0; i < 9; i++) {
+            if (lbl_3_bss_B630[i] == o[0xA0]) {
+                lbl_3_bss_B630[i] = 0xFF;
+                break;
+            }
+        }
+    } else {
+        AnimateActorBones(anim[0]);
+        *(f32*)(o + 0x9C) = *(f32*)(o + 0x9C) + lbl_3_rodata_3064;
+    }
 }
 
 // .text:0x000F9E78 size:0x548 mapped:0x80738F0C

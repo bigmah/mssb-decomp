@@ -21,7 +21,7 @@ void fn_3_F963C(void);
 void fn_3_F976C(void);
 void fn_3_F99F0(void);
 void fn_3_F9B9C(void);
-void fn_3_F9D94(void);
+void fn_3_F9D94(u8* o);
 void fn_3_F9E78(void);
 void fn_3_FA3C0(void);
 void fn_3_FA58C(void);
