@@ -648,6 +648,46 @@ void fn_3_B9D68(void) {
 }
 
 // .text:0x000B9FB8 size:0x198 mapped:0x806F904C
-void fn_3_B9FB8(void) {
-    return;
+typedef struct LitPos {
+    f32 x, y, z;
+    u32 color;
+} LitPos;
+extern u8 lbl_800F7478[];
+extern void (*lbl_3_data_10AB0[])(void*);
+extern void fn_3_35E4(u32 val);
+extern void fn_80023B90(void*, LitPos*);
+extern void LITAlloc(void**);
+extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
+extern void LITInitPos(void*, f32, f32, f32);
+extern void LITInitColor(void*, u32*);
+extern void fn_8001B214(void (*)(void));
+
+void fn_3_B9FB8(u32 type, void* p) {
+    LitPos pos;
+    void* lit;
+    u32 color;
+    s32 i;
+    fn_8001E474();
+    memset(lbl_3_common_bss_350E4, 0, 0x70);
+    fn_3_35E4(0);
+    if (p != NULL) {
+        for (i = 0; i < 4; i++) {
+            fn_80023B90(lbl_800F7478 + g_d_GameSettings[0x54] * 0x2C + i * 10, &pos);
+            LITAlloc(&lit);
+            LITInitAttn(lit, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+            LITInitPos(lit, pos.x, pos.y, pos.z);
+            color = pos.color;
+            LITInitColor(lit, &color);
+            *(void**)(lbl_3_common_bss_350E4 + 0x20 + i * 4) = lit;
+        }
+        *(void**)(lbl_3_common_bss_350E4 + 0x38) = p;
+        *(u32*)(lbl_3_common_bss_350E4 + 0x8) = 0;
+        *(u32*)(lbl_3_common_bss_350E4 + 0xC) = 0;
+        lbl_3_data_10AB0[type](p);
+        *(void**)(lbl_3_common_bss_350E4 + 0x14) = _OSAllocFromHeap(4, *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 8);
+        fn_8001B214(fn_3_B8298);
+        *(s16*)(lbl_3_common_bss_350E4 + 0x66) = rand();
+        lbl_8036E548[0x3088] = 1;
+        lbl_3_bss_1901 = 0;
+    }
 }
