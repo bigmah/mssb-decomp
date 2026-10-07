@@ -157,6 +157,8 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **One `fctiwz` but several `stfd`/`lwz` pairs (fn_3_111038):** each distinct conversion expression gets its own stack temp, sharing the fctiwz. `arr[i] = f; cur[i] += (s16)f; call(f)` gave the original's 0x20 / 0x28 / 0x28 slots; using `(s32)f` twice CSEs the second `lwz` away.
 - **`slwi rX, idx, 1` reused for a byte array (`[idx*2]`) and an s16 array (`[idx]`):** CW won't CSE the two; take `s32 off = idx * 2;` and use it for both (`*(s16*)((u8*)s16arr + off)`). Mixing a `MgStruct* mg = (MgStruct*)g_Minigame` local with fresh `((MgStruct*)g_Minigame)->x` accesses reproduces the original's re-materialised `lis/addi` base registers.
 - **Stub callee in a file without `dont_inline on`:** when the caller must still inline another same-file function (`fn_3_1111D0` into `fn_3_111738`), call the remaining stubs through a cast, `((void (*)(void))fn_3_110AD4)()`.
+- **Table lookup of a `rand()` index scheduled before other stores (fn_3_14E9F0):** `u8 k = tbl[(u32)rand() % 23];` as its own statement before the `v.z = v.y = v.x = 0.0f` stores matched; putting the lookup inside the call argument moved the `lis`/`lbz` around.
+- **Repeat a common subexpression instead of a local (fn_3_14B3F4):** writing `(1.0f - t)` in each of three lerps (CW CSEs it) gave the original f3/f4/f5 allocation; a `u = 1.0f - t` local did not. Likewise `d = *(s16*)(a+0x34) - *(s16*)(a+0x36)` with the 0x34 field re-read later (no `s16 n` local) gave the original load order.
 
 Add new patterns to this list as we find them.
 
