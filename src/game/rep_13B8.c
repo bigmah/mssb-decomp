@@ -561,7 +561,21 @@ void fn_3_8A4C8(void) {
 
 // .text:0x0008A4E4 size:0xC0 mapped:0x806C9578
 void fn_3_8A4E4(void) {
-    return;
+    int i;
+    for (i = 0; i < 4; i++) {
+        u8* r = ((RunnerT*)g_Runners)[i].b;
+        *(f32*)(r + 0x0) = ((P2*)lbl_3_data_4A34)[i].x;
+        *(f32*)(r + 0x8) = ((P2*)lbl_3_data_4A34)[i].z;
+        *(f32*)(r + 0x18) = 0.0f;
+        *(f32*)(r + 0x1C) = 0.0f;
+        *(f32*)(r + 0x20) = 0.0f;
+        r[0x124] = i;
+        r[0x125] = i;
+        r[0x126] = (i + 1) & 3;
+        *(s16*)(r + 0xE6) = i;
+        r[0x127] = 0xFF;
+        r[0x133] = 0;
+    }
 }
 
 // .text:0x0008A5A4 size:0x74 mapped:0x806C9638
