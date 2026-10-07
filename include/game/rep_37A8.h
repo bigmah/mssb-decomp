@@ -28,7 +28,7 @@ void fn_3_14471C(void);
 void fn_3_144ADC(void);
 void fn_3_144CB8(void);
 void fn_3_1453BC(void);
-void fn_3_145AD0(void);
+void fn_3_145AD0(s32 p);
 void fn_3_145B98(void);
 void fn_3_145EB8(void);
 void fn_3_145FF4(void);

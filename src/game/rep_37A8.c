@@ -15,6 +15,7 @@ extern void changeScene(s32, s32);
 extern void* memset(void*, s32, u32);
 extern s16 RandomInt_Game_Range(s16, s16);
 extern s16 lbl_3_data_21EAC[];
+extern u8 lbl_3_data_21D34[];
 extern u8 lbl_80366158[];
 extern s32 lbl_3_bss_B7E4;
 extern u8 lbl_3_bss_B800[];
@@ -270,8 +271,26 @@ void fn_3_1453BC(void) {
 }
 
 // .text:0x00145AD0 size:0xC8 mapped:0x80784B64
-void fn_3_145AD0(void) {
-    return;
+typedef struct { f32 x; f32 y; f32 z; } MgV3;
+
+void fn_3_145AD0(s32 p) {
+    s8 t;
+    s32 k;
+    u8* m;
+    u8* g;
+
+    k = 0;
+    t = *(s8*)(g_Minigame + p + 0x1BB6);
+    m = g_Minigame + t * 3;
+    for (; k < 3; k++, m++) {
+        if (*(s8*)(m + 0x1C7E) == p) {
+            break;
+        }
+    }
+    g = g_Minigame + p * 0xC;
+    *(f32*)(g + 0xCD0) = ((MgV3*)(lbl_3_data_21D34 + g_Minigame[t + 0x1CAD] * 0x24))[k].x;
+    *(f32*)(g + 0xCD4) = ((MgV3*)(lbl_3_data_21D34 + g_Minigame[t + 0x1CAD] * 0x24))[k].y;
+    *(f32*)(g + 0xCD8) = ((MgV3*)(lbl_3_data_21D34 + g_Minigame[t + 0x1CAD] * 0x24))[k].z;
 }
 
 // .text:0x00145B98 size:0x320 mapped:0x80784C2C
@@ -281,7 +300,18 @@ void fn_3_145B98(void) {
 
 // .text:0x00145EB8 size:0x13C mapped:0x80784F4C
 void fn_3_145EB8(void) {
-    return;
+    s32 i;
+    u8 v;
+
+    ((void (*)(void))fn_3_145B98)();
+    for (i = 0; i < 50; i++) {
+        v = g_Minigame[i + 0x193A];
+        if (v == 5 || v == 6) {
+            ((void (*)(s32))fn_3_1453BC)(i);
+        } else if (v == 2) {
+            fn_3_145AD0(i);
+        }
+    }
 }
 
 // .text:0x00145FF4 size:0x1B0 mapped:0x80785088
