@@ -219,7 +219,19 @@ void fn_3_FB3D8(void) {
 }
 
 // .text:0x000FBBA0 size:0x130 mapped:0x8073AC34
-void fn_3_FBBA0(void) {
-    return;
+void fn_3_FBBA0(u8* t) {
+    GXTexObj tex;
+    GXTlutObj tlut;
+    if (*(u32*)(t + 4) != 0) {
+        GXInitTexObjCI(&tex, *(void**)t, *(u16*)(t + 0xA), *(u16*)(t + 8), (GXCITexFmt) * (u8*)(t + 0x17), (GXTexWrapMode) * (u8*)(t + 0xC),
+                       (GXTexWrapMode) * (u8*)(t + 0xD), t[0x15] != t[0x16], 0);
+        GXInitTlutObj(&tlut, *(void**)(t + 4), (GXTlutFmt) * (u8*)(t + 0x1A), *(u16*)(t + 0x18));
+        GXLoadTlut(&tlut, 0);
+    } else {
+        GXInitTexObj(&tex, *(void**)t, *(u16*)(t + 0xA), *(u16*)(t + 8), (GXTexFmt) * (u8*)(t + 0x17), (GXTexWrapMode) * (u8*)(t + 0xC),
+                     (GXTexWrapMode) * (u8*)(t + 0xD), t[0x15] != t[0x16]);
+    }
+    GXInitTexObjLOD(&tex, (GXTexFilter)t[0xE], (GXTexFilter)t[0xF], (f32)t[0x15], (f32)t[0x16], *(f32*)(t + 0x10), 0, 0, GX_ANISO_1);
+    GXLoadTexObj(&tex, GX_TEXMAP0);
 }
 
