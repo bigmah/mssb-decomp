@@ -16,7 +16,7 @@ void fn_3_8BE8C(void);
 void fn_3_8C07C(void);
 void fn_3_8C104(void);
 void fn_3_8C2DC(void);
-void fn_3_8C4F0(void);
+s32 fn_3_8C4F0(u32 div, u8 lim);
 void fn_3_8C5C8(void);
 void fn_3_8CD74(void);
 void fn_3_8D9C0(void);
@@ -26,7 +26,7 @@ void fn_3_8F21C(void);
 void fn_3_8FC0C(void);
 void fn_3_8FC80(void);
 void fn_3_8FF18(void);
-void fn_3_8FF5C(void);
+u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z);
 void fn_3_90064(s32 id);
 void fn_3_90150(void);
 

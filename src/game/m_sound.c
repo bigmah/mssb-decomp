@@ -42,6 +42,13 @@ extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32,
 extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
 extern void sndRemoveEmitter(void*);
+extern u8 lbl_3_bss_1760[];
+typedef struct Snd1760 { u8 pad0; u8 on; u8 pad2[0xE]; u8 lo; u8 hi; } Snd1760;
+extern u16 fn_800A8864(void);
+extern void fn_800A8878(u8, u8);
+extern s32 fn_3_1650C(int* outX, int* outY, s32 r5, f32 pX, f32 pY, f32 pZ);
+extern u8 lbl_3_data_8338[];
+extern u8 lbl_800EF808[];
 
 #include "static/UnknownHomes_Static.h"
 extern void* lbl_3_bss_1768;
@@ -198,8 +205,27 @@ void fn_3_8C2DC(void) {
 }
 
 // .text:0x0008C4F0 size:0xD8 mapped:0x806CB584
-void fn_3_8C4F0(void) {
-    return;
+s32 fn_3_8C4F0(u32 div, u8 lim) {
+    Snd1760* st = (Snd1760*)lbl_3_bss_1760;
+    u16 v;
+    u8 hi;
+    u8 lo;
+    v = fn_800A8864();
+    S34C58.unk2F = 0;
+    hi = (v >> 8) & 0xFF;
+    lo = v & 0xFF;
+    if (st->on == 0) {
+        st->on = 1;
+        st->hi = hi / div;
+        st->lo = lo / div;
+    }
+    if ((s16)(hi - st->hi) <= lim || div == 1) {
+        st->on = 0;
+        fn_800A8878(lim, lim);
+        return 0;
+    }
+    fn_800A8878(hi - st->hi, lo - st->lo);
+    return 1;
 }
 
 // .text:0x0008C5C8 size:0x7AC mapped:0x806CB65C
@@ -288,8 +314,24 @@ void fn_3_8FF18(void) {
 }
 
 // .text:0x0008FF5C size:0x108 mapped:0x806CEFF0
-void fn_3_8FF5C(void) {
-    return;
+u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z) {
+    int sx;
+    int sy;
+    u32 pan = 0x3F;
+    u32 vid;
+    if (lbl_800EF808[0x396] == 1) {
+        fn_3_1650C(&sx, &sy, 1, x, -y, z);
+        if (sx < 0) {
+            pan = 0;
+        } else if (sx > 640) {
+            pan = 0x7F;
+        } else {
+            pan = (s32)(127.0f * ((f32)sx / 640.0f));
+        }
+    }
+    vid = sndFXStartEx(id, lbl_3_data_8338[id * 2 - 0x2A2], pan, 0);
+    sndFXCtrl(vid, 0x5B, lbl_3_data_8338[id * 2 - 0x2A1]);
+    return vid;
 }
 
 // .text:0x00090064 size:0xEC mapped:0x806CF0F8
@@ -329,9 +371,10 @@ extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
 
 // .text:0x00090220 size:0x74 mapped:0x806CF2B4
 u32 fn_3_90220(s32 idx, s32 off) {
-    u8* tbl = lbl_3_data_8530;
-    u8 ctrl = tbl[off + 0x180];
-    u32 vid = sndFXStartEx(off + lbl_3_data_8168[idx], tbl[off], 0x3F, 0);
+    u32 id = off + lbl_3_data_8168[idx];
+    u32 vol = lbl_3_data_8530[off];
+    u32 ctrl = lbl_3_data_8530[off + 0x180];
+    u32 vid = sndFXStartEx(id, vol, 0x3F, 0);
     sndFXCtrl(vid, 0x5B, ctrl);
     return vid;
 }
