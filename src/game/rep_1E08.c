@@ -412,8 +412,28 @@ void fn_3_BEFF8(void) {
 }
 
 // .text:0x000BF070 size:0xE8 mapped:0x806FE104
+extern u8 lbl_3_data_111A8[];
+extern void fn_8003A85C(u8);
+extern void fn_8003A848(u8, u8, u8);
+extern void fn_8003A6B0(s32, void*, f32, f32);
+static u8 s_BF070a[8] = {0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0};
+static u8 s_BF070b[8][3] = {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x5C, 0x40, 0x16}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}};
+static V2f s_BF070c[0x37] = {{1.2f, 1.2f}, {1.2f, 1.2f}, {1.5f, 1.5f}, {0.6f, 0.6f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.4f, 1.4f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.5f, 1.5f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.4f, 1.4f}, {0.7f, 0.7f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {0.00000000000000000000000000000000000002350989f, 0.00000000000000000000000000000000000009477423f}};
 void fn_3_BF070(void) {
-    return;
+    u8* w;
+    s32 i;
+    fn_8003A85C(s_BF070a[g_d_GameSettings.StadiumID]);
+    fn_8003A848(s_BF070b[g_d_GameSettings.StadiumID][0], s_BF070b[g_d_GameSettings.StadiumID][1], s_BF070b[g_d_GameSettings.StadiumID][2]);
+    w = *(u8**)(*(u8**)(lbl_3_common_bss_35154 + 8) + 0x18);
+    lbl_3_common_bss_35154[0x3B1] = 1;
+    for (i = 0; i < 13; i++) {
+        u8* o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+        if (o != NULL) {
+            fn_8003A6B0(i, w + 4, s_BF070c[*(s8*)(o + 0x252)].x, s_BF070c[*(s8*)(o + 0x252)].y);
+        } else {
+            fn_8003A6B0(i, w + 4, s_BF070c[0].x, s_BF070c[0].y);
+        }
+    }
 }
 
 // .text:0x000BF158 size:0x54 mapped:0x806FE1EC
