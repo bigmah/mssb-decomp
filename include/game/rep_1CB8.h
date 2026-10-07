@@ -4,7 +4,7 @@
 #include "mssbTypes.h"
 #include "game/rep_D0.h"
 
-void fn_3_B79AC(void);
+f32 fn_3_B79AC(f32 x, f32 z);
 int fn_3_B7C2C(Vec* a, Vec* b);
 void fn_3_B7CDC(void);
 int fn_3_B7D6C(f32 a, f32 b);
