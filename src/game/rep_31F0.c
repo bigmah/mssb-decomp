@@ -300,8 +300,44 @@ void fn_3_112230(void) {
 }
 
 // .text:0x00112450 size:0x108 mapped:0x807514E4
+extern void fn_3_F578(void);
+extern void fn_3_753E8(s32);
+extern void fn_3_6EBB4(s32);
+extern void setBatterContactConstants(void);
+extern s32 someAnimationIndFunction(void);
+extern u8 lbl_803CBC3C[];
+extern u8 lbl_3_common_bss_32234[];
+
 void fn_3_112450(void) {
-    return;
+    u8* gl = g_GameLogic;
+    u8* mg;
+    switch (gl[0x125]) {
+    case 0:
+        mg = g_Minigame;
+        mg[0x1905] = mg[0x18E0 + mg[0x190C]];
+        gl[0x12B] = 1;
+        mg[0x1A2D] = 0;
+        mg[0x1912] = 0;
+        mg[0x1ACB] = 0;
+        fn_3_F578();
+        fn_3_753E8(0);
+        fn_3_6EBB4(-1);
+        setBatterContactConstants();
+        setInMemBatterConstants(*(s8*)(mg + 0x1905));
+        lbl_803CBC3C[2] = 0;
+        gl[0x125] += 1;
+        break;
+    case 1:
+        if (someAnimationIndFunction() != 0) {
+            lbl_3_common_bss_32234[1] = 1;
+            gl[0x125] += 1;
+        }
+        break;
+    default:
+        lbl_3_common_bss_32724[0xB6] = 1;
+        fn_3_5A6D4(0);
+        break;
+    }
 }
 
 // .text:0x00112558 size:0x78 mapped:0x807515EC
