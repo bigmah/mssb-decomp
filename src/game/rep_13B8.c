@@ -1,8 +1,10 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
 extern f32 lbl_3_data_4A34[];
+extern u8 lbl_3_data_4B58[];
 extern s16 lbl_3_data_21904[];
 typedef struct { f32 x, z; } P2;
+typedef struct { u8 b[0x154]; } RunnerT;
 
 extern f32 lbl_3_rodata_1498;
 
@@ -175,8 +177,23 @@ void fn_3_80028(void) {
 }
 
 // .text:0x000810C4 size:0xCC mapped:0x806C0158
-void fn_3_810C4(void) {
-    return;
+void fn_3_810C4(int idx, int base) {
+    RunnerT* r = &((RunnerT*)g_Runners)[idx];
+    int next = (base + 1) & 3;
+    if (g_GameLogic[0x121] == 6) {
+        u8* e = lbl_3_data_4B58;
+        e += base * 0xC;
+        *(f32*)(r->b + 0x30) = *(f32*)(e + 8);
+        *(f32*)(r->b + 0x68) = 0.0f;
+    } else {
+        *(f32*)(r->b + 0x68) = *(f32*)(r->b + 0x54);
+    }
+    *(f32*)(r->b + 0x64) = *(f32*)(r->b + 0x68) + base;
+    *(s16*)(r->b + 0xE6) = base;
+    *(f32*)(r->b + 0x3C) = lbl_3_data_4A34[base * 2];
+    *(f32*)(r->b + 0x44) = lbl_3_data_4A34[base * 2 + 1];
+    *(f32*)(r->b + 0x48) = lbl_3_data_4A34[next * 2];
+    *(f32*)(r->b + 0x50) = lbl_3_data_4A34[next * 2 + 1];
 }
 
 // .text:0x00081190 size:0x928 mapped:0x806C0224
@@ -455,7 +472,6 @@ void fn_3_88D88(void) {
 }
 
 // .text:0x00088F98 size:0x90 mapped:0x806C802C
-typedef struct { u8 b[0x154]; } RunnerT;
 void fn_3_88F98(void) {
     int i;
     RunnerT* rs = (RunnerT*)g_Runners;
