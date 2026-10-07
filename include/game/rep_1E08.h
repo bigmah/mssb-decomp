@@ -23,7 +23,7 @@ void fn_3_BD1D4(void);
 void fn_3_BD1D8(void);
 void fn_3_BD434(int, int);
 void fn_3_BD4F0(void);
-void fn_3_BD504(void);
+void fn_3_BD504(int a, f32 x, f32 y, f32 z);
 void fn_3_BD6AC(int, f32, f32, f32);
 void fn_3_BD758(void);
 s32 fn_3_BD7D0(void);
