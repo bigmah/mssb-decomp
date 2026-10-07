@@ -92,6 +92,7 @@ void fn_3_FD4DC(void) {
 
 // .text:0x000FD51C size:0x8C mapped:0x8073C5B0
 typedef struct { u32 a, b, c; } V3U;
+typedef struct { u8 pad0[4]; u32 f4; u32 f8; V3U fC; u8 pad18[4]; u32 f1C; u32 f20; u32 f24; u32 f28; f32 f2C; u32 f30; u32 f34; u32 f38; u32 f3C; u32 f40; f32 f44; } CamSub;
 
 void fn_3_FD51C(s32 i) {
     u8* c = g_Camera + i * 0x9BC;
@@ -113,6 +114,32 @@ void fn_3_FD51C(s32 i) {
     *(u32*)(p + 0x40) = 0;
     *(f32*)(p + 0x44) = 0.0f;
 }
+
+#pragma dont_inline off
+static inline void CamSubInit(CamSub* p, V3U* v) {
+    p->f4 = 0;
+    p->f8 = 0;
+    p->fC = *v;
+    p->f1C = 0;
+    p->f20 = 0;
+    p->f24 = 0;
+    p->f28 = 0;
+    p->f2C = 0.0f;
+    p->f30 = 0;
+    p->f34 = 0;
+    p->f38 = 0;
+    p->f3C = 0;
+    p->f40 = 0;
+    p->f44 = 0.0f;
+}
+static inline void CamsReset(void) {
+    s32 i;
+    V3U v = *(V3U*)lbl_3_rodata_30EC;
+    for (i = 0; i < 2; i++) {
+        CamSubInit((CamSub*)(g_Camera + i * 0x9BC + 0x13C), &v);
+    }
+}
+#pragma dont_inline on
 
 // .text:0x000FD5A8 size:0xC8 mapped:0x8073C63C
 void fn_3_FD5A8(void) {
@@ -575,9 +602,19 @@ void* fn_3_1069B0(s32* base, s32 idx) {
     return (u8*)base + base[idx];
 }
 
+typedef struct { u8 pad[0x128]; s32 arr[0x200]; } Z1069;
+
 // .text:0x001069C0 size:0x1E0 mapped:0x80745A54
 void fn_3_1069C0(void) {
-    return;
+    s32 i;
+    *(s32*)(lbl_3_common_bss_DE94 + 0x124) = 1;
+    *(s32*)(lbl_3_common_bss_DE94 + 0x118) = 0;
+    *(s32*)(lbl_3_common_bss_DE94 + 0x11C) = 0;
+    *(s32*)(lbl_3_common_bss_DE94 + 0x928) = 0;
+    for (i = 0; i < 0x200; i++) {
+        ((Z1069*)lbl_3_common_bss_DE94)->arr[i] = 0;
+    }
+    CamsReset();
 }
 
 // .text:0x00106BA0 size:0x25C mapped:0x80745C34
