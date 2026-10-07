@@ -77,6 +77,8 @@ typedef struct Rep1FD8Ent {
 } Rep1FD8Ent;
 extern Rep1FD8Ent lbl_3_data_17804[];
 extern u8 lbl_803CBBC0[];
+extern Vec lbl_3_bss_9DE8[];
+extern u8 lbl_3_bss_9E48[];
 extern u8* lbl_3_bss_9E50[];
 extern u8 lbl_80371C30[];
 extern void fn_800528C0(f32, f32, f32, s16*, s16*);
@@ -523,7 +525,28 @@ void fn_3_C7444(u8* a) {
 
 // .text:0x000C749C size:0x11C mapped:0x80706530
 void fn_3_C749C(void) {
-    return;
+    s32 i;
+    s32 stad;
+    u8 v;
+    u32 h;
+    i = g_Ball[0x1BE5] ? 3 : 2;
+    lbl_3_bss_9E48[i] = 1;
+    lbl_3_bss_9DE8[i].x = ((Vec*)g_Ball)->x;
+    lbl_3_bss_9DE8[i].y = -((Vec*)g_Ball)->y;
+    lbl_3_bss_9DE8[i].z = ((Vec*)g_Ball)->z;
+    stad = g_d_GameSettings.StadiumID;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        v = lbl_3_data_84B8[8];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + 8];
+    }
+    h = sndFXStartEx((u16)(lbl_3_data_81DC[stad] + 4), v, 0x3F, 0);
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        v = lbl_3_data_84B8[9];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + 9];
+    }
+    sndFXCtrl(h, 0x5B, v);
 }
 
 // .text:0x000C75B8 size:0x1F4 mapped:0x8070664C
