@@ -14,7 +14,9 @@ typedef struct {
     /*0x0E6*/ s16 unkE6;
     /*0x0E8*/ u8 pad0E8[0x123 - 0xE8];
     /*0x123*/ u8 status;
-    /*0x124*/ u8 pad124[0x137 - 0x124];
+    /*0x124*/ u8 pad124[0x128 - 0x124];
+    /*0x128*/ u8 unk128;
+    /*0x129*/ u8 pad129[0x137 - 0x129];
     /*0x137*/ u8 unk137;
     /*0x138*/ u8 pad138[0x154 - 0x138];
 } RunnerT;
@@ -83,8 +85,34 @@ void fn_3_A1DA0(void) {
 }
 
 // .text:0x000A1F3C size:0x10C mapped:0x806E0FD0
-void fn_3_A1F3C(void) {
-    return;
+int fn_3_A1F3C(void) {
+    s32 idx;
+    s32 i;
+    if (g_Ball[0x1BBE] >= 3) {
+        return 0;
+    }
+    idx = lbl_3_bss_1808[3];
+    if (idx < 0 || idx > 3) {
+        return 0;
+    }
+    if (lbl_3_bss_1858[idx] >= 7) {
+        return 0;
+    }
+    if (g_Runners[idx].unk128 != 0) {
+        return 0;
+    }
+    if (idx >= 1) {
+        for (i = idx - 1; i >= 0; i--) {
+            f32 p = g_Runners[i].percentTowardsNextBase;
+            if (p > 0.15f && p < 0.85f) {
+                return 0;
+            }
+        }
+    }
+    if (fn_3_A46A0(idx)) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000A2048 size:0x1E4 mapped:0x806E10DC
