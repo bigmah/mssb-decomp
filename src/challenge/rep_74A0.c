@@ -13,6 +13,39 @@ extern s32 lbl_1_data_FB24[];
 extern const f32 lbl_1_rodata_7578;
 extern const f32 lbl_1_rodata_757C;
 extern const f32 lbl_1_rodata_7520;
+extern ChallengeBoneSelection lbl_1_bss_69F0;
+extern u8 lbl_8036E548[];
+extern void fn_1_1A850(MtxPtr, MtxPtr, u8, u8, u8, u8);
+
+// fn_1_1A774, size:0xDC
+#pragma opt_loop_invariants off
+void fn_1_1A774(void) {
+    Mtx matrix;
+    s32 index;
+    u8 red;
+    u8 green;
+    u8 blue;
+    u8 alpha;
+
+    if (lbl_1_bss_69F0.selectedBone < (*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[lbl_1_bss_69F0.selectedActor].drawing.actor->boneCount) {
+        for (index = 0; index < (*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[lbl_1_bss_69F0.selectedActor].drawing.actor->boneCount; index++) {
+            if (index == lbl_1_bss_69F0.selectedBone) {
+                red = 0;
+                green = 0xFF;
+                blue = 0xFF;
+                alpha = 0xFF;
+            } else {
+                red = 0;
+                green = 0x80;
+                blue = 0x80;
+                alpha = 0x40;
+            }
+            fn_800B2C88((*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[lbl_1_bss_69F0.selectedActor].drawing.actor, index, matrix);
+            fn_1_1A850(matrix, lbl_1_bss_69F0.matrix, red, green, blue, alpha);
+        }
+    }
+}
+#pragma opt_loop_invariants reset
 
 // fn_1_1A290, size:0x124
 void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode) {

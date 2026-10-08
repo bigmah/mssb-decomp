@@ -5,7 +5,9 @@
 #include "C3/geoPalette.h"
 
 typedef struct ChallengeDrawActor {
-    u8 padding[0x14];
+    u8 padding[6];
+    u16 boneCount;
+    u8 padding08[0x0C];
     struct DODisplayObj* display;
     u8 padding18[0x5C];
     struct ChallengeDrawActor* children;
@@ -42,6 +44,13 @@ typedef struct {
 } ChallengeOrbitPosition;
 
 typedef struct {
+    u16 selectedBone;
+    u8 selectedActor;
+    u8 padding03[0x189];
+    Mtx matrix;
+} ChallengeBoneSelection;
+
+typedef struct {
     void (*update)(u8*);
     u8 padding[0x0C];
     u16 state;
@@ -64,5 +73,7 @@ void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode);
 void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees);
 
 void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode);
+
+void fn_1_1A774(void);
 
 #endif

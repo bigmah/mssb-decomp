@@ -112,6 +112,7 @@ extern void fn_800A97D0(s32, s32);
 extern void fn_80048BEC(void*, u32, u32);
 extern s32 fn_80048820(void*, u16, u16, u16, u8);
 extern void fn_800B2D5C(void* actor);
+extern void fn_800B2C88(void* actor, u16 bone, void* matrix);
 extern void fn_80037768(void*, s32, s32, f32, f32, f32, f32);
 
 extern void fn_800ACFB0(void* object);
