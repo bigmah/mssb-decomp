@@ -63,3 +63,13 @@ void fn_2_12CC(u8* value, s32 increment) {
     }
     *value = current + increment;
 }
+
+// fn_2_12F8, size:0x30
+void fn_2_12F8(u16* value, s32 increment) {
+    u16 current = *value;
+    if (current + (u16)increment > 0xFFFF) {
+        *value = 0xFFFF;
+        return;
+    }
+    *value = current + increment;
+}
