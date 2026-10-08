@@ -57,3 +57,8 @@ void fn_2_6E848(u8* object) {
 void fn_2_6D840(u8* object) {
     lbl_2_data_2A248[*(s16*)(object + 0x94)](object);
 }
+
+// .text:0x6D748 size:0xC
+void fn_2_6D748(u8* object) {
+    *(s16*)(object + 0x94) = 1;
+}
