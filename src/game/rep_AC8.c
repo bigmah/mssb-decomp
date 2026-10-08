@@ -20,6 +20,10 @@ extern f32 lbl_3_rodata_1498;
 extern f32 lbl_3_rodata_BE4;
 extern f32 lbl_3_rodata_B8C;
 extern f32 lbl_3_rodata_B64;
+extern f32 lbl_3_rodata_BB8;
+extern f32 lbl_3_rodata_BDC;
+extern f32 lbl_3_rodata_BA0;
+extern s16 fn_3_9FCF8(s16, s16);
 extern f32 lbl_3_rodata_BFC;
 extern f32 lbl_3_rodata_B7C;
 extern f32 lbl_3_rodata_BD8;
@@ -777,7 +781,53 @@ s32 fn_3_378B4(void) {
 
 // .text:0x00038000 size:0x234 mapped:0x80677094
 void fn_3_38000(void) {
-    return;
+    f32 t;
+    f32 mx;
+    s16 ang = *(s16*)(g_Ball + 0x1B80);
+    f32 slack = lbl_3_rodata_B64;
+    s32 k = 30;
+    s32 mode = 0;
+    s32 res;
+    if (ang >= 0x800) {
+        res = 1;
+    } else {
+        if (ang < 0x300 && (ang < *(s16*)(g_Fielders + 0x650) || fn_3_9FCF8(ang, *(s16*)(g_Fielders + 0x8B8)) >= 0x100)) {
+            mode = 8;
+            mx = *(f32*)(g_Fielders + 0x540);
+        } else if (ang > 0x500 && (ang >= *(s16*)(g_Fielders + 0xB20) || fn_3_9FCF8(ang, *(s16*)(g_Fielders + 0xD88)) >= 0x100)) {
+            mode = 6;
+            mx = *(f32*)(g_Fielders + 0xA10);
+        } else if (ang < *(s16*)(g_Fielders + 0x8B8)) {
+            f32 a = *(f32*)(g_Fielders + 0x7A8);
+            f32 b = *(f32*)(g_Fielders + 0x540);
+            mx = a >= b ? a : b;
+        } else if (ang >= *(s16*)(g_Fielders + 0xD88)) {
+            f32 a = *(f32*)(g_Fielders + 0xC78);
+            f32 b = *(f32*)(g_Fielders + 0xA10);
+            mx = a >= b ? a : b;
+        } else {
+            f32 a = *(f32*)(g_Fielders + 0x7A8);
+            f32 b = *(f32*)(g_Fielders + 0xC78);
+            mx = a >= b ? a : b;
+        }
+        if (*(f32*)(g_Ball + 0x1A14) > lbl_3_rodata_BB8) {
+            t = *(f32*)(g_Ball + 0x1A14) - lbl_3_rodata_BB8;
+            slack = slack - lbl_3_rodata_BA0 * t;
+            k = (s32)(lbl_3_rodata_BDC * t) + 30;
+        }
+        if (mx + slack > *(f32*)(g_Ball + 0x1A00)) {
+            res = fn_3_378B4();
+        } else {
+            res = fn_3_361D8(*(f32*)(g_Ball + k * 16 + 0x354), *(f32*)(g_Ball + k * 16 + 0x35C));
+            if (mode == 8 && res == 3) {
+                res = 8;
+            }
+            if (mode == 6 && res == 5) {
+                res = 6;
+            }
+        }
+    }
+    fn_3_38790(res, 0);
 }
 
 // .text:0x00038234 size:0xD0 mapped:0x806772C8
