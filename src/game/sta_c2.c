@@ -1223,16 +1223,14 @@ void fn_3_D30D0(void) {
 }
 
 // .text:0x000D36B0 size:0x1D0 mapped:0x80712744
-// 99.7%: literal 0.0f; only fp regs f1/f2 swapped (a4 vs 280C[0]) in the first a4/b0 update block
 void fn_3_D36B0(u8* p) {
     u8* c;
     Mtx m;
     Vec v;
     Vec dir;
     Vec axis;
-    f32 d = lbl_3_rodata_280C[0];
     *(f32*)(p + 0xA4) = *(f32*)(p + 0xA4) + *(f32*)(p + 0xB0);
-    *(f32*)(p + 0xB0) = *(f32*)(p + 0xB0) - d;
+    *(f32*)(p + 0xB0) = *(f32*)(p + 0xB0) - lbl_3_rodata_280C[0];
     if (*(f32*)(p + 0xA4) < 0.0f) {
         *(f32*)(p + 0xA4) = 0.0f;
         if (!(p[0x99] & 4)) {
