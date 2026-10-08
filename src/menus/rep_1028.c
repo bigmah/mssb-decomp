@@ -105,3 +105,7 @@ void fn_2_90BD0(MenuStateObject* object) {
 void fn_2_918DC(MenuStateObject* object) {
     object->state = 2;
 }
+
+void fn_2_9177C(MenuStateObject* object) {
+    object->state = 2;
+}
