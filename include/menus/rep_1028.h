@@ -80,4 +80,6 @@ void fn_2_9033C(s32 index, const void* position, f32 value);
 
 void fn_2_8F7B0(s32 index, s16 type);
 
+void fn_2_8F838(s32 index, s16 type);
+
 #endif
