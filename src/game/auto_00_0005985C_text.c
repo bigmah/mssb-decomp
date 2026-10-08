@@ -37,8 +37,32 @@ extern void fn_3_6B870(void);
 extern s32 fn_3_6BA64(void);
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_803CBC3C[];
+extern void fn_3_6D4A0(void);
+extern void fn_3_5A87C(void*);
+extern void fn_3_DFA20(void);
+extern void fn_3_10FBE4(void);
+extern void fn_3_6C150(void*);
+extern void fn_3_8F1C8(void);
+extern void fn_3_5B0C4(void);
 
 #pragma dont_inline on
+
+// fn_3_5AE0C, size:0x90
+void fn_3_5AE0C(void) {
+    fn_3_6D4A0();
+    unkSimulationRelatedStruct._08 = 0;
+    unkSimulationRelatedStruct._07 = 0;
+    fn_3_5A87C(&unkSimulationRelatedStruct);
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        fn_3_DFA20();
+    } else if (g_d_GameSettings.GameModeSelected == 7) {
+        fn_3_10FBE4();
+    }
+    g_Minigame._19AB = 0;
+    fn_3_6C150(&g_Minigame);
+    fn_3_8F1C8();
+    *(void (**)(void))((u8**)&lbl_803CC1B8)[0] = fn_3_5B0C4;
+}
 
 // fn_3_5CD24, size:0x90
 void fn_3_5CD24(void) {

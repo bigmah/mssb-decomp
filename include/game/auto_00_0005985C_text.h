@@ -17,6 +17,8 @@ void fn_3_5F720(void);
 
 void fn_3_5CD24(void);
 
+void fn_3_5AE0C(void);
+
 void fn_3_5B408(void);
 
 void fn_3_5B368(void);
