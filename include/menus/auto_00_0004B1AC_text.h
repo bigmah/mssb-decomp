@@ -65,4 +65,6 @@ void fn_2_512B4(void);
 
 void fn_2_5118C(void);
 
+void fn_2_4E878(void* object, void* data);
+
 #endif

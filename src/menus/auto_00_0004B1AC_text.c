@@ -3,6 +3,7 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u32 lbl_803C7898[];
+extern void fn_80034E20(void* object, void* data);
 
 extern u8* lbl_2_bss_1A824C[];
 
@@ -179,4 +180,9 @@ void fn_2_512B4(void) {
 // fn_2_5118C, size:0x4
 void fn_2_5118C(void) {
     return;
+}
+
+// fn_2_4E878, size:0x20
+void fn_2_4E878(void* object, void* data) {
+    fn_80034E20(object, data);
 }
