@@ -16,11 +16,19 @@ extern u8 g_Fielders[];
 extern u8 g_Ball[];
 extern Vec lbl_3_rodata_2640;
 extern Vec lbl_3_rodata_264C;
+typedef struct { f32 x, y, z, w; } T16;
+extern T16 lbl_3_data_18730[];
+extern f32 lbl_3_rodata_2700;
+extern f32 lbl_3_rodata_2778;
 extern f32 lbl_3_rodata_26A0;
+extern f32 lbl_3_rodata_27E8;
+extern f32 lbl_3_rodata_2698;
+extern f32 lbl_3_rodata_26C8;
 extern f32 lbl_3_rodata_2678;
 extern u8 lbl_3_data_81DC[];
 extern Vec lbl_3_bss_A820[];
 extern u8 g_FieldingLogic[];
+extern u8 g_GameLogic[];
 extern u8 g_d_GameSettings[];
 extern void fn_80025EEC(s32, s32, s32);
 extern void fn_3_65A8(void);
@@ -41,7 +49,7 @@ extern f64 sin(f64);
 extern f32 lbl_3_rodata_27F0;
 extern Vec lbl_3_rodata_25F8;
 extern f32 lbl_3_rodata_2658[];
-typedef struct { u8 pad[0x20]; f32 a, b, c, d; u8 pad2[4]; } T34;
+typedef struct { f32 x, y, z, w, r; u8 pad[0xC]; f32 a, b, c, d; u8 pad2[4]; } T34;
 extern T34 lbl_3_data_18364[];
 extern s16 fn_3_B7F70(s32);
 extern f32 lbl_3_data_188E0;
@@ -444,8 +452,35 @@ void fn_3_D127C(void) {
 }
 
 // .text:0x000D1280 size:0x19C mapped:0x80710314
-void fn_3_D1280(void) {
-    return;
+void fn_3_D1280(u8* p) {
+    Vec s;
+    Vec d;
+    Vec v;
+    f32 m;
+    s32 n;
+    if (g_GameLogic[0x11E] == 1 || g_GameLogic[0x11E] == 0) {
+        p[0] = 0;
+    }
+    ((void (*)(void*))fn_3_D141C)(p);
+    PSVECAdd((Vec*)(*(u8**)(p + 0xB0) + 0xC), (Vec*)(*(u8**)(p + 0xAC) + 0xC), &s);
+    PSVECScale(&s, lbl_3_rodata_26A0, &s);
+    if (g_GameLogic[0x11E] == 2 && *(s16*)(g_GameLogic + 0x10A) >= 0) {
+        PSVECSubtract(&s, (Vec*)(p + 0xA0), &d);
+        m = PSVECMag(&d);
+        n = p[0xB4] + 1;
+        if (n < 0x100) {
+            p[0xB4] = n;
+        }
+        if (m >= lbl_3_rodata_27E8 && p[0xB4] > 10) {
+            memcpy(&v, p + 0xA0, 0xC);
+            v.y = v.y * lbl_3_rodata_2678;
+            fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 6, (f32*)&v, 0, 0xE);
+            p[0xB4] = 0;
+        }
+    }
+    PSVECScale(&s, lbl_3_rodata_2698, (Vec*)(p + 0xA0));
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetScale((Control*)p, lbl_3_rodata_26C8, lbl_3_rodata_26C8, lbl_3_rodata_26C8);
 }
 
 // .text:0x000D141C size:0x320 mapped:0x807104B0
