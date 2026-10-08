@@ -11,10 +11,118 @@ typedef struct {
 
 extern Rec15 lbl_80109420[];
 
+typedef struct {
+    u8 pad0;
+    u8 trk;
+    u8 row;
+    u8 pad3[3];
+} MissionIdx;
+
+typedef struct {
+    s16 type;
+    s16 target;
+    u8 pad[6];
+} MissionRec;
+
+extern MissionIdx lbl_800E8558[];
+extern MissionRec lbl_80109AE8[][10];
+
 static inline void gatherIds(s16* ids) {
     s32 i;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
+    }
+}
+
+// .text:0x00162080 size:0x28C
+// 97%: structure matches; only register allocation differs (locals/temps in r0, r3-r9 and the r31 'done' flag)
+void fn_3_162080(void) {
+    MissionIdx* mi;
+    u8* q = lbl_3_common_bss_37400;
+    s32 i;
+    u8 sp;
+    s8* sv;
+    s8 st;
+    u8 cp;
+    s32 k;
+    s32 done;
+    MissionRec* rec;
+    s8* e;
+    u8 so;
+    u8 sc;
+    u8 sw;
+    if (*(s16*)(q + 0x40) == g_GameLogic.teamFielding) {
+        mi = &lbl_800E8558[g_Pitcher.charID];
+        e = (s8*)&starMissionCompletionTracker[mi->trk];
+        rec = lbl_80109AE8[mi->row];
+        for (i = 0; i < 10; i++, e += 2, rec++) {
+            st = e[9];
+            if (st >= 0) {
+                done = 0;
+                if (rec->type == 3) {
+                    if (g_Pitcher.starPitchType != 0) {
+                        e[9] = st | 1;
+                        if (e[9] == 0x11) {
+                            e[9] = -1;
+                        }
+                    }
+                } else {
+                    sv = e + 9;
+                    sp = g_Pitcher.starPitchType;
+                    cp = g_Pitcher.ChargePitchType;
+                    for (k = 4; k < 13; k++) {
+                        if (rec->type == k) {
+                            switch (k) {
+                            case 11:
+                                if (sp != 0) {
+                                    *sv += 1;
+                                    if (*sv >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            case 12:
+                                if (cp == 3) {
+                                    *sv += 1;
+                                    if (*sv >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            }
+                            if (done != 0) {
+                                *sv = -1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (*(s16*)(q + 0x40) == g_GameLogic.teamBatting) {
+        mi = &lbl_800E8558[g_Batter.charID];
+        e = (s8*)&starMissionCompletionTracker[mi->trk];
+        rec = lbl_80109AE8[mi->row];
+        sw = g_Ball.currentStarSwing2;
+        sc = g_GameLogic.IsStarChance;
+        so = g_GameLogic.stadiumStarObtained;
+        for (i = 0; i < 10; i++, e += 2, rec++) {
+            st = e[9];
+            if (st >= 0) {
+                if (rec->type == 3 && sw != 0) {
+                    e[9] = st | 0x10;
+                    if (e[9] == 0x11) {
+                        e[9] = -1;
+                    }
+                }
+                if (rec->type == 2 && (sc == 3 || so != 0)) {
+                    e[9] += 1;
+                    if (e[9] >= rec->target) {
+                        e[9] = -1;
+                    }
+                }
+            }
+        }
     }
 }
 
