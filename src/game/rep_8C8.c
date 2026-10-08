@@ -2,9 +2,16 @@
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1838.h"
+#include "static/UnknownHomes_Static.h"
 #pragma dont_inline on
 extern s32 fn_3_B0CF4(void);
+extern s32 fn_3_B0D2C(void);
+extern u8 lbl_3_data_19C4[];
+
 extern u8 lbl_3_data_1ABC[];
+extern u8 lbl_3_data_1ADC[];
+extern u8 lbl_3_data_1AEC[];
+extern u8 lbl_3_data_1B4C[];
 extern u8 lbl_3_data_1AAC[];
 extern u8 lbl_3_data_1AB0[];
 extern f32 lbl_3_data_19CC[];
@@ -45,7 +52,64 @@ s32 fn_3_1E724(void) {
 
 // .text:0x0001E7F4 size:0x2B4 mapped:0x8065D888
 s32 fn_3_1E7F4(void) {
-    return 0;
+    s32 k;
+    s32 zone;
+    s32 chance;
+    u8 t;
+    t = g_Pitcher.starPitchType;
+    if (t == 3 || t == 4) {
+        k = 0;
+    } else if (t == 11 || t == 12) {
+        k = 0;
+    } else if (t == 1 || t == 2) {
+        k = 0;
+    } else {
+        for (zone = 0; zone < 4; zone++) {
+            if (g_Pitcher.pitchXPosition < lbl_3_data_19CC[zone]) {
+                break;
+            }
+        }
+        if (g_Batter.batterHand != 0) {
+            zone = 4 - zone;
+        }
+        if (zone == 1 || zone == 3) {
+            k = 1;
+        } else if (zone == 2) {
+            k = 0;
+        } else {
+            k = 2;
+        }
+        if (g_AiLogic.batterAIBuntInd != 1) {
+            if (g_AiLogic.aIBatterTrackingCode != 0 || k == 0 || g_AiLogic.lastPitchBallLocZone == zone) {
+                if (g_AiLogic.batterAISwingEarly1OrLate2 == 0) {
+                    chance = (lbl_3_data_1ADC + g_AiLogic.aIBatterDifficulty)[4];
+                } else {
+                    chance = (lbl_3_data_1ADC + g_AiLogic.aIBatterDifficulty)[0xC];
+                }
+            } else {
+                if (g_AiLogic.batterAISwingEarly1OrLate2 == 0) {
+                    chance = (lbl_3_data_1ADC + g_AiLogic.aIBatterDifficulty)[0];
+                } else {
+                    chance = (lbl_3_data_1ADC + g_AiLogic.aIBatterDifficulty)[8];
+                }
+            }
+            if (RandomInt_Game(100) >= chance) {
+                return 0;
+            }
+        }
+    }
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        k = (lbl_3_data_1AEC + k * 16 + g_Batter.characterClass * 4 + g_AiLogic.aIBatterDifficulty)[0x30];
+    } else {
+        k = (lbl_3_data_1AEC + k * 16 + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty];
+    }
+    chance = k;
+    if (g_AiLogic.batterAIBuntInd == 1) {
+        chance += lbl_3_data_1B4C[0];
+    } else if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 2) {
+        chance += lbl_3_data_1B4C[1];
+    }
+    return RandomInt_Game(100) < chance;
 }
 
 // .text:0x0001EAA8 size:0x53C mapped:0x8065DB3C
@@ -54,8 +118,46 @@ void fn_3_1EAA8(void) {
 }
 
 // .text:0x0001EFE4 size:0x1E8 mapped:0x8065E078
-void fn_3_1EFE4(void) {
-    return;
+// 99%: v (r6) vs r3/r5 regalloc differs in the first branch / subtraction chain
+s32 fn_3_1EFE4(void) {
+    s32 v;
+    if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 3) {
+        return 0;
+    }
+    if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 1) {
+        if (g_AiLogic._70 != 0 && g_AiLogic.lastPitchType != 0xFF) {
+            v = ((s16*)&g_Pitcher.windupCountdownUntilBallReleased)[2 - g_AiLogic.lastPitchType] + g_AiLogic.lastPitchFramesUntilPitchGetsToBatter - lbl_3_data_19C4[4];
+        } else {
+            v = g_Pitcher.curvePitchWindupFrames + 0x14;
+        }
+        v -= g_Pitcher.pitchTotalTimeCounter;
+        if (v - g_Batter.frameFullyCharged <= 0 || g_Pitcher.windupCountdownUntilBallReleased < 8) {
+            g_Batter.chargeStatus = 1;
+            g_Batter.hitGeneralType = 1;
+        }
+    }
+    if (g_Ball.pitchHangtimeCounter <= 0) {
+        return 0;
+    }
+    if (g_AiLogic.batterAISwingInd != 0) {
+        return 0;
+    }
+    if (g_GameLogic.secondaryGameMode == 0xD) {
+        return fn_3_B0D2C();
+    }
+    if (g_AiLogic.aISwingDecisionRelated_noSwingOverride != 0) {
+        return 0;
+    }
+    if (g_Ball.pitchHangtimeCounter == 1) {
+        fn_3_1EAA8();
+    }
+    if (g_Pitcher.framesUntilBallReachesBatterZ == g_AiLogic.batterAIZPosition && fn_3_1E7F4() == 0) {
+        g_AiLogic.someNotAISwingInd = 1;
+    }
+    if (g_Ball.pitchHangtimeCounter == g_AiLogic.frameToStartSwing + 1 && g_AiLogic.frameToStartSwing != 0 && g_AiLogic.someNotAISwingInd == 0) {
+        g_AiLogic.batterAISwingInd = 1;
+    }
+    return g_AiLogic.batterAISwingInd != 0;
 }
 
 // .text:0x0001F1CC size:0x184 mapped:0x8065E260
@@ -122,7 +224,46 @@ void fn_3_1F998(void) {
 
 // .text:0x0001FD8C size:0x1BC mapped:0x8065EE20
 void batterAIControlled(void) {
-    return;
+    s32 r;
+    if (g_Batter.swingInd == 0 && g_Batter.buntStatus == 0) {
+        if (fn_3_1EFE4() != 0) {
+            g_Batter.swingInd = 1;
+            g_Batter.framesSinceStartOfSwing = 0;
+        }
+    }
+    if (g_Batter.swingInd == 0 && g_Batter.buntStatus != 3) {
+        fn_3_1F998();
+    }
+    if (g_Batter.swingInd == 0 && g_Batter.buntStatus != 3 && g_Batter.buntStatus != 6) {
+        if (g_GameLogic.secondaryGameMode == 0xD) {
+            if (fn_3_B0CF4() != 0) {
+                r = 1;
+            } else {
+                r = 0;
+            }
+        } else if (g_AiLogic.batterAIBuntInd != 1) {
+            r = 0;
+        } else if (g_AiLogic.aISwingDecisionRelated_noSwingOverride != 0) {
+            r = 0;
+        } else if (g_Ball.pitchHangtimeCounter <= 0) {
+            r = 1;
+        } else if (g_Pitcher.framesUntilBallReachesBatterZ == g_AiLogic.batterAIZPosition && fn_3_1E7F4() == 0) {
+            r = 0;
+            g_AiLogic.aISwingDecisionRelated_noSwingOverride = 1;
+        } else {
+            r = 1;
+        }
+        if (r != 0) {
+            g_Batter.isBunting = 1;
+            g_Batter.hitGeneralType = 3;
+            if (g_Batter.buntStatus == 0) {
+                g_Batter.buntStatus = 1;
+                g_Batter.framesBuntHeld = 0;
+            }
+        } else {
+            g_Batter.isBunting = 0;
+        }
+    }
 }
 
 // .text:0x0001FF48 size:0x11C mapped:0x8065EFDC
