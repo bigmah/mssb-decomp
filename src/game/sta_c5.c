@@ -19,6 +19,14 @@ extern s32 fn_3_8BBC4(s32, s32, s32, s32);
 typedef struct { u8 pad[0x78]; s32 w78; u8 pad2[0xE8 - 0x7C]; } StadObj78;
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
+static inline u32 binomIn(u32 n, u32 k) {
+    u32 r = 1;
+    u32 i;
+    for (i = 1; i <= k; i++) {
+        r = r * (n - i + 1) / i;
+    }
+    return r;
+}
 #pragma dont_inline on
 #include "C3/control.h"
 #include "Dolphin/vec.h"
@@ -753,8 +761,12 @@ u32 fn_3_F37BC(u32 n, u32 k) {
 }
 
 // .text:0x000F38D4 size:0x130 mapped:0x80732968
+static u32 lbl_3_bss_B244[7];
 void fn_3_F38D4(void) {
-    return;
+    u32 i;
+    for (i = 0; i < 7; i++) {
+        lbl_3_bss_B244[i] = binomIn(6, i);
+    }
 }
 
 // .text:0x000F3A04 size:0x58 mapped:0x80732A98

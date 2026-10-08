@@ -16,7 +16,7 @@ void fn_3_9260(void);
 void fn_3_9508(void);
 void fn_3_9808(void);
 void fn_3_9B74(void);
-void fn_3_9CE0(void);
+f32 fn_3_9CE0(f32 x, f32 z);
 void fn_3_9E18(void);
 void fn_3_9E84(void);
 void fn_3_9FA4(void);
