@@ -29,4 +29,6 @@ void fn_3_B1BCC(void);
 
 void fn_3_B025C(void);
 
+void fn_3_AFDC0(void);
+
 #endif

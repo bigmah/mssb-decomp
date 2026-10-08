@@ -4,8 +4,10 @@
 #include "game/rep_1200.h"
 #include "game/rep_13B8.h"
 #include "game/rep_AC8.h"
+#include "game/auto_00_0005985C_text.h"
 
 extern s32 fn_3_B32B8(void);
+extern void fn_3_1DD48(void);
 
 extern u8 g_Fielders[];
 
@@ -118,4 +120,13 @@ void fn_3_B025C(void) {
         fn_3_8A958();
         fn_3_31594();
     }
+}
+
+// fn_3_AFDC0, size:0x4C
+void fn_3_AFDC0(void) {
+    g_Practice.allowPlayToEndIndicator = 0;
+    g_GameLogic.pre_PostMiniGameInd = 1;
+    g_GameLogic.minigameLastTurnSuccessInd = 1;
+    fn_3_1DD48();
+    fn_3_5A6D4(7);
 }
