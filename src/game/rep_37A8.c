@@ -28,6 +28,9 @@ typedef struct { s16 lo; s16 hi; s16 lim; } MgWin;
 extern MgWin lbl_3_data_21DC8[][2];
 extern u8 lbl_3_data_21E10[];
 extern u8 lbl_3_data_21D1C[];
+extern u8 lbl_3_data_21D2C[];
+extern u8 g_Fielders[];
+extern u8 g_Controls[];
 extern void fn_3_157570(void);
 extern void fn_3_DE4FC(void);
 extern void fn_3_154214(void);
@@ -272,8 +275,43 @@ void fn_3_14471C(void) {
 }
 
 // .text:0x00144ADC size:0x1DC mapped:0x80783B70
-void fn_3_144ADC(void) {
-    return;
+void fn_3_144ADC(s32 p) {
+    u8* in = g_Controls + (s8)g_Minigame[p + 0x18CC] * 16;
+    f32 d;
+    u8* f = g_Fielders + (s8)g_Minigame[p + 0x18F8] * 0x268;
+
+    if (g_Minigame[p + 0x18D8] != 0) {
+        in = g_Minigame + (s8)g_Minigame[p + 0x18CC] * 16 + 0x1D7C;
+    }
+    if (((s16*)(g_Minigame + 0x1B44))[p] < 0x7FFE) {
+        ((s16*)(g_Minigame + 0x1B44))[p]++;
+    } else {
+        ((s16*)(g_Minigame + 0x1B44))[p] = 0x7FFF;
+    }
+    switch (g_Minigame[0x1CA5 + p]) {
+    case 1:
+        d = ((f32*)lbl_3_data_21D2C)[0] - ((f32*)lbl_3_data_21D2C)[1];
+        *(f32*)(f+0xC) = d * ((f32)((s16*)(g_Minigame + 0x1B44))[p] / (f32)*(s16*)(lbl_3_data_21E68 + 0x20)) + ((f32*)lbl_3_data_21D2C)[1];
+        if (((s16*)(g_Minigame + 0x1B44))[p] >= *(s16*)(lbl_3_data_21E68 + 0x20)) {
+            g_Minigame[0x1CA5 + p] = 2;
+            ((s16*)(g_Minigame + 0x1B44))[p] = 0;
+        }
+        break;
+    case 2:
+        if (!(*(u16*)(in + 4) & 4)) {
+            g_Minigame[0x1CA5 + p] = 3;
+            ((s16*)(g_Minigame + 0x1B44))[p] = 0;
+        }
+        break;
+    case 3:
+        d = ((f32*)lbl_3_data_21D2C)[1] - ((f32*)lbl_3_data_21D2C)[0];
+        *(f32*)(f+0xC) = d * ((f32)((s16*)(g_Minigame + 0x1B44))[p] / (f32)*(s16*)(lbl_3_data_21E68 + 0x20)) + ((f32*)lbl_3_data_21D2C)[0];
+        if (((s16*)(g_Minigame + 0x1B44))[p] >= *(s16*)(lbl_3_data_21E68 + 0x20)) {
+            g_Minigame[0x1CA5 + p] = 0;
+            ((s16*)(g_Minigame + 0x1B44))[p] = 0;
+        }
+        break;
+    }
 }
 
 // .text:0x00144CB8 size:0x704 mapped:0x80783D4C
