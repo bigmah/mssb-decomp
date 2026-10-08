@@ -5,4 +5,6 @@
 
 void fn_3_AFDA4(void);
 
+void fn_3_AFD80(u8 state);
+
 #endif

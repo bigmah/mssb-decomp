@@ -9,3 +9,12 @@ void fn_3_AFDA4(void) {
     lbl_3_common_bss_34C90[0x1D6] = 0;
     lbl_3_common_bss_34C90[0x1D7] = 0;
 }
+
+// fn_3_AFD80, size:0x24
+void fn_3_AFD80(u8 state) {
+    lbl_3_common_bss_34C90[0x1D1] = state;
+    lbl_3_common_bss_34C90[0x1D2] = 0;
+    *(s16*)(lbl_3_common_bss_34C90 + 0xC) = 0;
+    *(s16*)(lbl_3_common_bss_34C90 + 0xE) = 0;
+    *(s16*)(lbl_3_common_bss_34C90 + 0x10) = 0;
+}
