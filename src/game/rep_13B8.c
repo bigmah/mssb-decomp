@@ -44,6 +44,7 @@ extern u8 g_d_GameSettings[];
 extern u8 lbl_3_common_bss_37400[];
 extern void fn_3_161588(int, s16);
 extern u8 g_FieldingLogic[];
+extern u8 g_UnkSound_32718[];
 extern const f32 lbl_3_rodata_14F8;
 extern void fn_3_59918(s32, s32);
 extern void fn_3_5C74C(s32);
@@ -950,7 +951,46 @@ void fn_3_87E80(void) {
 
 // .text:0x00088228 size:0x1E0 mapped:0x806C72BC
 void fn_3_88228(void) {
-    return;
+    u8* q;
+    s16 t;
+    u8* f;
+    int off;
+    s16 a;
+    s16 b86 = *(s16*)(g_Ball + 0x1B86);
+    int ri;
+    if (b86 >= 0 && (a = *(s16*)(g_Ball + 0x1B7A)) >= 0 && a != 3 && g_Fielders[*(s16*)(g_Ball + 0x1B78) * 0x268 + 0x1E7] == 0) {
+        ri = (b86 + 3) & 3;
+        off = ri * 0x154;
+        q = g_Runners + off;
+        if (*(s16*)(q += 0xEE) == 1) {
+            fn_3_88D88(ri);
+            *(s16*)q = 2;
+            g_Runners[off + 0x12C] = 2;
+            if (*(s16*)(g_Ball + 0x1B92) < 0) {
+                t = *(s16*)(g_Ball + 0x1B94);
+                if (t < 0) {
+                    *(s16*)(g_Ball + 0x1B92) = *(s16*)(g_Ball + 0x1B78);
+                } else {
+                    *(s16*)(g_Ball + 0x1B92) = t;
+                    if (g_FieldingLogic[0x141] != 0 && g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(s32*)(g_GameLogic + 8)) {
+                        f = g_Fielders;
+                        f += t * 0x268;
+                        fn_3_161588(8, *(s16*)(f + 0x178));
+                    }
+                    if ((s8)g_FieldingLogic[0x115] > 0 && g_FieldingLogic[0x133] != 0) {
+                        g_UnkSound_32718[8] = 4;
+                        t = *(s16*)(g_Ball + 0x1B90);
+                        g_FieldingLogic[0x134] = t;
+                        if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(s32*)(g_GameLogic + 8)) {
+                            f = g_Fielders;
+                            f += t * 0x268;
+                            fn_3_161588(2, *(s16*)(f + 0x178));
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // .text:0x00088408 size:0x5F4 mapped:0x806C749C
