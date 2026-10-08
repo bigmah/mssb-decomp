@@ -3,6 +3,7 @@
 extern const f32 lbl_2_rodata_B6C[];
 
 #include <string.h>
+#include <math.h>
 
 #include "static/UnknownHomes_Static.h"
 extern const f32 lbl_2_rodata_BA0;
@@ -46,6 +47,16 @@ typedef struct {
 
 extern MenuEntries* lbl_2_bss_1A8248[];
 extern const f32 lbl_2_rodata_B58;
+extern f32 fn_2_4A18C(f32);
+
+// fn_2_68940, size:0x8C
+f32 fn_2_68940(s32 from, s32 to) {
+    MenuEntry* source = &lbl_2_bss_1A8248[0]->entries[from];
+    MenuEntry* target = &lbl_2_bss_1A8248[0]->entries[to];
+    f32 angle = (f32)atan2(-(target->position.x - source->position.x),
+        -(target->position.z - source->position.z));
+    return fn_2_4A18C(source->heading) - angle;
+}
 
 // fn_2_6A5A8, size:0x80
 void fn_2_6A5A8(s32 index) {
