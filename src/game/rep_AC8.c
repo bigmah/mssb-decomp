@@ -1080,8 +1080,23 @@ void fn_3_42A00(void) {
 }
 
 // .text:0x00042BD0 size:0x10C mapped:0x80681C64
-void fn_3_42BD0(void) {
-    return;
+void fn_3_42BD0(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    u8* o;
+    int j;
+    if (i >= 6 && g_Ball[0x1BC9] == 0) {
+        if (*(f32*)(f + 0x70) < *(f32*)(g_Ball + 0x1A00)) {
+            fn_3_43038();
+            return;
+        }
+        for (j = 6; j < 9; j++) {
+            o = g_Fielders + j * 0x268;
+            if (j != i && o[0x1DC] == 3 && *(s16*)(o + 0x17E) <= *(s16*)(f + 0x17E) && *(s16*)(o + 0x17E) < 0x5A) {
+                fn_3_43038();
+                return;
+            }
+        }
+    }
 }
 
 // .text:0x00042CDC size:0x35C mapped:0x80681D70
