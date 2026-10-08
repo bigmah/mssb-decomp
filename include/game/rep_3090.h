@@ -24,7 +24,7 @@ s32 fn_3_10007C(void);
 void fn_3_1000D8(void);
 void fn_3_101CC4(void);
 void fn_3_103C30(void);
-void fn_3_103E7C(void);
+void fn_3_103E7C(f32* p);
 void fn_3_1040D8(void);
 void fn_3_104338(void);
 void fn_3_1045A8(void);
