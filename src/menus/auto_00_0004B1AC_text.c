@@ -2,6 +2,8 @@
 
 #include "static/UnknownHomes_Static.h"
 
+extern void fn_2_89F70(void);
+
 extern u8 lbl_2_data_1323C[];
 
 extern u8 lbl_2_data_1324C[];
@@ -90,4 +92,9 @@ void* fn_2_4E858(void* object) {
 // fn_2_512B8, size:0x8
 s32 fn_2_512B8(void) {
     return 0;
+}
+
+// fn_2_519F0, size:0x2C
+void* fn_2_519F0(void) {
+    return fn_800B0A5C_insertQueue((void*)fn_2_89F70, 0x3000);
 }
