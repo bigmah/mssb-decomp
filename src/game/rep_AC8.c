@@ -20,6 +20,9 @@ extern f32 lbl_3_rodata_1498;
 extern f32 lbl_3_rodata_BE4;
 extern f32 lbl_3_rodata_B8C;
 extern f32 lbl_3_rodata_B64;
+extern f32 lbl_3_rodata_BFC;
+extern f32 lbl_3_rodata_B7C;
+extern f32 lbl_3_rodata_BD8;
 extern f32 lbl_3_rodata_C00;
 extern s16 lbl_3_bss_170;
 extern u8 g_Controls[];
@@ -648,8 +651,8 @@ void fn_3_35E1C(void) {
 }
 
 // .text:0x000361D8 size:0x3F8 mapped:0x8067526C
-void fn_3_361D8(void) {
-    return;
+int fn_3_361D8(f32 x, f32 z) {
+    return 0;
 }
 
 // .text:0x000365D0 size:0xA8 mapped:0x80675664
@@ -723,8 +726,48 @@ void fn_3_37588(void) {
 }
 
 // .text:0x00037610 size:0x2A4 mapped:0x806766A4
-void fn_3_37610(s16 a) {
-    return;
+// 98%: prologue lis order (BFC load) and f/ao regs r6/r9 swapped in the idx>=0 block
+void fn_3_37610(int a) {
+    f32 t;
+    f32 best = lbl_3_rodata_BFC;
+    s32 idx = -1;
+    s32 i;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 a2;
+    f32 b2;
+    for (i = 0; i < 9; i++) {
+        u8* f = g_Fielders + i * 0x268;
+        t = *(f32*)(f + 0x74);
+        if (t < 5.0f && f[0x20F] == 0 && t < best && (f[0x210] == 0 || !((0.05f * (f32) * (s16*)(f + 0x1C0) + t) > best))) {
+            best = t;
+            idx = i;
+        }
+    }
+    if (idx >= 0) {
+        u8* base = g_Fielders;
+        int off = idx * 0x268;
+        u8* f = base + off;
+        if (!(*(f32*)(f + 0x74) < lbl_3_rodata_B64)) {
+            dx = *(f32*)(g_Ball + a * 16 + 0x354) - *(f32*)(base + off);
+            dz = *(f32*)(g_Ball + a * 16 + 0x35C) - *(f32*)(f + 8);
+            a2 = dx * dx;
+            b2 = dz * dz;
+            d = a2 + b2;
+            SQRT_L(d);
+            if (d > lbl_3_rodata_B64) {
+                idx = -1;
+            }
+        }
+    }
+    if (idx >= 0 && idx != *(s16*)(g_FieldingLogic + 0xB0) && *(s16*)(g_FieldingLogic + 0xB0) >= 0) {
+        u8* g = g_Fielders + *(s16*)(g_FieldingLogic + 0xB0) * 0x268;
+        if (*(f32*)(g + 0x74) < lbl_3_rodata_BD8 && g[0x20F] == 0) {
+            idx = -1;
+        }
+    }
+    fn_3_38790(idx >= 0 ? idx : fn_3_361D8(*(f32*)(g_Ball + a * 16 + 0x354), *(f32*)(g_Ball + a * 16 + 0x35C)), 0);
 }
 
 // .text:0x000378B4 size:0x74C mapped:0x80676948
