@@ -5,4 +5,6 @@
 
 u8 fn_800AFFB0(void);
 
+void fn_800AFFC0(u32 count);
+
 #endif
