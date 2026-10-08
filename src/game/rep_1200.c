@@ -204,8 +204,35 @@ void fn_3_70768(void) {
 }
 
 // .text:0x00070838 size:0x17C mapped:0x806AF8CC
+extern f32 lbl_3_data_5F5C[];
+extern u8 lbl_3_data_5F7C[];
+extern int RandomInt_Game_Range(int min, int max);
+extern f32 RandomF32_Game_Range(f32 a, f32 b);
 void fn_3_70838(void) {
-    return;
+    f32 d;
+    f32 dx;
+    f32 dy;
+    u8 v;
+    if (g_Pitcher[0x171] == 0) {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_5F5C[6], lbl_3_data_5F5C[6]);
+        *(f32*)(g_Pitcher + 0x28) = lbl_3_data_5F5C[0];
+        *(f32*)(g_Pitcher + 0x108) = RandomF32_Game_Range(lbl_3_data_5F5C[4], lbl_3_data_5F5C[5]);
+        *(f32*)(g_Pitcher + 0x2C) = lbl_3_rodata_1250 * (*(f32*)(g_Pitcher + 0x108) + *(f32*)(g_Pitcher + 0x2C));
+    } else {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_5F5C[7], lbl_3_data_5F5C[7]);
+        *(f32*)(g_Pitcher + 0x28) = lbl_3_data_5F5C[0];
+        *(f32*)(g_Pitcher + 0x2C) = *(f32*)(g_Pitcher + 0x78);
+    }
+    v = RandomInt_Game_Range(*(s16*)((u8*)lbl_3_data_5F7C + 8), *(s16*)((u8*)lbl_3_data_5F7C + 0xA));
+    dx = *(f32*)(g_Pitcher + 0x24) - *(f32*)(g_Pitcher + 0);
+    dy = *(f32*)(g_Pitcher + 0x28) - *(f32*)(g_Pitcher + 4);
+    d = *(f32*)(g_Pitcher + 8) - *(f32*)(g_Pitcher + 0x2C);
+    g_Pitcher[0x14A] = v;
+    g_Pitcher[0x171] = g_Pitcher[0x171] + 1;
+    *(f32*)(g_Pitcher + 0x20) = -((f32)v / *(f32*)(g_Pitcher + 0xAC));
+    *(s16*)(g_Pitcher + 0x138) = 0;
+    *(f32*)(g_Pitcher + 0x18) = -((dx * *(f32*)(g_Pitcher + 0x20)) / d);
+    *(f32*)(g_Pitcher + 0x1C) = -((dy * *(f32*)(g_Pitcher + 0x20)) / d);
 }
 
 // .text:0x000709B4 size:0x138 mapped:0x806AFA48
@@ -438,11 +465,9 @@ void fn_3_73F2C(void) {
 }
 
 // .text:0x00073FAC size:0x124 mapped:0x806B3040
-extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 extern f32 lbl_3_data_5EB0[];
 extern f32 lbl_3_data_4474[];
-extern f32 lbl_3_data_5F5C[];
 extern f32 lbl_3_data_2138C[];
 void fn_3_73FAC(void) {
     *(f32*)(g_Pitcher + 0x28) = *(f32*)(g_Batter + 0x50);
