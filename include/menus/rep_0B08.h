@@ -2,6 +2,7 @@
 #define __MENUS_REP_0B08_H__
 
 #include "mssbTypes.h"
+#include "Dolphin/vec.h"
 
 void fn_2_71A38(u8* object);
 
@@ -108,5 +109,7 @@ s32 fn_2_6AFD4(s32 index);
 void fn_2_68DAC(s32 index, void* result);
 
 void fn_2_696D4(s32 index);
+
+void fn_2_68DE8(s32 index, Vec* result);
 
 #endif

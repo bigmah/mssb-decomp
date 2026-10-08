@@ -1,5 +1,7 @@
 #include "menus/rep_0B08.h"
 
+extern const f32 lbl_2_rodata_B6C[];
+
 #include <string.h>
 
 #include "static/UnknownHomes_Static.h"
@@ -362,4 +364,16 @@ void fn_2_696D4(s32 index) {
         return;
     }
     *(f32*)((u8*)entry + 0x38) = 0.0f;
+}
+
+// fn_2_68DE8, size:0x80
+void fn_2_68DE8(s32 index, Vec* result) {
+    if (index != -1) {
+        memcpy(result, &lbl_2_bss_1A8248[0]->entries[index], 0xC);
+        PSVECScale(result, lbl_2_rodata_B6C[0], result);
+        return;
+    }
+    result->z = 0.0f;
+    result->y = 0.0f;
+    result->x = 0.0f;
 }
