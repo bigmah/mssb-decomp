@@ -44,6 +44,7 @@ extern u8 g_d_GameSettings[];
 extern u8 lbl_3_common_bss_37400[];
 extern void fn_3_161588(int, s16);
 extern u8 g_FieldingLogic[];
+extern void fn_3_6D964(int, int);
 extern int g_Strikes[];
 extern u8 g_Practice[];
 extern u8 g_Controls[];
@@ -1148,8 +1149,37 @@ void fn_3_899BC(void) {
 }
 
 // .text:0x0008A1D8 size:0x178 mapped:0x806C926C
+// ~90%: only the first (8A4E4-style) loop register allocation differs (i/p swapped in r6/r7)
 void fn_3_8A1D8(void) {
-    return;
+    int i;
+    for (i = 0; i < 4; i++) {
+        u8* r = ((RunnerT*)g_Runners)[i].b;
+        *(f32*)(r + 0x0) = ((P2*)lbl_3_data_4A34)[i].x;
+        *(f32*)(r + 0x8) = ((P2*)lbl_3_data_4A34)[i].z;
+        *(f32*)(r + 0x18) = 0.0f;
+        *(f32*)(r + 0x1C) = 0.0f;
+        *(f32*)(r + 0x20) = 0.0f;
+        r[0x124] = i;
+        r[0x125] = i;
+        r[0x126] = (i + 1) & 3;
+        *(s16*)(r + 0xE6) = i;
+        r[0x127] = 0xFF;
+        r[0x133] = 0;
+    }
+    if (g_GameLogic[0x121] != 0xC) {
+        for (i = 1; i < 4; i++) {
+            u8* r = g_Runners + i * 0x154;
+            if (*(s16*)(r + 0xE0) >= 0) {
+                fn_3_6D964(*(s16*)(r + 0xE0), i);
+            } else {
+                r[0x123] = 0;
+            }
+        }
+    }
+    {
+        int a = *(int*)(g_GameLogic + 0xC);
+        fn_3_6D964(*(int*)(g_GameLogic + a * 0x50 + *(int*)(g_GameLogic + a * 4 + 0xDC) * 8 + 0x3C), 0);
+    }
 }
 
 // .text:0x0008A350 size:0x178 mapped:0x806C93E4
@@ -1227,13 +1257,70 @@ void fn_3_8A5A4(void) {
 }
 
 // .text:0x0008A618 size:0x19C mapped:0x806C96AC
+// ~85%: shape matches; registers of hoisted constants/temps differ (orig: temp r3, fl r4, 1->r0, 0->r6)
 void fn_3_8A618(void) {
-    return;
+    int i;
+    u8* r;
+    u8 m;
+    if ((g_GameLogic[0x11E] != 2 || *(u16*)(g_GameLogic + 0xFC) >= *(u8*)(g_RunningLogic + 0x14) || g_GameLogic[0x121] == 0xE ||
+         g_FieldingLogic[0x107] != 0) &&
+        g_FieldingLogic[0x10E] == 0) {
+        if (g_GameLogic[*(int*)(g_GameLogic + 0xC) + 0x148] == 0) {
+            fn_3_7E2BC();
+        } else {
+            fn_3_83714();
+        }
+        m = g_FieldingLogic[0x107];
+        r = g_Runners;
+        for (i = 0; i < 4; i++, r += 0x154) {
+            if (r[0x123] != 0) {
+                if (m == 1 && r[0x14E] != 0 && *(s16*)(r + 0xE0) >= 0) {
+                    r[0x135] = 1;
+                }
+                r[0x14E] = 0;
+            }
+        }
+    }
 }
 
 // .text:0x0008A7B4 size:0x1A4 mapped:0x806C9848
 void fn_3_8A7B4(void) {
-    return;
+    int i;
+    u8* c;
+    u8 p;
+    int idx;
+    if (g_GameLogic[*(int*)(g_GameLogic + 0xC) + 0x148] != 0) {
+        fn_3_85CB0();
+    } else {
+        idx = *(int*)(g_GameLogic + 4);
+        c = g_Controls + *(int*)(g_GameLogic + idx * 4 + 0xEC) * 16;
+        p = g_Pitcher[0x13E];
+        if (!(p != 1 && p != 2 && p != 3)) {
+            if (g_d_GameSettings[7] == 2 && (s8)g_Practice[0x1C2] >= 0) {
+                c = g_Practice + idx * 16;
+            }
+            if (*(u16*)(c + 6) & 0x800) {
+                if (*(s16*)c < 0) {
+                    for (i = 1; i < 4; i++) {
+                        if (g_Runners[i * 0x154 + 0x123] != 0 && g_Runners[i * 0x154 + 0x14E] == 0) {
+                            g_Runners[i * 0x154 + 0x14E] = 1;
+                        }
+                    }
+                } else {
+                    if (*(s16*)c >= 0x1C0 && *(s16*)c <= 0x640) {
+                        g_Runners[0x2A2] = 1;
+                    }
+                    if (*(s16*)c >= 0x5C0 && *(s16*)c <= 0xA40) {
+                        g_Runners[0x3F6] = 1;
+                    }
+                    if (*(s16*)c >= 0x9C0 && *(s16*)c <= 0xE40) {
+                        g_Runners[0x54A] = 1;
+                    }
+                }
+            }
+        }
+    }
+    fn_3_86EF8();
 }
 
 // .text:0x0008A958 size:0x73C mapped:0x806C99EC
