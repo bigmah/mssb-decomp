@@ -176,3 +176,11 @@ void fn_2_90E98(u8* object) {
     entry->active = 0;
     entry->state = 0;
 }
+
+void fn_2_90C14(u8* object) {
+    if (*(s16*)(object + 0xA0) == 1) {
+        MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+        entry->active = 0;
+        entry->state = 0;
+    }
+}
