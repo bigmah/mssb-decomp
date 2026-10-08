@@ -90,4 +90,6 @@ void fn_2_8F9D0(s32 index, s16 type);
 
 void fn_2_8FA58(s32 index, s16 type);
 
+void fn_2_8FAE0(s32 index, s16 type);
+
 #endif
