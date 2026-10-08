@@ -47,6 +47,7 @@ extern u8 g_FieldingLogic[];
 extern int g_Strikes[];
 extern u8 g_Practice[];
 extern u8 g_Controls[];
+extern u32 fn_3_107DF8(u8);
 extern u8 g_AiLogic[];
 extern s16 lbl_3_data_1C58[];
 extern int RandomInt_Game(int);
@@ -155,8 +156,70 @@ void fn_3_7D9DC(int i) {
 }
 
 // .text:0x0007DB30 size:0x1F4 mapped:0x806BCBC4
-void fn_3_7DB30(int a) {
-    return;
+void fn_3_7DB30(int i) {
+    u8* r;
+    u8 k;
+    u8* c;
+    u8 t;
+    u16 b;
+    k = g_Minigame[i + 0x18FC];
+    c = g_Controls + (s8)k * 16;
+    r = g_Runners + i * 0x154;
+    if (fn_3_107DF8(k)) {
+        c = g_Minigame + (s8)g_Minigame[i + 0x18FC] * 16 + 0x1D7C;
+    }
+    t = r[0x137];
+    if (t == 3) {
+        u8 u = r[0x136];
+        if (u == 2 || u == 1) {
+            b = *(u16*)(c + 6);
+            if (b & 0x400) {
+                if (*(s16*)(r + 0xE0) >= 0) {
+                    r[0x135] = 3;
+                }
+            } else if (b & 0x800) {
+                if (*(s16*)(r + 0xE0) >= 0) {
+                    r[0x135] = 1;
+                }
+            }
+        } else if (*(u16*)(c + 6) & 0x800) {
+            if (*(s16*)(r + 0xE0) >= 0) {
+                r[0x135] = 2;
+            }
+        }
+    } else if (t == 1) {
+        u8 u = r[0x136];
+        if (u == 2 || u == 3) {
+            b = *(u16*)(c + 6);
+            if (b & 0x400) {
+                if (*(s16*)(r + 0xE0) >= 0) {
+                    r[0x135] = 3;
+                }
+            } else if (b & 0x800) {
+                if (*(s16*)(r + 0xE0) >= 0) {
+                    r[0x135] = 1;
+                }
+            }
+        } else if (*(u16*)(c + 6) & 0x400) {
+            if (*(s16*)(r + 0xE0) >= 0) {
+                r[0x135] = 2;
+            }
+        }
+    } else {
+        b = *(u16*)(c + 4);
+        if (b & 0x800) {
+            if (*(s16*)(r + 0xE0) >= 0) {
+                r[0x135] = 1;
+            }
+        } else if (b & 0x400) {
+            if (*(s16*)(r + 0xE0) >= 0) {
+                r[0x135] = 3;
+            }
+        }
+    }
+    if (*(u16*)(c + 6) & 0xF00) {
+        r[0x149] = 1;
+    }
 }
 
 // .text:0x0007DD24 size:0x48 mapped:0x806BCDB8
