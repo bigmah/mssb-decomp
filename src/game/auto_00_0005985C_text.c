@@ -48,6 +48,20 @@ extern u8 g_Scores[];
 
 #pragma dont_inline on
 
+// fn_3_5D9F8, size:0xA4
+void fn_3_5D9F8(void) {
+    if (g_Stats.replayInd == 0) {
+        g_Pitcher._15C = 0;
+        if (g_d_GameSettings.GameModeSelected == 4 && g_Scores[0xAD] == 0) {
+            g_GameLogic.framesOfExitingToMenu = 1;
+        } else if (g_GameLogic.EventTriggers_EndOfGame != 0) {
+            fn_3_5A6D4(9);
+        } else {
+            fn_3_5A6D4(3);
+        }
+    }
+}
+
 // fn_3_5C530, size:0x98
 s32 fn_3_5C530(s32 inning) {
     u8 finalInning = g_Scores[0xAA];
