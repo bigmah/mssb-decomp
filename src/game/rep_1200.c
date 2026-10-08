@@ -1,5 +1,6 @@
 #include "game/rep_1200.h"
 #include "header_rep_data.h"
+#include "math.h"
 
 extern u8 g_Pitcher[];
 extern u8 g_Minigame[];
@@ -66,8 +67,46 @@ void fn_3_6FB98(void) {
 }
 
 // .text:0x0006FDA0 size:0x224 mapped:0x806AEE34
+extern const f32 lbl_3_rodata_1254;
+extern const f32 lbl_3_rodata_1278;
+extern const f64 lbl_3_rodata_1260;
+extern const f64 lbl_3_rodata_1268;
+extern const f64 lbl_3_rodata_1270;
+static inline f32 sqrt_ext(f32 x) {
+    if (x > 0.0f) {
+        f64 h = lbl_3_rodata_1260;
+        f64 th = lbl_3_rodata_1268;
+        f64 xd = (f64)x;
+        f64 guess = __frsqrte(xd);
+        guess = h * guess * (th - guess * guess * xd);
+        guess = h * guess * (th - guess * guess * xd);
+        guess = h * guess * (th - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (x < lbl_3_rodata_1270)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
+extern s16 fn_3_9FB8C(f32 x, f32 y);
+extern void getComponentsFromSAng(s16 ang, f32* x, f32* y);
 void fn_3_6FDA0(void) {
-    return;
+    s16 ang;
+    f32 a;
+    f32 b;
+    f32 mag;
+    f32 k;
+    f32 t;
+    s32 off = *(s32*)(g_Ball + 0x1B4C) % 257 - 0x80;
+    ang = fn_3_9FB8C(*(f32*)(g_Pitcher + 0x18), -*(f32*)(g_Pitcher + 0x20));
+    getComponentsFromSAng(ang + off, &a, &b);
+    t = lbl_3_rodata_1254 * (f32)(*(s32*)(g_Ball + 0x1B50) % 10);
+    mag = sqrt_ext(*(f32*)(g_Pitcher + 0x18) * *(f32*)(g_Pitcher + 0x18) + *(f32*)(g_Pitcher + 0x20) * *(f32*)(g_Pitcher + 0x20));
+    k = lbl_3_rodata_1278 + t;
+    *(f32*)(g_Ball + 0x318) = k * (a * mag);
+    *(f32*)(g_Ball + 0x320) = k * (b * mag);
+    *(f32*)(g_Ball + 0x31C) = lbl_3_rodata_1258;
 }
 
 // .text:0x0006FFC4 size:0x2BC mapped:0x806AF058
@@ -76,12 +115,37 @@ void fn_3_6FFC4(void) {
 }
 
 // .text:0x00070280 size:0x16C mapped:0x806AF314
+extern u8 g_Batter[];
+extern u8 lbl_800E8558[];
+extern u8 lbl_3_data_76FC[];
+extern const f32 lbl_3_rodata_1288;
 void fn_3_70280(void) {
-    return;
+    s32 k;
+    s32 x;
+    s32 y;
+    s32 hit = 0;
+    if ((g_GameLogic[0x121] != 0xB || g_Practice[0x1DB] != 0) && g_Minigame[0x1A2A] != 2 &&
+        *(s16*)(g_Batter + 0x66) <= 0 && g_Pitcher[0x156] == 0) {
+        x = (s32)(lbl_3_rodata_1288 * (*(f32*)(g_Pitcher + 0) - *(f32*)(g_Batter + 0)));
+        y = (s32)(lbl_3_rodata_1288 * (*(f32*)(g_Pitcher + 8) - *(f32*)(g_Batter + 4)));
+        if (g_Batter[0x7B] != 0) {
+            x = -x;
+        }
+        k = lbl_800E8558[*(s16*)(g_Batter + 0x62) * 6 + 2] * 3;
+        if (y <= lbl_3_data_76FC[k]) {
+            if ((f32)y >= lbl_3_rodata_1258) {
+                if (x <= lbl_3_data_76FC[k + 1] && x >= -lbl_3_data_76FC[k + 2]) {
+                    hit = 1;
+                }
+            }
+        }
+        if (hit != 0) {
+            g_Batter[0x93] = 1;
+        }
+    }
 }
 
 // .text:0x000703EC size:0x294 mapped:0x806AF480
-extern u8 g_Batter[];
 extern u8 swingSoundFrame[];
 extern u8 g_Stats[];
 extern void fn_3_59918(s32, s32);
@@ -179,13 +243,62 @@ void fn_3_70768(void) {
 }
 
 // .text:0x00070838 size:0x17C mapped:0x806AF8CC
+extern f32 lbl_3_data_5F5C[];
+extern u8 lbl_3_data_5F7C[];
+extern int RandomInt_Game_Range(int min, int max);
+extern f32 RandomF32_Game_Range(f32 a, f32 b);
 void fn_3_70838(void) {
-    return;
+    f32 d;
+    f32 dx;
+    f32 dy;
+    u8 v;
+    if (g_Pitcher[0x171] == 0) {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_5F5C[6], lbl_3_data_5F5C[6]);
+        *(f32*)(g_Pitcher + 0x28) = lbl_3_data_5F5C[0];
+        *(f32*)(g_Pitcher + 0x108) = RandomF32_Game_Range(lbl_3_data_5F5C[4], lbl_3_data_5F5C[5]);
+        *(f32*)(g_Pitcher + 0x2C) = lbl_3_rodata_1250 * (*(f32*)(g_Pitcher + 0x108) + *(f32*)(g_Pitcher + 0x2C));
+    } else {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_5F5C[7], lbl_3_data_5F5C[7]);
+        *(f32*)(g_Pitcher + 0x28) = lbl_3_data_5F5C[0];
+        *(f32*)(g_Pitcher + 0x2C) = *(f32*)(g_Pitcher + 0x78);
+    }
+    v = RandomInt_Game_Range(*(s16*)((u8*)lbl_3_data_5F7C + 8), *(s16*)((u8*)lbl_3_data_5F7C + 0xA));
+    dx = *(f32*)(g_Pitcher + 0x24) - *(f32*)(g_Pitcher + 0);
+    dy = *(f32*)(g_Pitcher + 0x28) - *(f32*)(g_Pitcher + 4);
+    d = *(f32*)(g_Pitcher + 8) - *(f32*)(g_Pitcher + 0x2C);
+    g_Pitcher[0x14A] = v;
+    g_Pitcher[0x171] = g_Pitcher[0x171] + 1;
+    *(f32*)(g_Pitcher + 0x20) = -((f32)v / *(f32*)(g_Pitcher + 0xAC));
+    *(s16*)(g_Pitcher + 0x138) = 0;
+    *(f32*)(g_Pitcher + 0x18) = -((dx * *(f32*)(g_Pitcher + 0x20)) / d);
+    *(f32*)(g_Pitcher + 0x1C) = -((dy * *(f32*)(g_Pitcher + 0x20)) / d);
 }
 
 // .text:0x000709B4 size:0x138 mapped:0x806AFA48
+extern u8 lbl_3_data_5F50[];
+extern const f32 lbl_3_rodata_12A0;
+extern const f32 lbl_3_rodata_12A4;
+extern void getComponentsFromRad(f32 v, f32* x, f32* y);
 void fn_3_709B4(void) {
-    return;
+    f32 c;
+    f32 s;
+    f32 a;
+    f32 t;
+    u8 n = g_Pitcher[0x16C] + 1;
+    g_Pitcher[0x16C] = n;
+    if (n >= g_Pitcher[0x16D]) {
+        g_Pitcher[0x16B] = 2;
+        return;
+    }
+    a = (f32)n / (f32)g_Pitcher[0x16D];
+    a = a * lbl_3_rodata_12A0;
+    a = a + lbl_3_rodata_12A4;
+    getComponentsFromRad(a, &c, &s);
+    t = lbl_3_rodata_1254 * (f32)lbl_3_data_5F50[g_Pitcher[0x165] * 5 - 0x1F];
+    *(f32*)(g_Pitcher + 0xEC) = c * t + t;
+    *(f32*)(g_Pitcher + 0xF0) = s * t;
+    *(f32*)(g_Pitcher + 0xE8) = lbl_3_rodata_1258;
+    *(f32*)(g_Pitcher + 0x100) = a;
 }
 
 // .text:0x00070AEC size:0xA8 mapped:0x806AFB80
@@ -390,11 +503,9 @@ void fn_3_73F2C(void) {
 }
 
 // .text:0x00073FAC size:0x124 mapped:0x806B3040
-extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 extern f32 lbl_3_data_5EB0[];
 extern f32 lbl_3_data_4474[];
-extern f32 lbl_3_data_5F5C[];
 extern f32 lbl_3_data_2138C[];
 void fn_3_73FAC(void) {
     *(f32*)(g_Pitcher + 0x28) = *(f32*)(g_Batter + 0x50);
