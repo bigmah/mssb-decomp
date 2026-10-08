@@ -10,6 +10,7 @@ extern u32 lbl_3_data_19018[];
 
 extern f32 lbl_3_rodata_2B9C;
 extern f32 lbl_3_rodata_2BA0;
+extern f32 lbl_3_rodata_2BA4;
 
 extern f32 lbl_3_rodata_2B90;
 extern f32 lbl_3_rodata_2B94;
@@ -67,8 +68,20 @@ void fn_3_E5A84(void) {
 }
 
 // .text:0x000E5CBC size:0x158 mapped:0x80724D50
-void fn_3_E5CBC(void) {
-    return;
+void fn_3_E5CBC(u8* p, f32 t) {
+    u8* b = *(u8**)(p + 0xAC);
+    u8* a = *(u8**)(p + 0xA8);
+    f32 r;
+    if (t > 1.0f) {
+        t = 1.0f;
+    } else if (t < lbl_3_rodata_2BA4) {
+        t = lbl_3_rodata_2BA4;
+    }
+    r = 1.0f - t;
+    p[0xA4] = (u8)(r * (f32)b[0] + t * (f32)a[0]);
+    p[0xA5] = (u8)(r * (f32)b[1] + t * (f32)a[1]);
+    p[0xA6] = (u8)(r * (f32)b[2] + t * (f32)a[2]);
+    p[0xA7] = (u8)(r * (f32)b[3] + t * (f32)a[3]);
 }
 
 // .text:0x000E5E14 size:0x5C mapped:0x80724EA8

@@ -7,7 +7,7 @@
 void fn_3_E59B4(u8* a);
 void fn_3_E5A1C(u8* a);
 void fn_3_E5A84(void);
-void fn_3_E5CBC(void);
+void fn_3_E5CBC(u8* p, f32 t);
 s32 fn_3_E5E14(u8* p);
 void fn_3_E5E70(void);
 void fn_3_E5FEC(void);
