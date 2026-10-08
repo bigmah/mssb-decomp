@@ -155,7 +155,7 @@ void fn_3_8B9BC(void* pos) {
 }
 
 // .text:0x0008BA60 size:0x164 mapped:0x806CAAF4
-typedef struct SndEm3C { s32 x, y, z; u8 pad[8]; u32 f14; u8 pad2[0x24]; } SndEm3C;
+typedef struct SndEm3C { s32 x, y, z; s32 maxd, comp; u32 f14, f18; u32 fl[7]; u32 f38; } SndEm3C;
 extern SndEm3C lbl_3_data_8974[];
 extern Vec lbl_3_data_8D7C;
 void fn_3_8BA60(s32 i, f32* pos, f32* dir) {
@@ -184,8 +184,38 @@ void fn_3_8BA60(s32 i, f32* pos, f32* dir) {
 }
 
 // .text:0x0008BBC4 size:0x230 mapped:0x806CAC58
-void fn_3_8BBC4(void) {
-    return;
+extern char lbl_3_rodata_159C[];
+extern u32 sndAddEmitter(void*, void*, void*, f32, f32, u32, u16, u8, u8, void*);
+s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type) {
+    f32 tmp[3];
+    s32 i;
+    for (i = 0; i < 100; i++) {
+        if (lbl_3_common_bss_32B20[0x2034 + i] == 0 || sndCheckEmitter(lbl_3_common_bss_32B20 + i * 0x50 + 0x90) == 0) {
+            lbl_3_common_bss_32B20[0x1FD0 + i] = type;
+            lbl_3_common_bss_32B20[0x2034 + i] = 1;
+            lbl_3_common_bss_32B20[0x2098 + i] = 0;
+            if (pos == NULL) {
+                tmp[0] = lbl_3_data_8974[type].x / 100000.0f;
+                tmp[1] = lbl_3_data_8974[type].y / 100000.0f;
+                tmp[2] = lbl_3_data_8974[type].z / 100000.0f;
+                pos = tmp;
+            }
+            if (dir == NULL) {
+                dir = (f32*)&lbl_3_data_8D7C;
+            }
+            sndAddEmitter(lbl_3_common_bss_32B20 + i * 0x50 + 0x90, pos, dir,
+                          lbl_3_data_8974[type].maxd / 100000.0f, lbl_3_data_8974[type].comp / 100000.0f,
+                          lbl_3_data_8974[type].fl[0] | lbl_3_data_8974[type].fl[1] | lbl_3_data_8974[type].fl[2] |
+                              lbl_3_data_8974[type].fl[3] | lbl_3_data_8974[type].fl[4] | lbl_3_data_8974[type].fl[5] |
+                              lbl_3_data_8974[type].fl[6],
+                          (u16)id, lbl_3_data_8974[type].f14, lbl_3_data_8974[type].f18, 0);
+            return i;
+        }
+    }
+    if (i == 100) {
+        OSPanic(lbl_3_rodata_1590, 0xE4C, lbl_3_rodata_159C);
+    }
+    return -1;
 }
 
 // .text:0x0008BDF4 size:0x98 mapped:0x806CAE88

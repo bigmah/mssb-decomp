@@ -10,7 +10,7 @@ void fn_3_8B890(s32 i);
 void fn_3_8B964(void* a, void* b, void* c);
 void fn_3_8B9BC(void* pos);
 void fn_3_8BA60(s32 i, f32* pos, f32* dir);
-void fn_3_8BBC4(void);
+s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type);
 void fn_3_8BDF4(void);
 void fn_3_8BE8C(void);
 void fn_3_8C07C(void);
