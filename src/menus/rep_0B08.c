@@ -313,3 +313,11 @@ void fn_2_6BB7C(u8* object) {
     *(f32*)(object + 0x8C) = lbl_2_rodata_BA0;
     *(s16*)(object + 0x94) = 1;
 }
+
+// fn_2_6C120, size:0x70
+void fn_2_6C120(u8* object) {
+    f32 distance = (f32)__fabs(PSVECDistance((Vec*)((u8*)lbl_2_bss_1A8248[0] + 0x1610), (Vec*)object));
+    if (distance < lbl_2_rodata_BA8 && distance != 0.0f) {
+        *(s16*)(object + 0x94) = 2;
+    }
+}
