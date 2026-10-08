@@ -315,8 +315,8 @@ void fn_3_2C698(void) {
 }
 
 // .text:0x0002CBE0 size:0x314 mapped:0x8066BC74
-void fn_3_2CBE0(void) {
-    return;
+int fn_3_2CBE0(int a) {
+    return 0;
 }
 
 // .text:0x0002CEF4 size:0x18C mapped:0x8066BF88
@@ -404,18 +404,35 @@ void fn_3_2EA24(void) {
 }
 
 // .text:0x0002EA88 size:0x43C mapped:0x8066DB1C
-void fn_3_2EA88(void) {
+void fn_3_2EA88(int a) {
     return;
 }
 
 // .text:0x0002EEC4 size:0x5C0 mapped:0x8066DF58
-void fn_3_2EEC4(void) {
+void fn_3_2EEC4(int a) {
     return;
 }
 
 // .text:0x0002F484 size:0xF0 mapped:0x8066E518
 void fn_3_2F484(void) {
-    return;
+    int i;
+    fn_3_58688();
+    for (i = 0; i < 4; i++) {
+        if (*(s8*)(g_Minigame + 0x18F8 + i) >= 0) {
+            *(u8**)(g_FieldingLogic + 0x70) = g_FieldingLogic + i * 0x1C;
+            *(u8**)(g_FieldingLogic + 0x8C) = g_FieldingLogic + i * 6 + 0x74;
+            if (g_d_GameSettings[7] != 6 || *(s16*)(g_Minigame + 0x19BC) == 0 ||
+                i != *(s8*)(g_Minigame + 0x19C6) || fn_3_2CBE0(i) == 0) {
+                if (g_Minigame[0x18D8 + i] == 0) {
+                    fn_3_2EEC4(i);
+                } else if (g_Minigame[0x1A2A] == 6) {
+                    fn_3_2EEC4(i);
+                } else {
+                    fn_3_2EA88(i);
+                }
+            }
+        }
+    }
 }
 
 // .text:0x0002F574 size:0x260 mapped:0x8066E608
