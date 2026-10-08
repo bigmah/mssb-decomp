@@ -10,7 +10,7 @@ extern char lbl_3_rodata_2878[];
 #include "Dolphin/mtx.h"
 #pragma dont_inline on
 extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
-extern f64 lbl_3_rodata_2800;
+extern const f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern f32 lbl_3_rodata_280C[];
 extern f64 lbl_3_rodata_2668;
@@ -1531,13 +1531,50 @@ void fn_3_D5E80(s32* a) {
 }
 
 // .text:0x000D60C0 size:0x230 mapped:0x80715154
+extern u8 lbl_3_bss_A02A;
+extern u8 lbl_3_bss_A02B;
+extern f64 lbl_3_rodata_27D0;
+extern u8 lbl_3_bss_A02A;
+extern u8 lbl_3_bss_A02B;
+extern f64 lbl_3_rodata_27D0;
 void fn_3_D60C0(void) {
     return;
 }
 
 // .text:0x000D62F0 size:0x224 mapped:0x80715384
-void fn_3_D62F0(void) {
-    return;
+extern u8 lbl_3_bss_A02C;
+extern u8 lbl_3_bss_A02D;
+extern const f32 lbl_3_rodata_28A4;
+void fn_3_D62F0(s32* a) {
+    Mtx m2;
+    D5B6CCpy cpy;
+    D5C8CBss* g;
+    D5C8CCtl* c;
+    u32 v;
+    s32 j;
+    s32 idx;
+    g = (D5C8CBss*)lbl_3_common_bss_350E4;
+    for (j = 0; j < lbl_3_bss_A02D; j++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        idx = lbl_3_bss_A02C + j;
+        g->p44[v] = idx;
+        g->p3C[*a] += 1;
+        c = &g->arr[idx];
+        cpy = *(D5B6CCpy*)c;
+        CTRLBuildMatrix((Control*)&cpy, m2);
+        fn_3_B8464(m2, (void*)c->f78);
+        CTRLSetTranslation((Control*)&cpy, lbl_3_rodata_2800 + lbl_3_data_182C8[((u8*)c)[0x9C]].x, -(lbl_3_rodata_28A4 + lbl_3_data_182C8[((u8*)c)[0x9C]].y), lbl_3_rodata_2800 + lbl_3_data_182C8[((u8*)c)[0x9C]].z);
+        CTRLBuildMatrix((Control*)&cpy, m2);
+        fn_3_B8464(m2, (void*)c->f78);
+        CTRLSetTranslation((Control*)&cpy, lbl_3_data_182C8[((u8*)c)[0x9C]].x - lbl_3_rodata_2800, -(lbl_3_rodata_28A4 + lbl_3_data_182C8[((u8*)c)[0x9C]].y), lbl_3_data_182C8[((u8*)c)[0x9C]].z - lbl_3_rodata_2800);
+        CTRLBuildMatrix((Control*)&cpy, m2);
+        fn_3_B8464(m2, (void*)c->f78);
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
 }
 
 // .text:0x000D6514 size:0x2B8 mapped:0x807155A8
