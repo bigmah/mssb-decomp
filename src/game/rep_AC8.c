@@ -1,5 +1,6 @@
 #include "game/rep_AC8.h"
 #include "header_rep_data.h"
+#include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 extern s16 radToShortAngle(f32 v);
 
 extern u8 g_Ball[];
@@ -24,6 +25,29 @@ extern s16 lbl_3_bss_170;
 extern u8 g_Controls[];
 extern s16 lbl_3_data_484C[];
 extern f32 lbl_3_rodata_B70;
+extern f32 lbl_3_rodata_C24;
+extern int __float_nan[];
+#define NAN (*(f32*)__float_nan)
+f64 __frsqrte(f64);
+extern f64 lbl_3_rodata_B30;
+extern f64 lbl_3_rodata_B38;
+extern f64 lbl_3_rodata_B40;
+extern f32 lbl_3_rodata_C38;
+#define SQRT_L(x)                                                                                  \
+    do {                                                                                           \
+        if ((x) > lbl_3_rodata_B20) {                                                              \
+            f64 xd = (f64)(x);                                                                     \
+            f64 guess = __frsqrte(xd);                                                             \
+            guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);            \
+            guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);            \
+            guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);            \
+            (x) = (f32)(xd * guess);                                                               \
+        } else if ((x) < lbl_3_rodata_B40) {                                                       \
+            (x) = NAN;                                                                             \
+        } else if (isnan(x)) {                                                                     \
+            (x) = NAN;                                                                             \
+        }                                                                                          \
+    } while (0)
 #pragma dont_inline on
 
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
@@ -947,8 +971,43 @@ void fn_3_3DB78(void) {
 }
 
 // .text:0x0003E34C size:0x11C mapped:0x8067D3E0
-void fn_3_3E34C(void) {
-    return;
+void fn_3_3E34C(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (*(s16*)(f + 0x19C) >= 1) {
+        if (f[0x1C5] != 0) {
+            if (i != -1) {
+                f[0x1D3] = 0x12;
+                if (*(int*)(lbl_3_data_3C40 + 0x90) >= 0) {
+                    g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x90);
+                }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+            }
+        } else if (i != -1) {
+            f[0x1D3] = 0;
+            if (*(int*)lbl_3_data_3C40 >= 0) {
+                g_FieldingLogic[i + 0xF8] = *(int*)lbl_3_data_3C40;
+            }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+        }
+    } else if (g_FieldingLogic[0x11C] != 0 && i != -1) {
+        f[0x1D3] = 0;
+        if (*(int*)lbl_3_data_3C40 >= 0) {
+            g_FieldingLogic[i + 0xF8] = *(int*)lbl_3_data_3C40;
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
 }
 
 // .text:0x0003E468 size:0x228 mapped:0x8067D4FC
@@ -968,7 +1027,39 @@ void fn_3_3EB6C(void) {
 
 // .text:0x0003F034 size:0xF0 mapped:0x8067E0C8
 void fn_3_3F034(void) {
-    return;
+    int i;
+    u8* f;
+    for (i = 0; i < 9; i++) {
+        g_FieldingLogic[i + 0xF8] = 0;
+        f = g_Fielders + i * 0x268;
+        if (i != -1) {
+            f[0x1D3] = 0;
+            if (*(int*)lbl_3_data_3C40 >= 0) {
+                g_FieldingLogic[i + 0xF8] = *(int*)lbl_3_data_3C40;
+            }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+        }
+    }
+    *(s16*)(g_FieldingLogic + 0xD0) = -1;
+    g_FieldingLogic[0x101] = 0;
+    *(s16*)(g_FieldingLogic + 0xD2) = -1;
+    g_FieldingLogic[0x102] = 0;
+    *(s16*)(g_FieldingLogic + 0xD4) = -1;
+    g_FieldingLogic[0x103] = 0;
+    *(s16*)(g_FieldingLogic + 0xD6) = -1;
+    g_FieldingLogic[0x104] = 0;
+    *(s16*)(g_FieldingLogic + 0xBC) = -1;
+    *(s16*)(g_FieldingLogic + 0xBE) = -1;
+    *(s16*)(g_FieldingLogic + 0xC2) = -1;
+    if (*(s16*)(g_Ball + 0x1B7A) == 0 && *(s16*)(g_Ball + 0x1B5E) > 0x2D) {
+        fn_3_3EB6C();
+    } else {
+        fn_3_3E690();
+    }
 }
 
 // .text:0x0003F124 size:0x128 mapped:0x8067E1B8
@@ -1018,8 +1109,33 @@ void fn_3_411AC(void) {
 }
 
 // .text:0x000417D4 size:0x1A8 mapped:0x80680868
-void fn_3_417D4(void) {
-    return;
+void fn_3_417D4(int i) {
+    int off = i * 0x268;
+    u8* f = g_Fielders + off;
+    u8* g;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 a;
+    f32 b;
+    dx = *(f32*)(g_Ball + 0x3F4) - *(f32*)f;
+    dz = *(f32*)(g_Ball + 0x3FC) - *(f32*)(f + 8);
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_C38 && f[0x1DD] == 2 && *(f32*)(g_Ball + 0x3F8) > *(f32*)(f + 0xF4)) {
+        *(s16*)(f + 0x198) = 0;
+        g = g_Fielders;
+        g += off;
+        *(f32*)(g + 0x14) = *(f32*)f;
+        *(f32*)(g + 0x18) = *(f32*)(f + 4);
+        *(f32*)(g + 0x1C) = *(f32*)(f + 8);
+        *(f32*)(g + 0x30) = lbl_3_rodata_B20;
+        *(f32*)(g + 0x34) = lbl_3_rodata_B20;
+        *(f32*)(g + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(g + 0x68) = lbl_3_rodata_B20;
+    }
 }
 
 // .text:0x0004197C size:0x3FC mapped:0x80680A10
@@ -1048,8 +1164,23 @@ void fn_3_42A00(void) {
 }
 
 // .text:0x00042BD0 size:0x10C mapped:0x80681C64
-void fn_3_42BD0(void) {
-    return;
+void fn_3_42BD0(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    u8* o;
+    int j;
+    if (i >= 6 && g_Ball[0x1BC9] == 0) {
+        if (*(f32*)(f + 0x70) < *(f32*)(g_Ball + 0x1A00)) {
+            fn_3_43038();
+            return;
+        }
+        for (j = 6; j < 9; j++) {
+            o = g_Fielders + j * 0x268;
+            if (j != i && o[0x1DC] == 3 && *(s16*)(o + 0x17E) <= *(s16*)(f + 0x17E) && *(s16*)(o + 0x17E) < 0x5A) {
+                fn_3_43038();
+                return;
+            }
+        }
+    }
 }
 
 // .text:0x00042CDC size:0x35C mapped:0x80681D70
@@ -1537,3 +1668,5 @@ void fn_3_596F8(void) {
     return;
 }
 
+
+#pragma dont_inline off
