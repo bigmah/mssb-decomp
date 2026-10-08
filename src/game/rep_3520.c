@@ -844,6 +844,7 @@ void fn_3_1370A0(u8* o) {
     }
 }
 
+#pragma dont_inline off
 // .text:0x001371E8 size:0x3C mapped:0x8077627C
 void fn_3_1371E8(void) {
     lbl_3_bss_B702 = *(s16*)lbl_3_data_21AF0;
@@ -881,6 +882,8 @@ void fn_3_137224(u8* o) {
         }
     }
 }
+
+#pragma dont_inline on
 
 // .text:0x001373E0 size:0x5C0 mapped:0x80776474
 void fn_3_1373E0(void) {
@@ -1077,9 +1080,31 @@ void fn_3_137F14(u8* o) {
     }
 }
 
+// 99.9%: only f0/f1 swap on the `y <= 0` compare (orig y=f1, const=f0); 1371E8 and 137224 are inlined here (dont_inline off)
 // .text:0x0013802C size:0x2B4 mapped:0x807770C0
-void fn_3_13802C(void) {
-    return;
+void fn_3_13802C(u8* o) {
+    if (g_Minigame._72A != 0) {
+        *(f32*)(o + 0x10) = (&lbl_3_data_21A64)[5];
+        o[0x3D] = 5;
+        *(s16*)(o + 0x3A) = 0;
+        return;
+    }
+    PSVECAdd((Vec*)o, (Vec*)(o + 0xC), (Vec*)o);
+    if (fn_3_137B10(o) != 0) {
+        (&g_Minigame._1D78)[(s8)o[0x3C]] = 0;
+        fn_3_90064(0x30D);
+        return;
+    }
+    if (*(f32*)(o + 4) <= lbl_3_rodata_35D0) {
+        *(f32*)(o + 4) = lbl_3_rodata_35D0;
+        memset(o + 0xC, 0, 0xC);
+        *(s16*)(o + 0x3A) = 0;
+        o[0x3D] = 3;
+        fn_3_1371E8();
+        fn_3_137224(o);
+        (&g_Minigame._1D78)[(s8)o[0x3C]] = 0;
+        fn_3_90064(0x2F7);
+    }
 }
 
 // .text:0x001382E0 size:0x168 mapped:0x80777374

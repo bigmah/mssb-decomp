@@ -48,7 +48,7 @@ u8 fn_3_137B10(u8* o);
 void fn_3_137CF8(u8* o);
 void fn_3_137DE4(u8* o);
 void fn_3_137F14(u8* o);
-void fn_3_13802C(void);
+void fn_3_13802C(u8* o);
 void fn_3_1382E0(u8* o);
 void fn_3_138448(u8* a);
 void fn_3_1384B4(void);
