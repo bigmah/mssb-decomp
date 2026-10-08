@@ -5,4 +5,6 @@
 
 void fn_3_5B408(void);
 
+void fn_3_5B368(void);
+
 #endif

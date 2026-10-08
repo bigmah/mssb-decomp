@@ -8,3 +8,9 @@
 void fn_3_5B408(void) {
     g_GameLogic.frame_exitMenuShowing = 0;
 }
+
+// fn_3_5B368, size:0x18
+void fn_3_5B368(void) {
+    g_GameLogic.frames_memoryCardWriteOnMVP = 0;
+    g_GameLogic.endGameStage = 0;
+}
