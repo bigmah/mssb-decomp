@@ -5,7 +5,7 @@
 
 void fn_3_7D79C(void);
 void fn_3_7D920(int i);
-void fn_3_7D9DC(void);
+void fn_3_7D9DC(int i);
 void fn_3_7DB30(int);
 void fn_3_7DD24(int);
 void fn_3_7DD6C(void);

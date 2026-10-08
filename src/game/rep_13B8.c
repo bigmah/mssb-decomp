@@ -1,9 +1,11 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
+#include "math.h"
 extern f32 lbl_3_data_4A34[];
 extern u8 lbl_3_data_4B58[];
 extern int fn_3_52560(int, f32, f32);
 extern s16 lbl_3_data_21904[];
+extern u8 lbl_3_data_218BC[];
 extern const f32 lbl_3_rodata_1430;
 extern s16 lbl_3_data_4C54[];
 typedef struct { f32 x, z; } P2;
@@ -70,9 +72,38 @@ void fn_3_7D920(int i) {
     }
 }
 
+extern const f64 lbl_3_rodata_1418;
+extern const f64 lbl_3_rodata_1420;
+extern const f64 lbl_3_rodata_1428;
+extern const f32 lbl_3_rodata_1414;
+
 // .text:0x0007D9DC size:0x154 mapped:0x806BCA70
-void fn_3_7D9DC(void) {
-    return;
+static inline float sqrt13B8(float x) {
+    if (x > lbl_3_rodata_1414) {
+        double half = lbl_3_rodata_1418;
+        double three = lbl_3_rodata_1420;
+        double xd = (double)x;
+        double guess = __frsqrte(xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        return (float)(xd * guess);
+    } else if (x < lbl_3_rodata_1428)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
+
+
+void fn_3_7D9DC(int i) {
+    u8* r = g_Runners + i * 0x154;
+    f32 m = sqrt13B8(*(f32*)(g_Minigame + 0x1AEC) * *(f32*)(g_Minigame + 0x1AEC) + *(f32*)(g_Minigame + 0x1AF4) * *(f32*)(g_Minigame + 0x1AF4));
+    f32 k = ((f32*)lbl_3_data_218BC)[7];
+    *(f32*)(r + 0x18) = k * (*(f32*)(g_Minigame + 0x1AEC) / m);
+    *(f32*)(r + 0x20) = k * (*(f32*)(g_Minigame + 0x1AF4) / m);
+    *(s16*)(r + 0x108) = 0;
 }
 
 // .text:0x0007DB30 size:0x1F4 mapped:0x806BCBC4
@@ -791,3 +822,4 @@ void fn_3_8A958(void) {
     return;
 }
 
+#pragma dont_inline off
