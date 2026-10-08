@@ -317,6 +317,7 @@ Equivalent = config.non_matching  # Object should be linked when configured with
 config.warn_missing_config = True
 config.warn_missing_source = False
 config.libs = [
+    Rel("challenge", [Object(NonMatching, "challenge/rep_7920.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_7BF0.c")]),
     Rel(
         "challenge",
