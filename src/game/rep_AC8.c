@@ -29,6 +29,7 @@ extern f32 lbl_3_rodata_C24;
 extern int __float_nan[];
 #define NAN (*(f32*)__float_nan)
 f64 __frsqrte(f64);
+extern f64 atan2(f64, f64);
 extern f64 lbl_3_rodata_B30;
 extern f64 lbl_3_rodata_B38;
 extern f64 lbl_3_rodata_B40;
@@ -1154,13 +1155,40 @@ void fn_3_4207C(void) {
 }
 
 // .text:0x00042850 size:0x1B0 mapped:0x806818E4
-void fn_3_42850(void) {
+void fn_3_42850(int i) {
     return;
 }
 
 // .text:0x00042A00 size:0x1D0 mapped:0x80681A94
-void fn_3_42A00(void) {
-    return;
+void fn_3_42A00(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    u8* b;
+    f32 bx;
+    f32 bz;
+    b = g_Ball;
+    b += *(s16*)(f + 0x184) * 0x10;
+    bx = *(f32*)(b + 0x354);
+    bz = *(f32*)(b + 0x35C);
+    *(f32*)(f + 0x14) = bx;
+    *(f32*)(f + 0x1C) = bz;
+    dx = bx - *(f32*)f;
+    dz = bz - *(f32*)(f + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x50) = 0.0f;
+        *(f32*)(f + 0x68) = 0.0f;
+    } else {
+        *(f32*)(f + 0x64) = atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
+    if (*(s16*)(f + 0x184) <= 1) {
+        f[0x1DC] = 5;
+    }
 }
 
 // .text:0x00042BD0 size:0x10C mapped:0x80681C64
