@@ -1530,6 +1530,7 @@ void fn_3_13B284(void) {
     return;
 }
 
+#pragma dont_inline off
 // .text:0x0013B9C4 size:0x16C mapped:0x8077AA58
 void fn_3_13B9C4(void) {
     u32 i;
@@ -1552,10 +1553,10 @@ void fn_3_13B9C4(void) {
 // 99%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_1356F8
 // .text:0x0013BB30 size:0xC4 mapped:0x8077ABC4
 void fn_3_13BB30(void) {
-    u32 i;
-    u8 st;
-    u8* q;
     u8* g;
+    u8* q;
+    u8 st;
+    u32 i;
     f32 v;
     fn_3_F1DC();
     q = G8 + 0x1DCC;
@@ -1597,6 +1598,8 @@ void fn_3_13BBF4(void) {
     }
 }
 
+#pragma dont_inline on
+
 // .text:0x0013BCB8 size:0x7AC mapped:0x8077AD4C
 void fn_3_13BCB8(void) {
     return;
@@ -1609,7 +1612,26 @@ void fn_3_13C464(void) {
 
 // .text:0x0013C468 size:0x328 mapped:0x8077B4FC
 void fn_3_13C468(void) {
-    return;
+    switch (g_GameLogic.gameStatus) {
+    case 4:
+        fn_3_13BCB8();
+        break;
+    case 0x1A:
+        fn_3_13BBF4();
+        break;
+    case 0:
+        fn_3_13BB30();
+        break;
+    case 2:
+        fn_3_13B284();
+        break;
+    case 0xF:
+        fn_3_13B9C4();
+        break;
+    }
+    if (lbl_3_common_bss_34C58._30 != 0) {
+        lbl_3_common_bss_34C58._30 -= 1;
+    }
 }
 
 
