@@ -101,3 +101,7 @@ void fn_2_90DAC(MenuStateObject* object) {
 void fn_2_90BD0(MenuStateObject* object) {
     lbl_2_data_30880[object->state](object);
 }
+
+void fn_2_918DC(MenuStateObject* object) {
+    object->state = 2;
+}

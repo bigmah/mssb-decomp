@@ -21,4 +21,6 @@ void fn_2_911E0(MenuStateObject* object);
 void fn_2_90DAC(MenuStateObject* object);
 void fn_2_90BD0(MenuStateObject* object);
 
+void fn_2_918DC(MenuStateObject* object);
+
 #endif
