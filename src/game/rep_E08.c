@@ -1,5 +1,6 @@
 #include "game/rep_E08.h"
 #include "header_rep_data.h"
+#include "math.h"
 
 #pragma dont_inline on
 
@@ -24,6 +25,29 @@ extern u8 lbl_3_data_7E34[];
 extern u8 lbl_3_data_7D24[];
 extern f32 shortAngleToRad_Capped(s16 a);
 extern u32 fn_3_90220(s32 idx, s32 off);
+extern int getAnimRelatedCoordinates(int, int, f32*);
+extern void fn_8001B4D8(void);
+extern const f32 lbl_3_rodata_E58;
+extern const f64 lbl_3_rodata_E60;
+extern const f64 lbl_3_rodata_E68;
+extern const f64 lbl_3_rodata_E70;
+static inline f32 sqrt_E08(f32 x) {
+    if (x > lbl_3_rodata_E58) {
+        f64 h = lbl_3_rodata_E60;
+        f64 th = lbl_3_rodata_E68;
+        f64 xd = (f64)x;
+        f64 guess = __frsqrte(xd);
+        guess = h * guess * (th - guess * guess * xd);
+        guess = h * guess * (th - guess * guess * xd);
+        guess = h * guess * (th - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (x < lbl_3_rodata_E70)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
 extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
 extern void QueueCharacterAnimation(int, int, int, int, int, u8, int);
 
@@ -44,7 +68,53 @@ void fn_3_60768(void) {
 
 // .text:0x00060804 size:0x294 mapped:0x8069F898
 void fn_3_60804(s32 a, s32 b) {
-    return;
+    s32 k = a;
+    u8* e = g_UnkAnimation_31EAC + a * 0x54;
+    u8* f = g_Fielders + a * 0x268;
+    u8* o;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (a == 0) {
+            u8* m = g_Minigame;
+            m += *(s8*)(m + 0x1904);
+            k = *(s8*)(m + 0x18CC);
+        } else {
+            k = *(s8*)(g_Minigame + a + 0x18F2);
+        }
+    }
+    o = ((u8**)(lbl_8036E548 + 0x2C50))[k];
+    if (o != NULL) {
+        if (b == 0) {
+            if (e[0x42] == 1) {
+                f32 d;
+                e[0x42] = 0;
+                getAnimRelatedCoordinates(k, 4, (f32*)(e + 0x2C));
+                *(f32*)(f + 0x30) = *(f32*)(e + 0x2C) - *(f32*)(f + 0);
+                *(f32*)(f + 0x34) = *(f32*)(e + 0x34) - *(f32*)(f + 8);
+                d = sqrt_E08(*(f32*)(f + 0x30) * *(f32*)(f + 0x30) + *(f32*)(f + 0x34) * *(f32*)(f + 0x34));
+                *(f32*)(f + 0x50) = d;
+                *(f32*)(f + 0) = *(f32*)(e + 0x2C);
+                *(f32*)(f + 8) = *(f32*)(e + 0x34);
+                e[0x48] = 1;
+            }
+        } else {
+            if (e[0x42] == 0) {
+                fn_8001B4D8();
+                if (e[0x48] == 1) {
+                    *(f32*)(e + 0x10) = *(f32*)(e + 0x2C);
+                    *(f32*)(e + 0x18) = *(f32*)(e + 0x34);
+                } else {
+                    *(f32*)(e + 0x10) = *(f32*)(o + 0x34);
+                    *(f32*)(e + 0x18) = *(f32*)(o + 0x3C);
+                }
+                e[0x42] = 1;
+            } else {
+                f32 v[3];
+                getAnimRelatedCoordinates(k, 4, v);
+                *(f32*)(e + 0x10) = *(f32*)(o + 0x34) = v[0];
+                *(f32*)(e + 0x18) = *(f32*)(o + 0x3C) = v[2];
+            }
+        }
+    }
 }
 
 // .text:0x00060A98 size:0x2E8 mapped:0x8069FB2C
@@ -592,3 +662,5 @@ void fn_3_6714C(void) {
     return;
 }
 
+
+#pragma dont_inline off
