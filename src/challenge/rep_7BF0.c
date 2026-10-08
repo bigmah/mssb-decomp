@@ -12,6 +12,41 @@ extern void fn_1_AF4(s32, s32, f32);
 extern void fn_1_28CE8(u8*);
 extern ChallengeSimulationSettings lbl_1_data_11300;
 extern const char* lbl_1_data_11424[];
+extern void fn_1_26D28(void*, u16, u16, u16, void*);
+extern void fn_1_27330(void*);
+
+// fn_1_2948C, size:0x15C
+static inline u8 NavigationMask(u16 held) {
+    return (held & 0x800) ? 0x91 : ((held & 0x400) ? 0x50 : 0);
+}
+void fn_1_2948C(u8* object) {
+    u16 held;
+    u16 pressed;
+    u16 repeated;
+
+    repeated = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    held = lbl_803C77B8._00;
+    pressed = lbl_803C77B8._02;
+    if (lbl_803C77B8._02 & 0x1000) {
+        object[0x14] ^= 1;
+        if (object[0x14] != 0) {
+            fn_800A97D0(32, 0);
+        } else {
+            fn_800A97D0(16, 30);
+        }
+    } else if (object[0x14] != 0) {
+        fn_80048820(lbl_1_bss_471BC, held, pressed, repeated,
+            NavigationMask(lbl_803C77B8._00));
+        held &= 0xFFFFF3FF;
+        pressed &= 0xFFFFF3FF;
+        repeated &= 0xFFFFF3FF;
+    } else if (lbl_803C77B8._02 & 0x200) {
+        fn_1_29A48();
+    }
+    fn_1_26D28(lbl_1_bss_471D8, held, pressed, repeated, (u8*)&lbl_803C77B8 + 0x10);
+    fn_1_27330(lbl_1_bss_471D8);
+}
+
 
 // fn_1_289E0, size:0x100
 s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons) {

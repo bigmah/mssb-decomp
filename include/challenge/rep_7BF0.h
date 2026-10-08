@@ -47,4 +47,6 @@ void fn_1_2935C(void* camera);
 
 s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons);
 
+void fn_1_2948C(u8* object);
+
 #endif
