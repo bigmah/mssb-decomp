@@ -914,12 +914,11 @@ void fn_3_A7EF8(void) {
 }
 
 // .text:0x000A8074 size:0x2C4 mapped:0x806E7108
-void fn_3_A8074(void) {
+void fn_3_A8074(s32 idx) {
     return;
 }
 
 // .text:0x000A8338 size:0x140 mapped:0x806E73CC
-// 85%: only reg alloc differs (fielder ptr in r3 vs r4; g_FieldingLogic base reg r4 vs r5)
 void fn_3_A8338(s32 idx) {
     u8* fl;
     s16 sel;
@@ -939,7 +938,7 @@ void fn_3_A8338(s32 idx) {
             return;
         }
         *(s16*)(g_FieldingLogic + 0xE2) = sel;
-        fn_3_A8074();
+        fn_3_A8074(idx);
     }
     sel = *(s16*)(fl + 0xCC);
     if (sel >= 0 && sel <= 3) {
@@ -947,7 +946,8 @@ void fn_3_A8338(s32 idx) {
         if (rr == -1) {
             fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), lbl_3_data_4444[sel * 2], lbl_3_data_4444[sel * 2 + 1]);
         } else {
-            fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), g_Runners[rr].x, *(f32*)((u8*)&g_Runners[rr] + 8));
+            f32 x = *(f32*)((u8*)g_Runners + rr * 0x154);
+            fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), x, *(f32*)((u8*)&g_Runners[rr] + 8));
         }
     }
     fn_3_A3CC0();
