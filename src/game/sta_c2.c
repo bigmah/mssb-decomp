@@ -19,6 +19,9 @@ extern Vec lbl_3_rodata_2580;
 extern Vec lbl_3_rodata_258C;
 extern f32 lbl_3_rodata_265C;
 extern f32 lbl_3_rodata_2670;
+extern f32 lbl_3_rodata_2660;
+extern f32 shortAngleToRad(s16);
+extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
@@ -103,6 +106,8 @@ extern Vec lbl_3_rodata_25F8;
 extern f32 lbl_3_rodata_2658[];
 typedef struct { f32 x, y, z, w, r; u8 pad[0xC]; f32 a, b, c, d; u8 pad2[4]; } T34;
 extern T34 lbl_3_data_18364[];
+typedef struct { f32 x, y, z, w, b, c, d, e, f, g; u8 pad[0xC]; } T52;
+extern T52 lbl_3_data_182C8[];
 extern s16 fn_3_B7F70(s32);
 extern f32 lbl_3_data_188E0;
 extern f32 lbl_3_rodata_2694;
@@ -172,7 +177,38 @@ void fn_3_CBF80(void) {
 
 // .text:0x000CC1D4 size:0x180 mapped:0x8070B268
 void fn_3_CC1D4(void) {
-    return;
+    Mtx m;
+    Vec v;
+    u32 i;
+    u32 n;
+    u8* e;
+    u8* o;
+    u32 k;
+    u8* r;
+    f32 a;
+    a = shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8));
+    PSMTXRotRad(m, 0x59, lbl_3_rodata_2658[0] * -a);
+    v.x = lbl_3_rodata_265C;
+    v.y = lbl_3_rodata_2660;
+    v.z = lbl_3_rodata_2664;
+    PSMTXMultVec(m, &v, &v);
+    i = 0;
+    e = *(u8**)lbl_3_common_bss_350E4;
+    n = *(u32*)(lbl_3_common_bss_350E4 + 0x30);
+    for (; i < n; i++) {
+        if (e[0x9D] == 1) break;
+        e += 0xE8;
+    }
+    for (k = i; k < i + 3; k++) {
+        o = *(u8**)lbl_3_common_bss_350E4 + k * 0xE8;
+        CTRLSetTranslation((Control*)o, *(f32*)(g_Minigame + 0x1AE0) + v.x, *(f32*)(g_Minigame + 0x1AE4) - v.y, *(f32*)(g_Minigame + 0x1AE8) + v.z);
+        r = *(u8**)(o + 0x74);
+        *(s8*)(o + 0xAC) = (k % 3) * 0x1E;
+        *(f32*)(o + 0xA0) = 0.0f;
+        *(f32*)(r + 0x5C) = *(f32*)(o + 0xA0);
+        r[0x59] = 1;
+        fn_800B4CA0(*(void**)r, *(f32*)(r + 0x5C));
+    }
 }
 
 // .text:0x000CC354 size:0xE4 mapped:0x8070B3E8
