@@ -13,4 +13,6 @@ void fn_3_B3A28(void);
 
 void fn_3_B1DA4(u8 level, u8 value);
 
+void fn_3_B3288(void);
+
 #endif

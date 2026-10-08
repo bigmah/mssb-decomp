@@ -42,3 +42,12 @@ void fn_3_B1DA4(u8 level, u8 value) {
     *((u8*)&g_Practice + 0x1D8) = 0;
     g_Practice._188 = 0;
 }
+
+// fn_3_B3288, size:0x30
+void fn_3_B3288(void) {
+    g_Practice.pauseMenuLoading = 0;
+    *((u8*)&g_Practice + 0x19F) = 1;
+    g_Practice.frames_onPauseScreen = 0;
+    lbl_3_common_bss_34C90[0x1D2] = 0;
+    lbl_3_common_bss_34C90[0x1DA] = 0;
+}
