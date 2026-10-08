@@ -435,3 +435,27 @@ void fn_2_8F9D0(s32 index, s16 type) {
         effect->mode = 3;
     }
 }
+
+// fn_2_8FA58, size:0x88
+void fn_2_8FA58(s32 index, s16 type) {
+    if (lbl_2_bss_3401BC != NULL) {
+        s32 resource;
+        MenuEffect* effect;
+        u8 valid;
+        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x38);
+        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+        effect->resource = resource;
+        effect->type = type;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->enabled = 1;
+        valid = resource != 0;
+        effect->flag59 = valid;
+        effect->flag5A = valid;
+        effect->f60 = lbl_2_rodata_1080;
+        effect->f54 = lbl_2_rodata_1078;
+        effect->flag5A = 1;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->flag59 = 1;
+        effect->mode = 3;
+    }
+}
