@@ -1,5 +1,7 @@
 #include "challenge/rep_0610.h"
 
+extern u8 lbl_1_bss_67E0[];
+
 extern u8 lbl_1_bss_5F71;
 
 extern void* lbl_80366158[];
@@ -112,5 +114,14 @@ void fn_1_15170(void) {
         fn_1_148CC();
     } else if (buttons & 0x100) {
         lbl_1_bss_5F71 = 1;
+    }
+}
+
+// fn_1_14888, size:0x44
+void fn_1_14888(u8* object) {
+    if (lbl_1_bss_67E0[0x118]) {
+        fn_800B9AA8(lbl_1_bss_67E0 + 0x30);
+    } else {
+        fn_800B9AA8(*(void**)(object + 0x70));
     }
 }

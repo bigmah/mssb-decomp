@@ -39,4 +39,6 @@ void fn_1_148CC(void);
 
 void fn_1_15170(void);
 
+void fn_1_14888(u8* object);
+
 #endif
