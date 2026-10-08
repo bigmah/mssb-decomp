@@ -1,5 +1,6 @@
 #include "menus/rep_0B08.h"
 
+extern void (*lbl_2_data_2A268[])(u8* object);
 extern void (*lbl_2_data_2A25C[])(u8* object);
 extern void (*lbl_2_data_2A250[])(u8* object);
 extern void (*lbl_2_data_2A248[])(u8* object);
@@ -83,4 +84,9 @@ void fn_2_6D4B0(u8* object) {
 // .text:0x6D288 size:0x10
 void fn_2_6D288(u8* object) {
     *(s16*)(object + 0xA2) -= 1;
+}
+
+// .text:0x6D250 size:0x38
+void fn_2_6D250(u8* object) {
+    lbl_2_data_2A268[*(s16*)(object + 0x94)](object);
 }
