@@ -52,7 +52,7 @@ void fn_3_2F574(void);
 void fn_3_2F7D4(int);
 void fn_3_2F924(void);
 void fn_3_2FB9C(void);
-void fn_3_2FF2C(void);
+void fn_3_2FF2C(int);
 void fn_3_300B8(void);
 void fn_3_30214(void);
 int fn_3_30564(int);
