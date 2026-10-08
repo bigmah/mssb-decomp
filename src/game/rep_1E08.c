@@ -160,7 +160,10 @@ void fn_3_BB454(u8* a) {
 
 // .text:0x000BB7F4 size:0x3D0 mapped:0x806FA888
 void fn_3_BB7F4(void) {
-    return;
+    u8* t = fn_80033A24(fn_3_BA7F4, 0x80, 0, lbl_3_data_170D8[0], 1, 0x19);
+    if (t != NULL) {
+        fn_3_BB454(t);
+    }
 }
 
 // .text:0x000BBBC4 size:0x3D0 mapped:0x806FAC58
