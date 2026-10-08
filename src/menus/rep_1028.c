@@ -1,5 +1,7 @@
 #include "menus/rep_1028.h"
 
+#include <string.h>
+
 #include "static/UnknownHomes_Static.h"
 extern void* lbl_2_bss_340140[];
 
@@ -285,4 +287,13 @@ void fn_2_90A2C(u8* object) {
         entry->active = 2;
         entry->state = 0;
     }
+}
+
+// fn_2_9033C, size:0x6C
+void fn_2_9033C(s32 index, const void* position, f32 value) {
+    MenuSlot* slot = &lbl_2_bss_1A8248[0]->slots[index];
+    memcpy(slot, position, 0xC);
+    *(f32*)((u8*)slot + 0x28) = value;
+    *(f32*)((u8*)slot + 0x30) = 0.0f;
+    *(f32*)((u8*)slot + 0x28) = value;
 }
