@@ -18,7 +18,7 @@ extern void fn_3_8B318(s32);
 extern void fn_3_B6994(void);
 extern void fn_3_B6440(void);
 extern s32 fn_3_B254C(void);
-extern void fn_3_B1DA4(u8, s32);
+extern void fn_3_B1DA4(s32, u8);
 extern void fn_3_5F720(void);
 extern void fn_3_6C0E0(void);
 extern u8 g_RunningLogic[];
@@ -26,6 +26,8 @@ extern u8 lbl_3_data_FAF4[][4];
 extern void fn_3_B5818(void);
 extern void fn_3_B51E4(void);
 extern void fn_3_B4C40(void);
+
+
 
 // fn_3_B5D78, size:0x104
 void fn_3_B5D78(void) {
@@ -381,6 +383,63 @@ void fn_3_B6F6C(void) {
     ((u8*)&g_Practice)[0x1ED] = 0;
     changeScene(1, 6);
     fn_3_5A6D4(2);
+    fn_3_6C0E0();
+    fn_3_6714C(0);
+}
+
+extern void fn_3_F578(void);
+extern void setBatterContactConstants(void);
+extern void fn_3_8A350(void);
+extern void fn_3_8A1D8(void);
+extern void fn_3_58E50(void);
+extern void fn_3_58870(void);
+extern void fn_3_1E154(void);
+extern void fn_3_59A90(void);
+extern void fn_3_753E8(s32);
+
+// fn_3_B61C0, size:0x160
+void fn_3_B61C0(void) {
+    fn_3_F578();
+    fn_3_753E8(0);
+    setBatterContactConstants();
+    fn_3_8A350();
+    fn_3_8A1D8();
+    fn_3_58E50();
+    fn_3_58870();
+    fn_3_1E154();
+    fn_3_59A90();
+    fn_3_6C108();
+    g_Strikes.strikes = 0;
+    g_Strikes.balls = 0;
+    g_GameLogic._125 = 1;
+    if (g_GameLogic.pre_PostMiniGameInd != 0) {
+        g_GameLogic.minigameLastTurnSuccessInd = 1;
+        g_GameLogic.hudElementLoadingInd = 1;
+    } else {
+        g_GameLogic.minigameLastTurnSuccessInd = 0;
+    }
+    g_GameLogic.pre_PostMiniGameInd = 0;
+    g_GameLogic.minigameLastTurnSuccessInd = 0;
+    fn_3_5F720();
+    g_Strikes.storedOuts = g_Strikes.outs;
+    g_Strikes.runnerIndexForEachOutThisPitch[0] = -1;
+    g_Strikes.runnerIndexForEachOutThisPitch[1] = -1;
+    g_Strikes.runnerIndexForEachOutThisPitch[2] = -1;
+    g_Strikes.GameControls_StrikeBallBitVector = g_Strikes.balls + (g_Strikes.strikes * 16);
+    g_Strikes.allForcedRunnersReachedTheirBaseInd = 0;
+    g_Ball.totalFramesAtPlay = 0;
+    g_FieldingLogic._10E = 0;
+    *(s16*)((u8*)&g_FieldingLogic + 0xEE) = 0;
+    g_FieldingLogic._10F = 0;
+    g_FieldingLogic._110 = 0;
+    g_FieldingLogic._128 = 0;
+    g_FieldingLogic._129 = 0;
+    g_RunningLogic[0x13] = 0;
+    g_GameLogic.pre_PostMiniGameInd = 0;
+    g_GameLogic.minigameLastTurnSuccessInd = 0;
+    g_Practice.guidedPracticeCompletionRelated2 = 0;
+    changeScene(1, 6);
+    fn_3_5A6D4(1);
     fn_3_6C0E0();
     fn_3_6714C(0);
 }
