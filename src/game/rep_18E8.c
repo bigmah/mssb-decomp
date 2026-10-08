@@ -22,6 +22,7 @@ typedef struct {
 } RunnerT;
 extern RunnerT g_Runners[];
 extern u8 g_Fielders[];
+extern s32 g_Strikes[];
 extern void fn_3_52F4C(s16, f32, f32);
 extern u8 g_GameLogic[];
 extern u8 g_Scores[];
@@ -43,7 +44,8 @@ static s32 lbl_3_bss_1828[4];
 static u32 lbl_3_bss_1824;
 static s32 lbl_3_bss_1820;
 static s32 lbl_3_bss_181C;
-static s32 lbl_3_bss_1808[5];
+static s32 lbl_3_bss_1818;
+static s32 lbl_3_bss_1808[4];
 static u32 lbl_3_bss_1804;
 static u32 lbl_3_bss_1800;
 static u8 lbl_3_bss_17FC[4];
@@ -173,8 +175,26 @@ int fn_3_A2B6C(void) {
 }
 
 // .text:0x000A2C9C size:0x140 mapped:0x806E1D30
-void fn_3_A2C9C(void) {
-    return;
+int fn_3_A2C9C(void) {
+    s32 v;
+    if ((lbl_3_bss_1824 & 0x100) && *(f32*)(g_Ball + 0x1A10) < 5.0f) {
+        if (lbl_3_bss_1858[lbl_3_bss_1808[2]] <= 2 && fn_3_A46A0(lbl_3_bss_1808[2])) {
+            return 1;
+        }
+    }
+    if (lbl_3_bss_1818 != 0 && fn_3_A46A0(lbl_3_bss_1808[1])) {
+        return 1;
+    }
+    v = lbl_3_bss_1858[lbl_3_bss_1808[1]];
+    if (v <= 4 && g_Strikes[2] == g_Strikes[3]) {
+        if (*(f32*)(g_Ball + 0x1A08) < 2.5f && v <= 2 && fn_3_A46A0(lbl_3_bss_1808[0])) {
+            return 1;
+        }
+        if (fn_3_A46A0(lbl_3_bss_1808[1])) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // .text:0x000A2DDC size:0x1FC mapped:0x806E1E70
