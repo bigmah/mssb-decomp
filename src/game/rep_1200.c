@@ -345,7 +345,32 @@ extern int fn_3_6F4E8(void);
 extern void fn_3_5A6D4(int);
 extern void fn_3_7CE90(void);
 void fn_3_73DE8(void) {
-    return;
+    if (*(s16*)(g_Pitcher + 0x11E) < 0x7FFE) {
+        *(s16*)(g_Pitcher + 0x11E) += 1;
+    } else {
+        *(s16*)(g_Pitcher + 0x11E) = 0x7FFF;
+    }
+    if (*(s16*)(g_Ball + 0x1B6A) < 0x7FFE) {
+        *(s16*)(g_Ball + 0x1B6A) += 1;
+    } else {
+        *(s16*)(g_Ball + 0x1B6A) = 0x7FFF;
+    }
+    if (g_d_GameSettings[7] == 7 && (g_Minigame[0x1A2A] == 1 || g_Minigame[0x1A2A] == 2 || g_Minigame[0x1A2A] == 3)) {
+        g_Pitcher[0x158] = 1;
+        if (g_Minigame[0x1A2A] == 1) {
+            fn_3_155288();
+        }
+    } else if (g_Pitcher[0x158] == 0) {
+        fn_3_703EC();
+        return;
+    }
+    if (fn_3_6F4E8() == 0) {
+        if ((g_d_GameSettings[7] != 2 || g_Practice[0x1C8] == 0) && *(s16*)(g_Pitcher + 0x120) > 0x4B) {
+            g_GameLogic[0x12A] = 0;
+            fn_3_5A6D4(0);
+        }
+        fn_3_7CE90();
+    }
 }
 
 // .text:0x00073F2C size:0x80 mapped:0x806B2FC0
