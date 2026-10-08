@@ -802,8 +802,58 @@ void fn_3_A6D48(void) {
 }
 
 // .text:0x000A6E98 size:0x1A8 mapped:0x806E5F2C
-void fn_3_A6E98(void) {
-    return;
+// 99%: only `lfsx f1,r5,r0` (indexed load of runner x) differs; ours is lfs 0(r4). Param s16 a keeps r3 live (stale arg to fn_3_52F4C) -> matches reg numbering.
+void fn_3_A6E98(s16 a) {
+    u8* p;
+    u8* fl;
+    u8* r;
+    s8 s;
+    u8 st;
+
+    p = g_FieldingLogic;
+    if (*(s16*)(p + 0xEC) > 0) {
+        *(s16*)(p + 0xEC) -= 1;
+    }
+    if (*(s8*)(g_FieldingLogic + 0x125) >= 0) {
+        s = *(s8*)(g_FieldingLogic + 0x125);
+        *(s16*)(g_Ball + 0x1B86) = s;
+        if (*(s16*)(g_FieldingLogic + 0xCC) == s) {
+            *(s16*)(g_FieldingLogic + 0xCC) = -1;
+        }
+    }
+    if (*(s16*)(p + 0xEC) <= 0) {
+        g_FieldingLogic[0x112] = 2;
+    }
+    fl = g_FieldingLogic;
+    st = fl[0x111];
+    if (st == 2 && fl[0x112] == 1) {
+        r = (u8*)g_Runners + *(s16*)(fl + 0xE8) * 0x154;
+        fn_3_52F4C(a, *(f32*)r, *(f32*)(r + 8));
+        if (*(s16*)(g_FieldingLogic + 0xCC) == 9) {
+            *(s16*)(g_FieldingLogic + 0xDE) = *(s16*)(fl + 0xE8);
+        }
+        fn_3_A3CC0();
+    } else if (st == 1) {
+        s16 i = *(s16*)(g_FieldingLogic + 0xE8);
+        if (i >= 0) {
+            r = (u8*)g_Runners + i * 0x154;
+            if (r[0x123] == 1) {
+                if (*(s16*)(r + 0xE6) >= 0) {
+                    fl[0x111] = 0;
+                } else if (r[0x13A] == 0 && (r[0x137] == 1 || r[0x137] == 3)) {
+                    fl[0x111] = 0;
+                }
+            } else {
+                fl[0x111] = 0;
+            }
+        } else {
+            fl[0x111] = 0;
+        }
+        if (*(s16*)(g_FieldingLogic + 0xDE) >= 0) {
+            *(s16*)(g_FieldingLogic + 0xDE) = -1;
+            *(s16*)(g_FieldingLogic + 0xCC) = -1;
+        }
+    }
 }
 
 // .text:0x000A7040 size:0x674 mapped:0x806E60D4

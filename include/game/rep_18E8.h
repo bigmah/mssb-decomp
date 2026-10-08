@@ -40,7 +40,7 @@ void fn_3_A67E8(s32 i);
 s32 fn_3_A6810(f32, f32, f32, f32);
 void fn_3_A6ABC(void);
 void fn_3_A6D48(void);
-void fn_3_A6E98(void);
+void fn_3_A6E98(s16);
 void fn_3_A7040(void);
 void fn_3_A76B4(void);
 void fn_3_A7C88(void);
