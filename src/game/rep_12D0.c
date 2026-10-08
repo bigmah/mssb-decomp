@@ -16,10 +16,11 @@ void fn_3_77914(void) {
 }
 
 // .text:0x00078574 size:0x1BC mapped:0x806B7608
-// 99%: only register numbering differs (ball r6/r7, idx r7/r10, runner ptr r10/r6); structure matches
+// 99%: only idx/runner-ptr registers swapped (ours r6/r10, orig r10/r6); `s16 idx` fixed the ball ptr (r7)
+// decl order, locals' types, r/e forms and inline idx all tried; no change
 void fn_3_78574(s16 arg) {
     s32 flag = 0;
-    s32 idx;
+    s16 idx;
     s16 cur;
     s32 val;
     s32 off;
@@ -190,6 +191,7 @@ void fn_3_79414(void) {
 
 // .text:0x000795A8 size:0x1C4 mapped:0x806B863C
 // 90%: first half matches; tail (lbl[0x23] s8 handling) has different register allocation (raw s8 in r5, extended copy r7, runners base r4)
+// orig tail: raw `u8 x` (r5) + `sx=(s8)x` (r7), `mulli x,-1` (try `x * 0xFFFFFFFF` to get mulli, needs u8 raw x), lbl[0x23] and g_Runners base re-read in the else-if arm; decl order/types brute-forced w/o luck
 void fn_3_795A8(void) {
     s32 v;
     u8 cur;
