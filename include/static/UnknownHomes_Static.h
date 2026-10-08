@@ -90,4 +90,7 @@ extern void fn_800AD038(void* object);
 
 extern void fn_800ACFB0(void* object);
 
+#include "Dolphin/GX/GXTypes.h"
+extern void fn_800BD2CC(s32 channel, GXColor color);
+
 #endif // !__UNKNOWN_HOMES_STATIC_H_

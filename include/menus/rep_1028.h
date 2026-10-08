@@ -62,4 +62,6 @@ u8 fn_2_8F720(s32 index);
 
 void fn_2_90628(u8* object);
 
+void fn_2_8F688(void);
+
 #endif

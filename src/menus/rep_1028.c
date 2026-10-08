@@ -1,5 +1,8 @@
 #include "menus/rep_1028.h"
 
+#include "static/UnknownHomes_Static.h"
+extern u8 lbl_800F7478[];
+
 extern void fn_2_8AC84(s32 index, s32 value);
 typedef struct {
     u8 _00[0x90];
@@ -220,4 +223,11 @@ void fn_2_90628(u8* object) {
             entry->state = 0;
         }
     }
+}
+
+// fn_2_8F688, size:0x48
+void fn_2_8F688(void) {
+    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    color.a = 0xFF;
+    fn_800BD2CC(0, color);
 }
