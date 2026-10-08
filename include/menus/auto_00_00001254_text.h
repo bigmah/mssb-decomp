@@ -29,4 +29,6 @@ void fn_2_1DC4(void);
 
 void fn_2_893C(void);
 
+void fn_2_CCBC(void);
+
 #endif
