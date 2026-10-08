@@ -29,6 +29,13 @@ extern u8 lbl_3_common_bss_32724[];
 extern u8 g_GameLogic[];
 extern u8 g_Stats[];
 extern u8 g_Ball[];
+extern u8 g_Scores[];
+extern u8 lbl_3_data_EC1C[];
+extern u8 lbl_3_data_F430[];
+extern u8 lbl_3_data_F224[];
+extern u8 lbl_3_data_F344[];
+extern u8 lbl_3_data_E75C[];
+extern u8 inMemRoster[];
 extern u8 g_UnkSound_32718[];
 #include "static/UnknownHomes_Static.h"
 
@@ -126,11 +133,31 @@ void fn_3_933CC(void) {
     return;
 }
 
+#pragma dont_inline on
 // .text:0x00093544 size:0x144 mapped:0x806D25D8
 void fn_3_93544(void) {
-    return;
+    u8* o;
+    fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_EC1C);
+    *(s16*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x64) = (lbl_3_data_F430 + 1)[*(s32*)(g_GameLogic + 0x2C) * 2];
+    *(s16*)(((u8**)(lbl_80371C30 + 0x10))[*(u16*)(o + 0x14) * 2] + 0x64) = (lbl_3_data_F430 + 1)[*(s32*)(g_GameLogic + 0x38) * 2];
+    *(s32*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = *(s32*)(g_GameLogic + 0x28) << 16;
+    *(s32*)(((u8**)(lbl_80371C30 + 0x10))[*(u16*)(o + 0x14) * 2] + 0x5C) = *(s32*)(g_GameLogic + 0x34) << 16;
+    if (*(s32*)(g_GameLogic + 0xC) == 0) {
+        *(s16*)(o + 0x1C) = *(s16*)(g_Scores + 0xA0);
+        *(s16*)(o + 0x1E) = *(s16*)(g_Scores + 0x2A);
+    } else {
+        *(s16*)(o + 0x1C) = *(s16*)(g_Scores + 0x4);
+        *(s16*)(o + 0x1E) = *(s16*)(g_Scores + 0xA0);
+    }
+    *(u16*)(o + 0x20) = *(u16*)(o + 0x1C);
+    *(u16*)(o + 0x22) = *(u16*)(o + 0x1E);
+    ((void (*)(void*))fn_3_92CD8)(o);
+    *(s16*)(o + 0x18) = 0;
+    *(s16*)(o + 0x1A) = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_933CC;
 }
 
+#pragma dont_inline reset
 // .text:0x00093688 size:0x2D8 mapped:0x806D271C
 void fn_3_93688(void) {
     return;

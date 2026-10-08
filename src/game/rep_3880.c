@@ -2,6 +2,11 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_26C94[];
+extern const f32 lbl_3_rodata_39F8;
+extern const f32 lbl_3_rodata_39F4;
+extern const f64 lbl_3_rodata_39E8;
+extern s32 lbl_3_data_26D00[];
+extern void fn_8003403C(f32, f32);
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_26D5C[];
 extern u8 lbl_3_data_21770[];
@@ -23,6 +28,7 @@ extern u8 lbl_8036E548[];
 
 extern u8 g_Minigame[];
 extern u8 lbl_3_data_26E00[];
+extern const Vec lbl_3_rodata_3908;
 extern f32 fn_3_119D28(void);
 extern u8 lbl_3_data_26CB8[];
 extern s32 fn_8001B728(s32, s32, void*);
@@ -47,6 +53,12 @@ extern u8 lbl_3_data_26D88[];
 extern u8 lbl_3_data_26DC4[];
 extern void* fn_80031F34(void*, u32);
 extern void fn_8003403C(f32, f32);
+extern const f32 lbl_3_rodata_3970;
+extern const f32 lbl_3_rodata_39C4;
+extern const f64 lbl_3_rodata_3990;
+extern const f64 lbl_3_rodata_3968;
+extern const f64 lbl_3_rodata_39D8;
+extern const f64 lbl_3_rodata_3978;
 extern f64 cos(f64);
 extern f64 sin(f64);
 extern f32 lbl_3_bss_B860[];
@@ -609,9 +621,44 @@ u32 fn_3_14BA40(u8* o) {
     return n == 0;
 }
 
+// 92%: right shape and saved regs; float math block order differs (orig converts 180.0/d[1], rand and n separately, consts via lfd sym@l not addi)
 // .text:0x0014BCB0 size:0x21C mapped:0x8078AD44
-void fn_3_14BCB0(void) {
-    return;
+void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
+    u8* p;
+    u8* d;
+    u32 n;
+    f32 t;
+    f32 ang;
+    f32 s;
+    f32 c;
+    f32 r;
+    *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    n = 0;
+    p = *(u8**)(o + 0xC);
+    d = (flag != 0) ? lbl_3_data_26DC4 : lbl_3_data_26D88;
+    do {
+        if (*(s16*)(p + 0x4A) == 0) {
+            p[0x4D] = *(s32*)d;
+            p[0x4E] = 0;
+            *(s16*)(p + 0x4A) = *(s32*)(d + 8);
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)(d + 0x10) / lbl_3_rodata_3930;
+            p[0x43] = *(s32*)(d + 0x28);
+            p[0x40] = *(s32*)(d + 0x1C);
+            p[0x41] = *(s32*)(d + 0x20);
+            p[0x42] = *(s32*)(d + 0x24);
+            t = (f32)rand() / lbl_3_rodata_3970;
+            r = (f32)(lbl_3_rodata_39C4 * (lbl_3_rodata_3990 * ((f64)t - lbl_3_rodata_3968)));
+            ang = lbl_3_rodata_39B8 * (f32)(lbl_3_rodata_39D8 / (f64)*(s32*)(d + 4) * (f64)n);
+            c = (f32)cos(ang);
+            *(f32*)(p + 4) = r * c + v[0];
+            s = (f32)sin(ang);
+            n++;
+            *(f32*)(p + 8) = (f32)((f64)(v[1] - r * s) - lbl_3_rodata_3978);
+            *(f32*)(p + 0xC) = v[2];
+            p[0x4F] = flag;
+        }
+        p = *(u8**)p;
+    } while (p != NULL && n < *(u32*)(lbl_3_data_26D88 + 4));
 }
 
 // .text:0x0014BECC size:0x47C mapped:0x8078AF60
@@ -781,13 +828,59 @@ void fn_3_14CB28(s8 a) {
 }
 
 // .text:0x0014CBB4 size:0x18C mapped:0x8078BC48
-void fn_3_14CBB4(void) {
-    return;
+void fn_3_14CBB4(u8* a, u8* o) {
+    s32 delta;
+    f32 df;
+    s32 c;
+    GXSetBlendMode(1, 4, 5, 0);
+    fn_8003403C(*(f32*)(o + 0x38), *(f32*)(o + 0x3C));
+    fn_80033CC8(o, *(void**)(a + 0x10));
+    c = o[0x43];
+    if (-*(s16*)(o + 0x48) < lbl_3_data_26D00[10]) {
+        df = ((f32)lbl_3_data_26D00[12] / lbl_3_rodata_3930) / (f32)lbl_3_data_26D00[10];
+        delta = lbl_3_data_26D00[15] / lbl_3_data_26D00[10];
+    } else {
+        df = ((f32)(lbl_3_data_26D00[13] - lbl_3_data_26D00[12]) / lbl_3_rodata_3930) / (f32)(lbl_3_data_26D00[18] - lbl_3_data_26D00[10]);
+        delta = (lbl_3_data_26D00[16] - lbl_3_data_26D00[15]) / (lbl_3_data_26D00[18] - lbl_3_data_26D00[10]);
+    }
+    c += delta;
+    if (c > 0xFF) {
+        c = 0xFF;
+    } else if (c < 0) {
+        c = 0;
+    }
+    o[0x43] = c;
+    o[0x40] = o[0x41] = o[0x42] = o[0x43];
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x38) + df;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38);
 }
 
 // .text:0x0014CD40 size:0x18C mapped:0x8078BDD4
-void fn_3_14CD40(void) {
-    return;
+void fn_3_14CD40(u8* a, u8* o) {
+    s32 delta;
+    f32 df;
+    s32 c;
+    GXSetBlendMode(1, 1, 1, 0);
+    fn_8003403C(*(f32*)(o + 0x38), *(f32*)(o + 0x3C));
+    fn_80033CC8(o, *(void**)(a + 0x10));
+    c = o[0x43];
+    if (-*(s16*)(o + 0x48) < lbl_3_data_26D00[3]) {
+        df = ((f32)lbl_3_data_26D00[5] / lbl_3_rodata_3930) / (f32)lbl_3_data_26D00[3];
+        delta = lbl_3_data_26D00[8] / lbl_3_data_26D00[3];
+    } else {
+        df = ((f32)(lbl_3_data_26D00[6] - lbl_3_data_26D00[5]) / lbl_3_rodata_3930) / (f32)(lbl_3_data_26D00[17] - lbl_3_data_26D00[3]);
+        delta = (lbl_3_data_26D00[9] - lbl_3_data_26D00[8]) / (lbl_3_data_26D00[17] - lbl_3_data_26D00[3]);
+    }
+    c += delta;
+    if (c > 0xFF) {
+        c = 0xFF;
+    } else if (c < 0) {
+        c = 0;
+    }
+    o[0x43] = c;
+    o[0x40] = o[0x41] = o[0x42] = o[0x43];
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x38) + df;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38);
 }
 
 // .text:0x0014CECC size:0x3F4 mapped:0x8078BF60
@@ -898,9 +991,26 @@ void fn_3_14E810(void) {
 }
 
 // .text:0x0014E894 size:0x8C mapped:0x8078D928
-// 99%: orig has `li r30,0; mr r31,r30` for zero store reg
+// 99%: orig has `li r30,0; mr r31,r30` for zero store reg (li r31 instead)
 void fn_3_14E894(void) {
-    return;
+    u32 i = 0;
+    s16 z = 0;
+    do {
+        s8 k = i;
+        u8* p = fn_800339F0(0, 0x1E);
+        if (p != NULL) {
+            u8* q = *(u8**)(p + 0xC);
+            s32 v = k + 1;
+            do {
+                if (q[0x4C] == v) {
+                    *(s16*)(q + 0x4A) = z;
+                }
+                q = *(u8**)q;
+            } while (q != NULL);
+        }
+        i++;
+    } while (i < 4);
+    pitchingMachinePitching(0x1E);
 }
 
 // .text:0x0014E920 size:0x68 mapped:0x8078D9B4
@@ -966,8 +1076,22 @@ void fn_3_14ED24(void) {
 }
 
 // .text:0x0014F3CC size:0x178 mapped:0x8078E460
-void fn_3_14F3CC(void) {
-    return;
+void fn_3_14F3CC(u8* o) {
+    Vec v = lbl_3_rodata_3908;
+    f32 off;
+    s16 r1, r2;
+    if (o[0x4C] < 5) {
+        off = lbl_3_rodata_39F8;
+    } else {
+        off = lbl_3_rodata_39A8;
+    }
+    r1 = o[0x4C] < 5 ? 20000 : 10000;
+    r2 = o[0x4C] < 5 ? 20000 : 10000;
+    v.x += (f32)(rand() % r1 - r1 / 2) / lbl_3_rodata_39F4;
+    v.y += (f32)(rand() % r2 - r2 / 2) / lbl_3_rodata_39F4;
+    *(f32*)(o + 4) = v.x;
+    *(f32*)(o + 8) = v.y - off;
+    *(f32*)(o + 0xC) = v.z;
 }
 
 // .text:0x0014F544 size:0x60 mapped:0x8078E5D8
@@ -1063,8 +1187,30 @@ void fn_3_150D84(void) {
 }
 
 // .text:0x00151068 size:0x19C mapped:0x807900FC
-void fn_3_151068(void) {
-    return;
+// ~93%: prologue only: orig stores sth via r4 (param) with data base in r5; ours uses r31 and base in r4
+void fn_3_151068(u8* a, u8* o) {
+    Mtx m;
+    u8* obj;
+    u8* mp;
+    u8* t;
+    f32 x, y, z;
+    s32* d = (s32*)lbl_3_data_26C3C; *(s16*)(o + 0x4A) = d[6];
+    t = *(u8**)(a + 0x18);
+    t = *(u8**)t;
+    t = *(u8**)(t + 0x18);
+    obj = ((u8**)t)[d[7]];
+    PSMTXIdentity(m);
+    mp = *(u8**)(obj + 0xEC);
+    x = *(f32*)(mp + 0xC);
+    y = *(f32*)(mp + 0x1C);
+    z = *(f32*)(mp + 0x2C);
+    x += (f64)(rand() % 100 - 50) / lbl_3_rodata_39E8;
+    y += (f64)(rand() % 150 - 75) / lbl_3_rodata_39E8;
+    *(f32*)(o + 4) = x;
+    *(f32*)(o + 8) = y;
+    *(f32*)(o + 0xC) = z;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = *(s32*)(lbl_3_data_26C3C + 8);
+    o[0x43] = *(s32*)(lbl_3_data_26C3C + 0x10);
 }
 
 // .text:0x00151204 size:0x490 mapped:0x80790298
