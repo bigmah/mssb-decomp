@@ -15,4 +15,6 @@ void fn_3_59A90(void);
 
 s32 fn_3_59AE4(void);
 
+void fn_3_5A6D4(u8 status);
+
 #endif

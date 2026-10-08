@@ -51,3 +51,15 @@ s32 fn_3_59AE4(void) {
     }
     return 1;
 }
+
+// fn_3_5A6D4, size:0x28
+void fn_3_5A6D4(u8 status) {
+    s8 previous;
+    GameControlsStruct* game = &g_GameLogic;
+    previous = game->gameStatus;
+    game->FrameCountOfCurrentPitch = 0;
+    game->gameStatus_prev = previous;
+    game->gameStatus = status;
+    game->FrameCountOfCurrentAtBat_Copy = 0;
+    game->_125 = 0;
+}
