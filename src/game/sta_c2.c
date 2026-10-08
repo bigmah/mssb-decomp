@@ -1114,8 +1114,47 @@ s32 fn_3_D5470(f32* a, f32* b) {
 }
 
 // .text:0x000D5494 size:0x158 mapped:0x80714528
-void fn_3_D5494(void) {
-    return;
+typedef struct { f32 f0; s32 f4; } D5494E;
+typedef struct { u8 pad[0x90]; u8 f : 1; u8 pad91[0x9D - 0x91]; u8 f9D; u8 pad2[0xE8 - 0x9E]; } D5494C;
+typedef struct { D5494C* arr; u8 pad0[0x14 - 4]; D5494E* p14; u8 pad1[0x30 - 0x18]; u32 count; } D5494B;
+extern f32 lbl_3_rodata_26B8;
+extern f32 lbl_3_rodata_27E0;
+extern f32 lbl_3_rodata_289C;
+extern f32 lbl_3_rodata_28A0;
+void fn_3_D5494(f32 (*m)[4]) {
+    Vec v;
+    D5494B* g;
+    D5494C* c;
+    s32 off;
+    D5494E* e;
+    u32 i;
+    f32 x, hi;
+    u8 t;
+    memcpy(&v, g_Ball, 0xC);
+    PSMTXMultVec(m, &v, &v);
+    i = 0;
+    g = (D5494B*)lbl_3_common_bss_350E4;
+    off = 0;
+    for (; i < g->count; off += 8, i++) {
+        e = (D5494E*)((u8*)g->p14 + off);
+        c = &g->arr[e->f4];
+        if (c->f) {
+            t = c->f9D;
+            if (t == 0 || (u8)(t - 4) <= 1 || (t > 7 && t < 0xB)) {
+                e->f0 = lbl_3_rodata_2698;
+            } else {
+                x = e->f0;
+                hi = lbl_3_rodata_26B8 + v.z;
+                if (x < hi) {
+                    e->f0 = lbl_3_rodata_2698;
+                } else if (x > lbl_3_rodata_27E0 + v.z) {
+                    e->f0 = lbl_3_rodata_289C;
+                } else {
+                    { f32 d = x - hi; e->f0 = lbl_3_rodata_27A8 - lbl_3_rodata_26C8 * (d * lbl_3_rodata_28A0); }
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000D55EC size:0x580 mapped:0x80714680
