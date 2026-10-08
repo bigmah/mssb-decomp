@@ -12,6 +12,25 @@ extern u8 lbl_1_data_1CA0[];
 extern u8 lbl_1_data_17A4[];
 extern u8 lbl_1_bss_2FD9[];
 
+extern u8 lbl_1_bss_2FDA[];
+extern u8* lbl_803CC1B8[];
+extern void fn_1_A250(void);
+
+// fn_1_A2E4, size:0x64
+void fn_1_A2E4(void) {
+    switch ((s32)lbl_1_bss_2FDA[0]) {
+    case 0:
+        lbl_1_bss_2FDA[0]++;
+        break;
+    case 1:
+        lbl_1_bss_2FDA[0]++;
+        break;
+    case 2:
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_A250;
+        break;
+    }
+}
+
 // fn_1_A718, size:0x64
 s32 fn_1_A718(void) {
     s16 count = *(s8*)((u8*)lbl_800EF808 + 0x390);
