@@ -3,6 +3,7 @@
 
 
 extern u8 lbl_800F7478[];
+
 extern void fn_2_8AC84(s32 index, s32 value);
 
 typedef struct MenuState MenuState;
@@ -72,4 +73,25 @@ void fn_2_924B0(u8* object) {
     fn_2_8AC84(*(s32*)(object + 0x78), 0);
     color.a = 0xFF;
     fn_800BD2CC(0, color);
+}
+
+
+// fn_2_9267C, size:0x14C
+void fn_2_9267C(Vec* result, Vec* position, Vec* anchor, Vec* target,
+               f32 step, f32 spring, f32 damping, f32 restDistance) {
+    Vec direction;
+    Vec velocity;
+    Vec displacement;
+    f32 distance;
+    f32 force;
+    PSVECSubtract(position, anchor, &direction);
+    distance = PSVECDistance(position, anchor);
+    PSVECSubtract(target, anchor, &displacement);
+    PSVECScale(&displacement, step, &velocity);
+    force = spring * (restDistance - distance) +
+            damping * (PSVECDotProduct(&velocity, &direction) / distance);
+    PSVECNormalize(&direction, &direction);
+    PSVECScale(&direction, force * step, &direction);
+    PSVECAdd(position, &direction, position);
+    *result = *position;
 }
