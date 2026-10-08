@@ -19,4 +19,6 @@ s16 fn_2_201E4(s16 row, s16 column);
 
 void fn_2_20218(void);
 
+void fn_2_272BC(u8* menu, u8* item);
+
 #endif

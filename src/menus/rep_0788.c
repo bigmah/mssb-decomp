@@ -1,5 +1,7 @@
 #include "menus/rep_0788.h"
 
+typedef struct { u8* object; s32 _04; } MenuTableEntry;
+extern MenuTableEntry lbl_80371C30[];
 extern u8* lbl_2_bss_1A824C[];
 extern s16 lbl_2_data_3D30[][4];
 extern u8* lbl_803CC1B8[];
@@ -38,4 +40,9 @@ void fn_2_20218(void) {
     lbl_2_bss_1A824C[0][0x19782C] = 0;
     lbl_2_bss_1A824C[0][0x19782A] = 0;
     lbl_2_bss_1A824C[0][0x197832] = 0;
+}
+
+void fn_2_272BC(u8* menu, u8* item) {
+    u8* object = lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)(item + 0xE)].object;
+    *(u32*)(object + 0x54) &= ~2;
 }
