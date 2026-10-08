@@ -31,3 +31,12 @@ u32 fn_800527BC(void) {
     return lbl_803CB880;
 }
 
+// fn_80052798, size:0x24
+void fn_80052798(s32 count) {
+    if (count < 1) {
+        count = 1;
+    } else if (count > 2) {
+        count = 2;
+    }
+    lbl_803CB880 = count;
+}

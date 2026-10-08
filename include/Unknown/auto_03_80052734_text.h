@@ -10,4 +10,6 @@ camera_803c639c_s* fn_80052768_getCamera(int index);
 
 u32 fn_800527BC(void);
 
+void fn_80052798(s32 count);
+
 #endif
