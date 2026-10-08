@@ -623,7 +623,6 @@ u32 fn_3_14BA40(u8* o) {
     return n == 0;
 }
 
-// 92%: right shape and saved regs; float math block order differs (orig converts 180.0/d[1], rand and n separately, consts via lfd sym@l not addi)
 // .text:0x0014BCB0 size:0x21C mapped:0x8078AD44
 void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
     u8* p;
@@ -634,6 +633,7 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
     f32 s;
     f32 c;
     f32 r;
+    f64 u;
     *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
     n = 0;
     p = *(u8**)(o + 0xC);
@@ -649,8 +649,10 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
             p[0x41] = *(s32*)(d + 0x20);
             p[0x42] = *(s32*)(d + 0x24);
             t = (f32)rand() / lbl_3_rodata_3970;
-            r = (f32)(lbl_3_rodata_39C4 * (lbl_3_rodata_3990 * ((f64)t - lbl_3_rodata_3968)));
-            ang = lbl_3_rodata_39B8 * (f32)(lbl_3_rodata_39D8 / (f64)*(s32*)(d + 4) * (f64)n);
+            u = (f64)t - lbl_3_rodata_3968;
+            u = lbl_3_rodata_3990 * u;
+            r = lbl_3_rodata_39C4 * u;
+            ang = lbl_3_rodata_39B8 * (f32)(360.0 / (f64)*(s32*)(d + 4) * (f64)n);
             c = (f32)cos(ang);
             *(f32*)(p + 4) = r * c + v[0];
             s = (f32)sin(ang);
