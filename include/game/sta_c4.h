@@ -26,7 +26,7 @@ void fn_3_F9E78(void);
 void fn_3_FA3C0(void);
 void fn_3_FA58C(void);
 void fn_3_FB3D8(void);
-void fn_3_FBBA0(void);
+void fn_3_FBBA0(u8* t);
 void fn_3_F8444(void);
 void fn_3_F8454(void);
 
