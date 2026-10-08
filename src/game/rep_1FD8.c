@@ -502,14 +502,16 @@ extern void fn_8003403C(f32, f32);
 extern void fn_80033CC8(void*, s32);
 extern void GXSetZMode(int, int, int);
 extern void GXSetBlendMode(int, int, int, int);
-extern f32 lbl_3_rodata_2168[];
+extern const f32 lbl_3_rodata_2168[];
 extern const f32 lbl_3_rodata_213C;
-// 96%: 213C (0.0f) const load should hoist before first fadds (f1) and 2168 via addi+lfs 0; only f-reg/sched diffs
+// 97%: only f-reg numbering of hoisted consts (213C should be f1, loaded after first fadds); const externs help
 // .text:0x000C4724 size:0x1AC mapped:0x807037B8
 u32 fn_3_C4724(void* hv) {
     C4724Hdr* h = hv;
     C4724P* p = h->head;
     u32 n = 0;
+    f32 k;
+    f32 c;
     fn_80033620();
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 5, 0);
@@ -520,14 +522,15 @@ u32 fn_3_C4724(void* hv) {
             fn_8003403C(p->f38, p->f3C);
             fn_80033CC8(p, h->f10);
             if (lbl_80366158[0x28] == 0) {
-                f32 d = lbl_3_rodata_2168[0];
+                k = lbl_3_rodata_2168[0];
+                c = lbl_3_rodata_213C;
                 p->x += p->vx;
                 p->y += p->vy;
                 p->z += p->vz;
-                p->f38 -= d;
-                p->f3C -= d;
+                p->f38 -= k;
+                p->f3C -= k;
                 p->a43 -= 0xF;
-                if (p->f38 <= lbl_3_rodata_213C || p->f3C <= lbl_3_rodata_213C) {
+                if (p->f38 <= c || p->f3C <= c) {
                     p->s4A = 0;
                 }
             }
