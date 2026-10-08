@@ -35,7 +35,7 @@ typedef struct { Vec v; f32 pad[2]; } V14;
 extern V14 lbl_3_data_1B884[];
 typedef struct { f32 a, b, c, d, e, f; } T18;
 extern T18 lbl_3_data_1B9A4[];
-extern f32 lbl_3_rodata_2D5C;
+extern const f32 lbl_3_rodata_2D5C;
 extern f32 lbl_3_rodata_2D68;
 extern char lbl_3_rodata_2DC4[];
 extern s32 fn_800247E4(s32, s32, s32, s32);
@@ -47,7 +47,7 @@ extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, void*, u32);
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
-extern f32 lbl_3_rodata_2DEC;
+extern const f32 lbl_3_rodata_2DEC;
 extern const f32 lbl_3_rodata_2DDC;
 extern f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
@@ -617,7 +617,7 @@ void fn_3_EF890(u8* p) {
 
 // .text:0x000EF930 size:0x224 mapped:0x8072E9C4
 extern char lbl_3_rodata_2D24[];
-extern f64 lbl_3_rodata_2DF8;
+extern const f64 lbl_3_rodata_2DF8;
 extern f64 lbl_3_rodata_2E00;
 void fn_3_EF930(u8* p) {
     Quaternion q2;
@@ -1101,8 +1101,44 @@ void fn_3_F3CD0(void) {
 }
 
 // .text:0x000F3EFC size:0x3A4 mapped:0x80732F90
-void fn_3_F3EFC(void) {
-    return;
+extern u32 lbl_3_bss_B560[];
+extern f32 lbl_3_bss_B260[];
+extern const f32 lbl_3_rodata_2E90;
+extern const f32 lbl_3_rodata_2DEC;
+extern const f64 lbl_3_rodata_2DF8;
+extern const f64 lbl_3_rodata_2E98;
+extern const f64 lbl_3_rodata_2EA0;
+extern const f64 lbl_3_rodata_2EA8;
+extern const f64 lbl_3_rodata_2EB0;
+void fn_3_F3EFC(u8* a) {
+    u8* e;
+    u8 i;
+    e = *(u8**)(a + 0xC);
+    *(u32*)(a + 0x10) = lbl_3_bss_B560[0];
+    i = 0;
+    for (; e != NULL; e = *(u8**)e) {
+        *(f32*)(e + 0x38) = *(f32*)(e + 0x3C) = lbl_3_rodata_2E30;
+        *(f32*)(e + 0x10) = *(f32*)(e + 0x18) = lbl_3_rodata_2D5C;
+        *(f32*)(e + 0x14) = lbl_3_rodata_2E90;
+        *(f32*)(e + 0x4) = lbl_3_bss_B260[0] + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0x8) = lbl_3_rodata_2EA0 + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0xC) = lbl_3_bss_B260[2] + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0x28) = lbl_3_rodata_2EA8 + (rand() % 300 - 150) / lbl_3_rodata_2E30;
+        *(f32*)(e + 0x2C) = lbl_3_rodata_2EB0 + (rand() % 300 - 150) / lbl_3_rodata_2E30;
+        e[0x4F] = i;
+        *(s16*)(e + 0x48) = i;
+        e[0x42] = 0xFF;
+        e[0x41] = 0xFF;
+        e[0x40] = 0xFF;
+        e[0x43] = 0;
+        *(s16*)(e + 0x4A) = 0x1F4 - e[0x4F];
+        *(f32*)(e + 0x1C) = lbl_3_rodata_2DF8 + (rand() % 50) / lbl_3_rodata_2DEC;
+        *(f32*)(e + 0x20) = lbl_3_rodata_2D5C;
+        *(f32*)(e + 0x24) = 1 - (rand() % 2) * 2;
+        e[0x4D] = 0xF;
+        e[0x4E] = 0;
+        i++;
+    }
 }
 
 // .text:0x000F42A0 size:0x3CC mapped:0x80733334
