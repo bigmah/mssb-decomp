@@ -78,8 +78,55 @@ extern void fn_3_58F58(int, f32*, f32*);
 #pragma dont_inline on
 
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
-void fn_3_251E4(void) {
-    return;
+extern void getComponentsFromSAng(s16 ang, f32* x, f32* y);
+extern f32 lbl_3_rodata_B18;
+extern f32 lbl_3_rodata_B1C;
+int fn_3_51798(int i, f32* out);
+void fn_3_251E4(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 pos[3];
+    int r;
+    if (*(s16*)(f + 0x1BE) < 0x7FFE) {
+        *(s16*)(f + 0x1BE) = *(s16*)(f + 0x1BE) + 1;
+    } else {
+        *(s16*)(f + 0x1BE) = 0x7FFF;
+    }
+    *(s16*)(f + 0x1C0) = *(s16*)(f + 0x1C0) - 1;
+    if (f[0x210] == 1) {
+        if (*(s16*)(f + 0x1C0) <= 0) {
+            f[0x210] = 2;
+            *(s16*)(f + 0x1BE) = 0;
+            *(s16*)(f + 0x1C0) = lbl_3_data_49DC[0x22];
+            return;
+        }
+        *(f32*)(f + 0x174) = *(f32*)(f + 0x174) * *(f32*)(lbl_3_data_4930 + 0x8C);
+        *(f32*)(f + 0x50) = *(f32*)(f + 0x174);
+        getComponentsFromSAng(*(s16*)(f + 0x1C2), (f32*)(f + 0x38), (f32*)(f + 0x3C));
+        *(f32*)(f + 0x30) = *(f32*)(f + 0x38) * *(f32*)(f + 0x50);
+        *(f32*)(f + 0x34) = *(f32*)(f + 0x3C) * *(f32*)(f + 0x50);
+        r = fn_3_51798(i, pos);
+        if (r != 0) {
+            if (r == 2 && !(pos[0] > lbl_3_rodata_B18) && !(pos[0] < lbl_3_rodata_B1C)) {
+                *(f32*)(f + 0x30) = pos[0] - *(f32*)f;
+                *(f32*)(f + 0x34) = pos[2] - *(f32*)(f + 8);
+                *(f32*)f = pos[0];
+                *(f32*)(f + 8) = pos[2];
+            } else {
+                *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+                *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+                *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+            }
+        } else {
+            *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+            *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+        }
+        *(f32*)(f + 0x14) = *(f32*)f;
+        *(f32*)(f + 0x1C) = *(f32*)(f + 8);
+        return;
+    }
+    if (*(s16*)(f + 0x1C0) <= 0) {
+        f[0x210] = 0;
+    }
 }
 
 // .text:0x000253A4 size:0x2A4 mapped:0x80664438
@@ -2341,8 +2388,8 @@ void fn_3_5164C(void) {
 }
 
 // .text:0x00051798 size:0x658 mapped:0x8069082C
-void fn_3_51798(void) {
-    return;
+int fn_3_51798(int i, f32* out) {
+    return 0;
 }
 
 // .text:0x00051DF0 size:0x294 mapped:0x80690E84
