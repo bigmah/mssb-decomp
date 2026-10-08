@@ -614,25 +614,20 @@ void fn_3_1410F0(void) {
 }
 
 // .text:0x001412BC size:0x128 mapped:0x80780350
+// 97.8%: only register allocation differs (loop counter i gets r29 instead of r26; table bases shift down one)
 void fn_3_1412BC(void) {
     u8* e;
     u8* m;
-    u8* p3;
-    u8* p2;
-    u8* p1;
     s8 i;
     int idx;
     e = g_Minigame + 0x1DCC;
     memset(g_Minigame + 0x1D7C, 0, 0x78);
     m = g_Minigame;
-    p2 = lbl_3_data_2197C;
-    p3 = lbl_3_data_21944;
-    p1 = lbl_3_data_2194C;
     i = 0;
     do {
         idx = m[0x18DC];
-        *(s16*)e = RandomInt_Game_Range(((s16*)p1)[idx * 2], ((s16*)p1)[idx * 2 + 1]);
-        if (RandomInt_Game(100) < *(s8*)(p2 + idx)) {
+        *(s16*)e = RandomInt_Game_Range(((s16*)lbl_3_data_2194C)[idx * 2], ((s16*)lbl_3_data_2194C)[idx * 2 + 1]);
+        if (RandomInt_Game(100) < *(s8*)(lbl_3_data_2197C + idx)) {
             if (*(s8*)(lbl_3_data_21980 + idx) < 8) {
                 e[6] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21980 + idx), 8);
             } else {
@@ -642,7 +637,7 @@ void fn_3_1412BC(void) {
             e[6] = 0x7F;
         }
         e[5] = 2;
-        e[7] = RandomInt_Game_Range(*(s8*)(p3 + idx * 2), *(s8*)(p3 + idx * 2 + 1));
+        e[7] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21944 + idx * 2), *(s8*)(lbl_3_data_21944 + idx * 2 + 1));
         i++;
         e += 8;
         m++;
