@@ -34,7 +34,8 @@ struct MenuEntry {
     s32 objectId;
     u8 _84[0x0C];
     f32 bouncePhase;
-    u8 _94[0x1E];
+    s16 state;
+    u8 _96[0x1C];
     s16 locationIndex;
     u8 _B4[7];
     u8 flagBB;
@@ -80,6 +81,27 @@ extern f32 lbl_2_data_3EF4[];
 extern f32 lbl_2_data_3F5C;
 extern const Vec lbl_2_data_3150[];
 extern const f32 lbl_2_rodata_BAC[];
+extern const f64 lbl_2_rodata_BE0;
+extern const f64 lbl_2_rodata_BE8;
+extern const f32 lbl_2_rodata_C40;
+
+// fn_2_6F78C, size:0x100
+void fn_2_6F78C(MenuEntry* entry) {
+    f32 difference;
+
+    entry->heading = (f32)atan2(-(lbl_2_bss_1A8248[0]->entries[0].position.x - entry->position.x),
+        -(lbl_2_bss_1A8248[0]->entries[0].position.z - entry->position.z));
+    difference = fn_2_4A18C(entry->angle34 - entry->heading);
+    if ((difference < lbl_2_rodata_BE0 && difference > lbl_2_rodata_B58) ||
+        (difference > lbl_2_rodata_BE8 && difference < lbl_2_rodata_B58)) {
+        entry->state = 3;
+    } else if (difference < lbl_2_rodata_B58) {
+        entry->angle34 += lbl_2_rodata_C40;
+    } else {
+        entry->angle34 -= lbl_2_rodata_C40;
+    }
+    entry->heading = entry->angle34;
+}
 
 // fn_2_6B024, size:0xFC
 void fn_2_6B024(MenuEntry* owner) {
