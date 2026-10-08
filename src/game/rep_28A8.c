@@ -21,6 +21,8 @@ extern struct { u8 pad[0xC]; s16 n; u8 pad2[0x1C4]; u8 b1D2; } lbl_3_common_bss_
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
 extern u8 g_Ball[];
+extern u8 lbl_3_data_189AC[];
+extern int fn_3_B7E10(f32, f32);
 extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_18C48[];
 extern u8 lbl_8037169C[];
@@ -96,7 +98,61 @@ void fn_3_DC240(void) {
 
 // .text:0x000DC380 size:0x224 mapped:0x8071B414
 void fn_3_DC380(void) {
-    return;
+    if (*(s16*)(g_Ball + 0x1B74) == 0 && *(s16*)(g_Ball + 0x1B8C) != 3) {
+        s32 v = *(s32*)(g_Ball + 0x1B44);
+        if (v >= 0x80) {
+            v -= 0x80;
+        }
+        if (v >= 0x70 && v < 0x79) {
+            g_Minigame[0x19C8] = lbl_3_data_189AC[v - 0x70];
+        }
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) == -1) {
+        g_Minigame[0x19C9] = 1;
+        return;
+    }
+    if (g_Minigame[0x1926] != 0) {
+        g_Minigame[0x19C9] = lbl_3_data_189AC[g_Minigame[0x1926] - 0x70];
+        return;
+    }
+    if (g_Ball[0x1BD1] != 0) {
+        if (g_Ball[0x1BD1] == 1) {
+            g_Minigame[0x19C9] = 6;
+        } else if (g_Ball[0x1BD1] == 3) {
+            g_Minigame[0x19C9] = 4;
+        } else {
+            g_Minigame[0x19C9] = 1;
+        }
+        g_Minigame[0x190B] = 1;
+    } else {
+        if (*(s16*)(g_Ball + 0x1B7A) == 0) {
+            return;
+        }
+        if (g_Ball[0x1BC9] == 1) {
+            u8* f = g_Fielders + *(s16*)(g_Ball + 0x1B78) * 0x268;
+            if (f[0x1EE] != 0 || f[0x1EC] != 0) {
+                return;
+            }
+        } else if (!(*(f32*)(g_Ball + 0x1A14) < 0.003f || g_Ball[0x1BD0] != 0 || g_Ball[0x1BDE] == 2)) {
+            return;
+        }
+        if (*(s16*)(g_Ball + 0x1B7A) == 3) {
+            g_Minigame[0x19C9] = 2;
+            return;
+        }
+        if (g_Minigame[0x19C8] == 0) {
+            if (fn_3_B7E10(*(f32*)g_Ball, *(f32*)(g_Ball + 8)) != 0) {
+                g_Minigame[0x19C9] = 1;
+            } else {
+                g_Minigame[0x19C9] = 2;
+            }
+        } else {
+            g_Minigame[0x19C9] = g_Minigame[0x19C8];
+        }
+        *(f32*)(g_Minigame + 0x19AC) = *(f32*)g_Ball;
+        *(f32*)(g_Minigame + 0x19B0) = *(f32*)(g_Ball + 8);
+        *(s16*)(g_Minigame + 0x19B8) = 1;
+    }
 }
 
 // 98%: orig schedules lbz 0x1da before stw 0x0 (subi in r5, not r0)
