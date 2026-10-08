@@ -29,7 +29,7 @@ void fn_3_BD758(void);
 s32 fn_3_BD7D0(void);
 void fn_3_BD7D8(void);
 void fn_3_BD7DC(u32 a);
-void fn_3_BD80C(void);
+void fn_3_BD80C(u32 a);
 void fn_3_BD8D8(void);
 void fn_3_BD8FC(void);
 void fn_3_BDCA4(void);
