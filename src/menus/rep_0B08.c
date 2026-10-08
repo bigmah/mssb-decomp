@@ -54,6 +54,30 @@ extern const f32 lbl_2_rodata_C3C;
 extern const f32 lbl_2_rodata_C38;
 extern const f32 lbl_2_rodata_B5C;
 extern const f32 lbl_2_rodata_B60;
+extern const f32 lbl_2_rodata_B64;
+
+// fn_2_689CC, size:0xBC
+s16 fn_2_689CC(s32 index) {
+    Vec position;
+    Vec candidate;
+    f32 distance;
+    f32 nearest;
+    s32 current;
+    s32 closest;
+
+    nearest = lbl_2_rodata_B64;
+    closest = 0;
+    memcpy(&position, &lbl_2_bss_1A8248[0]->entries[index].position, sizeof(position));
+    for (current = 0; current < 51; current++) {
+        memcpy(&candidate, &lbl_2_data_2EA4[current], sizeof(candidate));
+        distance = PSVECDistance(&position, &candidate);
+        if (distance < nearest) {
+            nearest = distance;
+            closest = current;
+        }
+    }
+    return closest;
+}
 
 // fn_2_686EC, size:0xB8
 s32 fn_2_686EC(s32 from, s32 to) {

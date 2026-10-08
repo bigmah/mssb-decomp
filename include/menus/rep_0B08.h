@@ -137,4 +137,6 @@ void fn_2_6BAD8(MenuFadeState* fade);
 
 s32 fn_2_686EC(s32 from, s32 to);
 
+s16 fn_2_689CC(s32 index);
+
 #endif
