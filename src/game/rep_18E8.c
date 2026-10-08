@@ -709,7 +709,22 @@ void fn_3_A6ABC(void) {
 
 // .text:0x000A6D48 size:0x150 mapped:0x806E5DDC
 void fn_3_A6D48(void) {
-    return;
+    s32 i;
+    lbl_3_bss_1824 = 0;
+    lbl_3_bss_1808[0] = -1;
+    lbl_3_bss_1808[1] = -1;
+    lbl_3_bss_1808[2] = -1;
+    lbl_3_bss_1808[3] = -1;
+    for (i = 3; i >= 0; i--) {
+        RunnerT* r = &g_Runners[i];
+        if (r->status == 1) {
+            s32 b = r->unk125;
+            lbl_3_bss_1824 |= 1 << ((s32)r->fractionalBasesRan * 4);
+            if (lbl_3_bss_1808[b] < 0 || g_Runners[lbl_3_bss_1808[b]].unkE6 >= 0) {
+                lbl_3_bss_1808[b] = i;
+            }
+        }
+    }
 }
 
 // .text:0x000A6E98 size:0x1A8 mapped:0x806E5F2C
