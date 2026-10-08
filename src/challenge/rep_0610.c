@@ -94,3 +94,11 @@ void fn_1_14928(void) {
     fn_800AD038(lbl_80366158[2]);
     *(s16*)(*(u8**)(lbl_803CC1B8[0] + 0xC) + 0x10) = 1;
 }
+
+// fn_1_148CC, size:0x5C
+void fn_1_148CC(void) {
+    fn_800AD038(lbl_80366158[2]);
+    *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+    *(void (**)(u8*))(lbl_803CC1B8[0]) = fn_1_176EC;
+    lbl_1_bss_30B8 = 1;
+}

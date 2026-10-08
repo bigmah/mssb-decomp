@@ -35,4 +35,6 @@ void fn_1_116EC(void* object);
 
 void fn_1_14928(void);
 
+void fn_1_148CC(void);
+
 #endif
