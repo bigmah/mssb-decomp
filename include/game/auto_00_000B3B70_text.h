@@ -23,4 +23,6 @@ void fn_3_B6C50(void);
 
 void fn_3_B3B70(void);
 
+void fn_3_B5CB4(void);
+
 #endif

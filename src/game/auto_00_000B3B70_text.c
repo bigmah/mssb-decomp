@@ -1,5 +1,6 @@
 #include "game/auto_00_000B3B70_text.h"
 #include "game/UnknownHomes_Game.h"
+#include "static/UnknownHomes_Static.h"
 
 #pragma dont_inline on
 
@@ -12,6 +13,29 @@ extern u8 lbl_8036E548[];
 extern void fn_3_6AEC0(void);
 extern void fn_3_8F1C8(void);
 extern void fn_3_59338(void);
+
+extern void fn_3_8B318(s32);
+
+// fn_3_B5CB4, size:0x98
+void fn_3_B5CB4(void) {
+    PracticeStruct* practice = &g_Practice;
+    switch ((s32)practice->returnToPracticeMenuState) {
+    case 1:
+        fn_3_8B318(-1);
+        practice->returnToPracticeMenuState = 2;
+        lbl_3_common_bss_34C58._2C = 0;
+        lbl_3_common_bss_34C58._2A = 1;
+        lbl_3_common_bss_34C58._24 = 1;
+        /* fallthrough */
+    case 2:
+        practice->returnToPracticeMenuState = 3;
+        break;
+    default:
+        fn_800B0A5C_insertQueue((void*)fn_80062A94, 1);
+        practice->returnToPracticeMenuState = 0;
+        break;
+    }
+}
 
 // fn_3_B3B70, size:0x60
 void fn_3_B3B70(void) {
