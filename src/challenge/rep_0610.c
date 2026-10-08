@@ -1,5 +1,6 @@
 #include "challenge/rep_0610.h"
 
+extern u8 lbl_1_bss_3215;
 extern u8 lbl_1_bss_3214;
 extern u8 lbl_1_bss_30B8;
 
@@ -13,4 +14,8 @@ void fn_1_D2F0(void) {
 
 void fn_1_D650(void) {
     lbl_1_bss_3214 = 1;
+}
+
+void fn_1_D67C(u8 value) {
+    lbl_1_bss_3215 = value;
 }

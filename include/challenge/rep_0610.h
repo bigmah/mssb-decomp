@@ -9,4 +9,6 @@ void fn_1_D2F0(void);
 
 void fn_1_D650(void);
 
+void fn_1_D67C(u8 value);
+
 #endif
