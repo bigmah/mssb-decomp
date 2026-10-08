@@ -6,6 +6,7 @@ extern s16 radToShortAngle(f32 v);
 extern u8 g_Ball[];
 extern u8 g_Fielders[];
 extern u8 lbl_3_data_4884[];
+typedef struct { f32 a, b, c, d; } Ent16;
 extern u8 lbl_8036E548[];
 extern f32 lbl_3_rodata_B24;
 extern void fn_3_1682AC(int, int);
@@ -108,8 +109,45 @@ void fn_3_25844(int i, int j) {
 }
 
 // .text:0x000258D8 size:0x190 mapped:0x8066496C
-void fn_3_258D8(void) {
-    return;
+// ~60%: type reg r7 vs r8, lfsx table access, float op order/scheduling differ
+int fn_3_258D8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int type;
+    Ent16* t;
+    int n;
+    int k;
+    f32 sc;
+    if ((*(u8**)(g_FieldingLogic + 0x8C))[2] == 0) {
+        return 0;
+    }
+    if (f[0x25A] != 0) {
+        return 0;
+    }
+    type = f[0x1CC];
+    f[0x203] = 1;
+    *(f32*)(f + 0x15C) = lbl_3_rodata_B20;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            i = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            i = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    *(f32*)(f + 0x164) = ((Ent16*)lbl_3_data_4884)[type].a;
+    t = &((Ent16*)lbl_3_data_4884)[type];
+    sc = t->c;
+    *(f32*)(f + 0x160) = *(f32*)(f + 0x38) * lbl_3_rodata_B24 * sc;
+    *(f32*)(f + 0x168) = *(f32*)(f + 0x3C) * lbl_3_rodata_B24 * sc;
+    k = (int)t->d;
+    n = (int)(*(f32*)(f + 0x164) / t->b);
+    *(s16*)(f + 0x1AE) = (n + n) + k + 2;
+    *(s16*)(f + 0x1B0) = n + 1;
+    f[0x204] = 0;
+    if (type != 0) {
+        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
+    }
+    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+    return 1;
 }
 
 // .text:0x00025A68 size:0x1D8 mapped:0x80664AFC
@@ -219,8 +257,42 @@ void fn_3_28CA8(void) {
 }
 
 // .text:0x0002A164 size:0x124 mapped:0x806691F8
-void fn_3_2A164(void) {
-    return;
+typedef struct { f32 a, b, c, d, e; } Ent14;
+extern Ent14 lbl_3_data_47D0[];
+extern int fn_3_B7CDC(f32, f32);
+int fn_3_2A164(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (*(f32*)(f + 0x74) > lbl_3_data_47D0[f[0x1CA]].c) {
+        return 0;
+    }
+    if (*(f32*)(g_Ball + 4) < *(f32*)(f + 0x15C)) {
+        return 0;
+    }
+    if (*(f32*)(g_Ball + 4) > *(f32*)(f + 0x15C) + *(f32*)(f + 0xF4)) {
+        return 0;
+    }
+    if (fn_3_B7CDC(*(f32*)(g_Ball + 0), *(f32*)(g_Ball + 8)) != 0) {
+        return 0;
+    }
+    *(s16*)(f + 0x24C) = 1;
+    *(s16*)(f + 0x24E) = 0;
+    f[0x252] = 6;
+    f[0x253] = 0;
+    f[0x254] = 0;
+    f[0x255] = 0;
+    f[0x25B] = 0;
+    f[0x259] = 0;
+    f[0x25C] = 0;
+    f[0x25D] = 0;
+    f[0x25E] = 0;
+    f[0x25F] = 0;
+    f[0x264] = 0;
+    f[0x260] = 0;
+    if (*(s16*)(g_Ball + 0x1B60) > 1) {
+        f[0x264] = 1;
+    }
+    g_Ball[0x1BF0] = 0;
+    return 1;
 }
 
 // .text:0x0002A288 size:0x414 mapped:0x8066931C
@@ -330,8 +402,26 @@ int fn_3_2CBE0(int a) {
 }
 
 // .text:0x0002CEF4 size:0x18C mapped:0x8066BF88
-void fn_3_2CEF4(void) {
-    return;
+void fn_3_2CEF4(int i) {
+    u8* f;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    fn_3_2D47C(i);
+    f = g_Fielders + i * 0x268;
+    *(s16*)(f + 0x19E) = -1;
+    dz = *(f32*)(f + 0x1C) - *(f32*)(f + 8);
+    dx = *(f32*)(f + 0x14) - *(f32*)f;
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_B80) {
+        *(f32*)(f + 0x68) = d;
+        f[0x209] = 0;
+    } else {
+        *(s16*)(f + 0x19E) = fn_3_9FB8C(dx, dz);
+        f[0x209] = 0;
+    }
+    fn_3_3A584(i);
 }
 
 // .text:0x0002D080 size:0x288 mapped:0x8066C114
@@ -340,6 +430,7 @@ void fn_3_2D080(void) {
 }
 
 // .text:0x0002D308 size:0x174 mapped:0x8066C39C
+// 95%: prologue scheduling only; original loads the 0.0f const (f0) before the sth/first fielder loads (tried local z = B20, f assigned late)
 void fn_3_2D308(int i) {
     u8* f = g_Fielders + i * 0x268;
     f32 dx;
