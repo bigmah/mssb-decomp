@@ -69,6 +69,39 @@ s32 fn_3_163948(void) {
     return r;
 }
 
+// .text:0x00163A7C size:0x158
+s32 fn_3_163A7C(s32 r) {
+    s16 ids[9];
+    s32 i;
+    u8 a;
+    u8 b;
+    ChallengeTrackingStruct* e;
+    s32 id;
+    ChallengeTrackingStruct* t = starMissionCompletionTracker;
+    u8* q = lbl_3_common_bss_37400;
+    InMemBatterType* ba = &g_Batter;
+    InMemPitcherType* pi = &g_Pitcher;
+    a = *((u8*)starMissionCompletionTracker + 0x441C);
+    b = *((u8*)starMissionCompletionTracker + 0x4415);
+    for (i = 0; i < 9; i++) {
+        ids[i] = inMemRoster[1][i].stats.CharID;
+    }
+    if (q[0x46] == 2) {
+        id = pi->charID;
+    } else if (q[0x46] == 1) {
+        id = ba->charID;
+    }
+    for (i = 0; i < 9; i++) {
+        if (id == ids[i]) {
+            e = &t[ids[i]];
+            if ((s8)*((u8*)e->scoutFlagPointer + 4 + b * 6 + a) != 0) {
+                r = 1;
+            }
+        }
+    }
+    return r;
+}
+
 // .text:0x00163BD4 size:0x160
 s32 fn_3_163BD4(void) {
     s16 ids[9];
