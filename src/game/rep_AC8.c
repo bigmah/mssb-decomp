@@ -79,6 +79,8 @@ extern void fn_3_58F58(int, f32*, f32*);
 
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
 extern void getComponentsFromSAng(s16 ang, f32* x, f32* y);
+extern s16 fn_3_9FE6C_normalizeAngle(s16);
+extern void fn_3_6C854(int, int);
 extern f32 lbl_3_rodata_B18;
 extern f32 lbl_3_rodata_B1C;
 int fn_3_51798(int i, f32* out);
@@ -135,8 +137,50 @@ void fn_3_253A4(void) {
 }
 
 // .text:0x00025648 size:0x1FC mapped:0x806646DC
-void fn_3_25648(void) {
-    return;
+void fn_3_25648(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 pos[3];
+    int r;
+    *(s16*)(f + 0x1BA) = *(s16*)(f + 0x1BA) - 1;
+    if (*(s16*)(f + 0x1BA) <= 0) {
+        f[0x20F] = 0;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+        return;
+    }
+    *(s16*)(f + 0x1B8) = *(s16*)(f + 0x1B8) + 1;
+    *(s16*)(f + 0x1BC) = fn_3_9FE6C_normalizeAngle(*(s16*)(f + 0x1BC) + lbl_3_data_49DC[0x20]);
+    *(f32*)(f + 0x50) = *(f32*)(lbl_3_data_4930 + 0x84);
+    getComponentsFromSAng(*(s16*)(f + 0x1BC), (f32*)(f + 0x38), (f32*)(f + 0x3C));
+    *(f32*)(f + 0x30) = *(f32*)(f + 0x38) * *(f32*)(f + 0x50);
+    *(f32*)(f + 0x34) = *(f32*)(f + 0x3C) * *(f32*)(f + 0x50);
+    r = fn_3_51798(i, pos);
+    if (r != 0) {
+        if (r == 2 && !(pos[0] > lbl_3_rodata_B18) && !(pos[0] < lbl_3_rodata_B1C)) {
+            *(f32*)(f + 0x30) = pos[0] - *(f32*)f;
+            *(f32*)(f + 0x34) = pos[2] - *(f32*)(f + 8);
+            *(f32*)f = pos[0];
+            *(f32*)(f + 8) = pos[2];
+        } else {
+            *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+            *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+            *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+        }
+    } else {
+        *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+        *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+    }
+    *(f32*)(f + 0x14) = *(f32*)f;
+    *(f32*)(f + 0x1C) = *(f32*)(f + 8);
+    if (g_d_GameSettings[0x11] != 0) {
+        u8* m = g_Minigame + f[0x20D];
+        if (m[0x18D8] == 0) {
+            fn_3_6C854(*(s8*)(m + 0x18CC), 0);
+        }
+    } else if (g_GameLogic[*(int*)(g_GameLogic + 8) + 0x13E] == 0) {
+        fn_3_6C854(*(int*)(g_GameLogic + 8), 0);
+    }
 }
 
 // .text:0x00025844 size:0x94 mapped:0x806648D8
