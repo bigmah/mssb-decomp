@@ -8,6 +8,10 @@ extern f32 lbl_3_data_4444[];
 extern f32 game_atan2(f32, f32);
 extern s16 fn_3_9FC1C(f32, f32);
 extern u8 g_FieldingLogic[];
+extern u8 g_Controls[];
+extern u8 g_Practice[];
+extern u8 g_Minigame[];
+extern u8 g_d_GameSettings[];
 typedef struct {
     u8 pad000[0x1F5];
     s8 unk1F5;
@@ -754,7 +758,44 @@ void fn_3_A7C88(void) {
 
 // .text:0x000A7EF8 size:0x17C mapped:0x806E6F8C
 void fn_3_A7EF8(void) {
-    return;
+    u8* in;
+    s16 v;
+    u8 prev;
+
+    in = g_Controls + *(int*)(g_GameLogic + *(int*)(g_GameLogic + 8) * 4 + 0xEC) * 16;
+    if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0) {
+        in = g_Practice + *(int*)(g_GameLogic + 8) * 16;
+    } else if (g_d_GameSettings[0x11] != 0) {
+        in = g_Controls + *(s8*)(g_Minigame + g_Minigame[0x1922] + 0x18CC) * 16;
+    }
+    v = *(s16*)in;
+    prev = g_FieldingLogic[0x12E];
+    if (v >= 0xE00) {
+        g_FieldingLogic[0x12E] = 2;
+    } else if (v >= 0xA00) {
+        g_FieldingLogic[0x12E] = 3;
+    } else if (v >= 0x600) {
+        g_FieldingLogic[0x12E] = 4;
+    } else if (v >= 0x200) {
+        g_FieldingLogic[0x12E] = 1;
+    } else if (v >= 0) {
+        g_FieldingLogic[0x12E] = 2;
+    } else {
+        g_FieldingLogic[0x12E] = 0;
+    }
+    if (g_FieldingLogic[0x12E] == 0) {
+        g_FieldingLogic[0x12F] = 0;
+        return;
+    }
+    if (g_FieldingLogic[0x12E] == prev) {
+        if (g_FieldingLogic[0x12F] < 0xFE) {
+            g_FieldingLogic[0x12F]++;
+            return;
+        }
+        g_FieldingLogic[0x12F] = 0xFF;
+        return;
+    }
+    g_FieldingLogic[0x12F] = 1;
 }
 
 // .text:0x000A8074 size:0x2C4 mapped:0x806E7108
