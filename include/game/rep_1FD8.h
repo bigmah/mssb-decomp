@@ -46,7 +46,7 @@ void fn_3_C749C(void);
 void fn_3_C75B8(void);
 void fn_3_C77AC(void);
 void fn_3_C7A0C(void);
-void fn_3_C805C(void);
+void fn_3_C805C(s32* a, s32* b);
 s32 fn_3_C823C(s32, f32*);
 void fn_3_C82B4(void);
 void fn_3_C8650(void);

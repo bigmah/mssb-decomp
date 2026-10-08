@@ -733,9 +733,53 @@ void fn_3_C7A0C(void) {
     return;
 }
 
+typedef struct { u32 w[17]; } C42A4Cpy;
+extern u8 lbl_3_bss_9DE4[];
+extern u8 lbl_3_data_17514[];
+extern f32 lbl_3_rodata_21E0;
+extern void CTRLSetTranslation(void*, f32, f32, f32);
 // .text:0x000C805C size:0x1E0 mapped:0x807070F0
-void fn_3_C805C(void) {
-    return;
+void fn_3_C805C(s32* a, s32* b) {
+    Mtx m;
+    C42A4Cpy cpy;
+    C42A4Bss* g;
+    C42A4Ent* e;
+    s32 off;
+    s32 k;
+    s32 j;
+    u32 v;
+    C42A4Ctl* c;
+    s32 idx;
+    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    for (k = 0; k < 5; k++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        ((void (*)(void))fn_3_B8574)();
+        e = (C42A4Ent*)lbl_3_data_17514;
+        off = v * 4;
+        for (j = 0; j < 10; e++, j++) {
+            if (k == e->f12 && e->f10 != 7) {
+                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE4[0]) * 0xE8 + 0x90] >> 6) & 1) {
+                    idx = j + lbl_3_bss_9DE4[0];
+                    *(s32*)((u8*)g->p44 + off) = idx;
+                    g->p3C[*a] += 1;
+                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE4[0]];
+                    off += 4;
+                    cpy = *(C42A4Cpy*)c;
+                    ((void (*)(void*, void*))CTRLBuildMatrix)(c, m);
+                    fn_3_B8464(m, (void*)c->f78);
+                    CTRLSetTranslation(&cpy, ((f32*)e)[0], lbl_3_rodata_21E0, ((f32*)e)[2]);
+                    ((void (*)(void*, void*))CTRLBuildMatrix)(&cpy, m);
+                    fn_3_B8464(m, (void*)c->f78);
+                    *b += 1;
+                }
+            }
+        }
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
 }
 
 // .text:0x000C823C size:0x78 mapped:0x807072D0
