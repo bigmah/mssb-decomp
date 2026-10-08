@@ -1717,13 +1717,15 @@ void fn_3_8A1D8(void) {
 }
 
 // .text:0x0008A350 size:0x178 mapped:0x806C93E4
-// ~85%: gs[7]/gs[0x39] land in r7/r6 (orig r6/r7), runner base regs differ in 2nd loop
+// ~97%: loop 1 regs now match (u32 a/b); loop 2 differs: extra `mr r8,r4` for the runner pointer, table/i regs (r5/r6 vs r6/r4) and lis order.
+// Tried: index-form loop 2 / inlining fn_3_8A4E4 gets regs but folds offsets (no addi r8 between unrolled iterations); ~300 variants.
 void fn_3_8A350(void) {
     int i;
-    f32* p;
     u8* r;
-    u8 a = g_d_GameSettings[7];
-    u8 b = g_d_GameSettings[0x39];
+    f32* p;
+    u8* q;
+    u32 a = g_d_GameSettings[7];
+    u32 b = g_d_GameSettings[0x39];
     for (i = 1; i < 4; i++) {
         r = g_Runners + i * 0x154;
         if (a != 5 || b != 1 || *(s16*)(r + 0xE0) < 0) {
@@ -1734,20 +1736,20 @@ void fn_3_8A350(void) {
         }
     }
     g_RunningLogic[0x15] = 0;
-    r = g_Runners;
     p = lbl_3_data_4A34;
-    for (i = 0; i < 4; i++, r += 0x154, p += 2) {
-        *(f32*)(r + 0x0) = p[0];
-        *(f32*)(r + 0x8) = p[1];
-        *(f32*)(r + 0x18) = 0.0f;
-        *(f32*)(r + 0x1C) = 0.0f;
-        *(f32*)(r + 0x20) = 0.0f;
-        r[0x124] = i;
-        r[0x125] = i;
-        r[0x126] = (i + 1) & 3;
-        *(s16*)(r + 0xE6) = i;
-        r[0x127] = 0xFF;
-        r[0x133] = 0;
+    q = g_Runners;
+    for (i = 0; i < 4; i++, q += 0x154, p += 2) {
+        *(f32*)(q + 0x0) = p[0];
+        *(f32*)(q + 0x8) = p[1];
+        *(f32*)(q + 0x18) = 0.0f;
+        *(f32*)(q + 0x1C) = 0.0f;
+        *(f32*)(q + 0x20) = 0.0f;
+        q[0x124] = i;
+        q[0x125] = i;
+        q[0x126] = (i + 1) & 3;
+        *(s16*)(q + 0xE6) = i;
+        q[0x127] = 0xFF;
+        q[0x133] = 0;
     }
 }
 
@@ -1791,7 +1793,7 @@ void fn_3_8A5A4(void) {
 }
 
 // .text:0x0008A618 size:0x19C mapped:0x806C96AC
-// ~85%: shape matches; registers of hoisted constants/temps differ (orig: temp r3, fl r4, 1->r0, 0->r6)
+// ~98%: shape matches; only regs of hoisted constants/temps differ (orig: temp r3, m r4, 1->r0, 0->r6; ours: temp r4, m r6, 1->r3, 0->r0). ~100 variants tried.
 void fn_3_8A618(void) {
     int i;
     u8* r;
