@@ -817,10 +817,10 @@ void fn_3_C48D0(void* hv, Vec* src) {
     p = h->head;
     i = 0;
     while (p != NULL) {
-        x = src->x;
-        y = src->y;
+        x = ((volatile f32*)src)[0];
+        y = ((volatile f32*)src)[1];
         p->x = x;
-        z = src->z;
+        z = ((volatile f32*)src)[2];
         p->y = y;
         p->z = z;
         a = lbl_3_rodata_2158 * (f32)(rand() % 181) / lbl_3_rodata_215C;
