@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
+s32 fn_8004157C(void);
+
 void fn_800415A0(u16 value);
 
 #endif
