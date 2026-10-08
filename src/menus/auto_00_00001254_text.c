@@ -94,3 +94,8 @@ void fn_2_1254(void) {
 void fn_2_1DC4(void) {
     return;
 }
+
+// fn_2_893C, size:0x4
+void fn_2_893C(void) {
+    return;
+}
