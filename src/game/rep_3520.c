@@ -47,6 +47,9 @@ extern f32 lbl_3_rodata_35C4[];
 extern f32 lbl_3_rodata_35B8[];
 extern s16 lbl_3_data_21A60;
 extern f32 lbl_3_rodata_3644;
+extern void fn_3_157570(void);
+extern void fn_3_DE4FC(void);
+extern void fn_80011578(void);
 
 // .text:0x00133200 size:0x120 mapped:0x80772294
 void fn_3_133200(void) {
@@ -734,7 +737,21 @@ void fn_3_13B284(void) {
 
 // .text:0x0013B9C4 size:0x16C mapped:0x8077AA58
 void fn_3_13B9C4(void) {
-    return;
+    u32 i;
+    fn_3_157570();
+    fn_3_DE4FC();
+    fn_3_5A6D4(0xE);
+    fn_80011578();
+    for (i = 0; i < 100; i++) {
+        G8[0x193A + i] = 0;
+    }
+    *(s16*)(G8 + 0x1D50) = 0x1E;
+    G8[0x1D6C] = 0;
+    G8[0xBED] = 0;
+    G8[0xC2D] = 0;
+    G8[0xC6D] = 0;
+    G8[0xCAD] = 0;
+    G8[0xCCE] = 0;
 }
 
 // 99%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_1356F8
