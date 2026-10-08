@@ -50,6 +50,20 @@ extern f32 lbl_3_rodata_2DEC;
 extern const f32 lbl_3_rodata_2DDC;
 extern f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
+extern f32 lbl_3_bss_AF04[];
+extern f32 lbl_3_rodata_2D58;
+extern u8 lbl_3_data_1BA70[];
+extern u8 lbl_3_data_1B824[];
+extern f64 __fabs(f64);
+extern u8* fn_80052768_getCamera(int);
+extern char lbl_3_rodata_2D44[];
+extern f32 lbl_3_rodata_2D50;
+extern f32 lbl_3_rodata_2DA0;
+extern f32 lbl_3_rodata_2DA4;
+extern f64 lbl_3_rodata_2DA8;
+extern f32 lbl_3_rodata_2DB0;
+extern f32 lbl_3_rodata_2DB4;
+extern void DCFlushRange(void*, u32);
 extern f32 lbl_3_rodata_2D74;
 extern f32 lbl_3_rodata_2DF0;
 extern u8 lbl_800E8754[];
@@ -129,9 +143,61 @@ s32 fn_3_EE0BC(u32 v) {
 }
 #include "Dolphin/GX/GXPixel.h"
 
+// 70%: matrix setup is right; instruction scheduling of the first PSMTXCopy/scale block and const load forms differ
 // .text:0x000EE100 size:0x288 mapped:0x8072D194
-void fn_3_EE100(void) {
-    return;
+void fn_3_EE100(u8* obj, f32 (*mtx)[4]) {
+    Mtx b;
+    Mtx a;
+    Mtx c;
+    Mtx44 d;
+    GXColor col;
+    f32 f31;
+    f32 f9;
+    col.r = 0xFF;
+    col.g = 0xFF;
+    col.b = 0xFF;
+    col.a = 0xFF;
+    GXSetChanMatColor(GX_COLOR0A0, col);
+    GXSetNumChans(1);
+    f31 = lbl_3_bss_AF04[0];
+    PSMTXCopy((f32(*)[4])(obj + 0x18), a);
+    PSMTXCopy(mtx, b);
+    f9 = 1.0f + f31;
+    b[0][3] += ((f32*)lbl_3_data_1BA70)[0];
+    b[0][0] *= f9;
+    b[0][1] *= f9;
+    b[1][3] += ((f32*)lbl_3_data_1BA70)[1];
+    b[0][2] *= f9;
+    b[1][0] *= f9;
+    b[1][1] *= f9;
+    b[1][2] *= f9;
+    PSMTXConcat(b, a, a);
+    PSMTXIdentity(c);
+    PSMTX44Copy((f32(*)[4])fn_80052734(fn_8005268C()), d);
+    c[0][0] = d[0][0];
+    c[0][2] = d[0][2];
+    c[1][1] = d[1][1];
+    c[1][2] = d[1][2];
+    c[2][2] = d[3][2];
+    PSMTXConcat(c, a, a);
+    PSMTXIdentity(c);
+    c[0][0] = lbl_3_rodata_2D54;
+    c[0][2] = lbl_3_rodata_2D54;
+    c[1][1] = lbl_3_rodata_2D58;
+    c[1][2] = lbl_3_rodata_2D54;
+    c[2][2] = lbl_3_rodata_2D50;
+    c[2][3] = lbl_3_rodata_2D5C;
+    c[1][3] = lbl_3_rodata_2D5C;
+    c[0][3] = lbl_3_rodata_2D5C;
+    PSMTXConcat(c, a, a);
+    GXLoadTexMtxImm(a, 0x1E, GX_MTX3x4);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_POS, 0x1E, 0, 0x7D);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_RASA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
 }
 
 // .text:0x000EE388 size:0x2F4 mapped:0x8072D41C
@@ -144,9 +210,60 @@ void fn_3_EE67C(void) {
     return;
 }
 
+// 90%: mtx stores: orig does first via base+0x23c and the second via a separate pointer reg (r3+0x10); const load order/addi forms differ
 // .text:0x000EE96C size:0x228 mapped:0x8072DA00
-void fn_3_EE96C(void) {
-    return;
+void fn_3_EE96C(u8* pos) {
+    Mtx m;
+    Vec t;
+    u8* st = lbl_3_bss_AEE0;
+    Vec ref = *(Vec*)lbl_3_rodata_2D44;
+    f32* mp;
+    u8* cam;
+    f32 mag;
+    f32 clamp;
+    f32 dist;
+    f32 sc;
+    s32 s0;
+    s32 s1;
+    cam = fn_80052768_getCamera(fn_8005268C());
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(cam + 0x7C), &t);
+    mag = PSVECMag(&t);
+    if (mag != lbl_3_rodata_2D5C) {
+        PSVECNormalize(&t, &t);
+    } else {
+        t.y = lbl_3_rodata_2D5C;
+        t.x = lbl_3_rodata_2D5C;
+        t.z = lbl_3_rodata_2D50;
+    }
+    acos(PSVECDotProduct(&t, &ref));
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)pos, &t);
+    clamp = PSVECMag(&t);
+    dist = clamp;
+    if (clamp < lbl_3_rodata_2DA0) {
+        clamp = lbl_3_rodata_2DA0;
+    }
+    PSMTXCopy((f32(*)[4])(cam + 0x40), m);
+    sc = lbl_3_rodata_2DA4 / clamp;
+    ((struct { u8 pad[0x23C]; f32 m[2][3]; }*)st)->m[0][0] = sc;
+    ((struct { u8 pad[0x23C]; f32 m[2][3]; }*)st)->m[1][1] = sc * (f32)(lbl_3_rodata_2DA8 - __fabs(lbl_3_rodata_2D54 * (ref.y * m[1][1])));
+    if (dist < lbl_3_rodata_2DB0) {
+        s0 = 4;
+        s1 = 4;
+    } else if (dist < lbl_3_rodata_2DB4) {
+        s0 = 3;
+        s1 = 3;
+    } else {
+        s0 = 2;
+        s1 = 2;
+    }
+    *(u32*)(st + 0x14) = 0;
+    DCFlushRange(*(void**)(st + 0x238), 0x200);
+    GXSetIndTexMtx(GX_ITM_0, (f32(*)[3])(st + 0x23C), 2);
+    GXLoadTexObj((GXTexObj*)(st + 0x254), GX_TEXMAP7);
+    GXSetIndTexOrder(GX_IND_TEX_STAGE_0, GX_TEXCOORD0, GX_TEXMAP7);
+    GXSetNumIndStages(1);
+    GXSetIndTexCoordScale(GX_IND_TEX_STAGE_0, s0, s1);
+    GXSetTevIndWarp(GX_TEVSTAGE0, GX_IND_TEX_STAGE_0, 1, 0, GX_ITM_0);
 }
 
 // .text:0x000EEB94 size:0x160 mapped:0x8072DC28
@@ -270,7 +387,7 @@ void fn_3_F13F8(u8* p) {
 }
 #pragma dont_inline on
 
-// 99%: only scheduling of the stfs 0xB8 / li r6,0 / li r0,4 at the join differs (inlined fn_3_F13F8 matches)
+// 99%: only the position of stfs f2,0xB8 relative to the inlined fn_3_F13F8 zero-reg movs differs (one slot late)
 // .text:0x000EEFD4 size:0x244 mapped:0x8072E068
 void fn_3_EEFD4(s32 idx) {
     Vec d;
@@ -292,8 +409,11 @@ void fn_3_EEFD4(s32 idx) {
         if (d.z < lbl_3_rodata_2D5C) {
             ang = lbl_3_rodata_2DD0 - t;
         }
-        *(f32*)(e + 0xB8) = ang;
-        *(f32*)(e + 0xBC) = lbl_3_rodata_2D54;
+        {
+            f32 half = lbl_3_rodata_2D54;
+            *(f32*)(e + 0xB8) = ang;
+            *(f32*)(e + 0xBC) = half;
+        }
         e[0xC6] = 4;
         fn_3_F13F8(e);
         if (*(s16*)(g_Ball + 0x1B7A) != 2 && lbl_800E8754[4] != 0) {
@@ -402,9 +522,67 @@ void fn_3_EF408(u8* p) {
     p[0xC6] = 0;
 }
 
+// 60%: two box-edge loops; lfsx/addi index pattern and per-loop register numbering differ
 // .text:0x000EF55C size:0x258 mapped:0x8072E5F0
-void fn_3_EF55C(void) {
-    return;
+u32 fn_3_EF55C(Vec p, u8 idx) {
+    u8 a[4] = {1, 3, 0, 2};
+    u8 b[4] = {0, 1, 2, 3};
+    Vec v28;
+    Vec v1c;
+    Vec v10;
+    u8* t;
+    u32 i;
+    u8* q;
+    s8 sgn;
+    f32 z = lbl_3_rodata_2D5C;
+    if (p.y > z) {
+        return 1;
+    }
+    t = lbl_3_data_1B824 + idx * 32;
+    q = a;
+    for (i = 0, sgn = -1; i < 2; i++, q += 2, sgn += 2) {
+        u32 c0 = q[0] * 8;
+        u32 c1 = q[1] * 8;
+        f32 x0 = *(f32*)(t + c0);
+        f32 x1 = *(f32*)(t + c1);
+        f32 z0 = *(f32*)(t + (c0 + 4));
+        f32 z1 = *(f32*)(t + (c1 + 4));
+        v1c.y = z;
+        v28.x = p.x - x0;
+        v28.z = p.z - z0;
+        v1c.x = x1 - x0;
+        v1c.z = z1 - z0;
+        v28.y = z;
+        PSVECNormalize(&v28, &v28);
+        PSVECNormalize(&v1c, &v1c);
+        PSVECCrossProduct(&v1c, &v28, &v10);
+        if (v10.y * (f32)sgn < z) {
+            return 1;
+        }
+    }
+    z = z;
+    q = b;
+    for (i = 0, sgn = -1; i < 2; i++, q += 2, sgn += 2) {
+        u32 c0 = q[0] * 8;
+        u32 c1 = q[1] * 8;
+        f32 x0 = *(f32*)(t + c0);
+        f32 x1 = *(f32*)(t + c1);
+        f32 z0 = *(f32*)(t + (c0 + 4));
+        f32 z1 = *(f32*)(t + (c1 + 4));
+        v1c.y = z;
+        v28.x = p.x - x0;
+        v28.z = p.z - z0;
+        v1c.x = x1 - x0;
+        v1c.z = z1 - z0;
+        v28.y = z;
+        PSVECNormalize(&v28, &v28);
+        PSVECNormalize(&v1c, &v1c);
+        PSVECCrossProduct(&v1c, &v28, &v10);
+        if (v10.y * (f32)sgn < z) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // .text:0x000EF7B4 size:0x4C mapped:0x8072E848
