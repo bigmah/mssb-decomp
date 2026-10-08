@@ -7,4 +7,6 @@ void fn_80048BEC(s32* limits);
 
 void fn_80048C14(u32 value);
 
+void fn_80048C1C(void);
+
 #endif

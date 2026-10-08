@@ -14,3 +14,10 @@ void fn_80048BEC(s32* limits) {
 void fn_80048C14(u32 value) {
     lbl_803CBCE8 = value;
 }
+
+// fn_80048C1C, size:0xC
+void fn_80048C1C(void) {
+    if (lbl_803CBCE8 != 0) {
+        return;
+    }
+}
