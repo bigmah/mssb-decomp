@@ -4,6 +4,8 @@
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
 
+void fn_3_132EDC(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2);
+void fn_3_1330E4(void);
 void fn_3_133200(void);
 void fn_3_133320(void);
 void fn_3_13334C(void);
