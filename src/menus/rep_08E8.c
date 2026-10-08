@@ -1,5 +1,6 @@
 #include "menus/rep_08E8.h"
 
+extern u8* lbl_2_bss_1A8248[];
 
 // .text:0x4A064 size:0x4
 void fn_2_4A064(void) {
@@ -37,4 +38,10 @@ s32 fn_2_4A068(const u16* string) {
     const u16* end = string;
     while (*end != 0x4000) end++;
     return end - string;
+}
+
+s32 fn_2_46D00(void) {
+    u8* menu = lbl_2_bss_1A8248[0];
+    if (menu[0x441C] == 5 && menu[0x4422] >= 6) return 1;
+    return 0;
 }

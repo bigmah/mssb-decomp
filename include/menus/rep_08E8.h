@@ -15,4 +15,6 @@ u16* fn_2_4A094(u16* destination, const u16* source);
 
 s32 fn_2_4A068(const u16* string);
 
+s32 fn_2_46D00(void);
+
 #endif
