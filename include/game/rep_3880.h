@@ -52,7 +52,7 @@ void fn_3_14CD40(u8* a, u8* o);
 void fn_3_14CECC(void);
 void fn_3_14D2C0(u8* p);
 void fn_3_14D318(u8* a);
-void fn_3_14D44C(void);
+void fn_3_14D44C(u8* a, u32 kind);
 void fn_3_14D6D4(u8* p);
 void fn_3_14D710(s8 a);
 void fn_3_14DC80(s8 a);
