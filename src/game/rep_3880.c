@@ -17,6 +17,8 @@ extern f32 fn_3_119854(u8 i);
 extern u8 lbl_8036E548[];
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
+#include "Dolphin/mtx.h"
+#include "C3/control.h"
 
 
 extern u8 g_Minigame[];
@@ -29,6 +31,11 @@ extern void* fn_80033A24(void*, int, int, int, int, int);
 extern u8 lbl_3_data_26E24[];
 extern u8 lbl_3_data_26C3C[];
 extern u8 lbl_3_bss_B894[];
+extern f32 lbl_3_bss_B860[];
+extern f32 lbl_3_rodata_39A8;
+extern f32 lbl_3_rodata_392C;
+extern f32 lbl_3_rodata_3934;
+typedef struct { f32 x, y, z; } V3B;
 extern u8* lbl_3_bss_B850;
 extern void* memset(void*, int, unsigned long);
 #pragma dont_inline on
@@ -113,7 +120,26 @@ void fn_3_147DFC(void) {
 
 // .text:0x00147E20 size:0x174 mapped:0x80786EB4
 void fn_3_147E20(void) {
-    return;
+    GXSetZMode(1, 3, 1);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxDesc(0xD, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetVtxAttrFmt(0, 0xD, 1, 4, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(0);
+    GXSetTevColorIn(0, 0xF, 0xA, 8, 0xF);
+    GXSetTevAlphaIn(0, 7, 5, 4, 7);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    GXLoadPosMtxImm((void*)((u8*)fn_80052768_getCamera(0) + 0x40), 0);
+    GXSetCurrentMtx(0);
 }
 
 // .text:0x00147F94 size:0x14C mapped:0x80787028
@@ -137,14 +163,90 @@ void fn_3_147F94(void) {
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
 }
 
+// 96%: orig reads vertices 2-3 of the 2nd quad via lfsu (r4 = base+0xc); we fold to base-relative lfs; also li r3,1 scheduling
 // .text:0x001480E0 size:0x174 mapped:0x80787174
-void fn_3_1480E0(void) {
-    return;
+void fn_3_1480E0(u8* o) {
+    f32* v;
+    GXSetCullMode(2);
+    GXBegin(0x80, 0, 4);
+    v = (f32*)lbl_3_bss_B860;
+    GXWGFifo.f32 = v[0];
+    GXWGFifo.f32 = v[1];
+    GXWGFifo.f32 = v[2];
+    GXWGFifo.u32 = *(u32*)(o + 0x40);
+    GXWGFifo.f32 = v[3];
+    GXWGFifo.f32 = v[4];
+    GXWGFifo.f32 = v[5];
+    GXWGFifo.u32 = *(u32*)(o + 0x40);
+    GXWGFifo.f32 = v[6];
+    GXWGFifo.f32 = v[7];
+    GXWGFifo.f32 = v[8];
+    GXWGFifo.u32 = *(u32*)(o + 0x40);
+    GXWGFifo.f32 = v[9];
+    GXWGFifo.f32 = v[10];
+    GXWGFifo.f32 = v[11];
+    GXWGFifo.u32 = *(u32*)(o + 0x40);
+    GXSetCullMode(1);
+    GXBegin(0x80, 0, 4);
+    {
+    f32* p = v + 3;
+    GXWGFifo.f32 = v[0];
+    GXWGFifo.f32 = v[1];
+    GXWGFifo.f32 = v[2];
+    GXWGFifo.u32 = *(u32*)(o + 0x44);
+    GXWGFifo.f32 = v[3];
+    GXWGFifo.f32 = v[4];
+    GXWGFifo.f32 = v[5];
+    GXWGFifo.u32 = *(u32*)(o + 0x44);
+    GXWGFifo.f32 = p[3];
+    GXWGFifo.f32 = p[4];
+    GXWGFifo.f32 = p[5];
+    GXWGFifo.u32 = *(u32*)(o + 0x44);
+    GXWGFifo.f32 = p[6];
+    GXWGFifo.f32 = p[7];
+    GXWGFifo.f32 = p[8];
+    GXWGFifo.u32 = *(u32*)(o + 0x44);
+    }
 }
 
 // .text:0x00148254 size:0x180 mapped:0x807872E8
-void fn_3_148254(void) {
-    return;
+void fn_3_148254(u8* a, u8* b) {
+    Control c;
+    Mtx m;
+    Vec v;
+    f32 hx;
+    f32 hy;
+    u8* t;
+    f32 h = *(f32*)(b + 0x3C);
+    hx = *(f32*)(b + 0x38);
+    hx *= lbl_3_rodata_39A8;
+    hy = h * lbl_3_rodata_39A8;
+    t = ((u8**)(lbl_8036E548 + 0x2C50))[(s8)a[0x18]];
+    lbl_3_bss_B860[3] = hx;
+    lbl_3_bss_B860[0] = -hx;
+    lbl_3_bss_B860[1] = -hy;
+    lbl_3_bss_B860[4] = -hy;
+    lbl_3_bss_B860[6] = hx;
+    lbl_3_bss_B860[7] = hy;
+    lbl_3_bss_B860[9] = -hx;
+    lbl_3_bss_B860[10] = hy;
+    PSMTXInverse((void*)((u8*)fn_80052768_getCamera(0) + 0x40), m);
+    m[2][1] = lbl_3_rodata_3934;
+    m[1][2] = lbl_3_rodata_3934;
+    m[1][0] = lbl_3_rodata_3934;
+    m[0][1] = lbl_3_rodata_3934;
+    m[1][1] = lbl_3_rodata_392C;
+    v.x = *(f32*)(b + 4);
+    v.y = *(f32*)(b + 8);
+    v.z = *(f32*)(b + 0xC);
+    PSMTXMultVecSR(m, &v, &v);
+    c.type = 0;
+    CTRLSetRotation(&c, *(f32*)(b + 0x1C), *(f32*)(b + 0x20), *(f32*)(b + 0x24));
+    CTRLSetTranslation(&c, *(f32*)(t + 0x34) + v.x, -*(f32*)(t + 0x38) + v.y, *(f32*)(t + 0x3C) + v.z);
+    CTRLBuildMatrix(&c, m);
+    PSMTXConcat((void*)((u8*)fn_80052768_getCamera(0) + 0x40), m, m);
+    GXLoadPosMtxImm(m, 0);
+    GXSetCurrentMtx(0);
 }
 
 // .text:0x001483D4 size:0x48 mapped:0x80787468
@@ -1110,3 +1212,5 @@ void fn_3_157AC4(void) {
     return;
 }
 
+
+#pragma dont_inline off
