@@ -15,7 +15,7 @@ void fn_3_BC224(void);
 void fn_3_BC25C(void);
 s32 fn_3_BC274(u8* a, u8* b, u8* c);
 void fn_3_BC2DC(void);
-void fn_3_BC6D8(void);
+void fn_3_BC6D8(int a, int b, int idx, int c);
 void fn_3_BC850(int a, int i);
 void fn_3_BC888(void);
 void fn_3_BCA20(void);

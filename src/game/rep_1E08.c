@@ -141,8 +141,43 @@ void fn_3_BC2DC(void) {
 }
 
 // .text:0x000BC6D8 size:0x178 mapped:0x806FB76C
-void fn_3_BC6D8(void) {
-    return;
+extern s32 lbl_3_bss_9968;
+extern s32 g_UNK_StadiumDetails[];
+extern int rand(void);
+extern void fn_3_90064(int);
+extern void fn_80028628(int, int, void*, int, void*, void*, int);
+static u8 s_BF070a[8] = {0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0};
+static u8 s_BF070b[8][3] = {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x5C, 0x40, 0x16}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}};
+static V2f s_BF070c[0x36] = {{1.2f, 1.2f}, {1.2f, 1.2f}, {1.5f, 1.5f}, {0.6f, 0.6f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.4f, 1.4f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.5f, 1.5f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.4f, 1.4f}, {0.7f, 0.7f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}};
+static u8 s_BF070e[0x274] = {1};
+static u8 s_BF070f[0x5864] = {1};
+static s32 s_BC6D8_a[14] = {1};
+static s32 s_BC6D8_b[14] = {1};
+static u8 s_BC6D8_pad1[0xC] = {1};
+static u32 s_BC6D8_c[14] = {1};
+static s32 s_BC6D8_d[16] = {1};
+static u8 s_BC6D8_pad2[0x20] = {1};
+static s32 s_BC6D8_e[18] = {1};
+static s32 s_BC6D8_f[1] = {1};
+// 99%: only the null-test compare differs (original cmplwi, the switch form that gives the right beq/b shape emits cmpwi)
+void fn_3_BC6D8(int a, int b, int idx, int c) {
+    s32 old = s_BC6D8_e[3];
+    u32 p;
+    s_BC6D8_e[0] = g_UNK_StadiumDetails[1];
+    s_BC6D8_f[0] = g_UNK_StadiumDetails[1];
+    s_BC6D8_e[3] = (s32)((f32)old * ((f32)s_BC6D8_b[idx % 14] / lbl_3_rodata_1EC4));
+    p = s_BC6D8_c[idx];
+    switch (p) { case 0: p = (u32)&s_BC6D8_d[lbl_3_bss_9968 & 0xF]; break; }
+    fn_80028628(a, b, s_BC6D8_e, s_BC6D8_a[idx % 14], (void*)p, s_BC6D8_f, c);
+    lbl_3_bss_9968 += rand();
+    s_BC6D8_e[3] = old;
+    if (idx == 13) {
+        fn_3_90064(0x2D9);
+    } else if (idx >= 4 && idx <= 7) {
+        fn_3_90064(0x2D7);
+    } else {
+        fn_3_90064(0x2D8);
+    }
 }
 
 // .text:0x000BC850 size:0x38 mapped:0x806FB8E4
@@ -493,11 +528,6 @@ extern u8 lbl_3_data_111A8[];
 extern void fn_8003A85C(u8);
 extern void fn_8003A848(u8, u8, u8);
 extern void fn_8003A6B0(s32, void*, f32, f32);
-static u8 s_BF070a[8] = {0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0};
-static u8 s_BF070b[8][3] = {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x5C, 0x40, 0x16}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}};
-static V2f s_BF070c[0x36] = {{1.2f, 1.2f}, {1.2f, 1.2f}, {1.5f, 1.5f}, {0.6f, 0.6f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.4f, 1.4f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.5f, 1.5f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.4f, 1.4f}, {0.7f, 0.7f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}};
-static u8 s_BF070e[0x274] = {1};
-static u8 s_BF070f[0x10] = {1};
 void fn_3_BF070(void) {
     u8* w;
     s32 i;
