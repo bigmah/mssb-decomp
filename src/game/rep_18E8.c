@@ -802,7 +802,6 @@ void fn_3_A6D48(void) {
 }
 
 // .text:0x000A6E98 size:0x1A8 mapped:0x806E5F2C
-// 99%: only `lfsx f1,r5,r0` (indexed load of runner x) differs; ours is lfs 0(r4). Param s16 a keeps r3 live (stale arg to fn_3_52F4C) -> matches reg numbering.
 void fn_3_A6E98(s16 a) {
     u8* p;
     u8* fl;
@@ -827,8 +826,8 @@ void fn_3_A6E98(s16 a) {
     fl = g_FieldingLogic;
     st = fl[0x111];
     if (st == 2 && fl[0x112] == 1) {
-        r = (u8*)g_Runners + *(s16*)(fl + 0xE8) * 0x154;
-        fn_3_52F4C(a, *(f32*)r, *(f32*)(r + 8));
+        s16 k = *(s16*)(fl + 0xE8);
+        fn_3_52F4C(a, *(f32*)((u8*)g_Runners + k * 0x154), *(f32*)((u8*)&g_Runners[k] + 8));
         if (*(s16*)(g_FieldingLogic + 0xCC) == 9) {
             *(s16*)(g_FieldingLogic + 0xDE) = *(s16*)(fl + 0xE8);
         }
