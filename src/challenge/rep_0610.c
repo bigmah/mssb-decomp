@@ -74,3 +74,9 @@ s32 fn_1_D6E4(void) {
         return 0;
     }
 }
+
+// fn_1_160D8, size:0x20
+s32 fn_1_160D8(s8 a, s8 b) {
+    if (a == b) return 0xFF0F;
+    return 0xFFFF;
+}
