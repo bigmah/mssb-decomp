@@ -153,4 +153,6 @@ s32 fn_2_68A88(s32 index, s32 location);
 
 void fn_2_6ABFC(s32 index, s32 location);
 
+s32 fn_2_687A4(s32 index, s32 targetIndex, s32 location);
+
 #endif

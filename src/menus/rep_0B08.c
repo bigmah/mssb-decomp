@@ -77,6 +77,22 @@ extern f32 lbl_2_data_3EF4[];
 extern f32 lbl_2_data_3F5C;
 extern const Vec lbl_2_data_3150[];
 
+// fn_2_687A4, size:0x100
+s32 fn_2_687A4(s32 index, s32 targetIndex, s32 location) {
+    Vec position;
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    MenuEntry* target = &lbl_2_bss_1A8248[0]->entries[targetIndex];
+    f32 bearing = (f32)atan2(-(target->position.x - entry->position.x),
+        -(target->position.z - entry->position.z));
+
+    memcpy(&position, &lbl_2_data_2EA4[location], sizeof(Vec));
+    bearing -= (f32)atan2(-(position.x - entry->position.x), -(position.z - entry->position.z));
+    if (bearing < lbl_2_rodata_B5C && bearing > lbl_2_rodata_B60) {
+        return 1;
+    }
+    return 0;
+}
+
 // fn_2_68A88, size:0xCC
 s32 fn_2_68A88(s32 index, s32 location) {
     Vec scaled;
