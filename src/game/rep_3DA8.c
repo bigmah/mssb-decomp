@@ -19,12 +19,12 @@ void fn_3_16230C(void) {
 
 // .text:0x001637EC size:0x15C
 void fn_3_1637EC(void) {
-    s16 ids[9];
     s32 i;
-    s32 k;
-    u8 a;
+    s16 ids[9];
     u8 b;
-    u8 m;
+    u8 a;
+    s32 m;
+    s32 j;
     ChallengeTrackingStruct* e;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
     a = *((u8*)starMissionCompletionTracker + 0x441C);
@@ -32,11 +32,10 @@ void fn_3_1637EC(void) {
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
-    { s32 t6 = b * 6; k = t6 + a; }
-    for (i = 0; i < 9; i++) {
-        if (ids[i] != -1) {
-            e = &t[ids[i]];
-            m = *((u8*)e->scoutFlagPointer + 4 + k);
+    for (j = 0; j < 9; j++) {
+        if (ids[j] != -1) {
+            e = &t[ids[j]];
+            m = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
             if ((s8)m != 0 && (s8)e->scoutFlagsAchieved < (s8)m) {
                 e->scoutFlagsAchieved = m;
             }
