@@ -21,6 +21,9 @@ extern u8 lbl_3_data_F3F0[];
 extern u8 lbl_3_data_E120[];
 
 extern void fn_80034E20(void*, void*);
+extern void fn_800363D8(void*, s32, s32, s32, u8);
+typedef struct { u8 p[0x24]; s16 v; u8 q[0x7A]; } RT;
+typedef struct { u8* a; u8* b; } TB;
 extern void playSoundEffect(s32);
 extern u8 lbl_3_data_C1EC[];
 
@@ -110,7 +113,19 @@ void fn_3_91CCC(void) {
 
 // .text:0x00091D1C size:0x130 mapped:0x806D0DB0
 void fn_3_91D1C(void) {
-    return;
+    u8* o;
+    s32 i;
+    fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_F224);
+    *(u16*)(((u8**)(lbl_80371C30 + 0x18))[*(u16*)(o + 0x14) * 2] + 0x64) = ((u16*)lbl_3_data_F344)[g_d_GameSettings.StadiumID];
+    for (i = 0; i < 3; i++) {
+        s32 k = *(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0x10) * 4 + 0xDC) - (-i);
+        s32 m;
+        if (k > 9) k -= 9;
+        m = *(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0x10) * 0x50 + k * 8 + 0x3C);
+        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) - (-5) - (-i)) * 2] + 0x5C) = ((RT*)(inMemRoster + *(s32*)(g_GameLogic + 0x8) * 0x5A0))[m].v << 16;
+    }
+    fn_800363D8(o, 1, 4, 7, g_d_GameSettings.StadiumID);
+    *(void**)lbl_803CC1B8[0] = fn_3_91CCC;
 }
 
 // .text:0x00091E4C size:0x178 mapped:0x806D0EE0
