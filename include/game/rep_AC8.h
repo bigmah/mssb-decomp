@@ -7,7 +7,7 @@ void fn_3_251E4(void);
 void fn_3_253A4(void);
 void fn_3_25648(void);
 void fn_3_25844(int, int);
-void fn_3_258D8(void);
+int fn_3_258D8(int);
 void fn_3_25A68(void);
 void fn_3_25C40(void);
 void fn_3_261E8(void);
