@@ -1,5 +1,9 @@
 #include "menus/rep_08E8.h"
 
+extern u8 lbl_803CBBC0[];
+extern u8 lbl_2_data_13228[];
+extern void fn_800A7D4C(s32, void*, u8);
+
 extern const f32 lbl_2_rodata_9B0;
 
 #include "static/UnknownHomes_Static.h"
@@ -117,4 +121,10 @@ void fn_2_46D34(s32 delta) {
     if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) < 0) {
         *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 0;
     }
+}
+
+// fn_2_489DC, size:0x40
+void fn_2_489DC(void) {
+    s32 index = lbl_803CBBC0[0];
+    fn_800A7D4C(0xC, lbl_2_data_13228 + index * 8, index);
 }

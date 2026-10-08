@@ -33,4 +33,6 @@ f32 fn_2_4A18C(f32 angle);
 
 void fn_2_46D34(s32 delta);
 
+void fn_2_489DC(void);
+
 #endif
