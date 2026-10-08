@@ -17,4 +17,6 @@ s16 fn_2_24E9C(void);
 
 s16 fn_2_201E4(s16 row, s16 column);
 
+void fn_2_20218(void);
+
 #endif

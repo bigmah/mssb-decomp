@@ -1,5 +1,6 @@
 #include "menus/rep_0788.h"
 
+extern u8* lbl_2_bss_1A824C[];
 extern s16 lbl_2_data_3D30[][4];
 extern u8* lbl_803CC1B8[];
 
@@ -30,4 +31,11 @@ s16 fn_2_24E9C(void) {
 s16 fn_2_201E4(s16 row, s16 column) {
     if (column < 0) return -1;
     return lbl_2_data_3D30[row][column];
+}
+
+void fn_2_20218(void) {
+    lbl_2_bss_1A824C[0][0x19782B] = 0;
+    lbl_2_bss_1A824C[0][0x19782C] = 0;
+    lbl_2_bss_1A824C[0][0x19782A] = 0;
+    lbl_2_bss_1A824C[0][0x197832] = 0;
 }
