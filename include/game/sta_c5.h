@@ -39,7 +39,7 @@ void fn_3_F193C(void);
 void fn_3_F1E2C(void);
 void fn_3_F22FC(u8* p, s32 idx);
 void fn_3_F2448(void);
-void fn_3_F2724(void);
+void fn_3_F2724(u8* p, u8* q);
 void fn_3_F2938(void);
 void fn_3_F2FFC(void);
 void fn_3_F31E0(void);

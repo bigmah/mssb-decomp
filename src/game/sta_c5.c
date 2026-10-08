@@ -593,9 +593,52 @@ void fn_3_F2448(void) {
 }
 
 // .text:0x000F2724 size:0x214 mapped:0x807317B8
-void fn_3_F2724(void) {
-    return;
+extern f64 __fabs(f64);
+extern const f64 lbl_3_rodata_2E58;
+extern const f64 lbl_3_rodata_2E60;
+void fn_3_F2724(u8* p, u8* q) {
+    Vec d;
+    f32 c;
+    f32 s;
+    f32 s2;
+    f32 c2;
+    f32 az;
+    f32 ax;
+    f64 ta;
+    f64 tb;
+    sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    PSVECSubtract((Vec*)(q + 0xA0), (Vec*)(p + 0xA0), &d);
+    d.y = lbl_3_rodata_2D5C;
+    c = (f32)cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    s = (f32)sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    s2 = (f32)sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    c2 = (f32)cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    ta = __fabs(d.x * c + d.z * s);
+    tb = __fabs(d.x * -s2 + d.z * c2);
+    ax = ta;
+    az = tb;
+    if (ax <= lbl_3_rodata_2E58 && az <= lbl_3_rodata_2E60) {
+        u32 stad;
+        u8 v;
+        u32 h;
+        q[0xC6] = 5;
+        stad = g_d_GameSettings[9];
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8[0x16];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 0x16];
+        }
+        h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 0xB), v, 0x3F, 0);
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8[0x17];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 0x17];
+        }
+        sndFXCtrl(h, 0x5B, v);
+    }
 }
+
 
 // .text:0x000F2938 size:0x6C4 mapped:0x807319CC
 void fn_3_F2938(void) {
