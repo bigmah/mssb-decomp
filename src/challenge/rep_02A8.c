@@ -25,3 +25,10 @@ s32 fn_1_A880(void) {
     fn_80021518(0x1C, lbl_800EF808[0x2]);
     return 0;
 }
+
+// fn_1_A838, size:0x48
+s32 fn_1_A838(void) {
+    fn_80021518(0x1C, lbl_800EF808[4]);
+    fn_80021518(0x36, lbl_800EF808[4]);
+    return 0;
+}
