@@ -65,6 +65,10 @@ extern f64 sin(f64);
 extern f32 lbl_3_bss_B860[];
 extern const f32 lbl_3_rodata_39A8;
 extern f32 lbl_3_rodata_392C;
+extern f32 lbl_3_rodata_3A00;
+extern void* memcpy(void*, const void*, unsigned long);
+extern void fn_3_11F4B4(s32 idx, s32 flag);
+extern u8 lbl_3_data_26C1C[];
 extern const f32 lbl_3_rodata_3934[];
 typedef struct { f32 x, y, z; } V3B;
 extern u8* lbl_3_bss_B850;
@@ -1343,13 +1347,42 @@ void fn_3_151798(void) {
 }
 
 // .text:0x001517D0 size:0x228 mapped:0x80790864
-void fn_3_1517D0(void) {
+void fn_3_1517D0(u8* a, u8* o) {
     return;
 }
 
 // .text:0x001519F8 size:0x1B4 mapped:0x80790A8C
-void fn_3_1519F8(void) {
-    return;
+void fn_3_1519F8(u8* a, u8* o) {
+    Vec v;
+    Vec dir;
+    Vec ref;
+    f32 mag;
+    u8* tbl;
+    fn_3_1517D0(o, a);
+    if (lbl_80366158[0x28] != 0) {
+        return;
+    }
+    PSVECAdd((Vec*)(o + 4), (Vec*)(o + 0x10), (Vec*)(o + 4));
+    memcpy(&v, o + 4, 0xC);
+    tbl = lbl_3_data_26C1C + 4;
+    v.x = *(f32*)(lbl_3_data_26C1C + o[0x44] * 8) - v.x;
+    v.y = *(f32*)(tbl + o[0x44] * 8) - v.y;
+    v.z = lbl_3_rodata_3934[0];
+    PSVECNormalize(&v, &dir);
+    mag = PSVECMag(&v);
+    PSVECScale(&dir, lbl_3_rodata_3A00 * (lbl_3_rodata_392C / (mag * mag)), &v);
+    PSVECAdd((Vec*)(o + 0x10), &v, (Vec*)(o + 0x10));
+    ref.x = *(f32*)(lbl_3_data_26C1C + o[0x44] * 8);
+    ref.y = *(f32*)(tbl + o[0x44] * 8);
+    ref.z = lbl_3_rodata_3934[0];
+    PSVECNormalize(&ref, &ref);
+    if (PSVECDotProduct(&dir, &ref) < lbl_3_rodata_3934[0] || mag == lbl_3_rodata_3934[0]) {
+        *(s16*)(o + 0x4A) = 0;
+    }
+    if (*(s16*)(o + 0x4A) == 0 && o[0x45] != 0) {
+        fn_3_11F4B4(o[0x44], o[0x4D] == 1);
+        o[0x45] = 0;
+    }
 }
 
 // .text:0x00151BAC size:0x1C0 mapped:0x80790C40
