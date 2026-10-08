@@ -413,8 +413,53 @@ void fn_3_C3A38(u8* obj) {
 }
 
 // .text:0x000C3C2C size:0x268 mapped:0x80702CC0
+typedef struct {
+    u8 pad0[0x67];
+    u8 f67;
+    Vec pos[8];
+    u8 state[8];
+    u8* fD0;
+} C3C2CBss;
+extern C3C2CBss lbl_3_bss_9D80;
+#define C3C2C_SLOT(o, i) (((u8**)lbl_80371C30)[(*(u16*)((o) + 0x14) + (i)) * 2])
 void fn_3_C3C2C(void) {
-    return;
+    C3C2CBss* g = &lbl_3_bss_9D80;
+    u8* st = g->state;
+    Vec* pv = g->pos;
+    u8* e = lbl_803CC1B8;
+    s32 i;
+    for (i = 0; i < 8; i++, st++, pv++) {
+        switch (*st) {
+        case 1: {
+            s16 y1, x1;
+            fn_800528C0(pv->x, pv->y, pv->z, &x1, &y1);
+            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x48) = x1;
+            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x4C) = y1;
+            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x50) = 0.0f;
+            *(u32*)(C3C2C_SLOT(e, i) + 0x5C) = 0;
+            *(u32*)(C3C2C_SLOT(e, i) + 0x54) |= 2;
+            *st = 2;
+            break;
+        }
+        case 2: {
+            s16 y2, x2;
+            fn_800528C0(pv->x, pv->y, pv->z, &x2, &y2);
+            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x48) = x2;
+            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x4C) = y2;
+            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x50) = 0.0f;
+            if ((C3C2C_SLOT(e, i)[0x69] == 2) ? 1 : 0) {
+                *(u32*)(C3C2C_SLOT(e, i) + 0x54) &= ~2;
+                *st = 0;
+            }
+            break;
+        }
+        }
+    }
+    if (g->f67 != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        fn_80034CEC(g->fD0);
+        g->f67 = 0;
+    }
 }
 
 // .text:0x000C3E94 size:0xDC mapped:0x80702F28
