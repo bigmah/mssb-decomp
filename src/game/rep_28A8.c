@@ -409,7 +409,7 @@ void fn_3_DCED0(void) {
     }
     lbl_803CBC3C = 1;
     if (*p > 0x3C) {
-        fn_3_AFD80(1, 0);
+        ((void (*)(s32))fn_3_AFD80)(1);
         fn_3_5A6D4(0xB);
         return;
     }
@@ -745,4 +745,3 @@ void fn_3_DE610(void) {
 void fn_3_DE744(void) {
     return;
 }
-
