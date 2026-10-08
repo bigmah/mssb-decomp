@@ -95,4 +95,6 @@ void fn_2_6BFC0(u8* object);
 
 void fn_2_6C2E8(u8* object);
 
+void fn_2_6BA50(u8* object);
+
 #endif

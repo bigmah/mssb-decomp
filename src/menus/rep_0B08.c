@@ -1,8 +1,11 @@
 #include "menus/rep_0B08.h"
 
+#include "static/UnknownHomes_Static.h"
+extern u8 lbl_800F7478[];
+
 extern void fn_2_69E1C(s32 index);
 
-extern f32 PSVECDistance(const void* a, const void* b);
+
 extern f64 __fabs(f64 value);
 extern const f32 lbl_2_rodata_BA8;
 
@@ -269,7 +272,7 @@ void fn_2_6BAAC(u8* object) {
 
 // fn_2_6F72C, size:0x60
 void fn_2_6F72C(u8* object) {
-    f32 distance = (f32)__fabs(PSVECDistance((u8*)lbl_2_bss_1A8248[0] + 0x1610, object));
+    f32 distance = (f32)__fabs(PSVECDistance((Vec*)((u8*)lbl_2_bss_1A8248[0] + 0x1610), (Vec*)object));
     if (distance > lbl_2_rodata_BA8) {
         *(s16*)(object + 0x94) = 1;
     }
@@ -277,7 +280,7 @@ void fn_2_6F72C(u8* object) {
 
 // fn_2_6BFC0, size:0x60
 void fn_2_6BFC0(u8* object) {
-    f32 distance = (f32)__fabs(PSVECDistance((u8*)lbl_2_bss_1A8248[0] + 0x1610, object));
+    f32 distance = (f32)__fabs(PSVECDistance((Vec*)((u8*)lbl_2_bss_1A8248[0] + 0x1610), (Vec*)object));
     if (distance > lbl_2_rodata_BA8) {
         *(s16*)(object + 0x94) = 1;
     }
@@ -291,4 +294,12 @@ void fn_2_6C2E8(u8* object) {
         object[0xC4] = 1;
         *(s16*)(object + 0x94) = 3;
     }
+}
+
+// fn_2_6BA50, size:0x5C
+void fn_2_6BA50(u8* object) {
+    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    color.a = 0xFF;
+    fn_800BD2CC(0, color);
+    *(s16*)(object + 0x94) = 2;
 }
