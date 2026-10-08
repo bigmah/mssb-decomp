@@ -17,6 +17,21 @@ extern void fn_80037B18(void*, Vec*, f32);
 extern u8 lbl_1_data_10674[];
 extern void fn_1_1DA54(void);
 
+extern u8 lbl_1_bss_6D48[];
+extern const f32 lbl_1_rodata_77E4[];
+extern void fn_1_272DC(void*, s32);
+extern void fn_1_AF4(s32, s32, f32);
+extern void fn_1_1E5D0(void*);
+
+// .text:0x1EFF4 size:0x68
+void fn_1_1EFF4(void) {
+    fn_1_272DC(lbl_1_bss_6D48, 0);
+    fn_1_AF4(20, 20, lbl_1_rodata_77E4[0]);
+    if (*(u32*)(lbl_803CC1B8[0] + 0x2C) & 2) {
+        fn_1_1E5D0(lbl_1_bss_6BF4);
+    }
+}
+
 // .text:0x1DCE4 size:0x64
 void fn_1_1DCE4(void) {
     u8* queue = lbl_803CC1B8[0];
