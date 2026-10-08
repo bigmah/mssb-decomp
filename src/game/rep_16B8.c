@@ -36,6 +36,10 @@ extern u8 g_Scores[];
 extern u8 lbl_3_data_EC1C[];
 extern u8 lbl_3_data_F430[];
 extern u8 lbl_3_data_F224[];
+extern u8 lbl_3_data_8D88[];
+extern u8 lbl_3_data_BFEC[];
+extern u8 g_Minigame[];
+extern u8 g_Runners[];
 extern u8 lbl_3_data_F344[];
 extern u8 lbl_3_data_E75C[];
 extern u8 inMemRoster[];
@@ -412,7 +416,46 @@ void fn_3_959BC(void) {
 
 // .text:0x0009669C size:0x278 mapped:0x806D5730
 void fn_3_9669C(void) {
-    return;
+    u8* o = lbl_803CC1B8[0];
+    s32 k;
+    u8* r;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        fn_80034E20(o, lbl_3_data_8D88);
+        for (k = 1; k < 4; k++) {
+            if (g_Minigame[0x1914 + k] != 0) {
+                u8* e = ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) - (-1) - (-k)) * 2];
+                *(u32*)(e + 0x54) |= 2;
+                ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) - (-1) - (-k)) * 2][0x68] = 0;
+                *(u16*)(o + 0x1C + k * 2) = k;
+            } else {
+                *(u16*)(o + 0x1C + k * 2) = 9;
+            }
+            *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) - (-1) - (-k)) * 2] + 0x5C) = (k - 1) << 16;
+        }
+        if (g_Minigame[0x19A2] != 0) {
+            u8* e = lbl_80371C30;
+            e += *(u16*)(o + 0x14) * 8;
+            e = *(u8**)(e + 0x28);
+            *(u32*)(e + 0x54) |= 2;
+        }
+    } else {
+        fn_80034E20(o, lbl_3_data_BFEC);
+        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 9) * 2] + 0x5C) = 0;
+        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 0xA) * 2] + 0x5C) = 0x10000;
+        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 0xB) * 2] + 0x5C) = 0x20000;
+        r = g_Runners;
+        for (k = 0; k < 4; k++, r += 0x154) {
+            s16 v = *(s16*)(r + 0xE2);
+            if (v >= 0) {
+                *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 5 + k) * 2] + 0x5C) = v << 16;
+            }
+        }
+    }
+    lbl_3_common_bss_32724[0xC7] = 1;
+    *(u16*)(o + 0x18) = 0;
+    *(u16*)(o + 0x1A) = 0;
+    *(u16*)(o + 0x1C) = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_959BC;
 }
 
 // .text:0x00096914 size:0x78 mapped:0x806D59A8
