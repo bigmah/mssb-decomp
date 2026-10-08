@@ -12,6 +12,9 @@ extern char lbl_3_rodata_2878[];
 extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
+extern f32 lbl_3_rodata_280C[];
+extern f64 lbl_3_rodata_2668;
+extern void fn_8004C094(void*);
 extern Vec lbl_3_rodata_2580;
 extern Vec lbl_3_rodata_258C;
 extern f32 lbl_3_rodata_265C;
@@ -1070,8 +1073,38 @@ void fn_3_D30D0(void) {
 }
 
 // .text:0x000D36B0 size:0x1D0 mapped:0x80712744
-void fn_3_D36B0(void) {
-    return;
+// partial: code shape right; only fp reg numbering/scheduling differs in the first a4/b0 update block (zero const loaded after fadds in orig)
+void fn_3_D36B0(u8* p) {
+    u8* c;
+    Mtx m;
+    Vec v;
+    Vec dir;
+    Vec axis;
+    f32 d = lbl_3_rodata_280C[0];
+    *(f32*)(p + 0xA4) = *(f32*)(p + 0xA4) + *(f32*)(p + 0xB0);
+    *(f32*)(p + 0xB0) = *(f32*)(p + 0xB0) - d;
+    if (*(f32*)(p + 0xA4) < lbl_3_rodata_2664) {
+        *(f32*)(p + 0xA4) = lbl_3_rodata_2664;
+        if (!(p[0x99] & 4)) {
+            p[0xCB] = p[0xCA];
+            p[0xCA] = 1;
+            fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        }
+        p[0x99] = p[0x99] & 0xFB;
+        fn_8004C094(p + 0xA0);
+    }
+    c = *(u8**)(p + 0xC4);
+    axis = lbl_3_rodata_25B0;
+    dir = lbl_3_rodata_25BC;
+    PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSMTXMultVec(m, lbl_3_rodata_24E8, &v);
+    PSVECAdd(&v, (Vec*)(p + 0xA0), &v);
+    v.y += lbl_3_rodata_2668;
+    *(Vec*)(c + 0x1CC) = v;
+    *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
+    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 8, &dir, p);
+    CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
 }
 
 // .text:0x000D3880 size:0x45C mapped:0x80712914

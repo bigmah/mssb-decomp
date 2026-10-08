@@ -71,7 +71,7 @@ u8* fn_3_D2684(u8* p);
 void fn_3_D278C(void);
 void fn_3_D2A0C(void);
 void fn_3_D30D0(void);
-void fn_3_D36B0(void);
+void fn_3_D36B0(u8* p);
 void fn_3_D3880(void);
 void fn_3_D3CDC(void);
 void fn_3_D3F54(void);
