@@ -1,6 +1,7 @@
 #include "challenge/rep_7730.h"
 
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/gx.h"
 extern void fn_1_20BD8(void);
 
 extern void fn_1_246AC(void);
@@ -34,6 +35,20 @@ extern const f32 lbl_1_rodata_7860;
 extern const f32 lbl_1_rodata_7864;
 extern const f32 lbl_1_rodata_7868;
 extern const f32 lbl_1_rodata_780C;
+
+// fn_1_207D4, size:0xBC
+void fn_1_207D4(void) {
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, 8);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+}
 
 // fn_1_1F23C, size:0x9C
 void fn_1_1F23C(ChallengeProjectionState* state) {

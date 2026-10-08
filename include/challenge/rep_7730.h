@@ -62,4 +62,6 @@ void fn_1_23AD8(Mtx44 projection, Vec* camera, Vec* target);
 
 void fn_1_1F23C(ChallengeProjectionState* state);
 
+void fn_1_207D4(void);
+
 #endif
