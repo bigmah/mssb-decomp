@@ -145,7 +145,38 @@ f32 fn_3_13DDE0(f32 a, f32 b, u8 mode) {
         return (4.0f + a) - b;
     }
     return a - b;
-}// .text:0x0013DFBC size:0x1B8 mapped:0x8077D050
+}
+
+// .text:0x0013DEA4 size:0x118 mapped:0x8077CF38
+void fn_3_13DEA4(void) {
+    u8* p;
+    u32 k;
+    u8* e;
+    s16* t;
+    s8 i;
+    e = g_Minigame + 0x1DCC;
+    memset(g_Minigame + 0x1D7C, 0, 0x78);
+    i = 0;
+    do {
+        p = e + i * 8;
+        k = g_Minigame[0x18DC + i];
+        t = (s16*)(lbl_3_data_2194C + k * 4);
+        *(s16*)p = RandomInt_Game_Range(t[0], t[1]);
+        if (RandomInt_Game(100) < *(s8*)(lbl_3_data_2197C + k)) {
+            if (*(s8*)(lbl_3_data_21980 + k) < 8) {
+                p[6] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21980 + k), 8);
+            } else {
+                p[6] = 8;
+            }
+        } else {
+            p[6] = 0x7F;
+        }
+        p[5] = 2;
+        p[7] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21944 + k * 2), *(s8*)(lbl_3_data_21944 + k * 2 + 1));
+        i++;
+    } while (i < 4);
+}
+// .text:0x0013DFBC size:0x1B8 mapped:0x8077D050
 void fn_3_13DFBC(void) {
     return;
 }
