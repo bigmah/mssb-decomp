@@ -15,7 +15,7 @@ void fn_3_EEFA4(void);
 void fn_3_EEFD0(void);
 void fn_3_EEFD4(void);
 void fn_3_EF218(void);
-void fn_3_EF21C(void);
+void fn_3_EF21C(u8* p);
 void fn_3_EF3D4(u8* p, u8 idx);
 void fn_3_EF408(u8* p);
 void fn_3_EF55C(void);
