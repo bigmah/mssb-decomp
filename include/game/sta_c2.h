@@ -76,7 +76,7 @@ void fn_3_D3880(void);
 void fn_3_D3CDC(void);
 void fn_3_D3F54(void);
 void fn_3_D4780(void);
-void fn_3_D4CA4(void);
+void fn_3_D4CA4(u8* p);
 void fn_3_D4E00(void);
 void fn_3_D501C(f32* p);
 void fn_3_D511C(void);
