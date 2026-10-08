@@ -85,7 +85,7 @@ s32 fn_3_D5444(u32* a, u32* b);
 s32 fn_3_D5470(f32* a, f32* b);
 void fn_3_D5494(void);
 void fn_3_D55EC(void);
-void fn_3_D5B6C(void);
+void fn_3_D5B6C(s32* a);
 void fn_3_D5C8C(void);
 void fn_3_D5E80(void);
 void fn_3_D60C0(void);

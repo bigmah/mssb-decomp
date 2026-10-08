@@ -1124,8 +1124,28 @@ void fn_3_D55EC(void) {
 }
 
 // .text:0x000D5B6C size:0x120 mapped:0x80714C00
-void fn_3_D5B6C(void) {
-    return;
+typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } D5B6CCtl;
+typedef struct { D5B6CCtl* arr; u8 pad0[0x3C - 4]; u32* p3C; u16* p40; u32* p44; u8* p48; } D5B6CBss;
+typedef struct { u32 w[17]; } D5B6CCpy;
+extern u8 lbl_3_bss_A020;
+extern void fn_3_B8414(void*, void*);
+extern void fn_3_B8464(void*, void*);
+void fn_3_D5B6C(s32* a) {
+    D5B6CBss* g = (D5B6CBss*)lbl_3_common_bss_350E4;
+    D5B6CCpy sp34;
+    Mtx sp8;
+    D5B6CCtl* c;
+    u16 v;
+    v = g->p40[*a - 1] + g->p3C[*a - 1];
+    g->p40[*a] = v;
+    g->p44[v] = lbl_3_bss_A020;
+    g->p3C[*a] += 1;
+    c = &g->arr[lbl_3_bss_A020];
+    sp34 = *(D5B6CCpy*)c;
+    CTRLBuildMatrix((Control*)&sp34, sp8);
+    fn_3_B8464(sp8, (void*)c->f78);
+    fn_3_B8414(((D5B6CBss*)lbl_3_common_bss_350E4)->p48 + *a * 0x18, ((D5B6CBss*)lbl_3_common_bss_350E4)->p48 + (*a * 2 + 1) * 0xC);
+    *a += 1;
 }
 
 // .text:0x000D5C8C size:0x1F4 mapped:0x80714D20
