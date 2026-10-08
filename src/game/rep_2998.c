@@ -298,6 +298,21 @@ void fn_3_E4760(u8* a) {
     a[0xC9] = 0;
 }
 
+// .text:0x000E48D0 size:0x168
+void fn_3_E48D0(u8* a) {
+    fn_3_E4658(a);
+    fn_3_E4554(a);
+    a[0xC5] = 0;
+    a[0xC4] = 0;
+    a[0xC7] = 0;
+    a[0xC8] = 0;
+    if (a[0xCA] != 0) {
+        fn_3_65F4();
+        a[0xCA] = 0;
+        *(f32*)(a + 0xC0) = 0.0f;
+    }
+}
+
 // .text:0x000E4A38 size:0x1B0 mapped:0x80723ACC
 void fn_3_E4A38(void) {
     return;

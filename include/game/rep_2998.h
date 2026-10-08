@@ -26,7 +26,7 @@ void fn_3_E45A8(u8* a);
 void fn_3_E45F0(u8* a);
 void fn_3_E4658(u8* a);
 void fn_3_E4760(u8* a);
-void fn_3_E48D0(void);
+void fn_3_E48D0(u8* a);
 void fn_3_E4A38(void);
 u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]);
 void fn_3_E4CB0(s32* a, s32* b);
