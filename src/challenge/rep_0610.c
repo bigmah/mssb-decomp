@@ -46,3 +46,7 @@ u8 fn_1_D638(void) {
     lbl_1_bss_3214[0] = 0;
     return flag;
 }
+
+s32 fn_1_D660(void) {
+    return lbl_1_bss_3215[0] != 0;
+}

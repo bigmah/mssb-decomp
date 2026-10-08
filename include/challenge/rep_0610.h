@@ -21,4 +21,6 @@ void fn_1_176EC(u8* object);
 
 u8 fn_1_D638(void);
 
+s32 fn_1_D660(void);
+
 #endif
