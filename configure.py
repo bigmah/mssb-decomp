@@ -654,6 +654,7 @@ config.libs = [
         "host": False,
         "objects": [
             Object(NonMatching, "auto_03_8004ABD8_text", source="Unknown/auto_03_8004ABD8_text.c"),
+            Object(NonMatching, "auto_03_8004157C_text", source="Unknown/auto_03_8004157C_text.c"),
             Object(NonMatching, "auto_03_8003AE54_text", source="Unknown/auto_03_8003AE54_text.c"),
             Object(NonMatching, "auto_03_8003A538_text", source="Unknown/auto_03_8003A538_text.c"),
             Object(NonMatching, "auto_03_80039AA8_text", source="Unknown/auto_03_80039AA8_text.c"),
