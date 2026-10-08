@@ -7,4 +7,6 @@ void fn_2_4A064(void);
 
 void fn_2_474F8(void);
 
+s16 fn_2_4A150(s16 angle);
+
 #endif
