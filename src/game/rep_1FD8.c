@@ -749,9 +749,43 @@ u32 fn_3_C4724(void* hv) {
     return 0;
 }
 
+// 99%: only the x/y load order of the src->pos copy (we load y before x)
 // .text:0x000C48D0 size:0x2B0 mapped:0x80703964
-void fn_3_C48D0(void) {
-    return;
+void fn_3_C48D0(void* hv, Vec* src) {
+    C4724Hdr* h = hv;
+    C4724P* p = h->head;
+    u32 i = 0;
+    f32 a;
+    f32 c;
+    f32 k;
+    while (p != NULL) {
+        {
+            f32 x, y, z;
+            x = src->x;
+            y = src->y;
+            p->x = x;
+            z = src->z;
+            p->y = y;
+            p->z = z;
+        }
+        a = lbl_3_rodata_2158 * (f32)(rand() % 181) / lbl_3_rodata_215C;
+        c = lbl_3_rodata_2158 * (f32)(rand() % 360) / lbl_3_rodata_215C;
+        k = lbl_3_rodata_20D4 - (f32)(rand() % 3) / lbl_3_rodata_2160[0];
+        p->vx = k * cos(a) * cos(c);
+        p->vy = -k * sin(a);
+        p->vz = k * sin(a) * cos(c);
+        p->f38 = p->f3C = lbl_3_rodata_2164;
+        p->s48 = i / 6;
+        i++;
+        p->f4D = 0x1B;
+        p->f4E = 0;
+        p->a43 = 0xFF;
+        p->a42 = 0xFF;
+        p->a41 = 0xFF;
+        p->a40 = 0xFF;
+        p->s4A = 1;
+        p = p->next;
+    }
 }
 
 // .text:0x000C4B80 size:0x174 mapped:0x80703C14

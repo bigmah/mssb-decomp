@@ -2,6 +2,7 @@
 #define __GAME_rep_1FD8_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/vec.h"
 
 void fn_3_C19C8(void);
 void fn_3_C1C18(void);
@@ -28,7 +29,7 @@ void fn_3_C414C(int idx);
 void fn_3_C42A4(s32* a, s32* b);
 void fn_3_C444C(void* h, u8* b);
 u32 fn_3_C4724(void* h);
-void fn_3_C48D0(void);
+void fn_3_C48D0(void* h, Vec* src);
 void fn_3_C4B80(void);
 void fn_3_C4CF4(void* hv, u8 type);
 s32 fn_3_C4F00(void* hv);
