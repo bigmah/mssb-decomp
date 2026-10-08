@@ -1,5 +1,6 @@
 #include "game/auto_00_000AC9F8_text.h"
 #include "game/UnknownHomes_Game.h"
+#include "static/UnknownHomes_Static.h"
 #include "game/game_batter.h"
 #include "game/rep_1200.h"
 #include "game/rep_13B8.h"
@@ -24,6 +25,9 @@ extern void fn_3_1E154(void);
 extern void fn_3_6C108(void);
 extern void fn_3_B02A8(void);
 extern void fn_3_6714C(s32 player);
+extern void fn_3_B3A4C(void);
+extern u8 lbl_80366158[];
+extern u8 lbl_8037169C[];
 
 #pragma dont_inline on
 
@@ -278,4 +282,37 @@ void fn_3_B03F0(void) {
     g_GameLogic.minigameLastTurnSuccessInd = 1;
     fn_3_B02A8();
     fn_3_6714C(0);
+}
+
+// fn_3_B254C, size:0xE4
+s32 fn_3_B254C(void) {
+    if (g_Practice.transitioningIndicator == 0) {
+        lbl_80366158[0x28] = 1;
+        switch (g_Practice.practiceState) {
+        case 0:
+            g_Practice.framesInCurrTransitionState = 0;
+            g_Practice.practiceState++;
+            break;
+        case 1:
+            if (*(u16*)&g_Practice.framesInCurrTransitionState > 30) {
+                changeScene(3, 6);
+                g_Practice.practiceState++;
+            }
+            break;
+        case 2:
+            if (lbl_8037169C[0x13] != 0) {
+                g_Practice.practiceState++;
+            }
+            break;
+        case 3:
+            goto complete;
+        }
+        goto pending;
+    }
+complete:
+    minigamesSetSomePointers();
+    fn_3_B3A4C();
+    return 1;
+pending:
+    return 0;
 }

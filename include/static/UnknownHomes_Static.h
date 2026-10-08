@@ -103,4 +103,7 @@ extern s32 fn_80035838(void* data, s32 id);
 
 extern void fn_800AD054(void* first, void* second);
 
+extern void changeScene(s32 scene, s32 state);
+extern void minigamesSetSomePointers(void);
+
 #endif // !__UNKNOWN_HOMES_STATIC_H_
