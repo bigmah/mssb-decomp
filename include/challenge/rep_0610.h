@@ -11,4 +11,6 @@ void fn_1_D650(void);
 
 void fn_1_D67C(u8 value);
 
+void fn_1_106B4(void);
+
 #endif
