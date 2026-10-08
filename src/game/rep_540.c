@@ -11,6 +11,8 @@ extern f32 lbl_3_data_4428[];
 extern u8 g_Fielders[];
 extern int fn_3_B7D6C(f32, f32);
 extern void fn_3_8FF5C(s32, void*, f32, f32, f32);
+extern u8 lbl_800E8558[];
+extern int getAnimRelatedCoordinates(int, int, void*);
 extern f32 lbl_3_rodata_5E4;
 extern f32 lbl_3_rodata_5EC;
 extern f32 lbl_3_rodata_5F0;
@@ -448,7 +450,71 @@ void fn_3_B440(void) {
 
 // .text:0x0000B940 size:0x27C mapped:0x8064A9D4
 void fn_3_B940(void) {
-    return;
+    u8* fl;
+    s32 shifted = 0;
+    s32 i;
+    s32 idx = *(s16*)(g_Ball + 0x1B78);
+    s32 id = idx;
+    f32 p[3];
+    s16 anim;
+    if (idx >= 0) {
+        fl = g_Fielders + idx * 0x268;
+        if (g_d_GameSettings[0x11] != 0) {
+            id = *(s8*)(g_Minigame + *(s8*)(g_Minigame + idx + 0x18F2) + 0x18CC);
+        }
+        anim = *(s16*)(fl + 0x17A);
+        if (anim == 0x11 && g_FieldingLogic[0x109] != 0) {
+            getAnimRelatedCoordinates(id, 0x42, p);
+        } else if (anim == 0x26) {
+            getAnimRelatedCoordinates(id, 9, p);
+        } else if (lbl_800E8558[anim * 6 + 1] == 0x21) {
+            if (fl[0x1C7] == 0) {
+                getAnimRelatedCoordinates(id, 0x4F, p);
+            } else {
+                getAnimRelatedCoordinates(id, 0x4E, p);
+            }
+            shifted = 1;
+        } else if (fl[0x1C7] == 0) {
+            getAnimRelatedCoordinates(id, 0x19, p);
+        } else {
+            getAnimRelatedCoordinates(id, 0x13, p);
+        }
+        if (shifted != 0) {
+            if (*(s16*)(g_Ball + 0x1B6E) <= 1) {
+                f32 x = p[0] - *(f32*)(fl + 0);
+                f32 y = -p[1] - *(f32*)(fl + 4);
+                f32 z = p[2] - *(f32*)(fl + 8);
+                *(f32*)(g_Ball + 0xC) = x;
+                *(f32*)(g_Ball + 0x10) = y;
+                *(f32*)(g_Ball + 0x14) = z;
+                *(f32*)(g_Ball + 0x18) = x;
+                *(f32*)(g_Ball + 0x1C) = y;
+                *(f32*)(g_Ball + 0x20) = z;
+                *(f32*)(g_Ball + 0x24) = x;
+                *(f32*)(g_Ball + 0x28) = y;
+                *(f32*)(g_Ball + 0x2C) = z;
+                *(f32*)(g_Ball + 0x30) = x;
+                *(f32*)(g_Ball + 0x34) = y;
+                *(f32*)(g_Ball + 0x38) = z;
+            } else {
+                for (i = 3; i > 1; i--) {
+                    *(f32*)(g_Ball + 0xC + i * 12) = *(f32*)(g_Ball + 0xC + i * 12 - 12);
+                    *(f32*)(g_Ball + 0x10 + i * 12) = *(f32*)(g_Ball + 0x10 + i * 12 - 12);
+                    *(f32*)(g_Ball + 0x14 + i * 12) = *(f32*)(g_Ball + 0x14 + i * 12 - 12);
+                }
+                *(f32*)(g_Ball + 0x18) = *(f32*)(g_Ball + 0xC);
+                *(f32*)(g_Ball + 0x1C) = *(f32*)(g_Ball + 0x10);
+                *(f32*)(g_Ball + 0x20) = *(f32*)(g_Ball + 0x14);
+                *(f32*)(g_Ball + 0xC) = p[0] - *(f32*)(fl + 0);
+                *(f32*)(g_Ball + 0x10) = -p[1] - *(f32*)(fl + 4);
+                *(f32*)(g_Ball + 0x14) = p[2] - *(f32*)(fl + 8);
+            }
+        } else {
+            *(f32*)(g_Ball + 0xC) = p[0] - *(f32*)(fl + 0);
+            *(f32*)(g_Ball + 0x10) = -p[1] - *(f32*)(fl + 4);
+            *(f32*)(g_Ball + 0x14) = p[2] - *(f32*)(fl + 8);
+        }
+    }
 }
 
 // .text:0x0000BBBC size:0x98 mapped:0x8064AC50
