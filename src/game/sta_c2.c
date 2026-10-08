@@ -16,6 +16,18 @@ extern u8 g_Fielders[];
 extern u8 g_Ball[];
 extern Vec lbl_3_rodata_2640;
 extern Vec lbl_3_rodata_264C;
+extern u8 lbl_800E8754[];
+extern u8 lbl_3_bss_A034[];
+typedef struct { u8 a, b; u8 pad[0x1C]; } S1E;
+extern S1E lbl_3_data_8404[];
+typedef struct { u8 a, b; } S2;
+extern S2 lbl_3_data_84B8;
+typedef struct { u8 pad[0x1A]; s16 a; u8 pad2[0x3C]; s8 b; } S5C;
+typedef struct { u8 pad[0x8C]; S5C* obj; } P_cf;
+extern f32 lbl_3_rodata_2778;
+extern void fn_3_CB7E8(f32, f32, f32);
+extern u32 sndFXStartEx(int, u8, u8, u8);
+extern void sndFXCtrl(int, int, u8);
 extern f64 lbl_3_rodata_27A8;
 extern f64 lbl_3_rodata_27B0;
 extern int rand(void);
@@ -311,8 +323,50 @@ void fn_3_CF278(void) {
 }
 
 // .text:0x000CF72C size:0x200 mapped:0x8070E7C0
-void fn_3_CF72C(void) {
-    return;
+void fn_3_CF72C(s32 idx) {
+    u8* p = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+    Vec t;
+    Vec a;
+    Vec b;
+    s32 stad;
+    u8 v;
+    u32 h;
+    if (*(s16*)(g_Ball + 0x1B7A) < 2 && p[0xA4] != 1) {
+        if (lbl_800E8754[4] != 0) {
+            CTRLGetTranslation((Control*)p, &t.x, &t.y, &t.z);
+            fn_3_CB7E8(t.x, t.y - lbl_3_rodata_2778, t.z);
+            p[0xA4] = 1;
+        }
+        if (*(u32*)(p + 0xA0) != 0) {
+            fn_80033964(*(u32*)(p + 0xA0));
+            *(u32*)(p + 0xA0) = 0;
+        }
+        *(u32*)(p + 0xA0) = fn_80033A24(fn_3_CEFA8, 0x80, 0, 0x1E, 1, 0);
+        if (*(u32*)(p + 0xA0) != 0) {
+            a.x = *(f32*)(g_Ball + 0);
+            a.y = *(f32*)(g_Ball + 4);
+            a.z = *(f32*)(g_Ball + 8);
+            b = a;
+            ((void (*)(void*, Vec*))fn_3_CF278)(p, &b);
+        }
+        *(u8**)(p + 0x8C) = lbl_3_bss_A034 + p[0x9C] * 0x5C;
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 0);
+        (*(S5C**)(p + 0x8C))->a = 1;
+        (*(S5C**)(p + 0x8C))->b = -1;
+        stad = g_d_GameSettings[9];
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8.a;
+        } else {
+            v = lbl_3_data_8404[stad].a;
+        }
+        h = sndFXStartEx(((u16*)lbl_3_data_81DC)[stad], v, 0x3F, 0);
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8.b;
+        } else {
+            v = lbl_3_data_8404[stad].b;
+        }
+        sndFXCtrl(h, 0x5B, v);
+    }
 }
 
 // .text:0x000CF92C size:0x4 mapped:0x8070E9C0
