@@ -29,4 +29,6 @@ void fn_2_25850(u8* menu, u8* item);
 
 void fn_2_246E0(void);
 
+void fn_2_2469C(void);
+
 #endif
