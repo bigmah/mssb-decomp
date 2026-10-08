@@ -204,8 +204,64 @@ void fn_3_F9E78(void) {
 }
 
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
+// 93.9%: only saved-reg ranking differs (orig: offC<cnt<j<i<off18; ours: i<cnt<j<off18<offC), plus the zero-init copies come from i in the orig
+typedef struct {
+    u8* p0;
+    u8 pad4[0x2C];
+    s32 n;
+    u8 pad34[8];
+    u32* a3C;
+    u16* a40;
+    u32* a44;
+    u8* a48;
+    u8 pad4C[0x18];
+    s16 cnt;
+} StaCommon;
+extern StaCommon lbl_3_common_bss_350E4;
+extern u8 lbl_3_data_1BA98[];
+extern void* _OSAllocFromHeap(s32, s32);
+extern void* memset(void*, int, u32);
+extern void CTRLBuildMatrix(void*, void*);
+extern void fn_3_B8414(void*, void*);
+extern void fn_3_B8464(void*, void*);
+extern void fn_3_B8574(void);
 void fn_3_FA3C0(void) {
-    return;
+    Mtx m;
+    s32 j;
+    s32 cnt;
+    s32 i;
+    s32 size;
+    s32 idx;
+    size = (lbl_3_common_bss_350E4.n << 2) + (lbl_3_common_bss_350E4.n << 1) + (lbl_3_common_bss_350E4.n << 2) + lbl_3_common_bss_350E4.n * 0x18;
+    if (lbl_3_common_bss_350E4.a48 == NULL) {
+        lbl_3_common_bss_350E4.a48 = _OSAllocFromHeap(4, size);
+        lbl_3_common_bss_350E4.a3C = (u32*)(lbl_3_common_bss_350E4.a48 + lbl_3_common_bss_350E4.n * 0x18);
+        lbl_3_common_bss_350E4.a44 = lbl_3_common_bss_350E4.a3C + lbl_3_common_bss_350E4.n;
+        lbl_3_common_bss_350E4.a40 = (u16*)(lbl_3_common_bss_350E4.a44 + lbl_3_common_bss_350E4.n);
+    }
+    memset(lbl_3_common_bss_350E4.a48, 0, size);
+    cnt = 0;
+    for (i = 0; i < 10; i++) {
+        j = (u16)(lbl_3_common_bss_350E4.a40[cnt - 1] + lbl_3_common_bss_350E4.a3C[cnt - 1]);
+        lbl_3_common_bss_350E4.a40[cnt] = j;
+        idx = j;
+        fn_3_B8574();
+        for (j = 0; j < lbl_3_common_bss_350E4.n; j++) {
+            if (i == lbl_3_data_1BA98[j * 0x14 + 0x12] && (lbl_3_common_bss_350E4.p0[j * 0xE8 + 0x90] >> 6 & 1)) {
+                lbl_3_common_bss_350E4.a44[idx] = j;
+                idx++;
+                lbl_3_common_bss_350E4.a3C[cnt]++;
+                size = (s32)(lbl_3_common_bss_350E4.p0 + j * 0xE8);
+                CTRLBuildMatrix((void*)size, m);
+                fn_3_B8464(m, *(void**)(size + 0x78));
+            }
+        }
+        if (lbl_3_common_bss_350E4.a3C[cnt] != 0) {
+            fn_3_B8414(lbl_3_common_bss_350E4.a48 + cnt * 0x18, lbl_3_common_bss_350E4.a48 + (cnt * 0x18 + 0xC));
+            cnt++;
+        }
+    }
+    lbl_3_common_bss_350E4.cnt = cnt;
 }
 
 // .text:0x000FA58C size:0xE4C mapped:0x80739620
