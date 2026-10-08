@@ -16,6 +16,38 @@ extern u8 g_Fielders[];
 extern u8 g_Ball[];
 extern Vec lbl_3_rodata_2640;
 extern Vec lbl_3_rodata_264C;
+typedef struct PEnt {
+    struct PEnt* next;
+    f32 f4, f8, fC, f10, f14, f18, f1C, f20, f24;
+    u8 pad28[0x38 - 0x28];
+    f32 f38, f3C;
+    u8 c40, c41, c42, c43;
+    u8 pad44[4];
+    s16 s48, s4A;
+} PEnt;
+extern u8 lbl_3_bss_A018[];
+extern u8* lbl_803CC1B8;
+extern void fn_800528C0(f32, f32, f32, s16*, s16*);
+extern void fn_800B0A14_removeQueue(void);
+extern void fn_80034CEC(void*);
+extern f64 lbl_3_rodata_2728;
+extern f64 lbl_3_rodata_2770;
+extern f64 lbl_3_rodata_2780;
+extern void fn_80033620(void);
+extern void GXSetBlendMode(s32, s32, s32, s32);
+extern void GXSetZMode(s32, s32, s32);
+extern u8 lbl_800E8754[];
+extern u8 lbl_3_bss_A034[];
+typedef struct { u8 a, b; u8 pad[0x1C]; } S1E;
+extern S1E lbl_3_data_8404[];
+typedef struct { u8 a, b; } S2;
+extern S2 lbl_3_data_84B8;
+typedef struct { u8 pad[0x1A]; s16 a; u8 pad2[0x3C]; s8 b; } S5C;
+typedef struct { u8 pad[0x8C]; S5C* obj; } P_cf;
+extern f32 lbl_3_rodata_2778;
+extern void fn_3_CB7E8(f32, f32, f32);
+extern u32 sndFXStartEx(int, u8, u8, u8);
+extern void sndFXCtrl(int, int, u8);
 extern f64 lbl_3_rodata_27A8;
 extern f64 lbl_3_rodata_27B0;
 extern int rand(void);
@@ -221,7 +253,57 @@ void fn_3_CE8E4(void) {
 
 // .text:0x000CE954 size:0x268 mapped:0x8070D9E8
 void fn_3_CE954(void) {
-    return;
+    u8* b;
+    u8* st;
+    f32* v;
+    u8* g;
+    s32 i;
+    s32 f;
+    b = lbl_3_bss_A018;
+    i = 0;
+    st = b + 0x880;
+    v = (f32*)(b + 0x808);
+    g = lbl_803CC1B8;
+    do {
+        switch (*st) {
+        case 1: {
+            s16 b1;
+            s16 a1;
+            fn_800528C0(v[0], v[1], v[2], &a1, &b1);
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x48) = a1;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x4C) = b1;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x50) = 0.0f;
+            *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(g + 0x14) + i) * 8) + 0x5C) = 0;
+            *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(g + 0x14) + i) * 8) + 0x54) |= 2;
+            *st = 2;
+            break;
+        }
+        case 2: {
+            s16 b2;
+            s16 a2;
+            u8* t;
+            fn_800528C0(v[0], v[1], v[2], &a2, &b2);
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x48) = a2;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x4C) = b2;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x50) = 0.0f;
+            t = *(u8**)(lbl_80371C30 + (*(u16*)(g + 0x14) + i) * 8);
+            f = (t[0x69] == 2);
+            if (f != 0) {
+                *(u32*)(t + 0x54) &= ~2;
+                *st = 0;
+            }
+            break;
+        }
+        }
+        i++;
+        st++;
+        v += 3;
+    } while (i < 10);
+    if (b[0x804] != 0) {
+        fn_800B0A14_removeQueue();
+        fn_80034CEC(*(u8**)(b + 0x88C));
+        b[0x804] = 0;
+    }
 }
 
 // .text:0x000CEBBC size:0xDC mapped:0x8070DC50
@@ -311,8 +393,50 @@ void fn_3_CF278(void) {
 }
 
 // .text:0x000CF72C size:0x200 mapped:0x8070E7C0
-void fn_3_CF72C(void) {
-    return;
+void fn_3_CF72C(s32 idx) {
+    u8* p = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+    Vec t;
+    Vec a;
+    Vec b;
+    s32 stad;
+    u8 v;
+    u32 h;
+    if (*(s16*)(g_Ball + 0x1B7A) < 2 && p[0xA4] != 1) {
+        if (lbl_800E8754[4] != 0) {
+            CTRLGetTranslation((Control*)p, &t.x, &t.y, &t.z);
+            fn_3_CB7E8(t.x, t.y - lbl_3_rodata_2778, t.z);
+            p[0xA4] = 1;
+        }
+        if (*(u32*)(p + 0xA0) != 0) {
+            fn_80033964(*(u32*)(p + 0xA0));
+            *(u32*)(p + 0xA0) = 0;
+        }
+        *(u32*)(p + 0xA0) = fn_80033A24(fn_3_CEFA8, 0x80, 0, 0x1E, 1, 0);
+        if (*(u32*)(p + 0xA0) != 0) {
+            a.x = *(f32*)(g_Ball + 0);
+            a.y = *(f32*)(g_Ball + 4);
+            a.z = *(f32*)(g_Ball + 8);
+            b = a;
+            ((void (*)(void*, Vec*))fn_3_CF278)(p, &b);
+        }
+        *(u8**)(p + 0x8C) = lbl_3_bss_A034 + p[0x9C] * 0x5C;
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 0);
+        (*(S5C**)(p + 0x8C))->a = 1;
+        (*(S5C**)(p + 0x8C))->b = -1;
+        stad = g_d_GameSettings[9];
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8.a;
+        } else {
+            v = lbl_3_data_8404[stad].a;
+        }
+        h = sndFXStartEx(((u16*)lbl_3_data_81DC)[stad], v, 0x3F, 0);
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8.b;
+        } else {
+            v = lbl_3_data_8404[stad].b;
+        }
+        sndFXCtrl(h, 0x5B, v);
+    }
 }
 
 // .text:0x000CF92C size:0x4 mapped:0x8070E9C0
@@ -321,8 +445,34 @@ void fn_3_CF92C(void) {
 }
 
 // .text:0x000CF930 size:0x158 mapped:0x8070E9C4
-void fn_3_CF930(void) {
-    return;
+// partial: shape matches; volatile regs for int->float hi const / byte differ (r3,r0 vs r0,r5)
+void fn_3_CF930(u8* p) {
+    u8* a = *(u8**)(p + 0x8C);
+    u16 n;
+    f32 d;
+    u32* q;
+    if (a != NULL) {
+        f32 t;
+        u8 c;
+        n = *(u16*)(a + 0x24);
+        d = *(f32*)(a + 0x10);
+        if (*(f32*)(a + 0xC) == (f32)n) {
+            CTRLSetTranslation((Control*)p, lbl_3_data_18730[p[0x9C]].x, lbl_3_rodata_2700, lbl_3_data_18730[p[0x9C]].z);
+            *(u32*)(p + 0x8C) = 0;
+            ((BF90_c2*)p)->f = 0;
+        }
+        t = lbl_3_rodata_2778 / ((f32)n / d);
+        c = p[0x92];
+        if (c <= t) {
+            p[0x92] = 0;
+        } else {
+            p[0x92] = (u8)(c - t);
+        }
+    }
+    q = *(u32**)(p + 0xA0);
+    if (q != NULL && q[2] == 0) {
+        *(u32*)(p + 0xA0) = 0;
+    }
 }
 
 // .text:0x000CFA88 size:0x4 mapped:0x8070EB1C
@@ -354,8 +504,59 @@ void fn_3_CFAB4(u8* p, u8* q) {
 }
 
 // .text:0x000CFB44 size:0x214 mapped:0x8070EBD8
-void fn_3_CFB44(void) {
-    return;
+// partial: orig loads the zero const before the fadd in both clamps and does not reload f3C for f38; k lives in r3 (ours r0)
+s32 fn_3_CFB44(u8* a) {
+    u8* e = *(u8**)(a + 0xC);
+    u8* o = *(u8**)(a + 0x20);
+    s32 k;
+    u8* t;
+    fn_80033620();
+    GXSetBlendMode(1, 4, 5, 0);
+    GXSetZMode(1, 3, 1);
+    do {
+        if (*(s16*)(e + 0x48) <= 0 && *(s16*)(e + 0x4A) != 0) {
+            ((void (*)(f32, f32))fn_8003403C)(*(f32*)(e + 0x38), *(f32*)(e + 0x3C));
+            fn_80033CC8(e, *(s32*)(a + 0x10));
+            *(f32*)(e + 0x38) = *(f32*)(e + 0x38) + lbl_3_rodata_2728;
+            if (*(f32*)(e + 0x38) < lbl_3_rodata_2664) {
+                *(f32*)(e + 0x38) = lbl_3_rodata_2664;
+            }
+            *(f32*)(e + 0x3C) = *(f32*)(e + 0x3C) + lbl_3_rodata_2728;
+            if (*(f32*)(e + 0x3C) < lbl_3_rodata_2664) {
+                *(f32*)(e + 0x3C) = lbl_3_rodata_2664;
+            }
+            k = e[0x43] - 8;
+            if (k < 0) {
+                k = 0;
+            }
+            e[0x43] = k;
+            *(f32*)(e + 0x4) = *(f32*)(e + 0x4) + *(f32*)(e + 0x10);
+            *(f32*)(e + 0x8) = *(f32*)(e + 0x8) - *(f32*)(e + 0x14);
+            *(f32*)(e + 0xC) = *(f32*)(e + 0xC) + *(f32*)(e + 0x18);
+            *(s16*)(e + 0x4A) = *(s16*)(e + 0x4A) - 1;
+        }
+        *(s16*)(e + 0x48) = *(s16*)(e + 0x48) - 1;
+        if (*(s16*)(e + 0x4A) == 0) {
+            t = *(u8**)(*(u8**)(a + 0x20) + 0xA4);
+            *(f32*)(e + 0x4) = *(f32*)(e + 0x1C);
+            *(f32*)(e + 0x8) = *(f32*)(e + 0x20);
+            *(f32*)(e + 0xC) = *(f32*)(e + 0x24);
+            *(f32*)(e + 0x3C) = lbl_3_rodata_2770 * *(f32*)(t + 0xBC);
+            *(f32*)(e + 0x38) = *(f32*)(e + 0x3C);
+            e[0x42] = 0xFF;
+            e[0x41] = 0xFF;
+            e[0x40] = 0xFF;
+            e[0x43] = (u8)(lbl_3_rodata_2780 * *(f32*)(t + 0xBC));
+            *(s16*)(e + 0x4A) = 0x1E;
+            *(s16*)(e + 0x48) = 0;
+        }
+        e = *(u8**)e;
+    } while (e != NULL);
+    if ((*(u8**)(o + 0xA0))[0xD1] == 0) {
+        *(u32*)(o + 0xA8) = 0;
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000CFD58 size:0x374 mapped:0x8070EDEC

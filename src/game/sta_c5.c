@@ -47,16 +47,30 @@ extern void* memset(void*, s32, u32);
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
-extern f32 lbl_3_rodata_2DDC;
+extern const f32 lbl_3_rodata_2DDC;
 extern f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
+extern f32 lbl_3_bss_AF04[];
+extern f32 lbl_3_rodata_2D58;
+extern u8 lbl_3_data_1BA70[];
+extern u8 lbl_3_data_1B824[];
+extern f64 __fabs(f64);
+extern u8* fn_80052768_getCamera(int);
+extern char lbl_3_rodata_2D44[];
+extern f32 lbl_3_rodata_2D50;
+extern f32 lbl_3_rodata_2DA0;
+extern f32 lbl_3_rodata_2DA4;
+extern f64 lbl_3_rodata_2DA8;
+extern f32 lbl_3_rodata_2DB0;
+extern f32 lbl_3_rodata_2DB4;
+extern void DCFlushRange(void*, u32);
 extern f32 lbl_3_rodata_2D74;
 extern f32 lbl_3_rodata_2DF0;
 extern u8 lbl_800E8754[];
 extern void fn_3_CB7E8(f32, f32, f32);
 extern char lbl_3_rodata_2D38[];
 extern f64 lbl_3_rodata_2DD0;
-extern f32 lbl_3_rodata_2D54;
+extern const f32 lbl_3_rodata_2D54;
 extern f32 lbl_3_rodata_2DD8;
 extern u8 lbl_3_data_1B820[];
 extern u8 fn_800527C4(void*);
@@ -129,9 +143,61 @@ s32 fn_3_EE0BC(u32 v) {
 }
 #include "Dolphin/GX/GXPixel.h"
 
+// 70%: matrix setup is right; instruction scheduling of the first PSMTXCopy/scale block and const load forms differ
 // .text:0x000EE100 size:0x288 mapped:0x8072D194
-void fn_3_EE100(void) {
-    return;
+void fn_3_EE100(u8* obj, f32 (*mtx)[4]) {
+    Mtx b;
+    Mtx a;
+    Mtx c;
+    Mtx44 d;
+    GXColor col;
+    f32 f31;
+    f32 f9;
+    col.r = 0xFF;
+    col.g = 0xFF;
+    col.b = 0xFF;
+    col.a = 0xFF;
+    GXSetChanMatColor(GX_COLOR0A0, col);
+    GXSetNumChans(1);
+    f31 = lbl_3_bss_AF04[0];
+    PSMTXCopy((f32(*)[4])(obj + 0x18), a);
+    PSMTXCopy(mtx, b);
+    f9 = 1.0f + f31;
+    b[0][3] += ((f32*)lbl_3_data_1BA70)[0];
+    b[0][0] *= f9;
+    b[0][1] *= f9;
+    b[1][3] += ((f32*)lbl_3_data_1BA70)[1];
+    b[0][2] *= f9;
+    b[1][0] *= f9;
+    b[1][1] *= f9;
+    b[1][2] *= f9;
+    PSMTXConcat(b, a, a);
+    PSMTXIdentity(c);
+    PSMTX44Copy((f32(*)[4])fn_80052734(fn_8005268C()), d);
+    c[0][0] = d[0][0];
+    c[0][2] = d[0][2];
+    c[1][1] = d[1][1];
+    c[1][2] = d[1][2];
+    c[2][2] = d[3][2];
+    PSMTXConcat(c, a, a);
+    PSMTXIdentity(c);
+    c[0][0] = lbl_3_rodata_2D54;
+    c[0][2] = lbl_3_rodata_2D54;
+    c[1][1] = lbl_3_rodata_2D58;
+    c[1][2] = lbl_3_rodata_2D54;
+    c[2][2] = lbl_3_rodata_2D50;
+    c[2][3] = lbl_3_rodata_2D5C;
+    c[1][3] = lbl_3_rodata_2D5C;
+    c[0][3] = lbl_3_rodata_2D5C;
+    PSMTXConcat(c, a, a);
+    GXLoadTexMtxImm(a, 0x1E, GX_MTX3x4);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_POS, 0x1E, 0, 0x7D);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_RASA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
 }
 
 // .text:0x000EE388 size:0x2F4 mapped:0x8072D41C
@@ -144,9 +210,60 @@ void fn_3_EE67C(void) {
     return;
 }
 
+// 90%: mtx stores: orig does first via base+0x23c and the second via a separate pointer reg (r3+0x10); const load order/addi forms differ
 // .text:0x000EE96C size:0x228 mapped:0x8072DA00
-void fn_3_EE96C(void) {
-    return;
+void fn_3_EE96C(u8* pos) {
+    Mtx m;
+    Vec t;
+    u8* st = lbl_3_bss_AEE0;
+    Vec ref = *(Vec*)lbl_3_rodata_2D44;
+    f32* mp;
+    u8* cam;
+    f32 mag;
+    f32 clamp;
+    f32 dist;
+    f32 sc;
+    s32 s0;
+    s32 s1;
+    cam = fn_80052768_getCamera(fn_8005268C());
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(cam + 0x7C), &t);
+    mag = PSVECMag(&t);
+    if (mag != lbl_3_rodata_2D5C) {
+        PSVECNormalize(&t, &t);
+    } else {
+        t.y = lbl_3_rodata_2D5C;
+        t.x = lbl_3_rodata_2D5C;
+        t.z = lbl_3_rodata_2D50;
+    }
+    acos(PSVECDotProduct(&t, &ref));
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)pos, &t);
+    clamp = PSVECMag(&t);
+    dist = clamp;
+    if (clamp < lbl_3_rodata_2DA0) {
+        clamp = lbl_3_rodata_2DA0;
+    }
+    PSMTXCopy((f32(*)[4])(cam + 0x40), m);
+    sc = lbl_3_rodata_2DA4 / clamp;
+    ((struct { u8 pad[0x23C]; f32 m[2][3]; }*)st)->m[0][0] = sc;
+    ((struct { u8 pad[0x23C]; f32 m[2][3]; }*)st)->m[1][1] = sc * (f32)(lbl_3_rodata_2DA8 - __fabs(lbl_3_rodata_2D54 * (ref.y * m[1][1])));
+    if (dist < lbl_3_rodata_2DB0) {
+        s0 = 4;
+        s1 = 4;
+    } else if (dist < lbl_3_rodata_2DB4) {
+        s0 = 3;
+        s1 = 3;
+    } else {
+        s0 = 2;
+        s1 = 2;
+    }
+    *(u32*)(st + 0x14) = 0;
+    DCFlushRange(*(void**)(st + 0x238), 0x200);
+    GXSetIndTexMtx(GX_ITM_0, (f32(*)[3])(st + 0x23C), 2);
+    GXLoadTexObj((GXTexObj*)(st + 0x254), GX_TEXMAP7);
+    GXSetIndTexOrder(GX_IND_TEX_STAGE_0, GX_TEXCOORD0, GX_TEXMAP7);
+    GXSetNumIndStages(1);
+    GXSetIndTexCoordScale(GX_IND_TEX_STAGE_0, s0, s1);
+    GXSetTevIndWarp(GX_TEVSTAGE0, GX_IND_TEX_STAGE_0, 1, 0, GX_ITM_0);
 }
 
 // .text:0x000EEB94 size:0x160 mapped:0x8072DC28
@@ -270,7 +387,7 @@ void fn_3_F13F8(u8* p) {
 }
 #pragma dont_inline on
 
-// 99%: only scheduling of the stfs 0xB8 / li r6,0 / li r0,4 at the join differs (inlined fn_3_F13F8 matches)
+// 99%: only the position of stfs f2,0xB8 relative to the inlined fn_3_F13F8 zero-reg movs differs (one slot late)
 // .text:0x000EEFD4 size:0x244 mapped:0x8072E068
 void fn_3_EEFD4(s32 idx) {
     Vec d;
@@ -292,8 +409,11 @@ void fn_3_EEFD4(s32 idx) {
         if (d.z < lbl_3_rodata_2D5C) {
             ang = lbl_3_rodata_2DD0 - t;
         }
-        *(f32*)(e + 0xB8) = ang;
-        *(f32*)(e + 0xBC) = lbl_3_rodata_2D54;
+        {
+            f32 half = lbl_3_rodata_2D54;
+            *(f32*)(e + 0xB8) = ang;
+            *(f32*)(e + 0xBC) = half;
+        }
         e[0xC6] = 4;
         fn_3_F13F8(e);
         if (*(s16*)(g_Ball + 0x1B7A) != 2 && lbl_800E8754[4] != 0) {
@@ -402,9 +522,67 @@ void fn_3_EF408(u8* p) {
     p[0xC6] = 0;
 }
 
+// 60%: two box-edge loops; lfsx/addi index pattern and per-loop register numbering differ
 // .text:0x000EF55C size:0x258 mapped:0x8072E5F0
-void fn_3_EF55C(void) {
-    return;
+u32 fn_3_EF55C(Vec p, u8 idx) {
+    u8 a[4] = {1, 3, 0, 2};
+    u8 b[4] = {0, 1, 2, 3};
+    Vec v28;
+    Vec v1c;
+    Vec v10;
+    u8* t;
+    u32 i;
+    u8* q;
+    s8 sgn;
+    f32 z = lbl_3_rodata_2D5C;
+    if (p.y > z) {
+        return 1;
+    }
+    t = lbl_3_data_1B824 + idx * 32;
+    q = a;
+    for (i = 0, sgn = -1; i < 2; i++, q += 2, sgn += 2) {
+        u32 c0 = q[0] * 8;
+        u32 c1 = q[1] * 8;
+        f32 x0 = *(f32*)(t + c0);
+        f32 x1 = *(f32*)(t + c1);
+        f32 z0 = *(f32*)(t + (c0 + 4));
+        f32 z1 = *(f32*)(t + (c1 + 4));
+        v1c.y = z;
+        v28.x = p.x - x0;
+        v28.z = p.z - z0;
+        v1c.x = x1 - x0;
+        v1c.z = z1 - z0;
+        v28.y = z;
+        PSVECNormalize(&v28, &v28);
+        PSVECNormalize(&v1c, &v1c);
+        PSVECCrossProduct(&v1c, &v28, &v10);
+        if (v10.y * (f32)sgn < z) {
+            return 1;
+        }
+    }
+    z = z;
+    q = b;
+    for (i = 0, sgn = -1; i < 2; i++, q += 2, sgn += 2) {
+        u32 c0 = q[0] * 8;
+        u32 c1 = q[1] * 8;
+        f32 x0 = *(f32*)(t + c0);
+        f32 x1 = *(f32*)(t + c1);
+        f32 z0 = *(f32*)(t + (c0 + 4));
+        f32 z1 = *(f32*)(t + (c1 + 4));
+        v1c.y = z;
+        v28.x = p.x - x0;
+        v28.z = p.z - z0;
+        v1c.x = x1 - x0;
+        v1c.z = z1 - z0;
+        v28.y = z;
+        PSVECNormalize(&v28, &v28);
+        PSVECNormalize(&v1c, &v1c);
+        PSVECCrossProduct(&v1c, &v28, &v10);
+        if (v10.y * (f32)sgn < z) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // .text:0x000EF7B4 size:0x4C mapped:0x8072E848
@@ -489,9 +667,54 @@ void fn_3_F1448(u8* p) {
     CTRLSetScale((Control*)p, lbl_3_rodata_2D50, lbl_3_rodata_2D50, lbl_3_rodata_2D50);
 }
 
+struct StadCtlA {
+    Control c;
+    u8 pad34[0x74 - 0x3C];
+    u8** obj;
+    u8 pad78[0x90 - 0x78];
+    u8 fl90_hi : 1;
+    u8 fl90_lo : 7;
+    u8 pad91[8];
+    u8 f99;
+    u8 pad9A[2];
+    u8 idx;
+    u8 pad9D[3];
+    f32 xa0, ya4, za8, xac, zb0, rb4;
+    u8 padB8[0xC0 - 0xB8];
+    u8 fc0;
+    s8 fc1;
+    u8 padC2[2];
+    u8 fc4;
+    u8 fc5;
+    u8 fc6;
+    u8 fc7;
+};
+typedef struct StadCtlA StadCtlA;
+
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
-void fn_3_F1518(void) {
-    return;
+// 6 diff lines: first table lookup has base/index registers swapped (r5/r6); everything else matches
+extern u32 lbl_3_bss_B154[];
+void fn_3_F1518(StadCtlA* p) {
+    p->fc5 = ((u8*)&lbl_3_data_1B9A4[p->idx].f)[0];
+    p->fc6 = 1;
+    p->fc7 = 0;
+    p->fc1 = -1;
+    if (!p->fl90_hi) {
+        p->fl90_hi = 1;
+    }
+    p->f99 = 1;
+    p->zb0 = 0.0f;
+    p->xa0 = lbl_3_data_1B9A4[p->idx].a;
+    p->ya4 = lbl_3_data_1B9A4[p->idx].b;
+    p->za8 = lbl_3_data_1B9A4[p->idx].c;
+    p->xac = -lbl_3_data_1B9A4[p->idx].d;
+    p->c.type = 0;
+    CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+    CTRLSetRotation(&p->c, 0.0f, p->xac, 0.0f);
+    CTRLSetScale(&p->c, 1.0f, 1.0f, 1.0f);
+    fn_3_B97DC(p->obj, lbl_3_bss_B154[0]);
+    ((u8*)p->obj)[0x58] = 1;
+    p->fc0 = 0;
 }
 
 // .text:0x000F1674 size:0xDC mapped:0x80730708
@@ -517,9 +740,36 @@ void fn_3_F1674(void) {
 }
 
 // .text:0x000F1750 size:0x154 mapped:0x807307E4
-void fn_3_F1750(void) {
-    return;
+extern f32 fn_800B4A94(void*);
+extern const f32 lbl_3_rodata_2E30;
+void fn_3_F1750(StadCtlA* p) {
+    u8** o = p->obj;
+    f32 r;
+    f32 x;
+    f32 z;
+    if (!fn_800B4A94(*o)) {
+        p->xac = lbl_3_data_1B884[p->idx].v.x;
+        p->zb0 = lbl_3_data_1B884[p->idx].v.z;
+        z = p->zb0;
+        x = p->xac;
+        r = -lbl_3_data_1B884[p->idx].pad[0];
+        p->xa0 = x;
+        p->ya4 = lbl_3_rodata_2E30;
+        p->za8 = z;
+        p->rb4 = r;
+        p->c.type = 0;
+        CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+        CTRLSetRotation(&p->c, 0.0f, r, 0.0f);
+        p->fc1 = 0;
+        p->fl90_hi = 1;
+        p->obj = (u8**)(*(u8**)(lbl_8036E548 + 0x6C) + (lbl_3_bss_B219[0] + p->idx) * 0x90 + 0x34);
+        p->fc4 = 0;
+        p->f99 = 1;
+        return;
+    }
+    AnimateActorBones(*o);
 }
+
 
 // .text:0x000F18A4 size:0x98 mapped:0x80730938
 void fn_3_F18A4(u8* p) {
@@ -543,9 +793,49 @@ void fn_3_F1E2C(void) {
 }
 
 // .text:0x000F22FC size:0x14C mapped:0x80731390
-void fn_3_F22FC(void) {
-    return;
+extern void fn_3_253A4(s8, s16);
+extern s16 fn_3_9FB8C(f32, f32);
+extern u8 g_Fielders[];
+extern u8 lbl_3_bss_B21B;
+extern u8 lbl_3_bss_B21C;
+extern const f32 lbl_3_rodata_2E40;
+extern const f32 lbl_3_rodata_2D54;
+typedef struct {
+    u8 p0[0xAC];
+    f32 a;
+    f32 p1[2];
+    f32 b8;
+    f32 bc;
+    u8 p2;
+    s8 c1;
+    u8 p3[4];
+    u8 c6;
+    u8 p4[0xE8 - 0xC7];
+} StObjE8;
+void fn_3_F22FC(u8* p, s32 idx) {
+    Vec d;
+    s8 id = idx;
+    u8* f = g_Fielders + id * 0x268;
+    u8* cnt;
+    StObjE8* o;
+    u32 i;
+    PSVECSubtract((Vec*)f, (Vec*)(p + 0xA0), &d);
+    d.y = lbl_3_rodata_2D5C;
+    PSVECNormalize(&d, &d);
+    fn_3_253A4(id, (s16)fn_3_9FB8C(d.x, d.z));
+    fn_800527C4(p + 0xA0);
+    cnt = f + 0x217;
+    for (i = 0; i < lbl_3_bss_B21C; i++) {
+        o = (StObjE8*)(*(u8**)lbl_3_common_bss_350E4) + (lbl_3_bss_B21B + i);
+        if (o->c6 == 3 && o->c1 == (s8)idx) {
+            o->b8 = lbl_3_rodata_2DDC * (-o->a - lbl_3_rodata_2E40);
+            o->c6 = 4;
+            o->bc = lbl_3_rodata_2D54;
+            (*cnt)--;
+        }
+    }
 }
+
 
 // .text:0x000F2448 size:0x2DC mapped:0x807314DC
 void fn_3_F2448(void) {
@@ -553,9 +843,52 @@ void fn_3_F2448(void) {
 }
 
 // .text:0x000F2724 size:0x214 mapped:0x807317B8
-void fn_3_F2724(void) {
-    return;
+extern f64 __fabs(f64);
+extern const f64 lbl_3_rodata_2E58;
+extern const f64 lbl_3_rodata_2E60;
+void fn_3_F2724(u8* p, u8* q) {
+    Vec d;
+    f32 c;
+    f32 s;
+    f32 s2;
+    f32 c2;
+    f32 az;
+    f32 ax;
+    f64 ta;
+    f64 tb;
+    sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    PSVECSubtract((Vec*)(q + 0xA0), (Vec*)(p + 0xA0), &d);
+    d.y = lbl_3_rodata_2D5C;
+    c = (f32)cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    s = (f32)sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    s2 = (f32)sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    c2 = (f32)cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    ta = __fabs(d.x * c + d.z * s);
+    tb = __fabs(d.x * -s2 + d.z * c2);
+    ax = ta;
+    az = tb;
+    if (ax <= lbl_3_rodata_2E58 && az <= lbl_3_rodata_2E60) {
+        u32 stad;
+        u8 v;
+        u32 h;
+        q[0xC6] = 5;
+        stad = g_d_GameSettings[9];
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8[0x16];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 0x16];
+        }
+        h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 0xB), v, 0x3F, 0);
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8[0x17];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 0x17];
+        }
+        sndFXCtrl(h, 0x5B, v);
+    }
 }
+
 
 // .text:0x000F2938 size:0x6C4 mapped:0x807319CC
 void fn_3_F2938(void) {
