@@ -427,8 +427,6 @@ void fn_3_14423C(void) {
 // .text:0x0014443C size:0x2E0 mapped:0x807834D0
 typedef struct { u8 pad0[4]; f32 x; u8 pad8[0x10]; s16 a18; s16 a1A; s16 a1C; s16 a1E; u8 pad20[0xA]; u8 st; u8 sel; u8 who; u8 pad2D[0xB]; } MgSpawn;
 
-// 99%: only the load order of v[0]/v[1] in the case-1 lerp differs (orig lfs f3=v[1] first, f4=v[0] after the a1A conversion).
-// Tried hi/lo locals, operand orders, statement permutations; decl order and `a1C -= 1` form matter.
 void fn_3_14443C(void) {
     MgSpawn* p;
     s32 i;
@@ -465,7 +463,7 @@ void fn_3_14443C(void) {
         } else if (p->st == 1) {
             p->a1C -= 1;
             v = (f32*)(lbl_3_data_21D1C + p->sel * 8);
-            p->x = (v[1] - v[0]) * ((f32)p->a1A / (f32)tb[5]) + v[0];
+            p->x = (v[1] - v[0]) * ((f32)p->a1A / (f32)tb[5]) + *(f32*)(lbl_3_data_21D1C + p->sel * 8);
             if (p->a1C <= 0) {
                 p->st = 2;
                 p->a1A = 0;
