@@ -26,7 +26,7 @@ void fn_3_810C4(int idx, int base);
 void fn_3_81190(void);
 void fn_3_81AB8(int);
 void fn_3_81AEC(int);
-void fn_3_81BC8(void);
+int fn_3_81BC8(int i);
 void fn_3_81EAC(void);
 void fn_3_823B4(int i);
 void fn_3_82670(void);
