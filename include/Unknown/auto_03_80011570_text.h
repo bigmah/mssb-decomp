@@ -5,4 +5,6 @@
 
 u32 fn_80011570(void);
 
+void fn_800115C8(s8 index);
+
 #endif
