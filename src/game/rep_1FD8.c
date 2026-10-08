@@ -491,7 +491,8 @@ typedef struct C4724P {
     u8 pad44[4];
     s16 s48;
     s16 s4A;
-    u8 pad4C[4];
+    u8 pad4C[3];
+    u8 f4F;
     u8 f50;
 } C4724P;
 typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[0xE]; s32 f24; } C4724Hdr;
@@ -502,7 +503,7 @@ extern void fn_80033CC8(void*, s32);
 extern void GXSetZMode(int, int, int);
 extern void GXSetBlendMode(int, int, int, int);
 extern f32 lbl_3_rodata_2168[];
-extern f32 lbl_3_rodata_213C;
+extern const f32 lbl_3_rodata_213C;
 // 96%: 213C (0.0f) const load should hoist before first fadds (f1) and 2168 via addi+lfs 0; only f-reg/sched diffs
 // .text:0x000C4724 size:0x1AC mapped:0x807037B8
 u32 fn_3_C4724(void* hv) {
@@ -609,9 +610,76 @@ void fn_3_C4CF4(void* hv, u8 type) {
     }
 }
 
+extern int rand(void);
+extern f32 lbl_3_rodata_2160[];
+extern f32 lbl_3_rodata_216C;
+extern f64 sin(f64);
+extern f64 cos(f64);
+extern f32 lbl_3_rodata_2158;
+extern f32 lbl_3_rodata_215C;
+extern const f32 lbl_3_rodata_2170[];
+extern const f32 lbl_3_rodata_2174;
+typedef struct { u8 pad0[0x20]; void* f20; } C4F00H;
+#define C4F00_SPAWN() \
+    do { \
+        r = (f32)(15 - rand() % 31) / lbl_3_rodata_2160[0]; \
+        a = lbl_3_rodata_2158 * (f32)(rand() % 361) / lbl_3_rodata_215C; \
+        t.x = r * cos(a); \
+        t.z = r * sin(a); \
+        t.y = lbl_3_rodata_216C; \
+        ((void (*)(void*, void*))CTRLBuildMatrix)(*(void**)((u8*)h + 0x20), m); \
+        PSMTXMultVec(m, &t, (Vec*)&p->x); \
+    } while (0)
 // .text:0x000C4F00 size:0x404 mapped:0x80703F94
-void fn_3_C4F00(void) {
-    return;
+s32 fn_3_C4F00(void* hv) {
+    C4724Hdr* h = hv;
+    C4724P* p;
+    Vec t;
+    Mtx m;
+    f32 a;
+    f32 k;
+    f32 c;
+    f32 r;
+    fn_80033620();
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 5, 0);
+    p = h->head;
+    do {
+        if (p->s48 != 0) {
+            p->s48 -= (lbl_80366158[0x28] == 0);
+            if (p->s48 == 0) {
+                C4F00_SPAWN();
+            }
+        } else if (p->s4A != 0 && lbl_80366158[0x28] == 0) {
+            if (p->f4F == 0) {
+                p->a43 += 0xF;
+                k = lbl_3_rodata_2170[0];
+                p->f38 += k;
+                p->f3C += k;
+                if (p->f38 >= lbl_3_rodata_2174 || p->f3C >= lbl_3_rodata_2174) {
+                    p->f4F = 1;
+                }
+            } else {
+                p->a43 -= 0xF;
+                k = lbl_3_rodata_2170[0];
+                p->f38 -= k;
+                p->f3C -= k;
+                if (p->f38 <= lbl_3_rodata_213C || p->f3C <= lbl_3_rodata_213C) {
+                    p->s4A = 0;
+                }
+            }
+        }
+        if (p->s4A == 0) {
+            p->f38 = p->f3C = lbl_3_rodata_213C;
+            p->s4A = 1;
+            p->f4F = 0;
+            p->s48 = 0;
+            C4F00_SPAWN();
+            p->a43 = 0;
+        }
+        p = p->next;
+    } while (p != NULL);
+    return 0;
 }
 
 // .text:0x000C5304 size:0x1CC mapped:0x80704398

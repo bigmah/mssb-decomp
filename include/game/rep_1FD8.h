@@ -31,7 +31,7 @@ u32 fn_3_C4724(void* h);
 void fn_3_C48D0(void);
 void fn_3_C4B80(void);
 void fn_3_C4CF4(void* hv, u8 type);
-void fn_3_C4F00(void);
+s32 fn_3_C4F00(void* hv);
 void fn_3_C5304(void);
 void fn_3_C54D0(void);
 void fn_3_C56E8(void);
