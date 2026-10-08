@@ -130,3 +130,8 @@ void fn_2_4E824(void) {
 void fn_2_54BAC(void) {
     return;
 }
+
+// fn_2_54844, size:0x4
+void fn_2_54844(void) {
+    return;
+}
