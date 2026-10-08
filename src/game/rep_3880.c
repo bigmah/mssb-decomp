@@ -803,8 +803,59 @@ void fn_3_14C3BC(u8* o) {
 }
 
 // .text:0x0014C4C8 size:0x2D4 mapped:0x8078B55C
-void fn_3_14C4C8(void) {
-    return;
+u32 fn_3_14C4C8(u8* o) {
+    Mtx m;
+    Vec dir;
+    u8* p;
+    u8* d;
+    s32 a;
+    s32 s;
+    s32 delta;
+    f32 df;
+    if (lbl_80366158[0x28] != 0) {
+        return 0;
+    }
+    p = *(u8**)(o + 0xC);
+    if (*(s16*)(p + 0x4A) != 0) {
+        GXSetZMode(1, 3, 0);
+        GXSetBlendMode(1, 1, 1, 0);
+        PSVECScale((Vec*)lbl_3_data_26D50, lbl_3_rodata_39E0, &dir);
+        PSMTXRotRad(m, 'Y', shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8)));
+        PSMTXMultVec(m, &dir, &dir);
+        d = lbl_3_data_26D5C;
+        *(f32*)(p + 4) = (f32)*(s32*)(d + 0x14) / 100000.0f * lbl_3_rodata_39A8 + (*(f32*)(g_Minigame + 0x1AE0) + dir.x);
+        *(f32*)(p + 8) = dir.y - ((f32)*(s32*)(d + 0x14) / 100000.0f * lbl_3_rodata_39A8 + *(f32*)(g_Minigame + 0x1AE4));
+        *(f32*)(p + 0xC) = *(f32*)(g_Minigame + 0x1AE8) + dir.z;
+        fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+        fn_80033CC8(p, *(void**)(o + 0x10));
+        a = p[0x43];
+        s = *(s32*)(lbl_3_data_26D5C + 8) - *(s32*)(lbl_3_data_26D5C + 0xC);
+        if (s < *(s16*)(p + 0x4A)) {
+            df = (f32)(*(s32*)(d + 0x14) - *(s32*)(lbl_3_data_26D5C + 0x10)) / 100000.0f / (f32)*(s32*)(lbl_3_data_26D5C + 0xC);
+            delta = (*(s32*)(lbl_3_data_26D5C + 0x20) - *(s32*)(lbl_3_data_26D5C + 0x1C)) / *(s32*)(lbl_3_data_26D5C + 0xC);
+        } else {
+            df = (f32)(*(s32*)(lbl_3_data_26D5C + 0x18) - *(s32*)(d + 0x14)) / 100000.0f / (f32)s;
+            delta = (*(s32*)(lbl_3_data_26D5C + 0x24) - *(s32*)(lbl_3_data_26D5C + 0x20)) / s;
+        }
+        a += delta;
+        if (a < 0) {
+            a = 0;
+        }
+        if (a > 0xFF) {
+            a = 0xFF;
+        }
+        *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
+        *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+        p[0x43] = a;
+        a = p[0x43];
+        p[0x42] = a;
+        p[0x41] = a;
+        p[0x40] = a;
+        *(s16*)(p + 0x4A) = *(s16*)(p + 0x4A) - 1;
+    } else {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x0014C79C size:0x94 mapped:0x8078B830

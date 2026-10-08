@@ -39,7 +39,7 @@ void fn_3_14BECC(u32 a, u32 b);
 void fn_3_14C348(u32 a, u32 b);
 void fn_3_14C398(void);
 void fn_3_14C3BC(u8* o);
-void fn_3_14C4C8(void);
+u32 fn_3_14C4C8(u8* o);
 void fn_3_14C79C(u8* a);
 void fn_3_14C830(void);
 void fn_3_14C904(void);
