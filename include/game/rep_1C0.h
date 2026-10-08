@@ -22,7 +22,7 @@ void fn_3_567C(void);
 void fn_3_5BAC(void);
 void fn_3_5BCC(u8* p);
 void fn_3_5BF0(void);
-void fn_3_5C68(void);
+void fn_3_5C68(u8* obj);
 void fn_3_5E60(void);
 void fn_3_64DC(void);
 s16 fn_3_6424(u8* base, u8** out);
