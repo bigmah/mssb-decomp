@@ -79,6 +79,9 @@ extern Vec lbl_3_rodata_24E8[];
 extern u8 lbl_3_bss_A8A8[];
 typedef struct { u8 b[9]; } B9;
 extern B9 lbl_3_rodata_2544;
+extern B9 lbl_3_rodata_255C;
+extern B9 lbl_3_rodata_2568;
+extern f64 lbl_3_rodata_2668;
 extern B9 lbl_3_rodata_2550;
 extern u8 lbl_8036E548[];
 extern void fn_8005268C(void);
@@ -970,8 +973,34 @@ void fn_3_D24E8(u8* p, s32 idx0) {
 }
 
 // .text:0x000D255C size:0x128 mapped:0x807115F0
-void fn_3_D255C(void) {
-    return;
+s32 fn_3_D255C(u8* p) {
+    Vec d;
+    B9 a = lbl_3_rodata_255C;
+    B9 b = lbl_3_rodata_2568;
+    u32 i;
+    u8* t;
+    f64 lim;
+    u8* fl;
+    if (*(f32*)(p + 0xA4) > lbl_3_rodata_2770) {
+        return -1;
+    }
+    if (*(f32*)(p + 0xA0) > lbl_3_rodata_2664) {
+        t = a.b;
+    } else {
+        t = b.b;
+    }
+    fl = g_Fielders;
+    lim = lbl_3_rodata_2668;
+    for (i = 0; i < 9; i++) {
+        u8* o = fl + t[i] * 0x268;
+        if (o != NULL && o[0x210] == 0) {
+            PSVECSubtract((Vec*)(p + 0xA0), (Vec*)o, &d);
+            if (PSVECMag(&d) <= lim) {
+                return (s8)t[i];
+            }
+        }
+    }
+    return -1;
 }
 
 // .text:0x000D2684 size:0x108 mapped:0x80711718
