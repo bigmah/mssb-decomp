@@ -17,4 +17,6 @@ void fn_1_289C0(u8* object);
 
 void fn_1_29A48(void);
 
+void fn_1_29414(u8* object);
+
 #endif
