@@ -69,7 +69,7 @@ extern f32 g_AiLogic[];
 extern void fn_3_58F58(int, f32*, f32*);
 #define SQRT_L(x)                                                                                  \
     do {                                                                                           \
-        if ((x) > lbl_3_rodata_B20) {                                                              \
+        if ((x) > 0.0f) {                                                                          \
             f64 xd = (f64)(x);                                                                     \
             f64 guess = __frsqrte(xd);                                                             \
             guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);            \
