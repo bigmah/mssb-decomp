@@ -19,4 +19,6 @@ void fn_3_B6B70(void);
 
 void fn_3_B7794(void);
 
+void fn_3_B6C50(void);
+
 #endif

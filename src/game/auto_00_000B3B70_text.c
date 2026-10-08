@@ -5,6 +5,18 @@
 
 extern u8 lbl_3_common_bss_34C90[];
 
+extern void fn_3_1DD48(void);
+extern void fn_3_5A6D4(u8);
+
+// fn_3_B6C50, size:0x4C
+void fn_3_B6C50(void) {
+    g_Practice.allowPlayToEndIndicator = 0;
+    g_GameLogic.pre_PostMiniGameInd = 1;
+    g_GameLogic.minigameLastTurnSuccessInd = 1;
+    fn_3_1DD48();
+    fn_3_5A6D4(7);
+}
+
 // fn_3_B7794, size:0x48
 void fn_3_B7794(void) {
     ((u8*)&g_Practice)[0x1E8] = 1;
