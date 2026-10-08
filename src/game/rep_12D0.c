@@ -191,6 +191,7 @@ void fn_3_79414(void) {
 
 // .text:0x000795A8 size:0x1C4 mapped:0x806B863C
 // 90%: first half matches; tail (lbl[0x23] s8 handling) has different register allocation (raw s8 in r5, extended copy r7, runners base r4)
+// orig tail: raw `u8 x` (r5) + `sx=(s8)x` (r7), `mulli x,-1` (try `x * 0xFFFFFFFF` to get mulli, needs u8 raw x), lbl[0x23] and g_Runners base re-read in the else-if arm; decl order/types brute-forced w/o luck
 void fn_3_795A8(void) {
     s32 v;
     u8 cur;
