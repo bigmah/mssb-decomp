@@ -39,4 +39,6 @@ void fn_1_A348(void);
 
 void fn_1_A464(void);
 
+void fn_1_BFB0(void);
+
 #endif
