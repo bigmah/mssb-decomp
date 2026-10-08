@@ -23,7 +23,19 @@ extern void fn_3_59918(s32, s32);
 
 // .text:0x00006530 size:0x78 mapped:0x806455C4
 void fn_3_6530(void) {
-    return;
+    g_Ball[0x1BF1] = 1;
+    if (g_Ball[0x1BC9] == 2) {
+        g_Ball[0x1BC9] = 1;
+    }
+    g_Ball[0x1BE7] = 0;
+    g_Ball[0x1BE5] = 0;
+    g_Ball[0x1BF1] = 1;
+    g_Ball[0x1BEB] = 0;
+    g_Ball[0x1BED] = 0;
+    *(f32*)(g_Ball + 0x324) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x328) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x32C) = lbl_3_rodata_590;
+    fn_3_27648();
 }
 
 // .text:0x000065A8 size:0x20 mapped:0x8064563C
