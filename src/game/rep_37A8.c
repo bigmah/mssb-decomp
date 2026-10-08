@@ -231,14 +231,14 @@ void fn_3_143FAC(s32 x) {
 }
 
 // .text:0x0014402C size:0x210 mapped:0x807830C0
-// 85%: original keeps only idx*0x38 in r30 and re-adds g_Minigame after each call (lhau on +0x1C eats the first base+off);
-// here CSE keeps base+off in a saved reg (r30) and the cand[] pointer/value regs (r5/r6) are swapped.
+// 85.7%: original keeps only idx*0x38 in r30 and re-adds g_Minigame after each call (the first base+off is consumed by lhau on +0x1C);
+// here CSE keeps base+off in a saved reg (r30) for the s16/f32 stores (u8 stores already re-add). Decl order (cand,q,n,c,i,off) fixed the cand[] regs.
 void fn_3_14402C(s32 idx) {
     s32 cand[4];
-    s32 n;
-    s32 i;
     u8* q;
+    s32 n;
     s32* c;
+    s32 i;
     s32 off;
 
 #define MU(K) (g_Minigame + off + (K))
