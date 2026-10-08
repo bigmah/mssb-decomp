@@ -40,6 +40,48 @@ extern void* fn_3_B9534(u32, u32, void*);
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void OSPanic(const char*, int, const char*, ...);
 extern int rand(void);
+typedef struct {
+    u8* p0;
+    u8 pad4[0x2C];
+    s32 n;
+    u8 pad34[8];
+    u32* a3C;
+    u16* a40;
+    u32* a44;
+    u8* a48;
+    f32 f4C[3];
+    f32 f58[3];
+    s16 cnt;
+    u8 pad66[5];
+    u8 b6B;
+} StaCommon;
+extern StaCommon lbl_3_common_bss_350E4;
+extern u8 g_Ball[];
+extern f64 cos(f64);
+extern f64 sin(f64);
+extern s32 lbl_3_bss_B660;
+extern const f32 lbl_3_rodata_2FC4;
+extern const f64 lbl_3_rodata_3008;
+extern const f32 lbl_3_rodata_3010;
+extern const f32 lbl_3_rodata_3014;
+extern const f32 lbl_3_rodata_3018;
+extern const f64 lbl_3_rodata_3020;
+extern u8 lbl_3_bss_B570[];
+extern void fn_80034CEC(void*);
+extern u32 sndFXStartEx(int, u8, u8, u8);
+extern void sndFXCtrl(int, int, u8);
+extern u8 lbl_3_data_8404[];
+extern u8 lbl_3_data_84B8[];
+extern u8 lbl_3_bss_B620[];
+typedef struct { f32 x, y, z; } V3;
+extern V3 lbl_3_bss_B5D8[6];
+extern u8 lbl_8036E548[];
+extern u32 lbl_3_data_1BA88[];
+extern void fn_3_F92FC(void);
+extern const f32 lbl_3_rodata_3060;
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+extern void* memcpy(void*, const void*, u32);
+extern void* memset(void*, int, u32);
 extern void DCFlushRange(void*, u32);
 
 // .text:0x000F8444 size:0x10
@@ -86,14 +128,56 @@ void fn_3_F85B0(void) {
 }
 
 // .text:0x000F8878 size:0x244 mapped:0x8073790C
-void fn_3_F8878(void) {
-    return;
+// 99%: only the stfs of 0.123f (n+0x14) is emitted after the fmuls instead of at loop top (orig keeps it at top yet gives it the lowest f-reg f23; moving it to the top flips f-reg order)
+void fn_3_F8878(u8* a) {
+    s16 k;
+    u8* n;
+    u32 i;
+    f32 prev;
+    f32 f;
+    f32 ang;
+    n = *(u8**)(a + 0xC);
+    i = 0;
+    k = 0;
+    *(s32*)(a + 0x10) = lbl_3_bss_B660;
+    for (; n != NULL; n = *(u8**)n) {
+        if ((i & 1) == 0) {
+            f = (f32)((i % 6) * 0x3C);
+            if (((i / 6) & 1) == 1) {
+                f += lbl_3_rodata_3010;
+            }
+        } else {
+            f = lbl_3_rodata_3014 + prev;
+        }
+        prev = f;
+        *(f32*)(n + 0x14) = lbl_3_rodata_2FC4;
+        ang = lbl_3_rodata_3018 * f;
+        *(f32*)(n + 0x10) = lbl_3_rodata_3020 * (f32)cos(ang);
+        *(f32*)(n + 0x18) = lbl_3_rodata_3020 * (f32)sin(ang);
+        *(s16*)(n + 0x48) = k;
+        k += 3;
+        n[0x4F] = i;
+        i++;
+        *(f32*)(n + 0x4) = lbl_3_rodata_2FB8[0];
+        *(f32*)(n + 0x8) = lbl_3_rodata_2FB8[1] - lbl_3_rodata_2FC8;
+        *(f32*)(n + 0xC) = lbl_3_rodata_2FB8[2];
+        *(f32*)(n + 0x38) = lbl_3_rodata_2FD0;
+        *(f32*)(n + 0x3C) = lbl_3_rodata_2FD4;
+        n[0x42] = 0xFF;
+        n[0x41] = 0xFF;
+        n[0x40] = 0xFF;
+        n[0x43] = 0xFF;
+        *(s16*)(n + 0x4A) = 0x80;
+        n[0x4D] = 0x1B;
+        n[0x4E] = 0;
+    }
 }
 
 // .text:0x000F8ABC size:0x48 mapped:0x80737B50
 void fn_3_F8ABC(void) {
-    if (fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F) != 0) {
-        fn_3_F8878();
+    u32 r = fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F);
+    if (r != 0) {
+        fn_3_F8878((u8*)r);
     }
 }
 
@@ -173,7 +257,46 @@ void fn_3_F8D00(void) {
 
 // .text:0x000F8E20 size:0x268 mapped:0x80737EB4
 void fn_3_F8E20(void) {
-    return;
+    s16 spE;
+    s16 spC;
+    s16 spA;
+    s16 sp8;
+    u8* b = lbl_3_bss_B570;
+    u8* sp = b + 0xB0;
+    f32* p = (f32*)(b + 0x68);
+    u8* st = lbl_803CC1B8;
+    s32 i;
+    for (i = 0; i < 6; i++, sp++, p += 3) {
+        switch (*sp) {
+            case 1:
+                fn_800528C0(p[0], p[1], p[2], &spC, &spE);
+                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x48) = spC;
+                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x4C) = spE;
+                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x50) = 0.0f;
+                *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(st + 0x14) + i) * 8) + 0x5C) = 0;
+                *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(st + 0x14) + i) * 8) + 0x54) |= 2;
+                *sp = 2;
+                break;
+            case 2: {
+                u8* o;
+                fn_800528C0(p[0], p[1], p[2], &sp8, &spA);
+                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x48) = sp8;
+                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x4C) = spA;
+                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x50) = 0.0f;
+                o = *(u8**)(lbl_80371C30 + (*(u16*)(st + 0x14) + i) * 8);
+                if ((u32)__cntlzw(2 - o[0x69]) >> 5) {
+                    *(u32*)(o + 0x54) &= ~2;
+                    *sp = 0;
+                }
+                break;
+            }
+        }
+    }
+    if (b[0x64] != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        fn_80034CEC(*(void**)(b + 0xB8));
+        b[0x64] = 0;
+    }
 }
 
 // .text:0x000F9088 size:0xDC mapped:0x8073811C
@@ -187,8 +310,46 @@ void fn_3_F9088(f32* pos, s32 idx) {
 }
 
 // .text:0x000F9164 size:0x198 mapped:0x807381F8
-void fn_3_F9164(void) {
-    return;
+// partial: ~14 diff insns; only the g_Ball/B5D8/B620 tail address-reg assignment (r3/r4/r5) and snd/stad saved-reg order differ
+void fn_3_F9164(u8* o) {
+    s32 stad;
+    s32 slot;
+    s32 snd;
+    u32 h;
+    u8 v;
+    V3* d;
+    switch (o[0xA2]) {
+        case 0:
+            snd = 2;
+            slot = g_Ball[0x1BE5];
+            break;
+        case 1:
+            snd = 1;
+            slot = g_Ball[0x1BE5] + 2;
+            break;
+        case 2:
+            snd = 0;
+            slot = g_Ball[0x1BE5] + 4;
+            break;
+    }
+    stad = g_d_GameSettings[9];
+    if (g_d_GameSettings[7] == 6) {
+        v = lbl_3_data_84B8[snd * 2];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + snd * 2];
+    }
+    h = sndFXStartEx((u16)(snd + ((u16*)lbl_3_data_81DC)[stad]), v, 0x3F, 0);
+    if (g_d_GameSettings[7] == 6) {
+        v = lbl_3_data_84B8[snd * 2 + 1];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + snd * 2 + 1];
+    }
+    sndFXCtrl(h, 0x5B, v);
+    lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
+    d = &lbl_3_bss_B5D8[slot];
+    d->y = -*(f32*)(g_Ball + 4);
+    lbl_3_bss_B620[slot] = 1;
+    d->z = *(f32*)(g_Ball + 8);
 }
 
 // .text:0x000F92FC size:0x50 mapped:0x80738390
@@ -209,23 +370,105 @@ void fn_3_F934C(void) {
 }
 
 // .text:0x000F963C size:0x130 mapped:0x807386D0
-void fn_3_F963C(void) {
-    return;
+#pragma dont_inline off
+void fn_3_F963C(s32 idx, u8* v) {
+    typedef struct { u8 pad[0x90]; u8 a : 1; u8 f : 1; u8 b : 6; } FlagObj;
+    u8* p;
+    lbl_3_common_bss_350E4.b6B = 1;
+    p = fn_800B0A5C_insertQueue(fn_3_F934C, (u16)(*(u16*)((u8*)lbl_803CC1B8 + 0x12) + 1));
+    memcpy(lbl_3_common_bss_350E4.f4C, g_Ball, 0xC);
+    memcpy(lbl_3_common_bss_350E4.f58, g_Ball + 0x318, 0xC);
+    lbl_3_common_bss_350E4.f4C[1] = -lbl_3_common_bss_350E4.f4C[1];
+    lbl_3_common_bss_350E4.f58[1] = -lbl_3_common_bss_350E4.f58[1];
+    if (v != NULL) {
+        PSVECScale((Vec*)(v + 0xC), lbl_3_rodata_3060, (Vec*)(p + 0x14));
+    }
+    memset(p + 0x20, 0, 0xC);
+    *(s32*)(p + 0x2C) = idx;
+    p[0x30] = 0;
+    ((FlagObj*)(lbl_3_common_bss_350E4.p0 + *(s32*)(p + 0x2C) * 0xE8))->f = 0;
 }
+#pragma dont_inline on
 
 // .text:0x000F976C size:0x284 mapped:0x80738800
-void fn_3_F976C(void) {
-    return;
+// partial: = inlined F99F0 + F963C; same snd/stad saved-reg swap and tail reg assignment as F99F0
+void fn_3_F976C(s32 idx, s32 b, u8* c) {
+    fn_3_F99F0(idx);
+    fn_3_F963C(idx, c);
 }
 
 // .text:0x000F99F0 size:0x1AC mapped:0x80738A84
-void fn_3_F99F0(void) {
-    return;
+// partial: prologue matches; tail lis/addi reg assignment for g_Ball/B5D8/B620 differs (we put g_Ball in r3, orig r4)
+#pragma dont_inline off
+void fn_3_F99F0(s32 idx) {
+    s32 snd;
+    s32 slot;
+    s32 stad;
+    u32 h;
+    u8 v;
+    V3* d;
+    switch (*(u8*)((u32)lbl_3_common_bss_350E4.p0 + idx * 0xE8 + 0xA2)) {
+        case 0:
+            snd = 2;
+            slot = g_Ball[0x1BE5];
+            break;
+        case 1:
+            snd = 1;
+            slot = g_Ball[0x1BE5] + 2;
+            break;
+        case 2:
+            snd = 0;
+            slot = g_Ball[0x1BE5] + 4;
+            break;
+    }
+    stad = g_d_GameSettings[9];
+    if (g_d_GameSettings[7] == 6) {
+        v = lbl_3_data_84B8[snd * 2];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + snd * 2];
+    }
+    h = sndFXStartEx((u16)(snd + ((u16*)lbl_3_data_81DC)[stad]), v, 0x3F, 0);
+    if (g_d_GameSettings[7] == 6) {
+        v = lbl_3_data_84B8[snd * 2 + 1];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + snd * 2 + 1];
+    }
+    sndFXCtrl(h, 0x5B, v);
+    lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
+    lbl_3_bss_B5D8[slot].y = -*(f32*)(g_Ball + 4);
+    lbl_3_bss_B620[slot] = 1;
+    lbl_3_bss_B5D8[slot].z = *(f32*)(g_Ball + 8);
 }
 
+#pragma dont_inline on
+
 // .text:0x000F9B9C size:0x1F8 mapped:0x80738C30
-void fn_3_F9B9C(void) {
-    return;
+// partial: F963C inlined OK; only prologue reg order (lis r6/addi r7 base vs ours r3/r6) differs
+void fn_3_F9B9C(s32 idx, s32 b, u8* c) {
+    typedef struct { u8 pad[0x90]; u8 a : 1; u8 f : 1; u8 g : 1; u8 h : 5; } FlagObj;
+    u8* o = lbl_3_common_bss_350E4.p0 + idx * 0xE8;
+    u8* q;
+    u32 t;
+    o[0xA1] = o[0xA2];
+    if (o[0xA1] == 0) {
+        fn_3_F9E78();
+        return;
+    }
+    if (o[0xA1] == 2) {
+        fn_3_F963C(idx, c);
+    }
+    *(u32*)(o + 0x74) = *(u32*)(lbl_8036E548 + 0x6C) + o[0xA2] * 0x90 + 0x34;
+    *(u32*)(o + 0x80) = lbl_3_data_1BA88[o[0xA2]];
+    t = 0;
+    if (((FlagObj*)o)->a && *(u32*)(o + 0x78) != 0) {
+        t = 1;
+    }
+    ((FlagObj*)o)->f = t;
+    (*(void (**)(s32, s32, u8*))(o + 0x80))(idx, b, c);
+    ((FlagObj*)o)->g = 0;
+    q = fn_800B0A5C_insertQueue(fn_3_F92FC, 0);
+    *(s16*)(q + 0x10) = 0x5A;
+    *(u8**)(q + 0x14) = o;
 }
 
 // .text:0x000F9D94 size:0xE4 mapped:0x80738E28
@@ -258,20 +501,7 @@ void fn_3_F9E78(void) {
 }
 
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
-// 93.9%: only saved-reg ranking differs (orig: offC<cnt<j<i<off18; ours: i<cnt<j<off18<offC), plus the zero-init copies come from i in the orig
-typedef struct {
-    u8* p0;
-    u8 pad4[0x2C];
-    s32 n;
-    u8 pad34[8];
-    u32* a3C;
-    u16* a40;
-    u32* a44;
-    u8* a48;
-    u8 pad4C[0x18];
-    s16 cnt;
-} StaCommon;
-extern StaCommon lbl_3_common_bss_350E4;
+// 97.6%: idx assigned directly (no j temp). Remaining: saved-reg ranking (orig: offC<cnt<j<i<off18<off2<off4; ours: i<cnt<j<off18<offC) and the orig IV zero-inits are `mr` copies of i (ours li). Explicit offset vars + decl order fix regs but give li inits.
 extern u8 lbl_3_data_1BA98[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
@@ -296,9 +526,8 @@ void fn_3_FA3C0(void) {
     memset(lbl_3_common_bss_350E4.a48, 0, size);
     cnt = 0;
     for (i = 0; i < 10; i++) {
-        j = (u16)(lbl_3_common_bss_350E4.a40[cnt - 1] + lbl_3_common_bss_350E4.a3C[cnt - 1]);
-        lbl_3_common_bss_350E4.a40[cnt] = j;
-        idx = j;
+        idx = (u16)(lbl_3_common_bss_350E4.a40[cnt - 1] + lbl_3_common_bss_350E4.a3C[cnt - 1]);
+        lbl_3_common_bss_350E4.a40[cnt] = idx;
         fn_3_B8574();
         for (j = 0; j < lbl_3_common_bss_350E4.n; j++) {
             if (i == lbl_3_data_1BA98[j * 0x14 + 0x12] && (lbl_3_common_bss_350E4.p0[j * 0xE8 + 0x90] >> 6 & 1)) {
@@ -345,3 +574,5 @@ void fn_3_FBBA0(u8* t) {
     GXLoadTexObj(&tex, GX_TEXMAP0);
 }
 
+
+#pragma dont_inline off

@@ -440,9 +440,10 @@ void fn_3_1356F8(void) {
     f32 v;
     u8 st;
     u32 i;
+
     memset(G8 + 0x1D7C, 0, 0x78);
     g = G8;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++, q += 8, g += 1) {
         st = g[0x18DC];
         *(s16*)(q + 4) = -1;
         if (RandomInt_Game(100) < (s8)lbl_3_data_21B88[st]) {
@@ -451,7 +452,6 @@ void fn_3_1356F8(void) {
             v = lbl_3_rodata_3600;
         }
         *(f32*)q = v;
-        q += 8;
     }
 }
 
@@ -792,8 +792,8 @@ void fn_3_136EA4(void) {
     } else {
         pu = (s8)g[0x1D74];
         if (pu != -1) {
-            t = *(s16*)(g + 0x1D58) - 1;
-            *(s16*)(g + 0x1D58) = t;
+            t = *(s16*)(g + 0x1D58);
+            *(s16*)(g + 0x1D58) = --t;
             if (t <= 0) {
                 if ((s8)g[0x1D6D] != pu) {
                     fn_800115C8();
@@ -886,7 +886,7 @@ void fn_3_1373E0(void) {
 }
 
 // .text:0x001379A0 size:0x170 mapped:0x80776A34
-// 96%: first loop base reg (orig keeps g_Minigame in r7 + separate induction ptr), fabs dx/dz reg order
+// 96%: only the first (unrolled) fielder-index loop differs: orig keeps g_Minigame in r7 plus a separate induction ptr in r4
 u8 fn_3_1379A0(s32 idx) {
     u8* f = (u8*)&g_Fielders[idx];
     u8* m = G8;
@@ -908,6 +908,7 @@ u8 fn_3_1379A0(s32 idx) {
             f32 py = *(f32*)(p + 4);
             f32 th;
             f32 dx, dz;
+            f64 ta, tb;
             if (fy < py) {
                 th = *(f32*)(f + 0x16C);
             } else {
@@ -916,8 +917,10 @@ u8 fn_3_1379A0(s32 idx) {
             if (!(th < fabs(fy - py))) {
                 f32 ex = *(f32*)(f + 0) + *(f32*)(f + 0x30);
                 f32 ez = *(f32*)(f + 8) + *(f32*)(f + 0x34);
-                dx = fabs(*(f32*)(p + 0) - ex);
-                dz = fabs(*(f32*)(p + 8) - ez);
+                ta = fabs(*(f32*)(p + 0) - ex);
+                tb = fabs(*(f32*)(p + 8) - ez);
+                dx = ta;
+                dz = tb;
                 if (dx < lbl_3_rodata_363C) {
                   if (dz < lbl_3_rodata_3688) {
                     return 1;
@@ -930,7 +933,7 @@ u8 fn_3_1379A0(s32 idx) {
 }
 
 // .text:0x00137B10 size:0x1E8 mapped:0x80776BA4
-// 98%: fabs dx/dz land in swapped f-regs (orig dx=f1 dz=f3), Vec x/z load regs swapped
+// 98%: only the Vec v x/y/z load registers and store order differ (orig f1=x,f0=0.0,f2=z)
 u8 fn_3_137B10(u8* o) {
     u8* g = G8;
     u8* p = g;
@@ -946,6 +949,7 @@ u8 fn_3_137B10(u8* o) {
         u8* f;
         f32 fy, py, th;
         f32 dx, dz;
+        f64 ta, tb;
         if ((s8)fr < 0) {
             continue;
         }
@@ -967,15 +971,17 @@ u8 fn_3_137B10(u8* o) {
         if (th < fabs(fy - py)) {
             continue;
         }
-        dx = fabs(*(f32*)(o + 0) - *(f32*)(f + 0));
-        dz = fabs(*(f32*)(o + 8) - *(f32*)(f + 8));
+        ta = fabs(*(f32*)(o + 0) - *(f32*)(f + 0));
+        tb = fabs(*(f32*)(o + 8) - *(f32*)(f + 8));
+        dx = ta;
+        dz = tb;
         if (dx <= lbl_3_rodata_363C && dz <= lbl_3_rodata_3688) {
             if (i == (s8)g[0x1D6D]) {
                 if (ret == 0) {
                     Vec v;
+                    v.y = lbl_3_rodata_35D0;
                     v.x = *(f32*)(f + 0x38);
                     v.z = *(f32*)(f + 0x3C);
-                    v.y = lbl_3_rodata_35D0;
                     ret = 1;
                     PSVECScale(&v, d[2], &v);
                     v.y = d[3];
