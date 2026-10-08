@@ -49,6 +49,23 @@ extern MenuEntries* lbl_2_bss_1A8248[];
 extern const f32 lbl_2_rodata_B58;
 extern f32 fn_2_4A18C(f32);
 extern const Vec lbl_2_data_2EA4[];
+extern const f64 lbl_2_rodata_C30;
+extern const f32 lbl_2_rodata_C3C;
+
+// fn_2_6BDE0, size:0xA0
+void fn_2_6BDE0(MenuFadeState* fade) {
+    s32 alpha;
+
+    ((u8*)lbl_2_bss_1A8248[0])[fade->index * 0xD8 + 0x16D0] = 1;
+    fade->progress = (f32)((f64)fade->progress + lbl_2_rodata_C30);
+    alpha = (s32)(lbl_2_rodata_C3C * fade->progress);
+    if (alpha < 255) {
+        ((u8*)lbl_2_bss_1A8248[0])[fade->index * 0xD8 + 0x16DA] = alpha;
+    } else {
+        ((u8*)lbl_2_bss_1A8248[0])[fade->index * 0xD8 + 0x16DA] = 255;
+        fade->state = 2;
+    }
+}
 
 // fn_2_688A4, size:0x9C
 f32 fn_2_688A4(s32 index, s32 location) {

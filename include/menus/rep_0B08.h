@@ -4,6 +4,15 @@
 #include "mssbTypes.h"
 #include "Dolphin/vec.h"
 
+typedef struct {
+    u8 padding[0x80];
+    s32 index;
+    u8 padding84[8];
+    f32 progress;
+    u8 padding90[4];
+    s16 state;
+} MenuFadeState;
+
 void fn_2_71A38(u8* object);
 
 void fn_2_70588(u8* object);
@@ -119,5 +128,7 @@ void fn_2_6A5A8(s32 index);
 f32 fn_2_68940(s32 from, s32 to);
 
 f32 fn_2_688A4(s32 index, s32 location);
+
+void fn_2_6BDE0(MenuFadeState* fade);
 
 #endif
