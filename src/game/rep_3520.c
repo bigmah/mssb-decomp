@@ -12,6 +12,14 @@
 #include "static/UnknownHomes_Static.h"
 extern u8 lbl_3_data_21AF0[];
 extern f32 lbl_3_rodata_35D0;
+extern f64 lbl_3_rodata_3670;
+extern f32 lbl_3_rodata_3628;
+extern f64 lbl_3_rodata_3678;
+extern f64 lbl_3_rodata_3680;
+extern u8 lbl_3_data_21AD0[];
+extern u8 lbl_3_bss_B781;
+extern f32 lbl_3_rodata_3648;
+extern f32 lbl_3_rodata_36C8;
 extern f32 lbl_3_data_21A48[];
 extern f32 lbl_3_rodata_35D8;
 extern f32 lbl_3_rodata_3620;
@@ -584,8 +592,35 @@ void fn_3_1371E8(void) {
 }
 
 // .text:0x00137224 size:0x1BC mapped:0x807762B8
-void fn_3_137224(void) {
-    return;
+void fn_3_137224(u8* o) {
+    Vec sp20;
+    Vec sp14;
+    Vec sp8;
+    f32 d;
+    u32 i;
+    for (i = 0; i < 100; i++) {
+        if (G8[0x193A + i] == 1) {
+            f32 y = *(f32*)(G8 + i * 12 + 0xCD4);
+            if (!(y > *(f32*)(lbl_3_data_219B8 + 0x38)) && !(*(f32*)(G8 + i * 12 + 0x1184) > lbl_3_rodata_3670)) {
+                sp20.x = *(f32*)(G8 + i * 12 + 0xCD0);
+                sp20.y = y;
+                sp20.z = *(f32*)(G8 + i * 12 + 0xCD8);
+                PSVECSubtract(&sp20, (Vec*)o, &sp14);
+                d = PSVECMag(&sp14);
+                d = (lbl_3_rodata_3628 - d) / lbl_3_rodata_3628;
+                sp14.y = lbl_3_rodata_35D0;
+                if (!PSVECMag(&sp14)) {
+                    sp14.z = lbl_3_rodata_3648;
+                }
+                PSVECNormalize(&sp14, &sp14);
+                sp8.x = lbl_3_rodata_35D0;
+                sp8.z = lbl_3_rodata_35D0;
+                sp8.y = lbl_3_rodata_3680 * (lbl_3_rodata_3668 * ((f64)((f32)rand() / lbl_3_rodata_365C) - lbl_3_rodata_35E0)) + lbl_3_rodata_3678;
+                PSVECScale(&sp8, d, &sp8);
+                PSVECAdd(&sp8, (Vec*)(G8 + i * 12 + 0x1180), (Vec*)(G8 + i * 12 + 0x1180));
+            }
+        }
+    }
 }
 
 // .text:0x001373E0 size:0x5C0 mapped:0x80776474
@@ -682,8 +717,37 @@ void fn_3_13802C(void) {
 }
 
 // .text:0x001382E0 size:0x168 mapped:0x80777374
-void fn_3_1382E0(void) {
-    return;
+// 99%: clamp compares r5 (orig compares copy r8)
+void fn_3_1382E0(u8* o) {
+    u32 t0 = *(u32*)&G8[0x17C0] / 60 / 20;
+    u32 t = t0;
+    s16* row;
+    int lo;
+    if (G8[0x72A] != 0) {
+        o[0x3D] = 0;
+        *(s16*)(o + 0x3A) = 0;
+        row = lbl_3_data_21A90 + G8[0x1A2B] * 8;
+        lo = row[t0 * 2];
+        t0 = random_fn_3_9EE24((row[t0 * 2 + 1] - lo) * 60);
+        *(s16*)(o + 0x38) = t0 + lo * 60;
+        return;
+    }
+    if (*(s16*)(o + 0x3A) < 0x7FFE) {
+        (*(s16*)(o + 0x3A))++;
+    } else {
+        *(s16*)(o + 0x3A) = 0x7FFF;
+    }
+    if (t > 3) {
+        t = 3;
+    }
+    if (*(s16*)(o + 0x3A) / 60 >= *(s16*)(lbl_3_data_21AD0 + lbl_3_bss_B781 * 8 + t * 2)) {
+        f32 z = lbl_3_rodata_35D0;
+        *(f32*)(o + 0x14) = z;
+        *(f32*)(o + 0xC) = z;
+        *(f32*)(o + 0x10) = -(&lbl_3_data_21A64)[1];
+        o[0x3D] = 2;
+        *(s16*)(o + 0x3A) = 0;
+    }
 }
 
 // .text:0x00138448 size:0x6C mapped:0x807774DC
@@ -817,8 +881,34 @@ void fn_3_13AA78(void) {
 }
 
 // .text:0x0013ACB4 size:0x10C mapped:0x80779D48
-void fn_3_13ACB4(void) {
-    return;
+void fn_3_13ACB4(f32* p) {
+    f32 d;
+    f32 dz = p[2] - g_Minigame._6FC;
+    f32 nx = -p[5];
+    f32 nz = p[3];
+    f32 dx = p[0] - g_Minigame._6F4;
+    if (dx * nx + dz * nz > lbl_3_rodata_35D0) {
+        nx *= lbl_3_rodata_3648;
+        nz *= lbl_3_rodata_3648;
+    }
+    d = lbl_3_rodata_35D0 + dx * nx;
+    d = (d + dz * nz) * lbl_3_rodata_3638;
+    dx = dx - d * nx;
+    dz = dz - d * nz;
+    nx *= lbl_3_rodata_3648;
+    nz *= lbl_3_rodata_3648;
+    g_Minigame._6F4 = p[0] + dx;
+    g_Minigame._6FC = p[2] + dz;
+    dz = p[2] - g_Minigame._714;
+    dx = p[0] - g_Minigame._70C;
+    d = lbl_3_rodata_35D0 + dx * nx;
+    d = (d + dz * nz) * lbl_3_rodata_3638;
+    dx = dx - d * nx;
+    dz = dz - d * nz;
+    g_Minigame._70C = p[0] + dx;
+    g_Minigame._714 = p[2] + dz;
+    g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._70C + g_Minigame._6F4);
+    g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._714 + g_Minigame._6FC);
 }
 
 // .text:0x0013ADC0 size:0x5C mapped:0x80779E54
