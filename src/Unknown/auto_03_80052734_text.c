@@ -16,7 +16,18 @@ void* fn_80052734(s32 index) {
     return camera + 0x150;
 }
 
+// fn_80052768_getCamera, size:0x30
+camera_803c639c_s* fn_80052768_getCamera(int index) {
+    if (index < 0) {
+        index = 0;
+    } else if (index >= 2) {
+        index = 1;
+    }
+    return (camera_803c639c_s*)(lbl_803C639C + index * 0xA8);
+}
+
 // fn_800527BC, size:0x8
 u32 fn_800527BC(void) {
     return lbl_803CB880;
 }
+
