@@ -81,4 +81,6 @@ void fn_2_68F08(s32 index, s8 value);
 
 void fn_2_6AF80(s32 index, s8 value);
 
+s32 fn_2_68670(s32 index);
+
 #endif
