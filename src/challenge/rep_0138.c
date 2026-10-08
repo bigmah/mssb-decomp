@@ -26,6 +26,39 @@ extern const f32 lbl_1_rodata_208;
 
 extern s32 lbl_1_bss_C4;
 
+extern u8 lbl_1_bss_C2[];
+extern u8 lbl_1_data_85C[];
+
+// fn_1_7EF8, size:0x100
+void fn_1_7EF8(void) {
+    switch ((s32)*(u16*)((u8*)&lbl_803C77B8 + 4)) {
+    case 4:
+    case 8:
+        lbl_1_bss_C2[0] = !lbl_1_bss_C2[0];
+        break;
+    case 1: {
+        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2[0]);
+        fn_80048E00(lbl_1_bss_C2[0], value - 1);
+        break;
+    }
+    case 2: {
+        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2[0]);
+        fn_80048E00(lbl_1_bss_C2[0], value + 1);
+        break;
+    }
+    case 0x100: {
+        u8 enabled = !lbl_1_data_85C[0];
+        lbl_1_data_85C[0] = enabled;
+        if (enabled != 0) {
+            fn_80048C14(0x3F);
+        } else {
+            fn_80048C14(0);
+        }
+        break;
+    }
+    }
+}
+
 // fn_1_78E4, size:0x7C
 void fn_1_78E4(void) {
     GXColor clear = lbl_1_data_858[0].color;
