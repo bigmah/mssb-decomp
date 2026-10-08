@@ -11,6 +11,8 @@ s32 fn_1_A8B4(void);
 
 s32 fn_1_A908(void);
 
+s32 fn_1_A718(void);
+
 s32 fn_1_A77C(void);
 
 s32 fn_1_A7B0(void);

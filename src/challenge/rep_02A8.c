@@ -12,6 +12,19 @@ extern u8 lbl_1_data_1CA0[];
 extern u8 lbl_1_data_17A4[];
 extern u8 lbl_1_bss_2FD9[];
 
+// fn_1_A718, size:0x64
+s32 fn_1_A718(void) {
+    s16 count = *(s8*)((u8*)lbl_800EF808 + 0x390);
+    s8 remaining = count - 1;
+    while (remaining > 0) {
+        if (fn_800214D0() == 0) {
+            return 0;
+        }
+        remaining--;
+    }
+    return 1;
+}
+
 static inline s32 SoundOptionValue(s32 index) {
     return lbl_800EF808[index + 1];
 }
