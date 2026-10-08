@@ -119,11 +119,9 @@ s32 fn_3_12ED80(void) {
 void fn_3_12EE68(s32 i) {
     u8* a;
     u8* b;
-    s32 off;
     u8 k;
 
-    off = i * 0x34;
-    a = g_Minigame + off + 0x860;
+    a = g_Minigame + i * 0x34 + 0x860;
     if (i % 3 == 2) {
         return;
     }
@@ -140,8 +138,8 @@ void fn_3_12EE68(s32 i) {
         *(f32*)(b + 0x28) = lbl_3_data_216BC[i * 3 + 1];
     } else {
         k = 0;
-        k |= (g_Minigame[off + 0x85C] == 2);
-        k |= (g_Minigame[off + 0x890] == 2);
+        k |= (g_Minigame[i * 0x34 + 0x85C] == 2);
+        k |= (g_Minigame[i * 0x34 + 0x890] == 2);
         *(f32*)(b + 0x28) = lbl_3_data_216BC[k * 3 + 1];
     }
 }
@@ -204,7 +202,52 @@ void fn_3_12F9D4(s32 idx) {
 
 // .text:0x0012FAC4 size:0x2A8 mapped:0x8076EB58
 void fn_3_12FAC4(void) {
-    return;
+    u8* p;
+    f32* a;
+    s32 i;
+    f32 v[3];
+
+    ((void (*)(void))fn_3_12F624)();
+    for (i = 0; i < 15; i++) {
+        p = g_Minigame + i * 0x34 + 0x860;
+        if (*(s16*)(p + 0x2C) < 0x7FFE) {
+            *(s16*)(p + 0x2C) += 1;
+        } else {
+            *(s16*)(p + 0x2C) = 0x7FFF;
+        }
+        if (p[0x30] == 1) {
+            a = (f32*)(g_Minigame + i * 0x34 + 0x860);
+            a[1] += lbl_3_data_21770[1];
+            if (a[1] < a[4]) {
+                a[1] = a[4];
+                if (a[7] != a[4]) {
+                    f32 z, y, x;
+                    z = a[2];
+                    y = a[1];
+                    x = a[0];
+                    v[1] = y;
+                    v[2] = z;
+                    v[0] = x;
+                    v[1] = -v[1];
+                    v[2] = v[2] - lbl_3_rodata_351C[0];
+                    if (y <= lbl_3_rodata_3518) {
+                        fn_8004C108(v, 1);
+                        fn_3_90064(0x2E4);
+                    } else {
+                        fn_8004C108(v, 0);
+                        fn_3_90064(0x2E5);
+                    }
+                }
+                *((u8*)a + 0x30) = 2;
+            }
+        }
+        if (p[0x30] == 3) {
+            fn_3_12F28C(i);
+        }
+        if (p[0x32] != 0) {
+            ((void (*)(s32))fn_3_12EFA4)(i);
+        }
+    }
 }
 
 // .text:0x0012FD6C size:0x118 mapped:0x8076EE00
