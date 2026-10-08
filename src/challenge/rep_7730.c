@@ -9,6 +9,13 @@ extern u8* lbl_803CC1B8[];
 
 extern f32 lbl_1_bss_6BE4[4];
 
+extern void (*lbl_1_data_1066C[])(s16);
+
+// .text:0x1E8C0 size:0x4C
+void fn_1_1E8C0(s32 index) {
+    lbl_1_data_1066C[*(s32*)(lbl_803CC1B8[0] + 0x28)]((s16)(index - 8));
+}
+
 // .text:0x1DE5C size:0x4
 void fn_1_1DE5C(void) {
 }

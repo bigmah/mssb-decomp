@@ -5,6 +5,8 @@
 
 void fn_1_1DE5C(void);
 
+void fn_1_1E8C0(s32 index);
+
 void fn_1_1E28C(void);
 
 void fn_1_1DDE4(f32 value);
