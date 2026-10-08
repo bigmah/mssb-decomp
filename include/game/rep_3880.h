@@ -22,7 +22,7 @@ void fn_3_149BA8(void);
 void fn_3_14A070(s32* src, s32 n);
 void fn_3_14A164(void);
 u32 fn_3_14A188(u8* o);
-void fn_3_14A37C(void);
+void fn_3_14A37C(u8* o, f32* v);
 void fn_3_14A62C(void);
 void fn_3_14A90C(void);
 void fn_3_14AC1C(void);
