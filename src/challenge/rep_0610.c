@@ -1,5 +1,11 @@
 #include "challenge/rep_0610.h"
 
+extern u32 lbl_1_bss_30BC;
+extern u8 lbl_1_bss_30C0[];
+extern u8 lbl_1_data_F4F8[];
+extern u8 lbl_803CBBC0[];
+extern void fn_800A7D4C(s32, void*, u8);
+
 extern u32 lbl_80108B90;
 extern u16 lbl_1_data_F17C[];
 extern void fn_800324EC(u16, s32, s32, void*);
@@ -254,5 +260,18 @@ void fn_1_F2F8(void) {
         lbl_80108B90 = 0;
         *(u32*)(state + 0xC) = 0;
         state[0x2F01] = 10;
+    }
+}
+
+// fn_1_CB9C, size:0x88
+void fn_1_CB9C(s32 reset) {
+    if (reset != 0) {
+        lbl_1_bss_30BC = 0;
+    } else {
+        s32 index;
+        u8* entry = lbl_1_data_F4F8 + lbl_803CBBC0[0] * 0x38;
+        PSMTXCopy((f32(*)[4])(lbl_1_bss_30C0 + 0x58), (f32(*)[4])(entry + 8));
+        index = lbl_803CBBC0[0];
+        ((void (*)(s32, void*))fn_800A7D4C)(8, lbl_1_data_F4F8 + index * 0x38);
     }
 }
