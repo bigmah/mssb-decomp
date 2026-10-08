@@ -52,6 +52,11 @@ typedef struct {
     u8 padding18[0x28];
 } ChallengeCurvePoint;
 
+typedef struct {
+    u8 padding[0x22];
+    u8 stageCount;
+} ChallengeTextureStages;
+
 void fn_1_1DE5C(void);
 
 void fn_1_1E8C0(s32 index);
@@ -113,5 +118,7 @@ s32 fn_1_2051C(ChallengeTextureHeader* texture, GXTexObj* object, GXTlutObj* pal
 void fn_1_202A4(void);
 
 void fn_1_21298(ChallengeCurveDrawing* drawing);
+
+void fn_1_20640(ChallengeTextureStages* stages, u32* indices);
 
 #endif

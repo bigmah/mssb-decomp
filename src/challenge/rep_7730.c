@@ -48,6 +48,40 @@ extern void (*lbl_1_data_10508[])(u8*);
 extern void (*lbl_1_data_10510[])(u8*);
 extern ChallengeCurvePoint lbl_1_bss_6FE0[];
 extern u32 lbl_1_data_104DC[];
+extern GXTlutObj lbl_1_bss_6E44[];
+extern GXTexObj lbl_1_bss_6EA4[];
+
+// fn_1_20640, size:0x194
+void fn_1_20640(ChallengeTextureStages* stages, u32* indices) {
+    u32* image;
+    GXTexCoordID stage;
+    u32 textureIndex;
+    u32 paletteIndex;
+
+    GXSetNumTevStages(stages->stageCount);
+    GXSetNumTexGens(stages->stageCount);
+    image = indices;
+    for (stage = 0; stage < (s32)stages->stageCount; image++, stage++) {
+        GXSetTexCoordGen2(stage, GX_TG_MTX3X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+        if (stage != 0) {
+            GXSetTevColorIn(stage, GX_CC_CPREV, GX_CC_TEXC, GX_CC_RASA, GX_CC_ZERO);
+            GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+            GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        } else {
+            GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+            GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_RASA);
+            GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        }
+        textureIndex = *image;
+        paletteIndex = textureIndex & 0x7FFFFFFF;
+        GXLoadTexObj(&lbl_1_bss_6EA4[textureIndex], stage);
+        if (textureIndex & 0x80000000) {
+            GXLoadTlut(&lbl_1_bss_6E44[paletteIndex], stage);
+        }
+    }
+}
 
 // fn_1_21298, size:0x170
 void fn_1_21298(ChallengeCurveDrawing* drawing) {
