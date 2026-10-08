@@ -30,7 +30,7 @@ void fn_3_C444C(void);
 u32 fn_3_C4724(void* h);
 void fn_3_C48D0(void);
 void fn_3_C4B80(void);
-void fn_3_C4CF4(void);
+void fn_3_C4CF4(void* hv, u8 type);
 void fn_3_C4F00(void);
 void fn_3_C5304(void);
 void fn_3_C54D0(void);

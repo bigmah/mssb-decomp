@@ -491,6 +491,8 @@ typedef struct C4724P {
     u8 pad44[4];
     s16 s48;
     s16 s4A;
+    u8 pad4C[4];
+    u8 f50;
 } C4724P;
 typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[0xE]; s32 f24; } C4724Hdr;
 extern u8 lbl_80366158[];
@@ -571,8 +573,40 @@ void fn_3_C4B80(void) {
 }
 
 // .text:0x000C4CF4 size:0x20C mapped:0x80703D88
-void fn_3_C4CF4(void) {
-    return;
+void fn_3_C4CF4(void* hv, u8 type) {
+    C4724Hdr* h = hv;
+    C4724P* p = h->head;
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 5, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxDesc(0xD, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetVtxAttrFmt(0, 0xD, 1, 4, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(0);
+    GXSetTevColorIn(0, 0xF, 0xA, 8, 0xF);
+    GXSetTevAlphaIn(0, 7, 5, 4, 7);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    fn_8005268C();
+    GXSetProjection(fn_80052734(), 0);
+    fn_8005268C();
+    GXLoadPosMtxImm(fn_80052734() + 0x40, 0);
+    GXSetCurrentMtx(0);
+    while (p != NULL) {
+        if (p->s48 <= 0 && p->s4A > 0 && type == p->f50) {
+            fn_8003403C(p->f38, p->f3C);
+            fn_80033CC8(p, h->f10);
+        }
+        p = p->next;
+    }
 }
 
 // .text:0x000C4F00 size:0x404 mapped:0x80703F94
