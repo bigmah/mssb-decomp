@@ -40,6 +40,7 @@ extern void* fn_3_B9534(u32, u32, void*);
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void OSPanic(const char*, int, const char*, ...);
 extern int rand(void);
+extern void DCFlushRange(void*, u32);
 
 // .text:0x000F8444 size:0x10
 void fn_3_F8444(void) {
@@ -117,8 +118,34 @@ void fn_3_F8B34(void) {
 }
 
 // .text:0x000F8BA8 size:0x158 mapped:0x80737C3C
-void fn_3_F8BA8(void) {
-    return;
+void fn_3_F8BA8(u8* o) {
+    u32* r = *(u32**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(o + 0x74)) + 0x18)) + 0x14) + 0x10) + 4);
+    s8 prev;
+    u32 i, j;
+    if (o[0xA3] != 0 && o[0xA3] % 3 == 0) {
+        o[0xA2]++;
+        if (o[0xA2] > 0x19) {
+            o[0xA2] = 0xA;
+            o[0xA3] = 0;
+        }
+        r[1] &= ~0x1FFF;
+        r[1] |= o[0xA2];
+        for (i = 0; i < 0x80; i++) {
+            for (j = 0; j < 0x80; j++) {
+                if (j == 0) {
+                    prev = lbl_3_bss_B63C[fn_800247E4(i, 0x7F, 0x80, 2)];
+                }
+                {
+                    s32 idx = fn_800247E4(i, j, 0x80, 2);
+                    s8 t = lbl_3_bss_B63C[idx];
+                    lbl_3_bss_B63C[idx] = prev;
+                    prev = t;
+                }
+            }
+        }
+        DCFlushRange(lbl_3_bss_B63C, 0x8000);
+    }
+    o[0xA3]++;
 }
 
 // .text:0x000F8D00 size:0x120 mapped:0x80737D94
