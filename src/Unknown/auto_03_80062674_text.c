@@ -16,6 +16,23 @@ void fn_800626EC(s32 index) {
     lbl_803C663C[index]++;
 }
 
+// fn_80062674, size:0x78
+void fn_80062674(s32 index) {
+    lbl_803C663C[index]--;
+    if ((s32)lbl_803C663C[index] == 0) {
+        if (((u8*)&g_d_GameSettings)[0x10] == 0) {
+            lbl_803C66B0[0x55] = 0;
+        } else {
+            u8* entry = lbl_803C66B0 + index;
+            entry[0x55] = 0;
+        }
+        {
+            u8* entry = lbl_803C66B0 + index;
+            entry[0x5D] = 0;
+        }
+    }
+}
+
 // fn_80062744, size:0x20
 void fn_80062744(void) {
     lbl_803C663C[3] = 0;
