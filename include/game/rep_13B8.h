@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_7D79C(void);
+void fn_3_7D79C(int i);
 void fn_3_7D920(int i);
 void fn_3_7D9DC(int i);
 void fn_3_7DB30(int);
