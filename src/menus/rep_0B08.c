@@ -1,5 +1,28 @@
 #include "menus/rep_0B08.h"
 
+typedef struct {
+    u8 _00[0xC0];
+    s8 flagC0;
+    u8 _C1[3];
+    u8 flagC4;
+    u8 _C5[5];
+    s8 flagCA;
+    s8 flagCB;
+    s8 flagCC;
+    s8 flagCD;
+    s8 flagCE;
+    s8 flagCF;
+    u8 flagD0;
+    u8 _D1[7];
+} MenuEntry;
+
+typedef struct {
+    u8 _00[0x1610];
+    MenuEntry entries[4];
+} MenuEntries;
+
+extern MenuEntries* lbl_2_bss_1A8248[];
+
 extern void (*lbl_2_data_2A2E0[])(u8* object);
 extern void (*lbl_2_data_2A2D4[])(u8* object);
 extern void (*lbl_2_data_2A2C4[])(u8* object);
@@ -176,4 +199,13 @@ void fn_2_6ACF0(void) {
 
 // .text:0x6AAB8 size:0x4
 void fn_2_6AAB8(void) {
+}
+
+// fn_2_6C2C4, size:0x24
+void fn_2_6C2C4(void) {
+    u8* menu;
+    ((u8*)lbl_2_bss_1A8248[0])[0x442F] = 0;
+    menu = (u8*)lbl_2_bss_1A8248[0];
+    menu[0x17AB] = 0;
+    *(s16*)(menu + 0x177C) = 0;
 }

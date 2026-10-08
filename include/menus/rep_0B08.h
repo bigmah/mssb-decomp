@@ -67,4 +67,6 @@ void fn_2_6ACF0(void);
 
 void fn_2_6AAB8(void);
 
+void fn_2_6C2C4(void);
+
 #endif
