@@ -47,6 +47,12 @@ extern u8 lbl_3_data_26D88[];
 extern u8 lbl_3_data_26DC4[];
 extern void* fn_80031F34(void*, u32);
 extern void fn_8003403C(f32, f32);
+extern const f32 lbl_3_rodata_3970;
+extern const f32 lbl_3_rodata_39C4;
+extern const f64 lbl_3_rodata_3990;
+extern const f64 lbl_3_rodata_3968;
+extern const f64 lbl_3_rodata_39D8;
+extern const f64 lbl_3_rodata_3978;
 extern f64 cos(f64);
 extern f64 sin(f64);
 extern f32 lbl_3_bss_B860[];
@@ -609,9 +615,44 @@ u32 fn_3_14BA40(u8* o) {
     return n == 0;
 }
 
+// 92%: right shape and saved regs; float math block order differs (orig converts 180.0/d[1], rand and n separately, consts via lfd sym@l not addi)
 // .text:0x0014BCB0 size:0x21C mapped:0x8078AD44
-void fn_3_14BCB0(void) {
-    return;
+void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
+    u8* p;
+    u8* d;
+    u32 n;
+    f32 t;
+    f32 ang;
+    f32 s;
+    f32 c;
+    f32 r;
+    *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    n = 0;
+    p = *(u8**)(o + 0xC);
+    d = (flag != 0) ? lbl_3_data_26DC4 : lbl_3_data_26D88;
+    do {
+        if (*(s16*)(p + 0x4A) == 0) {
+            p[0x4D] = *(s32*)d;
+            p[0x4E] = 0;
+            *(s16*)(p + 0x4A) = *(s32*)(d + 8);
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)(d + 0x10) / lbl_3_rodata_3930;
+            p[0x43] = *(s32*)(d + 0x28);
+            p[0x40] = *(s32*)(d + 0x1C);
+            p[0x41] = *(s32*)(d + 0x20);
+            p[0x42] = *(s32*)(d + 0x24);
+            t = (f32)rand() / lbl_3_rodata_3970;
+            r = (f32)(lbl_3_rodata_39C4 * (lbl_3_rodata_3990 * ((f64)t - lbl_3_rodata_3968)));
+            ang = lbl_3_rodata_39B8 * (f32)(lbl_3_rodata_39D8 / (f64)*(s32*)(d + 4) * (f64)n);
+            c = (f32)cos(ang);
+            *(f32*)(p + 4) = r * c + v[0];
+            s = (f32)sin(ang);
+            n++;
+            *(f32*)(p + 8) = (f32)((f64)(v[1] - r * s) - lbl_3_rodata_3978);
+            *(f32*)(p + 0xC) = v[2];
+            p[0x4F] = flag;
+        }
+        p = *(u8**)p;
+    } while (p != NULL && n < *(u32*)(lbl_3_data_26D88 + 4));
 }
 
 // .text:0x0014BECC size:0x47C mapped:0x8078AF60
