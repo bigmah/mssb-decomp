@@ -7,6 +7,8 @@ extern u8 g_FieldingLogic[];
 extern u8 g_Runners[];
 extern u8 lbl_3_common_bss_32A94[];
 extern u8 g_RunningLogic[];
+extern f32 lbl_3_rodata_1328;
+extern f32 lbl_3_rodata_132C;
 
 // .text:0x00077914 size:0xC60 mapped:0x806B69A8
 void fn_3_77914(void) {
@@ -187,7 +189,75 @@ void fn_3_79414(void) {
 }
 
 // .text:0x000795A8 size:0x1C4 mapped:0x806B863C
+// 90%: first half matches; tail (lbl[0x23] s8 handling) has different register allocation (raw s8 in r5, extended copy r7, runners base r4)
 void fn_3_795A8(void) {
-    return;
+    s32 v;
+    u8 cur;
+    s8 x;
+    s32 sx;
+    u8 c;
+    u8 y;
+    f32 spd;
+    if (*(s8*)(lbl_3_common_bss_32A94 + 0x23) > 0) {
+        return;
+    }
+    if (g_Ball[0x1BD1] == 1) {
+        lbl_3_common_bss_32A94[0x22] = 4;
+        lbl_3_common_bss_32A94[0x23] = 4;
+        return;
+    }
+    if (g_Ball[0x1BD1] == 3) {
+        lbl_3_common_bss_32A94[0x22] = 2;
+        lbl_3_common_bss_32A94[0x23] = 2;
+        return;
+    }
+    if (g_Runners[0x123] == 3) {
+        lbl_3_common_bss_32A94[0x22] = 4;
+        lbl_3_common_bss_32A94[0x23] = 4;
+        return;
+    }
+    if (g_Ball[0x1BBE] <= 1 && g_Ball[0x1BC9] != 0) {
+        cur = g_Runners[0x125];
+        if (cur == 0) {
+            v = 1;
+        } else {
+            spd = *(f32*)(g_Runners + 0x68);
+            if (spd < lbl_3_rodata_1328) {
+                if (g_Runners[0x123] == 2 && lbl_3_rodata_132C == spd) {
+                    v = cur - 1;
+                } else {
+                    v = cur;
+                }
+            } else {
+                v = g_Runners[0x126];
+            }
+        }
+        lbl_3_common_bss_32A94[0x23] = -v;
+    }
+    x = lbl_3_common_bss_32A94[0x23];
+    sx = x;
+    c = g_Runners[0x125];
+    if (c == -sx) {
+        if (x != 0) {
+            y = x * -1;
+            lbl_3_common_bss_32A94[0x23] = y;
+            if (*(s8*)(g_Runners + 0x12F) == (s8)y) {
+                lbl_3_common_bss_32A94[0x23] = y - 1;
+            }
+            lbl_3_common_bss_32A94[0x22] = lbl_3_common_bss_32A94[0x23];
+            return;
+        }
+    } else if (c - 1 == -sx) {
+        if (x != 0) {
+            if (*(s8*)(g_Runners + 0x12F) == (1 - sx) % 4) {
+                lbl_3_common_bss_32A94[0x23] = lbl_3_common_bss_32A94[0x23] * -1;
+                lbl_3_common_bss_32A94[0x22] = lbl_3_common_bss_32A94[0x23];
+                return;
+            }
+        }
+    }
+    if (c != 0) {
+        lbl_3_common_bss_32A94[0x22] = c;
+    }
 }
 
