@@ -219,3 +219,8 @@ void fn_2_68638(s32 index, s8 value) {
 void fn_2_68654(s32 index, s8 value) {
     ((u8*)lbl_2_bss_1A8248[0])[index * 0xD8 + 0x16DD] = value;
 }
+
+// fn_2_686D0, size:0x1C
+void fn_2_686D0(s32 index, s8 value) {
+    ((u8*)lbl_2_bss_1A8248[0])[index * 0xD8 + 0x16DF] = value;
+}
