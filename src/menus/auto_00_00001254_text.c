@@ -53,3 +53,13 @@ void fn_2_12A0(s16* value, s32 increment) {
     }
     *value = 0x7FFF;
 }
+
+// fn_2_12CC, size:0x2C
+void fn_2_12CC(u8* value, s32 increment) {
+    u8 current = *value;
+    if (current + (u16)increment > 0xFF) {
+        *value = 0xFF;
+        return;
+    }
+    *value = current + increment;
+}
