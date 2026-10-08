@@ -6,7 +6,7 @@
 void fn_3_BA538(void);
 void fn_3_BA7F4(void);
 void fn_3_BB07C(f32*, f32);
-void fn_3_BB15C(void);
+void fn_3_BB15C(u8* p);
 void fn_3_BB454(void);
 void fn_3_BB7F4(void);
 void fn_3_BBBC4(void);

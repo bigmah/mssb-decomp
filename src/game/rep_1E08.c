@@ -13,7 +13,7 @@ extern void* (*lbl_3_data_11390[])(void*);
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_3_data_11380[];
 extern s32 lbl_3_data_17000[];
-extern f32 lbl_3_rodata_1EC4;
+extern const f32 lbl_3_rodata_1EC4;
 extern f64 sin(f64);
 extern f64 cos(f64);
 extern s32 lbl_3_data_170D8[];
@@ -96,9 +96,48 @@ void fn_3_BB07C(f32* out, f32 deg) {
 }
 
 // .text:0x000BB15C size:0x2F8 mapped:0x806FA1F0
-void fn_3_BB15C(void) {
-    return;
+extern int rand(void);
+extern const f32 lbl_3_rodata_1EB0;
+extern const f32 lbl_3_rodata_1EC8;
+extern const f32 lbl_3_rodata_1E84;
+extern const f32 lbl_3_rodata_1E98;
+void fn_3_BB15C(u8* p) {
+    s32 lo;
+    u8 lo8;
+    f32 sc;
+    f32 r;
+    f32 sn;
+    f32 cs;
+    s32 range;
+    f32 ang;
+    ang = 0.0f;
+    lo8 = lbl_3_data_170D8[5];
+    lo = lbl_3_data_170D8[5];
+    *(f32*)(p + 4) = (f32)(*(s16*)(p + 0x4A) * 2) / (f32)lbl_3_data_170D8[0] - lbl_3_rodata_1E84;
+    *(f32*)(p + 8) = lbl_3_rodata_1E98;
+    r = (f32)rand() / lbl_3_rodata_1EB0;
+    *(f32*)(p + 0xC) = 50.0f * r + 50.0f;
+    sn = sin(ang);
+    cs = cos(ang);
+    *(f32*)(p + 0x10) = (sn * (f32)lbl_3_data_170D8[1]) / lbl_3_rodata_1EC4;
+    *(f32*)(p + 0x14) = (cs * (f32)lbl_3_data_170D8[1]) / lbl_3_rodata_1EC4;
+    *(f32*)(p + 0x18) = 0.0f;
+    *(f32*)(p + 0x24) = 0.0f;
+    *(f32*)(p + 0x20) = 0.0f;
+    *(f32*)(p + 0x1C) = 0.0f;
+    sc = (f32)lbl_3_data_170D8[2] / lbl_3_rodata_1EC4;
+    *(f32*)(p + 0x28) = sc * ((f32)rand() / lbl_3_rodata_1EB0);
+    *(f32*)(p + 0x2C) = sc * ((f32)rand() / lbl_3_rodata_1EB0);
+    *(f32*)(p + 0x30) = sc * ((f32)rand() / lbl_3_rodata_1EB0);
+    p[0x47] = 0xFF;
+    p[0x43] = 0xFF;
+    p[0x41] = lo8 + rand() % (range = (u8)(0xFF - lo));
+    p[0x42] = lo8 + rand() % range;
+    p[0x44] = lo8 + rand() % range;
+    p[0x45] = lo8 + rand() % range;
+    p[0x46] = lo8 + rand() % range;
 }
+
 
 // .text:0x000BB454 size:0x3A0 mapped:0x806FA4E8
 void fn_3_BB454(void) {
@@ -347,8 +386,8 @@ void fn_3_BD1D4(void) {
 }
 
 // .text:0x000BD1D8 size:0x25C mapped:0x806FC26C
-extern f32 lbl_3_rodata_1E84;
-extern f32 lbl_3_rodata_1E98;
+extern const f32 lbl_3_rodata_1E84;
+extern const f32 lbl_3_rodata_1E98;
 extern f32 lbl_3_rodata_1EE0;
 extern f32 lbl_3_rodata_1F10;
 extern f32 lbl_3_rodata_1EE4;
@@ -575,7 +614,7 @@ void fn_3_BD8FC(void) {
 
 // .text:0x000BDCA4 size:0x170 mapped:0x806FCD38
 extern u8 lbl_803CBBC0;
-extern f32 lbl_3_rodata_1E84;
+extern const f32 lbl_3_rodata_1E84;
 extern u8 lbl_80366158[];
 extern void fn_800A7D4C(int, void*);
 typedef struct { u8 pad[8]; Mtx m; f32 x, y, z; s32 n; f32 s; u8 pad2[0x34C - 0x4C]; } BDCA4E;
@@ -600,7 +639,6 @@ void fn_3_BDCA4(void) {
 
 // .text:0x000BDE14 size:0x160 mapped:0x806FCEA8
 extern const f32 lbl_3_rodata_1F38;
-extern const f32 lbl_3_rodata_1EB0;
 extern const f64 lbl_3_rodata_1F40;
 extern int rand(void);
 extern void* memcpy(void*, const void*, u32);
