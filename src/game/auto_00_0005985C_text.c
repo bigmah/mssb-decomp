@@ -63,3 +63,10 @@ void fn_3_5A6D4(u8 status) {
     game->FrameCountOfCurrentAtBat_Copy = 0;
     game->_125 = 0;
 }
+
+// fn_3_5ED98, size:0x40
+void fn_3_5ED98(void) {
+    fn_3_5A6D4(2);
+    *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+    g_Pitcher.peachDaisyStarAnimationOn = 0;
+}
