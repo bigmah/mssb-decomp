@@ -20,6 +20,12 @@ extern f32 lbl_3_rodata_3A18;
 extern f32 fn_3_119854(u8 i);
 
 extern u8 lbl_8036E548[];
+extern u8 g_GameLogic[];
+extern const f32 lbl_3_rodata_3A34;
+extern const f32 lbl_3_rodata_3A38;
+extern const f32 lbl_3_rodata_3A3C;
+extern const f32 lbl_3_rodata_3A40;
+extern const f32 lbl_3_rodata_3A44;
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
@@ -1837,8 +1843,25 @@ void fn_3_1578F8(void) {
 }
 
 // .text:0x0015791C size:0x1A8 mapped:0x807969B0
-void fn_3_15791C(void) {
-    return;
+f32 fn_3_15791C(s32 i) {
+    s32 q = (i + 0x30) / 120;
+    s32 t = (i + 0x30) % 120;
+    f32 c;
+    f32 r;
+    if (t >= 48) {
+        c = cos(lbl_3_rodata_3A34 * (lbl_3_rodata_392C + ((f32)t - lbl_3_rodata_3A38) / lbl_3_rodata_3A3C));
+    } else {
+        c = cos(lbl_3_rodata_3A34 * ((f32)t / lbl_3_rodata_3A38));
+    }
+    r = c * lbl_3_rodata_39A8;
+    r += lbl_3_rodata_39A8;
+    if (q != 0) {
+        u8 gs = g_GameLogic[0x11E];
+        if (gs != 0xE && gs != 0x22 && gs != 0x24 && gs != 0x26) {
+            r += lbl_3_rodata_39A8 * ((f32)i - lbl_3_rodata_3A3C) / lbl_3_rodata_3A40;
+        }
+    }
+    return lbl_3_rodata_3A44 * r;
 }
 
 // .text:0x00157AC4 size:0x2F4 mapped:0x80796B58
