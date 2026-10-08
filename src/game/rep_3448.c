@@ -42,6 +42,8 @@ extern void fn_80034E20(void*, void*);
 extern u8 lbl_3_data_A9F8[];
 
 extern u8 lbl_80371C30[];
+extern u8 lbl_3_data_24B04[];
+extern u8 lbl_3_data_21788[];
 extern u8 lbl_3_data_226E0[];
 extern u8 lbl_3_data_24784[];
 extern u8 lbl_3_data_23A44[];
@@ -228,8 +230,104 @@ void fn_3_11FA58(void) {
 }
 
 // .text:0x0011FDB0 size:0x4BC mapped:0x8075EE44
+// near-match: only reg numbers in the last (4x unrolled) loop: orig base r5 / n r4, ours base r4 / n r5
 void fn_3_11FDB0(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    u32 i;
+    u32 j;
+    u32 k;
+    u32 lim;
+    u8* o;
+    s16 sc;
+    s32 n;
+    u8* t;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (*(u16*)(q + 0x1C)) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_24B04);
+        {
+            u32 bt = g_Batter[0x7B];
+            *(s16*)(((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14)].p + 0x64) = ((s32)(-bt | bt) >> 31) + 0x120;
+        }
+        for (i = 0; i < 10; i++) {
+            for (j = 1; j <= 4; j++) {
+                fn_800363D8(q, i + 3, j, 0x121, i);
+            }
+        }
+        *(u16*)(q + 0x1C) = 1;
+        break;
+    case 1:
+        sc = *(s16*)(g_Minigame + 0x18A4);
+        if (sc >= 0 && sc < 15) {
+            lim = 10;
+        } else {
+            lim = g_Minigame[0x1ADA];
+            if (lim > 10) {
+                lim = 10;
+            }
+        }
+        if (*(u16*)(q + 0x1E) < lim) {
+            *(u16*)(q + 0x1E) = *(u16*)(q + 0x1E) + 1;
+        } else {
+            *(u16*)(q + 0x1E) = lim;
+        }
+        if (*(u16*)(q + 0x1E) <= 3) {
+            i = 0;
+            do {
+                n = *(u16*)(q + 0x14) + i;
+                i++;
+                *(u16*)(*(u8**)(lbl_80371C30 + (n + 3) * 8) + 0x64) = 0x122;
+            } while (i < 10);
+            {
+                QEnt* t = (QEnt*)lbl_80371C30;
+                *(u16*)(t[*(u16*)(q + 0x14) + 13].p + 0x64) = 0x126;
+            }
+        } else if (*(u16*)(q + 0x1E) <= 6) {
+            i = 0;
+            do {
+                n = *(u16*)(q + 0x14) + i;
+                i++;
+                *(u16*)(*(u8**)(lbl_80371C30 + (n + 3) * 8) + 0x64) = 0x123;
+            } while (i < 10);
+            {
+                QEnt* t = (QEnt*)lbl_80371C30;
+                *(u16*)(t[*(u16*)(q + 0x14) + 13].p + 0x64) = 0x127;
+            }
+        } else {
+            i = 0;
+            do {
+                n = *(u16*)(q + 0x14) + i;
+                i++;
+                *(u16*)(*(u8**)(lbl_80371C30 + (n + 3) * 8) + 0x64) = 0x124;
+            } while (i < 10);
+            {
+                QEnt* t = (QEnt*)lbl_80371C30;
+                *(u16*)(t[*(u16*)(q + 0x14) + 13].p + 0x64) = 0x128;
+            }
+        }
+        t = lbl_80371C30;
+        for (k = 0; k < *(u16*)(q + 0x1E);) {
+            n = *(u16*)(q + 0x14) + k;
+            k++;
+            o = *(u8**)(t + (n + 3) * 8);
+            *(u32*)(o + 0x58) = (*(u32*)(o + 0x58) & 0xFFFFFF00) | 0xFF;
+        }
+        for (; k < 10;) {
+            n = *(u16*)(q + 0x14) + k;
+            k++;
+            o = *(u8**)(t + (n + 3) * 8);
+            *(u32*)(o + 0x58) = *(u32*)(o + 0x58) & 0xFFFFFF00;
+        }
+        break;
+    }
+    if ((s32)*(u16*)(q + 0x1E) >= *(s16*)(lbl_3_data_21788 + 4) && g_Minigame[0x1A3B] == 0 &&
+        (*(u16*)(g_d_GameSettings + 4) % 45) == 0) {
+        fn_3_90064(0x2FC);
+    }
 }
 
 // .text:0x0012026C size:0x630 mapped:0x8075F300
