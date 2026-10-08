@@ -17,4 +17,6 @@ void fn_1_78E4(void);
 
 void fn_1_7EF8(void);
 
+void fn_1_7E04(f32 scale);
+
 #endif

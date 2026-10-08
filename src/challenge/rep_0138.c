@@ -24,6 +24,31 @@ extern ChallengeFog* lbl_1_bss_4E0[];
 extern const f32 lbl_1_rodata_1D8;
 extern const f32 lbl_1_rodata_208;
 
+extern const f32 lbl_1_rodata_21C[];
+extern const f32 lbl_1_rodata_220[];
+extern const f32 lbl_1_rodata_224[];
+extern const f32 lbl_1_rodata_228[];
+extern const f32 lbl_1_rodata_22C[];
+extern const f32 lbl_1_rodata_230[];
+extern const f32 lbl_1_rodata_234[];
+extern const f32 lbl_1_rodata_238[];
+extern const f32 lbl_1_rodata_23C;
+extern const f32 lbl_1_rodata_240;
+extern const f32 lbl_1_rodata_244;
+
+// fn_1_7E04, size:0xF4
+void fn_1_7E04(f32 scale) {
+    Mtx44 projection;
+    f32 inverse = lbl_1_rodata_1D8 / scale;
+    C_MTXFrustum(projection, lbl_1_rodata_21C[0] * inverse, lbl_1_rodata_220[0] * inverse,
+                 lbl_1_rodata_224[0] * inverse, lbl_1_rodata_228[0] * inverse,
+                 lbl_1_rodata_1D8, lbl_1_rodata_208);
+    GXSetProjection(projection, GX_PERSPECTIVE);
+    fn_800B806C(0, lbl_1_rodata_22C[0] * inverse, lbl_1_rodata_230[0] * inverse,
+               lbl_1_rodata_234[0] * inverse, lbl_1_rodata_238[0] * inverse,
+               lbl_1_rodata_23C, lbl_1_rodata_240, lbl_1_rodata_244);
+}
+
 extern s32 lbl_1_bss_C4;
 
 extern u8 lbl_1_bss_C2[];
