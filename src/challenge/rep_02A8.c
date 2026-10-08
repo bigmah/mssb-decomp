@@ -13,3 +13,9 @@ s32 fn_1_A77C(void) {
     fn_80021518(0x31, lbl_800EF808[0x2A]);
     return 0;
 }
+
+// fn_1_A7B0, size:0x34
+s32 fn_1_A7B0(void) {
+    fn_80021518(0x33, lbl_800EF808[0x32]);
+    return 0;
+}
