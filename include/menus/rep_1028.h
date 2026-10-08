@@ -25,4 +25,6 @@ void fn_2_918DC(MenuStateObject* object);
 
 void fn_2_9177C(MenuStateObject* object);
 
+void fn_2_9150C(MenuStateObject* object);
+
 #endif
