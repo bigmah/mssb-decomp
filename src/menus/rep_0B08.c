@@ -377,3 +377,20 @@ void fn_2_68DE8(s32 index, Vec* result) {
     result->y = 0.0f;
     result->x = 0.0f;
 }
+
+// fn_2_6AABC, size:0x80
+void fn_2_6AABC(s32 index, const Vec* position) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    u8* p = (u8*)entry;
+    memcpy(entry, position, 0xC);
+    *(f32*)(p + 0xC) = 0.0f;
+    *(f32*)(p + 0x10) = 0.0f;
+    *(f32*)(p + 0x14) = 0.0f;
+    *(f32*)(p + 0x18) = 0.0f;
+    *(f32*)(p + 0x1C) = 0.0f;
+    *(f32*)(p + 0x20) = 0.0f;
+    *(f32*)(p + 0x6C) = *(f32*)(p + 0x0);
+    *(f32*)(p + 0x70) = *(f32*)(p + 0x8);
+    *(f32*)(p + 0x38) = 0.0f;
+    p[0xBB] = 0;
+}
