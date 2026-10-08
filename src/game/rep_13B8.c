@@ -1583,8 +1583,111 @@ void fn_3_872CC(void) {
 }
 
 // .text:0x00087424 size:0x3F8 mapped:0x806C64B8
+// 97%: only prologue load order differs (orig loads 4C54 table first: lha 0x14,0x16,0x12 then lfs 4C44; ours starts with 4C44 base)
 void fn_3_87424(void) {
-    return;
+    u8* q;
+    s16 t;
+    u8* f;
+    int off;
+    s16 a;
+    s16 b86;
+    int ri;
+    int i;
+    u8* r;
+    s32 d;
+    f32 p;
+    s16 h1;
+    s16 h2;
+    s16 h3;
+    f32 c1;
+    f32 c2;
+    f32 c3;
+    fn_3_872CC();
+    if (g_GameLogic[0x121] != 6 && g_GameLogic[0x121] != 0xE) {
+        b86 = *(s16*)(g_Ball + 0x1B86);
+        if (b86 >= 0 && (a = *(s16*)(g_Ball + 0x1B7A)) >= 0 && a != 3 && g_Fielders[*(s16*)(g_Ball + 0x1B78) * 0x268 + 0x1E7] == 0) {
+            ri = (b86 + 3) & 3;
+            off = ri * 0x154;
+            q = g_Runners + off;
+            if (*(s16*)(q += 0xEE) == 1) {
+                fn_3_88D88(ri);
+                *(s16*)q = 2;
+                g_Runners[off + 0x12C] = 2;
+                if (*(s16*)(g_Ball + 0x1B92) < 0) {
+                    t = *(s16*)(g_Ball + 0x1B94);
+                    if (t < 0) {
+                        *(s16*)(g_Ball + 0x1B92) = *(s16*)(g_Ball + 0x1B78);
+                    } else {
+                        *(s16*)(g_Ball + 0x1B92) = t;
+                        if (g_FieldingLogic[0x141] != 0 && g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(s32*)(g_GameLogic + 8)) {
+                            f = g_Fielders;
+                            f += t * 0x268;
+                            fn_3_161588(8, *(s16*)(f + 0x178));
+                        }
+                        if ((s8)g_FieldingLogic[0x115] > 0 && g_FieldingLogic[0x133] != 0) {
+                            g_UnkSound_32718[8] = 4;
+                            t = *(s16*)(g_Ball + 0x1B90);
+                            g_FieldingLogic[0x134] = t;
+                            if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(s32*)(g_GameLogic + 8)) {
+                                f = g_Fielders;
+                                f += t * 0x268;
+                                fn_3_161588(2, *(s16*)(f + 0x178));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        h1 = lbl_3_data_4C54[10];
+        h2 = lbl_3_data_4C54[11];
+        c1 = lbl_3_data_4C44[1];
+        c2 = lbl_3_data_4C44[2];
+        c3 = lbl_3_data_4C44[3];
+        h3 = lbl_3_data_4C54[9];
+        for (i = 0; i < 4; i++) {
+            r = g_Runners + i * 0x154;
+            if (r[0x123] == 1) {
+                d = 0;
+                if (*(f32*)(r + 0x84) >= lbl_3_rodata_1498) {
+                    d = h1;
+                }
+                if (r[0x147] != 0) {
+                    d += h2;
+                }
+                if (d != 0) {
+                    *(s16*)(r + 0xF6) = *(s16*)(r + 0xF6) - d;
+                    if (*(s16*)(r + 0xF6) < 0) {
+                        *(s16*)(r + 0xF6) = 0;
+                    }
+                }
+                p = lbl_3_rodata_1408 - (f32) * (s16*)(r + 0xF6) / (f32)h3;
+                *(f32*)(r + 0xD4) = lbl_3_rodata_1408 - c1 * p;
+                *(f32*)(r + 0xD8) = lbl_3_rodata_1408 - c2 * p;
+                *(f32*)(r + 0xDC) = lbl_3_rodata_1408 - c3 * p;
+            }
+        }
+        g_Runners[0x130] = 0;
+        g_Runners[0x284] = 0;
+        g_Runners[0x3D8] = 0;
+        g_Runners[0x52C] = 0;
+        if (g_FieldingLogic[0x111] == 2 || g_FieldingLogic[0x111] == 4) {
+            s16 fi = *(s16*)(g_FieldingLogic + 0xE8);
+            if (fi >= 0) {
+                q = g_Runners + fi * 0x154;
+                if (q[0x123] == 1) {
+                    q[0x130] = 1;
+                }
+                if (*(s16*)(g_FieldingLogic + 0xEC) < 5 && q[0x13A] != 0) {
+                    q[0x130] = 2;
+                }
+                if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(s32*)(g_GameLogic + 8)) {
+                    f = g_Fielders;
+                    f += *(s16*)(g_Ball + 0x1B78) * 0x268;
+                    fn_3_161588(6, *(s16*)(f + 0x178));
+                }
+            }
+        }
+    }
 }
 
 // .text:0x0008781C size:0x2CC mapped:0x806C68B0
