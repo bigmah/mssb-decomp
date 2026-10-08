@@ -36,7 +36,7 @@ void fn_3_833EC(int i);
 void fn_3_835B0(void);
 void fn_3_83714(void);
 int fn_3_841C0(int i, int j);
-void fn_3_842E4(void);
+int fn_3_842E4(int i);
 void fn_3_846C8(void);
 void fn_3_84AD0(void);
 void fn_3_85074(void);
