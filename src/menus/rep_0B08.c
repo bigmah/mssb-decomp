@@ -321,3 +321,13 @@ void fn_2_6C120(u8* object) {
         *(s16*)(object + 0x94) = 2;
     }
 }
+
+// fn_2_6AF9C, size:0x38
+s32 fn_2_6AF9C(s32 index) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    if (entry->flagD0 == 0) {
+        entry->flagD0 = 0;
+        return 1;
+    }
+    return 0;
+}
