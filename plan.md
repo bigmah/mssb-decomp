@@ -189,6 +189,8 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Zero-fill of an `s32` array member, 16x unrolled with `addi rX, rOff, 0x128+4k; stwx` (fn_3_1069C0):** index a typed struct member, `((S*)g)->arr[i] = 0;`. `*(s32*)(g + 0x128 + i*4)` or `((s32*)(g+0x128))[i]` give 8x unrolls with `slwi`/`add`.
 - **Still unsolved (rep_3090):** fn_3_FCE38/FCEB0: the original places the loop preheader (`slwi r6,r3,6`, or `lwz n; li off,0`) after the final `blr` and leaves a dead `b cond` behind the previous block. Tried while/for/goto/do-while(0)/inline helpers and GC 2.0/2.5/2.7; none reproduce it (only two functions in the whole game have this shape). fn_3_104B20 still resists, including inline `VecSet`/`GetTrans`/`Copy` helpers.
 
+- **Float rodata externs: declare them all `const` (fn_3_106BA0):** a loop that stores five different float constants only hoists all five into callee-saved FPRs (`lfs f27..f31` before the loop) when every `extern` is `const f32`. With a mix of `const` and non-const (or all non-const) the compiler reloads one constant inside the loop (or hoists the addresses instead), changing the frame size and saved-register set. Check the `const`ness of the externs first when the diff shows a different number of saved `fN`/`rN` registers.
+
 Add new patterns to this list as we find them.
 
 ## Phases
