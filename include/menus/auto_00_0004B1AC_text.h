@@ -37,4 +37,6 @@ void* fn_2_519F0(void);
 
 void fn_2_54874(void);
 
+void fn_2_54848(void);
+
 #endif
