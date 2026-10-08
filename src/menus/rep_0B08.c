@@ -331,3 +331,18 @@ s32 fn_2_6AF9C(s32 index) {
     }
     return 0;
 }
+
+// fn_2_6AFD4, size:0x50
+s32 fn_2_6AFD4(s32 index) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    u8 flag = entry->flagC4;
+    if (flag == 1) {
+        entry->flagC4 = 0;
+        return 1;
+    }
+    if (flag == 2) {
+        entry->flagC4 = 0;
+        return 2;
+    }
+    return 0;
+}

@@ -103,4 +103,6 @@ void fn_2_6C120(u8* object);
 
 s32 fn_2_6AF9C(s32 index);
 
+s32 fn_2_6AFD4(s32 index);
+
 #endif
