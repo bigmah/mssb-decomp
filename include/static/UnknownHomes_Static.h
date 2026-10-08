@@ -97,4 +97,6 @@ extern void fn_800B9A9C(u8 flag, f32 value);
 
 extern f32 fn_800B4A94(void* object);
 
+extern void fn_80035B50(int id);
+
 #endif // !__UNKNOWN_HOMES_STATIC_H_
