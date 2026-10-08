@@ -45,4 +45,7 @@ void fn_2_48D08(void);
 
 s16 fn_2_4A234(f32 x, f32 y);
 
+void fn_2_49E5C(s32 x, s32 y, s32 number, s32 flags, s32 digits, s32 style,
+                s32 first, s32 second, s32 third);
+
 #endif

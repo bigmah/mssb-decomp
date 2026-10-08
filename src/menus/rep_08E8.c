@@ -30,6 +30,21 @@ extern u8* lbl_2_bss_1A8248[];
 
 extern u8* lbl_2_bss_1A824C[];
 
+extern void* _OSAllocFromHeap(s32 alignment, s32 size);
+extern void* fn_2_4917C(void*, s32, s32, s32, s32);
+extern void fn_2_513E0(void*, s32, s32, s32, s32, s32, s32, s32);
+
+// .text:0x49E5C size:0xA0
+void fn_2_49E5C(s32 x, s32 y, s32 number, s32 flags, s32 digits, s32 style,
+                s32 first, s32 second, s32 third) {
+    void* buffer = _OSAllocFromHeap(16, 64);
+    fn_2_4917C(buffer, number, flags, digits, style);
+    fn_2_513E0(buffer, x, y, 0, style, first, second, third);
+    if (buffer != NULL) {
+        fn_800ACFB0(buffer);
+    }
+}
+
 // .text:0x4A234 size:0x90
 s16 fn_2_4A234(f32 x, f32 y) {
     s16 angle;
