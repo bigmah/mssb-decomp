@@ -16,7 +16,15 @@ extern f64 __fabs(f64 value);
 extern const f32 lbl_2_rodata_BA8;
 
 typedef struct {
-    u8 _00[0xC0];
+    Vec position;
+    Vec previousPosition;
+    Vec velocity;
+    u8 _24[0x14];
+    f32 _38;
+    u8 _3C[0x10];
+    f32 heading;
+    f32 _50;
+    u8 _54[0x6C];
     s8 flagC0;
     u8 _C1[3];
     u8 flagC4;
@@ -37,6 +45,19 @@ typedef struct {
 } MenuEntries;
 
 extern MenuEntries* lbl_2_bss_1A8248[];
+extern const f32 lbl_2_rodata_B58;
+
+// fn_2_6A5A8, size:0x80
+void fn_2_6A5A8(s32 index) {
+    lbl_2_bss_1A8248[0]->entries[index].previousPosition.x = lbl_2_bss_1A8248[0]->entries[index].position.x;
+    lbl_2_bss_1A8248[0]->entries[index].previousPosition.y = lbl_2_bss_1A8248[0]->entries[index].position.y;
+    lbl_2_bss_1A8248[0]->entries[index].previousPosition.z = lbl_2_bss_1A8248[0]->entries[index].position.z;
+    lbl_2_bss_1A8248[0]->entries[index].velocity.x = lbl_2_rodata_B58;
+    lbl_2_bss_1A8248[0]->entries[index].velocity.y = lbl_2_rodata_B58;
+    lbl_2_bss_1A8248[0]->entries[index].velocity.z = lbl_2_rodata_B58;
+    lbl_2_bss_1A8248[0]->entries[index]._38 = lbl_2_rodata_B58;
+    lbl_2_bss_1A8248[0]->entries[index]._50 = lbl_2_rodata_B58;
+}
 
 extern void (*lbl_2_data_2A2E0[])(u8* object);
 extern void (*lbl_2_data_2A2D4[])(u8* object);

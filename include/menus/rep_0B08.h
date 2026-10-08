@@ -114,4 +114,6 @@ void fn_2_68DE8(s32 index, Vec* result);
 
 void fn_2_6AABC(s32 index, const Vec* position);
 
+void fn_2_6A5A8(s32 index);
+
 #endif
