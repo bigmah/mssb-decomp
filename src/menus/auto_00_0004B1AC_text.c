@@ -86,3 +86,8 @@ s32 fn_2_4EB64(void) {
 void* fn_2_4E858(void* object) {
     return fn_80034CEC(object);
 }
+
+// fn_2_512B8, size:0x8
+s32 fn_2_512B8(void) {
+    return 0;
+}

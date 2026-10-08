@@ -31,4 +31,6 @@ s32 fn_2_4EB64(void);
 
 void* fn_2_4E858(void* object);
 
+s32 fn_2_512B8(void);
+
 #endif
