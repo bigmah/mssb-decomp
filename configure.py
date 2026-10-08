@@ -722,6 +722,7 @@ config.libs = [
         [
             Object(NonMatching, "auto_00_000B3B70_text", source="game/auto_00_000B3B70_text.c"),
             Object(NonMatching, "auto_00_0005985C_text", source="game/auto_00_0005985C_text.c"),
+            Object(NonMatching, "auto_00_000AC9F8_text", source="game/auto_00_000AC9F8_text.c"),
             Object(NonMatching, "game/rep_0.c"),
             Object(NonMatching, "game/rep_60.c"),
             Object(NonMatching, "game/rep_D0.c"),
