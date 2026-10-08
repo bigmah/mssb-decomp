@@ -774,3 +774,26 @@ void fn_2_6ABFC(s32 index, s32 location) {
     entry->angle34 = heading;
     entry->angle30 = heading;
 }
+
+// fn_2_698EC, size:0xE8
+void fn_2_698EC(s32 index, f32 threshold) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    f32 height;
+
+    if (entry->flagD0 != 0) {
+        height = -sinf_kludge(entry->bouncePhase);
+        height = lbl_2_rodata_BA8 * height;
+        entry->bouncePhase += lbl_2_rodata_BAC[0];
+        if (entry->position.y > threshold) {
+            entry->bouncePhase = 0.0f;
+            height = 0.0f;
+            entry->flagD0 = 0;
+            if (entry->typeC3 == 19) {
+                ((u8*)lbl_2_bss_1A8248[0])[entry->objectId * 0xD8 + 0x16D0] = 0;
+            }
+        }
+        entry->position.y = height;
+    } else {
+        entry->position.y = 0.0f;
+    }
+}
