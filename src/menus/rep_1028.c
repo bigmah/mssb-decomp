@@ -57,6 +57,33 @@ extern MenuStateCallback lbl_2_data_30880[3];
 extern u8 lbl_2_data_3198[];
 extern u8 lbl_2_data_369C[];
 
+// .text:0x904A8 size:0x90
+void fn_2_904A8(void) {
+    u8* slot;
+    s32 i;
+    for (i = 0; i < 29; i++) {
+        slot = (u8*)&lbl_2_bss_1A8248[0]->slots[i];
+        *(s32*)(slot + 0x78) = i;
+        *(s32*)(slot + 0x7C) = i;
+        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
+        *(f32*)(slot + 0x38) = lbl_2_rodata_1080;
+        *(f32*)(slot + 0x3C) = lbl_2_rodata_1080;
+        slot[0xAA] = 0;
+        *(s16*)(slot + 0x92) = i;
+        *(s16*)(slot + 0x94) = -1;
+        slot[0xA8] = 0;
+        slot[0xAB] = 0;
+        *(s16*)(slot + 0x90) = 0;
+        *(s8*)(slot + 0xAE) = -1;
+        slot[0xAC] = 0;
+        slot[0xAD] = 0;
+        *(f32*)(slot + 0x80) = lbl_2_rodata_1080;
+        *(s16*)(slot + 0xA6) = 0;
+        slot[0xB2] = 0xFF;
+        slot[0xB4] = 0;
+    }
+}
+
 // .text:0x8FC88 size:0x8C
 void fn_2_8FC88(s32 index) {
     if (lbl_2_bss_3401BC != NULL) {
