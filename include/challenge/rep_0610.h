@@ -49,4 +49,6 @@ void fn_1_161D0(void);
 
 void* fn_1_16558(s32 group, s32 index);
 
+void fn_1_17954(void);
+
 #endif

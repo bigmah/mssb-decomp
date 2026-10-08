@@ -1,5 +1,14 @@
 #include "challenge/rep_0610.h"
 
+#include "Dolphin/mtx.h"
+#include "Dolphin/GX/GXTransform.h"
+extern const f32 lbl_1_rodata_73CC[];
+extern const f32 lbl_1_rodata_73D0[];
+extern const f32 lbl_1_rodata_73D4[];
+extern const f32 lbl_1_rodata_73D8[];
+extern const f32 lbl_1_rodata_73DC[];
+extern const f32 lbl_1_rodata_73E0[];
+
 extern u8 lbl_8036E548[];
 extern u8 lbl_1_bss_5F73[];
 typedef struct { void* data; u32 pad4; u32 pad8; } ChallengeEntry;
@@ -168,4 +177,13 @@ void* fn_1_16558(s32 group, s32 index) {
     row = base; row += group * 4; table = *(u8**)(row + 0xC14);
     table = *(u8**)(table + 4);
     return ((ChallengeEntry*)table)[index].data;
+}
+
+// fn_1_17954, size:0x78
+void fn_1_17954(void) {
+    Mtx44 projection;
+    C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
+                 lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
+                 lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
+    GXSetProjection(projection, GX_PERSPECTIVE);
 }
