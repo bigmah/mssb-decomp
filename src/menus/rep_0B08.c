@@ -1,5 +1,7 @@
 #include "menus/rep_0B08.h"
 
+#include <string.h>
+
 #include "static/UnknownHomes_Static.h"
 extern const f32 lbl_2_rodata_BA0;
 
@@ -345,4 +347,9 @@ s32 fn_2_6AFD4(s32 index) {
         return 2;
     }
     return 0;
+}
+
+// fn_2_68DAC, size:0x3C
+void fn_2_68DAC(s32 index, void* result) {
+    memcpy(result, &lbl_2_bss_1A8248[0]->entries[index], 0xC);
 }
