@@ -7,4 +7,6 @@ u32 fn_8003A538(void);
 
 void fn_8003A540(u32 value);
 
+void fn_8003A548(u32 value);
+
 #endif
