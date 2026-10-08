@@ -95,4 +95,6 @@ extern void fn_800BD2CC(s32 channel, GXColor color);
 
 extern void fn_800B9A9C(u8 flag, f32 value);
 
+extern f32 fn_800B4A94(void* object);
+
 #endif // !__UNKNOWN_HOMES_STATIC_H_

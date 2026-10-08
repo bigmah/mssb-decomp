@@ -66,4 +66,6 @@ void fn_2_8F688(void);
 
 void fn_2_8F640(void);
 
+void fn_2_8F774(s32 index);
+
 #endif

@@ -1,6 +1,8 @@
 #include "menus/rep_1028.h"
 
 #include "static/UnknownHomes_Static.h"
+extern void* lbl_2_bss_340140[];
+
 extern u8 lbl_800F7478[];
 
 extern void fn_2_8AC84(s32 index, s32 value);
@@ -237,4 +239,10 @@ void fn_2_8F640(void) {
     GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
     color.a = 0xFF;
     fn_800BD2CC(1, color);
+}
+
+// fn_2_8F774, size:0x3C
+void fn_2_8F774(s32 index) {
+    u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
+    fn_800B4A94(((void**)data)[index * 0x24 + 13]);
 }
