@@ -29,6 +29,7 @@ extern f32 lbl_3_rodata_B7C;
 extern f32 lbl_3_rodata_BD8;
 extern f32 lbl_3_rodata_C00;
 extern s16 lbl_3_bss_170;
+extern s16 lbl_3_bss_16C;
 extern u8 g_Controls[];
 extern s16 lbl_3_data_484C[];
 extern f32 lbl_3_rodata_B70;
@@ -1008,8 +1009,34 @@ void fn_3_3ABF0(int i) {
 }
 
 // .text:0x0003ACC0 size:0x174 mapped:0x80679D54
-void fn_3_3ACC0(void) {
-    return;
+// 99%: final fn_3_9FCF8 compare gives bge end instead of blt blk; b end
+void fn_3_3ACC0(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (*(s16*)(g_Ball + 0x1B8E) < 0) {
+        if (i == *(s16*)(g_FieldingLogic + 0xB0) && g_FieldingLogic[0x139] == 0 && *(s16*)(g_Ball + 0x1B66) >= lbl_3_data_484C[0]) {
+            if (*(s16*)(g_Ball + 0x1B66) < lbl_3_data_484C[1] && (lbl_3_bss_170 < 0 || !(*(u16*)(g_FieldingLogic + 0x148) & 0x200)) &&
+                (g_d_GameSettings[7] != 2 || *(s8*)(g_Practice + 0x1C2) < 0 || g_Practice[0x1C5] == 0)) {
+                if ((f[0x201] == 0 || i < 6 || i > 8 || g_Ball[0x1BBE] != 0) && lbl_3_bss_16C >= 0) {
+                    s16 t = *(s16*)(f + 0x19A);
+                    if (t < 0) {
+                        if (*(s16*)(g_Ball + 0x1B66) > f[0x1D2] + 3) {
+                            goto blk;
+                        }
+                    } else {
+                        if (fn_3_9FCF8(lbl_3_bss_16C, t) < lbl_3_data_484C[2]) {
+                            goto blk;
+                        }
+                    }
+                }
+            } else {
+                goto blk;
+            }
+        }
+    } else {
+    blk:
+        f[0x1FF] = 2;
+        f[0x201] = 0;
+    }
 }
 
 // .text:0x0003AE34 size:0x53C mapped:0x80679EC8
