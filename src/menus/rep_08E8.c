@@ -18,3 +18,10 @@ s16 fn_2_4A150(s16 angle) {
     }
     return angle;
 }
+
+s16 fn_2_4A310(s16 a, s16 b) {
+    int difference = a - b;
+    difference = (s16)((difference < 0) ? -difference : difference);
+    if (difference > 0x800) return 0x1000 - difference;
+    return difference;
+}

@@ -9,4 +9,6 @@ void fn_2_474F8(void);
 
 s16 fn_2_4A150(s16 angle);
 
+s16 fn_2_4A310(s16 a, s16 b);
+
 #endif
