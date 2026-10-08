@@ -221,7 +221,7 @@ void fn_3_583B8(void);
 void fn_3_58688(void);
 void fn_3_58870(void);
 void fn_3_58E50(void);
-void fn_3_58F58(void);
+void fn_3_58F58(int, f32*, f32*);
 void fn_3_591AC(void);
 void fn_3_59338(void);
 void fn_3_595C4(void);

@@ -1789,13 +1789,115 @@ void fn_3_58E50(void) {
 }
 
 // .text:0x00058F58 size:0x254 mapped:0x80697FEC
-void fn_3_58F58(void) {
-    return;
+extern u8 g_Pitcher[];
+extern u8 g_Runners[];
+extern u8 g_Batter[];
+extern f32 lbl_3_data_4444[];
+extern f32 lbl_3_data_450C[][2];
+extern f32 lbl_3_data_4554[][3][2];
+extern f32 lbl_3_data_45B4[][2];
+extern f32 lbl_3_data_45D4[][2];
+// 99%: only reg swap (mulli/slwi dest r6/r7) in final table lookup
+void fn_3_58F58(int n, f32* x, f32* z) {
+    int flag = 0;
+    int k;
+    int sel;
+    s16 p = *(s16*)(g_Pitcher + 0x11E);
+    k = ((p > 0) ? 0 : -1) + 2;
+    if (n <= 1) {
+        *x = lbl_3_data_450C[n][0];
+        *z = lbl_3_data_450C[n][1];
+        return;
+    }
+    if (n <= 5) {
+        u8 r = g_Runners[0x277];
+        if (r != 0 && g_Runners[0x2A1] != 0 && *(s16*)(g_Ball + 0x1B68) > 0
+            && g_Pitcher[0x155] < 15) {
+            if (g_Batter[0x7B] == 0 && n == 3) {
+                *x = lbl_3_data_4444[4];
+                *z = lbl_3_data_4444[5];
+                return;
+            }
+            if (g_Batter[0x7B] != 0 && n == 5) {
+                *x = lbl_3_data_4444[4];
+                *z = lbl_3_data_4444[5];
+                return;
+            }
+        }
+        sel = 0;
+        if (p > 0x1E && (n == 2 || n == 4) && g_Batter[0x8F] >= 1 && g_Batter[0x8F] <= 3) {
+            flag = 1;
+        }
+        if ((n == 2 && r == 1) || (n == 4 && g_Runners[0x51F] == 1)) {
+            sel = k;
+        }
+        if (g_Runners[0x3CB] == 1) {
+            if (n == 3 && g_Batter[0x7B] == 0) {
+                sel = k;
+                g_FieldingLogic[0x11E] = 0;
+            }
+            if (n == 5 && g_Batter[0x7B] == 1) {
+                sel = k;
+                g_FieldingLogic[0x11E] = 1;
+            }
+        }
+        if (flag != 0) {
+            *x = lbl_3_data_45B4[n - 2][0];
+            *z = lbl_3_data_45B4[n - 2][1];
+            return;
+        }
+        *x = lbl_3_data_4554[n - 2][sel][0];
+        *z = lbl_3_data_4554[n - 2][sel][1];
+        return;
+    }
+    *x = lbl_3_data_45D4[n - 6][0];
+    *z = lbl_3_data_45D4[n - 6][1];
 }
 
 // .text:0x000591AC size:0x18C mapped:0x80698240
+extern u8 g_Runners[];
 void fn_3_591AC(void) {
-    return;
+    f32 spC;
+    f32 sp8;
+    u8* f2;
+    int j;
+    int i;
+    for (i = 0; i < 9; i++) {
+        f2 = g_Fielders + i * 0x268;
+        if (g_GameLogic[0x12B] != 0) {
+            fn_3_58F58(i, &spC, &sp8);
+            *(f32*)(f2 + 0) = spC;
+            *(f32*)(f2 + 8) = sp8;
+        }
+        *(f32*)(f2 + 0x14) = 0.0f;
+        *(f32*)(f2 + 0x18) = 0.0f;
+        *(f32*)(f2 + 0x1C) = 0.0f;
+        *(f32*)(f2 + 0x30) = 0.0f;
+        *(f32*)(f2 + 0x34) = 0.0f;
+        *(f32*)(f2 + 0xD4) = *(f32*)(f2 + 0);
+        *(f32*)(f2 + 0xD8) = *(f32*)(f2 + 8);
+        *(f32*)(f2 + 0x50) = 0.0f;
+        f2[0x1D9] = 0;
+        *(s8*)(f2 + 0x1F5) = -1;
+        f2[0x20F] = 0;
+        spC = -*(f32*)(f2 + 0);
+        sp8 = -*(f32*)(f2 + 8);
+        *(f32*)(f2 + 0x48) = atan2(sp8, spC);
+    }
+    if (g_GameLogic[0x12B] != 0) {
+        for (j = 0; j < 9; j++) {
+            f2 = g_Fielders + j * 0x268;
+            fn_3_58F58(j, (f32*)f2, (f32*)(f2 + 8));
+            *(f32*)(f2 + 4) = 0.0f;
+        }
+    }
+    if (g_Runners[0x277] == 1) {
+        *(s16*)(g_Fielders + 0x65C) = 1;
+        g_Fielders[0x6A7] = 1;
+        g_Fielders[0x6C5] = 1;
+        *(s16*)(g_FieldingLogic + 0xD2) = 2;
+        g_FieldingLogic[0x102] = 1;
+    }
 }
 
 // .text:0x00059338 size:0x28C mapped:0x806983CC
