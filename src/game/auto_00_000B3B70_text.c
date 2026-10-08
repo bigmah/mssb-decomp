@@ -1,6 +1,8 @@
 #include "game/auto_00_000B3B70_text.h"
 #include "game/UnknownHomes_Game.h"
 
+#pragma dont_inline on
+
 extern u8 lbl_3_common_bss_34C90[];
 
 // fn_3_B3C64, size:0x14
@@ -42,4 +44,10 @@ void fn_3_B5D4C(u8 type) {
     lbl_3_common_bss_34C90[0x1D2] = 0;
     g_Practice.practiceMenu_framesOnCurrMenuScreen = 0;
     g_Practice.framesInCurrTransitionState = 0;
+}
+
+// fn_3_B6B70, size:0x34
+void fn_3_B6B70(void) {
+    *((u8*)&g_Practice + 0x1DB) = 0;
+    fn_3_B3C78(0);
 }

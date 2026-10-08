@@ -15,4 +15,6 @@ void fn_3_B777C(u8 state);
 
 void fn_3_B5D4C(u8 type);
 
+void fn_3_B6B70(void);
+
 #endif
