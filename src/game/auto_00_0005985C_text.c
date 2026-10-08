@@ -29,3 +29,15 @@ void fn_3_5A684(void) {
 void fn_3_59AC0(s32 unused1, s32 unused2, void* allocation) {
     fn_80017D28(allocation);
 }
+
+// fn_3_59A90, size:0x30
+void fn_3_59A90(void) {
+    g_UnkSound_32718._02 = 0;
+    g_UnkSound_32718._03 = 0;
+    g_UnkSound_32718._04 = 0;
+    g_UnkSound_32718._05 = 0;
+    g_UnkSound_32718._06 = 0;
+    g_UnkSound_32718._00 = 0;
+    g_UnkSound_32718._07 = 0;
+    g_UnkSound_32718._08 = 0;
+}
