@@ -339,7 +339,7 @@ void fn_3_14A164(void) {
     pitchingMachinePitching(0x24);
 }
 
-// 96%: float reg alloc in the 2nd branch (f1/f2 swapped), flag addr in r3 vs r4
+// 99%: only the flag base addr is addi r3 (orig: lis/addi r4 before stmw); computing delta after df in the else branch fixed the float regs
 // .text:0x0014A188 size:0x1F4 mapped:0x8078921C
 u32 fn_3_14A188(u8* o) {
     u8* p;
@@ -368,10 +368,10 @@ u32 fn_3_14A188(u8* o) {
                 delta = (*(s32*)(d + 0x28) - *(s32*)(d + 0x24)) / *(s32*)(d + 0x10);
             } else {
                 s = *(s32*)(d + 8) - *(s32*)(d + 0x10);
-                delta = (*(s32*)(d + 0x2C) - *(s32*)(d + 0x28)) / s;
                 q = (f32)*(s32*)(d + 0x20) / lbl_3_rodata_3930;
                 df = q + *(f32*)(p + 0x18);
                 df /= (f32)s;
+                delta = (*(s32*)(d + 0x2C) - *(s32*)(d + 0x28)) / s;
             }
             a += delta;
             if (a < 0) {
@@ -454,10 +454,10 @@ void fn_3_14AC40(void) {
     return;
 }
 
-// 95%: 0.0f load scheduled late (orig loads it via addi r4 before the first store); fadds dest regs
 // .text:0x0014B248 size:0x1AC mapped:0x8078A2DC
 void fn_3_14B248(u8* a, u8* b) {
     f32 c;
+    f32 sn;
     f32 ang;
     f32 r;
     f32 d;
@@ -471,7 +471,8 @@ void fn_3_14B248(u8* a, u8* b) {
     r = (f32)((f64)((u32)rand() % 200) / lbl_3_rodata_39C8);
     c = (f32)cos(ang);
     px = r * c;
-    py = r * (f32)sin(ang);
+    sn = (f32)sin(ang);
+    py = r * sn;
     *(f32*)(b + 4) = *(f32*)(a + 0x24) + px;
     *(f32*)(b + 8) = *(f32*)(a + 0x28) + py;
     *(f32*)(b + 0xC) = *(f32*)(a + 0x2C) + lbl_3_rodata_3934[0];
@@ -622,7 +623,6 @@ u32 fn_3_14BA40(u8* o) {
     return n == 0;
 }
 
-// 92%: right shape and saved regs; float math block order differs (orig converts 180.0/d[1], rand and n separately, consts via lfd sym@l not addi)
 // .text:0x0014BCB0 size:0x21C mapped:0x8078AD44
 void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
     u8* p;
@@ -633,6 +633,7 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
     f32 s;
     f32 c;
     f32 r;
+    f64 u;
     *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
     n = 0;
     p = *(u8**)(o + 0xC);
@@ -648,8 +649,10 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
             p[0x41] = *(s32*)(d + 0x20);
             p[0x42] = *(s32*)(d + 0x24);
             t = (f32)rand() / lbl_3_rodata_3970;
-            r = (f32)(lbl_3_rodata_39C4 * (lbl_3_rodata_3990 * ((f64)t - lbl_3_rodata_3968)));
-            ang = lbl_3_rodata_39B8 * (f32)(lbl_3_rodata_39D8 / (f64)*(s32*)(d + 4) * (f64)n);
+            u = (f64)t - lbl_3_rodata_3968;
+            u = lbl_3_rodata_3990 * u;
+            r = lbl_3_rodata_39C4 * u;
+            ang = lbl_3_rodata_39B8 * (f32)(360.0 / (f64)*(s32*)(d + 4) * (f64)n);
             c = (f32)cos(ang);
             *(f32*)(p + 4) = r * c + v[0];
             s = (f32)sin(ang);

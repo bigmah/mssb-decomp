@@ -829,7 +829,7 @@ void fn_3_85744(int i) {
 }
 
 // .text:0x00085840 size:0x230 mapped:0x806C48D4
-// 90%: logic matches; register roles differ (arr copied to r10 and bc4 lands in r5; original keeps arr in r5, bc4 in r11, temp r10)
+// 97%: logic matches; register roles differ (arr copied to r10 and bc4 lands in r5; original keeps arr in r5, bc4 in r11, temp r10)
 int fn_3_85840(int i, int b, int* arr) {
     u8 bc9;
     u8* r;
@@ -1244,7 +1244,7 @@ void fn_3_870AC(void) {
 }
 
 // .text:0x000871BC size:0x110 mapped:0x806C6250
-// 99%: body matches; only prologue base-register order differs (lis/addi for data bases + hoisted lha/lfs scheduling)
+// ~90%: body matches; prologue base-register order and hoisted lha/lfs scheduling differ (tried ~200 decl/init/loop-form variants)
 void fn_3_871BC(void) {
     int n;
     f32 c1 = lbl_3_data_4C44[1];
@@ -1536,8 +1536,9 @@ void fn_3_88C24(void) {
 // .text:0x00088D88 size:0x210 mapped:0x806C7E1C
 // 98%: only r4/r5 swap between g_Strikes[2] value and idx*0x154 in the prologue
 void fn_3_88D88(int idx) {
-    u8* r = g_Runners + idx * 0x154;
+    u8* r = g_Runners;
     int k;
+    r += idx * 0x154;
     if (g_Strikes[2] < 3 && g_GameLogic[0x127] == 0 && r[0x123] == 1) {
         if (g_GameLogic[0x14F] == 0) {
             g_Strikes[2] = g_Strikes[2] + 1;
@@ -1683,13 +1684,14 @@ void fn_3_899BC(void) {
 }
 
 // .text:0x0008A1D8 size:0x178 mapped:0x806C926C
-// ~90%: only the first (8A4E4-style) loop register allocation differs (i/p swapped in r6/r7)
+// ~98%: loop regs match now; prologue differs (original loads the 0.0f via addi+lfs 0(r4) and copies i to r3 for the 0x133 stores)
 void fn_3_8A1D8(void) {
+    u8* r;
     int i;
-    for (i = 0; i < 4; i++) {
-        u8* r = ((RunnerT*)g_Runners)[i].b;
-        *(f32*)(r + 0x0) = ((P2*)lbl_3_data_4A34)[i].x;
-        *(f32*)(r + 0x8) = ((P2*)lbl_3_data_4A34)[i].z;
+    P2* p;
+    for (i = 0, r = g_Runners, p = (P2*)lbl_3_data_4A34; i < 4; i++, r += 0x154, p++) {
+        *(f32*)(r + 0x0) = p->x;
+        *(f32*)(r + 0x8) = p->z;
         *(f32*)(r + 0x18) = 0.0f;
         *(f32*)(r + 0x1C) = 0.0f;
         *(f32*)(r + 0x20) = 0.0f;
