@@ -5,4 +5,6 @@
 
 void fn_80021AC0(void);
 
+void fn_80021AC4(void);
+
 #endif

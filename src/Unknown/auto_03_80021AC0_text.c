@@ -3,3 +3,7 @@
 // fn_80021AC0, size:0x4
 void fn_80021AC0(void) {
 }
+
+// fn_80021AC4, size:0x4
+void fn_80021AC4(void) {
+}
