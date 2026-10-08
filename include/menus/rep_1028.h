@@ -52,4 +52,6 @@ void fn_2_90E98(u8* object);
 
 void fn_2_90C14(u8* object);
 
+void fn_2_90838(u8* object);
+
 #endif

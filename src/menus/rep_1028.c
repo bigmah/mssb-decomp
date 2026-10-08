@@ -1,5 +1,6 @@
 #include "menus/rep_1028.h"
 
+extern void fn_2_8AC84(s32 index, s32 value);
 typedef struct {
     u8 _00[0x90];
     s16 state;
@@ -183,4 +184,12 @@ void fn_2_90C14(u8* object) {
         entry->active = 0;
         entry->state = 0;
     }
+}
+
+void fn_2_90838(u8* object) {
+    if (*(s16*)(object + 0xA0) == 1) {
+        fn_2_8AC84(*(s32*)(object + 0x78), 0);
+        *(s16*)(object + 0xA0) = 2;
+    }
+    *(s16*)(object + 0x90) = 2;
 }
