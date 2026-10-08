@@ -798,8 +798,48 @@ void fn_3_A8338(s32 idx) {
 }
 
 // .text:0x000A8478 size:0x150 mapped:0x806E750C
-void fn_3_A8478(void) {
-    return;
+// ~95%: logic and block layout match; only regs differ (idx r8/prev r7/tmp r6 vs orig r7/r6/r7) and ec/ea load order in the final add
+s32 fn_3_A8478(s32* out0, s32* out1) {
+    u8 dir;
+    s32 prev;
+    s32 idx;
+    u8* r;
+
+    idx = *(s16*)(g_FieldingLogic + 0xC4);
+    if (idx >= 4 || (s16)idx < 0) {
+        return 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) == 3) {
+        r = (u8*)g_Runners + idx * 0x154;
+        if (r[0x123] == 1 && r[0x128] == 2) {
+            *out0 = idx;
+            goto cur;
+        }
+    }
+    prev = idx == 0 ? 3 : idx - 1;
+    r = (u8*)g_Runners + prev * 0x154;
+    if (r[0x123] == 1 && *(s16*)(r + 0xEE) == 1) {
+        *out0 = prev;
+        goto tail;
+    }
+    return 0;
+cur:
+    if (r[0x125] == idx) {
+        dir = r[0x137];
+        if (dir == 3 || dir == 2) {
+            *out1 = *(s16*)(r + 0xEC);
+        } else if ((dir == 1 && r[0x136] == 3) || (dir == 3 && r[0x136] == 1)) {
+            *out1 = *(s16*)(r + 0xEC) + 0x14;
+        } else {
+            *out1 = *(s16*)(r + 0xEC) + 0x32;
+        }
+    } else {
+        *out1 = *(s16*)(r + 0xEA) + *(s16*)(r + 0xEC) + *(s16*)(r + 0xEC);
+    }
+    return 1;
+tail:
+    *out1 = *(s16*)(r + 0xEA);
+    return 1;
 }
 
 // .text:0x000A85C8 size:0x40C mapped:0x806E765C

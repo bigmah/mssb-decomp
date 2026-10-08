@@ -1277,8 +1277,56 @@ void fn_3_D5B6C(s32* a) {
 }
 
 // .text:0x000D5C8C size:0x1F4 mapped:0x80714D20
-void fn_3_D5C8C(void) {
-    return;
+typedef struct { u8 pad[0xC]; u8 fC; u8 padD; u8 fE; u8 padF; } D5C8CEnt;
+typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } D5C8CCtl;
+typedef struct { D5C8CCtl* arr; u8 pad0[0x3C - 4]; u32* p3C; u16* p40; u32* p44; u8* p48; } D5C8CBss;
+extern f32 lbl_3_rodata_2758;
+extern u8 lbl_3_bss_A022;
+extern u8 lbl_3_bss_A023;
+extern void fn_3_B8574(void);
+void fn_3_D5C8C(s32* a) {
+    Mtx m2;
+    Mtx m;
+    D5B6CCpy cpy;
+    D5C8CBss* g;
+    D5C8CEnt* e;
+    s32 off;
+    s32 k;
+    s32 j;
+    u32 v;
+    D5C8CCtl* c;
+    s32 idx;
+    PSMTXIdentity(m);
+    PSMTXScale(m, lbl_3_rodata_26B8, lbl_3_rodata_26B8, lbl_3_rodata_26B8);
+    g = (D5C8CBss*)lbl_3_common_bss_350E4;
+    for (k = 0; k < 5; k++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        ((void (*)(void))fn_3_B8574)();
+        e = (D5C8CEnt*)lbl_3_data_18730;
+        off = v * 4;
+        for (j = 0; j < lbl_3_bss_A023; e++, j++) {
+            if (k == e->fE && e->fC != 0xD) {
+                idx = j + lbl_3_bss_A022;
+                if ((((u8*)((D5C8CBss*)lbl_3_common_bss_350E4)->arr)[idx * 0xE8 + 0x90] >> 6) & 1) {
+                    *(s32*)((u8*)g->p44 + off) = idx;
+                    g->p3C[*a] += 1;
+                    c = &((D5C8CBss*)lbl_3_common_bss_350E4)->arr[idx];
+                    off += 4;
+                    cpy = *(D5B6CCpy*)c;
+                    CTRLBuildMatrix((Control*)&cpy, m2);
+                    PSMTXConcat(m2, m, m2);
+                    fn_3_B8464(m2, (void*)c->f78);
+                    m2[1][3] = m2[1][3] * lbl_3_rodata_2758;
+                    fn_3_B8464(m2, (void*)c->f78);
+                }
+            }
+        }
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
 }
 
 // .text:0x000D5E80 size:0x240 mapped:0x80714F14
