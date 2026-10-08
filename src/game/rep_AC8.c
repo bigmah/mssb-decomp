@@ -2937,8 +2937,25 @@ void fn_3_526DC(void) {
 }
 
 // .text:0x00052F4C size:0x1A0 mapped:0x80691FE0
-void fn_3_52F4C(void) {
-    return;
+void fn_3_52F4C(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    *(f32*)(f + 0x14) = x;
+    *(f32*)(f + 0x1C) = z;
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x50) = 0.0f;
+        *(f32*)(f + 0x68) = 0.0f;
+    } else {
+        *(f32*)(f + 0x64) = atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
 }
 
 // .text:0x000530EC size:0x44 mapped:0x80692180
