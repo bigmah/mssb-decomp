@@ -19,6 +19,11 @@ extern void fn_3_B0874(void);
 extern void fn_3_B056C(void);
 extern void fn_3_AFE0C(void);
 extern void fn_3_B003C(void);
+extern void fn_3_F578(void);
+extern void fn_3_1E154(void);
+extern void fn_3_6C108(void);
+extern void fn_3_B02A8(void);
+extern void fn_3_6714C(s32 player);
 
 #pragma dont_inline on
 
@@ -254,4 +259,23 @@ void fn_3_B01E0(void) {
         g_Practice.guidedPracticeCompletionRelated2 == 0) {
         fn_3_B003C();
     }
+}
+
+// fn_3_B03F0, size:0x74
+void fn_3_B03F0(void) {
+    fn_3_F578();
+    fn_3_753E8(0);
+    setBatterContactConstants();
+    fn_3_8A1D8();
+    fn_3_58E50();
+    fn_3_1E154();
+    fn_3_59A90();
+    fn_3_6C108();
+    g_Strikes.strikes = 0;
+    g_Strikes.balls = 0;
+    g_GameLogic._125 = 1;
+    g_GameLogic.pre_PostMiniGameInd = 1;
+    g_GameLogic.minigameLastTurnSuccessInd = 1;
+    fn_3_B02A8();
+    fn_3_6714C(0);
 }
