@@ -715,12 +715,12 @@ void fn_3_1231D4(void) {
 }
 
 // .text:0x001235B8 size:0x3D8 mapped:0x8076264C
-// 99%: only diff is v%10 in v>=10 branch: orig computes into r7 then `mr r29,r7`, ours computes into r29 then `mr r7,r29`
 void fn_3_1235B8(void) {
     u8* q = lbl_803CC1B8;
     u8* p;
     u8* t;
     u32 v;
+    u32 d;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
         ((void (*)(void))fn_800B0A14_removeQueue)();
@@ -756,12 +756,14 @@ void fn_3_1235B8(void) {
                     QEnt* b = (QEnt*)lbl_80371C30;
                     QEnt* e;
                     b[*(u16*)(q + 0x14) + 2].p[0x68] = 1;
-                    fn_800363D8(q, 2, 4, 0x104, v % 10);
-                    fn_800363D8(q, 2, 5, 0x104, v % 10);
-                    fn_800363D8(q, 2, 6, 0x104, v % 10);
-                    fn_800363D8(q, 2, 7, 0x104, (v % 100) / 10);
-                    fn_800363D8(q, 2, 8, 0x104, (v % 100) / 10);
-                    fn_800363D8(q, 2, 9, 0x104, (v % 100) / 10);
+                    d = v % 10;
+                    fn_800363D8(q, 2, 4, 0x104, d);
+                    fn_800363D8(q, 2, 5, 0x104, d);
+                    fn_800363D8(q, 2, 6, 0x104, d);
+                    d = (v % 100) / 10;
+                    fn_800363D8(q, 2, 7, 0x104, d);
+                    fn_800363D8(q, 2, 8, 0x104, d);
+                    fn_800363D8(q, 2, 9, 0x104, d);
                     b = (QEnt*)lbl_80371C30;
                     e = b + 1;
                     e[*(u16*)(q + 0x14)].p[0x68] = 0;
