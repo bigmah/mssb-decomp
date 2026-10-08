@@ -56,3 +56,8 @@ void fn_1_D688(void) {
     lbl_1_bss_3216[0]++;
     if (lbl_1_bss_3216[0] == 3) lbl_1_bss_3216[0] = 0;
 }
+
+void fn_1_D6B4(void) {
+    if (lbl_1_bss_3216[0] == 0) lbl_1_bss_3216[0] = 3;
+    lbl_1_bss_3216[0]--;
+}

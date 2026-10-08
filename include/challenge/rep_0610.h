@@ -25,4 +25,6 @@ s32 fn_1_D660(void);
 
 void fn_1_D688(void);
 
+void fn_1_D6B4(void);
+
 #endif
