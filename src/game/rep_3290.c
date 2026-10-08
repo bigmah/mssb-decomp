@@ -193,7 +193,46 @@ void fn_3_113F14(void) {
 
 // .text:0x00114204 size:0x180 mapped:0x80753298
 void fn_3_114204(void) {
-    return;
+    int cnt;
+    int i;
+    u8* p;
+    f32* e;
+    cnt = 0;
+    for (i = 0; i < 7; i++) {
+        p = g_Minigame + i * 0x2C;
+        e = (f32*)(p + 0x72C);
+        if (((u8*)e)[0x28] == 2) {
+            e[0] += lbl_3_data_215C8[3];
+            e[1] += lbl_3_data_215C8[4];
+            e[2] += lbl_3_data_215C8[5];
+            if (e[2] >= e[5]) {
+                e[2] = e[5];
+                *(u8*)(e + 10) = 3;
+            }
+            cnt++;
+        }
+    }
+    if (cnt == 0) {
+        for (i = 0; i < 7; i++) {
+            p = g_Minigame + i * 0x2C;
+            e = (f32*)(p + 0x72C);
+            if (((u8*)e)[0x28] == 1) {
+                e[0] += lbl_3_data_215C8[0];
+                e[1] += lbl_3_data_215C8[1];
+                e[2] += lbl_3_data_215C8[2];
+                if (e[1] <= e[4]) {
+                    e[1] = e[4];
+                    *(u8*)(e + 10) = 3;
+                    fn_8004C108(e + 3, 1);
+                    fn_3_90064(0x2F4);
+                }
+                cnt++;
+            }
+        }
+        if (cnt == 0) {
+            g_Minigame[0x1A7F] = 2;
+        }
+    }
 }
 
 // .text:0x00114384 size:0x634 mapped:0x80753418
