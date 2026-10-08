@@ -992,7 +992,7 @@ f32 fn_3_BFB3C(u8* e, s32 x, f32 (*m)[4], f32 t) {
     f32 r;
     PSMTXIdentity(m);
     PSMTXIdentity(tmp);
-#define BFB3C_CH(k) fn_3_BFDA4(*(void**)(e + 0x14 + (k) * 4), t, e[0x34 + (k)], x, e[0x3C + (k)], e + 0x3C + (k))
+#define BFB3C_CH(k) fn_3_BFDA4(*(void**)(e + 0x14 + (k) * 4), e[0x34 + (k)], t, x, e[0x3C + (k)], e + 0x3C + (k))
     m[0][0] = *(u32*)(e + 0x14) ? BFB3C_CH(0) : lbl_3_rodata_1E84;
     m[1][1] = *(u32*)(e + 0x18) ? BFB3C_CH(1) : lbl_3_rodata_1E84;
     r = *(u32*)(e + 0x2C) ? BFB3C_CH(6) : lbl_3_rodata_1E68;
@@ -1015,9 +1015,77 @@ f32 fn_3_BFB3C(u8* e, s32 x, f32 (*m)[4], f32 t) {
 }
 
 // .text:0x000BFDA4 size:0x390 mapped:0x806FEE38
+extern const f32 lbl_3_rodata_1F50;
+extern f64 cos(f64);
+typedef struct {
+    f32 v;
+    f32 t;
+    u16 mode : 4;
+    u16 time : 12;
+    u8 a;
+    u8 b;
+} BFDA4Key;
+// 97%: int reg numbering in the post-loop block (idx*12 / cur ptr) and one extra 'b' in the switch dispatch
 #pragma dont_inline on
-f32 fn_3_BFDA4(void* p, f32 t, u8 a, s32 x, u8 b, u8* c) {
-    return lbl_3_rodata_1E68;
+f32 fn_3_BFDA4(void* kv, s32 n, f32 t, s32 len, u8 idx, u8* out) {
+    BFDA4Key* k = kv;
+    s32 dir;
+    f32 seg;
+    f32 el;
+    f32 res;
+    f32 v0;
+    f32 dv;
+    f32 h;
+    f32 hh;
+    f32 hs;
+    f32 ang;
+    u8 bb;
+    BFDA4Key* cur;
+    BFDA4Key* nxt;
+    if (idx < n - 1 && (f32)k[idx + 1].time <= t) {
+        dir = 1;
+    } else if (idx != 0 && (f32)k[idx].time > t) {
+        dir = -1;
+    }
+    while ((idx < n - 1 && (f32)k[idx + 1].time <= t) || (idx != 0 && (f32)k[idx].time > t)) {
+        idx += dir;
+    }
+    if (idx == n - 1) {
+        seg = (f32)(len - k[idx].time);
+        nxt = &k[idx];
+    } else {
+        seg = (f32)(k[idx + 1].time - k[idx].time);
+        nxt = &k[idx + 1];
+    }
+    cur = &k[idx];
+    v0 = cur->v;
+    dv = nxt->v - v0;
+    el = t - (f32)cur->time;
+    res = t;
+    switch (cur->mode) {
+        case 0:
+            res = v0 + dv * el / seg;
+            break;
+        case 1:
+            h = cur->t;
+            hh = h * lbl_3_rodata_1E64;
+            hs = (cur->a != 0) ? hh : -hh;
+            bb = k[idx].b;
+            if (bb & 1) {
+                if (cur->a != 0) {
+                    dv -= h;
+                } else {
+                    dv += h;
+                }
+            }
+            ang = lbl_3_rodata_1F50 * ((f32)cur->a + el * (f32)bb / seg);
+            res = hh * cos(ang) + ((v0 + hs) + dv * el / seg);
+            break;
+    }
+    if (out != NULL) {
+        *out = idx;
+    }
+    return res;
 }
 #pragma dont_inline reset
 
