@@ -46,21 +46,22 @@ void fn_3_1637EC(void) {
 // .text:0x00163948 size:0x134
 s32 fn_3_163948(void) {
     s16 ids[9];
-    s8* q;
-    s8* p;
+    u8* q;
+    u8* p;
     s32 i;
     s32 r;
-    s8 m;
-    q = (s8*)lbl_3_common_bss_37400;
+    s32 m;
+    s32 j;
+    q = lbl_3_common_bss_37400;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
     p = q;
     r = 0;
-    for (i = 0; i < 9; i++, p += 2) {
-        if (ids[i] != -1) {
-            m = p[1];
-            if (m != 0 && p[0] < m) {
+    for (j = 0; j < 9; j++) {
+        if (ids[j] != -1) {
+            m = p[j * 2 + 1];
+            if ((s8)m != 0 && (s8)p[j * 2] < (s8)m) {
                 r = 1;
             }
         }
