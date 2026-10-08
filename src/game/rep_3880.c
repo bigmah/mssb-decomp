@@ -2,6 +2,9 @@
 #include "header_rep_data.h"
 
 extern u8 lbl_3_data_26C94[];
+extern const f32 lbl_3_rodata_39F8;
+extern const f32 lbl_3_rodata_39F4;
+extern const f64 lbl_3_rodata_39E8;
 extern s32 lbl_3_data_26D00[];
 extern void fn_8003403C(f32, f32);
 extern u8 lbl_3_common_bss_32724[];
@@ -25,6 +28,7 @@ extern u8 lbl_8036E548[];
 
 extern u8 g_Minigame[];
 extern u8 lbl_3_data_26E00[];
+extern const Vec lbl_3_rodata_3908;
 extern f32 fn_3_119D28(void);
 extern u8 lbl_3_data_26CB8[];
 extern s32 fn_8001B728(s32, s32, void*);
@@ -899,8 +903,22 @@ void fn_3_14ED24(void) {
 }
 
 // .text:0x0014F3CC size:0x178 mapped:0x8078E460
-void fn_3_14F3CC(void) {
-    return;
+void fn_3_14F3CC(u8* o) {
+    Vec v = lbl_3_rodata_3908;
+    f32 off;
+    s16 r1, r2;
+    if (o[0x4C] < 5) {
+        off = lbl_3_rodata_39F8;
+    } else {
+        off = lbl_3_rodata_39A8;
+    }
+    r1 = o[0x4C] < 5 ? 20000 : 10000;
+    r2 = o[0x4C] < 5 ? 20000 : 10000;
+    v.x += (f32)(rand() % r1 - r1 / 2) / lbl_3_rodata_39F4;
+    v.y += (f32)(rand() % r2 - r2 / 2) / lbl_3_rodata_39F4;
+    *(f32*)(o + 4) = v.x;
+    *(f32*)(o + 8) = v.y - off;
+    *(f32*)(o + 0xC) = v.z;
 }
 
 // .text:0x0014F544 size:0x60 mapped:0x8078E5D8
@@ -996,8 +1014,30 @@ void fn_3_150D84(void) {
 }
 
 // .text:0x00151068 size:0x19C mapped:0x807900FC
-void fn_3_151068(void) {
-    return;
+// ~93%: prologue only: orig stores sth via r4 (param) with data base in r5; ours uses r31 and base in r4
+void fn_3_151068(u8* a, u8* o) {
+    Mtx m;
+    u8* obj;
+    u8* mp;
+    u8* t;
+    f32 x, y, z;
+    s32* d = (s32*)lbl_3_data_26C3C; *(s16*)(o + 0x4A) = d[6];
+    t = *(u8**)(a + 0x18);
+    t = *(u8**)t;
+    t = *(u8**)(t + 0x18);
+    obj = ((u8**)t)[d[7]];
+    PSMTXIdentity(m);
+    mp = *(u8**)(obj + 0xEC);
+    x = *(f32*)(mp + 0xC);
+    y = *(f32*)(mp + 0x1C);
+    z = *(f32*)(mp + 0x2C);
+    x += (f64)(rand() % 100 - 50) / lbl_3_rodata_39E8;
+    y += (f64)(rand() % 150 - 75) / lbl_3_rodata_39E8;
+    *(f32*)(o + 4) = x;
+    *(f32*)(o + 8) = y;
+    *(f32*)(o + 0xC) = z;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = *(s32*)(lbl_3_data_26C3C + 8);
+    o[0x43] = *(s32*)(lbl_3_data_26C3C + 0x10);
 }
 
 // .text:0x00151204 size:0x490 mapped:0x80790298
