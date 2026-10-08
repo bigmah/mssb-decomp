@@ -6,7 +6,21 @@ extern s32 fn_80022B68(void);
 
 extern void fn_80017D28(void* allocation);
 
+extern void fn_3_58688(void);
+extern void fn_3_583B8(void);
+extern void fn_3_3B9E4(void);
+
 #pragma dont_inline on
+
+// fn_3_598D0, size:0x48
+void fn_3_598D0(void) {
+    fn_3_58688();
+    if (g_GameLogic.teamAIInd[g_GameLogic.awayTeamBattingInd_battingTeam] != 0) {
+        fn_3_583B8();
+    } else {
+        fn_3_3B9E4();
+    }
+}
 
 // fn_3_5B408, size:0x14
 void fn_3_5B408(void) {
