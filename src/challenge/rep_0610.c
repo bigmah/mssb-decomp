@@ -1,5 +1,7 @@
 #include "challenge/rep_0610.h"
 
+extern void* lbl_1_bss_67B8[];
+
 extern u8 lbl_1_bss_67E0[];
 
 extern u8 lbl_1_bss_5F71;
@@ -132,5 +134,14 @@ void fn_1_E9F8(u8* object, s32 index, s32 count) {
     for (i = 0; i < count; i++) {
         index++;
         if (index == *(u16*)(object + 6)) index = 0;
+    }
+}
+
+// fn_1_10AA4, size:0x28
+void fn_1_10AA4(u8* object, f32 value) {
+    *(f32*)(object + 0x54) = value;
+    object[0x5A] = 1;
+    if (lbl_1_bss_67B8[0] != 0) {
+        *(f32*)((u8*)lbl_1_bss_67B8[0] + 4) = value;
     }
 }
