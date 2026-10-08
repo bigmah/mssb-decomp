@@ -7,4 +7,6 @@ u8 fn_800BD2B0(u32* value);
 
 void fn_800BD2CC(u8 flag, u32* value);
 
+void fn_800BD2DC(void);
+
 #endif
