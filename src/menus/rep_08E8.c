@@ -1,6 +1,8 @@
 #include "menus/rep_08E8.h"
 
 #include "static/UnknownHomes_Static.h"
+#include "math.h"
+
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_1A8248[];
 
@@ -67,4 +69,10 @@ void fn_2_4777C(void) {
         fn_800ACFB0(*(void**)(lbl_8036E548 + 0x2C8C));
         *(void**)(lbl_8036E548 + 0x2C8C) = 0;
     }
+}
+
+// fn_2_4A1E8, size:0x4C
+f32 fn_2_4A1E8(f32 x, f32 y) {
+    if (x == 0.0f && y == 0.0f) return 0.0f;
+    return (f32)atan2(y, x);
 }

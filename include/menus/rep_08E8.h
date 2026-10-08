@@ -23,4 +23,6 @@ void fn_2_474FC(void);
 
 void fn_2_4777C(void);
 
+f32 fn_2_4A1E8(f32 x, f32 y);
+
 #endif
