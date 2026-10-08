@@ -26,6 +26,25 @@ extern void fn_1_1E5D0(void*);
 extern void fn_1_21408(void);
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_1_data_104F4[];
+extern const f32 lbl_1_rodata_77D8;
+extern const f32 lbl_1_rodata_7804;
+extern const f32 lbl_1_rodata_7858;
+extern const f32 lbl_1_rodata_785C;
+extern const f32 lbl_1_rodata_7860;
+extern const f32 lbl_1_rodata_7864;
+extern const f32 lbl_1_rodata_7868;
+
+// fn_1_23AD8, size:0x7C
+void fn_1_23AD8(Mtx44 projection, Vec* camera, Vec* target) {
+    camera->x = lbl_1_rodata_77D8;
+    camera->y = lbl_1_rodata_77D8;
+    camera->z = lbl_1_rodata_7804;
+    target->x = lbl_1_rodata_77D8;
+    target->y = lbl_1_rodata_77D8;
+    target->z = lbl_1_rodata_77D8;
+    C_MTXFrustum(projection, lbl_1_rodata_7858, lbl_1_rodata_785C,
+        lbl_1_rodata_7860, lbl_1_rodata_7864, lbl_1_rodata_77E4[0], lbl_1_rodata_7868);
+}
 
 // fn_1_20F8C, size:0xB4
 void fn_1_20F8C(void) {

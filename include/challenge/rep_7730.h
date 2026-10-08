@@ -2,6 +2,7 @@
 #define __CHALLENGE_REP_7730_H__
 
 #include "mssbTypes.h"
+#include "Dolphin/mtx.h"
 
 typedef struct {
     u8 padding[0x10];
@@ -49,5 +50,7 @@ void fn_1_20DC8(void);
 f32 fn_1_1DD48(u16 buttons, s32 reverse, f32 value, f32 positive, f32 delta, f32 negative, f32 minimum, f32 maximum);
 
 void fn_1_20F8C(void);
+
+void fn_1_23AD8(Mtx44 projection, Vec* camera, Vec* target);
 
 #endif
