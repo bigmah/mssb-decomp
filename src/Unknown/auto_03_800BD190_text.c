@@ -20,3 +20,10 @@ void __MTGQR6(register u32 value) {
         mtspr GQR6, value
     }
 }
+
+// __MTGQR7, size:0x8
+void __MTGQR7(register u32 value) {
+    asm {
+        mtspr GQR7, value
+    }
+}
