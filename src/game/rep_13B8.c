@@ -1150,7 +1150,6 @@ void fn_3_82670(void) {
 }
 
 // .text:0x00082F80 size:0xFC mapped:0x806C2014
-// 98%: block 2 loads r+0xA4 into f1 then fmr f5 (original lfs f5 directly, compares f5)
 void fn_3_82F80(int i, s16* b, s16* a) {
     u8* r = g_Runners + i * 0x154;
     s32 n = 0;
@@ -1189,9 +1188,8 @@ void fn_3_82F80(int i, s16* b, s16* a) {
     rem2 = *(f32*)(r + 0x5C);
     if (rem2 > lbl_3_rodata_1414) {
         lim2 = *(f32*)(r + 0xA8);
-        s2 = *(f32*)(r + 0xA4);
         nl = -lim2;
-        if (s2 > nl) {
+        if ((s2 = *(f32*)(r + 0xA4)) > nl) {
             step2 = *(f32*)(r + 0xAC);
             do {
                 s2 -= step2;
