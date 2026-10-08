@@ -145,4 +145,6 @@ void fn_2_6AB3C(s32 index, const Vec* position, f32 heading);
 
 void fn_2_6832C(void);
 
+void fn_2_683EC(void);
+
 #endif

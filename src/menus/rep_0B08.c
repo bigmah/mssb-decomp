@@ -32,7 +32,9 @@ typedef struct {
     f32 storedZ;
     u8 _74[0x0C];
     s32 objectId;
-    u8 _84[0x37];
+    u8 _84[0x2E];
+    s16 locationIndex;
+    u8 _B4[7];
     u8 flagBB;
     u8 _BC[4];
     s8 flagC0;
@@ -606,4 +608,37 @@ void fn_2_6BC0C(MenuFadeState* fade) {
         ((u8*)lbl_2_bss_1A8248[0])[fade->index * 0xD8 + 0x16DA] = 255;
         fade->state = 2;
     }
+}
+
+// fn_2_683EC, size:0xE4
+void fn_2_683EC(void) {
+    MenuEntry* entry;
+    f32 heading;
+    u8* state;
+    MenuEntries* menu;
+
+    menu = lbl_2_bss_1A8248[0];
+    menu->entries[1].position.x = menu->entries[0].position.x;
+    menu->entries[1].position.y = menu->entries[0].position.y;
+    menu->entries[1].position.z = menu->entries[0].position.z;
+    entry = &lbl_2_bss_1A8248[0]->entries[1];
+    memcpy(&entry->position, &lbl_2_data_2EA4[lbl_2_bss_1A8248[0]->entries[0].locationIndex], sizeof(Vec));
+    entry->previousPosition.x = lbl_2_rodata_B58;
+    entry->previousPosition.y = lbl_2_rodata_B58;
+    entry->previousPosition.z = lbl_2_rodata_B58;
+    entry->velocity.x = lbl_2_rodata_B58;
+    entry->velocity.y = lbl_2_rodata_B58;
+    entry->velocity.z = lbl_2_rodata_B58;
+    entry->storedX = entry->position.x;
+    entry->storedZ = entry->position.z;
+    entry->_38 = lbl_2_rodata_B58;
+    entry->flagBB = 0;
+    heading = entry->heading;
+    entry->angle34 = heading;
+    entry->angle30 = heading;
+    *(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x179A) = lbl_2_bss_1A8248[0]->entries[0].locationIndex;
+    state = (u8*)lbl_2_bss_1A8248[0];
+    state[0x17AB] = 6;
+    *(s16*)(state + 0x177C) = 0;
+    ((u8*)lbl_2_bss_1A8248[0])[0x442F] = 1;
 }
