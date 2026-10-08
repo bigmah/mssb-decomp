@@ -9,4 +9,6 @@ u8 GetDrawShadows(void);
 
 void* fn_800BEB80(u8 index);
 
+void DrawShadows(u8 enable);
+
 #endif

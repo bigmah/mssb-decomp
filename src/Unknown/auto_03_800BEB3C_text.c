@@ -16,3 +16,8 @@ u8 GetDrawShadows(void) {
 void* fn_800BEB80(u8 index) {
     return *(u8**)(lbl_803009F8 + 0x14) + index * 0xE0 + 0xB0;
 }
+
+// DrawShadows, size:0xC
+void DrawShadows(u8 enable) {
+    lbl_803009F8[0] = enable;
+}
