@@ -33,4 +33,6 @@ s32 fn_1_160D8(s8 a, s8 b);
 
 void fn_1_116EC(void* object);
 
+void fn_1_14928(void);
+
 #endif

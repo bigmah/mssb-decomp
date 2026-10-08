@@ -1,5 +1,8 @@
 #include "challenge/rep_0610.h"
 
+extern void* lbl_80366158[];
+extern u8* lbl_803CC1B8[];
+
 extern s32 lbl_1_data_F4DC[3];
 extern u8 lbl_1_bss_3216[];
 extern void fn_1_1496C(u8* object);
@@ -84,4 +87,10 @@ s32 fn_1_160D8(s8 a, s8 b) {
 // fn_1_116EC, size:0x28
 void fn_1_116EC(void* object) {
     SetDisplayStateTexture(object, 0, 0);
+}
+
+// fn_1_14928, size:0x44
+void fn_1_14928(void) {
+    fn_800AD038(lbl_80366158[2]);
+    *(s16*)(*(u8**)(lbl_803CC1B8[0] + 0xC) + 0x10) = 1;
 }
