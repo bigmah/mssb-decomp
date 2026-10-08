@@ -5,4 +5,6 @@
 
 void fn_800BF038(u32 value);
 
+void fn_800BF048(u32 value);
+
 #endif
