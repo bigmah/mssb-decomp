@@ -93,7 +93,7 @@ extern void fn_800ACFB0(void* object);
 #include "Dolphin/GX/GXTypes.h"
 extern void fn_800BD2CC(s32 channel, GXColor color);
 
-extern void fn_800B9A9C(u8 flag, f32 value);
+extern void fn_800B9A9C(u32 flag, f32 value);
 
 extern f32 fn_800B4A94(void* object);
 

@@ -5,4 +5,6 @@
 
 void fn_800B9AA8(u32 value);
 
+void fn_800B9A9C(u32 flag, f32 value);
+
 #endif
