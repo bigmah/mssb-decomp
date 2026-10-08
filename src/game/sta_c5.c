@@ -695,9 +695,59 @@ void fn_3_F1674(void) {
 }
 
 // .text:0x000F1750 size:0x154 mapped:0x807307E4
-void fn_3_F1750(void) {
-    return;
+struct StadCtlA {
+    Control c;
+    u8 pad34[0x74 - 0x3C];
+    u8** obj;
+    u8 pad78[0x90 - 0x78];
+    u8 fl90_hi : 1;
+    u8 fl90_lo : 7;
+    u8 pad91[8];
+    u8 f99;
+    u8 pad9A[2];
+    u8 idx;
+    u8 pad9D[3];
+    f32 xa0, ya4, za8, xac, zb0, rb4;
+    u8 padB8[0xC0 - 0xB8];
+    u8 fc0;
+    s8 fc1;
+    u8 padC2[2];
+    u8 fc4;
+    u8 fc5;
+    u8 fc6;
+    u8 fc7;
+};
+typedef struct StadCtlA StadCtlA;
+extern f32 fn_800B4A94(void*);
+extern const f32 lbl_3_rodata_2E30;
+void fn_3_F1750(StadCtlA* p) {
+    u8** o = p->obj;
+    f32 r;
+    f32 x;
+    f32 z;
+    if (!fn_800B4A94(*o)) {
+        p->xac = lbl_3_data_1B884[p->idx].v.x;
+        p->zb0 = lbl_3_data_1B884[p->idx].v.z;
+        z = p->zb0;
+        x = p->xac;
+        r = -lbl_3_data_1B884[p->idx].pad[0];
+        p->xa0 = x;
+        p->ya4 = lbl_3_rodata_2E30;
+        p->za8 = z;
+        p->rb4 = r;
+        p->c.type = 0;
+        CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+        CTRLSetRotation(&p->c, 0.0f, r, 0.0f);
+        p->fc1 = 0;
+        p->fl90_hi = 1;
+        p->obj = (u8**)(*(u8**)(lbl_8036E548 + 0x6C) + (lbl_3_bss_B219[0] + p->idx) * 0x90 + 0x34);
+        p->fc4 = 0;
+        p->f99 = 1;
+        return;
+    }
+    AnimateActorBones(*o);
 }
+
 
 // .text:0x000F18A4 size:0x98 mapped:0x80730938
 void fn_3_F18A4(u8* p) {
