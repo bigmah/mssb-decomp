@@ -40,6 +40,33 @@ extern const f32 lbl_1_rodata_77E0[];
 extern const f32 lbl_1_rodata_7814[];
 extern const f32 lbl_1_rodata_7820[];
 extern Mtx44 lbl_1_bss_47010;
+extern void (*lbl_1_data_104A8[])(void);
+
+// fn_1_246AC, size:0xCC
+void fn_1_246AC(void) {
+    u8* queue = lbl_803CC1B8[0];
+    u16 repeated = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (repeated & 8) {
+        if (queue[0x14] == 0) {
+            queue[0x14] = 4;
+        }
+        queue[0x14]--;
+    } else if (repeated & 4) {
+        queue[0x14]++;
+        if (queue[0x14] == 4) {
+            queue[0x14] = 0;
+        }
+    } else {
+        u16 pressed = lbl_803C77B8._02;
+        if (pressed & 0x100) {
+            *(void (**)(void))queue = lbl_1_data_104A8[queue[0x14]];
+        } else if (pressed & 0x200) {
+            ChallengeTransfer* transfer = *(ChallengeTransfer**)(queue + 0x0C);
+            transfer->complete = 1;
+            fn_800B0A14_removeQueue(transfer);
+        }
+    }
+}
 
 // fn_1_26A34, size:0xC4
 void fn_1_26A34(void) {
