@@ -140,3 +140,8 @@ void fn_2_54844(void) {
 void fn_2_5268C(void) {
     return;
 }
+
+// fn_2_51568, size:0x4
+void fn_2_51568(void) {
+    return;
+}
