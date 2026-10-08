@@ -24,7 +24,7 @@ void fn_3_14A164(void);
 u32 fn_3_14A188(u8* o);
 void fn_3_14A37C(u8* o, f32* v);
 void fn_3_14A62C(f32* v);
-void fn_3_14A90C(void);
+void fn_3_14A90C(f32* v);
 void fn_3_14AC1C(void);
 void fn_3_14AC40(void);
 void fn_3_14B248(u8* a, u8* b);
