@@ -16,7 +16,7 @@ void fn_3_7ECFC(int i);
 int fn_3_7F2D8(void);
 void fn_3_7F494(int i);
 void fn_3_7F9C4(int i);
-void fn_3_7FA78(void);
+int fn_3_7FA78(int i);
 void fn_3_7FD90(int i);
 void fn_3_7FEA8(s32 i, s32 v);
 void fn_3_7FED4(f32* out, f32 dist, f32 frame);

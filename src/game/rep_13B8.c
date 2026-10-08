@@ -436,8 +436,87 @@ void fn_3_7F9C4(int i) {
 }
 
 // .text:0x0007FA78 size:0x318 mapped:0x806BEB0C
-void fn_3_7FA78(void) {
-    return;
+int fn_3_7FA78(int i) {
+    u8* r = g_Runners + i * 0x154;
+    u8 gm;
+    u8 fl;
+    s16 b66;
+    s16 f0;
+    s16 f2;
+    gm = g_GameLogic[0x121];
+    if (gm == 6) {
+        if (g_Minigame[0x190B] != 0) {
+            return 2;
+        }
+        if (g_Minigame[0x1B19] == 2 || g_Minigame[0x1B19] == 3) {
+            return 2;
+        }
+        return 0;
+    }
+    if (gm != 0xE) {
+        b66 = *(s16*)(g_Ball + 0x1B66);
+        if (b66 <= 0) {
+            return 0;
+        }
+        fl = g_FieldingLogic[0x107];
+        if (fl == 1) {
+            if (i != 0 && r[0x137] == 2 && r[0x135] == 0 && *(s16*)(g_Ball + 0x1B70) == lbl_3_data_4C54[4]) {
+                return 3;
+            }
+        } else if (fl == 2 && i != 0 && r[0x137] == 2 && r[0x135] == 0 && *(s16*)(g_Ball + 0x1B70) == lbl_3_data_4C54[4]) {
+            return 3;
+        }
+        if (i == 0) {
+            if (*(f32*)(r + 0x64) < lbl_3_rodata_1408 && *(s16*)(r + 0xEE) == 1 && g_FieldingLogic[0x108] == 0 && fl == 0) {
+                return 1;
+            }
+        } else if (r[0x133] == 1) {
+            return 1;
+        }
+        if (g_Ball[0x1BD1] == 1) {
+            return 1;
+        }
+        if (b66 == 5) {
+            return 1;
+        }
+    }
+    f0 = *(s16*)(r + 0xF0);
+    if (f0 & 4) {
+        u8 a = r[0x137];
+        if (a == 1) {
+            return 2;
+        }
+        if (r[0x136] == 1 && a == 2) {
+            return 2;
+        }
+    } else if (f0 & 1) {
+        if ((r[0x13E] != 1 || r[0x140] == 0) && r[0x137] == 1) {
+            return 2;
+        }
+        if (r[0x136] == 1) {
+            return 2;
+        }
+    } else if (f0 & 2) {
+        if (r[0x137] == 3) {
+            return 2;
+        }
+        if (r[0x136] == 3) {
+            return 2;
+        }
+    } else {
+        f2 = *(s16*)(r + 0xF2);
+        if (f2 & 4) {
+            if ((f0 & 1) == 0 && *(s16*)(g_Ball + 0x1B66) > 0 && (r[0x137] == 2 || r[0x136] == 2) && r[0x128] == 0) {
+                return 1;
+            }
+        } else if ((f2 & 8) && (f0 & 2) == 0 && (r[0x137] == 2 || r[0x136] == 2)) {
+            return 3;
+        }
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) == 3 && r[0x128] == 2) {
+        return 3;
+    }
+    return 0;
 }
 
 // .text:0x0007FD90 size:0x118 mapped:0x806BEE24
