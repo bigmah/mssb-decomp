@@ -3,10 +3,10 @@
 
 #include "mssbTypes.h"
 
-void fn_3_EE100(void);
+void fn_3_EE100(u8* obj, f32 (*mtx)[4]);
 void fn_3_EE388(void);
 void fn_3_EE67C(void);
-void fn_3_EE96C(void);
+void fn_3_EE96C(u8* pos);
 void fn_3_EEB94(void);
 void fn_3_EECF4(void);
 void fn_3_EEE3C(void);
@@ -18,7 +18,8 @@ void fn_3_EF218(void);
 void fn_3_EF21C(u8* p);
 void fn_3_EF3D4(u8* p, u8 idx);
 void fn_3_EF408(u8* p);
-void fn_3_EF55C(void);
+#include "Dolphin/vec.h"
+u32 fn_3_EF55C(Vec p, u8 idx);
 typedef struct { s32 a, b, c; } V3i;
 u32 fn_3_EF7B4(V3i v, s32 x);
 void fn_3_EF800(u8* p);
