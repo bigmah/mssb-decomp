@@ -125,3 +125,12 @@ void fn_1_14888(u8* object) {
         fn_800B9AA8(*(void**)(object + 0x70));
     }
 }
+
+// fn_1_E9F8, size:0x28
+void fn_1_E9F8(u8* object, s32 index, s32 count) {
+    s32 i;
+    for (i = 0; i < count; i++) {
+        index++;
+        if (index == *(u16*)(object + 6)) index = 0;
+    }
+}

@@ -41,4 +41,6 @@ void fn_1_15170(void);
 
 void fn_1_14888(u8* object);
 
+void fn_1_E9F8(u8* object, s32 index, s32 count);
+
 #endif
