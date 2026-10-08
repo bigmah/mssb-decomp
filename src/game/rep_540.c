@@ -30,6 +30,11 @@ extern f32 lbl_3_rodata_5EC;
 extern f32 lbl_3_rodata_5F0;
 extern f32 lbl_3_rodata_5F4;
 extern f32 lbl_3_rodata_5D4;
+extern u8 g_hitFloats[];
+extern u8 lbl_3_data_4604[];
+extern u8 lbl_3_data_4608;
+extern int RandomInt_Game(int);
+extern void getComponentsFromSAng(s16, f32*, f32*);
 extern f32 lbl_3_rodata_5E8;
 extern int fn_3_B7DD8(f32, f32);
 extern f32 lbl_3_rodata_608;
@@ -45,6 +50,32 @@ extern void fn_3_27648(void);
 
 extern s16 g_RunningLogic;
 extern void fn_3_59918(s32, s32);
+
+extern const f64 lbl_3_rodata_5B8;
+extern const f64 lbl_3_rodata_5C0;
+extern const f64 lbl_3_rodata_5C8;
+
+extern f32 lbl_3_rodata_60C;
+extern f32 lbl_3_rodata_610;
+extern f32 lbl_3_rodata_594;
+
+static inline float sqrt540(float x) {
+    if (x > 0.0f) {
+        double half = lbl_3_rodata_5B8;
+        double three = lbl_3_rodata_5C0;
+        double xd = (double)x;
+        double guess = __frsqrte(xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        return (float)(xd * guess);
+    } else if (x < lbl_3_rodata_5C8)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
 
 // .text:0x00006530 size:0x78 mapped:0x806455C4
 void fn_3_6530(void) {
@@ -118,8 +149,49 @@ void fn_3_6C38(void) {
 }
 
 // .text:0x00008CF0 size:0x35C mapped:0x80647D84
-void fn_3_8CF0(void) {
-    return;
+void fn_3_8CF0(f32* p, s32 n, u8* flag, s32 skip) {
+    s32 low = *(s32*)(g_Ball + 0x1B44) & 0x7F;
+    f32 sp10;
+    f32 spC;
+    f32 d;
+    f32 v;
+    s32 r;
+    if ((g_Ball[0x1BE7] == 9 || g_Ball[0x1BE7] == 0xA) && skip == 0) {
+        f32 dx = *(f32*)(g_Ball + 0x48) - *(f32*)(g_Ball + 0x3C);
+        f32 dy = *(f32*)(g_Ball + 0x4C) - *(f32*)(g_Ball + 0x40);
+        f32 dz = *(f32*)(g_Ball + 0x50) - *(f32*)(g_Ball + 0x44);
+        f32 sx = dx * dx;
+        f32 sy = dy * dy;
+        f32 sz = dz * dz;
+        d = sqrt540(sz + (sx + sy));
+        v = d * *(f32*)(g_hitFloats + 0x10);
+        getComponentsFromSAng((s16)(RandomInt_Game(0x200) + 0x80), &sp10, &spC);
+        *p = v * spC;
+        v = v * sp10;
+        r = RandomInt_Game(0x800);
+        getComponentsFromSAng((s16)(*(s16*)(g_Ball + 0x1B82) + r - 0x400), &sp10, &spC);
+        g_Ball[0x1BEA] = 1;
+        *(f32*)(g_Ball + 0x1A60) = v * sp10;
+        *(f32*)(g_Ball + 0x1A64) = v * spC;
+        g_FieldingLogic[0x13B] = 1;
+        fn_3_27648();
+    } else if (g_d_GameSettings[7] == 6 && low >= 0x70 && low < 0x79) {
+        if (n == 0) {
+            *p *= *(f32*)(lbl_3_data_4414 + 0);
+        } else {
+            *p *= *(f32*)(lbl_3_data_4414 + 4);
+        }
+    } else if (n == 0) {
+        *p *= lbl_3_data_4388[g_d_GameSettings[9]].f0;
+    } else {
+        *p *= lbl_3_data_4388[g_d_GameSettings[9]].f4;
+    }
+    if (*flag == 0 && *p < *(f32*)(lbl_3_data_4604) && n >= lbl_3_data_4608) {
+        *flag = 1;
+    }
+    if (*flag != 0) {
+        *p = lbl_3_rodata_590;
+    }
 }
 
 // .text:0x0000904C size:0x214 mapped:0x806480E0
@@ -419,32 +491,6 @@ void fn_3_9B74(void) {
 #pragma opt_common_subs reset
 
 // .text:0x00009CE0 size:0x138 mapped:0x80648D74
-extern const f64 lbl_3_rodata_5B8;
-extern const f64 lbl_3_rodata_5C0;
-extern const f64 lbl_3_rodata_5C8;
-
-extern f32 lbl_3_rodata_60C;
-extern f32 lbl_3_rodata_610;
-extern f32 lbl_3_rodata_594;
-
-static inline float sqrt540(float x) {
-    if (x > 0.0f) {
-        double half = lbl_3_rodata_5B8;
-        double three = lbl_3_rodata_5C0;
-        double xd = (double)x;
-        double guess = __frsqrte(xd);
-        guess = half * guess * (three - guess * guess * xd);
-        guess = half * guess * (three - guess * guess * xd);
-        guess = half * guess * (three - guess * guess * xd);
-        return (float)(xd * guess);
-    } else if (x < lbl_3_rodata_5C8)
-        return NAN;
-    else if (isnan(x))
-        return NAN;
-    else
-        return x;
-}
-
 f32 fn_3_9CE0(f32 x, f32 z) {
     f32 dx = x - *(f32*)(g_Ball + 0);
     f32 dz = z - *(f32*)(g_Ball + 8);
