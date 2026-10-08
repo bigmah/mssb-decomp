@@ -35,4 +35,6 @@ s32 fn_2_512B8(void);
 
 void* fn_2_519F0(void);
 
+void fn_2_54874(void);
+
 #endif
