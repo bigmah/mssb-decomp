@@ -3,6 +3,30 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/vec.h"
+typedef struct C4724P {
+    struct C4724P* next;
+    f32 x, y, z;
+    f32 vx, vy, vz;
+    f32 f1C, f20, f24;
+    u8 pad28[0x38 - 0x28];
+    f32 f38, f3C;
+    u8 a40, a41, a42;
+    u8 a43;
+    u8 pad44[4];
+    s16 s48;
+    s16 s4A;
+    u8 pad4C[1];
+    u8 f4D;
+    u8 f4E;
+    u8 f4F;
+    u8 f50;
+} C4724P;
+typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[2]; Vec* f18; u8 pad1C[4]; void* f20; s32 f24; } C4724Hdr;
+extern const u8 lbl_3_rodata_2028[];
+extern const f64 lbl_3_rodata_2118;
+extern const f64 lbl_3_rodata_2130;
+extern const f64 lbl_3_rodata_2140;
+extern const f32 lbl_3_rodata_2138;
 extern void fn_3_C2644(void);
 extern const f32 lbl_3_rodata_213C;
 extern u8 lbl_3_bss_9D81;
@@ -281,9 +305,24 @@ void fn_3_C2C80(void) {
     return;
 }
 
+// 60-line diff: orig hoists the 2118/2138/213C const loads up into the first fmadd; ours loads them later (f-reg numbering shifts)
 // .text:0x000C2EDC size:0x214 mapped:0x80701F70
-void fn_3_C2EDC(void) {
-    return;
+void fn_3_C2EDC(void* pv) {
+    C4724P* p = pv;
+    p->f38 = p->f20 * (lbl_3_rodata_2130 * p->f1C / p->f4F) + p->f38;
+    p->f3C = p->f20 * (lbl_3_rodata_2118 * p->f1C / p->f4F) + p->f3C;
+    p->f24 = p->f24 + (lbl_3_rodata_2138 / p->f4F);
+    if (p->f24 < lbl_3_rodata_213C) {
+        p->f24 = lbl_3_rodata_213C;
+    }
+    p->a43 = p->f24;
+    p->a40 = lbl_3_rodata_2028[0] * (p->a43 / lbl_3_rodata_2140);
+    p->a41 = lbl_3_rodata_2028[1] * (p->a43 / lbl_3_rodata_2140);
+    p->a42 = lbl_3_rodata_2028[2] * (p->a43 / lbl_3_rodata_2140);
+    p->x += p->vx;
+    p->y -= p->vy;
+    p->z += p->vz;
+    p->s4A -= 1;
 }
 
 // .text:0x000C30F0 size:0x57C mapped:0x80702184
@@ -511,25 +550,6 @@ void fn_3_C444C(void) {
     return;
 }
 
-typedef struct C4724P {
-    struct C4724P* next;
-    f32 x, y, z;
-    f32 vx, vy, vz;
-    f32 f1C;
-    u8 pad20[0x38 - 0x20];
-    f32 f38, f3C;
-    u8 a40, a41, a42;
-    u8 a43;
-    u8 pad44[4];
-    s16 s48;
-    s16 s4A;
-    u8 pad4C[1];
-    u8 f4D;
-    u8 f4E;
-    u8 f4F;
-    u8 f50;
-} C4724P;
-typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[2]; Vec* f18; u8 pad1C[4]; void* f20; s32 f24; } C4724Hdr;
 extern u8 lbl_80366158[];
 extern void fn_80033620(void);
 extern void fn_8003403C(f32, f32);
