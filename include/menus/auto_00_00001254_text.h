@@ -25,4 +25,6 @@ void fn_2_1D28(void);
 
 void fn_2_1254(void);
 
+void fn_2_1DC4(void);
+
 #endif
