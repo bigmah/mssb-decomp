@@ -2,6 +2,17 @@
 
 extern u32 lbl_803CC20C;
 
+// fn_800BD190, size:0x58
+void fn_800BD190(GQRValueGroups* groups, s32 value) {
+    u32 i;
+    s32 j;
+    for (i = 0; i < groups->count; i++) {
+        for (j = 0; j < groups->groups[i].group->count; j++) {
+            groups->groups[i].group->entries[j].value = value;
+        }
+    }
+}
+
 // __MTGQR5, size:0x8
 void __MTGQR5(register u32 value) {
     asm {
