@@ -1238,8 +1238,56 @@ void fn_3_F65C8(s32* n) {
 }
 
 // .text:0x000F66C8 size:0x270 mapped:0x8073575C
-void fn_3_F66C8(void) {
-    return;
+// 97.9%: points 2/3 of the bounding-box scan use lfsu (pt++); original does `addi r4,r3,8k` + `lfs 8k(r3)` and keeps e in r3
+typedef struct { f32 x, z; } P2;
+void fn_3_F66C8(s32* n) {
+    struct { Control c; u8 pad[0x14]; } c;
+    Mtx m;
+    s32 i;
+    u16 k;
+    s32 idx;
+    void* o;
+    f32* e;
+    P2* pt;
+    s32 j;
+    u8* oe;
+    f32 xmin;
+    f32 zmin;
+    f32 xmax;
+    f32 zmax;
+    f32 t;
+    extern f32 lbl_3_rodata_2F3C[];
+    fn_3_B8574();
+    for (i = 0; i < lbl_3_bss_B21C; i++) {
+        k = (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n - 1] + (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n - 1];
+        (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n] = k;
+        idx = lbl_3_bss_B21B + i;
+        (*(u32**)(lbl_3_common_bss_350E4 + 0x44))[k] = idx;
+        (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
+        oe = *(u8**)lbl_3_common_bss_350E4;
+        oe += idx * 0xE8;
+        e = (f32*)(lbl_3_data_1B824 + oe[0x9C] * 32);
+        xmin = xmax = e[0];
+        zmin = zmax = e[1];
+        pt = (P2*)e;
+        for (j = 1; j < 4; j++) {
+            pt++;
+            t = pt->x;
+            if (xmin > t) xmin = t; else if (xmax < t) xmax = t;
+            t = pt->z;
+            if (zmin > t) zmin = t; else if (zmax < t) zmax = t;
+        }
+        o = (void*)((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21B].w78;
+        CTRLSetTranslation(&c.c, xmin, ((f32*)&lbl_3_rodata_2D5C)[0], zmax);
+        CTRLBuildMatrix(&c.c, m);
+        fn_3_B8464(m, o);
+        CTRLSetTranslation(&c.c, xmax, lbl_3_rodata_2F3C[0], zmin);
+        CTRLBuildMatrix(&c.c, m);
+        fn_3_B8464(m, o);
+        fn_3_B8414(*(u8**)(lbl_3_common_bss_350E4 + 0x48) + *n * 0x18, *(u8**)(lbl_3_common_bss_350E4 + 0x48) + (*n * 2 + 1) * 0xC);
+        (*n)++;
+        fn_3_B8574();
+    }
 }
 
 // .text:0x000F6938 size:0x15C mapped:0x807359CC
