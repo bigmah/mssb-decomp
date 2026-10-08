@@ -20,6 +20,15 @@ extern Vec lbl_3_rodata_258C;
 extern f32 lbl_3_rodata_265C;
 extern f32 lbl_3_rodata_2670;
 extern f32 lbl_3_rodata_2660;
+extern f32 lbl_3_rodata_269C;
+extern f32 lbl_3_rodata_26A4;
+extern f32 lbl_3_rodata_26A8;
+extern f32 lbl_3_rodata_26AC;
+extern f32 lbl_3_rodata_26B0;
+extern f32 lbl_3_rodata_26B8;
+extern u8 lbl_3_bss_A8D0[];
+typedef struct { f32 a, b, c, d, e, f; f32 h, hh; s32 n; f32 inv; } CC438Cfg;
+typedef struct { f32 f0, f4, f8, f0C[6], f24[3], f30[3]; s32 n3C; } CC438Ent;
 extern void fn_3_8B890(s32);
 extern s32 lbl_3_data_182C4;
 extern f32 lbl_3_rodata_269C;
@@ -246,8 +255,40 @@ void fn_3_CC354(f32* p) {
 }
 
 // .text:0x000CC438 size:0x18C mapped:0x8070B4CC
+// 98.9%: only `addic. r31` (orig) vs `addic. r0; mr r31,r0` (ours) for the inlined CC354-style null check on lbl_3_bss_A8D0
 void fn_3_CC438(void) {
-    return;
+    f32* q;
+    f32 one;
+    u32 i;
+    CC438Cfg* g = (CC438Cfg*)lbl_3_bss_A8A8;
+    g->a = lbl_3_rodata_269C;
+    g->b = lbl_3_rodata_26A0;
+    g->c = lbl_3_rodata_26A4;
+    g->d = lbl_3_rodata_26A8;
+    g->e = lbl_3_rodata_26AC;
+    g->f = lbl_3_rodata_26B0;
+    g->n = 8;
+    one = lbl_3_rodata_2698;
+    g->h = one / (f32)g->n / lbl_3_rodata_26B4;
+    g->hh = g->h * g->h;
+    g->inv = one / (lbl_3_rodata_26B8 * g->h);
+    q = (f32*)lbl_3_bss_A8D0;
+    if (q != NULL) {
+        for (i = 0; i < 4; i++, q += 16) {
+            if (i == 3) {
+                q[0] = lbl_3_data_188E0;
+                q[2] = 0.504375f;
+                *(s32*)(q + 15) = 1;
+            } else {
+                q[0] = lbl_3_data_188E0;
+                q[2] = 0.504375f;
+            }
+            q[1] = one / q[0];
+            memset(q + 3, 0, 0x18);
+            memset(q + 9, 0, 0xC);
+            memset(q + 12, 0, 0xC);
+        }
+    }
 }
 
 // .text:0x000CC5C4 size:0x258 mapped:0x8070B658
