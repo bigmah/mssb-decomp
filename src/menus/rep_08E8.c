@@ -52,3 +52,11 @@ void fn_2_481B8(void) {
     u8* camera = (u8*)fn_80052768_getCamera(0);
     fn_800BD670(*(void**)(lbl_8036E548 + 0x60), (u32)(camera + 0x40));
 }
+
+// fn_2_474FC, size:0x44
+void fn_2_474FC(void) {
+    if (*(void**)(lbl_8036E548 + 0x2C88) != 0) {
+        fn_800ACFB0(*(void**)(lbl_8036E548 + 0x2C88));
+        *(void**)(lbl_8036E548 + 0x2C88) = 0;
+    }
+}

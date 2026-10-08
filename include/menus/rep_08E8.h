@@ -19,4 +19,6 @@ s32 fn_2_46D00(void);
 
 void fn_2_481B8(void);
 
+void fn_2_474FC(void);
+
 #endif
