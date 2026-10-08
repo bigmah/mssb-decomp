@@ -42,6 +42,8 @@ extern void fn_80034E20(void*, void*);
 extern u8 lbl_3_data_A9F8[];
 
 extern u8 lbl_80371C30[];
+extern u8 lbl_3_data_23A44[];
+extern u8 g_Pitcher[];
 extern u8 lbl_3_data_23904[];
 extern u8 lbl_803616CC[];
 extern u8 lbl_80109410[];
@@ -631,7 +633,125 @@ void fn_3_1243A4(void) {
 
 // .text:0x00124738 size:0x5A8 mapped:0x807637CC
 void fn_3_124738(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    u8* gl;
+    u8* m;
+    u8* o;
+    QEnt* t;
+    s32 n;
+    u32 x;
+    u32 f;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (*(u16*)(q + 0x1C)) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_23A44);
+        if (g_Minigame[0x1A2A] == 3) {
+            fn_800363D8(q, 1, 4, 0x14D, 1);
+        }
+        *(u16*)(q + 0x1C) = 1;
+        break;
+    case 1:
+        gl = g_GameLogic;
+        if (gl[0x11E] == 1 && *(u16*)(gl + 0xFC) == 0) {
+            m = g_Minigame;
+            if (m[0x1A2A] == 1) {
+                q[0x24] = m[0x1A2F] - m[0x1A2D];
+                q[0x25] = m[0x1A2D];
+            } else {
+                q[0x24] = m[0x1A2E];
+            }
+        }
+        n = *(s8*)(q + 0x24);
+        if (n > 0x63) {
+            n = 0x63;
+        }
+        if (n > 1) {
+            {
+                QEnt* tt = (QEnt*)lbl_80371C30;
+                *(u32*)(tt[*(u16*)(q + 0x14) + 1].p + 0x5C) = 0;
+            }
+            if (n >= 10) {
+                fn_800363D8(q, 1, 1, 0x14E, (n % 100) / 10);
+            } else {
+                fn_800363D8(q, 1, 1, 0x14E, 10);
+            }
+            fn_800363D8(q, 1, 2, 0x14E, n % 10);
+            t = (QEnt*)lbl_80371C30 + 2;
+            t[*(u16*)(q + 0x14)].p[0x68] = 0;
+            *(u32*)(t[*(u16*)(q + 0x14)].p + 0x5C) = 0;
+        } else {
+            *(u32*)(((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14) + 1].p + 0x5C) = 0x10000;
+            ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14) + 2].p[0x68] = 1;
+        }
+        m = g_Minigame;
+        if (m[0x1A2A] == 1) {
+            if (m[0x1909] == 0 && m[0x1A3C] == 0 && m[0x1A2B] == 3) {
+                if (m[0x1A2F] <= q[0x25] && q[0x25] < 0x13) {
+                    *(u32*)(((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14) + 1].p + 0x5C) = 0x10000;
+                    t = (QEnt*)lbl_80371C30 + 2;
+                    t[*(u16*)(q + 0x14)].p[0x68] = 0;
+                    *(u32*)(t[*(u16*)(q + 0x14)].p + 0x5C) = 0;
+                    ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14) + 3].p[0x68] = 1;
+                } else {
+                    t = (QEnt*)lbl_80371C30 + 3;
+                    t[*(u16*)(q + 0x14)].p[0x68] = 0;
+                    *(u32*)(t[*(u16*)(q + 0x14)].p + 0x5C) = 0;
+                }
+            }
+            if (gl[0x11E] == 0 || gl[0x11E] == 1) {
+                if (*(s8*)(q + 0x24) <= 1 && g_Pitcher[0x13E] >= 4) {
+                    ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14)].p[0x68] = 1;
+                } else {
+                    o = ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14)].p;
+                    x = *(u32*)(o + 0x5C) >> 16;
+                    if (x < 0xE) {
+                        o[0x68] = 1;
+                    } else if (x > 0xE) {
+                        o[0x68] = 4;
+                    } else {
+                        o[0x68] = 0;
+                    }
+                }
+            } else {
+                o = ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14)].p;
+                x = *(u32*)(o + 0x5C) >> 16;
+                if (x != 0) {
+                    if (x < 0x18) {
+                        o[0x68] = 1;
+                        f = 0;
+                    } else if (x > 0x18) {
+                        o[0x68] = 4;
+                        f = 0;
+                    } else {
+                        o[0x68] = 0;
+                        f = 1;
+                    }
+                    if (f != 0) {
+                        *(u32*)(((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14)].p + 0x5C) = 0;
+                    }
+                }
+            }
+        } else {
+            if (m[0x1A2E] == 0 && gl[0x11E] != 0 && gl[0x11E] != 1 && gl[0x11E] != 2) {
+                ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14)].p[0x68] = 1;
+            } else {
+                o = ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14)].p;
+                x = *(u32*)(o + 0x5C) >> 16;
+                if (x < 0xE) {
+                    o[0x68] = 1;
+                } else if (x > 0xE) {
+                    o[0x68] = 4;
+                } else {
+                    o[0x68] = 0;
+                }
+            }
+        }
+        break;
+    }
 }
 
 // .text:0x00124CE0 size:0x68C mapped:0x80763D74
