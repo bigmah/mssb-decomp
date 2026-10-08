@@ -4,7 +4,7 @@
 #include "mssbTypes.h"
 
 void fn_3_D9EA0(void);
-void fn_3_DA640(void);
+void fn_3_DA640(s32 n, s32 idx);
 void fn_3_DA834(void);
 void fn_3_DC240(void);
 void fn_3_DC380(void);
