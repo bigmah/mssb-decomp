@@ -4,6 +4,9 @@
 #pragma dont_inline on
 
 extern u8 g_Ball[];
+extern f32 lbl_3_data_4444[];
+extern f32 game_atan2(f32, f32);
+extern s16 fn_3_9FC1C(f32, f32);
 extern u8 g_FieldingLogic[];
 typedef struct {
     /*0x000*/ f32 x;
@@ -14,7 +17,10 @@ typedef struct {
     /*0x0E6*/ s16 unkE6;
     /*0x0E8*/ u8 pad0E8[0x123 - 0xE8];
     /*0x123*/ u8 status;
-    /*0x124*/ u8 pad124[0x128 - 0x124];
+    /*0x124*/ u8 pad124;
+    /*0x125*/ u8 unk125;
+    /*0x126*/ u8 unk126;
+    /*0x127*/ u8 unk127;
     /*0x128*/ u8 unk128;
     /*0x129*/ u8 pad129[0x137 - 0x129];
     /*0x137*/ u8 unk137;
@@ -791,8 +797,47 @@ void fn_3_A9D20(void) {
 }
 
 // .text:0x000AAA3C size:0x1BC mapped:0x806E9AD0
-void fn_3_AAA3C(void) {
-    return;
+void fn_3_AAA3C(int idx) {
+    u8* f = g_Fielders + idx * 0x268;
+    u8* e;
+    s16 ce = *(s16*)(g_FieldingLogic + 0xCE);
+    s16 c4;
+    if (ce < 0) {
+        return;
+    }
+    c4 = *(s16*)(g_FieldingLogic + 0xC4);
+    if (c4 < 0 || c4 > 3) {
+        return;
+    }
+    e = f;
+    e += c4 * 4;
+    if (*(f32*)(e + 0xA8) > lbl_3_rodata_19F0 && *(s16*)(g_FieldingLogic + 0xDC) < 0) {
+        return;
+    }
+    if (c4 == ce) {
+        if (*(s16*)(g_FieldingLogic + 0xE0) >= 0 && *(s16*)(g_FieldingLogic + 0xE0) <= 3) {
+            if (*(s16*)(g_FieldingLogic + 0xDC) == g_Runners[*(s16*)(g_FieldingLogic + 0xE0)].unk126 || *(s16*)(g_FieldingLogic + 0xDC) == g_Runners[*(s16*)(g_FieldingLogic + 0xE0)].unk125) {
+                g_FieldingLogic[0x119] = 1;
+            }
+        }
+    }
+    if (*(s16*)(g_FieldingLogic + 0xCE) == 9) {
+        if (*(s16*)(g_FieldingLogic + 0xE0) >= 0 && *(s16*)(g_FieldingLogic + 0xE0) <= 3) {
+            u8* r = (u8*)g_Runners + *(s16*)(g_FieldingLogic + 0xE0) * 0x154;
+            if (r[0x123] == 1 && *(s16*)(g_FieldingLogic + 0xC4) == r[0x127]) {
+                g_FieldingLogic[0x119] = 1;
+            }
+        }
+    }
+    if (g_FieldingLogic[0x119] != 0) {
+        if (*(s16*)(g_FieldingLogic + 0xC4) >= 0 && *(s16*)(g_FieldingLogic + 0xC4) <= 3) {
+            s32 o = *(s16*)(g_FieldingLogic + 0xC4);
+            f32 a = game_atan2(lbl_3_data_4444[o*2] - *(f32*)f, lbl_3_data_4444[o*2+1] - *(f32*)(f + 8));
+            if (fn_3_9FC1C(a, *(f32*)(f + 0x48)) > 0x40) {
+                g_FieldingLogic[0x119] = 0;
+            }
+        }
+    }
 }
 
 // .text:0x000AABF8 size:0x8C mapped:0x806E9C8C
