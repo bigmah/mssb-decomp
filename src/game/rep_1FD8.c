@@ -484,7 +484,8 @@ typedef struct C4724P {
     struct C4724P* next;
     f32 x, y, z;
     f32 vx, vy, vz;
-    u8 pad1C[0x38 - 0x1C];
+    f32 f1C;
+    u8 pad20[0x38 - 0x20];
     f32 f38, f3C;
     u8 pad40[3];
     u8 a43;
@@ -495,7 +496,7 @@ typedef struct C4724P {
     u8 f4F;
     u8 f50;
 } C4724P;
-typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[0xE]; s32 f24; } C4724Hdr;
+typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[2]; struct { u8 pad[4]; f32 y; }* f18; u8 pad1C[8]; s32 f24; } C4724Hdr;
 extern u8 lbl_80366158[];
 extern void fn_80033620(void);
 extern void fn_8003403C(f32, f32);
@@ -504,6 +505,9 @@ extern void GXSetZMode(int, int, int);
 extern void GXSetBlendMode(int, int, int, int);
 extern const f32 lbl_3_rodata_2168[];
 extern const f32 lbl_3_rodata_213C;
+extern const f32 lbl_3_rodata_21A4;
+extern const f32 lbl_3_rodata_21A8;
+extern f64 pow(f64, f64);
 // 97%: only f-reg numbering of hoisted consts (213C should be f1, loaded after first fadds); const externs help
 // .text:0x000C4724 size:0x1AC mapped:0x807037B8
 u32 fn_3_C4724(void* hv) {
@@ -910,8 +914,37 @@ void fn_3_C749C(void) {
 }
 
 // .text:0x000C75B8 size:0x1F4 mapped:0x8070664C
-void fn_3_C75B8(void) {
-    return;
+u32 fn_3_C75B8(void* hv) {
+    C4724Hdr* h = hv;
+    C4724P* p;
+    s32 n = -h->f24;
+    fn_80033620();
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 5, 0);
+    p = h->head;
+    do {
+        if (p->s48 != 0) {
+            p->s48 -= (lbl_80366158[0x28] == 0);
+        } else if (p->s4A != 0) {
+            fn_8003403C(p->f38, p->f3C);
+            fn_80033CC8(p, h->f10);
+            if (lbl_80366158[0x28] == 0) {
+                if (p->f38 < p->f1C) {
+                    p->f38 += p->f1C / lbl_3_rodata_21A4;
+                    p->f3C += p->f1C / lbl_3_rodata_21A4;
+                }
+                p->x += p->vx;
+                p->z += p->vz;
+                p->y = (p->vy + h->f18->y) - 5.0 * pow(2.0, (f64)n);
+                if (30 - h->f24 >= 16) {
+                    p->a43 = (f32)p->a43 - lbl_3_rodata_21A8;
+                }
+            }
+        }
+        p = p->next;
+    } while (p != NULL);
+    h->f24 -= (lbl_80366158[0x28] == 0);
+    return !h->f24;
 }
 
 // .text:0x000C77AC size:0x260 mapped:0x80706840
