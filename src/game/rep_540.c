@@ -279,7 +279,33 @@ void fn_3_A198(void) {
 
 // .text:0x0000A83C size:0x134 mapped:0x806498D0
 void fn_3_A83C(void) {
-    return;
+    int i;
+    f32* p = (f32*)(g_Ball + 0x2C4);
+    for (i = 0x3B; i != 0; i--) {
+        p[0x3C / 4] = p[0x30 / 4];
+        p[0x40 / 4] = p[0x34 / 4];
+        p[0x44 / 4] = p[0x38 / 4];
+        p -= 3;
+    }
+    if (g_Ball[0x1BF0] != 0 || g_Ball[0x1BEF] != 0) {
+        *(f32*)(g_Ball + 0x3C) = *(f32*)(g_Ball + 0x1B38);
+        *(f32*)(g_Ball + 0x40) = *(f32*)(g_Ball + 0x1B3C);
+        *(f32*)(g_Ball + 0x44) = *(f32*)(g_Ball + 0x1B40);
+    } else {
+        *(f32*)(g_Ball + 0x3C) = *(f32*)(g_Ball + 0);
+        *(f32*)(g_Ball + 0x40) = *(f32*)(g_Ball + 4);
+        *(f32*)(g_Ball + 0x44) = *(f32*)(g_Ball + 8);
+    }
+    if (g_Ball[0x1BE7] == 3 || g_Ball[0x1BE7] == 4) {
+        for (i = 9; i > 0; i--) {
+            *(f32*)(g_Ball + 0x1A8C + i * 12) = *(f32*)(g_Ball + 0x1A80 + i * 12);
+            *(f32*)(g_Ball + 0x1A90 + i * 12) = *(f32*)(g_Ball + 0x1A84 + i * 12);
+            *(f32*)(g_Ball + 0x1A94 + i * 12) = *(f32*)(g_Ball + 0x1A88 + i * 12);
+        }
+        *(f32*)(g_Ball + 0x1A8C) = *(f32*)(g_Ball + 0x1A68);
+        *(f32*)(g_Ball + 0x1A90) = *(f32*)(g_Ball + 0x1A6C);
+        *(f32*)(g_Ball + 0x1A94) = *(f32*)(g_Ball + 0x1A70);
+    }
 }
 
 // .text:0x0000A970 size:0xAD0 mapped:0x80649A04
