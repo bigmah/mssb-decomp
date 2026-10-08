@@ -25,7 +25,9 @@ typedef struct {
     u8 _3C[0x10];
     f32 heading;
     f32 _50;
-    u8 _54[0x6C];
+    u8 _54[0x2C];
+    s32 objectId;
+    u8 _84[0x3C];
     s8 flagC0;
     u8 _C1[3];
     u8 flagC4;
@@ -55,6 +57,31 @@ extern const f32 lbl_2_rodata_C38;
 extern const f32 lbl_2_rodata_B5C;
 extern const f32 lbl_2_rodata_B60;
 extern const f32 lbl_2_rodata_B64;
+extern u8* lbl_2_bss_1A824C[];
+
+typedef struct {
+    s16 clip;
+    s16 end;
+    u8 mode;
+    u8 padding;
+} MenuAnimation;
+
+extern MenuAnimation lbl_2_data_3C84[];
+extern void fn_2_8CD58(s32, s16, u8, u8, s16, u8, u8);
+
+// fn_2_68F24, size:0x98
+void fn_2_68F24(s32 index, s32 animation) {
+    MenuEntry* entry;
+    MenuAnimation* settings;
+    u8* cache;
+
+    entry = &lbl_2_bss_1A8248[0]->entries[index];
+    settings = &lbl_2_data_3C84[animation];
+    fn_2_8CD58(entry->objectId, settings->clip, settings->mode, 1, settings->end, 0, 0);
+    cache = lbl_2_bss_1A824C[0] + 0x190000;
+    cache += entry->objectId * 2;
+    *(s16*)(cache + 0x7756) = animation;
+}
 
 // fn_2_689CC, size:0xBC
 s16 fn_2_689CC(s32 index) {

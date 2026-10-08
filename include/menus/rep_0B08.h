@@ -139,4 +139,6 @@ s32 fn_2_686EC(s32 from, s32 to);
 
 s16 fn_2_689CC(s32 index);
 
+void fn_2_68F24(s32 index, s32 animation);
+
 #endif
