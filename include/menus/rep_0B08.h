@@ -11,4 +11,6 @@ void fn_2_704A0(u8* object);
 
 void fn_2_70494(u8* object);
 
+void fn_2_7045C(u8* object);
+
 #endif
