@@ -36,6 +36,12 @@ extern u8 g_Minigame[];
 extern u8 lbl_3_data_26E00[];
 extern const Vec lbl_3_rodata_3908;
 extern f32 lbl_3_data_266A8[];
+extern Vec lbl_3_data_26BB4;
+extern f64 __fabs(f64);
+extern f32 __fabsf(f32);
+extern u8 lbl_3_data_26BC0[];
+extern const f32 lbl_3_rodata_3950;
+extern const f64 lbl_3_rodata_3A08;
 extern const Vec lbl_3_rodata_38D0;
 extern f32 fn_3_119D28(void);
 extern u8 lbl_3_data_26CB8[];
@@ -1746,8 +1752,33 @@ void fn_3_1552AC(void) {
 }
 
 // .text:0x001559E4 size:0x244 mapped:0x80794A78
-void fn_3_1559E4(void) {
-    return;
+// 99%: only float regs of the post-PSMTXMultVec add block are shifted (orig v.x=f2,pos0=f1,v.y=f0; ours f1,f0,f3)
+void fn_3_1559E4(u8* o, f32* pos, f32* rot) {
+    struct { Control c; u32 pad[2]; } cc;
+    Mtx m;
+    Vec v;
+    Vec dir;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+    cc.c.type = 0;
+    CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
+    CTRLBuildMatrix(&cc.c, m);
+    if (g_Minigame[0x1A2A] == 1) {
+        dir = lbl_3_data_26BB4;
+    } else {
+        PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
+    }
+    v.x = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.x);
+    v.y = dir.y;
+    v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
+    PSMTXMultVec(m, &v, &v);
+    v.x = v.x + pos[0];
+    v.y = (f32)((f64)v.y - __fabs(pos[1]));
+    v.z = v.z + pos[2];
+    *(f32*)(o + 4) = v.x;
+    *(f32*)(o + 8) = v.y;
+    *(f32*)(o + 0xC) = v.z;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
+    o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
 }
 
 // .text:0x00155C28 size:0x2E0 mapped:0x80794CBC
