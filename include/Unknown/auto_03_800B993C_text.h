@@ -7,4 +7,6 @@ void fn_800B993C(void);
 
 void fn_800B9948(u32 value);
 
+void fn_800B996C(u32 value);
+
 #endif
