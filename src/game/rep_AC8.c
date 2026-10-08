@@ -1762,8 +1762,30 @@ void fn_3_58870(void) {
 }
 
 // .text:0x00058E50 size:0x108 mapped:0x80697EE4
+extern u8 lbl_3_data_46F8[];
+extern void fn_3_6E24C(s8, int);
 void fn_3_58E50(void) {
-    return;
+    u8* m;
+    int i;
+    g_GameLogic[0x155] = 0;
+    if (g_d_GameSettings[0x11] != 0) {
+        m = g_Minigame;
+        for (i = 0; i < 4; i++) {
+            int v = m[0x18F4];
+            if ((s8)v >= 0) {
+                int idx = ((s8)v == (s8)g_Minigame[0x1904]) ? 0 : i + 2;
+                u8* f;
+                fn_3_6E24C((s8)v, idx);
+                f = g_Fielders + idx * 0x268;
+                if (idx == 0) {
+                    f[0x1D2] = lbl_3_data_46F8[m[0x18D8] * 9];
+                } else {
+                    f[0x1D2] = lbl_3_data_46F8[m[0x18D8] * 9 + 7];
+                }
+            }
+            m++;
+        }
+    }
 }
 
 // .text:0x00058F58 size:0x254 mapped:0x80697FEC
