@@ -192,6 +192,13 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Zero-fill of an `s32` array member, 16x unrolled with `addi rX, rOff, 0x128+4k; stwx` (fn_3_1069C0):** index a typed struct member, `((S*)g)->arr[i] = 0;`. `*(s32*)(g + 0x128 + i*4)` or `((s32*)(g+0x128))[i]` give 8x unrolls with `slwi`/`add`.
 - **Still unsolved (rep_3090):** fn_3_FCE38/FCEB0: the original places the loop preheader (`slwi r6,r3,6`, or `lwz n; li off,0`) after the final `blr` and leaves a dead `b cond` behind the previous block. Tried while/for/goto/do-while(0)/inline helpers and GC 2.0/2.5/2.7; none reproduce it (only two functions in the whole game have this shape). fn_3_104B20 still resists, including inline `VecSet`/`GetTrans`/`Copy` helpers.
 
+- **Inlined `dolsqrtf2` with separate rodata (fn_3_7D9DC, rep_13B8):** `dolsqrtf2` from `math.h` pools its `static const` doubles into `.rodata.0`. Write a local `static inline sqrtX(float)` using `extern const f64` 0.5/3.0/0.0 symbols, with `double half = K1; double three = K2;` copied into locals first (that local copy alone fixed the f-reg allocation), call it from one statement, and end the file with `#pragma dont_inline off`; `#include "math.h"` only (UnknownHomes_Game.h clashes with the file's own externs).
+- **Whole-function bodies inlined into a caller (fn_3_833EC = 7FD90 + 7F9C4 bodies):** copy the bodies by hand; callee stubs that take the index but are declared `(void)` are called via casts `((void (*)(int))fn)(i)`, which also makes the `mr r3, r30` appear.
+- **Shared tail with `li r3,1; blr` (fn_3_7F2D8):** a `goto fail;` label at the end (`fail: ...; return 1;`) reproduced multiple branches to one failure block; constant compares use extern `const f32` per rodata symbol.
+- **`else return;` vs `!= x return`:** `if (c == 3) { stores } else { return; }` reproduces `bne; ...; b L; blr` dead-blr shapes (fn_3_7EBD4); the early-return form drops the dead `blr`.
+- **Range merge of `x==1||x==2||x==3` on a loaded byte (fn_3_7EA68):** a local copy (`u8 st`) merges into `subi/cmplwi 1/ble`; testing `g_Pitcher[0x13E] == 1 || g_Pitcher[0x13E] == 2 || ...` directly gives the separate compares. Loop `for (k=1;k<4;k++) g_Runners[k*0x154+...]` gives the unrolled runner checks.
+- **Reads of a global after a call not CSE'd (fn_3_835B0):** use `g_GameLogic[...]`/`*(s32*)(g_GameLogic + 0xC)` directly; a cached `u8* gl = g_GameLogic` made CW reuse `idx*8` across the call.
+
 Add new patterns to this list as we find them.
 
 ## Phases
