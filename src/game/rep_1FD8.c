@@ -425,7 +425,6 @@ void fn_3_C414C(int idx) {
     }
 }
 
-// 98%: only r7/r8 swap between the address regs of lbl_3_bss_9DE0 and lbl_3_common_bss_350E4
 // .text:0x000C42A4 size:0x1A8 mapped:0x80703338
 typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } C42A4Ctl;
 typedef struct { C42A4Ctl* arr; u8 pad0[0x3C - 4]; u32* p3C; u16* p40; u32* p44; u8* p48; } C42A4Bss;
@@ -455,8 +454,8 @@ void fn_3_C42A4(s32* a, s32* b) {
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
             if (k == e->f12 && e->f10 != 7) {
-                idx = j + lbl_3_bss_9DE0[0];
-                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[idx * 0xE8 + 0x90] >> 6) & 1) {
+                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE0[0]) * 0xE8 + 0x90] >> 6) & 1) {
+                    idx = j + lbl_3_bss_9DE0[0];
                     *(s32*)((u8*)g->p44 + off) = idx;
                     off += 4;
                     g->p3C[*a] += 1;
