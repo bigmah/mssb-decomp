@@ -653,6 +653,7 @@ config.libs = [
         "cflags": cflags_base + ["-O4,p", "-sym on"],
         "host": False,
         "objects": [
+            Object(NonMatching, "auto_03_8004ABD8_text", source="Unknown/auto_03_8004ABD8_text.c"),
             Object(NonMatching, "Unknown/File_0x800a6304.c", extra_cflags=["-cpp_exceptions on"]),
             Object(NonMatching, "Unknown/File_0x800a64e0.c", extra_cflags=["-cpp_exceptions on"]),
         ],
