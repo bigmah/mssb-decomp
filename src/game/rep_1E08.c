@@ -495,7 +495,9 @@ extern void fn_8003A848(u8, u8, u8);
 extern void fn_8003A6B0(s32, void*, f32, f32);
 static u8 s_BF070a[8] = {0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0};
 static u8 s_BF070b[8][3] = {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x5C, 0x40, 0x16}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}};
-static V2f s_BF070c[0x37] = {{1.2f, 1.2f}, {1.2f, 1.2f}, {1.5f, 1.5f}, {0.6f, 0.6f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.4f, 1.4f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.5f, 1.5f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.4f, 1.4f}, {0.7f, 0.7f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {0.00000000000000000000000000000000000002350989f, 0.00000000000000000000000000000000000009477423f}};
+static V2f s_BF070c[0x36] = {{1.2f, 1.2f}, {1.2f, 1.2f}, {1.5f, 1.5f}, {0.6f, 0.6f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.4f, 1.4f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.5f, 1.5f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.4f, 1.4f}, {0.7f, 0.7f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}};
+static u8 s_BF070e[0x274] = {1};
+static u8 s_BF070f[0x10] = {1};
 void fn_3_BF070(void) {
     u8* w;
     s32 i;
@@ -555,8 +557,43 @@ void fn_3_BF238(void) {
 }
 
 // .text:0x000BF6C0 size:0x1B8 mapped:0x806FE754
+extern void fn_3_B9D68(void*, int, void*, void*);
+extern void fn_8004B1B8(s32, void*);
+extern void fn_80035750(s32, s32, int);
+extern void* ActorObjectInitTable(int);
+extern void fn_800BDC88(void*, int, int, s32, int, int);
+extern void fn_3_6750C(s32);
 void fn_3_BF6C0(void) {
-    return;
+    s32 buf[8];
+    u8* c;
+    u8* t;
+    u8* w;
+    s32 i;
+    if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
+        fn_3_B9D68(s_BF070e, 6, *(void**)(lbl_3_common_bss_35154 + 8), buf);
+        c = lbl_3_common_bss_35154;
+        *(s32*)(lbl_3_common_bss_35154 + 4) = **(s32**)(c + 8);
+        fn_8004B1B8(**(s32**)(c + 8), *(void**)(c + 8));
+        fn_80035750(*(s32*)(*(u8**)(c + 8) + 4), *(s32*)(*(u8**)(c + 8) + 8), 4);
+        t = ActorObjectInitTable(1);
+        *(void**)(lbl_8036E548 + 0x70) = t;
+        fn_800BDC88(t, 0, 0, ((s32*)*(u8**)(c + 8))[buf[4]], 0, 0);
+        fn_8003A85C(s_BF070a[g_d_GameSettings.StadiumID]);
+        fn_8003A848(s_BF070b[g_d_GameSettings.StadiumID][0], s_BF070b[g_d_GameSettings.StadiumID][1], s_BF070b[g_d_GameSettings.StadiumID][2]);
+        w = *(u8**)(*(u8**)(c + 8) + 0x18);
+        lbl_3_common_bss_35154[0x3B1] = 1;
+        for (i = 0; i < 13; i++) {
+            u8* o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+            if (o != NULL) {
+                fn_8003A6B0(i, w + 4, s_BF070c[*(s8*)(o + 0x252)].x, s_BF070c[*(s8*)(o + 0x252)].y);
+            } else {
+                fn_8003A6B0(i, w + 4, s_BF070c[0].x, s_BF070c[0].y);
+            }
+        }
+        fn_3_6750C(*(s32*)(lbl_3_common_bss_35154 + 4));
+        *(s32*)(lbl_3_common_bss_35154 + 0xC) = ARAMTransfer(s_BF070f, 0, 0, 0);
+        *(void**)lbl_803CC1B8 = fn_3_BF238;
+    }
 }
 
 // .text:0x000BF878 size:0x80 mapped:0x806FE90C
