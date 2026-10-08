@@ -14,8 +14,79 @@ void fn_3_77914(void) {
 }
 
 // .text:0x00078574 size:0x1BC mapped:0x806B7608
-void fn_3_78574(void) {
-    return;
+// 99%: only register numbering differs (ball r6/r7, idx r7/r10, runner ptr r10/r6); structure matches
+void fn_3_78574(s16 arg) {
+    s32 flag = 0;
+    s32 idx;
+    s16 cur;
+    s32 val;
+    s32 off;
+    u8* r;
+    u8* e;
+    if (*(s8*)(g_FieldingLogic + 0x126) == -1) {
+        if (g_FieldingLogic[0x107] == 1) {
+            if (g_Runners[*(s16*)(g_FieldingLogic + 0xC4) * 0x154 + 0x123] != 1) {
+                *(s8*)(g_FieldingLogic + 0x127) = -1;
+                return;
+            }
+            g_FieldingLogic[0x126] = *(s16*)(g_FieldingLogic + 0xC4);
+        }
+        if (g_FieldingLogic[0x107] == 2) {
+            idx = (*(s16*)(g_FieldingLogic + 0xC4) + 3) & 3;
+            if (g_Runners[idx * 0x154 + 0x123] != 1) {
+                *(s8*)(g_FieldingLogic + 0x127) = -1;
+                return;
+            }
+            g_FieldingLogic[0x126] = idx;
+        }
+    }
+    if (g_FieldingLogic[0x107] != 0) {
+        return;
+    }
+    if (g_Ball[0x1BD7] > 1) {
+        return;
+    }
+    cur = *(s16*)(g_FieldingLogic + 0xC4);
+    if (cur < 0 || cur > 3) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) == 3) {
+        return;
+    }
+    if (*(s8*)(lbl_3_common_bss_32A94 + 0x22) >= 1) {
+        return;
+    }
+    if (g_Ball[0x1BBE] >= 2) {
+        return;
+    }
+    if (*(s32*)(g_Strikes + 8) > *(s32*)(g_Strikes + 0xC)) {
+        return;
+    }
+    idx = (cur + 3) & 3;
+    off = idx * 0x154;
+    r = g_Runners + off;
+    if (r[0x123] != 1) {
+        return;
+    }
+    val = *(s16*)(g_Ball + 0x1B62) + 0xF;
+    if (*(s16*)(r + 0xEE) == 0) {
+        if (cur != r[0x127]) {
+            return;
+        }
+        if (cur == r[0x125]) {
+            return;
+        }
+        val += 0x1E;
+    }
+    e = g_Runners;
+    e += off;
+    if (val < *(s16*)(e + 0xEA)) {
+        flag = 1;
+    }
+    if (flag != 0) {
+        *(s16*)(g_FieldingLogic + 0xEA) = arg;
+        g_FieldingLogic[0x113] = idx + 3;
+    }
 }
 
 // .text:0x00078730 size:0x394 mapped:0x806B77C4
