@@ -132,8 +132,73 @@ void fn_3_251E4(int i) {
 }
 
 // .text:0x000253A4 size:0x2A4 mapped:0x80664438
-void fn_3_253A4(void) {
-    return;
+extern u32 fn_3_90220(s32 idx, s32 off);
+extern void fn_3_A9354(int, int);
+int fn_3_253A4(int i, s16 ang) {
+    u8* f = g_Fielders + i * 0x268;
+    if (f[0x207] != 0 || f[0x205] != 0 || f[0x25E] != 0) {
+        return 0;
+    }
+    *(s16*)(f + 0x1C2) = ang;
+    f[0x210] = 1;
+    *(s16*)(f + 0x1BE) = 0;
+    *(s16*)(f + 0x1C0) = lbl_3_data_49DC[0x21];
+    *(f32*)(f + 0x174) = *(f32*)(lbl_3_data_4930 + 0x88);
+    if (f[0x252] == 4 || f[0x252] == 5) {
+        *(f32*)(f + 0x174) = lbl_3_rodata_B20;
+    }
+    if (f[0x207] != 0) {
+        *(f32*)(f + 0x174) = lbl_3_rodata_B20;
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        u8* m = g_Minigame + f[0x20D];
+        if (m[0x18D8] == 0) {
+            fn_3_6C854(*(s8*)(m + 0x18CC), 2);
+        }
+    } else if (g_GameLogic[*(int*)(g_GameLogic + 8) + 0x13E] == 0) {
+        fn_3_6C854(*(int*)(g_GameLogic + 8), 2);
+    }
+    fn_3_90220(*(s16*)(f + 0x17A), 10);
+    if (*(s16*)(g_Ball + 0x1B78) == i) {
+        fn_3_A9354(i, 1);
+        g_FieldingLogic[0x13B] = 1;
+        g_FieldingLogic[0x111] = 0;
+    }
+    if (f[0x252] != 0) {
+        if (g_d_GameSettings[7] != 6 && i != *(s16*)(g_FieldingLogic + 0xB0) && i != -1) {
+            f[0x1D3] = 0xC;
+            if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
+                g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
+            }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+        }
+        f[0x252] = 0;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(s16*)(f + 0x194) = 0;
+        f[0x1E9] = 0;
+        f[0x1DF] = 0;
+        f[0x205] = 0;
+        f[0x25E] = 0;
+        if (f[0x1E8] != 0) {
+            f[0x1E8] = 2;
+        }
+        if (*(s16*)(g_Ball + 0x1B78) >= 0 && g_Ball[0x1BF0] != 0) {
+            g_Ball[0x1BF0] = 0;
+            *(f32*)(g_Ball + 0) = *(f32*)(g_Ball + 0x1B38);
+            *(f32*)(g_Ball + 4) = *(f32*)(g_Ball + 0x1B3C);
+            *(f32*)(g_Ball + 8) = *(f32*)(g_Ball + 0x1B40);
+        }
+    }
+    f[0x262] = 0;
+    f[0x203] = 0;
+    f[0x20F] = 0;
+    f[0x1EE] = 0;
+    g_Ball[0x1BF0] = 0;
+    return 1;
 }
 
 // .text:0x00025648 size:0x1FC mapped:0x806646DC
