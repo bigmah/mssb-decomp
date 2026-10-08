@@ -173,3 +173,7 @@ void fn_2_6B4C4(u8* object) {
 // .text:0x6ACF0 size:0x4
 void fn_2_6ACF0(void) {
 }
+
+// .text:0x6AAB8 size:0x4
+void fn_2_6AAB8(void) {
+}
