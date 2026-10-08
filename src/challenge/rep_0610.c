@@ -1,5 +1,7 @@
 #include "challenge/rep_0610.h"
 
+#include "static/UnknownHomes_Static.h"
+extern void fn_1_10560(void* object);
 extern void* lbl_1_bss_3098[];
 extern u8 lbl_1_bss_3215;
 extern u8 lbl_1_bss_3214;
@@ -27,4 +29,9 @@ void fn_1_106B4(void) {
 
 void* fn_1_106A4(void) {
     return lbl_1_bss_3098[0];
+}
+
+void fn_1_10670(void) {
+    u8* object = fn_800B0A5C_insertQueue((void*)fn_1_10560, 11);
+    *(s16*)(object + 0x10) = 0;
 }

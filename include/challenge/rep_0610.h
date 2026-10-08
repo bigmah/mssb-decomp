@@ -15,4 +15,6 @@ void fn_1_106B4(void);
 
 void* fn_1_106A4(void);
 
+void fn_1_10670(void);
+
 #endif
