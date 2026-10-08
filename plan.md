@@ -206,6 +206,10 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 
 Add new patterns to this list as we find them.
 
+- **Direct global read vs base pointer (sta_c2 fn_3_CF72C):** `stad = g_d_GameSettings[9]; if (g_d_GameSettings[7] == 6)` (re-reading the global each time, `extern u8 g_d_GameSettings[]`) matched where `u8* gs = g_d_GameSettings; gs[9]/gs[7]` hoisted the table lookup above the branch. Also `lbl[mode==6]`-style data tables that the original reads as `lis; lbz sym@l` are separate scalar symbols; a two-field struct extern still gave `addi`.
+- **Local declaration order picks saved registers (sta_c2 fn_3_CE954):** declaring `u8* st; f32* v; u8* g; s32 i;` (initialised later, in a different order) gave st=r30, v=r29, g=r28, i=r27; a base pointer `u8* b = lbl_3_bss_A018;` declared first gets r31. Take the order from the original's register numbers, not the order of the initialisers. Bool tested later: `f = (t[0x69] == 2); if (f != 0)` gives `subfic/cntlzw/srwi.`; the pointer/counter increments' source order (`i++; st++; v += 3;`) changes the bottom-of-loop schedule.
+- **Float `0.0f` as a literal, not `extern f32 lbl_3_rodata_2664`,** moved the zero load into the original's position in fn_3_CE954/fn_3_D1110/fn_3_D196C (`0.5f`); for fn_3_D1280 the externs matched instead. Try both for every float constant.
+
 ## Phases
 
 ### Phase 0: Tooling (done)
