@@ -24,6 +24,21 @@ extern ChallengeFog* lbl_1_bss_4E0[];
 extern const f32 lbl_1_rodata_1D8;
 extern const f32 lbl_1_rodata_208;
 
+extern s32 lbl_1_bss_C4;
+
+// fn_1_78E4, size:0x7C
+void fn_1_78E4(void) {
+    GXColor clear = lbl_1_data_858[0].color;
+    GXSetCopyClear(clear, 0xFFFFFF);
+    if (lbl_1_bss_C4 != 0) {
+        GXSetCullMode(GX_CULL_NONE);
+    } else {
+        GXSetCullMode(GX_CULL_BACK);
+    }
+    SetFogNoneAgain();
+    GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
+}
+
 // fn_1_786C, size:0x78
 void fn_1_786C(void) {
     GXColor clear;
