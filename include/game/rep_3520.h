@@ -37,7 +37,7 @@ void fn_3_136048(void);
 void fn_3_1360BC(int p);
 void fn_3_136220(void);
 void fn_3_13688C(void);
-void fn_3_136CF4(void);
+void fn_3_136CF4(u8* o);
 void fn_3_136EA4(void);
 void fn_3_1370A0(u8* o);
 void fn_3_1371E8(void);
