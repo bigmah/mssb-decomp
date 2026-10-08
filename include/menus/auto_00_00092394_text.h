@@ -5,4 +5,6 @@
 
 void fn_2_923CC(u8* object);
 
+void fn_2_923D8(u8* object);
+
 #endif
