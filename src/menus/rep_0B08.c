@@ -20,7 +20,7 @@ typedef struct {
     Vec position;
     Vec previousPosition;
     Vec velocity;
-    u8 _24[0x0C];
+    Vec acceleration;
     f32 angle30;
     f32 angle34;
     f32 _38;
@@ -66,6 +66,31 @@ extern const f32 lbl_2_rodata_C38;
 extern const f32 lbl_2_rodata_B5C;
 extern const f32 lbl_2_rodata_B60;
 extern const f32 lbl_2_rodata_B64;
+
+// fn_2_6A628, size:0xE0
+void fn_2_6A628(void) {
+    Mtx rotation;
+    Vec movement;
+    MenuEntries* menu = lbl_2_bss_1A8248[0];
+
+    if (!(menu->entries[0]._38 <= lbl_2_rodata_B58)) {
+        PSMTXRotRad(rotation, 'Y', menu->entries[0].heading);
+        movement.x = lbl_2_rodata_B58;
+        movement.y = lbl_2_rodata_B58;
+        movement.z = -menu->entries[0]._38;
+        PSMTXMultVec(rotation, &movement, &movement);
+        menu->entries[0].velocity.x = movement.x;
+        menu->entries[0].velocity.z = movement.z;
+        menu->entries[0].position.x += menu->entries[0].velocity.x;
+        menu->entries[0].position.z += menu->entries[0].velocity.z;
+    }
+    menu->entries[0].previousPosition.x = menu->entries[0].position.x;
+    menu->entries[0].previousPosition.z = menu->entries[0].position.z;
+    if (lbl_2_rodata_B58 == menu->entries[0]._38) {
+        menu->entries[0].acceleration.x = lbl_2_rodata_B58;
+        menu->entries[0].acceleration.z = lbl_2_rodata_B58;
+    }
+}
 
 // fn_2_6832C, size:0xC0
 void fn_2_6832C(void) {

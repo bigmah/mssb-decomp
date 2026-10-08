@@ -147,4 +147,6 @@ void fn_2_6832C(void);
 
 void fn_2_683EC(void);
 
+void fn_2_6A628(void);
+
 #endif
