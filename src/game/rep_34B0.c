@@ -43,6 +43,7 @@ extern u8 g_Minigame[];
 extern u8 g_Scores[];
 extern void fn_3_10F550(s32, s32);
 extern void fn_3_10AD48(void);
+extern void fn_3_6C854(int, int);
 
 // .text:0x0012E8FC size:0x214 mapped:0x8076D990
 void fn_3_12E8FC(void) {
@@ -107,8 +108,16 @@ void fn_3_12EFA4(void) {
 }
 
 // .text:0x0012F28C size:0x198 mapped:0x8076E320
-void fn_3_12F28C(void) {
-    return;
+void fn_3_12F28C(s32 i) {
+    u8* p;
+
+    p = g_Minigame + i * 0x34 + 0x860;
+    if (*(s16*)(p + 0x2C) >= *(s16*)(p + 0x2E)) {
+        p[0x30] = 4;
+        *(s16*)(p + 0x2C) = 0;
+        fn_3_12EE68(i);
+        fn_3_6C854(*(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1905) + 0x18CC), 0);
+    }
 }
 
 // .text:0x0012F424 size:0x200 mapped:0x8076E4B8
