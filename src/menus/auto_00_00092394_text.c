@@ -1,6 +1,16 @@
 #include "menus/auto_00_00092394_text.h"
 
 
+typedef struct MenuState MenuState;
+typedef struct MenuObject {
+    u8 pad0[0x90];
+    s16 phase;
+    u8 pad92[0x19];
+    u8 state;
+    u8 padAC[0x10];
+} MenuObject;
+extern MenuState* lbl_2_bss_1A8248[];
+
 extern void (*lbl_2_data_308B4[])(u8* object);
 
 extern void (*lbl_2_data_307F0[])(u8* object);
@@ -43,4 +53,11 @@ void fn_2_92504(u8* object) {
 void fn_2_9253C(u8* object) {
     *(void (**)(u8*))(object + 0xB8) = lbl_2_data_308B4[object[0xAB]];
     (*(void (**)(u8*))(object + 0xB8))(object);
+}
+
+// fn_2_92654, size:0x28
+void fn_2_92654(s32 index, u8 state) {
+    MenuObject* object = (MenuObject*)((u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0);
+    object->state = state;
+    object->phase = 0;
 }
