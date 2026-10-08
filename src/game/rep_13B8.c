@@ -2,6 +2,8 @@
 #include "header_rep_data.h"
 #include "math.h"
 extern f32 lbl_3_data_4A34[];
+extern int fn_3_A6810(f32, f32, f32, f32);
+extern s16 lbl_3_data_1C88[];
 extern u8 lbl_3_data_4B58[];
 extern int fn_3_52560(int, f32, f32);
 extern s16 lbl_3_data_21904[];
@@ -23,6 +25,7 @@ extern const f32 lbl_3_rodata_140C;
 extern const f32 lbl_3_rodata_1410;
 extern const f32 lbl_3_rodata_1414;
 typedef struct { f32 x, z; } XZ13B8;
+extern f32 lbl_3_data_4444[];
 extern XZ13B8 lbl_3_data_4A54[2][13];
 extern void running_roundBasePosition(f32 frame, XZ13B8* outPos, XZ13B8* points, int count);
 extern const f64 lbl_3_rodata_1488;
@@ -743,8 +746,29 @@ void fn_3_83714(void) {
 }
 
 // .text:0x000841C0 size:0x124 mapped:0x806C3254
-void fn_3_841C0(void) {
-    return;
+int fn_3_841C0(int i, int j) {
+    u8* r = g_Runners + i * 0x154;
+    int v;
+    int k;
+    if (*(s16*)(r + 0xEE) == 1) {
+        return 1;
+    }
+    k = r[0x126];
+    v = j + fn_3_A6810(((f32*)(g_Ball + 0x354))[j * 4], ((f32*)(g_Ball + 0x35C))[j * 4], lbl_3_data_4444[k * 2], lbl_3_data_4444[k * 2 + 1]);
+    v += 0x2D;
+    if (*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0x10) * 4 + 0x14) >= 3) {
+        v -= 0x1E;
+    } else {
+        v += lbl_3_data_1C88[*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0xC) * 4 + 0xE4)];
+    }
+    if (g_Ball[0x1BBE] <= 1) {
+        if (v - 0x14 > *(s16*)(r + 0xEA)) {
+            return 1;
+        }
+    } else if (v > *(s16*)(r + 0xEA)) {
+        return 1;
+    }
+    return -1;
 }
 
 // .text:0x000842E4 size:0x3E4 mapped:0x806C3378
