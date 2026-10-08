@@ -5,4 +5,6 @@
 
 void fn_1_96D0(void);
 
+void fn_1_90B8(void);
+
 #endif
