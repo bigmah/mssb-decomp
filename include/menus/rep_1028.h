@@ -54,4 +54,6 @@ void fn_2_90C14(u8* object);
 
 void fn_2_90838(u8* object);
 
+void fn_2_8F758(s32 index, u8 value);
+
 #endif
