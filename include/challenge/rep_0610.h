@@ -7,4 +7,6 @@ void fn_1_163FC(void);
 
 void fn_1_D2F0(void);
 
+void fn_1_D650(void);
+
 #endif
