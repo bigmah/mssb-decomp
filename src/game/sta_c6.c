@@ -102,8 +102,50 @@ s32 fn_3_E5E14(u8* p) {
 }
 
 // .text:0x000E5E70 size:0x17C mapped:0x80724F04
-void fn_3_E5E70(void) {
-    return;
+void fn_3_E5E70(u8* out, u8 fmt, void* src) {
+    u16* s16p = src;
+    u32* s32p = src;
+    s32 f = (fmt >> 4) & 0xF;
+    if (out == NULL || src == NULL) {
+        return;
+    }
+    switch (f) {
+    case 0:
+        out[0] = (*s16p >> 8) & 0xF8;
+        out[1] = (*s16p >> 3) & 0xFC;
+        out[2] = (*s16p << 3) & 0xF8;
+        out[3] = 0xFF;
+        break;
+    case 3:
+        out[0] = (*s16p >> 12) & 0xF;
+        out[1] = (*s16p >> 8) & 0xF;
+        out[2] = (*s16p >> 4) & 0xF;
+        out[3] = *s16p & 0xF;
+        out[0] = out[0] | (out[0] << 4);
+        out[1] = out[1] | (out[1] << 4);
+        out[2] = out[2] | (out[2] << 4);
+        out[3] = out[3] | (out[3] << 4);
+        break;
+    case 5:
+        out[0] = *s32p >> 24;
+        out[1] = *s32p >> 16;
+        out[2] = *s32p >> 8;
+        out[3] = *s32p;
+        break;
+    case 1:
+    case 2:
+        out[0] = *s32p >> 24;
+        out[1] = *s32p >> 16;
+        out[2] = *s32p >> 8;
+        out[3] = 0xFF;
+        break;
+    case 4:
+        out[0] = __rlwinm(*s16p, 16, 24, 29);
+        out[1] = (*s16p >> 10) & 0xFC;
+        out[2] = (*s16p >> 4) & 0xFC;
+        out[3] = (*s16p << 2) & 0xFC;
+        break;
+    }
 }
 
 // .text:0x000E5FEC size:0x424 mapped:0x80725080
