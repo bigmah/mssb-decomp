@@ -1108,10 +1108,9 @@ void fn_3_13802C(u8* o) {
 }
 
 // .text:0x001382E0 size:0x168 mapped:0x80777374
-// 99%: clamp compares r5 (orig compares copy r8)
 void fn_3_1382E0(u8* o) {
     u32 t0 = *(u32*)&G8[0x17C0] / 60 / 20;
-    u32 t = t0;
+    int t = t0;
     s16* row;
     int lo;
     if (G8[0x72A] != 0) {
@@ -1128,7 +1127,7 @@ void fn_3_1382E0(u8* o) {
     } else {
         *(s16*)(o + 0x3A) = 0x7FFF;
     }
-    if (t > 3) {
+    if ((u32)t > 3) {
         t = 3;
     }
     if (*(s16*)(o + 0x3A) / 60 >= *(s16*)(lbl_3_data_21AD0 + lbl_3_bss_B781 * 8 + t * 2)) {
