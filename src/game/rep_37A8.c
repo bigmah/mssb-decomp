@@ -31,6 +31,10 @@ typedef struct { s16 lo; s16 hi; s16 lim; } MgWin;
 extern MgWin lbl_3_data_21DC8[][2];
 extern u8 lbl_3_data_21E10[];
 extern u8 lbl_3_data_21D1C[];
+extern u8 lbl_3_data_21DC4[];
+extern u8 lbl_3_data_21E04[];
+extern u8 lbl_3_data_26698[];
+extern int random_fn_3_9EE24(int max);
 extern u8 lbl_3_data_21D2C[];
 extern u8 g_Fielders[];
 extern u8 g_Controls[];
@@ -227,8 +231,54 @@ void fn_3_143FAC(s32 x) {
 }
 
 // .text:0x0014402C size:0x210 mapped:0x807830C0
+// 85%: original keeps only idx*0x38 in r30 and re-adds g_Minigame after each call (lhau on +0x1C eats the first base+off);
+// here CSE keeps base+off in a saved reg (r30) and the cand[] pointer/value regs (r5/r6) are swapped.
 void fn_3_14402C(s32 idx) {
-    return;
+    s32 cand[4];
+    s32 n;
+    s32 i;
+    u8* q;
+    s32* c;
+    s32 off;
+
+#define MU(K) (g_Minigame + off + (K))
+    if (g_Minigame[0x190B] != 0) {
+        return;
+    }
+    off = idx * 0x38;
+    if (*(s16*)MU(0x1C) < 0) {
+        *(s16*)MU(0x1C) = RandomInt_Game_Range(*(s16*)lbl_3_data_21DC4, *(s16*)(lbl_3_data_21DC4 + 2));
+    } else if (g_Minigame[0x1CA3] == 0 && g_Minigame[0x1CA2] == 0) {
+        *(s16*)MU(0x1C) = *(s16*)MU(0x1C) - 1;
+        if (*(s16*)MU(0x1C) == 0) {
+            n = 0;
+            q = g_Minigame;
+            c = cand;
+            for (i = 0; i < 4; i++, q++) {
+                if (q[0x1CA9] == 0) {
+                    *c++ = i;
+                    n++;
+                }
+            }
+            *MU(0x2C) = cand[random_fn_3_9EE24(n)];
+            g_Minigame[0x1CA9 + *MU(0x2C)] = 1;
+            *MU(0x2D) = lbl_3_data_21E10[*MU(0x2C)];
+            *(s16*)MU(0x1C) = *(s16*)(lbl_3_data_21E68 + 0xA);
+            *(s16*)MU(0x18) = 0;
+            *(s16*)MU(0x1A) = 0;
+            *(s16*)MU(0x1E) = 0;
+            *MU(0x2A) = 1;
+            *MU(0x2B) = 0;
+            *(f32*)MU(0x4) = *(f32*)(lbl_3_data_21D1C + 4);
+            *(s16*)MU(0x22) = *(s16*)lbl_3_data_21E04 + RandomInt_Game_Range(*(s16*)lbl_3_data_21E04, *(s16*)(lbl_3_data_21E04 + 2));
+            *(s16*)MU(0x24) = *(s16*)MU(0x22);
+            *(s8*)MU(0x34) = -1;
+            *(f32*)MU(0x14) = *(f32*)lbl_3_data_21D1C;
+            *(f32*)MU(0xC) = *(f32*)lbl_3_data_21D1C;
+            *(f32*)MU(0x10) = ((f32*)lbl_3_data_26698)[idx];
+        }
+    }
+#undef MU
 }
 
 // .text:0x0014423C size:0x200 mapped:0x807832D0
