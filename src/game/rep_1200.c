@@ -76,12 +76,37 @@ void fn_3_6FFC4(void) {
 }
 
 // .text:0x00070280 size:0x16C mapped:0x806AF314
+extern u8 g_Batter[];
+extern u8 lbl_800E8558[];
+extern u8 lbl_3_data_76FC[];
+extern const f32 lbl_3_rodata_1288;
 void fn_3_70280(void) {
-    return;
+    s32 k;
+    s32 x;
+    s32 y;
+    s32 hit = 0;
+    if ((g_GameLogic[0x121] != 0xB || g_Practice[0x1DB] != 0) && g_Minigame[0x1A2A] != 2 &&
+        *(s16*)(g_Batter + 0x66) <= 0 && g_Pitcher[0x156] == 0) {
+        x = (s32)(lbl_3_rodata_1288 * (*(f32*)(g_Pitcher + 0) - *(f32*)(g_Batter + 0)));
+        y = (s32)(lbl_3_rodata_1288 * (*(f32*)(g_Pitcher + 8) - *(f32*)(g_Batter + 4)));
+        if (g_Batter[0x7B] != 0) {
+            x = -x;
+        }
+        k = lbl_800E8558[*(s16*)(g_Batter + 0x62) * 6 + 2] * 3;
+        if (y <= lbl_3_data_76FC[k]) {
+            if ((f32)y >= lbl_3_rodata_1258) {
+                if (x <= lbl_3_data_76FC[k + 1] && x >= -lbl_3_data_76FC[k + 2]) {
+                    hit = 1;
+                }
+            }
+        }
+        if (hit != 0) {
+            g_Batter[0x93] = 1;
+        }
+    }
 }
 
 // .text:0x000703EC size:0x294 mapped:0x806AF480
-extern u8 g_Batter[];
 extern u8 swingSoundFrame[];
 extern u8 g_Stats[];
 extern void fn_3_59918(s32, s32);
