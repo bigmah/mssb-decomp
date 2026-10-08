@@ -1,5 +1,11 @@
 #include "challenge/rep_0610.h"
 
+#include "Dolphin/vec.h"
+extern void fn_80026134(s32, Vec*);
+extern void fn_80026130(s32, void*, f32);
+extern f32 lbl_1_data_ADC0[];
+extern u8 lbl_1_data_ADC4[];
+
 #include "Dolphin/mtx.h"
 #include "Dolphin/GX/GXTransform.h"
 extern const f32 lbl_1_rodata_73CC[];
@@ -186,4 +192,14 @@ void fn_1_17954(void) {
                  lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
                  lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
     GXSetProjection(projection, GX_PERSPECTIVE);
+}
+
+// fn_1_1073C, size:0x7C
+void fn_1_1073C(u8* object) {
+    Vec displacement;
+    displacement.x = *(f32*)(lbl_1_bss_67E0 + 0x108) - *(f32*)(object + 0x34);
+    displacement.y = *(f32*)(lbl_1_bss_67E0 + 0x10C) - *(f32*)(object + 0x38);
+    displacement.z = *(f32*)(lbl_1_bss_67E0 + 0x110) - *(f32*)(object + 0x3C);
+    fn_80026134(0, &displacement);
+    fn_80026130(0, lbl_1_data_ADC4, lbl_1_data_ADC0[0]);
 }
