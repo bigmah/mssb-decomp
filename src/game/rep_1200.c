@@ -112,9 +112,6 @@ void fn_3_706B8(int idx) {
 }
 
 // .text:0x00070768 size:0xD0 mapped:0x806AF7FC
-// 98.9%: int fn_3_70768(f32* out, int flag, f32 lim), a do/while trajectory step loop;
-// all matches except the final lerp `*out = px + (x - px) * (1.0f - (y - lim) / (y - py))`
-// (needs a `t = ...; *out = px + t;` split to avoid fmadds), whose regs (f4/f1/f0) never matched.
 void fn_3_70768(void) {
     return;
 }
@@ -302,8 +299,26 @@ void fn_3_73F2C(void) {
 }
 
 // .text:0x00073FAC size:0x124 mapped:0x806B3040
+extern u8 g_Batter[];
+extern f32 RandomF32_Game_Range(f32 a, f32 b);
+extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
+extern f32 lbl_3_data_5EB0[];
+extern f32 lbl_3_data_4474[];
+extern f32 lbl_3_data_5F5C[];
+extern f32 lbl_3_data_2138C[];
 void fn_3_73FAC(void) {
-    return;
+    *(f32*)(g_Pitcher + 0x28) = *(f32*)(g_Batter + 0x50);
+    *(f32*)(g_Pitcher + 0x24) = LinearInterpolateToNewRange(*(f32*)(g_Pitcher + 0x8C), lbl_3_data_4474[0], lbl_3_data_4474[1], lbl_3_data_5EB0[0], lbl_3_data_5EB0[1]);
+    if (g_Pitcher[0x165] == 3 || g_Pitcher[0x165] == 4) {
+        *(f32*)(g_Pitcher + 0x24) = lbl_3_rodata_1258;
+    } else if (g_Pitcher[0x165] == 9 || g_Pitcher[0x165] == 0xA) {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_5F5C[3], lbl_3_data_5F5C[3]);
+        *(f32*)(g_Pitcher + 0x28) = lbl_3_data_5F5C[0];
+        *(f32*)(g_Pitcher + 0x2C) = RandomF32_Game_Range(lbl_3_data_5F5C[1], lbl_3_data_5F5C[2]);
+    }
+    if (g_Minigame[0x1A2A] == 1 || g_Minigame[0x1A2A] == 3) {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_2138C[g_Minigame[0x1A2B]], lbl_3_data_2138C[g_Minigame[0x1A2B]]);
+    }
 }
 
 // .text:0x000740D0 size:0x58 mapped:0x806B3164
