@@ -68,3 +68,14 @@ void fn_1_20DC8(void) {
     object[0x25] = 0;
     *(s16*)(object + 0x10) = 0;
 }
+
+// fn_1_1DD48, size:0x4C
+f32 fn_1_1DD48(u16 buttons, s32 reverse, f32 value, f32 positive, f32 delta, f32 negative, f32 minimum, f32 maximum) {
+    if (buttons & 0x40) delta = positive;
+    else if (buttons & 0x20) delta = negative;
+    if (reverse) delta = -delta;
+    value += delta;
+    if (value < minimum) value = minimum;
+    if (value > maximum) value = maximum;
+    return value;
+}

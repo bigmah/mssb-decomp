@@ -29,4 +29,6 @@ void fn_1_24778(void);
 
 void fn_1_20DC8(void);
 
+f32 fn_1_1DD48(u16 buttons, s32 reverse, f32 value, f32 positive, f32 delta, f32 negative, f32 minimum, f32 maximum);
+
 #endif
