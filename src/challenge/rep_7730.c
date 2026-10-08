@@ -45,6 +45,22 @@ extern void* lbl_80366158[];
 extern void fn_1_267F4(void);
 extern void fn_1_25C68(void);
 
+// fn_1_2051C, size:0x124
+s32 fn_1_2051C(ChallengeTextureHeader* texture, GXTexObj* object, GXTlutObj* palette, GXTlut name) {
+    u8 mipmapped = texture->minLod != texture->maxLod;
+    if (texture->palette != NULL) {
+        GXInitTexObjCI(object, texture->image, texture->width, texture->height,
+            texture->format, texture->wrapS, texture->wrapT, mipmapped, name);
+        GXInitTlutObj(palette, texture->palette, texture->paletteFormat, texture->paletteEntries);
+    } else {
+        GXInitTexObj(object, texture->image, texture->width, texture->height,
+            texture->format, texture->wrapS, texture->wrapT, mipmapped);
+    }
+    GXInitTexObjLOD(object, texture->minFilter, texture->magFilter,
+        texture->minLod, texture->maxLod, texture->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    return !!texture->palette;
+}
+
 // fn_1_26928, size:0x10C
 void fn_1_26928(void) {
     u8* queue = lbl_803CC1B8[0];

@@ -3,6 +3,26 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
+#include "Dolphin/gx.h"
+
+typedef struct {
+    void* image;
+    void* palette;
+    u16 height;
+    u16 width;
+    u8 wrapS;
+    u8 wrapT;
+    u8 minFilter;
+    u8 magFilter;
+    f32 lodBias;
+    u8 padding14;
+    u8 minLod;
+    u8 maxLod;
+    u8 format;
+    u16 paletteEntries;
+    u8 paletteFormat;
+    u8 padding1B;
+} ChallengeTextureHeader;
 
 typedef struct {
     u8 padding[0x10];
@@ -73,5 +93,7 @@ void fn_1_246AC(void);
 void fn_1_26928(void);
 
 void fn_1_2040C(void);
+
+s32 fn_1_2051C(ChallengeTextureHeader* texture, GXTexObj* object, GXTlutObj* palette, GXTlut name);
 
 #endif
