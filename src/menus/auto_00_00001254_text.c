@@ -13,3 +13,8 @@ s32 fn_2_8794(s32 mode, s32 index) {
     if (mode != 0) index += 10;
     return index;
 }
+
+// fn_2_57E8, size:0x8
+s8 fn_2_57E8(s32 unused, s32 value) {
+    return value;
+}

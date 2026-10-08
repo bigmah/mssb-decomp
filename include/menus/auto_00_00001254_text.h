@@ -7,4 +7,6 @@ s32 fn_2_8780(s32 mode);
 
 s32 fn_2_8794(s32 mode, s32 index);
 
+s8 fn_2_57E8(s32 unused, s32 value);
+
 #endif
