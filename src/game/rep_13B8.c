@@ -2587,23 +2587,28 @@ void fn_3_88B18(void) {
 }
 
 // .text:0x00088C24 size:0x164 mapped:0x806C7CB8
-// 90%: same hoisted-lha order issue as fn_3_889FC
 void fn_3_88C24(void) {
     int i;
+    u8* r;
     fn_3_87AE8();
     if (g_GameLogic[0x121] == 6) {
         fn_3_87CC8();
     } else {
         fn_3_88408();
         fn_3_88B18();
-        for (i = 0; i < 4; i++) {
-            if (g_Runners[i * 0x154 + 0x123] == 1) {
-                if ((g_Ball.s.acr == 3 || g_FieldingLogic[0x108] == 2) && g_Ball.b[0x1BBF] <= 1) {
-                    g_Runners[i * 0x154 + 0x132] = 0;
-                } else if (g_Ball.b[0x1BBE] <= 1 && g_Ball.b[0x1BC9] != 0 && (u16)g_Ball.s.acr > 1) {
-                    u8 t = g_Runners[i * 0x154 + 0x125];
+        for (i = 0, r = g_Runners; i < 4; r += 0x154, i++) {
+            s16 a = g_Ball.s.acr;
+            u8 fl = g_FieldingLogic[0x108];
+            u8 b1 = g_Ball.b[0x1BBF];
+            u8 b2 = g_Ball.b[0x1BBE];
+            u8 b3 = g_Ball.b[0x1BC9];
+            if (r[0x123] == 1) {
+                if ((a == 3 || fl == 2) && b1 <= 1) {
+                    r[0x132] = 0;
+                } else if (b2 <= 1 && b3 != 0 && (u16)a > 1) {
+                    u8 t = r[0x125];
                     if (t != 0 && t < 3) {
-                        g_Runners[i * 0x154 + 0x132] = 0;
+                        r[0x132] = 0;
                     }
                 }
             }
