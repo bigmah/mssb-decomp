@@ -5,7 +5,7 @@
 
 void fn_3_EE100(u8* obj, f32 (*mtx)[4]);
 void fn_3_EE388(void);
-void fn_3_EE67C(void);
+void fn_3_EE67C(u8* a, f32 (*m)[4]);
 void fn_3_EE96C(u8* pos);
 void fn_3_EEB94(void);
 void fn_3_EECF4(void);

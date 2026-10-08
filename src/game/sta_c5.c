@@ -208,8 +208,86 @@ void fn_3_EE388(void) {
 }
 
 // .text:0x000EE67C size:0x2F0 mapped:0x8072D710
-void fn_3_EE67C(void) {
-    return;
+void fn_3_EE67C(u8* a, f32 (*m)[4]) {
+    Mtx mtx;
+    GXVtxDescList list[27];
+    u8* node;
+    u8* h;
+    s32 sz;
+    s32 i;
+    s32 n;
+    s32 k;
+    s32 attr;
+    s32 v;
+    PSMTXConcat(m, (f32(*)[4])(a + 0x18), mtx);
+    GXLoadPosMtxImm(mtx, 0);
+    GXSetCurrentMtx(0);
+    h = *(u8**)a;
+    switch ((u8)(h[6] >> 4)) {
+    case 0:
+    case 1:
+        sz = 1;
+        break;
+    case 2:
+    case 3:
+        sz = 2;
+        break;
+    case 4:
+        sz = 4;
+        break;
+    default:
+        sz = 0;
+        break;
+    }
+    GXSetArray(GX_VA_POS, *(void**)h, (u8)(h[7] * sz));
+    h = *(u8**)a;
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_TEX_ST, h[6] >> 4, h[6] & 0xF);
+    GXSetNumTexGens(1);
+    node = *(u8**)(*(u8**)(a + 0x10) + 4);
+    for (i = 0; i < *(u16*)(*(u8**)(a + 0x10) + 8); i++) {
+        switch (node[0]) {
+        case 1:
+            break;
+        case 2:
+            GXClearVtxDesc();
+            n = 0;
+            v = *(u32*)(node + 4) & 3;
+            if (v != 0) {
+                list[0].mAttr = 0;
+                list[0].mType = v;
+                n = 1;
+            }
+            attr = 9;
+            for (k = 2; k < 26; k += 2) {
+                v = (*(u32*)(node + 4) >> k) & 3;
+                if (v != 0) {
+                    list[n].mAttr = attr;
+                    list[n].mType = v;
+                    n++;
+                }
+                attr++;
+            }
+            v = (*(u32*)(node + 4) >> 26) & 3;
+            if (v != 0) {
+                list[n].mAttr = attr;
+                list[n].mType = v;
+                n++;
+            }
+            list[n].mAttr = 0xFF;
+            GXSetVtxDescv(list);
+            break;
+        case 3:
+            GXSetChanCtrl(GX_COLOR0A0, 0, 0, 0, 0, 0, 2);
+            fn_3_EE100(a, m);
+            break;
+        case 4:
+            break;
+        }
+        if (*(void**)(node + 8) != NULL) {
+            GXCallDisplayList(*(void**)(node + 8), *(u32*)(node + 0xC));
+        }
+        node += 0x10;
+    }
 }
 
 // 90%: mtx stores: orig does first via base+0x23c and the second via a separate pointer reg (r3+0x10); const load order/addi forms differ
