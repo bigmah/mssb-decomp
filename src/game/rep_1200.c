@@ -81,8 +81,70 @@ void fn_3_70280(void) {
 }
 
 // .text:0x000703EC size:0x294 mapped:0x806AF480
+extern u8 g_Batter[];
+extern u8 swingSoundFrame[];
+extern u8 g_Stats[];
+extern void fn_3_59918(s32, s32);
+extern void fn_3_7A154(s32);
+extern void fn_3_1DD48(void);
+extern u32 playSoundEffect(s32);
 void fn_3_703EC(void) {
-    return;
+    u8* p;
+    s16 fr = *(s16*)(g_Batter + 0x66);
+    if (fr <= 0 || fr >= swingSoundFrame[1] || g_Batter[0x95] != 0) {
+        g_Pitcher[0x158] = 1;
+        if (g_Pitcher[0x157] != 0) {
+            if (++g_Strikes.strikes >= 3) {
+                g_Pitcher[0x14E] = 1;
+                *(s16*)(g_Pitcher + 0x130) = 0;
+                g_Pitcher[0x13E] = 5;
+                *(s16*)(g_Pitcher + 0x120) = 0;
+                fn_3_59918(0x10, 0);
+                if (g_GameLogic[0x14C] == 1) {
+                    u8* sc;
+                    if ((*(s32*)&g_Scores < ((u8*)&g_Scores)[0xAA] || ((u8*)&g_Scores)[0xAD] == 0 || g_Strikes.outs < 2 ||
+                         !(*(s16*)((sc = (u8*)&g_Scores + 4) + *(s32*)(g_GameLogic + 0x10) * 0x26) > *(s16*)(sc + *(s32*)(g_GameLogic + 0xC) * 0x26))) &&
+                        (*(s32*)&g_Scores < ((u8*)&g_Scores)[0xAB] || ((u8*)&g_Scores)[0xAD] == 0 || g_Strikes.outs < 2)) {
+                        p = (u8*)((u32)g_GameLogic + 0x14A + *(s32*)(g_GameLogic + 8));
+                        if (*p < 5) {
+                            (*p)++;
+                            if (g_Stats[0x36] == 0) {
+                                playSoundEffect(0x19D);
+                            }
+                        }
+                    }
+                    g_GameLogic[0x14C] = 2;
+                }
+                if (g_d_GameSettings[7] == 6) {
+                    g_Minigame[0x19C6] = g_Minigame[0x1904];
+                }
+            } else {
+                fn_3_59918(8, 0);
+            }
+        } else {
+            if (++g_Strikes.balls >= 4) {
+                g_Pitcher[0x14E] = 2;
+                *(s16*)(g_Pitcher + 0x130) = 0;
+                g_Pitcher[0x13E] = 5;
+                *(s16*)(g_Pitcher + 0x120) = 0;
+                fn_3_59918(0xA, 0);
+                if (g_GameLogic[0x14C] == 1) {
+                    p = (u8*)((u32)g_GameLogic + 0x14A + *(s32*)(g_GameLogic + 4));
+                    if (*p < 5) {
+                        (*p)++;
+                        if (g_Stats[0x36] == 0) {
+                            playSoundEffect(0x19D);
+                        }
+                    }
+                    g_GameLogic[0x14C] = 3;
+                }
+            } else {
+                fn_3_59918(9, 0);
+            }
+        }
+        fn_3_7A154(0);
+        fn_3_1DD48();
+    }
 }
 
 // .text:0x00070680 size:0x38 mapped:0x806AF714
@@ -278,6 +340,10 @@ void fn_3_738A8(void) {
 }
 
 // .text:0x00073DE8 size:0x144 mapped:0x806B2E7C
+extern void fn_3_155288(void);
+extern int fn_3_6F4E8(void);
+extern void fn_3_5A6D4(int);
+extern void fn_3_7CE90(void);
 void fn_3_73DE8(void) {
     return;
 }
@@ -299,7 +365,6 @@ void fn_3_73F2C(void) {
 }
 
 // .text:0x00073FAC size:0x124 mapped:0x806B3040
-extern u8 g_Batter[];
 extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 extern f32 lbl_3_data_5EB0[];
