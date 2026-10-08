@@ -15,4 +15,6 @@ void fn_1_1DE04(f32 value);
 
 void fn_1_1DE14(f32 value);
 
+f32 fn_1_1DE20(void);
+
 #endif
