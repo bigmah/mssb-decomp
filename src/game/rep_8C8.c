@@ -7,6 +7,8 @@ extern s32 fn_3_B0CF4(void);
 extern u8 lbl_3_data_1ABC[];
 extern u8 lbl_3_data_1AAC[];
 extern u8 lbl_3_data_1AB0[];
+extern f32 lbl_3_data_19CC[];
+extern f32 lbl_3_data_4474[];
 
 // .text:0x0001E4B8 size:0x26C mapped:0x8065D54C
 void fn_3_1E4B8(void) {
@@ -78,7 +80,35 @@ void batterAIControlled(void) {
 
 // .text:0x0001FF48 size:0x11C mapped:0x8065EFDC
 void fn_3_1FF48(void) {
-    return;
+    int zone;
+    int mound;
+    f32 step;
+    f32 th;
+    f32 lo;
+    if (g_Pitcher.starPitchType != 0) {
+        return;
+    }
+    g_AiLogic.lastPitchFramesUntilPitchGetsToBatter = g_Pitcher.framesUntilPitchGetsToBatter;
+    g_AiLogic.lastPitchType = g_Pitcher.TypeOfPitch;
+    for (zone = 0; zone < 4; zone++) {
+        if (g_Pitcher.pitchXPosition < lbl_3_data_19CC[zone]) {
+            break;
+        }
+    }
+    if (g_Batter.batterHand != 0) {
+        zone = 4 - zone;
+    }
+    g_AiLogic.lastPitchBallLocZone = zone;
+    lo = lbl_3_data_4474[0];
+    step = (lbl_3_data_4474[1] - lo) / 5.0f;
+    th = lo + step;
+    for (mound = 0; mound < 4; mound++) {
+        if (g_Pitcher.pitcher.x < th) {
+            break;
+        }
+        th += step;
+    }
+    g_AiLogic.lastPitchMoundZone = mound;
 }
 
 // .text:0x00020064 size:0x124 mapped:0x8065F0F8
