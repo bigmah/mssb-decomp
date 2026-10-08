@@ -1999,8 +1999,35 @@ void fn_3_595C4(void) {
 }
 
 // .text:0x000596F8 size:0x164 mapped:0x8069878C
+// partial: same logic as tail of fn_3_59338; only reg allocation/fmuls dest (f0 vs f1) differ
 void fn_3_596F8(void) {
-    return;
+    int i;
+    int j;
+    u8* p;
+    u8* f;
+    g_GameLogic[0x155] = 0;
+    p = g_GameLogic + *(int*)(g_GameLogic + 0x10) * 0x50;
+    for (j = 0; j < 10; j++) {
+        int b = *(int*)(p + j * 8 + 0x40);
+        if (b <= 8) {
+            fn_3_6E24C(*(int*)(p + j * 8 + 0x3C), b);
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        u8 v = g_GameLogic[*(int*)(g_GameLogic + 0x10) + 0x142];
+        u8* row = lbl_3_data_46F8 + v * 9;
+        int t;
+        f = g_Fielders + i * 0x268;
+        f[0x1D2] = row[i];
+        if (v != 0) {
+            t = lbl_3_data_470C[0] + (s32)((f32)(lbl_3_data_470C[1] - lbl_3_data_470C[0]) * g_AiLogic[*(int*)(g_GameLogic + 0xC)]);
+            if (i <= 1) {
+                f[0x1D2] += t / 2;
+            } else {
+                f[0x1D2] += t;
+            }
+        }
+    }
 }
 
 
