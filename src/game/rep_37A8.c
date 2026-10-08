@@ -6,6 +6,9 @@ extern u8 g_Minigame[];
 #include "static/UnknownHomes_Static.h"
 extern void fn_3_141C8C(void);
 extern u8 lbl_3_bss_B7C1[];
+extern u8 lbl_3_bss_B7C0[];
+extern void GXInitTexObj(void*, void*, u16, u16, s32, s32, s32, u8);
+extern void GXInitTexObjLOD(void*, s32, s32, f32, f32, f32, u8, u8, s32);
 extern void fn_800B993C(void);
 extern u8 g_GameLogic[];
 extern u8 lbl_3_data_21278[];
@@ -84,7 +87,34 @@ s32 fn_3_142030(s32 a, s32 b, s32 c) {
 
 // .text:0x00142088 size:0x1D4 mapped:0x8078111C
 void fn_3_142088(void) {
-    return;
+    u32 i;
+    s32 j;
+    s32 w = 4;
+    u8* p;
+    u32 idx;
+    u8* base = lbl_3_bss_B7C0;
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            idx = fn_3_142030(j, i, w) * 4;
+            if (idx < 0x20) {
+                p = base + 0x40;
+                p += idx;
+                p[0] = p[2] = 0xFF;
+                p[1] = p[3] = 0x96;
+            } else {
+                p = base + 0x40;
+                p += idx;
+                p[0] = p[2] = 0;
+                p[1] = p[3] = 0;
+            }
+        }
+    }
+    GXInitTexObj((base + 4), base + 0x40, 4, 4, 6, 1, 1, 0);
+    GXInitTexObjLOD((base + 4), 1, 1, 0.0f, 0.0f, 0.0f, 0, 0, 0);
+    lbl_3_data_266A4 = -1;
+    *(s32*)(base + 0x24) = 0;
+    base[1] = 0;
 }
 
 // .text:0x0014225C size:0x28 mapped:0x807812F0

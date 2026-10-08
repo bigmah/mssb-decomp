@@ -46,7 +46,7 @@ void fn_3_A76B4(void);
 void fn_3_A7C88(void);
 void fn_3_A7EF8(void);
 void fn_3_A8074(void);
-void fn_3_A8338(void);
+void fn_3_A8338(s32 idx);
 s32 fn_3_A8478(s32* out0, s32* out1);
 void fn_3_A85C8(void);
 void fn_3_A89D4(void);
