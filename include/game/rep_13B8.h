@@ -64,7 +64,7 @@ void fn_3_88408(void);
 void fn_3_889FC(void);
 void fn_3_88B18(void);
 void fn_3_88C24(void);
-void fn_3_88D88(void);
+void fn_3_88D88(int idx);
 void fn_3_88F98(void);
 void fn_3_89028(void);
 void fn_3_8911C(void);
