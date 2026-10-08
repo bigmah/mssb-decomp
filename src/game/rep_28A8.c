@@ -32,6 +32,7 @@ extern void changeScene(s32, s32);
 #define B34C90 ((u8*)&lbl_3_common_bss_34C90)
 typedef struct { s32 a; u8 pad[0x1CE]; u8 b1D2; u8 pad2[7]; s8 b1DA; } SB;
 typedef struct { u8 pad[0x18D8]; u8 f18D8[4]; } SM;
+typedef struct { u8 p0[6]; u16 b6; u16 b8; u8 pad[0x1D2 - 0xA]; u8 b1D2; u8 pad1; u8 b1D4; u8 pad2[5]; s8 b1DA; } SC;
 extern s32 fn_3_6C938(s32, s32);
 extern void fn_3_5B408(void);
 extern s32 sndFXStartEx(s32, u8, u8, u8);
@@ -202,7 +203,65 @@ void fn_3_DC6E8(void) {
 
 // .text:0x000DCA68 size:0x218 mapped:0x8071BAFC
 void fn_3_DCA68(void) {
-    return;
+    SC* p = (SC*)&lbl_3_common_bss_34C90;
+    u16 b = p->b6;
+    if (b & 0x1000) {
+        p->b1D2 = 4;
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        return;
+    }
+    if (b & 0x100) {
+        if (p->b1DA == 0) {
+            p->b1D2 = 4;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            return;
+        }
+        if (p->b1DA == 1) {
+            p->b1D2 = 8;
+            p->b1D4 = 0;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            return;
+        }
+        if (p->b1DA == 2) {
+            p->b1D2 = 6;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            return;
+        }
+        if (p->b1DA == 3) {
+            fn_3_5B408();
+            ((SC*)&lbl_3_common_bss_34C90)->b1D2 = 9;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            return;
+        }
+    } else {
+        if (b & 0x200) {
+            if (p->b1DA != 0) {
+                p->b1DA = 0;
+            } else {
+                p->b1D2 = 4;
+            }
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            return;
+        }
+        if (p->b8 & 8) {
+            u8 t = p->b1DA;
+            if ((s8)t > 0) {
+                p->b1DA = t - 1;
+            } else {
+                p->b1DA = 3;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            return;
+        }
+        if (p->b8 & 4) {
+            u8 t = p->b1DA + 1;
+            p->b1DA = t;
+            if ((s8)t >= 4) {
+                p->b1DA = 0;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+    }
 }
 
 // .text:0x000DCC80 size:0x250 mapped:0x8071BD14
