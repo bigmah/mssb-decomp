@@ -10,7 +10,7 @@ typedef struct VecQueue {
     s32 count;
     s32 head;
     s32 tail;
-    volatile s32 cursor;
+    s32 cursor;
     s32 step;
 } VecQueue;
 
@@ -19,6 +19,8 @@ void fn_80023EEC(VecQueue* queue, Vec* entries, s32 capacity);
 s32 fn_80023D4C(VecQueue* queue, Vec* result);
 
 s32 fn_80023DFC(VecQueue* queue, Vec* result);
+
+void fn_80023E48(VecQueue* queue, Vec* value);
 
 u32 fn_80023D3C(void);
 

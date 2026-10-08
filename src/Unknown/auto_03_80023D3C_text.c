@@ -32,6 +32,7 @@ s32 fn_80023DFC(VecQueue* queue, Vec* result) {
     return 0;
 }
 
+
 // fn_80023D3C, size:0x8
 u32 fn_80023D3C(void) {
     return lbl_803CBC60;
@@ -40,4 +41,15 @@ u32 fn_80023D3C(void) {
 // fn_80023D44, size:0x8
 void fn_80023D44(u32 value) {
     lbl_803CBC60 = value;
+}
+
+// fn_80023E48, size:0xA4
+void fn_80023E48(VecQueue* queue, Vec* value) {
+    queue->head = (queue->head + queue->step) % queue->capacity;
+    if (queue->tail == queue->head) {
+        queue->tail = (queue->tail + queue->step) % queue->capacity;
+    }
+    queue->step = 1;
+    queue->entries[queue->head] = *value;
+    queue->count += queue->count < queue->capacity;
 }
