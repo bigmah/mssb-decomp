@@ -5,6 +5,8 @@
 
 u32 fn_2_1258(const void* base, u32 offset, s32 size);
 
+s32 fn_2_112F4(void* menu, s32 item, s32 index, const u16* values, s16 value);
+
 s32 fn_2_8780(s32 mode);
 
 s32 fn_2_8794(s32 mode, s32 index);

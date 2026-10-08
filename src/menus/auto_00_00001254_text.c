@@ -14,6 +14,23 @@ extern u32 lbl_803CB750[];
 
 extern u8 lbl_2_bss_F468[];
 
+typedef struct MenuEntrySlot {
+    u8* object;
+    u32 pad;
+} MenuEntrySlot;
+
+extern MenuEntrySlot lbl_80371C30[];
+
+// fn_2_112F4, size:0x4C
+s32 fn_2_112F4(void* menu, s32 item, s32 index, const u16* values, s16 value) {
+    u8* object = lbl_80371C30[*(u16*)((u8*)menu + 0x14) + item].object;
+    if ((s32)(*(u32*)(object + 0x5C) >> 16) == values[index + 1] - 1) {
+        *(s16*)(object + 0x64) = value;
+        return 1;
+    }
+    return 0;
+}
+
 // fn_2_1258, size:0x48
 u32 fn_2_1258(const void* base, u32 offset, s32 size) {
     u32 value = 0;
