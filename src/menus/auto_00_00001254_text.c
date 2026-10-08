@@ -14,6 +14,25 @@ extern u32 lbl_803CB750[];
 
 extern u8 lbl_2_bss_F468[];
 
+// fn_2_1258, size:0x48
+u32 fn_2_1258(const void* base, u32 offset, s32 size) {
+    u32 value = 0;
+    switch (size) {
+    case 1:
+        value = *(const u8*)(offset + (u32)base);
+        break;
+    case 2:
+        value = *(const u16*)((const u8*)base + offset);
+        break;
+    case 3:
+        break;
+    case 4:
+        value = *(const u32*)((const u8*)base + offset);
+        break;
+    }
+    return value;
+}
+
 // fn_2_8780, size:0x14
 s32 fn_2_8780(s32 mode) {
     if (mode != 0) {
