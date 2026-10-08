@@ -105,7 +105,11 @@ void *ReadDataFromDisk(void *)
 
 /*================================================================================*/
 
-#pragma opt_unroll_factor_limit 
+// 91.6%: unsolved. Asm-free forms: `for (i = 0; i < n; i++)` is 8x unrolled; with
+// `#pragma ppc_unroll_factor_limit 1` it is a plain ctr loop but keeps a `cmplwi n,0; ble` guard
+// the original lacks; do-while forms give subic./bne. Original also takes `lis r31; addi r31,r31`
+// directly and uses r5/r6/r5 where we use r4/r5/r3 (looks like extra live ranges, not found).
+#pragma opt_unroll_factor_limit
 void DecompressDiskData(void)
 {
     u32 dataFlag;
