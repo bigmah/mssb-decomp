@@ -1,5 +1,6 @@
 #include "challenge/rep_0610.h"
 
+extern s32 lbl_1_data_F4DC[3];
 extern u8 lbl_1_bss_3216[];
 extern void fn_1_1496C(u8* object);
 #include "static/UnknownHomes_Static.h"
@@ -60,4 +61,16 @@ void fn_1_D688(void) {
 void fn_1_D6B4(void) {
     if (lbl_1_bss_3216[0] == 0) lbl_1_bss_3216[0] = 3;
     lbl_1_bss_3216[0]--;
+}
+
+s32 fn_1_D6E4(void) {
+    u8 index = lbl_1_bss_3216[0];
+    switch (index) {
+    case 0:
+    case 1:
+    case 2:
+        return lbl_1_data_F4DC[index];
+    default:
+        return 0;
+    }
 }
