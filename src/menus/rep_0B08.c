@@ -249,3 +249,8 @@ s32 fn_2_68670(s32 index) {
 s32 fn_2_68690(s32 index) {
     return ((s8*)lbl_2_bss_1A8248[0])[index * 0xD8 + 0x16DC];
 }
+
+// fn_2_686B0, size:0x20
+s32 fn_2_686B0(s32 index) {
+    return ((s8*)lbl_2_bss_1A8248[0])[index * 0xD8 + 0x16DB];
+}
