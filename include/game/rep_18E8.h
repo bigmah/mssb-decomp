@@ -37,7 +37,7 @@ void fn_3_A5704(void);
 void fn_3_A5B4C(void);
 void fn_3_A63E4(void);
 void fn_3_A67E8(s32 i);
-void fn_3_A6810(void);
+s32 fn_3_A6810(f32, f32, f32, f32);
 void fn_3_A6ABC(void);
 void fn_3_A6D48(void);
 void fn_3_A6E98(void);

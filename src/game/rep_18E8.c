@@ -1,7 +1,39 @@
 #include "game/rep_18E8.h"
 #include "header_rep_data.h"
+#include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 
 #pragma dont_inline on
+extern int __float_nan[];
+#define NAN (*(f32*)__float_nan)
+f64 __frsqrte(f64);
+extern u8 lbl_3_data_4744[];
+extern const f64 lbl_3_rodata_1940;
+extern const f64 lbl_3_rodata_1948;
+extern const f64 lbl_3_rodata_1950;
+extern const f32 lbl_3_rodata_195C;
+extern const f32 lbl_3_rodata_1958;
+extern const f32 lbl_3_rodata_1970;
+extern const f32 lbl_3_rodata_1974;
+extern const f32 lbl_3_rodata_19EC;
+extern const f32 lbl_3_rodata_1A08;
+extern const f32 lbl_3_rodata_1A2C;
+extern const f32 lbl_3_rodata_1A30;
+extern const f32 lbl_3_rodata_1A34;
+#define SQRT_L(x)                                                                                  \
+    do {                                                                                           \
+        if ((x) > lbl_3_rodata_193C) {                                                             \
+            f64 xd = (f64)(x);                                                                     \
+            f64 guess = __frsqrte(xd);                                                             \
+            guess = lbl_3_rodata_1940 * guess * (lbl_3_rodata_1948 - guess * guess * xd);          \
+            guess = lbl_3_rodata_1940 * guess * (lbl_3_rodata_1948 - guess * guess * xd);          \
+            guess = lbl_3_rodata_1940 * guess * (lbl_3_rodata_1948 - guess * guess * xd);          \
+            (x) = (f32)(xd * guess);                                                               \
+        } else if ((x) < lbl_3_rodata_1950) {                                                      \
+            (x) = NAN;                                                                             \
+        } else if (isnan(x)) {                                                                     \
+            (x) = NAN;                                                                             \
+        }                                                                                          \
+    } while (0)
 
 extern u8 g_Ball[];
 extern f32 lbl_3_data_4444[];
@@ -707,9 +739,42 @@ void fn_3_A67E8(s32 i) {
 }
 
 // .text:0x000A6810 size:0x2AC mapped:0x806E58A4
-void fn_3_A6810(void) {
-    return;
+#pragma dont_inline off
+s32 fn_3_A6810(f32 x1, f32 z1, f32 x2, f32 z2) {
+    f32 dz;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 a;
+    f32 b;
+    f32 div;
+    s32 n;
+
+    dx = x2 - x1;
+    dz = z2 - z1;
+    step = (f32)lbl_3_data_4744[0xA] / lbl_3_rodata_1A2C;
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        div = lbl_3_rodata_1958;
+    } else {
+        div = step;
+    }
+    n = (s32)(d / div);
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1A30) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_195C) {
+        n = (s32)((f32)n * lbl_3_rodata_19EC) + 0x1E;
+    } else if (d > lbl_3_rodata_1A08) {
+        n = (s32)((f32)n * lbl_3_rodata_1A34);
+    }
+    return n;
 }
+#pragma dont_inline on
 
 // .text:0x000A6ABC size:0x28C mapped:0x806E5B50
 void fn_3_A6ABC(void) {
@@ -1024,3 +1089,5 @@ void fn_3_ABDD0(void) {
     return;
 }
 
+
+#pragma dont_inline off
