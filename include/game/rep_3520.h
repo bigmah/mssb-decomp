@@ -11,7 +11,7 @@ void fn_3_133320(void);
 void fn_3_13334C(void);
 int fn_3_1344BC(int a, int b);
 s16 fn_3_1345AC(s16 a, s16 b, s32 c);
-void fn_3_134658(void);
+void fn_3_134658(int a, f32* ox, f32* oz, s32* out);
 s32 fn_3_134908(s16* a, s16* b);
 s32 fn_3_134918(f32* a, f32* b);
 void fn_3_13493C(void);

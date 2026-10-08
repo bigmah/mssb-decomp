@@ -41,7 +41,7 @@ void fn_3_846C8(void);
 void fn_3_84AD0(void);
 void fn_3_85074(void);
 void fn_3_85744(int i);
-void fn_3_85840(void);
+int fn_3_85840(int i, int b, int* arr);
 int fn_3_85A70(int i);
 void fn_3_85C44(s32 i, s32 d);
 void fn_3_85CB0(void);
