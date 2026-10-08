@@ -298,8 +298,32 @@ void fn_3_101CC4(void) {
 }
 
 // .text:0x00103C30 size:0x24C mapped:0x80742CC4
-void fn_3_103C30(void) {
-    return;
+void fn_3_103C30(Vec* p) {
+    if (lbl_3_common_bss_DE94[0x9B4] != 0) {
+        Vec r;
+        Vec ta;
+        Vec tb;
+        Vec tc;
+        Vec junk;
+        memcpy(&junk, p, 12);
+        ta.x = *(f32*)(lbl_3_common_bss_DE94 + 0xD0);
+        ta.y = *(f32*)(lbl_3_common_bss_DE94 + 0xD4);
+        ta.z = *(f32*)(lbl_3_common_bss_DE94 + 0xD8);
+        memcpy(&tb, p, 12);
+        tc.x = *(f32*)(lbl_3_common_bss_DE94 + 0xC4);
+        tc.y = *(f32*)(lbl_3_common_bss_DE94 + 0xC8);
+        tc.z = *(f32*)(lbl_3_common_bss_DE94 + 0xCC);
+        r = CamStep(ta, tb, tc, *(f32*)(lbl_3_common_bss_DE94 + 0x10C), *(f32*)(lbl_3_common_bss_DE94 + 0x110), *(f32*)(lbl_3_common_bss_DE94 + 0x114));
+        *(f32*)(lbl_3_common_bss_DE94 + 0xC4) = p->x;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xC8) = p->y;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xCC) = p->z;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD0) = r.x;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD4) = r.y;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD8) = r.z;
+        p->x = r.x;
+        p->y = r.y;
+        p->z = r.z;
+    }
 }
 
 // .text:0x00103E7C size:0x25C mapped:0x80742F10
