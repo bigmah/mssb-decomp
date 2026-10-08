@@ -834,6 +834,7 @@ config.libs = [
             Object(NonMatching, "menus/rep_0730.c"),
             Object(NonMatching, "auto_00_0004B1AC_text", source="menus/auto_00_0004B1AC_text.c"),
             Object(NonMatching, "auto_00_00016870_text", source="menus/auto_00_00016870_text.c"),
+            Object(NonMatching, "auto_00_00092394_text", source="menus/auto_00_00092394_text.c"),
             Object(NonMatching, "menus/rep_0788.c"),
             Object(NonMatching, "menus/rep_07F0.c"),
             Object(NonMatching, "menus/rep_0840.c"),
