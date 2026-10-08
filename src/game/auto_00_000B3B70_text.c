@@ -18,3 +18,11 @@ void fn_3_B3C94(u8 state) {
     g_Practice.practiceState = state;
     g_Practice.framesInCurrTransitionState = 0;
 }
+
+// fn_3_B3CAC, size:0x28
+void fn_3_B3CAC(u8 mode) {
+    g_GameLogic.secondaryGameMode = mode;
+    g_Practice.totalFrames = 0;
+    g_Practice.framesInCurrTransitionState = 0;
+    g_Practice.practiceState = 0;
+}
