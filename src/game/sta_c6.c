@@ -10,6 +10,7 @@ extern u32 lbl_3_data_19018[];
 
 extern f32 lbl_3_rodata_2B9C;
 extern f32 lbl_3_rodata_2BA0;
+extern f32 lbl_3_rodata_2BA4;
 
 extern f32 lbl_3_rodata_2B90;
 extern f32 lbl_3_rodata_2B94;
@@ -62,13 +63,58 @@ void fn_3_E5A1C(u8* a) {
 }
 
 // .text:0x000E5A84 size:0x238 mapped:0x80724B18
-void fn_3_E5A84(void) {
-    return;
+typedef struct { f32 x, y, z, r, pad; } E751CP;
+extern void PSMTXIdentity(Mtx);
+void fn_3_E5A84(u8* a) {
+    Control c;
+    Mtx m;
+    u8* n;
+    s32 i;
+    PSMTXIdentity(m);
+    c.type = 0;
+    if (a[0xC1] < 8) {
+        CTRLSetTranslation(&c, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].x, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].y, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].z);
+        CTRLSetRotation(&c, 0.0f, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].r, 0.0f);
+    } else {
+        CTRLSetTranslation(&c, lbl_3_data_19644[a[0xC3]].x, lbl_3_data_19644[a[0xC3]].y, lbl_3_data_19644[a[0xC3]].z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[a[0xC3]], 0.0f);
+    }
+    CTRLBuildMatrix(&c, m);
+    for (i = 0; i < *(u16*)(**(u8***)(a + 0x74) + 6); i++) {
+        n = ((u8**)*(u8**)(**(u8***)(a + 0x74) + 0x18))[i];
+        CTRLBuildMatrix((Control*)(n + 0x1C), *(void**)(n + 0xEC));
+        PSMTXConcat(m, *(void**)(n + 0xEC), *(void**)(n + 0xEC));
+        PSMTXCopy(*(void**)(n + 0xEC), (void*)(*(u8**)(n + 0x14) + 0x18));
+    }
+    if (*(u8***)(a + 0x9C) != NULL) {
+        for (i = 0; i < *(u16*)(**(u8***)(a + 0x9C) + 6); i++) {
+            n = ((u8**)*(u8**)(**(u8***)(a + 0x9C) + 0x18))[i];
+            CTRLBuildMatrix((Control*)(n + 0x1C), *(void**)(n + 0xEC));
+            PSMTXConcat(m, *(void**)(n + 0xEC), *(void**)(n + 0xEC));
+            if (*(u8**)(n + 0x14) != NULL) {
+                PSMTXCopy(*(void**)(n + 0xEC), (void*)(*(u8**)(n + 0x14) + 0x18));
+            }
+        }
+        (**(u8***)(a + 0x9C))[0x98] = fn_800B3C04(0, **(u8***)(a + 0x9C), fn_80052734(fn_8005268C()) + 0x40);
+    }
+    (**(u8***)(a + 0x74))[0x98] = fn_800B3C04(0, **(u8***)(a + 0x74), fn_80052734(fn_8005268C()) + 0x40);
 }
 
 // .text:0x000E5CBC size:0x158 mapped:0x80724D50
-void fn_3_E5CBC(void) {
-    return;
+void fn_3_E5CBC(u8* p, f32 t) {
+    u8* b = *(u8**)(p + 0xAC);
+    u8* a = *(u8**)(p + 0xA8);
+    f32 r;
+    if (t > 1.0f) {
+        t = 1.0f;
+    } else if (t < lbl_3_rodata_2BA4) {
+        t = lbl_3_rodata_2BA4;
+    }
+    r = 1.0f - t;
+    p[0xA4] = (u8)(r * (f32)b[0] + t * (f32)a[0]);
+    p[0xA5] = (u8)(r * (f32)b[1] + t * (f32)a[1]);
+    p[0xA6] = (u8)(r * (f32)b[2] + t * (f32)a[2]);
+    p[0xA7] = (u8)(r * (f32)b[3] + t * (f32)a[3]);
 }
 
 // .text:0x000E5E14 size:0x5C mapped:0x80724EA8
@@ -89,8 +135,50 @@ s32 fn_3_E5E14(u8* p) {
 }
 
 // .text:0x000E5E70 size:0x17C mapped:0x80724F04
-void fn_3_E5E70(void) {
-    return;
+void fn_3_E5E70(u8* out, u8 fmt, void* src) {
+    u16* s16p = src;
+    u32* s32p = src;
+    s32 f = (fmt >> 4) & 0xF;
+    if (out == NULL || src == NULL) {
+        return;
+    }
+    switch (f) {
+    case 0:
+        out[0] = (*s16p >> 8) & 0xF8;
+        out[1] = (*s16p >> 3) & 0xFC;
+        out[2] = (*s16p << 3) & 0xF8;
+        out[3] = 0xFF;
+        break;
+    case 3:
+        out[0] = (*s16p >> 12) & 0xF;
+        out[1] = (*s16p >> 8) & 0xF;
+        out[2] = (*s16p >> 4) & 0xF;
+        out[3] = *s16p & 0xF;
+        out[0] = out[0] | (out[0] << 4);
+        out[1] = out[1] | (out[1] << 4);
+        out[2] = out[2] | (out[2] << 4);
+        out[3] = out[3] | (out[3] << 4);
+        break;
+    case 5:
+        out[0] = *s32p >> 24;
+        out[1] = *s32p >> 16;
+        out[2] = *s32p >> 8;
+        out[3] = *s32p;
+        break;
+    case 1:
+    case 2:
+        out[0] = *s32p >> 24;
+        out[1] = *s32p >> 16;
+        out[2] = *s32p >> 8;
+        out[3] = 0xFF;
+        break;
+    case 4:
+        out[0] = __rlwinm(*s16p, 16, 24, 29);
+        out[1] = (*s16p >> 10) & 0xFC;
+        out[2] = (*s16p >> 4) & 0xFC;
+        out[3] = (*s16p << 2) & 0xFC;
+        break;
+    }
 }
 
 // .text:0x000E5FEC size:0x424 mapped:0x80725080
@@ -336,7 +424,6 @@ void fn_3_E7424(void) {
 }
 
 // .text:0x000E751C size:0x120 mapped:0x807265B0
-typedef struct { f32 x, y, z, r, pad; } E751CP;
 s32 fn_3_E751C(s32 idx, Mtx m) {
     Control c;
     u8* o;
