@@ -1,6 +1,8 @@
 #include "game/auto_00_000AC9F8_text.h"
 #include "game/UnknownHomes_Game.h"
 
+extern u8 g_Fielders[];
+
 #include "game/auto_00_000B3B70_text.h"
 
 extern u8 lbl_3_common_bss_34C90[];
@@ -68,4 +70,12 @@ s32 fn_3_AFD48(s16 value) {
 s32 fn_3_B0CF4(void) {
     if (g_Practice.aiBuntIndicator == 0) return 0;
     return g_Ball.pitchHangtimeCounter > 0;
+}
+
+// fn_3_B0D7C, size:0x34
+void fn_3_B0D7C(void) {
+    g_Pitcher.handedness = g_Fielders[0x1C7];
+    g_Pitcher.curveBallSpeed = 0x7D;
+    g_Pitcher.fastBallSpeed = 0x91;
+    g_Pitcher.cursedBallStat = 0x64;
 }

@@ -19,4 +19,6 @@ s32 fn_3_AFD48(s16 value);
 
 s32 fn_3_B0CF4(void);
 
+void fn_3_B0D7C(void);
+
 #endif
