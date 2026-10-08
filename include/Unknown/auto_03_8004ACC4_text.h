@@ -5,4 +5,6 @@
 
 u32 fn_8004ACC4(s32 clear);
 
+u32 fn_8004ACDC(s32 clear);
+
 #endif
