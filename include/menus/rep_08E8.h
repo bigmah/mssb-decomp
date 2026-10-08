@@ -5,4 +5,6 @@
 
 void fn_2_4A064(void);
 
+void fn_2_474F8(void);
+
 #endif
