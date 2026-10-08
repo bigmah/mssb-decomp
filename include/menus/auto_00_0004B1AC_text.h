@@ -19,4 +19,6 @@ void fn_2_4E928(void);
 
 void fn_2_4E94C(void);
 
+s32 fn_2_4E970(void);
+
 #endif

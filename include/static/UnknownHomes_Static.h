@@ -99,4 +99,6 @@ extern f32 fn_800B4A94(void* object);
 
 extern void fn_80035B50(int id);
 
+extern s32 fn_80035838(void* data, s32 id);
+
 #endif // !__UNKNOWN_HOMES_STATIC_H_
