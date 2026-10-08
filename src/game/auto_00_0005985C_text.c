@@ -9,8 +9,23 @@ extern void fn_80017D28(void* allocation);
 extern void fn_3_58688(void);
 extern void fn_3_583B8(void);
 extern void fn_3_3B9E4(void);
+extern void fn_3_736CC(void);
+extern void fn_3_735A8(void);
 
 #pragma dont_inline on
+
+// fn_3_5DCE0, size:0x50
+s32 fn_3_5DCE0(void) {
+    s32 handled = 0;
+    if (g_Pitcher.strikeOutOrWalk == 1) {
+        fn_3_736CC();
+        handled = 1;
+    } else if (g_Pitcher.strikeOutOrWalk == 2) {
+        fn_3_735A8();
+        handled = 1;
+    }
+    return handled;
+}
 
 // fn_3_598D0, size:0x48
 void fn_3_598D0(void) {
