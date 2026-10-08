@@ -64,4 +64,6 @@ void fn_1_1F23C(ChallengeProjectionState* state);
 
 void fn_1_207D4(void);
 
+void fn_1_20890(void);
+
 #endif

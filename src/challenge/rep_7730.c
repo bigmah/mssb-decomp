@@ -35,6 +35,26 @@ extern const f32 lbl_1_rodata_7860;
 extern const f32 lbl_1_rodata_7864;
 extern const f32 lbl_1_rodata_7868;
 extern const f32 lbl_1_rodata_780C;
+extern const f32 lbl_1_rodata_77DC[];
+extern const f32 lbl_1_rodata_77E0[];
+extern const f32 lbl_1_rodata_7814[];
+extern const f32 lbl_1_rodata_7820[];
+extern Mtx44 lbl_1_bss_47010;
+
+// fn_1_20890, size:0xC0
+void fn_1_20890(void) {
+    Mtx identity;
+    C_MTXOrtho(lbl_1_bss_47010, lbl_1_rodata_77D8, lbl_1_rodata_77DC[0],
+        lbl_1_rodata_77D8, lbl_1_rodata_77E0[0], lbl_1_rodata_7814[0], lbl_1_rodata_7820[0]);
+    GXSetProjection(lbl_1_bss_47010, GX_ORTHOGRAPHIC);
+    PSMTXIdentity(identity);
+    GXLoadPosMtxImm(identity, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXLoadTexMtxImm(identity, GX_TEXMTX0, GX_MTX2x4);
+    fn_80048C14(3);
+    fn_80048E00(0, 32);
+    fn_80048E00(1, 0);
+}
 
 // fn_1_207D4, size:0xBC
 void fn_1_207D4(void) {
