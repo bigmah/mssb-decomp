@@ -9,6 +9,11 @@ extern s32 fn_3_B0D2C(void);
 extern u8 lbl_3_data_19C4[];
 
 extern u8 lbl_3_data_1ABC[];
+extern u8 lbl_3_data_1C90[];
+extern u8 lbl_3_data_1C98[];
+extern f32 lbl_3_data_1D10[];
+extern s16 lbl_3_data_4B90[];
+extern u8 g_RunningLogic[];
 extern u8 lbl_3_data_1ADC[];
 extern u8 lbl_3_data_1AEC[];
 extern u8 lbl_3_data_1B4C[];
@@ -24,7 +29,49 @@ extern f32 lbl_3_data_4474[];
 
 // .text:0x0001E4B8 size:0x26C mapped:0x8065D54C
 void fn_3_1E4B8(void) {
-    return;
+    u32 d;
+    s32 n;
+    s32 ri;
+    f32 chance;
+    u8 sp;
+    s32 rr;
+    s16 fl;
+    g_AiLogic.batterAIStealIndicator = 0;
+    rr = RandomInt_Game(100);
+    d = g_GameLogic.AIDifficulty0Special3Weak[g_GameLogic.homeTeamBattingInd_fieldingTeam];
+    if (rr < lbl_3_data_1C90[d]) {
+        g_AiLogic.batterAIStealingStartFrame = lbl_3_data_4B90[2] - 1;
+    } else {
+        g_AiLogic.batterAIStealingStartFrame = lbl_3_data_4B90[3] - 1;
+    }
+    n = g_Pitcher.nPitchesThisAB;
+    if (n > 2) {
+        n = 2;
+    }
+    fl = *(s16*)(g_RunningLogic + 2);
+    if (fl & 0x100) {
+        if (fl & 0x1000) {
+            return;
+        }
+        ri = 2;
+        chance = (lbl_3_data_1C98 + d * 12 + n * 4 + g_Runners[2].characterClass)[0x3C];
+    } else if (fl & 0x10) {
+        ri = 1;
+        chance = (lbl_3_data_1C98 + d * 12 + n * 4 + g_Runners[1].characterClass)[0x3C];
+    } else {
+        return;
+    }
+    chance *= lbl_3_data_1D10[g_Batter.characterClass];
+    if (g_Strikes.balls == 3) {
+        chance *= lbl_3_data_1D10[4];
+    }
+    sp = g_Runners[ri].speed;
+    if (sp >= 0x32) {
+        chance *= lbl_3_data_1D10[5] * (f32)((sp - 0x32) / 10) + 1.0f;
+    }
+    if (RandomInt_Game(100) < (s32)chance) {
+        g_AiLogic.batterAIStealIndicator = 1;
+    }
 }
 
 // .text:0x0001E724 size:0xD0 mapped:0x8065D7B8
