@@ -78,18 +78,174 @@ extern void fn_3_58F58(int, f32*, f32*);
 #pragma dont_inline on
 
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
-void fn_3_251E4(void) {
-    return;
+extern void getComponentsFromSAng(s16 ang, f32* x, f32* y);
+extern s16 fn_3_9FE6C_normalizeAngle(s16);
+extern void fn_3_6C854(int, int);
+extern f32 lbl_3_rodata_B18;
+extern f32 lbl_3_rodata_B1C;
+int fn_3_51798(int i, f32* out);
+void fn_3_251E4(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 pos[3];
+    int r;
+    if (*(s16*)(f + 0x1BE) < 0x7FFE) {
+        *(s16*)(f + 0x1BE) = *(s16*)(f + 0x1BE) + 1;
+    } else {
+        *(s16*)(f + 0x1BE) = 0x7FFF;
+    }
+    *(s16*)(f + 0x1C0) = *(s16*)(f + 0x1C0) - 1;
+    if (f[0x210] == 1) {
+        if (*(s16*)(f + 0x1C0) <= 0) {
+            f[0x210] = 2;
+            *(s16*)(f + 0x1BE) = 0;
+            *(s16*)(f + 0x1C0) = lbl_3_data_49DC[0x22];
+            return;
+        }
+        *(f32*)(f + 0x174) = *(f32*)(f + 0x174) * *(f32*)(lbl_3_data_4930 + 0x8C);
+        *(f32*)(f + 0x50) = *(f32*)(f + 0x174);
+        getComponentsFromSAng(*(s16*)(f + 0x1C2), (f32*)(f + 0x38), (f32*)(f + 0x3C));
+        *(f32*)(f + 0x30) = *(f32*)(f + 0x38) * *(f32*)(f + 0x50);
+        *(f32*)(f + 0x34) = *(f32*)(f + 0x3C) * *(f32*)(f + 0x50);
+        r = fn_3_51798(i, pos);
+        if (r != 0) {
+            if (r == 2 && !(pos[0] > lbl_3_rodata_B18) && !(pos[0] < lbl_3_rodata_B1C)) {
+                *(f32*)(f + 0x30) = pos[0] - *(f32*)f;
+                *(f32*)(f + 0x34) = pos[2] - *(f32*)(f + 8);
+                *(f32*)f = pos[0];
+                *(f32*)(f + 8) = pos[2];
+            } else {
+                *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+                *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+                *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+            }
+        } else {
+            *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+            *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+        }
+        *(f32*)(f + 0x14) = *(f32*)f;
+        *(f32*)(f + 0x1C) = *(f32*)(f + 8);
+        return;
+    }
+    if (*(s16*)(f + 0x1C0) <= 0) {
+        f[0x210] = 0;
+    }
 }
 
 // .text:0x000253A4 size:0x2A4 mapped:0x80664438
-void fn_3_253A4(void) {
-    return;
+extern u32 fn_3_90220(s32 idx, s32 off);
+extern void fn_3_A9354(int, int);
+int fn_3_253A4(int i, s16 ang) {
+    u8* f = g_Fielders + i * 0x268;
+    if (f[0x207] != 0 || f[0x205] != 0 || f[0x25E] != 0) {
+        return 0;
+    }
+    *(s16*)(f + 0x1C2) = ang;
+    f[0x210] = 1;
+    *(s16*)(f + 0x1BE) = 0;
+    *(s16*)(f + 0x1C0) = lbl_3_data_49DC[0x21];
+    *(f32*)(f + 0x174) = *(f32*)(lbl_3_data_4930 + 0x88);
+    if (f[0x252] == 4 || f[0x252] == 5) {
+        *(f32*)(f + 0x174) = lbl_3_rodata_B20;
+    }
+    if (f[0x207] != 0) {
+        *(f32*)(f + 0x174) = lbl_3_rodata_B20;
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        u8* m = g_Minigame + f[0x20D];
+        if (m[0x18D8] == 0) {
+            fn_3_6C854(*(s8*)(m + 0x18CC), 2);
+        }
+    } else if (g_GameLogic[*(int*)(g_GameLogic + 8) + 0x13E] == 0) {
+        fn_3_6C854(*(int*)(g_GameLogic + 8), 2);
+    }
+    fn_3_90220(*(s16*)(f + 0x17A), 10);
+    if (*(s16*)(g_Ball + 0x1B78) == i) {
+        fn_3_A9354(i, 1);
+        g_FieldingLogic[0x13B] = 1;
+        g_FieldingLogic[0x111] = 0;
+    }
+    if (f[0x252] != 0) {
+        if (g_d_GameSettings[7] != 6 && i != *(s16*)(g_FieldingLogic + 0xB0) && i != -1) {
+            f[0x1D3] = 0xC;
+            if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
+                g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
+            }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+        }
+        f[0x252] = 0;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(s16*)(f + 0x194) = 0;
+        f[0x1E9] = 0;
+        f[0x1DF] = 0;
+        f[0x205] = 0;
+        f[0x25E] = 0;
+        if (f[0x1E8] != 0) {
+            f[0x1E8] = 2;
+        }
+        if (*(s16*)(g_Ball + 0x1B78) >= 0 && g_Ball[0x1BF0] != 0) {
+            g_Ball[0x1BF0] = 0;
+            *(f32*)(g_Ball + 0) = *(f32*)(g_Ball + 0x1B38);
+            *(f32*)(g_Ball + 4) = *(f32*)(g_Ball + 0x1B3C);
+            *(f32*)(g_Ball + 8) = *(f32*)(g_Ball + 0x1B40);
+        }
+    }
+    f[0x262] = 0;
+    f[0x203] = 0;
+    f[0x20F] = 0;
+    f[0x1EE] = 0;
+    g_Ball[0x1BF0] = 0;
+    return 1;
 }
 
 // .text:0x00025648 size:0x1FC mapped:0x806646DC
-void fn_3_25648(void) {
-    return;
+void fn_3_25648(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 pos[3];
+    int r;
+    *(s16*)(f + 0x1BA) = *(s16*)(f + 0x1BA) - 1;
+    if (*(s16*)(f + 0x1BA) <= 0) {
+        f[0x20F] = 0;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+        return;
+    }
+    *(s16*)(f + 0x1B8) = *(s16*)(f + 0x1B8) + 1;
+    *(s16*)(f + 0x1BC) = fn_3_9FE6C_normalizeAngle(*(s16*)(f + 0x1BC) + lbl_3_data_49DC[0x20]);
+    *(f32*)(f + 0x50) = *(f32*)(lbl_3_data_4930 + 0x84);
+    getComponentsFromSAng(*(s16*)(f + 0x1BC), (f32*)(f + 0x38), (f32*)(f + 0x3C));
+    *(f32*)(f + 0x30) = *(f32*)(f + 0x38) * *(f32*)(f + 0x50);
+    *(f32*)(f + 0x34) = *(f32*)(f + 0x3C) * *(f32*)(f + 0x50);
+    r = fn_3_51798(i, pos);
+    if (r != 0) {
+        if (r == 2 && !(pos[0] > lbl_3_rodata_B18) && !(pos[0] < lbl_3_rodata_B1C)) {
+            *(f32*)(f + 0x30) = pos[0] - *(f32*)f;
+            *(f32*)(f + 0x34) = pos[2] - *(f32*)(f + 8);
+            *(f32*)f = pos[0];
+            *(f32*)(f + 8) = pos[2];
+        } else {
+            *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+            *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+            *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+        }
+    } else {
+        *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+        *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+    }
+    *(f32*)(f + 0x14) = *(f32*)f;
+    *(f32*)(f + 0x1C) = *(f32*)(f + 8);
+    if (g_d_GameSettings[0x11] != 0) {
+        u8* m = g_Minigame + f[0x20D];
+        if (m[0x18D8] == 0) {
+            fn_3_6C854(*(s8*)(m + 0x18CC), 0);
+        }
+    } else if (g_GameLogic[*(int*)(g_GameLogic + 8) + 0x13E] == 0) {
+        fn_3_6C854(*(int*)(g_GameLogic + 8), 0);
+    }
 }
 
 // .text:0x00025844 size:0x94 mapped:0x806648D8
@@ -2375,13 +2531,60 @@ void fn_3_51220(void) {
 }
 
 // .text:0x0005164C size:0x14C mapped:0x806906E0
-void fn_3_5164C(void) {
-    return;
+#pragma fp_contract off
+int fn_3_5164C(int i, f32* out) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 x = *(f32*)f + *(f32*)(f + 0x30);
+    f32 z = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+    int r = 0;
+    f32 t;
+    f32 lim;
+    f32 nx;
+    f32 zz;
+    if (x > 0.0f) {
+        if (x > z) {
+            x = z + lbl_3_rodata_B80 * (x - z);
+            z = x;
+            r = 2;
+        }
+    } else {
+        t = -x;
+        if (t > z) {
+            z += lbl_3_rodata_B80 * (t - z);
+            x = -z;
+            r = 2;
+        }
+    }
+    lim = *(f32*)(lbl_3_data_4444 + 0x14);
+    t = z - lim;
+    if (!(t > x)) {
+        nx = -x;
+        if (!(t > nx)) {
+            if (x > 0.0f) {
+                zz = lim - z;
+                x = zz + lbl_3_rodata_B80 * (x - zz);
+                z = -x + lim;
+                r = 2;
+            } else {
+                zz = lim - z;
+                x = -zz - lbl_3_rodata_B80 * (nx - zz);
+                z = x + lim;
+                r = 2;
+            }
+        }
+    }
+    if (z <= *(f32*)(lbl_3_data_4444 + 0x10)) {
+        return 1;
+    }
+    out[0] = x;
+    out[2] = z;
+    return r;
 }
+#pragma fp_contract reset
 
 // .text:0x00051798 size:0x658 mapped:0x8069082C
-void fn_3_51798(void) {
-    return;
+int fn_3_51798(int i, f32* out) {
+    return 0;
 }
 
 // .text:0x00051DF0 size:0x294 mapped:0x80690E84

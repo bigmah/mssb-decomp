@@ -3,9 +3,9 @@
 
 #include "mssbTypes.h"
 
-void fn_3_251E4(void);
-void fn_3_253A4(void);
-void fn_3_25648(void);
+void fn_3_251E4(int);
+int fn_3_253A4(int, s16);
+void fn_3_25648(int);
 void fn_3_25844(int, int);
 int fn_3_258D8(int);
 void fn_3_25A68(void);
@@ -190,8 +190,8 @@ void fn_3_50898(void);
 void fn_3_50C20(void);
 void fn_3_50DD8(void);
 void fn_3_51220(void);
-void fn_3_5164C(void);
-void fn_3_51798(void);
+int fn_3_5164C(int, f32*);
+int fn_3_51798(int, f32*);
 void fn_3_51DF0(void);
 void fn_3_52084(void);
 void fn_3_522E0(void);

@@ -39,6 +39,10 @@ void fn_3_C0770(void) {
 }
 
 extern u8 lbl_3_common_bss_35154[];
+extern void fn_800BD548(void*, int, ...);
+extern void fn_800BD8C4(void*, u32);
+extern void CTRLSetTranslation(void*, f32, f32, f32);
+extern void CTRLSetRotation(void*, f32, f32, f32);
 extern u8 lbl_80366158[];
 extern u8 lbl_3_data_12354[];
 extern f32 lbl_3_rodata_1F18;
@@ -342,8 +346,19 @@ void fn_3_BD7DC(u32 a) {
 }
 
 // .text:0x000BD80C size:0xCC mapped:0x806FC8A0
-void fn_3_BD80C(void) {
-    return;
+// 97%: compiler folds base+0x3E4 into offsets off one reg; original keeps bss base in r5 and c=r5+0x3e4 in r30
+void fn_3_BD80C(u32 a) {
+    f32* c;
+    u8* g;
+    u8* bs = lbl_3_common_bss_35154;
+    c = (f32*)(bs + 0x3E4);
+    g = lbl_8036E548;
+    if (bs[0x40A] != 0) {
+        CTRLSetTranslation(*(u8**)(g + 0x70) + 0x44, c[1], c[2], c[3]);
+        CTRLSetRotation(*(u8**)(g + 0x70) + 0x44, 57.295776f * c[4], 57.295776f * c[5], 57.295776f * c[6]);
+        fn_800BD548(*(u8**)(g + 0x70) + 0x34, 4, *(s32*)(g + 0xAC), *(s32*)(g + 0xB0), *(s32*)(g + 0xB4), *(s32*)(g + 0xB8));
+    }
+    fn_800BD8C4(*(void**)(g + 0x70), a);
 }
 
 // .text:0x000BD8D8 size:0x24 mapped:0x806FC96C

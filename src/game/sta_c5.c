@@ -694,10 +694,9 @@ struct StadCtlA {
 typedef struct StadCtlA StadCtlA;
 
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
-// 6 diff lines: first table lookup has base/index registers swapped (r5/r6); everything else matches
 extern u32 lbl_3_bss_B154[];
 void fn_3_F1518(StadCtlA* p) {
-    p->fc5 = ((u8*)&lbl_3_data_1B9A4[p->idx].f)[0];
+    p->fc5 = ((u8*)&lbl_3_data_1B9A4[0].f)[p->idx * 0x18];
     p->fc6 = 1;
     p->fc7 = 0;
     p->fc1 = -1;
@@ -1074,8 +1073,60 @@ void fn_3_F56CC(void) {
 }
 
 // .text:0x000F5C30 size:0x248 mapped:0x80734CC4
-void fn_3_F5C30(void) {
-    return;
+void fn_3_F5C30(u8* p) {
+    StadCtlA* q;
+    f32* t8;
+    f32* tc;
+    f32 r;
+    f32 x;
+    f32 z;
+    extern void fn_80033964(void*);
+    *(f32*)(p + 0xA8) = lbl_3_data_1B884[p[0x9C]].v.x;
+    *(f32*)(p + 0xAC) = lbl_3_data_1B884[p[0x9C]].v.y;
+    t8 = (f32*)lbl_3_data_1B884 + 2;
+    tc = (f32*)lbl_3_data_1B884 + 3;
+    *(f32*)(p + 0xB0) = *(f32*)((u8*)t8 + p[0x9C] * 0x14);
+    *(f32*)(p + 0xC0) = -*(f32*)((u8*)tc + p[0x9C] * 0x14);
+    p[0] = 0;
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA8), -*(f32*)(p + 0xAC), *(f32*)(p + 0xB0));
+    CTRLSetRotation((Control*)p, 0.0f, *(f32*)(p + 0xC0), 0.0f);
+    *(f32*)(p + 0xBC) = 0.0f;
+    *(f32*)(p + 0xB8) = 0.0f;
+    *(f32*)(p + 0xB4) = 0.0f;
+    if (*(u8**)(p + 0xA4) != NULL) {
+        if (*(u32*)(*(u8**)(p + 0xA4) + 8) != 0) {
+            fn_80033964(*(u8**)(p + 0xA4));
+            *(u32*)(p + 0xA4) = 0;
+        } else {
+            *(u32*)(p + 0xA4) = 0;
+        }
+    }
+    q = *(StadCtlA**)(p + 0xA0);
+    if (q != NULL) {
+        q->xac = lbl_3_data_1B884[q->idx].v.x;
+        q->zb0 = *(f32*)((u8*)t8 + q->idx * 0x14);
+        z = q->zb0;
+        x = q->xac;
+        r = -*(f32*)((u8*)tc + q->idx * 0x14);
+        q->xa0 = x;
+        q->ya4 = 10.0f;
+        q->za8 = z;
+        q->rb4 = r;
+        q->c.type = 0;
+        CTRLSetTranslation(&q->c, q->xa0, -q->ya4, q->za8);
+        CTRLSetRotation(&q->c, 0.0f, r, 0.0f);
+        q->fc1 = 0;
+        q->fl90_hi = 1;
+        q->obj = (u8**)(*(u8**)(lbl_8036E548 + 0x6C) + (lbl_3_bss_B219[0] + q->idx) * 0x90 + 0x34);
+        q->fc4 = 0;
+        q->f99 = 1;
+    }
+    p[0x99] = 1;
+    p[0xC4] = 0;
+    if (*(s32*)lbl_3_data_1B820 != -1) {
+        fn_3_8B890(*(s32*)lbl_3_data_1B820);
+        *(s32*)lbl_3_data_1B820 = -1;
+    }
 }
 
 // .text:0x000F5E78 size:0x84 mapped:0x80734F0C
@@ -1186,8 +1237,56 @@ void fn_3_F65C8(s32* n) {
 }
 
 // .text:0x000F66C8 size:0x270 mapped:0x8073575C
-void fn_3_F66C8(void) {
-    return;
+// 97.9%: points 2/3 of the bounding-box scan use lfsu (pt++); original does `addi r4,r3,8k` + `lfs 8k(r3)` and keeps e in r3
+typedef struct { f32 x, z; } P2;
+void fn_3_F66C8(s32* n) {
+    struct { Control c; u8 pad[0x14]; } c;
+    Mtx m;
+    s32 i;
+    u16 k;
+    s32 idx;
+    void* o;
+    f32* e;
+    P2* pt;
+    s32 j;
+    u8* oe;
+    f32 xmin;
+    f32 zmin;
+    f32 xmax;
+    f32 zmax;
+    f32 t;
+    extern f32 lbl_3_rodata_2F3C[];
+    fn_3_B8574();
+    for (i = 0; i < lbl_3_bss_B21C; i++) {
+        k = (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n - 1] + (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n - 1];
+        (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n] = k;
+        idx = lbl_3_bss_B21B + i;
+        (*(u32**)(lbl_3_common_bss_350E4 + 0x44))[k] = idx;
+        (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
+        oe = *(u8**)lbl_3_common_bss_350E4;
+        oe += idx * 0xE8;
+        e = (f32*)(lbl_3_data_1B824 + oe[0x9C] * 32);
+        xmin = xmax = e[0];
+        zmin = zmax = e[1];
+        pt = (P2*)e;
+        for (j = 1; j < 4; j++) {
+            pt++;
+            t = pt->x;
+            if (xmin > t) xmin = t; else if (xmax < t) xmax = t;
+            t = pt->z;
+            if (zmin > t) zmin = t; else if (zmax < t) zmax = t;
+        }
+        o = (void*)((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21B].w78;
+        CTRLSetTranslation(&c.c, xmin, ((f32*)&lbl_3_rodata_2D5C)[0], zmax);
+        CTRLBuildMatrix(&c.c, m);
+        fn_3_B8464(m, o);
+        CTRLSetTranslation(&c.c, xmax, lbl_3_rodata_2F3C[0], zmin);
+        CTRLBuildMatrix(&c.c, m);
+        fn_3_B8464(m, o);
+        fn_3_B8414(*(u8**)(lbl_3_common_bss_350E4 + 0x48) + *n * 0x18, *(u8**)(lbl_3_common_bss_350E4 + 0x48) + (*n * 2 + 1) * 0xC);
+        (*n)++;
+        fn_3_B8574();
+    }
 }
 
 // .text:0x000F6938 size:0x15C mapped:0x807359CC
