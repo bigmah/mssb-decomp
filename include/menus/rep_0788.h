@@ -13,4 +13,6 @@ void fn_2_1FF0C(void);
 
 void fn_2_24EB0(s16 value);
 
+s16 fn_2_24E9C(void);
+
 #endif
