@@ -19,6 +19,14 @@ extern s32 fn_3_8BBC4(s32, s32, s32, s32);
 typedef struct { u8 pad[0x78]; s32 w78; u8 pad2[0xE8 - 0x7C]; } StadObj78;
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
+static inline u32 binomIn(u32 n, u32 k) {
+    u32 r = 1;
+    u32 i;
+    for (i = 1; i <= k; i++) {
+        r = r * (n - i + 1) / i;
+    }
+    return r;
+}
 #pragma dont_inline on
 #include "C3/control.h"
 #include "Dolphin/vec.h"
@@ -28,12 +36,35 @@ extern V14 lbl_3_data_1B884[];
 typedef struct { f32 a, b, c, d, e, f; } T18;
 extern T18 lbl_3_data_1B9A4[];
 extern f32 lbl_3_rodata_2D5C;
+extern f32 lbl_3_rodata_2D68;
+extern char lbl_3_rodata_2DC4[];
+extern s32 fn_800247E4(s32, s32, s32, s32);
+extern void* fn_3_B9534(u32, u32, void*);
+extern int rand(void);
+extern s8 lbl_3_bss_AF18[];
+extern u8* lbl_3_bss_B118[];
+extern void* memset(void*, s32, u32);
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
 extern f32 lbl_3_rodata_2DDC;
 extern f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
+extern f32 lbl_3_rodata_2D74;
+extern f32 lbl_3_rodata_2DF0;
+extern u8 lbl_800E8754[];
+extern void fn_3_CB7E8(f32, f32, f32);
+extern char lbl_3_rodata_2D38[];
+extern f64 lbl_3_rodata_2DD0;
+extern f32 lbl_3_rodata_2D54;
+extern f32 lbl_3_rodata_2DD8;
+extern u8 lbl_3_data_1B820[];
+extern u8 fn_800527C4(void*);
+extern void fn_80064430(void*, s32, f32, f32);
+extern f64 acos(f64);
+extern f64 lbl_3_rodata_2DE0;
+extern f32 lbl_3_rodata_2D70;
+extern f32 lbl_3_rodata_2DE8;
 extern f64 cos(f64);
 extern u8 lbl_803C5090[];
 extern void fn_8003A144(u8*, u8*);
@@ -120,12 +151,60 @@ void fn_3_EE96C(void) {
 
 // .text:0x000EEB94 size:0x160 mapped:0x8072DC28
 void fn_3_EEB94(void) {
-    return;
+    u32 i, j;
+    for (i = 0; i < 0x10; i++) {
+        for (j = 0; j < 0x10; j++) {
+            s32 idx = fn_800247E4(j, i, 0x10, 2);
+            s32 a = lbl_3_bss_B118[0][idx];
+            s32 b = lbl_3_bss_B118[0][idx + 1];
+            a += lbl_3_bss_AF18[idx] * (rand() % 14 + 8);
+            b += lbl_3_bss_AF18[idx + 1] * (rand() % 14 + 8);
+            if (a >= 0xE3) {
+                a--;
+                lbl_3_bss_AF18[idx] = -1;
+            } else if (a <= 0x1B) {
+                a++;
+                lbl_3_bss_AF18[idx] = 1;
+            }
+            if (b >= 0xE3) {
+                b--;
+                lbl_3_bss_AF18[idx + 1] = -1;
+            } else if (b <= 0x1B) {
+                b++;
+                lbl_3_bss_AF18[idx + 1] = 1;
+            }
+            lbl_3_bss_B118[0][idx] = a;
+            lbl_3_bss_B118[0][idx + 1] = b;
+        }
+    }
 }
 
+// 97%: only the GXSetIndTexMtx matrix stores differ (orig: first store via r30+0x23c, rest via pointer r4+4..0x14)
 // .text:0x000EECF4 size:0x148 mapped:0x8072DD88
 void fn_3_EECF4(void) {
-    return;
+    typedef struct { u8 pad0[0x38]; u8 a38[0x200]; u8* tex; f32 m[2][3]; u8 a254[1]; } S;
+    S* s = (S*)lbl_3_bss_AEE0;
+    u32 i, j;
+    f32 (*m)[3] = (f32(*)[3])(lbl_3_bss_AEE0 + 0x23C);
+    s->m[0][0] = lbl_3_rodata_2D68;
+    m[0][1] = lbl_3_rodata_2D5C;
+    m[0][2] = lbl_3_rodata_2D5C;
+    m[1][0] = lbl_3_rodata_2D5C;
+    m[1][1] = lbl_3_rodata_2D68;
+    m[1][2] = lbl_3_rodata_2D5C;
+    GXSetIndTexMtx(GX_ITM_0, m, 2);
+    s->tex = (u8*)fn_3_B9534(0x10, 0x10, s->a254);
+    if (s->tex == NULL) {
+        OSPanic(lbl_3_rodata_2DB8, 0x1028, lbl_3_rodata_2DC4);
+    }
+    for (i = 0; i < 0x10; i++) {
+        for (j = 0; j < 0x10; j++) {
+            s32 idx = fn_800247E4(j, i, 0x10, 2);
+            s->tex[idx] = (u8)(rand() % 200) + 0x1B;
+            s->tex[idx + 1] = (u8)(rand() % 200) + 0x1B;
+        }
+    }
+    memset(s->a38, 1, 0x200);
 }
 
 // .text:0x000EEE3C size:0xE8 mapped:0x8072DED0
@@ -177,9 +256,68 @@ void fn_3_EEFD0(void) {
     return;
 }
 
+// .text:0x000F13F8 size:0x50 mapped:0x8073048C
+#pragma dont_inline off
+void fn_3_F13F8(u8* p) {
+    u8* o = **(u8***)(p + 0x74);
+    u32 i;
+    for (i = 0; i < *(u16*)(o + 6); i++) {
+        u8* e = (*(u8***)(o + 0x18))[i];
+        e[0x60] = 0;
+        e[0xA4] = 0;
+    }
+    (*(u8**)(p + 0x74))[0x58] = 0;
+}
+#pragma dont_inline on
+
+// 99%: only scheduling of the stfs 0xB8 / li r6,0 / li r0,4 at the join differs (inlined fn_3_F13F8 matches)
 // .text:0x000EEFD4 size:0x244 mapped:0x8072E068
-void fn_3_EEFD4(void) {
-    return;
+void fn_3_EEFD4(s32 idx) {
+    Vec d;
+    Vec ref;
+    u8* e = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+    ref = *(Vec*)lbl_3_rodata_2D38;
+    if (e[0xC6] < 3) {
+        f32 t;
+        f32 ang;
+        u32 stad;
+        u32 h;
+        u8 v;
+        d.x = *(f32*)(g_Ball + 0x318);
+        d.y = lbl_3_rodata_2D5C;
+        d.z = *(f32*)(g_Ball + 0x320);
+        PSVECNormalize(&d, &d);
+        t = (f32)acos(PSVECDotProduct(&ref, &d));
+        ang = t;
+        if (d.z < lbl_3_rodata_2D5C) {
+            ang = lbl_3_rodata_2DD0 - t;
+        }
+        *(f32*)(e + 0xB8) = ang;
+        *(f32*)(e + 0xBC) = lbl_3_rodata_2D54;
+        e[0xC6] = 4;
+        fn_3_F13F8(e);
+        if (*(s16*)(g_Ball + 0x1B7A) != 2 && lbl_800E8754[4] != 0) {
+            Vec t;
+            CTRLGetTranslation((Control*)e, &t.x, &t.y, &t.z);
+            fn_3_CB7E8(t.x, t.y - lbl_3_rodata_2DD8, t.z);
+            e[0xC8] = 1;
+        }
+        stad = g_d_GameSettings[9];
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8[0x12];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 0x12];
+        }
+        h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 9), v, 0x3F, 0);
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8[0x13];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 0x13];
+        }
+        sndFXCtrl(h, 0x5B, v);
+        fn_3_27648();
+        g_FieldingLogic[0x13B] = 1;
+    }
 }
 
 // .text:0x000EF218 size:0x4 mapped:0x8072E2AC
@@ -188,8 +326,45 @@ void fn_3_EF218(void) {
 }
 
 // .text:0x000EF21C size:0x1B8 mapped:0x8072E2B0
-void fn_3_EF21C(void) {
-    return;
+void fn_3_EF21C(u8* p) {
+    u8* d = lbl_3_data_1B820;
+    if (g_GameLogic[0x11E] == 2 && fn_800527C4(p + 0xA0) != 0) {
+        switch (p[0xC6]) {
+        case 0:
+            if (p[0xC7] % *(s32*)(d + 0x154) == 0) {
+                fn_80064430(p + 0xA0, 0, *(f32*)(d + 0x160), lbl_3_rodata_2D5C);
+                return;
+            }
+            break;
+        case 1:
+            if (p[0xC7] % *(s32*)(d + 0x158) == 0) {
+                fn_80064430(p + 0xA0, 0, *(f32*)(d + 0x164), lbl_3_rodata_2D5C);
+                return;
+            }
+            break;
+        case 2:
+            if (p[0xC7] % *(s32*)(d + 0x15C) == 0) {
+                u32 stad;
+                u32 h;
+                u8 v;
+                fn_80064430(p + 0xA0, 1, *(f32*)(d + 0x168), *(f32*)(d + 0x174));
+                stad = g_d_GameSettings[9];
+                if (g_d_GameSettings[7] == 6) {
+                    v = lbl_3_data_84B8[0x10];
+                } else {
+                    v = lbl_3_data_8404[stad * 0x1E + 0x10];
+                }
+                h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 8), v, 0x3F, 0);
+                if (g_d_GameSettings[7] == 6) {
+                    v = lbl_3_data_84B8[0x11];
+                } else {
+                    v = lbl_3_data_8404[stad * 0x1E + 0x11];
+                }
+                sndFXCtrl(h, 0x5B, v);
+            }
+            break;
+        }
+    }
 }
 
 // .text:0x000EF3D4 size:0x34 mapped:0x8072E468
@@ -198,8 +373,33 @@ void fn_3_EF3D4(u8* p, u8 idx) {
 }
 
 // .text:0x000EF408 size:0x154 mapped:0x8072E49C
-void fn_3_EF408(void) {
-    return;
+void fn_3_EF408(u8* p) {
+    Vec a;
+    Vec b;
+    Vec c;
+    f32 ang;
+    f32 d;
+    a.x = lbl_3_data_1B9A4[p[0x9C]].a - *(f32*)(p + 0xA0);
+    a.y = lbl_3_rodata_2D5C;
+    a.z = lbl_3_data_1B9A4[p[0x9C]].c - *(f32*)(p + 0xA8);
+    PSVECNormalize(&a, &a);
+    ang = -(lbl_3_rodata_2DDC * *(f32*)(p + 0xAC));
+    b.x = (f32)cos(ang);
+    b.y = lbl_3_rodata_2D5C;
+    b.z = (f32)sin(ang);
+    PSVECNormalize(&b, &b);
+    d = PSVECDotProduct(&a, &b);
+    if (d < lbl_3_rodata_2DE0) {
+        d = lbl_3_rodata_2D70;
+    }
+    *(f32*)(p + 0xB4) = lbl_3_rodata_2DE8 * (f32)acos(d);
+    PSVECCrossProduct(&a, &b, &c);
+    if (c.y < lbl_3_rodata_2D5C) {
+        *(s8*)(p + 0xC4) = 1;
+    } else {
+        *(s8*)(p + 0xC4) = -1;
+    }
+    p[0xC6] = 0;
 }
 
 // .text:0x000EF55C size:0x258 mapped:0x8072E5F0
@@ -227,11 +427,12 @@ void fn_3_EF800(u8* p) {
     p[0xC7]--;
 }
 
-// 90%: body is fn_3_F13F8 inlined + CTRLSetScale(p, 2.0f, 0.1f, 2.0f) + p[0xC6]=6, p[0xC7]=0x4B;
-// hand-inlined loop gives i/off zero regs swapped (orig: li r6 = i; mr r8,r6 = off). Needs real inlining (file has dont_inline on).
 // .text:0x000EF890 size:0xA0 mapped:0x8072E924
-void fn_3_EF890(void) {
-    return;
+void fn_3_EF890(u8* p) {
+    fn_3_F13F8(p);
+    CTRLSetScale((Control*)p, 2.0f, 0.1f, 2.0f);
+    p[0xC6] = 6;
+    p[0xC7] = 0x4B;
 }
 
 // .text:0x000EF930 size:0x224 mapped:0x8072E9C4
@@ -275,17 +476,6 @@ void fn_3_F0FA4(void) {
     return;
 }
 
-// .text:0x000F13F8 size:0x50 mapped:0x8073048C
-void fn_3_F13F8(u8* p) {
-    u8* o = **(u8***)(p + 0x74);
-    u32 i;
-    for (i = 0; i < *(u16*)(o + 6); i++) {
-        u8* e = (*(u8***)(o + 0x18))[i];
-        e[0x60] = 0;
-        e[0xA4] = 0;
-    }
-    (*(u8**)(p + 0x74))[0x58] = 0;
-}
 
 // .text:0x000F1448 size:0xD0 mapped:0x807304DC
 void fn_3_F1448(u8* p) {
@@ -393,8 +583,12 @@ u32 fn_3_F37BC(u32 n, u32 k) {
 }
 
 // .text:0x000F38D4 size:0x130 mapped:0x80732968
+static u32 lbl_3_bss_B244[7];
 void fn_3_F38D4(void) {
-    return;
+    u32 i;
+    for (i = 0; i < 7; i++) {
+        lbl_3_bss_B244[i] = binomIn(6, i);
+    }
 }
 
 // .text:0x000F3A04 size:0x58 mapped:0x80732A98
@@ -662,3 +856,5 @@ void fn_3_F6FDC(void) {
     return;
 }
 
+
+#pragma dont_inline off
