@@ -1,9 +1,13 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
+#include "math.h"
 extern f32 lbl_3_data_4A34[];
 extern u8 lbl_3_data_4B58[];
 extern int fn_3_52560(int, f32, f32);
 extern s16 lbl_3_data_21904[];
+extern u8 lbl_3_data_218BC[];
+extern const f32 lbl_3_rodata_1430;
+extern s16 lbl_3_data_4C54[];
 typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
 
@@ -36,6 +40,8 @@ extern void fn_3_161588(int, s16);
 extern u8 g_FieldingLogic[];
 extern int g_Strikes[];
 extern u8 g_Practice[];
+extern u8 g_Controls[];
+extern u8 g_Pitcher[];
 extern u8 g_RunningLogic[];
 extern u8 g_Minigame[];
 
@@ -68,9 +74,38 @@ void fn_3_7D920(int i) {
     }
 }
 
+extern const f64 lbl_3_rodata_1418;
+extern const f64 lbl_3_rodata_1420;
+extern const f64 lbl_3_rodata_1428;
+extern const f32 lbl_3_rodata_1414;
+
 // .text:0x0007D9DC size:0x154 mapped:0x806BCA70
-void fn_3_7D9DC(void) {
-    return;
+static inline float sqrt13B8(float x) {
+    if (x > lbl_3_rodata_1414) {
+        double half = lbl_3_rodata_1418;
+        double three = lbl_3_rodata_1420;
+        double xd = (double)x;
+        double guess = __frsqrte(xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        return (float)(xd * guess);
+    } else if (x < lbl_3_rodata_1428)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
+
+
+void fn_3_7D9DC(int i) {
+    u8* r = g_Runners + i * 0x154;
+    f32 m = sqrt13B8(*(f32*)(g_Minigame + 0x1AEC) * *(f32*)(g_Minigame + 0x1AEC) + *(f32*)(g_Minigame + 0x1AF4) * *(f32*)(g_Minigame + 0x1AF4));
+    f32 k = ((f32*)lbl_3_data_218BC)[7];
+    *(f32*)(r + 0x18) = k * (*(f32*)(g_Minigame + 0x1AEC) / m);
+    *(f32*)(r + 0x20) = k * (*(f32*)(g_Minigame + 0x1AF4) / m);
+    *(s16*)(r + 0x108) = 0;
 }
 
 // .text:0x0007DB30 size:0x1F4 mapped:0x806BCBC4
@@ -97,12 +132,90 @@ void fn_3_7E2BC(void) {
 
 // .text:0x0007EA68 size:0x16C mapped:0x806BDAFC
 void fn_3_7EA68(void) {
-    return;
+    u8* c = g_Controls + *(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 4) * 4 + 0xEC) * 16;
+    if (g_Pitcher[0x13E] == 1 || g_Pitcher[0x13E] == 2 || g_Pitcher[0x13E] == 3) {
+        s16 v;
+        if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0) {
+            c = g_Practice + *(s32*)(g_GameLogic + 4) * 16;
+        }
+        if (!(*(u16*)(c + 6) & 0x800)) {
+            return;
+        }
+        v = *(s16*)c;
+        if (v < 0) {
+            int k;
+            for (k = 1; k < 4; k++) {
+                if (g_Runners[k * 0x154 + 0x123] != 0 && g_Runners[k * 0x154 + 0x14E] == 0) {
+                    g_Runners[k * 0x154 + 0x14E] = 1;
+                }
+            }
+        } else {
+            if (v >= 0x1C0 && v <= 0x640) {
+                g_Runners[0x2A2] = 1;
+            }
+            if (*(s16*)c >= 0x5C0 && *(s16*)c <= 0xA40) {
+                g_Runners[0x3F6] = 1;
+            }
+            if (*(s16*)c >= 0x9C0 && *(s16*)c <= 0xE40) {
+                g_Runners[0x54A] = 1;
+            }
+        }
+    }
 }
 
 // .text:0x0007EBD4 size:0x128 mapped:0x806BDC68
 void fn_3_7EBD4(int i) {
-    return;
+    u8* r = g_Runners + i * 0x154;
+    if (g_GameLogic[0x11E] == 1) {
+        return;
+    }
+    if (r[0x123] == 2) {
+        if (r[0x145] != 0) {
+            return;
+        }
+        if (r[0x13A] != 0) {
+            if (r[0x13C] == 3) {
+                r[0x13A] = 0;
+                r[0x13C] = 0;
+            } else {
+                return;
+            }
+        }
+        if (*(s16*)(r + 0xEE) == 2) {
+            u8 c = r[0x140];
+            if (c != 0) {
+                if (c == 3) {
+                    r[0x13E] = 0;
+                    r[0x140] = 0;
+                } else {
+                    return;
+                }
+            } else {
+                if (!(*(f32*)(r + 0x68) < lbl_3_rodata_1430)) {
+                    if (r[0x137] != 2) {
+                        return;
+                    }
+                }
+            }
+        }
+        r[0x145] = 1;
+        r[0x146] = 0;
+        r[0x140] = 0;
+    } else {
+        if (g_Strikes[2] < 3) {
+            return;
+        }
+        if (r[0x13A] != 0) {
+            if (r[0x13C] == 3) {
+                r[0x13A] = 0;
+                r[0x13C] = 0;
+            } else {
+                return;
+            }
+        }
+        r[0x145] = 1;
+        r[0x146] = 0;
+    }
 }
 
 // .text:0x0007ECFC size:0x5DC mapped:0x806BDD90
@@ -146,8 +259,32 @@ void fn_3_7FA78(void) {
 }
 
 // .text:0x0007FD90 size:0x118 mapped:0x806BEE24
-void fn_3_7FD90(void) {
-    return;
+void fn_3_7FD90(int i) {
+    u8* r = g_Runners + i * 0x154;
+    int v;
+    if ((r[0x145] == 0 || r[0x146] == 0) && r[0x13A] == 0) {
+        if (*(s16*)(r + 0x112) >= lbl_3_data_4C54[3] || (r[0x137] != 1 && r[0x137] != 3)) {
+            u8 s = r[0x135];
+            if (s != 0) {
+                if (g_GameLogic[0x121] == 6) {
+                    if (r[0x123] == 1) {
+                        r[0x136] = s;
+                    }
+                } else {
+                    if ((i != 0 || r[0x126] != 1) && r[0x123] == 1) {
+                        r[0x136] = s;
+                    }
+                    if (r[0x136] == 3 && r[0x128] != 3 && *(s16*)(r + 0xE6) >= 0) {
+                        r[0x136] = 0;
+                    }
+                }
+            }
+        }
+        v = ((int (*)(void))fn_3_7FA78)();
+        if (v != 0) {
+            r[0x136] = v;
+        }
+    }
 }
 
 // .text:0x0007FEA8 size:0x2C mapped:0x806BEF3C
@@ -715,3 +852,4 @@ void fn_3_8A958(void) {
     return;
 }
 
+#pragma dont_inline off
