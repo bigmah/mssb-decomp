@@ -44,6 +44,10 @@ extern u8 g_d_GameSettings[];
 extern u8 lbl_3_common_bss_37400[];
 extern void fn_3_161588(int, s16);
 extern u8 g_FieldingLogic[];
+extern const f32 lbl_3_rodata_14F8;
+extern void fn_3_59918(s32, s32);
+extern void fn_3_5C74C(s32);
+extern void fn_3_5D094(s32);
 extern void fn_3_6D964(int, int);
 extern int g_Strikes[];
 extern u8 g_Practice[];
@@ -1039,8 +1043,47 @@ void fn_3_88C24(void) {
 }
 
 // .text:0x00088D88 size:0x210 mapped:0x806C7E1C
-void fn_3_88D88(void) {
-    return;
+// 98%: only r4/r5 swap between g_Strikes[2] value and idx*0x154 in the prologue
+void fn_3_88D88(int idx) {
+    u8* r = g_Runners + idx * 0x154;
+    int k;
+    if (g_Strikes[2] < 3 && g_GameLogic[0x127] == 0 && r[0x123] == 1) {
+        if (g_GameLogic[0x14F] == 0) {
+            g_Strikes[2] = g_Strikes[2] + 1;
+        } else if ((g_Practice[0x193] == 2 && g_Practice[0x194] == 1) || g_Practice[0x194] == 7 || g_Practice[0x194] == 6) {
+            g_Strikes[2]++;
+        }
+        if (g_Ball[0x1BCF] != 0 && g_Strikes[0] >= 3) {
+            fn_3_59918(0x16, 0);
+        } else if (*(f32*)(r + 0x64) >= lbl_3_rodata_14F8 && *(s16*)(g_Ball + 0x1B86) == 0) {
+            fn_3_59918(1, 1);
+        } else {
+            fn_3_59918(1, 0);
+        }
+        {
+            s16* p = (s16*)g_Strikes;
+            for (k = 0; k < 3; p++, k++) {
+                if (p[12] == -1) {
+                    ((s16*)((u8*)g_Strikes + 0x18))[k] = idx;
+                    break;
+                }
+            }
+        }
+        if (g_Strikes[2] == 3) {
+            if (*(s16*)(r + 0xEE) == 1) {
+                g_Strikes[4] = 1;
+            } else {
+                fn_3_5C74C(1);
+            }
+            fn_3_5D094(0);
+            if (g_GameLogic[0x127] != 0) {
+                fn_3_59918(0xD, 0);
+            } else {
+                fn_3_59918(5, 0);
+            }
+        }
+        r[0x123] = 2;
+    }
 }
 
 // .text:0x00088F98 size:0x90 mapped:0x806C802C
