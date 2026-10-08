@@ -5,4 +5,6 @@
 
 void fn_800A97D0(u8 value, s32 index);
 
+void fn_800A97EC(s32 index, u32 enable, u8 type);
+
 #endif
