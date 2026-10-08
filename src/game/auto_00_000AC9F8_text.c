@@ -8,6 +8,9 @@
 
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
+extern void ballPhysica(void);
+extern void fn_3_598D0(void);
+extern void fn_3_B0E00(void);
 
 extern u8 g_Fielders[];
 
@@ -139,4 +142,14 @@ void fn_3_B0DB0(void) {
     g_GameLogic.hudLoadingRelated = 1;
     fn_3_1DD48();
     fn_3_5A6D4(7);
+}
+
+// fn_3_B1120, size:0x4C
+void fn_3_B1120(void) {
+    if (g_Practice.instructionNumber >= 0 || fn_3_B32B8() == 0) {
+        ballPhysica();
+        fn_3_598D0();
+        fn_3_8A958();
+        fn_3_B0E00();
+    }
 }
