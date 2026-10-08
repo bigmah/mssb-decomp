@@ -7,4 +7,6 @@ void fn_3_B3C64(void);
 
 void fn_3_B3C78(u8 state);
 
+void fn_3_B3C94(u8 state);
+
 #endif
