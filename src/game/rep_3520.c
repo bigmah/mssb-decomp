@@ -1207,7 +1207,72 @@ void fn_3_139808(void) {
 
 // .text:0x00139CA0 size:0x2E4 mapped:0x80778D34
 void fn_3_139CA0(void) {
-    return;
+    UnkStructMinigame* s = NULL;
+    s32 i;
+    u8 flag = 0;
+    s32 n;
+    s16 t;
+    s32 ang;
+    f32 base;
+    if (g_Minigame.turnOverStatus == 0) {
+        t = g_Minigame._1D50;
+        g_Minigame._1D50 = --t;
+        if (t <= 0) {
+            n = lbl_3_data_21A04[2];
+            if (*(u16*)(G8 + 0x1D54) % lbl_3_data_21A04[6] == 0 && (0x64 - g_Minigame._1D6C) >= 10 && g_Minigame._B6C._40[0] == 0) {
+                s = &g_Minigame._B6C;
+                s->_40[0] = 1;
+                n = 10;
+                flag = 1;
+            }
+            ang = random_fn_3_9EE24(0x1000);
+            base = RandomF32_Game_Range(*(f32*)(lbl_3_data_219B8 + 8), *(f32*)(lbl_3_data_219B8 + 0xC));
+            for (i = 0; i < 100; i++) {
+                if (flag) {
+                    if (n != 0) {
+                        if (G8[0x193A + i] == 0) {
+                            G8[0x193A + i] = 2;
+                                    ((s16*)G8)[0xBE4 + i] = 0;
+                            g_Minigame._1D6C++;
+                            *(s32*)((u8*)s + n * 4 + 0x14) = i;
+                            n--;
+                        }
+                    } else {
+                        f32 r;
+                        s->_0.x = lbl_3_data_219AC[0];
+                        s->_0.y = lbl_3_data_219AC[1];
+                        s->_0.z = lbl_3_data_219AC[2];
+                        getComponentsFromSAng(ang + (random_fn_3_9EE24(lbl_3_data_21A04[4] * 2) - lbl_3_data_21A04[4]), &s->_C.x, &s->_C.z);
+                        r = base + RandomF32_Game_Range(-*(f32*)(lbl_3_data_219B8 + 0x10), *(f32*)(lbl_3_data_219B8 + 0x10));
+                        s->_C.x *= r;
+                        s->_C.z *= r;
+                        s->_C.y = RandomF32_Game_Range(*(f32*)(lbl_3_data_219B8 + 0x14), *(f32*)(lbl_3_data_219B8 + 0x18));
+                        break;
+                    }
+                } else if (G8[0x193A + i] == 0) {
+                    f32 r;
+                    *(f32*)(G8 + i * 12 + 0xCD0) = lbl_3_data_219AC[0];
+                    *(f32*)(G8 + i * 12 + 0xCD4) = lbl_3_data_219AC[1];
+                    *(f32*)(G8 + i * 12 + 0xCD8) = lbl_3_data_219AC[2];
+                    getComponentsFromSAng(ang + (random_fn_3_9EE24(lbl_3_data_21A04[4] * 2) - lbl_3_data_21A04[4]), (f32*)(G8 + i * 12 + 0x1180), (f32*)(G8 + i * 12 + 0x1188));
+                    r = base + RandomF32_Game_Range(-*(f32*)(lbl_3_data_219B8 + 0x10), *(f32*)(lbl_3_data_219B8 + 0x10));
+                    *(f32*)(G8 + i * 12 + 0x1180) *= r;
+                    *(f32*)(G8 + i * 12 + 0x1188) *= r;
+                    *(f32*)(G8 + i * 12 + 0x1184) = RandomF32_Game_Range(*(f32*)(lbl_3_data_219B8 + 0), *(f32*)(lbl_3_data_219B8 + 4));
+                    n--;
+                    G8[0x193A + i] = 1;
+                    ((s16*)G8)[0xBE4 + i] = 0;
+                    g_Minigame._1D6C++;
+                    *(u16*)(G8 + 0x1D54) += 1;
+                    if (n <= 0) {
+                        fn_3_90064(0x2E8);
+                        break;
+                    }
+                }
+            }
+            g_Minigame._1D50 = RandomInt_Game_Range(lbl_3_data_21A04[0], lbl_3_data_21A04[1]);
+        }
+    }
 }
 
 // .text:0x00139F84 size:0xC4 mapped:0x80779018
