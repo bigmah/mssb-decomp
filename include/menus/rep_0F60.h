@@ -5,4 +5,6 @@
 
 void fn_2_8D24C(u8* object);
 
+void fn_2_8B118(f32 value);
+
 #endif
