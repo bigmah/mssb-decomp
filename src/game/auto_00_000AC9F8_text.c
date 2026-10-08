@@ -17,6 +17,8 @@ extern void fn_3_B1578(void);
 extern s32 fn_3_B254C(void);
 extern void fn_3_B0874(void);
 extern void fn_3_B056C(void);
+extern void fn_3_AFE0C(void);
+extern void fn_3_B003C(void);
 
 #pragma dont_inline on
 
@@ -237,4 +239,19 @@ void fn_3_B0AAC(void) {
     }
     g_GameLogic.TeamStars[1] = 5;
     g_GameLogic.TeamStars[0] = 5;
+}
+
+// fn_3_B01E0, size:0x7C
+void fn_3_B01E0(void) {
+    ballPhysica();
+    fn_3_598D0();
+    if (g_Ball.framesSinceHit == 60) {
+        *(f32*)(g_Fielders + 0) = g_Pitcher.pitcherCoord.x;
+        *(f32*)(g_Fielders + 8) = g_Pitcher.pitcherCoord.z;
+    }
+    fn_3_AFE0C();
+    if (g_Practice.instructionNumber < 0 &&
+        g_Practice.guidedPracticeCompletionRelated2 == 0) {
+        fn_3_B003C();
+    }
 }
