@@ -201,6 +201,9 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Range merge of `x==1||x==2||x==3` on a loaded byte (fn_3_7EA68):** a local copy (`u8 st`) merges into `subi/cmplwi 1/ble`; testing `g_Pitcher[0x13E] == 1 || g_Pitcher[0x13E] == 2 || ...` directly gives the separate compares. Loop `for (k=1;k<4;k++) g_Runners[k*0x154+...]` gives the unrolled runner checks.
 - **Reads of a global after a call not CSE'd (fn_3_835B0):** use `g_GameLogic[...]`/`*(s32*)(g_GameLogic + 0xC)` directly; a cached `u8* gl = g_GameLogic` made CW reuse `idx*8` across the call.
 
+- **By-value `Vec` params of an inlined helper (fn_3_1040D8 / 103E7C / 103C30 / 104338 in rep_3090):** the signature of this shape is three `Vec` raw temps built with `stfs`, then one 9-word `lwz`/`stw` batch copying them into the param copies, then a 3-word copy of the result into a return slot. It is `static inline Vec CamStep(Vec a, Vec b, Vec c, f32 w0, f32 w1, f32 w2)` in a `dont_inline off ... on` window, called as `Vec r, ta, tb, tc;` (declared in that order: first declared = highest stack address) with `ta.x = ...; ... r = CamStep(ta, tb, tc, ...)`. Building the args with a `MkVec(x,y,z)` return-by-value helper puts the raw temps in the wrong place; filling named locals field by field is what matches. Keep `f32 d = PSVECDistance(..); f32 t = w0*(w2-d)+w1*(dot/d);` as two variables (reusing one `t` splits the web and the result lands in the wrong FPR). An unused `memcpy(&junk, p, 12)` into a local Vec is real (fn_3_103C30).
+- **A pooled `.data` base register with big constant offsets (`addi r31, DATA@l; addi r4, r31, 0x4f44`, fn_3_1048E0):** folded away when the data is `extern`. Reproduce with initialized `static` objects: `static u8 pad[0x4F44] = {1}; static Vec a = {...}, b, c;` declared in that order (the pad makes the first Vec land at +0x4F44).
+
 Add new patterns to this list as we find them.
 
 ## Phases
