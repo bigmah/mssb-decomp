@@ -5,4 +5,6 @@
 
 void fn_8001E460(void* value);
 
+void fn_8001E474(void);
+
 #endif
