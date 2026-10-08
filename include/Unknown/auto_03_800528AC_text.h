@@ -5,4 +5,6 @@
 
 void fn_800528AC(u32 value);
 
+void fn_800528B4(void);
+
 #endif
