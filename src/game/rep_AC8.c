@@ -2542,11 +2542,9 @@ void fn_3_49F3C(void) {
 typedef struct { u8 pad[0x190]; s16 x; u8 pad2[0x268 - 0x192]; } FS;
 void fn_3_49F40(int i, int mode) {
     u8* f;
-    u8* lg;
     if (g_FieldingLogic[i + 0xF8] != 0) {
         return;
     }
-    lg = g_FieldingLogic + i + 0xF8;
     f = g_Fielders + i * 0x268;
     f[0x1D4] = mode;
     if (mode == 0) {
@@ -2556,7 +2554,7 @@ void fn_3_49F40(int i, int mode) {
             }
             f[0x1D3] = 3;
             if (*(int*)(lbl_3_data_3C40 + 0x18) >= 0) {
-                *lg = *(int*)(lbl_3_data_3C40 + 0x18);
+                g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x18);
             }
             f[0x1D5] = 0;
             f[0x1D6] = 0;
@@ -2570,7 +2568,7 @@ void fn_3_49F40(int i, int mode) {
         }
         f[0x1D3] = 0x18;
         if (*(int*)(lbl_3_data_3C40 + 0xC0) >= 0) {
-            *lg = *(int*)(lbl_3_data_3C40 + 0xC0);
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0xC0);
         }
         f[0x1D5] = 0;
         f[0x1D6] = 0;
@@ -2586,7 +2584,7 @@ void fn_3_49F40(int i, int mode) {
         }
         f[0x1D3] = 8;
         if (*(int*)(lbl_3_data_3C40 + 0x40) >= 0) {
-            *lg = *(int*)(lbl_3_data_3C40 + 0x40);
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x40);
         }
         f[0x1D5] = 0;
         f[0x1D6] = 0;
@@ -2598,7 +2596,7 @@ void fn_3_49F40(int i, int mode) {
     if (i != -1) {
         f[0x1D3] = 7;
         if (*(int*)(lbl_3_data_3C40 + 0x38) >= 0) {
-            *lg = *(int*)(lbl_3_data_3C40 + 0x38);
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x38);
         }
         f[0x1D5] = 0;
         f[0x1D6] = 0;
