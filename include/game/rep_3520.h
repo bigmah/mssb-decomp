@@ -43,7 +43,7 @@ void fn_3_1370A0(u8* o);
 void fn_3_1371E8(void);
 void fn_3_137224(u8* o);
 void fn_3_1373E0(void);
-void fn_3_1379A0(void);
+u8 fn_3_1379A0(s32 idx);
 u8 fn_3_137B10(u8* o);
 void fn_3_137CF8(u8* o);
 void fn_3_137DE4(u8* o);

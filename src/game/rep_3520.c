@@ -12,6 +12,13 @@
 #include "static/UnknownHomes_Static.h"
 extern u8 lbl_3_data_21AF0[];
 extern f32 lbl_3_rodata_35D0;
+extern f32 lbl_3_data_219AC[];
+extern s16 lbl_3_data_21A30[];
+extern f32 lbl_3_data_21A14[];
+extern f32 lbl_3_rodata_363C;
+extern f32 lbl_3_rodata_3688;
+extern f32 lbl_3_rodata_368C;
+extern u8 lbl_3_bss_B780;
 extern f64 lbl_3_rodata_3670;
 extern f32 lbl_3_rodata_3628;
 extern f64 lbl_3_rodata_3678;
@@ -629,8 +636,44 @@ void fn_3_1373E0(void) {
 }
 
 // .text:0x001379A0 size:0x170 mapped:0x80776A34
-void fn_3_1379A0(void) {
-    return;
+u8 fn_3_1379A0(s32 idx) {
+    u8* f = (u8*)&g_Fielders[idx];
+    u8* m = G8;
+    u32 k;
+    u32 n;
+    for (k = 0; k < 4; k++) {
+        if (*(s8*)(m + 0x18F8 + k) == idx) {
+            break;
+        }
+    }
+    if (k == (u32)(s8)m[0x1D6D]) {
+        return 0;
+    }
+    for (n = 0; n < lbl_3_bss_B780; n++, m += 0x40) {
+        u8* p = m + 0xBB0;
+        u8 st = m[0xBED];
+        if (st == 3 || st == 5) {
+            f32 fy = *(f32*)(f + 0x15C) + (*(f32*)(f + 0xC) + *(f32*)(f + 4));
+            f32 py = *(f32*)(p + 4);
+            f32 th;
+            f32 dx, dz;
+            if (fy < py) {
+                th = *(f32*)(f + 0x16C);
+            } else {
+                th = lbl_3_rodata_368C;
+            }
+            if (!(th < fabs(fy - py))) {
+                dx = fabs(*(f32*)(p + 0) - (*(f32*)(f + 0) + *(f32*)(f + 0x30)));
+                dz = fabs(*(f32*)(p + 8) - (*(f32*)(f + 8) + *(f32*)(f + 0x34)));
+                if (dx < lbl_3_rodata_363C) {
+                  if (dz < lbl_3_rodata_3688) {
+                    return 1;
+                  }
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x00137B10 size:0x1E8 mapped:0x80776BA4
@@ -867,7 +910,31 @@ void fn_3_13A0AC(void) {
 
 // .text:0x0013A724 size:0x178 mapped:0x807797B8
 void fn_3_13A724(void) {
-    return;
+    Vec v;
+    f32 r;
+    g_Minigame._6F4 = g_Minigame._6E8;
+    g_Minigame._6F8 = g_Minigame._6EC;
+    g_Minigame._6FC = g_Minigame._6F0;
+    g_Minigame._728 = RandomInt_Game_Range(lbl_3_data_21A30[3], lbl_3_data_21A30[4]);
+    r = RandomF32_Game_Range(lbl_3_data_21A14[0], lbl_3_data_21A14[1]);
+    {
+        f32 x = lbl_3_data_219AC[0] - g_Minigame._6E8;
+        f32 z = lbl_3_data_219AC[2] - g_Minigame._6F0;
+        f32 y = lbl_3_data_219AC[1] - g_Minigame._6EC;
+        v.x = x;
+        v.z = z;
+        v.y = y;
+        if (x * x + z * z > lbl_3_rodata_35D0) {
+        }
+    }
+    getComponentsFromSAng(random_fn_3_9EE24(0x1000), &v.x, &v.z);
+    g_Minigame._70C = v.x * r + g_Minigame._6F4;
+    g_Minigame._714 = v.z * r + g_Minigame._6FC;
+    g_Minigame._710 = lbl_3_data_21A14[4];
+    g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._6F4 + g_Minigame._70C);
+    g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._6FC + g_Minigame._714);
+    g_Minigame._704 = g_Minigame._6F8 + RandomF32_Game_Range(lbl_3_data_21A14[2], lbl_3_data_21A14[3]);
+    g_Minigame._726 = 0;
 }
 
 // .text:0x0013A89C size:0x1DC mapped:0x80779930
@@ -920,18 +987,40 @@ void fn_3_13ADC0(f32* out, f32* a, f32* b) {
     out[2] = a[2] - d * b[2];
 }
 
-// .text:0x0013AE1C size:0x1C8 mapped:0x80779EB0
-void fn_3_13AE1C(void) {
-    return;
-}
-
-// .text:0x0013AFE4 size:0x2A0 mapped:0x8077A078
 static inline void clr(u32 s) {
     u32 i;
     for (i = s; i < 100; i++) {
         G8[0x193A + i] = 0;
     }
 }
+// .text:0x0013AE1C size:0x1C8 mapped:0x80779EB0
+void fn_3_13AE1C(void) {
+    fn_3_DE4FC();
+    if (G8[0x1A2B] <= 2 && G8[0x1909] == 0) {
+        if (G8[0x18E8 + *(s8*)(G8 + 0x1908)] == 1 && G8[0x19A8] == 0) {
+            G8[0x1A37] = 1;
+        } else {
+            G8[0x1A37] = 2;
+        }
+    }
+    fn_3_5A6D4(0xE);
+    fn_80011578();
+    {
+        u32 i;
+        for (i = 0; i < 100; i++) {
+            G8[0x193A + i] = 0;
+        }
+    }
+    *(s16*)(G8 + 0x1D50) = 0x1E;
+    G8[0x1D6C] = 0;
+    G8[0xBED] = 0;
+    G8[0xC2D] = 0;
+    G8[0xC6D] = 0;
+    G8[0xCAD] = 0;
+    G8[0xCCE] = 0;
+}
+
+// .text:0x0013AFE4 size:0x2A0 mapped:0x8077A078
 void fn_3_13AFE4(void) {
     if (G8[0x190B] == 0) {
         if (*(u32*)(G8 + 0x17C4) == 0) {
