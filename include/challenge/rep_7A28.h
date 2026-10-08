@@ -5,4 +5,6 @@
 
 void fn_1_27AD0(void);
 
+void fn_1_27E50(void);
+
 #endif
