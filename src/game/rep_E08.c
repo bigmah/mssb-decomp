@@ -21,6 +21,8 @@ extern int fn_3_9FB8C(f32 x, f32 y);
 extern int fn_3_9FCA4(s16 a, s16 b);
 extern int radToShortAngle(f32 v);
 extern u8 lbl_3_data_7E34[];
+extern u8 lbl_3_data_7D24[];
+extern f32 shortAngleToRad_Capped(s16 a);
 extern u32 fn_3_90220(s32 idx, s32 off);
 extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
 extern void QueueCharacterAnimation(int, int, int, int, int, u8, int);
@@ -152,8 +154,113 @@ u32 fn_3_61148(s32 i) {
 }
 
 // .text:0x00061228 size:0x31C mapped:0x806A02BC
-void fn_3_61228(void) {
-    return;
+u32 fn_3_61228(s32 a) {
+    s16 t;
+    u8* tb;
+    s32 oa;
+    u8* o;
+    s32 k = a;
+    u8* e = g_UnkAnimation_31EAC + a * 0x54;
+    u8* thr = g_UnkThrowing_31ACC;
+    u8* f = g_Fielders + a * 0x268;
+    s32 vv = 0x1D;
+    s32 flag = 0;
+    u8* fl = g_FieldingLogic;
+    s16 ang;
+    s32 adj;
+    s16 d;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (a == 0) {
+            u8* m = g_Minigame;
+            m += *(s8*)(m + 0x1904);
+            k = *(s8*)(m + 0x18CC);
+        } else {
+            k = *(s8*)(g_Minigame + a + 0x18F2);
+        }
+    }
+    o = ((u8**)(lbl_8036E548 + 0x2C50))[k];
+    if (o == NULL) {
+        return 0;
+    }
+    if (*(s16*)(thr + 0xC) != a) {
+        return 0;
+    }
+    if (e[0x43] != 0) {
+        if (f[0x1D3] == 0x11) {
+            e[0x43] = 0;
+            fn_3_60804(a, 0);
+            return 0;
+        }
+        t = *(s16*)(o + 0x6A);
+        if (t > 0 && *(s16*)(o + 0x68) <= 0) {
+            e[0x43] = 0;
+            fn_3_60804(a, 0);
+            return 0;
+        }
+        tb = lbl_3_data_7D24 + (s8)o[0x252] * 5;
+        oa = *(s16*)(o + 0x62);
+        if (t >= *(u8*)(oa - 0x1D + tb)) {
+            fl[0x10A] = 1;
+        }
+        return 1;
+    }
+    if (f[0x215] != 0) {
+        return 0;
+    }
+    if (thr[0xE] != 0) {
+        switch (thr[0xE]) {
+        case 2:
+            vv = 0x1E;
+            break;
+        case 3:
+            vv = 0x1F;
+            break;
+        case 4:
+            vv = 0x1D;
+            break;
+        case 5:
+            vv = 0x1D;
+            break;
+        case 6:
+            vv = 0x1D;
+            break;
+        case 7:
+            vv = 0x1D;
+            flag = 1;
+            break;
+        }
+        if (flag != 0) {
+            ang = radToShortAngle(*(f32*)(f + 0x48));
+            d = fn_3_9FCA4(ang, fn_3_9FB8C(*(f32*)(thr + 0) - *(f32*)(f + 0), *(f32*)(thr + 8) - *(f32*)(f + 8)));
+            adj = -d;
+            if (d < -0x600 || d > 0x600) {
+                if (d < -0x600) {
+                    adj = -0x800 - d;
+                } else {
+                    adj = 0x800 - d;
+                }
+            } else if (d > 0x200) {
+                adj = 0x400 - d;
+            } else if (d < -0x200) {
+                adj = -0x400 - d;
+            }
+            *(f32*)(f + 0x48) = shortAngleToRad_Capped((s16)(ang + adj));
+        }
+        AnimateCharacter(k, vv, 0, 1, 1, 0, e[0x40], -1);
+        thr[0xF] = vv;
+        e[0x43] = 1;
+        if (flag != 0) {
+            e[0x43] = 2;
+        }
+        e[0x4C] = 0;
+        e[0x4F] = 0;
+        e[0x47] = 0;
+        e[0x46] = 0;
+        e[0x50] = 0;
+        fn_3_60804(a, 1);
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x00061544 size:0x620 mapped:0x806A05D8

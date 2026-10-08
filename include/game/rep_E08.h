@@ -9,7 +9,7 @@ void fn_3_60A98(void);
 void fn_3_60D80(void);
 u32 fn_3_60E90(s32 a);
 u32 fn_3_61148(s32 i);
-void fn_3_61228(void);
+u32 fn_3_61228(s32 a);
 void fn_3_61544(void);
 void fn_3_61B64(void);
 void fn_3_62904(void);
