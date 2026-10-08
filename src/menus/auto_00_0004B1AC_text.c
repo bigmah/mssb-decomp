@@ -31,6 +31,24 @@ extern s16 lbl_2_data_3EC8[];
 
 extern s16 lbl_2_data_3ED4[];
 
+extern u8* lbl_2_bss_1A8244;
+
+// fn_2_4C314, size:0x58
+void fn_2_4C314(void) {
+    u8* menu = lbl_2_bss_1A8244;
+    u8 complete = 1;
+    s32 i;
+    s32 j;
+    for (i = 0; i < 5; i++) {
+        for (j = 0; j < 3; j++) {
+            if (menu[0xC6 + i * 4 + j] == 0) {
+                complete = 0;
+            }
+        }
+    }
+    menu[0xF4] = complete;
+}
+
 
 // fn_2_4C3C4, size:0x14
 s16 fn_2_4C3C4(s32 index) {

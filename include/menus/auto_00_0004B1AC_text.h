@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
+void fn_2_4C314(void);
+
 s16 fn_2_4C3C4(s32 index);
 
 s16 fn_2_4C3D8(s32 index);
