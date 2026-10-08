@@ -57,6 +57,15 @@ typedef struct {
 } StaCommon;
 extern StaCommon lbl_3_common_bss_350E4;
 extern u8 g_Ball[];
+extern f64 cos(f64);
+extern f64 sin(f64);
+extern s32 lbl_3_bss_B660;
+extern const f32 lbl_3_rodata_2FC4;
+extern const f64 lbl_3_rodata_3008;
+extern const f32 lbl_3_rodata_3010;
+extern const f32 lbl_3_rodata_3014;
+extern const f32 lbl_3_rodata_3018;
+extern const f64 lbl_3_rodata_3020;
 extern u8 lbl_3_bss_B570[];
 extern void fn_80034CEC(void*);
 extern u32 sndFXStartEx(int, u8, u8, u8);
@@ -119,14 +128,56 @@ void fn_3_F85B0(void) {
 }
 
 // .text:0x000F8878 size:0x244 mapped:0x8073790C
-void fn_3_F8878(void) {
-    return;
+// 99%: only the stfs of 0.123f (n+0x14) is emitted after the fmuls instead of at loop top (orig keeps it at top yet gives it the lowest f-reg f23; moving it to the top flips f-reg order)
+void fn_3_F8878(u8* a) {
+    s16 k;
+    u8* n;
+    u32 i;
+    f32 prev;
+    f32 f;
+    f32 ang;
+    n = *(u8**)(a + 0xC);
+    i = 0;
+    k = 0;
+    *(s32*)(a + 0x10) = lbl_3_bss_B660;
+    for (; n != NULL; n = *(u8**)n) {
+        if ((i & 1) == 0) {
+            f = (f32)((i % 6) * 0x3C);
+            if (((i / 6) & 1) == 1) {
+                f += lbl_3_rodata_3010;
+            }
+        } else {
+            f = lbl_3_rodata_3014 + prev;
+        }
+        prev = f;
+        *(f32*)(n + 0x14) = lbl_3_rodata_2FC4;
+        ang = lbl_3_rodata_3018 * f;
+        *(f32*)(n + 0x10) = lbl_3_rodata_3020 * (f32)cos(ang);
+        *(f32*)(n + 0x18) = lbl_3_rodata_3020 * (f32)sin(ang);
+        *(s16*)(n + 0x48) = k;
+        k += 3;
+        n[0x4F] = i;
+        i++;
+        *(f32*)(n + 0x4) = lbl_3_rodata_2FB8[0];
+        *(f32*)(n + 0x8) = lbl_3_rodata_2FB8[1] - lbl_3_rodata_2FC8;
+        *(f32*)(n + 0xC) = lbl_3_rodata_2FB8[2];
+        *(f32*)(n + 0x38) = lbl_3_rodata_2FD0;
+        *(f32*)(n + 0x3C) = lbl_3_rodata_2FD4;
+        n[0x42] = 0xFF;
+        n[0x41] = 0xFF;
+        n[0x40] = 0xFF;
+        n[0x43] = 0xFF;
+        *(s16*)(n + 0x4A) = 0x80;
+        n[0x4D] = 0x1B;
+        n[0x4E] = 0;
+    }
 }
 
 // .text:0x000F8ABC size:0x48 mapped:0x80737B50
 void fn_3_F8ABC(void) {
-    if (fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F) != 0) {
-        fn_3_F8878();
+    u32 r = fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F);
+    if (r != 0) {
+        fn_3_F8878((u8*)r);
     }
 }
 
