@@ -46,7 +46,9 @@ static s32 lbl_3_bss_181C;
 static s32 lbl_3_bss_1808[5];
 static u32 lbl_3_bss_1804;
 static u32 lbl_3_bss_1800;
-static s32 lbl_3_bss_17F8[2];
+static u8 lbl_3_bss_17FC[4];
+static s32 lbl_3_bss_17F8;
+extern f32 lbl_3_rodata_19B0;
 
 // .text:0x000A009C size:0x1C68 mapped:0x806DF130
 void fn_3_A009C(void) {
@@ -141,8 +143,33 @@ void fn_3_A295C(void) {
 }
 
 // .text:0x000A2B6C size:0x130 mapped:0x806E1C00
-void fn_3_A2B6C(void) {
-    return;
+int fn_3_A2B6C(void) {
+    s32 idx;
+    s16 fl;
+    u8* fp;
+    idx = lbl_3_bss_1808[3];
+    if (g_Runners[idx].percentTowardsNextBase >= 0.25f) {
+        if (lbl_3_bss_1858[idx] <= 3 && fn_3_A46A0(idx)) {
+            return 1;
+        }
+        if (lbl_3_bss_1800 & 0x6000) {
+            idx = lbl_3_bss_1808[3];
+            if (lbl_3_bss_1858[idx] <= 4) {
+                fl = *(s16*)(g_FieldingLogic + 0xD6);
+                if (fl >= 0) {
+                    fp = g_Fielders; fp += fl * 0x268;
+                    if (!(*(f32*)(fp + 0xB4) > 4.0f)) {
+                        if (!(g_Runners[idx].percentTowardsNextBase < lbl_3_rodata_19B0) || lbl_3_bss_17FC[3] != 0) {
+                            if (fn_3_A46A0(idx)) {
+                                return 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x000A2C9C size:0x140 mapped:0x806E1D30

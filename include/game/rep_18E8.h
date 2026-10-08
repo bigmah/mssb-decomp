@@ -12,7 +12,7 @@ void fn_3_A222C(void);
 void fn_3_A2404(void);
 void fn_3_A25C4(void);
 void fn_3_A295C(void);
-void fn_3_A2B6C(void);
+int fn_3_A2B6C(void);
 void fn_3_A2C9C(void);
 void fn_3_A2DDC(void);
 void fn_3_A2FD8(void);
