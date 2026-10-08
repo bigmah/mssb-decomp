@@ -7,6 +7,8 @@ void fn_3_598D0(void);
 
 s32 fn_3_5DCE0(void);
 
+s32 fn_3_59BCC(s32 stage);
+
 void fn_3_5B408(void);
 
 void fn_3_5B368(void);

@@ -11,8 +11,27 @@ extern void fn_3_583B8(void);
 extern void fn_3_3B9E4(void);
 extern void fn_3_736CC(void);
 extern void fn_3_735A8(void);
+extern void fn_8001AAA4(void);
+extern void fn_3_6AEC0(void);
+extern u8* lbl_803CC1B8;
 
 #pragma dont_inline on
+
+// fn_3_59BCC, size:0x60
+s32 fn_3_59BCC(s32 stage) {
+    u8* queue = lbl_803CC1B8;
+    if (stage < 1) {
+        return 0;
+    }
+    if (stage == 1) {
+        fn_8001AAA4();
+    }
+    if (*(s16*)(queue + 0x10) != 0) {
+        fn_3_6AEC0();
+        return 1;
+    }
+    return 0;
+}
 
 // fn_3_5DCE0, size:0x50
 s32 fn_3_5DCE0(void) {
