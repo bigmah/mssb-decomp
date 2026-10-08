@@ -18,6 +18,8 @@ extern u8 unkSimulationRelatedStruct[];
 
 extern void fn_3_5A6D4(s32);
 extern f32 lbl_3_data_21770[];
+extern f32 lbl_3_data_216BC[];
+extern int random_fn_3_9EE24(int max);
 extern f32 lbl_3_rodata_351C[];
 extern f32 lbl_3_rodata_3518;
 extern void fn_8004C108(f32*, s32);
@@ -133,7 +135,29 @@ void fn_3_12FD6C(void) {
 
 // .text:0x0012FE84 size:0x150 mapped:0x8076EF18
 void fn_3_12FE84(void) {
-    return;
+    f32 z, y, x;
+    u8* q;
+    f32* t;
+    s32 i;
+    for (i = 0; i < 15; i++) {
+        q = g_Minigame + i * 0x34;
+        t = lbl_3_data_216BC + i * 3;
+        q[0x890] = 1;
+        *(s16*)(q + 0x88C) = 0;
+        q[0x892] = 0;
+        x = t[0];
+        y = t[1];
+        z = t[2];
+        *(f32*)(q + 0x86C) = x;
+        *(f32*)(q + 0x870) = y;
+        *(f32*)(q + 0x874) = z;
+        *(f32*)(q + 0x860) = x;
+        *(f32*)(q + 0x864) = y;
+        *(f32*)(q + 0x868) = z;
+        *(f32*)(q + 0x864) = *(f32*)(q + 0x864) + lbl_3_data_21770[0];
+        *(f32*)(q + 0x864) = *(f32*)(q + 0x864) + ((f64)((i % 3) * 10) - (f64)(random_fn_3_9EE24(0x65) * 5) / 100.0);
+        q[0x891] = random_fn_3_9EE24(3);
+    }
 }
 
 // .text:0x0012FFD4 size:0x2B4 mapped:0x8076F068
