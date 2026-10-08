@@ -22,6 +22,37 @@ extern void fn_3_B1DA4(u8, s32);
 extern void fn_3_5F720(void);
 extern void fn_3_6C0E0(void);
 extern u8 g_RunningLogic[];
+extern u8 lbl_3_data_FAF4[][4];
+
+// fn_3_B5E7C, size:0x100
+void fn_3_B5E7C(void) {
+    if (g_Practice.practiceType_2 != 4 && g_Pitcher.pitcherActionState == 4) {
+        switch ((s32)g_Practice.practiceLevel) {
+        case 0:
+            g_Practice.guidedPracticeCounter++;
+            break;
+        case 1:
+            if (g_Pitcher.ChargePitchType >= 2U) {
+                g_Practice.guidedPracticeCounter++;
+            }
+            break;
+        case 2:
+            if (g_Pitcher.TypeOfPitch == 2) {
+                g_Practice.guidedPracticeCounter++;
+            }
+            break;
+        case 3:
+            if (g_Pitcher.starPitchType != 0) {
+                g_Practice.guidedPracticeCounter++;
+            }
+            break;
+        }
+        if (g_Practice.guidedPracticeCounter >= lbl_3_data_FAF4[g_Practice.practiceType_2][g_Practice.practiceLevel]) {
+            g_Practice.guidedPracticeCompletionRelated = 1;
+        }
+        g_Practice.guidedPracticeCompletionRelated2 = 1;
+    }
+}
 
 // fn_3_B6C9C, size:0xE4
 void fn_3_B6C9C(void) {
