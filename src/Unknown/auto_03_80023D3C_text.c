@@ -12,6 +12,16 @@ void fn_80023EEC(VecQueue* queue, Vec* entries, s32 capacity) {
     queue->step = 0;
 }
 
+// fn_80023D4C, size:0x4C
+s32 fn_80023D4C(VecQueue* queue, Vec* result) {
+    if (queue->count != 0) {
+        queue->cursor = queue->tail;
+        *result = queue->entries[queue->cursor];
+        return 1;
+    }
+    return 0;
+}
+
 // fn_80023D3C, size:0x8
 u32 fn_80023D3C(void) {
     return lbl_803CBC60;
