@@ -2,6 +2,16 @@
 
 extern u32 lbl_803CBC60;
 
+// fn_80023EEC, size:0x20
+void fn_80023EEC(VecQueue* queue, Vec* entries, s32 capacity) {
+    queue->entries = entries;
+    queue->capacity = capacity;
+    queue->count = 0;
+    queue->head = 0;
+    queue->tail = 0;
+    queue->step = 0;
+}
+
 // fn_80023D3C, size:0x8
 u32 fn_80023D3C(void) {
     return lbl_803CBC60;
