@@ -1,5 +1,6 @@
 #include "challenge/rep_0610.h"
 
+extern u8 lbl_1_bss_3216[];
 extern void fn_1_1496C(u8* object);
 #include "static/UnknownHomes_Static.h"
 extern void fn_1_10560(void* object);
@@ -49,4 +50,9 @@ u8 fn_1_D638(void) {
 
 s32 fn_1_D660(void) {
     return lbl_1_bss_3215[0] != 0;
+}
+
+void fn_1_D688(void) {
+    lbl_1_bss_3216[0]++;
+    if (lbl_1_bss_3216[0] == 3) lbl_1_bss_3216[0] = 0;
 }

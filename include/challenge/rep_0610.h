@@ -23,4 +23,6 @@ u8 fn_1_D638(void);
 
 s32 fn_1_D660(void);
 
+void fn_1_D688(void);
+
 #endif
