@@ -3,6 +3,7 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "musyx/musyx.h"
+#include "Dolphin/os.h"
 
 extern s32 lbl_800EF808[];
 
@@ -15,6 +16,26 @@ extern u8 lbl_1_bss_2FD9[];
 extern u8 lbl_1_bss_2FDA[];
 extern u8* lbl_803CC1B8[];
 extern void fn_1_A250(void);
+
+extern const char lbl_1_rodata_5C8[];
+extern const char lbl_1_rodata_5C0[];
+extern const char lbl_1_rodata_5D0[];
+
+// fn_1_BF34, size:0x7C
+static inline const char* ReverbStatusName(u32 success) {
+    const char* status = lbl_1_rodata_5C8;
+    if (success != 0) {
+        status = lbl_1_rodata_5C0;
+    }
+    return status;
+}
+
+u32 fn_1_BF34(u32 effect) {
+    u32 voice = sndFXStartEx(effect, 127, 63, 0);
+    const char* status = ReverbStatusName(sndFXCtrl(voice, 0x5B, fn_800211F0()));
+    OSReport(lbl_1_rodata_5D0, status);
+    return voice;
+}
 
 // fn_1_A2E4, size:0x64
 void fn_1_A2E4(void) {

@@ -15,6 +15,8 @@ s32 fn_1_A718(void);
 
 void fn_1_A2E4(void);
 
+u32 fn_1_BF34(u32 effect);
+
 s32 fn_1_A77C(void);
 
 s32 fn_1_A7B0(void);

@@ -81,6 +81,7 @@ extern lbl_803C77B8_s lbl_803C77B8;
 
 extern void fn_80021518(s32 id, s32 value);
 extern s32 fn_800214D0(void);
+extern u8 fn_800211F0(void);
 
 extern void fn_80048C28(void);
 extern void fn_80048C1C(void);
