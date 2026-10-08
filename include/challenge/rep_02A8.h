@@ -9,4 +9,6 @@ s32 fn_1_A77C(void);
 
 s32 fn_1_A7B0(void);
 
+s32 fn_1_A880(void);
+
 #endif
