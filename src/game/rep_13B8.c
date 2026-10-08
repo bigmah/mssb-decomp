@@ -7,6 +7,12 @@ extern int fn_3_52560(int, f32, f32);
 extern s16 lbl_3_data_21904[];
 extern u8 lbl_3_data_218BC[];
 extern const f32 lbl_3_rodata_1430;
+extern const f32 lbl_3_rodata_1438;
+extern const f32 lbl_3_rodata_144C;
+extern const f32 lbl_3_rodata_1450;
+extern const f32 lbl_3_rodata_1454;
+extern const f32 lbl_3_rodata_1458;
+extern const f32 lbl_3_rodata_145C;
 extern s16 lbl_3_data_4C54[];
 typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
@@ -41,6 +47,9 @@ extern u8 g_FieldingLogic[];
 extern int g_Strikes[];
 extern u8 g_Practice[];
 extern u8 g_Controls[];
+extern u8 g_AiLogic[];
+extern s16 lbl_3_data_1C58[];
+extern int RandomInt_Game(int);
 extern u8 g_Pitcher[];
 extern u8 g_RunningLogic[];
 extern u8 g_Minigame[];
@@ -261,8 +270,61 @@ void fn_3_7ECFC(int i) {
 }
 
 // .text:0x0007F2D8 size:0x1BC mapped:0x806BE36C
-void fn_3_7F2D8(void) {
-    return;
+int fn_3_7F2D8(void) {
+    u8* r = g_Runners;
+    f32 dist;
+    s16 s;
+    if (r[0x13A] == 0 && r[0x13F] == 0) {
+        if (r[0x140] != 0) {
+            return 1;
+        }
+        s = *(s16*)(g_Ball + 0x1B7A);
+        if (s != 3) {
+            dist = *(f32*)(r + 0x64);
+            if (dist < lbl_3_rodata_1450) {
+                goto fail;
+            }
+            if (s == 0 && r[0x277] == 1) {
+                if (*(s16*)(r + 0x23A) == 1) {
+                    goto fail;
+                }
+                if (g_Ball[0x1BBF] <= 2 && *(f32*)(r + 0x1B8) < lbl_3_rodata_1454) {
+                    goto fail;
+                }
+            }
+            if (s == 0 && *(f32*)(g_Ball + 0x19D4) > lbl_3_rodata_1438) {
+                goto set;
+            }
+            if (g_Ball[0x1BBE] <= 1) {
+                goto fail;
+            }
+            if (g_Ball[0x1BBE] <= 2 && *(f32*)(g_Ball + 0x1A14) < lbl_3_rodata_1458) {
+                goto fail;
+            }
+            s = *(s16*)(g_Ball + 0x1B78);
+            if (s >= 0 && *(f32*)(g_Ball + 0x1A08) < lbl_3_rodata_144C) {
+                goto fail;
+            }
+            if (s == 8 && dist <= lbl_3_rodata_145C) {
+                goto fail;
+            }
+            if (*(s16*)(g_FieldingLogic + 0xC4) == 1 && g_Ball[0x1BC9] == 2 && *(s16*)(r + 0xEA) + 0x1E > *(s16*)(g_Ball + 0x1B62)) {
+                goto fail;
+            }
+set:
+            r[0x13F] = 1;
+        }
+    }
+    if (r[0x13E] == 1) {
+        r[0x13E] = 0;
+    }
+    return 0;
+fail:
+    r[0x13E] = 1;
+    if (*(f32*)(r + 0x64) > lbl_3_rodata_1430) {
+        r[0x140] = 1;
+    }
+    return 1;
 }
 
 // .text:0x0007F494 size:0x530 mapped:0x806BE528
@@ -525,8 +587,38 @@ void fn_3_833EC(int i) {
 }
 
 // .text:0x000835B0 size:0x164 mapped:0x806C2644
+// ~97%: 12 diff lines, post-RandomInt_Game table temps (r0/r4/r5 allocation of idx*8 + DATA base)
 void fn_3_835B0(void) {
-    return;
+    u8* ai;
+    s32* t;
+    s32 k;
+    if (g_GameLogic[*(s32*)(g_GameLogic + 0xC) + 0x13E] == 0) {
+        if (*(u16*)(g_Controls + *(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 4) * 4 + 0xEC) * 16 + 6) & 0xF00) {
+            g_Runners[0x149] = 1;
+            g_Runners[0x29D] = 1;
+            g_Runners[0x3F1] = 1;
+            g_Runners[0x545] = 1;
+        }
+    } else {
+        ai = g_AiLogic;
+        if (*(s16*)(ai + 0x44) > 0) {
+            t = (s32*)(g_GameLogic + 0x14);
+            if (*(s16*)(g_Ball + 0x1B66) >= lbl_3_data_1C58[t[*(s32*)(g_GameLogic + 0xC)] * 4]) {
+                if (ai[0x77] != 0) {
+                    ai[0x77] = ai[0x77] - 1;
+                    return;
+                }
+                if (RandomInt_Game(0x64) < *(s16*)((u8*)lbl_3_data_1C58 + (k = t[*(s32*)(g_GameLogic + 0xC)] * 8) + 6)) {
+                    g_Runners[0x149] = 1;
+                    g_Runners[0x29D] = 1;
+                    g_Runners[0x3F1] = 1;
+                    g_Runners[0x545] = 1;
+                    *(s16*)(ai + 0x44) = *(s16*)(ai + 0x44) - 1;
+                }
+                ai[0x77] = *(s16*)((u8*)lbl_3_data_1C58 + k + 4);
+            }
+        }
+    }
 }
 
 // .text:0x00083714 size:0xAAC mapped:0x806C27A8
