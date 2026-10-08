@@ -1,5 +1,7 @@
 #include "menus/auto_00_0004B1AC_text.h"
 
+extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
+
 extern void fn_2_52690(void);
 extern u8 lbl_8034E9A0[];
 
@@ -194,4 +196,9 @@ void fn_2_4E878(void* object, void* data) {
 void fn_2_52648(s32 priority) {
     fn_800B0A5C_insertQueue((void*)fn_2_52690, priority);
     lbl_8034E9A0[0x472B] = g_d_GameSettings._06;
+}
+
+// fn_2_4E7A4, size:0x48
+void fn_2_4E7A4(void) {
+    fn_8003BF54(0, 0, 0, 1, 1, 4, 1, 3, 0);
 }
