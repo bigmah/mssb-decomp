@@ -11,4 +11,6 @@ s16 fn_2_4A150(s16 angle);
 
 s16 fn_2_4A310(s16 a, s16 b);
 
+u16* fn_2_4A094(u16* destination, const u16* source);
+
 #endif
