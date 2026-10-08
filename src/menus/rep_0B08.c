@@ -16,7 +16,7 @@ extern void fn_2_69E1C(s32 index);
 extern f64 __fabs(f64 value);
 extern const f32 lbl_2_rodata_BA8;
 
-typedef struct {
+struct MenuEntry {
     Vec position;
     Vec previousPosition;
     Vec velocity;
@@ -32,13 +32,16 @@ typedef struct {
     f32 storedZ;
     u8 _74[0x0C];
     s32 objectId;
-    u8 _84[0x2E];
+    u8 _84[0x0C];
+    f32 bouncePhase;
+    u8 _94[0x1E];
     s16 locationIndex;
     u8 _B4[7];
     u8 flagBB;
     u8 _BC[4];
     s8 flagC0;
-    u8 _C1[3];
+    u8 _C1[2];
+    u8 typeC3;
     u8 flagC4;
     u8 _C5[5];
     s8 flagCA;
@@ -49,7 +52,7 @@ typedef struct {
     s8 flagCF;
     u8 flagD0;
     u8 _D1[7];
-} MenuEntry;
+};
 
 typedef struct {
     Vec position;
@@ -76,6 +79,33 @@ extern const f32 lbl_2_rodata_B68[];
 extern f32 lbl_2_data_3EF4[];
 extern f32 lbl_2_data_3F5C;
 extern const Vec lbl_2_data_3150[];
+extern const f32 lbl_2_rodata_BAC[];
+
+// fn_2_6B024, size:0xFC
+void fn_2_6B024(MenuEntry* owner) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[owner->objectId];
+    f32 height;
+
+    if (entry->flagD0 != 0) {
+        height = -sinf_kludge(entry->bouncePhase);
+        height = lbl_2_rodata_BA8 * height;
+        entry->bouncePhase += lbl_2_rodata_BAC[0];
+        if (entry->position.y > 0.0f) {
+            entry->bouncePhase = 0.0f;
+            height = 0.0f;
+            entry->flagD0 = 0;
+            if (entry->typeC3 == 19) {
+                ((u8*)lbl_2_bss_1A8248[0])[entry->objectId * 0xD8 + 0x16D0] = 0;
+            }
+        }
+        entry->position.y = height;
+    } else {
+        entry->position.y = 0.0f;
+    }
+    if (owner->flagD0 == 0) {
+        owner->flagC4 = 1;
+    }
+}
 
 // fn_2_687A4, size:0x100
 s32 fn_2_687A4(s32 index, s32 targetIndex, s32 location) {
