@@ -91,3 +91,15 @@ void fn_3_B0D2C(void) {
         g_AiLogic.batterAISwingInd = 1;
     }
 }
+
+// fn_3_B1BCC, size:0x48
+void fn_3_B1BCC(void) {
+    u8* practice = (u8*)&g_Practice;
+    practice[0x1DD] = 0;
+    practice[0x1DE] = 0;
+    practice[0x1DF] = 0;
+    practice[0x1E0] = 0;
+    g_Practice._1E2 = 0;
+    g_Practice.maybeCommandData[0] = 0;
+    fn_3_B3C78(0);
+}
