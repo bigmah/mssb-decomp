@@ -8,6 +8,7 @@ extern u8 lbl_3_common_bss_350E4[];
 extern char lbl_3_rodata_286C[];
 extern char lbl_3_rodata_2878[];
 #include "Dolphin/mtx.h"
+#include "Dolphin/mtxext.h"
 #pragma dont_inline on
 extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern const f64 lbl_3_rodata_2800;
@@ -62,8 +63,8 @@ extern void fn_800528C0(f32, f32, f32, s16*, s16*);
 extern void fn_800B0A14_removeQueue(void);
 extern void fn_80034CEC(void*);
 extern const f64 lbl_3_rodata_2728;
-extern f64 lbl_3_rodata_2770;
-extern f64 lbl_3_rodata_2780;
+extern const f64 lbl_3_rodata_2770;
+extern const f64 lbl_3_rodata_2780;
 extern void fn_80033620(void);
 extern void GXSetBlendMode(s32, s32, s32, s32);
 extern void GXSetZMode(s32, s32, s32);
@@ -90,11 +91,11 @@ typedef struct { f32 x, y, z, w; } T16;
 extern T16 lbl_3_data_18730[];
 extern f32 lbl_3_rodata_2700;
 extern f32 lbl_3_rodata_2778;
-extern f32 lbl_3_rodata_26A0;
+extern const f32 lbl_3_rodata_26A0;
 extern f32 lbl_3_rodata_27E8;
-extern f32 lbl_3_rodata_2698;
+extern const f32 lbl_3_rodata_2698;
 extern f32 lbl_3_rodata_26C8;
-extern f32 lbl_3_rodata_2678;
+extern const f32 lbl_3_rodata_2678;
 extern u8 lbl_3_data_81DC[];
 extern Vec lbl_3_bss_A820[];
 extern u8 g_FieldingLogic[];
@@ -129,7 +130,7 @@ extern T52 lbl_3_data_182C8[];
 extern s16 fn_3_B7F70(s32);
 extern f32 lbl_3_data_188E0;
 extern f32 lbl_3_rodata_2694;
-extern f32 lbl_3_rodata_2698;
+extern const f32 lbl_3_rodata_2698;
 extern u8 lbl_80371C30[];
 extern u8 lbl_3_bss_A898[];
 extern u8* lbl_3_bss_A8A4;
@@ -314,6 +315,7 @@ void fn_3_CD958(void) {
 }
 
 // .text:0x000CD968 size:0x1E0 mapped:0x8070C9FC
+extern const f32 lbl_3_rodata_26CC;
 void fn_3_CD968(void) {
     return;
 }
@@ -620,7 +622,6 @@ void fn_3_CFAB4(u8* p, u8* q) {
 }
 
 // .text:0x000CFB44 size:0x214 mapped:0x8070EBD8
-// 94%: literal 0.0f fixes the clamps; remaining diff is only where the two f64 consts (2770/2780) are loaded in the reset block
 s32 fn_3_CFB44(u8* a) {
     u8* e = *(u8**)(a + 0xC);
     u8* o = *(u8**)(a + 0x20);
