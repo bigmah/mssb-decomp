@@ -35,4 +35,6 @@ void fn_1_BEF4(s16 voice);
 
 void fn_1_BDD8(void);
 
+void fn_1_A348(void);
+
 #endif

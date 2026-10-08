@@ -30,6 +30,34 @@ extern void fn_1_BFB0(void);
 extern void fn_1_BC00(void);
 extern u8 lbl_1_bss_2FDE[];
 
+extern s8 lbl_1_common_bss_49A78[];
+extern void (*lbl_1_data_1C8C[])(void);
+extern void fn_1_C2A4(void);
+
+// fn_1_A348, size:0x11C
+void fn_1_A348(void) {
+    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
+    if (held & 8) {
+        lbl_1_common_bss_49A78[0] = (lbl_1_common_bss_49A78[0] + 4) % 5;
+        return;
+    }
+    if (held & 4) {
+        lbl_1_common_bss_49A78[0] = (lbl_1_common_bss_49A78[0] + 6) % 5;
+        return;
+    }
+    if (pressed & 0x100) {
+        *(void (**)(void))lbl_803CC1B8[0] = lbl_1_data_1C8C[lbl_1_common_bss_49A78[0]];
+        lbl_1_common_bss_49A78[1] = 0;
+        return;
+    }
+    if (pressed & 0x1200) {
+        lbl_1_bss_2FDA[0] = 0;
+        lbl_1_bss_2FD9[0] = 0;
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_C2A4;
+    }
+}
+
 // fn_1_C188, size:0x11C
 void fn_1_C188(void) {
     u8* queue = lbl_803CC1B8[0];
