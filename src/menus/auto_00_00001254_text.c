@@ -1,4 +1,5 @@
 #include "menus/auto_00_00001254_text.h"
+#include "static/UnknownHomes_Static.h"
 
 extern void fn_800625A4(u8, s32);
 
@@ -20,6 +21,17 @@ typedef struct MenuEntrySlot {
 } MenuEntrySlot;
 
 extern MenuEntrySlot lbl_80371C30[];
+
+// fn_2_35D0, size:0x54
+s32 fn_2_35D0(u8 index) {
+    u8* flag = (u8*)((u32)lbl_2_bss_F468 + 0x45 + index);
+    if (*flag != 0) {
+        *flag = 0;
+        sndFXRelated(0x200);
+        return 1;
+    }
+    return 0;
+}
 
 // fn_2_112F4, size:0x4C
 s32 fn_2_112F4(void* menu, s32 item, s32 index, const u16* values, s16 value) {
