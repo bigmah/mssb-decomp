@@ -107,4 +107,6 @@ s32 fn_2_6AFD4(s32 index);
 
 void fn_2_68DAC(s32 index, void* result);
 
+void fn_2_696D4(s32 index);
+
 #endif

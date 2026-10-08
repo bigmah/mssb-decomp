@@ -353,3 +353,13 @@ s32 fn_2_6AFD4(s32 index) {
 void fn_2_68DAC(s32 index, void* result) {
     memcpy(result, &lbl_2_bss_1A8248[0]->entries[index], 0xC);
 }
+
+// fn_2_696D4, size:0x3C
+void fn_2_696D4(s32 index) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    if (*(s16*)((u8*)entry + 0xA0) != 0) {
+        *(f32*)((u8*)entry + 0x38) = *(f32*)((u8*)entry + 0x3C);
+        return;
+    }
+    *(f32*)((u8*)entry + 0x38) = 0.0f;
+}
