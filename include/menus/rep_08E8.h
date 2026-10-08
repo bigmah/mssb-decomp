@@ -51,4 +51,6 @@ void fn_2_49E5C(s32 x, s32 y, s32 number, s32 flags, s32 digits, s32 style,
 void fn_2_49DB8(s32 x, s32 y, s32 number, s32 flags, s32 option, s32 digits,
                 s32 style, s32 first, s32 second, s32 third);
 
+void fn_2_48BE0(void);
+
 #endif

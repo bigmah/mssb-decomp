@@ -1,4 +1,5 @@
 #include "menus/rep_08E8.h"
+#include "string.h"
 
 extern void LITXForm(void* light, void* matrix);
 
@@ -24,6 +25,7 @@ extern const f32 lbl_2_rodata_94C;
 extern const f32 lbl_2_rodata_9A8;
 extern const f32 lbl_2_rodata_9AC;
 extern const f32 lbl_2_rodata_9B4;
+extern const f32 lbl_2_rodata_9A0;
 
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_1A8248[];
@@ -33,6 +35,36 @@ extern u8* lbl_2_bss_1A824C[];
 extern void* _OSAllocFromHeap(s32 alignment, s32 size);
 extern void* fn_2_4917C(void*, s32, s32, s32, s32);
 extern void fn_2_513E0(void*, s32, s32, s32, s32, s32, s32, s32);
+
+extern f32 lbl_2_bss_55B8;
+extern Vec lbl_2_data_132EC;
+extern Vec lbl_2_data_132F8;
+
+// .text:0x48BE0 size:0x128
+void fn_2_48BE0(void) {
+    f32 x;
+    f32 z;
+    Vec position;
+    Vec direction;
+    u8* menu = lbl_2_bss_1A824C[0];
+    u8* parameters = lbl_8036E548 + *(s32*)(menu + 0x19769C) * 0x27C + 0xC04;
+    memcpy(&position, parameters + 0x34, sizeof(Vec));
+    PSVECSubtract(&position, &lbl_2_data_132F8, &direction);
+    z = direction.z * lbl_2_rodata_9A0;
+    x = direction.x * lbl_2_rodata_9A0;
+    direction.x = x;
+    direction.z = z;
+    if (lbl_2_rodata_94C != x || lbl_2_rodata_94C != z) {
+        lbl_2_bss_55B8 = fn_2_4A1E8(direction.z, x);
+    }
+    memcpy(&lbl_2_data_132F8, parameters + 0x34, sizeof(Vec));
+    *(f32*)(parameters + 0x34) = position.x;
+    *(f32*)(parameters + 0x38) = position.y;
+    *(f32*)(parameters + 0x3C) = position.z;
+    *(f32*)(parameters + 0x40) = lbl_2_data_132EC.x;
+    *(f32*)(parameters + 0x44) = lbl_2_bss_55B8;
+    *(f32*)(parameters + 0x48) = lbl_2_data_132EC.z;
+}
 
 // .text:0x49DB8 size:0xA4
 void fn_2_49DB8(s32 x, s32 y, s32 number, s32 flags, s32 option, s32 digits,
