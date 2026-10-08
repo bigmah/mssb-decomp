@@ -47,4 +47,7 @@ void fn_2_908FC(MenuStateObject* object);
 
 void fn_2_907F4(MenuStateObject* object);
 
+
+void fn_2_90E98(u8* object);
+
 #endif

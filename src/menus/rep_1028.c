@@ -1,5 +1,19 @@
 #include "menus/rep_1028.h"
 
+typedef struct {
+    u8 _00[0x90];
+    s16 state;
+    u8 _92[0x19];
+    u8 active;
+    u8 _AC[0x10];
+} MenuSlot;
+
+typedef struct {
+    u8 _00[0x21E0];
+    MenuSlot slots[32];
+} MenuSlots;
+
+extern MenuSlots* lbl_2_bss_1A8248[];
 extern MenuStateCallback lbl_2_data_308A4[3];
 extern MenuStateCallback lbl_2_data_30898[3];
 extern MenuStateCallback lbl_2_data_3088C[3];
@@ -155,4 +169,10 @@ void fn_2_908FC(MenuStateObject* object) {
 
 void fn_2_907F4(MenuStateObject* object) {
     lbl_2_data_308A4[object->state](object);
+}
+
+void fn_2_90E98(u8* object) {
+    MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+    entry->active = 0;
+    entry->state = 0;
 }
