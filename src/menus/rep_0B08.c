@@ -1,5 +1,7 @@
 #include "menus/rep_0B08.h"
 
+extern void fn_2_69E1C(s32 index);
+
 extern f32 PSVECDistance(const void* a, const void* b);
 extern f64 __fabs(f64 value);
 extern const f32 lbl_2_rodata_BA8;
@@ -278,5 +280,15 @@ void fn_2_6BFC0(u8* object) {
     f32 distance = (f32)__fabs(PSVECDistance((u8*)lbl_2_bss_1A8248[0] + 0x1610, object));
     if (distance > lbl_2_rodata_BA8) {
         *(s16*)(object + 0x94) = 1;
+    }
+}
+
+// fn_2_6C2E8, size:0x60
+void fn_2_6C2E8(u8* object) {
+    fn_2_69E1C(*(s32*)(object + 0x80));
+    if (*(f32*)(object + 0x50) <= 0.0f) {
+        object[0xBA] = 4;
+        object[0xC4] = 1;
+        *(s16*)(object + 0x94) = 3;
     }
 }
