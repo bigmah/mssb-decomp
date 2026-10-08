@@ -33,6 +33,18 @@ extern const f32 lbl_1_rodata_785C;
 extern const f32 lbl_1_rodata_7860;
 extern const f32 lbl_1_rodata_7864;
 extern const f32 lbl_1_rodata_7868;
+extern const f32 lbl_1_rodata_780C;
+
+// fn_1_1F23C, size:0x9C
+void fn_1_1F23C(ChallengeProjectionState* state) {
+    fn_800385F0(lbl_1_bss_6BF4,
+        *(f32*)(lbl_803CC1B8[0] + 0x14), *(f32*)(lbl_803CC1B8[0] + 0x18),
+        *(f32*)(lbl_803CC1B8[0] + 0x1C), *(f32*)(lbl_803CC1B8[0] + 0x20));
+    state->depth = -*(f32*)(lbl_803CC1B8[0] + 0x24);
+    state->distance += lbl_1_rodata_780C;
+    *(u32*)(lbl_803CC1B8[0] + 0x2C) &= ~2U;
+    *(u32*)(lbl_803CC1B8[0] + 0x2C) |= 2;
+}
 
 // fn_1_23AD8, size:0x7C
 void fn_1_23AD8(Mtx44 projection, Vec* camera, Vec* target) {

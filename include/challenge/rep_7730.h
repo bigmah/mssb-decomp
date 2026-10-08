@@ -11,6 +11,13 @@ typedef struct {
     void* data;
 } ChallengeTransfer;
 
+typedef struct {
+    u8 padding[0x50];
+    f32 depth;
+    u8 padding54[0x98];
+    f32 distance;
+} ChallengeProjectionState;
+
 void fn_1_1DE5C(void);
 
 void fn_1_1E8C0(s32 index);
@@ -52,5 +59,7 @@ f32 fn_1_1DD48(u16 buttons, s32 reverse, f32 value, f32 positive, f32 delta, f32
 void fn_1_20F8C(void);
 
 void fn_1_23AD8(Mtx44 projection, Vec* camera, Vec* target);
+
+void fn_1_1F23C(ChallengeProjectionState* state);
 
 #endif
