@@ -1480,8 +1480,54 @@ void fn_3_D5C8C(s32* a) {
 }
 
 // .text:0x000D5E80 size:0x240 mapped:0x80714F14
-void fn_3_D5E80(void) {
-    return;
+typedef struct { f32 x, y, z; u8 fC; u8 padD; u8 fE; u8 padF; u8 pad[0xC]; } D5E80Ent;
+extern D5E80Ent lbl_3_data_1849C[];
+extern u8 lbl_3_bss_A024;
+extern u8 lbl_3_bss_A025;
+extern f32 lbl_3_rodata_2664;
+void fn_3_D5E80(s32* a) {
+    Mtx m2;
+    D5B6CCpy cpy;
+    D5C8CBss* g;
+    D5E80Ent* e;
+    s32 off;
+    u32 v;
+    D5C8CCtl* c;
+    s32 k;
+    s32 j;
+    s32 idx;
+    g = (D5C8CBss*)lbl_3_common_bss_350E4;
+    for (k = 0; k < 5; k++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        ((void (*)(void))fn_3_B8574)();
+        e = lbl_3_data_1849C;
+        off = v * 4;
+        for (j = 0; j < lbl_3_bss_A025; e++, j++) {
+            if (k == e->fE && e->fC != 0xD) {
+                idx = j + lbl_3_bss_A024;
+                if ((((u8*)((D5C8CBss*)lbl_3_common_bss_350E4)->arr)[idx * 0xE8 + 0x90] >> 6) & 1) {
+                    *(s32*)((u8*)g->p44 + off) = idx;
+                    g->p3C[*a] += 1;
+                    c = &((D5C8CBss*)lbl_3_common_bss_350E4)->arr[idx];
+                    off += 4;
+                    cpy = *(D5B6CCpy*)c;
+                    CTRLBuildMatrix((Control*)&cpy, m2);
+                    fn_3_B8464(m2, (void*)c->f78);
+                    CTRLSetTranslation((Control*)&cpy, *(f32*)((u8*)c + 0xAC) + lbl_3_data_1849C[((u8*)c)[0x9C]].x, lbl_3_rodata_2664, *(f32*)((u8*)c + 0xAC) + lbl_3_data_1849C[((u8*)c)[0x9C]].z);
+                    CTRLBuildMatrix((Control*)&cpy, m2);
+                    fn_3_B8464(m2, (void*)c->f78);
+                    CTRLSetTranslation((Control*)&cpy, lbl_3_data_1849C[((u8*)c)[0x9C]].x - *(f32*)((u8*)c + 0xAC), lbl_3_rodata_2664, lbl_3_data_1849C[((u8*)c)[0x9C]].z - *(f32*)((u8*)c + 0xAC));
+                    CTRLBuildMatrix((Control*)&cpy, m2);
+                    fn_3_B8464(m2, (void*)c->f78);
+                }
+            }
+        }
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
 }
 
 // .text:0x000D60C0 size:0x230 mapped:0x80715154
