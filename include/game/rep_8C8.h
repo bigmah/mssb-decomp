@@ -7,7 +7,7 @@ void fn_3_1E4B8(void);
 s32 fn_3_1E724(void);
 s32 fn_3_1E7F4(void);
 void fn_3_1EAA8(void);
-void fn_3_1EFE4(void);
+s32 fn_3_1EFE4(void);
 void fn_3_1F1CC(void);
 void fn_3_1F350(void);
 void fn_3_1F478(void);

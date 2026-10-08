@@ -4,6 +4,7 @@
 #include "game/rep_1838.h"
 #pragma dont_inline on
 extern s32 fn_3_B0CF4(void);
+
 extern u8 lbl_3_data_1ABC[];
 extern u8 lbl_3_data_1AAC[];
 extern u8 lbl_3_data_1AB0[];
@@ -54,8 +55,8 @@ void fn_3_1EAA8(void) {
 }
 
 // .text:0x0001EFE4 size:0x1E8 mapped:0x8065E078
-void fn_3_1EFE4(void) {
-    return;
+s32 fn_3_1EFE4(void) {
+    return 0;
 }
 
 // .text:0x0001F1CC size:0x184 mapped:0x8065E260
@@ -122,7 +123,46 @@ void fn_3_1F998(void) {
 
 // .text:0x0001FD8C size:0x1BC mapped:0x8065EE20
 void batterAIControlled(void) {
-    return;
+    s32 r;
+    if (g_Batter.swingInd == 0 && g_Batter.buntStatus == 0) {
+        if (fn_3_1EFE4() != 0) {
+            g_Batter.swingInd = 1;
+            g_Batter.framesSinceStartOfSwing = 0;
+        }
+    }
+    if (g_Batter.swingInd == 0 && g_Batter.buntStatus != 3) {
+        fn_3_1F998();
+    }
+    if (g_Batter.swingInd == 0 && g_Batter.buntStatus != 3 && g_Batter.buntStatus != 6) {
+        if (g_GameLogic.secondaryGameMode == 0xD) {
+            if (fn_3_B0CF4() != 0) {
+                r = 1;
+            } else {
+                r = 0;
+            }
+        } else if (g_AiLogic.batterAIBuntInd != 1) {
+            r = 0;
+        } else if (g_AiLogic.aISwingDecisionRelated_noSwingOverride != 0) {
+            r = 0;
+        } else if (g_Ball.pitchHangtimeCounter <= 0) {
+            r = 1;
+        } else if (g_Pitcher.framesUntilBallReachesBatterZ == g_AiLogic.batterAIZPosition && fn_3_1E7F4() == 0) {
+            r = 0;
+            g_AiLogic.aISwingDecisionRelated_noSwingOverride = 1;
+        } else {
+            r = 1;
+        }
+        if (r != 0) {
+            g_Batter.isBunting = 1;
+            g_Batter.hitGeneralType = 3;
+            if (g_Batter.buntStatus == 0) {
+                g_Batter.buntStatus = 1;
+                g_Batter.framesBuntHeld = 0;
+            }
+        } else {
+            g_Batter.isBunting = 0;
+        }
+    }
 }
 
 // .text:0x0001FF48 size:0x11C mapped:0x8065EFDC
