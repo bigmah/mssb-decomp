@@ -1,5 +1,6 @@
 #include "game/rep_1200.h"
 #include "header_rep_data.h"
+#include "math.h"
 
 extern u8 g_Pitcher[];
 extern u8 g_Minigame[];
@@ -66,8 +67,46 @@ void fn_3_6FB98(void) {
 }
 
 // .text:0x0006FDA0 size:0x224 mapped:0x806AEE34
+extern const f32 lbl_3_rodata_1254;
+extern const f32 lbl_3_rodata_1278;
+extern const f64 lbl_3_rodata_1260;
+extern const f64 lbl_3_rodata_1268;
+extern const f64 lbl_3_rodata_1270;
+static inline f32 sqrt_ext(f32 x) {
+    if (x > 0.0f) {
+        f64 h = lbl_3_rodata_1260;
+        f64 th = lbl_3_rodata_1268;
+        f64 xd = (f64)x;
+        f64 guess = __frsqrte(xd);
+        guess = h * guess * (th - guess * guess * xd);
+        guess = h * guess * (th - guess * guess * xd);
+        guess = h * guess * (th - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (x < lbl_3_rodata_1270)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
+extern s16 fn_3_9FB8C(f32 x, f32 y);
+extern void getComponentsFromSAng(s16 ang, f32* x, f32* y);
 void fn_3_6FDA0(void) {
-    return;
+    s16 ang;
+    f32 a;
+    f32 b;
+    f32 mag;
+    f32 k;
+    f32 t;
+    s32 off = *(s32*)(g_Ball + 0x1B4C) % 257 - 0x80;
+    ang = fn_3_9FB8C(*(f32*)(g_Pitcher + 0x18), -*(f32*)(g_Pitcher + 0x20));
+    getComponentsFromSAng(ang + off, &a, &b);
+    t = lbl_3_rodata_1254 * (f32)(*(s32*)(g_Ball + 0x1B50) % 10);
+    mag = sqrt_ext(*(f32*)(g_Pitcher + 0x18) * *(f32*)(g_Pitcher + 0x18) + *(f32*)(g_Pitcher + 0x20) * *(f32*)(g_Pitcher + 0x20));
+    k = lbl_3_rodata_1278 + t;
+    *(f32*)(g_Ball + 0x318) = k * (a * mag);
+    *(f32*)(g_Ball + 0x320) = k * (b * mag);
+    *(f32*)(g_Ball + 0x31C) = lbl_3_rodata_1258;
 }
 
 // .text:0x0006FFC4 size:0x2BC mapped:0x806AF058
@@ -237,7 +276,6 @@ void fn_3_70838(void) {
 
 // .text:0x000709B4 size:0x138 mapped:0x806AFA48
 extern u8 lbl_3_data_5F50[];
-extern const f32 lbl_3_rodata_1254;
 extern const f32 lbl_3_rodata_12A0;
 extern const f32 lbl_3_rodata_12A4;
 extern void getComponentsFromRad(f32 v, f32* x, f32* y);
