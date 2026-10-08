@@ -30,6 +30,22 @@ extern u8* lbl_2_bss_1A8248[];
 
 extern u8* lbl_2_bss_1A824C[];
 
+// .text:0x4A234 size:0x90
+s16 fn_2_4A234(f32 x, f32 y) {
+    s16 angle;
+    if (lbl_2_rodata_94C == x) {
+        if (y >= lbl_2_rodata_94C) {
+            return 0x400;
+        }
+        return 0xC00;
+    }
+    angle = (s16)((lbl_2_rodata_9B4 * (f32)atan2(y, x)) / lbl_2_rodata_9A8);
+    if (angle < 0) {
+        angle += 0x1000;
+    }
+    return angle;
+}
+
 // .text:0x48D08 size:0x4C
 void fn_2_48D08(void) {
     u8* menu = lbl_2_bss_1A824C[0];

@@ -43,4 +43,6 @@ void fn_2_48D54(void);
 
 void fn_2_48D08(void);
 
+s16 fn_2_4A234(f32 x, f32 y);
+
 #endif
