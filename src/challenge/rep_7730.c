@@ -13,3 +13,7 @@ void fn_1_1E28C(void) {
 void fn_1_1DDE4(f32 value) {
     lbl_1_bss_6BE4[3] = value;
 }
+
+void fn_1_1DDF4(f32 value) {
+    lbl_1_bss_6BE4[2] = value;
+}
