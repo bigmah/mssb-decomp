@@ -46,6 +46,7 @@ extern void fn_3_10AD48(void);
 extern void fn_3_6C854(int, int);
 extern u8 g_Pitcher[];
 extern s16 lbl_3_data_217A4[];
+extern void fn_3_DE4FC(void);
 extern u8 g_Ball[];
 extern u8 g_Batter[];
 extern s16 lbl_3_data_21788[];
@@ -224,7 +225,6 @@ void fn_3_12FD6C(void) {
 
 // .text:0x0012FE84 size:0x150 mapped:0x8076EF18
 void fn_3_12FE84(void) {
-    f32 z, y, x;
     u8* q;
     f32* t;
     s32 i;
@@ -234,15 +234,12 @@ void fn_3_12FE84(void) {
         q[0x890] = 1;
         *(s16*)(q + 0x88C) = 0;
         q[0x892] = 0;
-        x = t[0];
-        y = t[1];
-        z = t[2];
-        *(f32*)(q + 0x86C) = x;
-        *(f32*)(q + 0x870) = y;
-        *(f32*)(q + 0x874) = z;
-        *(f32*)(q + 0x860) = x;
-        *(f32*)(q + 0x864) = y;
-        *(f32*)(q + 0x868) = z;
+        *(f32*)(q + 0x86C) = t[0];
+        *(f32*)(q + 0x870) = t[1];
+        *(f32*)(q + 0x874) = t[2];
+        *(f32*)(q + 0x860) = t[0];
+        *(f32*)(q + 0x864) = t[1];
+        *(f32*)(q + 0x868) = t[2];
         *(f32*)(q + 0x864) = *(f32*)(q + 0x864) + lbl_3_data_21770[0];
         *(f32*)(q + 0x864) = *(f32*)(q + 0x864) + ((f64)((i % 3) * 10) - (f64)(random_fn_3_9EE24(0x65) * 5) / 100.0);
         q[0x891] = random_fn_3_9EE24(3);
@@ -377,7 +374,10 @@ void fn_3_13128C(void) {
 
 // .text:0x001312D4 size:0x26C mapped:0x80770368
 void fn_3_1312D4(void) {
-    return;
+    fn_3_DE4FC();
+    fn_3_5A6D4(0xE);
+    fn_3_12FE84();
+    fn_3_12FD6C();
 }
 
 // .text:0x00131540 size:0x748 mapped:0x807705D4
