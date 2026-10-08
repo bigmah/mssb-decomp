@@ -20,6 +20,12 @@ extern f32 lbl_3_rodata_3A18;
 extern f32 fn_3_119854(u8 i);
 
 extern u8 lbl_8036E548[];
+extern u8 g_GameLogic[];
+extern const f32 lbl_3_rodata_3A34;
+extern const f32 lbl_3_rodata_3A38;
+extern const f32 lbl_3_rodata_3A3C;
+extern const f32 lbl_3_rodata_3A40;
+extern const f32 lbl_3_rodata_3A44;
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
@@ -29,6 +35,14 @@ extern u8 lbl_8036E548[];
 extern u8 g_Minigame[];
 extern u8 lbl_3_data_26E00[];
 extern const Vec lbl_3_rodata_3908;
+extern f32 lbl_3_data_266A8[];
+extern Vec lbl_3_data_26BB4;
+extern f64 __fabs(f64);
+extern f32 __fabsf(f32);
+extern u8 lbl_3_data_26BC0[];
+extern const f32 lbl_3_rodata_3950;
+extern const f64 lbl_3_rodata_3A08;
+extern const Vec lbl_3_rodata_38D0;
 extern f32 fn_3_119D28(void);
 extern u8 lbl_3_data_26CB8[];
 extern s32 fn_8001B728(s32, s32, void*);
@@ -39,6 +53,7 @@ extern u8 lbl_3_data_26C3C[];
 extern u8 lbl_3_bss_B894[];
 extern const f32 lbl_3_rodata_3930;
 extern const f32 lbl_3_rodata_39B8;
+extern const f32 lbl_3_rodata_39AC;
 extern const f64 lbl_3_rodata_39C8;
 extern u8 lbl_80366158[];
 extern u8 lbl_3_data_26E40[];
@@ -48,6 +63,8 @@ extern void fn_80033CC8(void*, void*);
 extern u8 lbl_3_data_26D50[];
 extern u8 lbl_3_data_26CD0[];
 extern const f32 lbl_3_rodata_39E0;
+extern const f32 lbl_3_rodata_39C0;
+extern const f32 lbl_3_rodata_39F0;
 extern f32 shortAngleToRad(s16);
 extern u8 lbl_3_data_26E7C[];
 extern u8 lbl_3_data_26D88[];
@@ -447,13 +464,95 @@ void fn_3_14A37C(u8* o, f32* v) {
 }
 
 // .text:0x0014A62C size:0x2E0 mapped:0x807896C0
-void fn_3_14A62C(void) {
-    return;
+void fn_3_14A62C(f32* v) {
+    u8* o;
+    u8* d;
+    s32 i;
+    u8* p;
+    f32 ang;
+    f32 c;
+    o = fn_80033A24(fn_3_14A188, 0x80, 0, *(s32*)(lbl_3_data_26E40 + 4), 1, 0x24);
+    if (o != NULL) {
+        *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+        p = *(u8**)(o + 0xC);
+        d = lbl_3_data_26E40;
+        i = 0;
+        do {
+            p[0x4D] = *(s32*)d;
+            p[0x4E] = 0;
+            *(s16*)(p + 0x4A) = *(s32*)(d + 8);
+            *(s16*)(p + 0x48) = 0;
+            *(f32*)(p + 4) = v[0];
+            *(f32*)(p + 8) = -v[1];
+            *(f32*)(p + 0xC) = v[2];
+            ang = (f32)(u32)(0x168 / *(s32*)(lbl_3_data_26E40 + 4) * i);
+            ang = lbl_3_rodata_39B8 * ang;
+            c = (f32)cos(ang);
+            *(f32*)(p + 4) = *(f32*)(p + 4) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
+            c = (f32)sin(ang);
+            *(f32*)(p + 8) = *(f32*)(p + 8) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)(d + 0x14) / lbl_3_rodata_3930;
+            p[0x42] = 0xFF;
+            p[0x41] = 0xFF;
+            p[0x40] = 0xFF;
+            p[0x43] = *(s32*)(d + 0x24);
+            *(f32*)(p + 0x10) = lbl_3_rodata_3934[0];
+            *(f32*)(p + 0x14) = (f32)(*(s32*)(d + 0x30) - rand() % *(s32*)(d + 0x34));
+            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) / lbl_3_rodata_3930;
+            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) * (f32)(-(rand() % 2 * 2) + 1);
+            *(f32*)(p + 0x18) = (f32)(*(s32*)(d + 0x18) - rand() % *(s32*)(d + 0x1C));
+            *(f32*)(p + 0x18) = *(f32*)(p + 0x18) / lbl_3_rodata_3930;
+            i++;
+            p = *(u8**)p;
+        } while (p != NULL);
+    }
 }
 
 // .text:0x0014A90C size:0x310 mapped:0x807899A0
-void fn_3_14A90C(void) {
-    return;
+void fn_3_14A90C(f32* v) {
+    u8* o;
+    u8* d;
+    s32 i;
+    u8* p;
+    f32 ang;
+    f32 c;
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 3 && v != NULL) {
+    o = fn_80033A24(fn_3_14A188, 0x80, 0, *(s32*)(lbl_3_data_26E40 + 4), 1, 0x24);
+    if (o != NULL) {
+        *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+        p = *(u8**)(o + 0xC);
+        d = lbl_3_data_26E40;
+        i = 0;
+        do {
+            p[0x4D] = *(s32*)d;
+            p[0x4E] = 0;
+            *(s16*)(p + 0x4A) = *(s32*)(d + 8);
+            *(s16*)(p + 0x48) = 0;
+            *(f32*)(p + 4) = v[0];
+            *(f32*)(p + 8) = -v[1];
+            *(f32*)(p + 0xC) = v[2];
+            ang = (f32)(u32)(0x168 / *(s32*)(lbl_3_data_26E40 + 4) * i);
+            ang = lbl_3_rodata_39B8 * ang;
+            c = (f32)cos(ang);
+            *(f32*)(p + 4) = *(f32*)(p + 4) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
+            c = (f32)sin(ang);
+            *(f32*)(p + 8) = *(f32*)(p + 8) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)(d + 0x14) / lbl_3_rodata_3930;
+            p[0x42] = 0xFF;
+            p[0x41] = 0xFF;
+            p[0x40] = 0xFF;
+            p[0x43] = *(s32*)(d + 0x24);
+            *(f32*)(p + 0x10) = lbl_3_rodata_3934[0];
+            *(f32*)(p + 0x14) = (f32)(*(s32*)(d + 0x30) - rand() % *(s32*)(d + 0x34));
+            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) / lbl_3_rodata_3930;
+            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) * (f32)(-(rand() % 2 * 2) + 1);
+            *(f32*)(p + 0x18) = (f32)(*(s32*)(d + 0x18) - rand() % *(s32*)(d + 0x1C));
+            *(f32*)(p + 0x18) = *(f32*)(p + 0x18) / lbl_3_rodata_3930;
+            i++;
+            p = *(u8**)p;
+        } while (p != NULL);
+    }
+    }
 }
 
 // .text:0x0014AC1C size:0x24 mapped:0x80789CB0
@@ -707,8 +806,59 @@ void fn_3_14C3BC(u8* o) {
 }
 
 // .text:0x0014C4C8 size:0x2D4 mapped:0x8078B55C
-void fn_3_14C4C8(void) {
-    return;
+u32 fn_3_14C4C8(u8* o) {
+    Mtx m;
+    Vec dir;
+    u8* p;
+    u8* d;
+    s32 a;
+    s32 s;
+    s32 delta;
+    f32 df;
+    if (lbl_80366158[0x28] != 0) {
+        return 0;
+    }
+    p = *(u8**)(o + 0xC);
+    if (*(s16*)(p + 0x4A) != 0) {
+        GXSetZMode(1, 3, 0);
+        GXSetBlendMode(1, 1, 1, 0);
+        PSVECScale((Vec*)lbl_3_data_26D50, lbl_3_rodata_39E0, &dir);
+        PSMTXRotRad(m, 'Y', shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8)));
+        PSMTXMultVec(m, &dir, &dir);
+        d = lbl_3_data_26D5C;
+        *(f32*)(p + 4) = (f32)*(s32*)(d + 0x14) / 100000.0f * lbl_3_rodata_39A8 + (*(f32*)(g_Minigame + 0x1AE0) + dir.x);
+        *(f32*)(p + 8) = dir.y - ((f32)*(s32*)(d + 0x14) / 100000.0f * lbl_3_rodata_39A8 + *(f32*)(g_Minigame + 0x1AE4));
+        *(f32*)(p + 0xC) = *(f32*)(g_Minigame + 0x1AE8) + dir.z;
+        fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+        fn_80033CC8(p, *(void**)(o + 0x10));
+        a = p[0x43];
+        s = *(s32*)(lbl_3_data_26D5C + 8) - *(s32*)(lbl_3_data_26D5C + 0xC);
+        if (s < *(s16*)(p + 0x4A)) {
+            df = (f32)(*(s32*)(d + 0x14) - *(s32*)(lbl_3_data_26D5C + 0x10)) / 100000.0f / (f32)*(s32*)(lbl_3_data_26D5C + 0xC);
+            delta = (*(s32*)(lbl_3_data_26D5C + 0x20) - *(s32*)(lbl_3_data_26D5C + 0x1C)) / *(s32*)(lbl_3_data_26D5C + 0xC);
+        } else {
+            df = (f32)(*(s32*)(lbl_3_data_26D5C + 0x18) - *(s32*)(d + 0x14)) / 100000.0f / (f32)s;
+            delta = (*(s32*)(lbl_3_data_26D5C + 0x24) - *(s32*)(lbl_3_data_26D5C + 0x20)) / s;
+        }
+        a += delta;
+        if (a < 0) {
+            a = 0;
+        }
+        if (a > 0xFF) {
+            a = 0xFF;
+        }
+        *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
+        *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+        p[0x43] = a;
+        a = p[0x43];
+        p[0x42] = a;
+        p[0x41] = a;
+        p[0x40] = a;
+        *(s16*)(p + 0x4A) = *(s16*)(p + 0x4A) - 1;
+    } else {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x0014C79C size:0x94 mapped:0x8078B830
@@ -1066,8 +1216,39 @@ u32 fn_3_14DD04(u8* o) {
 }
 
 // .text:0x0014DF6C size:0x2C8 mapped:0x8078D000
-void fn_3_14DF6C(void) {
-    return;
+void fn_3_14DF6C(u8* o, f32* v) {
+    u8* p;
+    u8* d;
+    f32 h;
+    f32 t;
+    s32 n;
+    s32 r;
+    p = *(u8**)(o + 0xC);
+    *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    d = lbl_3_data_26CD0;
+    do {
+        p[0x4D] = *(s32*)d;
+        p[0x4E] = 0;
+        *(f32*)(p + 4) = v[0] + (f32)(rand() % 1000 - 500) / lbl_3_rodata_39C0;
+        *(f32*)(p + 8) = -(lbl_3_rodata_39E0 + v[1]);
+        *(f32*)(p + 0xC) = v[2] + (f32)(rand() % 1000 - 500) / lbl_3_rodata_39C0;
+        *(f32*)(p + 0x18) = lbl_3_rodata_3934[0];
+        *(f32*)(p + 0x10) = lbl_3_rodata_3934[0];
+        *(f32*)(p + 0x14) = (f32)*(s32*)(d + 0x24) / lbl_3_rodata_3930;
+        h = *(f32*)(p + 0x14);
+        t = -(lbl_3_rodata_39C0 * (h * lbl_3_rodata_39F0) - (f32)(rand() % (s32)(lbl_3_rodata_39C0 * (h * lbl_3_rodata_39A8)))) / lbl_3_rodata_39C0;
+        *(f32*)(p + 0x14) = *(f32*)(p + 0x14) + t;
+        p[0x42] = 0xFF;
+        p[0x41] = 0xFF;
+        p[0x40] = 0xFF;
+        p[0x43] = *(s32*)(d + 0x18);
+        *(f32*)(p + 0x1C) = (f32)(rand() % 1000 + 500) / lbl_3_rodata_39C0;
+        h = (f32)*(s32*)(d + 0xC) / lbl_3_rodata_3930;
+        *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = h * *(f32*)(p + 0x1C);
+        *(s16*)(p + 0x4A) = *(s32*)(d + 8);
+        *(s16*)(p + 0x48) = 0;
+        p = *(u8**)p;
+    } while (p != NULL);
 }
 
 // .text:0x0014E234 size:0x58C mapped:0x8078D2C8
@@ -1323,8 +1504,31 @@ void fn_3_150940(void) {
 }
 
 // .text:0x00150D84 size:0x2E4 mapped:0x8078FE18
-void fn_3_150D84(void) {
-    return;
+void fn_3_150D84(u8* a, u8* o) {
+    s32* d;
+    f32 ang;
+    f32 s;
+    d = (s32*)lbl_3_data_26C3C;
+    *(s16*)(o + 0x4A) = d[20];
+    *(f32*)(o + 4) = *(f32*)(a + 0x1C);
+    *(f32*)(o + 8) = -*(f32*)(a + 0x20);
+    *(f32*)(o + 0xC) = *(f32*)(a + 0x24);
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)(d[10] + rand() % (d[11] - d[10])) / lbl_3_rodata_3930;
+    d = (s32*)lbl_3_data_26C3C;
+    *(f32*)(o + 0x14) = (f32)(d[12] + rand() % (d[13] - d[12])) / lbl_3_rodata_3930;
+    d = (s32*)lbl_3_data_26C3C;
+    ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 36000) / lbl_3_rodata_39E8);
+    d = (s32*)lbl_3_data_26C3C;
+    s = (f32)(d[16] + rand() % (d[17] - d[16])) / lbl_3_rodata_3930;
+    *(f32*)(o + 0x10) = s * (f32)cos(ang);
+    *(f32*)(o + 0x18) = s * (f32)sin(ang);
+    d = (s32*)lbl_3_data_26C3C;
+    *(f32*)(o + 0x1C) = lbl_3_rodata_39AC * ((f32)(d[18] + rand() % (d[19] - d[18])) / lbl_3_rodata_3930);
+    *(f32*)(o + 0x1C) = *(f32*)(o + 0x1C) * (f32)(-(rand() % 2 * 2) + 1);
+    o[0x43] = 0xFF;
+    o[0x42] = 0xFF;
+    o[0x41] = 0xFF;
+    o[0x40] = 0xFF;
 }
 
 // .text:0x00151068 size:0x19C mapped:0x807900FC
@@ -1738,8 +1942,33 @@ void fn_3_1552AC(void) {
 }
 
 // .text:0x001559E4 size:0x244 mapped:0x80794A78
-void fn_3_1559E4(void) {
-    return;
+// 99%: only float regs of the post-PSMTXMultVec add block are shifted (orig v.x=f2,pos0=f1,v.y=f0; ours f1,f0,f3)
+void fn_3_1559E4(u8* o, f32* pos, f32* rot) {
+    struct { Control c; u32 pad[2]; } cc;
+    Mtx m;
+    Vec v;
+    Vec dir;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+    cc.c.type = 0;
+    CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
+    CTRLBuildMatrix(&cc.c, m);
+    if (g_Minigame[0x1A2A] == 1) {
+        dir = lbl_3_data_26BB4;
+    } else {
+        PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
+    }
+    v.x = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.x);
+    v.y = dir.y;
+    v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
+    PSMTXMultVec(m, &v, &v);
+    v.x = v.x + pos[0];
+    v.y = (f32)((f64)v.y - __fabs(pos[1]));
+    v.z = v.z + pos[2];
+    *(f32*)(o + 4) = v.x;
+    *(f32*)(o + 8) = v.y;
+    *(f32*)(o + 0xC) = v.z;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
+    o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
 }
 
 // .text:0x00155C28 size:0x2E0 mapped:0x80794CBC
@@ -1837,14 +2066,82 @@ void fn_3_1578F8(void) {
 }
 
 // .text:0x0015791C size:0x1A8 mapped:0x807969B0
-void fn_3_15791C(void) {
-    return;
+f32 fn_3_15791C(s32 i) {
+    s32 q = (i + 0x30) / 120;
+    s32 t = (i + 0x30) % 120;
+    f32 c;
+    f32 r;
+    if (t >= 48) {
+        c = cos(lbl_3_rodata_3A34 * (lbl_3_rodata_392C + ((f32)t - lbl_3_rodata_3A38) / lbl_3_rodata_3A3C));
+    } else {
+        c = cos(lbl_3_rodata_3A34 * ((f32)t / lbl_3_rodata_3A38));
+    }
+    r = c * lbl_3_rodata_39A8;
+    r += lbl_3_rodata_39A8;
+    if (q != 0) {
+        u8 gs = g_GameLogic[0x11E];
+        if (gs != 0xE && gs != 0x22 && gs != 0x24 && gs != 0x26) {
+            r += lbl_3_rodata_39A8 * ((f32)i - lbl_3_rodata_3A3C) / lbl_3_rodata_3A40;
+        }
+    }
+    return lbl_3_rodata_3A44 * r;
 }
 
+// 95%: wave code is fn_3_15791C inlined by hand (call keeps f3/f4 swapped); only the 38D0 Vec copy loads are scheduled above the prologue stores
 // .text:0x00157AC4 size:0x2F4 mapped:0x80796B58
-void fn_3_157AC4(void) {
-    return;
+u32 fn_3_157AC4(u8* o) {
+    Mtx m;
+    s32 q;
+    s32 i;
+    u8* p;
+    s32 t;
+    f32 w;
+    f32 c;
+    f32 r;
+    u32 res;
+    Vec dir;
+    p = *(u8**)(o + 0xC);
+    dir = lbl_3_rodata_38D0;
+    PSMTXRotRad(m, 'Y', shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8)));
+    PSMTXMultVec(m, &dir, &dir);
+    i = *(s32*)(o + 0x18);
+    q = (i + 0x30) / 120;
+    t = (i + 0x30) % 120;
+    if (t >= 48) {
+        c = cos(lbl_3_rodata_3A34 * (lbl_3_rodata_392C + ((f32)t - lbl_3_rodata_3A38) / lbl_3_rodata_3A3C));
+    } else {
+        c = cos(lbl_3_rodata_3A34 * ((f32)t / lbl_3_rodata_3A38));
+    }
+    r = c * lbl_3_rodata_39A8;
+    r += lbl_3_rodata_39A8;
+    if (q != 0) {
+        u8 gs = g_GameLogic[0x11E];
+        if (gs != 0xE && gs != 0x22 && gs != 0x24 && gs != 0x26) {
+            r += lbl_3_rodata_39A8 * ((f32)i - lbl_3_rodata_3A3C) / lbl_3_rodata_3A40;
+        }
+    }
+    w = lbl_3_rodata_3A44 * r;
+    *(f32*)(p + 0x3C) = w;
+    *(f32*)(p + 0x38) = w;
+    *(f32*)(p + 4) = *(f32*)(g_Minigame + 0x1AE0) + dir.x + *(f32*)(p + 0x38) * lbl_3_data_266A8[0];
+    *(f32*)(p + 8) = *(f32*)(g_Minigame + 0x1AE4) + dir.y + *(f32*)(p + 0x3C) * lbl_3_data_266A8[1];
+    *(f32*)(p + 0xC) = *(f32*)(g_Minigame + 0x1AE8) + dir.z;
+    fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+    fn_80033CC8(*(void**)(o + 0xC), *(void**)(lbl_3_common_bss_32724 + 0x64));
+    if (lbl_80366158[0x28] == 0) {
+        *(s32*)(o + 0x18) += 1;
+    }
+    if (g_Minigame[0x1A40] != 0) {
+        res = 1;
+    } else {
+        res = 0;
+        if (*(s32*)(o + 0x18) == *(s32*)(o + 0x1C)) {
+            if (g_GameLogic[0x11E] != 0xE) {
+                res = 1;
+            }
+        }
+    }
+    return res;
 }
-
 
 #pragma dont_inline off
