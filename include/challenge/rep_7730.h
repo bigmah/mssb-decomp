@@ -70,4 +70,6 @@ void fn_1_26A34(void);
 
 void fn_1_246AC(void);
 
+void fn_1_26928(void);
+
 #endif

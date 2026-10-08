@@ -41,6 +41,42 @@ extern const f32 lbl_1_rodata_7814[];
 extern const f32 lbl_1_rodata_7820[];
 extern Mtx44 lbl_1_bss_47010;
 extern void (*lbl_1_data_104A8[])(void);
+extern void* lbl_80366158[];
+extern void fn_1_267F4(void);
+extern void fn_1_25C68(void);
+
+// fn_1_26928, size:0x10C
+void fn_1_26928(void) {
+    u8* queue = lbl_803CC1B8[0];
+    u16 repeated = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (repeated & 2) {
+        queue[0x20]++;
+        if (queue[0x20] == queue[0x1F]) {
+            queue[0x20] = 0;
+        }
+    } else if (repeated & 1) {
+        if (queue[0x20] == 0) {
+            queue[0x20] = queue[0x1F];
+        }
+        queue[0x20]--;
+    } else {
+        u16 pressed = lbl_803C77B8._02;
+        if (pressed & 0x100) {
+            queue[0x1E] = 0;
+            *(void (**)(void))lbl_803CC1B8[0] = fn_1_267F4;
+        } else if (pressed & 0x200) {
+            ChallengeTransfer* transfer;
+            fn_800AD038(lbl_80366158[2]);
+            transfer = *(ChallengeTransfer**)(lbl_803CC1B8[0] + 0x0C);
+            transfer->complete = 1;
+            fn_800B0A14_removeQueue(transfer);
+        } else if (pressed & 0x1000) {
+            *(void (**)(void))queue = fn_1_25C68;
+        }
+    }
+    fn_800B24D4(4);
+    fn_800B1188();
+}
 
 // fn_1_246AC, size:0xCC
 void fn_1_246AC(void) {
