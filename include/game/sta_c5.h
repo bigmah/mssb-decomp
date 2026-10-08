@@ -37,7 +37,7 @@ void fn_3_F1750(void);
 void fn_3_F18A4(u8* p);
 void fn_3_F193C(void);
 void fn_3_F1E2C(void);
-void fn_3_F22FC(void);
+void fn_3_F22FC(u8* p, s32 idx);
 void fn_3_F2448(void);
 void fn_3_F2724(void);
 void fn_3_F2938(void);

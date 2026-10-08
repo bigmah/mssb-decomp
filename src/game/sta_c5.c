@@ -47,7 +47,7 @@ extern void* memset(void*, s32, u32);
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
-extern f32 lbl_3_rodata_2DDC;
+extern const f32 lbl_3_rodata_2DDC;
 extern f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
 extern f32 lbl_3_rodata_2D74;
@@ -56,7 +56,7 @@ extern u8 lbl_800E8754[];
 extern void fn_3_CB7E8(f32, f32, f32);
 extern char lbl_3_rodata_2D38[];
 extern f64 lbl_3_rodata_2DD0;
-extern f32 lbl_3_rodata_2D54;
+extern const f32 lbl_3_rodata_2D54;
 extern f32 lbl_3_rodata_2DD8;
 extern u8 lbl_3_data_1B820[];
 extern u8 fn_800527C4(void*);
@@ -543,9 +543,49 @@ void fn_3_F1E2C(void) {
 }
 
 // .text:0x000F22FC size:0x14C mapped:0x80731390
-void fn_3_F22FC(void) {
-    return;
+extern void fn_3_253A4(s8, s16);
+extern s16 fn_3_9FB8C(f32, f32);
+extern u8 g_Fielders[];
+extern u8 lbl_3_bss_B21B;
+extern u8 lbl_3_bss_B21C;
+extern const f32 lbl_3_rodata_2E40;
+extern const f32 lbl_3_rodata_2D54;
+typedef struct {
+    u8 p0[0xAC];
+    f32 a;
+    f32 p1[2];
+    f32 b8;
+    f32 bc;
+    u8 p2;
+    s8 c1;
+    u8 p3[4];
+    u8 c6;
+    u8 p4[0xE8 - 0xC7];
+} StObjE8;
+void fn_3_F22FC(u8* p, s32 idx) {
+    Vec d;
+    s8 id = idx;
+    u8* f = g_Fielders + id * 0x268;
+    u8* cnt;
+    StObjE8* o;
+    u32 i;
+    PSVECSubtract((Vec*)f, (Vec*)(p + 0xA0), &d);
+    d.y = lbl_3_rodata_2D5C;
+    PSVECNormalize(&d, &d);
+    fn_3_253A4(id, (s16)fn_3_9FB8C(d.x, d.z));
+    fn_800527C4(p + 0xA0);
+    cnt = f + 0x217;
+    for (i = 0; i < lbl_3_bss_B21C; i++) {
+        o = (StObjE8*)(*(u8**)lbl_3_common_bss_350E4) + (lbl_3_bss_B21B + i);
+        if (o->c6 == 3 && o->c1 == (s8)idx) {
+            o->b8 = lbl_3_rodata_2DDC * (-o->a - lbl_3_rodata_2E40);
+            o->c6 = 4;
+            o->bc = lbl_3_rodata_2D54;
+            (*cnt)--;
+        }
+    }
 }
+
 
 // .text:0x000F2448 size:0x2DC mapped:0x807314DC
 void fn_3_F2448(void) {
