@@ -103,7 +103,21 @@ void fn_3_8CF0(void) {
 
 // .text:0x0000904C size:0x214 mapped:0x806480E0
 void fn_3_904C(void) {
-    return;
+    u8 st;
+    *(f32*)(g_Ball + 0x318) = 0.3f * *(f32*)(g_Ball + 0x318);
+    *(f32*)(g_Ball + 0x31C) = 0.3f * *(f32*)(g_Ball + 0x31C);
+    *(f32*)(g_Ball + 0x320) = 0.3f * *(f32*)(g_Ball + 0x320);
+    st = g_Ball[0x1BD1];
+    if (st == 1) {
+        g_Ball[0x1BDC] = 1;
+    } else if (*(s16*)(g_Ball + 0x1B7A) != -1) {
+        if (*(s16*)(g_Ball + 0x1B7A) == 0 || st == 1 || (g_Ball[0x1BD7] == 0 && g_Ball[0x1BD8] != 0 && g_Ball[0x1BD6] == 0)) {
+            fn_3_9FA4();
+            g_Ball[0x1BDC] = 1;
+        } else {
+            fn_3_9E84();
+        }
+    }
 }
 
 // .text:0x00009260 size:0x2A8 mapped:0x806482F4
