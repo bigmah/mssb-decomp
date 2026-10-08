@@ -11,3 +11,10 @@ u8 fn_800BD2B0(u32* value) {
     }
     return lbl_803CC220;
 }
+
+// fn_800BD2CC, size:0x10
+void fn_800BD2CC(u8 flag, u32* value) {
+    u32 input = *value;
+    lbl_803CC220 = flag;
+    lbl_803CC224 = input;
+}
