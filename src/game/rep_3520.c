@@ -1,6 +1,7 @@
 #include "game/rep_3520.h"
 #include "game/rep_1838.h"
 #include "game/rep_540.h"
+#include "game/rep_AC8.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/stl.h"
 #include "game/UnknownHomes_Game.h"
@@ -430,13 +431,115 @@ void fn_3_135924(void) {
 }
 
 // .text:0x00135A64 size:0x1B4 mapped:0x80774AF8
+extern f32 lbl_3_rodata_3640;
+extern f32 lbl_3_data_219AC[];
+extern f32 lbl_3_data_21A54[];
+extern f32 lbl_3_data_47BC[];
+// 98%: g_Minigame base lands in r5 then mr r27 (orig addi r27 directly); a/b loop incr order differs
 void fn_3_135A64(void) {
-    return;
+    u8* b;
+    u8* a;
+    s32 t;
+    u8* p;
+    s32 j;
+    f32 d;
+    u8* q;
+    u8* g = G8;
+    s16 ang;
+    u8* f;
+    s32 i;
+    if (g[0x190B] == 0 && !(*(f32*)(g + 0x1D48) < lbl_3_rodata_3640)) {
+        p = g;
+        q = g;
+        for (i = 0; i < 4; p += 1, q += 2, i++) {
+            t = p[0x18F8];
+            if ((s8)t < 0 || i == (s8)g[0x1D6D] || p[0x1D6E] != 0) {
+                continue;
+            }
+            f = (u8*)g_Fielders + (s8)t * 0x268;
+            if (f[0x203] != 0 && f[0x204] > 3) {
+                continue;
+            }
+            ang = ((int (*)(f32, f32))fn_3_9FB8C)(*(f32*)f - lbl_3_data_219AC[0], *(f32*)(f + 8) - lbl_3_data_219AC[2]);
+            a = g;
+            b = g;
+            for (j = 0; j < 4; a += 0x18, j++, b += 2) {
+                if (fn_3_9FCF8(ang, *(s16*)(b + 0x1D64)) > 0x200) {
+                    continue;
+                }
+                d = fn_3_9EFD0((VecXYZ*)(a + 0x1CE8), (VecXYZ*)(a + 0x1CF4), (VecXYZ*)f, 0);
+                if (d < lbl_3_data_21A54[2] + lbl_3_data_47BC[f[0x1C9]] && d >= lbl_3_rodata_35D0) {
+                    fn_3_1360BC(i);
+                    p[0x1D6E] = 3;
+                    *(s16*)(q + 0x1D5A) = 0;
+                    fn_3_25844(*(s8*)(p + 0x18F8), 2);
+                    fn_3_6C854(*(s8*)(p + 0x18CC), 2);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 // .text:0x00135C18 size:0x220 mapped:0x80774CAC
+extern void fn_3_156548(u32, f32, f32, f32);
+extern void fn_3_15730C(u32, f32, f32, f32);
+// 97%: structure and float regs match; int saved regs (gp/ge/ep/i/k/n) and prologue lis order differ
 void fn_3_135C18(void) {
-    return;
+    u8* e;
+    f32 spC;
+    s32 i = 0;
+    f32* sz;
+    f32 lo;
+    u8* ep;
+    u8* ge = G8;
+    f32* sx;
+    s32 k;
+    u8* gp;
+    f32 mid;
+    f32 step;
+    f32 v;
+    f32 sp8;
+    s32 n;
+    f32 zero = lbl_3_rodata_35D0;
+    ep = G8;
+    n = 0;
+    gp = G8;
+    lo = *(f32*)(G8 + 0x1D48) * lbl_3_data_21A54[1] - lbl_3_data_21A54[0];
+    step = (lbl_3_data_21A54[1] - lbl_3_data_21A54[0]) / (f32)(&lbl_3_data_21A60)[1];
+    mid = lo + lbl_3_data_21A54[0];
+    do {
+        getComponentsFromSAng(*(s16*)(gp + 0x1D64), &spC, &sp8);
+        v = lo;
+        e = ep;
+        sx = (f32*)(ge + 0x1CE8);
+        sz = (f32*)(ge + 0x1CF0);
+        k = 0;
+        *(f32*)(ge + 0x1CE8) = spC * lbl_3_data_21A54[0] + lbl_3_data_21A48[0];
+        *(f32*)(ge + 0x1CF0) = sp8 * lbl_3_data_21A54[0] + lbl_3_data_21A48[2];
+        *(f32*)(ge + 0x1CF4) = spC * mid + lbl_3_data_21A48[0];
+        *(f32*)(ge + 0x1CFC) = sp8 * mid + lbl_3_data_21A48[2];
+        spC = (*(f32*)(ge + 0x1CF4) - *(f32*)(ge + 0x1CE8)) / lo;
+        sp8 = (*(f32*)(ge + 0x1CFC) - *(f32*)(ge + 0x1CF0)) / lo;
+        for (; k < (&lbl_3_data_21A60)[1]; k++, e += 0x28, ep += 0x28, n++) {
+            *(f32*)(e + 0xA8) = spC * v + sx[0];
+            *(f32*)(e + 0xB0) = sp8 * v + sz[0];
+            if (v < zero) {
+                e[0xCE] = 0;
+            } else {
+                v -= step;
+                if (e[0xCE] != 0) {
+                    fn_3_156548(n, *(f32*)(e + 0xA8), -*(f32*)(e + 0xAC), *(f32*)(e + 0xB0));
+                } else {
+                    fn_3_15730C(n, *(f32*)(e + 0xA8), -*(f32*)(e + 0xAC), *(f32*)(e + 0xB0));
+                    e[0xCE] = 1;
+                }
+            }
+        }
+        i++;
+        ge += 0x18;
+        gp += 2;
+    } while (i < 4);
 }
 
 // .text:0x00135E38 size:0x60 mapped:0x80774ECC
@@ -547,13 +650,90 @@ void fn_3_13688C(void) {
 }
 
 // .text:0x00136CF4 size:0x1B0 mapped:0x80775D88
-void fn_3_136CF4(void) {
-    return;
+extern f32 lbl_3_data_21AF8[];
+extern s16 lbl_3_data_21B10[];
+extern u8 lbl_3_data_21B16;
+extern f32 lbl_3_rodata_3658;
+extern f32 lbl_3_rodata_3660;
+extern void fn_800115C8();
+// 99.5%: only the first block differs (pu extsb lands in r4, orig lbz r3 / extsb r5 / lha r4); rest matches
+void fn_3_136CF4(u8* o) {
+    u8* g = G8;
+    s32 pu;
+    s16 t;
+    f32 ang;
+    pu = (s8)g[0x1D74];
+    if (pu != -1) {
+        t = *(s16*)(g + 0x1D58) - 1;
+        *(s16*)(g + 0x1D58) = t;
+        if (t <= 0) {
+            if ((s8)g[0x1D6D] != pu) {
+                fn_800115C8();
+            }
+            ((s8*)g)[0x1D74] = -1;
+        }
+    } else {
+        *(s16*)(o + 0x1C) -= 1;
+        if (*(s16*)(o + 0x1C) <= 0) {
+            if ((s8)(rand() % 100 - lbl_3_data_21B16) < 0) {
+                o[0x1E] = 1;
+            } else {
+                o[0x1E] = 2;
+            }
+            *(f32*)o = lbl_3_data_219AC[0];
+            *(f32*)(o + 4) = lbl_3_data_219AC[1];
+            *(f32*)(o + 8) = lbl_3_data_219AC[2];
+            *(f32*)(o + 0x10) = lbl_3_data_21AF8[0];
+            ang = lbl_3_rodata_3660 * (lbl_3_rodata_3658 * ((f32)rand() / lbl_3_rodata_365C));
+            *(f32*)(o + 0xC) = lbl_3_data_21AF8[1] * (f32)cos(ang);
+            *(f32*)(o + 0x14) = lbl_3_data_21AF8[1] * (f32)sin(ang);
+            *(s16*)(o + 0x1C) = lbl_3_data_21B10[1];
+        }
+    }
 }
 
 // .text:0x00136EA4 size:0x1FC mapped:0x80775F38
+// 99%: same pu/extsb register block as fn_3_136CF4 differs (r4/r5 vs orig r5/r3)
 void fn_3_136EA4(void) {
-    return;
+    u8* g = G8;
+    s32 pu;
+    s16 t;
+    f32 ang;
+    if (g[0x190B] != 0) {
+        ((s8*)g)[0x1D74] = -1;
+        g[0xCCE] = 0;
+    } else if (g[0xCCE] != 0) {
+        ((void (*)(u8*))fn_3_13688C)(g + 0xCB0);
+    } else {
+        pu = (s8)g[0x1D74];
+        if (pu != -1) {
+            t = *(s16*)(g + 0x1D58) - 1;
+            *(s16*)(g + 0x1D58) = t;
+            if (t <= 0) {
+                if ((s8)g[0x1D6D] != pu) {
+                    fn_800115C8();
+                }
+                ((s8*)g)[0x1D74] = -1;
+            }
+        } else {
+            *(s16*)(g + 0xCCC) -= 1;
+            if (*(s16*)(g + 0xCCC) <= 0) {
+                if ((s8)(rand() % 100 - lbl_3_data_21B16) < 0) {
+                    g[0xCCE] = 1;
+                } else {
+                    g[0xCCE] = 2;
+                }
+                *(f32*)(G8 + 0xCB0) = lbl_3_data_219AC[0];
+                *(f32*)(G8 + 0xCB4) = lbl_3_data_219AC[1];
+                *(f32*)(G8 + 0xCB8) = lbl_3_data_219AC[2];
+                *(f32*)(G8 + 0xCC0) = lbl_3_data_21AF8[0];
+                ang = lbl_3_rodata_3660 * (lbl_3_rodata_3658 * ((f32)rand() / lbl_3_rodata_365C));
+                *(f32*)(G8 + 0xCBC) = lbl_3_data_21AF8[1] * (f32)cos(ang);
+                *(f32*)(G8 + 0xCC4) = lbl_3_data_21AF8[1] * (f32)sin(ang);
+                *(s16*)(g + 0xCCC) = lbl_3_data_21B10[1];
+            }
+        }
+    }
 }
 
 // .text:0x001370A0 size:0x148 mapped:0x80776134
