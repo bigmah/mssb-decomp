@@ -20,14 +20,21 @@ typedef struct {
     Vec position;
     Vec previousPosition;
     Vec velocity;
-    u8 _24[0x14];
+    u8 _24[0x0C];
+    f32 angle30;
+    f32 angle34;
     f32 _38;
     u8 _3C[0x10];
     f32 heading;
     f32 _50;
-    u8 _54[0x2C];
+    u8 _54[0x18];
+    f32 storedX;
+    f32 storedZ;
+    u8 _74[0x0C];
     s32 objectId;
-    u8 _84[0x3C];
+    u8 _84[0x37];
+    u8 flagBB;
+    u8 _BC[4];
     s8 flagC0;
     u8 _C1[3];
     u8 flagC4;
@@ -57,6 +64,32 @@ extern const f32 lbl_2_rodata_C38;
 extern const f32 lbl_2_rodata_B5C;
 extern const f32 lbl_2_rodata_B60;
 extern const f32 lbl_2_rodata_B64;
+
+// fn_2_6AB3C, size:0xC0
+void fn_2_6AB3C(s32 index, const Vec* position, f32 heading) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    f32 x;
+    f32 z;
+    f32 angle;
+
+    memcpy(&entry->position, position, sizeof(Vec));
+    entry->previousPosition.x = lbl_2_rodata_B58;
+    entry->previousPosition.y = lbl_2_rodata_B58;
+    entry->previousPosition.z = lbl_2_rodata_B58;
+    entry->velocity.x = lbl_2_rodata_B58;
+    entry->velocity.y = lbl_2_rodata_B58;
+    entry->velocity.z = lbl_2_rodata_B58;
+    entry->angle30 = heading;
+    entry->storedX = entry->position.x;
+    entry->storedZ = entry->position.z;
+    entry->_38 = lbl_2_rodata_B58;
+    entry->flagBB = 0;
+    x = -entry->position.x;
+    z = -entry->position.z;
+    angle = (f32)atan2(-x, -z);
+    entry->angle34 = angle;
+    entry->angle30 = angle;
+}
 extern u8* lbl_2_bss_1A824C[];
 
 typedef struct {
