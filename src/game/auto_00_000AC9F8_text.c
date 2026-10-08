@@ -79,3 +79,7 @@ void fn_3_B0D7C(void) {
     g_Pitcher.fastBallSpeed = 0x91;
     g_Pitcher.cursedBallStat = 0x64;
 }
+
+// fn_3_B0D78, size:0x4
+void fn_3_B0D78(void) {
+}

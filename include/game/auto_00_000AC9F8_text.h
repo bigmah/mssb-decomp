@@ -21,4 +21,6 @@ s32 fn_3_B0CF4(void);
 
 void fn_3_B0D7C(void);
 
+void fn_3_B0D78(void);
+
 #endif
