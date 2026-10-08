@@ -28,6 +28,10 @@ extern f32 lbl_3_rodata_B70;
 extern f32 lbl_3_rodata_C24;
 extern int __float_nan[];
 #define NAN (*(f32*)__float_nan)
+int __abs(int);
+#ifndef ABS
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#endif
 f64 __frsqrte(f64);
 extern f64 lbl_3_rodata_B30;
 extern f64 lbl_3_rodata_B38;
@@ -672,7 +676,33 @@ void fn_3_37114(void) {
 
 // .text:0x0003740C size:0x17C mapped:0x806764A0
 void fn_3_3740C(void) {
-    return;
+    s16 ang;
+    f32 mx = 0.0f;
+    s32 best = 0x1000;
+    s32 idx = -1;
+    s32 i;
+    if (g_Ball[0x1BC9] == 0 && *(s16*)(g_FieldingLogic + 0xB0) <= 5) {
+        for (i = 0; i < 6; i++) {
+            f32 v = *(f32*)(g_Fielders + i * 0x268 + 0x70);
+            if (v > mx) {
+                mx = v;
+            }
+        }
+        if (5.0f + mx < *(f32*)(g_Ball + 0x1A00)) {
+            ang = *(s16*)(g_Ball + 0x1B80);
+            for (i = 6; i < 9; i++) {
+                s32 d = __abs(ang - *(s16*)(g_Fielders + i * 0x268 + 0x180));
+                if (best > d) {
+                    best = d;
+                    idx = i;
+                }
+            }
+            *(s16*)(g_Ball + 0x1B80) = ang;
+            if (i >= 0) {
+                fn_3_38790(idx, 0);
+            }
+        }
+    }
 }
 
 // .text:0x00037588 size:0x88 mapped:0x8067661C
