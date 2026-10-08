@@ -21,8 +21,28 @@ extern void fn_3_5C74C(s32);
 extern void fn_3_5E2C4(void);
 extern void fn_3_79ACC(void);
 extern void fn_3_5D094(s32);
+extern void possiblyTransitionBlackScreen(void);
+extern void fn_3_5BAC(void);
 
 #pragma dont_inline on
+
+// fn_3_5FE88, size:0x88
+void fn_3_5FE88(void) {
+    GameControlsStruct* game = &g_GameLogic;
+    switch ((s32)game->_125) {
+    case 0:
+        fn_800B0A5C_insertQueue(possiblyTransitionBlackScreen, 2);
+        game->_125 = 1;
+        break;
+    case 1:
+        fn_800B0A5C_insertQueue(fn_3_5BAC, 4);
+        game->_125 = 2;
+        break;
+    default:
+        fn_3_5A6D4(5);
+        break;
+    }
+}
 
 // fn_3_5EDD8, size:0x80
 void fn_3_5EDD8(void) {
