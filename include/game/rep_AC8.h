@@ -121,7 +121,7 @@ void fn_3_3D304(void);
 void fn_3_3D6AC(void);
 s16 fn_3_3D7D4(int i);
 void fn_3_3DB78(void);
-void fn_3_3E34C(void);
+void fn_3_3E34C(int);
 void fn_3_3E468(void);
 void fn_3_3E690(void);
 void fn_3_3EB6C(void);
