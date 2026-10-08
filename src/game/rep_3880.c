@@ -46,6 +46,7 @@ extern void fn_80033620(void);
 extern void fn_80033F64(f32, f32, f32);
 extern void fn_80033CC8(void*, void*);
 extern u8 lbl_3_data_26D50[];
+extern u8 lbl_3_data_26CD0[];
 extern const f32 lbl_3_rodata_39E0;
 extern f32 shortAngleToRad(s16);
 extern u8 lbl_3_data_26E7C[];
@@ -338,7 +339,7 @@ void fn_3_14A164(void) {
     pitchingMachinePitching(0x24);
 }
 
-// 96%: float reg alloc in the 2nd branch (f1/f2 swapped), flag addr in r3 vs r4
+// 99%: only the flag base addr is addi r3 (orig: lis/addi r4 before stmw); computing delta after df in the else branch fixed the float regs
 // .text:0x0014A188 size:0x1F4 mapped:0x8078921C
 u32 fn_3_14A188(u8* o) {
     u8* p;
@@ -367,10 +368,10 @@ u32 fn_3_14A188(u8* o) {
                 delta = (*(s32*)(d + 0x28) - *(s32*)(d + 0x24)) / *(s32*)(d + 0x10);
             } else {
                 s = *(s32*)(d + 8) - *(s32*)(d + 0x10);
-                delta = (*(s32*)(d + 0x2C) - *(s32*)(d + 0x28)) / s;
                 q = (f32)*(s32*)(d + 0x20) / lbl_3_rodata_3930;
                 df = q + *(f32*)(p + 0x18);
                 df /= (f32)s;
+                delta = (*(s32*)(d + 0x2C) - *(s32*)(d + 0x28)) / s;
             }
             a += delta;
             if (a < 0) {
@@ -453,10 +454,10 @@ void fn_3_14AC40(void) {
     return;
 }
 
-// 95%: 0.0f load scheduled late (orig loads it via addi r4 before the first store); fadds dest regs
 // .text:0x0014B248 size:0x1AC mapped:0x8078A2DC
 void fn_3_14B248(u8* a, u8* b) {
     f32 c;
+    f32 sn;
     f32 ang;
     f32 r;
     f32 d;
@@ -470,7 +471,8 @@ void fn_3_14B248(u8* a, u8* b) {
     r = (f32)((f64)((u32)rand() % 200) / lbl_3_rodata_39C8);
     c = (f32)cos(ang);
     px = r * c;
-    py = r * (f32)sin(ang);
+    sn = (f32)sin(ang);
+    py = r * sn;
     *(f32*)(b + 4) = *(f32*)(a + 0x24) + px;
     *(f32*)(b + 8) = *(f32*)(a + 0x28) + py;
     *(f32*)(b + 0xC) = *(f32*)(a + 0x2C) + lbl_3_rodata_3934[0];
@@ -621,7 +623,6 @@ u32 fn_3_14BA40(u8* o) {
     return n == 0;
 }
 
-// 92%: right shape and saved regs; float math block order differs (orig converts 180.0/d[1], rand and n separately, consts via lfd sym@l not addi)
 // .text:0x0014BCB0 size:0x21C mapped:0x8078AD44
 void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
     u8* p;
@@ -632,6 +633,7 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
     f32 s;
     f32 c;
     f32 r;
+    f64 u;
     *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
     n = 0;
     p = *(u8**)(o + 0xC);
@@ -647,8 +649,10 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
             p[0x41] = *(s32*)(d + 0x20);
             p[0x42] = *(s32*)(d + 0x24);
             t = (f32)rand() / lbl_3_rodata_3970;
-            r = (f32)(lbl_3_rodata_39C4 * (lbl_3_rodata_3990 * ((f64)t - lbl_3_rodata_3968)));
-            ang = lbl_3_rodata_39B8 * (f32)(lbl_3_rodata_39D8 / (f64)*(s32*)(d + 4) * (f64)n);
+            u = (f64)t - lbl_3_rodata_3968;
+            u = lbl_3_rodata_3990 * u;
+            r = lbl_3_rodata_39C4 * u;
+            ang = lbl_3_rodata_39B8 * (f32)(360.0 / (f64)*(s32*)(d + 4) * (f64)n);
             c = (f32)cos(ang);
             *(f32*)(p + 4) = r * c + v[0];
             s = (f32)sin(ang);
@@ -911,8 +915,45 @@ void fn_3_14D318(u8* a) {
 }
 
 // .text:0x0014D44C size:0x288 mapped:0x8078C4E0
-void fn_3_14D44C(void) {
-    return;
+void fn_3_14D44C(u8* a, u32 kind0) {
+    u8 kind = kind0;
+    u8* p = *(u8**)(a + 0xC);
+    s32 n = 0;
+    do {
+        if (p[0x44] == 0 && *(s16*)(p + 0x4A) == 0) {
+            if (n < 3) {
+                f32* d = (f32*)lbl_3_data_21770;
+                f32* q;
+                f32 h = 0.5f;
+                p[0x44] = 1;
+                p[0x45] = kind;
+                p[0x46] = 0xFF;
+                p[0x4D] = lbl_3_data_26D00[0];
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[4];
+                p[0x43] = lbl_3_data_26D00[7];
+                q = (f32*)(g_Minigame + p[0x45] * 0x34 + 0x860);
+                *(f32*)(p + 4) = q[0];
+                *(f32*)(p + 8) = -(d[3] * h + q[1]);
+                *(f32*)(p + 0xC) = q[2];
+                *(f32*)(p + 4) = *(f32*)(p + 4) + (rand() % 100 - 50) / 100.0;
+                *(f32*)(p + 8) = *(f32*)(p + 8) + (rand() % 100 - 50) / 100.0;
+                *(s16*)(p + 0x4A) = lbl_3_data_26D00[17];
+                *(s16*)(p + 0x48) = 0;
+            } else {
+                p[0x44] = 2;
+                p[0x45] = kind;
+                p[0x46] = (n - 3) / 5;
+                p[0x4D] = lbl_3_data_26D00[1];
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[11];
+                p[0x43] = lbl_3_data_26D00[14];
+                *(s16*)(p + 0x48) = (n - 3) % 5 * 4 + 1;
+                *(s16*)(p + 0x4A) = lbl_3_data_26D00[18];
+            }
+            n++;
+            p[0x40] = p[0x41] = p[0x42] = 0xFF;
+        }
+        p = *(u8**)p;
+    } while (p != NULL && n < 0x2B);
 }
 
 // .text:0x0014D6D4 size:0x3C mapped:0x8078C768
@@ -949,8 +990,67 @@ void fn_3_14DCE0(void) {
 }
 
 // .text:0x0014DD04 size:0x268 mapped:0x8078CD98
-void fn_3_14DD04(void) {
-    return;
+u32 fn_3_14DD04(u8* o) {
+    u8* t;
+    u8* d;
+    u8* p;
+    u8** pp;
+    u8* prev;
+    s32 n;
+    s32 a;
+    s32 t8;
+    s32 delta;
+    f32 df;
+    n = 0;
+    t = fn_80031F34(*(void**)(o + 0xC), ((H154238*)o)->cnt);
+    *(u8**)(o + 0xC) = t;
+    p = t;
+    pp = (u8**)(o + 0xC);
+    prev = NULL;
+    GXSetZMode(1, 3, 1);
+    GXSetBlendMode(1, 4, 6, 0);
+    d = lbl_3_data_26CD0;
+    do {
+        if (*(s16*)(p + 0x4A) != 0) {
+            fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+            fn_80033CC8(p, *(void**)(o + 0x10));
+            *(f32*)(p + 8) = *(f32*)(p + 8) - *(f32*)(p + 0x14);
+            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) - (f32)*(s32*)(d + 0x28) / lbl_3_rodata_3930;
+            a = p[0x43];
+            t8 = *(s32*)(d + 8);
+            if (t8 / *(s16*)(p + 0x4A) < 2) {
+                df = *(f32*)(p + 0x1C) * ((f32)(*(s32*)(d + 0x10) - *(s32*)(d + 0xC)) / lbl_3_rodata_3930 / (f32)(t8 / 2));
+                delta = (*(s32*)(d + 0x1C) - *(s32*)(d + 0x18)) / (t8 / 2);
+            } else {
+                df = *(f32*)(p + 0x1C) * ((f32)(*(s32*)(d + 0x14) - *(s32*)(d + 0x10)) / lbl_3_rodata_3930 / (f32)(t8 / 2));
+                delta = (*(s32*)(d + 0x20) - *(s32*)(d + 0x1C)) / (t8 / 2);
+            }
+            a += delta;
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
+            *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+            if (a < 0) {
+                a = 0;
+            } else if (a > 0xFF) {
+                a = 0xFF;
+            }
+            p[0x43] = a;
+            *(s16*)(p + 0x4A) -= 1;
+            if (*(s16*)(p + 0x4A) == 0) {
+                *pp = *(u8**)p;
+                if (prev != NULL) {
+                    *(u8**)prev = p;
+                }
+                prev = p;
+                *(u8**)p = NULL;
+                ((H154238*)o)->cnt--;
+            } else {
+                pp = (u8**)p;
+                n++;
+            }
+        }
+        p = *pp;
+    } while (p != NULL);
+    return n == 0;
 }
 
 // .text:0x0014DF6C size:0x2C8 mapped:0x8078D000

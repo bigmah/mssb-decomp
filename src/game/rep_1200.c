@@ -57,13 +57,78 @@ void fn_3_6F748(void) {
 }
 
 // .text:0x0006FA28 size:0x170 mapped:0x806AEABC
+extern const f32 lbl_3_rodata_1254;
+extern void fn_3_DBD0(f32 z, f32 y, f32 x);
+extern f32 lbl_3_data_4388[][5];
+// 6FA28 and 6FB98 share this block (inlined). Both are ~55 diff lines: only f-reg/GPR allocation differs
+// (orig vy=f4/vx=f6, newY=f2, post-call Ball base r6; table lookup uses r4 base + r0 offset). 6FB98's tail matches.
+static inline void ballStep(void) {
+    f32* p;
+    f32 v;
+    f32 vy;
+    if (*(s16*)(g_Ball + 0x1B68) < 0x7FFE) {
+        *(s16*)(g_Ball + 0x1B68) += 1;
+    } else {
+        *(s16*)(g_Ball + 0x1B68) = 0x7FFF;
+    }
+    if (*(s16*)(g_Pitcher + 0x11E) < 0x7FFE) {
+        *(s16*)(g_Pitcher + 0x11E) += 1;
+    } else {
+        *(s16*)(g_Pitcher + 0x11E) = 0x7FFF;
+    }
+    *(f32*)(g_Ball + 0x3C) = *(f32*)(g_Ball + 0);
+    *(f32*)(g_Ball + 0x40) = *(f32*)(g_Ball + 4);
+    *(f32*)(g_Ball + 0x44) = *(f32*)(g_Ball + 8);
+    *(f32*)(g_Ball + 0x31C) = *(f32*)(g_Ball + 0x31C) - *(f32*)(g_Ball + 0x330);
+    fn_3_DBD0(*(f32*)(g_Ball + 8), *(f32*)(g_Ball + 4), *(f32*)(g_Ball + 0));
+    *(f32*)(g_Ball + 4) = *(f32*)(g_Ball + 4) + *(f32*)(g_Ball + 0x31C);
+    *(f32*)(g_Ball + 0) = *(f32*)(g_Ball + 0) + *(f32*)(g_Ball + 0x318);
+    *(f32*)(g_Ball + 8) = *(f32*)(g_Ball + 8) + *(f32*)(g_Ball + 0x320);
+    if (*(f32*)(g_Ball + 4) < *(f32*)(g_Ball + 0x1A28)) {
+        p = lbl_3_data_4388[g_d_GameSettings[9]];
+        vy = *(f32*)(g_Ball + 0x31C);
+        v = vy * -(vy * lbl_3_rodata_1250 - p[1]);
+        *(f32*)(g_Ball + 0x31C) = v;
+        *(f32*)(g_Ball + 0x31C) = -v;
+        if (*(f32*)(g_Ball + 0x31C) < lbl_3_rodata_1254) {
+            *(f32*)(g_Ball + 0x318) = *(f32*)(g_Ball + 0x318) * p[4];
+            *(f32*)(g_Ball + 0x320) = *(f32*)(g_Ball + 0x320) * p[4];
+        } else {
+            *(f32*)(g_Ball + 0x318) = *(f32*)(g_Ball + 0x318) * p[3];
+            *(f32*)(g_Ball + 0x320) = *(f32*)(g_Ball + 0x320) * p[3];
+        }
+        *(f32*)(g_Ball + 4) = *(f32*)(g_Ball + 0x1A28);
+    }
+}
 void fn_3_6FA28(void) {
-    return;
+    ballStep();
 }
 
 // .text:0x0006FB98 size:0x208 mapped:0x806AEC2C
+extern u8 g_Stats[];
+extern void fn_3_59918(s32, s32);
+extern u32 playSoundEffect(s32);
 void fn_3_6FB98(void) {
-    return;
+    u8* q;
+    ballStep();
+    {
+    u8* pp = g_Pitcher;
+    if (*(s16*)(pp + 0x120) == 10) {
+        fn_3_59918(0xB, 0);
+        g_Pitcher[0x13E] = 5;
+        *(s16*)(pp + 0x120) = 0;
+        if (g_GameLogic[0x14C] == 1) {
+            q = g_GameLogic + *(s32*)(g_GameLogic + 4);
+            if (*(q += 0x14A) < 5) {
+                *q += 1;
+                if (g_Stats[0x36] == 0) {
+                    playSoundEffect(0x19D);
+                }
+            }
+            g_GameLogic[0x14C] = 3;
+        }
+    }
+    }
 }
 
 // .text:0x0006FDA0 size:0x224 mapped:0x806AEE34
@@ -238,8 +303,54 @@ void fn_3_706B8(int idx) {
 }
 
 // .text:0x00070768 size:0xD0 mapped:0x806AF7FC
-void fn_3_70768(void) {
-    return;
+// near-match (13 diff lines): only the trailing lerp differs (orig computes z-pz before z-target and does not fuse px + dx*t into fmadds); ~1000 variants tried
+extern const f32 lbl_3_rodata_128C;
+extern const f32 lbl_3_rodata_1290;
+int fn_3_70768(f32* out, int flag, f32 target) {
+    int n = 0;
+    f32 z = *(f32*)(g_Pitcher + 8);
+    f32 x = *(f32*)(g_Pitcher + 0);
+    f32 vx = *(f32*)(g_Pitcher + 0x18);
+    f32 vy = *(f32*)(g_Pitcher + 0x1C);
+    f32 vz = *(f32*)(g_Pitcher + 0x20);
+    f32 add = *(f32*)(g_Pitcher + 0x5C);
+    f32 px, pz;
+    f32 fl, bo, dr;
+    f32 t;
+    if (z < target) {
+        return 0;
+    }
+    fl = *(f32*)(g_Pitcher + 0xB0);
+    bo = *(f32*)(g_Pitcher + 0xB4);
+    dr = *(f32*)(g_Pitcher + 0xBC);
+    do {
+        px = x;
+        pz = z;
+        n++;
+        if (z <= fl) {
+            f32 nvz = vz - vz * bo;
+            if (nvz < lbl_3_rodata_128C) {
+                vz = nvz;
+                vx = vx - vx * bo;
+                vy = vy - vy * bo;
+            }
+        }
+        vx *= dr;
+        vz *= dr;
+        vy *= dr;
+        x += vx;
+        z += vz;
+        if (flag != 0) {
+            x += add;
+        }
+    } while (!(z < target));
+    {
+        f32 dz = z - pz;
+        f32 num = z - target;
+        f32 dx = x - px;
+        *out = px + dx * (lbl_3_rodata_1290 - num / dz);
+    }
+    return n;
 }
 
 // .text:0x00070838 size:0x17C mapped:0x806AF8CC
@@ -545,8 +656,48 @@ void fn_3_74128(void) {
 }
 
 // .text:0x00074AC4 size:0x248 mapped:0x806B3B58
+extern u8 g_Controls[];
+extern u32 fn_3_107DB4(u8);
 void fn_3_74AC4(void) {
-    return;
+    s32 i = *(s32*)(g_GameLogic + 8);
+    u8* c = g_Controls + *(s32*)(g_GameLogic + i * 4 + 0xEC) * 16;
+    f32 add = lbl_3_rodata_1258;
+    if (g_d_GameSettings[7] == 2 && (s8)g_Practice[0x1C2] >= 0) {
+        c = g_Practice + i * 16;
+    } else {
+        u8* m = g_Minigame + 0x18CC;
+        if (fn_3_107DB4(m[(s8)g_Minigame[0x1904]]) != 0) {
+            c = g_Minigame + (s8)m[(s8)g_Minigame[0x1904]] * 16 + 0x1D7C;
+        } else if (g_d_GameSettings[0x11] != 0) {
+            c = g_Controls + (s8)m[(s8)g_Minigame[0x1904]] * 16;
+        }
+    }
+    if (*(u16*)(c + 4) & 0x40) {
+        g_Pitcher[0x172] = 1;
+    }
+    if (g_Pitcher[0x172] != 0) {
+        if (*(f32*)(g_Pitcher + 0x8C) >= -lbl_3_data_4474[3] && *(f32*)(g_Pitcher + 0x8C) <= lbl_3_data_4474[3]) {
+            g_Pitcher[0x172] = 0;
+            *(f32*)(g_Pitcher + 0x8C) = lbl_3_rodata_1258;
+        } else if (*(f32*)(g_Pitcher + 0x8C) < lbl_3_rodata_1258) {
+            *(f32*)(g_Pitcher + 0x8C) += lbl_3_data_4474[3];
+        } else {
+            *(f32*)(g_Pitcher + 0x8C) -= lbl_3_data_4474[3];
+        }
+        return;
+    }
+    if (*(u16*)(c + 4) & 1) {
+        add = -lbl_3_data_4474[2];
+    } else if (*(u16*)(c + 4) & 2) {
+        add = lbl_3_data_4474[2];
+    }
+    *(f32*)(g_Pitcher + 0x8C) = *(f32*)(g_Pitcher + 0x8C) + add;
+    if (*(f32*)(g_Pitcher + 0x8C) < lbl_3_data_4474[0]) {
+        *(f32*)(g_Pitcher + 0x8C) = lbl_3_data_4474[0];
+    }
+    if (*(f32*)(g_Pitcher + 0x8C) > lbl_3_data_4474[1]) {
+        *(f32*)(g_Pitcher + 0x8C) = lbl_3_data_4474[1];
+    }
 }
 
 // .text:0x00074D0C size:0x384 mapped:0x806B3DA0
