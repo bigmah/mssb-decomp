@@ -35,8 +35,8 @@ typedef struct { Vec v; f32 pad[2]; } V14;
 extern V14 lbl_3_data_1B884[];
 typedef struct { f32 a, b, c, d, e, f; } T18;
 extern T18 lbl_3_data_1B9A4[];
-extern f32 lbl_3_rodata_2D5C;
-extern f32 lbl_3_rodata_2D68;
+extern const f32 lbl_3_rodata_2D5C;
+extern const f32 lbl_3_rodata_2D68;
 extern char lbl_3_rodata_2DC4[];
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void* fn_3_B9534(u32, u32, void*);
@@ -45,41 +45,41 @@ extern s8 lbl_3_bss_AF18[];
 extern u8* lbl_3_bss_B118[];
 extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, void*, u32);
-extern f32 lbl_3_rodata_2D50;
-extern f32 lbl_3_rodata_2EE8;
-extern f32 lbl_3_rodata_2DEC;
+extern const f32 lbl_3_rodata_2D50;
+extern const f32 lbl_3_rodata_2EE8;
+extern const f32 lbl_3_rodata_2DEC;
 extern const f32 lbl_3_rodata_2DDC;
-extern f32 lbl_3_rodata_2E88;
+extern const f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
 extern f32 lbl_3_bss_AF04[];
-extern f32 lbl_3_rodata_2D58;
+extern const f32 lbl_3_rodata_2D58;
 extern u8 lbl_3_data_1BA70[];
 extern u8 lbl_3_data_1B824[];
 extern f64 __fabs(f64);
 extern u8* fn_80052768_getCamera(int);
 extern char lbl_3_rodata_2D44[];
-extern f32 lbl_3_rodata_2D50;
-extern f32 lbl_3_rodata_2DA0;
-extern f32 lbl_3_rodata_2DA4;
-extern f64 lbl_3_rodata_2DA8;
-extern f32 lbl_3_rodata_2DB0;
-extern f32 lbl_3_rodata_2DB4;
+extern const f32 lbl_3_rodata_2D50;
+extern const f32 lbl_3_rodata_2DA0;
+extern const f32 lbl_3_rodata_2DA4;
+extern const f64 lbl_3_rodata_2DA8;
+extern const f32 lbl_3_rodata_2DB0;
+extern const f32 lbl_3_rodata_2DB4;
 extern void DCFlushRange(void*, u32);
-extern f32 lbl_3_rodata_2D74;
-extern f32 lbl_3_rodata_2DF0;
+extern const f32 lbl_3_rodata_2D74;
+extern const f32 lbl_3_rodata_2DF0;
 extern u8 lbl_800E8754[];
 extern void fn_3_CB7E8(f32, f32, f32);
 extern char lbl_3_rodata_2D38[];
-extern f64 lbl_3_rodata_2DD0;
+extern const f64 lbl_3_rodata_2DD0;
 extern const f32 lbl_3_rodata_2D54;
-extern f32 lbl_3_rodata_2DD8;
+extern const f32 lbl_3_rodata_2DD8;
 extern u8 lbl_3_data_1B820[];
 extern u8 fn_800527C4(void*);
 extern void fn_80064430(void*, s32, f32, f32);
 extern f64 acos(f64);
-extern f64 lbl_3_rodata_2DE0;
-extern f32 lbl_3_rodata_2D70;
-extern f32 lbl_3_rodata_2DE8;
+extern const f64 lbl_3_rodata_2DE0;
+extern const f32 lbl_3_rodata_2D70;
+extern const f32 lbl_3_rodata_2DE8;
 extern f64 cos(f64);
 extern u8 lbl_803C5090[];
 extern void fn_8003A144(u8*, u8*);
@@ -208,8 +208,86 @@ void fn_3_EE388(void) {
 }
 
 // .text:0x000EE67C size:0x2F0 mapped:0x8072D710
-void fn_3_EE67C(void) {
-    return;
+void fn_3_EE67C(u8* a, f32 (*m)[4]) {
+    Mtx mtx;
+    GXVtxDescList list[27];
+    u8* node;
+    u8* h;
+    s32 sz;
+    s32 i;
+    s32 n;
+    s32 k;
+    s32 attr;
+    s32 v;
+    PSMTXConcat(m, (f32(*)[4])(a + 0x18), mtx);
+    GXLoadPosMtxImm(mtx, 0);
+    GXSetCurrentMtx(0);
+    h = *(u8**)a;
+    switch ((u8)(h[6] >> 4)) {
+    case 0:
+    case 1:
+        sz = 1;
+        break;
+    case 2:
+    case 3:
+        sz = 2;
+        break;
+    case 4:
+        sz = 4;
+        break;
+    default:
+        sz = 0;
+        break;
+    }
+    GXSetArray(GX_VA_POS, *(void**)h, (u8)(h[7] * sz));
+    h = *(u8**)a;
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_TEX_ST, h[6] >> 4, h[6] & 0xF);
+    GXSetNumTexGens(1);
+    node = *(u8**)(*(u8**)(a + 0x10) + 4);
+    for (i = 0; i < *(u16*)(*(u8**)(a + 0x10) + 8); i++) {
+        switch (node[0]) {
+        case 1:
+            break;
+        case 2:
+            GXClearVtxDesc();
+            n = 0;
+            v = *(u32*)(node + 4) & 3;
+            if (v != 0) {
+                list[0].mAttr = 0;
+                list[0].mType = v;
+                n = 1;
+            }
+            attr = 9;
+            for (k = 2; k < 26; k += 2) {
+                v = (*(u32*)(node + 4) >> k) & 3;
+                if (v != 0) {
+                    list[n].mAttr = attr;
+                    list[n].mType = v;
+                    n++;
+                }
+                attr++;
+            }
+            v = (*(u32*)(node + 4) >> 26) & 3;
+            if (v != 0) {
+                list[n].mAttr = attr;
+                list[n].mType = v;
+                n++;
+            }
+            list[n].mAttr = 0xFF;
+            GXSetVtxDescv(list);
+            break;
+        case 3:
+            GXSetChanCtrl(GX_COLOR0A0, 0, 0, 0, 0, 0, 2);
+            fn_3_EE100(a, m);
+            break;
+        case 4:
+            break;
+        }
+        if (*(void**)(node + 8) != NULL) {
+            GXCallDisplayList(*(void**)(node + 8), *(u32*)(node + 0xC));
+        }
+        node += 0x10;
+    }
 }
 
 // 90%: mtx stores: orig does first via base+0x23c and the second via a separate pointer reg (r3+0x10); const load order/addi forms differ
@@ -616,8 +694,47 @@ void fn_3_EF890(u8* p) {
 }
 
 // .text:0x000EF930 size:0x224 mapped:0x8072E9C4
-void fn_3_EF930(void) {
-    return;
+extern char lbl_3_rodata_2D24[];
+extern const f64 lbl_3_rodata_2DF8;
+extern const f64 lbl_3_rodata_2E00;
+void fn_3_EF930(u8* p) {
+    Quaternion q2;
+    Quaternion q1;
+    Vec c;
+    Vec e;
+    Vec w;
+    Vec axis;
+    f32 ang;
+    axis = *(Vec*)lbl_3_rodata_2D24;
+    e.x = lbl_3_rodata_2DF8 * (f32)cos(*(f32*)(p + 0xB8));
+    e.y = *(f32*)(p + 0xBC);
+    e.z = lbl_3_rodata_2DF8 * (f32)sin(*(f32*)(p + 0xB8));
+    PSVECAdd((Vec*)(p + 0xA0), &e, (Vec*)(p + 0xA0));
+    if (*(f32*)(p + 0xBC) < 0.0f && *(f32*)(p + 0xA4) - 1.0f < 0.0f) {
+        *(f32*)(p + 0xA0) = *(f32*)(p + 0xA0) - e.x;
+        *(f32*)(p + 0xA4) = 1.0f;
+        *(f32*)(p + 0xA8) = *(f32*)(p + 0xA8) - e.z;
+        p[0xC6] = 6;
+        p[0xC7] = 0x4B;
+    } else {
+        *(f32*)(p + 0xBC) -= lbl_3_rodata_2E00;
+    }
+    C_QUATRotAxisRad(&q1, &axis, -(lbl_3_rodata_2DDC * *(f32*)(p + 0xAC)));
+    e.y = -e.y;
+    w.x = -e.x;
+    w.y = lbl_3_rodata_2D58;
+    w.z = -e.z;
+    PSVECNormalize(&e, &e);
+    PSVECNormalize(&w, &w);
+    PSVECCrossProduct(&w, &e, &c);
+    ang = (f32)acos(PSVECDotProduct(&e, &w));
+    if (lbl_3_rodata_2D50 != ang && lbl_3_rodata_2D70 != ang) {
+        C_QUATRotAxisRad(&q2, &c, ang);
+        PSQUATMultiply(&q2, &q1, &q2);
+        PSQUATNormalize(&q2, &q2);
+        CTRLSetQuat((Control*)p, q2.x, q2.y, q2.z, q2.w);
+    }
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
 }
 
 // .text:0x000EFB54 size:0x630 mapped:0x8072EBE8
@@ -839,8 +956,80 @@ void fn_3_F22FC(u8* p, s32 idx) {
 
 
 // .text:0x000F2448 size:0x2DC mapped:0x807314DC
-void fn_3_F2448(void) {
-    return;
+extern char lbl_3_rodata_2CEC[];
+extern f64 __fabs(f64);
+extern const f64 lbl_3_rodata_2E58;
+extern const f64 lbl_3_rodata_2E60;
+extern const f32 lbl_3_rodata_2D70;
+extern const f32 lbl_3_rodata_2E50;
+extern s32 fn_8001B728(s32, s32, void*);
+extern void* memset(void*, s32, u32);
+typedef struct { u8 b[7]; } Ids7;
+s32 fn_3_F2448(u8* p) {
+    Ids7 ids;
+    Vec d;
+    Vec buf;
+    f32 c;
+    f32 s;
+    f32 s2;
+    f32 k;
+    f64 ta;
+    f64 tb;
+    f32 ax;
+    f32 az;
+    f32 lim;
+    u8* f;
+    u8* fb;
+    u32 i;
+    ids = *(Ids7*)lbl_3_rodata_2CEC;
+    sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    fb = g_Fielders;
+    k = lbl_3_rodata_2D70;
+    for (i = 0; i < 7; i++) {
+        f = fb + ids.b[i] * 0x268;
+        memset(&buf, 0, 0xC);
+        fn_8001B728(ids.b[i], 4, &buf);
+        buf.y = buf.y * k;
+        if (buf.y < *(f32*)(p + 0xA4)) {
+            lim = *(f32*)(f + 0x16C);
+        } else {
+            lim = lbl_3_rodata_2E50;
+        }
+        if (!(lim < __fabs(buf.y - *(f32*)(p + 0xA4))) && f != NULL && f[0x210] == 0) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            PSVECSubtract((Vec*)f, (Vec*)(p + 0xA0), &d);
+            c = (f32)cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+            s = (f32)sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+            s2 = (f32)sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+            {
+            f32 c2 = (f32)cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+            ta = __fabs(d.x * c + d.z * s);
+            tb = __fabs(d.x * -s2 + d.z * c2);
+            }
+            ax = ta;
+            az = tb;
+            if (ax <= lbl_3_rodata_2E58 && az <= lbl_3_rodata_2E60) {
+                stad = g_d_GameSettings[9];
+                if (g_d_GameSettings[7] == 6) {
+                    v = lbl_3_data_84B8[8];
+                } else {
+                    v = lbl_3_data_8404[stad * 0x1E + 8];
+                }
+                h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 4), v, 0x3F, 0);
+                if (g_d_GameSettings[7] == 6) {
+                    v = lbl_3_data_84B8[9];
+                } else {
+                    v = lbl_3_data_8404[stad * 0x1E + 9];
+                }
+                sndFXCtrl(h, 0x5B, v);
+                return (s8)ids.b[i];
+            }
+        }
+    }
+    return -1;
 }
 
 // .text:0x000F2724 size:0x214 mapped:0x807317B8
@@ -985,13 +1174,88 @@ void fn_3_F3BB0(u8* p) {
 }
 
 // .text:0x000F3CD0 size:0x22C mapped:0x80732D64
-void fn_3_F3CD0(void) {
-    return;
+extern void fn_80033620(void);
+extern void fn_80033F64(f32, f32, f32);
+extern void fn_80033CC8(u8*, s32);
+extern const f64 lbl_3_rodata_2EC0;
+extern const f64 lbl_3_rodata_2EC8;
+extern const f64 lbl_3_rodata_2ED0;
+extern const f32 lbl_3_rodata_2ED8;
+extern const f64 lbl_3_rodata_2EE0;
+u32 fn_3_F3CD0(u8* a) {
+    u8* e = *(u8**)(a + 0xC);
+    u32 cnt = 0;
+    fn_80033620();
+    do {
+        if (*(s16*)(e + 0x48) <= 0 && *(s16*)(e + 0x4A) != 0) {
+            fn_80033F64(*(f32*)(e + 0x38), *(f32*)(e + 0x3C), *(f32*)(e + 0x20));
+            fn_80033CC8(e, *(s32*)(a + 0x10));
+            if (-*(s16*)(e + 0x48) < 5) {
+                *(f32*)(e + 0x38) = *(f32*)(e + 0x38) + (*(f32*)(e + 0x28) - lbl_3_rodata_2EC0) / lbl_3_rodata_2EC8;
+                *(f32*)(e + 0x3C) = *(f32*)(e + 0x38);
+                e[0x43] = (s32)(e[0x43] + lbl_3_rodata_2ED0);
+            } else {
+                *(f32*)(e + 0x38) = *(f32*)(e + 0x38) + (*(f32*)(e + 0x2C) - *(f32*)(e + 0x28)) / lbl_3_rodata_2ED8;
+                *(f32*)(e + 0x3C) = *(f32*)(e + 0x38);
+                e[0x43] = (s32)(e[0x43] + lbl_3_rodata_2EE0 / (f64)(0x1EF - e[0x4F]));
+                if (e[0x43] >= 0x3C) {
+                    e[0x43] = 0;
+                }
+            }
+            *(f32*)(e + 0x4) = *(f32*)(e + 0x4) + *(f32*)(e + 0x10);
+            *(f32*)(e + 0x8) = *(f32*)(e + 0x8) + *(f32*)(e + 0x14);
+            *(f32*)(e + 0xC) = *(f32*)(e + 0xC) + *(f32*)(e + 0x18);
+            *(f32*)(e + 0x20) = *(f32*)(e + 0x1C) * *(f32*)(e + 0x24) + *(f32*)(e + 0x20);
+            *(s16*)(e + 0x4A) = *(s16*)(e + 0x4A) - 1;
+        }
+        *(s16*)(e + 0x48) = *(s16*)(e + 0x48) - 1;
+        if (*(s16*)(e + 0x4A) != 0) {
+            cnt++;
+        }
+        e = *(u8**)e;
+    } while (e != NULL);
+    return cnt == 0;
 }
 
 // .text:0x000F3EFC size:0x3A4 mapped:0x80732F90
-void fn_3_F3EFC(void) {
-    return;
+extern u32 lbl_3_bss_B560[];
+extern f32 lbl_3_bss_B260[];
+extern const f32 lbl_3_rodata_2E90;
+extern const f32 lbl_3_rodata_2DEC;
+extern const f64 lbl_3_rodata_2DF8;
+extern const f64 lbl_3_rodata_2E98;
+extern const f64 lbl_3_rodata_2EA0;
+extern const f64 lbl_3_rodata_2EA8;
+extern const f64 lbl_3_rodata_2EB0;
+void fn_3_F3EFC(u8* a) {
+    u8* e;
+    u8 i;
+    e = *(u8**)(a + 0xC);
+    *(u32*)(a + 0x10) = lbl_3_bss_B560[0];
+    i = 0;
+    for (; e != NULL; e = *(u8**)e) {
+        *(f32*)(e + 0x38) = *(f32*)(e + 0x3C) = lbl_3_rodata_2E30;
+        *(f32*)(e + 0x10) = *(f32*)(e + 0x18) = lbl_3_rodata_2D5C;
+        *(f32*)(e + 0x14) = lbl_3_rodata_2E90;
+        *(f32*)(e + 0x4) = lbl_3_bss_B260[0] + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0x8) = lbl_3_rodata_2EA0 + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0xC) = lbl_3_bss_B260[2] + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0x28) = lbl_3_rodata_2EA8 + (rand() % 300 - 150) / lbl_3_rodata_2E30;
+        *(f32*)(e + 0x2C) = lbl_3_rodata_2EB0 + (rand() % 300 - 150) / lbl_3_rodata_2E30;
+        e[0x4F] = i;
+        *(s16*)(e + 0x48) = i;
+        e[0x42] = 0xFF;
+        e[0x41] = 0xFF;
+        e[0x40] = 0xFF;
+        e[0x43] = 0;
+        *(s16*)(e + 0x4A) = 0x1F4 - e[0x4F];
+        *(f32*)(e + 0x1C) = lbl_3_rodata_2DF8 + (rand() % 50) / lbl_3_rodata_2DEC;
+        *(f32*)(e + 0x20) = lbl_3_rodata_2D5C;
+        *(f32*)(e + 0x24) = 1 - (rand() % 2) * 2;
+        e[0x4D] = 0xF;
+        e[0x4E] = 0;
+        i++;
+    }
 }
 
 // .text:0x000F42A0 size:0x3CC mapped:0x80733334
@@ -1058,8 +1322,55 @@ void fn_3_F4D00(u8* p) {
 }
 
 // .text:0x000F4DAC size:0x210 mapped:0x80733E40
+extern char lbl_3_rodata_2CBC[];
+extern const f32 lbl_3_rodata_2EEC;
+extern const f32 lbl_3_rodata_2EF0;
+extern const f64 lbl_3_rodata_2EF8;
+extern const f32 lbl_3_rodata_2F00;
+extern const f32 lbl_3_rodata_2F04;
+extern u8 fn_3_B7F70(s32);
+extern u8 lbl_3_bss_B21F;
+extern u8 lbl_3_bss_B220[];
 void fn_3_F4DAC(void) {
-    return;
+    Vec v;
+    Vec n;
+    Vec ref;
+    u8 acc;
+    u8 cnt;
+    u8 r;
+    u8* e;
+    f32 mag;
+    f32 ang;
+    f32 t;
+    cnt = 0;
+    ref = *(Vec*)lbl_3_rodata_2CBC;
+    acc = 100 / lbl_3_bss_B220[0];
+    v.x = *(f32*)(g_Ball + 0x348);
+    v.y = lbl_3_rodata_2D5C;
+    v.z = *(f32*)(g_Ball + 0x34C);
+    PSVECNormalize(&v, &n);
+    mag = PSVECMag(&v);
+    ang = lbl_3_rodata_2DE8 * (f32)acos(PSVECDotProduct(&n, &ref));
+    if (ang < lbl_3_rodata_2EEC) {
+        r = fn_3_B7F70(100);
+        while (r / acc != 0) {
+            cnt++;
+            acc += 100 / lbl_3_bss_B220[0];
+        }
+        e = *(u8**)lbl_3_common_bss_350E4 + (cnt + lbl_3_bss_B21F) * 0xE8;
+    } else if (n.x < lbl_3_rodata_2D5C) {
+        e = *(u8**)lbl_3_common_bss_350E4 + lbl_3_bss_B21F * 0xE8;
+    } else {
+        e = *(u8**)lbl_3_common_bss_350E4 + (lbl_3_bss_B21F + 1) * 0xE8;
+    }
+    t = ang / lbl_3_rodata_2EF0;
+    if (!(mag > lbl_3_rodata_2EF8 * (lbl_3_rodata_2DA8 - t) + lbl_3_rodata_2F00 * t)) {
+        if (mag > lbl_3_rodata_2F04) {
+            e[0xC4] = 1;
+        } else {
+            e[0xC4] = 2;
+        }
+    }
 }
 
 // .text:0x000F4FBC size:0x710 mapped:0x80734050
