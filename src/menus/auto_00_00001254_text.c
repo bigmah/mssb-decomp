@@ -43,3 +43,13 @@ void fn_2_1328(u32* value, u16 increment) {
     }
     *value = sum;
 }
+
+// fn_2_12A0, size:0x2C
+void fn_2_12A0(s16* value, s32 increment) {
+    s16 current = *value;
+    if (current < 0x7FFF - (s16)increment) {
+        *value = current + increment;
+        return;
+    }
+    *value = 0x7FFF;
+}

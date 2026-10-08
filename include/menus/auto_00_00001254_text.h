@@ -15,4 +15,6 @@ u32 fn_2_1554(void);
 
 void fn_2_1328(u32* value, u16 increment);
 
+void fn_2_12A0(s16* value, s32 increment);
+
 #endif
