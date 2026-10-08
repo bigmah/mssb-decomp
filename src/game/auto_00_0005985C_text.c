@@ -23,8 +23,32 @@ extern void fn_3_79ACC(void);
 extern void fn_3_5D094(s32);
 extern void possiblyTransitionBlackScreen(void);
 extern void fn_3_5BAC(void);
+extern void fn_3_F1DC(void);
+extern void fn_3_751B4(void);
+extern void setDefaultInMemBatter(void);
+extern void fn_3_8913C(void);
+extern void fn_3_58870(void);
+extern void fn_3_1DEB8(void);
+extern void Set_803cb848(s32);
+extern void fn_3_6EBB4(s32);
 
 #pragma dont_inline on
+
+// fn_3_5F720, size:0x88
+void fn_3_5F720(void) {
+    fn_3_F1DC();
+    fn_3_751B4();
+    setDefaultInMemBatter();
+    fn_3_8913C();
+    fn_3_58870();
+    fn_3_1DEB8();
+    Set_803cb848(1);
+    fn_3_6EBB4(g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]);
+    *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+    g_GameLogic.homeRunWordAnimationCompletedInd = 0;
+    unkSimulationRelatedStruct._05 = 0;
+    unkSimulationRelatedStruct._06 = 4;
+}
 
 // fn_3_5FE88, size:0x88
 void fn_3_5FE88(void) {
