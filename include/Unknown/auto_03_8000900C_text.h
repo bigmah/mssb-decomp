@@ -5,4 +5,6 @@
 
 void fn_8000900C(void);
 
+u32 fn_80009018(u32 value);
+
 #endif
