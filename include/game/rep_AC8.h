@@ -119,7 +119,7 @@ int fn_3_3CB8C(int);
 void fn_3_3CCB0(void);
 void fn_3_3D304(void);
 void fn_3_3D6AC(int);
-s16 fn_3_3D7D4(int i);
+int fn_3_3D7D4(int);
 void fn_3_3DB78(void);
 void fn_3_3E34C(int);
 void fn_3_3E468(void);
