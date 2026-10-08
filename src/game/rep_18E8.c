@@ -71,6 +71,15 @@ typedef struct {
 } RunnerT;
 extern RunnerT g_Runners[];
 extern u8 g_Fielders[];
+typedef struct { s16 a; s16 b; s16 c; } Tbl6;
+typedef struct { u8 pad0[2]; u8 b; u8 c; } Tbl4;
+extern Tbl6 lbl_3_data_4860[];
+extern f32 lbl_3_data_4878[];
+extern s16 lbl_3_data_4880;
+extern Tbl4 lbl_3_data_7E34[];
+extern void fn_3_5985C(int, int);
+extern void getComponentsFromSAng(s16, f32*, f32*);
+void fn_3_A9354(int a, int b);
 extern s32 g_Strikes[];
 extern void fn_3_52F4C(s16, f32, f32);
 extern u8 g_GameLogic[];
@@ -113,6 +122,19 @@ static u32 lbl_3_bss_1800;
 static u8 lbl_3_bss_17FC[4];
 static s32 lbl_3_bss_17F8;
 extern f32 lbl_3_rodata_19B0;
+extern const f32 lbl_3_rodata_1938;
+extern void fn_8004AFA8(int);
+extern void fn_8004AE18(int);
+extern int fn_3_51798(int, f32*);
+extern const f32 lbl_3_rodata_197C;
+extern const f32 lbl_3_rodata_19F4;
+extern const f32 lbl_3_rodata_19F8;
+extern const f32 lbl_3_rodata_19FC;
+extern const f32 lbl_3_rodata_1A00;
+extern const f32 lbl_3_rodata_1A04;
+extern const f32 lbl_3_rodata_1960;
+extern const f32 lbl_3_rodata_1964;
+extern const f32 lbl_3_rodata_1968;
 
 // .text:0x000A009C size:0x1C68 mapped:0x806DF130
 void fn_3_A009C(void) {
@@ -578,7 +600,7 @@ int fn_3_A32B8(void) {
 }
 
 // .text:0x000A3374 size:0x348 mapped:0x806E2408
-void fn_3_A3374(void) {
+int fn_3_A3374(void) {
     return;
 }
 
@@ -636,7 +658,45 @@ int fn_3_A37BC(void) {
 
 // .text:0x000A384C size:0x2E4 mapped:0x806E28E0
 void fn_3_A384C(void) {
-    return;
+    u8* f;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 a;
+    f32 b;
+    s32 n;
+
+    if ((lbl_3_bss_1824 & 0x11) && lbl_3_bss_1858[lbl_3_bss_1808[1]] <= 4) {
+        f = g_Fielders + *(s16*)(g_Ball + 0x1B78) * 0x268;
+        step = (f32)f[0x1CD] / lbl_3_rodata_1938;
+        dx = lbl_3_data_4444[4] - *(f32*)f;
+        dz = lbl_3_data_4444[5] - *(f32*)(f + 8);
+        a = dx * dx;
+        b = dz * dz;
+        d = a + b;
+        SQRT_L(d);
+        if (lbl_3_rodata_193C == step) {
+            step = lbl_3_rodata_1958;
+        }
+        if (d > lbl_3_rodata_195C) {
+            n = (s32)(lbl_3_rodata_1960 * d / step);
+        } else if (d > lbl_3_rodata_1964) {
+            n = (s32)(d / step);
+        } else {
+            n = (s32)(lbl_3_rodata_1968 * d / step);
+        }
+        if (d > lbl_3_rodata_196C) {
+            n = (s32)((f32)n * lbl_3_rodata_1970);
+            n += 0x1E;
+        } else if (d > lbl_3_rodata_1974) {
+            n = (s32)((f32)n * lbl_3_rodata_1960);
+            n += 0x1E;
+        }
+        if (n + 0x32 < *(s16*)((u8*)g_Runners + 0xEA)) {
+            lbl_3_bss_1818 = 1;
+        }
+    }
 }
 
 // .text:0x000A3B30 size:0xD0 mapped:0x806E2BC4
@@ -779,8 +839,43 @@ s32 fn_3_A6810(f32 x1, f32 z1, f32 x2, f32 z2) {
 #pragma dont_inline on
 
 // .text:0x000A6ABC size:0x28C mapped:0x806E5B50
-void fn_3_A6ABC(void) {
-    return;
+s32 fn_3_A6ABC(f32 x, f32 z) {
+    u8* f;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 a;
+    f32 b;
+    f32 div;
+    s32 n;
+
+    f = g_Fielders + *(s16*)(g_Ball + 0x1B78) * 0x268;
+    dx = x - *(f32*)f;
+    step = (f32)f[0x1CD] / lbl_3_rodata_1938;
+    dz = z - *(f32*)(f + 8);
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        div = lbl_3_rodata_1958;
+    } else {
+        div = step;
+    }
+    if (d > lbl_3_rodata_195C) {
+        n = (s32)(lbl_3_rodata_1960 * d / div);
+    } else if (d > lbl_3_rodata_1964) {
+        n = (s32)(d / div);
+    } else {
+        n = (s32)(lbl_3_rodata_1968 * d / div);
+    }
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+    }
+    return n;
 }
 
 // .text:0x000A6D48 size:0x150 mapped:0x806E5DDC
@@ -1119,18 +1214,69 @@ void fn_3_A89D4(void) {
 }
 
 // .text:0x000A9354 size:0x3A8 mapped:0x806E83E8
-void fn_3_A9354(void) {
+void fn_3_A9354(int a, int b) {
     return;
 }
 
 // .text:0x000A96FC size:0x288 mapped:0x806E8790
-void fn_3_A96FC(void) {
+void fn_3_A96FC(int fi) {
     return;
 }
 
 // .text:0x000A9984 size:0x2F0 mapped:0x806E8A18
-void fn_3_A9984(void) {
-    return;
+void fn_3_A9984(int fi) {
+    u8* f = g_Fielders + fi * 0x268;
+    f32 sp8;
+    f32 v[3];
+    f32 d;
+
+    if (*(s16*)(f + 0x1AC) == 0) {
+        f32 ax, az;
+        if (f[0x1EE] <= 1) {
+            f[0x200] = 0;
+            return;
+        }
+        v[0] = *(f32*)(g_Ball + 0x54) - *(f32*)(g_Ball + 0x60);
+        v[1] = *(f32*)(g_Ball + 0x58) - *(f32*)(g_Ball + 0x64);
+        v[2] = *(f32*)(g_Ball + 0x5C) - *(f32*)(g_Ball + 0x68);
+        *(f32*)(f + 0x120) = lbl_3_rodata_1990 * v[0];
+        *(f32*)(f + 0x124) = lbl_3_rodata_1990 * v[2];
+        f[0x200] = 1;
+        if (g_d_GameSettings[0x11] != 0) {
+            fn_8004AFA8(f[0x20D]);
+        } else {
+            fn_8004AFA8(fi);
+        }
+    } else {
+        f32 r = (f32)(f[0x1EE] - 1) / (f32)f[0x1EE];
+        *(f32*)(f + 0x120) = *(f32*)(f + 0x120) * r;
+        *(f32*)(f + 0x124) = *(f32*)(f + 0x124) * r;
+        if (f[0x1EE] <= 1) {
+            f[0x200] = 0;
+        }
+        if (*(s16*)(f + 0x1AC) > 0) {
+            if (g_d_GameSettings[0x11] != 0) {
+                fn_8004AE18(f[0x20D]);
+            } else {
+                fn_8004AE18(fi);
+            }
+        }
+    }
+    *(f32*)(f + 0x30) = *(f32*)(f + 0x120);
+    *(f32*)(f + 0x34) = *(f32*)(f + 0x124);
+    d = *(f32*)(f + 0x30) * *(f32*)(f + 0x30) + *(f32*)(f + 0x34) * *(f32*)(f + 0x34);
+    SQRT_L(d);
+    *(f32*)(f + 0x50) = d;
+    if (fn_3_51798(fi, v)) {
+        *(f32*)(f + 0x120) = lbl_3_rodata_193C;
+        *(f32*)(f + 0x124) = lbl_3_rodata_193C;
+        *(f32*)(f + 0x30) = lbl_3_rodata_193C;
+        *(f32*)(f + 0x34) = lbl_3_rodata_193C;
+        *(f32*)(f + 0x50) = lbl_3_rodata_193C;
+        return;
+    }
+    *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+    *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
 }
 
 // .text:0x000A9C74 size:0xAC mapped:0x806E8D08
