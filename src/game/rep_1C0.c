@@ -26,6 +26,9 @@ extern u32 fn_80009028(void);
 extern s32 fn_800527BC(void);
 extern void fn_80052694(void*);
 extern s32 fn_80052734(s32);
+extern s32 lbl_3_rodata_210;
+extern void DCStoreRange(void*, u32);
+extern void fn_80023F0C(void*, void*, int, int, int, int, int, int);
 extern void SetFog(u8, s32*, f32, f32, f32, f32);
 
 // .text:0x000035D4 size:0x10
@@ -244,8 +247,58 @@ void fn_3_5BF0(void) {
 }
 
 // .text:0x00005C68 size:0x1F8 mapped:0x80644CFC
-void fn_3_5C68(void) {
-    return;
+void fn_3_5C68(u8* obj) {
+    s32 col;
+    u8* p;
+    s32 i;
+    s32 k;
+    s32 cnt;
+    GXSetCullMode(2);
+    col = lbl_3_rodata_210;
+    SetFog(0, &col, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504);
+    GXSetBlendMode(1, 4, 5, 0);
+    k = 2;
+    while (k-- != 0) {
+        p = *(u8**)(obj + 8 + k * 4);
+        if (p != NULL) {
+            cnt = 0;
+            for (i = 0; i < *(u16*)(p + 0x14); i++) {
+                u8* st = *(u8**)(p + 0x10);
+                if (st[(i * 3) + 2]-- == 0) {
+                    u8* e;
+                    s32 m;
+                    u8* t;
+                    s32 x, y, ax, ay; u8* tb;
+                    u8* st2 = *(u8**)(p + 0x10);
+                    st2[(i * 3) + 1] = (st2[(i * 3) + 1] + 1) % *(u16*)(p + 0x18);
+                    ay = (i / 8) << 6;
+                    ax = (i % 8) << 5;
+                    e = *(u8**)(p + 0x10) + (i * 3);
+                    m = (*(u8**)(p + 0xC))[e[1]];
+                    if (k != 0) {
+                        tb = *(u8**)(p + 8);
+                        x = tb[e[0] * 4 + m * 2] << 5;
+                        y = tb[e[0] * 4 + m * 2 + 1] << 6;
+                    } else {
+                        tb = *(u8**)(p + 8);
+                        x = tb[e[0] * 8 + m * 2] << 5;
+                        y = tb[e[0] * 8 + m * 2 + 1] << 6;
+                    }
+                    fn_80023F0C(*(void**)p, *(void**)(p + 4), x, y, 0x20, 0x40, ax, ay);
+                    cnt++;
+                    (*(u8**)(p + 0x10))[(i * 3) + 2] = *(u16*)(p + 0x16);
+                }
+            }
+            if (cnt != 0) {
+                u8* tex = *(u8**)(p + 4);
+                DCStoreRange(*(void**)tex, *(u16*)(tex + 0xA) * *(u16*)(tex + 8));
+            }
+        }
+    }
+    if (lbl_3_bss_18[0] != 0) {
+        ((void (*)(void))lbl_3_bss_18[0])();
+    }
+    GXSetZCompLoc(0);
 }
 
 

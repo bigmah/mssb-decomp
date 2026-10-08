@@ -5,12 +5,18 @@
 
 extern u8 lbl_80366158[];
 extern Vec lbl_3_data_21004;
+/* The original pools .data from lbl_3_data_1C0A8; the axis vectors sit at +0x4F44. Pad reproduces that offset. */
+static u8 s_axpad[0x4F44] = {1};
+static Vec s_axa = {0.0f, 1.0f, 0.0f};
+static Vec s_axb = {0.0f, 0.0f, 1.0f};
+static Vec s_axc = {0.0f, 0.0f, -1.0f};
 extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
 extern u8* g_pCamera;
 extern f32 fn_3_9FEA8(f32);
+extern s16 fn_3_9FF04(f32);
 extern f64 cos(f64);
 extern f64 sin(f64);
 extern u32 lbl_3_rodata_30EC[];
@@ -284,7 +290,55 @@ void fn_3_1040D8(void) {
 
 // .text:0x00104338 size:0x270 mapped:0x807433CC
 void fn_3_104338(void) {
-    return;
+    u8 m[0x88];
+    u8 o[0x58];
+    u8* p0c;
+    u8* p18;
+    Vec vb;
+    Vec va;
+    s32 b = *(s32*)(lbl_3_common_bss_DE94 + 0x118);
+    s32 a = *(s32*)(lbl_3_common_bss_DE94 + 0x990);
+    memset(m, 0, 0x88);
+    {
+        f32 v = lbl_3_rodata_30FC;
+        *(f32*)(m + 0x3C) = v;
+        *(f32*)(m + 0x28) = v;
+        *(f32*)(m + 0x14) = v;
+        *(f32*)(m + 0x00) = v;
+        *(f32*)(m + 0x40) = v;
+    }
+    fn_3_104B3C(a, b, 0, 0, m);
+    memcpy(o, m + 0x58, 12);
+    p0c = o + 0xC;
+    memcpy(p0c, m + 0x64, 12);
+    memcpy(o + 0x40, m + 0x70, 12);
+    *(f32*)(o + 0x3C) = *(f32*)(m + 0x4C);
+    p18 = o + 0x18;
+    PSMTX44MultVec((f32(*)[4])m, &s_axa, (Vec*)p18);
+    PSVECNormalize((Vec*)p18, (Vec*)p18);
+    va = *(Vec*)(o + 0x24);
+    PSMTX44MultVec((f32(*)[4])m, &s_axb, &va);
+    PSVECNormalize(&va, &va);
+    vb = *(Vec*)(o + 0x30);
+    PSMTX44MultVec((f32(*)[4])m, &s_axc, &vb);
+    PSVECNormalize(&vb, &vb);
+    *(f32*)(o + 0x4C) = *(f32*)(m + 0x7C);
+    *(f32*)(o + 0x50) = *(f32*)(m + 0x80);
+    *(u8*)(o + 0x54) = *(u8*)(m + 0x84);
+    memcpy(lbl_3_common_bss_DE94 + 0x64, o, 12);
+    *(f32*)(lbl_3_common_bss_DE94 + 0xA0) = *(f32*)(o + 0x3C);
+    *(f32*)(lbl_3_common_bss_DE94 + 0xA4) = *(f32*)(o + 0x4C);
+    *(f32*)(lbl_3_common_bss_DE94 + 0xA8) = *(f32*)(o + 0x50);
+    *(u8*)(lbl_3_common_bss_DE94 + 0x9A7) = *(u8*)(o + 0x54);
+    memcpy(lbl_3_common_bss_DE94 + 0x88, p0c, 12);
+    *(f32*)(g_pCamera + 0x2858) = *(f32*)(o + 0x0);
+    *(f32*)(g_pCamera + 0x285C) = *(f32*)(o + 0x4);
+    *(f32*)(g_pCamera + 0x2860) = *(f32*)(o + 0x8);
+    *(f32*)(g_pCamera + 0x2870) = *(f32*)(o + 0x4C);
+    *(f32*)(g_pCamera + 0x2874) = *(f32*)(o + 0x50);
+    *(s16*)(g_pCamera + 0x289C) = fn_3_9FF04(fn_3_9FEA8(*(f32*)(g_pCamera + 0x2870)));
+    *(s16*)(g_pCamera + 0x289C) = fn_3_9FF04(fn_3_9FEA8(*(f32*)(g_pCamera + 0x2870)));
+    *(f32*)(g_pCamera + 0x2878) = lbl_3_rodata_30FC;
 }
 
 // .text:0x001045A8 size:0x198 mapped:0x8074363C
@@ -348,8 +402,35 @@ void fn_3_104740(void) {
 }
 
 // .text:0x001048E0 size:0x15C mapped:0x80743974
-void fn_3_1048E0(void) {
-    return;
+void fn_3_1048E0(s32 a, s32 b, s32 c, s32 d, u8* out) {
+    u8 m[0x88];
+    Vec va;
+    Vec vb;
+    memset(m, 0, 0x88);
+    {
+        f32 v = lbl_3_rodata_30FC;
+        *(f32*)(m + 0x3C) = v;
+        *(f32*)(m + 0x28) = v;
+        *(f32*)(m + 0x14) = v;
+        *(f32*)(m + 0x00) = v;
+        *(f32*)(m + 0x40) = v;
+    }
+    fn_3_104B3C(a, b, c, d, m);
+    memcpy(out, m + 0x58, 12);
+    memcpy(out + 0xC, m + 0x64, 12);
+    memcpy(out + 0x40, m + 0x70, 12);
+    *(f32*)(out + 0x3C) = *(f32*)(m + 0x4C);
+    PSMTX44MultVec((f32(*)[4])m, &s_axa, (Vec*)(out + 0x18));
+    PSVECNormalize((Vec*)(out + 0x18), (Vec*)(out + 0x18));
+    va = *(Vec*)(out + 0x24);
+    PSMTX44MultVec((f32(*)[4])m, &s_axb, &va);
+    PSVECNormalize(&va, &va);
+    vb = *(Vec*)(out + 0x30);
+    PSMTX44MultVec((f32(*)[4])m, &s_axc, &vb);
+    PSVECNormalize(&vb, &vb);
+    *(f32*)(out + 0x4C) = *(f32*)(m + 0x7C);
+    *(f32*)(out + 0x50) = *(f32*)(m + 0x80);
+    *(u8*)(out + 0x54) = *(u8*)(m + 0x84);
 }
 
 // .text:0x00104A3C size:0x4C mapped:0x80743AD0
@@ -376,7 +457,7 @@ void fn_3_104B20(void) {
 }
 
 // .text:0x00104B3C size:0x990 mapped:0x80743BD0
-void fn_3_104B3C(void) {
+void fn_3_104B3C(s32 a, s32 b, s32 c, s32 d, void* m) {
     return;
 }
 
