@@ -11,6 +11,18 @@ extern f32 lbl_1_bss_6BE4[4];
 
 extern void (*lbl_1_data_1066C[])(s16);
 
+extern f32 lbl_1_bss_6BF4[];
+extern void fn_80037B18(void*, Vec*, f32);
+
+// .text:0x1DD94 size:0x50
+void fn_1_1DD94(void) {
+    Vec axis;
+    axis.x = lbl_1_bss_6BE4[1];
+    axis.y = lbl_1_bss_6BE4[2];
+    axis.z = lbl_1_bss_6BE4[3];
+    fn_80037B18(lbl_1_bss_6BF4, &axis, lbl_1_bss_6BE4[0]);
+}
+
 // .text:0x1E8C0 size:0x4C
 void fn_1_1E8C0(s32 index) {
     lbl_1_data_1066C[*(s32*)(lbl_803CC1B8[0] + 0x28)]((s16)(index - 8));
