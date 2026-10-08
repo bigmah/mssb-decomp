@@ -11,7 +11,7 @@ u32 fn_3_60E90(s32 a);
 u32 fn_3_61148(s32 i);
 u32 fn_3_61228(s32 a);
 void fn_3_61544(void);
-void fn_3_61B64(void);
+void fn_3_61B64(s32 i);
 void fn_3_62904(void);
 void fn_3_62B50(void);
 void fn_3_62CA8(int i);
