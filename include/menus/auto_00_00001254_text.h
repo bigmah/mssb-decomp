@@ -31,4 +31,6 @@ void fn_2_893C(void);
 
 void fn_2_CCBC(void);
 
+void fn_2_3204(void);
+
 #endif

@@ -1,5 +1,8 @@
 #include "menus/auto_00_00001254_text.h"
 
+extern u8 lbl_803297E0[];
+extern void fn_2_2FC0(u8, s32, s32);
+
 extern void fn_2_7DDC(void);
 extern void fn_2_7504(void);
 
@@ -107,4 +110,9 @@ void fn_2_893C(void) {
 void fn_2_CCBC(void) {
     fn_2_7DDC();
     fn_2_7504();
+}
+
+// fn_2_3204, size:0x38
+void fn_2_3204(void) {
+    fn_2_2FC0(lbl_803297E0[0xCF5F], 1, 1);
 }
