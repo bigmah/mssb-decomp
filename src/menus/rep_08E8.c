@@ -106,3 +106,15 @@ f32 fn_2_4A18C(f32 angle) {
     }
     return angle;
 }
+
+// fn_2_46D34, size:0x60
+void fn_2_46D34(s32 delta) {
+    *(s16*)(lbl_2_bss_1A8248[0] + 0x43BE) = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC);
+    *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) += delta;
+    if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) > 999) {
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 999;
+    }
+    if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) < 0) {
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 0;
+    }
+}
