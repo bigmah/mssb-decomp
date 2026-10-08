@@ -69,4 +69,6 @@ void fn_2_6AAB8(void);
 
 void fn_2_6C2C4(void);
 
+void fn_2_68638(s32 index, s8 value);
+
 #endif
