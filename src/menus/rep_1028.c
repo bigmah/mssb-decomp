@@ -55,6 +55,16 @@ extern MenuStateCallback lbl_2_data_30870[4];
 extern MenuStateCallback lbl_2_data_30880[3];
 
 extern u8 lbl_2_data_3198[];
+extern u8 lbl_2_data_369C[];
+
+// .text:0x903A8 size:0x80
+void fn_2_903A8(s32 index) {
+    s32 offset = index * 0x14;
+    MenuSlot* slot = &lbl_2_bss_1A8248[0]->slots[index];
+    memcpy(slot, lbl_2_data_369C + offset, 12);
+    *(f32*)((u8*)slot + 0x30) = lbl_2_rodata_1080;
+    *(f32*)((u8*)slot + 0x28) = ((f32*)lbl_2_data_369C)[index * 5 + 3];
+}
 
 // .text:0x90428 size:0x80
 void fn_2_90428(s32 index) {
