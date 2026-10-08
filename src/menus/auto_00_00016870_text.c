@@ -22,3 +22,13 @@ u8 fn_2_16A5C(s32 index) {
     entry += index * 0x27C;
     return entry[0xE61];
 }
+
+// fn_2_16A74, size:0x24
+void fn_2_16A74(s32 index, s32 value) {
+    s32 offset = index * 0x27C;
+    u8* entry;
+    value = value != 0;
+    entry = lbl_8036E548;
+    entry += offset;
+    entry[0xE61] = value;
+}
