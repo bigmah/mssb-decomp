@@ -5,4 +5,6 @@
 
 void fn_800B2160(u8 value);
 
+s32 fn_800B216C(u8 flag, u32 mode, u8 index);
+
 #endif
