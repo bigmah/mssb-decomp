@@ -5,4 +5,6 @@
 
 void* GetUITexture(void);
 
+void* fn_80039AB4(void);
+
 #endif
