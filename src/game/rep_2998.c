@@ -25,7 +25,7 @@ extern E4EF4Ctl lbl_3_common_bss_350E4;
 extern void fn_800B4AFC(void*, s32);
 
 #include "C3/control.h"
-typedef struct { Vec pos; f32 rot; u8 pad[0xC]; } Ent18ED0;
+typedef struct { Vec pos; f32 rot; u8 f10; u8 f11; u8 f12; u8 pad[9]; } Ent18ED0;
 extern Ent18ED0 lbl_3_data_18ED0[];
 extern Vec lbl_3_rodata_2A48;
 extern const f32 lbl_3_rodata_2B20;
@@ -375,10 +375,53 @@ u32 fn_3_E4BE8(s32 idx, f32 (*m)[4]) {
 }
 
 // .text:0x000E4CB0 size:0x244 mapped:0x80723D44
-// asm stub: a C stub would be inlined into fn_3_E4EF4
-asm void fn_3_E4CB0(s32* a, s32* b) {
-    nofralloc
-    blr
+typedef struct { u32 w[17]; } E4CB0Cpy;
+extern void fn_3_B8574(void);
+extern void fn_3_B8414(void*, void*);
+extern void fn_3_B8464(void*, void*);
+void fn_3_E4CB0(s32* a, s32* b) {
+    E4CB0Cpy sp44;
+    Mtx sp14;
+    Vec t;
+    Ent18ED0* p;
+    u32 off;
+    E4BE8Ctl* c;
+    int i;
+    int j;
+    u16* q;
+    for (i = 0; i < 10; i++) {
+        u32 v;
+        q = (u16*)(lbl_3_common_bss_350E4.p40 + *a * 2);
+        v = (u16)(q[-1] + *(u32*)(lbl_3_common_bss_350E4.p3C + *a * 4 - 4));
+        q[0] = v;
+        fn_3_B8574();
+        p = lbl_3_data_18ED0;
+        off = v;
+        for (j = 0; j < 10; j++) {
+            p = &lbl_3_data_18ED0[j];
+            if (i == p->f12 && p->f10 != 2) {
+                if ((*((u8*)lbl_3_common_bss_350E4.arr + *b * 0xE8 + 0x90) >> 6) & 1) {
+                    ((s32*)lbl_3_common_bss_350E4.p44)[off] = *b;
+                    *(u32*)(lbl_3_common_bss_350E4.p3C + *a * 4) += 1;
+                    c = (E4BE8Ctl*)((u8*)lbl_3_common_bss_350E4.arr + *b * 0xE8);
+                    off += 1;
+                    sp44 = *(E4CB0Cpy*)c;
+                    CTRLGetTranslation((Control*)&sp44, &t.x, &t.y, &t.z);
+                    CTRLSetTranslation((Control*)&sp44, t.x - 4.0, t.y, t.z - 4.0);
+                    CTRLBuildMatrix((Control*)&sp44, sp14);
+                    fn_3_B8464(sp14, (void*)c->f78);
+                    CTRLSetTranslation((Control*)&sp44, 4.0 + t.x, t.y - 10.0, 4.0 + t.z);
+                    CTRLBuildMatrix((Control*)&sp44, sp14);
+                    fn_3_B8464(sp14, (void*)c->f78);
+                    *b += 1;
+                }
+            }
+        }
+        if (*(u32*)(lbl_3_common_bss_350E4.p3C + *a * 4) != 0) {
+            fn_3_B8414(lbl_3_common_bss_350E4.p48 + *a * 0x18, lbl_3_common_bss_350E4.p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
 }
 
 // .text:0x000E4EF4 size:0xD0 mapped:0x80723F88

@@ -13,7 +13,7 @@ void fn_3_70280(void);
 void fn_3_703EC(void);
 int fn_3_70680(f32 v);
 void fn_3_706B8(int idx);
-void fn_3_70768(void);
+int fn_3_70768(f32* out, int flag, f32 target);
 void fn_3_70838(void);
 void fn_3_709B4(void);
 void fn_3_70AEC(void);
