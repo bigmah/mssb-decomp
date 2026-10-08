@@ -47,4 +47,6 @@ void fn_2_6C970(u8* object);
 
 void fn_2_6C938(u8* object);
 
+void fn_2_6C28C(u8* object);
+
 #endif
