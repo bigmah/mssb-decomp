@@ -3,11 +3,29 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
+#include <math.h>
 
 extern void fn_1_1CBE4(u8* object);
 extern ChallengeRosterQueue* lbl_803CC1B8;
 extern u8 lbl_1_bss_69FC[];
 extern void fn_1_19D60(struct DODisplayObj*, s32);
+extern s32 lbl_1_data_FB24[];
+extern const f32 lbl_1_rodata_7578;
+extern const f32 lbl_1_rodata_757C;
+extern const f32 lbl_1_rodata_7520;
+
+// fn_1_18E04, size:0xE0
+void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees) {
+    f32 sine;
+    f32 radians;
+    f32 cosine;
+    radians = lbl_1_rodata_7578 * degrees;
+    sine = (f32)sin(radians);
+    cosine = (f32)cos(radians);
+    position->x = sine * (f32)lbl_1_data_FB24[1] / lbl_1_rodata_757C;
+    position->y = cosine * (f32)lbl_1_data_FB24[1] / lbl_1_rodata_757C;
+    position->z = lbl_1_rodata_7520;
+}
 
 // fn_1_1A1EC, size:0xA4
 void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode) {

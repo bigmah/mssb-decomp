@@ -22,6 +22,13 @@ typedef struct {
 } ChallengeActorDrawing;
 
 typedef struct {
+    u8 padding[0x10];
+    f32 x;
+    f32 y;
+    f32 z;
+} ChallengeOrbitPosition;
+
+typedef struct {
     void (*update)(u8*);
     u8 padding[0x0C];
     u16 state;
@@ -40,5 +47,7 @@ s32 fn_1_19D1C(u8 value);
 void fn_1_1D470(void);
 
 void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode);
+
+void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees);
 
 #endif
