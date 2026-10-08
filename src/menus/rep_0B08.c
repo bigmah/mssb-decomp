@@ -112,3 +112,8 @@ void fn_2_6CB78(u8* object) {
 void fn_2_6C97C(u8* object) {
     *(s16*)(object + 0x94) = 2;
 }
+
+// .text:0x6C970 size:0xC
+void fn_2_6C970(u8* object) {
+    *(s16*)(object + 0x94) = 2;
+}
