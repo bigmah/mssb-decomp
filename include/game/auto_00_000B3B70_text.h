@@ -31,4 +31,6 @@ void fn_3_B60F0(void);
 
 void fn_3_B6E98(void);
 
+void fn_3_B6C9C(void);
+
 #endif

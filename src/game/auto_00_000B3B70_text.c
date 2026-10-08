@@ -23,6 +23,40 @@ extern void fn_3_5F720(void);
 extern void fn_3_6C0E0(void);
 extern u8 g_RunningLogic[];
 
+// fn_3_B6C9C, size:0xE4
+void fn_3_B6C9C(void) {
+    if (g_Practice.instructionNumber >= 0) {
+        if (g_Practice.allowPlayToEndIndicator == 0) {
+            *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+            goto done;
+        }
+        goto timer;
+    }
+    if (g_Runners[1].runnerOnFieldOrOutOrScored == 3) {
+        g_Practice.guidedPracticeCompletionRelated = 1;
+    }
+    goto done;
+timer:
+    if (*(s16*)((u8*)&g_FieldingLogic + 0xAE) < 0x7FFE) {
+        *(s16*)((u8*)&g_FieldingLogic + 0xAE) += 1;
+    } else {
+        *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0x7FFF;
+    }
+    if (*(s16*)((u8*)&g_FieldingLogic + 0xAE) >= 60) {
+        g_Practice.allowPlayToEndIndicator = 0;
+        g_GameLogic.pre_PostMiniGameInd = 1;
+        g_GameLogic.minigameLastTurnSuccessInd = 1;
+        fn_3_1DD48();
+        fn_3_5A6D4(7);
+        return;
+    }
+    if (*(s16*)((u8*)&g_FieldingLogic + 0xAE) == 54) {
+        changeScene(3, 6);
+    }
+done:
+    return;
+}
+
 // fn_3_B60F0, size:0xD0
 void fn_3_B60F0(void) {
     fn_3_5F720();
