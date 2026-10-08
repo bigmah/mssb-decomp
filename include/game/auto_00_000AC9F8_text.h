@@ -11,7 +11,7 @@ void fn_3_B0A88(void);
 
 void fn_3_B3A28(void);
 
-void fn_3_B1DA4(u8 level, u8 value);
+void fn_3_B1DA4(s32 level, u8 value);
 
 void fn_3_B3288(void);
 
@@ -38,5 +38,7 @@ void fn_3_B1120(void);
 void fn_3_B116C(void);
 
 void fn_3_B274C(void);
+
+void fn_3_B1C14(void);
 
 #endif

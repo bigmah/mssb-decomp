@@ -12,6 +12,11 @@ extern void ballPhysica(void);
 extern void fn_3_598D0(void);
 extern void fn_3_B0E00(void);
 extern void fn_3_B0B5C(void);
+extern void fn_3_B1A30(void);
+extern void fn_3_B1578(void);
+extern s32 fn_3_B254C(void);
+
+#pragma dont_inline on
 
 extern u8 g_Fielders[];
 
@@ -48,7 +53,7 @@ void fn_3_B3A28(void) {
 }
 
 // fn_3_B1DA4, size:0x2C
-void fn_3_B1DA4(u8 level, u8 value) {
+void fn_3_B1DA4(s32 level, u8 value) {
     g_Practice.loadingGuidedPractice = 1;
     g_Practice._1D5 = 0;
     g_Practice.practiceLevel_2 = level;
@@ -181,5 +186,28 @@ void fn_3_B274C(void) {
         g_Practice.inputs[i].up_down = 0;
         g_Practice.inputs[i].rightTriggerDistance = 0;
         g_Practice.inputs[i].leftTriggerDistance = 0;
+    }
+}
+
+// fn_3_B1C14, size:0x9C
+void fn_3_B1C14(void) {
+    switch (g_Practice.tutorialState) {
+    case 0:
+        fn_3_B1A30();
+        break;
+    case 1:
+        fn_3_B1578();
+        break;
+    case 2:
+        if (fn_3_B254C() == 0) {
+            fn_3_B1578();
+        } else {
+            fn_3_B1DA4(g_Practice.practiceLevel + 8, 0);
+            fn_3_5A6D4(7);
+        }
+        break;
+    case 3:
+        fn_3_B1578();
+        break;
     }
 }
