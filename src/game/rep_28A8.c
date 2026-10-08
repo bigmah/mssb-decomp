@@ -17,7 +17,7 @@ extern void fn_3_2E87C(void);
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
 extern void fn_3_1DD48(void*);
-extern struct { u8 pad[0xC]; s16 n; u8 pad2[0x1C4]; u8 b1D2; u8 pad3[2]; u8 b1D5; } lbl_3_common_bss_34C90;
+extern struct { s32 w0; u16 w4; u16 w6; u16 w8; u8 pad[2]; s16 n; u8 pad0[4]; s16 w12; u8 pad1[0x1D0 - 0x14]; u8 b1D0; u8 pad2; u8 b1D2; u8 pad3[2]; u8 b1D5; u8 pad4[3]; u8 b1D9; s8 b1DA; u8 pad5[0x220 - 0x1DB]; u8 b220; } lbl_3_common_bss_34C90;
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
 extern u8 g_Ball[];
@@ -44,9 +44,9 @@ typedef struct { u8 p0[4]; u16 b4; u16 b6; u16 b8; u8 p1[6]; } CT;
 extern void fn_3_107E80(void);
 extern s32 fn_3_5B380(void);
 extern void fn_8004CC18();
-typedef struct { f32 a, b, c, d; } T18AC8;
 typedef struct { f32 x, y, z; } V3X;
-typedef struct { u8 pad0[0xCD0]; V3X pos[4]; u8 pad1[0x1180 - 0xD00]; V3X vel[4]; u8 pad2[0x193A - 0x11B0]; u8 flag[4]; } MGX;
+typedef struct { u8 pad0[0xCD0]; V3X pos[8]; u8 pad1[0x1180 - 0xD30]; V3X vel[8]; u8 pad2[0x17C8 - 0x11E0]; s16 f17C8; u8 pad3[0x1939 - 0x17CA]; u8 cnt; u8 flags[8]; u8 pad4[0x199F - 0x1942]; u8 f199F; } MGF;
+typedef struct { f32 a, b, c, d; } T18AC8;
 extern T18AC8 lbl_3_data_18AC8[];
 extern const f32 lbl_3_rodata_28FC;
 extern const f32 lbl_3_rodata_2918;
@@ -74,12 +74,14 @@ void fn_3_D9EA0(void) {
     return;
 }
 
-// ~92%: only GPR order of loop-invariants differs (orig range=r29,t+4=r28,t=r27; ours t+4=r29,t=r28,range=r27)
+// ~95%: only GPR order of loop-invariants differs (orig range=r29,t+4=r28,t=r27; ours t=r29,t+4=r28,range=r27)
 // .text:0x000DA640 size:0x1F4 mapped:0x807196D4
 void fn_3_DA640(s32 n, s32 idx) {
     f32 maxr;
     f32 sx, sy;
     f32 r, rv;
+    f32* t;
+    f32* ty;
     s32 range;
     s32 i;
     *(u8*)(g_Minigame + 0x1939) = n;
@@ -90,6 +92,8 @@ void fn_3_DA640(s32 n, s32 idx) {
         maxr = lbl_3_data_18AC8[idx].d;
     }
     range = (s32)(lbl_3_rodata_2918 * maxr);
+    t = &lbl_3_data_18AC8[idx].a;
+    ty = &lbl_3_data_18AC8[idx].b;
     for (i = 0; i < n; i++) {
         s16 ang;
         g_Minigame[0x193A + i] = 1;
@@ -97,8 +101,8 @@ void fn_3_DA640(s32 n, s32 idx) {
         { s32 q = rand() % range; r = lbl_3_rodata_2920 * (f32)q; }
         { s32 q2 = rand() % 0x1000; ang = fn_3_9FE6C_normalizeAngle(q2); }
         getComponentsFromSAng(ang, &sx, &sy);
-        *(f32*)(g_Minigame + i * 0xC + 0xCD0) = sx * r + lbl_3_data_18AC8[idx].a;
-        *(f32*)(g_Minigame + i * 0xC + 0xCD8) = sy * r + lbl_3_data_18AC8[idx].b;
+        *(f32*)(g_Minigame + i * 0xC + 0xCD0) = sx * r + *t;
+        *(f32*)(g_Minigame + i * 0xC + 0xCD8) = sy * r + *ty;
         rv = RandomF32_Game_Range(lbl_3_rodata_28FC, lbl_3_rodata_2924);
         *(f32*)(g_Minigame + i * 0xC + 0x1180) = sx * rv;
         *(f32*)(g_Minigame + i * 0xC + 0x1188) = sy * rv;
@@ -206,41 +210,34 @@ void fn_3_DC380(void) {
     }
 }
 
-// 98%: orig schedules lbz 0x1da before stw 0x0 (subi in r5, not r0)
 // .text:0x000DC5A4 size:0x144 mapped:0x8071B638
 void fn_3_DC5A4(void) {
     s32 r = fn_3_6C938(1, 0x100);
     if (r != 0) {
-        SB* p = (SB*)&lbl_3_common_bss_34C90;
-        s32 n = r - 1;
-        p->a = n;
-        if (p->b1DA == 2) {
+        lbl_3_common_bss_34C90.w0 = r - 1;
+        if (lbl_3_common_bss_34C90.b1DA == 2) {
             fn_3_5B408();
-            p = (SB*)&lbl_3_common_bss_34C90;
-            p->b1D2 = 9;
+            lbl_3_common_bss_34C90.b1D2 = 9;
         } else {
-            p->b1D2 = 4;
+            lbl_3_common_bss_34C90.b1D2 = 4;
         }
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
         return;
     }
     if (fn_3_6C938(1, 8) != 0) {
-        SB* p = (SB*)&lbl_3_common_bss_34C90;
-        u8 t = p->b1DA;
+        u8 t = lbl_3_common_bss_34C90.b1DA;
         if ((s8)t != 0) {
-            p->b1DA = t - 1;
+            lbl_3_common_bss_34C90.b1DA = t - 1;
         } else {
-            p->b1DA = 2;
+            lbl_3_common_bss_34C90.b1DA = 2;
         }
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         return;
     }
     if (fn_3_6C938(1, 4) != 0) {
-        SB* p = (SB*)&lbl_3_common_bss_34C90;
-        u8 t = p->b1DA + 1;
-        p->b1DA = t;
-        if ((s8)t >= 3) {
-            p->b1DA = 0;
+        lbl_3_common_bss_34C90.b1DA++;
+        if (lbl_3_common_bss_34C90.b1DA >= 3) {
+            lbl_3_common_bss_34C90.b1DA = 0;
         }
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
@@ -314,6 +311,7 @@ void fn_3_DCA68(void) {
     }
 }
 
+// ~94%: g_Controls copy block gets r3/r5 swapped (orig lis r5 lbl_803CBC3C, lwz r3), and final li r5,2 / stb 0x1d9 ordering differs
 // .text:0x000DCC80 size:0x250 mapped:0x8071BD14
 void fn_3_DCC80(void) {
     if (lbl_3_common_bss_34C90.n < 0x7FFE) {
@@ -321,55 +319,55 @@ void fn_3_DCC80(void) {
     } else {
         lbl_3_common_bss_34C90.n = 0x7FFF;
     }
-    if (L34->d12 < 0x7FFE) {
-        L34->d12 = L34->d12 + 1;
+    if (lbl_3_common_bss_34C90.w12 < 0x7FFE) {
+        lbl_3_common_bss_34C90.w12 = lbl_3_common_bss_34C90.w12 + 1;
     } else {
-        L34->d12 = 0x7FFF;
+        lbl_3_common_bss_34C90.w12 = 0x7FFF;
     }
     {
-        u8* c = g_Controls + L34->a * 0x10;
+        u8* c = g_Controls + lbl_3_common_bss_34C90.w0 * 0x10;
         lbl_803CBC3C = 1;
-        L34->b4 = *(u16*)(c + 4);
-        L34->b6 = *(u16*)(c + 6);
-        L34->b8 = *(u16*)(c + 8);
+        lbl_3_common_bss_34C90.w4 = *(u16*)(c + 4);
+        lbl_3_common_bss_34C90.w6 = *(u16*)(c + 6);
+        lbl_3_common_bss_34C90.w8 = *(u16*)(c + 8);
     }
-    switch (L34->b1D2) {
+    switch (lbl_3_common_bss_34C90.b1D2) {
     case 0:
-        L34->b1DA = 0;
-        L34->b1D5 = 0;
-        L34->b1D0 = 0x11;
-        L34->b1D2 = 1;
+        lbl_3_common_bss_34C90.b1DA = 0;
+        lbl_3_common_bss_34C90.b1D5 = 0;
+        lbl_3_common_bss_34C90.b1D0 = 0x11;
+        lbl_3_common_bss_34C90.b1D2 = 1;
         break;
     case 1:
-        L34->d12 = 0;
-        L34->b1D2 = 2;
+        lbl_3_common_bss_34C90.w12 = 0;
+        lbl_3_common_bss_34C90.b1D2 = 2;
         break;
     case 2:
-        if (L34->d12 >= 0x14) {
-            L34->b1D2 = 3;
+        if (lbl_3_common_bss_34C90.w12 >= 0x14) {
+            lbl_3_common_bss_34C90.b1D2 = 3;
         }
         break;
     case 3:
         fn_3_DCA68();
-        L34->d12 = 0;
+        lbl_3_common_bss_34C90.w12 = 0;
         break;
     case 4:
-        L34->b1D9 = 1;
-        L34->b1D2 = 5;
+        lbl_3_common_bss_34C90.b1D9 = 1;
+        lbl_3_common_bss_34C90.b1D2 = 5;
         break;
     case 5:
-        if (L34->b1D9 == 3) {
+        if (lbl_3_common_bss_34C90.b1D9 == 3) {
             fn_3_5A6D4(1);
         }
         break;
     case 6:
-        L34->b1D9 = 1;
-        L34->b1D2 = 7;
+        lbl_3_common_bss_34C90.b1D9 = 1;
+        lbl_3_common_bss_34C90.b1D2 = 7;
         break;
     case 7:
-        if (L34->b1D9 == 3) {
-            L34->b220 = 2;
-            L34->b1D2 = 0;
+        if (lbl_3_common_bss_34C90.b1D9 == 3) {
+            lbl_3_common_bss_34C90.b220 = 2;
+            lbl_3_common_bss_34C90.b1D2 = 0;
             fn_3_5A6D4(0xD);
         }
         break;
@@ -380,10 +378,10 @@ void fn_3_DCC80(void) {
         switch (fn_3_5B380()) {
         case 1:
             *(u16*)(g_GameLogic + 0xFE) = 0;
-            L34->b1D2 = 10;
+            lbl_3_common_bss_34C90.b1D2 = 10;
             break;
         case 2:
-            L34->b1D2 = 3;
+            lbl_3_common_bss_34C90.b1D2 = 3;
             break;
         }
         break;
@@ -392,9 +390,9 @@ void fn_3_DCC80(void) {
             changeScene(4, 6);
         }
         if (lbl_8037169C[0x13] != 0) {
-            L34->b1D9 = 2;
+            lbl_3_common_bss_34C90.b1D9 = 2;
             g_d_GameSettings[0x13] = 1;
-            fn_8004CC18(g_d_GameSettings, L34, 2);
+            fn_8004CC18(g_d_GameSettings, &lbl_3_common_bss_34C90, 2);
             g_GameLogic[0x122] = 1;
         }
         break;
