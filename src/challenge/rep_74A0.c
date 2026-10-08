@@ -14,6 +14,21 @@ extern const f32 lbl_1_rodata_7578;
 extern const f32 lbl_1_rodata_757C;
 extern const f32 lbl_1_rodata_7520;
 
+// fn_1_1A290, size:0x124
+void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode) {
+    u16 index;
+
+    GXSetZMode(1, GX_LEQUAL, 1);
+    GXSetCullMode(GX_CULL_BACK);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    for (index = 0; index < collection->count; index++) {
+        ChallengeActorDrawing* drawing = &collection->nodes[index].drawing;
+        if (drawing->actor != NULL && collection->nodes[index].visible != 0) {
+            fn_1_1A1EC(drawing, mode);
+        }
+    }
+}
+
 // fn_1_18E04, size:0xE0
 void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees) {
     f32 sine;
@@ -31,7 +46,7 @@ void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees) {
 void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode) {
     ChallengeDrawActor* actor = drawing->actor;
     if (drawing->prepare != NULL) {
-        drawing->prepare();
+        drawing->prepare(drawing);
     }
     if (actor->display != NULL) {
         fn_800B2D5C(actor);

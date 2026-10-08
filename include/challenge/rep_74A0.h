@@ -15,11 +15,24 @@ typedef struct ChallengeDrawActor {
     struct ChallengeDrawActor* next;
 } ChallengeDrawActor;
 
-typedef struct {
+typedef struct ChallengeActorDrawing {
     ChallengeDrawActor* actor;
     u8 padding[4];
-    void (*prepare)(void);
+    void (*prepare)(struct ChallengeActorDrawing*);
 } ChallengeActorDrawing;
+
+typedef struct {
+    ChallengeActorDrawing drawing;
+    u8 padding0C[0x60];
+    u8 visible;
+    u8 padding6D[0x23];
+} ChallengeDrawNode;
+
+typedef struct {
+    u16 count;
+    u8 padding[0x32];
+    ChallengeDrawNode nodes[1];
+} ChallengeDrawCollection;
 
 typedef struct {
     u8 padding[0x10];
@@ -49,5 +62,7 @@ void fn_1_1D470(void);
 void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode);
 
 void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees);
+
+void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode);
 
 #endif
