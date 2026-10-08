@@ -15,4 +15,6 @@ void fn_3_B1DA4(u8 level, u8 value);
 
 void fn_3_B3288(void);
 
+s32 fn_3_AFD48(s16 value);
+
 #endif

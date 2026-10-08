@@ -51,3 +51,15 @@ void fn_3_B3288(void) {
     lbl_3_common_bss_34C90[0x1D2] = 0;
     lbl_3_common_bss_34C90[0x1DA] = 0;
 }
+
+// fn_3_AFD48, size:0x38
+s32 fn_3_AFD48(s16 value) {
+    if (*(s8*)(lbl_3_common_bss_34C90 + 0x206) <= 0) {
+        *(s16*)(lbl_3_common_bss_34C90 + 4) = value;
+        *(s16*)(lbl_3_common_bss_34C90 + 6) = value;
+        *(s16*)(lbl_3_common_bss_34C90 + 8) = value;
+        lbl_3_common_bss_34C90[0x206] = 13;
+        return 1;
+    }
+    return 0;
+}
