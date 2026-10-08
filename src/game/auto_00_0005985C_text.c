@@ -31,8 +31,31 @@ extern void fn_3_58870(void);
 extern void fn_3_1DEB8(void);
 extern void Set_803cb848(s32);
 extern void fn_3_6EBB4(s32);
+extern void fn_3_8A1D8(void*);
+extern void fn_3_6C108(void);
+extern void fn_3_6B870(void);
+extern s32 fn_3_6BA64(void);
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_803CBC3C[];
 
 #pragma dont_inline on
+
+// fn_3_5CD24, size:0x90
+void fn_3_5CD24(void) {
+    GameControlsStruct* game = &g_GameLogic;
+    if (game->_125 == 0) {
+        lbl_3_common_bss_32724[0x9A] = 0;
+        fn_3_8A1D8(lbl_3_common_bss_32724);
+        fn_3_6C108();
+        fn_3_6B870();
+        game->_125++;
+    } else if (game->_125 == 1) {
+        if (fn_3_6BA64() != 0) {
+            lbl_803CBC3C[2] = 0;
+            fn_3_5A6D4(0);
+        }
+    }
+}
 
 // fn_3_5F720, size:0x88
 void fn_3_5F720(void) {
