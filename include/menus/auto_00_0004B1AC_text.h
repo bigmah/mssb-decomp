@@ -27,4 +27,6 @@ s32 fn_2_4EAF4(void);
 
 s32 fn_2_4EB2C(void);
 
+s32 fn_2_4EB64(void);
+
 #endif

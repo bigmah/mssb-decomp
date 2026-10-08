@@ -2,6 +2,8 @@
 
 #include "static/UnknownHomes_Static.h"
 
+extern u8 lbl_2_data_1323C[];
+
 extern u8 lbl_2_data_1324C[];
 
 extern u8 lbl_2_data_1325C[];
@@ -73,4 +75,9 @@ s32 fn_2_4EAF4(void) {
 // fn_2_4EB2C, size:0x38
 s32 fn_2_4EB2C(void) {
     return fn_80035838(lbl_2_data_1324C, 0x15) != 0;
+}
+
+// fn_2_4EB64, size:0x38
+s32 fn_2_4EB64(void) {
+    return fn_80035838(lbl_2_data_1323C, 0x8) != 0;
 }
