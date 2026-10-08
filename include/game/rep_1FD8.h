@@ -18,7 +18,7 @@ void fn_3_C2EDC(void);
 void fn_3_C30F0(void);
 void fn_3_C366C(u32 a, u8 b);
 void fn_3_C39C8(void);
-void fn_3_C3A38(void);
+void fn_3_C3A38(u8* obj);
 void fn_3_C3C2C(void);
 void fn_3_C3E94(f32* pos, s32 idx);
 void fn_3_C3F70(u8* a);

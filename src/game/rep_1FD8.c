@@ -4,6 +4,12 @@
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/vec.h"
 extern void fn_3_C2644(void);
+extern const f32 lbl_3_rodata_213C;
+extern u8 lbl_3_bss_9D81;
+extern u32 lbl_3_bss_9D8C;
+extern const f32 lbl_3_rodata_214C;
+extern void fn_800528B4(void);
+extern int rand(void);
 extern void CTRLBuildMatrix(void*);
 extern u8* lbl_3_bss_9D98;
 extern u8* lbl_3_common_bss_350E4[];
@@ -305,8 +311,33 @@ void fn_3_C39C8(void) {
 }
 
 // .text:0x000C3A38 size:0x1F4 mapped:0x80702ACC
-void fn_3_C3A38(void) {
-    return;
+void fn_3_C3A38(u8* obj) {
+    Vec v;
+    Mtx m;
+    if (g_GameLogic[0x11E] != 2 || obj == NULL) {
+        lbl_3_bss_9D8C = 0;
+        lbl_3_bss_9D81 = 0;
+        fn_800528B4();
+        return;
+    }
+    if (lbl_3_bss_9D81 != 0) {
+        lbl_3_bss_9D8C = 0x3C;
+        lbl_3_bss_9D81 = 0;
+    }
+    if (lbl_3_bss_9D8C != 0) {
+        v.x = (f32)(rand() % 20 - 10) / lbl_3_rodata_214C;
+        v.y = (f32)(rand() % 20 - 10) / lbl_3_rodata_214C;
+        v.z = lbl_3_rodata_213C;
+        PSMTXInverse((MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40), m);
+        PSMTXMultVecSR(m, &v, &v);
+        *(f32*)(obj + 0x70) += v.x;
+        *(f32*)(obj + 0x74) += v.y;
+        *(f32*)(obj + 0x78) += v.z;
+        *(f32*)(obj + 0x7C) += v.x;
+        *(f32*)(obj + 0x80) += v.y;
+        *(f32*)(obj + 0x84) += v.z;
+        lbl_3_bss_9D8C -= 1;
+    }
 }
 
 // .text:0x000C3C2C size:0x268 mapped:0x80702CC0
@@ -506,7 +537,6 @@ extern void fn_80033CC8(void*, s32);
 extern void GXSetZMode(int, int, int);
 extern void GXSetBlendMode(int, int, int, int);
 extern const f32 lbl_3_rodata_2168[];
-extern const f32 lbl_3_rodata_213C;
 extern const f32 lbl_3_rodata_21A4;
 extern const f32 lbl_3_rodata_21AC;
 extern s32 lbl_3_bss_9F0C;
