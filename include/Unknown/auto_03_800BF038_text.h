@@ -9,4 +9,6 @@ void fn_800BF048(u32 value);
 
 void fn_800BF058(u32 value);
 
+void* fn_800BF068(void);
+
 #endif
