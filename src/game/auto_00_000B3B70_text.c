@@ -1,6 +1,8 @@
 #include "game/auto_00_000B3B70_text.h"
 #include "game/UnknownHomes_Game.h"
 
+extern u8 lbl_3_common_bss_34C90[];
+
 // fn_3_B3C64, size:0x14
 void fn_3_B3C64(void) {
     g_GameLogic.framesOfExitingToMenu = 1;
@@ -31,4 +33,13 @@ void fn_3_B3CAC(u8 mode) {
 void fn_3_B777C(u8 state) {
     *((u8*)&g_Practice + 0x1E5) = state;
     g_Practice.maybeCommandData[2] = 0;
+}
+
+// fn_3_B5D4C, size:0x2C
+void fn_3_B5D4C(u8 type) {
+    g_Practice.practiceType_1 = type;
+    g_Practice.practiceState = 0;
+    lbl_3_common_bss_34C90[0x1D2] = 0;
+    g_Practice.practiceMenu_framesOnCurrMenuScreen = 0;
+    g_Practice.framesInCurrTransitionState = 0;
 }
