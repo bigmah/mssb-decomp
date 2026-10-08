@@ -914,7 +914,52 @@ void fn_3_A7EF8(void) {
 
 // .text:0x000A8074 size:0x2C4 mapped:0x806E7108
 void fn_3_A8074(s32 idx) {
-    return;
+    s16 dc;
+    s32 sel;
+    s16 cc;
+    s32 fwd;
+    u8* f;
+    s16 res;
+
+    s32 d;
+    s32 i;
+    sel = -1;
+    f = g_Fielders + idx * 0x268;
+    fwd = 0;
+    res = -1;
+    dc = *(s16*)(g_FieldingLogic + 0xDC);
+    if (dc < 0) {
+        *(s16*)(g_FieldingLogic + 0xDE) = -1;
+        return;
+    }
+    cc = *(s16*)(g_FieldingLogic + 0xCC);
+    d = cc - dc;
+    if (d == 1 || d == -3) {
+        sel = dc;
+    } else if (d == -1 || d == 3) {
+        sel = cc;
+    }
+    if (sel >= 0) {
+        if (cc > dc || (cc == 0 && dc == 3)) {
+            fwd = 1;
+        }
+        if (fwd != 0) {
+            for (i = 0; i < 4; i++) {
+                if (g_Runners[i].status == 1 && sel == g_Runners[i].unk125 && g_Runners[i].unkE6 < 0 && *(f32*)(f + cc * 4 + 0xA8) > *(f32*)((u8*)&g_Runners[i] + 0x78)) {
+                    res = i;
+                    break;
+                }
+            }
+        } else {
+            for (i = 3; i >= 0; i--) {
+                if (g_Runners[i].status == 1 && sel == g_Runners[i].unk125 && g_Runners[i].unkE6 < 0 && *(f32*)(f + cc * 4 + 0xA8) > *(f32*)((u8*)&g_Runners[i] + 0x74)) {
+                    res = i;
+                    break;
+                }
+            }
+        }
+    }
+    *(s16*)(g_FieldingLogic + 0xDE) = res;
 }
 
 // .text:0x000A8338 size:0x140 mapped:0x806E73CC
