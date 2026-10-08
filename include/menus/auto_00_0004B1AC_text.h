@@ -63,4 +63,6 @@ void fn_2_51358(void);
 
 void fn_2_512B4(void);
 
+void fn_2_5118C(void);
+
 #endif
