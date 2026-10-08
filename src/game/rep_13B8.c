@@ -2,11 +2,14 @@
 #include "header_rep_data.h"
 #include "math.h"
 extern f32 lbl_3_data_4A34[];
+extern int fn_3_A6810(f32, f32, f32, f32);
+extern s16 lbl_3_data_1C88[];
 extern u8 lbl_3_data_4B58[];
 extern int fn_3_52560(int, f32, f32);
 extern s16 lbl_3_data_21904[];
 extern u8 lbl_3_data_218BC[];
 extern const f32 lbl_3_rodata_1430;
+extern const f32 lbl_3_rodata_14BC;
 extern const f32 lbl_3_rodata_1438;
 extern const f32 lbl_3_rodata_144C;
 extern const f32 lbl_3_rodata_1450;
@@ -23,6 +26,7 @@ extern const f32 lbl_3_rodata_140C;
 extern const f32 lbl_3_rodata_1410;
 extern const f32 lbl_3_rodata_1414;
 typedef struct { f32 x, z; } XZ13B8;
+extern f32 lbl_3_data_4444[];
 extern XZ13B8 lbl_3_data_4A54[2][13];
 extern void running_roundBasePosition(f32 frame, XZ13B8* outPos, XZ13B8* points, int count);
 extern const f64 lbl_3_rodata_1488;
@@ -749,8 +753,29 @@ void fn_3_83714(void) {
 }
 
 // .text:0x000841C0 size:0x124 mapped:0x806C3254
-void fn_3_841C0(void) {
-    return;
+int fn_3_841C0(int i, int j) {
+    u8* r = g_Runners + i * 0x154;
+    int v;
+    int k;
+    if (*(s16*)(r + 0xEE) == 1) {
+        return 1;
+    }
+    k = r[0x126];
+    v = j + fn_3_A6810(((f32*)(g_Ball + 0x354))[j * 4], ((f32*)(g_Ball + 0x35C))[j * 4], lbl_3_data_4444[k * 2], lbl_3_data_4444[k * 2 + 1]);
+    v += 0x2D;
+    if (*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0x10) * 4 + 0x14) >= 3) {
+        v -= 0x1E;
+    } else {
+        v += lbl_3_data_1C88[*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0xC) * 4 + 0xE4)];
+    }
+    if (g_Ball[0x1BBE] <= 1) {
+        if (v - 0x14 > *(s16*)(r + 0xEA)) {
+            return 1;
+        }
+    } else if (v > *(s16*)(r + 0xEA)) {
+        return 1;
+    }
+    return -1;
 }
 
 // .text:0x000842E4 size:0x3E4 mapped:0x806C3378
@@ -827,7 +852,67 @@ void fn_3_85CB0(void) {
 
 // .text:0x00085EF4 size:0x158 mapped:0x806C4F88
 void fn_3_85EF4(s32 i, s32 d) {
-    return;
+    s16 e;
+    u8 t;
+    u8* r = g_Runners + i * 0x154;
+    if (r[0x123] != 1) {
+        return;
+    }
+    if (r[0x128] == 2 && d != -1) {
+        return;
+    }
+    if (r[0x13A] != 0 && r[0x13C] != 0) {
+        if (r[0x13B] == 1) {
+            r[0x127] = r[0x126];
+            return;
+        }
+        r[0x127] = r[0x125];
+        return;
+    }
+    if (d == 1) {
+        r[0x127] = r[0x126];
+    }
+    if (d == -1) {
+        t = r[0x125];
+        if (t == 0) {
+            return;
+        }
+        if (r[0x137] == 1 && *(s16*)(r + 0xE6) >= 0 && r[0x128] == 0) {
+            if (r[0x13E] == 1) {
+                return;
+            }
+            r[0x137] = 2;
+            return;
+        } else {
+            e = *(s16*)(r + 0xE6);
+            if (e >= 0) {
+                if (e == 1) {
+                    return;
+                }
+                if (i == 0) {
+                    return;
+                }
+                if (r[0x128] == 0) {
+                    return;
+                }
+                r[0x127] = (e + 3) & 3;
+            } else {
+                r[0x127] = t;
+            }
+        }
+    }
+    if (d == 0 && i == 0 && r[0x125] == 0) {
+        return;
+    }
+    if (d == 0) {
+        r[0x135] = 2;
+        return;
+    }
+    if (d == 1) {
+        r[0x135] = 1;
+        return;
+    }
+    r[0x135] = 3;
 }
 
 // .text:0x0008604C size:0xCC mapped:0x806C50E0
@@ -921,7 +1006,41 @@ void fn_3_871BC(void) {
 
 // .text:0x000872CC size:0x158 mapped:0x806C6360
 void fn_3_872CC(void) {
-    return;
+    int n;
+    for (n = 0; n < 4; n++) {
+        u8* r = g_Runners + n * 0x154;
+        if (r[0x123] != 0) {
+            *(s16*)(r + 0xE8) = *(s16*)(r + 0xE6);
+            *(f32*)(r + 0xC) = *(f32*)(r + 0x0);
+            *(f32*)(r + 0x10) = *(f32*)(r + 0x4);
+            *(f32*)(r + 0x14) = *(f32*)(r + 0x8);
+            *(f32*)(r + 0x24) = *(f32*)(r + 0x18);
+            *(f32*)(r + 0x28) = *(f32*)(r + 0x1C);
+            *(f32*)(r + 0x2C) = *(f32*)(r + 0x20);
+            *(f32*)(r + 0x7C) = *(f32*)(r + 0x64);
+            *(f32*)(r + 0x80) = *(f32*)(r + 0x68);
+            r[0x135] = 0;
+            r[0x149] = 0;
+            if (*(s16*)(g_Ball + 0x1B7A) == 3 && g_Strikes[3] < 2 && r[0x128] == 1) {
+                r[0x128] = 2;
+                if (*(s16*)(r + 0xE6) == r[0x124]) {
+                    r[0x128] = 0;
+                }
+            }
+            if (r[0x150] != 0) {
+                r[0x150] = r[0x150] - 1;
+                if (r[0x150] == 0) {
+                    r[0x151] = 0;
+                }
+            }
+            if (g_GameLogic[0x11E] == 2) {
+                r[0x133] = 0;
+            }
+        }
+    }
+    if (*(s16*)(g_Ball + 0x1B66) == 1 && *(f32*)(g_Ball + 0x19D4) >= lbl_3_rodata_14BC && g_Ball[0x1BBF] >= 2) {
+        g_RunningLogic[0x14] = 10;
+    }
 }
 
 // .text:0x00087424 size:0x3F8 mapped:0x806C64B8
