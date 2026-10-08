@@ -22,7 +22,7 @@ void fn_3_DD9A4(void);
 void fn_3_DDD60(void);
 void fn_3_DDF1C(void);
 void fn_3_DDFA0(void);
-void fn_3_DE308(void);
+void fn_3_DE308(s32 idx);
 void fn_3_DE4FC(void);
 void fn_3_DE610(void);
 void fn_3_DE744(void);

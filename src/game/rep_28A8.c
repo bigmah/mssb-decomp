@@ -192,9 +192,45 @@ void fn_3_DDFA0(void) {
     return;
 }
 
+typedef struct { s16 a, b, c; } T18BB8;
+extern T18BB8 lbl_3_data_18BB8[];
+
+typedef struct {
+    /* 0x0000 */ u8 pad0[0x1890];
+    /* 0x1890 */ s16 a[4];
+    /* 0x1898 */ s16 score[4];
+    /* 0x18A0 */ u8 pad1[0x1C];
+    /* 0x18BC */ s16 out[4][2];
+} T28A8;
+
+#define MG ((T28A8*)g_Minigame)
+
 // .text:0x000DE308 size:0x1F4 mapped:0x8071D39C
-void fn_3_DE308(void) {
-    return;
+void fn_3_DE308(s32 idx) {
+    s32 i;
+
+    if (idx == 0x14 || idx == 0x15) {
+        s16* sc = (s16*)(g_Minigame + 0x1898);
+        sc[(s8)g_Minigame[0x1905]] += g_Minigame[0x19CB] * lbl_3_data_18BB8[idx].a;
+        sc[(s8)g_Minigame[0x1904]] += g_Minigame[0x19CB] * lbl_3_data_18BB8[idx].b;
+        *(s16*)(g_Minigame + g_Fielders[*(s16*)(g_Ball + 0x1B78) * 0x268 + 0x20D] * 2 + 0x1898) +=
+            g_Minigame[0x19CB] * lbl_3_data_18BB8[idx].c;
+    } else {
+        s16* sc;
+        s16 v2;
+        sc = (s16*)(g_Minigame + 0x1898);
+        sc[(s8)g_Minigame[0x1905]] += g_Minigame[0x19CB] * lbl_3_data_18BB8[idx].a;
+        v2 = lbl_3_data_18BB8[idx].c;
+        sc[(s8)g_Minigame[0x1904]] += g_Minigame[0x19CB] * lbl_3_data_18BB8[idx].b;
+        sc[(s8)g_Minigame[0x18F5]] += g_Minigame[0x19CB] * v2;
+        sc[(s8)g_Minigame[0x18F6]] += g_Minigame[0x19CB] * v2;
+    }
+    for (i = 0; i < 4; i++) {
+        if (MG->score[i] != 0) {
+            MG->out[i][0] = MG->a[i];
+            MG->out[i][1] = MG->score[i];
+        }
+    }
 }
 
 // .text:0x000DE4FC size:0x114 mapped:0x8071D590
