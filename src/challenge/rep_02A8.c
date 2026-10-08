@@ -8,9 +8,18 @@ extern s32 lbl_800EF808[];
 
 extern u8 lbl_1_bss_2FDB[];
 extern u8 lbl_1_data_1884[];
+extern u8 lbl_1_data_1CA0[];
+extern u8 lbl_1_data_17A4[];
 
 static inline s32 SoundOptionValue(s32 index) {
     return lbl_800EF808[index + 1];
+}
+
+// fn_1_A8B4, size:0x54
+s32 fn_1_A8B4(void) {
+    s32 index = lbl_1_data_1CA0[0];
+    fn_80021518(lbl_1_data_17A4[index], SoundOptionValue(index + 5));
+    return 0;
 }
 
 // fn_1_A7E4, size:0x54

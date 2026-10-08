@@ -7,6 +7,8 @@ void fn_1_A714(void);
 
 s32 fn_1_A7E4(void);
 
+s32 fn_1_A8B4(void);
+
 s32 fn_1_A77C(void);
 
 s32 fn_1_A7B0(void);
