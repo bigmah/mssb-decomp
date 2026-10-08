@@ -17,4 +17,6 @@ void fn_3_B5D4C(u8 type);
 
 void fn_3_B6B70(void);
 
+void fn_3_B7794(void);
+
 #endif

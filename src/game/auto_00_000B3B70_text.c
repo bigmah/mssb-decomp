@@ -5,6 +5,16 @@
 
 extern u8 lbl_3_common_bss_34C90[];
 
+// fn_3_B7794, size:0x48
+void fn_3_B7794(void) {
+    ((u8*)&g_Practice)[0x1E8] = 1;
+    ((u8*)&g_Practice)[0x1E9] = 1;
+    ((u8*)&g_Practice)[0x1EA] = 0;
+    ((u8*)&g_Practice)[0x1EB] = 0;
+    ((u8*)&g_Practice)[0x1E7] = 0;
+    fn_3_B3C78(0);
+}
+
 // fn_3_B3C64, size:0x14
 void fn_3_B3C64(void) {
     g_GameLogic.framesOfExitingToMenu = 1;
