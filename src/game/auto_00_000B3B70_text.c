@@ -8,6 +8,23 @@ extern u8 lbl_3_common_bss_34C90[];
 extern void fn_3_1DD48(void);
 extern void fn_3_5A6D4(u8);
 
+extern u8 lbl_8036E548[];
+extern void fn_3_6AEC0(void);
+extern void fn_3_8F1C8(void);
+extern void fn_3_59338(void);
+
+// fn_3_B3B70, size:0x60
+void fn_3_B3B70(void) {
+    g_GameLogic.freeFieldingPracticeInd = 0;
+    g_Practice.instructionNumber = -1;
+    g_Practice.transitioningIndicator = 0;
+    lbl_8036E548[0x307E] = 1;
+    lbl_8036E548[0x307A] = 1;
+    fn_3_6AEC0();
+    fn_3_8F1C8();
+    fn_3_59338();
+}
+
 // fn_3_B6C50, size:0x4C
 void fn_3_B6C50(void) {
     g_Practice.allowPlayToEndIndicator = 0;
