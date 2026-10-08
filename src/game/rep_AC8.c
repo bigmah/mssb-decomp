@@ -1643,7 +1643,26 @@ void fn_3_4207C(int i) {
 
 // .text:0x00042850 size:0x1B0 mapped:0x806818E4
 void fn_3_42850(int i) {
-    return;
+    u8* f;
+    f32 dz, d, bz, dx, bx, a2;
+    bx = *(f32*)g_Ball;
+    bz = *(f32*)(g_Ball + 8);
+    f = g_Fielders + i * 0x268;
+    *(f32*)(f + 0x14) = bx;
+    *(f32*)(f + 0x1C) = bz;
+    dx = bx - *(f32*)f;
+    dz = bz - *(f32*)(f + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x50) = 0.0f;
+        *(f32*)(f + 0x68) = 0.0f;
+    } else {
+        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
+        a2 = dz * dz;
+        d = dx * dx + a2;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
 }
 
 // .text:0x00042A00 size:0x1D0 mapped:0x80681A94
