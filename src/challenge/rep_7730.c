@@ -44,6 +44,28 @@ extern void (*lbl_1_data_104A8[])(void);
 extern void* lbl_80366158[];
 extern void fn_1_267F4(void);
 extern void fn_1_25C68(void);
+extern void (*lbl_1_data_10508[])(u8*);
+extern void (*lbl_1_data_10510[])(u8*);
+
+// fn_1_202A4, size:0x168
+void fn_1_202A4(void) {
+    u8* queue = lbl_803CC1B8[0];
+    fn_80048C1C();
+    lbl_1_data_10508[queue[0x20]](queue);
+    if (lbl_803C77B8._02 & 0x200) {
+        GXColor clearColor;
+        ChallengeTransfer* transfer;
+        *(u32*)&clearColor = 0x11775500;
+        GXSetCopyClear(clearColor, 0xFFFFFF);
+        transfer = *(ChallengeTransfer**)(lbl_803CC1B8[0] + 0x0C);
+        transfer->complete = 1;
+        fn_800B0A14_removeQueue(transfer);
+    }
+    fn_80048D4C();
+    fn_1_207D4();
+    lbl_1_data_10510[queue[0x20]](queue);
+    fn_80048C28();
+}
 
 // fn_1_2051C, size:0x124
 s32 fn_1_2051C(ChallengeTextureHeader* texture, GXTexObj* object, GXTlutObj* palette, GXTlut name) {

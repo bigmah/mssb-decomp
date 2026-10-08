@@ -96,4 +96,6 @@ void fn_1_2040C(void);
 
 s32 fn_1_2051C(ChallengeTextureHeader* texture, GXTexObj* object, GXTlutObj* palette, GXTlut name);
 
+void fn_1_202A4(void);
+
 #endif
