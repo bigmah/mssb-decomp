@@ -483,7 +483,7 @@ void fn_3_1231D4(void) {
 }
 
 // .text:0x001235B8 size:0x3D8 mapped:0x8076264C
-// 97%: only reg swaps: v%10 temp r7/r29 copy in v>=10 branch, base/value r4/r5 in final 4-store block
+// 99%: only diff is v%10 in v>=10 branch: orig computes into r7 then `mr r29,r7`, ours computes into r29 then `mr r7,r29`
 void fn_3_1235B8(void) {
     u8* q = lbl_803CC1B8;
     u8* p;
@@ -538,11 +538,8 @@ void fn_3_1235B8(void) {
                 break;
             }
         }
-        {
-            QEnt* b = (QEnt*)lbl_80371C30;
-            b[*(u16*)(q + 0x14) + 1].p[0x68] = 4;
-            b[*(u16*)(q + 0x14) + 2].p[0x68] = 4;
-        }
+        ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14) + 1].p[0x68] = 4;
+        ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14) + 2].p[0x68] = 4;
         break;
     }
 }
