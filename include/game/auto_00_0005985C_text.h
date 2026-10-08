@@ -13,4 +13,6 @@ void fn_3_59AC0(s32 unused1, s32 unused2, void* allocation);
 
 void fn_3_59A90(void);
 
+s32 fn_3_59AE4(void);
+
 #endif

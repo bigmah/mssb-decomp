@@ -2,6 +2,8 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 
+extern s32 fn_80022B68(void);
+
 extern void fn_80017D28(void* allocation);
 
 #pragma dont_inline on
@@ -40,4 +42,12 @@ void fn_3_59A90(void) {
     g_UnkSound_32718._00 = 0;
     g_UnkSound_32718._07 = 0;
     g_UnkSound_32718._08 = 0;
+}
+
+// fn_3_59AE4, size:0x3C
+s32 fn_3_59AE4(void) {
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        return fn_80022B68();
+    }
+    return 1;
 }
