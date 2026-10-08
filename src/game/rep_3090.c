@@ -5,12 +5,18 @@
 
 extern u8 lbl_80366158[];
 extern Vec lbl_3_data_21004;
+/* The original pools .data from lbl_3_data_1C0A8; the axis vectors sit at +0x4F44. Pad reproduces that offset. */
+static u8 s_axpad[0x4F44] = {1};
+static Vec s_axa = {0.0f, 1.0f, 0.0f};
+static Vec s_axb = {0.0f, 0.0f, 1.0f};
+static Vec s_axc = {0.0f, 0.0f, -1.0f};
 extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
 extern u8* g_pCamera;
 extern f32 fn_3_9FEA8(f32);
+extern s16 fn_3_9FF04(f32);
 extern f64 cos(f64);
 extern f64 sin(f64);
 extern u32 lbl_3_rodata_30EC[];
@@ -20,6 +26,7 @@ extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, const void*, u32);
 extern const f32 lbl_3_rodata_30FC;
 extern const f32 lbl_3_rodata_30F8;
+extern const f32 lbl_3_rodata_3144;
 extern const f32 lbl_3_rodata_3158;
 extern const f32 lbl_3_rodata_3198;
 extern const f32 lbl_3_rodata_311C;
@@ -119,6 +126,29 @@ void fn_3_FD51C(s32 i) {
 }
 
 #pragma dont_inline off
+static inline Vec MkVec(f32 x, f32 y, f32 z) {
+    Vec v;
+    v.x = x;
+    v.y = y;
+    v.z = z;
+    return v;
+}
+static inline Vec CamStep(Vec a, Vec b, Vec c, f32 w0, f32 w1, f32 w2) {
+    Vec dir;
+    Vec sc;
+    Vec e;
+    f32 d;
+    f32 t;
+    PSVECSubtract(&a, &b, &dir);
+    d = PSVECDistance(&a, &b);
+    PSVECSubtract(&c, &b, &e);
+    PSVECScale(&e, lbl_3_rodata_3144, &sc);
+    t = w0 * (w2 - d) + w1 * (PSVECDotProduct(&sc, &dir) / d);
+    PSVECNormalize(&dir, &dir);
+    PSVECScale(&dir, t * lbl_3_rodata_3144, &dir);
+    PSVECAdd(&a, &dir, &a);
+    return a;
+}
 static inline void CamSubInit(CamSub* p, V3U* v) {
     p->f4 = 0;
     p->f8 = 0;
@@ -268,23 +298,147 @@ void fn_3_101CC4(void) {
 }
 
 // .text:0x00103C30 size:0x24C mapped:0x80742CC4
-void fn_3_103C30(void) {
-    return;
+void fn_3_103C30(Vec* p) {
+    if (lbl_3_common_bss_DE94[0x9B4] != 0) {
+        Vec r;
+        Vec ta;
+        Vec tb;
+        Vec tc;
+        Vec junk;
+        memcpy(&junk, p, 12);
+        ta.x = *(f32*)(lbl_3_common_bss_DE94 + 0xD0);
+        ta.y = *(f32*)(lbl_3_common_bss_DE94 + 0xD4);
+        ta.z = *(f32*)(lbl_3_common_bss_DE94 + 0xD8);
+        memcpy(&tb, p, 12);
+        tc.x = *(f32*)(lbl_3_common_bss_DE94 + 0xC4);
+        tc.y = *(f32*)(lbl_3_common_bss_DE94 + 0xC8);
+        tc.z = *(f32*)(lbl_3_common_bss_DE94 + 0xCC);
+        r = CamStep(ta, tb, tc, *(f32*)(lbl_3_common_bss_DE94 + 0x10C), *(f32*)(lbl_3_common_bss_DE94 + 0x110), *(f32*)(lbl_3_common_bss_DE94 + 0x114));
+        *(f32*)(lbl_3_common_bss_DE94 + 0xC4) = p->x;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xC8) = p->y;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xCC) = p->z;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD0) = r.x;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD4) = r.y;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD8) = r.z;
+        p->x = r.x;
+        p->y = r.y;
+        p->z = r.z;
+    }
 }
 
 // .text:0x00103E7C size:0x25C mapped:0x80742F10
-void fn_3_103E7C(void) {
-    return;
+void fn_3_103E7C(f32* p) {
+    if (lbl_3_common_bss_DE94[0x9B4] != 0) {
+        Vec r;
+        Vec ta;
+        Vec tb;
+        Vec tc;
+        p[0] = fn_3_9FEA8(p[0]);
+        p[1] = fn_3_9FEA8(p[1]);
+        ta.x = *(f32*)(lbl_3_common_bss_DE94 + 0xD0);
+        ta.y = *(f32*)(lbl_3_common_bss_DE94 + 0xD4);
+        ta.z = *(f32*)(lbl_3_common_bss_DE94 + 0xD8);
+        tb.x = p[0];
+        tb.y = p[1];
+        tb.z = lbl_3_rodata_30F8;
+        tc.x = *(f32*)(lbl_3_common_bss_DE94 + 0xC4);
+        tc.y = *(f32*)(lbl_3_common_bss_DE94 + 0xC8);
+        tc.z = *(f32*)(lbl_3_common_bss_DE94 + 0xCC);
+        r = CamStep(ta, tb, tc, *(f32*)(lbl_3_common_bss_DE94 + 0x10C), *(f32*)(lbl_3_common_bss_DE94 + 0x110), *(f32*)(lbl_3_common_bss_DE94 + 0x114));
+        *(f32*)(lbl_3_common_bss_DE94 + 0xC4) = p[0];
+        *(f32*)(lbl_3_common_bss_DE94 + 0xC8) = p[1];
+        *(f32*)(lbl_3_common_bss_DE94 + 0xCC) = lbl_3_rodata_30F8;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD0) = r.x;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD4) = r.y;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xD8) = r.z;
+        p[0] = r.x;
+        p[1] = r.y;
+    }
 }
 
 // .text:0x001040D8 size:0x260 mapped:0x8074316C
 void fn_3_1040D8(void) {
-    return;
+    if (lbl_3_common_bss_DE94[0x9B4] != 0) {
+        Vec r;
+        Vec ta;
+        Vec tb;
+        Vec tc;
+        f32 bx = *(f32*)(g_pCamera + 0x2840);
+        f32 by = *(f32*)(g_pCamera + 0x2844);
+        f32 bz = *(f32*)(g_pCamera + 0x2848);
+        ta.x = *(f32*)(lbl_3_common_bss_DE94 + 0xB8);
+        ta.y = *(f32*)(lbl_3_common_bss_DE94 + 0xBC);
+        ta.z = *(f32*)(lbl_3_common_bss_DE94 + 0xC0);
+        tb.x = bx;
+        tb.y = by;
+        tb.z = bz;
+        tc.x = *(f32*)(lbl_3_common_bss_DE94 + 0xAC);
+        tc.y = *(f32*)(lbl_3_common_bss_DE94 + 0xB0);
+        tc.z = *(f32*)(lbl_3_common_bss_DE94 + 0xB4);
+        r = CamStep(ta, tb, tc, *(f32*)(lbl_3_common_bss_DE94 + 0x100), *(f32*)(lbl_3_common_bss_DE94 + 0x104), *(f32*)(lbl_3_common_bss_DE94 + 0x108));
+        *(f32*)(g_pCamera + 0x2840) = r.x;
+        *(f32*)(g_pCamera + 0x2844) = r.y;
+        *(f32*)(g_pCamera + 0x2848) = r.z;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xB8) = r.x;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xBC) = r.y;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xC0) = r.z;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xAC) = bx;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xB0) = by;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xB4) = bz;
+    }
 }
 
 // .text:0x00104338 size:0x270 mapped:0x807433CC
 void fn_3_104338(void) {
-    return;
+    u8 m[0x88];
+    u8 o[0x58];
+    u8* p0c;
+    u8* p18;
+    Vec vb;
+    Vec va;
+    s32 b = *(s32*)(lbl_3_common_bss_DE94 + 0x118);
+    s32 a = *(s32*)(lbl_3_common_bss_DE94 + 0x990);
+    memset(m, 0, 0x88);
+    {
+        f32 v = lbl_3_rodata_30FC;
+        *(f32*)(m + 0x3C) = v;
+        *(f32*)(m + 0x28) = v;
+        *(f32*)(m + 0x14) = v;
+        *(f32*)(m + 0x00) = v;
+        *(f32*)(m + 0x40) = v;
+    }
+    fn_3_104B3C(a, b, 0, 0, m);
+    memcpy(o, m + 0x58, 12);
+    p0c = o + 0xC;
+    memcpy(p0c, m + 0x64, 12);
+    memcpy(o + 0x40, m + 0x70, 12);
+    *(f32*)(o + 0x3C) = *(f32*)(m + 0x4C);
+    p18 = o + 0x18;
+    PSMTX44MultVec((f32(*)[4])m, &s_axa, (Vec*)p18);
+    PSVECNormalize((Vec*)p18, (Vec*)p18);
+    va = *(Vec*)(o + 0x24);
+    PSMTX44MultVec((f32(*)[4])m, &s_axb, &va);
+    PSVECNormalize(&va, &va);
+    vb = *(Vec*)(o + 0x30);
+    PSMTX44MultVec((f32(*)[4])m, &s_axc, &vb);
+    PSVECNormalize(&vb, &vb);
+    *(f32*)(o + 0x4C) = *(f32*)(m + 0x7C);
+    *(f32*)(o + 0x50) = *(f32*)(m + 0x80);
+    *(u8*)(o + 0x54) = *(u8*)(m + 0x84);
+    memcpy(lbl_3_common_bss_DE94 + 0x64, o, 12);
+    *(f32*)(lbl_3_common_bss_DE94 + 0xA0) = *(f32*)(o + 0x3C);
+    *(f32*)(lbl_3_common_bss_DE94 + 0xA4) = *(f32*)(o + 0x4C);
+    *(f32*)(lbl_3_common_bss_DE94 + 0xA8) = *(f32*)(o + 0x50);
+    *(u8*)(lbl_3_common_bss_DE94 + 0x9A7) = *(u8*)(o + 0x54);
+    memcpy(lbl_3_common_bss_DE94 + 0x88, p0c, 12);
+    *(f32*)(g_pCamera + 0x2858) = *(f32*)(o + 0x0);
+    *(f32*)(g_pCamera + 0x285C) = *(f32*)(o + 0x4);
+    *(f32*)(g_pCamera + 0x2860) = *(f32*)(o + 0x8);
+    *(f32*)(g_pCamera + 0x2870) = *(f32*)(o + 0x4C);
+    *(f32*)(g_pCamera + 0x2874) = *(f32*)(o + 0x50);
+    *(s16*)(g_pCamera + 0x289C) = fn_3_9FF04(fn_3_9FEA8(*(f32*)(g_pCamera + 0x2870)));
+    *(s16*)(g_pCamera + 0x289C) = fn_3_9FF04(fn_3_9FEA8(*(f32*)(g_pCamera + 0x2870)));
+    *(f32*)(g_pCamera + 0x2878) = lbl_3_rodata_30FC;
 }
 
 // .text:0x001045A8 size:0x198 mapped:0x8074363C
@@ -348,8 +502,35 @@ void fn_3_104740(void) {
 }
 
 // .text:0x001048E0 size:0x15C mapped:0x80743974
-void fn_3_1048E0(void) {
-    return;
+void fn_3_1048E0(s32 a, s32 b, s32 c, s32 d, u8* out) {
+    u8 m[0x88];
+    Vec va;
+    Vec vb;
+    memset(m, 0, 0x88);
+    {
+        f32 v = lbl_3_rodata_30FC;
+        *(f32*)(m + 0x3C) = v;
+        *(f32*)(m + 0x28) = v;
+        *(f32*)(m + 0x14) = v;
+        *(f32*)(m + 0x00) = v;
+        *(f32*)(m + 0x40) = v;
+    }
+    fn_3_104B3C(a, b, c, d, m);
+    memcpy(out, m + 0x58, 12);
+    memcpy(out + 0xC, m + 0x64, 12);
+    memcpy(out + 0x40, m + 0x70, 12);
+    *(f32*)(out + 0x3C) = *(f32*)(m + 0x4C);
+    PSMTX44MultVec((f32(*)[4])m, &s_axa, (Vec*)(out + 0x18));
+    PSVECNormalize((Vec*)(out + 0x18), (Vec*)(out + 0x18));
+    va = *(Vec*)(out + 0x24);
+    PSMTX44MultVec((f32(*)[4])m, &s_axb, &va);
+    PSVECNormalize(&va, &va);
+    vb = *(Vec*)(out + 0x30);
+    PSMTX44MultVec((f32(*)[4])m, &s_axc, &vb);
+    PSVECNormalize(&vb, &vb);
+    *(f32*)(out + 0x4C) = *(f32*)(m + 0x7C);
+    *(f32*)(out + 0x50) = *(f32*)(m + 0x80);
+    *(u8*)(out + 0x54) = *(u8*)(m + 0x84);
 }
 
 // .text:0x00104A3C size:0x4C mapped:0x80743AD0
@@ -376,7 +557,7 @@ void fn_3_104B20(void) {
 }
 
 // .text:0x00104B3C size:0x990 mapped:0x80743BD0
-void fn_3_104B3C(void) {
+void fn_3_104B3C(s32 a, s32 b, s32 c, s32 d, void* m) {
     return;
 }
 
