@@ -9,4 +9,6 @@ void fn_1_1D0E8(u8* object);
 
 void fn_1_1D450(u8* object);
 
+s32 fn_1_19D1C(u8 value);
+
 #endif

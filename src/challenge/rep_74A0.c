@@ -18,3 +18,15 @@ void fn_1_1D0E8(u8* object) {
 void fn_1_1D450(u8* object) {
     fn_1_1CBE4(object);
 }
+
+// fn_1_19D1C, size:0x44
+s32 fn_1_19D1C(u8 value) {
+    switch ((value >> 4) & 0xF) {
+    case 0:
+    case 1: return 1;
+    case 2:
+    case 3: return 2;
+    case 4: return 4;
+    default: return 0;
+    }
+}
