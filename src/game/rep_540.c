@@ -263,6 +263,10 @@ extern const f64 lbl_3_rodata_5B8;
 extern const f64 lbl_3_rodata_5C0;
 extern const f64 lbl_3_rodata_5C8;
 
+extern f32 lbl_3_rodata_60C;
+extern f32 lbl_3_rodata_610;
+extern f32 lbl_3_rodata_594;
+
 static inline float sqrt540(float x) {
     if (x > 0.0f) {
         double half = lbl_3_rodata_5B8;
@@ -568,7 +572,54 @@ void fn_3_BC54(void) {
 
 // .text:0x0000BD78 size:0x2BC mapped:0x8064AE0C
 void fn_3_BD78(void) {
-    return;
+    s32 zone = -1;
+    f32 d;
+    if (*(s16*)(g_Ball + 0x1B9C) > 0xC00) {
+        zone = 0;
+    } else if (*(s16*)(g_Ball + 0x1B9C) < 0x400 && *(s16*)(g_Ball + 0x1B9A) > 0x400 && *(s16*)(g_Ball + 0x1B9A) < 0xC00) {
+        zone = 0;
+    } else if (*(s16*)(g_Ball + 0x1B9C) > 0x800) {
+        zone = 1;
+    } else if (*(s16*)(g_Ball + 0x1B9A) > 0x400 && *(s16*)(g_Ball + 0x1B9A) < 0xC00) {
+        zone = 1;
+    } else if (*(s16*)(g_Ball + 0x1B9C) < 0x1B0) {
+        zone = 2;
+    } else if (*(s16*)(g_Ball + 0x1B9C) > 0x650) {
+        zone = 3;
+    }
+    if (zone == 0 || zone == 2) {
+        g_Ball[0x1BC5] = 7;
+    } else if (zone == 1 || zone == 3) {
+        g_Ball[0x1BC5] = 8;
+    } else {
+        d = sqrt540(*(f32*)(g_Ball + 0x714) * *(f32*)(g_Ball + 0x714) + *(f32*)(g_Ball + 0x71C) * *(f32*)(g_Ball + 0x71C));
+        if (d < lbl_3_rodata_60C) {
+            g_Ball[0x1BC5] = 0;
+            return;
+        }
+        if (d < lbl_3_rodata_610) {
+            g_Ball[0x1BC5] = 1;
+            return;
+        }
+        if (d < lbl_3_rodata_594) {
+            if (*(s16*)(g_Ball + 0x1B9C) < 0x340) {
+                g_Ball[0x1BC5] = 2;
+                return;
+            }
+            if (*(s16*)(g_Ball + 0x1B9C) >= 0x4C0) {
+                g_Ball[0x1BC5] = 4;
+                return;
+            }
+            g_Ball[0x1BC5] = 3;
+            return;
+        }
+        if (g_Ball[0x1BC4] <= 4) {
+            g_Ball[0x1BC5] = 5;
+            return;
+        }
+        g_Ball[0x1BC5] = 6;
+        return;
+    }
 }
 
 // .text:0x0000C034 size:0x9C0 mapped:0x8064B0C8
