@@ -85,7 +85,7 @@ extern f32 lbl_3_rodata_392C;
 extern f32 lbl_3_rodata_3A00;
 extern const Vec lbl_3_rodata_38DC;
 extern const f32 lbl_3_rodata_3A04;
-extern const f32 lbl_3_rodata_3948;
+extern f32 lbl_3_rodata_3948;
 extern void fn_8005268C(void);
 extern u8* fn_80052734(void);
 extern f64 acos(f64);
@@ -1587,9 +1587,62 @@ void fn_3_151798(void) {
     pitchingMachinePitching(0x1C);
 }
 
+// 98%: only schedule order of the first lwz of the tx struct copy vs the hx/hy loads differs
 // .text:0x001517D0 size:0x228 mapped:0x80790864
+typedef struct { f32 f[8]; } Tex8;
+extern const Tex8 lbl_3_rodata_38E8;
+extern void fn_80033B58(void*, s32, s32, s32);
+
+typedef struct { f32 u, v; } UV;
 void fn_3_1517D0(u8* a, u8* o) {
-    return;
+    Mtx m;
+    Mtx44 m44;
+    Vec vt[4];
+    Tex8 tx;
+    f32 hx;
+    f32 hy;
+    f32* p;
+    UV* uv;
+    s32 i;
+    hx = *(f32*)(a + 0x38) * lbl_3_rodata_39A8;
+    hy = *(f32*)(a + 0x3C) * lbl_3_rodata_39A8;
+    ((s32*)&tx)[0] = ((const s32*)&lbl_3_rodata_38E8)[0];
+    ((s32*)&tx)[1] = ((const s32*)&lbl_3_rodata_38E8)[1];
+    ((s32*)&tx)[2] = ((const s32*)&lbl_3_rodata_38E8)[2];
+    ((s32*)&tx)[3] = ((const s32*)&lbl_3_rodata_38E8)[3];
+    ((s32*)&tx)[4] = ((const s32*)&lbl_3_rodata_38E8)[4];
+    ((s32*)&tx)[5] = ((const s32*)&lbl_3_rodata_38E8)[5];
+    ((s32*)&tx)[6] = ((const s32*)&lbl_3_rodata_38E8)[6];
+    ((s32*)&tx)[7] = ((const s32*)&lbl_3_rodata_38E8)[7];
+    vt[0].x = -hx;
+    vt[0].y = -hy;
+    vt[1].x = hx;
+    vt[1].y = -hy;
+    vt[2].x = hx;
+    vt[2].y = hy;
+    vt[3].x = -hx;
+    vt[3].y = hy;
+    vt[3].z = 0.0f;
+    vt[2].z = 0.0f;
+    vt[1].z = 0.0f;
+    vt[0].z = 0.0f;
+    PSMTXIdentity(m);
+    PSMTX44Identity(m44);
+    GXLoadPosMtxImm(m, 0);
+    GXSetCurrentMtx(0);
+    GXSetProjection(m44, 0);
+    fn_80033B58(*(void**)(o + 0x10), a[0x4D], 0, 0);
+    GXBegin(0x80, 0, 4);
+    p = &vt[0].x;
+    for (i = 0; i < 4; i++, p += 3) {
+        GXPosition3f32(*(f32*)(a + 4) + p[0], *(f32*)(a + 8) + p[1], -1.0f);
+        GXColor1u32(*(u32*)(a + 0x40));
+        uv = &((UV*)&tx)[a[0x4E] + i];
+        GXTexCoord2f32(uv->u, uv->v);
+    }
+    GXLoadPosMtxImm((void*)((u8*)fn_80052768_getCamera(0) + 0x40), 0);
+    GXSetCurrentMtx(0);
+    GXSetProjection((void*)fn_80052768_getCamera(0), 0);
 }
 
 // .text:0x001519F8 size:0x1B4 mapped:0x80790A8C
@@ -1908,9 +1961,49 @@ void fn_3_1542F4(void) {
     return;
 }
 
+// 99%: same float-reg shift as fn_3_1559E4 in the post-PSMTXMultVec add block (orig v.x=f2,pos0=f1,v.y=f0)
 // .text:0x001549F0 size:0x28C mapped:0x80793A84
-void fn_3_1549F0(void) {
-    return;
+void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {
+    struct { Control c; u32 pad[2]; } cc;
+    Mtx m;
+    Vec dir;
+    Vec v;
+    u8* o;
+    u8 i = 0;
+    o = *(u8**)(a + 0xC);
+    *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    do {
+        *(s16*)(o + 0x18) = b;
+        *(f32**)(o + 0x10) = pos;
+        *(f32**)(o + 0x14) = rot;
+        *(s16*)(o + 0x48) = i++;
+        o[0x4D] = *(s32*)lbl_3_data_26BC0;
+        o[0x4E] = 0;
+        if (*(s16*)(o + 0x48) == 0) {
+            *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+            cc.c.type = 0;
+            CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
+            CTRLBuildMatrix(&cc.c, m);
+            if (g_Minigame[0x1A2A] == 1) {
+                dir = lbl_3_data_26BB4;
+            } else {
+                PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
+            }
+            v.x = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.x);
+            v.y = dir.y;
+            v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
+            PSMTXMultVec(m, &v, &v);
+            v.x = v.x + pos[0];
+            v.y = (f32)((f64)v.y - __fabs(pos[1]));
+            v.z = v.z + pos[2];
+            *(f32*)(o + 4) = v.x;
+            *(f32*)(o + 8) = v.y;
+            *(f32*)(o + 0xC) = v.z;
+            *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
+            o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+        }
+        o = *(u8**)o;
+    } while (o != NULL);
 }
 
 // .text:0x00154C7C size:0x5A0 mapped:0x80793D10
