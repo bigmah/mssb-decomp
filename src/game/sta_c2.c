@@ -16,6 +16,17 @@ extern u8 g_Fielders[];
 extern u8 g_Ball[];
 extern Vec lbl_3_rodata_2640;
 extern Vec lbl_3_rodata_264C;
+extern u8 lbl_3_bss_A018[];
+extern u8* lbl_803CC1B8;
+extern void fn_800528C0(f32, f32, f32, s16*, s16*);
+extern void fn_800B0A14_removeQueue(void);
+extern void fn_80034CEC(void*);
+extern f64 lbl_3_rodata_2728;
+extern f64 lbl_3_rodata_2770;
+extern f64 lbl_3_rodata_2780;
+extern void fn_80033620(void);
+extern void GXSetBlendMode(s32, s32, s32, s32);
+extern void GXSetZMode(s32, s32, s32);
 extern u8 lbl_800E8754[];
 extern u8 lbl_3_bss_A034[];
 typedef struct { u8 a, b; u8 pad[0x1C]; } S1E;
@@ -233,7 +244,57 @@ void fn_3_CE8E4(void) {
 
 // .text:0x000CE954 size:0x268 mapped:0x8070D9E8
 void fn_3_CE954(void) {
-    return;
+    u8* b;
+    u8* st;
+    f32* v;
+    u8* g;
+    s32 i;
+    s32 f;
+    b = lbl_3_bss_A018;
+    i = 0;
+    st = b + 0x880;
+    v = (f32*)(b + 0x808);
+    g = lbl_803CC1B8;
+    do {
+        switch (*st) {
+        case 1: {
+            s16 b1;
+            s16 a1;
+            fn_800528C0(v[0], v[1], v[2], &a1, &b1);
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x48) = a1;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x4C) = b1;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x50) = 0.0f;
+            *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(g + 0x14) + i) * 8) + 0x5C) = 0;
+            *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(g + 0x14) + i) * 8) + 0x54) |= 2;
+            *st = 2;
+            break;
+        }
+        case 2: {
+            s16 b2;
+            s16 a2;
+            u8* t;
+            fn_800528C0(v[0], v[1], v[2], &a2, &b2);
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x48) = a2;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x4C) = b2;
+            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x50) = 0.0f;
+            t = *(u8**)(lbl_80371C30 + (*(u16*)(g + 0x14) + i) * 8);
+            f = (t[0x69] == 2);
+            if (f != 0) {
+                *(u32*)(t + 0x54) &= ~2;
+                *st = 0;
+            }
+            break;
+        }
+        }
+        i++;
+        st++;
+        v += 3;
+    } while (i < 10);
+    if (b[0x804] != 0) {
+        fn_800B0A14_removeQueue();
+        fn_80034CEC(*(u8**)(b + 0x88C));
+        b[0x804] = 0;
+    }
 }
 
 // .text:0x000CEBBC size:0xDC mapped:0x8070DC50
