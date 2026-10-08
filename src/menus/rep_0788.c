@@ -1,5 +1,6 @@
 #include "menus/rep_0788.h"
 
+extern u8* lbl_803CC1B8[];
 
 // .text:0x24724 size:0x4
 void fn_2_24724(void) {
@@ -15,4 +16,8 @@ void fn_2_1FF10(void) {
 
 // .text:0x1FF0C size:0x4
 void fn_2_1FF0C(void) {
+}
+
+void fn_2_24EB0(s16 value) {
+    *(s16*)(lbl_803CC1B8[0] + 0x10) = value;
 }
