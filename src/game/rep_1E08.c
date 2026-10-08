@@ -18,7 +18,7 @@ extern f64 sin(f64);
 extern f64 cos(f64);
 extern s32 lbl_3_data_170D8[];
 extern f32 lbl_3_rodata_1EC0;
-extern f32 lbl_3_rodata_1E68;
+extern const f32 lbl_3_rodata_1E68;
 extern s32 ARAMTransfer(void*, int, int, int);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_8006C43C(int);
@@ -49,7 +49,7 @@ extern u8 lbl_3_data_12354[];
 extern f32 lbl_3_rodata_1F18;
 extern f32 lbl_3_rodata_1F1C;
 extern f32 lbl_3_rodata_1F20;
-extern f32 lbl_3_rodata_1E64;
+extern const f32 lbl_3_rodata_1E64;
 extern u8 g_Ball[];
 extern u8 g_Pitcher[];
 extern void fn_3_15BAA0(int);
@@ -73,8 +73,69 @@ void fn_3_C07B0(void) {
 }
 
 // .text:0x000BA538 size:0x2BC mapped:0x806F95CC
-void fn_3_BA538(void) {
-    return;
+extern void CTRLBuildMatrix(void*, Mtx);
+extern const f32 lbl_3_rodata_1E6C;
+extern const f32 lbl_3_rodata_1E70;
+extern const f32 lbl_3_rodata_1E74;
+extern const f32 lbl_3_rodata_1E78;
+extern const f32 lbl_3_rodata_1E7C;
+extern const f32 lbl_3_rodata_1E80;
+extern const f32 lbl_3_rodata_1E88;
+extern const f32 lbl_3_rodata_1E84;
+void fn_3_BA538(u8* p) {
+    u8 ctrl[0x50];
+    f32 q[12];
+    Mtx m;
+    Mtx44 proj;
+    f32 hw;
+    f32 hh;
+    f32 tx;
+    f32 ux;
+    f32 uy;
+    f32 ty;
+    f32 sc;
+    s32 i;
+    hw = *(f32*)(p + 0x38) * lbl_3_rodata_1E64;
+    hh = *(f32*)(p + 0x3C) * lbl_3_rodata_1E64;
+    ctrl[0] = 0;
+    q[3] = hw;
+    q[6] = hw;
+    q[0] = -hw;
+    q[1] = -hh;
+    q[4] = -hh;
+    q[7] = hh;
+    q[9] = -hw;
+    q[10] = hh;
+    q[11] = 0.0f;
+    q[8] = 0.0f;
+    q[5] = 0.0f;
+    q[2] = 0.0f;
+    CTRLSetRotation(ctrl, *(f32*)(p + 0x1C), *(f32*)(p + 0x20), *(f32*)(p + 0x24));
+    sc = *(f32*)(p + 0xC);
+    tx = lbl_3_rodata_1E64 * *(f32*)(p + 4);
+    ty = 0.35f * *(f32*)(p + 8);
+    ux = tx * lbl_3_rodata_1E64;
+    uy = ty * lbl_3_rodata_1E64;
+    CTRLSetTranslation(ctrl, ux * sc, uy * sc, lbl_3_rodata_1E70);
+    CTRLBuildMatrix(ctrl, m);
+    GXLoadPosMtxImm(m, 0);
+    GXSetCurrentMtx(0);
+    C_MTXOrtho(proj, lbl_3_rodata_1E74 * *(f32*)(p + 0xC), lbl_3_rodata_1E78 * *(f32*)(p + 0xC),
+               lbl_3_rodata_1E7C * *(f32*)(p + 0xC), lbl_3_rodata_1E80 * *(f32*)(p + 0xC), lbl_3_rodata_1E84,
+               lbl_3_rodata_1E88);
+    GXSetProjection(proj, GX_ORTHOGRAPHIC);
+    GXSetCullMode(GX_CULL_BACK);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(q[i * 3], q[i * 3 + 1], q[i * 3 + 2]);
+        GXColor1u32(*(u32*)(p + 0x40));
+    }
+    GXSetCullMode(GX_CULL_FRONT);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(q[i * 3], q[i * 3 + 1], q[i * 3 + 2]);
+        GXColor1u32(*(u32*)(p + 0x44));
+    }
 }
 
 // .text:0x000BA7F4 size:0x888 mapped:0x806F9888
@@ -186,7 +247,7 @@ extern int fn_8004ABE0(void);
 extern void playSoundEffect(int);
 extern f32 lbl_3_bss_9964;
 extern f32 lbl_3_data_12CB4;
-extern f32 lbl_3_rodata_1E68;
+extern const f32 lbl_3_rodata_1E68;
 extern void fn_8003A550(s32, Vec*, Vec*, s32);
 extern BOOL getAnimRelatedCoordinates(int, int, void*);
 // 99%: loop pointer init emits addi r0; mr r30,r0 (known open pattern); jumptable reloc name differs
