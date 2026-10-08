@@ -721,8 +721,30 @@ void fn_3_88B18(void) {
 }
 
 // .text:0x00088C24 size:0x164 mapped:0x806C7CB8
+// 90%: same hoisted-lha order issue as fn_3_889FC
 void fn_3_88C24(void) {
-    return;
+    int i;
+    fn_3_87AE8();
+    if (g_GameLogic[0x121] == 6) {
+        fn_3_87CC8();
+    } else {
+        fn_3_88408();
+        fn_3_88B18();
+        for (i = 0; i < 4; i++) {
+            if (g_Runners[i * 0x154 + 0x123] == 1) {
+                if ((*(s16*)(g_Ball + 0x1B7A) == 3 || g_FieldingLogic[0x108] == 2) && g_Ball[0x1BBF] <= 1) {
+                    g_Runners[i * 0x154 + 0x132] = 0;
+                } else if (g_Ball[0x1BBE] <= 1 && g_Ball[0x1BC9] != 0 && (u16) * (s16*)(g_Ball + 0x1B7A) > 1) {
+                    u8 t = g_Runners[i * 0x154 + 0x125];
+                    if (t != 0 && t < 3) {
+                        g_Runners[i * 0x154 + 0x132] = 0;
+                    }
+                }
+            }
+        }
+        fn_3_87E80();
+    }
+    fn_3_8781C();
 }
 
 // .text:0x00088D88 size:0x210 mapped:0x806C7E1C
@@ -841,8 +863,38 @@ void fn_3_8A1D8(void) {
 }
 
 // .text:0x0008A350 size:0x178 mapped:0x806C93E4
+// ~85%: gs[7]/gs[0x39] land in r7/r6 (orig r6/r7), runner base regs differ in 2nd loop
 void fn_3_8A350(void) {
-    return;
+    int i;
+    f32* p;
+    u8* r;
+    u8 a = g_d_GameSettings[7];
+    u8 b = g_d_GameSettings[0x39];
+    for (i = 1; i < 4; i++) {
+        r = g_Runners + i * 0x154;
+        if (a != 5 || b != 1 || *(s16*)(r + 0xE0) < 0) {
+            *(s16*)(r + 0xE0) = -1;
+            r[0x11C] = 0;
+            r[0x131] = 0;
+            *(s16*)(r + 0xFC) = -1;
+        }
+    }
+    g_RunningLogic[0x15] = 0;
+    r = g_Runners;
+    p = lbl_3_data_4A34;
+    for (i = 0; i < 4; i++, r += 0x154, p += 2) {
+        *(f32*)(r + 0x0) = p[0];
+        *(f32*)(r + 0x8) = p[1];
+        *(f32*)(r + 0x18) = 0.0f;
+        *(f32*)(r + 0x1C) = 0.0f;
+        *(f32*)(r + 0x20) = 0.0f;
+        r[0x124] = i;
+        r[0x125] = i;
+        r[0x126] = (i + 1) & 3;
+        *(s16*)(r + 0xE6) = i;
+        r[0x127] = 0xFF;
+        r[0x133] = 0;
+    }
 }
 
 // .text:0x0008A4C8 size:0x1C mapped:0x806C955C
