@@ -24,7 +24,7 @@ typedef struct { s32 a, b, c; } V3i;
 u32 fn_3_EF7B4(V3i v, s32 x);
 void fn_3_EF800(u8* p);
 void fn_3_EF890(u8* p);
-void fn_3_EF930(void);
+void fn_3_EF930(u8* p);
 void fn_3_EFB54(u8* p);
 void fn_3_F0184(void);
 void fn_3_F0224(void);

@@ -616,8 +616,47 @@ void fn_3_EF890(u8* p) {
 }
 
 // .text:0x000EF930 size:0x224 mapped:0x8072E9C4
-void fn_3_EF930(void) {
-    return;
+extern char lbl_3_rodata_2D24[];
+extern f64 lbl_3_rodata_2DF8;
+extern f64 lbl_3_rodata_2E00;
+void fn_3_EF930(u8* p) {
+    Quaternion q2;
+    Quaternion q1;
+    Vec c;
+    Vec e;
+    Vec w;
+    Vec axis;
+    f32 ang;
+    axis = *(Vec*)lbl_3_rodata_2D24;
+    e.x = lbl_3_rodata_2DF8 * (f32)cos(*(f32*)(p + 0xB8));
+    e.y = *(f32*)(p + 0xBC);
+    e.z = lbl_3_rodata_2DF8 * (f32)sin(*(f32*)(p + 0xB8));
+    PSVECAdd((Vec*)(p + 0xA0), &e, (Vec*)(p + 0xA0));
+    if (*(f32*)(p + 0xBC) < 0.0f && *(f32*)(p + 0xA4) - 1.0f < 0.0f) {
+        *(f32*)(p + 0xA0) = *(f32*)(p + 0xA0) - e.x;
+        *(f32*)(p + 0xA4) = 1.0f;
+        *(f32*)(p + 0xA8) = *(f32*)(p + 0xA8) - e.z;
+        p[0xC6] = 6;
+        p[0xC7] = 0x4B;
+    } else {
+        *(f32*)(p + 0xBC) -= lbl_3_rodata_2E00;
+    }
+    C_QUATRotAxisRad(&q1, &axis, -(lbl_3_rodata_2DDC * *(f32*)(p + 0xAC)));
+    e.y = -e.y;
+    w.x = -e.x;
+    w.y = lbl_3_rodata_2D58;
+    w.z = -e.z;
+    PSVECNormalize(&e, &e);
+    PSVECNormalize(&w, &w);
+    PSVECCrossProduct(&w, &e, &c);
+    ang = (f32)acos(PSVECDotProduct(&e, &w));
+    if (lbl_3_rodata_2D50 != ang && lbl_3_rodata_2D70 != ang) {
+        C_QUATRotAxisRad(&q2, &c, ang);
+        PSQUATMultiply(&q2, &q1, &q2);
+        PSQUATNormalize(&q2, &q2);
+        CTRLSetQuat((Control*)p, q2.x, q2.y, q2.z, q2.w);
+    }
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
 }
 
 // .text:0x000EFB54 size:0x630 mapped:0x8072EBE8
