@@ -46,3 +46,8 @@ void fn_2_272BC(u8* menu, u8* item) {
     u8* object = lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)(item + 0xE)].object;
     *(u32*)(object + 0x54) &= ~2;
 }
+
+void fn_2_25D6C(u8* menu, u8* item) {
+    u8* object = lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)(item + 0xE)].object;
+    *(u32*)(object + 0x54) &= ~2;
+}
