@@ -125,3 +125,8 @@ void fn_2_4E824(void) {
     *(u32*)(lbl_2_bss_1A824C[0] + 0x195424) = lbl_803C7898[1];
     *(u32*)(lbl_2_bss_1A824C[0] + 0x195428) = lbl_803C7898[2];
 }
+
+// fn_2_54BAC, size:0x4
+void fn_2_54BAC(void) {
+    return;
+}
