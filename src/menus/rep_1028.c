@@ -198,3 +198,8 @@ void fn_2_90838(u8* object) {
 void fn_2_8F758(s32 index, u8 value) {
     ((u8*)lbl_2_bss_1A8248[0])[index * 0xBC + 0x2288] = value;
 }
+
+// fn_2_8F73C, size:0x1C
+void fn_2_8F73C(s32 index, u8 value) {
+    ((u8*)lbl_2_bss_1A8248[0])[index * 0xBC + 0x2294] = value;
+}
