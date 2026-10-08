@@ -34,6 +34,9 @@ extern f32 lbl_3_rodata_1980;
 extern f32 lbl_3_rodata_1984;
 extern f32 lbl_3_rodata_1988;
 extern f32 lbl_3_rodata_1990;
+extern const f32 lbl_3_rodata_199C;
+extern const f32 lbl_3_rodata_19E0;
+extern const f32 lbl_3_rodata_19E4;
 extern f32 lbl_3_rodata_1A0C;
 extern f32 lbl_3_rodata_1A10;
 extern f32 lbl_3_rodata_198C;
@@ -150,9 +153,60 @@ int fn_3_A1F3C(void) {
 }
 
 // .text:0x000A2048 size:0x1E4 mapped:0x806E10DC
-void fn_3_A2048(void) {
-    return;
+#pragma opt_loop_invariants off
+int fn_3_A2048(void) {
+    s32 i;
+    s32 m = 0;
+    s16 ball;
+    for (i = 0; i < 4; i++) {
+        RunnerT* r = &g_Runners[i];
+        if (r->status == 1) {
+            f32 f = r->fractionalBasesRan;
+            if (f < lbl_3_rodata_19E0) {
+                m |= 0x10;
+            } else if (f < lbl_3_rodata_19E4) {
+                m |= 0x100;
+            } else if (f <= lbl_3_rodata_199C) {
+                m |= 0x1000;
+            }
+        }
+    }
+    ball = *(s16*)(g_Ball + 0x1B80);
+    if (ball > 0x500) {
+        if (m & 0x1000) {
+            ((void (*)(int))fn_3_A41E8)(3);
+            return 1;
+        } else if (m & 0x100) {
+            ((void (*)(int))fn_3_A41E8)(3);
+            return 1;
+        } else if (m & 0x10) {
+            ((void (*)(int))fn_3_A41E8)(2);
+            return 1;
+        }
+        return 0;
+    } else if (ball > 0x400) {
+        if (m & 0x1000) {
+            ((void (*)(int))fn_3_A41E8)(3);
+            return 1;
+        } else if ((m & 0x100) && !(m & 0x1000)) {
+            ((void (*)(int))fn_3_A41E8)(2);
+            return 1;
+        }
+        return 0;
+    } else {
+        if (m & 0x1000) {
+            if (!(m & 0x10) || (m & 0x100)) {
+                ((void (*)(int))fn_3_A41E8)(0);
+                return 1;
+            }
+        } else if (m & 0x100) {
+            ((void (*)(int))fn_3_A41E8)(3);
+            return 1;
+        }
+        return 0;
+    }
 }
+#pragma opt_loop_invariants reset
 
 // .text:0x000A222C size:0x1D8 mapped:0x806E12C0
 void fn_3_A222C(void) {
