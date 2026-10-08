@@ -14,3 +14,11 @@ void fn_3_5B368(void) {
     g_GameLogic.frames_memoryCardWriteOnMVP = 0;
     g_GameLogic.endGameStage = 0;
 }
+
+// fn_3_5A684, size:0x1C
+void fn_3_5A684(void) {
+    g_Strikes.strikes = 0;
+    g_Strikes.balls = 0;
+    g_Strikes.outs = 0;
+    g_Strikes.forcedOutToEndInningInd = 0;
+}
