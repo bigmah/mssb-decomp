@@ -2,10 +2,32 @@
 
 
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/gx.h"
 
 extern void fn_1_1CBE4(u8* object);
 extern ChallengeRosterQueue* lbl_803CC1B8;
 extern u8 lbl_1_bss_69FC[];
+extern void fn_1_19D60(struct DODisplayObj*, s32);
+
+// fn_1_1A1EC, size:0xA4
+void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode) {
+    ChallengeDrawActor* actor = drawing->actor;
+    if (drawing->prepare != NULL) {
+        drawing->prepare();
+    }
+    if (actor->display != NULL) {
+        fn_800B2D5C(actor);
+        GXInvalidateVtxCache();
+        fn_1_19D60(actor->display, mode);
+    } else {
+        for (actor = actor->children; actor != NULL; actor = actor->next) {
+            if (actor->display != NULL) {
+                DOSetWorldMatrix(actor->display, actor->worldMatrix);
+            }
+            fn_1_19D60(actor->display, mode);
+        }
+    }
+}
 
 // fn_1_1D470, size:0xA4
 void fn_1_1D470(void) {

@@ -2,6 +2,24 @@
 #define __CHALLENGE_REP_74A0_H__
 
 #include "mssbTypes.h"
+#include "C3/geoPalette.h"
+
+typedef struct ChallengeDrawActor {
+    u8 padding[0x14];
+    struct DODisplayObj* display;
+    u8 padding18[0x5C];
+    struct ChallengeDrawActor* children;
+    u8 padding78[0x74];
+    MtxPtr worldMatrix;
+    u8 paddingF0[0x10];
+    struct ChallengeDrawActor* next;
+} ChallengeDrawActor;
+
+typedef struct {
+    ChallengeDrawActor* actor;
+    u8 padding[4];
+    void (*prepare)(void);
+} ChallengeActorDrawing;
 
 typedef struct {
     void (*update)(u8*);
@@ -20,5 +38,7 @@ void fn_1_1D450(u8* object);
 s32 fn_1_19D1C(u8 value);
 
 void fn_1_1D470(void);
+
+void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode);
 
 #endif
