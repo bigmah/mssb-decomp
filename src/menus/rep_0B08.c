@@ -1,6 +1,8 @@
 #include "menus/rep_0B08.h"
 
 #include "static/UnknownHomes_Static.h"
+extern const f32 lbl_2_rodata_BA0;
+
 extern u8 lbl_800F7478[];
 
 extern void fn_2_69E1C(s32 index);
@@ -302,4 +304,12 @@ void fn_2_6BA50(u8* object) {
     color.a = 0xFF;
     fn_800BD2CC(0, color);
     *(s16*)(object + 0x94) = 2;
+}
+
+// fn_2_6BB7C, size:0x4C
+void fn_2_6BB7C(u8* object) {
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 1;
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16DA] = 0xFF;
+    *(f32*)(object + 0x8C) = lbl_2_rodata_BA0;
+    *(s16*)(object + 0x94) = 1;
 }
