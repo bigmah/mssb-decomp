@@ -454,10 +454,10 @@ void fn_3_14AC40(void) {
     return;
 }
 
-// 95%: 0.0f load scheduled late (orig loads it via addi r4 before the first store); fadds dest regs
 // .text:0x0014B248 size:0x1AC mapped:0x8078A2DC
 void fn_3_14B248(u8* a, u8* b) {
     f32 c;
+    f32 sn;
     f32 ang;
     f32 r;
     f32 d;
@@ -471,7 +471,8 @@ void fn_3_14B248(u8* a, u8* b) {
     r = (f32)((f64)((u32)rand() % 200) / lbl_3_rodata_39C8);
     c = (f32)cos(ang);
     px = r * c;
-    py = r * (f32)sin(ang);
+    sn = (f32)sin(ang);
+    py = r * sn;
     *(f32*)(b + 4) = *(f32*)(a + 0x24) + px;
     *(f32*)(b + 8) = *(f32*)(a + 0x28) + py;
     *(f32*)(b + 0xC) = *(f32*)(a + 0x2C) + lbl_3_rodata_3934[0];
