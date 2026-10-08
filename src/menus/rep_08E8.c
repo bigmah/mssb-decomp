@@ -1,5 +1,7 @@
 #include "menus/rep_08E8.h"
 
+extern void LITXForm(void* light, void* matrix);
+
 #include "Dolphin/vec.h"
 extern s32 fn_2_68690(s32 index);
 extern void fn_2_68DAC(s32 index, void* result);
@@ -167,4 +169,13 @@ void fn_2_46C88(s32 index) {
     PSVECScale(&position, 2.0f, &position);
     *lbl_2_data_13374[0] = lbl_803CBD0C[0];
     fn_80031CA4(&position, lbl_2_data_13374[0]);
+}
+
+// fn_2_48D54, size:0x60
+void fn_2_48D54(void) {
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        u8* camera = (u8*)fn_80052768_getCamera(0);
+        LITXForm(*(void**)(lbl_8036E548 + i * 4 + 0xAC), camera + 0x40);
+    }
 }

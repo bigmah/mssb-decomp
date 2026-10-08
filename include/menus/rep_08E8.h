@@ -39,4 +39,6 @@ s32 fn_2_49EFC(const u16* string, u16 style);
 
 void fn_2_46C88(s32 index);
 
+void fn_2_48D54(void);
+
 #endif
