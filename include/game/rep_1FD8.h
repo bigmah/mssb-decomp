@@ -2,6 +2,7 @@
 #define __GAME_rep_1FD8_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/vec.h"
 
 void fn_3_C19C8(void);
 void fn_3_C1C18(void);
@@ -12,13 +13,13 @@ void fn_3_C24A0(void);
 void fn_3_C2644(void);
 void fn_3_C2974(void);
 void fn_3_C298C(void);
-void fn_3_C2AA0(void);
-void fn_3_C2C80(void);
-void fn_3_C2EDC(void);
+u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h);
+void fn_3_C2C80(void* p, u8* h);
+void fn_3_C2EDC(void* p);
 void fn_3_C30F0(void);
 void fn_3_C366C(u32 a, u8 b);
 void fn_3_C39C8(void);
-void fn_3_C3A38(void);
+void fn_3_C3A38(u8* obj);
 void fn_3_C3C2C(void);
 void fn_3_C3E94(f32* pos, s32 idx);
 void fn_3_C3F70(u8* a);
@@ -26,25 +27,25 @@ void fn_3_C4068(u8* a);
 void fn_3_C40EC(u8* a);
 void fn_3_C414C(int idx);
 void fn_3_C42A4(s32* a, s32* b);
-void fn_3_C444C(void);
+void fn_3_C444C(void* h, u8* b);
 u32 fn_3_C4724(void* h);
-void fn_3_C48D0(void);
+void fn_3_C48D0(void* h, Vec* src);
 void fn_3_C4B80(void);
 void fn_3_C4CF4(void* hv, u8 type);
 s32 fn_3_C4F00(void* hv);
-void fn_3_C5304(void);
+void fn_3_C5304(void* h, u8* b);
 void fn_3_C54D0(u8* a);
 void fn_3_C56E8(u8* a);
-void fn_3_C597C(void);
+void fn_3_C597C(s32 idx);
 u32 fn_3_C5CE0(u8* a);
 void fn_3_C5DDC(void);
 u32 fn_3_C625C(u8* a);
 void fn_3_C63D0(void);
-void fn_3_C71CC(void);
+void fn_3_C71CC(s32* a, s32* b);
 void fn_3_C7444(u8* a);
 void fn_3_C749C(void);
-void fn_3_C75B8(void);
-void fn_3_C77AC(void);
+u32 fn_3_C75B8(void* h);
+void fn_3_C77AC(void* h, u8* b);
 void fn_3_C7A0C(void);
 void fn_3_C805C(s32* a, s32* b);
 s32 fn_3_C823C(s32, f32*);
