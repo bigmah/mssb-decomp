@@ -184,8 +184,31 @@ void fn_3_70838(void) {
 }
 
 // .text:0x000709B4 size:0x138 mapped:0x806AFA48
+extern u8 lbl_3_data_5F50[];
+extern const f32 lbl_3_rodata_1254;
+extern const f32 lbl_3_rodata_12A0;
+extern const f32 lbl_3_rodata_12A4;
+extern void getComponentsFromRad(f32 v, f32* x, f32* y);
 void fn_3_709B4(void) {
-    return;
+    f32 c;
+    f32 s;
+    f32 a;
+    f32 t;
+    u8 n = g_Pitcher[0x16C] + 1;
+    g_Pitcher[0x16C] = n;
+    if (n >= g_Pitcher[0x16D]) {
+        g_Pitcher[0x16B] = 2;
+        return;
+    }
+    a = (f32)n / (f32)g_Pitcher[0x16D];
+    a = a * lbl_3_rodata_12A0;
+    a = a + lbl_3_rodata_12A4;
+    getComponentsFromRad(a, &c, &s);
+    t = lbl_3_rodata_1254 * (f32)lbl_3_data_5F50[g_Pitcher[0x165] * 5 - 0x1F];
+    *(f32*)(g_Pitcher + 0xEC) = c * t + t;
+    *(f32*)(g_Pitcher + 0xF0) = s * t;
+    *(f32*)(g_Pitcher + 0xE8) = lbl_3_rodata_1258;
+    *(f32*)(g_Pitcher + 0x100) = a;
 }
 
 // .text:0x00070AEC size:0xA8 mapped:0x806AFB80
