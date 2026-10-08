@@ -732,8 +732,58 @@ void fn_3_C54D0(u8* a) {
 }
 
 // .text:0x000C56E8 size:0x294 mapped:0x8070477C
-void fn_3_C56E8(void) {
-    return;
+void fn_3_C56E8(u8* a) {
+    Vec v1;
+    Vec v2;
+    C4724Hdr* h;
+    C4724P* p;
+    fn_8005268C();
+    PSMTXMultVec((MtxPtr)(fn_80052734() + 0x40), (Vec*)(a + 0x9C), &v1);
+    h = fn_800339F0(0, (u8)(a[0xA8] + 0x2A));
+    if (h == NULL) {
+        return;
+    }
+    for (p = h->head; p != NULL; p = p->next) {
+        fn_8005268C();
+        PSMTXMultVec((MtxPtr)(fn_80052734() + 0x40), (Vec*)&p->x, &v2);
+        if (v1.z >= v2.z) {
+            p->f50 = 0;
+        } else {
+            p->f50 = 1;
+        }
+    }
+    p = h->head;
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 5, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxDesc(0xD, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetVtxAttrFmt(0, 0xD, 1, 4, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(0);
+    GXSetTevColorIn(0, 0xF, 0xA, 8, 0xF);
+    GXSetTevAlphaIn(0, 7, 5, 4, 7);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    fn_8005268C();
+    GXSetProjection(fn_80052734(), 0);
+    fn_8005268C();
+    GXLoadPosMtxImm(fn_80052734() + 0x40, 0);
+    GXSetCurrentMtx(0);
+    while (p != NULL) {
+        if (p->s48 <= 0 && p->s4A > 0 && p->f50 == 0) {
+            fn_8003403C(p->f38, p->f3C);
+            fn_80033CC8(p, h->f10);
+        }
+        p = p->next;
+    }
 }
 
 // .text:0x000C597C size:0x364 mapped:0x80704A10
