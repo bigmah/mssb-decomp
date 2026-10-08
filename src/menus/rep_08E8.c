@@ -28,6 +28,21 @@ extern const f32 lbl_2_rodata_9B4;
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_1A8248[];
 
+extern u8* lbl_2_bss_1A824C[];
+
+// .text:0x48D08 size:0x4C
+void fn_2_48D08(void) {
+    u8* menu = lbl_2_bss_1A824C[0];
+    s32 index = *(s32*)(menu + 0x19769C);
+    f32* parameters = (f32*)(lbl_8036E548 + index * 0x27C + 0xC04);
+    parameters[13] = lbl_2_rodata_94C;
+    parameters[14] = lbl_2_rodata_94C;
+    parameters[15] = lbl_2_rodata_94C;
+    parameters[16] = lbl_2_rodata_94C;
+    parameters[17] = lbl_2_rodata_94C;
+    parameters[18] = lbl_2_rodata_94C;
+}
+
 // .text:0x4A064 size:0x4
 void fn_2_4A064(void) {
 }
