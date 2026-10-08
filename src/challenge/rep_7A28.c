@@ -2,6 +2,9 @@
 
 
 #include "static/UnknownHomes_Static.h"
+extern u8 lbl_1_data_10908[];
+extern s32 lbl_1_data_109F8;
+
 extern void* lbl_80366158[];
 extern u8* lbl_803CC1B8[];
 
@@ -16,4 +19,15 @@ void fn_1_27E50(void) {
     parent = *(u8**)(lbl_803CC1B8[0] + 0xC);
     *(s16*)(parent + 0x10) = 1;
     fn_800B0A14_removeQueue(parent);
+}
+
+// fn_1_27560, size:0x34
+void fn_1_27560(s32 value) {
+    *(s32*)(lbl_1_data_10908 + 0xA0) = value;
+    *(s32*)(lbl_1_data_10908 + 0x50) = value;
+    *(s32*)(lbl_1_data_10908 + 0x00) = value;
+    *(s32*)(lbl_1_data_10908 + 0x04) = 7;
+    *(s32*)(lbl_1_data_10908 + 0x54) = 7;
+    *(s32*)(lbl_1_data_10908 + 0xA4) = 4;
+    lbl_1_data_109F8 = value;
 }
