@@ -18,9 +18,12 @@ extern u8 g_Camera[];
 extern s16 lbl_3_bss_B67A;
 extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, const void*, u32);
-extern f32 lbl_3_rodata_30FC;
+extern const f32 lbl_3_rodata_30FC;
 extern const f32 lbl_3_rodata_30F8;
 extern const f32 lbl_3_rodata_3158;
+extern const f32 lbl_3_rodata_3198;
+extern const f32 lbl_3_rodata_311C;
+extern const f32 lbl_3_rodata_3134;
 extern const f32 lbl_3_rodata_315C;
 extern u8 lbl_8036E548[];
 extern void** fn_800111D8(void*);
@@ -619,7 +622,46 @@ void fn_3_1069C0(void) {
 
 // .text:0x00106BA0 size:0x25C mapped:0x80745C34
 void fn_3_106BA0(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 2; i++) {
+        u8* c = g_Camera + i * 0x9BC;
+        *(s32*)(c + 0x244) = 1;
+        *(s32*)(c + 0x238) = 0;
+        *(s32*)(c + 0x23C) = 0;
+        *(s16*)(c + 0xA66) = 0xE;
+        *(u8*)(c + 0xACE) = 0;
+        *(u8*)(c + 0xAD1) = 0;
+        *(u8*)(c + 0xACF) = 0;
+        *(u8*)(c + 0xAD0) = 0;
+        *(s32*)(c + 0xA4C) = 0;
+        *(s32*)(c + 0xA48) = 0;
+        *(u8*)(c + 0xAD2) = 0;
+        *(u8*)(c + 0xAD4) = 0;
+        *(u8*)(c + 0xAD3) = 0;
+        *(u8*)(c + 0xAD5) = 0;
+        *(u8*)(c + 0xAD6) = 0;
+        *(u8*)(c + 0xAD7) = 0;
+        *(f32*)(c + 0x1F0) = lbl_3_rodata_30F8;
+        *(f32*)(c + 0x1F4) = lbl_3_rodata_30F8;
+        *(f32*)(c + 0x1F8) = lbl_3_rodata_30F8;
+        *(f32*)(c + 0x1E4) = lbl_3_rodata_30F8;
+        *(f32*)(c + 0x1E8) = lbl_3_rodata_30F8;
+        *(f32*)(c + 0x1EC) = lbl_3_rodata_30FC;
+        *(f32*)(c + 0x1FC) = lbl_3_rodata_30FC;
+        *(f32*)(c + 0x200) = lbl_3_rodata_30FC;
+        *(f32*)(c + 0x204) = lbl_3_rodata_30FC;
+        *(f32*)(c + 0x220) = lbl_3_rodata_3198;
+        *(f32*)(c + 0x224) = lbl_3_rodata_311C;
+        *(f32*)(c + 0x228) = lbl_3_rodata_3134;
+        *(f32*)(c + 0x22C) = lbl_3_rodata_30FC;
+        *(f32*)(c + 0x230) = lbl_3_rodata_311C;
+        *(f32*)(c + 0x234) = lbl_3_rodata_3134;
+        *(s16*)(c + 0xA6A) = 0;
+        memset(c + 0x248, 0, 0x800);
+        memcpy(c + 0x1D8, g_pCamera + 0x284C, 12);
+    }
+    g_pCamera[0x28A9] = 0;
+    CamsReset();
 }
 
 // -inline deferred reads this at end of file: lets the GXFifo.h inlines (defined

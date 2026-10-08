@@ -550,8 +550,23 @@ f32 fn_3_119854(u8 i) {
 }
 
 // .text:0x00119878 size:0xBC mapped:0x8075890C
+// 97%: same code, but p/g (r5/r6) and the lis temps (r3/r4) come out swapped in the prologue
+extern const f32 lbl_3_rodata_3420;
 void fn_3_119878(void) {
-    return;
+    u8* p = *(u8**)(lbl_8036E548 + 0x2D94);
+    u8* g = g_Minigame;
+    p[0x1A16] = 0;
+    *(void**)(p + 0x19F0) = 0;
+    if (g[0xCCE] != 0 &&
+        (*(s16*)(g + 0xCCC) > 0x3C || *(s16*)(g + 0xCCC) % 2 != 0 ||
+         g[0x1B19] == 2 || g[0x1B19] == 3)) {
+        p[0x1A16] = 1;
+        *(void**)(p + 0x19F0) = fn_3_11741C;
+        *(f32*)(p + 0x19F4) = *(f32*)(g + 0xCB0);
+        *(f32*)(p + 0x19F8) = -*(f32*)(g + 0xCB4);
+        *(f32*)(p + 0x19FC) = *(f32*)(g + 0xCB8);
+        fn_8001D0D0(0xA6, lbl_3_rodata_3420);
+    }
 }
 
 // .text:0x00119934 size:0x300 mapped:0x807589C8
