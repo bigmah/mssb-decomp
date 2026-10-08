@@ -17,4 +17,6 @@ s32 fn_2_4A068(const u16* string);
 
 s32 fn_2_46D00(void);
 
+void fn_2_481B8(void);
+
 #endif
