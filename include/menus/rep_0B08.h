@@ -135,4 +135,6 @@ void fn_2_6BC0C(MenuFadeState* fade);
 
 void fn_2_6BAD8(MenuFadeState* fade);
 
+s32 fn_2_686EC(s32 from, s32 to);
+
 #endif

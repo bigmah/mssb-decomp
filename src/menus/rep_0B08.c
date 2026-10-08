@@ -52,6 +52,17 @@ extern const Vec lbl_2_data_2EA4[];
 extern const f64 lbl_2_rodata_C30;
 extern const f32 lbl_2_rodata_C3C;
 extern const f32 lbl_2_rodata_C38;
+extern const f32 lbl_2_rodata_B5C;
+extern const f32 lbl_2_rodata_B60;
+
+// fn_2_686EC, size:0xB8
+s32 fn_2_686EC(s32 from, s32 to) {
+    f32 angle = fn_2_68940(from, to);
+    if (angle < lbl_2_rodata_B5C && angle > lbl_2_rodata_B60) {
+        return 1;
+    }
+    return 0;
+}
 
 // fn_2_6BAD8, size:0xA4
 void fn_2_6BAD8(MenuFadeState* fade) {
