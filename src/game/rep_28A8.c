@@ -311,6 +311,7 @@ void fn_3_DCA68(void) {
     }
 }
 
+// ~94%: g_Controls copy block gets r3/r5 swapped (orig lis r5 lbl_803CBC3C, lwz r3), and final li r5,2 / stb 0x1d9 ordering differs
 // .text:0x000DCC80 size:0x250 mapped:0x8071BD14
 void fn_3_DCC80(void) {
     if (lbl_3_common_bss_34C90.n < 0x7FFE) {
