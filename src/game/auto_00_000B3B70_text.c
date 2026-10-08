@@ -15,6 +15,35 @@ extern void fn_3_8F1C8(void);
 extern void fn_3_59338(void);
 
 extern void fn_3_8B318(s32);
+extern void fn_3_B6994(void);
+extern void fn_3_B6440(void);
+extern s32 fn_3_B254C(void);
+extern void fn_3_B1DA4(u8, s32);
+
+// fn_3_B6BA4, size:0xAC
+void fn_3_B6BA4(void) {
+    switch ((s32)g_Practice.tutorialState) {
+    case 0:
+        fn_3_B6994();
+        break;
+    case 1:
+        fn_3_B6440();
+        break;
+    case 2:
+        if (fn_3_B254C() == 0) {
+            fn_3_B6440();
+        } else {
+            fn_3_B1DA4(g_Practice.practiceLevel, 0);
+            fn_3_5A6D4(7);
+        }
+        break;
+    case 3:
+        fn_3_B6440();
+        break;
+    }
+    g_GameLogic.TeamStars[1] = 5;
+    g_GameLogic.TeamStars[0] = 5;
+}
 
 // fn_3_B5CB4, size:0x98
 void fn_3_B5CB4(void) {
