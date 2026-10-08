@@ -338,6 +338,7 @@ void fn_3_2D080(void) {
 }
 
 // .text:0x0002D308 size:0x174 mapped:0x8066C39C
+// 95%: prologue scheduling only; original loads the 0.0f const (f0) before the sth/first fielder loads (tried local z = B20, f assigned late)
 void fn_3_2D308(int i) {
     u8* f = g_Fielders + i * 0x268;
     f32 dx;
