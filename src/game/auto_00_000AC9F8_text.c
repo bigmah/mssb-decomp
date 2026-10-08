@@ -32,3 +32,13 @@ void fn_3_B3A28(void) {
     lbl_3_common_bss_34C90[0x1D2] = 0;
     lbl_3_common_bss_34C90[0x1DA] = 0;
 }
+
+// fn_3_B1DA4, size:0x2C
+void fn_3_B1DA4(u8 level, u8 value) {
+    g_Practice.loadingGuidedPractice = 1;
+    g_Practice._1D5 = 0;
+    g_Practice.practiceLevel_2 = level;
+    *((u8*)&g_Practice + 0x1D7) = value;
+    *((u8*)&g_Practice + 0x1D8) = 0;
+    g_Practice._188 = 0;
+}
