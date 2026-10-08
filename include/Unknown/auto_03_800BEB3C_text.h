@@ -13,4 +13,6 @@ void* fn_800BEB80(u8 index);
 
 void DrawShadows(u8 enable);
 
+void fn_800BEC00(s32 reverse);
+
 #endif

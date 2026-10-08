@@ -39,3 +39,12 @@ void* fn_800BEB80(u8 index) {
 void DrawShadows(u8 enable) {
     lbl_803009F8[0] = enable;
 }
+
+// fn_800BEC00, size:0x30
+void fn_800BEC00(s32 reverse) {
+    if (reverse != 0) {
+        *(s8*)(lbl_803009F8 + 0x4D) = -1;
+        return;
+    }
+    *(s8*)(lbl_803009F8 + 0x4D) = 1;
+}
