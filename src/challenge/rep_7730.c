@@ -14,6 +14,16 @@ extern void (*lbl_1_data_1066C[])(s16);
 extern f32 lbl_1_bss_6BF4[];
 extern void fn_80037B18(void*, Vec*, f32);
 
+extern u8 lbl_1_data_10674[];
+extern void fn_1_1DA54(void);
+
+// .text:0x1DCE4 size:0x64
+void fn_1_1DCE4(void) {
+    u8* queue = lbl_803CC1B8[0];
+    *(void**)(queue + 0x14) = (void*)ARAMTransfer(lbl_1_data_10674, 0, 0, 0);
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_1DA54;
+}
+
 // .text:0x1DD94 size:0x50
 void fn_1_1DD94(void) {
     Vec axis;

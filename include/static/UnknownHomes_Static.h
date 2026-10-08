@@ -63,6 +63,7 @@ extern int fn_8001C67C_animation(int, int);
 extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 extern void* fn_800339F0(u32, u32);
 extern void* fn_80034CEC(void*);
+extern s32 ARAMTransfer(void*, int, int, int);
 extern void fn_800B0A14_removeQueue(void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_800B9948(void*);
