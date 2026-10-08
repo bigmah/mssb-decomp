@@ -46,10 +46,49 @@ extern void fn_3_10AD48(void);
 extern void fn_3_6C854(int, int);
 extern u8 g_Pitcher[];
 extern s16 lbl_3_data_217A4;
+extern s16 lbl_3_data_21788[];
 
 // .text:0x0012E8FC size:0x214 mapped:0x8076D990
 void fn_3_12E8FC(void) {
-    return;
+    s32 i;
+    s32 have = 0;
+    s32 pick;
+    u8* p;
+    f32* t;
+
+    if (g_Minigame[0x1ADA] >= lbl_3_data_21788[2]) {
+        for (i = 0, pick = 0; i < 15; i++) {
+            if (g_Minigame[i * 0x34 + 0x890] == 0) {
+                pick++;
+            }
+        }
+        pick = random_fn_3_9EE24(pick);
+        g_Minigame[0x1ADA] = 0;
+        have = 1;
+    }
+    for (i = 0; i < 15; i++) {
+        p = g_Minigame + i * 0x34;
+        t = lbl_3_data_216BC + i * 3;
+        if (p[0x890] == 0) {
+            p[0x890] = 1;
+            *(s16*)(p + 0x88C) = 0;
+            *(f32*)(p + 0x860) = t[0];
+            *(f32*)(p + 0x864) = t[1];
+            *(f32*)(p + 0x868) = t[2];
+            *(f32*)(p + 0x864) = *(f32*)(p + 0x864) + lbl_3_data_21770[0];
+            *(f32*)(p + 0x864) = *(f32*)(p + 0x864) + ((f64)((i % 3) * 10) - (f64)(random_fn_3_9EE24(0x65) * 5) / 100.0);
+            p[0x891] = random_fn_3_9EE24(3);
+            if (have != 0) {
+                if (pick == 0) {
+                    pick = -1;
+                    p[0x891] = 3;
+                    *(s16*)(g_Minigame + 0x18A4) = i;
+                } else if (pick > 0) {
+                    pick--;
+                }
+            }
+        }
+    }
 }
 
 // .text:0x0012EB10 size:0x270 mapped:0x8076DBA4
