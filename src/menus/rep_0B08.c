@@ -51,6 +51,21 @@ extern f32 fn_2_4A18C(f32);
 extern const Vec lbl_2_data_2EA4[];
 extern const f64 lbl_2_rodata_C30;
 extern const f32 lbl_2_rodata_C3C;
+extern const f32 lbl_2_rodata_C38;
+
+// fn_2_6BAD8, size:0xA4
+void fn_2_6BAD8(MenuFadeState* fade) {
+    s32 alpha;
+    fade->progress = (f32)((f64)fade->progress - lbl_2_rodata_C30);
+    alpha = (s32)(lbl_2_rodata_C38 * fade->progress);
+    if (alpha > 1) {
+        ((u8*)lbl_2_bss_1A8248[0])[fade->index * 0xD8 + 0x16DA] = alpha;
+    } else {
+        ((u8*)lbl_2_bss_1A8248[0])[fade->index * 0xD8 + 0x16DA] = 0;
+        ((u8*)lbl_2_bss_1A8248[0])[fade->index * 0xD8 + 0x16D0] = 0;
+        fade->state = 2;
+    }
+}
 
 // fn_2_6BDE0, size:0xA0
 void fn_2_6BDE0(MenuFadeState* fade) {

@@ -133,4 +133,6 @@ void fn_2_6BDE0(MenuFadeState* fade);
 
 void fn_2_6BC0C(MenuFadeState* fade);
 
+void fn_2_6BAD8(MenuFadeState* fade);
+
 #endif
