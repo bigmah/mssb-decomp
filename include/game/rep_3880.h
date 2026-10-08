@@ -125,6 +125,6 @@ void* fn_3_1575F0(u32 n);
 void fn_3_15767C(void);
 void fn_3_1578F8(void);
 f32 fn_3_15791C(s32 i);
-void fn_3_157AC4(void);
+u32 fn_3_157AC4(u8* o);
 
 #endif // !__GAME_rep_3880_H_

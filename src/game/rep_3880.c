@@ -35,6 +35,8 @@ extern const f32 lbl_3_rodata_3A44;
 extern u8 g_Minigame[];
 extern u8 lbl_3_data_26E00[];
 extern const Vec lbl_3_rodata_3908;
+extern f32 lbl_3_data_266A8[];
+extern const Vec lbl_3_rodata_38D0;
 extern f32 fn_3_119D28(void);
 extern u8 lbl_3_data_26CB8[];
 extern s32 fn_8001B728(s32, s32, void*);
@@ -1864,10 +1866,61 @@ f32 fn_3_15791C(s32 i) {
     return lbl_3_rodata_3A44 * r;
 }
 
+// 95%: wave code is fn_3_15791C inlined by hand (call keeps f3/f4 swapped); only the 38D0 Vec copy loads are scheduled above the prologue stores
 // .text:0x00157AC4 size:0x2F4 mapped:0x80796B58
-void fn_3_157AC4(void) {
-    return;
+u32 fn_3_157AC4(u8* o) {
+    Mtx m;
+    s32 q;
+    s32 i;
+    u8* p;
+    s32 t;
+    f32 w;
+    f32 c;
+    f32 r;
+    u32 res;
+    Vec dir;
+    p = *(u8**)(o + 0xC);
+    dir = lbl_3_rodata_38D0;
+    PSMTXRotRad(m, 'Y', shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8)));
+    PSMTXMultVec(m, &dir, &dir);
+    i = *(s32*)(o + 0x18);
+    q = (i + 0x30) / 120;
+    t = (i + 0x30) % 120;
+    if (t >= 48) {
+        c = cos(lbl_3_rodata_3A34 * (lbl_3_rodata_392C + ((f32)t - lbl_3_rodata_3A38) / lbl_3_rodata_3A3C));
+    } else {
+        c = cos(lbl_3_rodata_3A34 * ((f32)t / lbl_3_rodata_3A38));
+    }
+    r = c * lbl_3_rodata_39A8;
+    r += lbl_3_rodata_39A8;
+    if (q != 0) {
+        u8 gs = g_GameLogic[0x11E];
+        if (gs != 0xE && gs != 0x22 && gs != 0x24 && gs != 0x26) {
+            r += lbl_3_rodata_39A8 * ((f32)i - lbl_3_rodata_3A3C) / lbl_3_rodata_3A40;
+        }
+    }
+    w = lbl_3_rodata_3A44 * r;
+    *(f32*)(p + 0x3C) = w;
+    *(f32*)(p + 0x38) = w;
+    *(f32*)(p + 4) = *(f32*)(g_Minigame + 0x1AE0) + dir.x + *(f32*)(p + 0x38) * lbl_3_data_266A8[0];
+    *(f32*)(p + 8) = *(f32*)(g_Minigame + 0x1AE4) + dir.y + *(f32*)(p + 0x3C) * lbl_3_data_266A8[1];
+    *(f32*)(p + 0xC) = *(f32*)(g_Minigame + 0x1AE8) + dir.z;
+    fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+    fn_80033CC8(*(void**)(o + 0xC), *(void**)(lbl_3_common_bss_32724 + 0x64));
+    if (lbl_80366158[0x28] == 0) {
+        *(s32*)(o + 0x18) += 1;
+    }
+    if (g_Minigame[0x1A40] != 0) {
+        res = 1;
+    } else {
+        res = 0;
+        if (*(s32*)(o + 0x18) == *(s32*)(o + 0x1C)) {
+            if (g_GameLogic[0x11E] != 0xE) {
+                res = 1;
+            }
+        }
+    }
+    return res;
 }
-
 
 #pragma dont_inline off
