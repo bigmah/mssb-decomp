@@ -143,4 +143,6 @@ void fn_2_68F24(s32 index, s32 animation);
 
 void fn_2_6AB3C(s32 index, const Vec* position, f32 heading);
 
+void fn_2_6832C(void);
+
 #endif

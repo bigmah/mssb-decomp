@@ -65,6 +65,33 @@ extern const f32 lbl_2_rodata_B5C;
 extern const f32 lbl_2_rodata_B60;
 extern const f32 lbl_2_rodata_B64;
 
+// fn_2_6832C, size:0xC0
+void fn_2_6832C(void) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[1];
+    f32 heading;
+    u8* state;
+
+    memcpy(&entry->position, &lbl_2_data_2EA4[5], sizeof(Vec));
+    entry->previousPosition.x = lbl_2_rodata_B58;
+    entry->previousPosition.y = lbl_2_rodata_B58;
+    entry->previousPosition.z = lbl_2_rodata_B58;
+    entry->velocity.x = lbl_2_rodata_B58;
+    entry->velocity.y = lbl_2_rodata_B58;
+    entry->velocity.z = lbl_2_rodata_B58;
+    entry->storedX = entry->position.x;
+    entry->storedZ = entry->position.z;
+    entry->_38 = lbl_2_rodata_B58;
+    entry->flagBB = 0;
+    heading = entry->heading;
+    entry->angle34 = heading;
+    entry->angle30 = heading;
+    *(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x179A) = 5;
+    state = (u8*)lbl_2_bss_1A8248[0];
+    state[0x17AB] = 6;
+    *(s16*)(state + 0x177C) = 0;
+    ((u8*)lbl_2_bss_1A8248[0])[0x442F] = 1;
+}
+
 // fn_2_6AB3C, size:0xC0
 void fn_2_6AB3C(s32 index, const Vec* position, f32 heading) {
     MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
