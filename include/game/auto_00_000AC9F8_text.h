@@ -41,4 +41,6 @@ void fn_3_B274C(void);
 
 void fn_3_B1C14(void);
 
+void fn_3_B0AAC(void);
+
 #endif

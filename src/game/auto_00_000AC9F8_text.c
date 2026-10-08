@@ -15,6 +15,8 @@ extern void fn_3_B0B5C(void);
 extern void fn_3_B1A30(void);
 extern void fn_3_B1578(void);
 extern s32 fn_3_B254C(void);
+extern void fn_3_B0874(void);
+extern void fn_3_B056C(void);
 
 #pragma dont_inline on
 
@@ -210,4 +212,29 @@ void fn_3_B1C14(void) {
         fn_3_B1578();
         break;
     }
+}
+
+// fn_3_B0AAC, size:0xB0
+void fn_3_B0AAC(void) {
+    switch (g_Practice.tutorialState) {
+    case 0:
+        fn_3_B0874();
+        break;
+    case 1:
+        fn_3_B056C();
+        break;
+    case 2:
+        if (fn_3_B254C() == 0) {
+            fn_3_B056C();
+        } else {
+            fn_3_B1DA4(g_Practice.practiceLevel + 4, 0);
+            fn_3_5A6D4(7);
+        }
+        break;
+    case 3:
+        fn_3_B056C();
+        break;
+    }
+    g_GameLogic.TeamStars[1] = 5;
+    g_GameLogic.TeamStars[0] = 5;
 }
