@@ -23,6 +23,48 @@ extern void fn_3_5F720(void);
 extern void fn_3_6C0E0(void);
 extern u8 g_RunningLogic[];
 extern u8 lbl_3_data_FAF4[][4];
+extern void fn_3_B5818(void);
+extern void fn_3_B51E4(void);
+extern void fn_3_B4C40(void);
+
+// fn_3_B5D78, size:0x104
+void fn_3_B5D78(void) {
+    if (g_Practice.returnToPracticeMenuState != 0) {
+        switch ((s32)g_Practice.returnToPracticeMenuState) {
+        case 1:
+            fn_3_8B318(-1);
+            g_Practice.returnToPracticeMenuState = 2;
+            lbl_3_common_bss_34C58._2C = 0;
+            lbl_3_common_bss_34C58._2A = 1;
+            lbl_3_common_bss_34C58._24 = 1;
+            /* fallthrough */
+        case 2:
+            g_Practice.returnToPracticeMenuState = 3;
+            return;
+        default:
+            fn_800B0A5C_insertQueue((void*)fn_80062A94, 1);
+            g_Practice.returnToPracticeMenuState = 0;
+            return;
+        }
+    } else {
+        if ((*(u16*)&g_Practice.practiceMenu_framesOnCurrMenuScreen) < 0xFFFEU) {
+            (*(u16*)&g_Practice.practiceMenu_framesOnCurrMenuScreen)++;
+        } else {
+            (*(u16*)&g_Practice.practiceMenu_framesOnCurrMenuScreen) = 0xFFFF;
+        }
+        switch ((s32)g_Practice.practiceType_1) {
+        case 0:
+            fn_3_B5818();
+            break;
+        case 1: case 2: case 3: case 4: case 5:
+            fn_3_B51E4();
+            break;
+        case 6:
+            fn_3_B4C40();
+            break;
+        }
+    }
+}
 
 // fn_3_B5E7C, size:0x100
 void fn_3_B5E7C(void) {
