@@ -562,11 +562,12 @@ void fn_3_CFAB4(u8* p, u8* q) {
 }
 
 // .text:0x000CFB44 size:0x214 mapped:0x8070EBD8
-// partial: orig loads the zero const before the fadd in both clamps and does not reload f3C for f38; k lives in r3 (ours r0)
+// 94%: literal 0.0f fixes the clamps; remaining diff is only where the two f64 consts (2770/2780) are loaded in the reset block
 s32 fn_3_CFB44(u8* a) {
     u8* e = *(u8**)(a + 0xC);
     u8* o = *(u8**)(a + 0x20);
     s32 k;
+    f32 sc;
     u8* t;
     fn_80033620();
     GXSetBlendMode(1, 4, 5, 0);
@@ -576,14 +577,15 @@ s32 fn_3_CFB44(u8* a) {
             ((void (*)(f32, f32))fn_8003403C)(*(f32*)(e + 0x38), *(f32*)(e + 0x3C));
             fn_80033CC8(e, *(s32*)(a + 0x10));
             *(f32*)(e + 0x38) = *(f32*)(e + 0x38) + lbl_3_rodata_2728;
-            if (*(f32*)(e + 0x38) < lbl_3_rodata_2664) {
-                *(f32*)(e + 0x38) = lbl_3_rodata_2664;
+            if (*(f32*)(e + 0x38) < 0.0f) {
+                *(f32*)(e + 0x38) = 0.0f;
             }
             *(f32*)(e + 0x3C) = *(f32*)(e + 0x3C) + lbl_3_rodata_2728;
-            if (*(f32*)(e + 0x3C) < lbl_3_rodata_2664) {
-                *(f32*)(e + 0x3C) = lbl_3_rodata_2664;
+            if (*(f32*)(e + 0x3C) < 0.0f) {
+                *(f32*)(e + 0x3C) = 0.0f;
             }
-            k = e[0x43] - 8;
+            k = e[0x43];
+            k = k - 8;
             if (k < 0) {
                 k = 0;
             }
@@ -599,8 +601,9 @@ s32 fn_3_CFB44(u8* a) {
             *(f32*)(e + 0x4) = *(f32*)(e + 0x1C);
             *(f32*)(e + 0x8) = *(f32*)(e + 0x20);
             *(f32*)(e + 0xC) = *(f32*)(e + 0x24);
-            *(f32*)(e + 0x3C) = lbl_3_rodata_2770 * *(f32*)(t + 0xBC);
-            *(f32*)(e + 0x38) = *(f32*)(e + 0x3C);
+            sc = lbl_3_rodata_2770 * *(f32*)(t + 0xBC);
+            *(f32*)(e + 0x3C) = sc;
+            *(f32*)(e + 0x38) = sc;
             e[0x42] = 0xFF;
             e[0x41] = 0xFF;
             e[0x40] = 0xFF;
