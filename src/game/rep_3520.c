@@ -1238,22 +1238,23 @@ void fn_3_13A724(void) {
     g_Minigame._6FC = g_Minigame._6F0;
     g_Minigame._728 = RandomInt_Game_Range(lbl_3_data_21A30[3], lbl_3_data_21A30[4]);
     r = RandomF32_Game_Range(lbl_3_data_21A14[0], lbl_3_data_21A14[1]);
+    v.x = lbl_3_data_219AC[0] - g_Minigame._6E8;
+    v.y = lbl_3_data_219AC[1] - g_Minigame._6EC;
+    v.z = lbl_3_data_219AC[2] - g_Minigame._6F0;
+#pragma dont_inline off
+    dolsqrtf2(v.x*v.x + v.z*v.z);
+#pragma dont_inline on
+        getComponentsFromSAng(random_fn_3_9EE24(0x1000), &v.x, &v.z);
     {
-        f32 x = lbl_3_data_219AC[0] - g_Minigame._6E8;
-        f32 z = lbl_3_data_219AC[2] - g_Minigame._6F0;
-        f32 y = lbl_3_data_219AC[1] - g_Minigame._6EC;
-        v.x = x;
-        v.z = z;
-        v.y = y;
-        if (x * x + z * z > lbl_3_rodata_35D0) {
-        }
-    }
-    getComponentsFromSAng(random_fn_3_9EE24(0x1000), &v.x, &v.z);
-    g_Minigame._70C = v.x * r + g_Minigame._6F4;
-    g_Minigame._714 = v.z * r + g_Minigame._6FC;
+    f32 nz, nx;
+    nx = v.x * r + g_Minigame._6F4;
+    nz = v.z * r + g_Minigame._6FC;
+    g_Minigame._70C = nx;
+    g_Minigame._714 = nz;
     g_Minigame._710 = lbl_3_data_21A14[4];
-    g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._6F4 + g_Minigame._70C);
-    g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._6FC + g_Minigame._714);
+    g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._6F4 + nx);
+    g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._6FC + nz);
+    }
     g_Minigame._704 = g_Minigame._6F8 + RandomF32_Game_Range(lbl_3_data_21A14[2], lbl_3_data_21A14[3]);
     g_Minigame._726 = 0;
 }
