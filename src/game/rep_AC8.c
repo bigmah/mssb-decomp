@@ -2021,7 +2021,6 @@ void fn_3_58E50(void) {
 extern u8 g_Pitcher[];
 extern u8 g_Runners[];
 extern u8 g_Batter[];
-extern f32 lbl_3_data_4444[];
 extern f32 lbl_3_data_450C[][2];
 extern f32 lbl_3_data_4554[][3][2];
 extern f32 lbl_3_data_45B4[][2];
@@ -2043,13 +2042,13 @@ void fn_3_58F58(int n, f32* x, f32* z) {
         if (r != 0 && g_Runners[0x2A1] != 0 && *(s16*)(g_Ball + 0x1B68) > 0
             && g_Pitcher[0x155] < 15) {
             if (g_Batter[0x7B] == 0 && n == 3) {
-                *x = lbl_3_data_4444[4];
-                *z = lbl_3_data_4444[5];
+                *x = *(f32*)(lbl_3_data_4444 + 0x10);
+                *z = *(f32*)(lbl_3_data_4444 + 0x14);
                 return;
             }
             if (g_Batter[0x7B] != 0 && n == 5) {
-                *x = lbl_3_data_4444[4];
-                *z = lbl_3_data_4444[5];
+                *x = *(f32*)(lbl_3_data_4444 + 0x10);
+                *z = *(f32*)(lbl_3_data_4444 + 0x14);
                 return;
             }
         }
