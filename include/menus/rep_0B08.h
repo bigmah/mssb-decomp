@@ -5,4 +5,6 @@
 
 void fn_2_71A38(u8* object);
 
+void fn_2_70588(u8* object);
+
 #endif
