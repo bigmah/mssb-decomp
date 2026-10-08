@@ -362,8 +362,26 @@ int fn_3_2CBE0(int a) {
 }
 
 // .text:0x0002CEF4 size:0x18C mapped:0x8066BF88
-void fn_3_2CEF4(void) {
-    return;
+void fn_3_2CEF4(int i) {
+    u8* f;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    fn_3_2D47C(i);
+    f = g_Fielders + i * 0x268;
+    *(s16*)(f + 0x19E) = -1;
+    dz = *(f32*)(f + 0x1C) - *(f32*)(f + 8);
+    dx = *(f32*)(f + 0x14) - *(f32*)f;
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_B80) {
+        *(f32*)(f + 0x68) = d;
+        f[0x209] = 0;
+    } else {
+        *(s16*)(f + 0x19E) = fn_3_9FB8C(dx, dz);
+        f[0x209] = 0;
+    }
+    fn_3_3A584(i);
 }
 
 // .text:0x0002D080 size:0x288 mapped:0x8066C114
