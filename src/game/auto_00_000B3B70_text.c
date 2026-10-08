@@ -172,3 +172,29 @@ void fn_3_B6B70(void) {
     *((u8*)&g_Practice + 0x1DB) = 0;
     fn_3_B3C78(0);
 }
+
+// fn_3_B6E98, size:0xD4
+void fn_3_B6E98(void) {
+    fn_3_5F720();
+    g_Strikes.storedOuts = g_Strikes.outs;
+    g_Strikes.runnerIndexForEachOutThisPitch[0] = -1;
+    g_Strikes.runnerIndexForEachOutThisPitch[1] = -1;
+    g_Strikes.runnerIndexForEachOutThisPitch[2] = -1;
+    g_Strikes.GameControls_StrikeBallBitVector = g_Strikes.balls + (g_Strikes.strikes * 16);
+    g_Strikes.allForcedRunnersReachedTheirBaseInd = 0;
+    g_Ball.totalFramesAtPlay = 0;
+    g_FieldingLogic._10E = 0;
+    *(s16*)((u8*)&g_FieldingLogic + 0xEE) = 0;
+    g_FieldingLogic._10F = 0;
+    g_FieldingLogic._110 = 0;
+    g_FieldingLogic._128 = 0;
+    g_FieldingLogic._129 = 0;
+    g_RunningLogic[0x13] = 0;
+    g_GameLogic.pre_PostMiniGameInd = 0;
+    g_GameLogic.minigameLastTurnSuccessInd = 0;
+    ((u8*)&g_Practice)[0x1EC] = 0;
+    ((u8*)&g_Practice)[0x1ED] = 0;
+    changeScene(1, 6);
+    fn_3_5A6D4(2);
+    fn_3_6C0E0();
+}
