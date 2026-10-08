@@ -5,4 +5,6 @@
 
 void fn_1_A714(void);
 
+s32 fn_1_A77C(void);
+
 #endif

@@ -77,4 +77,6 @@ typedef struct {
 } lbl_803C77B8_s;
 extern lbl_803C77B8_s lbl_803C77B8;
 
+extern void fn_80021518(s32 id, s32 value);
+
 #endif // !__UNKNOWN_HOMES_STATIC_H_
