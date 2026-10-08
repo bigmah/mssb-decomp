@@ -60,3 +60,11 @@ void fn_2_474FC(void) {
         *(void**)(lbl_8036E548 + 0x2C88) = 0;
     }
 }
+
+// fn_2_4777C, size:0x44
+void fn_2_4777C(void) {
+    if (*(void**)(lbl_8036E548 + 0x2C8C) != 0) {
+        fn_800ACFB0(*(void**)(lbl_8036E548 + 0x2C8C));
+        *(void**)(lbl_8036E548 + 0x2C8C) = 0;
+    }
+}

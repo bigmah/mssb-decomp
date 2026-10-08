@@ -21,4 +21,6 @@ void fn_2_481B8(void);
 
 void fn_2_474FC(void);
 
+void fn_2_4777C(void);
+
 #endif
