@@ -5,4 +5,6 @@
 
 void fn_800B0D28(void* value);
 
+void fn_800B0D38(s32 index, s32 value);
+
 #endif
