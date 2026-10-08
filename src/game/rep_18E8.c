@@ -29,6 +29,11 @@ extern u8 g_Scores[];
 extern u8 lbl_3_data_4900[];
 extern int checkFieldingStat(int, int, int);
 extern void playSoundEffect(int);
+extern f32 lbl_3_rodata_196C;
+extern f32 lbl_3_rodata_1980;
+extern f32 lbl_3_rodata_1984;
+extern f32 lbl_3_rodata_1988;
+extern f32 lbl_3_rodata_1990;
 extern f32 lbl_3_rodata_1A0C;
 extern f32 lbl_3_rodata_1A10;
 extern f32 lbl_3_rodata_198C;
@@ -84,8 +89,33 @@ s32 fn_3_A1D04(void) {
 }
 
 // .text:0x000A1DA0 size:0x19C mapped:0x806E0E34
-void fn_3_A1DA0(void) {
-    return;
+int fn_3_A1DA0(void) {
+    u8* f = g_Fielders + *(s16*)(g_Ball + 0x1B78) * 0x268;
+    u8* r;
+    if (*(f32*)(f + 0x70) > -(lbl_3_rodata_1980 * (f32)(100 - f[0x1CE]) - lbl_3_rodata_196C)) {
+        return 0;
+    }
+    r = (u8*)g_Runners;
+    if (!(r[0x51F] == 1 && *(f32*)(r + 0x460) < lbl_3_rodata_1984 && (r[0x533] == 2 || r[0x533] == 1))) {
+        r = (u8*)g_Runners;
+        if (!(r[0x3CB] == 1 && *(f32*)(r + 0x30C) > lbl_3_rodata_1988 && *(f32*)(r + 0x30C) <= lbl_3_rodata_1984 && r[0x533] == 1 && r[0x3D0] == 0)) {
+            return 0;
+        }
+    }
+    r = (u8*)g_Runners;
+    if (r[0x277] == 1) {
+        if (r[0x27C] != 0) {
+            if (*(f32*)(r + 0x1B8) > lbl_3_rodata_198C) {
+                return 0;
+            }
+        } else if (*(s16*)(r + 0x242) == 1 && *(f32*)(r + 0x1B8) <= lbl_3_rodata_1990) {
+            return 0;
+        }
+    }
+    *(s16*)(g_FieldingLogic + 0xC4) = 0;
+    *(s16*)(g_FieldingLogic + 0xCC) = -1;
+    *(s16*)(g_FieldingLogic + 0xDE) = -1;
+    return 1;
 }
 
 // .text:0x000A1F3C size:0x10C mapped:0x806E0FD0
