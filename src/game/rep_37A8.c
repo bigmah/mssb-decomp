@@ -425,8 +425,86 @@ void fn_3_14423C(void) {
 }
 
 // .text:0x0014443C size:0x2E0 mapped:0x807834D0
+typedef struct { u8 pad0[4]; f32 x; u8 pad8[0x10]; s16 a18; s16 a1A; s16 a1C; s16 a1E; u8 pad20[0xA]; u8 st; u8 sel; u8 who; u8 pad2D[0xB]; } MgSpawn;
+
+// 99%: only the load order of v[0]/v[1] in the case-1 lerp differs (orig lfs f3=v[1] first, f4=v[0] after the a1A conversion).
+// Tried hi/lo locals, operand orders, statement permutations; decl order and `a1C -= 1` form matter.
 void fn_3_14443C(void) {
-    return;
+    MgSpawn* p;
+    s32 i;
+    u8* g;
+    s16* tb;
+    f32* v;
+    s32 k;
+
+    fn_3_14423C();
+    g = g_Minigame;
+    p = (MgSpawn*)g;
+    tb = (s16*)lbl_3_data_21E68;
+    i = 0;
+    do {
+        if (p->a18 < 0x7FFE) {
+            p->a18 = p->a18 + 1;
+        } else {
+            p->a18 = 0x7FFF;
+        }
+        if (p->a1A < 0x7FFE) {
+            p->a1A = p->a1A + 1;
+        } else {
+            p->a1A = 0x7FFF;
+        }
+        if (p->a1E != 0) {
+            if (p->a1E < 0x7FFE) {
+                p->a1E = p->a1E + 1;
+            } else {
+                p->a1E = 0x7FFF;
+            }
+        }
+        if (p->st == 0) {
+            ((void (*)(s32))fn_3_14402C)(i);
+        } else if (p->st == 1) {
+            p->a1C -= 1;
+            v = (f32*)(lbl_3_data_21D1C + p->sel * 8);
+            p->x = (v[1] - v[0]) * ((f32)p->a1A / (f32)tb[5]) + v[0];
+            if (p->a1C <= 0) {
+                p->st = 2;
+                p->a1A = 0;
+            }
+        } else if (p->st == 2) {
+            if (g[0x1CA2] == 2) {
+                MgSpawn* e = (MgSpawn*)g;
+                for (k = 0; k < 3; k++) {
+                    if (e->st == 2) {
+                        e->st = 3;
+                        e->a1A = 0;
+                    }
+                    e++;
+                }
+            }
+            ((void (*)(s32))fn_3_1439EC)(i);
+        } else if (p->st == 3) {
+            v = (f32*)(lbl_3_data_21D1C + p->sel * 8);
+            p->x = (v[0] - v[1]) * ((f32)p->a1A / (f32)tb[6]) + v[0];
+            if (p->a1A >= tb[6]) {
+                p->st = 0;
+                p->a1A = 0;
+                g_Minigame[p->who + 0x1CA9] = 0;
+                if (g[0x1CA3] != 0) {
+                    g[0x1CA3] = 0;
+                }
+            }
+        } else if (p->st == 4) {
+            if (p->a1C != 0) {
+                p->a1C -= 1;
+            }
+            if (p->a1A >= tb[8]) {
+                p->st = 0;
+                p->a1A = 0;
+            }
+        }
+        i++;
+        p++;
+    } while (i < 3);
 }
 
 // .text:0x0014471C size:0x3C0 mapped:0x807837B0
