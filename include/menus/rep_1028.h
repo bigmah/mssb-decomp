@@ -14,6 +14,8 @@ void fn_2_90428(s32 index);
 
 void fn_2_903A8(s32 index);
 
+void fn_2_8FC88(s32 index);
+
 void fn_2_91C08(MenuStateObject* object);
 void fn_2_91B38(MenuStateObject* object);
 void fn_2_91AE4(MenuStateObject* object);

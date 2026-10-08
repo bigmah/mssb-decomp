@@ -57,6 +57,27 @@ extern MenuStateCallback lbl_2_data_30880[3];
 extern u8 lbl_2_data_3198[];
 extern u8 lbl_2_data_369C[];
 
+// .text:0x8FC88 size:0x8C
+void fn_2_8FC88(s32 index) {
+    if (lbl_2_bss_3401BC != NULL) {
+        s32 resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0xC);
+        MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+        u8 valid;
+        effect->resource = resource;
+        effect->type = 0;
+        valid = resource != 0;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->enabled = 1;
+        effect->flag5A = effect->flag59 = valid;
+        effect->f60 = lbl_2_rodata_1080;
+        effect->f54 = lbl_2_rodata_1078;
+        effect->flag5A = 1;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->flag59 = 1;
+        effect->mode = 3;
+    }
+}
+
 // .text:0x903A8 size:0x80
 void fn_2_903A8(s32 index) {
     s32 offset = index * 0x14;
