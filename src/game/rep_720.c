@@ -908,36 +908,37 @@ void fn_3_19770(void) {
 }
 
 // .text:0x000195BC size:0x1B4 mapped:0x80658650
+// 97.9%: pointer-induction form (f32* b/sp, b[j*3+15]); only diff is an extra `addi r0; mr r7,r0` for the g_Ball pointer
 void fn_3_195BC(void) {
+    inMemCamera* cam;
+    Vec sp8;
     int j;
     int i;
-    const int count = 10;
-    inMemCamera* cam = g_pCamera;
-    Vec sp8;
+    f32* b;
+    f32* sp;
+    cam = g_pCamera;
     sp8.x = sp8.y = sp8.z = 0.f;
-
-    for (i = 0; i < 3; i++) {
-        for (j = 0; j < count; j++) {
-            if (i == 1 && (&g_Ball.pastCoordinates[j].x)[i] < 1.f) {
-                (&sp8.x)[i] += 1.f;
+    b = (f32*)&g_Ball;
+    sp = &sp8.x;
+    for (i = 0; i < 3; i++, b++, sp++) {
+        for (j = 0; j < 10; j++) {
+            if (i == 1 && b[j * 3 + 15] < 1.f) {
+                *sp += 1.f;
             } else {
-                (&sp8.x)[i] += (&g_Ball.pastCoordinates[j].x)[i];
+                *sp += b[j * 3 + 15];
             }
         }
-        (&sp8.x)[i] *= (1.f / count);
+        *sp *= (1.f / 10);
     }
-
     cam->_0FC.x = sp8.x;
     cam->_0FC.y = sp8.y * 0.85f;
     cam->_0FC.z = sp8.z;
-
     if (g_pCamera->_11A == 1) {
         VEC_COPY(&cam->_0F0, &cam->_0FC);
     } else {
         sp8.x = (cam->_0FC.x - cam->_0F0.x) * 0.2f;
         sp8.y = (cam->_0FC.y - cam->_0F0.y) * 0.2f;
         sp8.z = (cam->_0FC.z - cam->_0F0.z) * 0.2f;
-        
         VEC_ADD(&cam->_0F0, &cam->_0F0, &sp8);
     }
 }

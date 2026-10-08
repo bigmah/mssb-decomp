@@ -47,6 +47,12 @@ extern f32 lbl_3_rodata_35C4[];
 extern f32 lbl_3_rodata_35B8[];
 extern s16 lbl_3_data_21A60;
 extern f32 lbl_3_rodata_3644;
+extern void fn_3_157570(void);
+extern void fn_3_DE4FC(void);
+extern void fn_80011578(void);
+extern void fn_3_14E894(void);
+extern u8 lbl_800EFBA4[];
+extern s32 sndFXStartEx(s32, u8, u8, u8);
 
 extern u8 lbl_80366158[];
 extern s8 lbl_3_data_26580;
@@ -1010,8 +1016,49 @@ void fn_3_13AE1C(void) {
 }
 
 // .text:0x0013AFE4 size:0x2A0 mapped:0x8077A078
+static inline void clr(u32 s) {
+    u32 i;
+    for (i = s; i < 100; i++) {
+        G8[0x193A + i] = 0;
+    }
+}
 void fn_3_13AFE4(void) {
-    return;
+    if (G8[0x190B] == 0) {
+        if (*(u32*)(G8 + 0x17C4) == 0) {
+            G8[0x190B] = 1;
+            fn_3_10F550(3, 0);
+            sndFXStartEx(0x1BE, lbl_800EFBA4[7], 0x3F, 0);
+        }
+        return;
+    }
+    if (G8[0x190B] == 1) {
+        G8[0x190B] = 2;
+        g_GameLogic.CountdownUntilFade = *(s16*)lbl_3_data_21B20;
+        fn_3_14E894();
+    }
+    if (--g_GameLogic.CountdownUntilFade == 7) {
+        changeScene(3, 6);
+    }
+    if (g_GameLogic.CountdownUntilFade <= 0) {
+        fn_3_DE4FC();
+        if (G8[0x1A2B] <= 2 && G8[0x1909] == 0) {
+            if (G8[0x18E8 + *(s8*)(G8 + 0x1908)] == 1 && G8[0x19A8] == 0) {
+                G8[0x1A37] = 1;
+            } else {
+                G8[0x1A37] = 2;
+            }
+        }
+        fn_3_5A6D4(0xE);
+        fn_80011578();
+        clr(0);
+        *(s16*)(G8 + 0x1D50) = 0x1E;
+        G8[0x1D6C] = 0;
+        G8[0xBED] = 0;
+        G8[0xC2D] = 0;
+        G8[0xC6D] = 0;
+        G8[0xCAD] = 0;
+        G8[0xCCE] = 0;
+    }
 }
 
 // .text:0x0013B284 size:0x740 mapped:0x8077A318
@@ -1021,7 +1068,21 @@ void fn_3_13B284(void) {
 
 // .text:0x0013B9C4 size:0x16C mapped:0x8077AA58
 void fn_3_13B9C4(void) {
-    return;
+    u32 i;
+    fn_3_157570();
+    fn_3_DE4FC();
+    fn_3_5A6D4(0xE);
+    fn_80011578();
+    for (i = 0; i < 100; i++) {
+        G8[0x193A + i] = 0;
+    }
+    *(s16*)(G8 + 0x1D50) = 0x1E;
+    G8[0x1D6C] = 0;
+    G8[0xBED] = 0;
+    G8[0xC2D] = 0;
+    G8[0xC6D] = 0;
+    G8[0xCAD] = 0;
+    G8[0xCCE] = 0;
 }
 
 // 99%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_1356F8
@@ -1087,3 +1148,5 @@ void fn_3_13C468(void) {
     return;
 }
 
+
+#pragma dont_inline off
