@@ -109,6 +109,7 @@ s32 fn_3_163BD4(void) {
     u8 a;
     u8 b;
     s32 m;
+    s32 j;
     ChallengeTrackingStruct* e;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
     a = *((u8*)starMissionCompletionTracker + 0x441C);
@@ -117,11 +118,13 @@ s32 fn_3_163BD4(void) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
     r = 0;
-    for (i = 0; i < 9; i++) {
-        if (ids[i] != -1) {
-            e = &t[ids[i]];
+    for (j = 0; j < 9; j++) {
+        if (ids[j] != -1) {
+            e = &t[ids[j]];
             m = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
-            if ((s8)m != 0 && (s8)e->scoutFlagsAchieved < (s8)m) { r = 1; }
+            if ((s8)m != 0 && (s8)e->scoutFlagsAchieved < (s8)m) {
+                r = 1;
+            }
         }
     }
     return r;
