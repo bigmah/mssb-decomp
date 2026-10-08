@@ -1,5 +1,10 @@
 #include "menus/rep_0788.h"
 
+#include "static/UnknownHomes_Static.h"
+extern void fn_2_24488(void);
+extern u8 lbl_2_data_9FC8[];
+extern void fn_2_54354(void* data, s32 id);
+
 typedef struct { u8* object; s32 _04; } MenuTableEntry;
 extern MenuTableEntry lbl_80371C30[];
 extern u8* lbl_2_bss_1A824C[];
@@ -60,4 +65,11 @@ void fn_2_25A1C(u8* menu, u8* item) {
 void fn_2_25850(u8* menu, u8* item) {
     u8* object = lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)(item + 0xE)].object;
     *(u32*)(object + 0x54) &= ~2;
+}
+
+// fn_2_246E0, size:0x44
+void fn_2_246E0(void) {
+    u8* object = fn_800B0A5C_insertQueue((void*)fn_2_24488, 2);
+    *(s16*)(object + 0x1C) = 0;
+    fn_2_54354(lbl_2_data_9FC8, 0x293);
 }
