@@ -155,13 +155,67 @@ void fn_3_8B9BC(void* pos) {
 }
 
 // .text:0x0008BA60 size:0x164 mapped:0x806CAAF4
-void fn_3_8BA60(void) {
-    return;
+typedef struct SndEm3C { s32 x, y, z; s32 maxd, comp; u32 f14, f18; u32 fl[7]; u32 f38; } SndEm3C;
+extern SndEm3C lbl_3_data_8974[];
+extern Vec lbl_3_data_8D7C;
+void fn_3_8BA60(s32 i, f32* pos, f32* dir) {
+    f32 tmp[3];
+    u8* em;
+    u8 type;
+    if (i < 0 || i >= 100 || lbl_3_common_bss_32B20[0x2034 + i] == 0) {
+        return;
+    }
+    em = lbl_3_common_bss_32B20 + i * 0x50 + 0x90;
+    if (sndCheckEmitter(em) == 0) {
+        lbl_3_common_bss_32B20[0x2034 + i] = 0;
+        return;
+    }
+    type = lbl_3_common_bss_32B20[0x1FD0 + i];
+    if (pos == NULL) {
+        tmp[0] = lbl_3_data_8974[type].x / 100000.0f;
+        tmp[1] = lbl_3_data_8974[type].y / 100000.0f;
+        tmp[2] = lbl_3_data_8974[type].z / 100000.0f;
+        pos = tmp;
+    }
+    if (dir == NULL) {
+        dir = (f32*)&lbl_3_data_8D7C;
+    }
+    sndUpdateEmitter(em, (Vec*)pos, (Vec*)dir, lbl_3_data_8974[type].f14, 0);
 }
 
 // .text:0x0008BBC4 size:0x230 mapped:0x806CAC58
-void fn_3_8BBC4(void) {
-    return;
+extern char lbl_3_rodata_159C[];
+extern u32 sndAddEmitter(void*, void*, void*, f32, f32, u32, u16, u8, u8, void*);
+s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type) {
+    f32 tmp[3];
+    s32 i;
+    for (i = 0; i < 100; i++) {
+        if (lbl_3_common_bss_32B20[0x2034 + i] == 0 || sndCheckEmitter(lbl_3_common_bss_32B20 + i * 0x50 + 0x90) == 0) {
+            lbl_3_common_bss_32B20[0x1FD0 + i] = type;
+            lbl_3_common_bss_32B20[0x2034 + i] = 1;
+            lbl_3_common_bss_32B20[0x2098 + i] = 0;
+            if (pos == NULL) {
+                tmp[0] = lbl_3_data_8974[type].x / 100000.0f;
+                tmp[1] = lbl_3_data_8974[type].y / 100000.0f;
+                tmp[2] = lbl_3_data_8974[type].z / 100000.0f;
+                pos = tmp;
+            }
+            if (dir == NULL) {
+                dir = (f32*)&lbl_3_data_8D7C;
+            }
+            sndAddEmitter(lbl_3_common_bss_32B20 + i * 0x50 + 0x90, pos, dir,
+                          lbl_3_data_8974[type].maxd / 100000.0f, lbl_3_data_8974[type].comp / 100000.0f,
+                          lbl_3_data_8974[type].fl[0] | lbl_3_data_8974[type].fl[1] | lbl_3_data_8974[type].fl[2] |
+                              lbl_3_data_8974[type].fl[3] | lbl_3_data_8974[type].fl[4] | lbl_3_data_8974[type].fl[5] |
+                              lbl_3_data_8974[type].fl[6],
+                          (u16)id, lbl_3_data_8974[type].f14, lbl_3_data_8974[type].f18, 0);
+            return i;
+        }
+    }
+    if (i == 100) {
+        OSPanic(lbl_3_rodata_1590, 0xE4C, lbl_3_rodata_159C);
+    }
+    return -1;
 }
 
 // .text:0x0008BDF4 size:0x98 mapped:0x806CAE88
@@ -488,8 +542,16 @@ void fn_3_90064(s32 id) {
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4
-void fn_3_90150(void) {
-    return;
+// ~50%: orig converts t[b] first (slot 0x8/0xc, passed to sndFXStartEx) and keeps the t[b+0x180] result in r31; ours has the two swapped and schedules differently
+extern u8 lbl_3_data_8148[];
+u32 fn_3_90150(s32 a, s32 b) {
+    u8* d = lbl_3_data_8148;
+    u8* t = d + 0x3E8;
+    u8 v1 = t[b] * *(f32*)(d + 0x6E8);
+    u8 v2 = t[b + 0x180] * *(f32*)(d + 0x6E8);
+    u32 h = sndFXStartEx((u16)(b + ((u16*)(d + 0x20))[a]), v1, 0x3F, 0);
+    sndFXCtrl(h, 0x5B, v2);
+    return h;
 }
 
 
@@ -599,6 +661,7 @@ void fn_3_906FC(void) {
 }
 
 // .text:0x0009056C size:0x108 mapped:0x806CF600
+// ~93%: only the vol table read differs (orig: addi r4,r30,0x1c4; lbzx r0,r4,r0; ours folds 0x1c4 into lbz displacement)
 typedef struct { u16 a, b, c; } SeqEnt6;
 typedef struct { u8 v, pad; } SeqVol2;
 u32 fn_3_9056C(s32 idx) {
@@ -608,9 +671,11 @@ u32 fn_3_9056C(s32 idx) {
     u8 vol;
     u32 seq;
     if (g_d_GameSettings.GameModeSelected != 2) {
-        e = &((SeqEnt6*)(d + 0x798))[idx];
+        e = (SeqEnt6*)(d + 0x798);
+        e += idx;
     } else {
-        e = &((SeqEnt6*)(d + 0x80C))[idx];
+        e = (SeqEnt6*)(d + 0x80C);
+        e += idx;
     }
     s = &S34C58;
     if (sndSeqGetValid(s->unk8)) {
