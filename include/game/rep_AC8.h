@@ -153,7 +153,7 @@ void fn_3_4597C(void);
 void fn_3_45B88(void);
 void fn_3_45E98(void);
 void fn_3_46688(void);
-void fn_3_468DC(void);
+int fn_3_468DC(f32*, f32*);
 void fn_3_46ABC(void);
 void fn_3_46E08(void);
 void fn_3_47628(void);

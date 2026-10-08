@@ -1869,8 +1869,59 @@ void fn_3_46688(void) {
 }
 
 // .text:0x000468DC size:0x1E0 mapped:0x80685970
-void fn_3_468DC(void) {
-    return;
+int fn_3_468DC(f32* x, f32* z) {
+    if (*(s16*)(g_Ball + 0x1B78) >= 0) {
+        *x = *(f32*)g_Ball;
+        *z = *(f32*)(g_Ball + 8);
+    } else if (*(s16*)(g_Ball + 0x1B7E) >= 0) {
+        *x = *(f32*)(g_Fielders + *(s16*)(g_Ball + 0x1B7E) * 0x268 + 0x14);
+        *z = *(f32*)(g_Fielders + *(s16*)(g_Ball + 0x1B7E) * 0x268 + 0x1C);
+    } else if (g_FieldingLogic[0xFF] == 1) {
+        if (g_FieldingLogic[0x100] == 1) {
+            s16 a = *(s16*)(g_Fielders + 0x1256);
+            if (a == -1 || *(s16*)(g_Fielders + 0x14BE) == -1) {
+                return 0;
+            }
+            if (a < *(s16*)(g_Fielders + 0x14BE)) {
+                *x = *(f32*)(g_Fielders + 0x10EC);
+                *z = *(f32*)(g_Fielders + 0x10F4);
+            } else {
+                *x = *(f32*)(g_Fielders + 0x1354);
+                *z = *(f32*)(g_Fielders + 0x135C);
+            }
+        } else if (g_FieldingLogic[0xFE] == 1) {
+            s16 a = *(s16*)(g_Fielders + 0x1256);
+            if (a == -1 || *(s16*)(g_Fielders + 0xFEE) == -1) {
+                return 0;
+            }
+            if (a < *(s16*)(g_Fielders + 0xFEE)) {
+                *x = *(f32*)(g_Fielders + 0x10EC);
+                *z = *(f32*)(g_Fielders + 0x10F4);
+            } else {
+                *x = *(f32*)(g_Fielders + 0xE84);
+                *z = *(f32*)(g_Fielders + 0xE8C);
+            }
+        } else {
+            if (*(s16*)(g_Fielders + 0x1256) == -1) {
+                return 0;
+            }
+            *x = *(f32*)(g_Fielders + 0x10EC);
+            *z = *(f32*)(g_Fielders + 0x10F4);
+        }
+    } else if (g_FieldingLogic[0x100] == 1) {
+        if (*(s16*)(g_Fielders + 0x14BE) == -1) {
+            return 0;
+        }
+        *x = *(f32*)(g_Fielders + 0x1354);
+        *z = *(f32*)(g_Fielders + 0x135C);
+    } else {
+        if (*(s16*)(g_Fielders + 0xFEE) == -1) {
+            return 0;
+        }
+        *x = *(f32*)(g_Fielders + 0xE84);
+        *z = *(f32*)(g_Fielders + 0xE8C);
+    }
+    return 1;
 }
 
 // .text:0x00046ABC size:0x34C mapped:0x80685B50
