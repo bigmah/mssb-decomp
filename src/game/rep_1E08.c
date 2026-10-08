@@ -808,14 +808,39 @@ void fn_3_BF8F8(void) {
 }
 
 // .text:0x000BFB3C size:0x268 mapped:0x806FEBD0
-void fn_3_BFB3C(void) {
-    return;
+f32 fn_3_BFB3C(u8* e, s32 x, f32 (*m)[4], f32 t) {
+    Mtx tmp;
+    f32 r;
+    PSMTXIdentity(m);
+    PSMTXIdentity(tmp);
+#define BFB3C_CH(k) fn_3_BFDA4(*(void**)(e + 0x14 + (k) * 4), t, e[0x34 + (k)], x, e[0x3C + (k)], e + 0x3C + (k))
+    m[0][0] = *(u32*)(e + 0x14) ? BFB3C_CH(0) : lbl_3_rodata_1E84;
+    m[1][1] = *(u32*)(e + 0x18) ? BFB3C_CH(1) : lbl_3_rodata_1E84;
+    r = *(u32*)(e + 0x2C) ? BFB3C_CH(6) : lbl_3_rodata_1E68;
+    if (r != lbl_3_rodata_1E68) {
+        PSMTXRotRad(tmp, 'Z', r);
+        PSMTXConcat(tmp, m, m);
+    }
+    r = *(u32*)(e + 0x28) ? BFB3C_CH(5) : lbl_3_rodata_1E68;
+    if (r != lbl_3_rodata_1E68) {
+        PSMTXRotRad(tmp, 'Y', r);
+        PSMTXConcat(tmp, m, m);
+    }
+    PSMTXIdentity(tmp);
+    tmp[0][3] = *(u32*)(e + 0x1C) ? BFB3C_CH(2) : lbl_3_rodata_1E68;
+    tmp[1][3] = *(u32*)(e + 0x20) ? BFB3C_CH(3) : lbl_3_rodata_1E68;
+    tmp[2][3] = *(u32*)(e + 0x24) ? BFB3C_CH(4) : lbl_3_rodata_1E68;
+    PSMTXConcat(tmp, m, m);
+    return *(u32*)(e + 0x30) ? BFB3C_CH(7) : lbl_3_rodata_1E84;
+#undef BFB3C_CH
 }
 
 // .text:0x000BFDA4 size:0x390 mapped:0x806FEE38
-void fn_3_BFDA4(void) {
-    return;
+#pragma dont_inline on
+f32 fn_3_BFDA4(void* p, f32 t, u8 a, s32 x, u8 b, u8* c) {
+    return lbl_3_rodata_1E68;
 }
+#pragma dont_inline reset
 
 // .text:0x000C0134 size:0x63C mapped:0x806FF1C8
 void fn_3_C0134(void) {
