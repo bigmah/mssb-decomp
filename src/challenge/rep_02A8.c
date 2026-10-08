@@ -27,6 +27,8 @@ extern void fn_1_A95C(void);
 
 extern u8 lbl_1_bss_2FDD[];
 extern void fn_1_BFB0(void);
+extern void fn_1_BC00(void);
+extern u8 lbl_1_bss_2FDE[];
 
 // fn_1_C188, size:0x11C
 void fn_1_C188(void) {
@@ -228,4 +230,39 @@ s32 fn_1_A838(void) {
 void fn_1_BEF4(s16 voice) {
     sndFXKeyOff(voice);
     sndFXCtrl(voice, 7, 0);
+}
+
+// fn_1_BDD8, size:0x11C
+void fn_1_BDD8(void) {
+    u8* queue = lbl_803CC1B8[0];
+    switch ((s32)lbl_1_bss_2FDE[0]) {
+    case 0: {
+        s32 option;
+        u8* child;
+        *(s16*)(queue + 0x10) = 0;
+        option = lbl_1_data_1CA0[0] + 5;
+        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
+        child[0x18] = 0;
+        child[0x19] = option;
+        *(s32 (**)(void))(child + 0x14) = fn_1_A8B4;
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        lbl_1_bss_2FDE[0]++;
+        break;
+    }
+    case 1:
+        if (*(s16*)(queue + 0x10) != 0) {
+            if (lbl_1_data_1CA0[0] != 31) {
+                lbl_1_data_1CA0[0]++;
+                lbl_1_bss_2FDE[0] = 0;
+            } else {
+                *(s16*)(queue + 0x10) = 0;
+                lbl_1_bss_2FDE[0]++;
+            }
+        }
+        break;
+    case 2:
+        *(void (**)(void))queue = fn_1_BC00;
+        lbl_1_bss_2FDE[0] = 0;
+        break;
+    }
 }

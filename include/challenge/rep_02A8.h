@@ -33,4 +33,6 @@ s32 fn_1_A838(void);
 
 void fn_1_BEF4(s16 voice);
 
+void fn_1_BDD8(void);
+
 #endif
