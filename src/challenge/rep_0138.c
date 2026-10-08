@@ -8,6 +8,36 @@ extern GXCullMode lbl_1_data_8C4[];
 extern void* lbl_1_data_848[3];
 extern void fn_1_73B8(void* context, s32 count, ...);
 
+typedef union ChallengeColor {
+    GXColor color;
+    s32 word;
+} ChallengeColor;
+
+typedef struct ChallengeFog {
+    ChallengeColor color;
+    f32 start;
+    f32 end;
+} ChallengeFog;
+
+extern ChallengeColor lbl_1_data_858[];
+extern ChallengeFog* lbl_1_bss_4E0[];
+extern const f32 lbl_1_rodata_1D8;
+extern const f32 lbl_1_rodata_208;
+
+// fn_1_786C, size:0x78
+void fn_1_786C(void) {
+    GXColor clear;
+    GXColor color;
+    ChallengeFog* fog;
+    fn_80048D4C();
+    clear = lbl_1_data_858[0].color;
+    GXSetCopyClear(clear, 0xFFFFFF);
+    fog = lbl_1_bss_4E0[0];
+    color = fog->color.color;
+    // This call passes the packed colour through the GXColor value ABI.
+    ((void (*)(u8, GXColor, f32, f32, f32, f32))SetFog)(fog->color.color.a, color, fog->start, fog->end, lbl_1_rodata_1D8, lbl_1_rodata_208);
+}
+
 // fn_1_54E0, size:0x60
 void fn_1_54E0(void* matrix) {
     s32 i;

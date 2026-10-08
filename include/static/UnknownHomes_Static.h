@@ -70,6 +70,9 @@ extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_800B9948(void*);
 extern void fn_800BD670(void*, u32);
 extern void LITXForm(void* light, void* matrix);
+extern void fn_80048D4C(void);
+extern void SetFog(u8 mode, s32* color, f32 start, f32 end, f32 near, f32 far);
+extern void SetFogNoneAgain(void);
 extern void pitchingMachinePitching(u8);
 
 typedef struct {
