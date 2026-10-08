@@ -9,4 +9,6 @@ void fn_2_8B118(f32 value);
 
 s32 fn_2_8CC88(s32 index);
 
+void fn_2_8CCAC(s32 index, u8 value);
+
 #endif
