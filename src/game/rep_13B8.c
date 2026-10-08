@@ -1058,7 +1058,40 @@ void fn_3_8781C(void) {
 
 // .text:0x00087AE8 size:0x1E0 mapped:0x806C6B7C
 void fn_3_87AE8(void) {
-    return;
+    u8* r = g_Runners;
+    s16 b;
+    r[0x129] = 0;
+    if (g_GameLogic[0x121] != 6) {
+        if (g_Minigame[0x1A2A] == 3) {
+            r[0x129] = 1;
+        } else if ((b = *(s16*)(g_Ball + 0x1B66)) < 0) {
+            r[0x129] = 1;
+        } else if (g_FieldingLogic[0x107] == 1 || g_FieldingLogic[0x107] == 2 || g_FieldingLogic[0x107] == 3) {
+            if (g_Strikes[2] < 3) {
+                r[0x129] = 1;
+            }
+        } else if (r[0x12C] == 0 || r[0x123] != 2) {
+            if (b < r[0x122]) {
+                r[0x129] = 2;
+            } else if (g_Batter[0x94] == 4 && b < 0x5A) {
+                r[0x129] = 2;
+            } else if (g_Batter[0x94] == 3 || g_Batter[0x94] == 6) {
+                r[0x129] = 3;
+            }
+        }
+    }
+    *(f32*)(g_Runners + 0x18) = *(f32*)(g_Runners + 0x0) - *(f32*)(g_Runners + 0xC);
+    *(f32*)(g_Runners + 0x1C) = *(f32*)(g_Runners + 0x4) - *(f32*)(g_Runners + 0x10);
+    *(f32*)(g_Runners + 0x20) = *(f32*)(g_Runners + 0x8) - *(f32*)(g_Runners + 0x14);
+    *(f32*)(g_Runners + 0x16C) = *(f32*)(g_Runners + 0x154) - *(f32*)(g_Runners + 0x160);
+    *(f32*)(g_Runners + 0x170) = *(f32*)(g_Runners + 0x158) - *(f32*)(g_Runners + 0x164);
+    *(f32*)(g_Runners + 0x174) = *(f32*)(g_Runners + 0x15C) - *(f32*)(g_Runners + 0x168);
+    *(f32*)(g_Runners + 0x2C0) = *(f32*)(g_Runners + 0x2A8) - *(f32*)(g_Runners + 0x2B4);
+    *(f32*)(g_Runners + 0x2C4) = *(f32*)(g_Runners + 0x2AC) - *(f32*)(g_Runners + 0x2B8);
+    *(f32*)(g_Runners + 0x2C8) = *(f32*)(g_Runners + 0x2B0) - *(f32*)(g_Runners + 0x2BC);
+    *(f32*)(g_Runners + 0x414) = *(f32*)(g_Runners + 0x3FC) - *(f32*)(g_Runners + 0x408);
+    *(f32*)(g_Runners + 0x418) = *(f32*)(g_Runners + 0x400) - *(f32*)(g_Runners + 0x40C);
+    *(f32*)(g_Runners + 0x41C) = *(f32*)(g_Runners + 0x404) - *(f32*)(g_Runners + 0x410);
 }
 
 // .text:0x00087CC8 size:0x1B8 mapped:0x806C6D5C
