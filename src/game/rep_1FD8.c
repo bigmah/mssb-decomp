@@ -481,9 +481,63 @@ void fn_3_C444C(void) {
     return;
 }
 
+typedef struct C4724P {
+    struct C4724P* next;
+    f32 x, y, z;
+    f32 vx, vy, vz;
+    u8 pad1C[0x38 - 0x1C];
+    f32 f38, f3C;
+    u8 pad40[3];
+    u8 a43;
+    u8 pad44[4];
+    s16 s48;
+    s16 s4A;
+} C4724P;
+typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[0xE]; s32 f24; } C4724Hdr;
+extern u8 lbl_80366158[];
+extern void fn_80033620(void);
+extern void fn_8003403C(f32, f32);
+extern void fn_80033CC8(void*, s32);
+extern void GXSetZMode(int, int, int);
+extern void GXSetBlendMode(int, int, int, int);
+extern f32 lbl_3_rodata_2168[];
+extern f32 lbl_3_rodata_213C;
+// 96%: 213C (0.0f) const load should hoist before first fadds (f1) and 2168 via addi+lfs 0; only f-reg/sched diffs
 // .text:0x000C4724 size:0x1AC mapped:0x807037B8
-void fn_3_C4724(void) {
-    return;
+u32 fn_3_C4724(void* hv) {
+    C4724Hdr* h = hv;
+    C4724P* p = h->head;
+    u32 n = 0;
+    fn_80033620();
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 5, 0);
+    do {
+        if (p->s48 != 0) {
+            p->s48 -= (lbl_80366158[0x28] == 0);
+        } else if (p->s4A != 0) {
+            fn_8003403C(p->f38, p->f3C);
+            fn_80033CC8(p, h->f10);
+            if (lbl_80366158[0x28] == 0) {
+                f32 d = lbl_3_rodata_2168[0];
+                p->x += p->vx;
+                p->y += p->vy;
+                p->z += p->vz;
+                p->f38 -= d;
+                p->f3C -= d;
+                p->a43 -= 0xF;
+                if (p->f38 <= lbl_3_rodata_213C || p->f3C <= lbl_3_rodata_213C) {
+                    p->s4A = 0;
+                }
+            }
+            n++;
+        }
+        p = p->next;
+    } while (p != NULL && n < (h->f14 & 0xFFF));
+    h->f24 -= (lbl_80366158[0x28] == 0);
+    if (h->f24 == 0) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000C48D0 size:0x2B0 mapped:0x80703964

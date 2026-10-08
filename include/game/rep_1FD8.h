@@ -27,7 +27,7 @@ void fn_3_C40EC(u8* a);
 void fn_3_C414C(int idx);
 void fn_3_C42A4(s32* a, s32* b);
 void fn_3_C444C(void);
-void fn_3_C4724(void);
+u32 fn_3_C4724(void* h);
 void fn_3_C48D0(void);
 void fn_3_C4B80(void);
 void fn_3_C4CF4(void);
