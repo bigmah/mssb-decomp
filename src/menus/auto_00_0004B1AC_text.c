@@ -36,3 +36,8 @@ void fn_2_4E8E0(void) {
 void fn_2_4E904(void) {
     fn_80035B50(0xC);
 }
+
+// fn_2_4E928, size:0x24
+void fn_2_4E928(void) {
+    fn_80035B50(0x15);
+}
