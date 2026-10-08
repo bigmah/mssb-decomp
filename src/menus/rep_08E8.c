@@ -3,6 +3,11 @@
 #include "static/UnknownHomes_Static.h"
 #include "math.h"
 
+extern const f32 lbl_2_rodata_94C;
+extern const f32 lbl_2_rodata_9A8;
+extern const f32 lbl_2_rodata_9AC;
+extern const f32 lbl_2_rodata_9B4;
+
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_1A8248[];
 
@@ -75,4 +80,10 @@ void fn_2_4777C(void) {
 f32 fn_2_4A1E8(f32 x, f32 y) {
     if (x == 0.0f && y == 0.0f) return 0.0f;
     return (f32)atan2(y, x);
+}
+
+// fn_2_4A2C4, size:0x4C
+s32 fn_2_4A2C4(f32 angle) {
+    if (angle < lbl_2_rodata_94C) angle = lbl_2_rodata_9A8 + angle;
+    return (s32)((lbl_2_rodata_9B4 * angle) / lbl_2_rodata_9AC);
 }
