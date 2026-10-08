@@ -1,5 +1,9 @@
 #include "menus/auto_00_00092394_text.h"
+#include "static/UnknownHomes_Static.h"
 
+
+extern u8 lbl_800F7478[];
+extern void fn_2_8AC84(s32 index, s32 value);
 
 typedef struct MenuState MenuState;
 typedef struct MenuObject {
@@ -60,4 +64,12 @@ void fn_2_92654(s32 index, u8 state) {
     MenuObject* object = (MenuObject*)((u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0);
     object->state = state;
     object->phase = 0;
+}
+
+// fn_2_924B0, size:0x54
+void fn_2_924B0(u8* object) {
+    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    fn_2_8AC84(*(s32*)(object + 0x78), 0);
+    color.a = 0xFF;
+    fn_800BD2CC(0, color);
 }

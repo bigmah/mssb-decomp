@@ -19,4 +19,6 @@ void fn_2_9253C(u8* object);
 
 void fn_2_92654(s32 index, u8 state);
 
+void fn_2_924B0(u8* object);
+
 #endif
