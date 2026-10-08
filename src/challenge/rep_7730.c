@@ -21,3 +21,7 @@ void fn_1_1DDF4(f32 value) {
 void fn_1_1DE04(f32 value) {
     lbl_1_bss_6BE4[1] = value;
 }
+
+void fn_1_1DE14(f32 value) {
+    lbl_1_bss_6BE4[0] = value;
+}

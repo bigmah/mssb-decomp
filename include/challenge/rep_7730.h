@@ -13,4 +13,6 @@ void fn_1_1DDF4(f32 value);
 
 void fn_1_1DE04(f32 value);
 
+void fn_1_1DE14(f32 value);
+
 #endif
