@@ -2,6 +2,8 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 
+extern void fn_80017D28(void* allocation);
+
 #pragma dont_inline on
 
 // fn_3_5B408, size:0x14
@@ -21,4 +23,9 @@ void fn_3_5A684(void) {
     g_Strikes.balls = 0;
     g_Strikes.outs = 0;
     g_Strikes.forcedOutToEndInningInd = 0;
+}
+
+// fn_3_59AC0, size:0x24
+void fn_3_59AC0(s32 unused1, s32 unused2, void* allocation) {
+    fn_80017D28(allocation);
 }

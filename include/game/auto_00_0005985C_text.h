@@ -9,4 +9,6 @@ void fn_3_5B368(void);
 
 void fn_3_5A684(void);
 
+void fn_3_59AC0(s32 unused1, s32 unused2, void* allocation);
+
 #endif
