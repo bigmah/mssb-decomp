@@ -16,10 +16,11 @@ void fn_3_77914(void) {
 }
 
 // .text:0x00078574 size:0x1BC mapped:0x806B7608
-// 99%: only register numbering differs (ball r6/r7, idx r7/r10, runner ptr r10/r6); structure matches
+// 99%: only idx/runner-ptr registers swapped (ours r6/r10, orig r10/r6); `s16 idx` fixed the ball ptr (r7)
+// decl order, locals' types, r/e forms and inline idx all tried; no change
 void fn_3_78574(s16 arg) {
     s32 flag = 0;
-    s32 idx;
+    s16 idx;
     s16 cur;
     s32 val;
     s32 off;
