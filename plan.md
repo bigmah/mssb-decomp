@@ -37,6 +37,8 @@ Matched % is what moves the badges. Linked files are what really proves the deco
 
 ### Matching patterns we've already hit
 
+- **Extern arrays in `.sdata` larger than the default 8-byte limit (fn_80048EA8):** declare the real array size and use `DECL_SECT(".sdata") extern void* symbol[3];` when the original forms its address with `li rN,symbol@sda21`. An unsized extern array emits `lis/addi` instead. The explicit section preserves the original addressing without changing compiler flags or understating the array size.
+
 - **Extra pointer move at loop setup (`fn_2_16CE0`, `fn_2_16D38`, `fn_2_48D54`, `fn_1_11C98`):** a manually advanced local pointer can emit `addi r0, base, ...; mr rN,r0` where the original initializes the induction register directly. Write the accesses as `base + i * stride + field` in a `for (i = 0; i < count; i++)` loop instead; MWCC strength reduction creates the matching pointer walk without the extra move. If only the loop counter and a loaded object swap registers, move the object declaration to function scope before the counter (`fn_2_16CE0`).
 
 These came up repeatedly in `rep_1838.c`. Try them first when a diff is only register order or branch shape:
