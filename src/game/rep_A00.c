@@ -6,6 +6,10 @@ extern void changeScene(s32, s32);
 extern u8 g_GameLogic[];
 extern u8 g_Scores[];
 extern u8 g_Batter[];
+extern u8 g_Runners[];
+#ifndef ABS
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#endif
 extern u8 g_Fielders[];
 extern void fn_80052798(s32);
 extern u8 lbl_3_data_2398[];
@@ -181,8 +185,46 @@ s32 fn_3_22A20(void) {
 }
 
 // .text:0x00022ABC size:0x154 mapped:0x80661B50
-void fn_3_22ABC(void) {
-    return;
+typedef struct { u8 p0[4]; s16 v; u8 p1[0x20]; } ScoreT_A00;
+
+s32 fn_3_22ABC(void) {
+    s32 r = 0;
+    s32 n = 0;
+    s32 m;
+    ScoreT_A00* sc = (ScoreT_A00*)g_Scores;
+    u8* p1;
+    u8* p2;
+    s32 d;
+    if (*(s16*)(g_Runners + 0x234) != -1) {
+        n = 1;
+    }
+    p1 = g_Runners;
+    if (*(s16*)(p1 + 0x388) != -1) {
+        n += 1;
+    }
+    p2 = g_Runners;
+    if (*(s16*)(p2 + 0x4DC) != -1) {
+        n += 1;
+    }
+    d = *(s16*)((u8*)sc + 0xA6);
+    if (__abs(d) <= 4 && n == 3 && sc[*(s32*)(g_GameLogic + 0xC)].v <= sc[*(s32*)(g_GameLogic + 0x10)].v) {
+        r = 1;
+    }
+    m = 0;
+    if (*(s16*)(p1 + 0x388) != -1) {
+        m = 1;
+    }
+    if (*(s16*)(p2 + 0x4DC) != -1) {
+        m += 1;
+    }
+    d = *(s16*)((u8*)sc + 0xA6);
+    if (__abs(d) <= m && m > 0 && sc[*(s32*)(g_GameLogic + 0xC)].v <= sc[*(s32*)(g_GameLogic + 0x10)].v) {
+        r = 1;
+    }
+    if (r != 0) {
+        return g_Batter[0x78] != 0 ? 1 : 2;
+    }
+    return -1;
 }
 
 // .text:0x00022C10 size:0x10 mapped:0x80661CA4
