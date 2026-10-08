@@ -26,6 +26,7 @@ extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, const void*, u32);
 extern const f32 lbl_3_rodata_30FC;
 extern const f32 lbl_3_rodata_30F8;
+extern const f32 lbl_3_rodata_3144;
 extern const f32 lbl_3_rodata_3158;
 extern const f32 lbl_3_rodata_3198;
 extern const f32 lbl_3_rodata_311C;
@@ -125,6 +126,29 @@ void fn_3_FD51C(s32 i) {
 }
 
 #pragma dont_inline off
+static inline Vec MkVec(f32 x, f32 y, f32 z) {
+    Vec v;
+    v.x = x;
+    v.y = y;
+    v.z = z;
+    return v;
+}
+static inline Vec CamStep(Vec a, Vec b, Vec c, f32 w0, f32 w1, f32 w2) {
+    Vec dir;
+    Vec sc;
+    Vec e;
+    f32 d;
+    f32 t;
+    PSVECSubtract(&a, &b, &dir);
+    d = PSVECDistance(&a, &b);
+    PSVECSubtract(&c, &b, &e);
+    PSVECScale(&e, lbl_3_rodata_3144, &sc);
+    t = w0 * (w2 - d) + w1 * (PSVECDotProduct(&sc, &dir) / d);
+    PSVECNormalize(&dir, &dir);
+    PSVECScale(&dir, t * lbl_3_rodata_3144, &dir);
+    PSVECAdd(&a, &dir, &a);
+    return a;
+}
 static inline void CamSubInit(CamSub* p, V3U* v) {
     p->f4 = 0;
     p->f8 = 0;
@@ -285,7 +309,34 @@ void fn_3_103E7C(void) {
 
 // .text:0x001040D8 size:0x260 mapped:0x8074316C
 void fn_3_1040D8(void) {
-    return;
+    if (lbl_3_common_bss_DE94[0x9B4] != 0) {
+        Vec r;
+        Vec ta;
+        Vec tb;
+        Vec tc;
+        f32 bx = *(f32*)(g_pCamera + 0x2840);
+        f32 by = *(f32*)(g_pCamera + 0x2844);
+        f32 bz = *(f32*)(g_pCamera + 0x2848);
+        ta.x = *(f32*)(lbl_3_common_bss_DE94 + 0xB8);
+        ta.y = *(f32*)(lbl_3_common_bss_DE94 + 0xBC);
+        ta.z = *(f32*)(lbl_3_common_bss_DE94 + 0xC0);
+        tb.x = bx;
+        tb.y = by;
+        tb.z = bz;
+        tc.x = *(f32*)(lbl_3_common_bss_DE94 + 0xAC);
+        tc.y = *(f32*)(lbl_3_common_bss_DE94 + 0xB0);
+        tc.z = *(f32*)(lbl_3_common_bss_DE94 + 0xB4);
+        r = CamStep(ta, tb, tc, *(f32*)(lbl_3_common_bss_DE94 + 0x100), *(f32*)(lbl_3_common_bss_DE94 + 0x104), *(f32*)(lbl_3_common_bss_DE94 + 0x108));
+        *(f32*)(g_pCamera + 0x2840) = r.x;
+        *(f32*)(g_pCamera + 0x2844) = r.y;
+        *(f32*)(g_pCamera + 0x2848) = r.z;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xB8) = r.x;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xBC) = r.y;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xC0) = r.z;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xAC) = bx;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xB0) = by;
+        *(f32*)(lbl_3_common_bss_DE94 + 0xB4) = bz;
+    }
 }
 
 // .text:0x00104338 size:0x270 mapped:0x807433CC
