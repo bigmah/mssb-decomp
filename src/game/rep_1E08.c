@@ -140,8 +140,22 @@ void fn_3_BB15C(u8* p) {
 
 
 // .text:0x000BB454 size:0x3A0 mapped:0x806FA4E8
-void fn_3_BB454(void) {
-    return;
+void fn_3_BB454(u8* a) {
+    u8* p;
+    u32 i;
+    s32 t;
+    p = *(u8**)(a + 0xC);
+    i = 0;
+    do {
+        *(s16*)(p + 0x4A) = i;
+        *(f32*)(p + 0x38) = (f32)lbl_3_data_170D8[3] / lbl_3_rodata_1EC4;
+        *(f32*)(p + 0x3C) = (f32)lbl_3_data_170D8[4] / lbl_3_rodata_1EC4;
+        fn_3_BB15C(p);
+        t = lbl_3_data_170D8[0] / 5;
+        *(s16*)(p + 0x48) = ((i % 5) * t + rand() % t) * 2;
+        i++;
+        p = *(u8**)p;
+    } while (p != NULL);
 }
 
 // .text:0x000BB7F4 size:0x3D0 mapped:0x806FA888
