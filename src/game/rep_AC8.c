@@ -1069,8 +1069,53 @@ void fn_3_30D74(void) {
 }
 
 // .text:0x000313B0 size:0x1E4 mapped:0x80670444
+extern u8 lbl_3_common_bss_34C90[];
+extern u8 g_Pitcher[];
+extern f32 lbl_3_rodata_BC0;
+extern void fn_3_53F48(void);
+extern void fn_3_544B8(void);
 void fn_3_313B0(void) {
-    return;
+    int i;
+    u8* f;
+    int k;
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        if (g_d_GameSettings[0x11] != 0) {
+            for (k = 0; k < 4; k++) {
+                if (*(s8*)(g_Minigame + 0x18F8 + k) == i) {
+                    break;
+                }
+            }
+            if (k >= 4) {
+                continue;
+            }
+        }
+        if (*(f32*)(f + 0x50) > 0.0f) {
+            if (lbl_3_common_bss_34C90[0x1D5] == 0) {
+                *(f32*)(f + 0x48) = atan2(*(f32*)(f + 0x34), *(f32*)(f + 0x30));
+            }
+        } else if (*(s16*)(g_Pitcher + 0x11E) <= 0 && g_Runners[0x277] == 1 && i == 2 && g_d_GameSettings[0x11] == 0) {
+            *(f32*)(f + 0x48) = lbl_3_rodata_BC0;
+        } else {
+            *(f32*)(f + 0x48) = atan2(-*(f32*)(f + 8), -*(f32*)f);
+        }
+        if (0.0f != *(f32*)(f + 0x30) || 0.0f != *(f32*)(f + 0x34)) {
+            *(f32*)(f + 0x64) = atan2(*(f32*)(f + 0x34), *(f32*)(f + 0x30));
+            *(s16*)(f + 0x19A) = radToShortAngle(*(f32*)(f + 0x64));
+        } else {
+            *(f32*)(f + 0x64) = 0.0f;
+            *(s16*)(f + 0x19A) = -1;
+        }
+        if (g_d_GameSettings[0x11] != 0) {
+            g_Minigame[0x1923] = i;
+            fn_3_544B8();
+        }
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        fn_3_53F48();
+        return;
+    }
+    fn_3_544B8();
 }
 
 // .text:0x00031594 size:0xE4 mapped:0x80670628
