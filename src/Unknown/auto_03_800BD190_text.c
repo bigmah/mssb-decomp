@@ -13,3 +13,10 @@ void __MTGQR5(register u32 value) {
 void fn_800BD1E8(u32 value) {
     lbl_803CC20C = value;
 }
+
+// __MTGQR6, size:0x8
+void __MTGQR6(register u32 value) {
+    asm {
+        mtspr GQR6, value
+    }
+}

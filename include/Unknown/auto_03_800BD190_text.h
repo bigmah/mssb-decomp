@@ -7,4 +7,6 @@ void __MTGQR5(u32 value);
 
 void fn_800BD1E8(u32 value);
 
+void __MTGQR6(u32 value);
+
 #endif
