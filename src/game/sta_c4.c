@@ -40,6 +40,27 @@ extern void* fn_3_B9534(u32, u32, void*);
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void OSPanic(const char*, int, const char*, ...);
 extern int rand(void);
+typedef struct {
+    u8* p0;
+    u8 pad4[0x2C];
+    s32 n;
+    u8 pad34[8];
+    u32* a3C;
+    u16* a40;
+    u32* a44;
+    u8* a48;
+    f32 f4C[3];
+    f32 f58[3];
+    s16 cnt;
+    u8 pad66[5];
+    u8 b6B;
+} StaCommon;
+extern StaCommon lbl_3_common_bss_350E4;
+extern u8 g_Ball[];
+extern const f32 lbl_3_rodata_3060;
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+extern void* memcpy(void*, const void*, u32);
+extern void* memset(void*, int, u32);
 extern void DCFlushRange(void*, u32);
 
 // .text:0x000F8444 size:0x10
@@ -209,8 +230,22 @@ void fn_3_F934C(void) {
 }
 
 // .text:0x000F963C size:0x130 mapped:0x807386D0
-void fn_3_F963C(void) {
-    return;
+void fn_3_F963C(s32 idx, u8* v) {
+    typedef struct { u8 pad[0x90]; u8 a : 1; u8 f : 1; u8 b : 6; } FlagObj;
+    u8* p;
+    lbl_3_common_bss_350E4.b6B = 1;
+    p = fn_800B0A5C_insertQueue(fn_3_F934C, (u16)(*(u16*)((u8*)lbl_803CC1B8 + 0x12) + 1));
+    memcpy(lbl_3_common_bss_350E4.f4C, g_Ball, 0xC);
+    memcpy(lbl_3_common_bss_350E4.f58, g_Ball + 0x318, 0xC);
+    lbl_3_common_bss_350E4.f4C[1] = -lbl_3_common_bss_350E4.f4C[1];
+    lbl_3_common_bss_350E4.f58[1] = -lbl_3_common_bss_350E4.f58[1];
+    if (v != NULL) {
+        PSVECScale((Vec*)(v + 0xC), lbl_3_rodata_3060, (Vec*)(p + 0x14));
+    }
+    memset(p + 0x20, 0, 0xC);
+    *(s32*)(p + 0x2C) = idx;
+    p[0x30] = 0;
+    ((FlagObj*)(lbl_3_common_bss_350E4.p0 + *(s32*)(p + 0x2C) * 0xE8))->f = 0;
 }
 
 // .text:0x000F976C size:0x284 mapped:0x80738800
@@ -259,19 +294,6 @@ void fn_3_F9E78(void) {
 
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
 // 93.9%: only saved-reg ranking differs (orig: offC<cnt<j<i<off18; ours: i<cnt<j<off18<offC), plus the zero-init copies come from i in the orig
-typedef struct {
-    u8* p0;
-    u8 pad4[0x2C];
-    s32 n;
-    u8 pad34[8];
-    u32* a3C;
-    u16* a40;
-    u32* a44;
-    u8* a48;
-    u8 pad4C[0x18];
-    s16 cnt;
-} StaCommon;
-extern StaCommon lbl_3_common_bss_350E4;
 extern u8 lbl_3_data_1BA98[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);

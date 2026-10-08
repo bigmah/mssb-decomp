@@ -17,7 +17,7 @@ void fn_3_F9088(f32* pos, s32 idx);
 void fn_3_F9164(void);
 void fn_3_F92FC(void);
 void fn_3_F934C(void);
-void fn_3_F963C(void);
+void fn_3_F963C(s32 idx, u8* v);
 void fn_3_F976C(void);
 void fn_3_F99F0(void);
 void fn_3_F9B9C(void);
