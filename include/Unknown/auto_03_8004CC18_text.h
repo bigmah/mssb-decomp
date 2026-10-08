@@ -5,4 +5,6 @@
 
 void fn_8004CC18(void);
 
+void fn_8004CC2C(void);
+
 #endif
