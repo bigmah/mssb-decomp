@@ -7,4 +7,6 @@ u32 fn_800A88C0(void);
 
 u32 fn_800A88C8(void);
 
+u32 fn_800A88D0(void);
+
 #endif
