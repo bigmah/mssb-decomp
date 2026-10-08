@@ -217,6 +217,9 @@ Add new patterns to this list as we find them.
 - **Local declaration order picks saved registers (sta_c2 fn_3_CE954):** declaring `u8* st; f32* v; u8* g; s32 i;` (initialised later, in a different order) gave st=r30, v=r29, g=r28, i=r27; a base pointer `u8* b = lbl_3_bss_A018;` declared first gets r31. Take the order from the original's register numbers, not the order of the initialisers. Bool tested later: `f = (t[0x69] == 2); if (f != 0)` gives `subfic/cntlzw/srwi.`; the pointer/counter increments' source order (`i++; st++; v += 3;`) changes the bottom-of-loop schedule.
 - **Float `0.0f` as a literal, not `extern f32 lbl_3_rodata_2664`,** moved the zero load into the original's position in fn_3_CE954/fn_3_D1110/fn_3_D196C (`0.5f`); for fn_3_D1280 the externs matched instead. Try both for every float constant.
 
+- **Float register order follows expression/statement order (fn_3_14BCB0, fn_3_14B248, fn_3_14A188):** when only f-register numbers or `lfs` order differ, (a) split a nested `K4 * (K3 * (x - K2))` into separate `f64 u` temps (`u = (f64)t - K2; u = K3 * u; r = K4 * u;`), (b) assign `sn = (f32)sin(a); py = r * sn;` instead of inlining the call into the product, (c) compute `delta` after `df` in the else branch. A literal `360.0` (instead of an `extern const f64`) is loaded with `lfd @l` directly while extern scalars as array refs (`k[0]`) get `lis/addi/lfd 0(r)`.
+- **Repeated `x / 2` temp (fn_3_14DD04):** a named local `h = d8 / 2` shifted the temp register numbering (r4/r5/r6 rotated); writing `(t8 / 2)` inline at each use matched.
+
 ## Phases
 
 ### Phase 0: Tooling (done)
