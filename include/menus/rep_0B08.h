@@ -27,4 +27,6 @@ void fn_2_6D748(u8* object);
 
 void fn_2_6D710(u8* object);
 
+void fn_2_6D4E8(u8* object);
+
 #endif
