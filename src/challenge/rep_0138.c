@@ -54,6 +54,37 @@ extern s32 lbl_1_bss_C4;
 extern u8 lbl_1_bss_C2[];
 extern u8 lbl_1_data_85C[];
 
+extern u8 lbl_1_common_bss_472B4[];
+extern void fn_1_4DD8(u16* effects);
+
+// fn_1_717C, size:0x104
+void fn_1_717C(ChallengeModelOffsets* model) {
+    u8* geometry;
+    u8* actor;
+    u8* textures;
+    actor = (u8*)model + model->mainActor;
+    geometry = (u8*)model + model->mainGeometry;
+    textures = (u8*)model + model->textures;
+    fn_1_4DD8((u16*)((u8*)model + model->effects));
+    fn_800B49E4(actor);
+    fn_800BCE38(geometry);
+    convertTextureHeader(textures);
+    *(u8**)(lbl_1_common_bss_472B4 + 0x58) = textures + 4;
+    fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
+    haveActLayoutPointToGeoHeader(actor, geometry);
+    *(u16*)(lbl_1_common_bss_472B4 + 0x22A) = *(u16*)(actor + 6);
+    *(u8**)(lbl_1_common_bss_472B4 + 0x130) = actor;
+    *(u8**)(lbl_1_common_bss_472B4 + 0xC4) = actor;
+    actor = (u8*)model + model->secondaryActor;
+    geometry = (u8*)model + model->secondaryGeometry;
+    fn_800B49E4(actor);
+    fn_800BCE38(geometry);
+    fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
+    haveActLayoutPointToGeoHeader(actor, geometry);
+    *(u8**)(lbl_1_common_bss_472B4 + 0x208) = actor;
+    *(u8**)(lbl_1_common_bss_472B4 + 0x19C) = actor;
+}
+
 // fn_1_7EF8, size:0x100
 void fn_1_7EF8(void) {
     switch ((s32)*(u16*)((u8*)&lbl_803C77B8 + 4)) {

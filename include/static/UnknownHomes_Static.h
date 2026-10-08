@@ -76,6 +76,12 @@ extern s32 fn_80048E00(s32 index, s32 value);
 extern void fn_80048C14(u32 value);
 extern void SetFog(u8 mode, s32* color, f32 start, f32 end, f32 near, f32 far);
 extern void SetFogNoneAgain(void);
+extern void fn_800B49E4(void* actor);
+extern void fn_800BCE38(void* geometry);
+extern void convertTextureHeader(void* textures);
+extern void haveActLayoutPointToGeoHeader(void* actor, void* geometry);
+struct GQRValueGroups;
+extern void fn_800BD190(struct GQRValueGroups* groups, s32 value);
 extern void fn_800B806C(s32 index, f32 bottom, f32 top, f32 left, f32 right,
                       f32 near, f32 far, f32 focalLength);
 extern void pitchingMachinePitching(u8);
