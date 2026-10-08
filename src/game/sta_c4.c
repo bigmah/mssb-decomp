@@ -57,6 +57,15 @@ typedef struct {
 } StaCommon;
 extern StaCommon lbl_3_common_bss_350E4;
 extern u8 g_Ball[];
+extern f64 cos(f64);
+extern f64 sin(f64);
+extern s32 lbl_3_bss_B660;
+extern const f32 lbl_3_rodata_2FC4;
+extern const f64 lbl_3_rodata_3008;
+extern const f32 lbl_3_rodata_3010;
+extern const f32 lbl_3_rodata_3014;
+extern const f32 lbl_3_rodata_3018;
+extern const f64 lbl_3_rodata_3020;
 extern u8 lbl_3_bss_B570[];
 extern void fn_80034CEC(void*);
 extern u32 sndFXStartEx(int, u8, u8, u8);
@@ -119,14 +128,56 @@ void fn_3_F85B0(void) {
 }
 
 // .text:0x000F8878 size:0x244 mapped:0x8073790C
-void fn_3_F8878(void) {
-    return;
+// 99%: only the stfs of 0.123f (n+0x14) is emitted after the fmuls instead of at loop top (orig keeps it at top yet gives it the lowest f-reg f23; moving it to the top flips f-reg order)
+void fn_3_F8878(u8* a) {
+    s16 k;
+    u8* n;
+    u32 i;
+    f32 prev;
+    f32 f;
+    f32 ang;
+    n = *(u8**)(a + 0xC);
+    i = 0;
+    k = 0;
+    *(s32*)(a + 0x10) = lbl_3_bss_B660;
+    for (; n != NULL; n = *(u8**)n) {
+        if ((i & 1) == 0) {
+            f = (f32)((i % 6) * 0x3C);
+            if (((i / 6) & 1) == 1) {
+                f += lbl_3_rodata_3010;
+            }
+        } else {
+            f = lbl_3_rodata_3014 + prev;
+        }
+        prev = f;
+        *(f32*)(n + 0x14) = lbl_3_rodata_2FC4;
+        ang = lbl_3_rodata_3018 * f;
+        *(f32*)(n + 0x10) = lbl_3_rodata_3020 * (f32)cos(ang);
+        *(f32*)(n + 0x18) = lbl_3_rodata_3020 * (f32)sin(ang);
+        *(s16*)(n + 0x48) = k;
+        k += 3;
+        n[0x4F] = i;
+        i++;
+        *(f32*)(n + 0x4) = lbl_3_rodata_2FB8[0];
+        *(f32*)(n + 0x8) = lbl_3_rodata_2FB8[1] - lbl_3_rodata_2FC8;
+        *(f32*)(n + 0xC) = lbl_3_rodata_2FB8[2];
+        *(f32*)(n + 0x38) = lbl_3_rodata_2FD0;
+        *(f32*)(n + 0x3C) = lbl_3_rodata_2FD4;
+        n[0x42] = 0xFF;
+        n[0x41] = 0xFF;
+        n[0x40] = 0xFF;
+        n[0x43] = 0xFF;
+        *(s16*)(n + 0x4A) = 0x80;
+        n[0x4D] = 0x1B;
+        n[0x4E] = 0;
+    }
 }
 
 // .text:0x000F8ABC size:0x48 mapped:0x80737B50
 void fn_3_F8ABC(void) {
-    if (fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F) != 0) {
-        fn_3_F8878();
+    u32 r = fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F);
+    if (r != 0) {
+        fn_3_F8878((u8*)r);
     }
 }
 
@@ -450,7 +501,7 @@ void fn_3_F9E78(void) {
 }
 
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
-// 93.9%: only saved-reg ranking differs (orig: offC<cnt<j<i<off18; ours: i<cnt<j<off18<offC), plus the zero-init copies come from i in the orig
+// 97.6%: idx assigned directly (no j temp). Remaining: saved-reg ranking (orig: offC<cnt<j<i<off18<off2<off4; ours: i<cnt<j<off18<offC) and the orig IV zero-inits are `mr` copies of i (ours li). Explicit offset vars + decl order fix regs but give li inits.
 extern u8 lbl_3_data_1BA98[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
@@ -475,9 +526,8 @@ void fn_3_FA3C0(void) {
     memset(lbl_3_common_bss_350E4.a48, 0, size);
     cnt = 0;
     for (i = 0; i < 10; i++) {
-        j = (u16)(lbl_3_common_bss_350E4.a40[cnt - 1] + lbl_3_common_bss_350E4.a3C[cnt - 1]);
-        lbl_3_common_bss_350E4.a40[cnt] = j;
-        idx = j;
+        idx = (u16)(lbl_3_common_bss_350E4.a40[cnt - 1] + lbl_3_common_bss_350E4.a3C[cnt - 1]);
+        lbl_3_common_bss_350E4.a40[cnt] = idx;
         fn_3_B8574();
         for (j = 0; j < lbl_3_common_bss_350E4.n; j++) {
             if (i == lbl_3_data_1BA98[j * 0x14 + 0x12] && (lbl_3_common_bss_350E4.p0[j * 0xE8 + 0x90] >> 6 & 1)) {
