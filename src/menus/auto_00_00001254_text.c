@@ -1,5 +1,7 @@
 #include "menus/auto_00_00001254_text.h"
 
+extern u8 lbl_8034E9A0[];
+
 extern u32 lbl_803CB750[];
 
 extern u8 lbl_2_bss_F468[];
@@ -72,4 +74,13 @@ void fn_2_12F8(u16* value, s32 increment) {
         return;
     }
     *value = current + increment;
+}
+
+// fn_2_1D28, size:0x2C
+void fn_2_1D28(void) {
+    lbl_8034E9A0[0x472A] = 0xFF;
+    lbl_8034E9A0[0x4756] = 0;
+    lbl_8034E9A0[0x4754] = 0;
+    lbl_8034E9A0[0x4755] = 3;
+    lbl_8034E9A0[0x48B3] = 0;
 }

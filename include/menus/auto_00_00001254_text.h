@@ -21,4 +21,6 @@ void fn_2_12CC(u8* value, s32 increment);
 
 void fn_2_12F8(u16* value, s32 increment);
 
+void fn_2_1D28(void);
+
 #endif
