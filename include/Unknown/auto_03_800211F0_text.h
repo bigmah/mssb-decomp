@@ -5,4 +5,6 @@
 
 u8 fn_800211F0(void);
 
+void fn_80021204(void);
+
 #endif
