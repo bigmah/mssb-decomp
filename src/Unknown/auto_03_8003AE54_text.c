@@ -6,3 +6,8 @@ extern u8 lbl_803CBCB4;
 u8 fn_8003AE54(void) {
     return lbl_803CBCB4;
 }
+
+// fn_8003AE5C, size:0x8
+void fn_8003AE5C(u8 value) {
+    lbl_803CBCB4 = value;
+}

@@ -5,4 +5,6 @@
 
 u8 fn_8003AE54(void);
 
+void fn_8003AE5C(u8 value);
+
 #endif
