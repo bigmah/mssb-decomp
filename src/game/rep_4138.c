@@ -14,6 +14,11 @@ static u8 lbl_3_bss_D6EC;
 static s32 lbl_3_bss_D6E8;
 static u16* lbl_3_bss_D6E4;
 static u32 lbl_3_bss_D6E0;
+extern f32 lbl_3_data_2A448[];
+extern f32 lbl_3_data_2A478[];
+extern GXColor lbl_3_rodata_4188;
+extern f32 lbl_3_rodata_418C;
+extern f32 lbl_3_rodata_4190;
 extern u8 g_Scores[];
 extern u8 g_Strikes[];
 
@@ -59,8 +64,17 @@ void fn_3_16E2FC(u16* p, s32 i) {
 }
 
 // .text:0x0016D810 size:0x1A0 mapped:0x807AC8A4
-void fn_3_16D810(void) {
-    return;
+void fn_3_16D810(s32 n, f32 x, f32 y) {
+    s32 i;
+    GXColor col = lbl_3_rodata_4188;
+    f32 t = lbl_3_rodata_418C * (f32)n;
+    f32 u = t * lbl_3_rodata_4190;
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(x + lbl_3_data_2A448[i * 3], y + lbl_3_data_2A448[i * 3 + 1], lbl_3_data_2A448[i * 3 + 2]);
+        GXColor1u32(*(u32*)&col);
+        GXTexCoord2f32(u + lbl_3_data_2A478[i * 2], lbl_3_data_2A478[i * 2 + 1]);
+    }
 }
 
 extern s32 fn_8005268C(void);
