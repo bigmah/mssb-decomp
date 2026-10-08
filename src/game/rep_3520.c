@@ -201,12 +201,11 @@ void fn_3_13334C(void) {
 }
 
 // .text:0x001344BC size:0xF0 mapped:0x80773550
-// ~99%: r6/r7 swap (g_Fielders base reg) only
 int fn_3_1344BC(int a, int b) {
     u8* tbl = G8 + 0x18F8;
-    u8* fz = (u8*)g_Fielders + 8;
     int ib = (s8)tbl[b] * 0x268;
     int ia = (s8)tbl[a] * 0x268;
+    u8* fz = (u8*)g_Fielders + 8;
     f32 dxb = *(f32*)((u8*)g_Fielders + ib) - lbl_3_data_21A48[0];
     f32 dzb = *(f32*)(fz + ib) - lbl_3_data_21A48[2];
     f32 angA = atan2(*(f32*)(fz + ia) - lbl_3_data_21A48[2], *(f32*)((u8*)g_Fielders + ia) - lbl_3_data_21A48[0]);
@@ -229,8 +228,79 @@ s16 fn_3_1345AC(s16 a, s16 b, s32 c) {
 }
 
 // .text:0x00134658 size:0x2B0 mapped:0x807736EC
-void fn_3_134658(void) {
-    return;
+typedef struct { f32 d; s16 pts; u8 idx; u8 pad; } F134658Ent;
+extern f32 lbl_3_rodata_3610;
+extern void fn_800246D4(void*, void*, void*, int, int);
+#define SEL134658(IDX)                                                   \
+    {                                                                    \
+        u8* tb = G8 + 0x18F8;                                            \
+        f32 sx, sz;                                                      \
+        *ox = g_Fielders[(s8)tb[IDX]].x;                                 \
+        *oz = g_Fielders[(s8)tb[IDX]].z;                                 \
+        sx = *ox;                                                        \
+        sz = *oz;                                                        \
+        if (sx >= lbl_3_rodata_35D0) {                                   \
+            if (sz >= lbl_3_rodata_35D0) {                               \
+                r = 0;                                                   \
+            } else {                                                     \
+                r = 3;                                                   \
+            }                                                            \
+        } else if (sz >= lbl_3_rodata_35D0) {                            \
+            r = 1;                                                       \
+        } else {                                                         \
+            r = 2;                                                       \
+        }                                                                \
+        *out = r;                                                        \
+    }
+// 93%: g_Minigame base lands in r0 then mr (orig addi r7,r7 directly); float regs f1/f3 swapped
+void fn_3_134658(int a, f32* ox, f32* oz, s32* out) {
+    F134658Ent e[4];
+    F134658Ent* q = e;
+    F134658Ent* w = q;
+    u8* p = G8;
+    u8* m = G8;
+    u8* tb;
+    u32 n = 0;
+    u32 i = 0;
+    u32 k;
+    s32 r;
+    tb = p + a;
+    do {
+        if (i != a && p[0x1D6E] == 0) {
+            FS* f = &g_Fielders[(s8)p[0x18F8]];
+            if (*(u8*)((u8*)f + 0x20F) == 0) {
+                FS* h;
+                f32 dx, dz;
+                n++;
+                h = &g_Fielders[(s8)tb[0x18F8]];
+                dz = f->z - h->z;
+                dx = f->x - h->x;
+                w->d = dx * dx + dz * dz;
+                w->pts = *(s16*)(m + 0x1890);
+                w->idx = i;
+                w++;
+            }
+        }
+        i++;
+        m += 2;
+        p += 1;
+    } while (i < 4);
+    if (n != 0) {
+        fn_800246D4(fn_3_134918, e, e, 8, n);
+        k = 0;
+        do {
+            if (q->d <= lbl_3_rodata_3610 && q->pts > 0) {
+                SEL134658(e[k].idx);
+                return;
+            }
+            k++;
+            q++;
+        } while (k < n);
+        fn_800246D4(fn_3_134908, e, e, 8, n);
+        if (e[0].pts > 0) {
+            SEL134658(e[0].idx);
+        }
+    }
 }
 
 // .text:0x00134908 size:0x10 mapped:0x8077399C
@@ -476,9 +546,9 @@ void fn_3_135A64(void) {
                 continue;
             }
             ang = ((int (*)(f32, f32))fn_3_9FB8C)(*(f32*)f - lbl_3_data_219AC[0], *(f32*)(f + 8) - lbl_3_data_219AC[2]);
-            a = g;
             b = g;
-            for (j = 0; j < 4; a += 0x18, j++, b += 2) {
+            a = g;
+            for (j = 0; j < 4; j++, b += 2, a += 0x18) {
                 if (fn_3_9FCF8(ang, *(s16*)(b + 0x1D64)) > 0x200) {
                     continue;
                 }
@@ -679,8 +749,8 @@ void fn_3_136CF4(u8* o) {
     f32 ang;
     pu = (s8)g[0x1D74];
     if (pu != -1) {
-        t = *(s16*)(g + 0x1D58) - 1;
-        *(s16*)(g + 0x1D58) = t;
+        t = *(s16*)(g + 0x1D58);
+        *(s16*)(g + 0x1D58) = --t;
         if (t <= 0) {
             if ((s8)g[0x1D6D] != pu) {
                 fn_800115C8();
@@ -816,17 +886,18 @@ void fn_3_1373E0(void) {
 }
 
 // .text:0x001379A0 size:0x170 mapped:0x80776A34
+// 96%: first loop base reg (orig keeps g_Minigame in r7 + separate induction ptr), fabs dx/dz reg order
 u8 fn_3_1379A0(s32 idx) {
     u8* f = (u8*)&g_Fielders[idx];
     u8* m = G8;
     u32 k;
     u32 n;
     for (k = 0; k < 4; k++) {
-        if (*(s8*)(m + 0x18F8 + k) == idx) {
+        if ((s8)g_Minigame.minigameFielderIndex[k] == idx) {
             break;
         }
     }
-    if (k == (u32)(s8)m[0x1D6D]) {
+    if (k == (u32)(s8)g_Minigame._1D6D) {
         return 0;
     }
     for (n = 0; n < lbl_3_bss_B780; n++, m += 0x40) {
@@ -843,8 +914,10 @@ u8 fn_3_1379A0(s32 idx) {
                 th = lbl_3_rodata_368C;
             }
             if (!(th < fabs(fy - py))) {
-                dx = fabs(*(f32*)(p + 0) - (*(f32*)(f + 0) + *(f32*)(f + 0x30)));
-                dz = fabs(*(f32*)(p + 8) - (*(f32*)(f + 8) + *(f32*)(f + 0x34)));
+                f32 ex = *(f32*)(f + 0) + *(f32*)(f + 0x30);
+                f32 ez = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+                dx = fabs(*(f32*)(p + 0) - ex);
+                dz = fabs(*(f32*)(p + 8) - ez);
                 if (dx < lbl_3_rodata_363C) {
                   if (dz < lbl_3_rodata_3688) {
                     return 1;
@@ -857,8 +930,70 @@ u8 fn_3_1379A0(s32 idx) {
 }
 
 // .text:0x00137B10 size:0x1E8 mapped:0x80776BA4
+// 98%: fabs dx/dz land in swapped f-regs (orig dx=f1 dz=f3), Vec x/z load regs swapped
 u8 fn_3_137B10(u8* o) {
-    return 0;
+    u8* g = G8;
+    u8* p = g;
+    u8* q = g;
+    s32 i;
+    u8 ret;
+    f32* d = &lbl_3_data_21A64;
+    ret = 0;
+    i = 0;
+    for (; i < 4; i++, p += 1, q += 0xC) {
+        s32 fr = p[0x18F8];
+        u8 st;
+        u8* f;
+        f32 fy, py, th;
+        f32 dx, dz;
+        if ((s8)fr < 0) {
+            continue;
+        }
+        st = p[0x1D6E];
+        if (st != 0 && st != 3) {
+            continue;
+        }
+        if (o[0x3D] != 2 && i != (s8)g[0x1D6D]) {
+            continue;
+        }
+        f = (u8*)g_Fielders + (s8)fr * 0x268;
+        py = *(f32*)(o + 4);
+        fy = *(f32*)(f + 0x15C) + (*(f32*)(f + 0xC) + *(f32*)(f + 4));
+        if (fy < py) {
+            th = *(f32*)(f + 0x16C);
+        } else {
+            th = lbl_3_rodata_368C;
+        }
+        if (th < fabs(fy - py)) {
+            continue;
+        }
+        dx = fabs(*(f32*)(o + 0) - *(f32*)(f + 0));
+        dz = fabs(*(f32*)(o + 8) - *(f32*)(f + 8));
+        if (dx <= lbl_3_rodata_363C && dz <= lbl_3_rodata_3688) {
+            if (i == (s8)g[0x1D6D]) {
+                if (ret == 0) {
+                    Vec v;
+                    v.x = *(f32*)(f + 0x38);
+                    v.z = *(f32*)(f + 0x3C);
+                    v.y = lbl_3_rodata_35D0;
+                    ret = 1;
+                    PSVECScale(&v, d[2], &v);
+                    v.y = d[3];
+                    memcpy(o + 0xC, &v, 12);
+                    *(f32*)(o + 0x24) = d[4];
+                    *(s16*)(o + 0x3A) = 0;
+                    o[0x3D] = 4;
+                }
+            } else {
+                p[0x1D6E] = 1;
+                *(f32*)(q + 0x1CB8) = *(f32*)(f + 0) - *(f32*)(o + 0);
+                *(f32*)(q + 0x1CC0) = *(f32*)(f + 8) - *(f32*)(o + 8);
+                o[0x3E] = 1;
+                o[0x3F] = 0;
+            }
+        }
+    }
+    return ret;
 }
 
 // .text:0x00137CF8 size:0xEC mapped:0x80776D8C
