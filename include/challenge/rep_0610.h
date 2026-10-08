@@ -61,4 +61,6 @@ void fn_1_F2F8(void);
 
 void fn_1_CB9C(s32 reset);
 
+void fn_1_11C98(void);
+
 #endif

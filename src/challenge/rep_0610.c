@@ -36,6 +36,8 @@ extern u8 lbl_8036E548[];
 extern u8 lbl_1_bss_5F73[];
 typedef struct { void* data; u32 pad4; u32 pad8; } ChallengeEntry;
 
+extern void LITXForm(void* light, void* matrix);
+
 extern u8 lbl_1_bss_5F74;
 extern u8 lbl_1_bss_5F78[];
 
@@ -273,5 +275,13 @@ void fn_1_CB9C(s32 reset) {
         PSMTXCopy((f32(*)[4])(lbl_1_bss_30C0 + 0x58), (f32(*)[4])(entry + 8));
         index = lbl_803CBBC0[0];
         ((void (*)(s32, void*))fn_800A7D4C)(8, lbl_1_data_F4F8 + index * 0x38);
+    }
+}
+
+// fn_1_11C98, size:0x68
+void fn_1_11C98(void) {
+    s32 i;
+    for (i = 0; i < 3; i++) {
+        LITXForm(*(void**)(lbl_8036E548 + i * 4 + 0xAC), lbl_1_bss_68FC + 0x10);
     }
 }
