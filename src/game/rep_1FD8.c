@@ -23,6 +23,15 @@ typedef struct C4724P {
 } C4724P;
 typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[2]; Vec* f18; u8 pad1C[4]; void* f20; s32 f24; } C4724Hdr;
 extern const u8 lbl_3_rodata_2028[];
+extern const f32 lbl_3_rodata_20FC;
+extern const f64 lbl_3_rodata_2100;
+extern const f64 lbl_3_rodata_2110;
+extern const f64 lbl_3_rodata_2120;
+extern const f32 lbl_3_rodata_2108;
+extern const f32 lbl_3_rodata_20D4;
+extern const f32 lbl_3_rodata_2128;
+extern f64 sin(f64);
+extern f64 cos(f64);
 extern const f64 lbl_3_rodata_2118;
 extern const f64 lbl_3_rodata_2130;
 extern const f64 lbl_3_rodata_2140;
@@ -301,8 +310,32 @@ void fn_3_C2AA0(void) {
 }
 
 // .text:0x000C2C80 size:0x25C mapped:0x80701D14
-void fn_3_C2C80(void) {
-    return;
+void fn_3_C2C80(void* pv, u8* h) {
+    C4724P* p = pv;
+    f32 a;
+    s16 t;
+    a = lbl_3_rodata_20FC * (f32)(rand() % 360);
+    p->vx = lbl_3_rodata_2100 * (f32)cos(a);
+    p->vz = lbl_3_rodata_2100 * (f32)sin(a);
+    p->vy = lbl_3_rodata_2108;
+    p->f1C = lbl_3_rodata_20D4;
+    p->f1C = p->f1C + (f64)((u32)rand() % 2500) / lbl_3_rodata_2110;
+    p->f38 = p->f1C;
+    p->f3C = lbl_3_rodata_2118 * p->f1C;
+    p->f20 = (f64)(rand() % 101) / lbl_3_rodata_2120;
+    t = rand() % 24 + 0x48;
+    p->s4A = t;
+    p->f4F = t;
+    p->x = *(f32*)(h + 0x18);
+    p->y = *(f32*)(h + 0x1C);
+    p->z = *(f32*)(h + 0x20);
+    p->a40 = lbl_3_rodata_2028[0];
+    p->a41 = lbl_3_rodata_2028[1];
+    p->a42 = lbl_3_rodata_2028[2];
+    p->f24 = lbl_3_rodata_2128;
+    p->a43 = lbl_3_rodata_2128;
+    p->s4A = p->f4F;
+    p->s48 = 0;
 }
 
 // 60-line diff: orig hoists the 2118/2138/213C const loads up into the first fmadd; ours loads them later (f-reg numbering shifts)
