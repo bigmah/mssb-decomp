@@ -1080,7 +1080,6 @@ void fn_3_137F14(u8* o) {
     }
 }
 
-// 99.9%: only f0/f1 swap on the `y <= 0` compare (orig y=f1, const=f0); 1371E8 and 137224 are inlined here (dont_inline off)
 // .text:0x0013802C size:0x2B4 mapped:0x807770C0
 void fn_3_13802C(u8* o) {
     if (g_Minigame._72A != 0) {
@@ -1095,8 +1094,8 @@ void fn_3_13802C(u8* o) {
         fn_3_90064(0x30D);
         return;
     }
-    if (*(f32*)(o + 4) <= lbl_3_rodata_35D0) {
-        *(f32*)(o + 4) = lbl_3_rodata_35D0;
+    if (*(f32*)(o + 4) <= 0.0f) {
+        *(f32*)(o + 4) = 0.0f;
         memset(o + 0xC, 0, 0xC);
         *(s16*)(o + 0x3A) = 0;
         o[0x3D] = 3;
