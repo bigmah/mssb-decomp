@@ -17,6 +17,38 @@ extern u8 lbl_1_bss_2FDA[];
 extern u8* lbl_803CC1B8[];
 extern void fn_1_A250(void);
 
+extern u8 lbl_1_bss_2FEE[];
+extern void fn_1_9F04(void);
+extern void fn_1_A464(void);
+
+// fn_1_A634, size:0xE0
+void fn_1_A634(void) {
+    u8* queue = lbl_803CC1B8[0];
+    switch ((s32)lbl_1_bss_2FEE[0]) {
+    case 0: {
+        u8* child;
+        *(s16*)(queue + 0x10) = 0;
+        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
+        child[0x18] = 0;
+        child[0x19] = 3;
+        *(s32 (**)(void))(child + 0x14) = fn_1_A838;
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        lbl_1_bss_2FEE[0]++;
+        break;
+    }
+    case 1:
+        if (*(s16*)(queue + 0x10) != 0) {
+            *(s16*)(queue + 0x10) = 0;
+            lbl_1_bss_2FEE[0]++;
+        }
+        break;
+    case 2:
+        *(void (**)(void))queue = fn_1_A464;
+        lbl_1_bss_2FEE[0] = 0;
+        break;
+    }
+}
+
 extern const char lbl_1_rodata_5C8[];
 extern const char lbl_1_rodata_5C0[];
 extern const char lbl_1_rodata_5D0[];
