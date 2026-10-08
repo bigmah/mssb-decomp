@@ -4,3 +4,7 @@
 // .text:0x1DE5C size:0x4
 void fn_1_1DE5C(void) {
 }
+
+// .text:0x1E28C size:0x4
+void fn_1_1E28C(void) {
+}
