@@ -5,4 +5,6 @@
 
 void fn_1_1D10C(void);
 
+void fn_1_1D0E8(u8* object);
+
 #endif
