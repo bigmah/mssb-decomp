@@ -1,5 +1,6 @@
 #include "game/rep_1200.h"
 #include "header_rep_data.h"
+#include "math.h"
 
 extern u8 g_Pitcher[];
 extern u8 g_Minigame[];
@@ -66,8 +67,46 @@ void fn_3_6FB98(void) {
 }
 
 // .text:0x0006FDA0 size:0x224 mapped:0x806AEE34
+extern const f32 lbl_3_rodata_1254;
+extern const f32 lbl_3_rodata_1278;
+extern const f64 lbl_3_rodata_1260;
+extern const f64 lbl_3_rodata_1268;
+extern const f64 lbl_3_rodata_1270;
+static inline f32 sqrt_ext(f32 x) {
+    if (x > 0.0f) {
+        f64 h = lbl_3_rodata_1260;
+        f64 th = lbl_3_rodata_1268;
+        f64 xd = (f64)x;
+        f64 guess = __frsqrte(xd);
+        guess = h * guess * (th - guess * guess * xd);
+        guess = h * guess * (th - guess * guess * xd);
+        guess = h * guess * (th - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (x < lbl_3_rodata_1270)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
+extern s16 fn_3_9FB8C(f32 x, f32 y);
+extern void getComponentsFromSAng(s16 ang, f32* x, f32* y);
 void fn_3_6FDA0(void) {
-    return;
+    s16 ang;
+    f32 a;
+    f32 b;
+    f32 mag;
+    f32 k;
+    f32 t;
+    s32 off = *(s32*)(g_Ball + 0x1B4C) % 257 - 0x80;
+    ang = fn_3_9FB8C(*(f32*)(g_Pitcher + 0x18), -*(f32*)(g_Pitcher + 0x20));
+    getComponentsFromSAng(ang + off, &a, &b);
+    t = lbl_3_rodata_1254 * (f32)(*(s32*)(g_Ball + 0x1B50) % 10);
+    mag = sqrt_ext(*(f32*)(g_Pitcher + 0x18) * *(f32*)(g_Pitcher + 0x18) + *(f32*)(g_Pitcher + 0x20) * *(f32*)(g_Pitcher + 0x20));
+    k = lbl_3_rodata_1278 + t;
+    *(f32*)(g_Ball + 0x318) = k * (a * mag);
+    *(f32*)(g_Ball + 0x320) = k * (b * mag);
+    *(f32*)(g_Ball + 0x31C) = lbl_3_rodata_1258;
 }
 
 // .text:0x0006FFC4 size:0x2BC mapped:0x806AF058
@@ -76,13 +115,100 @@ void fn_3_6FFC4(void) {
 }
 
 // .text:0x00070280 size:0x16C mapped:0x806AF314
+extern u8 g_Batter[];
+extern u8 lbl_800E8558[];
+extern u8 lbl_3_data_76FC[];
+extern const f32 lbl_3_rodata_1288;
 void fn_3_70280(void) {
-    return;
+    s32 k;
+    s32 x;
+    s32 y;
+    s32 hit = 0;
+    if ((g_GameLogic[0x121] != 0xB || g_Practice[0x1DB] != 0) && g_Minigame[0x1A2A] != 2 &&
+        *(s16*)(g_Batter + 0x66) <= 0 && g_Pitcher[0x156] == 0) {
+        x = (s32)(lbl_3_rodata_1288 * (*(f32*)(g_Pitcher + 0) - *(f32*)(g_Batter + 0)));
+        y = (s32)(lbl_3_rodata_1288 * (*(f32*)(g_Pitcher + 8) - *(f32*)(g_Batter + 4)));
+        if (g_Batter[0x7B] != 0) {
+            x = -x;
+        }
+        k = lbl_800E8558[*(s16*)(g_Batter + 0x62) * 6 + 2] * 3;
+        if (y <= lbl_3_data_76FC[k]) {
+            if ((f32)y >= lbl_3_rodata_1258) {
+                if (x <= lbl_3_data_76FC[k + 1] && x >= -lbl_3_data_76FC[k + 2]) {
+                    hit = 1;
+                }
+            }
+        }
+        if (hit != 0) {
+            g_Batter[0x93] = 1;
+        }
+    }
 }
 
 // .text:0x000703EC size:0x294 mapped:0x806AF480
+extern u8 swingSoundFrame[];
+extern u8 g_Stats[];
+extern void fn_3_59918(s32, s32);
+extern void fn_3_7A154(s32);
+extern void fn_3_1DD48(void);
+extern u32 playSoundEffect(s32);
 void fn_3_703EC(void) {
-    return;
+    u8* p;
+    s16 fr = *(s16*)(g_Batter + 0x66);
+    if (fr <= 0 || fr >= swingSoundFrame[1] || g_Batter[0x95] != 0) {
+        g_Pitcher[0x158] = 1;
+        if (g_Pitcher[0x157] != 0) {
+            if (++g_Strikes.strikes >= 3) {
+                g_Pitcher[0x14E] = 1;
+                *(s16*)(g_Pitcher + 0x130) = 0;
+                g_Pitcher[0x13E] = 5;
+                *(s16*)(g_Pitcher + 0x120) = 0;
+                fn_3_59918(0x10, 0);
+                if (g_GameLogic[0x14C] == 1) {
+                    u8* sc;
+                    if ((*(s32*)&g_Scores < ((u8*)&g_Scores)[0xAA] || ((u8*)&g_Scores)[0xAD] == 0 || g_Strikes.outs < 2 ||
+                         !(*(s16*)((sc = (u8*)&g_Scores + 4) + *(s32*)(g_GameLogic + 0x10) * 0x26) > *(s16*)(sc + *(s32*)(g_GameLogic + 0xC) * 0x26))) &&
+                        (*(s32*)&g_Scores < ((u8*)&g_Scores)[0xAB] || ((u8*)&g_Scores)[0xAD] == 0 || g_Strikes.outs < 2)) {
+                        p = (u8*)((u32)g_GameLogic + 0x14A + *(s32*)(g_GameLogic + 8));
+                        if (*p < 5) {
+                            (*p)++;
+                            if (g_Stats[0x36] == 0) {
+                                playSoundEffect(0x19D);
+                            }
+                        }
+                    }
+                    g_GameLogic[0x14C] = 2;
+                }
+                if (g_d_GameSettings[7] == 6) {
+                    g_Minigame[0x19C6] = g_Minigame[0x1904];
+                }
+            } else {
+                fn_3_59918(8, 0);
+            }
+        } else {
+            if (++g_Strikes.balls >= 4) {
+                g_Pitcher[0x14E] = 2;
+                *(s16*)(g_Pitcher + 0x130) = 0;
+                g_Pitcher[0x13E] = 5;
+                *(s16*)(g_Pitcher + 0x120) = 0;
+                fn_3_59918(0xA, 0);
+                if (g_GameLogic[0x14C] == 1) {
+                    p = (u8*)((u32)g_GameLogic + 0x14A + *(s32*)(g_GameLogic + 4));
+                    if (*p < 5) {
+                        (*p)++;
+                        if (g_Stats[0x36] == 0) {
+                            playSoundEffect(0x19D);
+                        }
+                    }
+                    g_GameLogic[0x14C] = 3;
+                }
+            } else {
+                fn_3_59918(9, 0);
+            }
+        }
+        fn_3_7A154(0);
+        fn_3_1DD48();
+    }
 }
 
 // .text:0x00070680 size:0x38 mapped:0x806AF714
@@ -112,21 +238,67 @@ void fn_3_706B8(int idx) {
 }
 
 // .text:0x00070768 size:0xD0 mapped:0x806AF7FC
-// 98.9%: int fn_3_70768(f32* out, int flag, f32 lim), a do/while trajectory step loop;
-// all matches except the final lerp `*out = px + (x - px) * (1.0f - (y - lim) / (y - py))`
-// (needs a `t = ...; *out = px + t;` split to avoid fmadds), whose regs (f4/f1/f0) never matched.
 void fn_3_70768(void) {
     return;
 }
 
 // .text:0x00070838 size:0x17C mapped:0x806AF8CC
+extern f32 lbl_3_data_5F5C[];
+extern u8 lbl_3_data_5F7C[];
+extern int RandomInt_Game_Range(int min, int max);
+extern f32 RandomF32_Game_Range(f32 a, f32 b);
 void fn_3_70838(void) {
-    return;
+    f32 d;
+    f32 dx;
+    f32 dy;
+    u8 v;
+    if (g_Pitcher[0x171] == 0) {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_5F5C[6], lbl_3_data_5F5C[6]);
+        *(f32*)(g_Pitcher + 0x28) = lbl_3_data_5F5C[0];
+        *(f32*)(g_Pitcher + 0x108) = RandomF32_Game_Range(lbl_3_data_5F5C[4], lbl_3_data_5F5C[5]);
+        *(f32*)(g_Pitcher + 0x2C) = lbl_3_rodata_1250 * (*(f32*)(g_Pitcher + 0x108) + *(f32*)(g_Pitcher + 0x2C));
+    } else {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_5F5C[7], lbl_3_data_5F5C[7]);
+        *(f32*)(g_Pitcher + 0x28) = lbl_3_data_5F5C[0];
+        *(f32*)(g_Pitcher + 0x2C) = *(f32*)(g_Pitcher + 0x78);
+    }
+    v = RandomInt_Game_Range(*(s16*)((u8*)lbl_3_data_5F7C + 8), *(s16*)((u8*)lbl_3_data_5F7C + 0xA));
+    dx = *(f32*)(g_Pitcher + 0x24) - *(f32*)(g_Pitcher + 0);
+    dy = *(f32*)(g_Pitcher + 0x28) - *(f32*)(g_Pitcher + 4);
+    d = *(f32*)(g_Pitcher + 8) - *(f32*)(g_Pitcher + 0x2C);
+    g_Pitcher[0x14A] = v;
+    g_Pitcher[0x171] = g_Pitcher[0x171] + 1;
+    *(f32*)(g_Pitcher + 0x20) = -((f32)v / *(f32*)(g_Pitcher + 0xAC));
+    *(s16*)(g_Pitcher + 0x138) = 0;
+    *(f32*)(g_Pitcher + 0x18) = -((dx * *(f32*)(g_Pitcher + 0x20)) / d);
+    *(f32*)(g_Pitcher + 0x1C) = -((dy * *(f32*)(g_Pitcher + 0x20)) / d);
 }
 
 // .text:0x000709B4 size:0x138 mapped:0x806AFA48
+extern u8 lbl_3_data_5F50[];
+extern const f32 lbl_3_rodata_12A0;
+extern const f32 lbl_3_rodata_12A4;
+extern void getComponentsFromRad(f32 v, f32* x, f32* y);
 void fn_3_709B4(void) {
-    return;
+    f32 c;
+    f32 s;
+    f32 a;
+    f32 t;
+    u8 n = g_Pitcher[0x16C] + 1;
+    g_Pitcher[0x16C] = n;
+    if (n >= g_Pitcher[0x16D]) {
+        g_Pitcher[0x16B] = 2;
+        return;
+    }
+    a = (f32)n / (f32)g_Pitcher[0x16D];
+    a = a * lbl_3_rodata_12A0;
+    a = a + lbl_3_rodata_12A4;
+    getComponentsFromRad(a, &c, &s);
+    t = lbl_3_rodata_1254 * (f32)lbl_3_data_5F50[g_Pitcher[0x165] * 5 - 0x1F];
+    *(f32*)(g_Pitcher + 0xEC) = c * t + t;
+    *(f32*)(g_Pitcher + 0xF0) = s * t;
+    *(f32*)(g_Pitcher + 0xE8) = lbl_3_rodata_1258;
+    *(f32*)(g_Pitcher + 0x100) = a;
 }
 
 // .text:0x00070AEC size:0xA8 mapped:0x806AFB80
@@ -281,8 +453,37 @@ void fn_3_738A8(void) {
 }
 
 // .text:0x00073DE8 size:0x144 mapped:0x806B2E7C
+extern void fn_3_155288(void);
+extern int fn_3_6F4E8(void);
+extern void fn_3_5A6D4(int);
+extern void fn_3_7CE90(void);
 void fn_3_73DE8(void) {
-    return;
+    if (*(s16*)(g_Pitcher + 0x11E) < 0x7FFE) {
+        *(s16*)(g_Pitcher + 0x11E) += 1;
+    } else {
+        *(s16*)(g_Pitcher + 0x11E) = 0x7FFF;
+    }
+    if (*(s16*)(g_Ball + 0x1B6A) < 0x7FFE) {
+        *(s16*)(g_Ball + 0x1B6A) += 1;
+    } else {
+        *(s16*)(g_Ball + 0x1B6A) = 0x7FFF;
+    }
+    if (g_d_GameSettings[7] == 7 && (g_Minigame[0x1A2A] == 1 || g_Minigame[0x1A2A] == 2 || g_Minigame[0x1A2A] == 3)) {
+        g_Pitcher[0x158] = 1;
+        if (g_Minigame[0x1A2A] == 1) {
+            fn_3_155288();
+        }
+    } else if (g_Pitcher[0x158] == 0) {
+        fn_3_703EC();
+        return;
+    }
+    if (fn_3_6F4E8() == 0) {
+        if ((g_d_GameSettings[7] != 2 || g_Practice[0x1C8] == 0) && *(s16*)(g_Pitcher + 0x120) > 0x4B) {
+            g_GameLogic[0x12A] = 0;
+            fn_3_5A6D4(0);
+        }
+        fn_3_7CE90();
+    }
 }
 
 // .text:0x00073F2C size:0x80 mapped:0x806B2FC0
@@ -302,8 +503,23 @@ void fn_3_73F2C(void) {
 }
 
 // .text:0x00073FAC size:0x124 mapped:0x806B3040
+extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
+extern f32 lbl_3_data_5EB0[];
+extern f32 lbl_3_data_4474[];
+extern f32 lbl_3_data_2138C[];
 void fn_3_73FAC(void) {
-    return;
+    *(f32*)(g_Pitcher + 0x28) = *(f32*)(g_Batter + 0x50);
+    *(f32*)(g_Pitcher + 0x24) = LinearInterpolateToNewRange(*(f32*)(g_Pitcher + 0x8C), lbl_3_data_4474[0], lbl_3_data_4474[1], lbl_3_data_5EB0[0], lbl_3_data_5EB0[1]);
+    if (g_Pitcher[0x165] == 3 || g_Pitcher[0x165] == 4) {
+        *(f32*)(g_Pitcher + 0x24) = lbl_3_rodata_1258;
+    } else if (g_Pitcher[0x165] == 9 || g_Pitcher[0x165] == 0xA) {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_5F5C[3], lbl_3_data_5F5C[3]);
+        *(f32*)(g_Pitcher + 0x28) = lbl_3_data_5F5C[0];
+        *(f32*)(g_Pitcher + 0x2C) = RandomF32_Game_Range(lbl_3_data_5F5C[1], lbl_3_data_5F5C[2]);
+    }
+    if (g_Minigame[0x1A2A] == 1 || g_Minigame[0x1A2A] == 3) {
+        *(f32*)(g_Pitcher + 0x24) = RandomF32_Game_Range(-lbl_3_data_2138C[g_Minigame[0x1A2B]], lbl_3_data_2138C[g_Minigame[0x1A2B]]);
+    }
 }
 
 // .text:0x000740D0 size:0x58 mapped:0x806B3164

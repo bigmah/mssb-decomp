@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_7D79C(void);
+void fn_3_7D79C(int i);
 void fn_3_7D920(int i);
 void fn_3_7D9DC(int i);
 void fn_3_7DB30(int);
@@ -13,7 +13,7 @@ void fn_3_7E2BC(void);
 void fn_3_7EA68(void);
 void fn_3_7EBD4(int i);
 void fn_3_7ECFC(int i);
-void fn_3_7F2D8(void);
+int fn_3_7F2D8(void);
 void fn_3_7F494(int i);
 void fn_3_7F9C4(int i);
 void fn_3_7FA78(void);
@@ -30,12 +30,12 @@ void fn_3_81BC8(void);
 void fn_3_81EAC(void);
 void fn_3_823B4(void);
 void fn_3_82670(void);
-void fn_3_82F80(void);
+void fn_3_82F80(int i, s16* b, s16* a);
 void fn_3_8307C(void);
-void fn_3_833EC(void);
+void fn_3_833EC(int i);
 void fn_3_835B0(void);
 void fn_3_83714(void);
-void fn_3_841C0(void);
+int fn_3_841C0(int i, int j);
 void fn_3_842E4(void);
 void fn_3_846C8(void);
 void fn_3_84AD0(void);
@@ -64,7 +64,7 @@ void fn_3_88408(void);
 void fn_3_889FC(void);
 void fn_3_88B18(void);
 void fn_3_88C24(void);
-void fn_3_88D88(void);
+void fn_3_88D88(int idx);
 void fn_3_88F98(void);
 void fn_3_89028(void);
 void fn_3_8911C(void);
