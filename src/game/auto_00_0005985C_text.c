@@ -44,8 +44,33 @@ extern void fn_3_10FBE4(void);
 extern void fn_3_6C150(void*);
 extern void fn_3_8F1C8(void);
 extern void fn_3_5B0C4(void);
+extern u8 g_Scores[];
 
 #pragma dont_inline on
+
+// fn_3_5C530, size:0x98
+s32 fn_3_5C530(s32 inning) {
+    u8 finalInning = g_Scores[0xAA];
+    if (inning > finalInning) {
+        return 5;
+    }
+    if (finalInning <= 3U) {
+        if (finalInning == inning && g_Scores[0xAD] != 0) {
+            return 4;
+        }
+        return 0;
+    }
+    if (inning == finalInning) {
+        return 4;
+    }
+    if ((finalInning == 9 && inning >= 7) || (finalInning == 7 && inning >= 6)) {
+        return 3;
+    }
+    if (inning >= 4) {
+        return 2;
+    }
+    return 1;
+}
 
 // fn_3_5AE0C, size:0x90
 void fn_3_5AE0C(void) {
