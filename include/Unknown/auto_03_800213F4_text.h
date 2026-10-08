@@ -5,4 +5,6 @@
 
 void fn_800213F4(void);
 
+void* fn_800213F8(u32 size);
+
 #endif
