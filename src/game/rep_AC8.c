@@ -3268,8 +3268,65 @@ void fn_3_555AC(int i) {
 }
 
 // .text:0x00055710 size:0x208 mapped:0x806947A4
-void fn_3_55710(void) {
-    return;
+void fn_3_55710(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int sel = *(s8*)(f + 0x1F5);
+    int k;
+    u8* r;
+    u8 t;
+    if (g_FieldingLogic[0x116] != 0) {
+        r = g_Runners;
+        r += g_FieldingLogic[0x11B] * 0x154;
+        if (*(s16*)(r + 0xE6) >= 0 || r[0x123] == 2) {
+            g_FieldingLogic[0x116] = 0;
+            *(s16*)(g_FieldingLogic + 0xEC) = 0;
+        }
+    } else {
+        if (*(s8*)(g_FieldingLogic + 0x125) >= 0) {
+            sel = *(s8*)(g_FieldingLogic + 0x125);
+        }
+        if (sel >= 0) {
+            for (k = 3; k >= 0; k--) {
+                r = g_Runners + k * 0x154;
+                if (r[0x123] == 1 && *(s16*)(r + 0xEE) <= 0 && r[0x127] == sel && r[0x128] == 0 && *(s16*)(r + 0xE6) < 0) {
+                    t = r[0x13A];
+                    if (t != 0) {
+                        if (t == 2) {
+                            f[0x211] = 2;
+                            f[0x212] = 0;
+                            g_FieldingLogic[0x116] = 2;
+                            *(s16*)(g_FieldingLogic + 0xEC) = 6;
+                            g_FieldingLogic[0x111] = 7;
+                            g_FieldingLogic[0x13F] = 2;
+                            f[0x213] = k;
+                            if (g_GameLogic[*(int*)(g_GameLogic + 8) + 0x13E] == 0) {
+                                fn_3_6C854(*(int*)(g_GameLogic + 8), 2);
+                            }
+                        } else if (t == 3) {
+                            f[0x211] = 1;
+                            f[0x212] = 0;
+                            g_FieldingLogic[0x116] = 1;
+                            *(s16*)(g_FieldingLogic + 0xEC) = *(s16*)(r + 0x102);
+                            g_FieldingLogic[0x111] = 6;
+                            g_FieldingLogic[0x13F] = 1;
+                            f[0x213] = k;
+                        } else {
+                            s16 v = *(s16*)(r + 0x102);
+                            if (v < 6) {
+                                g_FieldingLogic[0x116] = 2;
+                                *(s16*)(g_FieldingLogic + 0xEC) = 6;
+                            } else {
+                                g_FieldingLogic[0x116] = 1;
+                                *(s16*)(g_FieldingLogic + 0xEC) = v;
+                            }
+                        }
+                        g_FieldingLogic[0x11B] = k;
+                        return;
+                    }
+                }
+            }
+        }
+    }
 }
 
 // .text:0x00055918 size:0x3AC mapped:0x806949AC
