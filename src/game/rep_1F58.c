@@ -1,5 +1,6 @@
 #include "game/rep_1F58.h"
 #include "header_rep_data.h"
+#include "Dolphin/mtx.h"
 
 extern u8 lbl_3_common_bss_35154[];
 extern u8 lbl_3_data_17260[];
@@ -17,6 +18,16 @@ extern void fn_800A7D4C(int, void*);
 extern void fn_800B0A14_removeQueue(void*);
 extern u8 lbl_3_bss_9D40[];
 extern f32 lbl_3_rodata_1FA8;
+extern void fn_80027918(u8, f32);
+extern f32 lbl_3_rodata_1FAC;
+extern s32 fn_8005268C(void);
+extern u8* fn_80052734(s32);
+extern void fn_80024DB0(void*);
+extern void fn_80024FA4(void*, void*, void*, s32);
+extern void fn_800B4CA0(void*, f32);
+extern void fn_800B4C04(void*, f32);
+extern void fn_800BDA24(void*);
+extern void fn_800BDA94(void*, void*);
 extern void* fn_80011570();
 extern void* memset(void*, s32, u32);
 extern void GXLoadTexObj(void*, s32);
@@ -38,8 +49,37 @@ void fn_3_C0854(void) {
 }
 
 // .text:0x000C095C size:0x17C mapped:0x806FF9F0
-void fn_3_C095C(void) {
-    return;
+void fn_3_C095C(u8* a) {
+    Mtx m;
+    void* args[2];
+    void* objs[2];
+    void** r;
+    s32 i;
+    u8* o;
+    f32 zero;
+    r = (void**)(*(u8**)(lbl_3_common_bss_35154 + 0x10) + 0x34);
+    args[0] = *(void**)(lbl_3_common_bss_35154 + 0x40);
+    objs[0] = lbl_3_common_bss_35154 + 0x20;
+    args[1] = *(void**)(lbl_3_common_bss_35154 + 0x9C);
+    objs[1] = lbl_3_common_bss_35154 + 0x7C;
+    PSMTXTrans(m, *(f32*)(a + 8), *(f32*)(a + 0xC), *(f32*)(a + 0x10));
+    PSMTXConcat((f32(*)[4])(fn_80052734(fn_8005268C()) + 0x40), m, m);
+    zero = lbl_3_rodata_1FA8;
+    i = 1;
+    do {
+        o = objs[i];
+        *(f32*)o = zero;
+        *(s16*)(o + 0xC) = 0;
+        *(f32*)(o + 4) = (f32) * (u32*)(a + 0x14);
+        fn_80024DB0(o);
+        fn_80024FA4(r, args[i], objs[i], -1);
+    } while (i-- != 0);
+    ((u8*)*r)[0x99] = 1;
+    fn_800B4CA0(*r, (f32) * (u32*)(a + 0x14));
+    fn_800B4C04(*r, lbl_3_rodata_1FAC);
+    fn_800BDA24(r);
+    ((u8*)*r)[0x98] = 0xFF;
+    fn_800BDA94(r, m);
 }
 
 // .text:0x000C0AD8 size:0x174 mapped:0x806FFB6C
