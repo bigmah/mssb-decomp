@@ -33,4 +33,6 @@ void fn_2_CCBC(void);
 
 void fn_2_3204(void);
 
+void fn_2_6098(s32 index);
+
 #endif

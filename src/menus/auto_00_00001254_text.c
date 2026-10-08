@@ -1,5 +1,7 @@
 #include "menus/auto_00_00001254_text.h"
 
+extern void fn_800625A4(u8, s32);
+
 extern u8 lbl_803297E0[];
 extern void fn_2_2FC0(u8, s32, s32);
 
@@ -115,4 +117,10 @@ void fn_2_CCBC(void) {
 // fn_2_3204, size:0x38
 void fn_2_3204(void) {
     fn_2_2FC0(lbl_803297E0[0xCF5F], 1, 1);
+}
+
+// fn_2_6098, size:0x3C
+void fn_2_6098(s32 index) {
+    ((u32*)lbl_2_bss_F468)[(u8)index] = 9;
+    fn_800625A4((u8)index, 0x17);
 }
