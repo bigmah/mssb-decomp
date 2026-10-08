@@ -86,4 +86,6 @@ void fn_2_8F8C0(s32 index, s16 type);
 
 void fn_2_8F948(s32 index, s16 type);
 
+void fn_2_8F9D0(s32 index, s16 type);
+
 #endif
