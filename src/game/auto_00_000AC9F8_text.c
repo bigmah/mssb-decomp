@@ -167,3 +167,19 @@ void fn_3_B116C(void) {
         fn_3_31594();
     }
 }
+
+// fn_3_B274C, size:0x58
+void fn_3_B274C(void) {
+    s32 i;
+    for (i = 0; i < 2; i++) {
+        g_Practice.inputs[i].controlStickAngle = -1;
+        g_Practice.inputs[i].controlStickMagnitude = 0;
+        g_Practice.inputs[i].buttonInput = 0;
+        g_Practice.inputs[i].newButtonInput = 0;
+        g_Practice.inputs[i]._08 = 0;
+        g_Practice.inputs[i].right_left = 0;
+        g_Practice.inputs[i].up_down = 0;
+        g_Practice.inputs[i].rightTriggerDistance = 0;
+        g_Practice.inputs[i].leftTriggerDistance = 0;
+    }
+}
