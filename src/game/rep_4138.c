@@ -4,7 +4,16 @@
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 
-extern s32 lbl_3_bss_D6F0[];
+extern u8 lbl_8036E548[];
+extern u8 lbl_803CBBC0[];
+extern u8 g_GameLogic[];
+extern u8 lbl_3_data_2A498[];
+extern void fn_800A7D4C(int, void*);
+static s32 lbl_3_bss_D6F0[9];
+static u8 lbl_3_bss_D6EC;
+static s32 lbl_3_bss_D6E8;
+static u16* lbl_3_bss_D6E4;
+static u32 lbl_3_bss_D6E0;
 extern u8 g_Scores[];
 extern u8 g_Strikes[];
 
@@ -18,8 +27,25 @@ void fn_3_16E1A0(void) {
     o[5] = *(s32*)(g_Strikes + 8);
 }
 
-extern u16* lbl_3_bss_D6E4;
-extern s32 lbl_3_bss_D6E8;
+typedef struct { s32 a, b; } Ent;
+
+// .text:0x0016E1EC size:0x110
+void fn_3_16E1EC(void) {
+    s32 x;
+    u32 idx;
+    if (((u32)lbl_3_bss_D6E4 == 0) | (lbl_3_bss_D6EC | (lbl_8036E548[0x3088] == 0))) {
+        lbl_3_bss_D6E4 = NULL;
+        lbl_3_bss_D6E8 = -1;
+        lbl_3_bss_D6EC = 0;
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
+    x = g_GameLogic[0x11E];
+    if ((x != 0x13) & (x != 0x14)) {
+        fn_3_16E1A0();
+    }
+    idx = lbl_803CBBC0[0];
+    fn_800A7D4C(1, lbl_3_data_2A498 + idx * 8);
+}
 
 void fn_3_16E2FC(u16* p, s32 i) {
     if (p == NULL) {
@@ -37,8 +63,6 @@ void fn_3_16D810(void) {
     return;
 }
 
-extern u16* lbl_3_bss_D6E4;
-extern s32 lbl_3_bss_D6E8;
 extern s32 fn_8005268C(void);
 extern void fn_80033B58(void*, s32, s32, s32);
 
@@ -109,24 +133,21 @@ void fn_3_16DFC4(void) {
     } while (i < 6U);
 }
 
-extern u8 lbl_3_bss_D6EC;
 
 // .text:0x0016E328 size:0x10
 void fn_3_16E328(void) {
     lbl_3_bss_D6EC = 1;
 }
 
-extern u8 lbl_3_bss_D6E0[];
 extern void fn_3_16E1EC(void);
 
 // .text:0x0016E338 size:0x6C
 void fn_3_16E338(u16* p, s32 i) {
-    u8* b = lbl_3_bss_D6E0;
     if (p != NULL && p[0] - 1 >= i) {
-        *(u16**)(b + 4) = p;
-        *(s32*)(b + 8) = i;
-        b[0xC] = 0;
-        memset(b + 0x10, 0, 0x18);
+        lbl_3_bss_D6E4 = p;
+        lbl_3_bss_D6E8 = i;
+        lbl_3_bss_D6EC = 0;
+        memset(lbl_3_bss_D6F0, 0, 0x18);
         fn_800B0A5C_insertQueue(fn_3_16E1EC, 5);
     }
 }
