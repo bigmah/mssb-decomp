@@ -1,5 +1,7 @@
 #include "menus/rep_08E8.h"
 
+extern const f32 lbl_2_rodata_9B0;
+
 #include "static/UnknownHomes_Static.h"
 #include "math.h"
 
@@ -92,4 +94,15 @@ s32 fn_2_4A2C4(f32 angle) {
 void fn_2_47AFC(void) {
     s32 i;
     for (i = 0; i < 13; i++) {}
+}
+
+// fn_2_4A18C, size:0x5C
+f32 fn_2_4A18C(f32 angle) {
+    if (angle >= lbl_2_rodata_9A8) {
+        while (angle >= lbl_2_rodata_9A8) angle -= lbl_2_rodata_9AC;
+    }
+    if (angle < lbl_2_rodata_9B0) {
+        while (angle < lbl_2_rodata_9B0) angle = lbl_2_rodata_9AC + angle;
+    }
+    return angle;
 }
