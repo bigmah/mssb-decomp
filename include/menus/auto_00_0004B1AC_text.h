@@ -55,4 +55,6 @@ void fn_2_5146C(void);
 
 void fn_2_513E4(void);
 
+void fn_2_513E0(void);
+
 #endif
