@@ -37,4 +37,6 @@ void fn_1_BDD8(void);
 
 void fn_1_A348(void);
 
+void fn_1_A464(void);
+
 #endif
