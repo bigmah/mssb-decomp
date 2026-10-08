@@ -24,6 +24,27 @@ extern void fn_1_AF4(s32, s32, f32);
 extern void fn_1_1E5D0(void*);
 
 extern void fn_1_21408(void);
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_1_data_104F4[];
+
+// fn_1_20F8C, size:0xB4
+void fn_1_20F8C(void) {
+    s16 phase = *(s16*)(lbl_803CC1B8[0] + 0x10);
+    ChallengeTransfer* transfer = *(ChallengeTransfer**)(lbl_803CC1B8[0] + 0x0C);
+    switch (phase) {
+    case 0:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            transfer->data = (void*)ARAMTransfer(lbl_1_data_104F4, 0, 0, 0);
+            (*(s16*)(lbl_803CC1B8[0] + 0x10))++;
+        }
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            transfer->complete = 1;
+        }
+        break;
+    }
+}
 
 // .text:0x225B8 size:0x8C
 void fn_1_225B8(void) {

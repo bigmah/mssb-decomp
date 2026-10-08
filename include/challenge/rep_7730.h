@@ -3,6 +3,13 @@
 
 #include "mssbTypes.h"
 
+typedef struct {
+    u8 padding[0x10];
+    s16 complete;
+    u8 padding12[2];
+    void* data;
+} ChallengeTransfer;
+
 void fn_1_1DE5C(void);
 
 void fn_1_1E8C0(s32 index);
@@ -40,5 +47,7 @@ void fn_1_24778(void);
 void fn_1_20DC8(void);
 
 f32 fn_1_1DD48(u16 buttons, s32 reverse, f32 value, f32 positive, f32 delta, f32 negative, f32 minimum, f32 maximum);
+
+void fn_1_20F8C(void);
 
 #endif
