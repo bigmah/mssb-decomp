@@ -260,8 +260,53 @@ int fn_3_A222C(void) {
 }
 
 // .text:0x000A2404 size:0x1C0 mapped:0x806E1498
-void fn_3_A2404(void) {
-    return;
+int fn_3_A2404(void) {
+    s32 order[3];
+    s32 i;
+    if (*(s16*)(g_Ball + 0x1B7A) != 3) {
+        return 0;
+    }
+    if (lbl_3_bss_1820 == 0) {
+        return 0;
+    }
+    if (*(f32*)(g_Ball + 0x1A08) < *(f32*)(g_Ball + 0x1A10)) {
+        if (*(f32*)(g_Ball + 0x1A0C) < *(f32*)(g_Ball + 0x1A08)) {
+            order[0] = 2;
+            order[1] = 1;
+            order[2] = 3;
+        } else if (*(f32*)(g_Ball + 0x1A0C) < *(f32*)(g_Ball + 0x1A10)) {
+            order[0] = 1;
+            order[1] = 2;
+            order[2] = 3;
+        } else {
+            order[0] = 1;
+            order[1] = 3;
+            order[2] = 2;
+        }
+    } else {
+        if (*(f32*)(g_Ball + 0x1A0C) < *(f32*)(g_Ball + 0x1A10)) {
+            order[0] = 2;
+            order[1] = 3;
+            order[2] = 1;
+        } else if (*(f32*)(g_Ball + 0x1A0C) < *(f32*)(g_Ball + 0x1A08)) {
+            order[0] = 3;
+            order[1] = 2;
+            order[2] = 1;
+        } else {
+            order[0] = 3;
+            order[1] = 1;
+            order[2] = 2;
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        s32 idx = order[i];
+        if (g_Runners[idx].status == 1 && g_Runners[idx].unk128 == 2 && lbl_3_bss_1858[idx] <= 4) {
+            if (fn_3_A46A0(idx)) {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x000A25C4 size:0x398 mapped:0x806E1658

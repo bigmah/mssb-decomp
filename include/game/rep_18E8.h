@@ -9,7 +9,7 @@ int fn_3_A1DA0(void);
 int fn_3_A1F3C(void);
 int fn_3_A2048(void);
 int fn_3_A222C(void);
-void fn_3_A2404(void);
+int fn_3_A2404(void);
 void fn_3_A25C4(void);
 void fn_3_A295C(void);
 int fn_3_A2B6C(void);
