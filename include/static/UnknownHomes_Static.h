@@ -84,4 +84,6 @@ extern void fn_80048C1C(void);
 
 extern void fn_800B9AA8(void* object);
 
+extern void SetDisplayStateTexture(void* object, s32 a, s32 b);
+
 #endif // !__UNKNOWN_HOMES_STATIC_H_

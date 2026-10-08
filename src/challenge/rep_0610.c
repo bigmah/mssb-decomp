@@ -80,3 +80,8 @@ s32 fn_1_160D8(s8 a, s8 b) {
     if (a == b) return 0xFF0F;
     return 0xFFFF;
 }
+
+// fn_1_116EC, size:0x28
+void fn_1_116EC(void* object) {
+    SetDisplayStateTexture(object, 0, 0);
+}
