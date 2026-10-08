@@ -23,6 +23,9 @@ extern f32 lbl_3_rodata_3E50;
 // Recipe so far: `#pragma opt_propagation off` keeps the idx/zero/one/cnt constants unfolded, and
 // volatile field accesses force the reloads of fields 2DA0/2DA4/2DA8 after the stores.
 // A static inline helper taking `u8* bss` as a parameter gave the right mapping when zero was a literal.
+// Also tried (no gain): all 5040 local-declaration orders, ~2500 statement orders of the first block, `register`,
+// int/ptr/u8 types for zero/one, reusing a/b as zero/one, inline helpers (bss param). An inline helper with
+// literal zero folded gets bss=r30/b=r31 right (30 diff lines) but then the cmpwi/bne is dropped.
 // .text:0x00166448 size:0x19C mapped:0x807A54DC
 #pragma opt_propagation off
 void fn_3_166448(void) {
