@@ -2398,8 +2398,47 @@ void fn_3_4B514(void) {
 }
 
 // .text:0x0004B8D0 size:0x13C mapped:0x8068A964
-void fn_3_4B8D0(void) {
-    return;
+void fn_3_4B8D0(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 k = *(s16*)(f + 0x18C);
+    if (k >= 0) {
+    if (k <= 3) {
+        s16* p = (s16*)g_FieldingLogic + k;
+        if (*(p += 0x68) == i) {
+            *p = -1;
+            g_FieldingLogic[0x101 + k] = 0;
+        }
+        *(s16*)(f + 0x18C) = -1;
+        f[0x1D7] = 0;
+        if (f[0x1D3] == 1 && i != -1) {
+            f[0x1D3] = 0xC;
+            if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
+                g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
+            }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+        }
+    } else if (k == 5) {
+        *(s16*)(g_FieldingLogic + 0xD8) = -1;
+        g_FieldingLogic[0x105] = 0;
+        *(s16*)(f + 0x18C) = -1;
+        f[0x1D7] = 0;
+        if (f[0x1D3] == 0xE && i != -1) {
+            f[0x1D3] = 0xC;
+            if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
+                g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
+            }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+        }
+    }
+    }
 }
 
 // .text:0x0004BA0C size:0xFBC mapped:0x8068AAA0
@@ -2492,9 +2531,56 @@ void fn_3_51220(void) {
 }
 
 // .text:0x0005164C size:0x14C mapped:0x806906E0
-void fn_3_5164C(void) {
-    return;
+#pragma fp_contract off
+int fn_3_5164C(int i, f32* out) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 x = *(f32*)f + *(f32*)(f + 0x30);
+    f32 z = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+    int r = 0;
+    f32 t;
+    f32 lim;
+    f32 nx;
+    f32 zz;
+    if (x > 0.0f) {
+        if (x > z) {
+            x = z + lbl_3_rodata_B80 * (x - z);
+            z = x;
+            r = 2;
+        }
+    } else {
+        t = -x;
+        if (t > z) {
+            z += lbl_3_rodata_B80 * (t - z);
+            x = -z;
+            r = 2;
+        }
+    }
+    lim = *(f32*)(lbl_3_data_4444 + 0x14);
+    t = z - lim;
+    if (!(t > x)) {
+        nx = -x;
+        if (!(t > nx)) {
+            if (x > 0.0f) {
+                zz = lim - z;
+                x = zz + lbl_3_rodata_B80 * (x - zz);
+                z = -x + lim;
+                r = 2;
+            } else {
+                zz = lim - z;
+                x = -zz - lbl_3_rodata_B80 * (nx - zz);
+                z = x + lim;
+                r = 2;
+            }
+        }
+    }
+    if (z <= *(f32*)(lbl_3_data_4444 + 0x10)) {
+        return 1;
+    }
+    out[0] = x;
+    out[2] = z;
+    return r;
 }
+#pragma fp_contract reset
 
 // .text:0x00051798 size:0x658 mapped:0x8069082C
 int fn_3_51798(int i, f32* out) {

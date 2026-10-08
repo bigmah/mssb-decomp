@@ -12,6 +12,16 @@ extern char lbl_3_rodata_2878[];
 extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
+extern f32 lbl_3_rodata_280C[];
+extern f64 lbl_3_rodata_2668;
+extern void fn_8004C094(void*);
+extern Vec lbl_3_rodata_2580;
+extern Vec lbl_3_rodata_258C;
+extern f32 lbl_3_rodata_265C;
+extern f32 lbl_3_rodata_2670;
+extern f32 lbl_3_rodata_26B4;
+extern f32 lbl_3_rodata_27F8;
+extern f64 acos(f64);
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
 extern Vec lbl_3_rodata_2640;
@@ -79,6 +89,9 @@ extern Vec lbl_3_rodata_24E8[];
 extern u8 lbl_3_bss_A8A8[];
 typedef struct { u8 b[9]; } B9;
 extern B9 lbl_3_rodata_2544;
+extern B9 lbl_3_rodata_255C;
+extern B9 lbl_3_rodata_2568;
+extern f64 lbl_3_rodata_2668;
 extern B9 lbl_3_rodata_2550;
 extern u8 lbl_8036E548[];
 extern void fn_8005268C(void);
@@ -947,8 +960,28 @@ void fn_3_D2220(u8* p) {
 }
 
 // .text:0x000D233C size:0x160 mapped:0x807113D0
-void fn_3_D233C(void) {
-    return;
+u8* fn_3_D233C(u8* p) {
+    Mtx m;
+    Vec diff;
+    Vec rot;
+    Vec dir = lbl_3_rodata_2580;
+    Vec axis = lbl_3_rodata_258C;
+    Vec pos = *(Vec*)(p + 0xA0);
+    if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+        return 0;
+    }
+    pos.y = lbl_3_rodata_265C;
+    PSVECSubtract((Vec*)g_Ball, &pos, &diff);
+    diff.y = lbl_3_rodata_2664;
+    if (PSVECMag(&diff) < lbl_3_rodata_27F8) {
+        PSVECNormalize(&diff, &diff);
+        PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+        PSMTXMultVec(m, &dir, &rot);
+        if (lbl_3_rodata_2670 * (f32)acos(PSVECDotProduct(&diff, &rot)) <= lbl_3_rodata_26B4) {
+            return g_Ball;
+        }
+    }
+    return 0;
 }
 
 // .text:0x000D249C size:0x4C mapped:0x80711530
@@ -970,8 +1003,34 @@ void fn_3_D24E8(u8* p, s32 idx0) {
 }
 
 // .text:0x000D255C size:0x128 mapped:0x807115F0
-void fn_3_D255C(void) {
-    return;
+s32 fn_3_D255C(u8* p) {
+    Vec d;
+    B9 a = lbl_3_rodata_255C;
+    B9 b = lbl_3_rodata_2568;
+    u32 i;
+    u8* t;
+    f64 lim;
+    u8* fl;
+    if (*(f32*)(p + 0xA4) > lbl_3_rodata_2770) {
+        return -1;
+    }
+    if (*(f32*)(p + 0xA0) > lbl_3_rodata_2664) {
+        t = a.b;
+    } else {
+        t = b.b;
+    }
+    fl = g_Fielders;
+    lim = lbl_3_rodata_2668;
+    for (i = 0; i < 9; i++) {
+        u8* o = fl + t[i] * 0x268;
+        if (o != NULL && o[0x210] == 0) {
+            PSVECSubtract((Vec*)(p + 0xA0), (Vec*)o, &d);
+            if (PSVECMag(&d) <= lim) {
+                return (s8)t[i];
+            }
+        }
+    }
+    return -1;
 }
 
 // .text:0x000D2684 size:0x108 mapped:0x80711718
@@ -1014,8 +1073,38 @@ void fn_3_D30D0(void) {
 }
 
 // .text:0x000D36B0 size:0x1D0 mapped:0x80712744
-void fn_3_D36B0(void) {
-    return;
+// partial: code shape right; only fp reg numbering/scheduling differs in the first a4/b0 update block (zero const loaded after fadds in orig)
+void fn_3_D36B0(u8* p) {
+    u8* c;
+    Mtx m;
+    Vec v;
+    Vec dir;
+    Vec axis;
+    f32 d = lbl_3_rodata_280C[0];
+    *(f32*)(p + 0xA4) = *(f32*)(p + 0xA4) + *(f32*)(p + 0xB0);
+    *(f32*)(p + 0xB0) = *(f32*)(p + 0xB0) - d;
+    if (*(f32*)(p + 0xA4) < lbl_3_rodata_2664) {
+        *(f32*)(p + 0xA4) = lbl_3_rodata_2664;
+        if (!(p[0x99] & 4)) {
+            p[0xCB] = p[0xCA];
+            p[0xCA] = 1;
+            fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        }
+        p[0x99] = p[0x99] & 0xFB;
+        fn_8004C094(p + 0xA0);
+    }
+    c = *(u8**)(p + 0xC4);
+    axis = lbl_3_rodata_25B0;
+    dir = lbl_3_rodata_25BC;
+    PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSMTXMultVec(m, lbl_3_rodata_24E8, &v);
+    PSVECAdd(&v, (Vec*)(p + 0xA0), &v);
+    v.y += lbl_3_rodata_2668;
+    *(Vec*)(c + 0x1CC) = v;
+    *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
+    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 8, &dir, p);
+    CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
 }
 
 // .text:0x000D3880 size:0x45C mapped:0x80712914
@@ -1114,8 +1203,47 @@ s32 fn_3_D5470(f32* a, f32* b) {
 }
 
 // .text:0x000D5494 size:0x158 mapped:0x80714528
-void fn_3_D5494(void) {
-    return;
+typedef struct { f32 f0; s32 f4; } D5494E;
+typedef struct { u8 pad[0x90]; u8 f : 1; u8 pad91[0x9D - 0x91]; u8 f9D; u8 pad2[0xE8 - 0x9E]; } D5494C;
+typedef struct { D5494C* arr; u8 pad0[0x14 - 4]; D5494E* p14; u8 pad1[0x30 - 0x18]; u32 count; } D5494B;
+extern f32 lbl_3_rodata_26B8;
+extern f32 lbl_3_rodata_27E0;
+extern f32 lbl_3_rodata_289C;
+extern f32 lbl_3_rodata_28A0;
+void fn_3_D5494(f32 (*m)[4]) {
+    Vec v;
+    D5494B* g;
+    D5494C* c;
+    s32 off;
+    D5494E* e;
+    u32 i;
+    f32 x, hi;
+    u8 t;
+    memcpy(&v, g_Ball, 0xC);
+    PSMTXMultVec(m, &v, &v);
+    i = 0;
+    g = (D5494B*)lbl_3_common_bss_350E4;
+    off = 0;
+    for (; i < g->count; off += 8, i++) {
+        e = (D5494E*)((u8*)g->p14 + off);
+        c = &g->arr[e->f4];
+        if (c->f) {
+            t = c->f9D;
+            if (t == 0 || (u8)(t - 4) <= 1 || (t > 7 && t < 0xB)) {
+                e->f0 = lbl_3_rodata_2698;
+            } else {
+                x = e->f0;
+                hi = lbl_3_rodata_26B8 + v.z;
+                if (x < hi) {
+                    e->f0 = lbl_3_rodata_2698;
+                } else if (x > lbl_3_rodata_27E0 + v.z) {
+                    e->f0 = lbl_3_rodata_289C;
+                } else {
+                    { f32 d = x - hi; e->f0 = lbl_3_rodata_27A8 - lbl_3_rodata_26C8 * (d * lbl_3_rodata_28A0); }
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000D55EC size:0x580 mapped:0x80714680
@@ -1124,8 +1252,28 @@ void fn_3_D55EC(void) {
 }
 
 // .text:0x000D5B6C size:0x120 mapped:0x80714C00
-void fn_3_D5B6C(void) {
-    return;
+typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } D5B6CCtl;
+typedef struct { D5B6CCtl* arr; u8 pad0[0x3C - 4]; u32* p3C; u16* p40; u32* p44; u8* p48; } D5B6CBss;
+typedef struct { u32 w[17]; } D5B6CCpy;
+extern u8 lbl_3_bss_A020;
+extern void fn_3_B8414(void*, void*);
+extern void fn_3_B8464(void*, void*);
+void fn_3_D5B6C(s32* a) {
+    D5B6CBss* g = (D5B6CBss*)lbl_3_common_bss_350E4;
+    D5B6CCpy sp34;
+    Mtx sp8;
+    D5B6CCtl* c;
+    u16 v;
+    v = g->p40[*a - 1] + g->p3C[*a - 1];
+    g->p40[*a] = v;
+    g->p44[v] = lbl_3_bss_A020;
+    g->p3C[*a] += 1;
+    c = &g->arr[lbl_3_bss_A020];
+    sp34 = *(D5B6CCpy*)c;
+    CTRLBuildMatrix((Control*)&sp34, sp8);
+    fn_3_B8464(sp8, (void*)c->f78);
+    fn_3_B8414(((D5B6CBss*)lbl_3_common_bss_350E4)->p48 + *a * 0x18, ((D5B6CBss*)lbl_3_common_bss_350E4)->p48 + (*a * 2 + 1) * 0xC);
+    *a += 1;
 }
 
 // .text:0x000D5C8C size:0x1F4 mapped:0x80714D20
