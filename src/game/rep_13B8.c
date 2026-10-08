@@ -40,6 +40,8 @@ extern void fn_3_161588(int, s16);
 extern u8 g_FieldingLogic[];
 extern int g_Strikes[];
 extern u8 g_Practice[];
+extern u8 g_Controls[];
+extern u8 g_Pitcher[];
 extern u8 g_RunningLogic[];
 extern u8 g_Minigame[];
 
@@ -130,7 +132,35 @@ void fn_3_7E2BC(void) {
 
 // .text:0x0007EA68 size:0x16C mapped:0x806BDAFC
 void fn_3_7EA68(void) {
-    return;
+    u8* c = g_Controls + *(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 4) * 4 + 0xEC) * 16;
+    if (g_Pitcher[0x13E] == 1 || g_Pitcher[0x13E] == 2 || g_Pitcher[0x13E] == 3) {
+        s16 v;
+        if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0) {
+            c = g_Practice + *(s32*)(g_GameLogic + 4) * 16;
+        }
+        if (!(*(u16*)(c + 6) & 0x800)) {
+            return;
+        }
+        v = *(s16*)c;
+        if (v < 0) {
+            int k;
+            for (k = 1; k < 4; k++) {
+                if (g_Runners[k * 0x154 + 0x123] != 0 && g_Runners[k * 0x154 + 0x14E] == 0) {
+                    g_Runners[k * 0x154 + 0x14E] = 1;
+                }
+            }
+        } else {
+            if (v >= 0x1C0 && v <= 0x640) {
+                g_Runners[0x2A2] = 1;
+            }
+            if (*(s16*)c >= 0x5C0 && *(s16*)c <= 0xA40) {
+                g_Runners[0x3F6] = 1;
+            }
+            if (*(s16*)c >= 0x9C0 && *(s16*)c <= 0xE40) {
+                g_Runners[0x54A] = 1;
+            }
+        }
+    }
 }
 
 // .text:0x0007EBD4 size:0x128 mapped:0x806BDC68
