@@ -84,6 +84,10 @@ extern u8 lbl_80371C30[];
 extern void fn_800528C0(f32, f32, f32, s16*, s16*);
 extern u32 lbl_3_bss_9D90;
 extern void fn_800A7D4C(int, Rep1FD8Ent*);
+extern u8 lbl_800E8754[];
+extern void CTRLGetTranslation(void*, f32*, f32*, f32*);
+extern void fn_3_CB7E8(f32, f32, f32);
+extern f32 lbl_3_rodata_2150;
 
 void fn_3_C1964(void) {
     lbl_3_bss_9D9C = 1;
@@ -351,8 +355,29 @@ void fn_3_C40EC(u8* a) {
 }
 
 // .text:0x000C414C size:0x158 mapped:0x807031E0
-void fn_3_C414C(void) {
-    return;
+void fn_3_C414C(int idx) {
+    u8 hit = 0;
+    Vec t;
+    u8* c = *(u8**)&lbl_3_common_bss_350E4 + idx * 0xE8;
+    CTRLGetTranslation(c, &t.x, &t.y, &t.z);
+    if (*(s16*)(g_Ball + 0x1B7A) != 2) {
+        if (c[0xA9] == 5 && lbl_800E8754[4] != 0) {
+            fn_3_CB7E8(t.x, t.y - lbl_3_rodata_2150, t.z);
+            hit = 1;
+            c[0xA9] = 6;
+        } else if (c[0xA9] == 4 && lbl_800E8754[4] != 0) {
+            fn_3_CB7E8(t.x, t.y, t.z - lbl_3_rodata_2150);
+            hit = 1;
+            c[0xA9] = 6;
+        }
+    }
+    if (hit) {
+        int i = g_Ball[0x1BE5] ? 7 : 6;
+        lbl_3_bss_9E48[i] = 1;
+        lbl_3_bss_9DE8[i].x = ((Vec*)g_Ball)->x;
+        lbl_3_bss_9DE8[i].y = -((Vec*)g_Ball)->y;
+        lbl_3_bss_9DE8[i].z = ((Vec*)g_Ball)->z;
+    }
 }
 
 // .text:0x000C42A4 size:0x1A8 mapped:0x80703338
