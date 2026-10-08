@@ -42,6 +42,10 @@ extern f32 lbl_3_rodata_2DEC;
 extern f32 lbl_3_rodata_2DDC;
 extern f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
+extern f64 acos(f64);
+extern f64 lbl_3_rodata_2DE0;
+extern f32 lbl_3_rodata_2D70;
+extern f32 lbl_3_rodata_2DE8;
 extern f64 cos(f64);
 extern u8 lbl_803C5090[];
 extern void fn_8003A144(u8*, u8*);
@@ -254,8 +258,33 @@ void fn_3_EF3D4(u8* p, u8 idx) {
 }
 
 // .text:0x000EF408 size:0x154 mapped:0x8072E49C
-void fn_3_EF408(void) {
-    return;
+void fn_3_EF408(u8* p) {
+    Vec a;
+    Vec b;
+    Vec c;
+    f32 ang;
+    f32 d;
+    a.x = lbl_3_data_1B9A4[p[0x9C]].a - *(f32*)(p + 0xA0);
+    a.y = lbl_3_rodata_2D5C;
+    a.z = lbl_3_data_1B9A4[p[0x9C]].c - *(f32*)(p + 0xA8);
+    PSVECNormalize(&a, &a);
+    ang = -(lbl_3_rodata_2DDC * *(f32*)(p + 0xAC));
+    b.x = (f32)cos(ang);
+    b.y = lbl_3_rodata_2D5C;
+    b.z = (f32)sin(ang);
+    PSVECNormalize(&b, &b);
+    d = PSVECDotProduct(&a, &b);
+    if (d < lbl_3_rodata_2DE0) {
+        d = lbl_3_rodata_2D70;
+    }
+    *(f32*)(p + 0xB4) = lbl_3_rodata_2DE8 * (f32)acos(d);
+    PSVECCrossProduct(&a, &b, &c);
+    if (c.y < lbl_3_rodata_2D5C) {
+        *(s8*)(p + 0xC4) = 1;
+    } else {
+        *(s8*)(p + 0xC4) = -1;
+    }
+    p[0xC6] = 0;
 }
 
 // .text:0x000EF55C size:0x258 mapped:0x8072E5F0
