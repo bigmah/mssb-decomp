@@ -1,5 +1,9 @@
 #include "challenge/rep_0610.h"
 
+extern u8 lbl_8036E548[];
+extern u8 lbl_1_bss_5F73[];
+typedef struct { void* data; u32 pad4; u32 pad8; } ChallengeEntry;
+
 extern u8 lbl_1_bss_5F74;
 extern u8 lbl_1_bss_5F78[];
 
@@ -153,4 +157,15 @@ void fn_1_10AA4(u8* object, f32 value) {
 void fn_1_161D0(void) {
     lbl_1_bss_5F74 ^= 1;
     fn_800B9A9C(lbl_1_bss_5F74, *(f32*)lbl_1_bss_5F78);
+}
+
+// fn_1_16558, size:0x38
+void* fn_1_16558(s32 group, s32 index) {
+    u8* base = lbl_8036E548;
+    u8* table;
+    u8* row;
+    base += lbl_1_bss_5F73[0] * 0x27C;
+    row = base; row += group * 4; table = *(u8**)(row + 0xC14);
+    table = *(u8**)(table + 4);
+    return ((ChallengeEntry*)table)[index].data;
 }

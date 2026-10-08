@@ -47,4 +47,6 @@ void fn_1_10AA4(u8* object, f32 value);
 
 void fn_1_161D0(void);
 
+void* fn_1_16558(s32 group, s32 index);
+
 #endif
