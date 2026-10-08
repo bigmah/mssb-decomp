@@ -55,7 +55,7 @@ extern void fn_3_B828C(void*);
 extern void fn_800BF058(void*);
 extern void fn_800BDF70(void*);
 extern u32 lbl_3_bss_9D84;
-extern u32 fn_80033A24(void*, int, int, int, int, int);
+extern u32 fn_80033A24(void*, int, int, int, int, u8);
 
 extern u32 lbl_3_bss_9D9C;
 extern u8 lbl_3_data_8404[];
@@ -1050,8 +1050,64 @@ void fn_3_C56E8(u8* a) {
 }
 
 // .text:0x000C597C size:0x364 mapped:0x80704A10
-void fn_3_C597C(void) {
-    return;
+typedef struct {
+    u8 pad0[0x90];
+    u8 b90_7 : 1;
+    u8 b90_rest : 7;
+    u8 pad91[0x9C - 0x91];
+    f32 px, py, pz;
+    u8 fA8;
+    u8 padA9[0xBD - 0xA9];
+    u8 fBD;
+} C597CEnt;
+void fn_3_C597C(s32 idx) {
+    f32 k;
+    u32 i;
+    f32 px;
+    C4724Hdr* h;
+    f32 py;
+    C4724P* p;
+    f32 pz;
+    f32 a;
+    f32 c;
+    C597CEnt* e;
+    e = (C597CEnt*)(*(u8**)&lbl_3_common_bss_350E4 + idx * 0xE8);
+    pitchingMachinePitching((u8)(e->fA8 + 0x2A));
+    h = (C4724Hdr*)fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(e->fA8 + 0x34));
+    if (h != NULL) {
+        p = h->head;
+        px = e->px;
+        py = e->py;
+        pz = e->pz;
+        i = 0;
+        while (p != NULL) {
+            p->x = px;
+            p->y = py;
+            p->z = pz;
+            a = lbl_3_rodata_2158 * (f32)(rand() % 360) / lbl_3_rodata_215C;
+            c = lbl_3_rodata_2158 * (f32)(rand() % 360) / lbl_3_rodata_215C;
+            k = lbl_3_rodata_20D4 - (f32)(rand() % 3) / lbl_3_rodata_2160[0];
+            p->vx = k * cos(a) * cos(c);
+            p->vy = -k * sin(a);
+            p->vz = k * sin(a) * cos(c);
+            p->f38 = p->f3C = lbl_3_rodata_2164;
+            p->s48 = i / 6;
+            i++;
+            p->f4D = 0x1B;
+            p->f4E = 0;
+            p->a43 = 0xFF;
+            p->a42 = 0xFF;
+            p->a41 = 0xFF;
+            p->a40 = 0xFF;
+            p->s4A = 1;
+            p = p->next;
+        }
+        h->f10 = lbl_3_bss_9F0C;
+        h->f24 = 0x1E;
+    }
+    e->fBD = 2;
+    e->b90_7 = 0;
+    e->py = lbl_3_rodata_2160[0];
 }
 
 // .text:0x000C5CE0 size:0xFC mapped:0x80704D74

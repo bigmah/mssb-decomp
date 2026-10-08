@@ -36,7 +36,7 @@ s32 fn_3_C4F00(void* hv);
 void fn_3_C5304(void* h, u8* b);
 void fn_3_C54D0(u8* a);
 void fn_3_C56E8(u8* a);
-void fn_3_C597C(void);
+void fn_3_C597C(s32 idx);
 u32 fn_3_C5CE0(u8* a);
 void fn_3_C5DDC(void);
 u32 fn_3_C625C(u8* a);
