@@ -5,4 +5,6 @@
 
 void fn_80062744(void);
 
+void fn_800626EC(s32 index);
+
 #endif
