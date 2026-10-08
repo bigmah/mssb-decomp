@@ -25,6 +25,25 @@ extern MenuEntrySlot lbl_80371C30[];
 extern u8 lbl_2_bss_100B4;
 extern u8* lbl_803CBBCC[];
 
+// fn_2_1D54, size:0x70
+void fn_2_1D54(s32* selection, u8 controller, s32 count) {
+    u8* controls = lbl_8034E9A0;
+    u16 buttons;
+    controls += controller * 6;
+    buttons = *(u16*)(controls + 0x4730);
+    if (buttons & 8) {
+        (*selection)--;
+        if (*selection < 0) {
+            *selection = count - 1;
+        }
+    } else if (buttons & 4) {
+        (*selection)++;
+        if (*selection == count) {
+            *selection = 0;
+        }
+    }
+}
+
 // fn_2_6138, size:0x68
 void fn_2_6138(void) {
     fn_800625A4(0, 19);

@@ -9,6 +9,8 @@ s32 fn_2_35D0(u8 index);
 
 void fn_2_6138(void);
 
+void fn_2_1D54(s32* selection, u8 controller, s32 count);
+
 s32 fn_2_112F4(void* menu, s32 item, s32 index, const u16* values, s16 value);
 
 s32 fn_2_8780(s32 mode);
