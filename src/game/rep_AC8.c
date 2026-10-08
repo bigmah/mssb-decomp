@@ -2375,9 +2375,56 @@ void fn_3_51220(void) {
 }
 
 // .text:0x0005164C size:0x14C mapped:0x806906E0
-void fn_3_5164C(void) {
-    return;
+#pragma fp_contract off
+int fn_3_5164C(int i, f32* out) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 x = *(f32*)f + *(f32*)(f + 0x30);
+    f32 z = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+    int r = 0;
+    f32 t;
+    f32 lim;
+    f32 nx;
+    f32 zz;
+    if (x > 0.0f) {
+        if (x > z) {
+            x = z + lbl_3_rodata_B80 * (x - z);
+            z = x;
+            r = 2;
+        }
+    } else {
+        t = -x;
+        if (t > z) {
+            z += lbl_3_rodata_B80 * (t - z);
+            x = -z;
+            r = 2;
+        }
+    }
+    lim = *(f32*)(lbl_3_data_4444 + 0x14);
+    t = z - lim;
+    if (!(t > x)) {
+        nx = -x;
+        if (!(t > nx)) {
+            if (x > 0.0f) {
+                zz = lim - z;
+                x = zz + lbl_3_rodata_B80 * (x - zz);
+                z = -x + lim;
+                r = 2;
+            } else {
+                zz = lim - z;
+                x = -zz - lbl_3_rodata_B80 * (nx - zz);
+                z = x + lim;
+                r = 2;
+            }
+        }
+    }
+    if (z <= *(f32*)(lbl_3_data_4444 + 0x10)) {
+        return 1;
+    }
+    out[0] = x;
+    out[2] = z;
+    return r;
 }
+#pragma fp_contract reset
 
 // .text:0x00051798 size:0x658 mapped:0x8069082C
 void fn_3_51798(void) {

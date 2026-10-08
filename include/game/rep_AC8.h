@@ -190,7 +190,7 @@ void fn_3_50898(void);
 void fn_3_50C20(void);
 void fn_3_50DD8(void);
 void fn_3_51220(void);
-void fn_3_5164C(void);
+int fn_3_5164C(int, f32*);
 void fn_3_51798(void);
 void fn_3_51DF0(void);
 void fn_3_52084(void);
