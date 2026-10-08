@@ -1,5 +1,6 @@
 #include "game/rep_AC8.h"
 #include "header_rep_data.h"
+#include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 extern s16 radToShortAngle(f32 v);
 
 extern u8 g_Ball[];
@@ -24,6 +25,29 @@ extern s16 lbl_3_bss_170;
 extern u8 g_Controls[];
 extern s16 lbl_3_data_484C[];
 extern f32 lbl_3_rodata_B70;
+extern f32 lbl_3_rodata_C24;
+extern int __float_nan[];
+#define NAN (*(f32*)__float_nan)
+f64 __frsqrte(f64);
+extern f64 lbl_3_rodata_B30;
+extern f64 lbl_3_rodata_B38;
+extern f64 lbl_3_rodata_B40;
+extern f32 lbl_3_rodata_C38;
+#define SQRT_L(x)                                                                                  \
+    do {                                                                                           \
+        if ((x) > lbl_3_rodata_B20) {                                                              \
+            f64 xd = (f64)(x);                                                                     \
+            f64 guess = __frsqrte(xd);                                                             \
+            guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);            \
+            guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);            \
+            guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);            \
+            (x) = (f32)(xd * guess);                                                               \
+        } else if ((x) < lbl_3_rodata_B40) {                                                       \
+            (x) = NAN;                                                                             \
+        } else if (isnan(x)) {                                                                     \
+            (x) = NAN;                                                                             \
+        }                                                                                          \
+    } while (0)
 #pragma dont_inline on
 
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
@@ -1085,8 +1109,33 @@ void fn_3_411AC(void) {
 }
 
 // .text:0x000417D4 size:0x1A8 mapped:0x80680868
-void fn_3_417D4(void) {
-    return;
+void fn_3_417D4(int i) {
+    int off = i * 0x268;
+    u8* f = g_Fielders + off;
+    u8* g;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 a;
+    f32 b;
+    dx = *(f32*)(g_Ball + 0x3F4) - *(f32*)f;
+    dz = *(f32*)(g_Ball + 0x3FC) - *(f32*)(f + 8);
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_C38 && f[0x1DD] == 2 && *(f32*)(g_Ball + 0x3F8) > *(f32*)(f + 0xF4)) {
+        *(s16*)(f + 0x198) = 0;
+        g = g_Fielders;
+        g += off;
+        *(f32*)(g + 0x14) = *(f32*)f;
+        *(f32*)(g + 0x18) = *(f32*)(f + 4);
+        *(f32*)(g + 0x1C) = *(f32*)(f + 8);
+        *(f32*)(g + 0x30) = lbl_3_rodata_B20;
+        *(f32*)(g + 0x34) = lbl_3_rodata_B20;
+        *(f32*)(g + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(g + 0x68) = lbl_3_rodata_B20;
+    }
 }
 
 // .text:0x0004197C size:0x3FC mapped:0x80680A10
@@ -1619,3 +1668,5 @@ void fn_3_596F8(void) {
     return;
 }
 
+
+#pragma dont_inline off

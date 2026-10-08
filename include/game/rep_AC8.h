@@ -135,7 +135,7 @@ void fn_3_40C04(void);
 void fn_3_40D54(void);
 void fn_3_40D88(void);
 void fn_3_411AC(void);
-void fn_3_417D4(void);
+void fn_3_417D4(int);
 void fn_3_4197C(void);
 void fn_3_41D78(void);
 void fn_3_4207C(void);
