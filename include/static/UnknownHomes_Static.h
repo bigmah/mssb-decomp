@@ -110,6 +110,7 @@ extern void SetDisplayStateTexture(void* object, s32 a, s32 b);
 extern void fn_800AD038(void* object);
 extern void fn_800A97D0(s32, s32);
 extern void fn_80048BEC(void*, u32, u32);
+extern void fn_80037768(void*, s32, s32, f32, f32, f32, f32);
 
 extern void fn_800ACFB0(void* object);
 

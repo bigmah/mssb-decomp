@@ -10,6 +10,16 @@ extern f32 lbl_1_rodata_7DFC;
 extern void fn_1_272DC(void*, u32);
 extern void fn_1_AF4(s32, s32, f32);
 extern void fn_1_28CE8(u8*);
+extern ChallengeSimulationSettings lbl_1_data_11300;
+
+// fn_1_2935C, size:0xB8
+void fn_1_2935C(void* camera) {
+    fn_80037768(camera, 2, lbl_1_data_11300.cameraFlags,
+        (f32)lbl_1_data_11300.scaledCamera[0] / 100000.0f,
+        (f32)lbl_1_data_11300.scaledCamera[1] / 100000.0f,
+        (f32)lbl_1_data_11300.scaledCamera[2] / 100000.0f,
+        (f32)lbl_1_data_11300.scaledCamera[3] / 100000.0f);
+}
 
 // fn_1_29414, size:0x78
 void fn_1_29414(u8* object) {
