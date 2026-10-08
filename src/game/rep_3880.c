@@ -42,6 +42,7 @@ extern void fn_80033CC8(void*, void*);
 extern u8 lbl_3_data_26D50[];
 extern const f32 lbl_3_rodata_39E0;
 extern f32 shortAngleToRad(s16);
+extern u8 lbl_3_data_26E7C[];
 extern f64 cos(f64);
 extern f64 sin(f64);
 extern f32 lbl_3_bss_B860[];
@@ -273,8 +274,16 @@ void fn_3_14841C(void) {
 }
 
 // .text:0x00148EF0 size:0xE0 mapped:0x80787F84
-void fn_3_148EF0(void) {
-    return;
+void fn_3_148EF0(u8* o, f32 ang) {
+    f32 s;
+    f32 a;
+    f32 c;
+    a = lbl_3_rodata_39B8 * ang;
+    s = (f32)sin(a);
+    c = (f32)cos(a);
+    *(f32*)(o + 0x10) = s * (f32)*(s32*)(lbl_3_data_26E7C + 4) / lbl_3_rodata_3930;
+    *(f32*)(o + 0x14) = c * (f32)*(s32*)(lbl_3_data_26E7C + 4) / lbl_3_rodata_3930;
+    *(f32*)(o + 0x18) = 0.0f;
 }
 
 // .text:0x00148FD0 size:0x370 mapped:0x80788064
