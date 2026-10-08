@@ -201,12 +201,11 @@ void fn_3_13334C(void) {
 }
 
 // .text:0x001344BC size:0xF0 mapped:0x80773550
-// ~99%: r6/r7 swap (g_Fielders base reg) only
 int fn_3_1344BC(int a, int b) {
     u8* tbl = G8 + 0x18F8;
-    u8* fz = (u8*)g_Fielders + 8;
     int ib = (s8)tbl[b] * 0x268;
     int ia = (s8)tbl[a] * 0x268;
+    u8* fz = (u8*)g_Fielders + 8;
     f32 dxb = *(f32*)((u8*)g_Fielders + ib) - lbl_3_data_21A48[0];
     f32 dzb = *(f32*)(fz + ib) - lbl_3_data_21A48[2];
     f32 angA = atan2(*(f32*)(fz + ia) - lbl_3_data_21A48[2], *(f32*)((u8*)g_Fielders + ia) - lbl_3_data_21A48[0]);
