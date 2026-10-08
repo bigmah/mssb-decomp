@@ -10,14 +10,14 @@ extern void fn_3_1DEB8(void);
 extern void fn_3_BF1AC(void);
 extern void Set_803cb848(s32);
 extern void fn_3_BF158(void);
-extern void fn_3_AFD80(s32);
+extern void fn_3_AFD80(s32, void*);
 extern void fn_3_5A6D4(s32);
 extern void fn_3_2EA24(void);
 extern void fn_3_2E87C(void);
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
 extern void fn_3_1DD48(void*);
-extern struct { u8 pad[0xC]; s16 n; u8 pad2[0x1C4]; u8 b1D2; } lbl_3_common_bss_34C90;
+extern struct { u8 pad[0xC]; s16 n; u8 pad2[0x1C4]; u8 b1D2; u8 pad3[2]; u8 b1D5; } lbl_3_common_bss_34C90;
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
 extern u8 g_Ball[];
@@ -38,6 +38,8 @@ extern void fn_3_5B408(void);
 extern s32 sndFXStartEx(s32, u8, u8, u8);
 extern u8 lbl_800EFBA4[];
 extern u8 g_Controls[];
+typedef struct { u8 pad[0x18CC]; s8 a[12]; u8 b[4]; u8 pad2[0x1906 - 0x18DC]; u8 n; } SMX;
+typedef struct { s32 a; u8 pad[0x1D1]; u8 b1D5; } SLB;
 extern u8 g_Fielders[];
 extern s32 fn_3_E5924(void);
 extern void fn_3_59918(s32, s32);
@@ -279,7 +281,7 @@ void fn_3_DCED0(void) {
     }
     lbl_803CBC3C = 1;
     if (*p > 0x3C) {
-        fn_3_AFD80(1);
+        fn_3_AFD80(1, 0);
         fn_3_5A6D4(0xB);
         return;
     }
@@ -290,12 +292,11 @@ void fn_3_DCED0(void) {
 // .text:0x000DCF44 size:0xBC mapped:0x8071BFD8
 void fn_3_DCF44(void) {
     s32 i;
-    for (i = 0; i < g_Minigame[0x1906]; i++) {
-        u8 pl = g_Minigame[0x18CC + i];
-        if ((s8)pl >= 0 && g_Minigame[0x18D8 + i] == 0 && (*(u16*)(g_Controls + (s8)pl * 0x10 + 6) & 0x1000)) {
-            *(u8*)((u8*)&lbl_3_common_bss_34C90 + 0x1D5) = 1;
-            *(s32*)&lbl_3_common_bss_34C90 = (s8)g_Minigame[0x18CC + i];
-            fn_3_AFD80(0);
+    for (i = 0; i < ((SMX*)g_Minigame)->n; i++) {
+        if (((SMX*)g_Minigame)->a[i] >= 0 && ((SMX*)g_Minigame)->b[i] == 0 && (*(u16*)(g_Controls + ((SMX*)g_Minigame)->a[i] * 0x10 + 6) & 0x1000)) {
+            lbl_3_common_bss_34C90.b1D5 = 1;
+            ((SLB*)&lbl_3_common_bss_34C90)->a = ((SMX*)g_Minigame)->a[i];
+            fn_3_AFD80(0, &lbl_3_common_bss_34C90);
             fn_3_59918(0xE, 0);
             return;
         }
