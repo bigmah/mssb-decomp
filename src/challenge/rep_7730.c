@@ -33,3 +33,7 @@ f32 fn_1_1DE20(void) {
 f32 fn_1_1DE30(void) {
     return lbl_1_bss_6BE4[2];
 }
+
+f32 fn_1_1DE40(void) {
+    return lbl_1_bss_6BE4[1];
+}
