@@ -4,6 +4,11 @@
 extern u8 g_Minigame[];
 
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/mtx.h"
+extern double acos(double);
+extern const Vec lbl_3_rodata_3808;
+extern const f32 lbl_3_rodata_3834;
+extern const f64 lbl_3_rodata_3868;
 extern void fn_3_141C8C(void);
 extern u8 lbl_3_bss_B7C1[];
 extern u8 lbl_3_bss_B7C0[];
@@ -27,6 +32,8 @@ extern void DCFlushRange(void*, u32);
 extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
 extern u8 lbl_3_data_21E68[];
+typedef struct { s16 lo; s16 hi; } MgRange;
+typedef struct { s16 t; u8 b; u8 c; } MgSlot;
 typedef struct { s16 lo; s16 hi; s16 lim; } MgWin;
 extern MgWin lbl_3_data_21DC8[][2];
 extern u8 lbl_3_data_21E10[];
@@ -37,6 +44,14 @@ extern u8 lbl_3_data_26698[];
 extern int random_fn_3_9EE24(int max);
 extern u8 lbl_3_data_21D2C[];
 extern u8 g_Fielders[];
+extern u8 lbl_3_data_21EBC[];
+extern u8 lbl_3_data_21EC0[];
+extern int RandomInt_Game(int);
+extern s16 lbl_3_data_7F10[];
+extern f32 lbl_3_data_21B94[];
+extern f32 charSizeMultipliers[][2];
+extern void fn_3_118358(s32, f32*);
+extern void fn_3_15730C(u32, f32, f32, f32);
 extern u8 g_Controls[];
 extern void fn_3_157570(void);
 extern void fn_3_DE4FC(void);
@@ -142,7 +157,6 @@ void fn_3_1428F0(void) {
 }
 
 // .text:0x00142C18 size:0x90 mapped:0x80781CAC
-typedef struct { s16 lo; s16 hi; } MgRange;
 
 // 97%: q/m saved registers swapped (r28/r29); this form matches the inlined copy in fn_3_146928
 void fn_3_142C18(void) {
@@ -204,8 +218,74 @@ void fn_3_143714(void) {
 }
 
 // .text:0x00143770 size:0x27C mapped:0x80782804
-void fn_3_143770(void) {
-    return;
+// 98.4%: only preheader scheduling differs (addi r6 g_Minigame / stw -1 order) and loop-end addi order (r6,r8,r9);
+// pa/pb pointer pair + local `Vec dir = {0,0,-1}` + x/r float temps are needed for the rest. Tried ~3000 decl/init/header permutations.
+s32 fn_3_143770(u8* p) {
+    s32 l1[4];
+    s32 l2[4];
+    Vec d;
+    Vec dir = {0.0f, 0.0f, -1.0f};
+    s32 n1;
+    s32 n2;
+    s32* pa;
+    s32* pb;
+    s32* l;
+    s32* n;
+    s32 i;
+    f32 ang;
+    f32 x;
+    f32 r;
+
+    if (p[0x2E] == 0) {
+        l1[0] = -1;
+        l1[1] = -1;
+        l1[2] = -1;
+        l1[3] = -1;
+        n1 = 0;
+        n2 = 0;
+        pa = l1;
+        pb = l2;
+        for (i = 0; i < 4; i++, pb++) {
+            if (g_Minigame[0x1C9A + i] == 0) {
+                if (g_Minigame[0x1C9E + i] == 0) {
+                    *pa++ = i;
+                    n1++;
+                }
+                *pb = i;
+                n2++;
+            }
+        }
+        if (n1 == 0) {
+            if (n2 == 0) {
+                for (n2 = 0; n2 < 4; n2++) {
+                    l2[n2] = n2;
+                }
+            }
+            l = l2;
+            n = &n2;
+        } else {
+            l = l1;
+            n = &n1;
+        }
+        p[0x35] = l[random_fn_3_9EE24(*n)];
+        p[0x34] = g_Minigame[*(s8*)(p + 0x35) + 0x18F8];
+        g_Minigame[*(s8*)(p + 0x35) + 0x1C9E] = 1;
+    } else {
+        p[0x34] = g_Minigame[*(s8*)(p + 0x2F) + 0x18F8];
+    }
+    PSVECSubtract((Vec*)(g_Fielders + *(s8*)(p + 0x34) * 0x268), (Vec*)p, &d);
+    d.y = lbl_3_rodata_3834;
+    if (PSVECMag(&d)) {
+        PSVECNormalize(&d, &d);
+    }
+    ang = acos(PSVECDotProduct(&d, &dir));
+    x = d.x;
+    r = ang;
+    if (x < lbl_3_rodata_3834) {
+        r = lbl_3_rodata_3868 - ang;
+    }
+    *(f32*)(p + 0x10) = -r;
+    return 1;
 }
 
 // .text:0x001439EC size:0x5C0 mapped:0x80782A80
@@ -345,8 +425,84 @@ void fn_3_14423C(void) {
 }
 
 // .text:0x0014443C size:0x2E0 mapped:0x807834D0
+typedef struct { u8 pad0[4]; f32 x; u8 pad8[0x10]; s16 a18; s16 a1A; s16 a1C; s16 a1E; u8 pad20[0xA]; u8 st; u8 sel; u8 who; u8 pad2D[0xB]; } MgSpawn;
+
 void fn_3_14443C(void) {
-    return;
+    MgSpawn* p;
+    s32 i;
+    u8* g;
+    s16* tb;
+    f32* v;
+    s32 k;
+
+    fn_3_14423C();
+    g = g_Minigame;
+    p = (MgSpawn*)g;
+    tb = (s16*)lbl_3_data_21E68;
+    i = 0;
+    do {
+        if (p->a18 < 0x7FFE) {
+            p->a18 = p->a18 + 1;
+        } else {
+            p->a18 = 0x7FFF;
+        }
+        if (p->a1A < 0x7FFE) {
+            p->a1A = p->a1A + 1;
+        } else {
+            p->a1A = 0x7FFF;
+        }
+        if (p->a1E != 0) {
+            if (p->a1E < 0x7FFE) {
+                p->a1E = p->a1E + 1;
+            } else {
+                p->a1E = 0x7FFF;
+            }
+        }
+        if (p->st == 0) {
+            ((void (*)(s32))fn_3_14402C)(i);
+        } else if (p->st == 1) {
+            p->a1C -= 1;
+            v = (f32*)(lbl_3_data_21D1C + p->sel * 8);
+            p->x = (v[1] - v[0]) * ((f32)p->a1A / (f32)tb[5]) + *(f32*)(lbl_3_data_21D1C + p->sel * 8);
+            if (p->a1C <= 0) {
+                p->st = 2;
+                p->a1A = 0;
+            }
+        } else if (p->st == 2) {
+            if (g[0x1CA2] == 2) {
+                MgSpawn* e = (MgSpawn*)g;
+                for (k = 0; k < 3; k++) {
+                    if (e->st == 2) {
+                        e->st = 3;
+                        e->a1A = 0;
+                    }
+                    e++;
+                }
+            }
+            ((void (*)(s32))fn_3_1439EC)(i);
+        } else if (p->st == 3) {
+            v = (f32*)(lbl_3_data_21D1C + p->sel * 8);
+            p->x = (v[0] - v[1]) * ((f32)p->a1A / (f32)tb[6]) + v[0];
+            if (p->a1A >= tb[6]) {
+                p->st = 0;
+                p->a1A = 0;
+                g_Minigame[p->who + 0x1CA9] = 0;
+                if (g[0x1CA3] != 0) {
+                    g[0x1CA3] = 0;
+                }
+            }
+        } else if (p->st == 4) {
+            if (p->a1C != 0) {
+                p->a1C -= 1;
+            }
+            if (p->a1A >= tb[8]) {
+                p->st = 0;
+                p->a1A = 0;
+            }
+        }
+        i++;
+        p++;
+    } while (i < 3);
 }
 
 // .text:0x0014471C size:0x3C0 mapped:0x807837B0
