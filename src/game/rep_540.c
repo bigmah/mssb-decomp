@@ -1,5 +1,6 @@
 #include "game/rep_540.h"
 #include "header_rep_data.h"
+#include "stl/math.h"
 
 extern f32 lbl_3_rodata_590;
 extern u8 g_Minigame[];
@@ -23,7 +24,19 @@ extern void fn_3_59918(s32, s32);
 
 // .text:0x00006530 size:0x78 mapped:0x806455C4
 void fn_3_6530(void) {
-    return;
+    g_Ball[0x1BF1] = 1;
+    if (g_Ball[0x1BC9] == 2) {
+        g_Ball[0x1BC9] = 1;
+    }
+    g_Ball[0x1BE7] = 0;
+    g_Ball[0x1BE5] = 0;
+    g_Ball[0x1BF1] = 1;
+    g_Ball[0x1BEB] = 0;
+    g_Ball[0x1BED] = 0;
+    *(f32*)(g_Ball + 0x324) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x328) = lbl_3_rodata_590;
+    *(f32*)(g_Ball + 0x32C) = lbl_3_rodata_590;
+    fn_3_27648();
 }
 
 // .text:0x000065A8 size:0x20 mapped:0x8064563C
@@ -111,8 +124,35 @@ void fn_3_9B74(void) {
 }
 
 // .text:0x00009CE0 size:0x138 mapped:0x80648D74
-void fn_3_9CE0(void) {
-    return;
+extern const f64 lbl_3_rodata_5B8;
+extern const f64 lbl_3_rodata_5C0;
+extern const f64 lbl_3_rodata_5C8;
+
+static inline float sqrt540(float x) {
+    if (x > 0.0f) {
+        double half = lbl_3_rodata_5B8;
+        double three = lbl_3_rodata_5C0;
+        double xd = (double)x;
+        double guess = __frsqrte(xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        return (float)(xd * guess);
+    } else if (x < lbl_3_rodata_5C8)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
+
+f32 fn_3_9CE0(f32 x, f32 z) {
+    f32 dx = x - *(f32*)(g_Ball + 0);
+    f32 dz = z - *(f32*)(g_Ball + 8);
+    f32 t = *(f32*)(g_Ball + 0x1A18) * dx + *(f32*)(g_Ball + 0x1A1C) * dz;
+    f32 d = dx * dx + dz * dz - t * t;
+    if (d < 0.0f) return 0.0f;
+    return sqrt540(d);
 }
 
 // .text:0x00009E18 size:0x6C mapped:0x80648EAC
@@ -239,7 +279,33 @@ void fn_3_A198(void) {
 
 // .text:0x0000A83C size:0x134 mapped:0x806498D0
 void fn_3_A83C(void) {
-    return;
+    int i;
+    f32* p = (f32*)(g_Ball + 0x2C4);
+    for (i = 0x3B; i != 0; i--) {
+        p[0x3C / 4] = p[0x30 / 4];
+        p[0x40 / 4] = p[0x34 / 4];
+        p[0x44 / 4] = p[0x38 / 4];
+        p -= 3;
+    }
+    if (g_Ball[0x1BF0] != 0 || g_Ball[0x1BEF] != 0) {
+        *(f32*)(g_Ball + 0x3C) = *(f32*)(g_Ball + 0x1B38);
+        *(f32*)(g_Ball + 0x40) = *(f32*)(g_Ball + 0x1B3C);
+        *(f32*)(g_Ball + 0x44) = *(f32*)(g_Ball + 0x1B40);
+    } else {
+        *(f32*)(g_Ball + 0x3C) = *(f32*)(g_Ball + 0);
+        *(f32*)(g_Ball + 0x40) = *(f32*)(g_Ball + 4);
+        *(f32*)(g_Ball + 0x44) = *(f32*)(g_Ball + 8);
+    }
+    if (g_Ball[0x1BE7] == 3 || g_Ball[0x1BE7] == 4) {
+        for (i = 9; i > 0; i--) {
+            *(f32*)(g_Ball + 0x1A8C + i * 12) = *(f32*)(g_Ball + 0x1A80 + i * 12);
+            *(f32*)(g_Ball + 0x1A90 + i * 12) = *(f32*)(g_Ball + 0x1A84 + i * 12);
+            *(f32*)(g_Ball + 0x1A94 + i * 12) = *(f32*)(g_Ball + 0x1A88 + i * 12);
+        }
+        *(f32*)(g_Ball + 0x1A8C) = *(f32*)(g_Ball + 0x1A68);
+        *(f32*)(g_Ball + 0x1A90) = *(f32*)(g_Ball + 0x1A6C);
+        *(f32*)(g_Ball + 0x1A94) = *(f32*)(g_Ball + 0x1A70);
+    }
 }
 
 // .text:0x0000A970 size:0xAD0 mapped:0x80649A04
