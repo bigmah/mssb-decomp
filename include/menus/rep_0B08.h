@@ -118,4 +118,6 @@ void fn_2_6A5A8(s32 index);
 
 f32 fn_2_68940(s32 from, s32 to);
 
+f32 fn_2_688A4(s32 index, s32 location);
+
 #endif

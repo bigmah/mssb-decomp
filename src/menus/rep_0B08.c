@@ -48,6 +48,18 @@ typedef struct {
 extern MenuEntries* lbl_2_bss_1A8248[];
 extern const f32 lbl_2_rodata_B58;
 extern f32 fn_2_4A18C(f32);
+extern const Vec lbl_2_data_2EA4[];
+
+// fn_2_688A4, size:0x9C
+f32 fn_2_688A4(s32 index, s32 location) {
+    Vec target;
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    f32 angle;
+
+    memcpy(&target, &lbl_2_data_2EA4[location], sizeof(target));
+    angle = (f32)atan2(-(target.x - entry->position.x), -(target.z - entry->position.z));
+    return fn_2_4A18C(entry->heading) - angle;
+}
 
 // fn_2_68940, size:0x8C
 f32 fn_2_68940(s32 from, s32 to) {
