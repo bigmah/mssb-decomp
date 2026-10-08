@@ -20,7 +20,7 @@ void fn_3_BC850(int a, int i);
 void fn_3_BC888(void);
 void fn_3_BCA20(void);
 void fn_3_BD1D4(void);
-void fn_3_BD1D8(void);
+void fn_3_BD1D8(f32 (*m)[4]);
 void fn_3_BD434(int, int);
 void fn_3_BD4F0(void);
 void fn_3_BD504(int a, f32 x, f32 y, f32 z);

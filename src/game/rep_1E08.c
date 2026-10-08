@@ -115,8 +115,114 @@ void fn_3_BBBC4(void) {
 }
 
 // .text:0x000BBF94 size:0x290 mapped:0x806FB028
+extern u8 g_GameLogic[];
+extern void fn_3_15FB84(u8, ...);
+extern void fn_3_169150(void);
+extern void fn_3_CB3AC(void);
+extern void fn_3_168CD8(void);
+extern void fn_3_16892C(void);
+extern int fn_8004ABE8(int);
+extern int fn_8004ABE0(void);
+extern void playSoundEffect(int);
+extern f32 lbl_3_bss_9964;
+extern f32 lbl_3_data_12CB4;
+extern f32 lbl_3_rodata_1E68;
+extern void fn_8003A550(s32, Vec*, Vec*, s32);
+extern BOOL getAnimRelatedCoordinates(int, int, void*);
+// 99%: loop pointer init emits addi r0; mr r30,r0 (known open pattern); jumptable reloc name differs
 void fn_3_BBF94(void) {
-    return;
+    Mtx m;
+    Vec v;
+    Vec c;
+    u8* gl = g_GameLogic;
+    s32 i;
+    s32 k;
+    u8** p;
+    u8* o;
+    u8 st = gl[0x11E];
+    switch (st) {
+        case 0:
+        case 3:
+        case 4:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+        case 15:
+        case 16:
+        case 17:
+        case 18:
+        case 24:
+        case 26:
+        case 27:
+        case 28:
+        case 29:
+        case 30:
+        case 31:
+        case 32:
+        case 33:
+        case 34:
+        case 35:
+        case 36:
+        case 37:
+        case 38:
+        case 39:
+        case 40:
+        case 41:
+            lbl_3_common_bss_35154[0x479] = 1;
+            break;
+    }
+    if (st < 0x1B) {
+        fn_3_BC2DC();
+    }
+    if (gl[0x11E] == 1 || (u8)(gl[0x11E] - 2) <= 1 || (u8)(gl[0x11E] - 0x13) <= 1 ||
+        gl[0x11E] == 0x16 || gl[0x11E] == 0x17) {
+        for (i = 0, p = (u8**)lbl_8036E548; i < 13; i++, p++) {
+            o = p[0x2C50 / 4];
+            if (o != NULL) {
+                if (o[0x25D] == 0) {
+                    o[0x279] = 0;
+                } else {
+                    PSMTXRotRad(m, 'Y', *(f32*)(o + 0x44));
+                    v.x = lbl_3_bss_9964;
+                    v.y = lbl_3_rodata_1E68;
+                    v.z = lbl_3_data_12CB4;
+                    PSMTXMultVec(m, &v, &v);
+                    k = o[0x276] & 0x14;
+                    if (k == 0x10 && (o[0x275] & 0x7F) == 6) {
+                        getAnimRelatedCoordinates(i, 0x22, &c);
+                        c.y = 0.0f;
+                        fn_8003A550(i, &c, &v, !o[0x25A]);
+                    }
+                    o[0x279] = (k == 4);
+                    k = o[0x276] & 0xA;
+                    if (k == 8 && (o[0x275] & 0x7F) == 6) {
+                        getAnimRelatedCoordinates(i, 0x1E, &c);
+                        c.y = 0.0f;
+                        fn_8003A550(i, &c, &v, o[0x25A]);
+                    }
+                    o[0x279] |= (k == 2) << 1;
+                }
+            }
+        }
+    }
+    if (lbl_3_common_bss_35154[0x470] != 0) {
+        fn_3_15FB84(lbl_3_common_bss_35154[0x472], lbl_3_common_bss_35154[0x473], lbl_3_common_bss_35154[0x474],
+                    lbl_3_common_bss_35154[0x475], lbl_3_common_bss_35154[0x476]);
+    }
+    fn_3_169150();
+    fn_8006C43C((int)fn_3_168CD8);
+    fn_8006C3F0((int)fn_3_16892C);
+    if (fn_8004ABE8(1) != 0) {
+        fn_3_CB3AC();
+        if (fn_8004ABE0() != 0) {
+            playSoundEffect(0x1B6);
+        }
+    }
 }
 
 // .text:0x000BC224 size:0x38 mapped:0x806FB2B8
@@ -136,9 +242,11 @@ s32 fn_3_BC274(u8* a, u8* b, u8* c) {
 }
 
 // .text:0x000BC2DC size:0x3FC mapped:0x806FB370
+#pragma dont_inline on
 void fn_3_BC2DC(void) {
     return;
 }
+#pragma dont_inline reset
 
 // .text:0x000BC6D8 size:0x178 mapped:0x806FB76C
 extern s32 lbl_3_bss_9968;
@@ -238,8 +346,65 @@ void fn_3_BD1D4(void) {
 }
 
 // .text:0x000BD1D8 size:0x25C mapped:0x806FC26C
-void fn_3_BD1D8(void) {
-    return;
+extern f32 lbl_3_rodata_1E84;
+extern f32 lbl_3_rodata_1E98;
+extern f32 lbl_3_rodata_1EE0;
+extern f32 lbl_3_rodata_1F10;
+extern f32 lbl_3_rodata_1EE4;
+extern f32 lbl_3_rodata_1F14;
+extern f32 lbl_3_rodata_1EFC;
+extern Vec lbl_3_bss_9978[];
+extern Vec lbl_3_bss_996C;
+extern u8 fn_3_8D4(void*, void*);
+extern void* memcpy(void*, const void*, u32);
+// 81%: stack layout (orig sp8,sp14,sp2C,sp38 + 0x10 spare) and float-reg order of the 4-way box test not matched
+void fn_3_BD1D8(f32 (*m)[4]) {
+    Vec sp38;
+    Vec sp2C;
+    struct { Vec a, b; } sp14;
+    Vec sp8;
+    f32 zoom;
+    u8 hit;
+    f32 z;
+    f32 xr;
+    f32 yr;
+    f32 top, bottom, right, left;
+    zoom = lbl_3_rodata_1E84 / fn_80052768_getCamera(0)->zoom;
+    *(u32*)(lbl_3_common_bss_35154 + 0x3C8) =
+        (*(u32*)(lbl_3_common_bss_35154 + 0x3C8) + 1) % *(u32*)(lbl_3_common_bss_35154 + 0x3CC);
+    PSVECScale((Vec*)(lbl_3_common_bss_35154 + 0x3BC), lbl_3_rodata_1E84, &sp8);
+    PSMTXMultVec(m, &sp8, lbl_3_bss_9978);
+    z = lbl_3_bss_9978[0].z;
+    if (z <= lbl_3_rodata_1E98) {
+        hit = 0;
+        xr = ((lbl_3_rodata_1EE0 * z) * lbl_3_rodata_1E64) / lbl_3_rodata_1EE4 * zoom;
+        yr = ((lbl_3_rodata_1F10 * z) * lbl_3_rodata_1E64) / lbl_3_rodata_1EE4 * zoom;
+        top = lbl_3_rodata_1F14 + lbl_3_bss_9978[0].y;
+        bottom = lbl_3_bss_9978[0].y - lbl_3_rodata_1F14;
+        right = lbl_3_rodata_1F14 + lbl_3_bss_9978[0].x;
+        left = lbl_3_bss_9978[0].x - lbl_3_rodata_1F14;
+        if (yr < top && bottom < -yr && xr > left && right > -xr) {
+            hit = 1;
+        }
+        lbl_3_common_bss_35154[0x3E1] = hit;
+        if (hit) {
+            lbl_3_bss_996C.x = lbl_3_rodata_1EFC * -lbl_3_bss_9978[0].x;
+            lbl_3_bss_996C.y = lbl_3_rodata_1EFC * -lbl_3_bss_9978[0].y;
+            lbl_3_bss_996C.z = lbl_3_rodata_1E68;
+            if (*(s16*)((u8*)g_UNK_StadiumDetails + 0x77C) != 0) {
+                memcpy(&sp2C, &fn_80052768_getCamera(0)->eye, 0xC);
+                memcpy(&sp38, lbl_3_common_bss_35154 + 0x3BC, 0xC);
+                lbl_3_common_bss_35154[0x3E2] = fn_3_8D4(&sp2C, &sp14);
+                if (lbl_3_common_bss_35154[0x3E2] == 0) {
+                    memcpy(&sp38, &fn_80052768_getCamera(0)->eye, 0xC);
+                    memcpy(&sp2C, lbl_3_common_bss_35154 + 0x3BC, 0xC);
+                    lbl_3_common_bss_35154[0x3E2] = fn_3_8D4(&sp2C, &sp14);
+                }
+            }
+        }
+    } else {
+        lbl_3_common_bss_35154[0x3E1] = 0;
+    }
 }
 
 // .text:0x000BD434 size:0xBC mapped:0x806FC4C8
