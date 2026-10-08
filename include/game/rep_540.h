@@ -10,7 +10,7 @@ void fn_3_65F4(void);
 void fn_3_6620(void);
 void fn_3_6694(void);
 void fn_3_6C38(void);
-void fn_3_8CF0(void);
+void fn_3_8CF0(f32* p, s32 n, u8* flag, s32 skip);
 void fn_3_904C(void);
 void fn_3_9260(s32 flags);
 void fn_3_9508(void);
