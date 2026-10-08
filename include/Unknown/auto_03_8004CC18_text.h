@@ -7,4 +7,6 @@ void fn_8004CC18(void);
 
 void fn_8004CC2C(void);
 
+void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, s16 value);
+
 #endif
