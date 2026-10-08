@@ -42,6 +42,14 @@ extern f32 lbl_3_rodata_2DEC;
 extern f32 lbl_3_rodata_2DDC;
 extern f32 lbl_3_rodata_2E88;
 extern f64 sin(f64);
+extern f32 lbl_3_rodata_2D74;
+extern f32 lbl_3_rodata_2DF0;
+extern u8 lbl_800E8754[];
+extern void fn_3_CB7E8(f32, f32, f32);
+extern char lbl_3_rodata_2D38[];
+extern f64 lbl_3_rodata_2DD0;
+extern f32 lbl_3_rodata_2D54;
+extern f32 lbl_3_rodata_2DD8;
 extern u8 lbl_3_data_1B820[];
 extern u8 fn_800527C4(void*);
 extern void fn_80064430(void*, s32, f32, f32);
@@ -240,9 +248,68 @@ void fn_3_EEFD0(void) {
     return;
 }
 
+// .text:0x000F13F8 size:0x50 mapped:0x8073048C
+#pragma dont_inline off
+void fn_3_F13F8(u8* p) {
+    u8* o = **(u8***)(p + 0x74);
+    u32 i;
+    for (i = 0; i < *(u16*)(o + 6); i++) {
+        u8* e = (*(u8***)(o + 0x18))[i];
+        e[0x60] = 0;
+        e[0xA4] = 0;
+    }
+    (*(u8**)(p + 0x74))[0x58] = 0;
+}
+#pragma dont_inline on
+
+// 99%: only scheduling of the stfs 0xB8 / li r6,0 / li r0,4 at the join differs (inlined fn_3_F13F8 matches)
 // .text:0x000EEFD4 size:0x244 mapped:0x8072E068
-void fn_3_EEFD4(void) {
-    return;
+void fn_3_EEFD4(s32 idx) {
+    Vec d;
+    Vec ref;
+    u8* e = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+    ref = *(Vec*)lbl_3_rodata_2D38;
+    if (e[0xC6] < 3) {
+        f32 t;
+        f32 ang;
+        u32 stad;
+        u32 h;
+        u8 v;
+        d.x = *(f32*)(g_Ball + 0x318);
+        d.y = lbl_3_rodata_2D5C;
+        d.z = *(f32*)(g_Ball + 0x320);
+        PSVECNormalize(&d, &d);
+        t = (f32)acos(PSVECDotProduct(&ref, &d));
+        ang = t;
+        if (d.z < lbl_3_rodata_2D5C) {
+            ang = lbl_3_rodata_2DD0 - t;
+        }
+        *(f32*)(e + 0xB8) = ang;
+        *(f32*)(e + 0xBC) = lbl_3_rodata_2D54;
+        e[0xC6] = 4;
+        fn_3_F13F8(e);
+        if (*(s16*)(g_Ball + 0x1B7A) != 2 && lbl_800E8754[4] != 0) {
+            Vec t;
+            CTRLGetTranslation((Control*)e, &t.x, &t.y, &t.z);
+            fn_3_CB7E8(t.x, t.y - lbl_3_rodata_2DD8, t.z);
+            e[0xC8] = 1;
+        }
+        stad = g_d_GameSettings[9];
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8[0x12];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 0x12];
+        }
+        h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 9), v, 0x3F, 0);
+        if (g_d_GameSettings[7] == 6) {
+            v = lbl_3_data_84B8[0x13];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 0x13];
+        }
+        sndFXCtrl(h, 0x5B, v);
+        fn_3_27648();
+        g_FieldingLogic[0x13B] = 1;
+    }
 }
 
 // .text:0x000EF218 size:0x4 mapped:0x8072E2AC
@@ -352,11 +419,12 @@ void fn_3_EF800(u8* p) {
     p[0xC7]--;
 }
 
-// 90%: body is fn_3_F13F8 inlined + CTRLSetScale(p, 2.0f, 0.1f, 2.0f) + p[0xC6]=6, p[0xC7]=0x4B;
-// hand-inlined loop gives i/off zero regs swapped (orig: li r6 = i; mr r8,r6 = off). Needs real inlining (file has dont_inline on).
 // .text:0x000EF890 size:0xA0 mapped:0x8072E924
-void fn_3_EF890(void) {
-    return;
+void fn_3_EF890(u8* p) {
+    fn_3_F13F8(p);
+    CTRLSetScale((Control*)p, 2.0f, 0.1f, 2.0f);
+    p[0xC6] = 6;
+    p[0xC7] = 0x4B;
 }
 
 // .text:0x000EF930 size:0x224 mapped:0x8072E9C4
@@ -400,17 +468,6 @@ void fn_3_F0FA4(void) {
     return;
 }
 
-// .text:0x000F13F8 size:0x50 mapped:0x8073048C
-void fn_3_F13F8(u8* p) {
-    u8* o = **(u8***)(p + 0x74);
-    u32 i;
-    for (i = 0; i < *(u16*)(o + 6); i++) {
-        u8* e = (*(u8***)(o + 0x18))[i];
-        e[0x60] = 0;
-        e[0xA4] = 0;
-    }
-    (*(u8**)(p + 0x74))[0x58] = 0;
-}
 
 // .text:0x000F1448 size:0xD0 mapped:0x807304DC
 void fn_3_F1448(u8* p) {
@@ -787,3 +844,5 @@ void fn_3_F6FDC(void) {
     return;
 }
 
+
+#pragma dont_inline off
