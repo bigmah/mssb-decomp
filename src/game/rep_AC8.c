@@ -54,6 +54,9 @@ extern f64 lbl_3_rodata_B38;
 extern f64 lbl_3_rodata_B40;
 extern f32 lbl_3_rodata_C38;
 extern f32 lbl_3_rodata_B80;
+extern f32 lbl_3_data_18984[];
+extern f32 g_AiLogic[];
+extern void fn_3_58F58(int, f32*, f32*);
 #define SQRT_L(x)                                                                                  \
     do {                                                                                           \
         if ((x) > lbl_3_rodata_B20) {                                                              \
@@ -427,7 +430,56 @@ void fn_3_2E41C(void) {
 
 // .text:0x0002E87C size:0x1A8 mapped:0x8066D910
 void fn_3_2E87C(void) {
-    return;
+    f32 spC;
+    f32 sp8;
+    u8* f;
+    int i;
+    u8 m;
+    fn_3_58F58(0, &spC, &sp8);
+    *(f32*)g_Fielders = spC;
+    *(f32*)(g_Fielders + 8) = sp8;
+    *(f32*)(g_Fielders + 0x14) = 0.0f;
+    *(f32*)(g_Fielders + 0x18) = 0.0f;
+    *(f32*)(g_Fielders + 0x1C) = 0.0f;
+    *(f32*)(g_Fielders + 0x30) = 0.0f;
+    *(f32*)(g_Fielders + 0x34) = 0.0f;
+    *(f32*)(g_Fielders + 0x38) = 0.0f;
+    m = g_Minigame[0x1906];
+    if (m >= 4) {
+        *(f32*)(g_Fielders + 0x738) = lbl_3_data_18984[2];
+        *(f32*)(g_Fielders + 0x740) = lbl_3_data_18984[3];
+    } else if (m >= 3) {
+        *(f32*)(g_Fielders + 0x738) = lbl_3_data_18984[0];
+        *(f32*)(g_Fielders + 0x740) = lbl_3_data_18984[1];
+    }
+    if (m >= 4) {
+        *(f32*)(g_Fielders + 0x9A0) = lbl_3_data_18984[4];
+        *(f32*)(g_Fielders + 0x9A8) = lbl_3_data_18984[5];
+    }
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        *(f32*)(f + 0x14) = 0.0f;
+        *(f32*)(f + 0x18) = 0.0f;
+        *(f32*)(f + 0x1C) = 0.0f;
+        *(f32*)(f + 0x30) = 0.0f;
+        *(f32*)(f + 0x34) = 0.0f;
+        *(f32*)(f + 0xD4) = *(f32*)(f + 0);
+        *(f32*)(f + 0xD8) = *(f32*)(f + 8);
+        *(f32*)(f + 0x50) = 0.0f;
+        f[0x1D9] = 0;
+        *(s8*)(f + 0x1F5) = -1;
+        spC = -*(f32*)(f + 0);
+        sp8 = -*(f32*)(f + 8);
+        *(f32*)(f + 0x48) = atan2(sp8, spC);
+    }
+    ((u8*)g_AiLogic)[0xB4] = 0;
+    ((u8*)g_AiLogic)[0xB8] = 0;
+    ((u8*)g_AiLogic)[0xB5] = 0;
+    ((u8*)g_AiLogic)[0xB9] = 0;
+    ((u8*)g_AiLogic)[0xB6] = 0;
+    ((u8*)g_AiLogic)[0xBA] = 0;
+    ((u8*)g_AiLogic)[0xB7] = 0;
+    ((u8*)g_AiLogic)[0xBB] = 0;
 }
 
 // .text:0x0002EA24 size:0x64 mapped:0x8066DAB8
