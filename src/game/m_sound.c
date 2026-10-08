@@ -542,12 +542,13 @@ void fn_3_90064(s32 id) {
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4
+// ~50%: orig converts t[b] first (slot 0x8/0xc, passed to sndFXStartEx) and keeps the t[b+0x180] result in r31; ours has the two swapped and schedules differently
 extern u8 lbl_3_data_8148[];
 u32 fn_3_90150(s32 a, s32 b) {
     u8* d = lbl_3_data_8148;
     u8* t = d + 0x3E8;
-    u8 v1 = (s32)((f32)t[b] * *(f32*)(d + 0x6E8));
-    u8 v2 = (s32)((f32)t[b + 0x180] * *(f32*)(d + 0x6E8));
+    u8 v1 = t[b] * *(f32*)(d + 0x6E8);
+    u8 v2 = t[b + 0x180] * *(f32*)(d + 0x6E8);
     u32 h = sndFXStartEx((u16)(b + ((u16*)(d + 0x20))[a]), v1, 0x3F, 0);
     sndFXCtrl(h, 0x5B, v2);
     return h;
@@ -660,6 +661,7 @@ void fn_3_906FC(void) {
 }
 
 // .text:0x0009056C size:0x108 mapped:0x806CF600
+// ~93%: only the vol table read differs (orig: addi r4,r30,0x1c4; lbzx r0,r4,r0; ours folds 0x1c4 into lbz displacement)
 typedef struct { u16 a, b, c; } SeqEnt6;
 typedef struct { u8 v, pad; } SeqVol2;
 u32 fn_3_9056C(s32 idx) {
@@ -669,9 +671,11 @@ u32 fn_3_9056C(s32 idx) {
     u8 vol;
     u32 seq;
     if (g_d_GameSettings.GameModeSelected != 2) {
-        e = &((SeqEnt6*)(d + 0x798))[idx];
+        e = (SeqEnt6*)(d + 0x798);
+        e += idx;
     } else {
-        e = &((SeqEnt6*)(d + 0x80C))[idx];
+        e = (SeqEnt6*)(d + 0x80C);
+        e += idx;
     }
     s = &S34C58;
     if (sndSeqGetValid(s->unk8)) {

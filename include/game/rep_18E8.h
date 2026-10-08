@@ -5,16 +5,16 @@
 
 void fn_3_A009C(void);
 s32 fn_3_A1D04(void);
-void fn_3_A1DA0(void);
-void fn_3_A1F3C(void);
-void fn_3_A2048(void);
-void fn_3_A222C(void);
-void fn_3_A2404(void);
+int fn_3_A1DA0(void);
+int fn_3_A1F3C(void);
+int fn_3_A2048(void);
+int fn_3_A222C(void);
+int fn_3_A2404(void);
 void fn_3_A25C4(void);
 void fn_3_A295C(void);
-void fn_3_A2B6C(void);
-void fn_3_A2C9C(void);
-void fn_3_A2DDC(void);
+int fn_3_A2B6C(void);
+int fn_3_A2C9C(void);
+int fn_3_A2DDC(void);
 void fn_3_A2FD8(void);
 int fn_3_A31E8(void);
 int fn_3_A32B8(void);
