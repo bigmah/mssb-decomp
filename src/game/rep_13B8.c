@@ -272,8 +272,162 @@ void fn_3_7DD24(int a) {
 }
 
 // .text:0x0007DD6C size:0x550 mapped:0x806BCE00
+// 99%: body matches (88C24 tail written out inline with `base`, switch as an if-chain, 7D920/7D79C/833EC bodies copied inline).
+// Left: (1) orig does `addi r25,base; mr r27,r25`, we get `addi r27; mr r25,r27`; (2) tail hoisted-load order (orig: lha, li counter, lbz fl, ...).
 void fn_3_7DD6C(void) {
-    return;
+    u8* r;
+    u8* mp;
+    u8* base;
+    int i;
+    u8 m;
+    s8 k;
+    int v;
+    XZ13B8 pos;
+    int idx;
+    int count;
+    f32 dist;
+    f32 frame;
+    fn_3_87424();
+    base = g_Runners;
+    for (i = 0, mp = g_Minigame, r = base; i < 4; r += 0x154, i++, mp++) {
+        if (r[0x123] != 0) {
+            g_Minigame[0x1924] = i;
+            if (r[0x137] == 0) {
+                r[0x137] = 2;
+            }
+            r[0x148] = idx = 0;
+            k = *(s8*)(mp + 0x18FC);
+            m = g_Minigame[k + 0x1B15];
+            if (m == 4) {
+            } else if (m == 1 || m == 2) {
+                if (m == 2) {
+                    if (g_Minigame[0x1B19] == 0) {
+                        g_Minigame[k + 0x1B15] = 3;
+                        *(s16*)(r + 0x108) = 0;
+                    }
+                } else {
+                if (*(s16*)(r + 0x108) < lbl_3_data_21904[1]) {
+                    *(f32*)(r + 0x0) += *(f32*)(r + 0x18);
+                    *(f32*)(r + 0x8) += *(f32*)(r + 0x20);
+                } else {
+                    g_Minigame[k + 0x1B15] = 2;
+                }
+                if (*(s16*)(r + 0x108) < 0x7FFE) {
+                    *(s16*)(r + 0x108) += 1;
+                } else {
+                    *(s16*)(r + 0x108) = 0x7FFF;
+                }
+                }
+            } else if (m == 3) {
+                if (*(s16*)(r + 0x108) <= 0) {
+                    dist = *(f32*)(r + 0x64);
+                    frame = *(f32*)(r + 0x68);
+                    if (dist < lbl_3_rodata_1408) {
+                        count = 4;
+                    } else if (dist < lbl_3_rodata_140C) {
+                        idx = 3;
+                        count = 4;
+                    } else if (dist < lbl_3_rodata_1410) {
+                        idx = 6;
+                        count = 4;
+                    } else if (g_GameLogic[0x121] == 6) {
+                        idx = 9;
+                        count = 4;
+                    } else {
+                        idx = 9;
+                        count = 3;
+                    }
+                    running_roundBasePosition(frame, &pos, &lbl_3_data_4A54[g_GameLogic[0x121] == 6][idx], count);
+                    *(f32*)(r + 0x0) = pos.x;
+                    *(f32*)(r + 0x8) = pos.z;
+                    *(f32*)(r + 0x4) = lbl_3_rodata_1414;
+                    *(f32*)(r + 0x18) = lbl_3_rodata_1414;
+                    *(f32*)(r + 0x20) = lbl_3_rodata_1414;
+                }
+                if (*(s16*)(r + 0x108) < 0x7FFE) {
+                    *(s16*)(r + 0x108) += 1;
+                } else {
+                    *(s16*)(r + 0x108) = 0x7FFF;
+                }
+                if (*(s16*)(r + 0x108) >= lbl_3_data_21904[2]) {
+                    g_Minigame[*(s8*)(mp + 0x18FC) + 0x1B15] = 0;
+                }
+            } else {
+                if (g_GameLogic[0x11E] == 2 && g_Minigame[0x190B] == 0) {
+                    fn_3_7DB30(i);
+                }
+                ((void (*)(int))fn_3_8307C)(i);
+                if ((r[0x145] == 0 || r[0x146] == 0) && r[0x13A] == 0) {
+                    if (*(s16*)(r + 0x112) >= lbl_3_data_4C54[3] || (r[0x137] != 1 && r[0x137] != 3)) {
+                        u8 s = r[0x135];
+                        if (s != 0) {
+                            if (g_GameLogic[0x121] == 6) {
+                                if (r[0x123] == 1) {
+                                    r[0x136] = s;
+                                }
+                            } else {
+                                if ((i != 0 || r[0x126] != 1) && r[0x123] == 1) {
+                                    r[0x136] = s;
+                                }
+                                if (r[0x136] == 3 && r[0x128] != 3 && *(s16*)(r + 0xE6) >= 0) {
+                                    r[0x136] = 0;
+                                }
+                            }
+                        }
+                    }
+                    v = ((int (*)(int))fn_3_7FA78)(i);
+                    if (v != 0) {
+                        r[0x136] = v;
+                    }
+                }
+                if (r[0x145] != 0) {
+                    r[0x13E] = 0;
+                    r[0x13A] = 0;
+                } else {
+                    fn_3_7ECFC(i);
+                    fn_3_7F494(i);
+                    if (g_GameLogic[0x121] != 6) {
+                        if (i == 0 && r[0x126] == 1) {
+                            fn_3_7F2D8();
+                        } else if (r[0x13E] == 1) {
+                            r[0x13E] = 0;
+                        }
+                        fn_3_7EBD4(i);
+                    }
+                }
+                ((void (*)(int))fn_3_82670)(i);
+                ((void (*)(int))fn_3_81190)(i);
+                ((void (*)(int))fn_3_80028)(i);
+                ((void (*)(int))fn_3_8307C)(i);
+            }
+        }
+    }
+    fn_3_87AE8();
+    if (g_GameLogic[0x121] == 6) {
+        fn_3_87CC8();
+    } else {
+        fn_3_88408();
+        fn_3_88B18();
+        for (i = 0; i < 4; base += 0x154, i++) {
+            s16 a = g_Ball.s.acr;
+            u8 b1 = g_Ball.b[0x1BBF];
+            u8 fl = g_FieldingLogic[0x108];
+            u8 b2 = g_Ball.b[0x1BBE];
+            u8 b3 = g_Ball.b[0x1BC9];
+            if (base[0x123] == 1) {
+                if ((a == 3 || fl == 2) && b1 <= 1) {
+                    base[0x132] = 0;
+                } else if (b2 <= 1 && b3 != 0 && (u16)a > 1) {
+                    u8 t = base[0x125];
+                    if (t != 0 && t < 3) {
+                        base[0x132] = 0;
+                    }
+                }
+            }
+        }
+        fn_3_87E80();
+    }
+    fn_3_8781C();
 }
 
 // .text:0x0007E2BC size:0x7AC mapped:0x806BD350
