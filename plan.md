@@ -37,6 +37,8 @@ Matched % is what moves the badges. Linked files are what really proves the deco
 
 ### Matching patterns we've already hit
 
+- **Conditional string-pointer setup before a variadic call (fn_1_BF34):** selecting a named extern string with a local `if` can emit `addi r0, symbol@l; mr r4,r0` in each branch. Put the selection in a small `static inline` helper returning `const char*`, assign its result to a local, then call `OSReport`; this preserves the original direct `addi r4` and delays loading the format string until after the condition. Check inlined callers too (fn_1_A464, fn_1_BFB0, fn_1_BC00). An explicit `u16` effect-ID local before the inlined sound wrapper preserves the arithmetic scheduling in the banked selectors.
+
 - **Preserving `subi; add` before a signed modulo (fn_80023D98):** MWCC reassociates `cursor + (capacity - 1)` into `add; subi`. Put `capacity - 1` in a small `static inline` helper and add its return value to `cursor`; the inlined expression retains the original subtraction-first order. A struct copy can also cause the compiler to reload a just-stored queue index without `volatile`; check the ordinary field type before adding a qualifier.
 
 - **Extern arrays in `.sdata` larger than the default 8-byte limit (fn_80048EA8):** declare the real array size and use `DECL_SECT(".sdata") extern void* symbol[3];` when the original forms its address with `li rN,symbol@sda21`. An unsized extern array emits `lis/addi` instead. The explicit section preserves the original addressing without changing compiler flags or understating the array size.

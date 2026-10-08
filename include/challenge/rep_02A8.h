@@ -41,4 +41,6 @@ void fn_1_A464(void);
 
 void fn_1_BFB0(void);
 
+void fn_1_BC00(void);
+
 #endif

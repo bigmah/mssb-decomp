@@ -37,6 +37,8 @@ extern void fn_1_C2A4(void);
 extern s16 lbl_1_data_1CA4;
 extern s16 lbl_1_bss_3056[];
 extern u16 lbl_1_data_17C4[];
+extern s16 lbl_1_bss_3054[];
+extern u16 lbl_1_data_17E8[];
 extern u32 lbl_1_data_1CA8;
 
 // fn_1_A464, size:0x1D0
@@ -359,6 +361,37 @@ void fn_1_BFB0(void) {
         lbl_1_bss_3056[0] = next;
         if (next > 0xE9) {
             lbl_1_bss_3056[0] = 0;
+        }
+    }
+}
+
+// fn_1_BC00, size:0x1D8
+void fn_1_BC00(void) {
+    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
+    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (pressed & 0x100) {
+        u16 effect = lbl_1_bss_3054[0] % 13 + lbl_1_data_17E8[lbl_1_bss_3054[0] / 13];
+        fn_1_BF34(effect);
+    } else if (pressed & 0x1200) {
+        fn_1_A718();
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_A348;
+    } else if (held & 1) {
+        if (held & 0x800) {
+            lbl_1_bss_3054[0] -= 10;
+        } else {
+            lbl_1_bss_3054[0]--;
+        }
+        if (lbl_1_bss_3054[0] < 0) {
+            lbl_1_bss_3054[0] = 0xB5;
+        }
+    } else if (held & 2) {
+        s16 next = lbl_1_bss_3054[0] + 1;
+        if (held & 0x800) {
+            next = lbl_1_bss_3054[0] + 10;
+        }
+        lbl_1_bss_3054[0] = next;
+        if (next > 0xB5) {
+            lbl_1_bss_3054[0] = 0;
         }
     }
 }
