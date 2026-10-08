@@ -589,9 +589,62 @@ void fn_3_82670(void) {
 }
 
 // .text:0x00082F80 size:0xFC mapped:0x806C2014
-// ~70%: second block float regs rotated (zero/step/-lim); see plan.md float loop note
-void fn_3_82F80(void) {
-    return;
+// 98%: block 2 loads r+0xA4 into f1 then fmr f5 (original lfs f5 directly, compares f5)
+void fn_3_82F80(int i, s16* b, s16* a) {
+    u8* r = g_Runners + i * 0x154;
+    s32 n = 0;
+    s32 q;
+    f32 step;
+    f32 lim;
+    f32 rem;
+    f32 v;
+    f32 s;
+    f32 step2;
+    f32 nl;
+    f32 lim2;
+    f32 rem2;
+    f32 s2;
+    rem = *(f32*)(r + 0x60);
+    if (rem > lbl_3_rodata_1414) {
+        s = *(f32*)(r + 0xA4);
+        lim = *(f32*)(r + 0xA8);
+        if (s < lim) {
+            v = s;
+            step = *(f32*)(r + 0xAC);
+            do {
+                v += step;
+                n++;
+                if (v > lim) {
+                    rem -= lim;
+                    break;
+                }
+                rem -= v;
+            } while (!(rem < lbl_3_rodata_1414));
+        }
+        n += (s32)(rem / lim) + 1;
+    }
+    *a = n;
+    n = 0;
+    rem2 = *(f32*)(r + 0x5C);
+    if (rem2 > lbl_3_rodata_1414) {
+        lim2 = *(f32*)(r + 0xA8);
+        s2 = *(f32*)(r + 0xA4);
+        nl = -lim2;
+        if (s2 > nl) {
+            step2 = *(f32*)(r + 0xAC);
+            do {
+                s2 -= step2;
+                n++;
+                if (s2 < nl) {
+                    rem2 -= lim2;
+                    break;
+                }
+                rem2 -= s2;
+            } while (!(rem2 < lbl_3_rodata_1414));
+        }
+        n += (s32)(rem2 / lim2) + 1;
+    }
+    *b = n;
 }
 
 // .text:0x0008307C size:0x370 mapped:0x806C2110
@@ -650,7 +703,7 @@ void fn_3_833EC(int i) {
 }
 
 // .text:0x000835B0 size:0x164 mapped:0x806C2644
-// ~97%: 12 diff lines, post-RandomInt_Game table temps (r0/r4/r5 allocation of idx*8 + DATA base)
+// 99.5%: 12 diff lines, post-RandomInt_Game table temps (r0/r4/r5 allocation of idx*8 + DATA base)
 void fn_3_835B0(void) {
     u8* ai;
     s32* t;
