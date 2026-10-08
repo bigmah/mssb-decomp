@@ -1,5 +1,23 @@
 #include "menus/rep_1028.h"
 
+extern void* lbl_2_bss_3401BC;
+extern const f32 lbl_2_rodata_1080;
+extern const f32 lbl_2_rodata_1078;
+typedef struct {
+    u32 pad0;
+    u32 resource;
+    u8 pad8[6];
+    s16 type;
+    u8 pad10[0x44];
+    f32 f54;
+    u8 enabled;
+    u8 flag59;
+    u8 flag5A;
+    u8 mode;
+    f32 f5C;
+    f32 f60;
+} MenuEffect;
+
 #include <string.h>
 
 #include "static/UnknownHomes_Static.h"
@@ -296,4 +314,28 @@ void fn_2_9033C(s32 index, const void* position, f32 value) {
     *(f32*)((u8*)slot + 0x28) = value;
     *(f32*)((u8*)slot + 0x30) = 0.0f;
     *(f32*)((u8*)slot + 0x28) = value;
+}
+
+// fn_2_8F7B0, size:0x88
+void fn_2_8F7B0(s32 index, s16 type) {
+    if (lbl_2_bss_3401BC != NULL) {
+        s32 resource;
+        MenuEffect* effect;
+        u8 valid;
+        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x4C);
+        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+        effect->resource = resource;
+        effect->type = type;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->enabled = 1;
+        valid = resource != 0;
+        effect->flag59 = valid;
+        effect->flag5A = valid;
+        effect->f60 = lbl_2_rodata_1080;
+        effect->f54 = lbl_2_rodata_1078;
+        effect->flag5A = 1;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->flag59 = 1;
+        effect->mode = 3;
+    }
 }
