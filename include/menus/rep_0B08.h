@@ -77,4 +77,6 @@ void fn_2_686D0(s32 index, s8 value);
 
 void fn_2_68D90(s32 index, s8 value);
 
+void fn_2_68F08(s32 index, s8 value);
+
 #endif
