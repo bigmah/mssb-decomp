@@ -9,4 +9,6 @@ void fn_800B9948(u32 value);
 
 void fn_800B996C(u32 value);
 
+void fn_800B9950(u32 mask, f32 first, f32 second);
+
 #endif
