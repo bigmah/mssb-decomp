@@ -1,6 +1,11 @@
 #include "game/rep_3448.h"
 #include "header_rep_data.h"
 
+typedef struct {
+    u8* p;
+    s32 pad;
+} QEnt;
+
 extern u8 g_Scores[];
 extern u8 lbl_3_data_24CE4[];
 extern u8 lbl_3_data_246E4[];
@@ -37,6 +42,8 @@ extern void fn_80034E20(void*, void*);
 extern u8 lbl_3_data_A9F8[];
 
 extern u8 lbl_80371C30[];
+extern u8 lbl_80366158[];
+extern u8 lbl_3_data_23AE4[];
 
 // .text:0x0011EC28 size:0x404 mapped:0x8075DCBC
 void fn_3_11EC28(void) {
@@ -354,7 +361,77 @@ void fn_3_123EBC(void) {
 
 // .text:0x001243A4 size:0x394 mapped:0x80763438
 void fn_3_1243A4(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    u8* p;
+    u32 a;
+    u32 b;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (*(u16*)(q + 0x1C)) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_23AE4);
+        switch (g_Minigame[0x1A2A]) {
+        case 1:
+            *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x5C) = 0;
+            break;
+        case 2:
+            *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x5C) = 0x10000;
+            break;
+        case 3:
+            *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x5C) = 0x20000;
+            break;
+        }
+        *(u16*)(q + 0x1C) = 1;
+        break;
+    case 1:
+        p = g_Minigame;
+        switch (p[0x1A2A]) {
+        case 1:
+            a = *(u32*)g_Scores;
+            b = g_Scores[0xAA];
+            break;
+        case 2:
+            a = *(u32*)g_Scores;
+            b = g_Scores[0xAA];
+            break;
+        case 3:
+            a = *(u32*)g_Scores;
+            b = g_Scores[0xAA];
+            break;
+        }
+        if (b > 9) {
+            b = 9;
+        }
+        if (a > b) {
+            a = b;
+        }
+        fn_800363D8(q, 2, 1, 0x140, a);
+        fn_800363D8(q, 2, 4, 0x140, b);
+        switch (p[0x1A2A]) {
+        case 1:
+            if (g_GameLogic[0x11E] == 0 || g_GameLogic[0x11E] == 1) {
+                { QEnt* t = (QEnt*)lbl_80371C30; t[*(u16*)(q + 0x14) + 1].p[0x68] = 1; }
+            } else {
+                { QEnt* t = (QEnt*)lbl_80371C30; t[*(u16*)(q + 0x14) + 1].p[0x68] = 4; }
+            }
+            break;
+        case 2:
+            { QEnt* t = (QEnt*)lbl_80371C30; t[*(u16*)(q + 0x14) + 1].p[0x68] = 1; }
+            break;
+        case 3:
+            { QEnt* t = (QEnt*)lbl_80371C30; t[*(u16*)(q + 0x14) + 1].p[0x68] = 1; }
+            break;
+        }
+        if (lbl_80366158[0x28] != 0) {
+            { QEnt* t = (QEnt*)lbl_80371C30; t[*(u16*)(q + 0x14) + 2].p[0x68] = 0; }
+        } else {
+            { QEnt* t = (QEnt*)lbl_80371C30; t[*(u16*)(q + 0x14) + 2].p[0x68] = 1; }
+        }
+        break;
+    }
 }
 
 // .text:0x00124738 size:0x5A8 mapped:0x807637CC
