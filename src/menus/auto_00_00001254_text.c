@@ -7,3 +7,9 @@ s32 fn_2_8780(s32 mode) {
     }
     return 9;
 }
+
+// fn_2_8794, size:0x14
+s32 fn_2_8794(s32 mode, s32 index) {
+    if (mode != 0) index += 10;
+    return index;
+}

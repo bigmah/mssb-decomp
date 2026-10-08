@@ -5,4 +5,6 @@
 
 s32 fn_2_8780(s32 mode);
 
+s32 fn_2_8794(s32 mode, s32 index);
+
 #endif
