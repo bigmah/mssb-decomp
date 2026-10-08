@@ -66,7 +66,7 @@ void fn_3_14E894(void);
 void fn_3_14E920(s8 a);
 void fn_3_14E988(s8 a);
 void fn_3_14E9F0(u8* a);
-void fn_3_14EAF4(void);
+void fn_3_14EAF4(u8* o);
 void fn_3_14ED24(void);
 void fn_3_14F3CC(u8* o);
 void fn_3_14F544(u8* a);
