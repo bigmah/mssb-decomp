@@ -12,6 +12,13 @@ extern char lbl_3_rodata_2878[];
 extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
+extern Vec lbl_3_rodata_2580;
+extern Vec lbl_3_rodata_258C;
+extern f32 lbl_3_rodata_265C;
+extern f32 lbl_3_rodata_2670;
+extern f32 lbl_3_rodata_26B4;
+extern f32 lbl_3_rodata_27F8;
+extern f64 acos(f64);
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
 extern Vec lbl_3_rodata_2640;
@@ -950,8 +957,28 @@ void fn_3_D2220(u8* p) {
 }
 
 // .text:0x000D233C size:0x160 mapped:0x807113D0
-void fn_3_D233C(void) {
-    return;
+u8* fn_3_D233C(u8* p) {
+    Mtx m;
+    Vec diff;
+    Vec rot;
+    Vec dir = lbl_3_rodata_2580;
+    Vec axis = lbl_3_rodata_258C;
+    Vec pos = *(Vec*)(p + 0xA0);
+    if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+        return 0;
+    }
+    pos.y = lbl_3_rodata_265C;
+    PSVECSubtract((Vec*)g_Ball, &pos, &diff);
+    diff.y = lbl_3_rodata_2664;
+    if (PSVECMag(&diff) < lbl_3_rodata_27F8) {
+        PSVECNormalize(&diff, &diff);
+        PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+        PSMTXMultVec(m, &dir, &rot);
+        if (lbl_3_rodata_2670 * (f32)acos(PSVECDotProduct(&diff, &rot)) <= lbl_3_rodata_26B4) {
+            return g_Ball;
+        }
+    }
+    return 0;
 }
 
 // .text:0x000D249C size:0x4C mapped:0x80711530
