@@ -855,7 +855,7 @@ void fn_3_2F924(void) {
 }
 
 // .text:0x0002FB9C size:0x390 mapped:0x8066EC30
-void fn_3_2FB9C(void) {
+void fn_3_2FB9C(int i) {
     return;
 }
 
@@ -901,9 +901,60 @@ void fn_3_2FF2C(int i) {
 }
 
 // .text:0x000300B8 size:0x15C mapped:0x8066F14C
-void fn_3_300B8(void) {
-    return;
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 pad0C[0x30 - 0xC];
+    f32 vx;
+    f32 vz;
+    u8 pad38[0xD4 - 0x38];
+    f32 px;
+    f32 pz;
+    u8 padDC[0x128 - 0xDC];
+    f32 tx;
+    u8 pad12C[4];
+    f32 tz;
+    u8 pad134[0x148 - 0x134];
+    f32 h;
+    u8 pad14C[0x154 - 0x14C];
+    f32 hv;
+    u8 pad158[0x1B2 - 0x158];
+    s16 n;
+    u8 pad1B4[0x205 - 0x1B4];
+    u8 st;
+    u8 flag;
+    u8 pad207[0x268 - 0x207];
+} Fld300B8;
+void fn_3_300B8(int i) {
+    Fld300B8* f = (Fld300B8*)g_Fielders + i;
+    f->flag = 0;
+    if (f->st == 1) {
+        s16 n = f->n;
+        f32 dx = (f->tx - f->x) / (f32)n;
+        f32 dz = (f->tz - f->z) / (f32)n;
+        f->x += dx;
+        f->z += dz;
+        f->hv = f->hv - *(f32*)(lbl_3_data_4930 + 0x48);
+        f->h = f->h + f->hv;
+        if (f->h < 0.0f) {
+            f->h = 0.0f;
+        }
+        f->n = f->n - 1;
+        if (f->n <= 0) {
+            f->st = 2;
+        }
+    } else if (f->st == 2) {
+        fn_3_2FB9C(i);
+        f->n = 0;
+    } else if (f->st >= 3) {
+        fn_3_2FF2C(i);
+        return;
+    }
+    f->vx = f->x - f->px;
+    f->vz = f->z - f->pz;
 }
+
 
 // .text:0x00030214 size:0x350 mapped:0x8066F2A8
 void fn_3_30214(void) {
