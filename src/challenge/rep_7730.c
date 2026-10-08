@@ -23,6 +23,24 @@ extern void fn_1_272DC(void*, s32);
 extern void fn_1_AF4(s32, s32, f32);
 extern void fn_1_1E5D0(void*);
 
+extern void fn_1_21408(void);
+
+// .text:0x225B8 size:0x8C
+void fn_1_225B8(void) {
+    u8* queue = lbl_803CC1B8[0];
+    switch ((s32)queue[0x25]) {
+    case 0:
+        fn_1_20DC8();
+        queue[0x25]++;
+        break;
+    case 1:
+        if (*(s16*)(queue + 0x10) != 0) {
+            *(void (**)(void))queue = fn_1_21408;
+        }
+        break;
+    }
+}
+
 // .text:0x1EFF4 size:0x68
 void fn_1_1EFF4(void) {
     fn_1_272DC(lbl_1_bss_6D48, 0);
