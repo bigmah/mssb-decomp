@@ -21,6 +21,22 @@ typedef struct {
     u8 stepRequested;
 } ChallengeSimulationSettings;
 
+typedef struct {
+    u32 flags;
+    const char* text;
+    u8 padding[0x24];
+} ChallengeMenuItem;
+
+typedef struct {
+    void* data;
+    s32 count;
+    s32 capacity;
+    s32 cursor;
+    s32 selected;
+    u32 flags;
+    ChallengeMenuItem* items;
+} ChallengeSimulationMenu;
+
 void fn_1_289C0(u8* object);
 
 void fn_1_29A48(void);
@@ -28,5 +44,7 @@ void fn_1_29A48(void);
 void fn_1_29414(u8* object);
 
 void fn_1_2935C(void* camera);
+
+s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons);
 
 #endif

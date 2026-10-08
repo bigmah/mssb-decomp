@@ -11,6 +11,39 @@ extern void fn_1_272DC(void*, u32);
 extern void fn_1_AF4(s32, s32, f32);
 extern void fn_1_28CE8(u8*);
 extern ChallengeSimulationSettings lbl_1_data_11300;
+extern const char* lbl_1_data_11424[];
+
+// fn_1_289E0, size:0x100
+s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons) {
+    switch (lbl_1_data_11300.simulationState) {
+    case 0:
+        if (buttons & 0x100) {
+            lbl_1_data_11300.simulationState = 2;
+        } else if (buttons & 0x400) {
+            lbl_1_data_11300.stepRequested = 1;
+            lbl_1_data_11300.simulationState = 1;
+        }
+        break;
+    case 1:
+        if (buttons & 0x100) {
+            lbl_1_data_11300.simulationState = 2;
+        } else if (buttons & 0x200) {
+            lbl_1_data_11300.simulationState = 0;
+        } else if (buttons & 0x400) {
+            lbl_1_data_11300.stepRequested = 1;
+        }
+        break;
+    case 2:
+        if (buttons & 0x100) {
+            lbl_1_data_11300.simulationState = 1;
+        } else if (buttons & 0x200) {
+            lbl_1_data_11300.simulationState = 0;
+        }
+        break;
+    }
+    menu->items[menu->selected].text = lbl_1_data_11424[lbl_1_data_11300.simulationState];
+    return 0;
+}
 
 // fn_1_2935C, size:0xB8
 void fn_1_2935C(void* camera) {
