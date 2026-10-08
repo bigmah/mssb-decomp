@@ -4,6 +4,10 @@
 #include "static/UnknownHomes_Static.h"
 #include "static/UnknownHomes_Static.h"
 #include "static/UnknownHomes_Static.h"
+extern void fn_2_242FC(void);
+extern void fn_2_54234(void* data, s32 id);
+extern u8 lbl_2_data_104EC[];
+
 extern void fn_2_2416C(void);
 extern u8 lbl_2_data_1073C[];
 extern void fn_2_54354(void* data, s32 id);
@@ -108,4 +112,12 @@ void fn_2_245C8(void) {
     u8* object = fn_800B0A5C_insertQueue((void*)fn_2_2416C, 2);
     *(s16*)(object + 0x1C) = 0;
     fn_2_54354(lbl_2_data_1073C, 0x8);
+}
+
+// fn_2_24650, size:0x4C
+void fn_2_24650(void) {
+    u8* object = fn_800B0A5C_insertQueue((void*)fn_2_242FC, 2);
+    *(s16*)(object + 0x1C) = 0;
+    *(s16*)(object + 0x1E) = 0;
+    fn_2_54234(lbl_2_data_104EC, 2);
 }

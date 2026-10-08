@@ -35,4 +35,6 @@ void fn_2_2460C(void);
 
 void fn_2_245C8(void);
 
+void fn_2_24650(void);
+
 #endif
