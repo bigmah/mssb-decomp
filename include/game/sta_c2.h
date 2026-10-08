@@ -68,7 +68,7 @@ s32 fn_3_D249C(u8* p);
 void fn_3_D24E8(u8* p, s32 idx0);
 s32 fn_3_D255C(u8* p);
 u8* fn_3_D2684(u8* p);
-void fn_3_D278C(void);
+void fn_3_D278C(u8* p);
 void fn_3_D2A0C(void);
 void fn_3_D30D0(void);
 void fn_3_D36B0(u8* p);
