@@ -14,8 +14,33 @@ extern void fn_3_735A8(void);
 extern void fn_8001AAA4(void);
 extern void fn_3_6AEC0(void);
 extern u8* lbl_803CC1B8;
+extern void ballPhysica(void);
+extern void fn_3_8A958(void);
+extern void fn_3_5DD30(void);
+extern void fn_3_5C74C(s32);
+extern void fn_3_5E2C4(void);
+extern void fn_3_79ACC(void);
+extern void fn_3_5D094(s32);
 
 #pragma dont_inline on
+
+// fn_3_5EDD8, size:0x80
+void fn_3_5EDD8(void) {
+    ballPhysica();
+    fn_3_598D0();
+    fn_3_8A958();
+    if (g_Ball.deadBallReason != 0) {
+        fn_3_5DD30();
+    }
+    fn_3_5C74C(0);
+    fn_3_5E2C4();
+    if (g_GameLogic.freeFieldingPracticeInd == 0) {
+        fn_3_79ACC();
+        if (g_Strikes.outs >= 3) {
+            fn_3_5D094(0);
+        }
+    }
+}
 
 // fn_3_59BCC, size:0x60
 s32 fn_3_59BCC(s32 stage) {
