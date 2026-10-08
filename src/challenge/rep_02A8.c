@@ -21,6 +21,41 @@ extern u8 lbl_1_bss_2FEE[];
 extern void fn_1_9F04(void);
 extern void fn_1_A464(void);
 
+extern u8 lbl_1_bss_2FE8[];
+extern u8 lbl_1_common_bss_49994[];
+extern void fn_1_A95C(void);
+
+// fn_1_B4A4, size:0x114
+void fn_1_B4A4(void) {
+    u8* queue = lbl_803CC1B8[0];
+    switch ((s32)lbl_1_bss_2FE8[0]) {
+    case 0: {
+        u8* child;
+        *(s16*)(queue + 0x10) = 0;
+        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
+        child[0x18] = 0;
+        child[0x19] = 0x2A;
+        *(s32 (**)(void))(child + 0x14) = fn_1_A7E4;
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        lbl_1_bss_2FE8[0]++;
+        break;
+    }
+    case 1:
+        if (*(s16*)(queue + 0x10) != 0) {
+            ((u8*)lbl_800EF808)[0x396] = 2;
+            sndOutputMode(SND_OUTPUTMODE_SURROUND);
+            *(s16*)(queue + 0x10) = 0;
+            lbl_1_bss_2FE8[0]++;
+        }
+        break;
+    case 2:
+        *(void (**)(void))queue = fn_1_A95C;
+        lbl_1_common_bss_49994[0xE0] = 0;
+        lbl_1_bss_2FE8[0] = 0;
+        break;
+    }
+}
+
 // fn_1_A634, size:0xE0
 void fn_1_A634(void) {
     u8* queue = lbl_803CC1B8[0];
