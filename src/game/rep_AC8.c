@@ -3422,7 +3422,37 @@ void fn_3_583B8(void) {
 
 // .text:0x00058688 size:0x1E8 mapped:0x8069771C
 void fn_3_58688(void) {
-    return;
+    s32 i;
+    *(s16*)(g_FieldingLogic + 0xCE) = *(s16*)(g_FieldingLogic + 0xCC);
+    *(s16*)(g_FieldingLogic + 0xE0) = *(s16*)(g_FieldingLogic + 0xDE);
+    if (g_Ball[0x1BE3] != 0) {
+        g_Ball[0x1BE3]--;
+    }
+    for (i = 0; i < 9; i++) {
+        g_Fielders[i * 0x268 + 0x1FC] = 0;
+        g_Fielders[i * 0x268 + 0x257] = g_Fielders[i * 0x268 + 0x256];
+        g_Fielders[i * 0x268 + 0x256] = 0;
+        g_Fielders[i * 0x268 + 0x20C] = g_Fielders[i * 0x268 + 0x20B];
+        g_Fielders[i * 0x268 + 0x20B] = 0;
+        g_Fielders[i * 0x268 + 0x216] = 0;
+        g_Fielders[i * 0x268 + 0x263] = 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B66) == 1 || (*(s16*)(g_Ball + 0x1B66) == 0x65 && g_FieldingLogic[0x107] != 0)) {
+        for (i = 0; i < 9; i++) {
+            *(f32*)(g_Fielders + i * 0x268 + 0x118) = *(f32*)(g_Fielders + i * 0x268);
+            *(f32*)(g_Fielders + i * 0x268 + 0x11C) = *(f32*)(g_Fielders + i * 0x268 + 8);
+        }
+    }
+    g_FieldingLogic[0x76] = 0;
+    g_FieldingLogic[0x7C] = 0;
+    g_FieldingLogic[0x82] = 0;
+    g_FieldingLogic[0x88] = 0;
+    g_FieldingLogic[0x144] = 0;
+    g_Ball[0x1BEF] = 0;
+    g_Pitcher[0x176] = 0;
+    if (g_FieldingLogic[0x146] != 0) {
+        g_FieldingLogic[0x146]--;
+    }
 }
 
 // .text:0x00058870 size:0x5E0 mapped:0x80697904
