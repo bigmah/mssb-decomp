@@ -49,6 +49,7 @@ extern const f32 lbl_3_rodata_214C;
 extern void fn_800528B4(void);
 extern int rand(void);
 extern void CTRLBuildMatrix(void*);
+extern void CTRLSetTranslation(void*, f32, f32, f32);
 extern u8* lbl_3_bss_9D98;
 extern u8* lbl_3_common_bss_350E4[];
 extern void fn_3_B8184(void);
@@ -1233,8 +1234,62 @@ void fn_3_C63D0(void) {
 }
 
 // .text:0x000C71CC size:0x278 mapped:0x80706260
-void fn_3_C71CC(void) {
-    return;
+typedef struct { u8 d[0x44]; } C71CCCopy;
+typedef struct { f32 x, y, z; u8 pad[4]; u8 f10; u8 pad11; u8 f12; u8 pad13[5]; } C71CCEnt;
+extern C71CCEnt lbl_3_data_175FC[];
+extern f32 lbl_3_data_175F0[];
+extern const f64 lbl_3_rodata_2190;
+extern const f32 lbl_3_rodata_2198;
+extern const f32 lbl_3_rodata_219C;
+extern const f32 lbl_3_rodata_21A0;
+void fn_3_C71CC(s32* a, s32* b) {
+    u32 v;
+    C71CCEnt* e;
+    f64 D;
+    C42A4Bss* g;
+    f32 y;
+    s32 off;
+    Mtx m;
+    f32 d;
+    C42A4Ctl* c;
+    s32 k;
+    s32 j;
+    C71CCCopy t;
+    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    D = lbl_3_rodata_2190 * lbl_3_rodata_2198 + lbl_3_rodata_219C;
+    for (k = 0; k < 5; k++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        ((void (*)(void))fn_3_B8574)();
+        e = lbl_3_data_175FC;
+        off = v * 4;
+        for (j = 0; j < 10; e++, j++) {
+            if (k == e->f12 && e->f10 != 7) {
+                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(*b) * 0xE8 + 0x90] >> 6) & 1) {
+                    *(s32*)((u8*)g->p44 + off) = *b;
+                    g->p3C[*a] += 1;
+                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[*b];
+                    off += 4;
+                    t = *(C71CCCopy*)c;
+                    ((void (*)(void*, void*))CTRLBuildMatrix)(c, m);
+                    fn_3_B8464(m, (void*)c->f78);
+                    y = (f32)D;
+                    d = lbl_3_data_175F0[2] * lbl_3_rodata_21A0;
+                    CTRLSetTranslation(&t, d + e->x, y + e->y, d + e->z);
+                    ((void (*)(void*, void*))CTRLBuildMatrix)(&t, m);
+                    fn_3_B8464(m, (void*)c->f78);
+                    CTRLSetTranslation(&t, e->x - d, y + e->y, e->z - d);
+                    ((void (*)(void*, void*))CTRLBuildMatrix)(&t, m);
+                    fn_3_B8464(m, (void*)c->f78);
+                    *b += 1;
+                }
+            }
+        }
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
 }
 
 // .text:0x000C7444 size:0x58 mapped:0x807064D8
