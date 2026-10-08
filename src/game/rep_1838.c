@@ -242,12 +242,26 @@ void getComponentsFromRad(f32 v, f32* x, f32* y) {
 
 // .text:0x0009F79C size:0x1C8 mapped:0x806DE830
 void fn_3_9F79C(f32 a, f32 x, f32 y, f32* outX, f32* outY) {
-    f32 c, s, v, mag;
+    f32 c, s, mag, sq;
+    static const double _half = .5;
+    static const double _three = 3.0;
     mag = game_atan2(x, y);
     getComponentsFromRad(mag + a, &c, &s);
-    v = dolsqrtf2(x * x + y * y);
-    *outX = c * v;
-    *outY = s * v;
+    sq = x * x + y * y;
+    if (sq > 0.0f) {
+        double xd = (double)sq;
+        double guess = __frsqrte(xd);
+        guess = _half * guess * (_three - guess * guess * xd);
+        guess = _half * guess * (_three - guess * guess * xd);
+        guess = _half * guess * (_three - guess * guess * xd);
+        sq = (float)(xd * guess);
+    } else if (sq < 0.0) {
+        sq = NAN;
+    } else if (isnan(sq)) {
+        sq = NAN;
+    }
+    *outX = c * sq;
+    *outY = s * sq;
 }
 
 // .text:0x0009F658 size:0x144 mapped:0x806DE6EC
