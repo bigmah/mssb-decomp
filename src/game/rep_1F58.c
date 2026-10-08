@@ -54,7 +54,7 @@ extern void GXInitTexObj(void* obj, void* img, u16 w, u16 h, int fmt, int ws, in
 extern void GXInitTexObjLOD(void* obj, int minF, int maxF, f32 minLOD, f32 maxLOD, f32 bias, int biasClamp, int edgeLOD, int maxAniso);
 
 // .text:0x000C0854 size:0x108 mapped:0x806FF8E8
-// ~85%: only regalloc differs (original: k in r0, -1 in r5, offset in r4)
+// 99.5%: only regalloc differs (original: k in r0, -1 in r5, sthx offset in r4; ours offset r0, -1 r4, k r5). ~290 variants tried (k type/order, store forms, ternary/else shapes).
 void fn_3_C0854(void) {
     s32 i;
     s32 j;
@@ -232,7 +232,7 @@ void fn_3_C0F8C(void) {
 }
 
 // .text:0x000C1004 size:0x1C8 mapped:0x80700098
-// ~95%: only regalloc differs (original: j in r31, inlined fn_3_C0D10 offset in r29; ours swapped)
+// 99.4%: only regalloc differs (original: j in r31, inlined fn_3_C0D10 offset in r29; ours swapped). Decl order, jj copy, C0D10 types did not change it.
 void fn_3_C1004(void) {
     s32 j;
     s16* q;
@@ -266,7 +266,7 @@ void fn_3_C1004(void) {
 }
 
 // .text:0x000C11CC size:0x178 mapped:0x80700260
-// ~70%: regalloc (j/d/o saved-reg order) and fp op scheduling differ
+// 77%: original never folds data_17248+K into displacements (hoisted addi r30,sym; then addi K / sthx / lfsx / lbzx indexed); CW folds every d+K form tried (struct, u8*, array extern, block/function-scope ptr vars, inline helper). fmul operand order is d->a[j] * (...).
 void fn_3_C11CC(s32 who, s32 a) {
     D1F58* d = &lbl_3_data_17248;
     s32 j;
