@@ -58,7 +58,7 @@ void fn_3_14D710(s8 a);
 void fn_3_14DC80(s8 a);
 void fn_3_14DCE0(void);
 u32 fn_3_14DD04(u8* o);
-void fn_3_14DF6C(void);
+void fn_3_14DF6C(u8* o, f32* v);
 void fn_3_14E234(u32 a);
 void fn_3_14E7C0(u32 a);
 void fn_3_14E810(void);
