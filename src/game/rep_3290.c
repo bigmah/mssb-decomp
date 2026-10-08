@@ -1,5 +1,6 @@
 #include "game/rep_3290.h"
 #include "header_rep_data.h"
+#include "stl/math.h"
 
 extern void* memset(void*, s32, u32);
 
@@ -20,6 +21,10 @@ extern PitcherVel_3290 g_Pitcher;
 typedef struct { u8 pad0[0x28]; u8 s28; u8 pad29; u8 s2a; u8 pad2b; } MgEnt_3290;
 
 extern void fn_3_1500C8(void);
+extern f32 lbl_3_data_215C8[];
+extern f32 lbl_3_data_21688[];
+extern void fn_8004C108(f32*, s32);
+extern void fn_3_90064(s32);
 #pragma dont_inline on
 
 // .text:0x001133C4 size:0x338 mapped:0x80752458
@@ -128,7 +133,48 @@ void fn_3_113A48(void) {
 
 // .text:0x00113D20 size:0x1A0 mapped:0x80752DB4
 void fn_3_113D20(void) {
-    return;
+    u8* p;
+    f32* e;
+    int i;
+    s8 flag;
+    f32 a;
+    f32 n;
+    s8 dir;
+    p = g_Minigame;
+    flag = 0;
+    for (i = 0; i < 7; i++) {
+        p = g_Minigame + i * 0x2C;
+        e = (f32*)(p + 0x72C);
+        a = e[6];
+        if (a != 0.0f || e[7] != 0.0f) {
+            e[6] = e[7] * cos(a) + e[6];
+            n = e[6];
+            if (n >= 0.0f) {
+                dir = -1;
+            } else {
+                dir = 1;
+            }
+            if (a < n) {
+                if (a < 0.0f && n >= 0.0f) {
+                    flag = 1;
+                }
+            } else if (a > 0.0f) {
+                if (n <= 0.0f) {
+                    flag = 1;
+                }
+            }
+            if (flag) {
+                e[7] = e[7] * lbl_3_data_21688[2];
+                if (fabs(e[7]) < e[8] * lbl_3_data_21688[2]) {
+                    e[8] = 0.0f;
+                    e[7] = 0.0f;
+                    e[6] = 0.0f;
+                }
+                flag = 0;
+            }
+            e[7] = dir * e[8] + e[7];
+        }
+    }
 }
 
 // .text:0x00113EC0 size:0x54 mapped:0x80752F54
