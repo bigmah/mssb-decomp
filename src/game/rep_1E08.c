@@ -17,7 +17,7 @@ extern const f32 lbl_3_rodata_1EC4;
 extern f64 sin(f64);
 extern f64 cos(f64);
 extern s32 lbl_3_data_170D8[];
-extern f32 lbl_3_rodata_1EC0;
+extern const f32 lbl_3_rodata_1EC0;
 extern const f32 lbl_3_rodata_1E68;
 extern s32 ARAMTransfer(void*, int, int, int);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -139,8 +139,144 @@ void fn_3_BA538(u8* p) {
 }
 
 // .text:0x000BA7F4 size:0x888 mapped:0x806F9888
-void fn_3_BA7F4(void) {
-    return;
+extern const Vec lbl_3_rodata_1E58;
+extern const f64 lbl_3_rodata_1E90;
+extern const f32 lbl_3_rodata_1E9C;
+extern const f64 lbl_3_rodata_1EA0;
+extern const f64 lbl_3_rodata_1EA8;
+extern const f64 lbl_3_rodata_1EB8;
+extern const f32 lbl_3_rodata_1E98;
+extern const f32 lbl_3_rodata_1E84;
+extern const f32 lbl_3_rodata_1EB0;
+extern f64 __fabs(f64);
+extern f64 acos(f64);
+extern int rand(void);
+extern void* memcpy(void*, const void*, u32);
+extern void* _OSAllocFromHeap(int, int);
+extern void fn_800246D4(void*, void*, void*, int, int);
+extern void fn_800ACFB0(void*);
+extern void fn_3_BA174(void);
+typedef struct {
+    u8* node;
+    f32 key;
+} BA7F4E;
+void fn_3_BA7F4(u8* a) {
+    Vec up;
+    Vec dir;
+    BA7F4E* arr;
+    BA7F4E* q;
+    u8* n;
+    u8* head;
+    s32 cnt;
+    f32 a2;
+    f32 s;
+    f32 ang;
+    f32 jit;
+    f32 c;
+    f32 x;
+    f64 ax;
+    u16 w;
+    s32 v;
+    up = lbl_3_rodata_1E58;
+    GXSetZMode(1, 7, 1);
+    GXSetBlendMode(1, 4, 5, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevColorIn(0, 0xF, 0xF, 0xF, 0xA);
+    GXSetTevAlphaIn(0, 7, 7, 7, 5);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetTevOp(0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    n = *(u8**)(a + 0xC);
+    w = *(u16*)(a + 0x14);
+    cnt = w & 0xFFF;
+    arr = _OSAllocFromHeap(0x20, (w & 0xFFF) << 3);
+    q = arr;
+    while (n != NULL) {
+        q->node = n;
+        q->key = *(f32*)(n + 0xC);
+        q++;
+        n = *(u8**)n;
+    }
+    fn_800246D4(fn_3_BA174, arr, arr, 8, cnt);
+    head = arr[0].node;
+    q = arr;
+    while (--cnt != 0) {
+        *(u8**)q->node = q[1].node;
+        q++;
+    }
+    *(u8**)q->node = NULL;
+    fn_800ACFB0(arr);
+    *(u8**)(a + 0xC) = head;
+    n = head;
+    do {
+        v = *(s16*)(n + 0x48);
+        if (v <= 0) {
+            fn_3_BA538(n);
+            PSVECAdd((Vec*)(n + 0x10), (Vec*)(n + 4), (Vec*)(n + 4));
+            PSVECAdd((Vec*)(n + 0x28), (Vec*)(n + 0x1C), (Vec*)(n + 0x1C));
+            x = *(f32*)(n + 4);
+            ax = __fabs(x);
+            if (ax > lbl_3_rodata_1E90) {
+                *(f32*)(n + 4) = ax / x;
+                *(f32*)(n + 0x10) = *(f32*)(n + 0x10) * lbl_3_rodata_1E98;
+            } else if (rand() % 5 == 0) {
+                memcpy(&dir, n + 0x10, 0xC);
+                PSVECNormalize(&dir, &dir);
+                ang = lbl_3_rodata_1E9C * (f32)acos(PSVECDotProduct(&up, &dir));
+                if (dir.x < lbl_3_rodata_1E68) {
+                    ang = ang * lbl_3_rodata_1E98;
+                }
+                jit = lbl_3_rodata_1EA0 * (lbl_3_rodata_1EA8 * ((f32)rand() / lbl_3_rodata_1EB0 - lbl_3_rodata_1EB8));
+                if (__fabs(ang + jit) > lbl_3_rodata_1EA0) {
+                    ang = lbl_3_rodata_1EA0 * (__fabs(ang) / ang);
+                } else {
+                    ang = ang + jit;
+                }
+                a2 = lbl_3_rodata_1EC0 * ang;
+                s = sin(a2);
+                c = cos(a2);
+                *(f32*)(n + 0x10) = (s * (f32)lbl_3_data_170D8[1]) / lbl_3_rodata_1EC4;
+                *(f32*)(n + 0x14) = (c * (f32)lbl_3_data_170D8[1]) / lbl_3_rodata_1EC4;
+                *(f32*)(n + 0x18) = lbl_3_rodata_1E68;
+            }
+            if (*(f32*)(n + 8) > lbl_3_rodata_1E84) {
+                fn_3_BB15C(n);
+            }
+        } else {
+            *(s16*)(n + 0x48) = v - 1;
+        }
+        n = *(u8**)n;
+    } while (n != NULL);
+    GXSetZMode(1, 3, 1);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxDesc(0xD, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetVtxAttrFmt(0, 0xD, 1, 4, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(0);
+    GXSetTevColorIn(0, 0xF, 0xA, 8, 0xF);
+    GXSetTevAlphaIn(0, 7, 5, 4, 7);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    GXLoadPosMtxImm((f32(*)[4])((u8*)fn_80052768_getCamera(0) + 0x40), 0);
+    GXSetCurrentMtx(0);
+    GXSetProjection((f32(*)[4])fn_80052768_getCamera(0), 0);
 }
 
 // .text:0x000BB07C size:0xE0 mapped:0x806FA110
