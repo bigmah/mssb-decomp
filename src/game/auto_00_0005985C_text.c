@@ -45,8 +45,28 @@ extern void fn_3_6C150(void*);
 extern void fn_3_8F1C8(void);
 extern void fn_3_5B0C4(void);
 extern u8 g_Scores[];
+extern void fn_3_32090(void*, void*);
+extern void fn_3_8911C(void);
 
 #pragma dont_inline on
+
+// fn_3_5C69C, size:0xB0
+void fn_3_5C69C(s32 type) {
+    g_Ball.framesSinceHit = 100;
+    g_Ball.framesSincePickOff = 0;
+    g_FieldingLogic._107 = type + 1;
+    g_FieldingLogic.throwSpeedType = 3;
+    fn_3_5A6D4(2);
+    *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+    g_Pitcher.peachDaisyStarAnimationOn = 0;
+    fn_3_32090(&g_Pitcher, &g_FieldingLogic);
+    fn_3_8911C();
+    if (g_Strikes.balls >= 4) {
+        g_Runners[0].runnerOnFieldOrOutOrScored = 5;
+    } else {
+        g_Runners[0].runnerOnFieldOrOutOrScored = 4;
+    }
+}
 
 // fn_3_5D9F8, size:0xA4
 void fn_3_5D9F8(void) {

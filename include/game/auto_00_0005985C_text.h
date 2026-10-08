@@ -23,6 +23,8 @@ s32 fn_3_5C530(s32 inning);
 
 void fn_3_5D9F8(void);
 
+void fn_3_5C69C(s32 type);
+
 void fn_3_5B408(void);
 
 void fn_3_5B368(void);
