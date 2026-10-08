@@ -11,4 +11,6 @@ void fn_3_B3C94(u8 state);
 
 void fn_3_B3CAC(u8 mode);
 
+void fn_3_B777C(u8 state);
+
 #endif

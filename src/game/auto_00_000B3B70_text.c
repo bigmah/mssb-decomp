@@ -26,3 +26,9 @@ void fn_3_B3CAC(u8 mode) {
     g_Practice.framesInCurrTransitionState = 0;
     g_Practice.practiceState = 0;
 }
+
+// fn_3_B777C, size:0x18
+void fn_3_B777C(u8 state) {
+    *((u8*)&g_Practice + 0x1E5) = state;
+    g_Practice.maybeCommandData[2] = 0;
+}
