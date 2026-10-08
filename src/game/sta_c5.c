@@ -878,8 +878,80 @@ void fn_3_F22FC(u8* p, s32 idx) {
 
 
 // .text:0x000F2448 size:0x2DC mapped:0x807314DC
-void fn_3_F2448(void) {
-    return;
+extern char lbl_3_rodata_2CEC[];
+extern f64 __fabs(f64);
+extern const f64 lbl_3_rodata_2E58;
+extern const f64 lbl_3_rodata_2E60;
+extern f32 lbl_3_rodata_2D70;
+extern f32 lbl_3_rodata_2E50;
+extern s32 fn_8001B728(s32, s32, void*);
+extern void* memset(void*, s32, u32);
+typedef struct { u8 b[7]; } Ids7;
+s32 fn_3_F2448(u8* p) {
+    Ids7 ids;
+    Vec d;
+    Vec buf;
+    f32 c;
+    f32 s;
+    f32 s2;
+    f32 k;
+    f64 ta;
+    f64 tb;
+    f32 ax;
+    f32 az;
+    f32 lim;
+    u8* f;
+    u8* fb;
+    u32 i;
+    ids = *(Ids7*)lbl_3_rodata_2CEC;
+    sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+    fb = g_Fielders;
+    k = lbl_3_rodata_2D70;
+    for (i = 0; i < 7; i++) {
+        f = fb + ids.b[i] * 0x268;
+        memset(&buf, 0, 0xC);
+        fn_8001B728(ids.b[i], 4, &buf);
+        buf.y = buf.y * k;
+        if (buf.y < *(f32*)(p + 0xA4)) {
+            lim = *(f32*)(f + 0x16C);
+        } else {
+            lim = lbl_3_rodata_2E50;
+        }
+        if (!(lim < __fabs(buf.y - *(f32*)(p + 0xA4))) && f != NULL && f[0x210] == 0) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            PSVECSubtract((Vec*)f, (Vec*)(p + 0xA0), &d);
+            c = (f32)cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+            s = (f32)sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+            s2 = (f32)sin(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+            {
+            f32 c2 = (f32)cos(-(lbl_3_rodata_2DDC * *(f32*)(p + 0xB4)));
+            ta = __fabs(d.x * c + d.z * s);
+            tb = __fabs(d.x * -s2 + d.z * c2);
+            }
+            ax = ta;
+            az = tb;
+            if (ax <= lbl_3_rodata_2E58 && az <= lbl_3_rodata_2E60) {
+                stad = g_d_GameSettings[9];
+                if (g_d_GameSettings[7] == 6) {
+                    v = lbl_3_data_84B8[8];
+                } else {
+                    v = lbl_3_data_8404[stad * 0x1E + 8];
+                }
+                h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 4), v, 0x3F, 0);
+                if (g_d_GameSettings[7] == 6) {
+                    v = lbl_3_data_84B8[9];
+                } else {
+                    v = lbl_3_data_8404[stad * 0x1E + 9];
+                }
+                sndFXCtrl(h, 0x5B, v);
+                return (s8)ids.b[i];
+            }
+        }
+    }
+    return -1;
 }
 
 // .text:0x000F2724 size:0x214 mapped:0x807317B8
