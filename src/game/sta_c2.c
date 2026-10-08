@@ -1162,7 +1162,7 @@ void fn_3_D30D0(void) {
 }
 
 // .text:0x000D36B0 size:0x1D0 mapped:0x80712744
-// partial: code shape right; only fp reg numbering/scheduling differs in the first a4/b0 update block (zero const loaded after fadds in orig)
+// 99.7%: literal 0.0f; only fp regs f1/f2 swapped (a4 vs 280C[0]) in the first a4/b0 update block
 void fn_3_D36B0(u8* p) {
     u8* c;
     Mtx m;
@@ -1172,8 +1172,8 @@ void fn_3_D36B0(u8* p) {
     f32 d = lbl_3_rodata_280C[0];
     *(f32*)(p + 0xA4) = *(f32*)(p + 0xA4) + *(f32*)(p + 0xB0);
     *(f32*)(p + 0xB0) = *(f32*)(p + 0xB0) - d;
-    if (*(f32*)(p + 0xA4) < lbl_3_rodata_2664) {
-        *(f32*)(p + 0xA4) = lbl_3_rodata_2664;
+    if (*(f32*)(p + 0xA4) < 0.0f) {
+        *(f32*)(p + 0xA4) = 0.0f;
         if (!(p[0x99] & 4)) {
             p[0xCB] = p[0xCA];
             p[0xCA] = 1;
@@ -1192,7 +1192,7 @@ void fn_3_D36B0(u8* p) {
     *(Vec*)(c + 0x1CC) = v;
     *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
     fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 8, &dir, p);
-    CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    CTRLSetRotation((Control*)p, 0.0f, *(f32*)(p + 0xC0), 0.0f);
     CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
 }
 
