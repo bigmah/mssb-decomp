@@ -23,4 +23,6 @@ void fn_2_272BC(u8* menu, u8* item);
 
 void fn_2_25D6C(u8* menu, u8* item);
 
+void fn_2_25A1C(u8* menu, u8* item);
+
 #endif
