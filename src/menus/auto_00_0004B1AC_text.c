@@ -21,3 +21,8 @@ s16 fn_2_4C3D8(s32 index) {
 void fn_2_4E898(void) {
     fn_80035B50(0x17);
 }
+
+// fn_2_4E8BC, size:0x24
+void fn_2_4E8BC(void) {
+    fn_80035B50(0x18);
+}

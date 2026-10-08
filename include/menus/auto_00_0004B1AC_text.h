@@ -9,4 +9,6 @@ s16 fn_2_4C3D8(s32 index);
 
 void fn_2_4E898(void);
 
+void fn_2_4E8BC(void);
+
 #endif
