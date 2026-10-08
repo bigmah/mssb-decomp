@@ -615,15 +615,17 @@ static void mcmdSetupLFO(SYNTH_VOICE* svoice, MSTEP* cstep) {
 }
 
 #pragma dont_inline on
+// 88%: orig keeps sInfo in r5 and recomputes (sInfo >> 24) per branch; ours hoists oKey and the temps rotate (unsolved)
 static void DoSetPitch(SYNTH_VOICE* svoice) {
-  u32 f;    // r28
-  u32 of;   // r25
-  u32 i;    // r31
-  u32 frq;  // r27
-  u32 ofrq; // r26
-  u32 no;   // r30
-  s32 key;  // r24
-  u8 oKey;  // r23
+  u32 f;
+  u32 f2;
+  u32 of;
+  u32 i;
+  u32 frq;
+  u32 ofrq;
+  u32 no;
+  s32 key;
+  u8 oKey;
   static u16 kf[13] = {
       4096, 4339, 4597, 4871, 5160, 5467, 5792, 6137, 6502, 6888, 7298, 7732, 8192,
   };
@@ -631,9 +633,10 @@ static void DoSetPitch(SYNTH_VOICE* svoice) {
   frq = svoice->playFrq & 0xFFFFFF;
   of = svoice->sInfo;
   ofrq = of & 0xFFFFFF;
+  oKey = of >> 24;
 
   if (ofrq == frq) {
-    svoice->curNote = of >> 24;
+    svoice->curNote = oKey;
     svoice->curDetune = 0;
   } else if (ofrq < frq) {
     f = (frq << 12) / ofrq;
@@ -643,15 +646,18 @@ static void DoSetPitch(SYNTH_VOICE* svoice) {
       }
     }
 
-    f /= (1 << no);
+    f2 = f / (1 << no);
 
     i = 11;
-    while (f <= kf[i]) {
+    while (1) {
+      if (f2 > kf[i]) {
+        break;
+      }
       i--;
     }
 
-    svoice->curNote = (of >> 24) + no * 12 + i;
-    svoice->curDetune = ((f - kf[i]) * 100) / (kf[i + 1] - kf[i]);
+    svoice->curNote = oKey + no * 12 + i;
+    svoice->curDetune = ((f2 - kf[i]) * 100) / (kf[i + 1] - kf[i]);
   } else {
     f = (ofrq << 12) / frq;
     for (no = 0; no < 11; ++no) {
@@ -660,20 +666,23 @@ static void DoSetPitch(SYNTH_VOICE* svoice) {
       }
     }
 
-    f /= (1 << no);
+    f2 = f / (1 << no);
 
     i = 11;
-    while (f <= kf[i]) {
+    while (1) {
+      if (f2 > kf[i]) {
+        break;
+      }
       i--;
     }
 
     key = no * 12 + i;
-    if (key > (of >> 24)) {
+    if (key > oKey) {
       svoice->curDetune = 0;
       svoice->curNote = 0;
     } else {
-      svoice->curNote = (of >> 24) - key;
-      svoice->curDetune = ((kf[i] - f) * 100) / (kf[i + 1] - kf[i]);
+      svoice->curNote = oKey - key;
+      svoice->curDetune = ((kf[i] - f2) * 100) / (kf[i + 1] - kf[i]);
     }
   }
 }
@@ -754,6 +763,7 @@ static void mcmdSetADSRFromCtrl(SYNTH_VOICE* svoice, MSTEP* cstep) {
   svoice->cFlags |= 0x100;
 }
 
+// 87%: saved regs r26..r31 vs orig r27..r31 (cstep reg not reused); dtime/sl saved-reg order swapped; rdLE read order matters
 static void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
   ADSR_INFO adsr;      // r1+0x10
   ADSR_INFO* adsr_ptr; // r31

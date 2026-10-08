@@ -44,6 +44,7 @@ extern int rand(void);
 extern s8 lbl_3_bss_AF18[];
 extern u8* lbl_3_bss_B118[];
 extern void* memset(void*, s32, u32);
+extern void* memcpy(void*, void*, u32);
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
@@ -93,6 +94,7 @@ extern u8 lbl_3_bss_B218[];
 extern u8 lbl_3_bss_B21A;
 extern void fn_3_B8414(void* a, void* b);
 extern void fn_3_B8464(void* mtx, void* obj);
+extern void fn_3_B8574(void);
 extern void fn_800B4CA0(void*, f32);
 extern void AnimateActorBones(void*);
 extern u8 lbl_3_bss_AEE0[];
@@ -1108,8 +1110,34 @@ s32 fn_3_F5F28(f32* a, f32* b) {
 }
 
 // .text:0x000F5F4C size:0x138 mapped:0x80734FE0
-void fn_3_F5F4C(void) {
-    return;
+void fn_3_F5F4C(Mtx m) {
+    extern const f32 lbl_3_rodata_2E30, lbl_3_rodata_2F2C, lbl_3_rodata_2F30, lbl_3_rodata_2F34;
+    Vec v;
+    u8* g;
+    s32 off;
+    u32 i;
+    memcpy(&v, g_Ball, 0xC);
+    PSMTXMultVec(m, &v, &v);
+    g = lbl_3_common_bss_350E4;
+    for (i = 0, off = 0; i < *(u32*)(g + 0x30); off += 8, i++) {
+        f32* e = (f32*)(*(u8**)(g + 0x14) + off);
+        u8* o = *(u8**)g + ((s32*)e)[1] * 0xE8;
+        if ((o[0x90] >> 7) & 1) {
+            if (o[0x9D] == 1) {
+                e[0] = lbl_3_rodata_2D50;
+            } else {
+                f32 d = e[0];
+                f32 lo = lbl_3_rodata_2D74 + v.z;
+                if (d < lo) {
+                    e[0] = lbl_3_rodata_2D50;
+                } else if (d > lbl_3_rodata_2E30 + v.z) {
+                    e[0] = lbl_3_rodata_2F2C;
+                } else {
+                    { f32 t = d - lo; e[0] = lbl_3_rodata_2DA8 - lbl_3_rodata_2F30 * (t * lbl_3_rodata_2F34); }
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000F6084 size:0x480 mapped:0x80735118
@@ -1163,13 +1191,73 @@ void fn_3_F66C8(void) {
 }
 
 // .text:0x000F6938 size:0x15C mapped:0x807359CC
-void fn_3_F6938(void) {
-    return;
+void fn_3_F6938(s32* n) {
+    struct { Control c; u8 pad[0x8]; } c;
+    Mtx m;
+    s32 i;
+    s32 idx;
+    u16 k;
+    u8* e;
+    void* o;
+    extern u8 lbl_3_bss_B21F;
+    extern u8 lbl_3_bss_B220[];
+    extern f32 lbl_3_rodata_2F40[];
+    for (i = 0; i < lbl_3_bss_B220[0]; i++) {
+        k = (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n - 1] + (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n - 1];
+        (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n] = k;
+        idx = lbl_3_bss_B21F + i;
+        (*(u32**)(lbl_3_common_bss_350E4 + 0x44))[k] = idx;
+        (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
+        e = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+        o = (void*)*(s32*)(e + 0x78);
+        c.c.type = 0;
+        CTRLSetTranslation(&c.c, lbl_3_data_1B884[e[0x9C]].v.x, -lbl_3_data_1B884[e[0x9C]].v.y, lbl_3_data_1B884[e[0x9C]].v.z);
+        CTRLSetScale(&c.c, lbl_3_rodata_2F40[0], lbl_3_rodata_2F40[0], lbl_3_rodata_2F40[0]);
+        CTRLBuildMatrix(&c.c, m);
+        fn_3_B8574();
+        fn_3_B8464(m, o);
+        fn_3_B8414(*(u8**)(lbl_3_common_bss_350E4 + 0x48) + *n * 0x18, *(u8**)(lbl_3_common_bss_350E4 + 0x48) + (*n * 2 + 1) * 0xC);
+        (*n)++;
+    }
 }
 
 // .text:0x000F6A94 size:0x1CC mapped:0x80735B28
-void fn_3_F6A94(void) {
-    return;
+void fn_3_F6A94(s32* n) {
+    struct { Control c; u8 pad[4]; } c;
+    Mtx m;
+    s32 i;
+    u16 k;
+    u32 off;
+    void* o;
+    extern u8 lbl_3_bss_B21D[];
+    extern u8 lbl_3_bss_B21E[];
+    extern f32 lbl_3_rodata_2F44[];
+    extern f32 lbl_3_rodata_2F48[];
+    extern f32 lbl_3_rodata_2F4C[];
+    extern f32 lbl_3_rodata_2F50[];
+    extern f32 lbl_3_rodata_2F54[];
+    k = (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n - 1] + (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n - 1];
+    (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n] = k;
+    off = k * 4;
+    for (i = 0; i < lbl_3_bss_B21E[0]; i++) {
+        *(u32*)(*(u8**)(lbl_3_common_bss_350E4 + 0x44) + off) = lbl_3_bss_B21D[0] + i;
+        off += 4;
+        (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
+    }
+    fn_3_B8574();
+    o = (void*)((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21D[0]].w78;
+    c.c.type = 0;
+    CTRLSetTranslation(&c.c, lbl_3_rodata_2F44[0], ((f32*)&lbl_3_rodata_2D5C)[0], lbl_3_rodata_2F48[0]);
+    CTRLBuildMatrix(&c.c, m);
+    fn_3_B8464(m, o);
+    c.c.type = 0;
+    CTRLSetTranslation(&c.c, lbl_3_rodata_2F4C[0], lbl_3_rodata_2F50[0], lbl_3_rodata_2F54[0]);
+    CTRLBuildMatrix(&c.c, m);
+    fn_3_B8464(m, o);
+    if ((*(u32**)(lbl_3_common_bss_350E4 + 0x3C))[*n] != 0) {
+        fn_3_B8414(*(u8**)(lbl_3_common_bss_350E4 + 0x48) + *n * 0x18, *(u8**)(lbl_3_common_bss_350E4 + 0x48) + (*n * 2 + 1) * 0xC);
+        (*n)++;
+    }
 }
 
 // .text:0x000F6C60 size:0x36C mapped:0x80735CF4
