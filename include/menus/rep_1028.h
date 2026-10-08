@@ -70,4 +70,6 @@ void fn_2_8F774(s32 index);
 
 void fn_2_916F8(u8* object);
 
+void fn_2_91488(u8* object);
+
 #endif

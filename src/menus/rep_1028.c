@@ -256,3 +256,13 @@ void fn_2_916F8(u8* object) {
         entry->state = 0;
     }
 }
+
+// fn_2_91488, size:0x84
+void fn_2_91488(u8* object) {
+    u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
+    if (fn_800B4A94(((void**)data)[*(s32*)(object + 0x78) * 0x24 + 13]) == 0.0f) {
+        MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+        entry->active = 2;
+        entry->state = 0;
+    }
+}
