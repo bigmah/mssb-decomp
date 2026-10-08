@@ -1449,7 +1449,6 @@ void fn_3_3ABF0(int i) {
 }
 
 // .text:0x0003ACC0 size:0x174 mapped:0x80679D54
-// 99%: final fn_3_9FCF8 compare gives bge end instead of blt blk; b end
 void fn_3_3ACC0(int i) {
     u8* f = g_Fielders + i * 0x268;
     if (*(s16*)(g_Ball + 0x1B8E) < 0) {
@@ -1472,6 +1471,7 @@ void fn_3_3ACC0(int i) {
                 goto blk;
             }
         }
+        return;
     } else {
     blk:
         f[0x1FF] = 2;
