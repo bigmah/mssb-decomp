@@ -11,6 +11,8 @@ void fn_2_54B38(void);
 
 void fn_2_53F88(s32 context);
 
+void fn_2_53F04(s32 context);
+
 s16 fn_2_4C3C4(s32 index);
 
 s16 fn_2_4C3D8(s32 index);
