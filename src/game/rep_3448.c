@@ -42,6 +42,7 @@ extern void fn_80034E20(void*, void*);
 extern u8 lbl_3_data_A9F8[];
 
 extern u8 lbl_80371C30[];
+extern u8 lbl_3_data_23D24[];
 extern u8 g_Ball[];
 extern u8 lbl_3_data_23F24[];
 extern u8 lbl_80366158[];
@@ -414,8 +415,68 @@ void fn_3_1231D4(void) {
 }
 
 // .text:0x001235B8 size:0x3D8 mapped:0x8076264C
+// 97%: only reg swaps: v%10 temp r7/r29 copy in v>=10 branch, base/value r4/r5 in final 4-store block
 void fn_3_1235B8(void) {
-    return;
+    u8* q = lbl_803CC1B8;
+    u8* p;
+    u8* t;
+    u32 v;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (*(u16*)(q + 0x1C)) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_23D24);
+        *(u16*)(q + 0x1C) = 1;
+        break;
+    case 1:
+        if (g_GameLogic[0x11E] == 1) {
+            p = g_Minigame;
+            t = p + 0x1ACC;
+            if (t[*(s8*)(p + 0x1905) * 2] >= 2) {
+                *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(q + 0x14) * 8) + 0x5C) = (g_Batter[0x7B] != 0) << 16;
+                v = t[*(s8*)(p + 0x1905) * 2];
+                if (v > 0x63) {
+                    v = 0x63;
+                }
+                if (v < 10) {
+                    QEnt* b = (QEnt*)lbl_80371C30;
+                    QEnt* e;
+                    b[*(u16*)(q + 0x14) + 1].p[0x68] = 1;
+                    fn_800363D8(q, 1, 4, 0x104, v % 10);
+                    fn_800363D8(q, 1, 5, 0x104, v % 10);
+                    fn_800363D8(q, 1, 6, 0x104, v % 10);
+                    b = (QEnt*)lbl_80371C30;
+                    e = b + 2;
+                    e[*(u16*)(q + 0x14)].p[0x68] = 0;
+                    *(u32*)(e[*(u16*)(q + 0x14)].p + 0x5C) = 0;
+                } else {
+                    QEnt* b = (QEnt*)lbl_80371C30;
+                    QEnt* e;
+                    b[*(u16*)(q + 0x14) + 2].p[0x68] = 1;
+                    fn_800363D8(q, 2, 4, 0x104, v % 10);
+                    fn_800363D8(q, 2, 5, 0x104, v % 10);
+                    fn_800363D8(q, 2, 6, 0x104, v % 10);
+                    fn_800363D8(q, 2, 7, 0x104, (v % 100) / 10);
+                    fn_800363D8(q, 2, 8, 0x104, (v % 100) / 10);
+                    fn_800363D8(q, 2, 9, 0x104, (v % 100) / 10);
+                    b = (QEnt*)lbl_80371C30;
+                    e = b + 1;
+                    e[*(u16*)(q + 0x14)].p[0x68] = 0;
+                    *(u32*)(e[*(u16*)(q + 0x14)].p + 0x5C) = 0;
+                }
+                break;
+            }
+        }
+        {
+            QEnt* b = (QEnt*)lbl_80371C30;
+            b[*(u16*)(q + 0x14) + 1].p[0x68] = 4;
+            b[*(u16*)(q + 0x14) + 2].p[0x68] = 4;
+        }
+        break;
+    }
 }
 
 // .text:0x00123990 size:0x52C mapped:0x80762A24
