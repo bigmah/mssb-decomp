@@ -7,6 +7,8 @@ extern int __float_nan[];
 #define NAN (*(f32*)__float_nan)
 f64 __frsqrte(f64);
 extern u8 lbl_3_data_4744[];
+extern u8 lbl_3_data_475C;
+extern u8 lbl_3_data_49DC[];
 extern const f64 lbl_3_rodata_1940;
 extern const f64 lbl_3_rodata_1948;
 extern const f64 lbl_3_rodata_1950;
@@ -867,7 +869,71 @@ void fn_3_A76B4(void) {
 
 // .text:0x000A7C88 size:0x270 mapped:0x806E6D1C
 void fn_3_A7C88(void) {
-    return;
+    u8* in;
+    u16 b4;
+    s16 v;
+
+    in = g_Controls + *(int*)(g_GameLogic + *(int*)(g_GameLogic + 8) * 4 + 0xEC) * 16;
+    if (g_d_GameSettings[7] == 6) {
+        return;
+    }
+    if (g_GameLogic[*(int*)(g_GameLogic + 0x10) + 0x144] != 0) {
+        return;
+    }
+    if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0) {
+        in = g_Practice + *(int*)(g_GameLogic + 8) * 16;
+    } else if (g_d_GameSettings[0x11] != 0) {
+        in = g_Controls + *(s8*)(g_Minigame + g_Minigame[0x1922] + 0x18CC) * 16;
+    }
+    if (!(*(u16*)(in + 4) & 0x100)) {
+        g_FieldingLogic[0x145] = 0;
+    }
+    if (g_FieldingLogic[0x145] != 0) {
+        if (g_FieldingLogic[0x145] < 0xFE) {
+            g_FieldingLogic[0x145]++;
+        } else {
+            g_FieldingLogic[0x145] = 0xFF;
+        }
+    }
+    b4 = *(u16*)(in + 4);
+    if (!(b4 & 0x100)) {
+        return;
+    }
+    if (*(u16*)(in + 6) & 0x100) {
+        if (b4 & 0x40) {
+            *(s16*)(g_FieldingLogic + 0xC6) = 6;
+        } else {
+            v = *(s16*)in;
+            if (v >= 0xE00) {
+                *(s16*)(g_FieldingLogic + 0xC6) = 1;
+            } else if (v >= 0xA00) {
+                *(s16*)(g_FieldingLogic + 0xC6) = 0;
+            } else if (v >= 0x600) {
+                *(s16*)(g_FieldingLogic + 0xC6) = 3;
+            } else if (v >= 0x200) {
+                *(s16*)(g_FieldingLogic + 0xC6) = 2;
+            } else if (v >= 0) {
+                *(s16*)(g_FieldingLogic + 0xC6) = 1;
+            } else {
+                g_FieldingLogic[0x145] = 1;
+            }
+        }
+    } else if (g_FieldingLogic[0x145] >= *(s16*)(lbl_3_data_49DC + 0x50)) {
+        if (*(s16*)(g_FieldingLogic + 0xC2) >= 0) {
+            return;
+        }
+        *(s16*)(g_FieldingLogic + 0xC6) = 8;
+    }
+    *(s16*)(g_FieldingLogic + 0xC8) = 0;
+    if (*(s16*)(g_FieldingLogic + 0xC6) == 8) {
+        g_FieldingLogic[0x12D] = 1;
+        return;
+    }
+    if (g_FieldingLogic[0x12F] <= lbl_3_data_475C && g_d_GameSettings[0x11] == 0) {
+        g_FieldingLogic[0x12D] = 0;
+        return;
+    }
+    g_FieldingLogic[0x12D] = 1;
 }
 
 // .text:0x000A7EF8 size:0x17C mapped:0x806E6F8C
