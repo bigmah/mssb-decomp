@@ -319,6 +319,10 @@ config.warn_missing_source = False
 config.libs = [
     Rel(
         "challenge",
+        [Object(NonMatching, "challenge/rep_0610.c")]
+    ),
+    Rel(
+        "challenge",
         [Object(NonMatching, "challenge/rep_7730.c")]
     ),
     RuntimeLib(
