@@ -27,4 +27,6 @@ f32 fn_2_4A1E8(f32 x, f32 y);
 
 s32 fn_2_4A2C4(f32 angle);
 
+void fn_2_47AFC(void);
+
 #endif

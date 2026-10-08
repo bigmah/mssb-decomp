@@ -87,3 +87,9 @@ s32 fn_2_4A2C4(f32 angle) {
     if (angle < lbl_2_rodata_94C) angle = lbl_2_rodata_9A8 + angle;
     return (s32)((lbl_2_rodata_9B4 * angle) / lbl_2_rodata_9AC);
 }
+
+// fn_2_47AFC, size:0x28
+void fn_2_47AFC(void) {
+    s32 i;
+    for (i = 0; i < 13; i++) {}
+}
