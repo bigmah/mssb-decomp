@@ -208,3 +208,16 @@ void fn_2_8F73C(s32 index, u8 value) {
 u8 fn_2_8F720(s32 index) {
     return ((u8*)lbl_2_bss_1A8248[0])[index * 0xBC + 0x2294];
 }
+
+// fn_2_90628, size:0x70
+void fn_2_90628(u8* object) {
+    if (*(s16*)(object + 0xA0) == 1) {
+        fn_2_8AC84(*(s32*)(object + 0x78), 0);
+        *(s16*)(object + 0xA0) = 2;
+        {
+            MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+            entry->active = 0;
+            entry->state = 0;
+        }
+    }
+}
