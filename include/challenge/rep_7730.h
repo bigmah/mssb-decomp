@@ -25,4 +25,6 @@ f32 fn_1_1DE50(void);
 
 void fn_1_267BC(void);
 
+void fn_1_24778(void);
+
 #endif

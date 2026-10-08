@@ -1,6 +1,8 @@
 #include "challenge/rep_7730.h"
 
 #include "static/UnknownHomes_Static.h"
+extern void fn_1_246AC(void);
+
 extern u8* lbl_803CC1B8[];
 
 extern f32 lbl_1_bss_6BE4[4];
@@ -50,4 +52,10 @@ void fn_1_267BC(void) {
     if (*(s16*)(lbl_803CC1B8[0] + 0x10) != 0) {
         fn_800B0A14_removeQueue(lbl_803CC1B8[0]);
     }
+}
+
+// fn_1_24778, size:0x28
+void fn_1_24778(void) {
+    lbl_803CC1B8[0][0x14] = 0;
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_246AC;
 }
