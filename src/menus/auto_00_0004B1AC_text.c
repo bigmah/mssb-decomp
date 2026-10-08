@@ -111,3 +111,9 @@ void fn_2_54848(void) {
     *(s16*)(lbl_2_bss_1A824C[0] + 0x197754) = 1;
     *(s16*)(lbl_2_bss_1A824C[0] + 0x197752) = 10;
 }
+
+// fn_2_4E7EC, size:0x38
+void fn_2_4E7EC(void) {
+    u8* data = lbl_2_bss_1A824C[0];
+    fn_800AD054(*(void**)(data + 0x195424), *(void**)(data + 0x195428));
+}

@@ -101,4 +101,6 @@ extern void fn_80035B50(int id);
 
 extern s32 fn_80035838(void* data, s32 id);
 
+extern void fn_800AD054(void* first, void* second);
+
 #endif // !__UNKNOWN_HOMES_STATIC_H_

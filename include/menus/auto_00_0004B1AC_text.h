@@ -39,4 +39,6 @@ void fn_2_54874(void);
 
 void fn_2_54848(void);
 
+void fn_2_4E7EC(void);
+
 #endif
