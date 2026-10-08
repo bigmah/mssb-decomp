@@ -649,8 +649,33 @@ void fn_3_2D47C(int a) {
 }
 
 // .text:0x0002D768 size:0x1C4 mapped:0x8066C7FC
-void fn_3_2D768(void) {
-    return;
+void fn_3_2D768(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    if (f[0x208] == 0) {
+        if (f[0x1DB] == 0) {
+            f[0x208] = 1;
+        } else {
+            f[0x208] = 3;
+        }
+    }
+    f[0x1D6] = 0;
+    fn_3_2D47C(i);
+    *(s16*)(f + 0x19E) = -1;
+    dz = *(f32*)(f + 0x1C) - *(f32*)(f + 8);
+    dx = *(f32*)(f + 0x14) - *(f32*)f;
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_B80) {
+        *(f32*)(f + 0x68) = d;
+        f[0x209] = 0;
+    } else {
+        *(s16*)(f + 0x19E) = fn_3_9FB8C(dx, dz);
+        f[0x209] = 0;
+    }
+    fn_3_3A584(i);
 }
 
 // .text:0x0002D92C size:0x198 mapped:0x8066C9C0
