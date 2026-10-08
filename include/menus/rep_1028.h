@@ -72,4 +72,6 @@ void fn_2_916F8(u8* object);
 
 void fn_2_91488(u8* object);
 
+void fn_2_91218(u8* object);
+
 #endif
