@@ -7,4 +7,6 @@ void fn_2_94854(u8 value);
 
 void fn_2_95604(void);
 
+void fn_2_95B28(void);
+
 #endif
