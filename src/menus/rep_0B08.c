@@ -52,8 +52,15 @@ typedef struct {
 } MenuEntry;
 
 typedef struct {
+    Vec position;
+    u8 padding[0xB0];
+} MenuLocationRecord;
+
+typedef struct {
     u8 _00[0x1610];
     MenuEntry entries[4];
+    u8 _1970[0x870];
+    MenuLocationRecord locations[4];
 } MenuEntries;
 
 extern MenuEntries* lbl_2_bss_1A8248[];
@@ -66,6 +73,33 @@ extern const f32 lbl_2_rodata_C38;
 extern const f32 lbl_2_rodata_B5C;
 extern const f32 lbl_2_rodata_B60;
 extern const f32 lbl_2_rodata_B64;
+extern const f32 lbl_2_rodata_B68[];
+extern f32 lbl_2_data_3EF4[];
+extern f32 lbl_2_data_3F5C;
+
+// fn_2_68A88, size:0xCC
+s32 fn_2_68A88(s32 index, s32 location) {
+    Vec scaled;
+    const Vec* point;
+    MenuEntry* entry;
+    f32 distance;
+    f32 limit;
+    f32 bias;
+    point = &lbl_2_bss_1A8248[0]->locations[location].position;
+    entry = &lbl_2_bss_1A8248[0]->entries[index];
+
+    scaled.x = point->x * lbl_2_rodata_B68[0];
+    scaled.y = point->y * lbl_2_rodata_B68[0];
+    scaled.z = point->z * lbl_2_rodata_B68[0];
+    distance = PSVECDistance(&entry->position, &scaled);
+    limit = lbl_2_data_3EF4[((u8*)lbl_2_bss_1A8248[0])[0x441C]];
+    bias = lbl_2_data_3F5C;
+    bias = limit + bias;
+    if (distance < bias && (u8)entry->flagC0 != 0) {
+        return 1;
+    }
+    return 0;
+}
 
 // fn_2_6A628, size:0xE0
 void fn_2_6A628(void) {
