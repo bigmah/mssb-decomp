@@ -2,6 +2,8 @@
 
 
 #include "static/UnknownHomes_Static.h"
+#include "musyx/musyx.h"
+
 extern s32 lbl_800EF808[];
 
 // .text:0xA714 size:0x4
@@ -31,4 +33,10 @@ s32 fn_1_A838(void) {
     fn_80021518(0x1C, lbl_800EF808[4]);
     fn_80021518(0x36, lbl_800EF808[4]);
     return 0;
+}
+
+// fn_1_BEF4, size:0x40
+void fn_1_BEF4(s16 voice) {
+    sndFXKeyOff(voice);
+    sndFXCtrl(voice, 7, 0);
 }
