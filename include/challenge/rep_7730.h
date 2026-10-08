@@ -72,4 +72,6 @@ void fn_1_246AC(void);
 
 void fn_1_26928(void);
 
+void fn_1_2040C(void);
+
 #endif

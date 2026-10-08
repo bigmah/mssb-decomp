@@ -307,3 +307,29 @@ f32 fn_1_1DD48(u16 buttons, s32 reverse, f32 value, f32 positive, f32 delta, f32
     if (value > maximum) value = maximum;
     return value;
 }
+
+extern void fn_1_2004C(void);
+
+// fn_1_2040C, size:0x110
+void fn_1_2040C(void) {
+    Mtx identity;
+    u8* queue = lbl_803CC1B8[0];
+    *(s32*)(queue + 0x1C) = 0;
+    queue[0x23] = 0;
+    queue[0x24] = 0;
+    queue[0x20] = 0;
+    queue[0x21] = 0;
+    queue[0x22] = 1;
+    C_MTXOrtho(lbl_1_bss_47010, lbl_1_rodata_77D8, lbl_1_rodata_77DC[0],
+        lbl_1_rodata_77D8, lbl_1_rodata_77E0[0], lbl_1_rodata_7814[0], lbl_1_rodata_7820[0]);
+    GXSetProjection(lbl_1_bss_47010, GX_ORTHOGRAPHIC);
+    PSMTXIdentity(identity);
+    GXLoadPosMtxImm(identity, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXLoadTexMtxImm(identity, GX_TEXMTX0, GX_MTX2x4);
+    fn_80048C14(3);
+    fn_80048E00(0, 32);
+    fn_80048E00(1, 0);
+    fn_800AD038(lbl_80366158[2]);
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_2004C;
+}
