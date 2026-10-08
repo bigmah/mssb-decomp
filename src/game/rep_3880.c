@@ -66,6 +66,12 @@ extern f32 lbl_3_bss_B860[];
 extern const f32 lbl_3_rodata_39A8;
 extern f32 lbl_3_rodata_392C;
 extern f32 lbl_3_rodata_3A00;
+extern const Vec lbl_3_rodata_38DC;
+extern const f32 lbl_3_rodata_3A04;
+extern const f32 lbl_3_rodata_3948;
+extern void fn_8005268C(void);
+extern u8* fn_80052734(void);
+extern f64 acos(f64);
 extern const Vec lbl_3_rodata_3914;
 extern u8 lbl_3_data_26BFC[];
 extern void* memcpy(void*, const void*, unsigned long);
@@ -1516,8 +1522,45 @@ void fn_3_1531A4(void) {
 }
 
 // .text:0x001534C0 size:0x1E8 mapped:0x80792554
-void fn_3_1534C0(void) {
-    return;
+void fn_3_1534C0(u8* o) {
+    Mtx m;
+    Vec up;
+    Vec axis;
+    Vec dir;
+    Vec off;
+    f32 ang;
+    f32 r;
+    u8* cam;
+    fn_8005268C();
+    cam = fn_80052734();
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    up = lbl_3_rodata_38DC;
+    off.x = lbl_3_rodata_3934[0];
+    off.y = lbl_3_rodata_3934[0];
+    off.z = lbl_3_rodata_3A04 * r;
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECNormalize(&dir, &dir);
+    ang = (f32)acos(PSVECDotProduct(&up, &dir));
+    PSVECCrossProduct(&up, &dir, &axis);
+    if (lbl_3_rodata_3934[0] == PSVECMag(&axis)) {
+        axis.x = lbl_3_rodata_3934[0];
+        axis.z = lbl_3_rodata_3934[0];
+        axis.y = lbl_3_rodata_3948;
+    }
+    PSMTXRotAxisRad(m, &axis, ang);
+    PSMTXMultVec(m, &off, &off);
+    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
+    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
+    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BEC;
+    o[0x4C] = 1;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BEC + 0xC);
+    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
+    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
 }
 
 // .text:0x001536A8 size:0x7E4 mapped:0x8079273C
