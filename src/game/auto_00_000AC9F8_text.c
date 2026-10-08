@@ -1,5 +1,11 @@
 #include "game/auto_00_000AC9F8_text.h"
 #include "game/UnknownHomes_Game.h"
+#include "game/game_batter.h"
+#include "game/rep_1200.h"
+#include "game/rep_13B8.h"
+#include "game/rep_AC8.h"
+
+extern s32 fn_3_B32B8(void);
 
 extern u8 g_Fielders[];
 
@@ -102,4 +108,14 @@ void fn_3_B1BCC(void) {
     g_Practice._1E2 = 0;
     g_Practice.maybeCommandData[0] = 0;
     fn_3_B3C78(0);
+}
+
+// fn_3_B025C, size:0x4C
+void fn_3_B025C(void) {
+    if (g_Practice.instructionNumber >= 0 || fn_3_B32B8() == 0) {
+        fn_3_75560();
+        atBat_batter();
+        fn_3_8A958();
+        fn_3_31594();
+    }
 }
