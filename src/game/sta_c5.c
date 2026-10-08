@@ -28,6 +28,14 @@ extern V14 lbl_3_data_1B884[];
 typedef struct { f32 a, b, c, d, e, f; } T18;
 extern T18 lbl_3_data_1B9A4[];
 extern f32 lbl_3_rodata_2D5C;
+extern f32 lbl_3_rodata_2D68;
+extern char lbl_3_rodata_2DC4[];
+extern s32 fn_800247E4(s32, s32, s32, s32);
+extern void* fn_3_B9534(u32, u32, void*);
+extern int rand(void);
+extern s8 lbl_3_bss_AF18[];
+extern u8* lbl_3_bss_B118[];
+extern void* memset(void*, s32, u32);
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
@@ -120,12 +128,60 @@ void fn_3_EE96C(void) {
 
 // .text:0x000EEB94 size:0x160 mapped:0x8072DC28
 void fn_3_EEB94(void) {
-    return;
+    u32 i, j;
+    for (i = 0; i < 0x10; i++) {
+        for (j = 0; j < 0x10; j++) {
+            s32 idx = fn_800247E4(j, i, 0x10, 2);
+            s32 a = lbl_3_bss_B118[0][idx];
+            s32 b = lbl_3_bss_B118[0][idx + 1];
+            a += lbl_3_bss_AF18[idx] * (rand() % 14 + 8);
+            b += lbl_3_bss_AF18[idx + 1] * (rand() % 14 + 8);
+            if (a >= 0xE3) {
+                a--;
+                lbl_3_bss_AF18[idx] = -1;
+            } else if (a <= 0x1B) {
+                a++;
+                lbl_3_bss_AF18[idx] = 1;
+            }
+            if (b >= 0xE3) {
+                b--;
+                lbl_3_bss_AF18[idx + 1] = -1;
+            } else if (b <= 0x1B) {
+                b++;
+                lbl_3_bss_AF18[idx + 1] = 1;
+            }
+            lbl_3_bss_B118[0][idx] = a;
+            lbl_3_bss_B118[0][idx + 1] = b;
+        }
+    }
 }
 
+// 97%: only the GXSetIndTexMtx matrix stores differ (orig: first store via r30+0x23c, rest via pointer r4+4..0x14)
 // .text:0x000EECF4 size:0x148 mapped:0x8072DD88
 void fn_3_EECF4(void) {
-    return;
+    typedef struct { u8 pad0[0x38]; u8 a38[0x200]; u8* tex; f32 m[2][3]; u8 a254[1]; } S;
+    S* s = (S*)lbl_3_bss_AEE0;
+    u32 i, j;
+    f32 (*m)[3] = (f32(*)[3])(lbl_3_bss_AEE0 + 0x23C);
+    s->m[0][0] = lbl_3_rodata_2D68;
+    m[0][1] = lbl_3_rodata_2D5C;
+    m[0][2] = lbl_3_rodata_2D5C;
+    m[1][0] = lbl_3_rodata_2D5C;
+    m[1][1] = lbl_3_rodata_2D68;
+    m[1][2] = lbl_3_rodata_2D5C;
+    GXSetIndTexMtx(GX_ITM_0, m, 2);
+    s->tex = (u8*)fn_3_B9534(0x10, 0x10, s->a254);
+    if (s->tex == NULL) {
+        OSPanic(lbl_3_rodata_2DB8, 0x1028, lbl_3_rodata_2DC4);
+    }
+    for (i = 0; i < 0x10; i++) {
+        for (j = 0; j < 0x10; j++) {
+            s32 idx = fn_800247E4(j, i, 0x10, 2);
+            s->tex[idx] = (u8)(rand() % 200) + 0x1B;
+            s->tex[idx + 1] = (u8)(rand() % 200) + 0x1B;
+        }
+    }
+    memset(s->a38, 1, 0x200);
 }
 
 // .text:0x000EEE3C size:0xE8 mapped:0x8072DED0
