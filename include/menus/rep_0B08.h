@@ -87,4 +87,6 @@ s32 fn_2_68690(s32 index);
 
 s32 fn_2_686B0(s32 index);
 
+void fn_2_6BAAC(u8* object);
+
 #endif
