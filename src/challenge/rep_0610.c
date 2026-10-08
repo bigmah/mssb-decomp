@@ -1,5 +1,10 @@
 #include "challenge/rep_0610.h"
 
+extern void fn_1_12820(void*, void*);
+extern s16 lbl_1_data_A978[];
+extern u8 lbl_1_bss_68FC[];
+extern void* lbl_1_bss_5F7C[];
+
 #include "Dolphin/vec.h"
 extern void fn_80026134(s32, Vec*);
 extern void fn_80026130(s32, void*, f32);
@@ -202,4 +207,12 @@ void fn_1_1073C(u8* object) {
     displacement.z = *(f32*)(lbl_1_bss_67E0 + 0x110) - *(f32*)(object + 0x3C);
     fn_80026134(0, &displacement);
     fn_80026130(0, lbl_1_data_ADC4, lbl_1_data_ADC0[0]);
+}
+
+// fn_1_12F18, size:0x74
+void fn_1_12F18(u8* object) {
+    fn_1_12820(*(void**)(lbl_8036E548 + 0x60), object + 8);
+    if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
+        fn_800BD670(lbl_1_bss_5F7C[0], (u32)(object + 8));
+    }
 }

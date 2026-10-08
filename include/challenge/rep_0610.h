@@ -53,4 +53,6 @@ void fn_1_17954(void);
 
 void fn_1_1073C(u8* object);
 
+void fn_1_12F18(u8* object);
+
 #endif
