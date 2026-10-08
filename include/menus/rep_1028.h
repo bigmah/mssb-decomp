@@ -64,4 +64,6 @@ void fn_2_90628(u8* object);
 
 void fn_2_8F688(void);
 
+void fn_2_8F640(void);
+
 #endif

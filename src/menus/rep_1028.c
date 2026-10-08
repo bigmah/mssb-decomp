@@ -231,3 +231,10 @@ void fn_2_8F688(void) {
     color.a = 0xFF;
     fn_800BD2CC(0, color);
 }
+
+// fn_2_8F640, size:0x48
+void fn_2_8F640(void) {
+    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    color.a = 0xFF;
+    fn_800BD2CC(1, color);
+}
