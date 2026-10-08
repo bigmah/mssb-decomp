@@ -83,3 +83,11 @@ void fn_3_B0D7C(void) {
 // fn_3_B0D78, size:0x4
 void fn_3_B0D78(void) {
 }
+
+// fn_3_B0D2C, size:0x4C
+void fn_3_B0D2C(void) {
+    if (g_Practice.aiBuntIndicator == 0 &&
+        g_Pitcher.framesUntilUnhittable + 1 == swingSoundFrame[0][1]) {
+        g_AiLogic.batterAISwingInd = 1;
+    }
+}
