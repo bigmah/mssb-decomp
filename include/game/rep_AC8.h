@@ -146,7 +146,7 @@ void fn_3_42CDC(void);
 void fn_3_43038(void);
 void fn_3_433E0(void);
 void fn_3_447C4(int);
-void fn_3_45394(void);
+void fn_3_45394(int);
 void fn_3_455B4(void);
 void fn_3_45860(void);
 void fn_3_4597C(void);
