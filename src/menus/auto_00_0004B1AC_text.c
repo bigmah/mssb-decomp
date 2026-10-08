@@ -150,3 +150,8 @@ void fn_2_51568(void) {
 void fn_2_5146C(void) {
     return;
 }
+
+// fn_2_513E4, size:0x4
+void fn_2_513E4(void) {
+    return;
+}
