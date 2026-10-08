@@ -69,6 +69,7 @@ extern void fn_800B0A14_removeQueue(void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_800B9948(void*);
 extern void fn_800BD670(void*, u32);
+extern void LITXForm(void* light, void* matrix);
 extern void pitchingMachinePitching(u8);
 
 typedef struct {
@@ -82,6 +83,7 @@ extern lbl_803C77B8_s lbl_803C77B8;
 extern void fn_80021518(s32 id, s32 value);
 extern s32 fn_800214D0(void);
 extern u8 fn_800211F0(void);
+extern u32 fn_80062890(s32 index);
 
 extern void fn_80048C28(void);
 extern void fn_80048C1C(void);

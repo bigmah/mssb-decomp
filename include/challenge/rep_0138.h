@@ -9,4 +9,6 @@ void fn_1_7848(void);
 
 void fn_1_77EC(void* context);
 
+void fn_1_54E0(void* matrix);
+
 #endif
