@@ -53,6 +53,7 @@ extern u8 lbl_3_data_26C3C[];
 extern u8 lbl_3_bss_B894[];
 extern const f32 lbl_3_rodata_3930;
 extern const f32 lbl_3_rodata_39B8;
+extern const f32 lbl_3_rodata_39AC;
 extern const f64 lbl_3_rodata_39C8;
 extern u8 lbl_80366158[];
 extern u8 lbl_3_data_26E40[];
@@ -1503,8 +1504,31 @@ void fn_3_150940(void) {
 }
 
 // .text:0x00150D84 size:0x2E4 mapped:0x8078FE18
-void fn_3_150D84(void) {
-    return;
+void fn_3_150D84(u8* a, u8* o) {
+    s32* d;
+    f32 ang;
+    f32 s;
+    d = (s32*)lbl_3_data_26C3C;
+    *(s16*)(o + 0x4A) = d[20];
+    *(f32*)(o + 4) = *(f32*)(a + 0x1C);
+    *(f32*)(o + 8) = -*(f32*)(a + 0x20);
+    *(f32*)(o + 0xC) = *(f32*)(a + 0x24);
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)(d[10] + rand() % (d[11] - d[10])) / lbl_3_rodata_3930;
+    d = (s32*)lbl_3_data_26C3C;
+    *(f32*)(o + 0x14) = (f32)(d[12] + rand() % (d[13] - d[12])) / lbl_3_rodata_3930;
+    d = (s32*)lbl_3_data_26C3C;
+    ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 36000) / lbl_3_rodata_39E8);
+    d = (s32*)lbl_3_data_26C3C;
+    s = (f32)(d[16] + rand() % (d[17] - d[16])) / lbl_3_rodata_3930;
+    *(f32*)(o + 0x10) = s * (f32)cos(ang);
+    *(f32*)(o + 0x18) = s * (f32)sin(ang);
+    d = (s32*)lbl_3_data_26C3C;
+    *(f32*)(o + 0x1C) = lbl_3_rodata_39AC * ((f32)(d[18] + rand() % (d[19] - d[18])) / lbl_3_rodata_3930);
+    *(f32*)(o + 0x1C) = *(f32*)(o + 0x1C) * (f32)(-(rand() % 2 * 2) + 1);
+    o[0x43] = 0xFF;
+    o[0x42] = 0xFF;
+    o[0x41] = 0xFF;
+    o[0x40] = 0xFF;
 }
 
 // .text:0x00151068 size:0x19C mapped:0x807900FC
