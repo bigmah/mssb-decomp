@@ -67,7 +67,7 @@ void fn_3_F5C30(void);
 s32 fn_3_F5E78(u8 id);
 s32 fn_3_F5EFC(u32* a, u32* b);
 s32 fn_3_F5F28(f32* a, f32* b);
-void fn_3_F5F4C(void);
+void fn_3_F5F4C(f32 (*m)[4]);
 void fn_3_F6084(void);
 s32 fn_3_F6504(s32 idx, s32 arg);
 void fn_3_F65C8(s32* n);

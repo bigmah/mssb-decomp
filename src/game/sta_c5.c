@@ -44,6 +44,7 @@ extern int rand(void);
 extern s8 lbl_3_bss_AF18[];
 extern u8* lbl_3_bss_B118[];
 extern void* memset(void*, s32, u32);
+extern void* memcpy(void*, void*, u32);
 extern f32 lbl_3_rodata_2D50;
 extern f32 lbl_3_rodata_2EE8;
 extern f32 lbl_3_rodata_2DEC;
@@ -1108,8 +1109,34 @@ s32 fn_3_F5F28(f32* a, f32* b) {
 }
 
 // .text:0x000F5F4C size:0x138 mapped:0x80734FE0
-void fn_3_F5F4C(void) {
-    return;
+void fn_3_F5F4C(Mtx m) {
+    extern const f32 lbl_3_rodata_2E30, lbl_3_rodata_2F2C, lbl_3_rodata_2F30, lbl_3_rodata_2F34;
+    Vec v;
+    u8* g;
+    s32 off;
+    u32 i;
+    memcpy(&v, g_Ball, 0xC);
+    PSMTXMultVec(m, &v, &v);
+    g = lbl_3_common_bss_350E4;
+    for (i = 0, off = 0; i < *(u32*)(g + 0x30); off += 8, i++) {
+        f32* e = (f32*)(*(u8**)(g + 0x14) + off);
+        u8* o = *(u8**)g + ((s32*)e)[1] * 0xE8;
+        if ((o[0x90] >> 7) & 1) {
+            if (o[0x9D] == 1) {
+                e[0] = lbl_3_rodata_2D50;
+            } else {
+                f32 d = e[0];
+                f32 lo = lbl_3_rodata_2D74 + v.z;
+                if (d < lo) {
+                    e[0] = lbl_3_rodata_2D50;
+                } else if (d > lbl_3_rodata_2E30 + v.z) {
+                    e[0] = lbl_3_rodata_2F2C;
+                } else {
+                    { f32 t = d - lo; e[0] = lbl_3_rodata_2DA8 - lbl_3_rodata_2F30 * (t * lbl_3_rodata_2F34); }
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000F6084 size:0x480 mapped:0x80735118
