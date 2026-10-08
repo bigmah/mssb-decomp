@@ -33,6 +33,21 @@ extern s16 lbl_2_data_3ED4[];
 
 extern u8* lbl_2_bss_1A8244;
 
+extern u8* lbl_2_bss_1A8248[];
+
+// fn_2_4C36C, size:0x58
+void fn_2_4C36C(void) {
+    lbl_2_bss_1A8248[0][0x4424] = 1;
+    lbl_2_bss_1A8248[0][0x4425] = 1;
+    lbl_2_bss_1A8248[0][0x441B] = 0;
+    {
+        u8* entry = lbl_2_bss_1A8244 + lbl_2_bss_1A8248[0][0x441C] * 4;
+        entry += lbl_2_bss_1A8248[0][0x4415];
+        entry[0xC6] = 1;
+    }
+    lbl_2_bss_1A8248[0][0x1606] = 1;
+}
+
 // fn_2_4C314, size:0x58
 void fn_2_4C314(void) {
     u8* menu = lbl_2_bss_1A8244;
