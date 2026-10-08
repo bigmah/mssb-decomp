@@ -94,6 +94,7 @@ extern u8 lbl_3_bss_B218[];
 extern u8 lbl_3_bss_B21A;
 extern void fn_3_B8414(void* a, void* b);
 extern void fn_3_B8464(void* mtx, void* obj);
+extern void fn_3_B8574(void);
 extern void fn_800B4CA0(void*, f32);
 extern void AnimateActorBones(void*);
 extern u8 lbl_3_bss_AEE0[];
@@ -1190,8 +1191,34 @@ void fn_3_F66C8(void) {
 }
 
 // .text:0x000F6938 size:0x15C mapped:0x807359CC
-void fn_3_F6938(void) {
-    return;
+void fn_3_F6938(s32* n) {
+    struct { Control c; u8 pad[0x8]; } c;
+    Mtx m;
+    s32 i;
+    s32 idx;
+    u16 k;
+    u8* e;
+    void* o;
+    extern u8 lbl_3_bss_B21F;
+    extern u8 lbl_3_bss_B220[];
+    extern f32 lbl_3_rodata_2F40[];
+    for (i = 0; i < lbl_3_bss_B220[0]; i++) {
+        k = (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n - 1] + (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n - 1];
+        (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n] = k;
+        idx = lbl_3_bss_B21F + i;
+        (*(u32**)(lbl_3_common_bss_350E4 + 0x44))[k] = idx;
+        (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
+        e = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
+        o = (void*)*(s32*)(e + 0x78);
+        c.c.type = 0;
+        CTRLSetTranslation(&c.c, lbl_3_data_1B884[e[0x9C]].v.x, -lbl_3_data_1B884[e[0x9C]].v.y, lbl_3_data_1B884[e[0x9C]].v.z);
+        CTRLSetScale(&c.c, lbl_3_rodata_2F40[0], lbl_3_rodata_2F40[0], lbl_3_rodata_2F40[0]);
+        CTRLBuildMatrix(&c.c, m);
+        fn_3_B8574();
+        fn_3_B8464(m, o);
+        fn_3_B8414(*(u8**)(lbl_3_common_bss_350E4 + 0x48) + *n * 0x18, *(u8**)(lbl_3_common_bss_350E4 + 0x48) + (*n * 2 + 1) * 0xC);
+        (*n)++;
+    }
 }
 
 // .text:0x000F6A94 size:0x1CC mapped:0x80735B28
