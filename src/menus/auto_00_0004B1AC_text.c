@@ -1,5 +1,8 @@
 #include "menus/auto_00_0004B1AC_text.h"
 
+extern void fn_2_52690(void);
+extern u8 lbl_8034E9A0[];
+
 #include "static/UnknownHomes_Static.h"
 
 extern u32 lbl_803C7898[];
@@ -185,4 +188,10 @@ void fn_2_5118C(void) {
 // fn_2_4E878, size:0x20
 void fn_2_4E878(void* object, void* data) {
     fn_80034E20(object, data);
+}
+
+// fn_2_52648, size:0x44
+void fn_2_52648(s32 priority) {
+    fn_800B0A5C_insertQueue((void*)fn_2_52690, priority);
+    lbl_8034E9A0[0x472B] = g_d_GameSettings._06;
 }

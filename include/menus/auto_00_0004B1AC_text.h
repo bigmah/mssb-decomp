@@ -67,4 +67,6 @@ void fn_2_5118C(void);
 
 void fn_2_4E878(void* object, void* data);
 
+void fn_2_52648(s32 priority);
+
 #endif
