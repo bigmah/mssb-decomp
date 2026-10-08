@@ -155,8 +155,32 @@ void fn_3_8B9BC(void* pos) {
 }
 
 // .text:0x0008BA60 size:0x164 mapped:0x806CAAF4
-void fn_3_8BA60(void) {
-    return;
+typedef struct SndEm3C { s32 x, y, z; u8 pad[8]; u32 f14; u8 pad2[0x24]; } SndEm3C;
+extern SndEm3C lbl_3_data_8974[];
+extern Vec lbl_3_data_8D7C;
+void fn_3_8BA60(s32 i, f32* pos, f32* dir) {
+    f32 tmp[3];
+    u8* em;
+    u8 type;
+    if (i < 0 || i >= 100 || lbl_3_common_bss_32B20[0x2034 + i] == 0) {
+        return;
+    }
+    em = lbl_3_common_bss_32B20 + i * 0x50 + 0x90;
+    if (sndCheckEmitter(em) == 0) {
+        lbl_3_common_bss_32B20[0x2034 + i] = 0;
+        return;
+    }
+    type = lbl_3_common_bss_32B20[0x1FD0 + i];
+    if (pos == NULL) {
+        tmp[0] = lbl_3_data_8974[type].x / 100000.0f;
+        tmp[1] = lbl_3_data_8974[type].y / 100000.0f;
+        tmp[2] = lbl_3_data_8974[type].z / 100000.0f;
+        pos = tmp;
+    }
+    if (dir == NULL) {
+        dir = (f32*)&lbl_3_data_8D7C;
+    }
+    sndUpdateEmitter(em, (Vec*)pos, (Vec*)dir, lbl_3_data_8974[type].f14, 0);
 }
 
 // .text:0x0008BBC4 size:0x230 mapped:0x806CAC58
@@ -488,8 +512,15 @@ void fn_3_90064(s32 id) {
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4
-void fn_3_90150(void) {
-    return;
+extern u8 lbl_3_data_8148[];
+u32 fn_3_90150(s32 a, s32 b) {
+    u8* d = lbl_3_data_8148;
+    u8* t = d + 0x3E8;
+    u8 v1 = (s32)((f32)t[b] * *(f32*)(d + 0x6E8));
+    u8 v2 = (s32)((f32)t[b + 0x180] * *(f32*)(d + 0x6E8));
+    u32 h = sndFXStartEx((u16)(b + ((u16*)(d + 0x20))[a]), v1, 0x3F, 0);
+    sndFXCtrl(h, 0x5B, v2);
+    return h;
 }
 
 
