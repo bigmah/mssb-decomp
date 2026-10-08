@@ -13,4 +13,6 @@ void fn_2_EC34(void);
 
 u32 fn_2_1554(void);
 
+void fn_2_1328(u32* value, u16 increment);
+
 #endif

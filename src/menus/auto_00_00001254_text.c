@@ -33,3 +33,13 @@ u32 fn_2_1554(void) {
     lbl_803CB750[0] = lbl_803CB750[0] * 0x5D588B65 + 1;
     return lbl_803CB750[0];
 }
+
+// fn_2_1328, size:0x2C
+void fn_2_1328(u32* value, u16 increment) {
+    u32 sum = *value + increment;
+    if (sum > 0x7FFFFFFF) {
+        *value = 0x7FFFFFFF;
+        return;
+    }
+    *value = sum;
+}
