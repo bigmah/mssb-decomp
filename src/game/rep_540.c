@@ -1,5 +1,6 @@
 #include "game/rep_540.h"
 #include "header_rep_data.h"
+#include "stl/math.h"
 
 extern f32 lbl_3_rodata_590;
 extern u8 g_Minigame[];
@@ -123,8 +124,35 @@ void fn_3_9B74(void) {
 }
 
 // .text:0x00009CE0 size:0x138 mapped:0x80648D74
-void fn_3_9CE0(void) {
-    return;
+extern const f64 lbl_3_rodata_5B8;
+extern const f64 lbl_3_rodata_5C0;
+extern const f64 lbl_3_rodata_5C8;
+
+static inline float sqrt540(float x) {
+    if (x > 0.0f) {
+        double half = lbl_3_rodata_5B8;
+        double three = lbl_3_rodata_5C0;
+        double xd = (double)x;
+        double guess = __frsqrte(xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        return (float)(xd * guess);
+    } else if (x < lbl_3_rodata_5C8)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
+
+f32 fn_3_9CE0(f32 x, f32 z) {
+    f32 dx = x - *(f32*)(g_Ball + 0);
+    f32 dz = z - *(f32*)(g_Ball + 8);
+    f32 t = *(f32*)(g_Ball + 0x1A18) * dx + *(f32*)(g_Ball + 0x1A1C) * dz;
+    f32 d = dx * dx + dz * dz - t * t;
+    if (d < 0.0f) return 0.0f;
+    return sqrt540(d);
 }
 
 // .text:0x00009E18 size:0x6C mapped:0x80648EAC
