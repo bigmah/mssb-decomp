@@ -5,7 +5,7 @@
 
 void fn_3_F8524(u8* p);
 void fn_3_F85B0(void);
-void fn_3_F8878(void);
+void fn_3_F8878(u8* a);
 void fn_3_F8ABC(void);
 void fn_3_F8B04(void);
 void fn_3_F8B30(void);
