@@ -1,5 +1,6 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
+#include "game/UnknownHomes_Game.h"
 #include "Dolphin/stl.h"
 #include "Dolphin/os.h"
 #include "C3/control.h"
@@ -10,6 +11,7 @@ extern u32 lbl_3_data_19018[];
 
 extern f32 lbl_3_rodata_2B9C;
 extern f32 lbl_3_rodata_2BA0;
+extern f32 lbl_3_rodata_2BA4;
 
 extern f32 lbl_3_rodata_2B90;
 extern f32 lbl_3_rodata_2B94;
@@ -29,8 +31,6 @@ extern char lbl_3_rodata_2BBC[];
 
 extern u8 lbl_3_common_bss_350E4[];
 
-extern u8 lbl_3_bss_AE80[];
-extern u8* lbl_3_bss_AEB4[];
 typedef struct { f32 x, y, z; } E751CV;
 extern E751CV lbl_3_data_19644[];
 extern f32 lbl_3_data_19698[];
@@ -39,9 +39,23 @@ extern u8* fn_80052734(s32);
 extern u8 fn_800B3C04(s32, void*, void*);
 extern void fn_800BDA24(void*);
 extern void fn_800BDA94(void*, void*);
-extern u8 lbl_3_data_1963F;
-extern u8 lbl_3_data_19640;
-extern u8 lbl_3_bss_AEAC;
+extern s8 lbl_3_data_1963F;
+extern s8 lbl_3_data_19640;
+extern u8 lbl_80366158[];
+// This unit's .bss (AE50..AEE0) as statics, declared in reverse address order.
+// AE52..AE7A are single bytes so the pool has no alignment gaps; AE51 is its own
+// object so the store compiles to stb 1(base) with no extra addi.
+static u8* lbl_3_bss_AEB4[11];
+static u8 lbl_3_bss_AEAD[7];
+static u8 lbl_3_bss_AEAC;
+static s32 lbl_3_bss_AE88[9];
+static s32 lbl_3_bss_AE84;
+static u8 lbl_3_bss_AE80[4];
+static u8 lbl_3_bss_AE7C;
+static u8 lbl_3_bss_AE7B;
+static u8 lbl_3_bss_AE52, lbl_3_bss_AE53, lbl_3_bss_AE54, lbl_3_bss_AE55, lbl_3_bss_AE56, lbl_3_bss_AE57, lbl_3_bss_AE58, lbl_3_bss_AE59, lbl_3_bss_AE5A, lbl_3_bss_AE5B, lbl_3_bss_AE5C, lbl_3_bss_AE5D, lbl_3_bss_AE5E, lbl_3_bss_AE5F, lbl_3_bss_AE60, lbl_3_bss_AE61, lbl_3_bss_AE62, lbl_3_bss_AE63, lbl_3_bss_AE64, lbl_3_bss_AE65, lbl_3_bss_AE66, lbl_3_bss_AE67, lbl_3_bss_AE68, lbl_3_bss_AE69, lbl_3_bss_AE6A, lbl_3_bss_AE6B, lbl_3_bss_AE6C, lbl_3_bss_AE6D, lbl_3_bss_AE6E, lbl_3_bss_AE6F, lbl_3_bss_AE70, lbl_3_bss_AE71, lbl_3_bss_AE72, lbl_3_bss_AE73, lbl_3_bss_AE74, lbl_3_bss_AE75, lbl_3_bss_AE76, lbl_3_bss_AE77, lbl_3_bss_AE78, lbl_3_bss_AE79, lbl_3_bss_AE7A;
+static u8 lbl_3_bss_AE51;
+static u8 lbl_3_bss_AE50;
 
 // .text:0x000E59B4 size:0x68 mapped:0x80724A48
 void fn_3_E59B4(u8* a) {
@@ -62,13 +76,58 @@ void fn_3_E5A1C(u8* a) {
 }
 
 // .text:0x000E5A84 size:0x238 mapped:0x80724B18
-void fn_3_E5A84(void) {
-    return;
+typedef struct { f32 x, y, z, r, pad; } E751CP;
+extern void PSMTXIdentity(Mtx);
+void fn_3_E5A84(u8* a) {
+    Control c;
+    Mtx m;
+    u8* n;
+    s32 i;
+    PSMTXIdentity(m);
+    c.type = 0;
+    if (a[0xC1] < 8) {
+        CTRLSetTranslation(&c, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].x, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].y, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].z);
+        CTRLSetRotation(&c, 0.0f, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].r, 0.0f);
+    } else {
+        CTRLSetTranslation(&c, lbl_3_data_19644[a[0xC3]].x, lbl_3_data_19644[a[0xC3]].y, lbl_3_data_19644[a[0xC3]].z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[a[0xC3]], 0.0f);
+    }
+    CTRLBuildMatrix(&c, m);
+    for (i = 0; i < *(u16*)(**(u8***)(a + 0x74) + 6); i++) {
+        n = ((u8**)*(u8**)(**(u8***)(a + 0x74) + 0x18))[i];
+        CTRLBuildMatrix((Control*)(n + 0x1C), *(void**)(n + 0xEC));
+        PSMTXConcat(m, *(void**)(n + 0xEC), *(void**)(n + 0xEC));
+        PSMTXCopy(*(void**)(n + 0xEC), (void*)(*(u8**)(n + 0x14) + 0x18));
+    }
+    if (*(u8***)(a + 0x9C) != NULL) {
+        for (i = 0; i < *(u16*)(**(u8***)(a + 0x9C) + 6); i++) {
+            n = ((u8**)*(u8**)(**(u8***)(a + 0x9C) + 0x18))[i];
+            CTRLBuildMatrix((Control*)(n + 0x1C), *(void**)(n + 0xEC));
+            PSMTXConcat(m, *(void**)(n + 0xEC), *(void**)(n + 0xEC));
+            if (*(u8**)(n + 0x14) != NULL) {
+                PSMTXCopy(*(void**)(n + 0xEC), (void*)(*(u8**)(n + 0x14) + 0x18));
+            }
+        }
+        (**(u8***)(a + 0x9C))[0x98] = fn_800B3C04(0, **(u8***)(a + 0x9C), fn_80052734(fn_8005268C()) + 0x40);
+    }
+    (**(u8***)(a + 0x74))[0x98] = fn_800B3C04(0, **(u8***)(a + 0x74), fn_80052734(fn_8005268C()) + 0x40);
 }
 
 // .text:0x000E5CBC size:0x158 mapped:0x80724D50
-void fn_3_E5CBC(void) {
-    return;
+void fn_3_E5CBC(u8* p, f32 t) {
+    u8* b = *(u8**)(p + 0xAC);
+    u8* a = *(u8**)(p + 0xA8);
+    f32 r;
+    if (t > 1.0f) {
+        t = 1.0f;
+    } else if (t < lbl_3_rodata_2BA4) {
+        t = lbl_3_rodata_2BA4;
+    }
+    r = 1.0f - t;
+    p[0xA4] = (u8)(r * (f32)b[0] + t * (f32)a[0]);
+    p[0xA5] = (u8)(r * (f32)b[1] + t * (f32)a[1]);
+    p[0xA6] = (u8)(r * (f32)b[2] + t * (f32)a[2]);
+    p[0xA7] = (u8)(r * (f32)b[3] + t * (f32)a[3]);
 }
 
 // .text:0x000E5E14 size:0x5C mapped:0x80724EA8
@@ -89,8 +148,50 @@ s32 fn_3_E5E14(u8* p) {
 }
 
 // .text:0x000E5E70 size:0x17C mapped:0x80724F04
-void fn_3_E5E70(void) {
-    return;
+void fn_3_E5E70(u8* out, u8 fmt, void* src) {
+    u16* s16p = src;
+    u32* s32p = src;
+    s32 f = (fmt >> 4) & 0xF;
+    if (out == NULL || src == NULL) {
+        return;
+    }
+    switch (f) {
+    case 0:
+        out[0] = (*s16p >> 8) & 0xF8;
+        out[1] = (*s16p >> 3) & 0xFC;
+        out[2] = (*s16p << 3) & 0xF8;
+        out[3] = 0xFF;
+        break;
+    case 3:
+        out[0] = (*s16p >> 12) & 0xF;
+        out[1] = (*s16p >> 8) & 0xF;
+        out[2] = (*s16p >> 4) & 0xF;
+        out[3] = *s16p & 0xF;
+        out[0] = out[0] | (out[0] << 4);
+        out[1] = out[1] | (out[1] << 4);
+        out[2] = out[2] | (out[2] << 4);
+        out[3] = out[3] | (out[3] << 4);
+        break;
+    case 5:
+        out[0] = *s32p >> 24;
+        out[1] = *s32p >> 16;
+        out[2] = *s32p >> 8;
+        out[3] = *s32p;
+        break;
+    case 1:
+    case 2:
+        out[0] = *s32p >> 24;
+        out[1] = *s32p >> 16;
+        out[2] = *s32p >> 8;
+        out[3] = 0xFF;
+        break;
+    case 4:
+        out[0] = __rlwinm(*s16p, 16, 24, 29);
+        out[1] = (*s16p >> 10) & 0xFC;
+        out[2] = (*s16p >> 4) & 0xFC;
+        out[3] = (*s16p << 2) & 0xFC;
+        break;
+    }
 }
 
 // .text:0x000E5FEC size:0x424 mapped:0x80725080
@@ -327,16 +428,26 @@ void fn_3_E7388(s32 unused, E7388Pair* out) {
 }
 
 // .text:0x000E7424 size:0xF8 mapped:0x807264B8
-// 90%: needs this unit's .bss (AE50..AEE0) defined as statics; the AE80 u8[4] array is addressed as addi r8,base,0x30.
-// Draft: s = AE50; if (g_GameLogic.gameStatus == 1 || == 0) { s38++; s[0x30..0x33] = g_Minigame._1914.._1917 != 0;
-// *(s8*)&1963F = *(s8*)&19640 = -1; } s[0x2C] = s[0x2B]; s[0x2B] = g_Minigame.toyFieldBallStateResult;
-// s34 += lbl_80366158[0x28] == 0; if (s[0x2C] != s[0x2B]) s34 = 0; s[1] = 0;
 void fn_3_E7424(void) {
-    return;
+    if (g_GameLogic.gameStatus == 1 || g_GameLogic.gameStatus == 0) {
+        lbl_3_bss_AE88[0]++;
+        lbl_3_bss_AE80[0] = g_Minigame._1914 != 0;
+        lbl_3_bss_AE80[1] = g_Minigame._1915 != 0;
+        lbl_3_bss_AE80[2] = g_Minigame._1916 != 0;
+        lbl_3_bss_AE80[3] = g_Minigame._1917 != 0;
+        lbl_3_data_1963F = -1;
+        lbl_3_data_19640 = -1;
+    }
+    lbl_3_bss_AE7C = lbl_3_bss_AE7B;
+    lbl_3_bss_AE7B = g_Minigame.toyFieldBallStateResult;
+    lbl_3_bss_AE84 += lbl_80366158[0x28] == 0;
+    if (lbl_3_bss_AE7C != lbl_3_bss_AE7B) {
+        lbl_3_bss_AE84 = 0;
+    }
+    lbl_3_bss_AE51 = 0;
 }
 
 // .text:0x000E751C size:0x120 mapped:0x807265B0
-typedef struct { f32 x, y, z, r, pad; } E751CP;
 s32 fn_3_E751C(s32 idx, Mtx m) {
     Control c;
     u8* o;
