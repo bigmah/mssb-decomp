@@ -46,6 +46,47 @@ extern void fn_1_267F4(void);
 extern void fn_1_25C68(void);
 extern void (*lbl_1_data_10508[])(u8*);
 extern void (*lbl_1_data_10510[])(u8*);
+extern ChallengeCurvePoint lbl_1_bss_6FE0[];
+extern u32 lbl_1_data_104DC[];
+
+// fn_1_21298, size:0x170
+void fn_1_21298(ChallengeCurveDrawing* drawing) {
+    s32 count;
+    ChallengeCurvePoint* point;
+    u32 color;
+
+    if (drawing->drawFlat != 0) {
+        GXBegin(GX_LINESTRIP, GX_VTXFMT0, (drawing->pointCount - 1) * 2);
+        count = drawing->pointCount;
+        while (--count != 0) {
+            point = &lbl_1_bss_6FE0[count];
+            GXWGFifo.f32 = point->position.x;
+            GXWGFifo.f32 = 0.0f;
+            GXWGFifo.f32 = point->position.z;
+            GXWGFifo.u32 = 0x80;
+            GXWGFifo.f32 = point[-1].position.x;
+            GXWGFifo.f32 = 0.0f;
+            GXWGFifo.f32 = point[-1].position.z;
+            GXWGFifo.u32 = 0x80;
+        }
+    }
+    if (drawing->drawFull != 0) {
+        GXBegin(GX_LINESTRIP, GX_VTXFMT0, (drawing->pointCount - 1) * 2);
+        count = drawing->pointCount;
+        while (--count != 0) {
+            point = &lbl_1_bss_6FE0[count];
+            GXWGFifo.f32 = point->position.x;
+            GXWGFifo.f32 = -point->position.y;
+            GXWGFifo.f32 = point->position.z;
+            color = lbl_1_data_104DC[count % 6];
+            GXWGFifo.u32 = color;
+            GXWGFifo.f32 = point[-1].position.x;
+            GXWGFifo.f32 = -point[-1].position.y;
+            GXWGFifo.f32 = point[-1].position.z;
+            GXWGFifo.u32 = color;
+        }
+    }
+}
 
 // fn_1_202A4, size:0x168
 void fn_1_202A4(void) {

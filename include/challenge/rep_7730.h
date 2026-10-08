@@ -38,6 +38,20 @@ typedef struct {
     f32 distance;
 } ChallengeProjectionState;
 
+typedef struct {
+    u8 padding[0x21];
+    u8 pointCount;
+    u8 drawFlat;
+    u8 colorMode;
+    u8 drawFull;
+} ChallengeCurveDrawing;
+
+typedef struct {
+    u8 padding[0x0C];
+    Vec position;
+    u8 padding18[0x28];
+} ChallengeCurvePoint;
+
 void fn_1_1DE5C(void);
 
 void fn_1_1E8C0(s32 index);
@@ -97,5 +111,7 @@ void fn_1_2040C(void);
 s32 fn_1_2051C(ChallengeTextureHeader* texture, GXTexObj* object, GXTlutObj* palette, GXTlut name);
 
 void fn_1_202A4(void);
+
+void fn_1_21298(ChallengeCurveDrawing* drawing);
 
 #endif
