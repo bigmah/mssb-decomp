@@ -7,3 +7,8 @@ extern u8* lbl_2_bss_1A8248[];
 void fn_2_9461C(s16 value) {
     *(s16*)(lbl_2_bss_1A8248[0] + 0x19774A) = value;
 }
+
+// fn_2_94604, size:0x18
+void fn_2_94604(u8 value) {
+    *(u8*)(lbl_2_bss_1A8248[0] + 0x197856) = value;
+}
