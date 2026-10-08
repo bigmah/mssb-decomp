@@ -1,5 +1,6 @@
 #include "menus/rep_1028.h"
 
+extern MenuStateCallback lbl_2_data_3088C[3];
 extern MenuStateCallback lbl_2_data_30810[3];
 extern MenuStateCallback lbl_2_data_3081C[3];
 extern MenuStateCallback lbl_2_data_30828[3];
@@ -140,4 +141,8 @@ void fn_2_9082C(MenuStateObject* object) {
 
 void fn_2_9061C(MenuStateObject* object) {
     object->state = 3;
+}
+
+void fn_2_909F4(MenuStateObject* object) {
+    lbl_2_data_3088C[object->state](object);
 }
