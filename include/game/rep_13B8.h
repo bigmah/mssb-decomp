@@ -32,7 +32,7 @@ void fn_3_823B4(void);
 void fn_3_82670(void);
 void fn_3_82F80(void);
 void fn_3_8307C(void);
-void fn_3_833EC(void);
+void fn_3_833EC(int i);
 void fn_3_835B0(void);
 void fn_3_83714(void);
 void fn_3_841C0(void);
