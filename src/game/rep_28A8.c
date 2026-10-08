@@ -44,9 +44,9 @@ typedef struct { u8 p0[4]; u16 b4; u16 b6; u16 b8; u8 p1[6]; } CT;
 extern void fn_3_107E80(void);
 extern s32 fn_3_5B380(void);
 extern void fn_8004CC18();
-typedef struct { f32 a, b, c, d; } T18AC8;
 typedef struct { f32 x, y, z; } V3X;
-typedef struct { u8 pad0[0xCD0]; V3X pos[4]; u8 pad1[0x1180 - 0xD00]; V3X vel[4]; u8 pad2[0x193A - 0x11B0]; u8 flag[4]; } MGX;
+typedef struct { u8 pad0[0xCD0]; V3X pos[8]; u8 pad1[0x1180 - 0xD30]; V3X vel[8]; u8 pad2[0x17C8 - 0x11E0]; s16 f17C8; u8 pad3[0x1939 - 0x17CA]; u8 cnt; u8 flags[8]; u8 pad4[0x199F - 0x1942]; u8 f199F; } MGF;
+typedef struct { f32 a, b, c, d; } T18AC8;
 extern T18AC8 lbl_3_data_18AC8[];
 extern const f32 lbl_3_rodata_28FC;
 extern const f32 lbl_3_rodata_2918;
@@ -74,12 +74,14 @@ void fn_3_D9EA0(void) {
     return;
 }
 
-// ~92%: only GPR order of loop-invariants differs (orig range=r29,t+4=r28,t=r27; ours t+4=r29,t=r28,range=r27)
+// ~95%: only GPR order of loop-invariants differs (orig range=r29,t+4=r28,t=r27; ours t=r29,t+4=r28,range=r27)
 // .text:0x000DA640 size:0x1F4 mapped:0x807196D4
 void fn_3_DA640(s32 n, s32 idx) {
     f32 maxr;
     f32 sx, sy;
     f32 r, rv;
+    f32* t;
+    f32* ty;
     s32 range;
     s32 i;
     *(u8*)(g_Minigame + 0x1939) = n;
@@ -90,6 +92,8 @@ void fn_3_DA640(s32 n, s32 idx) {
         maxr = lbl_3_data_18AC8[idx].d;
     }
     range = (s32)(lbl_3_rodata_2918 * maxr);
+    t = &lbl_3_data_18AC8[idx].a;
+    ty = &lbl_3_data_18AC8[idx].b;
     for (i = 0; i < n; i++) {
         s16 ang;
         g_Minigame[0x193A + i] = 1;
@@ -97,8 +101,8 @@ void fn_3_DA640(s32 n, s32 idx) {
         { s32 q = rand() % range; r = lbl_3_rodata_2920 * (f32)q; }
         { s32 q2 = rand() % 0x1000; ang = fn_3_9FE6C_normalizeAngle(q2); }
         getComponentsFromSAng(ang, &sx, &sy);
-        *(f32*)(g_Minigame + i * 0xC + 0xCD0) = sx * r + lbl_3_data_18AC8[idx].a;
-        *(f32*)(g_Minigame + i * 0xC + 0xCD8) = sy * r + lbl_3_data_18AC8[idx].b;
+        *(f32*)(g_Minigame + i * 0xC + 0xCD0) = sx * r + *t;
+        *(f32*)(g_Minigame + i * 0xC + 0xCD8) = sy * r + *ty;
         rv = RandomF32_Game_Range(lbl_3_rodata_28FC, lbl_3_rodata_2924);
         *(f32*)(g_Minigame + i * 0xC + 0x1180) = sx * rv;
         *(f32*)(g_Minigame + i * 0xC + 0x1188) = sy * rv;
