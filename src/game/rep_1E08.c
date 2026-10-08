@@ -1,5 +1,6 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
+#include "Dolphin/GX.h"
 typedef struct { f32 x, y; } V2f;
 extern V2f lbl_3_data_111C8[];
 extern void fn_8003A688(f32, f32);
@@ -803,8 +804,67 @@ int fn_3_BF878(void) {
 }
 
 // .text:0x000BF8F8 size:0x244 mapped:0x806FE98C
-void fn_3_BF8F8(void) {
-    return;
+extern u16 lbl_800F7860[];
+extern f32 lbl_3_rodata_1EF8;
+extern void fn_80033B58(void*, s32, s32, s32);
+extern void* memset(void*, int, u32);
+// 95%: x/y of the quad are read via lfsx (reg+reg) in the original and the e-based loads are not CSE'd with them
+void fn_3_BF8F8(u8* a, f32 (*in)[4], f32* pos, f32 (*cb)(u8*, s32, f32 (*)[4], f32)) {
+    Mtx cur;
+    Mtx inv;
+    f32 quad[12];
+    Vec tmp;
+    u8* b;
+    f32 k;
+    u32 col;
+    s32 j;
+    f32 x;
+    f32 y;
+    s32 off;
+    s32 alpha;
+    s32 i;
+    if (cb == NULL) {
+        cb = fn_3_BFB3C;
+    }
+    PSMTXInverse(in, inv);
+    inv[0][3] = lbl_3_rodata_1E68;
+    inv[1][3] = lbl_3_rodata_1E68;
+    inv[2][3] = lbl_3_rodata_1E68;
+    memset(quad, 0, 0x30);
+    i = 0;
+    k = lbl_3_rodata_1EF8;
+    off = 0;
+    for (; i < *(s32*)(a + 8); off += 0x44, i++) {
+        b = *(u8**)a;
+        alpha = (s32)(k * cb(b + off, (s32) * (f32*)(a + 0x10), cur, *(f32*)(a + 0x14)));
+        if ((u8)alpha != 0) {
+            u8* e;
+            b = *(u8**)a;
+            x = *(f32*)(b + off);
+            y = *(f32*)(b + (off + 4));
+            e = b + off;
+            quad[0] = x;
+            quad[1] = y;
+            quad[3] = *(f32*)e + *(f32*)(e + 8);
+            quad[4] = y;
+            quad[6] = quad[3];
+            quad[7] = *(f32*)(e + 4) + *(f32*)(e + 0xC);
+            quad[9] = x;
+            quad[10] = quad[7];
+            PSMTXConcat(inv, cur, cur);
+            e = *(u8**)a + off;
+            fn_80033B58(((void**)*(u8**)(a + 4))[*(u16*)(e + 0x10)], *(u16*)(e + 0x12), 0, 0);
+            GXBegin(0x80, 0, 4);
+            col = 0xFFFFFF00;
+            col = (col & ~0xFF) | (alpha & 0xFF);
+            for (j = 0; j < 4; j++) {
+                PSMTXMultVec(cur, (Vec*)&quad[j * 3], &tmp);
+                GXPosition3f32(pos[0] + tmp.x, pos[1] + tmp.y, pos[2] + tmp.z);
+                GXColor1u32(col);
+                GXTexCoord2f32((f32)lbl_800F7860[j * 2], (f32)lbl_800F7860[j * 2 + 1]);
+            }
+        }
+    }
 }
 
 // .text:0x000BFB3C size:0x268 mapped:0x806FEBD0

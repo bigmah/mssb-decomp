@@ -46,7 +46,7 @@ void fn_3_BF20C(void);
 void fn_3_BF238(void);
 void fn_3_BF6C0(void);
 int fn_3_BF878(void);
-void fn_3_BF8F8(void);
+void fn_3_BF8F8(u8* a, f32 (*in)[4], f32* pos, f32 (*cb)(u8*, s32, f32 (*)[4], f32));
 f32 fn_3_BFB3C(u8* e, s32 x, f32 (*m)[4], f32 t);
 f32 fn_3_BFDA4(void* p, f32 t, u8 a, s32 x, u8 b, u8* c);
 void fn_3_C0134(void);
