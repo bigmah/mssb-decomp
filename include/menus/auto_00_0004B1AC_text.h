@@ -7,6 +7,8 @@ void fn_2_4C314(void);
 
 void fn_2_4C36C(void);
 
+void fn_2_54B38(void);
+
 s16 fn_2_4C3C4(s32 index);
 
 s16 fn_2_4C3D8(s32 index);

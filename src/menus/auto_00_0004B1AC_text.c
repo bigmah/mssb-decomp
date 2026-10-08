@@ -1,6 +1,7 @@
 #include "menus/auto_00_0004B1AC_text.h"
 
 #include <string.h>
+#include "Dolphin/GX.h"
 extern void fn_2_4906C(void);
 
 extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
@@ -34,6 +35,25 @@ extern s16 lbl_2_data_3ED4[];
 extern u8* lbl_2_bss_1A8244;
 
 extern u8* lbl_2_bss_1A8248[];
+
+extern u8 lbl_8036E548[];
+extern void fn_2_68E68(void);
+extern void fn_2_47FF8(void);
+extern void fn_2_47CFC(void);
+
+// fn_2_54B38, size:0x74
+void fn_2_54B38(void) {
+    if (lbl_8036E548[0x307A] == 2) {
+        if (lbl_2_bss_1A8248[0][0x44F2] != 4) {
+            fn_2_68E68();
+        }
+        fn_2_47FF8();
+        if (lbl_2_bss_1A8248[0][0x44F2] != 4) {
+            fn_2_47CFC();
+        }
+    }
+    GXSetZCompLoc(GX_FALSE);
+}
 
 // fn_2_4C36C, size:0x58
 void fn_2_4C36C(void) {
