@@ -3,6 +3,7 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/vec.h"
+#include "Dolphin/mtxext.h"
 typedef struct C4724P {
     struct C4724P* next;
     f32 x, y, z;
@@ -64,7 +65,8 @@ extern u16 lbl_3_data_81DC[];
 extern u32 sndFXStartEx(int, u8, u8, u8);
 extern void sndFXCtrl(int, int, u8);
 extern u8 g_Ball[];
-extern f32 lbl_3_rodata_20F4;
+extern const f32 lbl_3_rodata_20F4;
+extern const f32 lbl_3_rodata_20F8;
 extern void GXClearVtxDesc(void);
 extern void GXSetVtxDesc(int, int);
 extern void GXSetVtxAttrFmt(int, int, int, int, int);
@@ -136,7 +138,7 @@ extern s32 lbl_3_data_177F4;
 extern u8 lbl_803C5090[];
 extern u8 lbl_8036E548[];
 extern void fn_800BEBCC(int, Vec*);
-extern f32 lbl_3_rodata_20F0;
+extern const f32 lbl_3_rodata_20F0;
 extern void CTRLGetTranslation(void*, f32*, f32*, f32*);
 extern void fn_3_CB7E8(f32, f32, f32);
 extern f32 lbl_3_rodata_2150;
@@ -341,9 +343,58 @@ void fn_3_C298C(void) {
     } while (i < 6);
 }
 
+// 48-line diff, all f-reg numbering (orig: w=f29 lo=f30 h/hi=f31; ours w=f30 h=f29 lo=f31)
 // .text:0x000C2AA0 size:0x1E0 mapped:0x80701B34
-void fn_3_C2AA0(void) {
-    return;
+u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h) {
+    Vec out;
+    f32 hw;
+    f32 hh;
+    Vec v[4];
+    u8* m;
+    u32 i;
+    u32 t;
+    f32 z;
+    f32 x;
+    f32 y;
+    u8 acc;
+    u8 f;
+    acc = 0;
+    fn_8005268C();
+    m = fn_80052734();
+    PSMTXMultVec((f32(*)[4])(m + 0x40), pos, pos);
+    z = pos->z;
+    if (z > lbl_3_rodata_20F4 || z < lbl_3_rodata_20F8) {
+        return 0;
+    }
+    x = pos->x;
+    y = pos->y;
+    hw = w * lbl_3_rodata_20D4;
+    hh = h * lbl_3_rodata_20D4;
+    v[0].z = v[1].z = v[2].z = v[3].z = z;
+    v[0].x = v[3].x = x - hw;
+    v[1].x = v[2].x = x + hw;
+    v[0].y = v[1].y = y - hh;
+    v[2].y = v[3].y = y + hh;
+    for (i = 0; i < 4; i++) {
+        PSMTX44MultVec((f32(*)[4])m, &v[i], &out);
+        f = (out.x < lbl_3_rodata_20F4);
+        f |= (out.x > lbl_3_rodata_20F0) << 1;
+        f |= (out.y < lbl_3_rodata_20F4) << 2;
+        f |= (out.y > lbl_3_rodata_20F0) << 3;
+        if (f == 0) {
+            return 1;
+        }
+        acc &= f;
+    }
+    t = acc & 3;
+    if (t == 1 || t == 2) {
+        return 0;
+    }
+    t = acc & 0xC;
+    if (t == 4 || t == 8) {
+        return 0;
+    }
+    return 1;
 }
 
 // .text:0x000C2C80 size:0x25C mapped:0x80701D14
@@ -752,22 +803,25 @@ u32 fn_3_C4724(void* hv) {
 // 99%: only the x/y load order of the src->pos copy (we load y before x)
 // .text:0x000C48D0 size:0x2B0 mapped:0x80703964
 void fn_3_C48D0(void* hv, Vec* src) {
-    C4724Hdr* h = hv;
-    C4724P* p = h->head;
-    u32 i = 0;
+    C4724Hdr* h;
+    C4724P* p;
+    u32 i;
     f32 a;
     f32 c;
     f32 k;
+    f32 x;
+    f32 y;
+    f32 z;
+    h = hv;
+    p = h->head;
+    i = 0;
     while (p != NULL) {
-        {
-            f32 x, y, z;
-            x = src->x;
-            y = src->y;
-            p->x = x;
-            z = src->z;
-            p->y = y;
-            p->z = z;
-        }
+        x = src->x;
+        y = src->y;
+        p->x = x;
+        z = src->z;
+        p->y = y;
+        p->z = z;
         a = lbl_3_rodata_2158 * (f32)(rand() % 181) / lbl_3_rodata_215C;
         c = lbl_3_rodata_2158 * (f32)(rand() % 360) / lbl_3_rodata_215C;
         k = lbl_3_rodata_20D4 - (f32)(rand() % 3) / lbl_3_rodata_2160[0];
