@@ -66,4 +66,6 @@ void fn_1_207D4(void);
 
 void fn_1_20890(void);
 
+void fn_1_26A34(void);
+
 #endif

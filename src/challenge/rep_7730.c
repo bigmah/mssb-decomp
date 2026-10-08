@@ -41,6 +41,22 @@ extern const f32 lbl_1_rodata_7814[];
 extern const f32 lbl_1_rodata_7820[];
 extern Mtx44 lbl_1_bss_47010;
 
+// fn_1_26A34, size:0xC4
+void fn_1_26A34(void) {
+    GXSetProjection(lbl_1_bss_47010, GX_PERSPECTIVE);
+    GXClearVtxDesc();
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+}
+
 // fn_1_20890, size:0xC0
 void fn_1_20890(void) {
     Mtx identity;
