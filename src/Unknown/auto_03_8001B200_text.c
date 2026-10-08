@@ -6,3 +6,8 @@ extern u8 lbl_8036E548[];
 void fn_8001B200(void) {
     *(u32*)(lbl_8036E548 + 0x308c) = 0x0;
 }
+
+// fn_8001B214, size:0x10
+void fn_8001B214(u32 value) {
+    *(u32*)(lbl_8036E548 + 0x308c) = value;
+}

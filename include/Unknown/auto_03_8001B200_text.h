@@ -5,4 +5,6 @@
 
 void fn_8001B200(void);
 
+void fn_8001B214(u32 value);
+
 #endif
