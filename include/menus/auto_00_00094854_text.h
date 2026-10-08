@@ -11,4 +11,6 @@ void fn_2_95B28(void);
 
 void fn_2_9486C(void);
 
+void fn_2_948B8(void);
+
 #endif
