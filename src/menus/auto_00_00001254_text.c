@@ -22,6 +22,19 @@ typedef struct MenuEntrySlot {
 
 extern MenuEntrySlot lbl_80371C30[];
 
+extern u8 lbl_2_bss_100B4;
+extern u8* lbl_803CBBCC[];
+
+// fn_2_6138, size:0x68
+void fn_2_6138(void) {
+    fn_800625A4(0, 19);
+    fn_800625A4(1, 19);
+    lbl_2_bss_F468[0x4F] = 0;
+    lbl_2_bss_F468[0x2E] = 0;
+    lbl_2_bss_100B4 = 1;
+    *(s16*)(lbl_803CBBCC[0] + 4) = 8;
+}
+
 // fn_2_35D0, size:0x54
 s32 fn_2_35D0(u8 index) {
     u8* flag = (u8*)((u32)lbl_2_bss_F468 + 0x45 + index);
