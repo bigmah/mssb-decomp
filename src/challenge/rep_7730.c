@@ -1,6 +1,8 @@
 #include "challenge/rep_7730.h"
 
 #include "static/UnknownHomes_Static.h"
+extern void fn_1_20BD8(void);
+
 extern void fn_1_246AC(void);
 
 extern u8* lbl_803CC1B8[];
@@ -58,4 +60,11 @@ void fn_1_267BC(void) {
 void fn_1_24778(void) {
     lbl_803CC1B8[0][0x14] = 0;
     *(void (**)(void))lbl_803CC1B8[0] = fn_1_246AC;
+}
+
+// fn_1_20DC8, size:0x38
+void fn_1_20DC8(void) {
+    u8* object = fn_800B0A5C_insertQueue((void*)fn_1_20BD8, 1);
+    object[0x25] = 0;
+    *(s16*)(object + 0x10) = 0;
 }
