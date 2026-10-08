@@ -21,6 +21,7 @@ extern struct { u8 pad[0xC]; s16 n; u8 pad2[0x1C4]; u8 b1D2; } lbl_3_common_bss_
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
 extern u8 g_Ball[];
+extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_18C48[];
 extern u8 lbl_8037169C[];
 extern int random_fn_3_9EE24(int);
@@ -188,7 +189,50 @@ void fn_3_DCF44(void) {
 
 // .text:0x000DD000 size:0x1A8 mapped:0x8071C094
 void fn_3_DD000(void) {
-    return;
+    u8* gl = g_GameLogic;
+    switch (gl[0x125]) {
+    case 0:
+        changeScene(1, 6);
+        gl[0x125] = 1;
+        break;
+    case 1:
+        if (*(u16*)(gl + 0xFC) > 0x708) {
+            gl[0x125] = 2;
+            *(s16*)(gl + 0xFE) = 0;
+        } else if (*(u16*)(gl + 0xFC) > 0x12C && fn_3_6C938(1, 0x1100) != 0) {
+            gl[0x125] = 2;
+            *(s16*)(g_GameLogic + 0xFE) = 0;
+        }
+        break;
+    case 2:
+        if (*(u16*)(gl + 0xFE) > 0x1E) {
+            if (g_Minigame[0x190A] != 0) {
+                gl[0x125] = 4;
+            } else {
+                gl[0x125] = 3;
+            }
+        }
+        break;
+    case 3:
+        ((u8*)&lbl_3_common_bss_34C90)[0x1D1] = 0;
+        ((u8*)&lbl_3_common_bss_34C90)[0x1D2] = 0;
+        fn_3_5A6D4(0x22);
+        break;
+    case 4:
+        changeScene(4, 6);
+        if (lbl_8037169C[0x13] != 0) {
+            gl[0x125] = 0xA;
+        }
+        break;
+    case 5:
+        if (g_Minigame[0x19A8] != 0) {
+            g_d_GameSettings[0x38] = 0;
+        } else {
+            g_d_GameSettings[0x38] = g_Minigame[g_d_GameSettings[0x35] + 0x18E8];
+        }
+        g_GameLogic[0x122] = 1;
+        break;
+    }
 }
 
 // .text:0x000DD1A8 size:0x1D4 mapped:0x8071C23C
