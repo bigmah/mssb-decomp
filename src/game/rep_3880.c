@@ -65,6 +65,11 @@ extern f64 sin(f64);
 extern f32 lbl_3_bss_B860[];
 extern const f32 lbl_3_rodata_39A8;
 extern f32 lbl_3_rodata_392C;
+extern f32 lbl_3_rodata_3A00;
+extern u8 lbl_3_data_26BFC[];
+extern void* memcpy(void*, const void*, unsigned long);
+extern void fn_3_11F4B4(s32 idx, s32 flag);
+extern u8 lbl_3_data_26C1C[];
 extern const f32 lbl_3_rodata_3934[];
 typedef struct { f32 x, y, z; } V3B;
 extern u8* lbl_3_bss_B850;
@@ -1287,18 +1292,15 @@ void fn_3_150D84(void) {
 }
 
 // .text:0x00151068 size:0x19C mapped:0x807900FC
-// ~93%: prologue only: orig stores sth via r4 (param) with data base in r5; ours uses r31 and base in r4
 void fn_3_151068(u8* a, u8* o) {
     Mtx m;
     u8* obj;
     u8* mp;
     u8* t;
     f32 x, y, z;
-    s32* d = (s32*)lbl_3_data_26C3C; *(s16*)(o + 0x4A) = d[6];
-    t = *(u8**)(a + 0x18);
-    t = *(u8**)t;
-    t = *(u8**)(t + 0x18);
-    obj = ((u8**)t)[d[7]];
+    s32* d = (s32*)lbl_3_data_26C3C;
+    *(s16*)(o + 0x4A) = d[6];
+    obj = (*(u8***)(*(u8**)(*(u8**)(a + 0x18))+0x18))[d[7]];
     PSMTXIdentity(m);
     mp = *(u8**)(obj + 0xEC);
     x = *(f32*)(mp + 0xC);
@@ -1346,23 +1348,116 @@ void fn_3_151798(void) {
 }
 
 // .text:0x001517D0 size:0x228 mapped:0x80790864
-void fn_3_1517D0(void) {
+void fn_3_1517D0(u8* a, u8* o) {
     return;
 }
 
 // .text:0x001519F8 size:0x1B4 mapped:0x80790A8C
-void fn_3_1519F8(void) {
-    return;
+void fn_3_1519F8(u8* a, u8* o) {
+    Vec v;
+    Vec dir;
+    Vec ref;
+    f32 mag;
+    u8* tbl;
+    fn_3_1517D0(o, a);
+    if (lbl_80366158[0x28] != 0) {
+        return;
+    }
+    PSVECAdd((Vec*)(o + 4), (Vec*)(o + 0x10), (Vec*)(o + 4));
+    memcpy(&v, o + 4, 0xC);
+    tbl = lbl_3_data_26C1C + 4;
+    v.x = *(f32*)(lbl_3_data_26C1C + o[0x44] * 8) - v.x;
+    v.y = *(f32*)(tbl + o[0x44] * 8) - v.y;
+    v.z = lbl_3_rodata_3934[0];
+    PSVECNormalize(&v, &dir);
+    mag = PSVECMag(&v);
+    PSVECScale(&dir, lbl_3_rodata_3A00 * (lbl_3_rodata_392C / (mag * mag)), &v);
+    PSVECAdd((Vec*)(o + 0x10), &v, (Vec*)(o + 0x10));
+    ref.x = *(f32*)(lbl_3_data_26C1C + o[0x44] * 8);
+    ref.y = *(f32*)(tbl + o[0x44] * 8);
+    ref.z = lbl_3_rodata_3934[0];
+    PSVECNormalize(&ref, &ref);
+    if (PSVECDotProduct(&dir, &ref) < lbl_3_rodata_3934[0] || mag == lbl_3_rodata_3934[0]) {
+        *(s16*)(o + 0x4A) = 0;
+    }
+    if (*(s16*)(o + 0x4A) == 0 && o[0x45] != 0) {
+        fn_3_11F4B4(o[0x44], o[0x4D] == 1);
+        o[0x45] = 0;
+    }
 }
 
 // .text:0x00151BAC size:0x1C0 mapped:0x80790C40
-void fn_3_151BAC(void) {
-    return;
+void fn_3_151BAC(u8* a, u8* o) {
+    s32 c;
+    s32 delta;
+    s32 half;
+    f32 df;
+    f32 r;
+    fn_8003403C(*(f32*)(o + 0x38), *(f32*)(o + 0x3C));
+    fn_80033CC8(o, *(void**)(a + 0x10));
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    c = o[0x43];
+    if (*(s32*)(lbl_3_data_26BFC + 0xC) / *(s16*)(o + 0x4A) < 2) {
+        half = *(s32*)(lbl_3_data_26BFC + 0xC) / 2;
+        delta = *(s32*)(lbl_3_data_26BDC + 8) / half;
+        df = (f32)*(s32*)(lbl_3_data_26BFC + 4) * r / lbl_3_rodata_3930 / (f32)half;
+    } else {
+        half = *(s32*)(lbl_3_data_26BFC + 0xC) / 2;
+        delta = -*(s32*)(lbl_3_data_26BDC + 8) / half;
+        df = -((f32)*(s32*)(lbl_3_data_26BFC + 4) * r / lbl_3_rodata_3930) / (f32)half;
+    }
+    c += delta;
+    if (c < 0) {
+        c = 0;
+    } else if (c > 0xFF) {
+        c = 0xFF;
+    }
+    o[0x43] = c;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x38) + df;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38);
+    PSVECAdd((Vec*)(o + 4), (Vec*)(o + 0x10), (Vec*)(o + 4));
+    *(s16*)(o + 0x4A) -= 1;
 }
 
 // .text:0x00151D6C size:0x1C0 mapped:0x80790E00
-void fn_3_151D6C(void) {
-    return;
+void fn_3_151D6C(u8* a, u8* o) {
+    s32 c;
+    s32 delta;
+    s32 half;
+    f32 df;
+    f32 r;
+    fn_8003403C(*(f32*)(o + 0x38), *(f32*)(o + 0x3C));
+    fn_80033CC8(o, *(void**)(a + 0x10));
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    c = o[0x43];
+    if (*(s32*)(lbl_3_data_26BEC + 0xC) / *(s16*)(o + 0x4A) < 2) {
+        half = *(s32*)(lbl_3_data_26BEC + 0xC) / 2;
+        delta = *(s32*)(lbl_3_data_26BDC + 8) / half;
+        df = (f32)*(s32*)(lbl_3_data_26BEC + 4) * r / lbl_3_rodata_3930 / (f32)half;
+    } else {
+        half = *(s32*)(lbl_3_data_26BEC + 0xC) / 2;
+        delta = -*(s32*)(lbl_3_data_26BDC + 8) / half;
+        df = -((f32)*(s32*)(lbl_3_data_26BEC + 4) * r / lbl_3_rodata_3930) / (f32)half;
+    }
+    c += delta;
+    if (c < 0) {
+        c = 0;
+    } else if (c > 0xFF) {
+        c = 0xFF;
+    }
+    o[0x43] = c;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x38) + df;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38);
+    PSVECAdd((Vec*)(o + 4), (Vec*)(o + 0x10), (Vec*)(o + 4));
+    *(s16*)(o + 0x4A) -= 1;
 }
 
 // .text:0x00151F2C size:0x5BC mapped:0x80790FC0
