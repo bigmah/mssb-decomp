@@ -256,8 +256,53 @@ void fn_3_1180A4(void) {
 }
 
 // .text:0x00118164 size:0x1F4 mapped:0x807571F8
+extern const f32 lbl_3_rodata_33F8;
+extern const f32 lbl_3_rodata_33FC;
+extern const f32 lbl_3_rodata_3400;
+extern s16 lbl_3_data_21A04[];
 void fn_3_118164(void) {
-    return;
+    u8* e1;
+    u8* e2;
+    s32 i;
+    s32 j;
+    for (i = 0; i < 0x64; i++) {
+        j = i + 0x82;
+        e1 = *(u8**)(lbl_8036E548 + 0x2D94) + j * 0x28;
+        e1[0x26] = 0;
+        e2 = *(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28;
+        e2[0x26] = 0;
+        if (g_Minigame[i + 0x193A] == 1 || g_Minigame[i + 0x193A] == 3) {
+            e1[0x26] = 1;
+            *(f32*)(e1 + 4) = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+            *(f32*)(e1 + 8) = -*(f32*)(g_Minigame + i * 0xC + 0xCD4);
+            *(f32*)(e1 + 0xC) = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            *(f32*)(e1 + 0x10) = lbl_3_rodata_33AC;
+            *(f32*)(e1 + 0x18) = lbl_3_rodata_33AC;
+            fn_8001D0D0(j, lbl_3_rodata_33F8);
+            if (*(s16*)(g_Minigame + i * 2 + 0x17C8) <= 1) {
+                *(f32*)(e1 + 0x14) = RandomF32_Game_Range(lbl_3_rodata_33D0, lbl_3_rodata_33D4);
+            } else if (g_Minigame[i + 0x193A] == 1) {
+                *(f32*)(e1 + 0x14) = fn_3_9FEA8(lbl_3_rodata_33FC + *(f32*)(e1 + 0x14));
+            } else {
+                *(f32*)(e1 + 0x14) = fn_3_9FEA8(lbl_3_rodata_33F4 + *(f32*)(e1 + 0x14));
+            }
+            e2[0x26] = 1;
+            *(s32*)e2 = 0;
+            *(f32*)(e2 + 4) = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+            *(f32*)(e2 + 8) = lbl_3_rodata_33C4;
+            *(f32*)(e2 + 0xC) = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            fn_8001D0D0(i, lbl_3_rodata_3400);
+            if (*(s16*)(g_Minigame + i * 2 + 0x17C8) > lbl_3_data_21A04[3] - 0xB4 &&
+                g_Minigame[i + 0x193A] == 1 && (*(u16*)(g_d_GameSettings + 4) & 1)) {
+                e1[0x26] = 0;
+                e2[0x26] = 0;
+            }
+            if (g_Minigame[i + 0x193A] == 3 && (*(u16*)(g_d_GameSettings + 4) & 1)) {
+                e1[0x26] = 0;
+                e2[0x26] = 0;
+            }
+        }
+    }
 }
 
 // .text:0x00118358 size:0xA4 mapped:0x807573EC
