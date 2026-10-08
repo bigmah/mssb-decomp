@@ -25,3 +25,10 @@ void fn_3_AFD80(u8 state) {
 void fn_3_B0A88(void) {
     fn_3_B3C78(0);
 }
+
+// fn_3_B3A28, size:0x24
+void fn_3_B3A28(void) {
+    g_Practice.frames_onPauseScreen = 0;
+    lbl_3_common_bss_34C90[0x1D2] = 0;
+    lbl_3_common_bss_34C90[0x1DA] = 0;
+}
