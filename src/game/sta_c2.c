@@ -16,6 +16,16 @@ extern u8 g_Fielders[];
 extern u8 g_Ball[];
 extern Vec lbl_3_rodata_2640;
 extern Vec lbl_3_rodata_264C;
+extern f32 lbl_3_rodata_26A0;
+extern f32 lbl_3_rodata_2678;
+extern u8 lbl_3_data_81DC[];
+extern Vec lbl_3_bss_A820[];
+extern u8 g_FieldingLogic[];
+extern u8 g_d_GameSettings[];
+extern void fn_80025EEC(s32, s32, s32);
+extern void fn_3_65A8(void);
+extern void fn_3_27648(void);
+extern s32 fn_3_8BBC4(s32, f32*, f32*, s32);
 extern Vec lbl_3_rodata_25B0;
 extern Vec lbl_3_rodata_25BC;
 extern Vec lbl_3_rodata_24E8[];
@@ -520,8 +530,32 @@ void fn_3_D1848(u8* arg) {
 }
 
 // .text:0x000D196C size:0x158 mapped:0x80710A00
-void fn_3_D196C(void) {
-    return;
+typedef struct { u8 pad0[0x8C]; s32 f8C; u8 pad1[0x99-0x90]; u8 f99; u8 pad2[0xB0-0x9A]; f32 fB0; u8 pad3[0xCA-0xB4]; u8 fCA, fCB, fCC; } E_D196C;
+void fn_3_D196C(s32 idx) {
+    E_D196C* e = (E_D196C*)(*(u8**)lbl_3_common_bss_350E4 + idx * 0xE8);
+    Vec v;
+    s32 k;
+    if (g_Ball[0x1BC9] != 1) {
+        if (e->fCA == 0) {
+            e->f99 = e->f99 & 0xFB;
+            e->fCC = 5;
+            e->fCB = e->fCA;
+            e->fCA = 2;
+            e->fB0 = 0.5f;
+            fn_80025EEC(e->f8C, 0, 3);
+        }
+        memcpy(&v, g_Ball, 0xC);
+        v.y = v.y * lbl_3_rodata_2678;
+        fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 5, (f32*)&v, 0, 0xD);
+        k = g_Ball[0x1BE5] != 0;
+        lbl_3_bss_A898[k] = 1;
+        lbl_3_bss_A820[k].x = *(f32*)(g_Ball + 0);
+        lbl_3_bss_A820[k].y = -*(f32*)(g_Ball + 4);
+        lbl_3_bss_A820[k].z = *(f32*)(g_Ball + 8);
+        fn_3_65A8();
+        fn_3_27648();
+        g_FieldingLogic[0x13B] = 1;
+    }
 }
 
 // .text:0x000D1AC4 size:0x60 mapped:0x80710B58
