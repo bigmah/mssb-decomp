@@ -12,5 +12,6 @@ typedef void (*MenuStateCallback)(MenuStateObject* object);
 
 void fn_2_91C08(MenuStateObject* object);
 void fn_2_91B38(MenuStateObject* object);
+void fn_2_91AE4(MenuStateObject* object);
 
 #endif
