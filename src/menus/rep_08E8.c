@@ -1,5 +1,12 @@
 #include "menus/rep_08E8.h"
 
+#include "Dolphin/vec.h"
+extern s32 fn_2_68690(s32 index);
+extern void fn_2_68DAC(s32 index, void* result);
+extern u32 lbl_803CBD0C[];
+extern u32* lbl_2_data_13374[];
+extern void fn_80031CA4(Vec*, u32*);
+
 extern u16 lbl_2_data_13238[];
 
 extern u8 lbl_803CBBC0[];
@@ -150,4 +157,14 @@ s32 fn_2_49EFC(const u16* string, u16 style) {
         string++;
     }
     return width;
+}
+
+// fn_2_46C88, size:0x78
+void fn_2_46C88(s32 index) {
+    Vec position;
+    fn_2_68690(0);
+    fn_2_68DAC(index, &position);
+    PSVECScale(&position, 2.0f, &position);
+    *lbl_2_data_13374[0] = lbl_803CBD0C[0];
+    fn_80031CA4(&position, lbl_2_data_13374[0]);
 }
