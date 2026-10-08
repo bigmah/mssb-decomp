@@ -12,7 +12,7 @@ void fn_3_6694(void);
 void fn_3_6C38(void);
 void fn_3_8CF0(void);
 void fn_3_904C(void);
-void fn_3_9260(void);
+void fn_3_9260(s32 flags);
 void fn_3_9508(void);
 void fn_3_9808(void);
 void fn_3_9B74(void);

@@ -741,17 +741,13 @@ static s32 midi2TimeTab[128] = {
 
 #pragma dont_inline on
 static void mcmdSetADSRFromCtrl(SYNTH_VOICE* svoice, MSTEP* cstep) {
-  float sScale;   // r63
-  ADSR_INFO adsr; // r1+0x10
-
+  float sScale;
+  ADSR_INFO adsr;
   sScale = dspDLSVolTab[inpGetMidiCtrl(cstep->para[0] >> 24, svoice->midi, svoice->midiSet) >> 7];
-  adsr.data.dls.atime =
-      dspARIndexTab[inpGetMidiCtrl((cstep->para[0] >> 8) & 0xFF, svoice->midi, svoice->midiSet) >> 7];
-  adsr.data.dls.dtime =
-      dspARIndexTab[inpGetMidiCtrl((cstep->para[0] >> 16) & 0xFF, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.atime = dspARIndexTab[inpGetMidiCtrl((u8)(cstep->para[0] >> 8), svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.dtime = dspARIndexTab[inpGetMidiCtrl((cstep->para[0] >> 16) & 0xFF, svoice->midi, svoice->midiSet) >> 7];
   adsr.data.dls.slevel = 193 - dspScale2IndexTab[(u32)(lbl_803CD178 * sScale)];
-  adsr.data.dls.rtime =
-      dspARIndexTab[inpGetMidiCtrl(cstep->para[1] & 0xFF, svoice->midi, svoice->midiSet) >> 7];
+  adsr.data.dls.rtime = dspARIndexTab[inpGetMidiCtrl(cstep->para[1] & 0xFF, svoice->midi, svoice->midiSet) >> 7];
   adsr.data.dls.ascale = 0x80000000;
   adsr.data.dls.dscale = 0x80000000;
   hwSetADSR(svoice->id & 0xFF, &adsr, 2);
