@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
+void fn_80048BEC(s32* limits);
+
 void fn_80048C14(u32 value);
 
 #endif
