@@ -41,6 +41,27 @@ extern void fn_2_68E68(void);
 extern void fn_2_47FF8(void);
 extern void fn_2_47CFC(void);
 
+typedef struct MenuDrawEntry MenuDrawEntry;
+struct MenuDrawEntry {
+    void (*draw)(s32 context, MenuDrawEntry* entry);
+    u8 data[0x14];
+};
+extern MenuDrawEntry (*lbl_2_bss_1A8234[])[864];
+
+// fn_2_53F88, size:0x84
+void fn_2_53F88(s32 context) {
+    s32 row;
+    s32 column;
+    for (row = 0; row < 70; row++) {
+        for (column = 0; column < 864; column++) {
+            MenuDrawEntry* entry = &lbl_2_bss_1A8234[0][row][column];
+            if (entry->draw != NULL) {
+                entry->draw(context, entry);
+            }
+        }
+    }
+}
+
 // fn_2_54B38, size:0x74
 void fn_2_54B38(void) {
     if (lbl_8036E548[0x307A] == 2) {
