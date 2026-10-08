@@ -112,7 +112,7 @@ void fn_3_3B9E4(void);
 void fn_3_3BE50(void);
 void fn_3_3C1A8(int);
 void fn_3_3C220(int);
-void fn_3_3C270(void);
+int fn_3_3C270(int);
 int fn_3_3C484(int);
 void fn_3_3C594(void);
 int fn_3_3CB8C(int);
