@@ -11,7 +11,6 @@
 
 #include "static/UnknownHomes_Static.h"
 extern u8 lbl_3_data_21AF0[];
-extern s16 lbl_3_bss_B702;
 extern f32 lbl_3_rodata_35D0;
 extern f32 lbl_3_data_21A48[];
 extern f32 lbl_3_rodata_35D8;
@@ -54,9 +53,117 @@ extern void fn_3_14E894(void);
 extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
 
+extern u8 lbl_80366158[];
+extern s8 lbl_3_data_26580;
+extern s32 fn_800247E4(s32, s32, s32, s32);
+extern void DCFlushRange(void*, u32);
+extern void GXLoadTexObj(void*, s32);
+extern void GXSetTexCoordGen2(s32, s32, s32, s32, s32, s32);
+extern void GXSetTevOrder(s32, s32, s32, s32);
+extern void GXSetTevColorIn(s32, s32, s32, s32, s32);
+extern void GXSetTevColorOp(s32, s32, s32, s32, s32, s32);
+extern void GXSetTevAlphaIn(s32, s32, s32, s32, s32);
+extern void GXSetTevAlphaOp(s32, s32, s32, s32, s32, s32);
+extern void GXInitTexObj(void*, void*, s32, s32, s32, s32, s32, s32);
+extern void GXInitTexObjLOD(void*, s32, s32, f32, f32, f32, s32, s32, s32);
+static u8 s_buf[0x40];
+static u8 s_pad[0x18];
+static u8 s_tex[0x20];
+static s32 s_cnt;
+static s16 lbl_3_bss_B702;
+static u8 s_B700;
+
+// .text:0x00132EDC size:0x208
+void fn_3_132EDC(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
+    s32 v;
+    s32 i;
+    s_cnt += (lbl_80366158[0x28] == 0);
+    if ((s_cnt & 1) == 0) {
+        {
+            u8* r = s_buf;
+            v = r[fn_800247E4(0, 0, 4, 4)];
+        }
+        v += lbl_3_data_26580 * 2;
+        if (v > 0xFF) {
+            v = 0xFF;
+        } else if (v < 0) {
+            v = 0;
+        }
+        for (i = 0; i < 32; i += 2) {
+            s_buf[i] = v;
+        }
+        DCFlushRange(s_buf, 0x40);
+        if (v + lbl_3_data_26580 * 2 > 0xFF || v + lbl_3_data_26580 * 2 < 0) {
+            lbl_3_data_26580 *= -1;
+        }
+    }
+    GXLoadTexObj(s_tex, *map);
+    GXSetTexCoordGen2(*coord, 1, 4, 0x3C, 0, 0x7D);
+    GXSetTevOrder(*stage, *coord, *map, 0xFF);
+    GXSetTevColorIn(*stage, 0xF, 8, 9, 0);
+    GXSetTevColorOp(*stage, 0, 0, 0, 1, 0);
+    GXSetTevAlphaIn(*stage, 7, 7, 7, 0);
+    GXSetTevAlphaOp(*stage, 0, 0, 0, 1, 0);
+    *stage += 1;
+    *coord += 1;
+    *map += 1;
+    *c1 += 1;
+    *c2 += 1;
+}
+
+// .text:0x001330E4 size:0x11C
+void fn_3_1330E4(void) {
+    s32 v;
+    s32 i;
+    s_cnt += (lbl_80366158[0x28] == 0);
+    if ((s_cnt & 1) == 0) {
+        v = s_buf[fn_800247E4(0, 0, 4, 4)];
+        v += lbl_3_data_26580 * 2;
+        if (v > 0xFF) {
+            v = 0xFF;
+        } else if (v < 0) {
+            v = 0;
+        }
+        for (i = 0; i < 32; i += 2) {
+            s_buf[i] = v;
+        }
+        DCFlushRange(s_buf, 0x40);
+        if (v + lbl_3_data_26580 * 2 > 0xFF || v + lbl_3_data_26580 * 2 < 0) {
+            lbl_3_data_26580 *= -1;
+        }
+    }
+}
+
 // .text:0x00133200 size:0x120 mapped:0x80772294
 void fn_3_133200(void) {
-    return;
+    u32 i;
+    u32 j;
+    u32 idx;
+    u8* p;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            idx = fn_800247E4(j, i, 4, 4);
+            if (idx < 0x20) {
+                p = s_buf;
+                p += idx;
+                p[2] = 0xFF;
+                p[0] = 0xFF;
+                p[3] = 0x96;
+                p[1] = 0x96;
+            } else {
+                p = s_buf;
+                p += idx;
+                p[2] = 0x96;
+                p[0] = 0x96;
+                p[3] = 0x96;
+                p[1] = 0x96;
+            }
+        }
+    }
+    GXInitTexObj(s_tex, s_buf, 4, 4, 6, 1, 1, 0);
+    GXInitTexObjLOD(s_tex, 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
+    lbl_3_data_26580 = -1;
+    s_cnt = 0;
 }
 
 // .text:0x00133320 size:0x2C mapped:0x807723B4
