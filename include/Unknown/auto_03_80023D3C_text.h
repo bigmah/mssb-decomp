@@ -5,4 +5,6 @@
 
 u32 fn_80023D3C(void);
 
+void fn_80023D44(u32 value);
+
 #endif
