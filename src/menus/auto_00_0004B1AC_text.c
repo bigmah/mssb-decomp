@@ -81,3 +81,8 @@ s32 fn_2_4EB2C(void) {
 s32 fn_2_4EB64(void) {
     return fn_80035838(lbl_2_data_1323C, 0x8) != 0;
 }
+
+// fn_2_4E858, size:0x20
+void* fn_2_4E858(void* object) {
+    return fn_80034CEC(object);
+}
