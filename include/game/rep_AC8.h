@@ -195,7 +195,7 @@ int fn_3_51798(int, f32*);
 void fn_3_51DF0(void);
 void fn_3_52084(void);
 void fn_3_522E0(void);
-void fn_3_52560(void);
+int fn_3_52560(int, f32, f32);
 void fn_3_526DC(void);
 void fn_3_52F4C(void);
 void fn_3_530EC(int);

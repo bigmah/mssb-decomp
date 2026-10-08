@@ -2917,8 +2917,18 @@ void fn_3_522E0(void) {
 }
 
 // .text:0x00052560 size:0x17C mapped:0x806915F4
-void fn_3_52560(void) {
-    return;
+extern f32 lbl_3_rodata_B60;
+int fn_3_52560(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 d;
+    f32 spd;
+    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
+        return 1;
+    }
+    d = (x - *(f32*)f) * (x - *(f32*)f) + (z - *(f32*)(f + 8)) * (z - *(f32*)(f + 8));
+    SQRT_L(d);
+    spd = *(f32*)(f + 0x58);
+    return ((u32)f[0x1D1] >> 1) + (int)(d / (lbl_3_rodata_B20 == spd ? lbl_3_rodata_B60 : spd));
 }
 
 // .text:0x000526DC size:0x870 mapped:0x80691770
