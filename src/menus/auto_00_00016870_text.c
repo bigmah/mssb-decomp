@@ -8,3 +8,9 @@ u8 fn_2_16A34(s32 index) {
     u8* entry = lbl_2_bss_100B8 + index;
     return entry[0x46];
 }
+
+// fn_2_16A48, size:0x14
+void fn_2_16A48(s32 index, u8 value) {
+    u8* entry = lbl_2_bss_100B8 + index;
+    entry[0x46] = value;
+}
