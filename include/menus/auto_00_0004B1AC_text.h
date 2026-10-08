@@ -47,4 +47,6 @@ void fn_2_54BAC(void);
 
 void fn_2_54844(void);
 
+void fn_2_5268C(void);
+
 #endif
