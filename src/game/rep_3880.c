@@ -339,7 +339,7 @@ void fn_3_14A164(void) {
     pitchingMachinePitching(0x24);
 }
 
-// 96%: float reg alloc in the 2nd branch (f1/f2 swapped), flag addr in r3 vs r4
+// 99%: only the flag base addr is addi r3 (orig: lis/addi r4 before stmw); computing delta after df in the else branch fixed the float regs
 // .text:0x0014A188 size:0x1F4 mapped:0x8078921C
 u32 fn_3_14A188(u8* o) {
     u8* p;
@@ -368,10 +368,10 @@ u32 fn_3_14A188(u8* o) {
                 delta = (*(s32*)(d + 0x28) - *(s32*)(d + 0x24)) / *(s32*)(d + 0x10);
             } else {
                 s = *(s32*)(d + 8) - *(s32*)(d + 0x10);
-                delta = (*(s32*)(d + 0x2C) - *(s32*)(d + 0x28)) / s;
                 q = (f32)*(s32*)(d + 0x20) / lbl_3_rodata_3930;
                 df = q + *(f32*)(p + 0x18);
                 df /= (f32)s;
+                delta = (*(s32*)(d + 0x2C) - *(s32*)(d + 0x28)) / s;
             }
             a += delta;
             if (a < 0) {
