@@ -58,8 +58,7 @@ typedef struct {
 
 typedef struct {
     u8 _00[0x1610];
-    MenuEntry entries[4];
-    u8 _1970[0x870];
+    MenuEntry entries[14];
     MenuLocationRecord locations[4];
 } MenuEntries;
 
@@ -76,6 +75,7 @@ extern const f32 lbl_2_rodata_B64;
 extern const f32 lbl_2_rodata_B68[];
 extern f32 lbl_2_data_3EF4[];
 extern f32 lbl_2_data_3F5C;
+extern const Vec lbl_2_data_3150[];
 
 // fn_2_68A88, size:0xCC
 s32 fn_2_68A88(s32 index, s32 location) {
@@ -700,4 +700,31 @@ void fn_2_683EC(void) {
     state[0x17AB] = 6;
     *(s16*)(state + 0x177C) = 0;
     ((u8*)lbl_2_bss_1A8248[0])[0x442F] = 1;
+}
+
+// fn_2_6ABFC, size:0xF4
+void fn_2_6ABFC(s32 index, s32 location) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    f32 heading;
+
+    if (index < 2) {
+        memcpy(&entry->position, &lbl_2_data_2EA4[location], sizeof(Vec));
+    } else if (index >= 2 && index <= 6) {
+        memcpy(&entry->position, &lbl_2_data_2EA4[location], sizeof(Vec));
+    } else {
+        memcpy(&entry->position, &lbl_2_data_3150[index - 7], sizeof(Vec));
+    }
+    entry->previousPosition.x = lbl_2_rodata_B58;
+    entry->previousPosition.y = lbl_2_rodata_B58;
+    entry->previousPosition.z = lbl_2_rodata_B58;
+    entry->velocity.x = lbl_2_rodata_B58;
+    entry->velocity.y = lbl_2_rodata_B58;
+    entry->velocity.z = lbl_2_rodata_B58;
+    entry->storedX = entry->position.x;
+    entry->storedZ = entry->position.z;
+    entry->_38 = lbl_2_rodata_B58;
+    entry->flagBB = 0;
+    heading = entry->heading;
+    entry->angle34 = heading;
+    entry->angle30 = heading;
 }

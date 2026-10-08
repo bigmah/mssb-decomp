@@ -151,4 +151,6 @@ void fn_2_6A628(void);
 
 s32 fn_2_68A88(s32 index, s32 location);
 
+void fn_2_6ABFC(s32 index, s32 location);
+
 #endif
