@@ -6,6 +6,7 @@ extern int fn_3_A6810(f32, f32, f32, f32);
 extern s16 lbl_3_data_1C88[];
 extern u8 lbl_3_data_4B58[];
 extern int fn_3_52560(int, f32, f32);
+extern f32 lbl_3_data_4444[];
 extern s16 lbl_3_data_21904[];
 extern u8 lbl_3_data_218BC[];
 extern const f32 lbl_3_rodata_1430;
@@ -830,8 +831,76 @@ void fn_3_85840(void) {
 }
 
 // .text:0x00085A70 size:0x1D4 mapped:0x806C4B04
-void fn_3_85A70(void) {
-    return;
+int fn_3_85A70(int i) {
+    u8* r = g_Runners + i * 0x154;
+    int a;
+    int b;
+    int y1;
+    int y2;
+    int st;
+    u8 k;
+    int w;
+    int s2;
+    int res;
+    s16 e;
+    s16 g;
+    st = *(s16*)(g_FieldingLogic + 0xCC);
+    if (st == 9 && *(s16*)(g_FieldingLogic + 0xDE) != i) {
+        return -2;
+    }
+    if (*(s16*)(r + 0xE6) >= 0) {
+        return -2;
+    }
+    a = r[0x126];
+    b = r[0x125];
+    if (a == *(s16*)(g_FieldingLogic + 0xDC) && (st == b || st == 9)) {
+        return -1;
+    }
+    if (b == *(s16*)(g_FieldingLogic + 0xDC) && (st == a || st == 9)) {
+        return 1;
+    }
+    y1 = fn_3_52560(*(s16*)(g_Ball + 0x1B78), lbl_3_data_4444[a * 2], lbl_3_data_4444[a * 2 + 1]);
+    y2 = fn_3_52560(*(s16*)(g_Ball + 0x1B78), lbl_3_data_4444[b * 2], lbl_3_data_4444[b * 2 + 1]);
+    e = *(s16*)(r + 0xEA);
+    g = *(s16*)(r + 0xEC);
+    s2 = *(s16*)(g_FieldingLogic + 0xCC);
+    if (s2 == 9) {
+        k = r[0x137];
+        if (k == 1 || k == 2) {
+            if (e < y1) {
+                return 1;
+            }
+            return -1;
+        }
+        res = 1;
+        if (g < y2) {
+            res = -1;
+        }
+        return res;
+    }
+    if (*(f32*)(r + 0x38) > 20.0f) {
+        return -2;
+    }
+    k = r[0x137];
+    w = r[0x125];
+    if (k == 1 || k == 2) {
+        w = r[0x126];
+    }
+    if (w != s2) {
+        return -2;
+    }
+    if (k == 1) {
+        res = -1;
+        if (e <= y1) {
+            res = 1;
+        }
+        return res;
+    }
+    res = 1;
+    if (g <= y2) {
+        res = -1;
+    }
+    return res;
 }
 
 // .text:0x00085C44 size:0x6C mapped:0x806C4CD8
