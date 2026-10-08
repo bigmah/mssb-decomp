@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
+void fn_800BEB3C(void);
+
 u8 fn_800BEBA0(void);
 
 u8 GetDrawShadows(void);

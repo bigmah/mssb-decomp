@@ -2,6 +2,24 @@
 
 extern u8 lbl_803009F8[];
 
+extern const f32 lbl_803CD068;
+extern const f32 lbl_803CD06C;
+extern const f32 lbl_803CD070;
+
+// fn_800BEB3C, size:0x44
+void fn_800BEB3C(void) {
+    *(s16*)(lbl_803009F8 + 0x24) = 0;
+    *(f32*)(lbl_803009F8 + 0x38) = lbl_803CD068;
+    *(f32*)(lbl_803009F8 + 0x30) = lbl_803CD068;
+    *(f32*)(lbl_803009F8 + 0x28) = lbl_803CD068;
+    *(f32*)(lbl_803009F8 + 0x3C) = lbl_803CD06C;
+    *(f32*)(lbl_803009F8 + 0x34) = lbl_803CD06C;
+    *(f32*)(lbl_803009F8 + 0x2C) = lbl_803CD06C;
+    *(f32*)(lbl_803009F8 + 0x48) = lbl_803CD070;
+    *(f32*)(lbl_803009F8 + 0x44) = lbl_803CD070;
+    *(f32*)(lbl_803009F8 + 0x40) = lbl_803CD070;
+}
+
 // fn_800BEBA0, size:0x10
 u8 fn_800BEBA0(void) {
     return *(u8*)(lbl_803009F8 + 0x0);
