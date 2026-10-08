@@ -52,6 +52,10 @@ void fn_3_FC938(void) {
 }
 
 // .text:0x000FCE38 size:0x74 mapped:0x8073BECC
+// ~95% (6 diff lines) with: void fn_3_FCE38(s32 i, f32 t) { u8* d = lbl_3_common_bss_DE94; s32 off = i << 6; s32 n = *(s32*)(d+0x3C);
+//   while (i < n && t > *(f32*)(*(u8**)(d+0x34) + off + 0x3C)) { off += 0x40; i++; } off = i << 6;
+//   while (i > 0 && t <= *(f32*)(*(u8**)(d+0x34) + off - 4)) { off -= 0x40; i--; } }
+// only the out-of-line loop-2 preheader (slwi r6,r3,6 after the final blr, dead `b` left behind) differs.
 void fn_3_FCE38(void) {
     return;
 }
@@ -62,6 +66,8 @@ void fn_3_FCEAC(void) {
 }
 
 // .text:0x000FCEB0 size:0x70 mapped:0x8073BF44
+// s32 fn_3_FCEB0(f32 t): `if (t < 0.0) return -1;` + same search loop as fn_3_FCE38, `return i < n ? i : -1`. 16 diff lines:
+// loop preheader (lwz n; li off,0) is placed inline instead of after the final blr, and the dead `b`/`blr` are missing.
 void fn_3_FCEB0(void) {
     return;
 }
@@ -552,6 +558,8 @@ void fn_3_104AD4(void* dst, void* mtx) {
 }
 
 // .text:0x00104B20 size:0x1C mapped:0x80743BB4
+// void fn_3_104B20(Vec* dst, u8* src): copy of 3 floats from src+0x30. Original = 3 grouped lfs (f2,f1,f0) then 3 stfs; our best is
+// 8 diff lines (per-field copy interleaves lfs/stfs through f0; struct copy `*dst = *s` gives lwz/stw). Tried other GC compilers too.
 void fn_3_104B20(void) {
     return;
 }
@@ -585,6 +593,8 @@ void fn_3_105A10(f32* out, f32* a, f32* b, f32 t) {
 }
 
 // .text:0x00105ACC size:0x10C mapped:0x80744B60
+// void fn_3_105ACC(f32* q, void* out): quaternion (x,y,z,w) -> 4x4 on stack, memcpy(out, m, 0x30). Plain formula draft is ~90 diff lines:
+// original keeps 2x/2z in f31/f30 (more FPR pressure, different schedule); order xx,yy,zz,xy,xz,wz,wy,yz,wx. Zero = lbl_3_rodata_30F8, one = lbl_3_rodata_30FC.
 void fn_3_105ACC(void) {
     return;
 }

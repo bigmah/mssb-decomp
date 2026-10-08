@@ -12,12 +12,15 @@ extern u8 lbl_3_data_218BC[];
 extern const f32 lbl_3_rodata_1430;
 extern const f32 lbl_3_rodata_14BC;
 extern const f32 lbl_3_rodata_1438;
+extern const f32 lbl_3_rodata_1440;
 extern const f32 lbl_3_rodata_144C;
 extern const f32 lbl_3_rodata_1450;
 extern const f32 lbl_3_rodata_1454;
 extern const f32 lbl_3_rodata_1458;
 extern const f32 lbl_3_rodata_145C;
 extern s16 lbl_3_data_4C54[];
+extern s16 lbl_3_data_4B90[];
+extern f32 lbl_3_data_4C44[];
 typedef struct { f32 x, z; } P2;
 typedef struct { u8 b[0x154]; } RunnerT;
 
@@ -826,8 +829,76 @@ void fn_3_85744(int i) {
 }
 
 // .text:0x00085840 size:0x230 mapped:0x806C48D4
-void fn_3_85840(void) {
-    return;
+// 90%: logic matches; register roles differ (arr copied to r10 and bc4 lands in r5; original keeps arr in r5, bc4 in r11, temp r10)
+int fn_3_85840(int i, int b, int* arr) {
+    u8 bc9;
+    u8* r;
+    s16 b7a;
+    u8 sf;
+    u8 bc4;
+    u8* self;
+    int j;
+    self = g_Runners + i * 0x154;
+    sf = self[0x126];
+    if ((s32)sf == 0) {
+        return 0;
+    }
+    j = i + 1;
+    r = g_Runners + j * 0x154;
+    arr += j;
+    bc9 = g_Ball[0x1BC9];
+    b7a = *(s16*)(g_Ball + 0x1B7A);
+    bc4 = g_Ball[0x1BC4];
+    for (; j < 4; j++, r += 0x154, arr++) {
+        u8 t;
+        u8 u;
+        if (r[0x123] == 1) {
+            t = r[0x125];
+            if (t == self[0x125]) {
+                if (r[0x13E] == 2 && r[0x142] == 3) {
+                    return 1;
+                }
+                u = r[0x137];
+                if (u == 3) {
+                    return 1;
+                }
+                if (u == 2 && *(f32*)(r + 0x64) - *(f32*)(self + 0x64) < (*(f32*)&lbl_3_rodata_1440)) {
+                    return 2;
+                }
+                if (bc9 != 0) {
+                    return 1;
+                }
+                if (i == 0 && b7a == 0) {
+                    f32 f = *(f32*)(self + 0x64);
+                    if (f > (*(f32*)&lbl_3_rodata_1408) && b <= 3 && *(f32*)(r + 0x64) < f) {
+                        return 2;
+                    }
+                }
+            }
+            if (t == sf) {
+                if (b7a == 0) {
+                    if (bc4 <= 4 && *(f32*)(r + 0x68) < (*(f32*)&lbl_3_rodata_1450)) {
+                        if (*(s16*)(self + 0xEE) == 1 && b > 3) {
+                            return 0;
+                        }
+                        u = r[0x137];
+                        if (u == 3 || u == 2) {
+                            return 1;
+                        }
+                    }
+                } else if (*(f32*)(r + 0x68) < (*(f32*)&lbl_3_rodata_1450) && arr[0] <= 0) {
+                    u = r[0x137];
+                    if (u == 2 || u == 3 || (u == 1 && r[0x136] == 3)) {
+                        return 1;
+                    }
+                    if (r[0x13E] == 2 && r[0x142] >= 2) {
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x00085A70 size:0x1D4 mapped:0x806C4B04
@@ -904,6 +975,19 @@ int fn_3_85A70(int i) {
 }
 
 // .text:0x00085C44 size:0x6C mapped:0x806C4CD8
+#pragma dont_inline off
+static inline void h85C44(u8* r, s32 i, s32 d) {
+    if (r[0x13E] == 1 && r[0x140] >= 2 && d != 1) {
+        return;
+    }
+    if (d == -1) {
+        if (r[0x124] == *(s16*)(r + 0xE6)) {
+            d = 0;
+        }
+    }
+    fn_3_85EF4(i, d);
+}
+
 void fn_3_85C44(s32 i, s32 d) {
     u8* r = g_Runners + i * 0x154;
     if (r[0x13E] == 1 && r[0x140] >= 2 && d != 1) {
@@ -919,8 +1003,40 @@ void fn_3_85C44(s32 i, s32 d) {
 
 // .text:0x00085CB0 size:0x244 mapped:0x806C4D44
 void fn_3_85CB0(void) {
-    return;
+    u8* r;
+    u8* q;
+    int j;
+    int i;
+    if (*(s16*)(g_Ball + 0x1B68) <= 0x1E && g_Pitcher[0x13E] == 2) {
+        if (g_Strikes[2] == 2 && ((u8*)g_Strikes)[0x20] == 0x23) {
+            for (i = 1, r = g_Runners + 0x154; i <= 3; i++, r += 0x154) {
+                if (r[0x123] == 0) {
+                    break;
+                }
+                if (*(s16*)(g_Pitcher + 0x11E) >= g_AiLogic[0x76]) {
+                    h85C44(r, i, 1);
+                }
+            }
+        } else if (g_AiLogic[0x75] != 0) {
+            for (j = 1, q = g_Runners + 0x154; j <= 2; j++, q += 0x154) {
+                if (*(s16*)(g_Pitcher + 0x11E) >= g_AiLogic[0x76]) {
+                    if (q[0x14E] == 0) {
+                        if (g_AiLogic[0x76] < lbl_3_data_4B90[2]) {
+                            q[0x14E] = 3;
+                        } else {
+                            q[0x14E] = 2;
+                        }
+                        q[0x133] = 0;
+                    }
+                    h85C44(q, j, 1);
+                }
+            }
+        } else if (g_AiLogic[0x74] == 2 && *(s16*)(g_Pitcher + 0x11E) >= g_AiLogic[0x76]) {
+            fn_3_85C44(3, 1);
+        }
+    }
 }
+#pragma dont_inline on
 
 // .text:0x00085EF4 size:0x158 mapped:0x806C4F88
 void fn_3_85EF4(s32 i, s32 d) {
@@ -1041,8 +1157,64 @@ void fn_3_86DFC(void) {
 }
 
 // .text:0x00086EF8 size:0x1B4 mapped:0x806C5F8C
+// 99%: body matches; only d1/base/lo register numbering differs (r7/r8 swapped) around the data[1]/data[0] range check
 void fn_3_86EF8(void) {
-    return;
+    int i;
+    int j;
+    int all;
+    s16 pt;
+    u8* r;
+    for (i = 1; i < 4; i++) {
+        r = g_Runners + i * 0x154;
+        if (r[0x123] != 0 && r[0x14E] != 0) {
+            if (r[0x14F] < 0xFE) {
+                r[0x14F] = r[0x14F] + 1;
+            } else {
+                r[0x14F] = 0xFF;
+            }
+            pt = *(s16*)(g_Pitcher + 0x11E);
+            if (pt > 0 && r[0x14E] == 1) {
+                if (pt == lbl_3_data_4B90[2]) {
+                    u8 t = r[0x14F];
+                    s32 lo = lbl_3_data_4B90[2] - lbl_3_data_4B90[1];
+                    s32 hi = lbl_3_data_4B90[2] - lbl_3_data_4B90[0];
+                    if (t >= lo && t <= hi) {
+                        r[0x14E] = 3;
+                        r[0x133] = 0;
+                        if (*(s16*)(r + 0xE0) >= 0) {
+                            r[0x135] = 1;
+                        }
+                    }
+                } else if (pt >= lbl_3_data_4B90[3]) {
+                    r[0x14E] = 2;
+                    r[0x133] = 0;
+                    if (*(s16*)(r + 0xE0) >= 0) {
+                        r[0x135] = 1;
+                    }
+                }
+            }
+            if (r[0x123] == 1 && r[0x137] == 1 && r[0x14D] == 0) {
+                all = 1;
+                for (j = 1; j < i; j++) {
+                    if (g_Runners[j * 0x154 + 0x123] == 0) {
+                        all = 0;
+                    }
+                }
+                if (all != 0) {
+                    r[0x14D] = i + 1;
+                } else {
+                    r[0x14D] = 1;
+                }
+            }
+            if (r[0x14D] != 0) {
+                if (*(s16*)(r + 0x116) < 0x7FFE) {
+                    *(s16*)(r + 0x116) = *(s16*)(r + 0x116) + 1;
+                } else {
+                    *(s16*)(r + 0x116) = 0x7FFF;
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000870AC size:0x110 mapped:0x806C6140
@@ -1072,8 +1244,38 @@ void fn_3_870AC(void) {
 }
 
 // .text:0x000871BC size:0x110 mapped:0x806C6250
+// 99%: body matches; only prologue base-register order differs (lis/addi for data bases + hoisted lha/lfs scheduling)
 void fn_3_871BC(void) {
-    return;
+    int n;
+    f32 c1 = lbl_3_data_4C44[1];
+    f32 c2 = lbl_3_data_4C44[2];
+    f32 c3 = lbl_3_data_4C44[3];
+    s16 a = lbl_3_data_4C54[10];
+    s16 b = lbl_3_data_4C54[11];
+    s16 mx = lbl_3_data_4C54[9];
+    for (n = 0; n < 4; n++) {
+        u8* r = g_Runners + n * 0x154;
+        if (r[0x123] == 1) {
+            s32 d = 0;
+            f32 t;
+            if (*(f32*)(r + 0x84) >= lbl_3_rodata_1498) {
+                d = a;
+            }
+            if (r[0x147] != 0) {
+                d += b;
+            }
+            if (d != 0) {
+                *(s16*)(r + 0xF6) = *(s16*)(r + 0xF6) - d;
+                if (*(s16*)(r + 0xF6) < 0) {
+                    *(s16*)(r + 0xF6) = 0;
+                }
+            }
+            t = 1.0f - (f32)*(s16*)(r + 0xF6) / (f32)mx;
+            *(f32*)(r + 0xD4) = 1.0f - c1 * t;
+            *(f32*)(r + 0xD8) = 1.0f - c2 * t;
+            *(f32*)(r + 0xDC) = 1.0f - c3 * t;
+        }
+    }
 }
 
 // .text:0x000872CC size:0x158 mapped:0x806C6360
@@ -1515,13 +1717,15 @@ void fn_3_8A1D8(void) {
 }
 
 // .text:0x0008A350 size:0x178 mapped:0x806C93E4
-// ~85%: gs[7]/gs[0x39] land in r7/r6 (orig r6/r7), runner base regs differ in 2nd loop
+// ~97%: loop 1 regs now match (u32 a/b); loop 2 differs: extra `mr r8,r4` for the runner pointer, table/i regs (r5/r6 vs r6/r4) and lis order.
+// Tried: index-form loop 2 / inlining fn_3_8A4E4 gets regs but folds offsets (no addi r8 between unrolled iterations); ~300 variants.
 void fn_3_8A350(void) {
     int i;
-    f32* p;
     u8* r;
-    u8 a = g_d_GameSettings[7];
-    u8 b = g_d_GameSettings[0x39];
+    f32* p;
+    u8* q;
+    u32 a = g_d_GameSettings[7];
+    u32 b = g_d_GameSettings[0x39];
     for (i = 1; i < 4; i++) {
         r = g_Runners + i * 0x154;
         if (a != 5 || b != 1 || *(s16*)(r + 0xE0) < 0) {
@@ -1532,20 +1736,20 @@ void fn_3_8A350(void) {
         }
     }
     g_RunningLogic[0x15] = 0;
-    r = g_Runners;
     p = lbl_3_data_4A34;
-    for (i = 0; i < 4; i++, r += 0x154, p += 2) {
-        *(f32*)(r + 0x0) = p[0];
-        *(f32*)(r + 0x8) = p[1];
-        *(f32*)(r + 0x18) = 0.0f;
-        *(f32*)(r + 0x1C) = 0.0f;
-        *(f32*)(r + 0x20) = 0.0f;
-        r[0x124] = i;
-        r[0x125] = i;
-        r[0x126] = (i + 1) & 3;
-        *(s16*)(r + 0xE6) = i;
-        r[0x127] = 0xFF;
-        r[0x133] = 0;
+    q = g_Runners;
+    for (i = 0; i < 4; i++, q += 0x154, p += 2) {
+        *(f32*)(q + 0x0) = p[0];
+        *(f32*)(q + 0x8) = p[1];
+        *(f32*)(q + 0x18) = 0.0f;
+        *(f32*)(q + 0x1C) = 0.0f;
+        *(f32*)(q + 0x20) = 0.0f;
+        q[0x124] = i;
+        q[0x125] = i;
+        q[0x126] = (i + 1) & 3;
+        *(s16*)(q + 0xE6) = i;
+        q[0x127] = 0xFF;
+        q[0x133] = 0;
     }
 }
 
@@ -1589,7 +1793,7 @@ void fn_3_8A5A4(void) {
 }
 
 // .text:0x0008A618 size:0x19C mapped:0x806C96AC
-// ~85%: shape matches; registers of hoisted constants/temps differ (orig: temp r3, fl r4, 1->r0, 0->r6)
+// ~98%: shape matches; only regs of hoisted constants/temps differ (orig: temp r3, m r4, 1->r0, 0->r6; ours: temp r4, m r6, 1->r3, 0->r0). ~100 variants tried.
 void fn_3_8A618(void) {
     int i;
     u8* r;
