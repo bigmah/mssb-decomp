@@ -91,4 +91,6 @@ void fn_2_6BAAC(u8* object);
 
 void fn_2_6F72C(u8* object);
 
+void fn_2_6BFC0(u8* object);
+
 #endif
