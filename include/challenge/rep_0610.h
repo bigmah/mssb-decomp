@@ -37,4 +37,6 @@ void fn_1_14928(void);
 
 void fn_1_148CC(void);
 
+void fn_1_15170(void);
+
 #endif
