@@ -46,6 +46,7 @@ extern void fn_80033620(void);
 extern void fn_80033F64(f32, f32, f32);
 extern void fn_80033CC8(void*, void*);
 extern u8 lbl_3_data_26D50[];
+extern u8 lbl_3_data_26CD0[];
 extern const f32 lbl_3_rodata_39E0;
 extern f32 shortAngleToRad(s16);
 extern u8 lbl_3_data_26E7C[];
@@ -986,8 +987,67 @@ void fn_3_14DCE0(void) {
 }
 
 // .text:0x0014DD04 size:0x268 mapped:0x8078CD98
-void fn_3_14DD04(void) {
-    return;
+u32 fn_3_14DD04(u8* o) {
+    u8* t;
+    u8* d;
+    u8* p;
+    u8** pp;
+    u8* prev;
+    s32 n;
+    s32 a;
+    s32 t8;
+    s32 delta;
+    f32 df;
+    n = 0;
+    t = fn_80031F34(*(void**)(o + 0xC), ((H154238*)o)->cnt);
+    *(u8**)(o + 0xC) = t;
+    p = t;
+    pp = (u8**)(o + 0xC);
+    prev = NULL;
+    GXSetZMode(1, 3, 1);
+    GXSetBlendMode(1, 4, 6, 0);
+    d = lbl_3_data_26CD0;
+    do {
+        if (*(s16*)(p + 0x4A) != 0) {
+            fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+            fn_80033CC8(p, *(void**)(o + 0x10));
+            *(f32*)(p + 8) = *(f32*)(p + 8) - *(f32*)(p + 0x14);
+            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) - (f32)*(s32*)(d + 0x28) / lbl_3_rodata_3930;
+            a = p[0x43];
+            t8 = *(s32*)(d + 8);
+            if (t8 / *(s16*)(p + 0x4A) < 2) {
+                df = *(f32*)(p + 0x1C) * ((f32)(*(s32*)(d + 0x10) - *(s32*)(d + 0xC)) / lbl_3_rodata_3930 / (f32)(t8 / 2));
+                delta = (*(s32*)(d + 0x1C) - *(s32*)(d + 0x18)) / (t8 / 2);
+            } else {
+                df = *(f32*)(p + 0x1C) * ((f32)(*(s32*)(d + 0x14) - *(s32*)(d + 0x10)) / lbl_3_rodata_3930 / (f32)(t8 / 2));
+                delta = (*(s32*)(d + 0x20) - *(s32*)(d + 0x1C)) / (t8 / 2);
+            }
+            a += delta;
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
+            *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+            if (a < 0) {
+                a = 0;
+            } else if (a > 0xFF) {
+                a = 0xFF;
+            }
+            p[0x43] = a;
+            *(s16*)(p + 0x4A) -= 1;
+            if (*(s16*)(p + 0x4A) == 0) {
+                *pp = *(u8**)p;
+                if (prev != NULL) {
+                    *(u8**)prev = p;
+                }
+                prev = p;
+                *(u8**)p = NULL;
+                ((H154238*)o)->cnt--;
+            } else {
+                pp = (u8**)p;
+                n++;
+            }
+        }
+        p = *pp;
+    } while (p != NULL);
+    return n == 0;
 }
 
 // .text:0x0014DF6C size:0x2C8 mapped:0x8078D000
