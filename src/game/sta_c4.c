@@ -31,6 +31,16 @@ extern const f32 lbl_3_rodata_2FC4;
 extern const f64 lbl_3_rodata_2FC8;
 extern const f32 lbl_3_rodata_2FD0;
 extern const f32 lbl_3_rodata_2FD4;
+extern const f32 lbl_3_rodata_3028;
+extern const f32 lbl_3_rodata_302C;
+extern const char lbl_3_rodata_3030[];
+extern const char lbl_3_rodata_303C[];
+extern u8* lbl_3_bss_B63C;
+extern void* fn_3_B9534(u32, u32, void*);
+extern s32 fn_800247E4(s32, s32, s32, s32);
+extern void OSPanic(const char*, int, const char*, ...);
+extern int rand(void);
+extern void DCFlushRange(void*, u32);
 
 // .text:0x000F8444 size:0x10
 void fn_3_F8444(void) {
@@ -108,13 +118,57 @@ void fn_3_F8B34(void) {
 }
 
 // .text:0x000F8BA8 size:0x158 mapped:0x80737C3C
-void fn_3_F8BA8(void) {
-    return;
+void fn_3_F8BA8(u8* o) {
+    u32* r = *(u32**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(o + 0x74)) + 0x18)) + 0x14) + 0x10) + 4);
+    s8 prev;
+    u32 i, j;
+    if (o[0xA3] != 0 && o[0xA3] % 3 == 0) {
+        o[0xA2]++;
+        if (o[0xA2] > 0x19) {
+            o[0xA2] = 0xA;
+            o[0xA3] = 0;
+        }
+        r[1] &= ~0x1FFF;
+        r[1] |= o[0xA2];
+        for (i = 0; i < 0x80; i++) {
+            for (j = 0; j < 0x80; j++) {
+                if (j == 0) {
+                    prev = lbl_3_bss_B63C[fn_800247E4(i, 0x7F, 0x80, 2)];
+                }
+                {
+                    s32 idx = fn_800247E4(i, j, 0x80, 2);
+                    s8 t = lbl_3_bss_B63C[idx];
+                    lbl_3_bss_B63C[idx] = prev;
+                    prev = t;
+                }
+            }
+        }
+        DCFlushRange(lbl_3_bss_B63C, 0x8000);
+    }
+    o[0xA3]++;
 }
 
 // .text:0x000F8D00 size:0x120 mapped:0x80737D94
 void fn_3_F8D00(void) {
-    return;
+    f32 m[2][3];
+    u32 i, j;
+    m[0][0] = lbl_3_rodata_3028;
+    m[0][1] = lbl_3_rodata_302C;
+    m[0][2] = lbl_3_rodata_302C;
+    m[1][0] = lbl_3_rodata_302C;
+    m[1][1] = lbl_3_rodata_3028;
+    m[1][2] = lbl_3_rodata_302C;
+    GXSetIndTexMtx(GX_ITM_0, m, 2);
+    lbl_3_bss_B63C = (u8*)fn_3_B9534(0x80, 0x80, &lbl_3_bss_B640);
+    if (lbl_3_bss_B63C == NULL) {
+        OSPanic(lbl_3_rodata_3030, 0x6DF, lbl_3_rodata_303C);
+    }
+    for (i = 0; i < 0x80; i++) {
+        for (j = 0; j < 0x80; j++) {
+            s32 idx = fn_800247E4(j, i, 0x80, 2);
+            lbl_3_bss_B63C[idx] = (u8)(rand() % 4) + 0x7E;
+        }
+    }
 }
 
 // .text:0x000F8E20 size:0x268 mapped:0x80737EB4

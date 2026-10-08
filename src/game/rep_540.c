@@ -13,6 +13,11 @@ extern int fn_3_B7D6C(f32, f32);
 extern void fn_3_8FF5C(s32, void*, f32, f32, f32);
 extern u8 lbl_800E8558[];
 extern int getAnimRelatedCoordinates(int, int, void*);
+extern f32 lbl_3_rodata_5A0;
+extern f32 lbl_3_rodata_660;
+extern f32 lbl_3_rodata_664;
+extern f32 lbl_3_rodata_668;
+extern f32 lbl_3_rodata_66C;
 extern f32 lbl_3_rodata_5E4;
 extern f32 lbl_3_rodata_5EC;
 extern f32 lbl_3_rodata_5F0;
@@ -583,7 +588,26 @@ void estimateAndSetFutureCoords(int) {
 
 // .text:0x0000D9EC size:0x1E4 mapped:0x8064CA80
 void fn_3_D9EC(void) {
-    return;
+    f32 r = sqrt540(*(f32*)(g_Ball + 0x318) * *(f32*)(g_Ball + 0x318) + *(f32*)(g_Ball + 0x320) * *(f32*)(g_Ball + 0x320));
+    f64 d = r;
+    f32 e;
+    *(f32*)(g_Ball + 0x1A14) = r;
+    g_Ball[0x1BDE] = 0;
+    e = (f32)d;
+    if (lbl_3_rodata_590 != e) {
+        *(f32*)(g_Ball + 0x1A18) = *(f32*)(g_Ball + 0x318) / e;
+        *(f32*)(g_Ball + 0x1A1C) = *(f32*)(g_Ball + 0x320) / e;
+    }
+    if (*(f32*)(g_Ball + 0x1A14) <= lbl_3_rodata_660 && *(f32*)(g_Ball + 4) <= lbl_3_rodata_664 && *(f32*)(g_Ball + 0x31C) < lbl_3_rodata_668 && *(f32*)(g_Ball + 0x31C) > lbl_3_rodata_66C) {
+        if (*(f32*)(g_Ball + 0x1A14) < lbl_3_rodata_5A0) {
+            g_Ball[0x1BDE] = 2;
+            *(f32*)(g_Ball + 0x318) = lbl_3_rodata_590;
+            *(f32*)(g_Ball + 0x320) = lbl_3_rodata_590;
+            *(f32*)(g_Ball + 0x1A14) = lbl_3_rodata_590;
+        } else {
+            g_Ball[0x1BDE] = 1;
+        }
+    }
 }
 
 // .text:0x0000DBD0 size:0x78 mapped:0x8064CC64

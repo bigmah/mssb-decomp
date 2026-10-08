@@ -298,9 +298,62 @@ void fn_3_E4760(u8* a) {
     a[0xC9] = 0;
 }
 
+// .text:0x000E48D0 size:0x168
+void fn_3_E48D0(u8* a) {
+    fn_3_E4658(a);
+    fn_3_E4554(a);
+    a[0xC5] = 0;
+    a[0xC4] = 0;
+    a[0xC7] = 0;
+    a[0xC8] = 0;
+    if (a[0xCA] != 0) {
+        fn_3_65F4();
+        a[0xCA] = 0;
+        *(f32*)(a + 0xC0) = 0.0f;
+    }
+}
+
 // .text:0x000E4A38 size:0x1B0 mapped:0x80723ACC
-void fn_3_E4A38(void) {
-    return;
+extern u8 lbl_3_bss_AE01;
+extern f32 lbl_3_rodata_2B2C;
+extern f32 lbl_3_rodata_2B30;
+void fn_3_E4A38(f32 (*m)[4], u8* b) {
+    Vec sp14;
+    Vec sp8;
+    int n;
+    u8* p;
+    int t;
+    u32 cnt;
+    f32 minx, miny, minz, maxx, maxy, maxz;
+    minz = miny = minx = lbl_3_rodata_2B2C;
+    maxz = maxy = maxx = lbl_3_rodata_2B30;
+    p = *(u8**)(b + 8);
+    for (;;) {
+        cnt = *(u16*)(p + 2);
+        if (cnt == 0) break;
+        t = cnt * 3;
+        if (p[1] != 0) {
+            t = cnt + 2;
+        }
+        n = t;
+        p += 4;
+        do {
+            if (lbl_3_bss_AE01 == 0) {
+                PSMTXMultVec(m, (Vec*)p, &sp14);
+            } else {
+                PSVECScale((Vec*)p, 1.0f, &sp14);
+            }
+            p += 0x10;
+            if (minx > sp14.x) minx = sp14.x;
+            if (miny > sp14.y) miny = sp14.y;
+            if (minz > sp14.z) minz = sp14.z;
+            if (maxx < sp14.x) maxx = sp14.x;
+            if (maxy < sp14.y) maxy = sp14.y;
+            if (maxz < sp14.z) maxz = sp14.z;
+            n--;
+        } while (n != 0);
+    }
+    PSVECScale((Vec*)g_Ball, 1.0f, &sp8);
 }
 
 // .text:0x000E4BE8 size:0xC8 mapped:0x80723C7C
