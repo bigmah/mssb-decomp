@@ -845,7 +845,67 @@ void fn_3_85CB0(void) {
 
 // .text:0x00085EF4 size:0x158 mapped:0x806C4F88
 void fn_3_85EF4(s32 i, s32 d) {
-    return;
+    s16 e;
+    u8 t;
+    u8* r = g_Runners + i * 0x154;
+    if (r[0x123] != 1) {
+        return;
+    }
+    if (r[0x128] == 2 && d != -1) {
+        return;
+    }
+    if (r[0x13A] != 0 && r[0x13C] != 0) {
+        if (r[0x13B] == 1) {
+            r[0x127] = r[0x126];
+            return;
+        }
+        r[0x127] = r[0x125];
+        return;
+    }
+    if (d == 1) {
+        r[0x127] = r[0x126];
+    }
+    if (d == -1) {
+        t = r[0x125];
+        if (t == 0) {
+            return;
+        }
+        if (r[0x137] == 1 && *(s16*)(r + 0xE6) >= 0 && r[0x128] == 0) {
+            if (r[0x13E] == 1) {
+                return;
+            }
+            r[0x137] = 2;
+            return;
+        } else {
+            e = *(s16*)(r + 0xE6);
+            if (e >= 0) {
+                if (e == 1) {
+                    return;
+                }
+                if (i == 0) {
+                    return;
+                }
+                if (r[0x128] == 0) {
+                    return;
+                }
+                r[0x127] = (e + 3) & 3;
+            } else {
+                r[0x127] = t;
+            }
+        }
+    }
+    if (d == 0 && i == 0 && r[0x125] == 0) {
+        return;
+    }
+    if (d == 0) {
+        r[0x135] = 2;
+        return;
+    }
+    if (d == 1) {
+        r[0x135] = 1;
+        return;
+    }
+    r[0x135] = 3;
 }
 
 // .text:0x0008604C size:0xCC mapped:0x806C50E0
