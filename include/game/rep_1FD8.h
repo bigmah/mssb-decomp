@@ -32,7 +32,7 @@ void fn_3_C48D0(void);
 void fn_3_C4B80(void);
 void fn_3_C4CF4(void* hv, u8 type);
 s32 fn_3_C4F00(void* hv);
-void fn_3_C5304(void);
+void fn_3_C5304(void* h, u8* b);
 void fn_3_C54D0(u8* a);
 void fn_3_C56E8(u8* a);
 void fn_3_C597C(void);

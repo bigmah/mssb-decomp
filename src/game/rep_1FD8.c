@@ -624,7 +624,7 @@ void fn_3_C4CF4(void* hv, u8 type) {
 
 extern int rand(void);
 extern f32 lbl_3_rodata_2160[];
-extern f32 lbl_3_rodata_216C;
+extern const f32 lbl_3_rodata_216C;
 extern f64 sin(f64);
 extern f64 cos(f64);
 extern const f32 lbl_3_rodata_2158;
@@ -695,8 +695,33 @@ s32 fn_3_C4F00(void* hv) {
 }
 
 // .text:0x000C5304 size:0x1CC mapped:0x80704398
-void fn_3_C5304(void) {
-    return;
+void fn_3_C5304(void* hv, u8* b) {
+    C4724Hdr* h = hv;
+    C4724P* p = h->head;
+    s16 i = 0;
+    h->f18 = (Vec*)(b + 0x9C);
+    h->f20 = b;
+    while (p != NULL) {
+        p->f38 = p->f3C = lbl_3_rodata_213C;
+        p->s48 = i;
+        i += 4;
+        p->f4D = 0x15;
+        p->f4E = 0;
+        p->a42 = 0xFF;
+        p->a41 = 0xFF;
+        p->a40 = 0xFF;
+        p->a43 = 0;
+        p->s4A = 1;
+        p->f4F = 0;
+        if (p->s48 == 0) {
+            p->x = h->f18->x + (f32)(15 - rand() % 31) / lbl_3_rodata_2160[0];
+            p->y = lbl_3_rodata_216C + h->f18->y;
+            p->z = h->f18->z + (f32)(15 - rand() % 31) / lbl_3_rodata_2160[0];
+        } else {
+            p->x = p->y = p->z = lbl_3_rodata_213C;
+        }
+        p = p->next;
+    }
 }
 
 // .text:0x000C54D0 size:0x218 mapped:0x80704564
