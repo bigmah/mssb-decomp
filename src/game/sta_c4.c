@@ -501,7 +501,7 @@ void fn_3_F9E78(void) {
 }
 
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
-// 93.9%: only saved-reg ranking differs (orig: offC<cnt<j<i<off18; ours: i<cnt<j<off18<offC), plus the zero-init copies come from i in the orig
+// 97.6%: idx assigned directly (no j temp). Remaining: saved-reg ranking (orig: offC<cnt<j<i<off18<off2<off4; ours: i<cnt<j<off18<offC) and the orig IV zero-inits are `mr` copies of i (ours li). Explicit offset vars + decl order fix regs but give li inits.
 extern u8 lbl_3_data_1BA98[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
@@ -526,9 +526,8 @@ void fn_3_FA3C0(void) {
     memset(lbl_3_common_bss_350E4.a48, 0, size);
     cnt = 0;
     for (i = 0; i < 10; i++) {
-        j = (u16)(lbl_3_common_bss_350E4.a40[cnt - 1] + lbl_3_common_bss_350E4.a3C[cnt - 1]);
-        lbl_3_common_bss_350E4.a40[cnt] = j;
-        idx = j;
+        idx = (u16)(lbl_3_common_bss_350E4.a40[cnt - 1] + lbl_3_common_bss_350E4.a3C[cnt - 1]);
+        lbl_3_common_bss_350E4.a40[cnt] = idx;
         fn_3_B8574();
         for (j = 0; j < lbl_3_common_bss_350E4.n; j++) {
             if (i == lbl_3_data_1BA98[j * 0x14 + 0x12] && (lbl_3_common_bss_350E4.p0[j * 0xE8 + 0x90] >> 6 & 1)) {
