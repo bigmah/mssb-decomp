@@ -57,4 +57,6 @@ void fn_1_12F18(u8* object);
 
 void fn_1_106C4(void);
 
+void fn_1_F2F8(void);
+
 #endif

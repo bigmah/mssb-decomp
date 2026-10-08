@@ -1,5 +1,9 @@
 #include "challenge/rep_0610.h"
 
+extern u32 lbl_80108B90;
+extern u16 lbl_1_data_F17C[];
+extern void fn_800324EC(u16, s32, s32, void*);
+
 extern u8 lbl_1_bss_3070[];
 
 extern void fn_1_12820(void*, void*);
@@ -236,5 +240,19 @@ void fn_1_106C4(void) {
     if (!(buttons & 0x100) && (buttons & 0x200)) {
         *(u32*)(state + 0xC) = 0;
         state[0x2F01] = 1;
+    }
+}
+
+// fn_1_F2F8, size:0x84
+void fn_1_F2F8(void) {
+    u8* state = lbl_1_bss_3070;
+    s32 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 0x100) {
+        lbl_80108B90 = *(u32*)(state + 0x28);
+        fn_800324EC(lbl_1_data_F17C[0], 0, -1, &lbl_80108B90);
+    } else if (buttons & 0x200) {
+        lbl_80108B90 = 0;
+        *(u32*)(state + 0xC) = 0;
+        state[0x2F01] = 10;
     }
 }
