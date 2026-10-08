@@ -1287,18 +1287,15 @@ void fn_3_150D84(void) {
 }
 
 // .text:0x00151068 size:0x19C mapped:0x807900FC
-// ~93%: prologue only: orig stores sth via r4 (param) with data base in r5; ours uses r31 and base in r4
 void fn_3_151068(u8* a, u8* o) {
     Mtx m;
     u8* obj;
     u8* mp;
     u8* t;
     f32 x, y, z;
-    s32* d = (s32*)lbl_3_data_26C3C; *(s16*)(o + 0x4A) = d[6];
-    t = *(u8**)(a + 0x18);
-    t = *(u8**)t;
-    t = *(u8**)(t + 0x18);
-    obj = ((u8**)t)[d[7]];
+    s32* d = (s32*)lbl_3_data_26C3C;
+    *(s16*)(o + 0x4A) = d[6];
+    obj = (*(u8***)(*(u8**)(*(u8**)(a + 0x18))+0x18))[d[7]];
     PSMTXIdentity(m);
     mp = *(u8**)(obj + 0xEC);
     x = *(f32*)(mp + 0xC);
