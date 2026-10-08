@@ -667,9 +667,54 @@ void fn_3_F1448(u8* p) {
     CTRLSetScale((Control*)p, lbl_3_rodata_2D50, lbl_3_rodata_2D50, lbl_3_rodata_2D50);
 }
 
+struct StadCtlA {
+    Control c;
+    u8 pad34[0x74 - 0x3C];
+    u8** obj;
+    u8 pad78[0x90 - 0x78];
+    u8 fl90_hi : 1;
+    u8 fl90_lo : 7;
+    u8 pad91[8];
+    u8 f99;
+    u8 pad9A[2];
+    u8 idx;
+    u8 pad9D[3];
+    f32 xa0, ya4, za8, xac, zb0, rb4;
+    u8 padB8[0xC0 - 0xB8];
+    u8 fc0;
+    s8 fc1;
+    u8 padC2[2];
+    u8 fc4;
+    u8 fc5;
+    u8 fc6;
+    u8 fc7;
+};
+typedef struct StadCtlA StadCtlA;
+
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
-void fn_3_F1518(void) {
-    return;
+// 6 diff lines: first table lookup has base/index registers swapped (r5/r6); everything else matches
+extern u32 lbl_3_bss_B154[];
+void fn_3_F1518(StadCtlA* p) {
+    p->fc5 = ((u8*)&lbl_3_data_1B9A4[p->idx].f)[0];
+    p->fc6 = 1;
+    p->fc7 = 0;
+    p->fc1 = -1;
+    if (!p->fl90_hi) {
+        p->fl90_hi = 1;
+    }
+    p->f99 = 1;
+    p->zb0 = 0.0f;
+    p->xa0 = lbl_3_data_1B9A4[p->idx].a;
+    p->ya4 = lbl_3_data_1B9A4[p->idx].b;
+    p->za8 = lbl_3_data_1B9A4[p->idx].c;
+    p->xac = -lbl_3_data_1B9A4[p->idx].d;
+    p->c.type = 0;
+    CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+    CTRLSetRotation(&p->c, 0.0f, p->xac, 0.0f);
+    CTRLSetScale(&p->c, 1.0f, 1.0f, 1.0f);
+    fn_3_B97DC(p->obj, lbl_3_bss_B154[0]);
+    ((u8*)p->obj)[0x58] = 1;
+    p->fc0 = 0;
 }
 
 // .text:0x000F1674 size:0xDC mapped:0x80730708
@@ -695,29 +740,6 @@ void fn_3_F1674(void) {
 }
 
 // .text:0x000F1750 size:0x154 mapped:0x807307E4
-struct StadCtlA {
-    Control c;
-    u8 pad34[0x74 - 0x3C];
-    u8** obj;
-    u8 pad78[0x90 - 0x78];
-    u8 fl90_hi : 1;
-    u8 fl90_lo : 7;
-    u8 pad91[8];
-    u8 f99;
-    u8 pad9A[2];
-    u8 idx;
-    u8 pad9D[3];
-    f32 xa0, ya4, za8, xac, zb0, rb4;
-    u8 padB8[0xC0 - 0xB8];
-    u8 fc0;
-    s8 fc1;
-    u8 padC2[2];
-    u8 fc4;
-    u8 fc5;
-    u8 fc6;
-    u8 fc7;
-};
-typedef struct StadCtlA StadCtlA;
 extern f32 fn_800B4A94(void*);
 extern const f32 lbl_3_rodata_2E30;
 void fn_3_F1750(StadCtlA* p) {
