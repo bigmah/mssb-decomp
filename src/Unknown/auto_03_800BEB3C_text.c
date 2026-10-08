@@ -6,3 +6,8 @@ extern u8 lbl_803009F8[];
 u8 fn_800BEBA0(void) {
     return *(u8*)(lbl_803009F8 + 0x0);
 }
+
+// GetDrawShadows, size:0x10
+u8 GetDrawShadows(void) {
+    return *(u8*)(lbl_803009F8 + 0x0);
+}
