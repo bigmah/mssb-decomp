@@ -18,7 +18,7 @@ void fn_3_142DB4(void);
 void fn_3_1430D0(void);
 void fn_3_143358(s32 i);
 void fn_3_143714(void);
-void fn_3_143770(void);
+s32 fn_3_143770(u8* p);
 void fn_3_1439EC(void);
 void fn_3_143FAC(s32);
 void fn_3_14402C(s32 idx);
