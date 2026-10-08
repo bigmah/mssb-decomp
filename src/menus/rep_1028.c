@@ -7,6 +7,7 @@ extern MenuStateCallback lbl_2_data_30834[3];
 extern MenuStateCallback lbl_2_data_30840[3];
 extern MenuStateCallback lbl_2_data_3084C[3];
 extern MenuStateCallback lbl_2_data_30858[3];
+extern MenuStateCallback lbl_2_data_30864[3];
 
 // .text:0x00091B7C size:0x4
 void fn_2_91B7C(void) {}
@@ -82,4 +83,9 @@ void fn_2_916C0(MenuStateObject* object) {
 // .text:0x00091450 size:0x38
 void fn_2_91450(MenuStateObject* object) {
     lbl_2_data_30858[object->state](object);
+}
+
+// .text:0x000911E0 size:0x38
+void fn_2_911E0(MenuStateObject* object) {
+    lbl_2_data_30864[object->state](object);
 }
