@@ -9,6 +9,11 @@ extern f32 game_atan2(f32, f32);
 extern s16 fn_3_9FC1C(f32, f32);
 extern u8 g_FieldingLogic[];
 typedef struct {
+    u8 pad000[0x1F5];
+    s8 unk1F5;
+    u8 pad1F6[0x268 - 0x1F6];
+} FielderT;
+typedef struct {
     /*0x000*/ f32 x;
     /*0x004*/ u8 pad004[0x64 - 0x4];
     /*0x064*/ f32 fractionalBasesRan;
@@ -709,7 +714,22 @@ void fn_3_A6ABC(void) {
 
 // .text:0x000A6D48 size:0x150 mapped:0x806E5DDC
 void fn_3_A6D48(void) {
-    return;
+    s32 i;
+    lbl_3_bss_1824 = 0;
+    lbl_3_bss_1808[0] = -1;
+    lbl_3_bss_1808[1] = -1;
+    lbl_3_bss_1808[2] = -1;
+    lbl_3_bss_1808[3] = -1;
+    for (i = 3; i >= 0; i--) {
+        RunnerT* r = &g_Runners[i];
+        if (r->status == 1) {
+            s32 b = r->unk125;
+            lbl_3_bss_1824 |= 1 << ((s32)r->fractionalBasesRan * 4);
+            if (lbl_3_bss_1808[b] < 0 || g_Runners[lbl_3_bss_1808[b]].unkE6 >= 0) {
+                lbl_3_bss_1808[b] = i;
+            }
+        }
+    }
 }
 
 // .text:0x000A6E98 size:0x1A8 mapped:0x806E5F2C
@@ -743,13 +763,83 @@ void fn_3_A8074(void) {
 }
 
 // .text:0x000A8338 size:0x140 mapped:0x806E73CC
-void fn_3_A8338(void) {
-    return;
+// 85%: only reg alloc differs (fielder ptr in r3 vs r4; g_FieldingLogic base reg r4 vs r5)
+void fn_3_A8338(s32 idx) {
+    u8* fl;
+    s16 sel;
+    FielderT* fp;
+    fl = g_FieldingLogic;
+    sel = *(s16*)(fl + 0xCC);
+    fp = &((FielderT*)g_Fielders)[idx];
+    if (sel >= 0 && sel <= 3 && fp->unk1F5 == sel) {
+        *(s16*)(fl + 0xCC) = -1;
+        return;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xE2) == -1) {
+        s16 r = *(s16*)(g_FieldingLogic + 0xDE);
+        if (r >= 0 && g_Runners[r].status != 1) {
+            *(s16*)(g_FieldingLogic + 0xDE) = -1;
+            *(s16*)(fl + 0xCC) = -1;
+            return;
+        }
+        *(s16*)(g_FieldingLogic + 0xE2) = sel;
+        fn_3_A8074();
+    }
+    sel = *(s16*)(fl + 0xCC);
+    if (sel >= 0 && sel <= 3) {
+        s16 rr = *(s16*)(g_FieldingLogic + 0xDE);
+        if (rr == -1) {
+            fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), lbl_3_data_4444[sel * 2], lbl_3_data_4444[sel * 2 + 1]);
+        } else {
+            fn_3_52F4C(*(s16*)(g_Ball + 0x1B78), g_Runners[rr].x, *(f32*)((u8*)&g_Runners[rr] + 8));
+        }
+    }
+    fn_3_A3CC0();
 }
 
 // .text:0x000A8478 size:0x150 mapped:0x806E750C
-void fn_3_A8478(void) {
-    return;
+// ~95%: logic and block layout match; only regs differ (idx r8/prev r7/tmp r6 vs orig r7/r6/r7) and ec/ea load order in the final add
+s32 fn_3_A8478(s32* out0, s32* out1) {
+    u8 dir;
+    s32 prev;
+    s32 idx;
+    u8* r;
+
+    idx = *(s16*)(g_FieldingLogic + 0xC4);
+    if (idx >= 4 || (s16)idx < 0) {
+        return 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) == 3) {
+        r = (u8*)g_Runners + idx * 0x154;
+        if (r[0x123] == 1 && r[0x128] == 2) {
+            *out0 = idx;
+            goto cur;
+        }
+    }
+    prev = idx == 0 ? 3 : idx - 1;
+    r = (u8*)g_Runners + prev * 0x154;
+    if (r[0x123] == 1 && *(s16*)(r + 0xEE) == 1) {
+        *out0 = prev;
+        goto tail;
+    }
+    return 0;
+cur:
+    if (r[0x125] == idx) {
+        dir = r[0x137];
+        if (dir == 3 || dir == 2) {
+            *out1 = *(s16*)(r + 0xEC);
+        } else if ((dir == 1 && r[0x136] == 3) || (dir == 3 && r[0x136] == 1)) {
+            *out1 = *(s16*)(r + 0xEC) + 0x14;
+        } else {
+            *out1 = *(s16*)(r + 0xEC) + 0x32;
+        }
+    } else {
+        *out1 = *(s16*)(r + 0xEA) + *(s16*)(r + 0xEC) + *(s16*)(r + 0xEC);
+    }
+    return 1;
+tail:
+    *out1 = *(s16*)(r + 0xEA);
+    return 1;
 }
 
 // .text:0x000A85C8 size:0x40C mapped:0x806E765C

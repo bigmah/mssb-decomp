@@ -694,10 +694,9 @@ struct StadCtlA {
 typedef struct StadCtlA StadCtlA;
 
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
-// 6 diff lines: first table lookup has base/index registers swapped (r5/r6); everything else matches
 extern u32 lbl_3_bss_B154[];
 void fn_3_F1518(StadCtlA* p) {
-    p->fc5 = ((u8*)&lbl_3_data_1B9A4[p->idx].f)[0];
+    p->fc5 = ((u8*)&lbl_3_data_1B9A4[0].f)[p->idx * 0x18];
     p->fc6 = 1;
     p->fc7 = 0;
     p->fc1 = -1;
