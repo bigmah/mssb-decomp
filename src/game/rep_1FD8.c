@@ -487,16 +487,18 @@ typedef struct C4724P {
     f32 f1C;
     u8 pad20[0x38 - 0x20];
     f32 f38, f3C;
-    u8 pad40[3];
+    u8 a40, a41, a42;
     u8 a43;
     u8 pad44[4];
     s16 s48;
     s16 s4A;
-    u8 pad4C[3];
+    u8 pad4C[1];
+    u8 f4D;
+    u8 f4E;
     u8 f4F;
     u8 f50;
 } C4724P;
-typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[2]; struct { u8 pad[4]; f32 y; }* f18; u8 pad1C[8]; s32 f24; } C4724Hdr;
+typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[2]; Vec* f18; u8 pad1C[4]; void* f20; s32 f24; } C4724Hdr;
 extern u8 lbl_80366158[];
 extern void fn_80033620(void);
 extern void fn_8003403C(f32, f32);
@@ -506,6 +508,9 @@ extern void GXSetBlendMode(int, int, int, int);
 extern const f32 lbl_3_rodata_2168[];
 extern const f32 lbl_3_rodata_213C;
 extern const f32 lbl_3_rodata_21A4;
+extern const f32 lbl_3_rodata_21AC;
+extern s32 lbl_3_bss_9F0C;
+extern u8 lbl_3_data_17514[];
 extern const f32 lbl_3_rodata_21A8;
 extern f64 pow(f64, f64);
 // 97%: only f-reg numbering of hoisted consts (213C should be f1, loaded after first fadds); const externs help
@@ -622,8 +627,8 @@ extern f32 lbl_3_rodata_2160[];
 extern f32 lbl_3_rodata_216C;
 extern f64 sin(f64);
 extern f64 cos(f64);
-extern f32 lbl_3_rodata_2158;
-extern f32 lbl_3_rodata_215C;
+extern const f32 lbl_3_rodata_2158;
+extern const f32 lbl_3_rodata_215C;
 extern const f32 lbl_3_rodata_2170[];
 extern const f32 lbl_3_rodata_2174;
 typedef struct { u8 pad0[0x20]; void* f20; } C4F00H;
@@ -947,9 +952,43 @@ u32 fn_3_C75B8(void* hv) {
     return !h->f24;
 }
 
+// 99%: only 'fmuls f0,f25,f0' operand order (we emit f0,f25); const-left source order changes the hoisted-const layout instead
 // .text:0x000C77AC size:0x260 mapped:0x80706840
-void fn_3_C77AC(void) {
-    return;
+void fn_3_C77AC(void* hv, u8* b) {
+    u32 ang;
+    C4724P* p;
+    C4724Hdr* h = hv;
+    f32 a, fa;
+    u32 i;
+    p = h->head;
+    h->f18 = (Vec*)(b + 0x9C);
+    h->f20 = b;
+    h->f10 = lbl_3_bss_9F0C;
+    h->f24 = 30;
+    i = 0;
+    ang = 0;
+    while (p != NULL) {
+        p->f38 = p->f3C = lbl_3_rodata_213C;
+        p->f1C = lbl_3_rodata_21AC - (f32)(rand() % 3);
+        fa = (f32)ang + *(f32*)(lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
+        a = (fa * lbl_3_rodata_2158) / lbl_3_rodata_215C;
+        p->vx = 0.3499999940395355 * cos(a);
+        p->vy = (f32)-(rand() % 3);
+        p->vz = 0.3499999940395355 * sin(a);
+        ang += 30;
+        p->x = h->f18->x;
+        p->z = h->f18->z;
+        p->s48 = i >> 2;
+        i++;
+        p->f4D = 0x1C;
+        p->f4E = 0;
+        p->a42 = 0x7F;
+        p->a41 = 0x7F;
+        p->a40 = 0x7F;
+        p->a43 = 0x99;
+        p->s4A = 1;
+        p = p->next;
+    }
 }
 
 // .text:0x000C7A0C size:0x650 mapped:0x80706AA0
