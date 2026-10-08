@@ -246,3 +246,13 @@ void fn_2_8F774(s32 index) {
     u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
     fn_800B4A94(((void**)data)[index * 0x24 + 13]);
 }
+
+// fn_2_916F8, size:0x84
+void fn_2_916F8(u8* object) {
+    u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
+    if (fn_800B4A94(((void**)data)[*(s32*)(object + 0x78) * 0x24 + 13]) == 0.0f) {
+        MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+        entry->active = 2;
+        entry->state = 0;
+    }
+}
