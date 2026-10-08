@@ -11,6 +11,7 @@ extern void fn_3_1DD48(void);
 extern void ballPhysica(void);
 extern void fn_3_598D0(void);
 extern void fn_3_B0E00(void);
+extern void fn_3_B0B5C(void);
 
 extern u8 g_Fielders[];
 
@@ -151,5 +152,18 @@ void fn_3_B1120(void) {
         fn_3_598D0();
         fn_3_8A958();
         fn_3_B0E00();
+    }
+}
+
+// fn_3_B116C, size:0x64
+void fn_3_B116C(void) {
+    if (g_Practice.instructionNumber >= 0 || fn_3_B32B8() == 0) {
+        if (g_Practice.hitVariablesSetIndicator == 0) {
+            fn_3_B0B5C();
+        }
+        fn_3_75560();
+        atBat_batter();
+        fn_3_8A958();
+        fn_3_31594();
     }
 }
