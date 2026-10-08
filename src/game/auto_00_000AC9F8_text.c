@@ -130,3 +130,13 @@ void fn_3_AFDC0(void) {
     fn_3_1DD48();
     fn_3_5A6D4(7);
 }
+
+// fn_3_B0DB0, size:0x50
+void fn_3_B0DB0(void) {
+    g_Practice.allowPlayToEndIndicator = 0;
+    g_GameLogic.pre_PostMiniGameInd = 1;
+    g_GameLogic.minigameLastTurnSuccessInd = 1;
+    g_GameLogic.hudLoadingRelated = 1;
+    fn_3_1DD48();
+    fn_3_5A6D4(7);
+}
