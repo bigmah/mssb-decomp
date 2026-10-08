@@ -47,8 +47,39 @@ extern void fn_3_5B0C4(void);
 extern u8 g_Scores[];
 extern void fn_3_32090(void*, void*);
 extern void fn_3_8911C(void);
+extern void fn_3_8A350(void);
+extern void fn_3_F7B8(void);
+extern void fn_3_75434(void);
+extern void fn_3_59338(void);
+extern void fn_3_7B130(void);
+extern void fn_3_22850(void);
 
 #pragma dont_inline on
+
+// fn_3_5D51C, size:0xCC
+void fn_3_5D51C(void) {
+    u8* scores = g_Scores;
+    if (scores[0xAD] == 0) {
+        scores[0xAD] = 1;
+    } else {
+        scores[0xAD] = 0;
+        *(s32*)scores += 1;
+    }
+    g_GameLogic.homeTeamBattingInd_fieldingTeam ^= 1;
+    g_GameLogic.awayTeamBattingInd_battingTeam ^= 1;
+    g_GameLogic.teamBatting ^= 1;
+    g_GameLogic.teamFielding ^= 1;
+    ((u8*)&g_GameLogic)[0x131] = 0;
+    ((u8*)&g_GameLogic)[0x132] = 0;
+    *(s16*)(g_Scores + 0xA0) = *(s16*)(g_Scores + scores[0xAD] * 0x26 + 4);
+    fn_3_5A684();
+    fn_3_8A350();
+    fn_3_F7B8();
+    fn_3_75434();
+    fn_3_59338();
+    fn_3_7B130();
+    fn_3_22850();
+}
 
 // fn_3_5C69C, size:0xB0
 void fn_3_5C69C(s32 type) {
