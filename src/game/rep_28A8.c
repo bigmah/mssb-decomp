@@ -21,6 +21,15 @@ extern struct { u8 pad[0xC]; s16 n; u8 pad2[0x1C4]; u8 b1D2; } lbl_3_common_bss_
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
 extern u8 g_Ball[];
+extern u8 lbl_3_data_1899C[];
+extern void changeScene(s32, s32);
+#define B34C90 ((u8*)&lbl_3_common_bss_34C90)
+typedef struct { s32 a; u8 pad[0x1CE]; u8 b1D2; u8 pad2[7]; s8 b1DA; } SB;
+extern s32 fn_3_6C938(s32, s32);
+extern void fn_3_5B408(void);
+extern s32 sndFXStartEx(s32, u8, u8, u8);
+extern u8 lbl_800EFBA4[];
+extern u8 g_Controls[];
 extern u8 g_Fielders[];
 extern s32 fn_3_E5924(void);
 extern void fn_3_59918(s32, s32);
@@ -85,9 +94,44 @@ void fn_3_DC380(void) {
     return;
 }
 
+// 98%: orig schedules lbz 0x1da before stw 0x0 (subi in r5, not r0)
 // .text:0x000DC5A4 size:0x144 mapped:0x8071B638
 void fn_3_DC5A4(void) {
-    return;
+    s32 r = fn_3_6C938(1, 0x100);
+    if (r != 0) {
+        SB* p = (SB*)&lbl_3_common_bss_34C90;
+        s32 n = r - 1;
+        p->a = n;
+        if (p->b1DA == 2) {
+            fn_3_5B408();
+            p = (SB*)&lbl_3_common_bss_34C90;
+            p->b1D2 = 9;
+        } else {
+            p->b1D2 = 4;
+        }
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        return;
+    }
+    if (fn_3_6C938(1, 8) != 0) {
+        SB* p = (SB*)&lbl_3_common_bss_34C90;
+        u8 t = p->b1DA;
+        if ((s8)t != 0) {
+            p->b1DA = t - 1;
+        } else {
+            p->b1DA = 2;
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        return;
+    }
+    if (fn_3_6C938(1, 4) != 0) {
+        SB* p = (SB*)&lbl_3_common_bss_34C90;
+        u8 t = p->b1DA + 1;
+        p->b1DA = t;
+        if ((s8)t >= 3) {
+            p->b1DA = 0;
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
 }
 
 // .text:0x000DC6E8 size:0x380 mapped:0x8071B77C
@@ -122,9 +166,20 @@ void fn_3_DCED0(void) {
     fn_3_2EA24();
 }
 
+// 21 diff lines: reg alloc (r3/r0 for s8 temp, lbl base order)
 // .text:0x000DCF44 size:0xBC mapped:0x8071BFD8
 void fn_3_DCF44(void) {
-    return;
+    s32 i;
+    for (i = 0; i < g_Minigame[0x1906]; i++) {
+        u8 pl = g_Minigame[0x18CC + i];
+        if ((s8)pl >= 0 && g_Minigame[0x18D8 + i] == 0 && (*(u16*)(g_Controls + (s8)pl * 0x10 + 6) & 0x1000)) {
+            *(u8*)((u8*)&lbl_3_common_bss_34C90 + 0x1D5) = 1;
+            *(s32*)&lbl_3_common_bss_34C90 = (s8)g_Minigame[0x18CC + i];
+            fn_3_AFD80(0);
+            fn_3_59918(0xE, 0);
+            return;
+        }
+    }
 }
 
 // .text:0x000DD000 size:0x1A8 mapped:0x8071C094
@@ -167,7 +222,44 @@ void fn_3_DD9A4(void) {
 
 // .text:0x000DDD60 size:0x1BC mapped:0x8071CDF4
 void fn_3_DDD60(void) {
-    return;
+    if (g_Minigame[0x190B] == 1) {
+        g_Minigame[0x190B] = 2;
+        *(s16*)(g_GameLogic + 0x100) = *(s16*)lbl_3_data_1899C;
+    }
+    *(s16*)(g_GameLogic + 0x100) -= 1;
+    if (g_Minigame[0x19A0] != 0 && *(s16*)(g_GameLogic + 0x100) < *(s16*)(lbl_3_data_1899C + 2)) {
+        *(s16*)(g_GameLogic + 0x100) = *(s16*)(lbl_3_data_1899C + 2);
+    }
+    if (*(s16*)(g_GameLogic + 0x100) == *(s16*)(lbl_3_data_1899C + 2) - 0xA) {
+        if (*(s16*)(g_Minigame + 0x19B6) >= *(s16*)(g_Minigame + 0x19B4) && g_Minigame[(s8)g_Minigame[0x1905] + 0x18E8] == 1) {
+            fn_3_59918(0xD, 0);
+        } else if ((s32)g_Minigame[0x1905] != (s8)g_Minigame[0x19C6]) {
+            if (*(s16*)(g_Minigame + 0x19B6) >= *(s16*)(g_Minigame + 0x19B4)) {
+                fn_3_59918(0xD, 0);
+            } else {
+                fn_3_59918(5, 0);
+            }
+        }
+    }
+    if (*(s16*)(g_GameLogic + 0x100) == 7) {
+        changeScene(3, 6);
+    }
+    if (*(s16*)(g_GameLogic + 0x100) <= 0) {
+        if (g_Minigame[0x19CE] != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+        }
+        g_GameLogic[0x12B] = 1;
+        g_GameLogic[0x12C] = 1;
+        g_GameLogic[0x12E] = 1;
+        fn_3_1DD48(g_GameLogic);
+        if (g_Minigame[0x1912] == 0) {
+            fn_3_2E87C();
+            fn_3_5A6D4(0);
+            return;
+        }
+        fn_3_5A6D4(8);
+    }
 }
 
 // .text:0x000DDF1C size:0x84 mapped:0x8071CFB0
