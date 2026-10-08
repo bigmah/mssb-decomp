@@ -1,6 +1,8 @@
 #include "game/rep_13B8.h"
 #include "header_rep_data.h"
 #include "math.h"
+#include "game/rep_D0.h"
+extern const f32 lbl_3_rodata_1460;
 extern f32 lbl_3_data_4A34[];
 extern int fn_3_A6810(f32, f32, f32, f32);
 extern s16 lbl_3_data_1C88[];
@@ -1906,7 +1908,74 @@ void fn_3_87424(void) {
 
 // .text:0x0008781C size:0x2CC mapped:0x806C68B0
 void fn_3_8781C(void) {
-    return;
+    int n;
+    u8 b1;
+    u8 b2;
+    u8 b3;
+    u8 b4;
+    s16 h;
+    int i;
+    u8* r;
+    VecSrcDst p;
+    CollisionStruct c;
+    *(s16*)g_RunningLogic = 0;
+    *(s16*)(g_RunningLogic + 4) = 0;
+    g_RunningLogic[0x10] = 0;
+    for (n = 0; n < 4; n++) {
+        r = g_Runners + n * 0x154;
+        if (*(f32*)(r + 0x68) > lbl_3_rodata_1458) {
+            r[0x12B] = 0;
+        }
+        if (r[0x123] == 1) {
+            *(s16*)g_RunningLogic |= 1 << (n * 4);
+            g_RunningLogic[0x10]++;
+            if (r[0x125] <= 3) {
+                *(s16*)(g_RunningLogic + 4) |= 1 << (r[0x125] * 4);
+            }
+        }
+        if (*(s16*)(g_Ball + 0x1B7A) == -1 && r[0x123] == 1) {
+            r[0x123] = 4;
+        }
+        if (*(s16*)(r + 0xE6) >= 0) {
+            if (*(s16*)(r + 0xFA) < 0x7FFE) {
+                *(s16*)(r + 0xFA) = *(s16*)(r + 0xFA) + 1;
+            } else {
+                *(s16*)(r + 0xFA) = 0x7FFF;
+            }
+        } else {
+            *(s16*)(r + 0xFA) = 0;
+        }
+        r[0x126] = (r[0x125] + 1) & 3;
+        if (r[0x123] != 0) {
+            p.src.x = *(f32*)(r + 0);
+            p.src.y = lbl_3_rodata_1460;
+            p.src.z = *(f32*)(r + 8);
+            p.dst.x = *(f32*)(r + 0);
+            p.dst.y = lbl_3_rodata_1408;
+            p.dst.z = *(f32*)(r + 8);
+            r[0x14C] = checkCollision(&p, &c, 0, 0);
+        }
+    }
+    if (*(s16*)(g_Runners + 0xF8) == -1) {
+        b1 = g_Ball[0x1BC9];
+        b2 = g_Ball[0x1BBE];
+        b3 = g_Ball[0x1BDD];
+        b4 = g_FieldingLogic[0x10E];
+        for (i = 0; i < 4; i++) {
+            if ((b1 == 1 && b2 <= 2) || b3 <= 1 || b4 != 0) {
+                if (g_Runners[i * 0x154 + 0x123] == 2) {
+                    *(s16*)(g_Runners + i * 0x154 + 0xF8) = g_Runners[i * 0x154 + 0x125];
+                } else if (g_Runners[i * 0x154 + 0x123] != 0) {
+                    h = *(s16*)(g_Runners + i * 0x154 + 0xE6);
+                    if (h >= 0) {
+                        *(s16*)(g_Runners + i * 0x154 + 0xF8) = h;
+                    }
+                }
+            } else if (g_Runners[i * 0x154 + 0x123] == 3) {
+                *(s16*)(g_Runners + i * 0x154 + 0xF8) = 0;
+            }
+        }
+    }
 }
 
 // .text:0x00087AE8 size:0x1E0 mapped:0x806C6B7C
