@@ -55,8 +55,19 @@ void fn_3_12EB10(void) {
 }
 
 // .text:0x0012ED80 size:0xE8 mapped:0x8076DE14
-void fn_3_12ED80(void) {
-    return;
+s32 fn_3_12ED80(void) {
+    s32 i;
+    u8* p = g_Minigame + 0x34;
+    for (i = 0; i < 5; i++) {
+        if (p[0x892] != 0) {
+            return 0;
+        }
+        if (p[0x8C6] != 0) {
+            return 0;
+        }
+        p += 0x9C;
+    }
+    return 1;
 }
 
 // .text:0x0012EE68 size:0x13C mapped:0x8076DEFC
