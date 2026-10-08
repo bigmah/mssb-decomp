@@ -1,5 +1,8 @@
 #include "menus/auto_00_0004B1AC_text.h"
 
+#include <string.h>
+extern void fn_2_4906C(void);
+
 extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
 
 extern void fn_2_52690(void);
@@ -201,4 +204,11 @@ void fn_2_52648(s32 priority) {
 // fn_2_4E7A4, size:0x48
 void fn_2_4E7A4(void) {
     fn_8003BF54(0, 0, 0, 1, 1, 4, 1, 3, 0);
+}
+
+// fn_2_515DC, size:0x60
+void fn_2_515DC(u8 mode) {
+    memset(lbl_2_bss_1A824C[0] + 0x19542C, 0, 0x1E90);
+    lbl_2_bss_1A824C[0][0x1972B8] = mode;
+    fn_2_4906C();
 }

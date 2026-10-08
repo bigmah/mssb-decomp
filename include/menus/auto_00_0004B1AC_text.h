@@ -71,4 +71,6 @@ void fn_2_52648(s32 priority);
 
 void fn_2_4E7A4(void);
 
+void fn_2_515DC(u8 mode);
+
 #endif
