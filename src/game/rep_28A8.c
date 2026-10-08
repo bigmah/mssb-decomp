@@ -21,10 +21,14 @@ extern struct { u8 pad[0xC]; s16 n; u8 pad2[0x1C4]; u8 b1D2; } lbl_3_common_bss_
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
 extern u8 g_Ball[];
+extern u8 lbl_3_data_18C48[];
+extern u8 lbl_8037169C[];
+extern int random_fn_3_9EE24(int);
 extern u8 lbl_3_data_1899C[];
 extern void changeScene(s32, s32);
 #define B34C90 ((u8*)&lbl_3_common_bss_34C90)
 typedef struct { s32 a; u8 pad[0x1CE]; u8 b1D2; u8 pad2[7]; s8 b1DA; } SB;
+typedef struct { u8 pad[0x18D8]; u8 f18D8[4]; } SM;
 extern s32 fn_3_6C938(s32, s32);
 extern void fn_3_5B408(void);
 extern s32 sndFXStartEx(s32, u8, u8, u8);
@@ -189,7 +193,64 @@ void fn_3_DD000(void) {
 
 // .text:0x000DD1A8 size:0x1D4 mapped:0x8071C23C
 void fn_3_DD1A8(void) {
-    return;
+    u8* gl = g_GameLogic;
+    s32 done;
+    switch (gl[0x125]) {
+    case 0: {
+        if (*(s16*)(g_Minigame + 0x19B6) == 0) {
+            if (random_fn_3_9EE24(100) < *(s16*)(lbl_3_data_18C48 + 0xE) || g_Minigame[0x1907] == 4) {
+                s32 n = 0;
+                int pl;
+            loopA:
+                pl = random_fn_3_9EE24(4);
+                n++;
+                *(s8*)(g_Minigame + 0x1905) = pl;
+                if (n < 100) {
+                    if (((SM*)g_Minigame)->f18D8[(s8)(u8)pl] != 0) {
+                        goto loopA;
+                    }
+                }
+            } else {
+                s32 n = 0;
+                int pl;
+            loopB:
+                pl = random_fn_3_9EE24(4);
+                n++;
+                *(s8*)(g_Minigame + 0x1905) = pl;
+                if (n < 100) {
+                    if (((SM*)g_Minigame)->f18D8[(s8)(u8)pl] == 0) {
+                        goto loopB;
+                    }
+                }
+            }
+        }
+        changeScene(1, 6);
+        *(s16*)(g_GameLogic + 0xFE) = 0;
+        gl[0x125] = 1;
+        break;
+    }
+    case 1: {
+        s32 t = *(u16*)(gl + 0xFC);
+        done = 0;
+        if (t >= *(s16*)(lbl_3_data_18C48 + 4)) {
+            done = 1;
+        } else if (*(u16*)(gl + 0xFE) >= *(s16*)(lbl_3_data_18C48 + 2) && fn_3_6C938(1, 0x1100) != 0) {
+            done = 1;
+        }
+        if (done != 0) {
+            gl[0x125] = 2;
+            changeScene(3, 6);
+        }
+        break;
+    }
+    case 2:
+        if (lbl_8037169C[0x13] != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+            fn_3_5A6D4(7);
+        }
+        break;
+    }
 }
 
 // .text:0x000DD37C size:0x80 mapped:0x8071C410
