@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
+void __MTGQR5(u32 value);
+
 void fn_800BD1E8(u32 value);
 
 #endif
