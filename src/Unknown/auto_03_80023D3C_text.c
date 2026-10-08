@@ -53,3 +53,18 @@ void fn_80023E48(VecQueue* queue, Vec* value) {
     queue->entries[queue->head] = *value;
     queue->count += queue->count < queue->capacity;
 }
+
+static inline s32 VecQueueLastIndex(s32 capacity) {
+    return capacity - 1;
+}
+
+// fn_80023D98, size:0x64
+s32 fn_80023D98(VecQueue* queue, Vec* result) {
+    s32 cursor = queue->cursor;
+    if (cursor == queue->tail) {
+        return 0;
+    }
+    queue->cursor = (cursor + VecQueueLastIndex(queue->capacity)) % queue->capacity;
+    *result = queue->entries[queue->cursor];
+    return 1;
+}
