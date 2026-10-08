@@ -17,6 +17,9 @@ extern u8 g_UnkThrowing_31ACC[];
 extern u8 g_d_GameSettings[];
 extern u8 lbl_8036E548[];
 extern u8 g_UnkAnimation_31EAC[];
+extern int fn_3_9FB8C(f32 x, f32 y);
+extern int fn_3_9FCA4(s16 a, s16 b);
+extern int radToShortAngle(f32 v);
 extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
 
 // .text:0x00060768 size:0x9C mapped:0x8069F7FC
@@ -100,7 +103,69 @@ void fn_3_61B64(void) {
 
 // .text:0x00062904 size:0x24C mapped:0x806A1998
 void fn_3_62904(void) {
-    return;
+    int i;
+    u8* p;
+    s16 bs;
+    u8* a;
+    u8* f;
+    u8 v;
+    s16 ang;
+    s16 d;
+    if (g_d_GameSettings[0x11] != 0) {
+        return;
+    }
+    p = g_Fielders;
+    for (i = 0; i < 9; p += 0x268, i++) {
+        if (p[0x211] != 0) {
+            if (g_Fielders[i * 0x268 + 0x211] != 0) {
+                u8* q = (u8*)((u32)g_UnkAnimation_31EAC + 0x51 + i * 0x54);
+                if (*q != 8 && *q != 9) {
+                    *q = 8;
+                }
+            }
+            break;
+        }
+    }
+    bs = *(s16*)(g_Ball + 0x1B78);
+    if (bs < 0 || g_FieldingLogic[0x111] == 0) {
+        return;
+    }
+    f = g_Fielders + bs * 0x268;
+    a = g_UnkAnimation_31EAC + bs * 0x54;
+    if (g_FieldingLogic[0x135] != 0) {
+        *(s16*)(f + 0x1AA) = 0;
+    }
+    g_UnkThrowing_31ACC[0x10] = g_FieldingLogic[0x135];
+    if (g_FieldingLogic[0x111] == 1) {
+        v = 1;
+        if (*(s16*)(g_FieldingLogic + 0xE8) >= 0) {
+            ang = fn_3_9FB8C(*(f32*)(g_FieldingLogic + 0x90) - *(f32*)(f + 0), *(f32*)(g_FieldingLogic + 0x98) - *(f32*)(f + 8));
+            d = fn_3_9FCA4(ang, radToShortAngle(*(f32*)(f + 0x48)));
+            if (d < -0x280) {
+                v = 2;
+            } else if (d > 0x280) {
+                v = 3;
+            }
+        }
+        a[0x51] = v;
+    } else if (g_FieldingLogic[0x111] == 2) {
+        a[0x51] = 4;
+    } else if (g_FieldingLogic[0x111] == 5) {
+        s16 ri;
+        v = 5;
+        ri = *(s16*)(g_FieldingLogic + 0xE8);
+        if (ri >= 0) {
+            u8* r = g_Runners + ri * 0x154;
+            ang = fn_3_9FB8C(*(f32*)(r + 0) - *(f32*)(f + 0), *(f32*)(r + 8) - *(f32*)(f + 8));
+            d = fn_3_9FCA4(ang, radToShortAngle(*(f32*)(f + 0x48)));
+            if (d < -0x1C0) {
+                v = 7;
+            } else if (d > 0x1C0) {
+                v = 6;
+            }
+        }
+        a[0x51] = v;
+    }
 }
 
 // .text:0x00062B50 size:0x158 mapped:0x806A1BE4
