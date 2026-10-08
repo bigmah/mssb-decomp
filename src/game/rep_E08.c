@@ -20,7 +20,10 @@ extern u8 g_UnkAnimation_31EAC[];
 extern int fn_3_9FB8C(f32 x, f32 y);
 extern int fn_3_9FCA4(s16 a, s16 b);
 extern int radToShortAngle(f32 v);
+extern u8 lbl_3_data_7E34[];
+extern u32 fn_3_90220(s32 idx, s32 off);
 extern void AnimateCharacter(int, int, int, int, int, int, u8, int);
+extern void QueueCharacterAnimation(int, int, int, int, int, u8, int);
 
 // .text:0x00060768 size:0x9C mapped:0x8069F7FC
 void fn_3_60768(void) {
@@ -53,8 +56,70 @@ void fn_3_60D80(void) {
 }
 
 // .text:0x00060E90 size:0x2B8 mapped:0x8069FF24
-void fn_3_60E90(void) {
-    return;
+u32 fn_3_60E90(s32 a) {
+    s32 k = a;
+    u8* e = g_UnkAnimation_31EAC + a * 0x54;
+    u8 st;
+    u8* o;
+    u8* f = g_Fielders + a * 0x268;
+    s16 oa;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (a == 0) {
+            u8* m = g_Minigame;
+            m += *(s8*)(m + 0x1904);
+            k = *(s8*)(m + 0x18CC);
+        } else {
+            k = *(s8*)(g_Minigame + a + 0x18F2);
+        }
+    }
+    st = e[0x51];
+    o = ((u8**)(lbl_8036E548 + 0x2C50))[k];
+    oa = *(s16*)(o + 0x62);
+    if (st != 9 && *(s16*)(g_Ball + 0x1B78) != a) {
+        e[0x44] = 0;
+        return 0;
+    }
+    if (st == 9) {
+        return 1;
+    }
+    if (e[0x44] != 0 && g_UnkThrowing_31ACC[0x10] == 0) {
+        if (st == 8 && f[0x212] == 3) {
+            if (oa != 0x24) {
+                fn_3_90220(*(s16*)(f + 0x17A), 10);
+            }
+            e[0x51] = 9;
+            AnimateCharacter(k, 0x24, 0, 1, 0, 0, e[0x40], 0);
+            QueueCharacterAnimation(k, 0x25, 0, 1, 0, e[0x40], 0);
+            fn_3_60804(a, 0);
+            return 1;
+        }
+        if (*(s16*)(o + 0x68) <= 0) {
+            e[0x44] = 0;
+            e[0x51] = 0;
+            fn_3_60804(a, 0);
+            return 0;
+        }
+        return 1;
+    }
+    if (st == 0 || st == 4) {
+        goto clear;
+    }
+    if (st == 8) {
+        s32 x = (s8)o[0x252] * 4;
+        if (lbl_3_data_7E34[x + 1] - *(s16*)(g_FieldingLogic + 0xF6) < 0) {
+            goto clear;
+        }
+        AnimateCharacter(k, 0x23, 0, 1, 1, lbl_3_data_7E34[x], e[0x40], -1);
+        e[0x44] = 1;
+    } else {
+        AnimateCharacter(k, 0x21, 0, 1, 0, lbl_3_data_7E34[(s8)o[0x252] * 4], e[0x40], -1);
+        e[0x44] = 1;
+    }
+    fn_3_60804(a, 0);
+    return 1;
+clear:
+    e[0x44] = 0;
+    return 0;
 }
 
 // .text:0x00061148 size:0xE0 mapped:0x806A01DC
