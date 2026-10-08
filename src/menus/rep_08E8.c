@@ -1,5 +1,7 @@
 #include "menus/rep_08E8.h"
 
+extern u16 lbl_2_data_13238[];
+
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_2_data_13228[];
 extern void fn_800A7D4C(s32, void*, u8);
@@ -127,4 +129,25 @@ void fn_2_46D34(s32 delta) {
 void fn_2_489DC(void) {
     s32 index = lbl_803CBBC0[0];
     fn_800A7D4C(0xC, lbl_2_data_13228 + index * 8, index);
+}
+
+// fn_2_49EFC, size:0x80
+s32 fn_2_49EFC(const u16* string, u16 style) {
+    u32 character;
+    s32 width = 0;
+    while ((character = *string) != 0x4000) {
+        if (character == 0x4003) {
+            width += lbl_2_data_13238[style];
+        } else if (character == 0x4002) {
+            width += (u32)lbl_2_data_13238[style] >> 1;
+        } else if (!(character & 0x4000)) {
+            if (character & 0x8000) {
+                width += lbl_2_data_13238[style];
+            } else {
+                width += (u32)lbl_2_data_13238[style] >> 1;
+            }
+        }
+        string++;
+    }
+    return width;
 }
