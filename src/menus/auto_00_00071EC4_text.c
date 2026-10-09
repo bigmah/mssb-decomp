@@ -43,3 +43,8 @@ void fn_2_72054(s32 index, s8 value) {
     *(s16*)(e + 0x94) = 0;
 }
 
+// fn_2_72630, size:0x2C
+void fn_2_72630(void) {
+    fn_800B0A5C_insertQueue((void*)fn_2_72594, 0x3000);
+}
+
