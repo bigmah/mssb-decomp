@@ -1,9 +1,19 @@
 #include "menus/rep_0DE0.h"
+#include "static/UnknownHomes_Static.h"
 
 
 extern u8* lbl_2_bss_1A8248[];
 extern MenuDrawWorld* lbl_2_bss_340140[];
 extern const f32 lbl_2_rodata_E88;
+
+// fn_2_86A0C, size:0x74
+void fn_2_86A0C(void) {
+    s32 index;
+    for (index = 0; index < 3; index++) {
+        camera_803c639c_s* camera = fn_80052768_getCamera(0);
+        LITXForm(lbl_2_bss_340140[0]->lights[index], camera->view);
+    }
+}
 
 // fn_2_869B4, size:0x58
 void fn_2_869B4(void) {
