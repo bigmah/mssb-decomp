@@ -82,3 +82,12 @@ s32 fn_2_4C4(u8* q, s8 value) {
     return 1;
 }
 
+// fn_2_510, size:0x44
+u8 fn_2_510(u8* q) {
+    if (q[0x16] == q[0x15]) {
+        return 0;
+    }
+    q[0x16] = (q[0x16] + 1) % 32;
+    return q[q[0x16] + 0x17];
+}
+
