@@ -4,5 +4,6 @@
 #include "mssbTypes.h"
 
 void fn_2_D08(u16 ch, u16 time, u8 mode);
+void fn_2_1018(u16 ch);
 
 #endif
