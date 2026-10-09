@@ -17,4 +17,6 @@ void fn_2_8DC00(void);
 
 void fn_2_8C724(void);
 
+void fn_2_8DB14(void);
+
 #endif

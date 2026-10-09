@@ -102,3 +102,21 @@ void fn_2_8C724(void) {
         *(u8*)(*(u8**)(lbl_2_bss_340140 + 0x68) + i * 0x90 + 0xA0) = 0;
     }
 }
+
+// fn_2_8DB14, size:0xEC
+void fn_2_8DB14(void) {
+    u32 max = 0;
+    u32 v;
+    s32 i;
+    s32 size;
+    for (i = 0; i < *(s16*)(lbl_2_bss_1A824C + 0x197746); i++) {
+        v = *(u32*)(lbl_2_data_2F990 + i * 0x10 + 4) & 0x0FFFFFFF;
+        if (max < v) max = v;
+    }
+    size = (max + 0x1F) & ~0x1F;
+    *(s32*)(lbl_2_bss_340140 + 0x2C90) = size;
+    *(void**)(lbl_2_bss_340140 + 0x2C88) = _OSAllocFromHeap(0x20, size * *(s16*)(lbl_2_bss_1A824C + 0x197746));
+    for (i = 0; i < *(s16*)(lbl_2_bss_1A824C + 0x197746); i++) {
+        *(s32*)(lbl_2_bss_340140 + i * 0x27C + 0xC14) = 0;
+    }
+}
