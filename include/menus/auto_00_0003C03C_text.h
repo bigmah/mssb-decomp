@@ -78,4 +78,6 @@ void fn_2_3DC60(void);
 
 void fn_2_3DDC4(void);
 
+void fn_2_3EA44(void);
+
 #endif
