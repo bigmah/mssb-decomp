@@ -130,3 +130,9 @@ s32 fn_3_91064(void) {
     return 0;
 }
 
+// fn_3_910AC, size:0x48
+s32 fn_3_910AC(void) {
+    fn_80021518(0x1C, lbl_800EF808[2]);
+    fn_80021518(0x1D, lbl_800EF808[2]);
+    return 0;
+}
