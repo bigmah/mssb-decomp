@@ -118,6 +118,20 @@ void fn_2_EC34(void) {
     if (lbl_2_bss_F468[0x56] == 0) lbl_2_bss_F468[0x56] = 1;
 }
 
+// fn_2_145C, size:0x30
+s32 fn_2_145C(u16* a, u16* b) {
+    for (;;) {
+        u16 x = *a++;
+        u16 y = *b++;
+        if (x != y) {
+            return 0;
+        }
+        if (x == 0x4000) {
+            return 1;
+        }
+    }
+}
+
 // fn_2_1554, size:0x24
 u32 fn_2_1554(void) {
     lbl_803CB750[0] = lbl_803CB750[0] * 0x5D588B65 + 1;
