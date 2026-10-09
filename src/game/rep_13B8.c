@@ -1361,20 +1361,19 @@ int fn_3_841C0(int i, int j) {
 }
 
 // .text:0x000842E4 size:0x3E4 mapped:0x806C3378
-// 98%: body matches; only saved-register numbering differs (orig: x=r24 r=r25 a=r29 b=r30; ours b=r24 a=r25 r=r29 x=r30). Decl order has no effect.
 int fn_3_842E4(int i) {
     s32 idx;
     s32 y;
     u8 s;
     s32* t;
     s32 fl;
-    s32 x;
-    u8* r;
-    u8* f14;
-    u8* f1c;
-    u8* t4;
-    u8 a;
     s32 b;
+    s32 a;
+    u8* t4;
+    u8* f1c;
+    u8* f14;
+    u8* r;
+    s32 x;
     u8* fp;
     r = g_Runners + i * 0x154;
     if (g_Ball.b[0x1BE0] == 0) {
@@ -1405,7 +1404,7 @@ int fn_3_842E4(int i) {
     if (s == 1 && fl == b) {
         if (*(f32*)(r + 0x68) >= lbl_3_rodata_149C) {
             x += 0x1E;
-            if (a == 3) {
+            if ((u8)a == 3) {
                 x += 0x14;
             }
         }
@@ -1462,9 +1461,8 @@ int fn_3_842E4(int i) {
         }
         if (r[0x13E] == 2 && r[0x142] == 2) {
             idx = *(s16*)(fp + 0xBE) * 0x268;
-            y = x + fn_3_A6810(*(f32*)(f14 + idx), *(f32*)(f1c + idx), *(f32*)((u8*)lbl_3_data_4444 + a * 8), *(f32*)(t4 + a * 8));
-            y += 0x14;
-            return (*(s16*)(r + 0xEC) < y) ? -1 : -2;
+            y = x + 0x14 + fn_3_A6810(*(f32*)(f14 + idx), *(f32*)(f1c + idx), *(f32*)((u8*)lbl_3_data_4444 + a * 8), *(f32*)(t4 + a * 8));
+            return (*(s16*)(r + 0xEC) > y) ? -1 : -2;
         }
         return -1;
     }
