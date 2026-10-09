@@ -3,6 +3,8 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
+#include "Dolphin/mtx.h"
+#include <string.h>
 
 extern GXCullMode lbl_1_data_8C4[];
 extern void* lbl_1_data_848[3];
@@ -55,6 +57,15 @@ extern u8 lbl_1_bss_C2[];
 extern u8 lbl_1_data_85C[];
 
 extern u8 lbl_1_common_bss_472B4[];
+extern u8* lbl_803CC1B8[];
+extern void* lbl_80366158[];
+extern void* _OSAllocFromHeap(s32, s32);
+extern void fn_800B472C(void*);
+extern void fn_1_6848(u8*);
+extern const f32 lbl_1_rodata_1F0;
+extern const f32 lbl_1_rodata_1F4;
+extern const f32 lbl_1_rodata_1F8;
+typedef struct { u8 b[0x6C]; } Chal6C;
 extern void fn_1_4DD8(u16* effects);
 extern u8 lbl_803CBBC0;
 extern void fn_800A7D4C(int, void*);
@@ -227,4 +238,31 @@ void fn_1_6578(void* obj, void* image, s32 w, s32 h) {
     }
     GXInitTexObj(obj, image, w, h, GX_TF_IA8, GX_REPEAT, GX_REPEAT, sMipCount);
     GXInitTexObjLOD(obj, filter, GX_LINEAR, lbl_1_rodata_1A8, (f32)sMipCount, sLodBias, 0, 0, GX_ANISO_1);
+}
+
+// fn_1_66C4, size:0x184
+void fn_1_66C4(void) {
+    u8* object = lbl_803CC1B8[0];
+    s32 a;
+    s32 b;
+    fn_800AD038(lbl_80366158[2]);
+    *(s16*)(object + 0x10) = 0;
+    a = *(s8*)(lbl_1_common_bss_472B4 + 0x230);
+    b = *(s8*)(lbl_1_common_bss_472B4 + 0x231);
+    memset(lbl_1_common_bss_472B4, 0, 0x240);
+    *(u8*)(lbl_1_common_bss_472B4 + 0x230) = a;
+    *(u8*)(lbl_1_common_bss_472B4 + 0x231) = b;
+    *(void**)(lbl_1_common_bss_472B4 + 0x21C) = _OSAllocFromHeap(0x20, 0x80000);
+    *(f32*)(lbl_1_common_bss_472B4 + 0x4C) = lbl_1_rodata_1F0;
+    *(f32*)(lbl_1_common_bss_472B4 + 0x50) = lbl_1_rodata_1F4;
+    *(u16*)(lbl_1_common_bss_472B4 + 0x30) = 0xF36C;
+    *(f32*)(lbl_1_common_bss_472B4 + 0x54) = lbl_1_rodata_1F8;
+    *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = -1;
+    lbl_1_common_bss_472B4[0x234] = 0;
+    PSMTXIdentity((f32(*)[4])(lbl_1_common_bss_472B4 + 0x64));
+    *(void**)(lbl_1_common_bss_472B4 + 0x60) = fn_1_77EC;
+    *(Chal6C*)(lbl_1_common_bss_472B4 + 0xC8) = *(Chal6C*)(lbl_1_common_bss_472B4 + 0x5C);
+    *(void**)(lbl_1_common_bss_472B4 + 0x138) = fn_800B472C;
+    *(Chal6C*)(lbl_1_common_bss_472B4 + 0x1A0) = *(Chal6C*)(lbl_1_common_bss_472B4 + 0x134);
+    *(void**)lbl_803CC1B8[0] = fn_1_6848;
 }
