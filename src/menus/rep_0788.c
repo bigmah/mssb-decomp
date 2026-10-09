@@ -68,6 +68,11 @@ extern void* fn_2_4E858(void*);
 extern void fn_2_53F04(void*);
 extern void fn_2_5400C(void);
 extern void fn_2_53CEC(void*);
+
+// fn_2_26774, size:0xF0
+void fn_2_26774(MenuTableContext* menu, MenuItemState* item) {
+    fn_2_32C64(menu, item);
+}
 extern s16 fn_2_53BC8(void*);
 
 // fn_2_32C64, size:0xF0
