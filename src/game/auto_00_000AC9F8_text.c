@@ -10,6 +10,7 @@
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
 extern void fn_3_5F720(void);
+extern u8 lbl_3_data_10598[];
 extern void fn_3_5B408(void);
 extern u8 lbl_3_data_FAE8[];
 extern u8 lbl_3_data_FAF4[][4];
@@ -1005,6 +1006,64 @@ void fn_3_AFB64(void) {
         fn_3_59918(0xE, 0);
         lbl_3_common_bss_34C58._2A = 1;
         lbl_3_common_bss_34C58._24 = 0x3B;
+    }
+}
+
+// fn_3_B28A8, size:0x1F8
+void fn_3_B28A8(void) {
+    InputStruct* c = &g_Controls[g_Practice.homeAway];
+    switch (lbl_3_common_bss_34C90[0x1D3]) {
+    case 0:
+        lbl_3_common_bss_34C90[0x221] = 1;
+        lbl_3_common_bss_34C90[0x222] = 3;
+        lbl_3_common_bss_34C90[0x1D9] = 1;
+        lbl_3_common_bss_34C90[0x1D3] = 1;
+        break;
+    case 1:
+        if (fn_80035838(lbl_3_data_10598 + 0x20, 0x13) != 0) {
+            lbl_3_common_bss_34C90[0x1D3] = 2;
+        }
+        break;
+    case 2:
+        if (lbl_3_common_bss_34C90[0x1D9] == 3) {
+            lbl_3_common_bss_34C90[0x1D3] = 3;
+        }
+        break;
+    case 3:
+        lbl_3_common_bss_34C90[0x1D3] = 4;
+        break;
+    case 4:
+        if (lbl_3_common_bss_32724[0xC3] == 0) {
+            lbl_3_common_bss_34C90[0x1D3] = 5;
+        }
+        break;
+    case 5:
+        if (lbl_3_common_bss_32724[0xC3] == 0) {
+            if (c->newButtonInput & 0x200) {
+                lbl_3_common_bss_34C90[0x1D3] = 6;
+                sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+                return;
+            }
+            if ((*(u16*)((u8*)c + 8) & 1) && lbl_3_common_bss_34C90[0x221] != 0) {
+                lbl_3_common_bss_34C90[0x221] -= 1;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                return;
+            }
+            if ((*(u16*)((u8*)c + 8) & 2) && lbl_3_common_bss_34C90[0x221] < lbl_3_common_bss_34C90[0x222] - 1) {
+                lbl_3_common_bss_34C90[0x221] += 1;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+        break;
+    case 6:
+        lbl_3_common_bss_34C90[0x1D3] = 7;
+        break;
+    case 7:
+        if (lbl_3_common_bss_32724[0xC3] == 0) {
+            fn_80035B50(0x13);
+            lbl_3_common_bss_34C90[0x1D2] = 0;
+        }
+        break;
     }
 }
 
