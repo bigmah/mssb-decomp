@@ -769,6 +769,11 @@ extern u16 lbl_2_data_1F3B0[];
 extern s32 lbl_2_data_1F3E0[];
 extern s32 lbl_2_data_1F3E8[];
 
+static u16 s_dst[2][0x100];
+static u16 s_src[2][0x100];
+static u16 s_cnt1[2];
+static u16 s_cnt0[2];
+static u8 s_buf[0x4000];
 static s32 s_c[2];
 static s32 s_b[2];
 static s32 s_a[2];
@@ -780,4 +785,23 @@ void fn_2_5135C(u8* obj, s32 i) {
         s_a[i] = lbl_2_data_1F3E8[i];
         s_c[i] = ((s32*)(lbl_2_bss_1A824C[0] + 0x1954AC))[i];
     }
+}
+
+// fn_2_50D40, size:0x74
+void fn_2_50D40(s32 ch) {
+    u16 v;
+    u16* src;
+    if (s_cnt1[ch] != 0) {
+        s_cnt1[ch]--;
+    }
+    src = s_src[ch];
+    do {
+        s32 k = s_cnt1[ch];
+        v = *src++;
+        s_cnt1[ch]++;
+        s_dst[ch][k] = v;
+        if (s_cnt1[ch] == 0x100) {
+            return;
+        }
+    } while (!((v & 0x4000) && !(v & 0x3FFF)));
 }
