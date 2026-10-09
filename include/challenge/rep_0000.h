@@ -14,6 +14,7 @@ typedef struct {
 } ChallengeModelHeader;
 
 void fn_1_20(ChallengeModelHeader* model);
+void fn_1_E8(ChallengeModelHeader* model);
 void fn_1_1B0(u32* table, s32 count);
 void fn_1_568(void);
 void fn_1_58C(void);

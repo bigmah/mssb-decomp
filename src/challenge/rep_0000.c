@@ -45,3 +45,16 @@ void fn_1_20(ChallengeModelHeader* model) {
     haveActLayoutPointToGeoHeader((void*)model->actor, (void*)model->geometry);
     if (model->extra != 0) fn_80025DDC((void*)model->extra);
 }
+
+void fn_1_E8(ChallengeModelHeader* model) {
+    s32 i;
+    u32* p = (u32*)model;
+    for (i = 0; i < 5; i++) {
+        if (p[i] != 0) p[i] += (u32)model;
+    }
+    convertTextureHeader((void*)model->textures);
+    LoadActorLayout((void*)model->actor);
+    convertGeometryAndSknHeader((void*)model->geometry, (void*)model->skin);
+    haveActLayoutPointToGeoHeader((void*)model->actor, (void*)model->geometry);
+    if (model->extra != 0) fn_80025DDC((void*)model->extra);
+}
