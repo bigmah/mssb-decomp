@@ -320,8 +320,8 @@ s32 fn_2_5156C(s32 index, u16 flag) {
     }
 }
 
-extern s16 lbl_2_bss_9600[];
-extern s16 lbl_2_bss_9608[][0x100];
+extern u16 lbl_2_bss_9600[];
+extern u16 lbl_2_bss_9608[][0x100];
 
 // fn_2_50E5C, size:0xC4
 void fn_2_50E5C(s32 channel) {
@@ -801,6 +801,27 @@ void fn_2_50D40(s32 ch) {
         s_cnt1[ch]++;
         s_dst[ch][k] = v;
         if (s_cnt1[ch] == 0x100) {
+            return;
+        }
+    } while (!((v & 0x4000) && !(v & 0x3FFF)));
+}
+
+// fn_2_50DB4, size:0xA8
+void fn_2_50DB4(s32 ch, s32 idx, u16* src) {
+    u8* menu = *(u8**)&lbl_2_bss_1A824C;
+    u8* p = lbl_80366B18[menu[0x1972B8] + 0x1E6];
+    u16 v;
+    u16** q = (u16**)(p + 4);
+    if (lbl_2_bss_9600[ch] != 0) {
+        lbl_2_bss_9600[ch]--;
+    }
+    src = (idx == -1) ? src : q[idx];
+    do {
+        s32 k = lbl_2_bss_9600[ch];
+        v = *src++;
+        lbl_2_bss_9600[ch]++;
+        lbl_2_bss_9608[ch][k] = v;
+        if (lbl_2_bss_9600[ch] == 0x100) {
             return;
         }
     } while (!((v & 0x4000) && !(v & 0x3FFF)));
