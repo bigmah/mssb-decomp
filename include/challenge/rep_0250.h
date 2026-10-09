@@ -15,4 +15,6 @@ void fn_1_96D4(void);
 
 void fn_1_973C(void* object);
 
+void fn_1_8CD4(void);
+
 #endif
