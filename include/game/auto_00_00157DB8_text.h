@@ -11,5 +11,6 @@ void fn_3_1589C4(void);
 void fn_3_1590C8(void);
 void fn_3_159590(void);
 void fn_3_15AD94(void);
+void fn_3_15ADD4(void);
 
 #endif
