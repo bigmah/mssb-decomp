@@ -56,3 +56,17 @@ void fn_3_1293D0(void) {
     }
 }
 
+// fn_3_12C514, size:0xB8
+void fn_3_12C514(void) {
+    if (g_GameLogic[0x11E] == 0x1A && g_GameLogic[0x125] == 0) {
+        memset(g_Minigame + 0x1DF4, 0, 0xE);
+        fn_800B0A5C_insertQueue(fn_3_123990, 2);
+        fn_800B0A5C_insertQueue(fn_3_123EBC, 2);
+        fn_800B0A5C_insertQueue(fn_3_124CE0, 2);
+        fn_800B0A5C_insertQueue(fn_3_11E364, 2);
+        lbl_3_common_bss_32724[0xB7] = 0;
+        lbl_3_common_bss_32724[0xB6] = 0;
+        fn_800B0A5C_insertQueue(fn_3_125850, 2);
+    }
+}
+
