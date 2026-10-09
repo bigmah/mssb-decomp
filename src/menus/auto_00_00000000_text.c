@@ -39,3 +39,12 @@ void fn_2_160(void) {
 void fn_2_2D8(void) {
 }
 
+// fn_2_2DC, size:0x4C
+void fn_2_2DC(void) {
+    u8* q = lbl_2_bss_4;
+    u8 n = (q[0x15] + 1) % 32;
+    if (n != q[0x16]) {
+        q[0x15] = n;
+        q[q[0x15] + 0x17] = 2;
+    }
+}
