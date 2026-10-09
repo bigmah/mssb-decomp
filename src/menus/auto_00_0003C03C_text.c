@@ -81,3 +81,12 @@ void fn_2_422FC(s32 index) {
     memcpy(lbl_2_bss_15B8, lbl_2_data_12C0C[index], 0x4000);
     *(u8**)(lbl_2_bss_1A824C[0] + 0x197684) = lbl_2_bss_15B8;
 }
+
+// fn_2_42270, size:0x8C
+void fn_2_42270(s32 index) {
+    *(s32*)(lbl_2_bss_1A824C[0] + 0x197694) = 0;
+    *(s32*)(lbl_2_bss_1A824C[0] + 0x19768C) = 0;
+    *(s32*)(lbl_2_bss_1A824C[0] + 0x197690) = 0;
+    memcpy(lbl_2_bss_15B8, lbl_2_data_12CE8[index], 0x4000);
+    *(u8**)(lbl_2_bss_1A824C[0] + 0x197684) = lbl_2_bss_15B8;
+}
