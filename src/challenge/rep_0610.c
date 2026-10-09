@@ -499,3 +499,27 @@ void* fn_1_16590(void) {
     table = *(u8**)(table + 4);
     return ((ChallengeEntry*)table)[lbl_1_bss_6940[scene * 0x48 + 0x45]].data;
 }
+
+#include "Dolphin/OS/OSUtil.h"
+extern s32 lbl_1_bss_3084[];
+extern void fn_1_135C0(void);
+extern void fn_1_1770C(u8* object);
+
+// .text:0x168C8 size:0xB0
+void fn_1_168C8(void) {
+    u8* queue = lbl_803CC1B8[0];
+    if (lbl_1_bss_3084[0] == 0) {
+        lbl_1_bss_3084[0] = 1;
+        *(u32*)(queue + 0x1C) = OSGetTick();
+        fn_1_135C0();
+        *(u32*)(queue + 0x1C) = OSGetTick() - *(u32*)(queue + 0x1C);
+    } else {
+        lbl_1_bss_3084[0] = 0;
+        *(s16*)(queue + 0x10) = 0;
+        if (*(u32*)(*(u8**)(lbl_8036E548 + 0xC0C) + 0x10) != 0) {
+            *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_1770C;
+        } else {
+            *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_1770C;
+        }
+    }
+}
