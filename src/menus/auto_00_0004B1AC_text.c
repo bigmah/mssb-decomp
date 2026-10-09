@@ -331,3 +331,18 @@ void fn_2_50E5C(s32 channel) {
         lbl_2_bss_9608[channel][i] = 0;
     }
 }
+
+extern void fn_2_509A4(void);
+
+// fn_2_50CC0, size:0x80
+void fn_2_50CC0(s16 value) {
+    s16 zero = 0;
+    u8* q;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FD6) = value;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FCC) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FCA) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x19729E) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x19729C) = zero;
+    q = fn_800B0A5C_insertQueue((void*)fn_2_509A4, 4);
+    q[0x28] = 0;
+}
