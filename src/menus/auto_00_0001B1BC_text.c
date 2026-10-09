@@ -12,11 +12,96 @@ extern s32 fn_2_4EB2C(void);
 extern s32 fn_2_4EAF4(void);
 extern s32 fn_2_4E9A8(void);
 extern u8 lbl_800EF808[];
+extern void fn_2_8EA80(void);
+extern void fn_2_8E478(void);
+extern void fn_2_47CFC(void);
+extern void fn_2_8AEE0(void);
+extern void fn_2_8ACB0(s32, s32);
+extern void fn_2_68FBC(s32, s32);
+extern void fn_2_8CCAC(s32, u8);
 extern u8 lbl_80366B18[];
 extern void fn_2_68DAC(s32 index, void* result);
 extern void fn_80068720(s32);
 extern void fn_8001F228(void);
 extern void fn_80021410(void);
+
+// fn_2_1B314, size:0x218
+void fn_2_1B314(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    s32 i;
+    switch ((s8)o[0x28]) {
+    case 0:
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197746) = 7;
+        q = fn_800B0A5C_insertQueue(fn_2_8EA80, 2);
+        q[0x28] = 0;
+        *(s16*)(o + 0x10) = 0;
+        o[0x28] = 1;
+        break;
+    case 1:
+        if (*(s16*)(o + 0x10) == 1) {
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        q = fn_800B0A5C_insertQueue(fn_2_8E478, 2);
+        q[0x28] = 0;
+        *(s16*)(o + 0x10) = 0;
+        o[0x28] = 3;
+        break;
+    case 3:
+        if (*(s16*)(o + 0x10) == 1) {
+            o[0x28] = 0xC;
+        }
+        break;
+    case 4:
+        for (i = 0; i < *(s16*)(lbl_2_bss_1A824C[0] + 0x197746); i++) {
+            fn_2_8CCAC(i, 1);
+            fn_2_68FBC(i, 1);
+        }
+        o[0x28] = 5;
+        break;
+    case 5:
+        fn_2_47CFC();
+        o[0x28] = 6;
+        break;
+    case 6:
+        for (i = 0; i < *(s16*)(lbl_2_bss_1A824C[0] + 0x197746); i++) {
+            fn_2_8CCAC(i, 0);
+        }
+        fn_2_47CFC();
+        o[0x28] = 7;
+        break;
+    case 7:
+        fn_2_47CFC();
+        o[0x28] = 8;
+        break;
+    case 8:
+        o[0x28] = 9;
+        break;
+    case 9:
+        fn_2_8AEE0();
+        o[0x28] = 10;
+        break;
+    case 10:
+        for (i = 0; i < 0x1D; i++) {
+            fn_2_8ACB0(i, 0);
+        }
+        fn_2_8AEE0();
+        o[0x28] = 11;
+        break;
+    case 11:
+        fn_2_8AEE0();
+        o[0x28] = 12;
+        break;
+    case 12:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+}
 
 // fn_2_1B52C, size:0x94
 void fn_2_1B52C(void) {
