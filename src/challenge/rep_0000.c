@@ -19,3 +19,10 @@ void fn_1_1B0(u32* table, s32 count) {
     }
 }
 
+void fn_1_568(void) {
+    u8* queue = lbl_803CC1B8[0];
+    if (*(s16*)(queue + 0x10) == 1) {
+        *(void**)queue = (void*)fn_1_16A0;
+    }
+}
+
