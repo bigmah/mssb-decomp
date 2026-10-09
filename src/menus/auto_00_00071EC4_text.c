@@ -12,6 +12,7 @@ extern void fn_80062674(s32 index);
 extern void fn_800626EC(s32 index);
 extern void fn_800625A4(s32 a, s32 b);
 extern u8* lbl_803CC1B8;
+extern s32 fn_80042DA8(s32 a, s32 b, s32 c);
 extern void fn_80034E20(void* object, void* data);
 extern u8 lbl_800FEF70[];
 extern u8 lbl_80361B20[];
@@ -235,4 +236,21 @@ s32 fn_2_74DB8(s32 a) {
     default:
         return 0;
     }
+}
+
+// fn_2_75B58, size:0x8C
+u8 fn_2_75B58(s32 a, s32 index) {
+    s32 i;
+    s32 hits;
+    s32 total;
+    u8 n;
+    hits = 0;
+    total = 0;
+    i = 0;
+    n = lbl_8034E9A0[index + 0x470F];
+    for (; i < n; i++) {
+        total++;
+        hits += fn_80042DA8(a, i + 0x6E + index * 5, 0x1E) != 0;
+    }
+    return hits == total;
 }
