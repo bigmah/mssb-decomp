@@ -847,3 +847,13 @@ void fn_2_50F20(s32 ch, s32 idx, u16* src) {
         }
     } while (!((v & 0x4000) && !(v & 0x3FFF)));
 }
+
+// fn_2_50FC8, size:0xE0
+void fn_2_50FC8(s32 ch) {
+    s32 i = 0;
+    lbl_2_bss_9604[ch] = 0;
+    ((s16*)(lbl_2_bss_1A824C[0] + 0x196FCA))[ch] = 1;
+    for (; i < 0x100; i++) {
+        lbl_2_bss_9A08[ch][i] = 0;
+    }
+}
