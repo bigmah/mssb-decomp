@@ -15,6 +15,12 @@ extern const char* lbl_1_data_11424[];
 extern void fn_1_26D28(void*, u16, u16, u16, void*);
 extern void fn_1_27330(void*);
 
+static struct { u8 pad0[0x38]; s8 sel; u8 pad1[0xE7]; } sA = {{0}};
+static u32 sB = 1;
+static u32 sC[36] = {0};
+static struct { u8 pad0[0x30]; u32 v; u8 pad1[0x444]; } sD = {{0}};
+static ChallengeMenuItem* sE[2] = {0};
+
 // fn_1_2948C, size:0x15C
 static inline u8 NavigationMask(u16 held) {
     return (held & 0x800) ? 0x91 : ((held & 0x400) ? 0x50 : 0);
@@ -114,4 +120,41 @@ void fn_1_29A48(void) {
 // fn_1_289C0, size:0x20
 void fn_1_289C0(u8* object) {
     fn_1_273D8(object);
+}
+
+// fn_1_28C34, size:0xB4
+void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data) {
+    menu->data = data ? data : (void*)sB;
+    menu->capacity = 0x10;
+    menu->cursor = 0;
+    menu->selected = 0;
+    menu->flags = 1;
+    menu->items = sE[which];
+    if (which == 1) {
+        if (sD.v == 0) {
+            sD.v = sC[sA.sel];
+        }
+    }
+    menu->count = 0;
+    while (menu->items[menu->count].text != NULL) {
+        menu->count++;
+    }
+}
+
+// fn_1_28AE0, size:0x154
+s32 fn_1_28AE0(ChallengeSimulationMenu* menu) {
+    ChallengeQueueEntry* entry = lbl_803CC1B8;
+    entry->selection = menu->items[menu->selected].selection;
+    if (entry->selection < 0) {
+        fn_800AD038(lbl_80366158[2]);
+        fn_800A97D0(16, 30);
+        {
+            ChallengeQueueState* state = lbl_803CC1B8->state;
+            state->state = 1;
+            fn_800B0A14_removeQueue(state);
+        }
+    } else {
+        fn_1_28C34(menu, entry->selection, (void*)menu->items[menu->selected].text);
+    }
+    return 0;
 }

@@ -30,4 +30,10 @@ void fn_1_7E04(f32 scale);
 
 void fn_1_717C(ChallengeModelOffsets* model);
 
+void fn_1_7280(void);
+
+void fn_1_6578(void* obj, void* image, s32 width, s32 height);
+
+void fn_1_66C4(void);
+
 #endif

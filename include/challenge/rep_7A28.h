@@ -9,4 +9,18 @@ void fn_1_27E50(void);
 
 void fn_1_27560(s32 value);
 
+void fn_1_27AD4(void);
+
+void fn_1_27D6C(void);
+
+void fn_1_28118(void);
+
+void fn_1_28200(void);
+
+void fn_1_27594(void);
+
+void fn_1_27BB8(void);
+
+void fn_1_27E98(void);
+
 #endif

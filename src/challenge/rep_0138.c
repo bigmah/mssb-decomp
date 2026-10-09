@@ -3,6 +3,8 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
+#include "Dolphin/mtx.h"
+#include <string.h>
 
 extern GXCullMode lbl_1_data_8C4[];
 extern void* lbl_1_data_848[3];
@@ -55,7 +57,32 @@ extern u8 lbl_1_bss_C2[];
 extern u8 lbl_1_data_85C[];
 
 extern u8 lbl_1_common_bss_472B4[];
+extern u8* lbl_803CC1B8[];
+extern void* lbl_80366158[];
+extern void* _OSAllocFromHeap(s32, s32);
+extern void fn_800B472C(void*);
+extern void fn_1_6848(u8*);
+extern const f32 lbl_1_rodata_1F0;
+extern const f32 lbl_1_rodata_1F4;
+extern const f32 lbl_1_rodata_1F8;
+typedef struct { u8 b[0x6C]; } Chal6C;
 extern void fn_1_4DD8(u16* effects);
+extern u8 lbl_803CBBC0;
+extern void fn_800A7D4C(int, void*);
+extern const f32 lbl_1_rodata_204;
+typedef struct { u8 b[8]; } Chal8;
+static u8 sPad[0x5E4] = {1};
+static Chal8 sTabA[3] = {{{1}}};
+static Chal8 sTabB[2] = {{{1}}};
+static Chal8 sTabC[2] = {{{1}}};
+static u8 sPad2[0x15C] = {1};
+static u8 sMipCount = 1;
+static f32 sMipScale[4] = {1.0f};
+static f32 sLodBias = 1.0f;
+static GXTexFilter sMinFilter = GX_LINEAR;
+extern void fn_1_6050(void*, s32, s32, f32);
+extern const f32 lbl_1_rodata_1A8;
+extern const f64 lbl_1_rodata_1E8;
 
 // fn_1_717C, size:0x104
 void fn_1_717C(ChallengeModelOffsets* model) {
@@ -164,4 +191,78 @@ void fn_1_5540(void) {
 void fn_1_7848(void) {
     fn_80048C28();
     fn_80048C1C();
+}
+
+// fn_1_7280, size:0x138
+void fn_1_7280(void) {
+    u8* p;
+    u8* q;
+    p = lbl_1_common_bss_472B4 + lbl_803CBBC0 * 0x6C + 0x5C;
+    PSMTXCopy((f32(*)[4])lbl_1_common_bss_472B4, (f32(*)[4])(p + 0x38));
+    fn_800A7D4C(0, &sTabC[lbl_803CBBC0]);
+    fn_800A7D4C(0, p);
+    fn_800A7D4C(0, &sTabB[lbl_803CBBC0]);
+    q = lbl_1_common_bss_472B4 + lbl_803CBBC0 * 0x6C + 0x134;
+    PSMTXRotRad((f32(*)[4])(q + 8), 0x59, lbl_1_rodata_204 * (f32)*(u16*)(lbl_1_common_bss_472B4 + 0x23A));
+    PSMTXCopy((f32(*)[4])lbl_1_common_bss_472B4, (f32(*)[4])(q + 0x38));
+    fn_800A7D4C(0, q);
+    fn_800A7D4C(0, &sTabA[lbl_803CBBC0]);
+}
+
+// fn_1_6578, size:0x14C
+void fn_1_6578(void* obj, void* image, s32 w, s32 h) {
+    GXTexFilter filter;
+    f32* scale;
+    s32 w0;
+    s32 h0;
+    s32 offset;
+    s32 level;
+    w0 = w;
+    h0 = h;
+    offset = 0;
+    if (sMipCount == 0) {
+        w = w / 4;
+        h = h / 4;
+        fn_1_6050(image, w, h, lbl_1_rodata_1D8);
+        filter = GX_LINEAR;
+    } else {
+        scale = sMipScale;
+        for (level = 0; level <= sMipCount; level++) {
+            fn_1_6050((u8*)image + offset * 2, w0, h0, *scale);
+            offset += w0 * h0;
+            w0 /= 2;
+            h0 /= 2;
+            scale++;
+        }
+        filter = sMinFilter;
+    }
+    GXInitTexObj(obj, image, w, h, GX_TF_IA8, GX_REPEAT, GX_REPEAT, sMipCount);
+    GXInitTexObjLOD(obj, filter, GX_LINEAR, lbl_1_rodata_1A8, (f32)sMipCount, sLodBias, 0, 0, GX_ANISO_1);
+}
+
+// fn_1_66C4, size:0x184
+void fn_1_66C4(void) {
+    u8* object = lbl_803CC1B8[0];
+    s32 a;
+    s32 b;
+    fn_800AD038(lbl_80366158[2]);
+    *(s16*)(object + 0x10) = 0;
+    a = *(s8*)(lbl_1_common_bss_472B4 + 0x230);
+    b = *(s8*)(lbl_1_common_bss_472B4 + 0x231);
+    memset(lbl_1_common_bss_472B4, 0, 0x240);
+    *(u8*)(lbl_1_common_bss_472B4 + 0x230) = a;
+    *(u8*)(lbl_1_common_bss_472B4 + 0x231) = b;
+    *(void**)(lbl_1_common_bss_472B4 + 0x21C) = _OSAllocFromHeap(0x20, 0x80000);
+    *(f32*)(lbl_1_common_bss_472B4 + 0x4C) = lbl_1_rodata_1F0;
+    *(f32*)(lbl_1_common_bss_472B4 + 0x50) = lbl_1_rodata_1F4;
+    *(u16*)(lbl_1_common_bss_472B4 + 0x30) = 0xF36C;
+    *(f32*)(lbl_1_common_bss_472B4 + 0x54) = lbl_1_rodata_1F8;
+    *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = -1;
+    lbl_1_common_bss_472B4[0x234] = 0;
+    PSMTXIdentity((f32(*)[4])(lbl_1_common_bss_472B4 + 0x64));
+    *(void**)(lbl_1_common_bss_472B4 + 0x60) = fn_1_77EC;
+    *(Chal6C*)(lbl_1_common_bss_472B4 + 0xC8) = *(Chal6C*)(lbl_1_common_bss_472B4 + 0x5C);
+    *(void**)(lbl_1_common_bss_472B4 + 0x138) = fn_800B472C;
+    *(Chal6C*)(lbl_1_common_bss_472B4 + 0x1A0) = *(Chal6C*)(lbl_1_common_bss_472B4 + 0x134);
+    *(void**)lbl_803CC1B8[0] = fn_1_6848;
 }
