@@ -1006,3 +1006,48 @@ void fn_2_4CD30(void) {
     g_d_GameSettings.bJMatchRelated = lbl_2_bss_1A8248[0][0x4418];
     fn_2_4C6A8();
 }
+
+extern int rand();
+
+extern u8 lbl_2_data_3CC0[];
+
+// fn_2_4CEE0, size:0x2B4
+void fn_2_4CEE0(void) {
+    GameInitVariables* g = &g_d_GameSettings;
+    u8* m;
+    u32 v;
+    g->exhibitionMatchInd = 0;
+    g->bJMatchInd = 1;
+    g_d_GameSettings.home_AwaySetting = rand() % 2;
+    g_d_GameSettings.bJMatchRelated = lbl_2_bss_1A8248[0][0x4418];
+    g_d_GameSettings.challengeDifficulty = lbl_2_bss_1A8248[0][0x4415];
+    fn_2_4C6A8();
+    m = lbl_2_bss_1A8248[0];
+    v = m[*(s16*)(m + 0x16C2) * 10 + 0x40F0];
+    if (v >= 6) {
+        if (*(s16*)(m + 0x16C0) == 3) {
+            if (v == 0) {
+                g->StadiumID = 0;
+                g->miniGameStadiumIndicator = 0;
+            } else if (v == 1) {
+                g->StadiumID = 1;
+                g->miniGameStadiumIndicator = 0;
+            } else {
+                g->StadiumID = 4;
+                g->miniGameStadiumIndicator = 0;
+            }
+        } else if (v == 2) {
+            g->StadiumID = 2;
+            g->miniGameStadiumIndicator = 0;
+        } else if (v == 3) {
+            g->StadiumID = 3;
+            g->miniGameStadiumIndicator = 0;
+        } else {
+            g->StadiumID = 5;
+            g->miniGameStadiumIndicator = 0;
+        }
+    } else {
+        g->miniGameStadiumIndicator = 0;
+        g->StadiumID = lbl_2_data_3CC0[v];
+    }
+}
