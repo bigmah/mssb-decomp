@@ -28,6 +28,9 @@ extern void fn_3_6714C(s32 player);
 extern void fn_3_B3A4C(void);
 extern u8 lbl_80366158[];
 extern u8 lbl_8037169C[];
+extern u8 lbl_800EFBA4[];
+extern s32 sndFXStartEx(s32, u8, u8, u8);
+extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_803CBC3C;
 extern void fn_3_BF1AC(void);
 extern void fn_3_BF158(void);
@@ -379,4 +382,26 @@ void fn_3_AFA64(void) {
     }
     fn_3_31594();
     fn_3_8A958();
+}
+
+// fn_3_AC9F8, size:0x100
+void fn_3_AC9F8(void) {
+    if (lbl_3_common_bss_32724[0xC3] == 0) {
+        if (*(u16*)(lbl_3_common_bss_34C90 + 6) & 0x200) {
+            lbl_3_common_bss_34C90[0x1D2] = 5;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            return;
+        }
+        if (g_d_GameSettings.GameModeSelected != 6) {
+            if ((*(u16*)(lbl_3_common_bss_34C90 + 8) & 1) && lbl_3_common_bss_34C90[0x221] != 0) {
+                lbl_3_common_bss_34C90[0x221] -= 1;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                return;
+            }
+            if ((*(u16*)(lbl_3_common_bss_34C90 + 8) & 2) && lbl_3_common_bss_34C90[0x221] < lbl_3_common_bss_34C90[0x222] - 1) {
+                lbl_3_common_bss_34C90[0x221] += 1;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+    }
 }
