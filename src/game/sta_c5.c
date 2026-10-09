@@ -1581,7 +1581,8 @@ void fn_3_F66C8(s32* n) {
         zmin = zmax = e[1];
         pt = (P2*)e;
         for (j = 1; j < 4; j++) {
-            pt++;
+            pt = (P2*)e;
+            pt += j;
             t = pt->x;
             if (xmin > t) xmin = t; else if (xmax < t) xmax = t;
             t = pt->z;
