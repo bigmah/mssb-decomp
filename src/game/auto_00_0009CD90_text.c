@@ -257,3 +257,49 @@ s32 fn_3_9E368(s32* weights, s32 n) {
     }
     return 0;
 }
+
+// RandomIndexFromWeights, size:0x234
+s32 RandomIndexFromWeights(u8* weights, s32 n) {
+    s32 buf[10];
+    s32 i;
+    s32 total;
+    s32 sum;
+    s32 r;
+    s32 rem;
+    sum = 0;
+    for (i = 0; i < n; i++) {
+        buf[i] = weights[i];
+        sum += buf[i];
+    }
+    total = sum;
+    if (sum < 0) {
+        total = -sum;
+    }
+    if (total <= 1) {
+        r = 0;
+    } else {
+        *(s32*)(g_Ball + 0x1B4C) = *(s32*)(g_Ball + 0x1B4C) - (*(s32*)(g_Ball + 0x1B50) & 0xFF) + *(s32*)(g_Ball + 0x1B50) / total + *(s16*)(g_Ball + 0x1B64);
+        if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0) {
+            r = 0;
+        } else {
+            if (g_d_GameSettings[7] == 7) {
+                *(s32*)(g_Ball + 0x1B4C) = *(s32*)(g_Ball + 0x1B4C) + rand();
+            }
+            r = *(s32*)(g_Ball + 0x1B4C) % total;
+            if (r < 0) {
+                r = -r;
+            }
+            if (sum < 0) {
+                r = -r;
+            }
+        }
+    }
+    rem = r;
+    for (i = 0; i < n; i++) {
+        if (rem < buf[i]) {
+            return i;
+        }
+        rem -= buf[i];
+    }
+    return 0;
+}
