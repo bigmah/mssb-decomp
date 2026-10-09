@@ -140,3 +140,20 @@ void fn_2_24650(void) {
     *(s16*)(object + 0x1E) = 0;
     fn_2_54234(lbl_2_data_104EC, 2);
 }
+
+// fn_2_1FF14, size:0xB0
+void fn_2_1FF14(s32 count) {
+    u16* repeat = (u16*)((u8*)&lbl_803C77B8 + 4);
+    if (repeat[MENU_INPUT_CONTEXT->port * 16] & 8) {
+        MENU_INPUT_CONTEXT->secondarySelection--;
+        if (MENU_INPUT_CONTEXT->secondarySelection < 0) {
+            MENU_INPUT_CONTEXT->secondarySelection = count - 1;
+        }
+    }
+    if (repeat[MENU_INPUT_CONTEXT->port * 16] & 4) {
+        MENU_INPUT_CONTEXT->secondarySelection++;
+        if (MENU_INPUT_CONTEXT->secondarySelection >= count) {
+            MENU_INPUT_CONTEXT->secondarySelection = 0;
+        }
+    }
+}

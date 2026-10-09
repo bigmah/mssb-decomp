@@ -6,7 +6,8 @@
 typedef struct {
     u8 padding[0x1976A0];
     s32 selection;
-    u8 padding1976A4[0x1BF];
+    s32 secondarySelection;
+    u8 padding1976A8[0x1BB];
     s8 port;
 } MenuInputContext;
 
@@ -45,5 +46,7 @@ void fn_2_245C8(void);
 void fn_2_24650(void);
 
 void fn_2_1FFC4(s32 count);
+
+void fn_2_1FF14(s32 count);
 
 #endif
