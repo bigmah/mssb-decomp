@@ -293,3 +293,31 @@ void fn_3_10AE18(void) {
     }
     fn_3_5A6D4(0x1A);
 }
+
+// fn_3_10768C, size:0xF8
+void fn_3_10768C(void) {
+    switch (g_GameLogic[0x125]) {
+    case 0:
+        g_Minigame[0x1A2A] = g_Minigame[0x1E1C + g_Minigame[0x1E2A]++];
+        changeScene(1, 6);
+        g_GameLogic[0x125] = 1;
+        break;
+    case 1:
+        if (*(u16*)(*(u8**)(g_Minigame + 0x1E04) + 0x1A) != 0) {
+            changeScene(3, 6);
+            g_GameLogic[0x125] = 2;
+        }
+        break;
+    case 2:
+        if (lbl_8037169C[0x13] != 0) {
+            g_GameLogic[0x125] = 3;
+        }
+        break;
+    case 3:
+        g_GameLogic[0x125] = 4;
+        break;
+    case 4:
+        fn_3_5A6D4(0x21);
+        break;
+    }
+}

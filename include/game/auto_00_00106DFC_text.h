@@ -25,5 +25,6 @@ u8 fn_3_107CD0(void);
 void fn_3_1078F8(void);
 void fn_3_10AD48(void);
 void fn_3_10AE18(void);
+void fn_3_10768C(void);
 
 #endif
