@@ -99,4 +99,6 @@ void fn_2_33E70(u8* a, u8* b);
 
 void fn_2_36D04(u8* a, u8* b);
 
+void fn_2_36750(u8* a, u8* b);
+
 #endif
