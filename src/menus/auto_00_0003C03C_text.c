@@ -138,3 +138,15 @@ s32 fn_2_44368(void) {
     }
     return count >= 5;
 }
+
+// fn_2_42638, size:0xD0
+void fn_2_42638(void) {
+    s32 i;
+    u8* d;
+    u8* s;
+    for (i = 0; i < 20; i++) {
+        d = lbl_2_bss_1A824C[0] + 0x1978C7;
+        s = lbl_2_bss_1A8248[0] + 0x43C2;
+        d[i] = s[i];
+    }
+}

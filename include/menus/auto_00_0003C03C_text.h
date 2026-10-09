@@ -36,4 +36,6 @@ s32 fn_2_442E8(void);
 
 s32 fn_2_44368(void);
 
+void fn_2_42638(void);
+
 #endif
