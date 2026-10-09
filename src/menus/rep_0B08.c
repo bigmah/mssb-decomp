@@ -898,3 +898,12 @@ void fn_2_6D4F8(u8* object) {
         *(s16*)(object + 0x94) = 2;
     }
 }
+
+// fn_2_6D088
+void fn_2_6D088(u8* object) {
+    if (fn_2_8CC88(*(s32*)(object + 0x84)) != 0) {
+        fn_2_68FBC(*(s32*)(object + 0x80), 7);
+        *(s16*)(object + 0xA2) = 0x1E;
+        *(s16*)(object + 0x94) = 2;
+    }
+}
