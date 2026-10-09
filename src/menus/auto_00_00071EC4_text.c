@@ -5,6 +5,7 @@
 extern u8 lbl_803CBBC4[];
 extern u8 lbl_803CBCD8[];
 extern u8 lbl_80371C30[];
+extern u8 lbl_2_bss_F468[];
 extern u8* lbl_2_bss_1A8248[];
 extern u8 lbl_803C66B0[];
 extern u8 lbl_8034E978[];
@@ -474,6 +475,16 @@ void fn_2_74564(s32 a) {
             fn_80062674(0);
             lbl_803C66B0[7] = 2;
             fn_800625A4(0, 0x57);
+        }
+    }
+}
+
+// fn_2_7EF68, size:0xC8
+void fn_2_7EF68(u8* o, s32 index) {
+    s32 i;
+    for (i = 0; i < 9; i++) {
+        if (i == ((s32*)lbl_2_bss_F468)[index]) {
+            *(u32*)(((u8**)lbl_80371C30)[(0x22 + *(u16*)(o + 0x14) + i + index * 9) * 2] + 0x54) |= 2;
         }
     }
 }
