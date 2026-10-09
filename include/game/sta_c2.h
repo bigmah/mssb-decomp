@@ -4,7 +4,7 @@
 #include "mssbTypes.h"
 #include "Dolphin/vec.h"
 
-void fn_3_CB8A8(void);
+void fn_3_CB8A8(u8*);
 void fn_3_CBA9C(u8* p);
 void fn_3_CBAFC(u8* p);
 void fn_3_CBC18(void);

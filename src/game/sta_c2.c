@@ -101,6 +101,7 @@ extern Vec lbl_3_bss_A820[];
 extern u8 g_FieldingLogic[];
 extern u8 g_GameLogic[];
 extern u8 g_d_GameSettings[];
+extern void fn_80025EEC(s32, s32, s32);
 extern void fn_3_65A8(void);
 extern void fn_3_27648(void);
 extern s32 fn_3_8BBC4(s32, f32*, f32*, s32);
@@ -145,9 +146,59 @@ extern const f64 lbl_3_rodata_2748;
 extern void fn_800B4CA0(void*, f32);
 extern void fn_80025EEC(s32, s32, s32);
 
+static inline void CC1D4_inl(void) {
+    Mtx m;
+    Vec v;
+    u32 i;
+    u32 n;
+    u8* e;
+    u8* o;
+    u32 k;
+    u8* r;
+    f32 a;
+    a = shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8));
+    PSMTXRotRad(m, 0x59, lbl_3_rodata_2658[0] * -a);
+    v.x = lbl_3_rodata_265C;
+    v.y = lbl_3_rodata_2660;
+    v.z = lbl_3_rodata_2664;
+    PSMTXMultVec(m, &v, &v);
+    i = 0;
+    e = *(u8**)lbl_3_common_bss_350E4;
+    n = *(u32*)(lbl_3_common_bss_350E4 + 0x30);
+    for (; i < n; i++) {
+        if (e[0x9D] == 1) break;
+        e += 0xE8;
+    }
+    for (k = i; k < i + 3; k++) {
+        o = *(u8**)lbl_3_common_bss_350E4 + k * 0xE8;
+        CTRLSetTranslation((Control*)o, *(f32*)(g_Minigame + 0x1AE0) + v.x, *(f32*)(g_Minigame + 0x1AE4) - v.y, *(f32*)(g_Minigame + 0x1AE8) + v.z);
+        r = *(u8**)(o + 0x74);
+        *(s8*)(o + 0xAC) = (k % 3) * 0x1E;
+        *(f32*)(o + 0xA0) = 0.0f;
+        *(f32*)(r + 0x5C) = *(f32*)(o + 0xA0);
+        r[0x59] = 1;
+        fn_800B4CA0(*(void**)r, *(f32*)(r + 0x5C));
+    }
+}
+
 // .text:0x000CB8A8 size:0x1F4 mapped:0x8070A93C
-void fn_3_CB8A8(void) {
-    return;
+void fn_3_CB8A8(u8* p) {
+    switch (p[0xCA]) {
+    case 0:
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+        CC1D4_inl();
+        break;
+    case 3:
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 4);
+        break;
+    case 1:
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 3);
+        break;
+    case 2:
+    default:
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        break;
+    }
 }
 
 // .text:0x000CBA9C size:0x60 mapped:0x8070AB30
