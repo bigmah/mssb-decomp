@@ -964,4 +964,48 @@ u8 fn_3_B3448(void) {
     return r;
 }
 
+// fn_3_AFB64, size:0x1E4
+void fn_3_AFB64(void) {
+    u8* u;
+    if (lbl_8036E548[0x2D46] == 0 && lbl_8036E548[0x2D52] == 0 && lbl_8036E548[0x2D5E] == 0 &&
+        (g_d_GameSettings.exhibitionMatchInd != 0 || lbl_3_common_bss_32724[0xB3] == 0) &&
+        g_Pitcher.pitchTotalTimeCounter <= 0 && lbl_3_common_bss_34C90[0x1D5] == 0 && g_Pitcher.pitcherActionState != 2) {
+        lbl_3_common_bss_34C90[0x201] = 0;
+        if ((lbl_3_common_bss_34C90 + 0x202)[g_GameLogic.teamFielding] != 0) {
+            lbl_3_common_bss_34C90[0x1D8] = 0;
+            (lbl_3_common_bss_34C90 + 0x202)[g_GameLogic.teamFielding] = 0;
+            lbl_3_common_bss_34C90[0x204 + g_GameLogic.teamFielding] = 0;
+            goto start;
+        }
+        if ((lbl_3_common_bss_34C90 + 0x202)[g_GameLogic.teamBatting] != 0) {
+            lbl_3_common_bss_34C90[0x1D8] = 1;
+            (lbl_3_common_bss_34C90 + 0x202)[g_GameLogic.teamBatting] = 0;
+            lbl_3_common_bss_34C90[0x204 + g_GameLogic.teamBatting] = 0;
+            goto start;
+        }
+        u = (u8*)&g_GameLogic + 0x13E;
+        if (u[g_GameLogic.teamFielding] == 0 &&
+            (g_Controls[g_GameLogic.teams[g_GameLogic.teamFielding]].newButtonInput & 0x1000)) {
+            lbl_3_common_bss_34C90[0x1D8] = 0;
+            goto start;
+        }
+        if (u[g_GameLogic.teamBatting] == 0 &&
+            (g_Controls[g_GameLogic.teams[g_GameLogic.teamBatting]].newButtonInput & 0x1000)) {
+            lbl_3_common_bss_34C90[0x1D8] = 1;
+            goto start;
+        }
+        return;
+    start:
+        lbl_3_common_bss_34C90[0x1D5] = 1;
+        lbl_3_common_bss_34C90[0x1D1] = 0;
+        lbl_3_common_bss_34C90[0x1D2] = 0;
+        *(s16*)(lbl_3_common_bss_34C90 + 0xC) = 0;
+        *(s16*)(lbl_3_common_bss_34C90 + 0xE) = 0;
+        *(s16*)(lbl_3_common_bss_34C90 + 0x10) = 0;
+        fn_3_59918(0xE, 0);
+        lbl_3_common_bss_34C58._2A = 1;
+        lbl_3_common_bss_34C58._24 = 0x3B;
+    }
+}
+
 #pragma dont_inline off
