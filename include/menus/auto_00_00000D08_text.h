@@ -3,4 +3,6 @@
 
 #include "mssbTypes.h"
 
+void fn_2_D08(u16 ch, u16 time, u8 mode);
+
 #endif
