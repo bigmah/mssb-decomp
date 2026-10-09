@@ -6,6 +6,16 @@ extern void fn_800A7D4C(s32, void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_800B0A14_removeQueue(void);
 
+extern void fn_8001F228(void);
+extern void fn_80062744(void);
+extern void fn_8001E474(void);
+extern void fn_80036C88(void*, void*);
+extern void fn_800B0D28(void*);
+extern struct {
+    u8 pad[0x28];
+    u16 menu[0x10];
+} lbl_800E8754;
+extern u8 lbl_2_data_0[];
 extern u8 lbl_2_data_C0[];
 extern u8* lbl_2_bss_4;
 
@@ -28,6 +38,8 @@ void fn_2_3C(void) {
     fn_800A7D4C(0, lbl_2_data_C0);
 }
 
+// NOTE fn_2_110: 6 diff lines (sthx r4,r7,r0 with addi r0,r3,0xc index; ours folds to sth 0xC(r3))
+
 // fn_2_160, size:0x48
 void fn_2_160(void) {
     *(u16*)(lbl_803CBBCC[0] + 0xC) |= *(u16*)((u8*)lbl_803C77B8 + 2);
@@ -48,3 +60,14 @@ void fn_2_2DC(void) {
         q[q[0x15] + 0x17] = 2;
     }
 }
+
+// fn_2_328, size:0x4C
+void fn_2_328(void) {
+    u8* q = lbl_2_bss_4;
+    u8 n = (q[0x15] + 1) % 32;
+    if (n != q[0x16]) {
+        q[0x15] = n;
+        q[q[0x15] + 0x17] = 1;
+    }
+}
+
