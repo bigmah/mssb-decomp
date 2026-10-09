@@ -599,3 +599,19 @@ void fn_2_53CEC(u8* menu) {
         }
     }
 }
+
+// fn_2_53DF8, size:0x10C
+void fn_2_53DF8(u8* menu) {
+    MenuDrawEntry* entry;
+    s32 row;
+    s32 column;
+    for (row = 0; row < 70; row++) {
+        for (column = 0; column < 864; column++) {
+            entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8234[0])[row][column];
+            if (entry->draw != NULL) {
+                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].object[0x68] = 0;
+                *(u32*)(lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].object + 0x54) &= ~2;
+            }
+        }
+    }
+}
