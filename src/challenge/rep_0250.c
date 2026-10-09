@@ -1,8 +1,13 @@
 #include "challenge/rep_0250.h"
 
 
-extern void fn_1_9380(void* object);
 #include "static/UnknownHomes_Static.h"
+static u8 ch_data_AB0[0xD4] = {1};
+static s32 ch_B84 = 1;
+static u8 ch_padB88[0x40] = {1};
+static u8 ch_BC8[0xA0] = {1};
+static u8 ch_C68[0x356] = {1};
+static u16 ch_FBE = 1;
 extern u8* lbl_803CC1B8[];
 extern u8 lbl_1_bss_2FAA;
 extern u8 lbl_1_bss_2FB9;
@@ -19,6 +24,8 @@ extern void fn_80035EEC(s32, s32);
 extern u8 lbl_1_bss_2FA8[];
 extern u8 lbl_1_data_BC8[];
 extern void fn_8003664C(u8, s32, u16, s32);
+extern u16 fn_80036824(u8, s32, s32);
+extern void fn_1_9290(void);
 extern u8 lbl_8039C3E0[];
 
 // .text:0x96D0 size:0x4
@@ -163,4 +170,54 @@ void fn_1_90E4(s32 value) {
     value %= 100;
     *(s32*)(lbl_80371C30[*(u16*)(lbl_1_bss_2FCC + 0x14) * 2 + 4] + 0x5C) = 0x100000;
     fn_8003664C(lbl_1_data_BC8[0x14], 2, (u16)(value / 10 + 10), 6);
+}
+
+// .text:0x9380 size:0x324
+void fn_1_9380(void* object) {
+    u8* queue;
+    u8* b;
+    u8 id;
+    s32 value;
+    u8* p;
+    b = lbl_1_bss_2FA8;
+    queue = *(u8**)lbl_803CC1B8;
+    p = ch_BC8;
+    id = p[0x14];
+    *(u8**)(b + 0x24) = queue;
+    if (b[7] == 0) {
+        fn_80034E20(queue, p);
+        { u16 n = fn_80036824(id, 1, 4); fn_8003664C(id, 0, n, 2); }
+        fn_8003664C(id, 1, 0x11, 3);
+    } else if (b[7] == 1) {
+        fn_80034E20(queue, p);
+        value = ch_B84;
+        *(s32*)(lbl_80371C30[*(u16*)(*(u8**)(b + 0x24) + 0x14) * 2] + 0x5C) = 0x80000;
+        fn_8003664C(id, 0, (u16)(value / 1000 + 10), 4);
+        value %= 1000;
+        *(s32*)(lbl_80371C30[*(u16*)(*(u8**)(b + 0x24) + 0x14) * 2 + 2] + 0x5C) = 0xC0000;
+        fn_8003664C(id, 1, (u16)(value / 100 + 10), 5);
+        value %= 100;
+        *(s32*)(lbl_80371C30[*(u16*)(*(u8**)(b + 0x24) + 0x14) * 2 + 4] + 0x5C) = 0x100000;
+        fn_8003664C(id, 2, (u16)(value / 10 + 10), 6);
+    } else {
+        s16* result;
+        u8* p2;
+        fn_80034E20(queue, ch_C68);
+        p2 = ch_C68;
+        result = fn_80035F20(p2[0x14], 1, *(u16*)(b + 0x18), -1);
+        *(f32*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x48) = result[0x14 / 2] / 2;
+        *(f32*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x4C) = result[0x16 / 2] / 2;
+        fn_80035ED0(1);
+        fn_8003664C(p2[0x14], 0, ch_FBE, 1);
+        *(u16*)(b + 0x18) += 1;
+        if (*(u16*)(b + 0x18) > 7) {
+            *(u16*)(b + 0x18) = 0;
+        }
+        ch_FBE += 1;
+        if (ch_FBE > 9) {
+            ch_FBE = 0;
+        }
+    }
+    *(u16*)(queue + 0x18) = 0;
+    **(void***)lbl_803CC1B8 = (void*)fn_1_9290;
 }
