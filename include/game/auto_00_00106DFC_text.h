@@ -15,5 +15,6 @@ void fn_3_10FB74(void);
 void fn_3_10C7A4(void);
 void fn_3_10B200(void);
 void fn_3_10A01C(void);
+u8 fn_3_107D70(s8 i);
 
 #endif
