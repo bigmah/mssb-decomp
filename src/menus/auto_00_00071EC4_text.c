@@ -331,3 +331,17 @@ void fn_2_72DDC(s32 a) {
         }
     }
 }
+
+// fn_2_7293C, size:0xA4
+void fn_2_7293C(s32 a) {
+    if ((lbl_803CBBC4[3] == 1) ? 1 : 0) {
+        s32 n = 0;
+        n += fn_80042DA8(a, 0, 0x19) != 0;
+        n += fn_80042DA8(a, 1, 0x19) != 0;
+        if (n == 2) {
+            lbl_803CBBC4[3] = 0;
+            lbl_803CBBC4[2] = 0;
+            lbl_803CBBC4[0] = 0;
+        }
+    }
+}
