@@ -132,6 +132,8 @@ void fn_2_31D94(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_31538(MenuTableContext* menu, MenuItemState* item);
 
+void fn_2_27824(MenuTableContext* menu, MenuItemState* item);
+
 void fn_2_2A21C(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_2D508(MenuTableContext* menu, MenuItemState* item);
