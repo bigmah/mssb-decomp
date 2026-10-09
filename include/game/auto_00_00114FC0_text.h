@@ -4,6 +4,7 @@
 #include "mssbTypes.h"
 
 void fn_3_114FC0(void);
+void fn_3_11502C(void);
 void fn_3_115828(void);
 void fn_3_1158B0(void);
 void fn_3_1158F8(void);
