@@ -1,11 +1,25 @@
 #include "menus/rep_0568.h"
 
 #include <string.h>
+#include "Dolphin/GX.h"
+#include "Dolphin/mtx.h"
 extern u8 lbl_8036E548[];
 extern u8 lbl_2_bss_100B8[];
 
 extern u8 lbl_8036E548[];
 extern u8 lbl_2_bss_100B8[];
+extern u8* lbl_2_bss_1224;
+extern void fn_2_18398(void);
+extern void fn_2_188EC(void);
+extern const f32 lbl_2_rodata_5BC;
+extern const f32 lbl_2_rodata_5D4;
+extern const f32 lbl_2_rodata_5D8;
+extern const f32 lbl_2_rodata_5DC;
+extern const f32 lbl_2_rodata_5E0;
+extern const f32 lbl_2_rodata_5E4;
+extern const f32 lbl_2_rodata_5E8;
+extern void fn_800BDA94(void*, s32);
+extern u8 lbl_8034E9A0[];
 
 #include "static/UnknownHomes_Static.h"
 
@@ -33,4 +47,25 @@ void fn_2_16D38(void) {
     for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
         memset(*(void**)(lbl_8036E548 + i * 0x27C + 0xC0C), 0, 0x5C);
     }
+}
+
+// fn_2_18650, size:0xF8
+s32 fn_2_18650(s32 a) {
+    s32 next = (*(s8*)&lbl_2_bss_100B8[0] + 1) % 10;
+    if (next != *(s8*)&lbl_2_bss_100B8[1]) {
+        if (lbl_2_bss_1224 == NULL) {
+            lbl_2_bss_1224 = fn_800B0A5C_insertQueue(fn_2_18398, 0xFFFF);
+            if (lbl_2_bss_1224 != NULL) {
+                lbl_2_bss_1224[0x1C] = 0;
+                lbl_2_bss_1224[0x1D] = 0;
+            } else {
+                return 0;
+            }
+        }
+        lbl_2_bss_100B8[*(s8*)&lbl_2_bss_100B8[0] + 2] = a;
+        lbl_2_bss_100B8[0] = next;
+        lbl_2_bss_100B8[a + 0x42] = 1;
+        return 1;
+    }
+    return 0;
 }

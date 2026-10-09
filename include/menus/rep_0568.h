@@ -9,4 +9,6 @@ void fn_2_16CE0(void);
 
 void fn_2_16D38(void);
 
+s32 fn_2_18650(s32 a);
+
 #endif
