@@ -285,3 +285,48 @@ void fn_1_11C98(void) {
         LITXForm(*(void**)(lbl_8036E548 + i * 4 + 0xAC), lbl_1_bss_68FC + 0x10);
     }
 }
+
+typedef struct {
+    f32 position;
+    u8 padding04[8];
+    void* track;
+} ChallengeAnimation;
+
+typedef struct {
+    u8 padding[0xE8];
+    ChallengeAnimation* animation;
+} ChallengeAnimationNode;
+
+typedef struct {
+    u8 padding00[6];
+    u16 count;
+    u8 padding08[0x10];
+    ChallengeAnimationNode** nodes;
+} ChallengeAnimationModel;
+
+typedef struct {
+    u8 padding00[0x34];
+    ChallengeAnimationModel* model;
+    u8 padding38[0x58];
+} ChallengeRenderObject;
+
+// .text:0xD71C size:0x88
+f32 fn_1_D71C(s32 index) {
+    s32 current;
+    ChallengeRenderObject* objects;
+    s32 count;
+    ChallengeAnimationModel* model;
+    objects = *(ChallengeRenderObject**)(lbl_8036E548 + 0x60);
+    model = objects[index].model;
+    count = model->count;
+    for (current = 0; current < count; current++) {
+        ChallengeAnimation* animation = model->nodes[current]->animation;
+        if (animation != NULL && animation->track != NULL) {
+            break;
+        }
+    }
+    if (current < count) {
+        return model->nodes[current]->animation->position;
+    }
+    return 0.0f;
+}

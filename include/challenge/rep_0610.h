@@ -63,4 +63,6 @@ void fn_1_CB9C(s32 reset);
 
 void fn_1_11C98(void);
 
+f32 fn_1_D71C(s32 index);
+
 #endif
