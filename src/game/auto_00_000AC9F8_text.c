@@ -10,6 +10,12 @@
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
 extern void fn_3_5F720(void);
+extern int random_fn_3_9EE24(int max);
+extern s16 lbl_3_data_FB08[][3];
+extern s16 lbl_3_data_FB44[][3];
+extern s16 lbl_3_data_FB80[][3];
+extern s16 lbl_3_data_FBBC[][3];
+extern s16 lbl_3_data_FBF8;
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
 extern u8 lbl_800E8754[];
@@ -757,6 +763,42 @@ void fn_3_AE770(void) {
     g_GameLogic.pre_PostMiniGameInd = 1;
     changeScene(1, 6);
     fn_3_5A6D4(0);
+}
+
+// fn_3_B0B5C, size:0x198
+void fn_3_B0B5C(void) {
+    if (g_Practice.hitVariablesSetIndicator == 0) {
+        g_Practice._152 += 1;
+        if (g_Practice._152 >= lbl_3_data_FBF8) {
+            if (g_Practice.practiceLevel == 0) {
+                s32 k = random_fn_3_9EE24(10);
+                g_Ball.Hit_HorizontalPower = lbl_3_data_FB08[k][0];
+                g_Ball.Hit_VerticalAngle = lbl_3_data_FB08[k][1];
+                g_Ball.Hit_HorizontalAngle = lbl_3_data_FB08[k][2];
+            } else if (g_Practice.practiceLevel == 1) {
+                s32 k = random_fn_3_9EE24(10);
+                g_Ball.Hit_HorizontalPower = lbl_3_data_FB44[k][0];
+                g_Ball.Hit_VerticalAngle = lbl_3_data_FB44[k][1];
+                g_Ball.Hit_HorizontalAngle = lbl_3_data_FB44[k][2];
+            } else if (g_Practice.practiceLevel == 2) {
+                s32 k = random_fn_3_9EE24(10);
+                g_Ball.Hit_HorizontalPower = lbl_3_data_FB80[k][0];
+                g_Ball.Hit_VerticalAngle = lbl_3_data_FB80[k][1];
+                g_Ball.Hit_HorizontalAngle = lbl_3_data_FB80[k][2];
+            } else if (g_Practice.practiceLevel == 3) {
+                s32 k = random_fn_3_9EE24(10);
+                g_Ball.Hit_HorizontalPower = lbl_3_data_FBBC[k][0];
+                g_Ball.Hit_VerticalAngle = lbl_3_data_FBBC[k][1];
+                g_Ball.Hit_HorizontalAngle = lbl_3_data_FBBC[k][2];
+            }
+            g_Practice.hitVariablesSetIndicator = 1;
+            if (g_Practice.maybeCommandData[0] < 0x7FFE) {
+                g_Practice.maybeCommandData[0] += 1;
+            } else {
+                g_Practice.maybeCommandData[0] = 0x7FFF;
+            }
+        }
+    }
 }
 
 #pragma dont_inline off
