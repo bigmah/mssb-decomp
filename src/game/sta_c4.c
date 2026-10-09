@@ -398,7 +398,6 @@ void fn_3_F976C(s32 idx, s32 b, u8* c) {
 }
 
 // .text:0x000F99F0 size:0x1AC mapped:0x80738A84
-// partial: prologue matches; tail lis/addi reg assignment for g_Ball/B5D8/B620 differs (we put g_Ball in r3, orig r4)
 #pragma dont_inline off
 void fn_3_F99F0(s32 idx) {
     s32 snd;
@@ -434,9 +433,9 @@ void fn_3_F99F0(s32 idx) {
         v = lbl_3_data_8404[stad * 0x1E + snd * 2 + 1];
     }
     sndFXCtrl(h, 0x5B, v);
+    lbl_3_bss_B620[slot] = 1;
     lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
     lbl_3_bss_B5D8[slot].y = -*(f32*)(g_Ball + 4);
-    lbl_3_bss_B620[slot] = 1;
     lbl_3_bss_B5D8[slot].z = *(f32*)(g_Ball + 8);
 }
 
