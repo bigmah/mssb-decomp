@@ -79,3 +79,18 @@ s32 fn_3_90928(void) {
     return 0;
 }
 
+// fn_3_909B0, size:0x68
+void fn_3_909B0(void) {
+    s32 i;
+    u32* p;
+    fn_800214D0();
+    i = 6;
+    if (g_d_GameSettings.StadiumID != 6) {
+        i = g_d_GameSettings.StadiumID;
+    }
+    p = lbl_800EF808;
+    p += i + 0x27;
+    fn_800ACFB0((void*)*(p += 1));
+    *p = 0;
+}
+
