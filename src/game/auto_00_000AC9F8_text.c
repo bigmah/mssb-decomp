@@ -28,6 +28,7 @@ extern void fn_3_6714C(s32 player);
 extern void fn_3_B3A4C(void);
 extern u8 lbl_80366158[];
 extern u8 lbl_8037169C[];
+extern u8 lbl_80354768[];
 extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
 extern u8 lbl_3_common_bss_32724[];
@@ -404,4 +405,31 @@ void fn_3_AC9F8(void) {
             }
         }
     }
+}
+
+// fn_3_B0464, size:0x108
+s32 fn_3_B0464(void) {
+    if (g_Practice.pauseMenuLoading != 0) {
+        return 0;
+    }
+    if (g_Practice.guidedPracticeCompletionRelated == 0) {
+        return 0;
+    }
+    if (g_UnkSound_32718._07 != 0) {
+        return 0;
+    }
+    g_Practice._186 += 1;
+    if (g_Practice._186 > 0x96) {
+        u8 (*t)[4] = (u8(*)[4])((u8*)&g_Practice + 0x1B2);
+        if (t[g_Practice.practiceType_2][g_Practice.practiceLevel] == 0) {
+            ((u8*)&g_Practice)[0x1B1] = 1;
+            t[g_Practice.practiceType_2][g_Practice.practiceLevel] = 1;
+            (lbl_80354768 + 0x10000 + g_Practice.practiceType_2 * 4 + g_Practice.practiceLevel)[-0x30B2] = 1;
+        }
+        g_Practice._1C7 = 1;
+        fn_3_B3A28();
+        fn_3_B1DA4(g_Practice.practiceLevel + 4, 1);
+        return 1;
+    }
+    return 0;
 }
