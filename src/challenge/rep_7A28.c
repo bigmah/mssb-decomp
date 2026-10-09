@@ -7,6 +7,15 @@ extern u8 lbl_1_data_10908[];
 extern s32 lbl_1_data_109F8;
 extern void (*lbl_1_data_108E8[])(void*);
 extern void fn_1_26D28(s32, u16, u16, u16, void*);
+extern void fn_1_276CC(void*);
+extern void fn_1_27E98(void*);
+extern u8 lbl_803C6CF8[];
+
+static void* sTable[4] = { (void*)fn_1_27AD4, (void*)fn_1_276CC, 0, 0 };
+static u8 sXfer[0x10] = {1};
+static u8 sArr[0xF0] = {1};
+static s32 sLast = 1;
+
 
 extern void* lbl_80366158[];
 extern u8* lbl_803CC1B8[];
@@ -71,5 +80,33 @@ void fn_1_27D6C(void) {
     }
     if (lbl_803C77B8._02 & 0x1000) {
         *(u16*)(lbl_803CC1B8[0] + 0x34) ^= 1;
+    }
+}
+
+// fn_1_28118, size:0xE8
+void fn_1_28118(void) {
+    u8* object = lbl_803CC1B8[0];
+    s16 state = *(s16*)(object + 0x10);
+    s32 ready;
+    switch (state) {
+    case 0:
+        *(s16*)(object + 0x10) = state + 1;
+        *(s32*)(object + 0x18) = ARAMTransfer(sXfer, 0, 0, 0);
+    case 1:
+        ready = lbl_803C6CF8[0x715];
+        if (ready == 1) {
+            s32 tex;
+            *(s32*)(object + 0x18) = *(s32*)(object + 0x18) + **(s32**)(object + 0x18);
+            convertTextureHeader(*(void**)(object + 0x18));
+            tex = *(s32*)(object + 0x18);
+            *(s32*)(sArr + 0xA0) = tex;
+            *(s32*)(sArr + 0x50) = tex;
+            *(s32*)(sArr + 0x00) = tex;
+            *(s32*)(sArr + 0x04) = 7;
+            *(s32*)(sArr + 0x54) = 7;
+            *(s32*)(sArr + 0xA4) = 4;
+            sLast = tex;
+            *(void**)lbl_803CC1B8[0] = fn_1_27E98;
+        }
     }
 }
