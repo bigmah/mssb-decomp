@@ -2,7 +2,7 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 
-extern s32 fn_800698F8(void);
+extern s32 fn_800698F8(s32);
 extern u32 lbl_800EF808[];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_3_common_bss_32724[];
@@ -115,7 +115,7 @@ void fn_3_90AB0(s32 a) {
     u32* p;
     s32 i;
     if (a >= 0) {
-        i = fn_800698F8() + 5;
+        i = fn_800698F8(a) + 5;
         p = lbl_800EF808;
         p += i;
         if (*(p += 1) != 0) {
@@ -126,13 +126,41 @@ void fn_3_90AB0(s32 a) {
     }
 }
 
+// fn_3_90B14, size:0x100
+s32 fn_3_90B14(s32 a, s32 b) {
+    u8* o = lbl_803CC1B8;
+    s32 t;
+    if (lbl_3_common_bss_34C58._2C == 0) {
+        lbl_3_common_bss_34C58._2C = 1;
+    }
+    if (lbl_3_common_bss_34C58._2C == 1 || lbl_3_common_bss_34C58._2C == 3) {
+        if (lbl_3_common_bss_34C58._2C == 1) {
+            lbl_3_common_bss_34C58._2D = a;
+        } else {
+            if (b < 0) {
+                return 1;
+            }
+            lbl_3_common_bss_34C58._2D = b;
+        }
+        t = fn_800698F8(lbl_3_common_bss_34C58._2D);
+        *(s16*)(o + 0x10) = 0;
+        fn_800216F8(t + 5, fn_3_90F48);
+        lbl_3_common_bss_34C58._2C++;
+    } else if (*(s16*)(o + 0x10) != 0) {
+        if (++lbl_3_common_bss_34C58._2C == 5) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // fn_3_90C14, size:0x9c
-s32 fn_3_90C14(s8 a) {
+s32 fn_3_90C14(s32 a) {
     u8* o = lbl_803CC1B8;
     s32 t;
     if (lbl_3_common_bss_34C58._2C == 0) {
         lbl_3_common_bss_34C58._2D = a;
-        t = fn_800698F8();
+        t = fn_800698F8(a);
         *(s16*)(o + 0x10) = 0;
         fn_800216F8(t + 5, fn_3_90F48);
         lbl_3_common_bss_34C58._2C++;

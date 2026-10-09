@@ -31,6 +31,8 @@ void fn_3_910F4(u8* p);
 
 void fn_3_911A8(void);
 
-s32 fn_3_90C14(s8 a);
+s32 fn_3_90C14(s32 a);
+
+s32 fn_3_90B14(s32 a, s32 b);
 
 #endif
