@@ -1263,3 +1263,11 @@ s32 fn_2_45A84(void) {
     }
     return flag == 1;
 }
+
+// fn_2_45810, size:0x128
+void fn_2_45810(void) {
+    s32 i;
+    for (i = 0; i < 54; i++) {
+        *(lbl_2_bss_1A8248[0] + i + 0x43D6) = 0;
+    }
+}
