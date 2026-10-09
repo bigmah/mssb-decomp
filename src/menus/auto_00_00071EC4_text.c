@@ -3,6 +3,7 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_803CBBC4[];
+extern u8 lbl_803CBCD8[];
 extern u8 lbl_80371C30[];
 extern u8* lbl_2_bss_1A8248[];
 extern u8 lbl_803C66B0[];
@@ -410,5 +411,17 @@ void fn_2_72CB4(s32 a) {
             lbl_803CBBC4[0] = 0;
             lbl_803CBBC4[4] = 1;
         }
+    }
+}
+
+// fn_2_83744, size:0x94
+void fn_2_83744(u8* o) {
+    if ((*(u32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) >> 16) == 0x14) {
+        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 1;
+    }
+    if ((*(u32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) >> 16) == 0x1E) {
+        lbl_803CBCD8[4] = 1;
+        fn_80062674(0);
+        lbl_803C66B0[0x31] = 2;
     }
 }
