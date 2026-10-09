@@ -47,3 +47,8 @@ s32 fn_2_45938(s32 index) {
 void fn_2_460EC(void) {
     return;
 }
+
+// fn_2_460F0, size:0x4
+void fn_2_460F0(void) {
+    return;
+}
