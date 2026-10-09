@@ -45,3 +45,9 @@ void fn_3_107078(void) {
         g_Minigame[0x1A3F] = 1;
     }
 }
+
+// fn_3_10F550, size:0x14
+void fn_3_10F550(s8 a, s16 b) {
+    g_Minigame[0x1A41] = a;
+    *(s16*)(g_Minigame + 0x1A28) = b;
+}
