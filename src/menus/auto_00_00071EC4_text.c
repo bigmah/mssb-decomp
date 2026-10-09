@@ -165,3 +165,11 @@ void fn_2_82DE8(void) {
     fn_80034E20(((u8**)&lbl_803CC1B8)[0], lbl_2_data_2B4DC);
     *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_82CF0;
 }
+
+// fn_2_82E58, size:0x68
+void fn_2_82E58(void) {
+    if (*(u16*)(lbl_803CBBCC[0] + 6) != 0xB && g_d_GameSettings.GameModeSelected != 5) {
+        fn_800B0A5C_insertQueue((void*)fn_2_82DE8, 0x3000);
+    }
+    fn_800B0A5C_insertQueue((void*)fn_2_8279C, 0x3000);
+}
