@@ -42,4 +42,8 @@ void fn_2_467FC(void);
 
 void fn_2_45978(void);
 
+void fn_2_409CC(void);
+
+void fn_2_3C03C(void);
+
 #endif
