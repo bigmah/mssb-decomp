@@ -65,4 +65,6 @@ void fn_1_11C98(void);
 
 f32 fn_1_D71C(s32 index);
 
+void fn_1_F040(void);
+
 #endif
