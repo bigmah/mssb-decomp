@@ -15,4 +15,7 @@ void nop_function(void);
 
 void fn_800B0C80(void (*draw)(void));
 
+void resetAllDrawingStructs(void);
+
+
 #endif
