@@ -29,5 +29,6 @@ void fn_3_10768C(void);
 s32 fn_3_107B9C(u8* a, u8* b);
 s32 fn_3_107BD0(u8* a, u8* b);
 s32 fn_3_107C04(u8* a, u8* b);
+s32 fn_3_107D34(u8* a, u8* b);
 
 #endif

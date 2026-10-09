@@ -345,3 +345,12 @@ s32 fn_3_107C04(u8* a, u8* b) {
     }
     return *a - *b;
 }
+
+// fn_3_107D34, size:0x3C
+typedef struct { s16 v; s16 pad; } S16x2;
+s32 fn_3_107D34(u8* a, u8* b) {
+    if (((S16x2*)(g_Minigame + 0x18BC))[*b].v != ((S16x2*)(g_Minigame + 0x18BC))[*a].v) {
+        return ((S16x2*)(g_Minigame + 0x18BC))[*b].v - ((S16x2*)(g_Minigame + 0x18BC))[*a].v;
+    }
+    return *a - *b;
+}
