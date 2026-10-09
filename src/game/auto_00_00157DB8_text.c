@@ -122,3 +122,10 @@ void fn_3_1589C4(void) {
     }
 }
 
+// fn_3_1590C8, size:0x4C
+void fn_3_1590C8(void) {
+    if (g_Practice.tutorialState == 0 && g_Practice.practiceState == 7) {
+        fn_800B0A5C_insertQueue(fn_3_158FE4, 2);
+    }
+}
+
