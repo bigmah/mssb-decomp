@@ -284,6 +284,24 @@ extern void fn_2_54120(void);
 extern void fn_2_53DF8(void*);
 extern void fn_8000FE54(void);
 
+// fn_2_20074, size:0x70
+s32 fn_2_20074(void) {
+    u16 v = *(u16*)((u8*)&lbl_803C77B8 + ((s8)lbl_2_bss_1A824C[0][0x197863] << 5));
+    s32 r;
+    if (v & 0x8) {
+        r = 0;
+    } else if (v & 0x4) {
+        r = 1;
+    } else if (v & 0x1) {
+        r = 2;
+    } else if (v & 0x2) {
+        r = 3;
+    } else {
+        r = -1;
+    }
+    return r;
+}
+
 // fn_2_24238, size:0xC4
 void fn_2_24238(void) {
     MenuQueueState* queue = (MenuQueueState*)lbl_803CC1B8[0];
