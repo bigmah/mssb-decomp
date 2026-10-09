@@ -95,5 +95,7 @@ void fn_2_50BF4(s16 id);
 
 void fn_2_510A8(void);
 
+s32 fn_2_4E9A8(void);
+
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);

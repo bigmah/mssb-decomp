@@ -407,3 +407,43 @@ void fn_2_510A8(void) {
         lbl_2_bss_9A08[1][i] = 0;
     }
 }
+
+extern u8 lbl_2_data_12EA8[];
+
+// fn_2_4E9A8, size:0x114
+s32 fn_2_4E9A8(void) {
+    u8* d = lbl_2_data_12EA8;
+    switch (lbl_2_bss_1A8248[0][0x441C]) {
+    case 0:
+        if (fn_80035838(d + 0x3D4, 0x18) == 0) {
+            return 0;
+        }
+        break;
+    case 1:
+        if (fn_80035838(d + 0x3E4, 0x18) == 0) {
+            return 0;
+        }
+        break;
+    case 2:
+        if (fn_80035838(d + 0x3F4, 0x18) == 0) {
+            return 0;
+        }
+        break;
+    case 3:
+        if (fn_80035838(d + 0x404, 0x18) == 0) {
+            return 0;
+        }
+        break;
+    case 4:
+        if (fn_80035838(d + 0x414, 0x18) == 0) {
+            return 0;
+        }
+        break;
+    case 5:
+        if (fn_80035838(d + 0x424, 0x18) == 0) {
+            return 0;
+        }
+        break;
+    }
+    return 1;
+}
