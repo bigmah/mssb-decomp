@@ -20,6 +20,7 @@ extern u8 lbl_8034E9A0[];
 extern u8 lbl_803C5EA4[];
 extern u8* lbl_803CBBCC[];
 extern u8 lbl_2_data_2B4DC[];
+extern u8 lbl_2_data_2AADC[];
 #include "menus/auto_00_00001254_text.h"
 
 // fn_2_73028, size:0x4
@@ -172,4 +173,10 @@ void fn_2_82E58(void) {
         fn_800B0A5C_insertQueue((void*)fn_2_82DE8, 0x3000);
     }
     fn_800B0A5C_insertQueue((void*)fn_2_8279C, 0x3000);
+}
+
+// fn_2_71F20, size:0x40
+void fn_2_71F20(u8* obj) {
+    *(void**)(obj + 0xD4) = lbl_2_data_2A2EC[obj[0xC3]];
+    (*(void (**)(u8*))(obj + 0xD4))(obj);
 }
