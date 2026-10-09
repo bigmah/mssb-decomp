@@ -10,6 +10,15 @@
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
 extern void fn_3_5F720(void);
+extern void fn_3_6EBB4(s32);
+extern void fn_3_6E24C(s32, s32);
+extern void fn_3_6D964(s32, s32);
+extern void setInMemBatterConstants(int rosterID);
+extern s32 fn_3_6BA64(void);
+extern s32 fn_3_B3CD4(void);
+extern void fn_3_B4124(s32, s32, s32, u8);
+extern void fn_80011BE4(s32);
+extern void* lbl_3_data_FDE4[];
 extern u8 lbl_3_data_10598[];
 extern void fn_3_5B408(void);
 extern u8 lbl_3_data_FAE8[];
@@ -55,6 +64,7 @@ extern void fn_3_6C108(void);
 extern void fn_3_B02A8(void);
 extern void fn_3_6714C(s32 player);
 extern void fn_3_B3A4C(void);
+extern void fn_3_B27A4(void);
 extern void fn_3_B1DD0(void);
 extern void fn_3_6EBB4(s32);
 extern u8 lbl_80366158[];
@@ -1063,6 +1073,69 @@ void fn_3_B28A8(void) {
             fn_80035B50(0x13);
             lbl_3_common_bss_34C90[0x1D2] = 0;
         }
+        break;
+    }
+}
+
+// fn_3_B0874, size:0x218
+void fn_3_B0874(void) {
+    switch (g_Practice.practiceState) {
+    case 0:
+        lbl_8036E548[0x307D] = 0;
+        fn_3_8A350();
+        if (g_Practice.practiceType_2 == 4) {
+            fn_3_B4124(1, 0, ((s8*)((u8*)&g_Minigame + 0x19E8))[g_Practice.homeAway * 9], ((u8*)&g_Minigame)[g_Practice.homeAway + 0x1A17]);
+            setInMemBatterConstants(0);
+            fn_3_6D964(0, 0);
+        } else {
+            fn_3_6EBB4(0);
+            fn_3_6E24C(0, 0);
+            setInMemBatterConstants(0);
+            fn_3_6D964(0, 0);
+        }
+        *(s32*)((u8*)&g_GameLogic + 0xDC) = 1;
+        *(s32*)((u8*)&g_GameLogic + 0xE0) = 1;
+        lbl_3_common_bss_32724[0x9A] = 0;
+        lbl_3_common_bss_32724[0x9C] = 0;
+        ((u8*)&lbl_803CBC3C)[2] = 0;
+        ((u8*)&g_Practice)[0x1D9] = 0;
+        fn_80011BE4(9);
+        fn_3_B3C94(1);
+        break;
+    case 1:
+        if (fn_3_6BA64() != 0) {
+            fn_3_B3C94(2);
+        }
+        break;
+    case 2:
+        if (g_Practice.practiceType_2 == 4) {
+            fn_3_B3C94(3);
+        } else if (fn_3_750DC() != 0) {
+            fn_3_B3C94(3);
+        }
+        break;
+    case 3:
+        if (someAnimationIndFunction() != 0) {
+            fn_3_B3C94(4);
+        }
+        break;
+    case 4:
+        if (fn_3_B3CD4() != 0) {
+            fn_3_B3C94(7);
+        }
+        break;
+    case 7:
+        fn_3_B3B70();
+        if (g_Practice.practiceType_2 == 4) {
+            fn_3_B3A4C();
+            fn_3_B3C78(3);
+        } else {
+            fn_3_B27A4();
+            g_Practice.commandList = lbl_3_data_FDE4[g_Practice.practiceLevel];
+            fn_3_B3C78(1);
+        }
+        changeScene(1, 6);
+        fn_3_5A6D4(7);
         break;
     }
 }
