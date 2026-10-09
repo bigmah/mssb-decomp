@@ -18,4 +18,6 @@ void fn_2_460EC(void);
 
 void fn_2_460F0(void);
 
+void fn_2_460F4(void);
+
 #endif

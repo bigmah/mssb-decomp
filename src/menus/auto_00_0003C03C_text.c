@@ -52,3 +52,8 @@ void fn_2_460EC(void) {
 void fn_2_460F0(void) {
     return;
 }
+
+// fn_2_460F4, size:0x4
+void fn_2_460F4(void) {
+    return;
+}
