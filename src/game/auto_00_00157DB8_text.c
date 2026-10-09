@@ -29,6 +29,7 @@ extern void fn_3_5EDD8(void);
 extern void fn_3_5F3FC(void);
 extern void fn_3_5CD24(void);
 extern void fn_3_15AE34(void);
+extern void fn_3_15B494(void);
 extern void fn_3_1586B0(void);
 extern void fn_3_9669C(void);
 extern u8 lbl_3_data_FAF4[];
@@ -203,5 +204,17 @@ void fn_3_15AF78(void) {
     }
     if (g_Practice.practiceLevel != 7 && g_Practice.practiceLevel != 6) {
         g_Strikes.outs = 0;
+    }
+}
+
+// fn_3_15B610, size:0x18C
+void fn_3_15B610(void) {
+    switch (g_Practice.tutorialState) {
+    case 0:
+        fn_3_15B494();
+        break;
+    case 3:
+        fn_3_15AF78();
+        break;
     }
 }
