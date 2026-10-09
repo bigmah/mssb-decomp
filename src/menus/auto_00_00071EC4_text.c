@@ -180,3 +180,15 @@ void fn_2_71F20(u8* obj) {
     *(void**)(obj + 0xD4) = lbl_2_data_2A2EC[obj[0xC3]];
     (*(void (**)(u8*))(obj + 0xD4))(obj);
 }
+
+// fn_2_72594, size:0x9C
+void fn_2_72594(void) {
+    u8* obj;
+    s32 i;
+    fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2AADC);
+    for (i = 0; i < 4; i++) {
+        fn_800363D8(obj, i + 7, 1, 0x32, 3 - i);
+    }
+    fn_800363D8(obj, 2, 1, 0x35, 0);
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_7207C;
+}
