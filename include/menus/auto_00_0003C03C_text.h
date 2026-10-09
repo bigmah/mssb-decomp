@@ -28,4 +28,6 @@ void fn_2_422FC(s32 index);
 
 void fn_2_42270(s32 index);
 
+s32 fn_2_44238(s32 value);
+
 #endif
