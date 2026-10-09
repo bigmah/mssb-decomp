@@ -345,11 +345,10 @@ void fn_3_F9164(u8* o) {
         v = lbl_3_data_8404[stad * 0x1E + snd * 2 + 1];
     }
     sndFXCtrl(h, 0x5B, v);
-    lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
-    d = &lbl_3_bss_B5D8[slot];
-    d->y = -*(f32*)(g_Ball + 4);
     lbl_3_bss_B620[slot] = 1;
-    d->z = *(f32*)(g_Ball + 8);
+    lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
+    lbl_3_bss_B5D8[slot].y = -*(f32*)(g_Ball + 4);
+    lbl_3_bss_B5D8[slot].z = *(f32*)(g_Ball + 8);
 }
 
 // .text:0x000F92FC size:0x50 mapped:0x80738390
