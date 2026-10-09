@@ -218,3 +218,25 @@ void fn_3_15B610(void) {
         break;
     }
 }
+
+// fn_3_158FE4, size:0xE4
+void fn_3_158FE4(void) {
+    u8* o;
+    u8* w;
+    u8* e;
+    fn_80034E20(o = lbl_803CC1B8, lbl_3_data_B85C);
+    e = lbl_80371C30;
+    e += *(u16*)(o + 0x14) * 8;
+    w = *(u8**)(e + 0x40);
+    *(u32*)(w + 0x54) &= ~2;
+    fn_800363D8(o, 0xD, 1, 0xE, g_Practice.practiceLevel);
+    fn_800363D8(o, 0xD, 2, 0xE, g_Practice.practiceLevel);
+    g_Practice.laukituTextChannelIndex = -1;
+    g_Practice.diagramTextChannelIndex = -1;
+    *(s16*)(o + 0x18) = 0;
+    *(s16*)(o + 0x1A) = 0;
+    *(s16*)(o + 0x1C) = 0;
+    *(s16*)(o + 0x1E) = 0;
+    *(s16*)(o + 0x20) = 0;
+    *(void**)lbl_803CC1B8 = fn_3_158B64;
+}
