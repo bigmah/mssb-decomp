@@ -33,3 +33,11 @@ s32 fn_3_EB684(void) {
     return 0;
 }
 
+// fn_3_ED244, size:0x64
+void fn_3_ED244(void) {
+    u8* p = lbl_803CC1B8;
+    if (lbl_3_common_bss_32724[0x96] != 0 || ((QEnt*)lbl_80371C30)[*(u16*)(p + 0x14)].p[0x69] == 2) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
+}
+
