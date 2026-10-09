@@ -26,3 +26,6 @@ void fn_1_568(void) {
     }
 }
 
+void fn_1_5E8(void) {
+}
+
