@@ -170,3 +170,14 @@ void fn_2_1C3A4(void) {
     return;
 }
 
+// fn_2_1C3A8, size:0x74
+void fn_2_1C3A8(void) {
+    if ((s32)lbl_2_bss_1A824C[0][0x1978FB] == 1) {
+        lbl_2_bss_1A8234[0][0x16268A] = 1;
+        lbl_2_bss_1A8234[0][0x162874] = 0;
+        return;
+    }
+    lbl_2_bss_1A8234[0][0x162874] = 1;
+    lbl_2_bss_1A8234[0][0x16268A] = 0;
+}
+
