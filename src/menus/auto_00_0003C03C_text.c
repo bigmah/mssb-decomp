@@ -26,6 +26,8 @@ extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A8230[];
 extern void fn_2_20218(void*);
 extern void fn_2_1BF50(void);
+extern void fn_2_1BFD0(void);
+extern u8 lbl_8034E978[];
 extern void fn_2_72054(s32, s8);
 extern s32 fn_2_8CC88(s32);
 
@@ -670,6 +672,42 @@ void fn_2_40A9C(void) {
         o[0x28] = 3;
         break;
     case 3:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+}
+
+// fn_2_40B90, size:0x128
+void fn_2_40B90(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    switch ((s8)o[0x28]) {
+    case 0:
+        lbl_2_bss_1A824C[0][0x1978F3] = 0;
+        o[0x28] = 1;
+        break;
+    case 1:
+        lbl_8036E548[0x307A] = 0;
+        fn_2_20218(lbl_8036E548);
+        lbl_2_bss_1A8234[0][0x162992] = 1;
+        lbl_2_bss_1A8230[0][0x32A86] = 1;
+        o[0x28] = 2;
+        break;
+    case 2:
+        o[0x28] = 3;
+        break;
+    case 3:
+        fn_2_1BFD0();
+        o[0x28] = 4;
+        break;
+    case 4:
+        lbl_8034E978[0x26] = 1;
+        o[0x28] = 5;
+        break;
+    case 5:
         q = *(u8**)(o + 0xC);
         *(s16*)(q + 0x10) = 1;
         fn_800B0A14_removeQueue(q);
