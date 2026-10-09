@@ -84,3 +84,11 @@ void fn_2_1164(void) {
 // fn_2_119C, size:0x4
 void fn_2_119C(void) {
 }
+
+// fn_2_11A0, size:0x38
+void fn_2_11A0(u16 value) {
+    *(u16*)(lbl_803CBBCC[0] + 6) = *(u16*)(lbl_803CBBCC[0] + 2);
+    *(u16*)(lbl_803CBBCC[0] + 8) = *(u16*)(lbl_803CBBCC[0] + 4);
+    *(u16*)(lbl_803CBBCC[0] + 2) = value;
+    *(u16*)(lbl_803CBBCC[0] + 4) = 0;
+}
