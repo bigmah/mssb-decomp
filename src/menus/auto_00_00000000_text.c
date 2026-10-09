@@ -91,3 +91,10 @@ u8 fn_2_510(u8* q) {
     return q[q[0x16] + 0x17];
 }
 
+// fn_2_940, size:0x38
+void fn_2_940(void) {
+    if (*(u16*)lbl_803CBBCC[0] == 5) {
+        fn_800B0A14_removeQueue();
+    }
+}
+
