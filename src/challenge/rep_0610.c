@@ -523,3 +523,33 @@ void fn_1_168C8(void) {
         }
     }
 }
+
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_1_data_A940[];
+extern u8 lbl_1_data_ADE0[];
+
+// .text:0x10560 size:0x110
+void fn_1_10560(void* object) {
+    u8* state = lbl_1_bss_3070;
+    switch (*(s16*)(lbl_803CC1B8[0] + 0x10)) {
+    case 0:
+        *(void**)(state + 0x24) = (void*)ARAMTransfer(lbl_1_data_ADE0, 0, 0, 0);
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 1;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            u8* data = *(u8**)(state + 0x24);
+            *(u8**)(state + 0x28) = data + *(u32*)data;
+            convertTextureHeader(*(u8**)(state + 0x28));
+            *(s32*)(state + 0x3074) = ARAMTransfer(lbl_1_data_A940, 0, 1, 0);
+            *(s16*)(lbl_803CC1B8[0] + 0x10) = 2;
+        }
+        break;
+    case 2:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            convertTextureHeader(*(void**)(state + 0x3074));
+            ((void (*)(void))fn_800B0A14_removeQueue)();
+        }
+        break;
+    }
+}
