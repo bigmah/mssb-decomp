@@ -385,3 +385,34 @@ void fn_2_1C34(u32 buttons) {
         break;
     }
 }
+
+// fn_2_1354, size:0x108
+void fn_2_1354(SortEntry* e, s32 n, s32 descending) {
+    u32 i;
+    u32 j;
+    SortEntry t;
+    if (n >= 2) {
+        if (descending == 0) {
+            for (i = 0; i < (u32)n; i++) {
+                j = i;
+                while (j >= 1 && e[j - 1].value > e[j].value) {
+                    t = e[j - 1];
+                    e[j - 1] = e[j];
+                    e[j] = t;
+                    j--;
+                }
+            }
+        } else {
+            SortEntry t2;
+            for (i = 0; i < (u32)n; i++) {
+                j = i;
+                while (j >= 1 && e[j - 1].value < e[j].value) {
+                    t2 = e[j - 1];
+                    e[j - 1] = e[j];
+                    e[j] = t2;
+                    j--;
+                }
+            }
+        }
+    }
+}

@@ -63,4 +63,11 @@ void fn_2_1216C(void);
 
 void fn_2_1C34(u32 buttons);
 
+typedef struct SortEntry {
+    s32 key;
+    s32 value;
+} SortEntry;
+
+void fn_2_1354(SortEntry* e, s32 n, s32 descending);
+
 #endif
