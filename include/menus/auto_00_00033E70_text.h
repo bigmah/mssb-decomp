@@ -47,4 +47,6 @@ void fn_2_38C14(void);
 
 void fn_2_38D44(void);
 
+void fn_2_37D98(void);
+
 #endif
