@@ -234,3 +234,22 @@ u8 fn_3_107CD0(void) {
     fn_800246D4(fn_3_107D34, arr, arr, 1, g_Minigame[0x1906]);
     return arr[0];
 }
+
+// fn_3_1078F8, size:0x90
+void fn_3_1078F8(void) {
+    u32 i;
+    u8* p;
+    memset(g_Minigame + 0x1E04, 0, 0x28);
+    g_Minigame[0x1A3D] = 0;
+    g_Minigame[0x1A3F] = 0;
+    lbl_8036E548[0x307E] = 0;
+    p = g_Minigame;
+    i = 0;
+    do {
+        p[0x1E1C] = i + 1;
+        i++;
+        p++;
+    } while (i < 6);
+    fn_3_9DC18(g_Minigame + 0x1E1C, 6, 0);
+    fn_3_5A6D4(0x28);
+}
