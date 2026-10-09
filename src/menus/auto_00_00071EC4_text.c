@@ -121,3 +121,7 @@ void fn_2_85108(void) {
     fn_800B0A5C_insertQueue((void*)fn_2_84FA8, 0x3000);
 }
 
+// fn_2_8515C, size:0x4
+void fn_2_8515C(void) {
+}
+
