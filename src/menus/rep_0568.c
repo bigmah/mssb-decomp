@@ -9,6 +9,17 @@ extern u8 lbl_2_bss_100B8[];
 extern u8 lbl_8036E548[];
 extern u8 lbl_2_bss_100B8[];
 extern u8* lbl_2_bss_1224;
+extern u8* lbl_2_bss_122C;
+extern u8* lbl_2_data_2780[];
+extern void* _OSAllocFromHeap(s32, s32);
+typedef struct {
+    u8* p;
+    u8 pad[0x5C];
+    s8 a;
+    s8 b;
+    u8 pad2[2];
+} Ent64;
+extern Ent64 lbl_2_bss_101AC[];
 extern void fn_2_18398(void);
 extern void fn_2_188EC(void);
 extern const f32 lbl_2_rodata_5BC;
@@ -118,5 +129,18 @@ void fn_2_1937C(u16* a, s32 b) {
                 fn_800BDA94(c, b);
             }
         }
+    }
+}
+
+// fn_2_17AB8, size:0x1D0
+void fn_2_17AB8(void) {
+    s32 size;
+    s32 i;
+    size = ((*(u32*)(lbl_2_data_2780[0] + 4) & 0x0FFFFFFF) + 0x1F) & ~0x1F;
+    lbl_2_bss_122C = _OSAllocFromHeap(0x20, size * lbl_2_bss_100B8[0x2D]);
+    for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+        lbl_2_bss_101AC[i].p = lbl_2_bss_122C + size * i;
+        lbl_2_bss_101AC[i].b = -1;
+        lbl_2_bss_101AC[i].a = -1;
     }
 }
