@@ -27,4 +27,8 @@ s32 fn_3_91064(void);
 
 s32 fn_3_910AC(void);
 
+void fn_3_910F4(u8* p);
+
+void fn_3_911A8(void);
+
 #endif

@@ -5,6 +5,8 @@
 extern s32 fn_800698F8(void);
 extern u32 lbl_800EF808[];
 extern u8* lbl_803CC1B8;
+extern u8 lbl_3_common_bss_32724[];
+extern void fn_8003649C(void*, s32, s32, s32, s32);
 extern u8 lbl_3_data_81D4[];
 extern void fn_800216F8(u8, void*);
 extern void fn_8006285C(void);
@@ -135,4 +137,25 @@ s32 fn_3_910AC(void) {
     fn_80021518(0x1C, lbl_800EF808[2]);
     fn_80021518(0x1D, lbl_800EF808[2]);
     return 0;
+}
+
+// fn_3_910F4, size:0xb4
+void fn_3_910F4(u8* p) {
+    s32 i;
+    s32 target = g_Strikes.outs;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        target = g_Minigame._190D - g_Minigame._1910;
+    }
+    i = 0;
+    do {
+        s32 state = 3;
+        if (*(u16*)(p + 0x1C) != target) {
+            if (target >= i + 1) {
+                state = 2;
+            }
+            fn_8003649C(p, i + 1, i + 1, 0x107, state);
+        }
+        i++;
+    } while (i < 2);
+    *(u16*)(p + 0x1C) = target;
 }
