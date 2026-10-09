@@ -553,3 +553,34 @@ void fn_1_10560(void* object) {
         break;
     }
 }
+
+typedef struct { u8 b[0x38]; } Ch38;
+static u8 ch_68FC[0x30];
+static u8 ch_fill2[0x68FC - 0x67E0 - 0x118];
+static u8 ch_67E0[0x118];
+static u8 ch_fill1[0x67E0 - 0x307C];
+static u8 ch_307B, ch_307A, ch_3079;
+static u8 ch_3078;
+static u8 ch_3070[8];
+extern u8 lbl_1_data_AA54[];
+extern u8 lbl_1_data_AAC4[];
+extern u8 lbl_1_data_AB34[];
+extern void fn_1_179CC(void);
+extern void fn_1_129D0(void);
+
+// .text:0xD8A0 size:0x118
+void fn_1_D8A0(void) {
+    Mtx44 projection;
+    C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
+                 lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
+                 lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
+    GXSetProjection(projection, GX_PERSPECTIVE);
+    fn_1_179CC();
+    PSMTXCopy((f32(*)[4])ch_67E0, (f32(*)[4])(ch_68FC + 0x10));
+    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AA54 + lbl_803CBBC0[0] * 0x38);
+    if (ch_3078 != 0) {
+        ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AB34 + lbl_803CBBC0[0] * 0x38);
+    }
+    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38);
+    fn_1_129D0();
+}
