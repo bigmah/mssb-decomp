@@ -66,3 +66,12 @@ void fn_3_106DFC(void) {
     *(void**)(g_Camera + 0xAB0) = _OSAllocFromHeap(4, 0x8000);
     *(void**)(g_Camera + 0x146C) = _OSAllocFromHeap(4, 0x8000);
 }
+
+// fn_3_106E50, size:0x60
+s32 fn_3_106E50(void) {
+    if ((s32)lbl_803C6CF8[0x715] == 1) {
+        *(s32*)(g_Camera + 0x1B4) = ARAMTransfer(lbl_3_data_20FDC, 0, 0, 0);
+        return 1;
+    }
+    return 0;
+}
