@@ -4,6 +4,9 @@ extern u8 g_Ball[];
 extern s32 g_Strikes;
 
 extern u8 lbl_3_common_bss_32A94[];
+extern u8 g_RunningLogic[];
+extern u8 g_Pitcher[];
+extern u8 g_Batter[];
 
 // fn_3_9DBE4, size:0x34
 void fn_3_9DBE4(void) {
@@ -25,4 +28,22 @@ void fn_3_9D550(void) {
         return;
     }
     *(s16*)lbl_3_common_bss_32A94 = 0x2C;
+}
+
+// fn_3_9D594, size:0x6C
+void fn_3_9D594(void) {
+    switch (g_RunningLogic[0x12]) {
+    case 4:
+        *(s16*)lbl_3_common_bss_32A94 = 1;
+        return;
+    case 3:
+        *(s16*)lbl_3_common_bss_32A94 = 2;
+        return;
+    case 2:
+        *(s16*)lbl_3_common_bss_32A94 = 3;
+        return;
+    default:
+        *(s16*)lbl_3_common_bss_32A94 = 4;
+        return;
+    }
 }
