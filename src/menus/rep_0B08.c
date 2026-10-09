@@ -1019,3 +1019,33 @@ s32 fn_2_68C80(s32 first, s32 second) {
     }
     return 0;
 }
+
+// fn_2_6B120
+void fn_2_6B120(MenuEntry* owner) {
+    s32 index = owner->objectId;
+    MenuEntry* entry;
+    f32 height;
+
+    fn_2_69E1C(index);
+    entry = &lbl_2_bss_1A8248[0]->entries[index];
+    if (entry->flagD0 != 0) {
+        height = (f32)sin(entry->bouncePhase);
+        height = lbl_2_rodata_BA8 * -height;
+        entry->bouncePhase += lbl_2_rodata_BAC[0];
+        if (entry->position.y > 0.0f) {
+            entry->bouncePhase = 0.0f;
+            height = 0.0f;
+            entry->flagD0 = 0;
+            if (entry->typeC3 == 19) {
+                ((u8*)lbl_2_bss_1A8248[0])[entry->objectId * 0xD8 + 0x16D0] = 0;
+            }
+        }
+        entry->position.y = height;
+    } else {
+        entry->position.y = 0.0f;
+    }
+    if (owner->_50 <= 0.0f) {
+        *(u8*)((u8*)owner + 0xBA) = 4;
+        owner->state = 2;
+    }
+}
