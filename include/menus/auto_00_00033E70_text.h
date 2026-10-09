@@ -3,4 +3,6 @@
 
 #include "mssbTypes.h"
 
+void fn_2_37430(u8* a, u8* b);
+
 #endif
