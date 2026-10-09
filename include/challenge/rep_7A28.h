@@ -15,4 +15,6 @@ void fn_1_27D6C(void);
 
 void fn_1_28118(void);
 
+void fn_1_28200(void);
+
 #endif

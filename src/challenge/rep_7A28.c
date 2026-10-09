@@ -10,6 +10,11 @@ extern void fn_1_26D28(s32, u16, u16, u16, void*);
 extern void fn_1_276CC(void*);
 extern void fn_1_27E98(void*);
 extern u8 lbl_803C6CF8[];
+extern void* _OSAllocFromHeap(s32, s32);
+extern void fn_1_273D8(void*);
+extern const f32 lbl_1_rodata_7B5C;
+extern const f32 lbl_1_rodata_7B64;
+extern const f32 lbl_1_rodata_7B98;
 
 static void* sTable[4] = { (void*)fn_1_27AD4, (void*)fn_1_276CC, 0, 0 };
 static u8 sXfer[0x10] = {1};
@@ -109,4 +114,28 @@ void fn_1_28118(void) {
             *(void**)lbl_803CC1B8[0] = fn_1_27E98;
         }
     }
+}
+
+// fn_1_28200, size:0xF4
+void fn_1_28200(void) {
+    u8* object = lbl_803CC1B8[0];
+    u8* camera;
+    *(s16*)(object + 0x10) = 0;
+    fn_800AD038(lbl_80366158[2]);
+    *(void**)(object + 0x14) = _OSAllocFromHeap(0x20, 0xDC);
+    fn_1_273D8(*(void**)(object + 0x14));
+    *(void**)(object + 0x1C) = _OSAllocFromHeap(0x20, 0x1C);
+    *(s32*)(*(u8**)(object + 0x1C) + 8) = 0x10;
+    *(s32*)(*(u8**)(object + 0x1C) + 0x14) = 1;
+    camera = *(u8**)(object + 0x14);
+    *(f32*)(camera + 0x8C) = *(f32*)(camera + 0x8C) * lbl_1_rodata_7B98;
+    *(f32*)(object + 0x20) = lbl_1_rodata_7B5C;
+    *(f32*)(object + 0x24) = lbl_1_rodata_7B98;
+    *(f32*)(object + 0x28) = lbl_1_rodata_7B5C;
+    *(f32*)(object + 0x2C) = lbl_1_rodata_7B64;
+    *(f32*)(object + 0x30) = lbl_1_rodata_7B64;
+    object[0x36] = 0;
+    object[0x37] = 0;
+    *(u16*)(object + 0x34) = 0;
+    *(void**)lbl_803CC1B8[0] = fn_1_28118;
 }
