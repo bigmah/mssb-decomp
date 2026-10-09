@@ -5,4 +5,6 @@
 
 void fn_80026130(void);
 
+void fn_80025DDC(u8* h);
+
 #endif
