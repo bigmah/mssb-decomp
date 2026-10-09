@@ -86,4 +86,6 @@ void fn_1_D590(s32 a, s32 b, f32 value);
 
 void fn_1_DE1C(void);
 
+void fn_1_D7A4(s32 index);
+
 #endif
