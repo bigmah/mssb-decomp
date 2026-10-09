@@ -72,3 +72,11 @@ void fn_3_ED490(void) {
     *(void**)lbl_803CC1B8 = fn_3_ED2F4;
 }
 
+// fn_3_ED4FC, size:0x78
+void fn_3_ED4FC(void) {
+    u8* p = lbl_803CC1B8;
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x12E] != 0 || g_GameLogic[0x11E] == 3 || g_GameLogic[0x11E] == 0xE || g_GameLogic[0x121] == 0xA) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
+}
+
