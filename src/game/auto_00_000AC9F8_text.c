@@ -10,6 +10,9 @@
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
 extern void fn_3_5F720(void);
+extern void fn_3_FBD70(void);
+extern void fn_3_FBD58(void);
+extern u8 lbl_800E8754[];
 extern void fn_3_59918(s32, s32);
 extern u8 lbl_8036E548[];
 extern s32 fn_8001C588(s16);
@@ -721,6 +724,39 @@ s32 fn_3_B32B8(void) {
         return 1;
     }
     return 0;
+}
+
+// fn_3_AE770, size:0x190
+void fn_3_AE770(void) {
+    s32 i;
+    if (*(s16*)(lbl_3_common_bss_34C90 + 0xC) <= 1) {
+        ((u8*)&lbl_803CBC3C)[2] = 0;
+        fn_80035B50(0x13);
+    }
+    fn_3_753E8(1);
+    setBatterContactConstants();
+    for (i = 0; i < 2; i++) {
+        if (((u8*)&g_GameLogic)[0x13E + i] == 0) {
+            if (lbl_800E8754[g_GameLogic.teams[i] * 7 + 9] != 0) {
+                ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x148] = 1;
+            } else {
+                ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x148] = 0;
+            }
+            if (lbl_800E8754[g_GameLogic.teams[i] * 7 + 0xA] != 0) {
+                ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x142] = 1;
+                ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x144] = 1;
+            } else {
+                ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x142] = 0;
+                ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x144] = 0;
+            }
+        }
+    }
+    fn_3_FBD70();
+    fn_3_FBD58();
+    lbl_8036E548[0x307E] = 1;
+    g_GameLogic.pre_PostMiniGameInd = 1;
+    changeScene(1, 6);
+    fn_3_5A6D4(0);
 }
 
 #pragma dont_inline off
