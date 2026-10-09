@@ -9,4 +9,6 @@ void fn_2_94604(u8 value);
 
 void fn_2_94634(s32 i);
 
+void fn_2_946DC(s32 i);
+
 #endif
