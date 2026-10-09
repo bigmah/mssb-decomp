@@ -101,3 +101,16 @@ s32 fn_2_44238(s32 value) {
     }
     return count != 0;
 }
+
+// fn_2_44184, size:0xB4
+void fn_2_44184(void) {
+    s32 count = 0;
+    s32 i;
+    u8* menu = lbl_2_bss_1A8248[0];
+    for (i = 0; i < 9; i++) {
+        if (*(s16*)(menu + 0x40B8 + i * 6) == 12) count++;
+    }
+    if (count == 0) {
+        menu[0x44F7] = 1;
+    }
+}
