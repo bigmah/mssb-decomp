@@ -2229,3 +2229,29 @@ void fn_2_30D80(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
+
+// fn_2_20CB0, size:0x58
+s32 fn_2_20CB0(u32 index) {
+    s32 result = 0;
+    switch (index) {
+    case 0:
+        result = 0;
+        break;
+    case 4:
+        result = 1;
+        break;
+    case 10:
+        result = 2;
+        break;
+    case 2:
+        result = 3;
+        break;
+    case 6:
+        result = 4;
+        break;
+    case 9:
+        result = 5;
+        break;
+    }
+    return result;
+}

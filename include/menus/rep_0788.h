@@ -181,5 +181,6 @@ void fn_2_31250(MenuTableContext* menu, MenuItemState* item);
 void fn_2_2FA7C(MenuTableContext* menu, MenuItemState* item);
 void fn_2_2FD00(MenuTableContext* menu, MenuItemState* item);
 void fn_2_30D80(MenuTableContext* menu, MenuItemState* item);
+s32 fn_2_20CB0(u32 index);
 
 #endif
