@@ -59,4 +59,6 @@ s32 fn_2_33BC(void);
 
 s32 fn_2_A62C(void);
 
+void fn_2_1216C(void);
+
 #endif
