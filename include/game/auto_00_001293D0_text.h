@@ -5,5 +5,6 @@
 
 void fn_3_12DB54(void);
 void fn_3_12E808(void);
+u32 fn_3_12DD88(void);
 
 #endif
