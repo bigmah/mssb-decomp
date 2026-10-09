@@ -3,6 +3,9 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void fn_800A7568(void);
+extern u8 lbl_8037169C[];
+extern u8 lbl_803C6CF8[];
 extern void starMissionRelated2(void);
 extern u8 lbl_3_common_bss_37400[];
 
@@ -386,6 +389,35 @@ void fn_3_5C5C8(void) {
         if (st == 1 || st == 3 || st == 4) {
             *(s16*)(g_Scores + 0x9C) += 1;
             g_Runners[i].runnerOnFieldOrOutOrScored = 3;
+        }
+    }
+}
+
+// fn_3_5C418, size:0x118
+void fn_3_5C418(void) {
+    s32 inScene = 0;
+    if (g_GameLogic.gameStatus == 1 || g_GameLogic.gameStatus == 2 || (u8)(g_GameLogic.gameStatus - 0x13) <= 3 ||
+        g_GameLogic.gameStatus == 7) {
+        inScene = 1;
+    }
+    if (unkSimulationRelatedStruct._08 == 0) {
+        if (lbl_803C77B8._02 & 0x1000) {
+            unkSimulationRelatedStruct._08 = 1;
+        }
+    } else {
+        if (inScene != 0) {
+            changeScene(3, 6);
+        }
+        if (lbl_8037169C[0x13] != 0 && inScene != 0) {
+            if ((s32)lbl_803C6CF8[0x715] == 1) {
+                lbl_3_common_bss_32724[0x96] = 1;
+                g_GameLogic.framesOfExitingToMenu = 1;
+                return;
+            }
+            if (unkSimulationRelatedStruct._09 == 0) {
+                fn_800A7568();
+                unkSimulationRelatedStruct._09 = 1;
+            }
         }
     }
 }
