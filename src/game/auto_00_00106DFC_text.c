@@ -30,6 +30,9 @@ extern void fn_3_9DC18(void*, s32, s32);
 extern void manageStadiumLoading(void);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern s32 fn_3_107D34(u8*, u8*);
+extern void fn_3_9E078(s32*, s32, s32);
+extern u8 lbl_8037169C[];
+extern void changeScene(s32, s32);
 extern void fn_3_1128E8(void);
 extern void fn_3_1160B8(void);
 extern void fn_3_1323CC(void);
@@ -252,4 +255,22 @@ void fn_3_1078F8(void) {
     } while (i < 6);
     fn_3_9DC18(g_Minigame + 0x1E1C, 6, 0);
     fn_3_5A6D4(0x28);
+}
+
+// fn_3_10AD48, size:0xD0
+void fn_3_10AD48(void) {
+    s32 arr[4];
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        arr[i] = -1;
+    }
+    for (i = 0; i < 4; i++) {
+        if (*(s8*)(g_Minigame + 0x18CC + i) >= 0) {
+            arr[i] = i;
+        }
+    }
+    fn_3_9E078(arr, g_Minigame[0x1906], 0);
+    for (i = 0; i < 4; i++) {
+        g_Minigame[0x18E0 + i] = arr[i];
+    }
 }
