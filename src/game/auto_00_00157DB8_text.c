@@ -54,3 +54,12 @@ void fn_3_1580AC(void) {
     *(void**)lbl_803CC1B8 = fn_3_157E28;
 }
 
+// fn_3_1581FC, size:0x68
+void fn_3_1581FC(void) {
+    fn_80034E20(lbl_803CC1B8, lbl_3_data_BD50);
+    if (lbl_800EF808[0x398] == 1) {
+        playSoundEffect(0x1AD);
+    }
+    *(void**)lbl_803CC1B8 = fn_3_15810C;
+}
+
