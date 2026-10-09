@@ -85,3 +85,10 @@ void fn_2_74D8C(void) {
 void fn_2_76098(void) {
 }
 
+// fn_2_7609C, size:0x30
+void fn_2_7609C(s32 unused, u8 a, u8 c) {
+    if (c == 0) {
+        fn_2_8794(a, 0);
+    }
+}
+
