@@ -25,3 +25,7 @@ void fn_2_37430(u8* a, u8* b) {
 void fn_2_3745C(void) {
 }
 
+// fn_2_37D70, size:0x4
+void fn_2_37D70(void) {
+}
+
