@@ -7,5 +7,6 @@ void fn_2_0(void);
 void fn_2_3C(void);
 void fn_2_160(void);
 void fn_2_2D8(void);
+void fn_2_2DC(void);
 
 #endif
