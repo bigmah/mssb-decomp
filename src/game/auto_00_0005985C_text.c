@@ -4,6 +4,9 @@
 
 extern s32 fn_80022B68(void);
 
+extern u8 g_Fielders[];
+extern u8 lbl_3_data_3C40[];
+
 extern void fn_80017D28(void* allocation);
 
 extern void fn_3_58688(void);
@@ -250,6 +253,28 @@ s32 fn_3_5DCE0(void) {
         handled = 1;
     }
     return handled;
+}
+
+// fn_3_5985C, size:0x74
+void fn_3_5985C(s32 arg0, s32 arg1) {
+    s32 v;
+    u8* fielder = g_Fielders + arg0 * 0x268;
+    if (arg0 == -1) {
+        return;
+    }
+    fielder[0x1D3] = arg1;
+    v = *(s32*)(lbl_3_data_3C40 + arg1 * 8);
+    if (v >= 0) {
+        *((u8*)&g_FieldingLogic + 0xF8 + arg0) = v;
+    }
+    fielder[0x1D5] = 0;
+    fielder[0x1D6] = 0;
+    *(s16*)(fielder + 0x1A4) = 0;
+    *(s16*)(fielder + 0x1AC) = 0;
+    fielder[0x1FF] = 0;
+    if (arg1 == 0x18) {
+        *(s16*)((u8*)&g_FieldingLogic + 0xBC) = arg0;
+    }
 }
 
 // fn_3_598D0, size:0x48
