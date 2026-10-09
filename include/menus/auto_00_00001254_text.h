@@ -53,4 +53,6 @@ s32 fn_2_148C(u16* p);
 
 void fn_2_120D0(void);
 
+void fn_2_7D44(void);
+
 #endif

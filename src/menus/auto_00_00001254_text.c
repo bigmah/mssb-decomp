@@ -27,6 +27,8 @@ typedef struct MenuEntrySlot {
 extern MenuEntrySlot lbl_80371C30[];
 
 extern u8 lbl_2_bss_100B4;
+extern u8 lbl_2_bss_100B8[];
+extern void fn_2_16A74(s32, s32);
 extern u8* lbl_803CBBCC[];
 
 // fn_2_1D54, size:0x70
@@ -291,4 +293,17 @@ void fn_2_120D0(void) {
     lbl_8034E978[0x26] = 1;
     fn_800AD038(*(void**)(lbl_8034E9A0 + 0x46E8));
     ((u8*)&g_d_GameSettings)[0x10] = 0;
+}
+
+// fn_2_7D44, size:0x98
+void fn_2_7D44(void) {
+    if (*(u16*)(lbl_803CBBCC[0] + 6) == 9) {
+        memset(lbl_2_bss_100B8, 0, 0x54);
+    }
+    lbl_8034E9A0[0x4755] = 1;
+    lbl_2_bss_100B8[0x2D] = 4;
+    fn_2_16A74(0, 0);
+    fn_2_16A74(1, 0);
+    fn_2_16A74(2, 0);
+    fn_2_16A74(3, 0);
 }
