@@ -7,7 +7,12 @@ typedef struct {
     u8 padding[0x1976A0];
     s32 selection;
     s32 secondarySelection;
-    u8 padding1976A8[0x1BB];
+    u8 padding1976A8[0xFA];
+    s16 frameSetA[5];
+    u8 padding1977AC[0x62];
+    s16 frameSetB[5];
+    s16 frameSetC[5];
+    u8 padding197822[0x41];
     s8 port;
 } MenuInputContext;
 
@@ -28,7 +33,9 @@ typedef struct {
     u8 padding[4];
     s16 state;
     s16 timer;
-    u8 padding08[6];
+    u8 padding08[2];
+    s16 index;
+    u8 padding0C[2];
     s16 offset;
 } MenuItemState;
 
@@ -115,5 +122,7 @@ void fn_2_29F18(MenuTableContext* menu, MenuItemState* item);
 void fn_2_2C378(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_2835C(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_26170(MenuTableContext* menu, MenuItemState* item);
 
 #endif
