@@ -133,4 +133,6 @@ void fn_2_28224(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_26F80(MenuTableContext* menu, MenuItemState* item);
 
+void fn_2_253B0(MenuTableContext* menu, MenuItemState* item);
+
 #endif
