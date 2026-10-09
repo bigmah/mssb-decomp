@@ -24,6 +24,11 @@ typedef struct {
 
 #include "static/UnknownHomes_Static.h"
 extern void* lbl_2_bss_340140[];
+extern u8* lbl_803CC1B8;
+extern u8* lbl_2_bss_1A824C[];
+extern void fn_2_3FA14(void);
+extern void fn_2_46D34(s32 delta);
+extern s32 lbl_2_data_38BC;
 
 extern u8 lbl_800F7478[];
 
@@ -1145,4 +1150,42 @@ void fn_2_91058(u8* object) {
     fn_80062890(0x40);
     *(f32*)(object + 0x2C) = (f32)atan2(-(*(f32*)(g + 0x1610) - *(f32*)(g + 0x16E8)), -(*(f32*)(g + 0x1618) - *(f32*)(g + 0x16F0)));
     *(s16*)(object + 0x90) = 1;
+}
+
+// .text:0x90EC4 size:0x194
+void fn_2_90EC4(u8* object) {
+    Mtx m;
+    Vec v;
+    u8* queue = lbl_803CC1B8;
+    if (object[0xB5] != 0) {
+        f32 s = (f32)sin(*(f32*)(object + 0x88));
+        f32 v = lbl_2_rodata_10B8[0] * -s;
+        *(f32*)(object + 0x88) = *(f32*)(object + 0x88) + lbl_2_rodata_10BC;
+        if (v >= 0.0f) {
+            *(f32*)(object + 0x88) = 0.0f;
+            v = 0.0f;
+            object[0xB5] = 0;
+        }
+        *(f32*)(object + 4) = v;
+    } else {
+        *(f32*)(object + 4) = 0.0f;
+    }
+    PSMTXRotRad(m, 'Y', *(f32*)(object + 0x2C));
+    v.x = lbl_2_rodata_1080;
+    v.y = lbl_2_rodata_1080;
+    v.z = lbl_2_rodata_10A8[0];
+    PSMTXMultVec(m, &v, &v);
+    *(f32*)(object + 0x0) = *(f32*)(object + 0x0) - v.x;
+    *(f32*)(object + 0x8) = *(f32*)(object + 0x8) - v.z;
+    if (*(f32*)(object + 0x4) >= lbl_2_rodata_1080) {
+        fn_2_46D34(lbl_2_data_38BC);
+        if (*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x43BE) < 0x3E7) {
+            u8* q = fn_800B0A5C_insertQueue((void*)fn_2_3FA14, 2);
+            q[0x28] = 0;
+            *(s16*)(queue + 0x10) = 0;
+        } else {
+            *(s16*)((u8*)lbl_2_bss_1A824C[0] + 0x197740) = 1;
+        }
+        *(s16*)(object + 0x90) = 2;
+    }
 }
