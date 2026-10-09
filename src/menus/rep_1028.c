@@ -55,6 +55,11 @@ extern MenuStateCallback lbl_2_data_30870[4];
 extern MenuStateCallback lbl_2_data_30880[3];
 
 extern u8 lbl_2_data_3198[];
+extern u8 lbl_2_data_30900[];
+extern const f32 lbl_2_rodata_10A8[];
+extern const f32 lbl_2_rodata_10AC[];
+extern const f32 lbl_2_rodata_10B4[];
+extern const f32 lbl_2_rodata_10B0;
 extern u8 lbl_2_data_369C[];
 
 // .text:0x904A8 size:0x90
@@ -550,5 +555,16 @@ void fn_2_8FAE0(s32 index, s16 type) {
         effect->f5C = lbl_2_rodata_1080;
         effect->flag59 = 1;
         effect->mode = 3;
+    }
+}
+
+
+// .text:0x8F6D0 size:0x50
+void fn_2_8F6D0(s32 index, s32 value) {
+    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    u8* anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    if (anim != NULL) {
+        *(s16*)(slot + 0xA6) = 0;
+        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[value];
     }
 }
