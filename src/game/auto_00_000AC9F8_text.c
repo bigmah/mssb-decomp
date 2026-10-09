@@ -27,6 +27,7 @@ extern void fn_3_B02A8(void);
 extern void fn_3_6714C(s32 player);
 extern void fn_3_B3A4C(void);
 extern void fn_3_B1DD0(void);
+extern void fn_3_6EBB4(s32);
 extern u8 lbl_80366158[];
 extern u8 lbl_8037169C[];
 extern u8 lbl_80354720[];
@@ -484,4 +485,32 @@ void fn_3_B2630(void) {
     } else {
         fn_3_B1DD0();
     }
+}
+
+// fn_3_AD2A0, size:0x11C
+void fn_3_AD2A0(void) {
+    s32 i;
+    s32 j;
+    s32 first = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0];
+    for (i = 0; i < 9; i++) {
+        for (j = 1; j < 10; j++) {
+            if (i == g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][j][0]) {
+                s32 v;
+                if (g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][j][1] !=
+                    *(s16*)(lbl_3_common_bss_34C90 + 0x242 + i * 2)) {
+                    lbl_3_common_bss_34C90[0x260] = 1;
+                }
+                v = *(s16*)(lbl_3_common_bss_34C90 + 0x242 + i * 2);
+                g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][j][1] = v;
+                if (v == 0) {
+                    g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0] = i;
+                    if (first != g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]) {
+                        g_GameLogic.playOverInd = 1;
+                    }
+                }
+            }
+        }
+    }
+    fn_3_596F8();
+    fn_3_6EBB4(g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]);
 }
