@@ -59,4 +59,6 @@ void fn_2_1FF14(s32 count);
 
 void fn_2_242FC(void);
 
+void fn_2_24238(void);
+
 #endif
