@@ -92,3 +92,8 @@ void fn_2_11A0(u16 value) {
     *(u16*)(lbl_803CBBCC[0] + 2) = value;
     *(u16*)(lbl_803CBBCC[0] + 4) = 0;
 }
+
+// fn_2_11D8, size:0x44
+void fn_2_11D8(void) {
+    ((void (**)(void))lbl_2_data_138)[*(u16*)(lbl_803CBBCC[0] + 2)]();
+}
