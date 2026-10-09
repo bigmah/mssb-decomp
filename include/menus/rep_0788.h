@@ -27,7 +27,8 @@ typedef struct {
 typedef struct {
     u8 padding[4];
     s16 state;
-    u8 padding06[8];
+    s16 timer;
+    u8 padding08[6];
     s16 offset;
 } MenuItemState;
 
@@ -100,5 +101,7 @@ void fn_2_2A21C(MenuTableContext* menu, MenuItemState* item);
 void fn_2_2D508(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_24488(void);
+
+void fn_2_322E4(MenuTableContext* menu, MenuItemState* item);
 
 #endif
