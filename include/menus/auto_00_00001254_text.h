@@ -51,4 +51,6 @@ s32 fn_2_60D4(u8 index);
 
 s32 fn_2_148C(u16* p);
 
+void fn_2_120D0(void);
+
 #endif

@@ -276,3 +276,19 @@ s32 fn_2_148C(u16* p) {
 done:
     return n;
 }
+
+// fn_2_120D0, size:0x9C
+void fn_2_120D0(void) {
+    lbl_8034E9A0[0x48AD] = 1;
+    lbl_8034E9A0[0x4755] = 3;
+    lbl_803C66B0[0] = 0;
+    lbl_803C66B0[0x5A] = 0;
+    lbl_803C66B0[0x59] = 0;
+    lbl_8034E9A0[0x472A] = 0xFF;
+    lbl_8034E9A0[0x48AF] = 1;
+    lbl_8034E9A0[0x48B1] = 1;
+    memset(lbl_803C66B0 + 1, 0, 6);
+    lbl_8034E978[0x26] = 1;
+    fn_800AD038(*(void**)(lbl_8034E9A0 + 0x46E8));
+    ((u8*)&g_d_GameSettings)[0x10] = 0;
+}
