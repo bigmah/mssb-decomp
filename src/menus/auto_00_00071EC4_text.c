@@ -125,3 +125,11 @@ void fn_2_85108(void) {
 void fn_2_8515C(void) {
 }
 
+// fn_2_85160, size:0x48
+void fn_2_85160(void) {
+    u8* p = lbl_803CC1B8;
+    if (--*(s16*)(p + 0x10) == 0) {
+        fn_800625A4(0, 4);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
+}
