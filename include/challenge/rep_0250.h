@@ -27,4 +27,6 @@ void fn_1_90E4(s32 value);
 
 void fn_1_9380(void* object);
 
+void fn_1_97E4(void);
+
 #endif
