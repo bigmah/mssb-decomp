@@ -447,3 +447,45 @@ s32 fn_2_4E9A8(void) {
     }
     return 1;
 }
+
+typedef struct {
+    s32 w0;
+    s16 f4;
+    s16 f6;
+    s16 f8;
+    s16 fA;
+    s16 fC;
+    s16 fE;
+} InitEntry;
+extern InitEntry lbl_2_data_205D4[];
+extern void fn_2_5389C(void);
+
+// fn_2_54890, size:0x124
+void fn_2_54890(void) {
+    u8* q;
+    s32 i;
+    InitEntry* e;
+    lbl_8034E978[0] = 0x5C;
+    lbl_8034E978[9] = lbl_8034E978[8];
+    lbl_8034E978[8] = ((Row10*)lbl_800FEF70)[0x5C].f8;
+    fn_800B0A5C_insertQueue((void*)fn_80053FE8, 0);
+    q = fn_800B0A5C_insertQueue((void*)fn_2_5389C, 0);
+    *(s16*)(q + 0x1C) = 0;
+    *(s16*)(q + 0x1E) = 0;
+    for (i = 0; i < 0x2B; i++) {
+        u8* p;
+        e = &lbl_2_data_205D4[i];
+        p = (u8*)lbl_2_bss_1A8234[0] + e->f8 * 0x5100 + e->f4 * 0x18;
+        *(s32*)p = e->w0;
+        *(s16*)(p + 8) = e->f4;
+        *(s16*)(p + 0xA) = e->f6;
+        *(s16*)(p + 0xC) = e->f8;
+        *(s16*)(p + 0xE) = e->fA;
+        *(s16*)(p + 0x10) = e->fC;
+    }
+    ((u8*)lbl_2_bss_1A8234[0] + 0x160000)[0x2604] = 1;
+    ((u8*)lbl_2_bss_1A8234[0] + 0x160000)[0x2605] = 1;
+    ((u8*)lbl_2_bss_1A8234[0] + 0x160000)[0x2606] = 1;
+    ((u8*)lbl_2_bss_1A8234[0] + 0x160000)[0x2607] = 1;
+    ((u8*)lbl_2_bss_1A8234[0] + 0x160000)[0x260A] = 1;
+}
