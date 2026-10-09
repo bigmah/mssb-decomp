@@ -23,3 +23,8 @@ void fn_2_0(void) {
     GXSetAlphaCompare(4, 0, 0, 7, 0);
 }
 
+// fn_2_3C, size:0x2C
+void fn_2_3C(void) {
+    fn_800A7D4C(0, lbl_2_data_C0);
+}
+
