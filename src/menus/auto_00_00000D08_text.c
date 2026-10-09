@@ -26,6 +26,27 @@ void fn_2_D08(u16 ch, u16 time, u8 mode) {
     }
 }
 
+// fn_2_D88, size:0xFC
+void fn_2_D88(u16 ch, s16 id) {
+    SeqEnt* entry;
+    s32 c;
+    c = ch;
+    if (id == lbl_2_bss_D958[c] && sndSeqGetValid(lbl_2_bss_D974[c])) {
+        return;
+    }
+    entry = &lbl_2_data_128[id];
+    if (lbl_2_bss_D974[c] != -1) {
+        if (sndSeqGetValid(lbl_2_bss_D974[c])) {
+            sndSeqVolume(0, 0, lbl_2_bss_D974[c], 1);
+            sndSeqStop(lbl_2_bss_D974[c]);
+        }
+        lbl_2_bss_D974[c] = -1;
+        lbl_2_bss_D958[c] = -1;
+    }
+    lbl_2_bss_D974[c] = sndSeqPlayEx(entry->a, entry->b, ((void**)lbl_2_bss_D984)[entry->c], 0, 0);
+    lbl_2_bss_D958[c] = id;
+}
+
 // fn_2_F64, size:0xB4
 void fn_2_F64(void) {
     u16 i;
