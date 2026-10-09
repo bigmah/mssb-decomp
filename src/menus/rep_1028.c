@@ -1061,3 +1061,43 @@ void fn_2_8F3D4(s32 index) {
         break;
     }
 }
+
+// .text:0x8F0F4 size:0x188
+void fn_2_8F0F4(s32 index) {
+    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    s32 alpha;
+    switch (*(s16*)(slot + 0xA6)) {
+    case 0:
+        color.a = 0xFF;
+        *(f32*)(slot + 0x84) = lbl_2_rodata_1078;
+        *(s16*)(slot + 0xA6) = 1;
+        fn_800BD2CC(1, color);
+    case 1:
+        *(f32*)(slot + 0x84) = *(f32*)(slot + 0x84) - *(f32*)(slot + 0x8C);
+        alpha = (s32)(lbl_2_rodata_107C * *(f32*)(slot + 0x84));
+        if (alpha > 1) {
+            color.a = alpha;
+            fn_800BD2CC(1, color);
+        } else {
+            color.a = 0;
+            fn_800BD2CC(1, color);
+            *(s16*)(slot + 0xA6) = 2;
+        }
+        break;
+    case 2:
+        color.a = 0;
+        fn_800BD2CC(1, color);
+        *(s16*)(slot + 0xA0) = 1;
+        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
+        *(s16*)(slot + 0xA6) = 3;
+        break;
+    case 3:
+        if (*(s16*)(slot + 0xA0) == 2) {
+            color.a = 0xFF;
+            fn_800BD2CC(0, color);
+            *(s16*)(slot + 0xA6) = 4;
+        }
+        break;
+    }
+}
