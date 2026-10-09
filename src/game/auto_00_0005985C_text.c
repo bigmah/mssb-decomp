@@ -3,6 +3,8 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
+extern u8 lbl_80366158[];
 extern void fn_3_6C13C(void*, void*);
 extern void fn_3_16598C(void);
 extern u8 g_RunningLogic[];
@@ -463,4 +465,32 @@ void fn_3_5D3FC(void) {
     if (gs->exhibitionMatchInd == 0) {
         fn_3_16598C();
     }
+}
+
+// fn_3_5B220, size:0x148
+s32 fn_3_5B220(s32 arg) {
+    if (g_GameLogic.frames_memoryCardWriteOnMVP < 0x7FFE) {
+        g_GameLogic.frames_memoryCardWriteOnMVP += 1;
+    } else {
+        g_GameLogic.frames_memoryCardWriteOnMVP = 0x7FFF;
+    }
+    switch ((s32)g_GameLogic.endGameStage) {
+    case 0:
+        if (arg == 1 && g_Minigame._1A3C == 0 && g_Minigame._1A44 == 0 && g_Minigame._1A45 == 0 && g_Minigame._1A43 == 0) {
+            return 1;
+        }
+        fn_8003BF54(lbl_80366158[0x27], 0, 0, 1, 0, 4, 5, 0, 0);
+        g_GameLogic.endGameStage += 1;
+        break;
+    case 1: {
+        s16 v = ((s16*)*(u8**)&lbl_803CC1B8)[8];
+        if (v == 1 || (u16)(v - 0xB) <= 1U || v == 7) {
+            g_GameLogic.endGameStage += 1;
+        }
+        break;
+    }
+    default:
+        return 1;
+    }
+    return 0;
 }
