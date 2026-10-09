@@ -21,8 +21,6 @@ extern u8* lbl_803CC1B8;
 extern u32 lbl_803CB750;
 extern void fn_8004153C(void);
 extern void fn_800A97D0(s32, s32);
-extern void fn_2_554(void);
-extern void fn_2_664(void);
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_803C66B0[];
 extern u8 lbl_2_data_C0[];
@@ -31,7 +29,8 @@ extern u8* lbl_2_bss_4;
 typedef struct {
     u8 pad0[2];
     u16 held;
-    u8 pad4[0x1C];
+    u16 held4;
+    u8 pad6[0x1A];
 } PadEntry;
 extern u8* lbl_803CBBCC[];
 extern PadEntry lbl_803C77B8[];
@@ -147,4 +146,43 @@ void fn_2_664(void) {
             *(u16*)(lbl_8034E9A0 + i * 6 + 0x4730) = *(u16*)((u8*)lbl_803C77B8 + (s8)lbl_8034E9A0[i + 0x46F8] * 32 + 4);
         }
     }
+}
+
+// fn_2_1A8, size:0x130
+s32 fn_2_1A8(u8 idx, u8 kind, u16 mask) {
+    u16 v = 0;
+    s32 r = -1;
+    switch (kind) {
+    case 0:
+        v = *(u16*)((u8*)lbl_803C77B8 + idx * 32);
+        break;
+    case 1:
+        v = ((u16*)(lbl_803CBBCC[0] + 0xC))[idx];
+        break;
+    case 2:
+        v = lbl_803C77B8[idx].held4;
+        break;
+    }
+    v &= mask;
+    if (kind == 1) {
+        lbl_803CBBCC[0][0x10] |= 1 << idx;
+    }
+    if (v & 0x100) {
+        r = 4;
+    } else if (v & 0x200) {
+        r = 5;
+    } else if (v & 8) {
+        r = 0;
+    } else if (v & 4) {
+        r = 1;
+    } else if (v & 1) {
+        r = 2;
+    } else if (v & 2) {
+        r = 3;
+    } else if (v & 0x40) {
+        r = 6;
+    } else if (v & 0x20) {
+        r = 7;
+    }
+    return r;
 }

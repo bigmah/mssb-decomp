@@ -7,6 +7,7 @@ void fn_2_0(void);
 void fn_2_3C(void);
 void fn_2_110(void);
 void fn_2_160(void);
+s32 fn_2_1A8(u8 idx, u8 kind, u16 mask);
 void fn_2_2D8(void);
 void fn_2_2DC(void);
 void fn_2_328(void);
@@ -17,5 +18,7 @@ void fn_2_A14(void);
 void _prolog(void);
 void _epilog(void);
 void fn_2_708(void);
+void fn_2_664(void);
+void fn_2_554(void);
 
 #endif
