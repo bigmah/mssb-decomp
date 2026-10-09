@@ -164,3 +164,20 @@ void fn_2_467FC(void) {
         }
     }
 }
+
+// fn_2_45978, size:0x10C
+void fn_2_45978(void) {
+    s32 i;
+    s32 j;
+    for (i = 0; i < 54; i++) {
+        u8* entry = lbl_2_bss_1A8248[0] + i * 0x34;
+        entry[7] = entry[6];
+        for (j = 0; j < 10; j++) {
+            entry[0x1D + j * 2] = entry[9 + j * 2];
+            entry[0x1E + j * 2] = entry[10 + j * 2];
+        }
+        lbl_2_bss_1A8248[0][i + 0x444D] = 0;
+        lbl_2_bss_1A8248[0][i + 0x4483] = 0;
+        lbl_2_bss_1A8248[0][i + 0x44B9] = 0;
+    }
+}
