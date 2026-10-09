@@ -140,3 +140,21 @@ void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data) {
         menu->count++;
     }
 }
+
+// fn_1_28AE0, size:0x154
+s32 fn_1_28AE0(ChallengeSimulationMenu* menu) {
+    ChallengeQueueEntry* entry = lbl_803CC1B8;
+    entry->selection = menu->items[menu->selected].selection;
+    if (entry->selection < 0) {
+        fn_800AD038(lbl_80366158[2]);
+        fn_800A97D0(16, 30);
+        {
+            ChallengeQueueState* state = lbl_803CC1B8->state;
+            state->state = 1;
+            fn_800B0A14_removeQueue(state);
+        }
+    } else {
+        fn_1_28C34(menu, entry->selection, (void*)menu->items[menu->selected].text);
+    }
+    return 0;
+}

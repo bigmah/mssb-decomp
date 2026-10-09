@@ -11,6 +11,8 @@ typedef struct {
 typedef struct {
     u8 padding[0x0C];
     ChallengeQueueState* state;
+    u8 padding10[5];
+    s8 selection;
 } ChallengeQueueEntry;
 
 typedef struct {
@@ -24,7 +26,9 @@ typedef struct {
 typedef struct {
     u32 flags;
     const char* text;
-    u8 padding[0x24];
+    u8 padding08[0x1C];
+    u32 selection;
+    u8 padding28[4];
 } ChallengeMenuItem;
 
 typedef struct {
@@ -50,5 +54,7 @@ s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons);
 void fn_1_2948C(u8* object);
 
 void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data);
+
+s32 fn_1_28AE0(ChallengeSimulationMenu* menu);
 
 #endif
