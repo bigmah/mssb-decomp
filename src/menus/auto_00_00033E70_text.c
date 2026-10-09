@@ -65,3 +65,18 @@ void fn_2_37D90(void) {
 void fn_2_37D94(void) {
 }
 
+// fn_2_38EA8, size:0xA0
+void fn_2_38EA8(void) {
+    lbl_2_bss_1A8248[0][0x4416] = lbl_2_bss_1A8248[0][0x4415];
+    lbl_2_bss_1A8244[0][0xE4 + lbl_2_bss_1A8248[0][0x4415]] = 1;
+    if (lbl_2_bss_1A8248[0][0x4415] < 3) {
+        u8* e = lbl_2_bss_1A8244[0] + lbl_2_bss_1A8248[0][0x441C];
+        if (e[0xE8] == 0) {
+            e[0xE8] = 1;
+        }
+        lbl_2_bss_1A8248[0][0x4415] = lbl_2_bss_1A8248[0][0x4415] + 1;
+        e = lbl_2_bss_1A8244[0] + lbl_2_bss_1A8248[0][0x441C];
+        e[0xDE] = e[0xDE] + 1;
+    }
+}
+
