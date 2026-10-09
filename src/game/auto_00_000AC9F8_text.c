@@ -546,6 +546,7 @@ s32 fn_3_B1470(void) {
     return 0;
 }
 
+#pragma dont_inline off
 // fn_3_B11D0, size:0x128
 void fn_3_B11D0(void) {
     fn_3_5F720();
@@ -578,6 +579,7 @@ void fn_3_B11D0(void) {
     fn_3_5A6D4(1);
     fn_3_6C0E0();
 }
+#pragma dont_inline on
 
 // fn_3_B02A8, size:0x148
 void fn_3_B02A8(void) {
@@ -617,3 +619,24 @@ void fn_3_B02A8(void) {
         lbl_3_common_bss_34C58._24 = 0x78;
     }
 }
+
+// fn_3_B12F8, size:0x178
+void fn_3_B12F8(void) {
+    fn_3_F578();
+    fn_3_753E8(0);
+    setBatterContactConstants();
+    fn_3_8A1D8();
+    fn_3_58E50();
+    fn_3_1E154();
+    fn_3_59A90();
+    fn_3_6C108();
+    g_Strikes.strikes = 0;
+    g_Strikes.balls = 0;
+    g_GameLogic._125 = 1;
+    g_GameLogic.pre_PostMiniGameInd = 1;
+    g_GameLogic.minigameLastTurnSuccessInd = 1;
+    fn_3_B11D0();
+    fn_3_6714C(0);
+}
+
+#pragma dont_inline off
