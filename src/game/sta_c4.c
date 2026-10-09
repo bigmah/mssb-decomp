@@ -310,7 +310,6 @@ void fn_3_F9088(f32* pos, s32 idx) {
 }
 
 // .text:0x000F9164 size:0x198 mapped:0x807381F8
-// partial: ~14 diff insns; only the g_Ball/B5D8/B620 tail address-reg assignment (r3/r4/r5) and snd/stad saved-reg order differ
 void fn_3_F9164(u8* o) {
     s32 stad;
     s32 slot;
@@ -432,7 +431,6 @@ void fn_3_F963C(s32 idx, u8* v) {
 #pragma dont_inline on
 
 // .text:0x000F976C size:0x284 mapped:0x80738800
-// partial: = inlined F99F0 + F963C; same snd/stad saved-reg swap and tail reg assignment as F99F0
 void fn_3_F976C(s32 idx, s32 b, u8* c) {
     F9164_inl(lbl_3_common_bss_350E4.p0 + idx * 0xE8);
     fn_3_F963C(idx, c);
