@@ -24,3 +24,10 @@ void fn_2_71EC4(u8* obj) {
     ((void (*)(u8*))lbl_2_data_2A1E8[*(s16*)(obj + 0x94)])(obj);
 }
 
+// fn_2_71EFC, size:0x24
+void fn_2_71EFC(u8* obj) {
+    s32 i = *(s32*)(obj + 0x80);
+    u8* b = lbl_2_bss_1A8248[0];
+    *(u8*)(b + i * 0xD8 + 0x16D0) = 0;
+}
+
