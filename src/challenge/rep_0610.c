@@ -400,3 +400,27 @@ void fn_1_160F8(s32 direction) {
 }
 
 #pragma fp_contract on
+
+extern const f32 lbl_1_rodata_73C8;
+extern s32 getAnimRelatedCoordinates(s32, s32, void*);
+
+// .text:0xD4BC size:0xD4
+void fn_1_D4BC(void) {
+    Vec coordinates;
+    u8* scene = lbl_8036E548;
+    u8* object = scene + 0xC04;
+    if (object != NULL) {
+        object[0x276] = (s32)object[0x276] >> 1;
+        object[0x276] = (object[0x276] * 8) & 0xF8;
+        getAnimRelatedCoordinates(0, 0x1E, &coordinates);
+        if (*(f32*)(object + 0x38) - coordinates.y < lbl_1_rodata_73C8) {
+            object[0x276] |= 2;
+        }
+        getAnimRelatedCoordinates(0, 0x22, &coordinates);
+        if (*(f32*)(object + 0x38) - coordinates.y < lbl_1_rodata_73C8) {
+            object[0x276] |= 4;
+        }
+    }
+    object = *(u8**)(scene + 0x2C50);
+    object[0x276] |= 1;
+}
