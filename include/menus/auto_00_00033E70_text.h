@@ -27,4 +27,6 @@ void fn_2_37D90(void);
 
 void fn_2_37D94(void);
 
+void fn_2_38EA8(void);
+
 #endif
