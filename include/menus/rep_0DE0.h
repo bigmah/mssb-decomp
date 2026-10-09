@@ -52,4 +52,6 @@ void fn_2_86F40(void);
 
 void fn_2_86FEC(void);
 
+void fn_2_868C8(void);
+
 #endif

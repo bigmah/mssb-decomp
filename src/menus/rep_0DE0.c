@@ -1,6 +1,7 @@
 #include "menus/rep_0DE0.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
+#include <string.h>
 
 
 extern u8* lbl_2_bss_1A8248[];
@@ -22,6 +23,37 @@ extern void fn_2_86470(void);
 extern void fn_2_85D6C(Mtx);
 extern void fn_2_190DC(MenuDrawCollection*, Mtx);
 extern void fn_800A7D4C(s32, void*);
+extern f32 fn_2_4A1E8(f32, f32);
+extern const f32 lbl_2_rodata_EAC;
+extern Vec lbl_2_data_2E9C4;
+extern Vec lbl_2_data_2E9D0;
+extern f32 lbl_2_bss_B29C;
+
+// fn_2_868C8, size:0xEC
+void fn_2_868C8(void) {
+    Vec position;
+    Vec difference;
+    MenuDrawState* state = lbl_2_bss_340140[0]->states;
+    f32 x;
+    f32 z;
+
+    memcpy(&position, &state->position, sizeof(Vec));
+    PSVECSubtract(&position, &lbl_2_data_2E9D0, &difference);
+    x = difference.x * lbl_2_rodata_EAC;
+    z = difference.z * lbl_2_rodata_EAC;
+    difference.x = x;
+    difference.z = z;
+    if (0.0f != x || 0.0f != z) {
+        lbl_2_bss_B29C = fn_2_4A1E8(difference.z, x);
+    }
+    memcpy(&lbl_2_data_2E9D0, &state->position, sizeof(Vec));
+    state->position.x = position.x;
+    state->position.y = position.y;
+    state->position.z = position.z;
+    state->rotation.x = lbl_2_data_2E9C4.x;
+    state->rotation.y = lbl_2_bss_B29C;
+    state->rotation.z = lbl_2_data_2E9C4.z;
+}
 
 // fn_2_86FEC, size:0xE8
 void fn_2_86FEC(void) {
