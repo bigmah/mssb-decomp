@@ -87,3 +87,14 @@ s32 fn_3_107988(u32 v) {
     }
     return 0;
 }
+
+// fn_3_109D88, size:0x58
+u8* fn_3_109D88(void) {
+    if (g_Minigame[0x1A3C] != 0) {
+        return lbl_803616CC + 0x118;
+    }
+    if (g_Minigame[0x1A2A] != 0) {
+        return lbl_803616CC + (g_Minigame[0x1A2A] - 1) * 0x28 + 0x28;
+    }
+    return lbl_803616CC;
+}
