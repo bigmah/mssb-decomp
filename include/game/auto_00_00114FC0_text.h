@@ -16,5 +16,6 @@ void fn_3_115BDC(void);
 void fn_3_1160B8(void);
 void fn_3_11669C(void);
 void fn_3_1166CC(void);
+void fn_3_11678C(void);
 
 #endif

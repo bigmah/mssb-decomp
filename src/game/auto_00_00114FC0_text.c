@@ -17,6 +17,10 @@ extern u8 lbl_8037169C[];
 extern void fn_3_F578(void);
 extern void fn_3_753E8(s32);
 extern u8 g_Batter[];
+extern u8 lbl_3_data_21BC4[];
+extern f32 lbl_3_data_226C4[];
+extern void fn_3_11881C(void);
+extern void fn_8001D110(s32 i, f32 a, f32 b, f32 c);
 extern u8 g_Ball[];
 extern f32 maybeInitialBatPos[];
 extern s16 lbl_3_data_2167C;
@@ -222,5 +226,25 @@ void fn_3_1166CC(void) {
         u8* p = *(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28;
         p[0x26] = 0;
         *(s32*)p = 0;
+    }
+}
+
+// fn_3_11678C, size:0xB4
+void fn_3_11678C(void) {
+    u8* e;
+    s32 i;
+    f32* v;
+    for (i = 0; i < 7; i++) {
+        e = *(u8**)(lbl_8036E548 + 0x2D94) + (i + 0xE9) * 0x28;
+        e[0x26] = 0;
+        if (i >= 4) {
+            e[0x26] = 1;
+            v = (f32*)(lbl_3_data_21BC4 + i * 0x30 - 0xC0);
+            *(f32*)(e + 4) = v[0];
+            *(f32*)(e + 8) = -v[1];
+            *(f32*)(e + 0xC) = v[2];
+            fn_8001D110(i + 0xE9, lbl_3_data_226C4[0], lbl_3_data_226C4[1], lbl_3_data_226C4[0]);
+            *(void**)e = fn_3_11881C;
+        }
     }
 }
