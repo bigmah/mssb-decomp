@@ -14,6 +14,9 @@ extern void fn_8004D0F0(void);
 extern void fn_3_11E7C4(void);
 extern void fn_3_11E364(void);
 extern void fn_3_129C88(void);
+extern void fn_3_11D780(void);
+extern void fn_3_EA454(void);
+extern u8 lbl_3_common_bss_34C90[];
 extern void* memset(void*, s32, u32);
 
 // fn_3_12DB54, size:0x2C
@@ -98,3 +101,19 @@ void fn_3_129F48(void) {
     lbl_3_common_bss_32724[0xBE] = 1;
     *(void (**)(void))((u8**)&lbl_803CC1B8)[0] = fn_3_129C88;
 }
+
+// fn_3_12C684, size:0xC8
+void fn_3_12C684(void) {
+    if (g_GameLogic[0x11E] == 0x1A && g_GameLogic[0x125] == 0) {
+        memset(g_Minigame + 0x1DF4, 0, 0xE);
+        fn_800B0A5C_insertQueue(fn_3_123990, 2);
+        fn_800B0A5C_insertQueue(fn_3_123EBC, 2);
+        fn_800B0A5C_insertQueue(fn_3_11EC28, 2);
+        fn_800B0A5C_insertQueue(fn_3_124CE0, 2);
+        fn_800B0A5C_insertQueue(fn_3_11F02C, 2);
+        lbl_3_common_bss_32724[0xB7] = 0;
+        lbl_3_common_bss_32724[0xB6] = 0;
+        fn_800B0A5C_insertQueue(fn_3_125850, 2);
+    }
+}
+
