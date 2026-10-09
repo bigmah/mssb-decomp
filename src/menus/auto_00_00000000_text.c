@@ -71,3 +71,14 @@ void fn_2_328(void) {
     }
 }
 
+// fn_2_4C4, size:0x4C
+s32 fn_2_4C4(u8* q, s8 value) {
+    u8 n = (q[0x15] + 1) % 32;
+    if (n == q[0x16]) {
+        return 0;
+    }
+    q[0x15] = n;
+    q[q[0x15] + 0x17] = value;
+    return 1;
+}
+
