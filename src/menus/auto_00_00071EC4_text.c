@@ -12,7 +12,14 @@ extern void fn_80062674(s32 index);
 extern void fn_800626EC(s32 index);
 extern void fn_800625A4(s32 a, s32 b);
 extern u8* lbl_803CC1B8;
+extern void fn_80034E20(void* object, void* data);
 extern u8 lbl_800FEF70[];
+extern u8 lbl_80361B20[];
+extern u8 lbl_800FE930[];
+extern u8 lbl_8034E9A0[];
+extern u8 lbl_803C5EA4[];
+extern u8* lbl_803CBBCC[];
+extern u8 lbl_2_data_2B4DC[];
 #include "menus/auto_00_00001254_text.h"
 
 // fn_2_73028, size:0x4
@@ -131,5 +138,20 @@ void fn_2_85160(void) {
     if (--*(s16*)(p + 0x10) == 0) {
         fn_800625A4(0, 4);
         ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
+}
+
+// fn_2_73B94, size:0x5C
+s32 fn_2_73B94(s32 a) {
+    if (lbl_2_bss_A840 == 0 && a == 6) {
+        return 0x2D;
+    }
+    if (lbl_2_bss_A840 == 6 && a == 0) {
+        return 0xE;
+    }
+    if (lbl_2_bss_A840 <= a) {
+        return 0x1D;
+    } else if (lbl_2_bss_A840 > a) {
+        return 0x2C;
     }
 }
