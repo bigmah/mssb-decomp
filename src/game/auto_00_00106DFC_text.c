@@ -321,3 +321,11 @@ void fn_3_10768C(void) {
         break;
     }
 }
+
+// fn_3_107B9C, size:0x34
+s32 fn_3_107B9C(u8* a, u8* b) {
+    if ((g_Minigame + 0x1E26)[*b] != (g_Minigame + 0x1E26)[*a]) {
+        return (g_Minigame + 0x1E26)[*b] - (g_Minigame + 0x1E26)[*a];
+    }
+    return *a - *b;
+}
