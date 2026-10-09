@@ -15,4 +15,6 @@ void fn_2_948B8(void);
 
 void fn_2_96D20(void);
 
+void fn_2_95F3C(u8* object);
+
 #endif

@@ -69,3 +69,18 @@ void fn_2_96D20(void) {
     fn_800B0A5C_insertQueue(fn_2_948B8, 0x3000);
     fn_800B0A5C_insertQueue(fn_2_96AD4, 0x3000);
 }
+
+extern s32 fn_80042DA8(void*, s32, s32);
+extern void fn_800626EC(s32);
+
+// fn_2_95F3C, size:0xA4
+void fn_2_95F3C(u8* object) {
+    if ((lbl_803C66B0[0x4F] == 0) ? 1 : 0) {
+        *(u8*)(lbl_80371C30[*(u16*)(object + 0x14)].object + 0x68) = 4;
+        *(u8*)(lbl_80371C30[*(u16*)(object + 0x14) + 1].object + 0x68) = 4;
+        *(u8*)(lbl_80371C30[*(u16*)(object + 0x14) + 3].object + 0x68) = 4;
+        *(u8*)(lbl_80371C30[*(u16*)(object + 0x14) + 4].object + 0x68) = 4;
+        fn_800626EC(0);
+        lbl_803C66B0[0x4F] = 1;
+    }
+}
