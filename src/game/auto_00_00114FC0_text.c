@@ -9,6 +9,11 @@ extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
 extern void fn_3_114A88(s32);
 extern void changeScene(s32, s32);
+extern s32 fn_3_6C938(s32, s32);
+extern void fn_3_FBD70(void);
+extern void fn_3_FBD58(void);
+extern s16 lbl_3_data_18C48[];
+extern u8 lbl_8037169C[];
 extern void fn_3_F578(void);
 extern void fn_3_753E8(s32);
 extern u8 g_Batter[];
@@ -60,6 +65,33 @@ void fn_3_11502C(void) {
             return;
         }
         fn_3_5A6D4(7);
+    }
+}
+
+// fn_3_115738, size:0xF0
+void fn_3_115738(void) {
+    switch (g_GameLogic[0x125]) {
+    case 0:
+        changeScene(1, 6);
+        g_GameLogic[0x125] = 1;
+        break;
+    case 1:
+        if (*(u16*)(g_GameLogic + 0xFC) >= lbl_3_data_18C48[2] ||
+            (*(u16*)(g_GameLogic + 0xFC) >= lbl_3_data_18C48[1] && fn_3_6C938(1, 0x1100) != 0)) {
+            changeScene(3, 6);
+            g_GameLogic[0x125] = 2;
+        }
+        break;
+    case 2:
+        if (lbl_8037169C[0x13] != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+            g_GameLogic[0x125] = 3;
+        }
+        break;
+    case 3:
+        fn_3_5A6D4(7);
+        break;
     }
 }
 
