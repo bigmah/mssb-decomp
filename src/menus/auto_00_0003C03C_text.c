@@ -578,3 +578,36 @@ void fn_2_3F55C(void) {
         o[0x28] = 0;
     }
 }
+
+// fn_2_4078C, size:0x130
+void fn_2_4078C(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    u8* p;
+    switch ((s8)o[0x28]) {
+    case 0:
+        lbl_2_bss_1A824C[0][0x19783E] = 0;
+        o[0x28] = 1;
+        break;
+    case 1:
+        p = (u8*)&lbl_803C77B8;
+        p += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        if (*(u16*)(p + 2) & 0x100) {
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        lbl_2_bss_1A824C[0][0x19783E] = 1;
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+    }
+}

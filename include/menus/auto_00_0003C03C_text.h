@@ -64,4 +64,6 @@ void fn_2_3F44C(void);
 
 void fn_2_3F55C(void);
 
+void fn_2_4078C(void);
+
 #endif
