@@ -16,4 +16,6 @@ s32 fn_2_45938(s32 index);
 
 void fn_2_460EC(void);
 
+void fn_2_460F0(void);
+
 #endif
