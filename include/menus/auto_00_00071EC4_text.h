@@ -33,4 +33,7 @@ void fn_2_82DE8(void);
 void fn_2_82E58(void);
 void fn_2_8279C(void);
 
+void fn_2_71F20(u8* obj);
+void fn_2_7207C(void);
+
 #endif
