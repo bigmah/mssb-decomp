@@ -69,6 +69,11 @@ extern void fn_2_53F04(void*);
 extern void fn_2_5400C(void);
 extern void fn_2_53CEC(void*);
 
+// fn_2_2A21C, size:0x11C
+void fn_2_2A21C(MenuTableContext* menu, MenuItemState* item) {
+    fn_2_2E17C(menu, item);
+}
+
 // fn_2_24728, size:0xD8
 s32 fn_2_24728(s32 character) {
     u8* menu = lbl_2_bss_1A8248[0];
