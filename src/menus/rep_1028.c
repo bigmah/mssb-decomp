@@ -56,6 +56,8 @@ extern MenuStateCallback lbl_2_data_30870[4];
 extern MenuStateCallback lbl_2_data_30880[3];
 
 extern u8 lbl_2_data_3198[];
+extern const f32 lbl_2_rodata_1084;
+extern const f64 lbl_2_rodata_1088;
 extern const f32 lbl_2_rodata_10B8[];
 extern const f32 lbl_2_rodata_10BC;
 extern u8 lbl_2_data_30900[];
@@ -693,5 +695,33 @@ void fn_2_90DE4(u8* object, f32 limit) {
         *(f32*)(object + 4) = v;
     } else {
         *(f32*)(object + 4) = lbl_2_rodata_1080;
+    }
+}
+
+// .text:0x8F528 size:0x118
+void fn_2_8F528(s32 index) {
+    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    s32 alpha;
+    switch (*(s16*)(slot + 0xA6)) {
+    case 0:
+        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
+        *(s16*)(slot + 0xA6) = 1;
+    case 1:
+        *(f32*)(slot + 0x84) = (f32)(*(f32*)(slot + 0x84) + lbl_2_rodata_1088);
+        alpha = (s32)(lbl_2_rodata_1084 * *(f32*)(slot + 0x84));
+        if (alpha < 0xFF) {
+            color.a = 1;
+            color.a = alpha;
+            fn_800BD2CC(1, color);
+        } else {
+            color.a = 0xFF;
+            fn_800BD2CC(0, color);
+            *(s16*)(slot + 0xA6) = 2;
+        }
+        break;
+    case 2:
+        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
+        break;
     }
 }
