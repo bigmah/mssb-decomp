@@ -232,3 +232,21 @@ void fn_2_1BAC(void) {
     memset(lbl_8034E9A0 + 0x489B, 0, 0x12);
     memset(lbl_8034E978, 0, 0x28);
 }
+
+// fn_2_60D4, size:0x64
+s32 fn_2_60D4(u8 index) {
+    u8* p;
+    if (g_d_GameSettings.GameModeSelected != 5) {
+        p = lbl_8034E9A0;
+        p += index * 4;
+        return *(s32*)(p + 0x46E0);
+    }
+    if (index != 0) {
+        p = lbl_8034E9A0;
+        p += index * 4;
+        return *(s32*)(p + 0x46E0);
+    }
+    p = lbl_8034E9A0;
+    p += index * 4;
+    return *(s32*)(p + 0x46E0);
+}

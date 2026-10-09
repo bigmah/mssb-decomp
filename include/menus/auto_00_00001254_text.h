@@ -47,4 +47,6 @@ void fn_2_6098(s32 index);
 
 void fn_2_1BAC(void);
 
+s32 fn_2_60D4(u8 index);
+
 #endif
