@@ -15,4 +15,6 @@ void fn_3_ED490(void);
 
 void fn_3_ED4FC(void);
 
+void fn_3_ED784(void);
+
 #endif
