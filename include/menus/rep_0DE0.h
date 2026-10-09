@@ -12,7 +12,27 @@ typedef struct {
 } MenuDrawState;
 
 typedef struct {
-    u8 padding[0xAC];
+    void* actor;
+    u8 padding[8];
+} MenuDrawDescriptor;
+
+typedef struct {
+    MenuDrawDescriptor descriptor;
+    u8 padding0C[0x60];
+    u8 visible;
+    u8 padding6D[0x23];
+} MenuDrawRow;
+
+typedef struct {
+    u16 count;
+    u8 padding[0x32];
+    MenuDrawRow rows[1];
+} MenuDrawCollection;
+
+typedef struct {
+    u8 padding[0x68];
+    MenuDrawCollection* collection;
+    u8 padding6C[0x40];
     void* lights[3];
     u8 paddingB8[0x2CDC];
     MenuDrawState* states;
@@ -27,5 +47,7 @@ void fn_2_870D4(f32 value);
 void fn_2_869B4(void);
 
 void fn_2_86A0C(void);
+
+void fn_2_86F40(void);
 
 #endif
