@@ -10,6 +10,7 @@
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
 extern void fn_3_5F720(void);
+extern s32 fn_8001C588(s16);
 extern s16 lbl_3_data_FC1C[];
 extern void fn_3_6C0E0(void);
 extern u8 g_RunningLogic[];
@@ -637,6 +638,47 @@ void fn_3_B12F8(void) {
     g_GameLogic.minigameLastTurnSuccessInd = 1;
     fn_3_B11D0();
     fn_3_6714C(0);
+}
+
+// fn_3_AF428, size:0x17C
+void fn_3_AF428(void) {
+    if (*(s16*)(lbl_3_common_bss_34C90 + 0x254) >= 0) {
+        if (*(s16*)(lbl_3_common_bss_34C90 + 0x25C) == *(s16*)(lbl_3_common_bss_34C90 + 0x254)) {
+            *(s16*)(lbl_3_common_bss_34C90 + 0x254) = -1;
+            return;
+        }
+        if (*(s16*)(lbl_3_common_bss_34C90 + 0x258) < 0) {
+            *(s16*)(lbl_3_common_bss_34C90 + 0x258) = *(s16*)(lbl_3_common_bss_34C90 + 0x254);
+            lbl_3_common_bss_32724[0x9C] = 0;
+            *(s32*)((u8*)&g_GameLogic + g_GameLogic.awayTeamBattingInd_battingTeam * 0x50 + 0x3C) =
+                *(s8*)(lbl_80354720 + *(s32*)lbl_3_common_bss_34C90 * 0x24 + *(s16*)(lbl_3_common_bss_34C90 + 0x254) * 4);
+            fn_3_750DC();
+            return;
+        }
+        if (fn_3_750DC() != 0) {
+            s16 v = *(s16*)(lbl_3_common_bss_34C90 + 0x258);
+            *(s16*)(lbl_3_common_bss_34C90 + 0x254) = -1;
+            *(s16*)(lbl_3_common_bss_34C90 + 0x25C) = v;
+            *(s16*)(lbl_3_common_bss_34C90 + 0x258) = -1;
+        }
+    } else if (*(s16*)(lbl_3_common_bss_34C90 + 0x256) >= 0) {
+        if (*(s16*)(lbl_3_common_bss_34C90 + 0x25E) == *(s16*)(lbl_3_common_bss_34C90 + 0x25A)) {
+            *(s16*)(lbl_3_common_bss_34C90 + 0x256) = -1;
+            *(s16*)(lbl_3_common_bss_34C90 + 0x25A) = -1;
+            return;
+        }
+        if (*(s16*)(lbl_3_common_bss_34C90 + 0x25A) < 0) {
+            *(s16*)(lbl_3_common_bss_34C90 + 0x25A) = *(s16*)(lbl_3_common_bss_34C90 + 0x256);
+            ((u8*)&lbl_803CBC3C)[3] = 0;
+            return;
+        }
+        if (fn_8001C588(inMemRoster[*(s32*)lbl_3_common_bss_34C90][*(s8*)(lbl_80354720 + *(s32*)lbl_3_common_bss_34C90 * 0x24 + *(s16*)(lbl_3_common_bss_34C90 + 0x256) * 4)].stats.CharID) != 0) {
+            s16 v = *(s16*)(lbl_3_common_bss_34C90 + 0x25A);
+            *(s16*)(lbl_3_common_bss_34C90 + 0x256) = -1;
+            *(s16*)(lbl_3_common_bss_34C90 + 0x25E) = v;
+            *(s16*)(lbl_3_common_bss_34C90 + 0x25A) = -1;
+        }
+    }
 }
 
 #pragma dont_inline off
