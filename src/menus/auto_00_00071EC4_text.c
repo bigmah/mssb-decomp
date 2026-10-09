@@ -31,3 +31,8 @@ void fn_2_71EFC(u8* obj) {
     *(u8*)(b + i * 0xD8 + 0x16D0) = 0;
 }
 
+// fn_2_72038, size:0x1C
+void fn_2_72038(s32 index, s16 value) {
+    *(s16*)(lbl_2_bss_1A8248[0] + index * 0xD8 + 0x16C4) = value;
+}
+
