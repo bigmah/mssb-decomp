@@ -4,9 +4,17 @@
 #include "static/UnknownHomes_Static.h"
 #include <string.h>
 #include "Dolphin/mtx.h"
+#include "Dolphin/gx.h"
 extern u8 lbl_1_data_10908[];
 extern s32 lbl_1_data_109F8;
 extern void (*lbl_1_data_108E8[])(void*);
+extern void fn_8003414C(void*);
+extern void fn_1_272DC(void*, s32);
+extern void fn_1_AF4(s32, s32, f32);
+extern void fn_1_F2C(s32, s32, s32);
+extern void GXDrawSphere1(u8);
+extern void minigamesGXStuff(void);
+extern void (*lbl_1_data_108F0[])(void);
 extern void fn_1_26D28(s32, u16, u16, u16, void*);
 extern void fn_1_276CC(void*);
 extern void fn_1_27E98(void*);
@@ -174,4 +182,44 @@ void fn_1_27594(void) {
     if (*(u16*)(lbl_803CC1B8[0] + 0x34) & 8) {
         fn_80048BEC(*(void**)(object + 0x1C), 1, 1);
     }
+}
+
+// fn_1_27BB8, size:0x1B4
+void fn_1_27BB8(void) {
+    Mtx m;
+    Vec v;
+    f32 x; f32 y; f32 z;
+    u8* object = lbl_803CC1B8[0];
+    fn_8003414C(*(void**)(object + 0x14));
+    fn_1_272DC(*(void**)(object + 0x14), 0);
+    fn_1_AF4(20, 20, lbl_1_rodata_7B64);
+    PSMTXScale(m, *(f32*)(object + 0x30), *(f32*)(object + 0x30), *(f32*)(object + 0x30));
+    PSMTXTransApply(m, m, *(f32*)(object + 0x20), *(f32*)(object + 0x24), *(f32*)(object + 0x28));
+    PSMTXConcat(*(void**)(object + 0x14), m, *(void**)(object + 0x14));
+    fn_1_272DC(*(void**)(object + 0x14), 0);
+    fn_1_F2C(4, 0, 0);
+    GXSetZMode(1, GX_LEQUAL, 1);
+    GXDrawSphere1(2);
+    PSMTXTrans(m, *(f32*)(object + 0x20), *(f32*)(object + 0x24), *(f32*)(object + 0x28));
+    PSMTXConcat(*(void**)(object + 0x14), m, *(void**)(object + 0x14));
+    fn_1_272DC(*(void**)(object + 0x14), 0);
+    fn_1_F2C(4, 0, 0);
+    GXBegin(GX_LINES, GX_VTXFMT0, 2);
+    z = *(f32*)(object + 0x28);
+    y = *(f32*)(object + 0x24);
+    x = *(f32*)(object + 0x20);
+    GXWGFifo.f32 = x;
+    GXWGFifo.f32 = y;
+    GXWGFifo.f32 = z;
+    GXWGFifo.u32 = 0xFF0000FF;
+    v.x = lbl_1_rodata_7B5C;
+    v.y = lbl_1_rodata_7B5C;
+    v.z = *(f32*)(object + 0x2C);
+    PSVECAdd((Vec*)(object + 0x20), &v, &v);
+    GXWGFifo.f32 = v.x;
+    GXWGFifo.f32 = v.y;
+    GXWGFifo.f32 = v.z;
+    GXWGFifo.u32 = 0xFF0000FF;
+    lbl_1_data_108F0[*(s8*)(object + 0x36)]();
+    minigamesGXStuff();
 }
