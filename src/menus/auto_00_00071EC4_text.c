@@ -92,3 +92,7 @@ void fn_2_7609C(s32 unused, u8 a, u8 c) {
     }
 }
 
+// fn_2_7664C, size:0x4
+void fn_2_7664C(void) {
+}
+
