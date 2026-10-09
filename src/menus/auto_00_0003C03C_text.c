@@ -26,6 +26,7 @@ extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A8230[];
 extern void fn_2_20218(void*);
 extern void fn_2_1BF50(void);
+extern u8* lbl_2_bss_1A8244[];
 typedef struct {
     u8 b[0x1C];
 } Rec1C;
@@ -1419,5 +1420,13 @@ void fn_2_450E4(void) {
                 lbl_2_bss_1A8248[0][m + 0x43D6] = 1;
             }
         }
+    }
+}
+
+// fn_2_44F64, size:0x180
+void fn_2_44F64(void) {
+    s32 i;
+    for (i = 0; i < 54; i++) {
+        lbl_2_bss_1A8244[0][i] |= *(lbl_2_bss_1A8248[0] + i + 0x43D6);
     }
 }
