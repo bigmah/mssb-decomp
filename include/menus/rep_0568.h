@@ -13,4 +13,6 @@ s32 fn_2_18650(s32 a);
 
 void fn_2_18FBC(void);
 
+void fn_2_1937C(u16* a, s32 b);
+
 #endif

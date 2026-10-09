@@ -94,3 +94,29 @@ void fn_2_18FBC(void) {
         ((s8*)lbl_2_bss_100B8)[i + 2] = -1;
     }
 }
+
+// fn_2_1937C, size:0x140
+void fn_2_1937C(u16* a, s32 b) {
+    Mtx44 m;
+    u16 i;
+    f32 fx;
+    f32 fy;
+    u8* e;
+    u8* c;
+    GXSetZMode(1, GX_LEQUAL, 1);
+    GXSetCullMode(GX_CULL_BACK);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    for (i = 0; i < *a; i++) {
+        e = *(u8**)(lbl_8036E548 + i * 4 + 0x2C50);
+        if (e != NULL) {
+            c = (u8*)a + i * 0x90 + 0x34;
+            if (*(u32*)c != 0 && c[0x6C] != 0) {
+                fx = *(f32*)(e + 0x34) / lbl_2_rodata_5D4;
+                fy = *(f32*)(e + 0x38) / lbl_2_rodata_5D4;
+                C_MTXFrustum(m, lbl_2_rodata_5D8 + fy, lbl_2_rodata_5DC + fy, lbl_2_rodata_5E0 + fx, lbl_2_rodata_5E4 + fx, lbl_2_rodata_5BC, lbl_2_rodata_5E8);
+                GXSetProjection(m, GX_PERSPECTIVE);
+                fn_800BDA94(c, b);
+            }
+        }
+    }
+}
