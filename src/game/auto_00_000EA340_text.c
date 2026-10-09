@@ -107,3 +107,13 @@ void fn_3_ED058(void) {
     }
 }
 
+// fn_3_ED6E0, size:0xA4
+void fn_3_ED6E0(void) {
+    u8* p = lbl_803CC1B8;
+    if (lbl_3_common_bss_32724[0x96] != 0 || ((QEnt*)lbl_80371C30)[*(u16*)(p + 0x14)].p[0x69] == 2 || g_GameLogic[0x11E] == 8) {
+        if (g_Minigame[0x1921] != 0) {
+            fn_800B0A5C_insertQueue(fn_3_ED0F4, 2);
+        }
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+    }
+}
