@@ -906,3 +906,63 @@ void fn_2_919CC(u8* object) {
     }
     *(s16*)(object + 0x90) = 1;
 }
+
+// .text:0x91518 size:0x1A8
+void fn_2_91518(u8* object) {
+    s32 index;
+    u8* slot;
+    u8* anim;
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    index = *(s32*)(object + 0x78);
+    if (index == 0x19) {
+        if (lbl_2_bss_3401BC != NULL) {
+            s32 resource;
+            MenuEffect* effect;
+            u8 valid;
+            resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x44);
+            effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+            effect->resource = resource;
+            effect->type = 1;
+            effect->f5C = lbl_2_rodata_1080;
+            effect->enabled = 1;
+            valid = resource != 0;
+            effect->flag59 = valid;
+            effect->flag5A = valid;
+            effect->f60 = lbl_2_rodata_1080;
+            effect->f54 = lbl_2_rodata_1078;
+            effect->flag5A = 1;
+            effect->f5C = lbl_2_rodata_1080;
+            effect->flag59 = 1;
+            effect->mode = 3;
+        }
+    } else {
+        if (lbl_2_bss_3401BC != NULL) {
+            s32 resource;
+            MenuEffect* effect;
+            u8 valid;
+            resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x48);
+            effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+            effect->resource = resource;
+            effect->type = 1;
+            effect->f5C = lbl_2_rodata_1080;
+            effect->enabled = 1;
+            valid = resource != 0;
+            effect->flag59 = valid;
+            effect->flag5A = valid;
+            effect->f60 = lbl_2_rodata_1080;
+            effect->f54 = lbl_2_rodata_1078;
+            effect->flag5A = 1;
+            effect->f5C = lbl_2_rodata_1080;
+            effect->flag59 = 1;
+            effect->mode = 3;
+        }
+    }
+    index = *(s32*)(object + 0x78);
+    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    if (anim != NULL) {
+        *(s16*)(slot + 0xA6) = 0;
+        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+    }
+    *(s16*)(object + 0x90) = 1;
+}
