@@ -189,3 +189,16 @@ u8 minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased(s8 i) {
     }
     return 0;
 }
+
+// fn_3_107C40, size:0x48
+s32 fn_3_107C40(void) {
+    u32 n = g_Minigame[0x1906];
+    s16 v = *(s16*)(g_Minigame + 0x1890);
+    u32 i;
+    for (i = 1; i < n; i++) {
+        if (*(s16*)(g_Minigame + 0x1890 + i * 2) != v) {
+            return 0;
+        }
+    }
+    return 1;
+}
