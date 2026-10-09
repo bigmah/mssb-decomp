@@ -17,4 +17,6 @@ void fn_2_1937C(u16* a, s32 b);
 
 void fn_2_17AB8(void);
 
+void fn_2_18148(u8* q);
+
 #endif

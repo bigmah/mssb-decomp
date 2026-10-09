@@ -31,6 +31,14 @@ extern const f32 lbl_2_rodata_5E4;
 extern const f32 lbl_2_rodata_5E8;
 extern void fn_800BDA94(void*, s32);
 extern u8 lbl_8034E9A0[];
+extern u8* lbl_803CBBCC[];
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_803C66B0[];
+extern u8 lbl_2_bss_100B4[];
+extern u8 lbl_2_data_241C[];
+extern s32 ARAMTransfer(void*, int, int, int);
+extern void fn_2_16F78(u8);
+extern void fn_2_14BB8(u8, s32);
 
 #include "static/UnknownHomes_Static.h"
 
@@ -142,5 +150,46 @@ void fn_2_17AB8(void) {
         lbl_2_bss_101AC[i].p = lbl_2_bss_122C + size * i;
         lbl_2_bss_101AC[i].b = -1;
         lbl_2_bss_101AC[i].a = -1;
+    }
+}
+
+// fn_2_18148, size:0x250
+void fn_2_18148(u8* q) {
+    u8 gf;
+    switch (q[0x21]) {
+    case 0:
+        *(u8**)(q + 0x14) = lbl_8036E548 + q[0x1E] * 0x27C + 0xC04;
+        (*(u8**)(q + 0x14))[0x252] = q[q[0x1E] + 0x18];
+        q[0x20] = lbl_2_bss_100B8[q[0x1E] + 0x46];
+        lbl_8036E548[q[0x1E] * 0x27C + 0xE61] = 0;
+        *(s16*)(*(u8**)(q + 0x14) + 0x68) = -1;
+        lbl_2_bss_100B4[1] = 1;
+        q[0x21] = q[0x21] + 1;
+        break;
+    case 1:
+        ARAMTransfer(lbl_2_data_241C + (s8)q[q[0x1E] + 0x18] * 0x10, *(s32*)(*(u8**)(q + 0x14) + 8), 0, 0);
+        q[0x21] = q[0x21] + 1;
+        break;
+    case 2:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            fn_2_16F78(q[0x1E]);
+            gf = *((u8*)&g_d_GameSettings + 0x10);
+            if (gf == 0 && lbl_803C66B0[0x59] == 0 && q[0x1E] == 1) {
+                lbl_8036E548[q[0x1E] * 0x27C + 0xE61] = 0;
+            } else {
+                lbl_8036E548[q[0x1E] * 0x27C + 0xE61] = (q[0x20] != 0);
+            }
+            if (g_d_GameSettings.GameModeSelected == 5 || gf != 0 || *(u16*)(lbl_803CBBCC[0] + 6) == 5) {
+                fn_2_14BB8(q[0x1E], 1);
+            } else if (lbl_2_bss_100B8[0x10] != 0) {
+                fn_2_14BB8(q[0x1E], q[0x1E] != 0);
+            }
+            q[0x21] = 0;
+            lbl_2_bss_100B8[0x32] = 1;
+            lbl_2_bss_100B4[1] = 0;
+            lbl_2_bss_100B8[0x18] = 1;
+            lbl_2_bss_100B8[q[0x1E] + 0x42] = 0;
+        }
+        break;
     }
 }
