@@ -120,3 +120,22 @@ void fn_2_8DB14(void) {
         *(s32*)(lbl_2_bss_340140 + i * 0x27C + 0xC14) = 0;
     }
 }
+
+extern void fn_800BDC88(u8*, u16, u16, s32, s32, s32);
+extern void fn_800BD548(u8*, s32, ...);
+extern void CTRLSetTranslation(u8*, f32, f32, f32);
+extern void CTRLSetRotation(u8*, f32, f32, f32);
+
+typedef struct { u8 pad[0x2DA0]; struct { s32 v; s32 x; s32 y; } arr[1]; } S2DA0;
+
+// fn_2_8C80C, size:0x104
+void fn_2_8C80C(s32 a, s32 b, s32 c, s32 d, s32 e) {
+    s32 i;
+    for (i = b; i < b + c; i++) {
+        fn_800BDC88(*(u8**)(lbl_2_bss_340140 + 0x68), i, i, ((S2DA0*)lbl_2_bss_340140)->arr[a].v, d, e);
+        (*(u8**)(*(u8**)(lbl_2_bss_340140 + 0x68) + i * 0x90 + 0x34))[0x99] = 1;
+        fn_800BD548(*(u8**)(lbl_2_bss_340140 + 0x68) + i * 0x90 + 0x34, 4, *(s32*)(lbl_2_bss_340140 + 0xAC), *(s32*)(lbl_2_bss_340140 + 0xB0), *(s32*)(lbl_2_bss_340140 + 0xB4), *(s32*)(lbl_2_bss_340140 + 0xB8));
+        CTRLSetTranslation(*(u8**)(lbl_2_bss_340140 + 0x68) + i * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(*(u8**)(lbl_2_bss_340140 + 0x68) + i * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
+    }
+}

@@ -71,4 +71,34 @@ void fn_2_36F44(u8* a, u8* b);
 
 void fn_2_370F8(u8* a, u8* b);
 
+void fn_2_346D8(u8* a, u8* b);
+
+void fn_2_34214(u8* a, u8* b);
+
+void fn_2_3439C(u8* a, u8* b);
+
+void fn_2_34BCC(u8* a, u8* b);
+
+void fn_2_349F8(u8* a, u8* b);
+
+void fn_2_36074(u8* a, u8* b);
+
+void fn_2_36204(u8* a, u8* b);
+
+void fn_2_36590(u8* a, u8* b);
+
+void fn_2_363C8(u8* a, u8* b);
+
+void fn_2_36B30(u8* a, u8* b);
+
+void fn_2_3523C(u8* a, u8* b);
+
+void fn_2_34D70(u8* a, u8* b);
+
+void fn_2_33E70(u8* a, u8* b);
+
+void fn_2_36D04(u8* a, u8* b);
+
+void fn_2_36750(u8* a, u8* b);
+
 #endif

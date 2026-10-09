@@ -54,3 +54,49 @@ void fn_2_948B8(void) {
     *(u32*)(lbl_80371C30[*(u16*)(object + 0x14)].object + 0x5C) = 0x280000;
     *(void (**)(void))lbl_803CC1B8[0] = fn_2_9486C;
 }
+
+extern u8 lbl_8034E978[];
+extern u8 lbl_800FEF70[];
+extern void fn_80053FE8(void);
+extern void fn_2_96AD4(void);
+
+// fn_2_96D20, size:0x74
+void fn_2_96D20(void) {
+    fn_800B0A5C_insertQueue(fn_80053FE8, 0x3000);
+    lbl_8034E978[0] = 0x5B;
+    lbl_8034E978[9] = lbl_8034E978[8];
+    lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + 0x5B8);
+    fn_800B0A5C_insertQueue(fn_2_948B8, 0x3000);
+    fn_800B0A5C_insertQueue(fn_2_96AD4, 0x3000);
+}
+
+extern s32 fn_80042DA8(void*, s32, s32);
+extern void fn_800626EC(s32);
+
+// fn_2_95E80, size:0xBC
+void fn_2_95E80(u8* object) {
+    u8 flag;
+    if ((lbl_803C66B0[0x4F] == 1) ? 1 : 0) {
+        flag = fn_80042DA8(object, 0, 0) != 0;
+        if ((*(u32*)(lbl_80371C30[*(u16*)(object + 0x14)].object + 0x5C) >> 16) == 3) {
+            changeScene(3, 6);
+        }
+        if ((s32)flag == 1) {
+            lbl_2_bss_1033C[0xE] = 1;
+            fn_80062674(0);
+            lbl_803C66B0[0x4F] = 2;
+        }
+    }
+}
+
+// fn_2_95F3C, size:0xA4
+void fn_2_95F3C(u8* object) {
+    if ((lbl_803C66B0[0x4F] == 0) ? 1 : 0) {
+        *(u8*)(lbl_80371C30[*(u16*)(object + 0x14)].object + 0x68) = 4;
+        *(u8*)(lbl_80371C30[*(u16*)(object + 0x14) + 1].object + 0x68) = 4;
+        *(u8*)(lbl_80371C30[*(u16*)(object + 0x14) + 3].object + 0x68) = 4;
+        *(u8*)(lbl_80371C30[*(u16*)(object + 0x14) + 4].object + 0x68) = 4;
+        fn_800626EC(0);
+        lbl_803C66B0[0x4F] = 1;
+    }
+}

@@ -19,4 +19,6 @@ void fn_2_8C724(void);
 
 void fn_2_8DB14(void);
 
+void fn_2_8C80C(s32 a, s32 b, s32 c, s32 d, s32 e);
+
 #endif
