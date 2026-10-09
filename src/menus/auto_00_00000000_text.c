@@ -30,8 +30,10 @@ extern void fn_2_10FC(void);
 extern u32 lbl_2_bss_B644;
 extern u8 lbl_2_data_C8[];
 extern u8 lbl_803C6CF8[];
-extern void fn_2_374(void);
 extern void fn_2_794(void);
+extern u8 g_d_GameSettings[];
+extern s32 fn_80022A24(u8, u8);
+extern void fn_800229CC(void);
 extern u8 lbl_2_data_C0[];
 extern u8* lbl_2_bss_4;
 
@@ -194,6 +196,28 @@ s32 fn_2_1A8(u8 idx, u8 kind, u16 mask) {
         r = 7;
     }
     return r;
+}
+
+// fn_2_374, size:0x150
+void fn_2_374(void) {
+    u8* o = lbl_803CC1B8;
+    u8 v;
+    switch (o[0x14]) {
+    case 0:
+        o[0x14] = fn_2_510(o);
+        break;
+    case 1:
+        if (fn_80022A24(g_d_GameSettings[9], g_d_GameSettings[0xA]) != 0) {
+            v = fn_2_510(o);
+            o[0x14] = v;
+            if (v == 2) {
+    case 2:
+                fn_800229CC();
+                o[0x14] = fn_2_510(o);
+            }
+        }
+        break;
+    }
 }
 
 // fn_2_554, size:0x110
