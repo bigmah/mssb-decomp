@@ -424,3 +424,32 @@ void fn_1_D4BC(void) {
     object = *(u8**)(scene + 0x2C50);
     object[0x276] |= 1;
 }
+
+extern s32* lbl_1_data_F278[];
+extern u8 lbl_1_data_F284[];
+extern void fn_1_F1D8(void*);
+
+// .text:0xF0D0 size:0x108
+void fn_1_F0D0(void) {
+    u8* challenge = lbl_1_bss_3070;
+    u16 buttons;
+    fn_1_F798(lbl_1_data_F278[*(s32*)(challenge + 0x38)], lbl_1_data_F284, 16);
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 0x1000) {
+        *(s32*)(challenge + 0x38) = (*(s32*)(challenge + 0x38) + 1) % 3;
+    } else if (*(u16*)((u8*)&lbl_803C77B8) & 0x100) {
+        if (*(u16*)((u8*)&lbl_803C77B8 + 2) & 0x100) {
+            u8* queue;
+            s32 resource = *(s32*)(challenge + 0x28);
+            *lbl_1_data_F278[2] = resource;
+            *lbl_1_data_F278[1] = resource;
+            *lbl_1_data_F278[0] = resource;
+            queue = fn_800B0A5C_insertQueue((void*)fn_1_F1D8, 0);
+            *(s32*)(queue + 0x20) = 240;
+            *(s32*)(queue + 0x24) = 4;
+        }
+    } else if (buttons & 0x200) {
+        *(s32*)(challenge + 0xC) = 0;
+        challenge[0x2F01] = 10;
+    }
+}

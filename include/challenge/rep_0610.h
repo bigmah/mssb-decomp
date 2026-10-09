@@ -73,4 +73,6 @@ void fn_1_160F8(s32 direction);
 
 void fn_1_D4BC(void);
 
+void fn_1_F0D0(void);
+
 #endif
