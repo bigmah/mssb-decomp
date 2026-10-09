@@ -40,4 +40,8 @@ s32 fn_2_74DB8(s32 a);
 
 u8 fn_2_75B58(s32 a, s32 index);
 
+void fn_2_747FC(void);
+void fn_2_834F0(void);
+void fn_2_836A4(void);
+
 #endif
