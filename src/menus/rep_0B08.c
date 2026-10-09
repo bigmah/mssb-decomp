@@ -881,3 +881,10 @@ void fn_2_68FBC(s32 index, s32 animation) {
         cache[entry->objectId + 0x3BAB] = animation;
     }
 }
+
+// fn_2_704AC, size:0xDC
+void fn_2_704AC(u8* object) {
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 1;
+    fn_2_68FBC(*(s32*)(object + 0x80), 1);
+    *(s16*)(object + 0x94) = 1;
+}
