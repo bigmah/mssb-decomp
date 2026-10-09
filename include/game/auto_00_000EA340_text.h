@@ -9,4 +9,6 @@ s32 fn_3_EB684(void);
 
 void fn_3_ED244(void);
 
+void fn_3_ED2A8(void);
+
 #endif

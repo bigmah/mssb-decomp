@@ -41,3 +41,8 @@ void fn_3_ED244(void) {
     }
 }
 
+// fn_3_ED2A8, size:0x4C
+void fn_3_ED2A8(void) {
+    fn_80034E20(lbl_803CC1B8, lbl_3_data_8FCC, &lbl_803CC1B8);
+    *(void**)lbl_803CC1B8 = fn_3_ED244;
+}
