@@ -3,6 +3,16 @@
 
 #include "mssbTypes.h"
 
+typedef struct {
+    s32 w0;
+    s16 f4;
+    s16 f6;
+    s16 f8;
+    s16 fA;
+    s16 fC;
+    s16 fE;
+} InitEntry;
+
 void fn_2_4C314(void);
 
 void fn_2_4C36C(void);
@@ -106,6 +116,8 @@ void fn_2_51190(s32 a, s32 b);
 void fn_2_50898(s32 a);
 
 void fn_2_54120(void);
+
+void fn_2_54234(InitEntry* entries, s32 count);
 
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);

@@ -448,15 +448,6 @@ s32 fn_2_4E9A8(void) {
     return 1;
 }
 
-typedef struct {
-    s32 w0;
-    s16 f4;
-    s16 f6;
-    s16 f8;
-    s16 fA;
-    s16 fC;
-    s16 fE;
-} InitEntry;
 extern InitEntry lbl_2_data_205D4[];
 extern void fn_2_5389C(void);
 
@@ -556,5 +547,19 @@ void fn_2_54120(void) {
         lbl_2_bss_1A8234[0][i + 0x1628C0] = 0;
         lbl_2_bss_1A8234[0][i + 0x162906] = 0;
         lbl_2_bss_1A8234[0][i + 0x16294C] = 0;
+    }
+}
+
+// fn_2_54234, size:0x120
+void fn_2_54234(InitEntry* entries, s32 count) {
+    s32 i;
+    for (i = 0; i < count; i++) {
+        u8* p = lbl_2_bss_1A8230[0] + entries[i].f8 * 0x5100 + entries[i].f4 * 0x18;
+        *(s32*)p = entries[i].w0;
+        *(s16*)(p + 8) = entries[i].f4;
+        *(s16*)(p + 0xA) = entries[i].f6;
+        *(s16*)(p + 0xC) = entries[i].f8;
+        *(s16*)(p + 0xE) = entries[i].fA;
+        *(s16*)(p + 0x10) = entries[i].fC;
     }
 }
