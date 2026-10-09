@@ -1,7 +1,10 @@
 #include "game/auto_00_0009CD90_text.h"
 
 extern u8 g_Ball[];
-extern s32 g_Strikes;
+extern u8 g_Strikes[];
+typedef struct { u8 pad0[0xEE]; s16 s16_EE; u8 pad1[0x154 - 0xF0]; } RunnerT;
+extern u8 g_Runners[];
+extern u8 g_FieldingLogic[];
 
 extern u8 lbl_3_common_bss_32A94[];
 extern u8 g_RunningLogic[];
@@ -24,7 +27,7 @@ void fn_3_9DBE4(void) {
 
 // fn_3_9D550, size:0x44
 void fn_3_9D550(void) {
-    if (g_Ball[0x1BCF] != 0 && g_Strikes >= 3) {
+    if (g_Ball[0x1BCF] != 0 && *(s32*)g_Strikes >= 3) {
         *(s16*)lbl_3_common_bss_32A94 = 0x27;
         return;
     }
@@ -104,4 +107,32 @@ s32 fn_3_9EA1C(s32 idx) {
         }
     }
     return 0;
+}
+
+// fn_3_9CD90, size:0xE8
+void fn_3_9CD90(void) {
+    s16* c = (s16*)lbl_3_common_bss_32A94;
+    s32 i;
+    if (c[1] == 0) {
+        if (*(s32*)(g_Strikes + 0x14) == 3) {
+            c[0] = 0x10;
+            return;
+        }
+        if (g_Runners[0x123] == 2) {
+            if (*(s16*)(g_Ball + 0x1B7A) == 3 || g_FieldingLogic[0x108] == 2) {
+                if (*(s16*)(g_Ball + 0x1B9A) > 0xA0) {
+                    c[1] = 0x12;
+                } else {
+                    c[1] = 0x13;
+                }
+            } else {
+                c[1] = 0x15;
+            }
+        }
+        for (i = 1; i < 4; i++) {
+            if (((RunnerT*)g_Runners)[i].s16_EE == 2) {
+                c[1] = 0x15;
+            }
+        }
+    }
 }
