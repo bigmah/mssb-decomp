@@ -3,6 +3,8 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void starMissionRelated2(void);
+extern u8 lbl_3_common_bss_37400[];
 
 extern u8 g_Fielders[];
 extern u8 lbl_3_data_3C40[];
@@ -360,4 +362,18 @@ void fn_3_5A6A0(s32 a, s32 b, s32 c, s32 d) {
     g->teamFielding = g->teamBatting ^ 1;
     *(s32*)((u8*)g + 0x1C) = c;
     *(s32*)((u8*)g + 0x20) = d;
+}
+
+// fn_3_5CFD0, size:0xC4
+void fn_3_5CFD0(void) {
+    u8* t = (u8*)starMissionCompletionTracker;
+    s32 a = t[0x441C];
+    s32 b = t[0x441E];
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && *(s16*)(g_Scores + 0xA4) <= 1 &&
+        (*(s16*)(g_Scores + 0xA4) ^ (*(s32*)&g_GameLogic == *(s16*)(lbl_3_common_bss_37400 + 0x40))) != 0) {
+        if ((t[0x4422] >= 4 && b == 5) || (t[0x4422] >= 5 && *(s8*)(t + 0x44EF) == 1 && a == 5)) {
+            g_GameLogic.playOverFadeOutStarted = 0;
+        }
+        starMissionRelated2();
+    }
 }
