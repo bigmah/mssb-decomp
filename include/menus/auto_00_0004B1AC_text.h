@@ -99,5 +99,7 @@ s32 fn_2_4E9A8(void);
 
 void fn_2_54890(void);
 
+void fn_2_5400C(void);
+
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);
