@@ -20,5 +20,6 @@ u8 fn_3_107DB4(s8 i);
 u8 fn_3_107DF8(s8 i);
 u8 minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased(s8 i);
 s32 fn_3_107C40(void);
+s32 fn_3_107C88(void);
 
 #endif
