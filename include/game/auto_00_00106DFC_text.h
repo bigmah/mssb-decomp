@@ -10,5 +10,6 @@ void fn_3_1104A8(void);
 void fn_3_106DFC(void);
 s32 fn_3_106E50(void);
 s32 fn_3_107988(u32 v);
+u8* fn_3_109D88(void);
 
 #endif
