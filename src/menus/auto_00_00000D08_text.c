@@ -60,3 +60,9 @@ void fn_2_10AC(u8* data) {
     lbl_2_bss_D958[3] = -1;
     lbl_2_bss_D984 = data;
 }
+
+// fn_2_10FC, size:0x34
+s32 fn_2_10FC(void) {
+    fn_80021518(0x1F, *(s32*)(lbl_800EF808 + 0xC));
+    return 0;
+}
