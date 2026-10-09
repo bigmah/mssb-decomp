@@ -67,4 +67,6 @@ f32 fn_1_D71C(s32 index);
 
 void fn_1_F040(void);
 
+void fn_1_F6E4(void);
+
 #endif

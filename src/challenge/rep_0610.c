@@ -334,7 +334,6 @@ f32 fn_1_D71C(s32 index) {
 typedef struct { s32 words[3]; } ChallengeCommand;
 extern const ChallengeCommand lbl_1_rodata_7344;
 extern s32 lbl_1_data_F2A0;
-extern void fn_8002955C(void*, s32, void*);
 
 // .text:0xF040 size:0x90
 void fn_1_F040(void) {
@@ -346,6 +345,29 @@ void fn_1_F040(void) {
     if (buttons & 0x100) {
         lbl_1_data_F2A0 = *(s32*)(challenge + 0x28);
         fn_8002955C(&command, 0, &lbl_1_data_F2A0);
+    } else if (buttons & 0x200) {
+        *(s32*)(challenge + 0xC) = 0;
+        challenge[0x2F01] = 10;
+    }
+}
+
+extern ChallengeCommand lbl_1_rodata_731C;
+extern u8 lbl_1_data_F0A8[];
+extern s32 lbl_1_data_F0BC;
+extern void fn_1_F798(void*, void*, s32);
+
+// .text:0xF6E4 size:0xB4
+void fn_1_F6E4(void) {
+    ChallengeCommand command;
+    s32* parameters = &lbl_1_data_F0BC;
+    u8* challenge = lbl_1_bss_3070;
+    u16 buttons;
+    command = lbl_1_rodata_731C;
+    fn_1_F798(parameters, lbl_1_data_F0A8, 12);
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 0x100) {
+        *parameters = *(s32*)(challenge + 0x28);
+        fn_80031CA4((Vec*)&command, (u32*)parameters);
     } else if (buttons & 0x200) {
         *(s32*)(challenge + 0xC) = 0;
         challenge[0x2F01] = 10;

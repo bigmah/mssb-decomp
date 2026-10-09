@@ -139,3 +139,6 @@ extern void minigamesSetSomePointers(void);
 #endif // !__UNKNOWN_HOMES_STATIC_H_
 
 extern void fn_800363D8(void*, s32, s32, s32, s32);
+
+extern void fn_8002955C(void*, s32, void*);
+extern void fn_80031CA4(Vec*, u32*);
