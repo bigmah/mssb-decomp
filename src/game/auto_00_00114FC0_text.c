@@ -17,6 +17,7 @@ extern u8 lbl_8037169C[];
 extern void fn_3_F578(void);
 extern void fn_3_753E8(s32);
 extern u8 g_Batter[];
+extern u8 g_Ball[];
 extern f32 maybeInitialBatPos[];
 extern s16 lbl_3_data_2167C;
 extern void fn_3_6EBB4(s32);
@@ -128,6 +129,45 @@ void fn_3_1158F8(void) {
     *(s16*)(g_FieldingLogic + 0xAE) = 0;
     unkSimulationRelatedStruct[5] = 0;
     unkSimulationRelatedStruct[6] = 4;
+}
+
+// fn_3_115978, size:0x13C
+void fn_3_115978(void) {
+    fn_3_6EBB4(*(s8*)(g_Minigame + 0x1904));
+    fn_3_F1DC();
+    fn_3_751B4();
+    fn_3_58870();
+    memset(g_Minigame + 0x1D7C, 0, 0x78);
+    Set_803cb848(1);
+    *(s16*)(g_FieldingLogic + 0xAE) = 0;
+    unkSimulationRelatedStruct[5] = 0;
+    unkSimulationRelatedStruct[6] = 4;
+    g_Minigame[0x190B] = 0;
+    g_Minigame[0x1A81] = 0;
+    *(s16*)(g_Minigame + 0x1A72) = 0;
+    *(s16*)(g_Minigame + 0x1A74) = 0;
+    *(s16*)(g_Minigame + 0x1A76) = 0;
+    g_Minigame[0x1A89] = 0;
+    g_Minigame[0x1A8A] = 0;
+    ((s8*)g_Minigame)[0x1A8B] = -1;
+    *(s16*)(g_Ball + 0x1B64) = 0;
+    if (g_Minigame[0x1A2D] == 0) {
+        if (g_GameLogic[0x12B] != 0) {
+            g_GameLogic[0x12C] = 1;
+            g_GameLogic[0x12D] = 1;
+        } else {
+            g_GameLogic[0x12C] = 0;
+        }
+        g_GameLogic[0x12B] = 0;
+    } else if (g_Minigame[0x1A2B] != 3) {
+        *(s16*)(g_Minigame + 0x1A70) = 0;
+        g_Minigame[0x1A7E] = 1;
+        fn_3_114A88(0);
+    } else {
+        g_GameLogic[0x12C] = 0;
+    }
+    changeScene(1, 6);
+    fn_3_5A6D4(1);
 }
 
 // fn_3_115AB4, size:0xA8
