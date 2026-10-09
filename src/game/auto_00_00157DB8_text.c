@@ -45,3 +45,12 @@ void fn_3_157DB8(s32 arg0) {
     }
 }
 
+// fn_3_1580AC, size:0x60
+void fn_3_1580AC(void) {
+    u8* o = lbl_803CC1B8;
+    fn_80034E20(o, lbl_3_data_BD90);
+    *(s16*)(o + 0x1C) = 0;
+    *(s16*)(o + 0x1E) = 0;
+    *(void**)lbl_803CC1B8 = fn_3_157E28;
+}
+
