@@ -39,6 +39,11 @@ extern u8 lbl_8034E978[];
 extern void fn_2_72054(s32, s8);
 extern s32 fn_2_8CC88(s32);
 
+typedef struct {
+    s32 k;
+    s32 v;
+} SortEnt;
+
 // fn_2_42474, size:0x1C
 void fn_2_42474(void) {
     u8* menu = lbl_2_bss_1A824C[0];
@@ -1174,4 +1179,22 @@ s32 fn_2_44E2C(s32 ch) {
         return n;
     }
     return 0;
+}
+
+// fn_2_44414, size:0xF0
+void fn_2_44414(void* arr) {
+    SortEnt* a = arr;
+    SortEnt tmp;
+    s32 i;
+    s32 j;
+    for (i = 1; i < 55; i++) {
+        tmp = a[i];
+        a[0] = tmp;
+        j = i - 1;
+        while (tmp.k < a[j].k) {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = tmp;
+    }
 }

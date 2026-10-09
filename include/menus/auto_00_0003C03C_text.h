@@ -96,4 +96,6 @@ void fn_2_432EC(void);
 
 s32 fn_2_44E2C(s32 ch);
 
+void fn_2_44414(void* a);
+
 #endif
