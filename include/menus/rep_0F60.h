@@ -15,4 +15,6 @@ void fn_2_8CCCC(s32 index, s32 a, s32 b, u8 mode, s32 c, s32 d, s32 e, s32 f);
 
 void fn_2_8DC00(void);
 
+void fn_2_8C724(void);
+
 #endif
