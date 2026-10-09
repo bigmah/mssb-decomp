@@ -120,3 +120,14 @@ void fn_2_1B6CC(void) {
     }
 }
 
+// fn_2_1BF50, size:0x80
+void fn_2_1BF50(void) {
+    fn_80068720(0xD);
+    lbl_2_bss_1A824C[0][0x1972BC] = 1;
+    lbl_2_bss_1A824C[0][0x1972C0] = 1;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D6) = 0;
+    lbl_2_bss_1A8248[0x44F2] = 0;
+    fn_2_4E898();
+    lbl_2_bss_1A823C[0][0x34] = 0;
+}
+
