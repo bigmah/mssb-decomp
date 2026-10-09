@@ -1,5 +1,7 @@
 #include "menus/auto_00_000194BC_text.h"
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/GX.h"
+#include "musyx/musyx.h"
 
 extern u8 lbl_2_bss_1033C[];
 extern u8 lbl_800EF808[];
@@ -40,6 +42,42 @@ extern u8* lbl_2_bss_1A8248[];
 extern u8* lbl_2_bss_1A824C[];
 extern void fn_2_4AB1C(void);
 extern s32 fn_2_46D00(void);
+extern s32 lbl_2_bss_1598;
+extern GXColor lbl_2_data_2E3C;
+extern u8* lbl_803CC1B8[];
+extern void fn_2_11A0(s32);
+extern void fn_2_19F2C(void);
+
+// fn_2_1A1B4, size:0xF8
+void fn_2_1A1B4(void) {
+    u8* object = lbl_803CC1B8[0];
+    switch (lbl_2_bss_1598) {
+    case 0: {
+        GXColor clear;
+        fn_2_19F2C();
+        *(s16*)(object + 0x10) = 0;
+        clear = lbl_2_data_2E3C;
+        GXSetCopyClear(clear, 0xFFFFFF);
+        lbl_2_bss_1598 = 1;
+        break;
+    }
+    case 1:
+        sndVolume(0x7F, 10, 0xFF);
+        lbl_2_bss_1598 = 4;
+        break;
+    case 2:
+        lbl_2_bss_1598 = 4;
+        break;
+    case 4:
+        changeScene(3, 6);
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            fn_2_11A0(5);
+        } else {
+            fn_2_11A0(0x10);
+        }
+        break;
+    }
+}
 
 // fn_2_1A420, size:0xA8
 s32 fn_2_1A420(void) {
