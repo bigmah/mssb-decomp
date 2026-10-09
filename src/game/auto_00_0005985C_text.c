@@ -3,6 +3,8 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void fn_80022CB4(void*, s32, s32, s32, void (*)(s32, s32, void*), void*);
+extern u8 lbl_800F1D78[];
 extern void fn_3_1E178(void);
 extern void fn_3_7AFE4(void);
 extern void setBatterContactConstants(void);
@@ -361,6 +363,18 @@ void fn_3_5A684(void) {
 // fn_3_59AC0, size:0x24
 void fn_3_59AC0(s32 unused1, s32 unused2, void* allocation) {
     fn_80017D28(allocation);
+}
+
+// fn_3_59B20, size:0xAC
+void fn_3_59B20(void) {
+    s32 i;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        for (i = 0; i < 4; i++) {
+            u8* p = lbl_8036E548 + i * 0x27C;
+            u8* e = p + 0xC04;
+            fn_80022CB4(lbl_800F1D78 + ((s8)p[0xE56] * 0x13 + 1) * 16, *(s32*)(e + 0xC), 0, 0, fn_3_59AC0, e);
+        }
+    }
 }
 
 // fn_3_59A90, size:0x30
