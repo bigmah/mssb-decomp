@@ -835,3 +835,21 @@ void fn_2_68E68(void) {
         params[0x277] = src[0xCA];
     }
 }
+
+// fn_2_6C020, size:0x100
+void fn_2_6C020(MenuEntry* entry) {
+    f32 difference;
+
+    entry->heading = (f32)atan2(-(lbl_2_bss_1A8248[0]->entries[0].position.x - entry->position.x),
+        -(lbl_2_bss_1A8248[0]->entries[0].position.z - entry->position.z));
+    difference = fn_2_4A18C(entry->angle34 - entry->heading);
+    if ((difference < lbl_2_rodata_BE0 && difference > lbl_2_rodata_B58) ||
+        (difference > lbl_2_rodata_BE8 && difference < lbl_2_rodata_B58)) {
+        entry->state = 3;
+    } else if (difference < lbl_2_rodata_B58) {
+        entry->angle34 += lbl_2_rodata_C40;
+    } else {
+        entry->angle34 -= lbl_2_rodata_C40;
+    }
+    entry->heading = entry->angle34;
+}
