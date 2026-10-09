@@ -303,3 +303,15 @@ s32 RandomIndexFromWeights(u8* weights, s32 n) {
     }
     return 0;
 }
+
+// fn_3_9E7D4, size:0x60
+void fn_3_9E7D4(s32 i) {
+    if (g_d_GameSettings[7] == 2 && g_GameLogic[0x121] == 0xF) {
+        return;
+    }
+    if (((s32*)(g_GameLogic + 0xDC))[i] == 9) {
+        ((s32*)(g_GameLogic + 0xDC))[i] = 1;
+    } else {
+        ((s32*)(g_GameLogic + 0xDC))[i] = ((s32*)(g_GameLogic + 0xDC))[i] + 1;
+    }
+}
