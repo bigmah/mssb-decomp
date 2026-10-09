@@ -258,6 +258,7 @@ typedef struct {
 
 extern MenuAnimation lbl_2_data_3C84[];
 extern void fn_2_8CD58(s32, s16, u8, u8, s16, u8, u8);
+extern s32 fn_2_8CC88(s32 index);
 
 // fn_2_68F24, size:0x98
 void fn_2_68F24(s32 index, s32 animation) {
@@ -887,4 +888,13 @@ void fn_2_704AC(u8* object) {
     ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 1;
     fn_2_68FBC(*(s32*)(object + 0x80), 1);
     *(s16*)(object + 0x94) = 1;
+}
+
+// fn_2_6D4F8
+void fn_2_6D4F8(u8* object) {
+    if (fn_2_8CC88(*(s32*)(object + 0x84)) != 0) {
+        fn_2_68FBC(*(s32*)(object + 0x80), 5);
+        *(s16*)(object + 0xA2) = 0x1E;
+        *(s16*)(object + 0x94) = 2;
+    }
 }
