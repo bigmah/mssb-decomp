@@ -41,6 +41,10 @@ extern int sndFXStartEx(int, int, int, int);
 extern void fn_8004EEF4(s32, s32, s32, s32, s32);
 extern u8 lbl_803C6724[];
 extern u8 starMissionCompletionTracker[];
+extern u8 lbl_2_data_3CE0[];
+extern u8 lbl_8037169C[];
+extern u8* lbl_803CBBCC[];
+extern void fn_800203E0(s32, s8);
 extern u8 lbl_2_bss_100B8[];
 extern void fn_2_16A74(s32, s32);
 extern u8* lbl_803CBBCC[];
@@ -581,3 +585,14 @@ void fn_2_52CC(void) {
     }
 }
 #pragma opt_propagation reset
+
+// fn_2_86EC, size:0x94
+void fn_2_86EC(void) {
+    if (g_d_GameSettings.GameModeSelected == 5 && lbl_8037169C[0x12] == 0) {
+        fn_800203E0(0xA, lbl_2_data_3CE0[starMissionCompletionTracker[0x441E]]);
+    }
+    fn_2_7DDC();
+    fn_2_7504();
+    lbl_2_bss_F468[0x56] = 0;
+    *(u16*)(lbl_803CBBCC[0] + 4) = 2;
+}
