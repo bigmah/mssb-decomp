@@ -36,3 +36,10 @@ void fn_2_72038(s32 index, s16 value) {
     *(s16*)(lbl_2_bss_1A8248[0] + index * 0xD8 + 0x16C4) = value;
 }
 
+// fn_2_72054, size:0x28
+void fn_2_72054(s32 index, s8 value) {
+    u8* e = lbl_2_bss_1A8248[0] + index * 0xD8 + 0x1610;
+    e[0xC3] = value;
+    *(s16*)(e + 0x94) = 0;
+}
+
