@@ -349,3 +349,15 @@ void fn_3_5ED98(void) {
     *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
     g_Pitcher.peachDaisyStarAnimationOn = 0;
 }
+
+// fn_3_5A6A0, size:0x34
+void fn_3_5A6A0(s32 a, s32 b, s32 c, s32 d) {
+    GameControlsStruct* g = &g_GameLogic;
+    g->homeTeamBattingInd_fieldingTeam = a;
+    g->awayTeamBattingInd_battingTeam = a ^ 1;
+    *(s32*)g = b;
+    g->teamBatting = b ^ a;
+    g->teamFielding = g->teamBatting ^ 1;
+    *(s32*)((u8*)g + 0x1C) = c;
+    *(s32*)((u8*)g + 0x20) = d;
+}
