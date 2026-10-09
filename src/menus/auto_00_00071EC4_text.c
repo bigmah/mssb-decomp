@@ -76,3 +76,8 @@ void fn_2_74518(void) {
     }
 }
 
+// fn_2_74D8C, size:0x2C
+void fn_2_74D8C(void) {
+    fn_800B0A5C_insertQueue((void*)fn_2_74CD8, 0x1000);
+}
+
