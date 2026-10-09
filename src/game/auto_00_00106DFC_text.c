@@ -112,3 +112,14 @@ void fn_3_10FB74(void) {
     lbl_8036E548[0x307A] = 0;
     fn_3_5A6D4(0x1D);
 }
+
+// fn_3_10C7A4, size:0x78
+void fn_3_10C7A4(void) {
+    s32 i;
+    fn_8001CA40(0);
+    for (i = 0; i < 4; i++) {
+        fn_80011BE4(i);
+        g_Minigame[0x19E9 + i * 9] = 0;
+        *(s8*)(g_Minigame + 0x19EA + i * 9) = -1;
+    }
+}
