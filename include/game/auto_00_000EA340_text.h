@@ -21,4 +21,6 @@ void fn_3_ED058(void);
 
 void fn_3_ED6E0(void);
 
+void fn_3_ED574(void);
+
 #endif
