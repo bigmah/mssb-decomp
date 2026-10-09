@@ -1404,3 +1404,20 @@ void fn_2_46ADC(void) {
         }
     }
 }
+
+// fn_2_450E4, size:0x120
+void fn_2_450E4(void) {
+    s32 t;
+    s32 k;
+    s32 m;
+    for (k = 0; k < *(s8*)(lbl_2_bss_1A824C[0] + 0x197866); k++) {
+        t = *(s8*)(lbl_2_bss_1A824C[0] + k + 0x197868);
+        lbl_2_bss_1A8248[0][t + 0x43D6] = 1;
+        for (m = 0; m < 54; m++) {
+            s32 q = lbl_800E8558[m * 6 + 1];
+            if (q == t) {
+                lbl_2_bss_1A8248[0][m + 0x43D6] = 1;
+            }
+        }
+    }
+}

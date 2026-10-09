@@ -118,4 +118,6 @@ void fn_2_42FC8(void);
 
 void fn_2_46ADC(void);
 
+void fn_2_450E4(void);
+
 #endif
