@@ -4,6 +4,21 @@ extern u32 lbl_803CBC18;
 
 extern u8 lbl_8036E548[];
 
+// fn_80011578, size:0x50
+void fn_80011578(void) {
+    s8 i = 0;
+    s32 n;
+    for (n = 13; n != 0; n--) {
+        if (i >= 0 && i < 13) {
+            u8* object = *(u8**)(lbl_8036E548 + ((s8)i << 2) + 0x2C50);
+            if (object != NULL) {
+                *(u32*)(object + 0x5C) = 0;
+            }
+        }
+        i++;
+    }
+}
+
 // fn_800115C8, size:0x3C
 void fn_800115C8(s8 index) {
     if (index >= 0 && index < 13) {
