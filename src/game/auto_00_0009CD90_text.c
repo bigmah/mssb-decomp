@@ -7,6 +7,7 @@ extern u8 lbl_3_common_bss_32A94[];
 extern u8 g_RunningLogic[];
 extern u8 g_Pitcher[];
 extern u8 g_Batter[];
+extern u8 g_GameLogic[];
 
 // fn_3_9DBE4, size:0x34
 void fn_3_9DBE4(void) {
@@ -92,4 +93,15 @@ void fn_3_9D600(void) {
     } else if (g_Pitcher[0x14E] == 3) {
         *(s16*)lbl_3_common_bss_32A94 = 0x2B;
     }
+}
+
+// fn_3_9EA1C, size:0xC8
+s32 fn_3_9EA1C(s32 idx) {
+    s32 i;
+    for (i = 1; i < 10; i++) {
+        if (*(s32*)(g_GameLogic + idx * 0x50 + i * 8 + 0x40) % 10 == 9) {
+            return 1;
+        }
+    }
+    return 0;
 }
