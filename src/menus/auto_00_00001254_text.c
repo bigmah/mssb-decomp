@@ -27,6 +27,7 @@ typedef struct MenuEntrySlot {
 extern MenuEntrySlot lbl_80371C30[];
 
 extern u8 lbl_2_bss_100B4;
+extern u8 starMissionCompletionTracker[];
 extern u8 lbl_2_bss_100B8[];
 extern void fn_2_16A74(s32, s32);
 extern u8* lbl_803CBBCC[];
@@ -306,4 +307,17 @@ void fn_2_7D44(void) {
     fn_2_16A74(1, 0);
     fn_2_16A74(2, 0);
     fn_2_16A74(3, 0);
+}
+
+// fn_2_33BC, size:0xD0
+s32 fn_2_33BC(void) {
+    s32 r = 1;
+    s32 i;
+    s8 a = *(s8*)(starMissionCompletionTracker + 0x40BB);
+    for (i = 1; i < 9; i++) {
+        if (a == *(s8*)(starMissionCompletionTracker + 0x40BB + i * 6)) {
+            r = 0;
+        }
+    }
+    return r;
 }

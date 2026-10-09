@@ -55,4 +55,6 @@ void fn_2_120D0(void);
 
 void fn_2_7D44(void);
 
+s32 fn_2_33BC(void);
+
 #endif
