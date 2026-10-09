@@ -655,7 +655,16 @@ void fn_2_4B1AC(void) {
 typedef struct {
     u8 pad0[2];
     u16 state;
-    u8 pad4[0xA];
+    u8 pad4;
+    u8 b5;
+    u8 pad6;
+    u8 b7;
+    u8 b8;
+    u8 b9;
+    u8 bA;
+    u8 bB;
+    u8 bC;
+    u8 padD;
     u8 bE;
     u8 pad0F[0x13];
     u8 b22;
@@ -697,5 +706,61 @@ void fn_2_520A4(void) {
     case 4:
         fn_2_51A1C();
         break;
+    }
+}
+
+typedef struct {
+    u8 pad[0x54];
+    u32 w54;
+} BssF410;
+extern BssF410 lbl_2_bss_F410;
+extern u8 lbl_80361B20[];
+typedef struct {
+    u8 b[0x4508];
+} MenuSlot;
+extern MenuSlot lbl_80354768[];
+
+// fn_2_51890, size:0x160
+void fn_2_51890(void) {
+    if ((s8)lbl_80354768[lbl_80361B20[0xF6]].b[0x1606] != 0) {
+        if (lbl_80354768[lbl_8034E9A0[0x4754]].b[0x441B] != 0) {
+            lbl_2_bss_F410.w54 = 1;
+            lbl_2_bss_33FBCC.b5 = 3;
+            lbl_2_bss_33FBCC.b7 = 0;
+            lbl_2_bss_33FBCC.b8 = 1;
+            lbl_2_bss_33FBCC.b9 = 1;
+            lbl_2_bss_33FBCC.bA = 1;
+            lbl_2_bss_33FBCC.bB = 1;
+            lbl_2_bss_33FBCC.bC = 1;
+        } else {
+            lbl_2_bss_F410.w54 = 2;
+            lbl_2_bss_33FBCC.b5 = 2;
+            lbl_2_bss_33FBCC.b7 = 0;
+            lbl_2_bss_33FBCC.b8 = 0;
+            lbl_2_bss_33FBCC.b9 = 1;
+            lbl_2_bss_33FBCC.bA = 1;
+            lbl_2_bss_33FBCC.bB = 1;
+            lbl_2_bss_33FBCC.bC = 1;
+        }
+    } else {
+        if (lbl_80354768[lbl_8034E9A0[0x4754]].b[0x441B] != 0) {
+            lbl_2_bss_F410.w54 = 1;
+            lbl_2_bss_33FBCC.b5 = 1;
+            lbl_2_bss_33FBCC.b7 = 0;
+            lbl_2_bss_33FBCC.b8 = 1;
+            lbl_2_bss_33FBCC.b9 = 0;
+            lbl_2_bss_33FBCC.bA = 1;
+            lbl_2_bss_33FBCC.bB = 1;
+            lbl_2_bss_33FBCC.bC = 1;
+        } else {
+            lbl_2_bss_F410.w54 = 0;
+            lbl_2_bss_33FBCC.b5 = 0;
+            lbl_2_bss_33FBCC.b7 = 1;
+            lbl_2_bss_33FBCC.b8 = 0;
+            lbl_2_bss_33FBCC.b9 = 0;
+            lbl_2_bss_33FBCC.bA = 0;
+            lbl_2_bss_33FBCC.bB = 0;
+            lbl_2_bss_33FBCC.bC = 1;
+        }
     }
 }

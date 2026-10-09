@@ -129,5 +129,7 @@ void fn_2_4B1AC(void);
 
 void fn_2_520A4(void);
 
+void fn_2_51890(void);
+
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);
