@@ -863,3 +863,21 @@ void fn_2_6BCAC(u8* object) {
     *(f32*)(object + 0x8C) = lbl_2_rodata_B58;
     *(s16*)(object + 0x94) = 1;
 }
+
+// fn_2_68FBC, size:0xB4
+void fn_2_68FBC(s32 index, s32 animation) {
+    MenuEntry* entry;
+    MenuAnimation* settings;
+    s16* cache;
+    s32 cur;
+
+    entry = &lbl_2_bss_1A8248[0]->entries[index];
+    settings = &lbl_2_data_3C84[animation];
+    cache = (s16*)(lbl_2_bss_1A824C[0] + 0x190000);
+    cur = cache[entry->objectId + 0x3BAB];
+    if (cur != animation) {
+        fn_2_8CD58(entry->objectId, settings->clip, settings->mode, 1, settings->end, 0, 0);
+        cache = (s16*)(lbl_2_bss_1A824C[0] + 0x190000);
+        cache[entry->objectId + 0x3BAB] = animation;
+    }
+}
