@@ -27,4 +27,6 @@ void fn_3_ED2F4(void);
 
 void fn_3_ECBB0(void);
 
+void fn_3_ED818(void);
+
 #endif
