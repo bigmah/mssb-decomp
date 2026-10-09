@@ -983,3 +983,13 @@ void fn_2_4C81C(void) {
     g_d_GameSettings.bJMatchRelated = lbl_2_bss_1A8248[0][0x4418];
     fn_2_4C6A8();
 }
+
+// fn_2_4CB94, size:0x19C
+void fn_2_4CB94(void) {
+    g_d_GameSettings.GameModeSelected = 6;
+    g_d_GameSettings.exhibitionMatchInd = 0;
+    g_d_GameSettings._36 = lbl_2_bss_1A8248[0][0x441D];
+    g_d_GameSettings.bJMatchInd = 1;
+    g_d_GameSettings.bJMatchRelated = lbl_2_bss_1A8248[0][0x4418];
+    fn_2_4C6A8();
+}
