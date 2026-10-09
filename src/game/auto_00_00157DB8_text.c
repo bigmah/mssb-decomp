@@ -139,3 +139,10 @@ void fn_3_159590(void) {
     *(void**)lbl_803CC1B8 = fn_3_159114;
 }
 
+// fn_3_15AD94, size:0x40
+void fn_3_15AD94(void) {
+    if (g_Pitcher.currentStateFrameCounter > lbl_3_data_FC1C) {
+        fn_3_750C4(2);
+    }
+}
+
