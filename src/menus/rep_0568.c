@@ -69,3 +69,28 @@ s32 fn_2_18650(s32 a) {
     }
     return 0;
 }
+
+// fn_2_18FBC, size:0xFC
+void fn_2_18FBC(void) {
+    u8* q;
+    s32 i;
+    q = fn_800B0A5C_insertQueue(fn_2_188EC, 0x6000);
+    lbl_2_bss_100B8[0x19] = 0;
+    lbl_2_bss_100B8[0x1B] = 1;
+    if (lbl_8034E9A0[0x4701] == 0) {
+        for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+            ((s8*)lbl_2_bss_100B8)[i + 0x27] = -1;
+        }
+        q[0x1C] = 0;
+    } else {
+        for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+            lbl_2_bss_100B8[i + 0x14] = 0;
+        }
+        q[0x1C] = 0;
+    }
+    lbl_2_bss_100B8[0] = i = 0;
+    lbl_2_bss_100B8[1] = 0;
+    for (; i < 10; i++) {
+        ((s8*)lbl_2_bss_100B8)[i + 2] = -1;
+    }
+}
