@@ -111,3 +111,13 @@ void fn_2_79634(s32 unused, s32 index) {
     }
 }
 
+// fn_2_85108, size:0x54
+void fn_2_85108(void) {
+    u8* a = lbl_8034E978;
+    u8* b = lbl_800FEF70;
+    a[0] = 5;
+    a[9] = a[8];
+    a[8] = *(u16*)(b + 0x58);
+    fn_800B0A5C_insertQueue((void*)fn_2_84FA8, 0x3000);
+}
+
