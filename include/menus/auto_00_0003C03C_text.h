@@ -74,4 +74,8 @@ void fn_2_40B90(void);
 
 void fn_2_3DF28(void);
 
+void fn_2_3DC60(void);
+
+void fn_2_3DDC4(void);
+
 #endif

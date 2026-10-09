@@ -753,3 +753,85 @@ void fn_2_3DF28(void) {
         o[0x28] = 0;
     }
 }
+
+// fn_2_3DC60, size:0x164
+void fn_2_3DC60(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    u8* p;
+    switch ((s8)o[0x28]) {
+    case 0:
+        lbl_2_bss_1A8234[0][0x16264B] = 1;
+        *(s16*)(o + 0x14) = 0x10;
+        fn_80062890(0x38);
+        o[0x28] = 1;
+        break;
+    case 1:
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        p = (u8*)&lbl_803C77B8;
+        p += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        if (*(u16*)(p + 2) & 0x300) {
+            lbl_2_bss_1A8234[0][0x162835] = 1;
+            *(s16*)(o + 0x14) = 0x10;
+            o[0x28] = 3;
+        }
+        break;
+    case 3:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+    }
+}
+
+// fn_2_3DDC4, size:0x164
+void fn_2_3DDC4(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    u8* p;
+    switch ((s8)o[0x28]) {
+    case 0:
+        lbl_2_bss_1A8234[0][0x16264C] = 1;
+        *(s16*)(o + 0x14) = 0x10;
+        fn_80062890(0x38);
+        o[0x28] = 1;
+        break;
+    case 1:
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        p = (u8*)&lbl_803C77B8;
+        p += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        if (*(u16*)(p + 2) & 0x300) {
+            lbl_2_bss_1A8234[0][0x162836] = 1;
+            *(s16*)(o + 0x14) = 0x10;
+            o[0x28] = 3;
+        }
+        break;
+    case 3:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+    }
+}
