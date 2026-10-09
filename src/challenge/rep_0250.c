@@ -1,6 +1,6 @@
 #include "challenge/rep_0250.h"
 
-extern void fn_1_973C(void* object);
+
 extern void fn_1_9380(void* object);
 #include "static/UnknownHomes_Static.h"
 extern void fn_1_8F34(void* object);
@@ -8,6 +8,9 @@ extern u8* lbl_803CC1B8[];
 extern u8 lbl_1_bss_2FAA;
 extern u8 lbl_1_bss_2FB9;
 extern void* fn_80034CEC(void*);
+extern u8 lbl_1_data_B88[];
+extern u8* lbl_80371C30[];
+extern void fn_80034E20(void*, void*);
 
 // .text:0x96D0 size:0x4
 void fn_1_96D0(void) {
@@ -33,4 +36,13 @@ void fn_1_96D4(void) {
         fn_800B0A14_removeQueue(fn_80034CEC(queue));
     }
     lbl_1_bss_2FB9 = lbl_1_bss_2FAA;
+}
+
+// .text:0x973C size:0x7C
+void fn_1_973C(void* object) {
+    u8* queue = *(u8**)lbl_803CC1B8;
+    fn_80034E20(queue, lbl_1_data_B88);
+    *(u8*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x66) = lbl_1_bss_2FAA;
+    *(u16*)(queue + 0x18) = 0;
+    **(void***)lbl_803CC1B8 = (void*)fn_1_96D4;
 }
