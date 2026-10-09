@@ -84,3 +84,17 @@ void fn_3_12C5CC(void) {
     }
 }
 
+// fn_3_129F48, size:0xB0
+void fn_3_129F48(void) {
+    u8* q = lbl_803CC1B8;
+    fn_80034E20(q, lbl_3_data_9FB4);
+    *(s16*)(q + 0x1C) = 0;
+    if (lbl_3_common_bss_32724[0xBF] != 0) {
+        *(u32*)(((u8**)lbl_80371C30)[*(u16*)(q + 0x14) * 2] + 0x5C) = 0x160000;
+        *(s16*)(q + 0x1C) = 2;
+    }
+    *(s16*)(q + 0x18) = 0;
+    *(s16*)(q + 0x1A) = 0;
+    lbl_3_common_bss_32724[0xBE] = 1;
+    *(void (**)(void))((u8**)&lbl_803CC1B8)[0] = fn_3_129C88;
+}
