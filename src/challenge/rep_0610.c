@@ -5,12 +5,18 @@ static u8 ch_68FC[0x30];
 static u8 ch_fill68F8[0x4];
 static u8 ch_67E0[0x118];
 static s32 ch_67B8[0xA];
-static u8 ch_fill5F6C[0x84C];
+static u8 ch_fill5F74[0x844];
+static u8 ch_5F73;
+static u8 ch_fill5F72;
+static u8 ch_fill5F71;
+static u8 ch_fill5F70;
+static u8 ch_fill5F6C[0x4];
 static u8 ch_fill5F6B;
 static u8 ch_fill5F6A;
 static u8 ch_5F69;
 static u8 ch_fill5F68;
-static u8 ch_fill30C0[0x2EA8];
+static u8 ch_3218[0x2D50];
+static u8 ch_fill30C0[0x158];
 static s32 ch_30BC;
 static u8 ch_fill307C[0x40];
 static u8 ch_fill307B;
@@ -614,5 +620,32 @@ void fn_1_CC24(void) {
             *(s32*)(object + 0x14) = ch_67B8[2];
             *(u16*)(object + 0x18) = lbl_1_data_F56E;
         }
+    }
+}
+
+#include "C3/control.h"
+extern void fn_80030D88(Vec*, Vec*, void*, s32);
+
+// .text:0xF1D8 size:0x120
+void fn_1_F1D8(void* unused) {
+    Control control;
+    Mtx matrix;
+    Vec coordinates;
+    Vec direction;
+    u8* queue = lbl_803CC1B8[0];
+    u8* object = ((u8**)(lbl_8036E548 + 0x2C50))[lbl_1_bss_5F73[0]];
+    getAnimRelatedCoordinates(0, *(s32*)(queue + 0x24), &coordinates);
+    control.type = 0;
+    CTRLSetRotation(&control, *(f32*)(object + 0x40), *(f32*)(object + 0x44), *(f32*)(object + 0x48));
+    CTRLBuildMatrix(&control, matrix);
+    direction.x = lbl_1_rodata_7394;
+    direction.z = lbl_1_rodata_73BC;
+    direction.y = lbl_1_rodata_7394;
+    PSMTXMultVec(matrix, &direction, &direction);
+    fn_80030D88(&coordinates, &direction, lbl_1_data_F278[0], 5);
+    fn_80030D88(&coordinates, &direction, lbl_1_data_F278[1], 5);
+    fn_80030D88(&coordinates, &direction, lbl_1_data_F278[2], 5);
+    if (--*(s32*)(queue + 0x20) == 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
     }
 }
