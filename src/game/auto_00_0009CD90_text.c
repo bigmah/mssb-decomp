@@ -10,6 +10,9 @@ extern u8 lbl_3_common_bss_32A94[];
 extern u8 g_RunningLogic[];
 extern u8 g_Pitcher[];
 extern u8 g_Batter[];
+extern u8 g_d_GameSettings[];
+extern u8 starMissionCompletionTracker[];
+extern u8 lbl_80361B20[];
 extern u8 g_GameLogic[];
 
 // fn_3_9DBE4, size:0x34
@@ -135,4 +138,23 @@ void fn_3_9CD90(void) {
             }
         }
     }
+}
+
+// fn_3_9E834, size:0x1E8
+s32 fn_3_9E834(void) {
+    s32 i;
+    if (g_d_GameSettings[8] == 0) {
+        for (i = 0; i < 54; i++) {
+            if (starMissionCompletionTracker[0x43D6 + i] != 0) {
+                return 1;
+            }
+        }
+    } else {
+        for (i = 0; i < 54; i++) {
+            if (lbl_80361B20[i] != 0) {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }
