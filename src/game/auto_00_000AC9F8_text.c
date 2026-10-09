@@ -28,6 +28,7 @@ extern void fn_3_6714C(s32 player);
 extern void fn_3_B3A4C(void);
 extern u8 lbl_80366158[];
 extern u8 lbl_8037169C[];
+extern s16 lbl_3_data_104B8[];
 
 #pragma dont_inline on
 
@@ -315,4 +316,30 @@ complete:
     return 1;
 pending:
     return 0;
+}
+
+// fn_3_B1CB0, size:0xF4
+s32 fn_3_B1CB0(void) {
+    u8 n;
+    InputStruct* c = &g_Controls[g_Practice._192];
+    if (g_Practice.loadingGuidedPractice == 0) {
+        return 0;
+    }
+    if (g_GameLogic.gameStatus != 1 && g_GameLogic.gameStatus != 2) {
+        return 0;
+    }
+    if (g_Practice._188 < 0x7FFE) {
+        g_Practice._188 += 1;
+    } else {
+        g_Practice._188 = 0x7FFF;
+    }
+    if (g_Practice._188 > 0x5A && (c->newButtonInput & 0x1100)) {
+        u8* pr = (u8*)&g_Practice;
+        n = pr[0x1D8] + 1;
+        pr[0x1D8] = n;
+        if (n >= 3 || *(s16*)((u8*)lbl_3_data_104B8 + pr[0x1D6] * 0xC + pr[0x1D7] * 6 + n * 2) < 0) {
+            g_Practice.loadingGuidedPractice = 0;
+        }
+    }
+    return 1;
 }
