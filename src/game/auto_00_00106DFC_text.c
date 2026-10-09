@@ -354,3 +354,15 @@ s32 fn_3_107D34(u8* a, u8* b) {
     }
     return *a - *b;
 }
+
+// fn_3_10F564, size:0x58
+s32 fn_3_10F564(void) {
+    if (*(s8*)(g_Minigame + 0x1A2C) == -1) {
+        if (lbl_3_data_228[0x10] != 0) {
+            *(s8*)(g_Minigame + 0x1A2C) = lbl_3_data_18910[g_Minigame[0x1A2A]];
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
