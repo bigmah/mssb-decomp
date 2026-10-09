@@ -92,4 +92,8 @@ void fn_2_42388(void);
 
 void fn_2_42EB0(void);
 
+void fn_2_432EC(void);
+
+s32 fn_2_44E2C(s32 ch);
+
 #endif
