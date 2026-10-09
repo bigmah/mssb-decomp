@@ -80,3 +80,7 @@ void fn_2_1164(void) {
     *(s16*)(object + 0x10) = 1;
     fn_800B0A14_removeQueue(object);
 }
+
+// fn_2_119C, size:0x4
+void fn_2_119C(void) {
+}

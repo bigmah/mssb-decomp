@@ -10,5 +10,6 @@ void fn_2_10AC(u8* data);
 s32 fn_2_10FC(void);
 void fn_2_1130(s16 value);
 void fn_2_1164(void);
+void fn_2_119C(void);
 
 #endif
