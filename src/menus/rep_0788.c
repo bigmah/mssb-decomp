@@ -799,3 +799,35 @@ void fn_2_25EB0(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
+
+// fn_2_28224, size:0x138
+void fn_2_28224(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        u8* object;
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 37;
+        return;
+    }
+    case 5: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        /* fallthrough */
+    }
+    case 37:
+    case 1:
+        return;
+    }
+}
