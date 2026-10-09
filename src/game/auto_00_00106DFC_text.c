@@ -12,6 +12,9 @@ extern u8 lbl_3_data_20FDC[];
 extern u8 lbl_3_data_228[];
 extern u8 lbl_3_data_18910[];
 extern u8 lbl_803616CC[];
+extern u8 inMemRoster[];
+extern u8 lbl_8034E9A0[];
+extern u8 lbl_800E86F0[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern s32 ARAMTransfer(void*, int, int, int);
 extern void fn_3_90064(s32);
@@ -26,6 +29,7 @@ extern void fn_8001CA40(s32);
 extern void fn_80011BE4(s32);
 extern void fn_800246D4(void*, void*, void*, s32, s32);
 extern void* memset(void*, int, unsigned long);
+extern void* memcpy(void*, const void*, unsigned long);
 extern void fn_3_9DC18(void*, s32, s32);
 extern void manageStadiumLoading(void);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -384,4 +388,24 @@ void fn_3_10F5BC(void) {
         g_d_GameSettings[0xA] = 1;
     }
     fn_800B0A5C_insertQueue(manageStadiumLoading, 0);
+}
+
+// fn_3_10C450, size:0x13C
+void fn_3_10C450(s32 a, s32 b) {
+    u8* r = inMemRoster + a * 0xA0;
+    memcpy(r, lbl_8034E9A0 + b * 0xA0, 0xA0);
+    if (g_Minigame[0x18D4 + a] != 0) {
+        r[0x28] += lbl_800E86F0[0];
+        r[0x29] += lbl_800E86F0[1];
+        r[0x2A] += lbl_800E86F0[2];
+        r[0x2B] += lbl_800E86F0[3];
+        r[0x2C] += lbl_800E86F0[4];
+        r[0x2F] += lbl_800E86F0[5];
+        r[0x30] += lbl_800E86F0[6];
+        r[0x0] += lbl_800E86F0[7];
+        r[0x1] += lbl_800E86F0[8];
+        r[0x2] += lbl_800E86F0[9];
+        r[0x3] += lbl_800E86F0[0xA];
+        r[0x4] += lbl_800E86F0[0xB];
+    }
 }
