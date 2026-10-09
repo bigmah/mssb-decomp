@@ -107,3 +107,19 @@ s32 fn_3_90A18(void) {
     return 0;
 }
 
+// fn_3_90AB0, size:0x64
+void fn_3_90AB0(s32 a) {
+    u32* p;
+    s32 i;
+    if (a >= 0) {
+        i = fn_800698F8() + 5;
+        p = lbl_800EF808;
+        p += i;
+        if (*(p += 1) != 0) {
+            fn_800214D0();
+            fn_800ACFB0((void*)*p);
+            *p = 0;
+        }
+    }
+}
+
