@@ -63,3 +63,16 @@ void fn_3_1158F8(void) {
     unkSimulationRelatedStruct[6] = 4;
 }
 
+// fn_3_115828, size:0x88
+void fn_3_115828(void) {
+    fn_3_DE4FC();
+    if (g_Minigame[0x1A2B] <= 2 && g_Minigame[0x1909] == 0) {
+        if (g_Minigame[*(s8*)(g_Minigame + 0x1908) + 0x18E8] == 1 && g_Minigame[0x19A8] == 0) {
+            g_Minigame[0x1A37] = 1;
+        } else {
+            g_Minigame[0x1A37] = 2;
+        }
+    }
+    fn_3_5A6D4(0xE);
+}
+
