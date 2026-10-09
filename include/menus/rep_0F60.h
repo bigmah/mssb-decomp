@@ -13,4 +13,6 @@ void fn_2_8CCAC(s32 index, u8 value);
 
 void fn_2_8CCCC(s32 index, s32 a, s32 b, u8 mode, s32 c, s32 d, s32 e, s32 f);
 
+void fn_2_8DC00(void);
+
 #endif

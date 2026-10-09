@@ -6,6 +6,9 @@
 extern u8* lbl_2_bss_1A8248[];
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_340140;
+extern u8* lbl_2_bss_1A824C;
+extern u8 lbl_2_data_2F990[];
+extern void* _OSAllocFromHeap(s32 alignment, s32 size);
 typedef struct {
     u8 pad0[0x25D];
     u8 enabled;
@@ -63,4 +66,23 @@ void fn_2_8CCCC(s32 index, s32 a, s32 b, u8 mode, s32 c, s32 d, s32 e, s32 f) {
         p[0x26A] = f;
     }
     *(s16*)(p + 0x66) = -1;
+}
+
+// fn_2_8DC00, size:0xD8
+void fn_2_8DC00(void) {
+    u8* t = lbl_2_data_2F990;
+    u32 max = 0;
+    u32 v;
+    s32 i;
+    s32 size;
+    for (i = 0; i < 13; i++) {
+        v = *(u32*)(t + 4) & 0x0FFFFFFF;
+        if (max < v) max = v;
+        t += 0x10;
+    }
+    size = (max + 0x1F) & ~0x1F;
+    *(void**)(lbl_2_bss_340140 + 0x2C8C) = _OSAllocFromHeap(0x20, size * *(s16*)(lbl_2_bss_1A824C + 0x197746));
+    for (i = 0; i < *(s16*)(lbl_2_bss_1A824C + 0x197746); i++) {
+        *(u8**)(lbl_2_bss_340140 + i * 0x27C + 0xC0C) = *(u8**)(lbl_2_bss_340140 + 0x2C8C) + i * size;
+    }
 }
