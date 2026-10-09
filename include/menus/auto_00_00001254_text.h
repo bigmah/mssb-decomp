@@ -57,4 +57,6 @@ void fn_2_7D44(void);
 
 s32 fn_2_33BC(void);
 
+s32 fn_2_A62C(void);
+
 #endif
