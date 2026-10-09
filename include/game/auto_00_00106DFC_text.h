@@ -5,5 +5,6 @@
 
 void fn_3_106EB0(void);
 void fn_3_107078(void);
+void fn_3_10F550(s8 a, s16 b);
 
 #endif
