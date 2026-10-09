@@ -36,3 +36,9 @@ void fn_2_4668C(s32 index) {
     u8* entry = menu + index * 0x34;
     entry[0x31] = 1;
 }
+
+// fn_2_45938, size:0x40
+s32 fn_2_45938(s32 index) {
+    u8* menu = lbl_2_bss_1A8248[0];
+    return *(s8*)(menu + lbl_803CB8F0[menu[index * 10 + 0x40F3]] * 0x34 + 0x31) == 0;
+}
