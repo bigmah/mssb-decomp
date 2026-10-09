@@ -80,3 +80,20 @@ void fn_3_ED4FC(void) {
     }
 }
 
+// fn_3_ED784, size:0x94
+void fn_3_ED784(void) {
+    u8* p = lbl_803CC1B8;
+    if (g_Minigame[0x1920] == 0xB) {
+        *(void**)p = fn_3_EC014;
+    } else {
+        s32 v = ((s16*)lbl_3_data_8EA8)[g_Minigame[0x1920]];
+        if (v < 0) {
+            fn_800B0A14_removeQueue(p);
+        } else {
+            *(s16*)(lbl_3_data_8E68 + 2) = (s16)v;
+            fn_80034E20(p, lbl_3_data_8E68);
+            *(void**)lbl_803CC1B8 = fn_3_ED6E0;
+        }
+    }
+}
+
