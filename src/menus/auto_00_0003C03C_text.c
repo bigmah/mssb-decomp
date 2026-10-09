@@ -17,3 +17,10 @@ void fn_2_42474(void) {
     u8* menu = lbl_2_bss_1A824C[0];
     *(s16*)(menu + 0x1976E4) = 0x78;
 }
+
+// fn_2_44F14, size:0x20
+s32 fn_2_44F14(s32 index) {
+    u8* menu = lbl_2_bss_1A8248[0];
+    u8* entry = menu + index * 0x34;
+    return *(s8*)(entry + 5);
+}
