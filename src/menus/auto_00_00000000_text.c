@@ -2,6 +2,7 @@
 #include "Dolphin/GX/GXPixel.h"
 #include "Dolphin/GX/GXTev.h"
 #include "Dolphin/OS/OSUtil.h"
+#include "musyx/musyx.h"
 
 extern void fn_800A7D4C(s32, void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -23,6 +24,14 @@ extern void fn_8004153C(void);
 extern void fn_800A97D0(s32, s32);
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_803C66B0[];
+extern s32 ARAMTransfer(void*, void*, int, int);
+extern void fn_800216F8(s32, void*);
+extern void fn_2_10FC(void);
+extern u32 lbl_2_bss_B644;
+extern u8 lbl_2_data_C8[];
+extern u8 lbl_803C6CF8[];
+extern void fn_2_374(void);
+extern void fn_2_794(void);
 extern u8 lbl_2_data_C0[];
 extern u8* lbl_2_bss_4;
 
@@ -185,4 +194,30 @@ s32 fn_2_1A8(u8 idx, u8 kind, u16 mask) {
         r = 7;
     }
     return r;
+}
+
+// fn_2_554, size:0x110
+void fn_2_554(void) {
+    u8* o = lbl_803CC1B8;
+    switch (*(u16*)(o + 0x14)) {
+    case 0:
+        lbl_2_bss_B644 = OSGetTick();
+        fn_800216F8(2, fn_2_10FC);
+        *(u16*)(o + 0x14) = 1;
+    case 1:
+        if (*(s16*)(*(u8**)&lbl_803CC1B8 + 0x10) != 0) {
+            sndVolume(0x7F, 0xA, 0xFF);
+            *(u16*)(o + 0x14) = 2;
+    case 2:
+            ARAMTransfer(lbl_2_data_C8, lbl_8034E9A0, 1, 0);
+            *(u16*)(o + 0x14) = 3;
+        }
+        break;
+    case 3:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            *(void**)o = fn_2_794;
+            lbl_2_bss_4 = fn_800B0A5C_insertQueue(fn_2_374, 0x8000);
+        }
+        break;
+    }
 }
