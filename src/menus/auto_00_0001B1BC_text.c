@@ -165,3 +165,8 @@ void fn_2_1C21C(void) {
     fn_2_68DAC(0, buf);
 }
 
+// fn_2_1C3A4, size:0x4
+void fn_2_1C3A4(void) {
+    return;
+}
+
