@@ -25,4 +25,6 @@ void fn_3_ED574(void);
 
 void fn_3_ED2F4(void);
 
+void fn_3_ECBB0(void);
+
 #endif

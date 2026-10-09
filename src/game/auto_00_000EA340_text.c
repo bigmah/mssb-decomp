@@ -193,3 +193,43 @@ remove:
     }
 }
 
+// fn_3_ECBB0, size:0x198
+void fn_3_ECBB0(void) {
+    QObj* p = (QObj*)lbl_803CC1B8;
+    u8* q = g_Minigame + 0x1DF4;
+    u32 j;
+    s32 n;
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        return;
+    }
+    if (g_GameLogic[0x11E] == 8) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        return;
+    }
+    switch (p->u1C) {
+    case 0:
+        fn_80034E20(p, lbl_3_data_19830);
+        *(s32*)(((QEnt*)lbl_80371C30)[p->u14 + 1].p + 0x5C) = 0xA0000;
+        j = 0;
+        do {
+            n = p->u14 + j;
+            j++;
+            *(u32*)(*(u8**)(lbl_80371C30 + (n + 2) * 8) + 0x54) &= ~2;
+        } while (j < 4);
+        n = p->u14 + (s8)g_Minigame[0x1935];
+        *(u32*)(*(u8**)(lbl_80371C30 + (n + 2) * 8) + 0x54) |= 2;
+        n = p->u14 + (s8)g_Minigame[0x1936];
+        *(u32*)(*(u8**)(lbl_80371C30 + (n + 2) * 8) + 0x54) |= 2;
+        q[(s8)g_Minigame[0x1935]] = 1;
+        q[(s8)g_Minigame[0x1936]] = 1;
+        p->u1C = 1;
+        break;
+    case 1:
+        g_Minigame[0x1934] = 2;
+        p->u1C = 2;
+        break;
+    case 2:
+        break;
+    }
+}
