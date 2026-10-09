@@ -97,3 +97,13 @@ void fn_3_ED784(void) {
     }
 }
 
+// fn_3_ED058, size:0x9C
+void fn_3_ED058(void) {
+    QObj* p = (QObj*)lbl_803CC1B8;
+    p->u18++;
+    if (lbl_3_common_bss_32724[0x96] != 0 || (g_GameLogic[0x11E] != 2 && g_GameLogic[0x11E] != 1) || ((QEnt*)lbl_80371C30)[p->u14].p[0x69] == 2) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        g_Minigame[0x19CD] = 3;
+    }
+}
+
