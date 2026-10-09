@@ -3,6 +3,7 @@
 
 #include "static/UnknownHomes_Static.h"
 #include <string.h>
+#include "Dolphin/mtx.h"
 extern u8 lbl_1_data_10908[];
 extern s32 lbl_1_data_109F8;
 extern void (*lbl_1_data_108E8[])(void*);
@@ -13,6 +14,12 @@ extern u8 lbl_803C6CF8[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void fn_1_273D8(void*);
 extern const f32 lbl_1_rodata_7B5C;
+typedef struct { u32 a, b, c; } V3U;
+extern V3U lbl_1_rodata_7B50;
+extern void fn_80030D88(void*, f32*, void*, s32);
+extern void fn_8002F5F4(void*, f32*, void*);
+extern void fn_80030470(void*, f32*, V3U*, void*, s32);
+extern void PSVECNormalize(const Vec*, Vec*);
 extern const f32 lbl_1_rodata_7B64;
 extern const f32 lbl_1_rodata_7B98;
 
@@ -138,4 +145,33 @@ void fn_1_28200(void) {
     object[0x37] = 0;
     *(u16*)(object + 0x34) = 0;
     *(void**)lbl_803CC1B8[0] = fn_1_28118;
+}
+
+// fn_1_27594, size:0x138
+void fn_1_27594(void) {
+    Vec dir;
+    V3U rest;
+    u8* object;
+    s32 i;
+    u16 flags;
+    object = lbl_803CC1B8[0];
+    rest = lbl_1_rodata_7B50;
+    flags = *(u16*)(object + 0x34);
+    if ((flags & 2) || (flags & 4)) {
+        i = 1;
+        dir.x = lbl_1_rodata_7B5C;
+        dir.y = lbl_1_rodata_7B5C;
+        dir.z = *(f32*)(object + 0x2C);
+        do {
+            fn_80030D88(object + 0x20, &dir.x, lbl_1_data_10908 + i * 0x50, 5);
+            i++;
+        } while (i < 3);
+        fn_8002F5F4(object + 0x20, &dir.x, &lbl_1_data_109F8);
+        PSVECNormalize(&dir, &dir);
+        fn_80030470(object + 0x20, &dir.x, &rest, lbl_1_data_10908, 5);
+        *(u16*)(lbl_803CC1B8[0] + 0x34) ^= 2;
+    }
+    if (*(u16*)(lbl_803CC1B8[0] + 0x34) & 8) {
+        fn_80048BEC(*(void**)(object + 0x1C), 1, 1);
+    }
 }
