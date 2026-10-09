@@ -808,3 +808,27 @@ void fn_2_9094C(u8* object) {
     }
     *(s16*)(object + 0x90) = 1;
 }
+
+// .text:0x8FDB0 size:0xEC
+void fn_2_8FDB0(s32 index) {
+    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    Mtx m;
+    Vec v;
+    if (!(*(f32*)(slot + 0x30) <= lbl_2_rodata_1080)) {
+        PSMTXRotRad(m, 'Y', *(f32*)(slot + 0x44));
+        v.x = lbl_2_rodata_1080;
+        v.y = lbl_2_rodata_1080;
+        v.z = -*(f32*)(slot + 0x30);
+        PSMTXMultVec(m, &v, &v);
+        *(f32*)(slot + 0x18) = v.x;
+        *(f32*)(slot + 0x1C) = v.z;
+        *(f32*)(slot + 0x0) = *(f32*)(slot + 0x0) + *(f32*)(slot + 0x18);
+        *(f32*)(slot + 0x8) = *(f32*)(slot + 0x8) + *(f32*)(slot + 0x1C);
+    }
+    *(f32*)(slot + 0xC) = *(f32*)(slot + 0x0);
+    *(f32*)(slot + 0x14) = *(f32*)(slot + 0x8);
+    if (lbl_2_rodata_1080 == *(f32*)(slot + 0x30)) {
+        *(f32*)(slot + 0x20) = lbl_2_rodata_1080;
+        *(f32*)(slot + 0x24) = lbl_2_rodata_1080;
+    }
+}
