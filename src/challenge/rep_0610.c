@@ -38,8 +38,8 @@ typedef struct { void* data; u32 pad4; u32 pad8; } ChallengeEntry;
 
 extern void LITXForm(void* light, void* matrix);
 
-extern u8 lbl_1_bss_5F74;
-extern u8 lbl_1_bss_5F78[];
+extern f32 lbl_1_bss_5F74;
+extern u8 lbl_1_bss_5F78;
 
 extern void* lbl_1_bss_67B8[];
 
@@ -189,8 +189,8 @@ void fn_1_10AA4(u8* object, f32 value) {
 
 // fn_1_161D0, size:0x3C
 void fn_1_161D0(void) {
-    lbl_1_bss_5F74 ^= 1;
-    fn_800B9A9C(lbl_1_bss_5F74, *(f32*)lbl_1_bss_5F78);
+    lbl_1_bss_5F78 ^= 1;
+    fn_800B9A9C(lbl_1_bss_5F78, lbl_1_bss_5F74);
 }
 
 // fn_1_16558, size:0x38
