@@ -21,4 +21,6 @@ void fn_1_27594(void);
 
 void fn_1_27BB8(void);
 
+void fn_1_27E98(void);
+
 #endif
