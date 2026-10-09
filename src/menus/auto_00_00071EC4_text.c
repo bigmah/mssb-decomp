@@ -382,3 +382,18 @@ void fn_2_72D60(u8* o) {
         lbl_803CBBC4[3] = 1;
     }
 }
+
+// fn_2_72814, size:0xAC
+void fn_2_72814(s32 a) {
+    if ((lbl_803CBBC4[3] == 1) ? 1 : 0) {
+        s32 n = 0;
+        n += fn_80042DA8(a, 0, 0) != 0;
+        n += fn_80042DA8(a, 1, 0) != 0;
+        if (n == 2) {
+            lbl_803CBBC4[3] = 0;
+            lbl_803CBBC4[2] = 0;
+            lbl_803CBBC4[0] = 0;
+            lbl_803CBBC4[4] = 1;
+        }
+    }
+}
