@@ -56,6 +56,14 @@ extern u8 lbl_1_data_85C[];
 
 extern u8 lbl_1_common_bss_472B4[];
 extern void fn_1_4DD8(u16* effects);
+extern u8 lbl_803CBBC0;
+extern void fn_800A7D4C(int, void*);
+extern const f32 lbl_1_rodata_204;
+typedef struct { u8 b[8]; } Chal8;
+static u8 sPad[0x5E4] = {1};
+static Chal8 sTabA[3] = {{{1}}};
+static Chal8 sTabB[2] = {{{1}}};
+static Chal8 sTabC[2] = {{{1}}};
 
 // fn_1_717C, size:0x104
 void fn_1_717C(ChallengeModelOffsets* model) {
@@ -164,4 +172,20 @@ void fn_1_5540(void) {
 void fn_1_7848(void) {
     fn_80048C28();
     fn_80048C1C();
+}
+
+// fn_1_7280, size:0x138
+void fn_1_7280(void) {
+    u8* p;
+    u8* q;
+    p = lbl_1_common_bss_472B4 + lbl_803CBBC0 * 0x6C + 0x5C;
+    PSMTXCopy((f32(*)[4])lbl_1_common_bss_472B4, (f32(*)[4])(p + 0x38));
+    fn_800A7D4C(0, &sTabC[lbl_803CBBC0]);
+    fn_800A7D4C(0, p);
+    fn_800A7D4C(0, &sTabB[lbl_803CBBC0]);
+    q = lbl_1_common_bss_472B4 + lbl_803CBBC0 * 0x6C + 0x134;
+    PSMTXRotRad((f32(*)[4])(q + 8), 0x59, lbl_1_rodata_204 * (f32)*(u16*)(lbl_1_common_bss_472B4 + 0x23A));
+    PSMTXCopy((f32(*)[4])lbl_1_common_bss_472B4, (f32(*)[4])(q + 0x38));
+    fn_800A7D4C(0, q);
+    fn_800A7D4C(0, &sTabA[lbl_803CBBC0]);
 }

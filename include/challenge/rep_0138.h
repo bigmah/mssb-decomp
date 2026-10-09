@@ -30,4 +30,6 @@ void fn_1_7E04(f32 scale);
 
 void fn_1_717C(ChallengeModelOffsets* model);
 
+void fn_1_7280(void);
+
 #endif
