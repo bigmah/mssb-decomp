@@ -85,3 +85,13 @@ void fn_3_115B5C(void) {
         fn_3_10F550(4, 0);
     }
 }
+
+// fn_3_1166CC, size:0xC0
+void fn_3_1166CC(void) {
+    u32 i;
+    for (i = 0; i < 40; i++) {
+        u8* p = *(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28;
+        p[0x26] = 0;
+        *(s32*)p = 0;
+    }
+}
