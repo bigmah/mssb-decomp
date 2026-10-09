@@ -28,6 +28,7 @@ extern void fn_3_6714C(s32 player);
 extern void fn_3_B3A4C(void);
 extern u8 lbl_80366158[];
 extern u8 lbl_8037169C[];
+extern u8 lbl_80354720[];
 extern u8 lbl_80354768[];
 extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
@@ -432,4 +433,22 @@ s32 fn_3_B0464(void) {
         return 1;
     }
     return 0;
+}
+
+// fn_3_AEFF8, size:0x114
+void fn_3_AEFF8(void) {
+    s32 i;
+    *(s16*)(lbl_3_common_bss_34C90 + 0x254) = -1;
+    *(s16*)(lbl_3_common_bss_34C90 + 0x258) = -1;
+    *(s16*)(lbl_3_common_bss_34C90 + 0x256) = -1;
+    *(s16*)(lbl_3_common_bss_34C90 + 0x25A) = -1;
+    for (i = 0; i < 9; i++) {
+        if (*(s8*)(lbl_80354720 + *(s32*)lbl_3_common_bss_34C90 * 0x24 + i * 4 + 2) == 0) {
+            *(s16*)(lbl_3_common_bss_34C90 + 0x25C) = i;
+        }
+        if (*(s8*)(lbl_80354720 + *(s32*)lbl_3_common_bss_34C90 * 0x24 + i * 4 + 2) == 1) {
+            *(s16*)(lbl_3_common_bss_34C90 + 0x25E) = i;
+        }
+    }
+
 }
