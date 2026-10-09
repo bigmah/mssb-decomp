@@ -13,6 +13,8 @@ extern u8 lbl_3_data_228[];
 extern u8 lbl_3_data_18910[];
 extern u8 lbl_803616CC[];
 extern u8 inMemRoster[];
+extern void fn_8006C398(void);
+extern void fn_3_1079C8(u8*, s32);
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_800E86F0[];
 extern void* _OSAllocFromHeap(s32, s32);
@@ -407,5 +409,39 @@ void fn_3_10C450(s32 a, s32 b) {
         r[0x2] += lbl_800E86F0[9];
         r[0x3] += lbl_800E86F0[0xA];
         r[0x4] += lbl_800E86F0[0xB];
+    }
+}
+
+// fn_3_10754C, size:0x140
+typedef struct { u8 p[0x24]; s16 v; u8 q[0x7A]; } RosT;
+void fn_3_10754C(u8* dst) {
+    u8 buf[0x10];
+    s32 i;
+    u32 k;
+    fn_8006C398();
+    if (g_Minigame[0x1A3C] != 0 && *(s8*)(g_Minigame + 0x1908) >= 0 && *(s8*)(g_Minigame + 0x1908) < 4) {
+        i = 0;
+        do {
+            ((s16*)dst)[i] = *(s16*)(g_Minigame + 0x1E10 + i * 2);
+            i++;
+        } while ((u32)i < 6);
+        i = 0;
+        do {
+            dst[i + 0xC] = g_Minigame[0x1E1C + i];
+            i++;
+        } while ((u32)i < 6);
+        fn_3_1079C8(buf, 1);
+        k = 0;
+        do {
+            if (*(s8*)(g_Minigame + 0x1908) == buf[k * 2]) {
+                dst[0x12] = buf[k * 2 + 1];
+            }
+            k++;
+        } while (k < g_Minigame[0x1906]);
+        {
+        RosT* r = (RosT*)inMemRoster;
+        dst[0x13] = g_Minigame[0x1E22 + *(s8*)(g_Minigame + 0x1908)];
+        dst[0x14] = r[*(s8*)(g_Minigame + 0x18CC + *(s8*)(g_Minigame + 0x1908))].v;
+        }
     }
 }
