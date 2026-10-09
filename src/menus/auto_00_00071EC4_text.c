@@ -12,6 +12,8 @@ extern s32 lbl_2_bss_F410;
 extern u8 lbl_2_data_2D33C[];
 extern u8 lbl_803C50E8[];
 extern void fn_80053FE8(void);
+extern void fn_8004E2EC(void);
+extern void fn_8004F964(void);
 extern void fn_80062674(s32 index);
 extern void fn_800626EC(s32 index);
 extern void fn_800625A4(s32 a, s32 b);
@@ -286,4 +288,25 @@ void fn_2_836A4(void) {
         fn_800B0A5C_insertQueue((void*)fn_2_82DE8, 0x3000);
     }
     fn_800B0A5C_insertQueue((void*)fn_2_834F0, 0x3000);
+}
+
+// fn_2_738C8, size:0xCC
+void fn_2_738C8(void) {
+    u8* a;
+    if (*(u16*)(lbl_803CBBCC[0] + 6) == 5) {
+        fn_800B0A5C_insertQueue((void*)fn_80053FE8, 0);
+    }
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        a = lbl_8034E978;
+        a[0] = 0xD;
+        a[9] = a[8];
+        a[8] = *(u16*)(lbl_800FEF70 + 0xD8);
+        fn_800B0A5C_insertQueue((void*)fn_8004E2EC, 0x3000);
+    } else {
+        a = lbl_8034E978;
+        a[0] = 0;
+        a[9] = a[8];
+        a[8] = *(u16*)(lbl_800FEF70 + 8);
+        fn_800B0A5C_insertQueue((void*)fn_8004F964, 0x3000);
+    }
 }
