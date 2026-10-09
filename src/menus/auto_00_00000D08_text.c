@@ -25,3 +25,15 @@ void fn_2_D08(u16 ch, u16 time, u8 mode) {
         sndSeqVolume(0, time, lbl_2_bss_D974[ch], mode);
     }
 }
+
+// fn_2_1018, size:0x94
+void fn_2_1018(u16 ch) {
+    if (lbl_2_bss_D974[ch] != -1) {
+        if (sndSeqGetValid(lbl_2_bss_D974[ch])) {
+            sndSeqVolume(0, 0, lbl_2_bss_D974[ch], 1);
+            sndSeqStop(lbl_2_bss_D974[ch]);
+        }
+        lbl_2_bss_D974[ch] = -1;
+        lbl_2_bss_D958[ch] = -1;
+    }
+}
