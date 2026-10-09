@@ -1,4 +1,5 @@
 #include "menus/rep_0788.h"
+#include "Dolphin/gx.h"
 
 #include "static/UnknownHomes_Static.h"
 #include "static/UnknownHomes_Static.h"
@@ -29,6 +30,37 @@ extern MenuTableEntry lbl_80371C30[];
 extern u8* lbl_2_bss_1A824C[];
 extern s16 lbl_2_data_3D30[][4];
 extern u8* lbl_803CC1B8[];
+extern u8* lbl_2_bss_1A8248[];
+extern u8 lbl_8036E548[];
+extern void fn_2_68E68(void);
+extern void fn_2_8FD14(void);
+extern void fn_2_8AEE0(void);
+extern void fn_2_47FF8(void);
+extern void fn_2_47CFC(void);
+
+// fn_2_2025C, size:0xCC
+void fn_2_2025C(void) {
+    u8* menu = lbl_2_bss_1A8248[0];
+    if (menu[0x44F2] == 2) {
+        lbl_8036E548[0x307A] = 0;
+    } else if (lbl_2_bss_1A824C[0][0x1978F3] != 0) {
+        lbl_8036E548[0x307A] = 4;
+    }
+    if (lbl_8036E548[0x307A] == 4) {
+        if (menu[0x44F2] != 3) {
+            if (menu[0x44F2] != 4) {
+                fn_2_68E68();
+            }
+            fn_2_8FD14();
+            fn_2_8AEE0();
+            fn_2_47FF8();
+            if (lbl_2_bss_1A8248[0][0x44F2] != 4) {
+                fn_2_47CFC();
+            }
+        }
+    }
+    GXSetZCompLoc(GX_FALSE);
+}
 extern u8* lbl_2_bss_1A8230[];
 extern u8 lbl_2_data_1048C[];
 extern void fn_2_4E878(void*, void*);
