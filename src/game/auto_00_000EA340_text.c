@@ -296,3 +296,54 @@ void fn_3_ED818(void) {
     }
 }
 
+// fn_3_EDD10, size:0x29C
+void fn_3_EDD10(void) {
+    if (g_GameLogic[0x11E] == 0x1C || (u8)(g_GameLogic[0x11E] - 0x1D) <= 3 || g_GameLogic[0x11E] == 0x21) {
+        fn_3_EDA3C();
+        return;
+    }
+    lbl_3_common_bss_32724[0xDA] = 0;
+    fn_3_97144(lbl_3_common_bss_32724);
+    fn_3_96914();
+    fn_3_ED818();
+    fn_3_9143C();
+    if (*(s16*)(g_Minigame + 0x18AA) == 1) {
+        fn_800B0A5C_insertQueue(fn_3_ED784, 2);
+    }
+    if (g_Minigame[0x199F] != 0 && lbl_3_common_bss_32724[0xD6] == 0 && g_GameLogic[0x11E] == 2) {
+        ((QObj*)fn_800B0A5C_insertQueue(fn_3_EA8FC, 2))->u18 = 1;
+        fn_800B0A5C_insertQueue(fn_3_EAEF4, 2);
+    }
+    if (g_Minigame[0x19CE] != 0 && *(s16*)(g_Minigame + 0x19BA) == 1) {
+        fn_800B0A5C_insertQueue(fn_3_ED2A8, 2);
+    }
+    if (g_GameLogic[0x11E] == 0xE || g_GameLogic[0x11E] == 0x22) {
+        fn_3_129458();
+    }
+    if (g_GameLogic[0x11E] == 5) {
+        if (g_Minigame[0x1E02] == 0) {
+            fn_800B0A5C_insertQueue(fn_3_1254F8, 2);
+        }
+    } else if (g_GameLogic[0x11E] == 0x22) {
+        if (lbl_3_common_bss_34C90[0x1D2] == 1) {
+            fn_800B0A5C_insertQueue(fn_3_9894C, 2);
+        }
+    } else if (g_GameLogic[0x11E] == 3) {
+        if (g_GameLogic[0x125] == 0 && *(u16*)(g_GameLogic + 0xFE) == 0) {
+            ((QObj*)fn_800B0A5C_insertQueue(fn_3_E911C, 2))->u18 = 0;
+        }
+    } else if (g_GameLogic[0x11E] == 0x24) {
+        if (g_GameLogic[0x125] == 5 && *(u16*)(g_GameLogic + 0xFE) == 0) {
+            fn_800B0A5C_insertQueue(fn_3_1274B4, 2);
+        }
+    } else if (g_GameLogic[0x11E] == 9) {
+    } else if (g_GameLogic[0x11E] == 0xD) {
+        if (lbl_3_common_bss_34C90[0x1D2] == 2) {
+            fn_800B0A5C_insertQueue(fn_3_128B90, 2);
+        }
+    } else if (g_GameLogic[0x11E] == 0xB) {
+        if (lbl_3_common_bss_34C90[0x1D2] == 8 && lbl_3_common_bss_34C90[0x1D4] == 2) {
+            fn_800B0A5C_insertQueue(fn_3_126604, 2);
+        }
+    }
+}
