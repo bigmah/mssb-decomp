@@ -17,6 +17,8 @@ extern s16* fn_80035F20(u8, s32, u16, s16);
 extern void fn_80035ED0(s32);
 extern void fn_80035EEC(s32, s32);
 extern u8 lbl_1_bss_2FA8[];
+extern u8 lbl_1_data_BC8[];
+extern void fn_8003664C(u8, s32, u16, s32);
 extern u8 lbl_8039C3E0[];
 
 // .text:0x96D0 size:0x4
@@ -147,4 +149,18 @@ void fn_1_8F34(void* object) {
         fn_80035ED0(3);
     }
     **(void***)lbl_803CC1B8 = (void*)fn_1_8DBC;
+}
+
+// .text:0x90E4 size:0x1AC
+void fn_1_90E4(s32 value) {
+    fn_80034CEC(lbl_1_bss_2FCC);
+    fn_80034E20(lbl_1_bss_2FCC, lbl_1_data_BC8);
+    *(s32*)(lbl_80371C30[*(u16*)(lbl_1_bss_2FCC + 0x14) * 2] + 0x5C) = 0x80000;
+    fn_8003664C(lbl_1_data_BC8[0x14], 0, (u16)(value / 1000 + 10), 4);
+    value %= 1000;
+    *(s32*)(lbl_80371C30[*(u16*)(lbl_1_bss_2FCC + 0x14) * 2 + 2] + 0x5C) = 0xC0000;
+    fn_8003664C(lbl_1_data_BC8[0x14], 1, (u16)(value / 100 + 10), 5);
+    value %= 100;
+    *(s32*)(lbl_80371C30[*(u16*)(lbl_1_bss_2FCC + 0x14) * 2 + 4] + 0x5C) = 0x100000;
+    fn_8003664C(lbl_1_data_BC8[0x14], 2, (u16)(value / 10 + 10), 6);
 }
