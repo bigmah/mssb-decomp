@@ -773,3 +773,19 @@ void fn_2_91B80(u8* object) {
     }
     *(s16*)(object + 0x90) = 1;
 }
+
+// .text:0x918F4 size:0x88
+void fn_2_918F4(u8* object) {
+    s32 index;
+    u8* slot;
+    u8* anim;
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    index = *(s32*)(object + 0x78);
+    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    if (anim != NULL) {
+        *(s16*)(slot + 0xA6) = 0;
+        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[2];
+    }
+    *(s16*)(object + 0x90) = 1;
+}
