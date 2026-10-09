@@ -155,3 +155,13 @@ s32 fn_2_73B94(s32 a) {
         return 0x2C;
     }
 }
+
+// fn_2_82DE8, size:0x70
+void fn_2_82DE8(void) {
+    *(u8**)(lbl_8034E9A0 + 0x4748) = ((u8**)&lbl_803CC1B8)[0];
+    lbl_8034E9A0[0x48AF] = 0;
+    lbl_803C5EA4[0x37] = 0;
+    lbl_803C5EA4[0x38] = 0;
+    fn_80034E20(((u8**)&lbl_803CC1B8)[0], lbl_2_data_2B4DC);
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_82CF0;
+}
