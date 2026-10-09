@@ -30,4 +30,6 @@ void fn_2_42270(s32 index);
 
 s32 fn_2_44238(s32 value);
 
+void fn_2_44184(void);
+
 #endif
