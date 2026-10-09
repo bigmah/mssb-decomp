@@ -75,3 +75,15 @@ s32 fn_3_106E50(void) {
     }
     return 0;
 }
+
+// fn_3_107988, size:0x40
+s32 fn_3_107988(u32 v) {
+    u32 i;
+    u32 n = g_Minigame[0x1E2A] - 1;
+    for (i = 0; i < n; i++) {
+        if (g_Minigame[0x1E1C + i] == v) {
+            return 1;
+        }
+    }
+    return 0;
+}
