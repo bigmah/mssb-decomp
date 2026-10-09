@@ -129,3 +129,13 @@ void fn_3_1590C8(void) {
     }
 }
 
+// fn_3_159590, size:0x64
+void fn_3_159590(void) {
+    u8* o = lbl_803CC1B8;
+    fn_80034E20(o, lbl_3_data_B3F4);
+    *(s16*)(o + 0x18) = 0;
+    *(s16*)(o + 0x1A) = 0;
+    *(s16*)(o + 0x1C) = 0;
+    *(void**)lbl_803CC1B8 = fn_3_159114;
+}
+
