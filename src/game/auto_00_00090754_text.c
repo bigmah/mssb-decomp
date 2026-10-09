@@ -8,8 +8,9 @@ extern u8* lbl_803CC1B8;
 extern u8 lbl_3_common_bss_32724[];
 extern void fn_8003649C(void*, s32, s32, s32, s32);
 extern u8 lbl_3_data_81D4[];
+extern u8 lbl_3_data_8148[];
 extern void fn_800216F8(u8, void*);
-extern void fn_3_90F48(void);
+
 extern void fn_8006285C(void);
 
 // fn_3_90754, size:0x10
@@ -168,6 +169,29 @@ s32 fn_3_90C14(s32 a) {
         lbl_3_common_bss_34C58._2C++;
         return 1;
     }
+    return 0;
+}
+
+// fn_3_90F48, size:0x11c
+s32 fn_3_90F48(void) {
+    s32 c;
+    s32 n;
+    u8* q;
+    u8 m = g_d_GameSettings.GameModeSelected;
+    if (m == 2) {
+        c = lbl_3_common_bss_34C58._2D;
+    } else if (m == 7 || m == 6) {
+        q = (u8*)&g_Minigame;
+        q += (u32)lbl_3_common_bss_34C58._2C >> 1;
+        c = q[0x18D0];
+    } else if (g_GameLogic.gameStatus == 0xE) {
+        c = lbl_3_common_bss_34C58._2D;
+    } else {
+        c = inMemRoster[((u8*)lbl_800EF808)[0x39A] / 9][((u8*)lbl_800EF808)[0x39A] % 9].stats.CharID;
+    }
+    c = fn_800698F8(c);
+    n = c + 5;
+    fn_80021518(lbl_3_data_8148[c], lbl_800EF808[n + 1]);
     return 0;
 }
 
