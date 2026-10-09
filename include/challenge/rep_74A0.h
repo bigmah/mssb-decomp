@@ -76,4 +76,6 @@ void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode);
 
 void fn_1_1A774(void);
 
+void fn_1_1D514(void);
+
 #endif
