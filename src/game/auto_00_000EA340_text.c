@@ -22,3 +22,14 @@ s32 fn_3_EBFD4(void) {
     return 0;
 }
 
+// fn_3_EB684, size:0x5C
+s32 fn_3_EB684(void) {
+    if (lbl_3_common_bss_32724[0x96] != 0 || lbl_3_common_bss_32724[0xB7] != 0) {
+        return 1;
+    }
+    if (g_GameLogic[0x11E] != 1 && g_GameLogic[0x11E] != 2 && g_GameLogic[0x11E] != 0xB) {
+        return 1;
+    }
+    return 0;
+}
+

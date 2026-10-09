@@ -5,4 +5,6 @@
 
 s32 fn_3_EBFD4(void);
 
+s32 fn_3_EB684(void);
+
 #endif
