@@ -368,6 +368,48 @@ void fn_3_F934C(void) {
     return;
 }
 
+#pragma dont_inline off
+static inline void F9164_inl(u8* o) {
+    s32 stad;
+    s32 slot;
+    s32 snd;
+    u32 h;
+    u8 v;
+    V3* d;
+    switch (o[0xA2]) {
+        case 0:
+            snd = 2;
+            slot = g_Ball[0x1BE5];
+            break;
+        case 1:
+            snd = 1;
+            slot = g_Ball[0x1BE5] + 2;
+            break;
+        case 2:
+            snd = 0;
+            slot = g_Ball[0x1BE5] + 4;
+            break;
+    }
+    stad = g_d_GameSettings[9];
+    if (g_d_GameSettings[7] == 6) {
+        v = lbl_3_data_84B8[snd * 2];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + snd * 2];
+    }
+    h = sndFXStartEx((u16)(snd + ((u16*)lbl_3_data_81DC)[stad]), v, 0x3F, 0);
+    if (g_d_GameSettings[7] == 6) {
+        v = lbl_3_data_84B8[snd * 2 + 1];
+    } else {
+        v = lbl_3_data_8404[stad * 0x1E + snd * 2 + 1];
+    }
+    sndFXCtrl(h, 0x5B, v);
+    lbl_3_bss_B620[slot] = 1;
+    lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
+    lbl_3_bss_B5D8[slot].y = -*(f32*)(g_Ball + 4);
+    lbl_3_bss_B5D8[slot].z = *(f32*)(g_Ball + 8);
+}
+#pragma dont_inline on
+
 // .text:0x000F963C size:0x130 mapped:0x807386D0
 #pragma dont_inline off
 void fn_3_F963C(s32 idx, u8* v) {
@@ -392,7 +434,7 @@ void fn_3_F963C(s32 idx, u8* v) {
 // .text:0x000F976C size:0x284 mapped:0x80738800
 // partial: = inlined F99F0 + F963C; same snd/stad saved-reg swap and tail reg assignment as F99F0
 void fn_3_F976C(s32 idx, s32 b, u8* c) {
-    fn_3_F99F0(idx);
+    F9164_inl(lbl_3_common_bss_350E4.p0 + idx * 0xE8);
     fn_3_F963C(idx, c);
 }
 
