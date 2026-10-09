@@ -114,3 +114,15 @@ void fn_2_44184(void) {
         menu[0x44F7] = 1;
     }
 }
+
+// fn_2_442E8, size:0x80
+s32 fn_2_442E8(void) {
+    s32 i;
+    s32 count = 0;
+    u8* menu = lbl_2_bss_1A8248[0];
+    for (i = 0; i < 9; i++) {
+        s32 a = *(s16*)(menu + 0x40B8 + i * 6);
+        if (a == 0 || a == 1) count++;
+    }
+    return count == 2;
+}
