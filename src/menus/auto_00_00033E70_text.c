@@ -18,6 +18,10 @@ extern void fn_800363D8(void*, s32, s32, s32, s32);
 extern void fn_80036134(void*, s32, s32, s32);
 extern s16 fn_8000F988(void*, s16, u16, s32, s32, s32);
 extern u8 lbl_80366B18[];
+extern u8 lbl_2_data_C924[];
+extern u8 lbl_2_data_C8F8[];
+extern u8 lbl_2_data_C904[];
+extern void fn_8000FE08(s16, s32, s32);
 
 // fn_2_37430, size:0x2C
 void fn_2_37430(u8* a, u8* b) {
@@ -1324,3 +1328,49 @@ void fn_2_3523C(u8* a, u8* b) {
     p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
     *(u32*)(p + 0x58) = *(s16*)(b + 0x12) | (*(u32*)(p + 0x58) & 0xFFFFFF00);
 }
+
+// fn_2_34D70, size:0x1FC
+void fn_2_34D70(u8* a, u8* b) {
+    u8* p;
+    s16 r = fn_2_53BC8(b);
+    if (r != -1) {
+        *(s16*)(b + 4) = r;
+    }
+    switch (*(s16*)(b + 4)) {
+    case 0: {
+        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
+        *(u32*)(p + 0x54) &= ~2;
+        *(s16*)(b + 0x12) = 0xFF;
+        *(s16*)(b + 0x14) = fn_8000F988(a, *(s16*)(b + 0xE), *(s16*)(b + 0x10), 4, 0x306, 0);
+        *(s16*)(b + 4) = 0x26;
+        break;
+    }
+    case 2: {
+        fn_8000FE08(*(s16*)(b + 0x14), 4, lbl_2_bss_1A8248[0][0x4415] + 0x305);
+        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
+        *(u32*)(p + 0x54) |= 2;
+        lbl_80366B18[*(s16*)(b + 0x14) * 0x38 + 0x2F] = 1;
+        *(s16*)(b + 4) = 3;
+        break;
+    }
+    case 3:
+        *(s16*)(b + 4) = 0x25;
+        break;
+    case 0x25:
+        *(s16*)(b + 4) = 0x25;
+        break;
+    case 5: {
+        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
+        *(u32*)(p + 0x54) &= ~2;
+        *(s16*)(b + 4) = 0x26;
+        break;
+    }
+    case 1:
+    case 4:
+        break;
+    }
+    lbl_80366B18[*(s16*)(b + 0x14) * 0x38 + 0x2F] = 1;
+    p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
+    *(u32*)(p + 0x58) = *(s16*)(b + 0x12) | (*(u32*)(p + 0x58) & 0xFFFFFF00);
+}
+
