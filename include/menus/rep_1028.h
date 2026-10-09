@@ -16,6 +16,7 @@ void fn_2_8F6D0(s32 index, s32 value);
 void fn_2_90888(u8* object);
 void fn_2_90698(u8* object);
 void fn_2_90C4C(u8* object);
+void fn_2_8FD14(void);
 
 void fn_2_903A8(s32 index);
 

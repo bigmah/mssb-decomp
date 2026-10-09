@@ -599,3 +599,21 @@ void fn_2_90C4C(u8* object) {
         *(s16*)(object + 0x90) = 2;
     }
 }
+
+// .text:0x8FD14 size:0x9C
+void fn_2_8FD14(void) {
+    u8* anim;
+    u8* dst;
+    u8* src;
+    s32 i;
+    for (i = 0; i < *(u16*)((u8*)lbl_2_bss_340140[0] + 0x3078); i++) {
+        anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+        if (anim != NULL) {
+            dst = anim + i * 0x28;
+            src = (u8*)lbl_2_bss_1A8248[0] + i * 0xBC + 0x21E0;
+            memcpy(dst + 4, src, 0xC);
+            *(f32*)(dst + 0x14) = *(f32*)(src + 0x28);
+            dst[0x26] = src[0xAA];
+        }
+    }
+}
