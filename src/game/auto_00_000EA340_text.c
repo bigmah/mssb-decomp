@@ -17,6 +17,7 @@ typedef struct {
     u16 u18;
     u16 u1A;
     u16 u1C;
+    u16 u1E;
 } QObj;
 extern u8* lbl_803CC1B8;
 extern u8 lbl_3_data_8EC4[];
@@ -55,6 +56,7 @@ extern void fn_80050F78(s32);
 extern void fn_8004CC4C(u8, u8, u8, s32, s16);
 extern u8 lbl_8034E978[];
 extern u8 lbl_800FEF70[];
+extern u8 lbl_3_data_19770[];
 extern u8 lbl_3_data_8FCC[];
 extern u8 lbl_3_data_8F64[];
 extern u16 lbl_3_data_8FC4[];
@@ -407,5 +409,87 @@ void fn_3_EDD10(void) {
         if (lbl_3_common_bss_34C90[0x1D2] == 8 && lbl_3_common_bss_34C90[0x1D4] == 2) {
             fn_800B0A5C_insertQueue(fn_3_126604, 2);
         }
+    }
+}
+
+// fn_3_ECD48, size:0x310
+void fn_3_ECD48(void) {
+    QObj* p = (QObj*)lbl_803CC1B8;
+    u8* q = g_Minigame + 0x1DF4;
+    u32 stadium;
+    u32 stadium2;
+    u8 v;
+    s32 v2;
+    u32 j;
+    s32 n;
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        return;
+    }
+    if (g_GameLogic[0x11E] == 8) {
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        return;
+    }
+    switch (p->u1C) {
+    case 0:
+        fn_80034E20(p, lbl_3_data_19770);
+        stadium = g_d_GameSettings.StadiumID;
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            v = lbl_3_data_84B8[0x22];
+        } else {
+            v = lbl_3_data_8404[stadium * 0x1E + 0x22];
+        }
+        v2 = sndFXStartEx(lbl_3_data_81DC[stadium] + 0x11, v, 0x3F, 0);
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            v = lbl_3_data_84B8[0x23];
+        } else {
+            v = lbl_3_data_8404[stadium * 0x1E + 0x23];
+        }
+        sndFXCtrl(v2, 0x5B, v);
+        p->u1C = 1;
+        p->u1E = 0;
+        break;
+    case 1:
+        if (*(u32*)(((QEnt*)lbl_80371C30)[p->u14].p + 0x5C) >> 16 == 0xA0) {
+            j = 0;
+            do {
+                n = p->u14 + (s8)g_Minigame[0x1936 + j];
+                j++;
+                *(u8*)(*(u8**)(lbl_80371C30 + (n + 1) * 8) + 0x68) = 1;
+            } while (j < (u32)(g_Minigame[0x1906] - 1));
+            p->u1C = 2;
+        }
+        p->u1E = p->u1E + 1;
+        if (p->u1E == 0x3C) {
+            stadium2 = g_d_GameSettings.StadiumID;
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                v = lbl_3_data_84B8[0x24];
+            } else {
+                v = lbl_3_data_8404[stadium2 * 0x1E + 0x24];
+            }
+            v2 = sndFXStartEx(lbl_3_data_81DC[stadium2] + 0x12, v, 0x3F, 0);
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                v = lbl_3_data_84B8[0x25];
+            } else {
+                v = lbl_3_data_8404[stadium2 * 0x1E + 0x25];
+            }
+            sndFXCtrl(v2, 0x5B, v);
+        }
+        break;
+    case 2:
+        n = p->u14;
+        n += (s8)g_Minigame[0x1936];
+        if (*(u32*)(*(u8**)(lbl_80371C30 + (n + 1) * 8) + 0x5C) >> 16 >= 6) {
+            j = 0;
+            do {
+                q[(s8)g_Minigame[0x1936 + j]] = 2;
+                j++;
+            } while (j < (u32)(g_Minigame[0x1906] - 1));
+            g_Minigame[0x1934] = 2;
+            p->u1C = 3;
+        }
+        break;
+    case 3:
+        break;
     }
 }

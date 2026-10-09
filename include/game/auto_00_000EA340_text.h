@@ -33,4 +33,6 @@ void fn_3_EDA3C(void);
 
 void fn_3_EDD10(void);
 
+void fn_3_ECD48(void);
+
 #endif
