@@ -576,3 +576,14 @@ void fn_2_90888(u8* object) {
     *(s16*)(object + 0xA0) = 0;
     *(s16*)(object + 0x90) = 1;
 }
+
+// .text:0x90698 size:0x80
+void fn_2_90698(u8* object) {
+    s16 timer = *(s16*)(object + 0x9C);
+    *(s16*)(object + 0x9C) = timer - 1;
+    if (timer == 0) {
+        *(f32*)(object + 0x8C) = lbl_2_rodata_10A8[0];
+        fn_2_8F6D0(*(s32*)(object + 0x78), 5);
+        *(s16*)(object + 0x90) = 2;
+    }
+}
