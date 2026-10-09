@@ -455,12 +455,14 @@ void fn_2_80B5C(s32 a, s32 index) {
 
 // fn_2_74564, size:0xD8
 void fn_2_74564(s32 a) {
-    s32 hits = 0;
-    s32 total = 0;
     s32 i;
+    s32 hits;
+    s32 total;
     s32 cur;
     cur = lbl_2_bss_F410;
     if ((lbl_803C66B0[7] == 1) ? 1 : 0) {
+        hits = 0;
+        total = 0;
         for (i = 0; i < 7; i++) {
             if (cur == i) {
                 total++;
