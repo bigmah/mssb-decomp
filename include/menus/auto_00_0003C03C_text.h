@@ -110,4 +110,6 @@ s32 fn_2_45A84(void);
 
 void fn_2_45810(void);
 
+void fn_2_45204(void);
+
 #endif

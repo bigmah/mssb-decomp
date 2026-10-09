@@ -1271,3 +1271,37 @@ void fn_2_45810(void) {
         *(lbl_2_bss_1A8248[0] + i + 0x43D6) = 0;
     }
 }
+
+// fn_2_45204, size:0x150
+// ~99%: extra mr r30,r0 for the strength-reduced table pointer
+void fn_2_45204(void) {
+    s32 i;
+    s32 n;
+    s32 cnt;
+    s32 j;
+    u8* mi;
+    u8 row;
+    u8* m;
+    mi = lbl_800E8558;
+    for (i = 0; i < 54; i++, mi += 6) {
+        n = fn_8006CDC0(i);
+        if (mi[3] == 1) {
+            cnt = 0;
+            row = mi[2];
+            for (j = 0; j < 10; j++) {
+                if (*(s16*)(lbl_80109AE8 + row * 0x64 + j * 10) != -1) {
+                    cnt++;
+                }
+            }
+            mi[2] = row;
+        } else {
+            cnt = 0;
+        }
+        if (n == cnt && cnt != 0) {
+            m = lbl_2_bss_1A8248[0] + i;
+            if (m[0x43D6] == 0) {
+                m[0x4483] = 1;
+            }
+        }
+    }
+}
