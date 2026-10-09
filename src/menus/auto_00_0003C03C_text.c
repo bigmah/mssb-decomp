@@ -26,6 +26,10 @@ extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A8230[];
 extern void fn_2_20218(void*);
 extern void fn_2_1BF50(void);
+typedef struct {
+    u8 b[0x1C];
+} Rec1C;
+extern Rec1C lbl_80109420[];
 extern s32 fn_8006CDC0(s32);
 extern u8 lbl_800E8558[];
 extern u8 lbl_80109AE8[];
@@ -1371,6 +1375,32 @@ void fn_2_42FC8(void) {
                     }
                 }
             }
+        }
+    }
+}
+
+// fn_2_46ADC, size:0x148
+// near-match: original lbl_80109420+0xC4 reloc form, inner loop guard cmpwi 0xa
+void fn_2_46ADC(void) {
+    s32 i;
+    s32 j;
+    u8* e;
+    for (i = 0; i < 54; i++) {
+        e = lbl_2_bss_1A8248[0] + i * 0x34;
+        *(u8**)e = (u8*)&lbl_80109420[7] + i * 0x1C;
+        e[4] = (*(u8**)e)[0];
+        e[5] = (*(u8**)e)[1];
+        e[7] = 0;
+        e[6] = 0;
+        e[8] = 0;
+        for (j = 0; j < 20; j++) {
+            e[0x1D + j] = 0;
+            e[9 + j] = 0;
+        }
+        if (*(s8*)(e + 4) == (s32)lbl_2_bss_1A8248[0][0x441C] && *(s8*)(e + 5) <= 3) {
+            e[0x31] = 1;
+        } else {
+            e[0x31] = 0;
         }
     }
 }

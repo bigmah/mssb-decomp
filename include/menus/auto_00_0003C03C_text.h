@@ -116,4 +116,6 @@ void fn_2_466AC(void);
 
 void fn_2_42FC8(void);
 
+void fn_2_46ADC(void);
+
 #endif
