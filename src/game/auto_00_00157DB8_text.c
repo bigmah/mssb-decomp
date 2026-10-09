@@ -63,3 +63,30 @@ void fn_3_1581FC(void) {
     *(void**)lbl_803CC1B8 = fn_3_15810C;
 }
 
+// fn_3_158264, size:0x148
+void fn_3_158264(u8* o) {
+    s32 v;
+    s32 c;
+    u8* row = lbl_3_data_FAF4 + g_Practice.practiceType_2 * 4;
+    v = row[g_Practice.practiceLevel];
+    fn_800363D8(o, 1, 3, 0x32, v);
+    fn_800363D8(o, 1, 4, 0x32, v);
+    c = g_Practice.guidedPracticeCounter;
+    fn_800363D8(o, 1, 1, 0x32, c);
+    fn_800363D8(o, 1, 2, 0x32, c);
+    if (c != *(u16*)(o + 0x1A)) {
+        QEnt* t = (QEnt*)(lbl_80371C30 + 8);
+        u8* q = t[*(u16*)(o + 0x14)].p;
+        if ((*(u32*)(q + 0x5C) >> 16) <= 9) {
+            *(u32*)(q + 0x5C) = 0xA0000;
+            t[*(u16*)(o + 0x14)].p[0x68] = 1;
+        }
+        q = t[*(u16*)(o + 0x14)].p;
+        if ((*(u32*)(q + 0x5C) >> 16) >= 0x13) {
+            *(u32*)(q + 0x5C) = 0x90000;
+            t[*(u16*)(o + 0x14)].p[0x68] = 0;
+            *(u16*)(o + 0x1A) = c;
+        }
+    }
+}
+
