@@ -3,6 +3,16 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void fn_3_BF1AC(void);
+extern void fn_3_90CB0(void);
+extern void fn_3_B95EC(void);
+extern void fn_8001E474(void);
+extern void fn_3_BC224(void);
+extern void fn_3_972C8(void);
+extern void fn_8001F228(void);
+extern void fn_3_902FC(void);
+extern void fn_3_8C07C(void);
+extern void fn_3_90434(void);
 extern void fn_3_5A6FC(void);
 extern void fn_3_6011C(void);
 extern void fn_3_FF4C(void);
@@ -604,5 +614,52 @@ void fn_3_59918(s32 x) {
             ((u8*)&g_UnkSound_32718)[i + 2] = x;
             return;
         }
+    }
+}
+
+// fn_3_5A6FC, size:0x180
+void fn_3_5A6FC(void) {
+    switch ((s32)g_GameLogic.framesOfExitingToMenu) {
+    case 1:
+        if (g_d_GameSettings.GameModeSelected == 5 && g_d_GameSettings.bJMatchInd == 1) {
+            g_d_GameSettings.home_AwaySetting ^= 1;
+        }
+        fn_3_BF1AC();
+        lbl_3_common_bss_32724[0x96] = 1;
+        if (g_d_GameSettings.minigamesEnabled != 0) {
+            fn_3_90CB0();
+            if (g_d_GameSettings.GameModeSelected != 6) {
+                fn_3_B95EC();
+            }
+        } else {
+            fn_3_B95EC();
+        }
+        fn_8001E474();
+        fn_3_BC224();
+        fn_3_972C8();
+        fn_8001F228();
+        fn_3_902FC();
+        fn_3_8C07C();
+        g_GameLogic.framesOfExitingToMenu += 1;
+        g_d_GameSettings._55 = 1;
+        return;
+    case 2:
+        g_GameLogic.framesOfExitingToMenu += 1;
+        return;
+    case 29:
+        fn_3_90434();
+        g_GameLogic.framesOfExitingToMenu += 1;
+        return;
+    case 30:
+        if (g_GameLogic._128 != 0) {
+            lbl_80366158[0x1C] = 2;
+        } else {
+            lbl_80366158[0x1C] = 1;
+        }
+        g_d_GameSettings.minigamesEnabled = 0;
+        return;
+    default:
+        g_GameLogic.framesOfExitingToMenu += 1;
+        return;
     }
 }
