@@ -30,3 +30,10 @@ void fn_3_1158B0(void) {
     fn_3_5A6D4(6);
 }
 
+// fn_3_115BDC, size:0x48
+void fn_3_115BDC(void) {
+    sndFXStartEx(0x1BD, lbl_800EFBA4[6], 0x3F, 0);
+    fn_3_114A88(1);
+    fn_3_5A6D4(6);
+}
+
