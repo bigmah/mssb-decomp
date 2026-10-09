@@ -123,3 +123,19 @@ void fn_3_10C7A4(void) {
         *(s8*)(g_Minigame + 0x19EA + i * 9) = -1;
     }
 }
+
+// fn_3_10B200, size:0x7C
+void fn_3_10B200(void) {
+    if (g_d_GameSettings[7] != 6) {
+        *(s16*)(lbl_8036E548 + 0x3078) = 0;
+    }
+    fn_80035B50(0xD);
+    fn_3_B95EC();
+    fn_3_5E60();
+    fn_80018B38();
+    fn_3_909B0();
+    fn_3_9081C();
+    fn_80035B50(0x11);
+    g_Minigame[0x19DF] = 0x1E;
+    fn_3_5A6D4(0x1D);
+}
