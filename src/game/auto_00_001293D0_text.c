@@ -19,3 +19,14 @@ void fn_3_12E808(void) {
     memset(g_Minigame + 0x1D7C, 0, 0x78);
 }
 
+// fn_3_12DD88, size:0x44
+u32 fn_3_12DD88(void) {
+    u32 i = 0;
+    do {
+        if (g_Minigame[i * 0x34 + 0x890] != 2) {
+            break;
+        }
+        i++;
+    } while (i < 0xF);
+    return i >= 0xF;
+}
