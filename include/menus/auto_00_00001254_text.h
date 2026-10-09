@@ -72,4 +72,6 @@ void fn_2_1354(SortEntry* e, s32 n, s32 descending);
 
 s32 fn_2_A50C(void);
 
+void fn_2_EC54(s32 index);
+
 #endif
