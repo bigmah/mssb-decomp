@@ -15,6 +15,8 @@ typedef struct MenuObject {
     u8 padAC[0x10];
 } MenuObject;
 extern MenuState* lbl_2_bss_1A8248[];
+extern void* lbl_2_bss_340140[];
+extern u8 lbl_2_data_30900[];
 
 extern void (*lbl_2_data_308B4[])(u8* object);
 
@@ -32,6 +34,22 @@ void fn_2_923CC(u8* object) {
 // fn_2_923D8, size:0xC
 void fn_2_923D8(u8* object) {
     *(s16*)(object + 0x90) = 2;
+}
+
+// fn_2_923E4, size:0x88
+void fn_2_923E4(u8* object) {
+    s32 index;
+    u8* slot;
+    u8* p;
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    index = *(s32*)(object + 0x78);
+    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    p = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    if (p != NULL) {
+        *(s16*)(slot + 0xA6) = 0;
+        *(u32*)(p + index * 0x28) = *(u32*)lbl_2_data_30900;
+    }
+    *(s16*)(object + 0x90) = 1;
 }
 
 // fn_2_924A4, size:0xC
