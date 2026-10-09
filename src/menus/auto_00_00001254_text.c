@@ -494,3 +494,28 @@ found:
     }
     return -1;
 }
+
+// fn_2_A040, size:0x160
+void fn_2_A040(s32 a, s32 b, u8 c, u8 d) {
+    s16* t;
+    s32 n;
+    s32 i;
+    s32 j;
+    t = (s16*)(lbl_80108EDC + a * 10);
+    if (t[b] != -1 && b < 4) {
+        n = b + 1;
+        if (n == 5 || t[n] == -1) {
+            n = 0;
+        }
+        for (i = 0; i < 2; i++) {
+            for (j = 0; j < 9; j++) {
+                if (*(s8*)(lbl_803C6724 + i * 9 + 2 + j) == t[n]) {
+                    return;
+                }
+            }
+        }
+        (lbl_803C6724 + c * 9 + d)[2] = t[n];
+        return;
+    }
+    (lbl_803C6724 + c * 9 + d)[2] = t[0];
+}

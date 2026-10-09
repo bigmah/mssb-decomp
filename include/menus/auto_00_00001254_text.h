@@ -76,4 +76,6 @@ void fn_2_EC54(s32 index);
 
 s8 fn_2_C324(s32 id);
 
+void fn_2_A040(s32 a, s32 b, u8 c, u8 d);
+
 #endif
