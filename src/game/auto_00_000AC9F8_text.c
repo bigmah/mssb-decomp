@@ -1140,4 +1140,65 @@ void fn_3_B0874(void) {
     }
 }
 
+// fn_3_AFE0C, size:0x230
+void fn_3_AFE0C(void) {
+    s16 t;
+    InputStruct* c = &g_Controls[g_Practice.homeAway];
+    t = 0x78;
+    if (g_Practice.instructionNumber >= 0) {
+        if (g_Practice.allowPlayToEndIndicator != 0) {
+            t = 0x3C;
+            goto count;
+        }
+        *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+        return;
+    }
+    if (g_Ball.AtBat_ContactResult == 0) {
+        *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+        return;
+    }
+    if (g_Practice.guidedPracticeCompletionRelated != 0) {
+        *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+        return;
+    }
+    if (g_Ball.deadBallReason == 1) {
+        if (((u8*)&g_Practice)[0x1B0] == 0) {
+            if (c->newButtonInput & 0x1100) {
+                ((u8*)&g_Practice)[0x1B0] = 1;
+            }
+            t = 0x12C;
+        } else {
+            t = 0x2D;
+        }
+        lbl_3_common_bss_34C58._2A = 1;
+        lbl_3_common_bss_34C58._24 = 0x1E;
+    } else if (g_Ball.framesSinceHit > 0xB4) {
+        t = 0x78;
+    }
+count:
+    if (*(s16*)((u8*)&g_FieldingLogic + 0xAE) < 0x7FFE) {
+        *(s16*)((u8*)&g_FieldingLogic + 0xAE) += 1;
+    } else {
+        *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0x7FFF;
+    }
+    if (g_GameLogic.framePlayEnd > t && *(s16*)((u8*)&g_FieldingLogic + 0xAE) > t - 0x5A) {
+        *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+        *(s16*)((u8*)&g_FieldingLogic + 0xEE) = 0;
+    }
+    if (*(s16*)((u8*)&g_FieldingLogic + 0xAE) >= t) {
+        g_Practice.allowPlayToEndIndicator = 0;
+        g_GameLogic.pre_PostMiniGameInd = 1;
+        g_GameLogic.minigameLastTurnSuccessInd = 1;
+        fn_3_1DD48();
+        fn_3_5A6D4(7);
+    } else if (*(s16*)((u8*)&g_FieldingLogic + 0xAE) >= t - 6) {
+        changeScene(3, 6);
+    } else if (*(s16*)((u8*)&g_FieldingLogic + 0xAE) == t - 0x1E) {
+        g_FieldingLogic._10E = 1;
+        *(s16*)((u8*)&g_FieldingLogic + 0xEE) = 1;
+    }
+    g_GameLogic.framePlayEnd = t;
+    g_GameLogic.CountdownUntilFade = t - *(s16*)((u8*)&g_FieldingLogic + 0xAE);
+}
+
 #pragma dont_inline off
