@@ -1051,3 +1051,62 @@ void fn_2_4CEE0(void) {
         g->StadiumID = lbl_2_data_3CC0[v];
     }
 }
+
+extern u8* lbl_803CC1B8[];
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_2_data_1FF84[];
+extern u8 lbl_2_data_1FF94[];
+extern void fn_800111B4(s32);
+extern void fn_800216F8(s32, void*);
+extern void fn_800627C4(void);
+extern void fn_2_8E8A4(void);
+
+// fn_2_549B4, size:0x184
+void fn_2_549B4(void) {
+    u8* o = lbl_803CC1B8[0];
+    u8* q;
+    switch ((s8)o[0x28]) {
+    case 0:
+        *(s32*)((u8*)lbl_80366B18 + 0x7A0) = ARAMTransfer(lbl_2_data_1FF94, 0, 1, 0);
+        o[0x28] = 1;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            fn_800111B4(*(s32*)((u8*)lbl_80366B18 + 0x7A0));
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        if (fn_80035838(lbl_2_data_1FF84, 10) != 0) {
+            o[0x28] = 3;
+        }
+        break;
+    case 3:
+        *(s16*)(o + 0x10) = 0;
+        fn_800216F8(4, fn_800627C4);
+        o[0x28] = 4;
+        break;
+    case 4:
+        if (*(s16*)(o + 0x10) != 0) {
+            *(s16*)(o + 0x10) = 0;
+            o[0x28] = 5;
+        }
+        break;
+    case 5:
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197746) = 1;
+        q = fn_800B0A5C_insertQueue(fn_2_8E8A4, 2);
+        q[0x28] = 0;
+        *(s16*)(q + 0x16) = 0xC;
+        *(s16*)(o + 0x10) = 0;
+        o[0x28] = 6;
+        break;
+    case 6:
+        if (*(s16*)(o + 0x10) == 1) {
+            q = *(u8**)(o + 0xC);
+            *(s16*)(q + 0x10) = 1;
+            fn_800B0A14_removeQueue(q);
+            o[0x28] = 0;
+        }
+        break;
+    }
+}
