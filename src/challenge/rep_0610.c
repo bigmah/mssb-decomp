@@ -487,3 +487,15 @@ void fn_1_CCC8(void) {
         fn_800B0A14_removeQueue(fn_80037AA0(lbl_1_bss_30C0, 0, (void*)fn_1_CB9C, *(u16*)(queue + 0x18), *(void**)(queue + 0x14)));
     }
 }
+
+// .text:0x16590 size:0x50
+void* fn_1_16590(void) {
+    u32 scene = lbl_1_bss_5F73[0];
+    u8* base = lbl_8036E548;
+    u8* table;
+    u8* row;
+    base += scene * 0x27C;
+    row = base; row += lbl_1_bss_6940[scene * 0x48 + 0x44] * 4; table = *(u8**)(row + 0xC14);
+    table = *(u8**)(table + 4);
+    return ((ChallengeEntry*)table)[lbl_1_bss_6940[scene * 0x48 + 0x45]].data;
+}

@@ -77,4 +77,6 @@ void fn_1_F0D0(void);
 
 void fn_1_CCC8(void);
 
+void* fn_1_16590(void);
+
 #endif
