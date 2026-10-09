@@ -329,3 +329,11 @@ s32 fn_3_107B9C(u8* a, u8* b) {
     }
     return *a - *b;
 }
+
+// fn_3_107BD0, size:0x34
+s32 fn_3_107BD0(u8* a, u8* b) {
+    if ((g_Minigame + 0x1E22)[*b] != (g_Minigame + 0x1E22)[*a]) {
+        return (g_Minigame + 0x1E22)[*b] - (g_Minigame + 0x1E22)[*a];
+    }
+    return *a - *b;
+}
