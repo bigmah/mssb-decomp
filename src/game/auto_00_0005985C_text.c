@@ -3,6 +3,12 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void fn_3_7CE90(void);
+extern void fn_3_77914(void);
+extern void fn_3_899BC(void);
+extern void fn_3_9E7D4(s32);
+extern void fn_8006C9D8(void);
+extern void fn_3_BF158(void);
 extern void fn_3_BF1AC(void);
 extern void fn_3_90CB0(void);
 extern void fn_3_B95EC(void);
@@ -661,5 +667,39 @@ void fn_3_5A6FC(void) {
     default:
         g_GameLogic.framesOfExitingToMenu += 1;
         return;
+    }
+}
+
+// fn_3_5EE58, size:0x194
+void fn_3_5EE58(void) {
+    if (g_Stats.replayInd == 0) {
+        fn_3_7CE90();
+        fn_3_77914();
+        g_GameLogic.playOverInd = 0;
+        if (g_GameLogic.freeFieldingPracticeInd != 0) {
+            fn_3_899BC();
+            fn_3_9E7D4(g_GameLogic.homeTeamBattingInd_fieldingTeam);
+        } else if (g_GameLogic.EventTriggers_EndOfGame != 0) {
+            if (g_d_GameSettings.exhibitionMatchInd == 0 &&
+                (*(s32*)&g_GameLogic ^ (*(s16*)(g_Scores + 0xA4) == g_d_GameSettings.humanTeamNumber)) != 0) {
+                fn_8006C9D8();
+            }
+        } else if (g_Strikes.outs >= 3) {
+            if (g_FieldingLogic._107 < 1U || g_FieldingLogic._107 > 3U || g_Strikes.balls >= 4) {
+                fn_3_9E7D4(g_GameLogic.homeTeamBattingInd_fieldingTeam);
+            }
+            if (g_d_GameSettings.GameModeSelected == 2 && (g_Practice.practiceLevel == 7 || g_Practice.practiceLevel == 6)) {
+                fn_3_899BC();
+            }
+        } else {
+            fn_3_899BC();
+            fn_3_9E7D4(g_GameLogic.homeTeamBattingInd_fieldingTeam);
+        }
+        fn_3_5A6D4(8);
+        if (g_GameLogic.secondaryGameMode == 0 && ((u8*)&g_Stats)[0x39] == 1) {
+            ((u8*)&g_Stats)[0x39] = 2;
+        }
+        fn_3_BF1AC();
+        fn_3_BF158();
     }
 }
