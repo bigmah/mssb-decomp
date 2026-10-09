@@ -651,3 +651,51 @@ void fn_2_4B1AC(void) {
     }
     starMissionRelated2();
 }
+
+typedef struct {
+    u8 pad0[2];
+    u16 state;
+    u8 pad4[0xA];
+    u8 bE;
+    u8 pad0F[0x13];
+    u8 b22;
+    u8 pad23;
+} Bss33FBCC;
+extern Bss33FBCC lbl_2_bss_33FBCC;
+extern s16 lbl_2_bss_9E08;
+extern void fn_2_89F70(void);
+extern void fn_2_51890(void);
+extern void fn_2_51A1C(void);
+extern void fn_2_51C58(void);
+
+// fn_2_520A4, size:0xF4
+void fn_2_520A4(void) {
+    switch (lbl_2_bss_33FBCC.state) {
+    case 0:
+        fn_2_51890();
+        fn_800B0A5C_insertQueue((void*)fn_2_89F70, 0x3000);
+        lbl_2_bss_33FBCC.b22 = 0x51;
+        lbl_2_bss_33FBCC.state = 1;
+        break;
+    case 1:
+        if (lbl_2_bss_33FBCC.b22 != 0x51) {
+            fn_2_51C58();
+        }
+        break;
+    case 2:
+        lbl_2_bss_33FBCC.b22 = 0x52;
+        lbl_2_bss_33FBCC.bE = 1;
+        lbl_2_bss_33FBCC.state = 0;
+        lbl_2_bss_9E08 = 0xA;
+        break;
+    case 3:
+        lbl_2_bss_33FBCC.b22 = 0x52;
+        lbl_2_bss_9E08 = 5;
+        lbl_2_bss_33FBCC.bE = 1;
+        lbl_2_bss_33FBCC.state = 0;
+        break;
+    case 4:
+        fn_2_51A1C();
+        break;
+    }
+}
