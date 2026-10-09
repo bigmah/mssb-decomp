@@ -734,7 +734,39 @@ void fn_3_657E4(void) {
 
 // .text:0x00065FE0 size:0x160 mapped:0x806A5074
 void fn_3_65FE0(void) {
-    return;
+    int flag;
+    int idx;
+    s8 c;
+    u8* o;
+    int i;
+    for (i = 0; i < 4; i++) {
+        idx = i;
+        o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+        flag = 0;
+        if (g_d_GameSettings[7] == 2) {
+            idx = 9;
+            o = ((u8**)lbl_8036E548)[0x2C74 / 4];
+        }
+        if (o != NULL) {
+            c = *(s8*)(g_Minigame + i * 9 + 0x19EC);
+            if (c == 0 || c == 2) {
+                flag = 1;
+            }
+            if (*(s8*)(g_Minigame + i * 9 + 0x19EA) < 0) {
+                AnimateCharacter(idx, 0x69, 1, 1, 1, 0, flag, 0);
+            } else if (*(s8*)(g_Minigame + i * 9 + 0x19E9) != 0) {
+                if (*(s16*)(o + 0x62) == 0x69) {
+                    AnimateCharacter(idx, 0x6A, 0, 1, 1, 0, flag, 0);
+                    QueueCharacterAnimation(idx, 0x6B, 1, 1, 0, flag, -1);
+                }
+            } else {
+                AnimateCharacter(idx, 0x69, 1, 1, 1, 0, flag, 0);
+            }
+            if (g_d_GameSettings[7] == 2) {
+                break;
+            }
+        }
+    }
 }
 
 // .text:0x00066140 size:0x3BC mapped:0x806A51D4
