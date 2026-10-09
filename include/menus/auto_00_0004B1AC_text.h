@@ -121,5 +121,7 @@ void fn_2_54234(InitEntry* entries, s32 count);
 
 void fn_2_54354(InitEntry* entries, s32 count);
 
+void fn_2_53CEC(u8* menu);
+
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);

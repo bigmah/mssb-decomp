@@ -577,3 +577,25 @@ void fn_2_54354(InitEntry* entries, s32 count) {
         *(s16*)(p + 0x10) = entries[i].fC;
     }
 }
+
+typedef struct {
+    u8* object;
+    s32 _04;
+} MenuTblEntry;
+extern MenuTblEntry lbl_80371C30[];
+
+// fn_2_53CEC, size:0x10C
+void fn_2_53CEC(u8* menu) {
+    MenuDrawEntry* entry;
+    s32 row;
+    s32 column;
+    for (row = 0; row < 10; row++) {
+        for (column = 0; column < 864; column++) {
+            entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8230[0])[row][column];
+            if (entry->draw != NULL) {
+                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].object[0x68] = 0;
+                *(u32*)(lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].object + 0x54) &= ~2;
+            }
+        }
+    }
+}
