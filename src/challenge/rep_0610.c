@@ -38,7 +38,7 @@ typedef struct { void* data; u32 pad4; u32 pad8; } ChallengeEntry;
 
 extern void LITXForm(void* light, void* matrix);
 
-extern f32 lbl_1_bss_5F74;
+extern u8 lbl_1_bss_5F74[];
 extern u8 lbl_1_bss_5F78;
 
 extern void* lbl_1_bss_67B8[];
@@ -190,7 +190,7 @@ void fn_1_10AA4(u8* object, f32 value) {
 // fn_1_161D0, size:0x3C
 void fn_1_161D0(void) {
     lbl_1_bss_5F78 ^= 1;
-    fn_800B9A9C(lbl_1_bss_5F78, lbl_1_bss_5F74);
+    fn_800B9A9C(lbl_1_bss_5F78, (*(f32*)lbl_1_bss_5F74));
 }
 
 // fn_1_16558, size:0x38
@@ -373,3 +373,30 @@ void fn_1_F6E4(void) {
         challenge[0x2F01] = 10;
     }
 }
+
+extern const f32 lbl_1_rodata_7430;
+extern const f32 lbl_1_rodata_73F8;
+extern f32 lbl_1_rodata_73BC;
+extern const f32 lbl_1_rodata_7394;
+
+#pragma fp_contract off
+// .text:0x160F8 size:0xD8
+void fn_1_160F8(s32 direction) {
+    f32 step = lbl_1_rodata_7430;
+    f32 value;
+    if (*(u16*)&lbl_803C77B8 & 0x400) {
+        step *= lbl_1_rodata_73F8;
+    }
+    step *= (f32)direction;
+    value = (*(f32*)lbl_1_bss_5F74) + step;
+    (*(f32*)lbl_1_bss_5F74) = value;
+    if (value > lbl_1_rodata_73BC) {
+        (*(f32*)lbl_1_bss_5F74) = lbl_1_rodata_7394;
+    }
+    if ((*(f32*)lbl_1_bss_5F74) < lbl_1_rodata_7394) {
+        (*(f32*)lbl_1_bss_5F74) = lbl_1_rodata_73BC;
+    }
+    fn_800B9A9C(lbl_1_bss_5F78, (*(f32*)lbl_1_bss_5F74));
+}
+
+#pragma fp_contract on
