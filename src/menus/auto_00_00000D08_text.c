@@ -73,3 +73,10 @@ void fn_2_1130(s16 value) {
     *(s16*)(object + 0x10) = value;
     ((void (*)(void))fn_800B0A14_removeQueue)();
 }
+
+// fn_2_1164, size:0x38
+void fn_2_1164(void) {
+    u8* object = *(u8**)(lbl_803CC1B8[0] + 0xC);
+    *(s16*)(object + 0x10) = 1;
+    fn_800B0A14_removeQueue(object);
+}
