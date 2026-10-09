@@ -38,4 +38,6 @@ s32 fn_2_44368(void);
 
 void fn_2_42638(void);
 
+void fn_2_467FC(void);
+
 #endif

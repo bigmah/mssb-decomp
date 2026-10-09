@@ -150,3 +150,17 @@ void fn_2_42638(void) {
         d[i] = s[i];
     }
 }
+
+// fn_2_467FC, size:0xE0
+void fn_2_467FC(void) {
+    u8* entry;
+    s32 i;
+    for (i = 0; i < 54; i++) {
+        entry = lbl_2_bss_1A8248[0] + i * 0x34;
+        if (*(s8*)(entry + 4) == (s32)lbl_2_bss_1A8248[0][0x441C] && *(s8*)(entry + 5) <= 3) {
+            entry[0x31] = 1;
+        } else {
+            entry[0x31] = 0;
+        }
+    }
+}
