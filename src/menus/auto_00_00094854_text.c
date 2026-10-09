@@ -54,3 +54,18 @@ void fn_2_948B8(void) {
     *(u32*)(lbl_80371C30[*(u16*)(object + 0x14)].object + 0x5C) = 0x280000;
     *(void (**)(void))lbl_803CC1B8[0] = fn_2_9486C;
 }
+
+extern u8 lbl_8034E978[];
+extern u8 lbl_800FEF70[];
+extern void fn_80053FE8(void);
+extern void fn_2_96AD4(void);
+
+// fn_2_96D20, size:0x74
+void fn_2_96D20(void) {
+    fn_800B0A5C_insertQueue(fn_80053FE8, 0x3000);
+    lbl_8034E978[0] = 0x5B;
+    lbl_8034E978[9] = lbl_8034E978[8];
+    lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + 0x5B8);
+    fn_800B0A5C_insertQueue(fn_2_948B8, 0x3000);
+    fn_800B0A5C_insertQueue(fn_2_96AD4, 0x3000);
+}
