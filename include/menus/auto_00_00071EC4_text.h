@@ -26,4 +26,11 @@ void fn_2_85108(void);
 void fn_2_8515C(void);
 void fn_2_85160(void);
 
+s32 fn_2_73B94(s32 a);
+
+void fn_2_82CF0(void);
+void fn_2_82DE8(void);
+void fn_2_82E58(void);
+void fn_2_8279C(void);
+
 #endif
