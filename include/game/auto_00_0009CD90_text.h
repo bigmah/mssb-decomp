@@ -11,4 +11,6 @@ void fn_3_9D594(void);
 
 void fn_3_9DB5C(void);
 
+void fn_3_9D600(void);
+
 #endif
