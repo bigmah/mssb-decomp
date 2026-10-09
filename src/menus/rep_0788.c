@@ -765,3 +765,37 @@ void fn_2_26010(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
+
+// fn_2_25EB0, size:0x160
+void fn_2_25EB0(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        MenuInputContext* frames = MENU_INPUT_CONTEXT;
+        s16 frame = frames->frameSetB[item->index];
+        if (frame != -1) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = (s32)frame << 16;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        item->state = 37;
+        /* fallthrough */
+    }
+    case 5:
+    case 37:
+    case 1:
+        return;
+    }
+}
