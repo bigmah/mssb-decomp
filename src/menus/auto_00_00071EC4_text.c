@@ -534,3 +534,19 @@ void fn_2_80500(u8* o, s32 index) {
         ((u8*)&g_d_GameSettings)[0x10] = 0;
     }
 }
+
+// fn_2_7E860, size:0x114
+void fn_2_7E860(s32 a, s32 index) {
+    if ((lbl_803C66B0[index + 0xD] == 1) ? 1 : 0) {
+        s32 n = 0;
+        n += fn_80042DA8(a, index + 0xC, 0xA) != 0;
+        n += fn_80042DA8(a, index + 0xE, 0xE) != 0;
+        n += fn_80042DA8(a, index + 0x12, 0xA) != 0;
+        n += fn_80042DA8(a, index + 0x1C, 0x14) != 0;
+        n += fn_80042DA8(a, index + 0x6A, 0x1E) != 0;
+        if (n == 5) {
+            fn_80062674(index);
+            lbl_803C66B0[index + 0xD] = 2;
+        }
+    }
+}
