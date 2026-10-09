@@ -49,4 +49,6 @@ s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons);
 
 void fn_1_2948C(u8* object);
 
+void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data);
+
 #endif

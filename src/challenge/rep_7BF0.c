@@ -15,6 +15,12 @@ extern const char* lbl_1_data_11424[];
 extern void fn_1_26D28(void*, u16, u16, u16, void*);
 extern void fn_1_27330(void*);
 
+static struct { u8 pad0[0x38]; s8 sel; u8 pad1[0xE7]; } sA = {{0}};
+static u32 sB = 1;
+static u32 sC[36] = {0};
+static struct { u8 pad0[0x30]; u32 v; u8 pad1[0x444]; } sD = {{0}};
+static ChallengeMenuItem* sE[2] = {0};
+
 // fn_1_2948C, size:0x15C
 static inline u8 NavigationMask(u16 held) {
     return (held & 0x800) ? 0x91 : ((held & 0x400) ? 0x50 : 0);
@@ -114,4 +120,23 @@ void fn_1_29A48(void) {
 // fn_1_289C0, size:0x20
 void fn_1_289C0(u8* object) {
     fn_1_273D8(object);
+}
+
+// fn_1_28C34, size:0xB4
+void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data) {
+    menu->data = data ? data : (void*)sB;
+    menu->capacity = 0x10;
+    menu->cursor = 0;
+    menu->selected = 0;
+    menu->flags = 1;
+    menu->items = sE[which];
+    if (which == 1) {
+        if (sD.v == 0) {
+            sD.v = sC[sA.sel];
+        }
+    }
+    menu->count = 0;
+    while (menu->items[menu->count].text != NULL) {
+        menu->count++;
+    }
 }
