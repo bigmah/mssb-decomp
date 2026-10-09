@@ -568,3 +568,11 @@ void fn_2_8F6D0(s32 index, s32 value) {
         *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[value];
     }
 }
+
+// .text:0x90888 size:0x74
+void fn_2_90888(u8* object) {
+    *(f32*)(object + 0x8C) = lbl_2_rodata_10AC[0];
+    fn_2_8F6D0(*(s32*)(object + 0x78), 5);
+    *(s16*)(object + 0xA0) = 0;
+    *(s16*)(object + 0x90) = 1;
+}

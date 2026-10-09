@@ -13,6 +13,7 @@ typedef void (*MenuStateCallback)(MenuStateObject* object);
 void fn_2_90428(s32 index);
 
 void fn_2_8F6D0(s32 index, s32 value);
+void fn_2_90888(u8* object);
 
 void fn_2_903A8(s32 index);
 
