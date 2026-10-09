@@ -21,3 +21,12 @@ void fn_2_194E8(void) {
     fn_80021204();
     lbl_800E8754[0x25] = lbl_80366158[0x1F];
 }
+
+// fn_2_19554, size:0x84
+s8 fn_2_19554(void) {
+    s32 result = 0;
+    if (lbl_800EF808[0x398] != fn_8003AE70(0) || lbl_800EF808[0x397] != fn_8003AE70(1) || lbl_80366158[0x1F] != fn_8003AE70(2)) {
+        result = 1;
+    }
+    return result;
+}
