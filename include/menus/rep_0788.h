@@ -85,4 +85,6 @@ void fn_2_327D4(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_26774(MenuTableContext* menu, MenuItemState* item);
 
+void fn_2_26684(MenuTableContext* menu, MenuItemState* item);
+
 #endif
