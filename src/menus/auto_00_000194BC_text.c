@@ -47,6 +47,7 @@ extern GXColor lbl_2_data_2E3C;
 extern u8* lbl_803CC1B8[];
 extern void fn_2_11A0(s32);
 extern void fn_2_19F2C(void);
+extern u8 lbl_8037169C[];
 
 // fn_2_1A1B4, size:0xF8
 void fn_2_1A1B4(void) {
@@ -76,6 +77,50 @@ void fn_2_1A1B4(void) {
             fn_2_11A0(0x10);
         }
         break;
+    }
+}
+
+// fn_2_1A2AC, size:0x174
+void fn_2_1A2AC(void) {
+    u8* object = lbl_803CC1B8[0];
+    switch (*(s8*)(object + 0x28)) {
+    case 0:
+        *(s8*)(lbl_2_bss_1A824C[0] + 0x19783E) = 0;
+        changeScene(1, 6);
+        object[0x28] = 1;
+        break;
+    case 1:
+        if (lbl_8037169C[0x12] != 0) {
+            object[0x28] = 2;
+        }
+        break;
+    case 2: {
+        u8* pad = (u8*)&lbl_803C77B8;
+        pad += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        if (*(u16*)(pad + 2) & 0x100) {
+            changeScene(3, 6);
+            object[0x28] = 3;
+        }
+        break;
+    }
+    case 3:
+        if (lbl_8037169C[0x13] != 0) {
+            object[0x28] = 4;
+        }
+        break;
+    case 4: {
+        u8* queue = *(u8**)(object + 0xC);
+        *(s16*)(queue + 0x10) = 1;
+        fn_800B0A14_removeQueue(queue);
+        object[0x28] = 0;
+        break;
+    }
+    }
+    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
+        u8* queue = *(u8**)(lbl_803CC1B8[0] + 0xC);
+        *(s16*)(queue + 0x10) = 1;
+        fn_800B0A14_removeQueue(queue);
+        object[0x28] = 0;
     }
 }
 
