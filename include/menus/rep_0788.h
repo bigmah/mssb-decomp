@@ -37,6 +37,9 @@ typedef struct {
     s16 index;
     u8 padding0C[2];
     s16 offset;
+    s16 unk10;
+    s16 unk12;
+    s16 unk14;
 } MenuItemState;
 
 void fn_2_24724(void);
@@ -156,5 +159,6 @@ void fn_2_28090(MenuTableContext* menu, MenuItemState* item);
 void fn_2_2CA30(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_2587C(MenuTableContext* menu, MenuItemState* item);
+void fn_2_25050(MenuTableContext* menu, MenuItemState* item);
 
 #endif
