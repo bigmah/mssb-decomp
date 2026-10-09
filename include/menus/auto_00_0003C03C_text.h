@@ -98,4 +98,8 @@ s32 fn_2_44E2C(s32 ch);
 
 void fn_2_44414(void* a);
 
+void fn_2_45D38(void);
+
+void fn_2_45FDC(void);
+
 #endif

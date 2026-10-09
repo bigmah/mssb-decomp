@@ -1198,3 +1198,21 @@ void fn_2_44414(void* arr) {
         a[j + 1] = tmp;
     }
 }
+
+// fn_2_45D38, size:0x110
+void fn_2_45D38(void) {
+    s32 i;
+    for (i = 0; i < 54; i++) {
+        u8* entry = lbl_2_bss_1A8248[0] + i * 0x34;
+        entry[6] = entry[7];
+    }
+}
+
+// fn_2_45FDC, size:0x110
+void fn_2_45FDC(void) {
+    s32 i;
+    for (i = 0; i < 54; i++) {
+        u8* entry = lbl_2_bss_1A8248[0] + i * 0x34;
+        entry[7] = entry[6];
+    }
+}
