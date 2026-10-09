@@ -2,8 +2,11 @@
 
 
 #include "static/UnknownHomes_Static.h"
+#include <string.h>
 extern u8 lbl_1_data_10908[];
 extern s32 lbl_1_data_109F8;
+extern void (*lbl_1_data_108E8[])(void*);
+extern void fn_1_26D28(s32, u16, u16, u16, void*);
 
 extern void* lbl_80366158[];
 extern u8* lbl_803CC1B8[];
@@ -51,5 +54,22 @@ void fn_1_27AD4(void) {
     }
     if (lbl_803C77B8._02 & 0x200) {
         fn_1_27E50();
+    }
+}
+
+// fn_1_27D6C, size:0xE4
+void fn_1_27D6C(void) {
+    u8 buf[6];
+    if (*(u16*)(lbl_803CC1B8[0] + 0x34) & 1) {
+        lbl_1_data_108E8[*(s8*)(lbl_803CC1B8[0] + 0x36)](lbl_1_data_108E8);
+    } else {
+        memcpy(buf, (u8*)&lbl_803C77B8 + 0x10, 6);
+        buf[0] = -buf[0];
+        buf[4] = ((u8*)&lbl_803C77B8)[0x15];
+        buf[5] = ((u8*)&lbl_803C77B8)[0x14];
+        fn_1_26D28(*(s32*)(lbl_803CC1B8[0] + 0x14), lbl_803C77B8._00, lbl_803C77B8._02, *(u16*)((u8*)&lbl_803C77B8 + 4), buf);
+    }
+    if (lbl_803C77B8._02 & 0x1000) {
+        *(u16*)(lbl_803CC1B8[0] + 0x34) ^= 1;
     }
 }

@@ -11,4 +11,6 @@ void fn_1_27560(s32 value);
 
 void fn_1_27AD4(void);
 
+void fn_1_27D6C(void);
+
 #endif
