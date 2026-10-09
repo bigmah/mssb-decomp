@@ -563,3 +563,17 @@ void fn_2_54234(InitEntry* entries, s32 count) {
         *(s16*)(p + 0x10) = entries[i].fC;
     }
 }
+
+// fn_2_54354, size:0x120
+void fn_2_54354(InitEntry* entries, s32 count) {
+    s32 i;
+    for (i = 0; i < count; i++) {
+        u8* p = lbl_2_bss_1A8234[0] + entries[i].f8 * 0x5100 + entries[i].f4 * 0x18;
+        *(s32*)p = entries[i].w0;
+        *(s16*)(p + 8) = entries[i].f4;
+        *(s16*)(p + 0xA) = entries[i].f6;
+        *(s16*)(p + 0xC) = entries[i].f8;
+        *(s16*)(p + 0xE) = entries[i].fA;
+        *(s16*)(p + 0x10) = entries[i].fC;
+    }
+}

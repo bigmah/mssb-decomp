@@ -119,5 +119,7 @@ void fn_2_54120(void);
 
 void fn_2_54234(InitEntry* entries, s32 count);
 
+void fn_2_54354(InitEntry* entries, s32 count);
+
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);
