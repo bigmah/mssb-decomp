@@ -1127,12 +1127,11 @@ void fn_2_42EB0(void) {
 }
 
 // fn_2_432EC, size:0x118
-// not matching: lis order / r30,r31 swapped for the two tables
 void fn_2_432EC(void) {
     s32 i;
     s32 j;
     s32 row;
-    s16 v;
+    s32 v;
     s16 t;
     s16 a;
     s16 b;
