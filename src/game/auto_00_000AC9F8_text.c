@@ -26,6 +26,7 @@ extern void fn_3_6C108(void);
 extern void fn_3_B02A8(void);
 extern void fn_3_6714C(s32 player);
 extern void fn_3_B3A4C(void);
+extern void fn_3_B1DD0(void);
 extern u8 lbl_80366158[];
 extern u8 lbl_8037169C[];
 extern u8 lbl_80354720[];
@@ -451,4 +452,36 @@ void fn_3_AEFF8(void) {
         }
     }
 
+}
+
+// fn_3_B2630, size:0x11C
+void fn_3_B2630(void) {
+    InputStruct* c = &g_Controls[g_Practice.homeAway];
+    if (g_Practice.framesOnAllInstructions < 0x7FFE) {
+        g_Practice.framesOnAllInstructions += 1;
+    } else {
+        g_Practice.framesOnAllInstructions = 0x7FFF;
+    }
+    if (g_Practice.instructionComplete_readyToAdvance == 0 && g_Practice.allInstructionsComplete == 0) {
+        if (g_Practice.framesOnCurrInstruction < 0x7FFE) {
+            g_Practice.framesOnCurrInstruction += 1;
+        } else {
+            g_Practice.framesOnCurrInstruction = 0x7FFF;
+        }
+    }
+    if (g_Practice.tutorialState == 1 && (c->newButtonInput & 0x1000)) {
+        if (g_Practice.tutorialState != 2) {
+            g_Practice.practiceState = 0;
+            g_Practice.tutorialState = 2;
+            g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        }
+    } else if (g_Practice.allInstructionsComplete != 0) {
+        if ((c->newButtonInput & 0x100) && g_Practice.tutorialState != 2) {
+            g_Practice.practiceState = 0;
+            g_Practice.tutorialState = 2;
+            g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        }
+    } else {
+        fn_3_B1DD0();
+    }
 }
