@@ -649,3 +649,21 @@ void fn_1_F1D8(void* unused) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
     }
 }
+
+extern void fn_8004B208(s32, s32, s32);
+
+// .text:0xD590 size:0xA8
+void fn_1_D590(s32 a, s32 b, f32 value) {
+    u8* state = lbl_1_bss_3070;
+    if (state[0x1A5] == 0 || state[0x1A6] == 0) return;
+    if (state[0x1A6] == 2) {
+        if ((s32)value == 0) {
+            state[0x1A4] += (state[0x1A4] != 0);
+        }
+        if (state[0x1A4] == 3) state[0x1A4] = 0;
+        if (state[0x1A4] == 2) goto call;
+    } else {
+call:
+        fn_8004B208(a, b, (s8)state[0x2EF2] & ~((s8)state[0x2EF2] >> 31));
+    }
+}
