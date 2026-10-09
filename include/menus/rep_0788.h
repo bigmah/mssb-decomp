@@ -3,6 +3,13 @@
 
 #include "mssbTypes.h"
 
+typedef struct {
+    u8 padding[0x1976A0];
+    s32 selection;
+    u8 padding1976A4[0x1BF];
+    s8 port;
+} MenuInputContext;
+
 void fn_2_24724(void);
 
 void fn_2_20258(void);
@@ -36,5 +43,7 @@ void fn_2_2460C(void);
 void fn_2_245C8(void);
 
 void fn_2_24650(void);
+
+void fn_2_1FFC4(s32 count);
 
 #endif

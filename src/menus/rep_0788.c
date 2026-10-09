@@ -30,6 +30,25 @@ extern u8* lbl_2_bss_1A824C[];
 extern s16 lbl_2_data_3D30[][4];
 extern u8* lbl_803CC1B8[];
 
+#define MENU_INPUT_CONTEXT ((MenuInputContext*)lbl_2_bss_1A824C[0])
+
+// fn_2_1FFC4, size:0xB0
+void fn_2_1FFC4(s32 count) {
+    u16* repeat = (u16*)((u8*)&lbl_803C77B8 + 4);
+    if (repeat[MENU_INPUT_CONTEXT->port * 16] & 8) {
+        MENU_INPUT_CONTEXT->selection--;
+        if (MENU_INPUT_CONTEXT->selection < 0) {
+            MENU_INPUT_CONTEXT->selection = count - 1;
+        }
+    }
+    if (repeat[MENU_INPUT_CONTEXT->port * 16] & 4) {
+        MENU_INPUT_CONTEXT->selection++;
+        if (MENU_INPUT_CONTEXT->selection >= count) {
+            MENU_INPUT_CONTEXT->selection = 0;
+        }
+    }
+}
+
 // .text:0x24724 size:0x4
 void fn_2_24724(void) {
 }
