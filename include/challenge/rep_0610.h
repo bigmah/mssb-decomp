@@ -81,5 +81,6 @@ void* fn_1_16590(void);
 void fn_1_168C8(void);
 void fn_1_10560(void* object);
 void fn_1_D8A0(void);
+void fn_1_CC24(void);
 
 #endif

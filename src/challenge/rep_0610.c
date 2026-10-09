@@ -1,5 +1,25 @@
 #include "challenge/rep_0610.h"
 
+// POOL BEGIN
+static u8 ch_68FC[0x30];
+static u8 ch_fill68F8[0x4];
+static u8 ch_67E0[0x118];
+static s32 ch_67B8[0xA];
+static u8 ch_fill5F6C[0x84C];
+static u8 ch_fill5F6B;
+static u8 ch_fill5F6A;
+static u8 ch_5F69;
+static u8 ch_fill5F68;
+static u8 ch_fill30C0[0x2EA8];
+static s32 ch_30BC;
+static u8 ch_fill307C[0x40];
+static u8 ch_fill307B;
+static u8 ch_fill307A;
+static u8 ch_fill3079;
+static u8 ch_3078;
+static u8 ch_3070[0x8];
+// POOL END
+
 extern u32 lbl_1_bss_30BC;
 extern u8 lbl_1_bss_30C0[];
 extern u8 lbl_1_data_F4F8[];
@@ -555,13 +575,6 @@ void fn_1_10560(void* object) {
 }
 
 typedef struct { u8 b[0x38]; } Ch38;
-static u8 ch_68FC[0x30];
-static u8 ch_fill2[0x68FC - 0x67E0 - 0x118];
-static u8 ch_67E0[0x118];
-static u8 ch_fill1[0x67E0 - 0x307C];
-static u8 ch_307B, ch_307A, ch_3079;
-static u8 ch_3078;
-static u8 ch_3070[8];
 extern u8 lbl_1_data_AA54[];
 extern u8 lbl_1_data_AAC4[];
 extern u8 lbl_1_data_AB34[];
@@ -583,4 +596,23 @@ void fn_1_D8A0(void) {
     }
     ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38);
     fn_1_129D0();
+}
+
+extern u16 lbl_1_data_F56C;
+extern u16 lbl_1_data_F56E;
+
+// .text:0xCC24 size:0xA4
+void fn_1_CC24(void) {
+    u8* object;
+    if (ch_30BC == 0) {
+        ch_30BC = 1;
+        object = fn_800B0A5C_insertQueue((void*)fn_1_CCC8, (u16)(*(u16*)(lbl_803CC1B8[0] + 0x12) + 1));
+        if (ch_5F69 != 0) {
+            *(s32*)(object + 0x14) = ch_67B8[1];
+            *(u16*)(object + 0x18) = lbl_1_data_F56C;
+        } else {
+            *(s32*)(object + 0x14) = ch_67B8[2];
+            *(u16*)(object + 0x18) = lbl_1_data_F56E;
+        }
+    }
 }
