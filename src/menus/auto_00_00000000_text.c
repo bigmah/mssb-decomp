@@ -98,3 +98,11 @@ void fn_2_940(void) {
     }
 }
 
+// fn_2_A14, size:0x5C
+void fn_2_A14(void) {
+    fn_800B0A5C_insertQueue(fn_2_160, 0x1000);
+    fn_800B0A5C_insertQueue(fn_2_110, 0xF000);
+    *(u16*)(lbl_803CBBCC[0] + 4) = 0;
+    *(u16*)(lbl_803CBBCC[0] + 2) = 0;
+}
+
