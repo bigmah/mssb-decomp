@@ -2307,3 +2307,45 @@ void fn_2_2B064(MenuTableContext* menu, MenuItemState* item) {
 void fn_2_2B250(MenuTableContext* menu, MenuItemState* item) {
     fn_2_2B064(menu, item);
 }
+
+// fn_2_2CF58, size:0x17C
+void fn_2_2CF58(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 37;
+        return;
+    }
+    case 8:
+        item->timer = 1;
+        item->state++;
+        return;
+    case 9:
+        if (item->timer-- <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            item->state = 37;
+        }
+        return;
+    case 5: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        return;
+    }
+    case 37:
+    case 1:
+        return;
+    }
+}
