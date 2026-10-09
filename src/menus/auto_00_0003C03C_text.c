@@ -62,3 +62,13 @@ void fn_2_460F4(void) {
 s32 fn_2_46C24(void) {
     return 0;
 }
+
+// fn_2_46C2C, size:0x5C
+void fn_2_46C2C(s32 unused, Vec* src) {
+    Vec position;
+    position.x = src->x;
+    position.y = src->y;
+    position.z = src->z;
+    *lbl_2_data_13374[0] = lbl_803CBD0C[0];
+    fn_80031CA4(&position, lbl_2_data_13374[0]);
+}
