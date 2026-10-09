@@ -11,6 +11,14 @@ typedef struct {
     s8 port;
 } MenuInputContext;
 
+typedef struct {
+    u8 padding[0x18];
+    u16 timerA;
+    u16 timerB;
+    u16 stateA;
+    u16 stateB;
+} MenuQueueState;
+
 void fn_2_24724(void);
 
 void fn_2_20258(void);
@@ -48,5 +56,7 @@ void fn_2_24650(void);
 void fn_2_1FFC4(s32 count);
 
 void fn_2_1FF14(s32 count);
+
+void fn_2_242FC(void);
 
 #endif

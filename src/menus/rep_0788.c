@@ -29,6 +29,35 @@ extern MenuTableEntry lbl_80371C30[];
 extern u8* lbl_2_bss_1A824C[];
 extern s16 lbl_2_data_3D30[][4];
 extern u8* lbl_803CC1B8[];
+extern u8* lbl_2_bss_1A8230[];
+extern u8 lbl_2_data_1048C[];
+extern void fn_2_4E878(void*, void*);
+extern void* fn_2_4E858(void*);
+extern void fn_2_53F04(void*);
+extern void fn_2_5400C(void);
+extern void fn_2_53CEC(void*);
+
+// fn_2_242FC, size:0xC0
+void fn_2_242FC(void) {
+    MenuQueueState* queue = (MenuQueueState*)lbl_803CC1B8[0];
+    switch ((s32)queue->stateB) {
+    case 1:
+        break;
+    case 0:
+        fn_2_4E878(queue, lbl_2_data_1048C);
+        queue->stateB = 1;
+        queue->timerB = 0;
+        break;
+    }
+    fn_2_53F04(queue);
+    fn_2_5400C();
+    if (lbl_2_bss_1A8230[0][0x32A86] != 0) {
+        fn_2_53CEC(queue);
+        fn_800B0A14_removeQueue(fn_2_4E858(queue));
+        queue->stateB = 0;
+        lbl_2_bss_1A8230[0][0x32A86] = 0;
+    }
+}
 
 #define MENU_INPUT_CONTEXT ((MenuInputContext*)lbl_2_bss_1A824C[0])
 
