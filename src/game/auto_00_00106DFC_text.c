@@ -25,6 +25,11 @@ extern void fn_80018B38(void);
 extern void fn_8001CA40(s32);
 extern void fn_80011BE4(s32);
 extern void fn_800246D4(void*, void*, void*, s32, s32);
+extern void* memset(void*, int, unsigned long);
+extern void fn_3_9DC18(void*, s32, s32);
+extern void manageStadiumLoading(void);
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+extern s32 fn_3_107D34(u8*, u8*);
 extern void fn_3_1128E8(void);
 extern void fn_3_1160B8(void);
 extern void fn_3_1323CC(void);
@@ -214,4 +219,18 @@ s32 fn_3_107C88(void) {
         }
     }
     return 1;
+}
+
+// fn_3_107CD0, size:0x64
+u8 fn_3_107CD0(void) {
+    u8 arr[4];
+    u8* p = arr;
+    u32 i = 0;
+    do {
+        *p = i;
+        i++;
+        p++;
+    } while (i < g_Minigame[0x1906]);
+    fn_800246D4(fn_3_107D34, arr, arr, 1, g_Minigame[0x1906]);
+    return arr[0];
 }
