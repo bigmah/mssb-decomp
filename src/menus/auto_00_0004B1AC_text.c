@@ -391,3 +391,19 @@ void fn_2_50BF4(s16 id) {
     *(u8**)(lbl_2_bss_1A824C[0] + 0x196F1C) = lbl_2_bss_5600;
     fn_2_4EB9C();
 }
+
+extern u16 lbl_2_bss_9604[];
+extern u16 lbl_2_bss_9A08[][0x100];
+
+// fn_2_510A8, size:0xE4
+void fn_2_510A8(void) {
+    s32 i = 0;
+    lbl_2_bss_9604[1] = 0;
+    lbl_2_bss_9604[0] = 0;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FCC) = 1;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FCA) = 1;
+    for (; i < 0x100; i++) {
+        lbl_2_bss_9A08[0][i] = 0;
+        lbl_2_bss_9A08[1][i] = 0;
+    }
+}
