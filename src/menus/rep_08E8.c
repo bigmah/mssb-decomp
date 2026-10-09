@@ -268,3 +268,18 @@ void fn_2_48D54(void) {
         LITXForm(*(void**)(lbl_8036E548 + i * 4 + 0xAC), camera + 0x40);
     }
 }
+
+// fn_2_4A0C4, size:0x8C
+s32 fn_2_4A0C4(const u16* a, const u16* b) {
+    while (1) {
+        if ((*a & 0xC000) == 0xC000) return -1;
+        if ((*b & 0xC000) == 0xC000) return 1;
+        if (*a == 0x4000 && *b == 0x4000) break;
+        if (*a == 0x4000) return -1;
+        if (*b == 0x4000) return 1;
+        if (*a - *b != 0) return *a - *b;
+        a++;
+        b++;
+    }
+    return 0;
+}

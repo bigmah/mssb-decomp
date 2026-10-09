@@ -53,4 +53,6 @@ void fn_2_49DB8(s32 x, s32 y, s32 number, s32 flags, s32 option, s32 digits,
 
 void fn_2_48BE0(void);
 
+s32 fn_2_4A0C4(const u16* a, const u16* b);
+
 #endif
