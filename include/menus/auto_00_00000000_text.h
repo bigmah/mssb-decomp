@@ -20,5 +20,6 @@ void _epilog(void);
 void fn_2_708(void);
 void fn_2_664(void);
 void fn_2_554(void);
+void fn_2_374(void);
 
 #endif
