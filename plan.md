@@ -236,6 +236,10 @@ These came up repeatedly in `rep_1838.c`. Try them first when a diff is only reg
 - **Hoisted zero as a typed local:** `s16 zero = 0;` for the `sth` stores gives `li r6,0` plus a separate `li r0,0` for a later `stb` (fn_2_50CC0).
 - **Zero-fill loops:** a `u16 [N][0x100]` extern with `a[ch][i] = 0` gives the 8x unrolled ctr loop (fn_2_50E5C); `s32 i = 0;` plus `for (; i < N; i++)` gives the `bgelr` guard.
 - **Calling a matched same-file function with more args than it takes:** cast the call (`((void (*)(s32, s32))fn)(0xD, 0)`); a block-scope `extern` with the wider prototype also works.
+- **Extra inductions as `mr rX, rZero`:** if the original has `li r9,0; mr r7,r9; mr r8,r9`, write one `for (i...)` loop using `i*stride` expressions directly; hand-written `off += ...` locals don't give it (menus fn_2_8DC00). Keep array loops indexed by the counter, not a walking pointer (fn_2_8DB14).
+- **Struct-array bss loop with the `cmpwi 8; subi; ble` unroll shape:** typedef an element struct with padding and index `arr[i]` (fn_2_17AB8). A bound read as `lhz` is `*(u16*)`. `(s32)bytearr[x] == 1` gives `cmpwi`, plain gives `cmplwi`. Declare params `s32` when the callee doesn't `extsh`/`extsb`.
+- **Scalar `extern u8* sym;`** reloads the pointer for every statement, as the original does (fn_2_8C724).
+- **Never let `fnvariants` hit the shell timeout:** an interrupted run leaves a variant in the source; run it in the background.
 - **Still unsolved (agents 2026-10-08):** `base + index*4; lwz 0xC(rX)` resource reads (menus fn_2_8FBF8/8FB68/90CD0/91788); `cursor + byte` add operand order (challenge fn_1_10458); 8-iteration loop prologue register rotation (challenge fn_1_D7A4/E8D4, would unlock fn_1_17D90); dead trailing `blr` (menus fn_2_513E8, fn_2_512C0); fn_2_2577C switch tree with `cmpwi 0x24; bge` and no upper bound.
 
 Add new patterns to this list as we find them.
