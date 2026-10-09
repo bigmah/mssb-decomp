@@ -4,5 +4,6 @@
 #include "mssbTypes.h"
 
 void fn_3_157DB8(s32 arg0);
+void fn_3_1580AC(void);
 
 #endif
