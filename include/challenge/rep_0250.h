@@ -11,4 +11,6 @@ void fn_1_96A4(void);
 
 void fn_1_97B8(void);
 
+void fn_1_96D4(void);
+
 #endif
