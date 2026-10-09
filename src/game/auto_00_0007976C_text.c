@@ -8,6 +8,35 @@ extern s32 fn_3_6C938(s32, s32);
 
 #pragma dont_inline on
 
+// fn_3_79A00, size:0xCC
+void fn_3_79A00(void) {
+    s8* b = (s8*)&lbl_3_common_bss_32A94;
+    s16 idx;
+    s16 fo;
+    if (b[0x25] == -1) {
+        return;
+    }
+    if (b[0x25] == 0 && (idx = g_Strikes.runnerIndexForEachOutThisPitch[0]) >= 0) {
+        if (g_Runners[idx].forceOutCd == 2) {
+            b[0x25] = 1;
+        } else {
+            b[0x25] = -1;
+        }
+    }
+    if (b[0x25] == 1 && (idx = g_Strikes.runnerIndexForEachOutThisPitch[1]) >= 0) {
+        fo = g_Runners[idx].forceOutCd;
+        if (fo == 2) {
+            b[0x25] = 2;
+            return;
+        }
+        if (fo == -1) {
+            b[0x25] = 3;
+            return;
+        }
+        b[0x25] = -1;
+    }
+}
+
 // fn_3_7AB34, size:0x44
 void fn_3_7AB34(void) {
     u8* r = lbl_803535C8 + *(s32*)((u8*)&g_GameLogic + 0x8) * 0x10E + ((s32*)((u8*)&g_GameLogic + *(s32*)((u8*)&g_GameLogic + 0x10) * 0x50))[0xF] * 0x1E;
