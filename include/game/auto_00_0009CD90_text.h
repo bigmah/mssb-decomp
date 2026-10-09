@@ -23,4 +23,6 @@ s32 fn_3_9D374(void);
 
 s32 fn_3_9E368(s32* weights, s32 n);
 
+s32 RandomIndexFromWeights(u8* weights, s32 n);
+
 #endif
