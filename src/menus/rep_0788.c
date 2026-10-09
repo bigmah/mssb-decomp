@@ -68,6 +68,33 @@ extern void* fn_2_4E858(void*);
 extern void fn_2_53F04(void*);
 extern void fn_2_5400C(void);
 extern void fn_2_53CEC(void*);
+extern s16 fn_2_53BC8(void*);
+
+// fn_2_32C64, size:0xF0
+void fn_2_32C64(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 37;
+        /* fallthrough */
+    }
+    case 5:
+    case 37:
+    case 1:
+        return;
+    }
+}
 
 // fn_2_242FC, size:0xC0
 void fn_2_242FC(void) {

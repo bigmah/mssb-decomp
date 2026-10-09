@@ -19,6 +19,18 @@ typedef struct {
     u16 stateB;
 } MenuQueueState;
 
+typedef struct {
+    u8 padding[0x14];
+    u16 firstIndex;
+} MenuTableContext;
+
+typedef struct {
+    u8 padding[4];
+    s16 state;
+    u8 padding06[8];
+    s16 offset;
+} MenuItemState;
+
 void fn_2_24724(void);
 
 void fn_2_20258(void);
@@ -66,5 +78,7 @@ void fn_2_243BC(void);
 void fn_2_2416C(void);
 
 void fn_2_2025C(void);
+
+void fn_2_32C64(MenuTableContext* menu, MenuItemState* item);
 
 #endif
