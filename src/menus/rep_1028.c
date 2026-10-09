@@ -19,6 +19,7 @@ typedef struct {
 } MenuEffect;
 
 #include <string.h>
+#include <math.h>
 
 #include "static/UnknownHomes_Static.h"
 extern void* lbl_2_bss_340140[];
@@ -55,6 +56,8 @@ extern MenuStateCallback lbl_2_data_30870[4];
 extern MenuStateCallback lbl_2_data_30880[3];
 
 extern u8 lbl_2_data_3198[];
+extern const f32 lbl_2_rodata_10B8[];
+extern const f32 lbl_2_rodata_10BC;
 extern u8 lbl_2_data_30900[];
 extern const f32 lbl_2_rodata_10A8[];
 extern const f32 lbl_2_rodata_10AC[];
@@ -674,4 +677,21 @@ void fn_2_90718(u8* object) {
     *(s16*)(object + 0x9C) = 0x50;
     *(s16*)(object + 0xA0) = 0;
     *(s16*)(object + 0x90) = 1;
+}
+
+// .text:0x90DE4 size:0xB4
+void fn_2_90DE4(u8* object, f32 limit) {
+    if (object[0xB5] != 0) {
+        f32 s = (f32)sin(*(f32*)(object + 0x88));
+        f32 v = lbl_2_rodata_10B8[0] * -s;
+        *(f32*)(object + 0x88) = *(f32*)(object + 0x88) + lbl_2_rodata_10BC;
+        if (v >= limit) {
+            *(f32*)(object + 0x88) = lbl_2_rodata_1080;
+            v = lbl_2_rodata_1080;
+            object[0xB5] = 0;
+        }
+        *(f32*)(object + 4) = v;
+    } else {
+        *(f32*)(object + 4) = lbl_2_rodata_1080;
+    }
 }
