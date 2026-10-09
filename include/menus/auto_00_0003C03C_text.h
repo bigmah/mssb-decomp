@@ -20,4 +20,6 @@ void fn_2_460F0(void);
 
 void fn_2_460F4(void);
 
+s32 fn_2_46C24(void);
+
 #endif
