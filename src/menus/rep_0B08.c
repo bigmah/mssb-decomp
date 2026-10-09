@@ -263,14 +263,13 @@ extern void fn_2_8CD58(s32, s16, u8, u8, s16, u8, u8);
 void fn_2_68F24(s32 index, s32 animation) {
     MenuEntry* entry;
     MenuAnimation* settings;
-    u8* cache;
+    s16* cache;
 
     entry = &lbl_2_bss_1A8248[0]->entries[index];
     settings = &lbl_2_data_3C84[animation];
     fn_2_8CD58(entry->objectId, settings->clip, settings->mode, 1, settings->end, 0, 0);
-    cache = lbl_2_bss_1A824C[0] + 0x190000;
-    cache += entry->objectId * 2;
-    *(s16*)(cache + 0x7756) = animation;
+    cache = (s16*)(lbl_2_bss_1A824C[0] + 0x190000);
+    cache[entry->objectId + 0x3BAB] = animation;
 }
 
 // fn_2_689CC, size:0xBC
@@ -852,4 +851,15 @@ void fn_2_6C020(MenuEntry* entry) {
         entry->angle34 -= lbl_2_rodata_C40;
     }
     entry->heading = entry->angle34;
+}
+
+// fn_2_6BCAC, size:0xBC
+void fn_2_6BCAC(u8* object) {
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 0;
+    fn_2_68F24(*(s32*)(object + 0x80), 9);
+    *(f32*)(object + 0x4C) = lbl_2_rodata_B58;
+    *(f32*)(object + 0x34) = lbl_2_rodata_B58;
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16DA] = 0xFF;
+    *(f32*)(object + 0x8C) = lbl_2_rodata_B58;
+    *(s16*)(object + 0x94) = 1;
 }
