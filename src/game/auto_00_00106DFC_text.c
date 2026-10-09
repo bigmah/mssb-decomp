@@ -139,3 +139,21 @@ void fn_3_10B200(void) {
     g_Minigame[0x19DF] = 0x1E;
     fn_3_5A6D4(0x1D);
 }
+
+// fn_3_10A01C, size:0x84
+void fn_3_10A01C(void) {
+    u8 m = g_Minigame[0x1A2A];
+    if (m == 1) {
+        fn_3_1128E8();
+    } else if (m == 2) {
+        fn_3_1160B8();
+    } else if (m == 3) {
+        fn_3_1323CC();
+    } else if (m == 4) {
+        fn_3_141A2C();
+    } else if (m == 5) {
+        fn_3_1471C0();
+    } else if (m == 6) {
+        fn_3_13C464();
+    }
+}
