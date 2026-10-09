@@ -1,7 +1,19 @@
 #include "game/auto_00_001293D0_text.h"
+#include "game/rep_3448.h"
 #include "static/UnknownHomes_Static.h"
 
 extern u8 g_Minigame[];
+extern u8 g_GameLogic[];
+extern u8* lbl_803CC1B8;
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_80371C30[];
+extern u8 lbl_3_data_9FB4[];
+extern void fn_80034E20(void*, void*);
+extern void fn_8004CC2C(void);
+extern void fn_8004D0F0(void);
+extern void fn_3_11E7C4(void);
+extern void fn_3_11E364(void);
+extern void fn_3_129C88(void);
 extern void* memset(void*, s32, u32);
 
 // fn_3_12DB54, size:0x2C
@@ -30,3 +42,17 @@ u32 fn_3_12DD88(void) {
     } while (i < 0xF);
     return i >= 0xF;
 }
+
+// fn_3_1293D0, size:0x88
+void fn_3_1293D0(void) {
+    if (g_GameLogic[0x125] == 0) {
+        fn_800B0A5C_insertQueue(fn_3_129370, 2);
+    }
+    if (g_GameLogic[0x125] == 5 && *(u16*)(g_GameLogic + 0xFE) == 1) {
+        fn_800B0A5C_insertQueue(fn_8004D0F0, 2);
+    }
+    if (g_GameLogic[0x125] == 6) {
+        fn_8004CC2C();
+    }
+}
+
