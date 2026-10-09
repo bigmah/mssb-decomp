@@ -1216,3 +1216,31 @@ void fn_2_45FDC(void) {
         entry[7] = entry[6];
     }
 }
+
+// fn_2_45BA4, size:0x194
+void fn_2_45BA4(void) {
+    s32 j;
+    s32 i;
+    u8* entry;
+    for (i = 0; i < 54; i++) {
+        entry = lbl_2_bss_1A8248[0] + i * 0x34;
+        for (j = 0; j < 10; j++) {
+            entry[9 + j * 2] = entry[0x1D + j * 2];
+            entry[10 + j * 2] = entry[0x1E + j * 2];
+        }
+    }
+}
+
+// fn_2_45E48, size:0x194
+void fn_2_45E48(void) {
+    s32 j;
+    s32 i;
+    u8* entry;
+    for (i = 0; i < 54; i++) {
+        entry = lbl_2_bss_1A8248[0] + i * 0x34;
+        for (j = 0; j < 10; j++) {
+            entry[0x1D + j * 2] = entry[9 + j * 2];
+            entry[0x1E + j * 2] = entry[10 + j * 2];
+        }
+    }
+}

@@ -102,4 +102,8 @@ void fn_2_45D38(void);
 
 void fn_2_45FDC(void);
 
+void fn_2_45BA4(void);
+
+void fn_2_45E48(void);
+
 #endif
