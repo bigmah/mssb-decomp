@@ -3,6 +3,7 @@
 extern void* lbl_2_bss_3401BC;
 extern const f32 lbl_2_rodata_1080;
 extern const f32 lbl_2_rodata_1078;
+extern const f32 lbl_2_rodata_107C;
 typedef struct {
     u32 pad0;
     u32 resource;
@@ -1042,7 +1043,7 @@ void fn_2_8F3D4(s32 index) {
         *(s16*)(slot + 0xA6) = 2;
     case 2:
         *(f32*)(slot + 0x84) = *(f32*)(slot + 0x84) - *(f32*)(slot + 0x8C);
-        alpha = (s32)(lbl_2_rodata_1084 * *(f32*)(slot + 0x84));
+        alpha = (s32)(lbl_2_rodata_107C * *(f32*)(slot + 0x84));
         if (alpha > 1) {
             color.a = alpha;
             fn_800BD2CC(1, color);
