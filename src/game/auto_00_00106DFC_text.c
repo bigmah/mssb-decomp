@@ -60,3 +60,9 @@ void fn_3_1104A8(void) {
         g_Minigame[0x1DBC + i - 1] = 0;
     } while (i < 4);
 }
+
+// fn_3_106DFC, size:0x54
+void fn_3_106DFC(void) {
+    *(void**)(g_Camera + 0xAB0) = _OSAllocFromHeap(4, 0x8000);
+    *(void**)(g_Camera + 0x146C) = _OSAllocFromHeap(4, 0x8000);
+}
