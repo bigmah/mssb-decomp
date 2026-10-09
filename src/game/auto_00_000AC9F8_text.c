@@ -9,6 +9,9 @@
 
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
+extern void fn_3_5F720(void);
+extern void fn_3_6C0E0(void);
+extern u8 g_RunningLogic[];
 extern void ballPhysica(void);
 extern void fn_3_598D0(void);
 extern void fn_3_B0E00(void);
@@ -540,4 +543,37 @@ s32 fn_3_B1470(void) {
         return 1;
     }
     return 0;
+}
+
+// fn_3_B11D0, size:0x128
+void fn_3_B11D0(void) {
+    fn_3_5F720();
+    g_Pitcher.handedness = g_Fielders[0x1C7];
+    g_Pitcher.curveBallSpeed = 0x7D;
+    g_Pitcher.fastBallSpeed = 0x91;
+    g_Pitcher.cursedBallStat = 0x64;
+    g_Strikes.storedOuts = g_Strikes.outs;
+    g_Strikes.runnerIndexForEachOutThisPitch[0] = -1;
+    g_Strikes.runnerIndexForEachOutThisPitch[1] = -1;
+    g_Strikes.runnerIndexForEachOutThisPitch[2] = -1;
+    g_Strikes.GameControls_StrikeBallBitVector = g_Strikes.balls + (g_Strikes.strikes * 16);
+    g_Strikes.allForcedRunnersReachedTheirBaseInd = 0;
+    g_Ball.totalFramesAtPlay = 0;
+    g_FieldingLogic._10E = 0;
+    *(s16*)((u8*)&g_FieldingLogic + 0xEE) = 0;
+    g_FieldingLogic._10F = 0;
+    g_FieldingLogic._110 = 0;
+    g_FieldingLogic._128 = 0;
+    g_FieldingLogic._129 = 0;
+    g_RunningLogic[0x13] = 0;
+    g_GameLogic.pre_PostMiniGameInd = 0;
+    g_GameLogic.minigameLastTurnSuccessInd = 0;
+    g_Practice.hitVariablesSetIndicator = 0;
+    ((u8*)&g_Practice)[0x1E4] = 0;
+    g_Practice._1CB = 0;
+    g_Strikes.outs = 0;
+    *(s16*)((u8*)&g_Practice + 0x152) = 0;
+    changeScene(1, 6);
+    fn_3_5A6D4(1);
+    fn_3_6C0E0();
 }
