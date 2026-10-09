@@ -3,8 +3,22 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void fn_3_5A6FC(void);
+extern void fn_3_6011C(void);
+extern void fn_3_FF4C(void);
+extern void fn_3_6D304(void);
+extern void fn_3_7D458(void);
+extern void fn_3_668BC(void);
+extern void fn_3_B482C(void);
+extern void fn_3_DFBAC(void);
+extern void fn_3_10FDC8(void);
+extern void fn_3_66140(void);
+extern void fn_3_664FC(void);
+extern void fn_3_BBF94(void);
+extern void fn_3_B93CC(void);
 extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
 extern u8 lbl_80366158[];
+extern u8 lbl_8036E548[];
 extern void fn_3_6C13C(void*, void*);
 extern void fn_3_16598C(void);
 extern u8 g_RunningLogic[];
@@ -493,4 +507,51 @@ s32 fn_3_5B220(s32 arg) {
         return 1;
     }
     return 0;
+}
+
+// fn_3_5ACA0, size:0x16C
+void fn_3_5ACA0(void) {
+    GameInitVariables* gs;
+    if (g_GameLogic.framesOfExitingToMenu != 0) {
+        fn_3_5A6FC();
+        return;
+    }
+    if (g_GameLogic.FrameCountOfCurrentPitch < 0xFFFE) {
+        g_GameLogic.FrameCountOfCurrentPitch += 1;
+    } else {
+        g_GameLogic.FrameCountOfCurrentPitch = 0xFFFF;
+    }
+    if (g_GameLogic.FrameCountOfCurrentAtBat_Copy < 0xFFFE) {
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy += 1;
+    } else {
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0xFFFF;
+    }
+    fn_3_FF4C();
+    fn_3_6D304();
+    gs = &g_d_GameSettings;
+    if (gs->GameModeSelected != 6 && gs->GameModeSelected != 7) {
+        fn_3_7D458();
+    }
+    fn_3_668BC();
+    if (gs->GameModeSelected == 2) {
+        fn_3_B482C();
+    } else if (gs->GameModeSelected == 6) {
+        fn_3_DFBAC();
+    } else if (gs->GameModeSelected == 7) {
+        fn_3_10FDC8();
+    } else if (g_GameLogic.secondaryGameMode == 0) {
+        fn_3_6011C();
+    }
+    if (g_d_GameSettings.minigamesEnabled != 0) {
+        fn_3_66140();
+    } else {
+        fn_3_664FC();
+    }
+    fn_3_BBF94();
+    if (lbl_8036E548[0x3088] != 0) {
+        fn_3_B93CC();
+    }
+    if (gs->GameModeSelected == 4 && lbl_80366158[0x2A] == 0) {
+        lbl_80366158[0x2A] = 1;
+    }
 }
