@@ -1974,6 +1974,8 @@ void fn_2_27EDC(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
+typedef struct { u8 pad0[0x197726]; s16 k; u8 pad1[0x19789F - 0x197728]; u8 arr[1]; } MenuSel;
+
 // fn_2_30C4C, size:0x134
 void fn_2_30C4C(MenuTableContext* menu, MenuItemState* item) {
     s16 state = fn_2_53BC8(item);
@@ -2162,6 +2164,53 @@ void fn_2_2FD00(MenuTableContext* menu, MenuItemState* item) {
     case 17:
         item->state = 37;
         return;
+    case 5:
+        item->timer = 14;
+        item->state = 6;
+        return;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        /* fallthrough */
+    }
+    case 37:
+    case 1:
+        return;
+    }
+}
+
+// fn_2_30D80, size:0x178
+void fn_2_30D80(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2:
+    case 17: {
+        u8* object;
+        MenuSel* ctx = (MenuSel*)lbl_2_bss_1A824C[0];
+        s32 value = 0x14;
+        s16 k = ctx->k;
+        if ((s8)ctx->arr[item->index + k] != 2) {
+            value = k;
+        }
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = value << 16;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 37;
+        return;
+    }
     case 5:
         item->timer = 14;
         item->state = 6;
