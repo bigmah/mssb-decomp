@@ -87,4 +87,6 @@ void fn_2_26774(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_26684(MenuTableContext* menu, MenuItemState* item);
 
+s32 fn_2_24728(s32 character);
+
 #endif

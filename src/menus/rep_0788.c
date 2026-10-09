@@ -69,6 +69,22 @@ extern void fn_2_53F04(void*);
 extern void fn_2_5400C(void);
 extern void fn_2_53CEC(void*);
 
+// fn_2_24728, size:0xD8
+s32 fn_2_24728(s32 character) {
+    u8* menu = lbl_2_bss_1A8248[0];
+    s32 index;
+    u8* record;
+
+    for (index = 0; index < 51; index++) {
+        record = menu + index * 10;
+        if (record[0x40F1] == 0 && record[0x40F2] == 1 &&
+            (s32)record[0x40F5] == character && menu[character + 0x4431] == 1) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // fn_2_26774, size:0xF0
 void fn_2_26774(MenuTableContext* menu, MenuItemState* item) {
     fn_2_32C64(menu, item);
