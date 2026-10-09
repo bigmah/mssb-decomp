@@ -90,3 +90,14 @@ void fn_2_42270(s32 index) {
     memcpy(lbl_2_bss_15B8, lbl_2_data_12CE8[index], 0x4000);
     *(u8**)(lbl_2_bss_1A824C[0] + 0x197684) = lbl_2_bss_15B8;
 }
+
+// fn_2_44238, size:0xB0
+s32 fn_2_44238(s32 value) {
+    s32 count = 0;
+    s32 i;
+    u8* menu = lbl_2_bss_1A8248[0];
+    for (i = 0; i < 9; i++) {
+        if (*(s16*)(menu + 0x40B8 + i * 6) == value) count++;
+    }
+    return count != 0;
+}
