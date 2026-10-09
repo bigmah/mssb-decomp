@@ -205,3 +205,24 @@ void fn_3_12C868(void) {
     }
 }
 
+// fn_3_12C984, size:0x10C
+void fn_3_12C984(void) {
+    if (lbl_3_common_bss_32724[0xB6] != 0) {
+        memset(g_Minigame + 0x1DF4, 0, 0xE);
+        fn_800B0A5C_insertQueue(fn_3_121908, 2);
+        if (g_Minigame[0x1909] != 0) {
+            fn_800B0A5C_insertQueue(fn_3_1243A4, 2);
+        }
+        fn_800B0A5C_insertQueue(fn_3_124738, 2);
+        fn_800B0A5C_insertQueue(fn_3_1226D4, 2);
+        fn_800B0A5C_insertQueue(fn_3_122334, 2);
+        fn_800B0A5C_insertQueue(fn_3_1235B8, 2);
+        fn_800B0A5C_insertQueue(fn_3_124CE0, 2);
+        fn_800B0A5C_insertQueue(fn_3_EB6E0, 2);
+        lbl_3_common_bss_32724[0xB7] = 0;
+        lbl_3_common_bss_32724[0xB6] = 0;
+        fn_800B0A5C_insertQueue(fn_3_125850, 2);
+    }
+    fn_3_97144();
+}
+
