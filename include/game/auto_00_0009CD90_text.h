@@ -19,4 +19,6 @@ void fn_3_9CD90(void);
 
 s32 fn_3_9E834(void);
 
+s32 fn_3_9D374(void);
+
 #endif
