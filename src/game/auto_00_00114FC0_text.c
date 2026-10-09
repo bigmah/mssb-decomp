@@ -76,3 +76,12 @@ void fn_3_115828(void) {
     fn_3_5A6D4(0xE);
 }
 
+// fn_3_115B5C, size:0x80
+void fn_3_115B5C(void) {
+    *(s32*)g_Scores += 1;
+    g_Minigame[0x190C] = 0;
+    fn_3_5A6D4(7);
+    if (g_Minigame[0x1909] != 0 || g_Minigame[0x1A3C] != 0 || g_Minigame[0x1A2B] != 3) {
+        fn_3_10F550(4, 0);
+    }
+}
