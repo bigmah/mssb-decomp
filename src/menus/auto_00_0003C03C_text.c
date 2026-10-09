@@ -126,3 +126,15 @@ s32 fn_2_442E8(void) {
     }
     return count == 2;
 }
+
+// fn_2_44368, size:0xAC
+s32 fn_2_44368(void) {
+    s32 i;
+    s32 count = 0;
+    u8* menu = lbl_2_bss_1A8248[0];
+    for (i = 0; i < 9; i++) {
+        s32 a = *(s16*)(menu + 0x40B8 + i * 6);
+        if (a == 13 || a == 29 || a == 30 || a == 31 || a == 32) count++;
+    }
+    return count >= 5;
+}
