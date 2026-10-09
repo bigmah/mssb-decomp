@@ -26,4 +26,6 @@ void fn_2_46C2C(s32 unused, Vec* src);
 
 void fn_2_422FC(s32 index);
 
+void fn_2_42270(s32 index);
+
 #endif
