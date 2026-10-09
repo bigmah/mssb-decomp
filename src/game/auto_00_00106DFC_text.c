@@ -51,3 +51,12 @@ void fn_3_10F550(s8 a, s16 b) {
     g_Minigame[0x1A41] = a;
     *(s16*)(g_Minigame + 0x1A28) = b;
 }
+
+// fn_3_1104A8, size:0x2C
+void fn_3_1104A8(void) {
+    s8 i = 0;
+    do {
+        i++;
+        g_Minigame[0x1DBC + i - 1] = 0;
+    } while (i < 4);
+}
