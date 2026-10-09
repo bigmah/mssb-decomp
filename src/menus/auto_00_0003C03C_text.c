@@ -1,6 +1,7 @@
 #include "menus/auto_00_0003C03C_text.h"
 #include "string.h"
 #include "Dolphin/vec.h"
+#include "static/UnknownHomes_Static.h"
 
 extern u8* lbl_2_bss_1A8248[];
 extern u8* lbl_2_bss_1A824C[];
@@ -11,6 +12,11 @@ extern void fn_80031CA4(Vec*, u32*);
 extern u8 lbl_2_bss_15B8[];
 extern void* lbl_2_data_12C0C[];
 extern void* lbl_2_data_12CE8[];
+extern u8* lbl_803CC1B8;
+extern u8 lbl_80366B18[];
+extern u8 lbl_803C6CF8[];
+extern u8 lbl_2_data_12298[];
+extern void fn_800111B4(s32);
 
 // fn_2_42474, size:0x1C
 void fn_2_42474(void) {
@@ -179,5 +185,29 @@ void fn_2_45978(void) {
         lbl_2_bss_1A8248[0][i + 0x444D] = 0;
         lbl_2_bss_1A8248[0][i + 0x4483] = 0;
         lbl_2_bss_1A8248[0][i + 0x44B9] = 0;
+    }
+}
+
+// fn_2_409CC, size:0xD0
+void fn_2_409CC(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    switch ((s8)o[0x28]) {
+    case 0:
+        *(s32*)(lbl_80366B18 + 0x7A8) = ARAMTransfer(lbl_2_data_12298, 0, 1, 0);
+        o[0x28] = 1;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            fn_800111B4(*(s32*)(lbl_80366B18 + 0x7A8));
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
     }
 }
