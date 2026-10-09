@@ -934,3 +934,13 @@ void fn_2_6D754(u8* object) {
     *(f32*)(object + 0x34) = lbl_2_rodata_B58;
     *(s16*)(object + 0x94) = 1;
 }
+
+// fn_2_6C190
+void fn_2_6C190(u8* object) {
+    extern void fn_2_46C88(s32, s32);
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 1;
+    fn_2_68FBC(*(s32*)(object + 0x80), 1);
+    *(f32*)(object + 0x34) = *(f32*)(object + 0x4C);
+    fn_2_46C88(((u8*)lbl_2_bss_1A8248[0])[0x441E], 0);
+    *(s16*)(object + 0x94) = 1;
+}
