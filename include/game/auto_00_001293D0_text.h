@@ -7,5 +7,6 @@ void fn_3_12E808(void);
 u32 fn_3_12DD88(void);
 void fn_3_1293D0(void);
 void fn_3_12C514(void);
+void fn_3_12C5CC(void);
 
 #endif
