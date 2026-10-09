@@ -35,3 +35,7 @@ void fn_2_160(void) {
     lbl_803CBBCC[0][0x10] = 0;
 }
 
+// fn_2_2D8, size:0x4
+void fn_2_2D8(void) {
+}
+
