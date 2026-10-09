@@ -73,6 +73,22 @@ void fn_2_96D20(void) {
 extern s32 fn_80042DA8(void*, s32, s32);
 extern void fn_800626EC(s32);
 
+// fn_2_95E80, size:0xBC
+void fn_2_95E80(u8* object) {
+    u8 flag;
+    if ((lbl_803C66B0[0x4F] == 1) ? 1 : 0) {
+        flag = fn_80042DA8(object, 0, 0) != 0;
+        if ((*(u32*)(lbl_80371C30[*(u16*)(object + 0x14)].object + 0x5C) >> 16) == 3) {
+            changeScene(3, 6);
+        }
+        if ((s32)flag == 1) {
+            lbl_2_bss_1033C[0xE] = 1;
+            fn_80062674(0);
+            lbl_803C66B0[0x4F] = 2;
+        }
+    }
+}
+
 // fn_2_95F3C, size:0xA4
 void fn_2_95F3C(u8* object) {
     if ((lbl_803C66B0[0x4F] == 0) ? 1 : 0) {
