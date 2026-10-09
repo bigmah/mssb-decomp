@@ -10,3 +10,12 @@ void fn_1_0(void* bank, char* name) {
     ANIMGet(bank, name);
 }
 
+void fn_1_1B0(u32* table, s32 count) {
+    s32 i;
+    for (i = 0; i < count; i++) {
+        if (table[i] != 0) {
+            table[i] += (u32)table;
+        }
+    }
+}
+
