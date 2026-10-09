@@ -68,4 +68,6 @@ void fn_2_4078C(void);
 
 void fn_2_408BC(void);
 
+void fn_2_40A9C(void);
+
 #endif
