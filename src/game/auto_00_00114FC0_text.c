@@ -9,6 +9,10 @@ extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
 extern void fn_3_114A88(s32);
 extern void changeScene(s32, s32);
+extern void fn_3_F578(void);
+extern void fn_3_753E8(s32);
+extern u8 g_Batter[];
+extern f32 maybeInitialBatPos[];
 extern s16 lbl_3_data_2167C;
 extern void fn_3_6EBB4(s32);
 extern void fn_3_F1DC(void);
@@ -92,6 +96,21 @@ void fn_3_1158F8(void) {
     *(s16*)(g_FieldingLogic + 0xAE) = 0;
     unkSimulationRelatedStruct[5] = 0;
     unkSimulationRelatedStruct[6] = 4;
+}
+
+// fn_3_115AB4, size:0xA8
+void fn_3_115AB4(void) {
+ u8 t;
+t = g_Minigame[g_Minigame[0x190C] + 0x18E0]; g_Minigame[0x1904] = t;
+g_GameLogic[0x12B] = 1;
+*(s16*)(g_Minigame + 0x1898) = 0; *(s16*)(g_Minigame + 0x189A) = 0; *(s16*)(g_Minigame + 0x189C) = 0; *(s16*)(g_Minigame + 0x189E) = 0;
+    fn_3_F578();
+    fn_3_753E8(0);
+    fn_3_6EBB4(*(s8*)(g_Minigame + 0x1904));
+    *(f32*)(g_Batter + 0x4C) = maybeInitialBatPos[0];
+    *(f32*)(g_Batter + 0x50) = maybeInitialBatPos[1];
+    *(f32*)(g_Batter + 0x54) = maybeInitialBatPos[2];
+    fn_3_5A6D4(0);
 }
 
 // fn_3_115B5C, size:0x80
