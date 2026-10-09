@@ -42,3 +42,8 @@ s32 fn_2_45938(s32 index) {
     u8* menu = lbl_2_bss_1A8248[0];
     return *(s8*)(menu + lbl_803CB8F0[menu[index * 10 + 0x40F3]] * 0x34 + 0x31) == 0;
 }
+
+// fn_2_460EC, size:0x4
+void fn_2_460EC(void) {
+    return;
+}
