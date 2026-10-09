@@ -44,4 +44,6 @@ void fn_2_747FC(void);
 void fn_2_834F0(void);
 void fn_2_836A4(void);
 
+void fn_2_738C8(void);
+
 #endif
