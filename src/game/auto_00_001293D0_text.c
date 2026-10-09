@@ -14,6 +14,15 @@ extern void fn_8004D0F0(void);
 extern void fn_3_11E7C4(void);
 extern void fn_3_11E364(void);
 extern void fn_3_129C88(void);
+extern void fn_3_129FF8(void);
+extern void fn_3_12C1AC(void);
+extern void fn_3_EB6E0(void);
+extern void fn_3_97144(void);
+extern void fn_3_99BDC(void);
+extern u8 lbl_3_data_9ECC[];
+extern u8 lbl_3_data_9208[];
+extern u8 lbl_3_data_92C8[];
+extern u8 g_Practice[];
 extern u8 lbl_3_common_bss_37400[];
 extern u8 lbl_3_data_217A4[];
 extern void fn_3_1608F0(s32, s32, u8);
@@ -152,3 +161,26 @@ void fn_3_12E83C(void) {
         fn_3_1608F0(2, v, g[0x1ADD]);
     }
 }
+
+// fn_3_12C74C, size:0x11C
+void fn_3_12C74C(void) {
+    if (lbl_3_common_bss_32724[0xB6] != 0) {
+        memset(g_Minigame + 0x1DF4, 0, 0xE);
+        if (g_Minigame[0x1909] == 0) {
+            fn_800B0A5C_insertQueue(fn_3_11F508, 2);
+        }
+        fn_800B0A5C_insertQueue(fn_3_11F778, 2);
+        fn_800B0A5C_insertQueue(fn_3_11FA58, 2);
+        fn_800B0A5C_insertQueue(fn_3_11FDB0, 2);
+        if (g_Minigame[0x1909] != 0) {
+            fn_800B0A5C_insertQueue(fn_3_1243A4, 2);
+        }
+        fn_800B0A5C_insertQueue(fn_3_124738, 2);
+        fn_800B0A5C_insertQueue(fn_3_124CE0, 2);
+        fn_800B0A5C_insertQueue(fn_3_EB6E0, 2);
+        lbl_3_common_bss_32724[0xB7] = 0;
+        lbl_3_common_bss_32724[0xB6] = 0;
+        fn_800B0A5C_insertQueue(fn_3_125850, 2);
+    }
+}
+
