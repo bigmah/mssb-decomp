@@ -28,3 +28,10 @@ void fn_2_3C(void) {
     fn_800A7D4C(0, lbl_2_data_C0);
 }
 
+// fn_2_160, size:0x48
+void fn_2_160(void) {
+    *(u16*)(lbl_803CBBCC[0] + 0xC) |= *(u16*)((u8*)lbl_803C77B8 + 2);
+    *(u16*)(lbl_803CBBCC[0] + 0xE) |= *(u16*)((u8*)lbl_803C77B8 + 0x22);
+    lbl_803CBBCC[0][0x10] = 0;
+}
+

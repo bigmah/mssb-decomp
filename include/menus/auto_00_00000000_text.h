@@ -5,5 +5,6 @@
 
 void fn_2_0(void);
 void fn_2_3C(void);
+void fn_2_160(void);
 
 #endif
