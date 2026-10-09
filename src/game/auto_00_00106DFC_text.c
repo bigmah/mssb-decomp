@@ -12,6 +12,18 @@ extern u8 lbl_3_data_20FDC[];
 extern u8 lbl_3_data_228[];
 extern u8 lbl_3_data_18910[];
 extern u8 lbl_803616CC[];
+extern u8 inMemRoster[];
+extern u8 lbl_8034E9A0[];
+extern u8 lbl_800E86F0[];
+extern void fn_3_10BE7C();
+extern u8 inMemRoster[];
+extern void fn_80062A74(void);
+extern void fn_80062A94(void);
+extern void fn_3_10B27C(void);
+extern void fn_8006C398(void);
+extern void fn_3_1079C8(u8*, s32);
+extern u8 lbl_8034E9A0[];
+extern u8 lbl_800E86F0[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern s32 ARAMTransfer(void*, int, int, int);
 extern void fn_3_90064(s32);
@@ -26,6 +38,8 @@ extern void fn_8001CA40(s32);
 extern void fn_80011BE4(s32);
 extern void fn_800246D4(void*, void*, void*, s32, s32);
 extern void* memset(void*, int, unsigned long);
+extern void* memcpy(void*, const void*, unsigned long);
+extern void* memcpy(void*, const void*, unsigned long);
 extern void fn_3_9DC18(void*, s32, s32);
 extern void manageStadiumLoading(void);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -365,4 +379,171 @@ s32 fn_3_10F564(void) {
         return 1;
     }
     return 0;
+}
+
+// fn_3_10F5BC, size:0xC8
+void fn_3_10F5BC(void) {
+    u32 t;
+    if (*(s8*)(g_Minigame + 0x1A2C) >= 0) {
+        lbl_8036E548[0x307E] = 0;
+        fn_3_B95EC();
+        fn_3_5E60();
+    }
+    *(s8*)(g_Minigame + 0x1A2C) = -1;
+    t = lbl_3_data_18910[g_Minigame[0x1A2A]];
+    lbl_3_data_228[0x10] = 0;
+    g_d_GameSettings[9] = t;
+    g_d_GameSettings[0xA] = 0;
+    if (g_d_GameSettings[9] == 0 || g_d_GameSettings[9] == 4 || g_d_GameSettings[9] == 1 || g_d_GameSettings[9] == 3) {
+        g_d_GameSettings[0xA] = 1;
+    }
+    fn_800B0A5C_insertQueue(manageStadiumLoading, 0);
+}
+
+// fn_3_10C450, size:0x13C
+void fn_3_10C450(s32 a, s32 b) {
+    u8* r = inMemRoster + a * 0xA0;
+    memcpy(r, lbl_8034E9A0 + b * 0xA0, 0xA0);
+    if (g_Minigame[0x18D4 + a] != 0) {
+        r[0x28] += lbl_800E86F0[0];
+        r[0x29] += lbl_800E86F0[1];
+        r[0x2A] += lbl_800E86F0[2];
+        r[0x2B] += lbl_800E86F0[3];
+        r[0x2C] += lbl_800E86F0[4];
+        r[0x2F] += lbl_800E86F0[5];
+        r[0x30] += lbl_800E86F0[6];
+        r[0x0] += lbl_800E86F0[7];
+        r[0x1] += lbl_800E86F0[8];
+        r[0x2] += lbl_800E86F0[9];
+        r[0x3] += lbl_800E86F0[0xA];
+        r[0x4] += lbl_800E86F0[0xB];
+    }
+}
+
+// fn_3_10754C, size:0x140
+typedef struct { u8 p[0x24]; s16 v; u8 q[0x7A]; } RosT;
+void fn_3_10754C(u8* dst) {
+    u8 buf[0x10];
+    s32 i;
+    u32 k;
+    fn_8006C398();
+    if (g_Minigame[0x1A3C] != 0 && *(s8*)(g_Minigame + 0x1908) >= 0 && *(s8*)(g_Minigame + 0x1908) < 4) {
+        i = 0;
+        do {
+            ((s16*)dst)[i] = *(s16*)(g_Minigame + 0x1E10 + i * 2);
+            i++;
+        } while ((u32)i < 6);
+        i = 0;
+        do {
+            dst[i + 0xC] = g_Minigame[0x1E1C + i];
+            i++;
+        } while ((u32)i < 6);
+        fn_3_1079C8(buf, 1);
+        k = 0;
+        do {
+            if (*(s8*)(g_Minigame + 0x1908) == buf[k * 2]) {
+                dst[0x12] = buf[k * 2 + 1];
+            }
+            k++;
+        } while (k < g_Minigame[0x1906]);
+        {
+        RosT* r = (RosT*)inMemRoster;
+        dst[0x13] = g_Minigame[0x1E22 + *(s8*)(g_Minigame + 0x1908)];
+        dst[0x14] = r[*(s8*)(g_Minigame + 0x18CC + *(s8*)(g_Minigame + 0x1908))].v;
+        }
+    }
+}
+
+// fn_3_107784, size:0x17C
+void fn_3_107784(void) {
+    switch (g_GameLogic[0x125]) {
+    case 0:
+        g_GameLogic[0x125] = g_GameLogic[0x125] + 1;
+        g_Minigame[0x1A1E] = 0;
+        if (g_Minigame[0x1A1C] == 0) {
+            fn_800B0A5C_insertQueue((void*)fn_80062A94, 1);
+        }
+        break;
+    case 1:
+        changeScene(1, 6);
+        *(s16*)(g_GameLogic + 0xFE) = 0;
+        g_GameLogic[0x125] = g_GameLogic[0x125] + 1;
+        break;
+    case 2:
+        fn_3_10B27C();
+        if (g_Minigame[0x1A1D] == 2) {
+            g_GameLogic[0x125] = 5;
+        } else if (g_Minigame[0x1A1D] != 0) {
+            g_GameLogic[0x125] = g_GameLogic[0x125] + 1;
+        }
+        break;
+    case 3:
+        changeScene(3, 6);
+        if (lbl_8037169C[0x13] != 0) {
+            g_GameLogic[0x125] = g_GameLogic[0x125] + 1;
+        }
+        break;
+    case 4:
+        fn_80062A74();
+        g_Minigame[0x1A1C] = 0;
+        fn_3_5A6D4(0x29);
+        break;
+    case 5:
+        changeScene(3, 6);
+        if (lbl_8037169C[0x13] != 0) {
+            g_GameLogic[0x125] = 6;
+        }
+        break;
+    case 6:
+        fn_3_5A6D4(0x1E);
+        break;
+    }
+}
+
+// fn_3_10C58C, size:0x218
+void fn_3_10C58C(void) {
+    s32 i;
+    u8* r;
+    *(s8*)(g_Minigame + 0x18CC) = -1;
+    g_Minigame[0x18D8] = 0;
+    g_Minigame[0x18D0] = 0xFF;
+    *(s8*)(g_Minigame + 0x18CD) = -1;
+    g_Minigame[0x18D9] = 0;
+    g_Minigame[0x18D1] = 0xFF;
+    *(s8*)(g_Minigame + 0x18CE) = -1;
+    g_Minigame[0x18DA] = 0;
+    g_Minigame[0x18D2] = 0xFF;
+    *(s8*)(g_Minigame + 0x18CF) = -1;
+    g_Minigame[0x18DB] = 0;
+    g_Minigame[0x18D3] = 0xFF;
+    g_Minigame[0x1906] = 0;
+    g_Minigame[0x1907] = 0;
+    fn_3_10BE7C();
+    for (i = 0; i < 4; i++) {
+        if (*(s8*)(g_Minigame + 0x19DA + i) >= 0) {
+            r = inMemRoster + i * 0xA0;
+            g_Minigame[0x18CC + g_Minigame[0x1906]] = i;
+            g_Minigame[0x18D8 + g_Minigame[0x1906]] = g_Minigame[0x19DA + i];
+            if (g_Minigame[0x18D8 + g_Minigame[0x1906]] == 0) {
+                g_Minigame[0x1907]++;
+            }
+            memcpy(r, lbl_8034E9A0 + *(s8*)(g_Minigame + 0x19E8 + i * 9) * 0xA0, 0xA0);
+            if (g_Minigame[0x18D4 + i] != 0) {
+                r[0x28] += lbl_800E86F0[0];
+                r[0x29] += lbl_800E86F0[1];
+                r[0x2A] += lbl_800E86F0[2];
+                r[0x2B] += lbl_800E86F0[3];
+                r[0x2C] += lbl_800E86F0[4];
+                r[0x2F] += lbl_800E86F0[5];
+                r[0x30] += lbl_800E86F0[6];
+                r[0x0] += lbl_800E86F0[7];
+                r[0x1] += lbl_800E86F0[8];
+                r[0x2] += lbl_800E86F0[9];
+                r[0x3] += lbl_800E86F0[0xA];
+                r[0x4] += lbl_800E86F0[0xB];
+            }
+            g_Minigame[0x18D0 + g_Minigame[0x1906]] = *(s16*)(r + 0x24);
+            g_Minigame[0x1906]++;
+        }
+    }
 }
