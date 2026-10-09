@@ -2,6 +2,24 @@
 
 
 extern u8* lbl_2_bss_1A8248[];
+extern MenuDrawWorld* lbl_2_bss_340140[];
+extern const f32 lbl_2_rodata_E88;
+
+// fn_2_869B4, size:0x58
+void fn_2_869B4(void) {
+    s32 index;
+    MenuDrawState* state;
+
+    for (index = 0; index < (s32)lbl_2_bss_340140[0]->count; index++) {
+        state = &lbl_2_bss_340140[0]->states[index];
+        state->position.x = lbl_2_rodata_E88;
+        state->position.y = lbl_2_rodata_E88;
+        state->position.z = lbl_2_rodata_E88;
+        state->rotation.x = lbl_2_rodata_E88;
+        state->rotation.y = lbl_2_rodata_E88;
+        state->rotation.z = lbl_2_rodata_E88;
+    }
+}
 
 // .text:0x87114 size:0x4
 void fn_2_87114(void) {
