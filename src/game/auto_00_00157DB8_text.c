@@ -90,3 +90,35 @@ void fn_3_158264(u8* o) {
     }
 }
 
+// fn_3_1589C4, size:0x1A0
+void fn_3_1589C4(void) {
+    if (g_Practice.practiceType_2 == 0 || g_Practice.practiceType_2 == 1 || g_Practice.practiceType_2 == 2) {
+        if (g_Practice.tutorialState == 3 && g_Practice._1C7 == 0) {
+            if (lbl_3_common_bss_32724[0xC6] == 0) {
+                fn_800B0A5C_insertQueue(fn_3_1586B0, 2);
+                lbl_3_common_bss_32724[0xC6] = 1;
+            }
+            if (g_Practice.practiceType_2 == 2 && g_Ball.totalFramesAtPlay == 1) {
+                fn_800B0A5C_insertQueue(fn_3_9669C, 2);
+            }
+            if (g_Practice.practiceType_2 == 2) {
+                if (g_Practice._186 == 0x3C) {
+                    fn_800B0A5C_insertQueue(fn_3_1581FC, 2);
+                }
+            } else if (g_Practice._186 == 1) {
+                fn_800B0A5C_insertQueue(fn_3_1581FC, 2);
+            }
+        }
+    } else if (g_Practice.practiceType_2 == 3) {
+        if (g_Practice.tutorialState == 3 && g_Practice._1C7 == 0) {
+            if (lbl_3_common_bss_32724[0xC7] == 0) {
+                fn_800B0A5C_insertQueue(fn_3_1586B0, 2);
+                fn_800B0A5C_insertQueue(fn_3_9669C, 2);
+            }
+            if (g_Practice._186 == 1) {
+                fn_800B0A5C_insertQueue(fn_3_1581FC, 2);
+            }
+        }
+    }
+}
+
