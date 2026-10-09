@@ -45,3 +45,18 @@ void fn_2_1018(u16 ch) {
         lbl_2_bss_D958[ch] = -1;
     }
 }
+
+// fn_2_10AC, size:0x50
+void fn_2_10AC(u8* data) {
+    *(u32*)data = *(u32*)data + (u32)data;
+    *(u32*)(data + 4) = *(u32*)(data + 4) + (u32)data;
+    lbl_2_bss_D974[0] = -1;
+    lbl_2_bss_D958[0] = -1;
+    lbl_2_bss_D974[1] = -1;
+    lbl_2_bss_D958[1] = -1;
+    lbl_2_bss_D974[2] = -1;
+    lbl_2_bss_D958[2] = -1;
+    lbl_2_bss_D974[3] = -1;
+    lbl_2_bss_D958[3] = -1;
+    lbl_2_bss_D984 = data;
+}
