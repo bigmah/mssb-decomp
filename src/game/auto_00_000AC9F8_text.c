@@ -10,6 +10,8 @@
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
 extern void fn_3_5F720(void);
+extern void fn_3_5B408(void);
+extern u8 lbl_3_data_FAE8[];
 extern u8 lbl_3_data_FAF4[][4];
 extern s16 lbl_3_data_FB04;
 extern void fn_3_6E24C(s32, s32);
@@ -59,7 +61,7 @@ extern u8 lbl_8037169C[];
 extern u8 lbl_80354720[];
 extern u8 lbl_80354768[];
 extern u8 lbl_800EFBA4[];
-extern s32 sndFXStartEx(s32, u8, u8, u8);
+extern u8 sndFXStartEx(s32, u8, u8, u8);
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_803CBC3C;
 extern void fn_3_BF1AC(void);
@@ -907,6 +909,59 @@ void fn_3_B003C(void) {
             g_Practice.guidedPracticeCompletionRelated2 = 1;
         }
     }
+}
+
+// fn_3_B3448, size:0x1D8
+u8 fn_3_B3448(void) {
+    s32 row;
+    InputStruct* c;
+    u16 b;
+    u8 r;
+    row = 0;
+    c = &g_Controls[g_Practice.homeAway];
+    if (g_Practice.practiceLevel == 3) {
+        row = 1;
+    }
+    if (c->newButtonInput & 0x100) {
+        r = g_Practice.currentMessageDoneTyping;
+        if (r != 0) {
+            switch ((lbl_3_data_FAE8 + row * 5)[*(s8*)(lbl_3_common_bss_34C90 + 0x1DA) + 1]) {
+            case 0:
+                lbl_3_common_bss_34C90[0x1D2] = 10;
+                break;
+            case 1:
+                lbl_3_common_bss_34C90[0x1D2] = 4;
+                break;
+            case 2:
+                lbl_3_common_bss_34C90[0x1D2] = 6;
+                break;
+            case 3:
+                fn_3_5B408();
+                lbl_3_common_bss_34C90[0x1D2] = 12;
+                break;
+            }
+            r = sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        }
+    } else {
+        b = *(u16*)((u8*)c + 8);
+        if (b & 4) {
+            lbl_3_common_bss_34C90[0x1DA]++;
+            if ((s8)lbl_3_common_bss_34C90[0x1DA] >= (s32)lbl_3_data_FAE8[row * 5]) {
+                lbl_3_common_bss_34C90[0x1DA] = 0;
+            }
+            r = sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else {
+            r = b & 8;
+            if (r != 0) {
+                lbl_3_common_bss_34C90[0x1DA]--;
+                if ((s8)lbl_3_common_bss_34C90[0x1DA] < 0) {
+                    lbl_3_common_bss_34C90[0x1DA] = lbl_3_data_FAE8[row * 5] - 1;
+                }
+                r = sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+    }
+    return r;
 }
 
 #pragma dont_inline off
