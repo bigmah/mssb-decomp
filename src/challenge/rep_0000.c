@@ -5,6 +5,9 @@ extern u8* lbl_803CC1B8[];
 extern void fn_1_16A0(void);
 extern void fn_1_1E0(void);
 extern void ANIMGet(void* bank, char* name);
+extern void LoadActorLayout(void* actor);
+extern void convertGeometryAndSknHeader(void* geometry, void* skin);
+extern void fn_80025DDC(void* object);
 
 void fn_1_0(void* bank, char* name) {
     ANIMGet(bank, name);
@@ -29,3 +32,16 @@ void fn_1_568(void) {
 void fn_1_5E8(void) {
 }
 
+
+void fn_1_20(ChallengeModelHeader* model) {
+    s32 i;
+    u32* p = (u32*)model;
+    for (i = 0; i < 5; i++) {
+        if (p[i] != 0) p[i] += (u32)model;
+    }
+    convertTextureHeader((void*)model->textures);
+    LoadActorLayout((void*)model->actor);
+    convertGeometryAndSknHeader((void*)model->geometry, (void*)model->skin);
+    haveActLayoutPointToGeoHeader((void*)model->actor, (void*)model->geometry);
+    if (model->extra != 0) fn_80025DDC((void*)model->extra);
+}
