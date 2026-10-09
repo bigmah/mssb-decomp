@@ -26,6 +26,14 @@ void fn_2_D08(u16 ch, u16 time, u8 mode) {
     }
 }
 
+// fn_2_F64, size:0xB4
+void fn_2_F64(void) {
+    u16 i;
+    for (i = 0; i < 4; i++) {
+        fn_2_1018(i);
+    }
+}
+
 // fn_2_1018, size:0x94
 void fn_2_1018(u16 ch) {
     if (lbl_2_bss_D974[ch] != -1) {
