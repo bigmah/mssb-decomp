@@ -1,5 +1,6 @@
 #include "menus/auto_00_00001254_text.h"
 #include "static/UnknownHomes_Static.h"
+#include <string.h>
 
 extern void fn_800625A4(u8, s32);
 
@@ -10,6 +11,9 @@ extern void fn_2_7DDC(void);
 extern void fn_2_7504(void);
 
 extern u8 lbl_8034E9A0[];
+extern u8 lbl_8034E978[];
+extern u8 lbl_803C66B0[];
+extern u8 lbl_803C5EA4[];
 
 extern u32 lbl_803CB750[];
 
@@ -217,4 +221,14 @@ void fn_2_3204(void) {
 void fn_2_6098(s32 index) {
     ((u32*)lbl_2_bss_F468)[(u8)index] = 9;
     fn_800625A4((u8)index, 0x17);
+}
+
+// fn_2_1BAC, size:0x88
+void fn_2_1BAC(void) {
+    memset(lbl_803C66B0 + 1, 0, 0x54);
+    lbl_803C66B0[0x56] = 0;
+    lbl_803C66B0[0x55] = 0;
+    memset(lbl_803C5EA4, 0, 0x3A);
+    memset(lbl_8034E9A0 + 0x489B, 0, 0x12);
+    memset(lbl_8034E978, 0, 0x28);
 }

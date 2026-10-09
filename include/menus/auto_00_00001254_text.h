@@ -45,4 +45,6 @@ void fn_2_3204(void);
 
 void fn_2_6098(s32 index);
 
+void fn_2_1BAC(void);
+
 #endif
