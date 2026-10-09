@@ -372,3 +372,22 @@ void fn_2_52198(void) {
     { Row10* r = (Row10*)lbl_800FEF70; lbl_8034E978[0] = sel; lbl_8034E978[9] = lbl_8034E978[8]; lbl_8034E978[8] = r[sel].f8; }
     fn_800B0A5C_insertQueue((void*)fn_2_8ABFC, 0x3000);
 }
+
+extern u8 lbl_2_bss_5600[];
+extern void* lbl_2_data_1E99C[];
+extern void fn_2_4EB9C(void);
+
+// fn_2_50BF4, size:0xCC
+void fn_2_50BF4(s16 id) {
+    s16 zero = 0;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FD4) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FD2) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FD6) = id;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FCC) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FCA) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x19729E) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x19729C) = zero;
+    memcpy(lbl_2_bss_5600, lbl_2_data_1E99C[*(s16*)(lbl_2_bss_1A824C[0] + 0x196FD6)], 0x4000);
+    *(u8**)(lbl_2_bss_1A824C[0] + 0x196F1C) = lbl_2_bss_5600;
+    fn_2_4EB9C();
+}
