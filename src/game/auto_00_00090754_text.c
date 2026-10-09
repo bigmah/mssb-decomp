@@ -9,6 +9,7 @@ extern u8 lbl_3_common_bss_32724[];
 extern void fn_8003649C(void*, s32, s32, s32, s32);
 extern u8 lbl_3_data_81D4[];
 extern void fn_800216F8(u8, void*);
+extern void fn_3_90F48(void);
 extern void fn_8006285C(void);
 
 // fn_3_90754, size:0x10
@@ -123,6 +124,23 @@ void fn_3_90AB0(s32 a) {
             *p = 0;
         }
     }
+}
+
+// fn_3_90C14, size:0x9c
+s32 fn_3_90C14(s8 a) {
+    u8* o = lbl_803CC1B8;
+    s32 t;
+    if (lbl_3_common_bss_34C58._2C == 0) {
+        lbl_3_common_bss_34C58._2D = a;
+        t = fn_800698F8();
+        *(s16*)(o + 0x10) = 0;
+        fn_800216F8(t + 5, fn_3_90F48);
+        lbl_3_common_bss_34C58._2C++;
+    } else if (*(s16*)(o + 0x10) != 0) {
+        lbl_3_common_bss_34C58._2C++;
+        return 1;
+    }
+    return 0;
 }
 
 // fn_3_91064, size:0x48
