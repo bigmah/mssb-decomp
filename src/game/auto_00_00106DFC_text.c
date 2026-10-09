@@ -38,3 +38,10 @@ extern void fn_3_13C464(void);
 void fn_3_106EB0(void) {
     fn_3_90064(0x30B);
 }
+
+// fn_3_107078, size:0x2C
+void fn_3_107078(void) {
+    if (g_Minigame[0x18E8 + *(s8*)(g_Minigame + 0x1908)] == 1) {
+        g_Minigame[0x1A3F] = 1;
+    }
+}
