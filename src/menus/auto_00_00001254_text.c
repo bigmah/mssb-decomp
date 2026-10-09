@@ -27,6 +27,9 @@ typedef struct MenuEntrySlot {
 extern MenuEntrySlot lbl_80371C30[];
 
 extern u8 lbl_2_bss_100B4;
+extern u8 lbl_2_bss_F410[];
+extern u8 lbl_800FDE84[];
+extern void fn_80050138(s32, s32, s32, s32, s32, s32);
 extern u8 lbl_80353B98[];
 extern u8 lbl_80354720[];
 extern void fn_800506E8(s32, s32, s32);
@@ -544,3 +547,37 @@ void fn_2_B508(void) {
         lbl_803C6724[0x53 + i] = 0;
     }
 }
+
+// fn_2_52CC, size:0x178
+#pragma opt_propagation off
+void fn_2_52CC(void) {
+    s32 i;
+    s32 one = 1;
+    lbl_2_bss_100B8[0x2E] = one;
+    lbl_803C66B0[0x59] = one;
+    ((s32*)lbl_2_bss_F468)[one] = 0xA;
+    lbl_803C5EA4[0xE] = one;
+    if (lbl_8034E9A0[0x4757 + *(s32*)(lbl_2_bss_F410 + 0x24)] != 0) {
+        for (i = 0; i < 0x20; i++) {
+            if (lbl_8034E9A0[0x4757 + lbl_800FDE84[i]] == 0) {
+                *(s32*)(lbl_2_bss_F410 + 0x24) = lbl_800FDE84[i];
+                break;
+            }
+        }
+    }
+    switch (*(s8*)(lbl_8034E9A0 + 0x46F9)) {
+    case 0:
+        fn_80050138(one, *(s32*)(lbl_2_bss_F410 + 0x24), -1, -1, -1, 0);
+        break;
+    case 1:
+        fn_80050138(one, -1, *(s32*)(lbl_2_bss_F410 + 0x24), -1, -1, 0);
+        break;
+    case 2:
+        fn_80050138(one, -1, -1, *(s32*)(lbl_2_bss_F410 + 0x24), -1, 0);
+        break;
+    case 3:
+        fn_80050138(one, -1, -1, -1, *(s32*)(lbl_2_bss_F410 + 0x24), 0);
+        break;
+    }
+}
+#pragma opt_propagation reset

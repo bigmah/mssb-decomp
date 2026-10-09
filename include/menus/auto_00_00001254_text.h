@@ -80,4 +80,6 @@ void fn_2_A040(s32 a, s32 b, u8 c, u8 d);
 
 void fn_2_B508(void);
 
+void fn_2_52CC(void);
+
 #endif
