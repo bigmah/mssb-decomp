@@ -50,4 +50,10 @@ void fn_2_3E7EC(void);
 
 void fn_2_3E918(void);
 
+void fn_2_3EBA8(void);
+
+void fn_2_3ECC0(void);
+
+void fn_2_3EDD8(void);
+
 #endif
