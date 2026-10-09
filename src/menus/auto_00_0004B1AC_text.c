@@ -764,3 +764,20 @@ void fn_2_51890(void) {
         }
     }
 }
+
+extern u16 lbl_2_data_1F3B0[];
+extern s32 lbl_2_data_1F3E0[];
+extern s32 lbl_2_data_1F3E8[];
+
+static s32 s_c[2];
+static s32 s_b[2];
+static s32 s_a[2];
+
+// fn_2_5135C, size:0x80
+void fn_2_5135C(u8* obj, s32 i) {
+    if (*(u16*)(obj + 0x10) % lbl_2_data_1F3B0[i] == 1) {
+        s_b[i] = lbl_2_data_1F3E0[i];
+        s_a[i] = lbl_2_data_1F3E8[i];
+        s_c[i] = ((s32*)(lbl_2_bss_1A824C[0] + 0x1954AC))[i];
+    }
+}
