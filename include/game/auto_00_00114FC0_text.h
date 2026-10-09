@@ -8,5 +8,6 @@ void fn_3_115BDC(void);
 void fn_3_1160B8(void);
 void fn_3_11669C(void);
 void fn_3_1158F8(void);
+void fn_3_115828(void);
 
 #endif
