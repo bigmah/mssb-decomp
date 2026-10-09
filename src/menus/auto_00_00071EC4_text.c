@@ -8,6 +8,10 @@ extern u8 lbl_8034E978[];
 extern void* lbl_2_data_2A1E8[];
 extern void* lbl_2_data_2A2EC[];
 extern s32 lbl_2_bss_A840;
+extern s32 lbl_2_bss_F410;
+extern u8 lbl_2_data_2D33C[];
+extern u8 lbl_803C50E8[];
+extern void fn_80053FE8(void);
 extern void fn_80062674(s32 index);
 extern void fn_800626EC(s32 index);
 extern void fn_800625A4(s32 a, s32 b);
@@ -253,4 +257,17 @@ u8 fn_2_75B58(s32 a, s32 index) {
         hits += fn_80042DA8(a, i + 0x6E + index * 5, 0x1E) != 0;
     }
     return hits == total;
+}
+
+// fn_2_74CD8, size:0xB4
+void fn_2_74CD8(void) {
+    u8* obj;
+    s32 i;
+    fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2D33C);
+    for (i = 0; i < 7; i++) {
+        fn_800363D8(obj, i + 0x18, 1, 0x36, i);
+    }
+    fn_800363D8(obj, 0x20, 1, 0x32, 0);
+    lbl_2_bss_A840 = lbl_2_bss_F410;
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_747FC;
 }
