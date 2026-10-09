@@ -101,7 +101,6 @@ extern Vec lbl_3_bss_A820[];
 extern u8 g_FieldingLogic[];
 extern u8 g_GameLogic[];
 extern u8 g_d_GameSettings[];
-extern void fn_80025EEC(s32, s32, s32);
 extern void fn_3_65A8(void);
 extern void fn_3_27648(void);
 extern s32 fn_3_8BBC4(s32, f32*, f32*, s32);
@@ -144,6 +143,7 @@ extern const f64 lbl_3_rodata_2738;
 extern const f64 lbl_3_rodata_2740;
 extern const f64 lbl_3_rodata_2748;
 extern void fn_800B4CA0(void*, f32);
+extern void fn_80025EEC(s32, s32, s32);
 
 // .text:0x000CB8A8 size:0x1F4 mapped:0x8070A93C
 void fn_3_CB8A8(void) {
@@ -255,26 +255,13 @@ void fn_3_CC354(f32* p) {
     }
 }
 
-// .text:0x000CC438 size:0x18C mapped:0x8070B4CC
-// 98.9%: only `addic. r31` (orig) vs `addic. r0; mr r31,r0` (ours) for the inlined CC354-style null check on lbl_3_bss_A8D0
-void fn_3_CC438(void) {
+static inline void CC354_inl(f32* p) {
     f32* q;
     f32 one;
     u32 i;
-    CC438Cfg* g = (CC438Cfg*)lbl_3_bss_A8A8;
-    g->a = lbl_3_rodata_269C;
-    g->b = lbl_3_rodata_26A0;
-    g->c = lbl_3_rodata_26A4;
-    g->d = lbl_3_rodata_26A8;
-    g->e = lbl_3_rodata_26AC;
-    g->f = lbl_3_rodata_26B0;
-    g->n = 8;
-    one = lbl_3_rodata_2698;
-    g->h = one / (f32)g->n / lbl_3_rodata_26B4;
-    g->hh = g->h * g->h;
-    g->inv = one / (lbl_3_rodata_26B8 * g->h);
-    q = (f32*)lbl_3_bss_A8D0;
-    if (q != NULL) {
+    if (p != NULL) {
+        one = lbl_3_rodata_2698;
+        q = p;
         for (i = 0; i < 4; i++, q += 16) {
             if (i == 3) {
                 q[0] = lbl_3_data_188E0;
@@ -290,6 +277,24 @@ void fn_3_CC438(void) {
             memset(q + 12, 0, 0xC);
         }
     }
+}
+
+// .text:0x000CC438 size:0x18C mapped:0x8070B4CC
+void fn_3_CC438(void) {
+    f32 one;
+    CC438Cfg* g = (CC438Cfg*)lbl_3_bss_A8A8;
+    g->a = lbl_3_rodata_269C;
+    g->b = lbl_3_rodata_26A0;
+    g->c = lbl_3_rodata_26A4;
+    g->d = lbl_3_rodata_26A8;
+    g->e = lbl_3_rodata_26AC;
+    g->f = lbl_3_rodata_26B0;
+    g->n = 8;
+    one = lbl_3_rodata_2698;
+    g->h = one / (f32)g->n / lbl_3_rodata_26B4;
+    g->hh = g->h * g->h;
+    g->inv = one / (lbl_3_rodata_26B8 * g->h);
+    CC354_inl((f32*)lbl_3_bss_A8D0);
 }
 
 // .text:0x000CC5C4 size:0x258 mapped:0x8070B658
@@ -1641,4 +1646,4 @@ void fn_3_D6514(void) {
 void fn_3_D67CC(void) {
     return;
 }
-
+#pragma dont_inline off
