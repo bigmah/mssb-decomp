@@ -19,4 +19,6 @@ void fn_1_8CD4(void);
 
 void fn_1_9290(void);
 
+void fn_1_8DBC(void);
+
 #endif
