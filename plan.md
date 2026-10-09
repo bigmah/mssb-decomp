@@ -492,3 +492,13 @@ Don't spend more than about 30–45 minutes on a single register-allocation figh
 - **Float sine wrapper and register allocation (`fn_2_6B024`, menus rep_0B08):** use `sinf_kludge(phase)` from `math.h` for the original `sin` call followed by `frsp`. Compared with an explicit `(f32)sin(phase)`, the inline wrapper preserves the original sine/amplitude register assignment. A single `0.0f` literal alongside named amplitude/step constants also preserves the original phase-update registers without pooling several literals.
 
 - **Command struct copies before calls (`fn_1_F6E4`, challenge rep_0610):** an external command table declared without `const` preserves the original load scheduling around parameter-address setup. Declaring that same rodata symbol `const` hoists its first two word loads and leaves eight diff lines. The code only reads the table.
+
+- **Constant-trip `for` loops are unrolled by CW; write the original element count** (menus fn_2_442E8 9 entries -> ctr 3, fn_2_467FC 54 -> ctr 18). `u32 n = byte - 1; for (i = 0; i < n; i++)` gives `subi; mtctr; cmplwi; ble`; signed gives `subic.` (fn_3_107988). A do-while with `u32 i` and a `u8* p` that both advance (`p[off] = i + 1; i++; p++; } while (i < 6)`) gives the single pointer-induction loop (fn_3_1078F8).
+- **Switch with two adjacent empty cases to the same target (fn_2_3735C):** CW merges them into a bare `cmpwi N; bge default` pivot; `case 0x24: case 0x25:` vs `case 0x24:` alone changes `beq` emission. Brute-force the set of empty cases with `fnvariants`.
+- **`neg; or; srwi 31` return:** `return !!result;` (fn_2_194xx family); `result != 0` schedules the `srwi` too early.
+- **`addi r0, idx, K; lbzx` from a pointer-in-global:** `u8* menu = g[0]; u8* entry = menu + idx * 0x34; entry[K]` (separate base and entry pointers); `g[0][idx*0x34+K]` folds K into the displacement (fn_2_4668C).
+- **`s8` return from a loaded byte:** declare the function `s32` and return `*(s8*)(...)`; an `s8` return type drops the `extsb` (fn_2_44F14).
+- **Fixed 4-iteration loop that calls an earlier-defined sibling:** `for (u16 i = 0; i < 4; i++) f(i);` inlines the sibling exactly (fn_2_F64).
+- **`u16 ch` index coalesced with `ch*4`:** copy first, `s32 c; c = ch;`, and index through `c` (fn_2_D88).
+- **`x = tbl[off + base[idx2]++]` as one statement** gives the original schedule; separate `n = base[..]; base[..] = n + 1` does not (fn_3_10768C).
+- **Still unsolved:** `(u8*,u8*)` comparators ending `cmplw; beq L; subf; blr; L: subf; blr` (fn_3_107B9C/107C04/107D34/107BD0 give `subf; bnelr`); a trailing `blr` after a final `while (1)` assert loop (fn_2_1C33C); `lis DATA@ha` after `addi lbl_80366158@l` (fn_2_19520, fn_2_19778).
