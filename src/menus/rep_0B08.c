@@ -944,3 +944,16 @@ void fn_2_6C190(u8* object) {
     fn_2_46C88(((u8*)lbl_2_bss_1A8248[0])[0x441E], 0);
     *(s16*)(object + 0x94) = 1;
 }
+
+// fn_2_6D878
+void fn_2_6D878(u8* object) {
+    s32 index = *(s32*)(object + 0x80);
+    if (lbl_2_bss_1A8248[0]->entries[0].flagCD == 0) {
+        *(s16*)(object + 0xA2) = 0x78;
+        fn_2_68FBC(index, 1);
+        object[0xBA] = 9;
+        *(f32*)(object + 0x50) = lbl_2_rodata_B58;
+        *(f32*)(object + 0x38) = lbl_2_rodata_B58;
+        *(s16*)(object + 0x94) = 2;
+    }
+}
