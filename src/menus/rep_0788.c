@@ -973,3 +973,8 @@ void fn_2_31F50(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
+
+// fn_2_316F8, size:0x188
+void fn_2_316F8(MenuTableContext* menu, MenuItemState* item) {
+    fn_2_31F50(menu, item);
+}
