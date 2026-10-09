@@ -3,6 +3,12 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern s32 fn_3_B32B8(void);
+extern void fn_3_AFB64(void);
+extern void fn_3_AFA64(void);
+extern void fn_3_75560(void);
+extern void atBat_batter(void);
+extern void fn_3_31594(void);
 extern void fn_3_7CE90(void);
 extern void fn_3_77914(void);
 extern void fn_3_899BC(void);
@@ -35,6 +41,7 @@ extern void fn_3_B93CC(void);
 extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
 extern u8 lbl_80366158[];
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_common_bss_34C90[];
 extern void fn_3_6C13C(void*, void*);
 extern void fn_3_16598C(void);
 extern u8 g_RunningLogic[];
@@ -701,5 +708,42 @@ void fn_3_5EE58(void) {
         }
         fn_3_BF1AC();
         fn_3_BF158();
+    }
+}
+
+// fn_3_5EFEC, size:0x168
+void fn_3_5EFEC(void) {
+    GameControlsStruct* game = &g_GameLogic;
+    if (game->freeFieldingPracticeInd != 0) {
+        if (fn_3_B32B8() != 0 || g_Practice.pauseMenuLoading != 0) {
+            return;
+        }
+    } else {
+        fn_3_AFB64();
+        if (lbl_3_common_bss_34C90[0x1D5] != 0) {
+            fn_3_AFA64();
+            return;
+        }
+    }
+    if (g_GameLogic.frameCountdownAtBeginningOfAtBatLockout != 0) {
+        g_GameLogic.frameCountdownAtBeginningOfAtBatLockout -= 1;
+    }
+    fn_3_75560();
+    atBat_batter();
+    fn_3_31594();
+    fn_3_8A958();
+    fn_3_5C74C(0);
+    if (game->freeFieldingPracticeInd == 0 && (g_Strikes.outs >= 3 || (g_Strikes.storedOuts == 2 && g_Pitcher.strikeOutOrWalk == 1)) &&
+        g_GameLogic.EventTriggers_EndOfGame == 0) {
+        fn_3_5D094(0);
+        if (g_GameLogic.EventTriggers_EndOfGame != 0) {
+            ((void (*)(s32, s32))fn_3_59918)(0xD, 0);
+        } else if (g_Scores[0xC3] == 0) {
+            ((void (*)(s32, s32))fn_3_59918)(5, 0);
+            g_Scores[0xC3] = 1;
+        }
+    }
+    if (g_Pitcher.pitcherActionState == 6) {
+        fn_3_5EE58();
     }
 }
