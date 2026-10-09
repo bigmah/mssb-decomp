@@ -3,6 +3,9 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void fn_3_6C13C(void*, void*);
+extern void fn_3_16598C(void);
+extern u8 g_RunningLogic[];
 extern void fn_800A7568(void);
 extern u8 lbl_8037169C[];
 extern u8 lbl_803C6CF8[];
@@ -419,5 +422,45 @@ void fn_3_5C418(void) {
                 unkSimulationRelatedStruct._09 = 1;
             }
         }
+    }
+}
+
+// fn_3_5D3FC, size:0x120
+void fn_3_5D3FC(void) {
+    s32 stage;
+    GameInitVariables* gs = &g_d_GameSettings;
+    s32 inning;
+    u8 finalInning;
+    ((u8*)&g_GameLogic)[0x135] = 0;
+    ((u8*)&g_GameLogic)[0x136] = 0;
+    g_RunningLogic[0x11] = 0;
+    g_RunningLogic[0x13] = 0;
+    *(s16*)(g_RunningLogic + 2) = 0;
+    inning = *(s32*)g_Scores;
+    finalInning = g_Scores[0xAA];
+    if (inning > finalInning) {
+        stage = 5;
+    } else if (finalInning <= 3U) {
+        if (finalInning == inning && g_Scores[0xAD] != 0) {
+            stage = 4;
+        } else {
+            stage = 0;
+        }
+    } else if (inning == finalInning) {
+        stage = 4;
+    } else if ((finalInning == 9 && inning >= 7) || (finalInning == 7 && inning >= 6)) {
+        stage = 3;
+    } else if (inning >= 4) {
+        stage = 2;
+    } else {
+        stage = 1;
+    }
+    g_Scores[0xAC] = stage;
+    g_Scores[0xC1] = 0;
+    g_Scores[0xC6] = 0;
+    lbl_3_common_bss_37400[0x48] = 0;
+    fn_3_6C13C(lbl_3_common_bss_37400, g_Scores);
+    if (gs->exhibitionMatchInd == 0) {
+        fn_3_16598C();
     }
 }
