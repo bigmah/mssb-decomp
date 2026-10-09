@@ -38,4 +38,6 @@ void fn_2_7207C(void);
 
 s32 fn_2_74DB8(s32 a);
 
+u8 fn_2_75B58(s32 a, s32 index);
+
 #endif
