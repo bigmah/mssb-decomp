@@ -106,3 +106,7 @@ void fn_2_A14(void) {
     *(u16*)(lbl_803CBBCC[0] + 2) = 0;
 }
 
+// _epilog, size:0x20
+void _epilog(void) {
+    fn_8001F228();
+}
