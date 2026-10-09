@@ -1094,7 +1094,6 @@ void fn_2_42388(void) {
 }
 
 // fn_2_42EB0, size:0x118
-// ~99%: li r0,0xa / addi r11 scheduling before the inner loop
 void fn_2_42EB0(void) {
     s32 i;
     s32 j;
@@ -1106,9 +1105,9 @@ void fn_2_42EB0(void) {
             if (*(s8*)(e + 0x31) == 1) {
                 for (j = 0; j < 10; j++) {
                     s32 row;
-                    s16 v;
-                    s16 t;
-                    s16 a;
+                    s32 v;
+                    s32 t;
+                    s32 a;
                     row = lbl_800E8558[i * 6 + 2] * 0x64;
                     v = *(s16*)(lbl_80109AE8 + row + j * 10);
                     t = *(s16*)(lbl_8010A768 + row + j * 10 + 2);
