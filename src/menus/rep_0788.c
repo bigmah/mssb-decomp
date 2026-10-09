@@ -328,3 +328,29 @@ void fn_2_2416C(void) {
         lbl_2_bss_1A8234[0][0x162992] = 0;
     }
 }
+
+// fn_2_327D4, size:0xF0
+void fn_2_327D4(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 37;
+        /* fallthrough */
+    }
+    case 5:
+    case 37:
+    case 1:
+        return;
+    }
+}
