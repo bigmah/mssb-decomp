@@ -645,3 +645,33 @@ void fn_2_90538(void) {
         slot[0xB4] = 0;
     }
 }
+
+// .text:0x90718 size:0xDC
+void fn_2_90718(u8* object) {
+    s32 index;
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    index = *(s32*)(object + 0x78);
+    if (lbl_2_bss_3401BC != NULL) {
+        s32 resource;
+        MenuEffect* effect;
+        u8 valid;
+        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x3C);
+        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+        effect->resource = resource;
+        effect->type = 2;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->enabled = 1;
+        valid = resource != 0;
+        effect->flag59 = valid;
+        effect->flag5A = valid;
+        effect->f60 = lbl_2_rodata_1080;
+        effect->f54 = lbl_2_rodata_1078;
+        effect->flag5A = 1;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->flag59 = 1;
+        effect->mode = 3;
+    }
+    *(s16*)(object + 0x9C) = 0x50;
+    *(s16*)(object + 0xA0) = 0;
+    *(s16*)(object + 0x90) = 1;
+}
