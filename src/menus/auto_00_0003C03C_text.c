@@ -57,3 +57,8 @@ void fn_2_460F0(void) {
 void fn_2_460F4(void) {
     return;
 }
+
+// fn_2_46C24, size:0x8
+s32 fn_2_46C24(void) {
+    return 0;
+}
