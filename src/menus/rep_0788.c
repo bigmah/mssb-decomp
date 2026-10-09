@@ -1243,6 +1243,31 @@ void fn_2_2CA30(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
+// fn_2_2577C, size:0xD4
+void fn_2_2577C(u8* a, u8* b) {
+    s16 r = fn_2_53BC8(b);
+    if (r != -1) {
+        *(s16*)(b + 4) = r;
+    }
+    switch (*(s16*)(b + 4)) {
+    case 0: {
+        u8* object = lbl_80371C30[*(u16*)(a + 0x14) + *(s16*)(b + 0xE)].object;
+        *(u32*)(object + 0x54) &= ~2;
+        *(s16*)(b + 4) = 0x26;
+        break;
+    }
+    case 2:
+        *(s16*)(b + 4) = 0x25;
+        break;
+    case 1:
+    case 5:
+    case 8:
+    case 0x24:
+    case 0x25:
+        break;
+    }
+}
+
 // fn_2_2587C, size:0x1A0
 void fn_2_2587C(MenuTableContext* menu, MenuItemState* item) {
     s16 state = fn_2_53BC8(item);
