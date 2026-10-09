@@ -216,3 +216,30 @@ void fn_2_24238(void) {
         lbl_2_bss_1A8234[0][0x162992] = 0;
     }
 }
+
+extern u8 lbl_2_data_C96C[];
+extern void fn_8000F8F4(void*);
+
+// fn_2_243BC, size:0xCC
+void fn_2_243BC(void) {
+    MenuQueueState* queue = (MenuQueueState*)lbl_803CC1B8[0];
+    switch ((s32)queue->stateA) {
+    case 1:
+        break;
+    case 0:
+        fn_2_4E878(queue, lbl_2_data_C96C);
+        queue->stateA = 1;
+        queue->timerA = 0;
+        break;
+    }
+    fn_2_53F88(queue);
+    fn_2_54120();
+    if (lbl_2_bss_1A8234[0][0x162992] != 0) {
+        fn_8000FE54();
+        fn_2_53DF8(queue);
+        fn_8000F8F4(queue);
+        fn_800B0A14_removeQueue(fn_2_4E858(queue));
+        queue->stateA = 0;
+        lbl_2_bss_1A8234[0][0x162992] = 0;
+    }
+}
