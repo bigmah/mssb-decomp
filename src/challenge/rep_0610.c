@@ -34,6 +34,8 @@ extern const f32 lbl_1_rodata_73E0[];
 
 extern u8 lbl_8036E548[];
 extern u8 lbl_1_bss_5F73[];
+extern u32 lbl_1_bss_5F6C;
+extern u8 lbl_1_bss_6940[];
 typedef struct { void* data; u32 pad4; u32 pad8; } ChallengeEntry;
 
 extern void LITXForm(void* light, void* matrix);
@@ -202,6 +204,17 @@ void* fn_1_16558(s32 group, s32 index) {
     row = base; row += group * 4; table = *(u8**)(row + 0xC14);
     table = *(u8**)(table + 4);
     return ((ChallengeEntry*)table)[index].data;
+}
+
+// fn_1_16400, size:0x4C
+void fn_1_16400(s8 arg) {
+    u8* base = lbl_8036E548;
+    u8* row;
+    u32 mod;
+    base += lbl_1_bss_5F73[0] * 0x27C;
+    row = *(u8**)(base + 0xC08);
+    mod = *(u16*)(row + 0x6);
+    lbl_1_bss_5F6C = (lbl_1_bss_5F6C + mod + arg) % mod;
 }
 
 // fn_1_17954, size:0x78
