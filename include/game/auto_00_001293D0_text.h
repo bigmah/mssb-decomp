@@ -3,4 +3,6 @@
 
 #include "mssbTypes.h"
 
+void fn_3_12DB54(void);
+
 #endif
