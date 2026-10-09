@@ -517,3 +517,20 @@ void fn_2_7EE7C(u8* o, s32 index) {
         fn_800625A4(index, 0x1A);
     }
 }
+
+// fn_2_80500, size:0xDC
+void fn_2_80500(u8* o, s32 index) {
+    u8* p = lbl_803C66B0 + index;
+    if ((*(p += 0xD) == 0) ? 1 : 0) {
+        u8 b = ((s8)lbl_8034E9A0[0x46F8] == 0) ? 1 : 0;
+        *(s32*)(((u8**)(lbl_80371C30 + 0x3D8))[*(u16*)(o + 0x14) * 2] + 0x5C) = b << 16;
+        *(s32*)(((u8**)(lbl_80371C30 + 0xC8))[*(u16*)(o + 0x14) * 2] + 0x5C) = (b + 4) << 16;
+        fn_800626EC(index);
+        *p = 1;
+    }
+    if (*p == 1) {
+        fn_80062674(index);
+        *p = 2;
+        ((u8*)&g_d_GameSettings)[0x10] = 0;
+    }
+}
