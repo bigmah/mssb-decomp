@@ -159,3 +159,9 @@ void fn_2_1BFD0(void) {
     lbl_2_bss_1A823C[0][0x34] = 0;
 }
 
+// fn_2_1C21C, size:0x28
+void fn_2_1C21C(void) {
+    u8 buf[0x18];
+    fn_2_68DAC(0, buf);
+}
+
