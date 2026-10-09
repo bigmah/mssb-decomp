@@ -151,4 +151,6 @@ void fn_2_2AEDC(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_24EC4(MenuTableContext* menu, MenuItemState* item);
 
+void fn_2_28090(MenuTableContext* menu, MenuItemState* item);
+
 #endif

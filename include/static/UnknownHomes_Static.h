@@ -137,3 +137,5 @@ extern void changeScene(s32 scene, s32 state);
 extern void minigamesSetSomePointers(void);
 
 #endif // !__UNKNOWN_HOMES_STATIC_H_
+
+extern void fn_800363D8(void*, s32, s32, s32, s32);
