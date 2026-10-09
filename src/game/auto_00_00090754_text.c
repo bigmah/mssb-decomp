@@ -21,3 +21,20 @@ s32 fn_3_90764(void) {
     return 0;
 }
 
+static inline s32 getStadium(void) {
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        return 6;
+    }
+    return g_d_GameSettings.StadiumID;
+}
+
+// fn_3_90798, size:0x84
+s32 fn_3_90798(void) {
+    s32 i;
+    s32 s;
+    i = getStadium() + 0x27;
+    s = getStadium();
+    fn_80021518(lbl_3_data_81D4[s], lbl_800EF808[i + 1]);
+    return 0;
+}
+
