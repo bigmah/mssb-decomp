@@ -987,3 +987,12 @@ void fn_2_6D374(u8* object) {
     fn_2_68FBC(*(s32*)(object + 0x80), 3);
     *(s16*)(object + 0x94) = 1;
 }
+
+// fn_2_6BE80
+void fn_2_6BE80(u8* object) {
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 0;
+    fn_2_68FBC(*(s32*)(object + 0x80), 1);
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16DA] = 0xFF;
+    *(f32*)(object + 0x8C) = lbl_2_rodata_B58;
+    *(s16*)(object + 0x94) = 1;
+}
