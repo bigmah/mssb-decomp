@@ -47,3 +47,30 @@ void fn_3_9D594(void) {
         return;
     }
 }
+
+// fn_3_9DB5C, size:0x88
+void fn_3_9DB5C(void) {
+    s16* h = (s16*)lbl_3_common_bss_32A94;
+    s32 i;
+    for (i = 7; i > 3; i--) h[i] = h[i - 1];
+    h[3] = h[0];
+    h[0] = 0;
+    h[1] = 0;
+    h[2] = 0;
+    ((s8*)lbl_3_common_bss_32A94)[0x10] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x11] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x12] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x13] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x14] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x15] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x16] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x17] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x18] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x19] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x1A] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x1B] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x1C] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x1D] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x1E] = -1;
+    ((s8*)lbl_3_common_bss_32A94)[0x1F] = -1;
+}
