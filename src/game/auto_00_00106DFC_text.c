@@ -366,3 +366,22 @@ s32 fn_3_10F564(void) {
     }
     return 0;
 }
+
+// fn_3_10F5BC, size:0xC8
+void fn_3_10F5BC(void) {
+    u32 t;
+    if (*(s8*)(g_Minigame + 0x1A2C) >= 0) {
+        lbl_8036E548[0x307E] = 0;
+        fn_3_B95EC();
+        fn_3_5E60();
+    }
+    *(s8*)(g_Minigame + 0x1A2C) = -1;
+    t = lbl_3_data_18910[g_Minigame[0x1A2A]];
+    lbl_3_data_228[0x10] = 0;
+    g_d_GameSettings[9] = t;
+    g_d_GameSettings[0xA] = 0;
+    if (g_d_GameSettings[9] == 0 || g_d_GameSettings[9] == 4 || g_d_GameSettings[9] == 1 || g_d_GameSettings[9] == 3) {
+        g_d_GameSettings[0xA] = 1;
+    }
+    fn_800B0A5C_insertQueue(manageStadiumLoading, 0);
+}
