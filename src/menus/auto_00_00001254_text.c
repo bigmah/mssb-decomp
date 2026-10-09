@@ -416,3 +416,19 @@ void fn_2_1354(SortEntry* e, s32 n, s32 descending) {
         }
     }
 }
+
+// fn_2_A50C, size:0x120
+s32 fn_2_A50C(void) {
+    s32 i;
+    s32 j;
+    s32 a;
+    for (i = 0; i < 9; i++) {
+        a = *(s8*)(lbl_803C6724 + 2 + i);
+        for (j = 0; j < 9; j++) {
+            if (a == *(s8*)(lbl_803C6724 + 0xB + j)) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
