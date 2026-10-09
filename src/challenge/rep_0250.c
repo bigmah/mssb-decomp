@@ -3,7 +3,6 @@
 
 extern void fn_1_9380(void* object);
 #include "static/UnknownHomes_Static.h"
-extern void fn_1_8F34(void* object);
 extern u8* lbl_803CC1B8[];
 extern u8 lbl_1_bss_2FAA;
 extern u8 lbl_1_bss_2FB9;
@@ -120,4 +119,32 @@ void fn_1_8DBC(void) {
     if ((lbl_803C77B8._02 & 1) || (lbl_803C77B8._02 & 2)) {
         fn_800B0A14_removeQueue(fn_80034CEC(queue));
     }
+}
+
+// .text:0x8F34 size:0x184
+void fn_1_8F34(void* object) {
+    u8* b = lbl_1_bss_2FA8;
+    u8* queue = *(u8**)lbl_803CC1B8;
+    if (lbl_803C77B8._02 & 0x200) {
+        fn_800B0A14_removeQueue(fn_80034CEC(*(u8**)(b + 0x24)));
+        return;
+    }
+    *(u8**)(b + 0x24) = queue;
+    fn_80034E20(queue, lbl_1_data_CC8);
+    if (b[7] == 1 || b[7] == 3) {
+        s16* result = fn_80035F20(lbl_1_data_CC8[0x14], 1, *(u16*)(b + 4), (s16)(*(u16*)(b + 4) + 2));
+        *(f32*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x48) = result[0x14 / 2];
+        *(f32*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x4C) = result[0x16 / 2];
+        fn_80035ED0(1);
+        *(u16*)(b + 4) += 1;
+        if (*(u16*)(b + 4) > 3) {
+            *(u16*)(b + 4) = 0;
+        }
+    } else {
+        *(s16*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x64) = 7;
+        fn_80035ED0(1);
+        fn_80035ED0(2);
+        fn_80035ED0(3);
+    }
+    **(void***)lbl_803CC1B8 = (void*)fn_1_8DBC;
 }
