@@ -10,6 +10,8 @@
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
 extern void fn_3_5F720(void);
+extern u8 lbl_3_data_FAF4[][4];
+extern s16 lbl_3_data_FB04;
 extern void fn_3_6E24C(s32, s32);
 extern void fn_3_6D964(s32, s32);
 extern void setInMemBatterConstants(int rosterID);
@@ -862,6 +864,48 @@ void fn_3_B1A30(void) {
         fn_3_5A6D4(7);
         fn_3_B3C78(1);
         break;
+    }
+}
+
+// fn_3_B003C, size:0x1A4
+void fn_3_B003C(void) {
+    if (g_Practice.practiceType_2 != 4 && g_Practice.guidedPracticeCompletionRelated2 == 0) {
+        if (g_Ball.deadBallReason != 0) {
+            if (g_Ball.framesOnGroundUntilPickedUp == 0 && ((u8*)&g_Practice)[0x1B0] == 0 &&
+                *(s16*)((u8*)&g_Ball + 0x1BA4) < lbl_3_data_FB04) {
+                return;
+            }
+            goto count;
+        }
+        if (g_Ball.framesSinceBallHitGroundOrWasCaught >= lbl_3_data_FB04) {
+        count:
+            switch (g_Practice.practiceLevel) {
+            case 0:
+                if (g_Batter.hitGeneralType != 3) {
+                    g_Practice.guidedPracticeCounter += 1;
+                }
+                break;
+            case 1:
+                if (g_Batter.hitGeneralType == 1 || (g_Batter.hitGeneralType == 2 && g_Batter.moonShotInd != 0)) {
+                    g_Practice.guidedPracticeCounter += 1;
+                }
+                break;
+            case 2:
+                if (g_Batter.hitGeneralType == 3) {
+                    g_Practice.guidedPracticeCounter += 1;
+                }
+                break;
+            case 3:
+                if (g_Batter.hitGeneralType == 2 && g_Batter.moonShotInd == 0) {
+                    g_Practice.guidedPracticeCounter += 1;
+                }
+                break;
+            }
+            if (g_Practice.guidedPracticeCounter >= lbl_3_data_FAF4[g_Practice.practiceType_2][g_Practice.practiceLevel]) {
+                g_Practice.guidedPracticeCompletionRelated = 1;
+            }
+            g_Practice.guidedPracticeCompletionRelated2 = 1;
+        }
     }
 }
 
