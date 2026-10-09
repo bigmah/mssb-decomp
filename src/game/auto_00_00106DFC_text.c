@@ -157,3 +157,11 @@ void fn_3_10A01C(void) {
         fn_3_13C464();
     }
 }
+
+// fn_3_107D70, size:0x44
+u8 fn_3_107D70(s8 i) {
+    if (g_d_GameSettings[7] == 7 && i >= 0 && i < 4) {
+        return g_Minigame[0x1DC8 + i];
+    }
+    return 0;
+}
