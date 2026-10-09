@@ -226,3 +226,28 @@ void fn_3_12C984(void) {
     fn_3_97144();
 }
 
+// fn_3_12C3F0, size:0x124
+void fn_3_12C3F0(void) {
+    u8* q = lbl_803CC1B8;
+    u8* t;
+    u16 v;
+    fn_80034E20(q, lbl_3_data_9208);
+    lbl_3_common_bss_32724[0xD9] = 1;
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        if (g_GameLogic[0x11E] == 0x1C || g_GameLogic[0x11E] == 0x1B || g_GameLogic[0x11E] == 0x1D) {
+            v = *(u16*)lbl_3_data_92C8;
+        } else {
+            v = *(u16*)(lbl_3_data_92C8 + 2);
+        }
+    } else if (g_Practice[0x198] == 6) {
+        v = *(u16*)(lbl_3_data_92C8 + 8);
+    } else {
+        v = *(u16*)(lbl_3_data_92C8 + 6);
+    }
+    t = lbl_80371C30 + 8;
+    *(u16*)(((u8**)t)[*(u16*)(q + 0x14) * 2] + 0x64) = v;
+    *(u32*)(((u8**)t)[*(u16*)(q + 0x14) * 2] + 0x5C) = 0x280000;
+    *(u16*)(q + 0x1C) = v;
+    *(u16*)(q + 0x1E) = 0;
+    *(void (**)(void))((u8**)&lbl_803CC1B8)[0] = fn_3_12C1AC;
+}
