@@ -91,4 +91,6 @@ s32 fn_2_24728(s32 character);
 
 void fn_2_33614(MenuTableContext* menu, MenuItemState* item);
 
+void fn_2_25D98(MenuTableContext* menu, MenuItemState* item);
+
 #endif
