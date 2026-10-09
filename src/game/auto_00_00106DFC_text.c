@@ -98,3 +98,17 @@ u8* fn_3_109D88(void) {
     }
     return lbl_803616CC;
 }
+
+// fn_3_10FB74, size:0x70
+void fn_3_10FB74(void) {
+    u8 s = g_GameLogic[0x125];
+    switch (s) {
+    case 0:
+        lbl_3_common_bss_32724[0xD8] = 0;
+        lbl_3_common_bss_34C58[0x2C] = 0;
+        g_GameLogic[0x125] = s + 1;
+        break;
+    }
+    lbl_8036E548[0x307A] = 0;
+    fn_3_5A6D4(0x1D);
+}
