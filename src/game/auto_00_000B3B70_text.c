@@ -7,6 +7,7 @@
 extern u8 lbl_3_common_bss_34C90[];
 
 extern void fn_3_1DD48(void);
+extern void fn_3_6D964(s32, s32);
 extern void fn_3_5A6D4(u8);
 
 extern u8 lbl_8036E548[];
@@ -484,5 +485,22 @@ void fn_3_B5F7C(void) {
             g_Practice.guidedPracticeCompletionRelated = 1;
         }
         g_Practice.guidedPracticeCompletionRelated2 = 1;
+    }
+}
+
+// fn_3_B3BD0, size:0x94
+void fn_3_B3BD0(void) {
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        InMemRunnerType* r = &g_Runners[i];
+        if (((u8*)&g_Practice)[0x1AB + i] != 0) {
+            if (g_GameLogic.secondaryGameMode == 0xE) {
+                fn_3_6D964(i - 1, i);
+            }
+            r->runnerOnFieldOrOutOrScored = 1;
+        } else {
+            r->runnerOnFieldOrOutOrScored = 0;
+            r->rosterID = -1;
+        }
     }
 }
