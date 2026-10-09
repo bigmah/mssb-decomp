@@ -1,6 +1,7 @@
 #include "menus/auto_00_00000000_text.h"
 #include "Dolphin/GX/GXPixel.h"
 #include "Dolphin/GX/GXTev.h"
+#include "Dolphin/OS/OSUtil.h"
 
 extern void fn_800A7D4C(s32, void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -16,6 +17,12 @@ extern struct {
     u16 menu[0x10];
 } lbl_800E8754;
 extern u8 lbl_2_data_0[];
+extern u8* lbl_803CC1B8;
+extern u32 lbl_803CB750;
+extern void fn_8004153C(void);
+extern void fn_800A97D0(s32, s32);
+extern void fn_2_554(void);
+extern void fn_2_664(void);
 extern u8 lbl_2_data_C0[];
 extern u8* lbl_2_bss_4;
 
@@ -109,4 +116,16 @@ void fn_2_A14(void) {
 // _epilog, size:0x20
 void _epilog(void) {
     fn_8001F228();
+}
+
+// fn_2_708, size:0x8C
+void fn_2_708(void) {
+    u8* o = lbl_803CC1B8;
+    lbl_803CB750 += OSGetTick();
+    fn_8004153C();
+    fn_800A97D0(0x10, 0x1E);
+    *(u16*)lbl_803CBBCC[0] = 0;
+    *(u16*)(o + 0x14) = 0;
+    fn_800B0A5C_insertQueue(fn_2_664, 0x1000);
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_554;
 }
