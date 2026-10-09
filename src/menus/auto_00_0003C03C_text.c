@@ -26,6 +26,9 @@ extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A8230[];
 extern void fn_2_20218(void*);
 extern void fn_2_1BF50(void);
+extern u8 lbl_800E8558[];
+extern u8 lbl_80109AE8[];
+extern u8 lbl_8010A768[];
 extern s32 fn_2_40CB8(void);
 extern void fn_2_90428(s32);
 extern void fn_2_92654(s32, u8);
@@ -1081,5 +1084,38 @@ void fn_2_42388(void) {
         *(s16*)(q + 0x10) = 1;
         fn_800B0A14_removeQueue(q);
         o[0x28] = 0;
+    }
+}
+
+// fn_2_42EB0, size:0x118
+// ~99%: li r0,0xa / addi r11 scheduling before the inner loop
+void fn_2_42EB0(void) {
+    s32 i;
+    s32 j;
+    u8* e;
+    u8* m;
+    for (i = 0; i < 54; i++) {
+        if (lbl_800E8558[i * 6 + 3] == 1) {
+            e = lbl_2_bss_1A8248[0] + i * 0x34;
+            if (*(s8*)(e + 0x31) == 1) {
+                for (j = 0; j < 10; j++) {
+                    s32 row;
+                    s16 v;
+                    s16 t;
+                    s16 a;
+                    row = lbl_800E8558[i * 6 + 2] * 0x64;
+                    v = *(s16*)(lbl_80109AE8 + row + j * 10);
+                    t = *(s16*)(lbl_8010A768 + row + j * 10 + 2);
+                    a = *(s16*)(lbl_8010A768 + row + j * 10 + 4);
+                    if (t != -1 && *(s8*)(e + j * 2 + 0xA) == 0 && t == 0x12 &&
+                        lbl_2_bss_1A8248[0][0x4415] >= a && lbl_2_bss_1A8248[0][0x442A] == 1) {
+                        e[j * 2 + 0xA] = 1;
+                    }
+                    if (v != -1 && *(s8*)(e + j * 2 + 9) < 0) {
+                        e[j * 2 + 0xA] = 1;
+                    }
+                }
+            }
+        }
     }
 }
