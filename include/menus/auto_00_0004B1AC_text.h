@@ -85,5 +85,7 @@ void fn_2_515DC(u8 mode);
 
 s32 fn_2_5156C(s32 index, u16 flag);
 
+void fn_2_50E5C(s32 channel);
+
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);

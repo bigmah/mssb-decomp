@@ -319,3 +319,15 @@ s32 fn_2_5156C(s32 index, u16 flag) {
         return *(s32*)(p + 4);
     }
 }
+
+extern s16 lbl_2_bss_9600[];
+extern s16 lbl_2_bss_9608[][0x100];
+
+// fn_2_50E5C, size:0xC4
+void fn_2_50E5C(s32 channel) {
+    s32 i;
+    lbl_2_bss_9600[channel] = 0;
+    for (i = 0; i < 0x100; i++) {
+        lbl_2_bss_9608[channel][i] = 0;
+    }
+}
