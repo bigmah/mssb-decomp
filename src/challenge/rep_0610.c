@@ -827,3 +827,46 @@ void fn_1_E8D4(void) {
         *(s16*)lbl_1_data_F4D4 += 1;
     }
 }
+
+// fn_1_10458, size:0x108
+void fn_1_10458(void) {
+    u8* state = lbl_1_bss_3070;
+    s32 cursor;
+    s32 buttons;
+    if (*(u32*)(state + 0x28) == 0) {
+        if (*(u32*)(state + 0x24) == 0) {
+            u8* object = fn_800B0A5C_insertQueue((void*)fn_1_10560, 11);
+            *(s16*)(object + 0x10) = 0;
+        }
+        return;
+    }
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 8) {
+        cursor = *(s32*)(state + 0xC);
+        if (cursor != 0) {
+            *(s32*)(state + 0xC) = cursor - 1;
+        } else {
+            *(s32*)(state + 0xC) = 6;
+        }
+        return;
+    }
+    if (buttons & 4) {
+        cursor = *(s32*)(state + 0xC) + 1;
+        *(s32*)(state + 0xC) = cursor;
+        if (cursor == 7) {
+            *(s32*)(state + 0xC) = 0;
+        }
+        return;
+    }
+    if (!(buttons & 1) && !(buttons & 2)) {
+        if (buttons & 0x100) {
+            state[0x2F01] += *(s32*)(state + 0xC) + 1;
+            *(s32*)(state + 0xC) = 0;
+            return;
+        }
+        if (buttons & 0x200) {
+            *(s32*)(state + 0xC) = 0;
+            state[0x2F01] = 1;
+        }
+    }
+}
