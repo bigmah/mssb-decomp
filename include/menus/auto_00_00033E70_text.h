@@ -13,4 +13,6 @@ void fn_2_37D74(void);
 
 void fn_2_37D78(void);
 
+void fn_2_37D7C(void);
+
 #endif

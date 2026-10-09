@@ -37,3 +37,7 @@ void fn_2_37D74(void) {
 void fn_2_37D78(void) {
 }
 
+// fn_2_37D7C, size:0x4
+void fn_2_37D7C(void) {
+}
+
