@@ -5,5 +5,6 @@
 
 void fn_3_1158B0(void);
 void fn_3_115BDC(void);
+void fn_3_1160B8(void);
 
 #endif
