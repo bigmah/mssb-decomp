@@ -377,3 +377,15 @@ void fn_3_5CFD0(void) {
         starMissionRelated2();
     }
 }
+
+// fn_3_5C5C8, size:0xD4
+void fn_3_5C5C8(void) {
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        u8 st = g_Runners[i].runnerOnFieldOrOutOrScored;
+        if (st == 1 || st == 3 || st == 4) {
+            *(s16*)(g_Scores + 0x9C) += 1;
+            g_Runners[i].runnerOnFieldOrOutOrScored = 3;
+        }
+    }
+}
