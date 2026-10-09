@@ -66,3 +66,10 @@ s32 fn_2_10FC(void) {
     fn_80021518(0x1F, *(s32*)(lbl_800EF808 + 0xC));
     return 0;
 }
+
+// fn_2_1130, size:0x34
+void fn_2_1130(s16 value) {
+    u8* object = *(u8**)(lbl_803CC1B8[0] + 0xC);
+    *(s16*)(object + 0x10) = value;
+    ((void (*)(void))fn_800B0A14_removeQueue)();
+}
