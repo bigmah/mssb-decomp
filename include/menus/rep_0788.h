@@ -110,4 +110,6 @@ void fn_2_27D8C(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_2DE78(MenuTableContext* menu, MenuItemState* item);
 
+void fn_2_29F18(MenuTableContext* menu, MenuItemState* item);
+
 #endif
