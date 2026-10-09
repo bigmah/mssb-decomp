@@ -973,3 +973,17 @@ void fn_2_6D5D4(u8* object) {
     fn_2_68FBC(*(s32*)(object + 0x80), 2);
     *(s16*)(object + 0x94) = 1;
 }
+
+// fn_2_6D374
+void fn_2_6D374(u8* object) {
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 1;
+    if (*(s32*)(object + 0x84) == 0) {
+        fn_80062890(lbl_2_data_3C5C[((u8*)lbl_2_bss_1A8248[0])[0x441C]]);
+    } else if (*(s32*)(object + 0x84) == 1) {
+        fn_80062890(lbl_2_data_3C5C[6]);
+    }
+    *(f32*)(object + 0x34) = lbl_2_rodata_B58;
+    *(f32*)(object + 0x4C) = lbl_2_rodata_B58;
+    fn_2_68FBC(*(s32*)(object + 0x80), 3);
+    *(s16*)(object + 0x94) = 1;
+}
