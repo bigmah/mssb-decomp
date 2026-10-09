@@ -30,3 +30,7 @@ s8 fn_2_19554(void) {
     }
     return result;
 }
+
+// fn_2_195D8, size:0x4
+void fn_2_195D8(void) {
+}
