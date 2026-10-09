@@ -184,3 +184,24 @@ void fn_3_12C74C(void) {
     }
 }
 
+// fn_3_12C868, size:0x11C
+void fn_3_12C868(void) {
+    if (g_GameLogic[0x11E] == 0x1A) {
+        memset(g_Minigame + 0x1DF4, 0, 0xE);
+        fn_800B0A5C_insertQueue(fn_3_12026C, 2);
+        fn_800B0A5C_insertQueue(fn_3_12089C, 2);
+        if (g_Minigame[0x1909] == 0 && g_Minigame[0x1A3C] == 0 && g_Minigame[0x1A2B] == 3) {
+            fn_800B0A5C_insertQueue(fn_3_120FF8, 2);
+        } else {
+            fn_800B0A5C_insertQueue(fn_3_1243A4, 2);
+            fn_800B0A5C_insertQueue(fn_3_123990, 2);
+        }
+        fn_800B0A5C_insertQueue(fn_3_124CE0, 2);
+        fn_800B0A5C_insertQueue(fn_3_121304, 2);
+        lbl_3_common_bss_32724[0xB7] = 0;
+        lbl_3_common_bss_32724[0xB6] = 0;
+        fn_800B0A5C_insertQueue(fn_3_125850, 2);
+        fn_800B0A5C_insertQueue(fn_3_99BDC, 2);
+    }
+}
+

@@ -13,5 +13,6 @@ void fn_3_12C684(void);
 void fn_3_129458(void);
 void fn_3_12E83C(void);
 void fn_3_12C74C(void);
+void fn_3_12C868(void);
 
 #endif
