@@ -1244,3 +1244,22 @@ void fn_2_45E48(void) {
         }
     }
 }
+
+// fn_2_45A84, size:0x120
+s32 fn_2_45A84(void) {
+    s32 i;
+    s32 j;
+    s32 flag;
+    u8* entry;
+    flag = 0;
+    for (i = 0; i < 54; i++) {
+        entry = lbl_2_bss_1A8248[0] + i * 0x34;
+        for (j = 0; j < 10; j++) {
+            if (*(s8*)(entry + 0x1D + j * 2) >= 0 && *(s8*)(entry + 9 + j * 2) < 0) {
+                flag = 1;
+                lbl_2_bss_1A8248[0][i + 0x44B9] = 1;
+            }
+        }
+    }
+    return flag == 1;
+}

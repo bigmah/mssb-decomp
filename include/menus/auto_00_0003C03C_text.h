@@ -106,4 +106,6 @@ void fn_2_45BA4(void);
 
 void fn_2_45E48(void);
 
+s32 fn_2_45A84(void);
+
 #endif
