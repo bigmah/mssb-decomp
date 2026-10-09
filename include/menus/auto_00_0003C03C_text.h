@@ -56,4 +56,8 @@ void fn_2_3ECC0(void);
 
 void fn_2_3EDD8(void);
 
+void fn_2_3EEF0(void);
+
+void fn_2_3F188(void);
+
 #endif
