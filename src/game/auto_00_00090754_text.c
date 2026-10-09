@@ -159,3 +159,15 @@ void fn_3_910F4(u8* p) {
     } while (i < 2);
     *(u16*)(p + 0x1C) = target;
 }
+
+// fn_3_911A8, size:0x10c
+void fn_3_911A8(void) {
+    u8* o = lbl_803CC1B8;
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic.gameStatus != 2) {
+        lbl_3_common_bss_32724[0x97] = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(o));
+        return;
+    }
+    *(u16*)(o + 0x18) = *(u16*)(o + 0x18) + 1;
+    fn_3_910F4(o);
+}
