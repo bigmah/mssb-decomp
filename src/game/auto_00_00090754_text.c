@@ -66,3 +66,16 @@ void fn_3_908E8(void) {
     lbl_800EF808[0x98 / 4] = 0;
 }
 
+// fn_3_90928, size:0x88
+s32 fn_3_90928(void) {
+    u8* o = lbl_803CC1B8;
+    if (lbl_3_common_bss_34C58._2C == 0) {
+        fn_800216F8(0x25, fn_8006285C);
+        *(s16*)(o + 0x10) = 0;
+        lbl_3_common_bss_34C58._2C++;
+    } else if (*(s16*)(o + 0x10) != 0) {
+        return 1;
+    }
+    return 0;
+}
+
