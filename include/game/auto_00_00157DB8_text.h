@@ -5,5 +5,6 @@
 
 void fn_3_157DB8(s32 arg0);
 void fn_3_1580AC(void);
+void fn_3_1581FC(void);
 
 #endif
