@@ -96,3 +96,10 @@ void fn_2_7609C(s32 unused, u8 a, u8 c) {
 void fn_2_7664C(void) {
 }
 
+// fn_2_78034, size:0x28
+void fn_2_78034(s32 unused, s32 index) {
+    if ((lbl_803C66B0[index + 0xD] == 0) ? 1 : 0) {
+        lbl_803C66B0[index + 0xD] = 1;
+    }
+}
+
