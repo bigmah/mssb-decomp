@@ -27,6 +27,8 @@ typedef struct MenuEntrySlot {
 extern MenuEntrySlot lbl_80371C30[];
 
 extern u8 lbl_2_bss_100B4;
+extern u8 lbl_800EFBA4[];
+extern int sndFXStartEx(int, int, int, int);
 extern void fn_8004EEF4(s32, s32, s32, s32, s32);
 extern u8 lbl_803C6724[];
 extern u8 starMissionCompletionTracker[];
@@ -358,4 +360,28 @@ void fn_2_1216C(void) {
         buf[*(s8*)(lbl_8034E9A0 + 0x46F8)] = 1;
     }
     fn_8004EEF4(buf[0], buf[1], buf[2], buf[3], 1);
+}
+
+// fn_2_1C34, size:0xF4
+void fn_2_1C34(u32 buttons) {
+    switch ((u16)buttons) {
+    case 0x100:
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        break;
+    case 0x200:
+        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        break;
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        break;
+    case 3:
+    case 0x20:
+    case 0x40:
+    case 0x400:
+    case 0x800:
+        break;
+    }
 }

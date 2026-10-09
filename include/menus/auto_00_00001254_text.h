@@ -61,4 +61,6 @@ s32 fn_2_A62C(void);
 
 void fn_2_1216C(void);
 
+void fn_2_1C34(u32 buttons);
+
 #endif
