@@ -274,3 +274,22 @@ void fn_3_10AD48(void) {
         g_Minigame[0x18E0 + i] = arr[i];
     }
 }
+
+// fn_3_10AE18, size:0xD8
+void fn_3_10AE18(void) {
+    s32 arr[4];
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        arr[i] = -1;
+    }
+    for (i = 0; i < 4; i++) {
+        if (*(s8*)(g_Minigame + 0x18CC + i) >= 0) {
+            arr[i] = i;
+        }
+    }
+    fn_3_9E078(arr, g_Minigame[0x1906], 0);
+    for (i = 0; i < 4; i++) {
+        g_Minigame[0x18E0 + i] = arr[i];
+    }
+    fn_3_5A6D4(0x1A);
+}
