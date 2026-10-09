@@ -153,3 +153,43 @@ void fn_3_ED574(void) {
     *(void**)lbl_803CC1B8 = fn_3_ED4FC;
 }
 
+// fn_3_ED2F4, size:0x19C
+void fn_3_ED2F4(void) {
+    QObj* p = (QObj*)lbl_803CC1B8;
+    u32 stadium;
+    u8 v;
+    s32 v2;
+    if (lbl_3_common_bss_32724[0x96] == 0) {
+        if (g_UnkSound_32718[7] == 0) {
+            ((QEnt*)lbl_80371C30)[p->u14].p[0x68] = 1;
+            if (p->u1C == 0) {
+                if (lbl_800EF808[0x398] == 1) {
+                    stadium = g_d_GameSettings.StadiumID;
+                    if (g_d_GameSettings.GameModeSelected == 6) {
+                        v = lbl_3_data_84B8[0x36];
+                    } else {
+                        v = lbl_3_data_8404[stadium * 0x1E + 0x36];
+                    }
+                    v2 = sndFXStartEx(lbl_3_data_81DC[stadium] + 0x1B, v, 0x3F, 0);
+                    if (g_d_GameSettings.GameModeSelected == 6) {
+                        v = lbl_3_data_84B8[0x37];
+                    } else {
+                        v = lbl_3_data_8404[stadium * 0x1E + 0x37];
+                    }
+                    sndFXCtrl(v2, 0x5B, v);
+                }
+                p->u1C = 1;
+            }
+        } else {
+            ((QEnt*)lbl_80371C30)[p->u14].p[0x68] = 0;
+        }
+        if (((QEnt*)lbl_80371C30)[p->u14].p[0x69] == 2) {
+            goto remove;
+        }
+    } else {
+remove:
+        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        g_Minigame[0x19CC] = 0;
+    }
+}
+
