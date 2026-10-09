@@ -84,4 +84,6 @@ void fn_1_D8A0(void);
 void fn_1_CC24(void);
 void fn_1_D590(s32 a, s32 b, f32 value);
 
+void fn_1_DE1C(void);
+
 #endif

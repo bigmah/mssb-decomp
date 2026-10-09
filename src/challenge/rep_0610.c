@@ -667,3 +667,36 @@ call:
         fn_8004B208(a, b, (s8)state[0x2EF2] & ~((s8)state[0x2EF2] >> 31));
     }
 }
+
+typedef struct { s16 v; u8 pad[6]; } Ch8;
+extern Ch8 lbl_1_bss_3218[];
+extern void fn_1_D9B8(void);
+extern void fn_1_DF14(void);
+
+// .text:0xDE1C size:0xF8
+void fn_1_DE1C(void) {
+    u8* queue = lbl_803CC1B8[0];
+    switch (queue[0x14]) {
+    case 0:
+        if ((s8)queue[0x15] == 0) {
+            *(void**)queue = (void*)fn_1_D9B8;
+        } else {
+            u8 n;
+            while ((s8)(n = queue[0x15]--) != 0) {
+                if (lbl_1_bss_3218[(s8)queue[0x15]].v >= 0) {
+                    u8* object = fn_800B0A5C_insertQueue((void*)fn_1_DF14, (u16)(*(u16*)(lbl_803CC1B8[0] + 0x12) + 1));
+                    *(s16*)(object + 0x10) = 0;
+                    object[0x14] = queue[0x15];
+                    *(s16*)(queue + 0x10) = 0;
+                    queue[0x14] = queue[0x14] + 1;
+                    break;
+                }
+            }
+        }
+        break;
+    case 1:
+        if (*(s16*)(queue + 0x10) != 0) queue[0x14] = 0;
+        break;
+    }
+    ((void (*)(void))fn_1_D8A0)();
+}
