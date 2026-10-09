@@ -71,4 +71,6 @@ void fn_2_36F44(u8* a, u8* b);
 
 void fn_2_370F8(u8* a, u8* b);
 
+void fn_2_346D8(u8* a, u8* b);
+
 #endif
