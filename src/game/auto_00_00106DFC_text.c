@@ -202,3 +202,16 @@ s32 fn_3_107C40(void) {
     }
     return 1;
 }
+
+// fn_3_107C88, size:0x48
+s32 fn_3_107C88(void) {
+    u32 n = g_Minigame[0x1906];
+    s16 v = *(s16*)(g_Minigame + 0x18BC);
+    u32 i;
+    for (i = 1; i < n; i++) {
+        if (*(s16*)(g_Minigame + 0x18BC + i * 4) != v) {
+            return 0;
+        }
+    }
+    return 1;
+}
