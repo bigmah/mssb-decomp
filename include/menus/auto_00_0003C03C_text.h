@@ -124,4 +124,6 @@ void fn_2_44F64(void);
 
 void fn_2_44014(void);
 
+void fn_2_43E8C(void);
+
 #endif
