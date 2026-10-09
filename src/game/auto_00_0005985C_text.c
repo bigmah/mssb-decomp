@@ -555,3 +555,54 @@ void fn_3_5ACA0(void) {
         lbl_80366158[0x2A] = 1;
     }
 }
+
+// fn_3_59918, size:0x178
+void fn_3_59918(s32 x) {
+    u8 gs;
+    s32 i;
+    if (g_Stats.replayInd != 0) {
+        return;
+    }
+    if (g_Minigame.GameMode_MiniGame == 1 && g_Ball.deadBallReason != 2) {
+        return;
+    }
+    gs = g_d_GameSettings.GameModeSelected;
+    if (gs == 2 && (g_Practice.practiceLevel == 7 || g_Practice.practiceLevel == 6)) {
+        if (x == 5) {
+            return;
+        }
+    } else if (gs == 2 && g_Practice._186 != 0) {
+        return;
+    }
+    if (gs == 6 && x == 5) {
+        if (lbl_3_common_bss_32724[0xD3] != 0) {
+            return;
+        }
+        lbl_3_common_bss_32724[0xD3] = 1;
+    }
+    if (g_GameLogic.playOver != 0) {
+        return;
+    }
+    if (g_Scores[0xC5] != 0) {
+        return;
+    }
+    if (x == 4) {
+        if (g_Scores[0xC4] != 0) {
+            return;
+        }
+        g_Scores[0xC4] = 1;
+    }
+    if (x == 0xD || x == 0x11) {
+        if (g_Scores[0xC5] != 0) {
+            return;
+        }
+        g_Scores[0xC5] = 1;
+        g_GameLogic.gameOverInd = 1;
+    }
+    for (i = 0; i < 5; i++) {
+        if (((u8*)&g_UnkSound_32718)[i + 2] == 0) {
+            ((u8*)&g_UnkSound_32718)[i + 2] = x;
+            return;
+        }
+    }
+}
