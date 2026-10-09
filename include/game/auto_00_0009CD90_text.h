@@ -13,4 +13,6 @@ void fn_3_9DB5C(void);
 
 void fn_3_9D600(void);
 
+s32 fn_3_9EA1C(s32 idx);
+
 #endif
