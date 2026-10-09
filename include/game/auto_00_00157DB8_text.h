@@ -9,5 +9,6 @@ void fn_3_1581FC(void);
 void fn_3_158264(u8* o);
 void fn_3_1589C4(void);
 void fn_3_1590C8(void);
+void fn_3_159590(void);
 
 #endif
