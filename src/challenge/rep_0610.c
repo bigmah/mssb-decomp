@@ -741,3 +741,47 @@ void fn_1_D7A4(s32 index) {
         }
     }
 }
+
+extern u8 lbl_1_data_ABA8;
+extern void fn_1_10E2C(void*, f32(*)[4], u32, u32, u32);
+extern void fn_800B2C88(void*, u16, void*);
+
+// .text:0x10CEC size:0x140
+void fn_1_10CEC(u8* object) {
+    u8 buffer[0x30];
+    Mtx matrix;
+    u8* state = lbl_1_bss_3070;
+    u8* scene;
+    s32 i;
+    s32 k;
+    u32 a;
+    u32 b;
+    u32 c;
+    if (lbl_1_data_ABA8 == 0) {
+        u8* row = lbl_8036E548 + state[0x2F03] * 0x27C;
+        PSMTXTrans(matrix, *(f32*)(row + 0xC38), *(f32*)(row + 0xC3C), *(f32*)(row + 0xC40));
+        PSMTXConcat((f32(*)[4])(object + 8), matrix, matrix);
+        scene = lbl_8036E548;
+        for (i = 0; k = state[0x2F03] * 0x90, i < *(u16*)(*(u8**)(*(u8**)(scene + 0x60) + k + 0x34) + 6); i++) {
+            if ((u32)i != *(u32*)(state + 0x2EFC)) {
+                a = 0x80008080;
+                b = 0x80800080;
+                c = 0x808080;
+            } else {
+                u8 f = state[0x20];
+                state[0x20] = f + 1;
+                if (f & 0x20) {
+                    a = 0xFF8080FF;
+                    b = 0x80FF80FF;
+                    c = 0x8080FFFF;
+                } else {
+                    a = -1;
+                    b = -1;
+                    c = -1;
+                }
+            }
+            fn_800B2C88(*(u8**)(*(u8**)(scene + 0x60) + k + 0x34), (u16)i, buffer);
+            fn_1_10E2C(buffer, matrix, a, b, c);
+        }
+    }
+}

@@ -88,4 +88,6 @@ void fn_1_DE1C(void);
 
 void fn_1_D7A4(s32 index);
 
+void fn_1_10CEC(u8* object);
+
 #endif
