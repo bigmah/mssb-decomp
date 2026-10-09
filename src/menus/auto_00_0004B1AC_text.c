@@ -826,3 +826,24 @@ void fn_2_50DB4(s32 ch, s32 idx, u16* src) {
         }
     } while (!((v & 0x4000) && !(v & 0x3FFF)));
 }
+
+// fn_2_50F20, size:0xA8
+void fn_2_50F20(s32 ch, s32 idx, u16* src) {
+    u8* menu = *(u8**)&lbl_2_bss_1A824C;
+    u8* p = lbl_80366B18[menu[0x1972B8] + 0x1E6];
+    u16 v;
+    u16** q = (u16**)(p + 4);
+    if (lbl_2_bss_9604[ch] != 0) {
+        lbl_2_bss_9604[ch]--;
+    }
+    src = (idx == -1) ? src : q[idx];
+    do {
+        s32 k = lbl_2_bss_9604[ch];
+        v = *src++;
+        lbl_2_bss_9604[ch]++;
+        lbl_2_bss_9A08[ch][k] = v;
+        if (lbl_2_bss_9604[ch] == 0x100) {
+            return;
+        }
+    } while (!((v & 0x4000) && !(v & 0x3FFF)));
+}
