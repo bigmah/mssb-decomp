@@ -88,4 +88,6 @@ void fn_2_4041C(void);
 
 void fn_2_405B4(void);
 
+void fn_2_42388(void);
+
 #endif
