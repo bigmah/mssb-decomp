@@ -103,3 +103,11 @@ void fn_2_78034(s32 unused, s32 index) {
     }
 }
 
+// fn_2_79634, size:0x54
+void fn_2_79634(s32 unused, s32 index) {
+    if ((lbl_803C66B0[index + 0xD] == 1) ? 1 : 0) {
+        fn_80062674(index);
+        lbl_803C66B0[index + 0xD] = 2;
+    }
+}
+
