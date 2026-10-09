@@ -949,3 +949,25 @@ s16 fn_2_53AA4(u8* obj) {
     }
     return r;
 }
+
+extern s16 lbl_2_data_373C[];
+
+// fn_2_4C6A8, size:0x174
+void fn_2_4C6A8(void) {
+    s32 i;
+    GameInitVariables* g = &g_d_GameSettings;
+    s8 idx;
+    i = 0;
+    for (; i < 0x14; i++) {
+        g->challengeCaptainStarBought[i] = 0;
+    }
+    for (i = 0; i < 0x14; i++) {
+        if (lbl_2_data_373C[i] == 0 && (s8)lbl_2_bss_1A8248[0][0x43C2 + i] != 0) {
+            g->challengeCaptainStarBought[i] = 1;
+        }
+    }
+    idx = lbl_2_bss_1A8248[0][0x444B];
+    if (idx != -1) {
+        g->challengeCaptainStarBought[idx] = 1;
+    }
+}
