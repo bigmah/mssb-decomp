@@ -23,5 +23,6 @@ s32 fn_3_107C40(void);
 s32 fn_3_107C88(void);
 u8 fn_3_107CD0(void);
 void fn_3_1078F8(void);
+void fn_3_10AD48(void);
 
 #endif
