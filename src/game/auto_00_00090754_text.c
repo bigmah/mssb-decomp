@@ -59,3 +59,10 @@ s32 fn_3_90860(void) {
     return 0;
 }
 
+// fn_3_908E8, size:0x40
+void fn_3_908E8(void) {
+    fn_800214D0();
+    fn_800ACFB0((void*)lbl_800EF808[0x98 / 4]);
+    lbl_800EF808[0x98 / 4] = 0;
+}
+
