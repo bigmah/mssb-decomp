@@ -446,3 +446,47 @@ void fn_1_2040C(void) {
     fn_800AD038(lbl_80366158[2]);
     *(void (**)(void))lbl_803CC1B8[0] = fn_1_2004C;
 }
+
+#include "Dolphin/os.h"
+extern s32 fn_80035DD4(s32);
+extern void fn_80034E20(void*, void*, void*);
+extern void fn_1_267BC(void);
+extern void fn_1_25F98(void);
+extern u8 lbl_1_data_FB98[];
+extern u8 lbl_1_data_10344[];
+extern u8 lbl_803C4BE0[];
+extern char lbl_1_rodata_78F0[];
+extern char lbl_1_rodata_78F8[];
+
+// fn_1_267F4, size:0x134
+void fn_1_267F4(void) {
+    u8* queue = lbl_803CC1B8[0];
+    switch (queue[0x1E]) {
+    case 0:
+        if (fn_80035838(lbl_1_data_FB98 + queue[0x20] * 0x10, 0) != 0) {
+            queue[0x1E] = queue[0x1E] + 1;
+        }
+        break;
+    case 1: {
+        s32 index;
+        u8* entry;
+        *(u8**)(queue + 0x14) = fn_800B0A5C_insertQueue((void*)fn_1_267BC, 1);
+        *(s16*)(*(u8**)(queue + 0x14) + 0x10) = 0;
+        index = fn_80035DD4(0);
+        if (index == -1) {
+            OSPanic(lbl_1_rodata_78F0, 0xF5, lbl_1_rodata_78F8);
+        }
+        entry = lbl_803C4BE0;
+        entry += index * 0x3C;
+        *(s16*)(queue + 0x18) = **(s32**)(*(u8**)(entry + 0x38) + 8);
+        fn_80034E20(*(u8**)(queue + 0x14), lbl_1_data_10344, entry);
+        queue[0x21] = 0;
+        queue[0x22] = 0;
+        queue[0x24] = 0;
+        *(s16*)(queue + 0x1A) = 0;
+        *(s16*)(queue + 0x1C) = 0;
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_25F98;
+        break;
+    }
+    }
+}
