@@ -37,4 +37,6 @@ s32 fn_3_90B14(s32 a, s32 b);
 
 s32 fn_3_90F48(void);
 
+s32 fn_3_90DD8(void);
+
 #endif
