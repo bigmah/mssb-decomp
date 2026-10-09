@@ -14,3 +14,8 @@ void fn_3_12DB54(void) {
     } while (i < 4);
 }
 
+// fn_3_12E808, size:0x34
+void fn_3_12E808(void) {
+    memset(g_Minigame + 0x1D7C, 0, 0x78);
+}
+
