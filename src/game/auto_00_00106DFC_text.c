@@ -173,3 +173,11 @@ u8 fn_3_107DB4(s8 i) {
     }
     return 0;
 }
+
+// fn_3_107DF8, size:0x44
+u8 fn_3_107DF8(s8 i) {
+    if (g_d_GameSettings[7] == 7 && i >= 0 && i < 4) {
+        return g_Minigame[0x1DC0 + i];
+    }
+    return 0;
+}
