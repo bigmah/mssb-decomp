@@ -10,6 +10,7 @@ extern u8 lbl_3_common_bss_32A94[];
 extern u8 g_RunningLogic[];
 extern u8 g_Pitcher[];
 extern u8 g_Batter[];
+extern u8 g_Scores[];
 extern u8 g_d_GameSettings[];
 extern u8 starMissionCompletionTracker[];
 extern u8 lbl_80361B20[];
@@ -155,6 +156,56 @@ s32 fn_3_9E834(void) {
                 return 1;
             }
         }
+    }
+    return 0;
+}
+
+// fn_3_9D374, size:0x1DC
+s32 fn_3_9D374(void) {
+    s16 st;
+    s32 diff;
+    s32 flag = 0;
+    if (*(s32*)(g_Strikes + 0x14) == 1) {
+        diff = *(s16*)(g_Scores + *(s32*)(g_GameLogic + 0xC) * 0x26 + 4) - *(s16*)(g_Scores + 0xA0);
+        if (diff == 1 && g_Runners[0x123] == 3) {
+            flag = 1;
+        }
+        st = *(s16*)(g_Runners + 0xF8);
+        if (st == 0 && g_Runners[0x123] == 3) {
+            *(s16*)lbl_3_common_bss_32A94 = 5;
+        } else if (st == 3) {
+            if (diff != 0 && flag == 0) {
+                *(s16*)lbl_3_common_bss_32A94 = 6;
+            } else {
+                *(s16*)(lbl_3_common_bss_32A94 + 2) = 0xB;
+            }
+        } else if (st == 2) {
+            if (diff != 0 && flag == 0) {
+                *(s16*)lbl_3_common_bss_32A94 = 7;
+            } else {
+                *(s16*)(lbl_3_common_bss_32A94 + 2) = 0xC;
+            }
+        } else if (st == 1) {
+            s8 b = *(s8*)(g_Ball + 0x1BDD);
+            if (b >= 0 && b <= 1) {
+                if (diff != 0 && flag == 0) {
+                    *(s16*)lbl_3_common_bss_32A94 = 9;
+                } else {
+                    *(s16*)(lbl_3_common_bss_32A94 + 2) = 0xE;
+                }
+            } else if (diff != 0 && flag == 0) {
+                *(s16*)lbl_3_common_bss_32A94 = 8;
+            } else {
+                *(s16*)(lbl_3_common_bss_32A94 + 2) = 0xD;
+            }
+        } else {
+            if (diff != 0 && flag == 0) {
+                *(s16*)(lbl_3_common_bss_32A94 + 2) = 0xA;
+            } else {
+                *(s16*)(lbl_3_common_bss_32A94 + 2) = 0xF;
+            }
+        }
+        return 1;
     }
     return 0;
 }
