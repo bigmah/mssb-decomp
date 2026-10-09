@@ -19,16 +19,31 @@ typedef struct {
     u16 u1C;
 } QObj;
 extern u8* lbl_803CC1B8;
+extern u8 lbl_3_data_8EC4[];
+extern u8 lbl_3_data_900C[];
+extern u8 inMemRoster[];
+extern void fn_3_E9D30(void);
+extern u8 g_UnkSound_32718[];
+extern u8 lbl_800EF808[];
+extern u8 lbl_3_data_19830[];
 extern u8 lbl_3_data_8FCC[];
+extern u8 lbl_3_data_8F64[];
+extern u16 lbl_3_data_8FC4[];
+extern u16 lbl_3_data_81DC[];
+extern u8 lbl_3_data_8404[];
+extern u8 lbl_3_data_84B8[];
+extern void sndFXCtrl(int, int, u8);
+extern s32 sndFXStartEx(u16, u8, u8, u8);
 extern u8 lbl_3_data_8F24[];
 extern u8 lbl_3_data_8E68[];
 extern u8 lbl_3_data_8EA8[];
 extern u8 g_Minigame[];
 extern void fn_80034E20(void*, void*);
 extern void fn_3_ED2F4(void);
+extern void fn_3_ED0F4(void);
 extern void fn_3_EC014(void);
 extern void fn_3_ED6E0(void);
-extern void fn_3_ED0F4(void);
+
 
 // fn_3_EBFD4, size:0x40
 s32 fn_3_EBFD4(void) {
@@ -117,3 +132,24 @@ void fn_3_ED6E0(void) {
         fn_800B0A14_removeQueue(fn_80034CEC(p));
     }
 }
+
+// fn_3_ED574, size:0x16C
+void fn_3_ED574(void) {
+    QObj* p = (QObj*)lbl_803CC1B8;
+    s32 v;
+    fn_80034E20(p, lbl_3_data_8EC4);
+    fn_800363D8(p, 1, 6, 0x4A, *(s16*)(g_Minigame + 0x19B4) % 10);
+    fn_800363D8(p, 1, 5, 0x4A, *(s16*)(g_Minigame + 0x19B4) / 10);
+    v = *(s16*)(g_Minigame + 0x19B6);
+    if (v > *(s16*)(g_Minigame + 0x19B4)) {
+        v = *(s16*)(g_Minigame + 0x19B4);
+    }
+    fn_800363D8(p, 1, 2, 0x4A, v % 10);
+    if (v >= 10) {
+        fn_800363D8(p, 1, 1, 0x4A, v / 10);
+    } else {
+        fn_800363D8(p, 1, 1, 0x4A, 10);
+    }
+    *(void**)lbl_803CC1B8 = fn_3_ED4FC;
+}
+
