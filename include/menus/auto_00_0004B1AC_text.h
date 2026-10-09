@@ -105,5 +105,7 @@ void fn_2_51190(s32 a, s32 b);
 
 void fn_2_50898(s32 a);
 
+void fn_2_54120(void);
+
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);

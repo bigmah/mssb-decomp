@@ -46,7 +46,7 @@ struct MenuDrawEntry {
     void (*draw)(s32 context, MenuDrawEntry* entry);
     u8 data[0x14];
 };
-extern MenuDrawEntry (*lbl_2_bss_1A8234[])[864];
+extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A8230[];
 
 // fn_2_53F04, size:0x84
@@ -69,7 +69,7 @@ void fn_2_53F88(s32 context) {
     s32 column;
     for (row = 0; row < 70; row++) {
         for (column = 0; column < 864; column++) {
-            MenuDrawEntry* entry = &lbl_2_bss_1A8234[0][row][column];
+            MenuDrawEntry* entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8234[0])[row][column];
             if (entry->draw != NULL) {
                 entry->draw(context, entry);
             }
@@ -537,4 +537,24 @@ void fn_2_50898(s32 a) {
     *(s16*)(lbl_2_bss_1A824C[0] + 0x196FD2) = 1;
     *(s32*)(lbl_2_bss_1A824C[0] + 0x196F30) = 1;
     *(s16*)(lbl_2_bss_1A824C[0] + 0x197298) = 0;
+}
+
+// fn_2_54120, size:0x114
+void fn_2_54120(void) {
+    s32 i;
+    for (i = 0; i < 0x46; i++) {
+        lbl_2_bss_1A8234[0][i + 0x162604] = 0;
+        lbl_2_bss_1A8234[0][i + 0x16264A] = 0;
+        lbl_2_bss_1A8234[0][i + 0x162690] = 0;
+        lbl_2_bss_1A8234[0][i + 0x1626D6] = 0;
+        lbl_2_bss_1A8234[0][i + 0x16271C] = 0;
+        lbl_2_bss_1A8234[0][i + 0x162762] = 0;
+        lbl_2_bss_1A8234[0][i + 0x1627A8] = 0;
+        lbl_2_bss_1A8234[0][i + 0x1627EE] = 0;
+        lbl_2_bss_1A8234[0][i + 0x162834] = 0;
+        lbl_2_bss_1A8234[0][i + 0x16287A] = 0;
+        lbl_2_bss_1A8234[0][i + 0x1628C0] = 0;
+        lbl_2_bss_1A8234[0][i + 0x162906] = 0;
+        lbl_2_bss_1A8234[0][i + 0x16294C] = 0;
+    }
 }
