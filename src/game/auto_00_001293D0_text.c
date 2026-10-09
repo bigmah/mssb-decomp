@@ -14,6 +14,9 @@ extern void fn_8004D0F0(void);
 extern void fn_3_11E7C4(void);
 extern void fn_3_11E364(void);
 extern void fn_3_129C88(void);
+extern u8 lbl_3_common_bss_37400[];
+extern u8 lbl_3_data_217A4[];
+extern void fn_3_1608F0(s32, s32, u8);
 extern void fn_3_11D780(void);
 extern void fn_3_EA454(void);
 extern u8 lbl_3_common_bss_34C90[];
@@ -130,5 +133,22 @@ void fn_3_129458(void) {
     }
     if (g_GameLogic[0x11E] == 0x22 && (lbl_3_common_bss_34C90[0x1D2] == 7 || g_GameLogic[0x122] != 0)) {
         lbl_3_common_bss_32724[0xB7] = 1;
+    }
+}
+
+// fn_3_12E83C, size:0xC0
+void fn_3_12E83C(void) {
+    s32 v;
+    u8* g = g_Minigame;
+    u8 k = g[0x1ADD];
+    if (k <= 1) {
+        v = *(s16*)(lbl_3_data_217A4 + 0xA) * k;
+    } else {
+        v = k * ((k - 1) * *(s16*)(lbl_3_data_217A4 + 0xA));
+    }
+    *(s16*)(g_Minigame + (s8)g_Minigame[0x1905] * 2 + 0x1890) += v;
+    *(s16*)(g_Minigame + 0x1DF4) = v;
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && (s8)g_Minigame[0x1905] == *(s16*)(lbl_3_common_bss_37400 + 0x40)) {
+        fn_3_1608F0(2, v, g[0x1ADD]);
     }
 }
