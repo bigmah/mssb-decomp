@@ -6,4 +6,6 @@
 
 void fn_2_42474(void);
 
+s32 fn_2_44F14(s32 index);
+
 #endif
