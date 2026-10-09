@@ -271,3 +271,19 @@ void fn_2_74CD8(void) {
     lbl_2_bss_A840 = lbl_2_bss_F410;
     *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_747FC;
 }
+
+// fn_2_836A4, size:0xA0
+void fn_2_836A4(void) {
+    u8* a;
+    if (lbl_803C50E8[0x47] != 0) {
+        fn_800B0A5C_insertQueue((void*)fn_80053FE8, 0);
+    }
+    a = lbl_8034E978;
+    a[9] = a[8];
+    a[0] = 0xC;
+    a[8] = *(u16*)(lbl_800FEF70 + 0xC8);
+    if (*(u16*)(lbl_803CBBCC[0] + 6) != 9) {
+        fn_800B0A5C_insertQueue((void*)fn_2_82DE8, 0x3000);
+    }
+    fn_800B0A5C_insertQueue((void*)fn_2_834F0, 0x3000);
+}
