@@ -42,4 +42,88 @@ void fn_2_467FC(void);
 
 void fn_2_45978(void);
 
+void fn_2_409CC(void);
+
+void fn_2_3C03C(void);
+
+void fn_2_3E7EC(void);
+
+void fn_2_3E918(void);
+
+void fn_2_3EBA8(void);
+
+void fn_2_3ECC0(void);
+
+void fn_2_3EDD8(void);
+
+void fn_2_3EEF0(void);
+
+void fn_2_3F188(void);
+
+void fn_2_3F44C(void);
+
+void fn_2_3F55C(void);
+
+void fn_2_4078C(void);
+
+void fn_2_408BC(void);
+
+void fn_2_40A9C(void);
+
+void fn_2_40B90(void);
+
+void fn_2_3DF28(void);
+
+void fn_2_3DC60(void);
+
+void fn_2_3DDC4(void);
+
+void fn_2_3EA44(void);
+
+void fn_2_3F004(void);
+
+void fn_2_3F29C(void);
+
+void fn_2_4041C(void);
+
+void fn_2_405B4(void);
+
+void fn_2_42388(void);
+
+void fn_2_42EB0(void);
+
+void fn_2_432EC(void);
+
+s32 fn_2_44E2C(s32 ch);
+
+void fn_2_44414(void* a);
+
+void fn_2_45D38(void);
+
+void fn_2_45FDC(void);
+
+void fn_2_45BA4(void);
+
+void fn_2_45E48(void);
+
+s32 fn_2_45A84(void);
+
+void fn_2_45810(void);
+
+void fn_2_45204(void);
+
+void fn_2_466AC(void);
+
+void fn_2_42FC8(void);
+
+void fn_2_46ADC(void);
+
+void fn_2_450E4(void);
+
+void fn_2_44F64(void);
+
+void fn_2_44014(void);
+
+void fn_2_43E8C(void);
+
 #endif

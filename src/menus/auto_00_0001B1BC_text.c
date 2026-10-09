@@ -289,3 +289,22 @@ void fn_2_1C490(void) {
     lbl_2_bss_1A8234[0][0x162677] = 0;
     lbl_2_bss_1A8234[0][0x162678] = 0;
 }
+
+typedef struct {
+    u32 w0;
+    u8 pad[0x14];
+} Cell18;
+
+// fn_2_1C244, size:0xF8
+void fn_2_1C244(void) {
+    s32 row;
+    s32 col;
+    for (row = 0; row < 70; row++) {
+        for (col = 0; col < 864; col++) {
+            Cell18* c = &((Cell18(*)[864])lbl_2_bss_1A8234[0])[row][col];
+            if (row >= 35 && col >= 100 && c->w0 != 0) {
+                return;
+            }
+        }
+    }
+}

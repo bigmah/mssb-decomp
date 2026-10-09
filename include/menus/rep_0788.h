@@ -106,6 +106,48 @@ void fn_2_25D98(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_2E17C(MenuTableContext* menu, MenuItemState* item);
 
+void fn_2_2B064(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2B250(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2CF58(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_272E8(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2AD30(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2749C(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_27660(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_32A78(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_325E8(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_27B7C(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_31880(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_31D94(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_31538(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_27824(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_320D8(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2F8A4(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2CBCC(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2DCA8(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2C1A8(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2C698(MenuTableContext* menu, MenuItemState* item);
+
+void fn_2_2C860(MenuTableContext* menu, MenuItemState* item);
+
 void fn_2_2A21C(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_2D508(MenuTableContext* menu, MenuItemState* item);

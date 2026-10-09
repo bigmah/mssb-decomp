@@ -5,4 +5,6 @@
 
 void fn_80022620(void);
 
+void fn_8002244C(s32 unused, s32* hdr, s32 arg);
+
 #endif

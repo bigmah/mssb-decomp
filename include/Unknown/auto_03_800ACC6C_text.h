@@ -5,4 +5,6 @@
 
 void fn_800ACCD4(void);
 
+s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
+
 #endif

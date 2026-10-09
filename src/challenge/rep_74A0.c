@@ -6,6 +6,7 @@
 #include <math.h>
 
 extern void fn_1_1CBE4(u8* object);
+extern u8 lbl_80366158[];
 extern ChallengeRosterQueue* lbl_803CC1B8;
 extern u8 lbl_1_bss_69FC[];
 extern void fn_1_19D60(struct DODisplayObj*, s32);
@@ -131,4 +132,18 @@ s32 fn_1_19D1C(u8 value) {
     case 4: return 4;
     default: return 0;
     }
+}
+
+// fn_1_1D514, size:0x7C
+void fn_1_1D514(void) {
+    u8* b = (u8*)&lbl_1_bss_69F0;
+    fn_800AD038(*(void**)(lbl_80366158 + 8));
+    lbl_803CC1B8->state = 0;
+    lbl_803CC1B8->update = (void (*)(u8*))fn_1_1D470;
+    b[6] = 0xFF;
+    b[7] = 0xFF;
+    b[8] = 0xFF;
+    b[9] = 0xFF;
+    b[5] = 0;
+    b[3] = 0;
 }
