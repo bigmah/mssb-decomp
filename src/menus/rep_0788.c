@@ -2892,3 +2892,54 @@ void fn_2_320D8(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
+
+// fn_2_2F8A4, size:0x1B4
+void fn_2_2F8A4(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        u8* object;
+        fn_800363D8(menu, item->offset, 1, 6, lbl_2_bss_1A8248[0][0x4415]);
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 37;
+        return;
+    }
+    case 5: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        object[0x68] = 4;
+        item->state = 6;
+        return;
+    }
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        return;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        return;
+    }
+    case 37:
+    case 1:
+        return;
+    }
+}
+
+extern u8 lbl_800E869C[];
+extern void determineIfMissionDescriptionIsShown(s32 index);
+
