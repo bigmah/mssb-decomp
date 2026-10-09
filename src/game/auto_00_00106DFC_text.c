@@ -181,3 +181,11 @@ u8 fn_3_107DF8(s8 i) {
     }
     return 0;
 }
+
+// minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased, size:0x44
+u8 minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased(s8 i) {
+    if (g_d_GameSettings[7] == 7 && i >= 0 && i < 4) {
+        return g_Minigame[0x1DBC + i];
+    }
+    return 0;
+}
