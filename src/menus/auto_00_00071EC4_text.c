@@ -320,3 +320,14 @@ void fn_2_72A58(void) {
         lbl_803CBBC4[0] = 0;
     }
 }
+
+// fn_2_72DDC, size:0x78
+void fn_2_72DDC(s32 a) {
+    if ((lbl_803CBBC4[3] == 1) ? 1 : 0) {
+        if ((s32)(fn_80042DA8(a, 0, 0x19) != 0) == 1) {
+            lbl_803CBBC4[3] = 0;
+            lbl_803CBBC4[2] = 0;
+            lbl_803CBBC4[0] = 0;
+        }
+    }
+}
