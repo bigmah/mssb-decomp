@@ -301,3 +301,21 @@ void fn_2_515DC(u8 mode) {
     lbl_2_bss_1A824C[0][0x1972B8] = mode;
     fn_2_4906C();
 }
+
+extern u8* lbl_80366B18[];
+
+// fn_2_5156C, size:0x70
+s32 fn_2_5156C(s32 index, u16 flag) {
+    if (flag == 0) {
+        u8* menu = *(u8**)&lbl_2_bss_1A824C;
+        u8* p = lbl_80366B18[menu[0x1972B8] + 0x1E6];
+        p += index * 4;
+        return *(s32*)(p + 4);
+    }
+    {
+        u8* menu = *(u8**)&lbl_2_bss_1A824C;
+        u8* p = lbl_80366B18[menu[0x1972B8] + 0x1E6];
+        p += index * 4;
+        return *(s32*)(p + 4);
+    }
+}
