@@ -10,6 +10,8 @@
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
 extern void fn_3_5F720(void);
+extern void fn_3_59918(s32, s32);
+extern u8 lbl_8036E548[];
 extern s32 fn_8001C588(s16);
 extern s16 lbl_3_data_FC1C[];
 extern void fn_3_6C0E0(void);
@@ -679,6 +681,46 @@ void fn_3_AF428(void) {
             *(s16*)(lbl_3_common_bss_34C90 + 0x25A) = -1;
         }
     }
+}
+
+// fn_3_B32B8, size:0x190
+s32 fn_3_B32B8(void) {
+    InputStruct* c = &g_Controls[g_Practice.homeAway];
+    if (lbl_8036E548[0x2D46] != 0) {
+        return 0;
+    }
+    if (lbl_8036E548[0x2D52] != 0) {
+        return 0;
+    }
+    if (g_Practice._186 != 0 || g_Practice.guidedPracticeCompletionRelated != 0) {
+        return 0;
+    }
+    if (g_GameLogic.FrameCountOfCurrentPitch < 0x1E || lbl_8037169C[0x10] != 0) {
+        return 0;
+    }
+    if (g_Practice.pauseMenuLoading != 0) {
+        lbl_80366158[0x28] = 1;
+        g_Practice.frames_sinceTimeCalled += 1;
+        if (g_Practice.frames_sinceTimeCalled >= 0x3C) {
+            g_Practice.pauseMenuLoading = 0;
+            ((u8*)&g_Practice)[0x19F] = 1;
+            g_Practice.frames_onPauseScreen = 0;
+            lbl_3_common_bss_34C90[0x1D2] = 0;
+            lbl_3_common_bss_34C90[0x1DA] = 0;
+        }
+        return 1;
+    }
+    if (g_Practice.practiceType_2 == 4 && g_Pitcher.pitchTotalTimeCounter > 0) {
+        return 0;
+    }
+    if (c->newButtonInput & 0x1000) {
+        lbl_80366158[0x28] = 1;
+        fn_3_59918(0xE, 0);
+        g_Practice.pauseMenuLoading = 1;
+        g_Practice.frames_sinceTimeCalled = 0;
+        return 1;
+    }
+    return 0;
 }
 
 #pragma dont_inline off
