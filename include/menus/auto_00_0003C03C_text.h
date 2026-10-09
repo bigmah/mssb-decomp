@@ -60,4 +60,8 @@ void fn_2_3EEF0(void);
 
 void fn_2_3F188(void);
 
+void fn_2_3F44C(void);
+
+void fn_2_3F55C(void);
+
 #endif
