@@ -488,3 +488,16 @@ void fn_2_7EF68(u8* o, s32 index) {
         }
     }
 }
+
+// fn_2_79688, size:0xDC
+void fn_2_79688(u8* o, s32 index) {
+    s32 i;
+    if (lbl_803C66B0[index + 0xD] != 0) {
+        return;
+    }
+    for (i = 0; i < 9; i++) {
+        ((u8**)lbl_80371C30)[(0x46 + *(u16*)(o + 0x14) + i + index * 9) * 2][0x68] = 4;
+    }
+    *(s32*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
+    ((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
+}
