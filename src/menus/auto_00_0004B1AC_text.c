@@ -346,3 +346,29 @@ void fn_2_50CC0(s16 value) {
     q = fn_800B0A5C_insertQueue((void*)fn_2_509A4, 4);
     q[0x28] = 0;
 }
+
+extern u8* lbl_803CBBCC[];
+extern u8 lbl_8034E978[];
+extern u8 lbl_800FEF70[];
+extern void fn_80053FE8(void);
+extern void fn_2_82DE8(void);
+extern void fn_2_8ABFC(void);
+
+// fn_2_52198, size:0xC8
+typedef struct { u8 pad[8]; u16 f8; u8 pad2[6]; } Row10;
+void fn_2_52198(void) {
+    u16 state = *(u16*)(lbl_803CBBCC[0] + 6);
+    s32 sel;
+    if (state == 5 || state == 0x10) {
+        fn_800B0A5C_insertQueue((void*)fn_80053FE8, 0);
+        fn_800B0A5C_insertQueue((void*)fn_2_82DE8, 0x3000);
+    }
+    if (lbl_8034E9A0[0x4756] == 0) {
+        sel = 0xB;
+    } else {
+        sel = 0x10;
+        lbl_8034E978[3] = lbl_8034E9A0[0x4711];
+    }
+    { Row10* r = (Row10*)lbl_800FEF70; lbl_8034E978[0] = sel; lbl_8034E978[9] = lbl_8034E978[8]; lbl_8034E978[8] = r[sel].f8; }
+    fn_800B0A5C_insertQueue((void*)fn_2_8ABFC, 0x3000);
+}

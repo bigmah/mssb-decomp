@@ -89,5 +89,7 @@ void fn_2_50E5C(s32 channel);
 
 void fn_2_50CC0(s16 value);
 
+void fn_2_52198(void);
+
 #endif
 s32 fn_2_5156C(s32 index, u16 flag);
