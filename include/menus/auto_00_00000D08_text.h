@@ -11,5 +11,6 @@ s32 fn_2_10FC(void);
 void fn_2_1130(s16 value);
 void fn_2_1164(void);
 void fn_2_119C(void);
+void fn_2_11A0(u16 value);
 
 #endif
