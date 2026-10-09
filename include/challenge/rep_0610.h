@@ -75,4 +75,6 @@ void fn_1_D4BC(void);
 
 void fn_1_F0D0(void);
 
+void fn_1_CCC8(void);
+
 #endif
