@@ -247,6 +247,7 @@ void fn_2_6AB3C(s32 index, const Vec* position, f32 heading) {
     entry->angle30 = angle;
 }
 extern u8* lbl_2_bss_1A824C[];
+extern u8 lbl_8036E548[];
 
 typedef struct {
     s16 clip;
@@ -817,5 +818,20 @@ void fn_2_698EC(s32 index, f32 threshold) {
         entry->position.y = height;
     } else {
         entry->position.y = 0.0f;
+    }
+}
+
+// fn_2_68E68, size:0xA0
+void fn_2_68E68(void) {
+    u8* src;
+    u8* params;
+    s32 i;
+    for (i = 0; i < *(s16*)(lbl_2_bss_1A824C[0] + 0x197746); i++) {
+        params = lbl_8036E548 + i * 0x27C + 0xC04;
+        src = (u8*)lbl_2_bss_1A8248[0] + i * 0xD8 + 0x1610;
+        memcpy(params + 0x34, src, 0xC);
+        *(f32*)(params + 0x44) = *(f32*)(src + 0x4C);
+        params[0x25D] = src[0xC0];
+        params[0x277] = src[0xCA];
     }
 }
