@@ -572,3 +572,8 @@ void fn_2_322E4(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
+
+// fn_2_31A90, size:0x150
+void fn_2_31A90(MenuTableContext* menu, MenuItemState* item) {
+    fn_2_322E4(menu, item);
+}
