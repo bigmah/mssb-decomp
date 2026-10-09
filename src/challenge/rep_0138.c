@@ -64,6 +64,14 @@ static u8 sPad[0x5E4] = {1};
 static Chal8 sTabA[3] = {{{1}}};
 static Chal8 sTabB[2] = {{{1}}};
 static Chal8 sTabC[2] = {{{1}}};
+static u8 sPad2[0x15C] = {1};
+static u8 sMipCount = 1;
+static f32 sMipScale[4] = {1.0f};
+static f32 sLodBias = 1.0f;
+static GXTexFilter sMinFilter = GX_LINEAR;
+extern void fn_1_6050(void*, s32, s32, f32);
+extern const f32 lbl_1_rodata_1A8;
+extern const f64 lbl_1_rodata_1E8;
 
 // fn_1_717C, size:0x104
 void fn_1_717C(ChallengeModelOffsets* model) {
@@ -188,4 +196,35 @@ void fn_1_7280(void) {
     PSMTXCopy((f32(*)[4])lbl_1_common_bss_472B4, (f32(*)[4])(q + 0x38));
     fn_800A7D4C(0, q);
     fn_800A7D4C(0, &sTabA[lbl_803CBBC0]);
+}
+
+// fn_1_6578, size:0x14C
+void fn_1_6578(void* obj, void* image, s32 w, s32 h) {
+    GXTexFilter filter;
+    f32* scale;
+    s32 w0;
+    s32 h0;
+    s32 offset;
+    s32 level;
+    w0 = w;
+    h0 = h;
+    offset = 0;
+    if (sMipCount == 0) {
+        w = w / 4;
+        h = h / 4;
+        fn_1_6050(image, w, h, lbl_1_rodata_1D8);
+        filter = GX_LINEAR;
+    } else {
+        scale = sMipScale;
+        for (level = 0; level <= sMipCount; level++) {
+            fn_1_6050((u8*)image + offset * 2, w0, h0, *scale);
+            offset += w0 * h0;
+            w0 /= 2;
+            h0 /= 2;
+            scale++;
+        }
+        filter = sMinFilter;
+    }
+    GXInitTexObj(obj, image, w, h, GX_TF_IA8, GX_REPEAT, GX_REPEAT, sMipCount);
+    GXInitTexObjLOD(obj, filter, GX_LINEAR, lbl_1_rodata_1A8, (f32)sMipCount, sLodBias, 0, 0, GX_ANISO_1);
 }

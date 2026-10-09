@@ -32,4 +32,6 @@ void fn_1_717C(ChallengeModelOffsets* model);
 
 void fn_1_7280(void);
 
+void fn_1_6578(void* obj, void* image, s32 width, s32 height);
+
 #endif
