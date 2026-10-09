@@ -48,3 +48,15 @@ void fn_2_72630(void) {
     fn_800B0A5C_insertQueue((void*)fn_2_72594, 0x3000);
 }
 
+// fn_2_73B54, size:0x40
+s32 fn_2_73B54(s32 a) {
+    s32 b = lbl_2_bss_A840;
+    if (b == 0 && a == 6) {
+        return 4;
+    }
+    if (b == 6 && a == 0) {
+        return 1;
+    }
+    return 1;
+}
+
