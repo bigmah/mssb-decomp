@@ -62,7 +62,17 @@ void _epilog(void) {
     fn_8001F228();
 }
 
-// NOTE fn_2_110: 6 diff lines (sthx r4,r7,r0 with addi r0,r3,0xc index; ours folds to sth 0xC(r3))
+// fn_2_110, size:0x50
+void fn_2_110(void) {
+    u8 i;
+    for (i = 0; i < 2; i++) {
+        u8* p = lbl_803CBBCC[0];
+        if (p[0x10] & (1 << (u8)i)) {
+            *(u16*)(p + i * 2 + 0xC) = 0;
+        }
+    }
+}
+
 
 // fn_2_160, size:0x48
 void fn_2_160(void) {
