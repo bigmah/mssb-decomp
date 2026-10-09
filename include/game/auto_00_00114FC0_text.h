@@ -9,6 +9,7 @@ void fn_3_115738(void);
 void fn_3_115828(void);
 void fn_3_1158B0(void);
 void fn_3_1158F8(void);
+void fn_3_115978(void);
 void fn_3_115AB4(void);
 void fn_3_115B5C(void);
 void fn_3_115BDC(void);
