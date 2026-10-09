@@ -186,8 +186,8 @@ void fn_3_92CD8(void) {
 }
 
 #pragma dont_inline on
+typedef struct { u8 a[4]; s16 v; u8 b[0x20]; } ScT;
 // .text:0x000933CC size:0x178 mapped:0x806D2460
-// 99%: g_Scores base/mulli swapped (addi into r0, mulli into r3; original addi r3 / mulli r0)
 void fn_3_933CC(void) {
     u8* o = lbl_803CC1B8[0];
     u16 w = *(u16*)(o + 0x18);
@@ -214,7 +214,8 @@ void fn_3_933CC(void) {
         if (c >= 0x1E && (c - 0x1E) % 27 == 0) {
             u16* p = (u16*)(o + *(s32*)(g_GameLogic + 0xC) * 2);
             u16 v = p[0x10];
-            if (v < *(s16*)((u8*)g_Scores + (*(s32*)(g_GameLogic + 0xC) * 0x26 + 4))) {
+            ScT* sc = (ScT*)g_Scores;
+            if (v < sc[*(s32*)(g_GameLogic + 0xC)].v) {
                 p[0x10] = v + 1;
             }
         }
