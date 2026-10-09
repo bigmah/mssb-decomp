@@ -250,3 +250,29 @@ s32 fn_2_60D4(u8 index) {
     p += index * 4;
     return *(s32*)(p + 0x46E0);
 }
+
+// fn_2_148C, size:0x6C
+s32 fn_2_148C(u16* p) {
+    s32 n = 0;
+    for (;;) {
+        u16 c = *p++;
+        if (c & 0x4000) {
+            switch (c & 0x3FFF) {
+            case 0:
+                goto done;
+            case 2:
+                n += 0xB;
+                break;
+            case 3:
+                n += 0x16;
+                break;
+            }
+        } else if (c & 0x8000) {
+            n += 0x16;
+        } else {
+            n += 0xB;
+        }
+    }
+done:
+    return n;
+}
