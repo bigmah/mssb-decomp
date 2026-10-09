@@ -36,4 +36,6 @@ void fn_2_8279C(void);
 void fn_2_71F20(u8* obj);
 void fn_2_7207C(void);
 
+s32 fn_2_74DB8(s32 a);
+
 #endif

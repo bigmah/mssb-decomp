@@ -192,3 +192,47 @@ void fn_2_72594(void) {
     fn_800363D8(obj, 2, 1, 0x35, 0);
     *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_7207C;
 }
+
+// fn_2_74DB8, size:0x5C
+s32 fn_2_74DB8(s32 a) {
+    switch (a) {
+    case 13:
+    case 16:
+    case 20:
+    case 22:
+    case 25:
+    case 34:
+    case 42:
+    case 50:
+    case 52:
+        return 1;
+    case 21:
+    case 24:
+    case 29:
+    case 33:
+    case 44:
+    case 51:
+    case 53:
+        return 2;
+    case 23:
+    case 30:
+    case 36:
+    case 45:
+        return 3;
+    case 12:
+    case 26:
+    case 27:
+    case 31:
+    case 35:
+    case 43:
+    case 46:
+    case 49:
+        return 4;
+    case 32:
+        return 5;
+    case 47:
+        return 6;
+    default:
+        return 0;
+    }
+}
