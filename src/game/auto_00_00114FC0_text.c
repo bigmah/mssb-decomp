@@ -50,3 +50,16 @@ void fn_3_11669C(void) {
     (*(u8**)(p + 0x2D94))[0x261E] = 0;
 }
 
+// fn_3_1158F8, size:0x80
+void fn_3_1158F8(void) {
+    fn_3_6EBB4(*(s8*)(g_Minigame + 0x1904));
+    fn_3_F1DC();
+    fn_3_751B4();
+    fn_3_58870();
+    memset(g_Minigame + 0x1D7C, 0, 0x78);
+    Set_803cb848(1);
+    *(s16*)(g_FieldingLogic + 0xAE) = 0;
+    unkSimulationRelatedStruct[5] = 0;
+    unkSimulationRelatedStruct[6] = 4;
+}
+
