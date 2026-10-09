@@ -123,8 +123,30 @@ void fn_3_60A98(void) {
 }
 
 // .text:0x00060D80 size:0x110 mapped:0x8069FE14
-void fn_3_60D80(void) {
-    return;
+s32 fn_3_60D80(s32 a) {
+    u8* e;
+    s32 k;
+    s16 anim;
+    s16 st;
+    e = g_UnkAnimation_31EAC + a * 0x54;
+    k = *(s8*)(g_Minigame + a + 0x18F2);
+    anim = *(s16*)(((u8**)(lbl_8036E548 + 0x2C50))[k] + 0x62);
+    st = *(s16*)(g_Minigame + k * 2 + 0x1B34);
+    if (st < 0) {
+        if (anim == 0x1D || anim == 0x1F) {
+            AnimateCharacter(k, 0, 1, 3, 0, 0, e[0x40], -1);
+        }
+        return 0;
+    }
+    if (st == 0) {
+        s32 c = g_Minigame[k + 0x1C92];
+        if (c == 3) {
+            AnimateCharacter(k, 0x1F, 0, 3, 0, 0, e[0x40], -1);
+        } else {
+            AnimateCharacter(k, 0x1D, 0, 3, 0, 0, e[0x40], -1);
+        }
+    }
+    return 1;
 }
 
 // .text:0x00060E90 size:0x2B8 mapped:0x8069FF24
@@ -712,7 +734,39 @@ void fn_3_657E4(void) {
 
 // .text:0x00065FE0 size:0x160 mapped:0x806A5074
 void fn_3_65FE0(void) {
-    return;
+    int flag;
+    int idx;
+    s8 c;
+    u8* o;
+    int i;
+    for (i = 0; i < 4; i++) {
+        idx = i;
+        o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+        flag = 0;
+        if (g_d_GameSettings[7] == 2) {
+            idx = 9;
+            o = ((u8**)lbl_8036E548)[0x2C74 / 4];
+        }
+        if (o != NULL) {
+            c = *(s8*)(g_Minigame + i * 9 + 0x19EC);
+            if (c == 0 || c == 2) {
+                flag = 1;
+            }
+            if (*(s8*)(g_Minigame + i * 9 + 0x19EA) < 0) {
+                AnimateCharacter(idx, 0x69, 1, 1, 1, 0, flag, 0);
+            } else if (*(s8*)(g_Minigame + i * 9 + 0x19E9) != 0) {
+                if (*(s16*)(o + 0x62) == 0x69) {
+                    AnimateCharacter(idx, 0x6A, 0, 1, 1, 0, flag, 0);
+                    QueueCharacterAnimation(idx, 0x6B, 1, 1, 0, flag, -1);
+                }
+            } else {
+                AnimateCharacter(idx, 0x69, 1, 1, 1, 0, flag, 0);
+            }
+            if (g_d_GameSettings[7] == 2) {
+                break;
+            }
+        }
+    }
 }
 
 // .text:0x00066140 size:0x3BC mapped:0x806A51D4
