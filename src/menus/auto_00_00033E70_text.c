@@ -101,3 +101,28 @@ void fn_2_372AC(u8* a, u8* b) {
     }
 }
 
+// fn_2_3735C, size:0xD4
+void fn_2_3735C(u8* a, u8* b) {
+    s16 r = fn_2_53BC8(b);
+    if (r != -1) {
+        *(s16*)(b + 4) = r;
+    }
+    switch (*(s16*)(b + 4)) {
+    case 0: {
+        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
+        *(u32*)(p + 0x54) &= ~2;
+        *(s16*)(b + 4) = 0x26;
+        break;
+    }
+    case 2:
+        *(s16*)(b + 4) = 0x25;
+        break;
+    case 1:
+    case 5:
+    case 8:
+    case 0x24:
+    case 0x25:
+        break;
+    }
+}
+

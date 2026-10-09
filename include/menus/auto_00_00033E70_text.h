@@ -31,4 +31,6 @@ void fn_2_38EA8(void);
 
 void fn_2_372AC(u8* a, u8* b);
 
+void fn_2_3735C(u8* a, u8* b);
+
 #endif
