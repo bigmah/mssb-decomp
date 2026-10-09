@@ -925,3 +925,12 @@ void fn_2_6D164(u8* object) {
     fn_2_68FBC(*(s32*)(object + 0x80), 4);
     *(s16*)(object + 0x94) = 1;
 }
+
+// fn_2_6D754
+void fn_2_6D754(u8* object) {
+    ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 1;
+    fn_2_68FBC(*(s32*)(object + 0x80), 1);
+    *(f32*)(object + 0x4C) = lbl_2_rodata_B58;
+    *(f32*)(object + 0x34) = lbl_2_rodata_B58;
+    *(s16*)(object + 0x94) = 1;
+}
