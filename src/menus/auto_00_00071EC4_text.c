@@ -550,3 +550,21 @@ void fn_2_7E860(s32 a, s32 index) {
         }
     }
 }
+
+// fn_2_7A460, size:0x158
+void fn_2_7A460(u8* o, s32 index) {
+    if ((lbl_803C66B0[index + 0xD] == 1) ? 1 : 0) {
+        s32 n = 0;
+        n += fn_80042DA8((s32)o, index, 0x28) != 0;
+        n += fn_80042DA8((s32)o, index + 2, 0x28) != 0;
+        n += fn_80042DA8((s32)o, index + 0x85, 0x1E) != 0;
+        n += fn_80042DA8((s32)o, index + 0x1C, 0x1E) != 0;
+        n += fn_80042DA8((s32)o, index + 0x6A, 0x32) != 0;
+        if (n == 5) {
+            *(u32*)(((u8**)lbl_80371C30)[(0xC + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
+            *(u32*)(((u8**)lbl_80371C30)[(0x12 + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
+            fn_80062674(index);
+            lbl_803C66B0[index + 0xD] = 2;
+        }
+    }
+}
