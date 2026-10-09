@@ -3,6 +3,11 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80022B68(void);
+extern void fn_3_1E178(void);
+extern void fn_3_7AFE4(void);
+extern void setBatterContactConstants(void);
+extern void fn_3_AFDA4(void);
+extern void fn_3_1E154(void);
 extern s32 fn_3_B32B8(void);
 extern void fn_3_AFB64(void);
 extern void fn_3_AFA64(void);
@@ -746,4 +751,63 @@ void fn_3_5EFEC(void) {
     if (g_Pitcher.pitcherActionState == 6) {
         fn_3_5EE58();
     }
+}
+
+// fn_3_5F7A8, size:0x188
+void fn_3_5F7A8(void) {
+    s32 stage;
+    GameInitVariables* gs = &g_d_GameSettings;
+    s32 inning;
+    u8 finalInning;
+    ((u8*)&g_GameLogic)[0x135] = 0;
+    ((u8*)&g_GameLogic)[0x136] = 0;
+    g_RunningLogic[0x11] = 0;
+    g_RunningLogic[0x13] = 0;
+    *(s16*)(g_RunningLogic + 2) = 0;
+    inning = *(s32*)g_Scores;
+    finalInning = g_Scores[0xAA];
+    if (inning > finalInning) {
+        stage = 5;
+    } else if (finalInning <= 3U) {
+        if (finalInning == inning && g_Scores[0xAD] != 0) {
+            stage = 4;
+        } else {
+            stage = 0;
+        }
+    } else if (inning == finalInning) {
+        stage = 4;
+    } else if ((finalInning == 9 && inning >= 7) || (finalInning == 7 && inning >= 6)) {
+        stage = 3;
+    } else if (inning >= 4) {
+        stage = 2;
+    } else {
+        stage = 1;
+    }
+    g_Scores[0xAC] = stage;
+    g_Scores[0xC1] = 0;
+    g_Scores[0xC6] = 0;
+    lbl_3_common_bss_37400[0x48] = 0;
+    fn_3_6C13C(lbl_3_common_bss_37400, g_Scores);
+    if (gs->exhibitionMatchInd == 0) {
+        fn_3_16598C();
+    }
+    fn_3_5A684();
+    fn_3_75434();
+    fn_3_59338();
+    fn_3_8A350();
+    fn_3_1E178();
+    fn_3_AFDA4();
+    ((void (*)(void))fn_3_6C13C)();
+    fn_3_7B130();
+    setBatterContactConstants();
+    ((void (*)(void))fn_3_8A1D8)();
+    fn_3_7AFE4();
+    fn_3_1E154();
+    fn_3_6C108();
+    g_Strikes.strikes = 0;
+    g_Strikes.balls = 0;
+    g_Strikes._1E = -1;
+    g_Strikes.stateRelated = 0;
+    g_GameLogic.frameCountdownAtBeginningOfAtBatLockout = 0x5A;
+    ((u8*)&g_GameLogic)[0x13D] = 0;
 }
