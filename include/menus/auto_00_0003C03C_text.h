@@ -80,4 +80,6 @@ void fn_2_3DDC4(void);
 
 void fn_2_3EA44(void);
 
+void fn_2_3F004(void);
+
 #endif
