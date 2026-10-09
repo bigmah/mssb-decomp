@@ -29,3 +29,10 @@ s32 fn_2_44F14(s32 index) {
 s32 fn_2_44F34(s32 index) {
     return *(s8*)(lbl_2_bss_1A8248[0] + index * 0x34 + 5) <= 3;
 }
+
+// fn_2_4668C, size:0x20
+void fn_2_4668C(s32 index) {
+    u8* menu = lbl_2_bss_1A8248[0];
+    u8* entry = menu + index * 0x34;
+    entry[0x31] = 1;
+}
