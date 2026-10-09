@@ -1,1 +1,27 @@
 #include "menus/auto_00_00000D08_text.h"
+#include "static/UnknownHomes_Static.h"
+
+extern u8 lbl_800EF808[];
+extern u8* lbl_803CC1B8[];
+extern u8* lbl_803CBBCC[];
+extern u8 lbl_2_data_138[];
+extern u32 lbl_2_bss_D974[];
+extern s16 lbl_2_bss_D958[];
+extern u8* lbl_2_bss_D984;
+typedef struct {
+    u16 a;
+    u16 b;
+    u16 c;
+} SeqEnt;
+extern SeqEnt lbl_2_data_128[];
+extern u32 sndSeqGetValid(u32);
+extern void sndSeqStop(u32);
+extern void sndSeqVolume(u8, u16, u32, u8);
+extern u32 sndSeqPlayEx(u16, u16, void*, void*, u8);
+
+// fn_2_D08, size:0x80
+void fn_2_D08(u16 ch, u16 time, u8 mode) {
+    if (lbl_2_bss_D974[ch] != -1 && sndSeqGetValid(lbl_2_bss_D974[ch])) {
+        sndSeqVolume(0, time, lbl_2_bss_D974[ch], mode);
+    }
+}
