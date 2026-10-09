@@ -37,3 +37,7 @@ void fn_3_115BDC(void) {
     fn_3_5A6D4(6);
 }
 
+// fn_3_1160B8, size:0x4
+void fn_3_1160B8(void) {
+}
+
