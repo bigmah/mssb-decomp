@@ -1002,8 +1002,21 @@ void fn_3_11C5F8(void) {
 }
 
 // .text:0x0011CD00 size:0x204 mapped:0x8075BD94
+extern void* _OSAllocFromHeap(int, int);
+extern void* ActorObjectInitTable(u16);
+extern void fn_80025C58(void*, void*);
+extern void* _OSAllocFromHeap(int, int);
+extern void* ActorObjectInitTable(u16);
+extern void fn_80025C58(void*, void*);
 void fn_3_11CD00(void) {
-    return;
+    *(u16*)(lbl_8036E548 + 0x3078) = 3;
+    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
+    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    fn_3_11D2C8(0xD, 0, 1, 0, 0);
+    fn_3_11D2C8(0xE, 1, 1, 0, 0);
+    fn_3_11D2C8(0xF, 2, 1, 0, 0);
+    *(f32*)(lbl_3_common_bss_32724 + 0x14) = 0.5f;
+    fn_80025C58(*(void**)lbl_3_common_bss_32724, *(u8**)(lbl_8036E548 + 0x68) + 0x154);
 }
 
 // .text:0x0011CF04 size:0x80 mapped:0x8075BF98
