@@ -32,6 +32,7 @@ typedef struct {
     u8 b[0x1C];
 } Rec1C;
 extern Rec1C lbl_80109420[];
+extern u8 lbl_801094E4[];
 extern s32 fn_8006CDC0(s32);
 extern u8 lbl_800E8558[];
 extern u8 lbl_80109AE8[];
@@ -1791,7 +1792,7 @@ void fn_2_46ADC(void) {
     u8* e;
     for (i = 0; i < 54; i++) {
         e = lbl_2_bss_1A8248[0] + i * 0x34;
-        *(u8**)e = (u8*)&lbl_80109420[7] + i * 0x1C;
+        *(u8**)e = lbl_801094E4 + i * 0x1C;
         e[4] = (*(u8**)e)[0];
         e[5] = (*(u8**)e)[1];
         e[7] = 0;
@@ -1913,5 +1914,15 @@ void fn_2_43404(void) {
                 }
             }
         }
+    }
+}
+void fn_2_468DC(void) {
+    s32 i;
+    u8* e;
+    for (i = 0; i < 54; i++) {
+        e = lbl_2_bss_1A8248[0] + i * 0x34;
+        *(u8**)e = lbl_801094E4 + i * 0x1C;
+        e[4] = (*(u8**)e)[0];
+        e[5] = (*(u8**)e)[1];
     }
 }
