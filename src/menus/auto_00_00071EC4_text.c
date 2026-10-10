@@ -616,3 +616,18 @@ void fn_2_7A460(u8* o, s32 index) {
         }
     }
 }
+
+// fn_2_73BF0, size:0xCC
+s32 fn_2_73BF0(s32 arg0) {
+    s32 r;
+    if (lbl_2_bss_A840 == 0 && arg0 == 6) {
+        if (lbl_8034E9A0[0x4752] != 0) { r = 0x36; } else { r = 0x36; }
+    } else if (lbl_2_bss_A840 == 6 && arg0 == 0) {
+        if (lbl_8034E9A0[0x4752] != 0) { r = 8; } else { r = 0; }
+    } else if (lbl_2_bss_A840 <= arg0) {
+        if (lbl_8034E9A0[0x4752] != 0) { r = 0x17; } else { r = 0xF; }
+    } else if (lbl_2_bss_A840 > arg0) {
+        if (lbl_8034E9A0[0x4752] != 0) { r = 0x26; } else { r = 0x1E; }
+    } else r = arg0;
+    return r;
+}

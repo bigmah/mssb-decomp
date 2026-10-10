@@ -10,6 +10,7 @@ void fn_2_72054(s32 index, s8 value);
 void fn_2_72594(void);
 void fn_2_72630(void);
 void fn_2_73028(void);
+s32 fn_2_73BF0(s32 arg0);
 s32 fn_2_73B54(s32 a);
 void fn_2_744C8(void);
 void fn_2_74518(void);
