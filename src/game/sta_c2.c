@@ -94,7 +94,7 @@ extern f32 lbl_3_rodata_2778;
 extern const f32 lbl_3_rodata_26A0;
 extern f32 lbl_3_rodata_27E8;
 extern const f32 lbl_3_rodata_2698;
-extern f32 lbl_3_rodata_26C8;
+extern const f32 lbl_3_rodata_26C8;
 extern const f32 lbl_3_rodata_2678;
 extern u8 lbl_3_data_81DC[];
 extern Vec lbl_3_bss_A820[];
@@ -348,9 +348,41 @@ void fn_3_CC438(void) {
     CC354_inl((f32*)lbl_3_bss_A8D0);
 }
 
+#pragma dont_inline off
+static inline void CC438_inl(void) {
+    f32 one;
+    CC438Cfg* g = (CC438Cfg*)lbl_3_bss_A8A8;
+    g->a = lbl_3_rodata_269C;
+    g->b = lbl_3_rodata_26A0;
+    g->c = lbl_3_rodata_26A4;
+    g->d = lbl_3_rodata_26A8;
+    g->e = lbl_3_rodata_26AC;
+    g->f = lbl_3_rodata_26B0;
+    g->n = 8;
+    one = lbl_3_rodata_2698;
+    g->h = one / (f32)g->n / lbl_3_rodata_26B4;
+    g->hh = g->h * g->h;
+    g->inv = one / (lbl_3_rodata_26B8 * g->h);
+    CC354_inl((f32*)lbl_3_bss_A8D0);
+}
+#pragma dont_inline on
+
 // .text:0x000CC5C4 size:0x258 mapped:0x8070B658
-void fn_3_CC5C4(void) {
-    return;
+void fn_3_CC5C4(u8* p) {
+    p[0xCA] = g_Minigame[0x1B19];
+    fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+    p[0xCB] = p[0xCA];
+    ((BF90_c2*)p)->f = 1;
+    p[0] = 0;
+    CTRLSetScale((Control*)p, lbl_3_rodata_26C8, lbl_3_rodata_26C8, lbl_3_rodata_26C8);
+    *(f32*)(p + 0xA0) = *(f32*)(g_Minigame + 0x1AE0);
+    *(f32*)(p + 0xA4) = *(f32*)(g_Minigame + 0x1AE4);
+    *(f32*)(p + 0xA8) = *(f32*)(g_Minigame + 0x1AE8);
+    *(f32*)(p + 0xC0) = shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8));
+    CTRLSetRotation((Control*)p, 0.0f, *(f32*)(p + 0xC0), 0.0f);
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CC438_inl();
+    ((void (*)(u8*))fn_3_CBF80)(p);
 }
 
 // .text:0x000CC81C size:0x408 mapped:0x8070B8B0
@@ -1464,7 +1496,7 @@ void fn_3_D4CA4(u8* p) {
     f32* yb;
     f32* zb;
     p[0] = 0;
-    CTRLSetScale((Control*)p, 0.75f, 0.75f, 0.75f);
+    CTRLSetScale((Control*)p, lbl_3_rodata_26C8, lbl_3_rodata_26C8, lbl_3_rodata_26C8);
     if (p[0xCA] == 0) {
         yb = (f32*)lbl_3_data_182C8 + 8;
         t = lbl_3_data_182C8 + p[0x9C];
@@ -1501,7 +1533,7 @@ void fn_3_D4E00(u8* p) {
     p[0xCB] = p[0xCA];
     ((BF90_c2*)p)->f = 1;
     p[0] = 0;
-    CTRLSetScale((Control*)p, 0.75f, 0.75f, 0.75f);
+    CTRLSetScale((Control*)p, lbl_3_rodata_26C8, lbl_3_rodata_26C8, lbl_3_rodata_26C8);
     if (p[0xCA] == 0) {
         yb = (f32*)lbl_3_data_182C8 + 8;
         t = lbl_3_data_182C8 + p[0x9C];

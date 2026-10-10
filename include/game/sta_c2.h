@@ -12,7 +12,7 @@ void fn_3_CBF80(void);
 void fn_3_CC1D4(void);
 void fn_3_CC354(f32* p);
 void fn_3_CC438(void);
-void fn_3_CC5C4(void);
+void fn_3_CC5C4(u8* p);
 void fn_3_CC81C(void);
 void fn_3_CCC24(void);
 void fn_3_CD958(void);
