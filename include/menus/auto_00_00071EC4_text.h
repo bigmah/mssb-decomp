@@ -23,6 +23,7 @@ void fn_2_73994(u8* o, s32 i);
 void fn_2_83974(u8* o);
 s32 fn_2_7463C(u8* o);
 void fn_2_834F0(void);
+void fn_2_80C2C(u8* o, s32 i);
 
 void fn_2_76098(void);
 void fn_2_7609C(s32 unused, u8 a, u8 c);
@@ -50,6 +51,7 @@ u8 fn_2_75B58(s32 a, s32 index);
 
 void fn_2_747FC(void);
 void fn_2_834F0(void);
+void fn_2_80C2C(u8* o, s32 i);
 void fn_2_836A4(void);
 
 void fn_2_738C8(void);
