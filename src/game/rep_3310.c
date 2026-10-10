@@ -986,7 +986,16 @@ void fn_3_11B75C(void) {
 
 // .text:0x0011BBA4 size:0x488 mapped:0x8075AC38
 void fn_3_11BBA4(void) {
-    return;
+    *(u16*)(lbl_8036E548 + 0x3078) = 0xEE;
+    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
+    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    fn_3_11D2C8(0, 0, 0x82, 0, 0);
+    fn_3_11D2C8(0x15, 0x82, 0x64, 0, 0);
+    fn_3_11D2C8(0x16, 0xE6, 1, 0, 0);
+    fn_3_11D2C8(0x17, 0xE7, 1, 0, 0);
+    fn_3_11D2C8(0x18, 0xE8, 1, 0, 0);
+    fn_3_11D2C8(0x19, 0xE9, 4, 0, 0);
+    fn_3_11D2C8(0x1A, 0xED, 1, 0, 0);
 }
 
 // .text:0x0011C02C size:0x2A0 mapped:0x8075B0C0
