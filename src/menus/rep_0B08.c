@@ -998,6 +998,7 @@ void fn_2_6BE80(u8* object) {
 }
 
 extern f32 lbl_2_data_3F0C[];
+extern f32 lbl_2_data_3F2C[];
 
 // fn_2_68C80
 s32 fn_2_68C80(s32 first, s32 second) {
@@ -1117,4 +1118,25 @@ void fn_2_6ACF4(void) {
         *(s8*)(e + 0xCC) = -1;
         off += 0xD8;
     }
+}
+
+// fn_2_68B54
+s32 fn_2_68B54(s32 first, s32 second) {
+    MenuEntry* a = &lbl_2_bss_1A8248[0]->entries[first];
+    MenuEntry* b = &lbl_2_bss_1A8248[0]->entries[second];
+    f32 distance = PSVECDistance(&a->position, &b->position);
+    f32 x;
+    f32 y;
+
+    if (first == 0) {
+        x = lbl_2_data_3EF4[((u8*)lbl_2_bss_1A8248[0])[0x441C]] + lbl_2_data_3F2C[((u8*)lbl_2_bss_1A8248[0])[0x441C]];
+        y = lbl_2_data_3F0C[second];
+    } else {
+        x = lbl_2_data_3F0C[first];
+        y = lbl_2_data_3EF4[((u8*)lbl_2_bss_1A8248[0])[0x441C]] + lbl_2_data_3F2C[((u8*)lbl_2_bss_1A8248[0])[0x441C]];
+    }
+    if (distance < x + y && (u8)a->flagC0 != 0 && (u8)b->flagC0 != 0) {
+        return 1;
+    }
+    return 0;
 }
