@@ -15,6 +15,8 @@ typedef struct {
     s16 state;
 } MenuFadeState;
 
+void fn_2_6A708(void);
+void fn_2_6B4FC(MenuEntry* owner);
 void fn_2_71A38(u8* object);
 void fn_2_6ACF4(void);
 

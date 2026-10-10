@@ -1,6 +1,7 @@
 #include "menus/rep_0B08.h"
 
 extern const f32 lbl_2_rodata_B6C[];
+extern const f32 lbl_2_rodata_C28;
 
 #include <string.h>
 #include <math.h>
@@ -102,6 +103,13 @@ void fn_2_6F78C(MenuEntry* entry) {
     }
     entry->heading = entry->angle34;
 }
+
+extern u8* lbl_2_bss_1A824C[];
+extern f32 lbl_2_bss_A170;
+extern Vec lbl_2_data_2A340;
+extern const f32 lbl_2_rodata_BB0;
+extern const f32 lbl_2_rodata_C10;
+extern f32 fn_2_4A1E8(f32);
 
 // fn_2_6B024, size:0xFC
 void fn_2_6B024(MenuEntry* owner) {
@@ -1423,4 +1431,41 @@ void fn_2_6AE08(void) {
         *(s8*)(e + 0xCB) = -1;
         *(s8*)(e + 0xCC) = -1;
     } while (i < 8);
+}
+
+// fn_2_6D968, size:0x1C8
+void fn_2_6D968(MenuEntry* entry) {
+    f32 difference;
+    s32 id = entry->objectId;
+    MenuEntry* target;
+    MenuAnimation* settings;
+    s16* cache;
+
+    entry->heading = (f32)atan2(-(lbl_2_bss_1A8248[0]->entries[0].position.x - entry->position.x),
+        -(lbl_2_bss_1A8248[0]->entries[0].position.z - entry->position.z));
+    difference = fn_2_4A18C(entry->angle34 - entry->heading);
+    if ((difference < lbl_2_rodata_BE0 && difference > lbl_2_rodata_B58) ||
+        (difference > lbl_2_rodata_BE8 && difference < lbl_2_rodata_B58)) {
+        entry->state = 4;
+    } else if (difference < lbl_2_rodata_B58) {
+        entry->angle34 += lbl_2_rodata_C40;
+    } else {
+        entry->angle34 -= lbl_2_rodata_C40;
+    }
+    entry->heading = entry->angle34;
+    if (lbl_2_bss_1A8248[0]->entries[0].flagCD == 0) {
+        *(s16*)((u8*)entry + 0xA2) = 0x78;
+        target = &lbl_2_bss_1A8248[0]->entries[id];
+        settings = &lbl_2_data_3C84[1];
+        cache = (s16*)(lbl_2_bss_1A824C[0] + 0x190000);
+        if (cache[target->objectId + 0x3BAB] != 1) {
+            fn_2_8CD58(target->objectId, settings->clip, settings->mode, 1, settings->end, 0, 0);
+            cache = (s16*)(lbl_2_bss_1A824C[0] + 0x190000);
+            cache[target->objectId + 0x3BAB] = 1;
+        }
+        *(u8*)((u8*)entry + 0xBA) = 9;
+        entry->_50 = lbl_2_rodata_B58;
+        entry->_38 = lbl_2_rodata_B58;
+        entry->state = 2;
+    }
 }
