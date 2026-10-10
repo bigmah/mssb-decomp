@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_14737C(void);
+u32 fn_3_14737C(u8* o);
 void fn_3_147778(void* n, void* a);
 void fn_3_147C00(void* arg);
 void fn_3_147CFC(void* arg);
@@ -49,7 +49,7 @@ void fn_3_14CAB4(s8 a);
 void fn_3_14CB28(s8 a);
 void fn_3_14CBB4(u8* a, u8* o);
 void fn_3_14CD40(u8* a, u8* o);
-void fn_3_14CECC(void);
+u32 fn_3_14CECC(u8* o);
 void fn_3_14D2C0(u8* p);
 void fn_3_14D318(u8* a);
 void fn_3_14D44C(u8* a, u32 kind);
@@ -118,7 +118,7 @@ void fn_3_156548(void);
 void fn_3_156970(void);
 void fn_3_156D04(void);
 void fn_3_15730C(u32 n, f32 x, f32 y, f32 z);
-void fn_3_1573AC(void);
+void fn_3_1573AC(u8* o);
 void fn_3_157570(void);
 void fn_3_157588(int);
 void* fn_3_1575F0(u32 n);
