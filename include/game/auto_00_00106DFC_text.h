@@ -38,5 +38,6 @@ void fn_3_10C450(s32 a, s32 b);
 void fn_3_10F5BC(void);
 void fn_3_10F1D4(void);
 void fn_3_1070A4(void);
+s32 fn_3_108854(void);
 
 #endif

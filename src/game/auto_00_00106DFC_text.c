@@ -682,3 +682,33 @@ void fn_3_1070A4(void) {
         break;
     }
 }
+
+// fn_3_108854, size:0x194
+s32 fn_3_108854(void) {
+    s32 i;
+    s8 c;
+    if (g_Minigame[0x190B] != 0) {
+        return 0;
+    }
+    for (i = 0; i < 4; i++) {
+        c = *(s8*)(g_Minigame + 0x18CC + i);
+        if (c >= 0 && g_Minigame[0x18D8 + i] == 0 && (*(u16*)(g_Controls + c * 0x10 + 6) & 0x1000)) {
+            goto found;
+        }
+    }
+    return 0;
+found:
+    g_Minigame[0x1A3B] = 1;
+    *(s32*)lbl_3_common_bss_34C90 = *(s8*)(g_Minigame + 0x18CC + i);
+    *(s16*)(lbl_3_common_bss_34C90 + 0xA) = 0;
+    if (g_d_GameSettings[8] == 0) {
+        lbl_3_common_bss_34C90[0x1D0] = 0x10;
+    } else if (g_Minigame[0x1A3C] != 0) {
+        lbl_3_common_bss_34C90[0x1D0] = 0xD;
+    } else {
+        lbl_3_common_bss_34C90[0x1D0] = 9;
+    }
+    lbl_3_common_bss_34C90[0x1D2] = 0;
+    lbl_3_common_bss_34C90[0x1DA] = 0;
+    return 1;
+}
