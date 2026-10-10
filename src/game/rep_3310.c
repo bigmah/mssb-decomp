@@ -38,6 +38,9 @@ extern void fn_800B0A14_removeQueue(void*);
 extern void fn_80024FA4(void*, u32, void*, int);
 extern void CTRLSetTranslation(void* c, f32 x, f32 y, f32 z);
 extern void CTRLSetRotation(void* c, f32 x, f32 y, f32 z);
+extern void* _OSAllocFromHeap(int, int);
+extern void* ActorObjectInitTable(u16);
+extern void fn_80025C58(void*, void*);
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
 // 97%: only the fn_8001D0D0 arg-1 table lookup differs: original is addi r4,r29,0x88; lfsx f1,r4,r0 (base+0x88 in a register), ours folds to add r4,r29,r0; lfs 0x88(r4)
@@ -988,7 +991,13 @@ void fn_3_11BBA4(void) {
 
 // .text:0x0011C02C size:0x2A0 mapped:0x8075B0C0
 void fn_3_11C02C(void) {
-    return;
+    *(u16*)(lbl_8036E548 + 0x3078) = 0xA7;
+    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
+    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    fn_3_11D2C8(0, 0, 0x82, 0, 0);
+    fn_3_11D2C8(0xB, 0x82, 0x23, 0, 0);
+    fn_3_11D2C8(0xC, 0xA5, 1, 0, 0);
+    fn_3_11D2C8(0x1A, 0xA6, 1, 0, 0);
 }
 
 // .text:0x0011C2CC size:0x32C mapped:0x8075B360
@@ -1002,9 +1011,6 @@ void fn_3_11C5F8(void) {
 }
 
 // .text:0x0011CD00 size:0x204 mapped:0x8075BD94
-extern void* _OSAllocFromHeap(int, int);
-extern void* ActorObjectInitTable(u16);
-extern void fn_80025C58(void*, void*);
 extern void* _OSAllocFromHeap(int, int);
 extern void* ActorObjectInitTable(u16);
 extern void fn_80025C58(void*, void*);
