@@ -377,8 +377,34 @@ void fn_3_CD968(void) {
 }
 
 // .text:0x000CDB48 size:0x248 mapped:0x8070CBDC
-void fn_3_CDB48(void) {
-    return;
+extern const f64 lbl_3_rodata_26D0;
+extern const f32 lbl_3_rodata_26D8;
+extern const f64 lbl_3_rodata_26E0;
+extern const f64 lbl_3_rodata_26E8;
+extern const f64 lbl_3_rodata_26F0;
+extern const f64 lbl_3_rodata_26F8;
+void fn_3_CDB48(void* pv, u8* h) {
+    PEnt* p = pv;
+    f32 a;
+    s16 t;
+    a = lbl_3_rodata_2658[0] * (f32)(rand() % 360);
+    p->f10 = lbl_3_rodata_26D0 * (f32)cos(a);
+    p->f18 = lbl_3_rodata_26D0 * (f32)sin(a);
+    p->f14 = lbl_3_rodata_26D8;
+    p->f1C = lbl_3_rodata_26A0;
+    p->f1C = p->f1C + (f64)((u32)rand() % 2500) / lbl_3_rodata_26E0;
+    p->f38 = lbl_3_rodata_26E8 * p->f1C;
+    p->f3C = lbl_3_rodata_26F0 * p->f1C;
+    p->f20 = (f64)(rand() % 101) / lbl_3_rodata_26F8;
+    t = rand() % 24 + 0x48;
+    p->s4A = t;
+    ((u8*)p)[0x4F] = t;
+    p->f4 = *(f32*)(h + 0x18);
+    p->f8 = *(f32*)(h + 0x1C);
+    p->fC = *(f32*)(h + 0x20);
+    p->c43 = p->f24 = 255.0f;
+    p->s4A = ((u8*)p)[0x4F];
+    p->s48 = 0;
 }
 
 // .text:0x000CDD90 size:0x214 mapped:0x8070CE24
