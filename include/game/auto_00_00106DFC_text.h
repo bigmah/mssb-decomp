@@ -47,5 +47,6 @@ void fn_3_1070A4(void);
 s32 fn_3_108854(void);
 void fn_3_1079C8(u8* out, s32 mode);
 u32 fn_3_109CE8(RankEnt* p);
+void fn_3_10EFAC(void);
 
 #endif
