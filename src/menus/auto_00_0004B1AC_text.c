@@ -1021,6 +1021,22 @@ void fn_2_4CB94(void) {
     fn_2_4C6A8();
 }
 
+extern u8 lbl_2_data_2E64[];
+
+// fn_2_4C9C4, size:0x1D0
+void fn_2_4C9C4(void) {
+    u8* d = lbl_2_bss_1A8248[0];
+    g_d_GameSettings.GameModeSelected = 7;
+    g_d_GameSettings.exhibitionMatchInd = 0;
+    g_d_GameSettings._33 = lbl_2_data_2E64[d[0x4420]];
+    g_d_GameSettings._35 = 0;
+    g_d_GameSettings._36 = d[0x441D];
+    g_d_GameSettings.challengeDifficulty = d[0x4415];
+    g_d_GameSettings.bJMatchRelated = d[0x4418];
+    g_d_GameSettings._3A = (*(volatile u8**)&lbl_2_bss_1A824C)[0x1978F1];
+    fn_2_4C6A8();
+}
+
 // fn_2_4CD30, size:0x1B0
 void fn_2_4CD30(void) {
     g_d_GameSettings.GameModeSelected = 7;
@@ -1077,6 +1093,27 @@ void fn_2_4CEE0(void) {
         g->miniGameStadiumIndicator = 0;
         g->StadiumID = lbl_2_data_3CC0[v];
     }
+}
+
+// fn_2_4D194, size:0x1E4
+void fn_2_4D194(void) {
+    GameInitVariables* g = &g_d_GameSettings;
+    u8* d = *(u8**)&lbl_2_bss_1A8248;
+    u8 s;
+    g->exhibitionMatchInd = 0;
+    g->bJMatchInd = 0;
+    g->miniGameStadiumIndicator = 0;
+    g->challengeDifficulty = d[0x4415];
+    if ((s32)d[0x44EF] == 1) {
+        g->home_AwaySetting = 0;
+        g->StadiumID = 1;
+    } else {
+        s = lbl_2_data_3CC0[d[0x441E]];
+        g->home_AwaySetting = 0;
+        g->StadiumID = s;
+    }
+    g->bJMatchRelated = (*(volatile u8**)&lbl_2_bss_1A8248)[0x4418];
+    fn_2_4C6A8();
 }
 
 extern u8* lbl_803CC1B8[];
