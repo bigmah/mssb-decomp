@@ -1525,3 +1525,54 @@ void fn_2_69710(s32 index) {
         entry->_38 = 0.12f;
     }
 }
+
+extern const f32 lbl_2_rodata_BB4;
+extern const f32 lbl_2_rodata_BB8;
+extern const f32 lbl_2_rodata_BBC;
+extern const f32 lbl_2_rodata_BC0;
+extern const f32 lbl_2_rodata_BC4;
+extern const f32 lbl_2_rodata_BC8;
+extern const f32 lbl_2_rodata_BCC;
+extern const f32 lbl_2_rodata_BD0;
+extern const f32 lbl_2_rodata_BD4;
+extern const f32 lbl_2_rodata_BD8;
+
+// fn_2_6E88C, size:0x1E8
+void fn_2_6E88C(MenuEntry* entry) {
+    f32 difference;
+    f32 magnitude;
+    f32 step;
+
+    entry->heading = (f32)atan2(-(lbl_2_bss_1A8248[0]->entries[0].position.x - entry->position.x),
+        -(lbl_2_bss_1A8248[0]->entries[0].position.z - entry->position.z));
+    difference = fn_2_4A18C(entry->angle34 - entry->heading);
+    magnitude = (f32)__fabs(difference);
+    if (magnitude > lbl_2_rodata_BB4) {
+        step = lbl_2_rodata_BB8;
+    } else if (magnitude > lbl_2_rodata_BB8) {
+        step = lbl_2_rodata_BBC;
+    } else if (magnitude > lbl_2_rodata_BBC) {
+        step = lbl_2_rodata_BC0;
+    } else if (magnitude > lbl_2_rodata_BC0) {
+        step = lbl_2_rodata_BC4;
+    } else if (magnitude > lbl_2_rodata_BC4) {
+        step = lbl_2_rodata_BC8;
+    } else if (magnitude > lbl_2_rodata_BC8) {
+        step = lbl_2_rodata_BCC;
+    } else if (magnitude > lbl_2_rodata_BCC) {
+        step = lbl_2_rodata_BD0;
+    } else if (magnitude > lbl_2_rodata_BD0) {
+        step = lbl_2_rodata_BD4;
+    } else if (magnitude < lbl_2_rodata_BD0) {
+        step = lbl_2_rodata_BD8;
+    }
+    if (!((difference < lbl_2_rodata_BE0 && difference > lbl_2_rodata_B58) ||
+          (difference > lbl_2_rodata_BE8 && difference < lbl_2_rodata_B58))) {
+        if (difference < lbl_2_rodata_B58) {
+            entry->angle34 += step;
+        } else {
+            entry->angle34 -= step;
+        }
+    }
+    entry->heading = entry->angle34;
+}
