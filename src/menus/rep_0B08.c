@@ -1313,14 +1313,13 @@ static inline f32 menuSqrtf(f32 x) {
         guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
         guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
         guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
-        return (f32)(xd * guess);
+        x = (f32)(xd * guess);
     } else if (x < lbl_2_rodata_B88) {
-        return NAN;
+        x = NAN;
     } else if (isnan(x)) {
-        return NAN;
-    } else {
-        return x;
+        x = NAN;
     }
+    return x;
 }
 
 // .text:0x6A450 size:0x158
@@ -1341,4 +1340,46 @@ void fn_2_6A450(s32 index, f32 x, f32 z) {
         entry->_50 = menuSqrtf(dx);
     }
     entry->flagBB = 1;
+}
+
+// .text:0x69554 size:0x180
+s32 fn_2_69554(s32 index, f32 x, f32 z) {
+    f32 dz;
+    f64 guess;
+    f32 dx;
+    f32 px;
+    MenuEntry* entry;
+    f32 divisor;
+    f32 sum;
+    f32 sz;
+    u32 bonus;
+    f64 xd;
+    f32 sx;
+
+    entry = &lbl_2_bss_1A8248[0]->entries[index];
+    px = entry->position.x;
+    if (x == px && z == entry->position.z) {
+        return 1;
+    }
+    dx = x - px;
+    dz = z - entry->position.z;
+    sz = dz * dz;
+    sx = dx * dx;
+    sum = sx + sz;
+    if (sum > 0.0f) {
+        xd = (f64)sum;
+        guess = __frsqrte(xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        sum = (f32)(xd * guess);
+    } else if (sum < lbl_2_rodata_B88) {
+        sum = NAN;
+    } else if (isnan(sum)) {
+        sum = NAN;
+    }
+    bonus = (u32)*(u8*)((u8*)entry + 0xB7) >> 1;
+    divisor = *(f32*)((u8*)entry + 0x40);
+    divisor = (0.0f == divisor) ? 1.0f : divisor;
+    return bonus + (s32)(sum / divisor);
 }
