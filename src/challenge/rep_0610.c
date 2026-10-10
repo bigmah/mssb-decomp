@@ -1,6 +1,8 @@
 #include "challenge/rep_0610.h"
 
 // POOL BEGIN
+static u8 ch_6940[0x48 * 4];
+static u8 ch_fill692C[0x14];
 static u8 ch_68FC[0x30];
 static u8 ch_fill68F8[0x4];
 static u8 ch_67E0[0x118];
@@ -15,7 +17,11 @@ static u8 ch_fill5F6B;
 static u8 ch_fill5F6A;
 static u8 ch_5F69;
 static u8 ch_fill5F68;
-static u8 ch_3218[0x2D50];
+static u8 ch_fill5F60[0x8];
+static s32 ch_5F5C;
+static u8 ch_3758[0x2804];
+static u8 ch_3258[0x500];
+static u8 ch_3218[0x40];
 static u8 ch_fill30C0[0x158];
 static s32 ch_30BC;
 static u8 ch_fill307C[0x40];
@@ -828,6 +834,53 @@ void fn_1_E8D4(void) {
     }
 }
 
+extern void fn_1_17B5C(void);
+
+// .text:0x17D90 size:0x124
+void fn_1_17D90(void) {
+    s32 n;
+    u8* src;
+    u8* dst;
+    u8* base;
+    fn_800AD038(lbl_80366158[2]);
+    *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+    *(void (**)(void))(lbl_803CC1B8[0]) = fn_1_17B5C;
+    src = lbl_1_data_F4D4[1] + 0x40;
+    n = 8;
+    dst = (u8*)lbl_1_bss_3218 + 0x40;
+    base = lbl_8036E548 + lbl_1_bss_5F73[0] * 0x27C;
+    while ((src -= 8, dst -= 8, n-- != 0)) {
+        if ((s8)src[0x10] != 0) {
+            u8* table;
+            s16 a = *(s16*)(src + 0x12);
+            s16 b;
+            s16 c;
+            *(s16*)dst = a;
+            table = *(u8**)(base + a * 4 + 0xC14);
+            b = *(s16*)(src + 0x14);
+            *(s16*)(dst + 2) = b;
+            *(s16*)(dst + 6) = (s8)src[0x11];
+            c = *(s16*)(src + 0x16);
+            if (c == -2) {
+                if (table != NULL) {
+                    *(s16*)(dst + 4) = (s32) **(f32**)(*(u8**)(table + 4) + b * 0xC + 4);
+                } else {
+                    *(s16*)(dst + 4) = 0;
+                }
+            } else {
+                *(s16*)(dst + 4) = c;
+            }
+        } else {
+            *(s16*)dst = -1;
+            *(s16*)(dst + 6) = 0;
+            *(s16*)(dst + 4) = 0;
+        }
+    }
+    while ((s8)lbl_1_data_F4D4[1][*(s16*)lbl_1_data_F4D4 * 0x50] != 0) {
+        *(s16*)lbl_1_data_F4D4 += 1;
+    }
+}
+
 // fn_1_10458, size:0x108
 void fn_1_10458(void) {
     u8* state = lbl_1_bss_3070;
@@ -869,4 +922,410 @@ void fn_1_10458(void) {
             state[0x2F01] = 1;
         }
     }
+}
+
+extern void fn_1_ECF8(u8, u8, u8);
+
+typedef struct { u8 pad : 3; u8 mode : 2; u8 rest : 3; } ChallengeFlagBits;
+
+// .text:0x1644C size:0x10C
+void fn_1_1644C(void) {
+    u32 entry;
+    s32 i;
+    u8** p;
+    entry = *(u32*)(lbl_8036E548 + ch_5F73 * 4 + 0x2C50);
+    ch_5F69 = ch_5F69 ^ 1;
+    if (entry != 0) {
+        u8* slot = *(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34;
+        if (ch_5F69 == 0) {
+            *(u32*)(slot + 0x68) = 0;
+        } else {
+            *(u32*)(slot + 0x68) = entry + 0x72;
+        }
+        fn_1_ECF8(ch_5F73, (ch_6940 + ch_5F73 * 0x48)[0x44], ch_5F69);
+        p = (u8**)ch_67B8;
+        for (i = 0; i < 4; i++) {
+            if (p[i] != NULL) ((ChallengeFlagBits*)(p[i] + 0x11))->mode = 3;
+        }
+    }
+}
+
+extern const f32 lbl_1_rodata_7480;
+extern const f32 lbl_1_rodata_7484;
+extern const f32 lbl_1_rodata_7488;
+extern const f32 lbl_1_rodata_748C;
+extern const f32 lbl_1_rodata_7490;
+extern const f32 lbl_1_rodata_7494;
+extern const f32 lbl_1_rodata_7498;
+extern const f32 lbl_1_rodata_749C;
+
+// .text:0x1347C size:0x144
+void fn_1_1347C(void) {
+    Mtx44 projection;
+    *(f32*)(lbl_1_bss_67E0 + 0x108) = lbl_1_rodata_7394;
+    *(f32*)(lbl_1_bss_67E0 + 0x10C) = lbl_1_rodata_7480;
+    *(f32*)(lbl_1_bss_67E0 + 0x110) = lbl_1_rodata_7394;
+    *(f32*)(lbl_1_bss_67E0 + 0xFC) = lbl_1_rodata_7394;
+    *(f32*)(lbl_1_bss_67E0 + 0x100) = lbl_1_rodata_7394;
+    *(f32*)(lbl_1_bss_67E0 + 0x104) = lbl_1_rodata_73F8;
+    C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
+                 lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
+                 lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
+    GXSetProjection(projection, GX_PERSPECTIVE);
+    fn_800B806C(0, lbl_1_rodata_7484, lbl_1_rodata_7488, lbl_1_rodata_748C, lbl_1_rodata_7490,
+                lbl_1_rodata_7494, lbl_1_rodata_7498, lbl_1_rodata_749C);
+    *(s32*)(lbl_1_bss_67E0 + 0x114) = 0;
+    *(f32*)(lbl_1_bss_67E0 + 0xF8) = lbl_1_rodata_7394;
+    *(s16*)(lbl_1_bss_67E0 + 0xF0) = 0;
+    *(s16*)(lbl_1_bss_67E0 + 0xF2) = 0;
+}
+
+typedef struct { u16 a; u16 b; } ChPair;
+extern ChPair lbl_1_data_1DC0[];
+extern ChPair lbl_1_data_1E18[];
+
+// .text:0x14710 size:0x174
+void fn_1_14710(u8* object) {
+    s32 i;
+    s32 k;
+    ChPair* p;
+    ChPair* q;
+    s32 mode;
+    u16 x;
+    u16 y;
+    for (i = 0; i < 0x78; i++) {
+        ((u16*)object)[i + 0x39] = i;
+    }
+    k = 0;
+    p = lbl_1_data_1DC0;
+    do {
+        x = *(u16*)(object + p->a * 2 + 0x162);
+        y = *(u16*)(object + p->b * 2 + 0x162);
+        if (x != 0xFFFF && y != 0xFFFF) {
+            *(u16*)(object + x * 2 + 0x72) = y;
+            *(u16*)(object + y * 2 + 0x72) = x;
+        }
+        k += 4;
+        p = (ChPair*)((u8*)p + 4);
+    } while (((u16*)lbl_1_data_1DC0)[k / 2] != 0xFFFF);
+    mode = (lbl_1_bss_68FC + lbl_1_bss_5F73[0])[0x40];
+    if (mode < 0x2C) {
+        if (mode == 0x10) goto yes;
+        goto no;
+    }
+    if (mode >= 0x30) goto no;
+yes:
+    q = lbl_1_data_1E18;
+    goto done;
+no:
+    q = NULL;
+done:
+    if (q != NULL) {
+        ChPair* r = q;
+        for (; r->a != 0xFFFF; r++) {
+            u16 x = *(u16*)(object + r->a * 2 + 0x162);
+            u16 y = *(u16*)(object + r->b * 2 + 0x162);
+            if (x != 0xFFFF && y != 0xFFFF) {
+                *(u16*)(object + x * 2 + 0x72) = y;
+                *(u16*)(object + y * 2 + 0x72) = x;
+            }
+        }
+    }
+}
+
+#include <string.h>
+extern void fn_1_107B8(void);
+
+// .text:0xDF14 size:0x184
+void fn_1_DF14(void) {
+    u8* queue = lbl_803CC1B8[0];
+    s16 state = *(s16*)(queue + 0x10);
+    s32 idx = queue[0x14];
+    u8** p;
+    u8* q;
+    u8* r;
+    s32 n;
+    switch (state) {
+    case 0:
+        {
+            s16* e = (s16*)ch_3218;
+            (ch_6940 + ch_5F73 * 0x48)[0x44] = *(s16*)(ch_3218 + idx * 8);
+            (ch_6940 + ch_5F73 * 0x48)[0x45] = e[idx * 4 + 1];
+        }
+        fn_800B0A5C_insertQueue((void*)fn_1_107B8, 0xFF);
+        ch_5F5C = 2;
+        *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        break;
+    case 1:
+        if (ch_5F5C == 0) {
+            p = (u8**)ch_67B8 + 5;
+            q = ch_3258 + idx * 0xA0 + 0xA0;
+            r = ch_3758 + idx * 0x500 + 0x500;
+            n = 5;
+            while ((p--, q -= 0x20, r -= 0x100, n-- != 0)) {
+                if (*p != NULL) {
+                    memcpy(q, *p, 0x20);
+                    *(u8**)(q + 0x1C) = r;
+                    memcpy(r, *(void**)(*p + 0x1C), *(u16*)(*p + 0x1A) * 4);
+                } else {
+                    memset(q, 0, 0x20);
+                }
+            }
+            {
+                u8* o = *(u8**)(lbl_803CC1B8[0] + 0xC);
+                *(s16*)(o + 0x10) = 1;
+                fn_800B0A14_removeQueue(o);
+            }
+        }
+        break;
+    }
+}
+
+extern u8 lbl_1_data_F10C[];
+extern u8* lbl_1_data_F174[];
+extern const f32 lbl_1_rodata_73FC;
+extern void fn_1_F50C(void);
+
+// .text:0xF37C size:0x190
+void fn_1_F37C(void) {
+    u8* state = lbl_1_bss_3070;
+    u8* pad;
+    u8* object;
+    fn_1_F798(lbl_1_data_F10C, lbl_1_data_F0A8, 0x12);
+    pad = (u8*)&lbl_803C77B8;
+    if (*(u16*)(pad + 4) & 0x1100) {
+        *(u32*)lbl_1_data_F10C = *(u32*)(state + 0x28);
+        *(u32*)lbl_1_data_F174[0] = *(u32*)(state + 0x28);
+        *(u32*)(lbl_1_data_F174[0] + 4) = 5;
+        object = fn_800B0A5C_insertQueue((void*)fn_1_F50C, (u16)(*(u16*)(lbl_803CC1B8[0] + 0x12) + 1));
+        *(f32*)(object + 0x18) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x14) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x1C) = lbl_1_rodata_73F8;
+        *(f32*)(object + 0x20) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x24) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x28) = (f32) * (s32*)(lbl_1_data_F10C + 0x5C) / lbl_1_rodata_73FC;
+        *(f32*)(object + 0x2C) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x30) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x34) = (f32) * (s32*)(lbl_1_data_F10C + 0x60) / lbl_1_rodata_73FC;
+        *(s16*)(object + 0x3C) = 0x20;
+        object[0x3E] = 1;
+        *(u32*)(object + 0x38) = *(u16*)(state + 0x34);
+        *(u16*)(state + 0x34) = *(u16*)(state + 0x34) + 2;
+        object[0x3F] = (*(u16*)(pad + 4) >> 12) & 1;
+        return;
+    }
+    if (*(u16*)(pad + 4) & 0x200) {
+        *(u32*)(state + 0xC) = 0;
+        state[0x2F01] = 10;
+    }
+}
+
+extern void fn_8002F258(void*, s32, void*);
+extern void fn_8002F1AC(void*, s32);
+
+// .text:0xF50C size:0x1D8
+void fn_1_F50C(void) {
+    Vec coordinates;
+    u8* queue = lbl_803CC1B8[0];
+    u8* row = lbl_8036E548 + lbl_1_bss_5F73[0] * 0x27C + 0xC04;
+    if (row != NULL) {
+        *(f32*)(row + 0x34) = *(f32*)(queue + 0x14);
+        *(f32*)(row + 0x38) = *(f32*)(queue + 0x18);
+        *(f32*)(row + 0x3C) = *(f32*)(queue + 0x1C);
+    }
+    fn_80030D88((Vec*)(queue + 0x14), (Vec*)(queue + 0x20), lbl_1_data_F10C, 5);
+    if (queue[0x3E] != 0) {
+        queue[0x3E] = 0;
+        if (queue[0x3F] != 0) {
+            getAnimRelatedCoordinates(0, 0x1E, &coordinates);
+            coordinates.y = lbl_1_rodata_7394;
+            fn_8002F258(&coordinates, *(s32*)(queue + 0x38), lbl_1_data_F174[0]);
+            getAnimRelatedCoordinates(0, 0x22, &coordinates);
+            coordinates.y = lbl_1_rodata_7394;
+            fn_8002F258(&coordinates, *(s32*)(queue + 0x38) + 1, lbl_1_data_F174[0]);
+        } else {
+            fn_8002F258(queue + 0x14, *(s32*)(queue + 0x38), lbl_1_data_F174[0]);
+        }
+    } else if (queue[0x3F] != 0) {
+        getAnimRelatedCoordinates(0, 0x1E, &coordinates);
+        coordinates.y = lbl_1_rodata_7394;
+        fn_8002F1AC(&coordinates, *(s32*)(queue + 0x38));
+        getAnimRelatedCoordinates(0, 0x22, &coordinates);
+        coordinates.y = lbl_1_rodata_7394;
+        fn_8002F1AC(&coordinates, *(s32*)(queue + 0x38) + 1);
+    } else {
+        fn_8002F1AC(queue + 0x14, *(s32*)(queue + 0x38));
+    }
+    PSVECAdd((Vec*)(queue + 0x20), (Vec*)(queue + 0x2C), (Vec*)(queue + 0x20));
+    PSVECAdd((Vec*)(queue + 0x20), (Vec*)(queue + 0x14), (Vec*)(queue + 0x14));
+    *(s16*)(queue + 0x3C) = *(u16*)(queue + 0x3C) - 1;
+    if (*(u16*)(queue + 0x3C) == 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
+}
+
+// .text:0x1620C size:0x1F0
+void fn_1_1620C(void) {
+    s32 i = 0;
+    do {
+        u8* row = lbl_8036E548 + i * 0x27C;
+        *(f32*)(row + 0xC38) = 0.0f;
+        *(f32*)(row + 0xC3C) = 0.0f;
+        *(f32*)(row + 0xC40) = lbl_1_rodata_73F8;
+        *(f32*)(row + 0xC44) = 0.0f;
+        *(f32*)(row + 0xC48) = 0.0f;
+        *(f32*)(row + 0xC4C) = 0.0f;
+        CTRLSetTranslation((Control*)(*(u8**)(lbl_8036E548 + 0x60) + i * 0x90 + 0x44), 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation((Control*)(*(u8**)(lbl_8036E548 + 0x60) + i * 0x90 + 0x44), 0.0f, 0.0f, 0.0f);
+        i++;
+    } while (i < 1);
+    fn_1_1347C();
+}
+
+// .text:0x151F8 size:0x214
+void fn_1_151F8(void) {
+    u8* state = lbl_1_bss_3070;
+    u8* pad = (u8*)&lbl_803C77B8;
+    u16 buttons = *(u16*)(pad + 4);
+    s32 cursor;
+    f32 step;
+    f32 value;
+    if (buttons & 8) {
+        cursor = *(s32*)(state + 0xC) - 1;
+        *(s32*)(state + 0xC) = cursor;
+        if (cursor < 0) {
+            *(s32*)(state + 0xC) = 1;
+        }
+    } else if (buttons & 4) {
+        cursor = *(s32*)(state + 0xC) + 1;
+        *(s32*)(state + 0xC) = cursor;
+        if (cursor >= 2) {
+            *(s32*)(state + 0xC) = 0;
+        }
+    } else if (buttons & 1) {
+        switch (*(s32*)(state + 0xC)) {
+        case 0:
+            state[0x2F08] ^= 1;
+            fn_800B9A9C(state[0x2F08], *(f32*)(state + 0x2F04));
+            break;
+        case 1:
+            step = lbl_1_rodata_7430;
+            if (*(u16*)pad & 0x400) {
+                step = step * lbl_1_rodata_73F8;
+            }
+            step = step * lbl_1_rodata_73A4[0];
+            value = *(f32*)(state + 0x2F04) + step;
+            *(f32*)(state + 0x2F04) = value;
+            if (value > lbl_1_rodata_73BC) {
+                *(f32*)(state + 0x2F04) = lbl_1_rodata_7394;
+            }
+            if (*(f32*)(state + 0x2F04) < lbl_1_rodata_7394) {
+                *(f32*)(state + 0x2F04) = lbl_1_rodata_73BC;
+            }
+            fn_800B9A9C(state[0x2F08], *(f32*)(state + 0x2F04));
+            break;
+        }
+    } else if (buttons & 2) {
+        switch (*(s32*)(state + 0xC)) {
+        case 0:
+            state[0x2F08] ^= 1;
+            fn_800B9A9C(state[0x2F08], *(f32*)(state + 0x2F04));
+            break;
+        case 1:
+            step = lbl_1_rodata_7430;
+            if (*(u16*)pad & 0x400) {
+                step = step * lbl_1_rodata_73F8;
+            }
+            step = step * lbl_1_rodata_73BC;
+            value = *(f32*)(state + 0x2F04) + step;
+            *(f32*)(state + 0x2F04) = value;
+            if (value > lbl_1_rodata_73BC) {
+                *(f32*)(state + 0x2F04) = lbl_1_rodata_7394;
+            }
+            if (*(f32*)(state + 0x2F04) < lbl_1_rodata_7394) {
+                *(f32*)(state + 0x2F04) = lbl_1_rodata_73BC;
+            }
+            fn_800B9A9C(state[0x2F08], *(f32*)(state + 0x2F04));
+            break;
+        }
+    } else if (buttons & 0x200) {
+        *(s32*)(state + 0xC) = 0;
+        state[0x2F01] = 1;
+    }
+}
+
+#include "Dolphin/gx.h"
+
+// .text:0x10ACC size:0x220
+void fn_1_10ACC(f32 (*matrix)[4], f32* position, void* unused, u8* color, f32 size) {
+    GXCullMode cullMode;
+    GXGetCullMode(&cullMode);
+    GXLoadPosMtxImm(matrix, 0);
+    GXSetCurrentMtx(0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetNumTevStages(1);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetTevOp(0, 4);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetChanCtrl(0, 0, 1, 1, 0, 0, 2);
+    GXSetChanCtrl(2, 0, 1, 1, 0, 0, 2);
+    GXSetBlendMode(1, 4, 5, 3);
+    GXSetCullMode(0);
+    GXSetZMode(1, 7, 1);
+    GXSetLineWidth(10, 0);
+    GXBegin(0xA8, 0, 2);
+    GXPosition3f32(position[0], position[1], position[2]);
+    GXColor4u8(color[0], color[1], color[2], color[3]);
+    GXPosition3f32(position[0] + size, position[1] + size, position[2] + size);
+    GXColor4u8(color[0], color[1], color[2], color[3]);
+    GXSetLineWidth(6, 0);
+    GXSetCullMode(cullMode);
+    GXSetZMode(1, 3, 1);
+}
+
+extern void fn_1_F2C(s32, s32, s32);
+extern f32 lbl_1_data_F570[];
+
+// .text:0xC9E0 size:0x1BC
+void fn_1_C9E0(u8* object) {
+    Mtx concat;
+    Vec scaled;
+    fn_1_F2C(4, 0, 0);
+    PSMTXConcat((f32(*)[4])(lbl_1_bss_68FC + 0x10), (f32(*)[4])(object + 8), concat);
+    GXLoadPosMtxImm(concat, 0);
+    GXSetCurrentMtx(0);
+    GXSetBlendMode(1, 4, 5, 0);
+    GXSetZMode(1, 7, 1);
+    GXBegin(0xA8, 0, 6);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0xC);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x10);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x14);
+    GXWGFifo.u32 = 0xFF0000FF;
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x0);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x4);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x8);
+    GXWGFifo.u32 = 0x00FF00FF;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.u32 = 0x000000FF;
+    PSVECScale((Vec*)(lbl_1_bss_30C0 + 0x128), lbl_1_data_F570[0], &scaled);
+    GXWGFifo.f32 = scaled.x;
+    GXWGFifo.f32 = scaled.y;
+    GXWGFifo.f32 = scaled.z;
+    GXWGFifo.u32 = 0x000000FF;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    PSVECScale((Vec*)(lbl_1_bss_30C0 + 0x140), lbl_1_data_F570[0], &scaled);
+    GXWGFifo.f32 = scaled.x;
+    GXWGFifo.f32 = scaled.y;
+    GXWGFifo.f32 = scaled.z;
+    GXWGFifo.u32 = 0xFFFFFFFF;
 }
