@@ -240,6 +240,23 @@ void fn_2_3204(void) {
     fn_2_2FC0(lbl_803297E0[0xCF5F], 1, 1);
 }
 
+// fn_2_5F80, size:0x118
+void fn_2_5F80(void) {
+    s32 i;
+    s32 j;
+    s32 k;
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 9; j++) {
+            for (k = 0; k < 9; k++) {
+                if (*(s8*)(lbl_80354720 + i * 0x24 + j * 4 + 2) == *(s8*)(lbl_80354720 + i * 0x24 + k * 4 + 2)) {
+                    (lbl_803C6724 + i * 9 + j)[2] = *(s16*)(inMemRoster + i * 0x5A0 + k * 0xA0 + 0x24);
+                }
+            }
+            (lbl_803C6724 + i * 9 + j)[0x14] = j;
+        }
+    }
+}
+
 // fn_2_6098, size:0x3C
 void fn_2_6098(s32 index) {
     ((u32*)lbl_2_bss_F468)[(u8)index] = 9;
