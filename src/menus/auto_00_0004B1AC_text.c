@@ -1170,3 +1170,55 @@ void fn_2_509A4(void) {
         o[0x28] = 0;
     }
 }
+
+extern u8 lbl_2_data_1F884[];
+extern u8 lbl_2_data_1F894[];
+extern s16 lbl_800E877C[];
+extern u8 lbl_803C50E8[];
+extern void fn_80042D38(s32, void*);
+
+// fn_2_53408, size:0x1A8
+void fn_2_53408(void) {
+    switch (*(u16*)&lbl_2_bss_33FBCC) {
+    case 0:
+        if (fn_80035838(lbl_2_data_1F884, 8) != 0) {
+            lbl_2_bss_33FBCC.padD = 0;
+            if (*(u16*)(lbl_803CBBCC[0] + 6) == 0x10) {
+                *(u16*)&lbl_2_bss_33FBCC = 1;
+                lbl_8034E9A0[0x4756] = 1;
+            } else {
+                *(u16*)&lbl_2_bss_33FBCC = 2;
+            }
+            {
+                s16* s = lbl_800E877C;
+                if (s[0x18] == 0xA && lbl_803C50E8[0x47] != 0) {
+                    s16* m2;
+                    changeScene(6, 6);
+                    changeScene(3, 6);
+                    fn_80035B50(8);
+                    m2 = lbl_800E877C;
+                    s[0x18] = 9;
+                    m2[0x19] = 0;
+                    fn_80042D38(5, m2);
+                    *(u16*)&lbl_2_bss_33FBCC = 0;
+                    *(s32*)((u8*)&lbl_2_bss_F410 + 0x50) = 0;
+                    lbl_2_bss_9E08 = 0;
+                    lbl_803C50E8[0x52] = 0;
+                }
+            }
+        }
+        break;
+    case 1:
+        if (fn_80035838(lbl_2_data_1F894, 6) != 0) {
+            *(u16*)&lbl_2_bss_33FBCC = 2;
+        }
+        break;
+    case 2:
+        fn_800B0A5C_insertQueue((void*)fn_2_52690, 0x2000);
+        lbl_8034E9A0[0x472B] = g_d_GameSettings._06;
+        *(u16*)&lbl_2_bss_33FBCC = *(u16*)&lbl_2_bss_33FBCC + 1;
+        break;
+    case 3:
+        break;
+    }
+}
