@@ -90,4 +90,6 @@ void fn_2_1DC8(void);
 
 void fn_2_6484(void);
 
+void fn_2_6608(void);
+
 #endif

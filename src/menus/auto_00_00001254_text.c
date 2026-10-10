@@ -8,6 +8,8 @@ extern u8 lbl_803297E0[];
 extern void fn_2_2FC0(u8, s32, s32);
 
 extern void fn_2_7DDC(void);
+extern void fn_2_3624(s32);
+extern void fn_2_104FC(s32);
 extern void fn_2_87A8(void);
 extern void fn_2_7504(void);
 
@@ -705,5 +707,43 @@ void fn_2_6484(void) {
             lbl_2_bss_F468[0x33] = 0;
         }
         break;
+    }
+}
+
+// fn_2_6608, size:0x17C
+void fn_2_6608(void) {
+    s32 i;
+    u8* p;
+    if (lbl_2_bss_F468[0x59] != 0) {
+        fn_2_3624(0);
+    } else if (lbl_2_bss_F468[0x5A] != 0 && lbl_2_bss_100B8[0x2E] != 0 && ((u8*)&g_d_GameSettings)[0x10] == 0) {
+        fn_2_3624(0);
+    } else {
+        fn_2_104FC(0);
+    }
+    if (((u8*)&g_d_GameSettings)[0x10] == 1) {
+        if (lbl_2_bss_F468[0x5A] != 0) {
+            fn_2_3624(1);
+        } else {
+            fn_2_104FC(1);
+        }
+    }
+    if (lbl_2_bss_F468[0x56] != 0) {
+        lbl_803C5EA4[9] = 0;
+        lbl_803C5EA4[8] = 0;
+        lbl_2_bss_100B8[0x31] = 0;
+        lbl_2_bss_100B8[0x30] = 0;
+        if (((u8*)&g_d_GameSettings)[0x10] == 0) {
+            *(u32*)lbl_2_bss_F468 = 9;
+            lbl_803C66B0[0x59] = 0;
+        }
+        for (i = 0; i < 2; i++) {
+            if (lbl_2_bss_F468[i + 0x59] != 0) {
+                ((void (*)(s32, s32))fn_800625A4)(i, 0x1B);
+                lbl_2_bss_F468[i + 0x59] = 0;
+            } else {
+                ((void (*)(s32, s32))fn_800625A4)(i, 0xB);
+            }
+        }
     }
 }
