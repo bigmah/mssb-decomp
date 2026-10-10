@@ -3,10 +3,23 @@
 #include <string.h>
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
-extern u8 lbl_8036E548[];
 extern u8 lbl_2_bss_100B8[];
+typedef struct { u8 b[0x27C]; } MenuEnt27C;
+typedef union {
+    u8 raw[0x7000];
+    struct {
+        u8 pad0[0xC04];
+        MenuEnt27C ents[12];
+        u8 pad1[0x2C50 - 0xC04 - 0x27C * 12];
+        u8* ptrs[15];
+        u8* pool;
+        u8 pad2[0x3078 - 0x2C90];
+        u16 w3078;
+    } f;
+} MenuGlobals;
+extern MenuGlobals lbl_8036E548;
+#define G8 (lbl_8036E548.raw)
 
-extern u8 lbl_8036E548[];
 extern u8 lbl_2_bss_100B8[];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_800FE930[];
@@ -58,7 +71,7 @@ void fn_2_16CE0(void) {
     u8* resource;
     s32 i;
     for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
-        resource = *(u8**)(lbl_8036E548 + i * 4 + 0x2C50);
+        resource = *(u8**)(G8 + i * 4 + 0x2C50);
         if (resource != NULL && *(s16*)(resource + 0x62) == 0x6B) {
             lbl_2_bss_100B8[i + 0x40] = 1;
         }
@@ -69,7 +82,7 @@ void fn_2_16CE0(void) {
 void fn_2_16D38(void) {
     s32 i;
     for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
-        memset(*(void**)(lbl_8036E548 + i * 0x27C + 0xC0C), 0, 0x5C);
+        memset(*(void**)(G8 + i * 0x27C + 0xC0C), 0, 0x5C);
     }
 }
 
@@ -131,7 +144,7 @@ void fn_2_1937C(u16* a, s32 b) {
     GXSetCullMode(GX_CULL_BACK);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     for (i = 0; i < *a; i++) {
-        e = *(u8**)(lbl_8036E548 + i * 4 + 0x2C50);
+        e = *(u8**)(G8 + i * 4 + 0x2C50);
         if (e != NULL) {
             c = (u8*)a + i * 0x90 + 0x34;
             if (*(u32*)c != 0 && c[0x6C] != 0) {
@@ -163,10 +176,10 @@ void fn_2_18148(u8* q) {
     u8 gf;
     switch (q[0x21]) {
     case 0:
-        *(u8**)(q + 0x14) = lbl_8036E548 + q[0x1E] * 0x27C + 0xC04;
+        *(u8**)(q + 0x14) = G8 + q[0x1E] * 0x27C + 0xC04;
         (*(u8**)(q + 0x14))[0x252] = q[q[0x1E] + 0x18];
         q[0x20] = lbl_2_bss_100B8[q[0x1E] + 0x46];
-        lbl_8036E548[q[0x1E] * 0x27C + 0xE61] = 0;
+        G8[q[0x1E] * 0x27C + 0xE61] = 0;
         *(s16*)(*(u8**)(q + 0x14) + 0x68) = -1;
         lbl_2_bss_100B4[1] = 1;
         q[0x21] = q[0x21] + 1;
@@ -180,9 +193,9 @@ void fn_2_18148(u8* q) {
             fn_2_16F78(q[0x1E]);
             gf = *((u8*)&g_d_GameSettings + 0x10);
             if (gf == 0 && lbl_803C66B0[0x59] == 0 && q[0x1E] == 1) {
-                lbl_8036E548[q[0x1E] * 0x27C + 0xE61] = 0;
+                G8[q[0x1E] * 0x27C + 0xE61] = 0;
             } else {
-                lbl_8036E548[q[0x1E] * 0x27C + 0xE61] = (q[0x20] != 0);
+                G8[q[0x1E] * 0x27C + 0xE61] = (q[0x20] != 0);
             }
             if (g_d_GameSettings.GameModeSelected == 5 || gf != 0 || *(u16*)(lbl_803CBBCC[0] + 6) == 5) {
                 fn_2_14BB8(q[0x1E], 1);
@@ -241,4 +254,24 @@ void fn_2_18748(void) {
         }
         break;
     }
+}
+
+// fn_2_16DA8, size:0x164
+void fn_2_16DA8(void) {
+    s32 i;
+    lbl_8036E548.f.w3078 = 0;
+    for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+        lbl_8036E548.f.ptrs[i] = lbl_8036E548.f.ents[i].b;
+    }
+    i = 3;
+    do {
+        lbl_2_bss_100B8[i + 0x42] = 0;
+    } while (i-- != 0);
+    if (*(u16*)(lbl_803CBBCC[0] + 6) == 5 || g_d_GameSettings.GameModeSelected == 5) {
+        lbl_2_bss_100B8[0x46] = 1;
+        lbl_2_bss_100B8[0x47] = 0;
+        return;
+    }
+    lbl_2_bss_100B8[0x46] = 1;
+    lbl_2_bss_100B8[0x47] = 1;
 }

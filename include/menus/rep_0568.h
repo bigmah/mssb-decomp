@@ -21,4 +21,6 @@ void fn_2_18148(u8* q);
 
 void fn_2_18748(void);
 
+void fn_2_16DA8(void);
+
 #endif
