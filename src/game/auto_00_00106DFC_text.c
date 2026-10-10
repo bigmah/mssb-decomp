@@ -762,3 +762,34 @@ void fn_3_1079C8(u8* out, s32 mode) {
         }
     }
 }
+
+// fn_3_109CE8, size:0xA0
+static inline u8* fn_3_109D88_inl(void) {
+    if (g_Minigame[0x1A3C] != 0) {
+        return lbl_803616CC + 0x118;
+    }
+    if (g_Minigame[0x1A2A] != 0) {
+        return lbl_803616CC + (g_Minigame[0x1A2A] - 1) * 0x28 + 0x28;
+    }
+    return lbl_803616CC;
+}
+
+#pragma opt_unroll_loops off
+u32 fn_3_109CE8(RankEnt* p) {
+    RankEnt* e;
+    s32 v;
+    u32 i;
+    if (g_Minigame[0x1907] == 1) {
+        e = (RankEnt*)fn_3_109D88_inl();
+        v = p->a;
+        i = 0;
+        do {
+            if (v > e[i].a || (v == e[i].a && p->b > e[i].b)) {
+                break;
+            }
+            i++;
+        } while (i < 5);
+        return i;
+    }
+}
+#pragma opt_unroll_loops reset
