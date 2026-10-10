@@ -13,6 +13,11 @@ extern u8 lbl_80354768[];
 extern void fn_3_5A6D4(u8);
 
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_data_FAC4[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_800EFBA4[];
+extern void fn_3_5B408(void);
+extern s32 sndFXStartEx(u16, u8, u8, u8);
 extern u8 lbl_3_data_FACC[];
 extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(u16, u8, u8, u8);
@@ -606,4 +611,44 @@ void fn_3_B5090(void) {
         }
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
+}
+
+// fn_3_B5694, size:0x184
+void fn_3_B5694(void) {
+    InputStruct* c = &g_Controls[g_Practice.homeAway];
+    u16 b;
+    u16 d;
+    s32 v;
+    if (lbl_3_common_bss_32724[0xBB] == 0) {
+        b = c->newButtonInput;
+        if (b & 0x100) {
+            fn_3_B3C94(5);
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (b & 0x200) {
+            fn_3_5B408();
+            fn_3_B3C94(7);
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        } else {
+            d = *(u16*)&c->_08;
+            if (d & 1) {
+                if (g_Practice.practiceType != 0) {
+                    g_Practice.practiceType -= 1;
+                } else {
+                    g_Practice.practiceType = 4;
+                }
+                lbl_3_common_bss_32724[0xBD] = 1;
+                sndFXStartEx(0x1B7, *lbl_800EFBA4, 0x3F, 0);
+            } else if (d & 2) {
+                v = g_Practice.practiceType + 1;
+                g_Practice.practiceType = v;
+                if ((u8)v >= 5) {
+                    g_Practice.practiceType = 0;
+                }
+                lbl_3_common_bss_32724[0xBD] = 2;
+                sndFXStartEx(0x1B7, *lbl_800EFBA4, 0x3F, 0);
+            }
+        }
+    }
+    g_Practice.practiceType_2 = lbl_3_data_FAC4[g_Practice.practiceType];
+    *(s8*)(lbl_3_common_bss_32724 + 0xB9) = g_Practice.practiceType;
 }
