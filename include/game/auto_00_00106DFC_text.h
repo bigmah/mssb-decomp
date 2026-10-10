@@ -3,6 +3,12 @@
 
 #include "mssbTypes.h"
 
+typedef struct {
+    s32 a;
+    s16 b;
+    s16 pad;
+} RankEnt;
+
 void fn_3_106EB0(void);
 void fn_3_107078(void);
 void fn_3_10F550(s8 a, s16 b);
@@ -40,5 +46,12 @@ void fn_3_10F1D4(void);
 void fn_3_1070A4(void);
 s32 fn_3_108854(void);
 void fn_3_1079C8(u8* out, s32 mode);
+u32 fn_3_109CE8(RankEnt* p);
+void fn_3_10EFAC(void);
+void fn_3_1089E8(void);
+void fn_3_108230(void);
+void fn_3_109254(void);
+void fn_3_10AEF0(void);
+void fn_3_107E80(void);
 
 #endif
