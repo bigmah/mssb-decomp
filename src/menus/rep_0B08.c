@@ -1929,3 +1929,49 @@ void fn_2_6DE54(MenuEntry* owner) {
         owner->state = 2;
     }
 }
+
+extern int rand();
+
+// fn_2_6ED30, size:0x3D4
+void fn_2_6ED30(MenuEntry* owner) {
+    s32 id = owner->objectId;
+    s32 other = *(s32*)((u8*)lbl_2_bss_1A8248[0] + 0x1690);
+    s32 mode;
+    s32 who;
+
+    fn_2_69E1C(id);
+    if (id >= 2 && id <= 6 && (mode = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DD), who = *(s8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DC), mode == 1) && who == id) {
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 2;
+        owner->flagCB = 0;
+        owner->state = 3;
+        return;
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1 && *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x44F3) == 0) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 3;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            owner->flagCB = 0;
+        } else {
+            owner->flagCB = -1;
+        }
+    } else {
+        owner->flagCB = -1;
+    }
+    if (owner->_50 <= lbl_2_rodata_B58) {
+        *(s16*)((u8*)owner + 0xAE) = *(s16*)((u8*)owner + 0xB2);
+        *(s16*)((u8*)owner + 0xB2) = *(s16*)((u8*)owner + 0xB0);
+        if (rand() % 100 < 10) {
+            fn_2_68FBC(id, 1);
+            *(s16*)((u8*)owner + 0xA2) = rand() % 180 + 60;
+            owner->state = 2;
+            return;
+        }
+        owner->state = 0;
+    }
+}
