@@ -1669,3 +1669,64 @@ void fn_2_6F88C(MenuEntry* owner) {
         owner->flagCB = -1;
     }
 }
+
+extern const f32 lbl_2_rodata_B90;
+extern s16 fn_2_4A234(f32, f32);
+extern s16 fn_2_4A310(s16, s16);
+
+// fn_2_692D0, size:0x284
+void fn_2_692D0(s32 index, s32 steps, f32* outX, f32* outZ, f32* outDistance, f32 dx, f32 dz) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    f32 total = lbl_2_rodata_B58;
+    f32 speed = entry->_38;
+    f32 nx;
+    f32 inv;
+    s32 n;
+    f32 nz;
+    s32 i;
+    s16 heading;
+    s16 side;
+    f64 xd;
+    f64 guess;
+    if (total == dx && total == dz) {
+        *outX = entry->position.x;
+        *outZ = entry->position.z;
+        *outDistance = total;
+        return;
+    }
+    inv = dx * dx + dz * dz;
+    if (inv > 0.0f) {
+        xd = (f64)inv;
+        guess = __frsqrte(xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        inv = (f32)(xd * guess);
+    } else if (inv < lbl_2_rodata_B88) {
+        inv = NAN;
+    } else if (isnan(inv)) {
+        inv = NAN;
+    }
+    nx = dx / inv;
+    nz = dz / inv;
+    heading = fn_2_4A234(nx, nz);
+    if (!(entry->_38 < lbl_2_rodata_B90) && (side = *(s16*)((u8*)entry + 0x9A)) >= 0 && fn_2_4A310(heading, side) > 0x2A8) {
+        speed = lbl_2_rodata_B58;
+    }
+    n = *(u8*)((u8*)entry + 0xB7);
+    for (i = 0; i <= n; i++) {
+        f32 a = *(f32*)((u8*)entry + 0x44);
+        f32 b = *(f32*)((u8*)entry + 0x40);
+        speed += a;
+        if (speed > b) {
+            total += b;
+            break;
+        }
+        total += speed;
+    }
+    steps -= i + 1;
+    total = *(f32*)((u8*)entry + 0x40) * (f32)steps + total;
+    *outDistance = total;
+    *outX = nx * total + entry->position.x;
+    *outZ = nz * total + entry->position.z;
+}
