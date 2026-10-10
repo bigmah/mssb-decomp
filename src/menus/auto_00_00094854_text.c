@@ -131,6 +131,45 @@ void fn_2_95FE0(u8* object) {
     }
 }
 
+#define ENT94(o, k, i) (((u8**)lbl_80371C30)[((k) + *(u16*)((o) + 0x14) + (i)) * 2])
+
+// fn_2_95B78, size:0x2C4
+void fn_2_95B78(u8* object) {
+    s32 i;
+    if ((lbl_803C66B0[0x4F] == 0) ? 1 : 0) {
+        for (i = 0; i < 3; i++) {
+            if (i == *(s16*)(lbl_2_bss_1033C + 2)) {
+                *(u32*)(ENT94(object, 0xF, i) + 0x5C) = 0;
+                *(u8*)(ENT94(object, 0xF, i) + 0x68) = 1;
+                *(u32*)(ENT94(object, 0x12, i) + 0x5C) = 0;
+                *(u8*)(ENT94(object, 0x12, i) + 0x68) = 1;
+                *(u8*)(ENT94(object, 6, i) + 0x68) = 4;
+            } else if (i == *(s16*)(lbl_2_bss_1033C + 4)) {
+                *(u32*)(ENT94(object, 0xF, i) + 0x5C) = 0xA0000;
+                *(u8*)(ENT94(object, 0xF, i) + 0x68) = 4;
+                *(u32*)(ENT94(object, 0x12, i) + 0x5C) = 0xA0000;
+                *(u8*)(ENT94(object, 0x12, i) + 0x68) = 4;
+                *(u8*)(ENT94(object, 6, i) + 0x68) = 1;
+            } else if (*(s8*)(lbl_2_bss_1033C + 6) != 0 || i != 1) {
+                *(u32*)(ENT94(object, 0xF, i) + 0x5C) = 0;
+                *(u8*)(ENT94(object, 0xF, i) + 0x68) = 0;
+                *(u32*)(ENT94(object, 0x12, i) + 0x5C) = 0;
+                *(u8*)(ENT94(object, 0x12, i) + 0x68) = 0;
+                *(u32*)(ENT94(object, 6, i) + 0x5C) = 0xF0000;
+                *(u8*)(ENT94(object, 6, i) + 0x68) = 0;
+            }
+        }
+        *(u32*)(((u8**)((u8*)lbl_80371C30 + 0x18))[*(u16*)(object + 0x14) * 2] + 0x5C) = 0;
+        fn_800363D8(object, 3, 1, 4, *(s16*)(lbl_2_bss_1033C + 2));
+        *(u8*)(((u8**)((u8*)lbl_80371C30 + 0x18))[*(u16*)(object + 0x14) * 2] + 0x68) = 1;
+        *(u32*)(((u8**)((u8*)lbl_80371C30 + 0x20))[*(u16*)(object + 0x14) * 2] + 0x5C) = 0;
+        fn_800363D8(object, 4, 1, 3, *(s16*)(lbl_2_bss_1033C + 2));
+        *(u8*)(((u8**)((u8*)lbl_80371C30 + 0x20))[*(u16*)(object + 0x14) * 2] + 0x68) = 1;
+        fn_800626EC(0);
+        lbl_803C66B0[0x4F] = 1;
+    }
+}
+
 // fn_2_9493C, size:0x150
 void fn_2_9493C(u8* object) {
     s32 a;

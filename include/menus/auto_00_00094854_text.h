@@ -23,4 +23,8 @@ void fn_2_95FE0(u8* object);
 
 void fn_2_9493C(u8* object);
 
+void fn_2_96AD4(void);
+
+void fn_2_95B78(u8* object);
+
 #endif
