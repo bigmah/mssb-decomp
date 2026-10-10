@@ -210,7 +210,7 @@ void fn_3_55370(void);
 void fn_3_555AC(int);
 void fn_3_55710(int);
 void fn_3_55918(void);
-void fn_3_55CC4(void);
+void fn_3_55CC4(int i);
 void fn_3_55EEC(int);
 void fn_3_57144(void);
 void fn_3_57488(void);

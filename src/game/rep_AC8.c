@@ -37,6 +37,7 @@ extern f32 lbl_3_rodata_BE4;
 extern f32 lbl_3_rodata_B8C;
 extern f32 lbl_3_rodata_B64;
 extern f32 lbl_3_rodata_BB8;
+extern f32 lbl_3_rodata_CBC;
 extern f32 lbl_3_rodata_BDC;
 extern f32 lbl_3_rodata_BA0;
 extern s16 fn_3_9FCF8(s16, s16);
@@ -3464,8 +3465,55 @@ void fn_3_55918(void) {
 }
 
 // .text:0x00055CC4 size:0x228 mapped:0x80694D58
-void fn_3_55CC4(void) {
-    return;
+void fn_3_55CC4(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 v;
+    u8 a;
+    u8 b;
+    if (f[0x1E8] == 2 && *(s16*)(g_Ball + 0x1B78) != i) {
+        f[0x1E8] = 0;
+    }
+    if (*(f32*)(f + 0x50) <= lbl_3_rodata_B20) {
+        *(s16*)(f + 0x19A) = -1;
+        *(s16*)(f + 0x1A0) = 0;
+    } else {
+        *(s16*)(f + 0x19A) = radToShortAngle(*(f32*)(f + 0x64));
+        if (*(s16*)(f + 0x1A0) < 0x7FFE) {
+            *(s16*)(f + 0x1A0) = *(s16*)(f + 0x1A0) + 1;
+        } else {
+            *(s16*)(f + 0x1A0) = 0x7FFF;
+        }
+    }
+    v = *(s16*)(g_FieldingLogic + 0xDE);
+    if (v >= 0 && f[0x1C6] == 0 && g_Runners[v * 0x154 + 0x123] != 1) {
+        *(s16*)(g_FieldingLogic + 0xDE) = -1;
+    }
+    if (g_Ball[0x1BC9] == 1 || g_Ball[0x1BC9] == 2) {
+        if (*(s16*)(g_FieldingLogic + 0xDC) >= 0 && *(s16*)(g_FieldingLogic + 0xCC) == 9) {
+            v = *(s16*)(g_FieldingLogic + 0xDE);
+            if (v >= 0) {
+                if (((f32*)(g_Runners + 0x68))[v * 0x55] >= lbl_3_rodata_BB8 && ((f32*)(g_Runners + 0x68))[v * 0x55] <= lbl_3_rodata_CBC) {
+                    *(s16*)(g_FieldingLogic + 0xF4) = v;
+                }
+            }
+        }
+        v = *(s16*)(g_FieldingLogic + 0xF4);
+        if (v >= 0) {
+
+            if (g_Runners[v * 0x154 + 0x123] != 1 || *(s16*)(g_Runners + v * 0x154 + 0xE6) >= 0) {
+                *(s16*)(g_FieldingLogic + 0xF4) = -1;
+            } else {
+                a = g_Runners[v * 0x154 + 0x125];
+                b = g_Runners[v * 0x154 + 0x126];
+                if (*(s16*)(g_FieldingLogic + 0xC4) != -1 && *(s16*)(g_FieldingLogic + 0xC4) != a && *(s16*)(g_FieldingLogic + 0xC4) != b) {
+                    *(s16*)(g_FieldingLogic + 0xF4) = -1;
+                }
+                if (*(s16*)(g_FieldingLogic + 0xCC) != -1 && *(s16*)(g_FieldingLogic + 0xCC) != 9 && *(s16*)(g_FieldingLogic + 0xCC) != a && *(s16*)(g_FieldingLogic + 0xCC) != b) {
+                    *(s16*)(g_FieldingLogic + 0xF4) = -1;
+                }
+            }
+        }
+    }
 }
 
 // .text:0x00055EEC size:0x1258 mapped:0x80694F80
