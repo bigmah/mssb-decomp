@@ -1140,3 +1140,23 @@ s32 fn_2_68B54(s32 first, s32 second) {
     }
     return 0;
 }
+
+extern s16 lbl_2_data_3D30[];
+
+// fn_2_6CCB8
+void fn_2_6CCB8(MenuEntry* owner) {
+    s32 i;
+
+    fn_2_69E1C(owner->objectId);
+    if (owner->_50 <= 0.0f) {
+        *(u8*)((u8*)owner + 0xBA) = 4;
+        owner->flagC4 = 1;
+        for (i = 0; i < 4; i++) {
+            if (*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0) == *(s16*)((u8*)lbl_2_data_3D30 + *(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C2) * 8 + i * 2)) {
+                ((u8*)lbl_2_bss_1A8248[0])[0x4448] = i;
+            }
+        }
+        *(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C2) = *(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0);
+        owner->state = 2;
+    }
+}
