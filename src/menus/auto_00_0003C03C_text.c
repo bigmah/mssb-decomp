@@ -78,6 +78,19 @@ s32 fn_2_44F34(s32 index) {
     return *(s8*)(lbl_2_bss_1A8248[0] + index * 0x34 + 5) <= 3;
 }
 
+// fn_2_46418, size:0x274
+void fn_2_46418(void) {
+    s32 i;
+    memcpy(lbl_2_bss_1A8248[0], lbl_2_bss_1A8248[0] + 0xAF8, 0xAF8);
+    for (i = 0; i < 54; i++) {
+        lbl_2_bss_1A8248[0][i * 0x34 + 7] = 0;
+        lbl_2_bss_1A8248[0][i * 0x34 + 6] = 0;
+        lbl_2_bss_1A8248[0][i * 0x34 + 8] = 0;
+        lbl_2_bss_1A8248[0][i * 0x34 + 0x31] = 0;
+    }
+    lbl_2_bss_1A8248[0][0x442A] = lbl_2_bss_1A8248[0][0x15F0];
+}
+
 // fn_2_4668C, size:0x20
 void fn_2_4668C(s32 index) {
     u8* menu = lbl_2_bss_1A8248[0];
