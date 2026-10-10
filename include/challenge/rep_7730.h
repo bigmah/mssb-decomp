@@ -58,7 +58,7 @@ typedef struct {
 } ChallengeCurvePoint;
 
 typedef struct {
-    u8 padding[0x18];
+    f32 params[6];
     f32 step;
     f32 stepSq;
     s32 steps;
@@ -157,5 +157,7 @@ void fn_1_247A0(void);
 void fn_1_21180(ChallengeCurveDrawing* arg);
 
 void fn_1_248BC(s32 count);
+
+void fn_1_22DF4(ChallengeCurveDrawing* arg);
 
 #endif

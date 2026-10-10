@@ -5,7 +5,8 @@
 
 // POOL BEGIN (high-to-low; memory order is the reverse)
 static Mtx44 lbl_1_bss_47010;
-static u8 lbl_1_bss_45868[0x17A8];
+static ChallengeCurveTiming lbl_1_bss_45868;
+static u8 lbl_1_bss_45890[0x17A8 - 0x28];
 static ChallengePathNode lbl_1_bss_43F68[100];
 static u8 lbl_1_bss_43EE0[0x88];
 static f32 lbl_1_bss_F6E0[0x34800 / 4];
@@ -593,7 +594,7 @@ void fn_1_247A0(void) {
     v.x = speed * ((s8)((u8*)&lbl_803C77B8)[0x10] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
     v.y = speed * ((s8)((u8*)&lbl_803C77B8)[0x13] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
     v.z = speed * ((s8)((u8*)&lbl_803C77B8)[0x11] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
-    fn_80038B48(lbl_1_bss_45868, lbl_1_bss_43F68, q[0x2B], &v);
+    fn_80038B48(&lbl_1_bss_45868, lbl_1_bss_43F68, q[0x2B], &v);
 }
 
 extern void fn_1_273D8(void*);
@@ -649,7 +650,7 @@ void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
 
 extern const f32 lbl_1_rodata_77F8;
 extern const f32 lbl_1_rodata_7854;
-extern void fn_80038E2C(void*, s32, s32);
+extern void fn_80038E2C(void*);
 
 // .text:0x22DF4 size:0x158
 void fn_1_22DF4(ChallengeCurveDrawing* arg) {
@@ -661,7 +662,7 @@ void fn_1_22DF4(ChallengeCurveDrawing* arg) {
     arg->drawFlat = 1;
     arg->colorMode = 0;
     arg->drawFull = 0;
-    fn_80038E2C(&lbl_1_bss_6FB8, arg->steps, arg->drawFull);
+    fn_80038E2C(&lbl_1_bss_6FB8);
     fn_1_21180(arg);
 }
 
@@ -708,4 +709,35 @@ void fn_1_248BC(s32 count) {
         GXWGFifo.f32 = lbl_1_data_104A4 * node->side.z + node->position.z;
         GXWGFifo.u32 = lbl_1_data_10384[i] ^ 0xFFFFFF00;
     }
+}
+
+extern const f32 lbl_1_rodata_7808[];
+extern const f32 lbl_1_rodata_78C4[];
+extern const f32 lbl_1_rodata_78C8[];
+
+// .text:0x24A8C size:0x1C0
+void fn_1_24A8C(void) {
+    u8* q = lbl_803CC1B8[0];
+    ChallengeCurveTiming* tm;
+    s32 n;
+    f32 t;
+
+    fn_80038E2C(&lbl_1_bss_45868);
+    tm = &lbl_1_bss_45868;
+    tm->params[0] = *(u16*)(q + 0x1A);
+    tm->params[1] = *(f32*)(q + 0x14);
+    tm->params[2] = *(u16*)(q + 0x18) * lbl_1_rodata_78C4[0];
+    tm->params[3] = *(u16*)(q + 0x1C) * lbl_1_rodata_78C4[0];
+    tm->params[4] = *(u16*)(q + 0x1E) * lbl_1_rodata_78C4[0];
+    tm->params[5] = *(u16*)(q + 0x20) / lbl_1_rodata_78C8[0];
+    n = q[0x2A];
+    tm->steps = n;
+    t = lbl_1_rodata_77E4[0] / (f32)n;
+    tm->step = t;
+    tm->stepSq = t * t;
+    tm->inv = lbl_1_rodata_77E4[0] / ((&lbl_1_rodata_780C)[0] * t);
+    if (lbl_803C77B8._00 & 0x40) {
+        tm->steps = 1;
+    }
+    fn_80038CD0(q[0x2B], &lbl_1_bss_45868, lbl_1_bss_43F68, lbl_1_rodata_7808[0], *(u16*)(q + 0x24) * lbl_1_rodata_78C4[0]);
 }
