@@ -1513,3 +1513,82 @@ void fn_1_11F08(u8* camera) {
     memcpy(view + 0x70, camera + 0x108, 0xC);
     memcpy(view + 0x7C, camera + 0xFC, 0xC);
 }
+
+// .text:0x165E0 size:0x2E8
+void fn_1_165E0(void) {
+    u8* state = lbl_1_bss_3070;
+    s16 delta;
+    u16 buttons;
+    u8* light;
+
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    delta = 0;
+    light = ((u8**)(lbl_8036E548 + 0xAC))[(s8)state[0x2F00]];
+    if (buttons & 1) {
+        delta = -1;
+    } else if (buttons & 2) {
+        delta = 1;
+    } else if (buttons & 8) {
+        if (--*(s32*)(state + 0xC) < 0) {
+            *(s32*)(state + 0xC) = 9;
+        }
+    } else if (buttons & 4) {
+        if (++*(s32*)(state + 0xC) >= 10) {
+            *(s32*)(state + 0xC) = 0;
+        }
+    } else if (lbl_803C77B8._02 & 0x200) {
+        state[0x2F00] = 0;
+        *(s32*)(state + 0xC) = 0;
+        state[0x2F01] = 1;
+    }
+    if (lbl_803C77B8._00 & 0x400) {
+        delta *= 10;
+    }
+    switch (*(u32*)(state + 0xC)) {
+    case 0: {
+        *(s8*)(state + 0x2F00) += delta;
+        if (*(s8*)(state + 0x2F00) < 0) {
+            state[0x2F00] = 2;
+        } else if (*(s8*)(state + 0x2F00) >= 3) {
+            state[0x2F00] = 0;
+        }
+        break;
+    }
+    case 1:
+        light[0x70] += delta;
+        if (light[0x70] > 0xFF) {
+            light[0x70] = 0;
+        }
+        break;
+    case 2:
+        light[0x71] += delta;
+        if (light[0x71] > 0xFF) {
+            light[0x71] = 0;
+        }
+        break;
+    case 3:
+        light[0x72] += delta;
+        if (light[0x72] > 0xFF) {
+            light[0x72] = 0;
+        }
+        break;
+    case 4:
+        *(f32*)(light + 0x40) += delta;
+        break;
+    case 5:
+        *(f32*)(light + 0x44) += delta;
+        break;
+    case 6:
+        *(f32*)(light + 0x48) += delta;
+        break;
+    case 7:
+        *(f32*)(light + 0x58) += delta;
+        break;
+    case 8:
+        *(f32*)(light + 0x5C) += delta;
+        break;
+    case 9:
+        *(f32*)(light + 0x60) += delta;
+        break;
+    }
+}
