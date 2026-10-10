@@ -1921,3 +1921,77 @@ void fn_2_38538(void) {
         p[0x28] = 0;
     }
 }
+
+#define FN353FC_ENT(a, b) lbl_80371C30[(*(u16*)((a) + 0x14) + *(s16*)((b) + 0xE)) * 2]
+
+// fn_2_353FC, size:0x358
+void fn_2_353FC(u8* a, u8* b) {
+    s16 r = fn_2_53BC8(b);
+    if (r != -1) {
+        *(s16*)(b + 4) = r;
+    }
+    switch (*(s16*)(b + 4)) {
+    case 0: {
+        u8* p = FN353FC_ENT(a, b);
+        *(u32*)(p + 0x54) &= ~2;
+        *(s16*)(b + 4) = 0x26;
+        break;
+    }
+    case 2:
+        *(u32*)(FN353FC_ENT(a, b) + 0x54) |= 2;
+        *(u32*)(FN353FC_ENT(a, b) + 0x5C) = 0;
+        FN353FC_ENT(a, b)[0x68] = 1;
+        *(s16*)(b + 4) = 3;
+        break;
+    case 3:
+        if ((*(u32*)(FN353FC_ENT(a, b) + 0x5C) >> 16) >= 5) {
+            *(s16*)(b + 4) = 0x25;
+        }
+        break;
+    case 0x25:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DA) == 0) {
+            u8* p = FN353FC_ENT(a, b);
+            if ((*(u32*)(p + 0x5C) >> 16) <= 5) {
+                *(u32*)(p + 0x5C) = 0x50000;
+                FN353FC_ENT(a, b)[0x68] = 0;
+            } else {
+                p[0x68] = 4;
+            }
+        } else {
+            u8* p = FN353FC_ENT(a, b);
+            if ((*(u32*)(p + 0x5C) >> 16) >= 0xA) {
+                *(u32*)(p + 0x5C) = 0xA0000;
+                FN353FC_ENT(a, b)[0x68] = 0;
+            } else {
+                p[0x68] = 1;
+            }
+        }
+        break;
+    case 5:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DA) == 0) {
+            FN353FC_ENT(a, b)[0x68] = 4;
+        } else {
+            FN353FC_ENT(a, b)[0x68] = 1;
+        }
+        *(s16*)(b + 4) = 6;
+        break;
+    case 6:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DA) == 0) {
+            u8* p = FN353FC_ENT(a, b);
+            if ((*(u32*)(p + 0x5C) >> 16) == 0) {
+                p[0x68] = 0;
+                *(s16*)(b + 4) = 7;
+            }
+        } else {
+            u8* p = FN353FC_ENT(a, b);
+            if ((*(u32*)(p + 0x5C) >> 16) >= 0xF) {
+                p[0x68] = 0;
+                *(s16*)(b + 4) = 7;
+            }
+        }
+        break;
+    case 7:
+        *(u32*)(FN353FC_ENT(a, b) + 0x54) &= ~2;
+        break;
+    }
+}
