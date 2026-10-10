@@ -55,4 +55,22 @@ void fn_2_48BE0(void);
 
 s32 fn_2_4A0C4(const u16* a, const u16* b);
 
+void fn_2_472C4(s16* sel, s16* scroll, s16 count, s16 page, s16 flags);
+
+void fn_2_4AEE4(void);
+
+void fn_2_47CFC(void);
+
+void fn_2_487A0(void);
+
+void fn_2_47FF8(void);
+
+void fn_2_48A1C(void);
+
+void fn_2_4906C(void);
+
+void fn_2_477C0(void);
+
+void fn_2_478F4(void);
+
 #endif
