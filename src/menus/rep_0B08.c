@@ -2052,3 +2052,37 @@ void fn_2_6B4FC(MenuEntry* owner) {
         e->state = 0;
     }
 }
+
+// fn_2_6FB0C, size:0x328
+void fn_2_6FB0C(MenuEntry* owner) {
+    s32 id = owner->objectId;
+    s32 other = *(s32*)((u8*)lbl_2_bss_1A8248[0] + 0x1690);
+    s32 mode;
+    s32 who;
+
+    ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
+    fn_2_68FBC(owner->objectId, 1);
+    owner->angle34 = owner->heading;
+    if (id >= 2 && id <= 6 && (mode = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DD), who = *(s8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DC), mode == 1) && who == id) {
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 2;
+        owner->flagCB = 0;
+        owner->state = 2;
+        return;
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 2;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            owner->flagCB = 0;
+        }
+    } else {
+        owner->flagCB = -1;
+    }
+    owner->state = 1;
+}
