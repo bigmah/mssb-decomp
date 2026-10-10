@@ -3492,3 +3492,63 @@ void fn_2_2B43C(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
 }
+
+// fn_2_2FE50, size:0x258
+void fn_2_2FE50(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        item->state = 37;
+        break;
+    }
+    case 17: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        item->state = 37;
+        break;
+    }
+    case 5:
+        item->timer = 14;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+        break;
+    }
+}
