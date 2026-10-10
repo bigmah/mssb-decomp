@@ -112,4 +112,6 @@ void fn_1_165E0(void);
 
 void fn_1_1540C(void);
 
+void fn_1_F798(void* paramsArg, void* typesArg, s32 count);
+
 #endif

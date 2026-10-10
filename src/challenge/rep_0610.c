@@ -1702,3 +1702,181 @@ void fn_1_1540C(void) {
         }
     }
 }
+
+extern s32 lbl_1_bss_307C;
+
+// .text:0xF798 size:0x400
+void fn_1_F798(void* paramsArg, void* typesArg, s32 count) {
+    s32* p = paramsArg;
+    u8* types = typesArg;
+    s32 s;
+    s32 m;
+    s32 l;
+    u16 buttons;
+    u8 t;
+    s32 v;
+
+    if (lbl_803C77B8._00 & 0x400) {
+        s = 10;
+        m = 100;
+        l = 10000;
+    } else if (lbl_803C77B8._00 & 0x800) {
+        s = 20;
+        l = 1000000;
+        m = 10000;
+    } else {
+        s = 1;
+        l = 100000;
+        m = 1000;
+    }
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 8) {
+        if (lbl_1_bss_307C != 0) {
+            lbl_1_bss_307C--;
+        } else {
+            lbl_1_bss_307C = count - 1;
+        }
+    } else if (buttons & 4) {
+        if (++lbl_1_bss_307C == count) {
+            lbl_1_bss_307C = 0;
+        }
+    } else if (buttons & 1) {
+        t = types[lbl_1_bss_307C];
+        switch (t) {
+        case 0:
+            break;
+        case 1:
+            p[t] = (p[t] + 41) % 42;
+            break;
+        case 2:
+            p[2] -= s;
+            if (p[2] < 1) {
+                p[2] = 1;
+            }
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 8:
+        case 9:
+        case 20:
+            if (p[t] - m > 0) {
+                p[t] -= m;
+            }
+            break;
+        case 6:
+            p[6] -= s;
+            if (p[6] < 1) {
+                p[6] = 1;
+                if (p[7] > p[6]) {
+                    p[7] = p[6];
+                }
+            }
+            break;
+        case 7:
+        case 11:
+        case 21:
+        case 22:
+            p[t] -= s;
+            if (p[types[lbl_1_bss_307C]] < 0) {
+                p[types[lbl_1_bss_307C]] = 0;
+            }
+            break;
+        case 10:
+            p[t] ^= 1;
+            break;
+        case 12:
+        case 13:
+            p[t] -= l;
+            if (p[types[lbl_1_bss_307C]] < 0) {
+                p[types[lbl_1_bss_307C]] = 0;
+            }
+            break;
+        case 23:
+        case 24:
+            p[t] -= m;
+            break;
+        case 14:
+        case 15:
+            p[t] -= l;
+        case 16:
+            v = ((p[16] >> 8) & 0xFF);
+            v -= s;
+            if (v < 0) {
+                v = 0;
+            }
+            p[16] = v * 0x01010100;
+            break;
+        case 17:
+        case 18:
+        case 19:
+            break;
+        }
+    } else if (buttons & 2) {
+        t = types[lbl_1_bss_307C];
+        switch (t) {
+        case 0:
+            break;
+        case 1:
+            p[t] = (p[t] + 1) % 42;
+            break;
+        case 2:
+            p[2] += s;
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 8:
+        case 9:
+        case 20:
+            p[t] += m;
+            break;
+        case 6:
+            p[6] += s;
+            break;
+        case 7:
+            p[7] += s;
+            if (p[7] > p[6]) {
+                p[7] = p[6];
+            }
+            break;
+        case 11:
+        case 21:
+            p[t] += s;
+            if (p[types[lbl_1_bss_307C]] > 255) {
+                p[types[lbl_1_bss_307C]] = 255;
+            }
+            break;
+        case 22:
+            p[t] += s;
+            break;
+        case 10:
+            p[t] ^= 1;
+            break;
+        case 12:
+        case 13:
+            p[t] += l;
+            break;
+        case 23:
+        case 24:
+            p[t] += m;
+            break;
+        case 14:
+        case 15:
+            p[t] += l;
+            break;
+        case 16:
+            v = ((p[16] >> 8) & 0xFF);
+            v += s;
+            if (v > 255) {
+                v = 255;
+            }
+            p[16] = v * 0x01010100;
+            break;
+        case 17:
+        case 18:
+        case 19:
+            break;
+        }
+    }
+}
