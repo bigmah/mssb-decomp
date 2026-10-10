@@ -19,7 +19,7 @@ extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_12298[];
 extern void fn_800111B4(s32);
 extern void fn_2_94854(u8);
-extern void fn_2_9461C(s16);
+extern void fn_2_9461C(s32);
 extern void fn_2_94604(u8);
 extern void fn_2_94634(u8);
 extern u8 lbl_8036E548[];
@@ -46,6 +46,7 @@ extern void fn_2_72054(s32, s8);
 extern void fn_2_44504(void);
 extern void fn_8006877C(s32);
 extern u8 lbl_2_data_1056C[];
+extern u8 lbl_2_data_3CE8[];
 extern u8 lbl_2_data_3C40[];
 extern s32 fn_2_8CC88(s32);
 
@@ -759,6 +760,60 @@ void fn_2_3DF28(void) {
         p += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
         if (*(u16*)(p + 2) & 0x300) {
             *(s16*)(o + 0x14) = 0x32;
+            o[0x28] = 3;
+        }
+        break;
+    case 3:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+    }
+}
+
+// fn_2_3C168, size:0x284
+void fn_2_3C168(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    s16 v;
+    s32 i;
+    switch ((s8)o[0x28]) {
+    case 0:
+        *(s16*)(o + 0x14) = 1;
+        o[0x28] = 1;
+        break;
+    case 1:
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            v = *(s16*)(lbl_2_data_3CE8 + lbl_2_bss_1A8248[0][0x441C] * 0xC + lbl_2_bss_1A8248[0][0x4422] * 2 + 2);
+            ((s8**)lbl_2_bss_1A824C)[0][0x197851] = -1;
+            if (*(s16*)(lbl_2_data_3CE8 + lbl_2_bss_1A8248[0][0x441C] * 0xC + lbl_2_bss_1A8248[0][0x4422] * 2) != 5) {
+                for (i = 0; i < 51; i++) {
+                    if (v == lbl_2_bss_1A8248[0][i * 10 + 0x40F0] && lbl_2_bss_1A8248[0][i * 10 + 0x40F1] == 1) {
+                        ((s8**)lbl_2_bss_1A824C)[0][0x197851] = v;
+                    }
+                }
+            }
+            if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197851) != -1) {
+                fn_2_94854(0xB);
+                fn_2_9461C(*(s8*)(lbl_2_bss_1A824C[0] + 0x197851) + 7);
+                fn_2_94604(1);
+                fn_2_94634(1);
+                *(s16*)(o + 0x14) = 0x3C;
+                o[0x28] = 2;
+            } else {
+                o[0x28] = 3;
+            }
+        }
+        break;
+    case 2:
+        if ((*(s16*)(o + 0x14))-- == 0) {
             o[0x28] = 3;
         }
         break;
