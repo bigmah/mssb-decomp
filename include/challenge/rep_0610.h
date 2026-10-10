@@ -98,4 +98,6 @@ void fn_1_1347C(void);
 
 void fn_1_17D90(void);
 
+void fn_1_14710(u8* object);
+
 #endif

@@ -975,3 +975,56 @@ void fn_1_1347C(void) {
     *(s16*)(lbl_1_bss_67E0 + 0xF0) = 0;
     *(s16*)(lbl_1_bss_67E0 + 0xF2) = 0;
 }
+
+typedef struct { u16 a; u16 b; } ChPair;
+extern ChPair lbl_1_data_1DC0[];
+extern ChPair lbl_1_data_1E18[];
+
+// .text:0x14710 size:0x174
+void fn_1_14710(u8* object) {
+    s32 i;
+    s32 k;
+    ChPair* p;
+    ChPair* q;
+    s32 mode;
+    u16 x;
+    u16 y;
+    for (i = 0; i < 0x78; i++) {
+        ((u16*)object)[i + 0x39] = i;
+    }
+    k = 0;
+    p = lbl_1_data_1DC0;
+    do {
+        x = *(u16*)(object + p->a * 2 + 0x162);
+        y = *(u16*)(object + p->b * 2 + 0x162);
+        if (x != 0xFFFF && y != 0xFFFF) {
+            *(u16*)(object + x * 2 + 0x72) = y;
+            *(u16*)(object + y * 2 + 0x72) = x;
+        }
+        k += 4;
+        p = (ChPair*)((u8*)p + 4);
+    } while (((u16*)lbl_1_data_1DC0)[k / 2] != 0xFFFF);
+    mode = (lbl_1_bss_68FC + lbl_1_bss_5F73[0])[0x40];
+    if (mode < 0x2C) {
+        if (mode == 0x10) goto yes;
+        goto no;
+    }
+    if (mode >= 0x30) goto no;
+yes:
+    q = lbl_1_data_1E18;
+    goto done;
+no:
+    q = NULL;
+done:
+    if (q != NULL) {
+        ChPair* r = q;
+        for (; r->a != 0xFFFF; r++) {
+            u16 x = *(u16*)(object + r->a * 2 + 0x162);
+            u16 y = *(u16*)(object + r->b * 2 + 0x162);
+            if (x != 0xFFFF && y != 0xFFFF) {
+                *(u16*)(object + x * 2 + 0x72) = y;
+                *(u16*)(object + y * 2 + 0x72) = x;
+            }
+        }
+    }
+}
