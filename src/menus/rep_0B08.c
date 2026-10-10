@@ -2022,3 +2022,33 @@ void fn_2_70110(MenuEntry* owner) {
     }
     owner->state = 1;
 }
+
+// fn_2_6B4FC, size:0x124
+void fn_2_6B4FC(MenuEntry* owner) {
+    MenuEntry* entry;
+    s32 off;
+    f32 height;
+
+    entry = (MenuEntry*)((u8*)lbl_2_bss_1A8248[0] + 0x1610 + (off = owner->objectId * 0xD8));
+    if (entry->flagD0 != 0) {
+        height = (f32)sin(entry->bouncePhase);
+        height = lbl_2_rodata_BA8 * -height;
+        entry->bouncePhase += lbl_2_rodata_BAC[0];
+        if (entry->position.y > 0.0f) {
+            entry->bouncePhase = lbl_2_rodata_B58;
+            height = lbl_2_rodata_B58;
+            entry->flagD0 = 0;
+            if (entry->typeC3 == 19) {
+                ((u8*)lbl_2_bss_1A8248[0])[entry->objectId * 0xD8 + 0x16D0] = 0;
+            }
+        }
+        entry->position.y = height;
+    } else {
+        entry->position.y = lbl_2_rodata_B58;
+    }
+    if (owner->flagD0 == 0) {
+        MenuEntry* e = (MenuEntry*)((u8*)lbl_2_bss_1A8248[0] + off + 0x1610);
+        e->typeC3 = 0;
+        e->state = 0;
+    }
+}
