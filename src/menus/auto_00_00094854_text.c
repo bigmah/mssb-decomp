@@ -232,3 +232,40 @@ void fn_2_96AD4(void) {
     }
     *(void (**)(void))lbl_803CC1B8[0] = fn_2_96698;
 }
+
+extern void fn_2_96118(u8* object);
+extern void fn_2_95654(u8* object);
+extern void fn_2_94A8C(u8* object);
+
+// fn_2_96698, size:0x43C
+void fn_2_96698(void) {
+    u8* object = (u8*)lbl_803CC1B8[0];
+    switch (lbl_803C66B0[0x5D]) {
+    case 0x59:
+        fn_2_96118(object);
+        fn_2_95FE0(object);
+        break;
+    case 0x5A:
+        fn_2_95F3C(object);
+        fn_2_95E80(object);
+        break;
+    case 0x5B:
+        if (lbl_2_bss_1033C[0xB] != 0) {
+            fn_2_95654(object);
+            fn_2_95604();
+        } else {
+            fn_2_95B78(object);
+            fn_2_95B28();
+        }
+        break;
+    case 0x5C:
+        fn_2_94A8C(object);
+        fn_2_9493C(object);
+        break;
+    }
+    if (lbl_2_bss_1033C[0xE] != 0) {
+        lbl_2_bss_1033C[0xE] = 0;
+        fn_80034CEC(object);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
+}
