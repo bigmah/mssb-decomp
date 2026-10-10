@@ -1310,6 +1310,27 @@ s32 fn_2_45A84(void) {
     return flag == 1;
 }
 
+// fn_2_45354, size:0x194
+void fn_2_45354(void) {
+    s32 i;
+    typedef struct {
+        u8 pad[0x197866];
+        s8 cnt;
+        u8 pad2;
+        s8 arr[54];
+    } Q;
+    ((Q**)lbl_2_bss_1A824C)[0]->cnt = 0;
+    for (i = 0; i < 54; i++) {
+        ((Q**)lbl_2_bss_1A824C)[0]->arr[i] = -1;
+    }
+    for (i = 0; i < 54; i++) {
+        if (*(s8*)(lbl_2_bss_1A8248[0] + i + 0x4483) == 1) {
+            ((Q**)lbl_2_bss_1A824C)[0]->arr[((Q**)lbl_2_bss_1A824C)[0]->cnt] = i;
+            ((Q**)lbl_2_bss_1A824C)[0]->cnt++;
+        }
+    }
+}
+
 // fn_2_45810, size:0x128
 void fn_2_45810(void) {
     s32 i;
