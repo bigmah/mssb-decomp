@@ -19,7 +19,8 @@ static f32 lbl_1_bss_6FA8[3];
 static void* lbl_1_bss_6FA4[1];
 static GXTexObj lbl_1_bss_6EA4[8];
 static GXTlutObj lbl_1_bss_6E44[8];
-static u8 lbl_1_bss_6D48[0xFC];
+static u32 lbl_1_bss_6E24[8];
+static u8 lbl_1_bss_6D48[0xDC];
 static f32 lbl_1_bss_6BF4[0x154 / 4];
 static f32 lbl_1_bss_6BE4[4];
 static u8* lbl_1_bss_6BE0[1];
@@ -934,4 +935,110 @@ void fn_1_22644(void) {
     fn_1_22DF4((ChallengeCurveDrawing*)lbl_803CC1B8[0]);
     fn_1_23AD8(lbl_1_bss_47010, (Vec*)(lbl_1_bss_43EE0 + 0x48), (Vec*)(lbl_1_bss_43EE0 + 0x3C));
     *(void (**)(void))lbl_803CC1B8[0] = fn_1_225B8;
+}
+
+extern u8 lbl_1_data_10518[];
+
+// .text:0x2004C size:0x258
+void fn_1_2004C(void) {
+    u8* q = lbl_803CC1B8[0];
+    s32 ids[9] = { 5, 6, 7, 8, 9, 13, 0x60, 0x61, 0x55 };
+    u8* data;
+    u32 i;
+
+    switch (q[0x21]) {
+    case 0:
+        *(void**)(q + 0x18) = (void*)ARAMTransfer(lbl_1_data_10518, 0, 0, 0);
+        q[0x21]++;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            data = *(u8**)(q + 0x18);
+            *(u8**)(q + 0x14) = data + *(s32*)(data + 0x14);
+            convertTextureHeader(*(void**)(q + 0x14));
+            for (i = 0; i < 8; i++) {
+                lbl_1_bss_6E24[i] = i;
+                if (fn_1_2051C((ChallengeTextureHeader*)(*(u8**)(q + 0x14) + ids[i] * 32 + 4),
+                        &lbl_1_bss_6EA4[i], &lbl_1_bss_6E44[i], i)) {
+                    lbl_1_bss_6E24[i] |= 0x80000000;
+                }
+            }
+            q[0x21] = 0;
+            *(void (**)(void))lbl_803CC1B8[0] = fn_1_202A4;
+        }
+        break;
+    }
+}
+
+extern void* _OSAllocFromHeap(s32, s32);
+extern void* memcpy(void*, const void*, u32);
+extern void DCStoreRangeNoSync(void*, u32);
+extern void PPCSync(void);
+
+// .text:0x1DA54 size:0x290
+void fn_1_1DA54(void) {
+    u8* q = lbl_803CC1B8[0];
+    ChallengeTextureHeader* tex;
+    u8* object;
+    s32 size;
+
+    if ((s32)lbl_803C6CF8[0x715] != 1) {
+        return;
+    }
+    *(u8**)(q + 0x18) = *(u8**)(q + 0x14) + *(s32*)(*(u8**)(q + 0x14) + 0x14);
+    convertTextureHeader(*(void**)(q + 0x18));
+    *(u16*)(q + 0x28) = 2;
+    *(u16*)(q + 0x1C) = 3;
+    *(u16*)(q + 0x1E) = 0;
+    *(u16*)(q + 0x22) = 3;
+    *(u16*)(q + 0x20) = 3;
+    *(u16*)(q + 0x24) = 0;
+    *(u16*)(q + 0x26) = 0;
+    *(ChallengeTextureHeader**)(q + 0x2C) = _OSAllocFromHeap(0x20, 0x20);
+    memcpy(*(void**)(q + 0x2C), *(u8**)(q + 0x18) + 0x44, 0x20);
+    tex = *(ChallengeTextureHeader**)(q + 0x2C);
+    if (tex->palette != NULL) {
+        switch (tex->paletteFormat) {
+        case 0:
+        case 1:
+        case 2:
+            size = tex->paletteEntries * 2;
+            (*(ChallengeTextureHeader**)(q + 0x2C))->palette = _OSAllocFromHeap(0x20, size);
+            memcpy((*(ChallengeTextureHeader**)(q + 0x2C))->palette, *(void**)(*(u8**)(q + 0x18) + 0x48), size);
+            break;
+        }
+        DCStoreRangeNoSync((*(ChallengeTextureHeader**)(q + 0x2C))->palette, size);
+        tex = *(ChallengeTextureHeader**)(q + 0x2C);
+        switch (tex->format) {
+        case 8:
+            size = (tex->width + 7) / 8 * 8 * ((tex->height + 7) / 8 * 8);
+            break;
+        case 9:
+            size = (tex->width + 7) / 8 * 8 * ((tex->height + 3) / 4 * 4);
+            break;
+        default:
+            fn_800AD038(lbl_80366158[2]);
+            object = *(u8**)(lbl_803CC1B8[0] + 0xC);
+            *(s16*)(object + 0x10) = 1;
+            fn_800B0A14_removeQueue(object);
+            return;
+        }
+    } else {
+        switch (tex->format) {
+        case 14:
+            size = (tex->width + 7) / 8 * 8 * ((tex->height + 7) / 8 * 8);
+            break;
+        default:
+            fn_800AD038(lbl_80366158[2]);
+            object = *(u8**)(lbl_803CC1B8[0] + 0xC);
+            *(s16*)(object + 0x10) = 1;
+            fn_800B0A14_removeQueue(object);
+            return;
+        }
+    }
+    (*(ChallengeTextureHeader**)(q + 0x2C))->image = _OSAllocFromHeap(0x20, size);
+    memcpy((*(ChallengeTextureHeader**)(q + 0x2C))->image, *(void**)(*(u8**)(q + 0x18) + 0x44), size);
+    DCStoreRangeNoSync((*(ChallengeTextureHeader**)(q + 0x2C))->image, size);
+    PPCSync();
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_1D944;
 }

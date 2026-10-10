@@ -176,4 +176,8 @@ void fn_1_20BD8(void);
 
 void fn_1_22644(void);
 
+void fn_1_2004C(void);
+
+void fn_1_1DA54(void);
+
 #endif
