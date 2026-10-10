@@ -35,6 +35,8 @@ extern u8 lbl_800FDE84[];
 extern void fn_80050138(s32, s32, s32, s32, s32, s32);
 extern u8 lbl_80353B98[];
 extern u8 lbl_80354720[];
+extern s16 randRange_FUN_80042bf0(s32, s32);
+extern u8 lbl_80109038[];
 extern void fn_800506E8(s32, s32, s32);
 extern void fn_80067B40(s32, u8, s32);
 extern u8 lbl_80108EDC[];
@@ -838,4 +840,36 @@ retry:
         }
     }
     return result;
+}
+
+// fn_2_6784, size:0x100
+void fn_2_6784(void) {
+    s32 i;
+    s32 j;
+    u8 dup;
+    u8 v;
+    for (i = 0; i < 9; i++) {
+        if (i == 0) {
+            *(u32*)(lbl_8034E9A0 + 0x46E4) = 0;
+            lbl_803C6724[0xB] = 0;
+            lbl_803C6724[0x53] = 1;
+            lbl_8034E9A0[lbl_803C6724[0xB] + 0x4757] = 1;
+        } else {
+            do {
+                dup = 0;
+                v = lbl_80109038[randRange_FUN_80042bf0(0, 9)];
+                for (j = 0; j < i; j++) {
+                    if (*(s8*)(lbl_803C6724 + j + 0xB) == v) {
+                        dup = 1;
+                    }
+                }
+            } while (dup);
+            lbl_803C6724[i + 0xB] = v;
+            lbl_803C6724[i + 0x53] = 1;
+            lbl_8034E9A0[v + 0x4757] = 1;
+        }
+        lbl_80354720[i * 4 + 0x24] = i;
+        lbl_80354720[i * 4 + 0x26] = i;
+        lbl_80354720[i * 4 + 0x25] = i;
+    }
 }
