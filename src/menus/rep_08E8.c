@@ -702,3 +702,35 @@ void fn_2_47FF8(void) {
     PSMTXCopy((MtxPtr)lbl_2_bss_1A81D4, (MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40));
     fn_80052968();
 }
+
+extern f32 lbl_2_bss_55BC;
+extern Vec lbl_2_data_13304;
+extern Vec lbl_2_data_13310;
+
+// .text:0x48A1C size:0x1C4
+void fn_2_48A1C(void) {
+    f32 x;
+    f32 z;
+    Vec position;
+    Vec direction;
+    u8* menu = lbl_2_bss_1A824C[0];
+    u8* parameters = lbl_8036E548 + *(s32*)(menu + 0x19769C) * 0x27C + 0xC04;
+    memcpy(&position, parameters + 0x34, sizeof(Vec));
+    PSVECSubtract(&position, &lbl_2_data_13310, &direction);
+    x = direction.x * lbl_2_rodata_9A0;
+    z = direction.z * lbl_2_rodata_9A0;
+    direction.x = x;
+    direction.z = z;
+    position.x += ((s8*)((u8*)&lbl_803C77B8 + 0x10))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20] / 768.0f;
+    position.z += ((s8*)((u8*)&lbl_803C77B8 + 0x11))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20] / 768.0f;
+    if (0.0f != x || 0.0f != z) {
+        lbl_2_bss_55BC = fn_2_4A1E8(direction.z, x);
+    }
+    memcpy(&lbl_2_data_13310, parameters + 0x34, sizeof(Vec));
+    *(f32*)(parameters + 0x34) = position.x;
+    *(f32*)(parameters + 0x38) = position.y;
+    *(f32*)(parameters + 0x3C) = position.z;
+    *(f32*)(parameters + 0x40) = lbl_2_data_13304.x;
+    *(f32*)(parameters + 0x44) = lbl_2_bss_55BC;
+    *(f32*)(parameters + 0x48) = lbl_2_data_13304.z;
+}
