@@ -121,4 +121,6 @@ void fn_1_21298(ChallengeCurveDrawing* drawing);
 
 void fn_1_20640(ChallengeTextureStages* stages, u32* indices);
 
+void fn_1_1D944(void);
+
 #endif
