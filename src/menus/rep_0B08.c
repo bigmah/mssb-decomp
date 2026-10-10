@@ -1469,3 +1469,59 @@ void fn_2_6D968(MenuEntry* entry) {
         entry->state = 2;
     }
 }
+
+extern const f32 lbl_2_rodata_BA4;
+extern s16 fn_2_4A150(s16);
+extern s32 fn_2_4A2C4(f32);
+
+// fn_2_69710, size:0x1C4
+void fn_2_69710(s32 index) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    s16 a;
+    s16 d;
+
+    if (*(s16*)((u8*)entry + 0x9C) == 0) {
+        a = fn_2_4A2C4(entry->heading);
+        d = fn_2_4A150((s16)(a - (s16)fn_2_4A2C4(entry->angle30)));
+        if (d < 0x200) {
+            *(u8*)((u8*)entry + 0xBE) = 0;
+        } else if (d < 0x600) {
+            *(u8*)((u8*)entry + 0xBE) = 3;
+        } else if (d < 0xA00) {
+            *(u8*)((u8*)entry + 0xBE) = 1;
+        } else if (d < 0xE00) {
+            *(u8*)((u8*)entry + 0xBE) = 2;
+        } else {
+            *(u8*)((u8*)entry + 0xBE) = 0;
+        }
+        if (*(u8*)((u8*)entry + 0xBC) != 1) {
+            if (*(u8*)((u8*)entry + 0xBE) == 1) {
+                *(u8*)((u8*)entry + 0xBE) = 5;
+            } else {
+                *(u8*)((u8*)entry + 0xBE) = 4;
+            }
+        }
+    }
+    if (*(u8*)((u8*)entry + 0xBE) == 4 || *(u8*)((u8*)entry + 0xBE) == 5) {
+        entry->_38 = lbl_2_rodata_B68[0] * *(f32*)((u8*)entry + 0x44) + entry->_38;
+    } else {
+        entry->_38 = entry->_38 + *(f32*)((u8*)entry + 0x44);
+    }
+    if (entry->_C1[0] == 0 && entry->_C1[1] != 0 && *(s16*)((u8*)entry + 0xA0) == 0) {
+        *(s16*)((u8*)entry + 0xA0) = 0x1E;
+    }
+    if (entry->_C1[0] != 0) {
+        if (entry->_38 > *(f32*)((u8*)entry + 0x40)) {
+            entry->_38 = *(f32*)((u8*)entry + 0x40);
+        }
+        *(s16*)((u8*)entry + 0xA0) = 0;
+    } else if (*(s16*)((u8*)entry + 0xA0) != 0) {
+        if (entry->_38 >= *(f32*)((u8*)entry + 0x40)) {
+            entry->_38 = *(f32*)((u8*)entry + 0x40);
+        } else {
+            *(s16*)((u8*)entry + 0xA0) = 0;
+        }
+    } else if (entry->_38 > 0.12f) {
+        entry->_38 = 0.12f;
+    }
+}
