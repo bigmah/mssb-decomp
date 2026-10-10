@@ -11,7 +11,7 @@ static u8 ch_fill60E4[0x6D4];
 static u8* ch_60E0;
 static u8 ch_fill5F74[0x16C];
 static u8 ch_5F73;
-static u8 ch_fill5F72;
+static u8 ch_5F72;
 static u8 ch_5F71;
 static u8 ch_fill5F70;
 static u32 ch_5F6C;
@@ -19,7 +19,10 @@ static u8 ch_fill5F6B;
 static u8 ch_fill5F6A;
 static u8 ch_5F69;
 static u8 ch_fill5F68;
-static u8 ch_fill5F60[0x8];
+static u8 ch_fill5F64[0x4];
+static u8 ch_fill5F63;
+static s8 ch_5F62;
+static u16 ch_5F60;
 static s32 ch_5F5C;
 static u8 ch_3758[0x2804];
 static u8 ch_3258[0x500];
@@ -971,22 +974,22 @@ extern const f32 lbl_1_rodata_749C;
 // .text:0x1347C size:0x144
 void fn_1_1347C(void) {
     Mtx44 projection;
-    *(f32*)(lbl_1_bss_67E0 + 0x108) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x10C) = lbl_1_rodata_7480;
-    *(f32*)(lbl_1_bss_67E0 + 0x110) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0xFC) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x100) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x104) = lbl_1_rodata_73F8;
+    *(f32*)(ch_67E0 + 0x108) = lbl_1_rodata_7394;
+    *(f32*)(ch_67E0 + 0x10C) = lbl_1_rodata_7480;
+    *(f32*)(ch_67E0 + 0x110) = lbl_1_rodata_7394;
+    *(f32*)(ch_67E0 + 0xFC) = lbl_1_rodata_7394;
+    *(f32*)(ch_67E0 + 0x100) = lbl_1_rodata_7394;
+    *(f32*)(ch_67E0 + 0x104) = lbl_1_rodata_73F8;
     C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
                  lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
                  lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
     GXSetProjection(projection, GX_PERSPECTIVE);
     fn_800B806C(0, lbl_1_rodata_7484, lbl_1_rodata_7488, lbl_1_rodata_748C, lbl_1_rodata_7490,
                 lbl_1_rodata_7494, lbl_1_rodata_7498, lbl_1_rodata_749C);
-    *(s32*)(lbl_1_bss_67E0 + 0x114) = 0;
-    *(f32*)(lbl_1_bss_67E0 + 0xF8) = lbl_1_rodata_7394;
-    *(s16*)(lbl_1_bss_67E0 + 0xF0) = 0;
-    *(s16*)(lbl_1_bss_67E0 + 0xF2) = 0;
+    *(s32*)(ch_67E0 + 0x114) = 0;
+    *(f32*)(ch_67E0 + 0xF8) = lbl_1_rodata_7394;
+    *(s16*)(ch_67E0 + 0xF0) = 0;
+    *(s16*)(ch_67E0 + 0xF2) = 0;
 }
 
 typedef struct { u16 a; u16 b; } ChPair;
@@ -1898,4 +1901,82 @@ void fn_1_121D4(u8* camera) {
     PSVECSubtract((Vec*)(camera + 0x108), (Vec*)(camera + 0xFC), (Vec*)(camera + 0x88));
     PSVECNormalize((Vec*)(camera + 0x88), (Vec*)(camera + 0x88));
     fn_80052968();
+}
+
+extern u8 lbl_1_data_1F1A;
+
+// .text:0x15CE0 size:0x3F8
+void fn_1_15CE0(void) {
+    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+
+    if (buttons & 8) {
+        if (--ch_307C < 0) {
+            ch_307C = 5;
+        }
+    } else if (buttons & 4) {
+        if (++ch_307C >= 6) {
+            ch_307C = 0;
+        }
+    } else if (buttons & 1) {
+        switch (ch_307C) {
+        case 0:
+            if (--ch_5F72 >= 2) {
+                ch_5F72 = 1;
+            }
+            break;
+        case 1:
+            break;
+        case 2:
+            ch_67E0[0x118] ^= 1;
+            break;
+        case 3:
+            lbl_1_data_1F1A ^= 1;
+            break;
+        case 4:
+            if (ch_5F62 >= 0) {
+                ch_5F62--;
+            }
+            break;
+        case 5:
+            if (ch_5F60 > 1) {
+                ch_5F60--;
+            }
+            break;
+        }
+    } else if (buttons & 2) {
+        switch (ch_307C) {
+        case 0:
+            if (++ch_5F72 >= 2) {
+                ch_5F72 = 0;
+            }
+            break;
+        case 1:
+            break;
+        case 2:
+            ch_67E0[0x118] ^= 1;
+            break;
+        case 3:
+            lbl_1_data_1F1A ^= 1;
+            break;
+        case 4:
+            if (ch_5F62 < 1) {
+                ch_5F62++;
+            }
+            break;
+        case 5:
+            if (ch_5F60 < 0x10) {
+                ch_5F60++;
+            }
+            break;
+        }
+    } else if (buttons & 0x100) {
+        switch (ch_307C) {
+        case 1:
+            fn_1_1620C();
+            break;
+        }
+    } else if (buttons & 0x200) {
+        ch_307C = 0;
+        ch_5F71 = 1;
+    }
 }

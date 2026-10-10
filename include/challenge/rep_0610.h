@@ -116,4 +116,6 @@ void fn_1_F798(void* paramsArg, void* typesArg, s32 count);
 
 void fn_1_121D4(u8* camera);
 
+void fn_1_15CE0(void);
+
 #endif
