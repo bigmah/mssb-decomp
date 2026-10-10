@@ -664,3 +664,41 @@ void fn_2_487A0(void) {
         GXWGFifo.u8 = 0xC8;
     }
 }
+
+extern void fn_2_6A87C(void);
+extern void fn_2_9007C(void);
+extern void fn_2_93BF8(void*);
+extern void fn_80052968(void);
+extern u8 lbl_2_bss_1A81D4[];
+
+// .text:0x47FF8 size:0x1C0
+void fn_2_47FF8(void) {
+    Mtx44 proj;
+    u8 mode;
+
+    C_MTXFrustum(proj, lbl_2_rodata_950, lbl_2_rodata_954, lbl_2_rodata_958, lbl_2_rodata_95C, lbl_2_rodata_960, lbl_2_rodata_964);
+    GXSetProjection(proj, GX_PERSPECTIVE);
+    fn_2_48D54();
+    if (lbl_2_bss_1A824C[0][0x19784A] != 0) {
+        mode = lbl_2_bss_1A824C[0][0x197846];
+        if (mode == 1) {
+            if (lbl_2_bss_1A824C[0][0x197847] == 0) {
+                fn_2_6A87C();
+            } else {
+                fn_2_6A87C();
+                fn_2_93BF8(lbl_2_bss_1A81D4);
+            }
+        } else if (mode == 2) {
+            fn_2_9007C();
+        } else {
+            fn_2_93BF8(lbl_2_bss_1A81D4);
+        }
+    } else {
+        fn_2_93BF8(lbl_2_bss_1A81D4);
+    }
+    memcpy((u8*)fn_80052768_getCamera(0) + 0x70, lbl_2_bss_1A81D4 + 0x4C, sizeof(Vec));
+    memcpy((u8*)fn_80052768_getCamera(0) + 0x7C, lbl_2_bss_1A81D4 + 0x40, sizeof(Vec));
+    *(f32*)((u8*)fn_80052768_getCamera(0) + 0xA4) = *(f32*)(lbl_2_bss_1A81D4 + 0x3C);
+    PSMTXCopy((MtxPtr)lbl_2_bss_1A81D4, (MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40));
+    fn_80052968();
+}
