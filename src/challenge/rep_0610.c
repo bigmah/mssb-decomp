@@ -1253,3 +1253,37 @@ void fn_1_151F8(void) {
         state[0x2F01] = 1;
     }
 }
+
+#include "Dolphin/gx.h"
+
+// .text:0x10ACC size:0x220
+void fn_1_10ACC(f32 (*matrix)[4], f32* position, void* unused, u8* color, f32 size) {
+    GXCullMode cullMode;
+    GXGetCullMode(&cullMode);
+    GXLoadPosMtxImm(matrix, 0);
+    GXSetCurrentMtx(0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetNumTevStages(1);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetTevOp(0, 4);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetChanCtrl(0, 0, 1, 1, 0, 0, 2);
+    GXSetChanCtrl(2, 0, 1, 1, 0, 0, 2);
+    GXSetBlendMode(1, 4, 5, 3);
+    GXSetCullMode(0);
+    GXSetZMode(1, 7, 1);
+    GXSetLineWidth(10, 0);
+    GXBegin(0xA8, 0, 2);
+    GXPosition3f32(position[0], position[1], position[2]);
+    GXColor4u8(color[0], color[1], color[2], color[3]);
+    GXPosition3f32(position[0] + size, position[1] + size, position[2] + size);
+    GXColor4u8(color[0], color[1], color[2], color[3]);
+    GXSetLineWidth(6, 0);
+    GXSetCullMode(cullMode);
+    GXSetZMode(1, 3, 1);
+}
