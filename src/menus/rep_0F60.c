@@ -139,3 +139,78 @@ void fn_2_8C80C(s32 a, s32 b, s32 c, s32 d, s32 e) {
         CTRLSetRotation(*(u8**)(lbl_2_bss_340140 + 0x68) + i * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
     }
 }
+
+extern u8 lbl_2_data_3CD0[];
+extern u8 lbl_800E869C[];
+extern void fn_2_8D270(u8 a);
+
+// fn_2_8D9DC, size:0x138
+void fn_2_8D9DC(s32 mode) {
+    s32 i;
+    
+    for (i = 0; i < *(s16*)(lbl_2_bss_1A824C + 0x197746); i++) {
+        *(u8**)(lbl_2_bss_340140 + i * 4 + 0x2C50) = lbl_8036E548 + i * 0x27C + 0xC04;
+        (*(u8**)(lbl_2_bss_340140 + i * 4 + 0x2C50))[0x255] = i;
+        (*(u8**)(lbl_2_bss_340140 + i * 4 + 0x2C50))[0x254] = i;
+        switch (mode) {
+        case 0:
+            (*(u8**)(lbl_2_bss_340140 + i * 4 + 0x2C50))[0x252] = lbl_2_data_3CD0[i];
+            break;
+        case 1:
+            (*(u8**)(lbl_2_bss_340140 + i * 4 + 0x2C50))[0x252] = 0x1C;
+            break;
+        case 2:
+            (*(u8**)(lbl_2_bss_340140 + i * 4 + 0x2C50))[0x252] = lbl_800E869C[*(s16*)(lbl_2_bss_1A824C + 0x197706)];
+            break;
+        }
+        fn_2_8D270(i);
+    }
+}
+
+extern void LoadActorLayout(void* a);
+extern void convertGeometryAndSknHeader(void* a, s32 b);
+extern void* ActorObjectInitTable(u16 n);
+
+// fn_2_8B2C0, size:0x158
+void fn_2_8B2C0(void) {
+    s32 off;
+    s32 i;
+    u8* t;
+    *(u16*)(lbl_2_bss_340140 + 0x3078) = off = i = 0;
+    *(u8**)(lbl_2_bss_340140 + 0x2DA0) = (t = *(u8**)(lbl_2_bss_340140 + 0x2D9C)) + *(s32*)(t + 0x0);
+    *(u8**)(lbl_2_bss_340140 + 0x2DA4) = t + *(s32*)(t + 0x4);
+    *(u8**)(lbl_2_bss_340140 + 0x2DA8) = t + *(s32*)(t + 0x8);
+    *(u8**)(lbl_2_bss_340140 + 0x2DAC) = t + *(s32*)(t + 0xC);
+    *(u8**)(lbl_2_bss_340140 + 0x2DB0) = t + *(s32*)(t + 0x10);
+    *(u8**)(lbl_2_bss_340140 + 0x2DB4) = t + *(s32*)(t + 0x14);
+    *(u8**)(lbl_2_bss_340140 + 0x2DB8) = t + *(s32*)(t + 0x18);
+    *(u8**)(lbl_2_bss_340140 + 0x2DBC) = t + *(s32*)(t + 0x1C);
+    *(u8**)(lbl_2_bss_340140 + 0x2DC0) = t + *(s32*)(t + 0x20);
+    *(u8**)(lbl_2_bss_340140 + 0x2DC4) = t + *(s32*)(t + 0x24);
+    *(u8**)(lbl_2_bss_340140 + 0x2DC8) = t + *(s32*)(t + 0x28);
+    *(u8**)(lbl_2_bss_340140 + 0x2DCC) = t + *(s32*)(t + 0x2C);
+    do {
+        u8* e = lbl_2_bss_340140 + off;
+        u8* a = *(u8**)(e + 0x2DA0);
+        u8* g = *(u8**)(e + 0x2DA4);
+        u8* x = *(u8**)(e + 0x2DA8);
+        LoadActorLayout(a);
+        convertGeometryAndSknHeader(g, 0);
+        haveActLayoutPointToGeoHeader(a, g);
+        convertTextureHeader(x);
+        fn_800BD190((struct GQRValueGroups*)g, (s32)x);
+        i++;
+        off += 0xC;
+    } while (i < 4);
+}
+
+// fn_2_8B158, size:0x168
+void fn_2_8B158(void) {
+    s32 i;
+    *(u16*)(lbl_2_bss_340140 + 0x3078) = 4;
+    *(void**)(lbl_2_bss_340140 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_2_bss_340140 + 0x3078) * 0x28);
+    *(void**)(lbl_2_bss_340140 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_2_bss_340140 + 0x3078));
+    for (i = 0; i < *(u16*)(lbl_2_bss_340140 + 0x3078); i++) {
+        fn_2_8C80C(i, i, 1, 0, 0);
+    }
+}
