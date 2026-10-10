@@ -17,6 +17,8 @@ void fn_2_4C314(void);
 
 void fn_2_4C9C4(void);
 
+void fn_2_4D194(void);
+
 void fn_2_4C36C(void);
 
 void fn_2_54B38(void);

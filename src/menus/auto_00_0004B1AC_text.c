@@ -1095,6 +1095,27 @@ void fn_2_4CEE0(void) {
     }
 }
 
+// fn_2_4D194, size:0x1E4
+void fn_2_4D194(void) {
+    GameInitVariables* g = &g_d_GameSettings;
+    u8* d = *(u8**)&lbl_2_bss_1A8248;
+    u8 s;
+    g->exhibitionMatchInd = 0;
+    g->bJMatchInd = 0;
+    g->miniGameStadiumIndicator = 0;
+    g->challengeDifficulty = d[0x4415];
+    if ((s32)d[0x44EF] == 1) {
+        g->home_AwaySetting = 0;
+        g->StadiumID = 1;
+    } else {
+        s = lbl_2_data_3CC0[d[0x441E]];
+        g->home_AwaySetting = 0;
+        g->StadiumID = s;
+    }
+    g->bJMatchRelated = (*(volatile u8**)&lbl_2_bss_1A8248)[0x4418];
+    fn_2_4C6A8();
+}
+
 extern u8* lbl_803CC1B8[];
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_1FF84[];
