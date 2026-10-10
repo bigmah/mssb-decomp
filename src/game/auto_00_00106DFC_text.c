@@ -712,3 +712,53 @@ found:
     lbl_3_common_bss_34C90[0x1DA] = 0;
     return 1;
 }
+
+// fn_3_1079C8, size:0x1D4
+void fn_3_1079C8(u8* out, s32 mode) {
+    u8 order[4];
+    s16 vals[4];
+    u32 i;
+
+    i = 0;
+    do {
+        order[i] = i;
+        i++;
+    } while (i < g_Minigame[0x1906]);
+    switch (mode) {
+    case 0:
+    default:
+        fn_800246D4(fn_3_107C04, order, order, 1, g_Minigame[0x1906]);
+        i = 0;
+        do {
+            vals[i] = *(s16*)(g_Minigame + 0x1890 + i * 2);
+            i++;
+        } while (i < g_Minigame[0x1906]);
+        break;
+    case 1:
+        fn_800246D4(fn_3_107BD0, order, order, 1, g_Minigame[0x1906]);
+        i = 0;
+        do {
+            vals[i] = g_Minigame[0x1E22 + i];
+            i++;
+        } while (i < g_Minigame[0x1906]);
+        break;
+    case 2:
+        fn_800246D4(fn_3_107B9C, order, order, 1, g_Minigame[0x1906]);
+        i = 0;
+        do {
+            vals[i] = g_Minigame[0x1E26 + i];
+            i++;
+        } while (i < g_Minigame[0x1906]);
+        break;
+    }
+    out[0] = order[0];
+    out[1] = 0;
+    for (i = 1; i < g_Minigame[0x1906]; i++) {
+        out[i * 2] = order[i];
+        if (vals[order[i]] == vals[order[i - 1]]) {
+            out[i * 2 + 1] = out[i * 2 - 1];
+        } else {
+            out[i * 2 + 1] = i;
+        }
+    }
+}
