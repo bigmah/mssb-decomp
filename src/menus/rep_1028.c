@@ -1239,3 +1239,33 @@ void fn_2_90EC4(u8* object) {
         *(s16*)(object + 0x90) = 2;
     }
 }
+
+// fn_2_91C4C, size:0x128
+void fn_2_91C4C(u8* object) {
+    s32 index = *(s32*)(object + 0x78);
+    u8 st = object[0xA8];
+    if (st == 1) {
+        if (lbl_2_bss_3401BC != NULL) {
+            MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+            effect->f54 = lbl_2_rodata_1080;
+            effect->flag5A = 1;
+            effect->f5C = lbl_2_rodata_1080;
+            effect->flag59 = 1;
+            effect->mode = 2;
+            effect->enabled = 0;
+            *(s16*)(object + 0x90) = 2;
+        }
+    } else if (st == 2) {
+        if (fn_800B4A94(*(void**)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34)) == lbl_2_rodata_1080
+            && lbl_2_bss_3401BC != NULL) {
+            MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+            effect->f54 = lbl_2_rodata_1080;
+            effect->flag5A = 1;
+            effect->f5C = lbl_2_rodata_1080;
+            effect->flag59 = 1;
+            effect->mode = 2;
+            effect->enabled = 0;
+            *(s16*)(object + 0x90) = 2;
+        }
+    }
+}
