@@ -2,6 +2,7 @@
 #define __CHALLENGE_REP_0138_H__
 
 #include "mssbTypes.h"
+#include "Dolphin/GX.h"
 
 typedef struct ChallengeModelOffsets {
     u32 mainActor;
@@ -35,5 +36,10 @@ void fn_1_7280(void);
 void fn_1_6578(void* obj, void* image, s32 width, s32 height);
 
 void fn_1_66C4(void);
+
+void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, GXTexCoordID coord, GXTexMapID map);
+s32 fn_1_5924(s32 width, s32 x, s32 y, s32 bpp, s32 alt);
+void fn_1_8368(void);
+void fn_1_5698(void);
 
 #endif
