@@ -57,4 +57,6 @@ s32 fn_2_4A0C4(const u16* a, const u16* b);
 
 void fn_2_472C4(s16* sel, s16* scroll, s16 count, s16 page, s16 flags);
 
+void fn_2_4AEE4(void);
+
 #endif

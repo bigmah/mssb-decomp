@@ -472,3 +472,57 @@ void fn_2_472C4(s16* sel, s16* scroll, s16 count, s16 page, s16 flags) {
         break;
     }
 }
+
+extern s32 lbl_2_data_3840[][3];
+extern f32 lbl_2_data_3804[][3];
+extern s32 lbl_2_data_387C[][3];
+
+// .text:0x4AEE4 size:0x2C8
+void fn_2_4AEE4(void) {
+    GameInitVariables* settings = &g_d_GameSettings;
+    s16 mode;
+    s32 add;
+    u8* menu;
+
+    fn_2_4B2D0();
+    mode = *(u8*)(lbl_2_bss_1A824C[0] + 0x197843);
+    if ((s8)mode == 0) {
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19777C) = lbl_2_data_3840[lbl_2_bss_1A8248[0][0x4420]][settings->_3A];
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19777E) = settings->_20[settings->_35][0] * lbl_2_data_3804[lbl_2_bss_1A8248[0][0x4420]][settings->_3A];
+        add = *(s16*)(lbl_2_bss_1A824C[0] + 0x19777C) + *(s16*)(lbl_2_bss_1A824C[0] + 0x19777E);
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BE) = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC);
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) += add;
+        if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) > 999) {
+            *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 999;
+        }
+        if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) < 0) {
+            *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 0;
+        }
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197780) = add;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = add;
+    } else if ((s8)mode == 1) {
+        add = lbl_2_data_387C[lbl_2_bss_1A8248[0][0x4420]][settings->_3A];
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BE) = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC);
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) += add;
+        if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) > 999) {
+            *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 999;
+        }
+        if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) < 0) {
+            *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 0;
+        }
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197782) = add;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = add;
+    } else if ((s8)mode == 2) {
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197796) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = 0;
+    }
+    menu = lbl_2_bss_1A8248[0] + lbl_2_bss_1A8248[0][0x4420];
+    if ((s8)menu[0x44F8] > 0) {
+        menu[0x44F8] = menu[0x44F8] - 1;
+    }
+    if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 0 &&
+        !(lbl_2_bss_1A8248[0][0x4428] & (1 << lbl_2_bss_1A8248[0][0x4420]))) {
+        lbl_2_bss_1A8248[0][0x4423]++;
+        lbl_2_bss_1A8248[0][0x4428] |= 1 << lbl_2_bss_1A8248[0][0x4420];
+    }
+}
