@@ -15,4 +15,6 @@ void fn_2_1C3A8(void);
 void fn_2_1C41C(void);
 void fn_2_1C490(void);
 
+void fn_2_1C714(s32 arg);
+
 #endif
