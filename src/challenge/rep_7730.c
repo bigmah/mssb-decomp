@@ -2,24 +2,46 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
+
+// POOL BEGIN (high-to-low; memory order is the reverse)
+static Mtx44 lbl_1_bss_47010;
+static ChallengeCurveTiming lbl_1_bss_45868;
+static u8 lbl_1_bss_45890[0x17A8 - 0x28];
+static ChallengePathNode lbl_1_bss_43F68[100];
+static u8 lbl_1_bss_43EE0[0x88];
+static f32 lbl_1_bss_F6E0[0x34800 / 4];
+static u8 lbl_1_bss_76E0[0x8000];
+static f32 lbl_1_bss_74E0[0x200 / 4];
+static ChallengeCurvePoint lbl_1_bss_6FE0[20];
+static ChallengeCurveTiming lbl_1_bss_6FB8;
+static u8 lbl_1_bss_6FB4[4];
+static f32 lbl_1_bss_6FA8[3];
+static void* lbl_1_bss_6FA4[1];
+static GXTexObj lbl_1_bss_6EA4[8];
+static GXTlutObj lbl_1_bss_6E44[8];
+static u32 lbl_1_bss_6E24[8];
+static u8 lbl_1_bss_6D48[0xDC];
+static f32 lbl_1_bss_6BF4[0x154 / 4];
+static f32 lbl_1_bss_6BE4[4];
+static u8* lbl_1_bss_6BE0[1];
+static s32 lbl_1_bss_6BDC;
+static s32 lbl_1_bss_6BD8;
+// POOL END
 extern void fn_1_20BD8(void);
 
 extern void fn_1_246AC(void);
 
 extern u8* lbl_803CC1B8[];
 
-extern f32 lbl_1_bss_6BE4[4];
 
 extern void (*lbl_1_data_1066C[])(s16);
 
-extern f32 lbl_1_bss_6BF4[];
 extern void fn_80037B18(void*, Vec*, f32);
 
 extern u8 lbl_1_data_10674[];
 extern void fn_1_1DA54(void);
 
-extern u8 lbl_1_bss_6D48[];
-extern const f32 lbl_1_rodata_77E4[];
+extern const f32 lbl_1_rodata_77E4;
 extern void fn_1_272DC(void*, s32);
 extern void fn_1_AF4(s32, s32, f32);
 extern void fn_1_1E5D0(void*);
@@ -39,17 +61,17 @@ extern const f32 lbl_1_rodata_77DC[];
 extern const f32 lbl_1_rodata_77E0[];
 extern const f32 lbl_1_rodata_7814[];
 extern const f32 lbl_1_rodata_7820[];
-extern Mtx44 lbl_1_bss_47010;
 extern void (*lbl_1_data_104A8[])(void);
 extern void* lbl_80366158[];
 extern void fn_1_267F4(void);
 extern void fn_1_25C68(void);
 extern void (*lbl_1_data_10508[])(u8*);
 extern void (*lbl_1_data_10510[])(u8*);
-extern ChallengeCurvePoint lbl_1_bss_6FE0[];
 extern u32 lbl_1_data_104DC[];
-extern GXTlutObj lbl_1_bss_6E44[];
-extern GXTexObj lbl_1_bss_6EA4[];
+extern const f32 lbl_1_rodata_7810;
+extern const f64 lbl_1_rodata_7818[];
+extern const f32 lbl_1_rodata_784C[];
+extern void fn_80038CD0(u8, void*, void*, f32, f32);
 
 // fn_1_20640, size:0x194
 void fn_1_20640(ChallengeTextureStages* stages, u32* indices) {
@@ -282,7 +304,7 @@ void fn_1_23AD8(Mtx44 projection, Vec* camera, Vec* target) {
     target->y = lbl_1_rodata_77D8;
     target->z = lbl_1_rodata_77D8;
     C_MTXFrustum(projection, lbl_1_rodata_7858, lbl_1_rodata_785C,
-        lbl_1_rodata_7860, lbl_1_rodata_7864, lbl_1_rodata_77E4[0], lbl_1_rodata_7868);
+        lbl_1_rodata_7860, lbl_1_rodata_7864, (&lbl_1_rodata_77E4)[0], lbl_1_rodata_7868);
 }
 
 // fn_1_20F8C, size:0xB4
@@ -323,7 +345,7 @@ void fn_1_225B8(void) {
 // .text:0x1EFF4 size:0x68
 void fn_1_1EFF4(void) {
     fn_1_272DC(lbl_1_bss_6D48, 0);
-    fn_1_AF4(20, 20, lbl_1_rodata_77E4[0]);
+    fn_1_AF4(20, 20, (&lbl_1_rodata_77E4)[0]);
     if (*(u32*)(lbl_803CC1B8[0] + 0x2C) & 2) {
         fn_1_1E5D0(lbl_1_bss_6BF4);
     }
@@ -489,4 +511,664 @@ void fn_1_267F4(void) {
         break;
     }
     }
+}
+
+typedef struct {
+    u8 pad0[8];
+    u32 flags;
+    void* data;
+    void* table;
+    u16 width;
+    u16 height;
+    u8 active;
+    u8 pad19[3];
+} ChallengeAnimEntry;
+
+extern ChallengeAnimEntry lbl_1_data_107E4[];
+extern u8 lbl_1_data_107C4[];
+extern u8 lbl_803CBBC0[];
+extern void fn_800A7D4C(s32, void*);
+
+// .text:0x1D944 size:0x110
+void fn_1_1D944(void) {
+    u8* q = lbl_803CC1B8[0];
+    ChallengeAnimEntry* e;
+    u8* obj;
+    u8* d;
+    u16 a, b;
+
+    if (lbl_803C77B8._02 & 0x200) {
+        fn_800AD038(lbl_80366158[2]);
+        obj = *(u8**)(lbl_803CC1B8[0] + 0xC);
+        *(s16*)(obj + 0x10) = 1;
+        fn_800B0A14_removeQueue(obj);
+        return;
+    }
+    if (--*(u16*)(q + 0x20) == 0) {
+        *(u16*)(q + 0x20) = *(u16*)(q + 0x22);
+        *(u16*)(q + 0x1E) = (*(u16*)(q + 0x1E) + 1) % *(u16*)(q + 0x1C);
+    }
+    lbl_1_data_107E4[lbl_803CBBC0[0]].data = *(u8**)(q + 0x18) + (*(u16*)(q + 0x28) + *(u16*)(q + 0x1E)) * 32 + 4;
+    e = &lbl_1_data_107E4[lbl_803CBBC0[0]];
+    e->width = *(u16*)(q + 0x24);
+    e->height = *(u16*)(q + 0x26);
+    e->active = 1;
+    e->table = lbl_1_data_107C4;
+    e->flags = *(u32*)(q + 0x2C);
+    fn_800A7D4C(0, e);
+}
+
+// .text:0x21180 size:0x118
+void fn_1_21180(ChallengeCurveDrawing* arg) {
+    ChallengeCurveTiming* tm;
+    s32 n = arg->steps;
+    f32 t;
+    ChallengeCurvePoint* pts;
+    s32 idx;
+
+    tm = &lbl_1_bss_6FB8;
+    tm->steps = n;
+    t = ((&lbl_1_rodata_77E4)[0] / (f32)n) / lbl_1_rodata_784C[0];
+    tm->step = t;
+    tm->stepSq = t * t;
+    tm->inv = (&lbl_1_rodata_77E4)[0] / ((&lbl_1_rodata_780C)[0] * t);
+    if (lbl_803C77B8._00 & 0x400) {
+        tm->steps = 1;
+    }
+    fn_80038CD0(arg->pointCount, &lbl_1_bss_6FB8, lbl_1_bss_6FE0, lbl_1_rodata_7810, arg->scale);
+    pts = lbl_1_bss_6FE0;
+    idx = arg->pointCount - 1;
+    lbl_1_bss_6FA8[0] = pts[idx].position.x;
+    lbl_1_bss_6FA8[1] = pts[idx].position.y;
+    lbl_1_bss_6FA8[2] = pts[idx].position.z;
+    pts[idx].mode = arg->colorMode;
+}
+
+extern void fn_80038B48(void*, void*, u8, Vec*);
+
+// .text:0x247A0 size:0x11C
+void fn_1_247A0(void) {
+    u8* q = lbl_803CC1B8[0];
+    u16 speed = *(u16*)(q + 0x22);
+    Vec v;
+
+    v.x = speed * ((s8)((u8*)&lbl_803C77B8)[0x10] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
+    v.y = speed * ((s8)((u8*)&lbl_803C77B8)[0x13] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
+    v.z = speed * ((s8)((u8*)&lbl_803C77B8)[0x11] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
+    fn_80038B48(&lbl_1_bss_45868, lbl_1_bss_43F68, q[0x2B], &v);
+}
+
+extern void fn_1_273D8(void*);
+extern void fn_1_1F05C(void);
+
+// 99.5%: inlined fn_1_1F23C tail swaps r6/r7 (lbl_803CC1B8 address vs loaded pointer)
+// .text:0x1F2D8 size:0x140
+void fn_1_1F2D8(void) {
+    fn_1_273D8(lbl_1_bss_6D48);
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_1F05C;
+    *(u32*)(lbl_803CC1B8[0] + 0x2C) = 0;
+    *(u32*)(lbl_803CC1B8[0] + 0x28) = 0;
+    *(f32*)(lbl_803CC1B8[0] + 0x14) = (&lbl_1_rodata_780C)[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x18) = (&lbl_1_rodata_7810)[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x1C) = (&lbl_1_rodata_7810)[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x20) = (&lbl_1_rodata_77E4)[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x24) = (&lbl_1_rodata_77E4)[0];
+    fn_1_1F23C((ChallengeProjectionState*)lbl_1_bss_6BF4);
+    *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+    lbl_1_bss_6BE4[0] = 0.0f;
+    lbl_1_bss_6BE4[1] = 0.0f;
+    lbl_1_bss_6BE4[2] = 0.0f;
+    lbl_1_bss_6BE4[3] = 0.0f;
+}
+
+extern const f64 lbl_1_rodata_7878;
+extern const f64 lbl_1_rodata_7880;
+extern const f64 lbl_1_rodata_7888;
+
+// 69%: original keeps i*4 index (lfsx base,r31) plus a dead `i` counter; ours strength-reduces to 3 pointers
+// .text:0x22F4C size:0x14C
+void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
+    f64 c = (lbl_1_rodata_7878 * *(f32*)(lbl_1_data_FB98 + 0x928)) / *(f32*)(lbl_1_data_FB98 + 0x924);
+    f32 k;
+    f32 m;
+    s32 y;
+    s32 x;
+    s32 i;
+    s32 row;
+
+    c = c * c;
+    k = c;
+    m = lbl_1_rodata_7880 - lbl_1_rodata_7888 * c;
+    for (y = 0, row = 0; y < h; y++, row += w) {
+        for (x = 0, i = row; x < w; x++, i++) {
+            out[i] = m * cur[i]
+                + k * (cur[(x + 1) % w + row] + (cur[(x + (w - 1)) % w + row]
+                + (cur[x + w * ((y + (h - 1)) % h)] + cur[x + w * ((y + 1) % h)])))
+                - prev[i];
+            out[i] *= *(f32*)(lbl_1_data_FB98 + 0x92C);
+            
+        }
+    }
+}
+
+extern const f32 lbl_1_rodata_77F8;
+extern const f32 lbl_1_rodata_7854;
+extern void fn_80038E2C(void*);
+
+// .text:0x22DF4 size:0x158
+void fn_1_22DF4(ChallengeCurveDrawing* arg) {
+    arg->scale = lbl_1_rodata_77F8;
+    arg->unk1C = lbl_1_rodata_7854;
+    arg->unk25 = 0;
+    arg->steps = 10;
+    arg->pointCount = 10;
+    arg->drawFlat = 1;
+    arg->colorMode = 0;
+    arg->drawFull = 0;
+    fn_80038E2C(&lbl_1_bss_6FB8);
+    fn_1_21180(arg);
+}
+
+extern u32 lbl_1_data_10384[];
+extern f32 lbl_1_data_104A4;
+
+// .text:0x248BC size:0x1D0
+void fn_1_248BC(s32 count) {
+    u8 width;
+    GXTexOffset offset;
+    s32 i;
+    ChallengePathNode* node;
+
+    GXGetLineWidth(&width, &offset);
+    GXSetLineWidth(0x18, offset);
+    GXBegin(GX_LINESTRIP, GX_VTXFMT0, count);
+    i = count;
+    while (i-- != 0) {
+        node = &lbl_1_bss_43F68[i];
+        GXWGFifo.f32 = node->position.x;
+        GXWGFifo.f32 = node->position.y;
+        GXWGFifo.f32 = node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i];
+    }
+    GXSetLineWidth(width, offset);
+    GXBegin(GX_LINES, GX_VTXFMT0, count * 4);
+    i = count;
+    while (i-- != 0) {
+        node = &lbl_1_bss_43F68[i];
+        GXWGFifo.f32 = node->position.x;
+        GXWGFifo.f32 = node->position.y;
+        GXWGFifo.f32 = node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i];
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->up.x + node->position.x;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->up.y + node->position.y;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->up.z + node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i];
+        GXWGFifo.f32 = node->position.x;
+        GXWGFifo.f32 = node->position.y;
+        GXWGFifo.f32 = node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i] ^ 0xFFFFFF00;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->side.x + node->position.x;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->side.y + node->position.y;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->side.z + node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i] ^ 0xFFFFFF00;
+    }
+}
+
+extern const f32 lbl_1_rodata_7808[];
+extern const f32 lbl_1_rodata_78C4[];
+extern const f32 lbl_1_rodata_78C8[];
+
+// 91%: f3/f6 swap for 1.0f vs int->float magic, and the tail 78C4 load is CSE'd with the head (orig reloads, addi form)
+// .text:0x24A8C size:0x1C0
+void fn_1_24A8C(void) {
+    u8* q = lbl_803CC1B8[0];
+    s32 n;
+    f32 t;
+
+    fn_80038E2C(&lbl_1_bss_45868);
+    lbl_1_bss_45868.params[0] = *(u16*)(q + 0x1A);
+    lbl_1_bss_45868.params[1] = *(f32*)(q + 0x14);
+    lbl_1_bss_45868.params[2] = *(u16*)(q + 0x18) * lbl_1_rodata_78C4[0];
+    lbl_1_bss_45868.params[3] = *(u16*)(q + 0x1C) * lbl_1_rodata_78C4[0];
+    lbl_1_bss_45868.params[4] = *(u16*)(q + 0x1E) * lbl_1_rodata_78C4[0];
+    lbl_1_bss_45868.params[5] = *(u16*)(q + 0x20) / lbl_1_rodata_78C8[0];
+    n = q[0x2A];
+    lbl_1_bss_45868.steps = n;
+    t = (&lbl_1_rodata_77E4)[0] / (f32)n;
+    lbl_1_bss_45868.step = t;
+    lbl_1_bss_45868.stepSq = t * t;
+    lbl_1_bss_45868.inv = (&lbl_1_rodata_77E4)[0] / ((&lbl_1_rodata_780C)[0] * t);
+    if (lbl_803C77B8._00 & 0x40) {
+        lbl_1_bss_45868.steps = 1;
+    }
+    fn_80038CD0(q[0x2B], &lbl_1_bss_45868, lbl_1_bss_43F68, lbl_1_rodata_7808[0], *(u16*)(q + 0x24) * lbl_1_rodata_78C4[0]);
+}
+
+extern s16 fn_1_1E90C(s16, u16, u16, u16);
+extern void fn_1_26D28(void*, u16, u16, u16, void*);
+extern void fn_1_27330(void*);
+extern void fn_80037BAC(void*);
+
+// .text:0x1F05C size:0x1E0
+void fn_1_1F05C(void) {
+    u8* q;
+
+    if (*(u32*)(lbl_803CC1B8[0] + 0x2C) & 1) {
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = fn_1_1E90C(*(s16*)(lbl_803CC1B8[0] + 0x10), lbl_803C77B8._00,
+            lbl_803C77B8._02, *(u16*)((u8*)&lbl_803C77B8 + 4));
+    } else {
+        fn_1_26D28(lbl_1_bss_6D48, lbl_803C77B8._00, lbl_803C77B8._02, *(u16*)((u8*)&lbl_803C77B8 + 4),
+            (u8*)&lbl_803C77B8 + 0x10);
+    }
+    if (lbl_803C77B8._02 & 0x200) {
+        q = lbl_803CC1B8[0];
+        if (*(u32*)(q + 0x2C) & 1) {
+            *(void (**)(void))q = fn_1_24778;
+        } else {
+            *(u32*)(q + 0x2C) ^= 1;
+        }
+    } else if (lbl_803C77B8._02 & 0x1000) {
+        *(u32*)(lbl_803CC1B8[0] + 0x2C) ^= 1;
+    }
+    fn_1_27330(lbl_1_bss_6D48);
+    q = lbl_803CC1B8[0];
+    switch (*(s32*)(q + 0x28)) {
+    case 0:
+        if (*(u32*)(q + 0x2C) & 4) {
+            *(u32*)(q + 0x2C) ^= 4;
+            fn_1_1DD94();
+        }
+        fn_80037BAC(lbl_1_bss_6BF4);
+        break;
+    }
+    q = lbl_803CC1B8[0];
+    if (*(u32*)(q + 0x2C) & 1) {
+        fn_1_1E8C0(*(s16*)(q + 0x10));
+    }
+    fn_1_1EFF4();
+}
+
+typedef struct {
+    u32 value;
+} ChallengeLightColor;
+
+extern ChallengeLightColor lbl_1_rodata_77B0;
+extern const f32 lbl_1_rodata_7840;
+extern void LITAlloc(void**);
+extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
+extern void LITInitPos(void*, f32, f32, f32);
+extern void LITInitDir(void*, f32, f32, f32);
+extern void LITInitColor(void*, ChallengeLightColor);
+extern u8* ActorObjectInitTable(u16);
+extern void LoadActorLayout(void*);
+extern void convertGeometryAndSknHeader(void*, s32);
+extern void fn_800BDC88(u8*, s32, s32, void*, s32, s32);
+extern void fn_800B2C08(void*, s32);
+extern void fn_800BD548(u8*, s32, ...);
+
+extern const f32 lbl_1_rodata_77E4_s;
+// 99.8%: LITInitPos: orig `lis r3,7840; lis r4,6FA4; addi r3,r4` (float const lis first), ours swaps r3/r4
+// .text:0x20E00 size:0x18C
+void fn_1_20E00(u8* obj) {
+    ChallengeLightColor color = lbl_1_rodata_77B0;
+    u8* data;
+    s32 i;
+    u8* layout;
+    u8* geo;
+
+    LITAlloc(lbl_1_bss_6FA4);
+    LITInitAttn(lbl_1_bss_6FA4[0], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(lbl_1_bss_6FA4[0], lbl_1_rodata_7840, lbl_1_rodata_7840, lbl_1_rodata_7840);
+    LITInitDir(lbl_1_bss_6FA4[0], 0.0f, 0.0f, 0.0f);
+    LITInitColor(lbl_1_bss_6FA4[0], color);
+    data = *(u8**)(obj + 0x14);
+    layout = data + ((s32*)data)[0];
+    geo = data + ((s32*)data)[1];
+    lbl_1_bss_6BE0[0] = ActorObjectInitTable(20);
+    LoadActorLayout(layout);
+    convertGeometryAndSknHeader(geo, 0);
+    haveActLayoutPointToGeoHeader(layout, geo);
+    for (i = 0; (u16)i < 20; i++) {
+        fn_800BDC88(lbl_1_bss_6BE0[0], i, i, layout, 0, 0);
+        fn_800B2C08(*(void**)(lbl_1_bss_6BE0[0] + (u16)i * 0x90 + 0x34), 0);
+        fn_800BD548(lbl_1_bss_6BE0[0] + (u16)i * 0x90 + 0x34, 1, lbl_1_bss_6FA4[0]);
+    }
+}
+
+// 99.8%: same LITInitPos r3/r4 swap as fn_1_20E00 (inlined here)
+// .text:0x20BD8 size:0x1F0
+void fn_1_20BD8(void) {
+    u8* q = lbl_803CC1B8[0];
+    u8* object;
+
+    switch (q[0x25]) {
+    case 0:
+        object = fn_800B0A5C_insertQueue((void*)fn_1_20F8C, 1);
+        *(s16*)(object + 0x10) = 0;
+        q[0x25]++;
+        break;
+    case 1:
+        if (*(s16*)(q + 0x10) != 0) {
+            fn_1_20E00(q);
+            object = *(u8**)(q + 0xC);
+            *(s16*)(object + 0x10) = 1;
+            fn_800B0A14_removeQueue(object);
+        }
+        break;
+    }
+}
+
+
+// .text:0x1F418 size:0x200
+void fn_1_1F418(u8* menu) {
+    s32 i;
+    s32 v;
+    u8 cur;
+
+    for (i = 0; i < 4; i++) {
+        cur = menu[0x21];
+        switch (i) {
+        case 0:
+            if (i == cur) {
+                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+                    if (menu[0x20] == 0) {
+                        menu[0x20] = 2;
+                    }
+                    menu[0x20]--;
+                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                    menu[0x20]++;
+                    if (menu[0x20] == 2) {
+                        menu[0x20] = 0;
+                    }
+                }
+            }
+            break;
+        case 1:
+            v = (s32)fn_80048EA8(0);
+            if (i == menu[0x21]) {
+                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+                    v--;
+                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                    v++;
+                }
+                fn_80048E00(0, v);
+            }
+            break;
+        case 2:
+            v = (s32)fn_80048EA8(1);
+            if (i == menu[0x21]) {
+                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+                    v--;
+                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                    v++;
+                }
+                fn_80048E00(1, v);
+            }
+            break;
+        case 3:
+            if (i == cur) {
+                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+                    if (*(u32*)(menu + 0x1C) != 0) {
+                        (*(u32*)(menu + 0x1C))--;
+                    }
+                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                    (*(u32*)(menu + 0x1C))++;
+                }
+            }
+            break;
+        }
+    }
+    if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 8) {
+        if (menu[0x21] == 0) {
+            menu[0x21] = 4;
+        }
+        menu[0x21]--;
+    } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 4) {
+        menu[0x21]++;
+        if (menu[0x21] == 4) {
+            menu[0x21] = 0;
+        }
+    }
+}
+
+// .text:0x22644 size:0x230
+void fn_1_22644(void) {
+    u8* q = lbl_803CC1B8[0];
+
+    fn_800AD038(lbl_80366158[2]);
+    q[0x25] = 0;
+    fn_1_22DF4((ChallengeCurveDrawing*)lbl_803CC1B8[0]);
+    fn_1_23AD8(lbl_1_bss_47010, (Vec*)(lbl_1_bss_43EE0 + 0x48), (Vec*)(lbl_1_bss_43EE0 + 0x3C));
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_225B8;
+}
+
+extern u8 lbl_1_data_10518[];
+
+// 99.5%: saved regs q=r25/i=r26 in orig, ours q=r26/i=r25 (decl/assign order variants did not help)
+// .text:0x2004C size:0x258
+void fn_1_2004C(void) {
+    u8* q = lbl_803CC1B8[0];
+    s32 ids[9] = { 5, 6, 7, 8, 9, 13, 0x60, 0x61, 0x55 };
+    u8* data;
+    u32 i;
+
+    switch (q[0x21]) {
+    case 0:
+        *(void**)(q + 0x18) = (void*)ARAMTransfer(lbl_1_data_10518, 0, 0, 0);
+        q[0x21]++;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            data = *(u8**)(q + 0x18);
+            *(u8**)(q + 0x14) = data + *(s32*)(data + 0x14);
+            convertTextureHeader(*(void**)(q + 0x14));
+            for (i = 0; i < 8; i++) {
+                lbl_1_bss_6E24[i] = i;
+                if (fn_1_2051C((ChallengeTextureHeader*)(*(u8**)(q + 0x14) + ids[i] * 32 + 4),
+                        &lbl_1_bss_6EA4[i], &lbl_1_bss_6E44[i], i)) {
+                    lbl_1_bss_6E24[i] |= 0x80000000;
+                }
+            }
+            q[0x21] = 0;
+            *(void (**)(void))lbl_803CC1B8[0] = fn_1_202A4;
+        }
+        break;
+    }
+}
+
+extern void* _OSAllocFromHeap(s32, s32);
+extern void* memcpy(void*, const void*, u32);
+extern void DCStoreRangeNoSync(void*, u32);
+extern void PPCSync(void);
+
+// .text:0x1DA54 size:0x290
+void fn_1_1DA54(void) {
+    u8* q = lbl_803CC1B8[0];
+    ChallengeTextureHeader* tex;
+    u8* object;
+    s32 size;
+
+    if ((s32)lbl_803C6CF8[0x715] != 1) {
+        return;
+    }
+    *(u8**)(q + 0x18) = *(u8**)(q + 0x14) + *(s32*)(*(u8**)(q + 0x14) + 0x14);
+    convertTextureHeader(*(void**)(q + 0x18));
+    *(u16*)(q + 0x28) = 2;
+    *(u16*)(q + 0x1C) = 3;
+    *(u16*)(q + 0x1E) = 0;
+    *(u16*)(q + 0x22) = 3;
+    *(u16*)(q + 0x20) = 3;
+    *(u16*)(q + 0x24) = 0;
+    *(u16*)(q + 0x26) = 0;
+    *(ChallengeTextureHeader**)(q + 0x2C) = _OSAllocFromHeap(0x20, 0x20);
+    memcpy(*(void**)(q + 0x2C), *(u8**)(q + 0x18) + 0x44, 0x20);
+    tex = *(ChallengeTextureHeader**)(q + 0x2C);
+    if (tex->palette != NULL) {
+        switch (tex->paletteFormat) {
+        case 0:
+        case 1:
+        case 2:
+            size = tex->paletteEntries * 2;
+            (*(ChallengeTextureHeader**)(q + 0x2C))->palette = _OSAllocFromHeap(0x20, size);
+            memcpy((*(ChallengeTextureHeader**)(q + 0x2C))->palette, *(void**)(*(u8**)(q + 0x18) + 0x48), size);
+            break;
+        }
+        DCStoreRangeNoSync((*(ChallengeTextureHeader**)(q + 0x2C))->palette, size);
+        tex = *(ChallengeTextureHeader**)(q + 0x2C);
+        switch (tex->format) {
+        case 8:
+            size = (tex->width + 7) / 8 * 8 * ((tex->height + 7) / 8 * 8);
+            break;
+        case 9:
+            size = (tex->width + 7) / 8 * 8 * ((tex->height + 3) / 4 * 4);
+            break;
+        default:
+            fn_800AD038(lbl_80366158[2]);
+            object = *(u8**)(lbl_803CC1B8[0] + 0xC);
+            *(s16*)(object + 0x10) = 1;
+            fn_800B0A14_removeQueue(object);
+            return;
+        }
+    } else {
+        switch (tex->format) {
+        case 14:
+            size = (tex->width + 7) / 8 * 8 * ((tex->height + 7) / 8 * 8);
+            break;
+        default:
+            fn_800AD038(lbl_80366158[2]);
+            object = *(u8**)(lbl_803CC1B8[0] + 0xC);
+            *(s16*)(object + 0x10) = 1;
+            fn_800B0A14_removeQueue(object);
+            return;
+        }
+    }
+    (*(ChallengeTextureHeader**)(q + 0x2C))->image = _OSAllocFromHeap(0x20, size);
+    memcpy((*(ChallengeTextureHeader**)(q + 0x2C))->image, *(void**)(*(u8**)(q + 0x18) + 0x44), size);
+    DCStoreRangeNoSync((*(ChallengeTextureHeader**)(q + 0x2C))->image, size);
+    PPCSync();
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_1D944;
+}
+
+extern const f32 lbl_1_rodata_78AC;
+extern const f32 lbl_1_rodata_78B0;
+extern const f32 lbl_1_rodata_78B4;
+extern const f32 lbl_1_rodata_78B8;
+extern const f32 lbl_1_rodata_78BC;
+extern const f32 lbl_1_rodata_78C0;
+extern double cos(double);
+extern int rand(void);
+extern void* memset(void*, int, u32);
+extern void fn_1_23B54(void);
+
+// .text:0x24410 size:0x29C
+void fn_1_24410(void) {
+    u8* q = lbl_803CC1B8[0];
+    s32 i;
+    s32 j;
+
+    fn_1_23AD8(lbl_1_bss_47010, (Vec*)(lbl_1_bss_43EE0 + 0x48), (Vec*)(lbl_1_bss_43EE0 + 0x3C));
+    *(u16*)(lbl_1_bss_43EE0 + 0x30) = 0;
+    *(f32*)(lbl_1_bss_43EE0 + 0x38) = (&lbl_1_rodata_77D8)[0];
+    *(u16*)(lbl_1_bss_43EE0 + 0x32) = 0;
+    q[0x27] = 0x40;
+    q[0x29] = 0x40;
+    q[0x28] = 0x40;
+    q[0x2A] = 0;
+    *(f32*)(q + 0x14) = lbl_1_rodata_78AC;
+    *(f32*)(q + 0x18) = lbl_1_rodata_78B0;
+    *(u16*)(q + 0x24) = 0;
+    *(f32*)(q + 0x1C) = lbl_1_rodata_78B4;
+    *(f32*)(q + 0x20) = lbl_1_rodata_78B8;
+    q[0x2B] = 1;
+    for (i = 0; i < 0x80; i++) {
+        lbl_1_bss_74E0[i] = cos(lbl_1_rodata_78BC * (lbl_1_rodata_780C * ((f32)i * lbl_1_rodata_78C0)));
+    }
+    q[0x2C] = 0;
+    memset(lbl_1_bss_76E0, 0, 0x8000);
+    for (j = 0; j < 0x20; j++) {
+        i = rand() % 32 * 128;
+        i += rand() % 128;
+        ((f32*)lbl_1_bss_76E0)[i] = lbl_1_rodata_77E4;
+    }
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_23B54;
+}
+
+extern const f32 lbl_1_rodata_77E8;
+extern void fn_80023F0C(void*, ChallengeTextureHeader*, s32, s32, s32, s32, s32, s32);
+extern void gOz_GXSetTexture(s32, s32, s32);
+extern void DCStoreRange(void*, u32);
+
+// 91%: orig divides height/64, width/32 with srawi/addze (signed); ours srwi (CW knows u16 >= 0); loop regs rotate
+// .text:0x1D694 size:0x2B0
+void fn_1_1D694(u8* obj) {
+    ChallengeTextureHeader* tex;
+    u8* src;
+    void* dst;
+    s32 rows;
+    s32 cols;
+    s32 y;
+    s32 x;
+    s32 v;
+
+    if (obj[0x18] != 0) {
+        tex = *(ChallengeTextureHeader**)(obj + 8);
+        src = *(u8**)(obj + 0x10);
+        dst = *(void**)(obj + 0xC);
+        memset(tex->image, 0, tex->width * tex->height);
+        rows = tex->height / 64;
+        cols = tex->width / 32;
+        for (y = 0; y < rows; y++) {
+            for (x = 0; x < cols; x++) {
+                if (x & lbl_803CBBC0[0]) {
+                    v = src[y * cols + x];
+                    fn_80023F0C(dst, tex, v % cols * 32, v / cols * 64, 0x20, 0x40, x * 32, y * 64);
+                }
+            }
+        }
+        DCStoreRange(tex->image, tex->width * tex->height);
+    }
+    {
+        Mtx proj;
+        Mtx view;
+
+        C_MTXOrtho(*(Mtx44*)proj, lbl_1_rodata_77D8, lbl_1_rodata_77DC[0], lbl_1_rodata_77D8, lbl_1_rodata_77E0[0], lbl_1_rodata_77D8, (&lbl_1_rodata_77E4)[0]);
+        PSMTXIdentity(view);
+        GXSetProjection(*(Mtx44*)proj, GX_ORTHOGRAPHIC);
+        GXLoadPosMtxImm(view, 0);
+        GXSetCurrentMtx(0);
+    }
+    gOz_GXSetTexture(0, 0, 0);
+    SetDisplayStateTexture(*(void**)(obj + 8), 0, 0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    GXWGFifo.u16 = 0;
+    GXWGFifo.u16 = 0;
+    {
+        f32 y = (*(ChallengeTextureHeader**)(obj + 8))->height;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = y;
+    }
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    GXWGFifo.u16 = 0;
+    GXWGFifo.u16 = 1;
+    {
+        f32 x = (*(ChallengeTextureHeader**)(obj + 8))->width;
+        f32 y = (*(ChallengeTextureHeader**)(obj + 8))->height;
+        GXWGFifo.f32 = x;
+        GXWGFifo.f32 = y;
+    }
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    GXWGFifo.u16 = 1;
+    GXWGFifo.u16 = 1;
+    GXWGFifo.f32 = (*(ChallengeTextureHeader**)(obj + 8))->width;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    GXWGFifo.u16 = 1;
+    GXWGFifo.u16 = 0;
 }

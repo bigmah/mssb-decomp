@@ -39,18 +39,47 @@ typedef struct {
 } ChallengeProjectionState;
 
 typedef struct {
-    u8 padding[0x21];
+    u8 padding[0x18];
+    f32 scale;
+    f32 unk1C;
+    u8 steps;
     u8 pointCount;
     u8 drawFlat;
     u8 colorMode;
     u8 drawFull;
+    u8 unk25;
 } ChallengeCurveDrawing;
 
 typedef struct {
     u8 padding[0x0C];
     Vec position;
-    u8 padding18[0x28];
+    u8 padding18[0x24];
+    s32 mode;
 } ChallengeCurvePoint;
+
+typedef struct {
+    f32 params[6];
+    f32 step;
+    f32 stepSq;
+    s32 steps;
+    f32 inv;
+} ChallengeCurveTiming;
+
+typedef struct {
+    f32 scale;
+    u8 padding4[8];
+    Vec position;
+    u8 padding18[0xC];
+    Vec side;
+    Vec up;
+    u8 padding3C[4];
+} ChallengePathNode;
+
+typedef struct {
+    u32 unk0;
+    Vec current;
+    u32 unk10;
+} ChallengeCurveCamera;
 
 typedef struct {
     u8 padding[0x22];
@@ -120,5 +149,39 @@ void fn_1_202A4(void);
 void fn_1_21298(ChallengeCurveDrawing* drawing);
 
 void fn_1_20640(ChallengeTextureStages* stages, u32* indices);
+
+void fn_1_1D944(void);
+
+void fn_1_247A0(void);
+
+void fn_1_21180(ChallengeCurveDrawing* arg);
+
+void fn_1_248BC(s32 count);
+
+void fn_1_22DF4(ChallengeCurveDrawing* arg);
+
+void fn_1_1F05C(void);
+
+void fn_1_1F418(u8* menu);
+
+void fn_1_1F2D8(void);
+
+void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev);
+
+void fn_1_24A8C(void);
+
+void fn_1_20E00(u8* obj);
+
+void fn_1_20BD8(void);
+
+void fn_1_22644(void);
+
+void fn_1_2004C(void);
+
+void fn_1_1DA54(void);
+
+void fn_1_24410(void);
+
+void fn_1_1D694(u8* obj);
 
 #endif
