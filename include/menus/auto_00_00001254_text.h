@@ -86,4 +86,6 @@ void fn_2_86EC(void);
 
 void fn_2_C698(u8 a, s32 b);
 
+void fn_2_1DC8(void);
+
 #endif

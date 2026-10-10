@@ -630,3 +630,42 @@ void fn_2_C698(u8 a, s32 b) {
     lbl_8034E9A0[slot + 0x4757] = 1;
     fn_80067B40(b, slot, 1);
 }
+
+// fn_2_1DC8, size:0x168
+void fn_2_1DC8(void) {
+    switch (*(u32*)lbl_2_bss_F468) {
+    case 0:
+        lbl_8034E9A0[0x4708] = 0;
+        ((u8*)&g_d_GameSettings)[7] = 0;
+        break;
+    case 1:
+        lbl_8034E9A0[0x4708] = 1;
+        ((u8*)&g_d_GameSettings)[7] = 5;
+        break;
+    case 2:
+        lbl_8034E9A0[0x4708] = 3;
+        ((u8*)&g_d_GameSettings)[7] = 7;
+        changeScene(4, 6);
+        break;
+    case 3:
+        lbl_8034E9A0[0x4708] = 2;
+        ((u8*)&g_d_GameSettings)[7] = 6;
+        changeScene(4, 6);
+        break;
+    case 4:
+        lbl_8034E9A0[0x4708] = 4;
+        ((u8*)&g_d_GameSettings)[7] = 2;
+        ((u8*)&g_d_GameSettings)[9] = 0;
+        ((u8*)&g_d_GameSettings)[0xA] = 2;
+        changeScene(4, 6);
+        break;
+    case 5:
+        lbl_8034E9A0[0x4708] = 6;
+        break;
+    case 6:
+        lbl_8034E9A0[0x4708] = 5;
+        break;
+    }
+    *(s16*)(lbl_803CBBCC[0] + 4) = 5;
+    fn_800625A4(0, 0x58);
+}
