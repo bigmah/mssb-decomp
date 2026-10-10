@@ -17,7 +17,11 @@ static u8 ch_fill5F6B;
 static u8 ch_fill5F6A;
 static u8 ch_5F69;
 static u8 ch_fill5F68;
-static u8 ch_3218[0x2D50];
+static u8 ch_fill5F60[0x8];
+static s32 ch_5F5C;
+static u8 ch_3758[0x2804];
+static u8 ch_3258[0x500];
+static u8 ch_3218[0x40];
 static u8 ch_fill30C0[0x158];
 static s32 ch_30BC;
 static u8 ch_fill307C[0x40];
@@ -1026,5 +1030,53 @@ done:
                 *(u16*)(object + y * 2 + 0x72) = x;
             }
         }
+    }
+}
+
+#include <string.h>
+extern void fn_1_107B8(void);
+
+// .text:0xDF14 size:0x184
+void fn_1_DF14(void) {
+    u8* queue = lbl_803CC1B8[0];
+    s16 state = *(s16*)(queue + 0x10);
+    s32 idx = queue[0x14];
+    u8** p;
+    u8* q;
+    u8* r;
+    s32 n;
+    switch (state) {
+    case 0:
+        {
+            s16* e = (s16*)ch_3218;
+            (ch_6940 + ch_5F73 * 0x48)[0x44] = *(s16*)(ch_3218 + idx * 8);
+            (ch_6940 + ch_5F73 * 0x48)[0x45] = e[idx * 4 + 1];
+        }
+        fn_800B0A5C_insertQueue((void*)fn_1_107B8, 0xFF);
+        ch_5F5C = 2;
+        *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        break;
+    case 1:
+        if (ch_5F5C == 0) {
+            p = (u8**)ch_67B8 + 5;
+            q = ch_3258 + idx * 0xA0 + 0xA0;
+            r = ch_3758 + idx * 0x500 + 0x500;
+            n = 5;
+            while ((p--, q -= 0x20, r -= 0x100, n-- != 0)) {
+                if (*p != NULL) {
+                    memcpy(q, *p, 0x20);
+                    *(u8**)(q + 0x1C) = r;
+                    memcpy(r, *(void**)(*p + 0x1C), *(u16*)(*p + 0x1A) * 4);
+                } else {
+                    memset(q, 0, 0x20);
+                }
+            }
+            {
+                u8* o = *(u8**)(lbl_803CC1B8[0] + 0xC);
+                *(s16*)(o + 0x10) = 1;
+                fn_800B0A14_removeQueue(o);
+            }
+        }
+        break;
     }
 }
