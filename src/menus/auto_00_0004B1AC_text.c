@@ -1021,6 +1021,22 @@ void fn_2_4CB94(void) {
     fn_2_4C6A8();
 }
 
+extern u8 lbl_2_data_2E64[];
+
+// fn_2_4C9C4, size:0x1D0
+void fn_2_4C9C4(void) {
+    u8* d = lbl_2_bss_1A8248[0];
+    g_d_GameSettings.GameModeSelected = 7;
+    g_d_GameSettings.exhibitionMatchInd = 0;
+    g_d_GameSettings._33 = lbl_2_data_2E64[d[0x4420]];
+    g_d_GameSettings._35 = 0;
+    g_d_GameSettings._36 = d[0x441D];
+    g_d_GameSettings.challengeDifficulty = d[0x4415];
+    g_d_GameSettings.bJMatchRelated = d[0x4418];
+    g_d_GameSettings._3A = (*(volatile u8**)&lbl_2_bss_1A824C)[0x1978F1];
+    fn_2_4C6A8();
+}
+
 // fn_2_4CD30, size:0x1B0
 void fn_2_4CD30(void) {
     g_d_GameSettings.GameModeSelected = 7;
