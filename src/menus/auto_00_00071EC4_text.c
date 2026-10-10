@@ -2,6 +2,7 @@
 
 #include "static/UnknownHomes_Static.h"
 
+extern s32 fn_80036214(u8* o, s32 a, s32 b, s32 c);
 extern u8 lbl_803CBBC4[];
 extern u8 lbl_803CBCD8[];
 extern u8 lbl_80371C30[];
@@ -295,6 +296,19 @@ s32 fn_2_74DB8(s32 a) {
     default:
         return 0;
     }
+}
+
+// fn_2_74E14, size:0x12C
+void fn_2_74E14(u8* o, s32 a, s32 b, u8 c) {
+    s32 v = (b - 1) << 16;
+    s32 r;
+    *(u32*)(*(u8**)(lbl_80371C30 + (0x97 + *(u16*)(o + 0x14) + a) * 8) + 0x54) |= 2;
+    *(u32*)(*(u8**)(lbl_80371C30 + (0x97 + *(u16*)(o + 0x14) + a) * 8) + 0x5C) = 0;
+    *(u8*)(*(u8**)(lbl_80371C30 + (0x97 + *(u16*)(o + 0x14) + a) * 8) + 0x68) = 1;
+    *(u32*)(*(u8**)(lbl_80371C30 + (0x9B + *(u16*)(o + 0x14) + c + a * 4) * 8) + 0x5C) = v;
+    r = fn_80036214(o, 0xAB, 0, (b + 1) / 2 - 1);
+    *(u32*)(*(u8**)(lbl_80371C30 + (0xA3 + *(u16*)(o + 0x14) + c + a * 4) * 8) + 0x5C) = v;
+    *(s32*)(*(u8**)(lbl_80371C30 + (0xA3 + *(u16*)(o + 0x14) + c + a * 4) * 8) + 0x58) = r;
 }
 
 // fn_2_75B58, size:0x8C
