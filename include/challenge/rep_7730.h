@@ -160,4 +160,6 @@ void fn_1_248BC(s32 count);
 
 void fn_1_22DF4(ChallengeCurveDrawing* arg);
 
+void fn_1_1F05C(void);
+
 #endif
