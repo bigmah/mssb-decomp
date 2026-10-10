@@ -110,4 +110,6 @@ void fn_1_11F08(u8* camera);
 
 void fn_1_165E0(void);
 
+void fn_1_1540C(void);
+
 #endif

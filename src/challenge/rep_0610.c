@@ -7,12 +7,14 @@ static u8 ch_68FC[0x30];
 static u8 ch_fill68F8[0x4];
 static u8 ch_67E0[0x118];
 static s32 ch_67B8[0xA];
-static u8 ch_fill5F74[0x844];
+static u8 ch_fill60E4[0x6D4];
+static u8* ch_60E0;
+static u8 ch_fill5F74[0x16C];
 static u8 ch_5F73;
 static u8 ch_fill5F72;
-static u8 ch_fill5F71;
+static u8 ch_5F71;
 static u8 ch_fill5F70;
-static u8 ch_fill5F6C[0x4];
+static u32 ch_5F6C;
 static u8 ch_fill5F6B;
 static u8 ch_fill5F6A;
 static u8 ch_5F69;
@@ -24,7 +26,14 @@ static u8 ch_3258[0x500];
 static u8 ch_3218[0x40];
 static u8 ch_fill30C0[0x158];
 static s32 ch_30BC;
-static u8 ch_fill307C[0x40];
+static u8 ch_fill308C[0x30];
+static s32 ch_3088;
+static u8 ch_fill3084[0x4];
+static u8 ch_fill3083;
+static u8 ch_fill3082;
+static u8 ch_fill3081;
+static u8 ch_3080;
+static s32 ch_307C;
 static u8 ch_fill307B;
 static u8 ch_fill307A;
 static u8 ch_fill3079;
@@ -243,10 +252,10 @@ void fn_1_16400(s8 arg) {
     u8* base = lbl_8036E548;
     u8* row;
     u32 mod;
-    base += lbl_1_bss_5F73[0] * 0x27C;
+    base += ch_5F73 * 0x27C;
     row = *(u8**)(base + 0xC08);
     mod = *(u16*)(row + 0x6);
-    lbl_1_bss_5F6C = (lbl_1_bss_5F6C + mod + arg) % mod;
+    ch_5F6C = (ch_5F6C + mod + arg) % mod;
 }
 
 // fn_1_17954, size:0x78
@@ -1590,5 +1599,106 @@ void fn_1_165E0(void) {
     case 9:
         *(f32*)(light + 0x60) += delta;
         break;
+    }
+}
+
+extern void fn_1_C2DC(void*, void*, s32, s32, s32, s32*, s32*, s32*);
+extern void fn_800B2BA8(void*, u16, void*, u16);
+extern s8 lbl_1_data_AC90;
+
+typedef struct {
+    u8 pad0[0x34];
+    u8* actor;
+    u8 pad38[0x58];
+} ChallengeModelEntry;
+
+// .text:0x1540C size:0x354
+void fn_1_1540C(void) {
+    u8 buffer[0x20];
+    s32 top;
+    s32 count;
+    s32 selected;
+    u16 buttons;
+    u16 id;
+
+    count = 0x14;
+    selected = ch_5F6C;
+    if (ch_3088 > selected) {
+        ch_3088 = selected;
+    } else if (ch_3088 < selected - 0x13) {
+        ch_3088 = selected - 0x13;
+    }
+    top = ch_3088;
+    fn_1_C2DC(**(void***)((*(ChallengeModelEntry**)(lbl_8036E548 + 0x60))[ch_5F73].actor + 0x18), buffer, 0, 0x13, 4, &selected, &top, &count);
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 8) {
+        if (--ch_307C < 0) {
+            ch_307C = 5;
+        }
+    } else if (buttons & 4) {
+        if (++ch_307C >= 6) {
+            ch_307C = 0;
+        }
+    } else if (buttons & 1) {
+        switch (ch_307C) {
+        case 0:
+            ch_3080 ^= 1;
+            break;
+        case 1:
+            lbl_1_data_ABA8 ^= 1;
+            break;
+        case 2:
+            fn_1_16400(-1);
+            break;
+        case 3:
+            break;
+        case 4:
+            if (lbl_1_data_AC90 >= 0) {
+                lbl_1_data_AC90--;
+            }
+            break;
+        case 5:
+            ((void (*)(void))fn_1_1644C)();
+            break;
+        }
+    } else if (buttons & 2) {
+        switch (ch_307C) {
+        case 0:
+            ch_3080 ^= 1;
+            break;
+        case 1:
+            lbl_1_data_ABA8 ^= 1;
+            break;
+        case 2:
+            fn_1_16400(1);
+            break;
+        case 3:
+            break;
+        case 4:
+            if (lbl_1_data_AC90 < 4) {
+                lbl_1_data_AC90++;
+            }
+            break;
+        case 5:
+            ((void (*)(void))fn_1_1644C)();
+            break;
+        }
+    } else if (buttons & 0x200) {
+        ch_307C = 0;
+        ch_5F71 = 1;
+    }
+    id = *(u16*)(lbl_8036E548 + 0xDAE);
+    if (id != 0xFFFF) {
+        if (lbl_1_data_AC90 >= 0) {
+            u8* actor = (*(ChallengeModelEntry**)&ch_60E0)[lbl_1_data_AC90].actor;
+            s32 i;
+            for (i = 0; i < *(u16*)(actor + 6); i++) {
+                if (*(u32*)((*(u8***)(actor + 0x18))[i] + 0x14) != 0) {
+                    fn_800B2BA8(*(void**)(*(u8**)(lbl_8036E548 + 0x60) + 0x34), id, actor, i);
+                }
+            }
+        } else {
+            fn_800B2BA8(*(void**)(*(u8**)(lbl_8036E548 + 0x60) + 0x34), id, NULL, 0);
+        }
     }
 }
