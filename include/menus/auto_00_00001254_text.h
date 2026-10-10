@@ -82,4 +82,6 @@ void fn_2_B508(void);
 
 void fn_2_52CC(void);
 
+void fn_2_86EC(void);
+
 #endif
