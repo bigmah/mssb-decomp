@@ -1410,3 +1410,32 @@ void fn_2_79764(s32 a, s32 index) {
         }
     }
 }
+
+extern void fn_2_CCE0(u8 a);
+
+// fn_2_7F714, size:0x1A8
+void fn_2_7F714(s32 a, s32 index) {
+    s32 n;
+    s32 k;
+    s32 j;
+    s32 v;
+    s32 found;
+    if (lbl_803C66B0[index + 0xD] == 1) {
+        n = 0;
+        k = 0;
+        v = (s8)((s32*)lbl_2_bss_F468)[index];
+        for (j = 0; j < 9; j++) {
+            s32 t = (s8)lbl_803C6724[index * 9 + j + 0x14];
+            if (t == v) {
+                found = j;
+                break;
+            }
+        }
+        k++;
+        n += fn_80042DA8(a, v + 0x34 + index * 9, 0xA) != 0;
+        if (CheckRowHits(a, index * 5, lbl_8034E9A0[index + 0x470F]) && n == k) {
+            fn_80062674(index);
+            fn_2_CCE0(index);
+        }
+    }
+}
