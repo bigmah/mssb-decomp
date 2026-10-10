@@ -20,6 +20,7 @@ void fn_2_74CD8(void);
 void fn_2_74D8C(void);
 void fn_2_78F78(u8* o, s32 i);
 void fn_2_73994(u8* o, s32 i);
+void fn_2_83974(u8* o);
 
 void fn_2_76098(void);
 void fn_2_7609C(s32 unused, u8 a, u8 c);
