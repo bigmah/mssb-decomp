@@ -392,6 +392,23 @@ void fn_2_50BF4(s16 id) {
     fn_2_4EB9C();
 }
 
+// fn_2_50B0C, size:0xE8
+void fn_2_50B0C(s32 id, s32 arg) {
+    s16 zero = 0;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FD4) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FD2) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FD6) = (s16)id;
+    *(s32*)(lbl_2_bss_1A824C[0] + 0x196F34) = (s16)arg;
+    *(s32*)(lbl_2_bss_1A824C[0] + 0x196F30) = (s16)arg;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FCC) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x196FCA) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x19729E) = zero;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x19729C) = zero;
+    memcpy(lbl_2_bss_5600, lbl_2_data_1E99C[*(s16*)(lbl_2_bss_1A824C[0] + 0x196FD6)], 0x4000);
+    *(u8**)(lbl_2_bss_1A824C[0] + 0x196F1C) = lbl_2_bss_5600;
+    fn_2_4EB9C();
+}
+
 extern u16 lbl_2_bss_9604[];
 extern u16 lbl_2_bss_9A08[][0x100];
 
