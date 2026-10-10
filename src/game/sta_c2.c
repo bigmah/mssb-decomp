@@ -582,9 +582,63 @@ void fn_3_CEE5C(u8* p, s32 a) {
     }
 }
 
+#pragma dont_inline off
+static inline void CED40_inl(u8* p, s32 a) {
+    ((void (*)(f32, f32))fn_8003403C)(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+    fn_80033CC8(p, a);
+    if (lbl_80366158[0x28] == 0) {
+        if (-*(s16*)(p + 0x48) < 5) {
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + lbl_3_rodata_2738;
+            *(f32*)(p + 0x3C) = *(f32*)(p + 0x3C) + lbl_3_rodata_2738;
+            p[0x43] = p[0x43] + lbl_3_rodata_2740;
+        } else {
+            p[0x43] = p[0x43] - 4;
+        }
+        *(f32*)(p + 0x4) = *(f32*)(p + 0x4) + *(f32*)(p + 0x10);
+        *(f32*)(p + 0x8) = *(f32*)(p + 0x8) + *(f32*)(p + 0x14);
+        *(f32*)(p + 0xC) = *(f32*)(p + 0xC) + *(f32*)(p + 0x18);
+    }
+}
+
+static inline void CEE5C_inl(u8* p, s32 a) {
+    ((void (*)(f32, f32))fn_8003403C)(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+    fn_80033CC8(p, a);
+    if (lbl_80366158[0x28] == 0) {
+        if (-*(s16*)(p + 0x48) < 5) {
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + lbl_3_rodata_2738;
+            *(f32*)(p + 0x3C) = *(f32*)(p + 0x3C) + lbl_3_rodata_2738;
+            p[0x43] = p[0x43] + lbl_3_rodata_2740;
+        } else {
+            p[0x43] = p[0x43] + lbl_3_rodata_2748;
+        }
+        *(f32*)(p + 0x4) = *(f32*)(p + 0x4) + *(f32*)(p + 0x10);
+        *(f32*)(p + 0x8) = *(f32*)(p + 0x8) + *(f32*)(p + 0x14);
+        *(f32*)(p + 0xC) = *(f32*)(p + 0xC) + *(f32*)(p + 0x18);
+    }
+}
+#pragma dont_inline on
+
 // .text:0x000CEFA8 size:0x2D0 mapped:0x8070E03C
-void fn_3_CEFA8(void) {
-    return;
+s32 fn_3_CEFA8(u8* h) {
+    u8* p = *(u8**)(h + 0xC);
+    fn_80033620();
+    do {
+        if (*(s16*)(p + 0x48) <= 0 && *(s16*)(p + 0x4A) != 0) {
+            if (p[0x4F] == 0) {
+                CEE5C_inl(p, *(s32*)(h + 0x10));
+            } else {
+                CED40_inl(p, *(s32*)(h + 0x10));
+            }
+            *(s16*)(p + 0x4A) -= (lbl_80366158[0x28] == 0);
+        }
+        *(s16*)(p + 0x48) -= (lbl_80366158[0x28] == 0);
+        p = *(u8**)p;
+    } while (p != NULL);
+    *(s32*)(h + 0x18) -= (lbl_80366158[0x28] == 0);
+    if (*(s32*)(h + 0x18) == 0) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x000CF278 size:0x4B4 mapped:0x8070E30C
