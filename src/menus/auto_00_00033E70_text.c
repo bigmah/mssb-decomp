@@ -1,6 +1,8 @@
 #include "menus/auto_00_00033E70_text.h"
 #include "static/UnknownHomes_Static.h"
 
+extern void fn_2_4E7EC(void);
+extern void fn_2_4E824(void);
 extern u8* lbl_80371C30[];
 extern u8* lbl_2_bss_1A8244[];
 extern u8* lbl_2_bss_1A8248[];
@@ -1518,5 +1520,90 @@ void fn_2_36750(u8* a, u8* b) {
     case 4:
     case 0x25:
         break;
+    }
+}
+
+typedef struct Fn37460Data {
+    u8 pad0[4];
+    s32 size;
+    void* alt;
+    void* buf;
+    void* heap;
+} Fn37460Data;
+
+extern Fn37460Data lbl_2_bss_15A0;
+extern u8 lbl_2_data_12180[];
+extern void* _OSAllocFromHeap(s32, s32);
+extern void* memset(void*, int, u32);
+extern void fn_80009018(void*);
+extern void fn_800AD070(void);
+extern void fn_800AD500(void*, void*);
+extern s32 fn_800AD6BC(void*);
+extern s32 fn_800AD780(void*);
+extern void fn_800AD95C(void*, s32);
+extern void fn_800AD9F4(void*);
+extern s32 fn_800ADAFC(void);
+extern s32 fn_800ADB04(void*, void*, s32, s32);
+extern void fn_800ADBFC(void);
+extern void fn_800ADC40(void*, s32);
+
+// fn_2_37460, size:0x1D0
+void fn_2_37460(void) {
+    Fn37460Data* d = &lbl_2_bss_15A0;
+    u8* o = lbl_803CC1B8;
+    void* p;
+    s32 sz;
+    switch ((s8)o[0x28]) {
+    case 0:
+        fn_2_4E824();
+        p = _OSAllocFromHeap(0x20, 0x1C0);
+        d->heap = p;
+        memset(p, 0, 0x1C0);
+        d->size = 0x400000;
+        p = _OSAllocFromHeap(0x20, 0x400000);
+        d->alt = p;
+        fn_800ADC40(p, d->size);
+        o[0x28]++;
+        return;
+    case 1:
+        if (fn_800ADB04(lbl_2_data_12180, d->heap, 1, 0) != 0) {
+            fn_80009018(d->heap);
+            o[0x28]++;
+        }
+        break;
+    case 2:
+        if (fn_800ADAFC() != 0) {
+            sz = fn_800AD6BC(d->heap);
+            p = _OSAllocFromHeap(0x20, sz);
+            d->buf = p;
+            fn_800AD500(d->heap, p);
+            fn_800AD95C(d->heap, 1);
+            o[0x28]++;
+            return;
+        }
+        break;
+    case 3:
+        fn_800AD070();
+        if (fn_800AD780(d->heap) != 0) {
+            o[0x28]++;
+            return;
+        }
+        break;
+    case 4:
+        if (fn_800AD780(d->heap) != 0) {
+            fn_80009018(0);
+            fn_800AD9F4(d->heap);
+            fn_800ADBFC();
+            o[0x28]++;
+            return;
+        }
+        break;
+    case 5:
+        fn_2_4E7EC();
+        p = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)((u8*)p + 0x10) = 1;
+        fn_800B0A14_removeQueue(p);
+        o[0x28] = 0;
+        return;
     }
 }
