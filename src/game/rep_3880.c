@@ -2236,7 +2236,56 @@ void fn_3_155C28(u8* a) {
 
 // .text:0x00155F08 size:0x310 mapped:0x80794F9C
 void fn_3_155F08(void) {
-    return;
+    struct { Control c; u32 pad[2]; } cc;
+    Mtx m;
+    Vec dir;
+    Vec v;
+    u8 i;
+    u8* o;
+    u8* a;
+    f32 rx;
+    f32 ry;
+    f32 rz;
+    f64 t;
+    a = fn_80033A24(fn_3_1552AC, 0x80, 0, *(s32*)(lbl_3_data_26BC0 + 4), 1, 0x1B);
+    if (a != NULL) {
+        o = *(u8**)(a + 0xC);
+        *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+        i = 0;
+        do {
+            *(s16*)(o + 0x48) = i++;
+            o[0x4D] = *(s32*)lbl_3_data_26BC0;
+            o[0x4E] = 0;
+            if (*(s16*)(o + 0x48) == 0) {
+                rx = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA6));
+                ry = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA8));
+                rz = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BAA));
+                *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+                cc.c.type = 0;
+                CTRLSetRotation(&cc.c, rx, ry, rz);
+                CTRLBuildMatrix(&cc.c, m);
+                if (g_Minigame[0x1A2A] == 1) {
+                    dir = lbl_3_data_26BB4;
+                } else {
+                    PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
+                }
+                v.x = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.x);
+                v.y = dir.y;
+                v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
+                PSMTXMultVec(m, &v, &v);
+                v.x = v.x + *(f32*)g_Ball;
+                t = __fabs(*(f32*)(g_Ball + 4));
+                v.y = v.y - t;
+                v.z = v.z + *(f32*)(g_Ball + 8);
+                *(f32*)(o + 4) = v.x;
+                *(f32*)(o + 8) = v.y;
+                *(f32*)(o + 0xC) = v.z;
+                *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
+                o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+            }
+            o = *(u8**)o;
+        } while (o != NULL);
+    }
 }
 
 // .text:0x00156218 size:0x330 mapped:0x807952AC
