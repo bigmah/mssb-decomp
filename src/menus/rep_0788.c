@@ -3239,3 +3239,1790 @@ void fn_2_2E5C8(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
+
+// fn_2_2F710, size:0x194
+void fn_2_2F710(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 37;
+        break;
+    }
+    case 17:
+        item->state = 37;
+        break;
+    case 5: {
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        item->state = 6;
+        break;
+    }
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_30EF8, size:0x1A4
+void fn_2_30EF8(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2:
+    case 17: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 37;
+        break;
+    }
+    case 5: {
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        item->state = 6;
+        break;
+    }
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_306D8, size:0x1BC
+void fn_2_306D8(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        u8* object;
+        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        s32 sum = item->index;
+        sum += *(s16*)(ctx + 0x772A);
+        fn_800363D8(menu, item->offset, 1, 0x65, (s8)ctx[sum + 0x789F] == 2 ? 0x14 : sum);
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 37;
+        return;
+    }
+    case 17: {
+        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        s32 sum = item->index;
+        sum += *(s16*)(ctx + 0x772A);
+        fn_800363D8(menu, item->offset, 1, 0x65, (s8)ctx[sum + 0x789F] == 2 ? 0x14 : sum);
+        item->state = 37;
+        return;
+    }
+    case 5:
+        item->timer = 14;
+        item->state = 6;
+        return;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        /* fallthrough */
+    }
+    case 37:
+    case 1:
+        return;
+    }
+}
+
+// fn_2_270B8, size:0x204
+void fn_2_270B8(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 3;
+        break;
+    }
+    case 3: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0xDC) {
+            object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 5: {
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x14A0000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 6;
+        break;
+    }
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x140) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+extern u8 lbl_80109AE8[];
+
+// fn_2_2B43C, size:0x204
+void fn_2_2B43C(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2:
+    case 8: {
+        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        s32 index = item->index;
+        if (*(s16*)(lbl_80109AE8 + *(s16*)(ctx + 0x7706) * 0x64 + index * 10) != -1) {
+            if (*(s16*)(ctx + 0x7710) == index) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x5C) = 0;
+                object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        item->state = 37;
+        break;
+    }
+    case 5:
+        item->timer = 9;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_2FE50, size:0x258
+void fn_2_2FE50(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        item->state = 37;
+        break;
+    }
+    case 17: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        item->state = 37;
+        break;
+    }
+    case 5:
+        item->timer = 14;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_26864, size:0x290
+void fn_2_26864(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        item->timer = 250;
+        item->state = 3;
+        break;
+    }
+    case 3: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            item->state = 37;
+        }
+        break;
+    }
+    case 37: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x78) {
+            *(u32*)(object + 0x5C) = 0x320000;
+        }
+        break;
+    }
+    case 17:
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x780000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 18;
+        break;
+    case 18: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x82) {
+            object[0x68] = 0;
+            item->state = 19;
+        }
+        break;
+    }
+    case 19: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 5: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    }
+}
+
+// fn_2_300BC, size:0x2D4
+void fn_2_300BC(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 37;
+        break;
+    }
+    case 17: {
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) >= 10) {
+                *(u32*)(object + 0x5C) = 0;
+            }
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        }
+        item->state = 18;
+        break;
+    }
+    case 18: {
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) != item->index) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+                *(u32*)(object + 0x5C) = 0;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        }
+        break;
+    }
+    case 5:
+        item->timer = 14;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_284B0, size:0x2D4
+void fn_2_284B0(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        item->state = 37;
+        break;
+    }
+    case 17: {
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) == item->unk10) {
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            item->state = 37;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) >= 10) {
+                *(u32*)(object + 0x5C) = 0xA0000;
+            }
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+            item->state = 18;
+        }
+        break;
+    }
+    case 18: {
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) != item->unk10) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+                *(u32*)(object + 0x5C) = 0;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                item->state = 37;
+            }
+        }
+        break;
+    }
+    case 5:
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0xA0000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        item->state = 6;
+        break;
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_26C70, size:0x2F8
+void fn_2_26C70(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 3;
+        break;
+    }
+    case 3: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0xDC) {
+            *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(13);
+        }
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x12C) {
+            *(u32*)(object + 0x5C) = 0x12C0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 17:
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x12C0000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 18;
+        break;
+    case 18: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x15E) {
+            *(u32*)(object + 0x5C) = 0x15E0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 5:
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x15E0000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 6;
+        break;
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x140) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_28948, size:0x3C8
+void fn_2_28948(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* ctx;
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        if (ctx[0x78F6] == 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        } else if (*(s16*)(ctx + 0x7706) == item->unk10) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        item->state = 37;
+        break;
+    }
+    case 8: {
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) == item->unk10) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        item->state = 37;
+        break;
+    }
+    case 37: {
+        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        if (ctx[0x78F6] == 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        } else if (*(s16*)(ctx + 0x7706) == item->unk10) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        break;
+    }
+    case 5:
+        item->timer = 40;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    }
+}
+
+// fn_2_2E7D0, size:0x40C
+void fn_2_2E7D0(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2:
+        if ((s8)lbl_2_bss_1A8248[0][0x444B] == -1) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            item->state = 3;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            item->state = 37;
+        }
+        break;
+    case 3: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0xE) {
+            *(u32*)(object + 0x5C) = 0xE0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 8:
+        if ((s8)lbl_2_bss_1A8248[0][0x444C] == -1) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0xF0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            item->state = 9;
+        } else {
+            item->state = 37;
+        }
+        break;
+    case 9: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x19) {
+            *(u32*)(object + 0x5C) = 0x190000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 20:
+        item->timer = 30;
+        item->state = 21;
+        break;
+    case 21: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            item->state = 22;
+        }
+        break;
+    }
+    case 22: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0xE) {
+            *(u32*)(object + 0x5C) = 0xE0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        item->state = 6;
+        break;
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_2EBE4, size:0x3E0
+void fn_2_2EBE4(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        s32 value = (s8)lbl_2_bss_1A8248[0][0x444B];
+        if (value == -1) {
+            item->state = 37;
+        } else {
+            u8* object;
+            fn_800363D8(menu, item->offset, 4, 0x64, value);
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            item->state = 3;
+        }
+        break;
+    }
+    case 3: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0xA) {
+            *(u32*)(object + 0x5C) = 0xA0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 8: {
+        u8* object;
+        fn_800363D8(menu, item->offset, 4, 0x64, *(s8*)(lbl_2_bss_1A8248[0] + 0x444B));
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0xB0000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 9;
+        break;
+    }
+    case 9: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x15) {
+            *(u32*)(object + 0x5C) = 0xA0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 20:
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x160000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 21;
+        break;
+    case 21: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x2D) {
+            *(u32*)(object + 0x5C) = 0;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 22;
+        }
+        break;
+    }
+    case 22: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 37;
+        break;
+    }
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        item->state = 6;
+        break;
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+extern s16 lbl_2_data_373C[];
+
+// fn_2_30894, size:0x3A4
+void fn_2_30894(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        s16 index = item->index;
+        s16 sel = *(s16*)(lbl_2_bss_1A824C[0] + 0x19772A);
+        if ((s32)lbl_2_bss_1A8248[0][index + sel + 0x43C2] == 1) {
+            s32 k = index + sel;
+            if (lbl_2_data_373C[k] == 0) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else if (*(s8*)(lbl_2_bss_1A8248[0] + 0x444B) == k) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        item->state = 37;
+        break;
+    }
+    case 8:
+    case 17: {
+        s16 index = item->index;
+        s16 sel = *(s16*)(lbl_2_bss_1A824C[0] + 0x19772A);
+        if ((s32)lbl_2_bss_1A8248[0][index + sel + 0x43C2] == 1) {
+            s32 k = index + sel;
+            if (lbl_2_data_373C[k] == 0) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else if (*(s8*)(lbl_2_bss_1A8248[0] + 0x444B) == k) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        item->state = 37;
+        break;
+    }
+    case 5:
+        item->timer = 14;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_2D8C4, size:0x1E4
+void fn_2_2D8C4(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8 id = lbl_800E869C[item->unk10];
+        s32 flag = lbl_2_bss_1A8248[0][id + 0x43D6];
+        if (fn_8006C79C(id) != 0) {
+            if (flag == 1) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+        }
+        item->state = 37;
+        break;
+    }
+    case 5:
+        item->timer = 40;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+    case 1:
+        break;
+    }
+}
+
+// fn_2_2DAA8, size:0x200
+void fn_2_2DAA8(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8 id = lbl_800E869C[item->unk10];
+        s32 flag = lbl_2_bss_1A8248[0][id + 0x43D6];
+        if (fn_8006C79C(id) != 0) {
+            if (flag == 1) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        item->state = 37;
+        break;
+    }
+    case 5:
+        item->timer = 40;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+    case 1:
+        break;
+    }
+}
+
+// fn_2_32F08, size:0x2BC
+void fn_2_32F08(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->unk12 = 0xFF;
+        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x2E0, 0);
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object;
+        switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972B4)) {
+        case 0:
+            fn_8000FE08(item->unk14, 4, 0x2E0);
+            break;
+        case 1:
+            fn_8000FE08(item->unk14, 4, 0x2E1);
+            break;
+        case 2:
+            fn_8000FE08(item->unk14, 4, 0x2E2);
+            break;
+        case 3:
+            fn_8000FE08(item->unk14, 4, 0x357);
+            break;
+        case 4:
+            fn_8000FE08(item->unk14, 4, 0x2DE);
+            break;
+        case 5:
+            fn_8000FE08(item->unk14, 4, 0x312);
+            break;
+        case 6:
+            fn_8000FE08(item->unk14, 4, 0x313);
+            break;
+        case 7:
+            fn_8000FE08(item->unk14, 4, 0x314);
+            break;
+        case 8:
+            fn_8000FE08(item->unk14, 4, 0x315);
+            break;
+        }
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+        item->state = 3;
+        break;
+    }
+    case 3:
+        item->state = 37;
+        break;
+    case 37:
+        item->state = 37;
+        break;
+    case 5: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 4:
+    case 1:
+        break;
+    }
+    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+    }
+}
+
+// fn_2_2D640, size:0x1D4
+void fn_2_2D640(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) == item->unk10) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        item->state = 37;
+        break;
+    case 37:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) == item->unk10) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        break;
+    case 5:
+        item->timer = 0x28;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    }
+}
+
+// fn_2_2AA8C, size:0x2A4
+void fn_2_2AA8C(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->unk12 = 0;
+        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 0, 8, 0);
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object;
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 0, lbl_800E869C[*(s16*)(lbl_2_bss_1A824C[0] + 0x197706)] + 8);
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 3;
+        break;
+    }
+    case 3: {
+        s32 v = item->unk12;
+        item->unk12 = v + (0xFF - v) / 4;
+        item->unk12 = item->unk12 + 1;
+        if (item->unk12 > 0xFF) {
+            item->unk12 = 0xFF;
+        }
+        if (item->unk12 >= 0xFF) {
+            item->state = 37;
+        }
+        break;
+    }
+    case 37:
+        item->state = 37;
+        break;
+    case 5:
+        item->timer = 9;
+        item->state = 6;
+        break;
+    case 6: {
+        s32 v = item->unk12;
+        item->unk12 = v + (-v) / 4;
+        item->unk12 = item->unk12 - 1;
+        if (item->unk12 < 0) {
+            item->unk12 = 0;
+        }
+        if (item->unk12 <= 0 || item->timer-- <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            item->state = 7;
+        }
+        break;
+    }
+    case 4:
+    case 1:
+        break;
+    }
+    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 0;
+    {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+    }
+}
+
+extern s32 fn_2_44F14(u8 index);
+extern s32 fn_8006CDC0(u8 index);
+extern s16 lbl_8010B3E8[];
+extern s16 lbl_8010B444[][11];
+
+// fn_2_2A77C, size:0x2D4
+void fn_2_2A77C(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->unk12 = 0;
+        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 0, lbl_8010B3E8[0], 0);
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object;
+        u8 id = lbl_800E869C[*(s16*)(lbl_2_bss_1A824C[0] + 0x197706)];
+        s32 row = fn_2_44F14(id);
+        s32 col = fn_8006CDC0(id);
+        s32 a = lbl_8010B444[row][col];
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 0, a + lbl_8010B3E8[*(s16*)(lbl_2_bss_1A824C[0] + 0x197706)]);
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 3;
+        break;
+    }
+    case 3: {
+        s32 v = item->unk12;
+        item->unk12 = v + (0xFF - v) / 4;
+        item->unk12 = item->unk12 + 1;
+        if (item->unk12 > 0xFF) {
+            item->unk12 = 0xFF;
+        }
+        if (item->unk12 >= 0xFF) {
+            item->state = 37;
+        }
+        break;
+    }
+    case 37:
+        item->state = 37;
+        break;
+    case 5:
+        item->timer = 9;
+        item->state = 6;
+        break;
+    case 6: {
+        s32 v = item->unk12;
+        item->unk12 = v + (-v) / 4;
+        item->unk12 = item->unk12 - 1;
+        if (item->unk12 < 0) {
+            item->unk12 = 0;
+        }
+        if (item->unk12 <= 0 || item->timer-- <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            item->state = 7;
+        }
+        break;
+    }
+    case 4:
+    case 1:
+        break;
+    }
+    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 0;
+    {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+    }
+}
+
+extern s16 lbl_2_data_107BC[];
+
+// fn_2_25524, size:0x254
+void fn_2_25524(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2:
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19774E) = 0;
+        if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197857) == item->index) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            item->state = 3;
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            item->state = 37;
+        }
+        break;
+    case 3:
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19774E) += 1;
+        if ((*(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) >> 16) >=
+            (u32)lbl_2_data_107BC[item->index]) {
+            lbl_2_bss_1A824C[0][0x197859] = 1;
+            item->state = 37;
+        }
+        break;
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        item->state = 6;
+        break;
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 4:
+    case 1:
+    case 37:
+        break;
+    }
+}
+
+// fn_2_2D0D4, size:0x434
+void fn_2_2D0D4(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0x50000;
+        fn_800363D8(menu, item->offset, 1, 0x41, *(s16*)(lbl_2_bss_1A824C[0] + 0x197730));
+        item->state = 37;
+        break;
+    }
+    case 30: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0x50000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        item->state = 31;
+        break;
+    }
+    case 31: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            fn_800363D8(menu, item->offset, 1, 0x41, *(s16*)(lbl_2_bss_1A824C[0] + 0x197730));
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x5C) = 0xA0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+            item->state = 32;
+        }
+        break;
+    }
+    case 32: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) <= 5) {
+            *(u32*)(object + 0x5C) = 0x50000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 38;
+        }
+        break;
+    }
+    case 33: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0x50000;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        item->state = 34;
+        break;
+    }
+    case 34: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 10) {
+            fn_800363D8(menu, item->offset, 1, 0x41, *(s16*)(lbl_2_bss_1A824C[0] + 0x197730));
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x5C) = 0;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            item->state = 35;
+        }
+        break;
+    }
+    case 35: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 5) {
+            *(u32*)(object + 0x5C) = 0x50000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            item->state = 38;
+        }
+        break;
+    }
+    case 8: {
+        u8* object;
+        fn_800363D8(menu, item->offset, 1, 0x41, *(s16*)(lbl_2_bss_1A824C[0] + 0x197730));
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0x50000;
+        item->state = 38;
+        break;
+    }
+    case 5: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0x50000;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_331C8, size:0x474
+void fn_2_331C8(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x5C) = 0;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        } else {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x5C) = 0xF0000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        }
+        item->state = 3;
+        break;
+    }
+    case 3:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) >= 5) {
+                *(u32*)(object + 0x5C) = 0x50000;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                item->state = 37;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) <= 10) {
+                *(u32*)(object + 0x5C) = 0xA0000;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                item->state = 37;
+            }
+        }
+        break;
+    case 37:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) <= 5) {
+                *(u32*)(object + 0x5C) = 0x50000;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            } else {
+                object[0x68] = 4;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) >= 10) {
+                *(u32*)(object + 0x5C) = 0xA0000;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            } else {
+                object[0x68] = 1;
+            }
+        }
+        break;
+    case 5:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        } else {
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        }
+        item->state = 6;
+        break;
+    case 6:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+                object[0x68] = 0;
+                item->state = 7;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            if ((*(u32*)(object + 0x5C) >> 16) >= 15) {
+                object[0x68] = 0;
+                item->state = 7;
+            }
+        }
+        break;
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    }
+}
+
+// fn_2_2EFCC, size:0x594
+void fn_2_2EFCC(MenuTableContext* menu, MenuItemState* item) {
+    s32 digit;
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->index) {
+    case 0:
+        digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) / 100;
+        break;
+    case 1:
+        digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) / 10 % 10;
+        break;
+    case 2:
+        digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) % 10;
+        break;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x5C) = 0;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197734) = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC);
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) = *(s16*)(lbl_2_bss_1A824C[0] + 0x19773C) = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC);
+        switch (item->index) {
+        case 0:
+            digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) / 100;
+            break;
+        case 1:
+            digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) / 10 % 10;
+            break;
+        case 2:
+            digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) % 10;
+            break;
+        }
+        fn_800363D8(menu, item->offset, 1, 0xD, digit);
+        item->state = 3;
+        break;
+    }
+    case 3: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) >= 0x15) {
+            object[0x68] = 0;
+            item->state = 37;
+        }
+        break;
+    }
+    case 17:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197736) != *(s16*)(lbl_2_bss_1A824C[0] + 0x19773C)) {
+            fn_800363D8(menu, item->offset, 1, 0xD, digit);
+            item->state = 18;
+        } else {
+            item->state = 37;
+        }
+        break;
+    case 18:
+        item->state = 37;
+        break;
+    case 20:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197736) != *(s16*)(lbl_2_bss_1A824C[0] + 0x19773C)) {
+            fn_800363D8(menu, item->offset, 1, 0xD, digit);
+            item->state = 21;
+        } else {
+            item->state = 37;
+        }
+        break;
+    case 21:
+        item->state = 37;
+        break;
+    case 30:
+    case 33:
+        switch (item->index) {
+        case 0:
+            digit = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) / 100;
+            break;
+        case 1:
+            digit = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) / 10 % 10;
+            break;
+        case 2:
+            digit = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) % 10;
+            break;
+        }
+        fn_800363D8(menu, item->offset, 1, 0xD, digit);
+        item->state = 37;
+        break;
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        item->state = 6;
+        break;
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+
+// fn_2_29884, size:0x69C
+void fn_2_29884(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        if (lbl_2_bss_1A824C[0][0x1978F6] == 0) {
+            if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
+                s32 flag = (lbl_2_bss_1A8248[0] + lbl_800E869C[item->unk10])[0x444D];
+                if (flag == 1) {
+                    *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2E;
+                    fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+                    object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x5C) = 0;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                } else {
+                    *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                    fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+                    object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x5C) = 0;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                }
+            } else {
+                *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+                object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x5C) = 0x10000;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        } else {
+            if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
+                s32 flag = (lbl_2_bss_1A8248[0] + lbl_800E869C[item->unk10])[0x44B9];
+                if (flag == 1) {
+                    *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2E;
+                    fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+                    object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x5C) = 0;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                } else {
+                    *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                    fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+                    object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x5C) = 0;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                }
+            } else {
+                *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+                object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x5C) = 0x10000;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        }
+        item->state = 37;
+        break;
+    }
+    case 8: {
+        u8* object;
+        if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
+            s32 flag = (lbl_2_bss_1A8248[0] + lbl_800E869C[item->unk10])[0x44B9];
+            if (flag == 1) {
+                *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2E;
+                fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+                object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x5C) = 0;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else {
+                *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+                object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x5C) = 0;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        } else {
+            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+            fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x5C) = 0x10000;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        item->state = 37;
+        break;
+    }
+    case 5:
+        item->timer = 0x28;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    case 37:
+        break;
+    }
+}

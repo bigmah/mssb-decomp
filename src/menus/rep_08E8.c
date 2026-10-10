@@ -331,3 +331,66 @@ void fn_2_4ACF8(void) {
         *(u8*)(lbl_2_bss_1A8248[0] + 0x4429) = 1;
     }
 }
+
+extern void* fn_800111D8(void*);
+extern void ACTSetAnimation(void*, void*, int, u16, f32, f32);
+extern void Set_FUN_800b2b6c(void*, s32);
+extern void fn_800B4CA0(void*, f32);
+extern void fn_800B4C04(void*, f32);
+extern void fn_800B4AFC(void*, s32);
+extern void fn_800BDA24(void*);
+extern u8* fn_80052734(s32);
+extern s32 fn_800527BC(void);
+extern u8 fn_800B3C04(s32, void*, void*);
+extern u8* lbl_2_bss_340140;
+extern const f32 lbl_2_rodata_9B0;
+
+// .text:0x47B24 size:0x1D8
+void fn_2_47B24(u16* count) {
+    u8* cam;
+    u8* o;
+    u16 i;
+    u16 j;
+    u8* p;
+    u8* actor;
+    u8 f;
+    f32 m[3][4];
+    if (lbl_2_bss_340140[0x307A] != 3) {
+        for (i = 0; i < *count; i++) {
+            actor = *(u8**)(lbl_8036E548 + i * 4 + 0x2C50);
+            if (actor != NULL && actor[0x25D] != 0) {
+                p = fn_800111D8(actor);
+                if (*(void**)p != NULL) {
+                    if (p[0x58] != 0) {
+                        ACTSetAnimation(*(void**)p, *(void**)(p + 4), 0, *(u16*)(p + 0xE), lbl_2_rodata_9B0, *(f32*)(p + 0x60));
+                    }
+                    if (p[0x59] != 0) {
+                        fn_800B4CA0(*(void**)p, *(f32*)(p + 0x5C));
+                    }
+                    if (p[0x5A] != 0) {
+                        fn_800B4C04(*(void**)p, *(f32*)(p + 0x54));
+                    }
+                    f = p[0x5B];
+                    if (f & 2) {
+                        fn_800B4AFC(*(void**)p, (u8)(f & 1));
+                    }
+                    Set_FUN_800b2b6c(*(void**)p, *(s32*)(p + 0x68));
+                    if (p[0x6C] != 0) {
+                        fn_800BDA24(p);
+                    }
+                    for (j = 0; j < fn_800527BC(); j++) {
+                        cam = fn_80052734(j) + 0x40;
+                        PSMTXTrans(m, *(f32*)(actor + 0x34), *(f32*)(actor + 0x38), *(f32*)(actor + 0x3C));
+                        PSMTXConcat((void*)cam, m, m);
+                        o = *(u8**)p;
+                        o[0x98] = (o[0x98] & (u8)~(3 << (j * 3))) | (fn_800B3C04(j, o, m) << (j * 3));
+                    }
+                    p[0x58] = 0;
+                    p[0x59] = 0;
+                    p[0x5A] = 0;
+                    p[0x5B] = p[0x5B] & 1;
+                }
+            }
+        }
+    }
+}

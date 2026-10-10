@@ -92,4 +92,12 @@ void fn_1_10CEC(u8* object);
 
 void fn_1_E8D4(void);
 
+void fn_1_1644C(void);
+
+void fn_1_1347C(void);
+
+void fn_1_17D90(void);
+
+void fn_1_14710(u8* object);
+
 #endif

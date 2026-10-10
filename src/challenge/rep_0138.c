@@ -266,3 +266,279 @@ void fn_1_66C4(void) {
     *(Chal6C*)(lbl_1_common_bss_472B4 + 0x1A0) = *(Chal6C*)(lbl_1_common_bss_472B4 + 0x134);
     *(void**)lbl_803CC1B8[0] = fn_1_6848;
 }
+
+typedef struct ChalTexState {
+    u8 pad0[0x11];
+    u8 replace;
+    u8 pad12[2];
+    GXIndTexScale tScale;
+    GXIndTexScale sScale;
+    u8 flags;
+    u8 pad1d[0x424-0x1d];
+    GXTexObj obj;
+} ChalTexState;
+static ChalTexState lbl_1_bss_C0;
+extern u8 lbl_1_data_2A8[];
+
+// 95%: extra lis/addi before flags load (base re-materialized); fn_1_5544, size:0x154
+void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, GXTexCoordID coord, GXTexMapID map) {
+    u8* d = lbl_1_data_2A8;
+    ChalTexState* st = &lbl_1_bss_C0;
+    u8 flags;
+    GXLoadTexObj(&st->obj, map);
+    flags = st->flags;
+    if (flags != 0) {
+        if (flags & 2) {
+            map--;
+        }
+        if (flags & 4) {
+            coord--;
+        }
+        GXSetTevOrder(stage, coord, map, GX_COLOR_NULL);
+        GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+        GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+        GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+        GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+        return;
+    }
+    GXSetNumIndStages(1);
+    GXSetIndTexMtx(mtx, (const f32(*)[3])(d + 0x7CC), (s8) * (f32*)(d + 0x7C8));
+    GXSetIndTexOrder(indStage, coord, map);
+    GXSetIndTexCoordScale(indStage, st->sScale, st->tScale);
+    GXSetTevIndWarp(stage, indStage, d[0x7C5], st->replace, mtx);
+}
+
+// 0%: right switch structure, but instruction scheduling differs; fn_1_5924, size:0x19C
+s32 fn_1_5924(s32 width, s32 x, s32 y, s32 bpp, s32 alt) {
+    s32 offset;
+    switch (bpp) {
+    case 4:
+        return (y / 8) * 8 * width + (x / 8) * 8 * 4 + (y % 8) * 8 + x % 8;
+    case 8:
+        return (y / 4) * 4 * width + (x / 8) * 8 * 4 + (y % 4) * 8 + x % 8;
+    case 16:
+        return (y / 4) * 4 * width + (x / 4) * 4 * 4 + (y % 4) * 4 + x % 4;
+    case 32:
+        offset = (y / 4) * 4 * width + (x / 4) * 4 * 4 + (y % 4) * 8 + x % 4;
+        if (alt != 0) {
+            offset += 16;
+        }
+        return offset;
+    }
+    return width;
+}
+
+extern f32 lbl_1_data_200[];
+extern const f32 lbl_1_rodata_210;
+extern const f32 lbl_1_rodata_218;
+
+// 90%+: only float regs differ (magic double f7/k f6 swapped); fn_1_8368, size:0x240
+void fn_1_8368(void) {
+    s32 v1;
+    if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+        v1 = *(s16*)(lbl_1_common_bss_472B4 + 0x22E) - 1;
+        *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = v1;
+        if ((s16)v1 < -1) {
+            *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = *(s16*)(lbl_1_common_bss_472B4 + 0x228) - 1;
+        }
+    } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+        s16 v2 = *(s16*)(lbl_1_common_bss_472B4 + 0x22E);
+        v2++;
+        *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = v2;
+        if (v2 >= *(s16*)(lbl_1_common_bss_472B4 + 0x228)) {
+            *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = -1;
+        }
+    } else if (*(u16*)((u8*)&lbl_803C77B8 + 2) & 0x400) {
+        lbl_1_common_bss_472B4[0x239] ^= 1;
+    } else if (*(u16*)((u8*)&lbl_803C77B8 + 2) & 0x100) {
+        lbl_1_common_bss_472B4[0x238] ^= 1;
+    }
+    lbl_1_data_200[0] = (f32)(s8)((u8*)&lbl_803C77B8)[0x10] * lbl_1_rodata_210 + lbl_1_data_200[0];
+    lbl_1_data_200[2] = (f32)(s8)((u8*)&lbl_803C77B8)[0x11] * lbl_1_rodata_210 + lbl_1_data_200[2];
+    lbl_1_data_200[3] = (f32)(s8)((u8*)&lbl_803C77B8)[0x12] * lbl_1_rodata_210 + lbl_1_data_200[3];
+    lbl_1_data_200[5] = (f32)(s8)((u8*)&lbl_803C77B8)[0x13] * lbl_1_rodata_210 + lbl_1_data_200[5];
+    if (!(*(u16*)&lbl_803C77B8 & 0x100)) {
+        lbl_1_data_200[1] = -((f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_218 - lbl_1_data_200[1]);
+        lbl_1_data_200[1] = (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_218 + lbl_1_data_200[1];
+    } else {
+        lbl_1_data_200[4] = -((f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_218 - lbl_1_data_200[4]);
+        lbl_1_data_200[4] = (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_218 + lbl_1_data_200[4];
+    }
+}
+
+extern GXTexObj lbl_1_bss_4E4;
+extern const f32 lbl_1_rodata_1AC;
+extern const f32 lbl_1_rodata_1B0;
+extern const f32 lbl_1_rodata_1B4;
+extern const f32 lbl_1_rodata_1B8;
+extern const f32 lbl_1_rodata_1BC;
+extern const f32 lbl_1_rodata_1C0;
+extern const f32 lbl_1_rodata_1C4;
+
+// fn_1_5698, size:0x28C
+void fn_1_5698(void) {
+    Mtx44 proj;
+    Mtx pos;
+    C_MTXOrtho(proj, lbl_1_rodata_1A8, lbl_1_rodata_1AC, lbl_1_rodata_1A8, lbl_1_rodata_1B0, lbl_1_rodata_1B4, lbl_1_rodata_1B8);
+    GXSetProjection(proj, GX_ORTHOGRAPHIC);
+    PSMTXIdentity(pos);
+    GXLoadPosMtxImm(pos, 0);
+    GXSetCurrentMtx(0);
+    GXSetZMode(1, GX_ALWAYS, 0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXSetCullMode(GX_CULL_NONE);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, 2);
+    GXSetNumChans(0);
+    GXSetNumTevStages(1);
+    GXSetNumTexGens(1);
+    GXSetTexCoordGen2(GX_TEXCOORD0, (GXTexGenType)1, GX_TG_TEX0, 0x3C, 0, 0x7D);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+    GXLoadTexObj(&lbl_1_bss_4E4, GX_TEXMAP0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1BC;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
+    GXWGFifo.u16 = 0;
+    GXWGFifo.u16 = 0;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1C0;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
+    GXWGFifo.u16 = 0;
+    GXWGFifo.u16 = 4;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1C4;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1C0;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
+    GXWGFifo.u16 = 4;
+    GXWGFifo.u16 = 4;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1C4;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1BC;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
+    GXWGFifo.u16 = 4;
+    GXWGFifo.u16 = 0;
+    GXSetNumIndStages(0);
+    GXSetTevDirect(GX_TEVSTAGE0);
+}
+
+// 85%: float regs differ in the 4 start/end cases (k f1/zero f0 in orig, f0/f1 here); fn_1_7FF8, size:0x370
+void fn_1_7FF8(void) {
+    s32 t;
+    s32 u;
+    f32 f;
+    switch ((s32) * (u16*)((u8*)&lbl_803C77B8 + 4)) {
+    case 8:
+        t = lbl_1_common_bss_472B4[0x23C] - 1;
+        lbl_1_common_bss_472B4[0x23C] = t;
+        if ((s8)t < 0) {
+            lbl_1_common_bss_472B4[0x23C] = 5;
+        }
+        return;
+    case 4:
+        t = lbl_1_common_bss_472B4[0x23C] + 1;
+        lbl_1_common_bss_472B4[0x23C] = t;
+        if ((s8)t >= 6) {
+            lbl_1_common_bss_472B4[0x23C] = 0;
+            return;
+        }
+        break;
+    case 1:
+        switch ((s8)lbl_1_common_bss_472B4[0x23C]) {
+        case 0:
+            u = lbl_1_bss_4E0[0]->color.color.a - 1;
+            lbl_1_bss_4E0[0]->color.color.a = u;
+            switch ((u8)u) {
+            case 0xFF:
+                lbl_1_bss_4E0[0]->color.color.a = 7;
+                return;
+            case 3:
+                lbl_1_bss_4E0[0]->color.color.a = 2;
+                return;
+            case 1:
+                lbl_1_bss_4E0[0]->color.color.a = 0;
+                return;
+            }
+            break;
+        case 1:
+            lbl_1_bss_4E0[0]->color.color.r = lbl_1_bss_4E0[0]->color.color.r - 1;
+            return;
+        case 2:
+            lbl_1_bss_4E0[0]->color.color.g = lbl_1_bss_4E0[0]->color.color.g - 1;
+            return;
+        case 3:
+            lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b - 1;
+            return;
+        case 4:
+            f = lbl_1_bss_4E0[0]->start;
+            f = f - lbl_1_rodata_1D8;
+            lbl_1_bss_4E0[0]->start = f;
+            if (f < lbl_1_rodata_1A8) {
+                lbl_1_bss_4E0[0]->start = lbl_1_rodata_1A8;
+                return;
+            }
+            break;
+        case 5:
+            f = lbl_1_bss_4E0[0]->end;
+            f = f - lbl_1_rodata_1D8;
+            lbl_1_bss_4E0[0]->end = f;
+            if (f < lbl_1_rodata_1A8) {
+                lbl_1_bss_4E0[0]->end = lbl_1_rodata_1A8;
+                return;
+            }
+            break;
+        }
+        break;
+    case 2:
+        switch ((s8)lbl_1_common_bss_472B4[0x23C]) {
+        case 0:
+            u = lbl_1_bss_4E0[0]->color.color.a + 1;
+            lbl_1_bss_4E0[0]->color.color.a = u;
+            switch ((u8)u) {
+            case 1:
+                lbl_1_bss_4E0[0]->color.color.a = 2;
+                return;
+            case 3:
+                lbl_1_bss_4E0[0]->color.color.a = 4;
+                return;
+            case 8:
+                lbl_1_bss_4E0[0]->color.color.a = 0;
+                return;
+            }
+            break;
+        case 1:
+            lbl_1_bss_4E0[0]->color.color.r = lbl_1_bss_4E0[0]->color.color.r + 1;
+            return;
+        case 2:
+            lbl_1_bss_4E0[0]->color.color.g = lbl_1_bss_4E0[0]->color.color.g + 1;
+            return;
+        case 3:
+            lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b + 1;
+            return;
+        case 4:
+            f = lbl_1_bss_4E0[0]->start;
+            f = f + lbl_1_rodata_1D8;
+            lbl_1_bss_4E0[0]->start = f;
+            if (f > lbl_1_rodata_208) {
+                lbl_1_bss_4E0[0]->start = lbl_1_rodata_208;
+                return;
+            }
+            break;
+        case 5:
+            f = lbl_1_bss_4E0[0]->end;
+            f = f + lbl_1_rodata_1D8;
+            lbl_1_bss_4E0[0]->end = f;
+            if (f > lbl_1_rodata_208) {
+                lbl_1_bss_4E0[0]->end = lbl_1_rodata_208;
+                return;
+            }
+            break;
+        }
+        break;
+    }
+}
