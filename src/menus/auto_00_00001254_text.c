@@ -596,3 +596,37 @@ void fn_2_86EC(void) {
     lbl_2_bss_F468[0x56] = 0;
     *(u16*)(lbl_803CBBCC[0] + 4) = 2;
 }
+
+// fn_2_C698, size:0x144
+void fn_2_C698(u8 a, s32 b) {
+    s32 slot;
+    if (g_d_GameSettings.GameModeSelected != 5) {
+        u8 idx = b;
+        u8* row = lbl_803C6724;
+        u8* p;
+        row += idx * 9;
+        p = row;
+        p += a;
+        slot = *(s8*)(p + 2);
+        lbl_8034E9A0[slot + 0x4757] = 1;
+        if (((u8*)&g_d_GameSettings)[0x10] == 0 && idx != 0) {
+            if (*(s8*)(lbl_8034E9A0 + 0x46F8) == 0) {
+                fn_800506E8(1, slot, 1);
+            } else {
+                fn_800506E8(0, slot, 1);
+            }
+        } else {
+            fn_800506E8(*(s8*)(lbl_8034E9A0 + idx + 0x46F8), slot, 1);
+        }
+        fn_80067B40(b, slot, 1);
+        return;
+    }
+    {
+        u8* r2 = lbl_803C6724;
+        r2 += a;
+        slot = *(s8*)(r2 + 2);
+    }
+    fn_800506E8(0, slot, 1);
+    lbl_8034E9A0[slot + 0x4757] = 1;
+    fn_80067B40(b, slot, 1);
+}
