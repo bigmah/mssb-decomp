@@ -727,8 +727,38 @@ void fn_3_2D92C(int i) {
 }
 
 // .text:0x0002DAC4 size:0x230 mapped:0x8066CB58
-void fn_3_2DAC4(void) {
-    return;
+void fn_3_2DAC4(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    if (f[0x1ED] == 0) {
+        if (f[0x208] == 0) {
+            if (f[0x1DB] == 0) {
+                f[0x208] = 1;
+            } else {
+                f[0x208] = 3;
+            }
+        }
+        f[0x1D6] = 0;
+        fn_3_2D47C(i);
+        *(s16*)(f + 0x19E) = -1;
+        dz = *(f32*)(f + 0x1C) - *(f32*)(f + 8);
+        dx = *(f32*)(f + 0x14) - *(f32*)f;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        if (d < lbl_3_rodata_B80) {
+            *(f32*)(f + 0x68) = d;
+            f[0x209] = 0;
+        } else {
+            *(s16*)(f + 0x19E) = fn_3_9FB8C(dx, dz);
+            f[0x209] = 0;
+        }
+        fn_3_3A584(i);
+    }
+    if (*(s16*)(g_Minigame + 0x18AA) != 0) {
+        SetFielderAct(i, 0x1C, 0xE0);
+    }
 }
 
 // .text:0x0002DCF4 size:0xC0 mapped:0x8066CD88

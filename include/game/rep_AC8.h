@@ -39,7 +39,7 @@ void fn_3_2D308(int);
 void fn_3_2D47C(int);
 void fn_3_2D768(int);
 void fn_3_2D92C(int);
-void fn_3_2DAC4(void);
+void fn_3_2DAC4(int i);
 void fn_3_2DCF4(int);
 void fn_3_2DDB4(void);
 void fn_3_2E41C(void);
