@@ -69,4 +69,6 @@ void fn_2_48A1C(void);
 
 void fn_2_4906C(void);
 
+void fn_2_477C0(void);
+
 #endif

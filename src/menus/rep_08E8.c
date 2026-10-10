@@ -197,6 +197,7 @@ s32 fn_2_4A2C4(f32 angle) {
 // fn_2_47AFC, size:0x28
 void fn_2_47AFC(void) {
     s32 i;
+    s32 j;
     for (i = 0; i < 13; i++) {}
 }
 
@@ -263,6 +264,7 @@ void fn_2_46C88(s32 index) {
 // fn_2_48D54, size:0x60
 void fn_2_48D54(void) {
     s32 i;
+    s32 j;
     for (i = 0; i < 4; i++) {
         u8* camera = (u8*)fn_80052768_getCamera(0);
         LITXForm(*(void**)(lbl_8036E548 + i * 4 + 0xAC), camera + 0x40);
@@ -567,6 +569,7 @@ void fn_2_47CFC(void) {
     u8* o;
     u8* p;
     s32 i;
+    s32 j;
     Mtx44 proj;
     Vec scale;
     u8* base;
@@ -614,6 +617,7 @@ extern f32 lbl_2_rodata_990;
 // .text:0x487A0 size:0x23C
 void fn_2_487A0(void) {
     s32 i;
+    s32 j;
     f32 z;
     GXLoadPosMtxImm((MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40), GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
@@ -740,8 +744,35 @@ extern u8 lbl_80366B18[];
 // .text:0x4906C size:0x110
 void fn_2_4906C(void) {
     s32 i;
+    s32 j;
     for (i = 0; i < 15; i++) {
         ((u32*)lbl_2_bss_1A824C[0])[i + 0x19542C / 4] =
             ((u32*)(*(u8**)(lbl_80366B18 + 0x798 + lbl_2_bss_1A824C[0][0x1972B8] * 4) + 4))[i];
+    }
+}
+
+extern u8 lbl_2_data_12EC0[];
+
+typedef struct { u32 a; u32 size; u32 c; u32 d; } Entry08E8;
+
+// .text:0x477C0 size:0x134
+void fn_2_477C0(void) {
+    u32 max = 0;
+    u32 v;
+    s32 i;
+    s32 j;
+    s32 size;
+    u8* buf;
+    for (i = 0; i < 54; i++) {
+        j = i * 19;
+        v = ((Entry08E8*)lbl_2_data_12EC0)[j].size & 0x0FFFFFFF;
+        if (max < v) max = v;
+    }
+    size = (max + 0x1F) & ~0x1F;
+    buf = _OSAllocFromHeap(0x20, size * 4);
+    *(u8**)(lbl_8036E548 + 0x2C8C) = buf;
+    for (i = 0; i < 4; i++) {
+        *(u8**)(lbl_8036E548 + i * 0x27C + 0xC0C) = buf;
+        buf += size;
     }
 }
