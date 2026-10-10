@@ -4289,3 +4289,78 @@ void fn_2_2DAA8(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
 }
+
+// fn_2_32F08, size:0x2BC
+void fn_2_32F08(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->unk12 = 0xFF;
+        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x2E0, 0);
+        item->state = 38;
+        break;
+    }
+    case 2: {
+        u8* object;
+        switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972B4)) {
+        case 0:
+            fn_8000FE08(item->unk14, 4, 0x2E0);
+            break;
+        case 1:
+            fn_8000FE08(item->unk14, 4, 0x2E1);
+            break;
+        case 2:
+            fn_8000FE08(item->unk14, 4, 0x2E2);
+            break;
+        case 3:
+            fn_8000FE08(item->unk14, 4, 0x357);
+            break;
+        case 4:
+            fn_8000FE08(item->unk14, 4, 0x2DE);
+            break;
+        case 5:
+            fn_8000FE08(item->unk14, 4, 0x312);
+            break;
+        case 6:
+            fn_8000FE08(item->unk14, 4, 0x313);
+            break;
+        case 7:
+            fn_8000FE08(item->unk14, 4, 0x314);
+            break;
+        case 8:
+            fn_8000FE08(item->unk14, 4, 0x315);
+            break;
+        }
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+        item->state = 3;
+        break;
+    }
+    case 3:
+        item->state = 37;
+        break;
+    case 37:
+        item->state = 37;
+        break;
+    case 5: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 4:
+    case 1:
+        break;
+    }
+    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+    }
+}
