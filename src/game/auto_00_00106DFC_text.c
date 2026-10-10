@@ -1,6 +1,11 @@
 #include "game/auto_00_00106DFC_text.h"
 
 extern u8 g_Minigame[];
+extern u8 g_Controls[];
+extern u8 lbl_80366158[];
+extern s32 fn_3_5B380(u16);
+extern void fn_8004CC18(void);
+extern void fn_3_10EFAC(void);
 extern u8 g_d_GameSettings[];
 extern u8 g_GameLogic[];
 extern u8 lbl_3_common_bss_32724[];
@@ -545,5 +550,74 @@ void fn_3_10C58C(void) {
             g_Minigame[0x18D0 + g_Minigame[0x1906]] = *(s16*)(r + 0x24);
             g_Minigame[0x1906]++;
         }
+    }
+}
+
+// fn_3_10F1D4, size:0x204
+void fn_3_10F1D4(void) {
+    u8 s = g_GameLogic[0x125];
+    u8 m;
+    switch (s) {
+    case 0:
+        changeScene(6, 6);
+        g_GameLogic[0x125] = g_GameLogic[0x125] + 1;
+        *(u16*)(g_GameLogic + 0xFE) = 0;
+        lbl_8036E548[0x307E] = 0;
+        g_Minigame[0x19E4] = 0;
+        break;
+    case 1:
+        if (*(u16*)(g_GameLogic + 0xFE) > 0x14) {
+            g_GameLogic[0x125] = s + 1;
+        }
+        break;
+    case 2:
+        fn_3_10EFAC();
+        *(u16*)(g_GameLogic + 0xFE) = 0;
+        break;
+    case 3:
+        if (lbl_3_common_bss_32724[0xBB] == 0) {
+            g_GameLogic[0x125] = s + 1;
+        }
+        break;
+    case 4:
+        m = g_Minigame[0x1A2A];
+        if (m >= 1 && m <= 6) {
+            if (g_Minigame[0x190A] != 0) {
+                g_Minigame[0x19E4] = 0;
+            } else {
+                g_Minigame[0x19E4] = g_d_GameSettings[0x13 + m];
+            }
+        }
+        fn_3_5A6D4(0x1E);
+        break;
+    case 5:
+        {
+        u8* cp = g_Controls;
+        cp += lbl_80366158[0x27] * 0x10;
+        switch (fn_3_5B380(*(u16*)(cp + 6))) {
+        case 1:
+            *(u16*)(g_GameLogic + 0xFE) = 0;
+            g_GameLogic[0x125] = g_GameLogic[0x125] + 1;
+            break;
+        case 2:
+            g_GameLogic[0x125] = 2;
+            break;
+        }
+        }
+        break;
+    case 6:
+        if (*(u16*)(g_GameLogic + 0xFE) > 0x2D) {
+            changeScene(4, 6);
+        }
+        if (lbl_8037169C[0x13] != 0) {
+            fn_80062A74();
+            g_Minigame[0x1A1C] = 0;
+            g_GameLogic[0x125] = g_GameLogic[0x125] + 1;
+        }
+        break;
+    case 7:
+        fn_8004CC18();
+        g_GameLogic[0x122] = 1;
+        break;
     }
 }
