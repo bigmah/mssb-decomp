@@ -1160,3 +1160,21 @@ void fn_2_6CCB8(MenuEntry* owner) {
         owner->state = 2;
     }
 }
+
+// fn_2_684D0
+s32 fn_2_684D0(s32 first) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[first];
+    s32 i;
+    u8 hit;
+
+    entry->flagCC = -1;
+    for (i = 1; i < 7; i++) {
+        hit = fn_2_68B54(first, i);
+        if (hit != 0 && i >= 2 && i <= 6) {
+            entry->flagCC = i;
+            break;
+        }
+        entry->flagCC = -1;
+    }
+    return *(s8*)((u8*)entry + 0xCC);
+}
