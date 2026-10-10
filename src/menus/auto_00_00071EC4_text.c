@@ -1371,3 +1371,42 @@ void fn_2_79FAC(s32 a, s32 index) {
         }
     }
 }
+
+// fn_2_79764, size:0x1CC
+
+
+static inline s32 CheckRowHits(s32 a, s32 base, u8 count) {
+    s32 i;
+    s32 n = 0;
+    s32 k = 0;
+    for (i = 0; i < count; i++) {
+        k++;
+        n += fn_80042DA8(a, i + 0x6E + base, 0x1E) != 0;
+    }
+    return n == k;
+}
+
+void fn_2_79764(s32 a, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 1) ? 1 : 0) {
+        s32 j;
+        s32 n1;
+        s32 k1;
+        s32 i;
+        n1 = 0;
+        k1 = 0;
+        for (i = 0; i < 9; i++) {
+            k1++;
+            n1 += fn_80042DA8(a, i + 0x34 + index * 9, 0x14) != 0;
+        }
+        if (CheckRowHits(a, index * 5, lbl_8034E9A0[index + 0x470F]) && n1 == k1) {
+            for (j = 0; j < 9; j++) {
+                if (*(s8*)(lbl_803C6724 + index * 9 + j + 0x4A) == 0) {
+                    lbl_803C6724[index * 9 + j + 0x4A] = 1;
+                }
+            }
+            fn_80062674(index);
+            *e = 2;
+        }
+    }
+}
