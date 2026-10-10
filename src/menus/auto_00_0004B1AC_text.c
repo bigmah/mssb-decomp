@@ -1341,3 +1341,94 @@ void fn_2_51A1C(void) {
         break;
     }
 }
+
+typedef struct {
+    u8 a[0x1E];
+    u8 pad1E[2];
+    u32 w20;
+    s16 h24;
+    u8 b26;
+    u8 b27;
+    u8 c28[2];
+    u8 c2A[2];
+    u8 b2C;
+    u8 b2D;
+    u8 b2E;
+    u8 b2F;
+    u8 b30;
+    u8 b31;
+    u8 b32;
+    u8 b33;
+    u8 b34;
+    u8 c35[2];
+    u8 c37[4];
+    u8 chem[0x36];
+    u8 b71;
+    u8 pad72[2];
+    u16 us[21];
+} MCharStats;
+
+extern MCharStats inMemRoster[2][9];
+extern u8 starMissionCompletionTracker[];
+extern u8 lbl_803C6724[];
+extern u8 lbl_80354720[];
+extern void fn_800678CC(s32);
+
+// fn_2_5163C, size:0x254
+void fn_2_5163C(void) {
+    MCharStats* src;
+    s32 i;
+    s8 sel;
+    *(u32*)(lbl_8034E9A0 + 0x46E0) = starMissionCompletionTracker[0x441D];
+    for (i = 0; i < 9; i++) {
+        lbl_803C6724[i + 2] = *(s16*)(starMissionCompletionTracker + i * 6 + 0x40B8);
+        sel = *(s8*)(lbl_803C6724 + i + 2);
+        src = (MCharStats*)(lbl_8034E9A0 + sel / 9 * 0x5A0 + sel % 9 * 0xA0);
+        memcpy(inMemRoster[0][i].a, src->a, 0x1E);
+        inMemRoster[0][i].h24 = src->h24;
+        inMemRoster[0][i].b26 = src->b26;
+        inMemRoster[0][i].b27 = src->b27;
+        memcpy(inMemRoster[0][i].c28, src->c28, 2);
+        memcpy(inMemRoster[0][i].c2A, src->c2A, 2);
+        inMemRoster[0][i].b2C = src->b2C;
+        inMemRoster[0][i].b2D = src->b2D;
+        inMemRoster[0][i].b2E = src->b2E;
+        inMemRoster[0][i].b2F = src->b2F;
+        inMemRoster[0][i].b30 = src->b30;
+        inMemRoster[0][i].b31 = src->b31;
+        inMemRoster[0][i].b32 = src->b32;
+        inMemRoster[0][i].b33 = src->b33;
+        inMemRoster[0][i].b34 = src->b34;
+        memcpy(inMemRoster[0][i].c35, src->c35, 2);
+        inMemRoster[0][i].w20 = src->w20;
+        memcpy(inMemRoster[0][i].c37, src->c37, 4);
+        memcpy(inMemRoster[0][i].chem, src->chem, 0x36);
+        inMemRoster[0][i].b71 = src->b71;
+        inMemRoster[0][i].us[0] = src->us[0];
+        inMemRoster[0][i].us[1] = src->us[1];
+        inMemRoster[0][i].us[2] = src->us[2];
+        inMemRoster[0][i].us[3] = src->us[3];
+        inMemRoster[0][i].us[4] = src->us[4];
+        inMemRoster[0][i].us[5] = src->us[5];
+        inMemRoster[0][i].us[6] = src->us[6];
+        inMemRoster[0][i].us[7] = src->us[7];
+        inMemRoster[0][i].us[8] = src->us[8];
+        inMemRoster[0][i].us[9] = src->us[9];
+        inMemRoster[0][i].us[10] = src->us[10];
+        inMemRoster[0][i].us[11] = src->us[11];
+        inMemRoster[0][i].us[12] = src->us[12];
+        inMemRoster[0][i].us[13] = src->us[13];
+        inMemRoster[0][i].us[14] = src->us[14];
+        inMemRoster[0][i].us[15] = src->us[15];
+        inMemRoster[0][i].us[16] = src->us[16];
+        inMemRoster[0][i].us[17] = src->us[17];
+        inMemRoster[0][i].us[18] = src->us[18];
+        inMemRoster[0][i].us[19] = src->us[19];
+        inMemRoster[0][i].us[20] = src->us[20];
+        lbl_80354720[i * 4 + 1] = i;
+        lbl_80354720[i * 4] = i;
+        lbl_803C6724[i + 0x14] = starMissionCompletionTracker[i * 6 + 0x40BB];
+        lbl_80354720[i * 4 + 2] = starMissionCompletionTracker[i * 6 + 0x40BB];
+    }
+    fn_800678CC(0);
+}
