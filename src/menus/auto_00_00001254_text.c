@@ -798,3 +798,44 @@ void fn_2_6608(void) {
         }
     }
 }
+
+typedef struct RosterSlot {
+    u8 pad0[0x24];
+    s16 x24;
+    u8 pad26[0xA0 - 0x26];
+} RosterSlot;
+
+// fn_2_9F70, size:0xD0
+s32 fn_2_9F70(s8 team) {
+    s32 result;
+    u8 other;
+    s32 i;
+    s32 j;
+    u8 v;
+    other = (lbl_2_bss_F468 + 0x2F)[team ^ 1];
+    switch (*(s32*)(lbl_2_bss_F468 + (s8)(lbl_2_bss_F468 + 0x2F)[team] * 4 + 0x10)) {
+    case 1:
+        result = 2;
+        break;
+    case 2:
+        result = 1;
+        break;
+    case 3:
+        result = 1;
+        break;
+    }
+retry:
+    for (i = 0; i < 9; i++) {
+        v = ((RosterSlot*)(inMemRoster + (s8)other * 0x5A0))[i].x24;
+        for (j = 0; j < 9; j++) {
+            if (v == 0) {
+                if (result == 1 || result == 2) {
+                    return 3;
+                }
+                result = 2;
+                goto retry;
+            }
+        }
+    }
+    return result;
+}
