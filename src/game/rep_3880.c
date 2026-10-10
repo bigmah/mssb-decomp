@@ -2155,12 +2155,12 @@ void fn_3_1552AC(void) {
 }
 
 // .text:0x001559E4 size:0x244 mapped:0x80794A78
-// 99%: only float regs of the post-PSMTXMultVec add block are shifted (orig v.x=f2,pos0=f1,v.y=f0; ours f1,f0,f3)
 void fn_3_1559E4(u8* o, f32* pos, f32* rot) {
     struct { Control c; u32 pad[2]; } cc;
     Mtx m;
     Vec v;
     Vec dir;
+    f64 t;
     *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
     cc.c.type = 0;
     CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
@@ -2175,7 +2175,8 @@ void fn_3_1559E4(u8* o, f32* pos, f32* rot) {
     v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
     PSMTXMultVec(m, &v, &v);
     v.x = v.x + pos[0];
-    v.y = (f32)((f64)v.y - __fabs(pos[1]));
+    t = __fabs(pos[1]);
+    v.y = v.y - t;
     v.z = v.z + pos[2];
     *(f32*)(o + 4) = v.x;
     *(f32*)(o + 8) = v.y;
