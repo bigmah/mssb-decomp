@@ -1301,3 +1301,44 @@ void fn_2_6CBB0(u8* object) {
         *(s16*)(e + 0x94) = 0;
     }
 }
+
+extern const f64 lbl_2_rodata_B78;
+extern const f64 lbl_2_rodata_B80;
+extern const f64 lbl_2_rodata_B88;
+
+static inline f32 menuSqrtf(f32 x) {
+    if (x > 0.0f) {
+        f64 xd = (f64)x;
+        f64 guess = __frsqrte(xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (x < lbl_2_rodata_B88) {
+        return NAN;
+    } else if (isnan(x)) {
+        return NAN;
+    } else {
+        return x;
+    }
+}
+
+// .text:0x6A450 size:0x158
+void fn_2_6A450(s32 index, f32 x, f32 z) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    f32 dx;
+    f32 dz;
+
+    entry->previousPosition.x = x;
+    entry->previousPosition.z = z;
+    dx = x - entry->position.x;
+    dz = z - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+}
