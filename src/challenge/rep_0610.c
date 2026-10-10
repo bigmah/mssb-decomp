@@ -898,3 +898,33 @@ void fn_1_1644C(void) {
         }
     }
 }
+
+extern const f32 lbl_1_rodata_7480;
+extern const f32 lbl_1_rodata_7484;
+extern const f32 lbl_1_rodata_7488;
+extern const f32 lbl_1_rodata_748C;
+extern const f32 lbl_1_rodata_7490;
+extern const f32 lbl_1_rodata_7494;
+extern const f32 lbl_1_rodata_7498;
+extern const f32 lbl_1_rodata_749C;
+
+// .text:0x1347C size:0x144
+void fn_1_1347C(void) {
+    Mtx44 projection;
+    *(f32*)(lbl_1_bss_67E0 + 0x108) = lbl_1_rodata_7394;
+    *(f32*)(lbl_1_bss_67E0 + 0x10C) = lbl_1_rodata_7480;
+    *(f32*)(lbl_1_bss_67E0 + 0x110) = lbl_1_rodata_7394;
+    *(f32*)(lbl_1_bss_67E0 + 0xFC) = lbl_1_rodata_7394;
+    *(f32*)(lbl_1_bss_67E0 + 0x100) = lbl_1_rodata_7394;
+    *(f32*)(lbl_1_bss_67E0 + 0x104) = lbl_1_rodata_73F8;
+    C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
+                 lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
+                 lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
+    GXSetProjection(projection, GX_PERSPECTIVE);
+    fn_800B806C(0, lbl_1_rodata_7484, lbl_1_rodata_7488, lbl_1_rodata_748C, lbl_1_rodata_7490,
+                lbl_1_rodata_7494, lbl_1_rodata_7498, lbl_1_rodata_749C);
+    *(s32*)(lbl_1_bss_67E0 + 0x114) = 0;
+    *(f32*)(lbl_1_bss_67E0 + 0xF8) = lbl_1_rodata_7394;
+    *(s16*)(lbl_1_bss_67E0 + 0xF0) = 0;
+    *(s16*)(lbl_1_bss_67E0 + 0xF2) = 0;
+}

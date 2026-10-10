@@ -94,4 +94,6 @@ void fn_1_E8D4(void);
 
 void fn_1_1644C(void);
 
+void fn_1_1347C(void);
+
 #endif
