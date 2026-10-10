@@ -924,3 +924,14 @@ void fn_1_1F418(u8* menu) {
         }
     }
 }
+
+// .text:0x22644 size:0x230
+void fn_1_22644(void) {
+    u8* q = lbl_803CC1B8[0];
+
+    fn_800AD038(lbl_80366158[2]);
+    q[0x25] = 0;
+    fn_1_22DF4((ChallengeCurveDrawing*)lbl_803CC1B8[0]);
+    fn_1_23AD8(lbl_1_bss_47010, (Vec*)(lbl_1_bss_43EE0 + 0x48), (Vec*)(lbl_1_bss_43EE0 + 0x3C));
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_225B8;
+}

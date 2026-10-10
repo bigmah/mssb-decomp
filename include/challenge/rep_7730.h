@@ -174,4 +174,6 @@ void fn_1_20E00(u8* obj);
 
 void fn_1_20BD8(void);
 
+void fn_1_22644(void);
+
 #endif
