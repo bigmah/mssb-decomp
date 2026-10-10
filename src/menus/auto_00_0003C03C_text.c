@@ -32,6 +32,7 @@ typedef struct {
     u8 b[0x1C];
 } Rec1C;
 extern Rec1C lbl_80109420[];
+extern u8 lbl_801094E4[];
 extern s32 fn_8006CDC0(s32);
 extern u8 lbl_800E8558[];
 extern u8 lbl_80109AE8[];
@@ -1791,7 +1792,7 @@ void fn_2_46ADC(void) {
     u8* e;
     for (i = 0; i < 54; i++) {
         e = lbl_2_bss_1A8248[0] + i * 0x34;
-        *(u8**)e = (u8*)&lbl_80109420[7] + i * 0x1C;
+        *(u8**)e = lbl_801094E4 + i * 0x1C;
         e[4] = (*(u8**)e)[0];
         e[5] = (*(u8**)e)[1];
         e[7] = 0;
@@ -1887,4 +1888,41 @@ void fn_2_43E8C(void) {
         }
     }
     lbl_2_bss_1A824C[0][0x1978F4] = 0;
+}
+
+// fn_2_43404, size:0x188
+void fn_2_43404(void) {
+    s32 i;
+    s32 j;
+    u8* e;
+    for (i = 0; i < 54; i++) {
+        if (lbl_800E8558[i * 6 + 3] == 1) {
+            e = lbl_2_bss_1A8248[0] + i * 0x34;
+            if (*(s8*)(e + 0x31) == 1) {
+                for (j = 0; j < 10; j++) {
+                    u8* p = lbl_80109AE8 + lbl_800E8558[i * 6 + 2] * 0x64 + j * 10;
+                    s32 t = *(s16*)p;
+                    s32 c = *(s16*)(p + 2);
+                    s32 b = *(s16*)(p + 6);
+                    s32 d = *(s16*)(p + 8);
+                    if (t != -1 && *(s8*)(e + j * 2 + 9) == 0 && t == 0x46 &&
+                        lbl_2_bss_1A8248[0][0x441C] == c &&
+                        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) >= d * 0x64 &&
+                        lbl_2_bss_1A8248[0][0x4415] >= b) {
+                        *(s8*)(e + j * 2 + 9) = -2;
+                    }
+                }
+            }
+        }
+    }
+}
+void fn_2_468DC(void) {
+    s32 i;
+    u8* e;
+    for (i = 0; i < 54; i++) {
+        e = lbl_2_bss_1A8248[0] + i * 0x34;
+        *(u8**)e = lbl_801094E4 + i * 0x1C;
+        e[4] = (*(u8**)e)[0];
+        e[5] = (*(u8**)e)[1];
+    }
 }
