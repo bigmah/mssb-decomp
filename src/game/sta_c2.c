@@ -1337,9 +1337,61 @@ void fn_3_D3880(void) {
     return;
 }
 
+typedef struct { u8 b[4]; } B4;
+extern B4 lbl_3_rodata_250C;
+extern B4 lbl_3_rodata_2510;
+extern const f32 lbl_3_rodata_2808;
 // .text:0x000D3CDC size:0x278 mapped:0x80712D70
-void fn_3_D3CDC(void) {
-    return;
+void fn_3_D3CDC(u8* p) {
+    u8* c;
+    Mtx m;
+    Vec d;
+    Vec v;
+    Vec dir;
+    Vec axis;
+    B4 a = lbl_3_rodata_2510;
+    B4 b = lbl_3_rodata_250C;
+    u8* t;
+    u32 i;
+    if (g_GameLogic[0x11E] != 2) {
+        if (p[0x99] & 2) {
+            p[0x99] &= 0xFD;
+        }
+    } else if (!(p[0x99] & 2)) {
+        if (*(f32*)(p + 0xA0) > lbl_3_rodata_2664) {
+            t = a.b;
+        } else {
+            t = b.b;
+        }
+        for (i = 0; i < 4; i++) {
+            u8* o = *(u8**)(lbl_8036E548 + t[i] * 4 + 0x2C50);
+            if (o != NULL) {
+                PSVECSubtract((Vec*)(p + 0xA0), (Vec*)(o + 0x34), &d);
+                if (PSVECMag(&d) <= lbl_3_rodata_2808) {
+                    p[0x99] |= 2;
+                    if (fn_3_B7F70(10) < 4) {
+                        p[0x99] &= 0xFB;
+                        p[0xCC] = 5;
+                        p[0xCB] = p[0xCA];
+                        p[0xCA] = 2;
+                        *(f32*)(p + 0xB0) = lbl_3_rodata_26A0;
+                        fn_80025EEC(*(s32*)(p + 0x8C), 0, 3);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    c = *(u8**)(p + 0xC4);
+    axis = lbl_3_rodata_25B0;
+    dir = lbl_3_rodata_25BC;
+    PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSMTXMultVec(m, lbl_3_rodata_24E8, &v);
+    PSVECAdd(&v, (Vec*)(p + 0xA0), &v);
+    v.y += lbl_3_rodata_2668;
+    *(Vec*)(c + 0x1CC) = v;
+    *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
+    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 8, &dir, p);
 }
 
 // .text:0x000D3F54 size:0x82C mapped:0x80712FE8
