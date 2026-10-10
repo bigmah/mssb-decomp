@@ -848,3 +848,31 @@ void fn_2_78F78(u8* o, s32 i) {
         *e = 2;
     }
 }
+
+extern u8 lbl_800FE5D4[];
+extern u8 lbl_2_data_2B3A4[];
+extern u8 starMissionCompletionTracker[];
+
+// fn_2_73994, size:0x1C0
+void fn_2_73994(u8* o, s32 i) {
+    s32 a;
+    s32 b;
+    u8 x;
+    u8 y;
+    if (((u8*)&g_d_GameSettings)[7] != 5) {
+        b = lbl_803C6724[i];
+        a = lbl_800FE5D4[((s32*)((u8*)&lbl_2_bss_F410 + 0x10))[i]];
+        b = lbl_800FE5D4[b];
+    } else if (i != 0) {
+        b = ((s8*)starMissionCompletionTracker)[0x441F];
+        a = b;
+    } else {
+        a = b = starMissionCompletionTracker[0x441D];
+    }
+    x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
+    y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
+    *(s32*)(((u8**)lbl_80371C30)[(0x82 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = lbl_2_data_2B3A4[x] << 16;
+    *(s32*)(((u8**)lbl_80371C30)[(0x7E + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = lbl_2_data_2B3A4[x] << 16;
+    fn_800363D8(o, i + 0x89, 1, 3, lbl_2_data_2B3A4[x]);
+    fn_800363D8(o, i + 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
+}
