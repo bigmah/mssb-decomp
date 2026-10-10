@@ -1576,3 +1576,32 @@ void fn_2_6E88C(MenuEntry* entry) {
     }
     entry->heading = entry->angle34;
 }
+
+extern const f32 lbl_2_rodata_C4C;
+extern void fn_2_46C88(s32, s32);
+
+// fn_2_6C988, size:0x1F0
+void fn_2_6C988(MenuEntry* entry) {
+    Vec sum;
+    Vec offset;
+    Mtx rotation;
+    MenuEntries* menu;
+
+    ((u8*)lbl_2_bss_1A8248[0])[entry->objectId * 0xD8 + 0x16D0] = 1;
+    menu = lbl_2_bss_1A8248[0];
+    PSVECSubtract(&lbl_2_data_2EA4[*(s16*)((u8*)menu + 0x16C0)], &lbl_2_data_2EA4[*(s16*)((u8*)menu + 0x16BE)], &sum);
+    PSVECScale(&sum, lbl_2_rodata_B68[0], &sum);
+    PSMTXRotRad(rotation, 'Y', *(f32*)((u8*)menu + 0x165C));
+    offset.x = lbl_2_rodata_B58;
+    offset.y = lbl_2_rodata_B58;
+    offset.z = lbl_2_rodata_C4C;
+    PSMTXMultVec(rotation, &offset, &offset);
+    PSVECAdd(&sum, &offset, &sum);
+    memcpy(&entry->position, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16BE)], sizeof(Vec));
+    PSVECAdd(&entry->position, &sum, &entry->position);
+    fn_2_68FBC(entry->objectId, 1);
+    entry->heading = (f32)atan2(-(menu->entries[0].position.x - entry->position.x),
+        -(menu->entries[0].position.z - entry->position.z));
+    fn_2_46C88(entry->objectId, 0);
+    entry->state = 1;
+}
