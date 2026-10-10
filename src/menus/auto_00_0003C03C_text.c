@@ -6,6 +6,7 @@
 extern u8* lbl_2_bss_1A8248[];
 extern u8* lbl_2_bss_1A824C[];
 extern u8 lbl_803CB8F0[];
+extern u8 lbl_2_data_3CC8[];
 extern u32 lbl_803CBD0C[];
 extern u32* lbl_2_data_13374[];
 extern void fn_80031CA4(Vec*, u32*);
@@ -797,6 +798,55 @@ void fn_2_3C3EC(void) {
         break;
     case 2:
         if ((*(s16*)(o + 0x14))-- == 0) {
+            o[0x28] = 3;
+        }
+        break;
+    case 3:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+    }
+}
+
+// fn_2_3DAB8, size:0x1A8
+void fn_2_3DAB8(void) {
+    u8* o = lbl_803CC1B8;
+    u8* gsb = (u8*)&g_d_GameSettings;
+    u8* q;
+    u8* gs;
+    u8* e;
+    switch ((s8)o[0x28]) {
+    case 0:
+        gs = gsb + lbl_2_data_3CC8[lbl_2_bss_1A8248[0][0x441C]];
+        if (*(gs += 0x1A) == 0) {
+            *gs = 1;
+            lbl_2_bss_1A8234[0][0x16264D] = 1;
+            *(s16*)(o + 0x14) = 0x10;
+            fn_80062890(0x38);
+            o[0x28] = 1;
+        } else {
+            o[0x28] = 3;
+        }
+        break;
+    case 1:
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        e = (u8*)&lbl_803C77B8;
+        e += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        if (*(u16*)(e + 2) & 0x300) {
+            lbl_2_bss_1A8234[0][0x162837] = 1;
+            *(s16*)(o + 0x14) = 0x10;
             o[0x28] = 3;
         }
         break;
