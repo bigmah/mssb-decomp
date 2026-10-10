@@ -1,6 +1,8 @@
 #include "challenge/rep_0610.h"
 
 // POOL BEGIN
+static u8 ch_6940[0x48 * 4];
+static u8 ch_fill692C[0x14];
 static u8 ch_68FC[0x30];
 static u8 ch_fill68F8[0x4];
 static u8 ch_67E0[0x118];
@@ -867,6 +869,32 @@ void fn_1_10458(void) {
         if (buttons & 0x200) {
             *(s32*)(state + 0xC) = 0;
             state[0x2F01] = 1;
+        }
+    }
+}
+
+extern void fn_1_ECF8(u8, u8, u8);
+
+typedef struct { u8 pad : 3; u8 mode : 2; u8 rest : 3; } ChallengeFlagBits;
+
+// .text:0x1644C size:0x10C
+void fn_1_1644C(void) {
+    u32 entry;
+    s32 i;
+    u8** p;
+    entry = *(u32*)(lbl_8036E548 + ch_5F73 * 4 + 0x2C50);
+    ch_5F69 = ch_5F69 ^ 1;
+    if (entry != 0) {
+        u8* slot = *(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34;
+        if (ch_5F69 == 0) {
+            *(u32*)(slot + 0x68) = 0;
+        } else {
+            *(u32*)(slot + 0x68) = entry + 0x72;
+        }
+        fn_1_ECF8(ch_5F73, (ch_6940 + ch_5F73 * 0x48)[0x44], ch_5F69);
+        p = (u8**)ch_67B8;
+        for (i = 0; i < 4; i++) {
+            if (p[i] != NULL) ((ChallengeFlagBits*)(p[i] + 0x11))->mode = 3;
         }
     }
 }
