@@ -147,3 +147,36 @@ void fn_1_1D514(void) {
     b[5] = 0;
     b[3] = 0;
 }
+
+typedef struct { u8 pad[0x3C]; f32 f3C, f40, f44, f48, f4C, f50; } ChallengeProjState;
+extern ChallengeProjState lbl_1_bss_6B7C;
+extern const f32 lbl_1_rodata_75F0;
+extern const f32 lbl_1_rodata_75F4;
+extern const f32 lbl_1_rodata_752C;
+extern const f32 lbl_1_rodata_7530;
+extern const f32 lbl_1_rodata_7534;
+extern const f32 lbl_1_rodata_7538;
+extern const f32 lbl_1_rodata_7540;
+extern const f32 lbl_1_rodata_753C;
+extern const f32 lbl_1_rodata_75F8;
+extern const f32 lbl_1_rodata_75FC;
+extern const f32 lbl_1_rodata_7600;
+extern const f32 lbl_1_rodata_7604;
+extern const f32 lbl_1_rodata_7608;
+extern const f32 lbl_1_rodata_7550;
+extern const f32 lbl_1_rodata_760C;
+
+// fn_1_1B6BC, size:0x120
+void fn_1_1B6BC(void) {
+    Mtx44 proj;
+    ChallengeProjState* st = &lbl_1_bss_6B7C;
+    st->f48 = lbl_1_rodata_7520;
+    st->f4C = lbl_1_rodata_75F0;
+    st->f50 = lbl_1_rodata_7520;
+    st->f3C = lbl_1_rodata_7520;
+    st->f40 = lbl_1_rodata_7520;
+    st->f44 = lbl_1_rodata_75F4;
+    C_MTXFrustum(proj, lbl_1_rodata_752C, lbl_1_rodata_7530, lbl_1_rodata_7534, lbl_1_rodata_7538, lbl_1_rodata_753C, lbl_1_rodata_7540);
+    GXSetProjection(proj, GX_PERSPECTIVE);
+    fn_800B806C(0, lbl_1_rodata_75F8, lbl_1_rodata_75FC, lbl_1_rodata_7600, lbl_1_rodata_7604, lbl_1_rodata_7608, lbl_1_rodata_7550, lbl_1_rodata_760C);
+}
