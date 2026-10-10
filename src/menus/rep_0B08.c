@@ -1178,3 +1178,43 @@ s32 fn_2_684D0(s32 first) {
     }
     return *(s8*)((u8*)entry + 0xCC);
 }
+
+extern s16 lbl_2_data_2E80[];
+
+// .text:0x71B80 size:0xEC
+void fn_2_71B80(u8* object) {
+    u8 type;
+    u8* p;
+    s32 lo;
+    s16* t;
+    s32 b, c;
+    s32 hi;
+    s32 base;
+
+    fn_2_69E1C(*(s32*)(object + 0x80));
+    type = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x441C);
+    t = lbl_2_data_2E80;
+    base = t[type * 3] * 2;
+    c = t[type * 3 + 2] * 2;
+    b = t[type * 3 + 1] * 2;
+    hi = base - c;
+    lo = base - b;
+    if (*(s32*)(object + 0x80) == 0) {
+        p = lbl_8036E548 + 0xC04;
+        if (p != NULL) {
+            c = *(s16*)(p + 0x68);
+            if (c == hi || c == lo) {
+                if (type == 5) {
+                    fn_80062890(1);
+                } else {
+                    fn_80062890(0);
+                }
+            }
+        }
+    }
+    if (*(f32*)(object + 0x50) <= lbl_2_rodata_B58) {
+        *(u8*)(object + 0xBA) = 4;
+        *(u8*)(object + 0xC4) = 1;
+        *(s16*)(object + 0x94) = 2;
+    }
+}
