@@ -1880,3 +1880,22 @@ void fn_1_F798(void* paramsArg, void* typesArg, s32 count) {
         }
     }
 }
+
+extern void fn_80011640(void*, void*);
+extern void fn_80052968(void);
+
+// .text:0x121D4 size:0x4F8
+void fn_1_121D4(u8* camera) {
+    switch (*(s32*)(camera + 0x114)) {
+    case 0:
+        fn_1_11F08(camera);
+        break;
+    case 1:
+        fn_1_11D00(camera);
+        break;
+    }
+    fn_80011640(camera, camera);
+    PSVECSubtract((Vec*)(camera + 0x108), (Vec*)(camera + 0xFC), (Vec*)(camera + 0x88));
+    PSVECNormalize((Vec*)(camera + 0x88), (Vec*)(camera + 0x88));
+    fn_80052968();
+}
