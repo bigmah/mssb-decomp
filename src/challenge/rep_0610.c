@@ -1080,3 +1080,42 @@ void fn_1_DF14(void) {
         break;
     }
 }
+
+extern u8 lbl_1_data_F10C[];
+extern u8* lbl_1_data_F174[];
+extern const f32 lbl_1_rodata_73FC;
+extern void fn_1_F50C(void);
+
+// .text:0xF37C size:0x190
+void fn_1_F37C(void) {
+    u8* state = lbl_1_bss_3070;
+    u8* pad;
+    u8* object;
+    fn_1_F798(lbl_1_data_F10C, lbl_1_data_F0A8, 0x12);
+    pad = (u8*)&lbl_803C77B8;
+    if (*(u16*)(pad + 4) & 0x1100) {
+        *(u32*)lbl_1_data_F10C = *(u32*)(state + 0x28);
+        *(u32*)lbl_1_data_F174[0] = *(u32*)(state + 0x28);
+        *(u32*)(lbl_1_data_F174[0] + 4) = 5;
+        object = fn_800B0A5C_insertQueue((void*)fn_1_F50C, (u16)(*(u16*)(lbl_803CC1B8[0] + 0x12) + 1));
+        *(f32*)(object + 0x18) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x14) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x1C) = lbl_1_rodata_73F8;
+        *(f32*)(object + 0x20) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x24) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x28) = (f32) * (s32*)(lbl_1_data_F10C + 0x5C) / lbl_1_rodata_73FC;
+        *(f32*)(object + 0x2C) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x30) = lbl_1_rodata_7394;
+        *(f32*)(object + 0x34) = (f32) * (s32*)(lbl_1_data_F10C + 0x60) / lbl_1_rodata_73FC;
+        *(s16*)(object + 0x3C) = 0x20;
+        object[0x3E] = 1;
+        *(u32*)(object + 0x38) = *(u16*)(state + 0x34);
+        *(u16*)(state + 0x34) = *(u16*)(state + 0x34) + 2;
+        object[0x3F] = (*(u16*)(pad + 4) >> 12) & 1;
+        return;
+    }
+    if (*(u16*)(pad + 4) & 0x200) {
+        *(u32*)(state + 0xC) = 0;
+        state[0x2F01] = 10;
+    }
+}
