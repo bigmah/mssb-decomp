@@ -182,4 +182,6 @@ void fn_1_1DA54(void);
 
 void fn_1_24410(void);
 
+void fn_1_1D694(u8* obj);
+
 #endif

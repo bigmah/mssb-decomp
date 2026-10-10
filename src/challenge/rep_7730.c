@@ -601,6 +601,7 @@ void fn_1_247A0(void) {
 extern void fn_1_273D8(void*);
 extern void fn_1_1F05C(void);
 
+// 99.5%: inlined fn_1_1F23C tail swaps r6/r7 (lbl_803CC1B8 address vs loaded pointer)
 // .text:0x1F2D8 size:0x140
 void fn_1_1F2D8(void) {
     fn_1_273D8(lbl_1_bss_6D48);
@@ -624,6 +625,7 @@ extern const f64 lbl_1_rodata_7878;
 extern const f64 lbl_1_rodata_7880;
 extern const f64 lbl_1_rodata_7888;
 
+// 69%: original keeps i*4 index (lfsx base,r31) plus a dead `i` counter; ours strength-reduces to 3 pointers
 // .text:0x22F4C size:0x14C
 void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
     f64 c = (lbl_1_rodata_7878 * *(f32*)(lbl_1_data_FB98 + 0x928)) / *(f32*)(lbl_1_data_FB98 + 0x924);
@@ -716,6 +718,7 @@ extern const f32 lbl_1_rodata_7808[];
 extern const f32 lbl_1_rodata_78C4[];
 extern const f32 lbl_1_rodata_78C8[];
 
+// 91%: f3/f6 swap for 1.0f vs int->float magic, and the tail 78C4 load is CSE'd with the head (orig reloads, addi form)
 // .text:0x24A8C size:0x1C0
 void fn_1_24A8C(void) {
     u8* q = lbl_803CC1B8[0];
@@ -804,6 +807,7 @@ extern void fn_800B2C08(void*, s32);
 extern void fn_800BD548(u8*, s32, ...);
 
 extern const f32 lbl_1_rodata_77E4_s;
+// 99.8%: LITInitPos: orig `lis r3,7840; lis r4,6FA4; addi r3,r4` (float const lis first), ours swaps r3/r4
 // .text:0x20E00 size:0x18C
 void fn_1_20E00(u8* obj) {
     ChallengeLightColor color = lbl_1_rodata_77B0;
@@ -831,6 +835,7 @@ void fn_1_20E00(u8* obj) {
     }
 }
 
+// 99.8%: same LITInitPos r3/r4 swap as fn_1_20E00 (inlined here)
 // .text:0x20BD8 size:0x1F0
 void fn_1_20BD8(void) {
     u8* q = lbl_803CC1B8[0];
@@ -939,6 +944,7 @@ void fn_1_22644(void) {
 
 extern u8 lbl_1_data_10518[];
 
+// 99.5%: saved regs q=r25/i=r26 in orig, ours q=r26/i=r25 (decl/assign order variants did not help)
 // .text:0x2004C size:0x258
 void fn_1_2004C(void) {
     u8* q = lbl_803CC1B8[0];
@@ -1085,4 +1091,84 @@ void fn_1_24410(void) {
         ((f32*)lbl_1_bss_76E0)[i] = lbl_1_rodata_77E4;
     }
     *(void (**)(void))lbl_803CC1B8[0] = fn_1_23B54;
+}
+
+extern const f32 lbl_1_rodata_77E8;
+extern void fn_80023F0C(void*, ChallengeTextureHeader*, s32, s32, s32, s32, s32, s32);
+extern void gOz_GXSetTexture(s32, s32, s32);
+extern void DCStoreRange(void*, u32);
+
+// 91%: orig divides height/64, width/32 with srawi/addze (signed); ours srwi (CW knows u16 >= 0); loop regs rotate
+// .text:0x1D694 size:0x2B0
+void fn_1_1D694(u8* obj) {
+    ChallengeTextureHeader* tex;
+    u8* src;
+    void* dst;
+    s32 rows;
+    s32 cols;
+    s32 y;
+    s32 x;
+    s32 v;
+
+    if (obj[0x18] != 0) {
+        tex = *(ChallengeTextureHeader**)(obj + 8);
+        src = *(u8**)(obj + 0x10);
+        dst = *(void**)(obj + 0xC);
+        memset(tex->image, 0, tex->width * tex->height);
+        rows = tex->height / 64;
+        cols = tex->width / 32;
+        for (y = 0; y < rows; y++) {
+            for (x = 0; x < cols; x++) {
+                if (x & lbl_803CBBC0[0]) {
+                    v = src[y * cols + x];
+                    fn_80023F0C(dst, tex, v % cols * 32, v / cols * 64, 0x20, 0x40, x * 32, y * 64);
+                }
+            }
+        }
+        DCStoreRange(tex->image, tex->width * tex->height);
+    }
+    {
+        Mtx proj;
+        Mtx view;
+
+        C_MTXOrtho(*(Mtx44*)proj, lbl_1_rodata_77D8, lbl_1_rodata_77DC[0], lbl_1_rodata_77D8, lbl_1_rodata_77E0[0], lbl_1_rodata_77D8, (&lbl_1_rodata_77E4)[0]);
+        PSMTXIdentity(view);
+        GXSetProjection(*(Mtx44*)proj, GX_ORTHOGRAPHIC);
+        GXLoadPosMtxImm(view, 0);
+        GXSetCurrentMtx(0);
+    }
+    gOz_GXSetTexture(0, 0, 0);
+    SetDisplayStateTexture(*(void**)(obj + 8), 0, 0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    GXWGFifo.u16 = 0;
+    GXWGFifo.u16 = 0;
+    {
+        f32 y = (*(ChallengeTextureHeader**)(obj + 8))->height;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = y;
+    }
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    GXWGFifo.u16 = 0;
+    GXWGFifo.u16 = 1;
+    {
+        f32 x = (*(ChallengeTextureHeader**)(obj + 8))->width;
+        f32 y = (*(ChallengeTextureHeader**)(obj + 8))->height;
+        GXWGFifo.f32 = x;
+        GXWGFifo.f32 = y;
+    }
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    GXWGFifo.u16 = 1;
+    GXWGFifo.u16 = 1;
+    GXWGFifo.f32 = (*(ChallengeTextureHeader**)(obj + 8))->width;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    GXWGFifo.u16 = 1;
+    GXWGFifo.u16 = 0;
 }
