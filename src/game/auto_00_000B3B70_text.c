@@ -13,6 +13,16 @@ extern u8 lbl_80354768[];
 extern void fn_3_5A6D4(u8);
 
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_common_bss_32724[];
+extern void fn_3_B2E20(void);
+extern void fn_3_8FC80(void);
+extern void fn_3_B43E8(void);
+extern void fn_3_B0AAC(void);
+extern void fn_3_B1C14(void);
+extern void fn_3_B77DC(void);
+extern void fn_3_15B610(void);
+extern s32 fn_80014F40(s32);
+extern s32 fn_80014D4C(s32);
 extern u8 lbl_3_data_FC20[];
 extern u8 lbl_3_common_bss_32724[];
 extern s32 fn_8001594C(s32);
@@ -716,5 +726,70 @@ void fn_3_B6994(void) {
         changeScene(1, 6);
         fn_3_5A6D4(7);
         break;
+    }
+}
+
+// fn_3_B482C, size:0x1A8
+void fn_3_B482C(void) {
+    *((u8*)&g_Practice + 0x1C3) = 0;
+    if (*((u8*)&g_Practice + 0x19F) != 0) {
+        fn_3_B2E20();
+        fn_3_8FC80();
+        return;
+    }
+    if (*(u16*)((u8*)&g_Practice + 0x142) < 0xFFFEU) {
+        (*(u16*)((u8*)&g_Practice + 0x142))++;
+    } else {
+        *(u16*)((u8*)&g_Practice + 0x142) = 0xFFFF;
+    }
+    if (*(u16*)((u8*)&g_Practice + 0x144) < 0xFFFEU) {
+        (*(u16*)((u8*)&g_Practice + 0x144))++;
+    } else {
+        *(u16*)((u8*)&g_Practice + 0x144) = 0xFFFF;
+    }
+    if (*(u16*)((u8*)&g_Practice + 0x140) < 0xFFFEU) {
+        (*(u16*)((u8*)&g_Practice + 0x140))++;
+    } else {
+        *(u16*)((u8*)&g_Practice + 0x140) = 0xFFFF;
+    }
+    switch (g_GameLogic.secondaryGameMode) {
+    case 18:
+        fn_3_B43E8();
+        break;
+    case 10:
+        fn_3_B5D78();
+        break;
+    case 11:
+        fn_3_B6BA4();
+        break;
+    case 12:
+        fn_3_B0AAC();
+        break;
+    case 13:
+        fn_3_B1C14();
+        break;
+    case 14:
+        fn_3_B77DC();
+        break;
+    case 15:
+    case 16:
+        fn_3_15B610();
+        break;
+    case 17:
+        *((u8*)&g_GameLogic + 0x122) = 1;
+        break;
+    }
+    fn_3_8FC80();
+    if (*((u8*)&g_GameLogic + 0x11E) == 1 || *((u8*)&g_GameLogic + 0x11E) == 2) {
+        if (*(s16*)(lbl_3_common_bss_32724 + 0x9E) >= 0) {
+            if (fn_80014F40(*(s16*)(lbl_3_common_bss_32724 + 0x9E)) != 0) {
+                *(s16*)(lbl_3_common_bss_32724 + 0x9E) = -1;
+            }
+        }
+        if (*(s16*)(lbl_3_common_bss_32724 + 0xA0) >= 0) {
+            if (fn_80014D4C(*(s16*)(lbl_3_common_bss_32724 + 0xA0)) != 0) {
+                *(s16*)(lbl_3_common_bss_32724 + 0xA0) = -1;
+            }
+        }
     }
 }
