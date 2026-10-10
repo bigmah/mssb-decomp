@@ -1785,7 +1785,6 @@ void fn_2_42FC8(void) {
 }
 
 // fn_2_46ADC, size:0x148
-// near-match: original lbl_80109420+0xC4 reloc form, inner loop guard cmpwi 0xa
 void fn_2_46ADC(void) {
     s32 i;
     s32 j;
@@ -1798,9 +1797,9 @@ void fn_2_46ADC(void) {
         e[7] = 0;
         e[6] = 0;
         e[8] = 0;
-        for (j = 0; j < 20; j++) {
-            e[0x1D + j] = 0;
-            e[9 + j] = 0;
+        for (j = 0; j < 10; j++) {
+            e[9 + j * 2] = e[0x1D + j * 2] = 0;
+            e[0xA + j * 2] = e[0x1E + j * 2] = 0;
         }
         if (*(s8*)(e + 4) == (s32)lbl_2_bss_1A8248[0][0x441C] && *(s8*)(e + 5) <= 3) {
             e[0x31] = 1;
