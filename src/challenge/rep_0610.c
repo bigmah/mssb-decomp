@@ -1418,3 +1418,53 @@ void fn_1_11D00(u8* camera) {
     PSMTXMultVec(rot, &lbl_1_data_AD24, &pos);
     makeLookAtMatrix(camera, camera + 0x108, &pos, camera + 0xFC);
 }
+
+typedef struct { u8 r, g, b, a; } ChallengeLightColor;
+extern void LITAlloc(void**);
+extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
+extern void LITInitPos(void*, f32, f32, f32);
+extern void LITInitDir(void*, f32, f32, f32);
+extern void LITInitColor(void*, ChallengeLightColor);
+extern ChallengeLightColor lbl_1_rodata_72F0;
+extern const f32 lbl_1_rodata_7474;
+extern const f32 lbl_1_rodata_7478;
+extern const f32 lbl_1_rodata_747C;
+
+// .text:0x131E4 size:0x298
+void fn_1_131E4(void) {
+    ChallengeLightColor color = lbl_1_rodata_72F0;
+    void** light0;
+    void** light1;
+    void** light2;
+    void** light3;
+
+    light0 = (void**)(lbl_8036E548 + 0xAC);
+    LITAlloc(light0);
+    light1 = (void**)(lbl_8036E548 + 0xB0);
+    LITAlloc(light1);
+    light2 = (void**)(lbl_8036E548 + 0xB4);
+    LITAlloc(light2);
+    light3 = (void**)(lbl_8036E548 + 0xB8);
+    LITAlloc(light3);
+
+    LITInitAttn(*light0, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(*light0, lbl_1_rodata_7474, lbl_1_rodata_7478, lbl_1_rodata_7474);
+    LITInitDir(*light0, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
+    LITInitColor(*light0, color);
+    LITInitDir(*light0, lbl_1_rodata_747C, lbl_1_rodata_7394, lbl_1_rodata_747C);
+
+    LITInitAttn(*light1, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(*light1, lbl_1_rodata_747C, lbl_1_rodata_7478, lbl_1_rodata_7394);
+    LITInitDir(*light1, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
+    LITInitColor(*light1, color);
+
+    LITInitAttn(*light2, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(*light2, lbl_1_rodata_7394, lbl_1_rodata_7478, lbl_1_rodata_7474);
+    LITInitDir(*light2, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
+    LITInitColor(*light2, color);
+
+    LITInitAttn(*light3, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(*light3, lbl_1_rodata_7394, lbl_1_rodata_7478, lbl_1_rodata_747C);
+    LITInitDir(*light3, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
+    LITInitColor(*light3, color);
+}
