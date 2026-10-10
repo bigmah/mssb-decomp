@@ -557,27 +557,12 @@ void fn_1_1D944(void) {
 }
 
 // .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
-// .text:0x21180 size:0x118
 void fn_1_21180(u8* arg) {
     ChallengeCurveTiming* tm;
-    ChallengeCurvePoint* p;
-    Vec* v;
     s32 n = arg[0x20];
     f32 t;
+    ChallengeCurvePoint* pts;
+    s32 idx;
 
     tm = &lbl_1_bss_6FB8;
     tm->steps = n;
@@ -589,17 +574,16 @@ void fn_1_21180(u8* arg) {
         tm->steps = 1;
     }
     fn_80038CD0(arg[0x21], &lbl_1_bss_6FB8, lbl_1_bss_6FE0, lbl_1_rodata_7810, *(f32*)(arg + 0x18));
-    n = arg[0x21];
-    p = &lbl_1_bss_6FE0[n - 1];
-    lbl_1_bss_6FA8[0] = p->position.x;
-    lbl_1_bss_6FA8[1] = p->position.y;
-    lbl_1_bss_6FA8[2] = p->position.z;
-    p->mode = arg[0x23];
+    pts = lbl_1_bss_6FE0;
+    idx = arg[0x21] - 1;
+    lbl_1_bss_6FA8[0] = pts[idx].position.x;
+    lbl_1_bss_6FA8[1] = pts[idx].position.y;
+    lbl_1_bss_6FA8[2] = pts[idx].position.z;
+    pts[idx].mode = arg[0x23];
 }
 
 extern void fn_80038B48(void*, void*, u8, Vec*);
 
-// .text:0x247A0 size:0x11C
 // .text:0x247A0 size:0x11C
 void fn_1_247A0(void) {
     u8* q = lbl_803CC1B8[0];
@@ -610,4 +594,55 @@ void fn_1_247A0(void) {
     v.y = speed * ((s8)((u8*)&lbl_803C77B8)[0x13] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
     v.z = speed * ((s8)((u8*)&lbl_803C77B8)[0x11] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
     fn_80038B48(lbl_1_bss_45868, lbl_1_bss_43F68, q[0x2B], &v);
+}
+
+extern void fn_1_273D8(void*);
+extern void fn_1_1F05C(void);
+
+// .text:0x1F2D8 size:0x140
+void fn_1_1F2D8(void) {
+    fn_1_273D8(lbl_1_bss_6D48);
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_1F05C;
+    *(u32*)(lbl_803CC1B8[0] + 0x2C) = 0;
+    *(u32*)(lbl_803CC1B8[0] + 0x28) = 0;
+    *(f32*)(lbl_803CC1B8[0] + 0x14) = (&lbl_1_rodata_780C)[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x18) = (&lbl_1_rodata_7810)[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x1C) = (&lbl_1_rodata_7810)[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x20) = lbl_1_rodata_77E4[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x24) = lbl_1_rodata_77E4[0];
+    fn_1_1F23C((ChallengeProjectionState*)lbl_1_bss_6BF4);
+    *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+    lbl_1_bss_6BE4[0] = 0.0f;
+    lbl_1_bss_6BE4[1] = 0.0f;
+    lbl_1_bss_6BE4[2] = 0.0f;
+    lbl_1_bss_6BE4[3] = 0.0f;
+}
+
+extern const f64 lbl_1_rodata_7878;
+extern const f64 lbl_1_rodata_7880;
+extern const f64 lbl_1_rodata_7888;
+
+// .text:0x22F4C size:0x14C
+void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
+    f64 c = (lbl_1_rodata_7878 * *(f32*)(lbl_1_data_FB98 + 0x928)) / *(f32*)(lbl_1_data_FB98 + 0x924);
+    f32 k;
+    f32 m;
+    s32 y;
+    s32 x;
+    s32 i;
+    s32 row;
+
+    c = c * c;
+    k = c;
+    m = lbl_1_rodata_7880 - lbl_1_rodata_7888 * c;
+    for (y = 0, row = 0; y < h; y++, row += w) {
+        for (x = 0, i = row; x < w; x++, i++) {
+            out[i] = m * cur[i]
+                + k * (cur[(x + 1) % w + row] + (cur[(x + (w - 1)) % w + row]
+                + (cur[x + w * ((y + (h - 1)) % h)] + cur[x + w * ((y + 1) % h)])))
+                - prev[i];
+            out[i] *= *(f32*)(lbl_1_data_FB98 + 0x92C);
+            
+        }
+    }
 }
