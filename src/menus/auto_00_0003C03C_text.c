@@ -43,6 +43,10 @@ extern u8 lbl_2_data_3198[];
 extern void fn_2_1BFD0(void);
 extern u8 lbl_8034E978[];
 extern void fn_2_72054(s32, s8);
+extern void fn_2_44504(void);
+extern void fn_8006877C(s32);
+extern u8 lbl_2_data_1056C[];
+extern u8 lbl_2_data_3C40[];
 extern s32 fn_2_8CC88(s32);
 
 typedef struct {
@@ -802,6 +806,72 @@ void fn_2_3C3EC(void) {
         }
         break;
     case 3:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+    }
+}
+
+// fn_2_3D878, size:0x24C
+void fn_2_3D878(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    switch ((s8)o[0x28]) {
+    case 0:
+        fn_2_44504();
+        lbl_2_bss_1A8234[0][0x162650] = 1;
+        *(s16*)(o + 0x14) = 0x12C;
+        o[0x28] = 1;
+        break;
+    case 1:
+        if (*(s16*)(o + 0x14) == 0x118) {
+            fn_80062890(0x44);
+        }
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            *(s16*)(o + 0x14) = 0x64;
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            lbl_2_bss_1A8234[0][0x1627AE] = 1;
+            lbl_2_bss_1A8230[0][0x32A0F] = 1;
+            *(s16*)(o + 0x14) = *(s16*)(lbl_2_data_1056C + lbl_2_bss_1A8248[0][0x4415] * 0xC + lbl_2_bss_1A8248[0][0x441C] * 2);
+            o[0x28] = 3;
+        }
+        break;
+    case 3:
+        if (*(s16*)(o + 0x14) == 0x32) {
+            fn_80062890(((s32*)lbl_2_data_3C40)[lbl_2_bss_1A8248[0][0x441C]]);
+        }
+        if (*(s16*)(o + 0x14) == 0x32) {
+            fn_8006877C(0xC);
+        }
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            *(s16*)(o + 0x14) = 0xB4;
+            o[0x28] = 4;
+        }
+        break;
+    case 4:
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            *(s16*)(o + 0x14) = 0x32;
+            o[0x28] = 5;
+        }
+        break;
+    case 5:
+        if ((*(s16*)(o + 0x14))-- == 0) {
+            o[0x28] = 6;
+        }
+        break;
+    case 6:
         q = *(u8**)(o + 0xC);
         *(s16*)(q + 0x10) = 1;
         fn_800B0A14_removeQueue(q);
