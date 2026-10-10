@@ -1383,3 +1383,44 @@ s32 fn_2_69554(s32 index, f32 x, f32 z) {
     divisor = (0.0f == divisor) ? 1.0f : divisor;
     return bonus + (s32)(sum / divisor);
 }
+
+extern const f32 lbl_2_rodata_C14;
+extern const f32 lbl_2_rodata_C18;
+
+// .text:0x6AE08 size:0x178
+void fn_2_6AE08(void) {
+    u8* e;
+    s32 i;
+
+    i = 0;
+    do {
+        e = (u8*)&lbl_2_bss_1A8248[0]->entries[i];
+        memset(e, 0, 0xD8);
+        *(s32*)(e + 0x80) = i;
+        *(s32*)(e + 0x84) = i;
+        *(f32*)(e + 0x8C) = lbl_2_rodata_B58;
+        *(u8*)(e + 0xB6) = 10;
+        *(f32*)(e + 0x40) = lbl_2_rodata_C18 * (f32) * (u8*)(e + 0xB6) + lbl_2_rodata_C14;
+        *(u8*)(e + 0xB8) = 10;
+        *(u8*)(e + 0xB7) = 15;
+        *(f32*)(e + 0x44) = *(f32*)(e + 0x40) / (f32) * (u8*)(e + 0xB7);
+        *(u8*)(e + 0xBB) = 0;
+        *(u8*)(e + 0xC0) = 0;
+        *(s16*)(e + 0x96) = i;
+        i++;
+        *(s16*)(e + 0x98) = -1;
+        *(u8*)(e + 0xBC) = 1;
+        *(u8*)(e + 0xC3) = 0;
+        *(s16*)(e + 0x94) = 0;
+        *(s8*)(e + 0xC6) = -1;
+        *(u8*)(e + 0xC4) = 0;
+        *(u8*)(e + 0xC5) = 0;
+        *(f32*)(e + 0x88) = lbl_2_rodata_B58;
+        *(u8*)(e + 0xC1) = 0;
+        *(u8*)(e + 0xBA) = 12;
+        *(s16*)(e + 0xAC) = 0;
+        *(u8*)(e + 0xCA) = 0xFF;
+        *(s8*)(e + 0xCB) = -1;
+        *(s8*)(e + 0xCC) = -1;
+    } while (i < 8);
+}
