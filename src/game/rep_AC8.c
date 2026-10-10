@@ -3423,13 +3423,50 @@ void fn_3_54900(int i) {
 }
 
 // .text:0x00054B58 size:0x818 mapped:0x80693BEC
-void fn_3_54B58(void) {
+void fn_3_54B58(int i) {
     return;
 }
 
 // .text:0x00055370 size:0x23C mapped:0x80694404
 void fn_3_55370(void) {
-    return;
+    int i;
+    u8* f;
+    s16 v;
+    f32 d;
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        if (g_d_GameSettings[0x11] != 0 && g_Minigame[0x1923] != i) {
+            continue;
+        }
+        fn_3_54B58(i);
+        *(f32*)(f + 0x7C) = fn_3_9CE0(*(f32*)f, *(f32*)(f + 8));
+        if (0.0f == *(f32*)(f + 0x50)) {
+            *(f32*)(f + 0x38) = 0.0f;
+            *(f32*)(f + 0x3C) = 0.0f;
+        } else {
+            *(f32*)(f + 0x38) = *(f32*)(f + 0x30) / *(f32*)(f + 0x50);
+            *(f32*)(f + 0x3C) = *(f32*)(f + 0x34) / *(f32*)(f + 0x50);
+        }
+        f[0x1EA] = 0;
+        f[0x217] = 0;
+
+    }
+    fn_3_544B8();
+    if (g_d_GameSettings[0x11] != 0) {
+        fn_3_53F48();
+        return;
+    }
+    v = *(s16*)(g_Ball + 0x1B78);
+    if (v >= 0) {
+        *(f32*)(g_Ball + 0) = *(f32*)(g_Fielders + v * 0x268);
+        *(f32*)(g_Ball + 4) = ((f32*)(g_Fielders + 4))[v * 0x9A];
+        *(f32*)(g_Ball + 8) = ((f32*)(g_Fielders + 8))[v * 0x9A];
+        *(f32*)(g_Ball + 0x348) = *(f32*)(g_Ball + 0);
+        *(f32*)(g_Ball + 0x34C) = *(f32*)(g_Ball + 8);
+        d = *(f32*)(g_Ball + 0) * *(f32*)(g_Ball + 0) + *(f32*)(g_Ball + 8) * *(f32*)(g_Ball + 8);
+        SQRT_L(d);
+        *(f32*)(g_Ball + 0x1A00) = d;
+    }
 }
 
 // .text:0x000555AC size:0x164 mapped:0x80694640

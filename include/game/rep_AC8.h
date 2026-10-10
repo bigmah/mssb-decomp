@@ -205,7 +205,7 @@ void fn_3_53EE8(int);
 void fn_3_53F48(void);
 void fn_3_544B8(void);
 void fn_3_54900(int i);
-void fn_3_54B58(void);
+void fn_3_54B58(int i);
 void fn_3_55370(void);
 void fn_3_555AC(int);
 void fn_3_55710(int);
