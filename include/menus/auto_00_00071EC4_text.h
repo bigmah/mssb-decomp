@@ -29,6 +29,7 @@ void fn_2_802EC(u8* o);
 void fn_2_84388(u8* o);
 void fn_2_800B0(u8* o, s32 i);
 void fn_2_760CC(u8* o);
+void fn_2_805DC(u8* o, s32 i);
 
 void fn_2_76098(void);
 void fn_2_7609C(s32 unused, u8 a, u8 c);
@@ -62,6 +63,7 @@ void fn_2_802EC(u8* o);
 void fn_2_84388(u8* o);
 void fn_2_800B0(u8* o, s32 i);
 void fn_2_760CC(u8* o);
+void fn_2_805DC(u8* o, s32 i);
 void fn_2_836A4(void);
 
 void fn_2_738C8(void);
