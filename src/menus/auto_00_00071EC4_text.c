@@ -1283,3 +1283,32 @@ void fn_2_805DC(u8* o, s32 i) {
         }
     }
 }
+
+// fn_2_80E0C, size:0x150
+void fn_2_80E0C(s32 a, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 1) ? 1 : 0) {
+        s32 n;
+        s32 k;
+        n = 0;
+        k = 0;
+        k++;
+        n += fn_80042DA8(a, index, 0x14) != 0;
+        k++;
+        n += fn_80042DA8(a, index + 2, 0x14) != 0;
+        if (index == 0 || lbl_2_bss_100B8[0x10] != 0 || ((u8*)&g_d_GameSettings)[0x10] != 0) {
+            k++;
+            n += fn_80042DA8(a, index + 0x85, 0xA) != 0;
+            k++;
+            n += fn_80042DA8(a, index + 0x87, 0xA) != 0;
+            k++;
+            n += fn_80042DA8(a, index + 0x89, 5) != 0;
+            k++;
+            n += fn_80042DA8(a, index + 0x8B, 0xA) != 0;
+        }
+        if (n == k) {
+            fn_80062674(index);
+            *e = 2;
+        }
+    }
+}
