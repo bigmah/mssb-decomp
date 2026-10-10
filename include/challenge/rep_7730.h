@@ -180,4 +180,6 @@ void fn_1_2004C(void);
 
 void fn_1_1DA54(void);
 
+void fn_1_24410(void);
+
 #endif

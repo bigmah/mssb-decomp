@@ -1042,3 +1042,47 @@ void fn_1_1DA54(void) {
     PPCSync();
     *(void (**)(void))lbl_803CC1B8[0] = fn_1_1D944;
 }
+
+extern const f32 lbl_1_rodata_78AC;
+extern const f32 lbl_1_rodata_78B0;
+extern const f32 lbl_1_rodata_78B4;
+extern const f32 lbl_1_rodata_78B8;
+extern const f32 lbl_1_rodata_78BC;
+extern const f32 lbl_1_rodata_78C0;
+extern double cos(double);
+extern int rand(void);
+extern void* memset(void*, int, u32);
+extern void fn_1_23B54(void);
+
+// .text:0x24410 size:0x29C
+void fn_1_24410(void) {
+    u8* q = lbl_803CC1B8[0];
+    s32 i;
+    s32 j;
+
+    fn_1_23AD8(lbl_1_bss_47010, (Vec*)(lbl_1_bss_43EE0 + 0x48), (Vec*)(lbl_1_bss_43EE0 + 0x3C));
+    *(u16*)(lbl_1_bss_43EE0 + 0x30) = 0;
+    *(f32*)(lbl_1_bss_43EE0 + 0x38) = (&lbl_1_rodata_77D8)[0];
+    *(u16*)(lbl_1_bss_43EE0 + 0x32) = 0;
+    q[0x27] = 0x40;
+    q[0x29] = 0x40;
+    q[0x28] = 0x40;
+    q[0x2A] = 0;
+    *(f32*)(q + 0x14) = lbl_1_rodata_78AC;
+    *(f32*)(q + 0x18) = lbl_1_rodata_78B0;
+    *(u16*)(q + 0x24) = 0;
+    *(f32*)(q + 0x1C) = lbl_1_rodata_78B4;
+    *(f32*)(q + 0x20) = lbl_1_rodata_78B8;
+    q[0x2B] = 1;
+    for (i = 0; i < 0x80; i++) {
+        lbl_1_bss_74E0[i] = cos(lbl_1_rodata_78BC * (lbl_1_rodata_780C * ((f32)i * lbl_1_rodata_78C0)));
+    }
+    q[0x2C] = 0;
+    memset(lbl_1_bss_76E0, 0, 0x8000);
+    for (j = 0; j < 0x20; j++) {
+        i = rand() % 32 * 128;
+        i += rand() % 128;
+        ((f32*)lbl_1_bss_76E0)[i] = lbl_1_rodata_77E4;
+    }
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_23B54;
+}
