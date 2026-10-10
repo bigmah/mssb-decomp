@@ -1001,8 +1001,35 @@ void fn_3_11C02C(void) {
 }
 
 // .text:0x0011C2CC size:0x32C mapped:0x8075B360
+static inline void initObj_11C2CC(s32 i) {
+    s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
+    u8* p = *(u8**)(lbl_8036E548 + 0x68);
+    u8* e = p + i * 0x90 + 0x34;
+    *(s32*)(e + 4) = v;
+    *(s16*)(e + 0xE) = 0;
+    *(f32*)(e + 0x5C) = 0.0f;
+    *(u8*)(e + 0x58) = 1;
+    *(u8*)(e + 0x59) = v != 0;
+    *(u8*)(e + 0x5A) = v != 0;
+    *(f32*)(e + 0x60) = 0.0f;
+    *(f32*)(e + 0x54) = 1.0f;
+    *(u8*)(e + 0x5A) = 1;
+    *(f32*)(e + 0x5C) = 0.0f;
+    *(u8*)(e + 0x59) = 1;
+    *(u8*)(e + 0x5B) = 2;
+}
 void fn_3_11C2CC(void) {
-    return;
+    s32 i;
+    *(u16*)(lbl_8036E548 + 0x3078) = 0x20;
+    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
+    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    fn_3_11D2C8(8, 0, 0xF, 0, 0);
+    fn_3_11D2C8(9, 0xF, 1, 0, 0);
+    fn_3_11D2C8(0xA, 0x10, 0xF, 0, 0);
+    fn_3_11D2C8(0x10, 0x1F, 1, 0, 0);
+    for (i = 0; i < 0xF; i++) {
+        initObj_11C2CC(i + 0x10);
+    }
 }
 
 // .text:0x0011C5F8 size:0x708 mapped:0x8075B68C
