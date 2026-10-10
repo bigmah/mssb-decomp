@@ -269,3 +269,78 @@ void fn_2_96698(void) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
     }
 }
+
+#define R94(o, B) (((u8**)((u8*)lbl_80371C30 + (B)))[*(u16*)((o) + 0x14) * 2])
+#define D94(o, B) (*(u8**)((u8*)lbl_80371C30 + *(u16*)((o) + 0x14) * 8 + (B)))
+
+// fn_2_95654, size:0x4D4
+void fn_2_95654(u8* object) {
+    s32 i;
+    if ((lbl_803C66B0[0x4F] == 0) ? 1 : 0) {
+        switch (*(s16*)(lbl_2_bss_1033C + 2)) {
+        case 0:
+            *(u16*)(R94(object, 0xC0) + 0x64) = 0x15;
+            *(u16*)(R94(object, 0xC8) + 0x64) = 0x15;
+            if (*(s8*)(lbl_2_bss_1033C + 6) != 0) {
+                *(u32*)(R94(object, 0xC0) + 0x5C) = 0;
+                *(u32*)(R94(object, 0xC8) + 0x5C) = 0xF0000;
+                *(u8*)(R94(object, 0xC0) + 0x68) = 1;
+                *(u8*)(R94(object, 0xC8) + 0x68) = 4;
+                *(u32*)(D94(object, 0xF8) + 0x58) = (*(u32*)(D94(object, 0xF8) + 0x58) & ~0xFFU) | 0xFF;
+                *(u32*)(D94(object, 0x100) + 0x58) = *(u32*)(D94(object, 0x100) + 0x58) & ~0xFFU;
+            } else {
+                *(u32*)(R94(object, 0xC0) + 0x5C) = 0xF0000;
+                *(u32*)(R94(object, 0xC8) + 0x5C) = 0;
+                *(u8*)(R94(object, 0xC0) + 0x68) = 4;
+                *(u8*)(R94(object, 0xC8) + 0x68) = 1;
+                *(u32*)(D94(object, 0xF8) + 0x58) = *(u32*)(D94(object, 0xF8) + 0x58) & ~0xFFU;
+                *(u32*)(D94(object, 0x100) + 0x58) = (*(u32*)(D94(object, 0x100) + 0x58) & ~0xFFU) | 0xFF;
+            }
+            break;
+        case 1:
+            *(u16*)(D94(object, 0xD0) + 0x64) = 0x15;
+            *(u16*)(D94(object, 0xD8) + 0x64) = 0x15;
+            *(u16*)(D94(object, 0xE0) + 0x64) = 0x15;
+            for (i = 0; i < 3; i++) {
+                if (*(s8*)(lbl_2_bss_1033C + 6) != 0) {
+                    if (*(s8*)(lbl_2_bss_1033C + 7) == i) {
+                        *(u32*)(((u8**)lbl_80371C30)[(0x1A + *(u16*)(object + 0x14) + i) * 2] + 0x5C) = 0;
+                        *(u8*)(((u8**)lbl_80371C30)[(0x1A + *(u16*)(object + 0x14) + i) * 2] + 0x68) = 1;
+                        *(u32*)(((u8**)lbl_80371C30)[(0x21 + *(u16*)(object + 0x14) + i) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(0x21 + *(u16*)(object + 0x14) + i) * 2] + 0x58) & ~0xFFU) | 0xFF;
+                    } else {
+                        if (*(s8*)(lbl_2_bss_1033C + 9) == i) {
+                            *(u32*)(((u8**)lbl_80371C30)[(0x1A + *(u16*)(object + 0x14) + i) * 2] + 0x5C) = 0xF0000;
+                            *(u8*)(((u8**)lbl_80371C30)[(0x1A + *(u16*)(object + 0x14) + i) * 2] + 0x68) = 4;
+                        } else {
+                            *(u32*)(((u8**)lbl_80371C30)[(0x1A + *(u16*)(object + 0x14) + i) * 2] + 0x5C) = 0;
+                            *(u8*)(((u8**)lbl_80371C30)[(0x1A + *(u16*)(object + 0x14) + i) * 2] + 0x68) = 0;
+                        }
+                        *(u32*)(((u8**)lbl_80371C30)[(0x21 + *(u16*)(object + 0x14) + i) * 2] + 0x58) = *(u32*)(((u8**)lbl_80371C30)[(0x21 + *(u16*)(object + 0x14) + i) * 2] + 0x58) & ~0xFFU;
+                    }
+                }
+            }
+            break;
+        case 2:
+            *(u16*)(R94(object, 0xE8) + 0x64) = 0x15;
+            *(u16*)(R94(object, 0xF0) + 0x64) = 0x15;
+            if (*(s8*)(lbl_2_bss_1033C + 8) != 0) {
+                *(u32*)(R94(object, 0xE8) + 0x5C) = 0;
+                *(u32*)(R94(object, 0xF0) + 0x5C) = 0xF0000;
+                *(u8*)(R94(object, 0xE8) + 0x68) = 1;
+                *(u8*)(R94(object, 0xF0) + 0x68) = 4;
+                *(u32*)(D94(object, 0x120) + 0x58) = (*(u32*)(D94(object, 0x120) + 0x58) & ~0xFFU) | 0xFF;
+                *(u32*)(D94(object, 0x128) + 0x58) = *(u32*)(D94(object, 0x128) + 0x58) & ~0xFFU;
+            } else {
+                *(u32*)(R94(object, 0xE8) + 0x5C) = 0xF0000;
+                *(u32*)(R94(object, 0xF0) + 0x5C) = 0;
+                *(u8*)(R94(object, 0xE8) + 0x68) = 4;
+                *(u8*)(R94(object, 0xF0) + 0x68) = 1;
+                *(u32*)(D94(object, 0x120) + 0x58) = *(u32*)(D94(object, 0x120) + 0x58) & ~0xFFU;
+                *(u32*)(D94(object, 0x128) + 0x58) = (*(u32*)(D94(object, 0x128) + 0x58) & ~0xFFU) | 0xFF;
+            }
+            break;
+        }
+        fn_800626EC(0);
+        lbl_803C66B0[0x4F] = 1;
+    }
+}
