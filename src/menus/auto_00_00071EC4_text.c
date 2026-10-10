@@ -631,3 +631,19 @@ s32 fn_2_73BF0(s32 arg0) {
     } else r = arg0;
     return r;
 }
+
+extern u8 lbl_2_data_2AF4C[];
+extern u8 lbl_803C6724[];
+extern void fn_2_7308C(void);
+
+// fn_2_73758, size:0x144
+void fn_2_73758(void) {
+    u8* obj;
+    s32 i;
+    fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2AF4C);
+    for (i = 0; i < 8; i++) {
+        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(obj + 0x14) + i + 4) * 2] + 0x5C) = *(s8*)(lbl_803C6724 + 3 + i) << 16;
+    }
+    lbl_803CBCD8[5] = 0;
+    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_7308C;
+}
