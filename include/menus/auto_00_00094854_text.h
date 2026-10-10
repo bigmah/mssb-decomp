@@ -31,4 +31,6 @@ void fn_2_96698(void);
 
 void fn_2_95654(u8* object);
 
+void fn_2_96118(u8* object);
+
 #endif
