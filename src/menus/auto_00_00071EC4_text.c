@@ -3,6 +3,11 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80036214(u8* o, s32 a, s32 b, s32 c);
+extern void fn_8004A34C(u8* a, s32 b, s32 c, s32 d, s32 e);
+extern void fn_80023CF4(s32 a);
+extern void fn_8004C9FC(void);
+extern void fn_2_11A0(u16 v);
+extern void fn_8004CA08(u32 v);
 extern u8 lbl_803CBBC4[];
 extern u8 lbl_803CBCD8[];
 extern u8 lbl_80371C30[];
@@ -802,6 +807,51 @@ s32 fn_2_85310(u16 a, u16 b, u16 c) {
 }
 
 extern s8 lbl_2_data_2E2EC;
+
+// fn_2_854B0, size:0x18C
+void fn_2_854B0(void) {
+    u8* g;
+    switch (*(u16*)(lbl_803CBBCC[0] + 4)) {
+    case 0:
+        fn_8004CA08(0x258);
+        fn_8004A34C(lbl_803C50E8, 0, 0x4A, 0, 0);
+        *(u16*)(lbl_803CBBCC[0] + 4) = 2;
+        break;
+    case 2:
+        g = lbl_803C50E8;
+        switch (g[0x45]) {
+        case 2:
+        case 4:
+            fn_8004C9FC();
+            fn_80023CF4(g[0x45] == 2);
+            {
+                s32 st = 4;
+                if (g[0x45] == 2) {
+                    st = 3;
+                }
+                *(u16*)(lbl_803CBBCC[0] + 4) = st;
+            }
+            break;
+        }
+        break;
+    case 3:
+        fn_8004A34C(lbl_803C50E8, 0, 0x4B, 0, 0);
+        *(u16*)(lbl_803CBBCC[0] + 4) = 6;
+        break;
+    case 4:
+        fn_8004A34C(lbl_803C50E8, 0, 0x4C, 0, 0);
+        *(u16*)(lbl_803CBBCC[0] + 4) = 6;
+        break;
+    case 6:
+        switch (lbl_803C50E8[0x45]) {
+        case 2:
+            fn_2_11A0(1);
+            fn_8004CA08(-1);
+            break;
+        }
+        break;
+    }
+}
 
 // fn_2_837D8, size:0x19C
 void fn_2_837D8(u8* o) {
