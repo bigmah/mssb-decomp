@@ -3331,3 +3331,54 @@ void fn_2_30EF8(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
 }
+
+// fn_2_306D8, size:0x1BC
+void fn_2_306D8(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        u8* object;
+        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        s32 sum = item->index;
+        sum += *(s16*)(ctx + 0x772A);
+        fn_800363D8(menu, item->offset, 1, 0x65, (s8)ctx[sum + 0x789F] == 2 ? 0x14 : sum);
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 37;
+        return;
+    }
+    case 17: {
+        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        s32 sum = item->index;
+        sum += *(s16*)(ctx + 0x772A);
+        fn_800363D8(menu, item->offset, 1, 0x65, (s8)ctx[sum + 0x789F] == 2 ? 0x14 : sum);
+        item->state = 37;
+        return;
+    }
+    case 5:
+        item->timer = 14;
+        item->state = 6;
+        return;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        /* fallthrough */
+    }
+    case 37:
+    case 1:
+        return;
+    }
+}
