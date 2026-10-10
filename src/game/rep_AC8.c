@@ -2074,7 +2074,44 @@ void fn_3_3E34C(int i) {
 
 // .text:0x0003E468 size:0x228 mapped:0x8067D4FC
 void fn_3_3E468(void) {
-    return;
+    s32 i;
+    int j;
+    s32 k;
+    int best;
+    f32 min;
+    u8* f;
+    for (i = 0; i < 9; i++) {
+        *(s16*)(g_Fielders + i * 0x268 + 0x18C) = -1;
+        g_Fielders[i * 0x268 + 0x1D7] = 0;
+    }
+    for (k = 0; k < 5; k++) {
+        *(s16*)(g_FieldingLogic + k * 2 + 0xD0) = -1;
+        g_FieldingLogic[k + 0x101] = 0;
+    }
+    for (j = 0; j < 4; j++) {
+        min = lbl_3_rodata_C24;
+        for (k = 0; k < 6; k++) {
+            if (g_FieldingLogic[k + 0xF8] == 0 && *(f32*)(g_Fielders + j * 4 + k * 0x268 + 0xA8) < min) {
+                min = *(f32*)(g_Fielders + j * 4 + k * 0x268 + 0xA8);
+                best = k;
+            }
+        }
+        f = g_Fielders + best * 0x268;
+        *(s16*)(f + 0x18C) = j;
+        f[0x1D7] = 1;
+        if (best != -1) {
+            f[0x1D3] = 1;
+            if (*(int*)(lbl_3_data_3C40 + 0x8) >= 0) {
+                g_FieldingLogic[best + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x8);
+            }
+            f[0x1D5] = 0;
+            f[0x1D6] = 0;
+            *(s16*)(f + 0x1A4) = 0;
+            *(s16*)(f + 0x1AC) = 0;
+            f[0x1FF] = 0;
+        }
+        *(s16*)(g_FieldingLogic + j * 2 + 0xD0) = best;
+    }
 }
 
 // .text:0x0003E690 size:0x4DC mapped:0x8067D724
