@@ -61,4 +61,6 @@ void fn_2_4AEE4(void);
 
 void fn_2_47CFC(void);
 
+void fn_2_487A0(void);
+
 #endif

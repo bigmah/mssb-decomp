@@ -606,3 +606,61 @@ void fn_2_47CFC(void) {
     }
     fn_2_47B24(*(u16**)(base + 0x60));
 }
+
+#include "Dolphin/gx.h"
+extern f32 lbl_2_rodata_98C;
+extern f32 lbl_2_rodata_990;
+
+// .text:0x487A0 size:0x23C
+void fn_2_487A0(void) {
+    s32 i;
+    f32 z;
+    GXLoadPosMtxImm((MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40), GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetColorUpdate(GX_TRUE);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetNumTevStages(1);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetChanCtrl(GX_ALPHA0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, (GXLogicOp)3);
+    for (i = -24; i < 25; i++) {
+        z = i;
+        GXBegin(GX_LINES, GX_VTXFMT0, 4);
+        GXWGFifo.f32 = *(volatile f32*)&lbl_2_rodata_98C;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_2_rodata_94C;
+        GXWGFifo.f32 = z;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xC8;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_2_rodata_990;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_2_rodata_94C;
+        GXWGFifo.f32 = z;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xC8;
+        GXWGFifo.f32 = z;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_2_rodata_94C;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_2_rodata_98C;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xC8;
+        GXWGFifo.f32 = z;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_2_rodata_94C;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_2_rodata_990;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xC8;
+    }
+}
