@@ -3268,8 +3268,37 @@ void fn_3_51DF0(void) {
 }
 
 // .text:0x00052084 size:0x25C mapped:0x80691118
-void fn_3_52084(void) {
-    return;
+f32 fn_3_52084(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    f32 p;
+    if (*(f32*)(f + 0x50) < 0.01f) {
+        d = (*(f32*)f - x) * (*(f32*)f - x) + (*(f32*)(f + 8) - z) * (*(f32*)(f + 8) - z);
+        SQRT_L(d);
+        return d;
+    }
+    dz = z - *(f32*)(f + 8);
+    dx = x - *(f32*)f;
+    p = *(f32*)(f + 0x38) * dx + *(f32*)(f + 0x3C) * dz;
+    d = (dx * dx + dz * dz) - p * p;
+    if (d < 0.0f) {
+        return 0.0f;
+    }
+    if (d > 0.0f) {
+        f64 xd = (f64)d;
+        f64 guess = __frsqrte(xd);
+        guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);
+        guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);
+        guess = lbl_3_rodata_B30 * guess * (lbl_3_rodata_B38 - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (d < lbl_3_rodata_B40) {
+        return NAN;
+    } else if (isnan(d)) {
+        return NAN;
+    }
+    return d;
 }
 
 // .text:0x000522E0 size:0x280 mapped:0x80691374
