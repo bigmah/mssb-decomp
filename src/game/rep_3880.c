@@ -2080,12 +2080,12 @@ void fn_3_1542F4(void) {
     return;
 }
 
-// 99%: same float-reg shift as fn_3_1559E4 in the post-PSMTXMultVec add block (orig v.x=f2,pos0=f1,v.y=f0)
 // .text:0x001549F0 size:0x28C mapped:0x80793A84
 void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {
     struct { Control c; u32 pad[2]; } cc;
     Mtx m;
     Vec dir;
+    f64 t;
     Vec v;
     u8* o;
     u8 i = 0;
@@ -2113,7 +2113,8 @@ void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {
             v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
             PSMTXMultVec(m, &v, &v);
             v.x = v.x + pos[0];
-            v.y = (f32)((f64)v.y - __fabs(pos[1]));
+            t = __fabs(pos[1]);
+            v.y = v.y - t;
             v.z = v.z + pos[2];
             *(f32*)(o + 4) = v.x;
             *(f32*)(o + 8) = v.y;
