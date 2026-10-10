@@ -280,10 +280,10 @@ typedef struct ChalTexState {
 static ChalTexState lbl_1_bss_C0;
 extern u8 lbl_1_data_2A8[];
 
-// 95%: extra lis/addi before flags load (base re-materialized); fn_1_5544, size:0x154
+
 void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, GXTexCoordID coord, GXTexMapID map) {
     u8* d = lbl_1_data_2A8;
-    ChalTexState* st = &lbl_1_bss_C0;
+    ChalTexState* st = (ChalTexState*)((u8*)&lbl_1_bss_C0 + 0);
     u8 flags;
     GXLoadTexObj(&st->obj, map);
     flags = st->flags;
