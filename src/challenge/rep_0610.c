@@ -1287,3 +1287,45 @@ void fn_1_10ACC(f32 (*matrix)[4], f32* position, void* unused, u8* color, f32 si
     GXSetCullMode(cullMode);
     GXSetZMode(1, 3, 1);
 }
+
+extern void fn_1_F2C(s32, s32, s32);
+extern f32 lbl_1_data_F570[];
+
+// .text:0xC9E0 size:0x1BC
+void fn_1_C9E0(u8* object) {
+    Mtx concat;
+    Vec scaled;
+    fn_1_F2C(4, 0, 0);
+    PSMTXConcat((f32(*)[4])(lbl_1_bss_68FC + 0x10), (f32(*)[4])(object + 8), concat);
+    GXLoadPosMtxImm(concat, 0);
+    GXSetCurrentMtx(0);
+    GXSetBlendMode(1, 4, 5, 0);
+    GXSetZMode(1, 7, 1);
+    GXBegin(0xA8, 0, 6);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0xC);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x10);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x14);
+    GXWGFifo.u32 = 0xFF0000FF;
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x0);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x4);
+    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x8);
+    GXWGFifo.u32 = 0x00FF00FF;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.u32 = 0x000000FF;
+    PSVECScale((Vec*)(lbl_1_bss_30C0 + 0x128), lbl_1_data_F570[0], &scaled);
+    GXWGFifo.f32 = scaled.x;
+    GXWGFifo.f32 = scaled.y;
+    GXWGFifo.f32 = scaled.z;
+    GXWGFifo.u32 = 0x000000FF;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.f32 = 0.0f;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+    PSVECScale((Vec*)(lbl_1_bss_30C0 + 0x140), lbl_1_data_F570[0], &scaled);
+    GXWGFifo.f32 = scaled.x;
+    GXWGFifo.f32 = scaled.y;
+    GXWGFifo.f32 = scaled.z;
+    GXWGFifo.u32 = 0xFFFFFFFF;
+}
