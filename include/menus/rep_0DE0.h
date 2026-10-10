@@ -40,6 +40,18 @@ typedef struct {
     u16 count;
 } MenuDrawWorld;
 
+typedef struct {
+    u8 pad00[0x30];
+    u16 yaw;
+    u16 pitch;
+    f32 offsetX;
+    f32 offsetZ;
+    Vec target;
+    Vec eye;
+} MenuCamera;
+
+void fn_2_8563C(MenuCamera* camera);
+
 void fn_2_87114(void);
 
 void fn_2_870D4(f32 value);

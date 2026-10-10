@@ -121,3 +121,49 @@ void fn_2_870D4(f32 value) {
         lbl_2_bss_1A8248[0][0x307A] = 0;
     }
 }
+
+extern const Vec lbl_2_rodata_E70;
+extern const Vec lbl_2_rodata_E7C;
+extern const f32 lbl_2_rodata_E8C[];
+extern f32 lbl_2_data_2E944[][6];
+extern s8 lbl_2_bss_33FBF5;
+extern void makeLookAtMatrix(void*, void*, void*, void*);
+
+// .text:0x8563C size:0x268
+void fn_2_8563C(MenuCamera* camera) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx combined;
+    Vec up = lbl_2_rodata_E70;
+    Vec angles;
+    Vec offset = lbl_2_rodata_E7C;
+    f32 c;
+    f32 s;
+
+    camera->yaw = 0xC19F;
+    camera->pitch = 0;
+    camera->offsetX = 0.0f;
+    camera->offsetZ = 0.0f;
+    angles.x = camera->yaw;
+    angles.y = camera->pitch;
+    angles.z = 0.0f;
+    PSVECScale(&angles, lbl_2_rodata_E8C[0], &angles);
+    PSMTXRotRad(rotX, 'X', angles.x);
+    PSMTXRotRad(rotY, 'Y', angles.y);
+    s = rotY[0][2];
+    c = rotY[0][0];
+    PSMTXConcat(rotY, rotX, combined);
+    PSMTXMultVec(combined, &offset, &camera->target);
+    camera->eye.x += camera->offsetZ * s - camera->offsetX * c;
+    camera->eye.z += camera->offsetZ * c + camera->offsetX * s;
+    camera->target.x += camera->eye.x;
+    camera->target.y += camera->eye.y;
+    camera->target.z += camera->eye.z;
+    camera->eye.x = lbl_2_data_2E944[lbl_2_bss_33FBF5][0];
+    camera->eye.y = lbl_2_data_2E944[lbl_2_bss_33FBF5][1];
+    camera->eye.z = lbl_2_data_2E944[lbl_2_bss_33FBF5][2];
+    camera->target.x = lbl_2_data_2E944[lbl_2_bss_33FBF5][3];
+    camera->target.y = lbl_2_data_2E944[lbl_2_bss_33FBF5][4];
+    camera->target.z = lbl_2_data_2E944[lbl_2_bss_33FBF5][5];
+    makeLookAtMatrix(camera, &camera->eye, &up, &camera->target);
+}
