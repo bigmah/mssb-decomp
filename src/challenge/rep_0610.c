@@ -1329,3 +1329,55 @@ void fn_1_C9E0(u8* object) {
     GXWGFifo.f32 = scaled.z;
     GXWGFifo.u32 = 0xFFFFFFFF;
 }
+
+// .text:0x14FB8 size:0x1B8
+void fn_1_14FB8(void) {
+    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u8* q = lbl_803CC1B8[0];
+
+    if (buttons & 8) {
+        if (q[0x20] != 0) {
+            q[0x20]--;
+        } else {
+            q[0x20] = 8;
+        }
+    } else if (buttons & 4) {
+        q[0x20]++;
+        if (q[0x20] == 9) {
+            q[0x20] = 0;
+        }
+    } else if (lbl_803C77B8._00 & 0x100) {
+        switch (q[0x20]) {
+        case 0:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 3;
+            break;
+        case 1:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 4;
+            break;
+        case 2:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 5;
+            break;
+        case 3:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 6;
+            break;
+        case 4:
+            if (lbl_803C77B8._02 & 0x100) lbl_1_bss_5F71 = 2;
+            break;
+        case 5:
+            if (lbl_803C77B8._02 & 0x100) lbl_1_bss_5F71 = 8;
+            break;
+        case 6:
+            if (lbl_803C77B8._02 & 0x100) lbl_1_bss_5F71 = 7;
+            break;
+        case 7:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 9;
+            break;
+        case 8:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 10;
+            break;
+        }
+    } else if (lbl_803C77B8._02 & 0x200) {
+        lbl_1_bss_5F71 = 0;
+        minigamesSetSomePointers();
+    }
+}

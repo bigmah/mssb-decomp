@@ -100,4 +100,6 @@ void fn_1_17D90(void);
 
 void fn_1_14710(u8* object);
 
+void fn_1_14FB8(void);
+
 #endif
