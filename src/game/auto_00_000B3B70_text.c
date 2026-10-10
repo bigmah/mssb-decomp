@@ -13,6 +13,16 @@ extern u8 lbl_80354768[];
 extern void fn_3_5A6D4(u8);
 
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_data_FC20[];
+extern u8 lbl_3_common_bss_32724[];
+extern s32 fn_8001594C(s32);
+extern s32 fn_3_B3CD4(void);
+extern s32 fn_3_750DC(void);
+extern void fn_3_6EBB4(s32);
+extern void fn_3_6E24C(s32, s32);
+extern void fn_3_B3A4C(void);
+extern void fn_3_B27A4(void);
+extern void fn_3_B4124(s32, s32, s32, u8);
 extern u8 lbl_3_data_FAC4[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_800EFBA4[];
@@ -651,4 +661,60 @@ void fn_3_B5694(void) {
     }
     g_Practice.practiceType_2 = lbl_3_data_FAC4[g_Practice.practiceType];
     *(s8*)(lbl_3_common_bss_32724 + 0xB9) = g_Practice.practiceType;
+}
+
+// fn_3_B6994, size:0x1DC
+void fn_3_B6994(void) {
+    switch (g_Practice.practiceState) {
+    case 0:
+        if (g_Practice.practiceType_2 == 4) {
+            fn_3_B4124(0, 0, ((s8*)((u8*)&g_Minigame + 0x19E8))[g_Practice.homeAway * 9], ((u8*)&g_Minigame)[g_Practice.homeAway + 0x1A17]);
+            fn_3_6EBB4(0);
+            fn_3_6E24C(0, 0);
+        } else {
+            fn_3_6EBB4(0);
+            fn_3_6E24C(0, 0);
+        }
+        g_GameLogic.currentBatterPerTeam[0] = 1;
+        g_GameLogic.currentBatterPerTeam[1] = 1;
+        lbl_8036E548[0x307D] = 1;
+        lbl_3_common_bss_32724[0x9C] = 0;
+        lbl_8036E548[0x2D77] = 0;
+        lbl_8036E548[0x2D7B] = 0;
+        *((u8*)&g_Practice + 0x1D9) = 0;
+        if (g_Practice.practiceType_2 == 4) {
+            fn_3_B3C94(1);
+        } else {
+            fn_3_B3C94(2);
+        }
+        break;
+    case 1:
+        if (fn_8001594C(g_GameLogic.teamFielding) != 0) {
+            fn_3_B3C94(2);
+        }
+        break;
+    case 2:
+        if (fn_3_750DC() != 0) {
+            fn_3_B3C94(4);
+        }
+        break;
+    case 4:
+        if (fn_3_B3CD4() != 0) {
+            fn_3_B3C94(7);
+        }
+        break;
+    case 7:
+        fn_3_B3B70();
+        if (g_Practice.practiceType_2 == 4) {
+            fn_3_B3A4C();
+            fn_3_B3C78(3);
+        } else {
+            fn_3_B27A4();
+            g_Practice.commandList = (void*)((u32*)lbl_3_data_FC20)[g_Practice.practiceLevel];
+            fn_3_B3C78(1);
+        }
+        changeScene(1, 6);
+        fn_3_5A6D4(7);
+        break;
+    }
 }
