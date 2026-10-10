@@ -1730,3 +1730,35 @@ void fn_2_692D0(s32 index, s32 steps, f32* outX, f32* outZ, f32* outDistance, f3
     *outX = nx * total + entry->position.x;
     *outZ = nz * total + entry->position.z;
 }
+
+// fn_2_71C6C, size:0x258
+void fn_2_71C6C(MenuEntry* owner) {
+    s32 id;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    id = owner->objectId;
+    ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
+    memcpy(owner->_74, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
+    entry = &lbl_2_bss_1A8248[0]->entries[id];
+    pz = *(f32*)&owner->_74[8];
+    px = *(f32*)&owner->_74[0];
+    entry->previousPosition.x = px;
+    entry->previousPosition.z = pz;
+    dx = px - entry->position.x;
+    dz = pz - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+    *(u8*)((u8*)owner + 0xBA) = 13;
+    fn_2_68FBC(id, 0);
+    owner->state = 1;
+}
