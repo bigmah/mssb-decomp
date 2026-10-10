@@ -898,25 +898,15 @@ void fn_3_D1004(u8* p, f32 x, f32 y, f32 z, f32 r, f32 sc) {
     CTRLSetQuat((Control*)(c + 0x1C), q.x, q.y, q.z, q.w);
 }
 
-// .text:0x000D1110 size:0x16C mapped:0x807101A4
-// partial: only gpr numbering of table/idx/t differs (r8/r9/r10 vs r9/r10/r8)
-void fn_3_D1110(u8* p) {
+#pragma dont_inline off
+static inline void D1004_inl(u8* p, f32 x, f32 y, f32 z, f32 r, f32 sc) {
     u8* c = *(u8**)(*(u8**)(**(u8***)(p + 0x74) + 0x18) + 0xC);
-    Quaternion q;
-    s32 i = p[0x9C];
-    T34* t = lbl_3_data_18364 + i;
     Vec axis = lbl_3_rodata_25F8;
-    f32* fb = (f32*)lbl_3_data_18364;
-    f32* yb = fb + 1;
-    f32 r = t->r;
-    f32 x, y, z;
-    z = t->z;
-    y = yb[i * 13];
-    x = fb[i * 13];
+    Quaternion q;
     *(f32*)(p + 0xA0) = x;
     *(f32*)(p + 0xA4) = y;
     *(f32*)(p + 0xA8) = z;
-    *(f32*)(p + 0xC0) = 0.0f;
+    *(f32*)(p + 0xC0) = sc;
     p[0] = 0;
     CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
     CTRLSetRotation((Control*)p, 0.0f, r, 0.0f);
@@ -924,7 +914,13 @@ void fn_3_D1110(u8* p) {
     PSQUATMultiply(&q, (Quaternion*)(p + 0xAC), &q);
     PSQUATNormalize(&q, &q);
     CTRLSetQuat((Control*)(c + 0x1C), q.x, q.y, q.z, q.w);
-    *(f32*)(p + 0xC8) = yb[p[0x9C] * 13];
+}
+#pragma dont_inline on
+
+// .text:0x000D1110 size:0x16C mapped:0x807101A4
+void fn_3_D1110(u8* p) {
+    D1004_inl(p, lbl_3_data_18364[p[0x9C]].x, lbl_3_data_18364[p[0x9C]].y, lbl_3_data_18364[p[0x9C]].z, lbl_3_data_18364[p[0x9C]].r, 0.0f);
+    *(f32*)(p + 0xC8) = lbl_3_data_18364[p[0x9C]].y;
     *(f32*)(p + 0xBC) = 0.0f;
     *(f32*)(p + 0xC4) = 0.0f;
     p[0xD1] = 0;
