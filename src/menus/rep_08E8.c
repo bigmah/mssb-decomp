@@ -283,3 +283,51 @@ s32 fn_2_4A0C4(const u16* a, const u16* b) {
     }
     return 0;
 }
+
+extern s32 lbl_2_data_38B8;
+extern void fn_2_4B2D0();
+
+// .text:0x4ACF8 size:0x1EC
+void fn_2_4ACF8(void) {
+    GameInitVariables* settings = &g_d_GameSettings;
+    s16 mode;
+    u8* menu;
+
+    fn_2_4B2D0();
+    mode = *(u8*)(lbl_2_bss_1A824C[0] + 0x197843);
+    if ((s8)mode == 0) {
+        s32 add = settings->challengeMinigame_baseCoinsEarned;
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BE) = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC);
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) += add;
+        if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) > 999) {
+            *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 999;
+        }
+        if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) < 0) {
+            *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 0;
+        }
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197792) = settings->challengeMinigame_baseCoinsEarned;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = settings->challengeMinigame_baseCoinsEarned;
+    } else if ((s8)mode == 1) {
+        s32 add = lbl_2_data_38B8;
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BE) = *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC);
+        *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) += add;
+        if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) > 999) {
+            *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 999;
+        }
+        if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) < 0) {
+            *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) = 0;
+        }
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197794) = lbl_2_data_38B8;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = lbl_2_data_38B8;
+    } else if ((s8)mode == 2) {
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197796) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = 0;
+    }
+    menu = lbl_2_bss_1A8248[0];
+    if ((s8)menu[0x44FD] > 0) {
+        menu[0x44FD] = menu[0x44FD] - 1;
+    }
+    if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 0 && *(u8*)(lbl_2_bss_1A8248[0] + 0x4429) == 0) {
+        *(u8*)(lbl_2_bss_1A8248[0] + 0x4429) = 1;
+    }
+}
