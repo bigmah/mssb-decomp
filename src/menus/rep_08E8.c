@@ -776,3 +776,33 @@ void fn_2_477C0(void) {
         buf += size;
     }
 }
+
+extern void fn_2_47540(void);
+extern void fn_80023B04(s32);
+extern void fn_80014204(s32);
+extern u32 fn_80023AA4(void);
+
+// .text:0x478F4 size:0x208
+void fn_2_478F4(void) {
+    s32 i;
+    fn_2_477C0();
+    fn_2_47540();
+    fn_80023B04(0xD);
+    fn_80014204(4);
+    *(u32*)(lbl_8036E548 + 0x13C) = fn_80023AA4();
+    for (i = 0; i < 4; i++) {
+        (lbl_8036E548 + i * 0x27C)[0xE59] = i;
+        ((u32*)(lbl_8036E548 + 0x2C50))[i] = 0;
+        ((s8*)lbl_8036E548)[0x2D6A + i] = -1;
+        ((s8*)lbl_8036E548)[i * 0x27C + 0xE5B] = -1;
+    }
+    for (i = 0; i < 9; i++) {
+        ((s8*)lbl_8036E548)[0x2D7F + i] = -1;
+    }
+    for (i = 0; i < 4; i++) {
+        ((s8*)lbl_8036E548)[0x2D89 + i] = -1;
+    }
+    lbl_8036E548[0x2D77] = 0;
+    lbl_8036E548[0x2D7B] = 0;
+    lbl_8036E548[0x2D7C] = 0;
+}

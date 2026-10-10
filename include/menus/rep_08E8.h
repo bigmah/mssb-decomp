@@ -71,4 +71,6 @@ void fn_2_4906C(void);
 
 void fn_2_477C0(void);
 
+void fn_2_478F4(void);
+
 #endif
