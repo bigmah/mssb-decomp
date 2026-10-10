@@ -35,6 +35,7 @@ void fn_3_B6C9C(void);
 
 void fn_3_B5E7C(void);
 
+void fn_3_B5090(void);
 void fn_3_B5D78(void);
 
 void fn_3_B6D80(void);

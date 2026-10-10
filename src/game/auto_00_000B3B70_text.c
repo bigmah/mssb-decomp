@@ -13,6 +13,9 @@ extern u8 lbl_80354768[];
 extern void fn_3_5A6D4(u8);
 
 extern u8 lbl_8036E548[];
+extern u8 lbl_3_data_FACC[];
+extern u8 lbl_800EFBA4[];
+extern s32 sndFXStartEx(u16, u8, u8, u8);
 extern void fn_3_6AEC0(void);
 extern void fn_3_8F1C8(void);
 extern void fn_3_59338(void);
@@ -562,4 +565,45 @@ s32 fn_3_B6320(void) {
         return 1;
     }
     return 0;
+}
+
+// fn_3_B5090, size:0x154
+void fn_3_B5090(void) {
+    InputStruct* c;
+    u8 n;
+    u16 b;
+    u16 d;
+    s32 v;
+    c = &g_Controls[g_Practice.homeAway];
+    n = lbl_3_data_FACC[g_Practice.practiceType_2 * 5];
+    b = c->newButtonInput;
+    if (b & 0x100) {
+        g_Practice.practiceLevel = (lbl_3_data_FACC + g_Practice.practiceType_2 * 5 + g_Practice.subMenuCursor)[1];
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        fn_3_B3C94(3);
+        return;
+    }
+    if (b & 0x200) {
+        fn_3_B3C94(5);
+        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        return;
+    }
+    d = *(u16*)&c->_08;
+    if (d & 8) {
+        if (g_Practice.subMenuCursor != 0) {
+            g_Practice.subMenuCursor -= 1;
+        } else {
+            g_Practice.subMenuCursor = n - 1;
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        return;
+    }
+    if (d & 4) {
+        v = g_Practice.subMenuCursor + 1;
+        g_Practice.subMenuCursor = v;
+        if ((u8)v >= (s32)n) {
+            g_Practice.subMenuCursor = 0;
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
 }
