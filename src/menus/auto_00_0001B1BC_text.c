@@ -290,6 +290,29 @@ void fn_2_1C490(void) {
     lbl_2_bss_1A8234[0][0x162678] = 0;
 }
 
+// fn_2_1C504, size:0xC4
+void fn_2_1C504(s32 arg) {
+    s32 i;
+    for (i = 0; i < 0x33; i++) {
+        if (arg == lbl_2_bss_1A8248[i * 10 + 0x40F0] && (lbl_2_bss_1A8248[i * 10 + 0x40F1] == 1 || lbl_2_bss_1A8248[i * 10 + 0x40F1] == 0)) {
+            if (lbl_2_bss_1A8248[0x441C] == 5) {
+                if (lbl_2_bss_1A8248[i * 10 + 0x40F2] == 1) {
+                    lbl_2_bss_1A8248[i * 10 + 0x40F1] = 3;
+                } else {
+                    lbl_2_bss_1A8248[i * 10 + 0x40F1] = 0;
+                }
+            } else {
+                lbl_2_bss_1A8248[i * 10 + 0x40F1] = 0;
+            }
+        }
+    }
+    lbl_2_bss_1A8248[arg + 0x440C] = 1;
+    if (!(lbl_2_bss_1A8248[0x4428] & (1 << arg))) {
+        lbl_2_bss_1A8248[0x4423]++;
+        lbl_2_bss_1A8248[0x4428] |= 1 << arg;
+    }
+}
+
 typedef struct {
     u32 w0;
     u8 pad[0x14];
