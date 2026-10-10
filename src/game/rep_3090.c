@@ -14,6 +14,7 @@ extern Vec lbl_3_data_20FF8;
 extern Vec lbl_3_data_20FEC;
 
 extern u8* lbl_3_common_bss_DE94;
+extern u8 g_GameLogic[];
 extern u8* g_pCamera;
 extern f32 fn_3_9FEA8(f32);
 extern s16 fn_3_9FF04(f32);
@@ -206,8 +207,91 @@ void fn_3_FD5A8(void) {
 }
 
 // .text:0x000FD670 size:0x38C mapped:0x8073C704
+// The block below is fn_3_104338's body (too large for CW to inline); fn_3_105C28 is inlined (result unused).
 void fn_3_FD670(void) {
-    return;
+    u8* d;
+    if (g_GameLogic[0x122] != 0) {
+        return;
+    }
+    {
+        u8 m[0x88];
+        u8 o[0x58];
+        u8* p0c;
+        u8* p18;
+        Vec vb;
+        Vec va;
+        s32 b = *(s32*)(lbl_3_common_bss_DE94 + 0x118);
+        s32 a = *(s32*)(lbl_3_common_bss_DE94 + 0x990);
+        memset(m, 0, 0x88);
+        {
+            f32 v = lbl_3_rodata_30FC;
+            *(f32*)(m + 0x3C) = v;
+            *(f32*)(m + 0x28) = v;
+            *(f32*)(m + 0x14) = v;
+            *(f32*)(m + 0x00) = v;
+            *(f32*)(m + 0x40) = v;
+        }
+        fn_3_104B3C(a, b, 0, 0, m);
+        memcpy(o, m + 0x58, 12);
+        p0c = o + 0xC;
+        memcpy(p0c, m + 0x64, 12);
+        memcpy(o + 0x40, m + 0x70, 12);
+        *(f32*)(o + 0x3C) = *(f32*)(m + 0x4C);
+        p18 = o + 0x18;
+        PSMTX44MultVec((f32(*)[4])m, &s_axa, (Vec*)p18);
+        PSVECNormalize((Vec*)p18, (Vec*)p18);
+        va = *(Vec*)(o + 0x24);
+        PSMTX44MultVec((f32(*)[4])m, &s_axb, &va);
+        PSVECNormalize(&va, &va);
+        vb = *(Vec*)(o + 0x30);
+        PSMTX44MultVec((f32(*)[4])m, &s_axc, &vb);
+        PSVECNormalize(&vb, &vb);
+        *(f32*)(o + 0x4C) = *(f32*)(m + 0x7C);
+        *(f32*)(o + 0x50) = *(f32*)(m + 0x80);
+        *(u8*)(o + 0x54) = *(u8*)(m + 0x84);
+        memcpy(lbl_3_common_bss_DE94 + 0x64, o, 12);
+        *(f32*)(lbl_3_common_bss_DE94 + 0xA0) = *(f32*)(o + 0x3C);
+        *(f32*)(lbl_3_common_bss_DE94 + 0xA4) = *(f32*)(o + 0x4C);
+        *(f32*)(lbl_3_common_bss_DE94 + 0xA8) = *(f32*)(o + 0x50);
+        *(u8*)(lbl_3_common_bss_DE94 + 0x9A7) = *(u8*)(o + 0x54);
+        memcpy(lbl_3_common_bss_DE94 + 0x88, p0c, 12);
+        *(f32*)(g_pCamera + 0x2858) = *(f32*)(o + 0x0);
+        *(f32*)(g_pCamera + 0x285C) = *(f32*)(o + 0x4);
+        *(f32*)(g_pCamera + 0x2860) = *(f32*)(o + 0x8);
+        *(f32*)(g_pCamera + 0x2870) = *(f32*)(o + 0x4C);
+        *(f32*)(g_pCamera + 0x2874) = *(f32*)(o + 0x50);
+        *(s16*)(g_pCamera + 0x289C) = fn_3_9FF04(fn_3_9FEA8(*(f32*)(g_pCamera + 0x2870)));
+        *(s16*)(g_pCamera + 0x289C) = fn_3_9FF04(fn_3_9FEA8(*(f32*)(g_pCamera + 0x2870)));
+        *(f32*)(g_pCamera + 0x2878) = lbl_3_rodata_30FC;
+    }
+    fn_3_1000D8();
+    *(u32*)(lbl_3_common_bss_DE94 + 0x93C) = *(u32*)(lbl_3_common_bss_DE94 + 0x938);
+    *(s16*)(lbl_3_common_bss_DE94 + 0x948) = *(s16*)(lbl_3_common_bss_DE94 + 0x946);
+    *(s16*)(lbl_3_common_bss_DE94 + 0x942) = *(s16*)(lbl_3_common_bss_DE94 + 0x940);
+    d = lbl_3_common_bss_DE94;
+    switch (*(s16*)(d + 0x944)) {
+    case 0:
+        if (d[0x9AE] != 0) {
+            if (((s32(*)(void))fn_3_FDB30)() != 0) {
+                lbl_3_common_bss_DE94[0x9AE] = 0;
+                lbl_3_common_bss_DE94[0x9AF] = 0;
+                lbl_3_common_bss_DE94[0x9B0] = 0;
+            }
+        } else if (d[0x9AD] == 1) {
+            fn_3_105C28(*(u8**)(d + 0x990), *(u32*)(d + 0x118));
+            if (*(u32*)(d + 0x118) >= *(u32*)(d + 0x11C) - 1) {
+                d[0x9AD] = 0;
+            } else {
+                *(u32*)(d + 0x118) += 0x10000;
+            }
+        }
+        break;
+    case 1:
+        if (d[0x9AE] == 0) {
+            *(s16*)(d + 0x944) = 0;
+        }
+        break;
+    }
 }
 
 // .text:0x000FD9FC size:0x20 mapped:0x8073CA90
@@ -612,8 +696,9 @@ void fn_3_105BD8(u8* p) {
 }
 
 // .text:0x00105C28 size:0x5C mapped:0x80744CBC
+#pragma dont_inline off
 u32 fn_3_105C28(u8* p, u32 key) {
-    u32 hi;
+    u16 hi;
     u32 res;
     u16 n;
     u16* tbl;
@@ -636,6 +721,7 @@ u32 fn_3_105C28(u8* p, u32 key) {
     } while (n != 0);
     return res | (last[1] << 16);
 }
+#pragma dont_inline on
 
 // .text:0x00105C84 size:0x58 mapped:0x80744D18
 void fn_3_105C84(u8* p) {
