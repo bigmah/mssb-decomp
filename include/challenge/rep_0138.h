@@ -41,5 +41,6 @@ void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, 
 s32 fn_1_5924(s32 width, s32 x, s32 y, s32 bpp, s32 alt);
 void fn_1_8368(void);
 void fn_1_5698(void);
+void fn_1_7FF8(void);
 
 #endif

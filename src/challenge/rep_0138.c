@@ -426,3 +426,119 @@ void fn_1_5698(void) {
     GXSetNumIndStages(0);
     GXSetTevDirect(GX_TEVSTAGE0);
 }
+
+// 85%: float regs differ in the 4 start/end cases (k f1/zero f0 in orig, f0/f1 here); fn_1_7FF8, size:0x370
+void fn_1_7FF8(void) {
+    s32 t;
+    s32 u;
+    f32 f;
+    switch ((s32) * (u16*)((u8*)&lbl_803C77B8 + 4)) {
+    case 8:
+        t = lbl_1_common_bss_472B4[0x23C] - 1;
+        lbl_1_common_bss_472B4[0x23C] = t;
+        if ((s8)t < 0) {
+            lbl_1_common_bss_472B4[0x23C] = 5;
+        }
+        return;
+    case 4:
+        t = lbl_1_common_bss_472B4[0x23C] + 1;
+        lbl_1_common_bss_472B4[0x23C] = t;
+        if ((s8)t >= 6) {
+            lbl_1_common_bss_472B4[0x23C] = 0;
+            return;
+        }
+        break;
+    case 1:
+        switch ((s8)lbl_1_common_bss_472B4[0x23C]) {
+        case 0:
+            u = lbl_1_bss_4E0[0]->color.color.a - 1;
+            lbl_1_bss_4E0[0]->color.color.a = u;
+            switch ((u8)u) {
+            case 0xFF:
+                lbl_1_bss_4E0[0]->color.color.a = 7;
+                return;
+            case 3:
+                lbl_1_bss_4E0[0]->color.color.a = 2;
+                return;
+            case 1:
+                lbl_1_bss_4E0[0]->color.color.a = 0;
+                return;
+            }
+            break;
+        case 1:
+            lbl_1_bss_4E0[0]->color.color.r = lbl_1_bss_4E0[0]->color.color.r - 1;
+            return;
+        case 2:
+            lbl_1_bss_4E0[0]->color.color.g = lbl_1_bss_4E0[0]->color.color.g - 1;
+            return;
+        case 3:
+            lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b - 1;
+            return;
+        case 4:
+            f = lbl_1_bss_4E0[0]->start;
+            f = f - lbl_1_rodata_1D8;
+            lbl_1_bss_4E0[0]->start = f;
+            if (f < lbl_1_rodata_1A8) {
+                lbl_1_bss_4E0[0]->start = lbl_1_rodata_1A8;
+                return;
+            }
+            break;
+        case 5:
+            f = lbl_1_bss_4E0[0]->end;
+            f = f - lbl_1_rodata_1D8;
+            lbl_1_bss_4E0[0]->end = f;
+            if (f < lbl_1_rodata_1A8) {
+                lbl_1_bss_4E0[0]->end = lbl_1_rodata_1A8;
+                return;
+            }
+            break;
+        }
+        break;
+    case 2:
+        switch ((s8)lbl_1_common_bss_472B4[0x23C]) {
+        case 0:
+            u = lbl_1_bss_4E0[0]->color.color.a + 1;
+            lbl_1_bss_4E0[0]->color.color.a = u;
+            switch ((u8)u) {
+            case 1:
+                lbl_1_bss_4E0[0]->color.color.a = 2;
+                return;
+            case 3:
+                lbl_1_bss_4E0[0]->color.color.a = 4;
+                return;
+            case 8:
+                lbl_1_bss_4E0[0]->color.color.a = 0;
+                return;
+            }
+            break;
+        case 1:
+            lbl_1_bss_4E0[0]->color.color.r = lbl_1_bss_4E0[0]->color.color.r + 1;
+            return;
+        case 2:
+            lbl_1_bss_4E0[0]->color.color.g = lbl_1_bss_4E0[0]->color.color.g + 1;
+            return;
+        case 3:
+            lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b + 1;
+            return;
+        case 4:
+            f = lbl_1_bss_4E0[0]->start;
+            f = f + lbl_1_rodata_1D8;
+            lbl_1_bss_4E0[0]->start = f;
+            if (f > lbl_1_rodata_208) {
+                lbl_1_bss_4E0[0]->start = lbl_1_rodata_208;
+                return;
+            }
+            break;
+        case 5:
+            f = lbl_1_bss_4E0[0]->end;
+            f = f + lbl_1_rodata_1D8;
+            lbl_1_bss_4E0[0]->end = f;
+            if (f > lbl_1_rodata_208) {
+                lbl_1_bss_4E0[0]->end = lbl_1_rodata_208;
+                return;
+            }
+            break;
+        }
+        break;
+    }
+}
