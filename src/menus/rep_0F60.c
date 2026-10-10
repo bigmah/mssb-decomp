@@ -365,3 +365,13 @@ void fn_2_8ACE0(void) {
         (*(u8**)(lbl_2_bss_340140 + 0x68))[i * 0x90 + 0xA0] = lbl_2_bss_3401BC[i + 0x50];
     }
 }
+
+extern Mtx lbl_2_bss_1A81D4;
+extern void fn_2_190DC(u8*, Mtx);
+
+// fn_2_8AEE0, size:0x238
+void fn_2_8AEE0(void) {
+    fn_2_8ACE0();
+    PSMTXCopy(lbl_2_bss_1A81D4, fn_80052768_getCamera(0)->view);
+    fn_2_190DC(*(u8**)(lbl_2_bss_340140 + 0x68), fn_80052768_getCamera(0)->view);
+}
