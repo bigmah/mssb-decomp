@@ -687,7 +687,13 @@ typedef struct {
     u8 bC;
     u8 padD;
     u8 bE;
-    u8 pad0F[0x13];
+    s8 bF;
+    u8 pad10[2];
+    u16 w12;
+    u8 b14;
+    u8 pad15[2];
+    u8 b17;
+    u8 pad18[0xA];
     u8 b22;
     u8 pad23;
 } Bss33FBCC;
@@ -1267,5 +1273,71 @@ void fn_2_5389C(void) {
         *(u16*)(o + 0x1C) = 0;
         *(u16*)(o + 0x1E) = 0;
         lbl_2_bss_1A8234[0][0x162992] = 0;
+    }
+}
+
+extern u8 lbl_2_bss_33FB4C[];
+extern void fn_8004A34C(void*, s32, s32, s32, s32);
+extern s32 fn_8004CA6C(u16);
+extern void fn_8004CC2C(void);
+extern void fn_2_460EC(u8);
+
+// fn_2_51A1C, size:0x23C
+void fn_2_51A1C(void) {
+    switch (lbl_2_bss_33FBCC.w12) {
+    case 0:
+        if (lbl_2_bss_33FBCC.b14 == 0) {
+            fn_8004A34C(lbl_2_bss_33FB4C, 0, 0x2E, 0, 0);
+        } else {
+            fn_8004A34C(lbl_2_bss_33FB4C, 0, 0x2F, 0, 0);
+        }
+        lbl_2_bss_33FBCC.w12 = 1;
+        break;
+    case 1:
+        lbl_2_bss_33FBCC.w12 = 2;
+        break;
+    case 2:
+        switch (fn_8004CA6C(*(u16*)(lbl_8034E9A0 + 0x472E))) {
+        case 1:
+            fn_8004CC2C();
+            break;
+        case 3:
+            if (++lbl_2_bss_33FBCC.b14 == 2) {
+                fn_2_460EC(lbl_8034E9A0[0x4754]);
+                fn_8003BF54(0, 0, 0, 0, 1, 5, 3, lbl_8034E9A0[0x4754], 3);
+                lbl_803C50E8[0x52] = 4;
+                *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+                lbl_2_bss_33FBCC.b14 = 0;
+                lbl_2_bss_33FBCC.w12 = 3;
+            } else {
+                lbl_2_bss_33FBCC.w12 = 0;
+            }
+            break;
+        case 2:
+            fn_8004CC2C();
+            break;
+        case 4:
+            lbl_2_bss_33FBCC.b22 = 0x52;
+            lbl_2_bss_33FBCC.bE = 1;
+            lbl_2_bss_33FBCC.bF = -1;
+            lbl_2_bss_33FBCC.w12 = 0;
+            lbl_2_bss_33FBCC.b14 = 0;
+            lbl_2_bss_9E08 = 5;
+            break;
+        case 0:
+            break;
+        }
+        break;
+    case 3:
+        if (*(s16*)(lbl_803CC1B8[0] + 0x10) != 0) {
+            lbl_2_bss_33FBCC.b17 = 0x50;
+            lbl_2_bss_33FBCC.b22 = 0x52;
+            lbl_2_bss_33FBCC.bE = 1;
+            lbl_2_bss_33FBCC.bF = -1;
+            lbl_2_bss_33FBCC.w12 = 0;
+            lbl_2_bss_33FBCC.b14 = 0;
+            lbl_2_bss_9E08 = 5;
+        }
+        break;
     }
 }
