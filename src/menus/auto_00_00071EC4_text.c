@@ -1778,3 +1778,70 @@ void fn_2_7A9D8(u8* o, s32 index) {
         *e = 1;
     }
 }
+
+extern void* memset(void* dst, int c, unsigned long n);
+
+// fn_2_76650, size:0x224
+void fn_2_76650(u8* o, u8 k, u32 mask) {
+    s32 buf[2];
+    s32 i;
+    s32 n;
+    memset(buf, -1, 2);
+    for (i = 0, n = 0; i < 14; i++) {
+        if (mask & (1 << i)) {
+            switch (i) {
+                case 0:
+                    i++;
+                    break;
+                case 1:
+                    buf[n++] = 1;
+                    break;
+                case 2:
+                    buf[n++] = 2;
+                    break;
+                case 3:
+                    buf[n++] = 3;
+                    break;
+                case 4:
+                    buf[n++] = 4;
+                    break;
+                case 5:
+                    buf[n++] = 5;
+                    break;
+                case 6:
+                    buf[n++] = 6;
+                    break;
+                case 7:
+                    buf[n++] = 7;
+                    break;
+                case 8:
+                    buf[n++] = 8;
+                    break;
+                case 9:
+                    buf[n++] = 9;
+                    break;
+                case 10:
+                    buf[n++] = 10;
+                    break;
+                case 11:
+                    buf[n++] = 11;
+                    break;
+                case 12:
+                    buf[n++] = 12;
+                    break;
+                default:
+                    buf[n++] = 13;
+                    break;
+            }
+        }
+    }
+    buf[0]--;
+    buf[1]--;
+    for (i = 0; i < 2; i++) {
+        if (buf[i] < 0) {
+            buf[i] = 12;
+        }
+    }
+    *(s32*)(((u8**)lbl_80371C30)[(0xCE + *(u16*)(o + 0x14) + k) * 2] + 0x5C) = buf[0] << 16;
+    *(s32*)(((u8**)lbl_80371C30)[(0xD0 + *(u16*)(o + 0x14) + k) * 2] + 0x5C) = buf[1] << 16;
+}
