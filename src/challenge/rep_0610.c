@@ -1163,3 +1163,21 @@ void fn_1_F50C(void) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
     }
 }
+
+// .text:0x1620C size:0x1F0
+void fn_1_1620C(void) {
+    s32 i = 0;
+    do {
+        u8* row = lbl_8036E548 + i * 0x27C;
+        *(f32*)(row + 0xC38) = 0.0f;
+        *(f32*)(row + 0xC3C) = 0.0f;
+        *(f32*)(row + 0xC40) = lbl_1_rodata_73F8;
+        *(f32*)(row + 0xC44) = 0.0f;
+        *(f32*)(row + 0xC48) = 0.0f;
+        *(f32*)(row + 0xC4C) = 0.0f;
+        CTRLSetTranslation((Control*)(*(u8**)(lbl_8036E548 + 0x60) + i * 0x90 + 0x44), 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation((Control*)(*(u8**)(lbl_8036E548 + 0x60) + i * 0x90 + 0x44), 0.0f, 0.0f, 0.0f);
+        i++;
+    } while (i < 1);
+    fn_1_1347C();
+}
