@@ -16,13 +16,13 @@ static ChallengeCurvePoint lbl_1_bss_6FE0[20];
 static ChallengeCurveTiming lbl_1_bss_6FB8;
 static u8 lbl_1_bss_6FB4[4];
 static f32 lbl_1_bss_6FA8[3];
-static u8 lbl_1_bss_6FA4[4];
+static void* lbl_1_bss_6FA4[1];
 static GXTexObj lbl_1_bss_6EA4[8];
 static GXTlutObj lbl_1_bss_6E44[8];
 static u8 lbl_1_bss_6D48[0xFC];
 static f32 lbl_1_bss_6BF4[0x154 / 4];
 static f32 lbl_1_bss_6BE4[4];
-static s32 lbl_1_bss_6BE0;
+static u8* lbl_1_bss_6BE0[1];
 static s32 lbl_1_bss_6BDC;
 static s32 lbl_1_bss_6BD8;
 // POOL END
@@ -40,7 +40,7 @@ extern void fn_80037B18(void*, Vec*, f32);
 extern u8 lbl_1_data_10674[];
 extern void fn_1_1DA54(void);
 
-extern const f32 lbl_1_rodata_77E4[];
+extern const f32 lbl_1_rodata_77E4;
 extern void fn_1_272DC(void*, s32);
 extern void fn_1_AF4(s32, s32, f32);
 extern void fn_1_1E5D0(void*);
@@ -303,7 +303,7 @@ void fn_1_23AD8(Mtx44 projection, Vec* camera, Vec* target) {
     target->y = lbl_1_rodata_77D8;
     target->z = lbl_1_rodata_77D8;
     C_MTXFrustum(projection, lbl_1_rodata_7858, lbl_1_rodata_785C,
-        lbl_1_rodata_7860, lbl_1_rodata_7864, lbl_1_rodata_77E4[0], lbl_1_rodata_7868);
+        lbl_1_rodata_7860, lbl_1_rodata_7864, (&lbl_1_rodata_77E4)[0], lbl_1_rodata_7868);
 }
 
 // fn_1_20F8C, size:0xB4
@@ -344,7 +344,7 @@ void fn_1_225B8(void) {
 // .text:0x1EFF4 size:0x68
 void fn_1_1EFF4(void) {
     fn_1_272DC(lbl_1_bss_6D48, 0);
-    fn_1_AF4(20, 20, lbl_1_rodata_77E4[0]);
+    fn_1_AF4(20, 20, (&lbl_1_rodata_77E4)[0]);
     if (*(u32*)(lbl_803CC1B8[0] + 0x2C) & 2) {
         fn_1_1E5D0(lbl_1_bss_6BF4);
     }
@@ -567,10 +567,10 @@ void fn_1_21180(ChallengeCurveDrawing* arg) {
 
     tm = &lbl_1_bss_6FB8;
     tm->steps = n;
-    t = (lbl_1_rodata_77E4[0] / (f32)n) / lbl_1_rodata_784C[0];
+    t = ((&lbl_1_rodata_77E4)[0] / (f32)n) / lbl_1_rodata_784C[0];
     tm->step = t;
     tm->stepSq = t * t;
-    tm->inv = lbl_1_rodata_77E4[0] / ((&lbl_1_rodata_780C)[0] * t);
+    tm->inv = (&lbl_1_rodata_77E4)[0] / ((&lbl_1_rodata_780C)[0] * t);
     if (lbl_803C77B8._00 & 0x400) {
         tm->steps = 1;
     }
@@ -609,8 +609,8 @@ void fn_1_1F2D8(void) {
     *(f32*)(lbl_803CC1B8[0] + 0x14) = (&lbl_1_rodata_780C)[0];
     *(f32*)(lbl_803CC1B8[0] + 0x18) = (&lbl_1_rodata_7810)[0];
     *(f32*)(lbl_803CC1B8[0] + 0x1C) = (&lbl_1_rodata_7810)[0];
-    *(f32*)(lbl_803CC1B8[0] + 0x20) = lbl_1_rodata_77E4[0];
-    *(f32*)(lbl_803CC1B8[0] + 0x24) = lbl_1_rodata_77E4[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x20) = (&lbl_1_rodata_77E4)[0];
+    *(f32*)(lbl_803CC1B8[0] + 0x24) = (&lbl_1_rodata_77E4)[0];
     fn_1_1F23C((ChallengeProjectionState*)lbl_1_bss_6BF4);
     *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
     lbl_1_bss_6BE4[0] = 0.0f;
@@ -730,10 +730,10 @@ void fn_1_24A8C(void) {
     lbl_1_bss_45868.params[5] = *(u16*)(q + 0x20) / lbl_1_rodata_78C8[0];
     n = q[0x2A];
     lbl_1_bss_45868.steps = n;
-    t = lbl_1_rodata_77E4[0] / (f32)n;
+    t = (&lbl_1_rodata_77E4)[0] / (f32)n;
     lbl_1_bss_45868.step = t;
     lbl_1_bss_45868.stepSq = t * t;
-    lbl_1_bss_45868.inv = lbl_1_rodata_77E4[0] / ((&lbl_1_rodata_780C)[0] * t);
+    lbl_1_bss_45868.inv = (&lbl_1_rodata_77E4)[0] / ((&lbl_1_rodata_780C)[0] * t);
     if (lbl_803C77B8._00 & 0x40) {
         lbl_1_bss_45868.steps = 1;
     }
@@ -782,4 +782,145 @@ void fn_1_1F05C(void) {
         fn_1_1E8C0(*(s16*)(q + 0x10));
     }
     fn_1_1EFF4();
+}
+
+typedef struct {
+    u32 value;
+} ChallengeLightColor;
+
+extern ChallengeLightColor lbl_1_rodata_77B0;
+extern const f32 lbl_1_rodata_7840;
+extern void LITAlloc(void**);
+extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
+extern void LITInitPos(void*, f32, f32, f32);
+extern void LITInitDir(void*, f32, f32, f32);
+extern void LITInitColor(void*, ChallengeLightColor);
+extern u8* ActorObjectInitTable(u16);
+extern void LoadActorLayout(void*);
+extern void convertGeometryAndSknHeader(void*, s32);
+extern void fn_800BDC88(u8*, s32, s32, void*, s32, s32);
+extern void fn_800B2C08(void*, s32);
+extern void fn_800BD548(u8*, s32, ...);
+
+extern const f32 lbl_1_rodata_77E4_s;
+// .text:0x20E00 size:0x18C
+void fn_1_20E00(u8* obj) {
+    ChallengeLightColor color = lbl_1_rodata_77B0;
+    u8* data;
+    s32 i;
+    u8* layout;
+    u8* geo;
+
+    LITAlloc(lbl_1_bss_6FA4);
+    LITInitAttn(lbl_1_bss_6FA4[0], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(lbl_1_bss_6FA4[0], lbl_1_rodata_7840, lbl_1_rodata_7840, lbl_1_rodata_7840);
+    LITInitDir(lbl_1_bss_6FA4[0], 0.0f, 0.0f, 0.0f);
+    LITInitColor(lbl_1_bss_6FA4[0], color);
+    data = *(u8**)(obj + 0x14);
+    layout = data + ((s32*)data)[0];
+    geo = data + ((s32*)data)[1];
+    lbl_1_bss_6BE0[0] = ActorObjectInitTable(20);
+    LoadActorLayout(layout);
+    convertGeometryAndSknHeader(geo, 0);
+    haveActLayoutPointToGeoHeader(layout, geo);
+    for (i = 0; (u16)i < 20; i++) {
+        fn_800BDC88(lbl_1_bss_6BE0[0], i, i, layout, 0, 0);
+        fn_800B2C08(*(void**)(lbl_1_bss_6BE0[0] + (u16)i * 0x90 + 0x34), 0);
+        fn_800BD548(lbl_1_bss_6BE0[0] + (u16)i * 0x90 + 0x34, 1, lbl_1_bss_6FA4[0]);
+    }
+}
+
+// .text:0x20BD8 size:0x1F0
+void fn_1_20BD8(void) {
+    u8* q = lbl_803CC1B8[0];
+    u8* object;
+
+    switch (q[0x25]) {
+    case 0:
+        object = fn_800B0A5C_insertQueue((void*)fn_1_20F8C, 1);
+        *(s16*)(object + 0x10) = 0;
+        q[0x25]++;
+        break;
+    case 1:
+        if (*(s16*)(q + 0x10) != 0) {
+            fn_1_20E00(q);
+            object = *(u8**)(q + 0xC);
+            *(s16*)(object + 0x10) = 1;
+            fn_800B0A14_removeQueue(object);
+        }
+        break;
+    }
+}
+
+
+// .text:0x1F418 size:0x200
+void fn_1_1F418(u8* menu) {
+    s32 i;
+    s32 v;
+    u8 cur;
+
+    for (i = 0; i < 4; i++) {
+        cur = menu[0x21];
+        switch (i) {
+        case 0:
+            if (i == cur) {
+                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+                    if (menu[0x20] == 0) {
+                        menu[0x20] = 2;
+                    }
+                    menu[0x20]--;
+                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                    menu[0x20]++;
+                    if (menu[0x20] == 2) {
+                        menu[0x20] = 0;
+                    }
+                }
+            }
+            break;
+        case 1:
+            v = (s32)fn_80048EA8(0);
+            if (i == menu[0x21]) {
+                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+                    v--;
+                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                    v++;
+                }
+                fn_80048E00(0, v);
+            }
+            break;
+        case 2:
+            v = (s32)fn_80048EA8(1);
+            if (i == menu[0x21]) {
+                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+                    v--;
+                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                    v++;
+                }
+                fn_80048E00(1, v);
+            }
+            break;
+        case 3:
+            if (i == cur) {
+                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+                    if (*(u32*)(menu + 0x1C) != 0) {
+                        (*(u32*)(menu + 0x1C))--;
+                    }
+                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                    (*(u32*)(menu + 0x1C))++;
+                }
+            }
+            break;
+        }
+    }
+    if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 8) {
+        if (menu[0x21] == 0) {
+            menu[0x21] = 4;
+        }
+        menu[0x21]--;
+    } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 4) {
+        menu[0x21]++;
+        if (menu[0x21] == 4) {
+            menu[0x21] = 0;
+        }
+    }
 }

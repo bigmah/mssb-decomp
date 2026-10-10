@@ -162,4 +162,16 @@ void fn_1_22DF4(ChallengeCurveDrawing* arg);
 
 void fn_1_1F05C(void);
 
+void fn_1_1F418(u8* menu);
+
+void fn_1_1F2D8(void);
+
+void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev);
+
+void fn_1_24A8C(void);
+
+void fn_1_20E00(u8* obj);
+
+void fn_1_20BD8(void);
+
 #endif
