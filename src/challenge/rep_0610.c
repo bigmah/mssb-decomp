@@ -7,24 +7,36 @@ static u8 ch_68FC[0x30];
 static u8 ch_fill68F8[0x4];
 static u8 ch_67E0[0x118];
 static s32 ch_67B8[0xA];
-static u8 ch_fill5F74[0x844];
+static u8 ch_fill60E4[0x6D4];
+static u8* ch_60E0;
+static u8 ch_fill5F74[0x16C];
 static u8 ch_5F73;
-static u8 ch_fill5F72;
-static u8 ch_fill5F71;
+static u8 ch_5F72;
+static u8 ch_5F71;
 static u8 ch_fill5F70;
-static u8 ch_fill5F6C[0x4];
+static u32 ch_5F6C;
 static u8 ch_fill5F6B;
 static u8 ch_fill5F6A;
 static u8 ch_5F69;
 static u8 ch_fill5F68;
-static u8 ch_fill5F60[0x8];
+static u8 ch_fill5F64[0x4];
+static u8 ch_fill5F63;
+static s8 ch_5F62;
+static u16 ch_5F60;
 static s32 ch_5F5C;
 static u8 ch_3758[0x2804];
 static u8 ch_3258[0x500];
 static u8 ch_3218[0x40];
 static u8 ch_fill30C0[0x158];
 static s32 ch_30BC;
-static u8 ch_fill307C[0x40];
+static u8 ch_fill308C[0x30];
+static s32 ch_3088;
+static u8 ch_fill3084[0x4];
+static u8 ch_fill3083;
+static u8 ch_fill3082;
+static u8 ch_fill3081;
+static u8 ch_3080;
+static s32 ch_307C;
 static u8 ch_fill307B;
 static u8 ch_fill307A;
 static u8 ch_fill3079;
@@ -243,10 +255,10 @@ void fn_1_16400(s8 arg) {
     u8* base = lbl_8036E548;
     u8* row;
     u32 mod;
-    base += lbl_1_bss_5F73[0] * 0x27C;
+    base += ch_5F73 * 0x27C;
     row = *(u8**)(base + 0xC08);
     mod = *(u16*)(row + 0x6);
-    lbl_1_bss_5F6C = (lbl_1_bss_5F6C + mod + arg) % mod;
+    ch_5F6C = (ch_5F6C + mod + arg) % mod;
 }
 
 // fn_1_17954, size:0x78
@@ -962,22 +974,22 @@ extern const f32 lbl_1_rodata_749C;
 // .text:0x1347C size:0x144
 void fn_1_1347C(void) {
     Mtx44 projection;
-    *(f32*)(lbl_1_bss_67E0 + 0x108) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x10C) = lbl_1_rodata_7480;
-    *(f32*)(lbl_1_bss_67E0 + 0x110) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0xFC) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x100) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x104) = lbl_1_rodata_73F8;
+    *(f32*)(ch_67E0 + 0x108) = lbl_1_rodata_7394;
+    *(f32*)(ch_67E0 + 0x10C) = lbl_1_rodata_7480;
+    *(f32*)(ch_67E0 + 0x110) = lbl_1_rodata_7394;
+    *(f32*)(ch_67E0 + 0xFC) = lbl_1_rodata_7394;
+    *(f32*)(ch_67E0 + 0x100) = lbl_1_rodata_7394;
+    *(f32*)(ch_67E0 + 0x104) = lbl_1_rodata_73F8;
     C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
                  lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
                  lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
     GXSetProjection(projection, GX_PERSPECTIVE);
     fn_800B806C(0, lbl_1_rodata_7484, lbl_1_rodata_7488, lbl_1_rodata_748C, lbl_1_rodata_7490,
                 lbl_1_rodata_7494, lbl_1_rodata_7498, lbl_1_rodata_749C);
-    *(s32*)(lbl_1_bss_67E0 + 0x114) = 0;
-    *(f32*)(lbl_1_bss_67E0 + 0xF8) = lbl_1_rodata_7394;
-    *(s16*)(lbl_1_bss_67E0 + 0xF0) = 0;
-    *(s16*)(lbl_1_bss_67E0 + 0xF2) = 0;
+    *(s32*)(ch_67E0 + 0x114) = 0;
+    *(f32*)(ch_67E0 + 0xF8) = lbl_1_rodata_7394;
+    *(s16*)(ch_67E0 + 0xF0) = 0;
+    *(s16*)(ch_67E0 + 0xF2) = 0;
 }
 
 typedef struct { u16 a; u16 b; } ChPair;
@@ -1328,4 +1340,643 @@ void fn_1_C9E0(u8* object) {
     GXWGFifo.f32 = scaled.y;
     GXWGFifo.f32 = scaled.z;
     GXWGFifo.u32 = 0xFFFFFFFF;
+}
+
+// .text:0x14FB8 size:0x1B8
+void fn_1_14FB8(void) {
+    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u8* q = lbl_803CC1B8[0];
+
+    if (buttons & 8) {
+        if (q[0x20] != 0) {
+            q[0x20]--;
+        } else {
+            q[0x20] = 8;
+        }
+    } else if (buttons & 4) {
+        q[0x20]++;
+        if (q[0x20] == 9) {
+            q[0x20] = 0;
+        }
+    } else if (lbl_803C77B8._00 & 0x100) {
+        switch (q[0x20]) {
+        case 0:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 3;
+            break;
+        case 1:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 4;
+            break;
+        case 2:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 5;
+            break;
+        case 3:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 6;
+            break;
+        case 4:
+            if (lbl_803C77B8._02 & 0x100) lbl_1_bss_5F71 = 2;
+            break;
+        case 5:
+            if (lbl_803C77B8._02 & 0x100) lbl_1_bss_5F71 = 8;
+            break;
+        case 6:
+            if (lbl_803C77B8._02 & 0x100) lbl_1_bss_5F71 = 7;
+            break;
+        case 7:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 9;
+            break;
+        case 8:
+            if (buttons & 0x100) lbl_1_bss_5F71 = 10;
+            break;
+        }
+    } else if (lbl_803C77B8._02 & 0x200) {
+        lbl_1_bss_5F71 = 0;
+        minigamesSetSomePointers();
+    }
+}
+
+extern Vec lbl_1_rodata_730C;
+extern Vec lbl_1_data_AD24;
+extern const f32 lbl_1_rodata_7448;
+extern const f32 lbl_1_rodata_744C;
+extern const f32 lbl_1_rodata_7450;
+extern void makeLookAtMatrix(void*, void*, Vec*, void*);
+
+// .text:0x11D00 size:0x208
+void fn_1_11D00(u8* camera) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx rot;
+    Vec angle;
+    Vec pos;
+
+    pos = lbl_1_rodata_730C;
+    if (!(lbl_803C77B8._00 & 0x10)) {
+        *(u16*)(camera + 0xF0) -= ((s8*)&lbl_803C77B8)[0x13] * 4;
+        *(u16*)(camera + 0xF2) += ((s8*)&lbl_803C77B8)[0x12] * 4;
+        *(f32*)(camera + 0xF8) += (f32)((s8*)&lbl_803C77B8)[0x11] * lbl_1_rodata_7448;
+        *(f32*)(camera + 0x100) += (f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_744C;
+        *(f32*)(camera + 0x100) -= (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_744C;
+    }
+    angle.x = *(u16*)(camera + 0xF0);
+    angle.y = *(u16*)(camera + 0xF2);
+    angle.z = lbl_1_rodata_7394;
+    PSVECScale(&angle, lbl_1_rodata_7450, &angle);
+    PSMTXRotRad(rotX, 'X', angle.x);
+    PSMTXRotRad(rotY, 'Y', angle.y);
+    PSMTXConcat(rotX, rotY, rot);
+    pos.z = -*(f32*)(camera + 0xF8);
+    PSMTXMultVec(rot, &pos, &pos);
+    PSVECAdd(&pos, (Vec*)(camera + 0xFC), (Vec*)(camera + 0x108));
+    PSMTXMultVec(rot, &lbl_1_data_AD24, &pos);
+    makeLookAtMatrix(camera, camera + 0x108, &pos, camera + 0xFC);
+}
+
+typedef struct { u8 r, g, b, a; } ChallengeLightColor;
+extern void LITAlloc(void**);
+extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
+extern void LITInitPos(void*, f32, f32, f32);
+extern void LITInitDir(void*, f32, f32, f32);
+extern void LITInitColor(void*, ChallengeLightColor);
+extern ChallengeLightColor lbl_1_rodata_72F0;
+extern const f32 lbl_1_rodata_7474;
+extern const f32 lbl_1_rodata_7478;
+extern const f32 lbl_1_rodata_747C;
+
+// .text:0x131E4 size:0x298
+void fn_1_131E4(void) {
+    ChallengeLightColor color = lbl_1_rodata_72F0;
+    void** light0;
+    void** light1;
+    void** light2;
+    void** light3;
+
+    light0 = (void**)(lbl_8036E548 + 0xAC);
+    LITAlloc(light0);
+    light1 = (void**)(lbl_8036E548 + 0xB0);
+    LITAlloc(light1);
+    light2 = (void**)(lbl_8036E548 + 0xB4);
+    LITAlloc(light2);
+    light3 = (void**)(lbl_8036E548 + 0xB8);
+    LITAlloc(light3);
+
+    LITInitAttn(*light0, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(*light0, lbl_1_rodata_7474, lbl_1_rodata_7478, lbl_1_rodata_7474);
+    LITInitDir(*light0, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
+    LITInitColor(*light0, color);
+    LITInitDir(*light0, lbl_1_rodata_747C, lbl_1_rodata_7394, lbl_1_rodata_747C);
+
+    LITInitAttn(*light1, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(*light1, lbl_1_rodata_747C, lbl_1_rodata_7478, lbl_1_rodata_7394);
+    LITInitDir(*light1, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
+    LITInitColor(*light1, color);
+
+    LITInitAttn(*light2, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(*light2, lbl_1_rodata_7394, lbl_1_rodata_7478, lbl_1_rodata_7474);
+    LITInitDir(*light2, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
+    LITInitColor(*light2, color);
+
+    LITInitAttn(*light3, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(*light3, lbl_1_rodata_7394, lbl_1_rodata_7478, lbl_1_rodata_747C);
+    LITInitDir(*light3, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
+    LITInitColor(*light3, color);
+}
+
+extern Vec lbl_1_rodata_7300;
+extern Vec lbl_1_data_AD18;
+extern const f32 lbl_1_rodata_7454;
+
+// .text:0x11F08 size:0x2CC
+void fn_1_11F08(u8* camera) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx rot;
+    Vec angle;
+    Vec pos;
+    f32 c;
+    f32 s;
+    u8* view;
+
+    pos = lbl_1_rodata_7300;
+    if (!(lbl_803C77B8._00 & 0x10)) {
+        *(u16*)(camera + 0xF0) -= ((s8*)&lbl_803C77B8)[0x13] * 4;
+        *(u16*)(camera + 0xF2) += ((s8*)&lbl_803C77B8)[0x12] * 4;
+        *(f32*)(camera + 0xF4) = (f32)((s8*)&lbl_803C77B8)[0x10] / lbl_1_rodata_7454;
+        *(f32*)(camera + 0xF8) = (f32)((s8*)&lbl_803C77B8)[0x11] * lbl_1_rodata_7448;
+        *(f32*)(camera + 0x10C) += (f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_744C;
+        *(f32*)(camera + 0x10C) -= (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_744C;
+    }
+    angle.x = *(u16*)(camera + 0xF0);
+    angle.y = *(u16*)(camera + 0xF2);
+    angle.z = lbl_1_rodata_7394;
+    PSVECScale(&angle, lbl_1_rodata_7450, &angle);
+    PSMTXRotRad(rotX, 'X', angle.x);
+    PSMTXRotRad(rotY, 'Y', angle.y);
+    s = rotY[0][2];
+    c = rotY[0][0];
+    PSMTXConcat(rotY, rotX, rot);
+    PSMTXMultVec(rot, &pos, (Vec*)(camera + 0xFC));
+    *(f32*)(camera + 0x108) += *(f32*)(camera + 0xF8) * s - *(f32*)(camera + 0xF4) * c;
+    *(f32*)(camera + 0x110) += *(f32*)(camera + 0xF8) * c + *(f32*)(camera + 0xF4) * s;
+    *(f32*)(camera + 0xFC) += *(f32*)(camera + 0x108);
+    *(f32*)(camera + 0x100) += *(f32*)(camera + 0x10C);
+    *(f32*)(camera + 0x104) += *(f32*)(camera + 0x110);
+    makeLookAtMatrix(camera, camera + 0x108, &lbl_1_data_AD18, camera + 0xFC);
+    view = (u8*)fn_80052768_getCamera(0);
+    memcpy(view + 0x70, camera + 0x108, 0xC);
+    memcpy(view + 0x7C, camera + 0xFC, 0xC);
+}
+
+// .text:0x165E0 size:0x2E8
+void fn_1_165E0(void) {
+    u8* state = lbl_1_bss_3070;
+    s16 delta;
+    u16 buttons;
+    u8* light;
+
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    delta = 0;
+    light = ((u8**)(lbl_8036E548 + 0xAC))[(s8)state[0x2F00]];
+    if (buttons & 1) {
+        delta = -1;
+    } else if (buttons & 2) {
+        delta = 1;
+    } else if (buttons & 8) {
+        if (--*(s32*)(state + 0xC) < 0) {
+            *(s32*)(state + 0xC) = 9;
+        }
+    } else if (buttons & 4) {
+        if (++*(s32*)(state + 0xC) >= 10) {
+            *(s32*)(state + 0xC) = 0;
+        }
+    } else if (lbl_803C77B8._02 & 0x200) {
+        state[0x2F00] = 0;
+        *(s32*)(state + 0xC) = 0;
+        state[0x2F01] = 1;
+    }
+    if (lbl_803C77B8._00 & 0x400) {
+        delta *= 10;
+    }
+    switch (*(u32*)(state + 0xC)) {
+    case 0: {
+        *(s8*)(state + 0x2F00) += delta;
+        if (*(s8*)(state + 0x2F00) < 0) {
+            state[0x2F00] = 2;
+        } else if (*(s8*)(state + 0x2F00) >= 3) {
+            state[0x2F00] = 0;
+        }
+        break;
+    }
+    case 1:
+        light[0x70] += delta;
+        if (light[0x70] > 0xFF) {
+            light[0x70] = 0;
+        }
+        break;
+    case 2:
+        light[0x71] += delta;
+        if (light[0x71] > 0xFF) {
+            light[0x71] = 0;
+        }
+        break;
+    case 3:
+        light[0x72] += delta;
+        if (light[0x72] > 0xFF) {
+            light[0x72] = 0;
+        }
+        break;
+    case 4:
+        *(f32*)(light + 0x40) += delta;
+        break;
+    case 5:
+        *(f32*)(light + 0x44) += delta;
+        break;
+    case 6:
+        *(f32*)(light + 0x48) += delta;
+        break;
+    case 7:
+        *(f32*)(light + 0x58) += delta;
+        break;
+    case 8:
+        *(f32*)(light + 0x5C) += delta;
+        break;
+    case 9:
+        *(f32*)(light + 0x60) += delta;
+        break;
+    }
+}
+
+extern void fn_1_C2DC(void*, void*, s32, s32, s32, s32*, s32*, s32*);
+extern void fn_800B2BA8(void*, u16, void*, u16);
+extern s8 lbl_1_data_AC90;
+
+typedef struct {
+    u8 pad0[0x34];
+    u8* actor;
+    u8 pad38[0x58];
+} ChallengeModelEntry;
+
+// .text:0x1540C size:0x354
+void fn_1_1540C(void) {
+    u8 buffer[0x20];
+    s32 top;
+    s32 count;
+    s32 selected;
+    u16 buttons;
+    u16 id;
+
+    count = 0x14;
+    selected = ch_5F6C;
+    if (ch_3088 > selected) {
+        ch_3088 = selected;
+    } else if (ch_3088 < selected - 0x13) {
+        ch_3088 = selected - 0x13;
+    }
+    top = ch_3088;
+    fn_1_C2DC(**(void***)((*(ChallengeModelEntry**)(lbl_8036E548 + 0x60))[ch_5F73].actor + 0x18), buffer, 0, 0x13, 4, &selected, &top, &count);
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 8) {
+        if (--ch_307C < 0) {
+            ch_307C = 5;
+        }
+    } else if (buttons & 4) {
+        if (++ch_307C >= 6) {
+            ch_307C = 0;
+        }
+    } else if (buttons & 1) {
+        switch (ch_307C) {
+        case 0:
+            ch_3080 ^= 1;
+            break;
+        case 1:
+            lbl_1_data_ABA8 ^= 1;
+            break;
+        case 2:
+            fn_1_16400(-1);
+            break;
+        case 3:
+            break;
+        case 4:
+            if (lbl_1_data_AC90 >= 0) {
+                lbl_1_data_AC90--;
+            }
+            break;
+        case 5:
+            ((void (*)(void))fn_1_1644C)();
+            break;
+        }
+    } else if (buttons & 2) {
+        switch (ch_307C) {
+        case 0:
+            ch_3080 ^= 1;
+            break;
+        case 1:
+            lbl_1_data_ABA8 ^= 1;
+            break;
+        case 2:
+            fn_1_16400(1);
+            break;
+        case 3:
+            break;
+        case 4:
+            if (lbl_1_data_AC90 < 4) {
+                lbl_1_data_AC90++;
+            }
+            break;
+        case 5:
+            ((void (*)(void))fn_1_1644C)();
+            break;
+        }
+    } else if (buttons & 0x200) {
+        ch_307C = 0;
+        ch_5F71 = 1;
+    }
+    id = *(u16*)(lbl_8036E548 + 0xDAE);
+    if (id != 0xFFFF) {
+        if (lbl_1_data_AC90 >= 0) {
+            u8* actor = (*(ChallengeModelEntry**)&ch_60E0)[lbl_1_data_AC90].actor;
+            s32 i;
+            for (i = 0; i < *(u16*)(actor + 6); i++) {
+                if (*(u32*)((*(u8***)(actor + 0x18))[i] + 0x14) != 0) {
+                    fn_800B2BA8(*(void**)(*(u8**)(lbl_8036E548 + 0x60) + 0x34), id, actor, i);
+                }
+            }
+        } else {
+            fn_800B2BA8(*(void**)(*(u8**)(lbl_8036E548 + 0x60) + 0x34), id, NULL, 0);
+        }
+    }
+}
+
+extern s32 lbl_1_bss_307C;
+
+// .text:0xF798 size:0x400
+void fn_1_F798(void* paramsArg, void* typesArg, s32 count) {
+    s32* p = paramsArg;
+    u8* types = typesArg;
+    s32 s;
+    s32 m;
+    s32 l;
+    u16 buttons;
+    u8 t;
+    s32 v;
+
+    if (lbl_803C77B8._00 & 0x400) {
+        s = 10;
+        m = 100;
+        l = 10000;
+    } else if (lbl_803C77B8._00 & 0x800) {
+        s = 20;
+        l = 1000000;
+        m = 10000;
+    } else {
+        s = 1;
+        l = 100000;
+        m = 1000;
+    }
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 8) {
+        if (lbl_1_bss_307C != 0) {
+            lbl_1_bss_307C--;
+        } else {
+            lbl_1_bss_307C = count - 1;
+        }
+    } else if (buttons & 4) {
+        if (++lbl_1_bss_307C == count) {
+            lbl_1_bss_307C = 0;
+        }
+    } else if (buttons & 1) {
+        t = types[lbl_1_bss_307C];
+        switch (t) {
+        case 0:
+            break;
+        case 1:
+            p[t] = (p[t] + 41) % 42;
+            break;
+        case 2:
+            p[2] -= s;
+            if (p[2] < 1) {
+                p[2] = 1;
+            }
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 8:
+        case 9:
+        case 20:
+            if (p[t] - m > 0) {
+                p[t] -= m;
+            }
+            break;
+        case 6:
+            p[6] -= s;
+            if (p[6] < 1) {
+                p[6] = 1;
+                if (p[7] > p[6]) {
+                    p[7] = p[6];
+                }
+            }
+            break;
+        case 7:
+        case 11:
+        case 21:
+        case 22:
+            p[t] -= s;
+            if (p[types[lbl_1_bss_307C]] < 0) {
+                p[types[lbl_1_bss_307C]] = 0;
+            }
+            break;
+        case 10:
+            p[t] ^= 1;
+            break;
+        case 12:
+        case 13:
+            p[t] -= l;
+            if (p[types[lbl_1_bss_307C]] < 0) {
+                p[types[lbl_1_bss_307C]] = 0;
+            }
+            break;
+        case 23:
+        case 24:
+            p[t] -= m;
+            break;
+        case 14:
+        case 15:
+            p[t] -= l;
+        case 16:
+            v = ((p[16] >> 8) & 0xFF);
+            v -= s;
+            if (v < 0) {
+                v = 0;
+            }
+            p[16] = v * 0x01010100;
+            break;
+        case 17:
+        case 18:
+        case 19:
+            break;
+        }
+    } else if (buttons & 2) {
+        t = types[lbl_1_bss_307C];
+        switch (t) {
+        case 0:
+            break;
+        case 1:
+            p[t] = (p[t] + 1) % 42;
+            break;
+        case 2:
+            p[2] += s;
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 8:
+        case 9:
+        case 20:
+            p[t] += m;
+            break;
+        case 6:
+            p[6] += s;
+            break;
+        case 7:
+            p[7] += s;
+            if (p[7] > p[6]) {
+                p[7] = p[6];
+            }
+            break;
+        case 11:
+        case 21:
+            p[t] += s;
+            if (p[types[lbl_1_bss_307C]] > 255) {
+                p[types[lbl_1_bss_307C]] = 255;
+            }
+            break;
+        case 22:
+            p[t] += s;
+            break;
+        case 10:
+            p[t] ^= 1;
+            break;
+        case 12:
+        case 13:
+            p[t] += l;
+            break;
+        case 23:
+        case 24:
+            p[t] += m;
+            break;
+        case 14:
+        case 15:
+            p[t] += l;
+            break;
+        case 16:
+            v = ((p[16] >> 8) & 0xFF);
+            v += s;
+            if (v > 255) {
+                v = 255;
+            }
+            p[16] = v * 0x01010100;
+            break;
+        case 17:
+        case 18:
+        case 19:
+            break;
+        }
+    }
+}
+
+extern void fn_80011640(void*, void*);
+extern void fn_80052968(void);
+
+// .text:0x121D4 size:0x4F8
+void fn_1_121D4(u8* camera) {
+    switch (*(s32*)(camera + 0x114)) {
+    case 0:
+        fn_1_11F08(camera);
+        break;
+    case 1:
+        fn_1_11D00(camera);
+        break;
+    }
+    fn_80011640(camera, camera);
+    PSVECSubtract((Vec*)(camera + 0x108), (Vec*)(camera + 0xFC), (Vec*)(camera + 0x88));
+    PSVECNormalize((Vec*)(camera + 0x88), (Vec*)(camera + 0x88));
+    fn_80052968();
+}
+
+extern u8 lbl_1_data_1F1A;
+
+// .text:0x15CE0 size:0x3F8
+void fn_1_15CE0(void) {
+    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+
+    if (buttons & 8) {
+        if (--ch_307C < 0) {
+            ch_307C = 5;
+        }
+    } else if (buttons & 4) {
+        if (++ch_307C >= 6) {
+            ch_307C = 0;
+        }
+    } else if (buttons & 1) {
+        switch (ch_307C) {
+        case 0:
+            if (--ch_5F72 >= 2) {
+                ch_5F72 = 1;
+            }
+            break;
+        case 1:
+            break;
+        case 2:
+            ch_67E0[0x118] ^= 1;
+            break;
+        case 3:
+            lbl_1_data_1F1A ^= 1;
+            break;
+        case 4:
+            if (ch_5F62 >= 0) {
+                ch_5F62--;
+            }
+            break;
+        case 5:
+            if (ch_5F60 > 1) {
+                ch_5F60--;
+            }
+            break;
+        }
+    } else if (buttons & 2) {
+        switch (ch_307C) {
+        case 0:
+            if (++ch_5F72 >= 2) {
+                ch_5F72 = 0;
+            }
+            break;
+        case 1:
+            break;
+        case 2:
+            ch_67E0[0x118] ^= 1;
+            break;
+        case 3:
+            lbl_1_data_1F1A ^= 1;
+            break;
+        case 4:
+            if (ch_5F62 < 1) {
+                ch_5F62++;
+            }
+            break;
+        case 5:
+            if (ch_5F60 < 0x10) {
+                ch_5F60++;
+            }
+            break;
+        }
+    } else if (buttons & 0x100) {
+        switch (ch_307C) {
+        case 1:
+            fn_1_1620C();
+            break;
+        }
+    } else if (buttons & 0x200) {
+        ch_307C = 0;
+        ch_5F71 = 1;
+    }
 }

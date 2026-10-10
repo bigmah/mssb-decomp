@@ -100,4 +100,22 @@ void fn_1_17D90(void);
 
 void fn_1_14710(u8* object);
 
+void fn_1_14FB8(void);
+
+void fn_1_11D00(u8* camera);
+
+void fn_1_131E4(void);
+
+void fn_1_11F08(u8* camera);
+
+void fn_1_165E0(void);
+
+void fn_1_1540C(void);
+
+void fn_1_F798(void* paramsArg, void* typesArg, s32 count);
+
+void fn_1_121D4(u8* camera);
+
+void fn_1_15CE0(void);
+
 #endif
