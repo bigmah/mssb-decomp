@@ -19,4 +19,8 @@ void fn_2_95E80(u8* object);
 
 void fn_2_95F3C(u8* object);
 
+void fn_2_95FE0(u8* object);
+
+void fn_2_9493C(u8* object);
+
 #endif

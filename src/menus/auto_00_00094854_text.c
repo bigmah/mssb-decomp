@@ -100,3 +100,33 @@ void fn_2_95F3C(u8* object) {
         lbl_803C66B0[0x4F] = 1;
     }
 }
+
+static inline void tally94(u8* o, s32 id, s32 f, s32* total, s32* hits) {
+    *total += 1;
+    *hits += fn_80042DA8(o, id, f) != 0;
+}
+
+// fn_2_95FE0, size:0x138
+void fn_2_95FE0(u8* object) {
+    s32 hits;
+    s32 total;
+    s32 i;
+    if ((lbl_803C66B0[0x4F] == 1) ? 1 : 0) {
+        hits = 0;
+        total = 0;
+        tally94(object, 0, 0xF, &total, &hits);
+        for (i = 0; i < 3; i++) {
+            if (i != *(s16*)(lbl_2_bss_1033C + 2)) {
+                tally94(object, i + 6, 0xF, &total, &hits);
+            }
+        }
+        if (hits == total) {
+            changeScene(1, 6);
+            *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(object + 0x14) + 6) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(object + 0x14) + 6) * 2] + 0x58) & ~0xFFU) | 0xFF;
+            *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(object + 0x14) + 7) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(object + 0x14) + 7) * 2] + 0x58) & ~0xFFU) | 0xFF;
+            *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(object + 0x14) + 8) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(object + 0x14) + 8) * 2] + 0x58) & ~0xFFU) | 0xFF;
+            fn_80062674(0);
+            lbl_803C66B0[0x4F] = 2;
+        }
+    }
+}
