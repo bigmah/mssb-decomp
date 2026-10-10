@@ -19,4 +19,20 @@ void fn_2_95E80(u8* object);
 
 void fn_2_95F3C(u8* object);
 
+void fn_2_95FE0(u8* object);
+
+void fn_2_9493C(u8* object);
+
+void fn_2_96AD4(void);
+
+void fn_2_95B78(u8* object);
+
+void fn_2_96698(void);
+
+void fn_2_95654(u8* object);
+
+void fn_2_96118(u8* object);
+
+void fn_2_94A8C(u8* object);
+
 #endif
