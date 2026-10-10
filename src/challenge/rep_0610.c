@@ -1381,3 +1381,40 @@ void fn_1_14FB8(void) {
         minigamesSetSomePointers();
     }
 }
+
+extern Vec lbl_1_rodata_730C;
+extern Vec lbl_1_data_AD24;
+extern const f32 lbl_1_rodata_7448;
+extern const f32 lbl_1_rodata_744C;
+extern const f32 lbl_1_rodata_7450;
+extern void makeLookAtMatrix(void*, void*, Vec*, void*);
+
+// .text:0x11D00 size:0x208
+void fn_1_11D00(u8* camera) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx rot;
+    Vec angle;
+    Vec pos;
+
+    pos = lbl_1_rodata_730C;
+    if (!(lbl_803C77B8._00 & 0x10)) {
+        *(u16*)(camera + 0xF0) -= ((s8*)&lbl_803C77B8)[0x13] * 4;
+        *(u16*)(camera + 0xF2) += ((s8*)&lbl_803C77B8)[0x12] * 4;
+        *(f32*)(camera + 0xF8) += (f32)((s8*)&lbl_803C77B8)[0x11] * lbl_1_rodata_7448;
+        *(f32*)(camera + 0x100) += (f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_744C;
+        *(f32*)(camera + 0x100) -= (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_744C;
+    }
+    angle.x = *(u16*)(camera + 0xF0);
+    angle.y = *(u16*)(camera + 0xF2);
+    angle.z = lbl_1_rodata_7394;
+    PSVECScale(&angle, lbl_1_rodata_7450, &angle);
+    PSMTXRotRad(rotX, 'X', angle.x);
+    PSMTXRotRad(rotY, 'Y', angle.y);
+    PSMTXConcat(rotX, rotY, rot);
+    pos.z = -*(f32*)(camera + 0xF8);
+    PSMTXMultVec(rot, &pos, &pos);
+    PSVECAdd(&pos, (Vec*)(camera + 0xFC), (Vec*)(camera + 0x108));
+    PSMTXMultVec(rot, &lbl_1_data_AD24, &pos);
+    makeLookAtMatrix(camera, camera + 0x108, &pos, camera + 0xFC);
+}

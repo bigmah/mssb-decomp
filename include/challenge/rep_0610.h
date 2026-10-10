@@ -102,4 +102,6 @@ void fn_1_14710(u8* object);
 
 void fn_1_14FB8(void);
 
+void fn_1_11D00(u8* camera);
+
 #endif
