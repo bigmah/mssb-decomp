@@ -59,3 +59,20 @@ void fn_2_946DC(s32 i) {
     *(f32*)(lbl_2_bss_1A824C[0] + 0x197648) = lbl_2_rodata_1184 + lbl_2_bss_1A81D4[0x11];
     *(f32*)(lbl_2_bss_1A824C[0] + 0x19764C) = lbl_2_rodata_1184 + lbl_2_bss_1A81D4[0x12];
 }
+
+extern void fn_80011640(s32 a, s32 b);
+extern void fn_2_932DC(s32 arg);
+extern void fn_2_92F2C(s32 arg);
+
+// fn_2_93BF8, size:0x6C
+void fn_2_93BF8(s32 arg) {
+    switch (*(u8*)(lbl_2_bss_1A824C[0] + 0x197845)) {
+    case 0:
+        fn_2_932DC(arg);
+        break;
+    case 1:
+        fn_2_92F2C(arg);
+        break;
+    }
+    fn_80011640(arg, arg);
+}
