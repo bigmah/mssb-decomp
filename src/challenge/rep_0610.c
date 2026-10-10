@@ -1119,3 +1119,47 @@ void fn_1_F37C(void) {
         state[0x2F01] = 10;
     }
 }
+
+extern void fn_8002F258(void*, s32, void*);
+extern void fn_8002F1AC(void*, s32);
+
+// .text:0xF50C size:0x1D8
+void fn_1_F50C(void) {
+    Vec coordinates;
+    u8* queue = lbl_803CC1B8[0];
+    u8* row = lbl_8036E548 + lbl_1_bss_5F73[0] * 0x27C + 0xC04;
+    if (row != NULL) {
+        *(f32*)(row + 0x34) = *(f32*)(queue + 0x14);
+        *(f32*)(row + 0x38) = *(f32*)(queue + 0x18);
+        *(f32*)(row + 0x3C) = *(f32*)(queue + 0x1C);
+    }
+    fn_80030D88((Vec*)(queue + 0x14), (Vec*)(queue + 0x20), lbl_1_data_F10C, 5);
+    if (queue[0x3E] != 0) {
+        queue[0x3E] = 0;
+        if (queue[0x3F] != 0) {
+            getAnimRelatedCoordinates(0, 0x1E, &coordinates);
+            coordinates.y = lbl_1_rodata_7394;
+            fn_8002F258(&coordinates, *(s32*)(queue + 0x38), lbl_1_data_F174[0]);
+            getAnimRelatedCoordinates(0, 0x22, &coordinates);
+            coordinates.y = lbl_1_rodata_7394;
+            fn_8002F258(&coordinates, *(s32*)(queue + 0x38) + 1, lbl_1_data_F174[0]);
+        } else {
+            fn_8002F258(queue + 0x14, *(s32*)(queue + 0x38), lbl_1_data_F174[0]);
+        }
+    } else if (queue[0x3F] != 0) {
+        getAnimRelatedCoordinates(0, 0x1E, &coordinates);
+        coordinates.y = lbl_1_rodata_7394;
+        fn_8002F1AC(&coordinates, *(s32*)(queue + 0x38));
+        getAnimRelatedCoordinates(0, 0x22, &coordinates);
+        coordinates.y = lbl_1_rodata_7394;
+        fn_8002F1AC(&coordinates, *(s32*)(queue + 0x38) + 1);
+    } else {
+        fn_8002F1AC(queue + 0x14, *(s32*)(queue + 0x38));
+    }
+    PSVECAdd((Vec*)(queue + 0x20), (Vec*)(queue + 0x2C), (Vec*)(queue + 0x20));
+    PSVECAdd((Vec*)(queue + 0x20), (Vec*)(queue + 0x14), (Vec*)(queue + 0x14));
+    *(s16*)(queue + 0x3C) = *(u16*)(queue + 0x3C) - 1;
+    if (*(u16*)(queue + 0x3C) == 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
+}
