@@ -35,6 +35,8 @@ extern u8 lbl_800FDE84[];
 extern void fn_80050138(s32, s32, s32, s32, s32, s32);
 extern u8 lbl_80353B98[];
 extern u8 lbl_80354720[];
+extern u8 lbl_803CB8D0[];
+extern u8 lbl_800E8754[];
 extern s16 randRange_FUN_80042bf0(s32, s32);
 extern u8 lbl_80109038[];
 extern void fn_800506E8(s32, s32, s32);
@@ -740,7 +742,7 @@ void fn_2_6484(void) {
         break;
     case 1:
         if (lbl_803C66B0[0x5D] == 0 || lbl_803C66B0[0x5E] == 0) {
-            fn_2_87A8();
+            ((void (*)(void))fn_2_87A8)();
         }
         break;
     case 2:
@@ -872,4 +874,52 @@ void fn_2_6784(void) {
         lbl_80354720[i * 4 + 0x26] = i;
         lbl_80354720[i * 4 + 0x25] = i;
     }
+}
+
+static inline void fn_2_87A8_work(s32 prev) {
+    u8* pad;
+    u16 b;
+    pad = (u8*)&lbl_803C77B8;
+    pad += *(s8*)(lbl_8034E9A0 + 0x46F8) * 0x20;
+    b = *(u16*)(pad + 4);
+    if (b & 8) {
+        if ((*(s32*)(lbl_2_bss_F410 + 0x4C) = prev - 1) < 0) {
+            *(s32*)(lbl_2_bss_F410 + 0x4C) = 3;
+        }
+        if (prev != *(s32*)(lbl_2_bss_F410 + 0x4C)) {
+            fn_800625A4(0, 0x20);
+        }
+        ((void (*)(u32))fn_2_1C34)(8);
+    } else if (b & 4) {
+        if ((*(s32*)(lbl_2_bss_F410 + 0x4C) = prev + 1) == 4) {
+            *(s32*)(lbl_2_bss_F410 + 0x4C) = 0;
+        }
+        if (prev != *(s32*)(lbl_2_bss_F410 + 0x4C)) {
+            fn_800625A4(0, 0x20);
+        }
+        ((void (*)(u32))fn_2_1C34)(4);
+    } else if (*(u16*)(pad + 2) & 0x200) {
+        lbl_2_bss_F468[0x33] = 2;
+        lbl_2_bss_F468[0x34] = 0;
+        lbl_2_bss_F468[0x35] = 1;
+        lbl_803C5EA4[0xE] = 1;
+        fn_800625A4(1, 0x1F);
+        ((void (*)(u32))fn_2_1C34)(0x200);
+    } else if (*(u16*)(pad + 2) & 0x100) {
+        lbl_800E8754[3] = lbl_803CB8D0[prev];
+        fn_800625A4(0, 0x21);
+        lbl_2_bss_F468[0x33] = 2;
+        lbl_2_bss_F468[0x34] = 0;
+        lbl_2_bss_F468[0x35] = 0;
+        ((void (*)(u32))fn_2_1C34)(0x100);
+    }
+}
+
+// fn_2_87A8, size:0x194
+void fn_2_87A8(void) {
+    s32 prev = *(s32*)(lbl_2_bss_F410 + 0x4C);
+    if (lbl_803C66B0[0x55] != 0 || lbl_803C66B0[0x56] != 0) {
+        return;
+    }
+    fn_2_87A8_work(prev);
 }

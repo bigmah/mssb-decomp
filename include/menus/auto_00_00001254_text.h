@@ -96,4 +96,6 @@ s32 fn_2_9F70(s8 team);
 
 void fn_2_6784(void);
 
+void fn_2_87A8(void);
+
 #endif
