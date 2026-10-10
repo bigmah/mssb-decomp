@@ -526,3 +526,83 @@ void fn_2_4AEE4(void) {
         lbl_2_bss_1A8248[0][0x4428] |= 1 << lbl_2_bss_1A8248[0][0x4420];
     }
 }
+
+#include "Dolphin/mtx.h"
+#include "Dolphin/GX/GXTransform.h"
+extern void CTRLSetScale(void* control, f32 x, f32 y, f32 z);
+extern void CTRLSetRotation(void* control, f32 x, f32 y, f32 z);
+extern void CTRLSetTranslation(void* control, f32 x, f32 y, f32 z);
+extern void fn_80024DB0(void*);
+extern void fn_80024FA4(void*, u32, void*, s32);
+extern void fn_2_8D024(void);
+extern Vec lbl_2_data_12EA8;
+extern Vec lbl_2_data_12EB4;
+extern const f32 lbl_2_rodata_950;
+extern const f32 lbl_2_rodata_954;
+extern const f32 lbl_2_rodata_958;
+extern const f32 lbl_2_rodata_95C;
+extern const f32 lbl_2_rodata_960;
+extern const f32 lbl_2_rodata_964;
+extern const f32 lbl_2_rodata_968;
+extern const f32 lbl_2_rodata_96C;
+extern const f32 lbl_2_rodata_970;
+
+typedef struct { u8 b : 1; u8 r : 7; } BitFlag08E8;
+
+static inline void attachModel(u8* sub, u8* dst) {
+    u8* q = sub + 0xC;
+    if (q != NULL) {
+        *(f32*)(q + 4) = lbl_2_rodata_970;
+    }
+    if (q != NULL) {
+        ((BitFlag08E8*)(q + 0x11))->b = 1;
+    }
+    fn_80024DB0(q);
+    fn_80024FA4(dst, *(u32*)(sub + 0x2C), sub + 0xC, -1);
+}
+
+// .text:0x47CFC size:0x2FC
+void fn_2_47CFC(void) {
+    u8* c;
+    u8* o;
+    u8* p;
+    s32 i;
+    Mtx44 proj;
+    Vec scale;
+    u8* base;
+
+    C_MTXFrustum(proj, lbl_2_rodata_950, lbl_2_rodata_954, lbl_2_rodata_958, lbl_2_rodata_95C, lbl_2_rodata_960, lbl_2_rodata_964);
+    GXSetProjection(proj, GX_PERSPECTIVE);
+    fn_2_8D024();
+    base = lbl_8036E548;
+    for (i = 0; i < *(s16*)(lbl_2_bss_1A824C[0] + 0x197746); i++) {
+        p = base + i * 0x27C + 0xC04;
+        c = *(u8**)(base + 0x60) + i * 0x90 + 0x34;
+        c[0x6C] = p[0x25D] & 1;
+        CTRLSetTranslation(c + 0x10, *(f32*)(p + 0x34), *(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+        CTRLSetRotation(c + 0x10, lbl_2_rodata_968 * *(f32*)(p + 0x40), lbl_2_rodata_968 * *(f32*)(p + 0x44), lbl_2_rodata_968 * *(f32*)(p + 0x48));
+        if (lbl_2_bss_1A824C[0][0x197848] == 0) {
+            memcpy(&scale, &lbl_2_data_12EA8, sizeof(Vec));
+            if (lbl_2_bss_1A8248[0][0x441C] == 5 && i == 0) {
+                PSVECScale(&scale, lbl_2_rodata_96C, &scale);
+                CTRLSetScale(c + 0x10, scale.x, scale.y, scale.z);
+            } else {
+                CTRLSetScale(c + 0x10, scale.x, scale.y, scale.z);
+            }
+        } else {
+            memcpy(&scale, &lbl_2_data_12EB4, sizeof(Vec));
+            CTRLSetScale(c + 0x10, scale.x, scale.y, scale.z);
+        }
+        *(f32*)(c + 0x54) = lbl_2_rodata_970;
+        c[0x5A] = 1;
+        o = *(u8**)(p + 0x30);
+        if (o != NULL) {
+            c = o + 4;
+            if (*(u32*)c != 0 && *(u32*)(o + 0x68) != 0 && o[0xCC] != 0) {
+                attachModel(c, *(u8**)(base + 0x13C) + o[0x60] * 0x90 + 0x34);
+                attachModel(*(u8**)(p + 0x30) + 0x68, *(u8**)(base + 0x13C) + (*(u8**)(p + 0x30))[0xC4] * 0x90 + 0x34);
+            }
+        }
+    }
+    fn_2_47B24(*(u16**)(base + 0x60));
+}
