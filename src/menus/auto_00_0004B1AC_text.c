@@ -1432,3 +1432,42 @@ void fn_2_5163C(void) {
     }
     fn_800678CC(0);
 }
+
+extern u8 lbl_80361C18[];
+
+// fn_2_4C3EC, size:0x2BC
+void fn_2_4C3EC(void) {
+    s32 flags[6];
+    s32* fp;
+    s32 j;
+    u8* t;
+    s32 k;
+    s32 i;
+    t = lbl_80361C18;
+    flags[0] = 0;
+    flags[1] = 0;
+    flags[2] = 0;
+    flags[3] = 0;
+    flags[4] = 0;
+    flags[5] = 0;
+    fp = flags;
+    for (i = 0; i < 0x36; i++) {
+        t[i] = 0;
+    }
+    for (k = 0; k < 6; k++) {
+        if (*fp != 0) {
+            for (j = 0; j < 9; j++) {
+                t[lbl_8034E9A0[k * 0x48 + 0x4380 + j]] = 1;
+            }
+        }
+        fp++;
+    }
+    for (i = 0; i < 0x36; i++) {
+        u8* e = lbl_2_bss_1A8248[0] + i * 0x34;
+        if ((s8)e[5] <= 3) {
+            if (*(s8*)(e + 0x31) == 1) {
+                t[i] = 1;
+            }
+        }
+    }
+}
