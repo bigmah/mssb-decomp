@@ -398,6 +398,24 @@ int fn_3_134C80(u32 a, u32 b, u32 c, f32 x, f32 y) {
 
 // .text:0x00134D4C size:0x370 mapped:0x80773DE0
 u32 fn_3_134D4C(f32 ax, f32 az, f32 r, f32 bx, f32 bz, f32 x, f32 y) {
+    f32 dist, len, dot, disc;
+    dist = dolsqrtf2((ax - bx) * (ax - bx) + (az - bz) * (az - bz));
+    len = dolsqrtf2((x - bx) * (x - bx) + (y - bz) * (y - bz));
+    dot = (ax - bx) * ((x - bx) / len) + (az - bz) * ((y - bz) / len);
+    if (dist < r) {
+        return 1;
+    }
+    if (dist == r && dot > 0.0f) {
+        return 2;
+    }
+    if (dot > 0.0f) {
+        disc = dot * dot + (r * r - dist * dist);
+        if (disc >= 0.0f) {
+            if (dot - dolsqrtf2(disc) <= len) {
+                return 3;
+            }
+        }
+    }
     return 0;
 }
 
