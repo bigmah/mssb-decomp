@@ -619,7 +619,6 @@ void fn_3_CF92C(void) {
 }
 
 // .text:0x000CF930 size:0x158 mapped:0x8070E9C4
-// partial: shape matches; volatile regs for int->float hi const / byte differ (r3,r0 vs r0,r5)
 void fn_3_CF930(u8* p) {
     u8* a = *(u8**)(p + 0x8C);
     u16 n;
@@ -627,7 +626,7 @@ void fn_3_CF930(u8* p) {
     u32* q;
     if (a != NULL) {
         f32 t;
-        u8 c;
+        f32 fn;
         n = *(u16*)(a + 0x24);
         d = *(f32*)(a + 0x10);
         if (*(f32*)(a + 0xC) == (f32)n) {
@@ -635,12 +634,12 @@ void fn_3_CF930(u8* p) {
             *(u32*)(p + 0x8C) = 0;
             ((BF90_c2*)p)->f = 0;
         }
-        t = lbl_3_rodata_2778 / ((f32)n / d);
-        c = p[0x92];
-        if (c <= t) {
+        fn = n;
+        t = lbl_3_rodata_2778 / (fn / d);
+        if (p[0x92] <= t) {
             p[0x92] = 0;
         } else {
-            p[0x92] = (u8)(c - t);
+            p[0x92] -= t;
         }
     }
     q = *(u32**)(p + 0xA0);
