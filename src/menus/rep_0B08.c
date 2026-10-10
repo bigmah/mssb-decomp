@@ -2086,3 +2086,63 @@ void fn_2_6FB0C(MenuEntry* owner) {
     }
     owner->state = 1;
 }
+
+extern const f32 lbl_2_rodata_C48;
+extern void fn_2_9033C(s32, f32*, const f32*, f32, f32, f32);
+extern void fn_2_92654(s32, u8);
+extern void fn_2_8F73C(s32, u8);
+
+// fn_2_6C5E0, size:0x358
+void fn_2_6C5E0(MenuEntry* owner) {
+    s32 id;
+    s32 flag;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+    f32 pos[3];
+
+    id = owner->objectId;
+    ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
+    *(u8*)((u8*)owner + 0xBA) = 11;
+    if (*(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x4439) == 1) {
+        memcpy(owner->_74, &lbl_2_data_2EA4[40], sizeof(Vec));
+        flag = 1;
+    } else if (owner->position.x > lbl_2_data_2EA4[40].x && owner->position.z > lbl_2_data_2EA4[40].z) {
+        memcpy(owner->_74, &lbl_2_data_2EA4[42], sizeof(Vec));
+        flag = 0;
+    } else {
+        memcpy(owner->_74, &lbl_2_data_2EA4[40], sizeof(Vec));
+        flag = 1;
+    }
+    pz = *(f32*)&owner->_74[8];
+    px = *(f32*)&owner->_74[0];
+    entry = &lbl_2_bss_1A8248[0]->entries[id];
+    entry->previousPosition.x = px;
+    entry->previousPosition.z = pz;
+    dx = px - entry->position.x;
+    dz = pz - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+    fn_2_68FBC(id, 0);
+    if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 0) {
+        pos[0] = lbl_2_rodata_B6C[0] * owner->position.x;
+        pos[1] = lbl_2_rodata_B6C[0] * (lbl_2_rodata_C48 + owner->position.y);
+        pos[2] = lbl_2_rodata_B6C[0] * owner->position.z;
+        fn_2_9033C(0x1C, pos, lbl_2_rodata_B6C, lbl_2_rodata_B58, lbl_2_rodata_C48, lbl_2_rodata_B6C[0]);
+        fn_2_92654(0x1C, 10);
+        fn_2_8F73C(0x1C, 1);
+    }
+    if (flag == 1) {
+        owner->state = 1;
+    } else {
+        owner->state = 2;
+    }
+}
