@@ -1468,3 +1468,48 @@ void fn_1_131E4(void) {
     LITInitDir(*light3, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
     LITInitColor(*light3, color);
 }
+
+extern Vec lbl_1_rodata_7300;
+extern Vec lbl_1_data_AD18;
+extern const f32 lbl_1_rodata_7454;
+
+// .text:0x11F08 size:0x2CC
+void fn_1_11F08(u8* camera) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx rot;
+    Vec angle;
+    Vec pos;
+    f32 c;
+    f32 s;
+    u8* view;
+
+    pos = lbl_1_rodata_7300;
+    if (!(lbl_803C77B8._00 & 0x10)) {
+        *(u16*)(camera + 0xF0) -= ((s8*)&lbl_803C77B8)[0x13] * 4;
+        *(u16*)(camera + 0xF2) += ((s8*)&lbl_803C77B8)[0x12] * 4;
+        *(f32*)(camera + 0xF4) = (f32)((s8*)&lbl_803C77B8)[0x10] / lbl_1_rodata_7454;
+        *(f32*)(camera + 0xF8) = (f32)((s8*)&lbl_803C77B8)[0x11] * lbl_1_rodata_7448;
+        *(f32*)(camera + 0x10C) += (f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_744C;
+        *(f32*)(camera + 0x10C) -= (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_744C;
+    }
+    angle.x = *(u16*)(camera + 0xF0);
+    angle.y = *(u16*)(camera + 0xF2);
+    angle.z = lbl_1_rodata_7394;
+    PSVECScale(&angle, lbl_1_rodata_7450, &angle);
+    PSMTXRotRad(rotX, 'X', angle.x);
+    PSMTXRotRad(rotY, 'Y', angle.y);
+    s = rotY[0][2];
+    c = rotY[0][0];
+    PSMTXConcat(rotY, rotX, rot);
+    PSMTXMultVec(rot, &pos, (Vec*)(camera + 0xFC));
+    *(f32*)(camera + 0x108) += *(f32*)(camera + 0xF8) * s - *(f32*)(camera + 0xF4) * c;
+    *(f32*)(camera + 0x110) += *(f32*)(camera + 0xF8) * c + *(f32*)(camera + 0xF4) * s;
+    *(f32*)(camera + 0xFC) += *(f32*)(camera + 0x108);
+    *(f32*)(camera + 0x100) += *(f32*)(camera + 0x10C);
+    *(f32*)(camera + 0x104) += *(f32*)(camera + 0x110);
+    makeLookAtMatrix(camera, camera + 0x108, &lbl_1_data_AD18, camera + 0xFC);
+    view = (u8*)fn_80052768_getCamera(0);
+    memcpy(view + 0x70, camera + 0x108, 0xC);
+    memcpy(view + 0x7C, camera + 0xFC, 0xC);
+}
