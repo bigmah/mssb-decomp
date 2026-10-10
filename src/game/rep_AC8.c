@@ -28,6 +28,7 @@ extern int fn_3_9FCA4(s16 a, s16 b);
 extern u8 g_FieldingLogic[];
 extern u8 lbl_3_data_3C40[];
 extern u8 lbl_3_data_4444[];
+extern u8 g_RunningLogic[];
 extern f64 atan2(f64, f64);
 extern u8 lbl_3_data_4930[];
 extern s16 lbl_3_data_49DC[];
@@ -3304,8 +3305,58 @@ void fn_3_544B8(void) {
 }
 
 // .text:0x00054900 size:0x258 mapped:0x80693994
-void fn_3_54900(void) {
-    return;
+void fn_3_54900(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int m = *(s16*)(g_RunningLogic + 4);
+    f32 x;
+    f32 z;
+    if (*(s8*)(f + 0x1F5) >= 0) {
+        x = *(f32*)(lbl_3_data_4444 + 0x20);
+        z = *(f32*)(lbl_3_data_4444 + 0x24);
+    } else if (g_RunningLogic[0x10] == 0) {
+        *(f32*)(f + 0x4C) = *(f32*)(f + 0x48);
+        f[0x1F2] = 1;
+        return;
+    } else {
+        if (*(s16*)(g_Ball + 0x1B7A) == 3) {
+            m &= 0xFFF0;
+        }
+        switch (m) {
+        case 0x1:
+            x = *(f32*)(lbl_3_data_4444 + 0x8);
+            z = *(f32*)(lbl_3_data_4444 + 0xC);
+            break;
+        case 0x10:
+            x = 0.7f * *(f32*)(lbl_3_data_4444 + 0x10) + 0.3f * *(f32*)(lbl_3_data_4444 + 0x8);
+            z = 0.7f * *(f32*)(lbl_3_data_4444 + 0x14) + 0.3f * *(f32*)(lbl_3_data_4444 + 0xC);
+            break;
+        case 0x100:
+            x = 0.7f * *(f32*)(lbl_3_data_4444 + 0x18) + 0.3f * *(f32*)(lbl_3_data_4444 + 0x10);
+            z = 0.7f * *(f32*)(lbl_3_data_4444 + 0x1C) + 0.3f * *(f32*)(lbl_3_data_4444 + 0x14);
+            break;
+        case 0x11:
+            x = lbl_3_rodata_B80 * (*(f32*)(lbl_3_data_4444 + 0x8) + *(f32*)(lbl_3_data_4444 + 0x10));
+            z = lbl_3_rodata_B80 * (*(f32*)(lbl_3_data_4444 + 0xC) + *(f32*)(lbl_3_data_4444 + 0x14));
+            break;
+        case 0x110:
+            x = lbl_3_rodata_B80 * (*(f32*)(lbl_3_data_4444 + 0x10) + *(f32*)(lbl_3_data_4444 + 0x18));
+            z = lbl_3_rodata_B80 * (*(f32*)(lbl_3_data_4444 + 0x14) + *(f32*)(lbl_3_data_4444 + 0x1C));
+            break;
+        case 0x111:
+            x = 0.3f * *(f32*)(lbl_3_data_4444 + 0x18) + 0.7f * *(f32*)(lbl_3_data_4444 + 0x10);
+            z = 0.3f * *(f32*)(lbl_3_data_4444 + 0x1C) + 0.7f * *(f32*)(lbl_3_data_4444 + 0x14);
+            break;
+        case 0x101:
+            x = *(f32*)(lbl_3_data_4444 + 0x20);
+            z = *(f32*)(lbl_3_data_4444 + 0x24);
+            break;
+        default:
+            x = *(f32*)(lbl_3_data_4444 + 0x0);
+            z = *(f32*)(lbl_3_data_4444 + 0x4);
+            break;
+        }
+    }
+    *(f32*)(f + 0x48) = atan2(z - *(f32*)(f + 8), x - *(f32*)f);
 }
 
 // .text:0x00054B58 size:0x818 mapped:0x80693BEC
