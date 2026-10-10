@@ -394,3 +394,81 @@ void fn_2_47B24(u16* count) {
         }
     }
 }
+
+#include "musyx/musyx.h"
+extern u8 lbl_800EFBA4[];
+
+// .text:0x472C4 size:0x234
+void fn_2_472C4(s16* sel, s16* scroll, s16 count, s16 page, s16 flags) {
+    s16 last;
+    s32 rem;
+    s16 max;
+    s32 v;
+    s16 step;
+    s16 back;
+    u8* pad;
+
+    if (count == 0) {
+        return;
+    }
+    if ((page == 0) | (count < page)) {
+        page = count;
+    }
+    rem = count % page;
+    if (rem != 0) {
+        last = rem;
+    } else {
+        last = page;
+    }
+    if (flags & 4) {
+        max = count - last;
+    } else {
+        max = count - page;
+    }
+    pad = (u8*)&lbl_803C77B8;
+    pad += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+    switch (*(u16*)(pad + 4)) {
+    case 0x4:
+    case 0x20:
+        if (!(flags & 8) && scroll != NULL && count > page) {
+            v = *scroll;
+            step = page - v % page;
+            if (v == max) {
+                if (flags & 2) {
+                    *scroll = 0;
+                } else {
+                    *scroll = max;
+                    return;
+                }
+            } else {
+                *scroll = v = (s16)(v + step);
+                if (v > max) {
+                    *scroll = max;
+                }
+            }
+            *sel = 0;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        }
+        break;
+    case 0x8:
+    case 0x40:
+        if (!(flags & 8) && scroll != NULL && count > page) {
+            back = *scroll % page;
+            if (back == 0) {
+                back = page;
+            }
+            if (*scroll <= 0) {
+                if (flags & 2) {
+                    *scroll = max;
+                    *sel = 0;
+                    sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                }
+            } else {
+                *scroll -= back;
+                *sel = 0;
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            }
+        }
+        break;
+    }
+}
