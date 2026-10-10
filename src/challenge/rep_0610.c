@@ -1181,3 +1181,75 @@ void fn_1_1620C(void) {
     } while (i < 1);
     fn_1_1347C();
 }
+
+// .text:0x151F8 size:0x214
+void fn_1_151F8(void) {
+    u8* state = lbl_1_bss_3070;
+    u8* pad = (u8*)&lbl_803C77B8;
+    u16 buttons = *(u16*)(pad + 4);
+    s32 cursor;
+    f32 step;
+    f32 value;
+    if (buttons & 8) {
+        cursor = *(s32*)(state + 0xC) - 1;
+        *(s32*)(state + 0xC) = cursor;
+        if (cursor < 0) {
+            *(s32*)(state + 0xC) = 1;
+        }
+    } else if (buttons & 4) {
+        cursor = *(s32*)(state + 0xC) + 1;
+        *(s32*)(state + 0xC) = cursor;
+        if (cursor >= 2) {
+            *(s32*)(state + 0xC) = 0;
+        }
+    } else if (buttons & 1) {
+        switch (*(s32*)(state + 0xC)) {
+        case 0:
+            state[0x2F08] ^= 1;
+            fn_800B9A9C(state[0x2F08], *(f32*)(state + 0x2F04));
+            break;
+        case 1:
+            step = lbl_1_rodata_7430;
+            if (*(u16*)pad & 0x400) {
+                step = step * lbl_1_rodata_73F8;
+            }
+            step = step * lbl_1_rodata_73A4[0];
+            value = *(f32*)(state + 0x2F04) + step;
+            *(f32*)(state + 0x2F04) = value;
+            if (value > lbl_1_rodata_73BC) {
+                *(f32*)(state + 0x2F04) = lbl_1_rodata_7394;
+            }
+            if (*(f32*)(state + 0x2F04) < lbl_1_rodata_7394) {
+                *(f32*)(state + 0x2F04) = lbl_1_rodata_73BC;
+            }
+            fn_800B9A9C(state[0x2F08], *(f32*)(state + 0x2F04));
+            break;
+        }
+    } else if (buttons & 2) {
+        switch (*(s32*)(state + 0xC)) {
+        case 0:
+            state[0x2F08] ^= 1;
+            fn_800B9A9C(state[0x2F08], *(f32*)(state + 0x2F04));
+            break;
+        case 1:
+            step = lbl_1_rodata_7430;
+            if (*(u16*)pad & 0x400) {
+                step = step * lbl_1_rodata_73F8;
+            }
+            step = step * lbl_1_rodata_73BC;
+            value = *(f32*)(state + 0x2F04) + step;
+            *(f32*)(state + 0x2F04) = value;
+            if (value > lbl_1_rodata_73BC) {
+                *(f32*)(state + 0x2F04) = lbl_1_rodata_7394;
+            }
+            if (*(f32*)(state + 0x2F04) < lbl_1_rodata_7394) {
+                *(f32*)(state + 0x2F04) = lbl_1_rodata_73BC;
+            }
+            fn_800B9A9C(state[0x2F08], *(f32*)(state + 0x2F04));
+            break;
+        }
+    } else if (buttons & 0x200) {
+        *(s32*)(state + 0xC) = 0;
+        state[0x2F01] = 1;
+    }
+}
