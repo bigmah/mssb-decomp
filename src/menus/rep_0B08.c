@@ -1762,3 +1762,44 @@ void fn_2_71C6C(MenuEntry* owner) {
     fn_2_68FBC(id, 0);
     owner->state = 1;
 }
+
+extern const f32 lbl_2_rodata_C44[];
+
+// fn_2_6C348, size:0x298
+void fn_2_6C348(MenuEntry* owner) {
+    s32 id;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    id = owner->objectId;
+    fn_2_69E1C(id);
+    if (owner->_50 <= lbl_2_rodata_B58) {
+        if (*(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x4439) == 1) {
+            *(u8*)((u8*)owner + 0xBA) = 4;
+            owner->flagC4 = 1;
+            owner->state = 3;
+            return;
+        }
+        memcpy(owner->_74, &lbl_2_data_2EA4[42], sizeof(Vec));
+        pz = lbl_2_rodata_B68[0] + *(f32*)&owner->_74[8];
+        px = lbl_2_rodata_C44[0] + *(f32*)&owner->_74[0];
+        entry = &lbl_2_bss_1A8248[0]->entries[id];
+        entry->previousPosition.x = px;
+        entry->previousPosition.z = pz;
+        dx = px - entry->position.x;
+        dz = pz - entry->position.z;
+        if (0.0f == dx && 0.0f == dz) {
+            entry->_38 = 0.0f;
+            entry->_50 = 0.0f;
+        } else {
+            dx = dx * dx + dz * dz;
+            entry->_50 = menuSqrtf(dx);
+        }
+        entry->flagBB = 1;
+        fn_2_68FBC(id, 0);
+        owner->state = 2;
+    }
+}
