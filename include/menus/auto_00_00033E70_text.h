@@ -7,6 +7,8 @@ void fn_2_37430(u8* a, u8* b);
 
 void fn_2_37460(void);
 
+void fn_2_38A40(void);
+
 void fn_2_3745C(void);
 
 void fn_2_37D70(void);
