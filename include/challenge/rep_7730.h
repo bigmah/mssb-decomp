@@ -39,11 +39,15 @@ typedef struct {
 } ChallengeProjectionState;
 
 typedef struct {
-    u8 padding[0x21];
+    u8 padding[0x18];
+    f32 scale;
+    f32 unk1C;
+    u8 steps;
     u8 pointCount;
     u8 drawFlat;
     u8 colorMode;
     u8 drawFull;
+    u8 unk25;
 } ChallengeCurveDrawing;
 
 typedef struct {
@@ -63,7 +67,12 @@ typedef struct {
 
 typedef struct {
     f32 scale;
-    u8 padding4[0x3C];
+    u8 padding4[8];
+    Vec position;
+    u8 padding18[0xC];
+    Vec side;
+    Vec up;
+    u8 padding3C[4];
 } ChallengePathNode;
 
 typedef struct {
@@ -145,6 +154,8 @@ void fn_1_1D944(void);
 
 void fn_1_247A0(void);
 
-void fn_1_21180(u8* arg);
+void fn_1_21180(ChallengeCurveDrawing* arg);
+
+void fn_1_248BC(s32 count);
 
 #endif

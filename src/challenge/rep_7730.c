@@ -557,9 +557,9 @@ void fn_1_1D944(void) {
 }
 
 // .text:0x21180 size:0x118
-void fn_1_21180(u8* arg) {
+void fn_1_21180(ChallengeCurveDrawing* arg) {
     ChallengeCurveTiming* tm;
-    s32 n = arg[0x20];
+    s32 n = arg->steps;
     f32 t;
     ChallengeCurvePoint* pts;
     s32 idx;
@@ -573,13 +573,13 @@ void fn_1_21180(u8* arg) {
     if (lbl_803C77B8._00 & 0x400) {
         tm->steps = 1;
     }
-    fn_80038CD0(arg[0x21], &lbl_1_bss_6FB8, lbl_1_bss_6FE0, lbl_1_rodata_7810, *(f32*)(arg + 0x18));
+    fn_80038CD0(arg->pointCount, &lbl_1_bss_6FB8, lbl_1_bss_6FE0, lbl_1_rodata_7810, arg->scale);
     pts = lbl_1_bss_6FE0;
-    idx = arg[0x21] - 1;
+    idx = arg->pointCount - 1;
     lbl_1_bss_6FA8[0] = pts[idx].position.x;
     lbl_1_bss_6FA8[1] = pts[idx].position.y;
     lbl_1_bss_6FA8[2] = pts[idx].position.z;
-    pts[idx].mode = arg[0x23];
+    pts[idx].mode = arg->colorMode;
 }
 
 extern void fn_80038B48(void*, void*, u8, Vec*);
@@ -644,5 +644,68 @@ void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
             out[i] *= *(f32*)(lbl_1_data_FB98 + 0x92C);
             
         }
+    }
+}
+
+extern const f32 lbl_1_rodata_77F8;
+extern const f32 lbl_1_rodata_7854;
+extern void fn_80038E2C(void*, s32, s32);
+
+// .text:0x22DF4 size:0x158
+void fn_1_22DF4(ChallengeCurveDrawing* arg) {
+    arg->scale = lbl_1_rodata_77F8;
+    arg->unk1C = lbl_1_rodata_7854;
+    arg->unk25 = 0;
+    arg->steps = 10;
+    arg->pointCount = 10;
+    arg->drawFlat = 1;
+    arg->colorMode = 0;
+    arg->drawFull = 0;
+    fn_80038E2C(&lbl_1_bss_6FB8, arg->steps, arg->drawFull);
+    fn_1_21180(arg);
+}
+
+extern u32 lbl_1_data_10384[];
+extern f32 lbl_1_data_104A4;
+
+// .text:0x248BC size:0x1D0
+void fn_1_248BC(s32 count) {
+    u8 width;
+    GXTexOffset offset;
+    s32 i;
+    ChallengePathNode* node;
+
+    GXGetLineWidth(&width, &offset);
+    GXSetLineWidth(0x18, offset);
+    GXBegin(GX_LINESTRIP, GX_VTXFMT0, count);
+    i = count;
+    while (i-- != 0) {
+        node = &lbl_1_bss_43F68[i];
+        GXWGFifo.f32 = node->position.x;
+        GXWGFifo.f32 = node->position.y;
+        GXWGFifo.f32 = node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i];
+    }
+    GXSetLineWidth(width, offset);
+    GXBegin(GX_LINES, GX_VTXFMT0, count * 4);
+    i = count;
+    while (i-- != 0) {
+        node = &lbl_1_bss_43F68[i];
+        GXWGFifo.f32 = node->position.x;
+        GXWGFifo.f32 = node->position.y;
+        GXWGFifo.f32 = node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i];
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->up.x + node->position.x;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->up.y + node->position.y;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->up.z + node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i];
+        GXWGFifo.f32 = node->position.x;
+        GXWGFifo.f32 = node->position.y;
+        GXWGFifo.f32 = node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i] ^ 0xFFFFFF00;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->side.x + node->position.x;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->side.y + node->position.y;
+        GXWGFifo.f32 = lbl_1_data_104A4 * node->side.z + node->position.z;
+        GXWGFifo.u32 = lbl_1_data_10384[i] ^ 0xFFFFFF00;
     }
 }
