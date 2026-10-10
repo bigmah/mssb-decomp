@@ -1803,3 +1803,42 @@ void fn_2_6C348(MenuEntry* owner) {
         owner->state = 2;
     }
 }
+
+// fn_2_6EA74, size:0x2BC
+void fn_2_6EA74(MenuEntry* owner) {
+    s32 id = owner->objectId;
+    MenuEntries* menu = lbl_2_bss_1A8248[0];
+    s32 other = *(s32*)((u8*)menu + 0x1690);
+    s32 who;
+    s32 mode;
+    s16 timer;
+
+    if (id >= 2 && id <= 6 && (mode = *(u8*)((u8*)menu + 0x16DD), who = *(s8*)((u8*)menu + 0x16DC), mode == 1) && who == id) {
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 2;
+        owner->flagCB = 0;
+        owner->state = 3;
+        return;
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1 && *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x44F3) == 0) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 3;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            owner->flagCB = 0;
+        } else {
+            owner->flagCB = -1;
+        }
+    } else {
+        owner->flagCB = -1;
+    }
+    timer = *(s16*)((u8*)owner + 0xA2);
+    *(s16*)((u8*)owner + 0xA2) = timer - 1;
+    if (timer == 0) {
+        owner->state = 0;
+    }
+}
