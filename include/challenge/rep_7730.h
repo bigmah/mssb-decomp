@@ -49,8 +49,28 @@ typedef struct {
 typedef struct {
     u8 padding[0x0C];
     Vec position;
-    u8 padding18[0x28];
+    u8 padding18[0x24];
+    s32 mode;
 } ChallengeCurvePoint;
+
+typedef struct {
+    u8 padding[0x18];
+    f32 step;
+    f32 stepSq;
+    s32 steps;
+    f32 inv;
+} ChallengeCurveTiming;
+
+typedef struct {
+    f32 scale;
+    u8 padding4[0x3C];
+} ChallengePathNode;
+
+typedef struct {
+    u32 unk0;
+    Vec current;
+    u32 unk10;
+} ChallengeCurveCamera;
 
 typedef struct {
     u8 padding[0x22];
@@ -122,5 +142,9 @@ void fn_1_21298(ChallengeCurveDrawing* drawing);
 void fn_1_20640(ChallengeTextureStages* stages, u32* indices);
 
 void fn_1_1D944(void);
+
+void fn_1_247A0(void);
+
+void fn_1_21180(u8* arg);
 
 #endif

@@ -2,23 +2,43 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
+
+// POOL BEGIN (high-to-low; memory order is the reverse)
+static Mtx44 lbl_1_bss_47010;
+static u8 lbl_1_bss_45868[0x17A8];
+static ChallengePathNode lbl_1_bss_43F68[100];
+static u8 lbl_1_bss_43EE0[0x88];
+static f32 lbl_1_bss_F6E0[0x34800 / 4];
+static u8 lbl_1_bss_76E0[0x8000];
+static f32 lbl_1_bss_74E0[0x200 / 4];
+static ChallengeCurvePoint lbl_1_bss_6FE0[20];
+static ChallengeCurveTiming lbl_1_bss_6FB8;
+static u8 lbl_1_bss_6FB4[4];
+static f32 lbl_1_bss_6FA8[3];
+static u8 lbl_1_bss_6FA4[4];
+static GXTexObj lbl_1_bss_6EA4[8];
+static GXTlutObj lbl_1_bss_6E44[8];
+static u8 lbl_1_bss_6D48[0xFC];
+static f32 lbl_1_bss_6BF4[0x154 / 4];
+static f32 lbl_1_bss_6BE4[4];
+static s32 lbl_1_bss_6BE0;
+static s32 lbl_1_bss_6BDC;
+static s32 lbl_1_bss_6BD8;
+// POOL END
 extern void fn_1_20BD8(void);
 
 extern void fn_1_246AC(void);
 
 extern u8* lbl_803CC1B8[];
 
-extern f32 lbl_1_bss_6BE4[4];
 
 extern void (*lbl_1_data_1066C[])(s16);
 
-extern f32 lbl_1_bss_6BF4[];
 extern void fn_80037B18(void*, Vec*, f32);
 
 extern u8 lbl_1_data_10674[];
 extern void fn_1_1DA54(void);
 
-extern u8 lbl_1_bss_6D48[];
 extern const f32 lbl_1_rodata_77E4[];
 extern void fn_1_272DC(void*, s32);
 extern void fn_1_AF4(s32, s32, f32);
@@ -39,17 +59,17 @@ extern const f32 lbl_1_rodata_77DC[];
 extern const f32 lbl_1_rodata_77E0[];
 extern const f32 lbl_1_rodata_7814[];
 extern const f32 lbl_1_rodata_7820[];
-extern Mtx44 lbl_1_bss_47010;
 extern void (*lbl_1_data_104A8[])(void);
 extern void* lbl_80366158[];
 extern void fn_1_267F4(void);
 extern void fn_1_25C68(void);
 extern void (*lbl_1_data_10508[])(u8*);
 extern void (*lbl_1_data_10510[])(u8*);
-extern ChallengeCurvePoint lbl_1_bss_6FE0[];
 extern u32 lbl_1_data_104DC[];
-extern GXTlutObj lbl_1_bss_6E44[];
-extern GXTexObj lbl_1_bss_6EA4[];
+extern const f32 lbl_1_rodata_7810;
+extern const f64 lbl_1_rodata_7818[];
+extern const f32 lbl_1_rodata_784C[];
+extern void fn_80038CD0(u8, void*, void*, f32, f32);
 
 // fn_1_20640, size:0x194
 void fn_1_20640(ChallengeTextureStages* stages, u32* indices) {
@@ -534,4 +554,60 @@ void fn_1_1D944(void) {
     e->table = lbl_1_data_107C4;
     e->flags = *(u32*)(q + 0x2C);
     fn_800A7D4C(0, e);
+}
+
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+// .text:0x21180 size:0x118
+void fn_1_21180(u8* arg) {
+    ChallengeCurveTiming* tm;
+    ChallengeCurvePoint* p;
+    Vec* v;
+    s32 n = arg[0x20];
+    f32 t;
+
+    tm = &lbl_1_bss_6FB8;
+    tm->steps = n;
+    t = (lbl_1_rodata_77E4[0] / (f32)n) / lbl_1_rodata_784C[0];
+    tm->step = t;
+    tm->stepSq = t * t;
+    tm->inv = lbl_1_rodata_77E4[0] / ((&lbl_1_rodata_780C)[0] * t);
+    if (lbl_803C77B8._00 & 0x400) {
+        tm->steps = 1;
+    }
+    fn_80038CD0(arg[0x21], &lbl_1_bss_6FB8, lbl_1_bss_6FE0, lbl_1_rodata_7810, *(f32*)(arg + 0x18));
+    n = arg[0x21];
+    p = &lbl_1_bss_6FE0[n - 1];
+    lbl_1_bss_6FA8[0] = p->position.x;
+    lbl_1_bss_6FA8[1] = p->position.y;
+    lbl_1_bss_6FA8[2] = p->position.z;
+    p->mode = arg[0x23];
+}
+
+extern void fn_80038B48(void*, void*, u8, Vec*);
+
+// .text:0x247A0 size:0x11C
+// .text:0x247A0 size:0x11C
+void fn_1_247A0(void) {
+    u8* q = lbl_803CC1B8[0];
+    u16 speed = *(u16*)(q + 0x22);
+    Vec v;
+
+    v.x = speed * ((s8)((u8*)&lbl_803C77B8)[0x10] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
+    v.y = speed * ((s8)((u8*)&lbl_803C77B8)[0x13] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
+    v.z = speed * ((s8)((u8*)&lbl_803C77B8)[0x11] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
+    fn_80038B48(lbl_1_bss_45868, lbl_1_bss_43F68, q[0x2B], &v);
 }
