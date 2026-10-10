@@ -1975,3 +1975,50 @@ void fn_2_6ED30(MenuEntry* owner) {
         owner->state = 0;
     }
 }
+
+// fn_2_70110, size:0x34C
+void fn_2_70110(MenuEntry* owner) {
+    s32 id = owner->objectId;
+    s32 i;
+    s32 hit;
+    MenuEntry* e;
+
+    ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
+    fn_2_68FBC(owner->objectId, 1);
+    if (owner->flagCD == 1) {
+        MenuEntry* b = &lbl_2_bss_1A8248[0]->entries[owner->flagCE];
+        MenuEntry* a = &lbl_2_bss_1A8248[0]->entries[id];
+        f32 angle = (f32)atan2(-(a->position.x - b->position.x), -(a->position.z - b->position.z));
+        f32 diff = fn_2_4A18C(b->heading) - angle;
+
+        if (b->typeC3 == 7 && (owner->state == 0 || owner->state == 1)) {
+            if ((f32)__fabs(diff) < 1.5707964f) {
+                lbl_2_bss_1A824C[0][0x1978F1] = 0;
+            } else {
+                lbl_2_bss_1A824C[0][0x1978F1] = 2;
+            }
+        } else {
+            lbl_2_bss_1A824C[0][0x1978F1] = 1;
+        }
+    }
+    for (i = 1; i < 7; i++) {
+        hit = (u8)fn_2_68C80(id, i);
+        if (hit != 0 && i == 1 && ((u8*)lbl_2_bss_1A8248[0])[0x44F3] == 0) {
+            owner->flagC4 = 2;
+            owner->flagCB = i;
+            e = &lbl_2_bss_1A8248[0]->entries[id];
+            e->typeC3 = 3;
+            e->state = 0;
+            return;
+        }
+        if (hit != 0 && i >= 2 && i <= 6) {
+            owner->flagCB = i;
+            e = &lbl_2_bss_1A8248[0]->entries[id];
+            e->typeC3 = 4;
+            e->state = 0;
+            return;
+        }
+        owner->flagCB = -1;
+    }
+    owner->state = 1;
+}
