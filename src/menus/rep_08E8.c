@@ -734,3 +734,14 @@ void fn_2_48A1C(void) {
     *(f32*)(parameters + 0x44) = lbl_2_bss_55BC;
     *(f32*)(parameters + 0x48) = lbl_2_data_13304.z;
 }
+
+extern u8 lbl_80366B18[];
+
+// .text:0x4906C size:0x110
+void fn_2_4906C(void) {
+    s32 i;
+    for (i = 0; i < 15; i++) {
+        ((u32*)lbl_2_bss_1A824C[0])[i + 0x19542C / 4] =
+            ((u32*)(*(u8**)(lbl_80366B18 + 0x798 + lbl_2_bss_1A824C[0][0x1972B8] * 4) + 4))[i];
+    }
+}
