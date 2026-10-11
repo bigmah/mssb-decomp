@@ -81,8 +81,12 @@ void fn_8006BE00(void) {
 }
 
 // .text:0x8006C088 size:0x48
-void fn_8006C088(void) {
-    return;
+void fn_8006C088(s32 alt) {
+    lbl_803CBD34 = alt ? &lbl_8010928C : &lbl_80109250;
+    VIConfigure(lbl_803CBD34);
+    VIFlush();
+    VIWaitForRetrace();
+    VIWaitForRetrace();
 }
 
 // .text:0x8006C0D0 size:0x30
