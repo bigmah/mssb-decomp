@@ -91,7 +91,24 @@ void fn_2_13D70(PortInput* in) {
 // .text:0x0001406C size:0xF8
 // Page 1: toggle g_d_GameSettings._1A entries.
 void fn_2_1406C(PortInput* in) {
-    return;
+    u16 repeat = in->repeat;
+    if (repeat & 8) {
+        lbl_2_bss_100B8.settingSel--;
+        if ((s8)lbl_2_bss_100B8.settingSel < 0) {
+            lbl_2_bss_100B8.settingSel = 5;
+        }
+    } else if (repeat & 4) {
+        lbl_2_bss_100B8.settingSel++;
+        if ((s8)lbl_2_bss_100B8.settingSel == 6) {
+            lbl_2_bss_100B8.settingSel = 0;
+        }
+    } else if (repeat & 1) {
+        g_d_GameSettings._1A[(s8)lbl_2_bss_100B8.settingSel] ^= 1;
+    } else if (repeat & 2) {
+        g_d_GameSettings._1A[(s8)lbl_2_bss_100B8.settingSel] ^= 1;
+    } else if (in->pressed & 0x200) {
+        lbl_2_bss_100B8.page = 0;
+    }
 }
 
 // .text:0x00014164 size:0xBC
