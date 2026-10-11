@@ -95,9 +95,19 @@ void fn_8006C0D0(void) {
 }
 
 // .text:0x8006C100 size:0x3C
-void fn_8006C100(void) {
-    return;
+// NONMATCHING 80%: the original keeps a rolled pointer-walk loop with an int counter; CW unrolls it here (u8 counter adds clrlwi)
+#if NONMATCHING
+u8 fn_8006C100(s16 value) {
+    u32 i;
+
+    for (i = 0; i < 7; i++) {
+        if (value >= lbl_80109400[i]) {
+            return i;
+        }
+    }
+    return 6;
 }
+#endif
 
 // .text:0x8006C13C size:0x12C
 void fn_8006C13C(void) {
