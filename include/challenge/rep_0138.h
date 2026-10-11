@@ -33,8 +33,8 @@ typedef struct ChallengeWork {
     /*0x032*/ u16 yaw;
     /*0x034*/ f32 strafe;
     /*0x038*/ f32 forward;
-    /*0x03C*/ Vec eye;
-    /*0x048*/ Vec target;
+    /*0x03C*/ Vec at;  // look-at point
+    /*0x048*/ Vec pos; // camera position
     /*0x054*/ f32 zoom;
     /*0x058*/ void* texBank;
     /*0x05C*/ ChallengeModel stage[2];  // per frame buffer (lbl_803CBBC0)

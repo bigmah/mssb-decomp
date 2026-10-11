@@ -275,8 +275,8 @@ void fn_1_66C4(void) {
     lbl_1_common_bss_472B4.stageSel = a;
     lbl_1_common_bss_472B4.variantSel = b;
     lbl_1_common_bss_472B4.heapBuf = _OSAllocFromHeap(0x20, 0x80000);
-    lbl_1_common_bss_472B4.target.y = lbl_1_rodata_1F0;
-    lbl_1_common_bss_472B4.target.z = lbl_1_rodata_1F4;
+    lbl_1_common_bss_472B4.pos.y = lbl_1_rodata_1F0;
+    lbl_1_common_bss_472B4.pos.z = lbl_1_rodata_1F4;
     lbl_1_common_bss_472B4.pitch = 0xF36C;
     lbl_1_common_bss_472B4.zoom = lbl_1_rodata_1F8;
     lbl_1_common_bss_472B4.selBone = -1;
@@ -290,7 +290,8 @@ void fn_1_66C4(void) {
 }
 
 typedef struct ChalTexState {
-    u8 pad0[0x11];
+    u8 indWarp; // lbl_1_bss_C0: use the normal map as an indirect warp (fn_1_5544)
+    u8 pad1[0x10];
     u8 replace;
     u8 pad12[2];
     GXIndTexScale tScale;
@@ -1043,6 +1044,66 @@ void fn_1_73B8(ChallengeModel* model, u8 numLights, ...) {
                 fn_1_4E98(obj, camera);
             }
         }
+    }
+}
+#endif
+
+extern const Vec lbl_1_rodata_188; // {0, 0, 100}
+extern const f32 lbl_1_rodata_20C;
+extern Vec lbl_1_data_87C; // up vector
+extern void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
+extern void fn_80011640(MtxPtr src, MtxPtr dst);
+extern void fn_800B9950(u32 mask, f32 first, f32 second);
+
+// NONMATCHING 99%: float regs of the trigger scale and magic constant swapped in the pos.y branch
+#if NONMATCHING
+void fn_1_7960(void) {
+    Mtx44 proj;
+    Mtx rotX;
+    Mtx rotY;
+    Mtx m;
+    Vec rot;
+    Vec dir;
+    f32 cosY;
+    f32 sinY;
+
+    dir = lbl_1_rodata_188;
+    lbl_1_common_bss_472B4.pitch -= PAD0.substickY * 2;
+    lbl_1_common_bss_472B4.yaw += PAD0.substickX * 2;
+    lbl_1_common_bss_472B4.strafe = PAD0.stickX / lbl_1_rodata_20C;
+    lbl_1_common_bss_472B4.forward = PAD0.stickY * lbl_1_rodata_210;
+    if (PAD0.held & PAD_TRIGGER_Z) {
+        lbl_1_common_bss_472B4.zoom -= PAD0.triggerLeft / 4096.0f;
+        lbl_1_common_bss_472B4.zoom += PAD0.triggerRight / 4096.0f;
+    } else {
+        lbl_1_common_bss_472B4.pos.y = -(PAD0.triggerRight * lbl_1_rodata_218 - lbl_1_common_bss_472B4.pos.y);
+        lbl_1_common_bss_472B4.pos.y = PAD0.triggerLeft * lbl_1_rodata_218 + lbl_1_common_bss_472B4.pos.y;
+    }
+    rot.x = lbl_1_common_bss_472B4.pitch;
+    rot.y = lbl_1_common_bss_472B4.yaw;
+    rot.z = lbl_1_rodata_1A8;
+    PSVECScale(&rot, lbl_1_rodata_204, &rot);
+    PSMTXRotRad(rotX, 'X', rot.x);
+    PSMTXRotRad(rotY, 'Y', rot.y);
+    sinY = rotY[0][2];
+    cosY = rotY[0][0];
+    PSMTXConcat(rotY, rotX, m);
+    PSMTXMultVec(m, &dir, &lbl_1_common_bss_472B4.at);
+    lbl_1_common_bss_472B4.pos.x += lbl_1_common_bss_472B4.forward * sinY - lbl_1_common_bss_472B4.strafe * cosY;
+    lbl_1_common_bss_472B4.pos.z += lbl_1_common_bss_472B4.forward * cosY + lbl_1_common_bss_472B4.strafe * sinY;
+    lbl_1_common_bss_472B4.at.x += lbl_1_common_bss_472B4.pos.x;
+    lbl_1_common_bss_472B4.at.y += lbl_1_common_bss_472B4.pos.y;
+    lbl_1_common_bss_472B4.at.z += lbl_1_common_bss_472B4.pos.z;
+    makeLookAtMatrix(lbl_1_common_bss_472B4.view, &lbl_1_common_bss_472B4.pos, &lbl_1_data_87C,
+                     &lbl_1_common_bss_472B4.at);
+    fn_1_7E04(lbl_1_common_bss_472B4.zoom);
+    fn_1_54E0(lbl_1_common_bss_472B4.view);
+    fn_80011640(lbl_1_common_bss_472B4.view, lbl_1_common_bss_472B4.view);
+    if (lbl_1_bss_C0.indWarp != 0) {
+        fn_800B9950(3, (0xFFFF - lbl_1_common_bss_472B4.yaw) / 32768.0f,
+                    (s16)lbl_1_common_bss_472B4.pitch / 32768.0f);
+    } else {
+        fn_800B9950(3, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
     }
 }
 #endif
