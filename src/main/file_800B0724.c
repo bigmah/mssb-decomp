@@ -79,8 +79,16 @@ void fn_800B0934(void) {
 }
 
 // .text:0x800B0938 size:0x64
-void SndFree(void) {
-    return;
+void SndFree(void* ptr) {
+    SndBlockHdr* hdr = (SndBlockHdr*)ptr - 1;
+    u8* prevCur = hdr->prevCur;
+    if (prevCur + hdr->size != lbl_803CBB10->cur) {
+        OSReport("sNp_SndFree err\n");
+        while (TRUE) {
+        }
+    }
+    lbl_803CBB10->cur = prevCur;
+    lbl_803CBB10->free = lbl_803CBB10->end - lbl_803CBB10->cur;
 }
 
 // .text:0x800B099C size:0x78
