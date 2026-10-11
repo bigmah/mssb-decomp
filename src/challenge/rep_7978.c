@@ -1,12 +1,8 @@
-// Keep each float constant its own rodata object (the original does not pool them).
-#pragma pool_data off
-#include "math.h" // static dolsqrtf2: the extern one in UnknownHomes_Game.h would emit its constants
-#undef SQRT2_LINKAGE
 #include "challenge/rep_7978.h"
-#include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_7978
+#include "header_rep_inline.h"
 
 
 static inline void updateView(ChallengeDebugCamera* camera) {

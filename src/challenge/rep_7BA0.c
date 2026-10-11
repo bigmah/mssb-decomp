@@ -3,7 +3,8 @@
 #include "main/file_800B0724.h"
 #include "main/file_800ADC40.h"
 #include "Dolphin/stl.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_7BA0
+#include "header_rep_inline.h"
 
 // THP player state for the movie test.
 typedef struct ChMovieWork {
