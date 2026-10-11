@@ -459,7 +459,7 @@ void fn_8006AF9C(void) {
         fn_800AD070();
     }
     if (task->_38 != 0) {
-        task->nodes[lbl_803CBBC0]._08 = 4;
+        task->nodes[lbl_803CBBC0].kind = 4;
         task->nodes[lbl_803CBBC0].alpha = task->_38;
         task->nodes[lbl_803CBBC0].next = NULL;
         task->nodes[lbl_803CBBC0].draw = fn_8006AC24;
