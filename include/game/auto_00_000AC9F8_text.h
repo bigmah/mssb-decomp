@@ -52,6 +52,12 @@ typedef struct PauseMenuState {
 
 extern PauseMenuState lbl_3_common_bss_34C90;
 
+// A menu's option list: number of options, then option ids.
+typedef struct MenuOptionList {
+    /*0x0*/ u8 count;
+    /*0x1*/ u8 items[7];
+} MenuOptionList; // size: 0x8
+
 void fn_3_AFDA4(void);
 
 void fn_3_AFD80(u8 state);
@@ -119,5 +125,7 @@ void fn_3_B056C(void);
 void fn_3_AF10C(void);
 
 void fn_3_B0E00(void);
+
+void fn_3_AE900(void);
 
 #endif
