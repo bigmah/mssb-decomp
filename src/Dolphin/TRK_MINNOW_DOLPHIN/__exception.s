@@ -1,6 +1,6 @@
 .include "macros.inc"
 
-.section .init, "ax"  # 0x80003100 - 0x80005600
+.section .init, "ax"  # 0x800034AC - 0x800053E0
 
 .global gTRKInterruptVectorTable
 gTRKInterruptVectorTable:
@@ -474,3 +474,11 @@ gTRKInterruptVectorTable:
 /* 80005084 00002084  4C 00 00 64 */	rfi 
 .global gTRKInterruptVectorTableEnd
 gTRKInterruptVectorTableEnd:
+
+# Addresses inside the table that game data points at (dtk labels).
+.global lbl_80003800
+.set lbl_80003800, gTRKInterruptVectorTable + 0x354
+.global lbl_80004400
+.set lbl_80004400, gTRKInterruptVectorTable + 0xF54
+.global lbl_80004800
+.set lbl_80004800, gTRKInterruptVectorTable + 0x1354

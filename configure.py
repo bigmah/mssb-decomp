@@ -611,6 +611,7 @@ config.libs = [
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/notify.c"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/flush_cache.c"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/mem_TRK.c"),
+            Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/__exception.s"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/targimpl.c"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/targsupp.c",
                    extra_cflags=["-inline deferred", "-func_align 16"]),
