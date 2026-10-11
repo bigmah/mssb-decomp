@@ -187,8 +187,9 @@ s32 fn_8002158C(void) {
 }
 
 // .text:0x800215F8 size:0x58
-void fn_800215F8(void) {
-    return;
+void fn_800215F8(SoundGroupRequest* req) {
+    req->task->done = 0;
+    fn_80022CB4(&lbl_800EF508[req->group], NULL, 1, 0, fn_80021650, req);
 }
 
 // .text:0x80021650 size:0xA8
