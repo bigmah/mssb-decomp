@@ -1,5 +1,8 @@
 #include "C3/charPipeline.h"
 #include "stl/math.h"
+#include "Dolphin/mtxext.h"
+
+void PSMTXMultVecArray(const Mtx m, const Vec *src, Vec *dst, u32 count);
 
 static f32 cosf(f32 v) { return cos(v); }
 static f32 sinf(f32 v) { return sin(v); }
@@ -539,16 +542,81 @@ void CTRLBuildInverseMatrix(Control *control, Mtx m) {
     }
 }
 
-void fn_800B84AC(Control *control, Control *r3, Control *r4, float f1)
+// The game's Control is 0x44 bytes: 8 more than the SDK layout in C3/control.h.
+// Blending copies whole controls, so it goes through this full-size view.
+typedef struct ControlFull {
+    Control ctrl;
+    u32 unk3C[2]; // TODO type
+} ControlFull;
+
+// Set by fn_800B313C before blending: also blend scale and the scale quaternion.
+extern s32 lbl_803CC1E8;
+
+// Blends two controls: dst = from * (1 - t) + to * t. Rotations use slerp (quaternion) or
+// shortest-way lerp (Euler degrees). If the controls differ in kind, dst takes `to`.
+void fn_800B84AC(Control *dst, Control *from, Control *to, f32 t)
 {
-    Quaternion q1 = r3->controlParams.q;
-    if (f1 >= 0.0)
-    {
-        control->controlParams.q = q1;
+    f32 s = 1.0f - t;
+    Quaternion *qFrom = &from->controlParams.srt.r;
+    Quaternion *qTo = &to->controlParams.srt.r;
+    Quaternion *qDst = &dst->controlParams.srt.r;
+    Quaternion neg;
+
+    if (t >= 1.0f || from == NULL || from->type != to->type) {
+        if (to->type & CTRL_SCALE) {
+            *(ControlFull *)dst = *(ControlFull *)to;
+        } else {
+            *(ControlFull *)dst = *(ControlFull *)to;
+        }
+        return;
     }
 
-    PSQUATDotProduct(0,0);
-    C_QUATSlerp(0, 0, 0, 0);
+    dst->type = to->type;
+    if (from->type & CTRL_ROT_QUAT) {
+        if (PSQUATDotProduct(qFrom, qTo) >= 0.0f) {
+            C_QUATSlerp(qFrom, qTo, qDst, t);
+        } else {
+            PSQUATScale(qFrom, -1.0f, &neg);
+            C_QUATSlerp(&neg, qTo, qDst, t);
+        }
+    } else if (from->type & CTRL_ROT_EULER) {
+        f32 *a = &qFrom->x;
+        f32 *b = &qTo->x;
+        f32 *d = &qDst->x;
+        s32 i;
+        for (i = 0; i < 3; i++) {
+            f32 diff = a[i] - b[i];
+            if (diff > 180.0f) {
+                a[i] -= 360.0f;
+            } else if (diff < -180.0f) {
+                b[i] -= 360.0f;
+            }
+            d[i] = t * b[i] + s * a[i];
+        }
+    } else {
+        *qDst = *qTo;
+    }
+
+    if (lbl_803CC1E8 != 0 && (from->type & CTRL_SCALE)) {
+        dst->controlParams.srt.s.x = to->controlParams.srt.s.x * t + from->controlParams.srt.s.x * s;
+        dst->controlParams.srt.s.y = to->controlParams.srt.s.y * t + from->controlParams.srt.s.y * s;
+        dst->controlParams.srt.s.z = to->controlParams.srt.s.z * t + from->controlParams.srt.s.z * s;
+        dst->controlParams.q.x = to->controlParams.q.x * t + from->controlParams.q.x * s;
+        dst->controlParams.q.y = to->controlParams.q.y * t + from->controlParams.q.y * s;
+        dst->controlParams.q.z = to->controlParams.q.z * t + from->controlParams.q.z * s;
+        dst->controlParams.q.w = to->controlParams.q.w * t + from->controlParams.q.w * s;
+    } else {
+        dst->controlParams.srt.s = to->controlParams.srt.s;
+        dst->controlParams.q = to->controlParams.q;
+    }
+
+    if (from->type & CTRL_TRANS) {
+        dst->controlParams.srt.t.x = to->controlParams.srt.t.x * t + from->controlParams.srt.t.x * s;
+        dst->controlParams.srt.t.y = to->controlParams.srt.t.y * t + from->controlParams.srt.t.y * s;
+        dst->controlParams.srt.t.z = to->controlParams.srt.t.z * t + from->controlParams.srt.t.z * s;
+    } else {
+        dst->controlParams.srt.t = to->controlParams.srt.t;
+    }
 }
 
 void CTRL_SetQuatUnk(Control *control, float x, float y, float z, float w)
@@ -569,17 +637,25 @@ void CTRL_GetQuatUnk(const Control *control, float *x, float *y, float *z, float
     *w = control->controlParams.q.w;
 }
 
-void fn_800B81C0()
-{
+// View volume used for visibility tests: the 8 corners of the frustum in view space,
+// its projection matrix and the near/far distances.
+typedef struct CTRLFrustum {
+    /* 0x00 */ Vec corners[8];
+    /* 0x60 */ Mtx44 proj;
+    /* 0xA0 */ f32 near;
+    /* 0xA4 */ f32 far;
+} CTRLFrustum; // size 0xA8
 
-}
+static CTRLFrustum sFrustums[4];
 
-void fn_800B806C()
-{
-    
-}
+// Box edges and faces by corner index (box corners in the same order as CTRLFrustum.corners).
+// TODO: these live just before control.c's .data in the DOL (0x80111670 / 0x80111688)
+u8 sBoxEdges[12][2] = {
+    {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
+};
+u8 sBoxFaces[6][4] = {
+    {0, 3, 7, 4}, {2, 1, 5, 6}, {0, 1, 2, 3}, {7, 6, 5, 4}, {3, 2, 6, 7}, {0, 4, 5, 1},
+};
 
-void fn_800B7D3C()
-{
-    
-}
+
+
