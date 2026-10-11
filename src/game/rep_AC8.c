@@ -66,6 +66,8 @@ extern f32 lbl_3_rodata_BD0;
 extern f32 lbl_3_data_1C44[];
 extern s16 lbl_3_data_1C54[];
 int RandomInt_Game_Range(int min, int max);
+struct _VecXYZ;
+f32 fn_3_9EFD0(struct _VecXYZ* a, struct _VecXYZ* b, struct _VecXYZ* c, struct _VecXYZ* d);
 extern u8 g_Batter[];
 BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern u8 lbl_3_common_bss_34C90[];
@@ -1271,9 +1273,133 @@ int fn_3_2B694(int i) {
 #endif
 
 // .text:0x0002BB04 size:0x734 mapped:0x8066AB98
+// NONMATCHING 85%: register allocation and int->float conversion scheduling in the trajectory loops
+#if NONMATCHING
 int fn_3_2BB04(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 vz;
+    f32 vx;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    int dive = 1;
+    int aimed = 0;
+    int k;
+    s16 diff;
+    s16 ang;
+    u8* pt;
+    Vec a;
+    Vec b;
+    Vec c;
+    Vec out;
+    vz = *(f32*)(f + 0x44);
+    vx = *(f32*)(f + 0x40);
+    d = vx * vx + vz * vz;
+    SQRT_L(d);
+    if (0.0f != d) {
+        vx = lbl_3_rodata_B24 * (vx / d);
+        vz = lbl_3_rodata_B24 * (vz / d);
+    }
+    if (g_Ball[0x1BC9] == 3 || g_Ball[0x1BCC] != 0 || i == 1) {
+        dive = 0;
+    }
+    if (g_Ball[0x1BD6] != 0) {
+        if (g_Ball[0x1BC3] == 2) {
+            if (*(f32*)(g_Ball + 0x1A14) < lbl_3_rodata_B24) {
+                dive = 0;
+            }
+        } else if (*(f32*)(g_Ball + 0x1A14) < lbl_3_rodata_B7C) {
+            dive = 0;
+        }
+    }
+    if (dive != 0) {
+        for (k = 1, pt = g_Ball + 0x10; k < lbl_3_data_49DC[0xB]; k++, pt += 0x10) {
+            if (*(f32*)(pt + 0x358) < *(f32*)(f + 0xF4)) {
+                dz = *(f32*)(pt + 0x35C) - (k * vz + *(f32*)(f + 8));
+                dx = *(f32*)(pt + 0x354) - (k * vx + *(f32*)f);
+                d = dx * dx + dz * dz;
+                SQRT_L(d);
+                if (d < *(f32*)(f + 0xE8)) {
+                    ang = fn_3_9FE6C_normalizeAngle(*(s16*)(g_Ball + 0x1B82) + 0x800);
+                    diff = fn_3_9FCA4(ang, fn_3_9FB8C(dx, dz));
+                    aimed = 1;
+                    if (diff <= 0x400 && diff >= -0x400) {
+                        goto hit;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+    for (k = 1, pt = g_Ball + 0x10; k < lbl_3_data_49DC[0xB]; k++, pt += 0x10) {
+        if (*(f32*)(pt + 0x358) < *(f32*)(f + 0xF4)) {
+            dz = *(f32*)(pt + 0x35C) - (k * vz + *(f32*)(f + 8));
+            dx = *(f32*)(pt + 0x354) - (k * vx + *(f32*)f);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            if (d < *(f32*)(f + 0xEC)) {
+                goto hit;
+            }
+        }
+    }
     return 0;
+hit:
+    *(s16*)(f + 0x24C) = k;
+    *(s16*)(f + 0x24E) = 0;
+    f[0x252] = 1;
+    f[0x253] = 0;
+    f[0x254] = 0;
+    f[0x255] = dive;
+    f[0x25B] = 0;
+    f[0x259] = 0;
+    f[0x25C] = 0;
+    f[0x25D] = 0;
+    f[0x25E] = 0;
+    f[0x25F] = 0;
+    f[0x264] = 0;
+    f[0x260] = 0;
+    if (k < *(s16*)(g_Ball + 0x1B60)) {
+        f[0x264] = 1;
+    }
+    g_Ball[0x1BF0] = 0;
+    if (*(f32*)(g_Ball + k * 16 + 0x358) < *(f32*)(f + 0xFC)) {
+        f[0x253] = 0;
+    } else if (*(f32*)(g_Ball + k * 16 + 0x358) < *(f32*)(f + 0xF8)) {
+        f[0x253] = 1;
+    } else {
+        f[0x253] = 2;
+    }
+    if (dive != 0 && aimed != 0) {
+        a.x = *(f32*)f;
+        a.y = *(f32*)(f + 4);
+        a.z = *(f32*)(f + 8);
+        b.x = 0.0f;
+        b.y = 0.0f;
+        b.z = 0.0f;
+        c.x = *(f32*)(g_Ball + k * 16 + 0x354);
+        c.z = *(f32*)(g_Ball + k * 16 + 0x35C);
+        c.y = 0.0f;
+        if (fn_3_9EFD0((struct _VecXYZ*)&a, (struct _VecXYZ*)&b, (struct _VecXYZ*)&c, (struct _VecXYZ*)&out) >
+            *(f32*)(f + 0xF0)) {
+            if (diff > 0) {
+                f[0x254] = 2;
+            } else {
+                f[0x254] = 1;
+            }
+        }
+    }
+    dx = *(f32*)(g_Ball + k * 16 + 0x354) - *(f32*)g_Ball;
+    dz = *(f32*)(g_Ball + k * 16 + 0x35C) - *(f32*)(g_Ball + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x240) = *(f32*)g_Ball;
+        *(f32*)(f + 0x244) = *(f32*)(g_Ball + 8);
+    } else {
+        *(f32*)(f + 0x240) = dx;
+        *(f32*)(f + 0x244) = dz;
+    }
+    return 1;
 }
+#endif
 
 // .text:0x0002C238 size:0xB8 mapped:0x8066B2CC
 void fn_3_2C238(int i, int a, int b, int c, int d) {
