@@ -82,7 +82,174 @@ void fn_2_5AF24(void) {
 
 // .text:0x0005AFB0 size:0x82C
 void fn_2_5AFB0(void) {
-    return;
+    switch (lbl_2_bss_1A823C->state) {
+    case 0:
+        lbl_2_bss_1A8234->layerFlags[1][7] = 1;
+        lbl_8034E978.menu = 0x59;
+        lbl_8034E978.prevTrack = lbl_8034E978.track;
+        lbl_8034E978.track = lbl_800FEF70[0x59].track;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A824C->listCursor = 0;
+        lbl_2_bss_1A8234->layerFlags[1][8] = 1;
+        lbl_2_bss_1A824C->listCount = 7;
+        lbl_2_bss_1A823C->state = 1;
+        break;
+    case 1:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 2;
+        }
+        break;
+    case 2: {
+        u16 repeat = MENU_PAD.repeat;
+        u16 down;
+        if (repeat & 1) {
+            lbl_2_bss_1A824C->listCursor =
+                (lbl_2_bss_1A824C->listCount - 1 + lbl_2_bss_1A824C->listCursor) % lbl_2_bss_1A824C->listCount;
+            lbl_2_bss_1A8234->layerFlags[6][7] = 1;
+            lbl_2_bss_1A8234->layerFlags[6][8] = 1;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            lbl_2_bss_1A823C->state = 3;
+            break;
+        }
+        if (repeat & 2) {
+            lbl_2_bss_1A824C->listCursor = (lbl_2_bss_1A824C->listCursor + 1) % lbl_2_bss_1A824C->listCount;
+            lbl_2_bss_1A8234->layerFlags[6][7] = 1;
+            lbl_2_bss_1A8234->layerFlags[6][8] = 1;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            lbl_2_bss_1A823C->state = 3;
+            break;
+        }
+        down = MENU_PAD.down;
+        if (down & 0x40) {
+            lbl_2_bss_1A824C->mode = 4;
+            lbl_2_bss_1A823C->state = 5;
+            lbl_2_bss_1A8234->layerFlags[11][2] = 1;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x20) {
+            lbl_2_bss_1A824C->mode = 4;
+            lbl_2_bss_1A823C->state = 5;
+            lbl_2_bss_1A8234->layerFlags[12][2] = 1;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x200) {
+            lbl_2_bss_1A824C->tab = 0;
+            lbl_2_bss_1A823C->state = 7;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        break;
+    }
+    case 3:
+        lbl_2_bss_1A823C->state = 4;
+        break;
+    case 4:
+        lbl_2_bss_1A823C->state = 2;
+        break;
+    case 5:
+        lbl_2_bss_1A8234->layerFlags[8][7] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][8] = 1;
+        lbl_2_bss_1A823C->state = 6;
+        break;
+    case 6:
+        CUR_TASK->func = fn_2_5B7DC;
+        lbl_2_bss_1A823C->state = 0;
+        break;
+    case 7:
+        lbl_2_bss_1A8234->layerFlags[1][4] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 8;
+        break;
+    case 8:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 9;
+        }
+        break;
+    case 9: {
+        u16 repeat = MENU_PAD.repeat;
+        u16 down;
+        if (repeat & 8) {
+            lbl_2_bss_1A824C->tab = (lbl_2_bss_1A824C->tab + 3) % 4;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (repeat & 4) {
+            lbl_2_bss_1A824C->tab = (lbl_2_bss_1A824C->tab + 1) % 4;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+        down = MENU_PAD.down;
+        if (down & 0x100) {
+            if (lbl_2_bss_1A824C->tab == 3) {
+                lbl_2_bss_1A823C->state = 13;
+            } else {
+                lbl_2_bss_1A823C->state = 10;
+            }
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x200) {
+            lbl_2_bss_1A823C->state = 15;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        break;
+    }
+    case 10:
+        lbl_2_bss_1A8234->layerFlags[8][7] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][8] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 11;
+        break;
+    case 11:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 12;
+        }
+        break;
+    case 12:
+        lbl_2_bss_1A8234->layerFlags[3][2] = 1;
+        switch (lbl_2_bss_1A824C->tab) {
+        case 0:
+            lbl_2_bss_1A824C->mode = 5;
+            CUR_TASK->func = fn_2_5A224;
+            break;
+        case 1:
+            lbl_2_bss_1A824C->mode = 0;
+            CUR_TASK->func = fn_2_5D26C;
+            break;
+        case 2:
+            lbl_2_bss_1A824C->mode = 2;
+            CUR_TASK->func = fn_2_5C5B8;
+            break;
+        case 3:
+            lbl_2_bss_1A824C->mode = 4;
+            lbl_2_bss_1A823C->state = 13;
+            break;
+        }
+        lbl_2_bss_1A823C->state = 0;
+        break;
+    case 13:
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 14;
+        break;
+    case 14:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 2;
+        }
+        break;
+    case 15:
+        changeScene(3, 6);
+        lbl_2_bss_1A8234->layerFlags[8][7] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][8] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][2] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][0] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][1] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 16;
+        break;
+    case 16:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            MenuTask* parent = CUR_TASK->parent;
+            parent->signal = 1;
+            fn_800B0A14_removeQueue(parent);
+            lbl_2_bss_1A823C->state = 0;
+        }
+        break;
+    }
 }
 
 // .text:0x0005B7DC size:0xDDC
