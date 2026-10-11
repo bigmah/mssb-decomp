@@ -379,7 +379,15 @@ void fn_8004A1BC(void) {
 
 // .text:0x8004A2BC size:0x6C
 void fn_8004A2BC(void) {
-    return;
+    switch (lbl_803CBBCC->step) {
+    case 0:
+        fn_800B0A5C_insertQueue(fn_8004A1BC, 0x2000);
+        lbl_803C5F04._2C = 0;
+        lbl_803CBBCC->step++;
+        break;
+    case 1:
+        break;
+    }
 }
 
 // .text:0x8004A328 size:0x24
