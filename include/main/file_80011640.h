@@ -243,7 +243,9 @@ typedef struct CharMgr {
     /*0x2D77*/ u8 state;
     /*0x2D78*/ u8 _2D78;
     /*0x2D79*/ u8 _2D79;
-    /*0x2D7A*/ u8 _2D7A[0x5];
+    /*0x2D7A*/ u8 _2D7A[0x2];
+    /*0x2D7C*/ u8 _2D7C;
+    /*0x2D7D*/ u8 _2D7D[0x2];
     /*0x2D7F*/ s8 _2D7F[9];
     /*0x2D88*/ s8 loadActor;
     /*0x2D89*/ s8 bankOwner[4];
@@ -402,6 +404,8 @@ void fn_8001E0D8(CharSlotList* list, s32 pass, Mtx view);
 void fn_8001E488(void);
 
 void fn_8001F8A4(void);
+
+s32 fn_80014A18(void);
 
 void fn_8001B200(void);
 

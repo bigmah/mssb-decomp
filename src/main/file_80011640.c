@@ -723,9 +723,98 @@ found:
 }
 
 // .text:0x80014A18 size:0x334
-void fn_80014A18(void) {
-    return;
+// NONMATCHING 89%: free-slot search ladder addressing and register allocation
+#if NONMATCHING
+s32 fn_80014A18(void) {
+    s32 i;
+    s32 k;
+    s32 done;
+    CharActor* actor;
+
+    if (lbl_8036E548._2D8E == 0) {
+        lbl_8036E548._2D8E = 1;
+        lbl_8036E548.loadActor = -1;
+        for (i = 0; i < 9; i++) {
+            lbl_8036E548._2D7F[i] = -1;
+        }
+    }
+    if (lbl_8036E548._2D8E == 1) {
+        for (i = 0; i <= 8; i++) {
+            for (k = 0; k < 9; k++) {
+                if (lbl_8036E548.active[i]->kind == lbl_8036E548._2D7F[k]) {
+                    lbl_8036E548.active[i]->banks.b[5] = lbl_8036E548.animBufs[5 + k];
+                    break;
+                }
+            }
+            if (k >= 9) {
+                lbl_8036E548.loadStep = 0;
+                lbl_8036E548._2D8E = 2;
+                lbl_8036E548.loadActor = i;
+                break;
+            }
+        }
+        if (i > 8) {
+            return 1;
+        }
+    }
+    if (lbl_8036E548._2D8E == 2) {
+        actor = &lbl_8036E548.actors[lbl_8036E548.active[lbl_8036E548.loadActor]->modelIndex];
+        if (lbl_8036E548.loadStep == 0) {
+            k = 0;
+            if (lbl_8036E548._2D7F[0] >= 0) {
+                k = 1;
+                if (lbl_8036E548._2D7F[1] >= 0) {
+                    k = 2;
+                    if (lbl_8036E548._2D7F[2] >= 0) {
+                        k = 3;
+                        if (lbl_8036E548._2D7F[3] >= 0) {
+                            k = 4;
+                            if (lbl_8036E548._2D7F[4] >= 0) {
+                                k = 5;
+                                if (lbl_8036E548._2D7F[5] >= 0) {
+                                    k = 6;
+                                    if (lbl_8036E548._2D7F[6] >= 0) {
+                                        k = 7;
+                                        if (lbl_8036E548._2D7F[7] >= 0) {
+                                            k = 8;
+                                            if (lbl_8036E548._2D7F[8] >= 0) {
+                                                k = 9;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            lbl_8036E548._2D7F[k] = actor->kind;
+            if (lbl_8036E548._2D7C == 0) {
+                actor->banks.b[2] = lbl_8036E548.animBufs[5 + k];
+                ARAMTransfer(&lbl_803CB790[actor->kind * 0x13 + 4], actor->banks.b[2], 0, 0);
+            } else {
+                actor->banks.b[5] = lbl_8036E548.animBufs[5 + k];
+                ARAMTransfer(&lbl_803CB790[actor->kind * 0x13 + 0x11], actor->banks.b[5], 0, 0);
+            }
+            lbl_8036E548.loadStep = 1;
+            done = 0;
+        } else if ((s32)lbl_803C6CF8.transferDone == 1) {
+            if (lbl_8036E548._2D7C == 0) {
+                ANIMGet(actor->banks.b[2]);
+            } else {
+                ANIMGet(actor->banks.b[5]);
+            }
+            done = 1;
+        } else {
+            done = 0;
+        }
+        if (done) {
+            lbl_8036E548._2D8E = 1;
+        }
+    }
+    return 0;
 }
+#endif
 
 // .text:0x80014D4C size:0x104
 s32 fn_80014D4C(s32 id) {
