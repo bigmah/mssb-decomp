@@ -236,7 +236,7 @@ void fn_800E4FF4(void* ctx, u8* src, u8* dst) {
 
 // .text:0x800E591C size:0x24
 void fn_800E591C(void* ctx, u8* src, u8* dst, u8* ref) {
-    return;
+    fn_800E5940(ctx, src, dst, ref, dst);
 }
 
 // .text:0x800E5940 size:0x9F0
