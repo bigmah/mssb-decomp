@@ -13,9 +13,86 @@ typedef struct PitcherCandidate {
 } PitcherCandidate;
 
 // .text:0x0001D86C size:0x2F0 mapped:0x8065C900
-void fn_3_1D86C(void) {
-    return;
+// NONMATCHING 97%: inMemRoster row address and the li 0 for differentClass are scheduled differently
+#if NONMATCHING
+s32 fn_3_1D86C(void) {
+    s32 team;
+    CharacterStats* roster;
+    s32 n;
+    s32 r;
+    s32 i;
+    PitcherCandidate cand[9];
+    s32 cnt;
+    s32 cls;
+    s32 sel;
+    s16 pitcher;
+    s16 savedPos;
+
+    team = g_GameLogic.teamFielding;
+    pitcher = lbl_3_common_bss_34C90.lineup[team][0].roster[0];
+    if (fn_3_6D564(team, pitcher, 0) >= lbl_3_data_5EDC[3]) {
+        return 0;
+    }
+
+    for (i = 0, n = 0; i < 9; i++) {
+        if (fn_3_6D564(g_GameLogic.teamFielding, i, 0) >= lbl_3_data_5EDC[3]) {
+            cand[n].idx = i;
+            n++;
+        }
+    }
+    if (n == 0) {
+        return 0;
+    }
+
+    roster = inMemRoster[team];
+    cls = roster[pitcher].stats.CharacterClass;
+    cnt = 0;
+    for (i = 0; i < n; i++) {
+        cand[i].differentClass = 0;
+        if (cls != roster[cand[i].idx].stats.CharacterClass) {
+            cand[i].differentClass = 1;
+            cnt++;
+        }
+    }
+
+    if (cnt != 0) {
+        r = random_fn_3_9EE24(cnt);
+        for (i = 0; i < n; i++) {
+            if (cand[i].differentClass) {
+                if (r == 0) {
+                    sel = cand[i].idx;
+                    goto found;
+                }
+                r--;
+            }
+        }
+    }
+    r = random_fn_3_9EE24(n);
+    for (i = 0; i < n; i++) {
+        if (r == 0) {
+            sel = cand[i].idx;
+            goto found;
+        }
+        r--;
+    }
+    return 0;
+
+found:
+    for (i = 1; i < 10; i++) {
+        if (sel == lbl_3_common_bss_34C90.lineup[team][i].roster[0]) {
+            savedPos = lbl_3_common_bss_34C90.lineup[team][i].position[0];
+            lbl_3_common_bss_34C90.lineup[team][i].position[1] = 0;
+            lbl_3_common_bss_34C90.lineup[team][0].roster[1] = sel;
+        }
+    }
+    for (i = 1; i < 10; i++) {
+        if (pitcher == lbl_3_common_bss_34C90.lineup[team][i].roster[0]) {
+            lbl_3_common_bss_34C90.lineup[team][i].position[1] = savedPos;
+        }
+    }
+    return 1;
 }
+#endif
 
 // .text:0x0001DB5C size:0xD4 mapped:0x8065CBF0
 void fn_3_1DB5C(void) {
