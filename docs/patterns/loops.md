@@ -58,3 +58,4 @@ Loop shapes, unrolling, induction variables, strength reduction, search loops. O
 - **`srwi. rN,cnt,2/3; mtctr; beq` unroll with no index register (`cnt = n+1`, guarded by `cmpwi n,0; blt`) where ours gives `subi r,n,8; cmpwi; ble` and `addi i,i,8` (fn_1_AF4, fn_1_4DD8):** count down: `for (i = n; i >= 0; i--)` instead of `for (i = 0; i <= n; i++)`.
 - **Small constant loop kept as a loop (`li r4,10; subic. r4,1; stb; subi p; bne`) where `for` fully unrolls (fn_1_8C9C):** `i = 10; do { a[i] = 0; } while (--i != 0);`.
 - **Dead `lbz; addi; extsb.; bne` walk over a string whose result is unused (fn_1_A184):** a `static inline` strlen-like helper called for its (discarded) result; an open-coded `while (*s++)` adds a `mr` copy.
+- **`cmpw i, lim` where the original has `cmpw lim, i` in a loop body `if (lim >= i)` (fn_3_12A2B8):** a `do { } while` loop canonicalises the induction var to the left; the same body in a `for (i = 0; i < 4; i++)` loop keeps source order.

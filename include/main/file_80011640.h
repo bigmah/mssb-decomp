@@ -200,7 +200,7 @@ typedef struct CharMgr {
     /*0x2DAC*/ u8 _2DAC[0x3070 - 0x2DAC];
     /*0x3070*/ void (*_3070)(MtxPtr view);
     /*0x3074*/ void (*_3074)(MtxPtr view);
-    /*0x3078*/ s16 _3078;
+    /*0x3078*/ u16 _3078; // trail2 count
     /*0x307A*/ u8 _307A;
     /*0x307B*/ u8 _307B;
     /*0x307C*/ u8 _307C;
