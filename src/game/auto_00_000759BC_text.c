@@ -155,9 +155,87 @@ void fn_3_76174(void) {
 #endif
 
 // .text:0x00076558 size:0x544 mapped:0x806B55EC
+// End of game: winner, winning/losing/save pitchers, then the MVP.
+// NONMATCHING 83%: original re-indexes lbl_803535C8 per counter (lbzu) instead of a record pointer
+#if NONMATCHING
 void fn_3_76558(void) {
-    return;
+    PitchingRecord* wp;
+    PitchingRecord* lp;
+    s32 loser;
+    s32 t;
+    s32 i;
+    s8 save;
+    u8 flag;
+
+    if (g_Scores.result == 0) {
+        lbl_80353A90.winner = g_GameLogic.homeTeamInd;
+    }
+    if (g_Scores.result == 1) {
+        lbl_80353A90.winner = g_GameLogic.homeTeamInd ^ 1;
+    }
+    if (g_Scores.result == 2) {
+        lbl_80353A90.winner = 2;
+    }
+    if (g_Scores.result == 0 || g_Scores.result == 1) {
+        fn_3_76174();
+        wp = &lbl_803535C8[lbl_80353A90.winner][lbl_80353A90.winningPitcher];
+        STAT_INC_U8(wp->wins);
+        if (g_Scores._BB[g_Scores.result] == 1) {
+            STAT_INC_U8(wp->_17);
+            if (lbl_80353A90.runs[lbl_80353A90.winner ^ 1][0] == 0) {
+                STAT_INC_U8(wp->_18);
+                flag = lbl_3_common_bss_32A94._63[g_Scores.result];
+                if (flag == 1) {
+                    lbl_80353A90._0F7 = 1;
+                }
+                if (flag == 2) {
+                    lbl_80353A90._0F7 = 2;
+                }
+            }
+        }
+        if (lbl_80353A90.winningPitcher != g_Scores._AF[g_Scores.result]) {
+            STAT_INC_U8(lbl_803535C8[lbl_80353A90.winner][lbl_80353A90.winningPitcher]._16);
+        }
+        loser = g_Scores.result ^ 1;
+        lbl_80353A90.losingPitcher = g_Scores._B5[loser];
+        lp = &lbl_803535C8[lbl_80353A90.winner ^ 1][lbl_80353A90.losingPitcher];
+        STAT_INC_U8(lp->losses);
+        if (g_Scores._BB[loser] == 1) {
+            STAT_INC_U8(lp->_17);
+        }
+        save = g_Scores._B7[g_Scores.result];
+        if (save != lbl_80353A90.winningPitcher && save >= 0) {
+            lbl_80353A90.savePitcher = save;
+            STAT_INC_U8(lbl_803535C8[lbl_80353A90.winner][save].saves);
+        }
+        loser = g_Scores.result ^ 1;
+        for (t = 0; t < 2; t++) {
+            for (i = 0; i < 9; i++) {
+                if (t == g_Scores.result) {
+                    if (i == lbl_80353A90.winningPitcher) {
+                        lbl_3_common_bss_32A38[lbl_80353A90.winner][i]._1 = 0;
+                    }
+                    if (i == lbl_80353A90.savePitcher) {
+                        lbl_3_common_bss_32A38[lbl_80353A90.winner][i]._1 = 0;
+                    }
+                }
+                if (t == loser && i == lbl_80353A90.losingPitcher) {
+                    lbl_3_common_bss_32A38[lbl_80353A90.winner ^ 1][i]._1 = 0;
+                }
+            }
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        lbl_803535C8[0][i]._19 += lbl_3_common_bss_32A38[0][i]._1;
+        lbl_803535C8[1][i]._19 += lbl_3_common_bss_32A38[1][i]._1;
+    }
+    lbl_80353A90.innings = g_Scores.inning;
+    fn_3_759BC();
+    if (g_d_GameSettings.exhibitionMatchInd == 0) {
+        fn_3_162D54();
+    }
 }
+#endif
 
 // .text:0x00076A9C size:0x1DC mapped:0x806B5B30
 // Credits runners who advanced and runners who scored.
