@@ -214,7 +214,41 @@ void fn_800216F8(void) {
 
 // .text:0x80021758 size:0x1FC
 void fn_80021758(void) {
-    return;
+    SoundLoadTask* task;
+    SoundGroupData* data;
+    SoundLoadTask* parent;
+
+    switch ((task = lbl_803CC1B8)->state) {
+    case 0:
+        if (task->group == 1) {
+            if (lbl_800EF808.loadFromAram != 0) {
+                lbl_800EF808.groups[task->group] = ARAMTransfer(&lbl_800EF508[task->group], NULL, 3, 0xB44000);
+            } else {
+                lbl_800EF808.groups[task->group] = ARAMTransfer(&lbl_800EF508[task->group], NULL, 1, 0);
+            }
+        } else {
+            lbl_800EF808.groups[task->group] = ARAMTransfer(&lbl_800EF508[task->group], NULL, 1, 0);
+        }
+        task->state = 1;
+        break;
+    case 1:
+        if (DVD_STATE_IDLE != 1 || gDataDecompressorValues[0x366] != 0) {
+            break;
+        }
+        data = lbl_800EF808.groups[task->group];
+        relocateSoundGroup(data);
+        task->state = 2;
+        task->callbackState = 0;
+    case 2:
+        if (task->callback(&task->callbackState) == 0) {
+            SoundGroupData** slot = &lbl_800EF808.groups[task->group];
+            fn_800ACF78(*slot, (u8*)(*slot)->samp - (u8*)*slot);
+            parent = task->parent;
+            parent->done = 1;
+            fn_800B0A14_removeQueue(parent);
+        }
+        break;
+    }
 }
 
 // .text:0x80021954 size:0x2C
