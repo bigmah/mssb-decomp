@@ -66,5 +66,20 @@ s32 fn_3_20B30(void) {
 
 // .text:0x00020C34 size:0xB8 mapped:0x8065FCC8
 void fn_3_20C34(void) {
-    return;
+    s32 chance;
+
+    if (!g_AiLogic.pitcherAIPitchDownTheMiddleInd) {
+        g_AiLogic.aIPitcherPickOffInd = 0;
+        if (g_RunningLogic.runnerBits == 1 || g_RunningLogic.runnerBits == 0x1111) {
+            return;
+        }
+        if (g_AiLogic.always0_AIPickoffRelated) {
+            chance = 5;
+        } else {
+            chance = lbl_3_data_1924[g_Pitcher.charClass][g_AiLogic._49];
+        }
+        if (RandomInt_Game(100) < chance) {
+            g_AiLogic.aIPitcherPickOffInd = 1;
+        }
+    }
 }
