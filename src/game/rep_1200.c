@@ -9,6 +9,7 @@ extern f32 lbl_3_data_446C[];
 extern const f32 lbl_3_rodata_1250;
 extern const f32 lbl_3_rodata_1258;
 extern const f32 lbl_3_rodata_12A8;
+extern const f32 lbl_3_rodata_1290;
 extern void fn_3_5C69C(s32 type);
 extern void fn_3_6EBB4(s32 rosterLoc);
 extern void fn_3_89864(s32 i, s32 d);
@@ -744,9 +745,99 @@ int fn_3_750DC(void) {
 }
 
 // .text:0x000751B4 size:0x234 mapped:0x806B4248
+extern f32 lbl_3_data_450C[];
+extern s16 lbl_3_data_8080[];
+// NONMATCHING 77%: same instructions, different f-reg allocation and scheduling of the strike-zone loads (orig reads
+// lbl_3_rodata_1250/1290 through addi+lfs 0, a..d in f9..f12)
+#if NONMATCHING
 void fn_3_751B4(void) {
-    return;
+    f32 h;
+    f32 a;
+    f32 b;
+    f32 c;
+    f32 d;
+    f32 cx;
+    f32 cz;
+    g_Pitcher.pitcherActionState = 0;
+    g_Pitcher.currentStateFrameCounter = 0;
+    g_Ball.fielderWBallIndex = 0;
+    g_Pitcher.pitchSpeedScaler = lbl_3_data_5F90[0];
+    g_Pitcher.decelerationFactor = lbl_3_data_5F90[1];
+    h = lbl_3_rodata_1250;
+    a = lbl_3_data_5E98[0];
+    b = lbl_3_data_5E98[1];
+    c = lbl_3_data_5E98[2];
+    d = lbl_3_data_5E98[3];
+    cx = h * (a + b);
+    cz = h * (c + d);
+    g_Pitcher.centerOfStrikeZone.x = cx;
+    g_Pitcher.centerOfStrikeZone.z = cz;
+    g_Pitcher.strikeZoneLeft = a;
+    g_Pitcher.strikeZoneRight = b;
+    g_Pitcher.beginningOfStrikeCheckZ = c;
+    g_Pitcher.endingOfStrikeCheckZ = d;
+    g_Pitcher.ballCurrentPosition.x = lbl_3_data_450C[0];
+    g_Pitcher.ballCurrentPosition.y = lbl_3_rodata_1290;
+    g_Pitcher.ballCurrentPosition.z = lbl_3_data_450C[1];
+    g_Pitcher.ballVelocity.x = lbl_3_rodata_1258;
+    g_Pitcher.ballVelocity.y = lbl_3_rodata_1258;
+    g_Pitcher.ballVelocity.z = lbl_3_rodata_1258;
+    g_Pitcher.pitchStartingPosition_AIMaxCurve = cx;
+    g_Pitcher.eggBallBounceYHeight = lbl_3_data_5E98[4];
+    g_Pitcher.frontOfPlateZ = cz;
+    g_Pitcher.pitchTotalTimeCounter = 0;
+    g_Pitcher.strikeZoneProcessNumber = 0;
+    g_Pitcher.frameBallCanStartBeingControlled = 0;
+    g_Pitcher.pitchInAirInd = 0;
+    g_Pitcher.calledStrikeInd = 0;
+    g_Pitcher.strikeInd = 0;
+    g_Pitcher.miniGameRelated = 0;
+    g_Pitcher.pickOffLoc = -1;
+    g_Pitcher.pitchDidntResultInLiveBallInd = 0;
+    g_Pitcher.strikeOutOrWalk = 0;
+    g_Pitcher.framesUntilPitchGetsToBatter = -1;
+    g_Pitcher.pitchChargeUp = lbl_3_rodata_1258;
+    g_Pitcher.pitchChargeUpAnimationProportion = lbl_3_rodata_1258;
+    g_Pitcher.unknownFrameCounter = 0;
+    g_Pitcher.ChargePitchType = 0;
+    g_Pitcher.framesAHeldForChargePitches = 0;
+    g_Pitcher.TypeOfPitch = 0;
+    g_Pitcher.ballHaloTrainInd_unused = 0;
+    g_Pitcher.overChargeInd = 0;
+    g_Pitcher.starPitchInd = 0;
+    g_Pitcher.starPitchType = 0;
+    g_Pitcher.warioWaluStarAnimationStage = 0;
+    g_Pitcher.windupCountdownUntilBallReleased = lbl_3_data_8080[0];
+    g_Pitcher.warioWaluStarHasPlayedSound = 0;
+    g_Pitcher.peachDaisyStarAnimationOn = 0;
+    g_Pitcher.peachDaisyAnimationHappened = 0;
+    g_Pitcher.anyCurveInput = 0;
+    g_Pitcher.bulletPitchFrameCounter = 0;
+    g_Pitcher.bulletPitchStageCode = 0;
+    g_Pitcher.eggBallBounceNumber = 0;
+    g_Pitcher.framesSinceFirstEggBounce = 0;
+    g_Pitcher.pitcherOffCenter = 0;
+    g_Pitcher.nonCaptainStarPitchTriggeredType = 0;
+    g_Pitcher.walkedInRunInd = 0;
+    g_Pitcher.unused_pitcherIsFielder = 0;
+    g_Pitcher.starPitchPositionAdjustment.x = lbl_3_rodata_1258;
+    g_Pitcher.starPitchPositionAdjustment.y = lbl_3_rodata_1258;
+    g_Pitcher.starPitchPositionAdjustment.z = lbl_3_rodata_1258;
+    g_Pitcher.pitchWindUpCountDown = lbl_3_data_8080[1];
+    g_Pitcher.curvePitchWindupFrames = lbl_3_data_8080[2];
+    g_Pitcher.windupCountdownUntilBallReleased = lbl_3_data_8080[1];
+    if (g_d_GameSettings.GameModeSelected == 2) {
+        g_Pitcher.AIInd = g_Practice.aIEnabled;
+    } else if (g_Minigame.GameMode_MiniGame == 1 || g_Minigame.GameMode_MiniGame == 3) {
+        g_Pitcher.AIInd = 1;
+    } else if (g_d_GameSettings.minigamesEnabled != 0) {
+        g_Pitcher.AIInd = g_Minigame.minigameControlStruct[0].battingHandedness[g_Minigame.minigamePlayerSelectedOrder];
+    } else {
+        g_Pitcher.AIInd = g_GameLogic._140[g_GameLogic.awayTeamBattingInd_battingTeam];
+    }
+    lbl_3_common_bss_34C58._34 = 0;
 }
+#endif
 
 // .text:0x000753E8 size:0x4C mapped:0x806B447C
 void fn_3_753E8(int a) {
