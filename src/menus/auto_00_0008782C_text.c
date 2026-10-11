@@ -719,7 +719,25 @@ void fn_2_8975C(void) {
 
 // .text:0x00089F70 size:0x98
 void fn_2_89F70(void) {
-    return;
+    u8* data = lbl_2_data_2E9F8;
+    SceneTask* task = lbl_803CC1B8;
+    u8* descs;
+
+    switch (lbl_2_bss_33FBCC.mode) {
+    case 0:
+        descs = data + 0xDCC;
+        break;
+    case 1:
+    case 2:
+        descs = data + 0xCCC;
+        break;
+    case 3:
+        descs = data + 0xBAC;
+        break;
+    }
+    fn_80034E20(task, descs);
+    lbl_2_bss_33FBCC.closing = 0;
+    lbl_803CC1B8->func = fn_2_8975C;
 }
 
 // .text:0x0008A008 size:0x81C
