@@ -523,8 +523,8 @@ void fn_800B472C(StaticModel* model) {
 }
 
 // .text:0x800B4908 size:0x8
-void haveActLayoutPointToGeoHeader(void) {
-    return;
+void haveActLayoutPointToGeoHeader(ActorLayout* layout, DODisplayData* geoPalette) {
+    layout->geoPalette = geoPalette;
 }
 
 // .text:0x800B4910 size:0xD4
