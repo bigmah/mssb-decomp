@@ -8,10 +8,20 @@ extern u8 lbl_3_data_21804[];
 extern void fn_3_157DB8(s16);
 extern void fn_3_14C904(void);
 extern void fn_3_90064(s32);
-extern u8 lbl_3_data_2188C[];
+extern f32 lbl_3_data_2188C[];
 extern s16 lbl_3_data_218A8;
 extern f64 lbl_3_rodata_3760;
 extern const f32 lbl_3_rodata_3734; // 0.0f
+extern const f32 lbl_3_rodata_376C; // 1.0f
+extern const f64 lbl_3_rodata_3770; // 45.0
+extern const f64 lbl_3_rodata_3778; // 2.0
+extern const f32 lbl_3_rodata_3780; // 32767.0f
+extern const f64 lbl_3_rodata_3788; // 0.5
+extern const f32 lbl_3_rodata_3790; // pi / 180
+extern f64 sin(f64);
+extern f64 cos(f64);
+extern void* memcpy(void*, const void*, u32);
+extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern void fn_8004C094(void*);
 extern void fn_3_6C854(int, int);
 extern void fn_3_DE4FC(void);
@@ -48,6 +58,16 @@ extern u8 lbl_3_data_218AC[5][3]; // per difficulty (4: multiplayer)
 extern u8 lbl_3_data_21884[][2];     // per item kind: [1] = points
 extern RepBss37400View lbl_3_common_bss_37400;
 extern const f32 lbl_3_rodata_3734; // 0.0f
+extern const f32 lbl_3_rodata_376C; // 1.0f
+extern const f64 lbl_3_rodata_3770; // 45.0
+extern const f64 lbl_3_rodata_3778; // 2.0
+extern const f32 lbl_3_rodata_3780; // 32767.0f
+extern const f64 lbl_3_rodata_3788; // 0.5
+extern const f32 lbl_3_rodata_3790; // pi / 180
+extern f64 sin(f64);
+extern f64 cos(f64);
+extern void* memcpy(void*, const void*, u32);
+extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern void fn_3_152AB4(u8 item, u8 runner, u8 type);
 extern u32 fn_3_90220(s32 idx, s32 off);
 extern void fn_3_1608F0(s32 kind, s32 value, s32 extra);
@@ -194,7 +214,6 @@ f32 fn_3_13DDE0(f32 a, f32 b, u8 mode) {
     return a - b;
 }
 
-#pragma dont_inline on
 // .text:0x0013DEA4 size:0x118 mapped:0x8077CF38
 void fn_3_13DEA4(void) {
     u8* p;
@@ -393,12 +412,12 @@ void fn_3_13E6D4(void) {
     for (i = 15; i < 0x23; i++) {
         if (g_Minigame + 0x193A != NULL) {
             PSVECAdd((Vec*)(g_Minigame + 0xCD0 + i * 12), (Vec*)(g_Minigame + 0x1180 + i * 12), (Vec*)(g_Minigame + 0xCD0 + i * 12));
-            *(f32*)(g_Minigame + 0x1184 + i * 12) = *(f32*)(g_Minigame + 0x1184 + i * 12) + ((f32*)lbl_3_data_2188C)[4];
+            *(f32*)(g_Minigame + 0x1184 + i * 12) = *(f32*)(g_Minigame + 0x1184 + i * 12) + lbl_3_data_2188C[4];
             if (*(f32*)(g_Minigame + 0xCD4 + i * 12) < lbl_3_rodata_3760) {
                 *(f32*)(g_Minigame + 0xCD4 + i * 12) = lbl_3_rodata_3768;
-                *(f32*)(g_Minigame + 0x1180 + i * 12) = *(f32*)(g_Minigame + 0x1180 + i * 12) * ((f32*)lbl_3_data_2188C)[5];
-                *(f32*)(g_Minigame + 0x1188 + i * 12) = *(f32*)(g_Minigame + 0x1188 + i * 12) * ((f32*)lbl_3_data_2188C)[5];
-                *(f32*)(g_Minigame + 0x1184 + i * 12) = *(f32*)(g_Minigame + 0x1184 + i * 12) * -((f32*)lbl_3_data_2188C)[6];
+                *(f32*)(g_Minigame + 0x1180 + i * 12) = *(f32*)(g_Minigame + 0x1180 + i * 12) * lbl_3_data_2188C[5];
+                *(f32*)(g_Minigame + 0x1188 + i * 12) = *(f32*)(g_Minigame + 0x1188 + i * 12) * lbl_3_data_2188C[5];
+                *(f32*)(g_Minigame + 0x1184 + i * 12) = *(f32*)(g_Minigame + 0x1184 + i * 12) * -lbl_3_data_2188C[6];
             }
             t = *(s16*)(g_Minigame + 0x17C8 + i * 2) + 1;
             *(s16*)(g_Minigame + 0x17C8 + i * 2) = t;
@@ -408,6 +427,66 @@ void fn_3_13E6D4(void) {
         }
     }
 }
+
+// Single-precision sin/cos; the original inlines these (each call result is
+// rounded to f32 before use).
+#pragma dont_inline off
+static inline f32 sinF(f32 x) {
+    return sin(x);
+}
+
+static inline f32 cosF(f32 x) {
+    return cos(x);
+}
+
+// .text:0x0013E7D4 size:0x25C mapped:0x8077D868
+// Throw out coins from player p's runner: one per two points (at most 5), into
+// free slots 15..34, flying in the runner's direction +-45 degrees.
+void fn_3_13E7D4(s32 p) {
+    RepRunnerView* r;
+    s32 n;
+    u32 i;
+    Vec dir;
+    f32 ang;
+    f32 speed;
+    f32 vy;
+    r = &g_Runners[REP_MG->_1900[p]];
+    n = REP_MG->points[p] / 2;
+    if (n == 0) {
+        return;
+    }
+    if (n > 5) {
+        n = 5;
+    }
+    for (i = 15; i < 35; i++) {
+        if (REP_MG->itemState[i] == 1) {
+            continue;
+        }
+        REP_MG->itemState[i] = 1;
+        REP_MG->coinPos[i].x = r->pos.x;
+        REP_MG->coinPos[i].y = r->pos.y;
+        REP_MG->coinPos[i].z = r->pos.z;
+        memcpy(&dir, &r->_018, sizeof(Vec));
+        dir.y = lbl_3_rodata_3734;
+        if (!PSVECMag(&dir)) {
+            dir.z = lbl_3_rodata_376C;
+        }
+        PSVECNormalize(&dir, &dir);
+        ang = lbl_3_rodata_3790 * (f32)(lbl_3_rodata_3770 * (lbl_3_rodata_3778 * ((f32)rand() / lbl_3_rodata_3780 - lbl_3_rodata_3788)));
+        dir.x = dir.x * cosF(ang) + -dir.z * sinF(ang);
+        dir.z = dir.x * sinF(ang) + dir.z * cosF(ang);
+        speed = RandomF32_Game_Range(lbl_3_data_2188C[2], lbl_3_data_2188C[3]);
+        vy = RandomF32_Game_Range(lbl_3_data_2188C[0], lbl_3_data_2188C[1]);
+        REP_MG->coinVel[i].x = speed * dir.x;
+        REP_MG->coinVel[i].y = vy;
+        REP_MG->coinVel[i].z = speed * dir.z;
+        REP_MG->coinFrames[i] = 0;
+        if (--n == 0) {
+            break;
+        }
+    }
+}
+#pragma dont_inline on
 
 // .text:0x0013EA30 size:0x214 mapped:0x8077DAC4
 // Award items lying near a runner: each item on the field goes to a random runner
@@ -521,7 +600,7 @@ void fn_3_13F484(void) {
 
 // .text:0x0013F6C8 size:0x11C mapped:0x8077E75C
 void fn_3_13F6C8(void) {
-    u8* d;
+    f32* d;
     u32 i;
     u8* a;
     u8* b;
@@ -531,20 +610,20 @@ void fn_3_13F6C8(void) {
     if (g_Minigame[0x190B] == 0) {
         fn_3_13F484();
         fn_3_13EA30();
-        d = lbl_3_data_2188C;
         a = g_Minigame + 0xB4;
+        d = lbl_3_data_2188C;
         b = g_Minigame + 0x1E;
         c = g_Minigame + 0xF;
         fl = g_Minigame + 0x193A;
         for (i = 15; i < 0x23; i++, a += 0xC, b += 2, c += 1) {
             if (fl != NULL) {
                 PSVECAdd((Vec*)(a + 0xCD0), (Vec*)(a + 0x1180), (Vec*)(a + 0xCD0));
-                *(f32*)(a + 0x1184) = *(f32*)(a + 0x1184) + ((f32*)d)[4];
+                *(f32*)(a + 0x1184) = *(f32*)(a + 0x1184) + d[4];
                 if (*(f32*)(a + 0xCD4) < lbl_3_rodata_3760) {
                     *(f32*)(a + 0xCD4) = lbl_3_rodata_3768;
-                    *(f32*)(a + 0x1180) = *(f32*)(a + 0x1180) * ((f32*)d)[5];
-                    *(f32*)(a + 0x1188) = *(f32*)(a + 0x1188) * ((f32*)d)[5];
-                    *(f32*)(a + 0x1184) = *(f32*)(a + 0x1184) * -((f32*)d)[6];
+                    *(f32*)(a + 0x1180) = *(f32*)(a + 0x1180) * d[5];
+                    *(f32*)(a + 0x1188) = *(f32*)(a + 0x1188) * d[5];
+                    *(f32*)(a + 0x1184) = *(f32*)(a + 0x1184) * -d[6];
                 }
                 t = *(s16*)(b + 0x17C8) + 1;
                 *(s16*)(b + 0x17C8) = t;

@@ -8,7 +8,10 @@
 // One g_Runners entry (InMemRunnerType, size 0x154), only the fields used here.
 // This unit declares g_Runners as bytes, so it reaches the fields through this view.
 typedef struct RepRunnerView {
-    /*0x000*/ u8 _000[0x64];
+    /*0x000*/ Vec pos;
+    /*0x00C*/ u8 _00C[0x18 - 0xC];
+    /*0x018*/ Vec _018; // movement direction
+    /*0x024*/ u8 _024[0x64 - 0x24];
     /*0x064*/ f32 fractionalBasesRan;
     /*0x068*/ u8 _068[0xE2 - 0x68];
     /*0x0E2*/ s16 _0E2;
@@ -108,7 +111,7 @@ void fn_3_13E21C(RepTarget* t);
 void fn_3_13E3A4(RepTarget* t);
 void fn_3_13E670(void);
 void fn_3_13E6D4(void);
-void fn_3_13E7D4(void);
+void fn_3_13E7D4(s32 p);
 void fn_3_13EA30(void);
 void fn_3_13EC44(s32 type);
 void fn_3_13F484(void);
