@@ -1,4 +1,22 @@
 #include "main/file_80069BDC.h"
+#include "main/file_800B0724.h"
+#include "Dolphin/vi.h"
+#include "Dolphin/gx.h"
+
+#include "string.h"
+
+extern AnimEventCallback lbl_803CBD38;
+extern AnimEventCallback lbl_803CBD3C;
+extern GXRenderModeObj* lbl_803CBD34;
+extern GXRenderModeObj lbl_80109250;
+extern GXRenderModeObj lbl_8010928C;
+extern u8 lbl_80366158[0x30]; // TODO type
+extern s16 lbl_80109400[8];
+extern s16 lbl_80109410[8];
+extern f32 lbl_801093E8[6];
+extern s16 lbl_803CB8E0[4];
+extern s16 lbl_803CB8E8;
+extern f32 lbl_8010B590[4][7];
 
 // .text:0x80069BDC size:0x5B8
 void fn_80069BDC(void) {
@@ -139,8 +157,8 @@ void fn_8006C6C4(void) {
 }
 
 // .text:0x8006C79C size:0x28
-void fn_8006C79C(void) {
-    return;
+BOOL fn_8006C79C(s32 idx) {
+    return (s8)gChallengeState.trackers[idx]._31 == 1;
 }
 
 // .text:0x8006C7C4 size:0x214
