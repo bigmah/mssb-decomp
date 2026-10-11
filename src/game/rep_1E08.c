@@ -1461,7 +1461,148 @@ f32 fn_3_BFDA4(void* kv, s32 n, f32 t, s32 len, u8 idx, u8* out) {
 #pragma dont_inline reset
 
 // .text:0x000C0134 size:0x63C mapped:0x806FF1C8
-void fn_3_C0134(void) {
-    return;
+// Bat swing trail state (lbl_3_bss_9950).
+typedef struct {
+    u8 _00[2];
+    /* 0x002 */ s16 count;  // points in the trail (lbl_3_bss_9952)
+    /* 0x004 */ s16 frame;  // 0..15
+    /* 0x008 */ s32 alpha;
+    /* 0x00C */ u8 state;   // 0 start, 1 fade in, 2 hold, 3 fade out (lbl_3_bss_995C)
+    u8 _0D[0x1E4 - 0xD];
+    /* 0x1E4 */ Vec ptsA[18];
+    /* 0x2BC */ Vec ptsB[18];
+    /* 0x394 */ Vec prevA;
+    /* 0x3A0 */ Vec prevB;
+    /* 0x3AC */ s16 skip;   // toggles 0/1 every frame
+} SwingTrail;
+extern SwingTrail lbl_3_bss_9950;
+extern s32 lbl_3_data_115FC[7]; // two bat-local points (1/100000 units) and the bone slot
+extern u8 g_Batter[];
+extern struct GameActor** fn_800111D8(struct CharActor* actor); // main/file_8000F150.h
+extern s32 fn_8005268C(void);
+extern void* fn_80052734(s32 index);
+extern void* memmove(void*, const void*, u32);
+extern void fn_3_310C(Vec* out, Vec* in, s32 n, s32 outCount); // game/rep_140.c: spline through n points
+// NONMATCHING 74%: scheduling of the int->float conversions, original keeps &ptsA/&prevA in regs (no folded offsets), regalloc
+#if NONMATCHING
+s32 fn_3_C0134(void) {
+    Vec splB[48];
+    Vec splA[48];
+    Vec local[2];
+    Vec tmp;
+    SwingTrail* w = &lbl_3_bss_9950;
+    u8* o;
+    GameBone* bone;
+    s32 who;
+    s32 i;
+    s32 n;
+    s32 alpha;
+    u16 slot;
+    who = (s8)*(s16*)(g_Batter + 0x62); // TODO type: InMemBatterType
+    for (i = 0; i < 13; i++) {
+        o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+        if (o != NULL && (s8)o[0x252] == who) {
+            break;
+        }
+    }
+    if (i >= 13) {
+        return 1;
+    }
+    bone = (GameBone*)fn_800111D8((struct CharActor*)o);
+    switch (w->state) {
+    case 0:
+        w->alpha = 0;
+        w->frame = 0;
+        w->count = 1;
+        w->skip = 0;
+        w->state++;
+        break;
+    case 1:
+        if (lbl_80366158[0x28] == 0) {
+            w->alpha += (lbl_80366158[0x28] == 0) * 16;
+            w->count += !(w->skip | (lbl_80366158[0x28] != 0));
+            if (w->alpha >= 0xFF) {
+                w->alpha = 0xFF;
+                w->state++;
+            }
+        }
+        break;
+    case 3:
+        if (lbl_80366158[0x28] == 0) {
+            w->alpha -= (lbl_80366158[0x28] == 0) * 16;
+            w->count -= !(w->skip | (lbl_80366158[0x28] != 0));
+            if (w->count < 2) {
+                w->alpha = 0;
+                w->state = 0;
+                return 1;
+            }
+        }
+        break;
+    }
+    if (lbl_80366158[0x28] == 0) {
+        slot = *(u16*)(o + 0x162 + lbl_3_data_115FC[6] * 2); // TODO type: CharActor bone slots
+        if (slot != 0xFFFF) {
+            local[0].x = (f32)lbl_3_data_115FC[0] / lbl_3_rodata_1EC4;
+            local[0].y = (f32)lbl_3_data_115FC[1] / lbl_3_rodata_1EC4;
+            local[0].z = (f32)lbl_3_data_115FC[2] / lbl_3_rodata_1EC4;
+            local[1].x = (f32)lbl_3_data_115FC[3] / lbl_3_rodata_1EC4;
+            local[1].y = (f32)lbl_3_data_115FC[4] / lbl_3_rodata_1EC4;
+            local[1].z = (f32)lbl_3_data_115FC[5] / lbl_3_rodata_1EC4;
+            bone = (*(GameActor**)bone)->boneArray[slot];
+            if (w->count > 1 && w->skip == 0 && lbl_80366158[0x28] == 0) {
+                w->ptsA[0].x = w->prevA.x;
+                w->ptsA[0].y = w->prevA.y;
+                w->ptsA[0].z = w->prevA.z;
+                w->ptsB[0].x = w->prevB.x;
+                w->ptsB[0].y = w->prevB.y;
+                w->ptsB[0].z = w->prevB.z;
+                memmove(&w->ptsA[1], &w->ptsA[0], (w->count - 1) * sizeof(Vec));
+                memmove(&w->ptsB[1], &w->ptsB[0], (w->count - 1) * sizeof(Vec));
+            }
+            PSMTXMultVec(bone->forwardMtx, &local[0], &tmp);
+            w->ptsA[0].x = *(f32*)(o + 0x34) + tmp.x; // TODO type: CharActor position
+            w->ptsA[0].y = *(f32*)(o + 0x38) + tmp.y;
+            w->ptsA[0].z = *(f32*)(o + 0x3C) + tmp.z;
+            PSMTXMultVec(bone->forwardMtx, &local[1], &tmp);
+            w->ptsB[0].x = *(f32*)(o + 0x34) + tmp.x;
+            w->ptsB[0].y = *(f32*)(o + 0x38) + tmp.y;
+            w->ptsB[0].z = *(f32*)(o + 0x3C) + tmp.z;
+            if (w->skip == 0 && lbl_80366158[0x28] == 0) {
+                w->prevA.x = w->ptsA[0].x;
+                w->prevA.y = w->ptsA[0].y;
+                w->prevA.z = w->ptsA[0].z;
+                w->prevB.x = w->ptsB[0].x;
+                w->prevB.y = w->ptsB[0].y;
+                w->prevB.z = w->ptsB[0].z;
+            }
+        }
+        w->frame = (w->frame + (lbl_80366158[0x28] == 0)) % 16;
+    }
+    if (w->count >= 3) {
+        fn_3_310C(splA, w->ptsA, w->count, w->count * 3 + 1);
+        fn_3_310C(splB, w->ptsB, w->count, w->count * 3 + 1);
+        GXLoadPosMtxImm((f32(*)[4])((u8*)fn_80052734(fn_8005268C()) + 0x40), 0);
+        fn_80033B58(*(void**)(lbl_3_common_bss_35154 + 4), 1, 0, 0);
+        GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+        GXSetCullMode(GX_CULL_NONE);
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+        alpha = w->alpha;
+        n = (w->count - 1) * 3;
+        GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT0, (u16)((n + 1) * 2));
+        for (i = 0; i < n + 1; i++) {
+            u32 col = (alpha - (i * alpha) / n) | 0xFFFFFF00;
+            f32 u = (f32)i / (f32)n;
+            GXPosition3f32(splA[i].x, splA[i].y, splA[i].z);
+            GXColor1u32(col);
+            GXTexCoord2f32(u, 0.0f);
+            GXPosition3f32(splB[i].x, splB[i].y, splB[i].z);
+            GXColor1u32(col);
+            GXTexCoord2f32(u, 1.0f);
+        }
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    }
+    w->skip = (w->skip + 2 - (lbl_80366158[0x28] == 0)) % 2;
+    return 0;
 }
+#endif
 
