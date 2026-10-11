@@ -533,6 +533,9 @@ void fn_3_130288(void) {
 #endif
 
 // .text:0x001307D0 size:0x2B0 mapped:0x8076F864
+// NONMATCHING 99%: registers only; the original gives i/b/base/table r29/r28/r27/r26,
+// ours r26/r27/r29/r28 (fn_3_12F9D4 and fn_3_12F28C are inlined in both).
+#if NONMATCHING
 void fn_3_1307D0(void) {
     BB_barrelStruct* b;
     s32 i;
@@ -558,6 +561,7 @@ void fn_3_1307D0(void) {
     }
     fn_3_130288();
 }
+#endif
 
 // .text:0x00130A80 size:0x4C mapped:0x8076FB14
 void fn_3_130A80(void) {
