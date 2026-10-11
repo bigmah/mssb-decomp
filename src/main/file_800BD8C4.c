@@ -43,8 +43,37 @@ void fn_800BDA94(void) {
 }
 
 // .text:0x800BDC88 size:0xEC
-void fn_800BDC88(void) {
-    return;
+void fn_800BDC88(ActorObjectTable* table, u16 index, u16 id, void* layout, void* animBank, s32 arg5) {
+
+    fn_800B4048(&table->objects[index], layout, index);
+    fn_800B4724(table->objects[index].actor, arg5);
+    table->objects[index].seqNum = 0;
+    table->objects[index].unk54 = lbl_803CD064;
+    table->objects[index].unk64 = 0;
+    table->objects[index].unk66 = 0;
+    table->objects[index].unk68 = 0;
+    table->objects[index].numLights = 0;
+    table->objects[index].lights[0] = NULL;
+    table->objects[index].lights[1] = NULL;
+    table->objects[index].lights[2] = NULL;
+    table->objects[index].lights[3] = NULL;
+    table->objects[index].lights[4] = NULL;
+    table->objects[index].lights[5] = NULL;
+    table->objects[index].lights[6] = NULL;
+    table->objects[index].lights[7] = NULL;
+    table->objects[index].id = id;
+    table->objects[index].animateBones = 1;
+    if (animBank != NULL) {
+        table->objects[index].animBank = animBank;
+        table->objects[index].setAnimation = 1;
+        table->objects[index].setSpeed = 1;
+        table->objects[index].setTime = 1;
+        table->objects[index].speed = lbl_803CD060;
+        if (table->objects[index].actor != NULL) {
+            table->objects[index].actor->unk99 = 0;
+        }
+    }
+    table->objects[index].callback = NULL;
 }
 
 // .text:0x800BDD74 size:0x118
