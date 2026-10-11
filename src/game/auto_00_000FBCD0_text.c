@@ -65,7 +65,36 @@ void fn_3_FBDAC(int scene) {
 
 // .text:0x000FBE24 size:0x4D8 mapped:0x8073AEB8
 void fn_3_FBE24(void) {
-    return;
+    switch (g_Stats._3C) {
+    case 2:
+    case 9:
+        fn_3_FBDAC(lbl_3_data_1DAE4[0][random_fn_3_9EE24(3)]);
+        break;
+    case 3:
+    case 4:
+    case 10:
+        fn_3_FBDAC(lbl_3_data_1DAE4[2][random_fn_3_9EE24(3)]);
+        break;
+    case 5:
+    case 11:
+        fn_3_FBDAC(lbl_3_data_1DAE4[3][random_fn_3_9EE24(3)]);
+        break;
+    case 6:
+        fn_3_FBDAC(lbl_3_data_1DAE4[4][1]);
+        break;
+    case 7:
+        fn_3_FBDAC(lbl_3_data_1DAE4[5][random_fn_3_9EE24(3)]);
+        break;
+    case 8:
+        fn_3_FBDAC(lbl_3_data_1DAE4[6][random_fn_3_9EE24(3)]);
+        break;
+    case 13:
+        fn_3_FBDAC(lbl_3_data_1DAE4[1][random_fn_3_9EE24(3)]);
+        break;
+    default:
+        fn_3_FBDAC(lbl_3_data_1DAE4[0][random_fn_3_9EE24(3)]);
+        break;
+    }
 }
 
 // .text:0x000FC2FC size:0x14C mapped:0x8073B390
