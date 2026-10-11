@@ -415,8 +415,8 @@ void fn_800BEC00(s32 reverse) {
 }
 
 // .text:0x800BEBCC size:0x34
-void fn_800BEBCC(void) {
-    return;
+void fn_800BEBCC(u8 index, Vec dir) {
+    lbl_803009F8.cameras[index].dir = dir;
 }
 
 // .text:0x800BEC30 size:0x3D8
