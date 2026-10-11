@@ -485,7 +485,7 @@ void fn_3_B5F7C(void) {
         return;
     }
     fn_3_75560();
-    if (g_Practice.__0x1e1padding[4] != 0) {
+    if (g_Practice._1DB != 0) {
         atBat_batter();
         fn_3_8A958();
     }

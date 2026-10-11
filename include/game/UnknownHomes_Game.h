@@ -922,7 +922,8 @@ typedef struct _PracticeStruct {
     /*0x19A*/ u8 subMenuCursor;
     artificial_padding(0x19a, 0x19e, u8);
     /*0x19E*/ u8 pauseMenuLoading; // unsure
-    artificial_padding(0x19e, 0x1a1, u8);
+    /*0x19F*/ u8 _19F;
+    /*0x1A0*/ u8 _1A0;
     /*0x1A1*/ u8 aIEnabled;
     /*0x1A2*/ u8 practiceBatterHandedness; // unsure
     /*0x1A3*/ u8 freePracticeInd_writeOnly;
@@ -930,7 +931,9 @@ typedef struct _PracticeStruct {
     /*0x1AA*/ u8 transitioningIndicator; // unsure
     artificial_padding(0x1aa, 0x1af, u8);
     /*0x1AF*/ u8 returnToPracticeMenuState;
-    artificial_padding(0x1af, 0x1c2, u8);
+    /*0x1B0*/ u8 _1B0;
+    /*0x1B1*/ u8 _1B1;
+    /*0x1B2*/ u8 levelCleared[4][4]; // [practiceType_2][practiceLevel]
     /*0x1C2*/ s8 instructionNumber;
     /*0x1C3*/ u8 readyToMoveToNextInstruction; // unsure
     /*0x1C4*/ u8 practice_runner_countInputForMashing;
@@ -952,7 +955,16 @@ typedef struct _PracticeStruct {
     /*0x1D4*/ u8 loadingGuidedPractice; // unsure
     /*0x1D5*/ u8 _1D5;
     /*0x1D6*/ u8 practiceLevel_2;
-    artificial_padding(0x1d6, 0x1e1, u8);
+    /*0x1D7*/ u8 _1D7;
+    /*0x1D8*/ u8 _1D8;
+    /*0x1D9*/ u8 _1D9;
+    /*0x1DA*/ u8 _1DA;
+    /*0x1DB*/ u8 _1DB;
+    /*0x1DC*/ u8 _1DC;
+    /*0x1DD*/ u8 _1DD;
+    /*0x1DE*/ u8 _1DE;
+    /*0x1DF*/ u8 _1DF;
+    /*0x1E0*/ u8 _1E0;
     /*0x1E1*/ u8 hitVariablesSetIndicator;
     /*0x1E2*/ u8 _1E2;
     /*0x1E3*/ u8 aiBuntIndicator; // unsure
