@@ -461,10 +461,29 @@ void fn_3_148FD0(u8* a, u8* p) {
 #endif
 #pragma dont_inline on
 
+// NONMATCHING 92% (measured with 148FD0 unwrapped): 148FD0 inlined; the hoisted float constants use one more saved FPR (f22) and the saved GPRs are shifted by one
 // .text:0x00149340 size:0x41C mapped:0x807883D4
-void fn_3_149340(void) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_149340(u8* o) {
+    u8* p;
+    u32 i;
+    s32 q;
+    p = *(u8**)(o + 0xC);
+    i = 0;
+    do {
+        *(s16*)(p + 0x4A) = i;
+        *(f32*)(p + 0x38) = (f32)*(s32*)(lbl_3_data_26E7C + 0xC) / lbl_3_rodata_3930;
+        *(f32*)(p + 0x3C) = (f32)*(s32*)(lbl_3_data_26E7C + 0x10) / lbl_3_rodata_3930;
+        fn_3_148FD0(o, p);
+        q = *(s32*)lbl_3_data_26E7C / 5;
+        *(s16*)(p + 0x48) = ((i % 5) * q + rand() % q) * 2;
+        i++;
+        p = *(u8**)p;
+    } while (p != NULL);
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x0014975C size:0x44C mapped:0x807887F0
 void fn_3_14975C(void) {
