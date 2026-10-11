@@ -280,9 +280,13 @@ typedef struct CharMgr {
 extern CharMgr lbl_8036E548;
 extern CharActor lbl_8036C4FC[13]; // backup of lbl_8036E548.actors
 
+struct CharQueueTask;
+
 // Task object (lbl_803CC1B8) running fn_800177B4.
 typedef struct CharLoadTask {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ struct CharQueueTask* parent;
+    /*0x10*/ u8 _10[0x4];
     /*0x14*/ u8 state;
     /*0x15*/ u8 index;
     /*0x16*/ u8 kind;
@@ -409,6 +413,8 @@ void fn_8001F8A4(void);
 s32 fn_80014A18(void);
 
 void fn_80014204(s32 count);
+
+s32 fn_8001594C(s32 team);
 
 void fn_8001B200(void);
 

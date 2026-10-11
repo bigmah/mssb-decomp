@@ -12,7 +12,9 @@ typedef struct GameSettingsView {
     /*0x07*/ u8 GameModeSelected;
     /*0x08*/ u8 _08;
     /*0x09*/ u8 StadiumID;
-    /*0x0A*/ u8 _0A[0x7];
+    /*0x0A*/ u8 _0A[0x4];
+    /*0x0E*/ u8 _0E;
+    /*0x0F*/ u8 _0F[0x2];
     /*0x11*/ u8 minigamesEnabled;
     /*0x12*/ u8 _12[0x54 - 0x12];
     /*0x54*/ u8 _54;
@@ -958,8 +960,8 @@ void fn_80015468(void) {
 }
 
 // .text:0x8001594C size:0x9F8
-void fn_8001594C(void) {
-    return;
+s32 fn_8001594C(s32 team) {
+    return 0;
 }
 
 // .text:0x80016344 size:0x3CC
@@ -2399,9 +2401,91 @@ void fn_8001A3FC(s32 arg) {
 #endif
 
 // .text:0x8001A6B0 size:0x3F4
+// NONMATCHING 95%: mixed saved/rematerialised lbl_8036E548 base registers
+#if NONMATCHING
 void challengeMapRelated(void) {
-    return;
+    CharLoadTask* task = lbl_803CC1B8;
+    CharLoadTask* child;
+    CharQueueTask* parent;
+    Vec dir2;
+    Vec dir;
+    f32 mag;
+    u8* base;
+    void** raw;
+    s32 i;
+
+    if (lbl_8036E548._3082 != 0) {
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        lbl_8036E548.state = 0;
+        lbl_8036E548._2D7A[1] = 0;
+        lbl_8036E548._2D7C = 0;
+        lbl_8036E548._2D7A[0] = 0;
+        task->kind = 0;
+        task->_17[1] = 0;
+        task->state = 1;
+        break;
+    case 1:
+        if (fn_8001594C(g_d_GameSettings._0E ^ 1) != 0) {
+            task->state = 2;
+        }
+        break;
+    case 2:
+        child = fn_800B0A5C_insertQueue(fn_800188C0, 0);
+        child->state = 0;
+        child->kind = 0;
+        child->_17[0] = 0xFF;
+        lbl_8036E548._307B = 1;
+        task->state++;
+        break;
+    case 3:
+        if (lbl_8036E548._307B == 0) {
+            task->state = 6;
+        }
+        break;
+    case 6:
+        dir.x = -lbl_80367318[0].x;
+        dir.y = -lbl_80367318[0].y;
+        dir.z = -lbl_80367318[0].z;
+        mag = dolsqrtf2(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+        dir.x /= mag;
+        lbl_8036E548._3087 = 1;
+        dir.y /= mag;
+        dir.z /= mag;
+        fn_8003A540(0);
+        lbl_8036E548._3086 = 1;
+        DrawShadows(1);
+        dir2 = dir;
+        fn_800BEBCC(0, &dir2);
+        fn_800BF048(fn_8001AAF0);
+        fn_800BF058(fn_8001AB10);
+        // TODO type: the stadium file header holds offsets, relocated in place.
+        base = (u8*)lbl_8036E548.stadiumFiles;
+        raw = (void**)base;
+        for (i = 0; i < 80; i++) {
+            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (u32)raw[i];
+        }
+        lbl_8036E548._3082 = 0;
+        lbl_8036E548._307C = 0;
+        lbl_8036E548._307D = 0;
+        fn_8001F8A4();
+        task->state++;
+        break;
+    case 7:
+        challengeMapMaybe();
+        task->state++;
+        break;
+    case 8:
+        lbl_8036E548._307C = 1;
+        parent = task->parent;
+        parent->_10 = 1;
+        fn_800B0A14_removeQueue(parent);
+        break;
+    }
 }
+#endif
 
 // .text:0x8001AAA4 size:0x4C
 void fn_8001AAA4(void) {
