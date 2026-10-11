@@ -356,8 +356,9 @@ void fn_3_C298C(void) {
     } while (i < 6);
 }
 
-// 48-line diff, all f-reg numbering (orig: w=f29 lo=f30 h/hi=f31; ours w=f30 h=f29 lo=f31)
 // .text:0x000C2AA0 size:0x1E0 mapped:0x80701B34
+// NONMATCHING 94%: all f-reg numbering (orig: w=f29 lo=f30 h/hi=f31; ours w=f30 h=f29 lo=f31)
+#if NONMATCHING
 u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h) {
     Vec out;
     f32 hw;
@@ -409,6 +410,7 @@ u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h) {
     }
     return 1;
 }
+#endif
 
 // .text:0x000C2C80 size:0x25C mapped:0x80701D14
 void fn_3_C2C80(void* pv, u8* h) {
