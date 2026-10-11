@@ -98,6 +98,21 @@ void fn_3_FBE24(void) {
 }
 
 // .text:0x000FC2FC size:0x14C mapped:0x8073B390
-void fn_3_FC2FC(void) {
-    return;
+// Spring step: pulls pos toward anchor (rest length restLen) and returns the new pos.
+Vec fn_3_FC2FC(Vec* pos, Vec* anchor, Vec* vel, f32 dt, f32 k, f32 damping, f32 restLen) {
+    Vec diff;
+    Vec velScaled;
+    Vec rel;
+    f32 dist;
+    f32 force;
+
+    PSVECSubtract(pos, anchor, &diff);
+    dist = PSVECDistance(pos, anchor);
+    PSVECSubtract(vel, anchor, &rel);
+    PSVECScale(&rel, dt, &velScaled);
+    force = k * (restLen - dist) + damping * (PSVECDotProduct(&velScaled, &diff) / dist);
+    PSVECNormalize(&diff, &diff);
+    PSVECScale(&diff, force * dt, &diff);
+    PSVECAdd(pos, &diff, pos);
+    return *pos;
 }
