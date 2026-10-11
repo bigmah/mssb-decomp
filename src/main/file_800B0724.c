@@ -529,9 +529,172 @@ void fn_800B1468(void) {
 }
 
 // .text:0x800B1500 size:0x9BC
-void DrawSprite(void) {
-    return;
+// NONMATCHING 94%: register allocation (verts/tex/dirty) differs, and the original evaluates an unused
+// "all corners degenerate?" float check on verts (no effect, omitted here)
+#if NONMATCHING
+// Appends a primitive to the current layer's display list, first writing any state
+// (projection, matrix, blend, alpha test, Z mode, texture) that differs from what the
+// list already has. Consecutive quads with no state change are merged into one draw.
+void DrawSprite(s32 prim, QuadVtx* verts, s32 count, SpriteTexInfo* tex, u16 width, u16 height) {
+    BOOL dirty = FALSE;
+    BOOL changed;
+    s32 alphaTest;
+
+    if (tex != NULL) {
+        lbl_803CC0F0 = lbl_803CC1C0;
+        dirty = fn_800B1EBC(tex, 0, width, height);
+        lbl_803CC0F0 = NULL;
+    }
+
+    if (memcmp(&lbl_803CBB38->proj, &lbl_803CBB34->proj, sizeof(SpriteProj)) != 0) {
+        memcpy(&lbl_803CBB38->proj, &lbl_803CBB34->proj, sizeof(SpriteProj));
+        SpriteReserve(0x21);
+        // XF load: 7 projection registers at 0x1020
+        *lbl_803CC1C0->pDisplayListData = 0x10;
+        *(u16*)(lbl_803CC1C0->pDisplayListData + 1) = 6;
+        *(u16*)(lbl_803CC1C0->pDisplayListData + 3) = 0x1020;
+        lbl_803CC1C0->pDisplayListData += 5;
+        *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[0];
+        lbl_803CC1C0->pDisplayListData += 4;
+        *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[1];
+        lbl_803CC1C0->pDisplayListData += 4;
+        *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[2];
+        lbl_803CC1C0->pDisplayListData += 4;
+        *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[3];
+        lbl_803CC1C0->pDisplayListData += 4;
+        *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[4];
+        lbl_803CC1C0->pDisplayListData += 4;
+        *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[5];
+        lbl_803CC1C0->pDisplayListData += 4;
+        *(u32*)lbl_803CC1C0->pDisplayListData = lbl_803CBB34->proj.type;
+        lbl_803CC1C0->pDisplayListData += 4;
+        changed = TRUE;
+    } else {
+        changed = FALSE;
+    }
+    dirty |= changed;
+
+    if (memcmp(lbl_803CBB38->mtx, lbl_803CBB34->mtx, sizeof(Mtx)) != 0) {
+        PSMTXCopy(lbl_803CBB34->mtx, lbl_803CBB38->mtx);
+        SpriteReserve(0x35);
+        // XF load: position matrix 0 (12 registers at 0)
+        *lbl_803CC1C0->pDisplayListData = 0x10;
+        *(u16*)(lbl_803CC1C0->pDisplayListData + 1) = 0xB;
+        *(u16*)(lbl_803CC1C0->pDisplayListData + 3) = 0;
+        lbl_803CC1C0->pDisplayListData += 5;
+        memcpy(lbl_803CC1C0->pDisplayListData, lbl_803CBB34->mtx, sizeof(Mtx));
+        changed = TRUE;
+        lbl_803CC1C0->pDisplayListData += sizeof(Mtx);
+    } else {
+        changed = FALSE;
+    }
+    dirty |= changed;
+
+    if (lbl_803CBB38->blendMode != lbl_803CBB34->blendMode) {
+        lbl_803CBB38->blendMode = lbl_803CBB34->blendMode;
+        SpriteReserve(0xA);
+        lbl_803CC0F0 = lbl_803CC1C0;
+        switch (lbl_803CBB34->blendMode) {
+        case 0:
+            fn_800A1BB0(GX_BM_NONE, GX_BL_ZERO, GX_BL_ZERO, GX_LO_CLEAR);
+            break;
+        case 1:
+            fn_800A1BB0(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+            break;
+        case 2:
+            fn_800A1BB0(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+            break;
+        case 3:
+            fn_800A1BB0(GX_BM_SUBTRACT, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+            break;
+        }
+        changed = TRUE;
+    } else {
+        changed = FALSE;
+    }
+    dirty |= changed;
+
+    alphaTest = 0;
+    if (lbl_803CBB34->noAlphaTest) {
+        alphaTest = 2;
+    }
+    if (lbl_803CBB38->alphaTest == alphaTest) {
+        changed = FALSE;
+    } else {
+        lbl_803CBB38->alphaTest = alphaTest;
+        if (alphaTest != 0) {
+            if (lbl_803CBB38->zMode != 0x40000013) {
+                lbl_803CBB38->zMode = 0x40000013;
+                SpriteReserve(5);
+                *lbl_803CC1C0->pDisplayListData = 0x61;
+                *(u32*)(lbl_803CC1C0->pDisplayListData + 1) = 0x40000013;
+                lbl_803CC1C0->pDisplayListData += 5;
+            }
+            SpriteReserve(5);
+            lbl_803CC0F0 = lbl_803CC1C0;
+            fn_800A1E3C(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+            lbl_803CC0F0 = NULL;
+        } else {
+            if (lbl_803CBB38->zMode != lbl_803CBB34->zMode) {
+                lbl_803CBB38->zMode = lbl_803CBB34->zMode;
+                SpriteReserve(5);
+                *lbl_803CC1C0->pDisplayListData = 0x61;
+                *(u32*)(lbl_803CC1C0->pDisplayListData + 1) = lbl_803CBB34->zMode;
+                lbl_803CC1C0->pDisplayListData += 5;
+            }
+            SpriteReserve(5);
+            lbl_803CC0F0 = lbl_803CC1C0;
+            fn_800A1E3C(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
+            lbl_803CC0F0 = NULL;
+        }
+        changed = TRUE;
+    }
+    {
+        BOOL zChanged = changed;
+        if (!changed) {
+            zChanged = SpriteSyncZMode();
+        }
+        dirty |= zChanged;
+    }
+
+    if ((lbl_803CBB34->textured == 1) == !tex) {
+        u8* cmd = lbl_803CBB20;
+        if (tex == NULL) {
+            cmd = lbl_803CBB18;
+        }
+        SpriteReserve(5);
+        memcpy(lbl_803CC1C0->pDisplayListData, cmd, 5);
+        dirty = TRUE;
+        lbl_803CC1C0->pDisplayListData += 5;
+        lbl_803CBB34->textured = (tex != NULL);
+    }
+
+    if (lbl_803CBB34->primOffset >= 0 && !dirty) {
+        u8* hdr = lbl_803CC1C0->begin + lbl_803CBB34->primOffset;
+        u16 n = *(u16*)(hdr + 1);
+        if (hdr[0] == GX_QUADS && prim == GX_QUADS &&
+            lbl_803CC1C0->pDisplayListData == hdr + n * sizeof(QuadVtx) + 3 && n < 0xFFFF - count) {
+            s32 size = count * sizeof(QuadVtx);
+            SpriteReserve(size);
+            hdr = lbl_803CC1C0->begin + lbl_803CBB34->primOffset;
+            memcpy(lbl_803CC1C0->pDisplayListData, verts, size);
+            lbl_803CC1C0->pDisplayListData += size;
+            *(u16*)(hdr + 1) += count;
+            return;
+        }
+    }
+    {
+        s32 size = count * sizeof(QuadVtx);
+        lbl_803CBB34->primOffset = lbl_803CC1C0->pDisplayListData - lbl_803CC1C0->begin;
+        SpriteReserve(size + 3);
+        *lbl_803CC1C0->pDisplayListData = prim;
+        *(u16*)(lbl_803CC1C0->pDisplayListData + 1) = count;
+        lbl_803CC1C0->pDisplayListData += 3;
+        memcpy(lbl_803CC1C0->pDisplayListData, verts, size);
+        lbl_803CC1C0->pDisplayListData += size;
+    }
 }
+#endif
 
 // .text:0x800B1EBC size:0x2A4
 // NONMATCHING 99%: map/width/height parameters get different saved registers
