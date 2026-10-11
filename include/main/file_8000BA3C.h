@@ -25,7 +25,7 @@ typedef union SpriteQuad {
 typedef struct SpriteDrawParams {
     /* 0x00 */ s32 ofs[4][2];
     /* 0x20 */ u32 color[4];
-    /* 0x30 */ u8 pad30[4];
+    /* 0x30 */ f32 radius2; // second ring radius
     /* 0x34 */ u16 segments; // circle segment count
     /* 0x36 */ u8 arcSegments; // when non-zero, only draw this many segments
 } SpriteDrawParams;
@@ -121,6 +121,7 @@ void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawPa
 void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void fn_8000E030(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000E2D4(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
+void fn_8000DC9C(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 

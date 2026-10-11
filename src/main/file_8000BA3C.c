@@ -2,6 +2,7 @@
 #include "stl/math.h"
 
 // main/file_800B0724
+void DrawNullSprite(QuadVtx* verts, s32 count); // draw triangle strip
 void fn_800B12DC(QuadVtx* verts, s32 count); // draw triangle fan
 void fn_800B13C0(Vec* pos, u32* colors, s32 count); // draw triangle fan
 
@@ -58,9 +59,124 @@ void fn_8000D8A4(void) {
 }
 
 // .text:0x8000DC9C size:0x394
-void fn_8000DC9C(void) {
-    return;
+// NONMATCHING: ~80%: our compiler unrolls the final strip loop 2x; saved-register allocation differs
+#if NONMATCHING
+void fn_8000DC9C(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params) {
+    QuadVtx strip[516];
+    Vec ring0[257];
+    Vec ring1[257];
+    Mtx m;
+    Vec out;
+    Vec pt;
+    f32 radius[2];
+    u32 color0;
+    u32 color1;
+    s32 i;
+    s32 j;
+    s32 n;
+    s32 step;
+    s16 angle;
+    f32 a;
+    f32 s;
+    f32 c;
+    u32 count;
+    Vec* p0;
+    Vec* p1;
+    QuadVtx* v;
+
+    if (!elem->hidden || params->arcSegments != 0) {
+        PSMTXCopy(mtx, m);
+        if (params->radius2 > 128.0f) {
+            radius[1] = 128.0f;
+            color1 = params->color[1];
+            radius[0] = params->radius2;
+            color0 = params->color[0];
+        } else {
+            radius[0] = 128.0f;
+            color0 = params->color[1];
+            radius[1] = params->radius2;
+            color1 = params->color[0];
+        }
+        for (i = 0; i < 2; i++) {
+            pt.x = 128.0f + radius[i];
+            pt.y = 128.0f;
+            pt.z = 0.0f;
+            PSMTXMultVec(m, &pt, &out);
+            if (i != 0) {
+                ring1[0].x = out.x;
+                ring1[0].y = out.y;
+                ring1[0].z = out.z;
+            } else {
+                ring0[0].x = out.x;
+                ring0[0].y = out.y;
+                ring0[0].z = out.z;
+            }
+        }
+        if (params->arcSegments != 0) {
+            n = params->arcSegments;
+        } else {
+            n = params->segments - 1;
+        }
+        step = 0x10000 / params->segments;
+        p1 = &ring1[1];
+        p0 = &ring0[1];
+        angle = 0;
+        do {
+            angle -= step;
+            a = 0.0000958738f * angle;
+            s = sin(a);
+            c = cos(a);
+            for (j = 0; j < 2; j++) {
+                pt.x = c * radius[j] + 128.0f;
+                pt.y = s * radius[j] + 128.0f;
+                pt.z = 0.0f;
+                PSMTXMultVec(m, &pt, &out);
+                if (j != 0) {
+                    p1->x = out.x;
+                    p1->y = out.y;
+                    p1->z = out.z;
+                } else {
+                    p0->x = out.x;
+                    p0->y = out.y;
+                    p0->z = out.z;
+                }
+            }
+            p1++;
+            p0++;
+        } while (--n);
+        if (!elem->hidden) {
+            ring1[params->segments].x = ring1[0].x;
+            ring0[params->segments].x = ring0[0].x;
+            ring1[params->segments].y = ring1[0].y;
+            ring0[params->segments].y = ring0[0].y;
+            ring1[params->segments].z = ring1[0].z;
+            ring0[params->segments].z = ring0[0].z;
+        }
+        if (elem->hidden) {
+            count = (params->arcSegments + 1) * 2;
+        } else {
+            count = (params->segments + 1) * 2;
+        }
+        v = strip;
+        p0 = ring0;
+        p1 = ring1;
+        for (i = 0; i < count; i += 2) {
+            v[0].pos.x = p0->x;
+            v[0].pos.y = p0->y;
+            v[0].pos.z = p0->z;
+            v[1].pos.x = p1->x;
+            v[1].pos.y = p1->y;
+            v[1].pos.z = p1->z;
+            v[0].color = color0;
+            v[1].color = color1;
+            p0++;
+            p1++;
+            v += 2;
+        }
+        DrawNullSprite(strip, count);
+    }
 }
+#endif
 
 // .text:0x8000E030 size:0x2A4
 // NONMATCHING: ~90%, saved-register allocation differs (count/n/angle); .sdata2 constant names need a split
