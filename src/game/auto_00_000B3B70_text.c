@@ -1295,7 +1295,7 @@ void fn_3_B43E8(void) {
     switch (g_GameLogic._125) {
     case 0:
         fn_3_B42A8();
-        *(s32*)g_GameLogic.homeTeamInd = 0; // TODO type: stored as one word
+        g_GameLogic._000 = 0;
         g_Practice.homeAway = lbl_80366158.practiceChar;
         g_Practice._192 = lbl_80366158.practiceChar;
         g_GameLogic.teamBatting = 1;

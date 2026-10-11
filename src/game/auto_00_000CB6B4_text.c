@@ -7,15 +7,15 @@ typedef struct CB6B4State {
     void* tex; // 0x04
 } CB6B4State;
 
-// Particle spawn parameters (layout as ParticleParamsC in main/file_800263FC.h).
-typedef struct CB6B4Particle {
-    void* tex;
-    u8 pad4[0x58 - 0x4];
-} CB6B4Particle;
-
 extern CB6B4State lbl_3_common_bss_35154;
 extern void* lbl_3_bss_9FDC;
-extern CB6B4Particle lbl_3_data_18268;
+// Completes the forward declaration from UnknownHomes_Static.h with the one field used here
+// (full layout: ParticleParamsC in main/file_800263FC.h).
+struct ParticleParamsC {
+    void* tex; // 0x00: TexArchive*
+    u8 pad4[0x54 - 0x4];
+};
+extern struct ParticleParamsC lbl_3_data_18268;
 
 // .text:0x000CB6B4 size:0x38 mapped:0x8070A748
 // Relocates the texture-archive offset stored at the head of a loaded file.

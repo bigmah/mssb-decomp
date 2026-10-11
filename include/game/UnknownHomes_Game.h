@@ -940,7 +940,6 @@ typedef struct _PracticeStruct {
     /*0x1B0*/ u8 _1B0;
     /*0x1B1*/ u8 _1B1;
     /*0x1B2*/ u8 levelCleared[4][4]; // [practiceType][level], copied from the save
-    artificial_padding(0x1b0, 0x1c2, u8);
     /*0x1C2*/ s8 instructionNumber;
     /*0x1C3*/ u8 readyToMoveToNextInstruction; // unsure
     /*0x1C4*/ u8 practice_runner_countInputForMashing;
