@@ -2702,9 +2702,56 @@ void fn_3_D3CDC(u8* p) {
 }
 
 // .text:0x000D3F54 size:0x82C mapped:0x80712FE8
-void fn_3_D3F54(void) {
-    return;
+// NONMATCHING 95% (with the four helpers pasted inline): written with calls instead; register numbering
+// nmverify: fn_3_D4E00 fn_3_D4CA4 fn_3_D36B0 fn_3_D278C are inlined in the original
+#if NONMATCHING
+// Per-frame update of a chained stadium object (8-node chain). In game state 3 it is
+// re-placed once (fn_3_D4E00); otherwise it is reset in state 0 and runs its behaviour
+// p[0xCA]: 0 fn_3_D3CDC, 1 fn_3_D3880, 2 fn_3_D36B0, 3 fn_3_D30D0, 4 fn_3_D2A0C, 5 fn_3_D278C.
+// The original inlines fn_3_D4E00, fn_3_D4CA4, fn_3_D36B0 and fn_3_D278C.
+void fn_3_D3F54(u8* p) {
+    if (g_GameLogic[0x11E] == 3) {
+        if (p[0xCD] == 0) {
+            fn_3_D4E00(p);
+        }
+        return;
+    }
+    if (p[0xCD] != 0) {
+        p[0xCD] = 0;
+    }
+    if (g_GameLogic[0x11E] == 0) {
+        if (p[0xCA] != 0) {
+            p[0xCA] = 1;
+            fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        }
+        fn_3_D4CA4(p);
+        *(s16*)(p + 0xC8) = 1;
+    }
+    if (g_GameLogic[0x11E] == 2) {
+        ((BF90_c2*)p)->f = 1;
+    }
+    switch (p[0xCA]) {
+    case 0:
+        fn_3_D3CDC(p);
+        break;
+    case 1:
+        fn_3_D3880(p);
+        break;
+    case 2:
+        fn_3_D36B0(p);
+        break;
+    case 3:
+        fn_3_D30D0(p);
+        break;
+    case 4:
+        fn_3_D2A0C(p);
+        break;
+    case 5:
+        fn_3_D278C(p);
+        break;
+    }
 }
+#endif
 
 // .text:0x000D4780 size:0x524 mapped:0x80713814
 // NONMATCHING 93%: the folded i/7 constants come from a pooled base register in our build; saved-register numbering
