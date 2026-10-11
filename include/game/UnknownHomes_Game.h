@@ -2739,6 +2739,7 @@ typedef struct {
     /* 0x28A6 */ u8 _28A6;
     /* 0x28A7 */ u8 _28A7;
     /* 0x28A8 */ u8 _28A8;
+    /* 0x28A9 */ u8 _28A9; // 1: restart the view loop (fn_3_1CE90)
 } inMemCamera;
 
 extern inMemCamera *g_pCamera;
