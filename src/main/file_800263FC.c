@@ -730,9 +730,87 @@ s32 fn_8002E828(Emitter* e) {
 #endif
 
 // .text:0x8002ECA0 size:0x50C
-void fn_8002ECA0(void) {
-    return;
+// NONMATCHING 75%: register allocation; same calls and stores
+#if NONMATCHING
+s32 fn_8002ECA0(Emitter* e) {
+    Vec d;
+    s32 alive = 0;
+    Particle* p = e->particles;
+    Particle** link = &e->particles;
+    Particle* lastDead = NULL;
+    Particle* deadHead = NULL;
+    GXPrimitive prim;
+    s32 a;
+
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    do {
+        PSVECSubtract(&p->pos, &p->u.trail.prev, &d);
+        LoadParticleTex(e->tex, p->texIndex, GX_CLAMP, GX_CLAMP);
+        if (PSVECMag(&d) != 0.0f) {
+            PSVECNormalize(&d, &d);
+            PSVECScale(&d, p->u.trail.width * 0.5f, &d);
+            prim = GX_TRIANGLESTRIP;
+        } else {
+            d.x = 0.0f;
+            d.y = 0.0f;
+            d.z = -p->u.trail.width * 0.5f;
+            prim = GX_QUADS;
+        }
+        a = (p->u.trail.alphaMax * p->life) / p->u.trail.maxLife;
+        if (a > p->u.trail.alphaMax) {
+            a = p->u.trail.alphaMax;
+        }
+        p->color.c.a = a;
+        GXBegin(prim, GX_VTXFMT0, 8);
+        GXPosition3f32((p->pos.x + d.x) - d.z, p->pos.y, d.x + (p->pos.z + d.z));
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(0.0f, 0.0f);
+        GXPosition3f32(d.z + (p->pos.x + d.x), p->pos.y, (p->pos.z + d.z) - d.x);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(1.0f, 0.0f);
+        GXPosition3f32(p->pos.x - d.z, p->pos.y, p->pos.z + d.x);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(0.0f, 0.25f);
+        GXPosition3f32(p->pos.x + d.z, p->pos.y, p->pos.z - d.x);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(1.0f, 0.25f);
+        GXPosition3f32(p->u.trail.prev.x - d.z, p->u.trail.prev.y, p->u.trail.prev.z + d.x);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(0.0f, 0.75f);
+        GXPosition3f32(p->u.trail.prev.x + d.z, p->u.trail.prev.y, p->u.trail.prev.z - d.x);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(1.0f, 0.75f);
+        GXPosition3f32((p->u.trail.prev.x - d.x) - d.z, p->u.trail.prev.y, d.x + (p->u.trail.prev.z - d.z));
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(0.0f, 1.0f);
+        GXPosition3f32(d.z + (p->u.trail.prev.x - d.x), p->u.trail.prev.y, (p->u.trail.prev.z - d.z) - d.x);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(1.0f, 1.0f);
+        p->life -= (lbl_80366158._28 == 0);
+        if (p->life == 0) {
+            // unlink and collect the dead particle
+            *link = p->next;
+            if (lastDead != NULL) {
+                lastDead->next = p;
+            } else {
+                deadHead = p;
+            }
+            p->next = NULL;
+            lastDead = p;
+            e->count--;
+        } else {
+            link = &p->next;
+            alive++;
+        }
+        p = *link;
+    } while (p != NULL);
+    if (deadHead != NULL) {
+        FreeParticles(deadHead);
+    }
+    return alive == 0;
 }
+#endif
 
 // .text:0x8002F1AC size:0xAC
 s32 fn_8002F1AC(Vec* pos, s32 id) {
