@@ -25,7 +25,7 @@ void macMakeActive(SYNTH_VOICE* svoice);
 
 void macSetExternalKeyoff(SYNTH_VOICE* svoice);
 
-static void DoSetPitch(SYNTH_VOICE* svoice);
+void DoSetPitch(SYNTH_VOICE* svoice);
 
 /*
   This may look like a fakematch, however this actually makes sense if you break it down:
@@ -616,76 +616,74 @@ static void mcmdSetupLFO(SYNTH_VOICE* svoice, MSTEP* cstep) {
 
 #pragma dont_inline on
 // 88%: orig keeps sInfo in r5 and recomputes (sInfo >> 24) per branch; ours hoists oKey and the temps rotate (unsolved)
-static void DoSetPitch(SYNTH_VOICE* svoice) {
-  u32 f;
-  u32 f2;
-  u32 of;
-  u32 i;
-  u32 frq;
-  u32 ofrq;
-  u32 no;
-  s32 key;
-  u8 oKey;
+void DoSetPitch(SYNTH_VOICE* svoice) {
+  u32 f;    // r29
+  u32 of;   // r26
+  u32 i;    // r31
+  u32 frq;  // r28
+  u32 ofrq; // r27
+  u32 no;   // r30
+  s32 key;  // r25
+  u8 oKey;  // r24
   static u16 kf[13] = {
       4096, 4339, 4597, 4871, 5160, 5467, 5792, 6137, 6502, 6888, 7298, 7732, 8192,
   };
 
   frq = svoice->playFrq & 0xFFFFFF;
-  of = svoice->sInfo;
-  ofrq = of & 0xFFFFFF;
-  oKey = of >> 24;
+  ofrq = svoice->sInfo & 0xFFFFFF;
 
   if (ofrq == frq) {
-    svoice->curNote = oKey;
+    svoice->curNote = (u8)(svoice->sInfo >> 24);
     svoice->curDetune = 0;
   } else if (ofrq < frq) {
     f = (frq << 12) / ofrq;
-    for (no = 0; no < 11; ++no) {
-      if ((f >> 12) < (1 << (no + 1))) {
+    of = f >> 12;
+
+    for (no = 0; no < 11; no++) {
+      if (of < (1 << (no + 1))) {
         break;
       }
     }
 
-    f2 = f / (1 << no);
+    f /= (1 << no);
 
-    i = 11;
-    while (1) {
-      if (f2 > kf[i]) {
+    for (i = 11;; i--) {
+      if (f > kf[i]) {
         break;
       }
-      i--;
     }
 
-    svoice->curNote = oKey + no * 12 + i;
-    svoice->curDetune = ((f2 - kf[i]) * 100) / (kf[i + 1] - kf[i]);
+    svoice->curNote = (svoice->sInfo >> 24) + (no * 12) + i;
+    svoice->curDetune = ((f - kf[i]) * 100) / (kf[i + 1] - kf[i]);
   } else {
     f = (ofrq << 12) / frq;
-    for (no = 0; no < 11; ++no) {
-      if ((f >> 12) < (1 << (no + 1))) {
+    of = f >> 12;
+
+    for (no = 0; no < 11; no++) {
+      if (of < (1 << (no + 1))) {
         break;
       }
     }
 
-    f2 = f / (1 << no);
+    f /= (1 << no);
 
-    i = 11;
-    while (1) {
-      if (f2 > kf[i]) {
+    for (i = 11;; i--) {
+      if (f > kf[i]) {
         break;
       }
-      i--;
     }
 
-    key = no * 12 + i;
+    key = i + (no * 12);
+    oKey = (svoice->sInfo >> 24);
     if (key > oKey) {
-      svoice->curDetune = 0;
-      svoice->curNote = 0;
+      svoice->curNote = svoice->curDetune = 0;
     } else {
       svoice->curNote = oKey - key;
-      svoice->curDetune = ((kf[i] - f2) * 100) / (kf[i + 1] - kf[i]);
+      svoice->curDetune = ((kf[i] - f) * 100) / (kf[i + 1] - kf[i]);
     }
   }
 }
+
 #pragma dont_inline reset
 
 static void mcmdSetPitch(SYNTH_VOICE* svoice, MSTEP* cstep) {
@@ -763,54 +761,53 @@ static void mcmdSetADSRFromCtrl(SYNTH_VOICE* svoice, MSTEP* cstep) {
   svoice->cFlags |= 0x100;
 }
 
-// 87%: saved regs r26..r31 vs orig r27..r31 (cstep reg not reused); dtime/sl saved-reg order swapped; rdLE read order matters
-static void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
+void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
   ADSR_INFO adsr;      // r1+0x10
   ADSR_INFO* adsr_ptr; // r31
   u32 sl;              // r28
   s32 ascale;          // r27
   s32 dscale;          // r26
-  float sScale;
-  s32 atime;
-  s32 dtime;
-  u16 rtime;
 
-  if ((adsr_ptr = dataGetCurve(cstep->para[0] >> 8)) != NULL) {
-    svoice->pitchADSRRange = (s8)cstep->para[1] << 8;
-    if (svoice->pitchADSRRange >= 0) {
-      svoice->pitchADSRRange += ((s8)(cstep->para[1] >> 8) << 8) / 100;
-    } else {
-      svoice->pitchADSRRange -= ((s8)(cstep->para[1] >> 8) << 8) / 100;
-    }
-
-    atime = rdLE32((u8*)adsr_ptr + 0);
-    dtime = rdLE32((u8*)adsr_ptr + 4);
-    sl = rdLE16((u8*)adsr_ptr + 8);
-    rtime = rdLE16((u8*)adsr_ptr + 0xA);
-    ascale = rdLE32((u8*)adsr_ptr + 0xC);
-    dscale = rdLE32((u8*)adsr_ptr + 0x10);
-    if (ascale != 0x80000000) {
-      sScale = lbl_803CD15C * svoice->orgVolume;
-      atime += (s32)(sScale * ascale);
-    }
-    if (dscale != 0x80000000) {
-      sScale = lbl_803CD160 * svoice->orgNote;
-      dtime += (s32)(sScale * dscale);
-    }
-
-    svoice->pitchADSR.mode = 1;
-    svoice->pitchADSR.data.dls.aMode = 0;
-    svoice->pitchADSR.data.dls.aTime = adsrConvertTimeCents(atime);
-    svoice->pitchADSR.data.dls.dTime = adsrConvertTimeCents(dtime);
-    sl = (sl >> 2) & 0x3FFF;
-    if (sl > 0x3FF) {
-      sl = 0x3FF;
-    }
-    svoice->pitchADSR.data.dls.sLevel = 193 - dspScale2IndexTab[sl];
-    svoice->pitchADSR.data.dls.rTime = rtime;
-    adsrSetup(&svoice->pitchADSR);
-    svoice->cFlags |= 0x20000000000;
+  if ((adsr_ptr = dataGetCurve((cstep->para[0] >> 8))) == NULL) {
+    return;
   }
+
+  svoice->pitchADSRRange = ((s8)cstep->para[1] << 8);
+
+  if (svoice->pitchADSRRange >= 0) {
+    svoice->pitchADSRRange += ((s16)(s8)(cstep->para[1] >> 8) << 8) / 100;
+  } else {
+    svoice->pitchADSRRange -= ((s16)(s8)(cstep->para[1] >> 8) << 8) / 100;
+  }
+
+  adsr.data.dls.atime = rdLE32(&adsr_ptr->data.dls.atime);
+  adsr.data.dls.dtime = rdLE32(&adsr_ptr->data.dls.dtime);
+  adsr.data.dls.slevel = (adsr_ptr->data.dls.slevel >> 8) | (adsr_ptr->data.dls.slevel << 8);
+  adsr.data.dls.rtime = (adsr_ptr->data.dls.rtime >> 8) | (adsr_ptr->data.dls.rtime << 8);
+  ascale = rdLE32(&adsr_ptr->data.dls.ascale);
+  dscale = rdLE32(&adsr_ptr->data.dls.dscale);
+
+  if (ascale != 0x80000000) {
+    f32 sScale = lbl_803CD15C * svoice->orgVolume;
+    adsr.data.dls.atime += (s32)(sScale * ascale);
+  }
+  if (dscale != 0x80000000) {
+    f32 sScale = lbl_803CD160 * svoice->orgNote;
+    adsr.data.dls.dtime += (s32)(sScale * dscale);
+  }
+
+  svoice->pitchADSR.mode = 1;
+  svoice->pitchADSR.data.dls.aMode = 0;
+  svoice->pitchADSR.data.dls.aTime = adsrConvertTimeCents(adsr.data.dls.atime);
+  svoice->pitchADSR.data.dls.dTime = adsrConvertTimeCents(adsr.data.dls.dtime);
+  sl = (adsr.data.dls.slevel >> 2);
+  if (sl > 0x3ff) {
+    sl = 0x3ff;
+  }
+  svoice->pitchADSR.data.dls.sLevel = 193 - dspScale2IndexTab[sl];
+  svoice->pitchADSR.data.dls.rTime = adsr.data.dls.rtime;
+  adsrSetup(&svoice->pitchADSR);
+  svoice->cFlags |= 0x20000000000;
 }
 #pragma dont_inline reset
 
@@ -827,7 +824,7 @@ static u32 mcmdPitchSweep(SYNTH_VOICE* svoice, MSTEP* cstep, int num) {
   }
   svoice->sweepAdd[num] = delta << 0x10;
   cstep->para[0] = 0;
-  mcmdWait(svoice, cstep);
+  return mcmdWait(svoice, cstep);
 }
 
 static void DoPanningSetup(SYNTH_VOICE* svoice, MSTEP* cstep, u8 pi) {
@@ -856,15 +853,11 @@ static void mcmdSetSurroundPanning(SYNTH_VOICE* svoice, MSTEP* cstep) {
 static void mcmdSetPianoPanning(SYNTH_VOICE* svoice, MSTEP* cstep) {
   s32 delta; // r31
   s32 scale; // r30
-  delta = (svoice->curNote << 16) - EXTRACT_3RDNYBBLE(cstep->para[0]);
-  scale = (s8)(u8)(cstep->para[0] >> 8);
+  delta = (svoice->curNote << 16) - ((u8)(cstep->para[0] >> 16) << 16);
+  scale = (s8)((u8)(cstep->para[0] >> 8));
   delta = ((delta * scale) >> 7);
   delta += (u8)(cstep->para[0] >> 0x18) << 16;
-  if (delta < 0) {
-    delta = 0;
-  } else if (delta > 0x7f0000) {
-    delta = 0x7f0000;
-  }
+  delta = delta < 0 ? 0 : delta > 0x7f0000 ? 0x7f0000 : delta;
   svoice->panTarget[0] = delta;
   svoice->panning[0] = delta;
 }
@@ -1350,7 +1343,7 @@ static void mcmdSetupTremolo(SYNTH_VOICE* svoice, MSTEP* cstep) {
   svoice->treCurScale = 1.f;
 }
 
-static void macHandleActive(SYNTH_VOICE* svoice) {
+void macHandleActive(SYNTH_VOICE* svoice) {
   u8 i;                              // r29
   u8 lastNote;                       // r27
   u32 ex;                            // r30
@@ -1660,6 +1653,12 @@ static void macHandleActive(SYNTH_VOICE* svoice) {
     case 0x5a:
       mcmdSRCModeSelect(svoice, &cstep);
       break;
+    case 0x5e:
+      mcmdFilterSwitchSelect(svoice, &cstep);
+      break;
+    case 0x5f:
+      mcmdFilterParameterSelect(svoice, &cstep);
+      break;
     case 0x60:
       mcmdVarCalculation(svoice, &cstep, 0);
       break;
@@ -1683,6 +1682,7 @@ static void macHandleActive(SYNTH_VOICE* svoice) {
       break;
     case 0x71:
       mcmdIfVarCompare(svoice, &cstep, 1);
+      break;
     }
   } while (!ex);
 }

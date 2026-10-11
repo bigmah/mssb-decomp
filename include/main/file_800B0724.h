@@ -157,7 +157,7 @@ void fn_800B0C80(void (*draw)(void));
 
 void resetAllDrawingStructs(void);
 
-struct SceneTask* fn_800B0A5C_insertQueue(void* draw, u16 priority);
+void* fn_800B0A5C_insertQueue(void* draw, u16 priority); // returns the SceneTask slot
 
 void fn_800B0D28(s32* layerSizes);
 
@@ -171,14 +171,14 @@ s32 fn_800B216C(u8 flag, u32 mode, u8 index);
 
 void fn_800B21A8(s32 mode);
 
-void fn_800B2B4C(GameActor* actor, f32 value);
+void fn_800B2B4C(GameActor* actor, f32 speed);
 void fn_800B2B54(GameActor* actor, u16 bone, u8 value);
-void Set_FUN_800b2b6c(GameActor* actor, s32 value);
+void Set_FUN_800b2b6c(GameActor* actor, u16* boneRemap);
 void fn_800B2B74(GameActor* actor, u16 bone);
 struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16 srcBone);
 void fn_800B2BE4(GameActor* actor, u16 bone);
-void fn_800B2BFC(GameActor* actor, s16 a, s16 b);
-void fn_800B2C08(GameActor* actor, s16 value);
+void fn_800B2BFC(GameActor* actor, u16 boneA, u16 boneB);
+void fn_800B2C08(GameActor* actor, u16 bone);
 void fn_800B2C10(GameActor* actor, u16 index, Vec* v);
 
 #endif

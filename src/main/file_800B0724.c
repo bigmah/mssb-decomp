@@ -204,7 +204,7 @@ void resetAllDrawingStructs(void) {
 
 // fn_800B0A5C_insertQueue, size:0xD0
 // Queues draw in the first free slot, before the first task with a higher priority.
-SceneTask* fn_800B0A5C_insertQueue(void* draw, u16 priority) {
+void* fn_800B0A5C_insertQueue(void* draw, u16 priority) {
     SceneTask* node;
     SceneTask* prev;
     SceneTask* entry;
@@ -1079,18 +1079,18 @@ void fn_800B2AC8(LoadedActorLayout* layout) {
 }
 
 // .text:0x800B2B4C size:0x8
-void fn_800B2B4C(GameActor* actor, f32 value) {
-    actor->unk90 = value;
+void fn_800B2B4C(GameActor* actor, f32 speed) {
+    actor->blendSpeed = speed;
 }
 
 // .text:0x800B2B54 size:0x18
 void fn_800B2B54(GameActor* actor, u16 bone, u8 value) {
-    actor->boneArray[bone]->unk134 = value;
+    actor->boneArray[bone]->flags = value;
 }
 
 // .text:0x800B2B6C size:0x8
-void Set_FUN_800b2b6c(GameActor* actor, s32 value) {
-    actor->unk88 = value;
+void Set_FUN_800b2b6c(GameActor* actor, u16* boneRemap) {
+    actor->boneRemap = boneRemap;
 }
 
 // .text:0x800B2B74 size:0x34
@@ -1116,22 +1116,22 @@ struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16
 // Restores a bone's original display object.
 void fn_800B2BE4(GameActor* actor, u16 bone) {
     GameBone* b = actor->boneArray[bone];
-    b->dispObj = b->defaultDispObj;
+    b->dispObj = b->baseDispObj;
 }
 
 // .text:0x800B2BFC size:0xC
-void fn_800B2BFC(GameActor* actor, s16 a, s16 b) {
-    actor->unk80 = a;
-    actor->unk82 = b;
+void fn_800B2BFC(GameActor* actor, u16 boneA, u16 boneB) {
+    actor->anchorBoneA = boneA;
+    actor->anchorBoneB = boneB;
 }
 
 // .text:0x800B2C08 size:0x8
-void fn_800B2C08(GameActor* actor, s16 value) {
-    actor->unk84 = value;
+void fn_800B2C08(GameActor* actor, u16 bone) {
+    actor->rootBone = bone;
 }
 
 // .text:0x800B2C10 size:0x34
 // Transforms v in place by the actor's matrix at index.
 void fn_800B2C10(GameActor* actor, u16 index, Vec* v) {
-    PSMTXMultVec(actor->mtxArray[index], v, v);
+    PSMTXMultVec(actor->forwardMtxArray[index], v, v);
 }

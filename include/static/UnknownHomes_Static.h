@@ -92,6 +92,10 @@ typedef struct {
     /* 0x02 */ u16 _02;
     artificial_padding(2, 0x22, u16);
     /* 0x22 */ u16 _22;
+    artificial_padding(0x22, 0x42, u16);
+    /* 0x42 */ u16 _42;
+    artificial_padding(0x42, 0x62, u16);
+    /* 0x62 */ u16 _62;
 } lbl_803C77B8_s;
 extern lbl_803C77B8_s lbl_803C77B8;
 
@@ -105,7 +109,7 @@ extern void fn_80048C1C(void);
 
 extern void fn_800B9AA8(void* object);
 
-extern void SetDisplayStateTexture(void* object, s32 a, s32 b);
+extern void SetDisplayStateTexture(struct TexImage* tex, s32 map, u32 tlutName);
 
 extern void fn_800AD038(void* object);
 extern void fn_800A97D0(s32, s32);
@@ -144,3 +148,19 @@ extern void fn_8002955C(void* pos, void* dir, void* params);
 extern void fn_80031CA4(Vec*, u32*);
 
 extern void* fn_80037AA0(void*, s32, void*, u16, void*);
+
+// ARAM stack allocator (Unknown/File_0x800a6304.c)
+extern u32 fn_800A6418(u32 size);
+extern void fn_800A63C8(void);
+// DVD stream (main/file_800A6870.c)
+extern void fn_800A6C80(void);
+extern void fn_800A6D10(u32 consumed);
+extern void fn_800A6E24(void* file, u8* buf, u32 size);
+// HVQM4 decoder
+extern void fn_800DFDD4(u8* src, u8* dst, u32 numChannels, u32 format, u32 count, void* chans);
+extern void fn_800E4AC8(void);
+extern void fn_800E4AE8(void* ctx, void* info);
+extern u32 fn_800E4B1C(void* ctx);
+extern void fn_800E4FF4(void* ctx, u8* src, u8* dst);
+extern void fn_800E591C(void* ctx, u8* src, u8* dst, u8* ref);
+extern void fn_800E5940(void* ctx, u8* src, u8* dst, u8* ref0, u8* ref1);

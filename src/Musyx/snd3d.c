@@ -761,16 +761,15 @@ bool32 AddStartingEmitter(SND_EMITTER *em, f32 vol, f32 xPan, f32 yPan, f32 zPan
 
 extern int synthCheckFXRealloc(unsigned short fid);
 
-// 95.8%: only the second (else) loop differs: orig has i=r24, em=r26 there (first loop is i=r26, em=r24)
 void StartContinousEmitters()
 {
-    SND_EMITTER *em; // r31
-    START_LIST *sl;  // r29
-    long i;          // r30
-    f32 dv;          // r63
-
     if (s3dFlag4)
     {
+        int i;           // r26
+        START_LIST *sl;  // r29
+        SND_EMITTER *em; // r31
+        f32 dv;          // r63
+
         for (i = 0; i < startGroupNum; ++i)
         {
             for (sl = startGroup[i].list; sl != NULL; sl = sl->next)
@@ -831,6 +830,13 @@ void StartContinousEmitters()
     }
     else
     {
+        int i;           // r27
+        START_LIST *sl;  // r31
+        SND_EMITTER *em; // r30
+        f32 dv;          // f31
+        RUN_LIST *rl;    // r25
+        RUN_LIST *lrl;   // r24
+
         for (i = 0; i < startGroupNum; ++i)
         {
             for (sl = startGroup[i].list; sl != NULL; sl = sl->next)
@@ -883,10 +889,26 @@ void StartContinousEmitters()
                     }
                     SetFXParameters(em, sl->vol, sl->xPan, sl->yPan, sl->zPan, sl->pitch, sl->unk18);
                     em->flags &= ~0x20000;
-                    ++startGroup[i].numRunning;
-                    if (startGroup[i].running != NULL)
+                    lrl = NULL;
+                    for (rl = startGroup[i].running; rl != NULL; rl = rl->next)
                     {
-                        startGroup[i].running = startGroup[i].running->next;
+                        if (rl->vol >= sl->vol)
+                        {
+                            runList[runListNum].em = em;
+                            runList[runListNum].vol = sl->vol;
+                            runList[runListNum].next = rl;
+                            if (lrl == NULL)
+                            {
+                                startGroup[i].running = &runList[runListNum];
+                            }
+                            else
+                            {
+                                lrl->next = &runList[runListNum];
+                            }
+                            ++startGroup[i].numRunning;
+                            runListNum++;
+                            break;
+                        }
                     }
                 }
             }
