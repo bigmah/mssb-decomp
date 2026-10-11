@@ -72,5 +72,6 @@ void fn_3_1084B4(void);
 void fn_3_10C81C(void);
 void fn_3_10B8D0(void);
 void fn_3_10BE7C(void);
+void fn_3_108C54(void);
 
 #endif
