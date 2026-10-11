@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "C3/geoPalette.h"
+#include "C3/control.h"
 
 typedef struct ChallengeDrawActor {
     u8 padding[6];
@@ -24,10 +25,17 @@ typedef struct ChallengeActorDrawing {
 } ChallengeActorDrawing;
 
 typedef struct {
-    ChallengeActorDrawing drawing;
-    u8 padding0C[0x60];
-    u8 visible;
-    u8 padding6D[0x23];
+    // (ActorObject in include/main/file_800BD8C4.h)
+    /*0x00*/ ChallengeActorDrawing drawing;
+    /*0x0C*/ u8 padding0C[4];
+    /*0x10*/ Control worldControl;
+    /*0x4C*/ u8 padding4C[8];
+    /*0x54*/ f32 scale;
+    /*0x58*/ u8 padding58[2];
+    /*0x5A*/ u8 setSpeed;
+    /*0x5B*/ u8 padding5B[0x11];
+    /*0x6C*/ u8 visible; // animateBones in ActorObject
+    /*0x6D*/ u8 padding6D[0x23];
 } ChallengeDrawNode;
 
 typedef struct {
@@ -57,6 +65,7 @@ typedef struct {
     u8 padding12[2];
     u8 actorIndex; // viewer: selected actor in lbl_8036E548
     s8 menu;
+    u8 viewMode; // 1 = show all actors
 } ChallengeRosterQueue;
 
 // One falling confetti piece (linked list, drawn by fn_1_182C0).
@@ -140,8 +149,19 @@ typedef struct ChallengeViewerActor {
     u8 pad00[0x34];
     Vec pos;
     Vec rot;
-    u8 pad4C[0x27C - 0x4C];
+    f32 scale;
+    u8 pad50[0x27C - 0x50];
 } ChallengeViewerActor;
+
+// View of lbl_8036E548 (global actor manager, cf. ActorManager in main/file_80026134.h).
+typedef struct ChallengeActorMgr {
+    /*0x000*/ u8 pad000[0x60];
+    /*0x060*/ ChallengeDrawCollection* collection;
+    /*0x064*/ u8 pad064[0xAC - 0x64];
+    /*0x0AC*/ struct Light* lights[3];
+    /*0x0B8*/ u8 pad0B8[0xC04 - 0xB8];
+    /*0xC04*/ ChallengeViewerActor actors[24];
+} ChallengeActorMgr;
 
 void fn_1_1D10C(void);
 
@@ -158,6 +178,8 @@ void fn_1_1A1EC(ChallengeActorDrawing* drawing, MtxPtr camera);
 void fn_1_1A3B4(void);
 
 void fn_1_1A850(MtxPtr bone, MtxPtr camera, u8 r, u8 g, u8 b, u8 a);
+
+void fn_1_1D110(void);
 
 void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 
