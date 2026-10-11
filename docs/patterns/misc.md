@@ -14,3 +14,4 @@ Everything else. One pattern per line, so `grep -i <keyword> docs/patterns/*.md`
 - **Stale-r3 result:** `sndFXCtrl(vid, 0x5B, x)` after `sndFXStartEx(...)` passes the first call result.
 - **`targsupp` TRK stubs show 0% (one `ASM` function with `entry` labels; separate C `ASM` functions get padded by `-func_align 16` or dead-stripped):** write it as `targsupp.s` with `.balign 16` and four `.fn` blocks; mwld keeps them and the shasum passes.
 - **`x = tbl[off + base[idx2]++]` as one statement** gives the original schedule; separate `n = base[..]; base[..] = n + 1` does not (fn_3_10768C).
+- **s8 table value passed to an s8 parameter: original has `lbzx; extsb` with the argument `li` scheduled before the load (fn_3_AEC50):** declare the table `u8[]` and pass `(s8)tbl[i]`; an `s8[]` table gives no extsb, and `(s32)` on an s8 table schedules `li r3` late.

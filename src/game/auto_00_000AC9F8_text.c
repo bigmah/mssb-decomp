@@ -8,6 +8,8 @@
 #include "game/rep_720.h"
 #include "game/auto_00_0005985C_text.h"
 #include "main/file_8004207C.h"
+#include "main/file_80069BDC.h"
+extern void fn_8004CC18(void); // main/file_8004C5F8.h conflicts with file_8004207C.h
 
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
@@ -1762,5 +1764,109 @@ void fn_3_B2AA0(void) {
             lbl_3_common_bss_34C90.cursor = count - 1;
         }
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
+}
+
+extern s32 fn_3_5B380(u16 buttons);
+extern u8 lbl_3_data_6104[]; // s8 values; read as u8 then cast (matches)
+
+// fn_3_AEC50, size:0x3A8
+void fn_3_AEC50(void) {
+    s32 row = 0;
+    if (g_d_GameSettings.exhibitionMatchInd == 0) {
+        row = 1;
+    }
+    switch (lbl_3_common_bss_34C90.subState) {
+    case 0:
+        lbl_3_common_bss_34C90.subFrames = 0;
+        lbl_3_common_bss_34C90.subState = 1;
+        if (lbl_3_common_bss_34C58._2A != 0) {
+            lbl_3_common_bss_34C58._2A = 2;
+            lbl_3_common_bss_34C58._24 = 0x78;
+        }
+        break;
+    case 1:
+        if (lbl_3_common_bss_34C90.subFrames > 20) {
+            lbl_3_common_bss_34C90.subState = 2;
+        }
+        break;
+    case 2:
+        fn_3_AE900();
+        lbl_3_common_bss_34C90.subFrames = 0;
+        break;
+    case 3:
+        if (lbl_3_common_bss_34C90.subFrames == 1) {
+            changeScene(3, 6);
+            lbl_3_common_bss_34C58._2A = 1;
+            lbl_3_common_bss_34C58._24 = 5;
+        }
+        if (lbl_8037169C._13 != 0) {
+            lbl_3_common_bss_34C90.subState = 4;
+        }
+        break;
+    case 4:
+        switch (lbl_3_data_F918[row][1].items[lbl_3_common_bss_34C90.cursor]) {
+        case 0:
+            fn_3_AFD80(10);
+            break;
+        }
+        lbl_3_common_bss_34C90._1D9 = 2;
+        break;
+    case 5:
+        if (lbl_3_common_bss_34C90.subFrames > 20) {
+            lbl_3_common_bss_34C90.subState = 6;
+        }
+        break;
+    case 6:
+        switch (lbl_3_data_F918[row][1].items[lbl_3_common_bss_34C90.cursor]) {
+        case 3:
+            fn_3_AFD80(11);
+            break;
+        case 5:
+            lbl_3_common_bss_34C90._220 = 0;
+            fn_3_AFD80(13);
+            break;
+        case 4:
+            fn_3_AFD80(12);
+            break;
+        case 1:
+            fn_3_AFD80(14);
+            break;
+        case 2:
+            fn_3_AFD80(15);
+            break;
+        }
+        break;
+    case 7:
+        switch (fn_3_5B380(lbl_3_common_bss_34C90.newButtons)) {
+        case 1:
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            lbl_3_common_bss_34C90.subState = 8;
+            break;
+        case 2:
+            lbl_3_common_bss_34C90.subState = 2;
+            break;
+        }
+        break;
+    case 8:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 0x2D) {
+            if (g_d_GameSettings.exhibitionMatchInd == 0) {
+                if (g_d_GameSettings.bJMatchInd == 1) {
+                    fn_800203E0(0xC, (s8)lbl_3_data_6104[gChallengeState._441C]);
+                } else {
+                    fn_800203E0(0xC, (s8)lbl_3_data_6104[gChallengeState._441E]);
+                }
+            } else {
+                changeScene(4, 6);
+            }
+        }
+        if (lbl_8037169C._13 != 0) {
+            g_GameLogic.framesOfExitingToMenu = 1;
+            lbl_3_common_bss_34C90._1D9 = 2;
+            g_d_GameSettings._13 = 1;
+            fn_80035B50(0x13);
+            fn_8004CC18();
+        }
+        break;
     }
 }

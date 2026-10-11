@@ -33,7 +33,8 @@ typedef struct PauseMenuState {
     /*0x204*/ u8 _204[2];
     /*0x206*/ s8 inputCooldown;
     /*0x207*/ u8 _207[2];
-    /*0x209*/ u8 _209[0x221 - 0x209];
+    /*0x209*/ u8 _209[0x220 - 0x209];
+    /*0x220*/ u8 _220;
     /*0x221*/ u8 optionCursor;
     /*0x222*/ u8 optionCount;
     /*0x223*/ u8 _223[0x23F - 0x223];
@@ -129,5 +130,7 @@ void fn_3_B0E00(void);
 void fn_3_AE900(void);
 
 void fn_3_B2AA0(void);
+
+void fn_3_AEC50(void);
 
 #endif
