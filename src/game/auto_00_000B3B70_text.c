@@ -85,6 +85,27 @@ typedef struct PracticeCharEntry {
 } PracticeCharEntry;
 extern PracticeCharEntry lbl_800E8558[];
 extern void fn_3_90AB0(s32 a);
+
+// Views of main.dol globals (full types in main/file_80008E00.h, file_8000F150.h, file_800A6870.h).
+typedef struct PracticeGlobals80366158 {
+    u8 _00[0x27];
+    u8 practiceChar; // 0x27
+} PracticeGlobals80366158;
+extern PracticeGlobals80366158 lbl_80366158;
+typedef struct PracticeTextSystem {
+    u8 _000[0x7AC];
+    s32 msgTable; // 0x7AC: ARAMTransfer result (TODO type: void*; ARAMTransfer is declared s32 here)
+} PracticeTextSystem;
+extern PracticeTextSystem lbl_80366B18;
+typedef struct PracticeAramLoader {
+    u8 _000[0x715];
+    u8 done; // 0x715
+} PracticeAramLoader;
+extern PracticeAramLoader lbl_803C6CF8;
+extern u8 lbl_3_data_10578[];
+extern void fn_800111B4(void* table);
+extern void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
+extern s32 fn_3_90C14(s32 a);
 extern s32 fn_3_90B14(s32 a, s32 b);
 
 
@@ -1175,3 +1196,63 @@ void fn_3_B3FE8(void) {
         g_Practice.levelCleared[i][3] = getCleared(i)[3];
     }
 }
+
+// .text:0x000B43E8 size:0x444
+// NONMATCHING 60%: the original inlines fn_3_B42A8, fn_3_B3CAC and fn_3_B3FE8 (calls here; same effects).
+// Matching needs fn_3_B3FE8 to match first (then define all three after `dont_inline off`).
+#if NONMATCHING
+void fn_3_B43E8(void) {
+    switch (g_GameLogic._125) {
+    case 0:
+        fn_3_B42A8();
+        *(s32*)g_GameLogic.homeTeamInd = 0; // TODO type: stored as one word
+        g_Practice.homeAway = lbl_80366158.practiceChar;
+        g_Practice._192 = lbl_80366158.practiceChar;
+        g_GameLogic.teamBatting = 1;
+        g_GameLogic.teamFielding = 0;
+        g_GameLogic.homeTeamBattingInd_fieldingTeam = 1;
+        g_GameLogic.awayTeamBattingInd_battingTeam = 0;
+        g_GameLogic.teams[0] = lbl_80366158.practiceChar;
+        g_GameLogic.teams[1] = lbl_80366158.practiceChar;
+        g_GameLogic.Team_CaptainRosterLoc[0] = 0;
+        g_GameLogic.Team_CaptainRosterLoc[1] = 0;
+        g_GameLogic._125++;
+        break;
+    case 1:
+        lbl_80366B18.msgTable = ARAMTransfer(lbl_3_data_10578, 0, 1, 0);
+        g_GameLogic._125++;
+        break;
+    case 2:
+        if (lbl_803C6CF8.done == 1) {
+            fn_800111B4((void*)lbl_80366B18.msgTable);
+            lbl_3_common_bss_34C58._2C = 0;
+            g_GameLogic._125++;
+            fn_8000F4B8(g_Practice._192, -1, -1, -1);
+        }
+        break;
+    case 3:
+        if (fn_3_90C14(0) != 0) {
+            lbl_3_common_bss_34C58._2C = 0;
+            g_GameLogic._125++;
+        }
+        break;
+    default:
+        g_Practice._19C = 0;
+        lbl_8036E548[0x2D77] = 0;
+        lbl_8036E548[0x2D7B] = 0;
+        lbl_8036E548[0x2D7C] = 0;
+        fn_8001594C(g_GameLogic.teamFielding);
+        g_Practice.lakituTextIndex = -1;
+        g_Practice.returnToPracticeMenuState = 1;
+        g_Practice.someCharID1 = -1;
+        g_Practice.someCharID2 = -1;
+        g_Practice._1B1 = 0;
+        g_Practice._1DA = 1;
+        fn_3_5A6D4(5);
+        fn_3_B3CAC(0xA);
+        fn_3_B5D4C(0);
+        fn_3_B3FE8();
+        break;
+    }
+}
+#endif
