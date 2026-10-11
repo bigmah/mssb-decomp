@@ -2750,3 +2750,81 @@ void fn_2_7207C(void) {
     }
 }
 #endif
+
+extern u8 lbl_2_data_2B59C[];
+
+// fn_2_8279C, size:0x554
+// NONMATCHING 93%: CW sign-extends the team icon differently (extsb vs extsh); register allocation
+#if NONMATCHING
+void fn_2_8279C(void) {
+    u8* o = lbl_803CC1B8;
+    u8* w;
+    s32 i;
+    s8 other;
+    s8 icon;
+    s32 cpu;
+    u8 x;
+    *(u8**)(lbl_8034E9A0 + 0x474C) = o; // TODO type
+    fn_80034E20(o, lbl_2_data_2B59C);
+    w = lbl_8034E9A0;
+    for (i = 0; i < 2; i++) {
+        if (g_d_GameSettings._10 == 0 && i != 0) {
+            if (g_d_GameSettings._10 == 0) {
+                if ((s8)lbl_8034E9A0[0x46F8] == 0) {
+                    other = 1;
+                } else {
+                    other = 0;
+                }
+            }
+            MN_SLOT(0x7A + BASE(o) + i)->frame = other << 16;
+            MN_SLOT(0x18 + BASE(o) + i)->frame = (other + 4) << 16;
+        } else {
+            cpu = 0;
+            MN_SLOT(0x7A + BASE(o) + i)->frame = (s8)w[0x46F8] << 16;
+            if (g_d_GameSettings._10 == 0 && i != 0) {
+                cpu = 1;
+            }
+            if (cpu) {
+                if ((s8)w[0x46F8] == -1) {
+                    icon = (i != 0) + 4;
+                } else {
+                    icon = (s8)w[0x46F8] + 4;
+                }
+            } else {
+                icon = (s8)w[0x46F8];
+            }
+            MN_SLOT(0x18 + BASE(o) + i)->frame = icon << 16;
+        }
+        w++;
+        MN_SLOT(0x1A + BASE(o) + i)->flags &= ~2;
+        MN_SLOT(0xB2 + BASE(o) + i)->flags &= ~2;
+    }
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        MN_SLOT(0x98 + BASE(o))->flags &= ~2;
+        x = lbl_8034E9A0[0x34 + (starMissionCompletionTracker[0x441D] / 9) * 0x5A0 + (starMissionCompletionTracker[0x441D] % 9) * 0xA0];
+        fn_800363D8(o, 0x89, 1, 3, lbl_2_data_2B3A4[x]);
+        fn_800363D8(o, 0x8B, 1, 3, lbl_2_data_2B3A4[x]);
+        x = lbl_8034E9A0[0x34 + (starMissionCompletionTracker[0x441F] / 9) * 0x5A0 + (starMissionCompletionTracker[0x441F] % 9) * 0xA0];
+        fn_800363D8(o, 0x8A, 1, 3, lbl_2_data_2B3A4[x]);
+        fn_800363D8(o, 0x8C, 1, 3, lbl_2_data_2B3A4[x]);
+    }
+    for (i = 0; i < 2; i++) {
+        s32 j;
+        for (j = 0; j < 5; j++) {
+            MN_SLOT(0x6E + BASE(o) + i * 5 + j)->frame = 0;
+            MN_SLOT(0x6E + BASE(o) + i * 5 + j)->state = 0;
+        }
+    }
+    MN_SLOT(0x1C + BASE(o))->flags &= ~2;
+    MN_SLOT(0x1D + BASE(o))->flags &= ~2;
+    MN_SLOT(0x1E + BASE(o))->flags &= ~2;
+    MN_SLOT(0x1F + BASE(o))->flags &= ~2;
+    MN_SLOT(0x84 + BASE(o))->flags &= ~2;
+    MN_SLOT(0xAE + BASE(o))->flags &= ~2;
+    MN_SLOT(0xAF + BASE(o))->flags &= ~2;
+    lbl_8034E9A0[0x48B2] = 0;
+    lbl_8034E9A0[0x48B1] = 0;
+    *(u16*)(lbl_8034E9A0 + 0x4760) = 0;
+    *(void**)lbl_803CC1B8 = fn_2_81628;
+}
+#endif
