@@ -386,8 +386,8 @@ void fn_80033620(void) {
 }
 
 // .text:0x80033794 size:0x38
-void fn_80033794(void) {
-    return;
+void fn_80033794(Particle* list) {
+    FreeParticles(list);
 }
 
 // .text:0x800337CC size:0x90
