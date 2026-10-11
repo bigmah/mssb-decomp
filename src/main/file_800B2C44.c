@@ -644,9 +644,121 @@ void fn_800B4278(GameActor* actor) {
 }
 
 // .text:0x800B43A0 size:0x384
-void fn_800B43A0(void) {
-    return;
+// ACTBuild: allocates an actor and all its bones/matrices in one block.
+// NONMATCHING 93%: original frame is 0xA0 bytes larger and the size sums are associated differently
+#if NONMATCHING
+GameActor* fn_800B43A0(ActorLayout* layout) {
+    Mtx identity;
+    struct DODisplayObj* skin;
+    GameActor* actor;
+    u16 boneCount;
+    u32 boneArraySize;
+    u32 forwardSize;
+    u32 skinSize;
+    u32 orientSize;
+    u32 invTransposeSize;
+    u32 vertexSize;
+    u16 compSize;
+    PositionData* pos;
+    u32 size;
+
+    skinSize = 0;
+    orientSize = 0;
+    invTransposeSize = 0;
+    vertexSize = 0;
+    boneCount = 0;
+    boneArraySize = OSRoundUp32B(layout->totalBones * sizeof(GameBone*));
+    forwardSize = OSRoundUp32B(layout->totalBones * sizeof(Mtx));
+    if (layout->skinFileID != 0xFFFF) {
+        DOGet(&skin, layout->geoPalette, layout->skinFileID);
+        skinSize = orientSize = OSRoundUp32B(layout->totalBones * sizeof(Mtx));
+        if (skin->lightingData != NULL) {
+            invTransposeSize = skinSize;
+        }
+        pos = skin->positionData;
+        switch ((u8)(pos->quantizeInfo >> 4)) {
+        case 0:
+        case 1:
+            compSize = 1;
+            break;
+        case 2:
+        case 3:
+            compSize = 2;
+            break;
+        case 4:
+            compSize = 4;
+            break;
+        default:
+            compSize = 0;
+            break;
+        }
+        vertexSize = OSRoundUp32B(pos->numPositions * (pos->compCount * compSize));
+    }
+
+    size = boneArraySize + forwardSize + skinSize + orientSize + vertexSize + invTransposeSize;
+    actor = _OSAllocFromHeap(0x20, size + OSRoundUp32B(layout->totalBones * sizeof(GameBone)) + sizeof(GameActor));
+    actor->boneArray = (GameBone**)(actor + 1);
+    actor->forwardMtxArray = (Mtx*)((u8*)actor->boneArray + boneArraySize);
+    actor->skinObject = skin;
+    actor->skHeader = NULL;
+    PSMTXIdentity(identity);
+    actor->actorID = layout->actorID;
+    actor->layout = layout;
+    actor->totalBones = layout->totalBones;
+    DSInitTree(&actor->hierarchy, NULL, &((GameBone*)NULL)->branch);
+    DSInitList(&actor->drawPriorityList, NULL, &((GameBone*)NULL)->drawPriorityLink);
+    actor->pal = NULL;
+    if (layout->geoPalette != NULL) {
+        actor->pal = layout->geoPalette;
+    }
+
+    if (layout->skinFileID != 0xFFFF) {
+        u32 normalOffset;
+
+        DOSetWorldMatrix(actor->skinObject, identity);
+        actor->skinMtxArray = (Mtx*)((u8*)actor->forwardMtxArray + forwardSize);
+        actor->orientationInvMtxArray = (Mtx*)((u8*)actor->skinMtxArray + skinSize);
+        // Move the skin's vertex positions (and the normals right after them) into the actor block.
+        normalOffset = actor->skinObject->lightingData->normalArray - actor->skinObject->positionData->positionArray;
+        actor->skinObject->positionData->positionArray = (char*)actor->orientationInvMtxArray + orientSize;
+        actor->skinObject->lightingData->normalArray = actor->skinObject->positionData->positionArray + normalOffset;
+        if (actor->skinObject->lightingData != NULL) {
+            actor->skinInvTransposeMtxArray = (Mtx*)(actor->skinObject->positionData->positionArray + vertexSize);
+        } else {
+            actor->skinInvTransposeMtxArray = NULL;
+        }
+    } else {
+        actor->skinObject = NULL;
+        actor->skinMtxArray = NULL;
+        actor->orientationInvMtxArray = NULL;
+        actor->skinInvTransposeMtxArray = NULL;
+    }
+
+    actor->worldControl.base.type = 0;
+    if (layout->hierarchy.Root != NULL) {
+        fn_800B4084(NULL, (ActorBone*)layout->hierarchy.Root, actor, &boneCount,
+                    (GameBone*)((u8*)actor->forwardMtxArray +
+                                (forwardSize + skinSize + orientSize + vertexSize + invTransposeSize)));
+    }
+    if (boneCount != actor->totalBones) {
+        OSPanic("act.c", 0x1F0, "Incorrect number of bones in actor");
+    }
+    if (actor->skinObject != NULL) {
+        f_BuildBoneSkinOrientationMatrix((GameBone*)actor->hierarchy.Root, identity);
+    }
+    ACTSort(actor);
+    actor->anchorBoneA = 0;
+    actor->anchorBoneB = 0;
+    actor->rootBone = 0;
+    actor->boneRemap = NULL;
+    actor->blend = 1.0f;
+    actor->blendSpeed = 0.0f;
+    actor->tickFlag = 0;
+    actor->flags = 0;
+    actor->boneCallback = NULL;
+    return actor;
 }
+#endif
 
 // .text:0x800B4724 size:0x8
 void fn_800B4724(GameActor* actor, sHdr* skHeader) {
