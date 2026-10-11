@@ -110,4 +110,8 @@ void fn_3_AC9F8(void);
 
 void fn_3_ACAF8(void);
 
+void fn_3_B3620(void);
+
+void fn_3_B056C(void);
+
 #endif

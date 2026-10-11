@@ -92,6 +92,7 @@ void fn_3_AFDA4(void) {
     lbl_3_common_bss_34C90._1D7 = 0;
 }
 
+#pragma dont_inline off
 // fn_3_AFD80, size:0x24
 void fn_3_AFD80(u8 state) {
     lbl_3_common_bss_34C90.state = state;
@@ -100,6 +101,7 @@ void fn_3_AFD80(u8 state) {
     lbl_3_common_bss_34C90._0E = 0;
     lbl_3_common_bss_34C90._10 = 0;
 }
+#pragma dont_inline on
 
 // fn_3_B0A88, size:0x24
 void fn_3_B0A88(void) {
@@ -182,6 +184,7 @@ void fn_3_B1BCC(void) {
     fn_3_B3C78(0);
 }
 
+#pragma dont_inline off
 // fn_3_B025C, size:0x4C
 void fn_3_B025C(void) {
     if (g_Practice.instructionNumber >= 0 || fn_3_B32B8() == 0) {
@@ -191,6 +194,7 @@ void fn_3_B025C(void) {
         fn_3_31594();
     }
 }
+#pragma dont_inline on
 
 // fn_3_AFDC0, size:0x4C
 void fn_3_AFDC0(void) {
@@ -211,6 +215,7 @@ void fn_3_B0DB0(void) {
     fn_3_5A6D4(7);
 }
 
+#pragma dont_inline off
 // fn_3_B1120, size:0x4C
 void fn_3_B1120(void) {
     if (g_Practice.instructionNumber >= 0 || fn_3_B32B8() == 0) {
@@ -220,7 +225,9 @@ void fn_3_B1120(void) {
         fn_3_B0E00();
     }
 }
+#pragma dont_inline on
 
+#pragma dont_inline off
 // fn_3_B116C, size:0x64
 void fn_3_B116C(void) {
     if (g_Practice.instructionNumber >= 0 || fn_3_B32B8() == 0) {
@@ -233,6 +240,7 @@ void fn_3_B116C(void) {
         fn_3_31594();
     }
 }
+#pragma dont_inline on
 
 // fn_3_B274C, size:0x58
 void fn_3_B274C(void) {
@@ -298,6 +306,7 @@ void fn_3_B0AAC(void) {
     g_GameLogic.TeamStars[0] = 5;
 }
 
+#pragma dont_inline off
 // fn_3_B01E0, size:0x7C
 void fn_3_B01E0(void) {
     ballPhysica();
@@ -312,7 +321,9 @@ void fn_3_B01E0(void) {
         fn_3_B003C();
     }
 }
+#pragma dont_inline on
 
+#pragma dont_inline off
 // fn_3_B03F0, size:0x74
 void fn_3_B03F0(void) {
     fn_3_F578();
@@ -331,6 +342,7 @@ void fn_3_B03F0(void) {
     fn_3_B02A8();
     fn_3_6714C(0);
 }
+#pragma dont_inline on
 
 // fn_3_B254C, size:0xE4
 s32 fn_3_B254C(void) {
@@ -425,6 +437,7 @@ void fn_3_AFA64(void) {
     fn_3_8A958();
 }
 
+#pragma dont_inline off
 // fn_3_AC9F8, size:0x100
 void fn_3_AC9F8(void) {
     if (lbl_3_common_bss_32724[0xC3] == 0) {
@@ -446,7 +459,9 @@ void fn_3_AC9F8(void) {
         }
     }
 }
+#pragma dont_inline on
 
+#pragma dont_inline off
 // fn_3_B0464, size:0x108
 s32 fn_3_B0464(void) {
     if (g_Practice.pauseMenuLoading != 0) {
@@ -473,6 +488,7 @@ s32 fn_3_B0464(void) {
     }
     return 0;
 }
+#pragma dont_inline on
 
 // fn_3_AEFF8, size:0x114
 void fn_3_AEFF8(void) {
@@ -552,6 +568,7 @@ void fn_3_AD2A0(void) {
     fn_3_6EBB4(g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]);
 }
 
+#pragma dont_inline off
 // fn_3_B1470, size:0x108
 s32 fn_3_B1470(void) {
     if (g_Practice.pauseMenuLoading != 0) {
@@ -578,6 +595,7 @@ s32 fn_3_B1470(void) {
     }
     return 0;
 }
+#pragma dont_inline on
 
 #pragma dont_inline off
 // fn_3_B11D0, size:0x128
@@ -1420,4 +1438,54 @@ void fn_3_ACAF8(void) {
         }
         break;
     }
+}
+
+// fn_3_B056C, size:0x308
+void fn_3_B056C(void) {
+    g_GameLogic.hudElementLoadingInd = 0;
+    if (g_Practice._1C7 != 0) {
+        fn_3_B3620();
+        return;
+    }
+    if (fn_3_B1CB0() != 0) {
+        return;
+    }
+    if (g_Practice.instructionNumber >= 0) {
+        fn_3_B2630();
+        if (g_Practice.readyToMoveToNextInstruction != 0) {
+            return;
+        }
+        if (g_Practice.tutorialState == 2) {
+            return;
+        }
+    } else if (fn_3_B0464() != 0) {
+        return;
+    }
+    if (g_Ball.totalFramesAtPlay < 0x7FFE) {
+        g_Ball.totalFramesAtPlay += 1;
+    } else {
+        g_Ball.totalFramesAtPlay = 0x7FFF;
+    }
+    if (g_Practice.frames_sinceMovedToFromMenu < 0xFFFE) {
+        g_Practice.frames_sinceMovedToFromMenu += 1;
+    } else {
+        g_Practice.frames_sinceMovedToFromMenu = 0xFFFF;
+    }
+    switch (g_GameLogic.gameStatus) {
+    case 0:
+        fn_3_B02A8();
+        break;
+    case 1:
+        fn_3_B025C();
+        break;
+    case 2:
+        fn_3_B01E0();
+        break;
+    case 7:
+        fn_3_B03F0();
+        break;
+    }
+    g_Strikes.strikes = 0;
+    g_Strikes.balls = 0;
+    g_Strikes.outs = 0;
 }
