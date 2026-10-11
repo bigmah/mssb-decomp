@@ -741,9 +741,100 @@ void fn_2_89F70(void) {
 }
 
 // .text:0x0008A008 size:0x81C
+// NONMATCHING 98%: register allocation in the logo-table scan and the slot-header block
+// (team id in r5 not r3); comparing the roster ids against `((u8*)save)[0x441D]` gets the
+// roster loop's `addi rN, save, 0x441D` base but not the rest.
+#if NONMATCHING
 void fn_2_8A008(SceneTask* task) {
-    return;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 n;
+    s32 logo;
+    u8 team;
+    ChallengeState* save;
+    u8 unused[3]; // cleared but never read (the original frame has 0x18 bytes of locals)
+
+    memset(unused, 0, 3);
+    for (i = 0; i < 3; i++) {
+        if (lbl_80354768._CF5E[i] != 0) {
+            save = CHALLENGE_SAVE(i);
+            SLOT_OBJ(task, i, 4)->_64 = 0x11;
+            fn_800363D8(task, i + 0x38, 1, 5, i);
+            if (save->_1606 != 0 && save->_441B == 0) {
+                SLOT_OBJ(task, i, 0x3B)->flags |= 2;
+                fn_800363D8(task, i + 0x3B, 1, 4, save->_4416);
+                SLOT_OBJ(task, i, 0x3B)->_5C = 0;
+                SLOT_OBJ(task, i, 0x3B)->_68 = 1;
+                fn_800363D8(task, i + 4, 1, 6, save->_4416);
+                SLOT_OBJ(task, i, 0xB)->flags &= ~2;
+                SLOT_OBJ(task, i, 0x17)->flags &= ~2;
+                SLOT_OBJ(task, i, 0x32)->flags &= ~2;
+                SLOT_OBJ(task, i, 0x35)->flags &= ~2;
+            } else {
+                SLOT_OBJ(task, i, 0x3B)->flags &= ~2;
+                SLOT_OBJ(task, i, 0xB)->flags |= 2;
+                SLOT_OBJ(task, i, 0x17)->flags |= 2;
+                SLOT_OBJ(task, i, 0x38)->flags |= 2;
+                SLOT_OBJ(task, i, 0x32)->flags |= 2;
+                SLOT_OBJ(task, i, 0x35)->flags |= 2;
+                SLOT_OBJ(task, i * 3, 0xE)->flags |= 2;
+                SLOT_OBJ(task, i * 3, 0xF)->flags |= 2;
+                SLOT_OBJ(task, i * 3, 0x10)->flags |= 2;
+                team = save->_441D;
+                for (k = 0; k < 6; k++) {
+                    if (lbl_2_data_2F964[k] == team) {
+                        logo = k;
+                    }
+                }
+                save->_441D = team;
+                SLOT_OBJ(task, i, 0xB)->_5C = 0;
+                fn_800363D8(task, i + 0xB, 1, 0x54, logo);
+                SLOT_OBJ(task, i, 0xB)->color = (SLOT_OBJ(task, i, 0xB)->color & ~0xFF) | 0xFF;
+                SLOT_OBJ(task, i, 0xB)->_68 = 1;
+                if (save->_444B != -1) {
+                    SLOT_OBJ(task, i, 0x32)->flags |= 2;
+                    SLOT_OBJ(task, i, 0x32)->_5C = 0;
+                    fn_800363D8(task, i + 0x32, 4, 0x64, save->_444B);
+                    SLOT_OBJ(task, i, 0x32)->_68 = 1;
+                    SLOT_OBJ(task, i, 0x35)->flags &= ~2;
+                    SLOT_OBJ(task, i, 0x35)->_68 = 0;
+                } else {
+                    SLOT_OBJ(task, i, 0x35)->flags |= 2;
+                    SLOT_OBJ(task, i, 0x35)->_68 = 1;
+                    SLOT_OBJ(task, i, 0x32)->flags &= ~2;
+                }
+                fn_800363D8(task, i + 4, 1, 6, save->_4415);
+                n = 0;
+                for (j = 0; j < 9; j++) {
+                    if (save->teams[j].id != save->_441D) {
+                        SLOT_OBJ(task, i * 8 + n++, 0x1A)->_5C = save->teams[j].id << 16;
+                    }
+                }
+            }
+        } else {
+            SLOT_OBJ(task, i, 4)->_64 = 1;
+            SLOT_OBJ(task, i, 4)->_5C = 0;
+            SLOT_OBJ(task, i, 4)->_68 = 1;
+            fn_800363D8(task, i + 4, 1, 6, 4);
+            SLOT_OBJ(task, i, 0xB)->flags &= ~2;
+            SLOT_OBJ(task, i, 0x17)->flags &= ~2;
+            SLOT_OBJ(task, i, 0x38)->flags &= ~2;
+            SLOT_OBJ(task, i, 0x32)->flags &= ~2;
+            SLOT_OBJ(task, i, 0x35)->flags &= ~2;
+            SLOT_OBJ(task, i, 0x3B)->flags &= ~2;
+            SLOT_OBJ(task, i * 3, 0xE)->flags &= ~2;
+            SLOT_OBJ(task, i * 3, 0xF)->flags &= ~2;
+            SLOT_OBJ(task, i * 3, 0x10)->flags &= ~2;
+        }
+        if (lbl_2_bss_F410.slot == i) {
+            SLOT_OBJ(task, i, 0x3F)->flags |= 2;
+        } else {
+            SLOT_OBJ(task, i, 0x3F)->flags &= ~2;
+        }
+    }
 }
+#endif
 
 // .text:0x0008A824 size:0x3D8
 void fn_2_8A824(void) {
