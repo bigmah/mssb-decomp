@@ -2819,3 +2819,116 @@ void fn_2_42708(void) {
         }
     }
 }
+
+extern s16 lbl_2_data_373C[];
+extern s32 fn_8006C6C4(void);
+
+// fn_2_3C7DC, size:0x558
+void fn_2_3C7DC(void) {
+    s32 i;
+    for (i = 0; i < 20; i++) {
+        (lbl_2_bss_1A824C[0] + 0x19789F)[i] = 0;
+    }
+    fn_8006C6C4();
+    for (i = 0; i < 20; i++) {
+        if (lbl_2_data_373C[i] == 1) {
+            if (i == 5) {
+                if (lbl_2_bss_1A8248[0][0x442C] == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+            } else if (i == 19) {
+                if (*(s8*)(lbl_2_bss_1A8248[0] + 0x43C2) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43C3) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43C4) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43C5) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43C6) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43C7) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43C8) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43C9) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43CA) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43CB) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43CC) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43CD) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43CE) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43CF) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43D0) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43D1) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43D2) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43D3) == 0 ||
+                    *(s8*)(lbl_2_bss_1A8248[0] + 0x43D4) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+            }
+        } else if (lbl_2_data_373C[i] == 0 && *(s8*)(lbl_2_bss_1A8248[0] + i + 0x43C2) == 1) {
+            lbl_2_bss_1A824C[0][i + 0x19789F] = 1;
+        } else if (lbl_2_data_373C[i] == 0 && *(s8*)(lbl_2_bss_1A8248[0] + i + 0x43C2) == 0) {
+            switch (i) {
+            case 6:
+                if (fn_8006C79C(0) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 8:
+                if (fn_8006C79C(4) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 10:
+                if (fn_8006C79C(0xA) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 12:
+                if (fn_8006C79C(6) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 14:
+                if (fn_8006C79C(2) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 16:
+                if (fn_8006C79C(9) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 7:
+                if (fn_8006C79C(1) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 9:
+                if (fn_8006C79C(5) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 11:
+                if (fn_8006C79C(0xB) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 13:
+                if (fn_8006C79C(0x11) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 15:
+                if (fn_8006C79C(3) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 17:
+                if (fn_8006C79C(0x13) == 0) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            case 18:
+                if (lbl_2_bss_1A8248[0][0x4428] != 0x1F) {
+                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
+                }
+                break;
+            }
+        }
+    }
+}
