@@ -13,6 +13,10 @@ extern f32 lbl_3_rodata_C48;
 extern u8 g_Strikes[];
 extern u8 g_Ball[];
 extern u8 g_Fielders[];
+extern s16 lbl_3_data_1C3C[];
+extern f32 lbl_3_rodata_B94;
+extern f32 lbl_3_rodata_B98;
+extern f32 lbl_3_rodata_B60;
 extern u8 lbl_3_data_4884[];
 typedef struct { f32 a, b, c, d; } Ent16;
 extern u8 lbl_8036E548[];
@@ -409,6 +413,10 @@ void fn_3_27648(void) {
 
 // .text:0x00027738 size:0x2C mapped:0x806667CC
 extern u8 g_Fielders[];
+extern s16 lbl_3_data_1C3C[];
+extern f32 lbl_3_rodata_B94;
+extern f32 lbl_3_rodata_B98;
+extern f32 lbl_3_rodata_B60;
 extern int fn_3_9FB8C(f32 x, f32 y);
 extern int fn_3_9FCA4(s16 a, s16 b);
 
@@ -678,9 +686,75 @@ void fn_3_2CEF4(int i) {
 }
 
 // .text:0x0002D080 size:0x288 mapped:0x8066C114
-void fn_3_2D080(void) {
-    return;
+// NONMATCHING 90%: float register allocation and constant-address hoisting differ in the prologue/loop
+#if NONMATCHING
+int fn_3_2D080(int i) {
+    f32 bestY = lbl_3_rodata_B94;
+    int best = 9999;
+    s16 lead = lbl_3_data_1C3C[1];
+    u8* f = g_Fielders + i * 0x268;
+    int saved = 0;
+    int found = 0;
+    int k = 0;
+    f32* y;
+    int t;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 spd;
+    while (k < 360) {
+        y = (f32*)(g_Ball + k * 16 + 0x358);
+        if (*y > lbl_3_rodata_B98) {
+            if (*y > lbl_3_rodata_B9C) {
+                k += 10;
+            } else if (*y > lbl_3_rodata_BA0) {
+                k += 5;
+            } else {
+                k += 2;
+            }
+            continue;
+        }
+        if (*(f32*)(g_Ball + k * 16 + 0x354) == *(f32*)f && *(f32*)(g_Ball + k * 16 + 0x35C) == *(f32*)(f + 8)) {
+            t = 1;
+        } else {
+            dx = *(f32*)(g_Ball + k * 16 + 0x354) - *(f32*)f;
+            dz = *(f32*)(g_Ball + k * 16 + 0x35C) - *(f32*)(f + 8);
+            dx = dx * dx;
+            dz = dz * dz;
+            d = dx + dz;
+            SQRT_L(d);
+            spd = *(f32*)(f + 0x58);
+            if (lbl_3_rodata_B20 == spd) {
+                spd = lbl_3_rodata_B60;
+            }
+            t = (f[0x1D1] / 2) + (int)(d / spd);
+        }
+        if (t < k - lead) {
+            if (!(*y < *(f32*)(f + 0xF4))) {
+                if (found && bestY < *y) {
+                    k = saved;
+                    break;
+                }
+                bestY = *y;
+                saved = k;
+                found = 1;
+            }
+        } else if (found) {
+            k = saved;
+            break;
+        }
+        if (t > best && !found) {
+            break;
+        }
+        best = t;
+        k += 3;
+    }
+    if (k >= 360) {
+        k = 359;
+    }
+    return k;
 }
+#endif
 
 // .text:0x0002D308 size:0x174 mapped:0x8066C39C
 // 95%: prologue scheduling only; original loads the 0.0f const (f0) before the sth/first fielder loads (tried local z = B20, f assigned late)

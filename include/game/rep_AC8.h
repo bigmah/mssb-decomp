@@ -34,7 +34,7 @@ void fn_3_2C2F0(void);
 void fn_3_2C698(void);
 int fn_3_2CBE0(int);
 void fn_3_2CEF4(int);
-void fn_3_2D080(void);
+int fn_3_2D080(int);
 void fn_3_2D308(int);
 void fn_3_2D47C(int);
 void fn_3_2D768(int);
