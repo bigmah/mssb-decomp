@@ -504,8 +504,35 @@ s32 fn_80016B60(CharActor* actor) {
 }
 
 // .text:0x80016F7C size:0x11C
-void fn_80016F7C(void) {
-    return;
+s32 fn_80016F7C(void) {
+    CharActor* src;
+    CharActor* dst;
+
+    if (lbl_8036E548._2D8E == 0) {
+        lbl_8036E548._2D8E = 1;
+        lbl_8036E548.loadStep = 0;
+        lbl_8036E548.loadActor = 0;
+    }
+    do {
+        if (fn_80016B60(&lbl_8036E548.actors[lbl_8036E548.loadActor]) == 0) {
+            goto fail;
+        }
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            src = &lbl_8036E548.actors[lbl_8036E548.loadActor];
+            dst = &lbl_8036E548.actors[lbl_8036E548.loadActor + 4];
+            dst->banks.b[0] = src->banks.b[0];
+            dst->banks.b[1] = src->banks.b[1];
+            dst->banks.b[2] = src->banks.b[2];
+            dst->banks.b[3] = src->banks.b[3];
+            dst->banks.b[4] = src->banks.b[4];
+            dst->banks.b[5] = src->banks.b[5];
+            dst->banks.b[6] = src->banks.b[6];
+        }
+        lbl_8036E548.loadActor++;
+    } while (lbl_8036E548.loadActor < 4);
+    return 1;
+fail:
+    return 0;
 }
 
 // .text:0x80017098 size:0x2A8
