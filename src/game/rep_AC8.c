@@ -17,6 +17,7 @@ extern s16 lbl_3_data_1C3C[];
 extern f32 lbl_3_data_450C[][2];
 extern f32 lbl_3_data_4290[][2][2];
 extern f32 lbl_3_rodata_B74;
+extern f32 lbl_3_rodata_BA4;
 int RandomInt_Game(int max);
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
@@ -838,8 +839,61 @@ void fn_3_2D308(int i) {
 }
 
 // .text:0x0002D47C size:0x2EC mapped:0x8066C510
-void fn_3_2D47C(int a) {
-    return;
+void fn_3_2D47C(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int hold = 0;
+    int best;
+    int k;
+    f32 d;
+    f32 bestD;
+    if (g_Minigame[0x19A4] != 0 || *(s16*)(g_Ball + 0x1B78) >= 0 || g_Ball[0x1BD1] != 0) {
+        hold = 1;
+    }
+    if (g_Minigame[0x1939] != 0 && hold != 0) {
+        f[0x208] = 4;
+    } else if (hold != 0) {
+        *(f32*)(f + 0x14) = *(f32*)f;
+        *(f32*)(f + 0x1C) = *(f32*)(f + 8);
+        return;
+    } else if (g_Ball[0x1BCC] != 0) {
+        f[0x208] = 2;
+    }
+    if (f[0x208] == 1) {
+        if (*(s16*)(g_Ball + 0x1B7A) == 1) {
+            f[0x208] = 2;
+        } else {
+            *(f32*)(f + 0x14) = *(f32*)(g_Ball + 0x348);
+            *(f32*)(f + 0x1C) = *(f32*)(g_Ball + 0x34C);
+        }
+    }
+    if (f[0x208] == 2) {
+        *(f32*)(f + 0x14) = *(f32*)g_Ball;
+        *(f32*)(f + 0x1C) = *(f32*)(g_Ball + 8);
+    }
+    if (f[0x208] == 3) {
+        int n = fn_3_2D080(i);
+        *(f32*)(f + 0x14) = *(f32*)(g_Ball + n * 16 + 0x354);
+        *(f32*)(f + 0x1C) = *(f32*)(g_Ball + n * 16 + 0x35C);
+    }
+    if (f[0x208] == 4) {
+        best = -1;
+        bestD = lbl_3_rodata_BA4;
+        for (k = 0; k < 100; k++) {
+            if (g_Minigame[0x193A + k] != 0) {
+                d = (*(f32*)f - *(f32*)(g_Minigame + k * 12 + 0xCD0)) * (*(f32*)f - *(f32*)(g_Minigame + k * 12 + 0xCD0)) +
+                    (*(f32*)(f + 8) - *(f32*)(g_Minigame + k * 12 + 0xCD8)) * (*(f32*)(f + 8) - *(f32*)(g_Minigame + k * 12 + 0xCD8));
+                SQRT_L(d);
+                if (d < bestD) {
+                    best = k;
+                    bestD = d;
+                }
+            }
+        }
+        if (best >= 0) {
+            *(f32*)(f + 0x14) = *(f32*)(g_Minigame + best * 12 + 0xCD0);
+            *(f32*)(f + 0x1C) = *(f32*)(g_Minigame + best * 12 + 0xCD8);
+        }
+    }
 }
 
 // .text:0x0002D768 size:0x1C4 mapped:0x8066C7FC
