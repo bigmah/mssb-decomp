@@ -1583,9 +1583,9 @@ void fn_800188C0(void) {
     switch (task->state) {
     case 0:
         if (g_d_GameSettings.GameModeSelected == 6) {
-            lbl_8036E548._2C84 = ARAMTransfer(&lbl_800EE910[1], NULL, 0, 0);
+            lbl_8036E548.stadiumFiles = ARAMTransfer(&lbl_800EE910[1], NULL, 0, 0);
         } else {
-            lbl_8036E548._2C84 = ARAMTransfer(&lbl_800EE910[0], NULL, 0, 0);
+            lbl_8036E548.stadiumFiles = ARAMTransfer(&lbl_800EE910[0], NULL, 0, 0);
         }
         task->state++;
         break;
@@ -3022,7 +3022,7 @@ void fn_8001DB74(CharSlotList* list) {
             continue;
         }
         if (slot->_58 != 0) {
-            ACTSetAnimation(slot->act, 0, slot->animId, 0.0f, slot->_60);
+            ACTSetAnimation(slot->model, slot->act, 0, slot->animId, 0.0f, slot->_60);
         }
         if (slot->_59 != 0) {
             fn_800B4CA0(slot->model, slot->_5C);
@@ -3266,7 +3266,7 @@ void fn_8001F228(void) {
         lbl_8036E548.actors[i]._25C = 0;
         lbl_8036E548.active[i] = NULL;
     }
-    lbl_8036E548._2C84 = NULL;
+    lbl_8036E548.stadiumFiles = NULL;
     lbl_8036E548._2C88 = NULL;
     lbl_8036E548.fileBuf = NULL;
     // NOTE: the original clears 16 entries per bankSets row, running past the
