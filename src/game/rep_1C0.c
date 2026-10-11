@@ -668,7 +668,7 @@ typedef struct StadiumSkyObj {
     /*0x04*/ void (*func)(struct StadiumSkyObj* obj);
     /*0x08*/ Mtx model;
     /*0x38*/ Mtx view;
-    /*0x68*/ u8 _68[4];
+    /*0x68*/ void* layout; // actor layout drawn by fn_3_3638
     /*0x6C*/ s32 camera;
 } StadiumSkyObj; // size: 0x70
 
@@ -682,15 +682,31 @@ typedef struct StadiumScreenFx {
     /*0xE*/ u16 lines;
 } StadiumScreenFx; // size: 0x10
 
+// Per-stadium visual settings (fog, screen effects, sky speed); copied from lbl_3_data_23C.
+typedef struct StadiumVisual {
+    /*0x00*/ u8 fog[0x24]; // read through raw offsets by fn_3_5BF0
+    /*0x24*/ StadiumScreenFx screenFx[3]; // scenes 1, 2, other
+    /*0x54*/ f32 skySpeed;
+    /*0x58*/ GXColor clearColor; // fn_3_35F0
+    /*0x5C*/ u8 _5C;
+    /*0x5D*/ u8 _5D; // passed to fn_8003AE5C
+    /*0x5E*/ u8 _5E[2];
+} StadiumVisual; // size: 0x60
+
 // View of g_UNK_StadiumDetails, only the fields used by this unit's sky code.
 typedef struct StadiumGfx {
-    /*0x000*/ u8 _000[8];
+    /*0x000*/ void* textures; // texture list of the loaded stadium archive
+    /*0x004*/ void* texArchive;
     /*0x008*/ StadiumSkyObj sky[7][2];
-    /*0x628*/ u8 _628[0x710 - 0x628];
+    /*0x628*/ u8 _628[0x70A - 0x628];
+    /*0x70A*/ s16 lightCount;
+    /*0x70C*/ u8* lights; // relocated offset table
     /*0x710*/ f32 skyAngle;
-    /*0x714*/ u8 _714[0x738 - 0x714];
-    /*0x738*/ StadiumScreenFx screenFx[3]; // scenes 1, 2, other
-    /*0x768*/ f32 skySpeed;
+    /*0x714*/ StadiumVisual visual;
+    /*0x774*/ u8 _774;
+    /*0x775*/ u8 _775[3];
+    /*0x778*/ u8* table2; // relocated offset table
+    /*0x77C*/ s16 table2Count;
 } StadiumGfx;
 #define sStadiumGfx (*(StadiumGfx*)g_UNK_StadiumDetails) // TODO type: g_UNK_StadiumDetails is u8[] here
 
@@ -720,9 +736,9 @@ typedef struct StadiumDrawData {
     /*0x1C4*/ StadiumCameraNode cameraNodes[4][2];
 } StadiumDrawData; // size: 0x224
 
-// lbl_3_data_23C ends with the two fn_3_3818 nodes.
+// lbl_3_data_23C: stadium visual settings, then the two fn_3_3818 nodes.
 typedef struct StadiumData23C {
-    /*0x000*/ u8 _000[0x5A0];
+    /*0x000*/ StadiumVisual visuals[15]; // [miniGameStadiumIndicator * 7 + StadiumID]
     /*0x5A0*/ StadiumFogNode drawCallbackNodes[2];
 } StadiumData23C;
 
@@ -759,10 +775,10 @@ void fn_3_567C(void) {
     switch (g_GameLogic.sceneID) {
     case 1:
     case 2:
-        fx = &sStadiumGfx.screenFx[g_GameLogic.sceneID - 1];
+        fx = &sStadiumGfx.visual.screenFx[g_GameLogic.sceneID - 1];
         break;
     default:
-        fx = &sStadiumGfx.screenFx[2];
+        fx = &sStadiumGfx.visual.screenFx[2];
         break;
     }
     if (lbl_8036E548[0x307E] == 0) { // TODO type: CharMgr._307E
@@ -773,7 +789,7 @@ void fn_3_567C(void) {
         fn_3_BD1D8(fn_80052768_getCamera(0)->view);
     }
     fn_3_B8C08(fn_80052768_getCamera(0)->view);
-    sStadiumGfx.skyAngle += sStadiumGfx.skySpeed;
+    sStadiumGfx.skyAngle += sStadiumGfx.visual.skySpeed;
     if (sStadiumGfx.skyAngle >= 6.2831855f) {
         sStadiumGfx.skyAngle -= 6.2831855f;
     }
@@ -948,6 +964,103 @@ void fn_3_5E60(void) {
     fn_800BCDBC(p + *(s32*)(p + 0xC));
     fn_800ACFB0(*(void**)(b + 4));
 }
+
+// Offsets (from the archive start) of the parts of a loaded stadium archive.
+typedef struct StadiumArchive {
+    /*0x00*/ u32 layout;
+    /*0x04*/ u32 skyLayout;
+    /*0x08*/ u32 lights;
+    /*0x0C*/ u32 geometry;
+    /*0x10*/ u32 skyGeometry;
+    /*0x14*/ u32 textures;
+    /*0x18*/ u32 _18[4];
+    /*0x28*/ u32 fadeTextures;
+    /*0x2C*/ u32 table2;   // optional
+    /*0x30*/ u32 textures3; // optional
+} StadiumArchive;
+
+struct LoadedActorLayout;
+extern void fn_800B2AC8(struct LoadedActorLayout* layout);
+extern void fn_8003AE5C(u8 value);
+extern void fn_8003AD84(void* archive);
+extern void fn_800BF038(void (*callback)(Mtx view, s32 arg));
+extern void fn_3_BD434(int stadium, int variant);
+
+// Sets up a freshly loaded stadium archive: relocates and links its models
+// and textures, fills the per-camera sky objects and copies the stadium's
+// visual settings.
+// .text:0x00005EC0 size:0x564
+// NONMATCHING 97%: fn_800BD190's s32 texture parameter makes us keep an extra copy of `textures`
+// (a void* prototype gives the original 4-register allocation)
+#if NONMATCHING
+void fn_3_5EC0(StadiumArchive* arc) {
+    void* layout = (u8*)arc + arc->layout;
+    void* geometry = (u8*)arc + arc->geometry;
+    void* textures = (u8*)arc + arc->textures;
+    s32 i;
+
+    sStadiumGfx.lightCount = fn_3_6424((u8*)arc + arc->lights, &sStadiumGfx.lights);
+    fn_800B49E4(layout);
+    fn_800BCE38(geometry);
+    convertTextureHeader(textures);
+    fn_800BD190(geometry, (s32)textures); // TODO type: second argument is a pointer
+    haveActLayoutPointToGeoHeader(layout, geometry);
+    fn_800B2AC8(layout);
+    sStadiumGfx.texArchive = textures;
+    PSMTXIdentity(sStadiumGfx.sky[1][0].model);
+    sStadiumGfx.sky[1][0].link = 2;
+    sStadiumGfx.sky[1][0].func = (void (*)(StadiumSkyObj*))fn_3_3638;
+    sStadiumGfx.sky[1][0].layout = layout;
+    sStadiumGfx.sky[1][1] = sStadiumGfx.sky[1][0];
+    sStadiumGfx.sky[3][0] = sStadiumGfx.sky[1][0];
+    sStadiumGfx.sky[3][1] = sStadiumGfx.sky[1][0];
+    for (i = 0; i < STADIUM_EXTRA_CAMERAS; i++) {
+        sStadiumGfx.sky[6 + i][0] = sStadiumGfx.sky[1][0];
+        sStadiumGfx.sky[6 + i][1] = sStadiumGfx.sky[1][0];
+    }
+
+    // The sky model shares the stadium textures.
+    layout = (u8*)arc + arc->skyLayout;
+    geometry = (u8*)arc + arc->skyGeometry;
+    fn_800B49E4(layout);
+    fn_800BCE38(geometry);
+    fn_800BD190(geometry, (s32)textures); // TODO type: second argument is a pointer
+    haveActLayoutPointToGeoHeader(layout, geometry);
+    sStadiumGfx.sky[0][0].link = 2;
+    sStadiumGfx.sky[0][0].func = (void (*)(StadiumSkyObj*))fn_3_3638;
+    sStadiumGfx.sky[0][0].layout = layout;
+    sStadiumGfx.sky[0][1] = sStadiumGfx.sky[0][0];
+    sStadiumGfx.sky[2][0] = sStadiumGfx.sky[0][0];
+    sStadiumGfx.sky[2][1] = sStadiumGfx.sky[0][0];
+    for (i = 0; i < STADIUM_EXTRA_CAMERAS; i++) {
+        sStadiumGfx.sky[4 + i][0] = sStadiumGfx.sky[0][0];
+        sStadiumGfx.sky[4 + i][1] = sStadiumGfx.sky[0][0];
+    }
+
+    sStadiumGfx.visual =
+        lbl_3_data_23C.visuals[g_d_GameSettings.miniGameStadiumIndicator * 7 + g_d_GameSettings.StadiumID];
+    sStadiumGfx.textures = (u8*)textures + 4; // TODO type: TexArchive entries
+    sStadiumGfx._774 = 0;
+    fn_8003AE5C(sStadiumGfx.visual._5D);
+
+    geometry = (u8*)arc + arc->fadeTextures;
+    convertTextureHeader(geometry);
+    *(void**)(lbl_3_common_bss_35154 + 0x3B4) = (u8*)geometry + 4; // TODO type: FadeState field 0x3B4
+    fn_3_BD434(g_d_GameSettings.StadiumID, g_d_GameSettings.miniGameStadiumIndicator);
+
+    if (arc->table2 != 0) {
+        sStadiumGfx.table2Count = fn_3_6424((u8*)arc + arc->table2, &sStadiumGfx.table2);
+    } else {
+        sStadiumGfx.table2Count = 0;
+    }
+    if (arc->textures3 != 0) {
+        geometry = (u8*)arc + arc->textures3;
+        convertTextureHeader(geometry);
+        fn_8003AD84(geometry);
+    }
+    fn_800BF038((void (*)(Mtx, s32))fn_3_35F0);
+}
+#endif
 
 // .text:0x000064DC size:0x54
 void fn_3_64DC(void) {
