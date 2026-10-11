@@ -54,6 +54,7 @@ extern int fn_3_B7CDC(f32, f32);
 extern f32 lbl_3_data_5CDC[];
 extern f32 lbl_3_data_5D08[];
 extern s16 lbl_3_data_79B4[];
+u8 fn_3_107D70(s8 i);
 extern u8 g_Batter[];
 BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern u8 lbl_3_common_bss_34C90[];
@@ -1908,9 +1909,106 @@ tail:
 #endif
 
 // .text:0x0002EEC4 size:0x5C0 mapped:0x8066DF58
+// NONMATCHING 85%: register allocation; fn_3_107D70 is declared u8 (its unit's header) but the original tests the full r3 (cmplwi)
+#if NONMATCHING
 void fn_3_2EEC4(int a) {
-    return;
+    u8* pads = g_Minigame + 0x18CC;
+    int n = *(s8*)(g_Minigame + a + 0x18F8);
+    u8* f;
+    u8* in;
+    s16* hist;
+    int i;
+    s16 hb;
+    f32 x;
+    f32 z;
+    f32 d;
+    f32 sx;
+    f32 sz;
+    g_Minigame[0x1922] = a;
+    g_Minigame[0x1923] = n;
+    f = g_Fielders + n * 0x268;
+    in = g_Controls + *(s8*)(pads + (u8)a) * 0x10;
+    if (fn_3_107D70(pads[(u8)a]) != 0) {
+        in = g_Minigame + *(s8*)(pads + g_Minigame[0x1922]) * 0x10 + 0x1D7C;
+    }
+    hist = lbl_3_bss_C8.hist[*(s8*)(pads + g_Minigame[0x1922])];
+    for (i = 19; i > 0; i--) {
+        lbl_3_bss_C8.tmp[i] = hist[i - 1];
+    }
+    lbl_3_bss_C8.tmp[0] = *(s16*)in;
+    if (lbl_3_bss_C8.tmp[0] == -1) {
+        for (i = 1; i < 20; i++) {
+            lbl_3_bss_C8.tmp[i] = -1;
+        }
+    }
+    if (lbl_3_bss_C8.tmp[1] >= 0 && lbl_3_bss_C8.tmp[2] != 0) {
+        lbl_3_bss_C8.cur = lbl_3_bss_C8.tmp[0];
+    } else {
+        lbl_3_bss_C8.cur = -1;
+    }
+    for (i = 0; i < 20; i++) {
+        hist[i] = lbl_3_bss_C8.tmp[i];
+    }
+    *(u16*)(g_FieldingLogic + 0x148) = *(u16*)(in + 4);
+    *(u16*)(g_FieldingLogic + 0x14A) = *(u16*)(in + 6);
+    *(u16*)(g_FieldingLogic + 0x14C) = *(u16*)(in + 8);
+    if (g_Minigame[0x1A2A] != 5 && (*(u16*)(g_FieldingLogic + 0x14A) & 0x100)) {
+        (*(u8**)(g_FieldingLogic + 0x8C))[2] = 2;
+        *(s16*)*(u8**)(g_FieldingLogic + 0x8C) = lbl_3_bss_C8.tmp[0];
+    }
+    if (g_Minigame[0x1A2A] == 5 || g_Minigame[0x1A2A] == 6) {
+        if (f[0x1D3] == 0 || f[0x1D3] == 9) {
+            SetFielderAct(n, 0xF, 0x78);
+        }
+    } else {
+        if (*(s16*)(g_Ball + 0x1B66) <= 0) {
+            return;
+        }
+        if (*(s16*)(g_Ball + 0x1B66) == 1) {
+            SetFielderAct(n, 0xF, 0x78);
+            goto tail;
+        }
+    }
+    fn_3_51220();
+    fn_3_55EEC(n);
+    ((FielderActEntry*)lbl_3_data_3C40)[f[0x1D3]].fn(n);
+    fn_3_55CC4(n);
+tail:
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        if (g_d_GameSettings[0x11] == 0 || g_Minigame[0x1923] == i) {
+            fn_3_54B58(i);
+            *(f32*)(f + 0x7C) = fn_3_9CE0(*(f32*)f, *(f32*)(f + 8));
+            if (0.0f == *(f32*)(f + 0x50)) {
+                *(f32*)(f + 0x38) = 0.0f;
+                *(f32*)(f + 0x3C) = 0.0f;
+            } else {
+                *(f32*)(f + 0x38) = *(f32*)(f + 0x30) / *(f32*)(f + 0x50);
+                *(f32*)(f + 0x3C) = *(f32*)(f + 0x34) / *(f32*)(f + 0x50);
+            }
+            f[0x1EA] = 0;
+            f[0x217] = 0;
+        }
+    }
+    fn_3_544B8();
+    if (g_d_GameSettings[0x11] != 0) {
+        fn_3_53F48();
+    } else if ((hb = *(s16*)(g_Ball + 0x1B78)) >= 0) {
+        x = *(f32*)(g_Fielders + hb * 0x268);
+        z = ((f32*)(g_Fielders + 8))[hb * 0x9A];
+        *(f32*)(g_Ball + 0) = x;
+        *(f32*)(g_Ball + 4) = ((f32*)(g_Fielders + 4))[hb * 0x9A];
+        *(f32*)(g_Ball + 8) = z;
+        *(f32*)(g_Ball + 0x348) = x;
+        *(f32*)(g_Ball + 0x34C) = z;
+        sx = x * x;
+        sz = z * z;
+        d = sx + sz;
+        SQRT_L(d);
+        *(f32*)(g_Ball + 0x1A00) = d;
+    }
 }
+#endif
 
 // .text:0x0002F484 size:0xF0 mapped:0x8066E518
 void fn_3_2F484(void) {
