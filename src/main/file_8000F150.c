@@ -327,7 +327,39 @@ ActorMgrActor* fn_800111FC(ActorMgrActor* actor, s32 second) {
 
 // .text:0x80011358 size:0x110
 void fn_80011358(s32 index, s32 kind) {
-    return;
+    ActorMgrActor* actor;
+    ActorModelSlot* models;
+    ActorModelSlot* models2;
+    ActorModel* model;
+    ActorModel** target;
+    u16 anim;
+    s32 i;
+    if (index < 0 || index >= 13) {
+        return;
+    }
+    actor = lbl_8036E548.active[index];
+    if (actor == NULL || (models = lbl_8036E548.models) == NULL || (models2 = lbl_8036E548.models2) == NULL) {
+        return;
+    }
+    anim = actor->anim;
+    if (anim == 0xFFFF) {
+        return;
+    }
+    if (kind < 0 || kind >= 5) {
+        kind = 4;
+    }
+    target = &models[actor->modelIndex].model;
+    if (kind == 4) {
+        fn_800B2BA8(*target, anim, NULL, 0);
+        return;
+    }
+    model = models2[kind + 21].model;
+    for (i = 0; i < model->animCount; i++) {
+        if (model->anims[i]->_14 != NULL) {
+            fn_800B2BA8(*target, anim, model, i);
+            return;
+        }
+    }
 }
 
 // .text:0x80011468 size:0x108
