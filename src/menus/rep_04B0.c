@@ -841,8 +841,13 @@ void fn_2_16664(void) {
 }
 
 // .text:0x000166CC size:0x58
+// Set up the menu lights as for stadium 0.
 void fn_2_166CC(void) {
-    return;
+    u8 stadium = g_d_GameSettings.StadiumID;
+    g_d_GameSettings.StadiumID = 0;
+    fn_8001CB10(lbl_2_data_1DD4, 4);
+    fn_8001CCC8();
+    g_d_GameSettings.StadiumID = stadium;
 }
 
 // .text:0x00016724 size:0x14C
