@@ -133,6 +133,10 @@ void fn_3_ADA3C(void);
 
 void fn_3_B1578(void);
 
+void fn_3_AE770(void);
+
+void fn_3_AF5A4(void);
+
 void fn_3_B056C(void);
 
 void fn_3_AF10C(void);
@@ -158,5 +162,9 @@ void fn_3_B2E20(void);
 void fn_3_ADA3C(void);
 
 void fn_3_B1578(void);
+
+void fn_3_AE770(void);
+
+void fn_3_AF5A4(void);
 
 #endif
