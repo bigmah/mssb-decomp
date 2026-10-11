@@ -154,6 +154,35 @@ void fn_3_EA340(void) {
 }
 #endif
 
+// .text:0x000ED0F4 size:0x150 mapped:0x8072C188
+// NONMATCHING 97%: scheduling of the sprite/table address computations
+#if NONMATCHING
+void fn_3_ED0F4(void) {
+    EaTask* task = EA_TASK;
+    u32 stadium;
+    u8 vol;
+    s32 voice;
+
+    fn_80034E20(task, lbl_3_data_8F64);
+    EA_SPRITE(task, 1)->anim = lbl_3_data_8FC4[EA_MG._1921 - 1];
+    stadium = g_d_GameSettings.StadiumID;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        vol = lbl_3_data_84B8[0x38];
+    } else {
+        vol = lbl_3_data_8404[stadium * 0x1E + 0x38];
+    }
+    voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 0x1C, vol, 0x3F, 0);
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        vol = lbl_3_data_84B8[0x39];
+    } else {
+        vol = lbl_3_data_8404[stadium * 0x1E + 0x39];
+    }
+    sndFXCtrl(voice, 0x5B, vol);
+    task->timer = 0;
+    EA_MG._19CD = 1;
+    EA_TASK->func = fn_3_ED058;
+}
+#endif
 
 // fn_3_EBFD4, size:0x40
 s32 fn_3_EBFD4(void) {
