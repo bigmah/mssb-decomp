@@ -134,9 +134,25 @@ void SetDisplayStateTexture(TexImage* tex, s32 map, u32 tlutName) {
 }
 
 // .text:0x800245EC size:0xE8
-void fn_800245EC(void) {
-    return;
+// Project `count` points to normalized [0,1] screen coordinates.
+// NONMATCHING 99%: f0/f1 swapped in the y-coordinate fmuls
+#if NONMATCHING
+void fn_800245EC(Mtx44 proj, Mtx view, Vec* points, f32* out, s32 count, s32 ySign) {
+    Vec p;
+    Mtx44 m;
+
+    PSMTX44Identity(m);
+    PSMTXCopy(view, m);
+    PSMTX44Concat(proj, m, m);
+    while (count-- != 0) {
+        PSMTX44MultVec(m, points, &p);
+        points++;
+        out[0] = lbl_803CC598 * p.x + lbl_803CC598;
+        out[1] = -ySign * (lbl_803CC598 * p.y) + lbl_803CC598;
+        out += 2;
+    }
 }
+#endif
 
 // .text:0x800246D4 size:0x110
 void fn_800246D4(void) {
