@@ -126,7 +126,7 @@ s32 fn_3_A6810(f32, f32, f32, f32);
 s32 fn_3_A6ABC(f32, f32);
 void fn_3_A6D48(void);
 void fn_3_A6E98(s32 fielder);
-void fn_3_A7040(void);
+void fn_3_A7040(s32 fi);
 void fn_3_A76B4(void);
 void fn_3_A7C88(void);
 void fn_3_A7EF8(void);

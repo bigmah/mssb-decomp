@@ -101,6 +101,8 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_1A3C;
+extern const f32 lbl_3_rodata_19A8;
 extern const f32 lbl_3_rodata_1A58;
 extern const f32 lbl_3_rodata_1A18;
 extern f32 lbl_3_data_4780[]; // per fielder class: covering distance
@@ -1710,9 +1712,177 @@ void fn_3_A6E98(s32 fielder) {
 }
 
 // .text:0x000A7040 size:0x674 mapped:0x806E60D4
-void fn_3_A7040(void) {
+// NONMATCHING 86%: register allocation differs and the first runner loop uses a ctr loop in the original
+#if NONMATCHING
+void fn_3_A7040(s32 fi) {
+    RepFielder* f;
+    s8 base;
+    s32 i;
+    InMemRunnerType* r;
+    f32 runAng;
+    f32 d;
+    f32 bd;
+    s32 near;
+    s32 kind;
+    s32 b;
+
+    g_FieldingLogic._111 = 0;
+    f = &g_Fielders[fi];
+    base = -1;
+    g_FieldingLogic._0E8 = -1;
+    if (g_Strikes.outs < 3 && g_Ball.ballState == BALL_STATE_HELD && g_Ball.fielderWBallIndex >= 0 &&
+        g_FieldingLogic._124 == 0) {
+        if (f->_1F5 >= 0) {
+            base = f->_1F5;
+        }
+        if (f->distToBase[0] <= lbl_3_rodata_1968) {
+            base = 0;
+        } else if (f->distToBase[1] <= lbl_3_rodata_1968) {
+            base = 1;
+        } else if (f->distToBase[2] <= lbl_3_rodata_1968) {
+            base = 2;
+        } else if (f->distToBase[3] <= lbl_3_rodata_1968) {
+            base = 3;
+        }
+        if (base >= 0) {
+            for (i = 3; i >= 0; i--) {
+                r = &g_Runners[i];
+                if ((g_Pitcher.strikeOutOrWalk != 2 || r->furthestBaseForcedToGoToOnWalk <= r->currentBase) &&
+                    r->runnerOnFieldOrOutOrScored == 1) {
+                    if (base == r->baseStandingOn_Stored && r->baseStandingOn < 0 && g_Ball.timeSinceBallPickedUp > 0xF &&
+                        r->position.x < lbl_3_rodata_1A38) {
+                        g_FieldingLogic._111 = 5;
+                        g_FieldingLogic._0E8 = i;
+                        g_FieldingLogic._112 = 1;
+                        g_FieldingLogic._0EC = 1;
+                        g_FieldingLogic._124 = 0xF;
+                        g_FieldingLogic._135 = 1;
+                        goto found;
+                    }
+                    if (base == r->baseRunningTowards) {
+                        if ((r->forceOutCd == 1 && r->nextBase == base) || r->forceOutType_unsed != 0) {
+                            break;
+                        }
+                        if (r->actionCode != 0) {
+                            if (r->actionFrames_countDown < 6) {
+                                g_FieldingLogic._111 = 1;
+                                g_FieldingLogic._0E8 = i;
+                                g_FieldingLogic._112 = 1;
+                                g_FieldingLogic._124 = 0xF;
+                                g_FieldingLogic._125 = base;
+                                g_FieldingLogic._135 = 1;
+                                if (g_FieldingLogic._0DE >= 0) {
+                                    g_FieldingLogic._0DE = i;
+                                }
+                                goto found;
+                            }
+                        } else if (r->tagUpInd == 2 && r->distanceFromBall < lbl_3_rodata_1A3C &&
+                                   g_Ball.timeSinceBallPickedUp > 0xF) {
+                            if (r->baseStandingOn == base && i != r->baseStandingOn) {
+                                g_FieldingLogic._111 = 5;
+                            } else {
+                                g_FieldingLogic._111 = 2;
+                            }
+                            g_FieldingLogic._0E8 = i;
+                            g_FieldingLogic._112 = 1;
+                            g_FieldingLogic._0EC = 1;
+                            g_FieldingLogic._124 = 0xF;
+                            g_FieldingLogic._135 = 1;
+                            goto found;
+                        }
+                    }
+                }
+            }
+        }
+        if (g_Ball.timeSinceBallPickedUp > 0xF) {
+            for (i = 3; i >= 0; i--) {
+                r = &g_Runners[i];
+                if (r->runnerOnFieldOrOutOrScored != 1 ||
+                    (f->coveringBase >= 0 && r->forceOutCd == 1 && r->nextBase == base)) {
+                    continue;
+                }
+                runAng = game_atan2(r->velocity.x, r->velocity.z);
+                if (fn_3_9FC1C(game_atan2(f->pos.x - r->position.x, f->pos.z - r->position.z), runAng) < 0x100 &&
+                    r->baseStandingOn < 0) {
+                    if ((r->baseStandingOn < 0 || r->tagUpInd == 2) && r->distanceFromBall - f->speed < lbl_3_rodata_1A3C) {
+                        g_FieldingLogic._111 = 2;
+                        g_FieldingLogic._0E8 = i;
+                        g_FieldingLogic._112 = 1;
+                        g_FieldingLogic._0EC = 1;
+                        g_FieldingLogic._124 = 0xF;
+                        g_FieldingLogic._135 = 1;
+                        if (g_FieldingLogic._0DE >= 0) {
+                            g_FieldingLogic._0DE = i;
+                        }
+                        goto found;
+                    }
+                    continue;
+                }
+                d = r->distanceFromBall;
+                near = 0;
+                if (d < lbl_3_rodata_1994) {
+                    if (r->baseStandingOn < 0) {
+                        near = 1;
+                    } else {
+                        if (r->runningDirectionCode == 1 && r->distToCurrentBase > lbl_3_rodata_19A8) {
+                            near = 1;
+                        }
+                        if (r->forceOutCd == 1 && r->baseStandingOn == r->startingBase_baseAchieved) {
+                            near = 1;
+                        }
+                    }
+                }
+                if (near) {
+                    kind = 0;
+                    if (r->forceOutCd == 1 && r->baseStandingOn == r->startingBase_baseAchieved && d < lbl_3_rodata_1A3C) {
+                        kind = 2;
+                    } else if ((g_FieldingLogic._0CC < 0 || g_FieldingLogic._0CC > 3 ||
+                                (bd = f->distToBase[g_FieldingLogic._0CC], !(bd < lbl_3_rodata_198C) &&
+                                 (!(bd < lbl_3_rodata_1994) || (r->forceOutCd == 0 && r->tagUpInd != 2)))) &&
+                               d < lbl_3_rodata_1A3C) {
+                        kind = 1;
+                    }
+                    if (kind) {
+                        g_FieldingLogic._111 = 2;
+                        g_FieldingLogic._0E8 = i;
+                        g_FieldingLogic._112 = 1;
+                        g_FieldingLogic._0EC = 1;
+                        g_FieldingLogic._124 = 0xF;
+                        g_FieldingLogic._135 = 1;
+                        if (g_FieldingLogic._0DE >= 0) {
+                            g_FieldingLogic._0DE = i;
+                        }
+                        goto found;
+                    }
+                }
+            }
+        }
+        if (g_FieldingLogic._111 == 2 && f->speed == lbl_3_rodata_193C) {
+            g_FieldingLogic._111 = 5;
+        }
+    }
     return;
+found:
+    r = &g_Runners[g_FieldingLogic._0E8];
+    if (r->actionCode != 0) {
+        if (r->runningDirectionCode == 1) {
+            b = g_Runners[g_FieldingLogic._0E8].currentBase;
+            g_FieldingLogic._090.x = lbl_3_data_4444[b * 2];
+            g_FieldingLogic._090.y = lbl_3_rodata_193C;
+            g_FieldingLogic._090.z = lbl_3_data_4444[b * 2 + 1];
+            return;
+        }
+        b = g_Runners[g_FieldingLogic._0E8].nextBase;
+        g_FieldingLogic._090.x = lbl_3_data_4444[b * 2];
+        g_FieldingLogic._090.y = lbl_3_rodata_193C;
+        g_FieldingLogic._090.z = lbl_3_data_4444[b * 2 + 1];
+        return;
+    }
+    g_FieldingLogic._090.x = g_Runners[g_FieldingLogic._0E8].position.x;
+    g_FieldingLogic._090.y = r->position.y;
+    g_FieldingLogic._090.z = r->position.z;
 }
+#endif
 
 // .text:0x000A76B4 size:0x5D4 mapped:0x806E6748
 // NONMATCHING 99%: scratch registers differ (g_Ball base, input pointer, stick angle); fn_3_AB554 is inlined
