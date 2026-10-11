@@ -2103,3 +2103,109 @@ void fn_3_ACD38(void) {
         }
     }
 }
+
+// fn_3_AE334, size:0x43C
+void fn_3_AE334(void) {
+    s32 i;
+    s32 row = 0;
+    if (g_d_GameSettings.exhibitionMatchInd == 0) {
+        row = 1;
+    }
+    switch (lbl_3_common_bss_34C90.subState) {
+    case 0:
+        for (i = 0; i < 9; i++) {
+            lbl_3_common_bss_34C90.positions[i] = lbl_80354720[lbl_3_common_bss_34C90.team][i].slot;
+        }
+        lbl_3_common_bss_34C90.subFrames = 0;
+        lbl_3_common_bss_34C90.subState = 1;
+        lbl_3_common_bss_34C90.positionsChanged = 0;
+        if (lbl_3_common_bss_34C58._2A != 0) {
+            lbl_3_common_bss_34C58._2A = 2;
+            lbl_3_common_bss_34C58._24 = 0x78;
+        }
+        break;
+    case 1:
+        if (lbl_3_common_bss_34C90.subFrames > 20) {
+            lbl_3_common_bss_34C90.subState = 2;
+        }
+        break;
+    case 2:
+        fn_3_ADEDC();
+        lbl_3_common_bss_34C90.subFrames = 0;
+        break;
+    case 3:
+        if (lbl_3_common_bss_34C90.subFrames == 1) {
+            changeScene(3, 6);
+            lbl_3_common_bss_34C58._2A = 1;
+            lbl_3_common_bss_34C58._24 = 5;
+        }
+        if (lbl_8037169C._13 != 0) {
+            lbl_3_common_bss_34C90.subState = 4;
+        }
+        break;
+    case 4:
+        switch (lbl_3_data_F918[row][0].items[lbl_3_common_bss_34C90.cursor]) {
+        case 0:
+            fn_3_AFD80(3);
+            break;
+        }
+        lbl_3_common_bss_34C90._1D9 = 2;
+        break;
+    case 5:
+        if (lbl_3_common_bss_34C90.subFrames > 20) {
+            lbl_3_common_bss_34C90.subState = 6;
+        }
+        break;
+    case 6:
+        switch (lbl_3_data_F918[row][0].items[lbl_3_common_bss_34C90.cursor]) {
+        case 3:
+            fn_3_AFD80(4);
+            break;
+        case 5:
+            lbl_3_common_bss_34C90._220 = 1;
+            fn_3_AFD80(6);
+            break;
+        case 4:
+            fn_3_AFD80(5);
+            break;
+        case 1:
+            fn_3_AFD80(7);
+            break;
+        case 2:
+            fn_3_AFD80(8);
+            break;
+        }
+        break;
+    case 7:
+        switch (fn_3_5B380(lbl_3_common_bss_34C90.newButtons)) {
+        case 1:
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            lbl_3_common_bss_34C90.subState = 8;
+            break;
+        case 2:
+            lbl_3_common_bss_34C90.subState = 2;
+            break;
+        }
+        break;
+    case 8:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 0x2D) {
+            if (g_d_GameSettings.exhibitionMatchInd == 0) {
+                if (g_d_GameSettings.bJMatchInd == 1) {
+                    fn_800203E0(0xC, (s8)lbl_3_data_6104[gChallengeState._441C]);
+                } else {
+                    fn_800203E0(0xC, (s8)lbl_3_data_6104[gChallengeState._441E]);
+                }
+            } else {
+                changeScene(4, 6);
+            }
+        }
+        if (lbl_8037169C._13 != 0) {
+            g_GameLogic.framesOfExitingToMenu = 1;
+            lbl_3_common_bss_34C90._1D9 = 2;
+            g_d_GameSettings._13 = 1;
+            fn_80035B50(0x13);
+            fn_8004CC18();
+        }
+        break;
+    }
+}

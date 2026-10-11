@@ -121,6 +121,10 @@ void fn_3_ACAF8(void);
 
 void fn_3_B3620(void);
 
+void fn_3_ADEDC(void);
+
+void fn_3_AE334(void);
+
 void fn_3_B056C(void);
 
 void fn_3_AF10C(void);
@@ -134,5 +138,9 @@ void fn_3_B2AA0(void);
 void fn_3_AEC50(void);
 
 void fn_3_B3620(void);
+
+void fn_3_ADEDC(void);
+
+void fn_3_AE334(void);
 
 #endif
