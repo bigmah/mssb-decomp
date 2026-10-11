@@ -12,8 +12,25 @@ void fn_80011640(Mtx a, Mtx out) {
 }
 
 // .text:0x800116DC size:0xF0
-void fn_800116DC(void) {
-    return;
+void fn_800116DC(CharActor* actor, Mtx m, u16 joint) {
+    Mtx tmp;
+    Mtx scale = {
+        { 1.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 1.0714285f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 1.0f, 0.0f },
+    };
+    MtxPtr dst;
+
+    PSMTXConcat(scale, m, tmp);
+    tmp[0][3] = 0.0f;
+    tmp[1][3] = 0.0f;
+    tmp[2][3] = 0.0f;
+    PSMTXInverse(tmp, tmp);
+    dst = actor->model->joints[joint]->worldMtx;
+    tmp[0][3] = dst[0][3];
+    tmp[1][3] = dst[1][3];
+    tmp[2][3] = dst[2][3];
+    PSMTXCopy(tmp, dst);
 }
 
 // .text:0x800117CC size:0xE0
