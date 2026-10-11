@@ -44,6 +44,12 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern const Vec lbl_3_rodata_2514;
+extern const f64 lbl_3_rodata_2830;
+extern const f64 lbl_3_rodata_2840;
+extern const f32 lbl_3_rodata_2838;
+extern const f32 lbl_3_rodata_2808;
+extern const f32 lbl_3_rodata_2828;
 extern const char lbl_3_rodata_249C[];
 extern const u8 lbl_3_rodata_2498[];
 extern const f32 lbl_3_rodata_2734;
@@ -2128,9 +2134,87 @@ void fn_3_D36B0(u8* p) {
 }
 
 // .text:0x000D3880 size:0x45C mapped:0x80712914
-void fn_3_D3880(void) {
-    return;
+// NONMATCHING 97%: the zero-length test compiles to a plain branch (target goes through cntlzw); cos/0.26 scheduling
+#if NONMATCHING
+// Turns p to face the ball while it is low and in front (within 60 degrees) during game
+// state 2; when it gets close (21.25) it swings (state 4 if within 12.5 or g_Ball[0x1BC9]==1,
+// else 3) and plays the stadium sound. Then steps the 8-node chain.
+void fn_3_D3880(u8* p) {
+    Mtx m;
+    Vec d;
+    Vec flat;
+    Vec c;
+    Vec x;
+    Vec fwd;
+    Vec s1;
+    Vec s2;
+    Vec v;
+    Vec dir;
+    Vec axis;
+    f32 dot;
+    f32 ang;
+    f32 dist;
+    u8* n;
+    x = lbl_3_rodata_2514;
+    memcpy(&c, p + 0xA0, sizeof(Vec));
+    c.y += lbl_3_rodata_2668;
+    if (g_GameLogic[0x11E] == 2 && !(((Vec*)g_Ball)->y > lbl_3_rodata_2830)) {
+        PSVECSubtract((Vec*)g_Ball, &c, &d);
+        memcpy(&flat, &d, sizeof(Vec));
+        flat.y = lbl_3_rodata_2664;
+        if (PSVECMag(&flat) == lbl_3_rodata_2664) {
+            flat.x = lbl_3_rodata_2698;
+        }
+        PSVECNormalize(&flat, &flat);
+        memset(&fwd, 0, sizeof(Vec));
+        fwd.x = cos(lbl_3_rodata_2658[0] * -*(f32*)(p + 0xC0));
+        fwd.z = sin(lbl_3_rodata_2658[0] * -*(f32*)(p + 0xC0));
+        PSVECNormalize(&fwd, &fwd);
+        if (lbl_3_rodata_2670 * (f32)acos(PSVECDotProduct(&flat, &fwd)) <= lbl_3_rodata_26B4) {
+            PSVECNormalize(&x, &x);
+            dot = PSVECDotProduct(&flat, &x);
+            if (dot > lbl_3_rodata_2698) {
+                dot = lbl_3_rodata_2698;
+            } else if (dot < lbl_3_rodata_2678) {
+                dot = lbl_3_rodata_2678;
+            }
+            ang = lbl_3_rodata_2670 * (f32)acos(dot);
+            if (flat.z < lbl_3_rodata_2664) {
+                ang *= lbl_3_rodata_2678;
+            }
+            *(f32*)(p + 0xC0) = -ang;
+            dist = PSVECMag(&d);
+            if (dist <= lbl_3_rodata_2840 && *(s16*)(p + 0xC8) > 0) {
+                *(f32*)(p + 0xBC) = ang;
+                if (dist <= lbl_3_rodata_2808 || g_Ball[0x1BC9] == 1) {
+                    p[0xCA] = 4;
+                    *(f32*)(p + 0xAC) = lbl_3_rodata_2838 * (f32)cos(lbl_3_rodata_2658[0] * *(f32*)(p + 0xBC));
+                    *(f32*)(p + 0xB0) = lbl_3_rodata_27E8;
+                    *(f32*)(p + 0xB4) = lbl_3_rodata_2838 * (f32)sin(lbl_3_rodata_2658[0] * *(f32*)(p + 0xBC));
+                    *(s16*)(p + 0xC8) -= 1;
+                } else {
+                    p[0xCA] = 3;
+                    *(f32*)(p + 0xB0) = lbl_3_rodata_2828;
+                }
+                fn_80025EEC(*(s32*)(p + 0x8C), 0, 4);
+                // s1/s2 are passed uninitialised, as in the original.
+                fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 4, (f32*)&s1, (f32*)&s2, 0xC);
+            }
+        }
+    }
+    CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    n = *(u8**)(p + 0xC4);
+    axis = lbl_3_rodata_25B0;
+    dir = lbl_3_rodata_25BC;
+    PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSMTXMultVec(m, lbl_3_rodata_24E8, &v);
+    PSVECAdd(&v, (Vec*)(p + 0xA0), &v);
+    v.y += lbl_3_rodata_2668;
+    *(Vec*)(n + 0x1CC) = v;
+    *(Vec*)(n + 0x1D8) = *(Vec*)(n + 0x1CC);
+    fn_3_D1F2C((CC438Cfg*)lbl_3_bss_A8A8, *(RopeNode**)(p + 0xC4), 8, &dir, p);
 }
+#endif
 
 typedef struct { u8 b[4]; } B4;
 extern B4 lbl_3_rodata_250C;
