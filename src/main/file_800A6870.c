@@ -236,7 +236,23 @@ void fn_800A6D10(s32 consumed) {
 
 // .text:0x800A6E24 size:0x170
 void fn_800A6E24(AssetLoadInstructions* instr, u8* ringBuf, s32 ringSize) {
-    return;
+    CancelTransfer();
+    lbl_803C6CF8.instr = instr;
+    lbl_803C6CF8.bytesRead = 0;
+    lbl_803C6CF8.diskOffset = instr->diskLocation;
+    lbl_803C6CF8.remaining = lbl_803C6CF8.totalSize = ALIGN32(instr->compressedSize);
+    lbl_803C6CF8.writePos = ringBuf;
+    lbl_803C6CF8.readPos = ringBuf;
+    lbl_803C6CF8.bufStart = ringBuf;
+    lbl_803C6CF8.buffered = 0;
+    lbl_803C6CF8.ringFull = FALSE;
+    lbl_803C6CF8.ringSize = ringSize;
+    lbl_803C6CF8.bufEnd = ringBuf + ringSize;
+    while (lbl_803C6CF8.idle != 1) {
+    }
+    DVDFastOpen(lbl_803C6CF8.entryNum, lbl_803C6CF8.fileInfo);
+    SET_STATE_IDLE(DVDSYS_STATE_RING, 0);
+    ReadRingChunk();
 }
 
 // .text:0x800A6F94 size:0x148
