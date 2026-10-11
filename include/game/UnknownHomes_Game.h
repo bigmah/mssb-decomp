@@ -2014,10 +2014,7 @@ typedef struct _MiniGameStruct {
     /*0x18CC*/ MiniGameControlStruct minigameControlStruct[1];
     /*0x18F8*/ s8 minigameFielderIndex[4];
     /*0x18FC*/ s8 _18FC[4];
-    /*0x1900*/ u8 _1900;
-    /*0x1901*/ u8 _1901;
-    /*0x1902*/ u8 _1902;
-    /*0x1903*/ u8 _1903;
+    /*0x1900*/ s8 _1900[4];
     /*0x1904*/ s8 minigamePlayerSelectedOrder; // the pitcher
     /*0x1905*/ s8 rosterID;
     /*0x1906*/ u8 miniGameNumberOfParticipants;
@@ -2255,7 +2252,7 @@ typedef struct _MiniGameStruct {
     /*0x1AD9*/ u8 _1AD9;
     /*0x1ADA*/ u8 barrelBatterChargeMeter;
     /*0x1ADB*/ u8 barrelBatter_scoreCalculatedInd;
-    /*0x1ADC*/ u8 barrelBatter_hitBarrelID;
+    /*0x1ADC*/ s8 barrelBatter_hitBarrelID;
     /*0x1ADD*/ u8 barrelBatter_barrelsHit;
     /*0x1ADE*/ u8 _1ADE[2];
     /*0x1AE0*/ f32 _1AE0;
