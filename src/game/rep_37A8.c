@@ -1548,9 +1548,90 @@ void fn_3_145AD0(s32 p) {
 
 // .text:0x00145B98 size:0x320 mapped:0x80784C2C
 // Refill each active player's queue of 3 held objects (g_Minigame + 0x1C7E + p * 3) from free object slots.
+// NONMATCHING 83.5%: original frame is 0x10 bigger and keeps queue pointers in other registers
+#if NONMATCHING
 void fn_3_145B98(void) {
-    return;
+    s32 list[4];
+    u8 p;
+    s32 s;
+    s32 j;
+    s32 n;
+    s32 k;
+    u8* gp;
+    u8* gq;
+    u8* qs;
+    s32* lp;
+
+    if (g_Minigame[0x190B] != 0) {
+        return;
+    }
+    gp = g_Minigame;
+    gq = g_Minigame;
+    p = 0;
+    do {
+        if ((s8)gp[0x18CC] >= 0) {
+            if ((s8)gq[0x1C80] < 0) {
+                qs = gq;
+                s = 0;
+                do {
+                    for (j = 0; j < 50; j++) {
+                        if (g_Minigame[j + 0x193A] == 0) {
+                            qs[0x1C7E] = j;
+                            g_Minigame[j + 0x1BB6] = p;
+                            g_Minigame[j + 0x193A] = 2;
+                            ((s16*)(g_Minigame + 0x17C8))[j] = 0;
+                            g_Minigame[j + 0x1B84] = RandomInt_Game(4);
+                            g_Minigame[j + 0x1C1A] = 0;
+                            g_Minigame[j + 0x1C4C] = 0;
+                            gp[0x1C8A]++;
+                            fn_3_145AD0(j);
+                            break;
+                        }
+                    }
+                    s++;
+                    qs++;
+                } while (s < 3);
+            } else if ((s8)gq[0x1C7E] < 0) {
+                gq[0x1C7E] = gq[0x1C7F];
+                gq[0x1C7F] = gq[0x1C80];
+                for (j = 0; j < 50; j++) {
+                    if (g_Minigame[j + 0x193A] == 0) {
+                        gq[0x1C80] = j;
+                        g_Minigame[j + 0x1BB6] = p;
+                        g_Minigame[j + 0x193A] = 2;
+                        ((s16*)(g_Minigame + 0x17C8))[j] = 0;
+                        g_Minigame[j + 0x1C1A] = 0;
+                        g_Minigame[j + 0x1C4C] = 0;
+                        gp[0x1C8A]++;
+                        if (gp[0x1C8A] <= *(s16*)(lbl_3_data_21E68 + 0x2)) {
+                            lp = list;
+                            n = 0;
+                            for (k = 0; k < 4; k++) {
+                                if (g_Minigame[k + 0x1CA9] == 1) {
+                                    *lp++ = k;
+                                    n++;
+                                }
+                            }
+                            if (n == 0) {
+                                g_Minigame[j + 0x1B84] = RandomInt_Game(4);
+                            } else {
+                                g_Minigame[j + 0x1B84] = list[RandomInt_Game(n)];
+                            }
+                        } else {
+                            g_Minigame[j + 0x1B84] = 5;
+                            gp[0x1C8A] = 0;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        p++;
+        gq += 3;
+        gp++;
+    } while (p < 4);
 }
+#endif
 
 // .text:0x00145EB8 size:0x13C mapped:0x80784F4C
 void fn_3_145EB8(void) {
