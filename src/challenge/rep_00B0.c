@@ -154,9 +154,19 @@ void fn_1_1BF8(ChalColBox* boxes, s32 index) {
 }
 
 // .text:0x00001DBC size:0x800
+// NONMATCHING 99.9%: the (u8)color copy gets r29 instead of r31, and the y/z row pointers r30/r31 instead of r29/r30
+#if NONMATCHING
 void fn_1_1DBC(s32 a, s32 b, s32 c, s32 d, s8 color) {
-    return;
+    GDPosition3f32(lbl_1_bss_60[a].x, lbl_1_bss_60[a].y, lbl_1_bss_60[a].z);
+    GDColor1x8(color);
+    GDPosition3f32(lbl_1_bss_60[b].x, lbl_1_bss_60[b].y, lbl_1_bss_60[b].z);
+    GDColor1x8(color);
+    GDPosition3f32(lbl_1_bss_60[c].x, lbl_1_bss_60[c].y, lbl_1_bss_60[c].z);
+    GDColor1x8(color);
+    GDPosition3f32(lbl_1_bss_60[d].x, lbl_1_bss_60[d].y, lbl_1_bss_60[d].z);
+    GDColor1x8(color);
 }
+#endif
 
 // .text:0x000025BC size:0x187C
 void fn_1_25BC(ChalColBlock* block) {
