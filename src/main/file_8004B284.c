@@ -1,5 +1,9 @@
 #include "main/file_8004B284.h"
-#include "static/UnknownHomes_Static.h"
+#include "main/file_80011640.h"
+#include "main/file_800263FC.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 #include "game/UnknownHomes_Game.h"
 #include "stl/mem.h"
 #include "stl/math.h"
@@ -37,7 +41,7 @@ s32 fn_800698F8(s32 charID);
 // NONMATCHING 91%: the original addresses lbl_800FC0FC through the lbl_800FBF10 base (same-TU data),
 // and its default case runs on with uninitialised values (here it returns)
 #if NONMATCHING
-void fn_8004B284(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
+void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     BatFxParams* fx = &lbl_800FBF10;
     s32 slot;
     f32 untilEnd;
@@ -54,33 +58,33 @@ void fn_8004B284(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
     switch (animID) {
     case 0x32:
         slot = 0;
-        untilEnd = lbl_800FB804[model->charID] - frame;
-        sinceStart = frame - lbl_800FB798[model->charID];
+        untilEnd = lbl_800FB804[model->kind] - frame;
+        sinceStart = frame - lbl_800FB798[model->kind];
         break;
     case 0x33:
         slot = 1;
-        untilEnd = lbl_800FB8DC[model->charID] - frame;
-        sinceStart = frame - lbl_800FB870[model->charID];
+        untilEnd = lbl_800FB8DC[model->kind] - frame;
+        sinceStart = frame - lbl_800FB870[model->kind];
         break;
     case 0x34:
         slot = 2;
-        untilEnd = lbl_800FB9B4[model->charID] - frame;
-        sinceStart = frame - lbl_800FB948[model->charID];
+        untilEnd = lbl_800FB9B4[model->kind] - frame;
+        sinceStart = frame - lbl_800FB948[model->kind];
         break;
     case 0x1A:
         slot = 4;
-        untilEnd = lbl_800FBA8C[model->charID] - frame;
-        sinceStart = frame - lbl_800FBA20[model->charID];
+        untilEnd = lbl_800FBA8C[model->kind] - frame;
+        sinceStart = frame - lbl_800FBA20[model->kind];
         break;
     case 0x1B:
         slot = 5;
-        untilEnd = lbl_800FBB64[model->charID] - frame;
-        sinceStart = frame - lbl_800FBAF8[model->charID];
+        untilEnd = lbl_800FBB64[model->kind] - frame;
+        sinceStart = frame - lbl_800FBAF8[model->kind];
         break;
     case 0x30:
         slot = 6;
-        untilEnd = lbl_800FBC3C[model->charID] - frame;
-        sinceStart = frame - lbl_800FBBD0[model->charID];
+        untilEnd = lbl_800FBC3C[model->kind] - frame;
+        sinceStart = frame - lbl_800FBBD0[model->kind];
         break;
     default:
         // The original falls through here with slot/untilEnd uninitialised.
@@ -94,8 +98,8 @@ void fn_8004B284(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
     dir.x = -sin(model->rot.y);
     dir.y = lbl_803CC818;
     dir.z = -cos(model->rot.y);
-    if (!getAnimRelatedCoordinates(model->playerIdx,
-                                   lbl_800FC0FC.animIDs[fn_800698F8(model->charID)][slot],
+    if (!getAnimRelatedCoordinates(model->index,
+                                   lbl_800FC0FC.animIDs[fn_800698F8(model->kind)][slot],
                                    (VecXYZ*)&pos)) {
         memcpy(&pos, &model->pos, sizeof(Vec));
     }
@@ -140,7 +144,7 @@ void fn_8004B284(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
     case 1:
     case 3:
     case 7:
-        fn_8002955C(&pos, &dir, paramsB);
+        fn_8002955C(&pos, &dir, (ParticleParamsC *)paramsB); // TODO type
         // fallthrough
     case 0:
     case 2:
@@ -150,42 +154,42 @@ void fn_8004B284(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
     case 10:
     case 11:
     case 12:
-        fn_80030D88(&pos, &dir, params, 5);
+        fn_80030D88(&pos, &dir, (ParticleParams5 *)params, 5); // TODO type
         break;
     }
 }
 #endif
 
 // .text:0x8004B6EC size:0xC8
-void fn_8004B6EC(CharModel* model, GameActor** actor) {
+void fn_8004B6EC(CharActor* model, ActorObject* obj) {
     s32 flag;
 
-    if (model == NULL || model->anim == NULL) {
+    if (model == NULL || model->part == NULL) {
         flag = 1;
     } else {
-        flag = ((fn_80024D2C(&model->anim->slots[0]) >> 28) & 1) ^ 1;
+        flag = ((fn_80024D2C(&model->part->player.state) >> 28) & 1) ^ 1;
     }
     if (flag) {
-        if (model->bone1F8 != 0xFFFF) {
-            fn_800B2BE4(*actor, model->bone1F8);
+        if (model->jointIdx[75] != 0xFFFF) {
+            fn_800B2BE4(obj->actor, model->jointIdx[75]);
         }
-        if (model->bone1FA != 0xFFFF) {
-            fn_800B2BA8(*actor, model->bone1FA, NULL, 0);
+        if (model->jointIdx[76] != 0xFFFF) {
+            fn_800B2BA8(obj->actor, model->jointIdx[76], NULL, 0);
         }
     } else {
-        if (model->bone1F8 != 0xFFFF) {
-            fn_800B2BA8(*actor, model->bone1F8, NULL, 0);
+        if (model->jointIdx[75] != 0xFFFF) {
+            fn_800B2BA8(obj->actor, model->jointIdx[75], NULL, 0);
         }
-        if (model->bone1FA != 0xFFFF) {
-            fn_800B2BE4(*actor, model->bone1FA);
+        if (model->jointIdx[76] != 0xFFFF) {
+            fn_800B2BE4(obj->actor, model->jointIdx[76]);
         }
     }
 }
 
 // .text:0x8004B7B4 size:0x40
-s32 fn_8004B7B4(CharModel* model, GameActor** actor) {
-    if (model->bone1FA != 0xFFFF) {
-        fn_800B2BA8(*actor, model->bone1FA, NULL, 0);
+s32 fn_8004B7B4(CharActor* model, ActorObject* obj) {
+    if (model->jointIdx[76] != 0xFFFF) {
+        fn_800B2BA8(obj->actor, model->jointIdx[76], NULL, 0);
     }
     return 0;
 }
@@ -198,14 +202,14 @@ typedef struct PartPair {
 extern PartPair lbl_800FC388[];
 
 // .text:0x8004B7F4 size:0x2F8
-void fn_8004B7F4(CharModel* model) {
+void fn_8004B7F4(CharActor* model, ActorObject* obj) {
     s32 idx; // table index, then loop counter; only set for charID 40/41 (the original leaves it unset otherwise)
     s32 side;
-    AnimSlotPair* anim;
+    CharParts* anim;
     u16 parts[2];
-    AnimSlot* slots[2];
+    ShapeAnimState* slots[2];
 
-    switch (model->charID) {
+    switch (model->kind) {
     case 40:
         idx = 1;
         break;
@@ -214,70 +218,70 @@ void fn_8004B7F4(CharModel* model) {
         break;
     }
 
-    if ((model->animID >= 0x69 && model->animID < 0x75) || model->animID == -1) {
-        fn_8001D180(model->playerIdx, lbl_800FC388[idx].a, 0);
-        fn_8001D180(model->playerIdx, lbl_800FC388[idx].b, 0);
-        fn_8001D180(model->playerIdx, 0, 0);
-        fn_8001D180(model->playerIdx, 1, 0);
+    if ((model->anim[0] >= 0x69 && model->anim[0] < 0x75) || model->anim[0] == -1) {
+        fn_8001D180(model->index, lbl_800FC388[idx].a, 0);
+        fn_8001D180(model->index, lbl_800FC388[idx].b, 0);
+        fn_8001D180(model->index, 0, 0);
+        fn_8001D180(model->index, 1, 0);
         return;
     }
 
     if (g_d_GameSettings.GameModeSelected == 6) {
-        if (model->unk278) {
-            side = !model->unk25B;
-            fn_8001D180(model->playerIdx, !side, 0);
+        if (model->_278) {
+            side = !model->_25B;
+            fn_8001D180(model->index, !side, 0);
         } else {
-            side = !model->unk25A;
-            fn_8001D180(model->playerIdx, !side, 1);
+            side = !model->_25A;
+            fn_8001D180(model->index, !side, 1);
         }
     } else if (g_d_GameSettings.GameModeSelected == 7) {
-        side = !model->unk25B;
-        fn_8001D180(model->playerIdx, !side, 0);
-    } else if (model->playerIdx >= 9) {
-        side = !model->unk25B;
-        fn_8001D180(model->playerIdx, !side, 0);
+        side = !model->_25B;
+        fn_8001D180(model->index, !side, 0);
+    } else if (model->index >= 9) {
+        side = !model->_25B;
+        fn_8001D180(model->index, !side, 0);
     } else {
-        side = !model->unk25A;
-        fn_8001D180(model->playerIdx, !side, 1);
+        side = !model->_25A;
+        fn_8001D180(model->index, !side, 1);
     }
-    fn_8001D180(model->playerIdx, side, 0);
+    fn_8001D180(model->index, side, 0);
 
-    anim = model->anim2;
+    anim = model->parts;
     parts[side] = lbl_800FC388[idx].a;
     parts[!side] = lbl_800FC388[idx].b;
     if (anim != NULL) {
-        if (!model->unk278) {
-            fn_8001D180(model->playerIdx, parts[0], 0);
-            fn_8001D180(model->playerIdx, parts[1], 0);
+        if (!model->_278) {
+            fn_8001D180(model->index, parts[0], 0);
+            fn_8001D180(model->index, parts[1], 0);
             return;
         }
-        slots[side] = &anim->slots[0];
-        slots[!side] = &anim->slots[1];
+        slots[side] = &anim->part[0].player.state;
+        slots[!side] = &anim->part[1].player.state;
         idx = 1;
         do {
             if (fn_80024D2C(slots[idx]) & 0x20000000) {
-                fn_8001D180(model->playerIdx, parts[idx], 1);
+                fn_8001D180(model->index, parts[idx], 1);
             } else {
-                fn_8001D180(model->playerIdx, parts[idx], 0);
+                fn_8001D180(model->index, parts[idx], 0);
             }
         } while (idx-- != 0);
     }
 }
 
 // .text:0x8004BAEC size:0x280
-void fn_8004BAEC(CharModel* model) {
+void fn_8004BAEC(CharActor* model, ActorObject* obj) {
     s32 idx; // table index, then loop counter; only set for charID 18/38 (the original leaves it unset otherwise)
     s32 side;
     u32 flags;
     u16 parts[2];
-    AnimSlot* slots[2];
+    ShapeAnimState* slots[2];
 
     if (model == NULL) {
         return;
     }
-    fn_8001D180(model->playerIdx, 0, 0);
-    fn_8001D180(model->playerIdx, 1, 0);
-    switch (model->charID) {
+    fn_8001D180(model->index, 0, 0);
+    fn_8001D180(model->index, 1, 0);
+    switch (model->kind) {
     case 38:
         idx = 0;
         break;
@@ -286,28 +290,28 @@ void fn_8004BAEC(CharModel* model) {
         break;
     }
 
-    if ((model->animID >= 0x69 && model->animID < 0x75) || model->animID == -1) {
-        fn_8001D180(model->playerIdx, lbl_800FC388[idx].a, 0);
-        fn_8001D180(model->playerIdx, lbl_800FC388[idx].b, 0);
+    if ((model->anim[0] >= 0x69 && model->anim[0] < 0x75) || model->anim[0] == -1) {
+        fn_8001D180(model->index, lbl_800FC388[idx].a, 0);
+        fn_8001D180(model->index, lbl_800FC388[idx].b, 0);
         return;
     }
 
-    if (model->anim2 == NULL) {
+    if (model->parts == NULL) {
         return;
     }
     if (g_d_GameSettings.GameModeSelected == 6 || g_d_GameSettings.GameModeSelected == 7) {
-        if (model->unk278) {
-            side = !model->unk25B;
+        if (model->_278) {
+            side = !model->_25B;
         } else {
-            side = !model->unk25A;
+            side = !model->_25A;
         }
-    } else if (model->playerIdx >= 9) {
-        side = !model->unk25B;
+    } else if (model->index >= 9) {
+        side = !model->_25B;
     } else {
-        side = !model->unk25A;
+        side = !model->_25A;
     }
-    slots[side] = model->anim2->slots[0].active ? &model->anim2->slots[0] : NULL;
-    slots[!side] = model->anim2->slots[1].active ? &model->anim2->slots[1] : NULL;
+    slots[side] = model->parts->part[0].player.active ? &model->parts->part[0].player.state : NULL;
+    slots[!side] = model->parts->part[1].player.active ? &model->parts->part[1].player.state : NULL;
     parts[side] = lbl_800FC388[idx].a;
     parts[!side] = lbl_800FC388[idx].b;
     for (idx = 0; idx < 2; idx++) {
@@ -316,58 +320,58 @@ void fn_8004BAEC(CharModel* model) {
         } else {
             flags = 0;
         }
-        if ((flags & 0x20000000) && (model->unk274 || model->unk278)) {
-            fn_8001D180(model->playerIdx, parts[idx], 1);
+        if ((flags & 0x20000000) && (model->_274 || model->_278)) {
+            fn_8001D180(model->index, parts[idx], 1);
         } else {
-            fn_8001D180(model->playerIdx, parts[idx], 0);
+            fn_8001D180(model->index, parts[idx], 0);
         }
     }
 }
 
 // .text:0x8004BD6C size:0x144
-s32 fn_8004BD6C(CharModel* model, GameActor** actor) {
+s32 fn_8004BD6C(CharActor* model, ActorObject* obj) {
     u16 boneA;
     u16 boneB;
     u32 partA;
     u32 partB;
 
-    switch (model->charID) {
+    switch (model->kind) {
     case 38:
-        boneA = model->bone18A;
+        boneA = model->jointIdx[20];
         partA = 2;
-        boneB = model->bone196;
+        boneB = model->jointIdx[26];
         partB = 3;
         break;
     case 18:
-        boneA = model->bone1F6;
+        boneA = model->jointIdx[74];
         partA = 4;
-        boneB = model->bone1F8;
+        boneB = model->jointIdx[75];
         partB = 5;
         break;
     case 40:
-        boneA = model->bone1DA;
+        boneA = model->jointIdx[60];
         partA = 6;
-        boneB = model->bone1DC;
+        boneB = model->jointIdx[61];
         partB = 7;
         break;
     case 41:
-        boneA = model->bone1DA;
+        boneA = model->jointIdx[60];
         partA = 6;
-        boneB = model->bone1DC;
+        boneB = model->jointIdx[61];
         partB = 7;
         break;
     default:
         return 0;
     }
-    fn_8001D180(model->playerIdx, 0, 0);
-    fn_8001D180(model->playerIdx, 1, 0);
-    fn_8001D180(model->playerIdx, partA, 0);
-    fn_8001D180(model->playerIdx, partB, 0);
+    fn_8001D180(model->index, 0, 0);
+    fn_8001D180(model->index, 1, 0);
+    fn_8001D180(model->index, partA, 0);
+    fn_8001D180(model->index, partB, 0);
     if (boneA != 0xFFFF) {
-        fn_800B2B74(*actor, boneA);
+        fn_800B2B74(obj->actor, boneA);
     }
     if (boneB != 0xFFFF) {
-        fn_800B2B74(*actor, boneB);
+        fn_800B2B74(obj->actor, boneB);
     }
     return 0;
 }

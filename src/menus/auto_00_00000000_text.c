@@ -5,6 +5,7 @@
 #include "musyx/musyx.h"
 #include "main/file_80008E00.h"
 #include "menus/auto_00_00000D08_text.h"
+extern u8 lbl_803C6CF8[]; // TODO type: ARAMLoader (main/file_800A6870.h); idle at 0x715
 
 extern void fn_800A7D4C(s32, void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -23,7 +24,7 @@ extern void fn_8004153C(void);
 extern void fn_800A97D0(s32, s32);
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_803C66B0[];
-extern s32 ARAMTransfer(void*, void*, int, int);
+extern s32 ARAMTransfer(void*, void*, int, int); // TODO type: main/file_800A6870.h
 extern void fn_800216F8(s32, void*);
 extern u32 lbl_2_bss_B644;
 extern u8 lbl_2_data_C8[];
@@ -214,7 +215,7 @@ void fn_2_554(void) {
         }
         break;
     case 3:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
             *(void**)o = fn_2_794;
             lbl_2_bss_4 = fn_800B0A5C_insertQueue(fn_2_374, 0x8000);
         }

@@ -127,7 +127,7 @@ SpaniObj* fn_80034F50(SpaniDesc* desc);
 void fn_80035168(void);
 void fn_800356B8(void);
 void fn_80035750(void* data, void* tex, s16 id);
-u8 fn_80035838(void* aramAddr, u8 id);
+s32 fn_80035838(void* aramAddr, u8 id);
 void fn_80035A00(void);
 void fn_80035B50(int id);
 void fn_80035CA4(s32 id);
