@@ -392,7 +392,17 @@ void fn_800A7568(void) {
 
 // .text:0x800A75EC size:0x84
 void fn_800A75EC(s32 result, DVDCommandBlock* block) {
-    return;
+    OSCancelThread(&gDataDecompressorValues.t);
+    StartThreadForReadingFromDisk();
+    SET_STATE_IDLE(DVDSYS_STATE_NONE, 1);
+    if (gDataDecompressorValues._35C != NULL) {
+        fn_800ACF14(gDataDecompressorValues._35C);
+        gDataDecompressorValues._35C = NULL;
+    }
+    if (lbl_803C6CF8.tempBuf != NULL) {
+        fn_800ACF14(lbl_803C6CF8.tempBuf);
+        lbl_803C6CF8.tempBuf = NULL;
+    }
 }
 
 // .text:0x800A7670 size:0x4C
