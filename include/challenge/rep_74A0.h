@@ -59,6 +59,27 @@ typedef struct {
     s8 menu;
 } ChallengeRosterQueue;
 
+// One falling confetti piece (linked list, drawn by fn_1_182C0).
+typedef union ChallengeConfettiColor {
+    u32 rgba;
+    GXColor c;
+} ChallengeConfettiColor;
+
+typedef struct ChallengeConfetti {
+    /*0x00*/ struct ChallengeConfetti* next;
+    /*0x04*/ Vec pos; // x/y in screen units (-1..1), z = depth scale
+    /*0x10*/ Vec vel;
+    /*0x1C*/ Vec rot;
+    /*0x28*/ Vec rotVel;
+    /*0x34*/ u8 pad34[4];
+    /*0x38*/ f32 width;
+    /*0x3C*/ f32 height;
+    /*0x40*/ ChallengeConfettiColor front;
+    /*0x44*/ ChallengeConfettiColor back;
+    /*0x48*/ s16 delay;
+    /*0x4A*/ s16 index;
+} ChallengeConfetti;
+
 // Debug viewer camera (lbl_1_bss_6B7C).
 typedef struct ChallengeCamera {
     /*0x00*/ Mtx view;
@@ -112,6 +133,8 @@ void fn_1_1A774(void);
 void fn_1_1D514(void);
 
 void fn_1_1B038(void);
+
+void fn_1_182C0(ChallengeConfetti* piece);
 
 void fn_1_1ADA4(void);
 

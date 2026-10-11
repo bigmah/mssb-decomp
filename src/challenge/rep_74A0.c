@@ -390,3 +390,61 @@ void fn_1_1B424(void) {
     makeLookAtMatrix(cam->view, &cam->pos, &lbl_1_data_FB0C, &cam->target);
 }
 #endif
+
+extern const f32 lbl_1_rodata_751C;
+extern const f32 lbl_1_rodata_7524;
+extern const f32 lbl_1_rodata_7528;
+
+// fn_1_182C0, size:0x2BC
+// Draw one confetti piece: a two-sided quad (front colour, back colour).
+// NONMATCHING 99%: float register choice and the order of the quad corner stores differ
+#if NONMATCHING
+void fn_1_182C0(ChallengeConfetti* piece) {
+    Vec quad[4];
+    Mtx mtx;
+    Mtx44 proj;
+    struct {
+        Control c;
+        u32 pad[2]; // frame size
+    } ctrl;
+    f32 halfW = piece->width * lbl_1_rodata_751C;
+    f32 halfH = piece->height * lbl_1_rodata_751C;
+    s32 i;
+
+    ctrl.c.type = 0;
+    quad[0].x = -halfW;
+    quad[0].y = -halfH;
+    quad[0].z = lbl_1_rodata_7520;
+    quad[1].x = halfW;
+    quad[1].y = -halfH;
+    quad[1].z = lbl_1_rodata_7520;
+    quad[2].x = halfW;
+    quad[2].y = halfH;
+    quad[2].z = lbl_1_rodata_7520;
+    quad[3].x = -halfW;
+    quad[3].y = halfH;
+    quad[3].z = lbl_1_rodata_7520;
+    CTRLSetRotation(&ctrl.c, piece->rot.x, piece->rot.y, piece->rot.z);
+    CTRLSetTranslation(&ctrl.c, lbl_1_rodata_751C * piece->pos.x * lbl_1_rodata_751C * piece->pos.z,
+                       lbl_1_rodata_7524 * piece->pos.y * lbl_1_rodata_751C * piece->pos.z, lbl_1_rodata_7528);
+    CTRLBuildMatrix(&ctrl.c, mtx);
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    C_MTXOrtho(proj, lbl_1_rodata_752C * piece->pos.z, lbl_1_rodata_7530 * piece->pos.z, lbl_1_rodata_7534 * piece->pos.z,
+               lbl_1_rodata_7538 * piece->pos.z, lbl_1_rodata_753C, lbl_1_rodata_7540);
+    GXSetProjection(proj, GX_ORTHOGRAPHIC);
+
+    GXSetCullMode(GX_CULL_BACK);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(quad[i].x, quad[i].y, quad[i].z);
+        GXColor1u32(piece->front.rgba);
+    }
+    GXSetCullMode(GX_CULL_FRONT);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(quad[i].x, quad[i].y, quad[i].z);
+        GXColor1u32(piece->back.rgba);
+    }
+}
+#endif
