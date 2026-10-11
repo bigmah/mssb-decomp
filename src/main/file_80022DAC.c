@@ -57,8 +57,68 @@ static inline u8* loadDisplayObj(MDisplayObj** dispObj, DODisplayData* pal, u16 
 }
 
 // .text:0x80022DAC size:0x2CC
-void f_InitBone(void) {
-    return;
+u8* f_InitBone(MBone* parent, MBoneLayout* layout, MActor* actor, u16* boneIndex, MBone* bones, u8* buffer) {
+    MBone* bone;
+
+    while (layout != NULL) {
+        bone = &bones[*boneIndex];
+        bone->branch.Children = NULL;
+        DSInsertBranchBelow(&actor->hierarchy, (Ptr)parent, (Ptr)bone);
+        actor->boneArray[*boneIndex] = bone;
+        bone->boneID = layout->boneID;
+        bone->inheritanceFlag = layout->inheritanceFlag;
+        bone->drawingPriority = layout->drawingPriority;
+        bone->orientationCtrl.ctrl.type = 0;
+        if (layout->orientationCtrl != NULL) {
+            bone->orientationCtrl = *layout->orientationCtrl;
+        }
+        bone->dispObj = NULL;
+        if (layout->geoFileID != 0xFFFF) {
+            buffer = loadDisplayObj(&bone->dispObj, actor->pal, layout->geoFileID, buffer);
+        }
+        bone->drawObj = bone->dispObj;
+        bone->anim = NULL;
+        bone->unk60 = 0;
+        bone->unkA4 = 0;
+        bone->anim = (MBoneAnim*)buffer;
+        buffer += 0x20;
+        bone->anim->time = lbl_803CC560;
+        bone->anim->unk4 = lbl_803CC560;
+        bone->anim->speed = lbl_803CC564;
+        bone->anim->track = NULL;
+        bone->anim->unk10 = NULL;
+        bone->anim->unk16 = 0;
+        bone->anim->unk17 = 1;
+        bone->anim->unk18 = 1;
+        bone->anim->unk14 = 0;
+        bone->unk134 = 1;
+        bone->unk136 = 0;
+        bone->unk137 = 0;
+        bone->forwardMtx = actor->forwardMtxArray[*boneIndex];
+        PSMTXIdentity(bone->forwardMtx);
+        if (actor->skinObject != NULL) {
+            bone->skinMtx = actor->skinMtxArray[*boneIndex];
+            PSMTXIdentity(bone->skinMtx);
+            bone->orientationInvMtx = actor->orientationInvMtxArray[*boneIndex];
+            PSMTXIdentity(bone->orientationInvMtx);
+            if (actor->skinObject->lightingData != NULL) {
+                bone->skinInvTransposeMtx = actor->skinInvTransposeMtxArray[*boneIndex];
+                PSMTXIdentity(bone->skinInvTransposeMtx);
+            } else {
+                bone->skinInvTransposeMtx = NULL;
+            }
+        } else {
+            bone->skinMtx = NULL;
+            bone->orientationInvMtx = NULL;
+            bone->skinInvTransposeMtx = NULL;
+        }
+        (*boneIndex)++;
+        if (layout->branch.Children != NULL) {
+            buffer = f_InitBone(bone, (MBoneLayout*)layout->branch.Children, actor, boneIndex, bones, buffer);
+        }
+        layout = (MBoneLayout*)layout->branch.Next;
+    }
+    return buffer;
 }
 
 // .text:0x80023078 size:0x268
