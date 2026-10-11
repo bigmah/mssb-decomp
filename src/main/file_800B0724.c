@@ -306,8 +306,8 @@ void fn_800B2AC8(void) {
 }
 
 // .text:0x800B2B4C size:0x8
-void fn_800B2B4C(void) {
-    return;
+void fn_800B2B4C(GameActor* actor, f32 value) {
+    actor->unk90 = value;
 }
 
 // .text:0x800B2B54 size:0x18

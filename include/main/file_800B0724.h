@@ -2,6 +2,7 @@
 #define __MAIN_FILE_800B0724_H__
 
 #include "mssbTypes.h"
+#include "main/file_80063028.h"
 
 void fn_800B0934(void);
 
@@ -33,4 +34,5 @@ s32 fn_800B216C(u8 flag, u32 mode, u8 index);
 
 void fn_800B21A8(s32 mode);
 
+void fn_800B2B4C(GameActor* actor, f32 value);
 #endif
