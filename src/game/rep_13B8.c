@@ -4440,6 +4440,8 @@ void fn_3_88C24(void) {
 
 // .text:0x00088D88 size:0x210 mapped:0x806C7E1C
 // 98%: only r4/r5 swap between g_Strikes[2] value and idx*0x154 in the prologue
+// NONMATCHING 99.8%: register allocation of the runner base/index in the prologue
+#if NONMATCHING
 void fn_3_88D88(int idx) {
     u8* r = g_Runners;
     int k;
@@ -4482,6 +4484,7 @@ void fn_3_88D88(int idx) {
         r[0x123] = 2;
     }
 }
+#endif
 
 // .text:0x00088F98 size:0x90 mapped:0x806C802C
 void fn_3_88F98(void) {
