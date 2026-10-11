@@ -39,7 +39,9 @@ typedef struct RepFielder {
     /*0x18C*/ s16 coveringBase;
     /*0x18E*/ u8 _18E[0x192 - 0x18E];
     /*0x192*/ s16 _192;
-    /*0x194*/ u8 _194[0x1AC - 0x194];
+    /*0x194*/ u8 _194[0x1A0 - 0x194];
+    /*0x1A0*/ s16 _1A0;
+    /*0x1A2*/ u8 _1A2[0x1AC - 0x1A2];
     /*0x1AC*/ s16 _1AC;
     /*0x1AE*/ u8 _1AE[0x1C2 - 0x1AE];
     /*0x1C2*/ s16 _1C2; // angle
@@ -86,7 +88,7 @@ typedef struct RepRunningLogic {
 extern RepRunningLogic g_RunningLogic;
 extern GameScores g_Scores;
 
-void fn_3_A009C(void);
+void fn_3_A009C(s32 fi);
 s32 fn_3_A1D04(void);
 int fn_3_A1DA0(void);
 int fn_3_A1F3C(void);

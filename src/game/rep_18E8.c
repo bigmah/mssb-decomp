@@ -15,7 +15,7 @@ extern int __float_nan[];
 f64 __frsqrte(f64);
 extern u8 lbl_3_data_4744[];
 extern u8 lbl_3_data_475C;
-extern u8 lbl_3_data_49DC[];
+extern s16 lbl_3_data_49DC[]; // fielding tuning values
 extern const f64 lbl_3_rodata_1940;
 extern const f64 lbl_3_rodata_1948;
 extern const f64 lbl_3_rodata_1950;
@@ -148,7 +148,7 @@ static inline s32 ballFielderFramesTo(f32 x, f32 z) {
 #pragma dont_inline on
 
 // .text:0x000A009C size:0x1C68 mapped:0x806DF130
-void fn_3_A009C(void) {
+void fn_3_A009C(s32 fi) {
     return;
 }
 
@@ -1715,9 +1715,148 @@ void fn_3_A7040(void) {
 }
 
 // .text:0x000A76B4 size:0x5D4 mapped:0x806E6748
+// NONMATCHING 99%: scratch registers differ (g_Ball base, input pointer, stick angle); fn_3_AB554 is inlined
+#if NONMATCHING
 void fn_3_A76B4(void) {
-    return;
+    s32 fi;
+    RepFielder* f;
+    InputStruct* in;
+    s16 prevBase;
+    u16 btn;
+    s16 ang;
+    s16 t;
+
+    fi = g_Ball.fielderWBallIndex;
+    prevBase = g_FieldingLogic._0CC;
+    in = &g_Controls[g_GameLogic.teams[g_GameLogic.teamFielding]];
+    f = &g_Fielders[fi];
+    if (g_FieldingLogic._10E == 0 && g_Ball.deadBallReason == 0 && g_FieldingLogic._12B == 0 && g_Strikes.outs < 3) {
+        g_FieldingLogic._13D = 0;
+        g_FieldingLogic._130 = 0;
+        if (g_FieldingLogic._0C6 >= 0) {
+            g_FieldingLogic._0C4 = g_FieldingLogic._0C6;
+            g_FieldingLogic._0C6 = -1;
+            g_FieldingLogic._0C8 = 0;
+            if (g_FieldingLogic._0C4 == 8) {
+                g_FieldingLogic._130 = 1;
+            }
+        } else {
+            if (g_d_GameSettings.GameModeSelected == 2 && g_Practice.instructionNumber >= 0) {
+                in = &g_Practice.inputs[g_GameLogic.teamFielding];
+            } else if (g_d_GameSettings.minigamesEnabled != 0) {
+                fi = g_Minigame.minigameRelatedIndex;
+                in = &g_Controls[g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame._1922]];
+            }
+            if (g_d_GameSettings.GameModeSelected != 6) {
+                if (!(in->buttonInput & 0x100)) {
+                    g_FieldingLogic._145 = 0;
+                }
+                if (g_FieldingLogic._145 != 0) {
+                    if (g_FieldingLogic._145 < 0xFE) {
+                        g_FieldingLogic._145++;
+                    } else {
+                        g_FieldingLogic._145 = 0xFF;
+                    }
+                }
+                btn = in->buttonInput;
+                if ((btn & 0x100) && g_FieldingLogic._145 <= lbl_3_data_49DC[0x50 / 2]) {
+                    if (in->newButtonInput & 0x100) {
+                        if (btn & 0x40) {
+                            g_FieldingLogic._0C4 = 6;
+                        } else {
+                            ang = in->controlStickAngle;
+                            if (ang >= 0xE00 || (btn & 2)) {
+                                g_FieldingLogic._0C4 = 1;
+                            } else if (ang >= 0xA00 || (btn & 4)) {
+                                g_FieldingLogic._0C4 = 0;
+                            } else if (ang >= 0x600 || (btn & 1)) {
+                                g_FieldingLogic._0C4 = 3;
+                            } else if (ang >= 0x200 || (btn & 8)) {
+                                g_FieldingLogic._0C4 = 2;
+                            } else if (ang >= 0 || (btn & 2)) {
+                                g_FieldingLogic._0C4 = 1;
+                            } else {
+                                g_FieldingLogic._145 = 1;
+                            }
+                        }
+                    } else if (g_FieldingLogic._145 >= lbl_3_data_49DC[0x50 / 2]) {
+                        g_FieldingLogic._130 = 1;
+                    }
+                    if (g_FieldingLogic._130 != 0) {
+                        g_FieldingLogic._12D = 1;
+                    } else if (g_FieldingLogic._12F <= lbl_3_data_475C && g_d_GameSettings.minigamesEnabled == 0 &&
+                               g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3) {
+                        g_FieldingLogic._12D = 0;
+                        g_FieldingLogic._13D = 1;
+                    } else {
+                        g_FieldingLogic._12D = 1;
+                    }
+                    goto done_input;
+                }
+            }
+            if (g_FieldingLogic._136 == 0) {
+                if (in->newButtonInput & 0x200) {
+                    ang = in->controlStickAngle;
+                    if (ang >= 0xE00 || (in->buttonInput & 2)) {
+                        g_FieldingLogic._0CC = 1;
+                    } else if (ang >= 0xA00 || (in->buttonInput & 4)) {
+                        g_FieldingLogic._0CC = 0;
+                    } else if (ang >= 0x600 || (in->buttonInput & 1)) {
+                        g_FieldingLogic._0CC = 3;
+                    } else if (ang >= 0x200 || (in->buttonInput & 8)) {
+                        g_FieldingLogic._0CC = 2;
+                    } else if (ang >= 0 || (in->buttonInput & 2)) {
+                        g_FieldingLogic._0CC = 1;
+                    }
+                }
+            } else {
+                fn_3_3AAF8(fi);
+                fn_3_3A584(fi);
+            }
+        }
+done_input:
+        if (g_FieldingLogic._130 != 0) {
+            g_FieldingLogic._0CC = -1;
+            g_FieldingLogic._0C4 = -1;
+            fn_3_A009C(fi);
+        }
+        if ((g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3) || g_FieldingLogic._0C4 == 5 || g_FieldingLogic._0C4 == 6) {
+            g_FieldingLogic._145 = 0;
+        } else {
+            g_FieldingLogic._0C4 = -1;
+        }
+        if (g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3 && f->distToBase[g_FieldingLogic._0C4] <= lbl_3_rodata_199C) {
+            g_FieldingLogic._0CC = g_FieldingLogic._0C4;
+            g_FieldingLogic._0C4 = -1;
+        }
+        if (g_FieldingLogic._0C4 == 6 && g_FieldingLogic._0BE < 0) {
+            g_FieldingLogic._0C4 = -1;
+        }
+        if (g_FieldingLogic._12A != 0 && g_FieldingLogic._0CC >= 0) {
+            g_FieldingLogic._0CC = prevBase;
+        }
+        if (prevBase != g_FieldingLogic._0CC && g_FieldingLogic._0CC >= 0) {
+            g_FieldingLogic._0E2 = -1;
+            g_FieldingLogic._0DE = -1;
+            g_FieldingLogic._0DC = g_Ball.baseBallAndFielderAreOn;
+            f->_1A0 = 0;
+            g_FieldingLogic._12A = 0x1E;
+        }
+        // inlined fn_3_AB554
+        if (g_FieldingLogic._10D != 0) {
+            t = g_Ball.timeSinceBallPickedUp;
+            if (t >= 0 && t < 0x28) {
+                if (g_FieldingLogic._0C4 >= 0) {
+                    g_FieldingLogic._10C = 1;
+                    g_FieldingLogic._10D = 0;
+                }
+            } else {
+                g_FieldingLogic._10D = 0;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x000A7C88 size:0x270 mapped:0x806E6D1C
 void fn_3_A7C88(void) {
@@ -1770,7 +1909,7 @@ void fn_3_A7C88(void) {
                 g_FieldingLogic._145 = 1;
             }
         }
-    } else if (g_FieldingLogic._145 >= *(s16*)(lbl_3_data_49DC + 0x50)) {
+    } else if (g_FieldingLogic._145 >= lbl_3_data_49DC[0x50 / 2]) {
         if (g_FieldingLogic._0C2 >= 0) {
             return;
         }
