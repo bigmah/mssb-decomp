@@ -63,6 +63,7 @@ typedef struct TrailScratch {
 extern TrailScratch lbl_8017EC00;
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB800;
+extern s32 lbl_803CB808; // easing iterations
 extern f32 lbl_803CB80C;
 extern f32 lbl_803CB804;
 extern const Vec lbl_800E679C;    // (0, -1, 0)
@@ -306,6 +307,22 @@ static inline void TrailPush(TrailHead* head, Vec* pos) {
     if (head->histCount < head->histMax) {
         head->histCount++;
     }
+}
+
+// Cosine-smoothed fraction of rem / dur, applied lbl_803CB808 times.
+static inline f32 EaseFrac(u16 rem, u16 dur, f32* whole) {
+    f32 t = (f32)rem / (f32)dur;
+    f32 frac = t - (f32)(s32)t;
+    s32 n;
+
+    *whole = t - frac;
+    if (frac > 1.0f) {
+        frac = frac - (f32)(s32)frac;
+    }
+    for (n = lbl_803CB808; n != 0; n--) {
+        frac = (1.0f - CosIdx((s32)(1024.0f * frac))) * 0.5f;
+    }
+    return frac;
 }
 
 static inline u32 Expand4444(u16 c) {
@@ -1486,9 +1503,95 @@ void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm) {
 #endif
 
 // .text:0x8002C56C size:0x864
-void fn_8002C56C(void) {
-    return;
+// NONMATCHING 54%: register allocation and float scheduling
+#if NONMATCHING
+s32 fn_8002C56C(Emitter* e) {
+    Mtx ident;
+    Mtx rot;
+    Vec a;
+    Vec off;
+    Vec pos;
+    f32 whole;
+    f32 frac;
+    s32 alive = 0;
+    u16 total;
+    u16 elapsed;
+    u16 ang;
+    StreakParticle* p = (StreakParticle*)e->particles;
+
+    LoadParticleTex(e->tex, e->u.t10.texIndex, GX_CLAMP, GX_CLAMP);
+    PSMTXIdentity(ident);
+    GXLoadPosMtxImm(ident, GX_PNMTX0);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+    if (lbl_80366158._28 == 0 && e->u.t10.unk40 != 0) {
+        e->u.t10.unk40--;
+    }
+    do {
+        if (p->rem[2] != 0) {
+            alive++;
+            total = p->dur[0] + p->dur[1] + p->dur[2];
+            elapsed = total - (p->rem[0] + p->rem[1] + p->rem[2]);
+            if (p->delay != 0) {
+                p->delay -= (lbl_80366158._28 == 0);
+            } else {
+                if (p->rem[0] != 0) {
+                    // phase 1: fly out
+                    frac = EaseFrac(p->rem[0], p->dur[0], &whole);
+                    frac = 1.0f - (whole + frac);
+                    PSVECAdd(&e->u.t10.dir, &p->offset, &a);
+                    PSVECScale(&a, p->reach * frac, &pos);
+                    PSVECScale(&p->dir, p->lenA * frac, &off);
+                    p->rem[0] -= (lbl_80366158._28 == 0);
+                } else if (p->rem[1] != 0) {
+                    // phase 2: travel to the end point
+                    frac = EaseFrac(p->rem[1], p->dur[1], &whole);
+                    frac = whole + frac;
+                    PSVECAdd(&e->u.t10.dir, &p->offset, &a);
+                    PSVECScale(&a, (1.0 - frac) + p->reach * frac, &pos);
+                    PSVECScale(&p->dir, p->lenA * frac, &off);
+                    p->rem[1] -= (lbl_80366158._28 == 0);
+                } else {
+                    // phase 3: at the end point
+                    frac = EaseFrac(p->rem[2], p->dur[2], &whole);
+                    PSVECAdd(&e->u.t10.dir, &p->offset, &a);
+                    memcpy(&pos, &a, sizeof(Vec));
+                    PSVECScale(&p->dir, p->lenB * (1.0f - (whole + frac)), &off);
+                    p->rem[2] -= (lbl_80366158._28 == 0);
+                }
+                if ((u16)(total - elapsed) < p->fade) {
+                    p->color.c.a = ((u16)(total - elapsed) * 0xFF) / p->fade;
+                }
+                ang = (s32)(p->spin * (f32)elapsed);
+                if (ang != 0) {
+                    PSMTXRotAxisRad(rot, &a, 0.017453292f * (f32)ang);
+                    PSMTXMultVec(rot, &off, &off);
+                }
+                PSVECAdd(&e->u.t10.start, &pos, &pos);
+                PSVECAdd(&pos, &off, &pos);
+                PSMTXMultVec(lbl_8017FFE0, &pos, &pos);
+                GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+                GXPosition3f32(pos.x - p->sizeX, pos.y - p->sizeY, pos.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(lbl_800F78C0[p->uvOrder & 0xF].s, lbl_800F78C0[p->uvOrder & 0xF].t);
+                GXPosition3f32(pos.x + p->sizeY, pos.y - p->sizeX, pos.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(lbl_800F78C0[(p->uvOrder >> 4) & 0xF].s, lbl_800F78C0[(p->uvOrder >> 4) & 0xF].t);
+                GXPosition3f32(pos.x + p->sizeX, pos.y + p->sizeY, pos.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(lbl_800F78C0[(p->uvOrder >> 8) & 0xF].s, lbl_800F78C0[(p->uvOrder >> 8) & 0xF].t);
+                GXPosition3f32(pos.x - p->sizeY, pos.y + p->sizeX, pos.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(lbl_800F78C0[(p->uvOrder >> 12) & 0xF].s, lbl_800F78C0[(p->uvOrder >> 12) & 0xF].t);
+            }
+        }
+        p = (StreakParticle*)p->next;
+    } while (p != NULL);
+    GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
+    return alive == 0;
 }
+#endif
 
 // .text:0x8002CDD0 size:0x7C
 void fn_8002CDD0(Vec* end) {

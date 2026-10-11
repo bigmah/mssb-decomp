@@ -171,7 +171,7 @@ typedef struct Emitter {
             /* 0x18 */ Vec start;
             /* 0x24 */ Vec end;
             /* 0x30 */ Vec dir;
-            /* 0x3C */ u8 pad3C[4];
+            /* 0x3C */ s32 texIndex;
             /* 0x40 */ u16 unk40;
         } t10;
         /* 0x18 */ f32 f[0x12]; // per-type parameters, see fn_80027918
@@ -421,6 +421,66 @@ typedef struct ParticleParamsE {
     /* 0x60 */ s32 alpha[3];
 } ParticleParamsE;
 
+// Streak particle (type 10): flies from start towards end in three eased
+// phases. A different view of a Particle pool entry.
+typedef struct StreakParticle {
+    /* 0x00 */ Particle* next;
+    /* 0x04 */ Vec offset;
+    /* 0x10 */ Vec dir;
+    /* 0x1C */ f32 sizeX;
+    /* 0x20 */ f32 sizeY;
+    /* 0x24 */ f32 lenA;
+    /* 0x28 */ f32 lenB;
+    /* 0x2C */ f32 reach;
+    /* 0x30 */ union {
+        u32 rgba;
+        GXColor c;
+    } color;
+    /* 0x34 */ f32 spin;
+    /* 0x38 */ u16 uvOrder; // 4 bits per corner
+    /* 0x3A */ u16 delay;
+    /* 0x3C */ u16 rem[3];  // frames left in each phase
+    /* 0x42 */ u16 dur[3];
+    /* 0x48 */ u16 fade;
+    /* 0x4A */ u8 pad4A[0x60 - 0x4A];
+} StreakParticle;
+
+typedef struct ParticleParamsA {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s32 unk28;
+    /* 0x2C */ s32 unk2C;
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ s32 unk34;
+    /* 0x38 */ s32 unk38;
+    /* 0x3C */ s32 unk3C;
+    /* 0x40 */ s32 unk40;
+    /* 0x44 */ s32 unk44;
+    /* 0x48 */ s32 unk48;
+    /* 0x4C */ s32 unk4C;
+    /* 0x50 */ s32 unk50;
+    /* 0x54 */ s32 unk54;
+    /* 0x58 */ s32 unk58;
+    /* 0x5C */ s32 unk5C;
+    /* 0x60 */ s32 unk60;
+    /* 0x64 */ s32 unk64;
+    /* 0x68 */ s32 unk68;
+    /* 0x6C */ s32 unk6C;
+    /* 0x70 */ s32 unk70;
+    /* 0x74 */ s32 unk74;
+    /* 0x78 */ s32 unk78;
+    /* 0x7C */ s32 unk7C;
+    /* 0x80 */ s32 unk80;
+} ParticleParamsA;
+
 // Queue task that flashes the stadium lights (fn_8002852C).
 typedef struct LightFlashTask {
     /* 0x00 */ u8 unk0[0x14];
@@ -469,7 +529,9 @@ s32 fn_80028F48(Emitter* e);
 void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm);
 void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm);
 void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u32* palette, s32 arg5, s32 flash);
+s32 fn_8002C56C(Emitter* e);
 void fn_8002CDD0(Vec* end);
+void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm);
 s32 fn_8002D82C(Emitter* e);
 void fn_8002DC68(Vec* pos);
 void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm);
