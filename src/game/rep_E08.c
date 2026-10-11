@@ -38,6 +38,9 @@ extern BOOL checkFieldingStat(int, int, int);
 extern void fn_8004AE18(s32 idx);
 extern u8 lbl_3_data_7F0C;
 extern s32 g_Strikes[];
+extern u8 lbl_800E8558[];
+extern u8 lbl_3_data_7760[];
+extern void playSoundEffect(int);
 extern const f32 lbl_3_rodata_E88;
 extern const f32 lbl_3_rodata_E8C;
 extern const f32 lbl_3_rodata_E90;
@@ -1127,9 +1130,130 @@ void fn_3_62E70(void) {
 }
 
 // .text:0x000631AC size:0x6C8 mapped:0x806A2240
+// NONMATCHING 99%: c/o register swap and scheduling in the prologue (anim init added for safety)
+#if NONMATCHING
 void fn_3_631AC(s32 a) {
-    return;
+    s32 anim;
+    s32 k;
+    u8** actors;
+    u8* o;
+    u8* r;
+    u8* c;
+    s32 flag;
+    u8 t;
+    r = g_Runners + a * 0x154;
+    k = a + 9;
+    c = lbl_3_common_bss_321A0 + (a << 5);
+    actors = (u8**)(lbl_8036E548 + 0x2C50);
+    o = actors[k];
+    if (g_d_GameSettings[0x11] != 0) {
+        k = *(s8*)(g_Minigame + a + 0x18FC);
+        o = actors[k];
+    }
+    anim = -1; // the original leaves this unset when there is no actor
+    if (o != NULL) {
+        anim = *(s16*)(o + 0x62);
+    }
+    switch (c[0x1B]) {
+    case 0:
+        return;
+    case 2:
+        flag = 0;
+        t = lbl_800E8558[*(s16*)(r + 0xE2) * 6 + 2];
+        if (t == 0xE || t == 0x14 || t == 0x1A || t == 0x1E) {
+            flag = 1;
+        }
+        if (r[0x137] == 1 && *(s16*)(r + 0xEA) < 0xA && g_GameLogic[0x121] != 6 && flag != 0) {
+            AnimateCharacter(k, 0x2E, 0, 1, 0, (s16)(*(s16*)(lbl_3_data_7870 + *(s16*)(r + 0xE2) * 6 + 4) - 0xA), 0, -1);
+        } else if (anim == 0x31) {
+            AnimateCharacter(k, 0x2D, 1, 2, 0, 0, 0, -1);
+        } else {
+            AnimateCharacter(k, 0x2D, 1, 1, 0, 0, 0, -1);
+        }
+        break;
+    case 3:
+        if (g_Minigame[0x1A2A] != 0) {
+            AnimateCharacter(k, 0x39, 1, 1, 1, 0, 0, -1);
+        } else if (lbl_800E8558[*(s16*)(r + 0xE2) * 6 + 2] == 0xC) {
+            AnimateCharacter(k, 0x39, 1, 1, 1, 0, 0, -1);
+        } else {
+            AnimateCharacter(k, 0x38, 1, 1, 1, 0, 0, -1);
+        }
+        break;
+    case 4:
+        AnimateCharacter(k, 0x39, 1, 1, 1, 0, 0, -1);
+        break;
+    case 5:
+        if (r[0x137] == 3) {
+            AnimateCharacter(k, 0x30, 0, 1, 0, 0x14, 1, -1);
+        } else {
+            AnimateCharacter(k, 0x30, 0, 1, 0, 0x14, 0, -1);
+        }
+        break;
+    case 7:
+        if (r[0x138] == 3) {
+            AnimateCharacter(k, 0x31, 0, 1, 0, 0, 1, 0);
+        } else {
+            AnimateCharacter(k, 0x31, 0, 1, 0, 0, 0, 0);
+        }
+        break;
+    case 8:
+        if (r[0x13C] == 1) {
+            if (*(s16*)(r + 0x100) == 1) {
+                if (r[0x13A] == 2) {
+                    AnimateCharacter(k, 0x33, 0, 1, 1, (s16)(lbl_3_data_7760[*(s16*)(r + 0xE2) * 5 + 2] - *(s16*)(r + 0x102)), 1, -1);
+                } else if (r[0x13A] == 3) {
+                    AnimateCharacter(k, 0x33, 0, 1, 1, (s16)(lbl_3_data_7760[*(s16*)(r + 0xE2) * 5 + 2] - *(s16*)(r + 0x102)), 1, -1);
+                } else if (r[0x13B] != 0 && r[0x126] != 0) {
+                    AnimateCharacter(k, 0x32, 0, 1, 1, (s16)(lbl_3_data_7760[*(s16*)(r + 0xE2) * 5 + 2] - *(s16*)(r + 0x102)), 1, -1);
+                } else {
+                    AnimateCharacter(k, 0x34, 0, 1, 1, (s16)(lbl_3_data_7760[*(s16*)(r + 0xE2) * 5 + 4] - *(s16*)(r + 0x102)), 0, -1);
+                }
+                if (g_GameLogic[0x11E] == 2) {
+                    playSoundEffect(0x171);
+                }
+            }
+        } else if (r[0x13C] == 2) {
+            if (*(s16*)(r + 0x102) == 1) {
+                AnimateCharacter(k, 0x38, 1, 1, 1, 0, 0, 0);
+            }
+        }
+        break;
+    case 9:
+        AnimateCharacter(k, 0x2D, 1, 1, 0, 0, 0, -1);
+        break;
+    case 10:
+        AnimateCharacter(k, 0x2F, 1, 1, 0, 0, 0, -1);
+        break;
+    case 11:
+        AnimateCharacter(k, 0x30, 1, 1, 0, 0, 0, -1);
+        break;
+    case 12:
+        AnimateCharacter(k, 0x2F, 1, 1, 0, 0, 0, -1);
+        break;
+    case 13:
+        AnimateCharacter(k, 0x2D, 1, 1, 0, 0, 0, -1);
+        break;
+    case 14:
+        if (*(s16*)(r + 0x114) == 0 && lbl_3_rodata_E58 != *(f32*)(r + 0x18)) {
+            AnimateCharacter(k, 0x2D, 1, 1, 0, 0, 0, -1);
+        }
+        break;
+    case 15:
+        AnimateCharacter(k, 0x35, 0, 1, 0, (s16)(*(s16*)(lbl_3_data_7870 + *(s16*)(r + 0xE2) * 6 + 2) - *(s16*)(r + 0x10E)), 0, -1);
+        break;
+    case 16:
+        AnimateCharacter(k, 0x39, 1, 1, 1, 0, 0, 0);
+        break;
+    case 17:
+        if (anim != 0x24) {
+            fn_3_90220(*(s16*)(r + 0xE2), 10);
+        }
+        AnimateCharacter(k, 0x24, 0, 1, 1, 0, 0, 0x14);
+        break;
+    }
 }
+#endif
 
 // .text:0x00063874 size:0x1C4 mapped:0x806A2908
 void fn_3_63874(s32 a) {
