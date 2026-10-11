@@ -34,11 +34,6 @@ void fn_8000C194(void) {
     return;
 }
 
-// .text:0x8000CC4C size:0x2A4
-void fn_8000CC4C(void) {
-    return;
-}
-
 // Advance to the next entry of an animation block.
 static inline AnimEntry* AnimEntry_Next(AnimEntry* entry, u32 fullWords, u32 rawWords) {
     AnimEntry* next = entry;
@@ -58,6 +53,102 @@ static inline AnimEntry* AnimEntry_Next(AnimEntry* entry, u32 fullWords, u32 raw
     }
     return next;
 }
+
+// .text:0x8000CC4C size:0x2A4
+// NONMATCHING: ~90%: same instructions, saved-register allocation and scheduling differ
+#if NONMATCHING
+void fn_8000CC4C(Anim* anim, AnimBlock* block, u8* src, u32 ofs, u32 len) {
+    AnimEntry* entry;
+    s32 i;
+    s32 j;
+    u32 end;
+    u32 base;
+    u32 limit;
+    u32 wofs;
+    u32 n;
+    u16* idx;
+    u16* span;
+    u8* dst;
+    u32 so;
+    u32 sl;
+    u32 se;
+
+    entry = block->entries;
+    end = ofs + len;
+    for (i = 0; i < block->count; i++) {
+        switch (entry->type & 0x7FFF) {
+        case ANIM_ENTRY_FULL:
+            if (block->size < end && block->size - ofs == 0) {
+                break;
+            }
+        case ANIM_ENTRY_RAW:
+            memcpy((u8*)entry + ofs, src, len);
+            break;
+        case ANIM_ENTRY_SPARSE:
+            base = ofs - 4;
+            limit = base + len;
+            idx = (u16*)entry;
+            dst = (u8*)entry + (((entry->count + 1) * 2) & ~3) + 8;
+            for (j = 0; j < entry->count; j++) {
+                wofs = idx[4] * 4;
+                if (wofs >= limit) {
+                    break;
+                }
+                if (wofs + 4 > base) {
+                    n = wofs + 4 - base;
+                    if (n < 4) {
+                        if (n > len) {
+                            n = len;
+                        }
+                        memcpy(dst + 4 - n, src, n);
+                    } else {
+                        n = limit - wofs;
+                        if (n < 4) {
+                            memcpy(dst, src + len + 4 - n, n);
+                        } else {
+                            memcpy(dst, src + wofs - base, 4);
+                        }
+                    }
+                }
+                idx++;
+                dst += 4;
+            }
+            break;
+        case ANIM_ENTRY_SPANS:
+            base = ofs - 4;
+            limit = base + len;
+            span = (u16*)entry;
+            dst = (u8*)entry + entry->count * 4 + 8;
+            for (j = 0; j < entry->count; j++) {
+                so = span[4];
+                sl = span[5];
+                if (so >= limit) {
+                    break;
+                }
+                se = so + sl;
+                if (se > base) {
+                    n = base - so;
+                    if (n < sl) {
+                        n = sl - n;
+                        if (n > len) {
+                            n = len;
+                        }
+                        memcpy(dst + (base - so), src, n);
+                    } else if (limit < se) {
+                        memcpy(dst, src + (so - base), limit - so);
+                    } else {
+                        memcpy(dst, src + (so - base), sl);
+                    }
+                }
+                dst += sl;
+                span += 2;
+            }
+            break;
+        }
+        entry = AnimEntry_Next(entry, (u32)block->size >> 2, anim->paramCount);
+    }
+}
+#endif
 
 // .text:0x8000CEF0 size:0x274
 BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out) {

@@ -165,6 +165,7 @@ void fn_8000E2D4(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000DC9C(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000D8A4(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
 BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out);
+void fn_8000CC4C(Anim* anim, AnimBlock* block, u8* src, u32 ofs, u32 len);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
