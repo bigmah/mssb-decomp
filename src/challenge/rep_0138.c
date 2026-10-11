@@ -201,8 +201,8 @@ void fn_1_717C(ChallengeModelOffsets* model) {
     geometry = (u8*)model + model->mainGeometry;
     textures = (u8*)model + model->textures;
     fn_1_4DD8((u16*)((u8*)model + model->effects));
-    fn_800B49E4(actor);
-    fn_800BCE38(geometry);
+    fn_800B49E4((struct ActorLayout *)actor); // TODO type
+    fn_800BCE38((struct DODisplayData *)geometry); // TODO type
     convertTextureHeader(textures);
     lbl_1_common_bss_472B4.texBank = textures + 4;
     fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
@@ -212,8 +212,8 @@ void fn_1_717C(ChallengeModelOffsets* model) {
     lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
     actor = (u8*)model + model->secondaryActor;
     geometry = (u8*)model + model->secondaryGeometry;
-    fn_800B49E4(actor);
-    fn_800BCE38(geometry);
+    fn_800B49E4((struct ActorLayout *)actor); // TODO type
+    fn_800BCE38((struct DODisplayData *)geometry); // TODO type
     fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
     haveActLayoutPointToGeoHeader(actor, geometry);
     lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
@@ -1194,7 +1194,6 @@ void fn_1_7960(void) {
 #endif
 
 extern void fn_1_196C(void);
-extern void fn_800B996C(u32 value);
 
 // fn_1_6E14, size:0x368
 // Viewer main loop: camera, model queueing, START to restart, B for the debug menu.
@@ -1267,7 +1266,7 @@ void fn_1_6E14(void) {
     }
     if (lbl_1_bss_C0.indWarp != 0) {
         // TODO type: main.dol keeps the callback in a u32
-        fn_800B996C((u32)fn_1_5544);
+        fn_800B996C((DOTevPass)fn_1_5544);
     } else {
         fn_800B996C(0);
     }
@@ -1310,7 +1309,7 @@ void fn_1_6848(void) {
         fn_800B9AA8(NULL);
         size = lbl_1_data_848.normalMapSize;
         fn_1_6578(&lbl_1_bss_C0.obj, lbl_1_bss_C0.image, size, size);
-        fn_800B996C((u32)fn_1_5544); // TODO type: main.dol keeps the callback in a u32
+        fn_800B996C((DOTevPass)fn_1_5544); // TODO type: check fn_1_5544 against DOTevPass
         LITAlloc(&lbl_1_data_848.lights[0]);
         LITAlloc(&lbl_1_data_848.lights[1]);
         LITAlloc(&lbl_1_data_848.lights[2]);
@@ -1375,8 +1374,8 @@ void fn_1_6848(void) {
             geometry = (u8*)model + model->mainGeometry;
             textures = (u8*)model + model->textures;
             fn_1_4DD8((u16*)((u8*)model + model->effects));
-            fn_800B49E4(actor);
-            fn_800BCE38(geometry);
+            fn_800B49E4((struct ActorLayout *)actor); // TODO type
+            fn_800BCE38((struct DODisplayData *)geometry); // TODO type
             convertTextureHeader(textures);
             lbl_1_common_bss_472B4.texBank = textures + 4;
             fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
@@ -1386,8 +1385,8 @@ void fn_1_6848(void) {
             lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
             actor = (u8*)model + model->secondaryActor;
             geometry = (u8*)model + model->secondaryGeometry;
-            fn_800B49E4(actor);
-            fn_800BCE38(geometry);
+            fn_800B49E4((struct ActorLayout *)actor); // TODO type
+            fn_800BCE38((struct DODisplayData *)geometry); // TODO type
             fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
             haveActLayoutPointToGeoHeader(actor, geometry);
             lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;

@@ -8,13 +8,12 @@
 #include "stl/stdlib.h"
 
 extern OSThread* GXGetCurrentGXThread(void);
-extern void SetDisplayStateTexture(void* object, s32 map, s32 b);
 extern void fn_800A7D4C(s32 list, void* node);
 extern void fn_800BD1E8(void (*func)(Mtx, s32*, s32*, s32*, u8*, u8*));
 
-extern TexDesc lbl_800F7A40;
+extern TexImage lbl_800F7A40;
 extern ScreenFxNode lbl_800F7A60[];
-extern TexDesc lbl_800F7AE0;
+extern TexImage lbl_800F7AE0;
 extern u8 lbl_8023DD80[];
 extern TrailSystem lbl_802D3D80;
 extern ScreenFx lbl_803C5090;
@@ -40,7 +39,7 @@ typedef struct GridPoint {
 #if NONMATCHING
 void fn_80039AC0(void) {
     GridPoint grid[9][9];
-    SpriteVertex v[4];
+    QuadVtx v[4];
     u32 color;
     s32 y;
     s32 x;
@@ -94,32 +93,32 @@ void fn_80039AC0(void) {
             s = 0;
             for (x = 0; x < 8; x++) {
                 z = -lbl_803C5090.scale;
-                v[0].x = grid[y][x].x;
-                v[0].y = grid[y][x].y;
-                v[0].z = z;
+                v[0].pos.x = grid[y][x].x;
+                v[0].pos.y = grid[y][x].y;
+                v[0].pos.z = z;
                 v[0].color = color;
                 v[0].s = s;
                 v[0].t = t0;
-                v[1].x = grid[y + 1][x].x;
-                v[1].y = grid[y + 1][x].y;
-                v[1].z = z;
+                v[1].pos.x = grid[y + 1][x].x;
+                v[1].pos.y = grid[y + 1][x].y;
+                v[1].pos.z = z;
                 v[1].color = color;
                 v[1].s = s;
                 v[1].t = t;
-                v[2].x = grid[y + 1][x + 1].x;
-                v[2].y = grid[y + 1][x + 1].y;
-                v[2].z = z;
+                v[2].pos.x = grid[y + 1][x + 1].x;
+                v[2].pos.y = grid[y + 1][x + 1].y;
+                v[2].pos.z = z;
                 v[2].color = color;
                 v[2].s = s + 0x80;
                 v[2].t = t;
-                v[3].x = grid[y][x + 1].x;
-                v[3].y = grid[y][x + 1].y;
-                v[3].z = z;
+                v[3].pos.x = grid[y][x + 1].x;
+                v[3].pos.y = grid[y][x + 1].y;
+                v[3].pos.z = z;
                 v[3].color = color;
                 v[3].s = s + 0x80;
                 v[3].t = t0;
                 do {
-                    DrawSprite_TexObj((struct QuadState*)v, (struct SpriteTexInfo*)&lbl_800F7A40);
+                    DrawSprite_TexObj(v, &lbl_800F7A40);
                     lbl_803C5090.repeat -= (lbl_803C5090.repeat != 0);
                 } while (lbl_803C5090.repeat != 0);
                 s += 0x80;
@@ -132,32 +131,32 @@ void fn_80039AC0(void) {
         z = -lbl_803C5090.scale;
         halfW = lbl_803CC7A0 * lbl_803C5090.scale / lbl_803CC7A4;
         halfH = lbl_803CC7B0 * lbl_803C5090.scale / lbl_803CC7A4;
-        v[0].x = -halfW * lbl_803CC7A8;
-        v[0].y = -halfH * lbl_803CC7A8;
-        v[0].z = z;
+        v[0].pos.x = -halfW * lbl_803CC7A8;
+        v[0].pos.y = -halfH * lbl_803CC7A8;
+        v[0].pos.z = z;
         v[0].color = color;
         v[0].s = 0;
         v[0].t = 0;
-        v[1].x = -halfW * lbl_803CC7A8;
-        v[1].y = -halfH * lbl_803CC7A8 + lbl_803C5090.lines * lbl_803C5090.scale / lbl_803CC7A4;
-        v[1].z = z;
+        v[1].pos.x = -halfW * lbl_803CC7A8;
+        v[1].pos.y = -halfH * lbl_803CC7A8 + lbl_803C5090.lines * lbl_803C5090.scale / lbl_803CC7A4;
+        v[1].pos.z = z;
         v[1].color = color;
         v[1].s = 0;
         v[1].t = (lbl_803C5090.lines << 10) / 448;
-        v[2].x = halfW * lbl_803CC7A8;
-        v[2].y = v[1].y;
-        v[2].z = z;
+        v[2].pos.x = halfW * lbl_803CC7A8;
+        v[2].pos.y = v[1].pos.y;
+        v[2].pos.z = z;
         v[2].color = color;
         v[2].s = 0x400;
         v[2].t = v[1].t;
-        v[3].x = halfW * lbl_803CC7A8;
-        v[3].y = v[0].y;
-        v[3].z = z;
+        v[3].pos.x = halfW * lbl_803CC7A8;
+        v[3].pos.y = v[0].pos.y;
+        v[3].pos.z = z;
         v[3].color = color;
         v[3].s = 0x400;
         v[3].t = 0;
         do {
-            DrawSprite_TexObj((struct QuadState*)v, (struct SpriteTexInfo*)&lbl_800F7A40);
+            DrawSprite_TexObj(v, &lbl_800F7A40);
             lbl_803C5090.repeat -= (lbl_803C5090.repeat != 0);
         } while (lbl_803C5090.repeat != 0);
     }
@@ -260,7 +259,7 @@ void fn_8003A2EC(void) {
 
 // .text:0x8003A37C size:0x14C
 void fn_8003A37C(Mtx mtx, s32* stage, s32* coord, s32* map, u8* count, u8* texMtx) {
-    lbl_800F7AE0.image = GetUITexture();
+    lbl_800F7AE0.data = GetUITexture();
     SetDisplayStateTexture(&lbl_800F7AE0, *map, 0);
     GXSetTevOrder(*stage, *coord, *map, GX_COLOR0A0);
     GXSetTevColorIn(*stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_TEXA, GX_CC_CPREV);

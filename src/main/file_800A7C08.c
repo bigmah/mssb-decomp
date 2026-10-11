@@ -1,4 +1,7 @@
 #include "main/file_800A7C08.h"
+#include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
+#include "main/file_800A6870.h"
 #include "Dolphin/os.h"
 #include "Dolphin/gx.h"
 #include "Dolphin/vi.h"
@@ -257,7 +260,6 @@ extern DVDCommandBlock lbl_802EF230;
 extern DVDCommandBlock lbl_802EF260;
 extern DVDCommandBlock lbl_802EF290;
 
-extern GlobalState6CF8 lbl_803C6CF8;
 
 extern s32 ConvertPathToEntryNum(void* file);
 extern BOOL fn_800A750C(void* file, DVDFileInfo* fileInfo);
@@ -788,7 +790,6 @@ void fn_800A94A8(s32 result, DVDCommandBlock* block) {
 
 extern void SISetSamplingRate(u32 msec);
 extern PadConfig lbl_80110080;
-extern PadState lbl_803C77B8[PAD_MAX_CONTROLLERS];
 
 // .text:0x800A94C4 size:0x5C
 void fn_800A94C4(void) {
@@ -1151,6 +1152,7 @@ void fn_800A9864(u8 chan, u8 mode, u64 serial) {
 
 // .text:0x800A98FC size:0x3FC
 // NONMATCHING 89%: switch jump table lives in unsplit .data (reloc names differ); status classification compiled into a different branch layout
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800A98FC(void) {
     CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
@@ -1358,6 +1360,7 @@ void fn_800A9E34(u8 chan, u8 mode, u64 serial) {
 
 // .text:0x800A9ECC size:0x480
 // NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800A9ECC(void) {
     CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
@@ -1486,6 +1489,7 @@ void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial) {
 
 // .text:0x800AA44C size:0x4E4
 // NONMATCHING 80%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AA44C(void) {
     CardNameTask* task = (CardNameTask*)lbl_803CC1B8;
@@ -1593,6 +1597,7 @@ void fn_800AA930(CardRequest* req, u64 serial) {
 
 // .text:0x800AAA70 size:0x474
 // NONMATCHING 76%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AAA70(void) {
     CardFileTask* task = (CardFileTask*)lbl_803CC1B8;
@@ -1680,6 +1685,7 @@ void fn_800AAEE4(CardRequest* req, u64 serial) {
 
 // .text:0x800AAFEC size:0x488
 // NONMATCHING 78%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AAFEC(void) {
     CardWriteTask* task = (CardWriteTask*)lbl_803CC1B8;
@@ -1757,6 +1763,7 @@ void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial) {
 
 // .text:0x800AB534 size:0x5E0
 // NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AB534(void) {
     CardNameTask* task = (CardNameTask*)lbl_803CC1B8;
@@ -1976,6 +1983,7 @@ void fn_800ABBD0(void) {
 
 // .text:0x800ABF44 size:0x5C4
 // NONMATCHING 92%: switch jump table lives in unsplit .data (reloc names differ); register allocation differs
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800ABF44(void) {
     CARDStat* stat = &lbl_802EF330;
@@ -2525,11 +2533,11 @@ static inline u32 ThpGetState(ThpPlayer* p) {
     if (state & 4) {
         return 4;
     }
-    switch (lbl_803C6CF8._722) {
+    switch (lbl_803C6CF8.driveStatus) {
     case -1:
         return 0xA0000000;
     default:
-        return lbl_803C6CF8._722 | 0x80000000;
+        return lbl_803C6CF8.driveStatus | 0x80000000;
     case 0:
         if (state & 2) {
             return state & 0x12;
@@ -2582,6 +2590,7 @@ static inline void ThpResume(ThpPlayer* p, u8 flags) {
 
 // .text:0x800AD070 size:0x420
 // NONMATCHING 81%: register allocation and block layout differ
+// nmverify: fn_800A7D4C inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AD070(void) {
     ThpPlayer* p;
@@ -2598,7 +2607,7 @@ void fn_800AD070(void) {
         return;
     }
     if (!(p->flags & 1)) {
-        if (!(p->state & 0x10) && lbl_803C6CF8._722 == 5) {
+        if (!(p->state & 0x10) && lbl_803C6CF8.driveStatus == 5) {
             ThpPause(p);
             p->state |= 0x10;
         }
@@ -2667,11 +2676,11 @@ u32 fn_800AD490(ThpPlayer* p) {
     if (state & 4) {
         return 4;
     }
-    switch (lbl_803C6CF8._722) {
+    switch (lbl_803C6CF8.driveStatus) {
     case -1:
         return 0xA0000000;
     default:
-        return lbl_803C6CF8._722 | 0x80000000;
+        return lbl_803C6CF8.driveStatus | 0x80000000;
     case 0:
         if (state & 2) {
             return state & 0x12;

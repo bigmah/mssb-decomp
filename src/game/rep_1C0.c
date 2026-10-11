@@ -29,7 +29,6 @@ extern s32 fn_80052734(s32);
 extern s32 lbl_3_rodata_210;
 extern void DCStoreRange(void*, u32);
 extern void fn_80023F0C(void*, void*, int, int, int, int, int, int);
-extern void SetFog(u8, s32*, f32, f32, f32, f32);
 
 // .text:0x000035D4 size:0x10
 u32 setFanObjPtr(void) {
@@ -243,7 +242,7 @@ void fn_3_5BF0(void) {
         ((void (*)(void))lbl_3_bss_18[0])();
     }
     col = *(s32*)(d + 0x714);
-    SetFog(d[0x717], &col, *(f32*)(d + 0x718), *(f32*)(d + 0x71C), lbl_3_rodata_520[0], lbl_3_rodata_538[0]);
+    SetFog(d[0x717], (GXColor *)&col, *(f32*)(d + 0x718), *(f32*)(d + 0x71C), lbl_3_rodata_520[0], lbl_3_rodata_538[0]); // TODO type
 }
 
 // .text:0x00005C68 size:0x1F8 mapped:0x80644CFC
@@ -255,7 +254,7 @@ void fn_3_5C68(u8* obj) {
     s32 cnt;
     GXSetCullMode(2);
     col = lbl_3_rodata_210;
-    SetFog(0, &col, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504);
+    SetFog(0, (GXColor *)&col, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504); // TODO type
     GXSetBlendMode(1, 4, 5, 0);
     k = 2;
     while (k-- != 0) {
@@ -318,7 +317,6 @@ void fn_3_5E60(void) {
 }
 
 extern u8 lbl_3_data_7EC[];
-extern s32 ARAMTransfer(void*, int, int, int);
 // .text:0x000064DC size:0x54
 void fn_3_64DC(void) {
     ARAMTransfer(lbl_3_data_7EC + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 0, 0);

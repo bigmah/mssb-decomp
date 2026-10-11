@@ -60,7 +60,7 @@ typedef struct ARAMLoader {
     /*0x718*/ s32 entryNum;
     /*0x71C*/ AssetLoadInstructions* instr;
     /*0x720*/ u16 compression;
-    /*0x722*/ u8 driveStatus; // DVDGetDriveStatus() result, read as s8
+    /*0x722*/ s8 driveStatus; // DVDGetDriveStatus() result (-1: none)
     /*0x723*/ u8 ringFull;
 } ARAMLoader; // size: 0x724
 

@@ -137,7 +137,7 @@ s16 fn_2_4C3C4(s32 index) {
 }
 
 // fn_2_4C3D8, size:0x14
-s16 fn_2_4C3D8(s32 index) {
+s32 fn_2_4C3D8(s32 index) {
     return lbl_2_data_3EC8[index];
 }
 
@@ -2594,6 +2594,7 @@ extern u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style
 
 // fn_2_4EB9C, size:0x1CFC
 // NONMATCHING 86%: same case layout and calls; the original addresses the text buffers (lbl_2_bss_5600/9600/9604/9608/9A08) through one lbl_2_bss_55E8 base register and keeps lbl_2_bss_1A824C's address live in r29, ours reloads with lis/addi
+// nmverify: lbl_2_bss_5600 lbl_2_bss_9600 lbl_2_bss_9604 lbl_2_bss_9608 lbl_2_bss_9A08 reached through a pooled base in original
 #if NONMATCHING
 s16 fn_2_4EB9C(void) {
     u8* queue = lbl_803CC1B8[0];

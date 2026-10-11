@@ -4,6 +4,8 @@
 #include "mssbTypes.h"
 
 // Debug menu (see fn_80048820).
+struct DebugMenu;
+
 typedef struct DebugMenuItem {
     /*0x00*/ s32 type; // 2: s8, 3-5: u8, 6-8: button action, else s32
     /*0x04*/ const char* label; // NULL ends the item list
