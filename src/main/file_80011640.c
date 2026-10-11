@@ -719,8 +719,26 @@ void fn_8001C528(void) {
 }
 
 // .text:0x8001C588 size:0xF4
-void fn_8001C588(void) {
-    return;
+s32 fn_8001C588(s32 id) {
+    if (lbl_803CBC3C[3] == 0) {
+        if ((s32)lbl_803C6CF8.transferDone != 1) {
+            goto fail;
+        }
+        lbl_803CBC3C[3] = 1;
+    }
+    if (lbl_803CBC3C[3] == 1) {
+        ARAMTransfer(&lbl_803CB790[id * 0x13 + 6], lbl_8036E548._2CE8, 0, 0);
+        lbl_803CBC3C[3] = 2;
+    } else if (lbl_803CBC3C[3] == 2 && (s32)lbl_803C6CF8.transferDone == 1) {
+        ANIMGet(lbl_8036E548._2CE8);
+        if (lbl_8036E548.active[1]->banks.b[4] == NULL) {
+            lbl_8036E548.active[1]->banks.b[4] = lbl_8036E548._2CE8;
+        }
+        return 1;
+    }
+fail:
+    lbl_803CBC3C[0] = 0;
+    return 0;
 }
 
 // .text:0x8001C67C size:0x2A4
