@@ -955,8 +955,17 @@ void fn_800B2854(u8* buf, s32 bufSize, Mtx44 proj, s32 projType, s32 numLayers, 
 #endif
 
 // .text:0x800B2AC8 size:0x84
-void fn_800B2AC8(void) {
-    return;
+// For every bone whose flags have bit 3 or 4 set, passes the skinning state's
+// unk8 (fn_800BF068) to the bone's display object (fn_800BC824).
+void fn_800B2AC8(LoadedActorLayout* layout) {
+    s32 i;
+    LoadedGeoPalette* pal = layout->pal;
+    for (i = 0; i < layout->totalBones; i++) {
+        if ((layout->bones[i].flags & 0x18) && layout->bones[i].geoFileID != 0xFFFF) {
+            u8* obj = pal->entries[layout->bones[i].geoFileID].obj;
+            fn_800BC824(obj, ((SkinState*)fn_800BF068())->unk8);
+        }
+    }
 }
 
 // .text:0x800B2B4C size:0x8
