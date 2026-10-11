@@ -196,8 +196,8 @@ void GQRSetup6(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType) {
 }
 
 // .text:0x800BD278 size:0x38
-void GQRSetup5(void) {
-    return;
+void GQRSetup5(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType) {
+    __MTGQR5((((loadScale << 8) + loadType) << 16) | ((storeScale << 8) + storeType));
 }
 
 extern u32 lbl_803CC224;
