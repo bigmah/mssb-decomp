@@ -391,8 +391,32 @@ void fn_80033794(Particle* list) {
 }
 
 // .text:0x800337CC size:0x90
-void fn_800337CC(void) {
-    return;
+Emitter* fn_800337CC(Emitter* e, s32 n, s32 strict) {
+    s32 count = 0;
+    Particle* p = lbl_803CBC74;
+    Particle* last = NULL;
+    if (e != NULL) {
+        while (p != NULL && n != 0) {
+            last = p;
+            p = p->next;
+            count++;
+            n--;
+        }
+        if (strict && n != 0) {
+            return NULL;
+        }
+        e->count = count;
+        if (count != 0) {
+            e->particles = lbl_803CBC74;
+            lbl_803CBC74 = p;
+            if (last != NULL) {
+                last->next = NULL;
+            }
+        } else {
+            e->particles = NULL;
+        }
+    }
+    return e;
 }
 
 // .text:0x8003385C size:0xCC
