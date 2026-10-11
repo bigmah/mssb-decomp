@@ -10,6 +10,8 @@ extern const f32 lbl_3_rodata_1250;
 extern const f32 lbl_3_rodata_1258;
 extern const f32 lbl_3_rodata_12A8;
 extern const f32 lbl_3_rodata_1290;
+extern const f32 lbl_3_rodata_12AC;
+extern f32 lbl_3_data_5E98[];
 extern void fn_3_5C69C(s32 type);
 extern void fn_3_6EBB4(s32 rosterLoc);
 extern void fn_3_89864(s32 i, s32 d);
@@ -42,7 +44,6 @@ typedef struct Rep1200CharEntry {
 } Rep1200CharEntry; // size: 0x6
 extern Rep1200CharEntry lbl_800E8558[];
 
-extern f32 lbl_3_data_5E98[];
 extern f32 lbl_3_data_5F90[];
 
 // .text:0x0006F6CC size:0x7C mapped:0x806AE760
@@ -460,6 +461,8 @@ typedef struct PitchSpeedRange {
     /*0x00*/ u8 _00[8];
     /*0x08*/ s16 eggMin;
     /*0x0A*/ s16 eggMax;
+    /*0x0C*/ s16 eggVeloMin;
+    /*0x0E*/ s16 eggVeloMax;
 } PitchSpeedRange;
 extern PitchSpeedRange lbl_3_data_5F7C;
 void fn_3_70838(void) {
@@ -527,8 +530,44 @@ void fn_3_70AEC(void) {
 }
 
 // .text:0x00070B94 size:0x360 mapped:0x806AFC28
+extern s32 LERPToNewRange_Float(s32 value, s32 inMin, s32 inMax, s32 outMin, s32 outMax);
+// Vertical (y) parabolic offset of the pitch; egg-ball pitches bounce.
 void fn_3_70B94(void) {
-    return;
+    f32 t;
+    if (g_Pitcher.starPitchType == 9 || g_Pitcher.starPitchType == 0xA) {
+        if (g_Pitcher.eggBallBounceNumber == 0) {
+            t = g_Ball.pitchHangtimeCounter - g_Pitcher.frameWhenUnhittable * lbl_3_rodata_1250;
+            g_Pitcher.pitchY_parabolicAdjustment =
+                g_Pitcher.verticalOffsetParabolaMidpoint - (t * (g_Pitcher.verticalGlobalParabolicVelo * t)) / lbl_3_rodata_12A8;
+        } else if (g_Pitcher.eggBallBounceNumber == 1 || g_Pitcher.eggBallBounceNumber == 2) {
+            if (g_Pitcher.framesSinceFirstEggBounce == 1) {
+                if (g_Pitcher.eggBallBounceNumber == 1) {
+                    f32 frames = fn_3_70768(&t, 0, g_Pitcher.eggBallBounceZLoc);
+                    g_Pitcher.ballBouncePeakZ = frames * lbl_3_rodata_1250;
+                    g_Pitcher.verticalGlobalParabolicVelo = LERPToNewRange_Float(
+                        g_Pitcher.pitchSpeed, lbl_3_data_5F7C.eggMin, lbl_3_data_5F7C.eggMax, lbl_3_data_5F7C.eggVeloMin, lbl_3_data_5F7C.eggVeloMax);
+                    t = g_Pitcher.ballBouncePeakZ;
+                    g_Pitcher.verticalOffsetParabolaMidpoint = (t * (g_Pitcher.verticalGlobalParabolicVelo * t)) / lbl_3_rodata_12A8;
+                } else {
+                    g_Pitcher.ballBouncePeakZ = g_Pitcher.framesUntilBallReachesBatterZ;
+                    g_Pitcher.verticalOffsetParabolaMidpoint = lbl_3_rodata_12AC + lbl_3_data_5E98[4];
+                    t = g_Pitcher.framesUntilBallReachesBatterZ;
+                    g_Pitcher.verticalGlobalParabolicVelo = (lbl_3_rodata_12A8 * g_Pitcher.verticalOffsetParabolaMidpoint) / (t * t);
+                }
+            }
+            t = (f32)g_Pitcher.framesSinceFirstEggBounce - (f32)g_Pitcher.ballBouncePeakZ;
+            g_Pitcher.pitchY_parabolicAdjustment =
+                g_Pitcher.verticalOffsetParabolaMidpoint - (t * (g_Pitcher.verticalGlobalParabolicVelo * t)) / lbl_3_rodata_12A8;
+        } else {
+            g_Pitcher.pitchY_parabolicAdjustment = lbl_3_rodata_1258;
+        }
+    } else if (g_Pitcher.cancelParabolicAdjustmentInd != 0) {
+        g_Pitcher.pitchY_parabolicAdjustment = lbl_3_rodata_1258;
+    } else {
+        t = g_Ball.pitchHangtimeCounter - g_Pitcher.frameWhenUnhittable * lbl_3_rodata_1250;
+        g_Pitcher.pitchY_parabolicAdjustment =
+            g_Pitcher.verticalOffsetParabolaMidpoint - (t * (g_Pitcher.verticalGlobalParabolicVelo * t)) / lbl_3_rodata_12A8;
+    }
 }
 
 // .text:0x00070EF4 size:0x354 mapped:0x806AFF88
