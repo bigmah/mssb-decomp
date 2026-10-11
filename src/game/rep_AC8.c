@@ -3565,9 +3565,57 @@ void fn_3_483CC(int i) {
 }
 
 // .text:0x00048480 size:0x5D4 mapped:0x80687514
-void fn_3_48480(void) {
-    return;
+extern void fn_3_A7C88(void);
+// NONMATCHING 50%: the original inlines fn_3_480B8 (lead-runner cover + set target); we call it (expected nmverify flag). The rest matches apart from registers
+#if NONMATCHING
+// Infielder i during a hit: cover the lead runner's base (fn_3_480B8), then react to the ball state.
+void fn_3_48480(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    u8 st;
+    switch (fn_3_53130(i)) {
+    case 2:
+        return;
+    default:
+        if (*(s16*)(g_FieldingLogic + 0xC4) == 6) {
+            fn_3_46ABC(i);
+            fn_3_A7C88();
+        } else if (*(int*)(g_Strikes + 8) < 3) {
+            fn_3_480B8(i);
+            ((void (*)(int))fn_3_526DC)(i);
+        }
+        if (0.0f != *(f32*)(f + 0x50)) {
+            *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x50);
+        }
+    case 1:
+        break;
+    }
+    st = g_Ball[0x1BC9];
+    if (st != 0 && *(s16*)(g_FieldingLogic + 0xC4) != 6 && g_Ball[0x1BBE] <= 1) {
+        *(s16*)(f + 0x18C) = -1;
+        f[0x1D7] = 0;
+        SetFielderAct(i, 0xC, 0x60);
+        *(s16*)(g_FieldingLogic + 0xBE) = -1;
+    } else if (st == 1 &&
+               ((f32*)(g_Fielders + *(s16*)(g_Ball + 0x1B78) * 0x268 + 0xA8))[*(s16*)(f + 0x18E)] < lbl_3_rodata_B70 &&
+               *(s16*)(g_FieldingLogic + 0xC4) != 6) {
+        *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
+        f[0x1D7] = 2;
+        SetFielderAct(i, 0xE, 0x70);
+        f[0x1D6] = 0;
+        *(s16*)(g_FieldingLogic + 0xBE) = -1;
+        *(s16*)(g_FieldingLogic + 0xC0) = 0x5A;
+    } else if (st == 2 && *(s16*)(g_FieldingLogic + 0xC4) != 6) {
+        *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
+        f[0x1D7] = 2;
+        SetFielderAct(i, 0xE, 0x70);
+        f[0x1D6] = 0;
+        *(s16*)(g_FieldingLogic + 0xBE) = -1;
+    }
+    if (*(s16*)(g_Ball + 0x1B8A) == i) {
+        fn_3_4E638();
+    }
 }
+#endif
 
 // .text:0x00048A54 size:0xAA0 mapped:0x80687AE8
 void fn_3_48A54(void) {
