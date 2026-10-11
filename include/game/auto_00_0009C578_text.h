@@ -16,7 +16,9 @@ typedef struct GameLineScore {
     /*0xFE*/ s8 _FE;
     /*0xFF*/ s8 _FF;
     /*0x100*/ s8 _100;
-    /*0x101*/ u8 _101[0x108 - 0x101];
+    /*0x101*/ u8 _101[0x104 - 0x101];
+    /*0x104*/ u8 _104;
+    /*0x105*/ u8 _105[0x108 - 0x105];
 } GameLineScore; // size: 0x108
 
 extern GameLineScore lbl_80353A90;

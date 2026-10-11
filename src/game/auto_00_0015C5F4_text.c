@@ -4,7 +4,11 @@
 
 // .text:0x0015C5F4 size:0x44 mapped:0x8079B688
 void fn_3_15C5F4(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+
+    if (g_GameLogic._125 == 7) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
 }
 
 // .text:0x0015C638 size:0xAC mapped:0x8079B6CC

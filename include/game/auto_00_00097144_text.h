@@ -53,7 +53,8 @@ typedef struct GameHudFlags {
     /*0xCF*/ u8 _CF;
     /*0xD0*/ u8 _D0;
     /*0xD1*/ u8 _D1;
-    /*0xD2*/ u8 _D2[0xD6 - 0xD2];
+    /*0xD2*/ u8 _D2; // scorebook (game/auto_00_0015C5F4_text) busy this frame
+    /*0xD3*/ u8 _D3[0xD6 - 0xD3];
     /*0xD6*/ u8 _D6;
     /*0xD7*/ u8 _D7[0xD9 - 0xD7];
     /*0xD9*/ u8 _D9;
@@ -75,7 +76,8 @@ typedef struct GamePauseState {
     /*0x1D3*/ u8 _1D3;
     /*0x1D4*/ u8 _1D4;
     /*0x1D5*/ u8 _1D5;
-    /*0x1D6*/ u8 _1D6[0x1D9 - 0x1D6];
+    /*0x1D6*/ u8 _1D6[0x1D8 - 0x1D6];
+    /*0x1D8*/ u8 _1D8;
     /*0x1D9*/ u8 itemsState; // 0: opening, 2: closed, 3: done
     /*0x1DA*/ s8 cursor;
     /*0x1DB*/ u8 _1DB[0x221 - 0x1DB];
