@@ -1020,9 +1020,88 @@ void fn_3_A5B4C(void) {
 }
 
 // .text:0x000A63E4 size:0x404 mapped:0x806E5478
-void fn_3_A63E4(void) {
-    return;
+// NONMATCHING 91%: float register allocation and constant-load scheduling differ; fn_3_A6ABC is inlined
+#if NONMATCHING
+s32 fn_3_A63E4(s32 i, s32 useNext, s32* throwBase, s32* coverBase) {
+    InMemRunnerType* r = &g_Runners[i];
+    RepFielder* f = &g_Fielders[g_Ball.fielderWBallIndex];
+    s32 runnerFrames;
+    f32 tx;
+    f32 tz;
+    f32 dz;
+    f32 dx;
+    f32 b;
+    f32 step;
+    f32 a;
+    f32 d;
+    s32 frames;
+    s32 n;
+    s32 base;
+    s32 throwFrames;
+    s16 cover;
+    s16 coverFrames;
+    f32 ballDist;
+
+    if (useNext == 0) {
+        runnerFrames = r->framesToPreviousBase;
+        base = r->currentBase;
+    } else {
+        runnerFrames = r->framesToNextBase;
+        base = r->nextBase;
+    }
+    // inlined fn_3_A6ABC(base x, base z)
+    tx = lbl_3_data_4444[base * 2];
+    step = (f32)f->_1CD / lbl_3_rodata_1938;
+    tz = lbl_3_data_4444[base * 2 + 1];
+    dx = tx - f->pos.x;
+    dz = tz - f->pos.z;
+    cover = g_FieldingLogic._0D0[base];
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        step = lbl_3_rodata_1958;
+    }
+    if (d > lbl_3_rodata_195C) {
+        n = (s32)(lbl_3_rodata_1960 * d / step);
+    } else if (d > lbl_3_rodata_1964) {
+        n = (s32)(d / step);
+    } else {
+        n = (s32)(lbl_3_rodata_1968 * d / step);
+    }
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+    }
+    ballDist = g_Ball.ballDistanceFromBase[base];
+    frames = f->_192 + n;
+    if (ballDist > lbl_3_rodata_195C && ballDist < lbl_3_rodata_1974 && (base == 0 || base == 3)) {
+        frames -= 0x2D;
+    }
+    throwFrames = fn_3_52560(g_Ball.fielderWBallIndex, tx, tz);
+    if (cover == g_Ball.fielderWBallIndex || cover == -1 || ballDist < lbl_3_rodata_199C) {
+        *throwBase = -1;
+        *coverBase = base;
+        return runnerFrames - throwFrames;
+    }
+    coverFrames = g_Fielders[cover].framesToDest;
+    if (throwFrames < coverFrames + 5) {
+        *throwBase = -1;
+        *coverBase = base;
+        return runnerFrames - throwFrames;
+    }
+    if (frames < coverFrames) {
+        *throwBase = base + 10;
+        *coverBase = -1;
+        return runnerFrames - g_Fielders[cover].framesToDest;
+    }
+    *throwBase = base;
+    *coverBase = -1;
+    return runnerFrames - frames;
 }
+#endif
 
 // .text:0x000A67E8 size:0x28 mapped:0x806E587C
 
