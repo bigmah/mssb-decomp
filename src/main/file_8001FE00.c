@@ -97,6 +97,22 @@ void fn_8002024C(void) {
 
 // .text:0x80020278 size:0x110
 s32 fn_80020278(s32 index) {
+    if (lbl_8037169C.loadState == 0) {
+        AramFile* file = &lbl_800EEFD0[index + 0x2D];
+        lbl_8037169C.tex = fn_800ACF34(0x20, file->size & 0x0FFFFFFF);
+        ARAMTransfer(file, (s32)lbl_8037169C.tex, 1, 0); // TODO type: 2nd param is the destination
+        lbl_8037169C.loadIndex = index;
+        lbl_8037169C.fadeAlpha = 0;
+        lbl_8037169C.loadState++;
+    } else if (lbl_8037169C.loadState == 1) {
+        if ((s32)lbl_803C6CF8.transferDone != 1) {
+            return 0;
+        }
+        convertTextureHeader(lbl_8037169C.tex);
+        lbl_8037169C.texObj = TEX_ARCHIVE_OBJ(lbl_8037169C.tex, 0);
+        lbl_8037169C.loadState = 2;
+        return 1;
+    }
     return 0;
 }
 
