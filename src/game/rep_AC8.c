@@ -3978,9 +3978,92 @@ void fn_3_3CCB0(void) {
 }
 
 // .text:0x0003D304 size:0x3A8 mapped:0x8067C398
-void fn_3_3D304(void) {
-    return;
+extern void fn_3_9F79C(f32 a, f32 b, f32 c, f32* x, f32* y);
+extern void fn_3_A96FC(int);
+extern void fn_3_A9984(int);
+extern u8 lbl_3_data_4290[];
+extern u8 lbl_3_data_4300[];
+extern u8 lbl_3_data_4348[];
+// NONMATCHING 96%: table x reads via lfsx in the original; f30/f31 swapped; calls fn_3_2F574/fn_3_526DC through casts until their prototypes gain the index arg
+#if NONMATCHING
+void fn_3_3D304(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 tx;
+    f32 tz;
+    f32 ox;
+    f32 oz;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    s32 team;
+    u8* home;
+    if (f[0x20F] != 0) {
+        g_FieldingLogic[0x111] = 0;
+        return;
+    }
+    if (f[0x210] != 0) {
+        fn_3_251E4(i);
+        f[0x1EE] = 0;
+        return;
+    }
+    if (fn_3_53130(i) != 0) {
+        return;
+    }
+    if (f[0x211] != 0) {
+        fn_3_A96FC(i);
+        return;
+    }
+    if (f[0x1EE] != 0) {
+        fn_3_A9984(i);
+        return;
+    }
+    if (f[0x1EF] != 0) {
+        return;
+    }
+    if (f[0x203] != 0) {
+        /* TODO: fn_3_2F574 takes the fielder index; its prototype (other range) is still (void) */
+        ((void (*)(int))fn_3_2F574)(i);
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B78) == i && f[0x1EC] == 0) {
+        *(s16*)(g_Ball + 0x1B78) = -1;
+    }
+    team = *(int*)(g_GameLogic + 8);
+    home = lbl_3_data_4290 + g_d_GameSettings[9] * 0x10 + *(int*)(g_GameLogic + 0x10) * 8;
+    tx = *(f32*)home;
+    tz = *(f32*)(home + 4);
+    if (*(s16*)(f + 0x178) != *(int*)(g_GameLogic + team * 4 + 0xF4)) {
+        fn_3_9F79C(*(f32*)(lbl_3_data_4348 + g_d_GameSettings[9] * 8 + team * 4), *(f32*)(lbl_3_data_4300 + i * 8),
+                   *(f32*)(lbl_3_data_4300 + i * 8 + 4), &ox, &oz);
+        tx += ox;
+        tz += oz;
+    }
+    f[0x1D6] = 0xD;
+    *(f32*)(f + 0x14) = tx;
+    *(f32*)(f + 0x1C) = tz;
+    dx = tx - *(f32*)f;
+    dz = tz - *(f32*)(f + 8);
+    if (lbl_3_rodata_B20 == dx && lbl_3_rodata_B20 == dz) {
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+    } else {
+        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
+    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
+    ((void (*)(int))fn_3_526DC)(i);
+    if (*(f32*)(f + 0x68) <= lbl_3_rodata_B80) {
+        SetFielderAct(i, 0, 0);
+        f[0x1FA] = 1;
+    }
+    if (i == *(s16*)(g_Ball + 0x1B78)) {
+        *(s16*)(g_FieldingLogic + 0xC4) = -1;
+    }
 }
+#endif
 
 // .text:0x0003D6AC size:0x128 mapped:0x8067C740
 void fn_3_3D6AC(int i) {
