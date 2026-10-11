@@ -128,4 +128,6 @@ void fn_3_B0E00(void);
 
 void fn_3_AE900(void);
 
+void fn_3_B2AA0(void);
+
 #endif
