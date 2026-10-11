@@ -12,7 +12,9 @@ typedef struct RepFielder {
     /*0x020*/ u8 _020[0x30 - 0x20];
     /*0x030*/ f32 velX;
     /*0x034*/ f32 velZ;
-    /*0x038*/ u8 _038[0x48 - 0x38];
+    /*0x038*/ f32 _038; // previous velocity x?
+    /*0x03C*/ f32 _03C; // previous velocity z?
+    /*0x040*/ u8 _040[0x48 - 0x40];
     /*0x048*/ f32 facing;
     /*0x04C*/ u8 _04C[0x50 - 0x4C];
     /*0x050*/ f32 speed;
@@ -56,7 +58,9 @@ typedef struct RepFielder {
     /*0x1D2*/ u8 _1D2;
     /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3];
     /*0x1D7*/ u8 _1D7;
-    /*0x1D8*/ u8 _1D8[0x1E2 - 0x1D8];
+    /*0x1D8*/ u8 _1D8[0x1E0 - 0x1D8];
+    /*0x1E0*/ u8 _1E0;
+    /*0x1E1*/ u8 _1E1;
     /*0x1E2*/ u8 _1E2;
     /*0x1E3*/ u8 _1E3[0x1ED - 0x1E3];
     /*0x1ED*/ u8 _1ED;

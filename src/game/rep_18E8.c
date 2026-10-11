@@ -103,6 +103,9 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_1A14;
+extern const f32 lbl_3_rodata_1A44;
+extern const f32 lbl_3_rodata_1A48;
 extern const f32 lbl_3_rodata_1A5C;
 extern const f32 lbl_3_rodata_1A60;
 extern const f32 lbl_3_rodata_1A64;
@@ -2503,9 +2506,114 @@ void fn_3_A85C8(f32 dist) {
 #endif
 
 // .text:0x000A89D4 size:0x980 mapped:0x806E7A68
+// Chooses g_FieldingLogic.throwSpeedType for the current throw.
+// NONMATCHING 60%: the original inlines fn_3_A85C8 (with fn_3_A6ABC) as its tail; here it is called. Code before it matches up to register allocation
+#if NONMATCHING
 void fn_3_A89D4(void) {
-    return;
+    RepFielder* f;
+    f32 dx;
+    f32 dz;
+    f32 a;
+    f32 b;
+    f32 dist;
+    f32 pred;
+    s32 i;
+    InMemRunnerType* r;
+
+    f = &g_Fielders[g_Ball.fielderWBallIndex];
+    dx = f->pos.x - g_Ball.throwDestination.x;
+    dz = f->pos.z - g_Ball.throwDestination.z;
+    g_FieldingLogic.throwSpeedType = 3;
+    g_FieldingLogic._109 = 0;
+    g_FieldingLogic._10B = 0;
+    a = dx * dx;
+    b = dz * dz;
+    dist = a + b;
+    g_FieldingLogic._0E6 = 0;
+    SQRT_L(dist);
+    if (g_FieldingLogic._119 != 0) {
+        g_FieldingLogic.throwSpeedType = 9;
+        return;
+    }
+    if (g_Runners[1].runnerOnFieldOrOutOrScored != 0 && g_Runners[1].actionCode != 0 &&
+        g_Runners[1].fractionalBasesRan >= lbl_3_rodata_1A3C && g_Runners[1].fractionalBasesRan <= lbl_3_rodata_1A14 &&
+        g_FieldingLogic._0C4 == 1 && g_Ball.baseBallAndFielderAreOn == 2) {
+        g_FieldingLogic.throwSpeedType = 10;
+        return;
+    }
+    if (dist > lbl_3_rodata_19E8 || (g_Ball.ballZoneAwayFromHome >= 3 && dist > lbl_3_rodata_19B8)) {
+        g_FieldingLogic._109 = 1;
+    }
+    if (g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3) {
+        if (f->_1E0 == 1 && g_Ball.timeSinceBallPickedUp < 0x2D) {
+            dx = (2.0f * f->_038 + f->pos.x) - g_Ball.throwDestination.x;
+            dz = (2.0f * f->_03C + f->pos.z) - g_Ball.throwDestination.z;
+            a = dx * dx;
+            b = dz * dz;
+            pred = a + b;
+            SQRT_L(pred);
+            if (pred < lbl_3_rodata_1A20) {
+                g_FieldingLogic.throwSpeedType = 8;
+                return;
+            }
+        } else {
+            if (dist < lbl_3_rodata_1A44) {
+                g_FieldingLogic.throwSpeedType = 8;
+                return;
+            }
+            if (dist < lbl_3_rodata_1A48 && g_Fielders[g_FieldingLogic._0D0[g_FieldingLogic._0C4]].framesToDest > 0x1E) {
+                g_FieldingLogic.throwSpeedType = 8;
+                return;
+            }
+        }
+    }
+    if (g_Ball.ballZoneAwayFromHome <= 2) {
+        // count runners up to the first one still in danger
+        for (i = 0; i < 4; i++) {
+            r = &g_Runners[i];
+            if (r->runnerOnFieldOrOutOrScored == 1) {
+                if (r->forceOutCd == 1 || r->tagUpInd == 2 || r->overrunBaseStage >= 3) {
+                    break;
+                }
+                if (r->percentTowardsNextBase <= lbl_3_rodata_19BC && r->runningDirectionCode == 1) {
+                    break;
+                }
+                if (r->percentTowardsNextBase >= lbl_3_rodata_19BC && r->percentTowardsNextBase <= lbl_3_rodata_1968) {
+                    break;
+                }
+            }
+        }
+        if (i >= 4) {
+            if (dist < lbl_3_rodata_1A0C) {
+                g_FieldingLogic.throwSpeedType = 7;
+                return;
+            }
+            g_FieldingLogic.throwSpeedType = 5;
+            return;
+        }
+    }
+    if (g_Ball.AtBat_ContactResult == -1) {
+        if (dist > lbl_3_rodata_1964) {
+            g_FieldingLogic.throwSpeedType = 4;
+            return;
+        }
+        g_FieldingLogic.throwSpeedType = 5;
+        return;
+    }
+    if (dist < lbl_3_rodata_19F0 && g_FieldingLogic.throwSpeedType < 5) {
+        g_FieldingLogic.throwSpeedType = 5;
+        return;
+    }
+    if (g_Ball.ballZoneAwayFromHome >= 3) {
+        if (g_Ball.AtBat_ContactResult != 3 && g_Runners[0].runnerOnFieldOrOutOrScored == 1 &&
+            g_Runners[0].fractionalBasesRan < lbl_3_rodata_1958 && g_FieldingLogic._0C4 == 1) {
+            g_FieldingLogic.throwSpeedType = 3;
+        }
+        return;
+    }
+    fn_3_A85C8(dist);
 }
+#endif
 
 // .text:0x000A9354 size:0x3A8 mapped:0x806E83E8
 void fn_3_A9354(int fi, int mode) {
