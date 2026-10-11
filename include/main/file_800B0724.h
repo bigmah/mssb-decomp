@@ -134,6 +134,7 @@ s32 AllocateSprite(s32 layer, s32 needed);
 void fn_800B1468(Vec* pos, u32 color, struct SpriteTexInfo* tex); // textured quad
 void fn_800B24D4(s32 layer);
 void fn_800B2AC8(LoadedActorLayout* layout);
+void fn_800B2240(SpriteDrawCmd* cmd);
 void fn_800B2854(u8* buf, s32 bufSize, Mtx44 proj, s32 projType, s32 numLayers, s32* layerIds, s32* layerSizes);
 void fn_800B27A4(s32 fracBits);
 void fn_800B27DC(Mtx44 m, s32 type); // set projection (GXSetProjection)
