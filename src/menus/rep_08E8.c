@@ -1,4 +1,9 @@
 #include "menus/rep_08E8.h"
+
+extern MenuLineScore lbl_80353A90;
+extern MenuRosterRecord lbl_803537E4[2][9];
+extern MenuFieldRecord lbl_803535C8[2][9];
+extern MenuSelectState lbl_8034E9A0;
 #include "string.h"
 
 extern void LITXForm(void* light, void* matrix);
@@ -1369,3 +1374,48 @@ void fn_2_4A6E8(void) {
 }
 
 #undef RESULT_S16
+
+extern u8 lbl_2_bss_55C0;
+extern u32 lbl_803C7898[];
+extern MenuSceneTask* lbl_803CC1B8;
+extern s32 fn_80016710(u8 kind, s32 index);
+extern void fn_2_93C64(void);
+
+// .text:0x481F4 size:0x5AC
+// Menu character viewer: set everything up (state 0), then wait for the
+// requested character to load and reset its transform (state 1).
+// NONMATCHING: the original inlines fn_2_48DB4 and fn_2_478F4 (both equivalent-only)
+#if NONMATCHING
+void fn_2_481F4(void) {
+    MenuSceneTask* task = lbl_803CC1B8;
+    MenuCharActor* actor;
+
+    switch (lbl_2_bss_55C0) {
+    case 0:
+        *(u32*)(lbl_2_bss_1A824C[0] + 0x195424) = lbl_803C7898[1]; // TODO type
+        *(u32*)(lbl_2_bss_1A824C[0] + 0x195428) = lbl_803C7898[2];
+        fn_2_48DB4();
+        fn_2_93C64();
+        fn_2_478F4();
+        lbl_8036E548[0x2D77] = 0;
+        lbl_2_bss_55C0 = 1;
+        break;
+    case 1:
+        if (fn_80016710(lbl_2_bss_1A8248[0][0x441D], task->_16)) {
+            *(s32*)(lbl_2_bss_1A824C[0] + 0x19769C) = task->_16;
+            lbl_2_bss_55C0 = 0;
+            actor = &MENU_CHARMGR.actors[*(s32*)(lbl_2_bss_1A824C[0] + 0x19769C)];
+            actor->pos.x = lbl_2_rodata_94C;
+            actor->pos.y = lbl_2_rodata_94C;
+            actor->pos.z = lbl_2_rodata_94C;
+            actor->rot.x = lbl_2_rodata_94C;
+            actor->rot.y = lbl_2_rodata_94C;
+            actor->rot.z = lbl_2_rodata_94C;
+            lbl_8036E548[0x2D77] = 0;
+            lbl_803CC1B8->parent->_10 = 1;
+            fn_800B0A14_removeQueue(lbl_803CC1B8->parent);
+        }
+        break;
+    }
+}
+#endif

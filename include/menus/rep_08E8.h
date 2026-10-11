@@ -2,13 +2,17 @@
 #define __MENUS_REP_08E8_H__
 
 #include "mssbTypes.h"
+#include "Dolphin/vec.h"
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h; that header can't be
 // included here), only the fields used by this unit.
 typedef struct MenuCharActor {
     /*0x000*/ u8 _000[0x10];
     /*0x010*/ void* banks[7];
-    /*0x02C*/ u8 _02C[0x27C - 0x2C];
+    /*0x02C*/ u8 _02C[0x34 - 0x2C];
+    /*0x034*/ Vec pos;
+    /*0x040*/ Vec rot;
+    /*0x04C*/ u8 _04C[0x27C - 0x4C];
 } MenuCharActor; // size: 0x27C
 
 typedef struct MenuCharMgr {
@@ -25,6 +29,17 @@ typedef struct MenuCharMgr {
     /*0x2CEC*/ u8* bankSets[4][5];
 } MenuCharMgr;
 
+// The running scene task (lbl_803CC1B8; SceneTask in main/file_80069BDC.h),
+// only the fields used here.
+typedef struct MenuSceneTask {
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ struct MenuSceneTask* parent;
+    /*0x10*/ s16 _10;
+    /*0x12*/ u8 _12[0x16 - 0x12];
+    /*0x16*/ s16 _16; // character index to load (fn_2_481F4)
+} MenuSceneTask;
+
+// Use as MENU_CHARMGR.field where lbl_8036E548 is declared as a u8 array.
 #define MENU_CHARMGR (*(MenuCharMgr*)lbl_8036E548)
 
 // Entry of the ARAM file table (19 per character).
@@ -43,7 +58,6 @@ typedef struct MenuLineScore {
     /*0xF7*/ u8 _F7[0x108 - 0xF7];
 } MenuLineScore;
 
-extern MenuLineScore lbl_80353A90;
 
 // lbl_803537E4: [2 teams][9] records, 0x26 bytes each (only fields used here).
 typedef struct MenuRosterRecord {
@@ -59,7 +73,6 @@ typedef struct MenuRosterRecord {
     /*0x19*/ u8 _19[0x26 - 0x19];
 } MenuRosterRecord;
 
-extern MenuRosterRecord lbl_803537E4[2][9];
 
 // lbl_803535C8: [2 teams][9] records, 0x1E bytes each (only fields used here).
 typedef struct MenuFieldRecord {
@@ -74,7 +87,6 @@ typedef struct MenuFieldRecord {
     /*0x1D*/ u8 _1D;
 } MenuFieldRecord;
 
-extern MenuFieldRecord lbl_803535C8[2][9];
 
 // lbl_8034E9A0 + 0x4908: three 4-byte slots.
 typedef struct MenuSlot4908 {
@@ -91,7 +103,6 @@ typedef struct MenuSelectState {
     /*0x4908*/ MenuSlot4908 _4908[3];
 } MenuSelectState;
 
-extern MenuSelectState lbl_8034E9A0;
 
 void fn_2_4A064(void);
 
@@ -176,5 +187,7 @@ void fn_2_4A340(void);
 void fn_2_4A6E8(void);
 
 void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
+
+void fn_2_481F4(void);
 
 #endif
