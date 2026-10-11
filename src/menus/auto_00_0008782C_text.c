@@ -376,7 +376,49 @@ void fn_2_887F8(SceneTask* task) {
 
 // .text:0x00088D90 size:0x2A8
 void fn_2_88D90(SceneTask* task) {
-    return;
+    s32 i;
+    s32 finished;
+    ChallengeState* save;
+
+    if ((lbl_2_bss_33FBCC.animStarted == 0) ? TRUE : FALSE) {
+        SLOT_OBJ(task, 0, 0)->_5C = 0x190000;
+        SLOT_OBJ(task, 0, 0)->_68 = 4;
+        for (i = 0; i < 3; i++) {
+            SLOT_OBJ(task, i, 4)->_68 = 4;
+            if (lbl_80354768._CF5E[i] != 0) {
+                SLOT_OBJ(task, i * 3, 0xE)->_68 = 4;
+                SLOT_OBJ(task, i * 3, 0xF)->_68 = 4;
+                SLOT_OBJ(task, i * 3, 0x10)->_68 = 4;
+                SLOT_OBJ(task, i, 0x38)->_68 = 4;
+                save = CHALLENGE_SAVE(i);
+                if (save->_1606 != 0 && save->_441B == 0) {
+                    SLOT_OBJ(task, i, 0x3B)->_68 = 4;
+                } else {
+                    SLOT_OBJ(task, i, 0x17)->_68 = 4;
+                    SLOT_OBJ(task, i, 0xB)->_5C = 0x160000;
+                    SLOT_OBJ(task, i, 0xB)->_68 = 4;
+                    if (save->_444B != -1) {
+                        SLOT_OBJ(task, i, 0x32)->_68 = 4;
+                    }
+                }
+            }
+        }
+        lbl_2_bss_33FBCC.animStarted = 1;
+        lbl_2_bss_33FBCC.animRunning = 1;
+    }
+    if ((lbl_2_bss_33FBCC.animRunning == 1) ? TRUE : FALSE) {
+        finished = fn_80042DA8(task, 0, 0) != 0;
+        if ((SLOT_OBJ(task, 0, 0)->_5C >> 16) == 3) {
+            changeScene(3, 6);
+        }
+        if (finished == 1) {
+            lbl_8034E9A0._48AF = 1;
+            lbl_2_bss_33FBCC.done = 1;
+            lbl_2_bss_33FBCC.anim = 0;
+            lbl_2_bss_33FBCC.animStarted = 0;
+            lbl_2_bss_33FBCC.animRunning = 0;
+        }
+    }
 }
 
 // .text:0x00089038 size:0x5C0
