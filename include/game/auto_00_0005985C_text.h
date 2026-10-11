@@ -16,7 +16,7 @@ typedef struct {
     /*0xA6*/ s16 _A6; // |run difference|
     /*0xA8*/ u8 _A8[2];
     /*0xAA*/ u8 finalInning;
-    /*0xAB*/ u8 _AB;
+    /*0xAB*/ u8 _AB; // last extra inning
     /*0xAC*/ u8 inningStage; // see fn_3_5C530
     /*0xAD*/ u8 bottomHalf;
     /*0xAE*/ u8 _AE;
@@ -107,5 +107,6 @@ void fn_3_59C2C(void);
 void fn_3_59F40(void);
 void fn_3_5A28C(void);
 void fn_3_5F3FC(void);
+void fn_3_5D094(s32 checkType);
 
 #endif
