@@ -26,8 +26,15 @@ void fn_3_6D4A0(void) {
 }
 
 // .text:0x0006D564 size:0xA0 mapped:0x806AC5F8
-void fn_3_6D564(void) {
-    return;
+u16 fn_3_6D564(s32 team, s32 idx, s32 delta) {
+    if (g_d_GameSettings.GameModeSelected == 0 || g_d_GameSettings.GameModeSelected == 5) {
+        if (delta < 0 && lbl_803535C8[team][idx].stamina < -delta) {
+            lbl_803535C8[team][idx].stamina = 0;
+        } else {
+            lbl_803535C8[team][idx].stamina += delta;
+        }
+    }
+    return lbl_803535C8[team][idx].stamina;
 }
 
 // .text:0x0006D604 size:0x54 mapped:0x806AC698
