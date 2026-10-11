@@ -33,8 +33,8 @@ void fn_2_150D0(void) {
 }
 
 // .text:0x00015104 size:0xB8
-void fn_2_15104(void) {
-    return;
+s32 fn_2_15104(s32 cur, s32 prev, u8 team, u8 value) {
+    return 0;
 }
 
 // .text:0x000151BC size:0x450
@@ -58,7 +58,7 @@ void fn_2_15AFC(void) {
 }
 
 // .text:0x00015E80 size:0x59C
-void fn_2_15E80(void) {
+void fn_2_15E80(u8 team) {
     return;
 }
 

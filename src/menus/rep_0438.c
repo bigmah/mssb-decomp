@@ -2,6 +2,11 @@
 #include "game/UnknownHomes_Game.h"
 #include "main/file_800639BC.h"
 #include "main/file_800A7C08.h"
+#include "main/file_800527C4.h"
+#include "main/menu_globals.h"
+#include "static/GameSettings.h"
+#include "menus/rep_04B0.h"
+#include <string.h>
 
 // .text:0x00012238 size:0x194
 void fn_2_12238(void) {
@@ -27,22 +32,86 @@ void fn_2_129AC(void) {
 
 // .text:0x000129D0 size:0xA0
 void fn_2_129D0(void) {
-    return;
+    memset(lbl_2_bss_100B8._14, 0, lbl_2_bss_100B8._2D);
+    memset(lbl_2_bss_100B8._1C, 0, lbl_2_bss_100B8._2D);
+    memset(lbl_2_bss_100B8._23, -1, 2);
+    lbl_2_bss_100B8._18[0] = 0;
+    lbl_2_bss_100B8._18[1] = 0;
+    lbl_2_bss_100B8._18[2] = 0;
+    lbl_2_bss_100B8._18[3] = 0;
+    lbl_2_bss_100B8._20 = 0;
+    lbl_2_bss_100B8._21[0] = -1;
+    lbl_2_bss_100B8._21[1] = -1;
+    lbl_2_bss_100B8._0C = -1;
+    lbl_2_bss_100B8._2D = 0;
 }
 
 // .text:0x00012A70 size:0xF0
 void fn_2_12A70(void) {
-    return;
+    if (lbl_2_bss_100B8._12[0] != 0) {
+        lbl_2_bss_100B8._12[0] = 0;
+        fn_800628D4(lbl_8034E9A0.captain[0]);
+    }
+    if (lbl_2_bss_100B8._12[1] != 0) {
+        lbl_2_bss_100B8._12[1] = 0;
+        fn_800628D4(lbl_8034E9A0.captain[1]);
+    }
+    if (lbl_2_bss_100B8._10[0] != 0 && lbl_2_bss_100B8._10[1] != 0) {
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            lbl_2_bss_100B4 = 1;
+        }
+        lbl_803CBBCC->step = 4;
+        if (g_d_GameSettings._10 == 0) {
+            lbl_2_bss_100B8._10[1] = 0;
+            lbl_2_bss_100B8._12[1] = 0;
+        }
+    }
 }
 
 // .text:0x00012B60 size:0xD4
 void fn_2_12B60(void) {
-    return;
+    s32 prev[2];
+    s32 i;
+
+    prev[0] = lbl_2_bss_F410._10[0];
+    prev[1] = lbl_2_bss_F410._10[1];
+    fn_2_15E80(0);
+    if (g_d_GameSettings._10 == 1) {
+        fn_2_15E80(1);
+    }
+    for (i = 0; i < 2; i++) {
+        while (fn_2_15104(lbl_2_bss_F410._10[i], prev[i], i, 1) == 0 && lbl_2_bss_100B8._10[i] != 0) {
+            prev[i] = lbl_2_bss_F410._10[i];
+        }
+    }
 }
 
 // .text:0x00012C34 size:0xA4
 void fn_2_12C34(void) {
-    return;
+    u8 n;
+    s32 i;
+    s32 j;
+
+    if (lbl_2_bss_100B8._46[4] != 0) {
+        return;
+    }
+    if (lbl_2_bss_100B8._20 == 1 || lbl_803C5EA4._05 == 0) {
+        if (lbl_2_bss_AE0 == 60000) {
+            lbl_2_bss_AE0 = 0;
+        }
+        lbl_2_bss_AE0++;
+    }
+    n = 12;
+    j = 4;
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        n = 6;
+    }
+    for (i = 0; i < n; i++) {
+        j++;
+        if (j == 21) {
+            j = 5;
+        }
+    }
 }
 
 // .text:0x00012CD8 size:0x2B0

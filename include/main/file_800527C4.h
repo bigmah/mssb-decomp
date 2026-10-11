@@ -8,7 +8,7 @@ struct GameActor;
 struct GameBone;
 struct SoundLoadTask;
 #include "game/UnknownHomes_Game.h"
-#include "main/file_8004207C.h"
+#include "main/file_8004B284.h"
 #include "Dolphin/mtx.h"
 
 

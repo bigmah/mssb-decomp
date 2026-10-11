@@ -5,9 +5,24 @@
 
 struct PortInput;
 
-// Debug options menu state (lbl_2_bss_100B8).
+// Menu state (lbl_2_bss_100B8); the debug options menu uses 0x46..0x51.
 typedef struct DebugMenuState {
-    /*0x00*/ u8 _00[0x46];
+    /*0x00*/ u8 _00[4];  // per team counter (fn_2_15104)
+    /*0x04*/ u8 _04[8];
+    /*0x0C*/ s32 _0C;
+    /*0x10*/ u8 _10[2];  // per team
+    /*0x12*/ u8 _12[2];  // per team: captain needs reload (fn_2_12A70)
+    /*0x14*/ u8 _14[4];
+    /*0x18*/ u8 _18[4];
+    /*0x1C*/ u8 _1C[4];
+    /*0x20*/ u8 _20;
+    /*0x21*/ s8 _21[2];
+    /*0x23*/ s8 _23[2];
+    /*0x25*/ u8 _25[0x2D - 0x25];
+    /*0x2D*/ u8 _2D; // used length of _14/_1C
+    /*0x2E*/ u8 _2E[2];
+    /*0x30*/ u8 _30[2];
+    /*0x32*/ u8 _32[0x46 - 0x32];
     /*0x46*/ u8 _46[5]; // see fn_2_16A34
     /*0x4B*/ s8 _4B;
     /*0x4C*/ u8 settingSel; // page 1: index into g_d_GameSettings._1A
