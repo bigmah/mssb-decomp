@@ -79,6 +79,11 @@ extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
 
 extern void ballPhysica(void);
+extern void fn_3_D8CD0(void);
+extern void fn_3_D9868(void);
+extern void fn_3_D9A30(void);
+extern s32 fn_3_E8AC8(void);
+void fn_3_DE308(s32 idx);
 extern s16 lbl_3_data_49DC[];
 extern u8 lbl_800EF808[]; // TODO type: options block (0x398: sound setting)
 extern void fn_3_2F484(void);
@@ -285,10 +290,221 @@ void fn_3_DA640(s32 n, s32 idx) {
 }
 #endif
 
+// NONMATCHING 86%: original reaches 18BB8/189AC via the pooled base lbl_3_data_188E8; register allocation differs in the inlined fn_3_DE308/fn_3_DA640 copies
 // .text:0x000DA834 size:0x1A0C mapped:0x807198C8
+// Toy Field: per-frame handling of a ball result (g_Minigame + 0x1920).
+#if NONMATCHING
 void fn_3_DA834(void) {
-    return;
+    u8* bases = g_Minigame + 0x1914; // [0] batter, [1..3] runners on 1st..3rd
+    s8* order = (s8*)(g_Minigame + 0x191C);
+    s32 i;
+    s32 j;
+
+    if (*(s16*)(g_Minigame + 0x18AA) < 0x7FFE) {
+        *(s16*)(g_Minigame + 0x18AA) += 1;
+    } else {
+        *(s16*)(g_Minigame + 0x18AA) = 0x7FFF;
+    }
+    if (*(s16*)(g_Minigame + 0x18AA) <= 1) {
+        if (g_Minigame[0x1920] == 1 && g_Ball[0x1BD3] == 0) {
+            g_Minigame[0x190B] = 1;
+            fn_3_DE308(11);
+            return;
+        }
+        g_Minigame[0x199F] = 1;
+        if (g_Minigame[0x1920] >= 1 && g_Minigame[0x1920] <= 8) {
+            g_Minigame[0x190B] = 1;
+            switch (g_Minigame[0x1920]) {
+            case 1:
+                fn_3_DE308(22);
+                break;
+            case 2:
+                if (g_Pitcher[0x14E] == 1 || g_Ball[0x1BD3] != 0) {
+                    fn_3_DE308(22);
+                } else if (g_Minigame[0x1926] == 0x71) {
+                    fn_3_DE308(9);
+                } else {
+                    fn_3_DE308(10);
+                }
+                break;
+            case 3:
+                fn_3_DE308(0);
+                break;
+            case 4:
+                fn_3_DE308(1);
+                break;
+            case 5:
+                fn_3_DE308(2);
+                break;
+            case 6:
+                if (g_Ball[0x1BD1] == 1) {
+                    fn_3_DE308(4);
+                } else {
+                    fn_3_DE308(3);
+                }
+                break;
+            case 7:
+                fn_3_DE308(23);
+                break;
+            case 8:
+                fn_3_DE308(23);
+                break;
+            }
+            if (g_Minigame[0x1920] >= 3 && g_Minigame[0x1920] <= 6) {
+                playCrowdSound(0);
+            }
+            if (g_Minigame[0x1920] == 2 || g_Ball[0x1BD3] != 0) {
+                if (*(s16*)(g_Ball + 0x1B78) >= 0) {
+                    g_Minigame[0x19C6] = g_Fielders[*(s16*)(g_Ball + 0x1B78) * 0x268 + 0x20D];
+                } else {
+                    g_Minigame[0x19C6] = g_Minigame[0x1904];
+                }
+            }
+        } else {
+            switch (g_Minigame[0x1920]) {
+            case 11:
+                fn_3_D9A30();
+                fn_3_D9868();
+                *(s16*)(g_Minigame + 0x19B8) = 1;
+                break;
+            case 9:
+            case 10:
+                if (*(f32*)(g_Minigame + 0x19AC) < 0.0f) {
+                    fn_3_DA640(30, 6);
+                } else {
+                    fn_3_DA640(30, 4);
+                }
+                *(s16*)(g_Minigame + 0x19B8) = 1;
+                g_Minigame[0x199E] = 0;
+                break;
+            default:
+                g_Minigame[0x190B] = 1;
+                break;
+            }
+        }
+        if (g_Minigame[0x1920] >= 3 && g_Minigame[0x1920] <= 6) {
+            // hit: every runner advances (1920 - 2) bases
+            s32 n = g_Minigame[0x1920] - 2;
+            for (i = 0; i < n; i++) {
+                if (bases[3] != 0) {
+                    g_Minigame[0x1921]++;
+                }
+                for (j = 3; j > 0; j--) {
+                    bases[j] = bases[j - 1];
+                    bases[j - 1] = 0;
+                }
+            }
+            for (i = 0; i < 4; i++) {
+                if (order[i] >= 0) {
+                    order[i] += n;
+                    if (order[i] >= 4) {
+                        order[i] = 4;
+                    }
+                }
+            }
+        }
+        if (g_Minigame[0x1920] == 7 || g_Minigame[0x1920] == 8) {
+            // walk: only forced runners advance
+            s32 n;
+            if (bases[3] != 0) {
+                g_Minigame[0x1921]++;
+            }
+            n = 1;
+            if (bases[1] != 0) {
+                n = 2;
+                if (bases[2] != 0) {
+                    n = 3;
+                    if (bases[3] != 0) {
+                        n = 4;
+                    }
+                }
+            }
+            for (j = n; j >= 1; j--) {
+                bases[j] = bases[j - 1];
+                bases[j - 1] = 0;
+            }
+            for (i = 0; i < 4; i++) {
+                if (order[i] < 0) {
+                    break;
+                }
+                order[i] += 1;
+                if (order[i] >= 4) {
+                    order[i] = 4;
+                }
+            }
+        }
+        for (i = 0; i < 4; i++) {
+            if (*(s16*)(g_Ball + 0x1B78) >= 0 && ((s8*)g_Minigame)[0x18F8 + i] == *(s16*)(g_Ball + 0x1B78)) {
+                if (*(s16*)(g_Ball + 0x1B7A) == 3) {
+                    fn_3_DE308(0x14);
+                } else {
+                    fn_3_DE308(0x15);
+                }
+                break;
+            }
+        }
+        g_Minigame[0x1912] = 1;
+    } else {
+        if (g_Minigame[0x1920] == 0xB) {
+            switch (g_Minigame[0x1934]) {
+            case 1:
+                break;
+            case 0: {
+                // slot machine reels: 0 spinning, 1 stopping, 2 stopped
+                s16* tbl = (s16*)(lbl_3_data_189AC + 0xC);
+                s16 firstStop = tbl[3];
+                if (*(s16*)(g_Minigame + 0x18B8) < 0x7FFE) {
+                    *(s16*)(g_Minigame + 0x18B8) += 1;
+                } else {
+                    *(s16*)(g_Minigame + 0x18B8) = 0x7FFF;
+                }
+                for (i = 0; i < 3; i++) {
+                    u8 st = g_Minigame[0x1927 + i];
+                    if (st == 0) {
+                        if (*(s16*)(g_Minigame + 0x18B8) > tbl[i * 2]) {
+                            g_Minigame[0x1927 + i] = 1;
+                        }
+                    } else if (st == 1) {
+                        if (i == 0) {
+                            if (*(s16*)(g_Minigame + 0x18B8) > firstStop) {
+                                g_Minigame[0x1927 + i] = 2;
+                            }
+                        } else if (i == 2) {
+                            if (g_Minigame[0x1930 + i] == 3) {
+                                g_Minigame[0x1927 + i] = 2;
+                            }
+                        } else if (g_Minigame[0x1930 + i] >= 2) {
+                            g_Minigame[0x1927 + i] = 2;
+                        }
+                    }
+                }
+                break;
+            }
+            case 2:
+                fn_3_D8CD0();
+                g_Minigame[0x1934] = 3;
+                break;
+            default:
+                if (g_Minigame[0x192D] == 6) {
+                    g_Minigame[0x19A6] = 3;
+                    if (*(s16*)(g_Minigame + 0x18BA) == 1) {
+                        fn_3_E8AC8();
+                    }
+                }
+                if (*(s16*)(g_Minigame + 0x18BA) < 0x7FFE) {
+                    *(s16*)(g_Minigame + 0x18BA) += 1;
+                } else {
+                    *(s16*)(g_Minigame + 0x18BA) = 0x7FFF;
+                }
+                break;
+            }
+        }
+        if (g_Minigame[0x1920] == 9 || g_Minigame[0x1920] == 0xA) {
+            fn_3_D9EA0();
+        }
+    }
 }
+#endif
 
 // .text:0x000DC240 size:0x140 mapped:0x8071B2D4
 void fn_3_DC240(void) {
