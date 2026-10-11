@@ -66,7 +66,7 @@ typedef struct CharSlot {
     /*0x60*/ f32 _60;
     /*0x64*/ u16 _64;
     /*0x66*/ u16 _66;
-    /*0x68*/ void* _68;
+    /*0x68*/ u16* mirror;
     /*0x6C*/ u8 _6C;
     /*0x6D*/ u8 lightCount;
     /*0x6E*/ u8 _6E[0x2];
@@ -133,7 +133,7 @@ typedef struct CharActor {
     /*0x068*/ s16 _068;
     /*0x06A*/ s16 _06A[3];
     /*0x070*/ s16 _070;
-    /*0x072*/ u8 _072[0x162 - 0x72];
+    /*0x072*/ u16 mirror[0x78]; // left/right joint remap
     /*0x162*/ u16 jointIdx[0x78];
     /*0x252*/ s8 kind;
     /*0x253*/ u8 _253;

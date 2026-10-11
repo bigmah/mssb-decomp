@@ -148,6 +148,11 @@ extern CharSlotList* fn_80023AA4(void);
 extern void fn_80023B04(s32 count);
 extern AramFile* lbl_803CB7A8;
 extern u8* lbl_803CBC24;
+// Joint mirror pairs (0xFFFF-terminated u16 pairs).
+// TODO type: these live inside lbl_800EE930's data block.
+extern u16 lbl_800EE930[];
+extern u16 lbl_803CB798[4];
+extern u16 lbl_803CB7A0[4];
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -3045,9 +3050,69 @@ void fn_8001F8A4(void) {
 }
 
 // .text:0x8001FC4C size:0x188
-void fn_8001FC4C(CharActor* actor) {
-    return;
+static inline void mirrorJointPairs(CharActor* actor, u16* pairs) {
+    u16 a;
+    u16 b;
+
+    for (; pairs[0] != 0xFFFF; pairs += 2) {
+        a = actor->jointIdx[pairs[0]];
+        b = actor->jointIdx[pairs[1]];
+        if (a != 0xFFFF && b != 0xFFFF) {
+            actor->mirror[a] = b;
+            actor->mirror[b] = a;
+        }
+    }
 }
+
+// NONMATCHING 84%: mirror tables are addressed from lbl_800EE930 instead of the original's lbl_800EE800 anchor (this unit's .data is not split)
+#if NONMATCHING
+void fn_8001FC4C(CharActor* actor) {
+    s32 i;
+    u16* pairs;
+
+    for (i = 0; i < 0x78; i++) {
+        actor->mirror[i] = i;
+    }
+    pairs = &lbl_800EE930[0x18];
+    i = 0;
+    do {
+        u16 a = actor->jointIdx[pairs[0]];
+        u16 b = actor->jointIdx[pairs[1]];
+        if (a != 0xFFFF && b != 0xFFFF) {
+            actor->mirror[a] = b;
+            actor->mirror[b] = a;
+        }
+        i += 2;
+        pairs += 2;
+    } while (lbl_800EE930[0x18 + i] != 0xFFFF);
+    switch (actor->kind) {
+    case 20:
+    case 43:
+        pairs = lbl_803CB798;
+        break;
+    case 41:
+        pairs = &lbl_800EE930[0x34];
+        break;
+    case 17:
+        pairs = lbl_803CB7A0;
+        break;
+    case 16:
+    case 44:
+    case 45:
+    case 46:
+    case 47:
+        pairs = &lbl_800EE930[0x40];
+        break;
+    default:
+        pairs = NULL;
+        break;
+    }
+    if (pairs == NULL) {
+        return;
+    }
+    mirrorJointPairs(actor, pairs);
+}
+#endif
 
 // .text:0x8001FDD4 size:0x2C
 void fn_8001FDD4(CharSlot* slot) {
