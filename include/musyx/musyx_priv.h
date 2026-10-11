@@ -1081,7 +1081,11 @@ typedef struct STREAM_INFO {
   u8 hwStreamHandle;
   u32 nextStreamHandle;
 #endif
-#if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 0)
+#if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 2)
+  u8 lpfEnable; // offset 0x61, size 0x1
+  u16 lpfA0;    // offset 0x62, size 0x2
+  u16 lpfB0;    // offset 0x64, size 0x2
+#elif MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 0)
   u32 padEnd;
 #endif
 } STREAM_INFO;
