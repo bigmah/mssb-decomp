@@ -110,6 +110,7 @@ extern void fn_800ACF14(void* p);
 extern s32 fn_800214D0(void);
 extern void fn_8002149C(s32 a);
 extern void fn_80035CA4(s32 a);
+extern void fn_8000900C(void);
 extern u8 lbl_803CBBC0;
 
 extern void fn_800A7D4C(s32 layer, DrawNode* node);
@@ -651,7 +652,51 @@ void fn_8006B78C(void) {
 
 // .text:0x8006BB60 size:0x2A0
 void fn_8006BB60(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+
+    fn_80022B68();
+    switch (task->state) {
+    case 0:
+        if (++task->_38 == 30) {
+            task->_36 = 90;
+            task->state++;
+        }
+        break;
+    case 1:
+        if (task->_36-- == 0) {
+            fn_8000900C();
+            lbl_80366158[0x20] = 1;
+            task->_36 = 3480;
+            task->state++;
+        }
+        break;
+    case 2:
+    case 3:
+        if (task->state == 2 && ++task->_39 == 30) {
+            task->state = 3;
+        } else if (task->state == 3 && --task->_39 == 0) {
+            task->state = 2;
+        }
+        if (--task->_36 == 0 || lbl_803C77B8[0]._00 != 0) {
+            task->state = 4;
+        }
+        break;
+    case 4:
+        if (--task->_38 == 0) {
+            task->state = 0;
+            lbl_803CC1B8->func = fn_8006B78C;
+        }
+        break;
+    }
+    task->nodes[lbl_803CBBC0].kind = 0;
+    task->nodes[lbl_803CBBC0].texSet = task->u14.res->data;
+    task->nodes[lbl_803CBBC0].texIdx = 6;
+    task->nodes[lbl_803CBBC0].alpha = task->_38 / 30.0f;
+    task->nodes[lbl_803CBBC0].texIdx2 = 7;
+    task->nodes[lbl_803CBBC0].alpha2 = (task->_39 / 30.0f) * task->_38 / 30.0f;
+    task->nodes[lbl_803CBBC0].next = NULL;
+    task->nodes[lbl_803CBBC0].draw = fn_8006AC24;
+    fn_800A7D4C(0, &task->nodes[lbl_803CBBC0]);
 }
 
 // .text:0x8006BE00 size:0x288

@@ -31,6 +31,11 @@ typedef struct DrawNode {
     /*0x1C*/ f32 alpha2;
 } DrawNode; // size: 0x20
 
+// Loaded resource handle (freed with fn_800ACF14); data is the loaded file.
+typedef struct ResHandle {
+    /*0x0*/ void* data;
+} ResHandle;
+
 // Scene/task object pointed to by lbl_803CC1B8.
 typedef struct SceneTask {
     /*0x00*/ void (*func)(void);
@@ -39,7 +44,7 @@ typedef struct SceneTask {
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;
     /*0x14*/ union {
-        void* res;   // resource freed with fn_800ACF14
+        ResHandle* res;
         u16 objIdx;  // index into lbl_80371C30 (child tasks)
     } u14;
     /*0x18*/ DrawNode* nodes;
