@@ -920,17 +920,30 @@ typedef struct _PracticeStruct {
     /*0x198*/ E(u8, PRACTICE_TYPE) practiceType_1;
     /*0x199*/ E(u8, PRACTICE_TYPE) practiceType;
     /*0x19A*/ u8 subMenuCursor;
-    artificial_padding(0x19a, 0x19e, u8);
+    /*0x19B*/ u8 _19B;
+    /*0x19C*/ u8 _19C;
+    /*0x19D*/ u8 _19D;
     /*0x19E*/ u8 pauseMenuLoading; // unsure
-    artificial_padding(0x19e, 0x1a1, u8);
+    /*0x19F*/ u8 _19F;
+    /*0x1A0*/ u8 _1A0;
     /*0x1A1*/ u8 aIEnabled;
     /*0x1A2*/ u8 practiceBatterHandedness; // unsure
     /*0x1A3*/ u8 freePracticeInd_writeOnly;
-    artificial_padding(0x1a3, 0x1aa, u8);
+    /*0x1A4*/ u8 _1A4;
+    /*0x1A5*/ u8 _1A5;
+    /*0x1A6*/ u8 _1A6;
+    /*0x1A7*/ u8 _1A7;
+    /*0x1A8*/ u8 _1A8;
+    /*0x1A9*/ u8 _1A9;
     /*0x1AA*/ u8 transitioningIndicator; // unsure
-    artificial_padding(0x1aa, 0x1af, u8);
+    /*0x1AB*/ u8 _1AB;
+    /*0x1AC*/ u8 _1AC;
+    /*0x1AD*/ u8 _1AD;
+    /*0x1AE*/ u8 _1AE;
     /*0x1AF*/ u8 returnToPracticeMenuState;
-    artificial_padding(0x1af, 0x1c2, u8);
+    /*0x1B0*/ u8 _1B0;
+    /*0x1B1*/ u8 _1B1;
+    /*0x1B2*/ u8 levelCleared[4][4]; // [practiceType][level], copied from the save
     /*0x1C2*/ s8 instructionNumber;
     /*0x1C3*/ u8 readyToMoveToNextInstruction; // unsure
     /*0x1C4*/ u8 practice_runner_countInputForMashing;
@@ -952,11 +965,22 @@ typedef struct _PracticeStruct {
     /*0x1D4*/ u8 loadingGuidedPractice; // unsure
     /*0x1D5*/ u8 _1D5;
     /*0x1D6*/ u8 practiceLevel_2;
-    artificial_padding(0x1d6, 0x1e1, u8);
+    /*0x1D7*/ u8 _1D7[0x1DB - 0x1D7];
+    /*0x1DB*/ u8 _1DB;
+    /*0x1DC*/ u8 _1DC[0x1E1 - 0x1DC];
     /*0x1E1*/ u8 hitVariablesSetIndicator;
     /*0x1E2*/ u8 _1E2;
     /*0x1E3*/ u8 aiBuntIndicator; // unsure
-    artificial_padding(0x1e3, 0x1ee, u8);
+    /*0x1E4*/ u8 _1E4;
+    /*0x1E5*/ u8 _1E5;
+    /*0x1E6*/ u8 _1E6;
+    /*0x1E7*/ u8 _1E7;
+    /*0x1E8*/ u8 _1E8;
+    /*0x1E9*/ u8 _1E9;
+    /*0x1EA*/ u8 _1EA;
+    /*0x1EB*/ u8 _1EB;
+    /*0x1EC*/ u8 _1EC;
+    /*0x1ED*/ u8 _1ED;
     /*0x1EE*/ u8 _1EE;
     /*0x1EF*/ u8 rosterID; // unsure
 } PracticeStruct;          // size: 0x1f0

@@ -4,6 +4,12 @@
 
 #pragma dont_inline on
 
+extern void possiblyTransitionBlackScreen(void);
+extern void fn_3_5BAC(void);
+
+// Saved practice clear flags: lbl_80354768 is SaveProgress (main/file_8003A688.h), _CF4E[type * 4 + level].
+#define SAVE_LEVEL_CLEARED(type) (lbl_80354768 + 0xCF4E + (type) * 4)
+
 extern u8 lbl_3_common_bss_34C90[];
 
 extern void fn_3_1DD48(void);
@@ -485,7 +491,7 @@ void fn_3_B5F7C(void) {
         return;
     }
     fn_3_75560();
-    if (g_Practice.__0x1e1padding[4] != 0) {
+    if (g_Practice._1DB != 0) {
         atBat_batter();
         fn_3_8A958();
     }
@@ -793,3 +799,37 @@ void fn_3_B482C(void) {
         }
     }
 }
+
+// .text:0x000B3FE8 size:0x13C
+// NONMATCHING 41%: same stores; ours hoists all 16 save-flag loads above the scalar stores (stmw r22),
+// the original copies them row by row after (src pointer +4 per row). Tried nested/j loops, struct views, memcpy.
+#if NONMATCHING
+void fn_3_B3FE8(void) {
+    s32 i;
+    fn_800B0A5C_insertQueue((void*)possiblyTransitionBlackScreen, 2);
+    fn_800B0A5C_insertQueue((void*)fn_3_5BAC, 4);
+    lbl_8036E548[0x307E] = 0;
+    g_Practice.practiceType = 0;
+    g_Practice._1AB = 0;
+    g_Practice._1AC = 0;
+    g_Practice._1AD = 0;
+    g_Practice._1A6 = 0;
+    g_Practice._1A8 = 0;
+    g_Practice._1A9 = 0;
+    g_Practice._19F = 0;
+    g_Practice.aIEnabled = 0;
+    g_Practice.practiceBatterHandedness = 0;
+    g_Practice.freePracticeInd_writeOnly = 0;
+    g_Practice._1A4 = 0;
+    g_Practice.instructionNumber = -1;
+    g_Practice.transitioningIndicator = 0;
+    g_Practice.loadingGuidedPractice = 0;
+    g_Practice._1D5 = 0;
+    for (i = 0; i < 4; i++) {
+        g_Practice.levelCleared[i][0] = SAVE_LEVEL_CLEARED(i)[0];
+        g_Practice.levelCleared[i][1] = SAVE_LEVEL_CLEARED(i)[1];
+        g_Practice.levelCleared[i][2] = SAVE_LEVEL_CLEARED(i)[2];
+        g_Practice.levelCleared[i][3] = SAVE_LEVEL_CLEARED(i)[3];
+    }
+}
+#endif
