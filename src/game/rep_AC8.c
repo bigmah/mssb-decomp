@@ -1547,9 +1547,98 @@ int fn_3_36678(int a, int b, f32 x, f32 y, int c) {
 }
 
 // .text:0x00037114 size:0x2F8 mapped:0x806761A8
-void fn_3_37114(void) {
-    return;
+// NONMATCHING 98%: angA/fb share r29 in the original, ours uses r26 (one extra saved reg)
+#if NONMATCHING
+int fn_3_37114(int a, int b, int strict, f32 x, f32 z) {
+    u8* fa = g_Fielders + a * 0x268;
+    u8* fb = g_Fielders + b * 0x268;
+    s32 cur = lbl_3_bss_16C;
+    s16 angB;
+    s16 angA;
+    s16 da;
+    s16 db;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    if (cur < 0) {
+        return -1;
+    }
+    dx = x - *(f32*)fa;
+    dz = z - *(f32*)(fa + 8);
+    /* distance computed but unused (the original keeps only the fcmpo) */
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    angA = fn_3_9FB8C(dx, dz);
+    dx = x - *(f32*)fb;
+    dz = z - *(f32*)(fb + 8);
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    angB = fn_3_9FB8C(dx, dz);
+    if (strict != 0) {
+        if (cur >= 0x580 && cur < 0xA80) {
+            if (angA >= 0x580 && angA < 0xA80 && angB >= 0x580 && angB < 0xA80) {
+                goto closer;
+            }
+            if (angA >= 0x580 && angA < 0xA80) {
+                return a;
+            }
+            if (angB >= 0x580 && angB < 0xA80) {
+                return b;
+            }
+        } else if (cur <= 0x280 && cur >= 0xD80) {
+            if (!(angA >= 0x280 && angA < 0xD80) && !(angB >= 0x280 && angB < 0xD80)) {
+                goto closer;
+            }
+            if (angA < 0x280 || angA >= 0xD80) {
+                return a;
+            }
+            if (angB < 0x280 || angB >= 0xD80) {
+                return b;
+            }
+        }
+    } else if (cur >= 0x400 && cur < 0xC00) {
+        if (!(angA >= 0x400 && angA < 0xC00 && angB >= 0x400 && angB < 0xC00)) {
+            if (angA >= 0x400 && angA < 0xC00) {
+                return a;
+            }
+            if (angB >= 0x400 && angB < 0xC00) {
+                return b;
+            }
+        }
+    } else if ((angA >= 0x400 && angA < 0xC00) || (angB >= 0x400 && angB < 0xC00)) {
+        if (angA < 0x400 || angA >= 0xC00) {
+            return a;
+        }
+        if (angB < 0x400 || angB >= 0xC00) {
+            return b;
+        }
+    }
+    if (strict != 0) {
+        return -1;
+    }
+    da = fn_3_9FCF8(lbl_3_bss_16C, angA);
+    db = fn_3_9FCF8(lbl_3_bss_16C, angB);
+    if (__abs(da - db) > 0x100) {
+        if (da > 0x400) {
+            if (db > 0x400) {
+                return -1;
+            }
+            return b;
+        }
+        if (db > 0x400) {
+            if (da > 0x400) {
+                return -1;
+            }
+            return a;
+        }
+    }
+closer:
+    if (angA < angB) {
+        return a;
+    }
+    return b;
 }
+#endif
 
 // .text:0x0003740C size:0x17C mapped:0x806764A0
 void fn_3_3740C(void) {

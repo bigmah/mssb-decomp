@@ -83,7 +83,7 @@ void fn_3_35E1C(void);
 int fn_3_361D8(f32, f32);
 int fn_3_365D0(int, int, int, f32, f32);
 int fn_3_36678(int, int, f32, f32, int);
-void fn_3_37114(void);
+int fn_3_37114(int a, int b, int strict, f32 x, f32 z);
 void fn_3_3740C(void);
 void fn_3_37588(void);
 void fn_3_37610(int a);
