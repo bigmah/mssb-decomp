@@ -105,6 +105,60 @@ void fn_1_5EC(void) {
     GXEnd();
 }
 
+// .text:0x00000AF4 size:0x438
+// Draws a white line grid on the y = 0 plane, centred on the origin.
+// NONMATCHING 99%: f1/f2 swapped for the 0.5f constant and the (f32)rows temp
+#if NONMATCHING
+void fn_1_AF4(s32 rows, s32 cols, f32 spacing) {
+    f32 x;
+    f32 z;
+    f32 x0;
+    f32 width;
+    f32 zEnd;
+    f32 xEnd;
+    f32 depth;
+    s32 i;
+
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetTexCoordGen2(GX_TEXCOORD0, (GXTexGenType)1, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+
+    width = cols * spacing;
+    x0 = -spacing * cols * 0.5f;
+    z = -spacing * rows * 0.5f;
+    x = x0;
+
+    GXBegin(GX_LINES, GX_VTXFMT0, (cols + 1) * 2);
+    depth = rows * spacing; // separate statement: no fmadds
+    zEnd = z + depth;
+    for (i = cols; i >= 0; i--) {
+        GXPosition3f32(x, 0.0f, z);
+        GXColor1u32(0xFFFFFFFF);
+        GXPosition3f32(x, 0.0f, zEnd);
+        GXColor1u32(0xFFFFFFFF);
+        x += spacing;
+    }
+    GXBegin(GX_LINES, GX_VTXFMT0, (rows + 1) * 2);
+    xEnd = x0 + width;
+    for (i = rows; i >= 0; i--) {
+        GXPosition3f32(x0, 0.0f, z);
+        GXColor1u32(0xFFFFFFFF);
+        GXPosition3f32(xEnd, 0.0f, z);
+        GXColor1u32(0xFFFFFFFF);
+        z += spacing;
+    }
+}
+#endif
+
 // .text:0x00001104 size:0x4
 void _epilog(void) {
     return;
