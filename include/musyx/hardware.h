@@ -7,6 +7,25 @@
 extern "C" {
 #endif
 
+typedef struct DSPADPCMblock {
+  // total size: 0x6
+  signed short Y0;        // offset 0x0, size 0x2
+  signed short Y1;        // offset 0x2, size 0x2
+  unsigned char PS;       // offset 0x4, size 0x1
+  unsigned char reserved; // offset 0x5, size 0x1
+} DSPADPCMblock;
+
+typedef struct DSPADPCMplusInfo {
+  // total size: 0x2E
+  unsigned short numCoef;     // offset 0x0, size 0x2
+  unsigned char initialPS;    // offset 0x2, size 0x1
+  unsigned char loopPS;       // offset 0x3, size 0x1
+  signed short loopY0;        // offset 0x4, size 0x2
+  signed short loopY1;        // offset 0x6, size 0x2
+  signed short coefTab[8][2]; // offset 0x8, size 0x20
+  DSPADPCMblock blk[1];       // offset 0x28, size 0x6
+} DSPADPCMplusInfo;
+
 bool32 hwIsStudioActive(u8 studio);
 void* hwGetStreamPlayBuffer(u8 hwStreamHandle);
 s32 hwInit(u32* frq, u16 numVoices, u16 numStudios, u32 flags); /* extern */
