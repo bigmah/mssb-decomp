@@ -149,7 +149,7 @@ void fn_3_447C4(int);
 void fn_3_45394(int);
 void fn_3_455B4(int);
 void fn_3_45860(int);
-void fn_3_4597C(void);
+void fn_3_4597C(int);
 void fn_3_45B88(void);
 void fn_3_45E98(void);
 int fn_3_46688(f32*, f32*);

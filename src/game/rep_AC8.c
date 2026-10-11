@@ -2595,8 +2595,48 @@ void fn_3_45860(int i) {
 }
 
 // .text:0x0004597C size:0x20C mapped:0x80684A10
-void fn_3_4597C(void) {
-    return;
+#ifndef REP_AC8_VECXZ
+#define REP_AC8_VECXZ
+typedef struct _VecXZ {
+    f32 x, z;
+} VecXZ; // same as include/game/UnknownHomes_Game.h (not includable here: g_Ball is u8[] in this file)
+#endif
+extern int calculateLineIntersection(VecXZ* out, VecXZ* a, VecXZ* b);
+// Move fielder i to the point on the ball's travel line closest to it.
+void fn_3_4597C(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    VecXZ out;
+    VecXZ line[2];
+    VecXZ perp[2];
+    f32 dz, dx, d;
+    f32 lx, lz, ox, oz;
+    line[0].x = *(f32*)g_Ball;
+    line[0].z = *(f32*)(g_Ball + 8);
+    line[1].x = *(f32*)(g_Ball + 0x19F8);
+    line[1].z = *(f32*)(g_Ball + 0x19FC);
+    perp[0].x = *(f32*)f;
+    perp[0].z = *(f32*)(f + 8);
+    lx = line[1].x - line[0].x;
+    lz = -(line[1].z - line[0].z);
+    perp[1].x = perp[0].x + lz;
+    perp[1].z = perp[0].z + lx;
+    calculateLineIntersection(&out, line, perp);
+    ox = out.x;
+    oz = out.z;
+    *(f32*)(f + 0x14) = ox;
+    *(f32*)(f + 0x1C) = oz;
+    dx = ox - *(f32*)f;
+    dz = oz - *(f32*)(f + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x50) = 0.0f;
+        *(f32*)(f + 0x68) = 0.0f;
+    } else {
+        *(f32*)(f + 0x64) = atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
 }
 
 // .text:0x00045B88 size:0x310 mapped:0x80684C1C
