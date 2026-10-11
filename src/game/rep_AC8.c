@@ -3327,12 +3327,11 @@ void fn_3_2F574(int i) {
 }
 
 // .text:0x0002F7D4 size:0x150 mapped:0x8066E868
+// NONMATCHING 80%: original addresses the jump table entry through two separately computed bases (lfsx + add); ours CSEs one
+#if NONMATCHING
 void fn_3_2F7D4(int i) {
     u8* f = g_Fielders + i * 0x268;
     int type = f[0x1CC];
-    u8* base = lbl_3_data_4884;
-    int off = type * 16;
-    f32* t;
     int n;
     int k;
     f[0x203] = 1;
@@ -3344,19 +3343,19 @@ void fn_3_2F7D4(int i) {
             i = *(s8*)(g_Minigame + i + 0x18F2);
         }
     }
-    t = (f32*)(base + off);
-    *(f32*)(f + 0x164) = *(f32*)(base + off);
-    *(f32*)(f + 0x160) = *(f32*)(f + 0x38) * lbl_3_rodata_B24 * t[2];
-    *(f32*)(f + 0x168) = *(f32*)(f + 0x3C) * lbl_3_rodata_B24 * t[2];
-    k = (int)t[3];
-    n = (int)(*(f32*)(f + 0x164) / t[1]);
+    *(f32*)(f + 0x164) = ((Ent16*)lbl_3_data_4884)[type].a;
+    *(f32*)(f + 0x160) = *(f32*)(f + 0x38) * lbl_3_rodata_B24 * ((Ent16*)lbl_3_data_4884)[type].c;
+    *(f32*)(f + 0x168) = *(f32*)(f + 0x3C) * lbl_3_rodata_B24 * ((Ent16*)lbl_3_data_4884)[type].c;
+    k = (int)((Ent16*)lbl_3_data_4884)[type].d;
+    n = (int)(*(f32*)(f + 0x164) / ((Ent16*)lbl_3_data_4884)[type].b);
     *(s16*)(f + 0x1B0) = n + 1;
-    *(s16*)(f + 0x1AE) = n + n + k + 2;
+    *(s16*)(f + 0x1AE) = n * 2 + k + 2;
     f[0x204] = 0;
     if (type != 0) {
-        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
+        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[i], 6);
     }
 }
+#endif
 
 // .text:0x0002F924 size:0x278 mapped:0x8066E9B8
 void fn_3_2F924(int i) {
@@ -4216,6 +4215,8 @@ s32 fn_3_327F4(void) {
 }
 
 // .text:0x00032810 size:0x194 mapped:0x806718A4
+// NONMATCHING 98%: registers only; the known SetFielderAct table-value/state r0 swap (see docs/patterns/unsolved.md)
+#if NONMATCHING
 void fn_3_32810(void) {
     SetFielderAct(0, 0x15, 0xA8);
     *(s16*)(g_FieldingLogic + 0xB0) = 0;
@@ -4234,6 +4235,7 @@ void fn_3_32810(void) {
     fn_3_47778();
     fn_3_4A124();
 }
+#endif
 
 // .text:0x000329A4 size:0x6E4 mapped:0x80671A38
 // NONMATCHING 90%: registers only; the known SetFielderAct table-value/state r0 swap (see docs/patterns/unsolved.md)
