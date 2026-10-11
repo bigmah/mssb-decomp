@@ -6,7 +6,7 @@ extern u8 lbl_80366158[];
 extern s32 fn_3_5B380(u16);
 extern void fn_8004CC18(void);
 extern u8 lbl_3_data_B060[];
-extern void fn_800203E0(s32, s32);
+extern void fn_800203E0(u8 scene, s8 variant);
 extern void fn_3_10C81C(void);
 extern void fn_3_E1370(s32);
 extern s32 fn_80016F7C(void);
@@ -1688,6 +1688,123 @@ void fn_3_10722C(void) {
             lbl_3_common_bss_34C90[0x1D2] = 0;
             fn_3_5A6D4(0x22);
         }
+        break;
+    }
+}
+
+extern void fn_3_6AB30(void);
+extern void fn_3_11CF84(void);
+extern u8 lbl_3_data_6104[8];
+extern u8 starMissionCompletionTracker[];
+
+static inline void satInc16(s16* p) {
+    if (*p < 0x7FFE) {
+        (*p)++;
+    } else {
+        *p = 0x7FFF;
+    }
+}
+
+// fn_3_1084B4, size:0x3A0
+void fn_3_1084B4(void) {
+    lbl_80366158[0x28] = 1;
+    satInc16((s16*)(lbl_3_common_bss_34C90 + 0xA));
+    satInc16((s16*)(lbl_3_common_bss_34C90 + 0xC));
+    satInc16((s16*)(lbl_3_common_bss_34C90 + 0x12));
+    switch (lbl_3_common_bss_34C90[0x1D2]) {
+    case 0:
+        *(s16*)(lbl_3_common_bss_34C90 + 0xC) = 0;
+        lbl_3_common_bss_34C90[0x1D2] = 1;
+        break;
+    case 1:
+        lbl_3_common_bss_34C90[0x1D2] = 3;
+        break;
+    case 2:
+        if (*(s16*)(lbl_3_common_bss_34C90 + 0xC) > 0x14) {
+            lbl_3_common_bss_34C90[0x1D2] = 3;
+        }
+        break;
+    case 3:
+        fn_3_108230();
+        *(s16*)(lbl_3_common_bss_34C90 + 0xC) = 0;
+        *(s16*)(lbl_3_common_bss_34C90 + 0x12) = 0;
+        lbl_3_common_bss_34C90[0x1D4] = 0;
+        break;
+    case 4:
+        lbl_3_common_bss_34C90[0x1D9] = 1;
+        lbl_3_common_bss_34C90[0x1D2] = 5;
+        break;
+    case 5:
+        if (lbl_3_common_bss_34C90[0x1D9] == 3) {
+            g_Minigame[0x1A3B] = 0;
+        }
+        break;
+    case 6:
+        changeScene(3, 6);
+        if (lbl_8037169C[0x13] != 0) {
+            lbl_3_common_bss_34C90[0x1D2] = 7;
+        }
+        break;
+    case 7:
+        lbl_8036E548[0x307A] = 0;
+        g_Minigame[0x1A40] = 1;
+        lbl_3_common_bss_34C90[0x1D9] = 2;
+        g_Minigame[0x1A3B] = 0;
+        fn_3_6AB30();
+        fn_3_11CF84();
+        g_Minigame[0x19DF] = 0x1C;
+        fn_3_5A6D4(0x1D);
+        break;
+    case 8:
+        switch (fn_3_5B380(((u16*)(g_Controls + 6))[*(s32*)lbl_3_common_bss_34C90 * 8])) {
+        case 1:
+            *(u16*)(g_GameLogic + 0xFE) = 0;
+            lbl_3_common_bss_34C90[0x1D2] = 9;
+            break;
+        case 2:
+            lbl_3_common_bss_34C90[0x1D2] = 3;
+            break;
+        }
+        break;
+    case 9:
+        if (*(u16*)(g_GameLogic + 0xFE) > 0x2D) {
+            if (g_d_GameSettings[8] == 0) {
+                fn_800203E0(0xC, (s8)lbl_3_data_6104[starMissionCompletionTracker[0x441C]]);
+            } else {
+                changeScene(4, 6);
+            }
+        }
+        if (lbl_8037169C[0x13] != 0) {
+            g_Minigame[0x1A40] = 1;
+            lbl_3_common_bss_34C90[0x1D9] = 2;
+            g_Minigame[0x1A3B] = 0;
+            g_d_GameSettings[0x13] = 1;
+            fn_3_11CF84();
+            fn_8004CC18();
+            g_GameLogic[0x122] = 1;
+        }
+        break;
+    case 10:
+        fn_3_107E80();
+        break;
+    case 11:
+        fn_3_107E80();
+        break;
+    case 12:
+        changeScene(3, 6);
+        if (lbl_8037169C[0x13] != 0) {
+            lbl_3_common_bss_34C90[0x1D2] = 0xD;
+        }
+        break;
+    case 13:
+        g_Minigame[0x1A38] = 1;
+        fn_3_11CF84();
+        lbl_8036E548[0x307A] = 0;
+        fn_3_6AB30();
+        g_Minigame[0x1A40] = 1;
+        lbl_3_common_bss_34C90[0x1D9] = 2;
+        g_Minigame[0x1A3B] = 0;
+        fn_3_5A6D4(4);
         break;
     }
 }
