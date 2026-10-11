@@ -166,4 +166,6 @@ void fn_1_E098(void);
 
 void fn_1_16978(void);
 
+void fn_1_135C0(void);
+
 #endif
