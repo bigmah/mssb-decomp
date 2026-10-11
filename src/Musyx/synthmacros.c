@@ -25,7 +25,7 @@ void macMakeActive(SYNTH_VOICE* svoice);
 
 void macSetExternalKeyoff(SYNTH_VOICE* svoice);
 
-static void DoSetPitch(SYNTH_VOICE* svoice);
+void DoSetPitch(SYNTH_VOICE* svoice);
 
 /*
   This may look like a fakematch, however this actually makes sense if you break it down:
@@ -616,76 +616,74 @@ static void mcmdSetupLFO(SYNTH_VOICE* svoice, MSTEP* cstep) {
 
 #pragma dont_inline on
 // 88%: orig keeps sInfo in r5 and recomputes (sInfo >> 24) per branch; ours hoists oKey and the temps rotate (unsolved)
-static void DoSetPitch(SYNTH_VOICE* svoice) {
-  u32 f;
-  u32 f2;
-  u32 of;
-  u32 i;
-  u32 frq;
-  u32 ofrq;
-  u32 no;
-  s32 key;
-  u8 oKey;
+void DoSetPitch(SYNTH_VOICE* svoice) {
+  u32 f;    // r29
+  u32 of;   // r26
+  u32 i;    // r31
+  u32 frq;  // r28
+  u32 ofrq; // r27
+  u32 no;   // r30
+  s32 key;  // r25
+  u8 oKey;  // r24
   static u16 kf[13] = {
       4096, 4339, 4597, 4871, 5160, 5467, 5792, 6137, 6502, 6888, 7298, 7732, 8192,
   };
 
   frq = svoice->playFrq & 0xFFFFFF;
-  of = svoice->sInfo;
-  ofrq = of & 0xFFFFFF;
-  oKey = of >> 24;
+  ofrq = svoice->sInfo & 0xFFFFFF;
 
   if (ofrq == frq) {
-    svoice->curNote = oKey;
+    svoice->curNote = (u8)(svoice->sInfo >> 24);
     svoice->curDetune = 0;
   } else if (ofrq < frq) {
     f = (frq << 12) / ofrq;
-    for (no = 0; no < 11; ++no) {
-      if ((f >> 12) < (1 << (no + 1))) {
+    of = f >> 12;
+
+    for (no = 0; no < 11; no++) {
+      if (of < (1 << (no + 1))) {
         break;
       }
     }
 
-    f2 = f / (1 << no);
+    f /= (1 << no);
 
-    i = 11;
-    while (1) {
-      if (f2 > kf[i]) {
+    for (i = 11;; i--) {
+      if (f > kf[i]) {
         break;
       }
-      i--;
     }
 
-    svoice->curNote = oKey + no * 12 + i;
-    svoice->curDetune = ((f2 - kf[i]) * 100) / (kf[i + 1] - kf[i]);
+    svoice->curNote = (svoice->sInfo >> 24) + (no * 12) + i;
+    svoice->curDetune = ((f - kf[i]) * 100) / (kf[i + 1] - kf[i]);
   } else {
     f = (ofrq << 12) / frq;
-    for (no = 0; no < 11; ++no) {
-      if ((f >> 12) < (1 << (no + 1))) {
+    of = f >> 12;
+
+    for (no = 0; no < 11; no++) {
+      if (of < (1 << (no + 1))) {
         break;
       }
     }
 
-    f2 = f / (1 << no);
+    f /= (1 << no);
 
-    i = 11;
-    while (1) {
-      if (f2 > kf[i]) {
+    for (i = 11;; i--) {
+      if (f > kf[i]) {
         break;
       }
-      i--;
     }
 
-    key = no * 12 + i;
+    key = i + (no * 12);
+    oKey = (svoice->sInfo >> 24);
     if (key > oKey) {
-      svoice->curDetune = 0;
-      svoice->curNote = 0;
+      svoice->curNote = svoice->curDetune = 0;
     } else {
       svoice->curNote = oKey - key;
-      svoice->curDetune = ((kf[i] - f2) * 100) / (kf[i + 1] - kf[i]);
+      svoice->curDetune = ((kf[i] - f) * 100) / (kf[i + 1] - kf[i]);
     }
   }
 }
+
 #pragma dont_inline reset
 
 static void mcmdSetPitch(SYNTH_VOICE* svoice, MSTEP* cstep) {
