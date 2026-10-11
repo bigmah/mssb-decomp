@@ -449,7 +449,22 @@ void fn_800A908C(s32 result, DVDCommandBlock* block) {
 
 // .text:0x800A90E4 size:0x84
 void fn_800A90E4(s32 result, DVDCommandBlock* block) {
-    return;
+    StreamTrack* track;
+
+    AISetStreamPlayState(0);
+    for (track = lbl_803CC150; track != NULL; track = track->next) {
+        DVDClose(&track->fileInfo);
+    }
+    lbl_803CC150 = NULL;
+    lbl_803CC14C = NULL;
+    lbl_803CC154 = NULL;
+    lbl_803CC148 = STREAM_STATE_STOP;
+    if (lbl_803CC128 != NULL) {
+        lbl_803CC128();
+        lbl_803CC128 = NULL;
+    }
+    lbl_803CC148 = STREAM_STATE_STOP;
+    lbl_803CC130 = 0;
 }
 
 // .text:0x800A9168 size:0x48
