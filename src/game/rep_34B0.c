@@ -473,9 +473,19 @@ void fn_3_12FE84(void) {
 }
 
 // .text:0x0012FFD4 size:0x2B4 mapped:0x8076F068
+// NONMATCHING: the original inlines fn_3_12EB10 (itself not matching yet), so the call here is expected.
+#if NONMATCHING
 void fn_3_12FFD4(void) {
-    return;
+    g_Minigame.bB_bombBarrelID = -1;
+    fn_3_12EB10();
+    fn_3_12E8FC();
+    if (g_Minigame.pointsTargetReachedInd != 0) {
+        fn_3_5A6D4(8);
+    } else {
+        fn_3_5A6D4(0);
+    }
 }
+#endif
 
 // .text:0x00130288 size:0x548 mapped:0x8076F31C
 void fn_3_130288(void) {
