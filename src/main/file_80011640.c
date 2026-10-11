@@ -1641,9 +1641,32 @@ void fn_8001DB74(void) {
 }
 
 // .text:0x8001DD58 size:0x14C
-void fn_8001DD58(void) {
-    return;
+// NONMATCHING 98%: register allocation only
+#if NONMATCHING
+void fn_8001DD58(CharModel* model, s32 pass, s32 a, s32 b, ...) {
+    va_list args;
+    CharJoint* joint;
+
+    if (model->flags & (1 << (pass * 3))) {
+        if (model->display != NULL) {
+            GXInvalidateVtxCache();
+            va_start(args, b);
+            if (model->_7C != NULL) {
+                DOVARender(model->display, a, b, args);
+            } else {
+                DOVARenderSkin(model->display, a, model->_64, model->_68, b);
+            }
+        }
+        for (joint = model->firstJoint; joint != NULL; joint = joint->next) {
+            if (joint->display != NULL) {
+                DOSetWorldMatrix(joint->display, joint->worldMtx);
+            }
+            va_start(args, b);
+            DOVARender(joint->display, a, b, args);
+        }
+    }
 }
+#endif
 
 // .text:0x8001DEA4 size:0x234
 void fn_8001DEA4(void) {
