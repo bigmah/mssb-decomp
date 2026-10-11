@@ -2838,9 +2838,225 @@ void fn_3_A9C74(int i) {
 }
 
 // .text:0x000A9D20 size:0xD1C mapped:0x806E8DB4
-void fn_3_A9D20(void) {
-    return;
+// Per-frame update for fielder fi while the play is live.
+// NONMATCHING 61%: the original inlines fn_3_A6D48, fn_3_A8338, fn_3_AABF8, fn_3_AAA3C and fn_3_A9C74; here they are called. Control flow matches
+#if NONMATCHING
+void fn_3_A9D20(s32 fi) {
+    s32 handled;
+    RepFielder* f;
+    s16 other;
+    f32 d;
+
+    handled = 0;
+    f = &g_Fielders[fi];
+    if (g_FieldingLogic._12A != 0) {
+        g_FieldingLogic._12A--;
+    }
+    if (f->_20F != 0) {
+        if (g_Ball.fielderWBallIndex == fi) {
+            fn_3_A9354(fi, 2);
+            g_FieldingLogic._13B = 1;
+            g_FieldingLogic._111 = 0;
+            return;
+        }
+        fn_3_25648(fi);
+        return;
+    }
+    if (f->_210 != 0) {
+        fn_3_251E4(fi);
+        f->_1EE = 0;
+        return;
+    }
+    if (f->_211 != 0) {
+        fn_3_A96FC(fi);
+        goto after;
+    }
+    if (f->_1EE != 0) {
+        fn_3_A9984(fi);
+        goto after;
+    }
+    if (f->_1EF != 0) {
+        goto after;
+    }
+    if (f->_203 != 0) {
+        fn_3_2F574(fi);
+        goto after;
+    }
+    if (f->_262 != 0) {
+        fn_3_25A68(fi);
+        goto input;
+    }
+    if (f->_25A == 2 && f->_1ED != 0) {
+        goto input;
+    }
+    if (f->_25E != 0) {
+        if (f->_25E >= 3) {
+            fn_3_30564(fi);
+        }
+        goto check;
+    }
+    if (f->_205 != 0) {
+        if (f->_205 < 5) {
+            f->_205 = 5;
+        }
+        fn_3_2FF2C(fi);
+        goto check;
+    }
+    if (f->_1EC != 0 &&
+        (g_FieldingLogic._11F == 0 || (g_Ball.timeSinceBallPickedUp > 0 && g_Ball.timeSinceBallPickedUp < 0xF))) {
+        goto input;
+    }
+    if (g_FieldingLogic._111 != 0) {
+        fn_3_A6E98(fi);
+        return;
+    }
+    if (f->throwing != 0) {
+        // wind-up of a throw already released
+        if (f->throwTimer < 0x7FFE) {
+            f->throwTimer++;
+        } else {
+            f->throwTimer = 0x7FFF;
+        }
+        if (f->throwTimer < f->_196) {
+            if (g_Ball.ballState == BALL_STATE_HELD) {
+                f->throwTimer = f->_196;
+            }
+            return;
+        }
+        if (f->_1D7 == 1) {
+            other = g_FieldingLogic._0D0[f->coveringBase];
+            if (other != fi && other >= 0) {
+                fn_3_5985C(other, 9);
+            }
+            fn_3_5985C(fi, 1);
+            g_FieldingLogic._0D0[f->coveringBase] = fi;
+        } else {
+            fn_3_5985C(fi, 9);
+        }
+        f->throwTimer = 0;
+        f->throwing = 0;
+        return;
+    }
+    fn_3_A6D48();
+    if (g_FieldingLogic._0C4 < 0) {
+        // no throw chosen yet
+        if (f->_1C6 != 0) {
+            fn_3_A009C(fi);
+        } else if (g_FieldingLogic._116 == 0) {
+            fn_3_A76B4();
+            if (g_FieldingLogic._0CC >= 0) {
+                fn_3_A8338(fi);
+            } else {
+                g_FieldingLogic._0E2 = -1;
+            }
+        }
+        d = f->velX * f->velX + f->velZ * f->velZ;
+        SQRT_L(d);
+        f->speed = d;
+        if (g_FieldingLogic._0C4 == f->coveringBase && g_FieldingLogic._0D0[f->coveringBase] == fi) {
+            g_FieldingLogic._0C4 = -1;
+        }
+        if (g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3) {
+            f->throwTarget.x = lbl_3_data_4444[g_FieldingLogic._0C4 * 2];
+            f->throwTarget.y = lbl_3_rodata_193C;
+            g_Ball.throwDestination.x = f->throwTarget.x;
+            g_Ball.throwDestination.y = f->throwTarget.y;
+            g_Ball.throwDestination.z = lbl_3_data_4444[g_FieldingLogic._0C4 * 2 + 1];
+            f->throwTarget.z = g_Ball.throwDestination.z;
+        } else if (g_FieldingLogic._0C4 == 6) {
+            if (g_FieldingLogic._0BE != fi) {
+                f->throwTarget.x = g_Fielders[g_FieldingLogic._0BE].pos.x;
+                f->throwTarget.y = lbl_3_rodata_193C;
+                g_Ball.throwDestination.x = f->throwTarget.x;
+                g_Ball.throwDestination.y = f->throwTarget.y;
+                g_Ball.throwDestination.z = g_Fielders[g_FieldingLogic._0BE].pos.z;
+                f->throwTarget.z = g_Ball.throwDestination.z;
+            } else {
+                g_FieldingLogic._0C4 = -1;
+            }
+        } else if (g_FieldingLogic._0C4 == 5) {
+            if (fn_3_AABF8()) {
+                f->throwTarget.x = lbl_3_data_4444[8];
+                f->throwTarget.y = lbl_3_rodata_193C;
+                g_Ball.throwDestination.x = f->throwTarget.x;
+                g_Ball.throwDestination.y = f->throwTarget.y;
+                g_Ball.throwDestination.z = lbl_3_data_4444[9];
+                f->throwTarget.z = g_Ball.throwDestination.z;
+            } else {
+                g_FieldingLogic._0C4 = -1;
+            }
+        }
+        g_FieldingLogic._119 = 0;
+        fn_3_AAA3C(fi);
+        if (g_FieldingLogic._0C4 >= 0) {
+            g_FieldingLogic._0CC = -1;
+            fn_3_A89D4();
+            fn_3_79040();
+        }
+        fn_3_A9C74(fi);
+        goto check;
+    }
+    if (f->_215 != 0) {
+        f->_215--;
+        return;
+    }
+    d = f->velX * f->velX + f->velZ * f->velZ;
+    SQRT_L(d);
+    f->speed = d;
+    if (g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3) {
+        f->throwTarget.x = lbl_3_data_4444[g_FieldingLogic._0C4 * 2];
+        f->throwTarget.y = lbl_3_rodata_193C;
+        g_Ball.throwDestination.x = f->throwTarget.x;
+        g_Ball.throwDestination.y = f->throwTarget.y;
+        g_Ball.throwDestination.z = lbl_3_data_4444[g_FieldingLogic._0C4 * 2 + 1];
+        f->throwTarget.z = g_Ball.throwDestination.z;
+    }
+    g_FieldingLogic._0E6++;
+    if (g_FieldingLogic._10A == 0) {
+        return;
+    }
+    fn_3_ABDD0(fi);
+    f->throwing = 1;
+    g_FieldingLogic._10A = 0;
+    f->throwTimer = 0;
+    g_FieldingLogic._111 = 0;
+    g_FieldingLogic._112 = 0;
+    goto check;
+input:
+    fn_3_A7C88();
+    handled = 1;
+    g_FieldingLogic._0C8 = 0;
+check:
+    if (g_Ball.fielderWBallIndex == fi && g_FieldingLogic._0C4 < 0 && handled == 0) {
+        fn_3_A7040(fi);
+    }
+after:
+    fn_3_5372C(fi);
+    g_Ball.baseBallAndFielderAreOn = -1;
+    if (g_Ball.fielderWBallIndex >= 0 && f->_1F5 >= 0) {
+        g_Ball.baseBallAndFielderAreOn = f->_1F5;
+        if (g_FieldingLogic._0CC == f->_1F5) {
+            g_FieldingLogic._0CC = -1;
+        }
+    }
+    if (f->throwing != 0) {
+        if (f->throwTimer < 0x7FFE) {
+            f->throwTimer++;
+        } else {
+            f->throwTimer = 0x7FFF;
+        }
+        if (f->throwTimer < f->_196) {
+            if (g_Ball.ballState == BALL_STATE_HELD) {
+                f->throwTimer = f->_196;
+            }
+        } else {
+            fn_3_5985C(fi, 0xF);
+            f->throwTimer = 0;
+            f->throwing = 0;
+        }
+    }
 }
+#endif
 
 // .text:0x000AAA3C size:0x1BC mapped:0x806E9AD0
 void fn_3_AAA3C(int idx) {

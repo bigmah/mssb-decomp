@@ -30,7 +30,9 @@ typedef struct RepFielder {
     /*0x0B8*/ f32 _0B8;
     /*0x0BC*/ u8 _0BC[0xF4 - 0xBC];
     /*0x0F4*/ f32 catchHeight;
-    /*0x0F8*/ u8 _0F8[0x120 - 0xF8];
+    /*0x0F8*/ u8 _0F8[0x10C - 0xF8];
+    /*0x10C*/ VecXYZ throwTarget;
+    /*0x118*/ u8 _118[0x120 - 0x118];
     /*0x120*/ f32 _120;
     /*0x124*/ f32 _124;
     /*0x128*/ u8 _128[0x174 - 0x128];
@@ -43,7 +45,7 @@ typedef struct RepFielder {
     /*0x18C*/ s16 coveringBase;
     /*0x18E*/ u8 _18E[0x192 - 0x18E];
     /*0x192*/ s16 _192;
-    /*0x194*/ u8 _194[0x196 - 0x194];
+    /*0x194*/ s16 throwTimer;
     /*0x196*/ s16 _196;
     /*0x198*/ u8 _198[0x1A0 - 0x198];
     /*0x1A0*/ s16 _1A0;
@@ -51,7 +53,9 @@ typedef struct RepFielder {
     /*0x1AC*/ s16 _1AC;
     /*0x1AE*/ u8 _1AE[0x1C2 - 0x1AE];
     /*0x1C2*/ s16 _1C2; // angle
-    /*0x1C4*/ u8 _1C4[0x1C9 - 0x1C4];
+    /*0x1C4*/ u8 _1C4[0x1C6 - 0x1C4];
+    /*0x1C6*/ u8 _1C6;
+    /*0x1C7*/ u8 _1C7[0x1C9 - 0x1C7];
     /*0x1C9*/ u8 _1C9; // lbl_3_data_4780 index
     /*0x1CA*/ u8 _1CA[0x1CD - 0x1CA];
     /*0x1CD*/ u8 _1CD; // speed-related stat
@@ -60,31 +64,46 @@ typedef struct RepFielder {
     /*0x1D2*/ u8 _1D2;
     /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3];
     /*0x1D7*/ u8 _1D7;
-    /*0x1D8*/ u8 _1D8[0x1E0 - 0x1D8];
+    /*0x1D8*/ u8 _1D8[0x1DF - 0x1D8];
+    /*0x1DF*/ u8 throwing;
     /*0x1E0*/ u8 _1E0;
     /*0x1E1*/ u8 _1E1;
     /*0x1E2*/ u8 _1E2;
     /*0x1E3*/ u8 _1E3;
     /*0x1E4*/ u8 _1E4;
-    /*0x1E5*/ u8 _1E5[0x1ED - 0x1E5];
+    /*0x1E5*/ u8 _1E5[0x1EC - 0x1E5];
+    /*0x1EC*/ u8 _1EC;
     /*0x1ED*/ u8 _1ED;
     /*0x1EE*/ u8 _1EE;
-    /*0x1EF*/ u8 _1EF[0x1F5 - 0x1EF];
+    /*0x1EF*/ u8 _1EF;
+    /*0x1F0*/ u8 _1F0[0x1F5 - 0x1F0];
     /*0x1F5*/ s8 _1F5; // base
     /*0x1F6*/ u8 _1F6;
     /*0x1F7*/ s8 _1F7;
     /*0x1F8*/ u8 _1F8;
     /*0x1F9*/ u8 _1F9[0x200 - 0x1F9];
     /*0x200*/ u8 _200;
-    /*0x201*/ u8 _201[0x20D - 0x201];
+    /*0x201*/ u8 _201[0x203 - 0x201];
+    /*0x203*/ u8 _203;
+    /*0x204*/ u8 _204;
+    /*0x205*/ u8 _205;
+    /*0x206*/ u8 _206[0x20D - 0x206];
     /*0x20D*/ u8 minigamePlayer;
-    /*0x20E*/ u8 _20E[0x211 - 0x20E];
+    /*0x20E*/ u8 _20E;
+    /*0x20F*/ u8 _20F;
+    /*0x210*/ u8 _210;
     /*0x211*/ u8 _211;
     /*0x212*/ u8 _212; // state
     /*0x213*/ u8 _213; // runner index
     /*0x214*/ u8 _214; // lbl_3_data_4860 index
     /*0x215*/ u8 _215;
-    /*0x216*/ u8 _216[0x268 - 0x216];
+    /*0x216*/ u8 _216[0x25A - 0x216];
+    /*0x25A*/ u8 _25A;
+    /*0x25B*/ u8 _25B[0x25E - 0x25B];
+    /*0x25E*/ u8 _25E;
+    /*0x25F*/ u8 _25F[0x262 - 0x25F];
+    /*0x262*/ u8 _262;
+    /*0x263*/ u8 _263[0x268 - 0x263];
 } RepFielder; // size: 0x268
 
 extern RepFielder g_Fielders[9];
@@ -159,7 +178,7 @@ void fn_3_A9354(int fi, int mode);
 void fn_3_A96FC(int);
 void fn_3_A9984(int);
 void fn_3_A9C74(int);
-void fn_3_A9D20(void);
+void fn_3_A9D20(s32 fi);
 void fn_3_AAA3C(int);
 int fn_3_AABF8(void);
 void fn_3_AAC84(f32* x, f32* z);

@@ -893,7 +893,7 @@ void fn_3_2F484(void) {
 }
 
 // .text:0x0002F574 size:0x260 mapped:0x8066E608
-void fn_3_2F574(void) {
+void fn_3_2F574(int fi) {
     return;
 }
 
@@ -4545,7 +4545,7 @@ extern void fn_3_A9984(int);
 extern u8 lbl_3_data_4290[];
 extern u8 lbl_3_data_4300[];
 extern u8 lbl_3_data_4348[];
-// NONMATCHING 96%: table x reads via lfsx in the original; f30/f31 swapped; calls fn_3_2F574/fn_3_526DC through casts until their prototypes gain the index arg
+// NONMATCHING 96%: table x reads via lfsx in the original; f30/f31 swapped; calls fn_3_526DC through casts
 #if NONMATCHING
 void fn_3_3D304(int i) {
     u8* f = g_Fielders + i * 0x268;
@@ -4582,8 +4582,7 @@ void fn_3_3D304(int i) {
         return;
     }
     if (f[0x203] != 0) {
-        /* TODO: fn_3_2F574 takes the fielder index; its prototype (other range) is still (void) */
-        ((void (*)(int))fn_3_2F574)(i);
+        fn_3_2F574(i);
         return;
     }
     if (*(s16*)(g_Ball + 0x1B78) == i && f[0x1EC] == 0) {
@@ -6403,7 +6402,7 @@ void fn_3_45394(int i) {
                 f[0x1FF] = 0;
             }
         } else {
-            ((void (*)(int))fn_3_5372C)(i);
+            fn_3_5372C(i);
         }
         break;
     }
@@ -8552,7 +8551,7 @@ int fn_3_53130(int i) {
 }
 
 // .text:0x0005372C size:0x7BC mapped:0x806927C0
-void fn_3_5372C(void) {
+void fn_3_5372C(int fi) {
     return;
 }
 
