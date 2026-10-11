@@ -668,9 +668,76 @@ void fn_3_1430D0(s32 hand, s32 p) {
 extern void fn_3_6C854(int, int);
 
 // Moves ball i; a fielder whose player is idle catches it when in reach.
+// NONMATCHING 97.3%: only the dir.x/dir.z/lbl_3_data_21E24[15] loads after PSVECNormalize are scheduled differently
+#if NONMATCHING
 void fn_3_143358(s32 i) {
-    return;
+    MgBall* b;
+    u8* f;
+    s32 k;
+    u8 fi;
+    u8* gp;
+    Vec dir;
+
+    b = &((MgBallView*)g_Minigame)->ball[i];
+    b->timer++;
+    if (b->timer > *(s16*)(lbl_3_data_21E68 + 0x14)) {
+        b->used = 0;
+        return;
+    }
+    b->pos.x += b->vel.x;
+    b->pos.y += b->vel.y;
+    b->pos.z += b->vel.z;
+    if (b->used == 2) {
+        b->vel.y += b->_18;
+    }
+    if (b->pos.y < lbl_3_data_21E24[13]) {
+        if (b->pos.z < lbl_3_rodata_3834) {
+            if (b->used == 2) {
+                g_Minigame[b->owner + 0x1C9E] = 0;
+            }
+            b->used = 0;
+            return;
+        }
+        b->vel.y = -b->vel.y;
+    }
+    for (k = 0; k < 4; k++) {
+        if ((s8)(fi = g_Minigame[k + 0x18F8]) >= 0) {
+            f = g_Fielders + (s8)fi * 0x268;
+            if (g_Minigame[k + 0x1CA5] == 0) {
+                if (lbl_3_data_21E24[2] + lbl_3_data_47BC[f[0x1C9]] >
+                    sqrt37A8((b->pos.x - *(f32*)(f + 0x0)) * (b->pos.x - *(f32*)(f + 0x0)) +
+                             (b->pos.z - *(f32*)(f + 0x8)) * (b->pos.z - *(f32*)(f + 0x8)))) {
+                    if (b->used == 2) {
+                        g_Minigame[b->owner + 0x1C9E] = 0;
+                    }
+                    b->used = 0;
+                    if (g_Minigame[k + 0x1C9A] == 0) {
+                        g_Minigame[k + 0x1C9A] = 1;
+                        ((s16*)(g_Minigame + 0x1B3C))[k] = *(s16*)(lbl_3_data_21E68 + 0x1C);
+                        ((s16*)(g_Minigame + 0x1B50))[k] = 0;
+                        dir.x = b->vel.x;
+                        dir.y = lbl_3_rodata_3834;
+                        dir.z = b->vel.z;
+                        PSVECNormalize(&dir, &dir);
+                        *(f32*)(f + 0x38) = dir.x;
+                        gp = g_Minigame + k;
+                        gp[0x1DF4] = 1;
+                        *(f32*)(f + 0x3C) = dir.z;
+                        *(f32*)(f + 0x50) = lbl_3_data_21E24[15];
+                        fn_3_6C854((s8)gp[0x18CC], 2);
+                        if (g_Minigame[k + 0x1CB1] < 0xFFFE) {
+                            g_Minigame[k + 0x1CB1]++;
+                        } else {
+                            g_Minigame[k + 0x1CB1] = 0xFF;
+                        }
+                    }
+                    return;
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x00143714 size:0x5C mapped:0x807827A8
 void fn_3_143714(void) {
