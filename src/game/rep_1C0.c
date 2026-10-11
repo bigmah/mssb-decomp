@@ -274,14 +274,69 @@ void fn_3_3BE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 
 }
 #endif
 
+// Like fn_3_3BE8 with point sampling and normalized float tex coords.
 // .text:0x00003EE8 size:0x3E4 mapped:0x80642F7C
-void fn_3_3EE8(void) {
-    return;
+// NONMATCHING 77%: scheduling of the int->float conversions; float constant pooling
+#if NONMATCHING
+void fn_3_3EE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 uw, s16 vh) {
+    GXTexObj tex;
+    f32 s0 = (f32)u / (f32)img->width;
+    f32 t0 = (f32)v / (f32)img->height;
+    f32 s1 = (f32)(u + uw) / (f32)img->width;
+    f32 t1 = (f32)(v + vh) / (f32)img->height;
+    f32 left = x0;
+    f32 top = y0;
+    f32 right = x1;
+    f32 bottom = y1;
+    GXColor white = {0xFF, 0xFF, 0xFF, 0xFF};
+
+    GXInitTexObj(&tex, img->data, img->width, img->height, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GXInitTexObjLOD(&tex, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(0);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevColor(GX_TEVREG0, white);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+    GXLoadTexObj(&tex, GX_TEXMAP0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXWGFifo.f32 = left;
+    GXWGFifo.f32 = top;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.f32 = s0;
+    GXWGFifo.f32 = t0;
+    GXWGFifo.f32 = right;
+    GXWGFifo.f32 = top;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.f32 = s1;
+    GXWGFifo.f32 = t0;
+    GXWGFifo.f32 = right;
+    GXWGFifo.f32 = bottom;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.f32 = s1;
+    GXWGFifo.f32 = t1;
+    GXWGFifo.f32 = left;
+    GXWGFifo.f32 = bottom;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.f32 = s0;
+    GXWGFifo.f32 = t1;
 }
 
 // Draws one font glyph: a quad in color0/color1 one pixel larger than the
 // glyph (the outline), then the glyph texel rect (sx, sy, sw, sh) on top.
 // Bit 0 of flags inverts the glyph.
+#endif
+
 // .text:0x000042CC size:0x6B8 mapped:0x80643360
 // NONMATCHING 99.8%: r0/r5/r11 allocation of the sx/sw/sy/sh int->float temps, f25/f27 swap
 #if NONMATCHING
