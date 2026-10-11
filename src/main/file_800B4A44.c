@@ -169,6 +169,30 @@ ANIMSequences* ANIMGetSequence(ANIMBank* animBank, char* sequenceName, u16 seqNu
 }
 
 // .text:0x800B508C size:0xE0
-void ANIMGet(void) {
-    return;
+// Converts the bank's file offsets into pointers in place.
+void ANIMGet(ANIMBank* animBank) {
+    ANIMSequences* seq;
+    struct ANIMAnimTrack* track;
+    KeyFrame* keyFrame;
+    u32 i;
+
+    if (animBank->userDataSize != 0 && animBank->userData != NULL) {
+        animBank->userData = (u8*)animBank->userData + (u32)animBank;
+    }
+    seq = (ANIMSequences*)(animBank + 1);
+    track = (struct ANIMAnimTrack*)(seq + animBank->numSequences);
+    keyFrame = (KeyFrame*)(track + animBank->numTracks);
+    animBank->animSequences = (ANIMSequences*)((u8*)animBank->animSequences + (u32)animBank);
+
+    for (i = 0; i < animBank->numSequences; i++) {
+        seq[i].sequenceName = (char*)animBank + (u32)seq[i].sequenceName;
+        seq[i].trackArray = (struct ANIMAnimTrack*)((u8*)animBank + (u32)seq[i].trackArray);
+    }
+    for (i = 0; i < animBank->numTracks; i++) {
+        track[i].keyFrames = (KeyFrame*)((u8*)animBank + (u32)track[i].keyFrames);
+    }
+    for (i = 0; i < animBank->numKeyFrames; i++) {
+        keyFrame[i].setting = (char*)animBank + (u32)keyFrame[i].setting;
+        keyFrame[i].interpolation = (char*)animBank + (u32)keyFrame[i].interpolation;
+    }
 }
