@@ -54,19 +54,37 @@ void fn_8003A8A0(void) {
     return;
 }
 
+extern u32 lbl_803CBCB8;
+
+extern u8 lbl_803CBCB4;
+
 // .text:0x8003AC90 size:0xF4
 void fn_8003AC90(void) {
-    return;
+    GXColor color;
+    color.a = 0xFF;
+    color.b = lbl_803CBCB4;
+    color.g = lbl_803CBCB4;
+    color.r = lbl_803CBCB4;
+    GXSetChanMatColor(GX_COLOR0A0, color);
+    GXSetNumChans(1);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_RASC, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_RASA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
 }
+
+extern GXTexObj lbl_803C50B0;
+extern GXTlutObj lbl_803C50DC;
+extern u16 lbl_800F7AC0[16];
+extern u8 lbl_803CBCAC;
 
 // .text:0x8003AD84 size:0xD0
 void fn_8003AD84(void) {
     return;
 }
-
-extern u32 lbl_803CBCB8;
-
-extern u8 lbl_803CBCB4;
 
 extern u8 lbl_802D4B00[];
 

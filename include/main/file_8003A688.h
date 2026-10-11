@@ -45,6 +45,11 @@ typedef struct TrailTexDesc {
     /*0x1A*/ u8 tlutFormat;
 } TrailTexDesc;
 
+typedef struct TrailTexSet {
+    /*0x00*/ u32 count;
+    /*0x04*/ TrailTexDesc tex[1];
+} TrailTexSet;
+
 extern OSTime lbl_802D4AE0[4];
 extern s32 lbl_803CBC48;
 extern s32 lbl_803CBC4C;
@@ -53,6 +58,8 @@ extern s32 lbl_803CBC50;
 void fn_8003A688(s32 type, f32 speed, f32 spread);
 void fn_8003A6B0(s32 type, TrailTexDesc* desc, f32 speed, f32 spread);
 void fn_8003A85C(u8 enabled);
+void fn_8003AC90(void);
+void fn_8003AD84(TrailTexSet* set);
 void fn_8003F23C(void);
 void fn_8003F2B8(void);
 void fn_8004153C(void);
