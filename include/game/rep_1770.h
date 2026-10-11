@@ -2,6 +2,7 @@
 #define __GAME_rep_1770_H_
 
 #include "mssbTypes.h"
+#include "game/auto_00_00097144_text.h"
 
 void fn_3_993A8(void);
 void fn_3_9976C(void);
@@ -11,10 +12,10 @@ void fn_3_99C88(void);
 void fn_3_99CFC(void);
 void fn_3_99E10(void);
 void fn_3_9A8A4(void);
-void fn_3_9B108(void);
+void fn_3_9B108(HudTask* task);
 void fn_3_9B320(void);
 void fn_3_9B7F4(void);
-void fn_3_9BEE0(u8* p);
+void fn_3_9BEE0(HudTask* task);
 void fn_3_9C014(void);
 void fn_3_9C28C(void);
 
