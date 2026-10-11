@@ -311,8 +311,18 @@ f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin
 }
 
 // .text:0x80024C04 size:0x68
-void fn_80024C04(void) {
-    return;
+s32 fn_80024C04(s32 index) {
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        if (lbl_803CB748[i] == lbl_800E8558[index].missionRow) {
+            if (g_d_GameSettings.__0x20padding[i + 8] == 0) { // TODO name: g_d_GameSettings bytes 0x1A..0x1F
+                return 0;
+            }
+            break;
+        }
+    }
+    return 1;
 }
 
 // .text:0x80024C6C size:0xC0
