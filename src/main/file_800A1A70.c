@@ -64,7 +64,7 @@ void GDSetTexLookupMode(GXTexMapID id, GXTexWrapMode wrap_s, GXTexWrapMode wrap_
 
 // .text:0x800A2194 size:0x100
 void GDSetTexImgAttr(GXTexMapID id, u16 width, u16 height, GXTexFmt format) {
-    return;
+    GDWriteBPCmd((u32)(width - 1) << 0 | (u32)(height - 1) << 10 | (u32)format << 20 | (u32)lbl_803CBAA8[id] << 24);
 }
 
 // .text:0x800A2294 size:0xE8
