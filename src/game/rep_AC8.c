@@ -2216,6 +2216,11 @@ extern f32 lbl_3_rodata_C08;
 extern f32 lbl_3_rodata_BA4;
 extern f32 lbl_3_rodata_BCC;
 extern f32 lbl_3_rodata_B90;
+extern f32 lbl_3_rodata_BE4;
+extern f32 lbl_3_rodata_C28;
+extern f32 lbl_3_rodata_C2C;
+extern f32 lbl_3_rodata_C30;
+extern f32 lbl_3_rodata_C34;
 #define FLD(n) (g_Fielders + (n) * 0x268) // fielder n's 0x268-byte block
 #define RUN(n) (g_Runners + (n) * 0x154)  // runner n's 0x154-byte block
 extern u8 lbl_3_data_44B4[];
@@ -2383,9 +2388,97 @@ void fn_3_3FCF0(int useBall) {
 #endif
 
 // .text:0x000402A8 size:0x95C mapped:0x8067F33C
+// NONMATCHING 95.6%: registers (SetFielderAct swap); orig keeps the infield mask and ball base in swapped saved regs
+#if NONMATCHING
+// Assign base-covering duties at the start of a play, by the ball's direction and which
+// fielders are free (0x1DB == 0), then run the other per-play fielding setups.
 void fn_3_402A8(void) {
-    return;
+    u32 mask = 0;
+    u32 inf;
+    int j;
+    s16 ang;
+    int a;
+    f32 d3, d5, dx, dz;
+    for (j = 0; j < 9; j++) {
+        if (FLD(j)[0x1DB] == 0) {
+            mask |= 1 << (j * 3);
+        }
+    }
+    inf = mask & 0x9249;
+    if ((inf != 0 && g_Ball[0x1BBF] <= 1 && *(f32*)(g_Ball + 0x19D4) >= lbl_3_rodata_BD8) ||
+        ((FLD(0)[0x1DB] == 0 || FLD(1)[0x1DB] == 0) && *(f32*)(g_Ball + 0x350) < lbl_3_rodata_C28)) {
+        ang = fn_3_9FB8C(*(f32*)(g_Ball + 0x1A2C), *(f32*)(g_Ball + 0x1A30));
+        if (FLD(1)[0x1DB] == 0 && (*(f32*)(g_Ball + 0x350) < lbl_3_rodata_BE4 || (ang > 0xA00 && ang < 0xE00))) {
+            SetFielderAct(1, 3, 0x18);
+            goto done;
+        }
+        if ((*(f32*)(g_Ball + 0x350) < lbl_3_rodata_C2C && ang > 0x300 && ang < 0x500) ||
+            (*(f32*)(g_Ball + 0x350) < lbl_3_rodata_C30 && ang > 0x300 && ang < 0x500 && (mask & 1)) ||
+            (*(f32*)(g_Ball + 0x350) < lbl_3_rodata_C34 && ang > 0x200 && ang < 0x600)) {
+            SetFielderAct(0, 3, 0x18);
+            goto done;
+        }
+        if (ang < 0x2C0) {
+            SetFielderAct(2, 3, 0x18);
+            goto done;
+        }
+        if (ang < 0x400) {
+            SetFielderAct(3, 3, 0x18);
+            goto done;
+        }
+        if (ang < 0x540) {
+            SetFielderAct(5, 3, 0x18);
+            goto done;
+        }
+        if (ang < 0x800) {
+            SetFielderAct(4, 3, 0x18);
+            goto done;
+        }
+    }
+    if (mask & 0x1240000) {
+        fn_3_9FB8C(*(f32*)(g_Ball + 0x1A2C), *(f32*)(g_Ball + 0x1A30));
+        a = *(s16*)(g_Ball + 0x1B9C);
+        if (a < 0x3C0) {
+            SetFielderAct(8, 3, 0x18);
+            SetFielderAct(7, 3, 0x18);
+            SetFielderAct(3, 3, 0x18);
+        } else if (a > 0x440) {
+            SetFielderAct(6, 3, 0x18);
+            SetFielderAct(7, 3, 0x18);
+            SetFielderAct(5, 3, 0x18);
+        } else {
+            SetFielderAct(6, 3, 0x18);
+            SetFielderAct(7, 3, 0x18);
+            SetFielderAct(8, 3, 0x18);
+            dx = *(f32*)FLD(3) - *(f32*)(g_Ball + 0x1A2C);
+            dz = *(f32*)(FLD(3) + 8) - *(f32*)(g_Ball + 0x1A30);
+            dx = dx * dx;
+            dz = dz * dz;
+            d3 = dx + dz;
+            SQRT_L(d3);
+            dx = *(f32*)FLD(5) - *(f32*)(g_Ball + 0x1A2C);
+            dz = *(f32*)(FLD(5) + 8) - *(f32*)(g_Ball + 0x1A30);
+            dx = dx * dx;
+            dz = dz * dz;
+            d5 = dx + dz;
+            SQRT_L(d5);
+            if (g_Ball[0x1BBF] < 3 || !(*(f32*)(g_Ball + 0x19D4) >= lbl_3_rodata_BD8)) {
+                if (d3 < d5) {
+                    SetFielderAct(3, 3, 0x18);
+                } else {
+                    SetFielderAct(5, 3, 0x18);
+                }
+            }
+        }
+    } else {
+        fn_3_3FCF0(inf);
+    }
+done:
+    fn_3_4C9C8();
+    fn_3_47778();
+    fn_3_4A124();
 }
+#endif
 
 // .text:0x00040C04 size:0x150 mapped:0x8067FC98
 // 98%: temp regs in the two tail blocks (orig li r4,3 / lwz r0 / g in r5; ours li r0 / lwz r5 / g r4); same issue as fn_3_3F124
