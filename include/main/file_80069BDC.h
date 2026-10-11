@@ -90,7 +90,9 @@ typedef struct ChallengeState {
     /*0x40B8*/ ChallengeTeamEntry teams[9]; // ids must be unique
     /*0x40EE*/ u8 _40EE[0x43BC - 0x40EE];
     /*0x43BC*/ s16 _43BC; // 0..1000
-    /*0x43BE*/ u8 _43BE[0x43D6 - 0x43BE];
+    /*0x43BE*/ u8 _43BE[0x43C0 - 0x43BE];
+    /*0x43C0*/ s16 _43C0; // scout-flag character of the current star chance
+    /*0x43C2*/ u8 _43C2[0x43D6 - 0x43C2];
     /*0x43D6*/ u8 _43D6[0x36]; // per character id (fn_3_12A910: star icon shown)
     /*0x440C*/ u8 _440C[0x4415 - 0x440C];
     /*0x4415*/ u8 _4415;
@@ -109,6 +111,8 @@ typedef struct ChallengeState {
     /*0x444B*/ s8 _444B; // -1: none
     /*0x444C*/ u8 _444C;
     /*0x444D*/ u8 _444D[54];
+    /*0x4483*/ u8 _4483[0x44F1 - 0x4483];
+    /*0x44F1*/ u8 _44F1;
 } ChallengeState;
 
 // What ChallengeTrackingStruct.scoutFlagPointer points to.
