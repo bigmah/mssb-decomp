@@ -1,5 +1,11 @@
 #include "main/file_80011640.h"
 #include "Dolphin/mtx.h"
+#include "static/UnknownHomes_Static.h"
+#include "PowerPC_EABI_Support/Runtime/__mem.h"
+
+extern void fn_8003AC90(void);
+extern s32 lbl_803CBBF0;
+extern CharLoadTask* lbl_803CC1B8;
 
 // .text:0x80011640 size:0x9C
 void fn_80011640(Mtx a, Mtx out) {
@@ -404,7 +410,7 @@ void fn_8001AAA4(void) {
 
 // .text:0x8001AAF0 size:0x20
 void fn_8001AAF0(void) {
-    return;
+    fn_8003AC90();
 }
 
 // .text:0x8001AB10 size:0x488
