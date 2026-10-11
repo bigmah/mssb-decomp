@@ -29,7 +29,6 @@ extern void fn_3_6D964(s32, s32);
 extern void setInMemBatterConstants(int rosterID);
 extern s32 fn_3_6BA64(void);
 extern s32 fn_3_B3CD4(void);
-extern void fn_3_B27A4(void);
 extern void fn_80011BE4(s32);
 extern void* lbl_3_data_101E0[];
 extern int random_fn_3_9EE24(int max);
@@ -64,7 +63,6 @@ extern void fn_3_6C108(void);
 extern void fn_3_B02A8(void);
 extern void fn_3_6714C(s32 player);
 extern void fn_3_B3A4C(void);
-extern void fn_3_B27A4(void);
 extern void fn_3_B1DD0(void);
 extern void fn_3_6EBB4(s32);
 extern u8 lbl_80366158[];
@@ -1202,3 +1200,54 @@ count:
 }
 
 #pragma dont_inline off
+
+// fn_3_B27A4, size:0x104
+void fn_3_B27A4(void) {
+    s32 i;
+    g_Practice.framesOnAllInstructions = 0;
+    g_Practice._164 = 0;
+    g_Practice.framesOnCurrInstruction = 0;
+    g_Practice.laukituTextChannelIndex = -1;
+    g_Practice.lakituTextIndex_stored = -1;
+    g_Practice.diagramTextChannelIndex = -1;
+    g_Practice.diagramTitleTextIndex_stored = -1;
+    g_Practice.cpuCommandDuration = 0;
+    g_Practice.instructionNumber = 0;
+    g_Practice.currentMessageDoneTyping = 0;
+    g_Practice.commandIndex = 0;
+    g_Practice.allInstructionsComplete = 0;
+    g_Practice.instructionComplete_readyToAdvance = 0;
+    g_Practice.allowPlayToEndIndicator = 0;
+    g_Practice._1C7 = 0;
+    g_Practice.guidedPracticeCompletionRelated = 0;
+    g_Practice.guidedPracticeCounter = 0;
+    g_Practice.maybeControlFlag1 = 0;
+    g_Practice.maybeControlFlag2 = 0;
+    g_Practice.practice_runner_countInputForMashing = 0;
+    g_Practice.practice_fielding_enableSprinting = 0;
+    g_Practice._1C6 = 0;
+    g_Practice.textRelatedIndicator = 0;
+    g_Practice.maybePreviousInput = 0;
+    g_Practice._17A = 0;
+    g_Practice.cpu_inputDuration = 0;
+    g_Practice._17E = 0;
+    g_Practice._186 = 0;
+    g_Practice.aIEnabled = 0;
+    g_Practice.practiceBatterHandedness = 0;
+    g_GameLogic._140[0] = g_GameLogic._140[1] = 0;
+    g_GameLogic.batterHandedness[0] = g_GameLogic.batterHandedness[1] = 0;
+    g_GameLogic.teamAIInd[0] = g_GameLogic.teamAIInd[1] = 0;
+    g_GameLogic.autoFielding[0] = g_GameLogic.autoFielding[1] = 0;
+    g_GameLogic.battingAIInd[0] = g_GameLogic.battingAIInd[1] = 0;
+    for (i = 0; i < 2; i++) {
+        g_Practice.inputs[i].controlStickAngle = -1;
+        g_Practice.inputs[i].controlStickMagnitude = 0;
+        g_Practice.inputs[i].buttonInput = 0;
+        g_Practice.inputs[i].newButtonInput = 0;
+        g_Practice.inputs[i]._08 = 0;
+        g_Practice.inputs[i].right_left = 0;
+        g_Practice.inputs[i].up_down = 0;
+        g_Practice.inputs[i].rightTriggerDistance = 0;
+        g_Practice.inputs[i].leftTriggerDistance = 0;
+    }
+}

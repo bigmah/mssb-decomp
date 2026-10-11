@@ -49,4 +49,6 @@ void fn_3_B03F0(void);
 
 s32 fn_3_B254C(void);
 
+void fn_3_B27A4(void);
+
 #endif
