@@ -187,7 +187,19 @@ void fn_8002059C(void) {
 
 // .text:0x80020624 size:0xD8
 void fn_80020624(void) {
-    return;
+    LayoutGroup* group = lbl_803CC1B8;
+    if (lbl_8037169C._16 != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    fn_80034E20(group, lbl_800EF470);
+    if (lbl_8037169C.state == 7) {
+        lbl_80371C30[group->start].obj->_68 = 1;
+        lbl_80371C30[group->start].obj->_5C = 0;
+    }
+    lbl_80371C30[group->start].obj->flags |= 2;
+    lbl_8037169C._16 = 1;
+    lbl_803CC1B8->callback = fn_8002059C;
 }
 
 // .text:0x800206FC size:0x968
