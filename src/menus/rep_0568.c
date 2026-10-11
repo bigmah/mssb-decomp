@@ -57,6 +57,8 @@ typedef struct MenuAssetInfo {
     /*0xC*/ u32 compressedSize;
 } MenuAssetInfo;
 extern MenuAssetInfo lbl_2_data_241C[];
+extern u8* lbl_2_bss_1228;
+extern MenuAssetInfo* lbl_2_data_277C; // part model descriptors, 6 per character
 extern s32 ARAMTransfer(void*, int, int, int);
 extern void fn_2_16F78(u8);
 extern void fn_2_14BB8(u8, s32);
@@ -383,6 +385,55 @@ void fn_2_19224(CharSlotList* list, MtxPtr view) {
         slot->_5B &= 1;
     }
 }
+
+// fn_2_17648, size:0x470
+// Allocates the two part file buffers of every menu actor and resets its parts state.
+// NONMATCHING 97%: loop counters in different registers (`mr r4, r12` vs `li r4, 0` for the second loop)
+#if NONMATCHING
+void fn_2_17648(void) {
+    u32 bufSize;
+    s32 k;
+    u32 size;
+    s16* id;
+    s32 n;
+    s32 i;
+    s32 j;
+    u32 maxSize = 0;
+
+    for (i = 0; i < 12; i++) {
+        for (j = 0; j < 9; j++) {
+            // Only the first roster entry is ever measured.
+            if (i * 9 + j == 0x35 || j != 0) {
+                goto done;
+            }
+            id = &lbl_8034E9A0.roster[i][j].charId;
+            for (k = 0; k < 6; k++) {
+                size = lbl_2_data_277C[*id + k].sizeInfo & 0x0FFFFFFF;
+                if (maxSize < size) {
+                    maxSize = size;
+                }
+            }
+        }
+    }
+done:
+    bufSize = (maxSize + 0x1F) & ~0x1F;
+    lbl_2_bss_1228 = _OSAllocFromHeap(0x20, bufSize * lbl_2_bss_100B8[0x2D] * 2);
+    for (n = 0; n < lbl_2_bss_100B8[0x2D]; n++) {
+        lbl_8036E548.partsPool[n].part[0].files = (void**)(lbl_2_bss_1228 + bufSize * (u32)(n * 2));
+        lbl_8036E548.partsPool[n].part[1].files = (void**)(lbl_2_bss_1228 + bufSize * (u32)(n * 2 + 1));
+    }
+    for (n = 0; n < lbl_2_bss_100B8[0x2D]; n++) {
+        lbl_8036E548.partsPool[n]._CF = -1;
+        lbl_8036E548.partsPool[n]._D1 = -1;
+        lbl_8036E548.partsPool[n]._D0 = -1;
+        lbl_8036E548.partsPool[n]._CD = 0xFF;
+        lbl_8036E548.partsPool[n].tex = NULL;
+        lbl_8036E548.partsPool[n]._CC = 0;
+        lbl_8036E548.partsPool[n].part[0].slot = n * 2;
+        lbl_8036E548.partsPool[n].part[1].slot = n * 2 + 1;
+    }
+}
+#endif
 
 // fn_2_17C88, size:0x250
 // Allocates one model file buffer per menu actor, big enough for the largest
