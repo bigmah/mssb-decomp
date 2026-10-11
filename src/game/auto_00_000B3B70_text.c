@@ -75,6 +75,19 @@ extern s32 fn_80050760(s32 p, s32 unused, s32 pressed, u16 dirs, s32 mode);
 extern s32 fn_8004FD64(s32 player);
 extern u32 fn_800628D4(s32 kind);
 
+// Character table (lbl_800E8558, CharTableEntry in main/file_8004C5F8.h).
+typedef struct PracticeCharEntry {
+    u8 _0;
+    u8 id;    // 0x1
+    u8 group; // 0x2: characters sharing a group share a model
+    u8 _3;
+    u8 _4;
+    u8 _5;
+} PracticeCharEntry;
+extern PracticeCharEntry lbl_800E8558[];
+extern void fn_3_90AB0(s32 a);
+extern s32 fn_3_90B14(s32 a, s32 b);
+
 #define SAVE_LEVEL_CLEARED(type) (lbl_80354768 + 0xCF4E + (type) * 4)
 
 extern u8 lbl_3_common_bss_34C90[];
@@ -1072,4 +1085,90 @@ void fn_3_B49D4(void) {
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
     }
+}
+
+// .text:0x000B3CD4 size:0x314
+// Loads the characters needed by the current practice type; returns 1 when ready.
+s32 fn_3_B3CD4(void) {
+    s32 b = -1;
+    s32 a = 0;
+
+    if (g_Practice._1D9 == 0) {
+        g_Practice._1D9 = 1;
+        g_Practice.someCharID3 = -1;
+        g_Practice.someCharID4 = -1;
+        switch (g_Practice.practiceType_2) {
+        case 0:
+            break;
+        case 1:
+            b = 1;
+            break;
+        case 2:
+            b = 1;
+            break;
+        case 3:
+            return 1;
+        case 4:
+            {
+                MgSelView* v = (MgSelView*)&g_Minigame;
+                a = v->sel[g_Practice.homeAway].charId;
+            }
+            break;
+        }
+        if (a == 0) {
+            a = -1;
+        }
+        if (b == 0) {
+            b = -1;
+        }
+        if (a < 0) {
+            a = b;
+            b = -1;
+        }
+        if (a < 0) {
+            return 1;
+        }
+        if (b >= 0 && lbl_800E8558[a].group == lbl_800E8558[b].group) {
+            b = -1;
+        }
+        if (b < 0) {
+            if ((g_Practice.someCharID1 >= 0 && lbl_800E8558[g_Practice.someCharID1].group == lbl_800E8558[a].group) ||
+                (g_Practice.someCharID2 >= 0 && lbl_800E8558[g_Practice.someCharID2].group == lbl_800E8558[a].group)) {
+                return 1;
+            }
+            if (g_Practice.someCharID2 >= 0) {
+                fn_3_90AB0(lbl_800E8558[g_Practice.someCharID2].id);
+                g_Practice.someCharID2 = lbl_800E8558[a].id;
+            } else if (g_Practice.someCharID1 < 0) {
+                g_Practice.someCharID1 = lbl_800E8558[a].id;
+            } else {
+                g_Practice.someCharID2 = lbl_800E8558[a].id;
+            }
+            g_Practice.someCharID3 = lbl_800E8558[a].id;
+        } else if (g_Practice.someCharID1 >= 0) {
+            if (lbl_800E8558[g_Practice.someCharID1].id != lbl_800E8558[b].id) {
+                if (lbl_800E8558[g_Practice.someCharID1].id == lbl_800E8558[a].id) {
+                    a = b;
+                } else {
+                    fn_3_90AB0(lbl_800E8558[g_Practice.someCharID1].id);
+                    fn_3_90AB0(lbl_800E8558[g_Practice.someCharID2].id);
+                    g_Practice.someCharID3 = lbl_800E8558[a].id;
+                    g_Practice.someCharID4 = lbl_800E8558[b].id;
+                    g_Practice.someCharID1 = lbl_800E8558[a].id;
+                    g_Practice.someCharID2 = lbl_800E8558[b].id;
+                    goto done;
+                }
+            }
+            if (lbl_800E8558[g_Practice.someCharID2].id != lbl_800E8558[a].id) {
+                fn_3_90AB0(lbl_800E8558[g_Practice.someCharID2].id);
+                g_Practice.someCharID3 = lbl_800E8558[a].id;
+                g_Practice.someCharID2 = lbl_800E8558[a].id;
+            }
+        }
+    }
+done:
+    if (g_Practice.someCharID3 >= 0 && fn_3_90B14(g_Practice.someCharID3, g_Practice.someCharID4) == 0) {
+        return 0;
+    }
+    return 1;
 }
