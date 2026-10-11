@@ -9,6 +9,9 @@
 #include "game/rep_1770.h"
 #include "game/auto_00_001293D0_text.h"
 #include "main/menu_globals.h"
+#include "game/auto_00_00097144_text.h"
+#include "game/rep_16B8.h"
+#include "game/auto_00_0009143C_text.h"
 #include "main/file_800527C4.h"
 #include "main/file_8004C5F8.h"
 
@@ -779,4 +782,49 @@ void fn_3_1599B8(void) {
     lbl_3_common_bss_32724._C1 = 1;
     o->_1A = 0;
     ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_1595F4;
+}
+
+// .text:0x0015A9F4 size:0x3A0
+void fn_3_15A9F4(void) {
+    if (g_GameLogic.secondaryGameMode == 0x11 || g_GameLogic.framesOfExitingToMenu != 0) {
+        return;
+    }
+    if (g_GameLogic.secondaryGameMode == 0xA) {
+        lbl_3_common_bss_32724._A7 = 0;
+        fn_3_15A448();
+        return;
+    }
+    if (g_Practice.practiceType_2 == 0 || g_Practice.practiceType_2 == 1 || g_Practice.practiceType_2 == 2 ||
+        g_Practice.practiceType_2 == 3) {
+        fn_3_1590C8();
+    }
+    if (g_Practice._1C7 != 0) {
+        if (g_Practice.frames_onPauseScreen == 1) {
+            fn_800B0A5C_insertQueue(fn_3_9894C, 2);
+        }
+    } else if (g_Practice._19F != 0) {
+        if (lbl_3_common_bss_34C90._1D2 == 1 && g_Practice.frames_onPauseScreen2 == 1) {
+            if (lbl_3_common_bss_32724._AA == 0) {
+                fn_800B0A5C_insertQueue(fn_3_98DE0, 2);
+            }
+            fn_800B0A5C_insertQueue(fn_3_9894C, 2);
+        }
+        if (lbl_3_common_bss_34C90._1D2 == 3 && lbl_3_common_bss_34C90._1D3 == 3) {
+            fn_800B0A5C_insertQueue(fn_3_983B8, 2);
+        }
+    }
+    if (g_Practice.loadingGuidedPractice != 0 && g_Practice._1D5 == 0) {
+        fn_800B0A5C_insertQueue(fn_3_1580AC, 2);
+        g_Practice._1D5 = 1;
+    }
+    fn_3_97144();
+    if ((g_Practice.practiceType_2 == 4 || g_Practice.practiceType_2 == 3) && g_Practice.practiceLevel != 4 &&
+        g_Practice.practiceLevel != 5) {
+        fn_3_96914();
+    }
+    fn_3_15A75C();
+    if (g_Practice.practiceLevel == 7 || g_Practice.practiceLevel == 6) {
+        fn_3_9143C();
+    }
+    fn_3_1589C4();
 }
