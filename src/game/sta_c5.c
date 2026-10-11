@@ -106,6 +106,9 @@ extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
 extern u32 lbl_3_bss_B154[];
 extern void fn_3_B97DC(void*, u32);
+extern const f32 lbl_3_rodata_2E14;
+extern f64 pow(f64, f64);
+extern f64 sqrt(f64);
 struct StadCtlA {
     Control c;
     u8 pad34[0x74 - 0x3C];
@@ -123,7 +126,8 @@ struct StadCtlA {
     f32* yawSrc; /* 0xBC */
     u8 fc0;
     s8 fc1;
-    u8 padC2[2];
+    s8 fc2;
+    u8 fc3;
     u8 fc4;
     u8 fc5;
     u8 fc6;
@@ -677,6 +681,7 @@ void fn_3_EF218(void) {
     return;
 }
 
+#pragma dont_inline off
 // .text:0x000EF21C size:0x1B8 mapped:0x8072E2B0
 void fn_3_EF21C(u8* p) {
     u8* d = lbl_3_data_1B820;
@@ -719,6 +724,7 @@ void fn_3_EF21C(u8* p) {
     }
 }
 
+#pragma dont_inline on
 // .text:0x000EF3D4 size:0x34 mapped:0x8072E468
 void fn_3_EF3D4(u8* p, u8 idx) {
     fn_3_B97DC(*(void**)(p + 0x74), lbl_3_bss_B154[idx]);
@@ -913,9 +919,100 @@ void fn_3_F0184(void) {
 }
 
 // .text:0x000F0224 size:0x608 mapped:0x8072F2B8
+extern char lbl_3_rodata_2D00[];
+extern u8 g_Fielders[];
+extern u8 lbl_3_bss_B21B;
+extern u8 lbl_3_bss_B21C;
+extern const f64 lbl_3_rodata_2E18;
+extern const f32 lbl_3_rodata_2E20;
+extern s32 fn_8001B728(s32, s32, void*);
+/* Chases the fielder p->fc1; bites when close enough. */
+// NONMATCHING 90%: inlines fn_3_F13F8 and fn_3_EF21C (first fn_3_EF55C test is the inlined fn_3_EF7B4 in the original: clrlwi.); original reaches lbl_3_bss_B154/B21B/B21C via the lbl_3_bss_AEE0 pooled base (nmverify flag expected); regalloc differs
+#if NONMATCHING
 void fn_3_F0224(StadCtlA* p) {
-    return;
+    Vec np;
+    Vec d;
+    Vec n;
+    Vec ref;
+    Vec fpos;
+    u8* f;
+    u8* actor;
+    f32 dist;
+    f32 ang;
+    u32 i;
+    ref = *(Vec*)lbl_3_rodata_2D00;
+    f = g_Fielders + p->fc1 * 0x268;
+    fpos = *(Vec*)f;
+    actor = *(u8**)(lbl_8036E548 + p->fc1 * 4 + 0x2C50);
+    if (fn_3_EF55C(fpos, p->fc5) != 0) {
+        p->fc6 = 1;
+        p->fc1 = -1;
+        fn_3_B97DC(p->obj, lbl_3_bss_B154[0]);
+        p->fc7 = 0;
+        return;
+    }
+    d.x = ((Vec*)f)->x - p->xa0;
+    d.y = lbl_3_rodata_2D5C;
+    d.z = ((Vec*)f)->z - p->za8;
+    PSVECNormalize(&d, &n);
+    np.x = lbl_3_rodata_2E18 * n.x + p->xa0;
+    np.y = p->ya4;
+    np.z = lbl_3_rodata_2E18 * n.z + p->za8;
+    if (fn_3_EF55C(np, p->fc5) == 0) {
+        p->xa0 = np.x;
+        p->ya4 = np.y;
+        p->za8 = np.z;
+    }
+    PSVECNormalize(&ref, &ref);
+    ang = lbl_3_rodata_2DE8 * (f32)acos(PSVECDotProduct(&n, &ref));
+    if (d.z < lbl_3_rodata_2D5C) {
+        ang = lbl_3_rodata_2E14 - ang;
+    }
+    p->xac = -ang;
+    memset(&d, 0, 0xC);
+    fn_8001B728(p->fc1, 0x23, &d);
+    d.y *= lbl_3_rodata_2D70;
+    dist = sqrt(pow(((Vec*)f)->x - p->xa0, lbl_3_rodata_2D80) + pow(((Vec*)f)->z - p->za8, lbl_3_rodata_2D80));
+    if (dist < lbl_3_rodata_2E20 && __fabs(d.y) <= lbl_3_rodata_2D88) {
+        fn_3_F13F8((u8*)p);
+        for (i = 0; i < lbl_3_bss_B21C; i++) {
+            if (i != p->idx) {
+                StadCtlA* e = (StadCtlA*)(*(u8**)lbl_3_common_bss_350E4 + (i + lbl_3_bss_B21B) * 0xE8);
+                if (e->fc6 == 3 && e->fc1 == p->fc1) {
+                    p->fc0++;
+                }
+            }
+        }
+        p->fc7 = 0;
+        p->fc6 = 3;
+        if (fn_800527C4(f) != 0) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0x14];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0x14];
+            }
+            h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 0xA), v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0x15];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0x15];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        }
+        g_Fielders[p->fc1 * 0x268 + 0x217]++;
+        p->fc2 = f[0x17A];
+        p->fc3 = actor[0x255];
+    }
+    CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+    CTRLSetRotation(&p->c, lbl_3_rodata_2D5C, p->xac, lbl_3_rodata_2D5C);
+    fn_3_EF21C((u8*)p);
+    p->fc7++;
 }
+#endif
 
 // .text:0x000F082C size:0x778 mapped:0x8072F8C0
 void fn_3_F082C(StadCtlA* p) {
@@ -1421,7 +1518,6 @@ void fn_3_F2724(u8* p, u8* q) {
 #pragma dont_inline on
 // .text:0x000F2938 size:0x6C4 mapped:0x807319CC
 extern f64 pow(f64, f64);
-extern const f32 lbl_3_rodata_2E14;
 extern char lbl_3_rodata_2CE0[];
 extern const f32 lbl_3_rodata_2E68;
 extern const f32 lbl_3_rodata_2E6C;
