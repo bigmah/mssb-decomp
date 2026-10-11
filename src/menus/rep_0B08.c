@@ -2337,3 +2337,56 @@ void fn_2_6B744(MenuEntry* owner) {
     fn_2_68FBC(id, 8);
     owner->state = 1;
 }
+
+// Per-fielder (ids 2..6) pointers to their home location.
+extern s16* lbl_2_data_3C2C[];
+
+// .text:0x6DB30 size:0x324
+void fn_2_6DB30(MenuEntry* owner) {
+    s32 id = owner->objectId;
+    s32 other = *(s32*)((u8*)lbl_2_bss_1A8248[0] + 0x1690);
+    s32 mode;
+    s32 who;
+    s16 timer;
+
+    fn_2_69E1C(id);
+    if (id >= 2 && id <= 6) {
+        if (id == 2) { // no-op, but present in the original
+            id = 2;
+        }
+        if ((mode = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DD), who = *(s8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DC), mode == 1) && who == id) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 4;
+            return;
+        }
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 4;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            if (lbl_2_bss_1A8248[0]->entries[id].locationIndex == *lbl_2_data_3C2C[id - 2]) {
+                owner->flagCB = 0;
+                owner->timer = 0x78;
+                owner->flagCF = 0;
+            } else {
+                owner->flagCB = 0;
+                owner->flagCF = -1;
+                owner->state = 0;
+            }
+        }
+    } else {
+        owner->flagCB = -1;
+    }
+    timer = owner->timer;
+    owner->timer = timer - 1;
+    if (timer == 0) {
+        owner->state = 0;
+    }
+}
