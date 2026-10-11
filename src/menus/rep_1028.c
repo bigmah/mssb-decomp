@@ -1324,10 +1324,9 @@ extern const f32 lbl_2_rodata_1090;
 extern const f32 lbl_2_rodata_1094;
 extern const f32 lbl_2_rodata_1098;
 
-// NONMATCHING 89%: scheduling only (lbl_803C77B8 address hoisted to the top, f-reg numbering)
 #if NONMATCHING
-// .text:0x8FE9C size:0x1E0
-void fn_2_8FE9C(s32 index) {
+// Moves cursor slot `index` with the stick (x/z) and d-pad up/down (y); body of fn_2_8FE9C.
+static inline void moveSlotWithPad(s32 index) {
     f32 x;
     f32 z;
     Vec position;
@@ -1356,5 +1355,39 @@ void fn_2_8FE9C(s32 index) {
     *(f32*)(slot + 0x4) = position.y;
     *(f32*)(slot + 0x8) = position.z;
     *(f32*)(slot + 0x44) = lbl_2_bss_B640;
+}
+
+// NONMATCHING 89%: scheduling only (lbl_803C77B8 address hoisted to the top, f-reg numbering)
+// .text:0x8FE9C size:0x1E0
+void fn_2_8FE9C(s32 index) {
+    moveSlotWithPad(index);
+}
+
+// NONMATCHING 92%: inlined fn_2_8FE9C body has the same scheduling difference, stack slots differ
+// .text:0x9007C size:0x2C0
+void fn_2_9007C(void) {
+    Mtx m;
+    Vec v;
+    s32 index = *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE);
+    u8* slot;
+    moveSlotWithPad(index);
+    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    if (!(*(f32*)(slot + 0x30) <= lbl_2_rodata_1080)) {
+        PSMTXRotRad(m, 'Y', *(f32*)(slot + 0x44));
+        v.x = lbl_2_rodata_1080;
+        v.y = lbl_2_rodata_1080;
+        v.z = -*(f32*)(slot + 0x30);
+        PSMTXMultVec(m, &v, &v);
+        *(f32*)(slot + 0x18) = v.x;
+        *(f32*)(slot + 0x1C) = v.z;
+        *(f32*)(slot + 0x0) = *(f32*)(slot + 0x0) + *(f32*)(slot + 0x18);
+        *(f32*)(slot + 0x8) = *(f32*)(slot + 0x8) + *(f32*)(slot + 0x1C);
+    }
+    *(f32*)(slot + 0xC) = *(f32*)(slot + 0x0);
+    *(f32*)(slot + 0x14) = *(f32*)(slot + 0x8);
+    if (lbl_2_rodata_1080 == *(f32*)(slot + 0x30)) {
+        *(f32*)(slot + 0x20) = lbl_2_rodata_1080;
+        *(f32*)(slot + 0x24) = lbl_2_rodata_1080;
+    }
 }
 #endif
