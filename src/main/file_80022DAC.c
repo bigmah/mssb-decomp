@@ -378,8 +378,20 @@ ActorSlotTable* fn_80023AA4(void) {
 }
 
 // .text:0x80023B04 size:0x8C
-void fn_80023B04(void) {
-    return;
+void fn_80023B04(s32 count) {
+    s32 i;
+    u8** p;
+
+    lbl_8017EBB0[0] = _OSAllocFromHeap(0x20, count * 0x86A0);
+    p = &lbl_8017EBB0[1];
+    i = 1;
+    do {
+        i++;
+        *p = p[-1] + 0x86A0;
+        p++;
+    } while (i < count);
+    lbl_803CBC5C = 0x86A0;
+    *(ActorSlotTable**)(lbl_8036E548 + 0x60) = ActorObjectInitTable(0xD); // TODO type
 }
 
 // .text:0x80023B90 size:0x164
