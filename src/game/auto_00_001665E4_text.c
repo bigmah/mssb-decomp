@@ -6,8 +6,8 @@
 
 extern AssetLoadInstructions lbl_3_data_284E8[2];
 
-// .text:0x001665E4 size:0xCC mapped:0x807A5678
 // Steps the trail-file load; returns 1 once it is done.
+// .text:0x001665E4 size:0xCC mapped:0x807A5678
 s32 fn_3_1665E4(void) {
     GameHudFlags* hud = &lbl_3_common_bss_32724;
 
@@ -30,3 +30,4 @@ s32 fn_3_1665E4(void) {
     }
     return 0;
 }
+
