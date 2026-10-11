@@ -2711,14 +2711,42 @@ void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {
     } while (o != NULL);
 }
 
+// NONMATCHING 17%: the original inlines fn_3_1549F0 twice; CW here won't inline it (its Control/Mtx locals?), so this calls it (nmverify call diff expected)
 // .text:0x00154C7C size:0x5A0 mapped:0x80793D10
-void fn_3_154C7C(u32 a, u32 b, u32 c) {
-    return;
+#if NONMATCHING
+void fn_3_154C7C(s16 id, f32* pos, f32* rot) {
+    u8 buf[0x5C];
+    u8* h;
+    u8* n;
+    u8* p;
+    h = fn_800339F0(NULL, 0x27);
+    if (h != NULL) {
+        n = fn_800337CC(buf, *(s32*)(lbl_3_data_26BC0 + 4), 1);
+        if (n != NULL) {
+            fn_3_1549F0(n, id, pos, rot);
+            p = *(u8**)(h + 0xC);
+            if (p != NULL) {
+                while (*(u8**)p != NULL) {
+                    p = *(u8**)p;
+                }
+                *(u8**)p = *(u8**)(n + 0xC);
+            } else {
+                *(u8**)(h + 0xC) = *(u8**)(n + 0xC);
+            }
+            ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+        }
+    } else {
+        n = fn_80033A24(fn_3_1542F4, 0x80, 0, *(s32*)(lbl_3_data_26BC0 + 4), 1, 0x27);
+        if (n != NULL) {
+            fn_3_1549F0(n, id, pos, rot);
+        }
+    }
 }
+#endif
 
 // .text:0x0015521C size:0x48 mapped:0x807942B0
-void fn_3_15521C(u32 a, u32 b, u32 c) {
-    if (g_d_GameSettings.GameModeSelected != 7 || b == 0 || c == 0) {
+void fn_3_15521C(s16 a, f32* b, f32* c) {
+    if (g_d_GameSettings.GameModeSelected != 7 || b == NULL || c == NULL) {
         return;
     }
     fn_3_154C7C(a, b, c);
