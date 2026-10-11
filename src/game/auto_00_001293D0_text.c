@@ -13,6 +13,8 @@ extern u8 lbl_3_common_bss_34C90[];
 extern u8 lbl_3_common_bss_37400[];
 extern u8 lbl_3_data_9FB4[];
 extern u8 lbl_3_data_9ECC[];
+extern u8 lbl_3_data_9D94[];
+extern u8 lbl_3_data_9EBC[2][8]; // [mode][slot]: digit/anim frames
 extern u8 lbl_3_data_9208[];
 extern u16 lbl_3_data_92C8[];
 extern u8 lbl_3_data_92D4[];
@@ -25,6 +27,7 @@ extern s8 lbl_3_data_217CC[]; // [ai strength]: % chance to mistime
 extern s8 lbl_3_data_217D0[]; // [ai strength]: max mistiming in frames
 extern s8 lbl_3_data_217D4[]; // [ai strength]: % chance to forget the stick
 extern void fn_80034E20(void*, void*);
+extern void fn_8003649C(void*, s32, s32, s32, s32);
 extern void fn_8004CC2C(void);
 extern void fn_8004D0F0(void);
 extern void fn_3_11E7C4(void);
@@ -767,3 +770,34 @@ remove:
     lbl_3_common_bss_32724[0xBE] = 0;
 }
 #endif
+
+// fn_3_12A6C4, size:0x24C
+void fn_3_12A6C4(void) {
+    HudTask* task;
+    s32 i;
+
+    (task = lbl_803CC1B8)->_1E = 0;
+    fn_80034E20(task, lbl_3_data_9D94);
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        task->_1E = 1;
+        lbl_80371C30[task->baseIdx + 1].obj->_64 = 0x30;
+        lbl_80371C30[task->baseIdx + 7].obj->flags &= ~2;
+    }
+    for (i = 0; i < 4; i++) {
+        lbl_80371C30[task->baseIdx + 4 + i].obj->_72 = lbl_3_data_9EBC[task->_1E][i];
+    }
+    lbl_80371C30[task->baseIdx + 3].obj->_72 = lbl_3_data_9EBC[task->_1E][4 + (s8)g_Minigame._19E3];
+    for (i = 0; i < 4; i++) {
+        fn_800363D8(task, i + 4, 1, 0x32, i + 4);
+        if (i > g_Minigame._1A0E || i < g_Minigame._1A0D) {
+            lbl_80371C30[task->baseIdx + 4 + i].obj->_5C = 6 << 16;
+        } else {
+            lbl_80371C30[task->baseIdx + 4 + i].obj->_5C = 0;
+        }
+    }
+    fn_8003649C(task, 2, 1, 0x35, 1);
+    task->timer = 0;
+    task->_1A = 0;
+    task->state = 0;
+    lbl_803CC1B8->func = fn_3_12A3F0;
+}

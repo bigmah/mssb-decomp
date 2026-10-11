@@ -56,5 +56,7 @@ u8 fn_3_12E384(BbCell* grid, s8 idx, u8 colour);
 void fn_3_12E17C(s8* chain, s16* score, u8 lookahead);
 void fn_3_12DDCC(void);
 void fn_3_12DB80(void);
+void fn_3_12A3F0(void);
+void fn_3_12A6C4(void);
 
 #endif
