@@ -45,7 +45,20 @@ void fn_8000F534(void* object, s32 visible) {
 
 // .text:0x8000F8F4 size:0x94
 void fn_8000F8F4(LayoutGroup* group) {
-    return;
+    s32 i;
+    s32 j;
+    u16 start = group->start;
+    for (i = 0; i < group->count; i++) {
+        LayoutObj* obj = lbl_80371C30[start + (u32)i].obj;
+        if (obj != NULL && (obj->flags & 4)) {
+            for (j = 0; j < 30; j++) {
+                if (lbl_80366B18.owners[j].object == lbl_80371C30[start + (u32)i].obj) {
+                    lbl_80366B18.owners[j].object = NULL;
+                    break;
+                }
+            }
+        }
+    }
 }
 
 // .text:0x8000F988 size:0x114
