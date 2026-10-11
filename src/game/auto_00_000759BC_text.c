@@ -24,9 +24,130 @@ extern void fn_3_162D54(void);
 #define STAT_INC_U16_FIELD(x) ((x) < 0xFFFE ? ((x) = (x) + 1) : ((x) = 0xFFFF))
 
 // .text:0x000759BC size:0x7B8 mapped:0x806B4A50
+// Picks the MVP.
+// NONMATCHING 80%: original keeps &lbl_80353A90 and other bases in spilled stack locals; register allocation differs
+#if NONMATCHING
 void fn_3_759BC(void) {
-    return;
+    s32 winner = -1;  // g_Scores.result when a team won
+    s32 winTeam = -1; // that team's index
+    s32 team;
+    s32 decided;
+    s32 t;
+    s32 i;
+    s32 recTeam;
+    s32 best;
+    s32 bestIdx;
+    s32 score[9];
+    BattingRecord* b;
+
+    lbl_80353A90.mvpCharID = -1;
+    if (g_Scores.result == 0 || g_Scores.result == 1) {
+        winner = g_Scores.result;
+        winTeam = g_Scores.result ^ g_GameLogic.homeTeamInd;
+    }
+    lbl_80353A90.mvpKind = 0;
+    // NOTE: on a tie winTeam is -1 here (the original reads inMemRoster[-1]); overwritten below.
+    if (g_Scores.result == 0) {
+        lbl_80353A90.mvpCharID = inMemRoster[winTeam][g_GameLogic.Team_CaptainRosterLoc[winTeam]].stats.CharID;
+    } else if (g_Scores.result == 1) {
+        lbl_80353A90.mvpCharID = inMemRoster[winTeam][g_GameLogic.Team_CaptainRosterLoc[winTeam]].stats.CharID;
+    } else {
+        lbl_80353A90.mvpCharID = inMemRoster[winTeam][g_GameLogic.Team_CaptainRosterLoc[random_fn_3_9EE24(2)]].stats.CharID;
+    }
+
+    decided = 0;
+    if (winner != 2 && ((g_d_GameSettings._10 != 0 && g_d_GameSettings._10 != 3) ||
+                        ((g_GameLogic._13E[0] != 0 || winTeam == 0) && (g_GameLogic._13E[1] != 0 || winTeam != 0)))) {
+        if (lbl_80353A90._0FB >= 0) {
+            lbl_3_common_bss_32A94.mvp[winner].rosterIdx = lbl_80353A90._0FB;
+            decided = 1;
+        } else if (lbl_80353A90._0F7 == 1 && g_Scores._AA >= 5) {
+            lbl_3_common_bss_32A94.mvp[winner].rosterIdx = lbl_80353A90._0A0[0x1E + winTeam * 0x14];
+            decided = 1;
+        } else if (lbl_80353A90._0F7 == 2 && g_Scores._AA >= 5) {
+            lbl_3_common_bss_32A94.mvp[winner].rosterIdx = lbl_80353A90._0A0[0x1E + winTeam * 0x14];
+            decided = 1;
+        } else if (lbl_80353A90._0FA >= 0) {
+            lbl_3_common_bss_32A94.mvp[winner].rosterIdx = lbl_80353A90._0FA;
+            decided = 1;
+        } else if (winner >= 0 && lbl_80353A90._0FE == winTeam && lbl_80353A90._0FD == lbl_80353A90._0FF) {
+            lbl_3_common_bss_32A94.mvp[winner].rosterIdx = lbl_80353A90._0FF;
+            decided = 1;
+        } else {
+            for (t = 0; t < 2; t++) {
+                recTeam = t ^ g_GameLogic.homeTeamInd;
+                best = 0;
+                bestIdx = -1;
+                for (i = 0; i < 9; i++) {
+                    score[i] = 0;
+                    if (winner == t) {
+                        if (i == lbl_80353A90.winningPitcher) {
+                            score[i] = lbl_3_data_60F8.winningPitcher;
+                        }
+                        if (i == lbl_80353A90._0FF) {
+                            if (lbl_80353A90._100 != 0) {
+                                score[i] = lbl_3_data_60F8._1;
+                            } else {
+                                score[i] = lbl_3_data_60F8._4;
+                            }
+                        }
+                    }
+                    b = &lbl_803537E4[recTeam][i];
+                    score[i] += lbl_3_data_60F8.homeRuns * b->homeRuns;
+                    score[i] += lbl_3_data_60F8._3 * b->_22;
+                    score[i] += lbl_3_data_60F8._5 * b->_23;
+                    score[i] += lbl_3_data_60F8.strikeouts * lbl_803535C8[recTeam][i].strikeouts;
+                    score[i] += lbl_3_data_60F8.rbi * b->rbi;
+                    score[i] += lbl_3_data_60F8.onBase * (b->hits + (b->walks + b->hitByPitch));
+                    score[i] += lbl_3_data_60F8._9 * b->_12;
+                    if (score[i] > best) {
+                        best = score[i];
+                        bestIdx = i;
+                    }
+                }
+                lbl_3_common_bss_32A94.mvp[t].rosterIdx = bestIdx;
+                lbl_3_common_bss_32A94.mvp[t].score = best;
+            }
+        }
+    }
+
+    if (decided) {
+        team = winTeam;
+        lbl_80353A90.mvp[team] = lbl_3_common_bss_32A94.mvp[winner].rosterIdx;
+        lbl_80353A90.mvpKind = 1;
+    } else if (g_GameLogic._13E[0] != g_GameLogic._13E[1]) {
+        team = g_GameLogic._13E[0] != 0;
+        if (winTeam == team) {
+            lbl_80353A90.mvp[team] = lbl_3_common_bss_32A94.mvp[winner].rosterIdx;
+            lbl_80353A90.mvpKind = 1;
+        } else if (winTeam >= 0) {
+            lbl_80353A90.mvp[team] = g_GameLogic.Team_CaptainRosterLoc[team];
+            lbl_80353A90.mvpKind = 2;
+        } else {
+            lbl_80353A90.mvp[team] = g_GameLogic.Team_CaptainRosterLoc[team];
+            lbl_80353A90.mvpKind = 3;
+        }
+    } else if (winTeam >= 0) {
+        team = winTeam;
+        lbl_80353A90.mvp[team] = lbl_3_common_bss_32A94.mvp[winner].rosterIdx;
+        lbl_80353A90.mvpKind = 1;
+    } else {
+        lbl_80353A90.mvp[0] = g_GameLogic.Team_CaptainRosterLoc[0];
+        team = 0;
+        lbl_80353A90.mvpKind = 3;
+    }
+
+    lbl_80353A90.mvpCharID = inMemRoster[team][lbl_80353A90.mvp[team]].stats.CharID;
+    if ((g_d_GameSettings._10 == 0 || g_d_GameSettings._10 == 3) &&
+        ((g_d_GameSettings._10 == 0 && team == 0) || (g_d_GameSettings._10 == 3 && team == 1)) && g_Scores._AA >= 5 &&
+        lbl_80353A90.mvpKind == 1) {
+        if (g_d_GameSettings.exhibitionMatchInd != 0) {
+            (lbl_80354768 + 0x10000)[lbl_800E8558[(s8)lbl_80353A90.mvpCharID * 6 + 1] - 0x30E8] = 1;
+        }
+        g_GameLogic._13D = 1;
+    }
 }
+#endif
 
 // .text:0x00076174 size:0x3E4 mapped:0x806B5208
 // Picks the winning pitcher.
