@@ -29,8 +29,11 @@ void fn_8003A848(u8 red, u8 green, u8 blue) {
 }
 
 // .text:0x8003A85C size:0x44
-void fn_8003A85C(void) {
-    return;
+void fn_8003A85C(u8 enabled) {
+    lbl_802D3D80.enabled = enabled;
+    lbl_802D3D80.head = 0;
+    lbl_802D3D80.tail = 0;
+    memset(lbl_802D3D80.texMode, 0, sizeof(lbl_802D3D80.texMode));
 }
 
 // .text:0x8003A8A0 size:0x3F0
