@@ -94,8 +94,40 @@ void fn_2_55AD4(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // .text:0x00055C5C size:0x17C
-void fn_2_55C5C(void) {
-    return;
+void fn_2_55C5C(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+    case 8:
+    case 0x11:
+    {
+        s16 count = lbl_2_data_1FD84[*(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA) + *(s16*)(lbl_2_bss_1A824C[0] + 0x1976FE)];
+        if (count > 1) {
+            lbl_80371C30[menu->firstIndex + item->offset].obj->flags |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].obj->_5C = (count - 1) << 16;
+        }
+    }
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 10;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        }
+        break;
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00055DD8 size:0x200
