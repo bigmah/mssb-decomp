@@ -97,6 +97,10 @@ void fn_3_13DA50(void) {
 extern const f32 lbl_3_rodata_3738; // 4.0f
 extern const f32 lbl_3_rodata_373C; // 0.15f
 extern const f32 lbl_3_rodata_3728; // 100.0f
+extern const f32 lbl_3_rodata_3748; // 1000.0f
+extern const f64 lbl_3_rodata_3750; // 1000.0
+extern int rand(void);
+extern void fn_800528B4(void);
 extern const f32 lbl_3_rodata_3730; // 10.0f
 extern const f32 lbl_3_rodata_375C; // 0.5f
 
@@ -195,8 +199,29 @@ void fn_3_13DEA4(void) {
     } while (i < 4);
 }
 // .text:0x0013DFBC size:0x1B8 mapped:0x8077D050
-void fn_3_13DFBC(void) {
-    return;
+// Camera shake callback (installed with fn_800528AC): jitter the eye and target
+// by up to +-lbl_3_bss_B794 on the view-space x/y axes for lbl_3_bss_B798[0] frames.
+void fn_3_13DFBC(camera_803c639c_s* cam) {
+    Vec d;
+    Mtx inv;
+    s32 range;
+    range = (s32)(lbl_3_rodata_3748 * lbl_3_bss_B794);
+    d.x = (rand() % range - range / 2) / lbl_3_rodata_3750;
+    d.y = (rand() % range - range / 2) / lbl_3_rodata_3750;
+    d.z = lbl_3_rodata_3734;
+    PSMTXInverse(cam->view, inv);
+    PSMTXMultVecSR(inv, &d, &d);
+    cam->eye.x += d.x;
+    cam->eye.y += d.y;
+    cam->eye.z += d.z;
+    cam->target.x += d.x;
+    cam->target.y += d.y;
+    cam->target.z += d.z;
+    if (--lbl_3_bss_B798[0] <= 0) {
+        lbl_3_bss_B798[0] = 0;
+        lbl_3_bss_B794 = lbl_3_rodata_3734;
+        fn_800528B4();
+    }
 }
 
 // .text:0x0013E174 size:0xA8 mapped:0x8077D208
@@ -213,7 +238,7 @@ void fn_3_13E174(u8 a) {
     default:
         return;
     }
-    fn_800528AC((fn_800528AC_parameter)fn_3_13DFBC);
+    fn_800528AC(fn_3_13DFBC);
 }
 // .text:0x0013E21C size:0x188 mapped:0x8077D2B0
 // NONMATCHING 97%: register allocation and prologue scheduling differ in the 4-runner loop
@@ -467,7 +492,7 @@ void fn_3_140484(void) {
             fn_3_90064(0x2DF);
             lbl_3_bss_B798[0] = (s32)lbl_3_data_218BC[12];
             lbl_3_bss_B794 = lbl_3_data_218BC[14];
-            fn_800528AC((fn_800528AC_parameter)fn_3_13DFBC);
+            fn_800528AC(fn_3_13DFBC);
             i = 0;
             do {
                 fn_3_6C854(i, 1);
@@ -588,7 +613,7 @@ void fn_3_1406F4(void) {
                 fn_3_90064(0x2DF);
                 lbl_3_bss_B798[0] = (s32)lbl_3_data_218BC[12];
                 lbl_3_bss_B794 = lbl_3_data_218BC[14];
-                fn_800528AC((fn_800528AC_parameter)fn_3_13DFBC);
+                fn_800528AC(fn_3_13DFBC);
                 k = 0;
                 do {
                     fn_3_6C854(k, 1);

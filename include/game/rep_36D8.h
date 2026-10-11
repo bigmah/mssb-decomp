@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
+#include "static/Camera.h"
 
 // One g_Runners entry (InMemRunnerType, size 0x154), only the fields used here.
 // This unit declares g_Runners as bytes, so it reaches the fields through this view.
@@ -51,7 +52,7 @@ void fn_3_13DA50(void);
 void fn_3_13DC48(s8 idx, f32 ang, f32* out1, f32* out2);
 f32 fn_3_13DDE0(f32 a, f32 b, u8 mode);
 void fn_3_13DEA4(void);
-void fn_3_13DFBC(void);
+void fn_3_13DFBC(camera_803c639c_s* cam);
 void fn_3_13E174(u8 a);
 void fn_3_13E21C(RepTarget* t);
 void fn_3_13E3A4(RepTarget* t);
