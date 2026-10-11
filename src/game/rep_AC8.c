@@ -2670,9 +2670,120 @@ void fn_3_393B0(void) {
 #endif
 
 // .text:0x00039858 size:0x56C mapped:0x806788EC
-void fn_3_39858(void) {
-    return;
+#pragma dont_inline off
+/* SetFielderAct that also records the fielder in FieldingLogic+0xBC */
+static inline void SetFielderActTag(int i, int state, int off) {
+    u8* f = g_Fielders + i * 0x268;
+    int d;
+    if (i != -1) {
+        d = *(int*)(lbl_3_data_3C40 + off);
+        f[0x1D3] = state;
+        if (d >= 0) {
+            g_FieldingLogic[i + 0xF8] = d;
+        }
+        *(s16*)(g_FieldingLogic + 0xBC) = i;
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
 }
+#pragma dont_inline on
+extern f32 lbl_3_data_4848;
+// NONMATCHING 94%: early-return/goto block layout (the original moves the 38790 tail to the end); bss_170 read via addi+lha
+#if NONMATCHING
+void fn_3_39858(void) {
+    s32 r = *(s16*)(g_FieldingLogic + 0xB0);
+    u8* f = g_Fielders + r * 0x268;
+    s16 cur;
+    s32 k;
+    f32 t;
+    if (*(s16*)(g_FieldingLogic + 0xB2) < 0) {
+        if (g_FieldingLogic[0x139] == 0 && *(s16*)(g_FieldingLogic + 0xDA) == 0) {
+            fn_3_38304();
+        }
+        return;
+    }
+    if (r <= 5 && *(s16*)(g_FieldingLogic + 0xB2) >= 6) {
+        if (g_Ball[0x1BC3] == 2 || g_Ball[0x1BC3] == 5) {
+            if (*(s16*)(g_FieldingLogic + 0xB2) !=
+                fn_3_36678(r, *(s16*)(g_FieldingLogic + 0xB2), *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C), 0)) {
+                return;
+            }
+        } else if (!(lbl_3_rodata_B78 + *(f32*)(f + 0x70) < *(f32*)(g_Ball + 0x1A00))) {
+            return;
+        }
+        fn_3_38790(*(s16*)(g_FieldingLogic + 0xB2), 1);
+        *(s16*)(g_FieldingLogic + 0xB2) = -1;
+        return;
+    }
+    if (g_FieldingLogic[0x139] == 0) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B66) < lbl_3_data_484C[3]) {
+        return;
+    }
+    cur = lbl_3_bss_170;
+    if (cur < 0 || !(*(u16*)(g_FieldingLogic + 0x148) & 0x200)) {
+        if (*(f32*)(g_Ball + 0x1A00) < (f32)lbl_3_data_484C[5]) {
+            return;
+        }
+        t = *(f32*)(g_Ball + 0x350) - (f32)lbl_3_data_484C[7];
+        if (t > (f32)lbl_3_data_484C[6]) {
+            t = (f32)lbl_3_data_484C[6];
+        }
+        if (*(f32*)(g_Ball + 0x1A00) < t) {
+            return;
+        }
+    }
+    if (!(((f32*)(g_Fielders + 0x80))[r * 0x9A] < lbl_3_data_4848)) {
+        if (((f32*)(g_Fielders + 0x80))[*(s16*)(g_FieldingLogic + 0xB2) * 0x9A] < lbl_3_data_4848) {
+            r = *(s16*)(g_FieldingLogic + 0xB2);
+        } else {
+            if (*(s16*)(g_Ball + 0x1B66) < lbl_3_data_484C[4]) {
+                if (cur <= 0) {
+                    return;
+                }
+                for (k = 1; k < lbl_3_data_484C[8]; k++) {
+                    if ((&lbl_3_bss_170)[k] <= 0 || fn_3_9FCF8(cur, (&lbl_3_bss_170)[k]) > 0x200) {
+                        break;
+                    }
+                }
+                if (k < lbl_3_data_484C[8]) {
+                    return;
+                }
+            }
+            r = fn_3_37114(*(s16*)(g_FieldingLogic + 0xB0), *(s16*)(g_FieldingLogic + 0xB2), 0,
+                           lbl_3_rodata_B80 * (((f32*)(g_Fielders + 0x14))[*(s16*)(g_FieldingLogic + 0xB0) * 0x9A] +
+                                               ((f32*)(g_Fielders + 0x14))[*(s16*)(g_FieldingLogic + 0xB2) * 0x9A]),
+                           lbl_3_rodata_B80 * (((f32*)(g_Fielders + 0x1C))[*(s16*)(g_FieldingLogic + 0xB0) * 0x9A] +
+                                               ((f32*)(g_Fielders + 0x1C))[*(s16*)(g_FieldingLogic + 0xB2) * 0x9A]));
+        }
+    }
+    if (r < 0) {
+        return;
+    }
+    if (r == *(s16*)(g_FieldingLogic + 0xB2)) {
+        if (*(s16*)(g_FieldingLogic + 0xBC) < 0) {
+            SetFielderActTag(*(s16*)(g_FieldingLogic + 0xB0), 0x18, 0xC0);
+        } else {
+            SetFielderAct(*(s16*)(g_FieldingLogic + 0xB0), 0xC, 0x60);
+        }
+        SetFielderAct(*(s16*)(g_FieldingLogic + 0xB2), 0x15, 0xA8);
+        *(s16*)(g_FieldingLogic + 0xB0) = *(s16*)(g_FieldingLogic + 0xB2);
+    } else {
+        if (*(s16*)(g_FieldingLogic + 0xBC) < 0) {
+            SetFielderActTag(*(s16*)(g_FieldingLogic + 0xB2), 0x18, 0xC0);
+        } else {
+            SetFielderAct(*(s16*)(g_FieldingLogic + 0xB2), 0xC, 0x60);
+        }
+        SetFielderAct(*(s16*)(g_FieldingLogic + 0xB0), 0x15, 0xA8);
+    }
+    *(s16*)(g_FieldingLogic + 0xB2) = -1;
+    g_FieldingLogic[0x139] = 0;
+}
+#endif
 
 // .text:0x00039DC4 size:0xEC mapped:0x80678E58
 void fn_3_39DC4(void) {
