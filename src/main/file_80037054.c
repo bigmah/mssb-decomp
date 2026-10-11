@@ -82,7 +82,7 @@ s32 fn_80037054(RigidBody* rb, RigidBodyParams* params) {
         PSVECAdd(&b.vel, &dvel, &b.vel);
         PSVECScale(&b.vel, b.unk150, &dpos);
         PSVECAdd(&b.pos, &dpos, &b.pos);
-        maxAngVel = params->unk1C / lbl_803CC724;
+        maxAngVel = params->maxAngVel / lbl_803CC724;
         w.x = b.inertia.x * b.angVel.x;
         w.y = b.inertia.y * b.angVel.y;
         w.z = b.inertia.z * b.angVel.z;
@@ -116,6 +116,83 @@ s32 fn_80037054(RigidBody* rb, RigidBodyParams* params) {
 
 // .text:0x8003731C size:0x44C
 s32 fn_8003731C(RigidBody* rb, RigidBodyParams* params) {
+    Vec world[2];
+    Vec local[2];
+    Vec v;
+    Vec f;
+    Vec fric;
+    Vec saved;
+    Vec t;
+    Vec off;
+    f32 spring = params->spring / 100000.0f;
+    f32 damping = params->damping / 100000.0f;
+    f32 maxForce = params->maxForce / 100000.0f;
+    f32 minForce = params->minForce / 100000.0f;
+    f32 torqueEps = params->torqueEps / 100000.0f;
+    f32 maxDepth = params->maxDepth / 100000.0f;
+    f32 friction = params->friction / 100000.0f;
+    f32 depth;
+    f32 mag;
+    s32 i;
+
+    memcpy(&saved, &rb->force, sizeof(Vec));
+    memset(&rb->force, 0, sizeof(Vec));
+    memset(&rb->forceLocal, 0, sizeof(Vec));
+    memset(&rb->torque, 0, sizeof(Vec));
+    off.x = off.z = lbl_803CC728;
+    off.y = -rb->radius;
+    PSMTXMultVec(rb->invRot, &off, &off);
+    PSVECScale(&rb->vel, -rb->unk50, &f);
+    PSVECAdd(&rb->force, &f, &rb->force);
+    PSVECScale(&rb->angVel, -rb->unk50, &t);
+    (&t.x)[rb->axis] = lbl_803CC728;
+    PSVECAdd(&rb->torque, &t, &rb->torque);
+
+    // ground contact at both end points
+    i = 2;
+    while (i-- != 0) {
+        PSVECAdd(i == 1 ? &rb->p1 : &rb->p0, &off, &local[i]);
+        PSMTXMultVec(rb->world, &local[i], &world[i]);
+        memset(&f, 0, sizeof(Vec));
+        f.y = -world[i].y;
+        depth = f.y;
+        if (depth >= lbl_803CC728) {
+            if (maxDepth != lbl_803CC728 && depth > maxDepth) {
+                f.y = maxDepth;
+            }
+            PSVECCrossProduct(&local[i], &rb->angVel, &v);
+            PSMTXMultVec(rb->rot, &v, &v);
+            PSVECAdd(&rb->vel, &v, &v);
+            f.y = spring * f.y + damping * -v.y;
+            mag = fabs(f.y);
+            if (maxForce != lbl_803CC728 && mag > maxForce) {
+                f.y = maxForce * (f.y / mag);
+            } else if (mag < minForce) {
+                continue;
+            }
+            if (friction != lbl_803CC728) {
+                fric.x = -v.x;
+                fric.y = lbl_803CC728;
+                fric.z = -v.z;
+                PSVECScale(&fric, friction, &fric);
+                f.x += fric.x;
+                f.z += fric.z;
+            }
+            PSVECAdd(&rb->force, &f, &rb->force);
+            PSMTXMultVec(rb->invRot, &f, &f);
+            PSVECCrossProduct(&local[i], &f, &t);
+            PSVECAdd(&rb->torque, &t, &rb->torque);
+        }
+    }
+
+    // gravity
+    f.x = lbl_803CC728;
+    f.y = lbl_803CC738 * rb->mass;
+    f.z = lbl_803CC728;
+    PSVECAdd(&rb->force, &f, &rb->force);
+    if (PSVECMag(&rb->torque) < torqueEps) {
+        memset(&rb->torque, 0, sizeof(Vec));
+    }
     return 0;
 }
 

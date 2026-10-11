@@ -31,22 +31,22 @@ typedef struct RigidBody {
     /*0x140*/ Vec angVel;
     /*0x14C*/ u8 unk14C;
     /*0x14D*/ u8 unk14D;
-    /*0x14E*/ s8 axis;
+    /*0x14E*/ u8 axis;
     /*0x14F*/ u8 _14F;
     /*0x150*/ f32 unk150;
 } RigidBody; // size 0x154
 
-// Parameters passed to the rigid body integrators.
+// Ground contact parameters, fixed point (value * 100000).
 typedef struct RigidBodyParams {
-    /*0x00*/ s32 unk0;
-    /*0x04*/ s32 unk4;
+    /*0x00*/ s32 spring;
+    /*0x04*/ s32 damping;
     /*0x08*/ s32 unk8;
-    /*0x0C*/ s32 unkC;
-    /*0x10*/ s32 unk10;
-    /*0x14*/ s32 unk14;
-    /*0x18*/ s32 unk18;
-    /*0x1C*/ s32 unk1C;
-    /*0x20*/ s32 unk20;
+    /*0x0C*/ s32 maxForce;
+    /*0x10*/ s32 minForce;
+    /*0x14*/ s32 torqueEps;
+    /*0x18*/ s32 maxDepth;
+    /*0x1C*/ s32 maxAngVel;
+    /*0x20*/ s32 friction;
 } RigidBodyParams;
 
 // One mass point of a verlet rope.
