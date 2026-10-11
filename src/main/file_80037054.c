@@ -453,24 +453,115 @@ void fn_800385F0(RigidBody* rb, f32 len, f32 frac, f32 radius, f32 mass) {
 }
 
 // .text:0x800387B0 size:0x398
-void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* gravity) {
-    return;
+void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
+    Vec dv;
+    Vec d;
+    Vec acc;
+    RopeNode* node;
+    RopeNode* prev;
+    s32 i;
+    s32 j;
+    f32 stretch;
+    f32 damp;
+    f32 speed;
+    f32 len;
+    f32 fmag;
+    f32 vmag;
+
+    // gravity and external force on the last node
+    for (i = 0; i < count; i++) {
+        node = &nodes[i];
+        memset(&node->force, 0, sizeof(Vec));
+        if (node->fixed == 0) {
+            node->force.y = lbl_803CC738 * node->mass;
+        }
+        if (i == count - 1) {
+            PSVECAdd(&node->force, force, &node->force);
+        }
+    }
+
+    // springs between neighbours
+    j = count;
+    while (--j != 0) {
+        node = &nodes[j];
+        prev = &nodes[j - 1];
+        PSVECSubtract(&node->pos, &prev->pos, &d);
+        PSVECSubtract(&node->vel, &prev->vel, &dv);
+        len = PSVECMag(&d);
+        if (lbl_803CC728 != len) {
+            stretch = p->springK * (len - p->restLen);
+            damp = p->damping * (PSVECDotProduct(&dv, &d) / len);
+            PSVECNormalize(&d, &d);
+            PSVECScale(&d, -(stretch + damp), &d);
+            if (node->fixed == 0) {
+                PSVECAdd(&node->force, &d, &node->force);
+            }
+            PSVECScale(&d, lbl_803CC75C, &d);
+            if (prev->fixed == 0) {
+                PSVECAdd(&prev->force, &d, &prev->force);
+            }
+        }
+    }
+
+    // air drag and ground friction
+    for (i = 0; i < count; i++) {
+        node = &nodes[i];
+        if (node->fixed == 0) {
+            memcpy(&dv, &node->vel, sizeof(Vec));
+            memcpy(&d, &node->force, sizeof(Vec));
+            PSVECScale(&d, node->invMass, &d);
+            PSVECScale(&d, p->dt, &d);
+            PSVECAdd(&dv, &d, &dv);
+            memset(&acc, 0, sizeof(Vec));
+            speed = PSVECMag(&dv);
+            if (speed != lbl_803CC728) {
+                PSVECScale(&dv, lbl_803CC75C, &d);
+                PSVECNormalize(&d, &d);
+                PSVECScale(&d, p->drag * (speed * speed), &d);
+                PSVECAdd(&acc, &d, &acc);
+            }
+            if (node->pos.y <= node->floorY && node->force.y < lbl_803CC728) {
+                len = node->force.y * p->friction;
+                if (len < lbl_803CC728) {
+                    len = -len;
+                }
+                memcpy(&d, &node->force, sizeof(Vec));
+                d.y = lbl_803CC728;
+                fmag = PSVECMag(&d);
+                dv.y = lbl_803CC728;
+                vmag = PSVECMag(&dv);
+                if (vmag != lbl_803CC728 || fmag > len) {
+                    if (vmag != lbl_803CC728) {
+                        PSVECNormalize(&dv, &d);
+                    } else {
+                        PSVECNormalize(&d, &d);
+                    }
+                    PSVECScale(&d, -len, &d);
+                    PSVECAdd(&acc, &d, &acc);
+                } else {
+                    PSVECScale(&node->force, lbl_803CC75C, &d);
+                    PSVECAdd(&acc, &d, &acc);
+                }
+            }
+            PSVECAdd(&node->force, &acc, &node->force);
+        }
+    }
 }
 
 // .text:0x80038B48 size:0x188
-void fn_80038B48(RopeParams* p, RopeNode* nodes, s32 count, Vec* gravity) {
+void fn_80038B48(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
     Vec accel;
     Vec g;
     Vec step;
     Vec next;
     RopeNode* node;
-    s32 iter;
     s32 i;
+    s32 iter;
     f32 dtSq;
     f32 damp;
     f32 under;
 
-    PSVECScale(gravity, p->dt, &g);
+    PSVECScale(force, p->dt, &g);
     for (iter = 0; iter < p->iterations; iter++) {
         fn_800387B0(p, nodes, count, &g);
         node = nodes;
@@ -490,7 +581,8 @@ void fn_80038B48(RopeParams* p, RopeNode* nodes, s32 count, Vec* gravity) {
                 under = node->pos.y - node->floorY;
                 if (under < lbl_803CC728) {
                     node->pos.y = node->pos.y - under * p->bounce;
-                    node->prevPos.y = node->prevPos.y - (node->prevPos.y - node->floorY) * p->bounce;
+                    under = node->prevPos.y - node->floorY;
+                    node->prevPos.y = node->prevPos.y - under * p->bounce;
                 }
             }
             node++;
