@@ -397,6 +397,38 @@ void fn_3_9DBE4(void) {
     lbl_3_common_bss_32A94._8A = 0;
 }
 
+// .text:0x0009E078 size:0x2F0
+// Shuffles arr[0..n) in place.
+void fn_3_9E078(s32* arr, s32 n, BOOL useBallRng) {
+    s32 src[20];
+    s32 used[20];
+    s32 i;
+    s32 j;
+    s32 r;
+
+    for (i = 0; i < n; i++) {
+        src[i] = arr[i];
+        used[i] = 0;
+    }
+    for (i = n - 1; i >= 0; i--) {
+        if (useBallRng) {
+            r = BallRandomInt(i + 1);
+        } else {
+            r = SimRandomInt(i + 1);
+        }
+        for (j = 0; j < n; j++) {
+            if (used[j] == 0) {
+                if (r == 0) {
+                    arr[i] = src[j];
+                    used[j] = 1;
+                    break;
+                }
+                r--;
+            }
+        }
+    }
+}
+
 // .text:0x0009E368 size:0x238
 s32 fn_3_9E368(s32* weights, s32 n) {
     s32 buf[10];
