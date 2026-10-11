@@ -17,6 +17,7 @@ extern s16 lbl_3_data_1C3C[];
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
+void fn_3_1AE44(u8, u16, f32, f32, f32);
 extern u8 lbl_3_data_4884[];
 typedef struct { f32 a, b, c, d; } Ent16;
 extern u8 lbl_8036E548[];
@@ -417,6 +418,7 @@ extern s16 lbl_3_data_1C3C[];
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
+void fn_3_1AE44(u8, u16, f32, f32, f32);
 extern int fn_3_9FB8C(f32 x, f32 y);
 extern int fn_3_9FCA4(s16 a, s16 b);
 
@@ -464,9 +466,63 @@ void fn_3_27860(void) {
 }
 
 // .text:0x00027D68 size:0x28C mapped:0x80666DFC
-void fn_3_27D68(void) {
-    return;
+// NONMATCHING 90%: float regalloc in the distance calc; the d < range test branches the other way (blt into the hit block)
+#if NONMATCHING
+int fn_3_27D68(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 h = *(f32*)(f + 0x148);
+    f32 hi = lbl_3_rodata_B60 + (*(f32*)(f + 0xF4) + h);
+    f32 lo = *(f32*)(f + 0xFC) + h;
+    u8* pt = g_Ball + 0x10;
+    int k;
+    int n;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    for (k = 1, n = 10; n != 0; pt += 16, k++, n--) {
+        if (*(f32*)(pt + 0x360) < *(f32*)(f + 0x70) && *(f32*)(pt + 0x358) > lo && *(f32*)(pt + 0x358) < hi) {
+            dx = *(f32*)f - *(f32*)(pt + 0x354);
+            dz = *(f32*)(f + 8) - *(f32*)(pt + 0x35C);
+            dx = dx * dx;
+            dz = dz * dz;
+            d = dx + dz;
+            SQRT_L(d);
+            if (d < *(f32*)(f + 0xE8)) {
+                if (*(f32*)(g_Ball + k * 16 + 0x370) < *(f32*)(f + 0x70)) {
+                    k -= 2;
+                } else if (*(f32*)(g_Ball + k * 16 + 0x380) < *(f32*)(f + 0x70)) {
+                    k -= 1;
+                }
+                if (k < 0) {
+                    k = 0;
+                }
+                *(s16*)(f + 0x24C) = k;
+                *(s16*)(f + 0x24E) = 0;
+                f[0x252] = 5;
+                f[0x253] = 0;
+                f[0x254] = 0;
+                f[0x255] = 0;
+                f[0x25B] = 0;
+                f[0x259] = 0;
+                f[0x25C] = 0;
+                f[0x25D] = 0;
+                f[0x25E] = 0;
+                f[0x25F] = 0;
+                f[0x264] = 0;
+                f[0x260] = 0;
+                if (k < *(s16*)(g_Ball + 0x1B60)) {
+                    f[0x264] = 1;
+                }
+                g_Ball[0x1BF0] = 0;
+                fn_3_1AE44(3, 0, *(f32*)(g_Ball + k * 16 + 0x354), *(f32*)(g_Ball + k * 16 + 0x358),
+                           *(f32*)(g_Ball + k * 16 + 0x35C));
+                return 1;
+            }
+        }
+    }
+    return 0;
 }
+#endif
 
 // .text:0x00027FF4 size:0x230 mapped:0x80667088
 // NONMATCHING 97%: f2/f5 swapped for fielder z and the 0x70 scale in the segment setup
@@ -3510,6 +3566,7 @@ void fn_3_522E0(void) {
 
 // .text:0x00052560 size:0x17C mapped:0x806915F4
 extern f32 lbl_3_rodata_B60;
+void fn_3_1AE44(u8, u16, f32, f32, f32);
 int fn_3_52560(int i, f32 x, f32 z) {
     u8* f = g_Fielders + i * 0x268;
     f32 d;
@@ -4280,6 +4337,7 @@ void fn_3_59338(void) {
 extern f32 lbl_3_rodata_CC4;
 extern f32 lbl_3_rodata_B24;
 extern f32 lbl_3_rodata_B60;
+void fn_3_1AE44(u8, u16, f32, f32, f32);
 void fn_3_595C4(void) {
     u8* fl;
     u8* f;
