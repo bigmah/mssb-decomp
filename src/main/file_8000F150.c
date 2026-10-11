@@ -176,10 +176,47 @@ void fn_8000FEE8(s32 index) {
     lbl_80366B18.entries[index].state = 0;
 }
 
+// NONMATCHING 99%: two address computations (table/msg slwi) scheduled in the other order
 // .text:0x8000FF04 size:0x1A0
+#if NONMATCHING
 s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSize) {
-    return 0;
+    s32 i;
+    TextEntry* e;
+    for (i = 0; i < 30; i++) {
+        if (lbl_80366B18.entries[i].state == 0) {
+            break;
+        }
+    }
+    if (i >= 30) {
+        return 0;
+    }
+    e = &lbl_80366B18.entries[i];
+    e->text = lbl_80366B18.tables[table]->msgs[msg];
+    e->x = x;
+    e->y = y;
+    e->layer = layer;
+    e->state = 2;
+    e->fontSize = fontSize;
+    e->color = color;
+    e->numbers[0] = 0;
+    e->numbers[1] = 0;
+    e->numbers[2] = 0;
+    e->numbers[3] = 0;
+    e->charSpacing = 0;
+    e->lineSpacing = 2;
+    e->hAlign = 0;
+    e->vAlign = 0;
+    e->mtx = NULL;
+    e->charLimit = -1;
+    e->typeSpeed = 0;
+    e->typeTimer = 0;
+    e->finished = 0;
+    e->_33 = 0;
+    e->_35 = 0;
+    e->_36 = 0;
+    return i;
 }
+#endif
 
 // .text:0x800100A4 size:0x3F4
 void fn_800100A4(s32 x, s32 y, u16 s, u16 t, u16 w, u32 color, s32 kind, MtxPtr mtx) {
