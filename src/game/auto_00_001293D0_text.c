@@ -5,6 +5,7 @@
 #include "static/GameSettings.h"
 #include "main/menu_globals.h"
 #include "game/rep_1838.h"
+#include "main/file_800527C4.h" // MenuDef
 
 extern HudTask* lbl_803CC1B8;
 extern LayoutSlot lbl_80371C30[];
@@ -14,6 +15,10 @@ extern u8 lbl_3_common_bss_37400[];
 extern u8 lbl_3_data_9FB4[];
 extern u8 lbl_3_data_9ECC[];
 extern u8 lbl_3_data_9D94[];
+extern u8 lbl_3_data_A598[];
+extern u16 lbl_3_data_A8B8[]; // anim frames for the stadium cursor slots
+extern u16 lbl_3_data_A9E8[]; // [stadium]: name anim
+extern MenuDef lbl_800FEF70[];
 extern u16 lbl_3_data_9EB4[2][2]; // [mode]: anim frame to wait for (intro, outro)
 extern u8 lbl_3_data_9EBC[2][8]; // [mode][slot]: digit/anim frames
 extern u8 lbl_3_data_9208[];
@@ -853,4 +858,44 @@ void fn_3_12A3F0(void) {
     return;
 remove:
     fn_800B0A14_removeQueue(fn_80034CEC(task));
+}
+
+// fn_3_129A18, size:0x270
+void fn_3_129A18(void) {
+    HudTask* task = lbl_803CC1B8;
+    s32 i;
+    s32 n;
+
+    fn_80034E20(task, lbl_3_data_A598);
+    lbl_80371C30[task->baseIdx].obj->_5C = 0;
+    task->state = 0;
+    if ((s8)g_Minigame._19E1 >= 5) {
+        task->state = (s8)g_Minigame._19E1 - 4;
+    }
+    for (i = 0, n = 0; i < 7; i++) {
+        lbl_80371C30[task->baseIdx + 14 + i].obj->_64 = lbl_3_data_A9E8[lbl_3_data_21268[i]];
+        if (g_d_GameSettings._12 < 1 && lbl_3_data_21268[i] == 6) {
+            lbl_80371C30[task->baseIdx + 14 + i].obj->_64 = lbl_3_data_A9E8[0];
+        } else if (g_d_GameSettings._12 < 2 && lbl_3_data_21268[i] == 7) {
+            lbl_80371C30[task->baseIdx + 14 + i].obj->_64 = lbl_3_data_A9E8[0];
+        }
+        if (i < task->state) {
+            lbl_80371C30[task->baseIdx + i].obj->_5C = lbl_3_data_A8B8[0] << 16;
+        } else if (n >= 5) {
+            lbl_80371C30[task->baseIdx + i].obj->_5C = lbl_3_data_A8B8[6] << 16;
+        } else {
+            n++;
+            lbl_80371C30[task->baseIdx + i].obj->_5C = lbl_3_data_A8B8[n] << 16;
+        }
+    }
+    lbl_3_common_bss_32724[0xDA] = 0;
+    lbl_3_common_bss_32724[0xBB] = 0;
+    lbl_8034E978.menu = 0x33;
+    lbl_8034E978.prevTrack = lbl_8034E978.track;
+    lbl_8034E978.track = lbl_800FEF70[0x33].track;
+    lbl_3_common_bss_32724[0xBA] = lbl_3_common_bss_32724[0xB9];
+    lbl_3_common_bss_32724[0xBD] = 0;
+    task->timer = 1;
+    task->_1E = 0;
+    lbl_803CC1B8->func = fn_3_12955C;
 }
