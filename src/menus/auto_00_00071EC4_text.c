@@ -14,7 +14,7 @@ extern u8 lbl_803CBBC4[];
 extern u8 lbl_803CBCD8[];
 extern u8 lbl_80371C30[];
 extern u8 lbl_2_bss_F468[];
-extern void fn_2_74F40(u8* o, s32 index);
+void fn_2_74F40(u8* o, s32 index);
 extern u8* lbl_2_bss_1A8248[];
 extern u8* lbl_2_bss_1A824C[];
 extern u8 lbl_803C66B0[];
@@ -4059,5 +4059,92 @@ void fn_2_845A8(void) {
             }
         }
     }
+}
+#endif
+
+extern BOOL fn_80067B40(s32 unused, u8 charId, u8 flag);
+
+// fn_2_74F40, size:0xC18
+// Refresh the selected character's stat bars (fn_2_74E14) and ability icon.
+// NONMATCHING 85%: same calls and stores; fn_2_74E14 inlined with different register allocation, BOOL test codegen differs
+#if NONMATCHING
+void fn_2_74F40(u8* o, s32 index) {
+    s32 c;
+    u8* stats;
+    if (*(u16*)(lbl_803CBBCC[0] + 2) == 9 || lbl_803C66B0[0x5D + index] == 0xB) {
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            c = lbl_800FE5D4[F410_S32(0x10 + index * 4)];
+        } else {
+            c = lbl_800FE930[lbl_80361B20[0xF4] * 6 + F410_S32(0x10)];
+        }
+        stats = lbl_8034E9A0 + (c / 9) * 0x5A0 + (c % 9) * 0xA0;
+        fn_2_74E14(o, index, stats[0x38], 1);
+        fn_2_74E14(o, index, stats[0x39], 3);
+        fn_2_74E14(o, index, stats[0x37], 0);
+        fn_2_74E14(o, index, stats[0x3A], 2);
+        MN_SLOT(0xAE + BASE(o) + index)->flags &= ~2;
+        return;
+    }
+    if (lbl_2_bss_F468[0x41 + index] != 0) {
+        MN_SLOT(0xB2 + BASE(o) + index)->flags &= ~2;
+        c = F410_S32(0x20 + index * 4);
+    } else {
+        s32 sel = F468_S32(index * 4);
+        if (sel != 9 && sel != 10) {
+            s32 j;
+            for (j = 0; j < 9; j++) {
+                if (TEAM_TBL->pos[index][j] == (s8)sel) {
+                    c = TEAM_TBL->roster[index][j];
+                }
+            }
+        } else {
+            c = -1;
+        }
+    }
+    if (c != -1 && fn_80067B40(0, c, 2) && g_d_GameSettings.GameModeSelected != 5) {
+        MN_SLOT(0xB2 + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0xB2 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0xB2 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xAE + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0xAE + BASE(o) + index)->frame = fn_2_74DB8(c) << 16;
+    } else {
+        MN_SLOT(0xB2 + BASE(o) + index)->flags &= ~2;
+        if (F468_S32(index * 4) != 9 && F468_S32(index * 4) != 10) {
+            MN_SLOT(0xAE + BASE(o) + index)->flags |= 2;
+            MN_SLOT(0xAE + BASE(o) + index)->frame = 0;
+        }
+    }
+    MN_SLOT(0xAC + BASE(o) + index)->flags |= 2;
+    {
+        u8 con;
+        u8 spd;
+        u8 pwr;
+        u8 fld;
+        if (c >= 0 && c < 0x36) {
+            stats = lbl_8034E9A0 + (c / 9) * 0x5A0 + (c % 9) * 0xA0;
+            con = stats[0x37];
+            spd = stats[0x39];
+            pwr = stats[0x38];
+            fld = stats[0x3A];
+            MN_SLOT(0xB0 + BASE(o) + index)->flags |= 2;
+            MN_SLOT(0xB0 + BASE(o) + index)->frame = c << 16;
+            MN_SLOT(0xAC + BASE(o) + index)->frame = 0;
+            MN_SLOT(0xAC + BASE(o) + index)->state = 1;
+        } else {
+            pwr = 0;
+            fld = 0;
+            spd = 0;
+            con = 0;
+            MN_SLOT(0xB0 + BASE(o) + index)->flags &= ~2;
+        }
+        if (c >= 0 && c < 0x36) {
+            fn_2_74E14(o, index, pwr, 1);
+            fn_2_74E14(o, index, spd, 3);
+            fn_2_74E14(o, index, con, 0);
+            fn_2_74E14(o, index, fld, 2);
+            return;
+        }
+    }
+    MN_SLOT(0x97 + BASE(o) + index)->flags &= ~2;
 }
 #endif
