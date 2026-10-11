@@ -392,7 +392,17 @@ void fn_800A93AC(s32 result, DVDFileInfo* fileInfo) {
 
 // .text:0x800A9424 size:0x84
 void fn_800A9424(s32 result, DVDFileInfo* fileInfo) {
-    return;
+    StreamTrack* track;
+
+    AISetStreamVolLeft(lbl_803CC135);
+    AISetStreamVolRight(lbl_803CC134);
+    AIResetStreamSampleCount();
+    AISetStreamTrigger(lbl_803CC138);
+    AISetStreamPlayState(1);
+    DVDStopStreamAtEndAsync(&lbl_802EF290, NULL);
+    track = lbl_803CC154;
+    lbl_803CC148 = STREAM_STATE_PLAY;
+    STREAM_NOTIFY(track, STREAM_EVENT_PLAY);
 }
 
 // fn_800A94A8, size:0x1C
