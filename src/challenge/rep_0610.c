@@ -7,7 +7,9 @@ static u8 ch_68FC[0x30];
 static u8 ch_fill68F8[0x4];
 static u8 ch_67E0[0x118];
 static s32 ch_67B8[0xA];
-static u8 ch_fill60E4[0x6D4];
+static u8 ch_fill60EC[0x6CC];
+static u8* ch_60E8;
+static u8 ch_fill60E4[0x4];
 static u8* ch_60E0;
 static u8 ch_fill5F74[0x16C];
 static u8 ch_5F73;
@@ -1399,7 +1401,7 @@ extern Vec lbl_1_data_AD24;
 extern const f32 lbl_1_rodata_7448;
 extern const f32 lbl_1_rodata_744C;
 extern const f32 lbl_1_rodata_7450;
-extern void makeLookAtMatrix(void*, void*, Vec*, void*);
+extern void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
 
 // .text:0x11D00 size:0x208
 void fn_1_11D00(u8* camera) {
@@ -1428,7 +1430,7 @@ void fn_1_11D00(u8* camera) {
     PSMTXMultVec(rot, &pos, &pos);
     PSVECAdd(&pos, (Vec*)(camera + 0xFC), (Vec*)(camera + 0x108));
     PSMTXMultVec(rot, &lbl_1_data_AD24, &pos);
-    makeLookAtMatrix(camera, camera + 0x108, &pos, camera + 0xFC);
+    makeLookAtMatrix((f32(*)[4])camera, (Vec*)(camera + 0x108), &pos, (Vec*)(camera + 0xFC));
 }
 
 typedef struct { u8 r, g, b, a; } ChallengeLightColor;
@@ -1520,7 +1522,7 @@ void fn_1_11F08(u8* camera) {
     *(f32*)(camera + 0xFC) += *(f32*)(camera + 0x108);
     *(f32*)(camera + 0x100) += *(f32*)(camera + 0x10C);
     *(f32*)(camera + 0x104) += *(f32*)(camera + 0x110);
-    makeLookAtMatrix(camera, camera + 0x108, &lbl_1_data_AD18, camera + 0xFC);
+    makeLookAtMatrix((f32(*)[4])camera, (Vec*)(camera + 0x108), &lbl_1_data_AD18, (Vec*)(camera + 0xFC));
     view = (u8*)fn_80052768_getCamera(0);
     memcpy(view + 0x70, camera + 0x108, 0xC);
     memcpy(view + 0x7C, camera + 0xFC, 0xC);
@@ -2092,6 +2094,54 @@ void fn_1_12820(void* tableArg, void* matrixArg) {
         PSMTXTrans(transform, *(f32*)(row + 0xC38), *(f32*)(row + 0xC3C), *(f32*)(row + 0xC40));
         PSMTXConcat(matrix, transform, transform);
         fn_800BDA94(object, transform);
+    }
+}
+#endif
+
+struct GameActor;
+extern void fn_800B2B74(struct GameActor* actor, u16 bone);
+extern u16 lbl_1_data_F4E8[][2];
+extern void fn_1_CDC8(void);
+
+// .text:0xD13C size:0x1B4
+// NONMATCHING ~85%: scheduling/register differences around the row pointer and flag compare
+#if NONMATCHING
+void fn_1_D13C(void) {
+    u16 bones[2];
+    u8* row = lbl_8036E548 + ch_5F73 * 0x27C + 0xC04;
+    s32 kind = 0; // uninitialized in the original (case 39 / default keep a stale register)
+    s32 i;
+    u16* bone;
+    u16* ids;
+    u8* queue;
+
+    queue = fn_800B0A5C_insertQueue((void*)fn_1_CDC8, (u16)(*(u16*)(lbl_803CC1B8[0] + 0x12) + 1));
+    ch_60E8 = queue;
+    *(s16*)(queue + 0x10) = (ch_6940 + ch_5F73 * 0x48)[0x44];
+    switch ((ch_68FC + ch_5F73)[0x40]) {
+    case 38:
+        kind = 0;
+        break;
+    case 18:
+        kind = 3;
+        break;
+    case 40:
+        kind = 1;
+        break;
+    case 41:
+        kind = 2;
+        break;
+    case 39:
+        break;
+    }
+    row[0x25A] = ((ch_6940 + ch_5F73 * 0x48)[0x44] < 2) == (ch_5F69 == 0);
+    ids = (u16*)(lbl_8036E548 + ch_5F73 * 0x27C + 0xD66);
+    bone = bones;
+    bone[row[0x25A]] = ids[lbl_1_data_F4E8[kind][0]];
+    bone[row[0x25A] == 0] = ids[lbl_1_data_F4E8[kind][1]];
+    for (i = 0; i < 2; i++) {
+        fn_800B2B74(*(struct GameActor**)(*(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34), *bone);
+        bone++;
     }
 }
 #endif
