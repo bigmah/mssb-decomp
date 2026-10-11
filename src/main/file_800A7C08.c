@@ -4,6 +4,7 @@
 #include "Dolphin/vi.h"
 #include "Dolphin/card.h"
 #include "Dolphin/dvd.h"
+#include "Dolphin/ai.h"
 
 extern OSThread* GXSetCurrentGXThread(void);
 extern s32 OSSignalSemaphore(OSSemaphore* sem);
@@ -144,19 +145,107 @@ void fn_800A84C4(u32 retraceCount) {
     }
 }
 
+extern void (*lbl_803CC128)(void); // called once the stream has been shut down
+extern volatile u32 lbl_803CC12C;           // stream error reported; skip the next play-address poll
+extern volatile u32 lbl_803CC130;
+extern volatile u8 lbl_803CC134;            // right volume
+extern volatile u8 lbl_803CC135;            // left volume
+extern volatile u32 lbl_803CC138;           // AI stream trigger interval
+extern volatile u32 lbl_803CC13C;           // last stream play address
+extern volatile u32 lbl_803CC140;           // playlist mode (STREAM_MODE_*)
+extern volatile u32 lbl_803CC144;           // state saved while skipping tracks
+extern volatile u32 lbl_803CC148;           // STREAM_STATE_*
+extern StreamTrack* lbl_803CC14C;  // playlist tail
+extern StreamTrack* lbl_803CC150;  // playlist head
+extern StreamTrack* lbl_803CC154;  // current track
+
+extern DVDCommandBlock lbl_802EF140;
+extern DVDCommandBlock lbl_802EF170;
+extern DVDCommandBlock lbl_802EF1A0;
+extern DVDCommandBlock lbl_802EF1D0;
+extern DVDCommandBlock lbl_802EF200;
+extern DVDCommandBlock lbl_802EF230;
+extern DVDCommandBlock lbl_802EF260;
+extern DVDCommandBlock lbl_802EF290;
+
+extern GlobalState6CF8 lbl_803C6CF8;
+
+extern s32 ConvertPathToEntryNum(void* file);
+extern BOOL fn_800A750C(void* file, DVDFileInfo* fileInfo);
+extern BOOL DVDPrepareStreamAsync(DVDFileInfo* fileInfo, u32 length, u32 offset, DVDCallback callback);
+extern BOOL DVDStopStreamAtEndAsync(DVDCommandBlock* block, DVDCBCallback callback);
+extern BOOL DVDGetStreamErrorStatusAsync(DVDCommandBlock* block, DVDCBCallback callback);
+extern BOOL DVDGetStreamPlayAddrAsync(DVDCommandBlock* block, DVDCBCallback callback);
+
+// Shared by fn_800A8518 and fn_800A86B4 (inlined into both).
+static inline s32 StreamCommand(s32 cmd) {
+    StreamTrack* track;
+    BOOL enabled;
+
+    if (lbl_803CC154 != NULL) {
+        if (lbl_803CC148 == STREAM_STATE_BUSY) {
+            return 0;
+        }
+        switch (cmd) {
+        case 1:
+            fn_800A88D8(STREAM_STATE_PLAY);
+            break;
+        case 2:
+            fn_800A88D8(STREAM_STATE_PAUSE);
+            break;
+        case 3:
+            fn_800A88D8(STREAM_STATE_STOP);
+            break;
+        case 4:
+            if (lbl_803CC148 != STREAM_STATE_BUSY && lbl_803CC154 != NULL) {
+                lbl_803CC144 = lbl_803CC148;
+                lbl_803CC148 = STREAM_STATE_BUSY;
+                if (lbl_803CC144 == STREAM_STATE_PLAY) {
+                    AISetStreamVolLeft(0);
+                    AISetStreamVolRight(0);
+                    DVDCancelStreamAsync(&lbl_802EF170, fn_800A9034);
+                } else {
+                    enabled = OSDisableInterrupts();
+                    if (lbl_803CC154 != NULL && (track = lbl_803CC154->next) != NULL) {
+                        lbl_803CC154 = track;
+                    }
+                    OSRestoreInterrupts(enabled);
+                    lbl_803CC148 = lbl_803CC144;
+                }
+            }
+            break;
+        case 5:
+            if (lbl_803CC148 != STREAM_STATE_BUSY && lbl_803CC154 != NULL) {
+                lbl_803CC144 = lbl_803CC148;
+                lbl_803CC148 = STREAM_STATE_BUSY;
+                if (lbl_803CC144 == STREAM_STATE_PLAY) {
+                    AISetStreamVolLeft(0);
+                    AISetStreamVolRight(0);
+                    DVDCancelStreamAsync(&lbl_802EF140, fn_800A8FDC);
+                } else {
+                    enabled = OSDisableInterrupts();
+                    if (lbl_803CC154 != NULL && (track = lbl_803CC154->prev) != NULL) {
+                        lbl_803CC154 = track;
+                    }
+                    OSRestoreInterrupts(enabled);
+                    lbl_803CC148 = lbl_803CC144;
+                }
+            }
+            break;
+        }
+    }
+    return 1;
+}
+
 // .text:0x800A8518 size:0x19C
-void fn_800A8518(void) {
-    return;
+s32 fn_800A8518(s32 cmd) {
+    return 0;
 }
 
 // .text:0x800A86B4 size:0x1B0
-void fn_800A86B4(void) {
+void fn_800A86B4(s32 cmd) {
     return;
 }
-
-extern u8 lbl_803CC135;
-
-extern u8 lbl_803CC134;
 
 // fn_800A8864, size:0x14
 u16 fn_800A8864(void) {
@@ -166,18 +255,17 @@ u16 fn_800A8864(void) {
 }
 
 // .text:0x800A8878 size:0x48
-void fn_800A8878(void) {
-    return;
+void fn_800A8878(u8 left, u8 right) {
+    lbl_803CC135 = left;
+    lbl_803CC134 = right;
+    if (lbl_803CC148 == STREAM_STATE_PLAY) {
+        AISetStreamVolLeft(left);
+        AISetStreamVolRight(right);
+    }
 }
 
-extern u32 lbl_803CC140;
-
-extern u32 lbl_803CC148;
-
-extern u32 lbl_803CC154;
-
 // fn_800A88C0, size:0x8
-u32 fn_800A88C0(void) {
+StreamTrack* fn_800A88C0(void) {
     return lbl_803CC154;
 }
 
@@ -192,11 +280,9 @@ u32 fn_800A88D0(void) {
 }
 
 // .text:0x800A88D8 size:0x1D8
-void fn_800A88D8(void) {
+void fn_800A88D8(u32 state) {
     return;
 }
-
-extern u32 lbl_803CC140;
 
 // fn_800A8AB0, size:0x8
 void fn_800A8AB0(u32 value) {
@@ -204,23 +290,23 @@ void fn_800A8AB0(u32 value) {
 }
 
 // .text:0x800A8AB8 size:0xC0
-void fn_800A8AB8(void) {
+void fn_800A8AB8(void (*onShutdown)(void)) {
     return;
 }
 
 // .text:0x800A8B78 size:0x144
-void fn_800A8B78(void) {
-    return;
+s32 fn_800A8B78(StreamTrack* track) {
+    return 0;
 }
 
 // .text:0x800A8CBC size:0x174
-void LoadFile(void) {
-    return;
+s32 LoadFile(void* file, StreamTrack* track, u32 flags, void (*callback)(u32 event), u32 options) {
+    return 0;
 }
 
 // .text:0x800A8E30 size:0x138
-void fn_800A8E30(void) {
-    return;
+s32 fn_800A8E30(void* file, StreamTrack* track, u32 flags, void (*callback)(u32 event)) {
+    return 0;
 }
 
 // .text:0x800A8F68 size:0x74
@@ -229,52 +315,48 @@ void fn_800A8F68(void) {
 }
 
 // .text:0x800A8FDC size:0x58
-void fn_800A8FDC(void) {
+void fn_800A8FDC(s32 result, DVDCommandBlock* block) {
     return;
 }
 
 // .text:0x800A9034 size:0x58
-void fn_800A9034(void) {
+void fn_800A9034(s32 result, DVDCommandBlock* block) {
     return;
 }
 
 // .text:0x800A908C size:0x58
-void fn_800A908C(void) {
+void fn_800A908C(s32 result, DVDCommandBlock* block) {
     return;
 }
 
 // .text:0x800A90E4 size:0x84
-void fn_800A90E4(void) {
+void fn_800A90E4(s32 result, DVDCommandBlock* block) {
     return;
 }
 
 // .text:0x800A9168 size:0x48
-void fn_800A9168(void) {
+void fn_800A9168(u32 count) {
     return;
 }
 
 // .text:0x800A91B0 size:0x1FC
-void fn_800A91B0(void) {
+void fn_800A91B0(s32 result, DVDCommandBlock* block) {
     return;
 }
 
 // .text:0x800A93AC size:0x78
-void fn_800A93AC(void) {
+void fn_800A93AC(s32 result, DVDFileInfo* fileInfo) {
     return;
 }
 
 // .text:0x800A9424 size:0x84
-void fn_800A9424(void) {
+void fn_800A9424(s32 result, DVDFileInfo* fileInfo) {
     return;
 }
 
-extern u32 lbl_803CC13C;
-
-extern u32 lbl_803CC12C;
-
 // fn_800A94A8, size:0x1C
-void fn_800A94A8(u8 flag) {
-    if (flag == 0) {
+void fn_800A94A8(s32 result, DVDCommandBlock* block) {
+    if ((u8)result == 0) {
         lbl_803CC12C = 1;
         lbl_803CC13C = 0;
     }
