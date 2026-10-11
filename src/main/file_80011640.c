@@ -560,8 +560,18 @@ void fn_8001CE74(void) {
 }
 
 // .text:0x8001D074 size:0x5C
-void fn_8001D074(void) {
-    return;
+void fn_8001D074(s32 index, s32 enable) {
+    CharActor* actor = lbl_8036E548.active[index];
+    CharModel* model;
+
+    if (actor != NULL) {
+        model = lbl_8036E548.slots[actor->modelIndex].model;
+        if (enable != 0) {
+            model->flags |= 4;
+        } else {
+            model->flags &= 0xFB;
+        }
+    }
 }
 
 // .text:0x8001D0D0 size:0x40
