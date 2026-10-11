@@ -72,10 +72,8 @@ typedef struct BallBounceParams {
     /*0x10*/ f32 rollFriction;
 } BallBounceParams; // size: 0x14
 extern BallBounceParams lbl_3_data_4388[];
-// 6FA28 and 6FB98 share this block (inlined). Both are ~55 diff lines: only f-reg/GPR allocation differs
-// (orig vy=f4/vx=f6, newY=f2, post-call Ball base r6; table lookup uses r4 base + r0 offset). 6FB98's tail matches.
+// 6FA28 and 6FB98 share this block (inlined).
 static inline void ballStep(void) {
-    BallBounceParams* p;
     f32 v;
     f32 vy;
     if (g_Ball.pitchHangtimeCounter < 0x7FFE) {
@@ -93,21 +91,20 @@ static inline void ballStep(void) {
     g_Ball.pastCoordinates[0].z = g_Ball.AtBat_Contact_BallPos.z;
     g_Ball.physicsSubstruct.velocity.y = g_Ball.physicsSubstruct.velocity.y - g_Ball.physicsSubstruct.gravity;
     fn_3_DBD0();
-    g_Ball.AtBat_Contact_BallPos.y = g_Ball.AtBat_Contact_BallPos.y + g_Ball.physicsSubstruct.velocity.y;
     g_Ball.AtBat_Contact_BallPos.x = g_Ball.AtBat_Contact_BallPos.x + g_Ball.physicsSubstruct.velocity.x;
+    g_Ball.AtBat_Contact_BallPos.y = g_Ball.AtBat_Contact_BallPos.y + g_Ball.physicsSubstruct.velocity.y;
     g_Ball.AtBat_Contact_BallPos.z = g_Ball.AtBat_Contact_BallPos.z + g_Ball.physicsSubstruct.velocity.z;
     if (g_Ball.AtBat_Contact_BallPos.y < g_Ball.groundYForBounces) {
-        p = &lbl_3_data_4388[g_d_GameSettings.StadiumID];
         vy = g_Ball.physicsSubstruct.velocity.y;
-        v = vy * -(vy * lbl_3_rodata_1250 - p->bounceDamp);
+        v = vy * -(vy * lbl_3_rodata_1250 - lbl_3_data_4388[g_d_GameSettings.StadiumID].bounceDamp);
         g_Ball.physicsSubstruct.velocity.y = v;
         g_Ball.physicsSubstruct.velocity.y = -v;
         if (g_Ball.physicsSubstruct.velocity.y < lbl_3_rodata_1254) {
-            g_Ball.physicsSubstruct.velocity.x = g_Ball.physicsSubstruct.velocity.x * p->rollFriction;
-            g_Ball.physicsSubstruct.velocity.z = g_Ball.physicsSubstruct.velocity.z * p->rollFriction;
+            g_Ball.physicsSubstruct.velocity.x = g_Ball.physicsSubstruct.velocity.x * lbl_3_data_4388[g_d_GameSettings.StadiumID].rollFriction;
+            g_Ball.physicsSubstruct.velocity.z = g_Ball.physicsSubstruct.velocity.z * lbl_3_data_4388[g_d_GameSettings.StadiumID].rollFriction;
         } else {
-            g_Ball.physicsSubstruct.velocity.x = g_Ball.physicsSubstruct.velocity.x * p->groundFriction;
-            g_Ball.physicsSubstruct.velocity.z = g_Ball.physicsSubstruct.velocity.z * p->groundFriction;
+            g_Ball.physicsSubstruct.velocity.x = g_Ball.physicsSubstruct.velocity.x * lbl_3_data_4388[g_d_GameSettings.StadiumID].groundFriction;
+            g_Ball.physicsSubstruct.velocity.z = g_Ball.physicsSubstruct.velocity.z * lbl_3_data_4388[g_d_GameSettings.StadiumID].groundFriction;
         }
         g_Ball.AtBat_Contact_BallPos.y = g_Ball.groundYForBounces;
     }
