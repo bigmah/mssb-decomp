@@ -538,7 +538,68 @@ void DoQuatAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
 
 // .text:0x800B7718 size:0x288
 void ANIMTick(struct ANIMPipe* pipe, u8 arg1) {
-    return;
+    KeyFrame* cur;
+    KeyFrame* next;
+    KeyFrame* frame;
+    f32 scale;
+
+    if (pipe == NULL || pipe->currentTrack == NULL) {
+        return;
+    }
+
+    ANIMGetKeyFrameFromTrack(pipe->currentTrack, pipe->time, &cur, &next, &pipe->keyFrameCache);
+
+    if (pipe->currentTrack->animType & ANIM_MTX) {
+        frame = cur;
+        scale = 1.0f / (f32)(1 << (pipe->currentTrack->quantizeInfo & 0xF));
+        ((MtxPtr)frame->setting)[0][0] *= scale;
+        ((MtxPtr)frame->setting)[0][1] *= scale;
+        ((MtxPtr)frame->setting)[0][2] *= scale;
+        ((MtxPtr)frame->setting)[0][3] *= scale;
+        ((MtxPtr)frame->setting)[1][0] *= scale;
+        ((MtxPtr)frame->setting)[1][1] *= scale;
+        ((MtxPtr)frame->setting)[1][2] *= scale;
+        ((MtxPtr)frame->setting)[1][3] *= scale;
+        ((MtxPtr)frame->setting)[2][0] *= scale;
+        ((MtxPtr)frame->setting)[2][1] *= scale;
+        ((MtxPtr)frame->setting)[2][2] *= scale;
+        ((MtxPtr)frame->setting)[2][3] *= scale;
+        CTRLSetMatrix(pipe->control, (MtxPtr)frame->setting);
+        return;
+    }
+
+    if (pipe->currentTrack->animType & ANIM_SCALE) {
+        DoScaleAnimation(pipe, cur, next, arg1);
+    }
+    if (pipe->currentTrack->animType & ANIM_ROT_QUAT) {
+        DoQuatAnimation(pipe, cur, next);
+    } else if (pipe->currentTrack->animType & ANIM_ROT_EULER) {
+        DoEulerAnimation(pipe, cur, next);
+    }
+    if (pipe->currentTrack->animType & ANIM_TRANS) {
+        DoTranslationAnimation(pipe, cur, next);
+    }
+
+    pipe->prevTime = pipe->time;
+    if (pipe->forward == 1) {
+        pipe->time += pipe->speed;
+        if (pipe->time > pipe->currentTrack->animTime) {
+            if (pipe->loop) {
+                pipe->time -= pipe->currentTrack->animTime;
+            } else {
+                pipe->time = pipe->currentTrack->animTime;
+            }
+        }
+    } else {
+        pipe->time -= pipe->speed;
+        if (pipe->time < 0.0f) {
+            if (pipe->loop) {
+                pipe->time += pipe->currentTrack->animTime;
+            } else {
+                pipe->time = 0.0f;
+            }
+        }
+    }
 }
 
 // .text:0x800B79A0 size:0x30
