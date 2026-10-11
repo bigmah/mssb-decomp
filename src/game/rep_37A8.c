@@ -372,9 +372,71 @@ static inline f32 sqrt37A8(f32 x) {
 }
 
 // Frames until the nearest incoming ball reaches player i's fielder, 0 if one is already in reach, -1 if none.
+// NONMATCHING 90.9%: one-register shift (r10->r9) throughout and the initial loop branch; logic matches
+#if NONMATCHING
 s32 fn_3_142570(s8 i) {
-    return 0;
+    u8* f;
+    MgBall* b;
+    f32 reach;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 v;
+    s32 best;
+    s32 t;
+    u8 found;
+    s8 j;
+    u8* g;
+    s16* tm;
+    s16 lim;
+
+    f = g_Fielders + (s8)g_Minigame[i + 0x18F8] * 0x268;
+    reach = lbl_3_data_21E24[2] + lbl_3_data_47BC[f[0x1C9]];
+    best = 10000;
+    found = 0;
+    j = 0;
+    do {
+        b = &((MgBallView*)g_Minigame)->ball[j];
+        if (b->used != 0) {
+            dz = *(f32*)(f + 0x8) - b->pos.z;
+            dx = *(f32*)(f + 0x0) - b->pos.x;
+            d = sqrt37A8(dx * dx + dz * dz);
+            if (d < reach) {
+                return 0;
+            }
+            dx /= d;
+            dz /= d;
+            v = sqrt37A8(b->vel.x * b->vel.x + b->vel.z * b->vel.z);
+            if (dx * (b->vel.x / v) + dz * (b->vel.z / v) >= lbl_3_rodata_3858) {
+                t = (d - reach) / v;
+                if (t < best) {
+                    best = t;
+                }
+                found = 1;
+            }
+        }
+        j++;
+    } while (j < 40);
+    g = g_Minigame;
+    tm = (s16*)g_Minigame;
+    lim = *(s16*)(lbl_3_data_21E68 + 0x2E);
+    for (j = 0; j < 50; j++, g++, tm++) {
+        if (g[0x193A] == 6 && g[0x1B84] == 5 && i == -1 - (s8)g[0x1BE8]) {
+            t = lim - tm[0xBE4];
+            if (t >= 0) {
+                if (t < best) {
+                    best = t;
+                }
+                found = 1;
+            }
+        }
+    }
+    if (found) {
+        return best;
+    }
+    return -1;
 }
+#endif
 
 // .text:0x001428F0 size:0x328 mapped:0x80781984
 
