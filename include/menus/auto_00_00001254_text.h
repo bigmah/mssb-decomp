@@ -3,6 +3,17 @@
 
 #include "mssbTypes.h"
 
+// Character table entry (lbl_800E8558); CharTableEntry in main/file_8004C5F8.h,
+// which declares fn_800506E8 with an s8 owner while menus calls it with an int.
+typedef struct MenuCharEntry {
+    /*0x0*/ u8 _0;
+    /*0x1*/ u8 id;
+    /*0x2*/ u8 lockId; // compared against lbl_803CB748[]
+    /*0x3*/ u8 _3;
+    /*0x4*/ u8 _4;
+    /*0x5*/ u8 _5;
+} MenuCharEntry;
+
 // Per-port controller state (lbl_803C77B8); same layout as PadState in main/file_800A7C08.h,
 // which can't be included next to UnknownHomes_Static.h.
 typedef struct MenuPad {
@@ -114,5 +125,7 @@ s32 fn_2_14F8(s32 a, s32 b);
 void fn_2_A1A0(s32 count, s32 team);
 
 void fn_2_1A88(void);
+
+void fn_2_348C(void);
 
 #endif

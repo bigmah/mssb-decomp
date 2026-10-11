@@ -5,6 +5,8 @@
 extern void fn_800625A4(u8, s32);
 
 extern u8 lbl_803297E0[];
+extern u8 lbl_803CB748[];
+extern MenuCharEntry lbl_800E8558[54];
 extern void fn_2_2FC0(u8, s32, s32);
 
 extern void fn_2_7DDC(void);
@@ -32,6 +34,7 @@ extern MenuEntrySlot lbl_80371C30[];
 extern u8 lbl_2_bss_100B4;
 extern u8 lbl_2_bss_F410[];
 extern u8 lbl_800FDE84[];
+extern void fn_800506E8(s32, s32, s32);
 extern void fn_80050138(s32, s32, s32, s32, s32, s32);
 extern u8 lbl_80353B98[];
 extern u8 lbl_80354720[];
@@ -39,7 +42,6 @@ extern u8 lbl_803CB8D0[];
 extern u8 lbl_800E8754[];
 extern s16 randRange_FUN_80042bf0(s32, s32);
 extern u8 lbl_80109038[];
-extern void fn_800506E8(s32, s32, s32);
 extern void fn_80067B40(s32, u8, s32);
 extern u8 lbl_80108EDC[];
 extern u8 inMemRoster[];
@@ -992,5 +994,20 @@ void fn_2_1A88(void) {
     }
     while (n < 4) {
         ((s8*)lbl_8034E9A0)[0x46F8 + n++] = -1;
+    }
+}
+
+// fn_2_348C, size:0x144
+void fn_2_348C(void) {
+    s32 i;
+    s32 j;
+    for (i = 0; i < 6; i++) {
+        s32 locked = g_d_GameSettings._1A[i] == 0;
+        for (j = 0; j < 0x36; j++) {
+            if (lbl_803CB748[i] == lbl_800E8558[j].lockId) {
+                lbl_8034E9A0[0x4757 + j] = locked;
+            }
+        }
+        lbl_803CB748[i] = lbl_803CB748[i];
     }
 }
