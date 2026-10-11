@@ -155,9 +155,55 @@ void fn_800245EC(Mtx44 proj, Mtx view, Vec* points, f32* out, s32 count, s32 ySi
 #endif
 
 // .text:0x800246D4 size:0x110
-void fn_800246D4(void) {
-    return;
+// Sort `count` elements of `size` bytes from src into dst (binary insertion sort, stable).
+// NONMATCHING 98%: saved-register assignment differs; same instructions
+#if NONMATCHING
+void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count) {
+    s32 mid;
+    s32 rest;
+    s32 cmp;
+    s32 hi;
+    s32 lo;
+    u8* buf;
+    s32 total;
+    s32 n;
+    s32 off;
+    s32 i;
+
+    total = size * count;
+    buf = fn_800ACF34(0x20, total);
+    i = count;
+    n = 0;
+
+    while (i-- != 0) {
+        hi = n;
+        lo = 0;
+        while (lo != hi) {
+            mid = lo + (hi - lo) / 2;
+            cmp = compare(src, buf + mid * size);
+            if (cmp == 0) {
+                lo = mid;
+                break;
+            }
+            if (cmp < 0) {
+                hi = mid;
+            } else {
+                lo = mid + 1;
+            }
+        }
+        off = lo * size;
+        rest = n - lo;
+        if (rest != 0) {
+            memmove(buf + off + size, buf + off, rest * size);
+        }
+        memcpy(buf + off, src, size);
+        src += size;
+        n++;
+    }
+    memcpy(dst, buf, total);
+    fn_800ACF14(buf);
 }
+#endif
 
 // .text:0x800247E4 size:0x5C
 void fn_800247E4(void) {
