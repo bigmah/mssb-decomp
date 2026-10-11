@@ -2447,3 +2447,82 @@ void fn_2_A6E0(void) {
     }
 }
 #endif
+
+// NONMATCHING 60%: only computes colours/slots into locals (the draw calls that used them
+// are compiled out), so it has no side effects; kept as a readable reconstruction.
+#if NONMATCHING
+// fn_2_95D8, size:0x4F4
+void fn_2_95D8(void) {
+    u32 color[2];
+    s8 slot[2][9];
+    s8 used[0x36];
+    s32 t;
+    s32 i;
+    s32 j;
+    s32 sel;
+    s32 cap;
+    s32 n;
+    if (*(u16*)(lbl_803CBBCC[0] + 4) < 4) {
+        for (t = 0; t < 2; t++) {
+            sel = (t == 0) ? ((s32*)lbl_2_bss_F468)[t] : ((s32*)lbl_2_bss_F468)[t] - 10;
+            color[t] = (t == 0) ? 0xFF0F : 0xF00F;
+            for (i = 0; i < 9; i++) {
+                for (j = 0; j < 9; j++) {
+                    if (i == (s8)lbl_80354720[t * 0x24 + j * 4 + 1]) {
+                        break;
+                    }
+                }
+                if (g_d_GameSettings.GameModeSelected != 5 || t == 0) {
+                    cap = *(s32*)(lbl_8034E9A0 + t * 4 + 0x46E0);
+                } else {
+                    cap = (s8)starMissionCompletionTracker[0x441F];
+                }
+                if ((s8)lbl_803C6724[t * 9 + i + 2] == cap) {
+                    color[t] = 0x88FF;
+                } else if (i == sel) {
+                    color[t] = 0xFF0F;
+                } else {
+                    color[t] = 0xFFFF;
+                }
+            }
+        }
+        n = 5;
+        for (t = 0; t < 2; t++) {
+            for (i = 0; i < 9; i++) {
+                slot[t][i] = -1;
+            }
+        }
+        for (i = 0; i < 0x36; i++) {
+            used[i] = -1;
+        }
+        for (i = 0; i < 0x36; i++) {
+            if (i == ((s32*)lbl_2_bss_F410)[8]) {
+                color[0] = 0xFFF;
+            } else if (i == ((s32*)lbl_2_bss_F410)[9]) {
+                color[1] = 0xF0FF;
+            } else {
+                color[0] = 0xFFFF;
+                color[1] = 0xFFFF;
+            }
+            for (t = 0; t < 2; t++) {
+                for (j = 0; j < 9; j++) {
+                    if (i == (s8)lbl_803C6724[t * 9 + j + 2] && color[0] != 0xFFF) {
+                        used[i] = i;
+                        color[0] = (t == 0) ? 0x88F : 0x808F;
+                        slot[t][j] = i;
+                    }
+                }
+            }
+            if (lbl_8034E9A0[i + 0x4757] != 0 && used[i] == -1) {
+                color[0] = 0x888F;
+            }
+            if (g_d_GameSettings._10 != 1 || i != ((s32*)lbl_2_bss_F410)[9]) {
+                n++;
+            }
+            if (n == 0x1A) {
+                n = 6;
+            }
+        }
+    }
+}
+#endif
