@@ -8,13 +8,24 @@
 typedef struct RopeNode {
     /*0x00*/ f32 mass;
     /*0x04*/ f32 invMass;
-    /*0x08*/ f32 damp;
+    /*0x08*/ f32 radius;
     /*0x0C*/ Vec pos;
     /*0x18*/ Vec prev;
     /*0x24*/ Vec vel;
     /*0x30*/ Vec force;
-    /*0x3C*/ s32 pinned;
+    /*0x3C*/ u32 pinned;
 } RopeNode;
+
+// Chain simulation parameters (lbl_3_bss_A8A8, lbl_3_bss_A018+0x890).
+typedef struct CC438Cfg {
+    /*0x00*/ f32 a;
+    /*0x04*/ f32 b;     // ground/sphere restitution factor
+    /*0x08*/ f32 c, d, e, f;
+    /*0x18*/ f32 h;     // substep time
+    /*0x1C*/ f32 hh;    // h * h
+    /*0x20*/ s32 n;     // substeps per frame
+    /*0x24*/ f32 inv;   // 1 / (2 * h)
+} CC438Cfg;
 
 void fn_3_CB8A8(u8*);
 void fn_3_CBA9C(u8* p);
@@ -72,8 +83,8 @@ void fn_3_D173C(u8* p);
 void fn_3_D1848(u8* arg);
 void fn_3_D196C(s32 idx);
 void fn_3_D1AC4(u8* p);
-void fn_3_D1B24(void);
-void fn_3_D1F2C(u8* a, u8* b, s32 n, Vec* d, u8* p);
+void fn_3_D1B24(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* grav);
+void fn_3_D1F2C(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* dir, u8* p);
 void fn_3_D2220(u8* p);
 u8* fn_3_D233C(u8* p);
 s32 fn_3_D249C(u8* p);

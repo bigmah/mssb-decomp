@@ -29,7 +29,6 @@ extern f32 lbl_3_rodata_26AC;
 extern f32 lbl_3_rodata_26B0;
 extern f32 lbl_3_rodata_26B8;
 extern u8 lbl_3_bss_A8D0[];
-typedef struct { f32 a, b, c, d, e, f; f32 h, hh; s32 n; f32 inv; } CC438Cfg;
 typedef struct { f32 f0, f4, f8, f0C[6], f24[3], f30[3]; s32 n3C; } CC438Ent;
 extern void fn_3_8B890(s32);
 extern s32 lbl_3_data_182C4;
@@ -234,7 +233,7 @@ void fn_3_CBAFC(u8* p) {
     v.y += 4.5;
     *(Vec*)(c + 0xCC) = v;
     *(Vec*)(c + 0xD8) = *(Vec*)(c + 0xCC);
-    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 4, &dir, p);
+    fn_3_D1F2C((CC438Cfg*)lbl_3_bss_A8A8, *(RopeNode**)(p + 0xC4), 4, &dir, p);
 }
 
 // .text:0x000CBC18 size:0x368 mapped:0x8070ACAC
@@ -1308,13 +1307,69 @@ void fn_3_D1AC4(u8* p) {
 }
 
 // .text:0x000D1B24 size:0x408 mapped:0x80710BB8
-void fn_3_D1B24(void) {
+void fn_3_D1B24(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* grav) {
     return;
 }
 
 // .text:0x000D1F2C size:0x2F4 mapped:0x80710FC0
-void fn_3_D1F2C(u8* a, u8* b, s32 n, Vec* d, u8* p) {
-    return;
+// Verlet-integrates the chain cfg->n substeps: gravity dir*cfg->h, ground bounce,
+// and pushes nodes out of the sphere (radius 4.5) around the owner p (p+0xA0, raised 4.5).
+void fn_3_D1F2C(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* dir, u8* p) {
+    Vec acc;
+    Vec grav;
+    Vec center;
+    Vec d;
+    Vec nd;
+    Vec push;
+    Vec ah;
+    Vec next;
+    RopeNode* r;
+    s32 i;
+    f32 hh, inv, mag, dy;
+    s32 step;
+    center = *(Vec*)(p + 0xA0);
+    center.y = center.y + lbl_3_rodata_2668;
+    PSVECScale(dir, cfg->h, &grav);
+    for (step = 0; step < cfg->n; step++) {
+        fn_3_D1B24(cfg, nodes, n, &grav);
+        for (r = nodes, i = 0; i < n; r++, i++) {
+            PSVECScale(&r->force, r->invMass, &acc);
+            inv = cfg->inv;
+            hh = cfg->hh;
+            PSVECScale(&r->pos, lbl_3_rodata_26B8, &next);
+            PSVECSubtract(&next, &r->prev, &next);
+            PSVECScale(&acc, hh, &ah);
+            PSVECAdd(&next, &ah, &next);
+            PSVECSubtract(&next, &r->prev, &r->vel);
+            PSVECScale(&r->vel, inv, &r->vel);
+            memcpy(&r->prev, &r->pos, sizeof(Vec));
+            memcpy(&r->pos, &next, sizeof(Vec));
+            if (r->pinned == 0) {
+                dy = r->pos.y - r->radius;
+                if (dy < lbl_3_rodata_2664) {
+                    r->pos.y = r->pos.y - dy * cfg->b;
+                    dy = r->prev.y - r->radius;
+                    r->prev.y = r->prev.y - dy * cfg->b;
+                }
+                PSVECSubtract(&r->pos, &center, &d);
+                mag = PSVECMag(&d);
+                if (lbl_3_rodata_2668 + r->radius > mag) {
+                    PSVECNormalize(&d, &nd);
+                    PSVECScale(&nd, lbl_3_rodata_2668 + r->radius - mag, &push);
+                    r->pos.x = push.x * cfg->b + r->pos.x;
+                    r->pos.y = push.y * cfg->b + r->pos.y;
+                    r->pos.z = push.z * cfg->b + r->pos.z;
+                    PSVECSubtract(&r->prev, &center, &d);
+                    mag = PSVECMag(&d);
+                    PSVECNormalize(&d, &nd);
+                    PSVECScale(&nd, lbl_3_rodata_2668 + r->radius - mag, &push);
+                    r->prev.x = push.x * cfg->b + r->prev.x;
+                    r->prev.y = push.y * cfg->b + r->prev.y;
+                    r->prev.z = push.z * cfg->b + r->prev.z;
+                }
+            }
+        }
+    }
 }
 
 // .text:0x000D2220 size:0x11C mapped:0x807112B4
@@ -1330,7 +1385,7 @@ void fn_3_D2220(u8* p) {
     v.y += 4.5;
     *(Vec*)(c + 0x1CC) = v;
     *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
-    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 8, &dir, p);
+    fn_3_D1F2C((CC438Cfg*)lbl_3_bss_A8A8, *(RopeNode**)(p + 0xC4), 8, &dir, p);
 }
 
 // .text:0x000D233C size:0x160 mapped:0x807113D0
@@ -1476,7 +1531,7 @@ void fn_3_D278C(u8* p) {
     v.y += lbl_3_rodata_2668;
     *(Vec*)(c + 0x1CC) = v;
     *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
-    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 8, &dir, p);
+    fn_3_D1F2C((CC438Cfg*)lbl_3_bss_A8A8, *(RopeNode**)(p + 0xC4), 8, &dir, p);
 }
 
 // .text:0x000D2A0C size:0x6C4 mapped:0x80711AA0
@@ -1517,7 +1572,7 @@ void fn_3_D36B0(u8* p) {
     v.y += lbl_3_rodata_2668;
     *(Vec*)(c + 0x1CC) = v;
     *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
-    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 8, &dir, p);
+    fn_3_D1F2C((CC438Cfg*)lbl_3_bss_A8A8, *(RopeNode**)(p + 0xC4), 8, &dir, p);
     CTRLSetRotation((Control*)p, 0.0f, *(f32*)(p + 0xC0), 0.0f);
     CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
 }
@@ -1581,7 +1636,7 @@ void fn_3_D3CDC(u8* p) {
     v.y += lbl_3_rodata_2668;
     *(Vec*)(c + 0x1CC) = v;
     *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
-    fn_3_D1F2C(lbl_3_bss_A8A8, *(u8**)(p + 0xC4), 8, &dir, p);
+    fn_3_D1F2C((CC438Cfg*)lbl_3_bss_A8A8, *(RopeNode**)(p + 0xC4), 8, &dir, p);
 }
 
 // .text:0x000D3F54 size:0x82C mapped:0x80712FE8
@@ -1705,14 +1760,14 @@ static inline void D511C_initChain(RopeNode* r) {
         for (i = 0; i < 8; i++, r++) {
             if (i == 7) {
                 r->mass = lbl_3_data_188E0;
-                r->damp = lbl_3_rodata_2694;
+                r->radius = lbl_3_rodata_2694;
                 r->pinned = 1;
             } else {
                 if (i == 0) {
                     r->pinned = 1;
                 }
                 r->mass = lbl_3_data_188E0;
-                r->damp = lbl_3_rodata_2694;
+                r->radius = lbl_3_rodata_2694;
             }
             r->invMass = one / r->mass;
             memset(&r->pos, 0, sizeof(Vec) * 2);
