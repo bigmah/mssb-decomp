@@ -426,7 +426,7 @@ void fn_3_11E308(void) {
 }
 
 // The score boards close when the minigame quits, ends or a pause menu leaves it.
-static inline s32 ScoreBoard_ShouldClose(void) {
+static inline u32 ScoreBoard_ShouldClose(void) {
     if (lbl_3_common_bss_32724.quit != 0 || lbl_3_common_bss_32724._B7 != 0) {
         return 1;
     }
@@ -434,11 +434,12 @@ static inline s32 ScoreBoard_ShouldClose(void) {
         return 1;
     }
     if (g_Minigame.pauseInd != 0) {
-        switch (lbl_3_common_bss_34C90[0x1D2]) { // TODO type: MinigameBss34C90View._1D2
-        case 7:
-        case 9:
+        u8 menu = lbl_3_common_bss_34C90[0x1D2]; // TODO type: MinigameBss34C90View._1D2
+
+        if (menu == 7 || menu == 9) {
             return 1;
-        case 13:
+        }
+        if (menu == 13) {
             return 1;
         }
     }
@@ -529,6 +530,77 @@ void fn_3_11E364(void) {
 #endif
 
 // .text:0x0011E7C4 size:0x464 mapped:0x8075D858
+// Score board variant: also flashes a marker when a player's count finishes.
+// NONMATCHING 95%: same differences as fn_3_11E364
+#if NONMATCHING
 void fn_3_11E7C4(void) {
-    return;
+    ScoreBoardTask* task = lbl_803CC1B8;
+    u32 i;
+    u32 shown;
+    u32 leader;
+    s32 noTie;
+    s32 diff;
+
+    if (ScoreBoard_ShouldClose()) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, lbl_3_data_25464);
+        i = 0;
+        do {
+            fn_800363D8(task, i + 9, 1, 0x65, i);
+            SPRITE_I(task, 0x11, i)->frame = inMemRoster[0][i].stats.CharID << 16;
+            i++;
+        } while (i < 4);
+        i = 0;
+        do {
+            SPRITE_I(task, 0x29, i)->flags &= ~2;
+            i++;
+        } while (i < 4);
+        task->state = 1;
+        break;
+    case 1:
+        leader = fn_3_107CD0();
+        noTie = fn_3_107C88();
+        i = 0;
+        do {
+            if (MG11D3->hit[i] != 0) {
+                MG11D3->hit[i] = 0;
+                SPRITE_I(task, 1, i)->frame = 0;
+                SPRITE_I(task, 1, i)->visible = 1;
+            }
+            diff = g_Minigame.miniGameCurrentPoints[i] - g_Minigame.minigamePoints_current_Latest[i].current;
+            if (diff > 0) {
+                g_Minigame.minigamePoints_current_Latest[i].current++;
+                task->counting[i] = 1;
+            } else if (diff < 0) {
+                g_Minigame.minigamePoints_current_Latest[i].current--;
+            } else if (task->counting[i] != 0) {
+                task->counting[i] = 0;
+                SPRITE_I(task, 0x19, i)->frame = 0;
+                SPRITE_I(task, 0x19, i)->visible = 1;
+                SPRITE(task, i * 3 + 0x1D)->frame = 0;
+                SPRITE(task, i * 3 + 0x1E)->frame = 0;
+                SPRITE(task, i * 3 + 0x1F)->frame = 0;
+            }
+            shown = g_Minigame.minigamePoints_current_Latest[i].current;
+            if (shown > 999) {
+                shown = 999;
+            }
+            fn_800363D8(task, i * 3 + 0x1D, 1, 0x66, (shown % 1000) / 100);
+            fn_800363D8(task, i * 3 + 0x1E, 1, 0x66, (shown % 100) / 10);
+            fn_800363D8(task, i * 3 + 0x1F, 1, 0x66, shown % 10);
+            if (noTie == 0 && g_Minigame.minigamePoints_current_Latest[i].current ==
+                                  g_Minigame.minigamePoints_current_Latest[leader].current) {
+                SPRITE_I(task, 0x29, i)->flags |= 2;
+            } else {
+                SPRITE_I(task, 0x29, i)->flags &= ~2;
+            }
+            i++;
+        } while (i < 4);
+        break;
+    }
 }
+#endif
