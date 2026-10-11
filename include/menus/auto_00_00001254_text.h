@@ -288,4 +288,6 @@ void fn_2_95D8(void);
 
 void fn_2_B920(void);
 
+void fn_2_11698(void);
+
 #endif

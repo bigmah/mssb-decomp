@@ -12,6 +12,13 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_803CBBC4[];
+extern u8 lbl_803C50E8[];
+extern u8 lbl_800FEF70[];
+extern u8 lbl_2_bss_758;
+extern void fn_2_15A90(s32* value, s32 min, u8 max);
+extern void fn_2_836A4(void);
+extern void fn_2_85108(void);
 extern u8 lbl_2_data_720[];
 extern void fn_800216F8(s32 group, void* callback);
 extern void fn_8006285C(void);
@@ -2945,5 +2952,208 @@ void fn_2_6D3C(void) {
     }
     fn_2_82E58();
     *(u16*)(lbl_803CBBCC[0] + 4) = 1;
+}
+#endif
+
+// NONMATCHING 98%: case 11 shares the scene+8 reset tail in the original
+#if NONMATCHING
+// fn_2_11698, size:0x810
+void fn_2_11698(void) {
+    s8 best = -1;
+    s32 i;
+    u8* scene = lbl_803CBBCC[0];
+    switch (*(u16*)(scene + 4)) {
+    case 0:
+        if (*(u16*)(scene + 6) == 0xD) {
+            fn_800625A4(0, 0x26);
+            *(u16*)(lbl_803CBBCC[0] + 4) = 1;
+            return;
+        }
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            changeScene(1, 6);
+            fn_2_836A4();
+            lbl_2_bss_F468[0x57] = 0;
+            for (i = 0; i < 4; i++) {
+                if (lbl_80361B20[0xE4 + i] != 0 && best < i) {
+                    best = i;
+                }
+            }
+            if (best != -1) {
+                lbl_2_bss_F468[0x57] = best + 1;
+                if (lbl_2_bss_F468[0x57] > 3) {
+                    lbl_2_bss_F468[0x57] = 3;
+                }
+            }
+            *(u16*)(lbl_803CBBCC[0] + 4) = 5;
+            return;
+        }
+        fn_2_85108();
+        if (lbl_803C66B0[0x55] == 0 && lbl_803C66B0[0x56] == 0) {
+            lbl_8034E978[0] = 5;
+            lbl_8034E978[9] = lbl_8034E978[8];
+            lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + 0x58);
+            lbl_803C5EA4[0x36] = 1;
+            lbl_803C5EA4[0x37] = lbl_803C5EA4[0x38];
+            lbl_803C5EA4[0x38] = 2;
+            lbl_803C66B0[0] = 4;
+            if (lbl_8034E9A0[0x4703] == 0) {
+                *(s32*)(lbl_2_bss_F410 + 0x44) = 0;
+                *(s32*)(lbl_2_bss_F410 + 0x44) = 0;
+            }
+            lbl_8034E9A0[0x4703] = 1;
+            fn_800625A4(0, 0x27);
+            *(u16*)(lbl_803CBBCC[0] + 4) = 1;
+        }
+        break;
+    case 1:
+        if (lbl_803C66B0[0x55] == 0 && lbl_803C66B0[0x56] == 0) {
+            *(u16*)(lbl_803CBBCC[0] + 4) = 2;
+        }
+        break;
+    case 2:
+        for (i = 0; i < 2; i++) {
+            fn_2_11340(i);
+        }
+        break;
+    case 3:
+        if (lbl_803CBCD8[4] == 0 && lbl_803C66B0[0x5D] == 0) {
+            lbl_803C66B0[0] = 3;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 0xB;
+        }
+        break;
+    case 4:
+        if (lbl_803C66B0[0x5D] == 0) {
+            lbl_2_bss_100B4 = 1;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 0xC;
+        }
+        break;
+    case 5:
+        if (lbl_803C66B0[0x55] == 0) {
+            lbl_803CBBC4[0] = 0;
+            lbl_803CBBC4[2] = 0;
+            lbl_803CBBC4[3] = 0;
+            lbl_803CBBC4[4] = 0;
+            *(s32*)(lbl_2_bss_F410 + 0x44) = 0;
+            changeScene(1, 6);
+            lbl_803C5EA4[0x36] = 1;
+            lbl_803C5EA4[0x37] = lbl_803C5EA4[0x38];
+            lbl_803C5EA4[0x38] = 4;
+            lbl_803CBBC4[0] = 0x5D;
+            lbl_803CBBC4[5] = 0;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 6;
+        }
+        break;
+    case 6:
+        if (lbl_803C66B0[0x55] == 0) {
+            lbl_803CBBC4[1] = *(s32*)(lbl_2_bss_F410 + 0x44);
+            fn_2_15A90((s32*)(lbl_2_bss_F410 + 0x44), 0, lbl_2_bss_F468[0x57]);
+            lbl_8034E9A0[0x4711] = *(s32*)(lbl_2_bss_F410 + 0x44);
+            if (lbl_803CBBC4[1] != (u8)*(s32*)(lbl_2_bss_F410 + 0x44)) {
+                lbl_803CBBC4[0] = 0x5E;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+            if (*(u16*)(lbl_8034E9A0 + 0x472E) & 0x100) {
+                if (*(s32*)(lbl_2_bss_F410 + 0x44) < 6) {
+                    if (lbl_80361B20[0xE3 + lbl_8034E9A0[0x4711]] == 0 && lbl_8034E9A0[0x4711] != 0) {
+                        sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+                        return;
+                    }
+                    lbl_803CBBC4[0] = 0x60;
+                    lbl_8034E9A0[0x472A] = 1;
+                    ((void (*)(u32))fn_2_1C34)(0x100);
+                    *(u16*)(lbl_803CBBCC[0] + 4) = 7;
+                }
+            } else if (*(u16*)(lbl_8034E9A0 + 0x472E) & 0x200) {
+                ((void (*)(u32))fn_2_1C34)(0x200);
+                lbl_803CBBC4[0] = 0x60;
+                lbl_8034E9A0[0x472A] = 1;
+                *(u16*)(lbl_803CBBCC[0] + 4) = 8;
+            }
+        }
+        break;
+    case 7:
+        if (lbl_803CBBC4[5] != 0) {
+            lbl_803CBBC4[5] = 0;
+            lbl_2_bss_100B4 = 1;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 0xC;
+        }
+        break;
+    case 8:
+        if (lbl_803CBBC4[5] != 0) {
+            *(u16*)(lbl_803CBBCC[0] + 4) = 0xB;
+        }
+        break;
+    case 9:
+        fn_800B0A5C_insertQueue(fn_8004D0F0, 0x3000);
+        *(u16*)(lbl_803CBBCC[0] + 4) = 0xA;
+        break;
+    case 10:
+        switch (fn_8004CA6C(*(u16*)(lbl_8034E9A0 + 0x472E))) {
+        case 0:
+            break;
+        case 1:
+            fn_8004CC2C();
+            break;
+        case 3:
+            ((void (*)(u8, s32, s32))fn_2_2FC0)(0xC, 1, 1);
+            lbl_803CBCD8[4] = 1;
+            fn_80035CA4(0xF);
+            fn_80035CA4(0x12);
+            fn_80035CA4(9);
+            fn_80035CA4(6);
+            lbl_8034E9A0[0x48AF] = 1;
+            lbl_8034E9A0[0x48B1] = 1;
+            lbl_8034E978[0x26] = 1;
+            changeScene(0xF, 6);
+            *(u16*)(lbl_803CBBCC[0] + 4) = 0xC;
+            lbl_2_bss_758 = 1;
+            break;
+        case 2:
+            fn_8004CC2C();
+            break;
+        case 4:
+            lbl_803297E0[0xCF5F] = 0;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 2;
+            break;
+        }
+        break;
+    case 11:
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            if (lbl_803CBCD8[4] == 0 && lbl_803C66B0[0x5D] == 0) {
+                lbl_803CBCD8[1] = 0;
+                lbl_803CBCD8[0] = 0;
+                fn_2_11A0(0xB);
+                *(u16*)(lbl_803CBBCC[0] + 8) = 0;
+            }
+        } else {
+            lbl_803CBBC4[4] = 1;
+            if (lbl_803C50E8[0x47] == 0) {
+                fn_2_11A0(0xF);
+            } else {
+                lbl_8034E978[0x26] = 1;
+                lbl_8034E9A0[0x48AF] = 1;
+                fn_2_11A0(5);
+            }
+            *(u16*)(lbl_803CBBCC[0] + 8) = 0;
+        }
+        break;
+    case 12:
+        if (lbl_2_bss_758 != 0) {
+            if (lbl_8034E978[0x24] == 0) {
+                fn_80062A74();
+                lbl_2_bss_758 = 0;
+                changeScene(0xF, 6);
+                fn_2_11A0(4);
+            }
+        } else if (g_d_GameSettings.GameModeSelected != 5) {
+            lbl_803CBCD8[4] = 0;
+            lbl_2_bss_F468[0x58] = 0;
+            fn_2_11A0(0xD);
+        } else if (lbl_803CBBC4[3] != 1) {
+            lbl_803CBBC4[4] = 1;
+            fn_2_11A0(9);
+        }
+        break;
+    }
 }
 #endif
