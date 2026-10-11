@@ -420,8 +420,15 @@ Emitter* fn_800337CC(Emitter* e, s32 n, s32 strict) {
 }
 
 // .text:0x8003385C size:0xCC
-void pitchingMachinePitching(void) {
-    return;
+void pitchingMachinePitching(u8 type) {
+    Emitter* e = EMITTER_HEAD->next;
+    while (e != NULL) {
+        Emitter* found = e->type == type ? e : NULL;
+        e = e->next;
+        if (found != NULL) {
+            FreeEmitter(found);
+        }
+    }
 }
 
 // .text:0x80033928 size:0x3C
