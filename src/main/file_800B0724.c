@@ -519,8 +519,15 @@ void fn_800B1388(QuadState* quad) {
 }
 
 // .text:0x800B13C0 size:0xA8
-void fn_800B13C0(void) {
-    return;
+void fn_800B13C0(Vec* pos, u32* colors, s32 count) {
+    QuadVtx* v = lbl_803C8A24;
+    s32 i;
+    for (i = 0; i < count; i++) {
+        memcpy(&v[i].pos, &pos[i], sizeof(Vec));
+        v[i].color = colors[i];
+        memcpy(&v[i].s, lbl_801115A0, 4);
+    }
+    DrawSprite(GX_TRIANGLEFAN, lbl_803C8A24, count, NULL, 0, 0);
 }
 
 // .text:0x800B1468 size:0x98
