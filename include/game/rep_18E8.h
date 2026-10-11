@@ -7,7 +7,9 @@
 // g_Fielders entry (stride 0x268); only the fields used here.
 typedef struct RepFielder {
     /*0x000*/ VecXYZ pos;
-    /*0x00C*/ u8 _00C[0x30 - 0xC];
+    /*0x00C*/ u8 _00C[0x14 - 0xC];
+    /*0x014*/ VecXYZ dest; // destination
+    /*0x020*/ u8 _020[0x30 - 0x20];
     /*0x030*/ f32 velX;
     /*0x034*/ f32 velZ;
     /*0x038*/ u8 _038[0x48 - 0x38];
@@ -27,7 +29,9 @@ typedef struct RepFielder {
     /*0x174*/ f32 _174;
     /*0x178*/ s16 rosterID;
     /*0x17A*/ s16 _17A; // action id (lbl_3_data_7E34 index)
-    /*0x17C*/ u8 _17C[0x18C - 0x17C];
+    /*0x17C*/ s16 _17C;
+    /*0x17E*/ s16 framesToDest;
+    /*0x180*/ u8 _180[0x18C - 0x180];
     /*0x18C*/ s16 coveringBase;
     /*0x18E*/ u8 _18E[0x192 - 0x18E];
     /*0x192*/ s16 _192;
@@ -126,7 +130,7 @@ void fn_3_A9C74(int);
 void fn_3_A9D20(void);
 void fn_3_AAA3C(int);
 int fn_3_AABF8(void);
-void fn_3_AAC84(void);
+void fn_3_AAC84(f32* x, f32* z);
 void fn_3_AAFF0(void);
 void fn_3_AB554(void);
 void fn_3_AB5B0(void);

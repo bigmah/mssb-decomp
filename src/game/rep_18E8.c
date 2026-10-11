@@ -1570,9 +1570,68 @@ int fn_3_AABF8(void) {
 }
 
 // .text:0x000AAC84 size:0x36C mapped:0x806E9D18
-void fn_3_AAC84(void) {
-    return;
+// NONMATCHING 89%: receiver position loads use lfsx/lfsu in the original, register allocation differs; fn_3_A6ABC is inlined
+#if NONMATCHING
+void fn_3_AAC84(f32* x, f32* z) {
+    RepFielder* f;
+    RepFielder* t;
+    s32 idx;
+    f32 tx;
+    f32 tz;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 a;
+    f32 b;
+    s32 n;
+
+    idx = g_FieldingLogic._0D8;
+    if (idx < 0) {
+        *x = lbl_3_data_4444[8];
+        *z = lbl_3_data_4444[9];
+        g_Ball.ballIsLooseInd_unused = 1;
+        g_Ball.fielderBeingThrownTo = -1;
+        return;
+    }
+    // inlined fn_3_A6ABC(receiver x, receiver z)
+    tx = g_Fielders[idx].pos.x;
+    tz = g_Fielders[idx].pos.z;
+    f = &g_Fielders[g_Ball.fielderWBallIndex];
+    dx = tx - f->pos.x;
+    step = (f32)f->_1CD / lbl_3_rodata_1938;
+    dz = tz - f->pos.z;
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        step = lbl_3_rodata_1958;
+    }
+    if (d > lbl_3_rodata_195C) {
+        n = (s32)(lbl_3_rodata_1960 * d / step);
+    } else if (d > lbl_3_rodata_1964) {
+        n = (s32)(d / step);
+    } else {
+        n = (s32)(lbl_3_rodata_1968 * d / step);
+    }
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+    }
+    n -= 10;
+    t = &g_Fielders[idx];
+    if (t->framesToDest < n) {
+        *x = t->dest.x;
+        *z = t->dest.z;
+    } else {
+        *x = (f32)n * t->velX + g_Fielders[idx].pos.x;
+        *z = (f32)n * t->velZ + g_Fielders[idx].pos.z;
+    }
+    g_Ball.fielderBeingThrownTo = idx;
 }
+#endif
 
 // .text:0x000AAFF0 size:0x564 mapped:0x806EA084
 void fn_3_AAFF0(void) {
