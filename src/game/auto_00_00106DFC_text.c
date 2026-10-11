@@ -106,15 +106,6 @@ void fn_3_10F550(s8 a, s16 b) {
     *(s16*)(g_Minigame + 0x1A28) = b;
 }
 
-// fn_3_1104A8, size:0x2C
-void fn_3_1104A8(void) {
-    s8 i = 0;
-    do {
-        i++;
-        g_Minigame[0x1DBC + i - 1] = 0;
-    } while (i < 4);
-}
-
 // fn_3_106DFC, size:0x54
 void fn_3_106DFC(void) {
     *(void**)(g_Camera + 0xAB0) = _OSAllocFromHeap(4, 0x8000);
@@ -165,17 +156,6 @@ void fn_3_10FB74(void) {
     }
     lbl_8036E548[0x307A] = 0;
     fn_3_5A6D4(0x1D);
-}
-
-// fn_3_10C7A4, size:0x78
-void fn_3_10C7A4(void) {
-    s32 i;
-    fn_8001CA40(0);
-    for (i = 0; i < 4; i++) {
-        fn_80011BE4(i);
-        g_Minigame[0x19E9 + i * 9] = 0;
-        *(s8*)(g_Minigame + 0x19EA + i * 9) = -1;
-    }
 }
 
 // fn_3_10B200, size:0x7C
@@ -689,8 +669,29 @@ void fn_3_10EFAC(void) {
     lbl_3_common_bss_32724[0xB9] = g_Minigame[0x19E1];
 }
 
-// fn_3_1070A4, size:0x188
 #pragma dont_inline off
+
+// fn_3_1104A8, size:0x2C
+void fn_3_1104A8(void) {
+    s8 i = 0;
+    do {
+        i++;
+        g_Minigame[0x1DBC + i - 1] = 0;
+    } while (i < 4);
+}
+
+// fn_3_10C7A4, size:0x78
+void fn_3_10C7A4(void) {
+    s32 i;
+    fn_8001CA40(0);
+    for (i = 0; i < 4; i++) {
+        fn_80011BE4(i);
+        g_Minigame[0x19E9 + i * 9] = 0;
+        *(s8*)(g_Minigame + 0x19EA + i * 9) = -1;
+    }
+}
+
+// fn_3_1070A4, size:0x188
 static inline void fn_3_107078_inl(void) {
     if (g_Minigame[0x18E8 + *(s8*)(g_Minigame + 0x1908)] == 1) {
         g_Minigame[0x1A3F] = 1;
@@ -1260,14 +1261,6 @@ extern void fn_3_110634(void);
 
 // NONMATCHING 90%: inlined fn_3_1104A8 loop picks i/ptr regs swapped, port re-extsb missing
 #if NONMATCHING
-static inline void clearPadActiveInline(void) {
-    s8 i = 0;
-    do {
-        i++;
-        g_Minigame[0x1DBC + i - 1] = 0;
-    } while (i < 4);
-}
-
 // fn_3_1104D4, size:0x160
 void fn_3_1104D4(void) {
     s8 i;
@@ -1276,7 +1269,7 @@ void fn_3_1104D4(void) {
     u8* p;
     u8* mg = g_Minigame;
 
-    clearPadActiveInline();
+    fn_3_1104A8();
 
     p = mg;
     i = 0;
@@ -1308,3 +1301,46 @@ void fn_3_1104D4(void) {
     } while (i < 4);
 }
 #endif
+
+extern void fn_3_8B318(s32);
+extern s32 fn_3_90928(void);
+extern void fn_800189E4(void);
+extern s32 fn_80035838(void* aramAddr, u8 id);
+extern u8 lbl_3_data_21EC8[];
+
+// fn_3_10F3D8, size:0x178
+void fn_3_10F3D8(void) {
+    u8 s = g_GameLogic[0x125];
+    switch (s) {
+    case 0:
+        fn_3_8B318(-1);
+        fn_3_10C7A4();
+        lbl_3_common_bss_34C58[0x2C] = 0;
+        g_GameLogic[0x125]++;
+    case 1:
+        if (fn_3_90928() != 0) {
+            g_GameLogic[0x125]++;
+        }
+        break;
+    case 2:
+        if (fn_80035838(lbl_3_data_21EC8 + 0x1D0, 9) != 0) {
+            g_GameLogic[0x125]++;
+        }
+        break;
+    case 3:
+        if (g_d_GameSettings[7] == 7) {
+            if (fn_80035838(lbl_3_data_21EC8 + 0xD0, 0x11) != 0) {
+                g_GameLogic[0x125]++;
+            }
+        } else {
+            g_GameLogic[0x125] = s + 1;
+        }
+        break;
+    default:
+        fn_800189E4();
+        fn_800B0A5C_insertQueue(fn_80062A94, 1);
+        g_Minigame[0x1A1C] = 1;
+        fn_3_5A6D4(g_Minigame[0x19DF]);
+        break;
+    }
+}
