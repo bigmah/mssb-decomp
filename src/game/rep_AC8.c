@@ -1,4 +1,5 @@
 #include "game/rep_AC8.h"
+#include "game/rep_D0.h"
 #include "header_rep_data.h"
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 extern s16 radToShortAngle(f32 v);
@@ -460,9 +461,43 @@ void fn_3_27D68(void) {
 }
 
 // .text:0x00027FF4 size:0x230 mapped:0x80667088
-void fn_3_27FF4(void) {
-    return;
+// NONMATCHING 97%: f2/f5 swapped for fielder z and the 0x70 scale in the segment setup
+#if NONMATCHING
+int fn_3_27FF4(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    VecSrcDst seg;
+    CollisionStruct hit;
+    f32 x, y, z;
+    f32 d;
+    if ((0.0f == *(f32*)(f + 0x38) && 0.0f == *(f32*)(f + 0x3C)) || *(s16*)(f + 0x19A) < 0) {
+        return 0;
+    }
+    x = *(f32*)f;
+    z = *(f32*)(f + 8);
+    y = -*(f32*)(lbl_3_data_4930 + 0x74);
+    seg.src.x = x;
+    seg.dst.y = y;
+    seg.src.y = y;
+    seg.src.z = z;
+    seg.dst.x = *(f32*)(f + 0x38) * *(f32*)(lbl_3_data_4930 + 0x70) + x;
+    seg.dst.z = *(f32*)(f + 0x3C) * *(f32*)(lbl_3_data_4930 + 0x70) + z;
+    if ((checkCollision(&seg, &hit, 0, 0) & 0x7F) != 2) {
+        return 0;
+    }
+    f[0x207] = 1;
+    *(s16*)(f + 0x1B4) = lbl_3_data_49DC[7];
+    *(f32*)(f + 0x128) = hit.position.x;
+    *(f32*)(f + 0x12C) = *(f32*)(lbl_3_data_4930 + 0x74);
+    *(f32*)(f + 0x130) = hit.position.z;
+    d = hit.normal.x * hit.normal.x + hit.normal.z * hit.normal.z;
+    *(f32*)(f + 0x148) = 0.0f;
+    SQRT_L(d);
+    *(f32*)(f + 0x140) = hit.normal.x / d;
+    *(f32*)(f + 0x144) = hit.normal.z / d;
+    *(f32*)(f + 0x50) = 0.0f;
+    return 1;
 }
+#endif
 
 // .text:0x00028224 size:0xA84 mapped:0x806672B8
 void fn_3_28224(void) {
