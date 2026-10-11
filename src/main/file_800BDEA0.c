@@ -95,8 +95,16 @@ void fn_800BDEA0(void) {
 }
 
 // .text:0x800BDF70 size:0x70
-void fn_800BDF70(void) {
-    return;
+void fn_800BDF70(ActorObject* obj) {
+    ShadowState* state = &lbl_803009F8;
+    u8 flags;
+
+    if (state->enabled && state->drawCallback != NULL && obj->animateBones) {
+        flags = obj->actor->flags98;
+        if ((flags & 0x24) && (flags & 0x12)) {
+            state->drawCallback(obj, state->cameras->view);
+        }
+    }
 }
 
 // .text:0x800BDFE0 size:0xBC
