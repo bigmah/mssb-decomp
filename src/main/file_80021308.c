@@ -436,7 +436,23 @@ void fn_800227A0(DiskFileEntry* entry, void* dst, void* user) {
 
 // .text:0x800227E4 size:0x1E8
 void fn_800227E4(void) {
-    return;
+    s32 j;
+    s32 i;
+    u32* addrs;
+    s32 k;
+
+    lbl_803716B8.aramBase = fn_800A6418(0x4D6600);
+    lbl_803716B8.loading = 1;
+    k = 0;
+    addrs = lbl_8017E320;
+    for (i = 0; i < 4; i++) {
+        lbl_803716B8.aramAddrs[i] = addrs;
+        addrs += lbl_803CB7E0[i];
+        for (j = 0; j < lbl_803CB7E0[i]; j++, k++) {
+            lbl_803716B8.aramAddrs[i][j] = lbl_803716B8.aramBase + lbl_800EFD38[k].aramOffset;
+        }
+    }
+    aramQueuePush(&lbl_800F1D68, (void*)lbl_803716B8.aramBase, 2, 0, fn_800227A0, NULL);
 }
 
 // .text:0x800229CC size:0x58
