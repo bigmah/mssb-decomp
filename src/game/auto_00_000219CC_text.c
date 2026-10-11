@@ -56,7 +56,42 @@ void fn_3_219CC(void) {
 
 // .text:0x00021AA8 size:0x134 mapped:0x80660B3C
 void fn_3_21AA8(void) {
-    return;
+    WaitTaskView* task = lbl_803CC1B8;
+    InMemRunnerType* runner = g_Runners;
+    GameActorView* actor = lbl_8036E548.actors[9];
+
+    switch (task->state) {
+    case 0:
+        if (runner->charID == 2 || runner->charID == 9) {
+            task->state = 1;
+        } else {
+            task->state = 3;
+        }
+        break;
+    case 1:
+        if (task->timer-- == 0) {
+            task->state = 2;
+        }
+        break;
+    case 2:
+        if ((actor->flags & 2) || (actor->flags & 1)) {
+            fn_3_14E50();
+        }
+        if (lbl_3_common_bss_1323C->busy == 0) {
+            task->state = 3;
+        }
+        break;
+    case 3: {
+        QueueParentView* parent;
+        fn_3_14E1C();
+        lbl_3_common_bss_1323C->busy = 0;
+        parent = lbl_803CC1B8->parent;
+        parent->done = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->state = 0;
+        break;
+    }
+    }
 }
 
 // .text:0x00021BDC size:0xA0 mapped:0x80660C70
