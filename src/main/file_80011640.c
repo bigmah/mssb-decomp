@@ -3,6 +3,7 @@
 #include "Dolphin/stl.h"
 #include "Dolphin/GX/GXTypes.h"
 #include "Dolphin/gx.h"
+#include "math.h"
 
 // Globals owned by other units (only the fields used here).
 typedef struct GameSettingsView {
@@ -171,6 +172,8 @@ extern void fn_800B9948(s32 value);
 extern void fn_800B993C(void);
 extern CharActor* lbl_803CBC18;
 extern u8 lbl_800EEA58[25];
+extern void fn_8003A540(s32 arg);
+extern void fn_800BF048(void (*fn)(void));
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -2006,9 +2009,69 @@ void fn_80018DEC(s32 mode) {
 #endif
 
 // .text:0x800196D8 size:0x388
+// NONMATCHING 99%: relocation loop counter register
+#if NONMATCHING
 void fn_800196D8(void) {
-    return;
+    CharLoadTask* task = lbl_803CC1B8;
+    CharLoadTask* child;
+    Vec dir2;
+    Vec dir;
+    f32 mag;
+    u8* base;
+    void** raw;
+    s32 i;
+
+    switch (task->state) {
+    case 0:
+        child = fn_800B0A5C_insertQueue(fn_800188C0, 0);
+        child->state = 0;
+        child->kind = 0;
+        child->_17[0] = 0xFF;
+        lbl_8036E548._307B = 1;
+        task->state++;
+        break;
+    case 1:
+        if (lbl_8036E548._307B == 0) {
+            task->state++;
+        }
+        break;
+    case 2:
+        dir.x = -lbl_80367318[0].x;
+        dir.y = -lbl_80367318[0].y;
+        dir.z = -lbl_80367318[0].z;
+        mag = dolsqrtf2(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+        dir.x /= mag;
+        lbl_8036E548._3087 = 1;
+        dir.y /= mag;
+        dir.z /= mag;
+        fn_8003A540(0);
+        lbl_8036E548._3086 = 1;
+        DrawShadows(1);
+        dir2 = dir;
+        fn_800BEBCC(0, &dir2);
+        fn_800BF048(fn_8001AAF0);
+        fn_800BF058(fn_8001AB10);
+        // TODO type: the stadium file header holds offsets, relocated in place.
+        base = (u8*)lbl_8036E548.stadiumFiles;
+        raw = (void**)base;
+        for (i = 0; i < 80; i++) {
+            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (u32)raw[i];
+        }
+        lbl_8036E548._307C = 0;
+        lbl_8036E548._307D = 0;
+        lbl_8036E548._3082 = 0;
+        fn_8001F8A4();
+        task->state++;
+        break;
+    default:
+        challengeMapMaybe();
+        lbl_8036E548._2D7D[0] = 1;
+        lbl_8036E548._307C = 1;
+        fn_800B0A14_removeQueue(&lbl_8036E548);
+        break;
+    }
 }
+#endif
 
 // .text:0x80019A60 size:0x1A0
 // NONMATCHING 97%: light-table base register and colour temp stack slots
