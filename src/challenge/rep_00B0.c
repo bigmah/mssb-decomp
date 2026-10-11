@@ -139,6 +139,82 @@ u32 fn_1_4728(Vec* ray, Vec* out) {
 
 // .text:0x00004A24 size:0x3B4
 void fn_1_4A24(ChalRayCast* cast, ChalColBlock* block) {
-    return;
+    Vec p[3];
+    Vec w[3];
+    u8 isStrip;
+    u32 count;
+    u32 flip;
+    ChalColVtx* v;
+    u32 inside;
+    f32 t;
+
+    v = (ChalColVtx*)block;
+    while (1) {
+        count = ((ChalColBlock*)v)->hdr.h.count;
+        if (count == 0) {
+            break;
+        }
+        isStrip = ((ChalColBlock*)v)->hdr.h.isStrip;
+        v = ((ChalColBlock*)v)->v;
+        if (isStrip == 0) {
+            do {
+                PSMTXMultVec(cast->mtx, &v[0].pos, &p[0]);
+                PSMTXMultVec(cast->mtx, &v[1].pos, &p[1]);
+                PSMTXMultVec(cast->mtx, &v[2].pos, &p[2]);
+                inside = (p[0].x * p[1].y - p[1].x * p[0].y >= 0.0f);
+                inside &= (p[1].x * p[2].y - p[2].x * p[1].y >= 0.0f);
+                inside &= (p[2].x * p[0].y - p[0].x * p[2].y >= 0.0f);
+                if (inside) {
+                    PSVECSubtract(&p[1], &p[0], &w[0]);
+                    PSVECSubtract(&p[2], &p[1], &w[1]);
+                    PSVECCrossProduct(&w[0], &w[1], &w[2]);
+                    t = -PSVECDotProduct(&w[2], &p[0]) / w[2].z;
+                    if (t >= 0.0f && cast->dist > t) {
+                        cast->dist = t;
+                        cast->hitId = v[2].id;
+                        cast->normal = w[2];
+                    }
+                }
+                v += 3;
+            } while (--count != 0);
+        } else {
+            flip = 0;
+            PSMTXMultVec(cast->mtx, &v[0].pos, &p[0]);
+            PSMTXMultVec(cast->mtx, &v[1].pos, &p[1]);
+            v += 2;
+            do {
+                PSMTXMultVec(cast->mtx, &v->pos, &p[2]);
+                w[0].x = p[0].x * p[1].y - p[1].x * p[0].y;
+                w[0].y = p[1].x * p[2].y - p[2].x * p[1].y;
+                w[0].z = p[2].x * p[0].y - p[0].x * p[2].y;
+                if (flip) {
+                    inside = (w[0].z <= 0.0f) & ((w[0].x <= 0.0f) & (w[0].y <= 0.0f));
+                } else {
+                    inside = (w[0].z >= 0.0f) & ((w[0].x >= 0.0f) & (w[0].y >= 0.0f));
+                }
+                if (inside) {
+                    PSVECSubtract(&p[1], &p[0], &w[0]);
+                    PSVECSubtract(&p[2], &p[1], &w[1]);
+                    PSVECCrossProduct(&w[0], &w[1], &w[2]);
+                    t = -PSVECDotProduct(&w[2], &p[0]) / w[2].z;
+                    if (t >= 0.0f && cast->dist > t) {
+                        cast->dist = t;
+                        cast->hitId = v->id;
+                        if (!flip) {
+                            cast->normal = w[2];
+                        } else {
+                            cast->normal.x = -w[2].x;
+                            cast->normal.y = -w[2].y;
+                            cast->normal.z = -w[2].z;
+                        }
+                    }
+                }
+                flip ^= 1;
+                v++;
+                p[0] = p[1];
+                p[1] = p[2];
+            } while (--count != 0);
+        }
+    }
 }
 
