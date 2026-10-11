@@ -2729,6 +2729,7 @@ typedef struct {
     /* 0x0039 */ u8 _39; // 1: replay offered, 2: replay done
     /* 0x003A */ u8 _3A;
     /* 0x003B */ u8 _3B;
+    /* 0x003C */ u8 _3C; // stadium id (unsure)
 } g_Stats_s; // size: 0x4634
 
 // 0x8088a7e4
@@ -2837,10 +2838,29 @@ typedef struct {
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
 
 typedef struct {
-    u8 pad[0xa0];
+    /* 0x0000 */ s32 _0000; // from lbl_3_data_20E0C[_092C]
+    /* 0x0004 */ u8 _0004[4];
+    /* 0x0008 */ s32 _0008;
+    /* 0x000C */ u8 _000C[8];
+    /* 0x0014 */ s32 _0014;
+    /* 0x0018 */ s32 _0018;
+    /* 0x001C */ u8 _001C[0xa0 - 0x1c];
     /* 0x00A0 */ f32 _00A0;
-    artificial_padding(0xa0, 0x9ac, f32);
+    /* 0x00A4 */ u8 _00A4[0x118 - 0xa4];
+    /* 0x0118 */ s32 _0118;
+    /* 0x011C */ u8 _011C[0x92c - 0x11c];
+    /* 0x092C */ s32 _092C; // scene index
+    /* 0x0930 */ u8 _0930[0x944 - 0x930];
+    /* 0x0944 */ s16 _0944;
+    /* 0x0946 */ u8 _0946[0x9ab - 0x946];
+    /* 0x09AB */ u8 _09AB;
     /* 0x09AC */ u8 _09AC;
+    /* 0x09AD */ u8 _09AD;
+    /* 0x09AE */ u8 _09AE;
+    /* 0x09AF */ u8 _09AF;
+    /* 0x09B0 */ u8 _09B0;
+    /* 0x09B1 */ u8 _09B1[5];
+    /* 0x09B6 */ u8 _09B6;
 } lbl_3_common_bss_DE94_s2;
 
 typedef struct {
