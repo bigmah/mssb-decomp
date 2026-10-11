@@ -194,5 +194,13 @@ void fn_3_24F24(s32 mode) {
 
 // .text:0x000250FC size:0xE8 mapped:0x80664190
 void fn_3_250FC(void) {
-    return;
+    s32 i;
+
+    lbl_3_common_bss_1323C->_25C = i = 0;
+    for (; i < 0x21; i++) {
+        lbl_3_data_2398[i]._34[0] = 0;
+        lbl_3_data_2398[i]._34[1] = 0;
+        lbl_3_data_2398[i]._34[2] = 0;
+    }
+    lbl_3_common_bss_1323C->_27B = 0;
 }
