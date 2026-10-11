@@ -2630,9 +2630,195 @@ void fn_3_13AFE4(void) {
 }
 
 // .text:0x0013B284 size:0x740 mapped:0x8077A318
-void fn_3_13B284(void) {
-    return;
+// Inline copies of the per-frame helpers that fn_3_13B284 inlines.
+#pragma opt_unroll_loops off
+static inline void h133320(void) {
+    s8 i = 0;
+    do {
+        G8[0x1DC8 + i] = 0;
+        i++;
+    } while (i < 4);
 }
+
+#pragma opt_unroll_loops reset
+static inline void h13974C(void) {
+    u32 i;
+    for (i = 0; i < 100; i++) {
+        if (G8[0x193A + i] == 3) {
+            ((s16*)G8)[0xBE4 + i]++;
+            PSVECAdd((Vec*)(G8 + i * 12 + 0xCD0), (Vec*)(G8 + i * 12 + 0x1180), (Vec*)(G8 + i * 12 + 0xCD0));
+            *(f32*)(G8 + i * 12 + 0x1184) += *(f32*)(lbl_3_data_219B8 + 0x2C);
+            if (*(f32*)(G8 + i * 12 + 0x1184) < lbl_3_rodata_35D0) {
+                G8[0x193A + i] = 0;
+                G8[0x1D6C]--;
+            }
+        }
+    }
+}
+
+static inline void h139700(void) {
+    u8* m = G8;
+    if (m[0xBAC] != 0) {
+        if (m[0x190B] != 0) {
+            m[0xBAC] = 0;
+            return;
+        }
+        fn_3_1391C0();
+    }
+}
+
+static inline void h136048(void) {
+    s32 i;
+    s16* a = (s16*)&g_Minigame;
+    for (i = 0; i < 4; i++) {
+        a[0xEB2 + i] += lbl_3_data_21A44;
+        a[0xEB2 + i] = fn_3_9FE6C_normalizeAngle(a[0xEB2 + i]);
+    }
+}
+
+static inline void h136EA4(void) {
+    u8* g = G8;
+    s32 pu;
+    s16 t;
+    f32 ang;
+    if (g[0x190B] != 0) {
+        ((s8*)g)[0x1D74] = -1;
+        g[0xCCE] = 0;
+    } else if (g[0xCCE] != 0) {
+        ((void (*)(u8*))fn_3_13688C)(g + 0xCB0);
+    } else {
+        pu = (s8)g[0x1D74];
+        if (pu != -1) {
+            t = *(s16*)(g + 0x1D58);
+            *(s16*)(g + 0x1D58) = --t;
+            if (t <= 0) {
+                if ((s8)g[0x1D6D] != pu) {
+                    fn_800115C8(g[0x1D74]);
+                }
+                ((s8*)g)[0x1D74] = -1;
+            }
+        } else {
+            *(s16*)(g + 0xCCC) -= 1;
+            if (*(s16*)(g + 0xCCC) <= 0) {
+                if ((s8)(rand() % 100 - lbl_3_data_21B16) < 0) {
+                    g[0xCCE] = 1;
+                } else {
+                    g[0xCCE] = 2;
+                }
+                *(f32*)(G8 + 0xCB0) = lbl_3_data_219AC[0];
+                *(f32*)(G8 + 0xCB4) = lbl_3_data_219AC[1];
+                *(f32*)(G8 + 0xCB8) = lbl_3_data_219AC[2];
+                *(f32*)(G8 + 0xCC0) = lbl_3_data_21AF8[0];
+                ang = lbl_3_rodata_3660 * (lbl_3_rodata_3658 * ((f32)rand() / lbl_3_rodata_365C));
+                *(f32*)(G8 + 0xCBC) = lbl_3_data_21AF8[1] * (f32)cos(ang);
+                *(f32*)(G8 + 0xCC4) = lbl_3_data_21AF8[1] * (f32)sin(ang);
+                *(s16*)(g + 0xCCC) = lbl_3_data_21B10[1];
+            }
+        }
+    }
+}
+
+static inline void h135924(void) {
+    u32 i;
+    for (i = 0; i < 100; i++) {
+        if (G8[0x193A + i] == 1) {
+            if (((f32*)(G8 + i * 12 + 0xCD0))[1] < lbl_3_rodata_35FC) {
+                Vec d;
+                Vec c = *(Vec*)lbl_3_rodata_35B8;
+                if ((f32*)(G8 + i * 12 + 0xCD0) != NULL) {
+                    PSVECSubtract((Vec*)(G8 + i * 12 + 0xCD0), &c, &d);
+                    d.y = lbl_3_rodata_35D0;
+                    if (PSVECMag(&d) <= lbl_3_rodata_363C) {
+                        Vec v;
+                        Vec base = *(Vec*)lbl_3_rodata_35C4;
+                        if ((f32*)(G8 + i * 12 + 0xCD0) != NULL) {
+                            PSVECNormalize(&d, &v);
+                            PSVECScale(&v, lbl_3_rodata_363C, &v);
+                            ((f32*)(G8 + i * 12 + 0xCD0))[0] = base.x + v.x;
+                            ((f32*)(G8 + i * 12 + 0xCD0))[2] = base.z + v.z;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+static inline void h13AFE4(void) {
+    if (G8[0x190B] == 0) {
+        if (*(u32*)(G8 + 0x17C4) == 0) {
+            G8[0x190B] = 1;
+            fn_3_10F550(3, 0);
+            sndFXStartEx(0x1BE, lbl_800EFBA4[7], 0x3F, 0);
+        }
+        return;
+    }
+    if (G8[0x190B] == 1) {
+        G8[0x190B] = 2;
+        g_GameLogic.CountdownUntilFade = *(s16*)lbl_3_data_21B20;
+        fn_3_14E894();
+    }
+    if (--g_GameLogic.CountdownUntilFade == 7) {
+        changeScene(3, 6);
+    }
+    if (g_GameLogic.CountdownUntilFade <= 0) {
+        fn_3_DE4FC();
+        if (G8[0x1A2B] <= 2 && G8[0x1909] == 0) {
+            if (G8[0x18E8 + *(s8*)(G8 + 0x1908)] == 1 && G8[0x19A8] == 0) {
+                G8[0x1A37] = 1;
+            } else {
+                G8[0x1A37] = 2;
+            }
+        }
+        fn_3_5A6D4(0xE);
+        fn_80011578();
+        clr(0);
+        *(s16*)(G8 + 0x1D50) = 0x1E;
+        G8[0x1D6C] = 0;
+        G8[0xBED] = 0;
+        G8[0xC2D] = 0;
+        G8[0xC6D] = 0;
+        G8[0xCAD] = 0;
+        G8[0xCCE] = 0;
+    }
+}
+
+extern u16 lbl_3_data_81FC[];
+extern s32 fn_3_108854(void);
+extern void fn_3_2F484(void);
+// NONMATCHING 95.8%: saved-register numbering differs (g_Minigame bases kept in other regs)
+#if NONMATCHING
+// Per-frame update for this minigame.
+void fn_3_13B284(void) {
+    if (fn_3_108854() != 0) {
+        return;
+    }
+    if (g_Minigame.turnOverStatus == 0) {
+        g_Minigame._17C0++;
+    }
+    if ((u32)g_Minigame._17C4 != 0) {
+        g_Minigame._17C4--;
+        // countdown beeps during the last 10 seconds
+        if ((u32)g_Minigame._17C4 < 600 && (u32)g_Minigame._17C4 != 0 && (u32)g_Minigame._17C4 % 60 == 0) {
+            fn_3_90064(lbl_3_data_81FC[0x28]);
+        }
+    }
+    fn_3_13334C();
+    fn_3_2F484();
+    h133320();
+    fn_3_136220();
+    fn_3_139CA0();
+    fn_3_139808();
+    h13974C();
+    h139700();
+    fn_3_13AA78();
+    h136048();
+    fn_3_138AA4();
+    h136EA4();
+    h135924();
+    h13AFE4();
+}
+#endif
 
 #pragma dont_inline off
 // .text:0x0013B9C4 size:0x16C mapped:0x8077AA58
