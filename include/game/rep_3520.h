@@ -17,9 +17,18 @@ s32 fn_3_134918(f32* a, f32* b);
 int fn_3_13493C(u32 idx, f32* ox, f32* oz, u32 depth);
 int fn_3_134C80(u32 a, u32 b, u32 c, f32 x, f32 y);
 u32 fn_3_134D4C(f32 ax, f32 az, f32 r, f32 bx, f32 bz, f32 x, f32 y);
-void fn_3_1350BC(void);
+typedef struct CoinCand {
+    /*0x00*/ f32 score; // lower is better (squared distance plus penalties)
+    /*0x04*/ s32 coin;  // index into the coin pool
+    /*0x08*/ f32 x;     // coin position rotated into the field frame
+    /*0x0C*/ f32 z;
+    /*0x10*/ u8 quad;   // quadrant of (x, z)
+    /*0x11*/ u8 valid;
+    /*0x12*/ u8 pad[2];
+} CoinCand; // size: 0x14
+CoinCand* fn_3_1350BC(u32 player, u32 quad, u32 n, CoinCand* cands);
 int fn_3_1354BC(int idx, f32 x, f32 y);
-int fn_3_135520(f32 x, f32 y, f32 r);
+u32 fn_3_135520(f32 x, f32 y, f32 r);
 void fn_3_135600(f32* outX, f32* outY, f32 x, f32 y);
 int fn_3_13564C(f32 x, f32 y);
 int fn_3_135698(u8* a, u8* b);

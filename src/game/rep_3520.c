@@ -187,6 +187,12 @@ void fn_3_133200(void) {
 
 // .text:0x00133320 size:0x2C mapped:0x807723B4
 #define G8 ((u8*)&g_Minigame)
+// Coin pool (100 entries) overlaid on g_Minigame: positions at 0xCD0, velocities at 0x1180,
+// per-coin timers at 0x17C8 and states at 0x193A. MiniGameStruct only declares the first 30.
+#define COIN_POS(i) (((Vec*)(G8 + 0xCD0))[i])
+#define COIN_VEL(i) (((Vec*)(G8 + 0x1180))[i])
+#define COIN_TIMER(i) (((s16*)(G8 + 0x17C8))[i])
+#define COIN_STATE(i) (G8[0x193A + (i)])
 
 #pragma opt_unroll_loops off
 void fn_3_133320(void) {
@@ -421,9 +427,117 @@ u32 fn_3_134D4C(f32 ax, f32 az, f32 r, f32 bx, f32 bz, f32 x, f32 y) {
 }
 
 // .text:0x001350BC size:0x400 mapped:0x80774150
-void fn_3_1350BC(void) {
-    return;
+extern const f32 lbl_3_rodata_3624;
+extern f32 lbl_3_rodata_3628;
+extern f32 lbl_3_rodata_362C;
+extern f32 lbl_3_rodata_3630;
+extern f32 lbl_3_rodata_3634;
+extern f32 lbl_3_rodata_3638;
+extern f32 lbl_3_data_21B38[];
+extern f32 lbl_3_data_21B58[];
+extern s16 lbl_3_data_21A88[];
+extern f32 lbl_3_data_21A54[];
+static inline int nearObstacle(u8* o, f32 x, f32 z) {
+    int r = 0;
+    f64 ax = fabs(*(f32*)(o + 0xBB0) - x);
+    f64 az = fabs(*(f32*)(o + 0xBB8) - z);
+    f32 fx = ax;
+    f32 fz = az;
+    if (fx <= lbl_3_rodata_35D8 && fz <= lbl_3_rodata_35DC) {
+        r = 1;
+    }
+    return r;
 }
+// NONMATCHING 96.8%: saved-register numbering differs and the obstacle-loop base gets addi r0 + mr
+// (docs/patterns/loops.md "global base u8* g = G8" open item)
+#if NONMATCHING
+CoinCand* fn_3_1350BC(u32 player, u32 quad, u32 n, CoinCand* cands) {
+    s32 ai = g_Minigame.minigameControlStruct[0].aIStrength[player];
+    CoinCand* c;
+    u32 i;
+    if (n != 0) {
+    i = 0;
+    c = cands;
+    do {
+        f32 cx, cz, dx, dz, r;
+        FS* f;
+        u32 k;
+        c->valid = 1;
+        cz = g_Minigame.wallBall_coinCoordinates[c->coin].z;
+        cx = g_Minigame.wallBall_coinCoordinates[c->coin].x;
+        dx = cx - lbl_3_data_21A48[0];
+        dz = cz - lbl_3_data_21A48[2];
+        if (dx * dx + dz * dz < lbl_3_rodata_3624) {
+            c->valid = 0;
+        } else if (player != g_Minigame._1D6D) {
+            if (g_Minigame._1D6D >= 0) {
+                r = lbl_3_data_21B38[ai];
+                f = &g_Fielders[g_Minigame.minigameFielderIndex[g_Minigame._1D6D]];
+                dz = cz - f->z;
+                dx = cx - f->x;
+                if (dx * dx + dz * dz <= r * r) {
+                    c->valid = 0;
+                }
+            }
+            if (c->valid != 0) {
+                u8* o;
+                for (k = 0, o = G8; ; ) {
+                    u8 st = o[0xBED];
+                    if (st >= 1 && st <= 3) {
+                        if (nearObstacle(o, cx, cz)) {
+                            c->valid = 0;
+                            break;
+                        }
+                    }
+                    k++;
+                    o += 0x40;
+                    if (k >= lbl_3_data_21A88[g_Minigame.soloMinigameDifficulty]) {
+                        break;
+                    }
+                }
+            }
+            if (c->valid != 0 && g_Minigame._CCE[0] == 2) {
+                dz = cz - g_Minigame._CB8;
+                r = lbl_3_data_21B58[ai];
+                dx = cx - g_Minigame._CB0;
+                if (dx * dx + dz * dz <= r * r) {
+                    c->valid = 0;
+                }
+            }
+        }
+        dz = g_Minigame.wallBall_coinCoordinates[c->coin].z - g_Fielders[g_Minigame.minigameFielderIndex[player]].z;
+        dx = g_Minigame.wallBall_coinCoordinates[c->coin].x - g_Fielders[g_Minigame.minigameFielderIndex[player]].x;
+        c->score = dx * dx + dz * dz;
+        for (k = 0; k < g_Minigame.miniGameNumberOfParticipants; k++) {
+            if (k != player) {
+                f32 d;
+                dz = g_Minigame.wallBall_coinCoordinates[c->coin].z - g_Fielders[g_Minigame.minigameFielderIndex[k]].z;
+                dx = g_Minigame.wallBall_coinCoordinates[c->coin].x - g_Fielders[g_Minigame.minigameFielderIndex[k]].x;
+                d = dx * dx + dz * dz;
+                if (d < lbl_3_rodata_3628 && d < c->score) {
+                    c->score += lbl_3_rodata_362C;
+                }
+            }
+        }
+        if (g_Minigame._1D72 != 0 && player != g_Minigame._1D6D) {
+            if (c->quad == ((quad + 1) & 3)) {
+                c->score += lbl_3_rodata_3630;
+            } else if (c->quad == ((quad + 2) & 3)) {
+                c->score += lbl_3_rodata_3634;
+            }
+            if (fn_3_135520(c->x, c->z, lbl_3_rodata_3638 * lbl_3_data_21A54[2])) {
+                c->valid = 0;
+            }
+        }
+        i++;
+        c++;
+    } while (i < n);
+    fn_800246D4(fn_3_135698, cands, cands, sizeof(CoinCand), n);
+    return cands;
+    }
+    return NULL;
+}
+#endif
 
 // .text:0x001354BC size:0x64 mapped:0x80774550
 int fn_3_1354BC(int idx, f32 x, f32 y) {
@@ -439,7 +553,7 @@ int fn_3_1354BC(int idx, f32 x, f32 y) {
 }
 
 // .text:0x00135520 size:0xE0 mapped:0x807745B4
-int fn_3_135520(f32 x, f32 y, f32 r) {
+u32 fn_3_135520(f32 x, f32 y, f32 r) {
     if (x >= lbl_3_rodata_35D0) {
         if (y >= lbl_3_rodata_35D0) {
             if (y <= r) {
