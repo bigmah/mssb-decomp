@@ -19,7 +19,6 @@ typedef struct GameSettingsView {
 } GameSettingsView;
 extern GameSettingsView g_d_GameSettings; // GameInitVariables (UnknownHomes_Static.h clashes with this unit's prototypes)
 void fn_800B0A14_removeQueue(void* unused);
-extern void* lbl_803CC1B8; // current queue task
 typedef struct StadiumLightRow {
     StadiumLight light;
     u8 pad[0x2C - sizeof(StadiumLight)];
@@ -79,7 +78,6 @@ typedef struct ActorTable {
     /* 0x2C50 */ void* actors[13];
 } ActorTable;
 extern ActorTable lbl_8036E548; // only the field used here
-s32 getAnimRelatedCoordinates(s32 actor, s32 anim, Vec* out); // TODO: UnknownHomes_Game.h has (int, int, VecXYZ*)
 extern SpaniSlot lbl_80371C30[0x360];
 extern SpaniObj* lbl_803CBC9C;
 extern Particle* lbl_803CBC74; // free particle list
@@ -3001,10 +2999,10 @@ void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
     if (a < 0 || a >= 13 || lbl_8036E548.actors[a] == NULL) {
         return;
     }
-    getAnimRelatedCoordinates(a, anim, &pos);
+    getAnimRelatedCoordinates(a, anim, (VecXYZ*)&pos); // TODO type: VecXYZ and Vec have the same layout
     if (b >= 0 && b < 13 && lbl_8036E548.actors[b] != NULL) {
         // midpoint between the two actors
-        getAnimRelatedCoordinates(b, anim, &q);
+        getAnimRelatedCoordinates(b, anim, (VecXYZ*)&q);
         PSVECSubtract(&q, &pos, &q);
         PSVECScale(&q, 0.5f, &q);
         PSVECAdd(&pos, &q, &pos);
