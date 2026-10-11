@@ -2832,8 +2832,7 @@ typedef struct {
         u8 _1; // set when RandomInt_Game(100) rolls under the fielder's chance (fn_3_1DEB8)
         u8 _2[4];
     } _077[4]; // per minigame fielder
-    u8 _08F[0xAE - 0x8F];
-    u8 pad[0x90];
+    u8 _08F[0x90 - 0x8F];
     /* 0x090 */ VecXYZ _090; // target position
     u8 _09C[0xAE - 0x9C];
     /* 0x0AE */ s16 _0AE;
