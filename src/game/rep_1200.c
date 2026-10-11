@@ -14,6 +14,7 @@ extern void fn_3_5C69C(s32 type);
 extern void fn_3_6EBB4(s32 rosterLoc);
 extern void fn_3_89864(s32 i, s32 d);
 extern s32 fn_8001C920(s32 id);
+extern void fn_3_7A154(s32 inPlay);
 
 // View of lbl_3_common_bss_32724 (in-game HUD flags), only the fields used here.
 typedef struct Rep1200Bss32724View {
@@ -178,9 +179,38 @@ void fn_3_6FDA0(void) {
 }
 
 // .text:0x0006FFC4 size:0x2BC mapped:0x806AF058
+// NONMATCHING 99%: f4/f5 swapped (orig keeps the |v|^2 sum in f5 and t in f4); same code as fn_3_6FDA0 which matches
+#if NONMATCHING
 void fn_3_6FFC4(void) {
-    return;
+    s16 ang;
+    f32 b;
+    f32 a;
+    f32 mag;
+    f32 k;
+    f32 t;
+    s32 off = g_Ball.StaticRandomInt1 % 257 - 0x80;
+    ang = fn_3_9FB8C(g_Pitcher.ballVelocity.x, -g_Pitcher.ballVelocity.z);
+    getComponentsFromSAng(ang + off, &a, &b);
+    t = lbl_3_rodata_1254 * (f32)(g_Ball.StaticRandomInt2 % 10);
+    mag = sqrt_ext(g_Pitcher.ballVelocity.x * g_Pitcher.ballVelocity.x + g_Pitcher.ballVelocity.z * g_Pitcher.ballVelocity.z);
+    k = lbl_3_rodata_1278 + t;
+    g_Ball.physicsSubstruct.velocity.x = k * (a * mag);
+    g_Ball.physicsSubstruct.velocity.z = k * (b * mag);
+    g_Ball.physicsSubstruct.velocity.y = lbl_3_rodata_1258;
+    g_Pitcher.strikeOutOrWalk = 3;
+    g_Pitcher.miniGameRelated = 1;
+    g_Pitcher.framesSinceAtBatEnded = 0;
+    playSoundEffect(0x170);
+    if (g_Batter.aiControlledInd == 0) {
+        if (g_d_GameSettings.minigamesEnabled != 0) {
+            fn_3_6C854(g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame.rosterID], 2);
+        } else {
+            fn_3_6C854(g_GameLogic.teamBatting, 2);
+        }
+    }
+    fn_3_7A154(0);
 }
+#endif
 
 // .text:0x00070280 size:0x16C mapped:0x806AF314
 // Hit-by-pitch box per character group: {max y, max x, max -x}.
@@ -213,7 +243,6 @@ void fn_3_70280(void) {
 }
 
 // .text:0x000703EC size:0x294 mapped:0x806AF480
-extern void fn_3_7A154(s32 inPlay);
 extern void fn_3_1DD48(void);
 void fn_3_703EC(void) {
     u8* p;
