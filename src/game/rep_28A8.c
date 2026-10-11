@@ -20,6 +20,11 @@ extern void fn_3_1DD48(void*);
 extern void fn_3_75560(void);
 extern void atBat_batter(void);
 extern u8 g_Pitcher[];
+extern u8 lbl_8036E548[];
+extern void fn_3_DF8D4(void);
+extern void fn_3_15F998(void);
+extern void fn_3_147DFC(void);
+extern void fn_3_11CF84(void);
 extern struct { s32 w0; u16 w4; u16 w6; u16 w8; u8 pad[2]; s16 n; u8 pad0[4]; s16 w12; u8 pad1[0x1D0 - 0x14]; u8 b1D0; u8 pad2; u8 b1D2; u8 pad3[2]; u8 b1D5; u8 pad4[3]; u8 b1D9; s8 b1DA; u8 pad5[0x220 - 0x1DB]; u8 b220; } lbl_3_common_bss_34C90;
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
@@ -45,8 +50,8 @@ typedef struct { s32 a; u16 b4; u16 b6; u16 b8; u8 pad0[2]; s16 c; u8 pad1[4]; s
 typedef struct { u8 p0[4]; u16 b4; u16 b6; u16 b8; u8 p1[6]; } CT;
 #define L34 ((SD*)&lbl_3_common_bss_34C90)
 extern void fn_3_107E80(void);
-extern s32 fn_3_5B380(void);
-extern void fn_8004CC18();
+extern s32 fn_3_5B380(u16 buttons);
+extern void fn_8004CC18(void);
 typedef struct { f32 x, y, z; } V3X;
 typedef struct { u8 pad0[0xCD0]; V3X pos[8]; u8 pad1[0x1180 - 0xD30]; V3X vel[8]; u8 pad2[0x17C8 - 0x11E0]; s16 f17C8; u8 pad3[0x1939 - 0x17CA]; u8 cnt; u8 flags[8]; u8 pad4[0x199F - 0x1942]; u8 f199F; } MGF;
 typedef struct { f32 a, b, c, d; } T18AC8;
@@ -248,7 +253,85 @@ void fn_3_DC5A4(void) {
 
 // .text:0x000DC6E8 size:0x380 mapped:0x8071B77C
 void fn_3_DC6E8(void) {
-    return;
+    s32 started;
+    if (lbl_3_common_bss_34C90.w12 < 0x7FFE) {
+        lbl_3_common_bss_34C90.w12 = lbl_3_common_bss_34C90.w12 + 1;
+    } else {
+        lbl_3_common_bss_34C90.w12 = 0x7FFF;
+    }
+    switch (lbl_3_common_bss_34C90.b1D2) {
+    case 0:
+        lbl_3_common_bss_34C90.b1DA = 0;
+        lbl_3_common_bss_34C90.b1D0 = 0x12;
+        lbl_3_common_bss_34C90.b1D2 = 1;
+        break;
+    case 1:
+        lbl_3_common_bss_34C90.w12 = 0;
+        lbl_3_common_bss_34C90.b1D2 = 2;
+        break;
+    case 2:
+        if (lbl_3_common_bss_34C90.w12 >= 0x14) {
+            lbl_3_common_bss_34C90.b1D2 = 3;
+        }
+        break;
+    case 3:
+        fn_3_DC5A4();
+        lbl_3_common_bss_34C90.w12 = 0;
+        break;
+    case 4:
+        if (lbl_3_common_bss_34C90.w12 >= 0x14) {
+            changeScene(3, 6);
+        }
+        if (lbl_8037169C[0x13] != 0) {
+            lbl_3_common_bss_34C90.b1D2 = 5;
+        }
+        break;
+    case 5:
+        lbl_8036E548[0x307A] = 0;
+        started = 0;
+        lbl_3_common_bss_34C90.b1D9 = 2;
+        if (lbl_3_common_bss_34C90.b1DA == 0) {
+            fn_3_5A6D4(5);
+            started = 1;
+            g_Minigame[0x1A38] = 1;
+        } else if (lbl_3_common_bss_34C90.b1DA == 1) {
+            g_Minigame[0x19DF] = 0x1E;
+            fn_3_5A6D4(0x1D);
+            started = 1;
+        }
+        if (started != 0) {
+            fn_3_DF8D4();
+            fn_3_15F998();
+            fn_3_147DFC();
+            if (lbl_3_common_bss_34C90.b1DA == 1) {
+                fn_3_11CF84();
+            }
+        }
+        break;
+    case 9:
+        switch (fn_3_5B380(((u16*)(g_Controls + 6))[lbl_3_common_bss_34C90.w0 * 8])) {
+        case 1:
+            fn_3_15F998();
+            fn_3_147DFC();
+            *(u16*)(g_GameLogic + 0xFE) = 0;
+            lbl_3_common_bss_34C90.b1D2 = 10;
+            break;
+        case 2:
+            lbl_3_common_bss_34C90.b1D2 = 3;
+            break;
+        }
+        break;
+    case 10:
+        if (*(u16*)(g_GameLogic + 0xFE) > 0x2D) {
+            changeScene(4, 6);
+        }
+        if (lbl_8037169C[0x13] != 0) {
+            lbl_3_common_bss_34C90.b1D9 = 2;
+            fn_8004CC18();
+            g_GameLogic[0x122] = 1;
+        }
+        break;
+    }
 }
 
 // .text:0x000DCA68 size:0x218 mapped:0x8071BAFC
@@ -378,7 +461,7 @@ void fn_3_DCC80(void) {
         fn_3_107E80();
         break;
     case 9:
-        switch (fn_3_5B380()) {
+        switch (fn_3_5B380(lbl_3_common_bss_34C90.w6)) {
         case 1:
             *(u16*)(g_GameLogic + 0xFE) = 0;
             lbl_3_common_bss_34C90.b1D2 = 10;
@@ -395,7 +478,7 @@ void fn_3_DCC80(void) {
         if (lbl_8037169C[0x13] != 0) {
             lbl_3_common_bss_34C90.b1D9 = 2;
             g_d_GameSettings[0x13] = 1;
-            fn_8004CC18(g_d_GameSettings, &lbl_3_common_bss_34C90, 2);
+            fn_8004CC18();
             g_GameLogic[0x122] = 1;
         }
         break;
