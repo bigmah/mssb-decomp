@@ -179,9 +179,105 @@ u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer) {
 }
 
 // .text:0x800232E0 size:0x32C
-void f_InitActorWithLayout(void) {
-    return;
+// NONMATCHING 80%: the original keeps the skin object pointer in a stack slot and the string table
+// (lbl_800E6698) in a saved register, and has a 0x110 frame; logic and calls are the same.
+#if NONMATCHING
+MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer) {
+    u16 boneCount;
+    Mtx identity;
+    MDisplayObj* skin;
+    MActor* actor;
+    s32 ptrArraySize;
+    s32 mtxArraySize;
+    s32 skinMtxSize = 0;
+    s32 orientationInvSize = 0;
+    s32 invTransposeSize = 0;
+    u32 i;
+    s32 normalOffset;
+    DODescriptor* desc;
+    PositionData* positionData;
+
+    boneCount = 0;
+    ptrArraySize = (layout->totalBones * sizeof(MBone*) + 0x1F) & ~0x1F;
+    mtxArraySize = (layout->totalBones * sizeof(Mtx) + 0x1F) & ~0x1F;
+    if (layout->skinFileID != 0xFFFF) {
+        buffer = loadDisplayObj(&skin, layout->pal, layout->skinFileID, buffer);
+        skinMtxSize = orientationInvSize = (layout->totalBones * sizeof(Mtx) + 0x1F) & ~0x1F;
+        if (skin->lightingData != NULL) {
+            invTransposeSize = skinMtxSize;
+        }
+    }
+    actor = (MActor*)buffer;
+    actor->boneArray = (MBone**)((u8*)actor + sizeof(MActor));
+    actor->forwardMtxArray = (Mtx*)((u8*)actor->boneArray + ptrArraySize);
+    actor->skinObject = skin;
+    actor->unk7C = 0;
+    buffer = (u8*)actor + ((ptrArraySize + mtxArraySize + skinMtxSize + orientationInvSize + invTransposeSize +
+                            ((layout->totalBones * sizeof(MBone) + 0x1F) & ~0x1F) + sizeof(MActor) + 0x1F) &
+                           ~0x1F);
+    PSMTXIdentity(identity);
+    actor->actorID = layout->actorID;
+    actor->layout = layout;
+    actor->totalBones = layout->totalBones;
+    DSInitTree(&actor->hierarchy, NULL, (DSBranchPtr)OFFSET_OF(MBone, branch));
+    DSInitList(&actor->drawPriorityList, NULL, (DSLinkPtr)OFFSET_OF(MBone, drawPriorityLink));
+    actor->pal = NULL;
+    if (layout->pal != NULL) {
+        actor->pal = layout->pal;
+    }
+    if (layout->skinFileID != 0xFFFF) {
+        DOSetWorldMatrix((struct DODisplayObj*)actor->skinObject, identity);
+        actor->skinMtxArray = (Mtx*)((u8*)actor->forwardMtxArray + mtxArraySize);
+        actor->orientationInvMtxArray = (Mtx*)((u8*)actor->skinMtxArray + skinMtxSize);
+        // The skin's normals live right after its positions in a shared array.
+        positionData = actor->skinObject->positionData;
+        normalOffset = actor->skinObject->lightingData->normalArray - positionData->positionArray;
+        desc = layout->pal->descriptorArray;
+        for (i = 0; i < layout->pal->numDescriptors; i++, desc++) {
+            char* positions;
+            if (desc->layout->positionData->compCount == 6) {
+                positions = desc->layout->positionData->positionArray;
+                positionData->positionArray = positions;
+                actor->skinObject->lightingData->normalArray = positions + normalOffset;
+                break;
+            }
+        }
+        if (actor->skinObject->lightingData != NULL) {
+            actor->skinInvTransposeMtxArray = (Mtx*)((u8*)actor->orientationInvMtxArray + orientationInvSize);
+        } else {
+            actor->skinInvTransposeMtxArray = NULL;
+        }
+    } else {
+        actor->skinObject = NULL;
+        actor->skinMtxArray = NULL;
+        actor->orientationInvMtxArray = NULL;
+        actor->skinInvTransposeMtxArray = NULL;
+    }
+    actor->unk1C = 0;
+    if (layout->hierarchyRoot != NULL) {
+        f_InitBone(NULL, layout->hierarchyRoot, actor, &boneCount,
+                   (MBone*)((u8*)actor->forwardMtxArray + mtxArraySize + skinMtxSize + orientationInvSize + invTransposeSize),
+                   buffer);
+    }
+    if (boneCount != actor->totalBones) {
+        OSPanic(lbl_800E6698 + 0x3C, 0x209, lbl_800E6698 + 0x48);
+    }
+    if (actor->skinObject != NULL) {
+        BuildBoneSkinOrientationMatrix((MBone*)actor->hierarchy.Root, identity);
+    }
+    ACTSort((Actor*)actor);
+    actor->unk80 = 0;
+    actor->unk82 = 0;
+    actor->unk84 = 0;
+    actor->unk88 = 0;
+    actor->unk8C = lbl_803CC564;
+    actor->unk90 = lbl_803CC560;
+    actor->unk99 = 0;
+    actor->unk98 = 0;
+    actor->unk94 = 0;
+    return actor;
 }
+#endif
 
 // .text:0x8002360C size:0x2D4
 void BuildBoneSkinOrientationMatrix(MBone* bone, MtxPtr parent) {
