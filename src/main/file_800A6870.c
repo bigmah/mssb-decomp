@@ -383,9 +383,12 @@ s32 ConvertPathToEntryNum(void* file) {
 }
 
 // .text:0x800A7568 size:0x84
+// NONMATCHING 94%: original materializes the callback via r0 + mr r4,r0; the inlined copies in callers match
+#if NONMATCHING
 void fn_800A7568(void) {
-    return;
+    CancelTransfer();
 }
+#endif
 
 // .text:0x800A75EC size:0x84
 void fn_800A75EC(s32 result, DVDCommandBlock* block) {
