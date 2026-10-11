@@ -1685,6 +1685,7 @@ void fn_2_65A00(void) {
 
 // .text:0x00065C84 size:0x1CC
 void fn_2_65C84(MenuTask* task, MenuItem* item) {
+    MenuSaveProgress* save = &lbl_80354768;
     s16 ev = fn_2_53BC8(item);
     if (ev != -1) {
         item->state = ev;
@@ -1695,7 +1696,7 @@ void fn_2_65C84(MenuTask* task, MenuItem* item) {
         item->state = 0x26;
         break;
     case 2:
-        if ((s32)lbl_80354768._CF18[lbl_800E869C[item->_10]] == 1) {
+        if ((s32)save->_CF18[lbl_800E869C[item->_10]] == 1) {
             lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
             lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 3 << 16;
         } else {
