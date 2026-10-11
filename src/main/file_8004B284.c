@@ -158,7 +158,28 @@ void fn_8004B284(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
 
 // .text:0x8004B6EC size:0xC8
 void fn_8004B6EC(CharModel* model, GameActor** actor) {
-    return;
+    s32 flag;
+
+    if (model == NULL || model->anim == NULL) {
+        flag = 1;
+    } else {
+        flag = ((fn_80024D2C(&model->anim->slots[0]) >> 28) & 1) ^ 1;
+    }
+    if (flag) {
+        if (model->bone1F8 != 0xFFFF) {
+            fn_800B2BE4(*actor, model->bone1F8);
+        }
+        if (model->bone1FA != 0xFFFF) {
+            fn_800B2BA8(*actor, model->bone1FA, NULL, 0);
+        }
+    } else {
+        if (model->bone1F8 != 0xFFFF) {
+            fn_800B2BA8(*actor, model->bone1F8, NULL, 0);
+        }
+        if (model->bone1FA != 0xFFFF) {
+            fn_800B2BE4(*actor, model->bone1FA);
+        }
+    }
 }
 
 // .text:0x8004B7B4 size:0x40
