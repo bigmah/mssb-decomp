@@ -27,6 +27,7 @@ BOOL fn_80069B68(void);
 s32 translateStarPitchHitIndex(u8 pitch);
 u8 translateStarPitch(u8 star);
 u8 translateStarSwing(u8 star);
+u8 fn_80064918(s16 charId);
 void fn_8006496C(void);
 
 #endif
