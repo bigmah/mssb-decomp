@@ -29,6 +29,7 @@ f32 fn_2_69070(s32 index, f32 x, f32 z);
 void fn_2_6B238(MenuEntry* owner);
 void fn_2_6B744(MenuEntry* owner);
 void fn_2_6DB30(MenuEntry* owner);
+void fn_2_705C0(MenuEntry* owner);
 void fn_2_6B4FC(MenuEntry* owner);
 void fn_2_71A38(u8* object);
 void fn_2_6ACF4(void);

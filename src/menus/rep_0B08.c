@@ -2390,3 +2390,89 @@ void fn_2_6DB30(MenuEntry* owner) {
         owner->state = 0;
     }
 }
+
+// .text:0x705C0 size:0x3E0
+// NONMATCHING 99%: r4/r5 swapped for the menu base and the self entry before atan2
+#if NONMATCHING
+void fn_2_705C0(MenuEntry* owner) {
+    s16* t;
+    u8 type;
+    s32 hi;
+    s32 base;
+    u8* p;
+    s32 lo;
+    s32 index;
+    s32 b, c;
+    s32 i;
+    s32 hit;
+    MenuEntry* e;
+
+    index = owner->objectId;
+    fn_2_69E1C(index);
+    type = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x441C);
+    t = lbl_2_data_2E80;
+    base = t[type * 3] * 2;
+    c = t[type * 3 + 2] * 2;
+    b = t[type * 3 + 1] * 2;
+    hi = base - c;
+    lo = base - b;
+    if (owner->objectId == 0) {
+        p = lbl_8036E548 + 0xC04;
+        if (p != NULL) {
+            c = *(s16*)(p + 0x68);
+            if (c == hi || c == lo) {
+                if (type == 5) {
+                    fn_80062890(1);
+                } else {
+                    fn_80062890(0);
+                }
+            }
+        }
+    }
+    if (owner->_38 <= lbl_2_rodata_B58) {
+        owner->angle34 = owner->heading;
+        e = &lbl_2_bss_1A8248[0]->entries[index];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+    for (i = 1; i < 7; i++) {
+        hit = (u8)fn_2_68C80(index, i);
+        if (hit != 0 && i == 1 && ((u8*)lbl_2_bss_1A8248[0])[0x44F3] == 0) {
+            owner->flagC4 = 2;
+            owner->flagCB = i;
+            e = &lbl_2_bss_1A8248[0]->entries[index];
+            e->typeC3 = 3;
+            e->state = 0;
+            return;
+        }
+        owner->flagCB = -1;
+    }
+    if (owner->flagCD == 1) {
+        MenuEntry* other;
+        MenuEntry* self;
+        f32 angle;
+        f32 diff;
+
+        self = &lbl_2_bss_1A8248[0]->entries[index];
+        other = &lbl_2_bss_1A8248[0]->entries[owner->flagCE];
+        angle = (f32)atan2(-(self->position.x - other->position.x), -(self->position.z - other->position.z));
+        diff = fn_2_4A18C(other->heading) - angle;
+
+        if (other->typeC3 == 7 && (owner->state == 0 || owner->state == 1)) {
+            if ((f32)__fabs(diff) < lbl_2_rodata_BB8) {
+                lbl_2_bss_1A824C[0][0x1978F1] = 0;
+            } else {
+                lbl_2_bss_1A824C[0][0x1978F1] = 2;
+            }
+        } else {
+            lbl_2_bss_1A824C[0][0x1978F1] = 1;
+        }
+        owner->mode = 4;
+        owner->flagC4 = 1;
+        owner->locationIndex = fn_2_689CC(0);
+        e = &lbl_2_bss_1A8248[0]->entries[index];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+}
+#endif
