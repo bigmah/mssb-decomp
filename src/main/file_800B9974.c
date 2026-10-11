@@ -107,6 +107,7 @@ void fn_800B9A9C(u32 flag, f32 value) {
 }
 
 // NONMATCHING 93%: original keeps -0.5f in f31 (fneg of the 0.5f constant) and allocates one more saved register
+// litcheck: -0.5 (the original negates its 0.5f with fneg)
 #if NONMATCHING
 // .text:0x800B9AB0 size:0x3F8
 s32 fn_800B9AB0(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state, s32* stage, s32* coord, s32* map,

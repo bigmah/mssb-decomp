@@ -566,6 +566,7 @@ void fn_800B1468(Vec* pos, u32 color, TexImage* tex) {
 // .text:0x800B1500 size:0x9BC
 // NONMATCHING 94%: register allocation (verts/tex/dirty) differs, and the original evaluates an unused
 // "all corners degenerate?" float check on verts (no effect, omitted here)
+// litcheck: 0.0 (only the omitted check compares against it)
 #if NONMATCHING
 // Appends a primitive to the current layer's display list, first writing any state
 // (projection, matrix, blend, alpha test, Z mode, texture) that differs from what the

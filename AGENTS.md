@@ -65,7 +65,7 @@ There are two levels. Never leave a function as a stub just because it won't mat
   s32 fn_8001234(u8* p) { ... }
   #endif
   ```
-  Use `#if`, not `#ifdef`: some libraries already compile with `-DNONMATCHING=0`. Check it compiles with `python3 tools/nmcheck.py src/<unit>.c` (the matching build never compiles it), then commit it as `equivalent <function_name>` once the full build still passes steps 2–3. Use this when a function has hit its time budget (see "When stuck"), or right away for very large functions where matching would take hours.
+  Use `#if`, not `#ifdef`: some libraries already compile with `-DNONMATCHING=0`. Check it compiles with `python3 tools/nmcheck.py src/<unit>.c` (the matching build never compiles it) and loads the right float/double/string constants with `python3 tools/litcheck.py src/<unit>.c` (objdiff ignores literal values, so run it for matches too), then commit it as `equivalent <function_name>` once the full build still passes steps 2–3. Use this when a function has hit its time budget (see "When stuck"), or right away for very large functions where matching would take hours.
 
 Steps for a matching commit:
 
