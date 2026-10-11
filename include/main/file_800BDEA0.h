@@ -5,6 +5,7 @@
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
 #include "main/file_800BD8C4.h"
+#include "main/file_80063028.h" // GameBone
 
 // One shadow-casting light camera (0xE0 bytes).
 typedef struct ShadowCamera {
@@ -62,10 +63,7 @@ typedef struct SKAccBuffer {
 
 // Skinning lists (game variant of the charPipeline skinning header).
 // vertDst / skBzeroBase are byte offsets into the caller's vertex buffer.
-typedef struct SKNBone {
-    /* 0x00 */ u8 pad0[0xF0];
-    /* 0xF0 */ MtxPtr skinMtx;
-} SKNBone;
+typedef GameBone SKNBone; // skinMtx at 0xF0
 
 typedef struct SKN1List {
     /* 0x00 */ Mtx43 m;
@@ -100,7 +98,8 @@ typedef struct SKNAccList {
     /* 0x42 */ u16 count;
 } SKNAccList;
 
-typedef struct SKNHeader {
+// Same object as the SDK sHdr (C3/actor.h, C3/skinning.h).
+typedef struct sHdr {
     /* 0x00 */ u16 numSk1List;
     /* 0x02 */ u16 numSk2List;
     /* 0x04 */ u16 numSkAccList;

@@ -9,12 +9,6 @@
 #include "C3/geoPalette.h"
 #include "C3/skinning.h"
 
-// An actor layout file: the header followed by totalBones bones.
-typedef struct ActorLayoutFile {
-    /*0x00*/ ActorLayout header;
-    /*0x20*/ ActorBone bones[1]; // really header.totalBones entries
-} ActorLayoutFile;
-
 // Static (non-animated) model drawn by fn_800B472C.
 typedef struct StaticModel {
     /*0x00*/ u8 pad00[0x8];
@@ -22,14 +16,6 @@ typedef struct StaticModel {
     /*0x38*/ Mtx camera;
     /*0x68*/ ActorLayout* layout;
 } StaticModel;
-
-// Out-of-unit helpers.
-void* _OSAllocFromHeap(s32 align, s32 size);
-void fn_800ACFB0(void* object); // free
-void fn_800BEA04(Vec pos);
-void fn_800BF2A8(GameBone** bones, sHdr* hdr, void* positionArray);
-void CTRLBuildMatrix_FlipX(Control* control, Mtx m);
-void CTRLBuildMatrix_FlipY(Control* control, Mtx m);
 
 void fn_800B2C44(GameActor* actor, u16 bone, Vec* pos);
 void fn_800B2C88(GameActor* actor, u16 bone, Mtx m);

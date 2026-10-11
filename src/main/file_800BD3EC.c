@@ -1,11 +1,9 @@
 #include "main/file_800BD3EC.h"
 #include "main/file_800B9974.h"
+#include "main/file_800BDEA0.h"
+#include "main/file_800B2C44.h"
+#include "main/file_800A7C08.h"
 #include "Dolphin/gx.h"
-
-extern void* _OSAllocFromHeap(s32 align, s32 size);
-extern void* fn_800BF068(void); // declared in main/file_800BDEA0.h, whose SKNIt prototype clashes with C3/skinning.h
-// TODO: move to file_800B2C44.h once fn_800B3A78 (DORender-like, variadic) has C there
-extern void fn_800B3A78(struct DODisplayObj* dispObj, MtxPtr camera, u8 numArgs, ...);
 
 
 // .text:0x800BD3EC size:0x8C
@@ -23,7 +21,7 @@ void LITAlloc(Light** light) {
 }
 
 // .text:0x800BD478 size:0xD0
-void fn_800BD478(Actor** actor, ActorLayoutFile* layout) {
+void fn_800BD478(GameActor** actor, ActorLayoutFile* layout) {
     s32 j;
     s32 i;
     struct DODisplayObj* obj;
@@ -35,7 +33,7 @@ void fn_800BD478(Actor** actor, ActorLayoutFile* layout) {
                     if (layout->bones[i].geoFileID != 0xFFFF) {
                         obj = (*actor)->boneArray[j]->dispObj;
                         if (obj != NULL) {
-                            fn_800BC824(obj, *(void**)((u8*)fn_800BF068() + 8)); // TODO type
+                            fn_800BC824(obj, fn_800BF068()->texObjs);
                         }
                     }
                     break;
@@ -91,13 +89,13 @@ void fn_800BD548(DOListEntry* entry, u8 numArgs, ...) {
 void fn_800BD670(DOList* list, MtxPtr camera) {
     u16 i;
     DOListEntry* entry;
-    struct DODisplayObj* obj;
+    GameActor* obj;
 
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
     GXSetCullMode(GX_CULL_BACK);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     for (i = 0; i < list->count; i++) {
-        obj = list->entries[i].dispObj;
+        obj = list->entries[i].actor;
         if (obj == NULL || list->entries[i].visible == 0) {
             continue;
         }

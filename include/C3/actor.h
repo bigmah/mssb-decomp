@@ -5,6 +5,10 @@
 #include "charPipeline/structures/Tree.h"
 #include "charPipeline/structures/List.h"
 
+struct GameActor;
+struct GameBone;
+struct ANIMAnimTrack;
+
 typedef struct DODisplayData *DODisplayDataPtr;
 typedef struct sBone sBone;
 typedef struct sHdr sHdr;
@@ -34,6 +38,12 @@ typedef struct ActorBone {
     /* 0x19 */ u8 drawingPriority;
     /* 0x1A */ u16 flags; // MSSB: static-layout render flags (bit 0 z-always, bits 1-2 blend mode)
 } ActorBone;
+
+// An actor layout file: the header followed by its bone array.
+typedef struct ActorLayoutFile {
+    /* 0x00 */ ActorLayout header;
+    /* 0x20 */ ActorBone bones[1]; // really header.totalBones entries
+} ActorLayoutFile;
 
 typedef struct {
     /* 0x00 */ ActorLayout *layout;

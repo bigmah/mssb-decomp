@@ -3,13 +3,14 @@
 
 #include "mssbTypes.h"
 #include "C3/charPipeline.h"
+#include "main/file_80063028.h" // GameActor
 
 typedef struct DOListEntry DOListEntry;
 typedef void (*DOListEntryCallback)(DOListEntry* entry);
 
-// One renderable display object plus the variadic args passed to its render call.
+// One actor plus the variadic args passed to its render call (fn_800B3A78).
 struct DOListEntry {
-    /* 0x00 */ struct DODisplayObj* dispObj;
+    /* 0x00 */ GameActor* actor;
     /* 0x04 */ u8 pad04[4];
     /* 0x08 */ DOListEntryCallback callback;
     /* 0x0C */ u8 pad0C[0x6C - 0x0C];
@@ -25,14 +26,8 @@ typedef struct DOList {
     /* 0x34 */ DOListEntry entries[1];
 } DOList;
 
-// An actor layout file: the header followed by its bone array.
-typedef struct ActorLayoutFile {
-    /* 0x00 */ ActorLayout header;
-    /* 0x20 */ ActorBone bones[1];
-} ActorLayoutFile;
-
 void LITAlloc(Light** light);
-void fn_800BD478(Actor** actor, ActorLayoutFile* layout);
+void fn_800BD478(GameActor** actor, ActorLayoutFile* layout);
 void fn_800BD548(DOListEntry* entry, u8 numArgs, ...);
 void fn_800BD670(DOList* list, MtxPtr camera);
 

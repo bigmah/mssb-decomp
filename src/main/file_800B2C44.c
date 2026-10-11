@@ -1,4 +1,7 @@
 #include "main/file_800B2C44.h"
+#include "main/file_800A7C08.h"
+#include "main/file_800B9974.h"
+#include "main/file_800BDEA0.h"
 
 extern u32 lbl_803CC1E8; // actor->tickFlag of the actor being built
 extern Mtx lbl_80111640; // extra root transform for actors with a bone remap table
@@ -48,9 +51,9 @@ void fn_800B2D5C(GameActor* actor) {
     GQRSetup5(8, 4, 8, 4);
     pos = actor->skinObject->positionData;
     if (pos->quantizeInfo == 0x40) {
-        SKNIt(actor->boneArray, actor->skHeader, pos->positionArray);
+        SKNIt(actor->boneArray, actor->skHeader, (u8*)pos->positionArray);
     } else {
-        fn_800BF2A8(actor->boneArray, actor->skHeader, pos->positionArray);
+        fn_800BF2A8(actor->boneArray, actor->skHeader, (u8*)pos->positionArray);
     }
 }
 

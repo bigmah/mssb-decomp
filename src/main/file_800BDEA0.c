@@ -1,4 +1,5 @@
 #include "main/file_800BDEA0.h"
+#include "main/file_800B9974.h" // GQRSetup5-7
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 
@@ -35,9 +36,6 @@ extern const f32 lbl_803CD0DC; // 50.0f
 extern void* lbl_803CB724[4];          // SKBuffers: locked-cache work buffers
 extern SKAccBuffer lbl_803CB6FC[2];    // SKAccBuffers
 
-void GQRSetup5(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType);
-void GQRSetup6(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType);
-void GQRSetup7(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType);
 
 // Bump allocator state (see fn_800AD054 / file_80008E00.c).
 typedef struct ShadowArena {
