@@ -180,7 +180,7 @@ void fn_3_E1D00(void) {
         obj = &lbl_3_common_bss_350E4.objs[i];
         fn_3_B828C((u32)obj); // TODO type
         if (obj->actor != NULL) {
-            obj->actor->actor->flags98 = obj->flags93 | 6;
+            obj->actor->actor->flags = obj->flags93 | 6;
             fn_800BDF70(obj->actor);
         }
     }
