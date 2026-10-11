@@ -120,4 +120,6 @@ void fn_1_15CE0(void);
 
 void fn_1_126CC(void);
 
+void fn_1_179CC(void);
+
 #endif

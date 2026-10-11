@@ -1995,13 +1995,47 @@ void fn_1_126CC(void) {
     z += (f32)((s8*)&lbl_803C77B8)[0x11] / 768.0f;
     y += (f32)((u8*)&lbl_803C77B8)[0x15] / 768.0f;
     y -= (f32)((u8*)&lbl_803C77B8)[0x14] / 768.0f;
-    lbl_1_data_AD0C[1] -= (f32)((s8*)&lbl_803C77B8)[0x12] * 0.001953125f;
-    lbl_1_data_AD0C[0] -= (f32)((s8*)&lbl_803C77B8)[0x13] * 0.001953125f;
+    lbl_1_data_AD0C[1] -= 0.001953125f * (f32)((s8*)&lbl_803C77B8)[0x12];
+    lbl_1_data_AD0C[0] -= 0.001953125f * (f32)((s8*)&lbl_803C77B8)[0x13];
     *(f32*)(row + 0x34) = x;
     *(f32*)(row + 0x38) = y;
     *(f32*)(row + 0x3C) = z;
     *(f32*)(row + 0x40) = lbl_1_data_AD0C[0];
     *(f32*)(row + 0x44) = lbl_1_data_AD0C[1];
     *(f32*)(row + 0x48) = lbl_1_data_AD0C[2];
+}
+#endif
+
+// .text:0x179CC size:0x190
+// NONMATCHING ~95%: register-only diffs (r4/r5, f4/f5 swapped around the 1/512 constant and row pointer)
+#if NONMATCHING
+void fn_1_179CC(void) {
+    u8* row;
+    f32 x;
+    f32 y;
+    f32 z;
+    switch (ch_5F72) {
+    case 0:
+        fn_1_121D4(ch_67E0);
+        break;
+    case 1:
+        row = lbl_8036E548 + ch_5F73 * 0x27C + 0xC04;
+        x = *(f32*)(row + 0x34);
+        y = *(f32*)(row + 0x38);
+        z = *(f32*)(row + 0x3C);
+        x += (f32)((s8*)&lbl_803C77B8)[0x10] / 768.0f;
+        z += (f32)((s8*)&lbl_803C77B8)[0x11] / 768.0f;
+        y += (f32)((u8*)&lbl_803C77B8)[0x15] / 768.0f;
+        y -= (f32)((u8*)&lbl_803C77B8)[0x14] / 768.0f;
+        lbl_1_data_AD0C[1] -= 0.001953125f * (f32)((s8*)&lbl_803C77B8)[0x12];
+        lbl_1_data_AD0C[0] -= 0.001953125f * (f32)((s8*)&lbl_803C77B8)[0x13];
+        *(f32*)(row + 0x34) = x;
+        *(f32*)(row + 0x38) = y;
+        *(f32*)(row + 0x3C) = z;
+        *(f32*)(row + 0x40) = lbl_1_data_AD0C[0];
+        *(f32*)(row + 0x44) = lbl_1_data_AD0C[1];
+        *(f32*)(row + 0x48) = lbl_1_data_AD0C[2];
+        break;
+    }
 }
 #endif
