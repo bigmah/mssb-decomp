@@ -392,8 +392,10 @@ void fn_800ACF78(void) {
 }
 
 // .text:0x800ACFB0 size:0x20
-void fn_800ACFB0(void) {
-    return;
+void fn_800ACFB0(void* block) {
+    u8* lo = ((HeapBlockHeader*)block)[-1].prev;
+    lbl_803C7898.lo = lo;
+    lbl_803C7898.freeSize = lbl_803C7898.hi - lo;
 }
 
 // .text:0x800ACFD0 size:0x4C
