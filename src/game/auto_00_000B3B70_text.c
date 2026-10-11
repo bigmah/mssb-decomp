@@ -118,6 +118,10 @@ extern u8 lbl_3_data_10578[];
 extern void fn_800111B4(void* table);
 extern void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
 extern s32 fn_3_90C14(s32 a);
+extern s32 fn_3_5B380(u16 buttons);
+extern void fn_3_5B368(void);
+extern void fn_8004CC18(void);
+extern s32 fn_3_5B220(s32 a);
 extern void fn_80050FE8(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4, s32 lockMode);
 extern void fn_80050138(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3, s32 any);
 extern void fn_80062A74(void);
@@ -631,46 +635,6 @@ void fn_3_B5090(void) {
     }
 }
 
-// fn_3_B5694, size:0x184
-void fn_3_B5694(void) {
-    InputStruct* c = &g_Controls[g_Practice.homeAway];
-    u16 b;
-    u16 d;
-    s32 v;
-    if (lbl_3_common_bss_32724[0xBB] == 0) {
-        b = c->newButtonInput;
-        if (b & 0x100) {
-            fn_3_B3C94(5);
-            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-        } else if (b & 0x200) {
-            fn_3_5B408();
-            fn_3_B3C94(7);
-            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
-        } else {
-            d = c->_08;
-            if (d & 1) {
-                if (g_Practice.practiceType != 0) {
-                    g_Practice.practiceType -= 1;
-                } else {
-                    g_Practice.practiceType = 4;
-                }
-                lbl_3_common_bss_32724[0xBD] = 1;
-                sndFXStartEx(0x1B7, *lbl_800EFBA4, 0x3F, 0);
-            } else if (d & 2) {
-                v = g_Practice.practiceType + 1;
-                g_Practice.practiceType = v;
-                if ((u8)v >= 5) {
-                    g_Practice.practiceType = 0;
-                }
-                lbl_3_common_bss_32724[0xBD] = 2;
-                sndFXStartEx(0x1B7, *lbl_800EFBA4, 0x3F, 0);
-            }
-        }
-    }
-    g_Practice.practiceType_2 = lbl_3_data_FAC4[g_Practice.practiceType];
-    *(s8*)(lbl_3_common_bss_32724 + 0xB9) = g_Practice.practiceType;
-}
-
 // fn_3_B6994, size:0x1DC
 void fn_3_B6994(void) {
     switch (g_Practice.practiceState) {
@@ -735,20 +699,20 @@ void fn_3_B482C(void) {
         fn_3_8FC80();
         return;
     }
-    if (*(u16*)((u8*)&g_Practice + 0x142) < 0xFFFEU) {
-        (*(u16*)((u8*)&g_Practice + 0x142))++;
+    if (g_Practice.framesInCurrTransitionState < 0xFFFEU) {
+        (g_Practice.framesInCurrTransitionState)++;
     } else {
-        *(u16*)((u8*)&g_Practice + 0x142) = 0xFFFF;
+        g_Practice.framesInCurrTransitionState = 0xFFFF;
     }
-    if (*(u16*)((u8*)&g_Practice + 0x144) < 0xFFFEU) {
-        (*(u16*)((u8*)&g_Practice + 0x144))++;
+    if (g_Practice.framesSincePracticeMenuDefaultTransition < 0xFFFEU) {
+        (g_Practice.framesSincePracticeMenuDefaultTransition)++;
     } else {
-        *(u16*)((u8*)&g_Practice + 0x144) = 0xFFFF;
+        g_Practice.framesSincePracticeMenuDefaultTransition = 0xFFFF;
     }
-    if (*(u16*)((u8*)&g_Practice + 0x140) < 0xFFFEU) {
-        (*(u16*)((u8*)&g_Practice + 0x140))++;
+    if (g_Practice.totalFrames < 0xFFFEU) {
+        (g_Practice.totalFrames)++;
     } else {
-        *(u16*)((u8*)&g_Practice + 0x140) = 0xFFFF;
+        g_Practice.totalFrames = 0xFFFF;
     }
     switch (g_GameLogic.secondaryGameMode) {
     case 18:
@@ -894,6 +858,46 @@ void fn_3_B7184(void) {
 }
 
 #pragma dont_inline off
+// fn_3_B5694, size:0x184
+void fn_3_B5694(void) {
+    InputStruct* c = &g_Controls[g_Practice.homeAway];
+    u16 b;
+    u16 d;
+    s32 v;
+    if (lbl_3_common_bss_32724[0xBB] == 0) {
+        b = c->newButtonInput;
+        if (b & 0x100) {
+            fn_3_B3C94(5);
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (b & 0x200) {
+            fn_3_5B408();
+            fn_3_B3C94(7);
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        } else {
+            d = c->_08;
+            if (d & 1) {
+                if (g_Practice.practiceType != 0) {
+                    g_Practice.practiceType -= 1;
+                } else {
+                    g_Practice.practiceType = 4;
+                }
+                lbl_3_common_bss_32724[0xBD] = 1;
+                sndFXStartEx(0x1B7, *lbl_800EFBA4, 0x3F, 0);
+            } else if (d & 2) {
+                v = g_Practice.practiceType + 1;
+                g_Practice.practiceType = v;
+                if ((u8)v >= 5) {
+                    g_Practice.practiceType = 0;
+                }
+                lbl_3_common_bss_32724[0xBD] = 2;
+                sndFXStartEx(0x1B7, *lbl_800EFBA4, 0x3F, 0);
+            }
+        }
+    }
+    g_Practice.practiceType_2 = lbl_3_data_FAC4[g_Practice.practiceType];
+    *(s8*)(lbl_3_common_bss_32724 + 0xB9) = g_Practice.practiceType;
+}
+
 // fn_3_B5D4C, size:0x2C
 void fn_3_B5D4C(u8 type) {
     g_Practice.practiceType_1 = type;
@@ -1409,6 +1413,105 @@ void fn_3_B4C40(void) {
     }
     if (g_Practice.practiceState >= 2) {
         fn_3_10C81C();
+    }
+}
+#endif
+
+// .text:0x000B5818 size:0x49C
+// NONMATCHING 80%: the original inlines fn_3_B5694 in case 4 (too big for our deferred inliner; a static inline
+// copy of its body matches here but then fn_3_B5694 itself gets different registers). Rest matches.
+#if NONMATCHING
+void fn_3_B5818(void) {
+    switch (g_Practice.practiceState) {
+    case 0:
+        g_Practice.subMenuCursor = 0;
+        g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        fn_3_B42A8();
+        if (g_Practice._1DA != 0) {
+            fn_3_B3C94(1);
+        } else {
+            fn_3_B3C94(2);
+        }
+        g_Practice._1DA = 0;
+        break;
+    case 1:
+        if (lbl_8036E548[0x2D7B] >= 10) {
+            fn_3_B3C94(2);
+        }
+        break;
+    case 2:
+        changeScene(6, 6);
+        fn_3_B3C94(3);
+        break;
+    case 3:
+        if (g_Practice.framesSincePracticeMenuDefaultTransition > 0x1E) {
+            fn_3_B3C94(4);
+        }
+        break;
+    case 4:
+        fn_3_B5694();
+        g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        break;
+    case 5:
+        if (g_Practice._19C != 0) {
+            fn_3_B3C94(6);
+        }
+        break;
+    case 6:
+        if (lbl_3_common_bss_32724[0xBB] == 0) {
+            switch (g_Practice.practiceType_2) {
+            case 0:
+                fn_3_B5D4C(1);
+                break;
+            case 1:
+                fn_3_B5D4C(2);
+                break;
+            case 2:
+                fn_3_B5D4C(3);
+                break;
+            case 3:
+                fn_3_B5D4C(4);
+                break;
+            case 4:
+                fn_3_B5D4C(5);
+                break;
+            }
+        }
+        break;
+    case 7:
+        switch (fn_3_5B380(g_Controls[lbl_80366158.practiceChar].newButtonInput)) {
+        case 1:
+            if (g_Practice._1B1 != 0) {
+                fn_8004CC18();
+                fn_3_5B368();
+            } else {
+                changeScene(4, 6);
+            }
+            fn_3_B3C94(8);
+            break;
+        case 2:
+            fn_3_B3C94(4);
+            break;
+        }
+        break;
+    case 8:
+        if (g_Practice._19C != 0) {
+            if (g_Practice._1B1 != 0) {
+                if (fn_3_5B220(3) != 0) {
+                    changeScene(4, 6);
+                    g_Practice._1B1 = 0;
+                }
+            } else if (lbl_8037169C._13 != 0) {
+                fn_80062A74();
+                fn_8004CC18();
+                fn_3_B3CAC(0x11);
+                lbl_8036E548[0x307A] = 0;
+            }
+        }
+        break;
+    }
+    if (g_Practice._19C == 0 && fn_8001594C(g_GameLogic.teamFielding) != 0) {
+        g_Practice._19C = 1;
     }
 }
 #endif
