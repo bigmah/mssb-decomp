@@ -209,7 +209,29 @@ void fn_800206FC(void) {
 
 // .text:0x80021064 size:0x124
 void fn_80021064(void) {
-    return;
+    LayoutGroup* group = lbl_803CC1B8;
+    fn_80034E20(group, lbl_800EF3B0);
+    lbl_80371C30[group->start].obj->flags &= ~2;
+    lbl_80371C30[group->start + 1].obj->flags &= ~2;
+    lbl_80371C30[group->start + 2].obj->flags &= ~2;
+    lbl_80371C30[group->start + 3].obj->flags &= ~2;
+    lbl_80371C30[group->start + 4].obj->flags &= ~2;
+    lbl_8037169C.alpha = 0;
+    lbl_8037169C.state = 0;
+    lbl_8037169C.request = 0;
+    lbl_8037169C._13 = 0;
+    lbl_8037169C.done = 0;
+    lbl_8037169C._16 = 0;
+    lbl_8037169C._17 = 0;
+    lbl_8037169C.tex = NULL;
+    lbl_8037169C.loadState = 0;
+    lbl_8037169C.fadeAlpha = 0;
+    lbl_8037169C.lastPick = 0xFF;
+    group->textIndex = 0;
+    group->_1E = 0;
+    group->timer = 0;
+    group->_1A = 0;
+    lbl_803CC1B8->callback = fn_800206FC;
 }
 
 // .text:0x80021188 size:0x34
