@@ -135,6 +135,37 @@ void fn_1_A024(ChListCursor* list, s32 dir) {
     }
 }
 
+// .text:0x0000A184 size:0x70
+// Walks the visible item names (the debug print that used them is compiled out).
+static inline s32 ch_strlen(const char* s) {
+    s32 n = 0;
+    while (*s++ != '\0') {
+        n++;
+    }
+    return n;
+}
+
+void fn_1_A184(ChListCursor* list) {
+    s32 rows;
+    ChListItem* item;
+    s32 i;
+
+    if (list->top + list->visible < list->count) {
+        rows = list->visible;
+    } else if (list->count < list->visible) {
+        rows = list->count;
+    } else {
+        rows = list->count - list->top;
+    }
+
+    item = &list->items[list->top];
+    for (i = 0; i < rows; i++, item++) {
+        if (item->name != NULL) {
+            ch_strlen(item->name);
+        }
+    }
+}
+
 // .text:0x0000A1F4 size:0x1C
 void fn_1_A1F4(ChListCursor* list, ChListItem* items, s32 count, s32 visible) {
     list->items = items;
