@@ -6,6 +6,7 @@
 #include "Dolphin/mtx.h"
 #include "C3/actor.h"
 #include "C3/geoPalette.h"
+#include "main/file_80024184.h"
 
 typedef struct VecQueue {
     Vec* entries;
@@ -194,16 +195,6 @@ typedef struct StadiumLightPos {
     /* 0xE */ u8 b;
     /* 0xF */ u8 a;
 } StadiumLightPos;
-
-// GX texture image as used by fn_80023F0C.
-typedef struct TexImage {
-    /* 0x00 */ u8* data;
-    /* 0x04 */ void* tlut;
-    /* 0x08 */ u16 height;
-    /* 0x0A */ u16 width;
-    /* 0x0C */ u8 unkC[0xB];
-    /* 0x17 */ u8 format;
-} TexImage;
 
 u8* f_InitBone(MBone* parent, MBoneLayout* layout, MActor* actor, u16* boneIndex, MBone* bones, u8* buffer);
 u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer);
