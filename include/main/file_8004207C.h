@@ -64,8 +64,7 @@ typedef struct MenuWork {
     /*0xCF56*/ u8 _CF56[2];
     /*0xCF58*/ u8 _CF58[2];
     /*0xCF5A*/ u8 _CF5A;
-    /*0xCF5B*/ u8 _CF5B;
-    /*0xCF5C*/ u8 _CF5C;
+    /*0xCF5B*/ u8 ready[2]; // per port, two-player tutorial sync
     /*0xCF5D*/ u8 _CF5D;
     /*0xCF5E*/ u8 _CF5E;
     /*0xCF5F*/ u8 _CF5F;
@@ -84,39 +83,23 @@ typedef struct MenuWork {
     /*0xCF70*/ u8 _CF70;
     /*0xCF71*/ u8 _CF71;
     /*0xCF72*/ u8 _CF72;
-    /*0xCF73*/ u8 _CF73;
+    /*0xCF73*/ u8 pauseShown;
     /*0xCF74*/ u8 _CF74;
     /*0xCF75*/ s8 starCursor;
     /*0xCF76*/ s8 prevStarCursor;
     /*0xCF77*/ u8 _CF77;
     /*0xCF78*/ u16 _CF78;
-    /*0xCF7A*/ u8 _CF7A;
-    /*0xCF7B*/ u8 _CF7B;
-    /*0xCF7C*/ u8 _CF7C;
+    /*0xCF7A*/ u8 nameText; // text entries of the star/mission panel
+    /*0xCF7B*/ u8 descText;
+    /*0xCF7C*/ u8 missionText;
     /*0xCF7D*/ u8 _CF7D;
-    /*0xCF7E*/ u8 _CF7E;
-    /*0xCF7F*/ u8 _CF7F;
-    /*0xCF80*/ u8 _CF80;
-    /*0xCF81*/ u8 _CF81;
-    /*0xCF82*/ u8 _CF82;
-    /*0xCF83*/ u8 _CF83;
-    /*0xCF84*/ u8 _CF84;
-    /*0xCF85*/ u8 _CF85;
-    /*0xCF86*/ u8 _CF86;
-    /*0xCF87*/ u8 _CF87;
-    /*0xCF88*/ u8 _CF88;
-    /*0xCF89*/ u8 _CF89;
-    /*0xCF8A*/ u8 _CF8A;
-    /*0xCF8B*/ u8 _CF8B;
-    /*0xCF8C*/ u8 _CF8C;
-    /*0xCF8D*/ u8 _CF8D;
-    /*0xCF8E*/ u8 _CF8E;
-    /*0xCF8F*/ u8 _CF8F;
-    /*0xCF90*/ u8 _CF90;
-    /*0xCF91*/ u8 _CF91;
+    /*0xCF7E*/ u8 scoutSub;
+    /*0xCF7F*/ u8 scoutDone;
+    /*0xCF80*/ s8 scoutTotal[9]; // scout flags per player
+    /*0xCF89*/ s8 scoutGot[9];
     /*0xCF92*/ u8 _CF92;
-    /*0xCF93*/ u8 _CF93;
-    /*0xCF94*/ u8 _CF94;
+    /*0xCF93*/ u8 missionShown;
+    /*0xCF94*/ u8 menuDone;
     /*0xCF95*/ s8 prevSlotCursor;
     /*0xCF96*/ s8 slotCursor;
     /*0xCF97*/ s8 prevStarCursor2;
@@ -138,12 +121,16 @@ extern MenuWork lbl_803297E0;
 // Character/team select work area (lbl_8034E9A0, only the fields used here).
 typedef struct CharSelWork {
     /*0x0000*/ CharacterStats chars[113]; // base stats, 9 per team slot
-    /*0x46A0*/ u8 _46A0[0x46F8 - 0x46A0];
+    /*0x46A0*/ u8 _46A0[0x46E0 - 0x46A0];
+    /*0x46E0*/ s8 _46E0[2][4];
+    /*0x46E8*/ u8 _46E8[0x46F8 - 0x46E8];
     /*0x46F8*/ s8 teamPort[2]; // controller port per team
     /*0x46FA*/ u8 _46FA[0x4704 - 0x46FA];
     /*0x4704*/ u8 _4704;
     /*0x4705*/ u8 _4705;
-    /*0x4706*/ u8 _4706[0x4720 - 0x4706];
+    /*0x4706*/ u8 _4706[0x470D - 0x4706];
+    /*0x470D*/ u8 _470D[2];
+    /*0x470F*/ u8 _470F[0x4720 - 0x470F];
     /*0x4720*/ s32 _4720[2];
     /*0x4728*/ u8 _4728[0x472C - 0x4728];
     /*0x472C*/ PortInput input[4];
@@ -155,27 +142,22 @@ typedef struct CharSelWork {
     /*0x48AF*/ u8 _48AF;
     /*0x48B0*/ u8 _48B0;
     /*0x48B1*/ u8 _48B1;
+    /*0x48B2*/ u8 _48B2;
+    /*0x48B3*/ u8 _48B3;
 } CharSelWork;
 
 extern CharSelWork lbl_8034E9A0;
 
 // Menu input/transition state (lbl_803C66B0, only the fields used here).
-typedef struct MenuInput {
-    /*0x00*/ u8 _00;
-    /*0x01*/ u8 _01[6];
-    /*0x07*/ u8 _07[0x55 - 0x07];
-    /*0x55*/ u8 busy0;
-    /*0x56*/ u8 busy1;
-    /*0x57*/ u8 _57[0x59 - 0x57];
-    /*0x59*/ u8 _59;
-    /*0x5A*/ u8 _5A;
-    /*0x5B*/ u8 _5B[0x5D - 0x5B];
-    /*0x5D*/ u8 _5D;
-    /*0x5E*/ u8 _5E;
-    /*0x5F*/ u8 _5F[0x64 - 0x5F];
-} MenuInput; // size: 0x64
+typedef struct TutorialSteps {
+    /*0x00*/ u8 steps[14][6]; // per tutorial step: [0] shared, [1 + port] per-port state
+    /*0x54*/ u8 _54;
+    /*0x55*/ u8 active[4]; // per port: tutorial text box busy
+    /*0x59*/ u8 portOf[4]; // controller port of player i
+    /*0x5D*/ u8 step[7];   // current tutorial step per port
+} TutorialSteps; // size: 0x64
 
-extern MenuInput lbl_803C66B0;
+extern TutorialSteps lbl_803C66B0;
 
 // Batting order per team (lbl_80354720).
 typedef struct OrderEntry {
@@ -187,19 +169,32 @@ typedef struct OrderEntry {
 
 extern OrderEntry lbl_80354720[2][9];
 
-typedef struct Unk8034E978 {
-    /*0x00*/ u8 _00;
-    /*0x01*/ u8 _01[7];
-    /*0x08*/ u8 _08;
-    /*0x09*/ u8 _09;
-    /*0x0A*/ u8 _0A[0x24 - 0x0A];
+// lbl_8034E978: current menu screen.
+typedef struct MenuState {
+    /*0x00*/ u8 menu;
+    /*0x01*/ u8 prevMenu;
+    /*0x02*/ u8 prev03;
+    /*0x03*/ u8 _03;
+    /*0x04*/ u8 _04;
+    /*0x05*/ u8 _05;
+    /*0x06*/ u8 _06;
+    /*0x07*/ u8 _07;
+    /*0x08*/ u8 track; // from MenuDef.track of the current menu
+    /*0x09*/ u8 prevTrack;
+    /*0x0A*/ s8 text[10]; // text entries for the menu description
+    /*0x14*/ u8 textCount;
+    /*0x15*/ u8 textCur;
+    /*0x16*/ u8 textDone[10]; // 0xFF: free
+    /*0x20*/ u8 descState;
+    /*0x21*/ u8 _21[2];
+    /*0x23*/ u8 _23;
     /*0x24*/ u8 _24;
     /*0x25*/ u8 _25;
     /*0x26*/ u8 _26;
     /*0x27*/ u8 _27;
-} Unk8034E978; // size: 0x28
+} MenuState; // size: 0x28
 
-extern Unk8034E978 lbl_8034E978;
+extern MenuState lbl_8034E978;
 
 typedef struct Unk803C5EA4 {
     /*0x00*/ u8 _00[0xF];
@@ -241,7 +236,8 @@ typedef struct MatchOptions {
 extern MatchOptions lbl_803C5F04;
 
 typedef struct Unk803C5EE0 {
-    /*0x00*/ u8 _00[0x15];
+    /*0x00*/ s16 cursor[4]; // copy of MatchOptions.cursor
+    /*0x08*/ u8 _08[0xD];
     /*0x15*/ u8 _15;
     /*0x16*/ u8 _16[2];
 } Unk803C5EE0; // size: 0x18
