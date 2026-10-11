@@ -397,6 +397,45 @@ void fn_3_9DBE4(void) {
     lbl_3_common_bss_32A94._8A = 0;
 }
 
+// .text:0x0009DC18 size:0x460
+// Shuffles arr[0..n) in place.
+// NONMATCHING 97%: shuffle result kept in r0 and copied (extra mr); loop pointer regs rotated
+#if NONMATCHING
+void fn_3_9DC18(u8* arr, u32 n, BOOL useBallRng) {
+    s32 used[20];
+    s32 src[20];
+    s32 tmp[10];
+    u32 k;
+    s32 i;
+    s32 r;
+    s32 j;
+
+    for (k = 0; k < n; k++) {
+        tmp[k] = arr[k];
+    }
+    for (i = 0; i < (s32)n; i++) {
+        src[i] = tmp[i];
+        used[i] = 0;
+    }
+    for (i = n - 1; i >= 0; i--) {
+        r = useBallRng ? BallRandomInt(i + 1) : SimRandomInt(i + 1);
+        for (j = 0; j < (s32)n; j++) {
+            if (used[j] == 0) {
+                if (r == 0) {
+                    tmp[i] = src[j];
+                    used[j] = 1;
+                    break;
+                }
+                r--;
+            }
+        }
+    }
+    for (k = 0; k < n; k++) {
+        arr[k] = tmp[k];
+    }
+}
+#endif
+
 // .text:0x0009E078 size:0x2F0
 // Shuffles arr[0..n) in place.
 void fn_3_9E078(s32* arr, s32 n, BOOL useBallRng) {
