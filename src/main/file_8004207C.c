@@ -464,7 +464,17 @@ u32 fn_8004ACDC(s32 clear) {
 
 // .text:0x8004ACF4 size:0x60
 void fn_8004ACF4(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
-    return;
+    switch (model->charID) {
+    case 0x30:
+    case 0x31:
+    case 0x32:
+    case 0x33:
+        if (frame < 0.5f) {
+            lbl_803CBD04 = 1;
+        }
+        break;
+    }
+    lbl_800FBE64[2](model, animID, colorIdx, frame);
 }
 
 // .text:0x8004AD54 size:0xC4
