@@ -240,9 +240,110 @@ s32 LERPToNewRange_Float(s32 value, s32 inMin, s32 inMax, s32 outMin, s32 outMax
 extern u8 lbl_3_data_21E9C[][4];
 
 
+// NONMATCHING 90.9%: port is re-sign-extended at each use in the original (extsb x2) and the loop pointers get other registers
+#if NONMATCHING
 void fn_3_142284(void) {
-    return;
+    s32 dist[4];
+    u8* g;
+    s16* lv;
+    MgCpu* cpu;
+    s32* d;
+    MgPad* pad;
+    u8 port;
+    s8 i;
+
+    g = g_Minigame;
+    d = dist;
+    lv = (s16*)g_Minigame;
+    cpu = (MgCpu*)(g_Minigame + 0x1DCC);
+    i = 0;
+    do {
+        port = g[0x18CC];
+        if ((s8)port >= 0 && (s8)port < 4) {
+            *d = fn_3_142570(i);
+            if (g[0x18D8] != 0) {
+                pad = (MgPad*)(g_Minigame + 0x1D7C + (s8)port * 16);
+                memset(pad, 0, sizeof(MgPad));
+                switch (cpu->state) {
+                case 0:
+                    if (*d >= 0) {
+                        switch (RandomIndexFromWeights(lbl_3_data_21E9C[g[0x18DC]], 4)) {
+                        case 0:
+                            if (*d > LERPToNewRange_Float(lv[0xDA8], 0, *(s16*)(lbl_3_data_21E68 + 0x26),
+                                                          *(s16*)(lbl_3_data_21E68 + 0x4), *(s16*)(lbl_3_data_21E68 + 0x6)) + 3) {
+                                if (fn_3_1428F0(i, 0)) {
+                                    cpu->state = 1;
+                                }
+                            } else {
+                                pad->trig |= 4;
+                                pad->held |= 4;
+                                cpu->state = 2;
+                            }
+                            break;
+                        case 1:
+                            if (*d > *(s16*)(lbl_3_data_21E68 + 0x4) + 3) {
+                                if (fn_3_1428F0(i, 0)) {
+                                    cpu->state = 1;
+                                }
+                            } else {
+                                pad->trig |= 4;
+                                pad->held |= 4;
+                                cpu->state = 2;
+                            }
+                            break;
+                        case 2:
+                            pad->trig |= 4;
+                            pad->held |= 4;
+                            cpu->state = 2;
+                            break;
+                        case 3:
+                            if (fn_3_1428F0(i, 1)) {
+                                cpu->state = 1;
+                            }
+                            break;
+                        }
+                    } else {
+                        if (fn_3_1428F0(i, 0)) {
+                            cpu->state = 1;
+                        }
+                    }
+                    break;
+                case 1:
+                    if ((s8)g[0x1C92] < 0) {
+                        cpu->state = 0;
+                    }
+                    break;
+                case 2:
+                    pad->held |= 4;
+                    if (g[0x1CA5] != 1) {
+                        cpu->state = 3;
+                    }
+                    break;
+                case 3:
+                    if (*d >= 0) {
+                        pad->held |= 4;
+                    } else {
+                        cpu->state = 4;
+                    }
+                    break;
+                case 4:
+                    if (g[0x1CA5] != 3) {
+                        cpu->state = 0;
+                    }
+                    break;
+                }
+            }
+        } else {
+            *d = -1;
+        }
+        i++;
+        cpu++;
+        lv++;
+        g++;
+        d++;
+    } while (i < 4);
 }
+#endif
 
 // .text:0x00142570 size:0x380 mapped:0x80781604
 extern f32 lbl_3_data_21E24[];
