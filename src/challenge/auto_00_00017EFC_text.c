@@ -17,3 +17,27 @@ s32 fn_1_17EFC(void* a, void* b) {
     return 0;
 }
 
+// .text:0x00017F28 size:0xC8
+// Sorts a list of `count` (> 0) nodes by depth, back to front, and returns the new head.
+ChSortNode* fn_1_17F28(ChSortNode* head, s32 count) {
+    ChSortEntry* entries;
+    ChSortEntry* e;
+    ChSortNode* node;
+
+    entries = _OSAllocFromHeap(0x20, count * sizeof(ChSortEntry));
+    for (e = entries, node = head; node != NULL; node = node->next, e++) {
+        e->node = node;
+        e->key = node->depth;
+    }
+    fn_800246D4(fn_1_17EFC, (u8*)entries, (u8*)entries, sizeof(ChSortEntry), count);
+    head = entries[0].node;
+    e = entries;
+    while (--count != 0) {
+        e->node->next = e[1].node;
+        e++;
+    }
+    e->node->next = NULL;
+    fn_800ACFB0(entries);
+    return head;
+}
+
