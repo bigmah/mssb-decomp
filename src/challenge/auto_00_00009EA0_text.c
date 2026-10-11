@@ -77,6 +77,64 @@ void fn_1_9F04(void) {
     }
 }
 
+// .text:0x0000A024 size:0x160
+// Moves the list cursor one row or one page, scrolling the window as needed.
+void fn_1_A024(ChListCursor* list, s32 dir) {
+    s32 top = list->top;
+    s32 visible = list->visible;
+    s32 count = list->count;
+    s32 cursor = list->cursor;
+    s32 row = cursor - top;
+    s32 rows;
+
+    if (top + visible < count) {
+        rows = visible;
+    } else if (count < visible) {
+        rows = count;
+    } else {
+        rows = count - top;
+    }
+
+    switch (dir) {
+    case CH_LIST_UP:
+        if (row != 0) {
+            list->cursor--;
+        } else if (top != 0) {
+            list->top--;
+            list->cursor--;
+        }
+        break;
+    case CH_LIST_DOWN:
+        if (row + 1 == rows) {
+            if (cursor + 1 < count) {
+                list->top++;
+                list->cursor++;
+            }
+        } else {
+            list->cursor++;
+        }
+        break;
+    case CH_LIST_PAGE_UP:
+        if (top < visible) {
+            list->top = 0;
+            list->cursor = 0;
+        } else {
+            list->top -= visible;
+            list->cursor -= list->visible;
+        }
+        break;
+    case CH_LIST_PAGE_DOWN:
+        if (cursor + rows >= count) {
+            list->top = count - rows;
+            list->cursor = list->count - 1;
+        } else {
+            list->top += visible;
+            list->cursor += list->visible;
+        }
+        break;
+    }
+}
+
 // .text:0x0000A1F4 size:0x1C
 void fn_1_A1F4(ChListCursor* list, ChListItem* items, s32 count, s32 visible) {
     list->items = items;
