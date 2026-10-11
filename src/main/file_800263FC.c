@@ -1,5 +1,116 @@
 #include "main/file_800263FC.h"
 
+// Particle / emitter system.
+
+int __abs(int);
+
+extern f32 lbl_8017ED68[]; // cosine table, 0x800 steps per turn
+extern Mtx lbl_8017FF78;   // camera (view) matrix
+extern Mtx lbl_8017FFE0;
+extern Particle* lbl_803CBC74; // free particle list
+extern u8 lbl_803CBC78;        // nonzero: clear all emitters on next draw
+extern s32 lbl_803CBC7C;
+extern Emitter* lbl_803CBC80;  // free emitter list (linked through next)
+extern EmitterHead lbl_803CBC84; // active list head
+#define EMITTER_HEAD ((Emitter*)&lbl_803CBC84)
+
+static inline Emitter* FindEmitter(Emitter* e, u8 type) {
+    if (e == NULL) {
+        e = EMITTER_HEAD;
+    }
+    while ((e = e->next) != NULL) {
+        if (e->type == type) {
+            break;
+        }
+    }
+    return e;
+}
+
+static inline void FreeParticles(Particle* list) {
+    Particle* last = list;
+    while (last != NULL && last->next != NULL) {
+        last = last->next;
+    }
+    if (last != NULL) {
+        last->next = lbl_803CBC74;
+        lbl_803CBC74 = list;
+    }
+}
+
+static inline Emitter* AllocParticles(Emitter* e, s32 n, s32 strict) {
+    s32 count;
+    Particle* p;
+    Particle* last;
+    count = 0;
+    last = NULL;
+    p = lbl_803CBC74;
+    if (e != NULL) {
+        while (p != NULL && n != 0) {
+            last = p;
+            p = p->next;
+            count++;
+            n--;
+        }
+        if (strict && n != 0) {
+            return NULL;
+        }
+        e->count = count;
+        if (count != 0) {
+            e->particles = lbl_803CBC74;
+            lbl_803CBC74 = p;
+            if (last != NULL) {
+                last->next = NULL;
+            }
+        } else {
+            e->particles = NULL;
+        }
+    }
+    return e;
+}
+
+static inline void FreeEmitter(Emitter* e) {
+    if (e->update != NULL) {
+        if (e->prev != NULL) {
+            e->prev->next = e->next;
+        }
+        if (e->next != NULL) {
+            e->next->prev = e->prev;
+        }
+        e->update = NULL;
+        FreeParticles(e->particles);
+        e->prev = NULL;
+        e->next = lbl_803CBC80;
+        lbl_803CBC80 = e;
+    }
+}
+
+static inline Emitter* NewEmitter(EmitterUpdateFn update, u8 priority, s32 unk14, s32 n, s32 strict, u8 type) {
+    Emitter* e = AllocParticles(lbl_803CBC80, n, strict);
+    Emitter* at;
+    if (e == NULL) {
+        return NULL;
+    }
+    lbl_803CBC80 = lbl_803CBC80->next;
+    e->update = update;
+    e->priority = priority;
+    e->type = type;
+    e->active = 1;
+    e->unk14 = unk14;
+    e->next = NULL;
+    e->prev = NULL;
+    at = EMITTER_HEAD;
+    while (at->next != NULL && at->next->priority < e->priority) {
+        at = at->next;
+    }
+    e->next = at->next;
+    if (e->next != NULL) {
+        e->next->prev = e;
+    }
+    e->prev = at;
+    at->next = e;
+    return e;
+}
+
 // .text:0x800263FC size:0x59C
 void fn_800263FC(void) {
     return;
@@ -211,8 +322,14 @@ void fn_80031F34(void) {
 }
 
 // .text:0x80032038 size:0x2C
-void fn_80032038(void) {
-    return;
+s32 fn_80032038(const void* a, const void* b) {
+    if (((const ParticleSortEntry*)a)->z > ((const ParticleSortEntry*)b)->z) {
+        return 1;
+    }
+    if (((const ParticleSortEntry*)a)->z < ((const ParticleSortEntry*)b)->z) {
+        return -1;
+    }
+    return 0;
 }
 
 // .text:0x80032064 size:0x220
