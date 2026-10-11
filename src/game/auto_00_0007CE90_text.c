@@ -70,9 +70,12 @@ void fn_3_7D2E0(void) {
 #endif
 
 // .text:0x0007D39C size:0xBC mapped:0x806BC430
+// NONMATCHING 65%: original loads controlStickAngle with lhax off g_Controls and schedules differently
+#if NONMATCHING
 void fn_3_7D39C(void) {
-    return;
+    recordReplayFrame();
 }
+#endif
 
 // .text:0x0007D458 size:0x328 mapped:0x806BC4EC
 void fn_3_7D458(void) {
