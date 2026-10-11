@@ -49,6 +49,15 @@ typedef struct TexArchive {
 
 #define TEX_ARCHIVE_OBJ(arc, i) (&(arc)->recs[(arc)->recs[i].obj])
 
+typedef struct SpriteVtx {
+    /*0x00*/ f32 x;
+    /*0x04*/ f32 y;
+    /*0x08*/ f32 z;
+    /*0x0C*/ u32 color;
+    /*0x10*/ u16 s;
+    /*0x12*/ u16 t;
+} SpriteVtx; // size: 0x14
+
 // Message table as loaded from disc; msgs[] hold file offsets until
 // fn_800111B4 relocates them.
 typedef struct MsgTable {

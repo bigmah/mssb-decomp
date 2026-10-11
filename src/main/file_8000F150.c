@@ -8,6 +8,16 @@ extern TexArchive lbl_800E9920;
 extern GXColor lbl_803CB784;
 extern u32 lbl_803CB788;
 extern u32 lbl_803CB780;
+typedef struct PaddedVec {
+    Vec v;
+    f32 _pad;
+} PaddedVec;
+
+extern f32 lbl_803CBBDC;
+extern f32 lbl_803CBBE0;
+extern void fn_800B2160(s32);
+extern void DrawSprite_TexObj(SpriteVtx* quad, TexRecord* tex);
+extern void fn_800B1314(SpriteVtx* quad, TexRecord* tex, u16 sScale, u16 tScale);
 extern void GXSetTexCoordScaleManually(GXTexCoordID coord, GXBool enable, u16 ss, u16 ts);
 
 typedef struct TextDisplayList {
@@ -421,10 +431,116 @@ s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSi
 }
 #endif
 
+// NONMATCHING 99%: f2/f3 swapped for the 0.0f constant, and two extra clrlwi on the u16 s+w sum
 // .text:0x800100A4 size:0x3F4
+#if NONMATCHING
 void fn_800100A4(s32 x, s32 y, u16 s, u16 t, u16 w, u32 color, s32 kind, MtxPtr mtx) {
-    return;
+    SpriteVtx quad[4];
+    Mtx trans;
+    Mtx m;
+    PaddedVec p[4];
+    f32 scale;
+    f32 left = 0.0f;
+    f32 top = 0.0f;
+    f32 right;
+    f32 bottom;
+    s32 h = 22;
+
+    fn_800B2160(1);
+    if (kind >= 10) {
+        h = 20;
+        w = 28;
+    } else if (kind == 3) {
+        h = 22;
+    } else if (kind == 2) {
+        h = 18;
+    } else if (kind == 1) {
+        h = 18;
+    }
+    if (mtx != NULL) {
+        PSMTXTrans(trans, x, y, 0.0f);
+        PSMTXConcat(mtx, trans, m);
+    } else {
+        PSMTXTrans(trans, x - 320, y - 224, 0.0f);
+    }
+    right = left + w;
+    bottom = top + h;
+    p[0].v.x = left;
+    p[0].v.y = top;
+    p[1].v.x = right;
+    p[1].v.y = top;
+    p[2].v.x = left;
+    p[2].v.y = bottom;
+    p[3].v.x = right;
+    p[3].v.y = bottom;
+    p[3].v.z = left;
+    p[2].v.z = left;
+    p[1].v.z = left;
+    p[0].v.z = left;
+    if (mtx == NULL) {
+        scale = lbl_803CBBE0 / lbl_803CBBDC;
+        PSMTXScale(m, scale, scale, 1.0f);
+        PSMTXConcat(m, trans, m);
+    }
+    PSMTXMultVec(m, &p[0].v, &p[0].v);
+    PSMTXMultVec(m, &p[1].v, &p[1].v);
+    PSMTXMultVec(m, &p[2].v, &p[2].v);
+    PSMTXMultVec(m, &p[3].v, &p[3].v);
+    quad[0].x = p[0].v.x;
+    quad[0].y = p[0].v.y;
+    quad[1].x = p[2].v.x;
+    quad[1].y = p[2].v.y;
+    quad[2].x = p[3].v.x;
+    quad[2].y = p[3].v.y;
+    quad[3].x = p[1].v.x;
+    quad[3].y = p[1].v.y;
+    if (mtx != NULL) {
+        quad[0].z = p[0].v.z;
+        quad[1].z = p[2].v.z;
+        quad[2].z = p[3].v.z;
+        quad[3].z = p[1].v.z;
+    } else {
+        quad[0].z = quad[1].z = quad[2].z = quad[3].z = -lbl_803CBBE0;
+    }
+    quad[3].color = color;
+    quad[2].color = color;
+    quad[1].color = color;
+    quad[0].color = color;
+    if (kind < 10) {
+        s *= lbl_80366B18.scaleX;
+        t *= lbl_80366B18.scaleY;
+        w *= lbl_80366B18.scaleX;
+        h *= lbl_80366B18.scaleY;
+    }
+    quad[1].s = s;
+    quad[0].s = s;
+    quad[3].s = s + w;
+    quad[2].s = s + w;
+    quad[3].t = t;
+    quad[0].t = t;
+    quad[2].t = t + h;
+    quad[1].t = t + h;
+    if (kind >= 10) {
+        quad[1].s = 0;
+        quad[0].s = 0;
+        quad[3].s = 0x400;
+        quad[2].s = 0x400;
+        quad[3].t = 0;
+        quad[0].t = 0;
+        quad[2].t = 0x400;
+        quad[1].t = 0x400;
+        DrawSprite_TexObj(quad, lbl_80366B18.iconTexObj[kind - 10]);
+    } else if (kind == 3) {
+        fn_800B1314(quad, lbl_80366B18.fontTexObj[3], 0x400, 0x400);
+    } else if (kind == 2) {
+        fn_800B1314(quad, lbl_80366B18.fontTexObj[2], 0x400, 0x400);
+    } else if (kind == 1) {
+        fn_800B1314(quad, lbl_80366B18.fontTexObj[1], 0x400, 0x400);
+    } else {
+        fn_800B1314(quad, lbl_80366B18.fontTexObj[0], 0x400, 0x400);
+    }
 }
+#endif
 
 // .text:0x80010498 size:0xA94
 #if NONMATCHING
