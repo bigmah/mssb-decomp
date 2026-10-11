@@ -488,7 +488,7 @@ void fn_800BEC30(u8 numCameras) {
 
 // .text:0x800BF008 size:0x30
 void fn_800BF008(void) {
-    return;
+    GXLoadTlut(lbl_803009F8.tlut, GX_TLUT15);
 }
 
 // fn_800BF038, size:0x10
