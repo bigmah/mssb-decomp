@@ -24,6 +24,10 @@ extern void fn_2_68DAC(s32 index, void* result);
 extern void fn_80068720(s32);
 extern void fn_8001F228(void);
 extern void fn_80021410(void);
+extern void fn_2_54474(void);
+extern u8 lbl_2_bss_1A8250[]; // menu work buffer that lbl_2_bss_1A824C points at
+extern u8 lbl_8034E9A0[];
+extern void* memset(void*, int, unsigned long);
 
 // fn_2_1B314, size:0x218
 void fn_2_1B314(void) {
@@ -242,6 +246,28 @@ void fn_2_1BFD0(void) {
         *(u32*)(lbl_80366B18 + 0x7A8) = 0;
     }
     lbl_2_bss_1A823C[0][0x34] = 0;
+}
+
+// fn_2_1C0D4, size:0x148
+// Reset the menu work buffer.
+void fn_2_1C0D4(void) {
+    u8* sel = lbl_8034E9A0;
+    s32 i;
+    lbl_2_bss_1A823C[0][0x34] = 1;
+    memset(lbl_2_bss_1A8250, 0, 0x1978FC);
+    for (i = 0; i < 8; i++) {
+        ((s16*)(lbl_2_bss_1A824C[0] + 0x197756))[i] = -1;
+    }
+    fn_2_54474();
+    lbl_2_bss_1A8248[0x44F2] = 0;
+    *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D6) = 0;
+    lbl_2_bss_1A824C[0][0x197833] = 0;
+    lbl_2_bss_1A8234[0][0x162992] = 0;
+    lbl_2_bss_1A824C[0][0x197838] = 0;
+    lbl_2_bss_1A824C[0][0x197835] = 0;
+    g_d_GameSettings.StadiumID = 0;
+    lbl_2_bss_1A824C[0][0x197863] = sel[0x46F8];
+    lbl_2_bss_1A824C[0][0x197848] = 0;
 }
 
 // fn_2_1C21C, size:0x28
