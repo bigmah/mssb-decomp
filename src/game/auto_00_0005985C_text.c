@@ -3,6 +3,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "main/file_80008E00.h"
 #include "main/file_8004207C.h"
+#include "main/file_80069BDC.h"
 
 extern s32 fn_80022B68(void);
 extern void fn_80022CB4(void*, s32, s32, s32, void (*)(s32, s32, void*), void*);
@@ -69,7 +70,6 @@ extern void fn_3_736CC(void);
 extern void fn_3_735A8(void);
 extern void fn_8001AAA4(void);
 extern void fn_3_6AEC0(void);
-extern u8* lbl_803CC1B8;
 extern void ballPhysica(void);
 extern void fn_3_8A958(void);
 extern void fn_3_5DD30(void);
@@ -110,6 +110,13 @@ extern void fn_3_59338(void);
 extern void fn_3_7B130(void);
 extern void fn_3_22850(void);
 extern int __abs(int);
+extern s32 fn_3_6C938(s32, s32);
+extern s32 fn_3_FD9FC(void);
+extern void fn_3_90328(s32 vol);
+extern void fn_3_FBD70(void);
+extern void fn_3_FBD58(void);
+extern s16 fn_3_6BD6C(void);
+extern u8 lbl_3_data_6104[8];
 extern void fn_3_6EF1C(void);
 extern void fn_3_754B8(void);
 extern void initializeInMemBatter(void);
@@ -251,7 +258,7 @@ void fn_3_5AE0C(void) {
     g_Minigame._19AB = 0;
     fn_3_6C150(&g_Minigame);
     fn_3_8F1C8();
-    *(void (**)(void))((u8**)&lbl_803CC1B8)[0] = fn_3_5B0C4;
+    lbl_803CC1B8->func = fn_3_5B0C4;
 }
 
 // fn_3_5CD24, size:0x90
@@ -325,14 +332,14 @@ void fn_3_5EDD8(void) {
 
 // fn_3_59BCC, size:0x60
 s32 fn_3_59BCC(s32 stage) {
-    u8* queue = lbl_803CC1B8;
+    SceneTask* queue = lbl_803CC1B8;
     if (stage < 1) {
         return 0;
     }
     if (stage == 1) {
         fn_8001AAA4();
     }
-    if (*(s16*)(queue + 0x10) != 0) {
+    if (queue->_10 != 0) {
         fn_3_6AEC0();
         return 1;
     }
@@ -582,7 +589,7 @@ s32 fn_3_5B220(s32 arg) {
         g_GameLogic.endGameStage += 1;
         break;
     case 1: {
-        s16 v = ((s16*)*(u8**)&lbl_803CC1B8)[8];
+        s16 v = lbl_803CC1B8->_10;
         if (v == 1 || (u16)(v - 0xB) <= 1U || v == 7) {
             g_GameLogic.endGameStage += 1;
         }
@@ -1008,4 +1015,68 @@ void fn_3_5FF10(void) {
     fn_3_250FC();
     fn_3_8BE8C();
     initializeUnknown();
+}
+
+// fn_3_5CDB4, size:0x21C
+void fn_3_5CDB4(void) {
+    GameControlsStruct* game = &g_GameLogic;
+    switch (game->_125) {
+    case 0:
+        changeScene(1, 6);
+        g_GameLogic.scoreBook_teamDisplayed = 0;
+        lbl_3_common_bss_32724[0x9B] = 0;
+        lbl_3_common_bss_32724[0x9A] = 0;
+        game->_125 = 1;
+        break;
+    case 1:
+        if ((s8)game->playOverFadeOutStarted < 0 || game->scoreBook_teamDisplayed != 0) {
+            if (g_GameLogic.FrameCountOfCurrentPitch >= 40 && fn_3_6C938(1, 0x1300) != 0) {
+                game->_125 = 2;
+            }
+            if (fn_3_FD9FC() != 0) {
+                game->_125 = 2;
+            }
+        }
+        break;
+    case 2:
+        if (g_d_GameSettings.exhibitionMatchInd == 0 && g_d_GameSettings.bJMatchInd == 1) {
+            fn_800203E0(0xC, (s8)lbl_3_data_6104[gChallengeState._441C]);
+        } else {
+            changeScene(3, 6);
+        }
+        fn_3_90328(-1);
+        game->_125 = 3;
+        break;
+    case 3:
+        if (lbl_8037169C._13 != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+            game->_125 = 4;
+        }
+        break;
+    case 4:
+        if ((s8)game->playOverFadeOutStarted >= 0) {
+            fn_3_5A6D4(0xE);
+            fn_3_8C07C();
+        } else if (g_d_GameSettings.exhibitionMatchInd == 0 && g_d_GameSettings.bJMatchInd == 1) {
+            game->_125 = 5;
+        } else {
+            fn_3_5A6D4(0xE);
+            fn_3_8C07C();
+        }
+        break;
+    case 5:
+        fn_3_8C07C();
+        game->_125 = 6;
+        break;
+    case 6:
+        game->_128 = 1;
+        game->framesOfExitingToMenu = 1;
+        break;
+    }
+    game = &g_GameLogic;
+    if ((s8)game->playOverFadeOutStarted >= 0 && game->scoreBook_teamDisplayed == 0) {
+        game->teamFielding = (s8)game->playOverFadeOutStarted;
+        game->scoreBook_teamDisplayed = fn_3_6BD6C();
+    }
 }

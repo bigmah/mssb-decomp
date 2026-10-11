@@ -96,5 +96,6 @@ s32 fn_3_5B380(void);
 void fn_3_5B0C4(void);
 void fn_3_5B41C(void);
 void fn_3_5FF10(void);
+void fn_3_5CDB4(void);
 
 #endif
