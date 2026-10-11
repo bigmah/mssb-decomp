@@ -37,5 +37,25 @@ void fn_1_27330(ChallengeDebugCamera* camera) {
 
 // .text:0x000273D8 size:0x188
 void fn_1_273D8(ChallengeDebugCamera* camera) {
-    return;
+    camera->moveSpeed = 5.0f;
+    camera->turnSpeed = 120.0f;
+    camera->update = NULL;
+    camera->pitch = camera->yaw = 0.0f;
+    camera->position.x = camera->position.y = camera->position.z = 0.0f;
+    camera->direction.x = camera->direction.y = 0.0f;
+    camera->direction.z = 1.0f;
+    camera->up.x = 0.0f;
+    camera->up.y = 1.0f;
+    camera->up.z = 0.0f;
+    updateView(camera);
+    camera->zoomSpeed = 1.0f;
+    camera->zoom = 1.0f;
+    camera->invZoom = 1.0f / camera->zoom;
+    camera->near = 1.0f;
+    camera->far = 512.0f;
+    camera->top = 240.0f;
+    camera->bottom = -240.0f;
+    camera->left = -320.0f;
+    camera->right = 320.0f;
+    updateProjection(camera);
 }
