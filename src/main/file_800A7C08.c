@@ -2547,7 +2547,12 @@ void fn_800AD95C(ThpPlayer* p, u8 flags) {
 
 // .text:0x800AD9F4 size:0x108
 void fn_800AD9F4(ThpPlayer* p) {
-    return;
+    if (p != NULL) {
+        if (p->state & 3) {
+            ThpStop(p);
+        }
+        OSSendMessage(&lbl_802FB870, (OSMessage)3, OS_MESSAGE_NOBLOCK);
+    }
 }
 
 // fn_800ADAFC, size:0x8
