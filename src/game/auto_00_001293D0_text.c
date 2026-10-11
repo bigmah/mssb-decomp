@@ -17,6 +17,8 @@ extern u8 lbl_3_data_9ECC[];
 extern u8 lbl_3_data_9D94[];
 extern u8 lbl_3_data_A598[];
 extern u8 lbl_3_data_9408[];
+extern u16 lbl_3_data_93D4[][2]; // [stadium]: anim frames
+extern u16 lbl_3_data_93F4[][2]; // [practice type]: anim frames
 extern u16 lbl_3_data_9D84[];
 extern u16 lbl_3_data_A8B8[]; // anim frames for the stadium cursor slots
 extern u16 lbl_3_data_A9E8[]; // [stadium]: name anim
@@ -1060,4 +1062,83 @@ void fn_3_12B7A0(void) {
     task->timer = 0;
     task->_1A = 0;
     lbl_803CC1B8->func = fn_3_12A910;
+}
+
+// fn_3_12BB64, size:0x484
+void fn_3_12BB64(void) {
+    HudTask* task = lbl_803CC1B8;
+
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        goto remove;
+    }
+    if (g_d_GameSettings.GameModeSelected == 2) {
+        if (g_Practice.practiceType_1 == 6) {
+            goto remove;
+        }
+        if (g_GameLogic.secondaryGameMode != 0xA) {
+            goto remove;
+        }
+    } else if (g_GameLogic.gameStatus != 0x1C) {
+        goto remove;
+    }
+    if (g_d_GameSettings.GameModeSelected == 2) {
+        lbl_80371C30[task->baseIdx + 3].obj->_5C = lbl_3_data_93F4[g_Practice.practiceType_2][0] << 16;
+        lbl_80371C30[task->baseIdx + 4].obj->_5C = lbl_3_data_93F4[g_Practice.practiceType_2][1] << 16;
+        if (task->_20 != g_Practice.practiceType_2) {
+            task->_22 = 1;
+        }
+    } else {
+        if (g_d_GameSettings._12 < 1 && (lbl_3_data_21268[(s8)g_Minigame._19E1] == 6 || lbl_3_data_21268[(s8)g_Minigame._19E1] == 7)) {
+            lbl_80371C30[task->baseIdx + 3].obj->_5C = lbl_3_data_93D4[0][0] << 16;
+            lbl_80371C30[task->baseIdx + 4].obj->_5C = lbl_3_data_93D4[0][1] << 16;
+        } else if (g_d_GameSettings._12 < 2 && lbl_3_data_21268[(s8)g_Minigame._19E1] == 7) {
+            lbl_80371C30[task->baseIdx + 3].obj->_5C = lbl_3_data_93D4[0][0] << 16;
+            lbl_80371C30[task->baseIdx + 4].obj->_5C = lbl_3_data_93D4[0][1] << 16;
+        } else {
+            lbl_80371C30[task->baseIdx + 3].obj->_5C = lbl_3_data_93D4[lbl_3_data_21268[(s8)g_Minigame._19E1]][0] << 16;
+            lbl_80371C30[task->baseIdx + 4].obj->_5C = lbl_3_data_93D4[lbl_3_data_21268[(s8)g_Minigame._19E1]][1] << 16;
+        }
+        if (task->_20 != lbl_3_data_21268[(s8)g_Minigame._19E1]) {
+            task->_22 = 1;
+        }
+    }
+    if (task->state == 0) {
+        task->state = 1;
+    } else if (task->state == 1) {
+        if ((s32)(lbl_80371C30[task->baseIdx + 2].obj->_5C >> 16) >= 14) {
+            task->state = 2;
+        }
+    } else if (task->state == 2) {
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            if (g_Practice.practiceType_1 == 5 && g_Practice.practiceState == 3) {
+                task->state = 3;
+            }
+        } else if (g_GameLogic.gameStatus == 0x1E) {
+            if (g_GameLogic._125 == 6 && g_Minigame.bB_bombBarrelHitInd == 0x1F) {
+                task->state = 3;
+            }
+        } else if (g_GameLogic.gameStatus == 0x20) {
+            if (g_GameLogic._125 == 5) {
+                task->state = 3;
+            }
+        }
+    } else if (task->state == 3) {
+        LayoutSlot* slots;
+        lbl_80371C30[task->baseIdx].obj->_68 = 4;
+        lbl_80371C30[task->baseIdx + 2].obj->_68 = 4;
+        lbl_80371C30[task->baseIdx + 1].obj->_68 = 4;
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            slots = lbl_80371C30 + 6;
+            if ((s32)(slots[task->baseIdx].obj->_5C >> 16) > 9) {
+                slots[task->baseIdx].obj->_5C = 9 << 16;
+            }
+            slots[task->baseIdx].obj->_68 = 4;
+        }
+    }
+    return;
+remove:
+    fn_8000FEE8(task->_1E);
+    fn_8000F8F4((LayoutGroup*)task);
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    lbl_3_common_bss_32724[0xBC] = 0;
 }
