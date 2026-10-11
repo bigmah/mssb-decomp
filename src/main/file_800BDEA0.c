@@ -1458,8 +1458,18 @@ L_800C06B0:
 #endif
 
 // .text:0x800C0770 size:0x4C
-void convertTextureHeader(void) {
-    return;
+void convertTextureHeader(TextureHeader* hdr) {
+    s32 i;
+
+    for (i = 0; i < hdr->count; i++) {
+        if (hdr->entries[i].data != NULL) {
+            hdr->entries[i].data = (u8*)hdr + (u32)hdr->entries[i].data;
+        }
+        if (hdr->entries[i].palette != NULL) {
+            hdr->entries[i].palette = (u8*)hdr + (u32)hdr->entries[i].palette;
+        }
+        hdr->entries[i].index = i;
+    }
 }
 
 // .text:0x800C07BC size:0x2D0
