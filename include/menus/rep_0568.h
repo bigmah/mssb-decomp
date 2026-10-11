@@ -6,6 +6,7 @@
 
 struct CharActor;
 struct CharSlotList;
+struct CharSlot;
 
 // Scene task (fn_800B0A5C_insertQueue) that streams the menu characters in (fn_2_18748).
 typedef struct MenuCharLoadTask {
@@ -22,7 +23,7 @@ typedef struct MenuCharLoadTask {
     /*0x21*/ u8 step;
 } MenuCharLoadTask;
 
-void fn_2_190B8(u8* object);
+void fn_2_190B8(struct CharSlot* slot);
 
 void fn_2_16CE0(void);
 
@@ -50,5 +51,6 @@ void fn_2_17C88(void);
 void fn_2_17ED8(void);
 void fn_2_17648(void);
 void fn_2_18398(void);
+void fn_2_16F78(u8 index);
 
 #endif

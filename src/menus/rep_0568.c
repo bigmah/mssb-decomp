@@ -67,11 +67,14 @@ typedef struct MenuAssetInfo {
 extern MenuAssetInfo lbl_2_data_241C[];
 extern u8* lbl_2_bss_1228;
 extern MenuAssetInfo* lbl_2_data_277C; // part model descriptors, 6 per character
-extern s32 ARAMTransfer(void*, int, int, int);
-extern void fn_2_16F78(u8);
+extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_2_14BB8(u8, s32);
 
-#include "static/UnknownHomes_Static.h"
+#include "static/GameSettings.h"
+
+extern void fn_800B9AA8(void* light);
+extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
+extern void fn_800B0A14_removeQueue(void* unused);
 
 extern void ACTSetAnimation(void* act, void* bank, s32 a, u16 anim, f32 frame, f32 speed);
 extern void fn_800B4CA0(CharModel* model, f32 v);
@@ -85,11 +88,26 @@ extern u8 lbl_2_data_2794[];
 extern void fn_80014204(s32 count);
 extern CharSlotList* fn_80023AA4(void);
 extern void fn_80023B04(s32 count);
+extern void ANIMGet(void* bank);
+extern void convertTextureHeader(void* textures);
+extern void LoadActorLayout(void* layout);
+extern void convertGeometryAndSknHeader(void* geo, void* skn);
+extern void haveActLayoutPointToGeoHeader(void* layout, void* geo);
+extern void fn_800BD190(void* geo, void* tex);
+extern void fn_8002399C(CharSlot* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
+extern void fn_800B2B74(CharModel* model, u16 joint);
+extern void fn_800B2BA8(CharModel* model, u16 joint, s32 a, s32 b);
+extern void fn_800B2C08(CharModel* model, u16 joint);
+extern void fn_800BD548(CharSlot* slot, s32 count, ...);
+extern void fn_800638B4(CharActor* actor, CharSlot* slot);
+extern void fn_8004B7B4(CharActor* actor, CharSlot* slot);
+extern Vec lbl_2_data_20F8[]; // menu actor positions
+extern u8 lbl_2_data_278C[];  // part file indices (fn_800126EC), 4 per part
 
 
 // fn_2_190B8, size:0x24
-void fn_2_190B8(u8* object) {
-    fn_800B9AA8(*(void**)(object + 0x70));
+void fn_2_190B8(CharSlot* slot) {
+    fn_800B9AA8(slot->lights[0]);
 }
 
 // fn_2_16CE0, size:0x58
@@ -211,7 +229,7 @@ void fn_2_18148(MenuCharLoadTask* task) {
         task->step++;
         break;
     case 1:
-        ARAMTransfer(&lbl_2_data_241C[(s8)task->charId[task->index]], (s32)task->actor->files, 0, 0); // TODO type: ARAM dest address
+        ARAMTransfer(&lbl_2_data_241C[(s8)task->charId[task->index]], task->actor->files, 0, 0);
         task->step++;
         break;
     case 2:
@@ -393,6 +411,176 @@ void fn_2_19224(CharSlotList* list, MtxPtr view) {
         slot->_5B &= 1;
     }
 }
+
+// fn_2_16F78, size:0x6D0
+// Sets up a menu actor once its model file has been streamed in (cf. fn_80017814).
+// NONMATCHING 95%: register allocation (index copies, slot base), slot field stores not CSE'd
+#if NONMATCHING
+void fn_2_16F78(u8 index) {
+    CharActor* actor = &lbl_8036E548.actors[index];
+    void** base;
+    u32* offsets;
+    s32 k;
+    void* tex;
+    void* layout;
+    void* geo;
+    void* skn;
+    void* bank;
+    CharSlot* slot;
+    CharSlot* menuSlot;
+    s32 count;
+    s32 i;
+    s32 j;
+    CharParts* parts;
+    s32 animA;
+    s32 animB;
+    BOOL special;
+    void* shape;
+    ShapeAnimSet* set;
+
+    actor->modelIndex = index;
+    // The file header holds offsets that are relocated in place.
+    base = actor->files;
+    offsets = (u32*)base;
+    for (k = 0; k < 15; k++) {
+        if (actor->files[k] == NULL) {
+            break;
+        }
+        actor->files[k] = (u8*)base + offsets[k];
+    }
+    tex = actor->files[0];
+    layout = actor->files[1];
+    geo = actor->files[2];
+    skn = actor->files[3];
+    convertTextureHeader(tex);
+    LoadActorLayout(layout);
+    convertGeometryAndSknHeader(geo, skn);
+    haveActLayoutPointToGeoHeader(layout, geo);
+    fn_800BD190(geo, tex);
+    bank = actor->files[4];
+    actor->banks.b[5] = bank;
+    ANIMGet(actor->banks.b[5]);
+    slot = fn_800111D8(actor);
+    fn_8002399C(slot, index, index, layout, bank, skn);
+
+    menuSlot = &lbl_8036E548.slots->slots[index];
+    menuSlot->act = actor->banks.b[5];
+    menuSlot->animId = 0;
+    menuSlot->_5C = 0.0f;
+    menuSlot->_58 = 1;
+    menuSlot->_59 = menuSlot->_5A = menuSlot->act != NULL;
+    menuSlot->_60 = 0.0f;
+    count = lbl_8036E548.slots->slots[index].model->jointCount;
+    memset(actor->jointIdx, 0xFF, 0x64);
+    for (i = 0; i < count; i++) {
+        if (lbl_8036E548.slots->slots[index].model->joints[i]->id != 0xFFFF) {
+            actor->jointIdx[lbl_8036E548.slots->slots[index].model->joints[i]->id] = i;
+        }
+    }
+    fn_800BD548(&lbl_8036E548.slots->slots[index], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+    actor->_040.x = actor->_040.y = actor->_040.z = 0.0f;
+    CTRLSetTranslation(&lbl_8036E548.slots->slots[index].ctrl, 0.0f, 0.0f, 0.0f);
+    CTRLSetRotation(&lbl_8036E548.slots->slots[index].ctrl, 0.0f, 0.0f, 0.0f);
+    lbl_8036E548.slots->slots[index]._54 = 0.5f;
+    lbl_8036E548.slots->slots[index]._5A = 1;
+    fn_800B2C08(lbl_8036E548.slots->slots[index].model, lbl_8036E548.active[index] != NULL ? lbl_8036E548.active[index]->jointIdx[4] : 0xFFFF);
+    fn_8001FC4C(lbl_8036E548.active[index]);
+    actor->pos.x = lbl_2_data_20F8[index].x;
+    actor->pos.y = lbl_2_data_20F8[index].y;
+    actor->pos.z = lbl_2_data_20F8[index].z;
+    actor->_04C = 0.5f;
+    actor->mode[0] = 0;
+    lbl_8036E548.slots->slots[index].callback = fn_2_190B8;
+    actor->model = slot->model;
+    fn_800B2B74(slot->model, actor->jointIdx[19]);
+    fn_800B2B74(slot->model, actor->jointIdx[25]);
+    j = actor->jointIdx[3];
+    if (j != 0xFFFF) {
+        fn_800B2B54(actor->model, j, 0xD);
+    }
+    j = actor->jointIdx[3];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[2];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[1];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[36];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+    }
+    j = actor->jointIdx[46];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+
+    parts = &lbl_8036E548.partsPool[actor->modelIndex];
+    if (actor->files[5] != NULL) {
+        actor->parts = &lbl_8036E548.partsPool[index];
+        parts->part[0].files = actor->files;
+        fn_800126EC(&parts->part[0], tex, lbl_2_data_278C);
+        parts->part[1].files = actor->files;
+        fn_800126EC(&parts->part[1], tex, lbl_2_data_278C + 4);
+    }
+    special = FALSE;
+    if (actor->kind == 0x12 || actor->kind == 0x26 || actor->kind == 0x28 || actor->kind == 0x29) {
+        special = TRUE;
+    }
+    if (special) {
+        switch (actor->kind) {
+        case 0x12:
+            animA = 4;
+            animB = 5;
+            break;
+        case 0x26:
+            animA = 2;
+            animB = 3;
+            break;
+        case 0x28:
+        case 0x29:
+            animA = 6;
+            animB = 7;
+            break;
+        }
+    } else {
+        animA = 1;
+        animB = 0;
+    }
+    fn_8001D180(index, animA, 1);
+    fn_8001D180(index, animB, 1);
+    shape = actor->files[13];
+    if (shape != NULL) {
+        set = actor->files[14];
+        if (set != NULL) {
+            fn_80025DDC(shape);
+            fn_80014990(index, shape, set);
+            fn_80025C58(shape, (ShapeModel**)&slot->model);
+        }
+    }
+    actor->parts->_CC = 1;
+    actor->parts->part[1].player.state.speed = 0.5f;
+    actor->parts->part[0].player.state.speed = 0.5f;
+    switch (actor->kind) {
+    case 2:
+        fn_800638B4(actor, slot);
+        break;
+    case 0x13:
+        actor->_25C = 1;
+        fn_8004B7B4(actor, slot);
+        break;
+    }
+    fn_2_16A98(index, 0, 1, 0, 0, 0, 0);
+}
+#endif
 
 // fn_2_17648, size:0x470
 // Allocates the two part file buffers of every menu actor and resets its parts state.
