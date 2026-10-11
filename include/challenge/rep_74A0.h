@@ -54,9 +54,30 @@ typedef struct {
     void (*update)(u8*);
     u8 padding[0x0C];
     u16 state;
-    u8 padding12[3];
+    u8 padding12[2];
+    u8 actorIndex; // viewer: selected actor in lbl_8036E548
     s8 menu;
 } ChallengeRosterQueue;
+
+// View of a controller entry in lbl_803C77B8 (PadState in main/file_800A7C08.h,
+// which can't be included next to UnknownHomes_Static.h).
+typedef struct ChallengePad {
+    u8 pad00[0x10];
+    s8 stickX;
+    s8 stickY;
+    s8 substickX;
+    s8 substickY;
+    u8 triggerL;
+    u8 triggerR;
+} ChallengePad;
+
+// View of an actor entry in lbl_8036E548 (+0xC04, stride 0x27C).
+typedef struct ChallengeViewerActor {
+    u8 pad00[0x34];
+    Vec pos;
+    Vec rot;
+    u8 pad4C[0x27C - 0x4C];
+} ChallengeViewerActor;
 
 void fn_1_1D10C(void);
 
@@ -79,5 +100,7 @@ void fn_1_1A774(void);
 void fn_1_1D514(void);
 
 void fn_1_1B038(void);
+
+void fn_1_1B2C8(void);
 
 #endif

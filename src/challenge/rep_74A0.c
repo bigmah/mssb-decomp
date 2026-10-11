@@ -218,3 +218,30 @@ void fn_1_1B038(void) {
     }
 }
 #endif
+
+extern Vec lbl_1_data_FB18;
+extern const f32 lbl_1_rodata_75CC;
+extern const f32 lbl_1_rodata_75D0;
+
+// fn_1_1B2C8, size:0x15C
+// Debug viewer: move the selected actor with the sticks/triggers.
+// NONMATCHING 32%: same operations; the original loads every input before the first store (scheduling/conversion order)
+#if NONMATCHING
+void fn_1_1B2C8(void) {
+    ChallengePad* pad = (ChallengePad*)&lbl_803C77B8;
+    ChallengeViewerActor* actor = (ChallengeViewerActor*)(lbl_8036E548 + lbl_803CC1B8->actorIndex * 0x27C + 0xC04);
+    f32 rx;
+    f32 ry;
+
+    actor->pos.x += pad->stickX / 768.0f;
+    actor->pos.y = actor->pos.y + pad->triggerR / 768.0f - pad->triggerL / 768.0f;
+    actor->pos.z += pad->stickY / 768.0f;
+    rx = lbl_1_data_FB18.x - pad->substickY * 0.001953125f;
+    ry = lbl_1_data_FB18.y - pad->substickX * 0.001953125f;
+    actor->rot.x = rx;
+    actor->rot.y = ry;
+    lbl_1_data_FB18.y = ry;
+    lbl_1_data_FB18.x = rx;
+    actor->rot.z = lbl_1_data_FB18.z;
+}
+#endif
