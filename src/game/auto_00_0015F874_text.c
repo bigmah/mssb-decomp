@@ -58,6 +58,17 @@ void fn_3_15F9C0(void) {
 }
 
 // .text:0x0015FA58 size:0x12C mapped:0x8079EAEC
-void fn_3_15FA58(void) {
-    return;
+void fn_3_15FA58(s32 n, s32* ids) {
+    SceneTask* task;
+    s32 i;
+
+    task = fn_800B0A5C_insertQueue(fn_3_15F9C0, lbl_803CC1B8->priority);
+    lbl_3_common_bss_35154.active = 1;
+    lbl_3_common_bss_35154.done = 0;
+    lbl_3_common_bss_35154.level = 0;
+    lbl_3_common_bss_35154.count = 0;
+    for (i = n; i != 0; i--) {
+        lbl_3_common_bss_35154.ids[lbl_3_common_bss_35154.count++] = *ids++;
+    }
+    task->_10 = lbl_3_data_27F10.duration;
 }
