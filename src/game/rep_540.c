@@ -1,6 +1,7 @@
 #include "game/rep_540.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/GameSettings.h"
+#include "game/rep_1838.h"
 #include "header_rep_data.h"
 #include "stl/math.h"
 
@@ -24,6 +25,8 @@ extern Fielder540 g_Fielders[9];
 
 extern u8 lbl_3_data_450C[];
 extern f32 lbl_3_data_4428[];
+extern f32 lbl_3_data_4930[];
+extern f32 lbl_3_data_45FC; // default ball gravity // fielding tuning floats
 extern int fn_3_B7D6C(f32, f32);
 extern void fn_3_8FF5C(s32, void*, f32, f32, f32);
 extern u8 lbl_800E8558[];
@@ -38,8 +41,6 @@ extern void fn_3_8C5C8(void);
 extern u8 lbl_3_data_4444[];
 extern u8 lbl_3_data_4604[];
 extern u8 lbl_3_data_4608;
-extern int RandomInt_Game(int);
-extern void getComponentsFromSAng(s16, f32*, f32*);
 extern int fn_3_B7DD8(f32, f32);
 extern f64 lbl_3_rodata_600;
 extern void fn_3_88D88(s32);
@@ -62,6 +63,14 @@ typedef struct {
 extern RandSeedObj lbl_3_data_228;
 
 // Same as fn_3_FF98 (reseeds g_Ball's static random ints).
+// Same update without the prePitch copy.
+static inline void ballSeedRandom(void) {
+    s32 a;
+    a = (((lbl_3_data_228.counter % 10) + 1) * (g_Ball.StaticRandomInt2 * g_Ball.StaticRandomInt1) + g_Ball.StaticRandomInt2 * 16 + (s32)(lbl_3_data_228.counter >> 1) + g_d_GameSettings.FrameCountWhileNotAtMainMenu) & 0x7FFF;
+    g_Ball.StaticRandomInt1 = a;
+    g_Ball.StaticRandomInt2 = (((lbl_3_data_228.counter % 10) + 1) * (g_Ball.StaticRandomInt2 * (g_Ball.StaticRandomInt2 + 1)) + a * 8 + (s32)(lbl_3_data_228.counter >> 1) + (g_d_GameSettings.FrameCountWhileNotAtMainMenu >> 1)) & 0x7FFF;
+}
+
 static inline void ballReseedRandom(void) {
     s32 a;
     a = (((lbl_3_data_228.counter % 10) + 1) * (g_Ball.StaticRandomInt2 * g_Ball.StaticRandomInt1) + g_Ball.StaticRandomInt2 * 16 + (s32)(lbl_3_data_228.counter >> 1) + g_d_GameSettings.FrameCountWhileNotAtMainMenu) & 0x7FFF;
@@ -1143,13 +1152,202 @@ void fn_3_E2D4(void) {
 
 // .text:0x0000EE4C size:0x390 mapped:0x8064DEE0
 void fn_3_EE4C(void) {
-    return;
+    f32 x;
+    f32 z;
+    f32 radius;
+    s32 i;
+    g_Ball.framesSinceHit = 0;
+    g_Ball.offsetWhilePickedUpHistory[0].x = 0.0f;
+    g_Ball.offsetWhilePickedUpHistory[0].y = 0.0f;
+    g_Ball.offsetWhilePickedUpHistory[0].z = 0.0f;
+    g_Ball.framesSinceThrowStarted = -1;
+    g_Ball.framesSinceBallHitGroundOrWasCaught = -1;
+    g_Ball.framesSinceLastBounce = -1;
+    g_Ball.ballHitGrroundDistanceFromHome = 0.0f;
+    g_Ball.AtBat_ContactResult = 0;
+    g_Ball.ballInitialHitDoneInd = 0;
+    g_Ball.fairBallInd = -1;
+    g_Ball.howFoulTheBallWillBe = 0;
+    g_Ball.ballState = 0;
+    g_Ball.fielderAboutToGetBall_hasBall = -1;
+    g_Ball.fielderWBallIndex = -1;
+    g_Ball.maxYOfHit = 0.0f;
+    g_Ball.deadBallReason = 0;
+    g_Ball.someCollisionVariable = 0;
+    g_Ball.deadBallRBIsAddedInd = 0;
+    g_Ball.baseBallAndFielderAreOn = -1;
+    g_Ball.fielderBeingThrownTo = -1;
+    g_Ball.ballIsLooseInd_unused = 0;
+    g_Ball.homeRunClassification = 0;
+    g_Ball.lineDriveThroughPitcherInd = 0;
+    g_Ball.hitWallInd = 0;
+    g_Ball.collisionRelated = 0;
+    g_Ball.timeSinceBallPickedUp = -1;
+    g_Ball.matchFramesAndBallAngle.framesSinceLastThrow = -1;
+    g_Ball.groundRuleDoubleInd = 0;
+    g_Ball.matchFramesAndBallAngle.framesAfterReceivingThrow = 0;
+    g_Ball.numberOfThrowsDuringPlay = 0;
+    g_Ball.ballZoneWhenCaught = (s8)-1;
+    if (g_Ball.currentStarSwing == 3 || g_Ball.currentStarSwing == 4) {
+        g_Ball.warioStarHitCoords[0].x = g_Ball.AtBat_Contact_BallPos.x;
+        g_Ball.warioStarHitCoords[0].y = g_Ball.AtBat_Contact_BallPos.y;
+        g_Ball.warioStarHitCoords[0].z = g_Ball.AtBat_Contact_BallPos.z;
+        g_Ball.warioStarHitCoords[1].x = g_Ball.AtBat_Contact_BallPos.x;
+        g_Ball.warioStarHitCoords[1].y = g_Ball.AtBat_Contact_BallPos.y;
+        g_Ball.warioStarHitCoords[1].z = g_Ball.AtBat_Contact_BallPos.z;
+        g_Ball.warioStarHitCoords[2].x = g_Ball.AtBat_Contact_BallPos.x;
+        g_Ball.warioStarHitCoords[2].y = g_Ball.AtBat_Contact_BallPos.y;
+        g_Ball.warioStarHitCoords[2].z = g_Ball.AtBat_Contact_BallPos.z;
+        for (i = 0; i < 10; i++) {
+            g_Ball.warioStarHitCoords[i + 3].x = g_Ball.AtBat_Contact_BallPos.x;
+            g_Ball.warioStarHitCoords[i + 3].y = g_Ball.AtBat_Contact_BallPos.y;
+            g_Ball.warioStarHitCoords[i + 3].z = g_Ball.AtBat_Contact_BallPos.z;
+        }
+    }
+    if (g_Minigame.GameMode_MiniGame == 1) {
+        g_Batter.hitTrajectory = 3;
+        if (g_Batter.buntStatus != 0) {
+            g_Batter.hitTrajectory = 6;
+        }
+        if (g_Ball.bODQualifyingHitInd != 0) {
+            for (i = 0; i < 360; i += 5) {
+                if (g_Ball.physicsSubstruct.futureCoordsAndDist[i].dist > 80.0f) {
+                    s16 ang = fn_3_9FB8C(g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.x, g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.z);
+                    if (ang > 0x240 && ang < 0x5C0) {
+                        g_Batter.hitTrajectory = 4;
+                    }
+                    return;
+                }
+            }
+        }
+    } else {
+        if (g_Minigame.GameMode_MiniGame == 3) {
+            g_Batter.hitTrajectory = 3;
+            if (g_Batter.buntStatus != 0) {
+                g_Batter.hitTrajectory = 6;
+            }
+        }
+        estimateAndSetFutureCoords(0);
+        fn_3_C034();
+        if (g_Ball.autoFielderAvoidDropSpotForPeachesStarHit != 0) {
+            if (g_Ball.currentStarSwing == 0xB) {
+                radius = RandomF32_Game_Range(lbl_3_data_4930[0x9C / 4], lbl_3_data_4930[0xA0 / 4]);
+            } else {
+                radius = RandomF32_Game_Range(lbl_3_data_4930[0xA4 / 4], lbl_3_data_4930[0xA8 / 4]);
+            }
+            getComponentsFromSAng(RandomInt_Game(0x1000), &x, &z);
+            g_Ball.peachDaisyStarHitFielderLoc.x = x * radius + g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x;
+            g_Ball.peachDaisyStarHitFielderLoc.z = z * radius + g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z;
+        }
+    }
 }
 
 // .text:0x0000F1DC size:0x39C mapped:0x8064E270
+// NONMATCHING 87%: scheduling of the inlined random reseed against the resets
+#if NONMATCHING
 void fn_3_F1DC(void) {
-    return;
+    s32 i;
+    g_Ball.AtBat_Contact_BallPos.x = *(f32*)(lbl_3_data_450C + 0);
+    g_Ball.AtBat_Contact_BallPos.y = 0.0f;
+    g_Ball.AtBat_Contact_BallPos.z = *(f32*)(lbl_3_data_450C + 4);
+    if (g_Minigame.GameMode_MiniGame == 6) {
+        g_Ball.AtBat_Contact_BallPos.x = 0.0f;
+        g_Ball.AtBat_Contact_BallPos.z = 0.0f;
+        g_Ball.AtBat_Contact_BallPos.y = 1.0f;
+    }
+    for (i = 0; i < 0x3C; i++) {
+        BALL_PAST(i).x = g_Ball.AtBat_Contact_BallPos.x;
+        BALL_PAST(i).y = g_Ball.AtBat_Contact_BallPos.y;
+        BALL_PAST(i).z = g_Ball.AtBat_Contact_BallPos.z;
+    }
+    ballSeedRandom();
+    g_Ball.StaticRandomInt1_prePitch = g_Ball.StaticRandomInt1;
+    g_Ball.framesSinceHit = -1;
+    g_Ball.physicsSubstruct.velocity.x = 0.0f;
+    g_Ball.physicsSubstruct.acceleration.x = 0.0f;
+    g_Ball.physicsSubstruct.velocity.y = 0.0f;
+    g_Ball.physicsSubstruct.acceleration.y = 0.0f;
+    g_Ball.physicsSubstruct.velocity.z = 0.0f;
+    g_Ball.physicsSubstruct.acceleration.z = 0.0f;
+    g_Ball.physicsSubstruct.gravity = lbl_3_data_45FC;
+    g_Ball.framesSinceThrowStarted = -1;
+    g_Ball.pitchHangtimeCounter = -1;
+    g_Ball.postPitchResultCounter = -1;
+    g_Ball.framesSinceBallHitGroundOrWasCaught = -1;
+    g_Ball.framesSinceLastBounce = -1;
+    g_Ball.framesSincePickOff = -1;
+    g_Ball.ballHitGrroundDistanceFromHome = 0.0f;
+    g_Ball.AtBat_ContactResult = 0;
+    g_Ball.ballInitialHitDoneInd = 0;
+    g_Ball.fairBallInd = -1;
+    g_Ball.howFoulTheBallWillBe = 0;
+    g_Ball.always0_fairFoulRelated = 0;
+    g_Ball.ballState = 0;
+    g_Ball.fielderAboutToGetBall_hasBall = -1;
+    g_Ball.fielderWBallIndex = -1;
+    g_Ball.maxYOfHit = 0.0f;
+    g_Ball.deadBallReason = 0;
+    g_Ball.someCollisionVariable = 0;
+    g_Ball.deadBallRBIsAddedInd = 0;
+    g_Ball.baseBallAndFielderAreOn = -1;
+    g_Ball.fielderBeingThrownTo = -1;
+    g_Ball.ballIsLooseInd_unused = 0;
+    g_Ball.homeRunClassification = 0;
+    g_Ball.lineDriveThroughPitcherInd = 0;
+    g_Ball.hitWallInd = 0;
+    g_Ball.fielderWithBallIndexStored = -1;
+    g_Ball.fielderWithBallIndexStored2 = -1;
+    g_Ball.fielderWhoGotLastOut = -1;
+    g_Ball.throwingFielder = -1;
+    g_Ball.maybeBuntInd = 0;
+    g_Ball.maybebuntOn2Strikes = 0;
+    g_Ball.timeSinceBallPickedUp = -1;
+    g_Ball.matchFramesAndBallAngle.framesSinceLastThrow = -1;
+    g_Ball.groundRuleDoubleInd = 0;
+    g_Ball.matchFramesAndBallAngle.framesAfterReceivingThrow = 0;
+    g_Ball.numberOfThrowsDuringPlay = 0;
+    g_Ball.framesOnGroundUntilPickedUp = 0;
+    g_Ball.numFieldersWhoHandledBallDuringPlay = 0;
+    g_Ball.numThrowsDuringPlay = 0;
+    g_Ball.bobbleLocation_1fair_2foul = 0;
+    g_Ball.matchFramesAndBallAngle.ballAndFielderOnBaseFrames = 0;
+    g_Ball.homeRunInd = 0;
+    g_Ball.matchFramesAndBallAngle.ballOverWallFrames = 0;
+    g_Ball.ballZoneWhenCaught = (s8)-1;
+    g_Ball._1BDF = 0;
+    g_Ball.matchFramesAndBallAngle.framesSinceFoulCalled = 0;
+    g_Ball.collisionRelated = 0;
+    g_Ball.landingSpotZoneAwayFromHome = 0;
+    g_Ball.ballZoneAwayFromHome = 0;
+    g_Ball.looseBall_codeForHowLongUntilSomeoneWillGetIt = 0;
+    g_Ball.someYCoord = -1.0f;
+    g_Ball.looseBall_5FrameCountdown = 0;
+    g_Ball.ballIsRollingIndicator = 0;
+    g_Ball.ballPickedUpCaught.x = 0.0f;
+    g_Ball.ballPickedUpCaught.z = 0.0f;
+    g_Ball.matchFramesAndBallAngle.framesOnGround = 0;
+    g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy = 0;
+    g_Ball.hardHitIndicator = 0;
+    g_Ball.ballEnergy = 0.0f;
+    g_Ball.framesSinceBallHitWall = 0;
+    g_Ball.hittingAddedGravityFactor = 0.0f;
+    g_Ball.currentStarSwing = 0;
+    g_Ball.currentStarSwing2 = 0;
+    g_Ball.knockoutProcessedFlag = 0;
+    g_Ball.bODQualifyingHitInd = 0;
+    g_Ball.IsAntichemistryThrow = 0;
+    g_Ball.warioWaluGarlicIsActive = 0;
+    g_Ball.matchFramesAndBallAngle.garlicHitFramesSinceSplit = 0;
+    g_Ball.autoFielderAvoidDropSpotForPeachesStarHit = 0;
+    g_Ball.fielderActionOccuring = 0;
+    g_Ball.catchAnimationTotalFrames = 0;
+    g_Ball._1BC0 = 1;
+    g_Ball.someCollisionInd = 0;
+    g_Ball.hitNoteBlockInd = 0;
+    g_Ball.pauseBallMovementWhenInPlant = 0;
+    g_Ball.ballCughtByPlantInd = 0;
 }
+#endif
 
 // .text:0x0000F578 size:0x240 mapped:0x8064E60C
 void fn_3_F578(void) {
