@@ -1687,6 +1687,47 @@ void fn_800E591C(void* ctx, u8* src, u8* dst, u8* ref) {
 }
 
 // .text:0x800E5940 size:0x9F0
+// NONMATCHING 96%: data base pointer folded into each offset; the original keeps it in a register
+#if NONMATCHING
 void fn_800E5940(void* ctx, u8* src, u8* dst, u8* ref0, u8* ref1) {
-    return;
+    HVQM4SeqObj* seq = ctx;
+    HVQState* state = seq->state;
+    u8* data = src + 0x4C;
+    HVQTree* tree;
+
+    state->basisShift = src[1];
+    state->dcShift = src[0];
+    state->mvXBits[0] = src[2];
+    state->mvYBits[0] = src[3];
+    state->mvXBits[1] = src[4];
+    state->mvYBits[1] = src[5];
+    HVQ_INIT_BITBUF(&state->basisNum[0].buf, data, src + 0x08);
+    HVQ_INIT_BITBUF(&state->basisNumRun[0].buf, data, src + 0x0C);
+    HVQ_INIT_BITBUF(&state->basisNum[1].buf, data, src + 0x10);
+    HVQ_INIT_BITBUF(&state->basisNumRun[1].buf, data, src + 0x14);
+    HVQ_INIT_BITBUF(&state->dcValues[0].buf, data, src + 0x18);
+    HVQ_INIT_BITBUF(&state->bufTree0[0].buf, data, src + 0x1C);
+    HVQ_INIT_BITBUF(&state->fixvl[0], data, src + 0x20);
+    HVQ_INIT_BITBUF(&state->dcValues[1].buf, data, src + 0x24);
+    HVQ_INIT_BITBUF(&state->bufTree0[1].buf, data, src + 0x28);
+    HVQ_INIT_BITBUF(&state->fixvl[1], data, src + 0x2C);
+    HVQ_INIT_BITBUF(&state->dcValues[2].buf, data, src + 0x30);
+    HVQ_INIT_BITBUF(&state->bufTree0[2].buf, data, src + 0x34);
+    HVQ_INIT_BITBUF(&state->fixvl[2], data, src + 0x38);
+    HVQ_INIT_BITBUF(&state->mvX.buf, data, src + 0x3C);
+    HVQ_INIT_BITBUF(&state->mvY.buf, data, src + 0x40);
+    HVQ_INIT_BITBUF(&state->mcbProc.buf, data, src + 0x44);
+    HVQ_INIT_BITBUF(&state->mcbType.buf, data, src + 0x48);
+
+    HVQ_READ_TREE(state->basisNum[0], 0, 0);
+    HVQ_READ_TREE(state->basisNumRun[0], 0, 0);
+    HVQ_READ_TREE(state->dcValues[0], 1, src[0]);
+    HVQ_READ_TREE(state->bufTree0[0], 0, 2);
+    HVQ_READ_TREE(state->mvX, 1, 0);
+    HVQ_READ_TREE(state->mcbProc, 0, 0);
+
+    state->dcMax = 0x7F << src[0];
+    state->dcMin = -(0x80 << src[0]);
+    fn_800E46D4(seq, dst, ref0, ref1);
 }
+#endif
