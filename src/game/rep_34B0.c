@@ -20,6 +20,9 @@ extern void fn_3_75560(void);
 extern void fn_3_12DB80(void);
 extern void atBat_batter(void);
 extern void fn_3_8A958(void);
+extern void fn_3_59A90(void);
+extern u8 lbl_3_data_2127C[][5]; // [minigame][difficulty]: CPU strength
+extern s16 lbl_3_data_21790[];   // [difficulty]: points needed to win
 extern void fn_3_751B4(void);
 extern void setDefaultInMemBatter(void);
 extern void fn_3_8913C(void);
@@ -817,8 +820,57 @@ void fn_3_13207C(void) {
 }
 
 // .text:0x001320BC size:0x310 mapped:0x80771150
+// Barrel Batter: set up the minigame.
 void fn_3_1320BC(void) {
-    return;
+    s32 i;
+
+    if (g_GameLogic._125 == 0) {
+        fn_3_59A90();
+        g_GameLogic.secondaryGameMode = 5;
+        for (i = 0; i < 4; i++) {
+            g_Minigame.miniGameCurrentPoints[i] = 0;
+            g_Minigame.miniGameLatestPoints[i] = 0;
+            g_Minigame.minigamePoints_current_Latest[i].current = 0;
+            g_Minigame.minigamePoints_current_Latest[i].latest = 0;
+            g_Minigame.minigameControlStruct[0].fieldOrder[i] = -1;
+            g_Minigame.minigameFielderIndex[i] = -1;
+            g_Minigame._18FC[i] = -1;
+            g_Minigame._1900[i] = -1;
+            g_Minigame.minigameControlStruct[0]._24[i] = 1;
+        }
+        g_Scores.inning = 0;
+        g_Minigame.pointsReqToWin_challenge = 0;
+        g_Minigame._1A37 = 0;
+        g_Minigame.minigamePlayerSelectedOrder = -1;
+        g_Minigame.rosterID = -1;
+        g_Minigame._17C0 = 0;
+        g_Minigame.bB_bombBarrelHitInd = 0;
+        g_Minigame.bB_bombBarrelID = -1;
+        if (g_Minigame.multiPlayerInd == 0) {
+            g_Scores.maxInnings = 1;
+            for (i = 0; i < 4; i++) {
+                g_Minigame.minigameControlStruct[0].aIStrength[i] = lbl_3_data_2127C[g_Minigame.GameMode_MiniGame][g_Minigame.soloMinigameDifficulty];
+            }
+            if (g_Minigame.soloMinigameDifficulty <= 2) {
+                g_Minigame.pointsReqToWin_challenge = lbl_3_data_21790[g_Minigame.soloMinigameDifficulty];
+            }
+        } else {
+            if (g_Minigame._1A3C != 0) {
+                g_Minigame.minigameControlStruct[0].aIStrength[0] = lbl_3_data_2127C[7][0];
+                g_Minigame.minigameControlStruct[0].aIStrength[1] = lbl_3_data_2127C[7][0];
+                g_Minigame.minigameControlStruct[0].aIStrength[2] = lbl_3_data_2127C[7][0];
+                g_Minigame.minigameControlStruct[0].aIStrength[3] = lbl_3_data_2127C[7][0];
+            }
+            g_Scores.maxInnings = lbl_3_data_21798[5];
+        }
+        fn_3_12FE84();
+        g_Minigame.turnNumberWithinRound = 0;
+        g_Minigame.barrelBatter_scoreCalculatedInd = 0;
+        g_Minigame.barrelBatterChargeMeter = 0;
+        g_GameLogic._125 += 1;
+    } else {
+        fn_3_5A6D4(5);
+    }
 }
 
 static inline void mgStep_1323CC(s32 idx) {

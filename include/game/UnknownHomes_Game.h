@@ -2013,10 +2013,7 @@ typedef struct _MiniGameStruct {
     /*0x18CC*/ MiniGameControlStruct minigameControlStruct[1];
     /*0x18F8*/ s8 minigameFielderIndex[4];
     /*0x18FC*/ s8 _18FC[4];
-    /*0x1900*/ u8 _1900;
-    /*0x1901*/ u8 _1901;
-    /*0x1902*/ u8 _1902;
-    /*0x1903*/ u8 _1903;
+    /*0x1900*/ s8 _1900[4];
     /*0x1904*/ s8 minigamePlayerSelectedOrder; // the pitcher
     /*0x1905*/ s8 rosterID;
     /*0x1906*/ u8 miniGameNumberOfParticipants;
