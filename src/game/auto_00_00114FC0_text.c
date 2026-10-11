@@ -20,7 +20,7 @@ extern void fn_3_753E8(s32);
 extern u8 g_Batter[];
 extern u8 lbl_3_data_21BC4[];
 extern f32 lbl_3_data_226C4[];
-extern void fn_3_11881C(void);
+extern void fn_3_11881C(s32 i);
 extern void fn_8001D110(s32 i, f32 a, f32 b, f32 c);
 extern u8 g_Ball[];
 extern f32 maybeInitialBatPos[];
