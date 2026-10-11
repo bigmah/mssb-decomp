@@ -316,7 +316,7 @@ s32 fn_80024C04(s32 index) {
 
     for (i = 0; i < 6; i++) {
         if (lbl_803CB748[i] == lbl_800E8558[index].missionRow) {
-            if (g_d_GameSettings.__0x20padding[i + 8] == 0) { // TODO name: g_d_GameSettings bytes 0x1A..0x1F
+            if (g_d_GameSettings._1A[i] == 0) {
                 return 0;
             }
             break;

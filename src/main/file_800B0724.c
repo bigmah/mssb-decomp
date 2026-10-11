@@ -866,8 +866,7 @@ void fn_800B2240(SpriteDrawCmd* cmd) {
     GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
     GXSetNumChans(1);
     GXSetNumTexGens(1);
-    // Value 1 is the SDK GX_TG_MTX2x4; this tree's GXEnum.h has MTX2X4/MTX3X4 swapped.
-    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX3X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
     GXInitTexObj(&texObj, lbl_80111580, 4, 4, GX_TF_RGB5A3, GX_CLAMP, GX_CLAMP, GX_FALSE);
     GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
     GXLoadTexObj(&texObj, GX_TEXMAP0);
@@ -1072,7 +1071,7 @@ void fn_800B2AC8(LoadedActorLayout* layout) {
     LoadedGeoPalette* pal = layout->pal;
     for (i = 0; i < layout->totalBones; i++) {
         if ((layout->bones[i].flags & 0x18) && layout->bones[i].geoFileID != 0xFFFF) {
-            u8* obj = pal->entries[layout->bones[i].geoFileID].obj;
+            struct DODisplayObj* obj = (struct DODisplayObj*)pal->entries[layout->bones[i].geoFileID].obj;
             fn_800BC824(obj, ((SkinState*)fn_800BF068())->unk8);
         }
     }

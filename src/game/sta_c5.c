@@ -193,7 +193,7 @@ void fn_3_EE100(u8* obj, f32 (*mtx)[4]) {
     c[0][3] = lbl_3_rodata_2D5C;
     PSMTXConcat(c, a, a);
     GXLoadTexMtxImm(a, 0x1E, GX_MTX3x4);
-    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_POS, 0x1E, 0, 0x7D);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX3X4, GX_TG_POS, 0x1E, 0, 0x7D);
     GXSetNumTevStages(1);
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);

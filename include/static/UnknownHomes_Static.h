@@ -18,7 +18,10 @@ typedef struct _GameInitVariables {
     /*0x0E*/ u8 home_AwaySetting;
     artificial_padding(0x0e, 0x11, u8);
     /*0x11*/ bool minigamesEnabled;
-    artificial_padding(0x11, 0x20, bool);
+    /*0x12*/ u8 _12; // saved
+    /*0x13*/ u8 _13;
+    /*0x14*/ u8 _14[6]; // saved
+    /*0x1A*/ u8 _1A[6]; // saved
     /*0x20*/ s16 _20[4][2];
     /*0x30*/ s16 challengeMinigame_baseCoinsEarned;
     /*0x32*/ u8 bJMatchRelated;
@@ -72,7 +75,7 @@ extern void fn_800BD670(void*, u32);
 extern void LITXForm(void* light, void* matrix);
 extern void fn_80048D4C(void);
 extern void fn_80062A94(void);
-extern void* fn_80048EA8(s32 index);
+extern s32 fn_80048EA8(s32 index);
 extern s32 fn_80048E00(s32 index, s32 value);
 extern void fn_80048C14(u32 value);
 extern void SetFog(u8 mode, s32* color, f32 start, f32 end, f32 near, f32 far);
