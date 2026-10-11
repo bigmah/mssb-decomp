@@ -9,6 +9,10 @@
 #include "game/rep_AC8.h"
 #include "game/auto_00_0001E154_text.h"
 #include "game/rep_1C0.h"
+#include "game/rep_1188.h"
+#include "game/rep_2940.h"
+#include "game/rep_28A8.h"
+#include "game/sta_c6.h"
 #include <stdlib.h>
 
 extern void possiblyTransitionBlackScreen(void);
@@ -22,10 +26,130 @@ extern u8 lbl_3_data_18944[];
 extern u8 lbl_3_data_21270[]; // per minigame: number of participants - 1
 extern u8 lbl_3_data_18980[]; // AI strength of each CPU player
 
+// NONMATCHING 95%: the fieldOrder fill loops address it as (&g_Minigame + 1 + n)->0x18F4 in the original
+// (ours: pointer to fieldOrder[1]); r5/r6 swapped there
 // .text:0x000DEB90 size:0x47C mapped:0x8071DC24
+#if NONMATCHING
 void fn_3_DEB90(void) {
-    return;
+    s32 pick;
+    s32 i;
+    s8 j;
+    s8* list;
+
+    g_Minigame._19C7 = 0;
+    if (g_Minigame.toyField_turnNumber == 0) {
+        // First turn: random pitcher among the non-batters.
+        g_Minigame._19C7 = 1;
+        pick = random_fn_3_9EE24(3);
+        for (i = 0; i < 4; i++) {
+            if (g_Minigame.rosterID != i) {
+                if (pick == 0) {
+                    g_Minigame.minigamePlayerSelectedOrder = i;
+                    break;
+                }
+                pick--;
+            }
+        }
+        list = &g_Minigame.minigameControlStruct[0].fieldOrder[1];
+        for (i = 0; i < 4; i++) {
+            if (g_Minigame.rosterID != i && g_Minigame.minigamePlayerSelectedOrder != i) {
+                *list++ = i;
+            }
+        }
+    } else {
+        if ((u8)g_Minigame.rosterID == g_Minigame._19C6) {
+            fn_3_59918(0x15, 0);
+        } else {
+            // The next batter must not pitch; otherwise the fielder who pitched least recently pitches.
+            if (g_Minigame.minigameControlStruct[0].fieldOrder[1] == g_Minigame._19C6) {
+                g_Minigame.minigamePlayerSelectedOrder = g_Minigame.minigameControlStruct[0].fieldOrder[2];
+            } else if (g_Minigame.minigameControlStruct[0].fieldOrder[2] == g_Minigame._19C6) {
+                g_Minigame.minigamePlayerSelectedOrder = g_Minigame.minigameControlStruct[0].fieldOrder[1];
+            } else {
+                u8 a = g_Minigame.roleStreak[g_Minigame.minigameControlStruct[0].fieldOrder[1]].count;
+                u8 b = g_Minigame.roleStreak[g_Minigame.minigameControlStruct[0].fieldOrder[2]].count;
+                if (a < b) {
+                    g_Minigame.minigamePlayerSelectedOrder = g_Minigame.minigameControlStruct[0].fieldOrder[2];
+                } else if (a > b) {
+                    g_Minigame.minigamePlayerSelectedOrder = g_Minigame.minigameControlStruct[0].fieldOrder[1];
+                } else {
+                    pick = random_fn_3_9EE24(2) + 1;
+                    g_Minigame.minigamePlayerSelectedOrder = g_Minigame.minigameControlStruct[0].fieldOrder[pick];
+                }
+            }
+            g_Minigame.rosterID = g_Minigame._19C6;
+            g_Minigame._19C7 = 1;
+        }
+        list = &g_Minigame.minigameControlStruct[0].fieldOrder[1];
+        for (j = 0; j < 4; j++) {
+            if (j != g_Minigame.minigamePlayerSelectedOrder && j != g_Minigame.rosterID) {
+                *list++ = j;
+            }
+        }
+    }
+
+    g_Minigame.minigameControlStruct[0]._24[g_Minigame.rosterID] = 1;
+    setInMemBatterConstants(g_Minigame.rosterID);
+    g_Minigame._19C6 = g_Minigame.rosterID;
+    g_Minigame.minigameControlStruct[0].fieldOrder[0] = g_Minigame.minigamePlayerSelectedOrder;
+
+    g_Minigame.minigameControlStruct[0]._24[g_Minigame.minigamePlayerSelectedOrder] = 0;
+    g_Minigame.minigameFielderIndex[g_Minigame.minigamePlayerSelectedOrder] = 0;
+    g_Fielders[g_Minigame.minigameFielderIndex[g_Minigame.minigamePlayerSelectedOrder]].rosterID =
+        g_Minigame.minigameControlStruct[0].fieldOrder[0];
+
+    g_Minigame.minigameControlStruct[0]._24[g_Minigame.minigameControlStruct[0].fieldOrder[1]] = 0;
+    g_Minigame.minigameFielderIndex[g_Minigame.minigameControlStruct[0].fieldOrder[1]] = 3;
+    g_Fielders[g_Minigame.minigameFielderIndex[g_Minigame.minigameControlStruct[0].fieldOrder[1]]].rosterID =
+        g_Minigame.minigameControlStruct[0].fieldOrder[1];
+
+    g_Minigame.minigameControlStruct[0]._24[g_Minigame.minigameControlStruct[0].fieldOrder[2]] = 0;
+    g_Minigame.minigameFielderIndex[g_Minigame.minigameControlStruct[0].fieldOrder[2]] = 4;
+    g_Fielders[g_Minigame.minigameFielderIndex[g_Minigame.minigameControlStruct[0].fieldOrder[2]]].rosterID =
+        g_Minigame.minigameControlStruct[0].fieldOrder[2];
+
+    // Track how many turns in a row each player has had the same role (0 pitcher, 1 batter, 2 fielder).
+    for (i = 0; i < 4; i++) {
+        if (g_Minigame.minigameControlStruct[0].fieldOrder[0] == i) {
+            if (g_Minigame.roleStreak[i].role == 0) {
+                if (g_Minigame.roleStreak[i].count < 0xFE) {
+                    g_Minigame.roleStreak[i].count++;
+                } else {
+                    g_Minigame.roleStreak[i].count = 0xFF;
+                }
+            } else {
+                g_Minigame.roleStreak[i].role = 0;
+                g_Minigame.roleStreak[i].count = 1;
+            }
+        } else if (g_Minigame.rosterID == i) {
+            if (g_Minigame.roleStreak[i].role == 1) {
+                if (g_Minigame.roleStreak[i].count < 0xFE) {
+                    g_Minigame.roleStreak[i].count++;
+                } else {
+                    g_Minigame.roleStreak[i].count = 0xFF;
+                }
+            } else {
+                g_Minigame.roleStreak[i].role = 1;
+                g_Minigame.roleStreak[i].count = 1;
+            }
+        } else if (g_Minigame.roleStreak[i].role == 2) {
+            if (g_Minigame.roleStreak[i].count < 0xFE) {
+                g_Minigame.roleStreak[i].count++;
+            } else {
+                g_Minigame.roleStreak[i].count = 0xFF;
+            }
+        } else {
+            g_Minigame.roleStreak[i].role = 2;
+            g_Minigame.roleStreak[i].count = 1;
+        }
+    }
+    g_Minigame.turnNumberWithinRound = 0;
+    g_Minigame.minigameControlStruct[0].turnOrder[0] = g_Minigame.rosterID;
+    g_Minigame.minigameControlStruct[0].turnOrder[1] = g_Minigame.minigamePlayerSelectedOrder;
+    g_Minigame.minigameControlStruct[0].turnOrder[2] = g_Minigame.minigameControlStruct[0].fieldOrder[1];
+    g_Minigame.minigameControlStruct[0].turnOrder[3] = g_Minigame.minigameControlStruct[0].fieldOrder[2];
 }
+#endif
 
 // .text:0x000DF00C size:0x250 mapped:0x8071E0A0
 void fn_3_DF00C(void) {

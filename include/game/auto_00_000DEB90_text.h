@@ -49,6 +49,33 @@ typedef struct MinigameBss32724View {
 
 extern MinigameBss32724View lbl_3_common_bss_32724;
 
+// View of lbl_3_common_bss_32234, only the fields used here.
+typedef struct MinigameBss32234View {
+    /*0x00*/ u8 _00;
+    /*0x01*/ u8 _01;
+} MinigameBss32234View;
+
+extern MinigameBss32234View lbl_3_common_bss_32234;
+
+// View of lbl_803CBC3C, only the fields used here.
+typedef struct MinigameCBC3CView {
+    /*0x00*/ u8 _00[2];
+    /*0x02*/ u8 _02;
+} MinigameCBC3CView;
+
+extern MinigameCBC3CView lbl_803CBC3C;
+
+// View of one g_Fielders entry, only the fields used here.
+typedef struct MinigameFielderView {
+    /*0x000*/ u8 _000[0x20D];
+    /*0x20D*/ s8 rosterID;
+    /*0x20E*/ u8 _20E[0x268 - 0x20E];
+} MinigameFielderView; // size: 0x268
+
+extern MinigameFielderView g_Fielders[];
+
+void fn_3_59918(s32 x, s32 unused);
+
 // View of lbl_3_common_bss_37400, only the fields used here.
 typedef struct MinigameBss37400View {
     /*0x00*/ u8 _00[0x40];

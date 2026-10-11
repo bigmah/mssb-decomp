@@ -1975,7 +1975,7 @@ typedef struct _MiniGameStruct {
     /*0x1901*/ u8 _1901;
     /*0x1902*/ u8 _1902;
     /*0x1903*/ u8 _1903;
-    /*0x1904*/ u8 minigamePlayerSelectedOrder;
+    /*0x1904*/ s8 minigamePlayerSelectedOrder; // the pitcher
     /*0x1905*/ s8 rosterID;
     /*0x1906*/ u8 miniGameNumberOfParticipants;
     /*0x1907*/ u8 _1907;
@@ -2115,7 +2115,7 @@ typedef struct _MiniGameStruct {
     /*0x19BA*/ s16 _19BA;
     /*0x19BC*/ s16 _19BC;
     /*0x19BE*/ MiniGameRoleStreak roleStreak[4]; // per player: last role (0 pitcher, 1 batter, 2 fielder) and repeat count
-    /*0x19C6*/ u8 _19C6;
+    /*0x19C6*/ s8 _19C6;
     /*0x19C7*/ u8 _19C7;
     /*0x19C8*/ u8 maybeTFCollisionResultState;
     /*0x19C9*/ E(u8, TOY_FIELD_RESULT) toyFieldBallStateResult;
