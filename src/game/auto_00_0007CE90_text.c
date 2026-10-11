@@ -5,6 +5,31 @@
 extern ScoresView g_Scores;
 extern RunningLogicView g_RunningLogic;
 
+// Records both controllers' input for the current replay frame.
+static inline void recordReplayFrame(void) {
+    ReplayFrame* frame;
+    InputStruct* in;
+
+    if (g_Stats.playFrameCounter >= REPLAY_MAX_FRAMES) {
+        g_Stats.endFrame = REPLAY_MAX_FRAMES - 1;
+    } else {
+        in = &g_Controls[g_Stats.controller[0]];
+        frame = &g_ReplayLogic[g_Stats.playFrameCounter];
+        frame->input[0].controlStickAngle = g_Controls[g_Stats.controller[0]].controlStickAngle;
+        frame->input[0].buttonInput = in->buttonInput & 0xEFFF;
+        frame->input[0].newButtonInput = in->newButtonInput & 0xEFFF;
+        frame->input[0].right_left = in->right_left;
+        frame->input[0].up_down = in->up_down;
+        in = &g_Controls[g_Stats.controller[1]];
+        frame->input[1].controlStickAngle = g_Controls[g_Stats.controller[1]].controlStickAngle;
+        frame->input[1].buttonInput = in->buttonInput & 0xEFFF;
+        frame->input[1].newButtonInput = in->newButtonInput & 0xEFFF;
+        frame->input[1].right_left = in->right_left;
+        frame->input[1].up_down = in->up_down;
+        g_Stats.playFrameCounter++;
+    }
+}
+
 // .text:0x0007CE90 size:0xF8 mapped:0x806BBF24
 void fn_3_7CE90(void) {
     if (g_Stats.recording != 0) {
@@ -37,9 +62,12 @@ void fn_3_7CF88(void) {
 }
 
 // .text:0x0007D2E0 size:0xBC mapped:0x806BC374
+// NONMATCHING 65%: original loads controlStickAngle with lhax off g_Controls and schedules differently
+#if NONMATCHING
 void fn_3_7D2E0(void) {
-    return;
+    recordReplayFrame();
 }
+#endif
 
 // .text:0x0007D39C size:0xBC mapped:0x806BC430
 void fn_3_7D39C(void) {
