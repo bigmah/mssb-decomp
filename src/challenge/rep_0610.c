@@ -12,14 +12,12 @@ static u8 ch_60EC[0x5C * 5];
 static u8* ch_60E8;
 static u8* ch_60E4;
 static u8* ch_60E0;
-static u8 ch_fill60DF;
-static u8 ch_fill60DE;
-static u8 ch_fill60DD;
-static u8 ch_fill60DC;
+static u8* ch_60DC;
 static u8 ch_fill60DB;
 static u8 ch_fill60DA;
 static u8 ch_60A4[0x36];
-static u8 ch_fill5F74[0x130];
+static void* ch_60A0;
+static u8 ch_fill5F74[0x12C];
 static u8 ch_5F73;
 static u8 ch_5F72;
 static u8 ch_5F71;
@@ -3837,6 +3835,221 @@ void fn_1_E098(void) {
         } else if (buttons & 0x200) {
             ch_5F71 = 1;
         }
+    }
+}
+#endif
+
+// C3/actor.h and C3/anim.h clash with this file's ACTSetAnimation prototype, so forward-declare.
+struct ANIMBank;
+struct DODisplayData;
+struct ActorLayout;
+extern void ANIMGet(struct ANIMBank* animBank);
+extern void fn_8004B1B8(u32 value);
+extern void convertGeometryAndSknHeader(struct DODisplayData* pal, void* sknHeader);
+extern void LoadActorLayout(struct ActorLayout* layout);
+extern ActorObjectTable* ActorObjectInitTable(u16 count);
+extern void fn_800BDC88(ActorObjectTable* table, u16 index, u16 id, void* layout, void* animBank, s32 arg5);
+extern u8 lbl_1_data_2398[][0x10]; // ARAM file descriptors
+extern u8 lbl_1_data_A3D8[];
+extern u8 lbl_1_data_A3F8[];
+extern u8 lbl_1_data_A5D8[][0x10];
+extern u8 lbl_1_data_A950[];
+
+#define CH_ARAM_DONE() (lbl_803C6CF8[0x715] == 1)
+
+// .text:0x16978 size:0xD74
+// Challenge loader state machine (queue state at +0x10): streams the player's animation banks,
+// models and textures from ARAM, then hands over to fn_1_168C8.
+// NONMATCHING ~60%: the per-group states (6..19) are folded into shared cases; pooled .data/.bss bases
+#if NONMATCHING
+void fn_1_16978(void) {
+    u8* state = lbl_1_bss_3070;
+    u8* queue = lbl_803CC1B8[0];
+    s16 step = *(s16*)(queue + 0x10);
+    u8* row;
+    s32 group;
+    s32 i;
+
+    switch (step) {
+    case 0:
+        lbl_1_bss_3098[0] = NULL;
+        *(s16*)((u8*)fn_800B0A5C_insertQueue((void*)fn_1_10560, 11) + 0x10) = 0;
+        *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        break;
+    case 1:
+        if (lbl_1_bss_3098[0] != NULL) {
+            fn_8004B1B8((u32)lbl_1_bss_3098[0]); // TODO type: fn_8004B1B8 stores a pointer
+            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        }
+        break;
+    case 2:
+        ch_5F73 = 0;
+        *(s16*)(queue + 0x10) = 4;
+        break;
+    case 3:
+        if (++ch_5F73 == 1) {
+            *(s16*)(queue + 0x10) = 27;
+        } else {
+            *(s16*)(queue + 0x10) = 4;
+        }
+        break;
+    case 4: {
+        u8 character = ch_68FC[0x40 + ch_5F73];
+        u8 variant = ch_6940[ch_5F73 * 0x48 + 0x46];
+        *(void**)(lbl_8036E548 + ch_5F73 * 0x27C + 0xC0C) =
+            (void*)ARAMTransfer(lbl_1_data_2398[*(s32*)(ch_3070 + 4) + character * 0x13 + variant], 0, 0, 0);
+        *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        break;
+    }
+    case 5:
+        if (CH_ARAM_DONE()) {
+            *(s16*)(queue + 0x10) = 6;
+        }
+        break;
+    case 6:
+    case 8:
+    case 10:
+    case 12:
+    case 14:
+    case 16:
+    case 18:
+        // Load animation bank `group` if this character has it.
+        group = (step - 6) / 2;
+        row = lbl_8036E548 + ch_5F73 * 0x27C;
+        if (lbl_1_data_2390[ch_5F73 * 7 + group] != 0) {
+            u8 character = ch_68FC[0x40 + ch_5F73];
+            *(void**)(row + 0xC14 + group * 4) =
+                (void*)ARAMTransfer(lbl_1_data_2398[*(s32*)(ch_3070 + 4) + character * 0x13 + 2 + group], 0, 0, 0);
+            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        } else {
+            *(void**)(row + 0xC14 + group * 4) = NULL;
+            switch (group) {
+            case 4: // the original skips group 5 here
+                *(s16*)(queue + 0x10) = 18;
+                break;
+            case 6:
+                *(s16*)(queue + 0x10) += 1;
+                break;
+            default:
+                *(s16*)(queue + 0x10) = step + 2;
+                break;
+            }
+        }
+        break;
+    case 7:
+    case 9:
+    case 11:
+    case 13:
+    case 15:
+    case 17:
+        if (CH_ARAM_DONE()) {
+            group = (step - 7) / 2;
+            ANIMGet(*(struct ANIMBank**)(lbl_8036E548 + ch_5F73 * 0x27C + 0xC14 + group * 4));
+            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        }
+        break;
+    case 19:
+        if (CH_ARAM_DONE()) {
+            if (lbl_1_data_2390[ch_5F73 * 7 + 6] != 0) {
+                ANIMGet(*(struct ANIMBank**)(lbl_8036E548 + ch_5F73 * 0x27C + 0xC2C));
+            }
+            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        }
+        break;
+    case 20:
+        row = lbl_8036E548 + ch_5F73 * 0x27C;
+        if (ch_3070[0] == 0 || *(u32*)(*(u8**)(row + 0xC0C) + 0x10) == 0) {
+            *(s16*)(queue + 0x10) = 22;
+            break;
+        }
+        *(u8**)(row + 0xC30) = ch_6940 + 0x48 + ch_5F73 * 0x64;
+        if (ch_68FC[0x40 + ch_5F73] == 0) {
+            **(void***)(lbl_8036E548 + ch_5F73 * 0x27C + 0xC30) = (void*)ARAMTransfer(lbl_1_data_A3F8, 0, 0, 0);
+            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        } else {
+            ch_3070[0] = 0;
+            *(s16*)(queue + 0x10) = 22;
+        }
+        break;
+    case 21:
+    case 25:
+        if (CH_ARAM_DONE()) {
+            *(s16*)(queue + 0x10) = step + 1;
+        }
+        break;
+    case 22: {
+        s16 file = lbl_1_data_A978[ch_68FC[0x40 + ch_5F73]];
+        if (file >= 0) {
+            (&ch_60A0)[ch_5F73] = (void*)ARAMTransfer(lbl_1_data_A5D8[file], 0, 0, 0);
+            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        } else {
+            *(s16*)(queue + 0x10) = 3;
+        }
+        break;
+    }
+    case 23:
+        if (CH_ARAM_DONE()) {
+            *(s16*)(queue + 0x10) = 3;
+        }
+        break;
+    case 24:
+        *(void**)(lbl_8036E548 + 0x2C84) = (void*)ARAMTransfer(lbl_1_data_A3D8, 0, 0, 0);
+        *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        break;
+    case 26: {
+        u32* offsets;
+        fn_1_D7A4(0);
+        // Relocate the 80 offsets at the start of the loaded file into pointers.
+        offsets = *(u32**)(lbl_8036E548 + 0x2C84);
+        for (i = 0; i < 0x50; i++) {
+            (*(u8***)(lbl_8036E548 + 0x2C84))[i] = (u8*)offsets + offsets[i];
+        }
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 27;
+        break;
+    }
+    case 27:
+        ch_60DC = (u8*)ARAMTransfer(lbl_1_data_A950, 0, 0, 0);
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 28;
+        break;
+    case 28:
+        if (CH_ARAM_DONE()) {
+            struct ActorLayout* layout;
+            void* geometry;
+            void* textures;
+
+            ch_60E0 = (u8*)ActorObjectInitTable(5);
+            for (i = 0; i < 15; i++) {
+                u32 offset = ((u32*)ch_60DC)[i];
+                if (offset == 0) {
+                    continue;
+                }
+                ((u8**)ch_60DC)[i] = ch_60DC + offset;
+                switch (i % 3) {
+                case 0:
+                    layout = ((struct ActorLayout**)ch_60DC)[i];
+                    LoadActorLayout(layout);
+                    break;
+                case 1:
+                    geometry = ((void**)ch_60DC)[i];
+                    convertGeometryAndSknHeader(geometry, NULL);
+                    haveActLayoutPointToGeoHeader(layout, geometry);
+                    break;
+                case 2:
+                    textures = ((void**)ch_60DC)[i];
+                    convertTextureHeader(textures);
+                    fn_800BD190(geometry, (s32)textures); // TODO type: fn_800BD190 takes (geometry, textures)
+                    fn_800BDC88((ActorObjectTable*)ch_60E0, i / 3, i / 3, layout, NULL, 0);
+                    break;
+                }
+            }
+            *(s16*)(lbl_803CC1B8[0] + 0x10) = 29;
+        }
+        break;
+    case 29:
+        ch_5F73 = 0;
+        *(s16*)(queue + 0x10) = 0;
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_168C8;
+        break;
     }
 }
 #endif
