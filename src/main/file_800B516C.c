@@ -141,10 +141,19 @@ static inline void QuatSlerp(Quaternion* p, Quaternion* q, Quaternion* r, f32 t)
     }
 }
 
+// NONMATCHING 97%: float register allocation only (original also uses f20)
 // .text:0x800B516C size:0x4A0
+#if NONMATCHING
 void Squad(Quaternion* p, Quaternion* a, Quaternion* b, Quaternion* q, Quaternion* r, f32 t) {
-    return;
+    Quaternion pq;
+    Quaternion ab;
+    f32 t2 = 2.0f * (1.0f - t) * t;
+
+    QuatSlerp(p, q, &pq, t);
+    QuatSlerp(a, b, &ab, t);
+    QuatSlerp(&pq, &ab, r, t2);
 }
+#endif
 
 // .text:0x800B560C size:0x79C
 void GetData(u8 type, void* src, f32* dst, u8 count, f32 scale) {
