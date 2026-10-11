@@ -3535,9 +3535,55 @@ void fn_3_4A124(void) {
 }
 
 // .text:0x0004A408 size:0x5A4 mapped:0x8068949C
-void fn_3_4A408(void) {
-    return;
+// NONMATCHING 98.9%: sqrt temp register (f2 vs f4) in the inlined fn_3_52560; px/pz pointer split uses mr+addi in orig
+#if NONMATCHING
+// Pick where fielder i should go to field a ball in flight (out x/z): a point on the
+// ball's trajectory it can reach in time.
+void fn_3_4A408(int i, f32* outX, f32* outZ) {
+    u8* f = g_Fielders + i * 0x268;
+    u8* e;
+    f32* px;
+    f32* pz;
+    f32 d, r, vx, vz;
+    if (*(s16*)(g_Ball + 0x1B7A) == 0) {
+        e = g_Ball + (*(s16*)(g_Ball + 0x1B60) + 30) * 0x10;
+        px = (f32*)(e + 0x354);
+        pz = (f32*)(e + 0x35C);
+        if (FramesToReachAC8(i, *px, *pz) < *(s16*)(g_Ball + 0x1B60) + 30) {
+            *outX = *px;
+            *outZ = *pz;
+        } else {
+            *outX = *(f32*)(g_Ball + *(s16*)(g_Ball + 0x1B60) * 0x10 + 0x714);
+            *outZ = *(f32*)(g_Ball + *(s16*)(g_Ball + 0x1B60) * 0x10 + 0x71C);
+        }
+        return;
+    }
+    if (fn_3_9CE0(*(f32*)f, *(f32*)(f + 8)) < lbl_3_rodata_B60) {
+        SetFielderAct(i, 0xC, 0x60);
+        f[0x1D5] = 3;
+        return;
+    }
+    if (i >= 6) {
+        d = *(f32*)(g_Ball + 0x714) * *(f32*)(g_Ball + 0x714) + *(f32*)(g_Ball + 0x71C) * *(f32*)(g_Ball + 0x71C);
+        SQRT_L(d);
+        r = lbl_3_rodata_C00 - d;
+        if (r > 0.0f) {
+            vx = *(f32*)(g_Ball + 0x1A18) * r;
+            vz = *(f32*)(g_Ball + 0x1A1C) * r;
+            *outX = vx + *(f32*)(g_Ball + 0x714);
+            *outZ = vz + *(f32*)(g_Ball + 0x71C);
+            return;
+        }
+    }
+    if (FramesToReachAC8(i, *(f32*)(g_Ball + 0x534), *(f32*)(g_Ball + 0x53C)) < 30) {
+        *outX = *(f32*)(g_Ball + 0x534);
+        *outZ = *(f32*)(g_Ball + 0x53C);
+    } else {
+        *outX = *(f32*)(g_Ball + 0x714);
+        *outZ = *(f32*)(g_Ball + 0x71C);
+    }
 }
+#endif
 
 // .text:0x0004A9AC size:0x77C mapped:0x80689A40
 void fn_3_4A9AC(void) {

@@ -169,7 +169,7 @@ void fn_3_49EA8(int);
 void fn_3_49F3C(void);
 void fn_3_49F40(int, int);
 void fn_3_4A124(void);
-void fn_3_4A408(void);
+void fn_3_4A408(int, f32*, f32*);
 void fn_3_4A9AC(void);
 void fn_3_4B128(int);
 void fn_3_4B514(int);
