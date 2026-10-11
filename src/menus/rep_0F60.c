@@ -1,6 +1,7 @@
 #include "menus/rep_0F60.h"
 
 #include "static/UnknownHomes_Static.h"
+#include "main/file_80024D2C.h"
 
 
 extern u8* lbl_2_bss_1A8248[];
@@ -388,3 +389,34 @@ void fn_2_8AEE0(void) {
     PSMTXCopy(lbl_2_bss_1A81D4, fn_80052768_getCamera(0)->view);
     fn_2_190DC(*(u8**)(lbl_2_bss_340140 + 0x68), fn_80052768_getCamera(0)->view);
 }
+
+extern void fn_80023B04(s32 count);
+extern void fn_80014204(s32 count);
+extern void* fn_80023AA4(void);
+
+// NONMATCHING 97%: original keeps &lbl_2_data_2F990 in r31 across the inlined fn_2_8DC00/fn_2_8DB14 table scans
+#if NONMATCHING
+// .text:0x8DCD8 size:0x2D8
+void fn_2_8DCD8(void) {
+    s32 i;
+    fn_2_8DC00();
+    fn_2_8DB14();
+    fn_80023B04(*(s16*)(lbl_2_bss_1A824C + 0x197746));
+    fn_80014204(*(s16*)(lbl_2_bss_1A824C + 0x197746));
+    *(void**)(lbl_2_bss_340140 + 0x13C) = fn_80023AA4();
+    for (i = 0; i < *(s16*)(lbl_2_bss_1A824C + 0x197746); i++) {
+        *(s8*)(lbl_2_bss_340140 + i * 0x27C + 0xE59) = i;
+        *(u8**)(lbl_2_bss_340140 + i * 4 + 0x2C50) = NULL;
+        *(s8*)(lbl_2_bss_340140 + i + 0x2D6A) = -1;
+        *(s8*)(lbl_2_bss_340140 + i * 0x27C + 0xE5B) = -1;
+    }
+    for (i = 0; i < 9; i++) {
+        *(s8*)(lbl_2_bss_340140 + i + 0x2D7F) = -1;
+    }
+    for (i = 0; i < 4; i++) {
+        *(s8*)(lbl_2_bss_340140 + i + 0x2D89) = -1;
+    }
+    lbl_2_bss_340140[0x2D77] = 0;
+    lbl_2_bss_340140[0x2D7B] = 0;
+}
+#endif
