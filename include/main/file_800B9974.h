@@ -12,7 +12,7 @@ void SetFog(GXFogType type, GXColor* color, f64 startz, f64 endz, f64 nearz, f64
 
 void SetFogNoneAgain(void);
 
-void fn_800B9AA8(u32 value);
+void fn_800B9AA8(Light* light);
 
 void fn_800B9A9C(u32 flag, f32 value);
 
@@ -45,7 +45,9 @@ void fn_800BD190(GQRValueGroups* groups, s32 value);
 
 void __MTGQR5(u32 value);
 
-void fn_800BD1E8(u32 value);
+typedef void (*DOShadowTevCallback)(Mtx m, s32* stage, s32* coord, s32* map, u8* numTevStages, u8* numTexGens);
+
+void fn_800BD1E8(DOShadowTevCallback callback);
 
 void __MTGQR6(u32 value);
 
@@ -69,13 +71,19 @@ void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 
 void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_list* list);
 
+s32 fn_800B9AB0(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state, s32* stage, s32* coord, s32* map,
+                s32* chan, MtxPtr camera);
+
+s32 fn_800B9EA8(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state, s32* stage, s32* coord, s32* map,
+                s32* chan, MtxPtr camera);
+
 void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxPtr camera);
 
 void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr camera);
 
 void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a);
 
-void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* texGenCount, u8* tevStage);
+void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, MtxPtr camera, u8* numTexGens, u8* numTevStages);
 
 void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* layout);
 

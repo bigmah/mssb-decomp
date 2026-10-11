@@ -24,6 +24,20 @@ extern char lbl_800E7EE4[]; // "Warning: DODefaultUserTevMode: Unknown user tev 
 extern char lbl_800E7F58[]; // "DOVARender: Invalid component count for normals %d\n"
 extern char lbl_800E7F8C[]; // "Display object id %d is greater than number of objects %d"
 
+extern void* lbl_803CBB58;      // must be non-NULL for the environment-map passes
+extern void (*lbl_803CC1F4)(s32 stage, s32 a, s32 b, s32 coord, s32 map); // extra pass after fn_800B9AB0
+extern f32 lbl_803CC1F8;         // environment map scroll (s)
+extern f32 lbl_803CC1FC;         // environment map scroll (t)
+extern void (*lbl_803CC200)(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map, u8* numTevStages,
+                            u8* numTexGens, MtxPtr camera); // final user TEV hook
+extern const Vec lbl_800E7E78;
+extern GXColor lbl_803CCFF8;     // GXColor {0, 0, 0, 0x80} (bump-map TEVREG0)
+extern u8 fn_800BEBA0(void);
+extern MtxPtr fn_800BEB80(u8 index);
+extern void* fn_800BF068(void);
+extern void fn_800BF008(void);   // {0, 0, 1}
+extern char lbl_800E7F20[];      // "Warning: DisplayObject.c: User TevMode %d not handled.\n"
+extern DOShadowTevCallback lbl_803CC20C; // replaces the default shadow TEV stage
 extern u8 lbl_803CC210[8];        // per texture map: DisplayStateList.pad16 of the last texture state
 extern GXTexObj lbl_803CB5FC[8];  // texture objects, one per texture map
 extern GXTlutObj lbl_803CB49C[8]; // TLUT objects, one per texture map
@@ -84,8 +98,8 @@ extern u32 lbl_803CC21C;
 extern u32 lbl_803CC1F0;
 
 // fn_800B9AA8, size:0x8
-void fn_800B9AA8(u32 value) {
-    lbl_803CC1F0 = value;
+void fn_800B9AA8(Light* light) {
+    lbl_803CC1F0 = light;
 }
 
 // fn_800B9A9C, size:0xC
@@ -94,10 +108,93 @@ void fn_800B9A9C(u32 flag, f32 value) {
     lbl_803CC218 = value;
 }
 
+// NONMATCHING 93%: original keeps -0.5f in f31 (fneg of the 0.5f constant) and allocates one more saved register
+#if NONMATCHING
 // .text:0x800B9AB0 size:0x3F8
-void fn_800B9AB0(void) {
-    return;
+s32 fn_800B9AB0(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state, s32* stage, s32* coord, s32* map,
+                s32* chan, MtxPtr camera) {
+    Mtx mv;
+    Mtx tmp;
+    Mtx nrm;
+    Mtx trans;
+    Mtx texMtx;
+    Mtx texMtx2;
+    GXColor konst;
+    GXTevColorArg konstArg;
+    GXTevColorArg rasColor;
+    GXTexGenSrc src;
+    f32 negHalf;
+
+    src = GX_TG_NRM;
+    if (lbl_803CBB58 == NULL) {
+        return -1;
+    }
+    if (dispObj == NULL || dispObj->lightingData == NULL || state == NULL) {
+        return -1;
+    }
+    PSMTXIdentity(nrm);
+    PSMTXIdentity(texMtx);
+    PSMTXConcat(camera, dispObj->worldMatrix, mv);
+    PSMTXInverse(mv, tmp);
+    PSMTXTranspose(tmp, nrm);
+    negHalf = -0.5f;
+    PSMTXScale(tmp, negHalf, 0.5f, 0.0f);
+    PSMTXTrans(trans, 0.5f, 0.5f, 1.0f);
+    PSMTXConcat(trans, tmp, texMtx2);
+    PSMTXScale(tmp, negHalf, 0.5f, 0.0f);
+    PSMTXTrans(trans, 0.5f + lbl_803CC1F8, 0.5f + lbl_803CC1FC, 1.0f);
+    PSMTXConcat(trans, tmp, texMtx);
+    if (type == 5) {
+        *chan = GX_COLOR0A0;
+        rasColor = GX_CC_RASC;
+        type = GX_CA_RASA;
+    } else {
+        *chan = GX_COLOR_NULL;
+        rasColor = GX_CC_CPREV;
+        type = GX_CA_APREV;
+    }
+    if (state->pad8 != 0) {
+        konst.r = konst.g = konst.b = konst.a = state->pad8;
+        konstArg = GX_CC_KONST;
+        GXSetTevKColor(GX_KCOLOR0, konst);
+        GXSetTevKColorSel(*stage, GX_TEV_KCSEL_K0);
+    } else {
+        konstArg = GX_CC_APREV;
+    }
+    if (dispObj->lightingData->compCount == 2) {
+        src = GX_TG_BINRM;
+    }
+    GXLoadTexMtxImm(nrm, GX_TEXMTX0 + *map * 3, GX_MTX3x4);
+    GXLoadTexMtxImm(texMtx, GX_PTTEXMTX0 + *map * 3, GX_MTX3x4);
+    GXSetTexCoordGen2(*coord, GX_TG_MTX3X4, src, GX_TEXMTX0 + *map * 3, GX_TRUE, GX_PTTEXMTX0 + *map * 3);
+    GXSetTevOrder(*stage, *coord, *map, *chan);
+    if (lbl_803CC210[*map] == 1) {
+        GXSetTevColorIn(*stage, GX_CC_ZERO, GX_CC_TEXC, konstArg, rasColor);
+        GXSetTevColorOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    } else if (lbl_803CC210[*map] == 0) {
+        GXSetTevColorIn(*stage, rasColor, GX_CC_TEXC, konstArg, GX_CC_ZERO);
+        GXSetTevColorOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    } else {
+        GXSetTevColorIn(*stage, GX_CC_ZERO, GX_CC_TEXC, konstArg, rasColor);
+        GXSetTevColorOp(*stage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    }
+    GXSetTevAlphaIn(*stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, type);
+    GXSetTevAlphaOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    if (lbl_803CC1F4 != NULL) {
+        (*coord)++;
+        GXLoadTexMtxImm(nrm, GX_TEXMTX0 + (*map + 1) * 3, GX_MTX3x4);
+        GXLoadTexMtxImm(texMtx2, GX_PTTEXMTX0 + (*map + 1) * 3, GX_MTX3x4);
+        GXSetTexCoordGen2(*coord, GX_TG_MTX3X4, src, GX_TEXMTX0 + (*map + 1) * 3, GX_TRUE,
+                          GX_PTTEXMTX0 + (*map + 1) * 3);
+        (*map)++;
+        lbl_803CC1F4(*stage, 0, 1, *coord, *map);
+    }
+    (*stage)++;
+    (*coord)++;
+    (*map)++;
+    return 0;
 }
+#endif
 
 // .text:0x800B9EA8 size:0x5A4
 void fn_800B9EA8(void) {
@@ -106,7 +203,7 @@ void fn_800B9EA8(void) {
 
 #pragma dont_inline off
 // .text:0x800BA44C size:0x3FC
-void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* texGenCount, u8* tevStage) {
+void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, MtxPtr camera, u8* numTexGens, u8* numTevStages) {
     Mtx m;
     GXTevStageID stage;
     GXTexCoordID coord;
@@ -123,7 +220,7 @@ void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* texGenC
         OSReport(lbl_800E7E84);
         return;
     }
-    map = coord = stage = *tevStage;
+    map = coord = stage = *numTevStages;
     if (stage == 0) {
         rasColor = GX_CC_RASC;
         rasAlpha = GX_CA_RASA;
@@ -149,10 +246,10 @@ void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* texGenC
         GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
         break;
     case 11: // texture modulated by raster, with the texture scrolled by the angle of (x, y)
-        x = ((f32*)data)[8]; // TODO type
-        y = ((f32*)data)[9];
+        x = camera[2][0];
+        y = camera[2][1];
         if (x == 0.0f && y == 0.0f) {
-            GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + *tevStage, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+            GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + *numTevStages, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
         } else {
             len = dolsqrtf2(x * x + y * y);
             scroll = 0.159154f * (f32)asin(y / len);
@@ -162,8 +259,8 @@ void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* texGenC
             PSMTXIdentity(m);
             m[0][0] = 2.0f;
             m[0][3] = -scroll;
-            GXLoadTexMtxImm(m, GX_TEXMTX0 + *tevStage * 3, GX_MTX3x4);
-            GXSetTexCoordGen2(coord, GX_TG_MTX3X4, GX_TG_TEX0 + *tevStage, GX_TEXMTX0 + *tevStage * 3, GX_FALSE,
+            GXLoadTexMtxImm(m, GX_TEXMTX0 + *numTevStages * 3, GX_MTX3x4);
+            GXSetTexCoordGen2(coord, GX_TG_MTX3X4, GX_TG_TEX0 + *numTevStages, GX_TEXMTX0 + *numTevStages * 3, GX_FALSE,
                               GX_PTIDENTITY);
         }
         GXSetTevOrder(stage, coord, map, chan);
@@ -176,8 +273,8 @@ void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* texGenC
         OSReport(lbl_800E7EE4, type);
         return;
     }
-    (*texGenCount)++;
-    (*tevStage)++;
+    (*numTexGens)++;
+    (*numTevStages)++;
 }
 #pragma dont_inline on
 
@@ -849,8 +946,8 @@ void __MTGQR5(register u32 value) {
 }
 
 // fn_800BD1E8, size:0x8
-void fn_800BD1E8(u32 value) {
-    lbl_803CC20C = value;
+void fn_800BD1E8(DOShadowTevCallback callback) {
+    lbl_803CC20C = callback;
 }
 
 // __MTGQR6, size:0x8

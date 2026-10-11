@@ -58,7 +58,7 @@ typedef struct {
 } DODisplayLayout; // size 0x34 (MSSB layout)
 
 // Per-object TEV setup callback (fn_800BA44C is the default), called from Custom_SetState.
-typedef void (*DOTevCallback)(s32 type, struct DODisplayObj *dispObj, void *data, u8 *tevStage, u8 *texCoord);
+typedef void (*DOTevCallback)(s32 type, struct DODisplayObj *dispObj, MtxPtr camera, u8 *numTexGens, u8 *numTevStages);
 
 struct DODisplayObj {
     /* 0x00 */ PositionData *positionData;
@@ -72,8 +72,8 @@ struct DODisplayObj {
     /* 0x17 */ u8 unk17;
     /* 0x18 */ Mtx worldMatrix;
     /* 0x48 */ DOTevCallback tevCallback;
-    /* 0x4C */ void *shaderFunc;
-    /* 0x50 */ void *shaderData;
+    /* 0x4C */ void *shaderFunc; // GXTexObj* of the sphere-map (environment) texture, see Custom_SetState
+    /* 0x50 */ void *shaderData; // GXTexObj* of the projected shadow texture, see Custom_SetState
     /* 0x54 */ u8 unk54[6][4];
 }; // size 0x6C (MSSB layout)
 
