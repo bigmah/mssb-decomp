@@ -691,6 +691,7 @@ void fn_3_14AC40(void) {
     return;
 }
 
+#pragma dont_inline off
 // .text:0x0014B248 size:0x1AC mapped:0x8078A2DC
 void fn_3_14B248(u8* a, u8* b) {
     f32 c;
@@ -738,14 +739,50 @@ void fn_3_14B3F4(u8* a) {
     *(f32*)(a + 0x28) = s * (p[1] * (1.0f - t) + q[1] * t) + *(f32*)(a + 0x1C);
     *(f32*)(a + 0x2C) = s * (p[2] * (1.0f - t) + q[2] * t) + *(f32*)(a + 0x20);
 }
+#pragma dont_inline on
 
+// NONMATCHING 99%: 14B3F4/14B248 inlined; only f28/f29 swapped for the angle and cos() result of the inlined 14B248
 // .text:0x0014B53C size:0x3F0 mapped:0x8078A5D0
-void fn_3_14B53C(void* p, u32 a, u32 b) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_14B53C(u8* o, u32 n, Vec* pos) {
+    Vec d;
+    f32 len;
+    f32 len2;
+    u8* p;
+    s32 i;
+    *(Vec*)(o + 0x18) = *pos;
+    i = 0;
+    *(void**)(o + 0x10) = *(void**)(lbl_3_common_bss_32724 + 0x6C);
+    *(s16*)(o + 0x34) = n;
+    *(s16*)(o + 0x36) = n;
+    PSVECSubtract((Vec*)lbl_3_data_26E00, (Vec*)(lbl_3_data_26E00 + 0xC), &d);
+    len = PSVECMag(&d);
+    PSVECSubtract((Vec*)(lbl_3_data_26E00 + 0xC), (Vec*)(lbl_3_data_26E00 + 0x18), &d);
+    len2 = PSVECMag(&d);
+    *(f32*)(o + 0x30) = len / ((len2 + len) / (f32)n);
+    fn_3_14B3F4(o);
+    p = *(u8**)(o + 0xC);
+    do {
+        p[0x4D] = *(s32*)lbl_3_data_26E24;
+        p[0x4E] = 0;
+        *(s16*)(p + 0x48) = (f32)i * ((f32)*(s16*)(o + 0x34) / (f32)*(s32*)(lbl_3_data_26E24 + 8));
+        p[0x42] = 0xFF;
+        p[0x41] = 0xFF;
+        p[0x40] = 0xFF;
+        *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26E24 + 4);
+        if (*(s16*)(p + 0x48) == 0) {
+            fn_3_14B248(o, p);
+        }
+        p = *(u8**)p;
+        i++;
+    } while (p != NULL);
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x0014B92C size:0x74 mapped:0x8078A9C0
-void fn_3_14B92C(u32 a, u32 b) {
+void fn_3_14B92C(u32 a, Vec* b) {
     void* p = fn_80033A24(fn_3_14AC40, 0x80, 0, *(int*)(lbl_3_data_26E24 + 8), 1, 0x23);
     if (p != 0) {
         fn_3_14B53C(p, a, b);
@@ -753,8 +790,8 @@ void fn_3_14B92C(u32 a, u32 b) {
 }
 
 // .text:0x0014B9A0 size:0x50 mapped:0x8078AA34
-void fn_3_14B9A0(u32 a, u32 b) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 3 && b != 0) {
+void fn_3_14B9A0(u32 a, Vec* b) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 3 && b != NULL) {
         fn_3_14B92C(a, b);
     }
 }
