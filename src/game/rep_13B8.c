@@ -1703,6 +1703,8 @@ void fn_3_81AEC(int i) {
 
 // .text:0x00081BC8 size:0x2E4 mapped:0x806C0C5C
 // 95%: only first block differs - orig hoists the 1468/4B44 const loads and stw 0x4330 above the sth 0x106 store
+// NONMATCHING 95%: hoisted constant loads in the first block (see note above)
+#if NONMATCHING
 int fn_3_81BC8(int i) {
     u8* r = g_Runners + i * 0x154;
     if (r[0x135] == 1) {
@@ -1776,6 +1778,7 @@ int fn_3_81BC8(int i) {
     *(f32*)(r + 0x60) = (lbl_3_rodata_1408 - *(f32*)(r + 0x68)) - *(f32*)(r + 0x58);
     return 1;
 }
+#endif
 
 // .text:0x00081EAC size:0x508 mapped:0x806C0F40
 int fn_3_81EAC(int i) {
