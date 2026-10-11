@@ -236,6 +236,7 @@ void fn_80021064(void) {
 
 // .text:0x80021188 size:0x34
 s32 fn_80021188(void) {
+    sndMasterVolume(0x7F, 1, 1, 1);
     return 0;
 }
 
