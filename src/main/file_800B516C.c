@@ -188,10 +188,113 @@ void GetData(u8 type, void* src, f32* dst, u8 count, f32 scale) {
     }
 }
 
+// NONMATCHING 82%: result is kept in registers instead of on the stack; (x >> n) & m uses extrwi instead of srawi+clrlwi
 // .text:0x800B5DA8 size:0x634
+#if NONMATCHING
 void DoTranslationAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
-    return;
+    s32 i;
+    f32 easeOut;
+    f32 easeIn;
+    f32 ctrlNext[3];
+    f32 ctrlCur[3];
+    f32 result[3];
+    f32 trans1[3];
+    f32 trans0[3];
+    u32 vecSize;
+    u8 compType;
+    u8 interp;
+    u32 offset;
+    char* data;
+    f32 scale;
+    f32 t;
+
+    compType = pipe->currentTrack->quantizeInfo >> 4;
+    scale = 1.0f / (f32)(1 << (pipe->currentTrack->quantizeInfo & 0xF));
+    vecSize = GetCompSize(compType) * 3;
+
+    // Translation follows scale, scale quaternion and rotation in the setting data.
+    offset = 0;
+    if (pipe->currentTrack->animType & ANIM_SCALE) {
+        offset = GetCompSize(compType) * 3;
+        if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
+            offset += GetCompSize(compType) * 4;
+        }
+    }
+    if (pipe->currentTrack->animType & ANIM_ROT_EULER) {
+        offset += vecSize;
+    }
+    if (pipe->currentTrack->animType & ANIM_ROT_QUAT) {
+        offset += 8;
+    }
+
+    GetData(compType, cur->setting + offset, trans0, 3, scale);
+    GetData(compType, next->setting + offset, trans1, 3, scale);
+
+    t = GetInterpTime(pipe, cur, next);
+
+    // Translation follows the scale and rotation tangents in the interpolation data.
+    offset = 0;
+    if (pipe->currentTrack->animType & ANIM_SCALE) {
+        interp = (pipe->currentTrack->interpolationType >> 2) & 3;
+        if (interp == ANIM_INTERP_BEZIER) {
+            offset = vecSize * 2;
+        }
+        if (interp == ANIM_INTERP_HERMITE) {
+            offset = vecSize * 2 + 4;
+        }
+    }
+    if (pipe->currentTrack->animType & ANIM_ROT_QUAT) {
+        interp = (pipe->currentTrack->interpolationType >> 4) & 7;
+        if (interp == ANIM_INTERP_SQUAD) {
+            offset += 0x10;
+        }
+        if (interp == ANIM_INTERP_SQUAD_EASE) {
+            offset += 0x14;
+        }
+    } else if (pipe->currentTrack->animType & ANIM_ROT_EULER) {
+        interp = (pipe->currentTrack->interpolationType >> 4) & 7;
+        if (interp == ANIM_INTERP_BEZIER) {
+            offset += vecSize * 2;
+        }
+        if (interp == ANIM_INTERP_HERMITE) {
+            offset += vecSize * 2 + 4;
+        }
+    }
+
+    switch (pipe->currentTrack->interpolationType & 3) {
+    case ANIM_INTERP_NONE:
+        for (i = 0; i < 3; i++) {
+            result[i] = trans0[i];
+        }
+        break;
+    case ANIM_INTERP_LINEAR:
+        for (i = 0; i < 3; i++) {
+            result[i] = t * trans1[i] + (1.0f - t) * trans0[i];
+        }
+        break;
+    case ANIM_INTERP_BEZIER:
+        GetData(compType, cur->interpolation + (offset + vecSize), ctrlCur, 3, scale);
+        GetData(compType, next->interpolation + offset, ctrlNext, 3, scale);
+        BezierVec(result, trans0, ctrlCur, ctrlNext, trans1, t);
+        break;
+    case ANIM_INTERP_HERMITE:
+        data = cur->interpolation + (offset + vecSize);
+        GetData(compType, data, ctrlCur, 3, scale);
+        GetData(lbl_803CBB51, data + (vecSize + 2), &easeIn, 1, lbl_803CBB4C);
+        data = next->interpolation + offset;
+        GetData(compType, data, ctrlNext, 3, scale);
+        GetData(lbl_803CBB51, data + vecSize * 2, &easeOut, 1, lbl_803CBB4C);
+        t = EaseTime(t, easeIn, easeOut);
+        HermiteVec(result, trans0, ctrlCur, ctrlNext, trans1, t);
+        break;
+    default:
+        OSPanic("animPipe.c", 546, "Unknown pInterpolation pSetting!(未知の補間タイプが指定されています)");
+        break;
+    }
+
+    CTRLSetTranslation(pipe->control, result[0], result[1], result[2]);
 }
+#endif
 
 // .text:0x800B63DC size:0xA30
 void DoScaleAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next, u8 unused) {
