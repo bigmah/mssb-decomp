@@ -72,6 +72,11 @@ extern u8 g_Batter[];
 extern u8 g_Runners[];
 typedef union { u8 b[0x1BF8]; struct { u8 pad0[0x1B7A]; s16 acr; } s; } BallViewT;
 extern BallViewT g_Ball;
+// Ball trajectory samples at g_Ball+0x354, 16 bytes each.
+typedef struct { f32 x, y, z, w; } BallTraj13B8;
+#define BALL_TRAJ_13B8 ((BallTraj13B8*)(g_Ball.b + 0x354))
+// Base coordinates (x, z) indexed by base number.
+#define BASE_XZ_13B8 ((XZ13B8*)lbl_3_data_4444)
 
 extern u8 g_Fielders[];
 extern u8 g_d_GameSettings[];
@@ -2059,9 +2064,249 @@ void fn_3_835B0(void) {
 }
 
 // .text:0x00083714 size:0xAAC mapped:0x806C27A8
-void fn_3_83714(void) {
-    return;
+// 1 = go, -1 = hold: compares the runner's frames to the next base with the
+// time the ball needs to get back (trajectory sample `traj`, frame `frame`).
+static inline int runnerBeatsThrow13B8(u8* r, BallTraj13B8* traj, int frame) {
+    int eta;
+    if (*(s16*)(r + 0xEE) == 1) {
+        return 1;
+    }
+    eta = frame + fn_3_A6810(traj->x, traj->z, BASE_XZ_13B8[r[0x126]].x, BASE_XZ_13B8[r[0x126]].z) + 45;
+    if (*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0x10) * 4 + 0x14) >= 3) {
+        eta -= 30;
+    } else {
+        eta += lbl_3_data_1C88[*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0xC) * 4 + 0xE4)];
+    }
+    if (g_Ball.b[0x1BBE] <= 1) {
+        if (eta - 20 > *(s16*)(r + 0xEA)) {
+            return 1;
+        }
+    } else if (eta > *(s16*)(r + 0xEA)) {
+        return 1;
+    }
+    return -1;
 }
+
+// CPU baserunning decisions for all runners (dec[k]: 1 advance, 0 stay, -1 return, -2 none).
+// NONMATCHING 94%: register allocation and loop/pointer strength reduction differ
+#if NONMATCHING
+void fn_3_83714(void) {
+    int dec[4];
+    int level = 3;
+    int frame = 0;
+    int best;
+    int k;
+    int j;
+    int t;
+    int same;
+    s16 hit;
+    u8 st;
+    u8* r;
+    BallTraj13B8* traj;
+    int team;
+    s16* ai;
+
+    if (g_d_GameSettings[7] == 2) {
+        return;
+    }
+    if (g_GameLogic[0x11E] == 2 && *(u16*)(g_GameLogic + 0xFC) < g_RunningLogic[0x14]) {
+        return;
+    }
+    if (g_FieldingLogic[0x10E] != 0) {
+        return;
+    }
+    if (*(s16*)(g_Ball.b + 0x1B66) >= 0 && g_Ball.s.acr == 0) {
+        level = fn_3_86118();
+    } else if (g_Ball.s.acr == 1 || g_Ball.b[0x1BC9] == 3) {
+        // Earliest frame any fielder can reach the ball's path.
+        best = 9999;
+        for (k = 0; k < 9; k++) {
+            st = g_FieldingLogic[0xF8 + k];
+            if (st == 1 || st == 10 || st == 11) {
+                j = 1;
+                do {
+                    t = fn_3_52560(k, BALL_TRAJ_13B8[j].x, BALL_TRAJ_13B8[j].z);
+                    if (t < j + 15) {
+                        break;
+                    }
+                    j += 5;
+                } while (j < 120);
+                if (j >= 120) {
+                    if (best >= 120) {
+                        best = 120;
+                    }
+                } else if (best > t) {
+                    best = t;
+                }
+            }
+        }
+        frame = best;
+    }
+    hit = g_Ball.s.acr;
+    if (*(s16*)(g_Ball.b + 0x1B66) < 0) {
+        hit = -2;
+    }
+    if (g_Ball.s.acr == 0 && g_Ball.b[0x1BC3] == 0) {
+        hit = 1;
+    }
+    traj = &BALL_TRAJ_13B8[frame];
+    for (k = 3; k >= 0; k--) {
+        r = g_Runners + k * 0x154;
+        dec[k] = -2;
+        if (r[0x123] != 1 || r[0x134] == 0 || g_Strikes[2] >= 3 || g_FieldingLogic[0x10E] != 0) {
+            continue;
+        }
+        if (k == 0 && *(s16*)(g_Ball.b + 0x1B66) < r[0x122]) {
+            dec[k] = 0;
+        } else if (k == 0 && *(s16*)(g_Ball.b + 0x1B66) == r[0x122]) {
+            dec[k] = 1;
+        } else if (g_Ball.b[0x1BD1] == 1) {
+            dec[k] = 1;
+        } else if (k == 0 && *(s16*)(g_Ball.b + 0x1B66) == -1) {
+            dec[k] = 0;
+        } else if (k == 0 && r[0x125] == 0) {
+        } else if ((g_Ball.s.acr == 0 || g_Ball.s.acr == 1) && g_FieldingLogic[0x108] != 0) {
+            dec[k] = -1;
+        } else if (g_Ball.b[0x1BC7] >= 2 && (g_Ball.b[0x1BD8] == 0 || g_Ball.b[0x1BDA] != 1)) {
+            dec[k] = -1;
+        } else if (g_Strikes[3] == 2 && g_FieldingLogic[0x107] == 0 && r[0x125] == r[0x124]) {
+            dec[k] = 1;
+        } else {
+            if (hit == 3) {
+                if (r[0x128] == 2) {
+                    r[0x12B] = 0;
+                    dec[k] = -1;
+                    r[0x12E] = -1;
+                    continue;
+                }
+                for (j = 3; j > k; j--) {
+                    if (g_Runners[j * 0x154 + 0x123] == 1 && g_Runners[j * 0x154 + 0x128] == 2) {
+                        dec[k] = -1;
+                        r[0x12E] = -1;
+                    }
+                }
+            }
+            if (hit == 3 && r[0x128] == 2) {
+                dec[k] = -1;
+            } else if (*(s16*)(r + 0xEE) == 1 && hit >= 1 && hit <= 2) {
+                dec[k] = 1;
+            } else {
+                if ((s8)r[0x12E] >= 0) {
+                    if (g_Ball.s.acr == 3 && r[0x128] != 0) {
+                        r[0x12E] = -1;
+                    } else if ((s8)r[0x12E] == r[0x125]) {
+                        r[0x12E] = -1;
+                    } else if (r[0x13A] != 0) {
+                        r[0x12E] = -1;
+                    } else {
+                        dec[k] = 1;
+                        continue;
+                    }
+                }
+                // Forced if a runner behind is on the same base.
+                same = 0;
+                for (j = 0; j < k; j++) {
+                    if (g_Runners[j * 0x154 + 0x123] == 1 && r[0x125] == g_Runners[j * 0x154 + 0x125] &&
+                        (j != 0 || (g_Ball.s.acr != 0 && g_Ball.s.acr != 3))) {
+                        same = 1;
+                        break;
+                    }
+                }
+                if (same != 0) {
+                    dec[k] = 1;
+                    continue;
+                }
+                if (!(*(f32*)(r + 0x64) > lbl_3_rodata_1488)) {
+                    if (*(f32*)(r + 0x38) < lbl_3_rodata_143C && g_Ball.b[0x1BC9] == 3) {
+                        r[0x12B] = 0;
+                    }
+                    t = *(s16*)(g_FieldingLogic + 0xC4);
+                    if ((t == 5 || t == 6 || t == r[0x125]) && *(f32*)(r + 0x68) >= lbl_3_rodata_1490 && r[0x137] == 1 &&
+                        g_Ball.b[0x1BBE] <= 3) {
+                        r[0x12B] = 0;
+                    }
+                    if (*(s16*)(r + 0xE6) >= 0 && r[0x13E] == 2) {
+                        r[0x12B] = 1;
+                        if (lbl_3_rodata_1414 == *(f32*)(r + 0x84)) {
+                            r[0x12B] = 0;
+                        }
+                    }
+                }
+                t = fn_3_85840(k, level, dec);
+                if (t == 1) {
+                    if (*(s16*)(g_Ball.b + 0x1B66) < 60 || g_Ball.s.acr == 0) {
+                        dec[k] = 0;
+                    } else {
+                        dec[k] = -1;
+                    }
+                } else if (t == 2) {
+                    dec[k] = 0;
+                } else if (*(s16*)(g_Ball.b + 0x1B66) == -1 || *(s16*)(g_Ball.b + 0x1B66) < 10) {
+                } else if (hit == 0) {
+                    if (g_Ball.b[0x1BF3] != 0) {
+                        dec[k] = fn_3_85074(k, 5);
+                    } else if (*(f32*)(g_Ball.b + 0x19D4) <= lbl_3_rodata_1494) {
+                        dec[k] = fn_3_84AD0(k, frame);
+                    } else {
+                        dec[k] = fn_3_85074(k, level);
+                    }
+                } else if (g_Ball.b[0x1BDE] != 0 &&
+                           (g_Ball.b[0x1BC9] == 3 || (g_Ball.s.acr == 1 && *(s16*)(g_Ball.b + 0x1B66) > 400))) {
+                    dec[k] = runnerBeatsThrow13B8(r, traj, frame);
+                } else if (g_Ball.b[0x1BD7] >= 1 && g_Ball.b[0x1BC9] == 3 &&
+                           (*(f32*)(g_Ball.b + 0x1A14) < lbl_3_rodata_1498 || g_FieldingLogic[0x12C] != 0)) {
+                    dec[k] = runnerBeatsThrow13B8(r, traj, frame);
+                } else if (hit == 1 || g_Ball.b[0x1BC9] == 3) {
+                    dec[k] = fn_3_84AD0(k, frame);
+                } else if (g_Ball.b[0x1BC9] == 1) {
+                    dec[k] = fn_3_846C8(k);
+                } else {
+                    dec[k] = fn_3_842E4(k);
+                }
+            }
+        }
+    }
+    for (k = 3; k >= 0; k--) {
+        r = g_Runners + k * 0x154;
+        t = dec[k];
+        if (t != -2 && (r[0x13E] != 1 || r[0x140] < 2 || t == 1)) {
+            if (t == -1 && r[0x124] == *(s16*)(r + 0xE6)) {
+                t = 0;
+            }
+            fn_3_85EF4(k, t);
+        }
+    }
+    team = *(s32*)(g_GameLogic + 0xC);
+    if (g_GameLogic[team + 0x148] == 0) {
+        return;
+    }
+    if (g_GameLogic[team + 0x13E] == 0) {
+        // Human team: any steal button makes everyone mash.
+        if (*(u16*)(g_Controls + *(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 4) * 4 + 0xEC) * 16 + 6) & 0xF00) {
+            for (k = 0; k < 4; k++) {
+                g_Runners[k * 0x154 + 0x149] = 1;
+            }
+        }
+    } else if (*(s16*)(g_AiLogic + 0x44) > 0) {
+        // CPU team: random mashing, with a cooldown.
+        ai = &lbl_3_data_1C58[*(s32*)(g_GameLogic + 0x14 + team * 4) * 4];
+        if (*(s16*)(g_Ball.b + 0x1B66) >= ai[0]) {
+            if (g_AiLogic[0x77] != 0) {
+                g_AiLogic[0x77]--;
+                return;
+            }
+            ai = &lbl_3_data_1C58[*(s32*)(g_GameLogic + 0x14 + *(s32*)(g_GameLogic + 0xC) * 4) * 4];
+            if (RandomInt_Game(100) < ai[3]) {
+                for (k = 0; k < 4; k++) {
+                    g_Runners[k * 0x154 + 0x149] = 1;
+                }
+                *(s16*)(g_AiLogic + 0x44) -= 1;
+            }
+            g_AiLogic[0x77] = ai[2];
+        }
+    }
+}
+#endif
 
 // .text:0x000841C0 size:0x124 mapped:0x806C3254
 int fn_3_841C0(int i, int j) {
@@ -2445,7 +2690,6 @@ extern const f32 lbl_3_rodata_14C0;
 extern const f32 lbl_3_rodata_14C4;
 extern const f32 lbl_3_rodata_14C8;
 extern const f32 lbl_3_rodata_1474;
-#define BASE_XZ_13B8 ((XZ13B8*)lbl_3_data_4444)
 // NONMATCHING 92%: expression/scheduling order around the fn_3_A6810 eta calls, register allocation
 #if NONMATCHING
 int fn_3_85074(int i, int b) {
@@ -2916,9 +3160,6 @@ extern const f32 lbl_3_rodata_14CC;
 extern const f32 lbl_3_rodata_14D0;
 extern const f32 lbl_3_rodata_14D4;
 extern s16 lbl_3_data_1C80[];
-// Ball trajectory samples at g_Ball+0x354, 16 bytes each.
-typedef struct { f32 x, y, z, w; } BallTraj13B8;
-#define BALL_TRAJ_13B8 ((BallTraj13B8*)(g_Ball.b + 0x354))
 // Note: the original also computes an unused squared distance from the ball
 // (g_Ball+0x348/0x34C) to the chosen sample; it has no effect and is omitted.
 // NONMATCHING 81%: unused distance calc and unrolled trajectory search in the original, register allocation
