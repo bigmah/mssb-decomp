@@ -34,8 +34,23 @@ void fn_800116DC(CharActor* actor, Mtx m, u16 joint) {
 }
 
 // .text:0x800117CC size:0xE0
-void fn_800117CC(void) {
-    return;
+void fn_800117CC(Mtx src, Mtx m, Mtx dst) {
+    Mtx tmp;
+    Mtx scale = {
+        { 1.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 1.0714285f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 1.0f, 0.0f },
+    };
+
+    PSMTXConcat(scale, m, tmp);
+    tmp[0][3] = 0.0f;
+    tmp[1][3] = 0.0f;
+    tmp[2][3] = 0.0f;
+    PSMTXInverse(tmp, tmp);
+    tmp[0][3] = src[0][3];
+    tmp[1][3] = src[1][3];
+    tmp[2][3] = src[2][3];
+    PSMTXCopy(tmp, dst);
 }
 
 // .text:0x800118AC size:0xC0
