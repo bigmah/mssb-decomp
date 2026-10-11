@@ -54,8 +54,19 @@ void fn_800117CC(Mtx src, Mtx m, Mtx dst) {
 }
 
 // .text:0x800118AC size:0xC0
-void fn_800118AC(void) {
-    return;
+MtxPtr fn_800118AC(Mtx m, Mtx out) {
+    Mtx scale = {
+        { 1.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 1.0714285f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 1.0f, 0.0f },
+    };
+
+    PSMTXConcat(scale, m, out);
+    out[0][3] = 0.0f;
+    out[1][3] = 0.0f;
+    out[2][3] = 0.0f;
+    PSMTXInverse(out, out);
+    return out;
 }
 
 // .text:0x8001196C size:0xF4
