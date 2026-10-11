@@ -1,20 +1,108 @@
 #include "challenge/rep_0010.h"
-#include "game/UnknownHomes_Game.h"
-#include "static/UnknownHomes_Static.h"
+#include "challenge/auto_00_00001538_text.h"
+#include "Dolphin/gx.h"
+#include "Dolphin/mtx.h"
+#include "main/file_80008E00.h"
+
+#pragma pool_data off
+
+extern void SetDisplayStateTexture(struct TexImage* tex, s32 map, u32 tlutName);
+extern void gOz_GXSetTexture(GXTevMode tevMode, s32 texFrac, s32 hasNormal);
+extern void fn_800AD054(void* lo, void* hi);
+extern void fn_800B0C80(void (*draw)(void));
+extern void resetAllDrawingStructs(void);
+
+extern GXColor lbl_1_data_A8; // copy-clear color
+
+// Unreferenced table at the start of this unit's .rodata.
+const f32 lbl_1_rodata_10[20] = {
+    1.0f, 1.5707964f, 1.0f, -1.0f, 4.712389f, 3.1415927f, -1.0f, 0.0f, -1.0f, 1.0f,
+    1.0f, 1.5707964f, 1.0f, -1.0f, 4.712389f, 3.1415927f, -1.0f, 0.0f, -1.0f, 1.0f,
+};
 
 // .text:0x000005EC size:0x508
+// Draws a test pattern: a grey backdrop and four additive diamonds.
 void fn_1_5EC(void) {
-    return;
-}
+    Mtx44 p;
+    Mtx m;
 
-// .text:0x00000AF4 size:0x438
-void fn_1_AF4(void) {
-    return;
-}
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    // 1 is the SDK GX_TG_MTX2x4 (GXEnum.h has the 2x4/3x4 names swapped)
+    GXSetTexCoordGen2(GX_TEXCOORD0, (GXTexGenType)1, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    C_MTXOrtho(p, 0.0f, 448.0f, 0.0f, 640.0f, 0.0f, 1.0f);
+    GXSetProjection(p, GX_ORTHOGRAPHIC);
+    PSMTXIdentity(m);
+    GXLoadPosMtxImm(m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
 
-// .text:0x00000F2C size:0x1D8
-void fn_1_F2C(void) {
-    return;
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(0.0f, 0.0f, -0.5f);
+    GXColor1u32(0x808080FF);
+    GXPosition3f32(0.0f, 448.0f, -0.5f);
+    GXColor1u32(0x808080FF);
+    GXPosition3f32(640.0f, 448.0f, -0.5f);
+    GXColor1u32(0x808080FF);
+    GXPosition3f32(640.0f, 0.0f, -0.5f);
+    GXColor1u32(0x808080FF);
+    GXEnd();
+
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(100.0f, 100.0f, -0.5f);
+    GXColor1u32(0x00FF0080);
+    GXPosition3f32(50.0f, 150.0f, -0.5f);
+    GXColor1u32(0x00FF0080);
+    GXPosition3f32(100.0f, 200.0f, -0.5f);
+    GXColor1u32(0x00FF0080);
+    GXPosition3f32(150.0f, 150.0f, -0.5f);
+    GXColor1u32(0x00FF0080);
+    GXEnd();
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(120.0f, 100.0f, -0.5f);
+    GXColor1u32(0xFF000080);
+    GXPosition3f32(70.0f, 150.0f, -0.5f);
+    GXColor1u32(0xFF000080);
+    GXPosition3f32(120.0f, 200.0f, -0.5f);
+    GXColor1u32(0xFF000080);
+    GXPosition3f32(170.0f, 150.0f, -0.5f);
+    GXColor1u32(0xFF000080);
+    GXEnd();
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(120.0f, 220.0f, -0.5f);
+    GXColor1u32(0xFF000080);
+    GXPosition3f32(70.0f, 270.0f, -0.5f);
+    GXColor1u32(0xFF000080);
+    GXPosition3f32(120.0f, 320.0f, -0.5f);
+    GXColor1u32(0xFF000080);
+    GXPosition3f32(170.0f, 270.0f, -0.5f);
+    GXColor1u32(0xFF000080);
+    GXEnd();
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(100.0f, 220.0f, -0.5f);
+    GXColor1u32(0x00FF0080);
+    GXPosition3f32(50.0f, 270.0f, -0.5f);
+    GXColor1u32(0x00FF0080);
+    GXPosition3f32(100.0f, 320.0f, -0.5f);
+    GXColor1u32(0x00FF0080);
+    GXPosition3f32(150.0f, 270.0f, -0.5f);
+    GXColor1u32(0x00FF0080);
+    GXEnd();
 }
 
 // .text:0x00001104 size:0x4
@@ -27,22 +115,3 @@ void _unresolved(void) {
     return;
 }
 
-// .text:0x0000110C size:0x3C
-void _prolog(void) {
-    return;
-}
-
-// .text:0x00001148 size:0x88
-void fn_1_1148(void) {
-    return;
-}
-
-// .text:0x000011D0 size:0x70
-void fn_1_11D0(void) {
-    return;
-}
-
-// .text:0x00001240 size:0x2F8
-void fn_1_1240(void) {
-    return;
-}
