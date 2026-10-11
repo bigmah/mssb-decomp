@@ -102,4 +102,8 @@ void fn_3_ACD38(void);
 
 void fn_3_AD164(s32 arg);
 
+void fn_3_AD3BC(void);
+
+void fn_3_AD8CC(void);
+
 #endif

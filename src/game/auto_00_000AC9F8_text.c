@@ -6,6 +6,7 @@
 #include "game/rep_13B8.h"
 #include "game/rep_AC8.h"
 #include "game/auto_00_0005985C_text.h"
+#include "main/menu_globals.h"
 
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
@@ -1297,6 +1298,60 @@ void fn_3_AD164(s32 arg) {
             lbl_3_common_bss_34C90.frames = 0;
             lbl_3_common_bss_34C90._0E = 0;
             lbl_3_common_bss_34C90._10 = 0;
+        }
+        break;
+    }
+}
+
+// fn_3_AD8CC, size:0x170
+void fn_3_AD8CC(void) {
+    u8 state;
+    switch (lbl_3_common_bss_34C90.subState) {
+    case 0:
+        state = lbl_3_common_bss_34C90.state;
+        lbl_3_common_bss_34C90.subFrames = 0;
+        lbl_803297E0._CFA2[lbl_3_common_bss_34C90.team] = state != 4;
+        if (state == 14 || state == 7) {
+            lbl_803297E0._CFA2[lbl_3_common_bss_34C90.team] = 2;
+        } else if (state == 15 || state == 8) {
+            lbl_803297E0._CFA2[lbl_3_common_bss_34C90.team] = 3;
+        }
+        lbl_3_common_bss_34C90.subState = 2;
+        break;
+    case 1:
+        break;
+    case 2:
+        lbl_3_common_bss_34C90.subFrames = 0;
+        lbl_3_common_bss_34C90.subState = 3;
+        break;
+    case 3:
+        if (lbl_3_common_bss_34C90.subFrames > 20) {
+            lbl_3_common_bss_34C90.subState = 4;
+        }
+        break;
+    case 4:
+        fn_3_AD3BC();
+        break;
+    case 5:
+        lbl_3_common_bss_34C90.subFrames = 0;
+        lbl_3_common_bss_34C90.subState = 6;
+        break;
+    case 6:
+        if (lbl_3_common_bss_34C90.subFrames > 20) {
+            if (lbl_3_common_bss_34C90.state == 11 || lbl_3_common_bss_34C90.state == 14 ||
+                lbl_3_common_bss_34C90.state == 15) {
+                lbl_3_common_bss_34C90.state = 9;
+                lbl_3_common_bss_34C90.subState = 0;
+                lbl_3_common_bss_34C90.frames = 0;
+                lbl_3_common_bss_34C90._0E = 0;
+                lbl_3_common_bss_34C90._10 = 0;
+            } else {
+                lbl_3_common_bss_34C90.state = 2;
+                lbl_3_common_bss_34C90.subState = 0;
+                lbl_3_common_bss_34C90.frames = 0;
+                lbl_3_common_bss_34C90._0E = 0;
+                lbl_3_common_bss_34C90._10 = 0;
+            }
         }
         break;
     }
