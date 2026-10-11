@@ -1156,9 +1156,162 @@ int fn_3_2ACD8(int i, int j) {
 }
 
 // .text:0x0002AD68 size:0x858 mapped:0x80669DFC
+// NONMATCHING 85%: the original inlines fn_3_2ACD8 for the short-fly case; we call it (same behaviour); loop/regalloc details differ
+// nmverify: fn_3_2ACD8 inlined on one side (calls match once expanded)
+#if NONMATCHING
 int fn_3_2AD68(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 hmax = lbl_3_rodata_B84 * *(f32*)(f + 0xF4);
+    s16 n = *(s16*)(g_Ball + 0x1B62);
+    int k;
+    int cnt;
+    u8* pt;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    s16 ang;
+    s16 diff;
+    Vec a;
+    Vec b;
+    Vec c;
+    Vec out;
+    if (*(s16*)(g_FieldingLogic + 0xC4) < 0) {
+        return 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B6C) <= 3) {
+        return 0;
+    }
+    if (*(s16*)(f + 0x1A8) != 0) {
+        return 0;
+    }
+    if (f[0x252] == 2) {
+        return 0;
+    }
+    if (g_FieldingLogic[i + 0xF8] == 0xF) {
+        if (g_FieldingLogic[0x13C] == 0) {
+            return 0;
+        }
+        if (*(f32*)(f + 0x68) > *(f32*)(f + 0xE8)) {
+            return 0;
+        }
+        for (k = lbl_3_data_49DC[0x17], pt = g_Ball + k * 16; k <= lbl_3_data_49DC[0x16]; k++, pt += 16) {
+            if (!(*(f32*)(pt + 0x358) > *(f32*)(f + 0xF4))) {
+                d = DIST2_XZ(*(f32*)(pt + 0x354), *(f32*)(pt + 0x35C), *(f32*)f, *(f32*)(f + 8));
+                SQRT_L(d);
+                if (d < *(f32*)(f + 0xE8)) {
+                    break;
+                }
+            }
+        }
+        if (k > lbl_3_data_49DC[0x16]) {
+            return 0;
+        }
+        goto hit;
+    }
+    if (i != *(s16*)(g_Ball + 0x1B8A)) {
+        return 0;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xC4) <= 3) {
+        f32* bpos = (f32*)(lbl_3_data_4444 + *(s16*)(g_FieldingLogic + 0xC4) * 8);
+        if (fn_3_9CE0(bpos[0], bpos[1]) < *(f32*)(f + 0xE8)) {
+            k = n - 1;
+            if (k <= 2) {
+                return 0;
+            }
+            if (k > lbl_3_data_49DC[0x18]) {
+                return 0;
+            }
+            if (*(s8*)(f + 0x1F5) != *(s16*)(g_FieldingLogic + 0xC4) && k > lbl_3_data_49DC[0x1A]) {
+                return 0;
+            }
+            for (cnt = 10, pt = g_Ball + k * 16; cnt != 0; cnt--, k--, pt -= 16) {
+                if (*(f32*)(pt + 0x358) > hmax) {
+                    k++;
+                    break;
+                }
+                d = DIST2_XZ(*(f32*)(pt + 0x354), *(f32*)(pt + 0x35C), *(f32*)f, *(f32*)(f + 8));
+                SQRT_L(d);
+                if (d > lbl_3_data_4794[f[0x1C9]]) {
+                    k++;
+                    break;
+                }
+            }
+            goto hit;
+        }
+        if (*(s16*)(g_Ball + 0x1B6C) <= 20) {
+            return 0;
+        }
+        return fn_3_2ACD8(i, n - 2);
+    }
+    if (*(s16*)(g_FieldingLogic + 0xC4) == 5 || *(s16*)(g_FieldingLogic + 0xC4) == 6) {
+        for (k = lbl_3_data_49DC[0x17], pt = g_Ball + k * 16; k <= lbl_3_data_49DC[0x16]; k++, pt += 16) {
+            if (!(*(f32*)(pt + 0x358) > *(f32*)(f + 0xF4))) {
+                d = DIST2_XZ(*(f32*)(pt + 0x354), *(f32*)(pt + 0x35C), *(f32*)f, *(f32*)(f + 8));
+                SQRT_L(d);
+                if (d < *(f32*)(f + 0xE8)) {
+                    break;
+                }
+            }
+        }
+        if (k > lbl_3_data_49DC[0x16]) {
+            return 0;
+        }
+        goto hit;
+    }
     return 0;
+hit:
+    *(s16*)(f + 0x24C) = k;
+    *(s16*)(f + 0x24E) = 0;
+    f[0x252] = 2;
+    f[0x253] = 0;
+    f[0x254] = 0;
+    f[0x255] = 1;
+    f[0x25B] = 0;
+    f[0x259] = 0;
+    f[0x25C] = 0;
+    f[0x25D] = 0;
+    f[0x25E] = 0;
+    f[0x25F] = 0;
+    f[0x264] = 0;
+    f[0x260] = 0;
+    if (k < *(s16*)(g_Ball + 0x1B60)) {
+        f[0x264] = 1;
+    }
+    g_Ball[0x1BF0] = 0;
+    if (*(f32*)(g_Ball + k * 16 + 0x358) < *(f32*)(f + 0xFC)) {
+        f[0x253] = 0;
+    } else if (*(f32*)(g_Ball + k * 16 + 0x358) < *(f32*)(f + 0xF8)) {
+        f[0x253] = 1;
+    } else {
+        f[0x253] = 2;
+    }
+    pt = g_Ball + k * 16;
+    a.x = *(f32*)f;
+    a.y = *(f32*)(f + 4);
+    a.z = *(f32*)(f + 8);
+    b.x = 0.0f;
+    b.y = 0.0f;
+    b.z = 0.0f;
+    c.x = *(f32*)(pt + 0x354);
+    c.z = *(f32*)(pt + 0x35C);
+    c.y = 0.0f;
+    if (fn_3_9EFD0((struct _VecXYZ*)&a, (struct _VecXYZ*)&b, (struct _VecXYZ*)&c, (struct _VecXYZ*)&out) >
+        *(f32*)(f + 0xF0)) {
+        dx = *(f32*)(pt + 0x354) - *(f32*)f;
+        dz = *(f32*)(pt + 0x35C) - *(f32*)(f + 8);
+        ang = fn_3_9FE6C_normalizeAngle(*(s16*)(g_Ball + 0x1B82) + 0x800);
+        diff = fn_3_9FCA4(ang, fn_3_9FB8C(dx, dz));
+        if (diff > 0) {
+            f[0x254] = 2;
+        } else {
+            f[0x254] = 1;
+        }
+    }
+    *(f32*)(f + 0x240) = *(f32*)(pt + 0x354) - *(f32*)g_Ball;
+    *(f32*)(f + 0x244) = *(f32*)(pt + 0x35C) - *(f32*)(g_Ball + 8);
+    return 1;
 }
+#endif
 
 // .text:0x0002B5C0 size:0xD4 mapped:0x8066A654
 void fn_3_2B5C0(int i) {
