@@ -2,17 +2,26 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 
+// Stadium state block; only the RNG seed is used here.
+typedef struct StadRandState {
+    u8 pad0[0x66];
+    s16 seed; // 0x66
+} StadRandState;
+
+extern StadRandState lbl_3_common_bss_350E4;
+
 // .text:0x000B7EF0 size:0x28 mapped:0x806F6F84
 f32 vecDotProduct(VecXYZ* a, VecXYZ* b) {
-    return 0;
+    return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
 }
 
 // .text:0x000B7F18 size:0x58 mapped:0x806F6FAC
-void fn_3_B7F18(void) {
+void vecCrossProduct(VecXYZ* out, VecXYZ* a, VecXYZ* b) {
     return;
 }
 
 // .text:0x000B7F70 size:0x58 mapped:0x806F7004
-void fn_3_B7F70(void) {
-    return;
+s16 fn_3_B7F70(s16 range) {
+    return 0;
 }
+
