@@ -74,7 +74,14 @@ void fn_3_E0668(void) {
 
 // .text:0x000E0758 size:0x84 mapped:0x8071F7EC
 void fn_3_E0758(void) {
-    return;
+    MinigameCoinSprite* coin;
+    s32 i;
+
+    for (i = 0; i < 30; i++) {
+        coin = &lbl_8036E548.trail2[i];
+        fn_8001D0D0(i, lbl_3_data_18D98[0]);
+        coin->angle = shortAngleToRad_Capped(rand() % 4096);
+    }
 }
 
 // .text:0x000E07DC size:0xA04 mapped:0x8071F870
