@@ -2991,9 +2991,28 @@ void fn_8004AE18(s32 idx) {
 }
 
 // .text:0x8004AFA8 size:0x210
+// NONMATCHING ~45%: the original inlines fn_8004AE18; ours calls it
+#if NONMATCHING
 void fn_8004AFA8(s32 idx) {
-    return;
+    CharModel* model = lbl_8036E548.active[idx];
+    Vec pos;
+
+    lbl_803CB84C->stamp = lbl_803CBD0C;
+    lbl_800FBE90[0] = lbl_803CBD0C;
+    if (model->charID == 0xE || model->charID == 0x25) {
+        return;
+    }
+    fn_8004AE18(idx);
+    if (model->unk276 & 2) {
+        getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&pos);
+        fn_8002F258(&pos, idx * 2, lbl_800FBE90);
+    }
+    if (model->unk276 & 4) {
+        getAnimRelatedCoordinates(idx, 0x22, (VecXYZ*)&pos);
+        fn_8002F258(&pos, idx * 2 + 1, lbl_800FBE90);
+    }
 }
+#endif
 
 // fn_8004B1B8, size:0x8
 void fn_8004B1B8(u32 value) {
