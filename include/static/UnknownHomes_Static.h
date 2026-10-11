@@ -90,7 +90,8 @@ extern void pitchingMachinePitching(u8);
 typedef struct {
     /* 0x00 */ u16 _00;
     /* 0x02 */ u16 _02;
-    artificial_padding(2, 0x22, u16);
+    /* 0x04 */ u16 _04; // repeat (PadState in main/file_800A7C08.h)
+    artificial_padding(4, 0x22, u16);
     /* 0x22 */ u16 _22;
     artificial_padding(0x22, 0x42, u16);
     /* 0x42 */ u16 _42;
