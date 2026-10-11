@@ -1084,8 +1084,23 @@ void minigamesSetSomePointers2(void) {
 #endif
 
 // .text:0x80034BCC size:0x120
-void fn_80034BCC(void) {
-    return;
+s32 fn_80034BCC(SpaniAttach* a) {
+    SpaniObj* o;
+    u8* col;
+
+    for (o = lbl_803CBC9C->unk8; o != NULL; o = o->unk4) {
+        if (((SpaniObj*)o->parent)->animId == a->key[0] && o->unk72 == a->key[1]) {
+            PSMTXCopy(a->mtx, o->mtx2);
+            // TODO type: unk58/unk74 are RGBA colors in SpaniObj
+            col = (u8*)&o->unk74;
+            col[0] = (a->color[0] * ((u8*)&o->unk58)[0]) / 255;
+            col[1] = (a->color[1] * ((u8*)&o->unk58)[1]) / 255;
+            col[2] = (a->color[2] * ((u8*)&o->unk58)[2]) / 255;
+            col[3] = (a->color[3] * ((u8*)&o->unk58)[3]) / 255;
+            o->unkA8 = 1;
+        }
+    }
+    return 0;
 }
 
 // .text:0x80034CEC size:0x134
