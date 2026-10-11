@@ -245,8 +245,44 @@ s32 fn_3_16D4D8(s32 id_, f32 x) {
 // NONMATCHING 78%: float literal pooling; the original keeps the inlined fn_3_16D4D8 result as a u8 flag (li 1/li 0, clrlwi.)
 #if NONMATCHING
 // .text:0x0016D5E4 size:0x22C mapped:0x807AC678
+// Kicks up dust under a running fielder (who = fielder + 1) or where the ball touches down
+// (who = 0), if that spot is on screen.
 void fn_3_16D5E4(u8 who) {
-    return;
+    f32 floorY;
+    Vec pos;
+    DustFielder* f;
+
+    if (g_d_GameSettings.StadiumID == 4) {
+        floorY = 1.5f;
+    } else {
+        floorY = 0.07f;
+    }
+    if (who != 0) {
+        f = &g_Fielders[who - 1];
+        if (!fn_3_16D4D8(who - 1, floorY)) {
+            return;
+        }
+        if (f->speed < 0.1f) {
+            return;
+        }
+        memcpy(&pos, f, sizeof(Vec));
+        pos.y = floorY;
+    } else {
+        f32 speed = PSVECMag(&g_Ball.physicsSubstruct.velocity);
+        if (!(g_Ball.AtBat_Contact_BallPos.y <= floorY)) {
+            return;
+        }
+        if ((g_Ball.maybeCollisionRelated & 0x7F) == 9 && !(g_Ball.pastCoordinates[0].y > floorY)) {
+            return;
+        }
+        if (!(speed >= 0.05)) {
+            return;
+        }
+        memcpy(&pos, &g_Ball, sizeof(Vec));
+    }
+    if (fn_800527C4(&pos)) {
+        fn_3_16CC2C(&pos, who);
+    }
 }
 #endif
 
