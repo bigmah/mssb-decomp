@@ -412,6 +412,95 @@ void fn_3_115BDC(void) {
     fn_3_5A6D4(6);
 }
 
+// fn_3_115C24, size:0x494
+// Wall Ball setup.
+// NONMATCHING 87%: g_Minigame stays in r30 across the calls (original reloads it into r7), fielder index not strength-reduced in the original
+#if NONMATCHING
+void fn_3_115C24(void) {
+    s32 i;
+    s32 n;
+    u8 strength;
+
+    if (g_GameLogic[0x125] == 0) {
+        fn_3_59A90();
+        g_GameLogic[0x121] = 4;
+        for (i = 0; i < 4; i++) {
+            WB->currentPoints[i] = 0;
+            WB->latestPoints[i] = 0;
+            WB->pointsPair[i][0] = 0;
+            WB->pointsPair[i][1] = 0;
+            WB->slotPlayer[i] = -1;
+            WB->playerSlot[i] = -1;
+            WB->_18FC[i] = -1;
+            WB->_1900[i] = -1;
+            WB->_18F0[i] = 0;
+        }
+        SCORES->round = 0;
+        WB->turnNumberWithinRound = 0;
+        WB->pointsReqToWin = 0;
+        WB->rosterID = -1;
+        WB->_17C0 = 0;
+        WB->_1A37 = 0;
+        WB->turnCounter = 0;
+        if (WB->multiPlayerInd == 0) {
+            strength = lbl_3_data_2127C[WB->gameMode][WB->difficulty];
+            SCORES->lastRound = lbl_3_data_2166C[WB->difficulty];
+            for (i = 0; i < 4; i++) {
+                WB->aIStrength[i] = strength;
+            }
+        } else {
+            if (WB->_1A3C != 0) {
+                for (i = 0; i < 4; i++) {
+                    WB->aIStrength[i] = lbl_3_data_2127C[7][0];
+                }
+            }
+            SCORES->lastRound = lbl_3_data_2166C[4];
+        }
+        n = 0;
+        for (i = 0; i < 4; i++) {
+            if (WB->characterIndex[i] >= 0) {
+                WB->slotPlayer[n] = i;
+                WB->playerSlot[WB->slotPlayer[n]] = n + 2;
+                WB->turnOrder[n] = i;
+                g_Fielders[n + 2].rosterID = i;
+                n++;
+            }
+        }
+        fn_3_58870();
+        fn_3_114A88(1);
+        for (i = 0; i < 7; i++) {
+            WB->bumper[i]._00 = 0;
+            WB->bumper[i].id = i;
+            WB->bumperOrder[i] = i;
+        }
+        WB->phase = 0;
+        WB->_1A80 = 0;
+        WB->_1A78 = 0;
+        for (i = 0; i < 2; i++) {
+            WB->_1A7C[i] = (i & 1) ? 0 : 6;
+        }
+        WB->_1A70 = 0;
+        WB->_1A7E = 0;
+        WB->_1A89 = 0;
+        WB->_1A8A = 0;
+        WB->_1A8B = -1;
+        WB->bonus = 0;
+        WB->_1A8C = 0;
+        for (i = 0; i < 100; i++) {
+            WB->coinVisible[i] = 0;
+        }
+        minigamesSetSomePointers();
+        minigamesGXStuff();
+        minigamesSetSomePointers2();
+        fn_3_F8ABC();
+        g_GameLogic[0x125]++;
+    } else {
+        lbl_3_common_bss_32234[1] = 1;
+        fn_3_5A6D4(5);
+    }
+}
+#endif
+
 // fn_3_1160B8, size:0x4
 void fn_3_1160B8(void) {
 }
