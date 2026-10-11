@@ -344,9 +344,46 @@ BOOL fn_8006C79C(s32 idx) {
 }
 
 // .text:0x8006C7C4 size:0x214
+// NONMATCHING 90%: the original keeps &found[0] in one register for both loops; rest is register numbering
+#if NONMATCHING
 void starMissionRelated2(void) {
-    return;
+    s32 found[6];
+    ChallengeTrackingStruct* t;
+    s32 i;
+    s32 j;
+    s32 cur;
+
+    found[0] = 0;
+    cur = gChallengeState._441C;
+    found[1] = 0;
+    found[2] = 0;
+    found[3] = 0;
+    found[4] = 0;
+    found[5] = 0;
+    for (i = 0; i < 54; i++) {
+        t = &starMissionCompletionTracker[i];
+        for (j = 0; j < 6; j++) {
+            if (i == lbl_803CB8F0[j]) {
+                s32 status = t->_31;
+                if (status == 1 && cur != j) {
+                    found[j] = 1;
+                }
+            }
+        }
+    }
+    // NOTE: t is left over from the loop above (always the last tracker).
+    for (j = 0; j < 6; j++) {
+        if (found[j] != 0 && (s8)t->_31 == 0) {
+            for (i = 0; i < 54; i++) {
+                t = &starMissionCompletionTracker[i];
+                if ((s8)t->_31 == 0 && (s8)t->challengeCaptain == j) {
+                    t->_31 = 2;
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8006C9D8 size:0xC4
 // NONMATCHING 90%: the original indexes _444D with i (addi/stbx) instead of a strength-reduced pointer; register numbering differs
