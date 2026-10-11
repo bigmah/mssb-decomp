@@ -3310,9 +3310,421 @@ void fn_8005FCA0(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x80060184 size:0x1A18
+// NONMATCHING 80%: tutorial step dispatcher; state tests, index sums and registers differ
+#if NONMATCHING
 void fn_80060184(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    s32 i;
+    u8 port;
+    u8* st;
+    s32 done;
+    s32 expected;
+    s32 j;
+    s32 k;
+
+    for (i = 0; i < 2; i++) {
+        port = lbl_803C66B0.portOf[i];
+        st = &lbl_803C66B0.steps[9][port + 1];
+        switch (lbl_803C66B0.step[i]) {
+        case 0x38:
+            if (g_d_GameSettings._06 != 2) {
+                fn_8005FCA0(task, port);
+                fn_8005F9D0(task, port);
+            } else {
+                if (*st == 0) {
+                    TASK_OBJ(task, 0)->_5C = 0;
+                    TASK_OBJ(task, 0)->_68 = 1;
+                    if (lbl_803297E0.teamKind[port] != 1) {
+                        TASK_OBJ(task, 1)->_5C = 0;
+                        TASK_OBJ(task, 1)->_68 = 1;
+                    }
+                    TASK_OBJ(task, 3)->_68 = 1;
+                    TASK_OBJ(task, 14)->_5C = 0;
+                    TASK_OBJ(task, 14)->_68 = 1;
+                    fn_800626EC(port);
+                    *st = 1;
+                }
+                if (*st == 1) {
+                    expected = 1;
+                    done = fn_80042DA8(task, 0, 20) != 0;
+                    if (lbl_803297E0.teamKind[port] != 1) {
+                        expected = 2;
+                        done += fn_80042DA8(task, 1, 20) != 0;
+                    }
+                    if (done == expected) {
+                        fn_80062674(port);
+                        *st = 2;
+                    }
+                }
+            }
+            break;
+        case 0x39:
+            if (g_d_GameSettings._06 != 2) {
+                fn_8005F734(task, port);
+                if (*st == 1) {
+                    done = fn_80042DA8(task, port + 20, 10) != 0;
+                    if (((u8*)&g_d_GameSettings)[0x10] == 0 && port == 0) { // TODO type
+                        done += fn_80042DA8(task, port, 30) != 0;
+                        done += fn_80042DA8(task, port + 18, 20) != 0;
+                    } else {
+                        done += fn_80042DA8(task, port, 20) != 0;
+                        done += fn_80042DA8(task, port + 18, 10) != 0;
+                    }
+                    done += fn_80042DA8(task, port + 4, 20) != 0;
+                    if (done + (fn_80042DA8(task, port + 10, 10) != 0) == 5) {
+                        if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+                            lbl_803297E0.ready[port] = 1;
+                            if (lbl_803297E0.ready[0] != 0 && lbl_803297E0.ready[1] != 0) {
+                                lbl_803297E0.ready[1] = 0;
+                                lbl_803297E0.ready[0] = 0;
+                                fn_80062674(0);
+                                fn_80062674(1);
+                                lbl_803C66B0.steps[9][1] = 2;
+                                lbl_803C66B0.steps[9][2] = 2;
+                            }
+                        } else {
+                            fn_80062674(port);
+                            *st = 2;
+                        }
+                    }
+                }
+            }
+            break;
+        case 0x3A:
+            if (*st == 0) {
+                if (g_d_GameSettings.GameModeSelected != 5 && ((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
+                    TASK_OBJ(task, port)->_5C = 30 << 16;
+                    TASK_OBJ(task, port)->_68 = 1;
+                } else {
+                    TASK_OBJ(task, port)->_5C = 20 << 16;
+                    TASK_OBJ(task, port)->_68 = 4;
+                }
+                fn_800626EC(port);
+                *st = 1;
+            }
+            if (*st == 1) {
+                if (g_d_GameSettings.GameModeSelected != 5 && ((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
+                    done = fn_80042DA8(task, port, 50) != 0;
+                } else {
+                    done = fn_80042DA8(task, port, 0) != 0;
+                }
+                if (done == 1) {
+                    fn_80062674(port);
+                    *st = 2;
+                }
+            }
+            break;
+        case 0x3C:
+            if (g_d_GameSettings._06 != 2) {
+                fn_8005F068(task, port);
+                if (*st == 1) {
+                    done = 0;
+                    expected = 0;
+                    switch (lbl_803297E0._CF52[port]) {
+                    case 0:
+                        if (lbl_803297E0._CF54[port] == 1) {
+                            expected = 1;
+                            done = fn_80042DA8(task, port + 20, 10) != 0;
+                        }
+                        break;
+                    case 1:
+                        if (lbl_803297E0._CF54[port] != 1) {
+                            expected = 1;
+                            done = fn_80042DA8(task, port + 20, 20) != 0;
+                        }
+                        break;
+                    }
+                    if (done == expected) {
+                        fn_80062674(port);
+                        *st = 2;
+                    }
+                }
+            }
+            break;
+        case 0x3D:
+            if (g_d_GameSettings._06 != 2) {
+                fn_8005EC88(task, port);
+            } else {
+                fn_8005B760(task, port);
+            }
+            if (*st == 1) {
+                fn_80062674(port);
+                *st = 2;
+            }
+            break;
+        case 0x3E:
+            if (g_d_GameSettings._06 != 2) {
+                if (*st == 0) {
+                    if (lbl_803297E0.selected[port] == 0) {
+                        s32 old = lbl_803297E0.selected2[port] - 1;
+                        s8 pos = lbl_80354720[port][old].pos;
+                        switch (lbl_803297E0._CF52[port]) {
+                        case 0:
+                            TASK_OBJ(task, old + port * 9 + 0x40)->_68 = 4;
+                            TASK_OBJ(task, old + port * 9 + 0x1C)->_5C = 10 << 16;
+                            TASK_OBJ(task, old + port * 9 + 0x1C)->_68 = 4;
+                            for (k = 0; k < 9; k++) {
+                                TASK_OBJ(task, k + port * 9 + 0x64)->flags &= ~2;
+                            }
+                            break;
+                        case 1:
+                            TASK_OBJ(task, pos + port * 9 + 0x10A)->_68 = 4;
+                            TASK_OBJ(task, pos + port * 9 + 0xF8)->_68 = 4;
+                            TASK_OBJ(task, pos + port * 9 + 0xE6)->flags &= ~2;
+                            for (k = 0; k < 9; k++) {
+                                TASK_OBJ(task, k + port * 9 + 0x12E)->flags &= ~2;
+                            }
+                            break;
+                        }
+                    }
+                    TASK_OBJ(task, port + 0x18)->_5C = 0;
+                    TASK_OBJ(task, port + 0x18)->_68 = 1;
+                    fn_800626EC(port);
+                    *st = 1;
+                }
+            } else if (*st == 0) {
+                switch (lbl_803297E0._CF52[port]) {
+                case 0: {
+                    s32 old = lbl_803297E0.selected2[port] - 1;
+                    TASK_OBJ(task, old + 0x63)->_68 = 4;
+                    TASK_OBJ(task, old + 0x51)->_5C = 10 << 16;
+                    TASK_OBJ(task, old + 0x51)->_68 = 4;
+                    for (k = 0; k < 9; k++) {
+                        TASK_OBJ(task, k + 0x75)->flags &= ~2;
+                        TASK_OBJ(task, k + 0x35)->flags &= ~2;
+                    }
+                    break;
+                }
+                case 1: {
+                    s8 pos = lbl_80354720[port][lbl_803297E0.selected2[port] - 1].pos;
+                    TASK_OBJ(task, pos + 0x23)->_68 = 4;
+                    TASK_OBJ(task, pos + 0x1A)->_68 = 4;
+                    TASK_OBJ(task, pos + 0x11)->flags &= ~2;
+                    for (k = 0; k < 9; k++) {
+                        TASK_OBJ(task, k + 0x35)->flags &= ~2;
+                        TASK_OBJ(task, k + 0x75)->flags &= ~2;
+                    }
+                    break;
+                }
+                }
+                TASK_OBJ(task, 14)->_5C = 0;
+                TASK_OBJ(task, 14)->_68 = 1;
+                fn_800626EC(port);
+                *st = 1;
+            }
+            if (*st == 1) {
+                fn_80062674(port);
+                *st = 2;
+            }
+            break;
+        case 0x3B:
+            fn_8005E9D8(task, port);
+            break;
+        case 0x3F:
+            if (g_d_GameSettings._06 != 2) {
+                if (*st == 0) {
+                    TASK_OBJ(task, 0)->_5C = 20 << 16;
+                    TASK_OBJ(task, 0)->_68 = 1;
+                    TASK_OBJ(task, 1)->_5C = 30 << 16;
+                    TASK_OBJ(task, 1)->_68 = 4;
+                    TASK_OBJ(task, 24)->_5C = 10 << 16;
+                    TASK_OBJ(task, 24)->_68 = 4;
+                    TASK_OBJ(task, 25)->_5C = 0;
+                    TASK_OBJ(task, 25)->_68 = 1;
+                    TASK_OBJ(task, 18)->_5C = 10 << 16;
+                    TASK_OBJ(task, 18)->_68 = 1;
+                    TASK_OBJ(task, 19)->_5C = 20 << 16;
+                    TASK_OBJ(task, 19)->_68 = 4;
+                    fn_800626EC(port);
+                    *st = 1;
+                }
+                if (*st == 1) {
+                    done = fn_80042DA8(task, 0, 30) != 0;
+                    done += fn_80042DA8(task, 1, 20) != 0;
+                    done += fn_80042DA8(task, 0x12, 20) != 0;
+                    if (done + (fn_80042DA8(task, 0x13, 10) != 0) == 4) {
+                        fn_80062674(port);
+                        *st = 2;
+                    }
+                }
+            }
+            break;
+        case 0x40:
+            if (g_d_GameSettings._06 != 2) {
+                if (*st == 0) {
+                    TASK_OBJ(task, 0)->_5C = 30 << 16;
+                    TASK_OBJ(task, 0)->_68 = 4;
+                    TASK_OBJ(task, 1)->_5C = 20 << 16;
+                    TASK_OBJ(task, 1)->_68 = 1;
+                    TASK_OBJ(task, 24)->_5C = 0;
+                    TASK_OBJ(task, 24)->_68 = 1;
+                    TASK_OBJ(task, 25)->_5C = 10 << 16;
+                    TASK_OBJ(task, 25)->_68 = 4;
+                    TASK_OBJ(task, 18)->_5C = 20 << 16;
+                    TASK_OBJ(task, 18)->_68 = 4;
+                    TASK_OBJ(task, 19)->_5C = 10 << 16;
+                    TASK_OBJ(task, 19)->_68 = 1;
+                    fn_800626EC(port);
+                    *st = 1;
+                }
+                if (*st == 1) {
+                    done = fn_80042DA8(task, 0, 20) != 0;
+                    done += fn_80042DA8(task, 1, 30) != 0;
+                    done += fn_80042DA8(task, 0x12, 10) != 0;
+                    if (done + (fn_80042DA8(task, 0x13, 20) != 0) == 4) {
+                        fn_80062674(port);
+                        *st = 2;
+                    }
+                }
+            }
+            break;
+        case 0x41:
+            if (*st == 0) {
+                TASK_OBJ(task, port)->_5C = 20 << 16;
+                TASK_OBJ(task, port)->_68 = 1;
+                TASK_OBJ(task, port + 0x18)->_5C = 10 << 16;
+                TASK_OBJ(task, port + 0x18)->_68 = 4;
+                TASK_OBJ(task, port + 0x12)->_5C = 10 << 16;
+                TASK_OBJ(task, port + 0x12)->_68 = 1;
+                fn_800626EC(port);
+                *st = 1;
+            }
+            if (*st == 1) {
+                done = fn_80042D68(task, port, 30) != 0;
+                if (done + (fn_80042D68(task, port + 0x12, 20) != 0) == 2) {
+                    lbl_803297E0._CF50[port] = 0;
+                    fn_80062674(port);
+                    *st = 2;
+                }
+            }
+            break;
+        case 0x42:
+            if (*st == 0) {
+                TASK_OBJ(task, port)->_5C = 30 << 16;
+                TASK_OBJ(task, port)->_68 = 4;
+                TASK_OBJ(task, port + 0x18)->_5C = 0;
+                TASK_OBJ(task, port + 0x18)->_68 = 1;
+                TASK_OBJ(task, port + 0x12)->_5C = 20 << 16;
+                TASK_OBJ(task, port + 0x12)->_68 = 4;
+                fn_800626EC(port);
+                *st = 1;
+            }
+            if (*st == 1) {
+                done = fn_80042DA8(task, port, 20) != 0;
+                if (done + (fn_80042DA8(task, port + 0x12, 10) != 0) == 2) {
+                    fn_80062674(port);
+                    *st = 2;
+                }
+            }
+            break;
+        case 0x43:
+            fn_8005C5C4(task, port);
+            if (*st == 1) {
+                done = 0;
+                expected = 0;
+                if (g_d_GameSettings._06 != 2) {
+                    if (g_d_GameSettings.GameModeSelected == 5) {
+                        done = fn_80042DA8(task, 0, 0) != 0;
+                        expected = 2;
+                        done += fn_80042DA8(task, 1, 0) != 0;
+                    } else if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+                        if (port != 0) {
+                            expected = 1;
+                            done = fn_80042DA8(task, port, 0) != 0;
+                        } else {
+                            expected = 1;
+                            done = fn_80042DA8(task, port, 50) != 0;
+                        }
+                    } else if ((TASK_OBJ(task, port)->_5C >> 16) >= 30) {
+                        expected = 1;
+                        done = fn_80042DA8(task, port, 50) != 0;
+                    } else {
+                        expected = 1;
+                        done = fn_80042DA8(task, port, 0) != 0;
+                    }
+                }
+                if (done == expected) {
+                    fn_80062674(port);
+                    *st = 2;
+                }
+            }
+            break;
+        case 0x44:
+            if (*st == 0) {
+                s8 prev = lbl_803297E0._CF3E[port];
+                s32 cur = lbl_803297E0.selected[port] - 1;
+                if (lbl_803297E0._CF52[port] == 0) {
+                    if (prev != -1 && prev != cur) {
+                        TASK_OBJ(task, prev + port * 9 + 0x1C)->_5C = 10 << 16;
+                        TASK_OBJ(task, prev + port * 9 + 0x1C)->_68 = 4;
+                        TASK_OBJ(task, prev + port * 9 + 0x40)->_5C = 10 << 16;
+                        TASK_OBJ(task, prev + port * 9 + 0x40)->_68 = 4;
+                    }
+                } else {
+                    s8 curPos = lbl_80354720[port][cur].pos;
+                    s8 prevPos = 0;
+                    if (prev != -1) { // the original reads it unconditionally
+                        prevPos = lbl_80354720[port][prev].pos;
+                    }
+                    if (g_d_GameSettings._06 != 2) {
+                        if (prev != -1 && prevPos != curPos) {
+                            TASK_OBJ(task, prevPos + port * 9 + 0x10A)->_68 = 4;
+                            TASK_OBJ(task, prevPos + port * 9 + 0xF8)->_68 = 4;
+                        }
+                    } else if (prev != -1 && prevPos != curPos) {
+                        TASK_OBJ(task, prevPos + 0x23)->_68 = 4;
+                        TASK_OBJ(task, prevPos + 0x1A)->_68 = 4;
+                    }
+                }
+                lbl_803297E0._CF3E[port] = 0xFF;
+                fn_800626EC(port);
+                *st = 1;
+            }
+            if (*st == 1) {
+                fn_80062674(port);
+                *st = 2;
+            }
+            break;
+        case 0x45: {
+            u8 any = FALSE;
+            if (lbl_803C66B0.steps[9][1] == 0) {
+                for (j = 0; j < 9; j++) {
+                    s8 got = gChallengeState.trackers[inMemRoster[1][j].stats.CharID].scoutFlagsAchieved;
+                    for (k = 0; k < got; k++) {
+                        any = TRUE;
+                        TASK_OBJ(task, k + j * 5 + 0x16D)->_68 = 1;
+                    }
+                }
+                if (any) {
+                    if (g_d_GameSettings._06 == 2) {
+                        sndFXStartEx(0x1B1, 0x7F, 0x3F, 0);
+                    } else {
+                        sndFXStartEx(0x1E6, 0x7F, 0x3F, 0);
+                    }
+                }
+                fn_800626EC(0);
+                lbl_803C66B0.steps[9][1] = 1;
+            }
+            if (lbl_803C66B0.steps[9][1] == 1) {
+                fn_80062674(0);
+                lbl_803C66B0.steps[9][1] = 2;
+            }
+            break;
+        }
+        case 0x46:
+            TASK_OBJ(task, 466)->flags |= 2;
+            TASK_OBJ(task, 466)->_68 = 1;
+            lbl_803C66B0.step[0] = 0;
+            break;
+        }
+        fn_8005A350(task, port);
+    }
+    if (lbl_803297E0._CF45 != 0) {
+        lbl_803297E0._CF45 = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
 }
+#endif
 
 // .text:0x80061B9C size:0x7D0
 // NONMATCHING 84%: the original keeps dead duplicate condition branches (inlined helpers) and different register use

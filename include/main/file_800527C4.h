@@ -30,7 +30,8 @@ typedef struct CharModelTable {
 typedef struct TutorialSteps {
     /*0x00*/ u8 steps[14][6];
     /*0x54*/ u8 _54;
-    /*0x55*/ u8 active[8];
+    /*0x55*/ u8 active[4];
+    /*0x59*/ u8 portOf[4]; // controller port of player i
     /*0x5D*/ u8 step[7];
 } TutorialSteps; // size: 0x64
 
@@ -153,7 +154,8 @@ typedef struct MenuWork {
     /*0xCF45*/ u8 _CF45;
     /*0xCF46*/ s8 selected[2]; // 1-based roster index per team
     /*0xCF48*/ s8 selected2[2];
-    /*0xCF4A*/ u8 _CF4A[8];
+    /*0xCF4A*/ u8 _CF4A[6];
+    /*0xCF50*/ u8 _CF50[2];
     /*0xCF52*/ u8 _CF52[2];
     /*0xCF54*/ u8 _CF54[2];
     /*0xCF56*/ u8 _CF56[2];
