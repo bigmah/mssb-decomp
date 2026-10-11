@@ -2953,7 +2953,7 @@ typedef struct {
     /* 0x3E */ u8 _3E[5];
     /* 0x43 */ u8 _43;
     /* 0x44 */ s16 _44[2]; // per team: times through the batting order
-    /* 0x48 */ u8 _48[4];
+    /* 0x48 */ s16 _48[2]; // per team
     /* 0x4C */ s16 _4C[2]; // per team
     /* 0x50 */ struct {
         s16 pitcher;
@@ -2964,7 +2964,11 @@ typedef struct {
     /* 0x61 */ u8 _61;
     /* 0x62 */ u8 _62;
     /* 0x63 */ u8 _63[2]; // per team
-    /* 0x65 */ u8 _65[0x8A - 0x65];
+    /* 0x65 */ u8 _65[2]; // per team
+    /* 0x67 */ u8 _67[2]; // per team
+    /* 0x69 */ u8 _69;
+    /* 0x6A */ u8 _6A[2][10]; // per team
+    /* 0x7E */ u8 _7E[0x8A - 0x7E];
     /* 0x8A */ u8 _8A;
 } lbl_3_common_bss_32A94_s;
 

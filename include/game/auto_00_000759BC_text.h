@@ -102,10 +102,10 @@ typedef struct LineScore {
     /*0x0F5*/ s8 savePitcher;
     /*0x0F6*/ u8 innings;
     /*0x0F7*/ u8 _0F7;
-    /*0x0F8*/ u8 _0F8[2];
+    /*0x0F8*/ s8 _0F8[2];
     /*0x0FA*/ s8 _0FA;
     /*0x0FB*/ s8 _0FB;
-    /*0x0FC*/ u8 _0FC;
+    /*0x0FC*/ s8 _0FC;
     /*0x0FD*/ s8 _0FD;
     /*0x0FE*/ s8 _0FE;
     /*0x0FF*/ s8 _0FF;
@@ -125,7 +125,7 @@ typedef struct PitcherGameStat {
     /*0x4*/ s8 _4;
 } PitcherGameStat; // size: 0x5
 
-// lbl_8034E9A0 + 0x4908: play-by-play log, [2 teams][100].
+// lbl_803532A8 (lbl_8034E9A0 + 0x4908): play-by-play log, [2 teams][100].
 typedef struct PlayLogEntry {
     /*0x0*/ u16 inning : 5;
     /*0x0*/ u16 batter : 4;
@@ -135,10 +135,13 @@ typedef struct PlayLogEntry {
     /*0x3*/ s8 result;
 } PlayLogEntry; // size: 0x4
 
-// lbl_8034E9A0 + 0x48C0: per-player game log, [2 teams][9].
+// lbl_80353260 (lbl_8034E9A0 + 0x48C0): per-player game log, [2 teams][9].
 typedef struct RosterLogEntry {
-    /*0x0*/ u8 _0;
-    /*0x1*/ u8 _1;
+    /*0x0*/ u8 team : 5; // 9: unused slot
+    /*0x0*/ u8 _0 : 3;
+    /*0x1*/ u8 _1a : 2;
+    /*0x1*/ u8 order : 4; // batting order 1-9, 10: pitcher not batting
+    /*0x1*/ u8 _1b : 2;
     /*0x2*/ u8 _2 : 4;
     /*0x2*/ u8 inning : 4; // inning the player entered
     /*0x3*/ u8 position : 4; // 0xA: none yet
@@ -151,12 +154,6 @@ typedef struct Lbl80354720Entry {
     /*0x3*/ u8 _3; // 1: entered this half-inning
 } Lbl80354720Entry; // size: 0x4
 
-// lbl_8034E9A0 (size 0x4C28), only the fields used here.
-typedef struct Bss8034E9A0View {
-    /*0x0000*/ u8 _0000[0x48C0];
-    /*0x48C0*/ RosterLogEntry rosterLog[2][9];
-    /*0x4908*/ PlayLogEntry playLog[2][100];
-} Bss8034E9A0View; // size: 0x4C28
 
 // lbl_3_data_60F8: MVP score weights.
 typedef struct MvpWeights {

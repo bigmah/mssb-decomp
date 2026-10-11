@@ -6,7 +6,8 @@
 
 extern ScoresView g_Scores;
 extern PitcherGameStat lbl_3_common_bss_32A38[2][9];
-extern Bss8034E9A0View lbl_8034E9A0;
+extern RosterLogEntry lbl_80353260[2][9];
+extern PlayLogEntry lbl_803532A8[2][100];
 extern Lbl80354720Entry lbl_80354720[2][9];
 extern LineScore lbl_80353A90;
 extern FielderView g_Fielders[];
@@ -295,7 +296,7 @@ void fn_3_79ACC(void) {
 
 // fn_3_7A154, size:0x9E0
 // End of a pitch: appearance flags, pitcher stats, runs charged to pitchers.
-// NONMATCHING 91%: register allocation/scheduling; original addresses lbl_8034E9A0+0x48C0 directly
+// NONMATCHING 91%: register allocation/scheduling
 #if NONMATCHING
 void fn_3_7A154(s32 inPlay) {
     s32 charge = 0;
@@ -346,7 +347,7 @@ void fn_3_7A154(s32 inPlay) {
     }
     for (i = 1; i < 10; i++) {
         RosterLogEntry* e =
-            &lbl_8034E9A0.rosterLog[g_GameLogic.teamFielding]
+            &lbl_80353260[g_GameLogic.teamFielding]
                                    [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][i][0]];
         if (e->position == 0xA) {
             e->position = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][i][1];
@@ -638,16 +639,14 @@ void fn_3_7AFE4(void) {
 
 // fn_3_7B130, size:0x1D8
 // Start of a half-inning.
-// NONMATCHING 98%: original addresses lbl_8034E9A0+0x48C0 as its own symbol; cmpwi vs cmplwi on the _3 byte
-#if NONMATCHING
 void fn_3_7B130(void) {
-    s32 t;
     s32 i;
+    s32 t;
 
     for (t = 0; t < 2; t++) {
         for (i = 0; i < 9; i++) {
-            if (lbl_80354720[t][i]._3 == 1) {
-                lbl_8034E9A0.rosterLog[t][i].inning = g_Scores.inning;
+            if ((s32)lbl_80354720[t][i]._3 == 1) {
+                lbl_80353260[t][i].inning = g_Scores.inning;
             }
         }
     }
@@ -676,7 +675,7 @@ void fn_3_7B130(void) {
                           [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]]
                               ._2 = 0;
 }
-#endif
+
 
 // fn_3_7BB74, size:0x4C
 BattingRecord* fn_3_7BB74(void) {

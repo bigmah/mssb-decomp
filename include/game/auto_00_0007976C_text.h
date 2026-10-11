@@ -19,6 +19,7 @@ void fn_3_7AEEC(void);
 void fn_3_7AF68(void);
 void fn_3_7AFE4(void);
 void fn_3_7B130(void);
+void fn_3_7B308(void);
 BattingRecord* fn_3_7BB74(void);
 PitchingRecord* fn_3_7BBC0(void);
 void fn_3_7BBF8(void);

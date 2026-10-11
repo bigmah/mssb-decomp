@@ -12,7 +12,8 @@ extern ScoresView g_Scores;
 extern RunningLogicView g_RunningLogic;
 extern FielderView g_Fielders[];
 extern Bss37400View lbl_3_common_bss_37400;
-extern Bss8034E9A0View lbl_8034E9A0;
+extern RosterLogEntry lbl_80353260[2][9];
+extern PlayLogEntry lbl_803532A8[2][100];
 extern MvpWeights lbl_3_data_60F8;
 extern u8 lbl_80354768[];
 extern u8 lbl_800E8558[];
@@ -414,7 +415,7 @@ void fn_3_76C78(void) {
 
 // .text:0x00076D08 size:0xC0C mapped:0x806B5D9C
 // Records the result of a plate appearance in the box score and play log.
-// NONMATCHING 93%: register allocation; original addresses lbl_8034E9A0+0x4908 directly
+// NONMATCHING 94%: register allocation
 #if NONMATCHING
 void fn_3_76D08(s32 batterSlot, s32 result, u8 detail, s32 rbi) {
     BattingRecord* bat;
@@ -438,7 +439,7 @@ void fn_3_76D08(s32 batterSlot, s32 result, u8 detail, s32 rbi) {
     idx = g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] +
           (lbl_3_common_bss_32A94._44[g_GameLogic.homeTeamBattingInd_fieldingTeam] - 1) * 9 - 1;
     if (idx >= 100) {
-        log = lbl_8034E9A0.playLog[g_GameLogic.teamBatting];
+        log = lbl_803532A8[g_GameLogic.teamBatting];
         for (i = 0; i < 99; i++) {
             lbl_3_common_bss_32888[g_GameLogic.teamBatting][i] = lbl_3_common_bss_32888[g_GameLogic.teamBatting][i + 1];
             log[i].inning = log[i + 1].inning;
@@ -450,7 +451,7 @@ void fn_3_76D08(s32 batterSlot, s32 result, u8 detail, s32 rbi) {
         }
         idx = 99;
     }
-    log = &lbl_8034E9A0.playLog[g_GameLogic.teamBatting][idx];
+    log = &lbl_803532A8[g_GameLogic.teamBatting][idx];
     log->inning = g_Scores.inning;
     log->batter = g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam];
     log->batterSlot = batterSlot;
@@ -462,11 +463,11 @@ void fn_3_76D08(s32 batterSlot, s32 result, u8 detail, s32 rbi) {
     if (result == 10) {
         dist = fn_3_9FB8C(g_Ball.landingSpotLocation.x, g_Ball.landingSpotLocation.z);
         if (dist < 0x380) {
-            lbl_8034E9A0.playLog[g_GameLogic.teamBatting][idx].detail = 8;
+            lbl_803532A8[g_GameLogic.teamBatting][idx].detail = 8;
         } else if (dist < 0x480) {
-            lbl_8034E9A0.playLog[g_GameLogic.teamBatting][idx].detail = 7;
+            lbl_803532A8[g_GameLogic.teamBatting][idx].detail = 7;
         } else {
-            lbl_8034E9A0.playLog[g_GameLogic.teamBatting][idx].detail = 6;
+            lbl_803532A8[g_GameLogic.teamBatting][idx].detail = 6;
         }
     }
 
