@@ -985,9 +985,33 @@ void fn_800317C4(Emitter* e, Vec* pos, ParticleParams5* prm) {
 #endif
 
 // .text:0x80031CA4 size:0x290
-void fn_80031CA4(void) {
-    return;
+// NONMATCHING 98%: register allocation in the inlined allocations
+#if NONMATCHING
+void fn_80031CA4(Vec* pos, ParticleParams5* prm) {
+    Emitter tmp;
+    Emitter* e = FindEmitter(NULL, 5);
+    Emitter* t;
+    Particle* last;
+
+    if (e != NULL) {
+        // add another ring to the running emitter
+        t = AllocParticles(&tmp, prm->count, 1);
+        if (t != NULL) {
+            fn_800317C4(t, pos, prm);
+            for (last = e->particles; last->next != NULL; last = last->next) {
+            }
+            last->next = t->particles;
+            e->count += t->count;
+        }
+    } else {
+        e = NewEmitter(fn_80031034, 0x11, 0, prm->count, 1, 5);
+        if (e != NULL) {
+            e->u.t5.unk18 = 0;
+            fn_800317C4(e, pos, prm);
+        }
+    }
 }
+#endif
 
 // .text:0x80031F34 size:0x104
 // NONMATCHING 62%: the original keeps n and the countdown copy in separate saved regs
