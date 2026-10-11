@@ -47,7 +47,11 @@ s32 fn_8000FA9C(s32 index) {
 
 // .text:0x8000FD54 size:0x24
 void fn_8000FD54(s32 index, s16 a, s16 b, s16 c, s16 d) {
-    return;
+    TextEntry* e = &lbl_80366B18.entries[index];
+    e->strings[0] = a;
+    e->strings[1] = b;
+    e->strings[2] = c;
+    e->strings[3] = d;
 }
 
 // .text:0x8000FD78 size:0x24
