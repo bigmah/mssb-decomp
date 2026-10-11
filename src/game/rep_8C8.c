@@ -22,6 +22,7 @@ extern u8 lbl_3_data_1AB0[];
 extern f32 lbl_3_data_19CC[];
 extern f32 lbl_3_data_19DC[];
 extern f32 lbl_3_data_1A04[];
+extern f32 lbl_3_data_1A0C[]; // [0] max box-move speed, [1] acceleration
 extern u8 lbl_3_data_1A24[];
 extern u8 lbl_3_data_1A28[];
 extern u8 lbl_3_data_1A3C[];
@@ -270,7 +271,115 @@ void fn_3_1F478(void) {
 
 // .text:0x0001F998 size:0x3F4 mapped:0x8065EA2C
 void fn_3_1F998(void) {
-    return;
+    BatterReachStruct* reach = &BatterHitbox[g_Batter.charID];
+    f32* speed = lbl_3_data_1A0C;
+    f32 r;
+    f32 x;
+
+    if (g_GameLogic.secondaryGameMode == 0xD) {
+        return;
+    }
+    if (g_Pitcher.windupCountdownUntilBallReleased <= lbl_3_data_1A3C[g_AiLogic.aIBatterDifficulty]) {
+        fn_3_1F478();
+    } else if (g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch == 3) {
+        g_AiLogic.batterAIDesiredXPosInBox = g_AiLogic.boxHorizontalPoint;
+    } else if (g_Batter.characterClass == 2) {
+        if (g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch != 1) {
+            if (g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch == 2 && g_AiLogic._6B != 0) {
+                g_AiLogic._6B -= 1;
+            } else {
+                g_AiLogic.batterAIDesiredXPosInBox = RandomF32_Game_Range(lbl_3_data_19DC[0], lbl_3_data_19DC[9]);
+                r = RandomF32_Game_Range(lbl_3_data_1A04[1], lbl_3_data_1A04[0] + lbl_3_data_1A04[0]);
+                if (RandomInt_Game(2) != 0) {
+                    g_AiLogic.batterAIDesiredXPosInBox += r;
+                } else {
+                    g_AiLogic.batterAIDesiredXPosInBox -= r;
+                }
+                if (g_AiLogic.batterAIDesiredXPosInBox < -lbl_3_data_1A04[0]) {
+                    g_AiLogic.batterAIDesiredXPosInBox = -lbl_3_data_1A04[0];
+                } else if (g_AiLogic.batterAIDesiredXPosInBox > lbl_3_data_1A04[0]) {
+                    g_AiLogic.batterAIDesiredXPosInBox = lbl_3_data_1A04[0];
+                }
+                g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch = 1;
+                g_AiLogic._6B = RandomInt_Game(0x2D) + 0xF;
+            }
+        }
+    } else if (g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch == 0) {
+        g_AiLogic.batterAIDesiredXPosInBox = RandomF32_Game_Range(lbl_3_data_19DC[g_AiLogic.batterAIInd9PrincessStarHit * 2 + 2], lbl_3_data_19DC[g_AiLogic.batterAIInd9PrincessStarHit * 2 + 3]);
+        g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch = 1;
+    }
+
+    if (g_AiLogic.batterAIDesiredXPosInBox < g_AiLogic.boxHorizontalPoint) {
+        g_AiLogic.batterAIBoxPosXVelo -= speed[1];
+        if (g_AiLogic.batterAIBoxPosXVelo < -speed[0]) {
+            g_AiLogic.batterAIBoxPosXVelo = -speed[0];
+        }
+        g_AiLogic.boxHorizontalPoint += g_AiLogic.batterAIBoxPosXVelo;
+        if (g_AiLogic.batterAIDesiredXPosInBox > g_AiLogic.boxHorizontalPoint) {
+            g_AiLogic.boxHorizontalPoint = g_AiLogic.batterAIDesiredXPosInBox;
+        }
+    } else if (g_AiLogic.batterAIDesiredXPosInBox > g_AiLogic.boxHorizontalPoint) {
+        g_AiLogic.batterAIBoxPosXVelo += speed[1];
+        if (g_AiLogic.batterAIBoxPosXVelo > speed[0]) {
+            g_AiLogic.batterAIBoxPosXVelo = speed[0];
+        }
+        g_AiLogic.boxHorizontalPoint += g_AiLogic.batterAIBoxPosXVelo;
+        if (g_AiLogic.batterAIDesiredXPosInBox < g_AiLogic.boxHorizontalPoint) {
+            g_AiLogic.boxHorizontalPoint = g_AiLogic.batterAIDesiredXPosInBox;
+        }
+    } else {
+        g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch = 2;
+        g_AiLogic.batterAIBoxPosXVelo = 0.0f;
+    }
+    if (g_AiLogic.boxHorizontalPoint < reach->HorizontalRangeNear) {
+        g_AiLogic.boxHorizontalPoint = reach->HorizontalRangeNear;
+    }
+    if (g_AiLogic.boxHorizontalPoint > reach->HorizontalRangeFar) {
+        g_AiLogic.boxHorizontalPoint = reach->HorizontalRangeFar;
+    }
+
+    if (g_AiLogic.batterAIDesiredZPosInBox < g_AiLogic.boxVerticalPoint) {
+        g_AiLogic.batterAIBoxPosZVelo -= speed[1];
+        if (g_AiLogic.batterAIBoxPosZVelo < -speed[0]) {
+            g_AiLogic.batterAIBoxPosZVelo = -speed[0];
+        }
+        g_AiLogic.boxVerticalPoint += g_AiLogic.batterAIBoxPosZVelo;
+        if (g_AiLogic.batterAIDesiredZPosInBox > g_AiLogic.boxVerticalPoint) {
+            g_AiLogic.boxVerticalPoint = g_AiLogic.batterAIDesiredZPosInBox;
+        }
+    } else if (g_AiLogic.batterAIDesiredZPosInBox > g_AiLogic.boxVerticalPoint) {
+        g_AiLogic.batterAIBoxPosZVelo += speed[1];
+        if (g_AiLogic.batterAIBoxPosZVelo > speed[0]) {
+            g_AiLogic.batterAIBoxPosZVelo = speed[0];
+        }
+        g_AiLogic.boxVerticalPoint += g_AiLogic.batterAIBoxPosZVelo;
+        if (g_AiLogic.batterAIDesiredZPosInBox < g_AiLogic.boxVerticalPoint) {
+            g_AiLogic.boxVerticalPoint = g_AiLogic.batterAIDesiredZPosInBox;
+        }
+    } else {
+        g_AiLogic.batterAIBoxPosZVelo = 0.0f;
+    }
+    if (g_AiLogic.boxVerticalPoint < reach->VerticalRangeFront) {
+        g_AiLogic.boxVerticalPoint = reach->VerticalRangeFront;
+    }
+    if (g_AiLogic.boxVerticalPoint > reach->VerticalRangeBack) {
+        g_AiLogic.boxVerticalPoint = reach->VerticalRangeBack;
+    }
+
+    {
+        f32 v;
+        f32 h;
+        h = g_AiLogic.boxHorizontalPoint;
+        v = g_AiLogic.boxVerticalPoint;
+        x = h + reach->batOffsetFromBatterX;
+        g_Batter.batPosition2.x = h;
+        g_Batter.batPosition2.z = v;
+        g_Batter.batterPos.x = x;
+        g_Batter.batterPos.z = v + reach->batOffsetFromBatterZ;
+    }
+    if (g_Batter.batterHand != 0) {
+        g_Batter.batterPos.x = -x;
+    }
 }
 
 // .text:0x0001FD8C size:0x1BC mapped:0x8065EE20
