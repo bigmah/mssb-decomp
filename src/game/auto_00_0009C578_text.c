@@ -64,8 +64,8 @@ void fn_3_9C794(void) {
     s32 i;
 
     changed = FALSE;
-    fielding = g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs;
-    batting = g_Scores.team[g_GameLogic.awayTeamBattingInd_battingTeam].runs;
+    fielding = g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0];
+    batting = g_Scores.team[g_GameLogic.awayTeamBattingInd_battingTeam].runs[0];
     before = g_Scores._A0;
     if (g_Scores._C2 == 0) {
         return;
