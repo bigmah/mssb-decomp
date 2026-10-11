@@ -902,8 +902,49 @@ void fn_2_62110(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x000623AC size:0x204
-void fn_2_623AC(void) {
-    return;
+void fn_2_623AC(MenuTask* task, MenuItem* item) {
+    MenuData* data;
+    s16 mode;
+    GameInitVariables* settings = &g_d_GameSettings;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+    case 0x11:
+        data = lbl_2_bss_1A824C;
+        mode = data->_1976FA;
+        if (mode == 6 && settings->_12 <= 1) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+            item->state = 0x25;
+        } else {
+            if (mode == 6) {
+                lbl_80371C30[task->baseIdx + item->sprite].obj->_5C =
+                    fn_8006C100(data->records[mode + 1][item->_0A].value) << 16;
+                lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+            } else {
+                lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+            }
+            item->state = 0x25;
+        }
+        break;
+    case 5:
+        item->timer = 26;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x000625B0 size:0x244
