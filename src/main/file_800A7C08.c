@@ -420,9 +420,19 @@ void* fn_800ACF34(s32 align, s32 size) {
 #endif
 
 // .text:0x800ACF78 size:0x38
-void fn_800ACF78(void) {
-    return;
+// NONMATCHING 96%: register allocation (base/total/diff registers rotated)
+#if NONMATCHING
+void fn_800ACF78(void* block, s32 size) {
+    HeapArena* heap;
+    u8* base = ((HeapBlockHeader*)block)[-1].prev;
+    s32 total;
+    heap = &lbl_803C7898;
+    total = ((size + 3) & ~3) + ((u8*)block - base);
+    heap->lo = base + total;
+    heap->freeSize = heap->hi - heap->lo;
+    ((HeapBlockHeader*)block)[-1].size = total;
 }
+#endif
 
 // .text:0x800ACFB0 size:0x20
 void fn_800ACFB0(void* block) {
