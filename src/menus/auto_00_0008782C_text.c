@@ -838,7 +838,80 @@ void fn_2_8A008(SceneTask* task) {
 
 // .text:0x0008A824 size:0x3D8
 void fn_2_8A824(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    s32 done;
+    s32 total;
+    s32 i;
+    ChallengeState* save;
+
+    switch (lbl_2_bss_33FBCC.anim) {
+    case 0x49:
+        fn_2_89038(task);
+        break;
+    case 0x4A:
+        fn_2_88D90(task);
+        break;
+    case 0x4B:
+        fn_2_887F8(task);
+        break;
+    case 0x4C:
+        fn_2_883C8(task);
+        break;
+    case 0x4D:
+        fn_2_88250(task);
+        break;
+    case 0x4E:
+        fn_2_87FB0(task);
+        break;
+    case 0x4F:
+        fn_2_87998(task);
+        break;
+    case 0x50:
+        if ((lbl_2_bss_33FBCC.animStarted == 0) ? TRUE : FALSE) {
+            fn_2_8A008(task);
+            lbl_2_bss_33FBCC.animStarted = 1;
+            lbl_2_bss_33FBCC.animRunning = 1;
+        }
+        if ((lbl_2_bss_33FBCC.animRunning == 1) ? TRUE : FALSE) {
+            done = 0;
+            total = 0;
+            for (i = 0; i < 3; i++) {
+                if (lbl_80354768._CF5E[i] != 0) {
+                    save = CHALLENGE_SAVE(i);
+                    if (save->_444B != -1) {
+                        total++;
+                        done += fn_80042DA8(task, i + 0x32, 0xA) != 0;
+                    } else if (save->_1606 == 0) {
+                        total++;
+                        done += fn_80042DA8(task, i + 0x35, 0xE) != 0;
+                    }
+                }
+            }
+            if (done == total) {
+                lbl_2_bss_33FBCC.anim = 0;
+                lbl_2_bss_33FBCC.animStarted = 0;
+                lbl_2_bss_33FBCC.animRunning = 0;
+            }
+        }
+        break;
+    }
+
+    for (i = 0; i < 3; i++) {
+        if (lbl_2_bss_F410.slot == i) {
+            SLOT_OBJ(task, i, 0x3F)->flags |= 2;
+        } else {
+            SLOT_OBJ(task, i, 0x3F)->flags &= ~2;
+        }
+    }
+
+    if (lbl_2_bss_33FBCC.done) {
+        lbl_2_bss_33FBCC.done = 0;
+        lbl_2_bss_33FBCC.anim = 0;
+        lbl_2_bss_33FBCC.animStarted = 0;
+        lbl_2_bss_33FBCC.animRunning = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        lbl_8034E978[3] = 0;
+    }
 }
 
 // .text:0x0008ABFC size:0x88
