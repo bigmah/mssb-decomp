@@ -64,13 +64,59 @@ extern u8 lbl_803CBCA1;
 extern u8 lbl_803CBCA2[6];
 
 // .text:0x80037054 size:0x2C8
-void fn_80037054(RigidBody* rb, RigidBodyParams* params) {
-    return;
+s32 fn_80037054(RigidBody* rb, RigidBodyParams* params) {
+    RigidBody b;
+    Vec dpos;
+    Vec dvel;
+    Vec w;
+    Quaternion q;
+    f32 maxAngVel;
+    f32 time;
+
+    time = lbl_803CC720;
+    rb->unk150 = rb->dt;
+    memcpy(&b, rb, sizeof(RigidBody));
+    do {
+        fn_8003731C(&b, params);
+        PSVECScale(&b.force, b.invMass * b.unk150, &dvel);
+        PSVECAdd(&b.vel, &dvel, &b.vel);
+        PSVECScale(&b.vel, b.unk150, &dpos);
+        PSVECAdd(&b.pos, &dpos, &b.pos);
+        maxAngVel = params->unk1C / lbl_803CC724;
+        w.x = b.inertia.x * b.angVel.x;
+        w.y = b.inertia.y * b.angVel.y;
+        w.z = b.inertia.z * b.angVel.z;
+        PSVECCrossProduct(&b.angVel, &w, &w);
+        PSVECSubtract(&b.torque, &w, &w);
+        w.x = w.x * b.invInertia.x;
+        w.y = w.y * b.invInertia.y;
+        w.z = w.z * b.invInertia.z;
+        PSVECScale(&w, b.unk150, &w);
+        PSVECAdd(&b.angVel, &w, &b.angVel);
+        if (maxAngVel != lbl_803CC728) {
+            f32 mag = PSVECMag(&b.angVel);
+            if (mag > maxAngVel) {
+                PSVECScale(&b.angVel, maxAngVel / mag, &b.angVel);
+            }
+        }
+        memcpy(&q, &b.angVel, sizeof(Vec));
+        q.w = lbl_803CC728;
+        PSQUATMultiply(&b.quat, &q, &q);
+        PSQUATScale(&q, lbl_803CC72C * b.unk150, &q);
+        PSQUATAdd(&b.quat, &q, &b.quat);
+        PSMTXQuat(b.rot, &b.quat);
+        PSMTXInverse(b.rot, b.invRot);
+        PSMTXTransApply(b.rot, b.world, b.pos.x, b.pos.y, b.pos.z);
+        PSMTXMultVec(b.invRot, &b.vel, &b.velLocal);
+        time -= b.unk150;
+    } while (time > lbl_803CC728);
+    memcpy(rb, &b, sizeof(RigidBody));
+    return 0;
 }
 
 // .text:0x8003731C size:0x44C
-void fn_8003731C(RigidBody* rb, RigidBodyParams* params) {
-    return;
+s32 fn_8003731C(RigidBody* rb, RigidBodyParams* params) {
+    return 0;
 }
 
 // .text:0x80037768 size:0x1FC
