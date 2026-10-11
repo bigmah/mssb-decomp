@@ -12,7 +12,8 @@ typedef struct {
     /*0x10*/ u8 _10[0xC];
     /*0x1C*/ u8 _1C;
     /*0x1D*/ u8 _1D;
-    /*0x1E*/ u8 _1E[2];
+    /*0x1E*/ u8 _1E;
+    /*0x1F*/ u8 _1F;
     /*0x20*/ u8 _20;
     /*0x21*/ u8 resetRequested; // hard reset (OSResetSystem restart)
     /*0x22*/ u8 _22;
@@ -23,7 +24,8 @@ typedef struct {
     /*0x27*/ u8 _27;
     /*0x28*/ u8 _28;
     /*0x29*/ u8 _29;
-    /*0x2A*/ u8 _2A[6];
+    /*0x2A*/ u8 _2A; // logo screen state (0: loading, 2: done)
+    /*0x2B*/ u8 _2B[5];
 } lbl_80366158_s; // size: 0x30
 
 extern lbl_80366158_s lbl_80366158;
