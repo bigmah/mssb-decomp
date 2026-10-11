@@ -219,5 +219,6 @@ void fn_1_1F618(ChallengeTextureStages* stages);
 void fn_1_1E5D0(ChallengeProjectionState* body);
 void fn_1_25C68(void);
 s16 fn_1_1E290(s16 sel, u16 held, u16 pressed, u16 repeat);
+s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat);
 
 #endif

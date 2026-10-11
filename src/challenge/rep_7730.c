@@ -747,7 +747,6 @@ void fn_1_24A8C(void) {
     fn_80038CD0(q[0x2B], &lbl_1_bss_45868, lbl_1_bss_43F68, lbl_1_rodata_7808[0], *(u16*)(q + 0x24) * lbl_1_rodata_78C4[0]);
 }
 
-extern s16 fn_1_1E90C(s16, u16, u16, u16);
 extern void fn_1_26D28(void*, u16, u16, u16, void*);
 extern void fn_1_27330(void*);
 extern void fn_80037BAC(void*);
@@ -1686,3 +1685,117 @@ s16 fn_1_1E290(s16 sel, u16 held, u16 pressed, u16 repeat) {
     }
     return sel;
 }
+
+extern s16 (*lbl_1_data_10668[])(s16, u16, u16, u16);
+extern s32 lbl_1_data_10670[];
+
+#if NONMATCHING
+static inline f32 fn_1_1E90C_adjust(f32 value, u16 held, s32 decrease, f32 min, f32 max) {
+    f32 v;
+    f32 step;
+
+    step = lbl_1_rodata_77F8;
+    if (held & 0x40) {
+        step = lbl_1_rodata_77FC;
+    } else if (held & 0x20) {
+        step = lbl_1_rodata_7800;
+    }
+    if (decrease) {
+        step = -step;
+    }
+    v = value + step;
+    if (v < min) {
+        v = min;
+    }
+    if (v > max) {
+        v = max;
+    }
+    return v;
+}
+#endif
+
+// NONMATCHING 98%: f0/f1 swapped in the inlined step/clamp helper (orig negates into a fresh reg), r0/r4 in the modulo paths
+// .text:0x1E90C size:0x6E8
+#if NONMATCHING
+s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat) {
+    f32 length = *(f32*)(lbl_803CC1B8[0] + 0x14);
+    f32 frac = *(f32*)(lbl_803CC1B8[0] + 0x18);
+    f32 radius = *(f32*)(lbl_803CC1B8[0] + 0x1C);
+    f32 mass = *(f32*)(lbl_803CC1B8[0] + 0x20);
+    f32 height = *(f32*)(lbl_803CC1B8[0] + 0x24);
+    s16 sub;
+
+    sub = lbl_1_data_10668[*(s32*)(lbl_803CC1B8[0] + 0x28)]((s16)(sel - 8), held, pressed, repeat) + 8;
+    if (sel != sub) {
+        s32 n = lbl_1_data_10670[*(s32*)(lbl_803CC1B8[0] + 0x28)] + 8;
+        sel = (sub + n) % n;
+    } else if (pressed & 0x100) {
+        switch (sel) {
+        case 0:
+            break;
+        case 1:
+            fn_1_1F23C(&lbl_1_bss_6BF4);
+            break;
+        case 2:
+            *(u32*)(lbl_803CC1B8[0] + 0x2C) ^= 4;
+            break;
+        case 3:
+            break;
+        }
+    } else if (repeat & 1) {
+        switch (sel) {
+        case 0:
+            *(s32*)(lbl_803CC1B8[0] + 0x28) = (*(s32*)(lbl_803CC1B8[0] + 0x28) + 7) % 8;
+            break;
+        case 3:
+            length = fn_1_1E90C_adjust(length, held, 1, lbl_1_rodata_77E4, lbl_1_rodata_7808[0]);
+            break;
+        case 4:
+            frac = fn_1_1E90C_adjust(frac, held, 1, lbl_1_rodata_77D8, lbl_1_rodata_77E4);
+            break;
+        case 5:
+            radius = fn_1_1E90C_adjust(radius, held, 1, lbl_1_rodata_77E4, lbl_1_rodata_7808[0]);
+            break;
+        case 7:
+            height = fn_1_1E90C_adjust(height, held, 1, lbl_1_rodata_77D8, lbl_1_rodata_7808[0]);
+            break;
+        }
+    } else if (repeat & 2) {
+        switch (sel) {
+        case 0:
+            *(s32*)(lbl_803CC1B8[0] + 0x28) = (*(s32*)(lbl_803CC1B8[0] + 0x28) + 1) % 8;
+            break;
+        case 3:
+            length = fn_1_1E90C_adjust(length, held, 0, lbl_1_rodata_77E4, lbl_1_rodata_7808[0]);
+            break;
+        case 4:
+            frac = fn_1_1E90C_adjust(frac, held, 0, lbl_1_rodata_77D8, lbl_1_rodata_77E4);
+            break;
+        case 5:
+            radius = fn_1_1E90C_adjust(radius, held, 0, lbl_1_rodata_77E4, lbl_1_rodata_7808[0]);
+            break;
+        case 6:
+            mass = fn_1_1E90C_adjust(mass, held, 0, lbl_1_rodata_77D8, lbl_1_rodata_7808[0]);
+            break;
+        case 7:
+            height = fn_1_1E90C_adjust(height, held, 0, lbl_1_rodata_77D8, lbl_1_rodata_7808[0]);
+            break;
+        }
+    } else if (repeat & 8) {
+        if (sel < 8) {
+            s32 n = lbl_1_data_10670[*(s32*)(lbl_803CC1B8[0] + 0x28)];
+            sel = (n + sel + 7) % (n + 8);
+        }
+    } else if (repeat & 4) {
+        if (sel < 8) {
+            sel = (sel + 1) % (lbl_1_data_10670[*(s32*)(lbl_803CC1B8[0] + 0x28)] + 8);
+        }
+    }
+    *(f32*)(lbl_803CC1B8[0] + 0x14) = length;
+    *(f32*)(lbl_803CC1B8[0] + 0x18) = frac;
+    *(f32*)(lbl_803CC1B8[0] + 0x1C) = radius;
+    *(f32*)(lbl_803CC1B8[0] + 0x20) = mass;
+    *(f32*)(lbl_803CC1B8[0] + 0x24) = height;
+    return sel;
+}
+#endif
