@@ -400,6 +400,178 @@ void fn_2_47B24(u16* count) {
 #include "musyx/musyx.h"
 extern u8 lbl_800EFBA4[];
 
+// .text:0x46D94 size:0x530
+// Move a list cursor with the d-pad: 4/8 step the cursor down/up (scrolling the
+// page when it leaves the visible window), 0x20/0x40 page down/up.
+// flags: 1 wrap, 2 wrap pages, 4 last page may be partial, 8 no paging, 0x10 silent.
+void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags) {
+    s16 last;
+    s32 rem;
+    s16 max;
+    s32 v;
+    s16 step;
+    s16 back;
+    u8* pad;
+    u32 partial;
+
+    if (count == 0) {
+        return;
+    }
+    if ((page == 0) | (count < page)) {
+        page = count;
+    }
+    rem = count % page;
+    if (rem != 0) {
+        last = rem;
+    } else {
+        last = page;
+    }
+    partial = flags & 4;
+    if (partial) {
+        max = count - last;
+    } else {
+        max = count - page;
+    }
+    pad = (u8*)&lbl_803C77B8;
+    pad += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+    switch (*(u16*)(pad + 4)) {
+    case 0x8:
+        if (scroll != NULL) {
+            *sel = v = (s16)(*sel - 1);
+            if (v < 0) {
+                if (*scroll != 0) {
+                    *scroll -= 1;
+                    if (!(flags & 0x10)) {
+                        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                    }
+                } else if (flags & 1) {
+                    if (partial) {
+                        *sel = last - 1;
+                    } else {
+                        *sel = page - 1;
+                    }
+                    *scroll = max;
+                    if (!(flags & 0x10)) {
+                        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                    }
+                    break;
+                }
+                *sel += 1;
+            } else if (!(flags & 0x10)) {
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        } else {
+            *sel = v = (s16)(*sel - 1);
+            if (v < 0) {
+                if (flags & 1) {
+                    *sel = count - 1;
+                    if (!(flags & 0x10)) {
+                        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                    }
+                } else {
+                    *sel += 1;
+                }
+            } else if (!(flags & 0x10)) {
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+        break;
+    case 0x4:
+        if (scroll != NULL) {
+            if (*sel + *scroll >= count - 1) {
+                if (*scroll < max) {
+                    *scroll += 1;
+                    *sel -= 1;
+                } else if (flags & 1) {
+                    *sel = 0;
+                    *scroll = 0;
+                } else {
+                    break;
+                }
+                if (!(flags & 0x10)) {
+                    sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                }
+            } else if (*sel >= page - 1) {
+                if (*scroll < max) {
+                    *scroll += 1;
+                } else if (flags & 1) {
+                    *sel = 0;
+                    *scroll = 0;
+                } else {
+                    break;
+                }
+                if (!(flags & 0x10)) {
+                    sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                }
+            } else {
+                *sel += 1;
+                if (!(flags & 0x10)) {
+                    sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                }
+            }
+        } else {
+            if (++*sel >= count) {
+                if (flags & 1) {
+                    *sel = 0;
+                } else {
+                    *sel -= 1;
+                    break;
+                }
+            }
+            if (!(flags & 0x10)) {
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+        break;
+    case 0x20:
+        if (!(flags & 8) && scroll != NULL && count > page) {
+            v = *scroll;
+            step = page - v % page;
+            if (v == max) {
+                if (flags & 2) {
+                    *scroll = 0;
+                } else {
+                    *scroll = max;
+                    return;
+                }
+            } else {
+                *scroll = v = (s16)(v + step);
+                if (v > max) {
+                    *scroll = max;
+                }
+            }
+            *sel = 0;
+            if (!(flags & 0x10)) {
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            }
+        }
+        break;
+    case 0x40:
+        if (!(flags & 8) && scroll != NULL && count > page) {
+            back = *scroll % page;
+            if (back == 0) {
+                back = page;
+            }
+            if (*scroll <= 0) {
+                if (flags & 2) {
+                    *scroll = max;
+                    *sel = 0;
+                    if (!(flags & 0x10)) {
+                        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                    }
+                }
+            } else {
+                *scroll -= back;
+                *sel = 0;
+                if (!(flags & 0x10)) {
+                    sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                }
+            }
+        }
+        break;
+    }
+}
+
 // .text:0x472C4 size:0x234
 void fn_2_472C4(s16* sel, s16* scroll, s16 count, s16 page, s16 flags) {
     s16 last;

@@ -175,4 +175,6 @@ void fn_2_4A340(void);
 
 void fn_2_4A6E8(void);
 
+void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
+
 #endif
