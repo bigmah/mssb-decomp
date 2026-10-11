@@ -46,7 +46,9 @@ typedef struct CharModel {
     /*0x25D*/ u8 unk25D;
     /*0x25E*/ u8 pad25E[0x16];
     /*0x274*/ u8 unk274;
-    /*0x275*/ u8 pad275[3];
+    /*0x275*/ u8 unk275;
+    /*0x276*/ u8 unk276;
+    /*0x277*/ u8 pad277;
     /*0x278*/ u8 unk278;
 } CharModel;
 
@@ -86,7 +88,7 @@ s32 fn_8001B728(s32 playerIdx, s32 kind, Vec* out);
 void fn_80030D88(Vec* pos, Vec* dir, void* params, int kind);
 void fn_8001D180(s32 playerIdx, u32 part, s32 alt);
 void fn_800B2B74(GameActor* actor, u16 bone);
-void fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16 srcBone);
+struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16 srcBone);
 void fn_800B2BE4(GameActor* actor, u16 bone);
 
 // Per-character swing effect callbacks (table lbl_800FBE64) share this signature.

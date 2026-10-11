@@ -9,14 +9,6 @@ s32 fn_8000A3EC(Mtx out, SpriteDrawParams* params, AnimFrame* a, AnimFrame* b, f
 void interpolatePointsBezier_Vec2s(f32* curve, AnimKeyV0* p0, AnimKeyV0* p1, AnimKeyV0* p2, AnimKeyV0* p3, s32 mode, f32 t);
 s32 fn_8000AF1C(Mtx out, SpriteDrawParams* params, AnimKeyV0* a, AnimKeyV0* b, void* animC, f32* curve, f32 t);
 
-// main/file_800B0724
-void DrawNullSprite(QuadVtx* verts, s32 count); // draw triangle strip
-void DrawSprite_TexObj(QuadState* quad, SpriteTexInfo* tex); // draw textured quad
-void fn_800B1388(QuadState* quad); // draw quad
-void fn_800B1188(void);
-void fn_800B12DC(QuadVtx* verts, s32 count); // draw triangle fan
-void fn_800B13C0(Vec* pos, u32* colors, s32 count); // draw triangle fan
-
 // Copy four transformed quad corners (in the given order) into the vertex positions.
 #define SET_QUAD_POS(a, b, c, d)                          \
     do {                                                  \

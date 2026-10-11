@@ -12,7 +12,8 @@ typedef struct {
     /*0x10*/ u8 _10[0xC];
     /*0x1C*/ u8 _1C;
     /*0x1D*/ u8 _1D;
-    /*0x1E*/ u8 _1E[2];
+    /*0x1E*/ u8 _1E;
+    /*0x1F*/ u8 _1F;
     /*0x20*/ u8 _20;
     /*0x21*/ u8 resetRequested; // hard reset (OSResetSystem restart)
     /*0x22*/ u8 _22;

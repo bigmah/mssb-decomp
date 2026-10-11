@@ -1264,16 +1264,16 @@ void fn_80068838(void) {
         unsure_FillRosterPositions(1);
         characterSelectScreen(1);
         for (i = 0; i < 9; i++) {
-            gChallengeState.team[i].charId = inMemRoster[0][i].stats.CharID;
-            gChallengeState.team[i].pos[0] = lbl_80354720[0][i][1];
-            gChallengeState.team[i].pos[1] = lbl_80354720[0][i][2];
-            gChallengeState.team[i].hand = inMemRoster[0][i].stats.BattingStance + inMemRoster[0][i].stats.FieldingArm * 2;
+            gChallengeState.teams[i].id = inMemRoster[0][i].stats.CharID;
+            gChallengeState.teams[i].pos[0] = lbl_80354720[0][i][1];
+            gChallengeState.teams[i].pos[1] = lbl_80354720[0][i][2];
+            gChallengeState.teams[i].hand = inMemRoster[0][i].stats.BattingStance + inMemRoster[0][i].stats.FieldingArm * 2;
         }
     } else {
         for (team = 0; team < 2; team++) {
             for (i = 0; i < 9; i++) {
                 if (team == 0) {
-                    id = gChallengeState.team[i].charId;
+                    id = gChallengeState.teams[i].id;
                 } else {
                     id = lbl_8034E9A0.presets[11][i];
                     if (id != 0x13 && (n = count) != 0) {
@@ -1299,11 +1299,11 @@ void fn_80068838(void) {
                 src = &lbl_8034E9A0.roster[(u8)(id / 9)][(u8)(id % 9)];
                 copyCharacterStats(&inMemRoster[team][i], src);
                 if (team == 0) {
-                    hand = (u8)gChallengeState.team[i].hand;
+                    hand = (u8)gChallengeState.teams[i].hand;
                     lbl_80354720[0][i][0] = i;
-                    lbl_80354720[0][i][1] = gChallengeState.team[i].pos[0];
+                    lbl_80354720[0][i][1] = gChallengeState.teams[i].pos[0];
                     inMemRoster[0][i].stats.FieldingArm = hand >> 1;
-                    lbl_80354720[0][i][2] = gChallengeState.team[i].pos[1];
+                    lbl_80354720[0][i][2] = gChallengeState.teams[i].pos[1];
                     inMemRoster[0][i].stats.BattingStance = hand % 2;
                 }
                 lbl_803C6724.picks[team][i] = id;

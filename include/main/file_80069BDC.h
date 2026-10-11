@@ -39,7 +39,8 @@ typedef struct ResHandle {
 // Scene/task object pointed to by lbl_803CC1B8.
 typedef struct SceneTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x0C - 0x04];
+    /*0x04*/ struct SceneTask* prev; // draw-queue links (fn_800B0A5C_insertQueue)
+    /*0x08*/ struct SceneTask* next;
     /*0x0C*/ struct SceneTask* parent;
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;
@@ -81,21 +82,26 @@ typedef struct StatOutput {
 } StatOutput; // size: 0x10
 
 // Saved challenge-mode team member (character id, field positions, handedness).
-typedef struct ChallengeTeamSlot {
-    /*0x0*/ s16 charId;
+typedef struct ChallengeTeamEntry {
+    /*0x0*/ s16 id;
     /*0x2*/ u8 pos[2];
     /*0x4*/ s8 hand; // FieldingArm * 2 + BattingStance
     /*0x5*/ u8 _5;
-} ChallengeTeamSlot; // size: 0x6
+} ChallengeTeamEntry; // size: 0x6
 
 // Challenge-mode save state; starMissionCompletionTracker (size 0x4508) starts with this.
 typedef struct ChallengeState {
     /*0x0000*/ ChallengeTrackingStruct trackers[54];
-    /*0x0AF8*/ u8 _AF8[0x40B8 - 0xAF8];
-    /*0x40B8*/ ChallengeTeamSlot team[9];
-    /*0x40EE*/ u8 _40EE[0x4415 - 0x40EE];
+    /*0x0AF8*/ u8 _AF8[0x1606 - 0xAF8];
+    /*0x1606*/ s8 _1606;
+    /*0x1607*/ u8 _1607[0x40B8 - 0x1607];
+    /*0x40B8*/ ChallengeTeamEntry teams[9]; // ids must be unique
+    /*0x40EE*/ u8 _40EE[0x43BC - 0x40EE];
+    /*0x43BC*/ s16 _43BC; // 0..1000
+    /*0x43BE*/ u8 _43BE[0x4415 - 0x43BE];
     /*0x4415*/ u8 _4415;
-    /*0x4416*/ u8 _4416[0x441C - 0x4416];
+    /*0x4416*/ u8 _4416[0x441B - 0x4416];
+    /*0x441B*/ u8 _441B;
     /*0x441C*/ u8 _441C;
     /*0x441D*/ u8 _441D;
     /*0x441E*/ u8 _441E;

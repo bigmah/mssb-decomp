@@ -12,7 +12,7 @@ extern DiskFileEntry lbl_800F1D68;
 extern DiskFileEntry lbl_800F1D78[];
 extern DiskFileEntry lbl_800F5D98[];
 extern SoundFileTables lbl_800F71D8;
-extern u8 lbl_800EFBB4[];
+extern SoundConfig lbl_800EFBB4;
 extern u8 lbl_80118740[];
 extern u8 lbl_80158740[];
 extern u8 lbl_8015C740[];
@@ -42,7 +42,6 @@ void fn_800A6304(void);
 void fn_800A648C(void);
 void fn_800A7568(void);
 void fn_800A8F68(void);
-void initSound(void* config, void* aiStack, void* buffer, u32 bufferSize);
 u32 sndPushGroup(void* prj_data, u16 gid, void* samples, void* sdir, void* pool);
 u32 sndPopGroup(void);
 s32 sndSetAuxProcessingCallbacks(u8 studio, SND_AUX_CALLBACK auxA, void* userA, u8 midiA, u16 seqIDA, SND_AUX_CALLBACK auxB,
@@ -276,7 +275,7 @@ void f_initSound(void) {
     lbl_80158740[1] = 'N';
     lbl_80158740[2] = 'D';
     lbl_80158740[3] = '@';
-    initSound(lbl_800EFBB4, NULL, lbl_8015C740, 0x21BE0);
+    initSound(&lbl_800EFBB4, NULL, lbl_8015C740, 0x21BE0);
     fn_800A8F68();
     fn_800A648C();
     mode = OSGetSoundMode();
