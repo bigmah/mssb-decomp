@@ -280,9 +280,96 @@ void fn_800A6F94(s32 result, DVDFileInfo* fileInfo) {
 }
 
 // .text:0x800A70DC size:0x430
+// NONMATCHING 97%: modes 0/3 schedule the fn_800ACF34 result through r25 instead of r4 (same code otherwise)
+#if NONMATCHING
 void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr) {
-    return 0;
+    u32 size;
+    void* result;
+    u32 t;
+    char* strings = lbl_800E7730;
+
+    CancelTransfer();
+    lbl_803C6CF8.compression = instr->compressionConstants;
+    lbl_803C6CF8.bytesRead = 0;
+    lbl_803C6CF8.chunkSize = 0;
+    lbl_803C6CF8.diskOffset = instr->diskLocation;
+    lbl_803C6CF8.sizeInfo = ((u32*)instr)[1]; // TODO type: whole flags/size word
+    gDataDecompressorValues.compressedFlag = instr->compressionFlag;
+    lbl_803C6CF8.instr = instr;
+    lbl_803C6CF8.mode = mode;
+    while (lbl_803C6CF8.idle != 1) {
+    }
+    DVDFastOpen(lbl_803C6CF8.entryNum, lbl_803C6CF8.fileInfo);
+    size = ALIGN32(instr->compressedSize);
+
+    if (dest == NULL) {
+        if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_LZ_TO_RAM || lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
+            dest = _OSAllocFromHeap(0x20, ALIGN32(lbl_803C6CF8.sizeInfo & 0x0FFFFFFF));
+        } else if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_TO_ARAM) {
+            OSPanic(strings + 0x2C, 554, strings + 0x38);
+        } else {
+            dest = _OSAllocFromHeap(0x20, size);
+        }
+    }
+    if (aramAddr == 0) {
+        if (lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
+            OSPanic(strings + 0x2C, 564, strings + 0x68);
+        }
+        if (lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_TO_RAM) {
+            OSPanic(strings + 0x2C, 568, strings + 0x68);
+        }
+    }
+
+    lbl_803C6CF8.totalSize = size;
+    lbl_803C6CF8.remaining = size;
+    lbl_803C6CF8.chunkSize = (lbl_803C6CF8.remaining >= 0x8000) ? 0x8000 : lbl_803C6CF8.remaining;
+    result = dest;
+
+    if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_LZ_TO_RAM) {
+        lbl_803C6CF8.bufEnd = dest;
+        dest = fn_800ACF34(0x20, 0x20000);
+        lbl_803C6CF8.tempBuf = dest;
+        SetReadParameters(instr, lbl_803C6CF8.tempBuf, lbl_803C6CF8.bufEnd, 1);
+    } else if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_TO_ARAM) {
+        OSInitSemaphore(&lbl_803C6CF8.aramSem, 3);
+        lbl_803C6CF8.aramStart = (u32)dest; // dest is an ARAM address in this mode
+        lbl_803C6CF8.aramCur = (u32)dest;
+        lbl_803C6CF8.tempBuf = fn_800ACF34(0x20, 0x20000);
+        dest = lbl_803C6CF8.tempBuf;
+        lbl_803C6CF8.tempBufEnd = (u8*)lbl_803C6CF8.tempBuf + 0x20000;
+        lbl_803C6CF8.arqIndex = 0;
+    } else if (lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
+        lbl_803C6CF8.aramStart = aramAddr;
+        lbl_803C6CF8.aramCur = aramAddr;
+        lbl_803C6CF8.bufEnd = dest;
+        lbl_803C6CF8.tempBuf = fn_800ACF34(0x20, 0x20000);
+        dest = lbl_803C6CF8.tempBuf;
+        lbl_803C6CF8.arqIndex = 0;
+        SetReadParameters(instr, dest, lbl_803C6CF8.bufEnd, 2);
+    } else if (lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_TO_RAM) {
+        lbl_803C6CF8.aramStart = aramAddr;
+        lbl_803C6CF8.aramCur = aramAddr;
+        lbl_803C6CF8.bufEnd = dest;
+        lbl_803C6CF8.chunkSize = lbl_803C6CF8.remaining;
+    }
+
+    lbl_803C6CF8.bufStart = dest;
+    lbl_803C6CF8.readPos = dest;
+    SET_STATE_IDLE(DVDSYS_STATE_READING, 0);
+    if (lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM || lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_TO_RAM) {
+        DCInvalidateRange(lbl_803C6CF8.readPos, lbl_803C6CF8.chunkSize);
+        PostAramRead();
+    } else {
+        DVDReadAsyncPrio(lbl_803C6CF8.fileInfo, dest, lbl_803C6CF8.chunkSize, lbl_803C6CF8.diskOffset, fn_800A7A80, 2);
+    }
+
+    if (lbl_803C6CF8.retryEnabled) {
+        t = size * 180;
+        lbl_803C6CF8.retryCount = lbl_803C6CF8.retryLimit = ((t >> 21) < 180) ? 180 : (t >> 22);
+    }
+    return result;
 }
+#endif
 
 // .text:0x800A750C size:0x38
 BOOL fn_800A750C(void* unused, DVDFileInfo* fileInfo) {
