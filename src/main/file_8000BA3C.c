@@ -2,6 +2,10 @@
 #include "stl/math.h"
 #include "stl/mem.h"
 
+// main/file_8000A0AC
+void fn_8000A0AC(f32* curve, AnimFrame* a, AnimFrame* b, f32 t);
+s32 fn_8000A3EC(Mtx out, SpriteDrawParams* params, AnimFrame* a, AnimFrame* b, f32* curve, f32 t, f32 z);
+
 // main/file_800B0724
 void DrawNullSprite(QuadVtx* verts, s32 count); // draw triangle strip
 void fn_800B12DC(QuadVtx* verts, s32 count); // draw triangle fan
@@ -24,16 +28,6 @@ void fn_800B13C0(Vec* pos, u32* colors, s32 count); // draw triangle fan
         lbl_80366188.v[3].pos.z = q.pt[d].pos.z;          \
     } while (0)
 
-// .text:0x8000BA3C size:0x758
-void fn_8000BA3C(void) {
-    return;
-}
-
-// .text:0x8000C194 size:0xAB8
-void fn_8000C194(void) {
-    return;
-}
-
 // Advance to the next entry of an animation block.
 static inline AnimEntry* AnimEntry_Next(AnimEntry* entry, u32 fullWords, u32 rawWords) {
     AnimEntry* next = entry;
@@ -52,6 +46,215 @@ static inline AnimEntry* AnimEntry_Next(AnimEntry* entry, u32 fullWords, u32 raw
         break;
     }
     return next;
+}
+
+// Decode an animation entry into a full frame of anim->paramCount words.
+static inline void AnimEntry_Decode(AnimEntry* entry, AnimBlock* block, u32* out, u32 outSize) {
+    u32* dst;
+    u32* values;
+    u16* idx;
+    u16* span;
+    u8* src;
+    s32 n;
+    s32 count;
+
+    switch (entry->type & 0x7FFF) {
+    case ANIM_ENTRY_FULL:
+        memset(out, 0, outSize);
+        memcpy(out, block->entries, block->size);
+        break;
+    case ANIM_ENTRY_RAW:
+        memcpy(out, entry, outSize);
+        break;
+    case ANIM_ENTRY_SPARSE:
+        memset(out, 0, outSize);
+        dst = out + 1;
+        memcpy(dst, &block->entries[0].count, block->size - 4);
+        memcpy(out, entry, 4);
+        n = entry->count;
+        values = (u32*)entry + entry->size;
+        idx = (u16*)entry + n;
+        while (values--, idx--, n-- != 0) {
+            dst[idx[4]] = *values;
+        }
+        break;
+    case ANIM_ENTRY_SPANS:
+        memset(out, 0, outSize);
+        dst = out + 1;
+        memcpy(dst, &block->entries[0].count, block->size - 4);
+        memcpy(out, entry, 4);
+        span = entry->data;
+        src = (u8*)entry + ((count = entry->count) * 4 + 8);
+        while (count-- != 0) {
+            memcpy((u8*)dst + span[0], src, span[1]);
+            src += span[1];
+            span += 2;
+        }
+        break;
+    }
+}
+
+// Scale each channel of an RGBA color by the matching channel of another.
+static inline u32 ModulateColor(u32 c, u32 r, u32 g, u32 b, u32 a) {
+    r = r * (c >> 24) / 255;
+    g = g * ((c >> 16) & 0xFF) / 255;
+    b = b * ((c >> 8) & 0xFF) / 255;
+    a = a * (c & 0xFF) / 255;
+    return (r << 24) | (g << 16) | (b << 8) | a;
+}
+
+// .text:0x8000BA3C size:0x758
+// NONMATCHING: ~75% (large function written as equivalent C): the original keeps the color channels in stack arrays; register allocation differs
+#if NONMATCHING
+s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, s16* path) {
+    AnimFrame frames[2];
+    SpriteDrawParams params;
+    Mtx m;
+    f32 curve[4];
+    AnimEntry* cur[2];
+    u32 subTime;
+    u16* subLoop;
+    AnimTrack* track;
+    AnimBlock** blockPtr;
+    AnimBlock* block;
+    AnimEntry* entry;
+    AnimLoop* loop;
+    AnimFrame* next;
+    u16* loops;
+    u32 t;
+    u32 start;
+    s32 numBlocks;
+    s32 result;
+    s32 n;
+    s32 i;
+    u16 prevTime;
+    u32 colR;
+    u32 colG;
+    u32 colB;
+    u32 colA;
+    u32 dt;
+    u32 span;
+    f32 f;
+
+    if (path != NULL) {
+        path[0] = trackIdx;
+    }
+    t = *time;
+    // TODO type: anim->table->tracks[trackIdx]
+    track = *(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8);
+    result = 0;
+    loops = track->loops;
+    numBlocks = track->count & 0x7FFFFFFF;
+    *outLoop = NULL;
+
+    // Apply the loop markers (last one first).
+    loop = (AnimLoop*)(loops + 2) + loops[0];
+    for (n = loops[0]; n != 0; n--) {
+        loop--;
+        if (t >= (u32)loop->end << 16) {
+            *outLoop = &loop->start;
+            result = loop->mode + 1;
+            if (loop->mode == 0) {
+                t = t % ((u32)loop->end << 16);
+            } else if (loop->mode == 2) {
+                start = **outLoop << 16;
+                t = start + (t - start) % (((u32)loop->end << 16) - start);
+            }
+            *time = t;
+            break;
+        }
+    }
+
+    numBlocks--;
+    // TODO type: &track->blocks[numBlocks - 1]
+    blockPtr = (AnimBlock**)((u8*)track + numBlocks * 4 + 8);
+    lbl_80366188.unk7F = 0;
+    if (path != NULL) {
+        path[1] = 0;
+    }
+    colR = color >> 24;
+    colG = (color >> 16) & 0xFF;
+    colB = (color >> 8) & 0xFF;
+    colA = color & 0xFF;
+
+    do {
+        block = *blockPtr--;
+        entry = block->entries;
+        cur[1] = entry;
+        n = block->count;
+        while (n-- != 0) {
+            cur[0] = entry;
+            prevTime = entry->time;
+            if (t < (u32)entry->time << 16) {
+                cur[1] = entry;
+                entry = AnimEntry_Next(entry, (u32)block->size >> 2, anim->paramCount);
+                continue;
+            }
+
+            // Find where the current segment started.
+            if (entry->type & 0x8000) {
+                for (i = n; i != 0; i--) {
+                    entry = AnimEntry_Next(entry, (u32)block->size >> 2, anim->paramCount);
+                    if (!(n != 1 && (entry->type & 0x8000))) {
+                        prevTime = entry->time;
+                    }
+                    n--;
+                }
+            }
+
+            for (i = 0; i < 2; i++) {
+                AnimEntry_Decode(cur[i], block, (u32*)&frames[i], anim->paramCount * 4);
+            }
+
+            next = (frames[1].kind == 0) ? &frames[0] : &frames[1];
+            if (frames[0].kind != 0) {
+                f = 1.0f;
+                dt = t - ((u32)frames[0].time << 16);
+                span = (u32)(next->time - frames[0].time) << 16;
+                if (dt < span) {
+                    f = (f32)dt / (f32)span;
+                }
+                if ((frames[0].flags >> 4) & 1) {
+                    fn_8000A0AC(curve, &frames[0], next, f);
+                }
+                flags |= fn_8000A3EC(m, &params, &frames[0], next, curve, f, next->unk18);
+                PSMTXConcat(mtx, m, m);
+                for (i = 0; i < 4; i++) {
+                    params.color[i] = ModulateColor(params.color[i], colR, colG, colB, colA);
+                }
+                switch (frames[0].kind) {
+                case 1:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    if (path != NULL && lbl_80366188.callback != NULL) {
+                        lbl_80366188.path = path;
+                        lbl_80366188.mtx = m;
+                        lbl_80366188.color = params.color[0];
+                        lbl_80366188.callback(&lbl_80366188, m);
+                    }
+                    if (frames[0].kind == 3) {
+                        subTime = t - ((u32)prevTime << 16);
+                        fn_8000BA3C(&subTime, anim, frames[0].subTrack, m, flags, params.color[0], &subLoop, path + 2);
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+        if (path != NULL) {
+            path[1]++;
+        }
+    } while (--numBlocks != 0);
+    return result;
+}
+#endif
+
+// .text:0x8000C194 size:0xAB8
+void fn_8000C194(void) {
+    return;
 }
 
 // .text:0x8000CC4C size:0x2A4

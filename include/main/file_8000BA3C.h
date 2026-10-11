@@ -124,6 +124,27 @@ typedef struct AnimTrack {
     /* 0x0C */ AnimBlock* blocks[1];
 } AnimTrack;
 
+// Loop marker in a track's loop table (count at +0, markers from +4).
+typedef struct AnimLoop {
+    /* 0x00 */ u16 end;
+    /* 0x02 */ u16 mode; // 0: wrap to 0, 2: wrap to start
+    /* 0x04 */ u16 start;
+    /* 0x06 */ u8 pad6[6];
+} AnimLoop;
+
+// A decoded animation frame (anim->paramCount words).
+typedef struct AnimFrame {
+    /* 0x00 */ u16 type;
+    /* 0x02 */ u16 time;
+    /* 0x04 */ u8 kind; // what to draw; 3: nested track
+    /* 0x05 */ u8 pad5;
+    /* 0x06 */ u16 subTrack;
+    /* 0x08 */ u8 flags; // bit 4: curved path
+    /* 0x09 */ u8 pad9[0xF];
+    /* 0x18 */ s16 unk18;
+    /* 0x1A */ u8 pad1A[0x36];
+} AnimFrame; // size 0x50
+
 typedef struct AnimTrackTable {
     /* 0x00 */ u8 pad0[8];
     /* 0x08 */ AnimTrack* tracks[1];
@@ -132,7 +153,7 @@ typedef struct AnimTrackTable {
 typedef struct Anim {
     /* 0x00 */ u8 pad0[5];
     /* 0x05 */ u8 paramCount; // words per decoded frame
-    /* 0x06 */ u8 pad6[2];
+    /* 0x06 */ u16 unk6; // 0: old format (fn_8000D164)
     /* 0x08 */ AnimTrackTable* table;
 } Anim;
 
@@ -140,9 +161,9 @@ typedef struct Anim {
 typedef struct QuadState {
     /* 0x00 */ QuadVtx v[4];
     /* 0x50 */ u8 pad50[0x14];
-    /* 0x64 */ void* unk64;
-    /* 0x68 */ void* unk68;
-    /* 0x6C */ void* unk6C;
+    /* 0x64 */ f32 (*mtx)[4];
+    /* 0x68 */ u32 color;
+    /* 0x6C */ s16* path;
     /* 0x70 */ SpriteBank* bank;
     /* 0x74 */ u8 pad74[4];
     /* 0x78 */ void* elem;
@@ -166,6 +187,7 @@ void fn_8000DC9C(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000D8A4(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
 BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out);
 void fn_8000CC4C(Anim* anim, AnimBlock* block, u8* src, u32 ofs, u32 len);
+s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, s16* path);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
