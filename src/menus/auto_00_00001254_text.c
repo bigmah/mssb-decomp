@@ -12,6 +12,8 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_2_bss_3A8[];
+extern void fn_80066EAC(u8 team);
 extern u8 lbl_803CBCD8[];
 extern u8 lbl_80361B20[];
 extern u8 lbl_2_data_130C[];
@@ -2038,5 +2040,38 @@ void fn_2_5444(u8 team) {
             *(s16*)(lbl_803CBBCC[0] + 4) = 7;
         }
     }
+}
+#endif
+
+// NONMATCHING 88%: copy-loop induction registers differ (r14-r16 vs r17-r19); v >> 1 is extrwi in the original
+#if NONMATCHING
+// fn_2_8940, size:0x3B8
+void fn_2_8940(void) {
+    s32 t;
+    s32 i;
+    s8 sel;
+    MenuCharStats* src;
+    MenuCharStats* dst;
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 9; i++) {
+            sel = lbl_803C6724[t * 9 + i + 2];
+            src = (MenuCharStats*)(lbl_8034E9A0 + sel / 9 * 0x5A0 + sel % 9 * 0xA0);
+            dst = &g_Roster[t * 9 + i];
+            MENU_COPY_CHAR_STATS(dst, src);
+            lbl_80354720[t * 0x24 + i * 4 + 2] = lbl_803C6724[t * 9 + i + 0x14];
+            if (t == 0 && g_d_GameSettings.GameModeSelected == 5) {
+                s32 v = lbl_2_bss_3A8[*(s16*)(starMissionCompletionTracker + i * 6 + 0x40B8)];
+                dst->b26 = v >> 1;
+                dst->b27 = v % 2;
+            }
+        }
+    }
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 9; i++) {
+            *(s16*)(lbl_803C5EA4 + 0x12 + t * 0x12 + i * 2) = (s8)lbl_803C6724[t * 9 + i + 2];
+        }
+    }
+    fn_80066EAC(0);
+    fn_80066EAC(1);
 }
 #endif
