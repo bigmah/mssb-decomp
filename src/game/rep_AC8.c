@@ -51,6 +51,8 @@ typedef struct {
 extern StickHistory lbl_3_bss_C8;
 extern f32 lbl_3_data_4794[];
 extern int fn_3_B7CDC(f32, f32);
+extern f32 lbl_3_data_5CDC[];
+extern f32 lbl_3_data_5D08[];
 extern u8 lbl_3_common_bss_34C90[];
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
@@ -910,7 +912,7 @@ int fn_3_2A288(int i) {
 #endif
 
 // .text:0x0002A69C size:0x63C mapped:0x80669730
-void fn_3_2A69C(void) {
+void fn_3_2A69C(int i) {
     return;
 }
 
@@ -930,8 +932,8 @@ int fn_3_2ACD8(int i, int j) {
 }
 
 // .text:0x0002AD68 size:0x858 mapped:0x80669DFC
-void fn_3_2AD68(void) {
-    return;
+int fn_3_2AD68(int i) {
+    return 0;
 }
 
 // .text:0x0002B5C0 size:0xD4 mapped:0x8066A654
@@ -1129,9 +1131,93 @@ void fn_3_2C2F0(int i) {
 }
 
 // .text:0x0002C698 size:0x548 mapped:0x8066B72C
-void fn_3_2C698(void) {
-    return;
+// NONMATCHING 85%: the original inlines fn_3_2A164 for the jumping-catch check; we call it (same behaviour); some branch layout/regalloc differs
+// nmverify: fn_3_2A164 inlined on one side (calls match once expanded)
+#if NONMATCHING
+void fn_3_2C698(int i) {
+    int who = i;
+    u8* f = g_Fielders + i * 0x268;
+    int kind;
+    if (g_GameLogic[0x121] == 7 || g_GameLogic[0x121] == 8) {
+        return;
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            who = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            who = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    if (g_d_GameSettings[7] == 6 && g_Minigame[0x19A4] != 0) {
+        return;
+    }
+    if (!((g_GameLogic[0x121] > 1 && (g_d_GameSettings[7] != 2 || g_Practice[0x193] != 2) && g_GameLogic[0x14F] == 0) ||
+          g_GameLogic[0x11E] == 2)) {
+        return;
+    }
+    if (g_d_GameSettings[7] == 2 && i >= 1 &&
+        (g_Practice[0x193] == 0 || g_Practice[0x193] == 1 || g_Practice[0x194] == 4 || g_Practice[0x194] == 5)) {
+        return;
+    }
+    if (g_Ball[0x1BF0] != 0 || g_Ball[0x1BD1] != 0 || (*(s16*)(g_Ball + 0x1B66) < 20 && i == 1) || f[0x1EE] != 0 ||
+        f[0x1EF] != 0 || f[0x20F] != 0 || f[0x207] != 0 || (i == 0 && f[0x1D2] + 5 > *(s16*)(g_Ball + 0x1B66)) ||
+        g_Ball[0x1BD0] != 0 || g_Ball[0x1BC9] == 1 || f[0x210] != 0) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1BA0) != 0 &&
+        (*(s16*)(g_Ball + 0x1BA0) < 30 || (*(s16*)(f + 0x19C) == 0 && *(s16*)(g_Ball + 0x1BA0) < 20))) {
+        return;
+    }
+    if (f[0x1ED] != 0 || f[0x25A] != 0 || (f[0x211] != 0 && f[0x212] == 3) || g_Ball[0x1BF3] != 0) {
+        return;
+    }
+    kind = *(int*)(g_Ball + 0x1B44) & 0x7F;
+    if (kind == 7 || kind == 8) {
+        return;
+    }
+    f[0x258] = 0;
+    if (g_Ball[0x1BC9] == 2) {
+        if (fn_3_2AD68(i) == 0) {
+            fn_3_2A69C(i);
+        }
+    } else if (f[0x203] != 0) {
+        fn_3_2A164(i);
+    } else if (f[0x205] != 0) {
+        fn_3_27D68(i);
+    } else {
+        if (fn_3_2BB04(i) == 0 && fn_3_2B694(i) == 0) {
+            if ((*(u8**)(g_FieldingLogic + 0x8C))[2] == 0) {
+                fn_3_2C2F0(i);
+                return;
+            }
+            if (fn_3_2A288(i) == 0) {
+                return;
+            }
+            (*(u8**)(g_FieldingLogic + 0x8C))[4] = 0;
+        }
+        if (f[0x265] == 0 && checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 7) == 0) {
+            fn_3_26664(i);
+        }
+        if (f[0x258] == 1) {
+            if (f[0x259] != 0) {
+                f[0x1EE] = 0;
+            } else {
+                f[0x1EE] = *(f32*)(g_Ball + 0x1A58) * lbl_3_data_5CDC[3] * lbl_3_data_5D08[f[0x1C9]];
+                if (f[0x1EE] < 3) {
+                    f[0x1EE] = 3;
+                }
+                f[0x1EE] = f[0x1EE] + *(s16*)(f + 0x24C);
+            }
+        } else {
+            f[0x1EE] = 0;
+        }
+        if (f[0x258] <= 1 && checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 7) != 0) {
+            fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 7);
+            playSoundEffect(0x1A8);
+        }
+    }
 }
+#endif
 
 // .text:0x0002CBE0 size:0x314 mapped:0x8066BC74
 // NONMATCHING 95%: registers only; loop pointer/counter r28/r29 swapped and f3/f4 in the ball-position sqrt
