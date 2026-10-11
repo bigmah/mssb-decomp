@@ -37,6 +37,10 @@ extern const f32 lbl_3_rodata_E78;
 extern BOOL checkFieldingStat(int, int, int);
 extern void fn_8004AE18(s32 idx);
 extern u8 lbl_3_data_7F0C;
+extern s32 g_Strikes[];
+extern const f32 lbl_3_rodata_E88;
+extern const f32 lbl_3_rodata_E8C;
+extern const f32 lbl_3_rodata_E90;
 // Fielder animation timing table (0x70 bytes).
 typedef struct {
     /*0x00*/ u8 _00[0x10];
@@ -599,9 +603,277 @@ reset:
 #endif
 
 // .text:0x00061B64 size:0xDA0 mapped:0x806A0BF8
+// NONMATCHING 87%: the original inlines fn_3_60D80 and fn_3_61148 here (calls kept for clarity)
+#if NONMATCHING
 void fn_3_61B64(s32 i) {
-    return;
+    s32 k = i;
+    u8* e = g_UnkAnimation_31EAC + i * 0x54;
+    u8* f = g_Fielders + i * 0x268;
+    u8** actors;
+    u8* o;
+    s16 anim;
+    s32 v;
+    s32 last;
+    f32 spd;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            u8* m = g_Minigame;
+            m += *(s8*)(m + 0x1904);
+            k = *(s8*)(m + 0x18CC);
+        } else {
+            k = *(s8*)(g_Minigame + f[0x20D] + 0x18CC);
+        }
+    }
+    actors = (u8**)(lbl_8036E548 + 0x2C50);
+    o = actors[k];
+    if (o == NULL) {
+        return;
+    }
+    anim = *(s16*)(o + 0x62);
+    if (*(s16*)(g_UnkThrowing_31ACC + 0xC) == i && *(s16*)(g_Ball + 0x1B78) == i) {
+        o[0x274] = 1;
+    }
+    if (g_Minigame[0x1A2A] == 2) {
+        goto check_state;
+    }
+    if (g_Minigame[0x1A2A] == 5) {
+        u8 t = g_Minigame[f[0x20D] + 0x1C9A];
+        if (t == 1) {
+            if (anim != 0x24) {
+                fn_3_90220(*(s16*)(f + 0x17A), 10);
+            }
+            AnimateCharacter(k, 0x24, 1, 1, 0, 0, 0, -1);
+            e[0x43] = 0;
+            goto done;
+        }
+        if (t == 2) {
+            AnimateCharacter(k, 0, 1, 1, 0, 0, 0, -1);
+            goto done;
+        }
+        if (fn_3_60D80(i) != 0) {
+            goto done;
+        }
+    }
+    if (g_Minigame[0x1A2A] == 6 && g_Minigame[f[0x20D] + 0x1D6E] == 2) {
+        if (anim != 0x24 && anim != 0x25) {
+            fn_3_90220(*(s16*)(f + 0x17A), 10);
+            AnimateCharacter(k, 0x24, 0, 1, 0, 0, 0, -1);
+            QueueCharacterAnimation(k, 0x25, 0, 0, 0, 0, 0);
+        }
+        goto done;
+    }
+    if (f[0x210] != 0) {
+        if (f[0x210] == 1) {
+            if (*(s16*)(f + 0x1BE) == 1) {
+                fn_3_60804(i, 0);
+                if (anim != 0x24) {
+                    fn_3_90220(*(s16*)(f + 0x17A), 10);
+                }
+                AnimateCharacter(k, 0x24, 0, 1, 0, 0, e[0x40], -1);
+            }
+        } else {
+            if (*(s16*)(f + 0x1BE) == 1) {
+                AnimateCharacter(k, 0x25, 0, 1, 1, 0, e[0x40], 0);
+                fn_3_60804(i, 1);
+            }
+            if (*(s16*)(f + 0x1C0) == 1) {
+                AnimateCharacter(k, 0, 1, 1, 0, 0, e[0x40], -1);
+                fn_3_60804(i, 0);
+            }
+        }
+        e[0x43] = 0;
+        goto done;
+    }
+    if (fn_3_61544(i) != 0) {
+        if (fn_3_61228(i) == 0) {
+            fn_3_60E90(i);
+        }
+        goto done;
+    }
+    if (f[0x20F] != 0) {
+        if (*(s16*)(f + 0x1B8) == 0) {
+            fn_3_60804(i, 0);
+        }
+        AnimateCharacter(k, 0x10, 1, 1, 0, 0, e[0x40], 0);
+        if (anim != 0x10) {
+            fn_3_90220(*(s16*)(f + 0x17A), 11);
+        }
+        e[0x43] = 0;
+        goto done;
+    }
+    if (*(s16*)(g_UnkThrowing_31ACC + 0xC) == i) {
+        if (fn_3_61228(i) != 0 || fn_3_60E90(i) != 0) {
+            goto done;
+        }
+        if (f[0x205] >= 3) {
+            AnimateCharacter(k, 0x27, 0, 1, 0, 0, e[0x40], -1);
+        } else {
+            spd = *(f32*)(e + 0);
+            if (spd > lbl_3_rodata_E88) {
+                if (g_Strikes[2] >= 3 && f[0x1D6] == 0xD) {
+                    AnimateCharacter(k, 7, 1, 1, 0, 0, e[0x40], -1);
+                } else if (*(s16*)(g_Ball + 0x1B78) == i && *(f32*)(f + 0xB8) < lbl_3_rodata_E8C) {
+                    if (anim == 5) {
+                        AnimateCharacter(k, 0x22, 1, 2, 0, 0, e[0x40], -1);
+                    } else {
+                        AnimateCharacter(k, 0x22, 1, 1, 0, 0, e[0x40], -1);
+                    }
+                } else if (spd > lbl_3_rodata_E90) {
+                    if (anim == 0x22) {
+                        AnimateCharacter(k, 5, 1, 2, 0, 0, e[0x40], -1);
+                    } else {
+                        AnimateCharacter(k, 5, 1, 1, 0, 0, e[0x40], -1);
+                    }
+                } else {
+                    AnimateCharacter(k, 7, 1, 1, 0, 0, e[0x40], -1);
+                }
+            } else {
+                AnimateCharacter(k, 1, 1, 1, 1, 0, e[0x40], -1);
+            }
+        }
+        goto done;
+    }
+    e[0x44] = 0;
+    if (fn_3_61148(i) != 0) {
+        goto done;
+    }
+check_state:
+    if (f[0x211] != 0 && f[0x212] == 3) {
+        if (*(s16*)(g_FieldingLogic + 0xF6) <= 1) {
+            fn_3_60804(k, 0);
+            e[0x44] = 0;
+            e[0x51] = 0;
+        }
+        goto done;
+    }
+    if (f[0x203] != 0) {
+        AnimateCharacter(k, 0x26, 0, 1, 0, 0, e[0x40], -1);
+        goto done;
+    }
+    if (f[0x207] != 0) {
+        if (f[0x207] == 1) {
+            AnimateCharacter(k, 0x26, 0, 1, 0, 0, e[0x40], -1);
+        } else if (f[0x207] == 2) {
+            AnimateCharacter(k, 0x28, 0, 1, 1, 0, e[0x40], -1);
+            o[0x26F] = 1;
+        } else if (f[0x207] == 3) {
+            if (*(s16*)(f + 0x1B4) == 1) {
+                fn_3_60804(k, 1);
+            }
+        } else if (f[0x207] == 4) {
+            o[0x26F] = 0;
+            if (*(s16*)(f + 0x1B4) == 1) {
+                AnimateCharacter(k, 0, 1, 1, 0, 0, e[0x40], -1);
+                fn_3_60804(k, 0);
+            }
+        }
+        goto done;
+    }
+    if (f[0x205] != 0) {
+        if (f[0x205] == 1) {
+            AnimateCharacter(k, 0x26, 0, 1, 0, 0, e[0x40], -1);
+        } else if (f[0x205] == 2) {
+            if (f[0x206] != 0) {
+                v = 0x2A;
+                if (f[0x206] == 3) {
+                    v = 0x2B;
+                } else if (f[0x206] == 4) {
+                    v = 0x2C;
+                }
+                if (anim == 0x2A || anim == 0x2B || anim == 0x2C) {
+                    AnimateCharacter(k, v, 1, 2, 1, 0, e[0x40], -1);
+                } else {
+                    AnimateCharacter(k, v, 1, 1, 1, 0, e[0x40], -1);
+                }
+            } else if (anim == 0x2A) {
+                AnimateCharacter(k, 0x28, 1, 2, 1, 0, e[0x40], -1);
+            } else {
+                AnimateCharacter(k, 0x28, 1, 1, 1, 0, e[0x40], 0);
+            }
+        } else if (f[0x205] >= 3) {
+            AnimateCharacter(k, 0x27, 0, 1, 0, 0, e[0x40], -1);
+        }
+        goto done;
+    }
+    spd = *(f32*)(e + 0);
+    if (spd > lbl_3_rodata_E7C) {
+        if (f[0x256] != 0) {
+            s16 ang = radToShortAngle(*(f32*)(f + 0x48));
+            s16 d = fn_3_9FCA4(ang, fn_3_9FB8C(*(f32*)(f + 0x30), *(f32*)(f + 0x34)));
+            v = 8; // the original leaves this unset when f[0x256] != 1
+            if (f[0x256] == 1) {
+                v = 8;
+                if (d < -0x600 || d > 0x600) {
+                    v = 9;
+                } else if (d > 0x200) {
+                    if (e[0x40] == 0) {
+                        v = 0xA;
+                    } else {
+                        v = 0xB;
+                    }
+                } else if (d < -0x200) {
+                    if (e[0x40] == 0) {
+                        v = 0xB;
+                    } else {
+                        v = 0xA;
+                    }
+                }
+            }
+            AnimateCharacter(k, v, 1, 1, 0, 0, e[0x40], -1);
+        } else if (f[0x1CB] == 1 && anim == 0x28) {
+            AnimateCharacter(k, 2, 1, 2, 1, 0, e[0x40], -1);
+            f[0x20A] = 1;
+        } else if (spd > lbl_3_rodata_E90) {
+            AnimateCharacter(k, 5, 1, 1, 0, 0, e[0x40], -1);
+        } else {
+            AnimateCharacter(k, 7, 1, 1, 0, 0, e[0x40], -1);
+        }
+        goto done;
+    }
+    if (g_Minigame[0x1A2A] == 2 && anim >= 0x3F && anim < 0x4B) {
+        return;
+    }
+    v = 2;
+    if (e[0x41] == 1) {
+        v = 0;
+    }
+    if (anim == 0x24 || anim == 0x25) {
+        if (anim == 0x25) {
+            AnimateCharacter(k, 0, 1, 2, 1, 0, e[0x40], -1);
+        }
+    } else if (e[0x45] != 0) {
+        AnimateCharacter(k, 3, 1, 1, 0, 0, e[0x40], -1);
+    } else if (f[0x1CB] == 1 && anim == 0x28) {
+        AnimateCharacter(k, v, 1, 2, 1, 0, e[0x40], -1);
+        f[0x20A] = 1;
+    } else if (anim == 0xF) {
+        AnimateCharacter(k, v, 1, 2, 1, 0, e[0x40], -1);
+    } else if (i == 1 && *(s16*)(g_Ball + 0x1B66) < 0x78) {
+        if (*(s16*)(g_Ball + 0x1B66) == 0x1E) {
+            AnimateCharacter(k, 0x3E, 0, 1, 1, 0, e[0x40], -1);
+        }
+    } else if (anim == 0x3E) {
+        AnimateCharacter(k, v, 1, 2, 1, 0, e[0x40], -1);
+    } else {
+        last = -1;
+        if (anim == 0x40 || anim == 0x42 || anim == 0x49 || anim == 0x4A) {
+            last = 0;
+        }
+        AnimateCharacter(k, v, 1, 1, 1, 0, e[0x40], last);
+    }
+done:
+    if (e[0x42] != 0) {
+        *(f32*)(o + 0x34) = *(f32*)(e + 0x10);
+        *(f32*)(o + 0x3C) = *(f32*)(e + 0x18);
+        e[0x42] = 1;
+    } else {
+        e[0x42] = 0;
+    }
+    if (f[0x1CB] == 1 && anim == 0x28 && (*(s16*)(o + 0x68) <= 1 || o[0x25E] == 1)) {
+        fn_3_60804(k, 0);
+    }
 }
+#endif
 
 // .text:0x00062904 size:0x24C mapped:0x806A1998
 void fn_3_62904(void) {
