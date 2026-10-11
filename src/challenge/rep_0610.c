@@ -2422,3 +2422,55 @@ void fn_1_EA20(void) {
     }
 }
 #endif
+
+extern u8 lbl_1_data_A938[];
+
+// .text:0x107B8 size:0x2EC
+// NONMATCHING ~75%: the original inlines fn_1_D300 (itself NONMATCHING), so this calls it
+#if NONMATCHING
+void fn_1_107B8(void) {
+    u8* entry = ch_6940 + ch_5F73 * 0x48;
+    u8* row = lbl_8036E548 + ch_5F73 * 0x27C;
+    u8 group = entry[0x44];
+    u8 index;
+    void* table;
+    ActorObject* object;
+
+    row[0xE7C] = group == 0;
+    switch (group) {
+    case 0:
+        row[0xE58] = 9;
+        break;
+    case 1:
+        row[0xE58] = 10;
+        break;
+    case 2:
+        row[0xE58] = 2;
+        break;
+    case 3:
+        row[0xE58] = 0;
+        break;
+    case 4:
+        row[0xE58] = 1;
+        break;
+    default:
+        row[0xE58] = 9;
+        break;
+    }
+    index = entry[0x45];
+    *(s16*)(row + 0xC66) = lbl_1_data_A938[group] + index;
+    table = *(void**)(row + group * 4 + 0xC14);
+    object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34);
+    object->animBank = table;
+    object->seqNum = index;
+    object->time = 0.0f;
+    object->setAnimation = 1;
+    object->setTime = table != NULL;
+    object->setSpeed = table != NULL;
+    object->speed = 0.0f;
+    fn_1_ECF8(ch_5F73, (ch_6940 + ch_5F73 * 0x48)[0x44], ch_5F69);
+    ch_5F5C = 0;
+    fn_1_D300(lbl_8036E548 + ch_5F73 * 0x27C + 0xC04);
+    fn_800B0A14_removeQueue(NULL); // argument unused (stale r3 in the original)
+}
+#endif
