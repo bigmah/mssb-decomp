@@ -19,6 +19,12 @@ extern f32 lbl_3_data_4290[][2][2];
 extern f32 lbl_3_rodata_B74;
 extern f32 lbl_3_rodata_BA4;
 int RandomInt_Game(int max);
+extern u8 lbl_3_data_4900[][3];
+extern u8 g_Pitcher[];
+extern f32 lbl_3_rodata_BC4;
+extern f32 lbl_3_rodata_BC8;
+void fn_3_31C50(void);
+BOOL checkFieldingStat(int, int, int);
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
@@ -1570,7 +1576,59 @@ void fn_3_31C50(void) {
 
 // .text:0x00032090 size:0x314 mapped:0x80671124
 void fn_3_32090(void) {
-    return;
+    int i;
+    u8* f;
+    int v;
+    f32 d;
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        if (i == 1) {
+            *(s16*)(f + 0x182) = 0x400;
+        } else if (0.0f == *(f32*)f) {
+            *(s16*)(f + 0x182) = 0x400;
+        } else {
+            v = (int)(lbl_3_rodata_BC4 * (f32)atan2(*(f32*)(f + 8), *(f32*)f) / lbl_3_rodata_BC8);
+            if (v < 0) {
+                v += 0x800;
+            }
+            *(s16*)(f + 0x182) = v;
+        }
+        d = *(f32*)f * *(f32*)f + *(f32*)(f + 8) * *(f32*)(f + 8);
+        SQRT_L(d);
+        *(f32*)(f + 0x70) = d;
+    }
+    fn_3_31C50();
+    *(f32*)(g_Ball + 0x318) = 0.0f;
+    *(f32*)(g_Ball + 0x31C) = 0.0f;
+    *(f32*)(g_Ball + 0x320) = 0.0f;
+    *(f32*)(g_Ball + 0x324) = 0.0f;
+    *(f32*)(g_Ball + 0x328) = 0.0f;
+    *(f32*)(g_Ball + 0x32C) = 0.0f;
+    g_Ball[0x1BC9] = 1;
+    *(s16*)(g_Ball + 0x1B7A) = 2;
+    *(s16*)(g_Ball + 0x1B7E) = 0;
+    *(s16*)(g_Ball + 0x1B8A) = -1;
+    g_Ball[0x1BCA] = 0;
+    g_Ball[0x1BE1] = 0;
+    if (g_FieldingLogic[0x107] == 1 || g_FieldingLogic[0x107] == 2) {
+        g_Ball[0x1BD7] = 1;
+    }
+    if (*(s16*)(g_Pitcher + 0x12E) == 5) {
+        *(f32*)(g_Ball + 0) = *(f32*)(g_Fielders + 0x268);
+        *(f32*)(g_Ball + 4) = *(f32*)(g_Fielders + 0x26C);
+        *(f32*)(g_Ball + 8) = *(f32*)(g_Fielders + 0x270);
+        *(s16*)(g_Ball + 0x1B78) = 1;
+        return;
+    }
+    *(f32*)(g_Ball + 0) = *(f32*)(g_Fielders + 0);
+    *(f32*)(g_Ball + 4) = *(f32*)(g_Fielders + 4);
+    *(f32*)(g_Ball + 8) = *(f32*)(g_Fielders + 8);
+    *(s16*)(g_Ball + 0x1B78) = 0;
+    if (*(s16*)(g_Pitcher + 0x12E) >= 1 && *(s16*)(g_Pitcher + 0x12E) <= 3) {
+        *(s16*)(g_FieldingLogic + 0xC4) = *(s16*)(g_Pitcher + 0x12E);
+    }
+    v = checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(g_Fielders + 0x178), 5);
+    g_Fielders[0x215] = lbl_3_data_4900[v][2];
 }
 
 // .text:0x000323A4 size:0x450 mapped:0x80671438
