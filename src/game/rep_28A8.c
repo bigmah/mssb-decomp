@@ -12,7 +12,7 @@ extern void fn_3_1DEB8(void);
 extern void fn_3_BF1AC(void);
 extern void Set_803cb848(s32);
 extern void fn_3_BF158(void);
-extern void fn_3_AFD80(s32, void*);
+extern void fn_3_AFD80(u8 state);
 extern void fn_3_5A6D4(s32);
 extern void fn_3_2EA24(void);
 extern void fn_3_2E87C(void);
@@ -876,7 +876,7 @@ void fn_3_DCED0(void) {
     }
     lbl_803CBC3C = 1;
     if (*p > 0x3C) {
-        ((void (*)(s32))fn_3_AFD80)(1);
+        fn_3_AFD80(1);
         fn_3_5A6D4(0xB);
         return;
     }
@@ -891,7 +891,7 @@ void fn_3_DCF44(void) {
         if (((SMX*)g_Minigame)->a[i] >= 0 && ((SMX*)g_Minigame)->b[i] == 0 && (*(u16*)(g_Controls + ((SMX*)g_Minigame)->a[i] * 0x10 + 6) & 0x1000)) {
             lbl_3_common_bss_34C90.b1D5 = 1;
             ((SLB*)&lbl_3_common_bss_34C90)->a = ((SMX*)g_Minigame)->a[i];
-            fn_3_AFD80(0, &lbl_3_common_bss_34C90);
+            fn_3_AFD80(0);
             fn_3_59918(0xE, 0);
             return;
         }
@@ -1206,9 +1206,7 @@ void fn_3_DDF1C(void) {
     unkSimulationRelatedStruct[6] = 4;
 }
 
-// NONMATCHING 98%: inlined fn_3_DCF44 schedules the stb 0x1d5 before the lbz 0x18cc (fn_3_DCF44 itself matches)
 // .text:0x000DDFA0 size:0x368 mapped:0x8071D034
-#if NONMATCHING
 void fn_3_DDFA0(void) {
     if (*(s16*)(g_Pitcher + 0x11E) <= 0 && lbl_3_common_bss_34C90.b1D5 == 0) {
         fn_3_DCF44();
@@ -1273,7 +1271,6 @@ void fn_3_DDFA0(void) {
         }
     }
 }
-#endif
 
 typedef struct { s16 a, b, c; } T18BB8;
 extern T18BB8 lbl_3_data_18BB8[];
