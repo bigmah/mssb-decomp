@@ -212,8 +212,145 @@ void fn_2_5F2A8(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x0005F458 size:0x96C
-void fn_2_5F458(void) {
-    return;
+void fn_2_5F458(MenuTask* task, MenuItem* item) {
+    s16 idx;
+    s32 value;
+    s32 d3;
+    s32 d0;
+    s32 d2;
+    s32 e0;
+    s32 e1;
+    s32 f2;
+    s32 f0;
+    s32 f1;
+    s32 d1;
+    s32 f3;
+    s32 e2;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        idx = item->_0A;
+        if (idx >= 0 && idx <= 5) {
+            value = lbl_2_bss_1A824C->_197404[idx];
+            switch (idx) {
+            case 0:
+                lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x75;
+                d3 = (value / 1000) % 10;
+                d2 = (value / 100) % 10;
+                d1 = (value / 10) % 10;
+                d0 = value % 10;
+                if (value < 1000) {
+                    d3 = 10;
+                }
+                if (value < 100) {
+                    d2 = 10;
+                }
+                if (value < 10) {
+                    d1 = 10;
+                }
+                fn_800363D8((SpaniOwner*)task, item->sprite, 1, 6, d0);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 2, 6, d1);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 3, 6, d2);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 4, 6, d3);
+                break;
+            case 1:
+                if (value < 10) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x79;
+                } else if (value < 100) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x78;
+                } else if (value < 1000) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x77;
+                } else if (value < 10000) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x76;
+                }
+                fn_800363D8((SpaniOwner*)task, item->sprite, 1, 6, value % 10);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 2, 6, (value / 10) % 10);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 3, 6, (value / 100) % 10);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 4, 6, (value / 1000) % 10);
+                break;
+            case 2:
+                if (value < 10) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x7D;
+                } else if (value < 100) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x7C;
+                }
+                fn_800363D8((SpaniOwner*)task, item->sprite, 1, 6, value % 10);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 2, 6, (value / 10) % 10);
+                break;
+            case 3:
+                lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x7B;
+                e2 = (value / 100) % 10;
+                e1 = (value / 10) % 10;
+                e0 = value % 10;
+                if (value < 100) {
+                    e2 = 10;
+                }
+                if (value < 10) {
+                    e1 = 10;
+                }
+                fn_800363D8((SpaniOwner*)task, item->sprite, 1, 6, e0);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 2, 6, e1);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 3, 6, e2);
+                break;
+            case 4:
+                lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x7A;
+                f3 = (value / 1000) % 10;
+                f2 = (value / 100) % 10;
+                f1 = (value / 10) % 10;
+                f0 = value % 10;
+                if (value < 1000) {
+                    f3 = 10;
+                }
+                if (value < 100) {
+                    f2 = 10;
+                }
+                if (value < 10) {
+                    f1 = 10;
+                }
+                fn_800363D8((SpaniOwner*)task, item->sprite, 1, 6, f0);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 2, 6, f1);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 3, 6, f2);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 4, 6, f3);
+                break;
+            case 5:
+                if (value < 10) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x80;
+                } else if (value < 100) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x7F;
+                } else if (value < 1000) {
+                    lbl_80371C30[task->baseIdx + item->sprite].obj->_64 = 0x7E;
+                }
+                fn_800363D8((SpaniOwner*)task, item->sprite, 1, 6, value % 10);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 2, 6, (value / 10) % 10);
+                fn_800363D8((SpaniOwner*)task, item->sprite, 3, 6, (value / 100) % 10);
+                break;
+            }
+        }
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 10;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 1:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x0005FDC4 size:0x2C0
