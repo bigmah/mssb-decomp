@@ -41,6 +41,35 @@ void DSInitTree(DSTreePtr tree, Ptr obj, DSBranchPtr branch) {
 #pragma scheduling reset
 
 // .text:0x80091570 size:0x98
-void DSInsertBranchBelow(void) {
-    return;
+void DSInsertBranchBelow(DSTreePtr tree, Ptr cursor, Ptr obj) {
+    DSBranchPtr branch = (DSBranchPtr)(obj + tree->Offset);
+    DSBranchPtr cursorBranch;
+    Ptr sibling = NULL;
+
+    if (cursor) {
+        cursorBranch = (DSBranchPtr)(cursor + tree->Offset);
+        if (cursorBranch->Children) {
+            sibling = cursorBranch->Children;
+        } else {
+            cursorBranch->Children = obj;
+        }
+    } else {
+        if (tree->Root) {
+            sibling = tree->Root;
+        } else {
+            tree->Root = obj;
+        }
+    }
+
+    if (sibling) {
+        while (((DSBranchPtr)(sibling + tree->Offset))->Next) {
+            sibling = ((DSBranchPtr)(sibling + tree->Offset))->Next;
+        }
+        ((DSBranchPtr)(sibling + tree->Offset))->Next = obj;
+        branch->Prev = sibling;
+    } else {
+        branch->Prev = NULL;
+    }
+    branch->Next = NULL;
+    branch->Parent = cursor;
 }
