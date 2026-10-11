@@ -1685,8 +1685,62 @@ void fn_2_65258(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x000653D4 size:0x274
-void fn_2_653D4(void) {
-    return;
+void fn_2_653D4(MenuTask* task, MenuItem* item) {
+    s32 alpha;
+    LayoutObj* obj;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->_12 = 0;
+        item->_14 = fn_8000F988((LayoutGroup*)task, item->sprite, item->_10, 2, 0x217, 0);
+        item->state = 0x26;
+        break;
+    case 2:
+        fn_8000FE08(item->_14, 2, lbl_2_bss_1A824C->_197706 + 0x217);
+        item->timer = 8;
+        item->state = 3;
+        break;
+    case 3:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+            item->state = 4;
+        }
+        break;
+    case 4:
+        alpha = item->_12;
+        item->_12 = alpha + (0xFF - alpha) / 4;
+        item->_12 += 1;
+        if (item->_12 > 0xFF) {
+            item->_12 = 0xFF;
+        }
+        if (item->_12 >= 0xFF) {
+            item->state = 0x25;
+        }
+        break;
+    case 0x25:
+        item->state = 0x25;
+        break;
+    case 5:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 6;
+        break;
+    case 6:
+        alpha = item->_12;
+        item->_12 = alpha + (-alpha) / 4;
+        item->_12 -= 1;
+        if (item->_12 < 0) {
+            item->_12 = 0;
+        }
+        break;
+    case 1:
+        break;
+    }
+    obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+    obj->color = item->_12 | (obj->color & ~0xFF);
 }
 
 // .text:0x00065648 size:0x208
