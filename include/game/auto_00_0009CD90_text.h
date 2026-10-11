@@ -22,7 +22,8 @@ extern GameRunningLogic g_RunningLogic;
 
 // g_Fielders entry (0x268 bytes); only the fields used here.
 typedef struct GameFielder {
-    /*0x000*/ u8 _000[0x178];
+    /*0x000*/ f32 x; // position (fn_3_1EAA8)
+    /*0x004*/ u8 _004[0x178 - 0x4];
     /*0x178*/ s16 rosterID;
     /*0x17A*/ u8 _17A[0x18C - 0x17A];
     /*0x18C*/ s16 _18C; // base the fielder is covering

@@ -3,6 +3,9 @@
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1838.h"
 #include "static/UnknownHomes_Static.h"
+#include "game/auto_00_0009CD90_text.h"
+#include "game/auto_00_000E587C_text.h"
+#include "static/GameSettings.h"
 #pragma dont_inline on
 extern s32 fn_3_B0CF4(void);
 extern s32 fn_3_B0D2C(void);
@@ -13,7 +16,6 @@ extern u8 lbl_3_data_1C90[];
 extern u8 lbl_3_data_1C98[];
 extern f32 lbl_3_data_1D10[];
 extern s16 lbl_3_data_4B90[];
-extern u8 g_RunningLogic[];
 extern u8 lbl_3_data_1ADC[];
 extern u8 lbl_3_data_1AEC[];
 extern u8 lbl_3_data_1B4C[];
@@ -28,6 +30,17 @@ extern u8 lbl_3_data_1A28[];
 extern u8 lbl_3_data_1A3C[];
 extern f32 lbl_3_data_4474[];
 extern u8 lbl_3_data_1A40[];
+extern u8 lbl_3_data_1B50[]; // swing-timing jitter weights: [difficulty][2][9]
+extern u8 lbl_3_data_1B98[];
+extern s8 lbl_3_data_1BA8[];
+extern s8 lbl_3_data_1BAC[]; // [early/late][difficulty][min, max]
+extern s8 lbl_3_data_1BBC[];
+extern s8 lbl_3_data_1BC4[];
+extern s8 lbl_3_data_1BCC[];
+extern u8 lbl_3_data_1BD4[];
+extern u8 lbl_3_data_1BD8[];
+extern u8 lbl_3_data_1BE4[];
+extern u8 lbl_3_data_1BF0[];
 extern u8 lbl_3_data_1A58[];
 extern f32 lbl_3_data_1A88[];
 extern f32 lbl_3_data_1AA8;
@@ -54,7 +67,7 @@ void fn_3_1E4B8(void) {
     if (n > 2) {
         n = 2;
     }
-    fl = *(s16*)(g_RunningLogic + 2);
+    fl = g_RunningLogic.occupiedBases;
     if (fl & 0x100) {
         if (fl & 0x1000) {
             return;
@@ -167,7 +180,91 @@ s32 fn_3_1E7F4(void) {
 
 // .text:0x0001EAA8 size:0x53C mapped:0x8065DB3C
 void fn_3_1EAA8(void) {
-    return;
+    int jitter;
+    int late;
+    int r;
+    u8 frame;
+    s8* range;
+    int f1;
+    int f2;
+
+    if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 3) {
+        return;
+    }
+    if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 0) {
+        jitter = RandomIndexFromWeights(lbl_3_data_1B50 + g_AiLogic.aIBatterDifficulty * 0x12, 9);
+        late = 0;
+    } else {
+        jitter = RandomIndexFromWeights(lbl_3_data_1B50 + g_AiLogic.aIBatterDifficulty * 0x12 + 9, 9);
+        late = 1;
+    }
+    frame = g_Pitcher.framesUntilBallReachesBatterZ + g_Ball.pitchHangtimeCounter - swingSoundFrame[late][1];
+    g_AiLogic.frameToStartSwing = frame;
+    g_AiLogic.aIDesiredFrameToSwing = frame;
+    jitter += frame;
+    g_AiLogic.frameToStartSwing = jitter - 4;
+    if ((g_Pitcher.starPitchType == 7 || g_Pitcher.starPitchType == 8) && RandomInt_Game(100) >= lbl_3_data_1BD4[g_AiLogic.aIBatterDifficulty]) {
+        g_AiLogic.frameToStartSwing += g_Pitcher.bulletPitchLoopFrames;
+    }
+    if (g_Pitcher.starPitchType == 1 || g_Pitcher.starPitchType == 2) {
+        r = RandomInt_Game_Range(lbl_3_data_1BC4[g_AiLogic.aIBatterDifficulty * 2], lbl_3_data_1BC4[g_AiLogic.aIBatterDifficulty * 2 + 1]);
+        if (r > 5) {
+            r = 5;
+        }
+        g_AiLogic.frameToStartSwing += r;
+    } else if (g_Pitcher.starPitchType == 11 || g_Pitcher.starPitchType == 12) {
+        g_AiLogic.frameToStartSwing += RandomInt_Game_Range(lbl_3_data_1BBC[g_AiLogic.aIBatterDifficulty * 2], lbl_3_data_1BBC[g_AiLogic.aIBatterDifficulty * 2 + 1]);
+    } else if (g_Pitcher.starPitchType == 9 || g_Pitcher.starPitchType == 10) {
+        g_AiLogic.frameToStartSwing += RandomInt_Game_Range(lbl_3_data_1BCC[g_AiLogic.aIBatterDifficulty * 2], lbl_3_data_1BCC[g_AiLogic.aIBatterDifficulty * 2 + 1]);
+    } else if (g_AiLogic.batterAISwingEarly1OrLate2 == 0) {
+        if (RandomInt_Game(100) < (lbl_3_data_1B98 + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty]) {
+            g_AiLogic.frameToStartSwing += lbl_3_data_1BA8[g_AiLogic.aIBatterDifficulty];
+        }
+    } else {
+        range = lbl_3_data_1BAC + (g_AiLogic.batterAISwingEarly1OrLate2 != 1) * 8;
+        g_AiLogic.frameToStartSwing += RandomInt_Game_Range(range[g_AiLogic.aIBatterDifficulty * 2], range[g_AiLogic.aIBatterDifficulty * 2 + 1]);
+    }
+    g_AiLogic.batterAILeftRightInput = RandomIndexFromWeights(lbl_3_data_1BD8 + g_Batter.characterClass * 3, 3);
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        f1 = g_Minigame.minigameFielderIndex[g_Minigame.minigameControlStruct[0].fieldOrder[1]];
+        f2 = g_Minigame.minigameFielderIndex[g_Minigame.minigameControlStruct[0].fieldOrder[2]];
+        if (g_Fielders[f1].x < 0.0f && g_Fielders[f2].x < 0.0f) {
+            if (g_Batter.batterHand != 0) {
+                g_AiLogic.batterAILeftRightInput = 0;
+            } else {
+                g_AiLogic.batterAILeftRightInput = 2;
+            }
+        } else if (g_Fielders[f1].x > 0.0f && g_Fielders[f2].x > 0.0f) {
+            if (g_Batter.batterHand != 0) {
+                g_AiLogic.batterAILeftRightInput = 2;
+            } else {
+                g_AiLogic.batterAILeftRightInput = 0;
+            }
+        } else {
+            r = fn_3_E587C();
+            if (r >= 4) {
+                if (g_Batter.batterHand != 0) {
+                    g_AiLogic.batterAILeftRightInput = 0;
+                } else {
+                    g_AiLogic.batterAILeftRightInput = 2;
+                }
+            } else if (r != 3 && r >= 0) {
+                if (g_Batter.batterHand != 0) {
+                    g_AiLogic.batterAILeftRightInput = 2;
+                } else {
+                    g_AiLogic.batterAILeftRightInput = 0;
+                }
+            }
+        }
+    } else if (g_Strikes.outs <= 1 && (g_RunningLogic.occupiedBases & 0x1000) && g_AiLogic.aIBatterDifficulty >= 1) {
+        if (g_Batter.characterClass == 1) {
+            g_AiLogic.batterAIUpDownInput = RandomIndexFromWeights(lbl_3_data_1BF0 + g_AiLogic.aIBatterDifficulty * 3, 3);
+        } else {
+            g_AiLogic.batterAIUpDownInput = RandomIndexFromWeights(lbl_3_data_1BF0 + g_AiLogic.aIBatterDifficulty * 3 + 0xC, 3);
+        }
+    } else {
+        g_AiLogic.batterAIUpDownInput = RandomIndexFromWeights(lbl_3_data_1BE4 + g_Batter.characterClass * 3, 3);
+    }
 }
 
 // .text:0x0001EFE4 size:0x1E8 mapped:0x8065E078
