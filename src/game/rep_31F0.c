@@ -3,6 +3,7 @@
 
 #include "musyx/musyx.h"
 #include "Dolphin/mtx.h"
+#include "static/Camera.h"
 #include "game/rep_1E08.h"
 extern u8 lbl_800EFBA4[];
 
@@ -143,9 +144,107 @@ s32 fn_3_110A38(void) {
 }
 
 // .text:0x00110AD4 size:0x564 mapped:0x8074FB68
-void fn_3_110AD4(void) {
-    return;
+extern s16 fn_3_9FB8C(f32 x, f32 y);
+extern void getComponentsFromSAng(s16 ang, f32* x, f32* y);
+extern camera_803c639c_s* fn_80052768_getCamera(int index);
+extern u8 lbl_3_data_213E0[4];
+extern f32 lbl_3_data_21438[];
+
+// NONMATCHING 99.8%: f1/f2/f3 picks around the fdivs in the re-aim branch
+#if NONMATCHING
+// g_Minigame +0x1AA0: last 10 hit results per roster slot
+typedef struct { u8 pad[0x1AA0]; u8 hist[4][10]; } MgHist_31F0;
+
+// Arms the first free slot of the 10 explosion timers at g_Minigame+0x1A96.
+static inline void startBombTimer_31F0(void) {
+    s32 i;
+    for (i = 0; i < 10; i++) {
+        if (g_Minigame[0x1A96 + i] == 0) {
+            g_Minigame[0x1A96 + i] = *(s16*)(lbl_3_data_21448 + 0x10);
+            return;
+        }
+    }
 }
+
+void fn_3_110AD4(void) {
+    f32 cosB;
+    Vec v;
+    s32 i;
+    s32 angA;
+    s32 angB;
+    u8* mg = g_Minigame;
+    if (mg[0x1AD4] == 0) {
+        for (i = 9; i > 0; i--) {
+            (g_Minigame + *(s8*)(g_Minigame + 0x1905) * 10)[i + 0x1AA0] = (g_Minigame + *(s8*)(g_Minigame + 0x1905) * 10)[i + 0x1A9F];
+        }
+        ((MgHist_31F0*)g_Minigame)->hist[*(s8*)(mg + 0x1905)][0] = g_Minigame[0x1AD6];
+        v.x = *(f32*)(g_Ball + 0x0);
+        v.y = -*(f32*)(g_Ball + 0x4);
+        v.z = *(f32*)(g_Ball + 0x8);
+        *(s16*)(g_Minigame + 0x18A2) = fn_3_9FB8C(v.x, v.z);
+        *(s16*)(g_Minigame + 0x18A4) = fn_3_9FB8C(*(f32*)(g_Ball + 0x1A00), -v.y);
+        // TODO type: fn_3_BC6D8 takes Vec* from/to (rep_1E08 declares them int)
+        if (g_Pitcher[0x164] != 0) {
+            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(0, 3), 1);
+        } else if (g_Minigame[0x1AD5] != 0) {
+            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, 13, 1);
+        } else {
+            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(8, 12), 1);
+        }
+        mg[0x1AD4] = 1;
+        g_Minigame[0x1DF7] = 1;
+        *(u16*)(g_Minigame + 0x18A0) = 1;
+        *(s16*)(g_Minigame + 0x18A6) = RandomInt_Game_Range(lbl_3_data_213E0[0], lbl_3_data_213E0[1]);
+        if (g_Pitcher[0x164] != 0) {
+            *(s16*)(g_Minigame + 0x18A8) = 0;
+        } else if (g_Minigame[0x1ACC + *(s8*)(mg + 0x1905) * 2] <= 1 || g_Minigame[0x1AD5] != 0) {
+            *(s16*)(g_Minigame + 0x18A8) = 1;
+            g_Minigame[0x1DF8] = 1;
+        } else {
+            *(s16*)(g_Minigame + 0x18A8) = 0;
+        }
+        fn_3_155288();
+        startBombTimer_31F0();
+    } else if (*(s16*)(mg + 0x18A8) == 0 && --*(s16*)(mg + 0x18A6) <= 0) {
+        angA = rand() % *(s16*)(lbl_3_data_21448 + 0xA);
+        if (rand() & 1) {
+            angA = -angA;
+        }
+        angA += *(s16*)(g_Minigame + 0x18A2);
+        angB = rand() % *(s16*)(lbl_3_data_21448 + 0xC);
+        if (rand() & 1) {
+            angB = -angB;
+        }
+        angB += *(s16*)(g_Minigame + 0x18A4);
+        getComponentsFromSAng(angA, &v.x, &v.z);
+        getComponentsFromSAng(angB, &cosB, &v.y);
+        v.y = v.y / cosB;
+        v.x *= lbl_3_data_21438[3];
+        v.z *= lbl_3_data_21438[3];
+        v.y = v.y * -lbl_3_data_21438[3];
+        if (g_Pitcher[0x164] != 0) {
+            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(0, 3), 1);
+        } else if (*(u16*)(g_Minigame + 0x18A0) & 1) {
+            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(4, 7), 1);
+        } else {
+            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(8, 12), 1);
+        }
+        *(s16*)(mg + 0x18A6) = RandomInt_Game_Range(lbl_3_data_213E0[2], lbl_3_data_213E0[3]);
+        *(u16*)(g_Minigame + 0x18A0) += 1;
+        if (g_Pitcher[0x164] != 0) {
+            if (*(u16*)(g_Minigame + 0x18A0) >= 10) {
+                *(s16*)(mg + 0x18A8) = 1;
+                g_Minigame[0x1DF8] = 1;
+            }
+        } else if (*(u16*)(g_Minigame + 0x18A0) >= g_Minigame[0x1ACC + *(s8*)(g_Minigame + 0x1905) * 2] ||
+                   *(u16*)(g_Minigame + 0x18A0) >= *(s16*)(lbl_3_data_21448 + 0xE)) {
+            *(s16*)(mg + 0x18A8) = 1;
+            g_Minigame[0x1DF8] = 1;
+        }
+        startBombTimer_31F0();
+    }
+}
+#endif
 
 extern u8 g_d_GameSettings[];
 extern u8 lbl_3_common_bss_37400[];
@@ -288,7 +387,6 @@ void fn_3_1112B4(void) {
 extern void ballPhysica(void);
 extern void fn_3_6C854(s32, s32);
 extern void fn_3_8F21C(void);
-extern u8 lbl_3_data_21438[];
 
 // g_Minigame +0x18CC: minigameControlStruct[0].characterIndex[]
 typedef struct { u8 pad[0x18CC]; s8 characterIndex[0x40]; } MgCI;
@@ -298,7 +396,7 @@ void fn_3_111738(void) {
     ballPhysica();
     fn_3_1111D0();
     if (g_Ball[0x1BEE] != 0 && g_Ball[0x1BD1] == 1 &&
-        (*(f32*)(g_Ball + 0x1A00) > *(f32*)(lbl_3_data_21438 + 0xC) || g_Minigame[0x1AD4] != 0)) {
+        (*(f32*)(g_Ball + 0x1A00) > lbl_3_data_21438[3] || g_Minigame[0x1AD4] != 0)) {
         ((void (*)(void))fn_3_110AD4)();
         g_Minigame[0x1AD7] = 1;
     }
