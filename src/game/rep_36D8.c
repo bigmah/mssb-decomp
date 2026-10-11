@@ -89,11 +89,6 @@ s32 fn_3_13DA20(f32* a, f32* b) {
     return (s32)(c * x - c * y);
 }
 
-// .text:0x0013DA50 size:0x1F8 mapped:0x8077CAE4
-void fn_3_13DA50(void) {
-    return;
-}
-
 extern const f32 lbl_3_rodata_3738; // 4.0f
 extern const f32 lbl_3_rodata_373C; // 0.15f
 extern const f32 lbl_3_rodata_3728; // 100.0f
@@ -104,7 +99,7 @@ extern void fn_800528B4(void);
 extern const f32 lbl_3_rodata_3730; // 10.0f
 extern const f32 lbl_3_rodata_375C; // 0.5f
 
-// Inlined copy of fn_3_13DDE0 (the original inlines it into fn_3_13DC48 with these
+// Inlined copy of fn_3_13DDE0 (the original inlines it into fn_3_13DA50/13DC48 with these
 // constants loaded from rodata). Distance in bases from a to b around the diamond,
 // forwards (mode 1) or backwards (mode 0).
 #pragma dont_inline off
@@ -129,6 +124,30 @@ static inline f32 baseDistance(f32 a, f32 b, u8 mode) {
         return (lbl_3_rodata_3738 + a) - b;
     }
     return a - b;
+}
+
+// .text:0x0013DA50 size:0x1F8 mapped:0x8077CAE4
+f32 fn_3_13DA50(s8 idx, f32 ang, s8* dir) {
+    f32 fwd;
+    f32 back;
+    fwd = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 1);
+    if (g_Runners[idx].runningDirectionCode == 3) {
+        fwd += lbl_3_rodata_373C;
+    }
+    back = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 0);
+    if (g_Runners[idx].runningDirectionCode == 1) {
+        back += lbl_3_rodata_373C;
+    }
+    if (fwd < back) {
+        *dir = 1;
+        return fwd;
+    }
+    if (fwd > back) {
+        *dir = 3;
+        return back;
+    }
+    *dir = RandomInt_Game(2) ? 1 : 3;
+    return fwd;
 }
 
 // .text:0x0013DC48 size:0x198 mapped:0x8077CCDC
