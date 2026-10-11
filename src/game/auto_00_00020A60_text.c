@@ -37,8 +37,31 @@ void fn_3_20AE0(void) {
 }
 
 // .text:0x00020B30 size:0x104 mapped:0x8065FBC4
-void fn_3_20B30(void) {
-    return;
+s32 fn_3_20B30(void) {
+    if (!g_AiLogic.aIPitcherPickOffInd) {
+        return 0;
+    }
+    if (g_Pitcher.currentStateFrameCounter > g_AiLogic.AIFrameToBeginPitch - 10) {
+        if (g_RunningLogic.runnerBits == 0x1011) {
+            if (RandomInt_Game(3) == 0) {
+                g_Pitcher.pickOffLoc = 3;
+            } else {
+                g_Pitcher.pickOffLoc = 1;
+            }
+        } else if (g_RunningLogic.runnerBits == 0x1101) {
+            g_Pitcher.pickOffLoc = 3;
+        } else if (g_RunningLogic.runnerBits == 0x111) {
+            g_Pitcher.pickOffLoc = 2;
+        } else if (g_RunningLogic.runnerBits == 0x1001) {
+            g_Pitcher.pickOffLoc = 3;
+        } else if (g_RunningLogic.runnerBits == 0x101) {
+            g_Pitcher.pickOffLoc = 2;
+        } else {
+            g_Pitcher.pickOffLoc = 1;
+        }
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x00020C34 size:0xB8 mapped:0x8065FCC8
