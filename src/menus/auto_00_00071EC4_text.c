@@ -1910,3 +1910,43 @@ s32 fn_2_7302C(void) {
     return i;
 }
 #endif
+
+extern void fn_80051D00(void);
+
+// lbl_8034E978 is the MenuState, lbl_800FEF70 the MenuDef table (main/file_800527C4.h).
+static inline void SetMenu(s32 menu) {
+    u16* track = (u16*)(lbl_800FEF70 + 8); // &MenuDef[0].track, stride 0x10
+    u8* st = lbl_8034E978;
+    st[0] = menu;     // menu
+    st[9] = st[8];    // prevTrack = track
+    st[8] = track[menu * 8];
+}
+
+// fn_2_7265C, size:0x1B8
+void fn_2_7265C(void) {
+    s32 i;
+    s32 menu;
+    s32 found = 0;
+    if (g_d_GameSettings.GameModeSelected == 5 && lbl_803C5EA4[0x11] == 0) {
+        lbl_803C5EA4[0x11] = 1;
+        fn_800B0A5C_insertQueue((void*)fn_80053FE8, 0x3000);
+        fn_800B0A5C_insertQueue((void*)fn_2_82DE8, 0x3000);
+    }
+    for (i = 0; i < 54; i++) {
+        if (lbl_80361B20[i] != 0) {
+            found = 1;
+            break;
+        }
+    }
+    if (g_d_GameSettings.GameModeSelected != 5) {
+        if (found) {
+            menu = 2;
+        } else {
+            menu = 1;
+        }
+    } else {
+        menu = 0x13;
+    }
+    SetMenu(menu);
+    fn_800B0A5C_insertQueue((void*)fn_80051D00, 0x3000);
+}
