@@ -37,7 +37,7 @@ extern u8 g_Ball[];
 extern u8 g_Fielders[];
 extern s16 lbl_3_data_1C3C[];
 extern f32 lbl_3_data_450C[][2];
-extern f32 lbl_3_data_4290[][2][2];
+extern u8 lbl_3_data_4290[];
 extern f32 lbl_3_rodata_B74;
 extern f32 lbl_3_rodata_BA4;
 int RandomInt_Game(int max);
@@ -3688,9 +3688,9 @@ void fn_3_3061C(void) {
     for (i = 0; i < 9; i++) {
         if (f[0x1F1] == 0) {
             f[0x1F1] = 1;
-            *(f32*)f = lbl_3_data_4290[g_d_GameSettings[9]][*(int*)(g_GameLogic + 0x10) ^ 1][0];
+            *(f32*)f = *(f32*)(lbl_3_data_4290 + g_d_GameSettings[9] * 0x10 + (*(int*)(g_GameLogic + 0x10) ^ 1) * 8);
             *(f32*)(f + 4) = 0.0f;
-            *(f32*)(f + 8) = lbl_3_data_4290[g_d_GameSettings[9]][*(int*)(g_GameLogic + 0x10) ^ 1][1];
+            *(f32*)(f + 8) = *(f32*)(lbl_3_data_4290 + g_d_GameSettings[9] * 0x10 + (*(int*)(g_GameLogic + 0x10) ^ 1) * 8 + 4);
             *(f32*)(f + 0x14) = home[0];
             *(f32*)(f + 0x1C) = home[1];
             *(s16*)(f + 0x1A6) = RandomInt_Game(30);
