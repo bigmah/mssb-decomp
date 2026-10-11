@@ -24,6 +24,7 @@ void fn_80069A98(void);
 void fn_80069AD4(void);
 void fn_80069B08(void);
 BOOL fn_80069B68(void);
+s32 translateStarPitchHitIndex(u8 pitch);
 void fn_8006496C(void);
 
 #endif

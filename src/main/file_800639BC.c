@@ -56,8 +56,22 @@ void fn_80064534(void) {
 }
 
 // .text:0x80064754 size:0x8C
-void translateStarPitchHitIndex(void) {
-    return;
+s32 translateStarPitchHitIndex(u8 pitch) {
+    switch (pitch) {
+    case 0: return 6;
+    case 1: return 7;
+    case 2: return 10;
+    case 3: return 11;
+    case 4: return 14;
+    case 5: return 15;
+    case 6: return 16;
+    case 7: return 17;
+    case 8: return 12;
+    case 9: return 13;
+    case 10: return 8;
+    case 11: return 9;
+    }
+    return -1;
 }
 
 // .text:0x800647E0 size:0x9C
