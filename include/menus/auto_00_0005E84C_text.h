@@ -4,6 +4,7 @@
 #include "mssbTypes.h"
 #include "main/file_8000F150.h"
 #include "main/file_80034F50.h"
+#include "main/file_80011640.h"
 
 // Menu task (queue item) that owns a run of sprites in lbl_80371C30 starting
 // at baseIdx. Only the fields used here.
@@ -77,6 +78,10 @@ typedef struct MenuState {
 extern MenuState* lbl_2_bss_1A8248;
 
 s16 fn_2_53BC8(void* item);
+
+extern s16 lbl_2_data_2E80[][3];
+
+u32 fn_80062890(s32 index);
 
 void fn_2_5E84C(void);
 void fn_2_5EB78(void);
@@ -153,7 +158,7 @@ void fn_2_67D48(void);
 void fn_2_67FEC(MenuTask* task, MenuItem* item);
 void fn_2_681A0(MenuTask* task, MenuItem* item);
 void fn_2_68234(MenuTask* task, MenuItem* item);
-void fn_2_68260(void);
+void fn_2_68260(MenuTask* task);
 void fn_2_68308(void);
 
 #endif

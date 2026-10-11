@@ -1234,8 +1234,22 @@ void fn_2_68234(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x00068260 size:0xA8
-void fn_2_68260(void) {
-    return;
+void fn_2_68260(MenuTask* task) {
+    CharActor* actor;
+    u8 idx = lbl_2_bss_1A8248->_441C;
+    s32 base = lbl_2_data_2E80[idx][0] * 2;
+    s32 animA = base - lbl_2_data_2E80[idx][2] * 2;
+    s32 animB = base - lbl_2_data_2E80[idx][1] * 2;
+    if (task->_80 == 0) {
+        actor = &lbl_8036E548.actors[0];
+        if (actor != NULL && (actor->_068 == animA || actor->_068 == animB)) {
+            if (idx == 5) {
+                fn_80062890(1);
+            } else {
+                fn_80062890(0);
+            }
+        }
+    }
 }
 
 // .text:0x00068308 size:0x24
