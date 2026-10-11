@@ -112,6 +112,7 @@ extern u8 lbl_3_common_bss_35154[];
 extern TexImage* lbl_3_bss_B854;
 extern u8 lbl_3_data_26B9C[];
 extern u8 lbl_3_bss_B858;
+extern const f32 lbl_3_rodata_3A1C;
 extern const f64 lbl_3_rodata_3A10;
 extern void PSMTX44MultVec(const Mtx44 mtx, const Vec* src, Vec* dst);
 extern const f64 lbl_3_rodata_39D0;
@@ -2919,10 +2920,93 @@ void fn_3_154238(s16 id) {
     }
 }
 
+// NONMATCHING 93%: respawn block inlined twice (as in the original); remaining diffs are scheduling of the list-head store and the pooled data base
 // .text:0x001542F4 size:0x6FC mapped:0x80793388
-void fn_3_1542F4(void) {
-    return;
+#if NONMATCHING
+static inline void respawn_1542F4(u8* o) {
+    struct { Control c; u32 pad[2]; } cc;
+    Mtx m;
+    Vec dir;
+    Vec v;
+    f32* pos;
+    f32* rot;
+    rot = *(f32**)(o + 0x14);
+    pos = *(f32**)(o + 0x10);
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+    cc.c.type = 0;
+    CTRLSetRotation(&cc.c, lbl_3_rodata_39AC * rot[0], lbl_3_rodata_39AC * rot[1], lbl_3_rodata_39AC * rot[2]);
+    CTRLBuildMatrix(&cc.c, m);
+    if (g_Minigame[0x1A2A] == 1) {
+        dir = lbl_3_data_26BB4;
+    } else {
+        PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
+    }
+    v.x = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.x);
+    v.y = dir.y;
+    v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
+    PSMTXMultVec(m, &v, &v);
+    v.x = v.x + pos[0];
+    v.y = v.y - __fabs(pos[1]);
+    v.z = v.z + pos[2];
+    *(f32*)(o + 4) = v.x;
+    *(f32*)(o + 8) = v.y;
+    *(f32*)(o + 0xC) = v.z;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
+    o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
 }
+
+u32 fn_3_1542F4(u8* e) {
+    u8* p;
+    s32* d;
+    s32 a;
+    if (lbl_80366158[0x28] != 0) {
+        return 0;
+    }
+    if (*(u8**)(e + 0xC) == NULL) {
+        return 0;
+    }
+    p = fn_80031F34(*(void**)(e + 0xC), ((H154238*)e)->cnt);
+    *(u8**)(e + 0xC) = p;
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
+    d = (s32*)lbl_3_data_26BC0;
+    do {
+        if (*(s16*)(p + 0x48) != 0) {
+            *(s16*)(p + 0x48) -= 1;
+            if (*(s16*)(p + 0x48) == 0) {
+                respawn_1542F4(p);
+            }
+        } else if (*(s16*)(p + 0x4A) != 0) {
+            fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+            fn_80033CC8(p, *(void**)(e + 0x10));
+            if (d[6] / *(s16*)(p + 0x4A) < 2) {
+                a = p[0x43] + d[5] / (d[6] / 2);
+                if (a > d[5]) {
+                    a = d[5];
+                }
+                p[0x43] = a;
+                *(f32*)(p + 0x38) = lbl_3_rodata_394C * ((f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2)) + *(f32*)(p + 0x38);
+                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+            } else {
+                a = p[0x43] - d[5] / (d[6] / 2);
+                if (a < d[4]) {
+                    a = d[4];
+                }
+                p[0x43] = a;
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x38) - lbl_3_rodata_394C * ((f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2));
+                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+            }
+            p[0x40] = p[0x41] = p[0x42] = (s32)(lbl_3_rodata_3A1C * ((f32)p[0x43] / lbl_3_rodata_3A1C));
+            *(s16*)(p + 0x4A) -= 1;
+        }
+        if (*(s16*)(p + 0x4A) == 0 && *(s16*)(p + 0x48) <= 0) {
+            respawn_1542F4(p);
+        }
+        p = *(u8**)p;
+    } while (p != NULL);
+    return 0;
+}
+#endif
 
 // .text:0x001549F0 size:0x28C mapped:0x80793A84
 void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {

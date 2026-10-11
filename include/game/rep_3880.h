@@ -104,7 +104,7 @@ void fn_3_1540E4(u32 a, u32 b, u32 c);
 void fn_3_1541C4(u32 a, u32 b, u32 c);
 void fn_3_154214(void);
 void fn_3_154238(s16 id);
-void fn_3_1542F4(void);
+u32 fn_3_1542F4(u8* e);
 void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot);
 void fn_3_154C7C(s16 id, f32* pos, f32* rot);
 void fn_3_15521C(s16 a, f32* b, f32* c);
