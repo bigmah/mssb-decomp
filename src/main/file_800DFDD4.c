@@ -1291,9 +1291,44 @@ void fn_800E3E3C(HVQState* state, HVQMCPlane* mc, s32 mvX, s32 mvY) {
 #endif
 
 // .text:0x800E40E4 size:0x158
+// NONMATCHING 79%: register allocation and loop shape
+#if NONMATCHING
 void fn_800E40E4(HVQState* state, HVQMCPlane* mc) {
-    return;
+    HVQPlaneDesc* plane = state->planes;
+    s32 i;
+
+    for (i = 0; i < 3; i++, mc++, plane++) {
+        HVQBlock* blkBase = mc->blk;
+        u16* blockOffs = plane->blockOffs;
+        u16 width = plane->widthInSamples;
+        s32* pixelOffs = plane->pixelOffs;
+        u16 stride = plane->blocksPerRow;
+        u8 blocksPerMB = plane->blocksPerMB;
+        s32 k;
+
+        for (k = 0; k < blocksPerMB; k++) {
+            u16 blkOff = *blockOffs++;
+            s32 pixOff = *pixelOffs++;
+            HVQBlock* blk = blkBase + blkOff;
+            u8 value = blk->value;
+            u8 type = blk->type & 0xF;
+
+            if (type == 0) {
+                HVQBlock* above = blk - stride;
+                HVQBlock* below = blk + stride;
+                u8 top = (above->type & 0x77) ? value : above->value;
+                u8 left = (blk[-1].type & 0x77) ? value : blk[-1].value;
+                u8 right = (blk[1].type & 0x77) ? value : blk[1].value;
+                u8 bottom = (below->type & 0x77) ? value : below->value;
+
+                fn_800E156C(mc->dst + pixOff, width, value, top, bottom, left, right);
+            } else {
+                fn_800E2580(state, mc->dst + pixOff, width, value, type, i);
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x800E423C size:0x498
 void fn_800E423C(HVQM4SeqObj* seq, HVQMCPlane* mc) {
