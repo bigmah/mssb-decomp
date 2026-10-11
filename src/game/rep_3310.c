@@ -485,9 +485,14 @@ void fn_3_11887C(void) {
 }
 
 // .text:0x0011897C size:0x4C mapped:0x80757A10
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+// Sets the skin texture of player-ball sprite i (0x82..0x84) from its state byte.
 void fn_3_11897C(s32 i) {
-    return;
+    lbl_8036E548.objs->objects[i].actor->skinObject->textureData->texturePalette->tex[0].texIndex =
+        lbl_3_data_22670[(g_Minigame + (i - 0x82) * 0x38)[0x2C]];
 }
+#endif
 
 // .text:0x001189C8 size:0x150 mapped:0x80757A5C
 extern f32 lbl_3_data_22694[];
