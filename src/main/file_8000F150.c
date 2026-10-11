@@ -265,10 +265,27 @@ void fn_80010FA0(void) {
 }
 #endif
 
+// NONMATCHING 96%: saved regs r30/r31 swapped (loop counter vs. lbl_80366B18 base)
 // .text:0x80011000 size:0x140
+#if NONMATCHING
 void fn_80011000(void) {
-    return;
+    s32 i;
+    lbl_80366B18.fontTex[0] = (TexArchive*)((u8*)lbl_80366B18.fontArchive + lbl_80366B18.fontArchive[0]);
+    lbl_80366B18.fontTex[1] = (TexArchive*)((u8*)lbl_80366B18.fontArchive + lbl_80366B18.fontArchive[1]);
+    lbl_80366B18.fontTex[2] = (TexArchive*)((u8*)lbl_80366B18.fontArchive + lbl_80366B18.fontArchive[2]);
+    lbl_80366B18.fontTex[3] = (TexArchive*)((u8*)lbl_80366B18.fontArchive + lbl_80366B18.fontArchive[3]);
+    for (i = 0; i < 4; i++) {
+        convertTextureHeader(lbl_80366B18.fontTex[i]);
+        lbl_80366B18.fontTexObj[i] = TEX_ARCHIVE_OBJ(lbl_80366B18.fontTex[i], 0);
+    }
+    convertTextureHeader(lbl_80366B18.iconArchive);
+    for (i = 0; i < 9; i++) {
+        lbl_80366B18.iconTexObj[i] = TEX_ARCHIVE_OBJ(lbl_80366B18.iconArchive, i);
+    }
+    lbl_80366B18.scaleX = 1;
+    lbl_80366B18.scaleY = 1;
 }
+#endif
 
 // .text:0x80011140 size:0x74
 void fn_80011140(void) {
