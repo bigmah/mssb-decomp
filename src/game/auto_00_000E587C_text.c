@@ -26,5 +26,15 @@ s32 fn_3_E587C(void) {
 // .text:0x000E5924 size:0x90 mapped:0x807249B8
 // Returns 1 if all 7 flags are set.
 s32 fn_3_E5924(void) {
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        if (lbl_3_data_196B4[i] == 0) {
+            break;
+        }
+    }
+    if (i >= 7) {
+        return 1;
+    }
     return 0;
 }
