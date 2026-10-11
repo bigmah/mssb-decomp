@@ -123,6 +123,7 @@ typedef struct SpaniOwner {
     /*0x14*/ u16 baseIdx;
 } SpaniOwner;
 
+void fn_800356B8(void);
 void fn_80035ED0(s32 idx);
 void fn_80035EEC(u16 frame, s32 idx);
 void fn_80036134(SpaniOwner* owner, s32 srcIdx, u32 track, s32 dstIdx);

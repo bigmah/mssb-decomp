@@ -116,7 +116,19 @@ void fn_80035168(void) {
 
 // .text:0x800356B8 size:0x98
 void fn_800356B8(void) {
-    return;
+    s32 i;
+
+    for (i = 0; i < SPANI_OBJ_COUNT; i++) {
+        lbl_8039C3E0[i].parent = NULL;
+        lbl_8039C3E0[i].unk4 = 0;
+        lbl_8039C3E0[i].unk8 = 0;
+        lbl_8039C3E0[i].flags = 0;
+        PSMTXIdentity(lbl_8039C3E0[i].mtx);
+        lbl_80371C30[i].obj = NULL;
+        lbl_80371C30[i].unk4 = 0;
+    }
+    fn_80011140();
+    lbl_803C5F74[0] = 0;
 }
 
 // .text:0x80035750 size:0xE8
