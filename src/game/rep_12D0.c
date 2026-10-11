@@ -85,7 +85,102 @@ void fn_3_78574(s16 arg) {
 
 // .text:0x00078730 size:0x394 mapped:0x806B77C4
 void fn_3_78730(void) {
-    return;
+    s32 i;
+    u8 state;
+    u8 status;
+    s16 contact;
+
+    if (g_FieldingLogic._107 != 0) {
+        if (g_FieldingLogic._127 != 0) {
+            return;
+        }
+        if (g_FieldingLogic._126 < 0 && g_Ball.framesSinceHit > 160) {
+            g_FieldingLogic._127 = -1;
+            return;
+        }
+        if (g_FieldingLogic._107 == 1 && g_FieldingLogic._126 >= 0) {
+            if (g_FieldingLogic._126 <= 3) {
+                if (g_Ball.looseBall_codeForHowLongUntilSomeoneWillGetIt == 1) {
+                    g_FieldingLogic._126 += 4;
+                }
+            } else if (g_FieldingLogic._126 <= 7) {
+                i = g_FieldingLogic._126 - 4;
+                if (g_Runners[i].runnerOnFieldOrOutOrScored == 3) {
+                    g_FieldingLogic._127 = 1;
+                    return;
+                }
+                if (g_Runners[i].baseStandingOn >= i + 1) {
+                    g_FieldingLogic._127 = 1;
+                    return;
+                }
+            }
+        }
+        if (g_FieldingLogic._107 == 2 && g_FieldingLogic._126 >= 0) {
+            if (g_FieldingLogic._126 <= 3) {
+                if (g_FieldingLogic._126 == 3) {
+                    g_FieldingLogic._127 = -1;
+                    return;
+                }
+                if (g_Ball.looseBall_codeForHowLongUntilSomeoneWillGetIt == 1) {
+                    g_FieldingLogic._126 += 4;
+                }
+            } else if (g_FieldingLogic._126 <= 7) {
+                i = g_FieldingLogic._126 - 4;
+                if (g_Runners[i].runnerOnFieldOrOutOrScored == 3) {
+                    g_FieldingLogic._127 = 2;
+                    return;
+                }
+                if (g_Runners[i].baseStandingOn >= i + 2) {
+                    g_FieldingLogic._127 = 2;
+                    return;
+                }
+            }
+        }
+        return;
+    }
+
+    state = g_FieldingLogic._113;
+    if (state == 9 && g_Runners[0].currentBase >= 1) {
+        g_Strikes.allForcedRunnersReachedTheirBaseInd = 2;
+        return;
+    }
+    if ((state == 1 || state == 2) && g_Ball.lineDriveThroughPitcherInd == 0 && g_FieldingLogic._121 < 0 &&
+        g_FieldingLogic._129 == 0 && (contact = g_Ball.AtBat_ContactResult) != 0 && g_Ball.deadBallReason == 0) {
+        if ((g_Runners[0].runnerOnFieldOrOutOrScored == 1 && g_Runners[0].fractionalBasesRan >= 1.0f) ||
+            g_Runners[0].runnerOnFieldOrOutOrScored == 3) {
+            if (state == 1) {
+                g_FieldingLogic._132 = 1;
+            } else {
+                g_FieldingLogic._132 = 2;
+            }
+            g_FieldingLogic._113 = 9;
+            g_Runners[0].runnerDidntReachOnError = 0;
+        }
+        if (g_Runners[0].runnerOnFieldOrOutOrScored == 2 && (g_Runners[0].forceOutCd == 2 || contact == 3)) {
+            g_FieldingLogic._113 = 0;
+        }
+    }
+    if (g_FieldingLogic._113 >= 3 && g_FieldingLogic._113 <= 7) {
+        // states 3..7 refer to runner (state - 3)
+        status = g_Runners[g_FieldingLogic._113 - 3].runnerOnFieldOrOutOrScored;
+        if ((status == 1 && g_Runners[g_FieldingLogic._113 - 3].baseStandingOn >= 0 &&
+             g_Runners[g_FieldingLogic._113 - 3].forceOutCd <= 0) ||
+            status == 3) {
+            g_FieldingLogic._113 = 9;
+            g_Runners[0].runnerDidntReachOnError = 0;
+            g_FieldingLogic._132 = 3;
+        }
+        // NOTE: after the state was set to 9 above this reads past g_Runners (index 6), as the original does
+        if (g_Runners[g_FieldingLogic._113 - 3].runnerOnFieldOrOutOrScored == 2) {
+            g_FieldingLogic._113 = 0;
+        }
+    }
+    if (g_FieldingLogic._113 == 9 && g_Strikes.storedOuts == 2) {
+        g_Runners[0].runnerDidntReachOnError = 0;
+        g_Runners[1].runnerDidntReachOnError = 0;
+        g_Runners[2].runnerDidntReachOnError = 0;
+        g_Runners[3].runnerDidntReachOnError = 0;
+    }
 }
 
 // .text:0x00078AC4 size:0x57C mapped:0x806B7B58
