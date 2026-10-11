@@ -1615,6 +1615,7 @@ void fn_3_140BCC(void) {
 }
 // .text:0x00140CE0 size:0x410 mapped:0x8077FD74
 // NONMATCHING 91%: register allocation differs around the inlined fn_3_13F7E4/13F6C8/13E670/140BCC
+#if NONMATCHING
 // Per-frame update of the minigame.
 void fn_3_140CE0(void) {
     s8 i;
@@ -1650,6 +1651,7 @@ void fn_3_140CE0(void) {
     fn_3_13E670();
     fn_3_140BCC();
 }
+#endif
 
 // .text:0x001410F0 size:0x1CC mapped:0x80780184
 void fn_3_1410F0(void) {
