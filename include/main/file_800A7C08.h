@@ -294,6 +294,8 @@ typedef struct ThpPlayer {
         (track)->callback((track)->flags & (ev));                                      \
     }
 
+void fn_800A7D4C(s32 index, DrawCallbackNode* node);
+
 u16 fn_800A8864(void);
 
 StreamTrack* fn_800A88C0(void);

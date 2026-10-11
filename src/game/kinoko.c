@@ -509,8 +509,11 @@ extern u8 g_Minigame[];
 
 // Per-frame task of the mushroom ribbon effect: trails the ribbon segments,
 // cycles their colours, rebuilds the quad list and queues the draw.
-// NONMATCHING 16%: the original inlines fn_3_16B5B4 and fn_3_169D00 for each ribbon and unrolls the
+// NONMATCHING 22%: the original inlines fn_3_16B5B4 and fn_3_169D00 for each ribbon and unrolls the
 // per-ribbon loops (this file is built with dont_inline; with inlining enabled this C scores 59%)
+// nmverify: fn_3_16B5B4 fn_3_169D00 OSPanic memset fn_8001B728 PSVECAdd PSVECScale fn_3_169E70 memcpy: original inlines
+// fn_3_16B5B4 x6 (constant id folds the switch: 6+5 fn_8001B728) and fn_3_169D00 x6, and unrolls the per-ribbon
+// memcpy/fn_3_169E70 loops; counts checked by hand
 #if NONMATCHING
 void fn_3_16A07C(void) {
     u8* dst;

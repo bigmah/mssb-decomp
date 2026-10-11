@@ -51,7 +51,7 @@ typedef struct BattingRecord {
     /*0x16*/ u8 _16;
     /*0x17*/ u8 _17; // rbi with runners on
     /*0x18*/ u8 _18; // home runs with runners on
-    /*0x19*/ u8 _19[0x22 - 0x19];
+    /*0x19*/ u8 _19[0x22 - 0x19]; // [1..8]: fielding positions played (fn_3_77914)
     /*0x22*/ u8 _22;
     /*0x23*/ u8 _23;
     /*0x24*/ u8 starSwingHits; // star swings that connected

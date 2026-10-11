@@ -246,7 +246,7 @@ typedef struct _InMemRunnerType {
     /*0x12C*/ u8 outType;
     /*0x12D*/ u8 forcedToAdvanceInd; // maybe
     /*0x12E*/ u8 unused_someBaseNum;
-    /*0x12F*/ u8 baseOfFailedBodyCheck; // maybe
+    /*0x12F*/ s8 baseOfFailedBodyCheck; // maybe
     /*0x130*/ u8 tagType;               // 1=Running 2=Sliding
     /*0x131*/ u8 runnerDidntReachOnError;
     /*0x132*/ u8 isEligibleToScore; // maybe
@@ -818,9 +818,10 @@ typedef struct _InputStruct {
     /*0x08*/ u16 _08; // held direction mask (read as u16)
     /*0x0A*/ s8 right_left;
     /*0x0B*/ s8 up_down;
-    /*0x0C*/ s8 rightTriggerDistance;
-    /*0x0D*/ s8 leftTriggerDistance;
-    /*0x0E*/ s16 _0E; // padding
+    /*0x0C*/ u8 rightTriggerDistance; // analog 0..255
+    /*0x0D*/ u8 leftTriggerDistance;
+    /*0x0E*/ u8 _0E; // cleared each frame (fn_3_6D304)
+    /*0x0F*/ u8 _0F;
 } InputStruct;        // size: 0x10
 
 typedef enum _PRACTICE_TYPE {
@@ -2013,10 +2014,7 @@ typedef struct _MiniGameStruct {
     /*0x18CC*/ MiniGameControlStruct minigameControlStruct[1];
     /*0x18F8*/ s8 minigameFielderIndex[4];
     /*0x18FC*/ s8 _18FC[4];
-    /*0x1900*/ u8 _1900;
-    /*0x1901*/ u8 _1901;
-    /*0x1902*/ u8 _1902;
-    /*0x1903*/ u8 _1903;
+    /*0x1900*/ s8 _1900[4];
     /*0x1904*/ s8 minigamePlayerSelectedOrder; // the pitcher
     /*0x1905*/ s8 rosterID;
     /*0x1906*/ u8 miniGameNumberOfParticipants;
@@ -2254,7 +2252,7 @@ typedef struct _MiniGameStruct {
     /*0x1AD9*/ u8 _1AD9;
     /*0x1ADA*/ u8 barrelBatterChargeMeter;
     /*0x1ADB*/ u8 barrelBatter_scoreCalculatedInd;
-    /*0x1ADC*/ u8 barrelBatter_hitBarrelID;
+    /*0x1ADC*/ s8 barrelBatter_hitBarrelID;
     /*0x1ADD*/ u8 barrelBatter_barrelsHit;
     /*0x1ADE*/ u8 _1ADE[2];
     /*0x1AE0*/ f32 _1AE0;
@@ -2835,9 +2833,14 @@ typedef struct {
     /* 0x0B0 */ s16 _0B0; // fielder index (g_Fielders), < 0 if none
     u8 _0B2[0xBC - 0xB2];
     /* 0x0BC */ s16 _0BC;
-    u8 _0BE[0xE4 - 0xBE];
+    u8 _0BE[0xC4 - 0xBE];
+    /* 0x0C4 */ s16 _0C4; // base the play is at (runner index)
+    u8 _0C6[0xCC - 0xC6];
+    /* 0x0CC */ s16 _0CC;
+    u8 _0CE[0xE4 - 0xCE];
     /* 0x0E4 */ s16 _0E4;
-    u8 _0E6[0xEA - 0xE6];
+    u8 _0E6[0xE8 - 0xE6];
+    /* 0x0E8 */ s16 _0E8;
     /* 0x0EA */ s16 _0EA; // fielder index (g_Fielders)
     u8 _0EC[0xEE - 0xEC];
     /* 0x0EE */ s16 _0EE;
@@ -2871,13 +2874,13 @@ typedef struct {
     /* 0x11E */ u8 _11E;
     /* 0x11F */ u8 _11F;
     /* 0x120 */ u8 _120;
-    /* 0x121 */ u8 _121;
+    /* 0x121 */ s8 _121;
     /* 0x122 */ u8 _122;
     /* 0x123 */ u8 _123;
     /* 0x124 */ u8 _124;
     /* 0x125 */ u8 _125;
-    /* 0x126 */ u8 _126;
-    /* 0x127 */ u8 _127;
+    /* 0x126 */ s8 _126; // -1: none
+    /* 0x127 */ s8 _127;
     /* 0x128 */ u8 _128;
     /* 0x129 */ u8 _129;
     /* 0x12A */ u8 _12A;
@@ -2940,7 +2943,7 @@ typedef struct {
     /* 0x1F */ s8 lastFielder;
     /* 0x20 */ s16 _20;
     /* 0x22 */ s8 _22; // -1: undecided (fn_3_7976C)
-    /* 0x23 */ u8 _23;
+    /* 0x23 */ s8 _23;
     /* 0x24 */ u8 _24;
     /* 0x25 */ s8 _25; // double-play tracking (fn_3_79A00)
     /* 0x26 */ s8 _26; // runs scored on the last dead ball

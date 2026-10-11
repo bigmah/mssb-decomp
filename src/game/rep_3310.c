@@ -2,19 +2,36 @@
 #include "game/rep_1D58.h"
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
+#include "C3/geoPalette.h"
+#include "C3/anim.h"
+#include "Dolphin/GX.h"
+#include "static/Camera.h"
+
+extern Rep3310CharMgr lbl_8036E548;
 
 extern f32 lbl_3_data_2262C;
 extern f32 lbl_3_data_22650[];
 extern u8 lbl_3_data_22670[];
-extern u8 lbl_3_data_2265C[];
+extern u8 g_Minigame[];
+extern const f32 lbl_3_rodata_33AC;
+extern const f32 lbl_3_rodata_33B0;
+extern f32 lbl_3_data_225F0[];
+extern f32 lbl_3_data_21A64[];
+struct TexArchive;
+extern void fn_80033B58(struct TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT);
+extern s32 fn_8005268C(void);
+extern camera_803c639c_s* fn_80052768_getCamera(int index);
+extern Rep3310BallCfg lbl_3_data_2265C;
+extern f64 acos(f64);
+extern f64 sin(f64);
+extern f64 cos(f64);
+extern void* memcpy(void* dst, const void* src, u32 n);
 extern u8 lbl_3_common_bss_32724[];
-extern u8 lbl_8036E548[];
 extern u8 g_GameLogic[];
 extern u8 g_Pitcher[];
 extern u8 lbl_80366158[];
 extern s16 lbl_3_data_217A4[];
 extern void fn_3_90064(s32);
-typedef struct Z90 { u8 pad[0x34]; u8* a; u8 pad2[0x90 - 0x38]; } Z90;
 extern f32 lbl_3_data_21A48[];
 extern void fn_8001D0D0(int, f32);
 extern f32 shortAngleToRad(s16 ang);
@@ -26,8 +43,7 @@ extern void fn_80035B50(int);
 extern void fn_80018B38(void);
 extern void fn_3_909B0(void);
 extern void fn_3_9081C(void);
-extern void fn_800BDC88(void* p, u16 a, u16 b, u32 c, s32 d, s32 e);
-extern void fn_800BD548(void* p, s32 n, ...);
+extern void fn_800BD548(ActorObject* obj, u8 numLights, ...);
 extern void fn_80034E20(void*, void*);
 extern void* lbl_803CC1B8[];
 extern u8 lbl_80371C30[];
@@ -36,131 +52,172 @@ extern void fn_80024DB0(void*);
 extern void* fn_80034CEC(void*);
 extern void fn_800B0A14_removeQueue(void*);
 extern void fn_80024FA4(void*, u32, void*, int);
-extern void CTRLSetTranslation(void* c, f32 x, f32 y, f32 z);
-extern void CTRLSetRotation(void* c, f32 x, f32 y, f32 z);
 extern void* _OSAllocFromHeap(int, int);
-extern void* ActorObjectInitTable(u16);
 extern void fn_80025C58(void*, void*);
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
-// 97%: only the fn_8001D0D0 arg-1 table lookup differs: original is addi r4,r29,0x88; lfsx f1,r4,r0 (base+0x88 in a register), ours folds to add r4,r29,r0; lfs 0x88(r4)
-extern f32 lbl_3_data_225F0[];
-extern const f32 lbl_3_rodata_33B0;
-extern const f32 lbl_3_rodata_33AC;
-extern u8 g_Minigame[];
+// NONMATCHING 84%: the original reaches lbl_3_data_22678/22688/22694/226AC through the lbl_3_data_225F0 pooled base (a u8* d = lbl_3_data_225F0 + offsets version reached 97%, but indexes past that object's end); the 0x88 table lookup is addi+lfsx there
+#if NONMATCHING
+extern f32 lbl_3_data_22678[];
+extern f32 lbl_3_data_22688[];
+// Places the 3 runners (sprites 0x82..0x84); a runner that just started (state 0x1C == 1)
+// gets its idle animation.
 void fn_3_116840(void) {
-    u8* d = (u8*)lbl_3_data_225F0;
+    Rep3310Sprite* e;
     u8* g;
-    u8* e;
-    u8* o;
     s32 i;
-    s32 x;
     for (i = 0; i < 3; i++) {
         g = g_Minigame + i * 0x38;
-        e = *(u8**)(lbl_8036E548 + 0x2D94) + (i + 0x82) * 0x28;
-        e[0x26] = 0;
+        e = &lbl_8036E548.sprites[i + 0x82];
+        e->visible = 0;
         if (g[0x2A] != 0) {
-            e[0x26] = 1;
-            *(f32*)(e + 4) = *(f32*)g;
-            *(f32*)(e + 8) = -*(f32*)(g + 4);
-            *(f32*)(e + 0xC) = *(f32*)(g + 8);
-            fn_8001D0D0(i + 0x82, ((f32*)(d + 0x88))[g[0x2B]]);
-            *(f32*)(e + 0x14) = ((f32*)(d + 0x98))[i];
-            *(void**)e = fn_3_11897C;
+            e->visible = 1;
+            e->pos[0] = *(f32*)g;
+            e->pos[1] = -*(f32*)(g + 4);
+            e->pos[2] = *(f32*)(g + 8);
+            fn_8001D0D0(i + 0x82, lbl_3_data_22678[g[0x2B]]);
+            e->rot[1] = lbl_3_data_22688[i];
+            e->draw = fn_3_11897C;
             if (*(s16*)(g + 0x1C) == 1) {
-                o = *(u8**)(lbl_8036E548 + 0x68) + (i + 0x82) * 0x90 + 0x34;
-                x = *(s32*)(lbl_3_common_bss_32724 + 0x78);
-                *(s32*)(o + 4) = x;
-                *(s16*)(o + 0xE) = 0;
-                *(f32*)(o + 0x5C) = lbl_3_rodata_33AC;
-                o[0x58] = 1;
-                o[0x59] = (x != 0);
-                o[0x5A] = (x != 0);
-                *(f32*)(o + 0x60) = lbl_3_rodata_33B0;
-                *(f32*)(o + 0x54) = *(f32*)(d + 0xA4);
-                o[0x5A] = 1;
-                *(f32*)(o + 0x5C) = (f32)*(s16*)(d + 0xBC);
-                o[0x59] = 1;
-                o[0x5B] = 3;
-                g[0x33] = 0;
-                *(s16*)(g + 0x28) = 0;
-                *(s16*)(g + 0x1C) = *(s16*)(g + 0x1C) + 1;
+                fn_3_1189C8(i, 0, 0, 6, 1);
+                *(s16*)(g + 0x1C) += 1;
             }
         }
     }
 }
+#endif
 
 // .text:0x001169D0 size:0x168 mapped:0x80755A64
 void fn_3_1169D0(void) {
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x275E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2416] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x252E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2646] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2786] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x289E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x29B6] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x243E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2556] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x266E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x27AE] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x28C6] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x29DE] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2466] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x257E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2696] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x27D6] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x28EE] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2A06] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x248E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x25A6] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x26BE] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x27FE] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2916] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2A2E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x24B6] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x25CE] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x26E6] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2826] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x293E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2A56] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x24DE] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x25F6] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x270E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x284E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2966] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2A7E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2506] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x261E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2736] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2876] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x298E] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0x2AA6] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x275E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2416] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x252E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2646] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2786] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x289E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x29B6] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x243E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2556] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x266E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x27AE] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x28C6] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x29DE] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2466] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x257E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2696] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x27D6] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x28EE] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2A06] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x248E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x25A6] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x26BE] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x27FE] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2916] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2A2E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x24B6] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x25CE] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x26E6] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2826] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x293E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2A56] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x24DE] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x25F6] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x270E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x284E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2966] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2A7E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2506] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x261E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2736] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2876] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x298E] = 0;
+    ((u8*)lbl_8036E548.sprites)[0x2AA6] = 0;
 }
 
 // .text:0x00116B38 size:0x3C mapped:0x80755BCC
 extern u8 g_Minigame[];
-extern u8 lbl_8036E548[];
 extern u8 g_d_GameSettings[];
 typedef struct { u8 pad[0x34]; void* p; u8 pad2[0x90 - 0x38]; } Ent90;
 extern f32 fn_800B4A94(void* p);
 
-typedef struct { u8 pad[0x26]; u8 f; u8 pad2[1]; } E28;
 void fn_3_116B38(void) {
     s32 i = 2;
     if (g_Minigame[0x1A2A] == 3) {
         i = 0x1F;
     }
-    ((E28*)*(u8**)(lbl_8036E548 + 0x2D94))[i].f = 0;
+    ((Rep3310Sprite*)lbl_8036E548.sprites)[i].visible = 0; // the cast is needed to match
 }
 
 // .text:0x00116B74 size:0x8A8 mapped:0x80755C08
-void fn_3_116B74(void) {
-    return;
+// NONMATCHING 56%: the original inlines every per-mode helper (fn_3_1169D0 is a bl here) and unrolls the 40-sprite clear loop by 8; it also reaches lbl_3_data_226C4 through the lbl_3_data_225F0 pooled base
+#if NONMATCHING
+extern void fn_8001D110(s32 i, f32 a, f32 b, f32 c);
+extern u8 lbl_3_data_21BC4[];
+extern f32 lbl_3_data_226C4[];
+static inline void hideSprites_116B74(void) {
+    s32 i;
+    for (i = 0; i < 40; i++) {
+        lbl_8036E548.sprites[i].visible = 0;
+        lbl_8036E548.sprites[i].draw = NULL;
+    }
 }
+// Per-frame sprite placement for the current minigame (g_Minigame[0x1A2A]).
+void fn_3_116B74(void) {
+    Rep3310Sprite* e;
+    f32* v;
+    s32 i;
+
+    switch (g_Minigame[0x1A2A]) {
+    case 1:
+        fn_3_116B38();
+        break;
+    case 2:
+        fn_3_1169D0();
+        break;
+    case 3:
+        fn_3_116B38();
+        fn_3_119F6C();
+        break;
+    case 4:
+        fn_3_119934();
+        fn_3_117494();
+        break;
+    case 6:
+        fn_3_118164();
+        fn_3_117FC8();
+        hideSprites_116B74();
+        fn_3_1179EC();
+        fn_3_117494();
+        break;
+    case 5:
+        fn_3_1194FC();
+        fn_3_116840();
+        hideSprites_116B74();
+        for (i = 0; i < 7; i++) {
+            e = &lbl_8036E548.sprites[i + 0xE9];
+            e->visible = 0;
+            if (i >= 4) {
+                v = (f32*)(lbl_3_data_21BC4 + i * 0x30 - 0xC0);
+                e->visible = 1;
+                e->pos[0] = v[0];
+                e->pos[1] = -v[1];
+                e->pos[2] = v[2];
+                fn_8001D110(i + 0xE9, lbl_3_data_226C4[0], lbl_3_data_226C4[1], lbl_3_data_226C4[0]);
+                e->draw = fn_3_11881C;
+            }
+        }
+        lbl_8036E548.sprites[0xF0].visible = 0;
+        lbl_8036E548.sprites[0xF1].visible = 0;
+        lbl_8036E548.sprites[0xF2].visible = 0;
+        lbl_8036E548.sprites[0xF3].visible = 0;
+        break;
+    }
+}
+#endif
 
 // .text:0x0011741C size:0x78 mapped:0x807564B0
 void fn_3_11741C(s32 i) {
-    u8* t = (*(Z90**)(lbl_8036E548 + 0x68))[i].a;
+    u8* t = (u8*)lbl_8036E548.objs->objects[i].actor;
     s32 off;
     s32 k;
     s32 v = g_Minigame[0xCCE] == 1 ? 0 : 2;
@@ -179,7 +236,7 @@ extern const f32 lbl_3_rodata_33C8;
 
 void fn_3_117494(void) {
     u8* g = g_Minigame;
-    u8* p = *(u8**)(lbl_8036E548 + 0x2D94);
+    u8* p = (u8*)lbl_8036E548.sprites;
     p[0x252E] = 0;
     p[0xFEE] = 0;
     *(void**)(p + 0x2508) = NULL;
@@ -199,9 +256,83 @@ void fn_3_117494(void) {
 }
 
 // .text:0x00117588 size:0x464 mapped:0x8075661C
-void fn_3_117588(void) {
-    return;
+// NONMATCHING 93%: (measured with the rodata externs) scheduling/register order of the quad corner math
+#if NONMATCHING
+// Draws the ground shadow quad under sprite idx (0xE9..0xEC), shrinking it with height,
+// then picks the actor's texture from its state byte.
+void fn_3_117588(s32 idx) {
+    f32 uv[4][2] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+    Vec quad[4];
+    GXColor color;
+    Rep3310Sprite* e = &lbl_8036E548.sprites[idx];
+    u8* state = g_Minigame + (idx - 0xE9) * 0x40 + 0xBB0;
+    GameActor* actor;
+    f32 size = 2.5f * (1.0f - (-e->pos[1] * 0.5f) / lbl_3_data_21A64[0]);
+    f32 hw;
+    f32 hd;
+    s32 k;
+    u16 tex;
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_TEXC, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+
+    hw = 2.8f * size * 0.5f;
+    hd = 2.5f * size * 0.5f;
+    color.r = 0;
+    color.g = 0;
+    color.b = 0;
+    color.a = 0x9B;
+    quad[0].x = -hw + e->pos[0];
+    quad[0].y = -0.06f;
+    quad[0].z = hd + e->pos[2];
+    quad[1].x = hw + e->pos[0];
+    quad[1].y = -0.06f;
+    quad[1].z = hd + e->pos[2];
+    quad[2].x = hw + e->pos[0];
+    quad[2].y = -0.06f;
+    quad[2].z = -hd + e->pos[2];
+    quad[3].x = -hw + e->pos[0];
+    quad[3].y = -0.06f;
+    quad[3].z = -hd + e->pos[2];
+
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, GX_PERSPECTIVE);
+    fn_80033B58(*(struct TexArchive**)(lbl_3_common_bss_32724 + 0x6C), 0x13, GX_CLAMP, GX_CLAMP); // TODO type
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (k = 0; k < 4; k++) {
+        GXPosition3f32(quad[k].x, quad[k].y, quad[k].z);
+        GXColor1u32(*(u32*)&color);
+        GXTexCoord2f32(uv[k][0], uv[k][1]);
+    }
+
+    actor = lbl_8036E548.objs->objects[idx].actor;
+    if (state[0x3D] == 1 || state[0x3D] == 5) {
+        tex = 0;
+    } else {
+        tex = 1;
+    }
+    for (k = 0; k < actor->totalBones; k++) {
+        actor->boneArray[k]->dispObj->textureData->texturePalette->tex[0].texIndex = tex;
+    }
 }
+#endif
 
 // .text:0x001179EC size:0xF8 mapped:0x80756A80
 extern const f32 lbl_3_rodata_33DC;
@@ -211,7 +342,7 @@ void fn_3_1179EC(void) {
     f32* v;
     u32 i;
     for (i = 0; i < 4; i++) {
-        e = *(u8**)(lbl_8036E548 + 0x2D94) + (i + 0xE9) * 0x28;
+        e = (u8*)lbl_8036E548.sprites + (i + 0xE9) * 0x28;
         v = (f32*)(g_Minigame + i * 0x40 + 0xBB0);
         e[0x26] = 0;
         *(void**)e = NULL;
@@ -231,7 +362,7 @@ void fn_3_1179EC(void) {
 
 // .text:0x00117AE4 size:0x94 mapped:0x80756B78
 void fn_3_117AE4(void) {
-    u8* p = *(u8**)(lbl_8036E548 + 0x2D94);
+    u8* p = (u8*)lbl_8036E548.sprites;
     f32 z = 0.0f;
     p[0x243E] = 1;
     *(f32*)(p + 0x241C) = lbl_3_data_21A48[0];
@@ -244,9 +375,75 @@ void fn_3_117AE4(void) {
 }
 
 // .text:0x00117B78 size:0x450 mapped:0x80756C0C
-void fn_3_117B78(void) {
-    return;
+// NONMATCHING 92%: (measured with the rodata externs) the original builds -1.5 with fneg and schedules the rotation math differently
+#if NONMATCHING
+// Draws the square ground marker under sprite idx, rotated by its yaw (rot[1]).
+void fn_3_117B78(s32 idx) {
+    f32 uv[4][2] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+    Vec quad[4];
+    Vec tmp;
+    GXColor color;
+    Rep3310Sprite* e = &lbl_8036E548.sprites[idx];
+    u32 k;
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_TEXC, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+
+    quad[0].x = -1.5f;
+    quad[0].z = 1.5f;
+    quad[1].x = 1.5f;
+    quad[1].z = 1.5f;
+    quad[2].x = 1.5f;
+    quad[2].z = -1.5f;
+    quad[3].x = -1.5f;
+    quad[3].z = -1.5f;
+    for (k = 0; k < 4; k++) {
+        f32 s;
+        f32 c;
+        memcpy(&tmp, &quad[k], sizeof(Vec));
+        s = sin(-e->rot[1]);
+        quad[k].x = tmp.x * (f32)cos(-e->rot[1]) + tmp.z * -s;
+        c = cos(-e->rot[1]);
+        quad[k].z = tmp.x * (f32)sin(-e->rot[1]) + tmp.z * c;
+    }
+    for (k = 0; k < 4; k++) {
+        quad[k].x += e->pos[0];
+        quad[k].y = -0.06f;
+        quad[k].z += e->pos[2];
+    }
+    color.r = 0;
+    color.g = 0;
+    color.b = 0;
+    color.a = 0x9B;
+
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, GX_PERSPECTIVE);
+    fn_80033B58(*(struct TexArchive**)(lbl_3_common_bss_32724 + 0x6C), 0x14, GX_CLAMP, GX_CLAMP); // TODO type
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (k = 0; k < 4; k++) {
+        GXPosition3f32(quad[k].x, quad[k].y, quad[k].z);
+        GXColor1u32(*(u32*)&color);
+        GXTexCoord2f32(uv[k][0], uv[k][1]);
+    }
 }
+#endif
 
 // .text:0x00117FC8 size:0xDC mapped:0x8075705C
 extern const f32 lbl_3_rodata_33CC;
@@ -257,9 +454,9 @@ extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern f32 fn_3_9FEA8(f32 v);
 
 void fn_3_117FC8(void) {
-    u8* p = *(u8**)(lbl_8036E548 + 0x2D94);
+    u8* p = (u8*)lbl_8036E548.sprites;
     p[0x2466] = 0;
-    (*(u8**)(lbl_8036E548 + 0x2D94))[0xFEE] = 0;
+    ((u8*)lbl_8036E548.sprites)[0xFEE] = 0;
     if (g_Minigame[0x72A] != 0) {
         p[0x2466] = 1;
         *(f32*)(p + 0x2444) = *(f32*)(g_Minigame + 0x6E8);
@@ -281,7 +478,7 @@ extern const f32 lbl_3_rodata_33C4;
 extern const f32 lbl_3_rodata_33F4;
 
 void fn_3_1180A4(void) {
-    u8* p = *(u8**)(lbl_8036E548 + 0x2D94);
+    u8* p = (u8*)lbl_8036E548.sprites;
     p[0xFC6] = 0;
     p[0x2416] = 0;
     if (g_Minigame[0xBAC] == 1) {
@@ -313,9 +510,9 @@ void fn_3_118164(void) {
     s32 j;
     for (i = 0; i < 0x64; i++) {
         j = i + 0x82;
-        e1 = *(u8**)(lbl_8036E548 + 0x2D94) + j * 0x28;
+        e1 = (u8*)lbl_8036E548.sprites + j * 0x28;
         e1[0x26] = 0;
-        e2 = *(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28;
+        e2 = (u8*)lbl_8036E548.sprites + i * 0x28;
         e2[0x26] = 0;
         if (g_Minigame[i + 0x193A] == 1 || g_Minigame[i + 0x193A] == 3) {
             e1[0x26] = 1;
@@ -353,16 +550,15 @@ void fn_3_118164(void) {
 
 // .text:0x00118358 size:0xA4 mapped:0x807573EC
 extern void* memset(void* dst, int c, u32 n);
-extern void PSMTXMultVec(void* m, void* src, void* dst);
 
 void fn_3_118358(s32 i, f32* v) {
-    u8* o = *(u8**)(*(u8**)(*(u8**)(*(u8**)(lbl_8036E548 + 0x68) + (i + 0x82) * 0x90 + 0x34) + 0x18) + 0x44);
+    u8* o = *(u8**)(*(u8**)(*(u8**)((u8*)lbl_8036E548.objs + (i + 0x82) * 0x90 + 0x34) + 0x18) + 0x44);
     if (i < 0 || i > 2) {
         return;
     }
     if (v != NULL) {
         memset(v, 0, 0xC);
-        PSMTXMultVec(*(void**)(o + 0xEC), v, v);
+        PSMTXMultVec(*(MtxPtr*)(o + 0xEC), (Vec*)v, (Vec*)v);
         v[1] *= -1.0f;
     }
 }
@@ -375,7 +571,7 @@ void fn_3_1183FC(void) {
     s32 i;
     u8* e;
     for (i = 0; i < 4; i++) {
-        e = *(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28;
+        e = (u8*)lbl_8036E548.sprites + i * 0x28;
         *(f32*)(e + 0x2584) = lbl_3_data_21B94[i * 3];
         *(f32*)(e + 0x2588) = -lbl_3_data_21B94[i * 3 + 1];
         *(f32*)(e + 0x258C) = lbl_3_data_21B94[i * 3 + 2];
@@ -429,7 +625,7 @@ void fn_3_11874C(void) {
         return;
     }
     for (i = 0; i < 0x28; i++) {
-        u8* p = *(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28;
+        u8* p = (u8*)lbl_8036E548.sprites + i * 0x28;
         f32* v = (f32*)(g_Minigame + i * 0x28 + 0xA8);
         p[0x26] = 0;
         *(s32*)p = 0;
@@ -444,9 +640,19 @@ void fn_3_11874C(void) {
 }
 
 // .text:0x0011881C size:0x60 mapped:0x807578B0
-void fn_3_11881C(void) {
-    return;
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+extern u8 lbl_3_data_226BC[];
+void fn_3_11881C(s32 i) {
+    s32 tex;
+    if (i - 0xE9 < 4) {
+        tex = lbl_3_data_226BC[i - 0xE9];
+    } else {
+        tex = lbl_3_data_226BC[4];
+    }
+    lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette->tex[0].texIndex = tex;
 }
+#endif
 
 // .text:0x0011887C size:0x100 mapped:0x80757910
 extern f32 lbl_3_data_21B94[];
@@ -459,7 +665,7 @@ void fn_3_11887C(void) {
     s32 i;
     f32* v;
     for (i = 0; i < 7; i++) {
-        e = *(u8**)(lbl_8036E548 + 0x2D94) + (i + 0xE9) * 0x28;
+        e = (u8*)lbl_8036E548.sprites + (i + 0xE9) * 0x28;
         e[0x26] = 1;
         if (i < 4) {
             v = &lbl_3_data_21B94[i * 3];
@@ -481,16 +687,21 @@ void fn_3_11887C(void) {
 }
 
 // .text:0x0011897C size:0x4C mapped:0x80757A10
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+// Sets the skin texture of player-ball sprite i (0x82..0x84) from its state byte.
 void fn_3_11897C(s32 i) {
-    return;
+    lbl_8036E548.objs->objects[i].actor->skinObject->textureData->texturePalette->tex[0].texIndex =
+        lbl_3_data_22670[(g_Minigame + (i - 0x82) * 0x38)[0x2C]];
 }
+#endif
 
 // .text:0x001189C8 size:0x150 mapped:0x80757A5C
 extern f32 lbl_3_data_22694[];
 extern s16 lbl_3_data_226AC[];
 void fn_3_1189C8(s32 i, s32 a, s32 b, s32 d, u8 flag) {
     u8* m = g_Minigame + i * 0x38;
-    u8* o = *(u8**)(lbl_8036E548 + 0x68) + (i + 0x82) * 0x90 + 0x34;
+    u8* o = (u8*)lbl_8036E548.objs + (i + 0x82) * 0x90 + 0x34;
     f32 inv = lbl_3_rodata_33AC;
     u8 t;
     s32 x;
@@ -519,9 +730,62 @@ void fn_3_1189C8(s32 i, s32 a, s32 b, s32 d, u8 flag) {
 }
 
 // .text:0x00118B18 size:0x7A0 mapped:0x80757BAC
-void fn_3_118B18(void) {
-    return;
+// NONMATCHING 74%: same instructions apart from addressing; the original reaches lbl_3_data_22678/22688/22694/226AC through the lbl_3_data_225F0 pooled base (one saved reg), we use one lis per access; inlined fn_3_1189C8 copies
+#if NONMATCHING
+extern s16 lbl_3_data_21E68[];
+extern f32 lbl_3_data_22678[];
+extern f32 lbl_3_data_22688[];
+extern s32 fn_3_143770(u8* p);
+extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
+// Animation state machine of runner i (g_Minigame + i * 0x38), actor 0x82 + i.
+void fn_3_118B18(s32 i) {
+    u8* g = g_Minigame + i * 0x38;
+    s32 frame;
+
+    *(s16*)(g + 0x28) += 1;
+    if (g[0x2A] == 1) {
+        if (*(s16*)(g + 0x1A) <= 1) {
+            fn_3_1189C8(i, 2, 0, 0, 0);
+            fn_8001D0D0(i + 0x82, 0.01f);
+        } else {
+            fn_8001D0D0(i + 0x82, LinearInterpolateToNewRange((f32)*(s16*)(g + 0x1A), 0.0f, (f32)lbl_3_data_21E68[5],
+                                                               lbl_3_data_22678[g[0x2B] + 2], lbl_3_data_22678[g[0x2B]]));
+        }
+        if (*(s16*)(g + 0x1C) == 1) {
+            fn_3_1189C8(i, 0, 0, 6, 1);
+        }
+    } else if (g[0x2A] == 4) {
+        if (*(s16*)(g + 0x1A) <= 1) {
+            fn_3_1189C8(i, 4, 0, 0, 0);
+        }
+    } else if (*(s16*)(g + 0x1E) == 2) {
+        if (g[0x2B] == 0) {
+            fn_3_1189C8(i, 1, 0, 0, 0);
+        } else {
+            fn_3_1189C8(i, 5, 0, 0, 0);
+        }
+    } else if (*(s16*)(g + 0x1E) == lbl_3_data_21E68[7]) {
+        if (g[0x33] != 0) {
+            fn_3_1189C8(i, 0, 0, 6, 1);
+        }
+    } else {
+        if (g[0x2E] != 0 && (*(s16*)(g + 0x26) == 1 || g[0x2B] != 0)) {
+            // lbl_3_data_226AC is followed by two u8 frame counts at +0xC/+0xD
+            frame = ((u8*)lbl_3_data_226AC)[0xC] - lbl_3_data_21E68[13] - 1;
+            if (g[0x2B] == 0) {
+                fn_3_143770(g);
+            }
+            fn_3_1189C8(i, 3, frame, 2, 0);
+        }
+        if (g[0x33] == 3 && *(s16*)(g + 0x28) == ((u8*)lbl_3_data_226AC)[0xD] - lbl_3_data_226AC[3]) {
+            fn_3_1189C8(i, 0, 0, 6, 1);
+            *(f32*)(g + 0x14) = 0.0f;
+            *(f32*)(g + 0xC) = 0.0f;
+            *(f32*)(g + 0x10) = lbl_3_data_22688[i];
+        }
+    }
 }
+#endif
 
 // .text:0x001192B8 size:0x1B0 mapped:0x8075834C
 extern s16 lbl_3_data_21E68[];
@@ -534,7 +798,7 @@ void fn_3_1192B8(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
         g = g_Minigame + i * 0x38;
-        e = *(u8**)(lbl_8036E548 + 0x2D94) + (i + 0x82) * 0x28;
+        e = (u8*)lbl_8036E548.sprites + (i + 0x82) * 0x28;
         e[0x26] = 0;
         if (g[0x2A] != 0) {
             e[0x26] = 1;
@@ -570,7 +834,7 @@ extern void fn_3_14225C(void);
 
 typedef struct { u8 p[0x34]; u8* o; u8 q[0x58]; } E90;
 void fn_3_119468(s32 i) {
-    E90* arr = *(E90**)(lbl_8036E548 + 0x68);
+    E90* arr = (E90*)lbl_8036E548.objs;
     u8* o = arr[i].o;
     if (o[0x98] & 9) {
         fn_3_14225C();
@@ -578,14 +842,104 @@ void fn_3_119468(s32 i) {
 }
 
 // .text:0x001194AC size:0x50 mapped:0x80758540
-void fn_3_1194AC(void) {
-    return;
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+void fn_3_1194AC(s32 i) {
+    lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette->tex[0].texIndex =
+        lbl_3_data_2265C.tex[g_Minigame[i + 0x1AFF]];
 }
+#endif
 
 // .text:0x001194FC size:0x358 mapped:0x80758590
+// NONMATCHING 89%: register allocation, the state 0/3/4 test is folded to a range compare, and the bounce counter update order differs; the original reaches lbl_3_data_2265C through the lbl_3_data_225F0 pooled base
+#if NONMATCHING
+extern void fn_3_15521C(s16 idx, f32* pos, f32* rot); // TODO: rep_3880.h declares it with u32 args
+// Places the 50 balls (sprites 0x85.., or 0xB7.. while state 5) and their shadows (0x28..).
 void fn_3_1194FC(void) {
-    return;
+    Vec dir;
+    Vec fwd = {0.0f, 0.0f, 1.0f};
+    Rep3310Sprite* e;
+    Rep3310Sprite* alt;
+    Rep3310Sprite* shadow;
+    s32 base;
+    s32 i;
+    f32 ang;
+    f32 s;
+
+    for (i = 0; i < 50; i++) {
+        e = &lbl_8036E548.sprites[i + 0x85];
+        e->visible = 0;
+        e->draw = NULL;
+        alt = &lbl_8036E548.sprites[i + 0xB7];
+        alt->visible = 0;
+        alt->draw = NULL;
+        shadow = &lbl_8036E548.sprites[i + 0x28];
+        shadow->visible = 0;
+        shadow->draw = NULL;
+        if (g_Minigame[0x193A + i] == 0 || g_Minigame[0x193A + i] == 3 || g_Minigame[0x193A + i] == 4) {
+            continue;
+        }
+        if (g_Minigame[0x1B84 + i] == 5) {
+            alt->draw = NULL;
+            e = alt;
+            base = 0xB7;
+        } else {
+            base = 0x85;
+            e->draw = fn_3_1194AC;
+        }
+        e->visible = 1;
+        e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+        e->pos[1] = -*(f32*)(g_Minigame + i * 0xC + 0xCD4);
+        e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+        if (g_Minigame[0x193A + i] == 2) {
+            s = lbl_3_data_2265C.scale -
+                ((f32)g_Minigame[0x1C4C + i] * (lbl_3_data_2265C.scale - lbl_3_data_2265C.minScale)) /
+                    (f32)lbl_3_data_2265C.squashFrames;
+            if (lbl_80366158[0x28] == 0) {
+                fn_8001D110(base + i, lbl_3_data_2265C.scale, s, lbl_3_data_2265C.scale);
+                g_Minigame[0x1C4C + i] = g_Minigame[0x1C4C + i] - g_Minigame[0x1C1A + i] * 2 + 1;
+                if (g_Minigame[0x1C4C + i] >= 60) {
+                    g_Minigame[0x1C1A + i] = g_Minigame[0x1C1A + i] == 0;
+                }
+                g_Minigame[0x1C4C + i] = g_Minigame[0x1C4C + i] - g_Minigame[0x1C1A + i] * 2 + 1;
+            }
+            e->rot[0] = 0.0f;
+            e->rot[1] = 0.0f;
+            e->rot[2] = 0.0f;
+            if (g_Minigame[0x1B84 + i] == 5) {
+                e->pos[1] -= 0.5f;
+            }
+            continue;
+        }
+        fn_8001D0D0(base + i, lbl_3_data_2265C.scale);
+        if (g_Minigame[0x193A + i] != 6) {
+            dir.x = *(f32*)(g_Minigame + 0x1180 + i * 0xC);
+            dir.y = 0.0f;
+            dir.z = *(f32*)(g_Minigame + 0x1188 + i * 0xC);
+            PSVECNormalize(&dir, &dir);
+            ang = acos(PSVECDotProduct(&fwd, &dir));
+            if (dir.x < 0.0f) {
+                ang = 6.2831855f - ang;
+            }
+            if (lbl_80366158[0x28] == 0) {
+                e->rot[1] = ang;
+                e->rot[0] += -0.17453292f;
+            }
+        }
+        if (g_Minigame[0x1B84 + i] == 5 && *(s16*)(g_Minigame + 0x17C8 + i * 2) == 1) {
+            fn_3_15521C(i, e->pos, e->rot);
+        }
+        if (g_Minigame[0x1B84 + i] == 5) {
+            e->draw = fn_3_119468;
+        }
+        shadow->visible = 1;
+        shadow->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+        shadow->pos[1] = -0.05f;
+        shadow->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+        fn_8001D0D0(i + 0x28, lbl_3_data_2265C.shadowScale);
+    }
 }
+#endif
 
 // .text:0x00119854 size:0x24 mapped:0x807588E8
 f32 fn_3_119854(u8 i) {
@@ -596,33 +950,103 @@ f32 fn_3_119854(u8 i) {
 }
 
 // .text:0x00119878 size:0xBC mapped:0x8075890C
-// 97%: same code, but p/g (r5/r6) and the lis temps (r3/r4) come out swapped in the prologue
-extern const f32 lbl_3_rodata_3420;
+// NONMATCHING 97%: the sprite-array and g_Minigame base registers (r5/r6) come out swapped; declaration/init orders, nested ifs and no-local forms did not help
+#if NONMATCHING
 void fn_3_119878(void) {
-    u8* p = *(u8**)(lbl_8036E548 + 0x2D94);
     u8* g = g_Minigame;
-    p[0x1A16] = 0;
-    *(void**)(p + 0x19F0) = 0;
+    Rep3310Sprite* p = lbl_8036E548.sprites;
+    p[0xA6].visible = 0;
+    p[0xA6].draw = NULL;
     if (g[0xCCE] != 0 &&
         (*(s16*)(g + 0xCCC) > 0x3C || *(s16*)(g + 0xCCC) % 2 != 0 ||
          g[0x1B19] == 2 || g[0x1B19] == 3)) {
-        p[0x1A16] = 1;
-        *(void**)(p + 0x19F0) = fn_3_11741C;
-        *(f32*)(p + 0x19F4) = *(f32*)(g + 0xCB0);
-        *(f32*)(p + 0x19F8) = -*(f32*)(g + 0xCB4);
-        *(f32*)(p + 0x19FC) = *(f32*)(g + 0xCB8);
-        fn_8001D0D0(0xA6, lbl_3_rodata_3420);
+        p[0xA6].visible = 1;
+        p[0xA6].draw = fn_3_11741C;
+        p[0xA6].pos[0] = *(f32*)(g + 0xCB0);
+        p[0xA6].pos[1] = -*(f32*)(g + 0xCB4);
+        p[0xA6].pos[2] = *(f32*)(g + 0xCB8);
+        fn_8001D0D0(0xA6, 3.5f);
     }
 }
+#endif
 
 // .text:0x00119934 size:0x300 mapped:0x807589C8
+// NONMATCHING 98%: (measured with the rodata externs) frsp of the acos result is scheduled after the v.z load, f1/f2 swapped
+#if NONMATCHING
+extern f32 lbl_3_data_2188C[];
+// Places the base markers (sprites 0x82..0x90, or the shared 0xA5 one) and the
+// running fielders' shadows (sprites 0x91..0xA4), spinning each a little per frame.
 void fn_3_119934(void) {
-    return;
+    Rep3310Sprite* shared = &lbl_8036E548.sprites[0xA5];
+    Rep3310Sprite* e;
+    Vec dir;
+    f32 ang;
+    s32 i;
+    s32 k;
+    u8 base;
+
+    shared->visible = 0;
+    for (i = 0; i < 15; i++) {
+        e = &lbl_8036E548.sprites[i + 0x82];
+        e->visible = 0;
+        base = g_Minigame[0x193A + i];
+        k = g_Minigame[0x1B19 + base] - 2;
+        if (k == 2) {
+            if (base >= 1 && base <= 6) {
+                shared->visible = 1;
+                shared->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+                shared->pos[1] = *(f32*)(g_Minigame + i * 0xC + 0xCD4);
+                shared->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+                fn_8001D0D0(0xA5, lbl_3_data_22650[k]);
+                shared->rot[1] += 0.005f;
+                if (shared->rot[1] > 3.1415927f) {
+                    shared->rot[1] -= 6.2831855f;
+                }
+            }
+        } else if (base >= 1 && base <= 6) {
+            e->visible = 1;
+            e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+            e->pos[1] = *(f32*)(g_Minigame + i * 0xC + 0xCD4);
+            e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            fn_8001D0D0(i + 0x82, lbl_3_data_22650[k]);
+            e->rot[1] += 0.005f;
+            if (e->rot[1] > 3.1415927f) {
+                e->rot[1] -= 6.2831855f;
+            }
+        }
+    }
+    for (i = 15; i < 35; i++) {
+        e = &lbl_8036E548.sprites[i + 0x82];
+        e->visible = 0;
+        if (g_Minigame[0x190B] == 0 && g_Minigame[0x193A + i] == 1) {
+            e->visible = 1;
+            e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+            e->pos[1] = -*(f32*)(g_Minigame + i * 0xC + 0xCD4);
+            e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            fn_8001D0D0(i + 0x82, 5.0f);
+            if (*(s16*)(g_Minigame + 0x17C8 + i * 2) == 0) {
+                e->rot[0] = RandomF32_Game_Range(-3.1415927f, 3.1415927f);
+                memcpy(&dir, g_Minigame + 0x1180 + i * 0xC, sizeof(Vec));
+                dir.y = 0.0f;
+                PSVECNormalize(&dir, &dir);
+                ang = acos(dir.x);
+                if (dir.z < 0.0f) {
+                    ang = 6.2831855f - ang;
+                }
+                e->rot[1] = ang;
+            } else if (lbl_80366158[0x28] == 0) {
+                memcpy(&dir, g_Minigame + 0x1180 + i * 0xC, sizeof(Vec));
+                dir.y = 0.0f;
+                e->rot[0] += (0.05f * PSVECMag(&dir)) / lbl_3_data_2188C[3];
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x00119C34 size:0x74 mapped:0x80758CC8
 void fn_3_119C34(void) {
-    u8* p = *(u8**)(lbl_8036E548 + 0x68);
+    u8* p = (u8*)lbl_8036E548.objs;
     s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
     s8 t;
     *(s32*)(p + 0x11A8) = v;
@@ -642,7 +1066,7 @@ void fn_3_119C34(void) {
 
 // .text:0x00119CA8 size:0x80 mapped:0x80758D3C
 void fn_3_119CA8(s32 i) {
-    u8* p = *(u8**)(lbl_8036E548 + 0x68);
+    u8* p = (u8*)lbl_8036E548.objs;
     u8* e = p + i * 0x90 + 0x34;
     s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
     s8 t;
@@ -668,13 +1092,13 @@ f32 fn_3_119D28(void) {
 
 // .text:0x00119D34 size:0xFC mapped:0x80758DC8
 void fn_3_119D34(void) {
-    u8* q = *(u8**)(lbl_8036E548 + 0x2D94) + 0x4D8;
+    u8* q = (u8*)lbl_8036E548.sprites + 0x4D8;
     q[0x26] = 1;
     fn_3_11A92C(q, 0x1F);
     if (lbl_80366158[0x28] == 0 && g_GameLogic[0x11E] == 1 && *(s16*)(g_Pitcher + 0x11E) == lbl_3_data_217A4[7]) {
         {
 
-        u8* p = *(u8**)(lbl_8036E548 + 0x68);
+        u8* p = (u8*)lbl_8036E548.objs;
         s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
         s8 t;
         *(s32*)(p + 0x11A8) = v;
@@ -696,125 +1120,115 @@ void fn_3_119D34(void) {
 }
 
 // .text:0x00119E30 size:0xB0 mapped:0x80758EC4
-void fn_3_119E30(void) {
-    return;
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+extern u8 lbl_3_data_2263C[];
+extern u8 lbl_3_data_2263E;
+// Blinks the highlighted runner's texture (swaps texture records 0-2 through lbl_3_data_2263C).
+void fn_3_119E30(s32 i) {
+    TextureData* td;
+    if (*(s16*)(g_Minigame + *(s16*)(g_Minigame + 0x18A4) * 0x34 + 0x88C) % lbl_3_data_2263E == 0) {
+        td = lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData;
+        td->texturePalette->tex[0].texIndex = lbl_3_data_2263C[td->texturePalette->tex[0].texIndex] == 0;
+        td->texturePalette->tex[1].texIndex = lbl_3_data_2263C[td->texturePalette->tex[1].texIndex] == 0;
+        td->texturePalette->tex[2].texIndex = lbl_3_data_2263C[td->texturePalette->tex[2].texIndex] == 0;
+    }
 }
+#endif
 
 // .text:0x00119EE0 size:0x8C mapped:0x80758F74
-void fn_3_119EE0(void) {
-    return;
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+extern u8 lbl_3_data_22638[];
+void fn_3_119EE0(s32 i) {
+    u8* g = g_Minigame + i * 0x34;
+    TextureData* td = lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData;
+    td->texturePalette->tex[0].texIndex = lbl_3_data_22638[g[0x891]] * 3;
+    td->texturePalette->tex[1].texIndex = lbl_3_data_22638[g[0x891]] * 3 + 1;
+    td->texturePalette->tex[2].texIndex = lbl_3_data_22638[g[0x891]] * 3 + 2;
 }
+#endif
 
 // .text:0x00119F6C size:0x2A0 mapped:0x80759000
-// 95%: saved-reg assignment off (lbl_8036E548/g_Minigame bases come out r30/r29 instead of r29/r30), original copies k=off and g=gm with mr, loop increment order differs
-extern const f32 lbl_3_rodata_3428;
+// NONMATCHING 85%: typed rewrite of a 95% raw-offset version; saved-reg assignment and loop induction pointers differ (the original strength-reduces the 0x28/0x90/0x34 strides into separate counters)
+#if NONMATCHING
 extern u8 lbl_3_data_2263F;
 extern void fn_3_14DC80(s8 a);
 extern void fn_3_14CB28(s8 a);
-extern f32 fn_800B4A94(void* p);
+// Places the 15 runners: sprite i normally, sprite 0x10 + i (an animated actor) while
+// scoring (state 4), and the shared highlight sprite 0xF for the selected runner.
 void fn_3_119F6C(void) {
-    u8* gm;
-    u8* g;
-    s32 off;
-    s32 k;
-    u8* e1;
-    u8* e2;
-    u8* e3;
+    Rep3310Sprite* hilite = &lbl_8036E548.sprites[0xF];
+    Rep3310Sprite* e;
+    Rep3310Sprite* runner;
+    GameActor* actor;
     u8* p;
+    u32 frame;
+    u32 k;
     s32 i;
-    u8 flag;
-    u8* tmp;
-    u8* o;
-    u8* m;
-    u32 t;
-    s32 x;
-    s32 q;
-    u8* r;
-    u32 j;
-    off = 0;
-    gm = g_Minigame;
-    flag = 0;
-    k = off;
-    g = gm;
-    i = 0;
-    tmp = *(u8**)(lbl_8036E548 + 0x2D94);
-    tmp[0x27E] = off;
-    e3 = tmp + 0x258;
-    for (; i < 0xF; i++, off += 0x28, k += 0x90, g += 0x34) {
-        e1 = *(u8**)(lbl_8036E548 + 0x2D94) + off;
-        p = g + 0x860;
-        e2 = *(u8**)(lbl_8036E548 + 0x2D94) + (i + 0x10) * 0x28;
-        e2[0x26] = 0;
-        e1[0x26] = 0;
-        if (g[0x890] != 0) {
-            if (g[0x890] == 4) {
-                e1 = e2;
-                if (*(s16*)(p + 0x2C) == 0) {
-                    o = *(u8**)(lbl_8036E548 + 0x68) + (i + 0x10) * 0x90 + 0x34;
-                    x = *(s32*)(lbl_3_common_bss_32724 + 0x74);
-                    *(s32*)(o + 4) = x;
-                    *(s16*)(o + 0xE) = 0;
-                    *(f32*)(o + 0x5C) = lbl_3_rodata_33AC;
-                    o[0x58] = 1;
-                    o[0x59] = (x != 0);
-                    o[0x5A] = (x != 0);
-                    *(f32*)(o + 0x60) = lbl_3_rodata_33AC;
-                    *(f32*)(o + 0x54) = lbl_3_rodata_33E0;
-                    o[0x5A] = 1;
-                    *(f32*)(o + 0x5C) = lbl_3_rodata_33AC;
-                    o[0x59] = 1;
-                    o[0x5B] = 2;
-                    fn_3_14DC80(i);
-                    fn_3_90064(0x2E3);
-                }
-                t = (u32)fn_800B4A94(*(void**)(*(u8**)(lbl_8036E548 + 0x68) + (i + 0x10) * 0x90 + 0x34));
-                if (t <= lbl_3_data_2263F) {
-                    if ((t & 1) == 0) {
-                        r = *(u8**)(*(u8**)(lbl_8036E548 + 0x68) + k + 0x934);
-                        for (q = 0, j = 0; j < *(u16*)(r + 6); q += 4, j++) {
-                            m = *(u8**)(*(u8**)(r + 0x18) + q);
-                            m = *(u8**)(m + 0xE8);
-                            if (m != NULL) {
-                                *(f32*)m = *(f32*)m + *(f32*)(m + 8);
-                            }
-                        }
-                        e2[0x26] = 0;
-                        goto next;
-                    }
-                    if (t == 0) {
-                        fn_3_14CB28(i);
-                    }
-                }
-            } else {
-                if (p[0x31] == 3 && i == *(s16*)(gm + 0x18A4)) {
-                    flag = 1;
-                    e1 = e3;
-                }
-            }
-            e1[0x26] = 1;
-            *(f32*)(e1 + 4) = *(f32*)p;
-            *(f32*)(e1 + 8) = -*(f32*)(p + 4);
-            *(f32*)(e1 + 0xC) = *(f32*)(p + 8);
-            *(f32*)(e1 + 0x10) = lbl_3_rodata_33AC;
-            *(f32*)(e1 + 0x14) = lbl_3_rodata_33AC;
-            *(f32*)(e1 + 0x18) = lbl_3_rodata_33AC;
-            if (flag != 0) {
-                fn_8001D0D0(0xF, lbl_3_rodata_3428);
-            } else {
-                fn_8001D0D0(i, lbl_3_rodata_3428);
-            }
-            if (flag != 0) {
-                flag = 0;
-                *(void**)e1 = fn_3_119E30;
-            } else if (p[0x30] != 4) {
-                *(void**)e1 = fn_3_119EE0;
-            } else {
-                *(void**)e1 = 0;
-            }
+    u8 flag = 0;
+
+    hilite->visible = 0;
+    for (i = 0; i < 15; i++) {
+        e = &lbl_8036E548.sprites[i];
+        p = g_Minigame + i * 0x34 + 0x860;
+        runner = &lbl_8036E548.sprites[i + 0x10];
+        runner->visible = 0;
+        e->visible = 0;
+        if (p[0x30] == 0) {
+            continue;
         }
-next:;
+        if (p[0x30] == 4) {
+            e = runner;
+            if (*(s16*)(p + 0x2C) == 0) {
+                fn_3_119CA8(i + 0x10);
+                fn_3_14DC80(i);
+                fn_3_90064(0x2E3);
+            }
+            frame = fn_800B4A94(lbl_8036E548.objs->objects[i + 0x10].actor);
+            if (frame <= lbl_3_data_2263F) {
+                if ((frame & 1) == 0) {
+                    actor = lbl_8036E548.objs->objects[i + 0x10].actor;
+                    for (k = 0; k < actor->totalBones; k++) {
+                        struct ANIMPipe* anim = actor->boneArray[k]->animPipe;
+                        if (anim != NULL) {
+                            anim->time += anim->speed;
+                        }
+                    }
+                    runner->visible = 0;
+                    continue;
+                }
+                if (frame == 0) {
+                    fn_3_14CB28(i);
+                }
+            }
+        } else if (p[0x31] == 3 && i == *(s16*)(g_Minigame + 0x18A4)) {
+            flag = 1;
+            e = hilite;
+        }
+        e->visible = 1;
+        e->pos[0] = *(f32*)p;
+        e->pos[1] = -*(f32*)(p + 4);
+        e->pos[2] = *(f32*)(p + 8);
+        e->rot[0] = 0.0f;
+        e->rot[1] = 0.0f;
+        e->rot[2] = 0.0f;
+        if (flag != 0) {
+            fn_8001D0D0(0xF, 0.75f);
+        } else {
+            fn_8001D0D0(i, 0.75f);
+        }
+        if (flag != 0) {
+            flag = 0;
+            e->draw = fn_3_119E30;
+        } else if (p[0x30] != 4) {
+            e->draw = fn_3_119EE0;
+        } else {
+            e->draw = NULL;
+        }
     }
 }
+#endif
 
 // .text:0x0011A20C size:0x4 mapped:0x807592A0
 void fn_3_11A20C(void) {
@@ -830,10 +1244,10 @@ void fn_3_11A210(void) {
     u8* g;
     s32 i;
     for (i = 0; i < 100; i++) {
-        e1 = *(u8**)(lbl_8036E548 + 0x2D94) + (i + 0x82) * 0x28;
+        e1 = (u8*)lbl_8036E548.sprites + (i + 0x82) * 0x28;
         e1[0x26] = 0;
         *(void**)e1 = 0;
-        e2 = *(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28;
+        e2 = (u8*)lbl_8036E548.sprites + i * 0x28;
         e2[0x26] = 0;
         *(void**)e2 = 0;
         if (g_Minigame[0x193A + i] != 0) {
@@ -859,13 +1273,13 @@ void fn_3_11A210(void) {
 
 // .text:0x0011A350 size:0x3C mapped:0x807593E4
 u32 fn_3_11A350(int i) {
-    Ent90* base = *(Ent90**)(lbl_8036E548 + 0x68);
+    Ent90* base = (Ent90*)lbl_8036E548.objs;
     return fn_800B4A94(base[i].p);
 }
 
 // .text:0x0011A38C size:0x7C mapped:0x80759420
 void fn_3_11A38C(s32 i, s16 h) {
-    u8* p = *(u8**)(lbl_8036E548 + 0x68);
+    u8* p = (u8*)lbl_8036E548.objs;
     u8* e = p + i * 0x90 + 0x34;
     s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x70);
     s8 t;
@@ -885,9 +1299,122 @@ void fn_3_11A38C(s32 i, s16 h) {
 }
 
 // .text:0x0011A408 size:0x524 mapped:0x8075949C
+// NONMATCHING 94%: (measured with the rodata externs) register allocation and the j + kind*7 + 0xFC sum order
+#if NONMATCHING
+extern Rep3310BallView g_Ball;
+extern u8 lbl_3_data_22634[];
+extern s16 lbl_3_data_21654[];
+extern f32 lbl_3_data_21520[];
+extern void fn_3_151710(ActorObject* obj, Vec* pos); // TODO: rep_3880.h declares it with u32 args
+extern void fn_3_14C348(Rep3310Item* item, u8 caught); // TODO: rep_3880.h declares it with u32 args
+extern void fn_3_1666B0(Rep3310Item* item); // TODO: rep_3E58.h declares it (void)
+// Places the 7 bonus items (g_Minigame + 0x72C) and their shadows; state 4 plays the
+// pickup animation once, state 5 waits for it to end.
 void fn_3_11A408(void) {
-    return;
+    Rep3310Item* item;
+    Rep3310Sprite* e;
+    Rep3310Sprite* shadow;
+    ActorObject* obj;
+    GameActor* actor;
+    Vec pos;
+    s32 j;
+    s32 n;
+    u32 k;
+    u8 caught = 0;
+    u8 t;
+
+    lbl_8036E548.sprites[0xFB].visible = 0;
+    for (j = 0; j < 7; j++) {
+        item = (Rep3310Item*)(g_Minigame + 0x72C + j * 0x2C);
+        lbl_8036E548.sprites[0xE6 + j].visible = 0;
+        lbl_8036E548.sprites[0xED + j].visible = 0;
+        lbl_8036E548.sprites[0xF4 + j].visible = 0;
+        lbl_8036E548.sprites[0xFC + j].visible = 0;
+        lbl_8036E548.sprites[0x103 + j].visible = 0;
+        lbl_8036E548.sprites[0x10A + j].visible = 0;
+        if (item->state == 0) {
+            continue;
+        }
+        if (item->state == 4) {
+            n = j + (item->kind == 2) * 7 + 0xFC;
+            if (item->kind == 2) {
+                if (g_Minigame[0x1A89] == 1) {
+                    pos.x = item->pos[0];
+                    pos.y = g_Ball.contactPos.y;
+                    pos.z = item->pos[2];
+                    fn_3_11A38C(n, 3);
+                    fn_3_151710(&lbl_8036E548.objs->objects[n], &pos);
+                    fn_3_90064(0x2EB);
+                } else {
+                    fn_3_11A38C(n, item->kind);
+                    fn_3_90064(0x2EC);
+                }
+            } else if (item->kind == 0) {
+                fn_3_11A38C(n, item->kind);
+                fn_3_90064(0x2E2);
+            } else {
+                if (item->kind == 1) {
+                    caught = 1;
+                }
+                fn_3_90064(0x2FF);
+            }
+            fn_3_14C348(item, caught);
+            if (caught) {
+                item->state = 0;
+                continue;
+            }
+            item->state = 5;
+        } else if (item->state == 5) {
+            n = j + (item->kind == 2) * 7 + 0xFC;
+            t = (u32)fn_800B4A94(lbl_8036E548.objs->objects[n].actor);
+            if (t < lbl_3_data_22634[item->kind] / 2 && t % 2 == 0) {
+                actor = lbl_8036E548.objs->objects[n].actor;
+                for (k = 0; k < actor->totalBones; k++) {
+                    struct ANIMPipe* anim = actor->boneArray[k]->animPipe;
+                    if (anim != NULL) {
+                        anim->time += anim->speed;
+                    }
+                }
+                continue;
+            }
+        } else if (item->kind == 0) {
+            if (item->timer > lbl_3_data_21654[item->kind + 4] / 2) {
+                n = j + 0xED;
+            } else {
+                n = 0xFB;
+            }
+        } else if (item->kind == 1) {
+            n = j + 0xF4;
+        } else {
+            n = j + 0x10A;
+            fn_3_1666B0(item);
+        }
+
+        e = &lbl_8036E548.sprites[n];
+        e->visible = 1;
+        e->pos[0] = item->pos[0];
+        e->pos[1] = -item->pos[1];
+        e->pos[2] = item->pos[2];
+        e->rot[0] = 0.0f;
+        e->rot[1] = 0.0f;
+        e->rot[2] = 0.0f;
+        e->rot[0] = item->spin;
+        fn_8001D0D0(n, 1.75f);
+        if (-e->pos[1] <= lbl_3_data_21520[22] && item->state < 4) {
+            shadow = &lbl_8036E548.sprites[0xE6 + j];
+            shadow->visible = 1;
+            shadow->pos[0] = e->pos[0];
+            shadow->pos[1] = -e->pos[1];
+            shadow->pos[2] = e->pos[2];
+            shadow->pos[1] = -0.03f;
+            shadow->rot[0] = 0.0f;
+            shadow->rot[1] = 0.0f;
+            shadow->rot[2] = 0.0f;
+            fn_8001D0D0(0xE6 + j, 1.75f * (1.0f - -e->pos[1] / lbl_3_data_21520[22]));
+        }
+    }
 }
+#endif
 
 // .text:0x0011A92C size:0x200 mapped:0x807599C0
 #pragma dont_inline on
@@ -955,7 +1482,7 @@ void fn_3_11AB2C(void) {
     if (g_d_GameSettings[7] == 2) {
         n = 0;
     }
-    e = *(u8**)(lbl_8036E548 + 0x2D94) + n * 0x28;
+    e = (u8*)lbl_8036E548.sprites + n * 0x28;
     if (e != NULL) {
         e[0x26] = 1;
         fn_3_11A92C(e, n);
@@ -965,7 +1492,7 @@ void fn_3_11AB2C(void) {
                 ((BF1*)(lbl_3_common_bss_32724 + 0x21))->b = 1;
             }
             fn_80024DB0(t);
-            fn_80024FA4(*(u8**)(lbl_8036E548 + 0x68) + n * 0x90 + 0x34, *(u32*)(lbl_3_common_bss_32724 + 0x30), t, -1);
+            fn_80024FA4((u8*)lbl_8036E548.objs + n * 0x90 + 0x34, *(u32*)(lbl_3_common_bss_32724 + 0x30), t, -1);
         } else if (g_Pitcher[0x13E] < 2 && *(s16*)(lbl_3_common_bss_32724 + 0x1E) == 0) {
             *(u16*)(lbl_3_common_bss_32724 + 0x1C) = 0;
             *(f32*)(lbl_3_common_bss_32724 + 0x10) = *(u16*)(lbl_3_common_bss_32724 + 0x1C);
@@ -975,17 +1502,68 @@ void fn_3_11AB2C(void) {
 }
 
 // .text:0x0011AC6C size:0xAF0 mapped:0x80759D00
+// NONMATCHING 94%: all helpers inline as in the original; left: register allocation and the original reaching lbl_3_data_226C4/226D4/226DC through the lbl_3_data_225F0 pooled base
+#if NONMATCHING
+// Per-frame sprite update for the current minigame (g_Minigame[0x1A2A]); hides every
+// sprite while the game logic is in states 0x1B..0x29.
 void fn_3_11AC6C(void) {
-    return;
+    Rep3310Sprite* e;
+    s32 i;
+
+    if (g_GameLogic[0x11E] >= 0x1B && g_GameLogic[0x11E] <= 0x29) {
+        if (lbl_8036E548.count != 0) {
+            for (i = 0; i < lbl_8036E548.count; i++) {
+                e = &lbl_8036E548.sprites[i];
+                if (e != NULL) {
+                    e->visible = 0;
+                }
+            }
+        }
+        return;
+    }
+    switch (g_Minigame[0x1A2A]) {
+    case 1:
+        fn_3_11AB2C();
+        break;
+    case 2:
+        fn_3_11A408();
+        fn_3_11A210();
+        break;
+    case 3:
+        fn_3_119F6C();
+        fn_3_119D34();
+        break;
+    case 4:
+        fn_3_119934();
+        fn_3_119878();
+        break;
+    case 6:
+        fn_3_118164();
+        fn_3_1180A4();
+        fn_3_117FC8();
+        fn_3_11874C();
+        fn_3_117AE4();
+        fn_3_1179EC();
+        fn_3_117494();
+        break;
+    case 5:
+        fn_3_1194FC();
+        fn_3_1192B8();
+        fn_3_11874C();
+        fn_3_11887C();
+        fn_3_1183FC();
+        break;
+    }
 }
+#endif
 
 // .text:0x0011B75C size:0x448 mapped:0x8075A7F0
 void fn_3_11B75C(void) {
-    *(u16*)(lbl_8036E548 + 0x3078) = 0xF4;
-    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
-    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    lbl_8036E548.count = 0xF4;
+    lbl_8036E548.sprites = _OSAllocFromHeap(0x20, lbl_8036E548.count * 0x28);
+    lbl_8036E548.objs = ActorObjectInitTable(lbl_8036E548.count);
     fn_3_11D2C8(0, 0, 0x82, 0, 0);
-    fn_3_11D2C8(0x11, 0x82, 3, *(s32*)(lbl_3_common_bss_32724 + 0x78), *(s32*)(lbl_3_common_bss_32724 + 0x60));
+    fn_3_11D2C8(0x11, 0x82, 3, *(void**)(lbl_3_common_bss_32724 + 0x78), *(struct sHdr**)(lbl_3_common_bss_32724 + 0x60));
     fn_3_11D2C8(0x12, 0x85, 0x32, 0, 0);
     fn_3_11D2C8(0xD, 0xB7, 0x32, 0, 0);
     fn_3_11D2C8(0x13, 0xE9, 7, 0, 0);
@@ -994,9 +1572,9 @@ void fn_3_11B75C(void) {
 
 // .text:0x0011BBA4 size:0x488 mapped:0x8075AC38
 void fn_3_11BBA4(void) {
-    *(u16*)(lbl_8036E548 + 0x3078) = 0xEE;
-    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
-    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    lbl_8036E548.count = 0xEE;
+    lbl_8036E548.sprites = _OSAllocFromHeap(0x20, lbl_8036E548.count * 0x28);
+    lbl_8036E548.objs = ActorObjectInitTable(lbl_8036E548.count);
     fn_3_11D2C8(0, 0, 0x82, 0, 0);
     fn_3_11D2C8(0x15, 0x82, 0x64, 0, 0);
     fn_3_11D2C8(0x16, 0xE6, 1, 0, 0);
@@ -1008,9 +1586,9 @@ void fn_3_11BBA4(void) {
 
 // .text:0x0011C02C size:0x2A0 mapped:0x8075B0C0
 void fn_3_11C02C(void) {
-    *(u16*)(lbl_8036E548 + 0x3078) = 0xA7;
-    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
-    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    lbl_8036E548.count = 0xA7;
+    lbl_8036E548.sprites = _OSAllocFromHeap(0x20, lbl_8036E548.count * 0x28);
+    lbl_8036E548.objs = ActorObjectInitTable(lbl_8036E548.count);
     fn_3_11D2C8(0, 0, 0x82, 0, 0);
     fn_3_11D2C8(0xB, 0x82, 0x23, 0, 0);
     fn_3_11D2C8(0xC, 0xA5, 1, 0, 0);
@@ -1020,7 +1598,7 @@ void fn_3_11C02C(void) {
 // .text:0x0011C2CC size:0x32C mapped:0x8075B360
 static inline void initObj_11C2CC(s32 i) {
     s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
-    u8* p = *(u8**)(lbl_8036E548 + 0x68);
+    u8* p = (u8*)lbl_8036E548.objs;
     u8* e = p + i * 0x90 + 0x34;
     *(s32*)(e + 4) = v;
     *(s16*)(e + 0xE) = 0;
@@ -1037,9 +1615,9 @@ static inline void initObj_11C2CC(s32 i) {
 }
 void fn_3_11C2CC(void) {
     s32 i;
-    *(u16*)(lbl_8036E548 + 0x3078) = 0x20;
-    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
-    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    lbl_8036E548.count = 0x20;
+    lbl_8036E548.sprites = _OSAllocFromHeap(0x20, lbl_8036E548.count * 0x28);
+    lbl_8036E548.objs = ActorObjectInitTable(lbl_8036E548.count);
     fn_3_11D2C8(8, 0, 0xF, 0, 0);
     fn_3_11D2C8(9, 0xF, 1, 0, 0);
     fn_3_11D2C8(0xA, 0x10, 0xF, 0, 0);
@@ -1052,7 +1630,7 @@ void fn_3_11C2CC(void) {
 // .text:0x0011C5F8 size:0x708 mapped:0x8075B68C
 static inline void initObj_11C5F8(s32 i, s16 h) {
     s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x70);
-    u8* p = *(u8**)(lbl_8036E548 + 0x68);
+    u8* p = (u8*)lbl_8036E548.objs;
     u8* e = p + i * 0x90 + 0x34;
     *(s32*)(e + 4) = v;
     *(s16*)(e + 0xE) = h;
@@ -1069,9 +1647,9 @@ static inline void initObj_11C5F8(s32 i, s16 h) {
 }
 void fn_3_11C5F8(void) {
     u16 i;
-    *(u16*)(lbl_8036E548 + 0x3078) = 0x111;
-    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
-    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    lbl_8036E548.count = 0x111;
+    lbl_8036E548.sprites = _OSAllocFromHeap(0x20, lbl_8036E548.count * 0x28);
+    lbl_8036E548.objs = ActorObjectInitTable(lbl_8036E548.count);
     fn_3_11D2C8(0, 0, 0x82, 0, 0);
     fn_3_11D2C8(0x15, 0x82, 0x64, 0, 0);
     fn_3_11D2C8(1, 0xE6, 7, 0, 0);
@@ -1089,25 +1667,24 @@ void fn_3_11C5F8(void) {
 
 // .text:0x0011CD00 size:0x204 mapped:0x8075BD94
 extern void* _OSAllocFromHeap(int, int);
-extern void* ActorObjectInitTable(u16);
 extern void fn_80025C58(void*, void*);
 void fn_3_11CD00(void) {
-    *(u16*)(lbl_8036E548 + 0x3078) = 3;
-    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
-    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    lbl_8036E548.count = 3;
+    lbl_8036E548.sprites = _OSAllocFromHeap(0x20, lbl_8036E548.count * 0x28);
+    lbl_8036E548.objs = ActorObjectInitTable(lbl_8036E548.count);
     fn_3_11D2C8(0xD, 0, 1, 0, 0);
     fn_3_11D2C8(0xE, 1, 1, 0, 0);
     fn_3_11D2C8(0xF, 2, 1, 0, 0);
     *(f32*)(lbl_3_common_bss_32724 + 0x14) = 0.5f;
-    fn_80025C58(*(void**)lbl_3_common_bss_32724, *(u8**)(lbl_8036E548 + 0x68) + 0x154);
+    fn_80025C58(*(void**)lbl_3_common_bss_32724, (u8*)lbl_8036E548.objs + 0x154);
 }
 
 // .text:0x0011CF04 size:0x80 mapped:0x8075BF98
 void fn_3_11CF04(void) {
     if (g_d_GameSettings[7] != 6) {
-        *(s16*)(lbl_8036E548 + 0x3078) = 0;
+        lbl_8036E548.count = 0;
     }
-    lbl_8036E548[0x307E] = 0;
+    lbl_8036E548._307E = 0;
     minigamesSetSomePointers();
     minigamesGXStuff();
     minigamesSetSomePointers2();
@@ -1134,18 +1711,18 @@ void fn_3_11CF84(void) {
             fn_80011B64(i);
         }
     }
-    for (i = *(u16*)(lbl_8036E548 + 0x3078) - 1; i >= 0; i--) {
-        (*(u8**)(lbl_8036E548 + 0x68))[i * 0x90 + 0xA0] = 0;
+    for (i = lbl_8036E548.count - 1; i >= 0; i--) {
+        ((u8*)lbl_8036E548.objs)[i * 0x90 + 0xA0] = 0;
     }
-    for (i = *(u16*)(lbl_8036E548 + 0x3078) - 1; i >= 0; i--) {
-        fn_800B4CDC(*(void**)(*(u8**)(lbl_8036E548 + 0x68) + i * 0x90 + 0x34));
+    for (i = lbl_8036E548.count - 1; i >= 0; i--) {
+        fn_800B4CDC(*(void**)((u8*)lbl_8036E548.objs + i * 0x90 + 0x34));
     }
     if (g_d_GameSettings[7] == 7) {
-        for (i = *(u16*)(lbl_8036E548 + 0x3078) - 1; i >= 0; i--) {
-            fn_800B4278(*(void**)(*(u8**)(lbl_8036E548 + 0x68) + i * 0x90 + 0x34));
+        for (i = lbl_8036E548.count - 1; i >= 0; i--) {
+            fn_800B4278(*(void**)((u8*)lbl_8036E548.objs + i * 0x90 + 0x34));
         }
-        fn_800ACFB0(*(void**)(lbl_8036E548 + 0x68));
-        fn_800ACFB0(*(void**)(lbl_8036E548 + 0x2D94));
+        fn_800ACFB0(lbl_8036E548.objs);
+        fn_800ACFB0(lbl_8036E548.sprites);
     }
     fn_800B993C();
     fn_3_90CB0();
@@ -1177,26 +1754,26 @@ void fn_3_11D1B0(void) {
         ((void (*)(void))fn_3_11B75C)();
         break;
     }
-    for (i = 0; i < *(u16*)(lbl_8036E548 + 0x3078); i++) {
-        *(f32*)(*(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28 + 4) = lbl_3_rodata_33AC;
-        *(f32*)(*(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28 + 8) = lbl_3_rodata_33AC;
-        *(f32*)(*(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28 + 0xC) = lbl_3_rodata_33AC;
-        *(f32*)(*(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28 + 0x10) = lbl_3_rodata_33AC;
-        *(f32*)(*(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28 + 0x14) = lbl_3_rodata_33AC;
-        *(f32*)(*(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28 + 0x18) = lbl_3_rodata_33AC;
-        *(u8*)(*(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28 + 0x26) = 0;
-        *(void**)(*(u8**)(lbl_8036E548 + 0x2D94) + i * 0x28) = NULL;
+    for (i = 0; i < lbl_8036E548.count; i++) {
+        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 4) = lbl_3_rodata_33AC;
+        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 8) = lbl_3_rodata_33AC;
+        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0xC) = lbl_3_rodata_33AC;
+        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0x10) = lbl_3_rodata_33AC;
+        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0x14) = lbl_3_rodata_33AC;
+        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0x18) = lbl_3_rodata_33AC;
+        *(u8*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0x26) = 0;
+        *(void**)((u8*)lbl_8036E548.sprites + i * 0x28) = NULL;
     }
 }
 
 // .text:0x0011D2C8 size:0xE4 mapped:0x8075C35C
-void fn_3_11D2C8(s32 idx, s32 start, s32 count, s32 a, s32 b) {
+void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skHeader) {
     s32 k;
     for (k = start; k < start + count; k++) {
-        fn_800BDC88(*(u8**)(lbl_8036E548 + 0x68), (u16)k, (u16)k, *(u32*)(lbl_8036E548 + idx * 0xC + 0x2DA0), a, b);
-        fn_800BD548(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x34, 4, *(u32*)(lbl_8036E548 + 0xAC), *(u32*)(lbl_8036E548 + 0xB0), *(u32*)(lbl_8036E548 + 0xB4), *(u32*)(lbl_8036E548 + 0xB8));
-        CTRLSetTranslation(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
-        CTRLSetRotation(*(u8**)(lbl_8036E548 + 0x68) + k * 0x90 + 0x44, 0.0f, 0.0f, 0.0f);
+        fn_800BDC88(lbl_8036E548.objs, (u16)k, (u16)k, lbl_8036E548.data[idx].layout, animBank, skHeader);
+        fn_800BD548(&lbl_8036E548.objs->objects[k], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+        CTRLSetTranslation(&lbl_8036E548.objs->objects[k].worldControl.base, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(&lbl_8036E548.objs->objects[k].worldControl.base, 0.0f, 0.0f, 0.0f);
     }
 }
 
