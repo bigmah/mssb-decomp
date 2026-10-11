@@ -62,5 +62,11 @@ void fn_3_1E328(void) {
 
 // .text:0x0001E3EC size:0xCC mapped:0x8065D480
 void fn_3_1E3EC(void) {
-    return;
+    g_AiLogic.batterAIBuntPossibility = 0;
+    g_AiLogic.batterAIBuntInd = 0;
+    if (g_Scores._A6 <= 2 && g_Scores.inning >= 2 && g_Strikes.outs <= 1 &&
+        (g_RunningLogic.runnerBits == 0x11 || g_RunningLogic.runnerBits == 0x111) &&
+        RandomInt_Game(100) < lbl_3_data_1C10[g_Batter.characterClass][g_AiLogic.aIBatterDifficulty]) {
+        g_AiLogic.batterAIBuntInd = 1;
+    }
 }
