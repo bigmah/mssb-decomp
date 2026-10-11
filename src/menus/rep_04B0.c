@@ -279,8 +279,75 @@ void fn_2_14574(PortInput* in) {
 }
 
 // .text:0x00014790 size:0x428
+// A second controller pressed A: it joins as player 2.
 void fn_2_14790(void) {
-    return;
+    s8 port = -1;
+    s32 i;
+    s32 prev;
+
+    if (lbl_2_bss_100B8.active == 0 || lbl_2_bss_100B8.busy != 0 || g_d_GameSettings.GameModeSelected == 5) {
+        return;
+    }
+    if (lbl_803C66B0._0E == 1) {
+        return;
+    }
+    for (i = 1; i < 4; i++) {
+        if (lbl_8034E9A0.joined[i] && (PADS[i].down & 0x100)) {
+            port = i;
+            break;
+        }
+    }
+    if (port == -1) {
+        return;
+    }
+    if (lbl_803C5EA4._05 != 0) {
+        return;
+    }
+
+    if (lbl_2_bss_100B8.picked[1] != 0) {
+        lbl_2_bss_100B8.picked[1] = 0;
+        lbl_2_bss_100B8._12[1] = 0;
+        fn_8004E5B4(1, lbl_8034E9A0.captain[1], 0);
+        lbl_8034E9A0.charFlag[lbl_8034E9A0.captain[1]] = 0;
+        lbl_8034E9A0.captain[1] = -1;
+    }
+
+    lbl_8034E9A0.joined[port] = 0;
+    lbl_803C5EA4._05 = 1;
+    lbl_8034E9A0.teamPort[port] = lbl_8034E9A0.teamPort[1];
+    lbl_8034E9A0.teamPort[1] = port;
+    lbl_803C66B0.portOf[0] = 0;
+    lbl_803C66B0.portOf[1] = 1;
+    if (lbl_8034E9A0.charFlag[0] != 0 || lbl_2_bss_F410.sel[0] == 0) {
+        lbl_803C6724.sel[1] = 1;
+    } else {
+        lbl_803C6724.sel[1] = 0;
+    }
+    lbl_803C6028._74[lbl_8034E9A0.teamPort[1]] = 0;
+    fn_800625A4(1, 1);
+    g_d_GameSettings._10 = 1;
+    lbl_803297E0.random[1] = 0;
+    lbl_803C6028._7F[1] = -1;
+    if (lbl_2_bss_F410.sel[0] == 0) {
+        lbl_2_bss_F410.sel[1] = 1;
+    } else {
+        lbl_2_bss_F410.sel[1] = 0;
+    }
+    lbl_803C6028._74[lbl_8034E9A0.teamPort[1]] = 0;
+    SHOW_CAPTAIN_CURSOR(lbl_8034E9A0.teamPort[1], lbl_2_bss_F410.sel[1])
+
+    for (prev = -1; !fn_2_15104(lbl_2_bss_F410.sel[1], prev, 1, 1); prev = lbl_2_bss_F410.sel[1]) {
+    }
+
+    lbl_8034E9A0._4704 = 0;
+    if (lbl_2_bss_F468._45[1] != 0) {
+        lbl_2_bss_F468._45[1] = 0;
+        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+    }
+    lbl_8034E9A0.input[1].repeat = 0;
+    lbl_8034E9A0.input[1].pressed = 0;
+    lbl_8034E9A0.input[1].held = 0;
+    sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
 }
 
 // .text:0x00014BB8 size:0xE8
