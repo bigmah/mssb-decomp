@@ -543,8 +543,9 @@ void fn_3_90064(s32 id) {
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4
-// ~50%: orig converts t[b] first (slot 0x8/0xc, passed to sndFXStartEx) and keeps the t[b+0x180] result in r31; ours has the two swapped and schedules differently
 extern u8 lbl_3_data_8148[];
+// NONMATCHING 36%: orig converts the u8 table entries as signed int (xoris) and schedules both conversions before the call; data reached through pooled base lbl_3_data_8148 (+0x20 = lbl_3_data_8168, +0x3E8 = lbl_3_data_8530)
+#if NONMATCHING
 u32 fn_3_90150(s32 a, s32 b) {
     u8* d = lbl_3_data_8148;
     u8* t = d + 0x3E8;
@@ -554,6 +555,7 @@ u32 fn_3_90150(s32 a, s32 b) {
     sndFXCtrl(h, 0x5B, v2);
     return h;
 }
+#endif
 
 
 extern u16 lbl_3_data_8168[];
@@ -661,9 +663,10 @@ void fn_3_906FC(void) {
 }
 
 // .text:0x0009056C size:0x108 mapped:0x806CF600
-// ~93%: only the vol table read differs (orig: addi r4,r30,0x1c4; lbzx r0,r4,r0; ours folds 0x1c4 into lbz displacement)
 typedef struct { u16 a, b, c; } SeqEnt6;
 typedef struct { u8 v, pad; } SeqVol2;
+// NONMATCHING 92%: only the vol table read differs (orig: addi r4,r30,0x1c4; lbzx r0,r4,r0; ours folds 0x1c4 into lbz displacement). Pooled base lbl_3_data_8148: +0x798 = lbl_3_data_88E0, +0x1C4 = lbl_3_data_830C
+#if NONMATCHING
 u32 fn_3_9056C(s32 idx) {
     u8* d = lbl_3_data_8148;
     SeqEnt6* e;
@@ -689,3 +692,4 @@ u32 fn_3_9056C(s32 idx) {
     sndSeqVolume(vol, 0, seq, 0);
     return 1;
 }
+#endif
