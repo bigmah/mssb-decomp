@@ -1,5 +1,6 @@
 #include "main/file_80069BDC.h"
 #include "main/file_800527C4.h"
+#include "main/file_8004207C.h"
 // UnknownHomes_Static.h declares fn_80021518 with placeholder argument types;
 // use the real prototype from file_80021308.h instead.
 #define fn_80021518 fn_80021518_placeholder
