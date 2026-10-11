@@ -447,9 +447,55 @@ void fn_80035EEC(u16 frame, s32 idx) {
 }
 
 // .text:0x80035F20 size:0x214
-void fn_80035F20(void) {
-    return;
+// NONMATCHING 76%: track search loop shape (original keeps n live across tracks, lwzx indexing)
+#if NONMATCHING
+SpaniKey* fn_80035F20(s32 texId, s32 objIdx, u16 keyIdx, s16 track) {
+    s32 slot;
+    SpaniSeq* seq;
+    u32 t;
+    SpaniTrack** pp;
+    SpaniTrack* tr;
+    SpaniKey* key;
+    s32 n;
+
+    slot = spaniFindSlot(texId);
+    if (slot == -1) {
+        OSPanic(lbl_800E68C4, 0x31C, lbl_800E68E8);
+    }
+    seq = lbl_803C4BE0[slot].anim->seqList->seqs[lbl_8039C3E0[objIdx].animId];
+    t = seq->trackCount - 1;
+    pp = &seq->tracks[t];
+    if (track == -1) {
+        tr = *pp;
+        n = tr->keyCount;
+        key = &tr->keys[n];
+        do {
+            n--;
+            key--;
+        } while (n != 0);
+        return &key[keyIdx];
+    }
+    do {
+        tr = *pp--;
+        n = tr->keyCount;
+        key = &tr->keys[n];
+        if (t == track) {
+            break;
+        }
+        do {
+            n--;
+            key--;
+        } while (n != 0);
+        t--;
+    } while (t != 0);
+    while (n != 0) {
+        n--;
+        key--;
+    }
+    return key;
 }
+#endif
+
 
 // .text:0x80036134 size:0xE0
 void fn_80036134(SpaniOwner* owner, s32 srcIdx, u32 track, s32 dstIdx) {
