@@ -2009,9 +2009,190 @@ void fn_3_37610(int a) {
 }
 
 // .text:0x000378B4 size:0x74C mapped:0x80676948
+#define FLD_ANG(n) (*(s16*)(g_Fielders + (n) * 0x268 + 0x180))
+#define FLD_RNG(n) (*(f32*)(g_Fielders + (n) * 0x268 + 0x70))
+// NONMATCHING 88%: original preloads r3=-1 and returns via bltlr/bgelr; ours materialises li r3,-1 per return; register numbering
+#if NONMATCHING
 s32 fn_3_378B4(void) {
-    return 0;
+    s16 cur = lbl_3_bss_170;
+    s16 ang = *(s16*)(g_Ball + 0x1B80);
+    s32 turn = 0x800;
+    s32 mid;
+    s32 w;
+    if (cur >= 0 && (&lbl_3_bss_170)[3] >= 0) {
+        turn = __abs(cur - (&lbl_3_bss_170)[3]);
+        if (turn > 0x800) {
+            turn = 0x1000 - turn;
+        }
+    }
+    if (*(s16*)(g_FieldingLogic + 0xB0) == 0) {
+        if (ang >= FLD_ANG(0) - 0x40 && ang < FLD_ANG(0) + 0x40 &&
+            *(f32*)(g_Ball + 0x1A00) - FLD_RNG(0) < lbl_3_rodata_B78) {
+            return 0;
+        }
+        if (ang < FLD_ANG(0)) {
+            if (cur >= 0xF00 || (cur >= 0 && cur < 0x300)) {
+                return 0;
+            }
+            if (cur >= 0xB00 && cur < 0xF00 && *(f32*)(g_Ball + 0x1A00) - FLD_RNG(0) < lbl_3_rodata_B78) {
+                return 0;
+            }
+        } else {
+            if (cur >= 0x500 && cur < 0x900) {
+                return 0;
+            }
+            if (cur >= 0x900 && cur < 0xD00 && *(f32*)(g_Ball + 0x1A00) - FLD_RNG(0) < lbl_3_rodata_B78) {
+                return 0;
+            }
+        }
+    }
+    if (__abs(FLD_ANG(2) - FLD_ANG(3)) < 0x40 &&
+        ((*(s16*)(g_FieldingLogic + 0xB0) != 2 && *(s16*)(g_FieldingLogic + 0xB0) != 3) || turn >= 0x400)) {
+        mid = (FLD_ANG(2) + FLD_ANG(3)) / 2;
+        if (ang >= mid - 0x100 && ang < mid + 0x100) {
+            if (FLD_RNG(2) < FLD_RNG(3)) {
+                if (FLD_RNG(2) > *(f32*)(g_Ball + 0x1A00)) {
+                    return 2;
+                }
+                if (lbl_3_rodata_B78 + FLD_RNG(3) > *(f32*)(g_Ball + 0x1A00)) {
+                    return 3;
+                }
+            } else {
+                if (FLD_RNG(3) > *(f32*)(g_Ball + 0x1A00)) {
+                    return 2;
+                }
+                if (lbl_3_rodata_B78 + FLD_RNG(2) > *(f32*)(g_Ball + 0x1A00)) {
+                    return 3;
+                }
+            }
+        }
+    }
+    if (__abs(FLD_ANG(4) - FLD_ANG(5)) < 0x40 &&
+        ((*(s16*)(g_FieldingLogic + 0xB0) != 4 && *(s16*)(g_FieldingLogic + 0xB0) != 5) || turn >= 0x400)) {
+        mid = (FLD_ANG(4) + FLD_ANG(5)) / 2;
+        if (ang >= mid - 0x100 && ang < mid + 0x100) {
+            if (FLD_RNG(4) <= FLD_RNG(5)) {
+                if (FLD_RNG(4) > *(f32*)(g_Ball + 0x1A00)) {
+                    return 4;
+                }
+                if (lbl_3_rodata_B78 + FLD_RNG(5) > *(f32*)(g_Ball + 0x1A00)) {
+                    return 5;
+                }
+            } else {
+                if (FLD_RNG(5) > *(f32*)(g_Ball + 0x1A00)) {
+                    return 5;
+                }
+                if (lbl_3_rodata_B78 + FLD_RNG(4) > *(f32*)(g_Ball + 0x1A00)) {
+                    return 4;
+                }
+            }
+        }
+    }
+    if (ang < FLD_ANG(2) + 0x40) {
+        if (*(s16*)(g_FieldingLogic + 0xB0) != 3 || turn >= 0x400) {
+            return 2;
+        }
+        return -1;
+    }
+    if (ang >= FLD_ANG(4) - 0x40 && ang < 0x800) {
+        if (*(s16*)(g_FieldingLogic + 0xB0) != 5 || turn >= 0x400) {
+            return 4;
+        }
+        return -1;
+    }
+    w = 0;
+    if (*(s16*)(g_FieldingLogic + 0xB0) == 3) {
+        w = 0x20;
+    }
+    if (ang >= FLD_ANG(3) - (w + 0x40) && ang < w + FLD_ANG(3) + 0x40) {
+        if (*(s16*)(g_FieldingLogic + 0xB0) == 2) {
+            if (cur >= 0x500 && cur < 0x900) {
+                return 2;
+            }
+            return 3;
+        }
+        if (*(s16*)(g_FieldingLogic + 0xB0) == 5 && *(s16*)(g_Fielders + 3 * 0x268 + 0x18C) == 2 && turn < 0x400) {
+            return -1;
+        }
+        if (*(s16*)(g_FieldingLogic + 0xB0) == 5 && *(s16*)(g_Fielders + 3 * 0x268 + 0x18C) == 2 &&
+            lbl_3_rodata_B64 + FLD_RNG(3) < *(f32*)(g_Ball + 0x1A00)) {
+            return -1;
+        }
+        return 3;
+    }
+    w = 0;
+    if (*(s16*)(g_FieldingLogic + 0xB0) == 2) {
+        w = 0x20;
+    }
+    if (ang >= FLD_ANG(5) - (w + 0x40) && ang < w + FLD_ANG(5) + 0x40) {
+        if (*(s16*)(g_FieldingLogic + 0xB0) == 4) {
+            if ((cur >= 0 && cur < 0x300) || cur >= 0xF00) {
+                return 4;
+            }
+            return 5;
+        }
+        if (*(s16*)(g_FieldingLogic + 0xB0) == 3 && *(s16*)(g_Fielders + 5 * 0x268 + 0x18C) == 2 && turn < 0x400) {
+            return -1;
+        }
+        if (*(s16*)(g_FieldingLogic + 0xB0) == 3 && *(s16*)(g_Fielders + 5 * 0x268 + 0x18C) == 2 &&
+            lbl_3_rodata_B64 + FLD_RNG(5) < *(f32*)(g_Ball + 0x1A00)) {
+            return -1;
+        }
+        return 5;
+    }
+    if (ang >= FLD_ANG(2) && ang < FLD_ANG(3)) {
+        if (cur >= 0x300 && cur < 0x700) {
+            return 2;
+        }
+        if (cur >= 0x700 && cur < 0x900) {
+            if (lbl_3_rodata_B64 + *(f32*)(g_Fielders + 2 * 0x268 + 8) > *(f32*)(g_Ball + 8)) {
+                return 2;
+            }
+            return -1;
+        }
+        if (cur >= 0xD00 || (cur >= 0 && cur < 0x300)) {
+            return 3;
+        }
+        return -1;
+    }
+    if (ang >= FLD_ANG(5) && ang < FLD_ANG(4)) {
+        if (cur >= 0x100 && cur < 0x500) {
+            return 4;
+        }
+        if (cur >= 0xF00 || (cur >= 0 && cur < 0x100)) {
+            if (lbl_3_rodata_B64 + *(f32*)(g_Fielders + 4 * 0x268 + 8) > *(f32*)(g_Ball + 8)) {
+                return 4;
+            }
+            return -1;
+        }
+        if (cur >= 0x500 && cur < 0xB00) {
+            return 5;
+        }
+        return -1;
+    }
+    if (ang >= FLD_ANG(3) && ang < FLD_ANG(5)) {
+        if (*(f32*)(g_Ball + 0x1A00) < lbl_3_rodata_B64 + FLD_RNG(0)) {
+            if (ang < FLD_ANG(0)) {
+                if (cur > 0xD00 || (cur >= 0 && cur < 0x100)) {
+                    return 0;
+                }
+            } else if (cur >= 0x700 && cur < 0xB00) {
+                return 0;
+            }
+        }
+        if (cur >= 0x500 && cur < 0xB00) {
+            return 3;
+        }
+        if (cur > 0xD00 || (cur >= 0 && cur < 0x300)) {
+            return 5;
+        }
+        return -1;
+    }
+    return -1;
 }
+#endif
+#undef FLD_ANG
+#undef FLD_RNG
 
 // .text:0x00038000 size:0x234 mapped:0x80677094
 void fn_3_38000(void) {
