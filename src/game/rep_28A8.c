@@ -397,7 +397,6 @@ void fn_3_DCA68(void) {
     }
 }
 
-// ~94%: g_Controls copy block gets r3/r5 swapped (orig lis r5 lbl_803CBC3C, lwz r3), and final li r5,2 / stb 0x1d9 ordering differs
 // .text:0x000DCC80 size:0x250 mapped:0x8071BD14
 void fn_3_DCC80(void) {
     if (lbl_3_common_bss_34C90.n < 0x7FFE) {
@@ -411,11 +410,10 @@ void fn_3_DCC80(void) {
         lbl_3_common_bss_34C90.w12 = 0x7FFF;
     }
     {
-        u8* c = g_Controls + lbl_3_common_bss_34C90.w0 * 0x10;
         lbl_803CBC3C = 1;
-        lbl_3_common_bss_34C90.w4 = *(u16*)(c + 4);
-        lbl_3_common_bss_34C90.w6 = *(u16*)(c + 6);
-        lbl_3_common_bss_34C90.w8 = *(u16*)(c + 8);
+        lbl_3_common_bss_34C90.w4 = ((u16*)(g_Controls + 4))[lbl_3_common_bss_34C90.w0 * 8];
+        lbl_3_common_bss_34C90.w6 = ((u16*)(g_Controls + 6))[lbl_3_common_bss_34C90.w0 * 8];
+        lbl_3_common_bss_34C90.w8 = ((u16*)(g_Controls + 8))[lbl_3_common_bss_34C90.w0 * 8];
     }
     switch (lbl_3_common_bss_34C90.b1D2) {
     case 0:
