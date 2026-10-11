@@ -67,6 +67,8 @@ void fn_80057CAC(void);
 void fn_8005CCE4(SceneTask* task, s32 port);
 void fn_8005DE14(SceneTask* task, s32 port);
 void fn_8005E9D8(SceneTask* task, s32 port);
+void fn_8005EC88(SceneTask* task, s32 port);
+void fn_8005C830(SceneTask* task, s32 port, s32 slot);
 void fn_8005F9D0(SceneTask* task, s32 port);
 void fn_80053810(void);
 void fn_80056120(void);
@@ -150,7 +152,8 @@ typedef struct RosterData {
     /*0x46F8*/ s8 _46F8[2];
     /*0x46FA*/ u8 _46FA[0x470D - 0x46FA];
     /*0x470D*/ u8 _470D[2];
-    /*0x470F*/ u8 _470F[0x489B - 0x470F];
+    /*0x470F*/ u8 _470F[0x47F9 - 0x470F];
+    /*0x47F9*/ s8 chemPartner[2][9][9]; // CharIDs linked to each roster slot
     /*0x489B*/ u8 _489B[2][9];
     /*0x48AD*/ u8 _48AD;
     /*0x48AE*/ u8 _48AE;

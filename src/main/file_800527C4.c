@@ -1005,9 +1005,61 @@ void fn_8005C5C4(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005C830 size:0x4B4
-void fn_8005C830(void) {
-    return;
+// NONMATCHING 88%: index sums associate differently and loop registers differ
+#if NONMATCHING
+void fn_8005C830(SceneTask* task, s32 port, s32 slot) {
+    s32 j;
+    s32 k;
+    CharacterStats* player;
+    RosterSlot* rs;
+
+    for (j = 0; j < 9; j++) {
+        player = inMemRoster[port];
+        rs = lbl_80354720[port];
+        for (k = 0; k < 9; k++, player++, rs++) {
+            if (player->stats.CharID != lbl_8034E9A0.chemPartner[port][slot][j]) {
+                continue;
+            }
+            if (lbl_803297E0._CF52[port] == 0) {
+                if (g_d_GameSettings._06 != 2) {
+                    TASK_OBJ(task, k + port * 9 + 0x52)->_5C = 0;
+                    TASK_OBJ(task, k + port * 9 + 0x52)->_68 = 1;
+                    TASK_OBJ(task, k + port * 9 + 0x64)->flags |= 2;
+                    TASK_OBJ(task, k + port * 9 + 0x64)->_64 = 0x2B;
+                    TASK_OBJ(task, k + port * 9 + 0x64)->_68 = 1;
+                } else {
+                    TASK_OBJ(task, rs->pos + 0x35)->flags |= 2;
+                    TASK_OBJ(task, rs->pos + 0x35)->_64 = 0x2B;
+                    TASK_OBJ(task, rs->pos + 0x35)->_5C = 0;
+                    TASK_OBJ(task, rs->pos + 0x35)->_68 = 1;
+                    TASK_OBJ(task, k + 0x6C)->flags |= 2;
+                    TASK_OBJ(task, k + 0x6C)->_5C = 0;
+                    TASK_OBJ(task, k + 0x6C)->_68 = 1;
+                    TASK_OBJ(task, k + 0x75)->flags |= 2;
+                    TASK_OBJ(task, k + 0x75)->_64 = 0x2B;
+                    TASK_OBJ(task, k + 0x75)->_68 = 1;
+                }
+            } else if (g_d_GameSettings._06 != 2) {
+                TASK_OBJ(task, rs->pos + port * 9 + 0x12E)->flags |= 2;
+                TASK_OBJ(task, rs->pos + port * 9 + 0x12E)->_64 = 0x2B;
+                TASK_OBJ(task, rs->pos + port * 9 + 0x12E)->_5C = 0;
+                TASK_OBJ(task, rs->pos + port * 9 + 0x12E)->_68 = 1;
+            } else {
+                TASK_OBJ(task, rs->pos + 0x35)->flags |= 2;
+                TASK_OBJ(task, rs->pos + 0x35)->_64 = 0x2B;
+                TASK_OBJ(task, rs->pos + 0x35)->_5C = 0;
+                TASK_OBJ(task, rs->pos + 0x35)->_68 = 1;
+                TASK_OBJ(task, k + 0x6C)->flags |= 2;
+                TASK_OBJ(task, k + 0x6C)->_5C = 0;
+                TASK_OBJ(task, k + 0x6C)->_68 = 1;
+                TASK_OBJ(task, k + 0x75)->flags |= 2;
+                TASK_OBJ(task, k + 0x75)->_64 = 0x2B;
+                TASK_OBJ(task, k + 0x75)->_68 = 1;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8005CCE4 size:0x1130
 void fn_8005CCE4(SceneTask* task, s32 port) {
@@ -1060,9 +1112,51 @@ void fn_8005E9D8(SceneTask* task, s32 port) {
 }
 
 // .text:0x8005EC88 size:0x3E0
-void fn_8005EC88(void) {
-    return;
+// NONMATCHING 90%: index sums (objIdx+i+port*9+K) associate differently; state test shape
+#if NONMATCHING
+void fn_8005EC88(SceneTask* task, s32 port) {
+    u8* state = &lbl_803C66B0.steps[9][port + 1];
+    s32 i;
+    s32 slot;
+    s8 pos;
+
+    if (*state == 0) {
+        if (lbl_803297E0.selected[port] != 0) {
+            slot = lbl_803297E0.selected[port] - 1;
+            pos = lbl_80354720[port][slot].pos;
+            for (i = 0; i < 9; i++) {
+                TASK_OBJ(task, i + port * 9 + 0x64)->flags &= ~2;
+                TASK_OBJ(task, i + port * 9 + 0x12E)->flags &= ~2;
+            }
+            switch (lbl_803297E0._CF52[port]) {
+            case 0:
+                TASK_OBJ(task, slot + port * 9 + 0x40)->_68 = 1;
+                TASK_OBJ(task, slot + port * 9 + 0x1C)->_5C = 0;
+                TASK_OBJ(task, slot + port * 9 + 0x1C)->_68 = 1;
+                TASK_OBJ(task, slot + port * 9 + 0x52)->_5C = 0;
+                TASK_OBJ(task, slot + port * 9 + 0x52)->_68 = 1;
+                TASK_OBJ(task, slot + port * 9 + 0x64)->flags |= 2;
+                TASK_OBJ(task, slot + port * 9 + 0x64)->_64 = 0x2A;
+                TASK_OBJ(task, slot + port * 9 + 0x64)->_68 = 1;
+                fn_8005C830(task, port, slot);
+                break;
+            case 1:
+                TASK_OBJ(task, pos + port * 9 + 0x10A)->_68 = 1;
+                TASK_OBJ(task, pos + port * 9 + 0xF8)->_68 = 1;
+                TASK_OBJ(task, pos + port * 9 + 0x12E)->flags |= 2;
+                TASK_OBJ(task, pos + port * 9 + 0x12E)->_64 = 0x2A;
+                TASK_OBJ(task, pos + port * 9 + 0x12E)->_68 = 1;
+                fn_8005C830(task, port, slot);
+                break;
+            }
+        }
+        TASK_OBJ(task, port + 0x18)->_5C = 10 << 16;
+        TASK_OBJ(task, port + 0x18)->_68 = 4;
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
+#endif
 
 // .text:0x8005F068 size:0x6CC
 void fn_8005F068(void) {
