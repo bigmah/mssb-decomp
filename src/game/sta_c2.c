@@ -44,6 +44,12 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern s32 lbl_3_bss_ADD0[];
+extern const f32 lbl_3_rodata_2730;
+extern const f64 lbl_3_rodata_2788;
+extern const f64 lbl_3_rodata_2790;
+extern const f32 lbl_3_rodata_2798;
+extern const f32 lbl_3_rodata_279C;
 extern f32 lbl_3_bss_A030;
 extern s32 lbl_3_data_182C0;
 extern const f32 lbl_3_rodata_27B8;
@@ -67,6 +73,7 @@ typedef struct PEnt {
     u8 c40, c41, c42, c43;
     u8 pad44[4];
     s16 s48, s4A;
+    u8 c4C, c4D, c4E, c4F;
 } PEnt;
 extern u8 lbl_3_bss_A018[];
 extern u8* lbl_803CC1B8;
@@ -1014,9 +1021,50 @@ s32 fn_3_CFB44(u8* a) {
 }
 
 // .text:0x000CFD58 size:0x374 mapped:0x8070EDEC
-void fn_3_CFD58(void) {
-    return;
+// Seeds the ring particles of p's emitter (p+0xA8): 5 per ring around the owner
+// (p+0xA0), each ring 10 degrees further round and 5 frames later.
+// NONMATCHING ~90%: target hoists all 11 float constants into f21-f31 (we keep 8 addresses in GPRs)
+#if NONMATCHING
+void fn_3_CFD58(u8* p) {
+    u8* h = *(u8**)(p + 0xA8);
+    PEnt* e = *(PEnt**)(h + 0xC);
+    s32 i;
+    s32 ring;
+    s32 a;
+    f32 ang;
+    *(u8**)(h + 0x20) = p;
+    *(s32*)(h + 0x10) = lbl_3_bss_ADD0[0];
+    for (i = 0; e != NULL; e = e->next) {
+        s32 dir = -(s8)(*(u8**)(p + 0xA0))[0xD0];
+        ring = i / 5;
+        ang = lbl_3_rodata_2658[0] * ((f32)(lbl_3_rodata_2788 * (i % 5) / lbl_3_rodata_2790) + (f32)(dir * ring * 10));
+        e->f1C = e->f4 = lbl_3_rodata_2730 * (f32)cos(ang) + *(f32*)(*(u8**)(p + 0xA0) + 0xA0);
+        e->f20 = e->f8 = lbl_3_rodata_2664;
+        e->f24 = e->fC = lbl_3_rodata_2730 * (f32)sin(ang) + *(f32*)(*(u8**)(p + 0xA0) + 0xA8);
+        rand();
+        e->f10 = lbl_3_rodata_2664;
+        e->f14 = lbl_3_rodata_2798;
+        e->f18 = lbl_3_rodata_2664;
+        e->s4A = (ring + 1) * 5;
+        e->f4 = e->f10 * (f32)(30 - e->s4A) + e->f4;
+        e->f8 = e->f14 * (f32)(30 - e->s4A) + e->f8;
+        e->fC = e->f18 * (f32)(30 - e->s4A) + e->fC;
+        e->f38 = e->f3C = lbl_3_rodata_2770 * ((f32)(30 - e->s4A) / lbl_3_rodata_279C) + lbl_3_rodata_2770;
+        e->c42 = 0xFF;
+        e->c41 = 0xFF;
+        e->c40 = 0xFF;
+        a = lbl_3_rodata_2720 * ((f32)(30 - e->s4A) / lbl_3_rodata_279C) + lbl_3_rodata_2700;
+        if (a < 0) {
+            a = 0;
+        }
+        e->c43 = a;
+        i++;
+        e->s48 = 0;
+        e->c4D = 9;
+        e->c4E = 0;
+    }
 }
+#endif
 
 // .text:0x000D00CC size:0x4 mapped:0x8070F160
 void fn_3_D00CC(void) {
@@ -1051,7 +1099,7 @@ void fn_3_D00D0(u8* p) {
         if (*(u32*)(p + 0xA8) == 0) {
             *(u32*)(p + 0xA8) = fn_80033A24(fn_3_CFB44, 0x80, 0, 0x1E, 0, 1);
             if (*(u32*)(p + 0xA8) != 0) {
-                ((void (*)(void*))fn_3_CFD58)(p);
+                fn_3_CFD58(p);
             }
         }
         CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(*(u8**)(p + 0xA0) + 0xC0), lbl_3_rodata_2664);

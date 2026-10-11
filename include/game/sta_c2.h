@@ -63,7 +63,7 @@ void fn_3_CFA88(void);
 void fn_3_CFA8C(void* p);
 void fn_3_CFAB4(u8* p, u8* q);
 s32 fn_3_CFB44(u8* a);
-void fn_3_CFD58(void);
+void fn_3_CFD58(u8* p);
 void fn_3_D00CC(void);
 void fn_3_D00D0(u8* p);
 void fn_3_D0280(void);
