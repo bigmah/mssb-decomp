@@ -1,5 +1,6 @@
 #include "menus/rep_0788.h"
 #include "Dolphin/gx.h"
+#include "main/file_80024184.h"
 
 #include "static/UnknownHomes_Static.h"
 #include "static/UnknownHomes_Static.h"
@@ -3437,7 +3438,7 @@ void fn_2_270B8(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
-extern u8 lbl_80109AE8[];
+extern StarMission lbl_80109AE8[][10];
 
 // fn_2_2B43C, size:0x204
 void fn_2_2B43C(MenuTableContext* menu, MenuItemState* item) {
@@ -3456,7 +3457,7 @@ void fn_2_2B43C(MenuTableContext* menu, MenuItemState* item) {
     case 8: {
         u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
         s32 index = item->index;
-        if (*(s16*)(lbl_80109AE8 + *(s16*)(ctx + 0x7706) * 0x64 + index * 10) != -1) {
+        if (lbl_80109AE8[*(s16*)(ctx + 0x7706)][index].type != -1) {
             if (*(s16*)(ctx + 0x7710) == index) {
                 u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
                 *(u32*)(object + 0x5C) = 0;
@@ -5132,6 +5133,57 @@ void fn_2_2F544(MenuTableContext* menu, MenuItemState* item) {
     }
     case 5:
         item->timer = 0x19;
+        item->state = 6;
+        return;
+    case 6:
+        if (item->timer-- <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+    case 37:
+    case 1:
+        return;
+    }
+}
+#endif
+
+// fn_2_2B654, size:0x230
+// NONMATCHING 98%: byte offset (row*0x34+9)+index*2 folded into lbz displacement instead of lbzx
+#if NONMATCHING
+void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        s16 index = item->index;
+        s16 row = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
+        u8* object;
+        if (lbl_80109AE8[row][index].type != -1) {
+            if (((s8*)lbl_2_bss_1A8248)[lbl_800E869C[row] * 0x34 + 9 + index * 2] < 0) {
+                object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else {
+                object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+            }
+        } else {
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        item->state = 37;
+        return;
+    }
+    case 5:
+        item->timer = 9;
         item->state = 6;
         return;
     case 6:
