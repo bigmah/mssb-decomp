@@ -216,7 +216,13 @@ void fn_800E4AC8(void) {
 
 // .text:0x800E4AE8 size:0x34
 void fn_800E4AE8(void* ctx, void* info) {
-    return;
+    HVQM4SeqObj* seq = ctx;
+    u8* p = info;
+
+    seq->frameWidth = (p[0] << 8) | p[1];
+    seq->frameHeight = (p[2] << 8) | p[3];
+    seq->hSamp = p[4];
+    seq->vSamp = p[5];
 }
 
 // .text:0x800E4B1C size:0x74
