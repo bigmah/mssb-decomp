@@ -239,3 +239,46 @@ void fn_2_858A4(MenuCamera* camera) {
     PSMTXMultVec(combined, &up, &offset);
     makeLookAtMatrix(camera->view, &camera->eye, &offset, &camera->target);
 }
+
+extern Vec lbl_2_rodata_E40;
+extern Vec lbl_2_rodata_E4C;
+extern const f32 lbl_2_rodata_EA8[];
+
+// Debug walk camera: substick turns, main stick strafes/moves, triggers raise/lower.
+// .text:0x85AC0 size:0x2AC
+void fn_2_85AC0(MenuCamera* camera) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx combined;
+    Vec up = lbl_2_rodata_E40;
+    Vec angles;
+    Vec offset = lbl_2_rodata_E4C;
+    MenuDebugPad* pad = g_MenuDebugPad;
+    f32 c;
+    f32 s;
+
+    if (!(pad->held & 0x10)) {
+        camera->yaw -= pad->substickY;
+        camera->pitch += pad->substickX;
+        camera->offsetX = pad->stickX / lbl_2_rodata_EA8[0];
+        camera->offsetZ = pad->stickY * lbl_2_rodata_E98[0];
+        camera->eye.y += pad->triggerRight * lbl_2_rodata_E9C;
+        camera->eye.y -= pad->triggerLeft * lbl_2_rodata_E9C;
+    }
+    angles.x = camera->yaw;
+    angles.y = camera->pitch;
+    angles.z = lbl_2_rodata_E88;
+    PSVECScale(&angles, lbl_2_rodata_E8C[0], &angles);
+    PSMTXRotRad(rotX, 'X', angles.x);
+    PSMTXRotRad(rotY, 'Y', angles.y);
+    s = rotY[0][2];
+    c = rotY[0][0];
+    PSMTXConcat(rotY, rotX, combined);
+    PSMTXMultVec(combined, &offset, &camera->target);
+    camera->eye.x += camera->offsetZ * s - camera->offsetX * c;
+    camera->eye.z += camera->offsetZ * c + camera->offsetX * s;
+    camera->target.x += camera->eye.x;
+    camera->target.y += camera->eye.y;
+    camera->target.z += camera->eye.z;
+    makeLookAtMatrix(camera->view, &camera->eye, &up, &camera->target);
+}
