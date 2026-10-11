@@ -72,7 +72,8 @@ typedef struct PiranhaPlant {
 typedef struct StadiumObjList {
     /*0x00*/ PiranhaPlant* objs;
     /*0x04*/ PiranhaPlant* objsBackup;
-    /*0x08*/ u8 _08[0x18 - 0x08];
+    /*0x08*/ u8 _08[0x14 - 0x08];
+    /*0x14*/ struct SortEnt* sort;  // count entries {f32 z; s32 idx}, draw order
     /*0x18*/ void (*draw)(void);
     /*0x1C*/ void (*update)(void);
     /*0x20*/ void* lights[4];
@@ -85,7 +86,8 @@ typedef struct StadiumObjList {
     /*0x48*/ Vec* groupBounds;      // per draw group: min and max corner
     /*0x4C*/ u8 _4C[0x64 - 0x4C];
     /*0x64*/ s16 numGroups;
-    /*0x66*/ u8 _66[0x6D - 0x66];
+    /*0x66*/ u8 _66[0x6C - 0x66];
+    /*0x6C*/ u8 depthSort;          // nonzero: sort objects by view depth
     /*0x6D*/ u8 numActorObjs;
 } StadiumObjList;
 

@@ -1,4 +1,7 @@
 #include "game/sta_c5.h"
+#include "game/rep_2998.h"
+#include "game/rep_D0.h"
+#include "game/m_sound.h"
 #include "header_rep_data.h"
 #include "Dolphin/os.h"
 extern u8 lbl_3_common_bss_350E4[];
@@ -13,9 +16,6 @@ extern u32 sndFXStartEx(int, u8, u8, u8);
 extern void sndFXCtrl(int, int, u8);
 extern void fn_3_65A8(void);
 extern void fn_3_27648(void);
-extern void fn_3_8B890(s32);
-extern void fn_3_8BA60(s32, s32, s32);
-extern s32 fn_3_8BBC4(s32, s32, s32, s32);
 typedef struct { u8 pad[0x78]; s32 w78; u8 pad2[0xE8 - 0x7C]; } StadObj78;
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
@@ -100,12 +100,141 @@ extern void AnimateActorBones(void*);
 extern u8 lbl_3_bss_AEE0[];
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_3_data_1BA5C[];
-extern void fn_800BDA24(s32);
+
 extern void fn_800B0A14_removeQueue();
 extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
-extern u32 lbl_3_bss_B154[];
-extern void fn_3_B97DC(void*, u32);
+extern void* lbl_3_bss_B154[]; /* actor anim banks */
+extern void fn_3_B97DC(void* obj, void* animBank);
+extern const f32 lbl_3_rodata_2E14;
+extern f64 pow(f64, f64);
+extern f64 sqrt(f64);
+extern s16 fn_3_B7F70(s16 range);
+struct StadCtlA {
+    Control c;
+    u8 pad34[0x74 - 0x3C];
+    u8** obj;
+    u8 pad78[0x90 - 0x78];
+    u8 fl90_hi : 1;
+    u8 fl90_lo : 7;
+    u8 pad91[8];
+    u8 f99;
+    u8 pad9A[2];
+    u8 idx;
+    u8 pad9D[3];
+    f32 xa0, ya4, za8, xac, zb0, rb4;
+    f32 fb8; /* 0xB8 */
+    f32* yawSrc; /* 0xBC */
+    u8 fc0;
+    s8 fc1;
+    s8 fc2;
+    u8 fc3;
+    u8 fc4;
+    u8 fc5;
+    u8 fc6;
+    u8 fc7;
+};
+typedef struct StadCtlA StadCtlA;
+extern Vec lbl_3_bss_B260[]; /* bezier control points */
+/* Draw-order entry of the stadium object list (same layout as rep_1D58's). */
+struct SortEnt {
+    f32 z;
+    s32 idx;
+};
+/* Common header of a 0xE8-byte stadium object (lbl_3_common_bss_350E4 objs). */
+typedef struct StadObjHdr {
+    Control c;                 /* 0x00 */
+    u8 pad3C[0x74 - 0x3C];
+    ActorObject* actorObj;     /* 0x74 */
+    void* shadow;              /* 0x78: passed to fn_3_B8464 */
+    void (*update)(void* p);   /* 0x7C */
+    void (*onHit)(s32 idx);    /* 0x80 */
+    void (*preDraw)(void* p);  /* 0x84 */
+    void* f88;                 /* 0x88 */
+    void* drawArg;             /* 0x8C */
+    u8 visible : 1;            /* 0x90 */
+    u8 hasShadow : 1;
+    u8 depthSort : 1;
+    u8 customZ : 1;
+    u8 zCompare : 1;
+    u8 zAlways : 1;
+    u8 zUpdate : 1;
+    u8 flag01 : 1;
+    u8 pad91;
+    u8 alpha;                  /* 0x92 */
+    u8 pad93;
+    s16 attached;              /* 0x94 */
+    s16 attachJoint;           /* 0x96 */
+    u8 layer;                  /* 0x98 */
+    u8 f99;                    /* 0x99 */
+    u8 castShadow;             /* 0x9A */
+    u8 pad9B;
+    u8 idx;                    /* 0x9C */
+    u8 kind;                   /* 0x9D */
+    u8 pad9E[2];
+    struct StadObjHdr* link;   /* 0xA0: paired object (kind-specific) */
+    u8 padA4[0xC5 - 0xA4];
+    u8 id;                     /* 0xC5 */
+    u8 padC6[0xE8 - 0xC6];
+} StadObjHdr;
+/* Stadium object that carries a linked StadCtlA (fn_3_F46A0 / fn_3_F5C30). */
+typedef struct StadObjB {
+    Control c;                         /* 0x00 */
+    u8 pad3C[0x7C - 0x3C];
+    void (*update)(struct StadObjB* p); /* 0x7C */
+    u8 pad80[0x99 - 0x80];
+    u8 f99;                            /* 0x99 */
+    u8 pad9A[2];
+    u8 idx;                            /* 0x9C */
+    u8 pad9D[3];
+    struct StadCtlA* link;             /* 0xA0 */
+    struct Emitter* emitter;           /* 0xA4 */
+    Vec pos;                           /* 0xA8 */
+    Vec vel;                           /* 0xB4 */
+    f32 yaw;                           /* 0xC0 */
+    u8 state;                          /* 0xC4 */
+    u8 padC5[0xE8 - 0xC5];
+} StadObjB;
+/* View of this file's pooled .bss starting at lbl_3_bss_AEE0. */
+typedef struct StaC5Work {
+    u8 pad0;
+    u8 cartBusy; /* 0x01 */
+    u8 flag2;    /* 0x02 */
+    u8 pad3;
+    u32 pathStep; /* 0x04 */
+    u8 pad8[0xC - 0x8];
+    f32 targetX; /* 0x0C */
+    u8 pad10[0x20 - 0x10];
+    f32 wobVel; /* 0x20 */
+    f32 wob;    /* 0x24 */
+    f32 wobAmp; /* 0x28 */
+    Vec wind;   /* 0x2C */
+    u8 pad38[0x344 - 0x38];
+    f32 pathSpeed; /* 0x344 */
+    f32 bezW[7];   /* 0x348: bernstein weights of lbl_3_bss_B260 */
+} StaC5Work;
+/* View of this file's pooled .data starting at lbl_3_data_1B820. */
+typedef struct StaC5Data {
+    u8 pad0[0x178];
+    s32 dustRate;  /* 0x178 */
+    f32 dustScale; /* 0x17C */
+    u8 pad180[0x228 - 0x180];
+    f32 targetZ;   /* 0x228 */
+    f32 footprint[2][2]; /* 0x22C: (x, z) offsets of two ground probes */
+    u8 pad23C[0x24D - 0x23C];
+    u8 windReset;  /* 0x24D */
+    u8 wobReset;   /* 0x24E */
+    u8 pad24F;
+    Vec windPos;   /* 0x250 */
+    Vec windVel;   /* 0x25C */
+} StaC5Data;
+extern const f32 lbl_3_rodata_2D60;
+extern const f32 lbl_3_rodata_2D64;
+extern const f32 lbl_3_rodata_2D6C;
+extern const f64 lbl_3_rodata_2D78;
+extern const f64 lbl_3_rodata_2D80;
+extern const f64 lbl_3_rodata_2D88;
+extern const f64 lbl_3_rodata_2D90;
 
 void fn_3_EDFAC(void) {
     u8* st = lbl_3_bss_AEE0;
@@ -145,8 +274,9 @@ s32 fn_3_EE0BC(u32 v) {
 }
 #include "Dolphin/GX/GXPixel.h"
 
-// 70%: matrix setup is right; instruction scheduling of the first PSMTXCopy/scale block and const load forms differ
 // .text:0x000EE100 size:0x288 mapped:0x8072D194
+// NONMATCHING 93%: matrix setup is right; scheduling of the first PSMTXCopy/scale block and const load forms differ
+#if NONMATCHING
 void fn_3_EE100(u8* obj, f32 (*mtx)[4]) {
     Mtx b;
     Mtx a;
@@ -201,11 +331,58 @@ void fn_3_EE100(u8* obj, f32 (*mtx)[4]) {
     GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_RASA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
     GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
 }
+#endif
 
 // .text:0x000EE388 size:0x2F4 mapped:0x8072D41C
+// NONMATCHING 86%: original reaches windVel.y/windPos.y/wind.z through a second addi'd pointer reg (separate static Vecs); float reg order differs
+#if NONMATCHING
 void fn_3_EE388(void) {
-    return;
+    StaC5Data* d = (StaC5Data*)lbl_3_data_1B820;
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    f32 ang;
+    f32 mag;
+    f32 a;
+    f32 amp;
+    if (d->windReset != 0) {
+        rand();
+        ang = lbl_3_rodata_2D60 * ((f32)rand() / lbl_3_rodata_2D64);
+        w->wind.x = lbl_3_rodata_2D68 * (f32)cos(ang);
+        w->wind.y = lbl_3_rodata_2D68 * (f32)sin(ang);
+        w->wind.z = lbl_3_rodata_2D5C;
+        PSVECSubtract(&w->wind, &d->windPos, &d->windVel);
+        if (PSVECMag(&d->windVel) != lbl_3_rodata_2D5C) {
+            PSVECNormalize(&d->windVel, &d->windVel);
+        }
+        PSVECScale(&d->windVel, lbl_3_rodata_2D6C, &d->windVel);
+        d->windReset = 0;
+    }
+    PSVECAdd(&d->windPos, &d->windVel, &d->windPos);
+    mag = PSVECMag(&w->wind);
+    if (PSVECMag(&d->windPos) > mag) {
+        d->windVel.x *= lbl_3_rodata_2D70;
+        d->windVel.y *= lbl_3_rodata_2D70;
+        PSVECScale(&w->wind, lbl_3_rodata_2D74, &w->wind);
+    } else if (PSVECDotProduct(&d->windPos, &w->wind) <= lbl_3_rodata_2D5C) {
+        d->windPos.y = lbl_3_rodata_2D5C;
+        d->windPos.x = lbl_3_rodata_2D5C;
+        d->windReset = 1;
+    }
+    if (d->wobReset != 0) {
+        a = (f32)rand() / lbl_3_rodata_2D64;
+        d->wobReset = 0;
+        w->wob = lbl_3_rodata_2D5C;
+        amp = lbl_3_rodata_2D78 * (lbl_3_rodata_2D80 * (a - lbl_3_rodata_2D88));
+        w->wobAmp = amp;
+        w->wobVel = lbl_3_rodata_2D90 * (__fabs(amp) / amp);
+    }
+    w->wob += w->wobVel;
+    if (__fabs(w->wob) >= __fabs(w->wobAmp)) {
+        w->wobVel *= lbl_3_rodata_2D70;
+    } else if ((s32)(__fabs(w->wob) / w->wob) != (s32)(__fabs(w->wobAmp) / w->wobAmp)) {
+        d->wobReset = 1;
+    }
 }
+#endif
 
 // .text:0x000EE67C size:0x2F0 mapped:0x8072D710
 void fn_3_EE67C(u8* a, f32 (*m)[4]) {
@@ -290,8 +467,9 @@ void fn_3_EE67C(u8* a, f32 (*m)[4]) {
     }
 }
 
-// 90%: mtx stores: orig does first via base+0x23c and the second via a separate pointer reg (r3+0x10); const load order/addi forms differ
 // .text:0x000EE96C size:0x228 mapped:0x8072DA00
+// NONMATCHING 96%: the original stores the ind-tex matrix through base+0x23c and a separate pointer reg (separate static in the pooled .bss); const load order differs
+#if NONMATCHING
 void fn_3_EE96C(u8* pos) {
     Mtx m;
     Vec t;
@@ -345,6 +523,7 @@ void fn_3_EE96C(u8* pos) {
     GXSetIndTexCoordScale(GX_IND_TEX_STAGE_0, s0, s1);
     GXSetTevIndWarp(GX_TEVSTAGE0, GX_IND_TEX_STAGE_0, 1, 0, GX_ITM_0);
 }
+#endif
 
 // .text:0x000EEB94 size:0x160 mapped:0x8072DC28
 void fn_3_EEB94(void) {
@@ -376,8 +555,10 @@ void fn_3_EEB94(void) {
     }
 }
 
-// 97%: only the GXSetIndTexMtx matrix stores differ (orig: first store via r30+0x23c, rest via pointer r4+4..0x14)
+#pragma dont_inline off
 // .text:0x000EECF4 size:0x148 mapped:0x8072DD88
+// NONMATCHING 99.6%: only the GXSetIndTexMtx matrix stores differ (orig: first store via r30+0x23c, rest via pointer r4+4..0x14: separate static in the pooled .bss)
+#if NONMATCHING
 void fn_3_EECF4(void) {
     typedef struct { u8 pad0[0x38]; u8 a38[0x200]; u8* tex; f32 m[2][3]; u8 a254[1]; } S;
     S* s = (S*)lbl_3_bss_AEE0;
@@ -403,7 +584,9 @@ void fn_3_EECF4(void) {
     }
     memset(s->a38, 1, 0x200);
 }
+#endif
 
+#pragma dont_inline on
 // .text:0x000EEE3C size:0xE8 mapped:0x8072DED0
 void fn_3_EEE3C(void) {
     u8* b = *(u8**)lbl_3_bss_B55C;
@@ -436,7 +619,7 @@ void fn_3_EEF24(void) {
         return;
     }
     if (lbl_8036E548[0x307E] != 0) {
-        fn_800BDA24(*(s32*)lbl_3_bss_B55C);
+        fn_800BDA24(*(ActorObject**)lbl_3_bss_B55C);
         fn_3_EE388();
         fn_3_EEB94();
         fn_800A7D4C(1, lbl_3_data_1BA5C + lbl_803CBBC0[0] * 8);
@@ -467,7 +650,6 @@ void fn_3_F13F8(u8* p) {
 }
 #pragma dont_inline on
 
-// 99%: only the position of stfs f2,0xB8 relative to the inlined fn_3_F13F8 zero-reg movs differs (one slot late)
 // .text:0x000EEFD4 size:0x244 mapped:0x8072E068
 void fn_3_EEFD4(s32 idx) {
     Vec d;
@@ -525,6 +707,7 @@ void fn_3_EF218(void) {
     return;
 }
 
+#pragma dont_inline off
 // .text:0x000EF21C size:0x1B8 mapped:0x8072E2B0
 void fn_3_EF21C(u8* p) {
     u8* d = lbl_3_data_1B820;
@@ -602,8 +785,10 @@ void fn_3_EF408(u8* p) {
     p[0xC6] = 0;
 }
 
-// 60%: two box-edge loops; lfsx/addi index pattern and per-loop register numbering differ
+#pragma dont_inline on
 // .text:0x000EF55C size:0x258 mapped:0x8072E5F0
+// NONMATCHING 92%: two box-edge loops; lfsx/addi index pattern and per-loop register numbering differ
+#if NONMATCHING
 u32 fn_3_EF55C(Vec p, u8 idx) {
     u8 a[4] = {1, 3, 0, 2};
     u8 b[4] = {0, 1, 2, 3};
@@ -664,12 +849,14 @@ u32 fn_3_EF55C(Vec p, u8 idx) {
     }
     return 0;
 }
+#endif
 
 // .text:0x000EF7B4 size:0x4C mapped:0x8072E848
 u32 fn_3_EF7B4(V3i v, s32 x) {
     return ((u8 (*)(V3i, s32))fn_3_EF55C)(v, x) != 0;
 }
 
+#pragma dont_inline off
 // .text:0x000EF800 size:0x90 mapped:0x8072E894
 void fn_3_EF800(u8* p) {
     typedef struct { u8 pad[0x90]; u8 f : 1; u8 rest : 7; } FObj;
@@ -688,11 +875,12 @@ void fn_3_EF800(u8* p) {
 // .text:0x000EF890 size:0xA0 mapped:0x8072E924
 void fn_3_EF890(u8* p) {
     fn_3_F13F8(p);
-    CTRLSetScale((Control*)p, 2.0f, 0.1f, 2.0f);
+    CTRLSetScale((Control*)p, lbl_3_rodata_2D74, lbl_3_rodata_2DF0, lbl_3_rodata_2D74);
     p[0xC6] = 6;
     p[0xC7] = 0x4B;
 }
 
+#pragma dont_inline on
 // .text:0x000EF930 size:0x224 mapped:0x8072E9C4
 extern char lbl_3_rodata_2D24[];
 extern const f64 lbl_3_rodata_2DF8;
@@ -738,9 +926,140 @@ void fn_3_EF930(u8* p) {
 }
 
 // .text:0x000EFB54 size:0x630 mapped:0x8072EBE8
-void fn_3_EFB54(u8* p) {
-    return;
+extern char lbl_3_rodata_2D0C[];
+extern char lbl_3_rodata_2D18[];
+extern const f32 lbl_3_rodata_2E08;
+extern const f32 lbl_3_rodata_2E0C;
+extern const f32 lbl_3_rodata_2E10;
+extern s32 fn_8001B728(s32, s32, void*);
+/* Held in a fielder's hand: follow the actor's hand joint and face along the arm. */
+// NONMATCHING 82-86%: stack frame 0x10 larger and float regalloc/scheduling differ; the original leaves the yaw uninitialized when fc0 >= 3 (initialized to 0 here)
+#if NONMATCHING
+void fn_3_EFB54(StadCtlA* p) {
+    Vec pos;
+    Vec off;
+    Vec ref;
+    Vec flat;
+    Vec tilt;
+    Vec axis;
+    Quaternion q;
+    Quaternion qYaw;
+    Quaternion qPitch;
+    u8* a;
+    u32 i;
+    s32 dir;
+    f32 yaw;
+    f32 h;
+    f32 r;
+    pos = *(Vec*)lbl_3_rodata_2D0C;
+    ref = *(Vec*)lbl_3_rodata_2D18;
+    a = *(u8**)(lbl_8036E548 + p->fc1 * 4 + 0x2C50);
+    if (a == NULL) {
+        return;
+    }
+    if ((s8)a[0x255] != (s8)p->fc3) {
+        /* the fielder changed; find the actor that still has our id (a ends as the last one checked) */
+        for (i = 0; i < 9; i++) {
+            a = ((u8**)(lbl_8036E548 + 0x2C50))[i];
+            if (a != NULL && (s8)p->fc3 == (s8)a[0x255]) {
+                p->fc1 = a[0x254];
+                break;
+            }
+        }
+    }
+    if (a == NULL) {
+        return;
+    }
+    memset(&pos, 0, 0xC);
+    if (a[0x25A] == 0) {
+        fn_8001B728((s8)a[0x254], 0x22, &pos);
+        dir = -1;
+    } else {
+        fn_8001B728((s8)a[0x254], 0x1E, &pos);
+        dir = 1;
+    }
+    yaw = 0.0f; /* uninitialized in the original for fc0 >= 3 */
+    switch (p->fc0) {
+    case 0:
+        yaw = -*(f32*)(a + 0x44) - lbl_3_rodata_2DDC * (f32)(dir * 30 + 90);
+        break;
+    case 1:
+        yaw = -*(f32*)(a + 0x44) - lbl_3_rodata_2DDC * (f32)(dir * 30 + 60);
+        break;
+    case 2:
+        yaw = -*(f32*)(a + 0x44) - lbl_3_rodata_2DDC * (f32)(dir * 30 + 120);
+        break;
+    }
+    if (pos.y < lbl_3_rodata_2D5C) {
+        h = pos.y;
+        if (h < lbl_3_rodata_2E08) {
+            h = lbl_3_rodata_2E08;
+        }
+        r = sqrt(lbl_3_rodata_2E0C - h * h);
+    } else {
+        h = lbl_3_rodata_2D5C;
+        r = lbl_3_rodata_2E10;
+    }
+    off.x = -r * (f32)cos(yaw);
+    off.y = -h;
+    off.z = -r * (f32)sin(yaw);
+    pos.x += off.x * lbl_3_rodata_2D54;
+    pos.y += off.y * lbl_3_rodata_2D54;
+    pos.z += off.z * lbl_3_rodata_2D54;
+    off.x *= lbl_3_rodata_2D70;
+    off.y *= lbl_3_rodata_2D70;
+    off.z *= lbl_3_rodata_2D70;
+    pos.y *= lbl_3_rodata_2D70;
+    p->xa0 = pos.x;
+    p->ya4 = pos.y;
+    p->za8 = pos.z;
+    tilt.x = off.x;
+    tilt.y = off.y;
+    tilt.z = off.z;
+    flat.x = off.x;
+    flat.y = off.y;
+    flat.z = off.z;
+    tilt.z = lbl_3_rodata_2D5C;
+    flat.y = lbl_3_rodata_2D5C;
+    tilt.x = sqrt(pow(off.x, lbl_3_rodata_2D80) + pow(off.z, lbl_3_rodata_2D80));
+    if (r != lbl_3_rodata_2D5C) {
+        PSVECNormalize(&flat, &flat);
+    }
+    PSVECNormalize(&tilt, &tilt);
+    p->xac = lbl_3_rodata_2DE8 * -(f32)acos(PSVECDotProduct(&flat, &ref));
+    if (flat.z < lbl_3_rodata_2D5C) {
+        p->xac = lbl_3_rodata_2E14 - p->xac;
+    }
+    axis.x = lbl_3_rodata_2D5C;
+    axis.y = lbl_3_rodata_2D50;
+    axis.z = lbl_3_rodata_2D5C;
+    C_QUATRotAxisRad(&qYaw, &axis, lbl_3_rodata_2DDC * p->xac);
+    /* zb0 holds the pitch (degrees) for this object kind */
+    p->zb0 = lbl_3_rodata_2DE8 * (f32)acos(PSVECDotProduct(&tilt, &ref));
+    if (tilt.y < lbl_3_rodata_2D5C) {
+        p->zb0 = lbl_3_rodata_2E14 - p->zb0;
+    }
+    axis.x = lbl_3_rodata_2D5C;
+    axis.y = lbl_3_rodata_2D5C;
+    axis.z = lbl_3_rodata_2D50;
+    C_QUATRotAxisRad(&qPitch, &axis, lbl_3_rodata_2DDC * p->zb0);
+    PSQUATMultiply(&qYaw, &qPitch, &q);
+    PSQUATNormalize(&q, &q);
+    if (PSQUATDotProduct(&q, &q) == lbl_3_rodata_2D5C) {
+        axis.x = lbl_3_rodata_2D5C;
+        axis.y = lbl_3_rodata_2D50;
+        axis.z = lbl_3_rodata_2D5C;
+        C_QUATRotAxisRad(&q, &axis, lbl_3_rodata_2D5C);
+    }
+    if (a[0x25D] != 1) {
+        p->fl90_hi = 0;
+    } else {
+        p->fl90_hi = 1;
+    }
+    CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+    CTRLSetQuat(&p->c, q.x, q.y, q.z, q.w);
 }
+#endif
 
 // .text:0x000F0184 size:0xA0 mapped:0x8072F218
 void fn_3_F0184(void) {
@@ -753,25 +1072,224 @@ void fn_3_F0184(void) {
     for (i = 0; i < lbl_3_bss_AEE0[0x33C]; i++) {
         u8* e = *(u8**)lbl_3_common_bss_350E4 + (i + lbl_3_bss_AEE0[0x33B]) * 0xE8;
         if (e != NULL && e[0xC6] == 3) {
-            fn_3_EFB54(e);
+            fn_3_EFB54((StadCtlA*)e);
         }
     }
 }
 
 // .text:0x000F0224 size:0x608 mapped:0x8072F2B8
-void fn_3_F0224(void) {
-    return;
+extern char lbl_3_rodata_2D00[];
+extern u8 g_Fielders[];
+extern u8 lbl_3_bss_B21B;
+extern u8 lbl_3_bss_B21C;
+extern const f64 lbl_3_rodata_2E18;
+extern const f32 lbl_3_rodata_2E20;
+extern s32 fn_8001B728(s32, s32, void*);
+/* Chases the fielder p->fc1; bites when close enough. */
+// NONMATCHING 90%: inlines fn_3_F13F8 and fn_3_EF21C (first fn_3_EF55C test is the inlined fn_3_EF7B4 in the original: clrlwi.); original reaches lbl_3_bss_B154/B21B/B21C via the lbl_3_bss_AEE0 pooled base (nmverify flag expected); regalloc differs
+#if NONMATCHING
+void fn_3_F0224(StadCtlA* p) {
+    Vec np;
+    Vec d;
+    Vec n;
+    Vec ref;
+    Vec fpos;
+    u8* f;
+    u8* actor;
+    f32 dist;
+    f32 ang;
+    u32 i;
+    ref = *(Vec*)lbl_3_rodata_2D00;
+    f = g_Fielders + p->fc1 * 0x268;
+    fpos = *(Vec*)f;
+    actor = *(u8**)(lbl_8036E548 + p->fc1 * 4 + 0x2C50);
+    if (fn_3_EF55C(fpos, p->fc5) != 0) {
+        p->fc6 = 1;
+        p->fc1 = -1;
+        fn_3_B97DC(p->obj, lbl_3_bss_B154[0]);
+        p->fc7 = 0;
+        return;
+    }
+    d.x = ((Vec*)f)->x - p->xa0;
+    d.y = lbl_3_rodata_2D5C;
+    d.z = ((Vec*)f)->z - p->za8;
+    PSVECNormalize(&d, &n);
+    np.x = lbl_3_rodata_2E18 * n.x + p->xa0;
+    np.y = p->ya4;
+    np.z = lbl_3_rodata_2E18 * n.z + p->za8;
+    if (fn_3_EF55C(np, p->fc5) == 0) {
+        p->xa0 = np.x;
+        p->ya4 = np.y;
+        p->za8 = np.z;
+    }
+    PSVECNormalize(&ref, &ref);
+    ang = lbl_3_rodata_2DE8 * (f32)acos(PSVECDotProduct(&n, &ref));
+    if (d.z < lbl_3_rodata_2D5C) {
+        ang = lbl_3_rodata_2E14 - ang;
+    }
+    p->xac = -ang;
+    memset(&d, 0, 0xC);
+    fn_8001B728(p->fc1, 0x23, &d);
+    d.y *= lbl_3_rodata_2D70;
+    dist = sqrt(pow(((Vec*)f)->x - p->xa0, lbl_3_rodata_2D80) + pow(((Vec*)f)->z - p->za8, lbl_3_rodata_2D80));
+    if (dist < lbl_3_rodata_2E20 && __fabs(d.y) <= lbl_3_rodata_2D88) {
+        fn_3_F13F8((u8*)p);
+        for (i = 0; i < lbl_3_bss_B21C; i++) {
+            if (i != p->idx) {
+                StadCtlA* e = (StadCtlA*)(*(u8**)lbl_3_common_bss_350E4 + (i + lbl_3_bss_B21B) * 0xE8);
+                if (e->fc6 == 3 && e->fc1 == p->fc1) {
+                    p->fc0++;
+                }
+            }
+        }
+        p->fc7 = 0;
+        p->fc6 = 3;
+        if (fn_800527C4(f) != 0) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0x14];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0x14];
+            }
+            h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 0xA), v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0x15];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0x15];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        }
+        g_Fielders[p->fc1 * 0x268 + 0x217]++;
+        p->fc2 = f[0x17A];
+        p->fc3 = actor[0x255];
+    }
+    CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+    CTRLSetRotation(&p->c, lbl_3_rodata_2D5C, p->xac, lbl_3_rodata_2D5C);
+    fn_3_EF21C((u8*)p);
+    p->fc7++;
 }
+#endif
 
 // .text:0x000F082C size:0x778 mapped:0x8072F8C0
-void fn_3_F082C(void) {
-    return;
+extern const f64 lbl_3_rodata_2E28;
+/* Wanders inside its box; latches onto a fielder that walks in. */
+// NONMATCHING 92%: inlines fn_3_EF21C x2 and fn_3_EF408 (the box tests are the inlined fn_3_EF7B4 in the original: clrlwi); original reaches lbl_3_data_1B9A4 via the lbl_3_data_1B820 pooled base (nmverify flag expected); regalloc differs
+#if NONMATCHING
+void fn_3_F082C(StadCtlA* p) {
+    Vec np;
+    u8* f;
+    u32 i;
+    f32 a;
+    f32 c;
+    f32 s;
+    for (i = 0, f = g_Fielders; i < 9; i++, f += 0x268) {
+        if (f == NULL) {
+            break;
+        }
+        if (fn_3_EF55C(*(Vec*)f, p->fc5) == 0 && *(f32*)(f + 0x15C) <= lbl_3_rodata_2D5C) {
+            p->fc1 = i;
+            p->fc6 = 2;
+            fn_3_B97DC(p->obj, lbl_3_bss_B154[1]);
+            return;
+        }
+    }
+    switch (p->fc6) {
+    case 0:
+        fn_3_EF21C((u8*)p);
+        if (p->rb4 > lbl_3_rodata_2D5C) {
+            if (p->rb4 < lbl_3_rodata_2D88) {
+                p->xac = (s8)p->fc4 * p->rb4 + p->xac;
+                p->rb4 = lbl_3_rodata_2D5C;
+            } else {
+                p->xac = lbl_3_rodata_2D88 * (s8)p->fc4 + p->xac;
+                p->rb4 = p->rb4 - lbl_3_rodata_2D88;
+            }
+            p->fc7++;
+        } else {
+            p->fc7 = 0;
+            p->fc6 = 1;
+        }
+        break;
+    case 1:
+        if (p->fc7 < 20) {
+            p->fc7++;
+            a = lbl_3_rodata_2DDC * -p->xac;
+            c = cos(a);
+            s = sin(a);
+            np.x = p->xa0 + (f32)(lbl_3_rodata_2E28 * c);
+            np.y = p->ya4 + lbl_3_rodata_2D5C;
+            np.z = p->za8 + (f32)(lbl_3_rodata_2E28 * s);
+            if (fn_3_EF55C(np, p->fc5) != 0) {
+                fn_3_EF408((u8*)p);
+            } else {
+                p->xa0 = np.x;
+                p->ya4 = np.y;
+                p->za8 = np.z;
+            }
+        } else {
+            if (fn_3_B7F70(10) < 8) {
+                p->fc6 = 0;
+                p->rb4 = fn_3_B7F70(60) + 1;
+                p->fc4 = fn_3_B7F70(2) * -1 + 1;
+            }
+            p->fc7 = 0;
+        }
+        fn_3_EF21C((u8*)p);
+        break;
+    }
+    CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+    CTRLSetRotation(&p->c, lbl_3_rodata_2D5C, p->xac, lbl_3_rodata_2D5C);
 }
+#endif
 
 // .text:0x000F0FA4 size:0x454 mapped:0x80730038
-void fn_3_F0FA4(void) {
-    return;
+// NONMATCHING 98.5%: inlines fn_3_F1518/fn_3_EF890/fn_3_EF800; only the p->obj load is scheduled later (orig loads it into r3 right after mr r31,r3, g_GameLogic base in r4)
+#if NONMATCHING
+void fn_3_F0FA4(StadCtlA* p) {
+    if (g_GameLogic[0x11E] == 0xB) {
+        return;
+    }
+    if (g_GameLogic[0x11E] == 3) {
+        if (p->f99 == 0) {
+            fn_3_F1518(p);
+        }
+        return;
+    }
+    if (p->f99 != 0) {
+        p->f99 = 0;
+    }
+    if (g_GameLogic[0x11E] == 0) {
+        if (p->fc6 >= 4) {
+            fn_3_F1518(p);
+        }
+        return;
+    }
+    if (((u8*)p->obj)[0x58] != 0) {
+        AnimateActorBones(*p->obj);
+    }
+    switch (p->fc6) {
+    case 0:
+    case 1:
+        fn_3_F082C(p);
+        break;
+    case 2:
+        fn_3_F0224(p);
+        break;
+    case 4:
+        fn_3_EF930((u8*)p);
+        break;
+    case 5:
+        fn_3_EF890((u8*)p);
+        break;
+    case 6:
+        fn_3_EF800((u8*)p);
+        break;
+    }
 }
+#endif
 
 
 // .text:0x000F1448 size:0xD0 mapped:0x807304DC
@@ -786,32 +1304,9 @@ void fn_3_F1448(u8* p) {
     CTRLSetScale((Control*)p, lbl_3_rodata_2D50, lbl_3_rodata_2D50, lbl_3_rodata_2D50);
 }
 
-struct StadCtlA {
-    Control c;
-    u8 pad34[0x74 - 0x3C];
-    u8** obj;
-    u8 pad78[0x90 - 0x78];
-    u8 fl90_hi : 1;
-    u8 fl90_lo : 7;
-    u8 pad91[8];
-    u8 f99;
-    u8 pad9A[2];
-    u8 idx;
-    u8 pad9D[3];
-    f32 xa0, ya4, za8, xac, zb0, rb4;
-    u8 padB8[0xC0 - 0xB8];
-    u8 fc0;
-    s8 fc1;
-    u8 padC2[2];
-    u8 fc4;
-    u8 fc5;
-    u8 fc6;
-    u8 fc7;
-};
-typedef struct StadCtlA StadCtlA;
 
+#pragma dont_inline off
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
-extern u32 lbl_3_bss_B154[];
 void fn_3_F1518(StadCtlA* p) {
     p->fc5 = ((u8*)&lbl_3_data_1B9A4[0].f)[p->idx * 0x18];
     p->fc6 = 1;
@@ -821,7 +1316,7 @@ void fn_3_F1518(StadCtlA* p) {
         p->fl90_hi = 1;
     }
     p->f99 = 1;
-    p->zb0 = 0.0f;
+    p->zb0 = lbl_3_rodata_2D5C;
     p->xa0 = lbl_3_data_1B9A4[p->idx].a;
     p->ya4 = lbl_3_data_1B9A4[p->idx].b;
     p->za8 = lbl_3_data_1B9A4[p->idx].c;
@@ -829,12 +1324,13 @@ void fn_3_F1518(StadCtlA* p) {
     p->c.type = 0;
     CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
     CTRLSetRotation(&p->c, 0.0f, p->xac, 0.0f);
-    CTRLSetScale(&p->c, 1.0f, 1.0f, 1.0f);
+    CTRLSetScale(&p->c, lbl_3_rodata_2D50, lbl_3_rodata_2D50, lbl_3_rodata_2D50);
     fn_3_B97DC(p->obj, lbl_3_bss_B154[0]);
     ((u8*)p->obj)[0x58] = 1;
     p->fc0 = 0;
 }
 
+#pragma dont_inline on
 // .text:0x000F1674 size:0xDC mapped:0x80730708
 void fn_3_F1674(void) {
     u32 stad = g_d_GameSettings[9];
@@ -857,6 +1353,7 @@ void fn_3_F1674(void) {
     g_FieldingLogic[0x13B] = 1;
 }
 
+#pragma dont_inline off
 // .text:0x000F1750 size:0x154 mapped:0x807307E4
 extern f32 fn_800B4A94(void*);
 extern const f32 lbl_3_rodata_2E30;
@@ -900,16 +1397,177 @@ void fn_3_F18A4(u8* p) {
     AnimateActorBones(*(void**)o);
 }
 
+#pragma dont_inline on
 // .text:0x000F193C size:0x4F0 mapped:0x807309D0
-void fn_3_F193C(void) {
-    return;
+// NONMATCHING 88%: inlines fn_3_F1750, fn_3_F18A4, fn_3_F3A04, fn_3_F22FC; original reaches lbl_3_bss_B218..B21C through the lbl_3_bss_AEE0 pooled base (nmverify flag expected); saved-reg allocation differs
+#if NONMATCHING
+void fn_3_F193C(StadCtlA* p) {
+    VecSrcDst seg;
+    CollisionStruct col;
+    u8** o = p->obj;
+    f32 yaw;
+    s8 id;
+    u32 r;
+    switch ((u8)p->fc1) {
+    case 0:
+        yaw = *p->yawSrc;
+        p->rb4 = yaw;
+        p->c.type = 0;
+        CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+        CTRLSetRotation(&p->c, 0.0f, yaw, 0.0f);
+        break;
+    case 1:
+        if (!p->fl90_hi) {
+            p->fl90_hi = 1;
+        }
+        memcpy(&seg.src, &p->xa0, 0xC);
+        seg.src.y *= lbl_3_rodata_2D70;
+        fn_3_F2938(p);
+        memcpy(&seg.dst, &p->xa0, 0xC);
+        seg.dst.y *= lbl_3_rodata_2D70;
+        AnimateActorBones(*o);
+        r = checkCollision(&seg, &col, 0, 0) & 0xF;
+        if (r == 2 || r == 5) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            p->fc1 = 2;
+            fn_3_8B890(*(s32*)lbl_3_data_1B820);
+            *(s32*)lbl_3_data_1B820 = -1;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[6];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 6];
+            }
+            h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 3), v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[7];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 7];
+            }
+            sndFXCtrl(h, 0x5B, v);
+            fn_3_F3A04((u8*)p);
+            fn_3_F18A4((u8*)p);
+        } else if (g_GameLogic[0x11E] == 2) {
+            id = fn_3_F2448((u8*)p);
+            if (id > -1) {
+                fn_3_F22FC((u8*)p, id);
+            }
+        }
+        break;
+    case 2:
+        fn_3_F1750(p);
+        break;
+    }
 }
+#endif
 
 // .text:0x000F1E2C size:0x4D0 mapped:0x80730EC0
-void fn_3_F1E2C(void) {
-    return;
+extern char lbl_3_rodata_2CF4[];
+extern const f64 lbl_3_rodata_2E48;
+// NONMATCHING 98.8%: saved-register numbering (d/r0/r1/r2, f29/f30) rotated; original reads footprint[0][1]/[1][*] through an addi'd pointer (separate static array)
+#if NONMATCHING
+void fn_3_F1E2C(StadCtlA* p) {
+    VecSrcDst seg;
+    CollisionStruct col;
+    Vec mid1;
+    Vec mid2;
+    Vec center;
+    Vec k;
+    f32 a;
+    f32 s;
+    f32 c;
+    u32 r0;
+    u32 r1;
+    u32 r2;
+    StaC5Data* d;
+    d = (StaC5Data*)lbl_3_data_1B820;
+    k = *(Vec*)lbl_3_rodata_2CF4;
+    if (p->ya4 > lbl_3_rodata_2D5C) {
+        return;
+    }
+    a = -(lbl_3_rodata_2DDC * p->rb4);
+    s = sin(a);
+    c = cos(a);
+    center.x = lbl_3_rodata_2E48 * (k.x * c + k.z * -s);
+    c = cos(a);
+    s = sin(a);
+    center.z = lbl_3_rodata_2E48 * (k.x * s + k.z * c);
+    PSVECAdd(&center, (Vec*)&p->xa0, &center);
+    center.y = lbl_3_rodata_2D5C;
+    seg.src.x = seg.dst.x = center.x;
+    seg.src.z = seg.dst.z = center.z;
+    seg.src.y = lbl_3_rodata_2D70;
+    seg.dst.y = lbl_3_rodata_2D50;
+    r0 = checkCollision(&seg, &col, 0, 0) & 0x7F;
+    if (r0 == 10) {
+        if (p->fc4 % d->dustRate != 0) {
+            p->fc4++;
+            return;
+        }
+        fn_80064430(&seg.src, 1, lbl_3_rodata_2D5C, d->dustScale);
+    }
+    s = sin(a);
+    c = cos(a);
+    seg.src.x = d->footprint[0][0] * c + d->footprint[0][1] * -s;
+    c = cos(a);
+    s = sin(a);
+    seg.src.z = d->footprint[0][0] * s + d->footprint[0][1] * c;
+    PSVECAdd(&center, &seg.src, &seg.src);
+    seg.dst.x = seg.src.x;
+    seg.dst.z = seg.src.z;
+    seg.src.y = lbl_3_rodata_2D70;
+    seg.dst.y = lbl_3_rodata_2D50;
+    r1 = checkCollision(&seg, &col, 0, 0) & 0x7F;
+    if (r1 == 10) {
+        if (p->fc4 % d->dustRate != 0) {
+            p->fc4++;
+            return;
+        }
+        fn_80064430(&seg.src, 1, lbl_3_rodata_2D5C, d->dustScale);
+    }
+    s = sin(a);
+    c = cos(a);
+    seg.src.x = d->footprint[1][0] * c + d->footprint[1][1] * -s;
+    c = cos(a);
+    s = sin(a);
+    seg.src.z = d->footprint[1][0] * s + d->footprint[1][1] * c;
+    PSVECAdd(&center, &seg.src, &seg.src);
+    seg.dst.x = seg.src.x;
+    seg.dst.z = seg.src.z;
+    seg.src.y = lbl_3_rodata_2D70;
+    seg.dst.y = lbl_3_rodata_2D50;
+    r2 = checkCollision(&seg, &col, 0, 0) & 0x7F;
+    if (r2 == 10) {
+        if (p->fc4 % d->dustRate != 0) {
+            p->fc4++;
+            return;
+        }
+        fn_80064430(&seg.src, 1, lbl_3_rodata_2D5C, d->dustScale);
+    }
+    if (r0 == 10) {
+        /* both use the last probe position still held in seg.src */
+        if (r1 == 10) {
+            PSVECSubtract(&seg.src, &center, &mid1);
+            mid1.x *= lbl_3_rodata_2D54;
+            mid1.z *= lbl_3_rodata_2D54;
+            PSVECAdd(&mid1, &center, &mid1);
+            fn_80064430(&mid1, 1, lbl_3_rodata_2D5C, d->dustScale);
+        }
+        if (r2 == 10) {
+            PSVECSubtract(&seg.src, &center, &mid2);
+            mid2.x *= lbl_3_rodata_2D54;
+            mid2.z *= lbl_3_rodata_2D54;
+            PSVECAdd(&mid2, &center, &mid2);
+            fn_80064430(&mid2, 1, lbl_3_rodata_2D5C, d->dustScale);
+        }
+    }
+    p->fc4 += ((r0 | r1 | r2) & 0xA) != 0;
 }
+#endif
 
+#pragma dont_inline off
 // .text:0x000F22FC size:0x14C mapped:0x80731390
 extern void fn_3_253A4(s8, s16);
 extern s16 fn_3_9FB8C(f32, f32);
@@ -955,6 +1613,7 @@ void fn_3_F22FC(u8* p, s32 idx) {
 }
 
 
+#pragma dont_inline on
 // .text:0x000F2448 size:0x2DC mapped:0x807314DC
 extern char lbl_3_rodata_2CEC[];
 extern f64 __fabs(f64);
@@ -1032,6 +1691,7 @@ s32 fn_3_F2448(u8* p) {
     return -1;
 }
 
+#pragma dont_inline off
 // .text:0x000F2724 size:0x214 mapped:0x807317B8
 extern f64 __fabs(f64);
 extern const f64 lbl_3_rodata_2E58;
@@ -1080,20 +1740,158 @@ void fn_3_F2724(u8* p, u8* q) {
 }
 
 
+#pragma dont_inline on
 // .text:0x000F2938 size:0x6C4 mapped:0x807319CC
-void fn_3_F2938(void) {
-    return;
+extern f64 pow(f64, f64);
+extern char lbl_3_rodata_2CE0[];
+extern const f32 lbl_3_rodata_2E68;
+extern const f32 lbl_3_rodata_2E6C;
+extern const f32 lbl_3_rodata_2E70;
+static u32 lbl_3_bss_B244[7];
+/* Moves p along the 6th-degree bezier lbl_3_bss_B260 (set up by fn_3_F31E0). */
+// NONMATCHING 90%: inlines fn_3_F3A5C and fn_3_F2724; the original reaches lbl_3_bss_B21B/B21C/B244/B260 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected); regalloc differs
+#if NONMATCHING
+void fn_3_F2938(StadCtlA* p) {
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    Vec pos;
+    Vec d;
+    Vec ref;
+    StadCtlA* e;
+    f32 t;
+    f32 u;
+    f64 a;
+    f64 b;
+    f32 ang;
+    u32 i;
+    t = lbl_3_rodata_2E68 * w->pathSpeed * (f32)w->pathStep;
+    ref = *(Vec*)lbl_3_rodata_2CE0;
+    u = lbl_3_rodata_2D50 - t;
+    for (i = 0; i < 7; i++) {
+        b = pow(u, 6 - i);
+        a = pow(t, i);
+        w->bezW[i] = lbl_3_bss_B244[i] * a * b;
+    }
+    pos = *(Vec*)&p->xa0;
+    pos.x = lbl_3_rodata_2D5C;
+    pos.z = lbl_3_rodata_2D5C;
+    for (i = 0; i < 7; i++) {
+        pos.x += w->bezW[i] * lbl_3_bss_B260[i].x;
+        pos.z += w->bezW[i] * lbl_3_bss_B260[i].z;
+    }
+    pos.y += p->fb8;
+    PSVECSubtract(&pos, (Vec*)&p->xa0, &d);
+    if (pos.y < lbl_3_rodata_2D5C) {
+        pos.y = lbl_3_rodata_2D5C;
+        p->fb8 = lbl_3_rodata_2D54 * -p->fb8;
+        if (p->fb8 > lbl_3_rodata_2E6C) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[2];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 2];
+            }
+            h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 1), v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[3];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 3];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        } else if (*(s32*)lbl_3_data_1B820 == -1) {
+            *(s32*)lbl_3_data_1B820 = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 2, &pos.x, &d.x, 3);
+        } else {
+            fn_3_8BA60(*(s32*)lbl_3_data_1B820, &pos.x, &d.x);
+        }
+    }
+    p->fb8 -= lbl_3_rodata_2E70;
+    d.y = lbl_3_rodata_2D5C;
+    if (PSVECMag(&d) != lbl_3_rodata_2D5C) {
+        PSVECNormalize(&d, &d);
+        PSVECNormalize(&ref, &ref);
+        ang = lbl_3_rodata_2DE8 * (f32)acos(PSVECDotProduct(&d, &ref));
+        if (d.x < lbl_3_rodata_2D5C) {
+            ang = lbl_3_rodata_2E14 - ang;
+        }
+    } else {
+        ang = -p->rb4;
+    }
+    fn_3_F3A5C((u8*)p, pos.x, pos.y, pos.z, -ang);
+    if (p->ya4 < lbl_3_rodata_2D88 && p->fb8 <= lbl_3_rodata_2D5C) {
+        for (i = 0; i < lbl_3_bss_B21C; i++) {
+            e = (StadCtlA*)(*(u8**)lbl_3_common_bss_350E4 + (lbl_3_bss_B21B + i) * 0xE8);
+            if (e->fc6 < 3) {
+                fn_3_F2724((u8*)p, (u8*)e);
+            }
+        }
+    }
+    fn_3_F1E2C(p);
+    w->pathStep++;
 }
+#endif
 
+extern const f32 lbl_3_rodata_2E80;
+extern const f32 lbl_3_rodata_2E84;
+extern const f32 lbl_3_rodata_2E30;
 // .text:0x000F2FFC size:0x1E4 mapped:0x80732090
-void fn_3_F2FFC(void) {
-    return;
+// NONMATCHING 75%: float scheduling/register order of the bezier control-point stores differs
+#if NONMATCHING
+void fn_3_F2FFC(StadCtlA* p, f32 x, f32 z) {
+    Vec dir;
+    s8 side;
+    s32 end;
+    f32 d = x - p->xac;
+    side = d / __fabs(d);
+    if (side == 0) {
+        d = p->xac;
+        side = -(d / __fabs(d));
+    }
+    dir.x = x - p->xac;
+    dir.y = lbl_3_rodata_2D5C;
+    dir.z = z - p->zb0;
+    PSVECNormalize(&dir, &dir);
+    end = side * 80;
+    lbl_3_bss_B260[0].x = lbl_3_rodata_2E30 * dir.x + p->xac;
+    lbl_3_bss_B260[0].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[0].z = lbl_3_rodata_2E30 * dir.z + p->zb0;
+    lbl_3_bss_B260[1].x = lbl_3_rodata_2E80 * (x - p->xac) + p->xac;
+    lbl_3_bss_B260[1].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[1].z = lbl_3_rodata_2E80 * (z - p->zb0) + p->zb0;
+    lbl_3_bss_B260[2].x = lbl_3_rodata_2E84 * (x - p->xac) + p->xac;
+    lbl_3_bss_B260[2].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[2].z = lbl_3_rodata_2E84 * (z - p->zb0) + p->zb0;
+    lbl_3_bss_B260[3].x = x;
+    lbl_3_bss_B260[3].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[3].z = z;
+    lbl_3_bss_B260[4].x = x + (end - x) / lbl_3_rodata_2E88;
+    lbl_3_bss_B260[4].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[4].z = z;
+    lbl_3_bss_B260[5].x = x + lbl_3_rodata_2D74 * (end - x) / lbl_3_rodata_2E88;
+    lbl_3_bss_B260[5].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[5].z = z;
+    lbl_3_bss_B260[6].x = end;
+    lbl_3_bss_B260[6].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[6].z = z;
 }
+#endif
 
 // .text:0x000F31E0 size:0x5DC mapped:0x80732274
-void fn_3_F31E0(void) {
-    return;
+extern const f32 lbl_3_rodata_2E8C;
+extern const f32 lbl_3_rodata_2EB8;
+// NONMATCHING 68%: the original inlines fn_3_F2FFC (itself NONMATCHING, CW won't auto-inline it here), fn_3_F42A0 and fn_3_F3A5C; the inlined code reaches lbl_3_bss_B260/B560 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected)
+#if NONMATCHING
+void fn_3_F31E0(StadCtlA* p, f32 x, f32 z) {
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    w->pathSpeed = lbl_3_rodata_2D68;
+    p->fb8 = lbl_3_rodata_2E8C;
+    fn_3_F2FFC(p, x, z);
+    fn_3_F42A0();
+    fn_3_F3A5C((u8*)p, lbl_3_bss_B260[0].x, lbl_3_rodata_2EB8, lbl_3_bss_B260[0].z, *p->yawSrc);
+    w->pathStep = 0;
 }
+#endif
 
 // .text:0x000F37BC size:0x118 mapped:0x80732850
 u32 fn_3_F37BC(u32 n, u32 k) {
@@ -1105,8 +1903,8 @@ u32 fn_3_F37BC(u32 n, u32 k) {
     return r;
 }
 
+#pragma dont_inline off
 // .text:0x000F38D4 size:0x130 mapped:0x80732968
-static u32 lbl_3_bss_B244[7];
 void fn_3_F38D4(void) {
     u32 i;
     for (i = 0; i < 7; i++) {
@@ -1133,6 +1931,7 @@ void fn_3_F3A5C(u8* p, f32 x, f32 y, f32 z, f32 r) {
     CTRLSetRotation((Control*)p, 0.0f, r, 0.0f);
 }
 
+#pragma dont_inline on
 // .text:0x000F3AE0 size:0xD0 mapped:0x80732B74
 void fn_3_F3AE0(u8* p) {
     f32 rot, x, z;
@@ -1150,6 +1949,7 @@ void fn_3_F3AE0(u8* p) {
     CTRLSetRotation((Control*)p, 0.0f, rot, 0.0f);
 }
 
+#pragma dont_inline off
 // .text:0x000F3BB0 size:0x120 mapped:0x80732C44
 void fn_3_F3BB0(u8* p) {
     typedef struct { u8 pad[0x90]; u8 f : 1; u8 rest : 7; } FObj;
@@ -1160,7 +1960,7 @@ void fn_3_F3BB0(u8* p) {
     x = *(f32*)(p + 0xAC);
     rot = -lbl_3_data_1B884[p[0x9C]].pad[0];
     *(f32*)(p + 0xA0) = x;
-    *(f32*)(p + 0xA4) = 10.0f;
+    *(f32*)(p + 0xA4) = lbl_3_rodata_2E30;
     *(f32*)(p + 0xA8) = z;
     *(f32*)(p + 0xB4) = rot;
     p[0] = 0;
@@ -1173,6 +1973,7 @@ void fn_3_F3BB0(u8* p) {
     p[0x99] = 1;
 }
 
+#pragma dont_inline on
 // .text:0x000F3CD0 size:0x22C mapped:0x80732D64
 extern void fn_80033620(void);
 extern void fn_80033F64(f32, f32, f32);
@@ -1182,7 +1983,8 @@ extern const f64 lbl_3_rodata_2EC8;
 extern const f64 lbl_3_rodata_2ED0;
 extern const f32 lbl_3_rodata_2ED8;
 extern const f64 lbl_3_rodata_2EE0;
-u32 fn_3_F3CD0(u8* a) {
+s32 fn_3_F3CD0(struct Emitter* em) {
+    u8* a = (u8*)em; /* TODO type: Emitter/Particle from main/file_800263FC.h */
     u8* e = *(u8**)(a + 0xC);
     u32 cnt = 0;
     fn_80033620();
@@ -1217,9 +2019,9 @@ u32 fn_3_F3CD0(u8* a) {
     return cnt == 0;
 }
 
+#pragma dont_inline off
 // .text:0x000F3EFC size:0x3A4 mapped:0x80732F90
 extern u32 lbl_3_bss_B560[];
-extern f32 lbl_3_bss_B260[];
 extern const f32 lbl_3_rodata_2E90;
 extern const f32 lbl_3_rodata_2DEC;
 extern const f64 lbl_3_rodata_2DF8;
@@ -1227,7 +2029,8 @@ extern const f64 lbl_3_rodata_2E98;
 extern const f64 lbl_3_rodata_2EA0;
 extern const f64 lbl_3_rodata_2EA8;
 extern const f64 lbl_3_rodata_2EB0;
-void fn_3_F3EFC(u8* a) {
+void fn_3_F3EFC(struct Emitter* em) {
+    u8* a = (u8*)em; /* TODO type */
     u8* e;
     u8 i;
     e = *(u8**)(a + 0xC);
@@ -1237,9 +2040,9 @@ void fn_3_F3EFC(u8* a) {
         *(f32*)(e + 0x38) = *(f32*)(e + 0x3C) = lbl_3_rodata_2E30;
         *(f32*)(e + 0x10) = *(f32*)(e + 0x18) = lbl_3_rodata_2D5C;
         *(f32*)(e + 0x14) = lbl_3_rodata_2E90;
-        *(f32*)(e + 0x4) = lbl_3_bss_B260[0] + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0x4) = lbl_3_bss_B260[0].x + (rand() % 600 - 300) / lbl_3_rodata_2E98;
         *(f32*)(e + 0x8) = lbl_3_rodata_2EA0 + (rand() % 600 - 300) / lbl_3_rodata_2E98;
-        *(f32*)(e + 0xC) = lbl_3_bss_B260[2] + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0xC) = lbl_3_bss_B260[0].z + (rand() % 600 - 300) / lbl_3_rodata_2E98;
         *(f32*)(e + 0x28) = lbl_3_rodata_2EA8 + (rand() % 300 - 150) / lbl_3_rodata_2E30;
         *(f32*)(e + 0x2C) = lbl_3_rodata_2EB0 + (rand() % 300 - 150) / lbl_3_rodata_2E30;
         e[0x4F] = i;
@@ -1259,10 +2062,15 @@ void fn_3_F3EFC(u8* a) {
 }
 
 // .text:0x000F42A0 size:0x3CC mapped:0x80733334
+struct Emitter* fn_80033A24(s32 (*update)(struct Emitter* e), u8 priority, s32 unk14, s32 n, s32 strict, u8 type);
 void fn_3_F42A0(void) {
-    return;
+    struct Emitter* e = fn_80033A24(fn_3_F3CD0, 0x80, 0, 8, 1, 0);
+    if (e != NULL) {
+        fn_3_F3EFC(e);
+    }
 }
 
+#pragma dont_inline on
 // .text:0x000F466C size:0x30 mapped:0x80733700
 extern void fn_3_27648(void);
 
@@ -1276,10 +2084,68 @@ void fn_3_F469C(void) {
     return;
 }
 
+extern char lbl_3_rodata_2CC8[];
 // .text:0x000F46A0 size:0x500 mapped:0x80733734
-void fn_3_F46A0(void) {
-    return;
+// NONMATCHING 83%: inlines fn_3_F5C30 (which now inlines fn_3_F3BB0), fn_3_F4C4C, fn_3_F4D00; our float literals from those get pooled through ...rodata.0 and the original reaches lbl_3_data_1B884/lbl_3_bss_B219 via pooled bases (nmverify flag expected); regalloc differs
+#if NONMATCHING
+void fn_3_F46A0(StadObjB* p) {
+    StaC5Data* d = (StaC5Data*)lbl_3_data_1B820;
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    Vec dir;
+    Vec ref;
+    f32 ang;
+    ref = *(Vec*)lbl_3_rodata_2CC8;
+    dir.x = w->targetX - p->pos.x;
+    dir.y = lbl_3_rodata_2D5C;
+    dir.z = d->targetZ - p->pos.z;
+    PSVECNormalize(&dir, &dir);
+    ang = lbl_3_rodata_2DE8 * (f32)acos(PSVECDotProduct(&dir, &ref));
+    if (dir.x < lbl_3_rodata_2D5C) {
+        ang = lbl_3_rodata_2E14 - ang;
+    }
+    p->yaw = -ang;
+    CTRLSetRotation(&p->c, lbl_3_rodata_2D5C, p->yaw, lbl_3_rodata_2D5C);
+    if (g_GameLogic[0x11E] != 3) {
+        fn_3_F5C30((u8*)p);
+        p->update = fn_3_F56CC;
+        return;
+    }
+    fn_3_F193C(p->link);
+    switch (p->state) {
+    case 0:
+        if (w->cartBusy == 0) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            fn_3_F31E0(p->link, w->targetX, d->targetZ);
+            fn_3_F4C4C((u8*)p);
+            p->link->fc1 = 1;
+            p->state = 3;
+            w->cartBusy = 1;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0];
+            }
+            h = sndFXStartEx(((u16*)lbl_3_data_81DC)[stad], v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[1];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 1];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        }
+        break;
+    case 3:
+        fn_3_F4D00((u8*)p);
+        if ((u8)p->link->fc1 == 0) {
+            w->cartBusy = 0;
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x000F4BA0 size:0xAC mapped:0x80733C34
 void fn_3_F4BA0(u8* p) {
@@ -1295,6 +2161,7 @@ void fn_3_F4BA0(u8* p) {
     *(f32*)(p + 0xBC) = 0.2f * d.z;
 }
 
+#pragma dont_inline off
 // .text:0x000F4C4C size:0xB4 mapped:0x80733CE0
 void fn_3_F4C4C(u8* p) {
     f32 a = -*(f32*)(p + 0xC0);
@@ -1317,8 +2184,8 @@ void fn_3_F4D00(u8* p) {
     tgt.y = lbl_3_data_1B884[p[0x9C]].v.y;
     tgt.z = lbl_3_data_1B884[p[0x9C]].v.z;
     PSVECSubtract(&tgt, (Vec*)(p + 0xA8), &d);
-    *(f32*)(p + 0xB4) = 0.2f * d.x;
-    *(f32*)(p + 0xBC) = 0.2f * d.z;
+    *(f32*)(p + 0xB4) = lbl_3_rodata_2EE8 * d.x;
+    *(f32*)(p + 0xBC) = lbl_3_rodata_2EE8 * d.z;
 }
 
 // .text:0x000F4DAC size:0x210 mapped:0x80733E40
@@ -1328,7 +2195,6 @@ extern const f32 lbl_3_rodata_2EF0;
 extern const f64 lbl_3_rodata_2EF8;
 extern const f32 lbl_3_rodata_2F00;
 extern const f32 lbl_3_rodata_2F04;
-extern u8 fn_3_B7F70(s32);
 extern u8 lbl_3_bss_B21F;
 extern u8 lbl_3_bss_B220[];
 void fn_3_F4DAC(void) {
@@ -1374,36 +2240,187 @@ void fn_3_F4DAC(void) {
 }
 
 // .text:0x000F4FBC size:0x710 mapped:0x80734050
-void fn_3_F4FBC(void) {
-    return;
+#pragma dont_inline on
+extern char lbl_3_rodata_2CB0[];
+extern const f32 lbl_3_rodata_2F08;
+extern const f32 lbl_3_rodata_2F0C;
+// NONMATCHING 89%: inlines fn_3_F4DAC and fn_3_F4C4C; the original reaches lbl_3_bss_B21F/B220 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected); float/gpr allocation differs
+#if NONMATCHING
+void fn_3_F4FBC(StadObjB* p) {
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    Vec d;
+    Vec n;
+    Vec ref;
+    f32 c;
+    f32 ang;
+    f32 mag;
+    ref = *(Vec*)lbl_3_rodata_2CB0;
+    if (g_Ball[0x1BD1] == 0) {
+        d.x = *(f32*)(g_Ball + 0x0) - p->pos.x;
+        d.y = lbl_3_rodata_2D5C;
+        d.z = *(f32*)(g_Ball + 0x8) - p->pos.z;
+        PSVECNormalize(&d, &d);
+        c = PSVECDotProduct(&d, &ref);
+        if (c > lbl_3_rodata_2D50) {
+            c = lbl_3_rodata_2D50;
+        } else if (c < lbl_3_rodata_2D70) {
+            c = lbl_3_rodata_2D70;
+        }
+        ang = lbl_3_rodata_2DE8 * (f32)acos(c);
+        if (ang > lbl_3_rodata_2F08) {
+            ang = lbl_3_rodata_2F08;
+        }
+        if (d.x < lbl_3_rodata_2D5C) {
+            ang = lbl_3_rodata_2E14 - ang;
+        }
+        p->yaw = -ang;
+        CTRLSetRotation(&p->c, lbl_3_rodata_2D5C, p->yaw, lbl_3_rodata_2D5C);
+    }
+    switch (p->state) {
+    case 0:
+        if (*(s16*)(g_Ball + 0x1B7A) < 2) {
+            if (w->flag2 == 0) {
+                w->flag2 = 1;
+                if ((s32)(fn_3_B7F70(100) + 1) > 0x3F) {
+                    w->cartBusy = 1;
+                }
+            }
+            if (w->cartBusy == 0) {
+                fn_3_F4DAC();
+                w->cartBusy = 1;
+            }
+        }
+        break;
+    case 1:
+        if (*(f32*)(g_Ball + 0x31C) < lbl_3_rodata_2D5C) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            p->link->fc1 = 1;
+            fn_3_F4C4C((u8*)p);
+            p->state = 3;
+            d.x = *(f32*)(g_Ball + 0x348);
+            d.y = lbl_3_rodata_2D5C;
+            d.z = *(f32*)(g_Ball + 0x34C);
+            mag = PSVECMag(&d);
+            if (mag > lbl_3_rodata_2F0C) {
+                PSVECNormalize(&d, &n);
+                PSVECScale(&n, lbl_3_rodata_2F0C, &d);
+            }
+            if (mag < lbl_3_rodata_2F04) {
+                PSVECNormalize(&d, &n);
+                PSVECScale(&n, lbl_3_rodata_2F04, &d);
+            }
+            fn_3_F31E0(p->link, d.x, d.z);
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0];
+            }
+            h = sndFXStartEx(((u16*)lbl_3_data_81DC)[stad], v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[1];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 1];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        }
+        break;
+    case 2:
+        d.x = *(f32*)(g_Ball + 0x0);
+        d.y = lbl_3_rodata_2D5C;
+        d.z = *(f32*)(g_Ball + 0x8);
+        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+            p->state = 0;
+            break;
+        }
+        if (PSVECMag(&d) > lbl_3_rodata_2F04) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            if (d.z < lbl_3_rodata_2EF0) {
+                d.z = lbl_3_rodata_2EF0;
+            }
+            fn_3_F31E0(p->link, d.x, d.z);
+            fn_3_F4C4C((u8*)p);
+            p->link->fc1 = 1;
+            p->state = 3;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0];
+            }
+            h = sndFXStartEx(((u16*)lbl_3_data_81DC)[stad], v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[1];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 1];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x000F56CC size:0x564 mapped:0x80734760
-void fn_3_F56CC(void) {
-    return;
+// NONMATCHING 97%: inlines fn_3_F5C30 (+fn_3_F3BB0) twice and fn_3_F4D00; saved-register numbering of the two table-column pointers differs; original reaches lbl_3_bss_B219 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected)
+#if NONMATCHING
+void fn_3_F56CC(StadObjB* p) {
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    if (g_d_GameSettings[7] == 7) {
+        return;
+    }
+    if (g_GameLogic[0x11E] == 3) {
+        fn_3_F5C30((u8*)p);
+        p->update = fn_3_F46A0;
+    } else if (g_GameLogic[0x11E] != 2) {
+        if (g_GameLogic[0x11E] == 0) {
+            fn_3_F5C30((u8*)p);
+        }
+        if (w->cartBusy != 0) {
+            w->cartBusy = 0;
+        }
+        if (w->flag2 != 0) {
+            w->flag2 = 0;
+        }
+    } else {
+        if (p->f99 != 0) {
+            p->f99 = 0;
+        }
+        if (p->link != NULL) {
+            fn_3_F193C(p->link);
+        }
+        switch (p->state) {
+        case 0:
+        case 1:
+        case 2:
+            fn_3_F4FBC(p);
+            break;
+        case 3:
+            fn_3_F4D00((u8*)p);
+            break;
+        }
+    }
 }
+#endif
 
+#pragma dont_inline off
 // .text:0x000F5C30 size:0x248 mapped:0x80734CC4
 void fn_3_F5C30(u8* p) {
-    StadCtlA* q;
-    f32* t8;
-    f32* tc;
-    f32 r;
-    f32 x;
-    f32 z;
     extern void fn_80033964(void*);
     *(f32*)(p + 0xA8) = lbl_3_data_1B884[p[0x9C]].v.x;
     *(f32*)(p + 0xAC) = lbl_3_data_1B884[p[0x9C]].v.y;
-    t8 = (f32*)lbl_3_data_1B884 + 2;
-    tc = (f32*)lbl_3_data_1B884 + 3;
-    *(f32*)(p + 0xB0) = *(f32*)((u8*)t8 + p[0x9C] * 0x14);
-    *(f32*)(p + 0xC0) = -*(f32*)((u8*)tc + p[0x9C] * 0x14);
+    *(f32*)(p + 0xB0) = lbl_3_data_1B884[p[0x9C]].v.z;
+    *(f32*)(p + 0xC0) = -lbl_3_data_1B884[p[0x9C]].pad[0];
     p[0] = 0;
     CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA8), -*(f32*)(p + 0xAC), *(f32*)(p + 0xB0));
     CTRLSetRotation((Control*)p, 0.0f, *(f32*)(p + 0xC0), 0.0f);
-    *(f32*)(p + 0xBC) = 0.0f;
-    *(f32*)(p + 0xB8) = 0.0f;
-    *(f32*)(p + 0xB4) = 0.0f;
+    *(f32*)(p + 0xBC) = lbl_3_rodata_2D5C;
+    *(f32*)(p + 0xB8) = lbl_3_rodata_2D5C;
+    *(f32*)(p + 0xB4) = lbl_3_rodata_2D5C;
     if (*(u8**)(p + 0xA4) != NULL) {
         if (*(u32*)(*(u8**)(p + 0xA4) + 8) != 0) {
             fn_80033964(*(u8**)(p + 0xA4));
@@ -1412,25 +2429,8 @@ void fn_3_F5C30(u8* p) {
             *(u32*)(p + 0xA4) = 0;
         }
     }
-    q = *(StadCtlA**)(p + 0xA0);
-    if (q != NULL) {
-        q->xac = lbl_3_data_1B884[q->idx].v.x;
-        q->zb0 = *(f32*)((u8*)t8 + q->idx * 0x14);
-        z = q->zb0;
-        x = q->xac;
-        r = -*(f32*)((u8*)tc + q->idx * 0x14);
-        q->xa0 = x;
-        q->ya4 = 10.0f;
-        q->za8 = z;
-        q->rb4 = r;
-        q->c.type = 0;
-        CTRLSetTranslation(&q->c, q->xa0, -q->ya4, q->za8);
-        CTRLSetRotation(&q->c, 0.0f, r, 0.0f);
-        q->fc1 = 0;
-        q->fl90_hi = 1;
-        q->obj = (u8**)(*(u8**)(lbl_8036E548 + 0x6C) + (lbl_3_bss_B219[0] + q->idx) * 0x90 + 0x34);
-        q->fc4 = 0;
-        q->f99 = 1;
+    if (*(u8**)(p + 0xA0) != NULL) {
+        fn_3_F3BB0(*(u8**)(p + 0xA0));
     }
     p[0x99] = 1;
     p[0xC4] = 0;
@@ -1440,6 +2440,7 @@ void fn_3_F5C30(u8* p) {
     }
 }
 
+#pragma dont_inline off
 // .text:0x000F5E78 size:0x84 mapped:0x80734F0C
 s32 fn_3_F5E78(u8 id) {
     u32 n = *(u32*)(lbl_3_common_bss_350E4 + 0x30);
@@ -1503,10 +2504,99 @@ void fn_3_F5F4C(Mtx m) {
 }
 
 // .text:0x000F6084 size:0x480 mapped:0x80735118
-void fn_3_F6084(void) {
-    return;
+extern const f32 lbl_3_rodata_2F38;
+extern void* fn_800ACF34(s32 align, s32 size);
+extern void fn_800ACF14(void* block);
+extern void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*)); // main/file_800BDEA0.h
+// NONMATCHING 91%: inlines fn_3_F5E78 x2 and fn_3_F5F4C; register allocation differs. The original checks kind==4 through a stale register (the Mtx argument on the first iteration); this reads it from the current object
+#if NONMATCHING
+void fn_3_F6084(MtxPtr view, struct SortEnt* out) {
+    StadiumObjList* list = (StadiumObjList*)lbl_3_common_bss_350E4;
+    StadObjHdr* objs;
+    StadObjHdr* e;
+    struct SortEnt* front;
+    struct SortEnt* back;
+    struct SortEnt* o;
+    struct SortEnt t;
+    Vec v;
+    s32 i;
+    s32 n;
+    s32 start;
+    u32 a;
+    u32 b;
+    void* tmp;
+    if (list->depthSort != 0) {
+        /* hidden objects first */
+        o = out;
+        n = 0;
+        i = list->count - 1;
+        e = (StadObjHdr*)list->objs + i;
+        do {
+            if (!e->visible) {
+                o->z = lbl_3_rodata_2F38;
+                n++;
+                o->idx = i;
+                o++;
+            }
+            e--;
+        } while (i-- != 0);
+        /* then unsorted visible ones, depth-sorted ones fill from the back */
+        i = list->count - 1;
+        front = out + n;
+        start = i;
+        back = out + i;
+        e = (StadObjHdr*)list->objs + i;
+        do {
+            if (e->visible) {
+                /* the original reads kind through a stale pointer on the first iteration */
+                if (e->kind == 4) {
+                    out[list->count - 1].z = lbl_3_rodata_2D70;
+                    out[list->count - 1].idx = i;
+                } else if (e->depthSort) {
+                    CTRLGetTranslation(&e->c, &v.x, &v.y, &v.z);
+                    PSMTXMultVec(view, &v, &v);
+                    start--;
+                    back[-1].z = v.z;
+                    back[-1].idx = i;
+                    back--;
+                } else {
+                    front->z = lbl_3_rodata_2F38;
+                    front->idx = i;
+                    front++;
+                }
+            }
+            e--;
+        } while (i-- != 0);
+        tmp = fn_800ACF34(0x20, (list->count - start) * 8);
+        fn_800C07BC(out + start, tmp, list->count - start, 8, (s32 (*)(const void*, const void*))fn_3_F5F28);
+        fn_800ACF14(tmp);
+        /* keep each paired object drawn before its partner */
+        for (i = 0; i < lbl_3_bss_B220[0]; i++) {
+            e = (StadObjHdr*)list->objs + (lbl_3_bss_B21F + i);
+            a = fn_3_F5E78(e->id);
+            b = fn_3_F5E78(e->link->id);
+            if (a > b) {
+                t = out[a];
+                out[a] = out[b];
+                out[b] = t;
+            }
+        }
+        fn_3_F5F4C(view);
+    } else {
+        objs = (StadObjHdr*)list->objs;
+        o = out;
+        for (i = 0; i < list->count; i++) {
+            /* the original never advances objs here */
+            CTRLGetTranslation(&objs->c, &v.x, &v.y, &v.z);
+            o->z = lbl_3_rodata_2D50;
+            o->idx = i;
+            o++;
+        }
+    }
 }
+#endif
 
+#pragma dont_inline on
 // .text:0x000F6504 size:0xC4 mapped:0x80735598
 s32 fn_3_F6504(s32 idx, s32 arg) {
     u8* c = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
@@ -1602,6 +2692,7 @@ void fn_3_F66C8(s32* n) {
 }
 
 // .text:0x000F6938 size:0x15C mapped:0x807359CC
+#pragma dont_inline off
 void fn_3_F6938(s32* n) {
     struct { Control c; u8 pad[0x8]; } c;
     Mtx m;
@@ -1671,10 +2762,36 @@ void fn_3_F6A94(s32* n) {
     }
 }
 
+#pragma dont_inline on
 // .text:0x000F6C60 size:0x36C mapped:0x80735CF4
+extern void* _OSAllocFromHeap(s32 align, s32 size);
+// NONMATCHING 78%: fn_3_F6A94/fn_3_F6938 are inlined; the original reaches lbl_3_bss_B21C..B220 through the lbl_3_bss_AEE0 pooled base (nmverify flag expected), regalloc differs
+#if NONMATCHING
 void fn_3_F6C60(void) {
-    return;
+    StadiumObjList* list = (StadiumObjList*)lbl_3_common_bss_350E4;
+    s32 n;
+    s32 size;
+    size = list->count * 2 + list->count * 4 + list->count * 0x18 + list->count * 4;
+    if (list->groupBounds == NULL) {
+        list->groupBounds = _OSAllocFromHeap(4, size);
+        list->groupCount = (u32*)(list->groupBounds + list->count * 2);
+        list->groupObjs = (s32*)(list->groupCount + list->count);
+        list->groupStart = (u16*)(list->groupObjs + list->count);
+    }
+    memset(list->groupBounds, 0, size);
+    n = 0;
+    if (lbl_3_bss_AEE0[0x33E] != 0) {
+        fn_3_F6A94(&n);
+    }
+    if (lbl_3_bss_AEE0[0x340] != 0) {
+        fn_3_F6938(&n);
+    }
+    if (lbl_3_bss_AEE0[0x33C] != 0) {
+        fn_3_F66C8(&n);
+    }
+    list->numGroups = n;
 }
+#endif
 
 // .text:0x000F6FCC size:0x10 mapped:0x80736060
 extern u8 lbl_3_bss_AEE8;
@@ -1684,9 +2801,346 @@ void fn_3_F6FCC(void) {
 }
 
 // .text:0x000F6FDC size:0x1468 mapped:0x80736070
-void fn_3_F6FDC(void) {
-    return;
+/* Placement tables (lbl_3_data_1B884 / lbl_3_data_1B9A4); type 6 ends a list. */
+typedef struct StaPlace14 {
+    Vec pos;
+    f32 rotY;
+    u8 type;
+    u8 pad11[3];
+} StaPlace14;
+typedef struct StaPlace18 {
+    Vec pos;
+    f32 rotY;
+    u8 type;
+    u8 pad11;
+    u8 f12;
+    u8 pad13;
+    u8 box;
+    u8 pad15[3];
+} StaPlace18;
+#define STA_ACTORS (*(ActorObjectTable**)(lbl_8036E548 + 0x6C)) // TODO type: lbl_8036E548
+extern void fn_3_B939C(void);
+extern void fn_3_B9D68(u8* ids, s32 n, void** files, s32* out);
+extern void fn_3_B97C8(void* fn);
+extern void fn_3_B98E8(void* p);
+extern void fn_800B4AFC(GameActor* actor, u8 loop);
+extern void fn_800BD548(ActorObject* obj, u8 numLights, ...);
+extern void fn_80025C58(void* shape, void* model);
+extern void fn_80025DDC(void* shape);
+extern void fn_80025FFC(void* model, void* player);
+extern void fn_80025EEC(void* player, s32 table, s32 entry);
+extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority); // TODO type: u16 priority in main/file_800B0724.h
+extern const f32 lbl_3_rodata_2F58;
+extern const f32 lbl_3_rodata_2F5C;
+extern const f32 lbl_3_rodata_2F60;
+extern const f32 lbl_3_rodata_2F64;
+// Stadium setup: loads the actors/animations from `files`, lays out the object
+// slots (group A, B and C from the placement tables, then 3 fixed ones) and
+// starts the stadium tasks.
+// NONMATCHING 81%: inlines fn_3_F3BB0, fn_3_F38D4, fn_3_F5C30, fn_3_F1518 and fn_3_EECF4; the original reaches the placement tables, lbl_3_bss_B154/B219/B244 via the lbl_3_data_1B820 / lbl_3_bss_AEE0 pooled bases (nmverify flag expected); regalloc and scheduling differ
+#if NONMATCHING
+void fn_3_F6FDC(void** files) {
+    StadiumObjList* list = (StadiumObjList*)lbl_3_common_bss_350E4;
+    StaC5Data* d = (StaC5Data*)lbl_3_data_1B820;
+    u8* w = lbl_3_bss_AEE0;
+    StaPlace14* pa = (StaPlace14*)(lbl_3_data_1B820 + 0x64);
+    StaPlace14* pc = (StaPlace14*)(lbl_3_data_1B820 + 0xDC);
+    StaPlace18* pb = (StaPlace18*)(lbl_3_data_1B820 + 0x184);
+    StadObjHdr* o;
+    s32* idx;
+    s32 nA;
+    s32 nB;
+    u8 nActors;
+    s32 i;
+    s32 j;
+    s32 k;
+    u8 kA;   /* first group-A actor after the per-group ones */
+    u8 kBall;
+    u8 kB;
+    u8 kEnd;
+    u8 stop;
+    u8 n;
+    list->draw = fn_3_B939C;
+    list->update = fn_3_EDFAC;
+    n = 0;
+    stop = 0;
+    w[0x27C] = 1;
+    if (g_d_GameSettings[7] != 7) {
+        fn_3_B97C8(fn_3_F6FCC);
+    }
+    w[8] = 0;
+    idx = _OSAllocFromHeap(4, 0x48);
+    list->fileIdx = (u32*)idx;
+    fn_3_B9D68(lbl_3_data_1B820 + 0x214, 0x12, files, idx);
+    *(void**)(w + 0x680) = files[0];
+
+    for (nA = 0; nA < 5; nA++) {
+        if (pc[nA].type == 6) {
+            break;
+        }
+    }
+    for (nB = 0; nB < 5; nB++) {
+        if (pb[nB].type == 6) {
+            break;
+        }
+    }
+    nActors = (u8)(nA + 2 + nB) + 4;
+    STA_ACTORS = ActorObjectInitTable(nActors);
+    list->numActorObjs = nActors;
+    w[0x339] = 0;
+    k = 0;
+    for (i = 0; i < (u8)nA; i++, k++) {
+        fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[1]], NULL, NULL);
+        fn_3_B97DC(&STA_ACTORS->objects[(u8)k], files[idx[1] + 2]);
+    }
+    w[0x338] = k;
+    kA = k;
+    fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[2]], NULL, NULL);
+    fn_3_B97DC(&STA_ACTORS->objects[(u8)k], files[idx[2] + 2]);
+    STA_ACTORS->objects[(u8)k].visFlags = 2;
+    fn_800B4AFC(STA_ACTORS->objects[(u8)k].actor, STA_ACTORS->objects[(u8)k].visFlags & 1);
+    kBall = k + 1;
+    fn_800BDC88(STA_ACTORS, kBall, kBall, files[idx[3]], NULL, NULL);
+    k += 2;
+    kB = k;
+    for (i = 0; i < (u8)nB; i++, k++) {
+        fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[4]], NULL, files[idx[4] + 2]);
+        fn_3_B98E8(&STA_ACTORS->objects[(u8)k]);
+    }
+    kEnd = k;
+    fn_800BDC88(STA_ACTORS, kEnd, kEnd, files[idx[5]], NULL, NULL);
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 1), (u8)(kEnd + 1), files[idx[6]], NULL, NULL);
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 2), (u8)(kEnd + 2), files[idx[7]], NULL, NULL);
+    *(ActorObject**)(w + 0x67C) = &STA_ACTORS->objects[(u8)(kEnd + 2)];
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 3), (u8)(kEnd + 3), files[idx[8]], NULL, NULL);
+    lbl_3_bss_B154[0] = files[idx[0x10]];
+    lbl_3_bss_B154[1] = files[idx[0x11]];
+    for (i = 0; i < nActors; i++) {
+        fn_800BD548(&STA_ACTORS->objects[i], 4, list->lights[0], list->lights[1], list->lights[2], list->lights[3]);
+    }
+    fn_80025DDC(files[idx[14]]);
+    fn_80025C58(files[idx[14]], &STA_ACTORS->objects[(u8)(kEnd + 1)]);
+    *(void**)(w + 0x2DC) = files[idx[15]];
+    fn_80025FFC(files[idx[14]], w + 0x2DC);
+    fn_80025EEC(w + 0x2DC, 0, 0);
+    *(f32*)(w + 0x2EC) = lbl_3_rodata_2F58;
+    fn_80025DDC(files[idx[12]]);
+    fn_80025C58(files[idx[12]], &STA_ACTORS->objects[kEnd]);
+    *(void**)(w + 0x280) = files[idx[13]];
+    fn_80025FFC(files[idx[12]], w + 0x280);
+    fn_80025EEC(w + 0x280, 0, 0);
+
+    list->count = 0x19;
+    list->objs = _OSAllocFromHeap(0x20, 0x16A8);
+    memset(list->objs, 0, 0x16A8);
+    list->objsBackup = _OSAllocFromHeap(0x20, 0x16A8);
+    memset(list->objsBackup, 0, 0x16A8);
+    o = (StadObjHdr*)list->objs;
+
+    /* group A: StadCtlA objects waiting at their spot */
+    if (g_d_GameSettings[7] != 7) {
+        w[0x33D] = 0;
+        for (j = 0; j < 5; j++) {
+            StadCtlA* p = (StadCtlA*)o;
+            if (pa[j].type == 6 || pc[j].type != 0) {
+                break;
+            }
+            o->kind = 0;
+            o->actorObj = &STA_ACTORS->objects[j];
+            p->fc2 = j;
+            p->fc3 = kA;
+            o->shadow = files[idx[9]];
+            o->update = NULL;
+            o->onHit = (void (*)(s32))fn_3_F1674;
+            o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
+            p->idx = j;
+            p->fc5 = n;
+            fn_3_F3BB0((u8*)p);
+            n++;
+            o->depthSort = 1;
+            o->alpha = 0xFF;
+            o->drawArg = NULL;
+            o->preDraw = NULL;
+            o->attached = 0;
+            o->attachJoint = -1;
+            o->layer = 1;
+            o->castShadow = 1;
+            o++;
+            w[0x33E]++;
+        }
+        fn_3_F38D4();
+    }
+
+    /* group B: StadObjB objects, each carrying the matching group-A object */
+    w[0x33F] = n;
+    for (j = 0; j < 5; j++) {
+        StadObjB* b = (StadObjB*)o;
+        if (pa[j].type == 6) {
+            stop = 1;
+        }
+        if (stop) {
+            for (; j < 5; j++) {
+                pa[j].type = 6;
+            }
+            break;
+        }
+        o->kind = 1;
+        b->idx = j;
+        o->id = n;
+        if (g_d_GameSettings[7] == 7) {
+            b->link = NULL;
+        } else {
+            b->link = (StadCtlA*)((StadObjHdr*)list->objs + (w[0x33D] + j));
+            b->link->yawSrc = &b->yaw;
+        }
+        b->state = 0;
+        o->actorObj = &STA_ACTORS->objects[kBall];
+        o->shadow = files[idx[10]];
+        o->update = (void (*)(void*))fn_3_F56CC;
+        o->onHit = (void (*)(s32))fn_3_F466C;
+        o->visible = 1;
+        o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
+        fn_3_F5C30((u8*)b);
+        n++;
+        o->depthSort = 1;
+        o->alpha = 0xFF;
+        o->drawArg = NULL;
+        o->preDraw = (void (*)(void*))fn_3_F469C;
+        o->attached = 0;
+        o->attachJoint = -1;
+        o->layer = 1;
+        o++;
+        w[0x340]++;
+    }
+
+    /* group C: StadCtlA objects roaming their box */
+    stop = 0;
+    if (g_d_GameSettings[7] != 7) {
+        w[0x33B] = n;
+        for (j = 0; j < 5; j++) {
+            StadCtlA* p = (StadCtlA*)o;
+            if (pb[j].type == 6) {
+                stop = 1;
+            }
+            if (stop) {
+                for (; j < 6; j++) {
+                    pb[j].type = 6;
+                    pb[j].f12 = 0xFF;
+                }
+                break;
+            }
+            o->kind = 2;
+            o->actorObj = &STA_ACTORS->objects[kB + j];
+            o->shadow = files[idx[11]];
+            o->update = (void (*)(void*))fn_3_F0FA4;
+            o->onHit = fn_3_EEFD4;
+            o->visible = 1;
+            o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
+            p->idx = j;
+            fn_3_F1518(p);
+            n++;
+            o->depthSort = 1;
+            o->alpha = 0xFF;
+            o->drawArg = NULL;
+            o->preDraw = NULL;
+            o->attached = 0;
+            o->attachJoint = -1;
+            o->layer = 1;
+            o++;
+            w[0x33C]++;
+        }
+        fn_800B0A5C_insertQueue(fn_3_F0184, 0x6001);
+    }
+
+    /* fixed objects */
+    o[0].kind = 3;
+    o[0].actorObj = &STA_ACTORS->objects[kEnd];
+    o[0].shadow = NULL;
+    o[0].update = NULL;
+    o[0].onHit = NULL;
+    o[0].visible = 1;
+    o[0].hasShadow = (o[0].visible && o[0].shadow != NULL) ? 1 : 0;
+    o[0].c.type = 0;
+    CTRLSetTranslation(&o[0].c, lbl_3_rodata_2D5C, lbl_3_rodata_2F5C, lbl_3_rodata_2D5C);
+    CTRLSetRotation(&o[0].c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+    o[0].depthSort = 1;
+    o[0].alpha = 0xFF;
+    o[0].drawArg = w + 0x280;
+    o[0].preDraw = NULL;
+    o[0].attached = 0;
+    o[0].attachJoint = -1;
+    o[0].layer = 1;
+    w[0x33A] = n + 1;
+
+    o[1].kind = 4;
+    o[1].actorObj = &STA_ACTORS->objects[(u8)(kEnd + 1)];
+    o[1].shadow = NULL;
+    o[1].update = NULL;
+    o[1].onHit = NULL;
+    o[1].visible = 1;
+    o[1].hasShadow = (o[1].visible && o[1].shadow != NULL) ? 1 : 0;
+    o[1].c.type = 0;
+    CTRLSetTranslation(&o[1].c, lbl_3_rodata_2D5C, lbl_3_rodata_2F60, lbl_3_rodata_2D5C);
+    CTRLSetRotation(&o[1].c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+    o[1].depthSort = 1;
+    o[1].alpha = 0xFF;
+    o[1].drawArg = w + 0x2DC;
+    o[1].preDraw = (void (*)(void*))fn_3_EEFA4;
+    o[1].f88 = NULL;
+    o[1].attached = 0;
+    o[1].attachJoint = -1;
+    o[1].layer = 1;
+    fn_800B0A5C_insertQueue(fn_3_EEF24, 5);
+
+    o[2].kind = 5;
+    o[2].actorObj = &STA_ACTORS->objects[(u8)(kEnd + 3)];
+    o[2].shadow = NULL;
+    o[2].update = NULL;
+    o[2].onHit = NULL;
+    o[2].visible = 1;
+    o[2].hasShadow = (o[2].visible && o[2].shadow != NULL) ? 1 : 0;
+    o[2].c.type = 0;
+    CTRLSetTranslation(&o[2].c, lbl_3_rodata_2D5C, lbl_3_rodata_2F64, lbl_3_rodata_2D5C);
+    CTRLSetRotation(&o[2].c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+    o[2].depthSort = 1;
+    o[2].alpha = 0xFF;
+    o[2].drawArg = NULL;
+    o[2].preDraw = NULL;
+    o[2].attached = 0;
+    o[2].attachJoint = -1;
+    o[2].layer = 1;
+    o[2].customZ = 1;
+    o[2].zCompare = 1;
+    o[2].zAlways = 0;
+    o[2].zUpdate = 0;
+
+    /* unused slots */
+    o += 3;
+    for (k = n + 3; k < list->count; k++, o++) {
+        o->kind = 0;
+        o->actorObj = NULL;
+        o->shadow = NULL;
+        o->update = NULL;
+        o->onHit = NULL;
+        o->visible = 0;
+        o->hasShadow = 0;
+        o->depthSort = 0;
+        o->c.type = 0;
+        CTRLSetTranslation(&o->c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+        CTRLSetRotation(&o->c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+        o->alpha = 0;
+        o->drawArg = NULL;
+        o->attached = 0;
+        o->attachJoint = -1;
+    }
+
+    list->groupBounds = NULL;
+    if (g_d_GameSettings[7] != 7) {
+        fn_3_F6C60();
+    }
+    fn_3_EECF4();
 }
+#endif
 
 
 #pragma dont_inline off

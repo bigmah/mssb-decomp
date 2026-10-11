@@ -971,6 +971,7 @@ L_800BFF20:
 #endif
 
 // .text:0x800BFF9C size:0x10C
+// litcheck: all (portable C for a paired-single asm routine that scales through GQRs, not constants)
 #if NONMATCHING
 void fn_800BFF9C(Mtx43 m, s16* src, s16* dst, u32 count) {
     f32 in[6];
@@ -1059,6 +1060,7 @@ L_800C002C:
 #endif
 
 // .text:0x800C00A8 size:0x220
+// litcheck: all (portable C for a paired-single asm routine that scales through GQRs, not constants)
 #if NONMATCHING
 void SKN2Vecs16Norms16NoTouch(Mtx43 m0, Mtx43 m1, u8* weights, f32* src, f32* dst, u32 count) {
     f32 v[6];
@@ -1218,6 +1220,7 @@ L_800C01D4:
 #endif
 
 // .text:0x800C02C8 size:0x220
+// litcheck: all (portable C for a paired-single asm routine that scales through GQRs, not constants)
 #if NONMATCHING
 void fn_800C02C8(Mtx43 m0, Mtx43 m1, u8* weights, s16* src, s16* dst, u32 count) {
     f32 in[6];
@@ -1376,6 +1379,7 @@ L_800C03F4:
 #endif
 
 // .text:0x800C04E8 size:0x148
+// litcheck: all (portable C for a paired-single asm routine that scales through GQRs, not constants)
 #if NONMATCHING
 void SKNAccVecs16Norms16Iu161(Mtx43 m, u16 count, f32* src, f32* dst, u16* indices, u8* weights) {
     f32 v[6];
@@ -1484,6 +1488,7 @@ L_800C056C:
 #endif
 
 // .text:0x800C0630 size:0x140
+// litcheck: all (portable C for a paired-single asm routine that scales through GQRs, not constants)
 #if NONMATCHING
 void SKNAccVecs16Norms16Iu162(Mtx43 m, u16 count, s16* src, s16* dst, u16* indices, u8* weights) {
     f32 in[6];

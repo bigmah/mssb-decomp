@@ -916,8 +916,8 @@ void fn_3_14402C(s32 idx) {
             *(s16*)MU(0x22) = *(s16*)lbl_3_data_21E04 + RandomInt_Game_Range(*(s16*)lbl_3_data_21E04, *(s16*)(lbl_3_data_21E04 + 2));
             *(s16*)MU(0x24) = *(s16*)MU(0x22);
             *(s8*)MU(0x34) = -1;
-            *(f32*)MU(0x14) = *(f32*)lbl_3_data_21D1C;
-            *(f32*)MU(0xC) = *(f32*)lbl_3_data_21D1C;
+            *(f32*)MU(0x14) = lbl_3_rodata_3834;
+            *(f32*)MU(0xC) = lbl_3_rodata_3834;
             *(f32*)MU(0x10) = ((f32*)lbl_3_data_26698)[idx];
         }
     }

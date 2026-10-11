@@ -3,6 +3,36 @@
 
 #include "mssbTypes.h"
 
+// lbl_3_common_bss_32724 (GameHudFlags in game/auto_00_00097144_text.h), only the fields used here.
+typedef struct RepF80HudView {
+    /*0x00*/ u8 _00[0xC8];
+    /*0xC8*/ u8 pitchEffect;  // star/charge pitch effect state (fn_3_6A83C)
+    /*0xC9*/ u8 chargeEffect; // batter charge effect running (fn_3_6A9B0)
+    /*0xCA*/ u8 ballEffect;   // star ball effect kind (fn_3_6A414), 0: none
+    /*0xCB*/ u8 _CB[0xD4 - 0xCB];
+    /*0xD4*/ u8 starEffect;   // star effect model shown (fn_3_6A2A4)
+} RepF80HudView;
+
+// lbl_3_common_bss_32220, only the fields used here.
+typedef struct RepF80Bss32220 {
+    /*0x0*/ u8 _0[2];
+    /*0x2*/ s16 _02;
+    /*0x4*/ u8 _4[6];
+    /*0xA*/ u8 state;
+} RepF80Bss32220;
+
+// lbl_3_common_bss_3223C, only the fields used here.
+typedef struct RepF80Bss3223C {
+    /*0x0*/ u8 _0[4];
+    /*0x4*/ f32 cameraYaw;
+} RepF80Bss3223C;
+
+// lbl_3_common_bss_35154, only the fields used here.
+typedef struct RepF80Bss35154 {
+    /*0x000*/ u8 _000[0x3AC];
+    /*0x3AC*/ u32 _3AC;
+} RepF80Bss35154;
+
 void fn_3_6A2A4(s8 idx);
 void fn_3_6A300(void);
 void fn_3_6A400(void);

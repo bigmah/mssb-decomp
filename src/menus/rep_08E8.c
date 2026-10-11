@@ -194,8 +194,8 @@ f32 fn_2_4A1E8(f32 x, f32 y) {
 
 // fn_2_4A2C4, size:0x4C
 s32 fn_2_4A2C4(f32 angle) {
-    if (angle < lbl_2_rodata_94C) angle = lbl_2_rodata_9A8 + angle;
-    return (s32)((lbl_2_rodata_9B4 * angle) / lbl_2_rodata_9AC);
+    if (angle < lbl_2_rodata_94C) angle = lbl_2_rodata_9AC + angle;
+    return (s32)((lbl_2_rodata_9B4 * angle) / lbl_2_rodata_9A8);
 }
 
 // fn_2_47AFC, size:0x28
@@ -368,7 +368,7 @@ void fn_2_47B24(u16* count) {
                 p = fn_800111D8(actor);
                 if (*(void**)p != NULL) {
                     if (p[0x58] != 0) {
-                        ACTSetAnimation(*(void**)p, *(void**)(p + 4), NULL, *(u16*)(p + 0xE), lbl_2_rodata_9B0, *(f32*)(p + 0x60));
+                        ACTSetAnimation(*(void**)p, *(void**)(p + 4), NULL, *(u16*)(p + 0xE), lbl_2_rodata_94C, *(f32*)(p + 0x60));
                     }
                     if (p[0x59] != 0) {
                         fn_800B4CA0(*(void**)p, *(f32*)(p + 0x5C));

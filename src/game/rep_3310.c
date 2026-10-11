@@ -310,16 +310,16 @@ void fn_3_117588(s32 idx) {
     color.b = 0;
     color.a = 0x9B;
     quad[0].x = -hw + e->pos[0];
-    quad[0].y = -0.06f;
+    quad[0].y = -0.060000002f;
     quad[0].z = hd + e->pos[2];
     quad[1].x = hw + e->pos[0];
-    quad[1].y = -0.06f;
+    quad[1].y = -0.060000002f;
     quad[1].z = hd + e->pos[2];
     quad[2].x = hw + e->pos[0];
-    quad[2].y = -0.06f;
+    quad[2].y = -0.060000002f;
     quad[2].z = -hd + e->pos[2];
     quad[3].x = -hw + e->pos[0];
-    quad[3].y = -0.06f;
+    quad[3].y = -0.060000002f;
     quad[3].z = -hd + e->pos[2];
 
     GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, GX_PNMTX0);
@@ -387,6 +387,7 @@ void fn_3_117AE4(void) {
 
 // .text:0x00117B78 size:0x450 mapped:0x80756C0C
 // NONMATCHING 92%: (measured with the rodata externs) the original builds -1.5 with fneg and schedules the rotation math differently
+// litcheck: -1.5 (the original negates its 1.5f with fneg)
 #if NONMATCHING
 // Draws the square ground marker under sprite idx, rotated by its yaw (rot[1]).
 void fn_3_117B78(s32 idx) {
@@ -435,7 +436,7 @@ void fn_3_117B78(s32 idx) {
     }
     for (k = 0; k < 4; k++) {
         quad[k].x += e->pos[0];
-        quad[k].y = -0.06f;
+        quad[k].y = -0.060000002f;
         quad[k].z += e->pos[2];
     }
     color.r = 0;
