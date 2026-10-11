@@ -54,7 +54,7 @@ void fn_3_C7A0C(struct C7A0CEnt* e);
 void fn_3_C805C(s32* a, s32* b);
 void* fn_3_C823C(s32 idx, Mtx out);
 void fn_3_C82B4(void);
-void fn_3_C8650(void);
+void fn_3_C8650(void** files);
 
 void fn_3_C1964(void);
 
