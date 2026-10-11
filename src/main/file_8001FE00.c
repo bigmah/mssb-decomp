@@ -172,7 +172,17 @@ void changeScene(s32 scene, s32 duration) {
 
 // .text:0x8002059C size:0x88
 void fn_8002059C(void) {
-    return;
+    LayoutGroup* group = lbl_803CC1B8;
+    if (lbl_8037169C.state == 7 && lbl_80371C30[group->start].obj->_69 == 2) {
+        lbl_8037169C.done = 1;
+        lbl_8037169C.state = 0;
+    } else {
+        lbl_8037169C.done = 0;
+        return;
+    }
+    lbl_8037169C._16 = 0;
+    fn_80034CEC(group);
+    ((void (*)(void))fn_800B0A14_removeQueue)();
 }
 
 // .text:0x80020624 size:0xD8
