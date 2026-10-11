@@ -51,6 +51,9 @@ extern struct SpaniDesc lbl_80108048;
 extern struct SpaniDesc lbl_800FEB30;
 extern struct SpaniDesc lbl_80107688;
 extern ChallengeMission lbl_8010A768[20][10];
+extern s16 lbl_8010B3E8[];
+extern s32 determineIfMissionDescriptionIsShown(s16 charID);
+extern s32 challengeRelated(s16 team);
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
@@ -473,9 +476,73 @@ void fn_800569C8(void) {
 }
 
 // .text:0x80056AE4 size:0x48C
-void drawStarProgressionMenu(void) {
-    return;
+// NONMATCHING 93%: register numbering and some sign-extension placement differ
+#if NONMATCHING
+void drawStarProgressionMenu(SceneTask* task) {
+    CharacterStats* player = &inMemRoster[0][lbl_803297E0.charSel];
+    s16 charID = player->stats.CharID;
+    ChallengeTeamInfo* info = &lbl_800E8558[charID];
+    u8 set;
+    s8 rank;
+    u16 msg;
+    s32 i;
+
+    lbl_803297E0.challengeTeam = info->_0[1];
+    set = info->_2;
+    rank = gChallengeState.trackers[lbl_803297E0.challengeTeam].variantClassification;
+    switch (rank) {
+    case 0:
+        rank = 3;
+        lbl_803297E0.missionCount = 10;
+        break;
+    case 1:
+        rank = 2;
+        lbl_803297E0.missionCount = 8;
+        break;
+    case 2:
+        rank = 1;
+        lbl_803297E0.missionCount = 6;
+        break;
+    case 3:
+        rank = 0;
+        lbl_803297E0.missionCount = 4;
+        break;
+    }
+    TASK_OBJ(task, 31)->_5C = rank << 16;
+    TASK_OBJ(task, 32)->_68 = 1;
+    TASK_OBJ(task, 36)->_5C = lbl_8034E9A0.chars[player->stats.CharID / 9][player->stats.CharID % 9].stats.CharacterClass << 16;
+    TASK_OBJ(task, 37)->_5C = charID << 16;
+    TASK_OBJ(task, 38)->_5C = (4 - determineIfMissionDescriptionIsShown(charID)) << 16;
+    if ((s8)gChallengeState.trackers[lbl_803297E0.challengeTeam].inGameMissionTracker[0].shownOnPauseMenu != 0) {
+        msg = lbl_8010A768[(s16)set][0].msg;
+    } else if (lbl_8010A768[(s16)set][0]._6 <= gChallengeState._4415) {
+        msg = 0x1C5;
+    } else {
+        msg = 0x1C6;
+    }
+    if (lbl_803297E0._CF92 == 1) {
+        lbl_803297E0.nameText = fn_8000F988((LayoutGroup*)task, 0x4F, 0, 0, charID + 8, 0);
+        lbl_803297E0.descText = fn_8000F988((LayoutGroup*)task, 0x50, 1, 0, lbl_8010B3E8[info->_2] + challengeRelated(lbl_803297E0.challengeTeam), 0);
+        lbl_803297E0.missionText = fn_8000F988((LayoutGroup*)task, 0x51, 0, 0, msg, 0);
+        lbl_80366B18.entries[lbl_803297E0.missionText].hAlign = 1;
+    } else {
+        fn_8000FE08(lbl_803297E0.nameText, 0, charID + 8);
+        fn_8000FE08(lbl_803297E0.descText, 0, lbl_8010B3E8[info->_2] + challengeRelated(lbl_803297E0.challengeTeam));
+        fn_8000FE08(lbl_803297E0.missionText, 0, msg);
+    }
+    for (i = 0; i < lbl_803297E0.missionCount; i++) {
+        if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, i) != 0) {
+            TASK_OBJ(task, i + 0x3B)->flags |= 2;
+            TASK_OBJ(task, i + 0x3B)->_68 = 1;
+        } else {
+            TASK_OBJ(task, i + 0x3B)->flags &= ~2;
+        }
+        TASK_OBJ(task, i + 0x45)->flags &= ~2;
+        TASK_OBJ(task, i + 0x31)->flags &= ~2;
+        TASK_OBJ(task, i + 0x45)->_5C = 0;
+    }
 }
+#endif
 
 // .text:0x80056F70 size:0x350
 // NONMATCHING 94%: shownOnPauseMenu read as s8 and (fn != 0) == 1 kept unfolded in the original
