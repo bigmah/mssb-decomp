@@ -296,10 +296,90 @@ void DoTranslationAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next
 }
 #endif
 
+// NONMATCHING 88%: result is kept in registers instead of on the stack; float register allocation
 // .text:0x800B63DC size:0xA30
+#if NONMATCHING
 void DoScaleAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next, u8 unused) {
-    return;
+    s32 i;
+    f32 easeOut;
+    f32 easeIn;
+    Quaternion quatResult = { 0.0f, 0.0f, 0.0f, 1.0f };
+    Quaternion quat1 = { 0.0f, 0.0f, 0.0f, 1.0f };
+    Quaternion quat0 = { 0.0f, 0.0f, 0.0f, 1.0f };
+    f32 ctrlNext[3];
+    f32 ctrlCur[3];
+    f32 result[3];
+    f32 scale1[3];
+    f32 scale0[3];
+    u32 vecSize;
+    u8 compType;
+    u8 interp;
+    char* data;
+    f32 scale;
+    f32 t;
+
+    compType = pipe->currentTrack->quantizeInfo >> 4;
+    scale = 1.0f / (f32)(1 << (pipe->currentTrack->quantizeInfo & 0xF));
+    vecSize = GetCompSize(compType) * 3;
+
+    GetData(compType, cur->setting, scale0, 3, scale);
+    GetData(compType, next->setting, scale1, 3, scale);
+    if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
+        GetData(compType, cur->setting + vecSize, &quat0.x, 4, scale);
+        GetData(compType, next->setting + vecSize, &quat1.x, 4, scale);
+    }
+
+    t = GetInterpTime(pipe, cur, next);
+
+    switch ((pipe->currentTrack->interpolationType >> 2) & 3) {
+    case ANIM_INTERP_NONE:
+        for (i = 0; i < 3; i++) {
+            result[i] = scale0[i];
+        }
+        if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
+            quatResult.x = quat0.x;
+            quatResult.y = quat0.y;
+            quatResult.z = quat0.z;
+            quatResult.w = quat0.w;
+        }
+        break;
+    case ANIM_INTERP_LINEAR:
+        for (i = 0; i < 3; i++) {
+            result[i] = t * scale1[i] + (1.0f - t) * scale0[i];
+        }
+        if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
+            QuatSlerp(&quat0, &quat1, &quatResult, t);
+        }
+        break;
+    case ANIM_INTERP_BEZIER:
+        GetData(compType, cur->interpolation + vecSize, ctrlCur, 3, scale);
+        GetData(compType, next->interpolation, ctrlNext, 3, scale);
+        BezierVec(result, scale0, ctrlCur, ctrlNext, scale1, t);
+        if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
+            QuatSlerp(&quat0, &quat1, &quatResult, t);
+        }
+        break;
+    case ANIM_INTERP_HERMITE:
+        data = cur->interpolation + vecSize;
+        GetData(compType, data, ctrlCur, 3, scale);
+        GetData(lbl_803CBB51, data + (vecSize + 2), &easeIn, 1, lbl_803CBB4C);
+        GetData(compType, next->interpolation, ctrlNext, 3, scale);
+        GetData(lbl_803CBB51, next->interpolation + vecSize * 2, &easeOut, 1, lbl_803CBB4C);
+        t = EaseTime(t, easeIn, easeOut);
+        HermiteVec(result, scale0, ctrlCur, ctrlNext, scale1, t);
+        if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
+            QuatSlerp(&quat0, &quat1, &quatResult, t);
+        }
+        break;
+    default:
+        OSPanic("animPipe.c", 424, "Unknown pInterpolation pSetting!(未知の補間タイプが指定されています)");
+        break;
+    }
+
+    CTRLSetScale(pipe->control, result[0], result[1], result[2]);
+    CTRL_SetQuatUnk(pipe->control, quatResult.x, quatResult.y, quatResult.z, quatResult.w);
 }
+#endif
 
 // NONMATCHING 86%: Bezier scheduling, keyframe-time compare operand order, f5/f6 swap
 // .text:0x800B6E0C size:0x3B4
