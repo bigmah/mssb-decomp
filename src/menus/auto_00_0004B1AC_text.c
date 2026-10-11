@@ -1505,6 +1505,36 @@ extern u16 lbl_2_data_1F3A0[];
 #define MENU_TEXT_CTRL 0x4000
 #define MENU_TEXT_WIDE 0x8000
 
+// Text line state inside the big menu work buffer (lbl_2_bss_1A824C[0]).
+typedef struct MenuTextState {
+    /*0x000000*/ u8 _000000[0x1954AC];
+    /*0x1954AC*/ u16* lines[(0x197294 - 0x1954AC) / 4];
+    /*0x197294*/ s16 lineCount[1];
+} MenuTextState;
+
+// fn_2_512C0, size:0x98
+// NONMATCHING 95%: original has a second dead `b` after the switch dispatch and no trailing `blr` after the loop (see docs/patterns/inlining.md "No trailing epilogue")
+#if NONMATCHING
+void fn_2_512C0(s32 index) {
+    u16* str = (*(MenuTextState**)&lbl_2_bss_1A824C)->lines[index];
+    u16 c;
+    while (1) {
+        c = *str++;
+        if (c & MENU_TEXT_CTRL) {
+            switch (c & 0x3FFF) {
+            case 0:
+                return;
+            case 4:
+            default:
+                break;
+            }
+            (*(MenuTextState**)&lbl_2_bss_1A824C)->lineCount[index]++;
+        } else {
+            (*(MenuTextState**)&lbl_2_bss_1A824C)->lineCount[index]++;
+        }
+    }
+}
+#endif
 
 // fn_2_513E8, size:0x84
 // NONMATCHING 97%: only an extra dead trailing `blr` after the infinite loop (see docs/patterns/inlining.md "No trailing epilogue")

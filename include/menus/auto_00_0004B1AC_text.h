@@ -135,6 +135,8 @@ void fn_2_520A4(void);
 
 void fn_2_51890(void);
 
+void fn_2_512C0(s32 index);
+
 s32 fn_2_513E8(u16* str, u16 font);
 
 #endif
