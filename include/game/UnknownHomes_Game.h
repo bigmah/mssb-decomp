@@ -1434,21 +1434,20 @@ typedef struct _UnkStructMinigame {
     /*0x05C*/ VecXYZ _5C;
 } UnkStructMinigame; // size: 0x68
 
+// Per-player arrays (index = player slot 0..3).
 typedef struct _MiniGameControlStruct {
-    /*0x000*/ s8 characterIndex[4];
-    /*0x004*/ u8 _4;
-    /*0x005*/ u8 _5;
-    /*0x006*/ u8 _6;
-    /*0x007*/ u8 _7;
-    /*0x008*/ u8 _8;
-    /*0x009*/ u8 _9;
-    /*0x00A*/ u8 _A;
-    /*0x00B*/ u8 _B;
-    /*0x00C*/ u8 battingHandedness[4];
-    /*0x010*/ u8 aIStrength[4];
-    /*0x014*/ u8 _14;
-    /*0x015*/ u8 _15;
-} MiniGameControlStruct; // size: 0x16
+    /*0x00*/ s8 characterIndex[4];
+    /*0x04*/ u8 _04[4];
+    /*0x08*/ u8 _08[4];
+    /*0x0C*/ u8 battingHandedness[4];
+    /*0x10*/ u8 aIStrength[4];
+    /*0x14*/ s8 turnOrder[4]; // [0] batter, [1] pitcher, then the fielders
+    /*0x18*/ s8 _18[4];
+    /*0x1C*/ u8 _1C[4];
+    /*0x20*/ u8 _20[4];
+    /*0x24*/ u8 _24[4];
+    /*0x28*/ s8 fieldOrder[4]; // [0] pitcher, then the fielders
+} MiniGameControlStruct; // size: 0x2C
 
 /*foul	1
 caught	2
@@ -1969,9 +1968,9 @@ typedef struct _MiniGameStruct {
     /*0x18B8*/ s16 _18B8;
     /*0x18BA*/ s16 _18BA;
     /*0x18BC*/ s32 minigamePoints_current_Latest[4];
-    /*0x18CC*/ MiniGameControlStruct minigameControlStruct[2];
-    /*0x18F8*/ u8 minigameFielderIndex[4];
-    /*0x18FC*/ u8 _18FC[4];
+    /*0x18CC*/ MiniGameControlStruct minigameControlStruct[1];
+    /*0x18F8*/ s8 minigameFielderIndex[4];
+    /*0x18FC*/ s8 _18FC[4];
     /*0x1900*/ u8 _1900;
     /*0x1901*/ u8 _1901;
     /*0x1902*/ u8 _1902;

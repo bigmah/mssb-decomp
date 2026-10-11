@@ -3,11 +3,18 @@
 #include "static/UnknownHomes_Static.h"
 #include "game/auto_00_0005985C_text.h"
 #include "game/rep_1838.h"
+#include "game/rep_1200.h"
+#include "game/game_batter.h"
+#include "game/rep_540.h"
+#include "game/rep_AC8.h"
+#include "game/auto_00_0001E154_text.h"
 #include <stdlib.h>
 
 extern f32 lbl_3_data_18D98[];
 extern MinigameCoinTiming lbl_3_data_18BB0[];
 extern f32 lbl_3_data_18DD0; // coin spin per frame
+extern s16 lbl_3_data_18C48[]; // minigame starting points
+extern u8 lbl_3_data_189A4[];  // toy field turn counts
 extern u8 lbl_3_data_18944[]; // per minigame: number of participants - 1
 extern u8 lbl_3_data_18980[]; // AI strength of each CPU player
 
@@ -86,7 +93,44 @@ void fn_3_DF820(void) {
 
 // .text:0x000DF8D4 size:0x14C mapped:0x8071E968
 void fn_3_DF8D4(void) {
-    return;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        g_Minigame.miniGameCurrentPoints[i] = lbl_3_data_18C48[0];
+        g_Minigame.minigameControlStruct[0]._1C[i] = 0;
+        g_Minigame.minigameControlStruct[0].fieldOrder[i] = -1;
+        g_Minigame.minigameFielderIndex[i] = -1;
+        g_Minigame._18FC[i] = -1;
+        g_Minigame.minigameControlStruct[0].turnOrder[i] = -1;
+        g_Minigame.minigameControlStruct[0]._18[i] = i;
+        g_Minigame.roleStreak[i].role = -1;
+    }
+    g_Minigame._1914 = 0;
+    g_Minigame._1915 = 0;
+    g_Minigame._1916 = 0;
+    g_Minigame._1917 = 0;
+    g_Minigame.turnNumberWithinRound = 0;
+    g_Minigame._1939 = 0;
+    g_Minigame._190D = 3;
+    g_Minigame._19A6 = 0;
+    g_Minigame.challenge_minigame_haven_tWonYetIndicator = 1;
+    g_Minigame._19A9 = 0;
+    g_Minigame._1911 = 0;
+    g_Minigame.toyField_pointMultiplier = 1;
+    g_Minigame.toyfield_waitFor_CoinsX2_AnimationToEnd = 0;
+    g_Minigame._19CD = 0;
+    g_Minigame._19CE = 0;
+    g_Minigame._19CF = 0;
+    g_Minigame.toyField_selectedTurns = lbl_3_data_189A4[g_Minigame._1A24[0]];
+    g_Minigame.toyField_turnNumber = 0;
+    if (g_d_GameSettings.exhibitionMatchInd == FALSE) {
+        g_Minigame.toyField_selectedTurns = lbl_3_data_189A4[5];
+    }
+    fn_3_754B8();
+    initializeInMemBatter();
+    fn_3_FBA8();
+    fn_3_595C4();
+    fn_3_1E328();
 }
 
 // .text:0x000DFA20 size:0x18C mapped:0x8071EAB4
