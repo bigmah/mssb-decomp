@@ -110,7 +110,7 @@ void fn_2_671DC(MenuTask* task, MenuItem* item);
 void fn_2_67390(void);
 void fn_2_67588(void);
 void fn_2_67780(void);
-void fn_2_67B94(void);
+void fn_2_67B94(MenuTask* task, MenuItem* item);
 void fn_2_67D48(void);
 void fn_2_67FEC(MenuTask* task, MenuItem* item);
 void fn_2_681A0(void);
