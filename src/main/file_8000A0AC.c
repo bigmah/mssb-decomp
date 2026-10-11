@@ -196,10 +196,140 @@ BOOL fn_8000A3EC(Mtx out, LayoutFrame* frame, LayoutKey* a, LayoutKey* b, f32* o
 }
 #endif
 
+// NONMATCHING 96%: register allocation and the pivot compares (xor. in the original) differ
 // .text:0x8000AF1C size:0xAAC
-void fn_8000AF1C(void) {
-    return;
+#if NONMATCHING
+BOOL fn_8000AF1C(Mtx out, LayoutFrame* frame, LayoutKey2* a, LayoutKey2* b, void* palette, f32* offset, f32 t) {
+    Mtx trans;
+    Mtx local;
+    Mtx rot;
+    Quaternion q;
+    f32 sc[2];
+    u8 color[4];
+    f32 u;
+    f32 pivotX;
+    f32 pivotY;
+    f32 angle;
+    f32 axisA;
+    f32 axisB;
+    f32 sx;
+    f32 sy;
+    s32 i;
+    u32 flipA;
+    u32 flipB;
+    u8 type;
+    u32* colorsA; // TODO type: palette entries are 16 bytes, colors start at +4
+    u32* colorsB;
+
+    pivotX = lbl_803CC42C;
+    pivotY = pivotX;
+    u = lbl_803CC428 - t;
+    if (a->pivot[0] != b->pivot[0]) {
+        pivotX = (f32)a->pivot[0] * u + (f32)b->pivot[0] * t;
+    } else if (a->pivot[0] != 0) {
+        pivotX = a->pivot[0];
+    }
+    if (a->pivot[1] != b->pivot[1]) {
+        pivotY = (f32)a->pivot[1] * u + (f32)b->pivot[1] * t;
+    } else if (a->pivot[1] != 0) {
+        pivotY = a->pivot[1];
+    }
+
+    PSMTXIdentity(local);
+    sx = (f32)a->scale[0] * lbl_803CC430 * u + (f32)b->scale[0] * lbl_803CC430 * t;
+    local[0][0] = sx;
+    local[0][3] = sx * -pivotX;
+    sy = (f32)a->scale[1] * lbl_803CC430 * u + (f32)b->scale[1] * lbl_803CC430 * t;
+    local[1][1] = sy;
+    local[1][3] = sy * -pivotY;
+
+    if (a->rot != b->rot) {
+        angle = a->rot / lbl_803CC434 * u + b->rot / lbl_803CC434 * t;
+    } else {
+        angle = a->rot / lbl_803CC434;
+    }
+    if (angle != lbl_803CC42C) {
+        flipA = (a->flags >> 1) & 1;
+        flipB = (b->flags >> 1) & 1;
+        angle *= lbl_803CC448;
+        if (flipA != flipB) {
+            // the rotation axis changes between z and y: blend it over the segment
+            angle *= lbl_803CC44C;
+            fn_8000E764(sc, lbl_803CC450 * t);
+            axisA = sc[flipA];
+            axisB = sc[flipB];
+            fn_8000E764(sc, lbl_803CC454 * angle);
+            q.x = lbl_803CC42C;
+            q.y = axisA * sc[0];
+            q.z = axisB * sc[0];
+            q.w = sc[1];
+            PSMTXQuat(rot, &q);
+        } else if (flipA) {
+            PSMTXRotRad(rot, 'Y', lbl_803CC454 * angle);
+        } else {
+            PSMTXRotRad(rot, 'Z', lbl_803CC454 * angle);
+        }
+        PSMTXConcat(rot, local, local);
+    }
+
+    PSMTXTrans(trans, pivotX, pivotY, lbl_803CC42C);
+    if ((a->flags >> 3) & 1) {
+        trans[0][3] += offset[0];
+        trans[1][3] += offset[1];
+    } else if (a->pos[0] != b->pos[0] || a->pos[1] != b->pos[1]) {
+        trans[0][3] += (f32)a->pos[0] * u + (f32)b->pos[0] * t;
+        trans[1][3] += (f32)a->pos[1] * u + (f32)b->pos[1] * t;
+    } else {
+        trans[0][3] += (f32)a->pos[0];
+        trans[1][3] += (f32)a->pos[1];
+    }
+    PSMTXConcat(trans, local, out);
+
+    for (i = 0; i < 4; i++) {
+        if (*(u32*)a->u.corners[i] != *(u32*)b->u.corners[i]) {
+            frame->corners[i][0] = (f32)a->u.corners[i][0] * u + (f32)b->u.corners[i][0] * t;
+            frame->corners[i][1] = (f32)a->u.corners[i][1] * u + (f32)b->u.corners[i][1] * t;
+        } else {
+            frame->corners[i][0] = a->u.corners[i][0];
+            frame->corners[i][1] = a->u.corners[i][1];
+        }
+    }
+
+    type = a->type & 0xF;
+    if (type == 3) {
+        frame->_30 = a->u.text._18 != b->u.text._18 ? (f32)a->u.text._18 * u + (f32)b->u.text._18 * t : (f32)a->u.text._18;
+        frame->_34 = a->u.text._1A != b->u.text._1A ? (f32)a->u.text._1A * u + (f32)b->u.text._1A * t : (f32)a->u.text._1A;
+        frame->_36 = a->u.text._26 != b->u.text._26 ? (f32)a->u.text._26 * u + (f32)b->u.text._26 * t : (f32)a->u.text._26;
+        frame->colors[0] = a->u.text._1C != b->u.text._1C ? (f32)a->u.text._1C * u + (f32)b->u.text._1C * t : (f32)a->u.text._1C;
+        frame->colors[1] = a->u.text._20 != b->u.text._20 ? (f32)a->u.text._20 * u + (f32)b->u.text._20 * t : (f32)a->u.text._20;
+    } else if (type != 2) {
+        if (*(u32*)a->color != *(u32*)b->color) {
+            color[0] = t * b->color[0] + u * a->color[0];
+            color[1] = t * b->color[1] + u * a->color[1];
+            color[2] = t * b->color[2] + u * a->color[2];
+            color[3] = t * b->color[3] + u * a->color[3];
+            frame->colors[3] = frame->colors[2] = frame->colors[1] = frame->colors[0] = *(u32*)color;
+        } else {
+            frame->colors[3] = frame->colors[2] = frame->colors[1] = frame->colors[0] = *(u32*)a->color;
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            colorsA = (u32*)((u8*)palette + (a->palette << 4)) + 1;
+            colorsB = (u32*)((u8*)palette + (b->palette << 4)) + 1;
+            if (colorsA[i] != colorsB[i]) {
+                color[0] = t * ((u8*)&colorsB[i])[0] + u * ((u8*)&colorsA[i])[0];
+                color[1] = t * ((u8*)&colorsB[i])[1] + u * ((u8*)&colorsA[i])[1];
+                color[2] = t * ((u8*)&colorsB[i])[2] + u * ((u8*)&colorsA[i])[2];
+                color[3] = t * ((u8*)&colorsB[i])[3] + u * ((u8*)&colorsA[i])[3];
+                frame->colors[i] = *(u32*)color;
+            } else {
+                frame->colors[i] = colorsA[i];
+            }
+        }
+    }
+    return angle != lbl_803CC42C;
 }
+#endif
 
 // .text:0x8000B9C8 size:0x74
 void fn_8000B9C8(void* file) {
