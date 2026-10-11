@@ -61,6 +61,7 @@ extern s32 challengeRelated(s16 team);
 extern s32 fn_80064918(s16 charID);
 extern void challengeDrawStarsOnMissionMenu(void);
 extern void transferStatsToInMemRoster(u8 team);
+extern u8 fn_80042598(u8 port, s8 pos);
 extern u8 lbl_800EFBA4[16]; // sound volumes
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
@@ -2667,9 +2668,181 @@ void fn_8005C830(SceneTask* task, s32 port, s32 slot) {
 #endif
 
 // .text:0x8005CCE4 size:0x1130
+// NONMATCHING 75%: the original recomputes the _06-dependent object bases per access; index sums fold differently
+#if NONMATCHING
 void fn_8005CCE4(SceneTask* task, s32 port) {
-    return;
+    u8* state = &lbl_803C66B0.steps[9][port + 1];
+    u8 prev;
+    s32 slot;
+    s8 slotPos;
+    s8 prevPos;
+    s32 i;
+    CharacterStats* players;
+    CharacterStats* player;
+    RosterSlot* rs;
+    u8 flag;
+    s32 a;
+    s32 b;
+
+    if (*state != 0) {
+        return;
+    }
+    prev = lbl_803297E0._CF3E[port];
+    slot = lbl_803297E0.selected[port] - 1;
+    slotPos = lbl_80354720[port][slot].pos;
+    prevPos = lbl_80354720[port][prev].pos;
+    players = inMemRoster[port];
+    if (lbl_803297E0._CF52[port] == 0) {
+        if (slot != prev) {
+            TASK_OBJ(task, prev + port * 9 + 0x1C)->_5C = 10 << 16;
+            TASK_OBJ(task, prev + port * 9 + 0x1C)->_68 = 4;
+        }
+        TASK_OBJ(task, prev + port * 9 + 0x40)->_68 = 4;
+        fn_800363D8(task, slot + port * 9 + 0x40, 1, 0x83, players[slot].stats.CharID);
+        fn_800363D8(task, prev + port * 9 + 0x40, 1, 0x83, players[prev].stats.CharID);
+        TASK_OBJ(task, slot + port * 9 + 0xD0)->_5C = players[slot].stats.CharacterClass << 16;
+        TASK_OBJ(task, prev + port * 9 + 0xD0)->_5C = players[prev].stats.CharacterClass << 16;
+        TASK_OBJ(task, slot + port * 9 + 0xAC)->_5C = (players[slot].stats.BattingStance + players[slot].stats.FieldingArm * 2) << 16;
+        TASK_OBJ(task, prev + port * 9 + 0xAC)->_5C = (players[prev].stats.BattingStance + players[prev].stats.FieldingArm * 2) << 16;
+        player = players;
+        for (i = 0; i < 9; i++, player++) {
+            a = g_d_GameSettings._06 != 2 ? port * 9 + 0x76 : 0x7E;
+            b = g_d_GameSettings._06 != 2 ? port * 9 + 0x88 : 0x87;
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+            } else {
+                flag = lbl_8034E9A0._489B[port][i];
+            }
+            if (flag != 0) {
+                TASK_OBJ(task, a + i)->flags |= 2;
+                TASK_OBJ(task, a + i)->_68 = 1;
+                TASK_OBJ(task, b + i)->flags |= 2;
+                TASK_OBJ(task, b + i)->_5C = 15 << 16;
+                TASK_OBJ(task, b + i)->_68 = 1;
+            } else if (lbl_80361B20[player->stats.CharID] != 0 && g_d_GameSettings.GameModeSelected != 5) {
+                TASK_OBJ(task, a + i)->flags |= 2;
+                TASK_OBJ(task, a + i)->_68 = 1;
+                TASK_OBJ(task, b + i)->flags |= 2;
+                TASK_OBJ(task, b + i)->_5C = 0;
+                TASK_OBJ(task, b + i)->_68 = 0;
+            } else {
+                TASK_OBJ(task, a + i)->flags &= ~2;
+                TASK_OBJ(task, b + i)->flags &= ~2;
+            }
+            if (g_d_GameSettings._06 != 2) {
+                TASK_OBJ(task, i + port * 9 + 0x64)->flags &= ~2;
+            } else {
+                TASK_OBJ(task, i + 0x75)->flags &= ~2;
+            }
+        }
+        TASK_OBJ(task, slot + port * 9 + 0x64)->flags |= 2;
+        TASK_OBJ(task, slot + port * 9 + 0x64)->_64 = 0x2A;
+        TASK_OBJ(task, slot + port * 9 + 0x64)->_68 = 1;
+        fn_8005C830(task, port, slot);
+    } else {
+        if (g_d_GameSettings._06 != 2) {
+            fn_800363D8(task, prevPos + port * 9 + 0x10A, 1, 0x83, players[prev].stats.CharID);
+            fn_800363D8(task, slotPos + port * 9 + 0x10A, 1, 0x83, players[slot].stats.CharID);
+            TASK_OBJ(task, slotPos + port * 9 + 0x10A)->_68 = 4;
+            TASK_OBJ(task, slotPos + port * 9 + 0xF8)->_68 = 4;
+            TASK_OBJ(task, prevPos + port * 9 + 0x10A)->_68 = 1;
+            TASK_OBJ(task, prevPos + port * 9 + 0xF8)->_68 = 1;
+            rs = lbl_80354720[port];
+            player = players;
+            for (i = 0; i < 9; i++, rs++, player++) {
+                s8 pos = rs->pos;
+                a = g_d_GameSettings._06 != 2 ? port * 9 + 0x140 : 0x3E;
+                b = g_d_GameSettings._06 != 2 ? port * 9 + 0x152 : 0x47;
+                if (g_d_GameSettings.GameModeSelected == 5) {
+                    flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                } else {
+                    flag = lbl_8034E9A0._489B[port][i];
+                }
+                if (flag != 0) {
+                    TASK_OBJ(task, a + pos)->flags |= 2;
+                    TASK_OBJ(task, a + pos)->_68 = 1;
+                    TASK_OBJ(task, b + pos)->flags |= 2;
+                    TASK_OBJ(task, b + pos)->_5C = 15 << 16;
+                    TASK_OBJ(task, b + pos)->_68 = 1;
+                } else if (lbl_80361B20[player->stats.CharID] != 0 && g_d_GameSettings.GameModeSelected != 5) {
+                    TASK_OBJ(task, a + pos)->flags |= 2;
+                    TASK_OBJ(task, a + pos)->_68 = 1;
+                    TASK_OBJ(task, b + pos)->flags |= 2;
+                    TASK_OBJ(task, b + pos)->_5C = 0;
+                    TASK_OBJ(task, b + pos)->_68 = 0;
+                } else {
+                    TASK_OBJ(task, a + pos)->flags &= ~2;
+                    TASK_OBJ(task, b + pos)->flags &= ~2;
+                }
+                TASK_OBJ(task, i + port * 9 + 0x12E)->flags &= ~2;
+            }
+            TASK_OBJ(task, prevPos + port * 9 + 0x12E)->flags |= 2;
+            TASK_OBJ(task, prevPos + port * 9 + 0x12E)->_64 = 0x2A;
+            TASK_OBJ(task, prevPos + port * 9 + 0x12E)->_68 = 1;
+        } else {
+            fn_800363D8(task, prevPos + 0x23, 1, 0x83, players[prev].stats.CharID);
+            fn_800363D8(task, slotPos + 0x23, 1, 0x83, players[slot].stats.CharID);
+            TASK_OBJ(task, slotPos + 0x23)->_68 = 4;
+            TASK_OBJ(task, slotPos + 0x1A)->_68 = 4;
+            TASK_OBJ(task, prevPos + 0x23)->_68 = 1;
+            TASK_OBJ(task, prevPos + 0x1A)->_68 = 1;
+            rs = lbl_80354720[port];
+            player = players;
+            for (i = 0; i < 9; i++, rs++, player++) {
+                s8 pos = rs->pos;
+                if (g_d_GameSettings.GameModeSelected == 5) {
+                    flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                } else {
+                    flag = lbl_8034E9A0._489B[port][i];
+                }
+                if (flag != 0 && (port != 1 || g_d_GameSettings.GameModeSelected != 5)) {
+                    TASK_OBJ(task, pos + 0x3E)->flags |= 2;
+                    TASK_OBJ(task, pos + 0x3E)->_68 = 1;
+                    TASK_OBJ(task, pos + 0x47)->flags |= 2;
+                    TASK_OBJ(task, pos + 0x47)->_5C = 15 << 16;
+                    TASK_OBJ(task, pos + 0x47)->_68 = 1;
+                    TASK_OBJ(task, i + 0x7E)->flags |= 2;
+                    TASK_OBJ(task, i + 0x7E)->_68 = 1;
+                    TASK_OBJ(task, i + 0x87)->flags |= 2;
+                    TASK_OBJ(task, i + 0x87)->_5C = 15 << 16;
+                    TASK_OBJ(task, i + 0x87)->_68 = 1;
+                } else if (lbl_80361B20[player->stats.CharID] != 0 && g_d_GameSettings.GameModeSelected != 5) {
+                    TASK_OBJ(task, pos + 0x3E)->flags |= 2;
+                    TASK_OBJ(task, pos + 0x3E)->_68 = 1;
+                    TASK_OBJ(task, pos + 0x47)->flags |= 2;
+                    TASK_OBJ(task, pos + 0x47)->_5C = 0;
+                    TASK_OBJ(task, pos + 0x47)->_68 = 0;
+                    TASK_OBJ(task, i + 0x7E)->flags |= 2;
+                    TASK_OBJ(task, i + 0x7E)->_68 = 1;
+                    TASK_OBJ(task, i + 0x87)->flags |= 2;
+                    TASK_OBJ(task, i + 0x87)->_5C = 0;
+                    TASK_OBJ(task, i + 0x87)->_68 = 0;
+                } else {
+                    TASK_OBJ(task, pos + 0x3E)->flags &= ~2;
+                    TASK_OBJ(task, pos + 0x47)->flags &= ~2;
+                    a = g_d_GameSettings._06 != 2 ? port * 9 + 0x76 : 0x7E;
+                    TASK_OBJ(task, a + i)->flags &= ~2;
+                    b = g_d_GameSettings._06 != 2 ? port * 9 + 0x88 : 0x87;
+                    TASK_OBJ(task, b + i)->flags &= ~2;
+                }
+                TASK_OBJ(task, i + 0x35)->flags &= ~2;
+                TASK_OBJ(task, i + 0x75)->flags &= ~2;
+            }
+            TASK_OBJ(task, prev + 0x75)->flags |= 2;
+            TASK_OBJ(task, prev + 0x75)->_64 = 0x2A;
+            TASK_OBJ(task, prev + 0x75)->_68 = 1;
+            TASK_OBJ(task, prevPos + 0x35)->flags |= 2;
+            TASK_OBJ(task, prevPos + 0x35)->_64 = 0x2A;
+            TASK_OBJ(task, prevPos + 0x35)->_68 = 1;
+        }
+        fn_8005C830(task, port, prev);
+        lbl_803297E0.selected[port] = fn_80042598(port, lbl_80354720[port][prev].pos);
+    }
+    lbl_803297E0._CF3E[port] = 0xFF;
+    lbl_803C66B0.step[port] = 0;
+    *state = 2;
 }
+#endif
 
 // .text:0x8005DE14 size:0xBC4
 // NONMATCHING 85%: object index sums fold differently; registers differ
