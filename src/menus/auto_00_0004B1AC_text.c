@@ -4,7 +4,7 @@
 #include "Dolphin/GX.h"
 extern void fn_2_4906C(void);
 
-extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
+extern void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
 
 extern void fn_2_52690(void);
 extern u8 lbl_8034E9A0[];
@@ -688,7 +688,8 @@ typedef struct {
     u8 padD;
     u8 bE;
     s8 bF;
-    u8 pad10[2];
+    s8 b10;
+    u8 pad11;
     u16 w12;
     u8 b14;
     u8 pad15[2];
@@ -737,7 +738,8 @@ void fn_2_520A4(void) {
 }
 
 typedef struct {
-    u8 pad[0x54];
+    u8 pad[0x50];
+    s32 w50;
     u32 w54;
 } BssF410;
 extern BssF410 lbl_2_bss_F410;
@@ -1881,4 +1883,89 @@ void fn_2_54474(void) {
             entry->_14 = 0;
         }
     }
+}
+
+#include "musyx/musyx.h"
+
+extern u8 lbl_800EFBA4[];
+
+// Pad buttons copied from lbl_8034E9A0 + 0x472C.
+typedef struct MenuPadCopy {
+    u16 held;
+    u16 down;
+    u16 repeat;
+} MenuPadCopy;
+
+// fn_2_52260, size:0x3E8
+void fn_2_52260(void) {
+    s32 sel = lbl_2_bss_F410.w50;
+    MenuPadCopy pad;
+    memset(&pad, 0, sizeof(pad));
+    pad.held = *(u16*)(lbl_8034E9A0 + 0x472C); // TODO type
+    pad.down = *(u16*)(lbl_8034E9A0 + 0x472E);
+    pad.repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
+    if (pad.down & 8) {
+        if (--sel < 0) {
+            sel = 2;
+        }
+        if (lbl_2_bss_33FBCC.bF != -1 && sel == lbl_8034E9A0[0x4754]) {
+            if (--sel < 0) {
+                sel = 2;
+            }
+        }
+        lbl_2_bss_33FBCC.b17 = 0x4C;
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else if (pad.down & 4) {
+        if (++sel == 3) {
+            sel = 0;
+        }
+        if (lbl_2_bss_33FBCC.bF != -1 && sel == lbl_8034E9A0[0x4754]) {
+            if (++sel == 3) {
+                sel = 0;
+            }
+        }
+        lbl_2_bss_33FBCC.b17 = 0x4C;
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else if (pad.down & 0x100) {
+        lbl_8034E9A0[0x4754] = sel;
+        lbl_80361B20[0xF6] = sel;
+        if (lbl_8034E9A0[0x4756] == 0 && lbl_2_bss_33FBCC.bF == -1) {
+            lbl_2_bss_33FBCC.state = 0;
+            lbl_2_bss_F410.w54 = 0;
+            lbl_2_bss_9E08 = 6;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (lbl_8034E9A0[0x4756] == 1 || lbl_2_bss_33FBCC.bF != -1) {
+            if (lbl_2_bss_33FBCC.bF != -1) {
+                if (lbl_80354768[3].b[0x46 + sel] != 0) { // TODO type: what lives here // TODO type
+                    fn_8004A34C(lbl_2_bss_33FB4C, 0, 0x29, 0, 0);
+                    sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                    lbl_2_bss_9E08 = 7;
+                } else {
+                    fn_8003BF54(0, 0, 0, 0, 1, 1, 2, sel, 2);
+                    sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                    *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+                    lbl_2_bss_9E08 = 9;
+                }
+            } else {
+                fn_8004A34C(lbl_2_bss_33FB4C, 0, 0x1B, 0, 0);
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                lbl_2_bss_9E08 = 7;
+            }
+        }
+    } else if (pad.down & 0x200) {
+        if (lbl_2_bss_33FBCC.bF != -1) {
+            lbl_2_bss_33FBCC.b10 = lbl_2_bss_33FBCC.bF;
+            lbl_2_bss_33FBCC.bF = -1;
+            lbl_2_bss_9E08 = 6;
+            lbl_2_bss_33FBCC.b17 = 0x4E;
+            lbl_803C50E8[0x52] = 0;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        } else {
+            lbl_2_bss_33FBCC.b17 = 0x4A;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            lbl_2_bss_33FBCC.bF = -1;
+            lbl_2_bss_9E08 = 0xE;
+        }
+    }
+    lbl_2_bss_F410.w50 = sel;
 }
