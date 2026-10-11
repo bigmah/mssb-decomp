@@ -966,7 +966,7 @@ void fn_800ACCE8(void) {
 
 // .text:0x800ACD44 size:0x20
 void fn_800ACD44(void) {
-    return;
+    CARDInit();
 }
 
 // .text:0x800ACD64 size:0x1B0
