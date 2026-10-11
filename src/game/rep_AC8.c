@@ -471,7 +471,7 @@ void fn_3_27860(void) {
 }
 
 // .text:0x00027D68 size:0x28C mapped:0x80666DFC
-// NONMATCHING 90%: float regalloc in the distance calc; the d < range test branches the other way (blt into the hit block)
+// NONMATCHING 92%: registers only; the loop-invariant height window lo/hi gets f5/f4 instead of f0/f1, shifting every float reg
 #if NONMATCHING
 int fn_3_27D68(int i) {
     u8* f = g_Fielders + i * 0x268;
@@ -481,51 +481,48 @@ int fn_3_27D68(int i) {
     u8* pt = g_Ball + 0x10;
     int k;
     int n;
-    f32 dx;
-    f32 dz;
     f32 d;
     for (k = 1, n = 10; n != 0; pt += 16, k++, n--) {
         if (*(f32*)(pt + 0x360) < *(f32*)(f + 0x70) && *(f32*)(pt + 0x358) > lo && *(f32*)(pt + 0x358) < hi) {
-            dx = *(f32*)f - *(f32*)(pt + 0x354);
-            dz = *(f32*)(f + 8) - *(f32*)(pt + 0x35C);
-            dx = dx * dx;
-            dz = dz * dz;
-            d = dx + dz;
+            d = (*(f32*)f - *(f32*)(pt + 0x354)) * (*(f32*)f - *(f32*)(pt + 0x354)) +
+                (*(f32*)(f + 8) - *(f32*)(pt + 0x35C)) * (*(f32*)(f + 8) - *(f32*)(pt + 0x35C));
             SQRT_L(d);
             if (d < *(f32*)(f + 0xE8)) {
-                if (*(f32*)(g_Ball + k * 16 + 0x370) < *(f32*)(f + 0x70)) {
-                    k -= 2;
-                } else if (*(f32*)(g_Ball + k * 16 + 0x380) < *(f32*)(f + 0x70)) {
-                    k -= 1;
-                }
-                if (k < 0) {
-                    k = 0;
-                }
-                *(s16*)(f + 0x24C) = k;
-                *(s16*)(f + 0x24E) = 0;
-                f[0x252] = 5;
-                f[0x253] = 0;
-                f[0x254] = 0;
-                f[0x255] = 0;
-                f[0x25B] = 0;
-                f[0x259] = 0;
-                f[0x25C] = 0;
-                f[0x25D] = 0;
-                f[0x25E] = 0;
-                f[0x25F] = 0;
-                f[0x264] = 0;
-                f[0x260] = 0;
-                if (k < *(s16*)(g_Ball + 0x1B60)) {
-                    f[0x264] = 1;
-                }
-                g_Ball[0x1BF0] = 0;
-                fn_3_1AE44(3, 0, *(f32*)(g_Ball + k * 16 + 0x354), *(f32*)(g_Ball + k * 16 + 0x358),
-                           *(f32*)(g_Ball + k * 16 + 0x35C));
-                return 1;
+                goto found;
             }
         }
     }
     return 0;
+found:
+    if (*(f32*)(g_Ball + k * 16 + 0x370) < *(f32*)(f + 0x70)) {
+        k -= 2;
+    } else if (*(f32*)(g_Ball + k * 16 + 0x380) < *(f32*)(f + 0x70)) {
+        k -= 1;
+    }
+    if (k < 0) {
+        k = 0;
+    }
+    *(s16*)(f + 0x24C) = k;
+    *(s16*)(f + 0x24E) = 0;
+    f[0x252] = 5;
+    f[0x253] = 0;
+    f[0x254] = 0;
+    f[0x255] = 0;
+    f[0x25B] = 0;
+    f[0x259] = 0;
+    f[0x25C] = 0;
+    f[0x25D] = 0;
+    f[0x25E] = 0;
+    f[0x25F] = 0;
+    f[0x264] = 0;
+    f[0x260] = 0;
+    if (k < *(s16*)(g_Ball + 0x1B60)) {
+        f[0x264] = 1;
+    }
+    g_Ball[0x1BF0] = 0;
+    fn_3_1AE44(3, 0, *(f32*)(g_Ball + k * 16 + 0x354), *(f32*)(g_Ball + k * 16 + 0x358),
+               *(f32*)(g_Ball + k * 16 + 0x35C));
+    return 1;
 }
 #endif
 
