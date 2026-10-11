@@ -58,5 +58,6 @@ void fn_800090B4(void);
 void fn_80009144(void);
 void fn_800097A0(void);
 void interpolatePointsUnknown(s32 index, BezierPoint* points, u32 first, u32 last);
+void BezierInterpolate(f32 t, BezierPoint* out, BezierPoint* p0, BezierPoint* p1, BezierPoint* p2, BezierPoint* p3);
 
 #endif

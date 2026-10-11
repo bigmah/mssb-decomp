@@ -361,10 +361,22 @@ void interpolatePointsUnknown(s32 i, BezierPoint* pts, u32 first, u32 last) {
     }
 }
 
+// NONMATCHING 90%: float register allocation only (constants/temps in different fN)
 // .text:0x8000A00C size:0x88
-void BezierInterpolate(void) {
-    return;
+#if NONMATCHING
+void BezierInterpolate(f32 t, BezierPoint* out, BezierPoint* p0, BezierPoint* p1, BezierPoint* p2, BezierPoint* p3) {
+    f32 b0, b1, b2, b3;
+    f32 t2 = t * t;
+    f32 t3 = t2 * t;
+
+    b0 = -t3 + lbl_803CC410 * t2 + lbl_803CC414 * t + lbl_803CC418;
+    b1 = lbl_803CC410 * t3 + lbl_803CC41C * t2 + lbl_803CC410 * t;
+    b2 = lbl_803CC414 * t3 + lbl_803CC410 * t2;
+    b3 = t3;
+    out->x = p0->x * b0 + p1->x * b1 + p2->x * b2 + b3 * p3->x;
+    out->y = p0->y * b0 + p1->y * b1 + p2->y * b2 + b3 * p3->y;
 }
+#endif
 
 // .text:0x8000A094 size:0x18
 void fn_8000A094(void) {
