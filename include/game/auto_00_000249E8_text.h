@@ -18,10 +18,25 @@ typedef struct GameActorView {
     /*0x279*/ u8 flags;
 } GameActorView;
 
+typedef struct StadiumPartView {
+    /*0x00*/ u8 active;
+    /*0x01*/ u8 _01[0x28 - 0x1];
+} StadiumPartView; // size: 0x28
+
+// Stadium object (lbl_8036E548.stadium, only the fields used here).
+typedef struct StadiumObjView {
+    /*0x000*/ u8 _000[0xC6];
+    /*0x0C6*/ u8 _0C6;
+    /*0x0C7*/ u8 _0C7[0x2CE - 0xC7];
+    /*0x2CE*/ StadiumPartView parts[4];
+} StadiumObjView;
+
 // Actor manager lbl_8036E548 (see ActorManager in main/file_80026134.h).
 typedef struct ActorMgrView {
     /*0x0000*/ u8 _0000[0x2C50];
     /*0x2C50*/ GameActorView* actors[13]; // 0-8 fielders, 9-12 batter and runners
+    /*0x2C84*/ u8 _2C84[0x2D90 - 0x2C84];
+    /*0x2D90*/ StadiumObjView* stadium;
 } ActorMgrView;
 extern ActorMgrView lbl_8036E548;
 
@@ -81,6 +96,20 @@ typedef struct SceneWork {
     /*0x280*/ u8 _280;
 } SceneWork;
 extern SceneWork* lbl_3_common_bss_1323C;
+
+// Effect/state block lbl_3_common_bss_32724 (size 0x124, only the fields used here).
+typedef struct Unk32724 {
+    /*0x00*/ u8 _00[0x90];
+    /*0x90*/ s16 _90;
+    /*0x92*/ u8 _92[0xC8 - 0x92];
+    /*0xC8*/ u8 _C8;
+    /*0xC9*/ u8 _C9;
+    /*0xCA*/ u8 _CA;
+    /*0xCB*/ u8 _CB[0xD4 - 0xCB];
+    /*0xD4*/ u8 _D4;
+    /*0xD5*/ u8 _D5[0x124 - 0xD5];
+} Unk32724; // size: 0x124
+extern Unk32724 lbl_3_common_bss_32724;
 
 void fn_3_249E8(s32 idx);
 void fn_3_24ADC(s32 idx, s32 queued);

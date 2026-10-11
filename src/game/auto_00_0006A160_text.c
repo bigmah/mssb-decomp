@@ -52,5 +52,12 @@ void fn_3_6A258(void) {
 
 // .text:0x0006A25C size:0x48 mapped:0x806A92F0
 void fn_3_6A25C(void) {
-    return;
+    s32 i;
+
+    if (lbl_8036E548.stadium != NULL) {
+        for (i = 0; i < 4; i++) {
+            lbl_8036E548.stadium->parts[i].active = 0;
+        }
+    }
+    lbl_3_common_bss_32724._D4 = 0;
 }
