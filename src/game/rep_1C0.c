@@ -5,6 +5,7 @@
 #include "Dolphin/mtx.h"
 #include "static/Camera.h"
 #include "main/file_8000F150.h"
+#include "game/UnknownHomes_Game.h"
 #pragma dont_inline on
 
 typedef struct { u8 b[14]; } Tbl14;
@@ -167,7 +168,7 @@ extern const f32 lbl_3_rodata_500; // 8.0f
 // .text:0x00003904 size:0x2E4 mapped:0x80642998
 // NONMATCHING 86%: scheduling of the inlined wide-glyph decode (i kept in r0 in the original)
 #if NONMATCHING
-void fn_3_3904(s16 x, s16 y, s32 msg, GXColor* color0, GXColor* color1, u8 flags) {
+void fn_3_3904(s16 x, s16 y, s32 msg, GXColor color0, GXColor color1, u8 flags) {
     GXTexObj tex;
     s16 sx;
     s16 sy;
@@ -212,7 +213,7 @@ void fn_3_3904(s16 x, s16 y, s32 msg, GXColor* color0, GXColor* color1, u8 flags
             height = lbl_3_rodata_4FC;
         }
         GXInitTexObjLOD(&tex, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
-        fn_3_42CC(&tex, x, y, x + advance, y + height, sx, sy, sw, sh, *color0, *color1, flags & 1);
+        fn_3_42CC(&tex, x, y, x + advance, y + height, sx, sy, sw, sh, color0, color1, flags & 1);
         x += advance;
     }
 }
@@ -363,18 +364,90 @@ void fn_3_4984(void) {
     GXSetCurrentMtx(0);
 }
 
+extern GameScores g_Scores;
+
+// Draws the scoreboard numbers of `stadium`: runs per inning for both teams
+// and the two totals. From extra innings on, the board starts at the inning
+// after the stadium's last regular column.
 // .text:0x00004A38 size:0x558 mapped:0x80643ACC
-void fn_3_4A38(u8 a) {
-    return;
+// NONMATCHING 73%: the original copies each local table from its own rodata symbol (ours share one
+// pooled base) and lays out the stack differently; control flow and calls match.
+#if NONMATCHING
+void fn_3_4A38(u8 stadium) {
+    GXColor colors[7][2] = {
+        {{0x66, 0x66, 0x66, 0xFF}, {0x00, 0x00, 0x00, 0xFF}}, {{0x66, 0x66, 0x66, 0xFF}, {0x00, 0x00, 0x00, 0xFF}},
+        {{0x66, 0x66, 0x66, 0xFF}, {0x00, 0x00, 0x00, 0xFF}}, {{0x66, 0x66, 0x66, 0xFF}, {0x00, 0x00, 0x00, 0xFF}},
+        {{0x66, 0x66, 0x66, 0xFF}, {0x00, 0x00, 0x00, 0xFF}}, {{0x66, 0x66, 0x66, 0xFF}, {0x00, 0x00, 0x00, 0xFF}},
+        {{0x66, 0x66, 0x66, 0xFF}, {0x00, 0x00, 0x00, 0xFF}},
+    };
+    s16 lastColumn[7] = {10, 9, 0, 0, 0, 0, 0};
+    s16 awayPos[7][2] = {{28, 192}, {18, 138}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+    s16 homePos[7][2] = {{28, 214}, {18, 159}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+    s16 awayTotalPos[7][2] = {{250, 192}, {180, 138}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+    s16 homeTotalPos[7][2] = {{250, 214}, {180, 159}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+    u8 totalWidth[7] = {1, 1, 0, 0, 0, 0, 0};
+    s16 spacing[7][2] = {{22, 18}, {18, 18}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+    GXTexObj tex;
+    s32 first;
+    s32 end;
+    s32 inning;
+    s16 xoff;
+    u8 boxed;
+
+    GXInitTexObjLOD(&tex, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    first = 1;
+    if (g_Scores.inning >= lastColumn[stadium] + 1) {
+        first = lastColumn[stadium] + 1;
+    }
+
+    end = g_Scores.inning;
+    xoff = 0;
+    for (inning = first; inning <= end; inning++) {
+        if (inning == g_Scores.inning && g_Scores.team[0].runs[inning] == 0 && g_Scores._AD == 0 &&
+            g_GameLogic.EventTriggers_EndOfGame == 0) {
+            break;
+        }
+        fn_3_4F90(&tex, awayPos[stadium][0] + xoff, awayPos[stadium][1], g_Scores.team[0].runs[inning], 1,
+                  colors[stadium][0], colors[stadium][1], 0);
+        xoff += spacing[stadium][0];
+    }
+    fn_3_4F90(&tex, awayTotalPos[stadium][0], awayTotalPos[stadium][1], g_Scores.team[0].runs[0],
+              totalWidth[stadium], colors[stadium][0], colors[stadium][1], 0);
+
+    if (g_GameLogic.EventTriggers_EndOfGame == 0) {
+        end = g_Scores.inning + g_Scores._AD;
+    } else {
+        end = g_Scores.maxInnings + 1;
+    }
+    xoff = 0;
+    for (inning = first; inning < end; inning++) {
+        // From the last regular inning on, a winning home score is drawn boxed.
+        if (inning >= g_Scores.maxInnings && g_Scores.team[1].runs[0] > g_Scores.team[0].runs[0]) {
+            boxed = 1;
+        } else {
+            boxed = 0;
+        }
+        if (inning == g_Scores.inning && g_Scores.team[1].runs[inning] == 0 && !boxed &&
+            g_GameLogic.EventTriggers_EndOfGame == 0) {
+            break;
+        }
+        fn_3_4F90(&tex, homePos[stadium][0] + xoff, homePos[stadium][1], g_Scores.team[1].runs[inning], 1,
+                  colors[stadium][0], colors[stadium][1], boxed);
+        xoff += spacing[stadium][0];
+    }
+    fn_3_4F90(&tex, homeTotalPos[stadium][0], homeTotalPos[stadium][1], g_Scores.team[1].runs[0],
+              totalWidth[stadium], colors[stadium][0], colors[stadium][1], 0);
 }
 
 // Draws `value` (clamped to 99) right-aligned in a field of `width` 16-pixel
 // cells, using the digit messages 0-9. `boxed` first draws a box in color0
 // in front of the digits.
+#endif
+
 // .text:0x00004F90 size:0x450 mapped:0x80644024
 // NONMATCHING 95%: saved-register allocation; right/bottom kept unextended in the original
 #if NONMATCHING
-void fn_3_4F90(GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor* color0, GXColor* color1, u8 boxed) {
+void fn_3_4F90(GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor color0, GXColor color1, u8 boxed) {
     u16** digitMsgs = lbl_80366B18.tables[0]->msgs;
     s16 digits;
     s16 cellW;
@@ -409,7 +482,7 @@ void fn_3_4F90(GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor* color0
     x = x + width * 16 - cellW;
     if (boxed) {
         GXClearVtxDesc();
-        GXSetTevColor(GX_TEVREG0, *color0);
+        GXSetTevColor(GX_TEVREG0, color0);
         GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
         GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
         GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0, GX_CC_C0);
@@ -441,7 +514,7 @@ void fn_3_4F90(GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor* color0
     count = digits;
     for (i = 0; i < count; i++) {
         DecodeGlyph(digitMsgs[(s16)(n % 10)], &sx, &sy, &sw, &sh, &page);
-        fn_3_42CC(tex, x, y, right, bottom, sx, sy, sw, sh, *color0, *color1, 0);
+        fn_3_42CC(tex, x, y, right, bottom, sx, sy, sw, sh, color0, color1, 0);
         right -= cellW;
         x -= cellW;
         n = n / 10;

@@ -13,14 +13,14 @@ void fn_3_35F0(void);
 void fn_3_3638(u8* obj);
 void fn_3_3818(void);
 void fn_3_38E8(StadiumDrawFn a);
-void fn_3_3904(s16 x, s16 y, s32 msg, GXColor* color0, GXColor* color1, u8 flags);
+void fn_3_3904(s16 x, s16 y, s32 msg, GXColor color0, GXColor color1, u8 flags);
 void fn_3_3BE8(void);
 void fn_3_3EE8(void);
 void fn_3_42CC(struct _GXTexObj* tex, s16 x0, s16 y0, s16 x1, s16 y1, s16 sx, s16 sy, s16 sw, s16 sh,
                GXColor color0, GXColor color1, u8 flags);
 void fn_3_4984(void);
 void fn_3_4A38(u8 a);
-void fn_3_4F90(struct _GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor* color0, GXColor* color1, u8 boxed);
+void fn_3_4F90(struct _GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor color0, GXColor color1, u8 boxed);
 void fn_3_53E0(u16* in, s16* a, s16* b, s16* c, s16* d, s16* e);
 void fn_3_5518(void);
 void fn_3_567C(void);
