@@ -212,7 +212,9 @@ void* fn_800A6900(void* arg) {
 
 // .text:0x800A6C80 size:0x90
 void fn_800A6C80(void) {
-    return;
+    CancelTransfer();
+    lbl_803C6CF8.remaining = 0;
+    lbl_803C6CF8.buffered = 0;
 }
 
 // .text:0x800A6D10 size:0x114
