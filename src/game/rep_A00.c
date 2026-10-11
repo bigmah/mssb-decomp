@@ -7,14 +7,19 @@
 #include "main/file_80069BDC.h"
 #include "main/file_80039AC0.h"
 #include "Dolphin/stl.h"
+#include "game/auto_00_000FBCD0_text.h"
+#include "game/auto_00_0006C854_text.h"
+#include "game/auto_00_0005985C_text.h"
+#include "game/rep_E08.h"
+#include "main/file_80011640.h"
 
 // Views declared here (other units have their own views of these objects).
-extern ActorMgrView lbl_8036E548;
 extern FielderView g_Fielders[];
 extern SceneWork* lbl_3_common_bss_1323C;
 extern GameScores g_Scores;
 extern ScreenFx lbl_803C5090;
 extern Unk2398Entry lbl_3_data_2398[];
+extern ARAMLoaderView lbl_803C6CF8;
 
 extern const f32 lbl_3_rodata_A50;
 extern const f32 lbl_3_rodata_A54; // 0.0f
@@ -30,6 +35,27 @@ f32 fn_3_9FEA8(f32 v);        // game/rep_1838.h: wrap angle
 
 #define SCENE lbl_3_common_bss_1323C
 #define FADE_TASK ((FadeTask*)lbl_803CC1B8)
+
+// Inline copy of fn_3_24DBC (auto_00_000249E8_text.c): clears the scene actors and starts scene mode `mode`.
+static inline void SceneReset(s32 mode) {
+    s32 i;
+
+    for (i = 0; i < 13; i++) {
+        SCENE->actorSetup[i] = -1;
+        memset(&SCENE->actors[i], 0, sizeof(SceneActorState));
+        SCENE->animSet[i] = 0;
+    }
+    fn_3_6714C(0);
+    SCENE->_25C = 1;
+    SCENE->_23C = 0;
+    SCENE->_27C = 0;
+    SCENE->mode = mode;
+    SCENE->_25F = 1;
+    SCENE->_27D = 0;
+    SCENE->busy = 0;
+    SCENE->_25A = 0;
+    SCENE->_280 = 1;
+}
 
 // .text:0x00021C90 size:0x154 mapped:0x80660D24
 void fn_3_21C90(void) {
@@ -123,11 +149,11 @@ void fn_3_21F14(void) {
 // .text:0x0002273C size:0xE0 mapped:0x806617D0
 s32 fn_3_2273C(void) {
     FielderView* f = g_Fielders;
-    GameActorView* p;
+    CharActor* p;
     s32 i;
     for (i = 0; i < 9; i++) {
         if (f->opponentIdx == 0) {
-            p = lbl_8036E548.actors[i];
+            p = lbl_8036E548.active[i];
             if (p == NULL) {
                 return 1;
             }
@@ -142,7 +168,7 @@ s32 fn_3_2273C(void) {
 
 // .text:0x0002281C size:0x34 mapped:0x806618B0
 s32 fn_3_2281C(s32 i) {
-    GameActorView* p = lbl_8036E548.actors[i];
+    CharActor* p = lbl_8036E548.active[i];
     if (p == NULL) {
         return 1;
     }
@@ -247,7 +273,51 @@ void fn_3_22C20(void) {
 
 // .text:0x000230D4 size:0x3E8 mapped:0x80662168
 void fn_3_230D4(void) {
-    return;
+    GameInitVariables* gs = &g_d_GameSettings;
+    GameControlsStruct* gl = &g_GameLogic;
+    s32 i;
+    switch (gl->_125) {
+    case 0:
+        if ((s32)lbl_803C6CF8.idle == 1) {
+            changeScene(1, 6);
+            fn_3_24630();
+            fn_3_FBD70();
+            fn_3_FBD58();
+            fn_3_5A6D4(0);
+        }
+        break;
+    case 1:
+        changeScene(1, 6);
+        SceneReset(1);
+        fn_3_FBDAC(0x6B);
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        gl->_125 = 2;
+        break;
+    case 2:
+        if (SCENE->_23C == 9) {
+            changeScene(1, 6);
+        }
+        if (SCENE->_23C < 0x7FFE) {
+            SCENE->_23C += 1;
+        } else {
+            SCENE->_23C = 0x7FFF;
+        }
+        for (i = 0; i < 13; i++) {
+            fn_8001D074(i, 1);
+        }
+        if (fn_3_6C938(1, 0x1100) != 0 && SCENE->_23C < SCENE->_23E - 7 && gs->GameModeSelected != 4
+            && g_GameLogic.FrameCountOfCurrentAtBat_Copy > 60) {
+            SCENE->_23C = SCENE->_23E - 8;
+            changeScene(3, 6);
+        }
+        if (SCENE->_23C == SCENE->_23E) {
+            fn_3_24630();
+            fn_3_FBD70();
+            fn_3_FBD58();
+            fn_3_5A6D4(0);
+        }
+        break;
+    }
 }
 
 // .text:0x000234BC size:0x3D4 mapped:0x80662550
@@ -301,7 +371,7 @@ void fn_3_24630(void) {
 void fn_3_24708(void) {
     Mtx m;
     Vec v;
-    GameActorView* a;
+    CharActor* a;
     SceneActorState* st;
     InMemRunnerType* r;
     s32 i;
@@ -311,7 +381,7 @@ void fn_3_24708(void) {
     i = 0;
 
     do {
-        a = lbl_8036E548.actors[i];
+        a = lbl_8036E548.active[i];
         if (a != NULL && (st = &SCENE->actors[i])->moving == 1) {
             if ((s32)SCENE->_27F != 3 || !(st->_1C > a->_068)) {
                 if (i <= 8) {

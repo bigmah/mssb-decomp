@@ -10,6 +10,12 @@ typedef struct FadeTask {
     /*0x20*/ u16 alpha;
 } FadeTask;
 
+// View of the DVD/ARAM loader lbl_803C6CF8 (ARAMLoader in main/file_800A6870.h).
+typedef struct ARAMLoaderView {
+    /*0x000*/ u8 _000[0x715];
+    /*0x715*/ volatile u8 idle;
+} ARAMLoaderView;
+
 void fn_3_21C90(void);
 void fn_3_21DE4(void);
 void fn_3_21F14(void);
