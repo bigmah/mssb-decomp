@@ -33,8 +33,53 @@ void fn_3_6D6D4(int idx) {
 }
 
 // .text:0x0006D964 size:0x4FC mapped:0x806AC9F8
-void fn_3_6D964(void) {
-    return;
+// setInMemRunnerConstants: fills g_Runners[runnerIdx] from the batting team's roster entry.
+extern u8 lbl_3_data_775C; // delay before starting to run
+
+void fn_3_6D964(int rosterID, int runnerIdx) {
+    int index;
+    CharacterStats* char_stats = &inMemRoster[g_GameLogic.teamBatting][rosterID];
+    InMemRunnerType* r = &g_Runners[runnerIdx];
+    ChallengeTrackingStruct* starMissions = starMissionCompletionTracker;
+
+    if (g_d_GameSettings.GameModeSelected == GAME_TYPE_PRACTICE) {
+        if (g_Practice.practiceType_2 == 0 || g_Practice.practiceType_2 == 1 || g_Practice.practiceType_2 == 2 ||
+            g_Practice.practiceType_2 == 3) {
+            char_stats = &inMemRoster[g_GameLogic.teamBatting][rosterID];
+        }
+    } else if (g_d_GameSettings.minigamesEnabled) {
+        char_stats = &inMemRoster[0][rosterID];
+    }
+
+    r->rosterID = rosterID;
+    r->charID = char_stats->stats.CharID;
+    r->speed = char_stats->stats.Speed;
+    r->weight = char_stats->stats.Weight;
+    r->delayBeforeStartingToRun = lbl_3_data_775C;
+    r->aIStrength0Special3Weak = g_GameLogic.AIDifficulty0Special3Weak[g_GameLogic.homeTeamBattingInd_fieldingTeam];
+    r->characterClass = char_stats->stats.CharacterClass;
+    if (r->speed > 200) {
+        r->speed = 200;
+    }
+
+    if (!g_d_GameSettings.exhibitionMatchInd) {
+        r->unused_starMissionCharID = -1;
+        for (index = 0; index < 54; index++) {
+            if ((r->charID == index) && (starMissions[index].variantClassification <= 3)) {
+                r->unused_starMissionCharID = index;
+                break;
+            }
+        }
+    }
+
+    if (g_d_GameSettings.minigamesEnabled) {
+        s8 idx = g_Minigame.minigameControlStruct[0].characterIndex[rosterID];
+        if (g_Minigame.minigameControlStruct[0].battingHandedness[idx] != 0) {
+            r->aIStrength0Special3Weak = aILevel[g_Minigame.minigameControlStruct[0].aIStrength[idx]];
+        }
+    }
+
+    fn_3_6D6D4(runnerIdx);
 }
 
 // .text:0x0006DE60 size:0x374 mapped:0x806ACEF4

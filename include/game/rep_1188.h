@@ -4,7 +4,7 @@
 #include "mssbTypes.h"
 
 void fn_3_6D6D4(int idx);
-void fn_3_6D964(void);
+void fn_3_6D964(int rosterID, int runnerIdx);
 void setInMemBatterConstants(int rosterID);
 u8 fn_3_6E1D4(u8 v);
 void fn_3_6E24C(void);
