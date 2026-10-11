@@ -48,6 +48,35 @@ void fn_1_9EA0(u8 group, s32 (*callback)(u8* state)) {
     ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
 }
 
+// .text:0x00009F04 size:0x120
+void fn_1_9F04(void) {
+    ChSoundLoadTask* task = lbl_803CC1B8;
+    ChTaskHeader* parent;
+
+    switch (task->step) {
+    case 0:
+        // TODO port: ARAMTransfer returns the destination pointer (declared s32 in UnknownHomes_Static.h)
+        lbl_800EF808.groups[task->group] = (struct SoundGroupData*)ARAMTransfer(&lbl_1_data_196C[task->group], 0, 1, 0);
+        task->step = 1;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8._715 != 1) {
+            break;
+        }
+        fn_80021980(lbl_800EF808.groups[task->group]);
+        task->step = 2;
+        task->callbackState = 0;
+    case 2:
+        if (task->callback(&task->callbackState) == 0) {
+            fn_80021954(&lbl_800EF808.groups[task->group]);
+            parent = task->h.parent;
+            parent->result = 1;
+            fn_800B0A14_removeQueue(parent);
+        }
+        break;
+    }
+}
+
 // .text:0x0000A1F4 size:0x1C
 void fn_1_A1F4(ChListCursor* list, ChListItem* items, s32 count, s32 visible) {
     list->items = items;
