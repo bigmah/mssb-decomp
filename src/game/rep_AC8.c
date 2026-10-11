@@ -2829,7 +2829,7 @@ void fn_3_48A54(void) {
 }
 
 // .text:0x000494F4 size:0x4D0 mapped:0x80688588
-void fn_3_494F4(void) {
+void fn_3_494F4(int i) {
     return;
 }
 
@@ -2898,8 +2898,49 @@ void fn_3_499C4(int i, f32* out) {
 
 
 // .text:0x00049C18 size:0x290 mapped:0x80688CAC
-void fn_3_49C18(void) {
-    return;
+void fn_3_49C18(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 out[3];
+    f32 dz, dx, d, ox, oz;
+    switch (fn_3_53130(i)) {
+    case 2:
+        return;
+    default:
+        if (f[0x1FF] == 0) {
+            fn_3_499C4(i, out);
+            ox = out[0];
+            oz = out[2];
+            *(f32*)(f + 0x14) = ox;
+            *(f32*)(f + 0x1C) = oz;
+            dx = ox - *(f32*)f;
+            dz = oz - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                d = dx * dx + dz * dz;
+                SQRT_L(d);
+                *(f32*)(f + 0x68) = d;
+            }
+            f[0x1D9] = 1;
+            f[0x1FF] = 1;
+        }
+        if (f[0x1FF] == 1) {
+            ((void (*)(int))fn_3_526DC)(i);
+            fn_3_494F4(i);
+        }
+    case 1:
+        if (g_Ball[0x1BC9] != 0 && g_Ball[0x1BC9] != 3) {
+            SetFielderAct(i, 0xC, 0x60);
+            if (i <= 5) {
+                f[0x1D6] = 7;
+            } else {
+                f[0x1D6] = 6;
+            }
+        }
+        break;
+    }
 }
 
 typedef struct { u8 b[0x268]; } FldT;
