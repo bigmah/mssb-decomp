@@ -972,7 +972,7 @@ config.libs = [
             Object(NonMatching, "auto_00_0008E6A4_text", source="menus/auto_00_0008E6A4_text.c"),
             Object(NonMatching, "menus/rep_0788.c"),
             Object(NonMatching, "menus/rep_07F0.c"),
-            Object(NonMatching, "menus/rep_0840.c"),
+            Object(Matching, "menus/rep_0840.c"),
             Object(NonMatching, "menus/rep_0898.c"),
             Object(NonMatching, "menus/rep_08E8.c"),
             Object(NonMatching, "menus/rep_09B8.c"),
