@@ -35,4 +35,13 @@ void fn_3_EDD10(void);
 
 void fn_3_ECD48(void);
 
+void fn_3_EA340(void);
+void fn_3_EA454(void);
+void fn_3_EA8FC(void);
+void fn_3_EAEF4(void);
+void fn_3_EB6E0(void);
+void fn_3_EC014(void);
+void fn_3_EC804(void);
+void fn_3_ED0F4(void);
+
 #endif

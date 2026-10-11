@@ -136,7 +136,14 @@ typedef struct EaMinigame {
     /*0x190C*/ u8 turn;
     /*0x190D*/ u8 _190D[0x1921 - 0x190D];
     /*0x1921*/ u8 _1921;
-    /*0x1922*/ u8 _1922[0x1939 - 0x1922];
+    /*0x1922*/ u8 _1922[0x1927 - 0x1922];
+    /*0x1927*/ u8 reelStop[3];  // slot reels (fn_3_EC014)
+    /*0x192A*/ u8 reelPos[3];
+    /*0x192D*/ u8 reelResult;
+    /*0x192E*/ u8 reelTarget[3];
+    /*0x1931*/ u8 reelState[3];
+    /*0x1934*/ u8 _1934;
+    /*0x1935*/ u8 _1935[0x1939 - 0x1935];
     /*0x1939*/ u8 _1939;
     /*0x193A*/ u8 _193A[0x19A0 - 0x193A];
     /*0x19A0*/ u8 _19A0; // a score is still counting
@@ -144,7 +151,8 @@ typedef struct EaMinigame {
     /*0x19C6*/ s8 _19C6;
     /*0x19C7*/ u8 _19C7[0x19CD - 0x19C7];
     /*0x19CD*/ u8 _19CD;
-    /*0x19CE*/ u8 _19CE[0x1A2A - 0x19CE];
+    /*0x19CE*/ u8 _19CE;
+    /*0x19CF*/ u8 _19CF[0x1A2A - 0x19CF];
     /*0x1A2A*/ u8 game;  // indexes the per-game tables
     /*0x1A2B*/ u8 _1A2B;
     /*0x1A2C*/ u8 _1A2C[0x1A3C - 0x1A2C];
@@ -679,6 +687,216 @@ void fn_3_EAEF4(void) {
     if (sound != 0 && EA_MG._1939 == 0) {
         sndFXStartEx(0x1C0, lbl_800EFBA4[9], 0x3F, 0);
     }
+}
+#endif
+
+// Slot-reel task (fn_3_EC014); same header as EaTask.
+typedef struct EaReelTask {
+    /*0x00*/ u8 _00[0x14];
+    /*0x14*/ u16 baseIdx;
+    /*0x16*/ u8 _16[0x1C - 0x16];
+    /*0x1C*/ u16 state;
+    /*0x1E*/ u8 _1E[0x24 - 0x1E];
+    /*0x24*/ s32 voice; // looping reel sound, -1 when off
+} EaReelTask;
+
+extern u8 lbl_3_data_19988[];
+extern s16 lbl_3_data_189C4[][7]; // reel symbols
+extern u16 lbl_3_data_19B88[];    // symbol -> sprite frame
+extern s32 sndFXKeyOff(s32 voice);
+
+// .text:0x000EC014 size:0x7F0 mapped:0x8072B0A8
+// NONMATCHING 96%: animState == 2 tests compile to cntlzw in the original; register allocation
+#if NONMATCHING
+void fn_3_EC014(void) {
+    EaReelTask* task = (EaReelTask*)lbl_803CC1B8;
+    u32 i;
+    u32 n;
+    u32 stadium;
+    u8 vol;
+    s32 voice;
+    s32 sym;
+
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] == 8 || task->state == 7) {
+        if (task->state != 0 && task->voice != -1) {
+            sndFXKeyOff(task->voice);
+            sndFXCtrl(task->voice, 7, 0);
+            task->voice = -1;
+        }
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (EA_MG._19CE != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, lbl_3_data_19988);
+        i = 0;
+        do {
+            EA_MG.reelState[i] = 0;
+            i++;
+        } while (i < 3);
+        task->voice = -1;
+        task->state = 1;
+        break;
+    case 1:
+        if (EA_SPRITE(task, 0)->animState == 2 && EA_SPRITE(task, 0xC)->animState == 2) {
+            i = 0;
+            do {
+                EA_SPRITE(task, i + 1)->visible = 1;
+                i++;
+            } while (i < 3);
+            EA_SPRITE(task, 0xD)->visible = 1;
+            EA_SPRITE(task, 0xE)->visible = 1;
+            stadium = g_d_GameSettings.StadiumID;
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                vol = lbl_3_data_84B8[4];
+            } else {
+                vol = lbl_3_data_8404[stadium * 0x1E + 4];
+            }
+            voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 2, vol, 0x3F, 0);
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                vol = lbl_3_data_84B8[5];
+            } else {
+                vol = lbl_3_data_8404[stadium * 0x1E + 5];
+            }
+            sndFXCtrl(voice, 0x5B, vol);
+            task->voice = voice;
+            task->state = 2;
+        }
+        break;
+    case 2:
+        i = 0;
+        do {
+            if (EA_SPRITE(task, i + 1)->animState == 2) {
+                EA_SPRITE(task, i + 1)->frame = 0;
+                EA_MG.reelPos[i]++;
+                if (EA_MG.reelPos[i] >= 7) {
+                    EA_MG.reelPos[i] = 0;
+                }
+                switch (EA_MG.reelState[i]) {
+                case 0:
+                    if (EA_MG.reelStop[i] >= 1) {
+                        EA_SPRITE(task, i + 1)->anim = 0x1F;
+                        EA_MG.reelState[i] = 1;
+                    }
+                    break;
+                case 1:
+                    if (EA_MG.reelStop[i] >= 2 &&
+                        EA_MG.reelTarget[i] == lbl_3_data_189C4[i][(EA_MG.reelPos[i] + 1) % 7]) {
+                        EA_SPRITE(task, i + 1)->anim = 0x20;
+                        EA_MG.reelState[i] = 2;
+                    }
+                    break;
+                case 2:
+                    if (EA_MG.reelTarget[i] == lbl_3_data_189C4[i][EA_MG.reelPos[i]]) {
+                        EA_SPRITE(task, i + 1)->visible = 0;
+                        stadium = g_d_GameSettings.StadiumID;
+                        EA_MG.reelStop[i] = 3;
+                        if (g_d_GameSettings.GameModeSelected == 6) {
+                            vol = lbl_3_data_84B8[6];
+                        } else {
+                            vol = lbl_3_data_8404[stadium * 0x1E + 6];
+                        }
+                        voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 3, vol, 0x3F, 0);
+                        if (g_d_GameSettings.GameModeSelected == 6) {
+                            vol = lbl_3_data_84B8[7];
+                        } else {
+                            vol = lbl_3_data_8404[stadium * 0x1E + 7];
+                        }
+                        sndFXCtrl(voice, 0x5B, vol);
+                        if (i == 2) {
+                            sndFXKeyOff(task->voice);
+                            sndFXCtrl(task->voice, 7, 0);
+                            task->voice = -1;
+                        }
+                        EA_MG.reelState[i] = 3;
+                    }
+                    break;
+                }
+            }
+            i++;
+        } while (i < 3);
+        n = 0;
+        i = 0;
+        do {
+            if (EA_MG.reelState[i] == 3) {
+                n++;
+            }
+            i++;
+        } while (i < 3);
+        if (n >= 3) {
+            task->state = 3;
+        }
+        break;
+    case 3:
+        i = 0;
+        do {
+            EA_SPRITE(task, i + 5)->visible = 1;
+            i++;
+        } while (i < 3);
+        switch (EA_MG.reelResult) {
+        case 0:
+        case 3:
+        case 4:
+        case 5:
+            EA_MG._1934 = 1;
+            task->state = 4;
+            break;
+        case 1:
+        case 2:
+        case 6:
+        case 7:
+        case 8:
+            EA_MG._1934 = 2;
+            task->state = 8;
+            break;
+        }
+        break;
+    case 4:
+        if (EA_SPRITE(task, 5)->animState == 2) {
+            task->state = 5;
+        }
+        break;
+    case 5:
+        EA_SPRITE(task, 0)->visible = 4;
+        EA_SPRITE(task, 0xC)->visible = 4;
+        EA_SPRITE(task, 0xD)->visible = 4;
+        task->state = 6;
+        break;
+    case 6:
+        if ((EA_SPRITE(task, 0)->frame >> 16) == 0 && (EA_SPRITE(task, 0xC)->frame >> 16) == 0 &&
+            (EA_SPRITE(task, 0xD)->frame >> 16) == 0) {
+            switch (EA_MG.reelResult) {
+            case 0:
+                fn_800B0A5C_insertQueue(fn_3_ECD48, 2);
+                break;
+            case 3:
+                ((EaTask*)fn_800B0A5C_insertQueue(fn_3_EC804, 2))->param = 0;
+                break;
+            case 4:
+                ((EaTask*)fn_800B0A5C_insertQueue(fn_3_EC804, 2))->param = 1;
+                break;
+            case 5:
+                fn_800B0A5C_insertQueue(fn_3_ECBB0, 2);
+                break;
+            }
+            task->state = 7;
+        }
+        break;
+    }
+    i = 0;
+    do {
+        sym = lbl_3_data_189C4[i][EA_MG.reelPos[i]];
+        fn_800363D8(task, i + 5, 1, 0x21, lbl_3_data_19B88[sym]);
+        fn_800363D8(task, i + 5, 2, 0x22, lbl_3_data_19B88[sym]);
+        sym = lbl_3_data_189C4[i][(EA_MG.reelPos[i] + 1) % 7];
+        fn_800363D8(task, i + 8, 1, 0x21, lbl_3_data_19B88[sym]);
+        fn_800363D8(task, i + 8, 2, 0x22, lbl_3_data_19B88[sym]);
+        i++;
+    } while (i < 3);
 }
 #endif
 
