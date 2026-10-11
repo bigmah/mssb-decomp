@@ -70,6 +70,24 @@ typedef struct Particle {
             /* 0x30 */ s32 unk30;
             /* 0x34 */ f32 unk34;
         } t5;
+        struct {
+            /* 0x10 */ f32 dSize1;
+            /* 0x14 */ f32 dSize2;
+            /* 0x18 */ s16 dAlpha1;
+            /* 0x1A */ s16 dAlpha2;
+            /* 0x1C */ s16 phase1; // frames of the first phase
+            /* 0x1E */ s16 life0;
+        } tE;
+        struct {
+            /* 0x10 */ f32 dSizeY1;
+            /* 0x14 */ f32 dSizeY2;
+            /* 0x18 */ f32 dSizeX1;
+            /* 0x1C */ f32 dSizeX2;
+            /* 0x20 */ s16 dAlpha1;
+            /* 0x22 */ s16 dAlpha2;
+            /* 0x24 */ s16 phase1;
+            /* 0x26 */ s16 life0;
+        } tEsub;
     } u;
     /* 0x38 */ f32 sizeX;
     /* 0x3C */ f32 sizeY;
@@ -124,6 +142,10 @@ typedef struct Emitter {
         struct {
             /* 0x18 */ u8 unk18;
         } t5;
+        struct {
+            /* 0x18 */ Particle* sub; // second particle list (ring around the center)
+            /* 0x1C */ u16 subCount;
+        } tE;
         struct {
             /* 0x18 */ struct {
                 Vec min;
@@ -378,6 +400,27 @@ typedef struct ParticleParamsC {
     /* 0x50 */ s32 unk50;
 } ParticleParamsC;
 
+// Spawn parameters of the type-14 (ground ring) emitter.
+typedef struct ParticleParamsE {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 subTexIndex;
+    /* 0x08 */ s32 subCount;
+    /* 0x0C */ s32 subLife;
+    /* 0x10 */ s32 subPhase1;
+    /* 0x14 */ f32 subSizeY[3]; // start, end of phase 1, end
+    /* 0x20 */ f32 subSizeX[3];
+    /* 0x2C */ s32 subAlpha[3];
+    /* 0x38 */ f32 radius;
+    /* 0x3C */ f32 angle0;      // degrees
+    /* 0x40 */ f32 angleSpan;   // degrees
+    /* 0x44 */ s32 texIndex;
+    /* 0x48 */ s32 count;
+    /* 0x4C */ s32 life;
+    /* 0x50 */ s32 phase1;
+    /* 0x54 */ f32 size[3];
+    /* 0x60 */ s32 alpha[3];
+} ParticleParamsE;
+
 // Queue task that flashes the stadium lights (fn_8002852C).
 typedef struct LightFlashTask {
     /* 0x00 */ u8 unk0[0x14];
@@ -417,6 +460,11 @@ typedef struct ParticleSortEntry {
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002852C(void);
+u8 fn_8002A85C(Emitter* e, Particle* p);
+u8 fn_8002AC68(Emitter* e, Particle* p);
+s32 fn_8002B014(Emitter* e);
+void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos);
+void fn_8002B7F8(Vec* pos, ParticleParamsE* prm, u8 withSub);
 s32 fn_80028F48(Emitter* e);
 void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm);
 void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm);

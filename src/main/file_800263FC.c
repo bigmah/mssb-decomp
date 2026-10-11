@@ -14,7 +14,8 @@ int rand(void);
 typedef struct GameSettingsView {
     /* 0x00 */ u8 pad0[0x54];
     /* 0x54 */ u8 stadiumId;
-    /* 0x55 */ u8 pad55[3];
+    /* 0x55 */ u8 unk55;
+    /* 0x56 */ u8 pad56[2];
 } GameSettingsView;
 extern GameSettingsView g_d_GameSettings; // GameInitVariables (UnknownHomes_Static.h clashes with this unit's prototypes)
 void fn_800B0A14_removeQueue(void* unused);
@@ -1085,9 +1086,38 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
 #endif
 
 // .text:0x8002A85C size:0x40C
-void fn_8002A85C(void) {
-    return;
+// NONMATCHING 67%: register allocation; the original inlines the corner setup and quad draw with different scheduling
+#if NONMATCHING
+u8 fn_8002A85C(Emitter* e, Particle* p) {
+    s32 a;
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+    QuadCorners(p->sizeX, p->sizeY);
+    DrawParticleQuad(p, e->tex);
+    a = p->color.c.a;
+    if (p->u.tEsub.life0 - p->life < p->u.tEsub.phase1) {
+        p->sizeX = p->sizeX + p->u.tEsub.dSizeX1;
+        p->sizeY = p->sizeY + p->u.tEsub.dSizeY1;
+        a += p->u.tEsub.dAlpha1;
+        p->pos.y = p->pos.y - p->u.tEsub.dSizeY1 * 0.5f;
+    } else {
+        p->sizeX = p->sizeX + p->u.tEsub.dSizeX2;
+        p->sizeY = p->sizeY + p->u.tEsub.dSizeY2;
+        a += p->u.tEsub.dAlpha2;
+        p->pos.y = p->pos.y - p->u.tEsub.dSizeY2 * 0.5f;
+    }
+    if (a < 0) {
+        a = 0;
+    }
+    if (a > 0xFF) {
+        a = 0xFF;
+    }
+    p->color.c.a = a;
+    p->life--;
+    return p->life == 0;
 }
+#endif
 
 // .text:0x8002AC68 size:0x3AC
 void fn_8002AC68(void) {
