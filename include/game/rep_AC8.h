@@ -50,7 +50,7 @@ void fn_3_2EEC4(int);
 void fn_3_2F484(void);
 void fn_3_2F574(int);
 void fn_3_2F7D4(int);
-void fn_3_2F924(void);
+void fn_3_2F924(int);
 void fn_3_2FB9C(int);
 void fn_3_2FF2C(int);
 void fn_3_300B8(int);

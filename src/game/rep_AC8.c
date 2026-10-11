@@ -1001,8 +1001,65 @@ void fn_3_2F7D4(int i) {
 }
 
 // .text:0x0002F924 size:0x278 mapped:0x8066E9B8
-void fn_3_2F924(void) {
-    return;
+void fn_3_2F924(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 dh;
+    f32 k;
+    f32 h;
+    if (f[0x207] == 1) {
+        dx = *(f32*)(f + 0x128) - *(f32*)f;
+        dz = *(f32*)(f + 0x130) - *(f32*)(f + 8);
+        dh = *(f32*)(f + 0x12C) - *(f32*)(f + 0x148);
+        if (*(s16*)(f + 0x1B4) > 1) {
+            k = 1.0f / *(s16*)(f + 0x1B4);
+        } else {
+            k = 1.0f;
+        }
+        dx *= k;
+        dz *= k;
+        dh *= k;
+        *(f32*)(f + 0x30) = dx;
+        *(f32*)(f + 0x34) = dz;
+        *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+        *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+        *(f32*)(f + 0x148) = *(f32*)(f + 0x148) + dh;
+        *(s16*)(f + 0x1B4) = *(s16*)(f + 0x1B4) - 1;
+        if (*(s16*)(f + 0x1B4) == 0) {
+            f[0x207] = 2;
+            *(s16*)(f + 0x1B4) = lbl_3_data_49DC[8];
+            if (g_d_GameSettings[0x11] != 0) {
+                u8* m = g_Minigame + f[0x20D];
+                if (m[0x18D8] == 0) {
+                    fn_3_6C854(*(s8*)(m + 0x18CC), 2);
+                }
+            } else if (g_GameLogic[*(int*)(g_GameLogic + 8) + 0x13E] == 0) {
+                fn_3_6C854(*(int*)(g_GameLogic + 8), 2);
+            }
+            fn_3_90220(*(s16*)(f + 0x17A), 11);
+        }
+    } else if (f[0x207] == 2) {
+        *(s16*)(f + 0x1B4) = *(s16*)(f + 0x1B4) - 1;
+        if (*(s16*)(f + 0x1B4) == 0) {
+            f[0x207] = 3;
+            *(s16*)(f + 0x1B4) = lbl_3_data_49DC[9];
+        }
+    } else if (f[0x207] == 3) {
+        h = *(f32*)(f + 0x148);
+        *(f32*)(f + 0x148) = h - h / *(s16*)(f + 0x1B4);
+        *(s16*)(f + 0x1B4) = *(s16*)(f + 0x1B4) - 1;
+        if (*(s16*)(f + 0x1B4) == 0) {
+            *(f32*)(f + 0x148) = 0.0f;
+            f[0x207] = 4;
+            *(s16*)(f + 0x1B4) = lbl_3_data_49DC[10];
+        }
+    } else if (f[0x207] == 4) {
+        *(s16*)(f + 0x1B4) = *(s16*)(f + 0x1B4) - 1;
+        if (*(s16*)(f + 0x1B4) == 0) {
+            f[0x207] = 0;
+        }
+    }
 }
 
 // .text:0x0002FB9C size:0x390 mapped:0x8066EC30
