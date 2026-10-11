@@ -205,6 +205,15 @@ extern void fn_8003A8A0(void* display, Mtx m, s32 a);
 extern f32 lbl_803CB7BC;
 extern u8 lbl_803CB7C0;
 extern u8 lbl_803CB7C1;
+extern f32 charSizeMultipliers[][2];
+extern void fn_8004B6EC(CharActor* actor, CharSlot* slot);
+extern void fn_8004B7F4(CharActor* actor, CharSlot* slot);
+extern void fn_8004BAEC(CharActor* actor, CharSlot* slot);
+extern void fn_8005240C(CharActor* actor, CharSlot* slot);
+extern s32 fn_80024C6C(CharActor* actor, s32 which);
+extern void fn_800B2C88(void* bone, Mtx m);
+extern void fn_800BEA04(Vec* pos);
+extern void fn_800BD8C4(CharSlotList* list, MtxPtr view);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -4172,9 +4181,239 @@ void fn_8001D180(s32 index, s32 which, s32 enable) {
 #endif
 
 // .text:0x8001D2D4 size:0x8A0
-void fn_8001D2D4(void) {
-    return;
+static inline void updateTrailSlot(CharSlotList* list, s32 i, CharTrail* t) {
+    list->slots[i]._6C = t->_26 & 1;
+    if (t->_26 != 0) {
+        CTRLSetTranslation(&list->slots[i].ctrl, t->_04[0], t->_04[1], t->_04[2]);
+        CTRLSetRotation(&list->slots[i].ctrl, 57.295776f * t->_04[3], 57.295776f * t->_04[4], 57.295776f * t->_04[5]);
+    }
 }
+
+// NONMATCHING 90%: register allocation and loop strength-reduction differences
+#if NONMATCHING
+void fn_8001D2D4(void) {
+    u32 doneMask;
+    s32 i;
+    CharActor* actor;
+    CharSlot* slot;
+    CharParts* parts;
+    CharParts* parts2;
+    ShapeAnimState* st0;
+    ShapeAnimState* st1;
+    ShapeAnimState* st2;
+    CharModel* model;
+    f32 scale;
+    CharTrail* t;
+    Vec p;
+    Vec q;
+    Mtx m;
+
+    if (lbl_8036E548._307A == 0 || lbl_8036E548._307C == 0) {
+        return;
+    }
+    if (lbl_80366158._28 != 0) {
+        lbl_803CBC3C[0] = 1;
+    }
+    fn_8001C234(&doneMask);
+    for (i = 0; i < 13; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor == NULL) {
+            continue;
+        }
+        slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+        switch (actor->kind) {
+        case 19:
+            fn_8004B6EC(actor, slot);
+            break;
+        case 40:
+        case 41:
+            fn_8004B7F4(actor, slot);
+            break;
+        case 38:
+            slot->model->_99 = 1;
+        case 18:
+            fn_8004BAEC(actor, slot);
+            break;
+        case 14:
+        case 37:
+            fn_8005240C(actor, slot);
+            break;
+        case 6:
+        case 10:
+        case 12:
+        case 24:
+        case 25:
+        case 26:
+        case 42:
+            slot->model->_99 = 1;
+            break;
+        case 20:
+        case 43:
+            if (actor->anim[0] == 0x40) {
+                slot->model->_99 = 0;
+            } else {
+                slot->model->_99 = 1;
+            }
+            break;
+        }
+    }
+    for (i = 0; i < lbl_8036E548.slots->count; i++) {
+        lbl_8036E548.slots->slots[i]._6C = 0;
+    }
+    for (i = 0; i < 13; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor == NULL) {
+            continue;
+        }
+        slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+        if (actor->part != NULL) {
+            st0 = &actor->part->player.state;
+        } else {
+            st0 = NULL;
+        }
+        parts = actor->parts;
+        if (parts != NULL) {
+            st1 = &parts->part[0].player.state;
+            st2 = &parts->part[1].player.state;
+        } else {
+            st1 = NULL;
+            st2 = NULL;
+        }
+        slot->_6C = actor->mode[0];
+        CTRLSetRotation(&slot->ctrl, 57.295776f * actor->_040.x, 57.295776f * actor->_040.y, 57.295776f * actor->_040.z);
+        scale = charSizeMultipliers[actor->kind][lbl_8036E548._307A == 5];
+        CTRLSetScale(&slot->ctrl, scale, scale, scale);
+        if (lbl_803CBC3C[0] != 0) {
+            slot->_54 = 0.0f;
+            slot->_5A = 1;
+            if (st0 != NULL) {
+                st0->active = 0;
+            }
+            if (st1 != NULL) {
+                st1->active = 0;
+            }
+            if (st2 != NULL) {
+                st2->active = 0;
+            }
+        } else if (actor->_26F != 0) {
+            slot->_54 = 0.0f;
+            slot->_5A = 1;
+            actor->_26F = 0;
+            if (st0 != NULL) {
+                st0->active = 0;
+            }
+            if (st1 != NULL) {
+                st1->active = 0;
+            }
+            if (st2 != NULL) {
+                st2->active = 0;
+            }
+        } else {
+            slot->_54 = actor->_04C;
+            slot->_5A = 1;
+            if (st0 != NULL) {
+                st0->speed = actor->_04C;
+            }
+            if (st1 != NULL) {
+                st1->speed = actor->_04C;
+            }
+            if (st2 != NULL) {
+                st2->speed = actor->_04C;
+            }
+            if (st0 != NULL) {
+                st0->active = 1;
+            }
+            if (st1 != NULL) {
+                st1->active = 1;
+            }
+            if (st2 != NULL) {
+                st2->active = 1;
+            }
+        }
+        if (actor->_068 != 0) {
+            if (actor->part != NULL) {
+                fn_80024DB0(&actor->part->player.state);
+            }
+            parts = actor->parts;
+            if (parts != NULL && parts->part[0].player.set != NULL && parts->part[1].player.set != NULL && parts->_CC != 0) {
+                fn_80024DB0(&parts->part[0].player.state);
+                fn_80024DB0(&actor->parts->part[1].player.state);
+            }
+        }
+    }
+    fn_8001DB74(lbl_8036E548.slots);
+    for (i = 0; i < 13; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor == NULL || actor->mode[0] == 0) {
+            continue;
+        }
+        slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+        model = slot->model;
+        if (!(model->flags & 9)) {
+            continue;
+        }
+        if (model != NULL) {
+            p.z = 0.0f;
+            p.y = 0.0f;
+            p.x = 0.0f;
+            fn_800B2C88(model->_84, m);
+            PSMTXTransApply(m, m, actor->pos.x, actor->pos.y, actor->pos.z);
+            PSMTXMultVec(m, &p, &p);
+            q = p;
+            fn_800BEA04(&q);
+        }
+        if (actor->part != NULL) {
+            fn_80024FA4((ShapeModel**)&slot->model, actor->part->player.model, &actor->part->player.state, -1);
+        }
+        parts = actor->parts;
+        if (parts != NULL && parts->part[0].player.set != NULL && parts->part[1].player.set != NULL && parts->_CC != 0) {
+            if (actor->anim[0] >= 0x3A && actor->anim[0] <= 0x3C && actor->_25B == 0) {
+                fn_80024FA4((ShapeModel**)&lbl_8036E548.partSlots->slots[parts->part[0].slot].model, parts->part[0].player.model, &parts->part[1].player.state, fn_80024C6C(actor, 0));
+                parts2 = actor->parts;
+                fn_80024FA4((ShapeModel**)&lbl_8036E548.partSlots->slots[parts2->part[1].slot].model, parts->part[1].player.model, &parts2->part[0].player.state, fn_80024C6C(actor, 1));
+            } else {
+                fn_80024FA4((ShapeModel**)&lbl_8036E548.partSlots->slots[parts->part[0].slot].model, parts->part[0].player.model, &parts->part[0].player.state, fn_80024C6C(actor, 1));
+                parts2 = actor->parts;
+                fn_80024FA4((ShapeModel**)&lbl_8036E548.partSlots->slots[parts2->part[1].slot].model, parts2->part[1].player.model, &parts2->part[1].player.state, fn_80024C6C(actor, 0));
+            }
+        }
+    }
+    if (lbl_8036E548._307A == 2) {
+        lbl_803CBC3C[0] = 0;
+        return;
+    }
+    lbl_803CBC3C[0] = 0;
+    if (lbl_8036E548.trail != NULL) {
+        if (lbl_8036E548.trail[5]._26 != 0) {
+            fn_80024DB0(&lbl_8036E548.stadiumAnim[0].state);
+            fn_80024FA4((ShapeModel**)&lbl_8036E548.slots64->slots[5].model, lbl_8036E548.stadiumAnim[0].model, &lbl_8036E548.stadiumAnim[0].state, -1);
+        }
+        if (lbl_8036E548.trail[6]._26 != 0) {
+            fn_80024DB0(&lbl_8036E548.stadiumAnim[1].state);
+            fn_80024FA4((ShapeModel**)&lbl_8036E548.slots64->slots[6].model, lbl_8036E548.stadiumAnim[1].model, &lbl_8036E548.stadiumAnim[1].state, -1);
+        }
+        for (i = 0; i < 25; i++) {
+            t = &lbl_8036E548.trail[i];
+            if (i == 4) {
+                t->_26 = 0;
+                lbl_8036E548.slots64->slots[i]._6C = t->_26;
+            }
+            updateTrailSlot(lbl_8036E548.slots64, i, t);
+        }
+        fn_800BD8C4(lbl_8036E548.slots64, fn_80052734(0)->view);
+    }
+    if (lbl_8036E548._3078 != 0) {
+        for (i = 0; i < lbl_8036E548._3078; i++) {
+            updateTrailSlot(lbl_8036E548.slots68, i, &lbl_8036E548.trail2[i]);
+        }
+        fn_800BD8C4(lbl_8036E548.slots68, fn_80052734(0)->view);
+    }
+    if (lbl_8036E548._3070 != NULL) {
+        lbl_8036E548._3070(fn_80052734(0)->view);
+        lbl_8036E548._3070 = NULL;
+    }
+}
+#endif
 
 // .text:0x8001DB74 size:0x1E4
 // NONMATCHING 95%: register allocation of the slot/camera loops

@@ -41,7 +41,9 @@ typedef struct CharModel {
     /*0x78*/ u8 _78[0x4];
     /*0x7C*/ void* _7C;
     /*0x80*/ u16 _80;
-    /*0x82*/ u8 _82[0x8C - 0x82];
+    /*0x82*/ u8 _82[0x2];
+    /*0x84*/ void* _84;
+    /*0x88*/ u8 _88[0x4];
     /*0x8C*/ f32 _8C;
     /*0x90*/ u8 _90[0x98 - 0x90];
     /*0x98*/ u8 flags;
@@ -259,7 +261,9 @@ typedef struct CharMgr {
     /*0x2DA0*/ void* trailLayout;
     /*0x2DA4*/ void* trailGeo;
     /*0x2DA8*/ void* trailTex;
-    /*0x2DAC*/ u8 _2DAC[0x3078 - 0x2DAC];
+    /*0x2DAC*/ u8 _2DAC[0x3070 - 0x2DAC];
+    /*0x3070*/ void (*_3070)(MtxPtr view);
+    /*0x3074*/ u8 _3074[0x4];
     /*0x3078*/ s16 _3078;
     /*0x307A*/ u8 _307A;
     /*0x307B*/ u8 _307B;
@@ -425,6 +429,8 @@ s32 fn_80016710(u8 kind, s32 index);
 u8 fn_80012B90(CharActor* actor);
 
 s32 fn_8001500C(s32 team, s32 roster, s32 index);
+
+void fn_8001D2D4(void);
 
 void fn_8001B200(void);
 
