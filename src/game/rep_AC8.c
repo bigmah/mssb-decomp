@@ -29,6 +29,8 @@ f32 shortAngleToRad_Capped(s16);
 extern f32 lbl_3_rodata_B90;
 void fn_3_53F48(void);
 extern f32 lbl_3_rodata_BB4;
+extern f32 lbl_3_rodata_B64;
+void getComponentsFromRad(f32 v, f32* x, f32* y);
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
@@ -1318,9 +1320,96 @@ void fn_3_2F924(int i) {
 }
 
 // .text:0x0002FB9C size:0x390 mapped:0x8066EC30
+// NONMATCHING 92%: the moved flag lives in r6 (initialised at entry) in the original, ours keeps it in r0; f-reg order in the side-step segment
+#if NONMATCHING
 void fn_3_2FB9C(int i) {
-    return;
+    int moved = 0;
+    u8* f = g_Fielders + i * 0x268;
+    f32 h = *(f32*)(f + 0x148);
+    int dir;
+    int side;
+    f32 a;
+    f32 cx;
+    f32 cz;
+    f32 y;
+    f32 e;
+    f32 lo;
+    f32 hi;
+    VecSrcDst seg;
+    CollisionStruct hit;
+    if (g_Ball[0x1BC9] == 1 || g_Ball[0x1BC9] == 2) {
+        f[0x205] = 3;
+        return;
+    }
+    if (*(u16*)(g_FieldingLogic + 0x14A) & 0x100) {
+        f[0x205] = 3;
+        return;
+    }
+    if (*(u16*)(g_FieldingLogic + 0x148) & 8) {
+        dir = 1;
+        h += *(f32*)(lbl_3_data_4930 + 0x64);
+    } else if (*(u16*)(g_FieldingLogic + 0x148) & 4) {
+        dir = 2;
+        h -= *(f32*)(lbl_3_data_4930 + 0x64);
+    } else {
+        goto turn;
+    }
+    if (h <= 0.0f) {
+        f[0x205] = 3;
+        return;
+    }
+    y = -(h + *(f32*)(f + 0xF4));
+    seg.dst.y = y;
+    seg.src.y = y;
+    seg.src.x = lbl_3_rodata_B64 * *(f32*)(f + 0x140) + *(f32*)f;
+    seg.src.z = lbl_3_rodata_B64 * *(f32*)(f + 0x144) + *(f32*)(f + 8);
+    seg.dst.x = *(f32*)f - lbl_3_rodata_B64 * *(f32*)(f + 0x140);
+    seg.dst.z = *(f32*)(f + 8) - lbl_3_rodata_B64 * *(f32*)(f + 0x144);
+    if ((checkCollision(&seg, &hit, 0, 0) & 0x7F) == 2) {
+        *(f32*)(f + 0x148) = h;
+        moved = 1;
+        f[0x206] = dir;
+        goto done;
+    }
+turn:
+    if (*(u16*)(g_FieldingLogic + 0x148) & 2) {
+        side = 3;
+        a = *(f32*)(f + 0x6C) - *(f32*)(lbl_3_data_4930 + 0x68);
+    } else if (*(u16*)(g_FieldingLogic + 0x148) & 1) {
+        side = 4;
+        a = *(f32*)(f + 0x6C) + *(f32*)(lbl_3_data_4930 + 0x68);
+    } else {
+        return;
+    }
+    getComponentsFromRad(a, &cx, &cz);
+    hi = lbl_3_rodata_B64 + *(f32*)(f + 0x70);
+    lo = *(f32*)(f + 0x70) - lbl_3_rodata_B64;
+    y = -(*(f32*)(f + 0x148) + *(f32*)(f + 0xF8));
+    seg.src.x = cx * lo;
+    seg.src.z = cz * lo;
+    seg.dst.x = cx * hi;
+    seg.dst.z = cz * hi;
+    seg.dst.y = y;
+    seg.src.y = y;
+    if ((checkCollision(&seg, &hit, 0, 0) & 0x7F) == 2) {
+        *(f32*)f = hit.position.x;
+        *(f32*)(f + 8) = hit.position.z;
+        if (side != 0) {
+            f[0x206] = side;
+        }
+        moved = 1;
+    } else {
+        moved = 0;
+    }
+done:
+    if (moved != 0) {
+        e = hit.normal.x * hit.normal.x + hit.normal.z * hit.normal.z;
+        SQRT_L(e);
+        *(f32*)(f + 0x140) = hit.normal.x / e;
+        *(f32*)(f + 0x144) = hit.normal.z / e;
+    }
 }
+#endif
 
 // .text:0x0002FF2C size:0x18C mapped:0x8066EFC0
 void fn_3_2FF2C(int i) {
