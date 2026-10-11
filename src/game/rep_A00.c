@@ -20,6 +20,7 @@
 #include "game/rep_AC8.h"
 #include "game/auto_00_001658F0_text.h"
 #include "game/rep_1330.h"
+#include "game/auto_00_000219CC_text.h"
 
 // Views declared here (other units have their own views of these objects).
 extern FielderView g_Fielders[];
@@ -52,7 +53,8 @@ extern s32 lbl_3_bss_9C;
 
 void fn_80052798(s32 count); // main/file_8004C5F8.h
 f32 fn_3_9FEA8(f32 v);        // game/rep_1838.h: wrap angle
-u32 fn_3_90220(s32 idx, s32 off); // game/m_sound.h (conflicts with another header here)
+u32 fn_3_90220(s32 idx, s32 off);
+void fn_3_8C07C(void); // game/m_sound.h (conflicts with another header here)
 
 #define SCENE lbl_3_common_bss_1323C
 #define FADE_TASK ((FadeTask*)lbl_803CC1B8)
@@ -650,7 +652,83 @@ void fn_3_234BC(void) {
 
 // .text:0x00023890 size:0x45C mapped:0x80662924
 void fn_3_23890(void) {
-    return;
+    GameControlsStruct* gl = &g_GameLogic;
+    SceneTask* task = lbl_803CC1B8;
+    s32 i;
+    GameInitVariables* gs = &g_d_GameSettings;
+    FadeTask* wait;
+    switch (gl->_125) {
+    case 0:
+        if ((s32)lbl_803C6CF8.idle == 1) {
+            g_pCamera->_AAA = 1;
+            g_pCamera->_AAE = 2;
+            fn_800B0A5C_insertQueue(fn_3_21DE4, 6);
+            gl->_125 = 1;
+        }
+        break;
+    case 1:
+        SceneReset(4);
+        fn_3_FBDAC(0x4C);
+        gl->_125 = 2;
+        break;
+    case 2:
+        changeScene(1, 6);
+        SCENE->busy = 1;
+        wait = fn_800B0A5C_insertQueue(fn_3_21AA8, 4);
+        task->_10 = 0;
+        wait->state = 0;
+        wait->frame = 0;
+        gl->_125 = 3;
+        break;
+    case 3:
+        fn_3_24708();
+        if (SCENE->_23C < 0x7FFE) {
+            SCENE->_23C += 1;
+        } else {
+            SCENE->_23C = 0x7FFF;
+        }
+        if (fn_3_6C938(1, 0x1100) != 0 && SCENE->_23C < SCENE->_23E - 0x1F && gs->GameModeSelected != 4
+            && g_GameLogic.FrameCountOfCurrentAtBat_Copy > 60 && lbl_3_common_bss_32724._B1 == 0) {
+            SCENE->_27C = 1;
+            SCENE->_23C = SCENE->_23E - 0x1F;
+        }
+        if (SCENE->_23C == SCENE->_23E - 0x1F) {
+            lbl_3_common_bss_32724._B1 = 1;
+        }
+        if (SCENE->_23C == SCENE->_23E) {
+            gl->_125 = 5;
+        }
+        for (i = 0; i < 13; i++) {
+            if ((u32)i <= 1 || i == 9) {
+                fn_8001D074(i, 1);
+            } else {
+                fn_8001D074(i, 0);
+            }
+        }
+        break;
+    case 4:
+        break;
+    case 5:
+        SCENE->busy = 0;
+        fn_3_24630();
+        fn_3_FBD70();
+        fn_3_FBD58();
+        gl->_125 = 6;
+        break;
+    case 6:
+        for (i = 0; i < 13; i++) {
+            fn_8001D074(i, 1);
+        }
+        fn_3_8C07C();
+        if ((s8)SCENE->_27C != 0) {
+            fn_3_5A6D4(g_GameLogic.gameStatus_prev);
+            g_Stats._39 = 2;
+        } else {
+            fn_3_5A6D4(g_GameLogic.gameStatus_prev);
+            g_Stats._39 = 2;
+        }
+        break;
+    }
 }
 
 // .text:0x00023CEC size:0x40C mapped:0x80662D80

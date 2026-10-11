@@ -144,7 +144,9 @@ typedef struct Unk32724 {
     /*0xA4*/ u8 _A4[0xAE - 0xA4];
     /*0xAE*/ u8 _AE; // set when a captain-duel scene event plays
     /*0xAF*/ s8 _AF; // pitcher roster id for it
-    /*0xB0*/ u8 _B0[0xC8 - 0xB0];
+    /*0xB0*/ u8 _B0;
+    /*0xB1*/ u8 _B1; // set once the scene skip point is reached (fn_3_23890)
+    /*0xB2*/ u8 _B2[0xC8 - 0xB2];
     /*0xC8*/ u8 _C8;
     /*0xC9*/ u8 _C9;
     /*0xCA*/ u8 _CA;

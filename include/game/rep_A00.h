@@ -8,6 +8,7 @@ typedef struct FadeTask {
     /*0x00*/ u8 _00[0x1E];
     /*0x1E*/ u16 frame;
     /*0x20*/ u16 alpha;
+    /*0x22*/ s16 state; // fn_3_21AA8 wait task
 } FadeTask;
 
 // View of the DVD/ARAM loader lbl_803C6CF8 (ARAMLoader in main/file_800A6870.h).
