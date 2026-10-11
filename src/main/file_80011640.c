@@ -824,8 +824,20 @@ void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(C
 #endif
 
 // .text:0x80017D28 size:0x94
-void fn_80017D28(void) {
-    return;
+void fn_80017D28(CharActor* src) {
+    s32 modelIndex = src->modelIndex + 4;
+    CharActor* dst = &lbl_8036E548.actors[modelIndex];
+
+    dst->kind = src->kind;
+    dst->index = src->index;
+    dst->modelIndex = modelIndex;
+    dst->_25C = 1;
+    dst->mode[0] = 0;
+    dst->parts = src->parts;
+    dst->_25A = src->_25A;
+    dst->_25B = src->_25B;
+    dst->files = src->_0C;
+    fn_80017814(dst, modelIndex, 0, fn_8001FDD4);
 }
 
 // .text:0x80017DBC size:0x268
