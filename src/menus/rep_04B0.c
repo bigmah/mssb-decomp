@@ -529,9 +529,67 @@ void fn_2_151BC(u8 player) {
 }
 
 // .text:0x0001560C size:0x484
+// NONMATCHING 96%: register allocation; the original indexes sel[] from the raw param
+// (clrlslwi) and keeps &g_d_GameSettings in r30
+#if NONMATCHING
+// A pressed: pick the captain under the cursor.
 void fn_2_1560C(u8 player) {
-    return;
+    s32 port;
+
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        if (lbl_2_bss_100B8.timer[0] != 0 || lbl_2_bss_100B8.loading[0] != 0) {
+            return;
+        }
+        lbl_8034E9A0.captain[0] = lbl_800FE930[lbl_80361B20._F4][lbl_2_bss_F410.sel[0]];
+        lbl_2_bss_100B8.picked[0] = 1;
+        lbl_2_bss_100B8._12[0] = 1;
+        fn_8004D4F0(lbl_8034E9A0.teamPort[0], lbl_8034E9A0.captain[0], 1);
+        fn_2_14BB8(0, 0);
+        lbl_803CBBCC->step = 4;
+        return;
+    }
+
+    if (lbl_2_bss_100B8.timer[player] != 0 || lbl_2_bss_100B8.loading[player] != 0) {
+        return;
+    }
+    if (g_d_GameSettings._10 == 0 && lbl_8036E548.active[player]->mode[0] == 0 && player != 0) {
+        return;
+    }
+    fn_2_14BB8(player, 0);
+    if (lbl_2_bss_100B8.picked[player] != 0) {
+        return;
+    }
+
+    lbl_8034E9A0.captain[player] = lbl_800FE5D4[lbl_2_bss_F410.sel[player]];
+    if (g_d_GameSettings._10 == 0 && player != 0) {
+        if (lbl_8034E9A0.teamPort[0] == 0) {
+            fn_8004E5B4(1, lbl_8034E9A0.captain[player], 1);
+        } else {
+            fn_8004E5B4(0, lbl_8034E9A0.captain[player], 1);
+        }
+    } else {
+        fn_8004E5B4(lbl_8034E9A0.teamPort[player], lbl_8034E9A0.captain[player], 1);
+    }
+    lbl_2_bss_100B8.picked[player] = 1;
+    lbl_2_bss_100B8._12[player] = 1;
+    lbl_8034E9A0.charFlag[lbl_800FE5D4[lbl_2_bss_F410.sel[player]]] = 1;
+
+    if (player == 0 && g_d_GameSettings._10 == 0 && g_d_GameSettings.GameModeSelected != 5) {
+        fn_800625A4(1, 6);
+        port = lbl_8034E9A0.teamPort[0] == 0;
+        lbl_803C66B0.portOf[player] = 1;
+        lbl_803C6028._74[port] = 1;
+        if (lbl_2_bss_F410.sel[0] == 0) {
+            lbl_2_bss_F410.sel[1] = 1;
+        } else {
+            lbl_2_bss_F410.sel[1] = 0;
+        }
+        SHOW_CAPTAIN_CURSOR(port, lbl_2_bss_F410.sel[1])
+        lbl_803C6724.sel[1] = lbl_2_bss_F410.sel[1];
+        fn_2_15104(lbl_2_bss_F410.sel[1], -1, 1, 1);
+    }
 }
+#endif
 
 // .text:0x00015A90 size:0x6C
 void fn_2_15A90(s32* value, u8 port, s32 max) {
