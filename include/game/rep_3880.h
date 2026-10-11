@@ -70,7 +70,7 @@ void fn_3_14EAF4(u8* o);
 void fn_3_14ED24(void);
 void fn_3_14F3CC(u8* o);
 void fn_3_14F544(u8* a);
-void fn_3_14F5A4(void);
+void fn_3_14F5A4(u8* o, s8 a);
 void fn_3_14F8D0(u8* a);
 void fn_3_14F930(s8 a);
 void fn_3_150010(s8 a);

@@ -4,6 +4,7 @@
 extern u8 lbl_3_data_26C94[];
 extern const f32 lbl_3_rodata_39F8;
 extern const f32 lbl_3_rodata_39F4;
+extern const f32 lbl_3_rodata_39FC;
 extern const f64 lbl_3_rodata_39E8;
 extern s32 lbl_3_data_26D00[];
 extern void fn_8003403C(f32, f32);
@@ -1493,6 +1494,7 @@ void fn_3_14E9F0(u8* a) {
     *(f32*)(a + 0xC) += v.z;
 }
 
+#pragma dont_inline off
 // .text:0x0014EAF4 size:0x230 mapped:0x8078DB88
 void fn_3_14EAF4(u8* o) {
     Vec v = lbl_3_rodata_3914;
@@ -1526,6 +1528,7 @@ void fn_3_14EAF4(u8* o) {
     *(f32*)(o + 8) += w.y;
     *(f32*)(o + 0xC) += w.z;
 }
+#pragma dont_inline on
 
 // .text:0x0014ED24 size:0x6A8 mapped:0x8078DDB8
 void fn_3_14ED24(void) {
@@ -1551,6 +1554,7 @@ void fn_3_14F3CC(u8* o) {
     *(f32*)(o + 0xC) = v.z;
 }
 
+#pragma dont_inline off
 // .text:0x0014F544 size:0x60 mapped:0x8078E5D8
 void fn_3_14F544(u8* a) {
     f32 f;
@@ -1560,11 +1564,34 @@ void fn_3_14F544(u8* a) {
     *(f32*)(a + 0x3C) = f;
     *(f32*)(a + 0x38) = f;
 }
+#pragma dont_inline on
 
+// NONMATCHING 99%: 14F544/14EAF4 inlined; the two Vec temps get swapped stack slots and the life/i int->float conversions are scheduled in the other order
 // .text:0x0014F5A4 size:0x32C mapped:0x8078E638
-void fn_3_14F5A4(void) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_14F5A4(u8* o, s8 a) {
+    u8* p;
+    u32 i = 0;
+    p = *(u8**)(o + 0xC);
+    do {
+        if (p[0x4C] == a + 1) {
+            fn_3_14F544(p);
+            *(s16*)(p + 0x48) = (f32)*(s16*)(p + 0x4A) / lbl_3_rodata_39FC * (f32)i;
+            if (*(s16*)(p + 0x48) == 0) {
+                fn_3_14EAF4(p);
+            }
+            p[0x42] = 0xFF;
+            i++;
+            p[0x41] = 0xFF;
+            p[0x40] = 0xFF;
+            *(f32*)(p + 0x34) = 0.0f;
+        }
+        p = *(u8**)p;
+    } while (p != NULL);
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x0014F8D0 size:0x60 mapped:0x8078E964
 void fn_3_14F8D0(u8* a) {
