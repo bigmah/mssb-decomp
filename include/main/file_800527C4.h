@@ -126,7 +126,9 @@ typedef struct MenuWork {
     /*0xCF70*/ u8 _CF70;
     /*0xCF71*/ u8 _CF71[0xB];
     /*0xCF7C*/ u8 missionText; // text entry index
-    /*0xCF7D*/ u8 _CF7D[3];
+    /*0xCF7D*/ u8 scoutState;
+    /*0xCF7E*/ u8 scoutSub;
+    /*0xCF7F*/ u8 scoutDone;
     /*0xCF80*/ s8 scoutTotal[9];
     /*0xCF89*/ s8 scoutGot[9];
     /*0xCF92*/ u8 _CF92;

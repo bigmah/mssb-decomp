@@ -69,6 +69,14 @@ extern s16 translateStarSwing(u8 star);
 // Layout object number n of a task's sprite run.
 #define TASK_OBJ(task, n) (lbl_80371C30[(task)->u14.objIdx + (n)].obj)
 
+static inline BOOL ObjFrameReached(SceneTask* task, s32 idx, s32 frame) {
+    return fn_80042D68(task, idx, frame) != 0;
+}
+
+static inline BOOL ObjAtFrame(SceneTask* task, s32 idx, s32 frame) {
+    return fn_80042DA8(task, idx, frame) != 0;
+}
+
 static inline void SetMenu(s16 menu) {
     lbl_8034E978.menu = menu;
     lbl_8034E978.prevTrack = lbl_8034E978.track;
@@ -451,7 +459,7 @@ void someChallengeStarFunction(SceneTask* task) {
         fn_8000FE08(lbl_803297E0.missionText, 0, msg);
         lbl_803297E0.missionShown = 1;
     }
-    if (lbl_803297E0.missionShown != 0 && (fn_80042DA8(task, 1, 10) != 0) == 1) {
+    if (lbl_803297E0.missionShown != 0 && ObjAtFrame(task, 1, 10) == 1) {
         lbl_803297E0.missionShown = 0;
         lbl_803297E0._CF92 = 0;
     }
@@ -482,9 +490,67 @@ void starMenu(void) {
 }
 
 // .text:0x80057CAC size:0x3A4
+// NONMATCHING 96%: the scout-flag loop counters start from the any-flag register; loop registers differ
+#if NONMATCHING
 void fn_80057CAC(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    s32 i;
+    s32 j;
+    s32 base;
+    u8 any;
+
+    switch (lbl_803297E0.scoutState) {
+    case 1:
+        if (lbl_803297E0.scoutSub == 0) {
+            TASK_OBJ(task, 0)->_68 = 1;
+            TASK_OBJ(task, 1)->_68 = 1;
+            for (i = 0; i < 9; i++) {
+                TASK_OBJ(task, i + 0x17)->_68 = 1;
+            }
+            lbl_803297E0.scoutSub = 1;
+        }
+        if (lbl_803297E0.scoutSub != 0 && ObjFrameReached(task, 0, 10) == 1) {
+            lbl_803297E0.scoutSub = 0;
+            lbl_803297E0.scoutState = 2;
+        }
+        break;
+    case 2:
+        any = FALSE;
+        if (lbl_803297E0.scoutSub == 0) {
+            for (i = 0, base = 0; i < 9; i++, base += 5) {
+                for (j = 0; j < lbl_803297E0.scoutGot[i]; j++) {
+                    any = TRUE;
+                    TASK_OBJ(task, j + base + 0x20)->_68 = 1;
+                }
+            }
+            if (any) {
+                sndFXStartEx(0x1B1, 0x7F, 0x3F, 0);
+            }
+            lbl_803297E0.scoutSub = 1;
+        }
+        if (lbl_803297E0.scoutSub != 0) {
+            lbl_803297E0.scoutSub = 0;
+            lbl_803297E0.scoutState = 0;
+        }
+        break;
+    case 3:
+        if (lbl_803297E0.scoutSub == 0) {
+            TASK_OBJ(task, 0)->_68 = 4;
+            lbl_803297E0.scoutSub = 1;
+        }
+        if (lbl_803297E0.scoutSub != 0 && ObjAtFrame(task, 0, 0) == 1) {
+            lbl_803297E0.scoutDone = 1;
+            lbl_803297E0.scoutSub = 0;
+            lbl_803297E0.scoutState = 0;
+        }
+        break;
+    }
+    if (lbl_803297E0.scoutDone != 0) {
+        lbl_803297E0.scoutDone = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
 }
+#endif
 
 // .text:0x80058050 size:0x344
 // NONMATCHING 92%: scout-flag loop registers and compare shapes differ
