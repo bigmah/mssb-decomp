@@ -463,7 +463,9 @@ int fn_3_70768(f32* out, int flag, f32 target) {
 // Egg-ball bounce params: [0] y, [1..2] z range, [3] x range, [4..5] bounce z range, [6..7] x range.
 extern f32 lbl_3_data_5F5C[];
 typedef struct PitchSpeedRange {
-    /*0x00*/ u8 _00[8];
+    /*0x00*/ s16 speedMin; // star-pitch (egg) speed range
+    /*0x02*/ s16 speedMax;
+    /*0x04*/ u8 _04[4];
     /*0x08*/ s16 eggMin;
     /*0x0A*/ s16 eggMax;
     /*0x0C*/ s16 eggVeloMin;
@@ -578,7 +580,7 @@ void fn_3_70B94(void) {
 // .text:0x00070EF4 size:0x354 mapped:0x806AFF88
 // Per special-pitch-type curve parameters (lbl_3_data_5D6C).
 typedef struct PitchCurveParams {
-    /*0x0*/ s16 _0;
+    /*0x0*/ s16 speed;
     /*0x2*/ s16 curveMin;
     /*0x4*/ s16 curveMax;
     /*0x6*/ s16 _6[4];
@@ -669,9 +671,86 @@ void fn_3_72768(void) {
 }
 
 // .text:0x00072CA8 size:0x464 mapped:0x806B1D3C
+// Pitch stat multipliers (lbl_3_data_5F08), only the fields used here.
+typedef struct PitchStatMults {
+    /*0x00*/ f32 _00[2];
+    /*0x08*/ f32 chargeCurve;
+    /*0x0C*/ f32 _0C[2];
+    /*0x14*/ f32 chargeCurveControl;
+    /*0x18*/ f32 _18[2];
+    /*0x20*/ f32 chargeCursedBall;
+    /*0x24*/ f32 changeUpSpeed;
+    /*0x28*/ f32 fastBallSpeed;
+} PitchStatMults;
+extern PitchStatMults lbl_3_data_5F08;
+// Low-stamina pitch penalties (lbl_3_data_5EDC), only the fields used here.
+typedef struct PitchStaminaPenalty {
+    /*0x00*/ u8 _00[6];
+    /*0x06*/ s16 threshold;
+    /*0x08*/ s16 _08;
+    /*0x0A*/ s16 curvePct;
+    /*0x0C*/ s16 speedPct;
+    /*0x0E*/ s16 curveControlPct;
+    /*0x10*/ s16 cursedBallPct;
+} PitchStaminaPenalty;
+extern PitchStaminaPenalty lbl_3_data_5EDC;
+extern s32 fn_3_6D564(s32 team, s32 idx, s32 delta);
+// Compute the pitch speed and the effective curse/curve-control/curve stats.
+// NONMATCHING 99%: register allocation only (r0/r4 in the star branch, r6/r7 + f0/f1 in the change-up, f2-f4 for the
+// stamina-penalty constants)
+#if NONMATCHING
 void fn_3_72CA8(void) {
-    return;
+    f32 cursed = g_Pitcher.cursedBallStat;
+    f32 control = g_Pitcher.curveControlStat;
+    f32 curve = g_Pitcher.curveStat;
+    if (g_Pitcher.starPitchType != 0) {
+        g_Pitcher.calced_cursedBall = 100;
+        g_Pitcher.calced_curveControl = 100;
+        g_Pitcher.calced_curve = 100;
+        g_Pitcher.pitchSpeed = lbl_3_data_5D6C[g_Pitcher.specialPitchTypeCode].speed;
+        if (g_Pitcher.starPitchType == 9 || g_Pitcher.starPitchType == 0xA) {
+            g_Pitcher.pitchSpeed = RandomInt_Game_Range(lbl_3_data_5F7C.speedMin, lbl_3_data_5F7C.speedMax);
+        }
+        return;
+    }
+    if (g_Pitcher.ChargePitchType == 3 || g_Pitcher.nonCaptainStarPitchTriggeredType == 2) {
+        g_Pitcher.pitchSpeed = g_Pitcher.fastBallSpeed * lbl_3_data_5F08.fastBallSpeed;
+    } else if (g_Pitcher.ChargePitchType != 0) {
+        if (g_Pitcher.ChargePitchType == 1) {
+            g_Pitcher.ChargePitchType = 2;
+        }
+        g_Pitcher.pitchSpeed = g_Pitcher.fastBallSpeed -
+                               (s32)(lbl_3_data_5F08.changeUpSpeed * ((f32)g_Pitcher.fastBallSpeed - (f32)g_Pitcher.curveBallSpeed) *
+                                     (lbl_3_rodata_1290 - g_Pitcher.pitchChargeUp));
+    } else if (g_Pitcher.TypeOfPitch == 2) {
+        g_Pitcher.pitchSpeed = g_Pitcher.curveBallSpeed;
+    } else {
+        g_Pitcher.pitchSpeed = g_Pitcher.curveBallSpeed;
+    }
+    if (g_Pitcher.ChargePitchType >= 2 || g_Pitcher.TypeOfPitch == 2 || g_Pitcher.nonCaptainStarPitchTriggeredType == 2 ||
+        g_Pitcher.nonCaptainStarPitchTriggeredType == 3) {
+        cursed *= lbl_3_data_5F08.chargeCursedBall;
+        control *= lbl_3_data_5F08.chargeCurveControl;
+        curve *= lbl_3_data_5F08.chargeCurve;
+    }
+    if (g_Pitcher.nonCaptainStarPitchTriggeredType == 0 &&
+        fn_3_6D564(g_GameLogic.teamFielding, g_Pitcher.rosterID, 0) < lbl_3_data_5EDC.threshold) {
+        if (g_Pitcher.ChargePitchType != 0) {
+            g_Pitcher.pitchSpeed = g_Pitcher.pitchSpeed * (lbl_3_rodata_1290 - lbl_3_rodata_1254 * lbl_3_data_5EDC.speedPct);
+        } else if (g_Pitcher.TypeOfPitch != 2) {
+            curve *= lbl_3_rodata_1290 - lbl_3_rodata_1254 * lbl_3_data_5EDC.curvePct;
+        }
+        control *= lbl_3_rodata_1290 - lbl_3_rodata_1254 * lbl_3_data_5EDC.curveControlPct;
+        cursed *= lbl_3_rodata_1290 - lbl_3_rodata_1254 * lbl_3_data_5EDC.cursedBallPct;
+    }
+    if (g_Minigame.GameMode_MiniGame == 1 || g_Minigame.GameMode_MiniGame == 3) {
+        g_Pitcher.pitchSpeed = g_Minigame.minigamePitchSpeedAdjustment;
+    }
+    g_Pitcher.calced_cursedBall = cursed;
+    g_Pitcher.calced_curveControl = control;
+    g_Pitcher.calced_curve = curve;
 }
+#endif
 
 // .text:0x0007310C size:0x49C mapped:0x806B21A0
 void fn_3_7310C(void) {
