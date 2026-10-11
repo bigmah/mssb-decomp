@@ -507,8 +507,36 @@ void fn_80033B58(TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wr
 }
 
 // .text:0x80033CC8 size:0x29C
-void fn_80033CC8(void) {
-    return;
+void fn_80033CC8(Particle* p, TexArchive* arc) {
+    GXTexObj texObj;
+    GXTlutObj tlutObj;
+    TexImage* img;
+    s32 tex = p->texIndex;
+    Vec* corner;
+    s32 i;
+
+    if (arc == NULL) {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    } else {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+        img = &arc->entries[arc->entries[tex].index].img;
+        if (img->tlut != NULL) {
+            GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
+            GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
+            GXLoadTlut(&tlutObj, GX_TLUT0);
+        } else {
+            GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+        }
+        GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        GXLoadTexObj(&texObj, GX_TEXMAP1);
+    }
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    corner = lbl_80180010;
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(p->pos.x + corner[i].x, p->pos.y + corner[i].y, p->pos.z + corner[i].z);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(lbl_800F7860[p->uvFrame + i].u, lbl_800F7860[p->uvFrame + i].v);
+    }
 }
 
 // .text:0x80033F64 size:0xD8
