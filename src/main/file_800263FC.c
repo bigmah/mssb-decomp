@@ -856,9 +856,89 @@ void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm) {
 #endif
 
 // .text:0x800297F0 size:0x4D8
-void fn_800297F0(void) {
-    return;
+// NONMATCHING 66%: float register allocation and scheduling
+#if NONMATCHING
+void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm) {
+    s32 lifeRange = prm->unk10 - prm->unkC;
+    SparkParticle* p = (SparkParticle*)e->particles;
+    f32 spinMin;
+    f32 spinRange;
+    f32 speedMin;
+    f32 speedRange;
+    f32 sizeMin;
+    f32 sizeRange;
+    f32 gravity;
+    f32 yaw;
+    f32 yawRange;
+    f32 pitch;
+    f32 pitchRange;
+    f32 pitchEnd;
+    s32 fadeStart;
+    u8 alpha;
+
+    e->tex = prm->tex;
+    spinMin = ((f32)prm->unk1C / 100000.0f) / 360.0f;
+    speedMin = (f32)prm->unk14 / 100000.0f;
+    sizeMin = (f32)prm->unk24 / 100000.0f;
+    gravity = (f32)prm->unk2C / 100000.0f;
+    speedRange = (f32)prm->unk18 / 100000.0f - speedMin;
+    sizeRange = (f32)prm->unk28 / 100000.0f - sizeMin;
+    spinRange = ((f32)prm->unk20 / 100000.0f) / 360.0f - spinMin;
+    if (axis != NULL) {
+        yaw = (f32)prm->unk48 / 100000.0f;
+        yawRange = (f32)(prm->unk4C - prm->unk48) / 100000.0f;
+        pitch = (f32)prm->unk40 / 100000.0f;
+        pitchRange = (f32)(prm->unk44 - prm->unk40) / 100000.0f;
+    } else {
+        // spread evenly over the sphere
+        pitch = -180.0f;
+        yaw = -180.0f;
+        yawRange = pitchRange = 360.0f / (f32)(s32)(f32)sqrt(prm->unk8);
+    }
+    alpha = prm->unk30;
+    if (prm->unk38 != 0) {
+        fadeStart = (alpha + (prm->unk38 - 1)) / prm->unk38;
+    } else {
+        fadeStart = 0;
+    }
+    do {
+        p->texIndex = prm->texIndex;
+        p->delay = 0;
+        p->life = prm->unkC + (lifeRange * rand()) / 32767;
+        pitchEnd = pitch + pitchRange;
+        p->size = sizeMin + (sizeRange * (f32)rand()) / 32767.0f;
+        p->pos.x = pos->x;
+        p->pos.y = pos->y - p->size * 0.5f;
+        p->pos.z = pos->z;
+        fn_800332B8(axis, &p->vel, yaw, yaw + yawRange, pitch, pitchEnd);
+        if (axis == NULL) {
+            yaw += yawRange;
+            if (yaw >= 180.0f) {
+                pitch += pitchRange;
+                yaw -= 360.0f;
+                if (pitch >= 180.0f) {
+                    pitch -= 360.0f;
+                }
+            }
+        } else {
+            pitch = -pitchEnd;
+        }
+        PSVECScale(&p->vel, speedMin + (speedRange * (f32)rand()) / 32767.0f, &p->vel);
+        p->accel.x = 0.0f;
+        p->accel.z = 0.0f;
+        p->accel.y = gravity;
+        p->spin = p->angle = spinMin + (spinRange * (f32)rand()) / 32767.0f;
+        p->color.rgba = prm->unk30;
+        p->alphaMax = alpha;
+        p->fadeIn = prm->unk34;
+        p->fadeOut = prm->unk38;
+        p->fadeStart = fadeStart;
+        p->additive = prm->unk3C;
+        p->zTest = prm->unk50;
+        p = (SparkParticle*)p->next;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x80029CC8 size:0x504
 // NONMATCHING 62%: register allocation; the original copies the identity matrix word by word
