@@ -60,7 +60,7 @@ extern GameSettingsView g_d_GameSettings;
 extern AramState lbl_803C6CF8;
 extern Unk803716B8 lbl_803716B8;
 extern AramFile* lbl_803CB790;
-extern s32 lbl_803CBBF0;
+extern u32 lbl_803CBBF0;
 extern CharLoadTask* lbl_803CC1B8;
 extern CharPart lbl_80118220[13];
 
@@ -184,6 +184,21 @@ extern CharActor* lbl_803CBC18;
 extern u8 lbl_800EEA58[25];
 extern void fn_8003A540(s32 arg);
 extern void fn_800BF048(void (*fn)(void));
+typedef struct BattingOrder {
+    /*0x0*/ s8 roster;
+    /*0x1*/ u8 _1;
+    /*0x2*/ s8 pos;
+    /*0x3*/ u8 _3;
+} BattingOrder;
+
+extern BattingOrder lbl_80354720[2][9];
+extern u8 lbl_803CB7C2;
+extern u8 lbl_803CBBF8;
+extern u8 lbl_803CBBF9;
+extern u8 lbl_803CBBFA;
+extern s32 lbl_803CBC28;
+extern u8 lbl_803CBC2C;
+extern void fn_80021ADC(s16 id, void** files);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -642,8 +657,8 @@ void fn_80012B90(void) {
 }
 
 // .text:0x80013680 size:0xB84
-void fn_80013680(void) {
-    return;
+u8 fn_80013680(CharActor* actor) {
+    return 0;
 }
 
 // .text:0x80014204 size:0x3F4
@@ -955,14 +970,201 @@ void fn_8001500C(void) {
 }
 
 // .text:0x80015468 size:0x4E4
-void fn_80015468(void) {
-    return;
+s32 fn_80015468(s32 team) {
+    return 0;
 }
 
 // .text:0x8001594C size:0x9F8
+// Attaches a CharPart (lbl_80118220) to each actor that needs one; returns
+// TRUE once all lbl_803CBBF8 actors are done.
+static inline BOOL attachActorParts(void) {
+    CharActor* actor;
+    CharPart* part;
+    s32 idx;
+    u8 kind;
+    s32 k;
+    s32 n;
+    BOOL ok;
+    BOOL done;
+
+    if (lbl_803CB7C2 != 0) {
+        lbl_803CB7C2 = 0;
+        if (lbl_803CBC34[0] != 0) {
+            lbl_803CBC2C = 0;
+            lbl_803CBBF8 = 9;
+        } else {
+            if (lbl_803CBC34[1] != 0) {
+                lbl_803CBC2C = 0;
+                lbl_803CBBF8++;
+            }
+            if (lbl_803CBC34[2] != 0) {
+                lbl_803CBBF8++;
+                if (lbl_803CBC34[1] == 0) {
+                    lbl_803CBC2C = 1;
+                }
+            }
+        }
+    }
+    if (lbl_803CBBF8 == 0) {
+        return TRUE;
+    }
+    idx = lbl_803CBBF0 + lbl_803CBC2C;
+    actor = lbl_8036E548.active[idx];
+    kind = actor->kind;
+    if (lbl_803CBBF9 == 0) {
+        for (k = 0; lbl_80118220[k]._61 != -2; k++) {
+            if (kind == (s8)lbl_80118220[k].slot && lbl_80118220[k]._61 == -1) {
+                part = &lbl_80118220[k];
+                actor->part = part;
+                part->slot = kind;
+                part->_61 = idx;
+                part->player.model = actor->files[4];
+                done = TRUE;
+                goto next;
+            }
+        }
+        lbl_803CBBF9 = 1;
+        for (n = 0; lbl_80118220[n]._61 != -2; n++) {
+            if (lbl_80118220[n]._61 == -1) {
+                break;
+            }
+        }
+        lbl_803CBC28 = n;
+    }
+    n = lbl_803CBC28;
+    lbl_80118220[n].player.unk59 = 0;
+    if (lbl_800EEB18[kind] == -1 || actor->files[4] == NULL) {
+        ok = TRUE;
+        actor->part = NULL;
+    } else {
+        if (lbl_803CBBFA == 0) {
+            fn_80021ADC(lbl_800EEB18[kind], lbl_80118220[n].files);
+            lbl_803CBBFA = 1;
+        }
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            part = &lbl_80118220[n];
+            part->slot = kind;
+            part->_61 = idx;
+            part->player.set = (ShapeAnimSet*)part->files;
+            fn_80025FFC(actor->files[4], &part->player);
+            actor->part = part;
+            ok = TRUE;
+            lbl_803CBBFA = 0;
+        } else {
+            ok = FALSE;
+        }
+    }
+    if (ok) {
+        done = TRUE;
+        lbl_803CBBF9 = 0;
+    } else {
+        done = FALSE;
+    }
+next:
+    if (done) {
+        lbl_803CBBF0++;
+    }
+    if (lbl_803CBBF8 == lbl_803CBBF0) {
+        lbl_803CBBF0 = 0;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static inline BOOL setupActorModels(void) {
+    if (fn_80013680(lbl_8036E548.active[lbl_803CBBF0])) {
+        lbl_803CBBF0++;
+    }
+    if (lbl_803CBBF0 == 9) {
+        lbl_803CBBF0 = 0;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+// NONMATCHING 92%: register allocation in the inlined part-attach state machine
+#if NONMATCHING
 s32 fn_8001594C(s32 team) {
+    BattingOrder* order;
+    s32 i;
+    s32 k;
+
+    if (lbl_8036E548.state == 1) {
+        return 0;
+    }
+    if (lbl_8036E548.state == 2) {
+        lbl_8036E548.active[lbl_8036E548._2D7A[1]] = &lbl_8036E548.actors[lbl_8036E548._2D79];
+        lbl_8036E548.state = 0;
+        lbl_8036E548._2D7A[1]++;
+    }
+    if (lbl_8036E548._2D7A[1] == 9) {
+        lbl_8036E548._2D8E = 0;
+        lbl_8036E548._2D7A[1] = 10;
+    }
+    if (lbl_8036E548._2D7C == 0) {
+        if (lbl_8036E548._2D7A[1] == 10) {
+            if (fn_80015468(team) == 0) {
+                return 0;
+            }
+            lbl_8036E548._2D7A[1] = 11;
+        }
+        if (lbl_8036E548._2D7A[1] == 11) {
+            if (!attachActorParts()) {
+                return 0;
+            }
+            lbl_8036E548._2D7A[1] = 12;
+        }
+        if (lbl_8036E548._2D7A[1] == 12) {
+            if (!setupActorModels()) {
+                return 0;
+            }
+            return 1;
+        }
+    } else {
+        if (lbl_8036E548._2D7A[1] == 10) {
+            if (fn_80014A18() == 0) {
+                return 0;
+            }
+            lbl_8036E548._2D7A[1] = 11;
+        }
+        if (lbl_8036E548._2D7A[1] == 11) {
+            if (!attachActorParts()) {
+                return 0;
+            }
+            lbl_8036E548._2D7A[1] = 12;
+        }
+        if (lbl_8036E548._2D7A[1] == 12) {
+            if (!setupActorModels()) {
+                return 0;
+            }
+            return 1;
+        }
+    }
+    order = lbl_80354720[team];
+    for (i = 0; i < 9; i++) {
+        if (lbl_8036E548.active[i] == NULL) {
+            continue;
+        }
+        for (k = 0; k < 9; k++) {
+            if (lbl_8036E548.active[i]->kind == inMemRoster[team][order[k].roster].charId) {
+                break;
+            }
+        }
+        if (k >= 9) {
+            fn_80011BE4(i);
+        }
+    }
+    for (k = 0; k < 9; k++) {
+        if ((s8)lbl_8036E548._2D7A[1] == order[k].pos) {
+            break;
+        }
+    }
+    if (fn_80017098(team, k, 0, lbl_8036E548._2D7A[1], 0, -1) != 0) {
+        lbl_8036E548.state = 2;
+    }
     return 0;
 }
+#endif
 
 // .text:0x80016344 size:0x3CC
 void fn_80016344(void) {

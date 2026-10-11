@@ -416,6 +416,9 @@ void fn_80014204(s32 count);
 
 s32 fn_8001594C(s32 team);
 
+s32 fn_80015468(s32 team);
+u8 fn_80013680(CharActor* actor);
+
 void fn_8001B200(void);
 
 void fn_8001B214(void (*callback)(void));
