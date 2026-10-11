@@ -3033,3 +3033,109 @@ void fn_2_709A0(MenuEntry* owner) {
     }
 }
 #endif
+
+// .text:0x71098 size:0x9A0
+// NONMATCHING 99%: r4/r5 swapped for the menu base and the self entry before atan2 (as in fn_2_705C0)
+#if NONMATCHING
+void fn_2_71098(MenuEntry* owner) {
+    s32 id;
+    s32 inFront;
+    s32 i;
+    s32 hit;
+    MenuEntry* e;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    id = owner->objectId;
+    fn_2_68F08(owner->objectId, 1);
+    inFront = 0;
+    memcpy(&owner->target, &lbl_2_data_2EA4[lbl_2_bss_1A8248[0]->entries[0].targetLocation], sizeof(Vec));
+    pz = owner->target.z;
+    px = owner->target.x;
+    fn_2_6A450(id, px, pz);
+    owner->mode = 12;
+    for (i = 1; i < 7; i++) {
+        if ((u8)fn_2_68C80(id, i)) {
+            owner->flagCB = i;
+            break;
+        }
+        owner->flagCB = -1;
+    }
+    if (owner->flagCB >= 2 && owner->flagCB <= 6) {
+        fn_2_68940(id, owner->flagCB);
+        inFront = fn_2_687A4(id, owner->flagCB, lbl_2_bss_1A8248[0]->entries[0].targetLocation);
+    }
+    if (inFront == 0) {
+        fn_2_69E1C(id);
+    } else {
+        fn_2_699D4(id);
+    }
+    fn_2_68FBC(id, 0);
+    for (i = 1; i < 7; i++) {
+        hit = (u8)fn_2_68C80(id, i);
+        if (hit != 0 && i == 1 && ((u8*)lbl_2_bss_1A8248[0])[0x44F3] == 0) {
+            owner->flagC4 = 2;
+            owner->flagCB = i;
+            e = &lbl_2_bss_1A8248[0]->entries[id];
+            e->typeC3 = 3;
+            e->state = 0;
+            return;
+        }
+        if (hit != 0 && i >= 2 && i <= 6) {
+            owner->mode = 4;
+            owner->flagC4 = 1;
+            owner->locationIndex = fn_2_689CC(0);
+            e = &lbl_2_bss_1A8248[0]->entries[id];
+            e->typeC3 = 4;
+            e->state = 0;
+            return;
+        }
+        owner->flagCB = -1;
+        owner->state = 1;
+    }
+    if (owner->flagCD == 1) {
+        MenuEntry* other;
+        MenuEntry* self;
+        f32 angle;
+        f32 diff;
+
+        self = &lbl_2_bss_1A8248[0]->entries[id];
+        other = &lbl_2_bss_1A8248[0]->entries[owner->flagCE];
+        angle = (f32)atan2(-(self->position.x - other->position.x), -(self->position.z - other->position.z));
+        diff = fn_2_4A18C(other->heading) - angle;
+        if (other->typeC3 == 7 && (owner->state == 0 || owner->state == 1)) {
+            if ((f32)__fabs(diff) < lbl_2_rodata_BB8) {
+                lbl_2_bss_1A824C[0][0x1978F1] = 0;
+            } else {
+                lbl_2_bss_1A824C[0][0x1978F1] = 2;
+            }
+        } else {
+            lbl_2_bss_1A824C[0][0x1978F1] = 1;
+        }
+        owner->mode = 4;
+        owner->flagC4 = 1;
+        owner->locationIndex = fn_2_689CC(0);
+        e = &lbl_2_bss_1A8248[0]->entries[id];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+    if (owner->_50 <= lbl_2_rodata_B58) {
+        owner->mode = 9;
+        owner->flagC4 = 1;
+        if (lbl_2_bss_1A824C[0][0x19783D] == 0) {
+            lbl_2_bss_1A8248[0]->entries[0].locationIndex = lbl_2_bss_1A8248[0]->entries[0].targetLocation;
+        } else {
+            lbl_2_bss_1A8248[0]->entries[0].locationIndex = lbl_2_bss_1A8248[0]->entries[0]._AE;
+        }
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 1;
+        owner->locationIndex = fn_2_689CC(0);
+        e = &lbl_2_bss_1A8248[0]->entries[id];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+}
+#endif
