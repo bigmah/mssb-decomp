@@ -5,6 +5,9 @@
 #include "main/file_80039AC0.h"
 #include "stl/math.h"
 #include "stl/mem.h"
+#include "main/file_80011640.h"
+#include "main/file_800A7C08.h"
+#include "main/file_800BDEA0.h"
 
 // Particle / emitter system.
 
@@ -33,10 +36,6 @@ void SetFogNone(void);
 u32 fn_8005268C(void);       // file_8004C5F8
 void* fn_80052734(s32 index); // file_8004C5F8: projection matrix
 extern u8 lbl_800F7840[]; // 4x4 RGB565 texture
-void* _OSAllocFromHeap(s32 heap, s32 size);
-void fn_800ACFB0(void* p); // free
-void fn_800C07BC(void* base, void* tmp, s32 n, s32 size, s32 (*cmp)(const void*, const void*)); // merge sort
-void fn_800118AC(Mtx in, Mtx out); // TODO: belongs in file_80011640.h
 
 extern f32 lbl_8017ED68[]; // cosine table, 0x800 steps per turn
 extern Mtx lbl_8017FF78[2]; // [0]: billboard rotation (inverse view, no translation), [1]: inverse view
@@ -47,9 +46,6 @@ extern Emitter lbl_801F8040[0x10];    // emitter pool
 extern UVCoord lbl_800F7860[];
 extern TexCoordF lbl_800F78C0[4]; // quad corner texcoords
 extern const Vec lbl_800E6778;    // (1, 0, 0)
-typedef struct MtxBox {
-    Mtx m;
-} MtxBox;
 extern const MtxBox lbl_800E67C0; // identity
 extern const MtxBox lbl_800E682C; // identity
 extern const MtxBox lbl_800E67F0; // identity
@@ -73,11 +69,6 @@ extern s32 lbl_803CB7F8;          // respawn delay mask
 extern f32 lbl_803CB7FC;          // respawn angle spread (0..1)
 extern ParticleParams lbl_800F787C; // default spawn parameters
 extern TexArchive* lbl_803CBD0C;
-typedef struct ActorTable {
-    /* 0x0000 */ u8 pad0[0x2C50];
-    /* 0x2C50 */ void* actors[13];
-} ActorTable;
-extern ActorTable lbl_8036E548; // only the field used here
 extern SpaniSlot lbl_80371C30[0x360];
 extern SpaniObj* lbl_803CBC9C;
 extern Particle* lbl_803CBC74; // free particle list
@@ -204,7 +195,7 @@ static inline void LoadParticleTex(TexArchive* arc, s32 idx, GXTexWrapMode wrapS
         return;
     }
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
-    img = &arc->entries[arc->entries[idx].index].img;
+    img = &arc->entries[arc->entries[idx].index];
     if (img->tlut != NULL) {
         GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE, 0);
         GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
@@ -228,7 +219,7 @@ static inline void DrawParticleQuad(Particle* p, TexArchive* arc) {
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     } else {
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
-        img = &arc->entries[arc->entries[tex].index].img;
+        img = &arc->entries[arc->entries[tex].index];
         if (img->tlut != NULL) {
             GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
             GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
@@ -357,6 +348,7 @@ static inline u32 Expand4444(u16 c) {
 
 // .text:0x800263FC size:0x59C
 // NONMATCHING 43%: the original inlines the z-sort (fn_80031F34) and the corner setup with the file-static bss base
+// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_800263FC(Emitter* e) {
     s32 alive = 0;
@@ -1453,6 +1445,7 @@ u8 fn_8002AC68(Emitter* e, Particle* p) {
 
 // .text:0x8002B014 size:0x3EC
 // NONMATCHING 36%: the original inlines the z-sort (fn_80031F34) twice
+// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_8002B014(Emitter* e) {
     s32 alive = 0;
@@ -1970,7 +1963,7 @@ s32 fn_8002D82C(Emitter* e) {
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     } else {
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
-        img = &arc->entries[arc->entries[tex].index].img;
+        img = &arc->entries[arc->entries[tex].index];
         if (img->tlut != NULL) {
             GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
             GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
@@ -2657,6 +2650,7 @@ void fn_80030D88(Vec* pos, Vec* dir, ParticleParams5* prm, u8 type) {
 
 // .text:0x80031034 size:0x790
 // NONMATCHING 43%: the original inlines fn_80031F34 and the corner/draw helpers with the file-static bss base
+// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_80031034(Emitter* e) {
     Vec a;
@@ -2996,11 +2990,11 @@ void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
     Particle* p;
     f32 size;
 
-    if (a < 0 || a >= 13 || lbl_8036E548.actors[a] == NULL) {
+    if (a < 0 || a >= 13 || lbl_8036E548.active[a] == NULL) {
         return;
     }
-    getAnimRelatedCoordinates(a, anim, (VecXYZ*)&pos); // TODO type: VecXYZ and Vec have the same layout
-    if (b >= 0 && b < 13 && lbl_8036E548.actors[b] != NULL) {
+    getAnimRelatedCoordinates(a, anim, &pos);
+    if (b >= 0 && b < 13 && lbl_8036E548.active[b] != NULL) {
         // midpoint between the two actors
         getAnimRelatedCoordinates(b, anim, (VecXYZ*)&q);
         PSVECSubtract(&q, &pos, &q);
@@ -3036,6 +3030,7 @@ void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
 
 // .text:0x800328E0 size:0x7EC
 // NONMATCHING 59%: the original inlines fn_8003403C with the file-static bss base (lbl_8017EC00 + offset); calls fn_8003403C here
+// nmverify: fn_8003403C inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_800328E0(Emitter* e) {
     Mtx rotM;
@@ -3382,7 +3377,7 @@ void fn_80033CC8(Particle* p, TexArchive* arc) {
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     } else {
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
-        img = &arc->entries[arc->entries[tex].index].img;
+        img = &arc->entries[arc->entries[tex].index];
         if (img->tlut != NULL) {
             GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
             GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
@@ -3630,7 +3625,7 @@ void minigamesSetSomePointers2(void) {
 #endif
 
 // .text:0x80034BCC size:0x120
-s32 fn_80034BCC(SpaniAttach* a) {
+s32 fn_80034BCC(SpaniAttach* a, Mtx unused) {
     SpaniObj* o;
     u8* col;
 

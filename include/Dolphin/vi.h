@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+struct _GXRenderModeObj;
+
 #ifdef __cplusplus
 extern "C" {
 #endif // ifdef __cplusplus

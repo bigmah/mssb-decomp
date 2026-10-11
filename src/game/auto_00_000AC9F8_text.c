@@ -24,7 +24,7 @@ extern void fn_3_6D964(s32, s32);
 extern void setInMemBatterConstants(int rosterID);
 extern s32 fn_3_6BA64(void);
 extern s32 fn_3_B3CD4(void);
-extern void fn_3_B4124(s32, s32, s32, u8);
+extern void fn_3_B4124(s32 team, s32 slot, s32 charId, s32 handedness);
 extern void fn_80011BE4(s32);
 extern s16* lbl_3_data_FDE4[];
 extern u8 lbl_3_data_10598[];
@@ -84,7 +84,6 @@ extern s16 lbl_3_data_104B8[][2][3];
 
 #pragma dont_inline on
 
-extern s32 fn_3_5B380(u16 buttons);
 extern s32 fn_3_5B220(s32);
 extern u8 lbl_3_data_FACC[];
 
@@ -627,7 +626,7 @@ void fn_3_B11D0(void) {
     g_Strikes.allForcedRunnersReachedTheirBaseInd = 0;
     g_Ball.totalFramesAtPlay = 0;
     g_FieldingLogic._10E = 0;
-    g_FieldingLogic._EE = 0;
+    g_FieldingLogic._0EE = 0;
     g_FieldingLogic._10F = 0;
     g_FieldingLogic._110 = 0;
     g_FieldingLogic._128 = 0;
@@ -660,7 +659,7 @@ void fn_3_B02A8(void) {
     g_Strikes.allForcedRunnersReachedTheirBaseInd = 0;
     g_Ball.totalFramesAtPlay = 0;
     g_FieldingLogic._10E = 0;
-    g_FieldingLogic._EE = 0;
+    g_FieldingLogic._0EE = 0;
     g_FieldingLogic._10F = 0;
     g_FieldingLogic._110 = 0;
     g_FieldingLogic._128 = 0;
@@ -794,16 +793,16 @@ void fn_3_AE770(void) {
     for (i = 0; i < 2; i++) {
         if (g_GameLogic._13E[i] == 0) {
             if (lbl_800E8754.port[g_GameLogic.teams[i]]._2 != 0) {
-                g_GameLogic.battingAIInd[g_GameLogic.homeTeamInd ^ i] = 1;
+                g_GameLogic.battingAIInd[g_GameLogic._000 ^ i] = 1;
             } else {
-                g_GameLogic.battingAIInd[g_GameLogic.homeTeamInd ^ i] = 0;
+                g_GameLogic.battingAIInd[g_GameLogic._000 ^ i] = 0;
             }
             if (lbl_800E8754.port[g_GameLogic.teams[i]]._3 != 0) {
-                g_GameLogic.teamAIInd[g_GameLogic.homeTeamInd ^ i] = 1;
-                g_GameLogic.autoFielding[g_GameLogic.homeTeamInd ^ i] = 1;
+                g_GameLogic.teamAIInd[g_GameLogic._000 ^ i] = 1;
+                g_GameLogic.autoFielding[g_GameLogic._000 ^ i] = 1;
             } else {
-                g_GameLogic.teamAIInd[g_GameLogic.homeTeamInd ^ i] = 0;
-                g_GameLogic.autoFielding[g_GameLogic.homeTeamInd ^ i] = 0;
+                g_GameLogic.teamAIInd[g_GameLogic._000 ^ i] = 0;
+                g_GameLogic.autoFielding[g_GameLogic._000 ^ i] = 0;
             }
         }
     }
@@ -1178,15 +1177,15 @@ void fn_3_AFE0C(void) {
             t = 0x3C;
             goto count;
         }
-        g_FieldingLogic._AE = 0;
+        g_FieldingLogic._0AE = 0;
         return;
     }
     if (g_Ball.AtBat_ContactResult == 0) {
-        g_FieldingLogic._AE = 0;
+        g_FieldingLogic._0AE = 0;
         return;
     }
     if (g_Practice.guidedPracticeCompletionRelated != 0) {
-        g_FieldingLogic._AE = 0;
+        g_FieldingLogic._0AE = 0;
         return;
     }
     if (g_Ball.deadBallReason == 1) {
@@ -1204,29 +1203,29 @@ void fn_3_AFE0C(void) {
         t = 0x78;
     }
 count:
-    if (g_FieldingLogic._AE < 0x7FFE) {
-        g_FieldingLogic._AE += 1;
+    if (g_FieldingLogic._0AE < 0x7FFE) {
+        g_FieldingLogic._0AE += 1;
     } else {
-        g_FieldingLogic._AE = 0x7FFF;
+        g_FieldingLogic._0AE = 0x7FFF;
     }
-    if (g_GameLogic.framePlayEnd > t && g_FieldingLogic._AE > t - 0x5A) {
-        g_FieldingLogic._AE = 0;
-        g_FieldingLogic._EE = 0;
+    if (g_GameLogic.framePlayEnd > t && g_FieldingLogic._0AE > t - 0x5A) {
+        g_FieldingLogic._0AE = 0;
+        g_FieldingLogic._0EE = 0;
     }
-    if (g_FieldingLogic._AE >= t) {
+    if (g_FieldingLogic._0AE >= t) {
         g_Practice.allowPlayToEndIndicator = 0;
         g_GameLogic.pre_PostMiniGameInd = 1;
         g_GameLogic.minigameLastTurnSuccessInd = 1;
         fn_3_1DD48();
         fn_3_5A6D4(7);
-    } else if (g_FieldingLogic._AE >= t - 6) {
+    } else if (g_FieldingLogic._0AE >= t - 6) {
         changeScene(3, 6);
-    } else if (g_FieldingLogic._AE == t - 0x1E) {
+    } else if (g_FieldingLogic._0AE == t - 0x1E) {
         g_FieldingLogic._10E = 1;
-        g_FieldingLogic._EE = 1;
+        g_FieldingLogic._0EE = 1;
     }
     g_GameLogic.framePlayEnd = t;
-    g_GameLogic.CountdownUntilFade = t - g_FieldingLogic._AE;
+    g_GameLogic.CountdownUntilFade = t - g_FieldingLogic._0AE;
 }
 
 #pragma dont_inline off
@@ -1525,7 +1524,7 @@ void fn_3_B0E00(void) {
         if (g_Practice.allowPlayToEndIndicator != 0) {
             limit = 0x3C;
         } else {
-            g_FieldingLogic._AE = 0;
+            g_FieldingLogic._0AE = 0;
             return;
         }
     } else if (g_Practice._1E4 != 2) {
@@ -1583,15 +1582,15 @@ void fn_3_B0E00(void) {
             return;
         }
     }
-    if (g_FieldingLogic._AE < 0x7FFE) {
-        g_FieldingLogic._AE += 1;
+    if (g_FieldingLogic._0AE < 0x7FFE) {
+        g_FieldingLogic._0AE += 1;
     } else {
-        g_FieldingLogic._AE = 0x7FFF;
+        g_FieldingLogic._0AE = 0x7FFF;
     }
     if (g_Practice.guidedPracticeCompletionRelated == 0) {
-        if (g_FieldingLogic._AE >= limit) {
+        if (g_FieldingLogic._0AE >= limit) {
             fn_3_B0DB0();
-        } else if (g_FieldingLogic._AE == limit - 6) {
+        } else if (g_FieldingLogic._0AE == limit - 6) {
             changeScene(3, 6);
         }
     }
@@ -2574,16 +2573,16 @@ void fn_3_ADA3C(void) {
         for (i = 0; i < 2; i++) {
             if (g_GameLogic._13E[i] == 0) {
                 if (lbl_800E8754.port[g_GameLogic.teams[i]]._2 != 0) {
-                    g_GameLogic.battingAIInd[g_GameLogic.homeTeamInd ^ i] = 1;
+                    g_GameLogic.battingAIInd[g_GameLogic._000 ^ i] = 1;
                 } else {
-                    g_GameLogic.battingAIInd[g_GameLogic.homeTeamInd ^ i] = 0;
+                    g_GameLogic.battingAIInd[g_GameLogic._000 ^ i] = 0;
                 }
                 if (lbl_800E8754.port[g_GameLogic.teams[i]]._3 != 0) {
-                    g_GameLogic.teamAIInd[g_GameLogic.homeTeamInd ^ i] = 1;
-                    g_GameLogic.autoFielding[g_GameLogic.homeTeamInd ^ i] = 1;
+                    g_GameLogic.teamAIInd[g_GameLogic._000 ^ i] = 1;
+                    g_GameLogic.autoFielding[g_GameLogic._000 ^ i] = 1;
                 } else {
-                    g_GameLogic.teamAIInd[g_GameLogic.homeTeamInd ^ i] = 0;
-                    g_GameLogic.autoFielding[g_GameLogic.homeTeamInd ^ i] = 0;
+                    g_GameLogic.teamAIInd[g_GameLogic._000 ^ i] = 0;
+                    g_GameLogic.autoFielding[g_GameLogic._000 ^ i] = 0;
                 }
             }
         }

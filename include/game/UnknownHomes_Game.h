@@ -7,6 +7,7 @@
 #define SQRT2_LINKAGE extern
 #include "math.h"
 #include "Dolphin/mtx.h"
+#include "Dolphin/vec.h"
 
 #define SINF(x) ((f32)sin(x))
 #define COSF(x) ((f32)cos(x))
@@ -69,9 +70,7 @@ typedef struct _VecXZ {
     f32 x, z;
 } VecXZ;
 
-typedef struct _VecXYZ {
-    f32 x, y, z;
-} VecXYZ;
+typedef Vec VecXYZ; // same object as Dolphin Vec
 
 typedef struct _Orientationf {
     s16 yaw, pitch, roll;
@@ -816,7 +815,7 @@ typedef struct _InputStruct {
     /*0x02*/ s16 controlStickMagnitude;
     /*0x04*/ E(u16, INPUT_BUTTON) buttonInput;
     /*0x06*/ E(u16, INPUT_BUTTON) newButtonInput; // pressed this frame
-    /*0x08*/ u16 _08; // repeat buttons
+    /*0x08*/ u16 _08; // held direction mask (read as u16)
     /*0x0A*/ s8 right_left;
     /*0x0B*/ s8 up_down;
     /*0x0C*/ s8 rightTriggerDistance;
@@ -873,9 +872,9 @@ typedef struct _PracticeStruct {
     /*0x020*/ s16* commandList; // tutorial command script
     /*0x024*/ int homeAway;
     artificial_padding(0x24, 0x140, int);
-    /*0x140*/ frame_t totalFrames;
-    /*0x142*/ frame_t framesInCurrTransitionState;
-    /*0x144*/ frame_t framesSincePracticeMenuDefaultTransition;
+    /*0x140*/ u16 totalFrames;
+    /*0x142*/ u16 framesInCurrTransitionState;
+    /*0x144*/ u16 framesSincePracticeMenuDefaultTransition;
     /*0x146*/ frame_t practiceMenu_framesOnCurrMenuScreen;
     /*0x148*/ u16 frames_sinceMovedToFromMenu;
     /*0x14A*/ frame_t _14A;
@@ -918,20 +917,27 @@ typedef struct _PracticeStruct {
     /*0x198*/ E(u8, PRACTICE_TYPE) practiceType_1;
     /*0x199*/ E(u8, PRACTICE_TYPE) practiceType;
     /*0x19A*/ u8 subMenuCursor;
-    artificial_padding(0x19a, 0x19e, u8);
+    /*0x19B*/ u8 _19B;
+    /*0x19C*/ u8 _19C;
+    /*0x19D*/ u8 _19D;
     /*0x19E*/ u8 pauseMenuLoading; // unsure
     /*0x19F*/ u8 _19F;
     /*0x1A0*/ u8 _1A0;
     /*0x1A1*/ u8 aIEnabled;
     /*0x1A2*/ u8 practiceBatterHandedness; // unsure
     /*0x1A3*/ u8 freePracticeInd_writeOnly;
-    artificial_padding(0x1a3, 0x1aa, u8);
+    /*0x1A4*/ u8 _1A4;
+    /*0x1A5*/ u8 _1A5;
+    /*0x1A6*/ u8 _1A6;
+    /*0x1A7*/ u8 _1A7;
+    /*0x1A8*/ u8 _1A8;
+    /*0x1A9*/ u8 _1A9;
     /*0x1AA*/ u8 transitioningIndicator; // unsure
-    artificial_padding(0x1aa, 0x1af, u8);
+    /*0x1AB*/ u8 startRunners[4]; // per base slot (0 = batter): occupied at practice start
     /*0x1AF*/ u8 returnToPracticeMenuState;
     /*0x1B0*/ u8 _1B0;
     /*0x1B1*/ u8 _1B1;
-    /*0x1B2*/ u8 levelCleared[4][4]; // [practiceType_2][practiceLevel]
+    /*0x1B2*/ u8 levelCleared[4][4]; // [practiceType][level], copied from the save
     /*0x1C2*/ s8 instructionNumber;
     /*0x1C3*/ u8 readyToMoveToNextInstruction; // unsure
     /*0x1C4*/ u8 practice_runner_countInputForMashing;
@@ -967,7 +973,15 @@ typedef struct _PracticeStruct {
     /*0x1E2*/ u8 _1E2;
     /*0x1E3*/ u8 aiBuntIndicator; // unsure
     /*0x1E4*/ u8 _1E4;
-    artificial_padding(0x1e4, 0x1ee, u8);
+    /*0x1E5*/ u8 _1E5;
+    /*0x1E6*/ u8 _1E6;
+    /*0x1E7*/ u8 _1E7;
+    /*0x1E8*/ u8 _1E8;
+    /*0x1E9*/ u8 _1E9;
+    /*0x1EA*/ u8 _1EA;
+    /*0x1EB*/ u8 _1EB;
+    /*0x1EC*/ u8 _1EC;
+    /*0x1ED*/ u8 _1ED;
     /*0x1EE*/ u8 _1EE;
     /*0x1EF*/ u8 rosterID; // unsure
 } PracticeStruct;          // size: 0x1f0
@@ -1118,13 +1132,13 @@ typedef struct _LogoInfoStruct {
 } LogoInfoStruct; // size: 0xC
 
 typedef struct _GameControlsStruct {
-    /*0x000*/ int homeTeamInd;
+    /*0x000*/ s32 _000; // a team index (0/1), compared with g_Scores.winningTeam
     /*0x004*/ int teamBatting;
     /*0x008*/ int teamFielding;
     /*0x00C*/ int homeTeamBattingInd_fieldingTeam;
     /*0x010*/ int awayTeamBattingInd_battingTeam;
     /*0x014*/ u32 AIDifficulty0Special3Weak[2];
-    artificial_padding(0x14, 0x24, u32[2]);
+    /*0x01C*/ s32 _01C[2]; // per team, from g_d_GameSettings.maybeHomeAway[]
     /*0x024*/ LogoInfoStruct logo[2];
     /*0x03C*/ int battingOrderAndPositionMapping[2][10][2]; // first Pair Is Pitcher
     /*0x0DC*/ int currentBatterPerTeam[2];
@@ -1140,9 +1154,9 @@ typedef struct _GameControlsStruct {
     /*0x108*/ s16 _108;
     /*0x10A*/ s16 bOD_framesInLiveBallScene;
     /*0x10C*/ s16 frameCountdownAtBeginningOfAtBatLockout;
-    /*0x10E*/ s16 scoreBook_teamDisplayed;
-    /*0x110*/ s16 scoreBook_batter_pitcherStatsDisplayed;
-    /*0x112*/ s16 scoreBook_scrollIndex;
+    /*0x10E*/ u16 scoreBook_teamDisplayed;
+    /*0x110*/ u16 scoreBook_batter_pitcherStatsDisplayed;
+    /*0x112*/ u16 scoreBook_scrollIndex;
     /*0x114*/ s16 _114;
     /*0x116*/ s16 scoreBook_logoFadeDirectionLeft_Right;
     /*0x118*/ s16 _118;
@@ -1167,18 +1181,18 @@ typedef struct _GameControlsStruct {
     /*0x12E*/ u8 hudLoadingRelated; // unsure
     /*0x12F*/ u8 _12F;
     /*0x130*/ E(u8, WIN_TYPE) winType;
-    /*0x131*/ u8 _131[2];
-    /*0x133*/ u8 _133[2];
+    /*0x131*/ u8 _131[2]; // per team
+    /*0x133*/ u8 _133[2]; // per team
     /*0x135*/ u8 _135;
     /*0x136*/ u8 _136;
-    /*0x137*/ u8 playOverFadeOutStarted;
+    /*0x137*/ s8 playOverFadeOutStarted; // also: scorebook team selection (-1: none)
     /*0x138*/ u8 playOver;
     /*0x139*/ u8 playOverInd;
     /*0x13A*/ u8 walkOffWinInd; // unsure
     /*0x13B*/ u8 gameOverInd;
     /*0x13C*/ u8 scoutFlag_VsScreenInd;
-    artificial_padding(0x13C, 0x13E, u8);
-    /*0x13E*/ u8 _13E[2];
+    /*0x13D*/ u8 _13D;
+    /*0x13E*/ u8 _13E[2]; // per team: AI controlled (also selects the alternate logo frame)
     /*0x140*/ u8 _140[2];
     /*0x142*/ u8 teamAIInd[2];
     /*0x144*/ u8 autoFielding[2];
@@ -1448,21 +1462,20 @@ typedef struct _UnkStructMinigame {
     /*0x05C*/ VecXYZ _5C;
 } UnkStructMinigame; // size: 0x68
 
+// Per-player arrays (index = player slot 0..3).
 typedef struct _MiniGameControlStruct {
-    /*0x000*/ s8 characterIndex[4];
-    /*0x004*/ u8 _4;
-    /*0x005*/ u8 _5;
-    /*0x006*/ u8 _6;
-    /*0x007*/ u8 _7;
-    /*0x008*/ u8 _8;
-    /*0x009*/ u8 _9;
-    /*0x00A*/ u8 _A;
-    /*0x00B*/ u8 _B;
-    /*0x00C*/ u8 battingHandedness[4];
-    /*0x010*/ u8 aIStrength[4];
-    /*0x014*/ u8 _14;
-    /*0x015*/ u8 _15;
-} MiniGameControlStruct; // size: 0x16
+    /*0x00*/ s8 characterIndex[4];
+    /*0x04*/ u8 _04[4];
+    /*0x08*/ u8 _08[4];
+    /*0x0C*/ u8 battingHandedness[4];
+    /*0x10*/ u8 aIStrength[4];
+    /*0x14*/ s8 turnOrder[4]; // [0] batter, [1] pitcher, then the fielders
+    /*0x18*/ s8 _18[4];
+    /*0x1C*/ u8 _1C[4];
+    /*0x20*/ u8 _20[4];
+    /*0x24*/ u8 _24[4];
+    /*0x28*/ s8 fieldOrder[4]; // [0] pitcher, then the fielders
+} MiniGameControlStruct; // size: 0x2C
 
 /*foul	1
 caught	2
@@ -1515,6 +1528,29 @@ typedef enum _WALL_BALL_GAME_STATE {
     WALL_BALL_GAME_STATE_DROP_IN_NEW_WALLS = 1,
     WALL_BALL_GAME_STATE_PITCH_OR_WAITING_FOR_PITCH = 2
 } WALL_BALL_GAME_STATE;
+
+typedef struct _MiniGameResultSlot {
+    /*0x0*/ u8 player;
+    /*0x1*/ u8 taken;
+} MiniGameResultSlot; // size: 0x2
+
+typedef struct _MiniGamePointsPair {
+    /*0x0*/ s16 current;
+    /*0x2*/ s16 latest;
+} MiniGamePointsPair; // size: 0x4
+
+typedef struct _MiniGameRoleStreak {
+    /*0x0*/ u8 role;
+    /*0x1*/ u8 count;
+} MiniGameRoleStreak; // size: 0x2
+
+typedef struct _MiniGameSlot9 {
+    /*0x0*/ s8 _0;
+    /*0x1*/ u8 _1;
+    /*0x2*/ s8 _2;
+    /*0x3*/ s8 _3;
+    /*0x4*/ u8 _4[5];
+} MiniGameSlot9; // size: 0x9
 
 typedef struct _MiniGameStruct {
     /*0x000*/ u8 _0;
@@ -1915,12 +1951,8 @@ typedef struct _MiniGameStruct {
     /*0xCC8*/ f32 _CC8;
     /*0xCCC*/ s16 _CCC;
     /*0xCCE*/ u8 _CCE[2];
-    /*0xCD0*/ VecXYZ wallBall_coinCoordinates;
-    /*0xCDC*/ u8 pad5[4];
-    /*0xCE0*/ f32 _CE0;
-    /*0xCE4*/ u8 pad6[160];
-    /*0xD84*/ VecXYZ _D84;
-    /*0xD90*/ u8 pad7[1008];
+    /*0xCD0*/ VecXYZ wallBall_coinCoordinates[30];
+    /*0xE38*/ u8 pad7[0x1180 - 0xE38];
     /*0x1180*/ VecXYZ wallBall_coinVelocity;
     /*0x118C*/ u8 pad8[168];
     /*0x1234*/ VecXYZ _1234;
@@ -1973,15 +2005,15 @@ typedef struct _MiniGameStruct {
     /*0x18AC*/ u8 pad12[12];
     /*0x18B8*/ s16 _18B8;
     /*0x18BA*/ s16 _18BA;
-    /*0x18BC*/ s32 minigamePoints_current_Latest[4];
-    /*0x18CC*/ MiniGameControlStruct minigameControlStruct[2];
-    /*0x18F8*/ u8 minigameFielderIndex[4];
-    /*0x18FC*/ u8 _18FC[4];
+    /*0x18BC*/ MiniGamePointsPair minigamePoints_current_Latest[4];
+    /*0x18CC*/ MiniGameControlStruct minigameControlStruct[1];
+    /*0x18F8*/ s8 minigameFielderIndex[4];
+    /*0x18FC*/ s8 _18FC[4];
     /*0x1900*/ u8 _1900;
     /*0x1901*/ u8 _1901;
     /*0x1902*/ u8 _1902;
     /*0x1903*/ u8 _1903;
-    /*0x1904*/ u8 minigamePlayerSelectedOrder;
+    /*0x1904*/ s8 minigamePlayerSelectedOrder; // the pitcher
     /*0x1905*/ s8 rosterID;
     /*0x1906*/ u8 miniGameNumberOfParticipants;
     /*0x1907*/ u8 _1907;
@@ -2016,51 +2048,16 @@ typedef struct _MiniGameStruct {
     /*0x1924*/ u8 runnerNum;
     /*0x1925*/ u8 _1925;
     /*0x1926*/ u8 toyFieldStateInd_collisionRelated;
-    /*0x1927*/ u8 _1927;
-    /*0x1928*/ s16 _1928;
-    /*0x192A*/ u8 _192A;
-    /*0x192B*/ s16 _192B;
-    /*0x192E*/ u8 _192E;
-    /*0x192F*/ u8 _192F;
-    /*0x1930*/ u8 _1930;
+    /*0x1927*/ u8 reelStop[3];
+    /*0x192A*/ u8 reelStart[3];
+    /*0x192D*/ u8 _192D; // slot result
+    /*0x192E*/ u8 reelSymbol[3];
     /*0x1931*/ u8 _1931;
     /*0x1932*/ s16 _1932;
     /*0x1934*/ u8 _1934;
-    /*0x1935*/ u8 _1935;
-    /*0x1936*/ u8 _1936;
-    /*0x1937*/ u8 _1937;
-    /*0x1938*/ u8 _1938;
+    /*0x1935*/ s8 playerOrder[4];
     /*0x1939*/ u8 _1939;
-    /*0x193A*/ u8 wallBall_coinsVisibleInd;
-    /*0x193B*/ u8 _193B;
-    /*0x193C*/ u8 _193C;
-    /*0x193D*/ u8 _193D;
-    /*0x193E*/ u8 _193E;
-    /*0x193F*/ u8 _193F;
-    /*0x1940*/ u8 _1940;
-    /*0x1941*/ u8 _1941;
-    /*0x1942*/ u8 _1942;
-    /*0x1943*/ u8 _1943;
-    /*0x1944*/ u8 _1944;
-    /*0x1945*/ u8 _1945;
-    /*0x1946*/ u8 _1946;
-    /*0x1947*/ u8 _1947;
-    /*0x1948*/ u8 _1948;
-    /*0x1949*/ u8 _1949;
-    /*0x194A*/ u8 _194A;
-    /*0x194B*/ u8 _194B;
-    /*0x194C*/ u8 _194C;
-    /*0x194D*/ u8 _194D;
-    /*0x194E*/ u8 _194E;
-    /*0x194F*/ u8 _194F;
-    /*0x1950*/ u8 _1950;
-    /*0x1951*/ u8 _1951;
-    /*0x1952*/ u8 _1952;
-    /*0x1953*/ u8 _1953;
-    /*0x1954*/ u8 _1954;
-    /*0x1955*/ u8 _1955;
-    /*0x1956*/ u8 _1956;
-    /*0x1957*/ u8 _1957;
+    /*0x193A*/ u8 wallBall_coinsVisibleInd[30];
     /*0x1958*/ u8 _1958;
     /*0x1959*/ u8 _1959;
     /*0x195A*/ u8 _195A;
@@ -2149,12 +2146,8 @@ typedef struct _MiniGameStruct {
     /*0x19B8*/ s16 TF_framesSinceHittingPanel;
     /*0x19BA*/ s16 _19BA;
     /*0x19BC*/ s16 _19BC;
-    /*0x19BE*/ u8 _19BE;
-    /*0x19BF*/ u8 _19BF;
-    /*0x19C0*/ s16 _19C0;
-    /*0x19C2*/ s16 _19C2;
-    /*0x19C4*/ s16 _19C4;
-    /*0x19C6*/ u8 _19C6;
+    /*0x19BE*/ MiniGameRoleStreak roleStreak[4]; // per player: last role (0 pitcher, 1 batter, 2 fielder) and repeat count
+    /*0x19C6*/ s8 _19C6;
     /*0x19C7*/ u8 _19C7;
     /*0x19C8*/ u8 maybeTFCollisionResultState;
     /*0x19C9*/ E(u8, TOY_FIELD_RESULT) toyFieldBallStateResult;
@@ -2165,14 +2158,8 @@ typedef struct _MiniGameStruct {
     /*0x19CE*/ u8 _19CE;
     /*0x19CF*/ u8 _19CF;
     /*0x19D0*/ s16 _19D0;
-    /*0x19D2*/ s16 _19D2;
-    /*0x19D4*/ s16 _19D4;
-    /*0x19D6*/ s16 _19D6;
-    /*0x19D8*/ s16 _19D8;
-    /*0x19DA*/ u8 _19DA;
-    /*0x19DB*/ u8 _19DB;
-    /*0x19DC*/ u8 _19DC;
-    /*0x19DD*/ u8 _19DD;
+    /*0x19D2*/ s16 _19D2[4];
+    /*0x19DA*/ s8 _19DA[4];
     /*0x19DE*/ u8 _19DE;
     /*0x19DF*/ u8 _19DF;
     /*0x19E0*/ u8 _19E0;
@@ -2182,50 +2169,12 @@ typedef struct _MiniGameStruct {
     /*0x19E4*/ s16 _19E4;
     /*0x19E6*/ u8 _19E6;
     /*0x19E7*/ u8 _19E7;
-    /*0x19E8*/ u8 _19E8;
-    /*0x19E9*/ u8 _19E9;
-    /*0x19EA*/ u8 _19EA;
-    /*0x19EB*/ u8 _19EB;
-    /*0x19EC*/ u8 _19EC;
-    /*0x19ED*/ u8 _19ED;
-    /*0x19EE*/ u8 _19EE;
-    /*0x19EF*/ u8 _19EF;
-    /*0x19F0*/ u8 _19F0;
-    /*0x19F1*/ u8 _19F1;
-    /*0x19F2*/ u8 _19F2;
-    /*0x19F3*/ u8 _19F3;
-    /*0x19F4*/ u8 _19F4;
-    /*0x19F5*/ u8 _19F5;
-    /*0x19F6*/ u8 pad14[2];
-    /*0x19F8*/ u8 _19F8;
-    /*0x19F9*/ u8 _19F9;
-    /*0x19FA*/ u8 _19FA;
-    /*0x19FB*/ u8 _19FB;
-    /*0x19FC*/ u8 _19FC;
-    /*0x19FD*/ u8 _19FD;
-    /*0x19FE*/ u8 _19FE;
-    /*0x19FF*/ u8 pad15[2];
-    /*0x1A01*/ u8 _1A01;
-    /*0x1A02*/ u8 _1A02;
-    /*0x1A03*/ u8 _1A03;
-    /*0x1A04*/ u8 _1A04;
-    /*0x1A05*/ u8 _1A05;
-    /*0x1A06*/ u8 _1A06;
-    /*0x1A07*/ u8 _1A07;
-    /*0x1A08*/ u8 pad16[2];
-    /*0x1A0A*/ u8 _1A0A;
-    /*0x1A0B*/ u8 _1A0B;
-    /*0x1A0C*/ u8 _1A0C;
+    /*0x19E8*/ MiniGameSlot9 _19E8[4];
+    /*0x1A0C*/ s8 _1A0C;
     /*0x1A0D*/ u8 _1A0D;
     /*0x1A0E*/ u8 _1A0E;
-    /*0x1A0F*/ u8 _1A0F;
-    /*0x1A10*/ u8 _1A10;
-    /*0x1A11*/ u8 _1A11;
-    /*0x1A12*/ u8 _1A12;
-    /*0x1A13*/ u8 _1A13;
-    /*0x1A14*/ u8 _1A14;
-    /*0x1A15*/ u8 _1A15;
-    /*0x1A16*/ u8 _1A16;
+    /*0x1A0F*/ s8 _1A0F[4];
+    /*0x1A13*/ u8 _1A13[4];
     /*0x1A17*/ u8 battingHandedness[9];
     /*0x1A20*/ u8 _1A20;
     /*0x1A21*/ u8 _1A21;
@@ -2236,7 +2185,7 @@ typedef struct _MiniGameStruct {
     /*0x1A28*/ s16 someGraphicFrameCountdown;
     /*0x1A2A*/ E(u8, MINI_GAME_ID) GameMode_MiniGame;
     /*0x1A2B*/ E(u8, MINIGAME_DIFFICULTY) soloMinigameDifficulty;
-    /*0x1A2C*/ u8 _1A2C;
+    /*0x1A2C*/ s8 _1A2C;
     /*0x1A2D*/ u8 miniGameTurnCounter;
     /*0x1A2E*/ u8 bB_pitchesRemainingInTurn;
     /*0x1A2F*/ u8 bODRoundStartingNumPitches;
@@ -2478,7 +2427,14 @@ typedef struct _MiniGameStruct {
     /*0x1D7A*/ u8 _1D7A;
     /*0x1D7B*/ u8 _1D7B;
     /*0x1D7C*/ InputStruct _1D7C[4];
-} MiniGameStruct; // size: 0x1D7C
+    /*0x1DBC*/ u8 _1DBC[0x1E08 - 0x1DBC];
+    /*0x1E08*/ MiniGameResultSlot resultSlot[4];
+    /*0x1E10*/ u8 _1E10[0x1E22 - 0x1E10];
+    /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
+    /*0x1E26*/ u8 _1E26[4];
+    /*0x1E2A*/ u8 _1E2A;    // round counter
+    /*0x1E2B*/ u8 _1E2B;
+} MiniGameStruct; // size: 0x1E2C
 
 extern MiniGameStruct g_Minigame;
 
@@ -2792,6 +2748,10 @@ typedef struct {
     /* 0x0024 */ u32 playFrameCounter;
     artificial_padding(0x24, 0x36, u32);
     /* 0x0036 */ u8 replayInd;
+    /* 0x0037 */ u8 _37[2];
+    /* 0x0039 */ u8 _39; // 1: replay offered, 2: replay done
+    /* 0x003A */ u8 _3A;
+    /* 0x003B */ u8 _3B;
 } g_Stats_s; // size: 0x4634
 
 // 0x8088a7e4
@@ -2799,10 +2759,15 @@ extern g_Stats_s g_Stats;
 
 typedef struct {
     u8 pad[0xAE];
-    /* 0x0AE */ s16 _AE;
-    u8 pad_B0[0xEE - 0xB0];
-    /* 0x0EE */ s16 _EE;
-    u8 pad_F0[0x105 - 0xF0];
+    /* 0x0AE */ s16 _0AE;
+    u8 _0B0[0xBC - 0xB0];
+    /* 0x0BC */ s16 _0BC;
+    u8 _0BE[0xE4 - 0xBE];
+    /* 0x0E4 */ s16 _0E4;
+    u8 _0E6[0xEE - 0xE6];
+    /* 0x0EE */ s16 _0EE;
+    u8 _0F0[0xF8 - 0xF0];
+    /* 0x0F8 */ u8 _0F8[0x105 - 0xF8]; // per fielder
     /* 0x105 */ u8 playerAtMoundCutoffLocation;
     /* 0x106 */ u8 throwSpeedType;
     /* 0x107 */ u8 _107;
@@ -2883,12 +2848,65 @@ typedef struct {
 extern g_FieldingLogic_s g_FieldingLogic;
 
 typedef struct {
-    /* 0x0 */ s16 _0;
-    /* 0x2 */ s16 _2;
-    /* 0x4 */ s16 _4;
-} lbl_3_common_bss_32A94_s;
+    /* 0x00 */ s16 _0;
+    /* 0x02 */ s16 _2;
+    /* 0x04 */ s16 _4;
+    /* 0x06 */ s16 _6[5]; // history of _0 (fn_3_9DB5C)
+    /* 0x10 */ struct {
+        s8 fielder; // fielder holding the ball (-1: none)
+        s8 outs;    // outs recorded on the play so far
+        s8 base;    // base the fielder was covering
+    } plays[5];
+    /* 0x1F */ s8 lastFielder;
+    /* 0x20 */ u8 _20[2];
+    /* 0x22 */ s8 _22;
+    /* 0x23 */ u8 _23;
+    /* 0x24 */ u8 _24;
+    /* 0x25 */ u8 _25;
+    /* 0x26 */ s8 _26; // runs scored on the last dead ball
+    /* 0x27 */ u8 _27[0x44 - 0x27];
+    /* 0x44 */ s16 _44[2]; // per team: times through the batting order
+    /* 0x48 */ u8 _48[0x7D - 0x48];
+    /* 0x7D */ u8 _7D;
+    /* 0x7E */ u8 _7E;
+    /* 0x7F */ u8 _7F;
+    /* 0x80 */ u8 _80;
+    /* 0x81 */ u8 _81;
+    /* 0x82 */ u8 _82;
+    /* 0x83 */ u8 _83;
+    /* 0x84 */ u8 _84;
+    /* 0x85 */ u8 _85;
+    /* 0x86 */ u8 _86;
+    /* 0x87 */ u8 _87;
+    /* 0x88 */ u8 _88;
+    /* 0x89 */ u8 _89;
+    /* 0x8A */ u8 _8A;
+    /* 0x8B */ u8 _8B;
+} lbl_3_common_bss_32A94_s; // size: 0x8C
 
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
+
+// g_Scores layout (0xC8 bytes); declare `extern GameScores g_Scores;` in the unit header.
+typedef struct GameScoresTeam {
+    /* 0x00 */ s16 runs[19]; // [0] total, [1..] per inning
+} GameScoresTeam; // size: 0x26
+
+typedef struct GameScores {
+    /* 0x00 */ s32 inning;
+    /* 0x04 */ GameScoresTeam team[2];
+    /* 0x50 */ u8 _50[0x9C - 0x50];
+    /* 0x9C */ s16 _9C;
+    /* 0x9E */ s16 _9E;
+    /* 0xA0 */ s16 _A0;
+    /* 0xA2 */ u8 _A2[0xAA - 0xA2];
+    /* 0xAA */ u8 maxInnings;
+    /* 0xAB */ u8 _AB;
+    /* 0xAC */ u8 _AC;
+    /* 0xAD */ u8 _AD;
+    /* 0xAE */ u8 _AE[0xC2 - 0xAE];
+    /* 0xC2 */ u8 _C2;
+    /* 0xC3 */ u8 _C3[0xC8 - 0xC3];
+} GameScores; // size: 0xC8
 
 typedef struct {
     u8 pad[0xa0];
@@ -2908,7 +2926,6 @@ extern s16 toyFieldHitVertTraj[2][5][5][2];
 extern s16 bODHitVertTraj[5][5][2];
 extern s16 HitVertTrajRanges[2][5][5][2];
 
-extern BOOL getAnimRelatedCoordinates(int, int, VecXYZ*);
 extern void fn_3_6C854(int, int);
 extern void playSoundEffect(int);
 extern void fn_3_5ED98(void);
