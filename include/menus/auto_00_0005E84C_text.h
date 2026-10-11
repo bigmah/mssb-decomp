@@ -62,6 +62,20 @@ typedef struct MenuData {
 
 extern MenuData* lbl_2_bss_1A824C;
 
+// Menus state (lbl_2_bss_1A8248 points at it); only the fields used here.
+typedef struct MenuState {
+    /*0x0000*/ u8 _0000[0x177C];
+    /*0x177C*/ s16 _177C;
+    /*0x177E*/ u8 _177E[0x17AB - 0x177E];
+    /*0x17AB*/ u8 _17AB;
+    /*0x17AC*/ u8 _17AC[0x441C - 0x17AC];
+    /*0x441C*/ u8 _441C;
+    /*0x441D*/ u8 _441D[0x442F - 0x441D];
+    /*0x442F*/ u8 _442F;
+} MenuState;
+
+extern MenuState* lbl_2_bss_1A8248;
+
 s16 fn_2_53BC8(void* item);
 
 void fn_2_5E84C(void);
@@ -137,7 +151,7 @@ void fn_2_67780(void);
 void fn_2_67B94(MenuTask* task, MenuItem* item);
 void fn_2_67D48(void);
 void fn_2_67FEC(MenuTask* task, MenuItem* item);
-void fn_2_681A0(void);
+void fn_2_681A0(MenuTask* task, MenuItem* item);
 void fn_2_68234(void);
 void fn_2_68260(void);
 void fn_2_68308(void);

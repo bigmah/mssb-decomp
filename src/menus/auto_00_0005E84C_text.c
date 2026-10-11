@@ -1209,8 +1209,23 @@ void fn_2_67FEC(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x000681A0 size:0x94
-void fn_2_681A0(void) {
-    return;
+void fn_2_681A0(MenuTask* task, MenuItem* item) {
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        item->state = 0x26;
+        break;
+    case 2:
+        item->state = 0x25;
+        break;
+    case 1:
+    case 5:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00068234 size:0x2C
@@ -1225,5 +1240,7 @@ void fn_2_68260(void) {
 
 // .text:0x00068308 size:0x24
 void fn_2_68308(void) {
-    return;
+    lbl_2_bss_1A8248->_17AB = 0;
+    lbl_2_bss_1A8248->_177C = 0;
+    lbl_2_bss_1A8248->_442F = 0;
 }
