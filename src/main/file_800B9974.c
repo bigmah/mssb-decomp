@@ -264,8 +264,13 @@ void* LoadGeoPalette(DODisplayDataPtr pal) {
 }
 
 // .text:0x800BCD60 size:0x5C
-void convertGeometryAndSknHeader(void) {
-    return;
+void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader) {
+    void* skinPositions = LoadGeoPalette(pal);
+
+    if (sknHeader != NULL) {
+        SKNLoadFile(sknHeader, skinPositions);
+    }
+    pal->skinPositions = skinPositions;
 }
 
 // .text:0x800BCDBC size:0x7C
