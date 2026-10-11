@@ -118,7 +118,7 @@ s32 fn_80020278(s32 index) {
 
 // .text:0x80020388 size:0x58
 s32 fn_80020388(void) {
-    return 0;
+    return fn_80035838(&lbl_800EEFD0[lbl_803CB7CC[g_d_GameSettings.StadiumID] + 0x26], 13) != 0;
 }
 
 // .text:0x800203E0 size:0xEC
