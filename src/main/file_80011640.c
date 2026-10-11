@@ -1267,8 +1267,29 @@ void fn_8001B4D8(s32 index, s32 enable) {
 #endif
 
 // .text:0x8001B5EC size:0x13C
-void fn_8001B5EC(void) {
-    return;
+static inline void setRootJoints(CharActor* actor, u16 idx, s32 k) {
+    u16 j0 = getJoint(actor, k);
+    u16 j1 = getJoint(actor, 0);
+    CharSlotList* list = lbl_8036E548.slots;
+    Vec v;
+
+    fn_800B2C44(list->slots[idx].model, list->slots[idx].model->_80, &v);
+    list->slots[idx]._64 = j1;
+    list->slots[idx]._66 = j0;
+}
+
+void fn_8001B5EC(s32 index, s32 enable) {
+    CharActor* actor = lbl_8036E548.active[index];
+    s32 modelIndex;
+
+    if (actor != NULL) {
+        modelIndex = actor->modelIndex;
+        if (enable == 0) {
+            setRootJoints(actor, modelIndex, 4);
+        } else {
+            setRootJoints(actor, modelIndex, 0);
+        }
+    }
 }
 
 // .text:0x8001B728 size:0xE4
