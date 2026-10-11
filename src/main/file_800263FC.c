@@ -3,10 +3,13 @@
 // Particle / emitter system.
 
 int __abs(int);
+void fn_800118AC(Mtx in, Mtx out); // TODO: belongs in file_80011640.h
 
 extern f32 lbl_8017ED68[]; // cosine table, 0x800 steps per turn
-extern Mtx lbl_8017FF78;   // camera (view) matrix
+extern Mtx lbl_8017FF78[2]; // [0]: billboard rotation (inverse view, no translation), [1]: inverse view
 extern Mtx lbl_8017FFE0;
+extern Vec lbl_80180010[4];     // billboard quad corners
+extern UVCoord lbl_800F7860[];
 extern Particle* lbl_803CBC74; // free particle list
 extern u8 lbl_803CBC78;        // nonzero: clear all emitters on next draw
 extern s32 lbl_803CBC7C;
@@ -481,8 +484,26 @@ Emitter* fn_80033A24(EmitterUpdateFn update, u8 priority, s32 unk14, s32 n, s32 
 }
 
 // .text:0x80033B58 size:0x170
-void fn_80033B58(void) {
-    return;
+void fn_80033B58(TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT) {
+    GXTexObj texObj;
+    GXTlutObj tlutObj;
+    TexImage* img;
+
+    if (arc == NULL) {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+        return;
+    }
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+    img = &arc->entries[arc->entries[idx].index].img;
+    if (img->tlut != NULL) {
+        GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE, 0);
+        GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
+        GXLoadTlut(&tlutObj, GX_TLUT0);
+    } else {
+        GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE);
+    }
+    GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXLoadTexObj(&texObj, GX_TEXMAP1);
 }
 
 // .text:0x80033CC8 size:0x29C

@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
+#include "Dolphin/gx.h"
+#include "main/file_80024184.h"
 
 // Particle effect system: a pool of 0x1400 particles (lbl_80180040) and
 // 16 emitters (lbl_801F8040), each emitter owning a singly linked list of
@@ -20,13 +22,17 @@ typedef struct Particle {
     /* 0x24 */ u8 unk24[0x38 - 0x24];
     /* 0x38 */ f32 unk38;
     /* 0x3C */ f32 unk3C;
-    /* 0x40 */ s32 unk40;
+    /* 0x40 */ union {
+        u32 rgba;
+        GXColor c;
+    } color;
     /* 0x44 */ u8 unk44[0x48 - 0x44];
     /* 0x48 */ s16 unk48;  // start delay (> 0: not yet visible)
     /* 0x4A */ s16 unk4A;  // life
     /* 0x4C */ u8 unk4C;
-    /* 0x4D */ s8 unk4D;
-    /* 0x4E */ u8 unk4E[0x60 - 0x4E];
+    /* 0x4D */ u8 texIndex;
+    /* 0x4E */ u8 uvFrame;
+    /* 0x4F */ u8 unk4F[0x60 - 0x4F];
 } Particle; // size 0x60
 
 struct Emitter;
@@ -55,6 +61,25 @@ typedef struct Emitter {
     /* 0x44 */ f32 unk44;
     /* 0x48 */ u8 unk48[0x60 - 0x48];
 } Emitter; // size 0x60
+
+// Texture archive: a count followed by 0x20-byte entries; entry[i].index
+// selects which entry's image is used for texture i.
+typedef struct TexArchiveEntry {
+    /* 0x00 */ TexImage img;
+    /* 0x1C */ u16 index;
+    /* 0x1E */ u8 pad1E[2];
+} TexArchiveEntry; // size 0x20
+
+typedef struct TexArchive {
+    /* 0x00 */ s32 count;
+    /* 0x04 */ TexArchiveEntry entries[1]; // variable length
+} TexArchive;
+
+// u/v texel coordinates of one quad corner (lbl_800F7860).
+typedef struct UVCoord {
+    /* 0x0 */ u16 u;
+    /* 0x2 */ u16 v;
+} UVCoord;
 
 // Head of the active emitter list; aliases the prev/next of an Emitter.
 typedef struct EmitterHead {
@@ -89,7 +114,12 @@ Emitter* fn_80033A24(EmitterUpdateFn update, u8 priority, s32 unk14, s32 n, s32 
 s32 fn_80033928(u8 type);
 Emitter* fn_800339F0(Emitter* after, u8 type);
 void fn_80027918(u8 type, f32 v);
+void fn_80033B58(TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT);
+void fn_80033CC8(Particle* p, TexArchive* arc);
+void fn_80033F64(f32 width, f32 height, f32 angleDeg);
+void fn_8003403C(f32 width, f32 height);
 void fn_800340F4(Mtx m);
 void fn_80034120(Mtx m);
+void fn_8003414C(Mtx view);
 
 #endif
