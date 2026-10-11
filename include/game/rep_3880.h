@@ -5,7 +5,7 @@
 #include "main/file_80024184.h"
 
 u32 fn_3_14737C(u8* o);
-void fn_3_147778(void* n, void* a);
+void fn_3_147778(u8* e, Vec* pos);
 void fn_3_147C00(void* arg);
 void fn_3_147CFC(void* arg);
 void fn_3_147DFC(void);

@@ -112,6 +112,12 @@ extern u8 lbl_3_common_bss_35154[];
 extern TexImage* lbl_3_bss_B854;
 extern u8 lbl_3_data_26B9C[];
 extern u8 lbl_3_bss_B858;
+extern const f32 lbl_3_rodata_394C;
+extern const f64 lbl_3_rodata_3958;
+extern const f64 lbl_3_rodata_3960;
+extern const f32 lbl_3_rodata_3980;
+extern const f64 lbl_3_rodata_3988;
+extern const f32 lbl_3_rodata_3998;
 extern f32 lbl_3_data_26BAC;
 extern f32 lbl_3_data_26BB0;
 extern const f32 lbl_3_rodata_3A20;
@@ -216,10 +222,69 @@ u32 fn_3_14737C(u8* o) {
 #endif
 #pragma dont_inline on
 
+// NONMATCHING 99%: only the ring-angle int->double conversions in the first branch are scheduled in the other order
 // .text:0x00147778 size:0x488 mapped:0x8078680C
-void fn_3_147778(void* n, void* a) {
-    return;
+#if NONMATCHING
+void fn_3_147778(u8* e, Vec* pos) {
+    s16 delay;
+    u8* p;
+    u32 i;
+    u8 nA;
+    u8 nB;
+    f64 ang;
+    f32 size;
+    i = 0;
+    nA = *(s32*)(lbl_3_data_26E9C + 8);
+    nB = *(s32*)(lbl_3_data_26E9C + 0x30);
+    if (pos->y > lbl_3_rodata_3934[0]) {
+        pos->y *= lbl_3_rodata_3948;
+    }
+    delay = 0;
+    *(void**)(e + 0x10) = *(void**)(lbl_3_common_bss_32724 + 0x6C);
+    p = *(u8**)(e + 0xC);
+    do {
+        if (i < nA) {
+            p[0x4C] = 1;
+            *(f32*)(p + 0x10) = (i == 0) ? lbl_3_rodata_394C : lbl_3_rodata_3950;
+            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26E9C + 4);
+            size = (f32)*(s32*)(lbl_3_data_26E9C + 0x10) / lbl_3_rodata_3930 * *(f32*)(p + 0x10);
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = size;
+            p[0x43] = *(s32*)(lbl_3_data_26E9C + 0x1C);
+            memcpy(p + 4, pos, sizeof(Vec));
+            if (i != 0) {
+                ang = lbl_3_rodata_3958 * (lbl_3_rodata_3960 / (f64)nA) * (f64)(i - 1);
+                *(f32*)(p + 4) = lbl_3_rodata_3950 * (f32)cos((f32)ang) + *(f32*)(p + 4);
+                *(f32*)(p + 8) = lbl_3_rodata_3950 * (f32)sin((f32)ang) + *(f32*)(p + 8);
+                *(f32*)(p + 4) = lbl_3_rodata_3968 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3978) + *(f32*)(p + 4);
+                *(f32*)(p + 8) = lbl_3_rodata_3968 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3978) + *(f32*)(p + 8);
+            }
+            p[0x4D] = *(s32*)lbl_3_data_26E9C;
+            *(s16*)(p + 0x48) = delay;
+        } else {
+            p[0x4C] = 2;
+            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26E9C + 0x2C);
+            size = (f32)*(s32*)(lbl_3_data_26E9C + 0x38) / lbl_3_rodata_3930;
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = size;
+            p[0x43] = *(s32*)(lbl_3_data_26E9C + 0x44);
+            memcpy(p + 4, pos, sizeof(Vec));
+            ang = lbl_3_rodata_3958 * (lbl_3_rodata_3960 / (f64)nB) * (f64)(u8)(i - nA);
+            *(f32*)(p + 4) = lbl_3_rodata_3980 * (f32)cos((f32)ang) + *(f32*)(p + 4);
+            *(f32*)(p + 8) = lbl_3_rodata_3980 * (f32)sin((f32)ang) + *(f32*)(p + 8);
+            *(f32*)(p + 4) = lbl_3_rodata_3988 * (lbl_3_rodata_3990 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3968)) + *(f32*)(p + 4);
+            *(f32*)(p + 8) = lbl_3_rodata_3998 * (lbl_3_rodata_3948 * ((f32)rand() / lbl_3_rodata_3970)) + *(f32*)(p + 8);
+            p[0x4D] = *(s32*)(lbl_3_data_26E9C + 0x28);
+            *(s16*)(p + 0x48) = 5;
+        }
+        p[0x42] = 0xFF;
+        delay += 2;
+        i++;
+        p[0x41] = 0xFF;
+        p[0x40] = 0xFF;
+        p[0x4E] = 0;
+        p = *(u8**)p;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x00147C00 size:0xFC mapped:0x80786C94
 void fn_3_147C00(void* arg) {
