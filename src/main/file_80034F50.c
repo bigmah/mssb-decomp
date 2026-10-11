@@ -153,8 +153,17 @@ void fn_80035A00(void) {
 }
 
 // .text:0x80035B50 size:0x154
-void fn_80035B50(void) {
-    return;
+void fn_80035B50(int id) {
+    s32 slot = spaniFindSlot(id);
+
+    if (slot != -1) {
+        lbl_8023D6C0[slot] = -1;
+        fn_800ACFB0(lbl_803C4BE0[slot].data);
+        lbl_803C4BE0[slot].data = NULL;
+        lbl_803C4BE0[slot].tex = NULL;
+        lbl_803C4BE0[slot].anim = NULL;
+        PSMTXIdentity(lbl_803C4BE0[slot].mtx);
+    }
 }
 
 // .text:0x80035CA4 size:0x130
