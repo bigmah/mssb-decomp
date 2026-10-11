@@ -77,9 +77,85 @@ void fn_3_675B8(u16 frames) {
 }
 
 // .text:0x00067620 size:0x298 mapped:0x806A66B4
+// NONMATCHING 91%: the display list header bytes do not reuse the loop induction registers (posA/i/posB)
+#if NONMATCHING
 void fn_3_67620(s32 type, u16 frames) {
-    return;
+    RepTrailWork* w = &lbl_3_bss_200;
+    u8* start;
+    u8* dl;
+    u8* src;
+    u8* dst;
+    s32 i;
+    s32 posA;
+    s32 posB;
+
+    w->type = type;
+    if (type == 10) {
+        lbl_3_data_6880[type].tex.image =
+            &lbl_3_common_bss_35154.archive->entries[lbl_3_data_6940.charTex[g_Pitcher.charID] + 0x21];
+    } else if (type == 11) {
+        lbl_3_data_6880[type].tex.image =
+            &lbl_3_common_bss_35154.archive->entries[lbl_3_data_6940.charTex[g_Batter.charID] + 0x21];
+    }
+    w->alpha = 255.0f;
+    if (frames == 0) {
+        w->delay = -1;
+        w->alphaStep = 0.0f;
+    } else if (lbl_3_data_6880[type].tex.image != NULL) {
+        w->delay = frames - 8;
+        w->fadeFrames = 8;
+        w->alphaStep = 31.875f;
+    } else {
+        w->delay = 0;
+        w->fadeFrames = frames;
+        w->alphaStep = 255.0f / (f32)(s32)frames;
+    }
+    lbl_3_bss_204 = lbl_3_data_6880[type].tex.image;
+    fn_80023EEC(&w->queue, w->history, lbl_3_data_6880[type].length);
+
+    // Triangle strip over the 60 point pairs: (pos, color, texcoord) index8 triples.
+    start = dl = w->displayList;
+    i = 1;
+    posA = 2;
+    posB = 3;
+    dl[0] = GX_TRIANGLESTRIP | GX_VTXFMT0;
+    dl[1] = 0;
+    dl[2] = 120;
+    dl[3] = 0;
+    dl[4] = 0;
+    dl[5] = posA;
+    dl[6] = i;
+    dl[7] = 0;
+    dl[8] = posB;
+    dl += 9;
+    do {
+        dl[0] = posA;
+        dl[1] = i;
+        dl[2] = 6 - ((i & 1) << 1);
+        dl[3] = posB;
+        posA += 2;
+        dl[4] = i;
+        posB += 2;
+        dl[5] = 7 - ((i & 1) << 1);
+        dl += 6;
+        i++;
+    } while (i < 60);
+    DCStoreRangeNoSync(start, dl - start);
+
+    // Same strip with the vertices in reverse order.
+    memcpy(w->displayListReversed, w->displayList, 3);
+    src = w->displayList + 3;
+    dst = w->displayListReversed + 3 + 120 * 3;
+    i = 119;
+    do {
+        dst -= 3;
+        memcpy(dst, src, 3);
+        src += 3;
+    } while (i-- != 0);
+    DCStoreRangeNoSync(w->displayListReversed, 3 + 120 * 3);
+    lbl_3_common_bss_32724.trailActive = 1;
 }
+#endif
 
 // .text:0x000678B8 size:0x190 mapped:0x806A694C
 void fn_3_678B8(void) {
