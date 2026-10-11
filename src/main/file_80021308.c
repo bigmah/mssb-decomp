@@ -337,8 +337,23 @@ void fn_80022B68(void) {
 }
 
 // .text:0x80022CB4 size:0xA4
-void fn_80022CB4(void) {
-    return;
+s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user) {
+    AramQueueEntry* e;
+    s8 next = (lbl_803716B8.head + 1) % ARAM_QUEUE_LEN;
+
+    if (next == lbl_803716B8.tail || (dst == NULL && callback == NULL)) {
+        return 0;
+    }
+    lbl_803716B8.busy = 1;
+    e = &lbl_803716B8.queue[lbl_803716B8.head];
+    e->entry = entry;
+    e->dst = dst;
+    e->mode = mode;
+    e->aramAddr = aramAddr;
+    e->callback = callback;
+    e->user = user;
+    lbl_803716B8.head = next;
+    return 1;
 }
 
 // .text:0x80022D58 size:0x54
