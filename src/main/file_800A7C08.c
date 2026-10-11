@@ -409,7 +409,17 @@ void fn_800A8F68(void) {
 
 // .text:0x800A8FDC size:0x58
 void fn_800A8FDC(s32 result, DVDCommandBlock* block) {
-    return;
+    StreamTrack* track;
+    BOOL enabled;
+
+    AISetStreamPlayState(0);
+    enabled = OSDisableInterrupts();
+    if (lbl_803CC154 != NULL && (track = lbl_803CC154->prev) != NULL) {
+        lbl_803CC154 = track;
+    }
+    OSRestoreInterrupts(enabled);
+    lbl_803CC148 = STREAM_STATE_STOP;
+    fn_800A88D8(lbl_803CC144);
 }
 
 // .text:0x800A9034 size:0x58
