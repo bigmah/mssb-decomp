@@ -48,7 +48,7 @@ void fn_3_2EA24(void);
 void fn_3_2EA88(int);
 void fn_3_2EEC4(int);
 void fn_3_2F484(void);
-void fn_3_2F574(void);
+void fn_3_2F574(int);
 void fn_3_2F7D4(int);
 void fn_3_2F924(void);
 void fn_3_2FB9C(int);
