@@ -39,7 +39,7 @@ int fn_3_841C0(int i, int j);
 int fn_3_842E4(int i);
 int fn_3_846C8(int i);
 int fn_3_84AD0(int i, int frame);
-void fn_3_85074(void);
+int fn_3_85074(int i, int b);
 void fn_3_85744(int i);
 int fn_3_85840(int i, int b, int* arr);
 int fn_3_85A70(int i);
