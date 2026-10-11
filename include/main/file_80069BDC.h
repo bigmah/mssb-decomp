@@ -51,6 +51,12 @@ typedef struct ChallengeState {
     /*0x444D*/ u8 _444D[54];
 } ChallengeState;
 
+// What ChallengeTrackingStruct.scoutFlagPointer points to.
+typedef struct ScoutFlagTable {
+    /*0x0*/ u8 _0[4];
+    /*0x4*/ s8 flags[8][6];
+} ScoutFlagTable;
+
 #define gChallengeState (*(ChallengeState*)starMissionCompletionTracker)
 
 typedef struct ChallengeTeamInfo {
@@ -64,6 +70,11 @@ extern ChallengeTeamInfo lbl_800E8558[54];
 
 // Event callbacks registered by the game module (see fn_3_16892C).
 typedef void (*AnimEventCallback)(void* obj, f32 frame, s32 a, s32 b);
+
+s16 fn_8006C13C(StatInput* in);
+void fn_8006C2B4(StatOutput* out, StatInput* in);
+s16 fn_8006C268(StatOutput* stats);
+void fn_8006C398(StatInput* in);
 
 void fn_8006C3F0(AnimEventCallback cb);
 void fn_8006C3F8(void* obj, f32 frame, s32 a, s32 b);

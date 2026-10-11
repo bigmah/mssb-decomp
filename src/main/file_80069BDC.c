@@ -22,6 +22,42 @@ extern s16 lbl_8010B444[5][11];
 
 extern BOOL challengeStarRelatedInd(s32 team, s32 mission);
 
+typedef struct MissionDef {
+    /*0x0*/ s16 _0;
+    /*0x2*/ s16 type;
+    /*0x4*/ s16 starsNeeded;
+    /*0x6*/ s16 _6;
+    /*0x8*/ s16 _8;
+} MissionDef; // size: 0xA
+
+extern MissionDef lbl_8010A768[20][10];
+extern u8 lbl_803CB8F0[8];
+
+typedef struct Unk803297E0 {
+    /*0x0000*/ u8 _0000[0xCF69];
+    /*0xCF69*/ u8 _CF69;
+    /*0xCF6A*/ u8 _CF6A;
+    /*0xCF6B*/ u8 _CF6B;
+    /*0xCF6C*/ u8 _CF6C[4];
+} Unk803297E0;
+
+extern Unk803297E0 lbl_803297E0;
+
+typedef struct Unk80366B18 {
+    /*0x00*/ u8 _00[0x2F];
+    /*0x2F*/ u8 _2F;
+    /*0x30*/ u8 _30[8];
+} Unk80366B18; // size: 0x38
+
+extern Unk80366B18 lbl_80366B18[36];
+extern u8 lbl_801075A8[0xE0]; // TODO type
+
+extern void fn_80034E20(void* task, void* desc);
+extern void* fn_80034CEC(void* task);
+extern u8 fn_8000F988(void* task, s32 idx, s32 a, s32 b, s32 c, s32 d);
+extern void fn_8000FEE8(u8 idx);
+extern void fn_8000F8F4(void* task);
+
 // .text:0x80069BDC size:0x5B8
 void fn_80069BDC(void) {
     return;
@@ -350,7 +386,21 @@ s32 fn_8006CDC0(s32 team) {
 
 // .text:0x8006CEBC size:0xB0
 void fn_8006CEBC(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    s32 i;
+
+    if (lbl_803297E0._CF6B != 0) {
+        lbl_803297E0._CF6B = 0;
+        for (i = 0; i < 4; i++) {
+            fn_8000FEE8(lbl_803297E0._CF6C[i]);
+        }
+        fn_8000F8F4(task);
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
+    if (lbl_803297E0._CF69 == 0) {
+        lbl_803297E0._CF69 = 1;
+        lbl_803297E0._CF6A = 1;
+    }
 }
 
 // .text:0x8006CF6C size:0xB8
