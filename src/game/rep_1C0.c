@@ -10,6 +10,106 @@
 #pragma dont_inline on
 
 typedef struct { u8 b[14]; } Tbl14;
+
+// Sky/backdrop object drawn per camera (two copies, indexed by lbl_803CBBC0).
+typedef struct StadiumSkyObj {
+    /*0x00*/ u32 link; // draw-list link (fn_800A7D4C)
+    /*0x04*/ void (*func)(struct StadiumSkyObj* obj);
+    /*0x08*/ Mtx model;
+    /*0x38*/ Mtx view;
+    /*0x68*/ void* layout; // actor layout drawn by fn_3_3638
+    /*0x6C*/ s32 camera;
+} StadiumSkyObj; // size: 0x70
+
+// Per-scene screen effect settings copied into lbl_803C5090.
+typedef struct StadiumScreenFx {
+    /*0x0*/ f32 scale;
+    /*0x4*/ f32 jitterX;
+    /*0x8*/ f32 jitterY;
+    /*0xC*/ u8 flags;
+    /*0xD*/ u8 alpha;
+    /*0xE*/ u16 lines;
+} StadiumScreenFx; // size: 0x10
+
+// Per-stadium visual settings (fog, screen effects, sky speed); copied from lbl_3_data_23C.
+typedef struct StadiumVisual {
+    /*0x00*/ u8 fog[0x24]; // read through raw offsets by fn_3_5BF0
+    /*0x24*/ StadiumScreenFx screenFx[3]; // scenes 1, 2, other
+    /*0x54*/ f32 skySpeed;
+    /*0x58*/ GXColor clearColor; // fn_3_35F0
+    /*0x5C*/ u8 _5C;
+    /*0x5D*/ u8 _5D; // passed to fn_8003AE5C
+    /*0x5E*/ u8 _5E[2];
+} StadiumVisual; // size: 0x60
+
+// View of g_UNK_StadiumDetails, only the fields used by this unit's sky code.
+typedef struct StadiumGfx {
+    /*0x000*/ void* textures; // texture list of the loaded stadium archive
+    /*0x004*/ void* texArchive;
+    /*0x008*/ StadiumSkyObj sky[7][2];
+    /*0x628*/ u8 _628[0x70A - 0x628];
+    /*0x70A*/ s16 lightCount;
+    /*0x70C*/ u8* lights; // relocated offset table
+    /*0x710*/ f32 skyAngle;
+    /*0x714*/ StadiumVisual visual;
+    /*0x774*/ u8 _774;
+    /*0x775*/ u8 _775[3];
+    /*0x778*/ u8* table2; // relocated offset table
+    /*0x77C*/ s16 table2Count;
+} StadiumGfx;
+#define sStadiumGfx (*(StadiumGfx*)g_UNK_StadiumDetails) // TODO type: g_UNK_StadiumDetails is u8[] here
+
+typedef struct StadiumAnimNode {
+    /*0x0*/ u32 link;
+    /*0x4*/ void (*func)(struct StadiumAnimNode* node); // fn_3_5C68
+    /*0x8*/ void* anim[2];
+} StadiumAnimNode;
+
+typedef struct StadiumFogNode {
+    /*0x0*/ u32 link;
+    /*0x4*/ void (*func)(void); // fn_3_5BF0
+} StadiumFogNode;
+
+typedef struct StadiumCameraNode {
+    /*0x0*/ u32 link;
+    /*0x4*/ void (*func)(struct StadiumCameraNode* node); // fn_3_5BCC
+    /*0x8*/ s32 camera;
+} StadiumCameraNode;
+
+// lbl_3_data_7EC: per-stadium ARAM loads, then the stadium draw-list nodes.
+typedef struct StadiumDrawData {
+    /*0x000*/ u8 aram[21][0x10];
+    /*0x150*/ StadiumAnimNode animNodes[2];
+    /*0x170*/ s32 _170;
+    /*0x174*/ StadiumFogNode fogNodes[5][2];
+    /*0x1C4*/ StadiumCameraNode cameraNodes[4][2];
+} StadiumDrawData; // size: 0x224
+
+// lbl_3_data_23C: stadium visual settings, then the two fn_3_3818 nodes.
+typedef struct StadiumData23C {
+    /*0x000*/ StadiumVisual visuals[15]; // [miniGameStadiumIndicator * 7 + StadiumID]
+    /*0x5A0*/ StadiumFogNode drawCallbackNodes[2];
+} StadiumData23C;
+
+typedef struct StadiumObjAnims {
+    /*0x0*/ u8 _0[8];
+    /*0x8*/ void* anim[2];
+} StadiumObjAnims; // view of lbl_3_common_bss_350E4 (StadiumObjMgr, game/rep_1D58.c)
+
+extern StadiumDrawData lbl_3_data_7EC;
+extern StadiumData23C lbl_3_data_23C;
+extern StadiumObjAnims lbl_3_common_bss_350E4;
+extern u8 lbl_3_common_bss_35154[];
+extern u8 lbl_8036E548[];
+extern ScreenFx lbl_803C5090;
+extern void fn_800A7D4C(s32 list, void* node);
+extern void fn_8003A2C0(void);
+extern void fn_3_BD1D8(Mtx m);
+extern void fn_3_BCA20(void);
+extern void fn_3_B8C08(Mtx view);
+
+#define STADIUM_EXTRA_CAMERAS 0
+
 extern u8 lbl_3_rodata_214[];
 extern void CTRLBuildMatrix(void*, void*);
 extern void DOVARender(void*, void*, int, int);
@@ -634,132 +734,35 @@ void fn_3_53E0(u16* in, s16* x, s16* y, s16* w, s16* h, s16* page) {
 }
 
 // .text:0x00005518 size:0x164 mapped:0x806445AC
-// near-match (6 lines): saved reg assignment sd/off swapped
+// NONMATCHING 99.8%: r29/r31 swapped between the texture list and the image offset
+#if NONMATCHING
+// Copies the rendered scoreboard into the stadium's scoreboard texture.
 void fn_3_5518(void) {
-    u8* sd;
-    s16 tbl[7];
+    s16 boardImage[7] = {0x49, 0x95, 0x1DB, 0x121, 0x1B2, 0xFB, 0};
+    TexImage* images;
     Mtx44 proj;
     Mtx mtx;
-    s32 off;
-    void* tex;
-    *(Tbl14*)tbl = *(Tbl14*)lbl_3_rodata_214;
-    sd = *(u8**)g_UNK_StadiumDetails;
-    off = tbl[g_d_GameSettings.StadiumID] << 5;
-    GXSetZMode(1, 7, 1);
-    GXSetScissor(0, 0, 0x280, 0x1C0);
-    C_MTXOrtho(proj, lbl_3_rodata_504, lbl_3_rodata_524, lbl_3_rodata_504, lbl_3_rodata_528, lbl_3_rodata_52C, lbl_3_rodata_530);
-    GXSetProjection(proj, 1);
-    GXSetCullMode(0);
+    s32 idx;
+
+    images = sStadiumGfx.textures;
+    idx = boardImage[g_d_GameSettings.StadiumID];
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    GXSetScissor(0, 0, 640, 448);
+    C_MTXOrtho(proj, 0.0f, 480.0f, 0.0f, 640.0f, 0.5f, 1.5f);
+    GXSetProjection(proj, GX_ORTHOGRAPHIC);
+    GXSetCullMode(GX_CULL_NONE);
     PSMTXIdentity(mtx);
-    GXLoadPosMtxImm(mtx, 0);
-    GXSetCurrentMtx(0);
-    GXSetTexCopySrc(0, 0, 0x200, 0x1E0);
-    GXSetTexCopyDst(0x200, 0x1E0, 0x20, 0);
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetTexCopySrc(0, 0, 512, 480);
+    GXSetTexCopyDst(512, 480, GX_CTF_R4, GX_FALSE);
     fn_3_4A38(g_d_GameSettings.StadiumID);
-    tex = *(void**)(sd + off);
     GXDrawDone();
-    GXCopyTex(tex, 1);
+    GXCopyTex(images[idx].data, GX_TRUE);
     GXPixModeSync();
 }
+#endif
 
-// Sky/backdrop object drawn per camera (two copies, indexed by lbl_803CBBC0).
-typedef struct StadiumSkyObj {
-    /*0x00*/ u32 link; // draw-list link (fn_800A7D4C)
-    /*0x04*/ void (*func)(struct StadiumSkyObj* obj);
-    /*0x08*/ Mtx model;
-    /*0x38*/ Mtx view;
-    /*0x68*/ void* layout; // actor layout drawn by fn_3_3638
-    /*0x6C*/ s32 camera;
-} StadiumSkyObj; // size: 0x70
-
-// Per-scene screen effect settings copied into lbl_803C5090.
-typedef struct StadiumScreenFx {
-    /*0x0*/ f32 scale;
-    /*0x4*/ f32 jitterX;
-    /*0x8*/ f32 jitterY;
-    /*0xC*/ u8 flags;
-    /*0xD*/ u8 alpha;
-    /*0xE*/ u16 lines;
-} StadiumScreenFx; // size: 0x10
-
-// Per-stadium visual settings (fog, screen effects, sky speed); copied from lbl_3_data_23C.
-typedef struct StadiumVisual {
-    /*0x00*/ u8 fog[0x24]; // read through raw offsets by fn_3_5BF0
-    /*0x24*/ StadiumScreenFx screenFx[3]; // scenes 1, 2, other
-    /*0x54*/ f32 skySpeed;
-    /*0x58*/ GXColor clearColor; // fn_3_35F0
-    /*0x5C*/ u8 _5C;
-    /*0x5D*/ u8 _5D; // passed to fn_8003AE5C
-    /*0x5E*/ u8 _5E[2];
-} StadiumVisual; // size: 0x60
-
-// View of g_UNK_StadiumDetails, only the fields used by this unit's sky code.
-typedef struct StadiumGfx {
-    /*0x000*/ void* textures; // texture list of the loaded stadium archive
-    /*0x004*/ void* texArchive;
-    /*0x008*/ StadiumSkyObj sky[7][2];
-    /*0x628*/ u8 _628[0x70A - 0x628];
-    /*0x70A*/ s16 lightCount;
-    /*0x70C*/ u8* lights; // relocated offset table
-    /*0x710*/ f32 skyAngle;
-    /*0x714*/ StadiumVisual visual;
-    /*0x774*/ u8 _774;
-    /*0x775*/ u8 _775[3];
-    /*0x778*/ u8* table2; // relocated offset table
-    /*0x77C*/ s16 table2Count;
-} StadiumGfx;
-#define sStadiumGfx (*(StadiumGfx*)g_UNK_StadiumDetails) // TODO type: g_UNK_StadiumDetails is u8[] here
-
-typedef struct StadiumAnimNode {
-    /*0x0*/ u32 link;
-    /*0x4*/ void (*func)(struct StadiumAnimNode* node); // fn_3_5C68
-    /*0x8*/ void* anim[2];
-} StadiumAnimNode;
-
-typedef struct StadiumFogNode {
-    /*0x0*/ u32 link;
-    /*0x4*/ void (*func)(void); // fn_3_5BF0
-} StadiumFogNode;
-
-typedef struct StadiumCameraNode {
-    /*0x0*/ u32 link;
-    /*0x4*/ void (*func)(struct StadiumCameraNode* node); // fn_3_5BCC
-    /*0x8*/ s32 camera;
-} StadiumCameraNode;
-
-// lbl_3_data_7EC: per-stadium ARAM loads, then the stadium draw-list nodes.
-typedef struct StadiumDrawData {
-    /*0x000*/ u8 aram[21][0x10];
-    /*0x150*/ StadiumAnimNode animNodes[2];
-    /*0x170*/ s32 _170;
-    /*0x174*/ StadiumFogNode fogNodes[5][2];
-    /*0x1C4*/ StadiumCameraNode cameraNodes[4][2];
-} StadiumDrawData; // size: 0x224
-
-// lbl_3_data_23C: stadium visual settings, then the two fn_3_3818 nodes.
-typedef struct StadiumData23C {
-    /*0x000*/ StadiumVisual visuals[15]; // [miniGameStadiumIndicator * 7 + StadiumID]
-    /*0x5A0*/ StadiumFogNode drawCallbackNodes[2];
-} StadiumData23C;
-
-typedef struct StadiumObjAnims {
-    /*0x0*/ u8 _0[8];
-    /*0x8*/ void* anim[2];
-} StadiumObjAnims; // view of lbl_3_common_bss_350E4 (StadiumObjMgr, game/rep_1D58.c)
-
-extern StadiumDrawData lbl_3_data_7EC;
-extern StadiumData23C lbl_3_data_23C;
-extern StadiumObjAnims lbl_3_common_bss_350E4;
-extern u8 lbl_3_common_bss_35154[];
-extern u8 lbl_8036E548[];
-extern ScreenFx lbl_803C5090;
-extern void fn_800A7D4C(s32 list, void* node);
-extern void fn_8003A2C0(void);
-extern void fn_3_BD1D8(Mtx m);
-extern void fn_3_BCA20(void);
-extern void fn_3_B8C08(Mtx view);
-
-#define STADIUM_EXTRA_CAMERAS 0
 
 // Per-frame stadium update: queues the sky objects and draw nodes of every
 // camera and sets up the screen effect for the current scene.
@@ -1068,7 +1071,6 @@ void fn_3_64DC(void) {
 }
 
 // .text:0x00006424 size:0xB8
-// near-match: prologue register allocation (r5/r0/r6) differs
 s16 fn_3_6424(u8* base, u8** out) {
     s16 n = *(u16*)base;
     u32* p;
