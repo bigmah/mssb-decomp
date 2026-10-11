@@ -232,6 +232,7 @@ def blob_covered(b, other):
 
 
 LOADS = {48: 4, 49: 4, 50: 8, 51: 8, 56: 8, 32: 4, 33: 4, 40: 2, 41: 2, 42: 2, 43: 2, 34: 1, 35: 1}
+UPDATE_LOADS = {33, 35, 41, 43, 49, 51}
 X_LOADS = {23, 55, 87, 119, 279, 311, 343, 375, 535, 567, 599, 631}  # lwzx lbzx lhzx lhax lfsx lfdx (+u)
 X_STORES = {151, 183, 215, 247, 407, 439, 663, 695, 727, 759, 918, 662, 983, 150}
 INT_WRITE_RD = {7, 8, 12, 13, 14, 15, 32, 33, 34, 35, 40, 41, 42, 43, 46}
@@ -298,50 +299,83 @@ def fn_literals(elf, fname, ext=None):
         if sym["shndx"] >= len(src.secs) or src.secs[sym["shndx"]]["name"] not in LIT_SECTIONS:
             continue
         rel[off & ~3] = (src, sym["shndx"], sym["value"] + add)
-    regs, bases = {}, []  # reg -> base; base = [src, sidx, addr, used, escaped]
-    for off in range(start, start + size, 4):
-        (insn,) = struct.unpack_from(">I", elf.d, text["off"] + off)
+    end = start + size
+    insns = {off: struct.unpack_from(">I", elf.d, text["off"] + off)[0] for off in range(start, end, 4)}
+    # switch jump tables: relocations from data into this function are targets of its bctr
+    jt = sorted({elf.syms[si]["value"] + add for i, rl in elf.relas.items()
+                 if i != idx and elf.secs[i]["name"] in (".data", ".rodata", ".sdata", ".sdata2")
+                 for _, _, si, add in rl
+                 if elf.syms[si]["shndx"] == idx and start <= elf.syms[si]["value"] + add < end})
+
+    def succs(off, insn):
+        op = insn >> 26
+        if op == 18:
+            li = (insn & 0x03FFFFFC) - ((insn & 0x02000000) << 1)
+            return [off + 4] if insn & 1 else [off + li]
+        if op == 16:
+            bd = (insn & 0xFFFC) - ((insn & 0x8000) << 1)
+            always = (insn >> 21) & 0x14 == 0x14
+            return ([] if always and not insn & 1 else [off + 4]) + [off + bd]
+        if op == 19 and ((insn >> 1) & 0x3FF) in (16, 528):
+            always = (insn >> 21) & 0x14 == 0x14
+            out = [] if always and not insn & 1 else [off + 4]
+            return out + (jt if (insn >> 1) & 0x3FF == 528 else [])
+        return [off + 4]
+
+    bases = {}  # creating offset -> [src, sidx, addr, used, escaped, offset]
+
+    def new_base(off, src, sidx, addr, used):
+        if off not in bases:
+            bases[off] = [src, sidx, addr, used, False, off - start]
+        return off
+
+    def step(off, insn, regs, emit):
+        """Transfer function: updates regs (reg -> base key); with emit, also records values
+        and marks bases used/escaped."""
         op, rd, ra, rb = insn >> 26, (insn >> 21) & 31, (insn >> 16) & 31, (insn >> 11) & 31
         d = (insn & 0xFFFF) - ((insn & 0x8000) << 1)
+
+        def mark(r, i):
+            if emit:
+                bases[regs[r]][i] = True
+
+        def value(t):
+            if emit and t:
+                toks[t] += 1; seq.append((off - start, t))
         if off in rel:
             src, sidx, addr = rel[off]
             if op in LOADS:
-                t = load_tok(src, sidx, addr, op)
-                if t:
-                    toks[t] += 1; seq.append((off - start, t))
+                value(load_tok(src, sidx, addr, op))
                 if op in INT_WRITE_RD:
                     regs.pop(rd, None)
+                if op in UPDATE_LOADS:  # lwzu rD, lbl@l(rA): rA now holds the address
+                    regs[ra] = new_base(off, src, sidx, addr, True)
             elif op in (14, 24):  # addi/ori: an address in a register
-                base = [src, sidx, addr, False, False, off - start]
-                bases.append(base)
-                regs[rd if op == 14 else ra] = base
-            continue
+                regs[rd if op == 14 else ra] = new_base(off, src, sidx, addr, False)
+            return
         if op in LOADS and ra in regs and ra != 0:
-            src, sidx, addr = regs[ra][:3]
+            src, sidx, addr = bases[regs[ra]][:3]
             if op == 56:
                 d = (insn & 0xFFF) - ((insn & 0x800) << 1)
-            t = load_tok(src, sidx, addr + d, op)
-            if t:
-                toks[t] += 1; seq.append((off - start, t))
-            regs[ra][3] = True
+            value(load_tok(src, sidx, addr + d, op))
+            mark(ra, 3)
             if op in INT_WRITE_RD:
                 regs.pop(rd, None)
-            continue
+            if op in UPDATE_LOADS:
+                regs[ra] = new_base(off, src, sidx, addr + d, True)
+            return
         if op == 14 and ra in regs and ra != 0:  # addi rD, rBase, d
-            b = regs[ra]
-            b[3] = True
-            nb = [b[0], b[1], b[2] + d, False, False, off - start]
-            bases.append(nb)
-            regs[rd] = nb
-            continue
-        if op == 18:  # branch: a call passes bases in r3-r10 on, and clobbers volatiles
-            if insn & 1:
-                for r in range(3, 11):
-                    if r in regs and not regs[r][3]:  # (a used base is just left over)
-                        regs[r][4] = True
-                for r in [0] + list(range(3, 13)):
-                    regs.pop(r, None)
-            continue
+            b = bases[regs[ra]]
+            mark(ra, 3)
+            regs[rd] = new_base(off, b[0], b[1], b[2] + d, False)
+            return
+        if op == 18 and insn & 1:  # a call passes bases in r3-r10 on, and clobbers volatiles
+            for r in range(3, 11):
+                if r in regs and not bases[regs[r]][3]:  # (a used base is just left over)
+                    mark(r, 4)
+            for r in [0] + list(range(3, 13)):
+                regs.pop(r, None)
+            return
         if op == 31:
             xo = (insn >> 1) & 0x3FF
             if xo == 444 and rd == rb:  # mr rA, rS
@@ -349,28 +383,48 @@ def fn_literals(elf, fname, ext=None):
                     regs[ra] = regs[rd]
                 else:
                     regs.pop(ra, None)
-                continue
+                return
             if xo in X_LOADS:
                 for r in (ra, rb):
                     if r in regs:
-                        regs[r][4] = True
-                regs.pop(rd, None) if xo not in (535, 567, 599, 631) else None
-                continue
+                        mark(r, 4)
+                if xo not in (535, 567, 599, 631):
+                    regs.pop(rd, None)
+                return
             if xo in X_STORES:
                 if rd in regs and xo not in (663, 695, 727, 759, 983):
-                    regs[rd][4] = True
-                continue
+                    mark(rd, 4)
+                return
             if xo == 266 and (ra in regs or rb in regs):  # add: indexing into the block
-                regs[ra if ra in regs else rb][4] = True
+                mark(ra if ra in regs else rb, 4)
             regs.pop(rd, None); regs.pop(ra, None)
-            continue
+            return
         if op in (36, 37, 38, 39, 44, 45) and rd in regs:  # stw/stb/sth of a base: stored
-            regs[rd][4] = True
-            continue
+            mark(rd, 4)
+            return
         if op in INT_WRITE_RD:
             regs.pop(rd, None)
         elif op in INT_WRITE_RA:
             regs.pop(ra, None)
+
+    # forward dataflow to a fixpoint: a register holds a base only if it does on every path
+    state = {start: {}}
+    work = [start]
+    while work:
+        off = work.pop()
+        regs = dict(state[off])
+        step(off, insns[off], regs, False)
+        for n in succs(off, insns[off]):
+            if not (start <= n < end):
+                continue
+            old = state.get(n)
+            new = regs if old is None else {r: k for r, k in old.items() if regs.get(r) == k}
+            if old is None or new != old:
+                state[n] = new
+                work.append(n)
+    for off in range(start, end, 4):
+        step(off, insns[off], dict(state.get(off, {})), True)
+    bases = list(bases.values())
     for b in bases:
         if b[4] or not b[3]:
             t, pool = addr_tok(b[0], b[1], b[2])
@@ -451,7 +505,7 @@ def same(a, b):
     return False
 
 
-def compare(tgt, ours, src_text, fname, counts, verbose, label):
+def compare(tgt, ours, src_text, fname, counts, verbose, label, matched=True):
     tf, of = tgt.functions(), ours.functions()
     lits = target_literals()
     tt, tp, tc = fn_literals(tgt, fname, lits)
@@ -459,9 +513,10 @@ def compare(tgt, ours, src_text, fname, counts, verbose, label):
     # a stub (or missing C): nothing to compare
     if not ot and of[fname][2] * 2 < tf[fname][2]:
         return None
-    if tf[fname][2] == of[fname][2] and len(tt.seq) == len(ot.seq) and \
+    if matched and tf[fname][2] == of[fname][2] and len(tt.seq) == len(ot.seq) and \
             [o for o, _ in tt.seq] == [o for o, _ in ot.seq]:
-        # same instructions (a matched function): compare value by value, which also catches
+        # same instructions (a matched function; an equivalent one may just schedule its
+        # loads differently): compare value by value, which also catches
         # a wrong literal whose value the function loads elsewhere too
         bad = [(o, a, b) for (o, a), (_, b) in zip(sorted(tt.seq), sorted(ot.seq)) if not same(a, b)]
         note = reviewed(src_text, fname)
@@ -565,13 +620,14 @@ def main():
                 continue
             if tf[fname][0] != tgt.sec_index.get(".text") and tgt.secs[tf[fname][0]]["name"] != ".text":
                 continue
-            r = compare(tgt, ours, src_text, fname, args.counts, args.verbose, src)
+            pct = report.get(u["name"], {}).get(fname)
+            r = compare(tgt, ours, src_text, fname, args.counts, args.verbose, src,
+                        matched=pct == 100 and fname not in nm)
             if r is None:
                 continue
             checked += 1
             if r:
                 flagged += 1
-                pct = report.get(u["name"], {}).get(fname)
                 kind = "equivalent" if fname in nm else ("matched" if pct == 100 else f"{pct or 0:.0f}%")
                 print(f"{src}: {fname} ({kind}): target-only [{r[0]}]  ours-only [{r[1]}]")
     print(f"{checked} function(s) checked, {flagged} flagged")
