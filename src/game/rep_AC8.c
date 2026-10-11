@@ -3771,6 +3771,8 @@ void fn_3_55710(int i) {
 }
 
 // .text:0x00055918 size:0x3AC mapped:0x806949AC
+// NONMATCHING 98%: final 9-fielder loop lacks the original's leftover `i < 9` guard; scratch regs differ in the SetFielderAct2 inlines
+#if NONMATCHING
 void fn_3_55918(void) {
     int i;
     u8* f;
@@ -3834,6 +3836,7 @@ void fn_3_55918(void) {
         *(s16*)(g_Fielders + i * 0x268 + 0x192) = 0xF;
     }
 }
+#endif
 
 // .text:0x00055CC4 size:0x228 mapped:0x80694D58
 void fn_3_55CC4(int i) {
