@@ -81,9 +81,14 @@ typedef struct {
     u32 unk10;
 } ChallengeCurveCamera;
 
+// Debug/texture test state (queue object): value/toggle/cursor/stageCount are edited by fn_1_1FD78.
 typedef struct {
-    u8 padding[0x22];
-    u8 stageCount;
+    /* 0x00 */ u8 pad0[0x1C];
+    /* 0x1C */ u32 value;
+    /* 0x20 */ u8 toggle;
+    /* 0x21 */ u8 cursor;
+    /* 0x22 */ u8 stageCount;
+    /* 0x23 */ u8 unk23;
 } ChallengeTextureStages;
 
 typedef struct {
@@ -97,14 +102,6 @@ typedef struct {
     /* 0x54 */ u8 pad54[0x34];
 } ChallengeCameraState; // size 0x88
 
-typedef struct {
-    /* 0x00 */ u8 pad0[0x1C];
-    /* 0x1C */ u32 value;
-    /* 0x20 */ u8 toggle;
-    /* 0x21 */ u8 cursor;
-    /* 0x22 */ u8 level;
-    /* 0x23 */ u8 unk23;
-} ChallengeDebugMenu;
 
 void fn_1_1DE5C(void);
 
@@ -206,6 +203,7 @@ void fn_1_1D694(u8* obj);
 void fn_1_21040(void);
 void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera);
 void fn_1_23804(s32 arg0, s32 arg1, s32 rows, s32 cols, f32 arg4, f32 arg5);
-void fn_1_1FD78(ChallengeDebugMenu* menu);
+void fn_1_1FD78(ChallengeTextureStages* menu);
+void fn_1_1F618(ChallengeTextureStages* stages);
 
 #endif

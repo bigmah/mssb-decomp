@@ -1351,7 +1351,7 @@ void fn_1_23804(s32 arg0, s32 arg1, s32 rows, s32 cols, f32 arg4, f32 arg5) {
 #define CHALLENGE_PAD_TRIGGER (*(u16*)((u8*)&lbl_803C77B8 + 4)) // TODO type: lbl_803C77B8_s lacks the 0x04 field
 
 // .text:0x1FD78 size:0x2D4
-void fn_1_1FD78(ChallengeDebugMenu* menu) {
+void fn_1_1FD78(ChallengeTextureStages* menu) {
     u32 step;
     s32 i;
     s32 v;
@@ -1429,12 +1429,12 @@ void fn_1_1FD78(ChallengeDebugMenu* menu) {
         case 5:
             if (i == cur) {
                 if (CHALLENGE_PAD_TRIGGER & 1) {
-                    if (menu->level > 1) {
-                        menu->level--;
+                    if (menu->stageCount > 1) {
+                        menu->stageCount--;
                     }
                 } else if (CHALLENGE_PAD_TRIGGER & 2) {
-                    if (menu->level < 4) {
-                        menu->level++;
+                    if (menu->stageCount < 4) {
+                        menu->stageCount++;
                     }
                 }
             }
@@ -1453,3 +1453,47 @@ void fn_1_1FD78(ChallengeDebugMenu* menu) {
         }
     }
 }
+
+extern const f32 lbl_1_rodata_77FC;
+
+// NONMATCHING 97%: inlined fn_1_20640 keeps the texture index in a register (orig reloads *image for the tlut test) and the FIFO base gets a different saved reg
+// .text:0x1F618 size:0x2E8
+#if NONMATCHING
+void fn_1_1F618(ChallengeTextureStages* stages) {
+    s32 i;
+    u32 index[1];
+    f32 z;
+
+    i = stages->value;
+    while (i-- != 0) {
+        index[0] = i % 4;
+        fn_1_20640(stages, index);
+        GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        z = lbl_1_rodata_7814[0] - lbl_1_rodata_77FC * i;
+        GXWGFifo.f32 = z;
+        GXWGFifo.u32 = 0xFFFFFF80;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E0[0];
+        GXWGFifo.f32 = z;
+        GXWGFifo.u32 = 0xFFFFFF80;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.u16 = 0x100;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77DC[0];
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E0[0];
+        GXWGFifo.f32 = z;
+        GXWGFifo.u32 = 0xFFFFFF80;
+        GXWGFifo.u16 = 0x100;
+        GXWGFifo.u16 = 0x100;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77DC[0];
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = z;
+        GXWGFifo.u32 = 0xFFFFFF80;
+        GXWGFifo.u16 = 0x100;
+        GXWGFifo.u16 = 0;
+    }
+}
+#endif
