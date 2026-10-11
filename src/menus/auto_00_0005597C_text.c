@@ -12,6 +12,7 @@ extern s16 lbl_2_data_1FBB4[];
 extern s16 fn_2_53BC8(void*);
 struct SpaniOwner;
 void fn_80036134(struct SpaniOwner* owner, s32 srcIdx, u32 track, s32 dstIdx);
+s32 fn_80036214(struct SpaniOwner* owner, s32 idx, u32 track, u32 frame);
 extern void fn_2_4E7EC(void);
 extern void fn_8001F228(void);
 extern s32 fn_80021410(void);
@@ -314,8 +315,66 @@ void fn_2_563C0(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // .text:0x00056688 size:0x314
-void fn_2_56688(void) {
-    return;
+void fn_2_56688(MenuTableContext* menu, MenuItemState* item) {
+    s16 msg;
+    u32 color;
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    msg = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976FE) + item->index) % *(s16*)(lbl_2_bss_1A824C[0] + 0x19772E);
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->unk12 = 0;
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 2, 0, 1);
+        item->state = 0x26;
+        break;
+    case 2:
+        fn_8000FE08(item->unk14, 2, msg);
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags |= 2;
+        fn_8000FE08(item->unk14, 2, msg);
+        item->state = 3;
+        break;
+    case 3:
+        item->unk12 += (0xFF - item->unk12) / 4;
+        item->unk12++;
+        if (item->unk12 > 0xFF) {
+            item->unk12 = 0xFF;
+        }
+        if (item->unk12 >= 0xFF) {
+            item->state = 0x25;
+        }
+        break;
+    case 0x25:
+        fn_8000FE08(item->unk14, 2, msg);
+        item->state = 0x25;
+        break;
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->state = 6;
+        break;
+    case 6:
+        item->unk12 += (0 - item->unk12) / 4;
+        item->unk12--;
+        if (item->unk12 < 0) {
+            item->unk12 = 0;
+        }
+        break;
+    case 1:
+    case 4:
+        break;
+    }
+    if (item->index == *(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA)) {
+        color = fn_80036214((struct SpaniOwner*)menu, 0x25, 0, 1);
+    } else {
+        color = fn_80036214((struct SpaniOwner*)menu, 0x26, 0, 0);
+    }
+    lbl_80371C30[menu->firstIndex + item->offset].obj->color =
+        (lbl_80371C30[menu->firstIndex + item->offset].obj->color & 0xFF) | (color & ~0xFF);
+    lbl_80366B18.entries[item->unk14].hAlign = 0;
+    lbl_80371C30[menu->firstIndex + item->offset].obj->color =
+        (lbl_80371C30[menu->firstIndex + item->offset].obj->color & ~0xFF) | item->unk12;
 }
 
 // .text:0x0005699C size:0x298
