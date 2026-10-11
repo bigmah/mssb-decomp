@@ -140,6 +140,12 @@ extern void fn_800BDFE0(CharSlotList* list);
 extern void fn_800BDEA0(void);
 extern void (*lbl_803CBBF4)(void);
 extern void ACTSetBoneTrack(CharJoint* bone, void* track, s32 flag, f32 time);
+extern AramFile* lbl_803CB794;
+extern void* lbl_803CBC30;
+extern u8 lbl_803CBC34[8];
+extern s16 lbl_800EEB18[54];
+extern CharSlotList* fn_80023AA4(void);
+extern void fn_80023B04(s32 count);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -608,7 +614,7 @@ void fn_80014204(void) {
 }
 
 // .text:0x800145F8 size:0x398
-void fn_800145F8(void) {
+void fn_800145F8(s32 arg) {
     return;
 }
 
@@ -1383,9 +1389,110 @@ void fn_80018024(void) {
 #endif
 
 // .text:0x80018270 size:0x650
-void fn_80018270(void) {
-    return;
+// NONMATCHING 87%: max-size loops unrolled/scheduled differently
+#if NONMATCHING
+void fn_80018270(s32 mode) {
+    u32 max1 = 0;
+    u32 max0 = 0;
+    u32 size;
+    u32 s0;
+    u32 s1;
+    u32 total;
+    s32 i;
+    s32 t;
+    s32 k;
+    u8* p;
+
+    if (mode == 2) {
+        p = _OSAllocFromHeap(0x20, 0x13E80);
+        lbl_8036E548.fileBuf = p;
+        lbl_8036E548.actors[0].files = (void**)p;
+        for (i = 1; i < 9; i++) {
+            lbl_8036E548.actors[i].files = _OSAllocFromHeap(0x20, 0x12C40);
+        }
+        for (k = 0; k < 54; k++) {
+            size = lbl_803CB790[k * 0x13].size & 0x0FFFFFFF;
+            if (max0 < size) {
+                max0 = size;
+            }
+        }
+        s0 = (max0 + 0x1F) & ~0x1F;
+        total = s0 * 4 + 0x13E80;
+        p = _OSAllocFromHeap(0x20, total);
+        lbl_8036E548.actors[10].files = (void**)(p + s0);
+        lbl_8036E548.actors[11].files = (void**)(p + s0 * 2);
+        lbl_8036E548.actors[12].files = (void**)(p + s0 * 3);
+        lbl_8036E548._2D64 = total;
+        lbl_8036E548.actors[9].files = (void**)p;
+        lbl_8036E548.preload[0].buffer = p + s0 * 4;
+        lbl_8036E548.preload[0].size = 0x13E80;
+        lbl_8036E548.preload[0].id = -1;
+        lbl_8036E548.preload[0].state = 0;
+    } else {
+        if (mode == 0) {
+            for (t = 0; t < 2; t++) {
+                for (i = 0; i < 9; i++) {
+                    size = lbl_803CB790[inMemRoster[t][i].charId * 0x13].size & 0x0FFFFFFF;
+                    if (max0 < size) {
+                        max0 = size;
+                    }
+                }
+            }
+            for (t = 0; t < 2; t++) {
+                for (i = 0; i < 9; i++) {
+                    size = lbl_803CB790[inMemRoster[t][i].charId * 0x13 + 1].size & 0x0FFFFFFF;
+                    if (max1 < size) {
+                        max1 = size;
+                    }
+                }
+            }
+        } else {
+            for (k = 0; k < 54; k++) {
+                size = lbl_803CB790[k * 0x13].size & 0x0FFFFFFF;
+                if (max0 < size) {
+                    max0 = size;
+                }
+            }
+            for (k = 0; k < 54; k++) {
+                size = lbl_803CB790[k * 0x13 + 1].size & 0x0FFFFFFF;
+                if (max1 < size) {
+                    max1 = size;
+                }
+            }
+        }
+        s1 = (max1 + 0x1F) & ~0x1F;
+        s0 = (max0 + 0x1F) & ~0x1F;
+        total = s1 * 9 + s0 * 4 + s0 + s1;
+        p = _OSAllocFromHeap(0x20, total);
+        lbl_8036E548.fileBuf = p;
+        lbl_8036E548._2D64 = total;
+        for (i = 0; i < 9; i++) {
+            lbl_8036E548.actors[i].files = (void**)p;
+            p += s1;
+        }
+        lbl_8036E548.actors[9].files = (void**)p;
+        p += s0;
+        lbl_8036E548.actors[10].files = (void**)p;
+        p += s0;
+        lbl_8036E548.actors[11].files = (void**)p;
+        p += s0;
+        lbl_8036E548.actors[12].files = (void**)p;
+        p += s0;
+        lbl_8036E548.preload[2].buffer = p;
+        lbl_8036E548.preload[2].size = s0;
+        lbl_8036E548.preload[2].id = -1;
+        lbl_8036E548.preload[2].state = 0;
+        lbl_8036E548.preload[0].buffer = p + s0;
+        lbl_8036E548.preload[0].size = s1;
+        lbl_8036E548.preload[0].id = -1;
+        lbl_8036E548.preload[0].state = 0;
+    }
+    for (i = 0; i < 13; i++) {
+        lbl_8036E548.actors[i].part = NULL;
+        lbl_8036E548.actors[i].parts = NULL;
+    }
 }
+#endif
 
 // .text:0x800188C0 size:0xF8
 void fn_800188C0(void) {
@@ -1554,7 +1661,7 @@ void fn_80018B74(void) {
 #endif
 
 // .text:0x80018DEC size:0x8EC
-void fn_80018DEC(void) {
+void fn_80018DEC(s32 arg) {
     return;
 }
 
