@@ -134,4 +134,6 @@ void fn_1_1770C(u8* object);
 
 void fn_1_12F8C(void* table, void* matrix);
 
+void fn_1_EA20(void);
+
 #endif

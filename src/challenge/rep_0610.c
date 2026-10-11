@@ -34,12 +34,18 @@ static u8 ch_fill5F63;
 static s8 ch_5F62;
 static u16 ch_5F60;
 static s32 ch_5F5C;
-static u8 ch_3758[0x2804];
+static s32 ch_5F58;
+static u8 ch_3758[0x2800];
 static u8 ch_3258[0x500];
 static u8 ch_3218[0x40];
 static u8 ch_fill30C0[0x158];
 static s32 ch_30BC;
-static u8 ch_fill3090[0x2C];
+static u8 ch_fill30B8[0x4];
+static u8 ch_fill30B7;
+static u8 ch_fill30B6;
+static s16 ch_30B4;
+static s32 ch_30B0;
+static u8 ch_fill3090[0x20];
 static s32 ch_308C;
 static s32 ch_3088;
 static u8 ch_fill3084[0x4];
@@ -2336,6 +2342,83 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
         object->setTime = 0;
         object->setSpeed = 0;
         object->visFlags &= 1;
+    }
+}
+#endif
+
+extern void fn_80039A4C(void);
+
+// .text:0xEA20 size:0x2D8
+// NONMATCHING ~90%: case 0 loop reloads the animation table differently; register allocation
+#if NONMATCHING
+void fn_1_EA20(void) {
+    ActorObject* object;
+    u8* entry;
+    u8** table;
+    s32 i;
+    s32 j;
+    u16 buttons;
+
+    switch (ch_30B0) {
+    case 0:
+        object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34);
+        ch_5F68 = 1;
+        ch_5F64 = 0.0f;
+        object->time = 0.0f;
+        object->setTime = 1;
+        ch_30B0 = 1;
+        ch_5F58 = 0;
+        entry = ch_6940 + ch_5F73 * 0x48;
+        table = (u8**)(lbl_8036E548 + ch_5F73 * 0x27C + entry[0x44] * 4 + 0xC14);
+        j = entry[0x45] * 0xC;
+        for (i = 0; i < *(u16*)(*(u8**)(*table + 4) + j + 8); i++) {
+            f32 frame = (*(f32**)(*(u8**)(*table + 4) + j + 4))[i * 4];
+            if ((f32)ch_5F58 < frame) {
+                ch_5F58 = (s32)frame;
+            }
+        }
+        break;
+    case 1:
+        if (lbl_803C77B8._02 & 0x200) {
+            ch_30B0 = 0;
+            ch_5F71 = 1;
+            break;
+        }
+        buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+        if (buttons & 1) {
+            if (--ch_30B4 < 0) {
+                ch_30B4 = ch_5F58 - 2;
+            }
+        } else if (buttons & 2) {
+            if (++ch_30B4 > ch_5F58 - 2) {
+                ch_30B4 = 0;
+            }
+        } else if (buttons & 0x100) {
+            ch_5F68 = 0;
+            fn_80039A4C();
+            lbl_8036E548[0x3084] = ch_5F73;
+            ch_30B0 = 2;
+            ((u8**)(lbl_8036E548 + 0x2C50))[ch_5F73] = lbl_8036E548 + ch_5F73 * 0x27C + 0xC04;
+        }
+        break;
+    default:
+        if ((u32)(ch_30B0 - 2) == (u32)(ch_30B4 * 2)) {
+            lbl_8036E548[0x3083] = 1;
+        }
+        ch_30B0++;
+        if (lbl_803C77B8._02 & 0x200) {
+            ch_30B0 = 0;
+            lbl_8036E548[0x3083] = 0;
+        } else if (lbl_803C77B8._02 & 0x100) {
+            object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34);
+            object->time = 0.0f;
+            object->setTime = 1;
+            fn_80039A4C();
+            lbl_8036E548[0x3084] = ch_5F73;
+            ch_30B0 = 2;
+            ((u8**)(lbl_8036E548 + 0x2C50))[ch_5F73] = lbl_8036E548 + ch_5F73 * 0x27C + 0xC04;
+        }
+        break;
     }
 }
 #endif
