@@ -3299,8 +3299,36 @@ int fn_3_51798(int i, f32* out) {
 }
 
 // .text:0x00051DF0 size:0x294 mapped:0x80690E84
-void fn_3_51DF0(void) {
-    return;
+extern f32 lbl_3_rodata_C70;
+extern f32 lbl_3_rodata_C74;
+extern f32 lbl_3_rodata_C78;
+extern f32 lbl_3_rodata_C7C;
+extern f32 lbl_3_rodata_C80;
+int fn_3_51DF0(f32 x, f32 z) {
+    f32 d;
+    f32 xx;
+    if (40.0f + (x - z) > 0.0f && 40.0f + (-x - z) > 0.0f) {
+        return 0;
+    }
+    xx = x * x;
+    d = xx + z * z;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_C70) {
+        return 1;
+    }
+    z -= lbl_3_rodata_C74;
+    d = xx + z * z;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_C78) {
+        return 1;
+    }
+    if (d < lbl_3_rodata_C7C) {
+        return 2;
+    }
+    if (d < lbl_3_rodata_C80) {
+        return 3;
+    }
+    return 4;
 }
 
 // .text:0x00052084 size:0x25C mapped:0x80691118
