@@ -1229,8 +1229,8 @@ void fn_2_681A0(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x00068234 size:0x2C
-void fn_2_68234(void) {
-    return;
+void fn_2_68234(MenuTask* task, MenuItem* item) {
+    lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
 }
 
 // .text:0x00068260 size:0xA8
