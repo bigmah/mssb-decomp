@@ -1453,10 +1453,7 @@ typedef struct _BB_barrelStruct {
 typedef struct _UnkStructMinigame {
     /*0x000*/ VecXYZ _0;
     /*0x00C*/ VecXYZ _C;
-    /*0x018*/ s32 _18;
-    /*0x01C*/ s32 _1C;
-    /*0x020*/ u8 pad4[28];
-    /*0x03C*/ s32 _3C;
+    /*0x018*/ s32 coins[10]; // coin pool indices carried by this object (rep_3520)
     /*0x040*/ u8 _40[4];
     /*0x044*/ VecXYZ _44;
     /*0x050*/ VecXYZ _50;
@@ -2402,7 +2399,7 @@ typedef struct _MiniGameStruct {
     /*0x1D40*/ f32 _1D40;
     /*0x1D44*/ f32 _1D44;
     /*0x1D48*/ f32 _1D48;
-    /*0x1D4C*/ f32 starDashRelated_0_5Or1_5;
+    /*0x1D4C*/ f32* starDashRelated_0_5Or1_5; // points at the speed multiplier (0.5 or 1.5)
     /*0x1D50*/ s16 _1D50;
     /*0x1D52*/ s16 _1D52;
     /*0x1D54*/ s16 _1D54;
@@ -2416,7 +2413,7 @@ typedef struct _MiniGameStruct {
     /*0x1D68*/ s16 _1D68;
     /*0x1D6A*/ s16 _1D6A;
     /*0x1D6C*/ u8 _1D6C;
-    /*0x1D6D*/ u8 _1D6D;
+    /*0x1D6D*/ s8 _1D6D;
     /*0x1D6E*/ u8 starDashStunType[4];
     /*0x1D72*/ u8 _1D72;
     /*0x1D73*/ u8 _1D73;
