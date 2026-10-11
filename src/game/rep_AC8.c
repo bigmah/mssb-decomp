@@ -62,6 +62,7 @@ extern f32 lbl_3_rodata_B6C;
 extern f32 lbl_3_rodata_BA8;
 extern f32 lbl_3_rodata_BAC;
 extern f32 lbl_3_rodata_BB0;
+extern f32 lbl_3_rodata_BD0;
 extern f32 lbl_3_data_1C44[];
 extern s16 lbl_3_data_1C54[];
 int RandomInt_Game_Range(int min, int max);
@@ -3184,9 +3185,71 @@ void fn_3_32810(void) {
 }
 
 // .text:0x000329A4 size:0x6E4 mapped:0x80671A38
+// NONMATCHING 90%: registers only; the known SetFielderAct table-value/state r0 swap (see docs/patterns/unsolved.md)
+#if NONMATCHING
 void fn_3_329A4(void) {
-    return;
+    s16 ang = *(s16*)(g_Ball + 0x1B9C);
+    if (*(s16*)(g_Ball + 0x1B9A) >= 0x400 && *(s16*)(g_Ball + 0x1B9A) <= 0xC00) {
+        ang += 0x800;
+        if (ang > 0x1000) {
+            ang -= 0x1000;
+        }
+    }
+    if (ang >= 0xE00) {
+        *(s16*)(g_FieldingLogic + 0xB0) = 1;
+        SetFielderAct(2, 0x10, 0x80);
+    } else if (ang >= 0xA00) {
+        *(s16*)(g_FieldingLogic + 0xB0) = 1;
+    } else if (ang >= 0x800) {
+        *(s16*)(g_FieldingLogic + 0xB0) = 1;
+        SetFielderAct(4, 0x10, 0x80);
+    } else if (ang >= 0x400) {
+        if (*(s16*)(g_Ball + 0x1B9A) < 0x40) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 4;
+            SetFielderAct(6, 0x10, 0x80);
+        } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_BA0) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 1;
+            SetFielderAct(4, 0x10, 0x80);
+            SetFielderAct(6, 0x10, 0x80);
+        } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_B9C) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 4;
+            SetFielderAct(5, 0x10, 0x80);
+            SetFielderAct(6, 0x10, 0x80);
+        } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_BD0) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 5;
+            SetFielderAct(4, 0x10, 0x80);
+            SetFielderAct(6, 0x10, 0x80);
+        } else {
+            *(s16*)(g_FieldingLogic + 0xB0) = 6;
+            SetFielderAct(5, 0x10, 0x80);
+        }
+    } else if (*(s16*)(g_Ball + 0x1B9A) < 0x40) {
+        *(s16*)(g_FieldingLogic + 0xB0) = 2;
+        SetFielderAct(8, 0x10, 0x80);
+    } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_BA0) {
+        *(s16*)(g_FieldingLogic + 0xB0) = 1;
+        SetFielderAct(2, 0x10, 0x80);
+        SetFielderAct(8, 0x10, 0x80);
+    } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_B9C) {
+        *(s16*)(g_FieldingLogic + 0xB0) = 2;
+        SetFielderAct(3, 0x10, 0x80);
+        SetFielderAct(8, 0x10, 0x80);
+    } else {
+        /* note: the original has no else here, so the < 40 case is overwritten below */
+        if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_BD0) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 3;
+            SetFielderAct(2, 0x10, 0x80);
+            SetFielderAct(8, 0x10, 0x80);
+        }
+        *(s16*)(g_FieldingLogic + 0xB0) = 8;
+        SetFielderAct(3, 0x10, 0x80);
+    }
+    SetFielderAct(*(s16*)(g_FieldingLogic + 0xB0), 0x15, 0xA8);
+    fn_3_4C9C8();
+    fn_3_47778();
+    fn_3_4A124();
 }
+#endif
 
 // .text:0x00033088 size:0x3D0 mapped:0x8067211C
 void fn_3_33088(void) {
