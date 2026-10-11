@@ -107,6 +107,6 @@ void fn_1_73B8(ChallengeModel* model, u8 numLights, ...);
 void fn_1_6848(void);
 void fn_1_6E14(void);
 void fn_1_7960(void);
-void fn_1_5AC0(void);
+void fn_1_5AC0(u16* image, s32 width, s32 height, f32 scale);
 
 #endif

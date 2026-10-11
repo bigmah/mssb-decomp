@@ -383,8 +383,11 @@ typedef struct ChalTexState {
     GXIndTexScale tScale;
     GXIndTexScale sScale;
     u8 flags;
-    u8 pad1d[0x424-0x1d];
-    GXTexObj obj;
+    u8 pad1d[0x420-0x1d];
+    ChallengeFog* fog;  // lbl_1_bss_4E0
+    GXTexObj obj;       // lbl_1_bss_4E4
+    u8 pad444[0x460-0x444];
+    u16 image[(0x2FA8 - 0x520) / 2]; // normal map (IA8, with mipmaps)
 } ChalTexState;
 static ChalTexState lbl_1_bss_C0;
 
@@ -1269,3 +1272,130 @@ void fn_1_6E14(void) {
         fn_800B996C(0);
     }
 }
+
+typedef struct ChalLightColors {
+    GXColor c[3];
+} ChalLightColors;
+extern const ChalLightColors lbl_1_rodata_194; // red, blue, green
+extern const f32 lbl_1_rodata_1FC;
+extern const f32 lbl_1_rodata_200;
+extern struct {
+    u8 pad[0x715];
+    volatile s8 idle;
+} lbl_803C6CF8; // main.dol's DVD/ARAM loader
+extern void LITAlloc(void** light);
+extern void LITInitAttn(void* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
+extern void LITInitPos(void* light, f32 x, f32 y, f32 z);
+extern void LITInitDir(void* light, f32 x, f32 y, f32 z);
+extern void LITInitColor(void* light, GXColor* color);
+
+// fn_1_6848, size:0x5CC
+// Viewer setup task: builds the normal map and lights, lets pad 0 pick a stage and
+// variant, loads that model from ARAM and then hands over to fn_1_6E14.
+// NONMATCHING 91%: the original addresses .data/.bss through pooled base registers in a different register order
+#if NONMATCHING
+void fn_1_6848(void) {
+    ChalLightColors colors;
+    GXColor color;
+    ChalTask* task;
+    ChallengeModelOffsets* model;
+    u8* actor;
+    u8* geometry;
+    u8* textures;
+    s32 size;
+
+    task = lbl_803CC1B8;
+    switch (task->state) {
+    case 0:
+        fn_800B9AA8(NULL);
+        size = lbl_1_data_848.normalMapSize;
+        fn_1_6578(&lbl_1_bss_C0.obj, lbl_1_bss_C0.image, size, size);
+        fn_800B996C((u32)fn_1_5544); // TODO type: main.dol keeps the callback in a u32
+        LITAlloc(&lbl_1_data_848.lights[0]);
+        LITAlloc(&lbl_1_data_848.lights[1]);
+        LITAlloc(&lbl_1_data_848.lights[2]);
+        colors = lbl_1_rodata_194;
+        LITInitAttn(lbl_1_data_848.lights[0], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848.lights[0], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1A8);
+        LITInitDir(lbl_1_data_848.lights[0], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        color = colors.c[0];
+        LITInitColor(lbl_1_data_848.lights[0], &color);
+        LITInitAttn(lbl_1_data_848.lights[1], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848.lights[1], lbl_1_rodata_1A8, lbl_1_rodata_200, lbl_1_rodata_1FC);
+        LITInitDir(lbl_1_data_848.lights[1], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        color = colors.c[1];
+        LITInitColor(lbl_1_data_848.lights[1], &color);
+        LITInitAttn(lbl_1_data_848.lights[2], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848.lights[2], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1FC);
+        LITInitDir(lbl_1_data_848.lights[2], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        color = colors.c[2];
+        LITInitColor(lbl_1_data_848.lights[2], &color);
+        task->state = 1;
+        // fallthrough
+    case 1:
+        switch (PAD0.repeat) {
+        case PAD_BUTTON_UP:
+            if (--lbl_1_common_bss_472B4.stageSel < 0) {
+                lbl_1_common_bss_472B4.stageSel = lbl_1_data_8CC - 1;
+            }
+            break;
+        case PAD_BUTTON_DOWN:
+            if (++lbl_1_common_bss_472B4.stageSel >= lbl_1_data_8CC) {
+                lbl_1_common_bss_472B4.stageSel = 0;
+            }
+            break;
+        case PAD_BUTTON_B:
+            if (++lbl_1_common_bss_472B4.variantSel > 2) {
+                lbl_1_common_bss_472B4.variantSel = 0;
+            }
+            break;
+        case PAD_BUTTON_A:
+            task->state = 2;
+            break;
+        case PAD_BUTTON_START:
+            fn_800B996C(0);
+            task->parent->state = 1;
+            break;
+        }
+        break;
+    case 2:
+        task->modelIdx = lbl_1_common_bss_472B4.variantSel + lbl_1_common_bss_472B4.stageSel * 3;
+        // TODO type: ARAMTransfer returns the destination pointer as s32
+        task->model = (ChallengeModelOffsets*)ARAMTransfer(&lbl_1_data_8D0[task->modelIdx], 0, 0, 0);
+        task->state = 3;
+        lbl_1_bss_C0.fog = &lbl_1_data_2A8[lbl_1_common_bss_472B4.stageSel].fog[lbl_1_common_bss_472B4.variantSel];
+        break;
+    case 3:
+        if (lbl_803C6CF8.idle == 1) {
+            model = task->model;
+            actor = (u8*)model + model->mainActor;
+            geometry = (u8*)model + model->mainGeometry;
+            textures = (u8*)model + model->textures;
+            fn_1_4DD8((u16*)((u8*)model + model->effects));
+            fn_800B49E4(actor);
+            fn_800BCE38(geometry);
+            convertTextureHeader(textures);
+            lbl_1_common_bss_472B4.texBank = textures + 4;
+            fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
+            haveActLayoutPointToGeoHeader(actor, geometry);
+            lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
+            lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
+            lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
+            actor = (u8*)model + model->secondaryActor;
+            geometry = (u8*)model + model->secondaryGeometry;
+            fn_800B49E4(actor);
+            fn_800BCE38(geometry);
+            fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
+            haveActLayoutPointToGeoHeader(actor, geometry);
+            lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
+            lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
+            DCFlushRangeNoSync(task->model, lbl_1_data_8D0[task->modelIdx].sizeInfo & 0x0FFFFFFF);
+            lbl_803CC1B8->func = fn_1_6E14;
+        }
+        break;
+    }
+}
+#endif
