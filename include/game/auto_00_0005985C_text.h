@@ -45,4 +45,18 @@ void fn_3_5A6D4(u8 status);
 
 void fn_3_5ED98(void);
 
+void fn_3_59B20(void);
+void fn_3_5A6A0(s32 a, s32 b, s32 c, s32 d);
+void fn_3_5CFD0(void);
+void fn_3_5C5C8(void);
+void fn_3_5C418(void);
+void fn_3_5D3FC(void);
+s32 fn_3_5B220(s32 arg);
+void fn_3_5ACA0(void);
+void fn_3_59918(s32 x);
+void fn_3_5EE58(void);
+void fn_3_5EFEC(void);
+void fn_3_5F7A8(void);
+s32 fn_3_5B380(void);
+
 #endif

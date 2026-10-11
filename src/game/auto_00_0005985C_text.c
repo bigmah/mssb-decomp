@@ -110,6 +110,8 @@ extern void fn_3_75434(void);
 extern void fn_3_59338(void);
 extern void fn_3_7B130(void);
 extern void fn_3_22850(void);
+extern s32 fn_8004CA6C(u16 buttons);
+extern void fn_8004CC2C(void);
 
 #pragma dont_inline on
 
@@ -824,4 +826,25 @@ void fn_3_5F7A8(void) {
     g_Strikes.stateRelated = 0;
     g_GameLogic.frameCountdownAtBeginningOfAtBatLockout = 0x5A;
     ((u8*)&g_GameLogic)[0x13D] = 0;
+}
+
+// fn_3_5B380, size:0x88
+s32 fn_3_5B380(void) {
+    u16 buttons; // never set in the original: the call reads whatever is in r3
+    if (g_GameLogic.frame_exitMenuShowing < 0x7FFE) {
+        g_GameLogic.frame_exitMenuShowing += 1;
+    } else {
+        g_GameLogic.frame_exitMenuShowing = 0x7FFF;
+    }
+    if (g_GameLogic.frame_exitMenuShowing > 0x14) {
+        s32 choice = fn_8004CA6C(buttons);
+        if (choice == 1) {
+            return 1;
+        } else if (choice == 2) {
+            fn_8004CC2C();
+        } else if (choice == 4) {
+            return 2;
+        }
+    }
+    return 0;
 }
