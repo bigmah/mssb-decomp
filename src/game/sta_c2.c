@@ -44,6 +44,10 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern const Vec lbl_3_rodata_252C;
+extern const f64 lbl_3_rodata_2818;
+extern const f64 lbl_3_rodata_2820;
+extern void fn_3_6530(void);
 extern const Vec lbl_3_rodata_24D0;
 extern const Vec lbl_3_rodata_24DC;
 extern const f32 lbl_3_rodata_2848;
@@ -2096,9 +2100,159 @@ void fn_3_D278C(u8* p) {
 }
 
 // .text:0x000D2A0C size:0x6C4 mapped:0x80711AA0
-void fn_3_D2A0C(void) {
-    return;
+// NONMATCHING ~88%: frame/saved-register layout differs (target keeps a float in f31); same calls and stores
+#if NONMATCHING
+#pragma dont_inline off
+// Inlined copies of fn_3_D2220 / fn_3_D249C / fn_3_D255C / fn_3_D24E8.
+static inline void D2220_inl(u8* p) {
+    u8* c;
+    Mtx m;
+    Vec v;
+    Vec dir;
+    Vec axis;
+    c = *(u8**)(p + 0xC4);
+    axis = lbl_3_rodata_25B0;
+    dir = lbl_3_rodata_25BC;
+    PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSMTXMultVec(m, lbl_3_rodata_24E8, &v);
+    PSVECAdd(&v, (Vec*)(p + 0xA0), &v);
+    v.y += lbl_3_rodata_2668;
+    *(Vec*)(c + 0x1CC) = v;
+    *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
+    fn_3_D1F2C((CC438Cfg*)(lbl_3_bss_A018 + 0x890), *(RopeNode**)(p + 0xC4), 8, &dir, p);
 }
+
+static inline s32 D249C_inl(u8* p) {
+    Vec v;
+    u8* o = *(u8**)(p + 0xC4);
+    PSVECSubtract((Vec*)(o + 0x1CC), (Vec*)(o + 0xC), &v);
+    return PSVECMag(&v) > lbl_3_rodata_2800;
+}
+
+static inline s32 D255C_inl(u8* p) {
+    Vec d;
+    B9 a = lbl_3_rodata_255C;
+    B9 b = lbl_3_rodata_2568;
+    u32 i;
+    u8* t;
+    if (*(f32*)(p + 0xA4) > lbl_3_rodata_2770) {
+        return -1;
+    }
+    if (*(f32*)(p + 0xA0) > lbl_3_rodata_2664) {
+        t = a.b;
+    } else {
+        t = b.b;
+    }
+    for (i = 0; i < 9; i++) {
+        u8* o = g_Fielders + t[i] * 0x268;
+        if (o != NULL && o[0x210] == 0) {
+            PSVECSubtract((Vec*)(p + 0xA0), (Vec*)o, &d);
+            if (PSVECMag(&d) <= lbl_3_rodata_2668) {
+                return (s8)t[i];
+            }
+        }
+    }
+    return -1;
+}
+
+static inline void D24E8_inl(u8* p, s32 idx0) {
+    s8 idx = idx0;
+    Vec v;
+    PSVECSubtract((Vec*)(g_Fielders + idx * 0x268), (Vec*)(p + 0xA0), &v);
+    v.y = lbl_3_rodata_2664;
+    PSVECNormalize(&v, &v);
+    fn_3_253A4(idx, fn_3_9FB8C(v.x, v.z));
+}
+#pragma dont_inline on
+
+// Flying state of a stadium object knocked into the air: integrates p+0xAC velocity
+// with gravity, plays the apex/landing sounds, bats the ball away if it touches it,
+// and bounces off (state 5) when the chain over-stretches or a fielder is hit.
+void fn_3_D2A0C(u8* p) {
+    Vec x;
+    Vec w;
+    Vec c;
+    Vec d;
+    Vec n;
+    Vec bw;
+    s32 idx;
+    f32 vy;
+    f32 ang;
+    x = lbl_3_rodata_252C;
+    vy = *(f32*)(p + 0xB0);
+    *(f32*)(p + 0xA0) += *(f32*)(p + 0xAC);
+    *(f32*)(p + 0xA4) += *(f32*)(p + 0xB0);
+    *(f32*)(p + 0xA8) += *(f32*)(p + 0xB4);
+    *(f32*)(p + 0xB0) -= lbl_3_rodata_280C[0];
+    if (vy > lbl_3_rodata_2664 && *(f32*)(p + 0xB0) <= lbl_3_rodata_2664) {
+        memcpy(&w, p + 0xA0, sizeof(Vec));
+        w.y = w.y * lbl_3_rodata_2678;
+        fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 3, (f32*)&w, 0, 0xB);
+    }
+    if (*(f32*)(p + 0xA4) < lbl_3_rodata_2664) {
+        *(f32*)(p + 0xA4) = lbl_3_rodata_2664;
+        *(f32*)(p + 0xB0) = lbl_3_rodata_27E8;
+        memcpy(&w, p + 0xA0, sizeof(Vec));
+        w.y = w.y * lbl_3_rodata_2678;
+        fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 2, (f32*)&w, 0, 0xA);
+        fn_8004C094(p + 0xA0);
+    }
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    D2220_inl(p);
+    if (*(s16*)(g_Ball + 0x1B7A) < 2) {
+        c.x = *(f32*)(p + 0xA0);
+        c.y = *(f32*)(p + 0xA4);
+        c.z = *(f32*)(p + 0xA8);
+        c.y += lbl_3_rodata_2668;
+        PSVECSubtract((Vec*)g_Ball, &c, &d);
+        if (((Vec*)g_Ball)->y < c.y) {
+            d.y = lbl_3_rodata_2664;
+        }
+        if (PSVECMag(&d) < lbl_3_rodata_2668) {
+            PSVECNormalize(&d, &n);
+            ((Vec*)g_Ball)->x = lbl_3_rodata_2668 * n.x + c.x;
+            ((Vec*)g_Ball)->z = lbl_3_rodata_2668 * n.z + c.z;
+            *(f32*)(g_Ball + 0x318) = lbl_3_rodata_2818 * n.x;
+            *(f32*)(g_Ball + 0x31C) = lbl_3_rodata_2818 * n.y;
+            *(f32*)(g_Ball + 0x320) = lbl_3_rodata_2818 * n.z;
+            p[0xCA] = 5;
+            memcpy(&bw, g_Ball, sizeof(Vec));
+            bw.y = bw.y * lbl_3_rodata_2678;
+            fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 5, (f32*)&bw, 0, 0xD);
+            fn_3_27648();
+            g_FieldingLogic[0x13B] = 1;
+            fn_3_6530();
+            ((Vec*)(lbl_3_bss_A018 + 0x808))[1].z = ((Vec*)g_Ball)->z;
+            (lbl_3_bss_A018 + 0x880)[1] = 1;
+            ((Vec*)(lbl_3_bss_A018 + 0x808))[1].x = ((Vec*)g_Ball)->x;
+            ((Vec*)(lbl_3_bss_A018 + 0x808))[1].y = -((Vec*)g_Ball)->y;
+        }
+    }
+    if (D249C_inl(p)) {
+        p[0xCA] = 5;
+    }
+    idx = D255C_inl(p);
+    if (idx >= 0) {
+        D24E8_inl(p, idx);
+        p[0xCA] = 5;
+    }
+    if (p[0xCA] == 5) {
+        PSVECNormalize((Vec*)(p + 0xAC), &n);
+        n.x = n.x * lbl_3_rodata_2678;
+        n.z = n.z * lbl_3_rodata_2678;
+        *(f32*)(p + 0xAC) = lbl_3_rodata_2820 * n.x;
+        *(f32*)(p + 0xB0) = lbl_3_rodata_2814;
+        *(f32*)(p + 0xB4) = lbl_3_rodata_2820 * n.z;
+        ang = -(lbl_3_rodata_2670 * (f32)acos(PSVECDotProduct(&x, &n)));
+        if (n.z < lbl_3_rodata_2664) {
+            ang *= lbl_3_rodata_2678;
+        }
+        *(f32*)(p + 0xC0) = ang;
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+    }
+}
+#endif
 
 // .text:0x000D30D0 size:0x5E0 mapped:0x80712164
 void fn_3_D30D0(void) {
