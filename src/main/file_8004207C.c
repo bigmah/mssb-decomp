@@ -2379,9 +2379,129 @@ void fn_80049D3C(void) {
 }
 
 // .text:0x80049D8C size:0x370
+// NONMATCHING ~85%: register allocation; switch-count selection layout
+#if NONMATCHING
 void fn_80049D8C(u8 dir, u8 team) {
-    return;
+    s32 count = 0;
+    s8 cursor;
+
+    lbl_803C5F04.prevCursor[team] = lbl_803C5F04.cursor[team];
+    cursor = lbl_803C5F04.cursor[team];
+    if (cursor == 0 && lbl_803C5F04._36 == 0) {
+        return;
+    }
+    lbl_803C5F04.lastDir[team] = dir;
+    if (dir == 0) {
+        if (lbl_803C5F04._36 == 0) {
+            if (cursor == 2 || cursor == 4) {
+                goto increment;
+            }
+        decrement:
+            lbl_803C5F04.prevOption[cursor] = lbl_803C5F04.option[cursor];
+            lbl_803C5F04.option[cursor]--;
+            switch (cursor) {
+            case 3:
+                count = 5;
+                break;
+            case 1:
+            case 2:
+            case 4:
+                count = 2;
+                break;
+            }
+            if (lbl_803C5F04.option[cursor] < 0) {
+                lbl_803C5F04.option[cursor] = count - 1;
+            }
+            if (lbl_803C5F04.prevOption[cursor] != lbl_803C5F04.option[cursor]) {
+                fn_800625A4(team, 0x30);
+                sndFXRelated(2);
+            }
+        } else {
+            lbl_803C5F04.prevPlayerOption[team][cursor] = lbl_803C5F04.playerOption[team][cursor];
+            switch (cursor) {
+            case 0:
+                if (lbl_803C5F04.playerOption[team][0] != 0) {
+                    lbl_803C5F04.playerOption[team][0] = 0;
+                }
+                break;
+            case 1:
+                if (lbl_803C5F04.playerOption[team][1] != 0) {
+                    lbl_803C5F04.playerOption[team][1] = 0;
+                }
+                break;
+            case 2:
+                if (lbl_803C5F04.playerOption[team][2] != 0) {
+                    lbl_803C5F04.playerOption[team][2] = 0;
+                }
+                break;
+            case 3:
+                if (lbl_803C5F04.playerOption[team][3] == 0) {
+                    lbl_803C5F04.playerOption[team][3] = 1;
+                }
+                break;
+            }
+            if (lbl_803C5F04.prevPlayerOption[team][cursor] != lbl_803C5F04.playerOption[team][cursor]) {
+                fn_800625A4(team, 0x30);
+                sndFXRelated(2);
+            }
+        }
+    } else {
+        if (lbl_803C5F04._36 == 0) {
+            if (cursor == 2 || cursor == 4) {
+                goto decrement;
+            }
+        increment:
+            lbl_803C5F04.prevOption[cursor] = lbl_803C5F04.option[cursor];
+            lbl_803C5F04.option[cursor]++;
+            switch (cursor) {
+            case 3:
+                count = 5;
+                break;
+            case 1:
+            case 2:
+            case 4:
+                count = 2;
+                break;
+            }
+            if (lbl_803C5F04.option[cursor] == count) {
+                lbl_803C5F04.option[cursor] = 0;
+            }
+            if (lbl_803C5F04.prevOption[cursor] != lbl_803C5F04.option[cursor]) {
+                fn_800625A4(team, 0x30);
+                sndFXRelated(2);
+            }
+        } else {
+            lbl_803C5F04.prevPlayerOption[team][cursor] = lbl_803C5F04.playerOption[team][cursor];
+            switch (cursor) {
+            case 0:
+                if (lbl_803C5F04.playerOption[team][0] == 0) {
+                    lbl_803C5F04.playerOption[team][0] = 1;
+                }
+                break;
+            case 1:
+                if (lbl_803C5F04.playerOption[team][1] == 0) {
+                    lbl_803C5F04.playerOption[team][1] = 1;
+                }
+                break;
+            case 2:
+                if (lbl_803C5F04.playerOption[team][2] == 0) {
+                    lbl_803C5F04.playerOption[team][2] = 1;
+                }
+                break;
+            case 3:
+                if (lbl_803C5F04.playerOption[team][3] != 0) {
+                    lbl_803C5F04.playerOption[team][3] = 0;
+                }
+                break;
+            }
+            if (lbl_803C5F04.prevPlayerOption[team][cursor] != lbl_803C5F04.playerOption[team][cursor]) {
+                fn_800625A4(team, 0x30);
+                sndFXRelated(2);
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8004A0FC size:0xC0
 void fn_8004A0FC(void) {
