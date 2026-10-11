@@ -588,9 +588,38 @@ void fn_80027300(Emitter* e, Vec* center, Vec* target, ParticleParamsAttract* pr
 #endif
 
 // .text:0x80027674 size:0x2A4
-void fn_80027674(void) {
-    return;
+// NONMATCHING 96%: register allocation in the inlined allocations
+#if NONMATCHING
+void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, f32 radius) {
+    Emitter tmp;
+    Emitter* e = FindEmitter(NULL, type);
+    Emitter* t;
+    Particle* last;
+
+    if (e != NULL) {
+        t = AllocParticles(&tmp, prm->count, 1);
+        if (t != NULL) {
+            fn_80027300(t, center, target, prm, radius);
+            last = e->particles;
+            if (last == NULL) {
+                // the original stores through a NULL pointer here
+                e->particles = t->particles;
+            } else {
+                while (last->next != NULL) {
+                    last = last->next;
+                }
+                last->next = t->particles;
+            }
+            e->count += t->count;
+        }
+    } else {
+        e = NewEmitter(fn_80026E58, 0x80, 1, prm->count, 1, type);
+        if (e != NULL) {
+            fn_80027300(e, center, target, prm, radius);
+        }
+    }
 }
+#endif
 
 // .text:0x80027918 size:0x50
 // NONMATCHING 96%: the store goes through r4 instead of the copied r3
