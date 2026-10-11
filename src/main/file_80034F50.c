@@ -192,8 +192,12 @@ void fn_80036270(SpaniOwner* owner, s32 idx, u32 track, u32 frame, s16* outX, s1
 }
 
 // .text:0x800362F0 size:0xE8
-void fn_800362F0(void) {
-    return;
+void fn_800362F0(SpaniOwner* owner, s32 idx) {
+    s32 i;
+
+    for (i = 0; i < SPANI_TEX_OVERRIDE_COUNT; i++) {
+        lbl_80371C30[owner->baseIdx + idx].obj->texOverride[i] = 0xFFFF;
+    }
 }
 
 // .text:0x800363D8 size:0xC4

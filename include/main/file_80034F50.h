@@ -127,5 +127,6 @@ void fn_80035ED0(s32 idx);
 void fn_80035EEC(u16 frame, s32 idx);
 s32 fn_80036214(SpaniOwner* owner, s32 idx, u32 track, u32 frame);
 void fn_80036270(SpaniOwner* owner, s32 idx, u32 track, u32 frame, s16* outX, s16* outY);
+void fn_800362F0(SpaniOwner* owner, s32 idx);
 
 #endif
