@@ -3840,9 +3840,139 @@ void fn_3_89914(s32 a, s32 b) {
 }
 
 // .text:0x000899BC size:0x81C mapped:0x806C8A50
-void fn_3_899BC(void) {
-    return;
+// Puts runner `src` (-1 = nobody) on base slot `dst`.
+static inline void moveRunner13B8(int dst, int src) {
+    u8* d = g_Runners + dst * 0x154;
+    u8* s = g_Runners + src * 0x154;
+    if (src >= 0 && src <= 3) {
+        if (g_GameLogic[0x121] == 15 && src == 0) {
+            *(s16*)(d + 0xE0) = g_Practice[0x1EF];
+        } else {
+            *(s16*)(d + 0xE0) = *(s16*)(s + 0xE0);
+            d[0x11C] = s[0x11C];
+            d[0x131] = s[0x131];
+            *(s16*)(d + 0xFC) = *(s16*)(s + 0xFC);
+        }
+        *(s16*)(g_RunningLogic + 6 + src * 2) = dst;
+    } else {
+        *(s16*)(d + 0xE0) = -1;
+        d[0x131] = 0;
+        *(s16*)(d + 0xFC) = -1;
+    }
 }
+
+// Rebuilds the runner slots after a play: map[base] = runner that ends up there.
+// NONMATCHING 99.9%: only the stack frame size; map[] is 5 long here to avoid the original's out-of-bounds write
+#if NONMATCHING
+void fn_3_899BC(void) {
+    // The original declares map[4] and writes map[4] (onto the saved
+    // registers) when a forced runner advances from third.
+    s32 map[5];
+    int k;
+    int b;
+    int t;
+    u8* r;
+
+    if (g_d_GameSettings[7] == 2 && g_Strikes[2] >= 3) {
+        for (k = 0; k < 4; k++) {
+            g_Runners[k * 0x154 + 0x123] = 0;
+            *(s16*)(g_Runners + k * 0x154 + 0xE0) = -1;
+        }
+    }
+    map[0] = -1;
+    *(s16*)(g_RunningLogic + 6) = -1;
+    map[1] = -1;
+    *(s16*)(g_RunningLogic + 8) = -1;
+    map[2] = -1;
+    *(s16*)(g_RunningLogic + 0xA) = -1;
+    map[3] = -1;
+    *(s16*)(g_RunningLogic + 0xC) = -1;
+    if (g_Pitcher[0x14E] == 2 && g_FieldingLogic[0x107] != 0) {
+        for (k = 3; k >= 1; k--) {
+            r = g_Runners + k * 0x154;
+            if (r[0x123] == 1 || r[0x123] == 5) {
+                if (r[0x125] == k && r[0x12D] != 0) {
+                    map[k + 1] = k;
+                } else {
+                    map[r[0x125]] = k;
+                }
+            }
+        }
+        map[1] = 0;
+        for (b = 3; b >= 0; b--) {
+            moveRunner13B8(b, map[b]);
+        }
+        return;
+    }
+    if (g_Ball.b[0x1BD3] != 0) {
+        map[3] = 3;
+        moveRunner13B8(3, 3);
+        map[2] = 2;
+        moveRunner13B8(2, 2);
+        map[1] = 1;
+        moveRunner13B8(1, 1);
+        return;
+    }
+    if (g_Pitcher[0x14E] == 3) {
+        if (g_Runners[1 * 0x154 + 0x123] == 0) {
+            map[3] = 3;
+            moveRunner13B8(3, 3);
+            map[2] = 2;
+            moveRunner13B8(2, 2);
+        } else if (g_Runners[2 * 0x154 + 0x123] == 0) {
+            map[2] = 1;
+            moveRunner13B8(2, 1);
+            map[3] = 3;
+            moveRunner13B8(3, 3);
+        } else {
+            map[3] = 2;
+            moveRunner13B8(3, 2);
+            map[2] = 1;
+            moveRunner13B8(2, 1);
+        }
+        map[1] = 0;
+        moveRunner13B8(1, 0);
+        return;
+    }
+    if (g_Ball.b[0x1BD1] == 3) {
+        map[3] = 1;
+        moveRunner13B8(3, 1);
+        map[2] = 0;
+        moveRunner13B8(2, 0);
+        map[1] = -1;
+        moveRunner13B8(1, -1);
+        return;
+    }
+    if (g_Ball.b[0x1BD1] == 4) {
+        if (*(s16*)(g_Runners + 1 * 0x154 + 0xFE) >= 0 && g_Runners[1 * 0x154 + 0x123] == 1 &&
+            *(s16*)(g_Runners + 1 * 0x154 + 0xFE) == 1) {
+            map[3] = 1;
+        }
+        if (*(s16*)(g_Runners + 0xFE) >= 0 && g_Runners[0x123] == 1) {
+            t = *(s16*)(g_Runners + 0xFE) + 2;
+            if (t < 4) {
+                if (map[3] >= 0 && t == 3) {
+                    t--;
+                }
+                map[t] = 0;
+            }
+        }
+        for (b = 3; b >= 1; b--) {
+            moveRunner13B8(b, map[b]);
+        }
+        return;
+    } else {
+        for (k = 0, r = g_Runners; k < 4; k++, r += 0x154) {
+            if (r[0x123] == 1 || r[0x123] == 5) {
+                map[r[0x125]] = k;
+            }
+        }
+    }
+    for (b = 3; b >= 1; b--) {
+        moveRunner13B8(b, map[b]);
+    }
+}
+#endif
 
 // .text:0x0008A1D8 size:0x178 mapped:0x806C926C
 // ~98%: loop regs match now; prologue differs (original loads the 0.0f via addi+lfs 0(r4) and copies i to r3 for the 0x133 stores)
