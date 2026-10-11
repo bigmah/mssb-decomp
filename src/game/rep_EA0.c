@@ -255,9 +255,54 @@ void fn_3_67A48(void) {
 #endif
 
 // .text:0x00067C34 size:0x2BC mapped:0x806A6CC8
+// NONMATCHING 98%: the original moves node through r0 and schedules li r3,0 before saving r31
+#if NONMATCHING
 void fn_3_67C34(TrailNode* node) {
-    return;
+    Mtx m = { { 1.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f, 0.0f } };
+    s32 i;
+
+    fn_80052694(0);
+    GXLoadPosMtxImm(m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
+    GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
+    GXSetVtxDesc(GX_VA_TEX0, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, 14);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXSetColorUpdate(GX_TRUE);
+    GXSetNumChans(1);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetNumTexGens(1);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_MTX2x4, GX_TG_TEXCOORD0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumIndStages(0);
+    GXSetTevDirect(GX_TEVSTAGE0);
+    if (lbl_3_bss_204 != NULL) {
+        lbl_3_bss_204->wrapT = GX_CLAMP;
+        SetDisplayStateTexture(lbl_3_bss_204, 0, 0);
+    }
+    if (lbl_3_bss_204 != NULL) {
+        GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+    } else {
+        GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    }
+    GXSetZCompLoc(GX_FALSE);
+    GXInvalidateVtxCache();
+    for (i = 0; i < 2; i++) {
+        GXSetArray(GX_VA_POS, node->strips[i]->positions, sizeof(Vec));
+        GXSetArray(GX_VA_CLR0, node->strips[i]->colors, sizeof(u32));
+        GXSetArray(GX_VA_TEX0, node->strips[i]->texCoords, 2 * sizeof(u16));
+        GXCallDisplayList(node->strips[i]->displayList, node->strips[i]->displayListSize);
+    }
 }
+#endif
 
 // Builds the trail vertices from the position history. Returns which way the trail
 // faces the camera (-1/1), which picks the strip draw order.
