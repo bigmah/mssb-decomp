@@ -2355,6 +2355,8 @@ void fn_3_417D4(int i) {
 
 // .text:0x0004197C size:0x3FC mapped:0x80680A10
 extern f32 lbl_3_rodata_BA4;
+extern u8 lbl_3_data_44B4[];
+extern f32 lbl_3_rodata_BD4;
 // NONMATCHING 94.0%: register allocation and constant-load scheduling in the distance loop
 #if NONMATCHING
 // Pick the fielder closest to the ball's landing spot and send it after the ball.
@@ -3495,9 +3497,61 @@ void fn_3_4B128(void) {
 }
 
 // .text:0x0004B514 size:0x3BC mapped:0x8068A5A8
-void fn_3_4B514(void) {
-    return;
+// NONMATCHING 96.5%: table load is lfs+add instead of lfsx; f30/f31 swapped for the offset/dx
+#if NONMATCHING
+// Fielder i backs up: runs to its preset spot (lbl_3_data_44B4) or 20 units behind itself.
+void fn_3_4B514(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 off = 0.0f;
+    if (fn_3_53130(i) != 0) {
+        return;
+    }
+    if (f[0x1D4] >= 2) {
+        f32 dz, dx, d, ox, oz;
+        ox = ((VecXZ*)lbl_3_data_44B4)[f[0x1D4]].x;
+        oz = ((VecXZ*)lbl_3_data_44B4)[f[0x1D4]].z;
+        *(f32*)(f + 0x14) = ox;
+        *(f32*)(f + 0x1C) = oz;
+        dx = ox - *(f32*)f;
+        dz = oz - *(f32*)(f + 8);
+        if (0.0f == dx && 0.0f == dz) {
+            *(f32*)(f + 0x50) = 0.0f;
+            *(f32*)(f + 0x68) = 0.0f;
+        } else {
+            *(f32*)(f + 0x64) = atan2(dz, dx);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            *(f32*)(f + 0x68) = d;
+        }
+        f[0x1D9] = 1;
+    } else {
+        f32 dz, dx, d, ox, oz;
+        if (i == 6) {
+            off = lbl_3_rodata_BA0;
+        }
+        if (i == 8) {
+            off = lbl_3_rodata_BD4;
+        }
+        ox = *(f32*)f + off;
+        oz = *(f32*)(f + 8) - lbl_3_rodata_B9C;
+        *(f32*)(f + 0x14) = ox;
+        *(f32*)(f + 0x1C) = oz;
+        dx = ox - *(f32*)f;
+        dz = oz - *(f32*)(f + 8);
+        if (0.0f == dx && 0.0f == dz) {
+            *(f32*)(f + 0x50) = 0.0f;
+            *(f32*)(f + 0x68) = 0.0f;
+        } else {
+            *(f32*)(f + 0x64) = atan2(dz, dx);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            *(f32*)(f + 0x68) = d;
+        }
+        f[0x1D9] = 1;
+    }
+    SetFielderAct(i, 6, 0x30);
 }
+#endif
 
 // .text:0x0004B8D0 size:0x13C mapped:0x8068A964
 void fn_3_4B8D0(int i) {

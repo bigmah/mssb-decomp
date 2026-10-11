@@ -172,7 +172,7 @@ void fn_3_4A124(void);
 void fn_3_4A408(void);
 void fn_3_4A9AC(void);
 void fn_3_4B128(void);
-void fn_3_4B514(void);
+void fn_3_4B514(int);
 void fn_3_4B8D0(int);
 void fn_3_4BA0C(void);
 void fn_3_4C9C8(void);
