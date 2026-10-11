@@ -259,5 +259,6 @@ s32 fn_1_22874(void);
 s32 fn_1_23098(Mtx44 proj, Mtx camera, s32 lines, s32 cols, f32 nearZ, f32 farZ);
 void fn_1_23B54(void);
 void fn_1_21CE8(void);
+void fn_1_21408(void);
 
 #endif

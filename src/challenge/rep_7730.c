@@ -50,7 +50,6 @@ extern void fn_1_272DC(void*, s32);
 extern void fn_1_AF4(s32, s32, f32);
 
 
-extern void fn_1_21408(void);
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_1_data_104F4[];
 extern const f32 lbl_1_rodata_77D8;
@@ -2551,23 +2550,16 @@ void fn_1_23B54(void) {
 
 extern const f32 lbl_1_rodata_7850;
 
-// NONMATCHING 63% (98% when fn_1_20950 is force-inlined, which then drops fn_1_20950's own copy): the original inlines fn_1_20950 here; ours calls it
-// .text:0x21CE8 size:0x8D0
 #if NONMATCHING
-void fn_1_21CE8(void) {
-    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
+// Shared by fn_1_21CE8 / fn_1_21408: drive the rope's free end with the stick, then simulate it.
+static inline void fn_1_21CE8_moveRope(ChallengeCurveDrawing* q) {
     ChallengeCurvePoint* tip;
     Vec force;
     f32 speed;
     f32 mass;
 
-    if (fn_1_22874() != 0 || (lbl_803C77B8._02 & 0x100)) {
-        fn_1_21180(q);
-    } else if (lbl_803C77B8._02 & 0x200) {
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_21408;
-    }
     if (q->colorMode != 0) {
-        // move the free end of the rope with the stick
+        // move the free end of the rope directly
         if (((u8*)&lbl_803C77B8)[0x75] >= 0x50) {
             speed = lbl_1_rodata_77FC * q->unk1C;
         } else {
@@ -2590,7 +2582,9 @@ void fn_1_21CE8(void) {
         force.z = speed * ((s8)((u8*)&lbl_803C77B8)[0x71] * mass);
     }
     fn_80038B48(&lbl_1_bss_6FB8, lbl_1_bss_6FE0, q->pointCount, &force);
+}
 
+static inline void fn_1_21CE8_setupDraw(void) {
     GXSetProjection(lbl_1_bss_47010, GX_PERSPECTIVE);
     GXClearVtxDesc();
     GXSetCullMode(GX_CULL_NONE);
@@ -2605,8 +2599,49 @@ void fn_1_21CE8(void) {
     GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
     GXLoadPosMtxImm(lbl_1_bss_43EE0.view, 0);
     GXSetCurrentMtx(0);
+}
+#endif
+
+// NONMATCHING 63% (98% when fn_1_20950 is force-inlined, which then drops fn_1_20950's own copy): the original inlines fn_1_20950 here; ours calls it
+// .text:0x21CE8 size:0x8D0
+#if NONMATCHING
+void fn_1_21CE8(void) {
+    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
+
+    if (fn_1_22874() != 0 || (lbl_803C77B8._02 & 0x100)) {
+        fn_1_21180(q);
+    } else if (lbl_803C77B8._02 & 0x200) {
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_21408;
+    }
+    fn_1_21CE8_moveRope(q);
+    fn_1_21CE8_setupDraw();
     fn_1_21040();
     fn_1_21298(q);
     fn_1_20950(lbl_1_bss_6FE0, q->pointCount - 1, lbl_1_bss_43EE0.view);
+}
+#endif
+
+// NONMATCHING 63%: same shape as fn_1_21CE8 (the original inlines fn_1_20950 here; ours calls it)
+// .text:0x21408 size:0x8E0
+#if NONMATCHING
+void fn_1_21408(void) {
+    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
+
+    if (lbl_803C77B8._02 & 0x1000) {
+        *(void (**)(void))q = fn_1_21CE8;
+    } else if (lbl_803C77B8._02 & 0x100) {
+        fn_1_21180(q);
+    } else if (lbl_803C77B8._02 & 0x200) {
+        lbl_1_bss_6BE0[0] = NULL;
+        *(void (**)(void))q = fn_1_24778;
+    }
+    fn_1_121D4((u8*)&lbl_1_bss_43EE0);
+    fn_1_21CE8_moveRope(q);
+    fn_1_21CE8_setupDraw();
+    fn_1_21040();
+    fn_1_21298(q);
+    if (lbl_1_bss_6BE0[0] != NULL) {
+        fn_1_20950(lbl_1_bss_6FE0, q->pointCount - 1, lbl_1_bss_43EE0.view);
+    }
 }
 #endif
