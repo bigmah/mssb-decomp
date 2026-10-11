@@ -433,7 +433,7 @@ typedef struct _InMemBallType {
     /*0x1BDA*/ u8 bobbleLocation_1fair_2foul;
     /*0x1BDB*/ u8 _1BDB;
     /*0x1BDC*/ u8 homeRunInd;
-    /*0x1BDD*/ u8 ballZoneWhenCaught;
+    /*0x1BDD*/ s8 ballZoneWhenCaught; // -1: none
     /*0x1BDE*/ u8 ballStoppingCode1ReallySlow2Stopped;
     /*0x1BDF*/ u8 _1BDF;
     /*0x1BE0*/ u8 throwTimeEstimatesCompleteInd;
@@ -2679,7 +2679,11 @@ typedef struct {
     /* 0xAA2 */ s16 _AA2;
     /* 0xAA4 */ s16 _AA4;
     /* 0xAA6 */ s16 _AA6;
-    artificial_padding(0xaa6, 0xab4, u16);
+    /* 0xAA8 */ u16 _AA8; // fade-out active (fn_3_21C90)
+    /* 0xAAA */ u16 _AAA; // fade-in active (fn_3_21DE4)
+    /* 0xAAC */ u16 _AAC; // fade-out length in frames
+    /* 0xAAE */ u16 _AAE; // fade-in length in frames
+    artificial_padding(0xaae, 0xab4, u16);
     /* 0xAB5 */ u8 _AB4;
     /* 0xAB5 */ u8 _AB5;
     /* 0xAB6 */ u8 _AB6;
@@ -2733,6 +2737,7 @@ typedef struct {
     /* 0x28A6 */ u8 _28A6;
     /* 0x28A7 */ u8 _28A7;
     /* 0x28A8 */ u8 _28A8;
+    /* 0x28A9 */ u8 _28A9; // 1: restart the view loop (fn_3_1CE90)
 } inMemCamera;
 
 extern inMemCamera *g_pCamera;
@@ -2825,7 +2830,13 @@ typedef struct {
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0x90];
+    u8 pad[0x77];
+    /* 0x077 */ struct {
+        u8 _0;
+        u8 _1; // set when RandomInt_Game(100) rolls under the fielder's chance (fn_3_1DEB8)
+        u8 _2[4];
+    } _077[4]; // per minigame fielder
+    u8 _08F[0x90 - 0x8F];
     /* 0x090 */ VecXYZ _090; // target position
     u8 _09C[0xAE - 0x9C];
     /* 0x0AE */ s16 _0AE;

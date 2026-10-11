@@ -26,7 +26,9 @@ typedef struct _UNK_StadiumCollision {
     artificial_padding(0, 0x70a, void*);
     s16 numCollisionBoxes;
     CollisionBox* pCollisionBoxes;
-    artificial_padding(0x70c, 0x778, void*);
+    artificial_padding(0x70c, 0x774, void*);
+    u8 _774; // 1 while the live-ball scene is shown (fn_3_1CE90)
+    artificial_padding(0x774, 0x778, u8);
     CollisionBox* pCollisionBoxes2;
     s16 numCollisionBoxes2;
 } UNK_StadiumCollision; // size: 0x780
