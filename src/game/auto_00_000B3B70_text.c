@@ -59,6 +59,9 @@ typedef struct MgSelView {
     u16 selTimer[4];      // 0x19D2
     u8 pad19DA[0x19E8 - 0x19DA];
     MgCharSel sel[4];     // 0x19E8
+    s8 _1A0C;             // 0x1A0C
+    u8 pad1A0D[0x1A13 - 0x1A0D];
+    u8 _1A13[4];          // 0x1A13
 } MgSelView;
 #define MG_CHARSEL (((MgSelView*)&g_Minigame)->sel)
 #define MG_SEL_TIMER (((MgSelView*)&g_Minigame)->selTimer)
@@ -106,6 +109,16 @@ extern u8 lbl_3_data_10578[];
 extern void fn_800111B4(void* table);
 extern void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
 extern s32 fn_3_90C14(s32 a);
+extern void fn_80050FE8(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4, s32 lockMode);
+extern void fn_80050138(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3, s32 any);
+extern void fn_80062A74(void);
+extern void fn_3_10C81C(void);
+// Scene fade state (lbl_8037169C, SceneFade in main/file_8001FE00.h).
+typedef struct PracticeSceneFade {
+    u8 _00[0x13];
+    u8 _13; // 0x13
+} PracticeSceneFade;
+extern PracticeSceneFade lbl_8037169C;
 extern s32 fn_3_90B14(s32 a, s32 b);
 
 
@@ -1253,6 +1266,106 @@ void fn_3_B43E8(void) {
         fn_3_B5D4C(0);
         fn_3_B3FE8();
         break;
+    }
+}
+#endif
+
+// .text:0x000B4C40 size:0x450
+// NONMATCHING 88%: case 6 inlines fn_3_B5D4C(5) in the original; rest is scheduling/regalloc in case 0.
+#if NONMATCHING
+void fn_3_B4C40(void) {
+    s32 i;
+
+    if (g_GameLogic._125 <= 2) {
+        for (i = 0; i < 4; i++) {
+            MG_CHARSEL[i]._8 = MG_CHARSEL[i]._7;
+            MG_CHARSEL[i]._7 = 1;
+        }
+    }
+    switch (g_Practice.practiceState) {
+    case 0: {
+        s32 active[4];
+        active[0] = 0;
+        active[1] = 0;
+        active[2] = 0;
+        active[3] = 0;
+        active[g_Practice.homeAway] = 1;
+        fn_80050FE8(active[0], active[1], active[2], active[3], 1, 1);
+        fn_80050138(0, 0, 0, 0, 0, 0);
+        for (i = 0; i < 4; i++) {
+            CharacterStats* cs;
+            MG_CHARSEL[i]._2 = -1;
+            cs = &lbl_8034E9A0[MG_CHARSEL[i].charId];
+            g_Minigame.battingHandedness[i] = cs->stats.FieldingArm * 2 + cs->stats.BattingStance;
+            MG_CHARSEL[i].chosen = 0;
+            MG_SEL_TIMER[i] = 0x14;
+        }
+        lbl_8036E548[0x2D77] = 0;
+        lbl_8036E548[0x307A] = 5;
+        ((MgSelView*)&g_Minigame)->_1A0C = -1;
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        g_Practice._1D9 = 0;
+        g_Practice.practiceState++;
+        for (i = 0; i < 4; i++) {
+            ((MgSelView*)&g_Minigame)->_1A13[i] = 1;
+        }
+        break;
+    }
+    case 1:
+        changeScene(1, 6);
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+            MG_CHARSEL[g_Practice.homeAway].charId =
+                fn_80050760(g_Practice.homeAway, g_Controls[g_Practice.homeAway].buttonInput,
+                            g_Controls[g_Practice.homeAway].newButtonInput, g_Controls[g_Practice.homeAway]._08, 0);
+            g_Minigame.battingHandedness[g_Practice.homeAway] =
+                lbl_8034E9A0[MG_CHARSEL[g_Practice.homeAway].charId].stats.FieldingArm * 2 +
+                lbl_8034E9A0[MG_CHARSEL[g_Practice.homeAway].charId].stats.BattingStance;
+        }
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 0x1E) {
+            g_Minigame._19DE = 0;
+            g_Practice.practiceState++;
+        }
+        break;
+    case 2:
+        fn_3_B49D4();
+        fn_3_B4124(0, 0, MG_CHARSEL[g_Practice.homeAway].charId, g_Minigame.battingHandedness[g_Practice.homeAway]);
+        lbl_3_common_bss_34C58._2C = 0;
+        break;
+    case 3:
+        if (fn_3_B3CD4() != 0) {
+            if (g_GameLogic.FrameCountOfCurrentAtBat_Copy >= 0x5A) {
+                changeScene(3, 6);
+            }
+            if (lbl_8037169C._13 != 0) {
+                g_Practice.practiceState++;
+            }
+        }
+        break;
+    case 4:
+        if (g_Practice.practiceLevel == 4) {
+            fn_3_B3CAC(0xC);
+        } else if (g_Practice.practiceLevel == 5) {
+            fn_3_B3CAC(0xB);
+        } else if (g_Practice.practiceLevel == 6) {
+            fn_3_B3CAC(0xF);
+        } else {
+            fn_3_B3CAC(0x10);
+        }
+        fn_80062A74();
+        fn_3_B3C78(0);
+        break;
+    case 5:
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        g_Practice.practiceState++;
+        break;
+    case 6:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy >= 0xF) {
+            fn_3_B5D4C(5);
+        }
+        break;
+    }
+    if (g_Practice.practiceState >= 2) {
+        fn_3_10C81C();
     }
 }
 #endif

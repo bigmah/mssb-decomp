@@ -55,5 +55,6 @@ s32 fn_3_B3CD4(void);
 void fn_3_B7620(void);
 void fn_3_B77DC(void);
 void fn_3_B43E8(void);
+void fn_3_B4C40(void);
 
 #endif
