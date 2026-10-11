@@ -188,7 +188,45 @@ void fn_800E2580(HVQState* state, u8* dst, s32 stride, u8 value, u8 type, s32 pl
 
 // .text:0x800E2898 size:0x144
 void fn_800E2898(HVQState* state, u8* dst, s32 stride, HVQIpicCtx* ctx) {
-    return;
+    u8 type = ctx->curBlk.type;
+
+    if (type == 0) {
+        u8 value = ctx->curBlk.value;
+        u8 top = (ctx->above->type & 0x77) ? value : ctx->above->value;
+        u8 bottom = (ctx->below->type & 0x77) ? value : ctx->below->value;
+        u8 right = (ctx->next.type & 0x77) ? value : ctx->next.value;
+
+        fn_800E156C(dst, stride, value, top, bottom, ctx->left, right);
+        ctx->left = value;
+    } else if (type == 8) {
+        u8 value = ctx->curBlk.value;
+        u8* row = dst + stride;
+
+        dst[3] = value;
+        dst[2] = value;
+        dst[1] = value;
+        dst[0] = value;
+        row[3] = value;
+        row[2] = value;
+        row[1] = value;
+        row[0] = value;
+        row += stride;
+        row[3] = value;
+        row[2] = value;
+        row[1] = value;
+        row[0] = value;
+        row += stride;
+        row[3] = value;
+        row[2] = value;
+        row[1] = value;
+        row[0] = value;
+        ctx->left = value;
+    } else {
+        fn_800E2580(state, dst, stride, ctx->curBlk.value, ctx->curBlk.type, ctx->planeIdx);
+        ctx->left = ctx->next.value;
+    }
+    ctx->above++;
+    ctx->below++;
 }
 
 // .text:0x800E29DC size:0xD4
