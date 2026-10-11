@@ -112,6 +112,7 @@ extern u8 lbl_3_common_bss_35154[];
 extern TexImage* lbl_3_bss_B854;
 extern u8 lbl_3_data_26B9C[];
 extern u8 lbl_3_bss_B858;
+extern const f64 lbl_3_rodata_39D0;
 extern const f32 lbl_3_rodata_394C;
 extern const f64 lbl_3_rodata_3958;
 extern const f64 lbl_3_rodata_3960;
@@ -805,10 +806,67 @@ void fn_3_14AC1C(void) {
     pitchingMachinePitching(0x23);
 }
 
+// NONMATCHING 99%: 14B3F4/14B248 inlined; only FPR numbering of the inlined 14B248 angle/radius temps differs
 // .text:0x0014AC40 size:0x608 mapped:0x80789CD4
-void fn_3_14AC40(void) {
-    return;
+#if NONMATCHING
+u32 fn_3_14AC40(u8* o) {
+    u8* p;
+    s32 da;
+    f32 ds;
+    s32 a;
+    if (lbl_80366158[0x28] != 0) {
+        return 0;
+    }
+    fn_80033620();
+    p = *(u8**)(o + 0xC);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+    if (lbl_80366158[0x28] == 0) {
+        fn_3_14B3F4(o);
+        *(s16*)(o + 0x36) -= 1;
+    }
+    da = (*(s32*)(lbl_3_data_26E24 + 0x18) - *(s32*)(lbl_3_data_26E24 + 0x14)) / *(s32*)(lbl_3_data_26E24 + 4) * 2;
+    ds = lbl_3_rodata_39C4 * ((f32)(*(s32*)(lbl_3_data_26E24 + 0x10) - *(s32*)(lbl_3_data_26E24 + 0xC)) / lbl_3_rodata_3930 /
+                              (f32)*(s32*)(lbl_3_data_26E24 + 4));
+    do {
+        if (*(s16*)(p + 0x4A) != 0) {
+            if (*(s16*)(p + 0x48) > 0) {
+                *(s16*)(p + 0x48) -= 1;
+                if (*(s16*)(p + 0x48) == 0) {
+                    fn_3_14B248(o, p);
+                }
+            } else {
+                fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+                fn_80033CC8(p, *(void**)(o + 0x10));
+                a = p[0x43];
+                if (*(s32*)(lbl_3_data_26E24 + 4) / *(s16*)(p + 0x4A) < 2) {
+                    ds = __fabs(ds);
+                    da = __fabs(da);
+                } else {
+                    ds = lbl_3_rodata_39D0 * __fabs(ds);
+                    da = lbl_3_rodata_39D0 * __fabs(da);
+                }
+                a += da;
+                if (a > 0xFF) {
+                    a = 0xFF;
+                }
+                if (a < 0) {
+                    a = 0;
+                }
+                *(f32*)(p + 0x38) += ds;
+                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                p[0x43] = a;
+                *(s16*)(p + 0x4A) -= 1;
+                if (*(s16*)(p + 0x4A) == 0) {
+                    fn_3_14B248(o, p);
+                }
+            }
+        }
+        p = *(u8**)p;
+    } while (p != NULL);
+    return *(s16*)(o + 0x36) == 0;
 }
+#endif
 
 #pragma dont_inline off
 // .text:0x0014B248 size:0x1AC mapped:0x8078A2DC
