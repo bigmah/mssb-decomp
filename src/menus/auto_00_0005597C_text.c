@@ -275,8 +275,35 @@ void fn_2_57294(void) {
 }
 
 // .text:0x0005754C size:0x1D8
-void fn_2_5754C(void) {
-    return;
+void fn_2_5754C(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 1;
+        item->state = 0x26;
+        break;
+    case 2:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags |= 2;
+        fn_80036134((struct SpaniOwner*)menu, 0x1D, *(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA), 0xE);
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_5C = 0;
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 0x25:
+        fn_80036134((struct SpaniOwner*)menu, 0x1D, *(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA), 0xE);
+        break;
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 1:
+    case 4:
+        break;
+    }
 }
 
 // .text:0x00057724 size:0x148
