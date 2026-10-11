@@ -137,9 +137,38 @@ s16 fn_8006C268(StatOutput* stats) {
 #endif
 
 // .text:0x8006C2B4 size:0xE4
-void fn_8006C2B4(void) {
-    return;
+// NONMATCHING 90%: CW unrolls the 6-iteration loop 2x (ctr loop); the original keeps it rolled with cmplwi/blt
+#if NONMATCHING
+void fn_8006C2B4(StatOutput* out, StatInput* in) {
+    u32 i;
+    u8 k;
+    s16 v;
+    s16 r;
+
+    for (i = 0; i < 6; i++) {
+        k = in->order[i];
+        v = in->vals[k - 1];
+        if (v > lbl_80109410[k]) {
+            v = lbl_80109410[k];
+        }
+        r = v * lbl_801093E8[k - 1];
+        if (r > 999) {
+            r = 999;
+        }
+        out->vals[k - 1] = r;
+    }
+    v = lbl_803CB8E0[in->_12];
+    if (v > 999) {
+        v = 999;
+    }
+    out->_C = v;
+    v = in->_13 * lbl_803CB8E8;
+    if (v > 999) {
+        v = 999;
+    }
+    out->_E = v;
 }
+#endif
 
 // .text:0x8006C398 size:0x58
 // NONMATCHING 75%: the original keeps the 6-iteration order[] init loop rolled; CW fully unrolls it here
