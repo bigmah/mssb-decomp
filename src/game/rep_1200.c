@@ -25,8 +25,11 @@ extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 
 typedef struct Rep1200Bss32724View {
     /*0x00*/ u8 _00[0x9C];
     /*0x9C*/ u8 _9C;
-    /*0x9D*/ u8 _9D[0xB3 - 0x9D];
+    /*0x9D*/ u8 _9D[0xB1 - 0x9D];
+    /*0xB1*/ u8 _B1;
+    /*0xB2*/ u8 _B2;
     /*0xB3*/ u8 _B3;
+    /*0xB4*/ u8 _B4;
 } Rep1200Bss32724View;
 extern Rep1200Bss32724View lbl_3_common_bss_32724;
 
@@ -675,6 +678,44 @@ void fn_3_7310C(void) {
     return;
 }
 
+// Force/advance runners after a walk (3) or other non-hit at-bat end. Same code as fn_3_735A8/fn_3_7372C;
+// this inlined copy (declared r, i, stop) is what fn_3_738A8 expands, the standalone ones allocate differently.
+static inline void advanceRunnersAfterWalk(void) {
+    InMemRunnerType* r;
+    int i;
+    int stop = 0;
+    if (g_Pitcher.strikeOutOrWalk == 3) {
+        r = &g_Runners[1];
+        for (i = 1; i < 4; i++) {
+            if (r->runnerOnFieldOrOutOrScored == 1 || r->runnerOnFieldOrOutOrScored == 5) {
+                if (stop == 0) {
+                    r->currentBase = i;
+                    fn_3_89864(i, 1);
+                } else {
+                    r->currentBase = r->startingBase_baseAchieved;
+                    r->nextBase = (r->currentBase + 1) & 3;
+                }
+            } else {
+                stop = 1;
+            }
+            r++;
+        }
+    } else {
+        r = &g_Runners[1];
+        for (i = 1; i < 4; i++) {
+            if (r->runnerOnFieldOrOutOrScored != 1 && r->runnerOnFieldOrOutOrScored != 5) {
+                break;
+            }
+            if (i == r->currentBase) {
+                fn_3_89864(i, 1);
+            }
+            r++;
+        }
+    }
+    g_Runners[0].currentBase = 1;
+    g_Runners[0].nextBase = 2;
+}
+
 // .text:0x000735A8 size:0x124 mapped:0x806B263C
 void fn_3_735A8(void) {
     int i;
@@ -779,13 +820,126 @@ void fn_3_73850(void) {
 }
 
 // .text:0x000738A8 size:0x540 mapped:0x806B293C
+// lbl_3_common_bss_37400, only the fields used here.
+typedef struct Rep1200Bss37400View {
+    /*0x00*/ u8 _00[0x42];
+    /*0x42*/ s16 _42; // countdown
+    /*0x44*/ u8 _44[2];
+    /*0x46*/ u8 _46;
+    /*0x47*/ u8 _47;
+    /*0x48*/ u8 _48;
+} Rep1200Bss37400View;
+extern Rep1200Bss37400View lbl_3_common_bss_37400;
+// lbl_3_common_bss_32220, only the fields used here.
+typedef struct Rep1200Bss32220View {
+    /*0x00*/ u8 _00[6];
+    /*0x06*/ s16 _06;
+} Rep1200Bss32220View;
+extern Rep1200Bss32220View lbl_3_common_bss_32220;
+extern void fn_3_164A74(void);
+extern void changeScene(s32 scene, s32 state);
+extern void fn_3_7BC20(void);
+extern void fn_3_8C07C(void);
+extern s32 fn_3_6F4E8(void);
+// Pitcher state 5: the at-bat ended (strikeout / walk / hit by pitch); wait, then hand over.
 void fn_3_738A8(void) {
-    return;
+    s32 frames = 0x78;
+    if (g_Pitcher.pitchTotalTimeCounter < 0x7FFE) {
+        g_Pitcher.pitchTotalTimeCounter += 1;
+    } else {
+        g_Pitcher.pitchTotalTimeCounter = 0x7FFF;
+    }
+    if (g_Pitcher.framesSinceAtBatEnded < 0x7FFE) {
+        g_Pitcher.framesSinceAtBatEnded += 1;
+    } else {
+        g_Pitcher.framesSinceAtBatEnded = 0x7FFF;
+    }
+    if (g_d_GameSettings.minigamesEnabled != 0) {
+        return;
+    }
+    if (g_GameLogic.gameOverInd != 0) {
+        frames = 0xC3;
+    } else if (g_Batter.hitByPitch != 0) {
+        frames = 0x5A;
+    } else {
+        if (g_Ball.postPitchResultCounter < 0x7FFE) {
+            g_Ball.postPitchResultCounter += 1;
+        } else {
+            g_Ball.postPitchResultCounter = 0x7FFF;
+        }
+        if (fn_3_6F4E8() != 0) {
+            return;
+        }
+    }
+    if (g_Pitcher.framesSinceAtBatEnded == 1) {
+        if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400._46 != 0 && g_Stats.replayInd == 0) {
+            fn_3_164A74();
+            lbl_3_common_bss_37400._42 = 0xB4;
+        }
+        if ((g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3) && g_RunningLogic._10 == 4) {
+            if (g_Scores._AD != 0) {
+                if (g_Scores.inning >= g_Scores.maxInnings && g_Scores.team[0].runs[0] == g_Scores.team[1].runs[0]) {
+                    fn_3_59918(0xD, 0);
+                    g_GameLogic.gameOverInd = 1;
+                } else if (g_Scores._C3[4] != 0) { // run-difference (mercy) limit
+                    GameScoresTeam* sc = g_Scores.team;
+                    if (sc[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] - sc[g_GameLogic.awayTeamBattingInd_battingTeam].runs[0] + 1 >=
+                        g_Scores._C3[4]) {
+                        fn_3_59918(0x11, 0);
+                        g_GameLogic.gameOverInd = 1;
+                    }
+                }
+            }
+            g_Pitcher.walkedInRunInd = 1;
+        }
+    }
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400._46 != 0 && g_Stats.replayInd == 0 &&
+        lbl_3_common_bss_37400._48 == 0) {
+        if (--lbl_3_common_bss_37400._42 == 0x78) {
+            lbl_3_common_bss_32724._B4 = 1;
+        }
+        frames = 0x78;
+    }
+    if (g_Pitcher.framesSinceAtBatEnded == 1) {
+        if (frames > 0x78) {
+            lbl_3_common_bss_34C58._2A = 1;
+            lbl_3_common_bss_34C58._24 = 0x77;
+        } else {
+            lbl_3_common_bss_34C58._2A = 1;
+            lbl_3_common_bss_34C58._24 = frames - 1;
+        }
+    }
+    if (g_Pitcher.framesSinceAtBatEnded == frames - 0xB) {
+        if (lbl_3_common_bss_32724._B1 == 0) {
+            changeScene(3, 6);
+        }
+    } else if (g_Pitcher.framesSinceAtBatEnded == frames - 0x1F) {
+        if (lbl_3_common_bss_32220._06 > 0x1D) {
+            g_Pitcher.framesSinceAtBatEnded -= 1;
+            return;
+        }
+        fn_3_7BC20();
+        if (g_Stats._39 != 0) {
+            lbl_3_common_bss_32724._B1 = 1;
+        }
+    } else if (g_Pitcher.framesSinceAtBatEnded >= frames) {
+        g_GameLogic.hudLoadingRelated = 1;
+        g_Ball.postPitchResultCounter = -1;
+        g_Pitcher.pitcherActionState = 6;
+        g_Pitcher.currentStateFrameCounter = 0;
+        if (g_Pitcher.strikeOutOrWalk == 1) {
+            fn_3_73850();
+        } else if (g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3) {
+            advanceRunnersAfterWalk();
+        }
+        if (g_Stats._39 != 0) {
+            fn_3_8C07C();
+        }
+    }
 }
 
 // .text:0x00073DE8 size:0x144 mapped:0x806B2E7C
 extern void fn_3_155288(void);
-extern s32 fn_3_6F4E8(void);
 extern void fn_3_5A6D4(u8 status);
 extern void fn_3_7CE90(void);
 void fn_3_73DE8(void) {
@@ -1197,6 +1351,42 @@ void fn_3_754B8(void) {
 }
 
 // .text:0x00075560 size:0x45C mapped:0x806B45F4
+extern void fn_3_A83C(void);
+// Pitcher per-frame update: dispatch on the action state.
 void fn_3_75560(void) {
-    return;
+    if (fn_3_107DB4(g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame.minigamePlayerSelectedOrder]) != 0) {
+        g_Pitcher.AIInd = 0;
+    }
+    if (g_Pitcher.currentStateFrameCounter < 0x7FFE) {
+        g_Pitcher.currentStateFrameCounter += 1;
+    } else {
+        g_Pitcher.currentStateFrameCounter = 0x7FFF;
+    }
+    fn_3_A83C();
+    switch (g_Pitcher.pitcherActionState) {
+    case 0:
+        fn_3_75090();
+        break;
+    case 1:
+        fn_3_74D0C();
+        break;
+    case 2:
+        fn_3_74128();
+        break;
+    case 3:
+        fn_3_73F2C();
+        break;
+    case 4:
+        fn_3_73DE8();
+        break;
+    case 5:
+        fn_3_738A8();
+        break;
+    case 6:
+        fn_3_73718();
+        break;
+    case 7:
+        fn_3_6FB98();
+        break;
+    }
 }
