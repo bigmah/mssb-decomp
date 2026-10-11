@@ -1,8 +1,8 @@
 #include "main/file_80091450.h"
 
 // .text:0x80091450 size:0x10
-void TEXGet(void) {
-    return;
+TEXDescriptorPtr TEXGet(TEXPalettePtr pal, u32 id) {
+    return &pal->descriptorArray[id];
 }
 
 // .text:0x80091460 size:0x18
