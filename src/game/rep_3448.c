@@ -63,6 +63,7 @@ extern u8 lbl_3_data_25344[];
 extern u8 lbl_3_data_24E04[];
 extern u8 lbl_3_data_23E04[];
 extern u8 lbl_3_data_23C84[];
+extern u8 lbl_3_data_240A4[];
 extern RepFielder g_Fielders[];
 extern RepRosterEnt inMemRoster[];
 extern RepRunner g_Runners[4];
@@ -736,9 +737,129 @@ void fn_3_120FF8(void) {
 #endif
 
 // .text:0x00121304 size:0x604 mapped:0x80760398
+// NONMATCHING 68%: loop induction variables (orig strength-reduces the 4*i slot counters), the inlined fn_3_125424(q, i + 1, 0) keeps its dead x < 0 test
+#if NONMATCHING
 void fn_3_121304(void) {
-    return;
+    u32 snd = 0;
+    RepTask* q = REP_TASK;
+    RepObj* o;
+    u8* m;
+    s16* sc;
+    u32 i;
+    s32 n;
+    s32 lead;
+    s32 tied;
+    s32 d;
+    s32 step;
+    s8 p;
+    s8 c;
+    u32 v;
+    u32 x;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_240A4);
+        i = 0;
+        m = g_Minigame;
+        do {
+            p = m[0x18E0];
+            if (p < 0) {
+                REP_OBJ(q, i + 1)->flags &= ~2;
+            } else {
+                c = g_Minigame[0x18CC + p];
+                fn_800363D8(q, i + 9, 1, 0x65, c);
+                REP_OBJ(q, i + 0x11)->frame = inMemRoster[c].charId << 16;
+            }
+            i++;
+            m++;
+        } while (i < 4);
+        i = 0;
+        do {
+            n = q->baseIdx + i;
+            i++;
+            o = *(RepObj**)((u8*)lbl_80371C30 + (n + 0x2D) * sizeof(RepSlot));
+            o->flags &= ~2;
+        } while (i < 4);
+        q->state = 1;
+        break;
+    case 1:
+        lead = fn_3_107CD0();
+        tied = fn_3_107C88();
+        m = g_Minigame;
+        for (i = 0; i < 4; i++) {
+            p = m[0x18E0 + i];
+            if (p < 0) {
+                continue;
+            }
+            sc = (s16*)(g_Minigame + 0x18BC + p * 4);
+            d = *(s16*)(g_Minigame + 0x1890 + p * 2) - *sc;
+            if (d != 0) {
+                if (d > 0) {
+                    q->_24[p] = 1;
+                }
+                step = d / 8;
+                if (step != 0) {
+                    *sc += step;
+                } else {
+                    *sc += d / (d < 0 ? -d : d);
+                }
+                snd = 1;
+            } else {
+                *sc = *(s16*)(g_Minigame + 0x1890 + p * 2);
+                if (q->_24[p] != 0) {
+                    q->_24[p] = 0;
+                    REP_OBJ(q, i + 0x19)->frame = 0;
+                    REP_OBJ(q, i + 0x19)->mode = 1;
+                    REP_OBJ(q, i * 4 + 0x1D)->frame = 0;
+                    REP_OBJ(q, i * 4 + 0x1E)->frame = 0;
+                    REP_OBJ(q, i * 4 + 0x1F)->frame = 0;
+                    REP_OBJ(q, i * 4 + 0x20)->frame = 0;
+                }
+            }
+            v = *sc;
+            if (v > 9999) {
+                v = 9999;
+            }
+            fn_800363D8(q, i * 4 + 0x1D, 1, 0x66, (v % 10000) / 1000);
+            fn_800363D8(q, i * 4 + 0x1E, 1, 0x66, (v % 1000) / 100);
+            fn_800363D8(q, i * 4 + 0x1F, 1, 0x66, (v % 100) / 10);
+            fn_800363D8(q, i * 4 + 0x20, 1, 0x66, v % 10);
+            if (i == g_Minigame[0x190C]) {
+                o = REP_OBJ(q, i + 1);
+                x = o->frame >> 16;
+                if (x < 10) {
+                    o->mode = 1;
+                } else if (x > 10) {
+                    o->mode = 4;
+                } else {
+                    o->mode = 0;
+                }
+            } else {
+                o = REP_OBJ(q, i + 1);
+                x = o->frame >> 16;
+                if (x > 0) {
+                    o->mode = 4;
+                } else {
+                    o->mode = 0;
+                }
+            }
+            if (tied == 0 && *sc == *(s16*)(g_Minigame + 0x18BC + lead * 4)) {
+                REP_OBJ(q, i + 0x2D)->flags |= 2;
+            } else {
+                REP_OBJ(q, i + 0x2D)->flags &= ~2;
+            }
+        }
+        break;
+    }
+    if (snd != 0) {
+        sndFXStartEx(0x1C0, lbl_800EFBA4[9], 0x3F, 0);
+    }
 }
+#endif
 
 // .text:0x00121908 size:0xA2C mapped:0x8076099C
 void fn_3_121908(void) {
