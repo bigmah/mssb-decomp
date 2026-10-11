@@ -173,7 +173,35 @@ s32 fn_800E1BB4(HVQState* state, u8* basis, s32* sum, u8* src, s32 srcStride, s3
 
 // .text:0x800E20A0 size:0x270
 s32 fn_800E20A0(HVQState* state, s32* block, u8 count, u8* src, s32 srcStride, s32 planeIdx) {
-    return 0;
+    s32 sum;
+    u8 basis[16];
+    s32 unused; // keeps the original stack layout
+
+    sum = 0;
+    block[0] = block[1] = block[2] = block[3] = block[4] = block[5] = block[6] = block[7] = block[8] = block[9] =
+        block[10] = block[11] = block[12] = block[13] = block[14] = block[15] = 0;
+    while (count--) {
+        s32 factor = fn_800E1708(state, basis, &sum, src, srcStride, planeIdx);
+
+        block[0] += factor * basis[0];
+        block[1] += factor * basis[1];
+        block[2] += factor * basis[2];
+        block[3] += factor * basis[3];
+        block[4] += factor * basis[4];
+        block[5] += factor * basis[5];
+        block[6] += factor * basis[6];
+        block[7] += factor * basis[7];
+        block[8] += factor * basis[8];
+        block[9] += factor * basis[9];
+        block[10] += factor * basis[10];
+        block[11] += factor * basis[11];
+        block[12] += factor * basis[12];
+        block[13] += factor * basis[13];
+        block[14] += factor * basis[14];
+        block[15] += factor * basis[15];
+    }
+    return (block[0] + block[1] + block[2] + block[3] + block[4] + block[5] + block[6] + block[7] + block[8] +
+            block[9] + block[10] + block[11] + block[12] + block[13] + block[14] + block[15]) >> 4;
 }
 
 // .text:0x800E2310 size:0x270
