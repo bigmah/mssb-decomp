@@ -40,7 +40,7 @@ typedef struct Particle {
             /* 0x14 */ f32 unk14;
             /* 0x18 */ s32 unk18;
             /* 0x1C */ s32 unk1C;
-            /* 0x20 */ s32 unk20; // id in fn_8002F1AC
+            /* 0x20 */ s32 unk20;
             /* 0x24 */ u8 pad24[0x38 - 0x24];
         } t6;
         struct {
@@ -51,6 +51,14 @@ typedef struct Particle {
             /* 0x30 */ f32 sizeXDelta; // over the whole life
             /* 0x34 */ f32 sizeYDelta;
         } tB;
+        struct {
+            /* 0x10 */ Vec prev;    // previous position (tail end)
+            /* 0x1C */ f32 width;
+            /* 0x20 */ s32 id;
+            /* 0x24 */ s32 alphaMax;
+            /* 0x28 */ s32 maxLife;
+            /* 0x2C */ u8 pad2C[0x38 - 0x2C];
+        } trail;
     } u;
     /* 0x38 */ f32 sizeX;
     /* 0x3C */ f32 sizeY;
@@ -204,7 +212,9 @@ void fn_8002CDD0(Vec* end);
 s32 fn_8002D82C(Emitter* e);
 void fn_8002DC68(Vec* pos);
 void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm);
+s32 fn_8002ECA0(Emitter* e);
 s32 fn_8002F1AC(Vec* pos, s32 id);
+void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm);
 Particle* fn_80031F34(Particle* list, s32 n);
 s32 fn_80032038(const void* a, const void* b);
 f32 fn_800335BC(s32 angle);

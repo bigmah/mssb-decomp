@@ -206,8 +206,37 @@ static inline void DrawParticleQuad(Particle* p, TexArchive* arc) {
     }
 }
 
+static inline void QuadCorners(f32 width, f32 height) {
+    s32 i;
+    f32 x1;
+    f32 x0;
+    f32 y0;
+    f32 y1;
+
+    x1 = 0.5f * width;
+    x0 = 0.5f * -width;
+    y0 = 0.5f * -height;
+    y1 = 0.5f * height;
+    lbl_80180010[0].z = 0.0f;
+    lbl_80180010[0].x = x0;
+    lbl_80180010[0].y = y0;
+    lbl_80180010[1].x = x1;
+    lbl_80180010[1].y = y0;
+    lbl_80180010[1].z = 0.0f;
+    lbl_80180010[2].x = x1;
+    lbl_80180010[2].y = y1;
+    lbl_80180010[2].z = 0.0f;
+    lbl_80180010[3].x = x0;
+    lbl_80180010[3].y = y1;
+    lbl_80180010[3].z = 0.0f;
+    for (i = 0; i < 4; i++) {
+        PSMTXMultVec(lbl_8017FF78[0], &lbl_80180010[i], &lbl_80180010[i]);
+    }
+}
+
 s32 fn_8002E3DC(Emitter* e);
 s32 fn_8002E828(Emitter* e);
+s32 fn_8002ECA0(Emitter* e);
 s32 fn_80029CC8(Emitter* e);
 
 // .text:0x800263FC size:0x59C
@@ -645,9 +674,31 @@ void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm) {
 #endif
 
 // .text:0x8002E3DC size:0x44C
+// NONMATCHING 72%: register allocation only (same instructions)
+#if NONMATCHING
 s32 fn_8002E3DC(Emitter* e) {
-    return 0;
+    s32 alive = 0;
+    Particle* p = e->particles;
+    f32 size;
+
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    do {
+        if (lbl_80366158._28 == 0) {
+            p->life -= (p->life > 0) & (lbl_80366158._28 == 0);
+            p->color.c.a -= p->u.t6.unk18 / p->u.t6.unk1C;
+            size = (p->u.t6.unk14 - p->u.t6.unk10) * ((f32)(p->u.t6.unk1C - p->life) / (f32)p->u.t6.unk1C) + p->u.t6.unk10;
+            p->sizeY = size;
+            p->sizeX = size;
+        }
+        QuadCorners(p->sizeX, p->sizeY);
+        DrawParticleQuad(p, e->tex);
+        alive += (p->life > 0);
+        p = p->next;
+    } while (p != NULL);
+    return alive == 0;
 }
+#endif
 
 // .text:0x8002E828 size:0x478
 s32 fn_8002E828(Emitter* e) {
