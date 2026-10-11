@@ -1244,9 +1244,51 @@ void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nes
 #endif
 
 // .text:0x800E3E3C size:0x2A8
+// NONMATCHING 83%: register allocation and loop shape
+#if NONMATCHING
 void fn_800E3E3C(HVQState* state, HVQMCPlane* mc, s32 mvX, s32 mvY) {
-    return;
+    s32 halfY = mvY & 1;
+    s32 halfX = mvX & 1;
+    HVQPlaneDesc* plane = state->planes;
+    HVQBitBuf* fixvl = state->fixvl;
+    s32 i;
+    // luma reference area around the macroblock, used as the MC basis source
+    u8* nest = (mvX >> 1) + mc->ref + ((mvY >> 1) - 16) * state->planes[0].widthInSamples - 32;
+
+    for (i = 0; i < 3; i++, mc++, plane++, fixvl++) {
+        u16* blockOffs = plane->blockOffs;
+        s32* pixelOffs = plane->pixelOffs;
+        u8 blocksPerMB = plane->blocksPerMB;
+        u8* ref = (mvX >> (plane->widthShift + 1)) + (mvY >> (plane->heightShift + 1)) * plane->widthInSamples + mc->ref;
+        s32 k;
+
+        for (k = 0; k < blocksPerMB; k++) {
+            u16 blkOff = *blockOffs++;
+            s32 pixOff = *pixelOffs++;
+            u8* dst = mc->dst + pixOff;
+            u8 type = mc->blk[blkOff].type & 0xF;
+
+            if (type == 6) {
+                s32 stride = plane->widthInSamples;
+                s32 n;
+
+                for (n = 0; n < 4; n++) {
+                    dst[0] = *fixvl->ptr++;
+                    dst[1] = *fixvl->ptr++;
+                    dst[2] = *fixvl->ptr++;
+                    dst[3] = *fixvl->ptr++;
+                    dst += stride;
+                }
+            } else if (type == 0) {
+                fn_800E2C18(dst, plane->widthInSamples, ref + pixOff, plane->widthInSamples, halfX, halfY);
+            } else {
+                fn_800E3860(state, dst, ref + pixOff, plane->widthInSamples, type, nest, state->planes[0].widthInSamples,
+                            i, halfX, halfY);
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x800E40E4 size:0x158
 void fn_800E40E4(HVQState* state, HVQMCPlane* mc) {
