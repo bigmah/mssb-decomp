@@ -2361,3 +2361,82 @@ void fn_2_75BE4(u8* o, s32 index) {
     }
 }
 #endif
+
+// fn_2_78AC0, size:0x4B8
+// NONMATCHING 80%: slot offsets folded into load displacements, register allocation differs
+#if NONMATCHING
+void fn_2_78AC0(u8* o, s32 index) {
+    u8* sel = lbl_2_bss_F468 + index;
+    s8 prev = sel[0x61];
+    s32 cur = F468_S32(index * 4);
+    s8 found;
+    s32 j;
+    s32 n;
+    s32 k;
+    u8* e;
+    u8* flag;
+    if (prev != -1) {
+        for (j = 0; j < 9; j++) {
+            if (TEAM_TBL->pos[index][j] == prev) {
+                found = j;
+            }
+        }
+    }
+    e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        MN_OBJ2(o, index, 0xA)->frame = 0xF0000;
+        MN_OBJ2(o, index, 0xA)->state = 4;
+        MN_OBJ2(o, index, 0x1E)->state = 4;
+        MN_OBJ2(o, index, 0x93)->anim = 9;
+        MN_OBJ2(o, index, 0x89)->frame = 0;
+        MN_OBJ2(o, index, 0x89)->state = 1;
+        MN_OBJ2(o, index, 0x8D)->frame = 0x140000;
+        MN_OBJ2(o, index, 0x8D)->state = 4;
+        MN_OBJ2(o, index, 0x6A)->state = 1;
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            MN_OBJ2(o, index, 0x8F)->anim = 7;
+        }
+        if (prev != -1 && prev != (s8)cur) {
+            MN_OBJ2(o, prev + index * 9, 0x46)->state = 4;
+            if (TEAM_TBL->roster[index][found] != -1 && TEAM_TBL->roster[index][found] != 0x36) {
+                MN_OBJ2(o, prev + index * 9, 0x34)->frame = 0xA0000;
+                MN_OBJ2(o, prev + index * 9, 0x34)->state = 1;
+            }
+        }
+        fn_800626EC(index);
+        *e = 1;
+    }
+    if (*e == 1) {
+        n = fn_80042DA8((s32)o, index + 0x89, 5) != 0;
+        k = 2;
+        n += fn_80042DA8((s32)o, index + 0x6A, 0xA) != 0;
+        if (prev != -1 && lbl_2_bss_F468[0x56] == 0 && prev != (s8)cur) {
+            if (TEAM_TBL->roster[index][found] != -1 && TEAM_TBL->roster[index][found] != 0x36) {
+                k = 3;
+                n += fn_80042DA8((s32)o, prev + index * 9 + 0x34, 0x14) != 0;
+            }
+        }
+        if (n == k) {
+            sel[0x61] = -1;
+            fn_80062674(index);
+            *e = 2;
+            flag = lbl_2_bss_F468 + index;
+            if (*(flag += 0x65) != 0) {
+                if (g_d_GameSettings.GameModeSelected == 5) {
+                    fn_800625A4(0, 0x13);
+                    fn_800625A4(1, 0x13);
+                } else if (g_d_GameSettings._10 == 0) {
+                    fn_800625A4(index, 0x11);
+                } else {
+                    fn_800625A4(index, 0x11);
+                }
+                *flag = 0;
+                return;
+            }
+            if (lbl_2_bss_F468[0x56] != 0) {
+                fn_800625A4(index, 0xB);
+            }
+        }
+    }
+}
+#endif
