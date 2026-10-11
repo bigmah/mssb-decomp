@@ -146,6 +146,11 @@ void fn_80042D38(u16 scene) {
 
 // .text:0x80042D68 size:0x40
 s32 fn_80042D68(LayoutOwner* owner, s32 idx, s32 value) {
+    LayoutObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+    if ((s32)(obj->_5C >> 16) >= value) {
+        obj->_68 = 0;
+        return 1;
+    }
     return 0;
 }
 
