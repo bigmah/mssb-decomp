@@ -18,7 +18,7 @@ extern u8 lbl_80366158[];
 extern ChallengeRosterQueue* lbl_803CC1B8;
 extern u8 lbl_1_bss_69FC[];
 extern void fn_1_19D60(struct DODisplayObj*, s32);
-extern s32 lbl_1_data_FB24[];
+extern ChallengeConfettiConfig lbl_1_data_FB24;
 extern const f32 lbl_1_rodata_7578;
 extern const f32 lbl_1_rodata_757C;
 extern const f32 lbl_1_rodata_7520;
@@ -72,16 +72,17 @@ void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode) {
 }
 
 // fn_1_18E04, size:0xE0
-void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees) {
+// Set a confetti piece's velocity: `speed` along `degrees` (0 = straight down the screen).
+void fn_1_18E04(ChallengeConfetti* piece, f32 degrees) {
     f32 sine;
     f32 radians;
     f32 cosine;
     radians = lbl_1_rodata_7578 * degrees;
     sine = (f32)sin(radians);
     cosine = (f32)cos(radians);
-    position->x = sine * (f32)lbl_1_data_FB24[1] / lbl_1_rodata_757C;
-    position->y = cosine * (f32)lbl_1_data_FB24[1] / lbl_1_rodata_757C;
-    position->z = lbl_1_rodata_7520;
+    piece->vel.x = sine * (f32)lbl_1_data_FB24.speed / lbl_1_rodata_757C;
+    piece->vel.y = cosine * (f32)lbl_1_data_FB24.speed / lbl_1_rodata_757C;
+    piece->vel.z = lbl_1_rodata_7520;
 }
 
 // fn_1_1A1EC, size:0xA4
@@ -448,3 +449,44 @@ void fn_1_182C0(ChallengeConfetti* piece) {
     }
 }
 #endif
+
+#include <stdlib.h>
+extern const f32 lbl_1_rodata_7550;
+extern const f32 lbl_1_rodata_7568;
+extern const f32 lbl_1_rodata_7580;
+
+// fn_1_18EE4, size:0x2F8
+// (Re)spawn a confetti piece at the top of the screen with random depth, spin and colours.
+void fn_1_18EE4(ChallengeConfetti* piece) {
+    s32 colorMin = lbl_1_data_FB24.colorMin;
+    s32 base = (u8)colorMin;
+    u8 range;
+    f32 spin;
+
+    piece->pos.x = (f32)(piece->index * 2) / (f32)lbl_1_data_FB24.count - lbl_1_rodata_753C;
+    piece->pos.y = lbl_1_rodata_7550;
+    piece->pos.z = 50.0f * ((f32)rand() / 32767.0f) + 50.0f;
+    {
+        // fn_1_18E04(piece, 0.0f), with the angle already folded to 0
+        f32 sine = (f32)sin(lbl_1_rodata_7520);
+        f32 cosine = (f32)cos(lbl_1_rodata_7520);
+        piece->vel.x = sine * (f32)lbl_1_data_FB24.speed / lbl_1_rodata_757C;
+        piece->vel.y = cosine * (f32)lbl_1_data_FB24.speed / lbl_1_rodata_757C;
+        piece->vel.z = lbl_1_rodata_7520;
+    }
+    piece->rot.z = lbl_1_rodata_7520;
+    piece->rot.y = lbl_1_rodata_7520;
+    piece->rot.x = lbl_1_rodata_7520;
+    spin = (f32)lbl_1_data_FB24.spin / lbl_1_rodata_757C;
+    piece->rotVel.x = spin * ((f32)rand() / lbl_1_rodata_7568);
+    piece->rotVel.y = spin * ((f32)rand() / lbl_1_rodata_7568);
+    piece->rotVel.z = spin * ((f32)rand() / lbl_1_rodata_7568);
+    piece->back.c.a = 0xFF;
+    piece->front.c.a = 0xFF;
+    range = 0xFF - colorMin;
+    piece->front.c.g = base + rand() % range;
+    piece->front.c.b = base + rand() % range;
+    piece->back.c.r = base + rand() % range;
+    piece->back.c.g = base + rand() % range;
+    piece->back.c.b = base + rand() % range;
+}

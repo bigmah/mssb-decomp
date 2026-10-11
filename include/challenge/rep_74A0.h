@@ -37,13 +37,6 @@ typedef struct {
 } ChallengeDrawCollection;
 
 typedef struct {
-    u8 padding[0x10];
-    f32 x;
-    f32 y;
-    f32 z;
-} ChallengeOrbitPosition;
-
-typedef struct {
     u16 selectedBone;
     u8 selectedActor;
     u8 padding03[0x189];
@@ -79,6 +72,16 @@ typedef struct ChallengeConfetti {
     /*0x48*/ s16 delay;
     /*0x4A*/ s16 index;
 } ChallengeConfetti;
+
+// Confetti settings (lbl_1_data_FB24).
+typedef struct ChallengeConfettiConfig {
+    s32 count;
+    s32 speed; // / 100000
+    s32 spin;  // / 100000
+    s32 width; // / 100000
+    s32 height; // / 100000
+    s32 colorMin;
+} ChallengeConfettiConfig;
 
 // Debug viewer camera (lbl_1_bss_6B7C).
 typedef struct ChallengeCamera {
@@ -124,7 +127,7 @@ void fn_1_1D470(void);
 
 void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode);
 
-void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees);
+void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 
 void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode);
 
@@ -135,6 +138,8 @@ void fn_1_1D514(void);
 void fn_1_1B038(void);
 
 void fn_1_182C0(ChallengeConfetti* piece);
+
+void fn_1_18EE4(ChallengeConfetti* piece);
 
 void fn_1_1ADA4(void);
 
