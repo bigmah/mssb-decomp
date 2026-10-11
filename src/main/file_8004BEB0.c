@@ -74,5 +74,14 @@ void fn_8004C094(Vec* pos) {
 
 // .text:0x8004C108 size:0x94
 void fn_8004C108(Vec* pos, u8 colorIdx) {
-    return;
+    EffectParams params;
+    EffectParams* p = &params;
+
+    if (pos != NULL) {
+        memcpy(p, lbl_803CB860, sizeof(EffectParams));
+        p->stamp = lbl_803CBD0C;
+        p->rgb = (lbl_803CB864[colorIdx].r << 24) | ((lbl_803CB864[colorIdx].g & 0xFF) << 16) |
+                 (lbl_803CB864[colorIdx].b << 8);
+        fn_80031CA4(pos, (u32*)p);
+    }
 }
