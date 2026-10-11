@@ -2187,3 +2187,51 @@ void fn_2_6A87C(void) {
     fn_2_6A628();
 }
 #endif
+
+extern const f32 lbl_2_rodata_B70;
+
+// Same as menuSqrtf, written with early returns (gives a different block order).
+static inline f32 menuSqrtfR(f32 x) {
+    if (x > 0.0f) {
+        f64 xd = (f64)x;
+        f64 guess = __frsqrte(xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (x < lbl_2_rodata_B88) {
+        return NAN;
+    } else if (isnan(x)) {
+        return NAN;
+    }
+    return x;
+}
+
+// .text:0x69070 size:0x260
+// Distance from (x, z) to the entry: straight-line when it is (almost) still,
+// otherwise the perpendicular distance to its line of motion.
+f32 fn_2_69070(s32 index, f32 x, f32 z) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    f32 dz;
+    f32 dx;
+    f32 along;
+    f32 distance;
+
+    if (entry->_38 < lbl_2_rodata_B70) {
+        dx = entry->position.x - x;
+        dz = entry->position.z - z;
+        {
+            f32 xx = dx * dx;
+            f32 zz = dz * dz;
+            return menuSqrtf(xx + zz);
+        }
+    }
+    dz = z - entry->position.z;
+    dx = x - entry->position.x;
+    along = entry->acceleration.x * dx + entry->acceleration.z * dz;
+    distance = (dx * dx + dz * dz) - along * along;
+    if (distance < 0.0f) {
+        return 0.0f;
+    }
+    return menuSqrtfR(distance);
+}
