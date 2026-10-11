@@ -261,7 +261,11 @@ void fn_80021204(void) {
 
 // .text:0x80021228 size:0x64
 void fn_80021228(u8 mode) {
-    return;
+    u8 set = mode ? mode : 1;
+    lbl_800EF808.outputModeSet = set;
+    lbl_800EF808.outputMode = mode;
+    sndOutputMode(mode);
+    OSSetSoundMode(lbl_800EF808.outputMode != 0);
 }
 
 // .text:0x8002128C size:0x7C
