@@ -8,9 +8,10 @@
 
 // POOL BEGIN (high-to-low; memory order is the reverse)
 static Mtx44 lbl_1_bss_47010;
-static ChallengeCurveTiming lbl_1_bss_45868;
 static u8 lbl_1_bss_45890[0x17A8 - 0x28];
+static ChallengeCurveTiming lbl_1_bss_45868;
 static ChallengePathNode lbl_1_bss_43F68[100];
+static Mtx lbl_1_bss_43F38;
 static ChallengeCameraState lbl_1_bss_43EE0;
 static Vec lbl_1_bss_F6E0[160][112];
 static u8 lbl_1_bss_76E0[0x8000];
@@ -67,7 +68,6 @@ extern const f32 lbl_1_rodata_7820[];
 extern void (*lbl_1_data_104A8[])(void);
 extern void* lbl_80366158[];
 extern void fn_1_267F4(void);
-extern void fn_1_25C68(void);
 extern void (*lbl_1_data_10508[])(u8*);
 extern void (*lbl_1_data_10510[])(u8*);
 extern u32 lbl_1_data_104DC[];
@@ -1584,3 +1584,43 @@ void fn_1_1E5D0(ChallengeProjectionState* body) {
         GXWGFifo.u8 = 0xFF;
     }
 }
+
+extern const f32 lbl_1_rodata_78A4;
+extern const f32 lbl_1_rodata_78D4;
+extern const f32 lbl_1_rodata_78D8;
+extern const f32 lbl_1_rodata_78DC;
+extern const f32 lbl_1_rodata_78E0;
+extern void fn_1_25064(void);
+
+// NONMATCHING 89%: orig hoists the lbl_1_data_FB98 pool base into r30 before C_MTXFrustum; the inlined fn_1_24A8C has its own f-reg swap
+// .text:0x25C68 size:0x330
+#if NONMATCHING
+void fn_1_25C68(void) {
+    u8* q = lbl_803CC1B8[0];
+    u8* cfg = lbl_1_data_FB98;
+    GXColor clear;
+
+    *(u32*)&clear = 0;
+    GXSetCopyClear(clear, 0xFFFFFF);
+    C_MTXFrustum(lbl_1_bss_47010, lbl_1_rodata_78D4, lbl_1_rodata_78D8, lbl_1_rodata_78DC, lbl_1_rodata_78E0,
+        (&lbl_1_rodata_77E4)[0], lbl_1_rodata_7868);
+    // TODO type: lbl_1_data_FB98 is the base of this file's static .data pool
+    C_MTXLookAt(lbl_1_bss_43F38, (Vec*)(cfg + 0x8F4), (Vec*)(cfg + 0x8E8),
+        (Vec*)(cfg + 0x900));
+    *(u16*)(q + 0x18) = lbl_1_rodata_78A4 * *(f32*)(cfg + 0x8D0);
+    *(u16*)(q + 0x1C) = lbl_1_rodata_78A4 * *(f32*)(cfg + 0x8D4);
+    *(u16*)(q + 0x1A) = *(f32*)(cfg + 0x8D8);
+    *(u16*)(q + 0x1E) = 0x20;
+    q[0x2A] = *(s32*)(cfg + 0x8DC);
+    *(u16*)(q + 0x22) = 10;
+    q[0x2B] = 20;
+    *(u16*)(q + 0x20) = lbl_1_rodata_78A4 * *(f32*)(cfg + 0x8E4);
+    *(u16*)(q + 0x24) = lbl_1_rodata_78A4 * *(f32*)(cfg + 0x8E0);
+    *(f32*)(q + 0x14) = lbl_1_rodata_7814[0];
+    *(u16*)(q + 0x26) = 100;
+    *(u16*)(q + 0x28) = 10;
+    fn_1_24A8C();
+    *(void (**)(void))lbl_803CC1B8[0] = fn_1_25064;
+    q[0x2C] = 0;
+}
+#endif

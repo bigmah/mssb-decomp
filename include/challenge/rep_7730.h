@@ -110,8 +110,8 @@ typedef struct {
     /* 0x38 */ f32 unk38;
     /* 0x3C */ Vec target;
     /* 0x48 */ Vec camera;
-    /* 0x54 */ u8 pad54[0x34];
-} ChallengeCameraState; // size 0x88
+    /* 0x54 */ u8 pad54[4];
+} ChallengeCameraState; // size 0x58
 
 
 void fn_1_1DE5C(void);
@@ -217,5 +217,6 @@ void fn_1_23804(s32 arg0, s32 arg1, s32 rows, s32 cols, f32 arg4, f32 arg5);
 void fn_1_1FD78(ChallengeTextureStages* menu);
 void fn_1_1F618(ChallengeTextureStages* stages);
 void fn_1_1E5D0(ChallengeProjectionState* body);
+void fn_1_25C68(void);
 
 #endif
