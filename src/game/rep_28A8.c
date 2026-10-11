@@ -17,6 +17,9 @@ extern void fn_3_2E87C(void);
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
 extern void fn_3_1DD48(void*);
+extern void fn_3_75560(void);
+extern void atBat_batter(void);
+extern u8 g_Pitcher[];
 extern struct { s32 w0; u16 w4; u16 w6; u16 w8; u8 pad[2]; s16 n; u8 pad0[4]; s16 w12; u8 pad1[0x1D0 - 0x14]; u8 b1D0; u8 pad2; u8 b1D2; u8 pad3[2]; u8 b1D5; u8 pad4[3]; u8 b1D9; s8 b1DA; u8 pad5[0x220 - 0x1DB]; u8 b220; } lbl_3_common_bss_34C90;
 extern u8 lbl_803CBC3C;
 extern u8 g_Minigame[];
@@ -628,10 +631,74 @@ void fn_3_DDF1C(void) {
     unkSimulationRelatedStruct[6] = 4;
 }
 
+// NONMATCHING 98%: inlined fn_3_DCF44 schedules the stb 0x1d5 before the lbz 0x18cc (fn_3_DCF44 itself matches)
 // .text:0x000DDFA0 size:0x368 mapped:0x8071D034
+#if NONMATCHING
 void fn_3_DDFA0(void) {
-    return;
+    if (*(s16*)(g_Pitcher + 0x11E) <= 0 && lbl_3_common_bss_34C90.b1D5 == 0) {
+        fn_3_DCF44();
+    }
+    if (lbl_3_common_bss_34C90.b1D5 != 0) {
+        fn_3_DCED0();
+        return;
+    }
+    fn_3_75560();
+    atBat_batter();
+    fn_3_2EA24();
+    if (g_Minigame[0x1920] == 0 && g_Pitcher[0x14E] != 0) {
+        if (g_Pitcher[0x14E] == 1) {
+            g_Minigame[0x1920] = 2;
+        } else if (g_Pitcher[0x14E] == 2) {
+            g_Minigame[0x1920] = 7;
+        } else {
+            g_Minigame[0x1920] = 8;
+        }
+    }
+    if (g_Minigame[0x1920] != 0) {
+        fn_3_DA834();
+    }
+    if (g_Minigame[0x190B] != 0) {
+        if (g_Minigame[0x190B] == 1) {
+            g_Minigame[0x190B] = 2;
+            *(s16*)(g_GameLogic + 0x100) = *(s16*)lbl_3_data_1899C;
+        }
+        *(s16*)(g_GameLogic + 0x100) -= 1;
+        if (g_Minigame[0x19A0] != 0 && *(s16*)(g_GameLogic + 0x100) < *(s16*)(lbl_3_data_1899C + 2)) {
+            *(s16*)(g_GameLogic + 0x100) = *(s16*)(lbl_3_data_1899C + 2);
+        }
+        if (*(s16*)(g_GameLogic + 0x100) == *(s16*)(lbl_3_data_1899C + 2) - 0xA) {
+            if (*(s16*)(g_Minigame + 0x19B6) >= *(s16*)(g_Minigame + 0x19B4) && g_Minigame[(s8)g_Minigame[0x1905] + 0x18E8] == 1) {
+                fn_3_59918(0xD, 0);
+            } else if ((s32)g_Minigame[0x1905] != (s8)g_Minigame[0x19C6]) {
+                if (*(s16*)(g_Minigame + 0x19B6) >= *(s16*)(g_Minigame + 0x19B4)) {
+                    fn_3_59918(0xD, 0);
+                } else {
+                    fn_3_59918(5, 0);
+                }
+            }
+        }
+        if (*(s16*)(g_GameLogic + 0x100) == 7) {
+            changeScene(3, 6);
+        }
+        if (*(s16*)(g_GameLogic + 0x100) <= 0) {
+            if (g_Minigame[0x19CE] != 0) {
+                fn_3_FBD70();
+                fn_3_FBD58();
+            }
+            g_GameLogic[0x12B] = 1;
+            g_GameLogic[0x12C] = 1;
+            g_GameLogic[0x12E] = 1;
+            fn_3_1DD48(g_GameLogic);
+            if (g_Minigame[0x1912] == 0) {
+                fn_3_2E87C();
+                fn_3_5A6D4(0);
+                return;
+            }
+            fn_3_5A6D4(8);
+        }
+    }
 }
+#endif
 
 typedef struct { s16 a, b, c; } T18BB8;
 extern T18BB8 lbl_3_data_18BB8[];
