@@ -512,7 +512,21 @@ s32 fn_8004ABE8(s32 clear) {
 
 // .text:0x8004AC00 size:0xC4
 void fn_8004AC00(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
-    return;
+    if (lbl_80366158._28 == 1) {
+        return;
+    }
+    if (model->charID == 0) {
+        if (frame >= (f32)lbl_803CBCF8 && frame <= (f32)lbl_803CB850) {
+            lbl_803CBD00 = 1;
+            if (frame == 0.5) {
+                lbl_803CBCFC = 1;
+            } else {
+                lbl_803CBCFC = 0;
+            }
+        }
+    } else if (model->charID == 0x12) {
+        fn_8004C19C(model, animID, colorIdx, frame);
+    }
 }
 
 extern u32 lbl_803CBD08;
