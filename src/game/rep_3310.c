@@ -630,9 +630,80 @@ void fn_3_119878(void) {
 }
 
 // .text:0x00119934 size:0x300 mapped:0x807589C8
+// NONMATCHING 98%: (measured with the rodata externs) frsp of the acos result is scheduled after the v.z load, f1/f2 swapped
+#if NONMATCHING
+extern f64 acos(f64);
+extern void* memcpy(void* dst, const void* src, u32 n);
+extern f32 lbl_3_data_2188C[];
+// Places the base markers (sprites 0x82..0x90, or the shared 0xA5 one) and the
+// running fielders' shadows (sprites 0x91..0xA4), spinning each a little per frame.
 void fn_3_119934(void) {
-    return;
+    Rep3310Sprite* shared = &lbl_8036E548.sprites[0xA5];
+    Rep3310Sprite* e;
+    Vec dir;
+    f32 ang;
+    s32 i;
+    s32 k;
+    u8 base;
+
+    shared->visible = 0;
+    for (i = 0; i < 15; i++) {
+        e = &lbl_8036E548.sprites[i + 0x82];
+        e->visible = 0;
+        base = g_Minigame[0x193A + i];
+        k = g_Minigame[0x1B19 + base] - 2;
+        if (k == 2) {
+            if (base >= 1 && base <= 6) {
+                shared->visible = 1;
+                shared->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+                shared->pos[1] = *(f32*)(g_Minigame + i * 0xC + 0xCD4);
+                shared->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+                fn_8001D0D0(0xA5, lbl_3_data_22650[k]);
+                shared->rot[1] += 0.005f;
+                if (shared->rot[1] > 3.1415927f) {
+                    shared->rot[1] -= 6.2831855f;
+                }
+            }
+        } else if (base >= 1 && base <= 6) {
+            e->visible = 1;
+            e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+            e->pos[1] = *(f32*)(g_Minigame + i * 0xC + 0xCD4);
+            e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            fn_8001D0D0(i + 0x82, lbl_3_data_22650[k]);
+            e->rot[1] += 0.005f;
+            if (e->rot[1] > 3.1415927f) {
+                e->rot[1] -= 6.2831855f;
+            }
+        }
+    }
+    for (i = 15; i < 35; i++) {
+        e = &lbl_8036E548.sprites[i + 0x82];
+        e->visible = 0;
+        if (g_Minigame[0x190B] == 0 && g_Minigame[0x193A + i] == 1) {
+            e->visible = 1;
+            e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+            e->pos[1] = -*(f32*)(g_Minigame + i * 0xC + 0xCD4);
+            e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            fn_8001D0D0(i + 0x82, 5.0f);
+            if (*(s16*)(g_Minigame + 0x17C8 + i * 2) == 0) {
+                e->rot[0] = RandomF32_Game_Range(-3.1415927f, 3.1415927f);
+                memcpy(&dir, g_Minigame + 0x1180 + i * 0xC, sizeof(Vec));
+                dir.y = 0.0f;
+                PSVECNormalize(&dir, &dir);
+                ang = acos(dir.x);
+                if (dir.z < 0.0f) {
+                    ang = 6.2831855f - ang;
+                }
+                e->rot[1] = ang;
+            } else if (lbl_80366158[0x28] == 0) {
+                memcpy(&dir, g_Minigame + 0x1180 + i * 0xC, sizeof(Vec));
+                dir.y = 0.0f;
+                e->rot[0] += (0.05f * PSVECMag(&dir)) / lbl_3_data_2188C[3];
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x00119C34 size:0x74 mapped:0x80758CC8
 void fn_3_119C34(void) {
