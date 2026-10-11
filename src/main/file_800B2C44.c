@@ -451,8 +451,75 @@ void fn_800B4724(GameActor* actor, sHdr* skHeader) {
 }
 
 // .text:0x800B472C size:0x1DC
-void fn_800B472C(void) {
-    return;
+void fn_800B472C(StaticModel* model) {
+    MtxPtr world;
+    MtxPtr camera;
+    s32 i;
+    ActorLayoutFile* file;
+    struct DODisplayObj* obj;
+    DODisplayData* pal;
+    ActorBone* layoutBone;
+    Mtx m;
+    Vec box[8];
+
+    world = model->world;
+    camera = model->camera;
+    file = (ActorLayoutFile*)model->layout;
+    pal = file->header.geoPalette;
+    for (i = 0; i < file->header.totalBones; i++) {
+        layoutBone = &file->bones[i];
+        if (layoutBone->geoFileID == 0xFFFF) {
+            continue;
+        }
+        // TODO type: MSSB's descriptor entries point straight at display objects.
+        obj = (struct DODisplayObj*)pal->descriptorArray[layoutBone->geoFileID].layout;
+        CTRLBuildMatrix(layoutBone->orientationCtrl, obj->worldMatrix);
+        PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
+        PSMTXConcat(camera, obj->worldMatrix, m);
+        box[0].x = obj->bounds[1];
+        box[0].y = obj->bounds[3];
+        box[0].z = obj->bounds[4];
+        box[1].x = obj->bounds[0];
+        box[1].y = obj->bounds[3];
+        box[1].z = obj->bounds[4];
+        box[2].x = obj->bounds[0];
+        box[2].y = obj->bounds[3];
+        box[2].z = obj->bounds[5];
+        box[3].x = obj->bounds[1];
+        box[3].y = obj->bounds[3];
+        box[3].z = obj->bounds[5];
+        box[4].x = obj->bounds[1];
+        box[4].y = obj->bounds[2];
+        box[4].z = obj->bounds[4];
+        box[5].x = obj->bounds[0];
+        box[5].y = obj->bounds[2];
+        box[5].z = obj->bounds[4];
+        box[6].x = obj->bounds[0];
+        box[6].y = obj->bounds[2];
+        box[6].z = obj->bounds[5];
+        box[7].x = obj->bounds[1];
+        box[7].y = obj->bounds[2];
+        box[7].z = obj->bounds[5];
+        if (fn_800B7D3C(NULL, box, m)) {
+            if (layoutBone->flags & 1) {
+                GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+            } else {
+                GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+            }
+            switch (layoutBone->flags & 6) {
+            case 2:
+                GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
+                break;
+            case 4:
+                GXSetBlendMode(GX_BM_BLEND, GX_BL_DSTCOL, GX_BL_ZERO, GX_LO_CLEAR);
+                break;
+            default:
+                GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+                break;
+            }
+            DOVARender(obj, camera, 0, NULL);
+        }
+    }
 }
 
 // .text:0x800B4908 size:0x8
