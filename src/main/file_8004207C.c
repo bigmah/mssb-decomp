@@ -133,7 +133,26 @@ s32 randRange_FUN_80042bf0(s32 a, s32 b) {
 
 // .text:0x80042C44 size:0xF4
 void sndFXRelated(u16 button) {
-    return;
+    switch (button) {
+    case 0x100:
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        break;
+    case 0x200:
+        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        break;
+    case 0x1:
+    case 0x2:
+    case 0x4:
+    case 0x8:
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        break;
+    case 0x3:
+    case 0x20:
+    case 0x40:
+    case 0x400:
+    case 0x800:
+        break;
+    }
 }
 
 // .text:0x80042D38 size:0x30
