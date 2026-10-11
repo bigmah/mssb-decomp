@@ -9,7 +9,8 @@ extern u8 lbl_3_data_D7A8[];
 extern u8 lbl_3_data_D9E4[];
 extern u8 lbl_3_data_DA50[];
 extern u8 lbl_3_common_bss_37400[];
-extern u16 lbl_3_data_DA44[2][3]; // frame per option, [simple layout][option]
+extern u16 lbl_3_data_DA44[2][3];
+extern u16 lbl_3_data_E0D0[8]; // frame per option, [simple layout][option]
 
 extern void fn_3_96CA4(void);
 extern void fn_3_95970(void);
@@ -140,9 +141,64 @@ void fn_3_978DC(void) {
 }
 
 // .text:0x00097CEC size:0x33C mapped:0x806D6D80
+// NONMATCHING 97%: register-only; r28/r29/r30 rotated between the E0D0 base, teams walk and slot base
+#if NONMATCHING
 void fn_3_97CEC(void) {
-    return;
+    s32 k;
+    s32 j;
+    u32 frame;
+    s32 i;
+    HudTask* task = HUD_TASK;
+
+    fn_80034E20(task, lbl_3_data_DA50);
+    for (i = 0; i < 2; i++) {
+        if (g_GameLogic._13E[i] != 0) {
+            frame = g_GameLogic.teams[i] + 4;
+        } else {
+            frame = g_GameLogic.teams[i];
+        }
+        if (i == 0) {
+            fn_800363D8(task, 4, 1, 0x46, frame);
+        } else {
+            fn_800363D8(task, 0x1C, 1, 0x46, frame);
+        }
+    }
+    for (j = 0; j < 4; j++) {
+        fn_800363D8(task, j + 5, 1, 0x11A, j);
+        fn_800363D8(task, j + 0x1D, 1, 0x11A, j);
+    }
+    for (k = 0; k < 2; k++) {
+        i = 0x21;
+        if (k == 0) {
+            i = 9;
+        }
+        fn_800363D8(task, i, 1, 0x116, lbl_3_data_E0D0[0]);
+        fn_800363D8(task, i, 2, 0x116, lbl_3_data_E0D0[1]);
+        if (lbl_800E8754.port[g_GameLogic.teams[k]]._6 != 0) {
+            HUD_OBJ(task, i)->_5C = 0xA0000;
+        }
+        fn_800363D8(task, i + 1, 1, 0x116, lbl_3_data_E0D0[2]);
+        fn_800363D8(task, i + 1, 2, 0x116, lbl_3_data_E0D0[3]);
+        if (lbl_800E8754.port[g_GameLogic.teams[k]]._3 != 0) {
+            HUD_OBJ(task, i + 1)->_5C = 0xA0000;
+        }
+        fn_800363D8(task, i + 2, 1, 0x116, lbl_3_data_E0D0[4]);
+        fn_800363D8(task, i + 2, 2, 0x116, lbl_3_data_E0D0[5]);
+        if (lbl_800E8754.port[g_GameLogic.teams[k]]._2 != 0) {
+            HUD_OBJ(task, i + 2)->_5C = 0xA0000;
+        }
+        fn_800363D8(task, i + 3, 1, 0x116, lbl_3_data_E0D0[7]);
+        fn_800363D8(task, i + 3, 2, 0x116, lbl_3_data_E0D0[6]);
+        if (lbl_800E8754.port[g_GameLogic.teams[k]]._4 == 0) {
+            HUD_OBJ(task, i + 3)->_5C = 0xA0000;
+        }
+    }
+    HUD_OBJ(task, 0x1A)->_5C = lbl_8034E9A0.captain[0] << 16;
+    HUD_OBJ(task, 0x32)->_5C = lbl_8034E9A0.captain[1] << 16;
+    task->timer = 0;
+    HUD_TASK->func = fn_3_978DC;
 }
+#endif
 
 // .text:0x00098028 size:0x390 mapped:0x806D70BC
 void fn_3_98028(void) {
