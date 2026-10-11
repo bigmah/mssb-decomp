@@ -27,6 +27,11 @@ extern u8 lbl_3_data_1A24[];
 extern u8 lbl_3_data_1A28[];
 extern u8 lbl_3_data_1A3C[];
 extern f32 lbl_3_data_4474[];
+extern u8 lbl_3_data_1A40[];
+extern u8 lbl_3_data_1A58[];
+extern f32 lbl_3_data_1A88[];
+extern f32 lbl_3_data_1AA8;
+extern f32 lbl_3_data_5EB8;
 
 // .text:0x0001E4B8 size:0x26C mapped:0x8065D54C
 void fn_3_1E4B8(void) {
@@ -266,7 +271,95 @@ void fn_3_1F350(void) {
 
 // .text:0x0001F478 size:0x520 mapped:0x8065E50C
 void fn_3_1F478(void) {
-    return;
+    BOOL centered = FALSE;
+    int chance;
+    int mound;
+    f32 step;
+    f32 th;
+    f32 lo;
+    f32 x;
+
+    if (g_Ball.pitchHangtimeCounter < g_AiLogic.batterAIInd8_FrameBtwn10And16) {
+        if (g_Pitcher.windupCountdownUntilBallReleased == lbl_3_data_1A3C[g_AiLogic.aIBatterDifficulty]) {
+            if (g_AiLogic.lastPitchBallLocZone != 0xFF && RandomInt_Game(100) < lbl_3_data_1A24[g_Batter.characterClass]) {
+                g_AiLogic.batterAI_GuessedPitchLocZone = g_AiLogic.lastPitchBallLocZone;
+                if (g_AiLogic.batterAI_GuessedPitchLocZone == 0) {
+                    g_AiLogic.batterAI_GuessedPitchLocZone = 1;
+                } else if (g_AiLogic.batterAI_GuessedPitchLocZone == 4) {
+                    g_AiLogic.batterAI_GuessedPitchLocZone = 3;
+                }
+            } else {
+                g_AiLogic.batterAI_GuessedPitchLocZone = RandomIndexFromWeights(lbl_3_data_1A28 + g_Batter.characterClass * 5, 5);
+            }
+            g_AiLogic.batterAIDesiredXPosInBox = RandomF32_Game_Range(lbl_3_data_19DC[g_AiLogic.batterAI_GuessedPitchLocZone * 2], lbl_3_data_19DC[g_AiLogic.batterAI_GuessedPitchLocZone * 2 + 1]);
+            g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch = 1;
+        }
+    } else if (g_Ball.pitchHangtimeCounter == g_AiLogic.batterAIInd8_FrameBtwn10And16) {
+        if (g_Pitcher.starPitchType == 3 || g_Pitcher.starPitchType == 4) {
+            g_AiLogic._73 = RandomInt_Game(2);
+            chance = lbl_3_data_1A40[g_AiLogic.aIBatterDifficulty + 0x14];
+        } else if (g_Pitcher.starPitchType == 11 || g_Pitcher.starPitchType == 12) {
+            g_AiLogic.batterAITrackBallPoorlyOffset = RandomF32_Game_Range(-lbl_3_data_1AA8, lbl_3_data_1AA8);
+            g_AiLogic.aIBatterTrackingCode = 2;
+            return;
+        } else if (g_Pitcher.pitchXPosition2 >= lbl_3_data_19CC[1] && g_Pitcher.pitchXPosition2 < lbl_3_data_19CC[2]) {
+            centered = TRUE;
+            chance = lbl_3_data_1A40[g_AiLogic.aIBatterDifficulty + 0x10];
+        } else {
+            chance = (lbl_3_data_1A40 + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty];
+        }
+        if (RandomInt_Game(100) < chance) {
+            lo = lbl_3_data_4474[0];
+            step = (lbl_3_data_4474[1] - lo) / 5.0f;
+            th = lo + step;
+            for (mound = 0; mound < 4; mound++) {
+                if (g_Pitcher.pitcher.x < th) {
+                    break;
+                }
+                th += step;
+            }
+            if (g_Pitcher.starPitchType == 3 || g_Pitcher.starPitchType == 4) {
+                chance = (lbl_3_data_1A58 + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty];
+            } else if (centered) {
+                chance = (lbl_3_data_1A58 + g_Batter.characterClass * 4 + g_AiLogic.aIBatterDifficulty)[0x20];
+            } else if (g_AiLogic.lastPitchMoundZone == mound) {
+                chance = (lbl_3_data_1A58 + g_Batter.characterClass * 4 + g_AiLogic.aIBatterDifficulty)[0x10];
+            } else {
+                chance = (lbl_3_data_1A58 + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty];
+            }
+            if (RandomInt_Game(100) < chance) {
+                g_AiLogic.batterAITrackBallPoorlyOffset = RandomF32_Game_Range(lbl_3_data_1A88[g_AiLogic.aIBatterDifficulty * 2], lbl_3_data_1A88[g_AiLogic.aIBatterDifficulty * 2 + 1]);
+                if (RandomInt_Game(2) != 0) {
+                    g_AiLogic.batterAITrackBallPoorlyOffset = -g_AiLogic.batterAITrackBallPoorlyOffset;
+                }
+                g_AiLogic.aIBatterTrackingCode = 1;
+            } else {
+                g_AiLogic.aIBatterTrackingCode = 2;
+                g_AiLogic.batterAITrackBallPoorlyOffset = 0.0f;
+            }
+        }
+    } else if (g_AiLogic.aIBatterTrackingCode != 0) {
+        if (g_Pitcher.starPitchType == 11 || g_Pitcher.starPitchType == 12) {
+            g_AiLogic.batterAIDesiredXPosInBox = g_AiLogic.batterAITrackBallPoorlyOffset;
+            return;
+        }
+        x = g_Pitcher.pitchXPosition;
+        if (g_Pitcher.starPitchType == 3 || g_Pitcher.starPitchType == 4) {
+            if (g_Pitcher.warioWaluStarPitchRightLeft == 0) {
+                x += lbl_3_data_5EB8;
+            } else {
+                x -= lbl_3_data_5EB8;
+            }
+            if (g_AiLogic._73 == 0) {
+                x = -x;
+            }
+        }
+        if (g_Batter.batterHand != 0) {
+            g_AiLogic.batterAIDesiredXPosInBox = -x - g_AiLogic.batterAITrackBallPoorlyOffset;
+        } else {
+            g_AiLogic.batterAIDesiredXPosInBox = x + g_AiLogic.batterAITrackBallPoorlyOffset;
+        }
+    }
 }
 
 // .text:0x0001F998 size:0x3F4 mapped:0x8065EA2C
