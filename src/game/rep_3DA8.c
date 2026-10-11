@@ -22,7 +22,8 @@ typedef struct {
 typedef struct {
     s16 type;
     s16 target;
-    u8 pad[6];
+    s16 flags; // 1: needs a win, 2/4/8: minimum difficulty 1/2/3, 0x800: ...
+    u8 pad[4];
 } MissionRec;
 
 extern MissionIdx lbl_800E8558[];
@@ -38,11 +39,41 @@ extern MissionFielderView g_Fielders[9];
 extern GameScores g_Scores;
 // lbl_803537E4[2][9] per-player game record (BatterRecord in game/auto_00_0015C5F4_text.h).
 typedef struct {
-    /*0x00*/ u8 _00[0x9];
+    /*0x00*/ u8 _00[0x4];
+    /*0x04*/ u8 _04; // at bats
+    /*0x05*/ u8 _05; // hits
+    /*0x06*/ u8 _06[0x9 - 0x6];
     /*0x09*/ u8 _09;
-    /*0x0A*/ u8 _0A[0x26 - 0xA];
+    /*0x0A*/ u8 _0A[0xD - 0xA];
+    /*0x0D*/ u8 _0D;
+    /*0x0E*/ u8 _0E[0x26 - 0xE];
 } MissionBatterRecord;
 extern MissionBatterRecord lbl_803537E4[2][9];
+
+// lbl_80353A90 (GameLineScore in game/auto_00_0009C578_text.h); only the fields used here.
+typedef struct {
+    /*0x000*/ u8 _000[0xBE];
+    /*0x0BE*/ struct {
+        s8 player; // roster slot
+        u8 _01[0x13];
+    } _0BE[2]; // per team
+    /*0x0E6*/ u8 _0E6[0x103 - 0xE6];
+    /*0x103*/ s8 _103; // mission index (lbl_800E8558)
+    /*0x104*/ u8 _104[0x108 - 0x104];
+} MissionLineScoreView;
+extern MissionLineScoreView lbl_80353A90;
+// lbl_803535C8[2][9] per-player pitching record (PitcherRecord in game/auto_00_0015C5F4_text.h).
+typedef struct {
+    /*0x00*/ u8 _00[0x18];
+    /*0x18*/ u8 _18;
+    /*0x19*/ u8 _19[0x1E - 0x19];
+} MissionPitcherRecord;
+extern MissionPitcherRecord lbl_803535C8[2][9];
+extern struct {
+    /*0x0000*/ u8 _0000[0x46E4];
+    /*0x46E4*/ s32 _46E4; // a character id (lbl_800E8558 index)
+} lbl_8034E9A0;
+#include "static/GameSettings.h"
 
 // Star mission status as a signed value (< 0: done).
 #define MISSION_STATUS(t, i) (*(s8*)&(t)->inGameMissionTracker[i].starMissionStatus)
@@ -429,6 +460,157 @@ void fn_3_16230C(s32 result, u8 rbi) {
 }
 #endif
 
+
+// End-of-game star mission evaluation, then the in-game statuses are folded
+// into "completed" (-2) / "not completed" (0).
+// NONMATCHING 87%: register allocation and switch layout differ (case 7 tested first in the original)
+// .text:0x00162D54 size:0xA98
+#if NONMATCHING
+void fn_3_162D54(void) {
+    u8* q = lbl_3_common_bss_37400;
+    s32 side;
+    s32 p;
+    s32 i;
+    s32 t;
+    s32 player;
+    MissionIdx* mi;
+    ChallengeTrackingStruct* trk;
+    MissionRec* rec;
+    MissionBatterRecord* br;
+
+    side = *(s16*)(q + 0x40) ^ g_GameLogic._000; // TODO type
+    if (g_d_GameSettings.bJMatchInd != 1) {
+        if (lbl_3_common_bss_32A94._4C[side] == 1) {
+            player = lbl_80353A90._0BE[*(s16*)(q + 0x40)].player;
+            t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][player].stats.CharID].trk;
+            trk = &starMissionCompletionTracker[t];
+            rec = lbl_80109AE8[lbl_800E8558[t].row];
+            for (i = 0; i < 10; i++, rec++) {
+                if (MISSION_STATUS(trk, i) >= 0) {
+                    switch (rec->type) {
+                    case 7:
+                        if (lbl_3_common_bss_32A94._63[side] == 1) {
+                            MISSION_STATUS(trk, i) = -1;
+                        }
+                        break;
+                    case 6:
+                    case 9:
+                        if (lbl_803535C8[*(s16*)(q + 0x40)][player]._18 != 0) {
+                            if (rec->type == 6) {
+                                if (rec->target == lbl_800E8558[lbl_8034E9A0._46E4].row) {
+                                    MISSION_STATUS(trk, i) = -1;
+                                }
+                            } else {
+                                MISSION_STATUS(trk, i) = -1;
+                            }
+                        }
+                        break;
+                    case 8:
+                        MISSION_STATUS(trk, i) = -1;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Batting average (type 25) and type 26 missions.
+        for (p = 0; p < 9; p++) {
+            br = &lbl_803537E4[*(s16*)(q + 0x40)][p];
+            t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+            trk = &starMissionCompletionTracker[t];
+            rec = lbl_80109AE8[lbl_800E8558[t].row];
+            for (i = 0; i < 10; i++, rec++) {
+                if (MISSION_STATUS(trk, i) >= 0) {
+                    if (rec->type == 25 && br->_04 != 0 && (br->_05 * 10) / br->_04 >= rec->target) {
+                        MISSION_STATUS(trk, i) = -1;
+                    }
+                    if (rec->type == 26 && br->_0D == 0) {
+                        MISSION_STATUS(trk, i) = -1;
+                    }
+                }
+            }
+        }
+
+        if (g_Scores._A4 == side) {
+            // Won the game.
+            mi = &lbl_800E8558[lbl_80353A90._103];
+            rec = lbl_80109AE8[mi->row];
+            trk = &starMissionCompletionTracker[mi->trk];
+            for (i = 0; i < 10; i++, rec++) {
+                if (MISSION_STATUS(trk, i) >= 0 && rec->type == 1) {
+                    MISSION_STATUS(trk, i) = -1;
+                }
+            }
+            for (p = 0; p < 9; p++) {
+                t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+                trk = &starMissionCompletionTracker[t];
+                rec = lbl_80109AE8[lbl_800E8558[t].row];
+                for (i = 0; i < 10; i++, rec++) {
+                    if (MISSION_STATUS(trk, i) >= 0 && rec->type == 0 && g_d_GameSettings.StadiumID == rec->target) {
+                        MISSION_STATUS(trk, i) = -1;
+                    }
+                }
+            }
+        } else {
+            // Lost: missions flagged "needs a win" are not completed.
+            for (p = 0; p < 9; p++) {
+                t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+                trk = &starMissionCompletionTracker[t];
+                rec = lbl_80109AE8[lbl_800E8558[t].row];
+                for (i = 0; i < 10; i++, rec++) {
+                    if (MISSION_STATUS(trk, i) == -1 && (rec->flags & 1)) {
+                        MISSION_STATUS(trk, i) = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    // Missions that need a minimum difficulty.
+    for (p = 0; p < 9; p++) {
+        t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+        trk = &starMissionCompletionTracker[t];
+        rec = lbl_80109AE8[lbl_800E8558[t].row];
+        for (i = 0; i < 10; i++, rec++) {
+            if (MISSION_STATUS(trk, i) == -1) {
+                if (rec->flags & 2) {
+                    if (g_d_GameSettings.challengeDifficulty < 1) {
+                        MISSION_STATUS(trk, i) = 0;
+                    }
+                } else if (rec->flags & 4) {
+                    if (g_d_GameSettings.challengeDifficulty < 2) {
+                        MISSION_STATUS(trk, i) = 0;
+                    }
+                } else if ((rec->flags & 8) && g_d_GameSettings.challengeDifficulty < 3) {
+                    MISSION_STATUS(trk, i) = 0;
+                }
+            }
+        }
+    }
+
+    for (p = 0; p < 9; p++) {
+        t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+        trk = &starMissionCompletionTracker[t];
+        rec = lbl_80109AE8[lbl_800E8558[t].row];
+        for (i = 0; i < 10; i++, rec++) {
+            if (MISSION_STATUS(trk, i) == -1 && (rec->flags & 0x800) && lbl_8034E9A0._46E4 != 9 &&
+                *(s16*)((u8*)starMissionCompletionTracker + 0x16C2) != 0x2A) { // TODO type
+                MISSION_STATUS(trk, i) = 0;
+            }
+        }
+    }
+
+    for (t = 0; t < 54; t++) {
+        for (i = 0; i < 10; i++) {
+            if (MISSION_STATUS(&starMissionCompletionTracker[t], i) <= -1) {
+                MISSION_STATUS(&starMissionCompletionTracker[t], i) = -2;
+            } else {
+                MISSION_STATUS(&starMissionCompletionTracker[t], i) = 0;
+            }
+        }
+    }
+}
+#endif
 
 // .text:0x001637EC size:0x15C
 void fn_3_1637EC(void) {
