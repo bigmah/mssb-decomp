@@ -25,7 +25,21 @@ void fn_3_1E154(void) {
 
 // .text:0x0001E178 size:0x1B0 mapped:0x8065D20C
 void fn_3_1E178(void) {
-    return;
+    s32 i;
+    s32 t;
+
+    fn_3_20AB0();
+    for (i = 0; i < 10; i++) {
+        lbl_3_common_bss_34C90.savedOrder[g_GameLogic.homeTeamBattingInd_fieldingTeam][i][0] =
+            g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][i][0];
+        lbl_3_common_bss_34C90.savedOrder[g_GameLogic.homeTeamBattingInd_fieldingTeam][i][1] =
+            g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][i][1];
+    }
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 9; i++) {
+            lbl_3_common_bss_34C90.orderByte[t][i] = lbl_80354720[t][i]._3;
+        }
+    }
 }
 
 // .text:0x0001E328 size:0xC4 mapped:0x8065D3BC
