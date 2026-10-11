@@ -86,6 +86,16 @@ extern AssetLoadInstructions lbl_2_data_20C00;
 
 extern MenuTask* lbl_803CC1B8;
 
+// lbl_2_bss_1A823C points at this; only the fields used here.
+typedef struct MenuFlags {
+    /*0x00*/ u8 _00[0x34];
+    /*0x34*/ u8 _34;
+} MenuFlags;
+
+extern MenuFlags* lbl_2_bss_1A823C;
+
+void fn_800ACFB0(void* block);
+
 void fn_800B0A14_removeQueue(void* unused);
 
 u32 fn_80062890(s32 index);

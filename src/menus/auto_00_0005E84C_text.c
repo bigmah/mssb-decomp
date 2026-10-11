@@ -44,7 +44,15 @@ void fn_2_5ED3C(void) {
 
 // .text:0x0005EE34 size:0x88
 void fn_2_5EE34(void) {
-    return;
+    lbl_2_bss_1A824C->_1972BC = 1;
+    lbl_2_bss_1A824C->_1972C0 = 1;
+    fn_8001F228();
+    fn_80035B50(10);
+    if (lbl_80366B18.tables[2] != NULL) {
+        fn_800ACFB0(lbl_80366B18.tables[2]);
+        lbl_80366B18.tables[2] = NULL;
+    }
+    lbl_2_bss_1A823C->_34 = 0;
 }
 
 // .text:0x0005EEBC size:0x1D0
