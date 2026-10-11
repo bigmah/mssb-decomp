@@ -29,7 +29,12 @@ extern void SKNLoadFile(void* sknHeader, void* skinPositions);
 
 // .text:0x800B9974 size:0x50
 void SetFogNone(void) {
-    return;
+    GXColor color;
+
+    color.b = 0;
+    color.g = 0;
+    color.r = 0;
+    GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, color);
 }
 
 // .text:0x800B99C4 size:0x6C
