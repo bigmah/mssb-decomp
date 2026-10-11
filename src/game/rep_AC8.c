@@ -4285,8 +4285,121 @@ void fn_3_53F48(void) {
 }
 
 // .text:0x000544B8 size:0x448 mapped:0x8069354C
+#include "game/rep_D0.h"
+#include "musyx/musyx.h"
+extern f32 lbl_3_rodata_CA8;
+extern f32 lbl_3_rodata_C9C;
+extern u16 lbl_3_data_81DC[];
+extern u8 lbl_3_data_8404[];
+extern u8 lbl_3_data_84B8[];
+extern void fn_80063958(s8 index);
+extern s32 fn_800639BC(s8 idx, Vec* a, Vec* b);
+extern void fn_3_16D5E4(u8);
 void fn_3_544B8(void) {
-    return;
+    u32 kind;
+    int col;
+    int i;
+    u8* f;
+    VecSrcDst ray;
+    CollisionStruct hit;
+    Vec pos;
+    Vec prev;
+    f32 v;
+    f32 h;
+    SND_VOICEID vid;
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        if (g_d_GameSettings[0x11] != 0 && g_Minigame[0x1923] != i) {
+            continue;
+        }
+        if ((g_GameLogic[0x11E] == 1 || g_GameLogic[0x11E] == 2) && *(f32*)(f + 0xB8) > lbl_3_rodata_CA8 &&
+            *(s16*)(g_Ball + 0x1B64) > 1 && *(s16*)(g_Ball + 0x1B64) < 0x7FFF && i % 3 != *(s16*)(g_Ball + 0x1B64) % 3) {
+            // skip the ground probe on most frames: reuse last height and surface
+            *(f32*)(f + 0xC) = *(f32*)(f + 0x10);
+            col = f[0x1E6];
+        } else {
+            ray.src.x = *(f32*)f;
+            ray.src.y = lbl_3_rodata_C9C;
+            ray.src.z = *(f32*)(f + 8);
+            ray.dst.x = *(f32*)f;
+            ray.dst.y = lbl_3_rodata_B60;
+            ray.dst.z = *(f32*)(f + 8);
+            col = checkCollision(&ray, &hit, 0, 0);
+            if (col == 0) {
+                *(f32*)(f + 0xC) = lbl_3_rodata_B20;
+            } else {
+                *(f32*)(f + 0xC) = -hit.position.y;
+            }
+            kind = col & 0x7F;
+            if (kind == BALL_COLLISION_TYPE_WATER) {
+                pos.x = *(f32*)f;
+                pos.y = *(f32*)(f + 0xC);
+                pos.z = *(f32*)(f + 8);
+                prev.x = *(f32*)(f + 0xD4);
+                prev.y = *(f32*)(f + 0xC);
+                prev.z = *(f32*)(f + 0xD8);
+                if ((u8)fn_800639BC(i, &pos, &prev) >= 2) {
+                    if (g_d_GameSettings[9] == 4) {
+                        vid = sndFXStartEx(lbl_3_data_81DC[4] + 7, g_d_GameSettings[7] == 6 ? lbl_3_data_84B8[0xE] : lbl_3_data_8404[0x86], 0x3F, 0);
+                        sndFXCtrl(vid, 0x5B, g_d_GameSettings[7] == 6 ? lbl_3_data_84B8[0xF] : lbl_3_data_8404[0x87]);
+                    } else if (g_d_GameSettings[9] == 5) {
+                        vid = sndFXStartEx(lbl_3_data_81DC[5] + 0xC, g_d_GameSettings[7] == 6 ? lbl_3_data_84B8[0x18] : lbl_3_data_8404[0xAE], 0x3F, 0);
+                        sndFXCtrl(vid, 0x5B, g_d_GameSettings[7] == 6 ? lbl_3_data_84B8[0x19] : lbl_3_data_8404[0xAF]);
+                    }
+                }
+            } else {
+                fn_80063958(i);
+            }
+            if (kind == BALL_COLLISION_TYPE_ROUGH_TERRAIN) {
+                fn_3_16D5E4(i + 1);
+            }
+            *(f32*)(f + 0x10) = *(f32*)(f + 0xC);
+        }
+        if (f[0x203] != 0) {
+            *(f32*)(f + 0xC) = *(f32*)(f + 0xC) + *(f32*)(f + 0x15C);
+        }
+        if (f[0x205] != 0) {
+            *(f32*)(f + 0xC) = *(f32*)(f + 0x148);
+        }
+        if (f[0x207] != 0) {
+            *(f32*)(f + 0xC) = *(f32*)(f + 0x148);
+        }
+        if (f[0x252] == 4) {
+            *(f32*)(f + 0xC) = *(f32*)(f + 0x148);
+            if (f[0x25C] != 0) {
+                f[0x25E] = 1;
+            } else {
+                f[0x25E] = 2;
+            }
+        } else if (f[0x25E] != 0) {
+            if (f[0x25E] == 2) {
+                f[0x25E] = 3;
+                *(f32*)(f + 0x14C) = lbl_3_rodata_B20;
+                f[0x25D] = 0;
+                v = lbl_3_rodata_B80 * *(f32*)(f + 0x164);
+                h = *(f32*)(f + 0x148);
+                do {
+                    v -= *(f32*)(lbl_3_data_4930 + 0x2C);
+                    h += v;
+                    f[0x25D]++;
+                } while (!(h < lbl_3_rodata_B20));
+                getComponentsFromSAng(*(s16*)(f + 0x180), (f32*)(f + 0x150), (f32*)(f + 0x158));
+                *(f32*)(f + 0x150) = *(f32*)(f + 0x150) * -*(f32*)(lbl_3_data_4930 + 0x34);
+                *(f32*)(f + 0x158) = *(f32*)(f + 0x158) * -*(f32*)(lbl_3_data_4930 + 0x34);
+            } else if (f[0x25E] == 3) {
+                f[0x25D]--;
+                *(f32*)(f + 0x14C) -= *(f32*)(lbl_3_data_4930 + 0x2C);
+                *(f32*)(f + 0x148) += *(f32*)(f + 0x14C);
+                if (*(f32*)(f + 0x148) < 0.0f) {
+                    *(f32*)(f + 0x148) = 0.0f;
+                    f[0x25E] = 4;
+                    f[0x25F] = lbl_3_data_49DC[4];
+                }
+            }
+            *(f32*)(f + 0xC) = *(f32*)(f + 0x148);
+        }
+        f[0x1E6] = col;
+    }
 }
 
 // .text:0x00054900 size:0x258 mapped:0x80693994
