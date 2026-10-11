@@ -1578,6 +1578,7 @@ u32 fn_3_14DD04(u8* o) {
     return n == 0;
 }
 
+#pragma dont_inline off
 // .text:0x0014DF6C size:0x2C8 mapped:0x8078D000
 void fn_3_14DF6C(u8* o, f32* v) {
     u8* p;
@@ -1615,13 +1616,35 @@ void fn_3_14DF6C(u8* o, f32* v) {
 }
 
 // .text:0x0014E234 size:0x58C mapped:0x8078D2C8
-void fn_3_14E234(u32 a) {
-    return;
+void fn_3_14E234(f32* v) {
+    u8 buf[0x5C];
+    u8* h;
+    u8* n;
+    u8* p;
+    h = fn_800339F0(NULL, 0x1F);
+    if (h != NULL) {
+        n = fn_800337CC(buf, *(s32*)(lbl_3_data_26CD0 + 4), 1);
+        if (n != NULL) {
+            fn_3_14DF6C(n, v);
+            p = *(u8**)(h + 0xC);
+            while (*(u8**)p != NULL) {
+                p = *(u8**)p;
+            }
+            *(u8**)p = *(u8**)(n + 0xC);
+            ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+        }
+    } else {
+        n = fn_80033A24(fn_3_14DD04, 0x80, 0, *(s32*)(lbl_3_data_26CD0 + 4), 1, 0x1F);
+        if (n != NULL) {
+            fn_3_14DF6C(n, v);
+        }
+    }
 }
+#pragma dont_inline on
 
 // .text:0x0014E7C0 size:0x50 mapped:0x8078D854
-void fn_3_14E7C0(u32 a) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 6 && a != 0) {
+void fn_3_14E7C0(f32* a) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 6 && a != NULL) {
         fn_3_14E234(a);
     }
 }
