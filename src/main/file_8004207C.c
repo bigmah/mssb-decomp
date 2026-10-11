@@ -506,7 +506,14 @@ void fn_8004B1C0(s32 kind, CharModel* model, s32 animID, u32 colorIdx, f32 frame
 
 // .text:0x8004B208 size:0x68
 void fn_8004B208(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
-    return;
+    s8 kind;
+
+    if (lbl_803CB848 != 0 && animID >= 0 && animID < 0x75) {
+        kind = lbl_800FBDEC[animID];
+        if (kind != 11) {
+            lbl_800FBE64[kind](model, animID, colorIdx, frame);
+        }
+    }
 }
 
 extern u32 lbl_803CBD04;
