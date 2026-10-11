@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_1608F0(void);
+void fn_3_1608F0(s32 kind, s32 value, s32 extra);
 void fn_3_161078(void);
 
 #endif

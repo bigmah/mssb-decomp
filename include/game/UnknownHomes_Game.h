@@ -246,7 +246,7 @@ typedef struct _InMemRunnerType {
     /*0x12C*/ u8 outType;
     /*0x12D*/ u8 forcedToAdvanceInd; // maybe
     /*0x12E*/ u8 unused_someBaseNum;
-    /*0x12F*/ u8 baseOfFailedBodyCheck; // maybe
+    /*0x12F*/ s8 baseOfFailedBodyCheck; // maybe
     /*0x130*/ u8 tagType;               // 1=Running 2=Sliding
     /*0x131*/ u8 runnerDidntReachOnError;
     /*0x132*/ u8 isEligibleToScore; // maybe
@@ -361,7 +361,7 @@ typedef struct _InMemBallType {
     /*0x1B2C*/ VecXYZ diveCatchLocationOffset;
     /*0x1B38*/ VecXYZ fielderActionCatchCoords;
     /*0x1B44*/ s32 collisionCode;
-    /*0x1B48*/ f32 maybeCollisionRelated;
+    /*0x1B48*/ s32 maybeCollisionRelated; // previous frame's collisionCode
     /*0x1B4C*/ s32 StaticRandomInt1;
     /*0x1B50*/ s32 StaticRandomInt2;
     /*0x1B54*/ u32 StaticRandomInt1_prePitch;
@@ -818,9 +818,10 @@ typedef struct _InputStruct {
     /*0x08*/ u16 _08; // held direction mask (read as u16)
     /*0x0A*/ s8 right_left;
     /*0x0B*/ s8 up_down;
-    /*0x0C*/ s8 rightTriggerDistance;
-    /*0x0D*/ s8 leftTriggerDistance;
-    /*0x0E*/ s16 _0E; // padding
+    /*0x0C*/ u8 rightTriggerDistance; // analog 0..255
+    /*0x0D*/ u8 leftTriggerDistance;
+    /*0x0E*/ u8 _0E; // cleared each frame (fn_3_6D304)
+    /*0x0F*/ u8 _0F;
 } InputStruct;        // size: 0x10
 
 typedef enum _PRACTICE_TYPE {
@@ -1545,11 +1546,15 @@ typedef struct _MiniGameRoleStreak {
 } MiniGameRoleStreak; // size: 0x2
 
 typedef struct _MiniGameSlot9 {
-    /*0x0*/ s8 _0;
+    /*0x0*/ s8 _0; // character id, < 0: none
     /*0x1*/ u8 _1;
     /*0x2*/ s8 _2;
     /*0x3*/ s8 _3;
-    /*0x4*/ u8 _4[5];
+    /*0x4*/ u8 _4;
+    /*0x5*/ u8 _5;
+    /*0x6*/ s8 _6;
+    /*0x7*/ s8 _7;
+    /*0x8*/ u8 _8;
 } MiniGameSlot9; // size: 0x9
 
 typedef struct _MiniGameStruct {
@@ -2037,10 +2042,7 @@ typedef struct _MiniGameStruct {
     /*0x1919*/ u8 _1919;
     /*0x191A*/ u8 _191A;
     /*0x191B*/ u8 _191B;
-    /*0x191C*/ u8 _191C;
-    /*0x191D*/ u8 _191D;
-    /*0x191E*/ u8 _191E;
-    /*0x191F*/ u8 _191F;
+    /*0x191C*/ s8 _191C[4]; // per player: panel progress
     /*0x1920*/ E(u8, TOY_FIELD_RESULT) toyFieldBallStateResult2;
     /*0x1921*/ u8 _1921;
     /*0x1922*/ u8 _1922;
@@ -2166,7 +2168,8 @@ typedef struct _MiniGameStruct {
     /*0x19E1*/ u8 _19E1;
     /*0x19E2*/ u8 _19E2;
     /*0x19E3*/ u8 _19E3;
-    /*0x19E4*/ s16 _19E4;
+    /*0x19E4*/ s8 _19E4; // level reached in this minigame (g_d_GameSettings._14[mode - 1])
+    /*0x19E5*/ u8 _19E5;
     /*0x19E6*/ u8 _19E6;
     /*0x19E7*/ u8 _19E7;
     /*0x19E8*/ MiniGameSlot9 _19E8[4];
@@ -2427,7 +2430,20 @@ typedef struct _MiniGameStruct {
     /*0x1D7A*/ u8 _1D7A;
     /*0x1D7B*/ u8 _1D7B;
     /*0x1D7C*/ InputStruct _1D7C[4];
-    /*0x1DBC*/ u8 _1DBC[0x1E08 - 0x1DBC];
+    /*0x1DBC*/ u8 _1DBC[4]; // per player: input driven by the CPU this frame (fn_3_12DB80)
+    /*0x1DC0*/ u8 _1DC0[4];
+    /*0x1DC4*/ u8 _1DC4[4];
+    /*0x1DC8*/ u8 _1DC8[4];
+    /*0x1DCC*/ s16 bB_cpuSwingFrame;  // pitcher frame at which the CPU swings (fn_3_12DDCC)
+    /*0x1DCE*/ u16 bB_cpuStickInput;  // stick direction held with the swing
+    /*0x1DD0*/ s8 bB_cpuSwingStep;
+    /*0x1DD1*/ u8 bB_cpuSwingPlanned;
+    /*0x1DD2*/ s8 bB_cpuPreferLow;    // sort order for the CPU's target choice (fn_3_12E084)
+    /*0x1DD3*/ u8 _1DD3[0x1DF4 - 0x1DD3];
+    /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
+    /*0x1E02*/ u8 _1E02;
+    /*0x1E03*/ u8 _1E03;
+    /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)
     /*0x1E08*/ MiniGameResultSlot resultSlot[4];
     /*0x1E10*/ u8 _1E10[0x1E22 - 0x1E10];
     /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
@@ -2817,11 +2833,17 @@ extern g_Stats_s g_Stats;
 typedef struct {
     u8 pad[0xAE];
     /* 0x0AE */ s16 _0AE;
-    u8 _0B0[0xBC - 0xB0];
+    /* 0x0B0 */ s16 _0B0; // fielder index (g_Fielders), < 0 if none
+    u8 _0B2[0xBC - 0xB2];
     /* 0x0BC */ s16 _0BC;
-    u8 _0BE[0xE4 - 0xBE];
+    u8 _0BE[0xC4 - 0xBE];
+    /* 0x0C4 */ s16 _0C4; // base the play is at (runner index)
+    u8 _0C6[0xCC - 0xC6];
+    /* 0x0CC */ s16 _0CC;
+    u8 _0CE[0xE4 - 0xCE];
     /* 0x0E4 */ s16 _0E4;
-    u8 _0E6[0xEA - 0xE6];
+    u8 _0E6[0xE8 - 0xE6];
+    /* 0x0E8 */ s16 _0E8;
     /* 0x0EA */ s16 _0EA; // fielder index (g_Fielders)
     u8 _0EC[0xEE - 0xEC];
     /* 0x0EE */ s16 _0EE;
@@ -2855,13 +2877,13 @@ typedef struct {
     /* 0x11E */ u8 _11E;
     /* 0x11F */ u8 _11F;
     /* 0x120 */ u8 _120;
-    /* 0x121 */ u8 _121;
+    /* 0x121 */ s8 _121;
     /* 0x122 */ u8 _122;
     /* 0x123 */ u8 _123;
     /* 0x124 */ u8 _124;
     /* 0x125 */ u8 _125;
-    /* 0x126 */ u8 _126;
-    /* 0x127 */ u8 _127;
+    /* 0x126 */ s8 _126; // -1: none
+    /* 0x127 */ s8 _127;
     /* 0x128 */ u8 _128;
     /* 0x129 */ u8 _129;
     /* 0x12A */ u8 _12A;
@@ -2924,7 +2946,7 @@ typedef struct {
     /* 0x1F */ s8 lastFielder;
     /* 0x20 */ s16 _20;
     /* 0x22 */ s8 _22; // -1: undecided (fn_3_7976C)
-    /* 0x23 */ u8 _23;
+    /* 0x23 */ s8 _23;
     /* 0x24 */ u8 _24;
     /* 0x25 */ s8 _25; // double-play tracking (fn_3_79A00)
     /* 0x26 */ s8 _26; // runs scored on the last dead ball
@@ -2981,25 +3003,49 @@ typedef struct GameScoresTeam {
 typedef struct GameScores {
     /* 0x00 */ s32 inning;
     /* 0x04 */ GameScoresTeam team[2];
-    /* 0x50 */ u8 _50[0x9C - 0x50];
+    /* 0x50 */ GameScoresTeam hits[2]; // same layout as team[]: [0] total, [1..] per inning
     /* 0x9C */ s16 _9C;
     /* 0x9E */ s16 _9E;
     /* 0xA0 */ s16 _A0;
-    /* 0xA2 */ u8 _A2[0xAA - 0xA2];
+    /* 0xA2 */ s16 _A2;
+    /* 0xA4 */ s16 _A4; // 0: away won, 1: home won, else tie
+    /* 0xA6 */ s16 _A6;
+    /* 0xA8 */ u8 _A8[0xAA - 0xA8];
     /* 0xAA */ u8 maxInnings;
     /* 0xAB */ u8 _AB;
     /* 0xAC */ u8 _AC;
     /* 0xAD */ u8 _AD;
     /* 0xAE */ u8 _AE[0xC2 - 0xAE];
     /* 0xC2 */ u8 _C2;
-    /* 0xC3 */ u8 _C3[0xC8 - 0xC3];
+    /* 0xC3 */ u8 _C3[0xC6 - 0xC3];
+    /* 0xC6 */ u8 _C6;
+    /* 0xC7 */ u8 _C7;
 } GameScores; // size: 0xC8
 
 typedef struct {
-    u8 pad[0xa0];
+    /* 0x0000 */ s32 _0000; // from lbl_3_data_20E0C[_092C]
+    /* 0x0004 */ u8 _0004[4];
+    /* 0x0008 */ s32 _0008;
+    /* 0x000C */ u8 _000C[8];
+    /* 0x0014 */ s32 _0014;
+    /* 0x0018 */ s32 _0018;
+    /* 0x001C */ u8 _001C[0xa0 - 0x1c];
     /* 0x00A0 */ f32 _00A0;
-    artificial_padding(0xa0, 0x9ac, f32);
+    /* 0x00A4 */ u8 _00A4[0x118 - 0xa4];
+    /* 0x0118 */ s32 _0118;
+    /* 0x011C */ u8 _011C[0x92c - 0x11c];
+    /* 0x092C */ s32 _092C; // scene index
+    /* 0x0930 */ u8 _0930[0x944 - 0x930];
+    /* 0x0944 */ s16 _0944;
+    /* 0x0946 */ u8 _0946[0x9ab - 0x946];
+    /* 0x09AB */ u8 _09AB;
     /* 0x09AC */ u8 _09AC;
+    /* 0x09AD */ u8 _09AD;
+    /* 0x09AE */ u8 _09AE;
+    /* 0x09AF */ u8 _09AF;
+    /* 0x09B0 */ u8 _09B0;
+    /* 0x09B1 */ u8 _09B1[5];
+    /* 0x09B6 */ u8 _09B6;
 } lbl_3_common_bss_DE94_s2;
 
 typedef struct {

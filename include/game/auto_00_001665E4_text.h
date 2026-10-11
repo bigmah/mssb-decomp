@@ -3,6 +3,6 @@
 
 #include "mssbTypes.h"
 
-void fn_3_1665E4(void);
+s32 fn_3_1665E4(void);
 
 #endif
