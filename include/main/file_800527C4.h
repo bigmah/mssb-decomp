@@ -83,7 +83,7 @@ void fn_80053810(void);
 void fn_800531D0(SceneTask* task);
 void fn_800559EC(void);
 void fn_80054B00(SceneTask* task, s32 port);
-void fn_800542C4(u8 which, u8 cur, SceneTask* task);
+void fn_800542C4(u8 cur, u8 target, SceneTask* task);
 void fn_80058E0C(SceneTask* task, u8 port);
 void fn_8005F068(SceneTask* task, s32 port);
 void fn_80056120(void);

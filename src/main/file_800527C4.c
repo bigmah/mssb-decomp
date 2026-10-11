@@ -362,21 +362,21 @@ void fn_80053FE8(void) {
 // .text:0x800542C4 size:0x64C
 // NONMATCHING 93%: the i != a tests use a cntlzw/xori boolean in the original; registers differ
 #if NONMATCHING
-void fn_800542C4(u8 which, u8 cur, SceneTask* task) {
-    s8 a = lbl_803C5F04.tblA[which];
+void fn_800542C4(u8 cur, u8 target, SceneTask* task) {
+    s8 a = lbl_803C5F04.tblA[cur];
     s32 i;
 
-    switch (which) {
+    switch (cur) {
     case 1:
         for (i = 0; i < 2; i++) {
             TASK_OBJ(task, i + 0xC)->_64 = 0x106;
             if (i == a) {
                 TASK_OBJ(task, i + 0xC)->_68 = 1;
-            } else if (which == cur) {
+            } else if (cur == target) {
                 TASK_OBJ(task, i + 0xC)->_5C = 10 << 16;
                 TASK_OBJ(task, i + 0xC)->_68 = 4;
             }
-            if (which == cur) {
+            if (cur == target) {
                 if (a != 0) {
                     TASK_OBJ(task, 26)->_5C = 25 << 16;
                     TASK_OBJ(task, 26)->_68 = 4;
@@ -392,7 +392,7 @@ void fn_800542C4(u8 which, u8 cur, SceneTask* task) {
             TASK_OBJ(task, i + 0xE)->_64 = 0x106;
             if (i != a) {
                 TASK_OBJ(task, i + 0xE)->_68 = 1;
-            } else if (which == cur) {
+            } else if (cur == target) {
                 TASK_OBJ(task, i + 0xE)->_5C = 10 << 16;
                 TASK_OBJ(task, i + 0xE)->_68 = 4;
             }
@@ -409,7 +409,7 @@ void fn_800542C4(u8 which, u8 cur, SceneTask* task) {
             if (i == a) {
                 TASK_OBJ(task, i + 0x10)->_64 = 0x108;
                 TASK_OBJ(task, i + 0x10)->_68 = 1;
-            } else if (i == lbl_803C5F04.tblB[which] && which == cur) {
+            } else if (i == lbl_803C5F04.tblB[cur] && cur == target) {
                 TASK_OBJ(task, i + 0x10)->_64 = 0x108;
                 TASK_OBJ(task, i + 0x10)->_5C = 10 << 16;
                 TASK_OBJ(task, i + 0x10)->_68 = 4;
@@ -427,7 +427,7 @@ void fn_800542C4(u8 which, u8 cur, SceneTask* task) {
             TASK_OBJ(task, i + 0x15)->_64 = 0x106;
             if (i != a) {
                 TASK_OBJ(task, i + 0x15)->_68 = 1;
-            } else if (which == cur) {
+            } else if (cur == target) {
                 TASK_OBJ(task, i + 0x15)->_5C = 10 << 16;
                 TASK_OBJ(task, i + 0x15)->_68 = 4;
             }
@@ -500,10 +500,114 @@ void fn_80054910(SceneTask* task, s32 port) {
 }
 #endif
 
-// .text:0x80054B00 size:0x874
-void fn_80054B00(SceneTask* task, s32 port) {
-    return;
+// Highlights the chosen option of tutorial question n (shared by fn_80054B00).
+static inline void ShowTutorialChoice(SceneTask* task, s8 n) {
+    s8 a = lbl_803C5F04.tblA[n];
+    switch (n) {
+    case 1:
+        TASK_OBJ(task, a + 0xC)->_64 = 0x107;
+        TASK_OBJ(task, a + 0xC)->_5C = 10 << 16;
+        TASK_OBJ(task, a + 0xC)->_68 = 4;
+        break;
+    case 2:
+        TASK_OBJ(task, (a ^ 1) + 0xE)->_64 = 0x107;
+        TASK_OBJ(task, (a ^ 1) + 0xE)->_5C = 10 << 16;
+        TASK_OBJ(task, (a ^ 1) + 0xE)->_68 = 4;
+        break;
+    case 3:
+        TASK_OBJ(task, a + 0x10)->_64 = 0x109;
+        TASK_OBJ(task, a + 0x10)->_5C = 10 << 16;
+        TASK_OBJ(task, a + 0x10)->_68 = 4;
+        break;
+    case 4:
+        TASK_OBJ(task, (a ^ 1) + 0x15)->_64 = 0x107;
+        TASK_OBJ(task, (a ^ 1) + 0x15)->_5C = 10 << 16;
+        TASK_OBJ(task, (a ^ 1) + 0x15)->_68 = 4;
+        break;
+    }
 }
+
+// .text:0x80054B00 size:0x874
+// NONMATCHING 85%: object index sums fold differently; registers differ
+#if NONMATCHING
+void fn_80054B00(SceneTask* task, s32 port) {
+    u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[8][port + 1]
+    s8 cur;
+    s8 target;
+    s8 a = 0; // left unset in the original; only compared when set
+    s8 b = 0;
+
+    if ((*(state += 0x31) == 0) ? TRUE : FALSE) {
+        cur = lbl_803C5F04.cur[port];
+        target = lbl_803C5F04.target[port];
+        if (cur != 0) {
+            if (lbl_803C5F04.mode == 0) {
+                a = lbl_803C5F04.tblA[cur];
+                b = lbl_803C5F04.tblB[target];
+            } else {
+                a = lbl_803C5F04.tblC[port][cur];
+                b = lbl_803C5F04.tblD[port][target];
+            }
+        } else if (lbl_803C5F04.mode == 1) {
+            a = lbl_803C5F04.tblC[port][cur];
+            b = lbl_803C5F04.tblD[port][target];
+        }
+        if (cur != target) {
+            if (lbl_803C5F04.mode == 0) {
+                if (cur == 0) {
+                    TASK_OBJ(task, target + 1)->_5C = 0;
+                    TASK_OBJ(task, target + 1)->_68 = 0;
+                    TASK_OBJ(task, 11)->_5C = 0;
+                    TASK_OBJ(task, 11)->_68 = 1;
+                    ShowTutorialChoice(task, target);
+                } else if (target == 0) {
+                    TASK_OBJ(task, cur + 1)->_68 = 1;
+                    TASK_OBJ(task, 11)->_5C = 10 << 16;
+                    TASK_OBJ(task, 11)->_68 = 4;
+                } else {
+                    TASK_OBJ(task, cur + 1)->_68 = 1;
+                    TASK_OBJ(task, target + 1)->_5C = 0;
+                    TASK_OBJ(task, target + 1)->_68 = 0;
+                    ShowTutorialChoice(task, target);
+                }
+            } else {
+                if (port == 0) {
+                    TASK_OBJ(task, 11)->_5C = 0;
+                    TASK_OBJ(task, 11)->_68 = 0;
+                }
+                TASK_OBJ(task, cur + port * 4 + 0x2B)->_68 = 1;
+                TASK_OBJ(task, cur * 2 + port + 0x3F)->_68 = 1;
+                TASK_OBJ(task, target + port * 4 + 0x2B)->_5C = 0;
+                TASK_OBJ(task, target + port * 4 + 0x2B)->_68 = 0;
+                TASK_OBJ(task, target * 2 + port + 0x3F)->_68 = 4;
+            }
+            if (lbl_803C5F04.mode == 0) {
+                fn_800542C4(cur, target, task);
+            }
+        } else if (target == cur && a != b) {
+            if (lbl_803C5F04.mode == 0 && cur != 0) {
+                fn_800542C4(cur, target, task);
+            } else if (lbl_803C5F04.mode == 1) {
+                if (lbl_803C5F04._37[port] == 0) {
+                    TASK_OBJ(task, cur + port * 4 + 0x33)->_68 = 4;
+                    TASK_OBJ(task, cur * 4 + port + 0x47)->flags &= ~2;
+                    TASK_OBJ(task, cur * 4 + port + 0x49)->flags |= 2;
+                    TASK_OBJ(task, cur * 4 + port + 0x47)->_68 = 0;
+                    TASK_OBJ(task, cur * 4 + port + 0x49)->_68 = 1;
+                } else {
+                    TASK_OBJ(task, cur + port * 4 + 0x33)->_68 = 1;
+                    TASK_OBJ(task, cur * 4 + port + 0x47)->flags |= 2;
+                    TASK_OBJ(task, cur * 4 + port + 0x49)->flags &= ~2;
+                    TASK_OBJ(task, cur * 4 + port + 0x47)->_68 = 1;
+                    TASK_OBJ(task, cur * 4 + port + 0x49)->_68 = 0;
+                }
+            }
+        }
+        fn_800626EC(port);
+        *state = 1;
+    }
+}
+#endif
 
 // .text:0x80055374 size:0x424
 // NONMATCHING 88%: index sums fold differently and registers differ
