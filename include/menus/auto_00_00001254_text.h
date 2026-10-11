@@ -254,4 +254,6 @@ void fn_2_A288(void);
 
 void fn_2_1800(void);
 
+void fn_2_1578(void);
+
 #endif

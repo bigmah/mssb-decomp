@@ -1650,3 +1650,41 @@ void fn_2_1800(void) {
     }
 }
 #endif
+
+// NONMATCHING 97%: same code as fn_2_1800; register choice for the three button words
+#if NONMATCHING
+// fn_2_1578, size:0x288
+void fn_2_1578(void) {
+    MenuButtons b;
+    memset(&b, 0, sizeof(b));
+    b.held = *(u16*)(lbl_8034E9A0 + 0x472C);
+    b.down = *(u16*)(lbl_8034E9A0 + 0x472E);
+    b.repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
+    if (lbl_803C66B0[0x55] != 0) {
+        return;
+    }
+    if (b.down & 0x100) {
+        fn_2_1DC8();
+        lbl_80366158[0x27] = 0;
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+    } else if (b.down & 0x200) {
+        lbl_80366158[0x29] = 2;
+        lbl_8034E9A0[0x472A] = 0;
+        *(s16*)(lbl_803CBBCC[0] + 4) = 6;
+        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+    } else if ((b.repeat & 8) || (b.repeat & 4)) {
+        ((s32*)lbl_2_bss_F410)[1] = ((s32*)lbl_2_bss_F410)[0];
+        if (b.repeat & 8) {
+            if (--((s32*)lbl_2_bss_F410)[0] < 0) {
+                ((s32*)lbl_2_bss_F410)[0] = 6;
+            }
+        } else if (b.repeat & 4) {
+            if (++((s32*)lbl_2_bss_F410)[0] == 7) {
+                ((s32*)lbl_2_bss_F410)[0] = 0;
+            }
+        }
+        fn_800625A4(0, 0x56);
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
+}
+#endif
