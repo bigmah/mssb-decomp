@@ -1106,8 +1106,9 @@ extern void fn_80023F0C(void*, ChallengeTextureHeader*, s32, s32, s32, s32, s32,
 extern void gOz_GXSetTexture(s32, s32, s32);
 extern void DCStoreRange(void*, u32);
 
-// 91%: orig divides height/64, width/32 with srawi/addze (signed); ours srwi (CW knows u16 >= 0); loop regs rotate
+// NONMATCHING 91%: orig divides height/64, width/32 with srawi/addze (signed); ours srwi (CW knows u16 >= 0); loop regs rotate
 // .text:0x1D694 size:0x2B0
+#if NONMATCHING
 void fn_1_1D694(u8* obj) {
     ChallengeTextureHeader* tex;
     u8* src;
@@ -1180,6 +1181,7 @@ void fn_1_1D694(u8* obj) {
     GXWGFifo.u16 = 1;
     GXWGFifo.u16 = 0;
 }
+#endif
 
 extern const f32 lbl_1_rodata_7844;
 extern const f32 lbl_1_rodata_7848;
