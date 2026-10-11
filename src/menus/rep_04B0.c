@@ -423,7 +423,10 @@ void fn_2_14FB8(s32 player) {
 
 // .text:0x000150D0 size:0x34
 void fn_2_150D0(u8 index) {
-    return;
+    if (lbl_2_bss_100B8.loadReq[index] == 0) {
+        lbl_2_bss_100B8.loadReq[index] = 1;
+        lbl_2_bss_100B8.timer[index] = 0;
+    }
 }
 
 // .text:0x00015104 size:0xB8
