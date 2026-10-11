@@ -173,4 +173,6 @@ void fn_2_48DB4(void);
 
 void fn_2_4A340(void);
 
+void fn_2_4A6E8(void);
+
 #endif
