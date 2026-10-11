@@ -57,8 +57,8 @@ void fn_3_77914(void) {
         mode = g_FieldingLogic._107;
         lbl_80353A90.runs[batting][inning] = g_Scores.team[home].runs[inning];
         lbl_80353A90.runs[batting][0] = g_Scores.team[home].runs[0];
-        lbl_80353A90.hits[batting][inning] = g_Scores._50[home][inning];
-        lbl_80353A90.hits[batting][0] = g_Scores._50[home][0];
+        lbl_80353A90.hits[batting][inning] = g_Scores.hits[home].runs[inning];
+        lbl_80353A90.hits[batting][0] = g_Scores.hits[home].runs[0];
         awayErrors = g_Scores._A8[g_GameLogic.awayTeamBattingInd_battingTeam];
         lbl_80353A90.errors[batting] = g_Scores._A8[home];
         lbl_80353A90.errors[g_GameLogic.teamFielding] = awayErrors;
@@ -175,8 +175,8 @@ void fn_3_77914(void) {
                         if (lbl_3_common_bss_32A94._22 <= 3) {
                             fielder = g_Ball.fielderWithBallIndexStored2;
                         }
-                        g_Scores._50[home][g_Scores.inning]++;
-                        g_Scores._50[home][0]++;
+                        g_Scores.hits[home].runs[g_Scores.inning]++;
+                        g_Scores.hits[home].runs[0]++;
                         if (lbl_3_common_bss_32A94._22 >= 4 && g_Ball.deadBallReason == 1) {
                             INC_SAT_U8(lbl_3_common_bss_32A94._3E[0]);
                         } else {

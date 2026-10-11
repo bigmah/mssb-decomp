@@ -1,5 +1,7 @@
 #include "game/kinoko.h"
 #include "header_rep_data.h"
+#include "Dolphin/GX/GXFifo.h"
+#include "static/GameSettings.h"
 #pragma dont_inline on
 
 typedef struct {
@@ -146,6 +148,10 @@ extern void PSVECSubtract(void*, void*, void*);
 extern void PSVECCrossProduct(void*, void*, void*);
 extern void* memcpy(void*, void*, u32);
 extern void fn_3_16A07C(void);
+extern void PSMTXCopy(void* src, void* dst);
+extern void PSMTXMultVec(void* m, void* src, void* dst);
+extern void GXBegin(s32 type, s32 fmt, u16 n);
+extern f32 lbl_3_rodata_402C; // -1.0f
 extern void* memset(void*, s32, u32);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 
@@ -273,9 +279,133 @@ void fn_3_169804(void) {
 }
 
 // .text:0x00169984 size:0x37C mapped:0x807A8A18
+// One entry of the back-to-front sort of the mushroom ribbon quads.
+typedef struct RibSortEnt {
+    f32 depth;
+    u32 idx;
+} RibSortEnt;
+
+// Draws the ribbon quads sorted by view-space depth.
+// NONMATCHING 97%: loop counters/pointers get different saved registers (r27/r28/r30 rotated)
+#if NONMATCHING
 void fn_3_169984(void) {
-    return;
+    RibSortEnt swap;
+    f32 viewPos[3];
+    f32 view[3][4];
+    RibSortEnt list[149];
+    RibSortEnt* sorted;
+    RibSortEnt* front;
+    RibSortEnt* back;
+    RibSortEnt* a;
+    RibSortEnt* b;
+    RibEnt* e;
+    u32 i;
+    u32 j;
+    f32 noDepth;
+
+    PSMTXCopy(fn_80052768_getCamera(fn_8005268C()) + 0x40, view);
+    sorted = list;
+    noDepth = lbl_3_rodata_402C;
+    e = lbl_3_bss_BAE0;
+    back = &list[148];
+    front = sorted;
+    for (i = 0; i < 149; i++) {
+        if (e->flag == 0) {
+            back->idx = i;
+            back->depth = noDepth;
+            back--;
+        } else {
+            PSMTXMultVec(view, e->v, viewPos);
+            front->depth = viewPos[2];
+            front->idx = i;
+            front++;
+        }
+        e++;
+    }
+    a = sorted;
+    for (i = 0; i < 148; i++) {
+        for (j = i + 1, b = &list[j]; j < 149; j++) {
+            if (a->depth > b->depth) {
+                memcpy(&swap, a, sizeof(RibSortEnt));
+                memcpy(a, b, sizeof(RibSortEnt));
+                memcpy(b, &swap, sizeof(RibSortEnt));
+            }
+            b++;
+        }
+        a++;
+    }
+
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 1, 0);
+    GXSetCullMode(2);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevColorIn(0, 0xF, 0xF, 0xF, 0xA);
+    GXSetTevAlphaIn(0, 7, 7, 7, 5);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetTevOp(0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C()) + 0x40, 0);
+    GXSetCurrentMtx(0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C()), 0);
+
+    for (i = 0; i < 149; i++) {
+        e = &lbl_3_bss_BAE0[sorted->idx];
+        if (e->flag != 0) {
+            GXBegin(0x80, 0, 4);
+            {
+                f32* q = e->p[0];
+                f32 z = q[2];
+                f32 y = q[1];
+                f32 x = q[0];
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+            }
+            GXWGFifo.u32 = *(u32*)e->p[1];
+            {
+                f32* q = e->p[2];
+                f32 z = q[2];
+                f32 y = q[1];
+                f32 x = q[0];
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+            }
+            GXWGFifo.u32 = *(u32*)e->p[3];
+            {
+                f32* q = e->p[4];
+                f32 z = q[2];
+                f32 y = q[1];
+                f32 x = q[0];
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+            }
+            GXWGFifo.u32 = *(u32*)e->p[5];
+            {
+                f32* q = e->p[6];
+                f32 z = q[2];
+                f32 y = q[1];
+                f32 x = q[0];
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+            }
+            GXWGFifo.u32 = *(u32*)e->p[7];
+        }
+        sorted++;
+    }
 }
+#endif
 
 // .text:0x00169D00 size:0x170
 void fn_3_169D00(u8* base, u32* cnt) {
@@ -370,9 +500,81 @@ void fn_3_169E70(u8* base) {
 }
 
 // .text:0x0016A07C size:0x140C mapped:0x807A9110
+extern u8 lbl_803CBBC0; // index of the display list buffer in use
+extern void fn_800A7D4C(s32 list, void* node);
+extern void fn_800B0A14_removeQueue(void*);
+extern u8 g_Minigame[];
+#define KINOKO_RIBBON(r) (lbl_3_data_28928 + (r) * 0x44C)   // 6 ribbons of 25 segments (0x2C each)
+#define KINOKO_TICK (*(s32*)(lbl_3_data_28928 + 0x19D4))
+
+// Per-frame task of the mushroom ribbon effect: trails the ribbon segments,
+// cycles their colours, rebuilds the quad list and queues the draw.
+// NONMATCHING 16%: the original inlines fn_3_16B5B4 and fn_3_169D00 for each ribbon and unrolls the
+// per-ribbon loops (this file is built with dont_inline; with inlining enabled this C scores 59%)
+#if NONMATCHING
 void fn_3_16A07C(void) {
-    return;
+    u8* dst;
+    u8* src;
+    u32 i;
+    u32 count;
+    u8 alpha;
+    s32 r;
+    u8 v;
+
+    if (g_d_GameSettings._55 != 0 || g_Minigame[0x1A40] != 0) { // TODO type: g_Minigame._1A40
+        ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+        memset(lbl_3_data_28928, 0, 0x19E0);
+        return;
+    }
+    if (*(s8*)(g_Minigame + 0x1D74) == -1 || lbl_3_data_28928[0x19DD] == 0) { // TODO type: g_Minigame.playerIDWithPowerup[0]
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        memset(lbl_3_data_28928, 0, 0x19E0);
+        return;
+    }
+
+    if (lbl_80366158[0x28] == 0) {
+        KINOKO_TICK++;
+        dst = lbl_3_data_28928 + 24 * 0x2C;
+        for (i = 24; i != 0; i--) {
+            alpha = (24 - i) * 8;
+            src = lbl_3_data_28928 + (i - 1) * 0x2C;
+            for (r = 0; r < 6; r++) {
+                memcpy(dst + r * 0x44C, src + r * 0x44C, 0x2C);
+                dst[r * 0x44C + 0x27] = alpha;
+            }
+            dst -= 0x2C;
+        }
+        if (KINOKO_TICK % 5 == 0) {
+            for (r = 0; r < 6; r++) {
+                v = ++KINOKO_RIBBON(r)[0x28];
+                if (v >= 6) {
+                    KINOKO_RIBBON(r)[0x28] = v - 6;
+                }
+                v = ++KINOKO_RIBBON(r)[0x29];
+                if (v >= 6) {
+                    KINOKO_RIBBON(r)[0x29] = v - 6;
+                }
+            }
+        }
+        fn_3_16B5B4(KINOKO_RIBBON(0), 0x1C, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(1), 0x20, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(2), 4, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(3), 7, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(4), 0x12, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(5), 0x18, KINOKO_TICK % 5);
+    }
+
+    for (r = 0; r < 6; r++) {
+        fn_3_169E70(KINOKO_RIBBON(r));
+    }
+    count = 0;
+    memset(lbl_3_bss_BAE0, 0, 0x1BF0);
+    for (r = 0; r < 6; r++) {
+        fn_3_169D00(KINOKO_RIBBON(r), &count);
+    }
+    fn_800A7D4C(1, lbl_3_data_28928 + 0x19F8 + lbl_803CBBC0 * 8);
 }
+#endif
 
 extern const f32 lbl_3_rodata_4040;
 extern const f64 lbl_3_rodata_4048;
@@ -414,7 +616,55 @@ void fn_3_16B5B4(u8* out, s8 id, int t) {
 }
 
 // .text:0x0016B884 size:0xB10 mapped:0x807AA918
+// Resets the six mushroom ribbons: each ribbon is 25 segments of 0x2C bytes
+// (stride 0x44C); segment +0x24 is the RGBA colour, +0x27 its alpha,
+// +0x28/+0x29 the from/to colour indices into lbl_3_data_2A308.
+// NONMATCHING 13%: the original inlines fn_3_16B5B4 (with t = 0, so k folds to 0.0f) for every ribbon;
+// this file is built with dont_inline. With inlining enabled this C scores 63% (diff: k not folded)
+#if NONMATCHING
 void fn_3_16B884(void) {
-    return;
+    u8* src;
+    u8* dst;
+    u32 i;
+    u8 alpha;
+
+    lbl_3_data_28928[0x28] = 0;
+    lbl_3_data_28928[0x29] = 1;
+    fn_3_16B5B4(lbl_3_data_28928, 0x1C, 0);
+    lbl_3_data_28928[0x44C + 0x28] = 1;
+    lbl_3_data_28928[0x44C + 0x29] = 2;
+    fn_3_16B5B4(lbl_3_data_28928 + 0x44C, 0x20, 0);
+    lbl_3_data_28928[0x898 + 0x28] = 2;
+    lbl_3_data_28928[0x898 + 0x29] = 3;
+    fn_3_16B5B4(lbl_3_data_28928 + 0x898, 4, 0);
+    lbl_3_data_28928[0xCE4 + 0x28] = 3;
+    lbl_3_data_28928[0xCE4 + 0x29] = 4;
+    fn_3_16B5B4(lbl_3_data_28928 + 0xCE4, 7, 0);
+    lbl_3_data_28928[0x1130 + 0x28] = 4;
+    lbl_3_data_28928[0x1130 + 0x29] = 5;
+    fn_3_16B5B4(lbl_3_data_28928 + 0x1130, 0x12, 0);
+    lbl_3_data_28928[0x157C + 0x28] = 5;
+    lbl_3_data_28928[0x157C + 0x29] = 0;
+    fn_3_16B5B4(lbl_3_data_28928 + 0x157C, 0x18, 0);
+
+    dst = lbl_3_data_28928 + 0x2C;
+    for (i = 1; i < 25; i++) {
+        alpha = (24 - i) * 8;
+        src = lbl_3_data_28928 + (i - 1) * 0x2C;
+        memcpy(dst, src, 0x2C);
+        dst[0x27] = alpha;
+        memcpy(dst + 0x44C, src + 0x44C, 0x2C);
+        dst[0x44C + 0x27] = alpha;
+        memcpy(dst + 0x898, src + 0x898, 0x2C);
+        dst[0x898 + 0x27] = alpha;
+        memcpy(dst + 0xCE4, src + 0xCE4, 0x2C);
+        dst[0xCE4 + 0x27] = alpha;
+        memcpy(dst + 0x1130, src + 0x1130, 0x2C);
+        dst[0x1130 + 0x27] = alpha;
+        memcpy(dst + 0x157C, src + 0x157C, 0x2C);
+        dst[0x157C + 0x27] = alpha;
+        dst += 0x2C;
+    }
 }
+#endif
 
