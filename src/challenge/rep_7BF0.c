@@ -1,21 +1,66 @@
 #include "challenge/rep_7BF0.h"
-#include "static/UnknownHomes_Static.h"
+#include "Dolphin/mtx.h"
+#include "Dolphin/gx.h"
+#include "main/file_800A7C08.h"
+#include "main/file_800B0724.h"
+#include "main/file_8004207C.h"
+#include "main/file_80024184.h"
+#include "main/file_80037054.h"
 
-extern void fn_1_273D8(u8* object);
+extern PadState lbl_803C77B8[4];
+extern void fn_800B806C(s32 index, f32 bottom, f32 top, f32 left, f32 right, f32 near, f32 far, f32 focalLength);
+extern void fn_1_AF4(s32 rows, s32 cols, f32 spacing);
+
 extern void* lbl_80366158[];
 extern ChallengeQueueEntry* lbl_803CC1B8;
-extern u8 lbl_1_bss_471BC[];
-extern u8 lbl_1_bss_471D8[];
+// POOL BEGIN (high-to-low; memory order is the reverse)
+static ChallengeDebugCamera lbl_1_bss_471D8;
+static ChallengeSimulationMenu lbl_1_bss_471BC;
+static RigidBody lbl_1_bss_47068;
+// POOL END
 extern f32 lbl_1_rodata_7DFC;
-extern void fn_1_272DC(void*, u32);
-extern void fn_1_AF4(s32, s32, f32);
-extern void fn_1_28CE8(u8*);
-extern ChallengeSimulationSettings lbl_1_data_11300;
 extern const char* lbl_1_data_11424[];
-extern void fn_1_26D28(void*, u16, u16, u16, void*);
-extern void fn_1_27330(void*);
 
-static struct { u8 pad0[0x38]; s8 sel; u8 pad1[0xE7]; } sA = {{0}};
+static ChallengeSimulationSettings lbl_1_data_11300 = {
+    { 150000, 50000, 6250, 12500 }, // len, frac, radius, mass
+    5000,                           // unk50
+    500000,                         // height
+    2000000,                        // angle
+    { 0, 0, 0 },                    // vel
+    { 0, 0, 0 },                    // angVel
+    19,                             // steps
+    0,                              // simulationState
+    0,                              // stepRequested
+};
+static RigidBodyParams sSimParams = { 100000000, 100, 100, 980665, 100, 100, 1000, 314000, 0 };
+// Unit cube drawn by fn_1_28CE8.
+static f32 sBoxVerts[8][3] = {
+    { -0.5f, -0.5f, -0.5f },
+    { 0.5f, -0.5f, -0.5f },
+    { 0.5f, 0.5f, -0.5f },
+    { -0.5f, 0.5f, -0.5f },
+    { -0.5f, -0.5f, 0.5f },
+    { 0.5f, -0.5f, 0.5f },
+    { 0.5f, 0.5f, 0.5f },
+    { -0.5f, 0.5f, 0.5f },
+};
+static GXColor sBoxColors[8] = {
+    { 0xFF, 0x00, 0x00, 0xFF },
+    { 0x00, 0xFF, 0x00, 0xFF },
+    { 0x00, 0x00, 0xFF, 0xFF },
+    { 0xFF, 0xFF, 0x00, 0xFF },
+    { 0xFF, 0x00, 0xFF, 0xFF },
+    { 0x00, 0xFF, 0xFF, 0xFF },
+    { 0x00, 0x00, 0x00, 0x00 },
+    { 0x00, 0x00, 0x00, 0x00 },
+};
+// GX_QUADS, 24 vertices of (position index, color index): one quad per face
+static u8 sBoxDisplayList[0x40] = {
+    0x80, 0x00, 0x18, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x01, 0x07, 0x01, 0x06,
+    0x01, 0x05, 0x01, 0x00, 0x02, 0x04, 0x02, 0x05, 0x02, 0x01, 0x02, 0x01, 0x03, 0x05, 0x03, 0x06,
+    0x03, 0x02, 0x03, 0x02, 0x04, 0x06, 0x04, 0x07, 0x04, 0x03, 0x04, 0x03, 0x05, 0x07, 0x05, 0x04,
+    0x05, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
 static u32 sB = 1;
 static u32 sC[36] = {0};
 static struct { u8 pad0[0x30]; u32 v; u8 pad1[0x444]; } sD = {{0}};
@@ -25,32 +70,32 @@ static ChallengeMenuItem* sE[2] = {0};
 static inline u8 NavigationMask(u16 held) {
     return (held & 0x800) ? 0x91 : ((held & 0x400) ? 0x50 : 0);
 }
-void fn_1_2948C(u8* object) {
+void fn_1_2948C(ChallengeQueueEntry* task) {
     u16 held;
     u16 pressed;
     u16 repeated;
 
-    repeated = *(u16*)((u8*)&lbl_803C77B8 + 4);
-    held = lbl_803C77B8._00;
-    pressed = lbl_803C77B8._02;
-    if (lbl_803C77B8._02 & 0x1000) {
-        object[0x14] ^= 1;
-        if (object[0x14] != 0) {
+    repeated = lbl_803C77B8[0].repeat;
+    held = lbl_803C77B8[0].held;
+    pressed = lbl_803C77B8[0].down;
+    if (lbl_803C77B8[0].down & 0x1000) {
+        task->menuOpen ^= 1;
+        if (task->menuOpen != 0) {
             fn_800A97D0(32, 0);
         } else {
             fn_800A97D0(16, 30);
         }
-    } else if (object[0x14] != 0) {
-        fn_80048820(lbl_1_bss_471BC, held, pressed, repeated,
-            NavigationMask(lbl_803C77B8._00));
+    } else if (task->menuOpen != 0) {
+        fn_80048820(&lbl_1_bss_471BC, held, pressed, repeated,
+            NavigationMask(lbl_803C77B8[0].held));
         held &= 0xFFFFF3FF;
         pressed &= 0xFFFFF3FF;
         repeated &= 0xFFFFF3FF;
-    } else if (lbl_803C77B8._02 & 0x200) {
+    } else if (lbl_803C77B8[0].down & 0x200) {
         fn_1_29A48();
     }
-    fn_1_26D28(lbl_1_bss_471D8, held, pressed, repeated, (u8*)&lbl_803C77B8 + 0x10);
-    fn_1_27330(lbl_1_bss_471D8);
+    fn_1_26D28(&lbl_1_bss_471D8, held, pressed, repeated, (ChallengeDebugPad*)&lbl_803C77B8[0].sticks);
+    fn_1_27330(&lbl_1_bss_471D8);
 }
 
 
@@ -87,8 +132,8 @@ s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons) {
 }
 
 // fn_1_2935C, size:0xB8
-void fn_1_2935C(void* camera) {
-    fn_80037768(camera, 2, lbl_1_data_11300.cameraFlags,
+void fn_1_2935C(RigidBody* body) {
+    fn_80037768(body, 2, lbl_1_data_11300.cameraFlags,
         (f32)lbl_1_data_11300.scaledCamera[0] / 100000.0f,
         (f32)lbl_1_data_11300.scaledCamera[1] / 100000.0f,
         (f32)lbl_1_data_11300.scaledCamera[2] / 100000.0f,
@@ -96,13 +141,13 @@ void fn_1_2935C(void* camera) {
 }
 
 // fn_1_29414, size:0x78
-void fn_1_29414(u8* object) {
-    if (object[0x14] != 0) {
-        fn_80048BEC(lbl_1_bss_471BC, 0, 0);
+void fn_1_29414(ChallengeQueueEntry* task) {
+    if (task->menuOpen != 0) {
+        fn_80048BEC(&lbl_1_bss_471BC, 0, 0);
     }
-    fn_1_272DC(lbl_1_bss_471D8, 0);
+    fn_1_272DC(&lbl_1_bss_471D8, 0);
     fn_1_AF4(10, 10, lbl_1_rodata_7DFC);
-    fn_1_28CE8(object);
+    fn_1_28CE8(task);
 }
 
 // fn_1_29A48, size:0x54
@@ -118,8 +163,8 @@ void fn_1_29A48(void) {
 
 
 // fn_1_289C0, size:0x20
-void fn_1_289C0(u8* object) {
-    fn_1_273D8(object);
+void fn_1_289C0(ChallengeDebugCamera* camera) {
+    fn_1_273D8(camera);
 }
 
 // fn_1_28C34, size:0xB4
@@ -132,7 +177,7 @@ void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data) {
     menu->items = sE[which];
     if (which == 1) {
         if (sD.v == 0) {
-            sD.v = sC[sA.sel];
+            sD.v = sC[lbl_1_data_11300.simulationState];
         }
     }
     menu->count = 0;
@@ -158,3 +203,168 @@ s32 fn_1_28AE0(ChallengeSimulationMenu* menu) {
     }
     return 0;
 }
+
+// .text:0x0002858C size:0x434
+// Orbit-camera update (same as fn_1_26D28 without the callback, pitch and height inverted).
+void fn_1_2858C(ChallengeDebugCamera* camera, u16 held, u16 pressed, u16 repeated, ChallengeDebugPad* pad) {
+    Mtx rot;
+    Quaternion q;
+    Vec v;
+
+    if (pressed & 0x10) {
+        fn_1_273D8(camera);
+        return;
+    }
+
+    camera->yaw = camera->yaw - (((3.1415927f * camera->turnSpeed) / 180.0f) * (f32)pad->substickX /
+                                 128.0f) / 60.0f;
+    camera->pitch = camera->pitch + (((3.1415927f * camera->turnSpeed) / 180.0f) *
+                                     (f32)pad->substickY / 128.0f) / 60.0f;
+    while (camera->yaw < -3.1415927f) {
+        camera->yaw += 6.2831855f;
+    }
+    while (camera->yaw >= 3.1415927f) {
+        camera->yaw -= 6.2831855f;
+    }
+    if (camera->pitch < -3.1385248f) {
+        camera->pitch = -3.1385248f;
+    } else if (camera->pitch > 3.1385248f) {
+        camera->pitch = 3.1385248f;
+    }
+
+    v.x = 0.0f;
+    v.y = 0.0f;
+    v.z = 1.0f;
+    PSVECCrossProduct(&v, &camera->up, &camera->direction);
+    PSVECNormalize(&camera->direction, &camera->direction);
+    C_QUATRotAxisRad(&q, &camera->direction, camera->pitch);
+    PSMTXQuat(rot, &q);
+    PSMTXMultVec(rot, &v, &camera->direction);
+    C_QUATRotAxisRad(&q, &camera->up, camera->yaw);
+    PSMTXQuat(rot, &q);
+    PSMTXMultVec(rot, &camera->direction, &camera->direction);
+
+    v.x = (camera->moveSpeed * (f32)-pad->stickX / 128.0f) / 60.0f;
+    v.z = (camera->moveSpeed * (f32)pad->stickY / 128.0f) / 60.0f;
+    v.y -= ((camera->moveSpeed * (f32)pad->triggerL) / 150.0f) / 60.0f;
+    v.y += ((camera->moveSpeed * (f32)pad->triggerR) / 150.0f) / 60.0f;
+    PSMTXMultVec(rot, &v, &v);
+    PSVECAdd(&camera->position, &v, &camera->position);
+
+    camera->zoom = camera->zoom + (camera->zoomSpeed * (f32)(s32)((held >> 10) & 1)) / 60.0f;
+    camera->zoom = camera->zoom - (camera->zoomSpeed * (f32)(s32)((held >> 11) & 1)) / 60.0f;
+    camera->zoom = 0.1f * (f32)(0.0f == camera->zoom) + camera->zoom * (f32)(0.0f != camera->zoom);
+    camera->invZoom = 1.0f / camera->zoom;
+}
+
+// .text:0x00028CE8 size:0x374
+// Draws the rigid body as a box plus a set of axes; the vectors computed at the end are unused.
+void fn_1_28CE8(ChallengeQueueEntry* task) {
+    Mtx m;
+    Vec v;
+    f32 width;
+
+    width = (f32)lbl_1_data_11300.scaledCamera[2] / 100000.0f;
+    PSMTXScale(m, width, width, (f32)lbl_1_data_11300.scaledCamera[0] / 100000.0f);
+    PSMTXConcat(lbl_1_bss_47068.world, m, m);
+    PSMTXConcat(lbl_1_bss_471D8.view, m, m);
+    GXLoadPosMtxImm(m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    gOz_GXSetTexture(GX_PASSCLR, 0, 0);
+
+    GXBegin(GX_LINES, GX_VTXFMT0, 6);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXColor1u32(0xFF0000FF);
+    GXPosition3f32(1.0f, 0.0f, 0.0f);
+    GXColor1u32(0xFF0000FF);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXColor1u32(0x00FF00FF);
+    GXPosition3f32(0.0f, 1.0f, 0.0f);
+    GXColor1u32(0x00FF00FF);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXColor1u32(0x0000FFFF);
+    GXPosition3f32(0.0f, 0.0f, 1.0f);
+    GXColor1u32(0x0000FFFF);
+
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
+    GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetArray(GX_VA_POS, sBoxVerts, sizeof(sBoxVerts[0]));
+    GXSetArray(GX_VA_CLR0, sBoxColors, sizeof(sBoxColors[0]));
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXSetCullMode(GX_CULL_BACK);
+    GXCallDisplayList(sBoxDisplayList, sizeof(sBoxDisplayList));
+
+    PSMTXMultVec(lbl_1_bss_47068.world, &lbl_1_bss_47068.p0, &v);
+    PSMTXMultVec(lbl_1_bss_47068.world, &lbl_1_bss_47068.p1, &v);
+    PSVECCrossProduct(&lbl_1_bss_47068.p0, &lbl_1_bss_47068.angVel, &v);
+    PSMTXMultVec(lbl_1_bss_47068.rot, &v, &v);
+    PSVECCrossProduct(&lbl_1_bss_47068.p1, &lbl_1_bss_47068.angVel, &v);
+    PSMTXMultVec(lbl_1_bss_47068.rot, &v, &v);
+    PSVECScale(&lbl_1_bss_47068.force, lbl_1_bss_47068.invMass, &v);
+}
+
+// .text:0x0002905C size:0x300
+// Steps the rigid-body simulation according to lbl_1_data_11300.simulationState.
+void fn_1_2905C(void) {
+    Mtx m;
+
+    switch (lbl_1_data_11300.simulationState) {
+    case 0:
+        fn_1_2935C(&lbl_1_bss_47068);
+        lbl_1_bss_47068.pos.x = 0.0f;
+        lbl_1_bss_47068.pos.y = (f32)lbl_1_data_11300.height / 100000.0f;
+        lbl_1_bss_47068.pos.z = 0.0f;
+        lbl_1_bss_47068.vel.x = (f32)lbl_1_data_11300.vel[0] / 100000.0f;
+        lbl_1_bss_47068.vel.y = (f32)lbl_1_data_11300.vel[1] / 100000.0f;
+        lbl_1_bss_47068.vel.z = (f32)lbl_1_data_11300.vel[2] / 100000.0f;
+        PSMTXMultVec(lbl_1_bss_47068.invRot, &lbl_1_bss_47068.vel, &lbl_1_bss_47068.velLocal);
+        lbl_1_bss_47068.angVel.x = (f32)lbl_1_data_11300.angVel[0] / 100000.0f;
+        lbl_1_bss_47068.angVel.y = (f32)lbl_1_data_11300.angVel[1] / 100000.0f;
+        lbl_1_bss_47068.angVel.z = (f32)lbl_1_data_11300.angVel[2] / 100000.0f;
+        PSMTXRotRad(m, 'X', 0.017453292f * ((f32)lbl_1_data_11300.angle / 100000.0f));
+        C_QUATMtx(&lbl_1_bss_47068.quat, m);
+        fn_800383BC(&lbl_1_bss_47068);
+        break;
+    case 1:
+        if (lbl_1_data_11300.stepRequested == 0) {
+            break;
+        }
+        lbl_1_data_11300.stepRequested = 0;
+    case 2:
+        lbl_1_bss_47068.unk50 = (f32)lbl_1_data_11300.unk50 / 100000.0f;
+        fn_80037054(&lbl_1_bss_47068, &sSimParams);
+        break;
+    }
+}
+
+// .text:0x000295E8 size:0x460
+void fn_1_295E8(void) {
+    ChallengeQueueEntry* task = lbl_803CC1B8;
+
+    fn_1_2948C(task);
+    fn_1_2905C();
+    fn_1_29414(task);
+}
+
+// .text:0x00029A9C size:0x1C0
+// NONMATCHING 92%: register allocation/scheduling of the inlined fn_1_2935C prologue
+#if NONMATCHING
+void fn_1_29A9C(void) {
+    fn_1_2935C(&lbl_1_bss_47068);
+    fn_1_289C0(&lbl_1_bss_471D8);
+    lbl_1_data_11300.simulationState = 0;
+    fn_1_28C34(&lbl_1_bss_471BC, 0, NULL);
+    fn_800B806C(0, -240.0f, 240.0f, -320.0f, 320.0f, -512.0f, -1.0f, 1280.0f);
+    lbl_803CC1B8->func = fn_1_295E8;
+}
+#endif

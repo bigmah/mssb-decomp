@@ -364,7 +364,7 @@ void fn_800ACCD4(void);
 
 s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
 
-u8 fn_800ADAFC(void);
+BOOL fn_800ADAFC(void);
 
 s32 fn_800A8518(s32 cmd);
 void fn_800A86B4(s32 cmd);
