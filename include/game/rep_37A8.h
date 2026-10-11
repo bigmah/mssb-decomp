@@ -4,7 +4,9 @@
 #include "mssbTypes.h"
 
 void fn_3_141C44(void);
-void fn_3_141C8C(void);
+struct DODisplayObj;
+void fn_3_141C8C(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map, u8* numTevStages, u8* numTexGens,
+                 f32 (*camera)[4]);
 void fn_3_141F30(void);
 s32 fn_3_142030(s32, s32, s32);
 void fn_3_142088(void);

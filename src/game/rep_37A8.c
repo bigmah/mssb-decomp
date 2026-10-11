@@ -5,15 +5,14 @@ extern u8 g_Minigame[];
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/mtx.h"
+#include "Dolphin/gx.h"
 extern double acos(double);
 extern const Vec lbl_3_rodata_3808;
+extern const f32 lbl_3_rodata_382C;
+extern const f32 lbl_3_rodata_3830;
 extern const f32 lbl_3_rodata_3834;
+extern const f32 lbl_3_rodata_3838;
 extern const f64 lbl_3_rodata_3868;
-extern void fn_3_141C8C(void);
-extern u8 lbl_3_bss_B7C1[];
-extern u8 lbl_3_bss_B7C0[];
-extern void GXInitTexObj(void*, void*, u16, u16, s32, s32, s32, u8);
-extern void GXInitTexObjLOD(void*, s32, s32, f32, f32, f32, u8, u8, s32);
 extern void fn_800B993C(void);
 extern u8 g_GameLogic[];
 extern u8 lbl_3_data_21278[];
@@ -25,8 +24,6 @@ extern s16 RandomInt_Game_Range(s16, s16);
 extern s16 lbl_3_data_21EAC[];
 extern u8 lbl_3_data_21D34[];
 extern u8 lbl_80366158[];
-extern s32 lbl_3_bss_B7E4;
-extern u8 lbl_3_bss_B800[];
 extern s8 lbl_3_data_266A4;
 extern void DCFlushRange(void*, u32);
 extern u8 lbl_800EFBA4[];
@@ -57,19 +54,55 @@ extern void fn_3_157570(void);
 extern void fn_3_DE4FC(void);
 extern void fn_3_154214(void);
 
+// This unit's .bss (B7C0..B850) as statics, declared in reverse address order:
+// a flashing 4x4 RGBA8 texture used by the TEV hook fn_3_141C8C.
+static u8 lbl_3_bss_B800[0x50] ATTRIBUTE_ALIGN(32); // texel data (0x40 used)
+static s32 lbl_3_bss_B7E4;                          // frame tick for the flash
+static GXTexObj lbl_3_bss_B7C4;                     // texture object
+static u8 lbl_3_bss_B7C1;                           // hook frame counter
+static u8 lbl_3_bss_B7C0;
+
 // .text:0x00141C44 size:0x48
 void fn_3_141C44(void) {
-    lbl_3_bss_B7C1[0] += 1;
-    if (lbl_3_bss_B7C1[0] >= 6) {
-        lbl_3_bss_B7C1[0] = 0;
+    lbl_3_bss_B7C1++;
+    if (lbl_3_bss_B7C1 >= 6) {
+        lbl_3_bss_B7C1 = 0;
         fn_800B993C();
     }
 }
 
 // .text:0x00141C8C size:0x2A4 mapped:0x80780D20
-void fn_3_141C8C(void) {
-    return;
+// NONMATCHING 98.7%: in the inlined fn_3_141F30 the original loads the first texel through the loop
+// pointer (addi r4,base,0x40; lbz 0(r4)) after the lbl_3_data_266A4 load; ours folds it to lbz 0x40(r31).
+#if NONMATCHING
+void fn_3_141C8C(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map, u8* numTevStages, u8* numTexGens,
+                 MtxPtr camera) {
+    Mtx ident;
+    Mtx scale;
+    Mtx trans;
+
+    fn_3_141F30();
+    GXLoadTexObj(&lbl_3_bss_B7C4, *map);
+    PSMTXIdentity(ident);
+    PSMTXScale(scale, lbl_3_rodata_382C, lbl_3_rodata_3830, lbl_3_rodata_3834);
+    PSMTXTrans(trans, lbl_3_rodata_382C, lbl_3_rodata_382C, lbl_3_rodata_3838);
+    PSMTXConcat(trans, scale, scale);
+    GXLoadTexMtxImm(ident, *map * 3 + 0x1E, 0);
+    GXLoadTexMtxImm(scale, *map * 3 + 0x40, 0);
+    GXSetTexCoordGen2(*coord, 0, 0, *map * 3 + 0x1E, 1, *map * 3 + 0x40);
+    GXSetTevOrder(*stage, *coord, *map, 0xFF);
+    GXSetTevColorIn(*stage, 0xF, 8, 9, 0);
+    GXSetTevColorOp(*stage, 0, 0, 0, 1, 0);
+    GXSetTevAlphaIn(*stage, 7, 7, 7, 0);
+    GXSetTevAlphaOp(*stage, 0, 0, 0, 1, 0);
+    (*stage)++;
+    (*coord)++;
+    (*map)++;
+    (*numTevStages)++;
+    (*numTexGens)++;
+    fn_3_141C44();
 }
+#endif
 
 // .text:0x00141F30 size:0x100 mapped:0x80780FC4
 void fn_3_141F30(void) {
@@ -77,6 +110,7 @@ void fn_3_141F30(void) {
     u8* p;
     s32 n;
     s32 i;
+
     lbl_3_bss_B7E4 = lbl_3_bss_B7E4 + (lbl_80366158[0x28] == 0);
     if (!(lbl_3_bss_B7E4 & 1)) {
         p = lbl_3_bss_B800;
@@ -111,34 +145,33 @@ void fn_3_142088(void) {
     s32 w = 4;
     u8* p;
     u32 idx;
-    u8* base = lbl_3_bss_B7C0;
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             idx = fn_3_142030(j, i, w) * 4;
             if (idx < 0x20) {
-                p = base + 0x40;
+                p = lbl_3_bss_B800;
                 p += idx;
                 p[0] = p[2] = 0xFF;
                 p[1] = p[3] = 0x96;
             } else {
-                p = base + 0x40;
+                p = lbl_3_bss_B800;
                 p += idx;
                 p[0] = p[2] = 0;
                 p[1] = p[3] = 0;
             }
         }
     }
-    GXInitTexObj((base + 4), base + 0x40, 4, 4, 6, 1, 1, 0);
-    GXInitTexObjLOD((base + 4), 1, 1, 0.0f, 0.0f, 0.0f, 0, 0, 0);
+    GXInitTexObj(&lbl_3_bss_B7C4, lbl_3_bss_B800, 4, 4, GX_TF_RGBA8, GX_REPEAT, GX_REPEAT, GX_FALSE);
+    GXInitTexObjLOD(&lbl_3_bss_B7C4, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
     lbl_3_data_266A4 = -1;
-    *(s32*)(base + 0x24) = 0;
-    base[1] = 0;
+    lbl_3_bss_B7E4 = 0;
+    lbl_3_bss_B7C1 = 0;
 }
 
 // .text:0x0014225C size:0x28 mapped:0x807812F0
 void fn_3_14225C(void) {
-    fn_800B9948((DOTevHook)fn_3_141C8C); // TODO type: check fn_3_141C8C against DOTevHook
+    fn_800B9948(fn_3_141C8C);
 }
 
 // .text:0x00142284 size:0x2EC mapped:0x80781318
