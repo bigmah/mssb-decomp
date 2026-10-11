@@ -347,3 +347,46 @@ void fn_3_164554(void) {
         }
     }
 }
+
+// Hands out the mission's bonus scout flags (lbl_80109420[].v) one at a time,
+// round-robin over the roster, while some player still has flags to earn.
+// NONMATCHING 98.6%: register allocation only (the inlined fn_3_163BD4 copies use one register higher)
+// .text:0x00164664 size:0x410
+#if NONMATCHING
+void fn_3_164664(void) {
+    s16 ids[9];
+    s32 i;
+    u8 a;
+    u8 b;
+    s32 bonus;
+    s32 r;
+    s32 m;
+    ChallengeTrackingStruct* e;
+    ChallengeTrackingStruct* t = starMissionCompletionTracker;
+    u8* q = lbl_3_common_bss_37400;
+    a = *((u8*)starMissionCompletionTracker + 0x441C);
+    b = *((u8*)starMissionCompletionTracker + 0x4415);
+    bonus = lbl_80109420[q[0x46]].v;
+    for (i = 0; i < 9; i++) {
+        ids[i] = inMemRoster[1][i].stats.CharID;
+    }
+    i = 0;
+    r = fn_3_163BD4();
+    if (bonus > 0 && r) {
+        while (bonus > 0) {
+            if (ids[i] != -1) {
+                e = &t[ids[i]];
+                m = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
+                if ((s8)m != 0 && (s8)e->scoutFlagsAchieved < (s8)m) {
+                    bonus--;
+                    e->scoutFlagsAchieved++;
+                }
+            }
+            i = (i + 1) % 9;
+            if (!fn_3_163BD4()) {
+                break;
+            }
+        }
+    }
+}
+#endif
