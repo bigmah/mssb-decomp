@@ -2205,9 +2205,100 @@ void fn_3_66140(void) {
 #endif
 
 // .text:0x000664FC size:0x3C0 mapped:0x806A5590
+// NONMATCHING 96%: register allocation; fn_3_65FE0 and fn_3_63A38 written out inline, as in the original
+#if NONMATCHING
 void fn_3_664FC(void) {
-    return;
+    s32 i;
+    u8 mode;
+    for (i = 0; i < 9; i++) {
+        g_UnkAnimation_31EAC[i * 0x54 + 0x48] = 0;
+    }
+    mode = g_GameLogic[0x11E];
+    if (mode == 0xB || (mode >= 3 && mode <= 5) || g_GameLogic[0x121] == 0xA || g_GameLogic[0x121] == 0x12 ||
+        (g_d_GameSettings[7] == 2 && g_Practice[0x196] == 0)) {
+        if (g_d_GameSettings[7] == 2 && g_GameLogic[0x121] == 0xA && g_Practice[0x198] == 6) {
+            {
+                int flag;
+                int idx;
+                s8 c;
+                u8* o;
+                for (i = 0; i < 4; i++) {
+                    idx = i;
+                    o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+                    flag = 0;
+                    if (g_d_GameSettings[7] == 2) {
+                        idx = 9;
+                        o = ((u8**)lbl_8036E548)[0x2C74 / 4];
+                    }
+                    if (o != NULL) {
+                        c = *(s8*)(g_Minigame + i * 9 + 0x19EC);
+                        if (c == 0 || c == 2) {
+                            flag = 1;
+                        }
+                        if (*(s8*)(g_Minigame + i * 9 + 0x19EA) < 0) {
+                            AnimateCharacter(idx, 0x69, 1, 1, 1, 0, flag, 0);
+                        } else if (*(s8*)(g_Minigame + i * 9 + 0x19E9) != 0) {
+                            if (*(s16*)(o + 0x62) == 0x69) {
+                                AnimateCharacter(idx, 0x6A, 0, 1, 1, 0, flag, 0);
+                                QueueCharacterAnimation(idx, 0x6B, 1, 1, 0, flag, -1);
+                            }
+                        } else {
+                            AnimateCharacter(idx, 0x69, 1, 1, 1, 0, flag, 0);
+                        }
+                        if (g_d_GameSettings[7] == 2) {
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            for (i = 0; i < 13; i++) {
+                AnimateCharacter(i, 2, 1, 1, 0, 0, 0, 0);
+            }
+        }
+        return;
+    }
+    if (mode == 0xE) {
+        if (g_GameLogic[0x125] > 2) {
+            fn_3_657E4();
+        }
+        return;
+    }
+    if (lbl_3_common_bss_1323C[0x25C] != 0) {
+        fn_3_22C10();
+        return;
+    }
+    if (lbl_3_common_bss_32234[1] != 0) {
+        fn_3_6714C(0);
+        lbl_3_common_bss_32234[1] = 0;
+        return;
+    }
+    if (g_GameLogic[0x12C] != 0 && *(s16*)(g_Ball + 0x1B64) == 0) {
+        fn_3_6714C(0);
+        return;
+    }
+    lbl_3_common_bss_32234[0] = 0;
+    fn_3_64BDC();
+    fn_3_63AF8();
+    fn_3_62E70();
+    for (i = 0; i < 4; i++) {
+        u8* r = ((E08Run*)g_Runners)[i].d;
+        u8* c = ((E08C*)lbl_3_common_bss_321A0)[i].d;
+        c[0x1C] = c[0x1B];
+        if (g_d_GameSettings[0x11] == 0 || (s8)g_Minigame[0x18FC + i] >= 0) {
+            if (r[0x123] == 0) {
+                c[0x1B] = 0;
+            } else {
+                c[0x1B] = 3;
+                *(f32*)c = *(f32*)(r + 0x84);
+                c[0x1D] = r[0x137];
+                fn_3_63874(i);
+                fn_3_631AC(i);
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x000668BC size:0x874 mapped:0x806A5950
 void fn_3_668BC(void) {
