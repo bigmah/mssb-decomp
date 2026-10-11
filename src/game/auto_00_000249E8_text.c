@@ -155,8 +155,41 @@ void fn_3_24F20(void) {
 }
 
 // .text:0x00024F24 size:0x1D8 mapped:0x80663FB8
-void fn_3_24F24(void) {
-    return;
+void fn_3_24F24(s32 mode) {
+    u8* script = lbl_3_data_1F40[mode];
+    s32 range = 0;
+    s32 i;
+    u8 k;
+
+    for (i = 0; i < 13; i++) {
+        lbl_3_common_bss_1323C->actorSetup[i] = -1;
+    }
+    lbl_3_common_bss_1323C->_25C = 1;
+    lbl_3_common_bss_1323C->_23C = 0;
+    lbl_3_common_bss_1323C->_27C = 0;
+    lbl_3_common_bss_1323C->mode = mode;
+    lbl_3_common_bss_1323C->_25F = 1;
+    lbl_3_common_bss_1323C->_27D = 0;
+    lbl_3_common_bss_1323C->busy = 0;
+    lbl_3_common_bss_1323C->_25A = 0;
+    lbl_3_common_bss_1323C->_280 = 1;
+    lbl_3_common_bss_1323C->_23E = *script * 10;
+    if (*++script == 0xFD) {
+        range = 2;
+        script++;
+    }
+    lbl_3_common_bss_1323C->_25E = *script++;
+    if (range != 0) {
+        lbl_3_common_bss_1323C->_25E += random_fn_3_9EE24(range);
+    }
+    for (;;) {
+        k = *script;
+        if (k == 0xFE) {
+            break;
+        }
+        script++;
+        lbl_3_common_bss_1323C->actorSetup[lbl_3_data_1D28[k].actor] = k;
+    }
 }
 
 // .text:0x000250FC size:0xE8 mapped:0x80664190
