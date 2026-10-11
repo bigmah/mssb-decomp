@@ -155,7 +155,49 @@ void fn_2_87998(SceneTask* task) {
 
 // .text:0x00087FB0 size:0x2A0
 void fn_2_87FB0(SceneTask* task) {
-    return;
+    s32 i;
+    s32 done;
+    s32 total;
+    ChallengeState* save;
+
+    if ((lbl_2_bss_33FBCC.animStarted == 0) ? TRUE : FALSE) {
+        fn_2_8A008(task);
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._10, 7)->_64 = 0x12;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._10, 7)->_5C = 0;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._10, 7)->_68 = 1;
+        SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->_64 = 0x12;
+        SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->_68 = 1;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._10, 4)->flags |= 2;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._10, 0x42)->flags &= ~2;
+        lbl_2_bss_33FBCC.animStarted = 1;
+        lbl_2_bss_33FBCC.prevSlot = lbl_2_bss_33FBCC._10;
+        lbl_2_bss_F410.slot = lbl_2_bss_33FBCC._10;
+        lbl_2_bss_33FBCC._10 = -1;
+        lbl_2_bss_33FBCC.animRunning = 1;
+    }
+    if ((lbl_2_bss_33FBCC.animRunning == 1) ? TRUE : FALSE) {
+        done = 0;
+        total = 0;
+        for (i = 0; i < 3; i++) {
+            if (lbl_80354768._CF5E[i] != 0) {
+                save = CHALLENGE_SAVE(i);
+                if (save->_444B != -1) {
+                    total++;
+                    done += fn_80042DA8(task, i + 0x32, 0xA) != 0;
+                } else if (save->_1606 == 0) {
+                    total++;
+                    done += fn_80042DA8(task, i + 0x35, 0xE) != 0;
+                }
+            }
+        }
+        if (done == total) {
+            SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->_64 = 0x13;
+            SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->_68 = 1;
+            lbl_2_bss_33FBCC.anim = 0;
+            lbl_2_bss_33FBCC.animStarted = 0;
+            lbl_2_bss_33FBCC.animRunning = 0;
+        }
+    }
 }
 
 // .text:0x00088250 size:0x178
