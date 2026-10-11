@@ -111,7 +111,7 @@ typedef struct HudTask {
     /*0x1C*/ u16 state;
     /*0x1E*/ u16 _1E;
     /*0x20*/ u16 _20;
-    /*0x22*/ s16 _22;
+    /*0x22*/ u16 _22; // read with lhz in fn_3_9C28C
 } HudTask;
 
 #define HUD_TASK ((HudTask*)lbl_803CC1B8)

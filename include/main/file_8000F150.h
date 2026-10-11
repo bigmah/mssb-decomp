@@ -58,7 +58,7 @@ typedef struct LayoutObj {
     /*0x3C*/ u8 _3C[0xC];
     /*0x48*/ f32 x;
     /*0x4C*/ f32 y;
-    /*0x50*/ u8 _50[0x4];
+    /*0x50*/ f32 z;
     /*0x54*/ u32 flags;
     /*0x58*/ u32 color;
     /*0x5C*/ u32 _5C;
