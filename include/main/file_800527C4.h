@@ -25,9 +25,31 @@ typedef struct CharModelTable {
     /*0x2C50*/ CharJointMapObj* chars[13];
 } CharModelTable;
 
+// lbl_803C66B0: tutorial step state per player.
+typedef struct TutorialSteps {
+    /*0x00*/ u8 steps[14][6];
+    /*0x54*/ u8 _54;
+    /*0x55*/ u8 active[8];
+    /*0x5D*/ u8 step[7];
+} TutorialSteps; // size: 0x64
+
+// lbl_803C6714: two looping sound effects driven by queue tasks.
+typedef struct LoopSfxState {
+    /*0x00*/ u32 voiceA;
+    /*0x04*/ u8 activeA;
+    /*0x05*/ u8 stopA;
+    /*0x06*/ u8 fadeLen;   // frames to fade out over (0: no fade)
+    /*0x07*/ u8 fadeCount;
+    /*0x08*/ u32 voiceB;
+    /*0x0C*/ u8 activeB;
+    /*0x0D*/ u8 stopB;
+    /*0x0E*/ u8 _0E[2];
+} LoopSfxState; // size: 0x10
+
 void fn_800528B4(void);
 
 BOOL fn_80062578(void);
+void fn_800625A4(s32 index, s8 step);
 void fn_800626EC(s32 index);
 void fn_80062674(s32 index);
 void fn_80062744(void);
@@ -39,6 +61,8 @@ void fn_8006282C(void);
 s32 fn_8006285C(void);
 u32 fn_800628D4(s32 kind);
 void fn_80062948(void);
+void fn_8006295C(void);
+void initializeUnknown(void);
 void fn_80062A74(void);
 void fn_80062BE4(Vec* pos);
 void fn_80062C24(Vec* pos);

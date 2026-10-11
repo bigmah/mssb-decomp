@@ -9,6 +9,7 @@
 #include "main/file_80008E00.h"
 #include "C3/control.h"
 #include "musyx/musyx.h"
+#include "dolphin/os.h"
 
 extern SoundManager lbl_800EF808;
 extern SoundGroupRequest lbl_80108B84;
@@ -20,7 +21,12 @@ extern s8 lbl_80108BF0[][0x36];
 extern u16 lbl_80108DF4[0x22];
 extern u16 lbl_80108E38[0x46];
 extern u32 lbl_803C663C[4];
-extern u8 lbl_803C66B0[0x64];
+extern TutorialSteps lbl_803C66B0;
+extern LoopSfxState lbl_803C6714;
+extern u8 lbl_803CB888;
+extern u8 lbl_803CB889;
+extern char lbl_800E6970[]; // "...(%d) Step No %d \n"
+extern char lbl_800E69A8[]; // "sound end \n"
 extern s32 lbl_803CBD0C;
 extern u8 lbl_8034E9A0[];
 extern CharModelTable lbl_8036E548;
@@ -296,25 +302,36 @@ void SetMenuNumber(void) {
 // .text:0x80062578 size:0x2C
 BOOL fn_80062578(void) {
     BOOL ret = FALSE;
-    if (lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
+    if (lbl_803C66B0.step[0] == 0 && lbl_803C66B0.step[1] == 0) {
         ret = TRUE;
     }
     return ret;
 }
 
 // .text:0x800625A4 size:0xD0
-void fn_800625A4(void) {
-    return;
+// NONMATCHING 98%: the unrolled clear stores the loop counter's zero register (r4) instead of a fresh li r0,0
+#if NONMATCHING
+void fn_800625A4(s32 index, s8 step) {
+    s32 i;
+    s32 port = ((u8*)&g_d_GameSettings)[0x10] == 0 ? 0 : index; // TODO type
+
+    if (lbl_803C66B0.active[port] != 0) {
+        OSReport(lbl_800E6970, port, lbl_803C66B0.step[port]);
+    }
+    lbl_803C66B0.step[index] = step;
+    for (i = 0; i < 14; i++) {
+        lbl_803C66B0.steps[i][index + 1] = 0;
+    }
 }
+#endif
 
 
 // fn_800626EC, size:0x58
 void fn_800626EC(s32 index) {
     if (((u8*)&g_d_GameSettings)[0x10] == 0) {
-        lbl_803C66B0[0x55] = 1;
+        lbl_803C66B0.active[0] = 1;
     } else {
-        u8* entry = lbl_803C66B0 + index;
-        entry[0x55] = 1;
+        lbl_803C66B0.active[index] = 1;
     }
     lbl_803C663C[index]++;
 }
@@ -324,15 +341,11 @@ void fn_80062674(s32 index) {
     lbl_803C663C[index]--;
     if ((s32)lbl_803C663C[index] == 0) {
         if (((u8*)&g_d_GameSettings)[0x10] == 0) {
-            lbl_803C66B0[0x55] = 0;
+            lbl_803C66B0.active[0] = 0;
         } else {
-            u8* entry = lbl_803C66B0 + index;
-            entry[0x55] = 0;
+            lbl_803C66B0.active[index] = 0;
         }
-        {
-            u8* entry = lbl_803C66B0 + index;
-            entry[0x5D] = 0;
-        }
+        lbl_803C66B0.step[index] = 0;
     }
 }
 
@@ -396,36 +409,84 @@ u32 fn_800628D4(s32 kind) {
 }
 #endif
 
-extern u8 lbl_803C6714[];
-
 // fn_80062948, size:0x14
 void fn_80062948(void) {
-    *(u8*)(lbl_803C6714 + 0xd) = 0x1;
+    lbl_803C6714.stopB = 1;
 }
 
 // .text:0x8006295C size:0xF4
 void fn_8006295C(void) {
-    return;
+    if (lbl_800EF808.unk398 != 0) {
+        if (lbl_803C6714.activeB == 0) {
+            lbl_803C6714.voiceB = sndFXStartEx(0, lbl_803CB889, 0x3F, 0);
+            lbl_803C6714.activeB = 1;
+            lbl_803C6714.stopB = 0;
+        }
+        if (lbl_803C6714.stopB != 0) {
+            sndFXKeyOff(lbl_803C6714.voiceB);
+            lbl_803C6714.voiceB = 0;
+            lbl_803C6714.stopB = 0;
+            lbl_803C6714.activeB = 0;
+            ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+        }
+    } else {
+        sndFXKeyOff(lbl_803C6714.voiceB);
+        lbl_803C6714.voiceB = 0;
+        lbl_803C6714.stopB = 0;
+        lbl_803C6714.activeB = 0;
+        OSReport(lbl_800E69A8);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 
 
 // initializeUnknown, size:0x24
 void initializeUnknown(void) {
     lbl_8034E9A0[0x48B3] = 0;
-    *(u32*)lbl_803C6714 = 0;
-    lbl_803C6714[5] = 0;
-    lbl_803C6714[4] = 0;
+    lbl_803C6714.voiceA = 0;
+    lbl_803C6714.stopA = 0;
+    lbl_803C6714.activeA = 0;
 }
 
 // fn_80062A74, size:0x20
 void fn_80062A74(void) {
-    lbl_803C6714[5] = 1;
+    lbl_803C6714.stopA = 1;
     lbl_8034E9A0[0x48B3] = 1;
 }
 
 // .text:0x80062A94 size:0x150
 void fn_80062A94(void) {
-    return;
+    if (lbl_800EF808.unk398 != 0) {
+        if (lbl_803C6714.activeA == 0) {
+            lbl_803C6714.voiceA = sndFXStartEx(0x1E4, lbl_803CB888, 0x3F, 0);
+            lbl_803C6714.activeA = 1;
+            lbl_803C6714.stopA = 0;
+            lbl_803C6714.fadeLen = 0;
+            lbl_803C6714.fadeCount = 0;
+        }
+        if (lbl_803C6714.fadeLen != 0) {
+            lbl_803C6714.fadeCount++;
+            if (lbl_803C6714.fadeCount >= lbl_803C6714.fadeLen) {
+                lbl_803C6714.stopA = 1;
+            } else {
+                sndFXCtrl(lbl_803C6714.voiceA, 7, lbl_803CB888 - lbl_803CB888 * lbl_803C6714.fadeCount / lbl_803C6714.fadeLen);
+            }
+        }
+        if (lbl_803C6714.stopA != 0) {
+            sndFXKeyOff(lbl_803C6714.voiceA);
+            lbl_803C6714.stopA = 0;
+            lbl_803C6714.voiceA = 0;
+            lbl_803C6714.activeA = 0;
+            ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+        }
+    } else {
+        sndFXKeyOff(lbl_803C6714.voiceA);
+        lbl_803C6714.voiceA = 0;
+        lbl_803C6714.stopA = 0;
+        lbl_803C6714.activeA = 0;
+        OSReport(lbl_800E69A8);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 
 // .text:0x80062BE4 size:0x40
