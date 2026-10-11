@@ -390,8 +390,32 @@ void fn_8002244C(s32 unused, s32* hdr, s32 arg) {
 }
 
 // .text:0x8002254C size:0xD4
-void fn_8002254C(void) {
-    return;
+void fn_8002254C(s32 unused, s32* hdr, s32 index) {
+    s32 aramAddr;
+    s8 next;
+    s32 h;
+    hdr = (s32*)((u8*)hdr + *hdr);
+    aramAddr = lbl_803716B8.aramAddrs[0][index];
+    h = lbl_803716B8.head;
+    next = (h + 1) % ARAM_QUEUE_LEN;
+    if (next == lbl_803716B8.tail) {
+        return;
+    }
+    if (hdr == NULL && fn_80022620 == NULL) {
+        return;
+    }
+    {
+        AramQueueEntry* e;
+        lbl_803716B8.busy = 1;
+        e = &lbl_803716B8.queue[lbl_803716B8.head];
+        e->entry = &lbl_800EFD38[index];
+        e->dst = hdr;
+        e->mode = 3;
+        e->aramAddr = aramAddr;
+        e->callback = fn_80022620;
+        e->user = NULL;
+        lbl_803716B8.head = next;
+    }
 }
 
 // .text:0x80022634 size:0x16C
