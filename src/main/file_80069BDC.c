@@ -323,8 +323,74 @@ void fn_8006A824(TexSet* set, s32 idx, f32 alpha) {
 }
 
 // .text:0x8006AC24 size:0x348
-void fn_8006AC24(void) {
-    return;
+void fn_8006AC24(DrawNode* node) {
+    switch (node->kind) {
+    case 0: {
+        Mtx m;
+        Mtx44 p;
+        PSMTXIdentity(m);
+        C_MTXOrtho(p, -23.0f, 448.0f, 0.0f, 608.0f, -100.0f, 100.0f);
+        GXSetProjection(p, GX_ORTHOGRAPHIC);
+        GXLoadPosMtxImm(m, GX_PNMTX0);
+        GXSetCurrentMtx(GX_PNMTX0);
+        fn_80069BDC(node->texSet, node->texIdx, node->alpha, node->texIdx2, node->alpha2);
+        break;
+    }
+    case 1: {
+        Mtx m;
+        Mtx44 p;
+        PSMTXIdentity(m);
+        C_MTXOrtho(p, -23.0f, 448.0f, 0.0f, 608.0f, -100.0f, 100.0f);
+        GXSetProjection(p, GX_ORTHOGRAPHIC);
+        GXLoadPosMtxImm(m, GX_PNMTX0);
+        GXSetCurrentMtx(GX_PNMTX0);
+        fn_8006A824(node->texSet, node->texIdx, node->alpha);
+        break;
+    }
+    case 2: {
+        Mtx m;
+        Mtx44 p;
+        PSMTXIdentity(m);
+        C_MTXOrtho(p, 0.0f, 448.0f, 0.0f, 608.0f, -100.0f, 100.0f);
+        GXSetProjection(p, GX_ORTHOGRAPHIC);
+        GXLoadPosMtxImm(m, GX_PNMTX0);
+        GXSetCurrentMtx(GX_PNMTX0);
+        fn_8006A500(node->texSet, node->texIdx, node->alpha);
+        break;
+    }
+    case 3: {
+        Mtx m;
+        Mtx44 p;
+        PSMTXIdentity(m);
+        C_MTXOrtho(p, 0.0f, 448.0f, 0.0f, 608.0f, -100.0f, 100.0f);
+        GXSetProjection(p, GX_ORTHOGRAPHIC);
+        GXLoadPosMtxImm(m, GX_PNMTX0);
+        GXSetCurrentMtx(GX_PNMTX0);
+        fn_8006A194(node->texSet, node->texIdx, node->alpha);
+        break;
+    }
+    case 4: {
+        Mtx m;
+        Mtx44 p;
+        PSMTXIdentity(m);
+        C_MTXOrtho(p, 0.0f, 448.0f, 0.0f, 640.0f, 0.0f, 1.0f);
+        GXSetProjection(p, GX_ORTHOGRAPHIC);
+        GXLoadPosMtxImm(m, GX_PNMTX0);
+        GXSetCurrentMtx(GX_PNMTX0);
+        gOz_GXSetTexture(4, 0, 0);
+        GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+        GXPosition3f32(0.0f, 0.0f, -0.5f);
+        GXColor4u8(0, 0, 0, (u8)(255.0f * node->alpha / 30.0f));
+        GXPosition3f32(640.0f, 0.0f, -0.5f);
+        GXColor4u8(0, 0, 0, (u8)(255.0f * node->alpha / 30.0f));
+        GXPosition3f32(640.0f, 448.0f, -0.5f);
+        GXColor4u8(0, 0, 0, (u8)(255.0f * node->alpha / 30.0f));
+        GXPosition3f32(0.0f, 448.0f, -0.5f);
+        GXColor4u8(0, 0, 0, (u8)(255.0f * node->alpha / 30.0f));
+        GXEnd();
+        break;
+    }
+    }
 }
 
 // .text:0x8006AF6C size:0x30
