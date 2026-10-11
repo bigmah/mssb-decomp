@@ -1172,9 +1172,93 @@ u8 fn_8002AC68(Emitter* e, Particle* p) {
 #endif
 
 // .text:0x8002B014 size:0x3EC
-void fn_8002B014(void) {
-    return;
+// NONMATCHING 36%: the original inlines the z-sort (fn_80031F34) twice
+#if NONMATCHING
+s32 fn_8002B014(Emitter* e) {
+    s32 alive = 0;
+    Particle* p;
+    Particle** link;
+    Particle* lastDead;
+    Particle* deadHead;
+
+    if (e->count != 0) {
+        p = fn_80031F34(e->particles, e->count);
+        e->particles = p;
+        link = &e->particles;
+        lastDead = NULL;
+        deadHead = NULL;
+        // note: a particle with life 0 here would never be advanced past (as in the original)
+        do {
+            if (p->life != 0) {
+                if (p->delay > 0) {
+                    link = &p->next;
+                    p->delay--;
+                    alive++;
+                } else if (fn_8002AC68(e, p)) {
+                    *link = p->next;
+                    if (lastDead != NULL) {
+                        lastDead->next = p;
+                    } else {
+                        deadHead = p;
+                    }
+                    lastDead = p;
+                    p->next = NULL;
+                    e->count--;
+                } else {
+                    link = &p->next;
+                    alive++;
+                }
+            }
+            p = *link;
+        } while (p != NULL);
+        if (deadHead != NULL) {
+            for (p = deadHead; p != NULL; p = p->next) {
+                p->unk4C = 0;
+                p->delay = 0;
+            }
+            FreeParticles(deadHead);
+        }
+    }
+    if (e->u.tE.subCount != 0) {
+        p = fn_80031F34(e->u.tE.sub, e->u.tE.subCount);
+        e->u.tE.sub = p;
+        link = &e->u.tE.sub;
+        lastDead = NULL;
+        deadHead = NULL;
+        do {
+            if (p->life != 0) {
+                if (p->delay > 0) {
+                    link = &p->next;
+                    p->delay--;
+                    alive++;
+                } else if (fn_8002A85C(e, p)) {
+                    *link = p->next;
+                    if (lastDead != NULL) {
+                        lastDead->next = p;
+                    } else {
+                        deadHead = p;
+                    }
+                    lastDead = p;
+                    p->next = NULL;
+                    e->u.tE.subCount--;
+                } else {
+                    link = &p->next;
+                    alive++;
+                }
+            }
+            p = *link;
+        } while (p != NULL);
+        if (deadHead != NULL) {
+            for (p = deadHead; p != NULL; p = p->next) {
+                p->unk4C = 0;
+                p->delay = 0;
+            }
+            FreeParticles(deadHead);
+        }
+    }
+    return alive == 0;
 }
+#endif
 
 // .text:0x8002B400 size:0x3F8
 void fn_8002B400(void) {
