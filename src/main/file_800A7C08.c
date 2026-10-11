@@ -852,7 +852,53 @@ void fn_800A98FC(void) {
 
 // .text:0x800A9CF8 size:0x13C
 void fn_800A9CF8(void) {
-    return;
+    char* fileName = lbl_802EF330.fileName;
+    CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
+    CardMountTask* parent = (CardMountTask*)task->parent;
+    s32 res;
+
+    switch (task->step) {
+    case 0:
+        if (parent->mode == 1) {
+            res = CARDDeleteAsync(parent->chan, fileName, NULL);
+            if (res < 0) {
+                fn_800ACD64(res);
+                task->step = 3;
+            } else {
+                task->step++;
+            }
+        } else {
+            res = CARDFastDelete(parent->chan, fileName);
+            if (res < 0) {
+                fn_800ACD64(res);
+                task->step = 3;
+            } else {
+                task->step += 2;
+            }
+        }
+        break;
+    case 1:
+        fn_800ACD64(CARDGetResultCode(parent->chan));
+        switch (lbl_803CC1B8->result) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            task->step++;
+            break;
+        default:
+            task->step = 3;
+            break;
+        }
+        break;
+    case 2:
+        parent->result = 1;
+        fn_800B0A14_removeQueue(parent);
+        break;
+    case 3:
+        parent->result = 2;
+        fn_800B0A14_removeQueue(parent);
+        break;
+    }
 }
 
 // .text:0x800A9E34 size:0x98
