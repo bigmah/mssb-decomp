@@ -1,53 +1,73 @@
 #include "game/sta_c6.h"
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
+#include "game/auto_00_000D8A10_text.h"
 #include "Dolphin/stl.h"
 #include "Dolphin/os.h"
 #include "C3/control.h"
-extern u8 lbl_3_data_19024[];
-
+#include "C3/geoPalette.h"
+#include "main/file_800B4A44.h"
+// main/file_800BD3EC.h clashes with UnknownHomes_Static.h (fn_800BD670)
+void fn_800BD478(GameActor** actor, struct ActorLayoutFile* layout);
+void fn_800BD548(ActorObject* obj, u8 numLights, ...);
+#include "main/file_80011640.h"
+#include "musyx/musyx.h"
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
-extern u32 lbl_3_data_19018[];
+#include "static/UnknownHomes_Static.h"
 
-extern f32 lbl_3_rodata_2B9C;
-extern f32 lbl_3_rodata_2BA0;
-extern f32 lbl_3_rodata_2BA4;
+// Toy Field.
+
+#pragma dont_inline on
+
+extern void PSMTXIdentity(Mtx);
+extern void* _OSAllocFromHeap(s32 align, s32 size);
+extern void DCStoreRange(void* addr, u32 numBytes);
+extern s32 fn_8005268C(void);
+extern void* fn_80052734(s32);
+extern u8 fn_800B3C04(s32 viewIndex, GameActor* actor, Mtx camera);
+// rep_1D58 (stadium objects)
+void fn_3_B8414(Vec* min, Vec* max);
+void fn_3_B8464(Mtx m, void* shadow);
+void fn_3_B8574(void);
+void fn_3_B97DC(ActorObject* obj, void* animBank);
+void fn_3_B9D68(void* names, s32 n, void** files, u32* out);
+
+// View matrix of the current camera.
+#define CUR_VIEW() (((camera_803c639c_s*)fn_80052734(fn_8005268C()))->view)
+#define CUR_CAMERA_VIEW() (fn_80052768_getCamera(fn_8005268C())->view)
+
+extern StaC6List lbl_3_common_bss_350E4;
+extern u8 lbl_3_data_19018[3][4];   // overlay colours picked by fn_3_E6410 / fn_3_E64A8
+extern StaC6Data lbl_3_data_19024;
+extern u8 lbl_3_data_19610[];       // TODO type: file name table for fn_3_B9D68 (47 files)
+extern s8 lbl_3_data_1963F;         // object index the ball touched
+extern s8 lbl_3_data_19640;
+extern Vec lbl_3_data_19644[7];     // wall panel positions
+extern f32 lbl_3_data_19698[7];     // wall panel rotations
+extern StaC6Data2 lbl_3_data_196B4;
+extern u8 lbl_3_data_1976C;         // nonzero: show the lit overlay (bone 2)
+extern u8 lbl_80366158[];
+extern u16 lbl_3_data_81DC[];       // per stadium: crowd sound id base
+extern MinigameSoundParams lbl_3_data_8404[];
+extern MinigameSoundParams lbl_3_data_84B8[];
 
 extern f32 lbl_3_rodata_2B90;
 extern f32 lbl_3_rodata_2B94;
 extern f32 lbl_3_rodata_2B98;
-extern f32 fn_800B4C40(void*);
-extern void fn_800B4CA0(void*, f32);
-extern void AnimateActorBones(void*);
-#include "static/UnknownHomes_Static.h"
-
-extern u8 lbl_3_common_bss_350E4[];
-#pragma dont_inline on
-
-extern u8 lbl_3_data_196B4[];
-extern u8 lbl_8036E548[];
+extern f32 lbl_3_rodata_2B9C;
+extern f32 lbl_3_rodata_2BA0;
+extern f32 lbl_3_rodata_2BA4;
 extern char lbl_3_rodata_2BB0[];
 extern char lbl_3_rodata_2BBC[];
 
-extern u8 lbl_3_common_bss_350E4[];
-
-typedef struct { f32 x, y, z; } E751CV;
-extern E751CV lbl_3_data_19644[];
-extern f32 lbl_3_data_19698[];
-extern s32 fn_8005268C(void);
-extern u8* fn_80052734(s32);
-extern u8 fn_800B3C04(s32, void*, void*);
-extern void fn_800BDA24(void*);
-extern void fn_800BDA94(void*, void*);
-extern s8 lbl_3_data_1963F;
-extern s8 lbl_3_data_19640;
-extern u8 lbl_80366158[];
 // This unit's .bss (AE50..AEE0) as statics, declared in reverse address order.
 // AE52..AE7A are single bytes so the pool has no alignment gaps; AE51 is its own
 // object so the store compiles to stb 1(base) with no extra addi.
-static u8* lbl_3_bss_AEB4[11];
-static u8 lbl_3_bss_AEAD[7];
-static u8 lbl_3_bss_AEAC;
+static StaC6Spot* lbl_3_bss_AEB4[11]; // [0]: field panel spots in use
+static StaC6Pad* lbl_3_bss_AEB0;      // wall panels in use
+static s8 lbl_3_bss_AEAE;             // layout index
+static u8 lbl_3_bss_AEAD;             // number of field panel objects
+static u8 lbl_3_bss_AEAC;             // number of panels (kinds 0-15)
 static s32 lbl_3_bss_AE88[9];
 static s32 lbl_3_bss_AE84;
 static u8 lbl_3_bss_AE80[4];
@@ -57,66 +77,68 @@ static u8 lbl_3_bss_AE52, lbl_3_bss_AE53, lbl_3_bss_AE54, lbl_3_bss_AE55, lbl_3_
 static u8 lbl_3_bss_AE51;
 static u8 lbl_3_bss_AE50;
 
+#define BONE(obj, i) ((obj)->actor->boneArray[i])
+
 // .text:0x000E59B4 size:0x68 mapped:0x80724A48
-void fn_3_E59B4(u8* a) {
-    void* o = **(void***)(a + 0x74);
-    if (lbl_3_rodata_2B90 + fn_800B4C40(o) > lbl_3_rodata_2B94) {
-        fn_800B4CA0(o, lbl_3_rodata_2B98);
+void fn_3_E59B4(StaC6Obj* o) {
+    GameActor* actor = o->actorObj->actor;
+    if (lbl_3_rodata_2B90 + fn_800B4C40(actor) > lbl_3_rodata_2B94) {
+        fn_800B4CA0(actor, lbl_3_rodata_2B98);
     }
-    AnimateActorBones(o);
+    AnimateActorBones(actor);
 }
 
 // .text:0x000E5A1C size:0x68 mapped:0x80724AB0
-void fn_3_E5A1C(u8* a) {
-    void* o = **(void***)(a + 0x74);
-    if (lbl_3_rodata_2B90 + fn_800B4C40(o) > lbl_3_rodata_2B9C) {
-        fn_800B4CA0(o, lbl_3_rodata_2BA0);
+void fn_3_E5A1C(StaC6Obj* o) {
+    GameActor* actor = o->actorObj->actor;
+    if (lbl_3_rodata_2B90 + fn_800B4C40(actor) > lbl_3_rodata_2B9C) {
+        fn_800B4CA0(actor, lbl_3_rodata_2BA0);
     }
-    AnimateActorBones(o);
+    AnimateActorBones(actor);
 }
 
 // .text:0x000E5A84 size:0x238 mapped:0x80724B18
-typedef struct { f32 x, y, z, r, pad; } E751CP;
-extern void PSMTXIdentity(Mtx);
-void fn_3_E5A84(u8* a) {
+// Place the object's bones at its spot.
+void fn_3_E5A84(StaC6Obj* o) {
     Control c;
     Mtx m;
-    u8* n;
+    GameBone* bone;
     s32 i;
     PSMTXIdentity(m);
     c.type = 0;
-    if (a[0xC1] < 8) {
-        CTRLSetTranslation(&c, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].x, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].y, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].z);
-        CTRLSetRotation(&c, 0.0f, ((E751CP**)lbl_3_bss_AEB4)[0][a[0xC0]].r, 0.0f);
+    if (o->kind < 8) {
+        CTRLSetTranslation(&c, lbl_3_bss_AEB4[0][o->index].pos.x, lbl_3_bss_AEB4[0][o->index].pos.y, lbl_3_bss_AEB4[0][o->index].pos.z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_bss_AEB4[0][o->index].rotY, 0.0f);
     } else {
-        CTRLSetTranslation(&c, lbl_3_data_19644[a[0xC3]].x, lbl_3_data_19644[a[0xC3]].y, lbl_3_data_19644[a[0xC3]].z);
-        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[a[0xC3]], 0.0f);
+        CTRLSetTranslation(&c, lbl_3_data_19644[o->slot].x, lbl_3_data_19644[o->slot].y, lbl_3_data_19644[o->slot].z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[o->slot], 0.0f);
     }
     CTRLBuildMatrix(&c, m);
-    for (i = 0; i < *(u16*)(**(u8***)(a + 0x74) + 6); i++) {
-        n = ((u8**)*(u8**)(**(u8***)(a + 0x74) + 0x18))[i];
-        CTRLBuildMatrix((Control*)(n + 0x1C), *(void**)(n + 0xEC));
-        PSMTXConcat(m, *(void**)(n + 0xEC), *(void**)(n + 0xEC));
-        PSMTXCopy(*(void**)(n + 0xEC), (void*)(*(u8**)(n + 0x14) + 0x18));
+    for (i = 0; i < o->actorObj->actor->totalBones; i++) {
+        bone = o->actorObj->actor->boneArray[i];
+        CTRLBuildMatrix(&bone->orientCtrl.base, bone->forwardMtx);
+        PSMTXConcat(m, bone->forwardMtx, bone->forwardMtx);
+        PSMTXCopy(bone->forwardMtx, bone->dispObj->worldMatrix);
     }
-    if (*(u8***)(a + 0x9C) != NULL) {
-        for (i = 0; i < *(u16*)(**(u8***)(a + 0x9C) + 6); i++) {
-            n = ((u8**)*(u8**)(**(u8***)(a + 0x9C) + 0x18))[i];
-            CTRLBuildMatrix((Control*)(n + 0x1C), *(void**)(n + 0xEC));
-            PSMTXConcat(m, *(void**)(n + 0xEC), *(void**)(n + 0xEC));
-            if (*(u8**)(n + 0x14) != NULL) {
-                PSMTXCopy(*(void**)(n + 0xEC), (void*)(*(u8**)(n + 0x14) + 0x18));
+    if (o->subObj != NULL) {
+        for (i = 0; i < o->subObj->actor->totalBones; i++) {
+            bone = o->subObj->actor->boneArray[i];
+            CTRLBuildMatrix(&bone->orientCtrl.base, bone->forwardMtx);
+            PSMTXConcat(m, bone->forwardMtx, bone->forwardMtx);
+            if (bone->dispObj != NULL) {
+                PSMTXCopy(bone->forwardMtx, bone->dispObj->worldMatrix);
             }
         }
-        (**(u8***)(a + 0x9C))[0x98] = fn_800B3C04(0, **(u8***)(a + 0x9C), fn_80052734(fn_8005268C()) + 0x40);
+        o->subObj->actor->flags = fn_800B3C04(0, o->subObj->actor, CUR_VIEW());
     }
-    (**(u8***)(a + 0x74))[0x98] = fn_800B3C04(0, **(u8***)(a + 0x74), fn_80052734(fn_8005268C()) + 0x40);
+    o->actorObj->actor->flags = fn_800B3C04(0, o->actorObj->actor, CUR_VIEW());
 }
 
 // .text:0x000E5CBC size:0x158 mapped:0x80724D50
-void fn_3_E5CBC(u8* p, f32 t) {
-    u8* b = *(u8**)(p + 0xAC);
-    u8* a = *(u8**)(p + 0xA8);
+// Blend the overlay colour from colorFrom (t = 0) to colorTo (t = 1).
+void fn_3_E5CBC(StaC6Obj* o, f32 t) {
+    u8* from = o->colorFrom;
+    u8* to = o->colorTo;
     f32 r;
     if (t > 1.0f) {
         t = 1.0f;
@@ -124,15 +146,16 @@ void fn_3_E5CBC(u8* p, f32 t) {
         t = lbl_3_rodata_2BA4;
     }
     r = 1.0f - t;
-    p[0xA4] = (u8)(r * (f32)b[0] + t * (f32)a[0]);
-    p[0xA5] = (u8)(r * (f32)b[1] + t * (f32)a[1]);
-    p[0xA6] = (u8)(r * (f32)b[2] + t * (f32)a[2]);
-    p[0xA7] = (u8)(r * (f32)b[3] + t * (f32)a[3]);
+    o->color[0] = (u8)(r * (f32)from[0] + t * (f32)to[0]);
+    o->color[1] = (u8)(r * (f32)from[1] + t * (f32)to[1]);
+    o->color[2] = (u8)(r * (f32)from[2] + t * (f32)to[2]);
+    o->color[3] = (u8)(r * (f32)from[3] + t * (f32)to[3]);
 }
 
 // .text:0x000E5E14 size:0x5C mapped:0x80724EA8
+// Bytes per colour of a display object's colour array.
 s32 fn_3_E5E14(u8* p) {
-    switch ((u8)((s32)(*(u8**)(p + 4))[6] >> 4)) {
+    switch ((u8)((s32)((struct DODisplayObj*)p)->colorData->quantizeInfo >> 4)) {
     case 0:
     case 3:
         return 2;
@@ -148,6 +171,7 @@ s32 fn_3_E5E14(u8* p) {
 }
 
 // .text:0x000E5E70 size:0x17C mapped:0x80724F04
+// Decode one colour of format fmt >> 4 to RGBA.
 void fn_3_E5E70(u8* out, u8 fmt, void* src) {
     u16* s16p = src;
     u32* s32p = src;
@@ -195,21 +219,22 @@ void fn_3_E5E70(u8* out, u8 fmt, void* src) {
 }
 
 // .text:0x000E5FEC size:0x424 mapped:0x80725080
-void fn_3_E5FEC(void) {
+void fn_3_E5FEC(StaC6Obj* o) {
     return;
 }
 
 // .text:0x000E6410 size:0x98 mapped:0x807254A4
-void fn_3_E6410(u8* p) {
-    u32* list[3];
-    u32** w = list;
+// Pick a random overlay colour other than colorFrom.
+void fn_3_E6410(StaC6Obj* o) {
+    u8* list[3];
+    u8** w = list;
     s32 i;
     for (i = 0; i < 3; i++) {
-        if (*(u32**)(p + 0xAC) != &lbl_3_data_19018[i]) {
-            *w++ = &lbl_3_data_19018[i];
+        if (o->colorFrom != lbl_3_data_19018[i]) {
+            *w++ = lbl_3_data_19018[i];
         }
     }
-    *(u32**)(p + 0xA8) = list[rand() % 2];
+    o->colorTo = list[rand() % 2];
 }
 
 // .text:0x000E64A8 size:0x80 mapped:0x8072553C
@@ -217,172 +242,170 @@ u32* fn_3_E64A8(void) {
     u8 v = rand() % 3;
     switch (v) {
     case 0:
-        return lbl_3_data_19018;
+        return (u32*)lbl_3_data_19018[0];
     case 1:
-        return lbl_3_data_19018 + 1;
+        return (u32*)lbl_3_data_19018[1];
     default:
-        return lbl_3_data_19018 + 2;
+        return (u32*)lbl_3_data_19018[2];
     }
 }
 
 // .text:0x000E6528 size:0x50 mapped:0x807255BC
-void fn_3_E6528(u8* p) {
-    memcpy(p + 0xA4, *(void**)(p + 0xB4), 4);
-    *(void**)(p + 0xBC) = lbl_3_data_19024 + 0x64;
-    p[0xC2] = 0;
+void fn_3_E6528(StaC6Obj* o) {
+    memcpy(o->color, o->colorIdle, 4);
+    o->bodyColor = lbl_3_data_19024.bodyColors[1];
+    o->lit = 0;
 }
 
 // .text:0x000E6578 size:0xC0 mapped:0x8072560C
-void fn_3_E6578(u8* a) {
-    u8** p;
-    u8* q;
-    u8* r;
+// Pick the overlay texture for the panel kind.
+void fn_3_E6578(StaC6Obj* o) {
+    ActorObject* sub;
+    struct DODisplayObj* disp;
+    TextureData* tex;
 
-    p = *(u8***)(a + 0x9C);
-    if (p == NULL) {
+    sub = o->subObj;
+    if (sub == NULL) {
         return;
     }
-    q = *(u8**)(*(u8**)(*(u8**)(*p + 0x18) + 4) + 0x14);
-    r = *(u8**)(q + 8);
-    if ((*(u8**)(*(u8**)(q + 0x10) + 4))[0x20] != 3) {
+    disp = BONE(sub, 1)->dispObj;
+    tex = disp->textureData;
+    if (disp->displayData->displayStateList[2].id != 3) {
         OSPanic(lbl_3_rodata_2BB0, 0x713, lbl_3_rodata_2BBC);
     }
-    if (a[0xC1] == 2) {
-        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 1;
-    } else if (a[0xC1] == 10) {
-        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 0;
+    if (o->kind == 2) {
+        tex->texturePalette->tex[4].texIndex = 1;
+    } else if (o->kind == 10) {
+        tex->texturePalette->tex[4].texIndex = 0;
     } else {
-        *(s16*)(*(u8**)(r + 0xC) + 0xA0) = 4;
+        tex->texturePalette->tex[4].texIndex = 4;
     }
 }
 
 // .text:0x000E6638 size:0x4C mapped:0x807256CC
-void fn_3_E6638(u8* a) {
-    u8** c = *(u8***)(*(u8**)(*(u8**)(a + 0x74)) + 0x18);
-    u8* d;
-    d = c[0];
-    *(u32*)(d + 0x14) = *(u32*)(d + 0x18);
-    c = *(u8***)(*(u8**)(*(u8**)(a + 0x74)) + 0x18);
-    d = c[1];
-    *(u32*)(d + 0x14) = *(u32*)(d + 0x18);
-    c = *(u8***)(*(u8**)(*(u8**)(a + 0x74)) + 0x18);
-    d = c[2];
-    *(u32*)(d + 0x14) = *(u32*)(d + 0x18);
+void fn_3_E6638(StaC6Obj* o) {
+    GameBone* b;
+    b = BONE(o->actorObj, 0);
+    b->dispObj = b->baseDispObj;
+    b = BONE(o->actorObj, 1);
+    b->dispObj = b->baseDispObj;
+    b = BONE(o->actorObj, 2);
+    b->dispObj = b->baseDispObj;
 }
 
 // .text:0x000E6684 size:0x98 mapped:0x80725718
-void fn_3_E6684(u8* p) {
-    u32* o;
+void fn_3_E6684(StaC6Obj* o) {
+    GameBone* b;
     s32 i;
     for (i = 0; i < 3; i++) {
-        o = (*(u32***)(**(u8***)(p + 0x74) + 0x18))[i];
+        b = BONE(o->actorObj, i);
         if (lbl_3_bss_AE80[i + 1] != 0) {
-            o[0x14 / 4] = o[0x18 / 4];
+            b->dispObj = b->baseDispObj;
         } else {
-            o[0x14 / 4] = 0;
+            b->dispObj = NULL;
         }
     }
 }
 
 // .text:0x000E671C size:0x7C mapped:0x807257B0
-void fn_3_E671C(u8* a) {
-    u8* o = **(u8***)(a + 0x74);
-    u8* t;
-    t = ((u8**)*(u8**)(o + 0x18))[0];
-    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
-    t = ((u8**)*(u8**)(o + 0x18))[1];
-    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
-    t = ((u8**)*(u8**)(o + 0x18))[2];
-    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
-    t = ((u8**)*(u8**)(o + 0x18))[3];
-    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
-    t = ((u8**)*(u8**)(o + 0x18))[4];
-    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
-    t = ((u8**)*(u8**)(o + 0x18))[5];
-    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
-    t = ((u8**)*(u8**)(o + 0x18))[6];
-    *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+void fn_3_E671C(StaC6Obj* o) {
+    GameActor* actor = o->actorObj->actor;
+    GameBone* b;
+    b = actor->boneArray[0];
+    b->dispObj = b->baseDispObj;
+    b = actor->boneArray[1];
+    b->dispObj = b->baseDispObj;
+    b = actor->boneArray[2];
+    b->dispObj = b->baseDispObj;
+    b = actor->boneArray[3];
+    b->dispObj = b->baseDispObj;
+    b = actor->boneArray[4];
+    b->dispObj = b->baseDispObj;
+    b = actor->boneArray[5];
+    b->dispObj = b->baseDispObj;
+    b = actor->boneArray[6];
+    b->dispObj = b->baseDispObj;
 }
 
 // .text:0x000E6798 size:0x5C mapped:0x8072582C
-void fn_3_E6798(u8* a) {
-    u8* o = **(u8***)(a + 0x74);
+// Show the bones of the targets that were hit.
+void fn_3_E6798(StaC6Obj* o) {
+    GameActor* actor = o->actorObj->actor;
     s32 i;
     for (i = 0; i < 7; i++) {
-        if (lbl_3_data_196B4[i] != 0) {
-            u8* t = ((u8**)*(u8**)(o + 0x18))[i];
-            *(u32*)(t + 0x14) = *(u32*)(t + 0x18);
+        if (lbl_3_data_196B4.hit[i] != 0) {
+            GameBone* b = actor->boneArray[i];
+            b->dispObj = b->baseDispObj;
         } else {
-            u8* t = ((u8**)*(u8**)(o + 0x18))[i];
-            *(u32*)(t + 0x14) = 0;
+            GameBone* b = actor->boneArray[i];
+            b->dispObj = NULL;
         }
     }
 }
 
 // .text:0x000E67F4 size:0xB4 mapped:0x80725888
-typedef struct { u8 pad[0x34]; u8 sub[0x5C]; } E67F4B;
+// Reset the targets.
 void fn_3_E67F4(void) {
     u32 i;
-    void* o;
-    u8* e;
-    u8* b;
+    GameActor* actor;
+    ActorObject* obj;
+    ActorObjectTable* t;
 
     for (i = 0; i < 7; i++) {
-        lbl_3_data_196B4[i] = 0;
-        b = *(u8**)(lbl_8036E548 + 0x6C);
-        o = *(void**)(b + i * 0x90 + 0x934);
-        e = ((E67F4B*)b)[i + 0x10].sub;
-        *(f32*)(e + 0x5C) = 20.0f;
-        e[0x59] = 1;
-        fn_800B4CA0(o, *(f32*)(*(u8**)(lbl_8036E548 + 0x6C) + i * 0x90 + 0x990));
-        AnimateActorBones(o);
+        lbl_3_data_196B4.hit[i] = 0;
+        t = lbl_8036E548.slots6C;
+        actor = t->objects[i + 16].actor;
+        obj = &t->objects[i + 16];
+        obj->time = 20.0f;
+        obj->setTime = 1;
+        fn_800B4CA0(actor, lbl_8036E548.slots6C->objects[i + 16].time);
+        AnimateActorBones(actor);
     }
 }
 
 // .text:0x000E68A8 size:0xE4 mapped:0x8072593C
-typedef struct { u8 pad[0x74]; void** p74; u8 pad2[0x24]; void** p9C; } E68A8S;
-void fn_3_E68A8(u8* a) {
-    E68A8S* s = (E68A8S*)a;
-    void* o = *s->p9C;
-    f32 t = fn_800B4C40(*s->p74) - *(f32*)((u8*)s->p74 + 0x54);
+void fn_3_E68A8(StaC6Obj* obj) {
+    StaC6Obj* o = (StaC6Obj*)(u8*)obj; // the copy (not the cast) is needed to match
+    GameActor* actor = o->subObj->actor;
+    f32 t = fn_800B4C40(o->actorObj->actor) - o->actorObj->unk54;
     if (t < 0.0f) {
         t = 0.0f;
     }
-    if (s->p9C != NULL) {
-        memcpy((u8*)s->p9C + 0x10, s, 0x44);
-        fn_800B4CA0(o, t);
-        fn_800BDA24(s->p9C);
-        ((u8*)*s->p9C)[0x98] = fn_800B3C04(0, *s->p9C, fn_80052734(fn_8005268C()) + 0x40);
-        fn_800BDA94(s->p9C, (u8*)fn_80052768_getCamera(fn_8005268C()) + 0x40);
+    if (o->subObj != NULL) {
+        memcpy(&o->subObj->worldControl, o, sizeof(GameControl));
+        fn_800B4CA0(actor, t);
+        fn_800BDA24(o->subObj);
+        o->subObj->actor->flags = fn_800B3C04(0, o->subObj->actor, CUR_VIEW());
+        fn_800BDA94(o->subObj, CUR_CAMERA_VIEW());
     }
 }
 
 // .text:0x000E698C size:0xBC mapped:0x80725A20
-void fn_3_E698C(u8* a) {
-    void* o;
+void fn_3_E698C(StaC6Obj* o) {
+    GameActor* actor;
     f32 t;
     u8 idx;
-    void* tmp;
+    GameActor* tmp;
 
-    o = tmp = **(void***)(a + 0x74);
+    actor = tmp = o->actorObj->actor;
     t = fn_800B4C40(tmp);
-    idx = a[0xC1] - 0x10;
-    if (lbl_3_data_196B4[idx] == 0) {
-        fn_800B4CA0(o, 0.0f);
-        AnimateActorBones(o);
+    idx = o->kind - 16;
+    if (lbl_3_data_196B4.hit[idx] == 0) {
+        fn_800B4CA0(actor, 0.0f);
+        AnimateActorBones(actor);
     }
-    if (lbl_3_data_196B4[idx] != 0 && t <= 60.0f) {
-        AnimateActorBones(o);
+    if (lbl_3_data_196B4.hit[idx] != 0 && t <= 60.0f) {
+        AnimateActorBones(actor);
     }
 }
 
 // .text:0x000E6A48 size:0x348 mapped:0x80725ADC
-void fn_3_E6A48(void) {
+void fn_3_E6A48(StaC6Obj* o) {
     return;
 }
 
 // .text:0x000E6D90 size:0x5C0 mapped:0x80725E24
-void fn_3_E6D90(void) {
+void fn_3_E6D90(StaC6Obj* o) {
     return;
 }
 
@@ -392,33 +415,30 @@ void fn_3_E7350(void) {
 }
 
 // .text:0x000E7364 size:0x24 mapped:0x807263F8
-typedef struct { u8 pad[0xC0]; u8 v; u8 pad2[0x27]; } E8;
 void fn_3_E7364(s32 i) {
-    lbl_3_data_19640 = ((E8*)*(u8**)lbl_3_common_bss_350E4)[i].v;
+    // objs[i].index, through a byte pointer to match (lbzx)
+    lbl_3_data_19640 = ((u8*)lbl_3_common_bss_350E4.objs + i * sizeof(StaC6Obj))[0xC0];
 }
 
 // .text:0x000E7388 size:0x9C mapped:0x8072641C
-typedef struct { u8 pad[0x90]; u8 f : 1; u8 pad2[0x57]; } E8F;
-typedef struct E7388Pair { f32 f; s32 i; } E7388Pair;
-typedef struct { E8F* arr; u8 pad[0x2C]; s32 count; } E7388G;
 void fn_3_E7388(s32 unused, E7388Pair* out) {
-    E8F* e;
+    StaC6Obj* e;
     E7388Pair* p = out;
     s32 i;
-    e = &((E7388G*)lbl_3_common_bss_350E4)->arr[((E7388G*)lbl_3_common_bss_350E4)->count - 1];
-    i = ((E7388G*)lbl_3_common_bss_350E4)->count - 1;
+    e = &lbl_3_common_bss_350E4.objs[lbl_3_common_bss_350E4.count - 1];
+    i = lbl_3_common_bss_350E4.count - 1;
     do {
-        if (!e->f) {
+        if (!e->visible) {
             p->i = i;
             p++;
         }
         e--;
     } while (i-- != 0);
-    e = &((E7388G*)lbl_3_common_bss_350E4)->arr[((E7388G*)lbl_3_common_bss_350E4)->count - 1];
-    i = ((E7388G*)lbl_3_common_bss_350E4)->count - 1;
-    p = out + ((E7388G*)lbl_3_common_bss_350E4)->count;
+    e = &lbl_3_common_bss_350E4.objs[lbl_3_common_bss_350E4.count - 1];
+    i = lbl_3_common_bss_350E4.count - 1;
+    p = out + lbl_3_common_bss_350E4.count;
     do {
-        if (e->f) {
+        if (e->visible) {
             p--;
             p->i = i;
             p->f = 1.0f;
@@ -448,20 +468,21 @@ void fn_3_E7424(void) {
 }
 
 // .text:0x000E751C size:0x120 mapped:0x807265B0
-s32 fn_3_E751C(s32 idx, Mtx m) {
+// Shadow matrix of object idx; returns its shadow.
+void* fn_3_E751C(s32 idx, Mtx m) {
     Control c;
-    u8* o;
+    StaC6Obj* o;
     c.type = 0;
-    o = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
-    if (o[0xC1] <= 7) {
-        CTRLSetTranslation(&c, ((E751CP**)lbl_3_bss_AEB4)[0][idx].x, -0.04f, ((E751CP**)lbl_3_bss_AEB4)[0][idx].z);
-        CTRLSetRotation(&c, 0.0f, (*(E751CP**)lbl_3_bss_AEB4)[idx].r, 0.0f);
+    o = &lbl_3_common_bss_350E4.objs[idx];
+    if (o->kind <= 7) {
+        CTRLSetTranslation(&c, lbl_3_bss_AEB4[0][idx].pos.x, -0.04f, lbl_3_bss_AEB4[0][idx].pos.z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_bss_AEB4[0][idx].rotY, 0.0f);
     } else {
-        CTRLSetTranslation(&c, lbl_3_data_19644[o[0xC3]].x, -0.04f, lbl_3_data_19644[o[0xC3]].z);
-        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[o[0xC3]], 0.0f);
+        CTRLSetTranslation(&c, lbl_3_data_19644[o->slot].x, -0.04f, lbl_3_data_19644[o->slot].z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[o->slot], 0.0f);
     }
     CTRLBuildMatrix(&c, m);
-    return *(s32*)(o + 0x78);
+    return o->shadow;
 }
 
 // .text:0x000E763C size:0x3F0 mapped:0x807266D0
@@ -470,12 +491,13 @@ void fn_3_E763C(void) {
 }
 
 // .text:0x000E7A2C size:0xF4 mapped:0x80726AC0
-void fn_3_E7A2C(u8* o) {
-    *(void**)(o + 0x7C) = 0;
-    *(void**)(o + 0x80) = 0;
-    *(void**)(o + 0x84) = 0;
-    *(void**)(o + 0x88) = 0;
-    switch (o[0xC1]) {
+// Set the callbacks for the object's kind.
+void fn_3_E7A2C(StaC6Obj* o) {
+    o->update = NULL;
+    o->onHit = NULL;
+    o->preDraw = NULL;
+    o->postDraw = NULL;
+    switch (o->kind) {
     case 0:
     case 1:
     case 2:
@@ -492,8 +514,8 @@ void fn_3_E7A2C(u8* o) {
     case 13:
     case 14:
     case 15:
-        *(void**)(o + 0x80) = fn_3_E7364;
-        *(void**)(o + 0x84) = fn_3_E6D90;
+        o->onHit = fn_3_E7364;
+        o->preDraw = fn_3_E6D90;
         lbl_3_bss_AEAC++;
         break;
     case 16:
@@ -503,28 +525,28 @@ void fn_3_E7A2C(u8* o) {
     case 20:
     case 21:
     case 22:
-        *(void**)(o + 0x7C) = fn_3_E698C;
-        *(void**)(o + 0x84) = fn_3_E68A8;
+        o->update = fn_3_E698C;
+        o->preDraw = fn_3_E68A8;
         break;
     case 23:
-        *(void**)(o + 0x84) = fn_3_E6798;
-        *(void**)(o + 0x88) = fn_3_E671C;
+        o->preDraw = fn_3_E6798;
+        o->postDraw = fn_3_E671C;
         break;
     case 24:
-        *(void**)(o + 0x84) = fn_3_E6684;
-        *(void**)(o + 0x88) = fn_3_E6638;
+        o->preDraw = fn_3_E6684;
+        o->postDraw = fn_3_E6638;
         break;
     case 26:
-        *(void**)(o + 0x7C) = fn_3_E59B4;
+        o->update = fn_3_E59B4;
         break;
     case 25:
-        *(void**)(o + 0x7C) = fn_3_E5A1C;
+        o->update = fn_3_E5A1C;
         break;
     }
 }
 
 // .text:0x000E7B20 size:0xFA8 mapped:0x80726BB4
-u8 fn_3_E7B20(void* a, void* b) {
+u8 fn_3_E7B20(void** files, u32* idx) {
     return 0;
 }
 
@@ -533,11 +555,10 @@ s32 fn_3_E8AC8(void) {
     if (g_d_GameSettings.StadiumID != 6) {
         return 0;
     }
-    return fn_3_E7B20(*(void**)(lbl_3_common_bss_350E4 + 0x38), *(void**)(lbl_3_common_bss_350E4 + 0x34)) != 0;
+    return fn_3_E7B20(lbl_3_common_bss_350E4.files, lbl_3_common_bss_350E4.fileIdx) != 0;
 }
 
 // .text:0x000E8B24 size:0x5F8 mapped:0x80727BB8
-void fn_3_E8B24(void) {
+void fn_3_E8B24(void** files) {
     return;
 }
-
