@@ -348,7 +348,33 @@ void fn_800A8AB0(u32 value) {
 
 // .text:0x800A8AB8 size:0xC0
 void fn_800A8AB8(void (*onShutdown)(void)) {
-    return;
+    StreamTrack* track;
+    u32 prev;
+
+    if (lbl_803CC148 == STREAM_STATE_BUSY) {
+        return;
+    }
+    prev = lbl_803CC148;
+    lbl_803CC128 = onShutdown;
+    lbl_803CC148 = STREAM_STATE_BUSY;
+    if (prev == STREAM_STATE_PLAY) {
+        DVDCancelStreamAsync(&lbl_802EF1D0, fn_800A90E4);
+        return;
+    }
+    AISetStreamPlayState(0);
+    for (track = lbl_803CC150; track != NULL; track = track->next) {
+        DVDClose(&track->fileInfo);
+    }
+    lbl_803CC150 = NULL;
+    lbl_803CC14C = NULL;
+    lbl_803CC154 = NULL;
+    lbl_803CC148 = STREAM_STATE_STOP;
+    if (lbl_803CC128 != NULL) {
+        lbl_803CC128();
+        lbl_803CC128 = NULL;
+    }
+    lbl_803CC148 = STREAM_STATE_STOP;
+    lbl_803CC130 = 0;
 }
 
 // .text:0x800A8B78 size:0x144
