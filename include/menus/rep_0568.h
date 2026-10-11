@@ -45,5 +45,6 @@ void fn_2_16F0C(u8 index);
 void fn_2_190DC(struct CharSlotList* list, MtxPtr view);
 
 void fn_2_19224(struct CharSlotList* list, MtxPtr view);
+void fn_2_16A98(s32 index, s32 anim, u8 loop, u8 b, s16 frame, u8 d, u8 blend);
 
 #endif

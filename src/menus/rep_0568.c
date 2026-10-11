@@ -51,6 +51,9 @@ extern void fn_800B4C04(CharModel* model, f32 v);
 extern void fn_800B4AFC(CharModel* model, u8 loop);
 extern void Set_FUN_800b2b6c(CharModel* model, void* p);
 extern void fn_800BDA24(CharSlot* slot);
+extern void fn_800B2B54(CharModel* model, u16 joint, s32 arg);
+extern CharSlot* fn_800111D8(CharActor* actor);
+extern u8 lbl_2_data_2794[];
 
 
 // fn_2_190B8, size:0x24
@@ -359,3 +362,66 @@ void fn_2_19224(CharSlotList* list, MtxPtr view) {
         slot->_5B &= 1;
     }
 }
+
+// fn_2_16A98, size:0x248
+// Menu version of the character animation request (cf. fn_8001BA44): only the
+// three menu animations (bank 5) are supported; the only caller passes anim 0
+// (bank/idx are left unset for anim >= 3, as in the original).
+// NONMATCHING 99%: `mr r5, r23` scheduled before `addi r3, r3, 0x68` at the parts call
+#if NONMATCHING
+void fn_2_16A98(s32 index, s32 anim, u8 loop, u8 b, s16 frame, u8 d, u8 blend) {
+    CharActor* actor;
+    CharSlot* slot;
+    CharAnimBank* bankData;
+    s32 bank;
+    s32 idx;
+    u8 entry;
+    f32 speed = 0.0f;
+
+    actor = lbl_8036E548.active[index];
+    if (actor == NULL) {
+        return;
+    }
+    slot = fn_800111D8(actor);
+    if (blend != 0) {
+        speed = 1.0f / blend;
+    }
+    if (actor->_26C[0] == 0) {
+        fn_800B2B54(actor->model, lbl_8036E548.active[index] != NULL ? lbl_8036E548.active[index]->jointIdx[4] : 0xFFFF, 0xD);
+    } else {
+        fn_800B2B54(actor->model, lbl_8036E548.active[index] != NULL ? lbl_8036E548.active[index]->jointIdx[4] : 0xFFFF, 1);
+    }
+    if (anim < 3) {
+        bank = 5;
+        idx = anim;
+    }
+    entry = lbl_2_data_2794[idx];
+    if (actor->part != NULL) {
+        fn_80025EEC(&actor->part->player, 5, entry);
+    }
+    if (actor->parts != NULL && actor->parts->_CC != 0) {
+        fn_80025EEC(&actor->parts->part[1].player, 5, entry);
+        fn_80025EEC(&actor->parts->part[0].player, 5, entry);
+    }
+    if (index < lbl_2_bss_100B8[0x2D] && (bankData = actor->banks.b[bank]) != NULL) {
+        if (idx >= bankData->count) {
+            return;
+        }
+        slot->act = bankData;
+        slot->animId = idx;
+        slot->_5C = 0.0f;
+        slot->_58 = 1;
+        slot->_59 = bankData != NULL;
+        slot->_5A = bankData != NULL;
+        slot->_60 = speed;
+    }
+    if (loop != 0) {
+        slot->_5B = 3;
+    } else {
+        slot->_5B = 2;
+    }
+    slot->_5C = frame * actor->_04C;
+    slot->_59 = 1;
+    actor->_268 = b;
+}
+#endif
