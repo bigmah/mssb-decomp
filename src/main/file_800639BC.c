@@ -186,7 +186,9 @@ void fn_80069A68(void) {
 
 // .text:0x80069A98 size:0x3C
 void fn_80069A98(void) {
-    return;
+    fn_80034CEC(lbl_803CBD30);
+    lbl_803CBD30 = NULL;
+    lbl_80366158._2A = 2;
 }
 
 // .text:0x80069AD4 size:0x34
