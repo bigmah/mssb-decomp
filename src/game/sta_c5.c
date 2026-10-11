@@ -1,6 +1,7 @@
 #include "game/sta_c5.h"
 #include "game/rep_2998.h"
 #include "game/rep_D0.h"
+#include "game/m_sound.h"
 #include "header_rep_data.h"
 #include "Dolphin/os.h"
 extern u8 lbl_3_common_bss_350E4[];
@@ -15,9 +16,6 @@ extern u32 sndFXStartEx(int, u8, u8, u8);
 extern void sndFXCtrl(int, int, u8);
 extern void fn_3_65A8(void);
 extern void fn_3_27648(void);
-extern void fn_3_8B890(s32);
-extern void fn_3_8BA60(s32, s32, s32);
-extern s32 fn_3_8BBC4(s32, s32, s32, s32);
 typedef struct { u8 pad[0x78]; s32 w78; u8 pad2[0xE8 - 0x7C]; } StadObj78;
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
@@ -190,6 +188,7 @@ typedef struct StaC5Work {
     Vec wind;   /* 0x2C */
     u8 pad38[0x344 - 0x38];
     f32 pathSpeed; /* 0x344 */
+    f32 bezW[7];   /* 0x348: bernstein weights of lbl_3_bss_B260 */
 } StaC5Work;
 /* View of this file's pooled .data starting at lbl_3_data_1B820. */
 typedef struct StaC5Data {
@@ -1370,6 +1369,7 @@ s32 fn_3_F2448(u8* p) {
     return -1;
 }
 
+#pragma dont_inline off
 // .text:0x000F2724 size:0x214 mapped:0x807317B8
 extern f64 __fabs(f64);
 extern const f64 lbl_3_rodata_2E58;
@@ -1418,10 +1418,98 @@ void fn_3_F2724(u8* p, u8* q) {
 }
 
 
+#pragma dont_inline on
 // .text:0x000F2938 size:0x6C4 mapped:0x807319CC
+extern f64 pow(f64, f64);
+extern const f32 lbl_3_rodata_2E14;
+extern char lbl_3_rodata_2CE0[];
+extern const f32 lbl_3_rodata_2E68;
+extern const f32 lbl_3_rodata_2E6C;
+extern const f32 lbl_3_rodata_2E70;
+static u32 lbl_3_bss_B244[7];
+/* Moves p along the 6th-degree bezier lbl_3_bss_B260 (set up by fn_3_F31E0). */
+// NONMATCHING 90%: inlines fn_3_F3A5C and fn_3_F2724; the original reaches lbl_3_bss_B21B/B21C/B244/B260 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected); regalloc differs
+#if NONMATCHING
 void fn_3_F2938(StadCtlA* p) {
-    return;
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    Vec pos;
+    Vec d;
+    Vec ref;
+    StadCtlA* e;
+    f32 t;
+    f32 u;
+    f64 a;
+    f64 b;
+    f32 ang;
+    u32 i;
+    t = lbl_3_rodata_2E68 * w->pathSpeed * (f32)w->pathStep;
+    ref = *(Vec*)lbl_3_rodata_2CE0;
+    u = lbl_3_rodata_2D50 - t;
+    for (i = 0; i < 7; i++) {
+        b = pow(u, 6 - i);
+        a = pow(t, i);
+        w->bezW[i] = lbl_3_bss_B244[i] * a * b;
+    }
+    pos = *(Vec*)&p->xa0;
+    pos.x = lbl_3_rodata_2D5C;
+    pos.z = lbl_3_rodata_2D5C;
+    for (i = 0; i < 7; i++) {
+        pos.x += w->bezW[i] * lbl_3_bss_B260[i].x;
+        pos.z += w->bezW[i] * lbl_3_bss_B260[i].z;
+    }
+    pos.y += p->fb8;
+    PSVECSubtract(&pos, (Vec*)&p->xa0, &d);
+    if (pos.y < lbl_3_rodata_2D5C) {
+        pos.y = lbl_3_rodata_2D5C;
+        p->fb8 = lbl_3_rodata_2D54 * -p->fb8;
+        if (p->fb8 > lbl_3_rodata_2E6C) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[2];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 2];
+            }
+            h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 1), v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[3];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 3];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        } else if (*(s32*)lbl_3_data_1B820 == -1) {
+            *(s32*)lbl_3_data_1B820 = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 2, &pos.x, &d.x, 3);
+        } else {
+            fn_3_8BA60(*(s32*)lbl_3_data_1B820, &pos.x, &d.x);
+        }
+    }
+    p->fb8 -= lbl_3_rodata_2E70;
+    d.y = lbl_3_rodata_2D5C;
+    if (PSVECMag(&d) != lbl_3_rodata_2D5C) {
+        PSVECNormalize(&d, &d);
+        PSVECNormalize(&ref, &ref);
+        ang = lbl_3_rodata_2DE8 * (f32)acos(PSVECDotProduct(&d, &ref));
+        if (d.x < lbl_3_rodata_2D5C) {
+            ang = lbl_3_rodata_2E14 - ang;
+        }
+    } else {
+        ang = -p->rb4;
+    }
+    fn_3_F3A5C((u8*)p, pos.x, pos.y, pos.z, -ang);
+    if (p->ya4 < lbl_3_rodata_2D88 && p->fb8 <= lbl_3_rodata_2D5C) {
+        for (i = 0; i < lbl_3_bss_B21C; i++) {
+            e = (StadCtlA*)(*(u8**)lbl_3_common_bss_350E4 + (lbl_3_bss_B21B + i) * 0xE8);
+            if (e->fc6 < 3) {
+                fn_3_F2724((u8*)p, (u8*)e);
+            }
+        }
+    }
+    fn_3_F1E2C(p);
+    w->pathStep++;
 }
+#endif
 
 extern const f32 lbl_3_rodata_2E80;
 extern const f32 lbl_3_rodata_2E84;
@@ -1495,7 +1583,6 @@ u32 fn_3_F37BC(u32 n, u32 k) {
 }
 
 // .text:0x000F38D4 size:0x130 mapped:0x80732968
-static u32 lbl_3_bss_B244[7];
 void fn_3_F38D4(void) {
     u32 i;
     for (i = 0; i < 7; i++) {
@@ -1677,7 +1764,6 @@ void fn_3_F469C(void) {
 }
 
 extern char lbl_3_rodata_2CC8[];
-extern const f32 lbl_3_rodata_2E14;
 // .text:0x000F46A0 size:0x500 mapped:0x80733734
 // NONMATCHING 83%: inlines fn_3_F5C30 (which now inlines fn_3_F3BB0), fn_3_F4C4C, fn_3_F4D00; our float literals from those get pooled through ...rodata.0 and the original reaches lbl_3_data_1B884/lbl_3_bss_B219 via pooled bases (nmverify flag expected); regalloc differs
 #if NONMATCHING
