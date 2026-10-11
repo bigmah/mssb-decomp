@@ -1,10 +1,26 @@
 #include "game/auto_00_0001E154_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "game/auto_00_0001D86C_text.h"
+#include "game/auto_00_00020A60_text.h"
+#include "game/rep_940.h"
+#include "game/rep_1838.h"
+
+// Batting order per team (see OrderEntry in main/file_8004207C.h).
+typedef struct BattingOrderEntry {
+    /*0x0*/ u8 _0;
+    /*0x1*/ u8 _1;
+    /*0x2*/ s8 slot;
+    /*0x3*/ u8 _3;
+} BattingOrderEntry;
+extern BattingOrderEntry lbl_80354720[2][9];
+
+extern u8 lbl_3_data_1C10[8][4]; // bunt chance (%) by batter class and AI level
 
 // .text:0x0001E154 size:0x24 mapped:0x8065D1E8
 void fn_3_1E154(void) {
-    return;
+    fn_3_219A0();
+    fn_3_20A60();
 }
 
 // .text:0x0001E178 size:0x1B0 mapped:0x8065D20C
