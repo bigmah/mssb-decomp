@@ -761,54 +761,53 @@ static void mcmdSetADSRFromCtrl(SYNTH_VOICE* svoice, MSTEP* cstep) {
   svoice->cFlags |= 0x100;
 }
 
-// 87%: saved regs r26..r31 vs orig r27..r31 (cstep reg not reused); dtime/sl saved-reg order swapped; rdLE read order matters
-static void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
+void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
   ADSR_INFO adsr;      // r1+0x10
   ADSR_INFO* adsr_ptr; // r31
   u32 sl;              // r28
   s32 ascale;          // r27
   s32 dscale;          // r26
-  float sScale;
-  s32 atime;
-  s32 dtime;
-  u16 rtime;
 
-  if ((adsr_ptr = dataGetCurve(cstep->para[0] >> 8)) != NULL) {
-    svoice->pitchADSRRange = (s8)cstep->para[1] << 8;
-    if (svoice->pitchADSRRange >= 0) {
-      svoice->pitchADSRRange += ((s8)(cstep->para[1] >> 8) << 8) / 100;
-    } else {
-      svoice->pitchADSRRange -= ((s8)(cstep->para[1] >> 8) << 8) / 100;
-    }
-
-    atime = rdLE32((u8*)adsr_ptr + 0);
-    dtime = rdLE32((u8*)adsr_ptr + 4);
-    sl = rdLE16((u8*)adsr_ptr + 8);
-    rtime = rdLE16((u8*)adsr_ptr + 0xA);
-    ascale = rdLE32((u8*)adsr_ptr + 0xC);
-    dscale = rdLE32((u8*)adsr_ptr + 0x10);
-    if (ascale != 0x80000000) {
-      sScale = lbl_803CD15C * svoice->orgVolume;
-      atime += (s32)(sScale * ascale);
-    }
-    if (dscale != 0x80000000) {
-      sScale = lbl_803CD160 * svoice->orgNote;
-      dtime += (s32)(sScale * dscale);
-    }
-
-    svoice->pitchADSR.mode = 1;
-    svoice->pitchADSR.data.dls.aMode = 0;
-    svoice->pitchADSR.data.dls.aTime = adsrConvertTimeCents(atime);
-    svoice->pitchADSR.data.dls.dTime = adsrConvertTimeCents(dtime);
-    sl = (sl >> 2) & 0x3FFF;
-    if (sl > 0x3FF) {
-      sl = 0x3FF;
-    }
-    svoice->pitchADSR.data.dls.sLevel = 193 - dspScale2IndexTab[sl];
-    svoice->pitchADSR.data.dls.rTime = rtime;
-    adsrSetup(&svoice->pitchADSR);
-    svoice->cFlags |= 0x20000000000;
+  if ((adsr_ptr = dataGetCurve((cstep->para[0] >> 8))) == NULL) {
+    return;
   }
+
+  svoice->pitchADSRRange = ((s8)cstep->para[1] << 8);
+
+  if (svoice->pitchADSRRange >= 0) {
+    svoice->pitchADSRRange += ((s16)(s8)(cstep->para[1] >> 8) << 8) / 100;
+  } else {
+    svoice->pitchADSRRange -= ((s16)(s8)(cstep->para[1] >> 8) << 8) / 100;
+  }
+
+  adsr.data.dls.atime = rdLE32(&adsr_ptr->data.dls.atime);
+  adsr.data.dls.dtime = rdLE32(&adsr_ptr->data.dls.dtime);
+  adsr.data.dls.slevel = (adsr_ptr->data.dls.slevel >> 8) | (adsr_ptr->data.dls.slevel << 8);
+  adsr.data.dls.rtime = (adsr_ptr->data.dls.rtime >> 8) | (adsr_ptr->data.dls.rtime << 8);
+  ascale = rdLE32(&adsr_ptr->data.dls.ascale);
+  dscale = rdLE32(&adsr_ptr->data.dls.dscale);
+
+  if (ascale != 0x80000000) {
+    f32 sScale = lbl_803CD15C * svoice->orgVolume;
+    adsr.data.dls.atime += (s32)(sScale * ascale);
+  }
+  if (dscale != 0x80000000) {
+    f32 sScale = lbl_803CD160 * svoice->orgNote;
+    adsr.data.dls.dtime += (s32)(sScale * dscale);
+  }
+
+  svoice->pitchADSR.mode = 1;
+  svoice->pitchADSR.data.dls.aMode = 0;
+  svoice->pitchADSR.data.dls.aTime = adsrConvertTimeCents(adsr.data.dls.atime);
+  svoice->pitchADSR.data.dls.dTime = adsrConvertTimeCents(adsr.data.dls.dtime);
+  sl = (adsr.data.dls.slevel >> 2);
+  if (sl > 0x3ff) {
+    sl = 0x3ff;
+  }
+  svoice->pitchADSR.data.dls.sLevel = 193 - dspScale2IndexTab[sl];
+  svoice->pitchADSR.data.dls.rTime = adsr.data.dls.rtime;
+  adsrSetup(&svoice->pitchADSR);
+  svoice->cFlags |= 0x20000000000;
 }
 #pragma dont_inline reset
 
