@@ -340,8 +340,10 @@ struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16
 }
 
 // .text:0x800B2BE4 size:0x18
-void fn_800B2BE4(void) {
-    return;
+// Restores a bone's original display object.
+void fn_800B2BE4(GameActor* actor, u16 bone) {
+    GameBone* b = actor->boneArray[bone];
+    b->dispObj = b->defaultDispObj;
 }
 
 // .text:0x800B2BFC size:0xC
