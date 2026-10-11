@@ -10,8 +10,8 @@ typedef struct HudTask {
     /*0x04*/ u8 _04[0x10];
     /*0x14*/ u16 baseIdx; // first sprite in lbl_80371C30
     /*0x16*/ u16 _16;
-    /*0x18*/ s16 timer;
-    /*0x1A*/ s16 _1A;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 _1A;
     /*0x1C*/ u16 state;
     /*0x1E*/ u16 _1E;
     /*0x20*/ s16 _20;

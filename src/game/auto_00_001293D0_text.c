@@ -629,3 +629,138 @@ void fn_3_12DB80(void) {
         i++;
     } while (i < 4);
 }
+
+// fn_3_129C88, size:0x2C0
+// Minigame level icons (3 levels): highlight the level reached.
+// NONMATCHING 99.7%: add operand order (base, i) in the sprite index sums
+#if NONMATCHING
+void fn_3_129C88(void) {
+    HudTask* task = lbl_803CC1B8;
+    s32 i;
+
+    if (task->timer < 0xFFFE) {
+        task->timer = task->timer + 1;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    if (task->_1A < 0xFFFE) {
+        task->_1A = task->_1A + 1;
+    } else {
+        task->_1A = 0xFFFF;
+    }
+    if (lbl_3_common_bss_32724[0x96] == 0 && g_GameLogic.gameStatus == 0x1E) {
+        if (task->state == 0) {
+            task->state++;
+            return;
+        }
+        if (task->state == 1) {
+            if ((s32)(lbl_80371C30[task->baseIdx].obj->_5C >> 16) >= 0xF) {
+                lbl_80371C30[task->baseIdx].obj->_68 = 0;
+                task->state++;
+            }
+            return;
+        }
+        if (task->state == 2) {
+            for (i = 0; i < 3; i++) {
+                if (i == g_Minigame._19E4) {
+                    if (g_Minigame._19DE >= 8 || g_GameLogic._125 >= 6) {
+                        if ((lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C >> 16) <= 0x5A) {
+                            lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0x5A << 16;
+                        }
+                        lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 1;
+                    } else {
+                        if ((lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C >> 16) >= 0x5A) {
+                            lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0xA << 16;
+                        }
+                        lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 1;
+                    }
+                } else {
+                    lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 0;
+                    lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0;
+                }
+            }
+            if (g_Minigame._19DE == 0) {
+                lbl_80371C30[task->baseIdx].obj->_68 = 4;
+                lbl_80371C30[task->baseIdx + 1].obj->_68 = 4;
+                task->state = 3;
+            }
+            return;
+        }
+        if (task->state == 3) {
+            if ((s32)(lbl_80371C30[task->baseIdx].obj->_5C >> 16) <= 0) {
+                goto remove;
+            }
+        }
+        return;
+    }
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    lbl_3_common_bss_32724[0xBE] = 0;
+}
+#endif
+
+// fn_3_129FF8, size:0x2C0
+// Minigame level icons (4 levels): highlight the level reached.
+void fn_3_129FF8(void) {
+    HudTask* task = lbl_803CC1B8;
+    s32 i;
+
+    if (task->timer < 0xFFFE) {
+        task->timer = task->timer + 1;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    if (task->_1A < 0xFFFE) {
+        task->_1A = task->_1A + 1;
+    } else {
+        task->_1A = 0xFFFF;
+    }
+    if (lbl_3_common_bss_32724[0x96] == 0 && g_GameLogic.gameStatus == 0x1E) {
+        if (task->state == 0) {
+            task->state++;
+            return;
+        }
+        if (task->state == 1) {
+            if ((s32)(lbl_80371C30[task->baseIdx].obj->_5C >> 16) >= 0xF) {
+                lbl_80371C30[task->baseIdx].obj->_68 = 0;
+                task->state++;
+            }
+            return;
+        }
+        if (task->state == 2) {
+            for (i = 0; i < 4; i++) {
+                if (i == g_Minigame._19E4) {
+                    if (g_Minigame._19DE >= 8 || g_GameLogic._125 >= 6) {
+                        if ((lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C >> 16) <= 0x37) {
+                            lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0x37 << 16;
+                        }
+                        lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 1;
+                    } else {
+                        if ((lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C >> 16) >= 0x37) {
+                            lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0x5 << 16;
+                        }
+                        lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 1;
+                    }
+                } else {
+                    lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 0;
+                    lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0;
+                }
+            }
+            if (g_Minigame._19DE == 0) {
+                lbl_80371C30[task->baseIdx].obj->_68 = 4;
+                lbl_80371C30[task->baseIdx + 1].obj->_68 = 4;
+                task->state = 3;
+            }
+            return;
+        }
+        if (task->state == 3) {
+            if ((s32)(lbl_80371C30[task->baseIdx].obj->_5C >> 16) <= 0) {
+                goto remove;
+            }
+        }
+        return;
+    }
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    lbl_3_common_bss_32724[0xBE] = 0;
+}

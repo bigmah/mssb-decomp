@@ -2170,7 +2170,8 @@ typedef struct _MiniGameStruct {
     /*0x19E1*/ u8 _19E1;
     /*0x19E2*/ u8 _19E2;
     /*0x19E3*/ u8 _19E3;
-    /*0x19E4*/ s16 _19E4;
+    /*0x19E4*/ s8 _19E4; // level reached in this minigame (g_d_GameSettings._14[mode - 1])
+    /*0x19E5*/ u8 _19E5;
     /*0x19E6*/ u8 _19E6;
     /*0x19E7*/ u8 _19E7;
     /*0x19E8*/ u8 _19E8;
