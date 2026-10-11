@@ -994,7 +994,7 @@ void fn_3_A4158(int i) {
 }
 
 // .text:0x000A41E8 size:0x4B8 mapped:0x806E327C
-// NONMATCHING 97%: base-coordinate loads and float temps scheduled differently; fn_3_A6ABC and fn_3_AABF8 are inlined
+// NONMATCHING 98.9%: base-coordinate loads and float temps scheduled differently; fn_3_A6ABC and fn_3_AABF8 are inlined
 #if NONMATCHING
 void fn_3_A41E8(s32 base) {
     s16 cover;
