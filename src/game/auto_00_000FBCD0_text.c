@@ -43,8 +43,20 @@ void fn_3_FBD70(void) {
 }
 
 // .text:0x000FBDAC size:0x78 mapped:0x8073AE40
-void fn_3_FBDAC(int p0) {
-    return;
+void fn_3_FBDAC(int scene) {
+    lbl_3_common_bss_DE94_s2* p = lbl_3_common_bss_DE94._0000;
+    p->_09AB = 1;
+    lbl_3_common_bss_DE94._0000->_09AC = 1;
+    lbl_3_common_bss_DE94._0000->_09AF = 1;
+    lbl_3_common_bss_DE94._0000->_09B0 = 1;
+    p->_0018 = 0;
+    p->_0008 = 0;
+    p->_0014 = 0;
+    lbl_3_common_bss_DE94._0000->_092C = scene;
+    lbl_3_common_bss_DE94._0000->_0000 = lbl_3_data_20E0C[scene];
+    lbl_3_common_bss_DE94._0000->_09AE = 1;
+    lbl_3_common_bss_DE94._0000->_0118 = 0;
+    lbl_3_common_bss_DE94._0000->_0944 = 0;
 }
 
 // .text:0x000FBE24 size:0x4D8 mapped:0x8073AEB8
