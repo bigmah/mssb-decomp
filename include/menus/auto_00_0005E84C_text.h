@@ -70,7 +70,7 @@ void fn_2_5ED3C(void);
 void fn_2_5EE34(void);
 void fn_2_5EEBC(MenuTask* task, MenuItem* item);
 void fn_2_5F08C(MenuTask* task, MenuItem* item);
-void fn_2_5F2A8(void);
+void fn_2_5F2A8(MenuTask* task, MenuItem* item);
 void fn_2_5F458(void);
 void fn_2_5FDC4(void);
 void fn_2_60084(MenuTask* task, MenuItem* item);
