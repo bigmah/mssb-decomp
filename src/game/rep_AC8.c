@@ -4606,9 +4606,122 @@ int fn_3_53130(int i) {
 #endif
 
 // .text:0x0005372C size:0x7BC mapped:0x806927C0
-void fn_3_5372C(void) {
-    return;
+extern f32 lbl_3_data_4780[];
+extern f32 lbl_3_rodata_CA0;
+extern f32 lbl_3_rodata_CA4;
+#pragma dont_inline off
+// same body as fn_3_4B8D0: fielder i gives up the base it covers
+static inline void ReleaseBaseInl(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 k = *(s16*)(f + 0x18C);
+    if (k >= 0) {
+        if (k <= 3) {
+            if (*(s16*)(g_FieldingLogic + k * 2 + 0xD0) == i) {
+                *(s16*)(g_FieldingLogic + k * 2 + 0xD0) = -1;
+                g_FieldingLogic[0x101 + k] = 0;
+            }
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            if (f[0x1D3] == 1 && i != -1) {
+                f[0x1D3] = 0xC;
+                if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
+                    g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
+                }
+                f[0x1D5] = 0;
+                f[0x1D6] = 0;
+                *(s16*)(f + 0x1A4) = 0;
+                *(s16*)(f + 0x1AC) = 0;
+                f[0x1FF] = 0;
+            }
+        } else if (k == 5) {
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            *(s16*)(g_FieldingLogic + 0xD8) = -1;
+            g_FieldingLogic[0x105] = 0;
+            if (f[0x1D3] == 0xE && i != -1) {
+                f[0x1D3] = 0xC;
+                if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
+                    g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
+                }
+                f[0x1D5] = 0;
+                f[0x1D6] = 0;
+                *(s16*)(f + 0x1A4) = 0;
+                *(s16*)(f + 0x1AC) = 0;
+                f[0x1FF] = 0;
+            }
+        }
+    }
 }
+#pragma dont_inline on
+// NONMATCHING 94%: base table / cover-slot accesses use add+lfs/lha instead of lfsx/lhax; regs differ
+#if NONMATCHING
+// base-cover bookkeeping for fielder i (who stands on which base)
+void fn_3_5372C(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 b;
+    s16 k;
+    int n;
+    f32 d;
+    b = *(s16*)(f + 0x18C);
+    if (b >= 0 && b <= 3) {
+        d = (*(f32*)(lbl_3_data_4444 + b * 8) - *(f32*)f) * (*(f32*)(lbl_3_data_4444 + b * 8) - *(f32*)f) +
+            (*(f32*)(lbl_3_data_4444 + b * 8 + 4) - *(f32*)(f + 8)) * (*(f32*)(lbl_3_data_4444 + b * 8 + 4) - *(f32*)(f + 8));
+        SQRT_L(d);
+        if (lbl_3_data_4780[f[0x1C9]] > d) {
+            g_FieldingLogic[*(s16*)(f + 0x18C) + 0x101] = 1;
+            f[0x1F5] = *(s16*)(f + 0x18C);
+            if (i == 0 && f[0x1D8] == 1) {
+                f[0x1D8] = 0;
+            }
+        }
+        if (*(s16*)(g_Ball + 0x1B78) == i) {
+            b = *(s16*)(f + 0x18C);
+            k = *(s16*)(g_FieldingLogic + b * 2 + 0xD0);
+            if (k != i && k >= 0 && g_FieldingLogic[b + 0x101] != 0) {
+                ReleaseBaseInl(i);
+            }
+        }
+    } else if (*(s16*)(g_Ball + 0x1B78) == i) {
+        for (n = 0; n < 4; n++) {
+            d = (*(f32*)(lbl_3_data_4444 + n * 8) - *(f32*)f) * (*(f32*)(lbl_3_data_4444 + n * 8) - *(f32*)f) +
+                (*(f32*)(lbl_3_data_4444 + n * 8 + 4) - *(f32*)(f + 8)) * (*(f32*)(lbl_3_data_4444 + n * 8 + 4) - *(f32*)(f + 8));
+            SQRT_L(d);
+            if (lbl_3_data_4780[f[0x1C9]] > d) {
+                ReleaseBaseInl(*(s16*)(g_FieldingLogic + n * 2 + 0xD0));
+                *(s16*)(f + 0x18C) = n;
+                *(s16*)(g_FieldingLogic + n * 2 + 0xD0) = i;
+                f[0x1D7] = 1;
+                g_FieldingLogic[n + 0x101] = 1;
+                break;
+            }
+        }
+    }
+    if (*(s8*)(f + 0x1F5) >= 0) {
+        b = *(s8*)(f + 0x1F5);
+        d = (*(f32*)(lbl_3_data_4444 + b * 8) - *(f32*)f) * (*(f32*)(lbl_3_data_4444 + b * 8) - *(f32*)f) +
+            (*(f32*)(lbl_3_data_4444 + b * 8 + 4) - *(f32*)(f + 8)) * (*(f32*)(lbl_3_data_4444 + b * 8 + 4) - *(f32*)(f + 8));
+        SQRT_L(d);
+        if (*(s16*)(g_Ball + 0x1B78) == i) {
+            if (lbl_3_rodata_CA0 + lbl_3_data_4780[f[0x1C9]] < d) {
+                f[0x1F5] = -1;
+            }
+        } else if (lbl_3_rodata_CA4 + lbl_3_data_4780[f[0x1C9]] < d) {
+            f[0x1F5] = -1;
+        }
+    }
+    if (f[0x203] != 0) {
+        f[0x1F5] = -1;
+    }
+    if (*(s8*)(f + 0x1F5) < 0) {
+        for (n = 0; n < 4; n++) {
+            if (*(s16*)(g_FieldingLogic + n * 2 + 0xD0) == i) {
+                g_FieldingLogic[n + 0x101] = 0;
+                break;
+            }
+        }
+    }
+}
+#endif
 
 // .text:0x00053EE8 size:0x60 mapped:0x80692F7C
 void fn_3_53EE8(int i) {
