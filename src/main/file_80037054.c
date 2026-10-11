@@ -315,8 +315,131 @@ void fn_80037B18(RigidBody* rb, Vec* force) {
 }
 
 // .text:0x80037BAC size:0x5F0
-void fn_80037BAC(RigidBody* rb) {
-    return;
+s32 fn_80037BAC(RigidBody* rb) {
+    RigidBody b;
+    RigidBody* orig;
+    Vec world[2];
+    Vec t;
+    Vec n;
+    Vec vel;
+    Vec angVel;
+    Vec r;
+    Quaternion q;
+    Vec* pts[2];
+    s32 side[2];
+    f32 time;
+    f32 denom;
+    s32 j;
+
+    orig = rb;
+    time = rb->dt;
+    rb = &b;
+    memcpy(rb, orig, 0x150);
+    pts[0] = &rb->p1;
+    pts[1] = &rb->p0;
+    PSMTXMultVec(rb->world, &rb->p1, &world[0]);
+    PSMTXMultVec(rb->world, &rb->p0, &world[1]);
+    rb->unk150 = rb->dt;
+    do {
+        PSMTXMultVec(rb->invRot, &rb->vel, &rb->velLocal);
+        fn_8003819C(rb);
+        PSVECScale(&rb->forceLocal, rb->invMass * rb->unk150, &t);
+        PSMTXMultVec(rb->rot, &t, &t);
+        PSVECAdd(&rb->vel, &t, &rb->vel);
+        PSVECScale(&rb->vel, rb->unk150, &t);
+        PSVECAdd(&rb->pos, &t, &rb->pos);
+        t.x = rb->inertia.x * rb->angVel.x;
+        t.y = rb->inertia.y * rb->angVel.y;
+        t.z = rb->inertia.z * rb->angVel.z;
+        PSVECCrossProduct(&rb->angVel, &t, &t);
+        PSVECSubtract(&rb->torque, &t, &t);
+        PSVECScale(&t, rb->unk150, &t);
+        rb->angVel.x = t.x * rb->invInertia.x + rb->angVel.x;
+        rb->angVel.y = t.y * rb->invInertia.y + rb->angVel.y;
+        rb->angVel.z = t.z * rb->invInertia.z + rb->angVel.z;
+        PSVECScale(&rb->angVel, rb->unk150, (Vec*)&q);
+        q.w = lbl_803CC728;
+        PSQUATMultiply(&rb->quat, &q, &q);
+        PSQUATScale(&q, lbl_803CC72C * rb->unk150, &q);
+        PSQUATAdd(&rb->quat, &q, &q);
+        if (q.x != lbl_803CC728 || q.y != lbl_803CC728 || q.z != lbl_803CC728 || q.w != lbl_803CC728) {
+            PSQUATNormalize(&q, &rb->quat);
+        } else {
+            memcpy(&rb->quat, &q, sizeof(Quaternion));
+        }
+        rb->torque.x = rb->torque.y = rb->torque.z = lbl_803CC728;
+        rb->forceLocal.x = rb->forceLocal.y = rb->forceLocal.z = lbl_803CC728;
+        PSMTXQuat(rb->rot, &rb->quat);
+        PSMTXInverse(rb->rot, rb->invRot);
+        PSMTXTransApply(rb->rot, rb->world, rb->pos.x, rb->pos.y, rb->pos.z);
+        PSMTXMultVec(rb->world, &rb->p1, &world[0]);
+        PSMTXMultVec(rb->world, &rb->p0, &world[1]);
+
+        // which end points touch the ground (1), are above it (0) or went through it (-1)
+        side[0] = (world[0].y < -rb->radius) ? 0 : ((world[0].y > rb->radius) ? -1 : 1);
+        side[1] = (world[1].y < -rb->radius) ? 0 : ((world[1].y > rb->radius) ? -1 : 1);
+        if (side[0] == 0) {
+            rb->unk14D = 0;
+        } else if (rb->unk14D != 0) {
+            side[0] = 0;
+        }
+        if (side[1] == 0) {
+            rb->unk14C = 0;
+        } else if (rb->unk14C != 0) {
+            side[1] = 0;
+        }
+
+        if (side[0] != -1 && side[1] != -1) {
+            PSMTXMultVec(rb->invRot, &rb->vel, &rb->velLocal);
+            memcpy(&vel, &rb->velLocal, sizeof(Vec));
+            memcpy(&angVel, &rb->angVel, sizeof(Vec));
+            n.x = lbl_803CC728;
+            n.y = lbl_803CC73C;
+            n.z = lbl_803CC728;
+            PSMTXMultVec(rb->invRot, &n, &n);
+            j = 1;
+            do {
+                if (side[j] != 0) {
+                    PSVECCrossProduct(&angVel, pts[j], &t);
+                    PSVECAdd(&vel, &t, &t);
+                    PSMTXMultVec(rb->rot, &t, &r);
+                    if (r.y > lbl_803CC728) {
+                        // collision impulse
+                        PSVECCrossProduct(pts[j], &n, &r);
+                        r.x = r.x * rb->invInertia.x;
+                        r.y = r.y * rb->invInertia.y;
+                        r.z = r.z * rb->invInertia.z;
+                        PSVECCrossProduct(&r, pts[j], &r);
+                        denom = rb->invMass + PSVECDotProduct(&n, &r);
+                        PSVECScale(&n, (lbl_803CC73C + rb->unk54) * -PSVECDotProduct(&t, &n) / denom, &t);
+                        PSVECScale(&t, rb->invMass, &r);
+                        PSVECAdd(&rb->velLocal, &r, &rb->velLocal);
+                        PSVECCrossProduct(pts[j], &t, &t);
+                        t.x = t.x * rb->invInertia.x;
+                        t.y = t.y * rb->invInertia.y;
+                        t.z = t.z * rb->invInertia.z;
+                        PSVECAdd(&rb->angVel, &t, &rb->angVel);
+                    }
+                    if (j != 0) {
+                        rb->unk14C = 1;
+                    } else {
+                        rb->unk14D = 1;
+                    }
+                }
+            } while (j-- != 0);
+            PSMTXMultVec(rb->rot, &rb->velLocal, &rb->vel);
+            time -= rb->unk150;
+            if (rb->unk150 < time) {
+                rb->unk150 = time;
+            }
+            memcpy(orig, rb, 0x150);
+        } else {
+            // went through the ground: retry with half the step
+            memcpy(rb, orig, 0x150);
+            rb->unk150 *= lbl_803CC72C;
+        }
+    } while (time > lbl_803CC728);
+    return 0;
 }
 
 // .text:0x8003819C size:0x220

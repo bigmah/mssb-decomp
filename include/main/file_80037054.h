@@ -128,7 +128,7 @@ void fn_80037964(JointAttachTask* task);
 void fn_80037984(void);
 void fn_80037AA0(RigidBody* body, s32 charIdx, void (*callback)(void), u16 joint, void* anim);
 void fn_80037B18(RigidBody* rb, Vec* force);
-void fn_80037BAC(RigidBody* rb);
+s32 fn_80037BAC(RigidBody* rb);
 void fn_8003819C(RigidBody* rb);
 MtxPtr fn_800383BC(RigidBody* rb);
 void fn_80038418(RigidBody* rb, Vec* pos, Quaternion* quat, Vec* prevPos, Quaternion* prevQuat);
