@@ -97,5 +97,21 @@ void fn_3_E1C60(void) {
 
 // .text:0x000E1D00 size:0xB8 mapped:0x80720D94
 void fn_3_E1D00(void) {
-    return;
+    StadObjE8* obj;
+    s32 i;
+
+    fn_800BF058((ShadowDrawCallback)fn_3_B8184);
+    fn_8003A548((u32)fn_3_E1C60); // TODO type: callback stored as u32
+    for (i = 0; i < lbl_3_common_bss_350E4.count; i++) {
+        if (lbl_3_data_18ED0[i].kind == 2) {
+            break;
+        }
+        obj = &lbl_3_common_bss_350E4.objs[i];
+        fn_3_B828C((u32)obj); // TODO type
+        if (obj->actor != NULL) {
+            obj->actor->actor->flags98 = obj->flags93 | 6;
+            fn_800BDF70(obj->actor);
+        }
+    }
+    fn_8003A548(0);
 }
