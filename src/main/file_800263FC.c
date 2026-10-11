@@ -646,9 +646,120 @@ void fn_800324EC(void) {
 }
 
 // .text:0x800328E0 size:0x7EC
-void fn_800328E0(void) {
-    return;
+// NONMATCHING 59%: the original inlines fn_8003403C with the file-static bss base (lbl_8017EC00 + offset); calls fn_8003403C here
+#if NONMATCHING
+s32 fn_800328E0(Emitter* e) {
+    Mtx rotM;
+    Quaternion q;
+    Vec ref;
+    Vec dir;
+    Vec axis;
+    Vec v;
+    f32 angle;
+    f32 s;
+    f32 spread;
+    f32 cosA;
+    f32 sinA;
+    f32 spd;
+    f32 h;
+    s32 ang;
+    s32 r;
+    s32 k;
+    s32 c;
+    s32 count = 0;
+    Particle* p = e->particles;
+
+    ref = lbl_800E6784;
+    fn_8003403C(p->sizeX, p->sizeY);
+    memcpy(&dir, &e->u.t1.dir, sizeof(Vec));
+    angle = acos(PSVECDotProduct(&ref, &dir));
+    PSVECCrossProduct(&ref, &dir, &axis);
+    angle = angle * 0.5f;
+    s = sin(angle);
+    q.w = cos(angle);
+    q.x = axis.x * s;
+    q.y = axis.y * s;
+    q.z = axis.z * s;
+    PSMTXQuat(rotM, &q);
+    do {
+        if (p->delay > 0) {
+            p->delay -= (lbl_80366158._28 == 0);
+            count++;
+        } else if (p->life != 0) {
+            if (lbl_80366158._28 == 0) {
+                p->u.phys.force.z = 0.0f;
+                p->u.phys.force.x = 0.0f;
+                p->u.phys.force.y = 0.16344418f * p->u.phys.mass;
+                p->u.phys.force.x = 0.001f * (-p->u.phys.vel.x * p->u.phys.mass) + p->u.phys.force.x;
+                p->u.phys.force.y = 0.001f * (-p->u.phys.vel.y * p->u.phys.mass) + p->u.phys.force.y;
+                p->u.phys.force.z = 0.001f * (-p->u.phys.vel.z * p->u.phys.mass) + p->u.phys.force.z;
+                for (k = 0; k < 3; k++) {
+                    c = p->color.v[k] + (s8)p->colorStep.v[k];
+                    if (c < 0) {
+                        c = 0;
+                    } else if (c > 0xFF) {
+                        c = 0xFF;
+                    }
+                    p->color.v[k] = c;
+                    (&p->u.phys.accel.x)[k] = (&p->u.phys.force.x)[k] / p->u.phys.mass;
+                    (&p->u.phys.vel.x)[k] += (&p->u.phys.accel.x)[k];
+                    (&p->pos.x)[k] += (&p->u.phys.vel.x)[k];
+                }
+                c = p->color.v[k] + (s8)p->colorStep.v[k];
+                if (c < 0) {
+                    c = 0;
+                } else if (c > 0xFF) {
+                    c = 0xFF;
+                }
+                p->color.v[k] = c;
+                if (p->u.phys.vel.y > 0.0f && p->pos.y >= e->u.t1.floorY) {
+                    p->u.phys.vel.y = p->u.phys.vel.y * e->u.t1.bounce;
+                    p->life--;
+                }
+                if (fabs(p->pos.x) > 300.0 || fabs(p->pos.z) > 300.0) {
+                    p->life = 0;
+                }
+            }
+            DrawParticleQuad(p, e->tex);
+            count++;
+        } else if (e->u.t1.spawnLeft != 0) {
+            spread = lbl_803CB7FC;
+            ang = (s32)(512.0f * (1.0f - spread) + (512.0f * spread * (f32)rand()) / 32767.0f);
+            cosA = CosIdx(ang);
+            sinA = SinIdx(ang);
+            r = rand();
+            k = (rand() & 0xF) + 0x5A;
+            p->u.phys.mass = 0.001f;
+            p->pos.x = e->u.t1.pos.x;
+            p->pos.y = e->u.t1.pos.y;
+            p->pos.z = e->u.t1.pos.z;
+            spd = (((e->u.t1.speed / 60.0f) * (f32)k) / 100.0f) / 0.001f;
+            h = spd * cosA;
+            v.y = -spd * sinA;
+            v.x = h * CosIdx(r);
+            v.z = h * SinIdx(r);
+            v.y = v.y + 0.16344418f;
+            PSMTXMultVec(rotM, &v, &v);
+            p->u.phys.vel.x = v.x;
+            p->u.phys.vel.y = v.y;
+            p->u.phys.vel.z = v.z;
+            p->sizeX = e->u.t1.size;
+            p->sizeY = e->u.t1.size;
+            p->color.rgba = e->u.t1.color;
+            p->colorStep.all = 0;
+            p->life = 2;
+            p->delay = r & lbl_803CB7F8;
+            p->texIndex = 0xFF;
+            count++;
+        }
+        p = p->next;
+    } while (p != NULL);
+    if (e->u.t1.spawnLeft > 0) {
+        e->u.t1.spawnLeft--;
+    }
+    return count == 0;
 }
+#endif
 
 // .text:0x800330CC size:0x1EC
 void fn_800330CC(s32 n, u32 color, Vec* pos, Vec* dir, s32 spawnFrames, TexArchive* tex, f32 speed, f32 size) {
