@@ -550,8 +550,8 @@ void fn_8001D074(void) {
 }
 
 // .text:0x8001D0D0 size:0x40
-void fn_8001D0D0(void) {
-    return;
+void fn_8001D0D0(s32 index, f32 scale) {
+    CTRLSetScale(&lbl_8036E548.slots68[index].ctrl, scale, scale, scale);
 }
 
 // .text:0x8001D110 size:0x38
