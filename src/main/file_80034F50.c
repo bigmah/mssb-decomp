@@ -182,8 +182,13 @@ s32 fn_80036214(SpaniOwner* owner, s32 idx, u32 track, u32 frame) {
 }
 
 // .text:0x80036270 size:0x80
-void fn_80036270(void) {
-    return;
+void fn_80036270(SpaniOwner* owner, s32 idx, u32 track, u32 frame, s16* outX, s16* outY) {
+    SpaniKey key;
+    SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+
+    fn_8000CEF0(lbl_803C4BE0[obj->texSlot].anim, obj->animId, track, frame, &key);
+    *outX = key.x;
+    *outY = key.y;
 }
 
 // .text:0x800362F0 size:0xE8
