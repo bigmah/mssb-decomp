@@ -127,3 +127,13 @@ void fn_1_16A0(void) {
     }
 }
 
+// .text:0x00001948 size:0x24
+// Waits for the running test to finish.
+void fn_1_1948(void) {
+    ChTaskHeader* task = lbl_803CC1B8;
+
+    if (task->result != 0) {
+        task->func = fn_1_11D0;
+    }
+}
+
