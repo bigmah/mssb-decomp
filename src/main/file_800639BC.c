@@ -273,8 +273,18 @@ void fn_80068720(u8 track) {
 }
 
 // .text:0x8006877C size:0xBC
-void fn_8006877C(void) {
-    return;
+void fn_8006877C(u8 track) {
+    if (lbl_800EF808.unk398 != 0) {
+        fn_800A8878(lbl_800E88A4[track][0], lbl_800E88A4[track][0]);
+        if (track == 12) {
+            fn_800A8AB0(0);
+        } else {
+            fn_800A8AB0(2);
+        }
+        fn_800A8E30(lbl_800E87B4[track], &lbl_8034E478[track], 0, NULL);
+        fn_800A86B4(4);
+        fn_800A86B4(1);
+    }
 }
 
 // .text:0x80068838 size:0xF78

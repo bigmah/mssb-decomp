@@ -34,5 +34,6 @@ void fn_800671FC(void);
 s16 fn_80067AC8(s16 id, s8 col);
 void fn_800684A4(void);
 void fn_80068720(u8 track);
+void fn_8006877C(u8 track);
 
 #endif
