@@ -3495,3 +3495,119 @@ void fn_2_7DAB8(u8* o, s32 index) {
     }
 }
 #endif
+
+// fn_2_7836C, size:0x754
+// NONMATCHING 75%: TEAM_TBL[index] indexing computed with mulli per access; orig hoists index*9 and walks with lbzu
+#if NONMATCHING
+void fn_2_7836C(u8* o, s8 index) {
+    u8* sel = lbl_2_bss_F468 + index;
+    s8 fp;
+    s8 fs;
+    s32 j;
+    s32 n;
+    s32 k;
+    u8* e;
+    if (sel[0x5F] == 0) {
+        u8 prev = lbl_2_bss_F468[0x61 + index];
+        for (j = 0; j < 9; j++) {
+            if (TEAM_TBL->pos[index][j] == (s8)prev) {
+                fp = j;
+            }
+        }
+        e = lbl_803C66B0 + index;
+        if ((*(e += 0xD) == 0) ? 1 : 0) {
+            if ((s8)prev != -1) {
+                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->frame = 0;
+                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->state = 1;
+                if (TEAM_TBL->roster[index][fp] != -1 && TEAM_TBL->roster[index][fp] != 0x36) {
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->frame = 0x140000;
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->state = 4;
+                }
+            }
+            if (lbl_2_bss_F468[0x37 + index] != 0) {
+                MN_SLOT(0x93 + BASE(o) + index)->anim = 0xA;
+                MN_SLOT(0x93 + BASE(o) + index)->state = 1;
+            }
+            fn_800626EC(index);
+            *e = 1;
+        }
+        if (*e == 1) {
+            n = 0;
+            k = 0;
+            if (TEAM_TBL->roster[index][fp] != -1 && TEAM_TBL->roster[index][fp] != 0x36 && (s8)prev != -1) {
+                k++;
+                n += fn_80042DA8((s32)o, (s8)prev + index * 9 + 0x34, 0xA) != 0;
+            }
+            if (n == k) {
+                sel[0x5F] = 1;
+                fn_80062674(index);
+                *e = 2;
+            }
+        }
+    } else {
+        u8* pp = lbl_2_bss_F468 + index;
+        u8 prev = *(pp += 0x61);
+        s8 cur = F468_S32(index * 4);
+        for (j = 0; j < 9; j++) {
+            s8 t = TEAM_TBL->pos[index][j];
+            if (t == (s8)prev) {
+                fp = j;
+            }
+            if (t == cur) {
+                fs = j;
+            }
+        }
+        e = lbl_803C66B0 + index;
+        if ((*(e += 0xD) == 0) ? 1 : 0) {
+            if ((s8)prev != -1) {
+                s8 r = TEAM_TBL->roster[index][fp];
+                if (r != -1 && r != 0x36) {
+                    MN_SLOT(0x58 + BASE(o) + (s8)prev + index * 9)->frame = r << 16;
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->flags |= 2;
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->frame = 0xA0000;
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->state = 1;
+                } else {
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->flags &= ~2;
+                }
+            }
+            {
+                s8 r = TEAM_TBL->roster[index][fs];
+                if (r != -1 && r != 0x36) {
+                    MN_SLOT(0x58 + BASE(o) + cur + index * 9)->frame = r << 16;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->frame = 0xA0000;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->state = 0;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->flags |= 2;
+                } else {
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->flags &= ~2;
+                }
+            }
+            if ((s8)prev != cur && (s8)prev != -1) {
+                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->frame = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->state = 4;
+            }
+            if (lbl_2_bss_F468[0x37 + index] != 0) {
+                MN_SLOT(0x93 + BASE(o) + index)->anim = 9;
+                MN_SLOT(0x93 + BASE(o) + index)->frame = 0xA0000;
+                MN_SLOT(0x93 + BASE(o) + index)->state = 0;
+            }
+            fn_2_74F40(o, index);
+            fn_800626EC(index);
+            *e = 1;
+        }
+        if (*e == 1) {
+            n = 0;
+            k = 0;
+            if (TEAM_TBL->roster[index][fp] != -1 && TEAM_TBL->roster[index][fp] != 0x36 && (s8)prev != -1 && (s8)prev != cur) {
+                k++;
+                n += fn_80042DA8((s32)o, (s8)prev + index * 9 + 0x34, 0x14) != 0;
+            }
+            if (n == k) {
+                sel[0x5F] = 0;
+                *pp = -1;
+                fn_80062674(index);
+                *e = 2;
+            }
+        }
+    }
+}
+#endif
