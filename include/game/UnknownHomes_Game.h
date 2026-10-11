@@ -2786,6 +2786,8 @@ typedef struct {
     /* 0x0036 */ u8 replayInd;
     /* 0x0037 */ u8 _37[2];
     /* 0x0039 */ u8 _39; // 1: replay offered, 2: replay done
+    /* 0x003A */ u8 _3A;
+    /* 0x003B */ u8 _3B;
 } g_Stats_s; // size: 0x4634
 
 // 0x8088a7e4

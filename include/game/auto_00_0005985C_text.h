@@ -116,5 +116,6 @@ void fn_3_5F930(void);
 void fn_3_5C74C(s32 force);
 void fn_3_6011C(void);
 void fn_3_5BD40(void);
+void fn_3_5E2C4(void);
 
 #endif
