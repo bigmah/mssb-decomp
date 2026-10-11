@@ -1,12 +1,20 @@
 #include "game/rep_1D58.h"
 #include "header_rep_data.h"
+#include "C3/control.h"
+#include "C3/light.h"
+#include "main/file_800BD8C4.h"
+#include "main/file_800B9974.h"
+#include "main/file_80024D2C.h"
+#include "main/file_800BD3EC.h"
+#include "main/file_8004C5F8.h"
+#include "main/file_800BDEA0.h"
+#include "main/file_800B2C44.h"
+#include "main/file_80008E00.h"
 
 extern u8 lbl_3_data_11168[];
 extern void* memcpy(void*, const void*, u32);
 extern f32 lbl_3_bss_1910[];
 extern u8 lbl_3_bss_1940[];
-extern void GXInitTexObj(void*, void*, u16, u16, int, int, int, int);
-extern void GXInitTexObjLOD(void*, int, int, int, int, int, f32, f32, f32);
 extern f32 lbl_3_rodata_1DCC;
 extern f32 lbl_3_rodata_1DD0[];
 extern f32 lbl_3_rodata_1DB4[];
@@ -19,6 +27,64 @@ extern int rand(void);
 extern void fn_3_8BBC4(void);
 extern f32 lbl_3_data_11178[];
 typedef struct { f32 x, y, z; } V3;
+
+typedef struct SortEnt SortEnt;
+
+// Shape (texture) animation attached to a stadium object.
+typedef struct StadiumObjShape {
+    /* 0x00 */ u8 pad0[0xC];
+    /* 0x0C */ ShapeAnimState anim;
+    /* 0x2C */ ShapeData* shape;
+} StadiumObjShape;
+
+// One 0xE8-byte stadium object (lbl_3_common_bss_350E4.objs[]).
+typedef struct StadiumObj {
+    /* 0x00 */ Control ctrl;
+    /* 0x3C */ u8 pad3C[8];
+    /* 0x44 */ Mtx mtx;
+    /* 0x74 */ ActorObject* actor;
+    /* 0x78 */ s32 unk78;
+    /* 0x7C */ u8 pad7C[4];
+    /* 0x80 */ void (*func)(int, int, void*);
+    /* 0x84 */ void (*preDraw)(struct StadiumObj* obj);
+    /* 0x88 */ void (*postDraw)(struct StadiumObj* obj);
+    /* 0x8C */ StadiumObjShape* shapeAnim;
+    /* 0x90 */ u8 visible : 1;
+    /* 0x90 */ u8 flag40 : 1;
+    /* 0x90 */ u8 depthFade : 1; // sorted by depth; alpha scaled by the sort factor
+    /* 0x90 */ u8 customZ : 1;   // use the z mode bits below
+    /* 0x90 */ u8 zCompare : 1;
+    /* 0x90 */ u8 zAlways : 1;   // GX_ALWAYS instead of GX_LEQUAL
+    /* 0x90 */ u8 zUpdate : 1;
+    /* 0x90 */ u8 flag01 : 1;
+    /* 0x91 */ u8 pad91;
+    /* 0x92 */ u8 alpha;
+    /* 0x93 */ u8 viewFlags;     // low 2 bits: fn_800B3C04 result
+    /* 0x94 */ u16 attached;
+    /* 0x96 */ s16 attachJoint;  // -1: attach to the camera matrix
+    /* 0x98 */ u8 layer;
+    /* 0x99 */ u8 pad99;
+    /* 0x9A */ u8 castShadow;
+    /* 0x9B */ u8 pad9B[0xE8 - 0x9B];
+} StadiumObj; // size: 0xE8
+
+// lbl_3_common_bss_350E4: the stadium object manager.
+typedef struct StadiumObjMgr {
+    /* 0x00 */ StadiumObj* objs;
+    /* 0x04 */ StadiumObj* saved;
+    /* 0x08 */ u8 pad8[0xC];
+    /* 0x14 */ SortEnt* sort;
+    /* 0x18 */ u8 pad18[8];
+    /* 0x20 */ Light* lights[4];
+    /* 0x30 */ s32 count;
+    /* 0x34 */ u8 pad34[4];
+    /* 0x38 */ void* data;
+    /* 0x3C */ u8 pad3C[0x30];
+    /* 0x6C */ u8 sortByDepth;
+    /* 0x6D */ u8 pad6D[3];
+} StadiumObjMgr; // size: 0x70
+// TODO type: older functions in this file still view the manager as u8[].
+#define sStadiumMgr (*(StadiumObjMgr*)lbl_3_common_bss_350E4)
 
 typedef struct DspObj DspObj;
 struct DspObj {
@@ -36,11 +102,8 @@ struct DspObj {
     u8 padF0[0x10];
     DspObj* next;
 };
-extern u32 lbl_3_bss_190C;
-extern u8 g_d_GameSettings[];
-extern void PSMTXMultVec(void*, void*, void*);
+extern struct StadiumObj* lbl_3_bss_190C;
 extern void fn_8003A548(void*);
-extern void* fn_800BF068();
 extern u8 g_Ball[];
 typedef struct StadW78 {
     u8 pad[0x78];
@@ -67,33 +130,16 @@ extern void minigamesSetSomePointers(void);
 extern void minigamesGXStuff(void);
 extern void minigamesSetSomePointers2(void);
 extern void fn_8001B200(void);
-extern void fn_800B4278(void*);
 extern void fn_3_C1964(void);
 extern void fn_3_16E328(void);
 extern void fn_800528B4(void);
 extern void fn_8001E474(void);
-extern void CTRLBuildMatrix(u32, void*);
-extern void PSMTXConcat(void*, void*, void*);
-extern void DOSetWorldMatrix(void*, void*);
-extern void DOVARenderSkin(void*, void*, void*, void*, int, int);
 extern void fn_8003A8A0();
 extern f32 lbl_3_rodata_1DD4;
 extern u8 lbl_3_common_bss_350E4[];
 extern u32 lbl_3_bss_1904;
-extern void GXSetBlendMode(int, int, int, int);
-extern void GXSetNumTevStages(int);
-extern void GXSetTevOrder(int, int, int, int);
-extern void GXSetTevColorIn(int, int, int, int, int);
-extern void GXSetTevColorOp(int, int, int, int, int, int);
-extern void GXSetTevAlphaIn(int, int, int, int, int);
-extern void GXSetTevAlphaOp(int, int, int, int, int, int);
 extern void fn_800ACFB0(u32);
 extern void* _OSAllocFromHeap(s32, s32);
-extern void ACTSetAnimation(void*, void*, int, u16, f32, f32);
-extern void fn_800B4BC8(void*, int);
-extern void fn_800B4CA0(void*, f32);
-extern void fn_800B4C04(void*, f32);
-extern void fn_800B4AFC(void*, s32);
 
 typedef struct StadExtra {
     f32 a, b, c;
@@ -149,12 +195,12 @@ void fn_3_B80D0(void) {
 
 // .text:0x000B8184 size:0xF8 mapped:0x806F7218
 void fn_3_B8184(void* pp, void* cam) {
-    f32 m2[12];
-    f32 m[12];
+    Mtx m2;
+    Mtx m;
     DspObj* o;
     DspObj* n;
-    CTRLBuildMatrix(lbl_3_bss_190C, m);
-    if (!(m[7] > lbl_3_rodata_1DCC) || g_d_GameSettings[9] != 1) {
+    CTRLBuildMatrix(&lbl_3_bss_190C->ctrl, m);
+    if (!(m[1][3] > lbl_3_rodata_1DCC) || g_d_GameSettings.StadiumID != 1) {
         PSMTXConcat(cam, m, m2);
         o = *(DspObj**)pp;
         n = o->child;
@@ -176,14 +222,14 @@ void fn_3_B8184(void* pp, void* cam) {
 }
 
 // .text:0x000B827C size:0x10 mapped:0x806F7310
-u32 lbl_3_bss_190C;
+StadiumObj* lbl_3_bss_190C;
 
-u32 fn_3_B827C(void) {
+StadiumObj* fn_3_B827C(void) {
     return lbl_3_bss_190C;
 }
 
 // .text:0x000B828C size:0xC mapped:0x806F7320
-void fn_3_B828C(u32 val) {
+void fn_3_B828C(StadiumObj* val) {
     lbl_3_bss_190C = val;
 }
 
@@ -194,7 +240,7 @@ void fn_3_B8298(void) {
     u8* c;
     void* pp;
     u8* e;
-    switch (g_d_GameSettings[9]) {
+    switch (g_d_GameSettings.StadiumID) {
         case 3:
             fn_8003A548(fn_3_B80D0);
             break;
@@ -205,7 +251,7 @@ void fn_3_B8298(void) {
     for (; i < *(u32*)(c + 0x30); i++) {
         e = *(u8**)c + off;
         if (((e[0x90] >> 7) & 1) && *(void**)(e + 0x74) != 0 && e[0x9A] != 0) {
-            lbl_3_bss_190C = (u32)e;
+            lbl_3_bss_190C = (StadiumObj*)e;
             fn_3_B8184(*(void**)(e + 0x74), *(u8**)((u8*)fn_800BF068() + 0x14) + 0x40);
         }
         off += 0xE8;
@@ -237,7 +283,7 @@ void fn_3_B8464(void* mtx, void* obj) {
         }
         p += 4;
         do {
-            PSMTXMultVec(mtx, p, out);
+            PSMTXMultVec(mtx, (Vec*)p, (Vec*)out);
             p += 0x10;
             if (lbl_3_bss_1910[0] > out[0]) {
                 lbl_3_bss_1910[0] = out[0];
@@ -296,39 +342,23 @@ s32 fn_3_B8658(f32* a, f32* b) {
 }
 
 // .text:0x000B867C size:0x1AC mapped:0x806F7710
-typedef struct SortEnt {
+struct SortEnt {
     f32 z;
     s32 idx;
-} SortEnt;
-typedef struct StadVisObj {
-    u8 pad0[0x90];
-    u8 visible : 1;
-    u8 b6 : 1;
-    u8 sorted : 1;
-    u8 b4 : 5;
-    u8 pad91[0xE8 - 0x91];
-} StadVisObj;
-typedef struct StadObjList2 {
-    StadVisObj* objs;
-    u8 pad4[0x2C];
-    s32 count;
-    u8 pad34[0x6C - 0x34];
-    u8 flag6C;
-} StadObjList2;
-extern void CTRLGetTranslation(void*, f32*, f32*, f32*);
+};
 extern void* fn_800ACF34(s32, s32);
 extern void fn_800ACF14(void*);
 extern void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*)); // main/file_800BDEA0.h
 
 void fn_3_B867C(void* mtx, SortEnt* out) {
-    StadObjList2* c = (StadObjList2*)lbl_3_common_bss_350E4;
-    V3 v;
-    StadVisObj* obj;
+    StadiumObjMgr* c = &sStadiumMgr;
+    Vec v;
+    StadiumObj* obj;
     s32 i;
     s32 k;
     s32 n;
     void* tmp;
-    if (c->flag6C != 0) {
+    if (c->sortByDepth != 0) {
         n = 0;
         obj = &c->objs[c->count - 1];
         i = c->count - 1;
@@ -342,11 +372,11 @@ void fn_3_B867C(void* mtx, SortEnt* out) {
         } while (i-- != 0);
         k = c->count;
         i = c->count - 1;
-        obj = &((StadObjList2*)lbl_3_common_bss_350E4)->objs[i];
+        obj = &sStadiumMgr.objs[i];
         do {
             if (obj->visible) {
-                if (obj->sorted) {
-                    CTRLGetTranslation(obj, &v.x, &v.y, &v.z);
+                if (obj->depthFade) {
+                    CTRLGetTranslation(&obj->ctrl, &v.x, &v.y, &v.z);
                     PSMTXMultVec(mtx, &v, &v);
                     k--;
                     out[k].z = v.z;
@@ -427,8 +457,8 @@ s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
         if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
             return 0;
         }
-        CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
-        return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
+        CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, (MtxPtr)arg); // TODO type: arg is a matrix pointer
+        return sStadiumMgr.objs[idx].unk78;
     }
     if (type == 3) {
         if ((g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
@@ -440,8 +470,8 @@ s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
         if ((*(s16*)(g_Ball + 0x1B7A) >= 2) | (g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
             return 0;
         }
-        CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
-        return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
+        CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, (MtxPtr)arg); // TODO type: arg is a matrix pointer
+        return sStadiumMgr.objs[idx].unk78;
     }
     if (type == 5) {
         if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
@@ -452,8 +482,8 @@ s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
     if (type == 6) {
         return fn_3_E751C(idx, arg);
     }
-    CTRLBuildMatrix((u32)&((StadObj78**)lbl_3_common_bss_350E4)[0][idx], (void*)arg);
-    return ((StadObj78**)lbl_3_common_bss_350E4)[0][idx].w78;
+    CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, (MtxPtr)arg); // TODO type: arg is a matrix pointer
+    return sStadiumMgr.objs[idx].unk78;
 }
 
 // .text:0x000B939C size:0x28 mapped:0x806F8430
@@ -475,7 +505,6 @@ void fn_3_B93C8(void) {
 }
 
 // .text:0x000B93CC size:0x140 mapped:0x806F8460
-extern u8 lbl_80366158[];
 extern void fn_800638CC(void);
 typedef struct StadObjFn {
     u8 pad[0x7C];
@@ -485,12 +514,12 @@ typedef struct StadObjFn {
 
 void fn_3_B93CC(void) {
     s32 i;
-    if (g_d_GameSettings[0x55] == 0) {
+    if (g_d_GameSettings._55 == 0) {
         if (g_GameLogic[0x11E] == 0) {
             *(s16*)(lbl_3_common_bss_350E4 + 0x66) = rand();
         }
-        if (lbl_80366158[0x28] != 0) {
-            if (g_d_GameSettings[7] == 2 && *(void**)(lbl_3_common_bss_350E4 + 0x1C) != NULL) {
+        if (lbl_80366158._28 != 0) {
+            if (g_d_GameSettings.GameModeSelected == 2 && *(void**)(lbl_3_common_bss_350E4 + 0x1C) != NULL) {
                 (*(void (**)(void))(lbl_3_common_bss_350E4 + 0x1C))();
             }
         } else {
@@ -552,7 +581,7 @@ void fn_3_B95EC(void) {
         ((void (*)(void))lbl_3_bss_9940)();
         lbl_3_bss_9940 = 0;
     }
-    if (g_d_GameSettings[0x11] != 0) {
+    if (g_d_GameSettings.minigamesEnabled != 0) {
         fn_8001B200();
         if (*(u32*)(lbl_3_common_bss_350E4 + 0x14) != 0) {
             fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x14));
@@ -674,23 +703,24 @@ void fn_3_B98E8(void* p) {
 // .text:0x000B99E4 size:0x1D0 mapped:0x806F8A78
 typedef struct LitPos {
     f32 x, y, z;
-    u32 color;
+    GXColor color;
 } LitPos;
-extern u8 lbl_800F7478[];
+// Per-stadium light setup (packed lights for fn_80023B90, then the ambient colour).
+typedef struct StadiumLightRow {
+    /* 0x00 */ u8 light[4][0xA];
+    /* 0x28 */ GXColor ambient;
+} StadiumLightRow; // size: 0x2C
+extern StadiumLightRow lbl_800F7478[];
 extern void (*lbl_3_data_10AB0[])(void*);
 extern void fn_3_35E4(u32 val);
 extern void fn_80023B90(void*, LitPos*);
-extern void LITAlloc(void**);
-extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
-extern void LITInitPos(void*, f32, f32, f32);
-extern void LITInitColor(void*, u32*);
 extern void fn_8001B214(void (*)(void));
-extern void fn_800B0A14_removeQueue(void);
+extern void fn_800B0A14_removeQueue(void); // TODO type: takes a task pointer (main/file_800B0724.h); this caller passes none
 
 void fn_3_B99E4(void) {
     if ((s32)lbl_803C6CF8[0x715] == 1) {
         lbl_3_common_bss_350E4[0x6A] = 0;
-        fn_3_B9FB8(g_d_GameSettings[9], *(void**)(lbl_8036E548 + 8));
+        fn_3_B9FB8(g_d_GameSettings.StadiumID, *(void**)(lbl_8036E548 + 8));
         fn_800B0A14_removeQueue();
     }
 }
@@ -730,12 +760,6 @@ s32 fn_3_B9BB4(u32 type) {
     return 0;
 }
 
-extern void convertTextureHeader(void* textures);
-extern void LoadActorLayout(void* layout);
-extern void convertGeometryAndSknHeader(void* geometry, void* sknHeader);
-extern void haveActLayoutPointToGeoHeader(void* actor, void* geometry);
-extern void fn_800BD190(void* geometry, void* textures);
-extern void ANIMGet(void* animBank);
 
 // Relocates a packed archive in place. `kinds` gives the content type of each
 // file group; `table` starts with a list of u32 offsets (relative to `table`)
@@ -776,7 +800,7 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
             LoadActorLayout(layout);
             convertGeometryAndSknHeader(geo, skn);
             skn = NULL;
-            fn_800BD190(geo, tex);
+            fn_800BD190(geo, (s32)tex); // TODO type: second argument is a pointer
             haveActLayoutPointToGeoHeader(layout, geo);
             break;
         case 6: {
@@ -815,15 +839,15 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
 // .text:0x000B9FB8 size:0x198 mapped:0x806F904C
 void fn_3_B9FB8(u32 type, void* p) {
     LitPos pos;
-    void* lit;
-    u32 color;
+    Light* lit;
+    GXColor color;
     s32 i;
     fn_8001E474();
     memset(lbl_3_common_bss_350E4, 0, 0x70);
     fn_3_35E4(0);
     if (p != NULL) {
         for (i = 0; i < 4; i++) {
-            fn_80023B90(lbl_800F7478 + g_d_GameSettings[0x54] * 0x2C + i * 10, &pos);
+            fn_80023B90(lbl_800F7478[g_d_GameSettings._54].light[i], &pos);
             LITAlloc(&lit);
             LITInitAttn(lit, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
             LITInitPos(lit, pos.x, pos.y, pos.z);

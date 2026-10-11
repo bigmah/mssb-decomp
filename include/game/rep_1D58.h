@@ -3,11 +3,14 @@
 
 #include "mssbTypes.h"
 
+struct StadiumObj;
+struct SortEnt;
+
 void fn_3_B7FC8(void* a, void* b);
 void fn_3_B80D0(void);
 void fn_3_B8184(void* pp, void* cam);
-u32 fn_3_B827C(void);
-void fn_3_B828C(u32 val);
+struct StadiumObj* fn_3_B827C(void);
+void fn_3_B828C(struct StadiumObj* val);
 void fn_3_B8298(void);
 void fn_3_B8414(void* a, void* b);
 void fn_3_B8464(void* mtx, void* obj);
