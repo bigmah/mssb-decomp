@@ -276,7 +276,63 @@ u32 fn_800E4B1C(void* ctx) {
 
 // .text:0x800E4B90 size:0x464
 void fn_800E4B90(HVQM4SeqObj* seq, HVQState* state) {
-    return;
+    HVQBlock* blocks;
+        s32 i;
+    HVQBlock* p;
+    s32 n;
+
+    seq->state = state;
+    fn_800E07E8(seq, 0, 1, 1);
+    fn_800E07E8(seq, 1, seq->hSamp, seq->vSamp);
+    fn_800E07E8(seq, 2, seq->hSamp, seq->vSamp);
+    if ((state->isLandscape = seq->frameWidth >= seq->frameHeight)) {
+        state->nestWidth = 70;
+        state->nestHeight = 38;
+    } else {
+        state->nestWidth = 38;
+        state->nestHeight = 70;
+    }
+    state->basisNum[0].tree = state->basisNum[1].tree = &state->basisNumTree;
+    state->basisNumRun[0].tree = state->basisNumRun[1].tree = &state->runTree;
+    state->dcValues[0].tree = state->dcValues[1].tree = state->dcValues[2].tree = &state->dcTree;
+    state->dcRle[0].tree = state->dcRle[1].tree = state->dcRle[2].tree = &state->runTree;
+    state->bufTree0[0].tree = state->bufTree0[1].tree = state->bufTree0[2].tree = &state->bufTree;
+    state->mvX.tree = state->mvY.tree = &state->mvTree;
+    state->mcbType.tree = state->mcbProc.tree = &state->mcTypeTree;
+
+    // block grids follow the state; fill each grid's border with "no block"
+    blocks = (HVQBlock*)(state + 1);
+    for (i = 0; i < 3; i++) {
+        HVQPlaneDesc* plane = &state->planes[i];
+        plane->border = blocks;
+        plane->payload = blocks + plane->blocksPerRow + 1;
+        blocks += plane->blocksPerRow * plane->rowsWithBorder;
+
+        p = plane->border;
+        for (n = plane->blocksPerRow; n > 0; n--) {
+            p->value = 0x7F;
+            p->type = 0xFF;
+            p++;
+        }
+        p = blocks;
+        for (n = plane->blocksPerRow; n > 0; n--) {
+            p[-1].value = 0x7F;
+            p[-1].type = 0xFF;
+            p--;
+        }
+        p = plane->border + plane->blocksPerRow;
+        for (n = plane->rowsWithBorder - 2; n > 0; n--) {
+            p->value = 0x7F;
+            p->type = 0xFF;
+            p += plane->blocksPerRow;
+        }
+        p = plane->border + plane->blocksPerRow * 2 - 1;
+        for (n = plane->rowsWithBorder - 2; n > 0; n--) {
+            p->value = 0x7F;
+            p->type = 0xFF;
+            p += plane->blocksPerRow;
+        }
+    }
 }
 
 // .text:0x800E4FF4 size:0x928
