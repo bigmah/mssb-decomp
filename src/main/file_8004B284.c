@@ -199,7 +199,69 @@ extern PartPair lbl_800FC388[];
 
 // .text:0x8004B7F4 size:0x2F8
 void fn_8004B7F4(CharModel* model) {
-    return;
+    s32 idx; // table index, then loop counter; only set for charID 40/41 (the original leaves it unset otherwise)
+    s32 side;
+    AnimSlotPair* anim;
+    u16 parts[2];
+    AnimSlot* slots[2];
+
+    switch (model->charID) {
+    case 40:
+        idx = 1;
+        break;
+    case 41:
+        idx = 2;
+        break;
+    }
+
+    if ((model->animID >= 0x69 && model->animID < 0x75) || model->animID == -1) {
+        fn_8001D180(model->playerIdx, lbl_800FC388[idx].a, 0);
+        fn_8001D180(model->playerIdx, lbl_800FC388[idx].b, 0);
+        fn_8001D180(model->playerIdx, 0, 0);
+        fn_8001D180(model->playerIdx, 1, 0);
+        return;
+    }
+
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        if (model->unk278) {
+            side = !model->unk25B;
+            fn_8001D180(model->playerIdx, !side, 0);
+        } else {
+            side = !model->unk25A;
+            fn_8001D180(model->playerIdx, !side, 1);
+        }
+    } else if (g_d_GameSettings.GameModeSelected == 7) {
+        side = !model->unk25B;
+        fn_8001D180(model->playerIdx, !side, 0);
+    } else if (model->playerIdx >= 9) {
+        side = !model->unk25B;
+        fn_8001D180(model->playerIdx, !side, 0);
+    } else {
+        side = !model->unk25A;
+        fn_8001D180(model->playerIdx, !side, 1);
+    }
+    fn_8001D180(model->playerIdx, side, 0);
+
+    anim = model->anim2;
+    parts[side] = lbl_800FC388[idx].a;
+    parts[!side] = lbl_800FC388[idx].b;
+    if (anim != NULL) {
+        if (!model->unk278) {
+            fn_8001D180(model->playerIdx, parts[0], 0);
+            fn_8001D180(model->playerIdx, parts[1], 0);
+            return;
+        }
+        slots[side] = &anim->slots[0];
+        slots[!side] = &anim->slots[1];
+        idx = 1;
+        do {
+            if (fn_80024D2C(slots[idx]) & 0x20000000) {
+                fn_8001D180(model->playerIdx, parts[idx], 1);
+            } else {
+                fn_8001D180(model->playerIdx, parts[idx], 0);
+            }
+        } while (idx-- != 0);
+    }
 }
 
 // .text:0x8004BAEC size:0x280
