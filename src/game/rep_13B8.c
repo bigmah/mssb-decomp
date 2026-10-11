@@ -1698,9 +1698,138 @@ int fn_3_846C8(int i) {
 }
 
 // .text:0x00084AD0 size:0x5A4 mapped:0x806C3B64
-void fn_3_84AD0(void) {
-    return;
+extern const f32 lbl_3_rodata_14AC;
+extern const f32 lbl_3_rodata_14B0;
+extern const f32 lbl_3_rodata_14B4;
+extern const f32 lbl_3_rodata_14B8;
+// NONMATCHING 96%: fielder loop not unrolled the same way, register allocation, constant reload
+#if NONMATCHING
+int fn_3_84AD0(int i, int frame) {
+    u8* r = g_Runners + i * 0x154;
+    int eta;
+    f32 best;
+    int bestK;
+    f32 ballDist;
+    s16 ballFrames;
+    s16 ballPos;
+    u8* f;
+    int k;
+
+    if (*(s16*)(r + 0xEE) == 1) {
+        return 1;
+    }
+    if (i == 3 && *(s16*)(g_RunningLogic + 2) == 0x1011) {
+        r[0x12E] = 0;
+        return 1;
+    }
+    if ((g_FieldingLogic[0x107] == 3 || g_FieldingLogic[0x107] == 4) && r[0x125] == r[0x124]) {
+        r[0x12E] = r[0x126];
+        return 1;
+    }
+    eta = frame + fn_3_A6810(*(f32*)(g_Ball.b + frame * 16 + 0x354), *(f32*)(g_Ball.b + frame * 16 + 0x35C),
+                             ((XZ13B8*)lbl_3_data_4444)[r[0x126]].x, ((XZ13B8*)lbl_3_data_4444)[r[0x126]].z);
+    eta += 20;
+    if (*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0x10) * 4 + 0x14) >= 3) {
+        eta -= 30;
+    } else {
+        eta += lbl_3_data_1C88[*(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 0xC) * 4 + 0xE4)];
+    }
+    if (i == 2) {
+        ballFrames = *(s16*)(g_Ball.b + 0x1B66);
+        if (ballFrames < 100 && g_Runners[0x51F] == 0) {
+            ballPos = *(s16*)(g_Ball.b + 0x1B9C);
+            if (ballPos > 0x2A8 && ballPos < 0x30C) {
+                if (eta + 45 > *(s16*)(r + 0xEA)) {
+                    r[0x12E] = 3;
+                    return 1;
+                }
+                if (ballFrames < 60 && g_Ball.b[0x1BBE] <= 1) {
+                    return 0;
+                }
+            }
+            if (ballPos > 0x3A0 && ballPos < 0x460 && ballFrames < 60 && g_Ball.b[0x1BBE] <= 1) {
+                return 0;
+            }
+            if (g_Ball.b[0x1BCF] != 0 && ballFrames < 60) {
+                r[0x12E] = 3;
+                return 1;
+            }
+        }
+    }
+    if (g_Ball.b[0x1BBE] >= 3) {
+        if (*(f32*)(r + 0x64) >= lbl_3_rodata_14AC && r[0x137] == 1) {
+            r[0x12E] = 0;
+            return 1;
+        }
+        if (r[0x125] == r[0x124] && eta > *(s16*)(r + 0xEA) - 30) {
+            return 1;
+        }
+        if (eta > *(s16*)(r + 0xEA)) {
+            return 1;
+        }
+        return -2;
+    }
+    best = lbl_3_rodata_14B0;
+    bestK = -1;
+    if (g_Ball.b[0x1BF1] != 0) {
+        ballDist = *(f32*)(g_Ball.b + 0x1A00);
+        for (k = 2; k < 6; k++) {
+            f = g_Fielders + k * 0x268;
+            if (!(ballDist > lbl_3_rodata_1410 + *(f32*)(f + 0x70)) && *(f32*)(f + 0x7C) < best) {
+                best = *(f32*)(f + 0x7C);
+                bestK = k;
+            }
+        }
+        if (best < lbl_3_rodata_1410) {
+            k = bestK * 0x268;
+            if (*(f32*)(g_Fielders + k + 0x70) > ballDist && (r[0x137] == 3 || r[0x137] == 2)) {
+                if (fn_3_A6810(*(f32*)(g_Fielders + k), *(f32*)(g_Fielders + k), ((XZ13B8*)lbl_3_data_4444)[r[0x125]].x, ((XZ13B8*)lbl_3_data_4444)[r[0x125]].z) <
+                    *(s16*)(r + 0xEC) - 20) {
+                    return -1;
+                }
+            }
+        }
+    }
+    if (g_Ball.b[0x1BBE] <= 1 && *(f32*)(g_Ball.b + 0x1A14) > lbl_3_rodata_1450 &&
+        *(f32*)(g_Ball.b + 0x1A00) > lbl_3_rodata_14B4) {
+        if (bestK >= 0) {
+            if (*(f32*)(g_Fielders + bestK * 0x268 + 0x70) - *(f32*)(g_Ball.b + 0x1A00) < best) {
+                return 1;
+            }
+        } else {
+            return 1;
+        }
+    }
+    if (g_Ball.b[0x1BBE] >= 2 || bestK == -1) {
+        if (*(f32*)(r + 0x64) >= lbl_3_rodata_14B8 && r[0x137] == 1) {
+            r[0x12E] = 0;
+            return 1;
+        }
+        if (r[0x125] == r[0x124] && eta > *(s16*)(r + 0xEA) - 30) {
+            return 1;
+        }
+        if (g_Ball.b[0x1BF1] != 0) {
+            if (eta > *(s16*)(r + 0xEA) + 30) {
+                return 1;
+            }
+            if (*(f32*)(r + 0x68) > lbl_3_rodata_1450) {
+                return 1;
+            }
+            return -1;
+        }
+        if (g_Ball.b[0x1BC9] == 3) {
+            if (eta > *(s16*)(r + 0xEA) + 20) {
+                return 1;
+            }
+            if (*(f32*)(r + 0x68) > lbl_3_rodata_1450) {
+                return 1;
+            }
+            return -1;
+        }
+    }
+    return 0;
 }
+#endif
 
 // .text:0x00085074 size:0x6D0 mapped:0x806C4108
 void fn_3_85074(void) {
