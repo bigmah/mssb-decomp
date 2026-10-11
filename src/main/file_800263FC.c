@@ -291,6 +291,42 @@ static inline void QuadCorners(f32 width, f32 height) {
     }
 }
 
+// Sort a particle list back to front by view-space z (the body of fn_80031F34,
+// which the original inlines into the draw functions).
+static inline Particle* ZSortParticles(Particle* list, s32 n) {
+    Vec v;
+    s32 i = 0;
+    s32 count = n;
+    ParticleSortEntry* buf;
+    ParticleSortEntry* ent;
+    Particle* p;
+
+    if (n != 0) {
+        buf = _OSAllocFromHeap(0x20, n * 2 * sizeof(ParticleSortEntry));
+        for (p = list, ent = buf; p != NULL; p = p->next) {
+            if (i >= n) {
+                OSReport("zsort particle err.\n");
+                break;
+            }
+            ent->p = p;
+            PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
+            i++;
+            ent->z = v.z;
+            ent++;
+        }
+        fn_800C07BC(buf, buf + n, count, sizeof(ParticleSortEntry), fn_80032038);
+        list = buf[0].p;
+        ent = buf;
+        while (--n != 0) {
+            ent->p->next = ent[1].p;
+            ent++;
+        }
+        ent->p->next = NULL;
+        fn_800ACFB0(buf);
+    }
+    return list;
+}
+
 s32 fn_8002E3DC(Emitter* e);
 s32 fn_80026E58(Emitter* e);
 s32 fn_800263FC(Emitter* e);
@@ -371,8 +407,7 @@ static inline u32 Expand4444(u16 c) {
 }
 
 // .text:0x800263FC size:0x59C
-// NONMATCHING 43%: the original inlines the z-sort (fn_80031F34) and the corner setup with the file-static bss base
-// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
+// NONMATCHING 93%: the original addresses the scratch matrices/corners off the file-static bss base (lbl_8017EC00 + offset)
 #if NONMATCHING
 s32 fn_800263FC(Emitter* e) {
     s32 alive = 0;
@@ -382,7 +417,7 @@ s32 fn_800263FC(Emitter* e) {
     Particle* lastDead = NULL;
     Particle* deadHead = NULL;
 
-    p = fn_80031F34(e->particles, e->count);
+    p = ZSortParticles(e->particles, e->count);
     e->particles = p;
     link = &e->particles;
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
@@ -1468,8 +1503,7 @@ u8 fn_8002AC68(Emitter* e, Particle* p) {
 #endif
 
 // .text:0x8002B014 size:0x3EC
-// NONMATCHING 36%: the original inlines the z-sort (fn_80031F34) twice
-// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
+// NONMATCHING 95%: register allocation in the inlined z-sorts (the original keeps the count copy in its own saved reg)
 #if NONMATCHING
 s32 fn_8002B014(Emitter* e) {
     s32 alive = 0;
@@ -1479,7 +1513,7 @@ s32 fn_8002B014(Emitter* e) {
     Particle* deadHead;
 
     if (e->count != 0) {
-        p = fn_80031F34(e->particles, e->count);
+        p = ZSortParticles(e->particles, e->count);
         e->particles = p;
         link = &e->particles;
         lastDead = NULL;
@@ -1487,22 +1521,24 @@ s32 fn_8002B014(Emitter* e) {
         // note: a particle with life 0 here would never be advanced past (as in the original)
         do {
             if (p->life != 0) {
-                if (p->delay > 0) {
-                    link = &p->next;
-                    p->delay--;
-                    alive++;
-                } else if (fn_8002AC68(e, p)) {
-                    *link = p->next;
-                    if (lastDead != NULL) {
-                        lastDead->next = p;
+                if (p->delay <= 0) {
+                    if (fn_8002AC68(e, p)) {
+                        *link = p->next;
+                        if (lastDead != NULL) {
+                            lastDead->next = p;
+                        } else {
+                            deadHead = p;
+                        }
+                        lastDead = p;
+                        p->next = NULL;
+                        e->count--;
                     } else {
-                        deadHead = p;
+                        link = &p->next;
+                        alive++;
                     }
-                    lastDead = p;
-                    p->next = NULL;
-                    e->count--;
                 } else {
                     link = &p->next;
+                    p->delay--;
                     alive++;
                 }
             }
@@ -1517,29 +1553,31 @@ s32 fn_8002B014(Emitter* e) {
         }
     }
     if (e->u.tE.subCount != 0) {
-        p = fn_80031F34(e->u.tE.sub, e->u.tE.subCount);
+        p = ZSortParticles(e->u.tE.sub, e->u.tE.subCount);
         e->u.tE.sub = p;
         link = &e->u.tE.sub;
         lastDead = NULL;
         deadHead = NULL;
         do {
             if (p->life != 0) {
-                if (p->delay > 0) {
-                    link = &p->next;
-                    p->delay--;
-                    alive++;
-                } else if (fn_8002A85C(e, p)) {
-                    *link = p->next;
-                    if (lastDead != NULL) {
-                        lastDead->next = p;
+                if (p->delay <= 0) {
+                    if (fn_8002A85C(e, p)) {
+                        *link = p->next;
+                        if (lastDead != NULL) {
+                            lastDead->next = p;
+                        } else {
+                            deadHead = p;
+                        }
+                        lastDead = p;
+                        p->next = NULL;
+                        e->u.tE.subCount--;
                     } else {
-                        deadHead = p;
+                        link = &p->next;
+                        alive++;
                     }
-                    lastDead = p;
-                    p->next = NULL;
-                    e->u.tE.subCount--;
                 } else {
                     link = &p->next;
+                    p->delay--;
                     alive++;
                 }
             }
@@ -2704,8 +2742,7 @@ void fn_80030D88(Vec* pos, Vec* dir, ParticleParams5* prm, u8 type) {
 #endif
 
 // .text:0x80031034 size:0x790
-// NONMATCHING 43%: the original inlines fn_80031F34 and the corner/draw helpers with the file-static bss base
-// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
+// NONMATCHING 89%: the original inlines the corner/draw helpers with the file-static bss base (lbl_8017EC00 + offset)
 #if NONMATCHING
 s32 fn_80031034(Emitter* e) {
     Vec a;
@@ -2725,7 +2762,7 @@ s32 fn_80031034(Emitter* e) {
 
     GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
     GXSetZMode(GX_TRUE, GX_LEQUAL, e->u.t5.unk18);
-    e->particles = fn_80031F34(e->particles, e->count);
+    e->particles = ZSortParticles(e->particles, e->count);
     p = e->particles;
     link = &e->particles;
     while (p != NULL) {
@@ -2919,40 +2956,10 @@ void fn_80031CA4(Vec* pos, ParticleParams5* prm) {
 #endif
 
 // .text:0x80031F34 size:0x104
-// NONMATCHING 62%: the original keeps n and the countdown copy in separate saved regs
+// NONMATCHING 93%: the original keeps n and the count copy in separate saved regs
 #if NONMATCHING
 Particle* fn_80031F34(Particle* list, s32 n) {
-    Vec v;
-    s32 i = 0;
-    s32 left = n;
-    ParticleSortEntry* buf;
-    ParticleSortEntry* ent;
-    Particle* p;
-
-    if (n != 0) {
-        buf = _OSAllocFromHeap(0x20, n * 2 * sizeof(ParticleSortEntry));
-        for (p = list, ent = buf; p != NULL; p = p->next) {
-            if (i >= n) {
-                OSReport("zsort particle err.\n");
-                break;
-            }
-            ent->p = p;
-            PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
-            i++;
-            ent->z = v.z;
-            ent++;
-        }
-        fn_800C07BC(buf, buf + n, n, sizeof(ParticleSortEntry), fn_80032038);
-        list = buf[0].p;
-        ent = buf;
-        while (--left != 0) {
-            ent->p->next = ent[1].p;
-            ent++;
-        }
-        ent->p->next = NULL;
-        fn_800ACFB0(buf);
-    }
-    return list;
+    return ZSortParticles(list, n);
 }
 #endif
 
