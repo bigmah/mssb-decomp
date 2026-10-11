@@ -4,6 +4,7 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_3_data_D258[];
+extern u8 lbl_3_data_D250[5];
 extern u8 lbl_3_data_C56C[2][0x660];
 extern u16 lbl_3_data_D22C[4];
 extern u16 lbl_3_data_D234[14];
@@ -224,9 +225,150 @@ void fn_3_99CFC(void) {
 }
 
 // .text:0x00099E10 size:0xA94 mapped:0x806D8EA4
+// NONMATCHING 99%: register allocation only (original walks task->stars and &g_GameLogic.TeamStars with r31/r12); decl-order shuffles did not fix it
+#if NONMATCHING
 void fn_3_99E10(void) {
+    StarHudTask* task = (StarHudTask*)lbl_803CC1B8;
+    s32 gained = -1;
+    s32 lost = -1;
+    s32 moonStars = -1;
+    s32 i;
+    s32 team;
+    task->timer++;
+    if (lbl_3_common_bss_32724.hudOff != 0 || g_GameLogic.hudLoadingRelated != 0 || g_GameLogic.gameStatus == 3 ||
+        g_GameLogic.gameStatus == 0xE || g_GameLogic.secondaryGameMode == 0xA) {
+        goto remove;
+    }
+    if (g_GameLogic.IsStarChance == 0 || lbl_3_common_bss_34C90._1D5 != 0) {
+        if (lbl_3_common_bss_32724._A7 == 0) {
+            goto remove;
+        }
+        if (lbl_3_common_bss_32724._A7 < 0xFF) {
+            for (i = 0; i < 50; i++) {
+                HUD_OBJ(task, i)->color = (HUD_OBJ(task, i)->color & ~0xFF) | lbl_3_common_bss_32724._A7;
+            }
+        } else {
+            for (i = 0; i < 50; i++) {
+                HUD_OBJ(task, i)->color = (HUD_OBJ(task, i)->color & ~0xFF) | lbl_3_common_bss_32724._A6;
+            }
+        }
+    }
+    if (lbl_3_common_bss_34C90._1D5 != 0) {
+        if (lbl_3_common_bss_32724._A7 == 0) {
+            goto remove;
+        }
+        if (lbl_3_common_bss_32724._A7 < 0xFF) {
+            for (i = 0; i < 50; i++) {
+                HUD_OBJ(task, i)->color = (HUD_OBJ(task, i)->color & ~0xFF) | lbl_3_common_bss_32724._A7;
+            }
+        }
+    }
+    for (team = 0; team < 2; team++) {
+        for (i = 0; i < 5; i++) {
+            s32 idx = i + 0x27;
+            u16 base;
+            s32 stars;
+            LayoutObj* o;
+            s32 frame;
+            if (team == g_GameLogic.teamFielding) {
+                idx = i + 0x22;
+            }
+            base = task->baseIdx;
+            stars = g_GameLogic.TeamStars[team];
+            o = lbl_80371C30[base + idx].obj;
+            frame = o->_5C >> 16;
+            if (g_Batter.moonShotInd != 0 && g_Ball.framesSinceHit == 0 && team == g_GameLogic.teamBatting) {
+                {
+                    s32 k;
+                    for (k = 0; k < 5; k++) {
+                        if (lbl_3_data_D250[k] > g_GameLogic.PauseSimulationFrameCount) {
+                            break;
+                        }
+                    }
+                    stars = k;
+                }
+                moonStars = stars;
+            }
+            if (stars > i) {
+                if (task->stars[team] <= i) {
+                    if (frame == 0) {
+                        s32 flash = lbl_80371C30[base + 44].obj->_5C >> 16;
+                        if (flash == 0) {
+                            gained = team;
+                        } else if (flash == 0x19) {
+                            o->_5C = 0x40000;
+                            HUD_OBJ(task, idx)->_68 = 1;
+                        }
+                    } else if (frame >= 0x14) {
+                        o->_5C = 0x30000;
+                        HUD_OBJ(task, idx)->_68 = 0;
+                        task->stars[team]++;
+                    }
+                } else if (frame >= 3) {
+                    o->_68 = 0;
+                }
+            } else if (stars < task->stars[team] && frame >= 3) {
+                o->_68 = 4;
+                lost = team;
+                task->stars[team]--;
+                if (moonStars >= 0 && moonStars != 4) {
+                    lost = -1;
+                }
+            }
+        }
+    }
+    if (gained >= 0) {
+        HUD_OBJ(task, 44)->flags |= 2;
+        HUD_OBJ(task, 44)->_68 = 1;
+        HUD_OBJ(task, 45)->_68 = 1;
+        if (g_Batter.batterHand == 0) {
+            if (gained == g_GameLogic.teamFielding) {
+                HUD_OBJ(task, 45)->_72 = 1;
+            } else {
+                HUD_OBJ(task, 45)->_72 = 0;
+            }
+        } else if (gained == g_GameLogic.teamFielding) {
+            HUD_OBJ(task, 45)->_72 = 3;
+        } else {
+            HUD_OBJ(task, 45)->_72 = 2;
+        }
+    } else if ((HUD_OBJ(task, 44)->_69 == 2) ? 1 : 0) {
+        HUD_OBJ(task, 44)->flags |= 2;
+        HUD_OBJ(task, 44)->_68 = 0;
+        HUD_OBJ(task, 44)->_5C = 0;
+        HUD_OBJ(task, 45)->_68 = 0;
+        HUD_OBJ(task, 45)->_5C = 0;
+        HUD_OBJ(task, 44)->flags &= ~2;
+    }
+    if (lost >= 0) {
+        HUD_OBJ(task, 46)->flags |= 2;
+        HUD_OBJ(task, 46)->_68 = 4;
+        HUD_OBJ(task, 47)->_68 = 4;
+        if (g_Batter.batterHand == 0) {
+            if (lost == g_GameLogic.teamFielding) {
+                HUD_OBJ(task, 47)->_72 = 1;
+            } else {
+                HUD_OBJ(task, 47)->_72 = 0;
+            }
+        } else if (lost == g_GameLogic.teamFielding) {
+            HUD_OBJ(task, 47)->_72 = 3;
+        } else {
+            HUD_OBJ(task, 47)->_72 = 2;
+        }
+    } else if ((HUD_OBJ(task, 46)->_5C >> 16) == 0) {
+        HUD_OBJ(task, 46)->flags |= 2;
+        HUD_OBJ(task, 46)->_68 = 0;
+        HUD_OBJ(task, 46)->_5C = 0x1E0000;
+        HUD_OBJ(task, 47)->_68 = 0;
+        HUD_OBJ(task, 47)->_5C = 0x1E0000;
+        HUD_OBJ(task, 46)->flags &= ~2;
+    }
     return;
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    lbl_3_common_bss_32724._A8 = 0;
 }
+#endif
 
 // .text:0x0009A8A4 size:0x864 mapped:0x806D9938
 void fn_3_9A8A4(void) {

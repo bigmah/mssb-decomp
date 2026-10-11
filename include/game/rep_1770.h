@@ -4,6 +4,18 @@
 #include "mssbTypes.h"
 #include "game/auto_00_00097144_text.h"
 
+// Star-meter HUD task (fn_3_9A8A4 / fn_3_99E10): HudTask with the per-team star counts at 0x1C.
+typedef struct StarHudTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
+    /*0x16*/ u16 _16;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ u16 stars[2]; // stars currently shown per team
+    /*0x20*/ u16 _20;
+} StarHudTask;
+
 void fn_3_993A8(void);
 void fn_3_9976C(void);
 void fn_3_99818(void);
