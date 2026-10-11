@@ -172,7 +172,8 @@ typedef struct SaveImage {
     /*0x5F1*/ u8 _5F1[3];
     /*0x5F4*/ s32 _5F4;
     /*0x5F8*/ SaveChallengeBlock challenge[3];
-} SaveImage;
+    /*0xD51C*/ u8 _D51C[0x10000 - 0xD51C]; // filled with 0xEE
+} SaveImage; // size: 0x10000
 
 extern SaveImage lbl_802D4B00;
 
@@ -189,7 +190,10 @@ extern SaveProgress lbl_80354768;
 
 // Save/load dialog state (lbl_803C50E8), driven by fn_8004A34C.
 typedef struct SaveDialog {
-    /*0x00*/ u8 _00[0x3E];
+    /*0x00*/ u8 _00;
+    /*0x01*/ u8 _01[0x9 - 0x1];
+    /*0x09*/ u8 _09;
+    /*0x0A*/ u8 _0A[0x3E - 0xA];
     /*0x3E*/ u8 status;
     /*0x3F*/ u8 msg;
     /*0x40*/ u8 port;
@@ -227,6 +231,7 @@ void fn_8003AD84(TexArchive* arc);
 void fn_8003E8D8(void);
 void fn_8003F23C(void);
 void fn_8003F2B8(void);
+
 void fn_8003AECC(void);
 void fn_8003B5B0(void);
 void fn_8003BB90(void);
