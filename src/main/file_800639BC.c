@@ -75,8 +75,25 @@ s32 translateStarPitchHitIndex(u8 pitch) {
 }
 
 // .text:0x800647E0 size:0x9C
-void translateStarPitch(void) {
-    return;
+u8 translateStarPitch(u8 star) {
+    switch (star) {
+    case 0: return 0x85;
+    case 1: return 0x87;
+    case 2: return 0x91;
+    case 3: return 0x93;
+    case 4: return 0x99;
+    case 5: return 0x9B;
+    case 6: return 0x8D;
+    case 7: return 0x8F;
+    case 8: return 0x89;
+    case 9: return 0x8B;
+    case 10: return 0x95;
+    case 11: return 0x97;
+    case 12: return 0xA1;
+    case 13: return 0xA0;
+    case 14: return 0xA2;
+    }
+    return star;
 }
 
 // .text:0x8006487C size:0x9C
