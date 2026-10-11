@@ -31,6 +31,7 @@ extern PracticeTutorBss lbl_3_common_bss_34C90;
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
+extern PracticeMsgEntry lbl_3_data_103B8[][4][4];
 extern u8 lbl_3_data_FAA8[3][9];
 extern s16 lbl_3_data_104B8[][2][3];
 extern u8 lbl_3_data_B1BC[];
@@ -51,7 +52,7 @@ void fn_3_157DB8(s32 arg0) {
 
 // fn_3_1580AC, size:0x60
 void fn_3_1580AC(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeMsgTask* o = lbl_803CC1B8[0];
     fn_80034E20(o, lbl_3_data_BD90);
     o->state = 0;
     o->text = 0;
@@ -161,9 +162,9 @@ void fn_3_1590C8(void) {
 void fn_3_159590(void) {
     PracticeTask* o = lbl_803CC1B8[0];
     fn_80034E20(o, lbl_3_data_B3F4);
-    o->_18 = 0;
+    o->timer = 0;
     o->_1A = 0;
-    o->state = 0;
+    o->text[0] = 0;
     ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_159114;
 }
 
@@ -242,7 +243,7 @@ void fn_3_15B610(void) {
 
 // fn_3_158FE4, size:0xE4
 void fn_3_158FE4(void) {
-    PracticeTask* o;
+    PracticeMsgTask* o;
     LayoutObj* w;
     LayoutSlot* e;
     fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_B85C);
@@ -254,7 +255,7 @@ void fn_3_158FE4(void) {
     fn_800363D8(o, 0xD, 2, 0xE, g_Practice.practiceLevel);
     g_Practice.laukituTextChannelIndex = -1;
     g_Practice.diagramTextChannelIndex = -1;
-    o->_18 = 0;
+    o->timer = 0;
     o->_1A = 0;
     o->state = 0;
     o->text = 0;
@@ -404,7 +405,7 @@ void fn_3_15B494(void) {
 
 // .text:0x0015A244 size:0x204
 void fn_3_15A244(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeMsgTask* o = lbl_803CC1B8[0];
     s32 i;
 
     fn_80034E20(o, lbl_3_data_B1BC);
@@ -427,7 +428,7 @@ void fn_3_15A244(void) {
 
 // .text:0x00157E28 size:0x284
 void fn_3_157E28(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeMsgTask* o = lbl_803CC1B8[0];
     LayoutObj* obj;
 
     if (lbl_3_common_bss_32724._96 != 0) {
@@ -580,5 +581,65 @@ void fn_3_15A75C(void) {
     if (g_GameLogic.gameStatus == 8) {
         lbl_3_common_bss_32724._A7 = 0;
         lbl_3_common_bss_32724._A5 = 0;
+    }
+}
+
+// .text:0x001583AC size:0x304
+void fn_3_1583AC(void) {
+    PracticeTask* o = lbl_803CC1B8[0];
+    s32 v;
+    s32 c;
+    s32 i;
+    s32 any;
+
+    if (lbl_3_common_bss_32724._96 == 0 && (g_Practice._1C7 == 0 || lbl_3_common_bss_34C90._1D2 != 0) &&
+        (g_Practice._19F == 0 || (lbl_3_common_bss_34C90._1D2 != 7 && lbl_3_common_bss_34C90._1D2 != 0xB))) {
+        if (o->timer == 0) {
+            for (i = 0; i < 4; i++) {
+                PracticeMsgEntry* e = &lbl_3_data_103B8[g_Practice.practiceType_2][g_Practice.practiceLevel][i];
+                if (e->enabled != 0) {
+                    o->text[i] = fn_8000F988((LayoutGroup*)o, i + 0x12, 0, 5, e->msg, 0);
+                    lbl_80366B18.entries[o->text[i]].hAlign = 1;
+                    lbl_80366B18.entries[o->text[i]].vAlign = 1;
+                }
+            }
+            o->timer++;
+        }
+        {
+            u8* row = lbl_3_data_FAF4 + g_Practice.practiceType_2 * 4;
+            v = row[g_Practice.practiceLevel];
+            fn_800363D8(o, 1, 3, 0x32, v);
+            fn_800363D8(o, 1, 4, 0x32, v);
+            c = g_Practice.guidedPracticeCounter;
+            fn_800363D8(o, 1, 1, 0x32, c);
+            fn_800363D8(o, 1, 2, 0x32, c);
+            if (c != o->_1A) {
+                LayoutSlot* t = &lbl_80371C30[1];
+                LayoutObj* q = t[o->baseIdx].obj;
+                if ((q->_5C >> 16) <= 9) {
+                    q->_5C = 0xA0000;
+                    t[o->baseIdx].obj->_68 = 1;
+                }
+                q = t[o->baseIdx].obj;
+                if ((q->_5C >> 16) >= 0x13) {
+                    q->_5C = 0x90000;
+                    t[o->baseIdx].obj->_68 = 0;
+                    o->_1A = c;
+                }
+            }
+        }
+    } else {
+        any = 0;
+        for (i = 0; i < 4; i++) {
+            if (lbl_3_data_103B8[g_Practice.practiceType_2][g_Practice.practiceLevel][i].enabled > 0) {
+                fn_8000FEE8(o->text[i]);
+                any = 1;
+            }
+        }
+        if (any) {
+            fn_8000F8F4((LayoutGroup*)o);
+        }
+        lbl_3_common_bss_32724._C6 = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(o));
     }
 }
