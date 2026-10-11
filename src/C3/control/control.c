@@ -731,4 +731,50 @@ s32 fn_800B81C0(Vec *quad, Vec *box)
 }
 #endif
 
+// NONMATCHING 97.8%: FPR allocation (the 1.0f constant and right-left swap registers)
+#if NONMATCHING
+// Sets up frustum `index` from the window [left, right] x [bottom, top] at distance
+// `focalLength`, clipped to [near, far].
+void fn_800B806C(s32 index, f32 bottom, f32 top, f32 left, f32 right, f32 near, f32 far,
+                 f32 focalLength)
+{
+    f32 twoFocal = 2.0f * focalLength;
+    f32 invFocal = 1.0f / focalLength;
+    f32 t, b, r, l;
+
+    sFrustums[index].near = near;
+    sFrustums[index].far = far;
+    sFrustums[index].proj[0][0] = twoFocal / (right - left);
+    sFrustums[index].proj[0][1] = 0.0f;
+    sFrustums[index].proj[0][2] = 0.0f;
+    sFrustums[index].proj[0][3] = 0.0f;
+    sFrustums[index].proj[1][0] = 0.0f;
+    sFrustums[index].proj[1][1] = twoFocal / (top - bottom);
+    sFrustums[index].proj[1][2] = 0.0f;
+    sFrustums[index].proj[1][3] = 0.0f;
+    sFrustums[index].proj[2][0] = 0.0f;
+    sFrustums[index].proj[2][1] = 0.0f;
+    sFrustums[index].proj[2][2] = (far + near) / (far - near);
+    sFrustums[index].proj[2][3] = (-2.0f * (far * near)) / (far - near);
+    sFrustums[index].proj[3][0] = 0.0f;
+    sFrustums[index].proj[3][1] = 0.0f;
+    sFrustums[index].proj[3][2] = 1.0f;
+    sFrustums[index].proj[3][3] = 0.0f;
+
+    l = left * invFocal;
+    r = right * invFocal;
+    b = bottom * invFocal;
+    t = top * invFocal;
+    sFrustums[index].corners[0].x = sFrustums[index].corners[4].x = l * far;
+    sFrustums[index].corners[3].x = sFrustums[index].corners[7].x = l * near;
+    sFrustums[index].corners[1].x = sFrustums[index].corners[5].x = r * far;
+    sFrustums[index].corners[2].x = sFrustums[index].corners[6].x = r * near;
+    sFrustums[index].corners[0].y = sFrustums[index].corners[1].y = b * far;
+    sFrustums[index].corners[2].y = sFrustums[index].corners[3].y = b * near;
+    sFrustums[index].corners[4].y = sFrustums[index].corners[5].y = t * far;
+    sFrustums[index].corners[6].y = sFrustums[index].corners[7].y = t * near;
+    sFrustums[index].corners[0].z = sFrustums[index].corners[1].z = sFrustums[index].corners[4].z = sFrustums[index].corners[5].z = far;
+    sFrustums[index].corners[2].z = sFrustums[index].corners[3].z = sFrustums[index].corners[6].z = sFrustums[index].corners[7].z = near;
+}
+#endif
 
