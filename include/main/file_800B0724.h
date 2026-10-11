@@ -50,7 +50,7 @@ void fn_800B0C80(void (*draw)(void));
 
 void resetAllDrawingStructs(void);
 
-void* fn_800B0A5C_insertQueue(void* draw, u16 priority);
+struct SceneTask* fn_800B0A5C_insertQueue(void* draw, u16 priority);
 
 void fn_800B0D28(void* value);
 

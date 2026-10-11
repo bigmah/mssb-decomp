@@ -1,4 +1,5 @@
 #include "main/file_800B0724.h"
+#include "main/file_80069BDC.h"
 #include "Dolphin/os.h"
 #include "Dolphin/ai.h"
 #include "Dolphin/ar.h"
@@ -123,22 +124,23 @@ void* SndAlloc(u32 size) {
 }
 #endif
 
-extern u16 lbl_803CC1B0;
-extern u16 lbl_803CC1B2;
-extern u16 lbl_803CC1B4;
-extern u8 lbl_80111300[];
-extern u8* lbl_803CC1B8;
-
-extern u8 lbl_803C7A24[];
+// Draw queue: lbl_803C7A24 holds 64 task slots. Slots 0-5 are the sentinels of three
+// priority-sorted lists (head = slot 2n, tail = slot 2n+1); lbl_803CC1B0 picks the list.
+extern u16 lbl_803CC1B0; // active list
+extern u16 lbl_803CC1B2; // queued task count
+extern u16 lbl_803CC1B4; // last slot handed out
+extern SceneTask lbl_80111300; // root task (parent of the sentinels)
+extern SceneTask lbl_803C7A24[64];
 
 // fn_800B0A14_removeQueue, size:0x48
+// Unlinks the running task (lbl_803CC1B8) and frees its slot.
 void fn_800B0A14_removeQueue(void* unused) {
     if (lbl_803CC1B2 != 0) {
-        u8* previous = *(u8**)(lbl_803CC1B8 + 4);
-        *(u8**)(previous + 8) = *(u8**)(lbl_803CC1B8 + 8);
-        previous = *(u8**)(lbl_803CC1B8 + 8);
-        *(u8**)(previous + 4) = *(u8**)(lbl_803CC1B8 + 4);
-        *(u32*)lbl_803CC1B8 = 0;
+        SceneTask* neighbor = lbl_803CC1B8->prev;
+        neighbor->next = lbl_803CC1B8->next;
+        neighbor = lbl_803CC1B8->next;
+        neighbor->prev = lbl_803CC1B8->prev;
+        lbl_803CC1B8->func = NULL;
         lbl_803CC1B2--;
     }
 }
@@ -148,47 +150,48 @@ void nop_function(void) {
 }
 
 // fn_800B0C80, size:0x34
+// Sets the function run by each list's head sentinel.
 void fn_800B0C80(void (*draw)(void)) {
-    u8* node;
+    SceneTask* head;
     s32 remaining;
     if (draw == NULL) {
         draw = nop_function;
     }
     remaining = 3;
-    node = lbl_803C7A24;
+    head = lbl_803C7A24;
     do {
         remaining--;
-        *(void (**)(void))node = draw;
-        node += 0x80;
+        head->func = draw;
+        head += 2;
     } while (remaining != 0);
 }
 
 // resetAllDrawingStructs, size:0x98
 void resetAllDrawingStructs(void) {
     s32 remaining;
-    u8* node;
-    u32* slot;
+    SceneTask* head;
+    SceneTask* slot;
     s32 count;
-    node = lbl_803C7A24;
+    head = lbl_803C7A24;
     remaining = 3;
     do {
-        *(s32*)(node + 4) = 0;
-        *(u8**)(node + 8) = node + 0x40;
-        *(u8**)(node + 0xC) = lbl_80111300;
-        *(u16*)(node + 0x10) = 0;
-        *(u16*)(node + 0x12) = 0;
-        *(u8**)(node + 0x44) = node;
-        *(s32*)(node + 0x48) = 0;
-        *(u8**)(node + 0x4C) = lbl_80111300;
-        *(u16*)(node + 0x50) = 0;
-        *(u16*)(node + 0x52) = 0xFFFF;
-        node += 0x80;
+        head[0].prev = NULL;
+        head[0].next = &head[1];
+        head[0].parent = &lbl_80111300;
+        head[0]._10 = 0;
+        head[0].priority = 0;
+        head[1].prev = &head[0];
+        head[1].next = NULL;
+        head[1].parent = &lbl_80111300;
+        head[1]._10 = 0;
+        head[1].priority = 0xFFFF;
+        head += 2;
     } while (--remaining != 0);
-    slot = (u32*)(lbl_803C7A24 + 0x180);
-    count = 0x3A;
+    slot = &lbl_803C7A24[6];
+    count = 64 - 6;
     do {
-        *slot = 0;
-        slot += 0x10;
+        slot->func = NULL;
+        slot++;
     } while (--count != 0);
     lbl_803CC1B2 = 0;
     lbl_803CC1B0 = 0;
@@ -196,36 +199,39 @@ void resetAllDrawingStructs(void) {
 }
 
 // fn_800B0A5C_insertQueue, size:0xD0
-void* fn_800B0A5C_insertQueue(void* draw, u16 priority) {
-    u8* node;
-    u8* prev;
-    u8* entry;
+// Queues draw in the first free slot, before the first task with a higher priority.
+SceneTask* fn_800B0A5C_insertQueue(void* draw, u16 priority) {
+    SceneTask* node;
+    SceneTask* prev;
+    SceneTask* entry;
+    s32* args;
     u16 idx;
     s32 i;
     do {
         lbl_803CC1B4++;
         idx = lbl_803CC1B4 & 0x3F;
         lbl_803CC1B4 = idx;
-    } while (*(u32*)(lbl_803C7A24 + idx * 0x40) != 0);
-    node = lbl_803C7A24 + (lbl_803CC1B0 << 7);
+    } while (*(void**)&lbl_803C7A24[idx] != NULL); // read as a plain word: lbl_803CC1B4 is reloaded each pass
+    node = &lbl_803C7A24[lbl_803CC1B0 * 2];
     do {
-        node = *(u8**)(node + 8);
-    } while (*(u16*)(node + 0x12) < priority);
-    prev = *(u8**)(node + 4);
-    entry = lbl_803C7A24 + (idx << 6);
-    *(u8**)(node + 4) = entry;
-    *(u8**)(prev + 8) = entry;
-    *(void**)entry = draw;
-    *(u8**)(entry + 4) = prev;
-    *(u8**)(entry + 8) = node;
-    *(u8**)(entry + 0xC) = lbl_803CC1B8;
-    *(u16*)(entry + 0x10) = 0;
-    *(u16*)(entry + 0x12) = priority;
-    *(s32*)(entry + 0x14) = 0;
+        node = node->next;
+    } while (node->priority < priority);
+    prev = node->prev;
+    entry = &lbl_803C7A24[idx];
+    node->prev = entry;
+    prev->next = entry;
+    entry->func = (void (*)(void))draw;
+    entry->prev = prev;
+    entry->next = node;
+    entry->parent = lbl_803CC1B8;
+    entry->_10 = 0;
+    entry->priority = priority;
+    entry->u14.res = NULL;
     lbl_803CC1B2++;
+    args = (s32*)&entry->nodes; // TODO type: clears the task's 0x18-0x3F user words
     for (i = 0; i < 5; i++) {
-        *(s32*)(entry + 0x1C + i * 8) = 0;
-        *(s32*)(entry + 0x18 + i * 8) = 0;
+        args[i * 2 + 1] = 0;
+        args[i * 2] = 0;
     }
     return entry;
 }
@@ -236,8 +242,22 @@ void resetAllDrawingStructs_tonop(void) {
 }
 
 // .text:0x800B0CB8 size:0x70
+// Task functions are called with a pointer to caller-stack scratch space.
+typedef void (*DrawScriptFunc)(void* scratch);
+
+// Runs the root task, then every task of the active list in order.
 void RunDrawScripts_with_stack_variables(void) {
-    return;
+    u8 rootScratch[0x1C];
+    u8 listScratch[0x14];
+    SceneTask* task;
+    lbl_803CC1B8 = &lbl_80111300;
+    ((DrawScriptFunc)lbl_80111300.func)(rootScratch);
+    task = &lbl_803C7A24[lbl_803CC1B0 * 2];
+    do {
+        lbl_803CC1B8 = task;
+        ((DrawScriptFunc)task->func)(listScratch);
+        task = task->next;
+    } while (task != NULL);
 }
 
 extern void* lbl_803CC1D8[2];
