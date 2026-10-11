@@ -32,7 +32,7 @@ typedef struct ActorBone {
     /* 0x16 */ u16 boneID;
     /* 0x18 */ u8 inheritanceFlag;
     /* 0x19 */ u8 drawingPriority;
-    /* 0x1A */ u16 pad16;
+    /* 0x1A */ u16 flags; // MSSB: static-layout render flags (bit 0 z-always, bits 1-2 blend mode)
 } ActorBone;
 
 typedef struct {

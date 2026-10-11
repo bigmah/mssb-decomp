@@ -1,5 +1,9 @@
 #include "main/file_800B2C44.h"
 
+extern u32 lbl_803CC1E8; // actor->tickFlag of the actor being built
+extern Mtx lbl_80111640; // extra root transform for actors with a bone remap table
+extern Vec lbl_800E7D28; // {0, 0, 0}
+
 // .text:0x800B2C44 size:0x44
 void fn_800B2C44(void) {
     return;
@@ -76,8 +80,8 @@ void fn_800B43A0(void) {
 }
 
 // .text:0x800B4724 size:0x8
-void fn_800B4724(void) {
-    return;
+void fn_800B4724(GameActor* actor, sHdr* skHeader) {
+    actor->skHeader = skHeader;
 }
 
 // .text:0x800B472C size:0x1DC

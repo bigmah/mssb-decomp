@@ -57,14 +57,14 @@ typedef struct GameActor {
     /*0x14*/ struct DODisplayObj* skinObject;
     /*0x18*/ GameBone** boneArray;
     /*0x1C*/ GameControl worldControl;
-    /*0x60*/ MtxPtr forwardMtxArray;
-    /*0x64*/ MtxPtr skinMtxArray;
-    /*0x68*/ MtxPtr skinInvTransposeMtxArray;
-    /*0x6C*/ MtxPtr orientationInvMtxArray;
+    /*0x60*/ Mtx* forwardMtxArray;
+    /*0x64*/ Mtx* skinMtxArray;
+    /*0x68*/ Mtx* skinInvTransposeMtxArray;
+    /*0x6C*/ Mtx* orientationInvMtxArray;
     /*0x70*/ DSList drawPriorityList;
     /*0x7C*/ struct sHdr* skHeader;
-    /*0x80*/ u16 footBoneA;
-    /*0x82*/ u16 footBoneB;
+    /*0x80*/ u16 anchorBoneA;
+    /*0x82*/ u16 anchorBoneB; // fn_800B3F20 moves the actor so this bone mirrors anchorBoneA
     /*0x84*/ u16 rootBone;
     /*0x86*/ u8 pad86[0x2];
     /*0x88*/ u16* boneRemap; // per-bone index of the bone whose animation drives it
