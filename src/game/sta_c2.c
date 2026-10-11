@@ -51,7 +51,7 @@ extern const f32 lbl_3_rodata_275C;
 extern const f32 lbl_3_rodata_2760;
 extern const f64 lbl_3_rodata_2768;
 extern const Vec lbl_3_rodata_24A0[];
-extern s32 lbl_3_bss_ADD0[];
+extern void* lbl_3_bss_ADD0[];
 extern const f32 lbl_3_rodata_2730;
 extern const f64 lbl_3_rodata_2788;
 extern const f64 lbl_3_rodata_2790;
@@ -90,7 +90,7 @@ extern void fn_80034CEC(void*);
 extern const f64 lbl_3_rodata_2728;
 extern const f64 lbl_3_rodata_2770;
 extern const f64 lbl_3_rodata_2780;
-extern void fn_80033620(void);
+extern void fn_80033620(void* e);
 extern void GXSetBlendMode(s32, s32, s32, s32);
 extern void GXSetZMode(s32, s32, s32);
 extern u8 lbl_800E8754[];
@@ -164,8 +164,8 @@ extern u8* lbl_3_bss_A8A4;
 extern s32 fn_3_9FB8C(f32, f32);
 extern void fn_3_253A4(s8, s16);
 extern void AnimateActorBones(void*);
-extern void fn_8003403C(u8*, f32, f32);
-extern void fn_80033CC8(u8*, s32);
+extern void fn_8003403C(f32 w, f32 h);
+extern void fn_80033CC8(void* particle, void* tex);
 extern u8 lbl_80366158[];
 extern const f64 lbl_3_rodata_2738;
 extern const f64 lbl_3_rodata_2740;
@@ -701,7 +701,7 @@ void fn_3_CE56C(u8* h, u8 idx) {
     s8 n;
     f32 a;
     s16 t;
-    *(s32*)(h + 0x10) = lbl_3_bss_ADD0[0];
+    *(void**)(h + 0x10) = lbl_3_bss_ADD0[0];
     *(Vec*)(h + 0x18) = lbl_3_rodata_24A0[idx];
     h[0x24] = idx;
     h[0x25] = 1;
@@ -841,8 +841,8 @@ void fn_3_CED3C(void) {
 }
 
 // .text:0x000CED40 size:0x11C mapped:0x8070DDD4
-void fn_3_CED40(u8* p, s32 a) {
-    fn_8003403C(p, *(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+void fn_3_CED40(u8* p, void* a) {
+    fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
     fn_80033CC8(p, a);
     if (lbl_80366158[0x28] == 0) {
         if (-*(s16*)(p + 0x48) < 5) {
@@ -859,8 +859,8 @@ void fn_3_CED40(u8* p, s32 a) {
 }
 
 // .text:0x000CEE5C size:0x14C mapped:0x8070DEF0
-void fn_3_CEE5C(u8* p, s32 a) {
-    fn_8003403C(p, *(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+void fn_3_CEE5C(u8* p, void* a) {
+    fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
     fn_80033CC8(p, a);
     if (lbl_80366158[0x28] == 0) {
         if (-*(s16*)(p + 0x48) < 5) {
@@ -877,8 +877,8 @@ void fn_3_CEE5C(u8* p, s32 a) {
 }
 
 #pragma dont_inline off
-static inline void CED40_inl(u8* p, s32 a) {
-    ((void (*)(f32, f32))fn_8003403C)(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+static inline void CED40_inl(u8* p, void* a) {
+    fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
     fn_80033CC8(p, a);
     if (lbl_80366158[0x28] == 0) {
         if (-*(s16*)(p + 0x48) < 5) {
@@ -894,8 +894,8 @@ static inline void CED40_inl(u8* p, s32 a) {
     }
 }
 
-static inline void CEE5C_inl(u8* p, s32 a) {
-    ((void (*)(f32, f32))fn_8003403C)(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+static inline void CEE5C_inl(u8* p, void* a) {
+    fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
     fn_80033CC8(p, a);
     if (lbl_80366158[0x28] == 0) {
         if (-*(s16*)(p + 0x48) < 5) {
@@ -915,13 +915,13 @@ static inline void CEE5C_inl(u8* p, s32 a) {
 // .text:0x000CEFA8 size:0x2D0 mapped:0x8070E03C
 s32 fn_3_CEFA8(u8* h) {
     u8* p = *(u8**)(h + 0xC);
-    fn_80033620();
+    fn_80033620(h);
     do {
         if (*(s16*)(p + 0x48) <= 0 && *(s16*)(p + 0x4A) != 0) {
             if (p[0x4F] == 0) {
-                CEE5C_inl(p, *(s32*)(h + 0x10));
+                CEE5C_inl(p, *(void**)(h + 0x10));
             } else {
-                CED40_inl(p, *(s32*)(h + 0x10));
+                CED40_inl(p, *(void**)(h + 0x10));
             }
             *(s16*)(p + 0x4A) -= (lbl_80366158[0x28] == 0);
         }
@@ -949,7 +949,7 @@ void fn_3_CF278(u8* p, Vec* pos) {
     f32 a;
     i = 0;
     k = 0;
-    *(s32*)(h + 0x10) = lbl_3_bss_ADD0[0];
+    *(void**)(h + 0x10) = lbl_3_bss_ADD0[0];
     *(s32*)(h + 0x18) = 100;
     *(u8**)(h + 0x20) = p;
     for (; e != NULL; e = e->next) {
@@ -1113,13 +1113,13 @@ s32 fn_3_CFB44(u8* a) {
     s32 k;
     f32 sc;
     u8* t;
-    fn_80033620();
+    fn_80033620(a);
     GXSetBlendMode(1, 4, 5, 0);
     GXSetZMode(1, 3, 1);
     do {
         if (*(s16*)(e + 0x48) <= 0 && *(s16*)(e + 0x4A) != 0) {
-            ((void (*)(f32, f32))fn_8003403C)(*(f32*)(e + 0x38), *(f32*)(e + 0x3C));
-            fn_80033CC8(e, *(s32*)(a + 0x10));
+            fn_8003403C(*(f32*)(e + 0x38), *(f32*)(e + 0x3C));
+            fn_80033CC8(e, *(void**)(a + 0x10));
             *(f32*)(e + 0x38) = *(f32*)(e + 0x38) + lbl_3_rodata_2728;
             if (*(f32*)(e + 0x38) < 0.0f) {
                 *(f32*)(e + 0x38) = 0.0f;
@@ -1177,7 +1177,7 @@ void fn_3_CFD58(u8* p) {
     s32 a;
     f32 ang;
     *(u8**)(h + 0x20) = p;
-    *(s32*)(h + 0x10) = lbl_3_bss_ADD0[0];
+    *(void**)(h + 0x10) = lbl_3_bss_ADD0[0];
     for (i = 0; e != NULL; e = e->next) {
         ang = lbl_3_rodata_2658[0] * ((f32)(lbl_3_rodata_2788 * (i % 5) / lbl_3_rodata_2790) + (f32)(-(s8)(*(u8**)(p + 0xA0))[0xD0] * (ring = i / 5) * 10));
         e->f1C = e->f4 = lbl_3_rodata_2730 * (f32)cos(ang) + *(f32*)(*(u8**)(p + 0xA0) + 0xA0);
