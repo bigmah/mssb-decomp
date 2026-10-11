@@ -154,7 +154,9 @@ void fn_8006496C(void) {
 
 // .text:0x800649BC size:0x48
 void fn_800649BC(void) {
-    return;
+    g_d_GameSettings.home_AwaySetting = randRange_FUN_80042bf0(0, 1);
+    lbl_800E8754[0] = 3;
+    lbl_800E8754[3] = lbl_803CB8D0[0];
 }
 
 // .text:0x80064A04 size:0x13E8
