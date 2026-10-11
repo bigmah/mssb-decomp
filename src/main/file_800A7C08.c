@@ -1319,7 +1319,18 @@ void fn_800AAFEC(void) {
 
 // .text:0x800AB474 size:0xC0
 void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial) {
-    return;
+    CardNameTask* task;
+
+    lbl_803C7838.op = 3;
+    task = fn_800B0A5C_insertQueue(fn_800AB534, 0xFF);
+    memset(&task->step, 0, sizeof(((Task*)0)->data));
+    task->chan = chan;
+    task->mode = mode;
+    task->arg = blocks;
+    task->fileName = lbl_802EF2D0;
+    memcpy(task->fileName, fileName, CARD_FILENAME_MAX);
+    lbl_802EF2C0[chan] = serial;
+    lbl_803CC1B8->result = 0;
 }
 
 // .text:0x800AB534 size:0x5E0
