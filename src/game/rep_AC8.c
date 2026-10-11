@@ -8,6 +8,21 @@ extern u8 g_Runners[];
 extern f32 lbl_3_rodata_C50;
 extern f32 lbl_3_rodata_B78;
 extern f32 lbl_3_rodata_B68;
+void fn_3_A0F0(void);
+int fn_3_B7E10(f32 a, f32 b);
+u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z);
+void fn_3_16696C(void);
+extern void fn_3_161588(int, s16);
+void fn_3_59918(s32 x);
+u32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
+unsigned long sndFXCtrl(u32 vid, u8 ctrl, u8 value);
+extern u8 g_hitShorts[];
+extern u8 g_UnkSound_32718[];
+extern u8 lbl_3_common_bss_37400[];
+extern u8 lbl_800E8558[];
+extern u16 lbl_3_data_81DC[];
+extern u8 lbl_3_data_8404[];
+extern u8 lbl_3_data_84B8[];
 extern f32 lbl_3_rodata_C54;
 extern f32 lbl_3_rodata_C48;
 extern u8 g_Strikes[];
@@ -696,9 +711,240 @@ go:
 }
 
 // .text:0x00026A74 size:0xBD4 mapped:0x80665B08
+// NONMATCHING 88%: the original inlines fn_3_27764 for the already-caught case; we call it (same behaviour); fn_3_59918 is called with its one declared argument (original also zeroes r4)
+// nmverify: fn_3_27764 inlined on one side (calls match once expanded)
+#if NONMATCHING
 void fn_3_26A74(int i) {
-    return;
+    u8* f = g_Fielders + i * 0x268;
+    u8* r;
+    int k;
+    int t;
+    f32 d;
+    f32 spd;
+    int stadium;
+    int vol;
+    int pan;
+    u32 vid;
+    if (g_Ball[0x1BC9] == 1) {
+        fn_3_27764(i);
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) == 0 || (g_Ball[0x1BD6] == 0 && g_Ball[0x1BD7] == 0 && g_Ball[0x1BD8] == 1)) {
+        if (*(s16*)(g_Ball + 0x1B7C) == -1) {
+            if (fn_3_B7E10(*(f32*)g_Ball, *(f32*)(g_Ball + 8)) != 0) {
+                *(s16*)(g_Ball + 0x1B7C) = 1;
+            } else {
+                *(s16*)(g_Ball + 0x1B7C) = 0;
+            }
+        }
+        *(s16*)(g_Ball + 0x1B7A) = 3;
+        if (g_FieldingLogic[0x108] != 0) {
+            g_FieldingLogic[0x108] = 2;
+        }
+    } else if (*(s16*)(g_Ball + 0x1B7A) == 1) {
+        if (g_Ball[0x1BC6] == 0 && fn_3_B7E10(*(f32*)g_Ball, *(f32*)(g_Ball + 8)) != 0) {
+            fn_3_A0F0();
+        } else {
+            *(s16*)(g_Ball + 0x1B7A) = 2;
+            if (g_FieldingLogic[0x108] != 0) {
+                g_FieldingLogic[0x108] = 2;
+            }
+        }
+        if (*(s16*)(g_Ball + 0x1B7C) == -1) {
+            if (*(s16*)(g_Ball + 0x1B7A) == -1) {
+                *(s16*)(g_Ball + 0x1B7C) = 1;
+            } else {
+                *(s16*)(g_Ball + 0x1B7C) = 0;
+            }
+        }
+        if (g_Ball[0x1BC9] == 0 && *(s16*)(g_Ball + 0x1B7A) != -1 && g_FieldingLogic[0x108] == 0 &&
+            *(s16*)(g_Ball + 0x1B5E) + 15 > *(s16*)(g_Ball + 0x1B66) && g_FieldingLogic[0x108] == 0 &&
+            g_d_GameSettings[7] != 6) {
+            fn_3_59918(4);
+        }
+    }
+    if (f[0x252] == 2) {
+        g_FieldingLogic[0x11F] = 1;
+    } else {
+        g_FieldingLogic[0x11F] = 0;
+    }
+    if (f[0x1D7] == 1) {
+        fn_3_5372C(i);
+        if (*(s16*)(g_FieldingLogic + *(s16*)(f + 0x18C) * 2 + 0xD0) == i &&
+            g_FieldingLogic[*(s16*)(f + 0x18C) + 0x101] == 1) {
+            *(s16*)(g_Ball + 0x1B86) = *(s16*)(f + 0x18C);
+            for (k = 0, r = g_Runners; k < 4; k++, r += 0x154) {
+                if (r[0x123] == 1) {
+                    if (*(s16*)(f + 0x18C) == *(s16*)(r + 0xE6) && *(s16*)(r + 0xFA) < 120 &&
+                        (r[0x128] != 2 || r[0x124] == *(s16*)(r + 0xE6))) {
+                        fn_3_59918(2);
+                    }
+                } else if (r[0x123] == 3 && *(s16*)(f + 0x18C) == 0 && *(s16*)(r + 0xFA) < 60) {
+                    fn_3_59918(2);
+                }
+            }
+        }
+    }
+    g_FieldingLogic[0x114] = f[0x259];
+    if (*(s8*)(g_FieldingLogic + 0x115) < 0) {
+        g_FieldingLogic[0x115] = f[0x259];
+    }
+    if (g_Ball[0x1BD7] == 0) {
+        if (*(f32*)(f + 0x118) == *(f32*)f && *(f32*)(f + 0x11C) == *(f32*)(f + 8)) {
+            t = 1;
+        } else {
+            d = DIST2_XZ(*(f32*)(f + 0x118), *(f32*)(f + 0x11C), *(f32*)f, *(f32*)(f + 8));
+            SQRT_L(d);
+            spd = *(f32*)(f + 0x58);
+            if (0.0f == spd) {
+                spd = lbl_3_rodata_B60;
+            }
+            t = (f[0x1D1] >> 1) + (int)(d / spd);
+        }
+        if (*(s16*)(g_Ball + 0x1B66) - t < lbl_3_data_49DC[0x26]) {
+            g_FieldingLogic[0x133] = 1;
+        }
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) == 3 && g_Ball[0x1BD7] == 0) {
+        if (f[0x252] == 4 || f[0x252] == 5) {
+            g_FieldingLogic[0x133] = 2;
+            g_UnkSound_32718[8] = 4;
+            g_FieldingLogic[0x134] = i;
+            if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(int*)(g_GameLogic + 8) &&
+                *(s16*)(g_Ball + 0x1B7A) == 3) {
+                fn_3_161588(2, *(s16*)(f + 0x178));
+            }
+        } else if (f[0x203] != 0) {
+            if (*(f32*)(g_Ball + 4) > *(f32*)(f + 0xF4) + *(f32*)(lbl_3_data_4930 + 0x98)) {
+                g_FieldingLogic[0x133] = 2;
+                g_UnkSound_32718[8] = 4;
+                g_FieldingLogic[0x134] = i;
+                if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(int*)(g_GameLogic + 8) &&
+                    *(s16*)(g_Ball + 0x1B7A) == 3) {
+                    fn_3_161588(2, *(s16*)(f + 0x178));
+                }
+            }
+        } else {
+            if (g_FieldingLogic[0x133] == 1 && f[0x259] != 0) {
+                g_FieldingLogic[0x133] = 2;
+                g_UnkSound_32718[8] = 4;
+                g_FieldingLogic[0x134] = i;
+                if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(int*)(g_GameLogic + 8) &&
+                    *(s16*)(g_Ball + 0x1B7A) == 3) {
+                    fn_3_161588(2, *(s16*)(f + 0x178));
+                }
+            }
+            if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(int*)(g_GameLogic + 8) &&
+                *(s16*)(g_Ball + 0x1B7A) == 3 && f[0x259] == 2) {
+                fn_3_161588(3, *(s16*)(f + 0x178));
+            }
+        }
+    }
+    if (g_Ball[0x1BE7] == 1 || g_Ball[0x1BE7] == 2) {
+        f[0x1EF] = ((s16*)(g_hitShorts + 8))[g_Batter[0xA3]];
+    }
+    if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(int*)(g_GameLogic + 8) &&
+        g_FieldingLogic[0x107] == 0) {
+        if (g_Ball[0x1BD8] == 0) {
+            fn_3_161588(1, *(s16*)(f + 0x178));
+        }
+        if (g_Ball[0x1BD8] != 0 && g_Ball[0x1BD7] == 0) {
+            fn_3_161588(9, *(s16*)(f + 0x178));
+        }
+        if (f[0x252] == 6) {
+            fn_3_161588(4, *(s16*)(f + 0x178));
+        } else if (f[0x252] == 5) {
+            fn_3_161588(5, *(s16*)(f + 0x178));
+        }
+    }
+    SetFielderAct(i, 0xA, 0x50);
+    *(s16*)(g_FieldingLogic + 0xB0) = -1;
+    if (g_Ball[0x1BD7] < 0xFE) {
+        g_Ball[0x1BD7] = g_Ball[0x1BD7] + 1;
+    } else {
+        g_Ball[0x1BD7] = 0xFF;
+    }
+    if (g_Ball[0x1BD8] < 0xFE) {
+        g_Ball[0x1BD8] = g_Ball[0x1BD8] + 1;
+    } else {
+        g_Ball[0x1BD8] = 0xFF;
+    }
+    *(f32*)(g_Ball + 0) = *(f32*)(f + 0);
+    *(f32*)(g_Ball + 4) = *(f32*)(f + 4);
+    *(f32*)(g_Ball + 8) = *(f32*)(f + 8);
+    *(f32*)(g_Ball + 0x318) = 0.0f;
+    *(f32*)(g_Ball + 0x31C) = 0.0f;
+    *(f32*)(g_Ball + 0x320) = 0.0f;
+    *(f32*)(g_Ball + 0x324) = 0.0f;
+    *(f32*)(g_Ball + 0x328) = 0.0f;
+    *(f32*)(g_Ball + 0x32C) = 0.0f;
+    g_Ball[0x1BC9] = 1;
+    *(s16*)(g_Ball + 0x1B78) = i;
+    *(s16*)(g_Ball + 0x1B7E) = i;
+    *(s16*)(g_Ball + 0x1B8A) = -1;
+    g_Ball[0x1BCA] = 0;
+    g_Ball[0x1BE1] = 0;
+    *(s16*)(g_Ball + 0x1B6E) = 0;
+    g_Ball[0x1BE3] = 0;
+    *(f32*)(g_Ball + 0x1A50) = *(f32*)(f + 0);
+    *(f32*)(g_Ball + 0x1A54) = *(f32*)(f + 8);
+    g_Ball[0x1BD6] = 0;
+    g_Ball[0x1BC6] = 1;
+    g_Ball[0x1BEB] = 0;
+    g_Ball[0x1BF0] = 0;
+    g_Ball[0x1BE4] = 0;
+    if (*(s8*)(g_Ball + 0x1BDD) < 0) {
+        g_Ball[0x1BDD] = g_Ball[0x1BBE];
+    }
+    if (*(s16*)(g_Ball + 0x1B8E) == -1) {
+        *(s16*)(g_Ball + 0x1B8E) = i;
+    }
+    if (*(s16*)(g_Ball + 0x1B90) == -1) {
+        *(s16*)(g_Ball + 0x1B90) = i;
+    }
+    f[0x252] = 0;
+    *(f32*)(f + 0x50) = 0.0f;
+    *(s16*)(f + 0x194) = 0;
+    f[0x1E9] = 0;
+    f[0x1DF] = 0;
+    f[0x215] = 0;
+    f[0x265] = 0;
+    if (f[0x1E8] != 0) {
+        f[0x1E8] = 2;
+    }
+    *(s16*)(g_FieldingLogic + 0xC4) = -1;
+    *(s16*)(g_FieldingLogic + 0xCC) = -1;
+    *(s16*)(g_FieldingLogic + 0xDE) = -1;
+    *(s16*)(g_FieldingLogic + 0xDC) = *(s16*)(g_Ball + 0x1B86);
+    *(s16*)(g_FieldingLogic + 0xE2) = -1;
+    *(s16*)(g_FieldingLogic + 0xB0) = -1;
+    *(s16*)(g_FieldingLogic + 0xB2) = -1;
+    *(s16*)(g_FieldingLogic + 0xB4) = -1;
+    g_FieldingLogic[0x12C] = 0;
+    g_FieldingLogic[0x140] = 0;
+    g_FieldingLogic[0x142] = 0;
+    g_FieldingLogic[0x109] = 0;
+    g_Batter[0xA8] = 0;
+    g_Minigame[0x19C6] = f[0x20D];
+    if (g_FieldingLogic[0x143] == 1) {
+        g_FieldingLogic[0x143] = 2;
+    }
+    if (g_Ball[0x1BE7] != 0) {
+        g_Ball[0x1BE7] = 0;
+    }
+    if (lbl_800E8558[*(s16*)(f + 0x17A) * 6 + 2] == 0x19) {
+        fn_3_16696C();
+    }
+    fn_3_8FF5C(0x16C, *(f32*)g_Ball, *(f32*)(g_Ball + 4), *(f32*)(g_Ball + 8));
+    if (g_d_GameSettings[7] == 6) {
+        stadium = g_d_GameSettings[9];
+        vol = g_d_GameSettings[7] == 6 ? lbl_3_data_84B8[0x2C] : lbl_3_data_8404[stadium * 0x1E + 0x2C];
+        vid = sndFXStartEx(lbl_3_data_81DC[stadium] + 0x16, vol, 0x3F, 0);
+        pan = g_d_GameSettings[7] == 6 ? lbl_3_data_84B8[0x2D] : lbl_3_data_8404[stadium * 0x1E + 0x2D];
+        sndFXCtrl(vid, 0x5B, pan);
+    }
 }
+#endif
 
 // .text:0x00027648 size:0xF0 mapped:0x806666DC
 void fn_3_27648(void) {
@@ -5813,7 +6059,7 @@ int fn_3_53130(int i) {
 }
 
 // .text:0x0005372C size:0x7BC mapped:0x806927C0
-void fn_3_5372C(void) {
+void fn_3_5372C(int i) {
     return;
 }
 

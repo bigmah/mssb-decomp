@@ -200,7 +200,7 @@ void fn_3_526DC(void);
 void fn_3_52F4C(int, f32, f32);
 void fn_3_530EC(int);
 int fn_3_53130(int);
-void fn_3_5372C(void);
+void fn_3_5372C(int);
 void fn_3_53EE8(int);
 void fn_3_53F48(void);
 void fn_3_544B8(void);
