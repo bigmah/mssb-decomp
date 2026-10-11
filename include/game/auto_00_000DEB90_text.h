@@ -24,6 +24,12 @@ typedef struct MinigameCharMgrView {
 
 extern MinigameCharMgrView lbl_8036E548;
 
+// Per-difficulty coin timing table (lbl_3_data_18BB0).
+typedef struct MinigameCoinTiming {
+    /*0x0*/ s16 _0;
+    /*0x2*/ s16 blinkStart; // coins blink once the visible counter passes this
+} MinigameCoinTiming;
+
 // View of g_Scores, only the fields used here.
 typedef struct MinigameScoresView {
     /*0x00*/ s32 inning;

@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 extern f32 lbl_3_data_18D98[];
+extern MinigameCoinTiming lbl_3_data_18BB0[];
+extern f32 lbl_3_data_18DD0; // coin spin per frame
 extern u8 lbl_3_data_18944[]; // per minigame: number of participants - 1
 extern u8 lbl_3_data_18980[]; // AI strength of each CPU player
 
@@ -99,7 +101,24 @@ void fn_3_DFBAC(void) {
 
 // .text:0x000E0668 size:0xF0 mapped:0x8071F6FC
 void fn_3_E0668(void) {
-    return;
+    MinigameCoinSprite* coin;
+    s32 i;
+
+    for (i = 0; i < 30; i++) {
+        coin = &lbl_8036E548.trail2[i];
+        if (g_Minigame.wallBall_coinsVisibleInd[i] == 0) {
+            coin->visible = 0;
+        } else if (g_Minigame.wallBall_coinsVisibleFrameCounter > lbl_3_data_18BB0[g_Minigame._199E].blinkStart &&
+                   (g_Minigame.wallBall_coinsVisibleFrameCounter & 1)) {
+            coin->visible = 0;
+        } else {
+            coin->visible = 1;
+            coin->x = g_Minigame.wallBall_coinCoordinates[i].x;
+            coin->y = -g_Minigame.wallBall_coinCoordinates[i].y;
+            coin->z = g_Minigame.wallBall_coinCoordinates[i].z;
+            coin->angle = fn_3_9FEA8(coin->angle + lbl_3_data_18DD0);
+        }
+    }
 }
 
 // .text:0x000E0758 size:0x84 mapped:0x8071F7EC
