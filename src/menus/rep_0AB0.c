@@ -16,6 +16,8 @@
 #include "menus/auto_00_00071EC4_text.h"
 #include "menus/auto_00_0008E6A4_text.h"
 #include "menus/auto_00_00094854_text.h"
+#include "menus/auto_00_00092394_text.h"
+#include "menus/rep_1028.h"
 #include "Dolphin/GX/GXPixel.h"
 
 extern u32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
@@ -34,6 +36,11 @@ extern u8 lbl_800E869C[]; // grid id -> character id
 extern s8 lbl_2_bss_A169;
 extern void fn_2_93C64(void);
 extern void fn_2_68E68(void);
+extern void fn_2_8AEE0(void);
+extern void fn_2_8DFB0(void);
+extern void fn_8001F228(void);
+extern MenuCharMgr* lbl_2_bss_340140;
+extern u8 lbl_2_bss_33FBF0[]; // per actor
 // lbl_803CC1B8 (SceneTask*, main/file_80069BDC.h) is the running menu task.
 #define CUR_TASK ((MenuTask*)lbl_803CC1B8)
 extern InitEntry lbl_2_data_20C68[];
@@ -993,7 +1000,235 @@ void fn_2_5CB5C(void) {
 
 // .text:0x0005D26C size:0x9F0
 void fn_2_5D26C(void) {
-    return;
+    MenuTask* task = CUR_TASK;
+    s32 i;
+    switch (lbl_2_bss_1A823C->state) {
+    case 0: {
+        MenuTask* child;
+        fn_8001F228();
+        lbl_2_bss_1A824C->_197848 = 2;
+        lbl_2_bss_1A824C->_197702 = 0;
+        child = fn_800B0A5C_insertQueue(fn_2_8DFB0, 2);
+        child->step = 0;
+        child->arg = 0;
+        task->signal = 0;
+        lbl_2_bss_1A823C->state = 1;
+        break;
+    }
+    case 1:
+        if (task->signal == 1) {
+            fn_2_94854(1);
+            fn_2_9461C(-1);
+            fn_2_94604(0);
+            fn_2_93C64();
+            lbl_2_bss_1A823C->state = 2;
+        }
+        break;
+    case 2:
+        lbl_2_bss_1A823C->state = 3;
+        break;
+    case 3:
+        lbl_2_bss_1A823C->state = 4;
+        break;
+    case 4:
+        lbl_2_bss_1A8234->layerFlags[1][3] = 1;
+        lbl_8034E978.menu = 0x55;
+        lbl_8034E978.prevTrack = lbl_8034E978.track;
+        lbl_8034E978.track = lbl_800FEF70[0x55].track;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 8;
+        break;
+    case 5: {
+        MenuTask* child;
+        lbl_2_bss_1A824C->_197702 = 0;
+        child = fn_800B0A5C_insertQueue(fn_2_8DFB0, 2);
+        child->step = 0;
+        child->arg = 0;
+        task->signal = 0;
+        lbl_2_bss_1A823C->state = 6;
+        break;
+    }
+    case 6:
+        if (task->signal == 1) {
+            fn_2_94854(1);
+            fn_2_9461C(-1);
+            fn_2_94604(0);
+            fn_2_93C64();
+            lbl_2_bss_1A823C->state = 7;
+        }
+        break;
+    case 7:
+        lbl_2_bss_1A8234->layerFlags[1][3] = 1;
+        lbl_8034E978.menu = 0x55;
+        lbl_8034E978.prevTrack = lbl_8034E978.track;
+        lbl_8034E978.track = lbl_800FEF70[0x55].track;
+        lbl_2_bss_1A8234->timer = 0x12;
+        lbl_2_bss_1A823C->state = 8;
+        break;
+    case 8:
+        if (lbl_2_bss_1A8234->timer == 0xE) {
+            for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+                if (lbl_2_bss_33FBF0[i] == 1) {
+                    fn_2_903A8(i);
+                    fn_2_92654(i, 0xD);
+                }
+            }
+        }
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 9;
+        }
+        break;
+    case 9: {
+        u16 down = MENU_PAD.down;
+        if (down & 0x40) {
+            lbl_2_bss_1A824C->mode = 6;
+            lbl_2_bss_1A823C->state = 10;
+            lbl_2_bss_1A8234->layerFlags[11][2] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][3] = 1;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x20) {
+            lbl_2_bss_1A824C->mode = 6;
+            lbl_2_bss_1A823C->state = 10;
+            lbl_2_bss_1A8234->layerFlags[12][2] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][3] = 1;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x200) {
+            lbl_2_bss_1A824C->tab = 0;
+            lbl_2_bss_1A823C->state = 12;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        break;
+    }
+    case 10:
+        for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+            fn_2_92654(i, 0);
+        }
+        lbl_2_bss_1A823C->state = 11;
+        break;
+    case 11:
+        fn_2_4E7EC();
+        CUR_TASK->func = fn_2_5CB5C;
+        lbl_2_bss_1A823C->state = 1;
+        break;
+    case 12:
+        lbl_2_bss_1A8234->layerFlags[1][4] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 13;
+        break;
+    case 13:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 14;
+        }
+        break;
+    case 14: {
+        u16 repeat = MENU_PAD.repeat;
+        u16 down;
+        if (repeat & 8) {
+            lbl_2_bss_1A824C->tab = (lbl_2_bss_1A824C->tab + 3) % 4;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (repeat & 4) {
+            lbl_2_bss_1A824C->tab = (lbl_2_bss_1A824C->tab + 1) % 4;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+        down = MENU_PAD.down;
+        if (down & 0x100) {
+            if (lbl_2_bss_1A824C->tab == 1) {
+                lbl_2_bss_1A823C->state = 18;
+            } else {
+                lbl_2_bss_1A823C->state = 15;
+            }
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x200) {
+            lbl_2_bss_1A823C->state = 20;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        break;
+    }
+    case 15:
+        lbl_2_bss_1A8234->layerFlags[8][3] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+            fn_2_92654(i, 0);
+        }
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 16;
+        break;
+    case 16:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            fn_2_4E7EC();
+            lbl_2_bss_1A823C->state = 17;
+        }
+        break;
+    case 17:
+        lbl_2_bss_1A8234->layerFlags[3][2] = 1;
+        switch (lbl_2_bss_1A824C->tab) {
+        case 0:
+            lbl_2_bss_1A824C->mode = 5;
+            CUR_TASK->func = fn_2_5A224;
+            break;
+        case 2:
+            lbl_2_bss_1A824C->mode = 2;
+            CUR_TASK->func = fn_2_5C5B8;
+            break;
+        case 3:
+            lbl_2_bss_1A824C->mode = 3;
+            CUR_TASK->func = fn_2_5AFB0;
+            break;
+        }
+        lbl_2_bss_1A823C->state = 0;
+        break;
+    case 18:
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 19;
+        break;
+    case 19:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 9;
+        }
+        break;
+    case 20:
+        changeScene(3, 6);
+        for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+            fn_2_92654(i, 0);
+        }
+        lbl_2_bss_1A8234->layerFlags[8][2] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][3] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][0] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][1] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 21;
+        break;
+    case 21:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            MenuTask* parent;
+            fn_2_4E7EC();
+            parent = CUR_TASK->parent;
+            parent->signal = 1;
+            fn_800B0A14_removeQueue(parent);
+            lbl_2_bss_1A823C->state = 0;
+        }
+        break;
+    case 22: {
+        MenuTask* child = fn_800B0A5C_insertQueue(fn_2_5979C, 2);
+        child->step = 0;
+        task->signal = 0;
+        lbl_2_bss_1A823C->state = 23;
+        break;
+    }
+    case 23:
+        if (task->signal == 1) {
+            lbl_2_bss_1A823C->state = 9;
+        }
+        break;
+    }
+    if (lbl_2_bss_340140->_307A == 3) {
+        fn_2_8FD14();
+        fn_2_8AEE0();
+        fn_2_47FF8();
+        fn_2_47CFC();
+    }
 }
 
 // .text:0x0005DC5C size:0x4A8
