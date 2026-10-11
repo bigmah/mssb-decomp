@@ -198,10 +198,83 @@ void DoScaleAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next, u8 u
     return;
 }
 
+// NONMATCHING 86%: Bezier scheduling, keyframe-time compare operand order, f5/f6 swap
 // .text:0x800B6E0C size:0x3B4
+#if NONMATCHING
 void DoEulerAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
-    return;
+    f32 rot0[3];
+    f32 rot1[3];
+    f32 result[3];
+    f32 ctrlCur[3];
+    f32 ctrlNext[3];
+    u32 vecSize;
+    u8 compType;
+    u8 interp;
+    u32 offset;
+    f32 scale;
+    f32 t;
+    s32 i;
+
+    compType = pipe->currentTrack->quantizeInfo >> 4;
+    scale = 1.0f / (f32)(1 << (pipe->currentTrack->quantizeInfo & 0xF));
+    vecSize = GetCompSize(compType) * 3;
+
+    // Euler angles follow the scale in the setting data.
+    offset = 0;
+    if (pipe->currentTrack->animType & ANIM_SCALE) {
+        offset = vecSize;
+    }
+
+    GetData(compType, cur->setting + offset, rot0, 3, scale);
+    GetData(compType, next->setting + offset, rot1, 3, scale);
+
+    t = GetInterpTime(pipe, cur, next);
+
+    offset = 0;
+    if (pipe->currentTrack->animType & ANIM_SCALE) {
+        interp = (pipe->currentTrack->interpolationType >> 2) & 3;
+        if (interp == ANIM_INTERP_BEZIER) {
+            offset = vecSize * 2;
+        }
+        if (interp == ANIM_INTERP_HERMITE) {
+            offset = vecSize * 2 + 4;
+        }
+    }
+
+    switch ((pipe->currentTrack->interpolationType >> 4) & 7) {
+    case ANIM_INTERP_NONE:
+        result[0] = rot0[0];
+        result[1] = rot0[1];
+        result[2] = rot0[2];
+        break;
+    case ANIM_INTERP_LINEAR:
+        // Take the short way around.
+        for (i = 0; i < 3; i++) {
+            f32 diff = rot0[i] - rot1[i];
+            if (diff > 180.0f) {
+                rot0[i] -= 360.0f;
+            } else if (diff < -180.0f) {
+                rot1[i] -= 360.0f;
+            }
+            result[i] = t * rot1[i] + (1.0f - t) * rot0[i];
+        }
+        break;
+    case ANIM_INTERP_BEZIER:
+        GetData(compType, cur->interpolation + (offset + vecSize), ctrlCur, 3, scale);
+        GetData(compType, next->interpolation + offset, ctrlNext, 3, scale);
+        BezierVec(result, rot0, ctrlCur, ctrlNext, rot1, t);
+        break;
+    case ANIM_INTERP_HERMITE:
+        OSPanic("animPipe.c", 301, "Hermite pInterpolation not yet supported for Euler angles(Hermite補間はオイラー角制御ではサポートされていません)");
+        break;
+    default:
+        OSPanic("animPipe.c", 304, "Unknown pInterpolation pSetting!(未知の補間タイプが指定されています)");
+        break;
+    }
+
+    CTRLSetRotation(pipe->control, result[0], result[1], result[2]);
 }
+#endif
 
 // .text:0x800B71C0 size:0x558
 void DoQuatAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
