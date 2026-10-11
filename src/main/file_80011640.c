@@ -649,6 +649,8 @@ void fn_8001FC4C(void) {
 }
 
 // .text:0x8001FDD4 size:0x2C
-void fn_8001FDD4(void) {
-    return;
+void fn_8001FDD4(CharLoadObj* obj) {
+    if (obj->_70 != NULL) {
+        fn_800B9AA8(obj->_70);
+    }
 }
