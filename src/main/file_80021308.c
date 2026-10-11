@@ -192,8 +192,18 @@ void fn_800215F8(void) {
 }
 
 // .text:0x80021650 size:0xA8
-void fn_80021650(void) {
-    return;
+void fn_80021650(DiskFileEntry* entry, void* dst, void* user) {
+    SoundGroupRequest* req = user;
+    s32 group = req->group;
+    SoundGroupData* data;
+
+    lbl_800EF808.groups[group] = dst;
+    data = lbl_800EF808.groups[group];
+    relocateSoundGroup(data);
+    req->onLoaded(req, data);
+    data = lbl_800EF808.groups[group];
+    fn_800ACF78(data, (u8*)data->samp - (u8*)data);
+    req->task->done = 1;
 }
 
 // .text:0x800216F8 size:0x60
