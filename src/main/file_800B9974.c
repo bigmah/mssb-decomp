@@ -110,8 +110,45 @@ void SetState(void) {
 }
 
 // .text:0x800BBF5C size:0x168
-void GetColorFromQuant(void) {
-    return;
+void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a) {
+    switch ((quantizeInfo >> 4) & 0xF) {
+    case GX_RGB565:
+        *r = (*(u16*)color >> 8) & 0xF8;
+        *g = (*(u16*)color >> 3) & 0xFC;
+        *b = (*(u16*)color & 0x1F) << 3;
+        *a = 0xFF;
+        break;
+    case GX_RGBA4:
+        *r = (*(u16*)color >> 12) & 0xF;
+        *g = (*(u16*)color >> 8) & 0xF;
+        *b = (*(u16*)color >> 4) & 0xF;
+        *a = *(u16*)color & 0xF;
+        *r = *r | (*r << 4);
+        *g = *g | (*g << 4);
+        *b = *b | (*b << 4);
+        *a = *a | (*a << 4);
+        break;
+    case GX_RGBA8:
+        *r = *(u32*)color >> 24;
+        *g = (*(u32*)color >> 16) & 0xFF;
+        *b = (*(u32*)color >> 8) & 0xFF;
+        *a = *(u32*)color & 0xFF;
+        break;
+    case GX_RGB8:
+    case GX_RGBX8:
+        *r = *(u32*)color >> 24;
+        *g = (*(u32*)color >> 16) & 0xFF;
+        *b = (*(u32*)color >> 8) & 0xFF;
+        *a = 0xFF;
+        break;
+    case GX_RGBA6:
+        // Reads only 16 bits, so the red channel always comes out 0 (original bug kept).
+        *r = (*(u16*)color & 0xFC0000) >> 16;
+        *g = (*(u16*)color >> 10) & 0xFC;
+        *b = (*(u16*)color >> 4) & 0xFC;
+        *a = (*(u16*)color & 0x3F) << 2;
+        break;
+    }
 }
 
 // .text:0x800BC0C4 size:0x724

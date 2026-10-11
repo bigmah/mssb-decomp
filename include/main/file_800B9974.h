@@ -67,6 +67,8 @@ void LITInitPos(Light* light, f32 x, f32 y, f32 z);
 
 void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 
+void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a);
+
 void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* tevStage, u8* texCoord);
 
 void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* layout);
