@@ -1014,7 +1014,47 @@ void fn_8001F228(void) {
 
 // .text:0x8001F4C0 size:0x128
 void challengeMapMaybe(void) {
-    return;
+    s32 i;
+    CharActor* actor;
+
+    for (i = 0; i < 13; i++) {
+        actor = &lbl_8036E548.actors[i];
+        actor->_25C = 0;
+        actor->mode[0] = 0;
+        actor->_04C = 0.5f;
+        actor->_060 = 0;
+        actor->anim[0] = 0;
+        actor->anim[1] = 0;
+        actor->_06A[0] = 0;
+        actor->mode[1] = 1;
+        actor->_268 = 0;
+        actor->_273 = 0;
+        actor->_274 = 0;
+        actor->_278 = 0;
+        actor->_05C = 0;
+        actor->pos.x = 0.0f;
+        actor->pos.y = 0.0f;
+        actor->pos.z = 0.0f;
+        actor->_040.x = 0.0f;
+        actor->_040.y = 0.0f;
+        actor->_040.z = 0.0f;
+        actor->_070 = -1;
+    }
+    for (i = 0; i < 13; i++) {
+        if (lbl_8036E548.active[i] != NULL) {
+            lbl_8036E548.active[i]->_25C = 1;
+        }
+    }
+    for (i = 0; i < 25; i++) {
+        lbl_8036E548.trail[i]._26 = 0;
+        lbl_8036E548.trail[i]._04[0] = 0.0f;
+        lbl_8036E548.trail[i]._04[1] = 0.0f;
+        lbl_8036E548.trail[i]._04[2] = 0.0f;
+        lbl_8036E548.trail[i]._04[3] = 0.0f;
+        lbl_8036E548.trail[i]._04[4] = 0.0f;
+        lbl_8036E548.trail[i]._04[5] = 0.0f;
+    }
+    lbl_8036E548._3078 = 0;
 }
 
 // .text:0x8001F5E8 size:0x2BC
