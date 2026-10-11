@@ -864,8 +864,16 @@ void fn_800B251C(void) {
 }
 
 // .text:0x800B27A4 size:0x38
-void fn_800B27A4(void) {
-    return;
+// Sets the texcoord fraction bits; the quad texcoords become 1.0 in that format.
+void fn_800B27A4(s32 fracBits) {
+    if (fracBits >= 0 && fracBits <= 14) {
+        s16 one = 1 << fracBits;
+        lbl_803CC1C8 = fracBits;
+        lbl_801115A0[3][0] = one;
+        lbl_801115A0[2][1] = one;
+        lbl_801115A0[2][0] = one;
+        lbl_801115A0[1][1] = one;
+    }
 }
 
 // .text:0x800B27DC size:0x78
