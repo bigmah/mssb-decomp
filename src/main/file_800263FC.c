@@ -99,6 +99,19 @@ static inline f32 CosIdx(s32 angle) {
 
 #define SinIdx(angle) CosIdx((angle) + 0x600)
 
+// CosIdx with a branching abs (the original's form at some call sites).
+static inline f32 CosIdxB(s32 angle) {
+    s32 i = angle;
+    if (i < 0) {
+        i = -i;
+    }
+    i &= 0x7FF;
+    if (i >= 0x401) {
+        i = 0x800 - i;
+    }
+    return lbl_8017ED68[i];
+}
+
 static inline Emitter* FindEmitter(Emitter* e, u8 type) {
     if (e == NULL) {
         e = EMITTER_HEAD;
@@ -1872,7 +1885,7 @@ void fn_8002CDD0(Vec* end) {
 }
 
 // .text:0x8002CE4C size:0x9E0
-// NONMATCHING 20%: the original converts all parameters up front (many float registers); same calls and stores
+// NONMATCHING 86%: scheduling of the up-front parameter conversions; same calls and stores
 #if NONMATCHING
 void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
     Vec n;
@@ -1880,21 +1893,34 @@ void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
     s32 total;
     s32 totalMin;
     s32 totalRange;
-    s32 p3Min = prm->unk24;
-    s32 p3Range = prm->unk28 - prm->unk24;
-    s32 fadeMin = prm->unk2C;
-    s32 fadeRange = prm->unk30 - prm->unk2C;
-    s32 a;
+    s32 p3Min;
+    s32 p3Range;
+    s32 fadeMin;
+    s32 fadeRange;
     s32 ang;
     f32 r;
     f32 split;
     f32 splitRange;
+    f32 rMin;
+    f32 rRange;
     f32 yawMin;
     f32 yawMax;
     f32 pitchMin;
     f32 pitchMax;
     f32 dirLen;
     f32 dirLenRange;
+    f32 angMin;
+    f32 angRange;
+    f32 spinMin;
+    f32 spinRange;
+    f32 lenAMin;
+    f32 lenARange;
+    f32 lenBMin;
+    f32 lenBRange;
+    f32 reachMin;
+    f32 reachRange;
+    f32 offMin;
+    f32 offRange;
     Emitter* e;
     StreakParticle* p;
 
@@ -1906,12 +1932,30 @@ void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
     totalRange = (s32)((f32)prm->unk10 * ((f32)prm->unk18 / 100000.0f) - (f32)totalMin);
     split = (f32)prm->unk1C / 100000.0f;
     splitRange = (f32)(prm->unk20 - prm->unk1C) / 100000.0f;
+    p3Min = prm->unk24;
+    p3Range = prm->unk28 - prm->unk24;
+    fadeMin = prm->unk2C;
+    fadeRange = prm->unk30 - prm->unk2C;
+    rMin = (f32)prm->unk34 / 100000.0f;
+    rRange = (f32)(prm->unk38 - prm->unk34) / 100000.0f;
     yawMin = (f32)prm->unk3C / 100000.0f;
     yawMax = (f32)prm->unk40 / 100000.0f;
     pitchMin = (f32)prm->unk44 / 100000.0f;
     pitchMax = (f32)prm->unk48 / 100000.0f;
     dirLen = (f32)prm->unk4C / 100000.0f;
     dirLenRange = (f32)(prm->unk50 - prm->unk4C) / 100000.0f;
+    angMin = (f32)prm->unk54 / 100000.0f;
+    angRange = (f32)(prm->unk58 - prm->unk54) / 100000.0f;
+    spinMin = (f32)prm->unk5C / 100000.0f;
+    spinRange = (f32)(prm->unk60 - prm->unk5C) / 100000.0f;
+    lenAMin = (f32)prm->unk64 / 100000.0f;
+    lenARange = (f32)(prm->unk68 - prm->unk64) / 100000.0f;
+    lenBMin = (f32)prm->unk6C / 100000.0f;
+    lenBRange = (f32)(prm->unk70 - prm->unk6C) / 100000.0f;
+    reachMin = (f32)prm->unk74 / 100000.0f;
+    reachRange = (f32)(prm->unk78 - prm->unk74) / 100000.0f;
+    offMin = (f32)prm->unk7C / 100000.0f;
+    offRange = (f32)(prm->unk80 - prm->unk7C) / 100000.0f;
     e->tex = prm->tex;
     e->u.t10.texIndex = prm->texIndex;
     e->u.t10.unk40 = prm->unk10;
@@ -1936,14 +1980,14 @@ void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
         p->dir.x = p->dir.x * (f32)sign;
         sign *= -1;
         PSVECNormalize(&p->dir, &n);
-        PSVECScale(&n, (f32)prm->unk7C / 100000.0f + (((f32)(prm->unk80 - prm->unk7C) / 100000.0f) * (f32)rand()) / 32767.0f, &p->offset);
-        p->lenA = (f32)prm->unk64 / 100000.0f + (((f32)(prm->unk68 - prm->unk64) / 100000.0f) * (f32)rand()) / 32767.0f;
-        p->lenB = ((f32)prm->unk6C / 100000.0f + (((f32)(prm->unk70 - prm->unk6C) / 100000.0f) * (f32)rand()) / 32767.0f) - p->lenA;
-        p->reach = (f32)prm->unk74 / 100000.0f + (((f32)(prm->unk78 - prm->unk74) / 100000.0f) * (f32)rand()) / 32767.0f;
-        p->spin = (f32)prm->unk5C / 100000.0f + (((f32)(prm->unk60 - prm->unk5C) / 100000.0f) * (f32)rand()) / 32767.0f;
-        ang = (s32)(0.5f + (2048.0f * ((f32)prm->unk54 / 100000.0f + (((f32)(prm->unk58 - prm->unk54) / 100000.0f) * (f32)rand()) / 32767.0f)) / 360.0f);
-        r = 1.4142135f * (((f32)prm->unk34 / 100000.0f + (((f32)(prm->unk38 - prm->unk34) / 100000.0f) * (f32)rand()) / 32767.0f) * 0.5f);
-        p->sizeX = r * CosIdx(ang);
+        PSVECScale(&n, offMin + (offRange * (f32)rand()) / 32767.0f, &p->offset);
+        p->lenA = lenAMin + (lenARange * (f32)rand()) / 32767.0f;
+        p->lenB = (lenBMin + (lenBRange * (f32)rand()) / 32767.0f) - p->lenA;
+        p->reach = reachMin + (reachRange * (f32)rand()) / 32767.0f;
+        p->spin = spinMin + (spinRange * (f32)rand()) / 32767.0f;
+        ang = (s32)(0.5f + (2048.0f * (angMin + (angRange * (f32)rand()) / 32767.0f)) / 360.0f);
+        r = 1.4142135f * ((rMin + (rRange * (f32)rand()) / 32767.0f) * 0.5f);
+        p->sizeX = r * CosIdxB(ang);
         p->sizeY = r * SinIdx(ang);
         p->color.rgba = 0xFFFFFFFF;
         p->uvOrder = (rand() & 1) ? 0x123 : 0x321;
