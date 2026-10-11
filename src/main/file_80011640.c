@@ -1258,9 +1258,110 @@ void fn_80018B38(void) {
 }
 
 // .text:0x80018B74 size:0x278
+// NONMATCHING 96%: size temporaries register allocation
+#if NONMATCHING
 void fn_80018B74(void) {
-    return;
+    u32 max0 = 0;
+    u32 max1 = 0;
+    u32 max2 = 0;
+    u32 max3 = 0;
+    u32 max4 = 0;
+    u32 size;
+    u32 s0;
+    u32 s1;
+    u32 s2;
+    u32 s3;
+    u32 s4;
+    u32 total;
+    s32 k;
+    s32 m;
+    u8* p;
+    AramFile* f;
+
+    f = lbl_803CB790;
+    for (k = 0; k < 54; k++) {
+        if (g_d_GameSettings.GameModeSelected == 7) {
+            size = f[0xD].size & 0x0FFFFFFF;
+            if (max0 < size) {
+                max0 = size;
+            }
+        } else {
+            size = f[4].size & 0x0FFFFFFF;
+            if (max0 < size) {
+                max0 = size;
+            }
+        }
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            size = f[0xE].size & 0x0FFFFFFF;
+            if (max1 < size) {
+                max1 = size;
+            }
+        } else {
+            size = f[0xC].size & 0x0FFFFFFF;
+            if (max1 < size) {
+                max1 = size;
+            }
+        }
+        size = f[0x12].size & 0x0FFFFFFF;
+        if (max2 < size) {
+            max2 = size;
+        }
+        if (g_d_GameSettings.GameModeSelected == 7) {
+            size = f[9].size & 0x0FFFFFFF;
+            if (max3 < size) {
+                max3 = size;
+            }
+        } else {
+            size = f[2].size & 0x0FFFFFFF;
+            if (max3 < size) {
+                max3 = size;
+            }
+        }
+        size = f[0x10].size & 0x0FFFFFFF;
+        if (max4 < size) {
+            max4 = size;
+        }
+        f += 0x13;
+    }
+    s2 = (max2 + 0x1F) & ~0x1F;
+    s1 = (max1 + 0x1F) & ~0x1F;
+    s4 = (max4 + 0x1F) & ~0x1F;
+    s0 = (max0 + 0x1F) & ~0x1F;
+    s3 = (max3 + 0x1F) & ~0x1F;
+    lbl_8036E548.bankSize[2] = s0;
+    total = s3 + (s0 + (s1 + s2 + s4)) * 4;
+    lbl_8036E548.bankSize[1] = s1;
+    lbl_8036E548.bankSize[3] = s2;
+    lbl_8036E548.bankSize[0] = s3;
+    lbl_8036E548._2CA4 = s4;
+    lbl_8036E548._2D60 = total;
+    p = _OSAllocFromHeap(0x20, total);
+    lbl_8036E548._2C88 = p;
+    for (m = 0; m < 4; m++) {
+        lbl_8036E548.bankSets[m][0] = p;
+        p += s0;
+        lbl_8036E548.bankSets[m][1] = p;
+        p += s1;
+        lbl_8036E548.bankSets[m][2] = p;
+        p += s2;
+        if (m == 0) {
+            lbl_8036E548.bankSets[m][3] = p;
+            p += s3;
+        } else {
+            lbl_8036E548.bankSets[m][3] = lbl_8036E548.bankSets[0][3];
+        }
+        lbl_8036E548.bankSets[m][4] = p;
+        p += s4;
+        lbl_8036E548.actors[m].banks.b[0] = NULL;
+        lbl_8036E548.actors[m].banks.b[3] = NULL;
+        lbl_8036E548.actors[m].banks.b[4] = NULL;
+        lbl_8036E548.actors[m].banks.b[1] = NULL;
+        lbl_8036E548.actors[m].banks.b[2] = NULL;
+        lbl_8036E548.actors[m].banks.b[5] = NULL;
+    }
+    lbl_8036E548._2D68 = -1;
 }
+#endif
 
 // .text:0x80018DEC size:0x8EC
 void fn_80018DEC(void) {

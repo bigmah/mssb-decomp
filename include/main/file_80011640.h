@@ -197,7 +197,8 @@ typedef struct CharMgr {
     /*0x2C84*/ void* _2C84;
     /*0x2C88*/ void* _2C88;
     /*0x2C8C*/ u8* fileBuf;
-    /*0x2C90*/ u8 _2C90[0x2CA4 - 0x2C90];
+    /*0x2C90*/ u32 bankSize[4];
+    /*0x2CA0*/ u8 _2CA0[0x4];
     /*0x2CA4*/ u32 _2CA4;
     /*0x2CA8*/ u8 _2CA8[0x8];
     /*0x2CB0*/ void* bankBuf[4];
@@ -206,7 +207,7 @@ typedef struct CharMgr {
     /*0x2CE8*/ void* _2CE8;
     /*0x2CEC*/ void* bankSets[4][5];
     /*0x2D3C*/ CharPreload preload[3];
-    /*0x2D60*/ u8 _2D60[0x4];
+    /*0x2D60*/ u32 _2D60;
     /*0x2D64*/ u32 _2D64;
     /*0x2D68*/ s16 _2D68;
     /*0x2D6A*/ s8 _2D6A[13];
@@ -332,6 +333,8 @@ void fn_8001DEA4(CharSlot* slot, s32 pass, s32 a);
 
 s32 fn_80017340(s32 actorIdx);
 void fn_80018024(void);
+
+void fn_80018B74(void);
 
 void fn_8001B200(void);
 
