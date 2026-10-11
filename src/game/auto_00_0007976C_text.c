@@ -149,6 +149,47 @@ void fn_3_7AF68(void) {
     }
 }
 
+// fn_3_7AFE4, size:0x14C
+// Start of a new at-bat.
+// NONMATCHING 97%: registers only; original inlines fn_3_7AEEC here (blocked by #pragma dont_inline on)
+#if NONMATCHING
+void fn_3_7AFE4(void) {
+    s32 i;
+    u8 team = g_Scores._AD;
+    s32 batter = g_GameLogic.currentBatterPerTeam[team];
+
+    lbl_3_common_bss_32A94._22 = -1;
+    lbl_3_common_bss_32A94._23 = 0;
+    lbl_3_common_bss_32A94._24 = 0;
+    lbl_3_common_bss_32A94._20 = -1;
+    lbl_3_common_bss_32A94._25 = 0;
+    lbl_3_common_bss_32A94._26 = 0;
+    if (lbl_3_common_bss_32A94._61 < 0xFE) {
+        lbl_3_common_bss_32A94._61++;
+    } else {
+        lbl_3_common_bss_32A94._61 = 0xFF;
+    }
+    if (batter == 1) {
+        if (lbl_3_common_bss_32A94._61 > 1 || g_Scores.inning != 1) {
+            lbl_3_common_bss_32A94._44[team]++;
+        }
+        // same as fn_3_7AEEC
+        lbl_3_common_bss_32A94._22 = -1;
+        lbl_3_common_bss_32A94.baseOccupied[0] = 0;
+        for (i = 1; i < 4; i++) {
+            if (g_Runners[i].runnerOnFieldOrOutOrScored != 0) {
+                lbl_3_common_bss_32A94.baseOccupied[i] = 1;
+            } else {
+                lbl_3_common_bss_32A94.baseOccupied[i] = 0;
+            }
+        }
+    }
+    for (i = 0; i < 7; i++) {
+        lbl_3_common_bss_32A94.pitchCountLog[i] = 0;
+    }
+}
+#endif
+
 // fn_3_7BB74, size:0x4C
 u8* fn_3_7BB74(void) {
     return lbl_803537E4 + *(s32*)((u8*)&g_GameLogic + 4) * 0x156 + ((s32*)((u8*)&g_GameLogic + *(s32*)((u8*)&g_GameLogic + 0xC) * 0x50 + ((s32*)((u8*)&g_GameLogic + *(s32*)((u8*)&g_GameLogic + 0xC) * 4))[0xDC/4] * 8))[0xF] * 0x26;

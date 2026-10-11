@@ -16,7 +16,9 @@ typedef struct ScoresView {
     /*0xA6*/ u8 _A6[2];
     /*0xA8*/ u8 _A8[2]; // errors per team
     /*0xAA*/ u8 _AA;
-    /*0xAB*/ u8 _AB[4];
+    /*0xAB*/ u8 _AB[2];
+    /*0xAD*/ u8 _AD; // team at bat
+    /*0xAE*/ s8 _AE;
     /*0xAF*/ s8 _AF[2]; // pitcher slots
     /*0xB1*/ s8 _B1[2];
     /*0xB3*/ s8 _B3[2];

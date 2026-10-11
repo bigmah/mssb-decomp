@@ -11,6 +11,7 @@ s32 fn_3_7AEA8(void);
 void fn_3_7AEE8(void);
 void fn_3_7AEEC(void);
 void fn_3_7AF68(void);
+void fn_3_7AFE4(void);
 u8* fn_3_7BB74(void);
 u8* fn_3_7BBC0(void);
 void fn_3_7BBF8(void);
