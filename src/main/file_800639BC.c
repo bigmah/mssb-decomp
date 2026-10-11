@@ -33,6 +33,7 @@ extern MenuSlotSrc lbl_800E88C4[6][5];
 extern MenuSlotSrc lbl_800E8A2C[5];
 extern MenuSlotSrc lbl_800E8A68[5];
 extern u8 lbl_800E869C[32];
+extern u8 lbl_80109054[2][4][5]; // preferred field positions per character class
 extern ActorMgr lbl_8036E548;
 extern s8 lbl_803CB8C8[3]; // characters without foot dust
 extern s8 lbl_803CB8BC[5]; // characters with medium dust
@@ -70,6 +71,51 @@ extern void fn_8002B7F8(Vec* pos, EffectDesc* desc, s32 count);
 extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_80034E20(void* task, void* desc);
 extern void* fn_80034CEC(void* task);
+
+
+// Field-by-field copy of a character's stats (inlined by the original).
+#if NONMATCHING
+static void copyCharacterStats(CharacterStats* dst, CharacterStats* src) {
+    s32 i;
+
+    memcpy(&dst->stats, &src->stats, 0x1E);
+    dst->stats.CharID = src->stats.CharID;
+    dst->stats.FieldingArm = src->stats.FieldingArm;
+    dst->stats.BattingStance = src->stats.BattingStance;
+    memcpy(&dst->stats.SlapContactSize, &src->stats.SlapContactSize, 2);
+    memcpy(&dst->stats.SlapHitPower, &src->stats.SlapHitPower, 2);
+    dst->stats.BuntingContactSize = src->stats.BuntingContactSize;
+    dst->stats.HitTrajectoryPushPull = src->stats.HitTrajectoryPushPull;
+    dst->stats.HitTrajectoryHighLow = src->stats.HitTrajectoryHighLow;
+    dst->stats.Speed = src->stats.Speed;
+    dst->stats.ThrowingArm = src->stats.ThrowingArm;
+    dst->stats.CharacterClass = src->stats.CharacterClass;
+    dst->stats.Weight = src->stats.Weight;
+    dst->stats.Captain = src->stats.Captain;
+    dst->stats.CaptainStarHitPitch = src->stats.CaptainStarHitPitch;
+    memcpy(&dst->stats.NonCaptainStarSwing, &src->stats.NonCaptainStarSwing, 2);
+    dst->stats.FieldingStats = src->stats.FieldingStats;
+    memcpy(&dst->stats.BattingStatBar, &src->stats.BattingStatBar, 4);
+    memcpy(&dst->chemistry, &src->chemistry, sizeof(ChemistryTable));
+    dst->BytesAfterChemistry[0] = src->BytesAfterChemistry[0];
+    for (i = 0; i < 21; i++) {
+        dst->UnusedShorts[i] = src->UnusedShorts[i];
+    }
+}
+
+// Index of id in the team's chemistry order; keeps rank if it is not there
+// (the original leaves the register unchanged).
+static s32 chemRank(u8 team, s32 id, s32 rank) {
+    s32 k;
+
+    for (k = 0; k < 0x36; k++) {
+        if (lbl_8034E9A0.chemOrder[team][k] == id) {
+            return k;
+        }
+    }
+    return rank;
+}
+#endif
 
 // .text:0x800639BC size:0x988
 // Foot dust: spawns dust effects at a character's feet (0x23: left, 0x1F: right).
@@ -358,9 +404,163 @@ void fn_800649BC(void) {
 }
 
 // .text:0x80064A04 size:0x13E8
-void unsure_FillRosterPositions(void) {
-    return;
+// NONMATCHING 39%: the original inlines placeSlotByClass and chemRank at every call site
+// (the logic was checked against the asm block by block)
+#if NONMATCHING
+// Gives character c's slot (in picks[team]) the first free field position its
+// class prefers, or a random free one. checkFree: in the random case, only take
+// a slot that has no position yet.
+static void placeSlotByClass(u8 team, s8* slotPos, s8 c, BOOL checkFree) {
+    u8* pref = lbl_80109054[1][lbl_8034E9A0.roster[c / 9][c % 9].stats.CharacterClass];
+    s32 p;
+    s32 k;
+    s32 j;
+    u8 r;
+    u8 isFree;
+
+    for (p = 0; p < 5; p++) {
+        for (k = 0; k < 9; k++) {
+            if (slotPos[k] == pref[p]) {
+                break;
+            }
+        }
+        if (k == 9) {
+            for (j = 0; j < 9; j++) {
+                if (c == lbl_803C6724.picks[team][j] && slotPos[j] == -1) {
+                    slotPos[j] = pref[p];
+                    return;
+                }
+            }
+        }
+    }
+    do {
+        r = randRange_FUN_80042bf0(0, 8);
+        for (k = 0; k < 9; k++) {
+            if (slotPos[k] == r) {
+                break;
+            }
+        }
+        isFree = (k == 9);
+    } while (!isFree);
+    for (j = 0; j < 9; j++) {
+        if (c == lbl_803C6724.picks[team][j] && (!checkFree || slotPos[j] == -1)) {
+            slotPos[j] = r;
+            return;
+        }
+    }
 }
+
+// Assigns a field position to each of a team's picks (lbl_803C6724.pos): the
+// captain pitches (0), then the captain-type characters and the others in
+// chemistry order take the first free position preferred by their class.
+void unsure_FillRosterPositions(u8 team) {
+    s8 others[9];
+    s8 captains[9];
+    s8 slotPos[9];
+    u8 nc;
+    u8 no;
+    u8 isCaptain;
+    s32 i;
+    s32 k;
+    s32 a;
+    s32 b;
+    s32 rankA = 0;
+    s32 rankB = 0;
+    s8 c;
+    s8 t;
+
+    for (i = 0; i < 9; i++) {
+        others[i] = -1;
+        captains[i] = -1;
+        slotPos[i] = -1;
+    }
+    for (i = 0; i < 9; i++) {
+        if (lbl_803C6724.picks[team][i] == lbl_8034E9A0.captain[team]) {
+            slotPos[i] = 0;
+        }
+    }
+    nc = 0;
+    for (i = 0; i < 9; i++) {
+        for (k = 0; k < 12; k++) {
+            c = lbl_803C6724.picks[team][i];
+            if (c == lbl_80108EC4[k] && lbl_8034E9A0.captain[team] != c) {
+                captains[nc++] = c;
+            }
+        }
+    }
+
+    if (captains[0] != -1) {
+        if (captains[1] == -1) {
+            placeSlotByClass(team, slotPos, captains[0], FALSE);
+        } else {
+            for (a = 0; a < 8; a++) {
+                if (captains[a] == -1) {
+                    break;
+                }
+                // NOTE: ranks picks[team][a], not captains[a] (as in the original)
+                rankA = chemRank(team, lbl_803C6724.picks[team][a], rankA);
+                for (b = a + 1; b < 9; b++) {
+                    if (captains[b] == -1) {
+                        break;
+                    }
+                    rankB = chemRank(team, captains[b], rankB);
+                    if (rankA > rankB) {
+                        t = captains[b];
+                        captains[b] = captains[a];
+                        captains[a] = t;
+                    }
+                }
+            }
+            for (k = 0; k < 9; k++) {
+                if (captains[k] == -1) {
+                    break;
+                }
+                placeSlotByClass(team, slotPos, captains[k], FALSE);
+            }
+        }
+    }
+
+    no = 0;
+    for (i = 0; i < 9; i++) {
+        isCaptain = FALSE;
+        for (k = 0; k < 12; k++) {
+            if (lbl_803C6724.picks[team][i] == lbl_80108EC4[k]) {
+                isCaptain = TRUE;
+            }
+        }
+        if (!isCaptain) {
+            others[no++] = lbl_803C6724.picks[team][i];
+        }
+    }
+    for (a = 0; a < 8; a++) {
+        if (others[a] == -1) {
+            break;
+        }
+        rankA = chemRank(team, others[a], rankA);
+        for (b = a + 1; b < 9; b++) {
+            if (others[b] == -1) {
+                break;
+            }
+            rankB = chemRank(team, others[b], rankB);
+            if (rankA > rankB) {
+                t = others[b];
+                others[b] = others[a];
+                others[a] = t;
+            }
+        }
+    }
+    for (k = 0; k < 9; k++) {
+        if (others[k] == -1) {
+            break;
+        }
+        placeSlotByClass(team, slotPos, others[k], TRUE);
+    }
+
+    for (i = 0; i < 9; i++) {
+        lbl_803C6724.pos[team][i] = slotPos[i];
+    }
+}
+#endif
 
 // .text:0x80065DEC size:0x10C0
 void characterSelectScreen(void) {

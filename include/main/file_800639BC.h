@@ -9,8 +9,9 @@
 // Character-select / team-setup state at 0x8034E9A0 (size 0x4C28).
 // Only the fields used so far are named.
 typedef struct CharSelectState {
-    /*0x0000*/ CharacterStats roster[2][9]; // working copy of the rosters
-    /*0x0B40*/ u8 _0B40[0x46E0 - 0xB40];
+    /*0x0000*/ CharacterStats roster[6][9]; // stats of every character, indexed [id / 9][id % 9]
+    /*0x21C0*/ u8 _21C0[0x4380 - 0x21C0];
+    /*0x4380*/ u8 presets[12][0x48]; // [n][0..8]: roster indices of a preset team
     /*0x46E0*/ s32 captain[2]; // captain character id per team
     /*0x46E8*/ u8 _46E8[0x46F8 - 0x46E8];
     /*0x46F8*/ u8 ports[2];
@@ -34,7 +35,7 @@ extern CharSelectState lbl_8034E9A0;
 typedef struct TeamSelect {
     /*0x00*/ u8 _00[2];
     /*0x02*/ s8 picks[2][9]; // roster index (team * 9 + slot) per pick
-    /*0x14*/ u8 _14[0x26 - 0x14];
+    /*0x14*/ u8 pos[2][9]; // saved field position per pick
     /*0x26*/ u8 rating[2][9];
     /*0x38*/ u8 _38[0x5C - 0x38];
 } TeamSelect; // size: 0x5C
@@ -119,5 +120,6 @@ void fn_80064534(void);
 void fn_80067C48(u8 team);
 void fn_80067F70(u8 team);
 s32 fn_800639BC(s8 idx, Vec* a, Vec* b);
+void unsure_FillRosterPositions(u8 team);
 
 #endif
