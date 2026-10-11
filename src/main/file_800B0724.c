@@ -847,8 +847,15 @@ void fn_800B2240(void) {
 }
 
 // .text:0x800B24D4 size:0x48
-void fn_800B24D4(void) {
-    return;
+// Selects the layer that sprite drawing goes to.
+void fn_800B24D4(s32 layer) {
+    SpriteState* state;
+    lbl_803CC1D4 = layer;
+    state = &lbl_802FEBF8[layer];
+    lbl_803CBB34 = state;
+    lbl_803CBB38 = state + SPRITE_MAX_LAYERS;
+    lbl_803CBB40 = &lbl_802FE918[layer];
+    lbl_803CC1C0 = &lbl_803CC1E4[layer];
 }
 
 // .text:0x800B251C size:0x288

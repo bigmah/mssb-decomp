@@ -132,6 +132,7 @@ void fn_800B1188(void);
 void fn_800B13C0(Vec* pos, u32* colors, s32 count); // triangle fan
 s32 AllocateSprite(s32 layer, s32 needed);
 void fn_800B1468(Vec* pos, u32 color, struct SpriteTexInfo* tex); // textured quad
+void fn_800B24D4(s32 layer);
 s32 fn_800B1EBC(struct SpriteTexInfo* tex, s32 map, u32 width, u32 height);
 
 void fn_800B0934(void);
