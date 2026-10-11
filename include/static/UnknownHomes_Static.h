@@ -4,49 +4,7 @@
 #include "mssbtypes.h"
 #include "Dolphin/mtx.h"
 
-typedef struct _GameInitVariables {
-    /*0x00*/ int _00;
-    /*0x04*/ u16 FrameCountWhileNotAtMainMenu;
-    /*0x06*/ u8 _06; // 1 Menu,2 InGame/Minigame/Practice/etc
-    /*0x07*/ E(u8, GAME_TYPE) GameModeSelected;
-    /*0x08*/ bool exhibitionMatchInd;
-    /*0x09*/ E(u8, STADIUM_ID) StadiumID;
-    /*0x0A*/ u8 miniGameStadiumIndicator;
-    /*0x0B*/ u8 _0B;
-    /*0x0C*/ u8 maybeHomeAway;
-    /*0x0D*/ u8 maybeHomeAway2;
-    /*0x0E*/ u8 home_AwaySetting;
-    artificial_padding(0x0e, 0x11, u8);
-    /*0x11*/ bool minigamesEnabled;
-    /*0x12*/ u8 _12; // saved
-    /*0x13*/ u8 _13;
-    /*0x14*/ u8 _14[6]; // saved
-    /*0x1A*/ u8 _1A[6]; // saved
-    /*0x20*/ s16 _20[4][2];
-    /*0x30*/ s16 challengeMinigame_baseCoinsEarned;
-    /*0x32*/ u8 bJMatchRelated;
-    /*0x33*/ u8 _33;
-    /*0x34*/ u8 humanTeamNumber;
-    /*0x35*/ u8 _35;
-    /*0x36*/ u8 _36;
-    /*0x37*/ u8 challengeDifficulty; // unsure
-    /*0x38*/ u8 _38;
-    /*0x39*/ u8 bJMatchInd;
-    /*0x3A*/ u8 _3A;
-    /*0x3B*/ u8 someChallengeModeFlag;
-    /*0x3C*/ u8 challengeCaptainStarBought[18];
-    /*0x4E*/ u8 _4E;
-    /*0x4F*/ u8 _4F;
-    /*0x50*/ u8 PlayerPorts[2];
-    /*0x52*/ u8 _52;
-    /*0x53*/ u8 _53;
-    /*0x54*/ E(u8, STADIUM_ID) _54;
-    /*0x55*/ u8 _55;
-    /*0x56*/ u8 _56;
-    /*0x57*/ u8 _57;
-} GameInitVariables; // size: 0x58
-
-extern GameInitVariables g_d_GameSettings;
+#include "static/GameSettings.h"
 
 typedef struct {
     /*0x00*/ Mtx44 proj;
@@ -75,7 +33,7 @@ extern void fn_800BD670(void*, u32);
 extern void LITXForm(void* light, void* matrix);
 extern void fn_80048D4C(void);
 extern void fn_80062A94(void);
-extern void* fn_80048EA8(s32 index);
+extern s32 fn_80048EA8(s32 index);
 extern s32 fn_80048E00(s32 index, s32 value);
 extern void fn_80048C14(u32 value);
 extern void SetFog(u8 mode, s32* color, f32 start, f32 end, f32 near, f32 far);
@@ -93,7 +51,8 @@ extern void pitchingMachinePitching(u8);
 typedef struct {
     /* 0x00 */ u16 _00;
     /* 0x02 */ u16 _02;
-    artificial_padding(2, 0x22, u16);
+    /* 0x04 */ u16 _04; // repeat (PadState in main/file_800A7C08.h)
+    artificial_padding(4, 0x22, u16);
     /* 0x22 */ u16 _22;
     artificial_padding(0x22, 0x42, u16);
     /* 0x42 */ u16 _42;
