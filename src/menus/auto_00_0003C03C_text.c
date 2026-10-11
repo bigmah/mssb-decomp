@@ -2692,3 +2692,130 @@ void fn_2_439D0(void) {
         }
     }
 }
+
+// fn_2_42708, size:0x4E0
+void fn_2_42708(void) {
+    s32 i;
+    s32 j;
+    s32 r;
+    u8* e;
+    for (i = 0; i < 54; i++) {
+        if (lbl_800E8558[i * 6 + 3] == 1) {
+            e = lbl_2_bss_1A8248[0] + i * 0x34;
+            if ((s32)e[0x31] == 1) {
+                for (j = 0; j < 10; j++) {
+                    s32 row = lbl_800E8558[i * 6 + 2] * 0x64;
+                    s32 t = *(s16*)(lbl_80109AE8 + row + j * 10);
+                    u8* p = lbl_8010A768 + row + j * 10;
+                    s32 type = *(s16*)(p + 2);
+                    s32 a = *(s16*)(p + 4);
+                    s32 b = *(s16*)(p + 6);
+                    s32 c = *(s16*)(p + 8);
+                    if (type != -1 && *(s8*)(e + j * 2 + 10) == 0) {
+                        switch (type) {
+                        case 1:
+                            if (fn_8006CDC0(i) >= a && lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 3:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 1) && lbl_2_bss_1A8248[0][0x4415] >= a) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 4:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 2) && lbl_2_bss_1A8248[0][0x4415] >= a) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 5:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 4) && lbl_2_bss_1A8248[0][0x4415] >= a) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 6:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 8) && lbl_2_bss_1A8248[0][0x4415] >= a) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 7:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 16) && lbl_2_bss_1A8248[0][0x4415] >= a) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 8:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 1) && lbl_2_bss_1A8248[0][0x441C] == a &&
+                                lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 9:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 2) && lbl_2_bss_1A8248[0][0x441C] == a &&
+                                lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 10:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 4) && lbl_2_bss_1A8248[0][0x441C] == a &&
+                                lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 11:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 8) && lbl_2_bss_1A8248[0][0x441C] == a &&
+                                lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 12:
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 16) && lbl_2_bss_1A8248[0][0x441C] == a &&
+                                lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 13:
+                            r = fn_8006C79C(i);
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 1) && r == 1 && lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 14:
+                            r = fn_8006C79C(i);
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 2) && r == 1 && lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 15:
+                            r = fn_8006C79C(i);
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 4) && r == 1 && lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 16:
+                            r = fn_8006C79C(i);
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 8) && r == 1 && lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 17:
+                            r = fn_8006C79C(i);
+                            if ((lbl_2_bss_1A8248[0][0x4428] & 16) && r == 1 && lbl_2_bss_1A8248[0][0x4415] >= b) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        case 20:
+                            if (lbl_2_bss_1A8248[0][0x441C] == a && *(s16*)(lbl_2_bss_1A8248[0] + 0x43BC) >= b &&
+                                lbl_2_bss_1A8248[0][0x4415] >= c) {
+                                e[j * 2 + 10] = 1;
+                            }
+                            break;
+                        }
+                    }
+                    if (t != -1 && *(s8*)(e + j * 2 + 9) < 0) {
+                        e[j * 2 + 10] = 1;
+                    }
+                }
+            }
+        }
+    }
+}
