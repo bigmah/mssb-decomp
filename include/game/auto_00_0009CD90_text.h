@@ -26,7 +26,9 @@ typedef struct GameFielder {
     /*0x178*/ s16 rosterID;
     /*0x17A*/ u8 _17A[0x18C - 0x17A];
     /*0x18C*/ s16 _18C; // base the fielder is covering
-    /*0x18E*/ u8 _18E[0x1E0 - 0x18E];
+    /*0x18E*/ u8 _18E[0x1C4 - 0x18E];
+    /*0x1C4*/ u8 _1C4; // index into lbl_3_data_1C30 (fn_3_1DEB8)
+    /*0x1C5*/ u8 _1C5[0x1E0 - 0x1C5];
     /*0x1E0*/ u8 _1E0;
     /*0x1E1*/ u8 _1E1[0x268 - 0x1E1];
 } GameFielder; // size: 0x268

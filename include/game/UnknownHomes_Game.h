@@ -2831,7 +2831,13 @@ typedef struct {
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0xAE];
+    u8 pad[0x77];
+    /* 0x077 */ struct {
+        u8 _0;
+        u8 _1; // set when RandomInt_Game(100) rolls under the fielder's chance (fn_3_1DEB8)
+        u8 _2[4];
+    } _077[4]; // per minigame fielder
+    u8 _08F[0xAE - 0x8F];
     /* 0x0AE */ s16 _0AE;
     /* 0x0B0 */ s16 _0B0; // fielder index (g_Fielders), < 0 if none
     u8 _0B2[0xBC - 0xB2];
