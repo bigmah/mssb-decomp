@@ -66,6 +66,7 @@ void fn_8005BB5C(SceneTask* task);
 void fn_8005B760(SceneTask* task, s32 port);
 void fn_80055374(SceneTask* task, s32 port);
 void someChallengeStarFunction2(SceneTask* task);
+void fn_800596D4(SceneTask* task);
 void someChallengeStarFunction(SceneTask* task);
 void fn_80057CAC(void);
 void fn_8005CCE4(SceneTask* task, s32 port);
@@ -130,7 +131,12 @@ typedef struct MenuWork {
     /*0xCF63*/ u8 starShown[2];
     /*0xCF65*/ u8 _CF65[0xB];
     /*0xCF70*/ u8 _CF70;
-    /*0xCF71*/ u8 _CF71[0xB];
+    /*0xCF71*/ u8 _CF71[2];
+    /*0xCF73*/ u8 pauseShown;
+    /*0xCF74*/ u8 _CF74;
+    /*0xCF75*/ s8 pauseMission;
+    /*0xCF76*/ s8 pausePrevMission;
+    /*0xCF77*/ u8 _CF77[5];
     /*0xCF7C*/ u8 missionText; // text entry index
     /*0xCF7D*/ u8 scoutState;
     /*0xCF7E*/ u8 scoutSub;

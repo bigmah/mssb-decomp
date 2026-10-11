@@ -900,9 +900,70 @@ void fn_80059458(SceneTask* task, u8 port, u32 mask) {
 #endif
 
 // .text:0x800596D4 size:0x464
-void fn_800596D4(void) {
-    return;
+// NONMATCHING 92%: register numbering and index-sum order differ
+#if NONMATCHING
+void fn_800596D4(SceneTask* task) {
+    s32 base;
+    s16 msg;
+    u8 set;
+
+    if (lbl_803297E0.pauseShown == 0) {
+        if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.pauseMission) != 0) {
+            base = 0x1DD;
+            TASK_OBJ(task, 473)->flags |= 2;
+            TASK_OBJ(task, 473)->_5C = 0;
+            TASK_OBJ(task, 473)->_68 = 1;
+            TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1E7)->flags |= 2;
+            TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1E7)->_5C = 0;
+            TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1E7)->_68 = 1;
+            if (g_d_GameSettings._06 == 2) {
+                base = 0x173;
+            }
+            TASK_OBJ(task, base + lbl_803297E0.pauseMission)->_5C = 1 << 16;
+        } else {
+            base = 0x1DD;
+            TASK_OBJ(task, 473)->flags &= ~2;
+            TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1E7)->flags &= ~2;
+            if (g_d_GameSettings._06 == 2) {
+                base = 0x173;
+            }
+            TASK_OBJ(task, base + lbl_803297E0.pauseMission)->_5C = 0;
+        }
+        TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1FB)->flags |= 2;
+        TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1FB)->_68 = 1;
+        if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.pausePrevMission) != 0) {
+            base = 0x1DD;
+            TASK_OBJ(task, lbl_803297E0.pausePrevMission + 0x1E7)->flags &= ~2;
+            if (g_d_GameSettings._06 == 2) {
+                base = 0x173;
+            }
+            TASK_OBJ(task, base + lbl_803297E0.pausePrevMission)->_5C = 0;
+        } else {
+            base = 0x1DD;
+            if (g_d_GameSettings._06 == 2) {
+                base = 0x173;
+            }
+            TASK_OBJ(task, base + lbl_803297E0.pausePrevMission)->_5C = 0;
+        }
+        TASK_OBJ(task, lbl_803297E0.pausePrevMission + 0x1FB)->flags &= ~2;
+        TASK_OBJ(task, lbl_803297E0.pausePrevMission + 0x1FB)->_68 = 1;
+        set = lbl_800E8558[lbl_803297E0.challengeTeam]._2;
+        if ((s8)gChallengeState.trackers[lbl_803297E0.challengeTeam].inGameMissionTracker[lbl_803297E0.pauseMission].shownOnPauseMenu != 0) {
+            msg = lbl_8010A768[set][lbl_803297E0.pauseMission].msg;
+        } else if (lbl_8010A768[set][lbl_803297E0.pauseMission]._6 <= gChallengeState._4415) {
+            msg = 0x1C5;
+        } else {
+            msg = 0x1C6;
+        }
+        fn_8000FE08(lbl_803297E0.missionText, 0, msg);
+        lbl_803297E0.pauseShown = 1;
+    }
+    if (lbl_803297E0.pauseShown != 0) {
+        lbl_803297E0._CF74 = 0;
+        lbl_803297E0.pauseShown = 0;
+    }
 }
+#endif
 
 // .text:0x80059B38 size:0x818
 void starMissionRelated1(void) {
