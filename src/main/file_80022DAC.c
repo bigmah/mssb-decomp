@@ -362,8 +362,19 @@ void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, u32 a
 #endif
 
 // .text:0x80023AA4 size:0x60
-void fn_80023AA4(void) {
-    return;
+ActorSlotTable* fn_80023AA4(void) {
+    u32 i;
+    u8** p;
+
+    lbl_8017EB40[0] = _OSAllocFromHeap(0x20, 0x1C * 0x1BC0);
+    p = &lbl_8017EB40[1];
+    i = 1;
+    do {
+        i++;
+        *p = p[-1] + 0x1BC0;
+        p++;
+    } while (i < 0x1C);
+    return ActorObjectInitTable(0x1C);
 }
 
 // .text:0x80023B04 size:0x8C
