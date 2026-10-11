@@ -119,8 +119,15 @@ void fn_800B4CA0(GameActor* actor, f32 time) {
 }
 
 // .text:0x800B4CDC size:0x88
-void fn_800B4CDC(void) {
-    return;
+void fn_800B4CDC(GameActor* actor) {
+    s32 i;
+
+    for (i = actor->totalBones - 1; i >= 0; i--) {
+        if (actor->boneArray[i]->animPipe != NULL) {
+            fn_800ACFB0(actor->boneArray[i]->animPipe);
+            actor->boneArray[i]->animPipe = NULL;
+        }
+    }
 }
 
 // .text:0x800B4D64 size:0x138
