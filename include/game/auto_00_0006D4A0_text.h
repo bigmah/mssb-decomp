@@ -13,7 +13,7 @@ typedef struct PlayerGameRecord {
 extern PlayerGameRecord lbl_803535C8[2][9];
 
 void fn_3_6D4A0(void);
-u16 fn_3_6D564(s32 team, s32 idx, s32 delta);
+s32 fn_3_6D564(s32 team, s32 idx, s32 delta);
 s32 fn_3_6D658(s32 team, s32 charId, s32 otherId);
 
 #endif
