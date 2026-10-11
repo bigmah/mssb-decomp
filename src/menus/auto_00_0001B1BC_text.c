@@ -57,7 +57,7 @@ extern void fn_2_467FC(void);
 extern void fn_2_468DC(void);
 extern void fn_2_4AB1C(void);
 extern s32 fn_2_46D00(void);
-extern void fn_2_46D94(s16* a, s16* b, s16 count, s32 c, s32 d);
+extern void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
 extern s32 fn_8006CDC0(s32 team);
 extern s32 fn_2_44E2C(s32 ch);
 
