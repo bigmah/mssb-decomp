@@ -2037,10 +2037,7 @@ typedef struct _MiniGameStruct {
     /*0x1919*/ u8 _1919;
     /*0x191A*/ u8 _191A;
     /*0x191B*/ u8 _191B;
-    /*0x191C*/ u8 _191C;
-    /*0x191D*/ u8 _191D;
-    /*0x191E*/ u8 _191E;
-    /*0x191F*/ u8 _191F;
+    /*0x191C*/ s8 _191C[4]; // per player: panel progress
     /*0x1920*/ E(u8, TOY_FIELD_RESULT) toyFieldBallStateResult2;
     /*0x1921*/ u8 _1921;
     /*0x1922*/ u8 _1922;

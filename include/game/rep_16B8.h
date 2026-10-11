@@ -83,6 +83,25 @@ typedef struct RepScoreTask {
     /*0x1C*/ u16 score[2][2]; // [0][team]: score shown, [1][team]: target score
 } RepScoreTask;
 
+// Field-HUD task (fn_3_9669C / fn_3_959BC); only the fields used here.
+typedef struct RepFieldHudTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
+    /*0x16*/ u16 _16;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 blinkTimer; // minigame: frames since a panel was hit (0 = idle)
+    /*0x1C*/ u16 progress[4]; // minigame: per player, shown panel count (+10 once complete, 14 = done)
+} RepFieldHudTask;
+
+// View of lbl_3_common_bss_34C90 (pause state), only the fields used here.
+typedef struct RepPauseView {
+    /*0x000*/ u8 _000[0xC];
+    /*0x00C*/ s16 _00C;
+    /*0x00E*/ u8 _00E[0x1D5 - 0xE];
+    /*0x1D5*/ u8 _1D5;
+} RepPauseView;
+
 #define REP_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
 
 void fn_3_91520(void);

@@ -34,6 +34,8 @@ extern u8 lbl_3_data_EC1C[];
 extern u8 lbl_3_data_F430[];
 extern u8 lbl_3_data_EABC[];
 extern u8 lbl_3_data_E85C[];
+extern f32 lbl_3_data_C1CC[4]; // field-map transform: offset x, offset y, scale x, scale y
+extern u8 lbl_3_common_bss_34C90[]; // TODO type: GamePauseState (auto_00_00097144_text.h)
 extern void fn_3_ED0F4(void);
 extern u8 lbl_3_data_F224[];
 extern u8 lbl_3_data_F200[];
@@ -1044,9 +1046,185 @@ void fn_3_95970(void) {
 }
 
 // .text:0x000959BC size:0xCE0 mapped:0x806D4A50
-void fn_3_959BC(void) {
-    return;
+// NONMATCHING 91%: (with the alpha helper pasted in by hand; it stays a call here because the file ends in
+// `dont_inline on`) block layout of the i == 0 runner case, a few `+1` slot offsets folded into lwz, regalloc
+#if NONMATCHING
+static inline void fn_3_959BC_setAlpha(RepFieldHudTask* task, s32 alpha) {
+    s32 i;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        for (i = 1; i < 6; i++) {
+            lbl_80371C30[task->baseIdx + i].obj->color = alpha | (lbl_80371C30[task->baseIdx + i].obj->color & ~0xFF);
+        }
+    } else {
+        for (i = 1; i < 14; i++) {
+            lbl_80371C30[task->baseIdx + i].obj->color = alpha | (lbl_80371C30[task->baseIdx + i].obj->color & ~0xFF);
+        }
+    }
 }
+
+void fn_3_959BC(void) {
+    RepFieldHudTask* task = lbl_803CC1B8[0];
+    s32 i;
+    s32 any;
+    s32 phase;
+    s32 digit;
+    s32 slot;
+    s32 alpha;
+    u8 status;
+    InMemRunnerType* r;
+    f32 sx;
+    f32 sy;
+    if (task->timer < 0xFFFE) {
+        task->timer++;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    if (lbl_3_common_bss_32724[0x96] != 0 ||
+        (g_d_GameSettings.GameModeSelected == 2 && (g_Practice.tutorialState == 0 || g_Practice._1C7 != 0))) {
+        goto remove;
+    }
+    if (task->blinkTimer != 0) {
+        if (task->blinkTimer < 0xFFFE) {
+            task->blinkTimer++;
+        } else {
+            task->blinkTimer = 0xFFFF;
+        }
+    }
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        if (g_Minigame.framesSincePanelHit == 1) {
+            any = 0;
+            for (i = 0; i < 4; i++) {
+                if (g_Minigame._191C[i] > i) {
+                    any = 1;
+                }
+            }
+            if (any) {
+                task->blinkTimer = 1;
+            }
+        }
+        if (task->blinkTimer != 0) {
+            for (i = 1; i < 5; i++) {
+                lbl_80371C30[task->baseIdx + i].obj->flags &= ~2;
+            }
+            phase = (task->blinkTimer - 1) % 45;
+            if (phase == 0) {
+                for (i = 0; i < 4; i++) {
+                    digit = task->progress[i] % 10;
+                    if (digit == 4) {
+                        task->progress[i] = 14;
+                    } else if (digit < g_Minigame._191C[i]) {
+                        task->progress[i]++;
+                        lbl_80371C30[(task->progress[i] % 10) % 4 + task->baseIdx + 1].obj->flags |= 2;
+                    } else if (digit > 0 && digit < 4 && digit == g_Minigame._191C[i]) {
+                        lbl_80371C30[digit % 4 + task->baseIdx + 1].obj->flags |= 2;
+                        if (task->progress[i] < 10) {
+                            task->progress[i] += 10;
+                        }
+                    }
+                }
+            }
+            for (i = 0; i < 4; i++) {
+                slot = (task->progress[i] % 10) % 4 + 1;
+                if (task->progress[i] <= g_Minigame._191C[i]) {
+                    if (slot == 1) {
+                        lbl_80371C30[task->baseIdx + slot].obj->flags |= 2;
+                    } else if (phase <= 15 || phase > 30) {
+                        lbl_80371C30[task->baseIdx + slot].obj->flags |= 2;
+                    }
+                    g_Minigame._1925 |= 1 << (slot - 1);
+                } else if (task->progress[i] >= 10) {
+                    g_Minigame._1925 |= 1 << (slot - 1);
+                    lbl_80371C30[task->baseIdx + slot].obj->flags |= 2;
+                }
+            }
+        }
+    } else {
+        // runner markers (slots 1-4) and occupied-base markers (slots 9-11)
+        lbl_80371C30[task->baseIdx + 9].obj->flags &= ~2;
+        lbl_80371C30[task->baseIdx + 10].obj->flags &= ~2;
+        lbl_80371C30[task->baseIdx + 11].obj->flags &= ~2;
+        r = g_Runners;
+        for (i = 0; i < 4; i++, r++) {
+            status = r->runnerOnFieldOrOutOrScored;
+            if (status != 1 || g_Strikes.outs >= 3) {
+                lbl_80371C30[task->baseIdx + (i + 1)].obj->flags &= ~2;
+                continue;
+            }
+            if (i == 0) {
+                if (g_Ball.framesSinceHit < 1) {
+                    lbl_80371C30[task->baseIdx + (i + 1)].obj->flags &= ~2;
+                    continue;
+                }
+                if (status == 1 || status == 5) {
+                    if (g_Ball.framesSinceHit < 16) {
+                        lbl_80371C30[task->baseIdx + (i + 1)].obj->color =
+                            (g_Ball.framesSinceHit * 16) | (lbl_80371C30[task->baseIdx + (i + 1)].obj->color & ~0xFF);
+                    } else {
+                        lbl_80371C30[task->baseIdx + (i + 1)].obj->color = (lbl_80371C30[task->baseIdx + (i + 1)].obj->color & ~0xFF) | 0xFF;
+                    }
+                }
+            } else {
+                lbl_80371C30[task->baseIdx + (i + 1)].obj->color = (lbl_80371C30[task->baseIdx + (i + 1)].obj->color & ~0xFF) | 0xFF;
+            }
+            lbl_80371C30[task->baseIdx + (i + 1)].obj->flags |= 2;
+            sx = lbl_3_data_C1CC[2] * r->position.x;
+            sy = lbl_3_data_C1CC[3] * -r->position.z;
+            lbl_80371C30[task->baseIdx + (i + 1)].obj->x = sx + lbl_3_data_C1CC[0];
+            lbl_80371C30[task->baseIdx + (i + 1)].obj->y = sy + lbl_3_data_C1CC[1];
+            if (r->currentBase >= 1 && r->currentBase <= 3) {
+                lbl_80371C30[task->baseIdx + r->currentBase + 8].obj->flags |= 2;
+            }
+        }
+        // steal indicator (slot 12)
+        REP_OBJ(task, 12)->flags &= ~2;
+        if (g_GameLogic.sceneID == 1) {
+            for (i = 1; i < 4; i++) {
+                if (g_Runners[i].runnerOnFieldOrOutOrScored != 0 && g_Runners[i].furthestBaseForcedToGoToOnWalk != 0) {
+                    REP_OBJ(task, 12)->flags |= 2;
+                    for (; i < 4; i++) {
+                        if (g_Runners[i].stealingStatus == 3) {
+                            break;
+                        }
+                    }
+                    if (i < 4) {
+                        REP_OBJ(task, 12)->_64 = 0xA2;
+                    } else {
+                        REP_OBJ(task, 12)->_64 = 0xA6;
+                    }
+                    break;
+                }
+            }
+        }
+        // CPU-batting indicator (slot 13)
+        REP_OBJ(task, 13)->flags &= ~2;
+        if (g_d_GameSettings.GameModeSelected != 2 && g_GameLogic._13E[g_GameLogic.teamBatting] == 0 &&
+            g_GameLogic.battingAIInd[g_GameLogic.homeTeamBattingInd_fieldingTeam] != 0) {
+            REP_OBJ(task, 13)->flags |= 2;
+        }
+    }
+    if (task->timer <= 16) {
+        alpha = task->timer * 16;
+        if (alpha > 0xFF) {
+            alpha = 0xFF;
+        }
+        fn_3_959BC_setAlpha(task, alpha);
+    }
+    if (((RepPauseView*)&lbl_3_common_bss_34C90)->_1D5 != 0 && g_d_GameSettings.GameModeSelected != 6) {
+        alpha = 0xF0 - ((RepPauseView*)&lbl_3_common_bss_34C90)->_00C * 16;
+        if (alpha <= 0) {
+            goto remove;
+        }
+        fn_3_959BC_setAlpha(task, alpha);
+    }
+    if (g_GameLogic.hudLoadingRelated == 0 && g_GameLogic.gameStatus != 3 && g_GameLogic.gameStatus != 0xE &&
+        g_GameLogic.secondaryGameMode != 0xA) {
+        return;
+    }
+remove:
+    lbl_3_common_bss_32724[0xC7] = 0;
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
+}
+#endif
 
 // .text:0x0009669C size:0x278 mapped:0x806D5730
 void fn_3_9669C(void) {
