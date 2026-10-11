@@ -120,9 +120,24 @@ void fn_8001196C(void) {
 #endif
 
 // .text:0x80011A60 size:0x104
+// NONMATCHING 97%: register allocation only
+#if NONMATCHING
 void fn_80011A60(void) {
-    return;
+    s32 i;
+    s32 idx;
+
+    for (i = 0; i < 4; i++) {
+        idx = i + 9;
+        detachOwnedPart(idx);
+        detachOwnedParts(idx);
+        if (lbl_8036E548.active[idx] != NULL) {
+            lbl_8036E548.active[idx]->_25C = 0;
+            lbl_8036E548.active[idx] = NULL;
+        }
+        clearSlotRefs(idx);
+    }
 }
+#endif
 
 // .text:0x80011B64 size:0x80
 void fn_80011B64(void) {
