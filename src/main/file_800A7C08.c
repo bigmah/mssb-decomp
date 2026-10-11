@@ -6,6 +6,8 @@
 #include "Dolphin/dvd.h"
 #include "Dolphin/ai.h"
 #include "Dolphin/pad.h"
+#include "stl/mem.h"
+#include "main/file_800B0724.h"
 
 extern OSThread* GXSetCurrentGXThread(void);
 extern s32 OSSignalSemaphore(OSSemaphore* sem);
@@ -809,8 +811,37 @@ void fn_800A983C(void) {
     SISetSamplingRate(0);
 }
 
+extern CardSystem lbl_803C7838;
+extern Task* lbl_803CC1B8;            // currently running task
+extern u64 lbl_802EF2C0[2];           // expected serial number per slot
+extern CARDMemoryCard lbl_802EF3A0;   // CARD work area
+extern CARDStat lbl_802EF330;
+extern u16 lbl_800E7800[256];         // CRC-16 table
+extern char lbl_803CCEE0[8];          // OSPanic file name
+extern char lbl_800E7B28[];           // OSPanic message
+
+extern s32 CARDGetResultCode(s32 chan);
+extern s32 CARDGetXferredBytes(s32 chan);
+extern s32 CARDCheckAsync(s32 chan, CARDCallback callback);
+extern s32 CARDFormatAsync(s32 chan, CARDCallback callback);
+extern s32 CARDDeleteAsync(s32 chan, const char* fileName, CARDCallback callback);
+extern s32 CARDFastDelete(s32 chan, char* fileName);
+extern void CARDInit(void);
+
+// Classifies lbl_803C7838.status: 0 = still busy, 1 = ready, 2 = error.
+static inline s32 CardStatusClass(void) {
+    u8 status = lbl_803C7838.status;
+    if (status == CARD_STATUS_BUSY) {
+        return 0;
+    }
+    if (status == CARD_STATUS_READY) {
+        return 1;
+    }
+    return 2;
+}
+
 // .text:0x800A9864 size:0x98
-void fn_800A9864(void) {
+void fn_800A9864(u8 chan, u8 mode, u64 serial) {
     return;
 }
 
@@ -825,7 +856,7 @@ void fn_800A9CF8(void) {
 }
 
 // .text:0x800A9E34 size:0x98
-void fn_800A9E34(void) {
+void fn_800A9E34(u8 chan, u8 mode, u64 serial) {
     return;
 }
 
@@ -875,8 +906,8 @@ void fn_800AB534(void) {
 }
 
 // .text:0x800ABB14 size:0x4C
-void fn_800ABB14(void) {
-    return;
+u16 fn_800ABB14(u8* data, s32 len) {
+    return 0;
 }
 
 // .text:0x800ABB60 size:0x70
@@ -899,11 +930,9 @@ void fn_800AC508(void) {
     return;
 }
 
-extern u8 lbl_803C7838[];
-
 // fn_800ACCD4, size:0x14
 void fn_800ACCD4(void) {
-    *(u8*)(lbl_803C7838 + 0x55) = 0x7;
+    lbl_803C7838.op = 7;
 }
 
 // fn_800ACC6C, size:0x68
@@ -941,8 +970,63 @@ void fn_800ACD44(void) {
 }
 
 // .text:0x800ACD64 size:0x1B0
-void fn_800ACD64(void) {
-    return;
+void fn_800ACD64(s32 result) {
+    lbl_803C7838.lastResult = result;
+    switch (result) {
+    case CARD_RESULT_READY:
+        lbl_803C7838.status = CARD_STATUS_READY;
+        break;
+    case CARD_RESULT_BUSY:
+        lbl_803C7838.status = CARD_STATUS_BUSY;
+        break;
+    case CARD_RESULT_NOCARD:
+        lbl_803C7838.status = 0;
+        break;
+    case CARD_RESULT_BROKEN:
+        lbl_803C7838.status = 1;
+        break;
+    case CARD_RESULT_ENCODING:
+        lbl_803C7838.status = 2;
+        break;
+    case CARD_RESULT_IOERROR:
+    case CARD_RESULT_FATAL_ERROR:
+        lbl_803C7838.status = 3;
+        break;
+    case CARD_RESULT_WRONGDEVICE:
+        lbl_803C7838.status = 4;
+        break;
+    case CARD_RESULT_NOENT:
+        lbl_803C7838.status = 5;
+        break;
+    case CARD_RESULT_INSSPACE:
+        lbl_803C7838.status = 6;
+        break;
+    case CARD_RESULT_EXIST:
+        lbl_803C7838.status = 8;
+        break;
+    case CARD_RESULT_CANCELED:
+    case CARD_RESULT_NOPERM:
+    case CARD_RESULT_LIMIT:
+        if (lbl_803C7838.op == 1) {
+            lbl_803C7838.status = 9;
+        } else if (lbl_803C7838.op == 2) {
+            lbl_803C7838.status = 10;
+        }
+        break;
+    case CARD_RESULT_NOFILE:
+        if (lbl_803C7838.op == 1) {
+            lbl_803C7838.status = 9;
+        } else if (lbl_803C7838.op == 2) {
+            lbl_803C7838.status = 14;
+        }
+        break;
+    case CARD_RESULT_NAMETOOLONG:
+        OSPanic(lbl_803CCEE0, 0xEC, lbl_800E7B28);
+        break;
+    case CARD_RESULT_BAD_SECTOR_SIZE:
+        lbl_803C7838.status = 7;
+        break;
+    }
 }
 
 // Simple two-ended arena: blocks are allocated upward from lo or downward from hi.

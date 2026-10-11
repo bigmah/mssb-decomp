@@ -5,6 +5,7 @@
 #include "Dolphin/os.h"
 #include "Dolphin/gx.h"
 #include "Dolphin/dvd.h"
+#include "Dolphin/card.h"
 
 // Entry in the per-frame draw callback list. `next` holds the next entry's address with
 // flags in the low two bits: bit 0 = disabled, bit 1 = field the callback runs on.
@@ -143,6 +144,55 @@ typedef struct PadConfig {
     /*0x9*/ s8 stickPos;
 } PadConfig;
 
+// Task node handed out by fn_800B0A5C_insertQueue (main/file_800B0724). The 0x2C bytes
+// at `data` belong to the task; the memory card tasks overlay their own layouts on it.
+typedef struct Task {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct Task* prev;
+    /*0x08*/ struct Task* next;
+    /*0x0C*/ struct Task* parent; // task that was running when this one was queued
+    /*0x10*/ s16 result;          // set by child tasks: 1 = done, 2 = failed
+    /*0x12*/ u16 priority;
+    /*0x14*/ u8 data[0x2C];
+} Task;
+
+typedef struct CardMountTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct Task* prev;
+    /*0x08*/ struct Task* next;
+    /*0x0C*/ struct Task* parent;
+    /*0x10*/ s16 result;
+    /*0x12*/ u16 priority;
+    /*0x14*/ s32 step;
+    /*0x18*/ u8 chan;
+    /*0x19*/ u8 mode; // 1 = use the async CARD calls
+} CardMountTask;
+
+typedef struct CardSlot {
+    /*0x00*/ u64 serial;
+    /*0x08*/ s32 probeResult;
+    /*0x0C*/ s32 memSize;
+    /*0x10*/ s32 sectorSize;
+    /*0x14*/ u8 _14[0x14];
+} CardSlot;
+
+// Memory card state (lbl_803C7838).
+typedef struct CardSystem {
+    /*0x00*/ CardSlot slots[2];
+    /*0x50*/ s32 lastResult;
+    /*0x54*/ u8 status; // CARD_STATUS_* or an error code
+    /*0x55*/ u8 op;     // current operation
+    /*0x56*/ u8 _56[2];
+    /*0x58*/ s32 xferred;
+    /*0x5C*/ s8 progress; // percent
+    /*0x5D*/ u8 _5D[3];
+} CardSystem;
+
+#define CARD_STATUS_BUSY 0xF
+#define CARD_STATUS_SERIAL_MISMATCH 0x10
+#define CARD_STATUS_READY 0x11
+#define CARD_RESULT_BAD_SECTOR_SIZE -129
+
 #define STREAM_NOTIFY(track, ev)                                                       \
     if ((track) != NULL && (track)->callback != NULL && ((track)->flags & (ev)) != 0) { \
         (track)->callback((track)->flags & (ev));                                      \
@@ -190,5 +240,15 @@ void fn_800A9424(s32 result, DVDFileInfo* fileInfo);
 void fn_800A94C4(void);
 void fn_800A9520(void);
 void fn_800A983C(void);
+void fn_800A9864(u8 chan, u8 mode, u64 serial);
+void fn_800A98FC(void);
+void fn_800A9CF8(void);
+void fn_800A9E34(u8 chan, u8 mode, u64 serial);
+void fn_800A9ECC(void);
+u16 fn_800ABB14(u8* data, s32 len);
+void fn_800ABB60(void);
+void fn_800ACCE8(void);
+void fn_800ACD44(void);
+void fn_800ACD64(s32 result);
 
 #endif
