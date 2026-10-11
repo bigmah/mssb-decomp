@@ -882,8 +882,19 @@ static void SKNBlend2(Mtx43 m0, Mtx43 m1, const u8* w, const f32* in, f32* out) 
 #endif
 
 // .text:0x800BFE90 size:0x10C
-void SKN1Vecs16Norms16(void) {
-    return;
+#if NONMATCHING
+void SKN1Vecs16Norms16(Mtx43 m, f32* src, f32* dst, u32 count) {
+    f32 v[6];
+    s32 k;
+
+    do {
+        SKNXformVtx(m, src, v);
+        for (k = 0; k < 6; k++) {
+            dst[k] = v[k];
+        }
+        src += 6;
+        dst += 6;
+    } while (--count);
 }
 #else
 asm void SKN1Vecs16Norms16(register Mtx43 m, register f32* src, register f32* dst, register u32 count) {
