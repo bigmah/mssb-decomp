@@ -2,6 +2,9 @@
 #include "Dolphin/gx.h"
 #include "main/file_80024184.h"
 #include "game/UnknownHomes_Game.h"
+#include "menus/auto_00_0005E84C_text.h"
+#include "menus/rep_08E8.h"
+#include "menus/auto_00_0001B1BC_text.h"
 #include "menus/auto_00_00094854_text.h"
 #include "menus/rep_10C0.h"
 #include "menus/auto_00_00092394_text.h"
@@ -6424,6 +6427,631 @@ void fn_2_24800(void) {
     case 0:
         lbl_2_bss_1A8248[0x441B] = 1;
         break;
+    }
+}
+#endif
+
+// One controller entry of lbl_803C77B8 (PadState in main/file_800A7C08.h,
+// which can't be included next to UnknownHomes_Static.h).
+typedef struct MenuPad {
+    /* 0x00 */ u16 held;
+    /* 0x02 */ u16 down;
+    /* 0x04 */ u16 repeat;
+    /* 0x06 */ u8 pad06[0xA];
+    /* 0x10 */ s8 stickX;
+    /* 0x11 */ s8 stickY;
+    /* 0x12 */ s8 substickX;
+    /* 0x13 */ s8 substickY;
+    /* 0x14 */ u8 pad14[0xC];
+} MenuPad; // size: 0x20
+
+#define MENU_PAD (((MenuPad*)&lbl_803C77B8)[(s8)lbl_2_bss_1A824C[0][0x197863]])
+
+extern void fn_2_46C2C(s32 unused, Vec* src);
+extern void fn_2_3F66C(void);
+extern void fn_2_3FA14(void);
+
+// Debug menu: unlock every character of one team.
+static inline void fn_2_1D440_unlockTeam(s32 team) {
+    s32 i;
+    for (i = 0; i < 51; i++) {
+        u8* record = lbl_2_bss_1A8248 + i * 10;
+        if (record[0x40F0] == team && (record[0x40F1] == 1 || record[0x40F1] == 0)) {
+            if (lbl_2_bss_1A8248[0x441C] == 5) {
+                if (record[0x40F2] == 1) {
+                    record[0x40F1] = 3;
+                } else {
+                    record[0x40F1] = 0;
+                }
+            } else {
+                record[0x40F1] = 0;
+            }
+        }
+    }
+    lbl_2_bss_1A8248[0x440C + team] = 1;
+    if (!(lbl_2_bss_1A8248[0x4428] & (1 << team))) {
+        lbl_2_bss_1A8248[0x4423]++;
+        lbl_2_bss_1A8248[0x4428] |= 1 << team;
+    }
+}
+
+// fn_2_1D440, size:0x2ACC
+// NONMATCHING 98%: register allocation and a few compare forms (cmpw vs cmpwi) differ
+#if NONMATCHING
+void fn_2_1D440(void) {
+    u8* queue = lbl_803CC1B8[0];
+    s32 i;
+
+    switch (*(s8*)(queue + 0x28)) {
+    case 0:
+        MENU_INPUT_CONTEXT->secondarySelection = 0;
+        MENU_INPUT_CONTEXT->selection = 0;
+        queue[0x28] = 1;
+        break;
+    case 1:
+        fn_2_1FFC4(19);
+        for (i = 0; i < 19; i++) {
+            switch (i) {
+            case 0:
+                if (MENU_INPUT_CONTEXT->selection == i && ((MENU_PAD.down & 0x100) || MENU_PAD.substickY > 0x32)) {
+                    queue[0x28] = 13;
+                }
+                break;
+            case 1:
+                if (MENU_INPUT_CONTEXT->selection == i) {
+                    u16 repeat = MENU_PAD.repeat;
+                    if (repeat & 1) {
+                        if (*(s16*)(lbl_2_bss_1A8248 + 0x43BC) > 0) {
+                            fn_80062890(0x37);
+                            fn_2_46D34(-1);
+                        } else {
+                            fn_80062890(0x37);
+                            *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 999;
+                        }
+                        lbl_2_bss_1A8234[0][0x162933] = 1;
+                    } else if (repeat & 2) {
+                        if (*(s16*)(lbl_2_bss_1A8248 + 0x43BC) < 999) {
+                            fn_80062890(0x37);
+                            fn_2_46D34(1);
+                        } else {
+                            fn_80062890(0x37);
+                            *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 0;
+                        }
+                        lbl_2_bss_1A8234[0][0x162979] = 1;
+                    } else if (repeat & 0x40) {
+                        fn_80062890(0x37);
+                        *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 0;
+                    } else if (repeat & 0x20) {
+                        fn_80062890(0x37);
+                        *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 999;
+                    }
+                }
+                break;
+            case 2:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 3)) {
+                    lbl_2_bss_1A8248[0x44F2] ^= 1;
+                }
+                break;
+            case 3:
+                if (MENU_INPUT_CONTEXT->selection == i) {
+                    u16 repeat = MENU_PAD.repeat;
+                    if (repeat & 1) {
+                        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) > 0) {
+                            (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C))--;
+                        } else {
+                            *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 999;
+                        }
+                    } else if (repeat & 2) {
+                        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) < 999) {
+                            (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C))++;
+                        } else {
+                            *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 0;
+                        }
+                    } else if (repeat & 0x40) {
+                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 0;
+                    } else if (repeat & 0x20) {
+                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 999;
+                    }
+                    if ((MENU_PAD.repeat & 0x100) && *(s16*)(lbl_2_bss_1A824C[0] + 0x19773E) == 0) {
+                        fn_2_46D34(*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C));
+                        ((u8*)fn_800B0A5C_insertQueue(fn_2_3FA14, 2))[0x28] = 0;
+                        *(s16*)(queue + 0x10) = 0;
+                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19773E) = 1;
+                    }
+                }
+                break;
+            case 4:
+                if (MENU_INPUT_CONTEXT->selection == i) {
+                    u16 repeat = MENU_PAD.repeat;
+                    if (repeat & 1) {
+                        // NOTE: the original tests and decrements 0x19779C here but
+                        // increments 0x19779E below.
+                        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) > 0) {
+                            (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C))--;
+                        } else {
+                            *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 999;
+                        }
+                    } else if (repeat & 2) {
+                        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) < 999) {
+                            (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779E))++;
+                        } else {
+                            *(s16*)(lbl_2_bss_1A824C[0] + 0x19779E) = 0;
+                        }
+                    } else if (repeat & 0x40) {
+                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19779E) = 0;
+                    } else if (repeat & 0x20) {
+                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19779E) = 999;
+                    }
+                    if ((MENU_PAD.repeat & 0x100) && *(s16*)(lbl_2_bss_1A824C[0] + 0x19773E) == 0) {
+                        fn_2_46D34(-*(s16*)(lbl_2_bss_1A824C[0] + 0x19779E));
+                        if (*(s16*)(lbl_2_bss_1A8248 + 0x43BE) > 0) {
+                            ((u8*)fn_800B0A5C_insertQueue(fn_2_3F66C, 2))[0x28] = 0;
+                            *(s16*)(queue + 0x10) = 0;
+                        }
+                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19773E) = 1;
+                    }
+                }
+                break;
+            case 5:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    queue[0x28] = 2;
+                }
+                break;
+            case 6:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    queue[0x28] = 3;
+                }
+                break;
+            case 7:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A824C[0][0x19784A] = 1;
+                    lbl_2_bss_1A824C[0][0x197846] = 1;
+                    lbl_2_bss_1A824C[0][0x197847] = 0;
+                    queue[0x28] = 4;
+                }
+                break;
+            case 8:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A824C[0][0x19784A] = 1;
+                    lbl_2_bss_1A824C[0][0x197846] = 0;
+                    lbl_2_bss_1A824C[0][0x197845] = 1;
+                    queue[0x28] = 5;
+                }
+                break;
+            case 9:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A824C[0][0x19784A] = 1;
+                    lbl_2_bss_1A824C[0][0x197846] = 2;
+                    queue[0x28] = 6;
+                }
+                break;
+            case 10:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    queue[0x28] = 7;
+                }
+                break;
+            case 11:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x103)) {
+                    s32 j;
+                    lbl_2_bss_1A8248[0x441A] = 1;
+                    lbl_2_bss_1A8248[0x4439] = 0;
+                    *(s16*)(lbl_2_bss_1A8248 + 0x16C2) = lbl_2_data_3EC8[5];
+                    fn_2_6ABFC(0, *(s16*)(lbl_2_bss_1A8248 + 0x16C2));
+                    for (j = 0; j < 5; j++) {
+                        fn_2_1C714(j);
+                    }
+                }
+                break;
+            case 12:
+                if (MENU_INPUT_CONTEXT->selection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x4415] = (lbl_2_bss_1A8248[0x4415] + 3) % 4;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x4415] = (lbl_2_bss_1A8248[0x4415] + 1) % 4;
+                    }
+                }
+                break;
+            case 13:
+                if (MENU_INPUT_CONTEXT->selection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 0x103) {
+                        fn_2_683EC();
+                    } else if (down & 0x400) {
+                        fn_2_68308();
+                    } else if (down & 0x800) {
+                        fn_2_6832C();
+                    }
+                }
+                break;
+            case 14:
+                if (MENU_INPUT_CONTEXT->selection == i) {
+                    u16 repeat = MENU_PAD.repeat;
+                    if (repeat & 0x800) {
+                        lbl_2_bss_1A824C[0][0x19785C] = ((s8)lbl_2_bss_1A824C[0][0x19785C] + 1) % 2;
+                    } else if (repeat & 0x400) {
+                        lbl_2_bss_1A824C[0][0x19785C] = ((s8)lbl_2_bss_1A824C[0][0x19785C] + 1) % 2;
+                    }
+                    if (MENU_PAD.down & 0x100) {
+                        Vec zero;
+                        zero.z = 0.0f;
+                        zero.y = 0.0f;
+                        zero.x = 0.0f;
+                        fn_2_46C2C(0, &zero);
+                    }
+                }
+                break;
+            case 15:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    queue[0x28] = 9;
+                }
+                break;
+            case 16:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    queue[0x28] = 11;
+                }
+                break;
+            case 17:
+                if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
+                    s32 j;
+                    for (j = 0; j < 20; j++) {
+                        lbl_2_bss_1A8248[0x43C2 + j] = 1;
+                    }
+                }
+                break;
+            case 18:
+                if (MENU_INPUT_CONTEXT->selection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x44F8] = 0;
+                        lbl_2_bss_1A8248[0x44F9] = 0;
+                        lbl_2_bss_1A8248[0x44FA] = 0;
+                        lbl_2_bss_1A8248[0x44FB] = 0;
+                        lbl_2_bss_1A8248[0x44FC] = 0;
+                        lbl_2_bss_1A8248[0x44FD] = 0;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x44F8] = 3;
+                        lbl_2_bss_1A8248[0x44F9] = 3;
+                        lbl_2_bss_1A8248[0x44FA] = 3;
+                        lbl_2_bss_1A8248[0x44FB] = 3;
+                        lbl_2_bss_1A8248[0x44FC] = 3;
+                        lbl_2_bss_1A8248[0x44FD] = 3;
+                    }
+                }
+                break;
+            }
+        }
+        if ((MENU_PAD.down & 0x200) || MENU_PAD.substickY > 0x32) {
+            queue[0x28] = 13;
+        }
+        break;
+    case 2:
+        fn_2_1FF14(7);
+        for (i = 0; i < 7; i++) {
+            switch (i) {
+            case 0:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x300)) {
+                    MENU_INPUT_CONTEXT->secondarySelection = 0;
+                    queue[0x28] = 1;
+                }
+                break;
+            case 1:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1C714(0);
+                }
+                break;
+            case 2:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1C714(1);
+                }
+                break;
+            case 3:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1C714(2);
+                }
+                break;
+            case 4:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1C714(3);
+                }
+                break;
+            case 5:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1C714(4);
+                }
+                break;
+            case 6:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1C714(5);
+                }
+                break;
+            }
+        }
+        if (MENU_PAD.down & 0x201) {
+            MENU_INPUT_CONTEXT->secondarySelection = 0;
+            queue[0x28] = 1;
+        } else if (MENU_PAD.substickY > 0x32) {
+            queue[0x28] = 13;
+        }
+        break;
+    case 3:
+        fn_2_1FF14(6);
+        for (i = 0; i < 6; i++) {
+            switch (i) {
+            case 0:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x300)) {
+                    MENU_INPUT_CONTEXT->secondarySelection = 0;
+                    queue[0x28] = 1;
+                }
+                break;
+            case 1:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1D440_unlockTeam(0);
+                }
+                break;
+            case 2:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1D440_unlockTeam(1);
+                }
+                break;
+            case 3:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1D440_unlockTeam(2);
+                }
+                break;
+            case 4:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1D440_unlockTeam(3);
+                }
+                break;
+            case 5:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x100)) {
+                    fn_2_1D440_unlockTeam(4);
+                }
+                break;
+            }
+        }
+        if (MENU_PAD.down & 0x60) {
+            fn_2_1D440_unlockTeam(0);
+            fn_2_1D440_unlockTeam(1);
+            fn_2_1D440_unlockTeam(2);
+            fn_2_1D440_unlockTeam(3);
+            fn_2_1D440_unlockTeam(4);
+        }
+        if (MENU_PAD.down & 0x201) {
+            MENU_INPUT_CONTEXT->secondarySelection = 0;
+            queue[0x28] = 1;
+        } else if (MENU_PAD.substickY > 0x32) {
+            queue[0x28] = 13;
+        }
+        break;
+    case 4:
+        fn_2_1FF14(1);
+        if (MENU_INPUT_CONTEXT->secondarySelection == 0) {
+            if (MENU_PAD.down & 0x10) {
+                lbl_2_bss_1A824C[0][0x197847] ^= 1;
+            }
+            if (MENU_PAD.down & 0x200) {
+                lbl_2_bss_1A824C[0][0x19784A] = 0;
+                lbl_2_bss_1A824C[0][0x197846] = 0;
+                MENU_INPUT_CONTEXT->secondarySelection = 0;
+                lbl_2_bss_1A824C[0][0x197847] = 0;
+                fn_2_6ABFC(0, *(s16*)(lbl_2_bss_1A8248 + 0x16C2));
+                queue[0x28] = 1;
+            }
+            if (MENU_PAD.down & 0x100) {
+                Vec position;
+                fn_2_68DAC(0, &position);
+                (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779A))++;
+            }
+            if (MENU_PAD.down & 0x1000) {
+                *(s16*)(lbl_2_bss_1A824C[0] + 0x19779A) = 0;
+            }
+        }
+        break;
+    case 5:
+        fn_2_1FF14(1);
+        if (MENU_INPUT_CONTEXT->secondarySelection == 0) {
+            MenuPad* pad = &MENU_PAD;
+            u16 down = pad->down;
+            if ((down & 1) && (pad->held & 0x100)) {
+                lbl_2_bss_1A824C[0][0x197849] = (lbl_2_bss_1A824C[0][0x197849] + 19) % 20;
+            } else if ((down & 2) && (pad->held & 0x100)) {
+                lbl_2_bss_1A824C[0][0x197849] = (lbl_2_bss_1A824C[0][0x197849] + 1) % 20;
+            }
+            down = MENU_PAD.down;
+            if (down & 0x200) {
+                lbl_2_bss_1A824C[0][0x19784A] = 0;
+                lbl_2_bss_1A824C[0][0x197846] = 0;
+                MENU_INPUT_CONTEXT->secondarySelection = 0;
+                lbl_2_bss_1A824C[0][0x197845] = 0;
+                queue[0x28] = 1;
+            } else if (down & 0x1000) {
+                fn_2_93C64();
+            }
+        }
+        break;
+    case 6:
+        fn_2_1FF14(1);
+        if (MENU_INPUT_CONTEXT->secondarySelection == 0) {
+            MenuPad* pad = &MENU_PAD;
+            u16 down = pad->down;
+            u16 repeat;
+            if (down & 0x200) {
+                lbl_2_bss_1A824C[0][0x19784A] = 0;
+                lbl_2_bss_1A824C[0][0x197846] = 0;
+                MENU_INPUT_CONTEXT->secondarySelection = 0;
+                fn_2_6ABFC(0, *(s16*)(lbl_2_bss_1A8248 + 0x16C2));
+                queue[0x28] = 1;
+            } else if ((down & 0x40) && (pad->held & 0x100)) {
+                *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) + 28) % 29;
+            } else if ((down & 0x20) && (pad->held & 0x100)) {
+                *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) + 1) % 29;
+            } else {
+                repeat = pad->repeat;
+                if (repeat & 0x800) {
+                    *(f32*)(lbl_2_bss_1A8248 + *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) * 0xBC + 0x2208) -= 0.1f;
+                } else if (repeat & 0x400) {
+                    *(f32*)(lbl_2_bss_1A8248 + *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) * 0xBC + 0x2208) += 0.1f;
+                }
+            }
+        }
+        break;
+    case 7:
+        fn_2_1FF14(12);
+        for (i = 0; i < 12; i++) {
+            switch (i) {
+            case 0:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x301)) {
+                    queue[0x28] = 1;
+                }
+                break;
+            case 1:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x443B] = ((s8)lbl_2_bss_1A8248[0x443B] + 3) % 4;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x443B] = ((s8)lbl_2_bss_1A8248[0x443B] + 1) % 4;
+                    }
+                }
+                break;
+            case 2:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x443C] = ((s8)lbl_2_bss_1A8248[0x443C] + 1) % 2;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x443C] = ((s8)lbl_2_bss_1A8248[0x443C] + 1) % 2;
+                    }
+                }
+                break;
+            case 3:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x443D] = ((s8)lbl_2_bss_1A8248[0x443D] + 3) % 4;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x443D] = ((s8)lbl_2_bss_1A8248[0x443D] + 1) % 4;
+                    }
+                }
+                break;
+            case 4:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x443E] = ((s8)lbl_2_bss_1A8248[0x443E] + 1) % 2;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x443E] = ((s8)lbl_2_bss_1A8248[0x443E] + 1) % 2;
+                    }
+                }
+                break;
+            case 5:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x443F] = ((s8)lbl_2_bss_1A8248[0x443F] + 2) % 3;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x443F] = ((s8)lbl_2_bss_1A8248[0x443F] + 1) % 3;
+                    }
+                }
+                break;
+            case 6:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x4437] = ((s8)lbl_2_bss_1A8248[0x4437] + 3) % 4;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x4437] = ((s8)lbl_2_bss_1A8248[0x4437] + 1) % 4;
+                    }
+                }
+                break;
+            case 7:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x4440] = ((s8)lbl_2_bss_1A8248[0x4440] + 3) % 4;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x4440] = ((s8)lbl_2_bss_1A8248[0x4440] + 1) % 4;
+                    }
+                }
+                break;
+            case 8:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x4441] = ((s8)lbl_2_bss_1A8248[0x4441] + 1) % 2;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x4441] = ((s8)lbl_2_bss_1A8248[0x4441] + 1) % 2;
+                    }
+                }
+                break;
+            case 9:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x4442] = ((s8)lbl_2_bss_1A8248[0x4442] + 3) % 4;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x4442] = ((s8)lbl_2_bss_1A8248[0x4442] + 1) % 4;
+                    }
+                }
+                break;
+            case 10:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x4443] = ((s8)lbl_2_bss_1A8248[0x4443] + 1) % 2;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x4443] = ((s8)lbl_2_bss_1A8248[0x4443] + 1) % 2;
+                    }
+                }
+                break;
+            case 11:
+                if (MENU_INPUT_CONTEXT->secondarySelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        lbl_2_bss_1A8248[0x443A] = (lbl_2_bss_1A8248[0x443A] + 3) % 4;
+                    } else if (down & 2) {
+                        lbl_2_bss_1A8248[0x443A] = (lbl_2_bss_1A8248[0x443A] + 1) % 4;
+                    }
+                }
+                break;
+            }
+        }
+        if (MENU_PAD.down & 0x300) {
+            MENU_INPUT_CONTEXT->secondarySelection = 0;
+            queue[0x28] = 1;
+        } else if (MENU_PAD.substickY > 0x32) {
+            queue[0x28] = 13;
+        }
+        break;
+    case 9:
+        ((u8*)fn_800B0A5C_insertQueue(fn_2_1CF94, 2))[0x28] = 0;
+        *(s16*)(queue + 0x10) = 0;
+        queue[0x28] = 10;
+        break;
+    case 10:
+        if (*(s16*)(queue + 0x10) == 1) {
+            queue[0x28] = 1;
+        }
+        break;
+    case 11:
+        ((u8*)fn_800B0A5C_insertQueue(fn_2_1C860, 2))[0x28] = 0;
+        *(s16*)(queue + 0x10) = 0;
+        queue[0x28] = 12;
+        break;
+    case 12:
+        if (*(s16*)(queue + 0x10) == 1) {
+            queue[0x28] = 1;
+        }
+        break;
+    case 13: {
+        u8* parent = *(u8**)(queue + 0xC);
+        *(s16*)(parent + 0x10) = 1;
+        fn_800B0A14_removeQueue(parent);
+        queue[0x28] = 0;
+        break;
+    }
     }
 }
 #endif
