@@ -56,8 +56,26 @@ void fn_3_11DACC(void) {
 }
 
 // .text:0x0011DDC4 size:0xBC mapped:0x8075CE58
-void fn_3_11DDC4(void) {
-    return;
+// CRC-16 (reflected CCITT polynomial 0x8408, initial value 0).
+u16 fn_3_11DDC4(u8* data, u32 len) {
+    u32 crc = 0;
+    u32 b;
+    u32 i;
+    u32 j;
+
+    for (i = 0; i < len; i++, data++) {
+        b = *data;
+        for (j = 0; j < 8; j++) {
+            if ((crc ^ b) & 1) {
+                crc >>= 1;
+                crc ^= 0x8408;
+            } else {
+                crc >>= 1;
+            }
+            b >>= 1;
+        }
+    }
+    return crc;
 }
 
 // .text:0x0011DE80 size:0x4C mapped:0x8075CF14
