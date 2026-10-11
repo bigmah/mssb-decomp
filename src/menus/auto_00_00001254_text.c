@@ -11,11 +11,16 @@ extern u8 lbl_803CBD24[];
 extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
+extern void fn_800649BC(void);
+extern void fn_800671FC(void);
+extern void fn_800684A4(void);
+extern void fn_80069854(void);
+extern void fn_80067F70(u8 team);
+extern void characterSelectScreen(u8 team);
 extern void fn_2_72630(void);
 extern void fn_800678CC(s32 team);
 extern void unsure_FillRosterPositions(u8 team);
 extern MenuCharEntry lbl_800E8558[54];
-extern void fn_2_2FC0(u8, s32, s32);
 
 extern void fn_2_7DDC(void);
 extern void fn_2_3624(s32);
@@ -285,7 +290,7 @@ void fn_2_2BB8(void) {
 
 // fn_2_3204, size:0x38
 void fn_2_3204(void) {
-    fn_2_2FC0(lbl_803297E0[0xCF5F], 1, 1);
+    ((void (*)(u8, s32, s32))fn_2_2FC0)(lbl_803297E0[0xCF5F], 1, 1);
 }
 
 // fn_2_5F80, size:0x118
@@ -1407,3 +1412,40 @@ void fn_2_110B0(void) {
     }
 }
 #endif
+
+// fn_2_2FC0, size:0x244
+void fn_2_2FC0(u8 mode, s32 b, s32 c) {
+    switch (mode) {
+    case 9:
+        fn_800684A4();
+        if (c == 0) {
+            break;
+        }
+    case 10:
+        memset(lbl_8034E9A0 + 0x4757, 0, 0x36);
+        (lbl_8034E9A0 + 0x4757)[*(s32*)(lbl_8034E9A0 + 0x46E0)] = 1;
+        (lbl_8034E9A0 + 0x4757)[*(s32*)(lbl_8034E9A0 + 0x46E4)] = 1;
+        fn_2_348C();
+        fn_80067F70(0);
+        fn_80067F70(1);
+        fn_2_8940();
+        fn_800678CC(0);
+        fn_800678CC(1);
+        unsure_FillRosterPositions(0);
+        unsure_FillRosterPositions(1);
+        characterSelectScreen(0);
+        characterSelectScreen(1);
+        fn_80069854();
+        if (c == 0) {
+            break;
+        }
+    case 12:
+        fn_800671FC();
+        if (b != 0) {
+            fn_800649BC();
+        }
+        break;
+    case 11:
+        break;
+    }
+}
