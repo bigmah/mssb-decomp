@@ -104,7 +104,7 @@ typedef struct EaTask {
     /*0x04*/ u8 _04[0x10];
     /*0x14*/ u16 baseIdx;
     /*0x16*/ u16 _16;
-    /*0x18*/ u16 timer;
+    /*0x18*/ u16 param; // set by the creator
     /*0x1A*/ u16 _1A;
     /*0x1C*/ u16 state;
     /*0x1E*/ u16 _1E;
@@ -116,18 +116,28 @@ typedef struct EaTask {
 typedef struct EaMinigame {
     /*0x0000*/ u8 _0000[0x1890];
     /*0x1890*/ s16 points[4]; // miniGameCurrentPoints
-    /*0x1898*/ u8 _1898[0x18CC - 0x1898];
+    /*0x1898*/ u8 _1898[0x18BC - 0x1898];
+    /*0x18BC*/ struct {
+        s16 _0;
+        s16 delta;
+    } _18BC[4];
     /*0x18CC*/ s8 characterIndex[4]; // minigameControlStruct[0]
-    /*0x18D0*/ u8 _18D0[0x18F4 - 0x18D0];
+    /*0x18D0*/ u8 _18D0[0x18E0 - 0x18D0];
+    /*0x18E0*/ s8 order[4];
+    /*0x18E4*/ u8 _18E4[0x18F4 - 0x18E4];
     /*0x18F4*/ s8 player[3];
     /*0x18F7*/ u8 _18F7[0x1906 - 0x18F7];
     /*0x1906*/ u8 numPlayers;
     /*0x1907*/ u8 _1907[2];
     /*0x1909*/ u8 _1909;
     /*0x190A*/ u8 _190A;
-    /*0x190B*/ u8 _190B[0x1921 - 0x190B];
+    /*0x190B*/ u8 _190B;
+    /*0x190C*/ u8 turn;
+    /*0x190D*/ u8 _190D[0x1921 - 0x190D];
     /*0x1921*/ u8 _1921;
-    /*0x1922*/ u8 _1922[0x19CD - 0x1922];
+    /*0x1922*/ u8 _1922[0x19A0 - 0x1922];
+    /*0x19A0*/ u8 _19A0;
+    /*0x19A1*/ u8 _19A1[0x19CD - 0x19A1];
     /*0x19CD*/ u8 _19CD;
     /*0x19CE*/ u8 _19CE[0x1A2A - 0x19CE];
     /*0x1A2A*/ u8 game;  // indexes the per-game tables
@@ -161,7 +171,7 @@ void fn_3_EA340(void) {
             EA_SPRITE(task, i + 9)->frame = EA_CHAR_ID(EA_MG.player[i]) << 16;
         }
     }
-    task->timer = 0;
+    task->param = 0;
     EA_TASK->func = fn_3_E9D30;
 }
 #endif
@@ -190,7 +200,7 @@ void fn_3_ED0F4(void) {
         vol = lbl_3_data_8404[stadium * 0x1E + 0x39];
     }
     sndFXCtrl(voice, 0x5B, vol);
-    task->timer = 0;
+    task->param = 0;
     EA_MG._19CD = 1;
     EA_TASK->func = fn_3_ED058;
 }
@@ -245,7 +255,7 @@ void fn_3_EC804(void) {
     case 0:
         fn_80034E20(task, pool->desc1A0);
         EA_SPRITE(task, 0)->anim = pool->anim200[EA_MG_FLAGS._1936];
-        EA_SPRITE(task, 1)->anim = (task->timer != 0) + 0xF;
+        EA_SPRITE(task, 1)->anim = (task->param != 0) + 0xF;
         task->_1E = pool->stop208[EA_MG_FLAGS._1936];
         task->_20 = pool->end210[EA_MG_FLAGS._1936];
         stadium = g_d_GameSettings.StadiumID;
@@ -265,7 +275,7 @@ void fn_3_EC804(void) {
         break;
     case 1:
         if (task->_1E == EA_SPRITE(task, 0)->frame >> 16) {
-            if (task->timer != 0) {
+            if (task->param != 0) {
                 stadium = g_d_GameSettings.StadiumID;
                 if (g_d_GameSettings.GameModeSelected == 6) {
                     vol = lbl_3_data_84B8[0xE];
@@ -394,6 +404,102 @@ void fn_3_EA454(void) {
         task->state = 1;
         // fallthrough
     case 1:
+        break;
+    }
+}
+#endif
+
+extern u8 g_Batter[];
+extern u8 lbl_3_data_1A730[];
+extern u16 lbl_3_data_1A158[][2]; // [numPlayers - 1][g_Batter[0x7B]]
+extern s32 fn_3_125424(void* a, s32 i, u32 v);
+
+// .text:0x000EA8FC size:0x5F8 mapped:0x80729990
+// NONMATCHING 88%: the batter-side digit offset is computed as 3 & ~((-x | x) >> 31) in the original; loop register allocation
+#if NONMATCHING
+void fn_3_EA8FC(void) {
+    EaTask* task = EA_TASK;
+    u32 i;
+    s8 who;
+    s16 delta;
+    s32 anim;
+
+    if (task->param != 0) {
+        if (fn_3_EB684()) {
+            lbl_3_common_bss_32724[0xD6] = 0;
+            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            return;
+        }
+    } else if (fn_3_EBFD4()) {
+        lbl_3_common_bss_32724[0xD6] = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, lbl_3_data_1A730);
+        if (task->param != 0) {
+            EA_SPRITE(task, 0)->frame = 10 << 16;
+        } else {
+            EA_SPRITE(task, 0)->anim = lbl_3_data_1A158[EA_MG.numPlayers - 1][g_Batter[0x7B]];
+            EA_SPRITE(task, 0)->frame = 10 << 16;
+            EA_SPRITE(task, 1)->anim = 0x58;
+            EA_SPRITE(task, 2)->anim = 0x58;
+            EA_SPRITE(task, 3)->anim = 0x58;
+            EA_SPRITE(task, 4)->anim = 0x58;
+        }
+        task->state = 1;
+        break;
+    case 1:
+        for (i = 0; i < EA_MG.numPlayers; i++) {
+            if (task->param != 0) {
+                who = i;
+            } else {
+                who = EA_MG.order[(EA_MG.turn + i) % EA_MG.numPlayers];
+            }
+            delta = EA_MG._18BC[who].delta;
+            if (delta != 0) {
+                if (delta < 0) {
+                    delta *= -1;
+                    anim = 0x59;
+                } else {
+                    anim = 0x5A;
+                }
+                if (delta > 999) {
+                    delta = 999;
+                }
+                if (task->param != 0) {
+                    if (delta >= 100) {
+                        EA_SPRITE(task, i + 1)->frame = 2 << 16;
+                    } else if (delta >= 10) {
+                        EA_SPRITE(task, i + 1)->frame = 1 << 16;
+                    } else {
+                        EA_SPRITE(task, i + 1)->frame = 0;
+                    }
+                } else if (delta >= 100) {
+                    EA_SPRITE(task, i + 1)->frame = ((g_Batter[0x7B] == 0 ? 3 : 0) + 2) << 16;
+                } else if (delta >= 10) {
+                    EA_SPRITE(task, i + 1)->frame = ((g_Batter[0x7B] == 0 ? 3 : 0) + 1) << 16;
+                } else {
+                    EA_SPRITE(task, i + 1)->frame = (g_Batter[0x7B] == 0 ? 3 : 0) << 16;
+                }
+                fn_800363D8(task, i * 4 + 5, 1, anim, 11);
+                fn_800363D8(task, i * 4 + 6, 1, anim, (delta % 1000) / 100);
+                fn_800363D8(task, i * 4 + 7, 1, anim, (delta % 100) / 10);
+                fn_800363D8(task, i * 4 + 8, 1, anim, delta % 10);
+                if (EA_MG._19A0 != 0) {
+                    fn_3_125424(task, i * 4 + 5, 8);
+                    fn_3_125424(task, i * 4 + 6, 8);
+                    fn_3_125424(task, i * 4 + 7, 8);
+                    fn_3_125424(task, i * 4 + 8, 8);
+                } else {
+                    EA_SPRITE(task, i * 4 + 5)->visible = 1;
+                    EA_SPRITE(task, i * 4 + 6)->visible = 1;
+                    EA_SPRITE(task, i * 4 + 7)->visible = 1;
+                    EA_SPRITE(task, i * 4 + 8)->visible = 1;
+                }
+            }
+        }
         break;
     }
 }
