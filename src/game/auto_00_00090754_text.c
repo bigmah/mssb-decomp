@@ -173,6 +173,44 @@ s32 fn_3_90C14(s32 a) {
     return 0;
 }
 
+// fn_3_90CB0, size:0x128
+void fn_3_90CB0(void) {
+    s32 slot;
+    s32 j;
+    s32 k;
+    s32 dup;
+    u32* p;
+
+    if (g_Minigame._19AB != 0) {
+        for (slot = 3; slot >= 0; slot--) {
+            for (j = 0; j < 4; j++) {
+                if (g_Minigame.minigameControlStruct[0].characterIndex[j] != slot) {
+                    continue;
+                }
+                dup = 0;
+                for (k = 0; k < j; k++) {
+                    if (lbl_800E8558[g_Minigame.minigameControlStruct[0].charID[j] * 6 + 1] ==
+                        lbl_800E8558[g_Minigame.minigameControlStruct[0].charID[k] * 6 + 1]) {
+                        dup = 1;
+                        break;
+                    }
+                }
+                if (dup == 0) {
+                    break;
+                }
+            }
+            if (j < 4) {
+                p = &lbl_800EF808[fn_800698F8(inMemRoster[0][slot].stats.CharID) + 5] + 1;
+                if (*p != 0) {
+                    fn_800214D0();
+                    fn_800ACFB0((void*)*p);
+                    *p = 0;
+                }
+            }
+        }
+    }
+}
+
 // fn_3_90DD8, size:0x170
 s32 fn_3_90DD8(void) {
     u8* o = lbl_803CC1B8;

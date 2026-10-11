@@ -833,7 +833,7 @@ void fn_3_A83C(void) {
 }
 
 // .text:0x0000A970 size:0xAD0 mapped:0x80649A04
-void fn_3_A970(void) {
+void fn_3_A970(s32 arg) {
     return;
 }
 
