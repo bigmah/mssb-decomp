@@ -12,6 +12,7 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_2_bss_3E0[];
 extern void fn_800649BC(void);
 extern void fn_800671FC(void);
 extern void fn_800684A4(void);
@@ -1567,5 +1568,46 @@ retry:
     g_Roster[(u8)team * 9 + slot].h24 = id;
     order2[2] = slot;
     fn_2_C698(slot, team);
+}
+#endif
+
+// NONMATCHING 70%: the original fully unrolls the 8-entry preset scan; flag reads use [1],[2] after writing [0],[1] exactly as the original does
+#if NONMATCHING
+// fn_2_A288, size:0x284
+void fn_2_A288(void) {
+    u8 idx = 0; // uninitialized in the original if the captain isn't found
+    u8 n = 0;
+    s32 i;
+    s32 k;
+    s32 j;
+    for (i = 0; i < 12; i++) {
+        if (lbl_80108EC4[i] == *(s32*)(lbl_8034E9A0 + 0x46E0)) {
+            lbl_8034E9A0[0x470B] = i;
+            idx = i;
+        } else if (lbl_80108EC4[i] == *(s32*)(lbl_8034E9A0 + 0x46E4)) {
+            lbl_8034E9A0[0x470C] = i;
+        }
+    }
+    for (k = 1; k < 3; k++) {
+        for (j = 1; j < 9; j++) {
+            u8 v = lbl_8034E9A0[0x4380 + idx * 0x48 + k * 0x12 + j];
+            if (v == *(s32*)(lbl_8034E9A0 + 0x46E4) && v != 0xFF) {
+                lbl_2_bss_3E0[k - 1] = -1;
+            }
+        }
+        if ((s8)lbl_2_bss_3E0[k - 1] == -1) {
+            lbl_2_bss_3E0[k - 1] = 0;
+        } else {
+            lbl_2_bss_3E0[k - 1] = 1;
+        }
+    }
+    for (k = 1; k < 3; k++) {
+        if ((s8)lbl_2_bss_3E0[k] == 0) {
+            n++;
+        }
+    }
+    if (n == 2) {
+        lbl_2_bss_3E0[0] = -1;
+    }
 }
 #endif

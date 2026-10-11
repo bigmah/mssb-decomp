@@ -243,4 +243,6 @@ void fn_2_6884(void);
 
 void fn_2_C7DC(u8 slot, s32 team);
 
+void fn_2_A288(void);
+
 #endif
