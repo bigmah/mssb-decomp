@@ -159,6 +159,43 @@ void fn_1_AF4(s32 rows, s32 cols, f32 spacing) {
 }
 #endif
 
+// .text:0x00000F2C size:0x1D8
+// Same as gOz_GXSetTexture without the GX thread check.
+void fn_1_F2C(GXTevMode tevMode, s32 texFrac, s32 hasNormal) {
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    if (hasNormal) {
+        GXSetVtxDesc(GX_VA_NRM, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_NBT, GX_F32, 0);
+    }
+    switch (tevMode) {
+    case GX_MODULATE:
+    case GX_PASSCLR:
+        GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+        if (tevMode == GX_PASSCLR) {
+            break;
+        }
+    case GX_REPLACE:
+        GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+        if (texFrac == -1) {
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+        } else {
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, (u8)texFrac);
+        }
+        break;
+    }
+    GXSetTevOrder(GX_TEVSTAGE0, tevMode == GX_PASSCLR ? GX_TEXCOORD_NULL : GX_TEXCOORD0,
+                  tevMode == GX_PASSCLR ? GX_TEXMAP_NULL : GX_TEXMAP0, tevMode == GX_REPLACE ? GX_COLOR_NULL : GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetTexCoordGen2(GX_TEXCOORD0, (GXTexGenType)1, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumChans(tevMode != GX_REPLACE);
+    GXSetNumTexGens(tevMode != GX_PASSCLR);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, tevMode);
+}
+
 // .text:0x00001104 size:0x4
 void _epilog(void) {
     return;
