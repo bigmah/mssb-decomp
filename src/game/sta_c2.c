@@ -587,9 +587,6 @@ void fn_3_CC81C(void) {
 #endif
 
 // .text:0x000CCC24 size:0xD34 mapped:0x8070BCB8
-// NONMATCHING ~90% (with fn_3_CC5C4/fn_3_D511C pasted inline): written with calls; register numbering, loop shapes
-// nmverify: fn_3_CC5C4 fn_3_D511C are inlined in the original
-#if NONMATCHING
 // One static prop of this stadium (lbl_3_data_185D0, type 0xD ends the list).
 typedef struct C2Prop {
     /*0x00*/ Vec pos;
@@ -615,6 +612,9 @@ extern void* _OSAllocFromHeap(s32 align, u32 size);
 #define C2_SLOTS (*(ActorObjectTable**)(lbl_8036E548 + 0x6C))
 #define C2_OBJ(i) (&C2_SLOTS->objects[i])
 
+// NONMATCHING ~90% (with fn_3_CC5C4/fn_3_D511C pasted inline): written with calls; register numbering, loop shapes
+// nmverify: fn_3_CC5C4 fn_3_D511C are inlined in the original
+#if NONMATCHING
 // Stadium setup: builds the actor table (main object, three companions, the chain
 // model and one model per prop), the shared animation player (lbl_3_bss_A018+0x74C),
 // both 8-node chains, and the object list: the main object (0), three companions
@@ -3673,7 +3673,559 @@ void fn_3_D6514(void) {
 #endif
 
 // .text:0x000D67CC size:0x2244 mapped:0x80715860
-void fn_3_D67CC(void) {
-    return;
+// NONMATCHING ~85% (with the helpers pasted inline; the list-counting loops are unrolled in the original)
+// nmverify: fn_3_D4E00 fn_3_D511C fn_3_D6514 fn_3_CE8E4 are inlined in the original
+#if NONMATCHING
+extern void fn_3_B939C(void);
+extern void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx);
+extern u8 lbl_3_bss_A022;
+extern u8 lbl_3_bss_A023;
+extern u8 lbl_3_bss_A02A;
+extern u8 lbl_3_bss_A02B;
+
+// Stadium objects of this file, in lbl_3_data_182C0 (lists end at type 0xD):
+//   +0x008 T52 mains[2]     (chained creatures)        +0x0A4 T34 spinners[5]
+//   +0x310 C2Prop props[10]                            +0x470 T16 posts[10]
+//   +0x520 T16 lamps[10]                               +0x604 file kinds (26)
+// lbl_3_bss_A018: +0x1C/+0x3B4/+0x74C anim players (posts, lamps, mains; 0x5C each),
+// +0x9B8/+0xBB8 the two 8-node chains, +0x890 their config, +0xDB8 files[0].
+//
+// Stadium setup (mode 7 uses fn_3_CCC24 instead): loads the actor models and their
+// animations, then fills the object list: the mains with their 3 companions each,
+// 14 chain links, the spinners with their shadow/marker objects (types 4 and 5),
+// the props, posts and lamps; then builds the shadow draw groups and the smoke plumes.
+// The original inlines fn_3_D4E00, fn_3_D511C, fn_3_D6514 and fn_3_CE8E4.
+void fn_3_D67CC(void** files) {
+    StadiumObjList* g = (StadiumObjList*)lbl_3_common_bss_350E4;
+    u32* idx;
+    T52* mains = lbl_3_data_182C8;
+    T34* spin = lbl_3_data_18364;
+    C2Prop* prop = (C2Prop*)((u8*)&lbl_3_data_182C0 + 0x310);
+    T16* post = lbl_3_data_18730;
+    T16* lamp = (T16*)((u8*)&lbl_3_data_182C0 + 0x520);
+    u8* o;
+    u8* m;
+    u8* chain;
+    void* model;
+    Quaternion q;
+    Vec axis;
+    Vec off;
+    Mtx mtx;
+    u8 done;
+    u8 sh;
+    s32 count;
+    u32 nMain, nSpin, nProp, nPost, nLamp, nObjs, nComp;
+    u32 i;
+    s32 k;
+    s32 j;
+    s32 compBase, chainIdx, spinBase, markerIdx, ringIdx, propBase, postBase, lampBase;
+    s32 phase;
+    u8* player;
+
+    g->draw = fn_3_B939C;
+    done = 0;
+    count = 0;
+    idx = _OSAllocFromHeap(4, 0x68);
+    g->fileIdx = idx;
+    fn_3_B9D68((u8*)&lbl_3_data_182C0 + 0x604, 26, (u8*)files, (s32*)idx);
+    lbl_3_bss_ADD0[0] = files[0];
+    lbl_3_data_182C0 = -1;
+    lbl_3_data_182C4 = -1;
+    if (g_d_GameSettings[7] == 7) {
+        fn_3_CCC24(files, idx);
+        return;
+    }
+
+    // count the entries of each list
+    for (nMain = 0; nMain < 2 && ((u8*)&mains[nMain])[0xC] != 0xD; nMain++) {
+    }
+    nComp = nMain * 3;
+    nObjs = nComp + nMain + 1;
+    for (nSpin = 0; nSpin < 5 && ((u8*)&spin[nSpin])[0xC] != 0xD; nSpin++) {
+    }
+    nObjs += nSpin;
+    nObjs += 3;
+    for (nProp = 0; nProp < 10 && prop[nProp].type != 0xD; nProp++) {
+    }
+    nObjs += nProp;
+    for (nPost = 0; nPost < 10 && ((u8*)&post[nPost])[0xC] != 0xD; nPost++) {
+    }
+    nObjs += nPost;
+    for (nLamp = 0; nLamp < 10 && ((u8*)&lamp[nLamp])[0xC] != 0xD; nLamp++) {
+    }
+    nObjs += nLamp;
+    g->numActorObjs = nObjs;
+
+    // actor models
+    C2_SLOTS = ActorObjectInitTable(nObjs);
+    j = 0;
+    for (i = 0; i < nMain; i++, j++) {
+        fn_800BDC88(C2_SLOTS, j, j, files[idx[1 + i]], NULL, NULL);
+    }
+    compBase = j;
+    for (i = 0; i < nComp; i++, j++) {
+        fn_800BDC88(C2_SLOTS, j, j, files[idx[3]], NULL, NULL);
+        fn_3_B97DC(C2_OBJ(j), files[idx[3] + 2]);
+    }
+    chainIdx = j;
+    fn_800BDC88(C2_SLOTS, j, j, files[idx[4]], NULL, NULL);
+    j++;
+    spinBase = j;
+    for (i = 0; i < nSpin; i++, j++) {
+        fn_800BDC88(C2_SLOTS, j, j, files[idx[5]], NULL, NULL);
+    }
+    markerIdx = j;
+    fn_800BDC88(C2_SLOTS, j, j, files[idx[6]], NULL, NULL);
+    ringIdx = j + 1;
+    fn_800BDC88(C2_SLOTS, j + 1, j + 1, files[idx[7]], NULL, NULL);
+    j += 2;
+    propBase = j;
+    for (i = 0; i < nProp; i++, j++) {
+        fn_800BDC88(C2_SLOTS, j, j, files[idx[8]], NULL, NULL);
+        fn_3_B97DC(C2_OBJ(j), files[idx[8] + 2]);
+    }
+    postBase = j;
+    for (i = 0; i < nPost; i++, j++) {
+        fn_800BDC88(C2_SLOTS, j, j, files[idx[9 + i]], NULL, NULL);
+    }
+    lampBase = j;
+    for (i = 0; i < nLamp; i++, j++) {
+        fn_800BDC88(C2_SLOTS, j, j, files[idx[12]], NULL, NULL);
+    }
+    for (i = 0; i < nObjs; i++) {
+        fn_800BD548(C2_OBJ(i), 4, g->lights[0], g->lights[1], g->lights[2], g->lights[3]);
+    }
+
+    // animations: one player per object, the first set up from the file, the rest copied
+    if (files[idx[15]] != NULL && files[idx[16]] != NULL && files[idx[17]] != NULL) {
+        fn_80025DDC(files[idx[15]]);
+        fn_80025DDC(files[idx[16]]);
+        for (i = 0; i < nMain; i++) {
+            fn_80025C58(files[idx[15 + i]], C2_OBJ(i));
+        }
+        for (i = 0, player = lbl_3_bss_A018 + 0x74C; i < nMain; i++, player += 0x5C) {
+            if (i == 0) {
+                *(void**)player = files[idx[17]];
+                fn_80025FFC(files[idx[15]], player);
+            } else {
+                memcpy(player, lbl_3_bss_A018 + 0x74C + (i - 1) * 0x5C, 0x5C);
+                *(void**)(player + 0x2C) = files[idx[15 + i]];
+            }
+            fn_80025EEC(player, 0, 1);
+        }
+    }
+    if (files[idx[18]] != NULL && files[idx[19]] != NULL) {
+        fn_80025DDC(files[idx[18]]);
+        for (i = 0; i < nLamp; i++) {
+            fn_80025C58(files[idx[18 + i]], C2_OBJ(lampBase + i));
+        }
+        for (i = 0, player = lbl_3_bss_A018 + 0x3B4; i < nLamp; i++, player += 0x5C) {
+            if (i == 0) {
+                *(void**)player = files[idx[19]];
+                fn_80025FFC(files[idx[18]], player);
+            } else {
+                memcpy(player, lbl_3_bss_A018 + 0x3B4 + (i - 1) * 0x5C, 0x5C);
+                *(void**)(player + 0x2C) = files[idx[18 + i]];
+            }
+            fn_80025EEC(player, 0, 0);
+        }
+    }
+    if (files[idx[20]] != NULL && files[idx[21]] != NULL && files[idx[22]] != NULL && files[idx[23]] != NULL) {
+        fn_80025DDC(files[idx[20]]);
+        fn_80025DDC(files[idx[21]]);
+        fn_80025DDC(files[idx[22]]);
+        for (i = 0; i < nPost; i++) {
+            fn_80025C58(files[idx[20 + i]], C2_OBJ(postBase + i));
+        }
+        for (i = 0, player = lbl_3_bss_A018 + 0x1C; i < nPost; i++, player += 0x5C) {
+            if (i == 0) {
+                *(void**)player = files[idx[23]];
+                fn_80025FFC(files[idx[20]], player);
+            } else {
+                memcpy(player, lbl_3_bss_A018 + 0x1C + (i - 1) * 0x5C, 0x5C);
+                *(void**)(player + 0x2C) = files[idx[20 + i]];
+            }
+            fn_80025EEC(player, 0, 0);
+        }
+    }
+    fn_80035750(files[idx[25]], files[idx[24]], 5);
+    *(void**)(lbl_3_bss_A018 + 0x88C) = fn_800B0A5C_insertQueue(fn_3_CE954, 2);
+    fn_80034E20(*(void**)(lbl_3_bss_A018 + 0x88C), lbl_3_data_10D3C);
+    fn_3_D511C();
+
+    // the object list
+    g->count = 0x43;
+    g->objs = _OSAllocFromHeap(0x20, 0x43 * 0xE8);
+    memset(g->objs, 0, 0x43 * 0xE8);
+    g->objsBackup = _OSAllocFromHeap(0x20, 0x43 * 0xE8);
+    memset(g->objsBackup, 0, 0x43 * 0xE8);
+    o = (u8*)g->objs;
+    player = lbl_3_bss_A018 + 0x74C;
+    lbl_3_bss_A02C = 0;
+
+    // the mains
+    for (i = 0; i < 2; i++, mains++) {
+        if (((u8*)mains)[0xC] == 0xD) {
+            done = 1;
+        }
+        if (done) {
+            for (; i < 2; i++) {
+                ((u8*)&lbl_3_data_182C8[i])[0xC] = 0xD;
+            }
+            break;
+        }
+        o[0x9D] = ((u8*)mains)[0xC];
+        if (((u8*)mains)[0x30] == 0) {
+            *(const Vec**)(o + 0xB8) = &lbl_3_rodata_24DC;
+        } else {
+            *(const Vec**)(o + 0xB8) = &lbl_3_rodata_24D0;
+        }
+        *(ActorObject**)(o + 0x74) = C2_OBJ(i);
+        *(void**)(o + 0x78) = files[idx[13]];
+        *(void**)(o + 0x7C) = fn_3_D3F54;
+        *(void**)(o + 0x80) = fn_3_D196C;
+        ((PiranhaPlant*)o)->hasShadow = 1;
+        ((PiranhaPlant*)o)->bit5 = 1;
+        o[0x9C] = i;
+        o[0x92] = 0xFF;
+        *(void**)(o + 0x84) = fn_3_D1AC4;
+        *(u8**)(o + 0x8C) = player;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = 1;
+        if (((u8*)mains)[0x30] == 0) {
+            *(RopeNode**)(o + 0xC4) = (RopeNode*)(lbl_3_bss_A018 + 0xBB8);
+        } else {
+            *(RopeNode**)(o + 0xC4) = (RopeNode*)(lbl_3_bss_A018 + 0x9B8);
+        }
+        fn_3_D4E00(o);
+        o += 0xE8;
+        count++;
+        player += 0x5C;
+        lbl_3_bss_A02D++;
+    }
+
+    // three companions per main, standing next to it
+    done = 0;
+    for (i = 0; i < 6; i++) {
+        T52* mn = &lbl_3_data_182C8[i / 3];
+        if (((u8*)mn)[0xC] == 0xD) {
+            done = 1;
+        }
+        if (done) {
+            break;
+        }
+        o[0x9D] = 1;
+        m = (u8*)g->objs + (i / 3) * 0xE8;
+        *(ActorObject**)(o + 0x74) = C2_OBJ(compBase + i);
+        *(void**)(o + 0x78) = NULL;
+        *(void**)(o + 0x7C) = fn_3_D1848;
+        *(void**)(o + 0x80) = NULL;
+        ((PiranhaPlant*)o)->visible = 0;
+        ((PiranhaPlant*)o)->hasShadow = 0;
+        *(f32*)(o + 0xA4) = (*(ActorObject**)(o + 0x74))->unk54;
+        ((PiranhaPlant*)o)->bit5 = 0;
+        o[0] = 0;
+        PSMTXRotRad(mtx, 'Y', lbl_3_rodata_2658[0] * -mn->f);
+        off.x = lbl_3_rodata_265C;
+        off.y = lbl_3_rodata_2660;
+        off.z = lbl_3_rodata_2664;
+        PSMTXMultVec(mtx, &off, &off);
+        CTRLSetTranslation((Control*)o, off.x + mn->x, mn->y - off.y, off.z + mn->z);
+        CTRLSetScale((Control*)o, lbl_3_rodata_26C8, lbl_3_rodata_26C8, lbl_3_rodata_26C8);
+        o[0x92] = 0xFF;
+        *(void**)(o + 0x84) = fn_3_D173C;
+        *(void**)(o + 0x8C) = NULL;
+        count++;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = 1;
+        *(u8**)(o + 0xA8) = m + 0xCA;
+        o[0x9C] = i;
+        o[0xAC] = (i % 3) * 30;
+        o[0xAD] = 0;
+        o += 0xE8;
+    }
+
+    // 14 chain links, 7 on each chain
+    for (i = 0; i < 14; i++, o += 0xE8) {
+        chain = (i / 7 == 0) ? lbl_3_bss_A018 + 0xBB8 : lbl_3_bss_A018 + 0x9B8;
+        *(RopeNode**)(o + 0xAC) = (RopeNode*)chain + i % 7;
+        *(RopeNode**)(o + 0xB0) = (RopeNode*)chain + (i % 7 + 1);
+        o[0x9D] = 2;
+        *(ActorObject**)(o + 0x74) = C2_OBJ(chainIdx);
+        *(void**)(o + 0x78) = NULL;
+        *(void**)(o + 0x7C) = fn_3_D1280;
+        *(void**)(o + 0x80) = NULL;
+        ((PiranhaPlant*)o)->visible = 1;
+        ((PiranhaPlant*)o)->hasShadow = 0;
+        ((PiranhaPlant*)o)->bit5 = 1;
+        fn_3_D141C(o);
+        PSVECAdd(&(*(RopeNode**)(o + 0xB0))->pos, &(*(RopeNode**)(o + 0xAC))->pos, (Vec*)(o + 0xA0));
+        PSVECScale((Vec*)(o + 0xA0), lbl_3_rodata_26A0, (Vec*)(o + 0xA0));
+        CTRLSetTranslation((Control*)o, *(f32*)(o + 0xA0), -*(f32*)(o + 0xA4), *(f32*)(o + 0xA8));
+        CTRLSetScale((Control*)o, lbl_3_rodata_26C8, lbl_3_rodata_26C8, lbl_3_rodata_26C8);
+        o[0x92] = 0xFF;
+        count++;
+        *(void**)(o + 0x84) = fn_3_D127C;
+        *(void**)(o + 0x8C) = NULL;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = 1;
+        o[0x9C] = i;
+    }
+    lbl_3_bss_A02A = count;
+
+    // the spinners
+    done = 0;
+    axis = lbl_3_rodata_25F8;
+    for (i = 0; i < 5; i++, spin++) {
+        if (((u8*)spin)[0xC] == 0xD) {
+            done = 1;
+        }
+        if (done) {
+            // (sic) the original re-marks only entry i
+            for (k = i; k < 6; k++) {
+                ((u8*)&lbl_3_data_18364[i])[0xC] = 0xD;
+            }
+            break;
+        }
+        o[0x9D] = ((u8*)spin)[0xC];
+        o[0x9C] = i;
+        o[0xD2] = count;
+        *(ActorObject**)(o + 0x74) = C2_OBJ(spinBase + i);
+        *(void**)(o + 0x78) = NULL;
+        *(void**)(o + 0x7C) = fn_3_D0918;
+        *(void**)(o + 0x80) = NULL;
+        ((PiranhaPlant*)o)->visible = 1;
+        sh = 0;
+        if (((PiranhaPlant*)o)->visible && *(void**)(o + 0x78) != NULL) {
+            sh = 1;
+        }
+        ((PiranhaPlant*)o)->hasShadow = sh;
+        model = *(u8**)(*(u8**)(**(u8***)(o + 0x74) + 0x18) + 0xC);
+        CTRLGetQuat((Control*)((u8*)model + 0x1C), (f32*)(o + 0xAC), (f32*)(o + 0xB0), (f32*)(o + 0xB4), (f32*)(o + 0xB8));
+        *(f32*)(o + 0xA0) = lbl_3_data_18364[o[0x9C]].x;
+        *(f32*)(o + 0xA4) = lbl_3_data_18364[o[0x9C]].y;
+        *(f32*)(o + 0xA8) = lbl_3_data_18364[o[0x9C]].z;
+        *(f32*)(o + 0xC0) = lbl_3_rodata_2664;
+        o[0] = 0;
+        CTRLSetTranslation((Control*)o, *(f32*)(o + 0xA0), -*(f32*)(o + 0xA4), *(f32*)(o + 0xA8));
+        CTRLSetRotation((Control*)o, lbl_3_rodata_2664, lbl_3_data_18364[o[0x9C]].r, lbl_3_rodata_2664);
+        C_QUATRotAxisRad(&q, &axis, lbl_3_rodata_2658[0] * *(f32*)(o + 0xC0));
+        PSQUATMultiply(&q, (Quaternion*)(o + 0xAC), &q);
+        PSQUATNormalize(&q, &q);
+        CTRLSetQuat((Control*)((u8*)model + 0x1C), q.x, q.y, q.z, q.w);
+        count++;
+        *(f32*)(o + 0xC8) = lbl_3_data_18364[o[0x9C]].y;
+        *(f32*)(o + 0xBC) = lbl_3_rodata_2664;
+        *(f32*)(o + 0xC4) = lbl_3_rodata_2664;
+        o[0xD1] = 0;
+        ((PiranhaPlant*)o)->bit5 = 1;
+        o[0x92] = 0xFF;
+        *(void**)(o + 0x8C) = NULL;
+        *(void**)(o + 0x84) = fn_3_D0528;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = 1;
+        o[0x9A] = 1;
+        o += 0xE8;
+        lbl_3_bss_A02B++;
+    }
+    lbl_3_bss_A018[0x10] = count;
+
+    // a marker under each spinner (fn_3_D0284)
+    for (k = 0; k < lbl_3_bss_A02B; k++, o += 0xE8) {
+        m = (u8*)g->objs + (lbl_3_bss_A02A + k) * 0xE8;
+        o[0x9D] = 4;
+        o[0x9C] = k;
+        *(u8**)(o + 0xA0) = m;
+        o[0xC0] = count;
+        *(f32*)(o + 0xBC) = lbl_3_rodata_2698;
+        *(ActorObject**)(o + 0x74) = C2_OBJ(markerIdx);
+        *(void**)(o + 0x78) = NULL;
+        *(void**)(o + 0x7C) = fn_3_D0284;
+        *(void**)(o + 0x80) = NULL;
+        ((PiranhaPlant*)o)->visible = 1;
+        sh = 0;
+        if (((PiranhaPlant*)o)->visible && *(void**)(o + 0x78) != NULL) {
+            sh = 1;
+        }
+        ((PiranhaPlant*)o)->hasShadow = sh;
+        o[0] = 0;
+        CTRLSetTranslation((Control*)o, *(f32*)(m + 0xA0), lbl_3_rodata_2664, *(f32*)(m + 0xA8));
+        count++;
+        *(f32*)(o + 0xA4) = *(f32*)(m + 0xA0);
+        *(f32*)(o + 0xA8) = *(f32*)(m + 0xA4);
+        *(f32*)(o + 0xAC) = *(f32*)(m + 0xA8);
+        *(f32*)(o + 0xA8) = lbl_3_rodata_2664;
+        ((PiranhaPlant*)o)->bit5 = ((PiranhaPlant*)m)->bit5;
+        o[0x92] = 0xFF;
+        *(void**)(o + 0x8C) = NULL;
+        *(void**)(o + 0x84) = fn_3_D0280;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = m[0x98];
+        lbl_3_bss_A018[0x11]++;
+    }
+    lbl_3_bss_A026 = count;
+
+    // the ring around each spinner that carries the ball (fn_3_D00D0)
+    for (k = 0; k < lbl_3_bss_A02B; k++, o += 0xE8) {
+        m = (u8*)g->objs + (lbl_3_bss_A02A + k) * 0xE8;
+        o[0x9D] = 5;
+        o[0x9C] = k;
+        *(u8**)(o + 0xA0) = m;
+        *(u8**)(o + 0xA4) = (u8*)g->objs + (lbl_3_bss_A018[0x10] + k) * 0xE8;
+        o[0xAC] = count;
+        *(ActorObject**)(o + 0x74) = C2_OBJ(ringIdx);
+        *(void**)(o + 0x78) = NULL;
+        *(void**)(o + 0x7C) = fn_3_D00D0;
+        *(void**)(o + 0x80) = NULL;
+        ((PiranhaPlant*)o)->visible = 1;
+        ((PiranhaPlant*)o)->hasShadow = 0;
+        o[0] = 0;
+        CTRLSetTranslation((Control*)o, *(f32*)(m + 0xA0), lbl_3_rodata_2664, *(f32*)(m + 0xA8));
+        count++;
+        ((PiranhaPlant*)o)->bit5 = ((PiranhaPlant*)m)->bit5;
+        o[0x92] = 0xFF;
+        *(void**)(o + 0x8C) = NULL;
+        *(void**)(o + 0x84) = fn_3_D00CC;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = ((PiranhaPlant*)m)->bit5;
+        lbl_3_bss_A027++;
+    }
+
+    // the props
+    done = 0;
+    phase = 0;
+    for (i = 0; i < 10; i++, prop++) {
+        if (prop->type == 0xD) {
+            done = 1;
+        }
+        if (done) {
+            for (; i < 11; i++) {
+                ((C2Prop*)((u8*)&lbl_3_data_182C0 + 0x310))[i].type = 0xD;
+            }
+            break;
+        }
+        o[0x9D] = prop->type;
+        *(s32*)(o + 0xA0) = phase;
+        *(ActorObject**)(o + 0x74) = C2_OBJ(propBase + i);
+        *(void**)(o + 0x78) = NULL;
+        *(void**)(o + 0x7C) = fn_3_CFA8C;
+        *(void**)(o + 0x80) = NULL;
+        ((PiranhaPlant*)o)->visible = 1;
+        sh = 0;
+        if (((PiranhaPlant*)o)->visible && *(void**)(o + 0x78) != NULL) {
+            sh = 1;
+        }
+        ((PiranhaPlant*)o)->hasShadow = sh;
+        o[0] = 0;
+        CTRLSetScale((Control*)o, prop->scale.x, prop->scale.y, prop->scale.z);
+        CTRLSetTranslation((Control*)o, prop->pos.x, prop->pos.y, prop->pos.z);
+        CTRLSetRotation((Control*)o, lbl_3_rodata_2664, -prop->rotY, lbl_3_rodata_2664);
+        ((PiranhaPlant*)o)->bit5 = 0;
+        o[0x92] = 0xFF;
+        count++;
+        *(void**)(o + 0x8C) = NULL;
+        phase += 30;
+        *(void**)(o + 0x84) = fn_3_CFA88;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = 1;
+        o += 0xE8;
+    }
+    lbl_3_bss_A022 = count;
+
+    // the posts (fn_3_CF930; hit by the ball: fn_3_CF72C)
+    done = 0;
+    for (i = 0; i < 10; i++, post++) {
+        if (((u8*)post)[0xC] == 0xD) {
+            done = 1;
+        }
+        if (done) {
+            for (; i < 11; i++) {
+                memset(&lbl_3_data_18730[i], 0, sizeof(T16));
+                ((u8*)&lbl_3_data_18730[i])[0xC] = 0xD;
+            }
+            break;
+        }
+        o[0x9D] = i + 8;
+        o[0x9C] = i;
+        o[0xA4] = 0;
+        *(void**)(o + 0xA0) = NULL;
+        *(ActorObject**)(o + 0x74) = C2_OBJ(postBase + i);
+        *(void**)(o + 0x78) = files[idx[14]];
+        *(void**)(o + 0x7C) = fn_3_CF930;
+        *(void**)(o + 0x80) = fn_3_CF72C;
+        ((PiranhaPlant*)o)->visible = 1;
+        sh = 0;
+        if (((PiranhaPlant*)o)->visible && *(void**)(o + 0x78) != NULL) {
+            sh = 1;
+        }
+        ((PiranhaPlant*)o)->hasShadow = sh;
+        o[0] = 0;
+        CTRLSetTranslation((Control*)o, post->x, -post->y, post->z);
+        ((PiranhaPlant*)o)->bit5 = 1;
+        o[0x92] = 0xFF;
+        count++;
+        *(void**)(o + 0x8C) = NULL;
+        *(void**)(o + 0x84) = fn_3_CF92C;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = 1;
+        o += 0xE8;
+        lbl_3_bss_A023++;
+    }
+
+    // the lamps (animated, fn_3_CED3C)
+    done = 0;
+    player = lbl_3_bss_A018 + 0x3B4;
+    for (i = 0; i < 10; i++, lamp++) {
+        if (((u8*)lamp)[0xC] == 0xD) {
+            done = 1;
+        }
+        if (done) {
+            // (sic) the original marks the end of the prop list here
+            for (; i < 11; i++) {
+                ((C2Prop*)((u8*)&lbl_3_data_182C0 + 0x310))[i].type = 0xD;
+            }
+            break;
+        }
+        o[0x9D] = ((u8*)lamp)[0xC];
+        *(ActorObject**)(o + 0x74) = C2_OBJ(lampBase + i);
+        *(void**)(o + 0x78) = NULL;
+        *(void**)(o + 0x7C) = fn_3_CED3C;
+        *(void**)(o + 0x80) = NULL;
+        ((PiranhaPlant*)o)->visible = 1;
+        sh = 0;
+        if (((PiranhaPlant*)o)->visible && *(void**)(o + 0x78) != NULL) {
+            sh = 1;
+        }
+        ((PiranhaPlant*)o)->hasShadow = sh;
+        o[0] = 0;
+        CTRLSetTranslation((Control*)o, lamp->x, lamp->y, lamp->z);
+        ((PiranhaPlant*)o)->bit5 = 1;
+        o[0x92] = 0xFF;
+        *(u8**)(o + 0x8C) = player;
+        player += 0x5C;
+        *(void**)(o + 0x84) = fn_3_CED38;
+        *(s16*)(o + 0x94) = 0;
+        *(s16*)(o + 0x96) = -1;
+        o[0x98] = 1;
+        o[0x90] |= 0x10;
+        o[0x90] |= 0x08;
+        o[0x90] |= 0x04;
+        o[0x90] &= ~0x02;
+        o += 0xE8;
+    }
+
+    g->groupBounds = NULL;
+    fn_3_D6514();
+    fn_3_CE8E4();
+    fn_3_B97C8(fn_3_CD958);
 }
+#endif
 #pragma dont_inline off

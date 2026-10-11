@@ -120,6 +120,6 @@ void fn_3_D5E80(s32* a);
 void fn_3_D60C0(s32* a);
 void fn_3_D62F0(s32* a);
 void fn_3_D6514(void);
-void fn_3_D67CC(void);
+void fn_3_D67CC(void** files);
 
 #endif // !__GAME_sta_c2_H_
