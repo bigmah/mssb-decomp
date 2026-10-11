@@ -16,6 +16,12 @@ typedef struct ARAMLoaderView {
     /*0x715*/ volatile u8 idle;
 } ARAMLoaderView;
 
+// lbl_3_data_7F7C entry (indexed by lbl_800E8558[char]._2); only the fields used here.
+typedef struct CharVoiceAnim {
+    /*0x0*/ s16 anim; // batter animation that triggers the voice
+    /*0x2*/ u8 _2[6];
+} CharVoiceAnim; // size: 0x8
+
 void fn_3_21C90(void);
 void fn_3_21DE4(void);
 s32 fn_3_21F14(void);

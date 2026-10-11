@@ -19,6 +19,7 @@
 #include "game/rep_868.h"
 #include "game/rep_AC8.h"
 #include "game/auto_00_001658F0_text.h"
+#include "game/rep_1330.h"
 
 // Views declared here (other units have their own views of these objects).
 extern FielderView g_Fielders[];
@@ -37,6 +38,8 @@ extern Unk32724 lbl_3_common_bss_32724;
 extern StarChanceOdds lbl_80109420[];
 extern ARAMLoaderView lbl_803C6CF8;
 extern s32 lbl_3_data_1F74[]; // scene ids, indexed by SCENE->_260
+extern s32 lbl_3_data_1FF8[]; // scene ids per runner character
+extern CharVoiceAnim lbl_3_data_7F7C[];
 
 extern const f32 lbl_3_rodata_A50;
 extern const f32 lbl_3_rodata_A54; // 0.0f
@@ -49,6 +52,7 @@ extern s32 lbl_3_bss_9C;
 
 void fn_80052798(s32 count); // main/file_8004C5F8.h
 f32 fn_3_9FEA8(f32 v);        // game/rep_1838.h: wrap angle
+u32 fn_3_90220(s32 idx, s32 off); // game/m_sound.h (conflicts with another header here)
 
 #define SCENE lbl_3_common_bss_1323C
 #define FADE_TASK ((FadeTask*)lbl_803CC1B8)
@@ -72,6 +76,14 @@ static inline void SceneReset(s32 mode) {
     SCENE->busy = 0;
     SCENE->_25A = 0;
     SCENE->_280 = 1;
+}
+
+// Plays the batter's voice when actor 9 (the batter) is in its swing animation.
+static inline void BatterVoice(void) {
+    CharActor* a = lbl_8036E548.active[9];
+    if (a->anim[0] == 0x3C && a->_06A[0] == lbl_3_data_7F7C[lbl_800E8558[g_Batter.charID]._2].anim) {
+        fn_3_90220(g_Batter.charID, 0);
+    }
 }
 
 // .text:0x00021C90 size:0x154 mapped:0x80660D24
@@ -643,7 +655,61 @@ void fn_3_23890(void) {
 
 // .text:0x00023CEC size:0x40C mapped:0x80662D80
 void fn_3_23CEC(void) {
-    return;
+    GameInitVariables* gs = &g_d_GameSettings;
+    GameControlsStruct* gl = &g_GameLogic;
+    s32 i;
+    switch (gl->_125) {
+    case 0:
+        if ((s32)lbl_803C6CF8.idle == 1) {
+            changeScene(1, 6);
+            gl->_125 = 1;
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        }
+        break;
+    case 1:
+        SceneReset(3);
+        fn_3_FBDAC(lbl_3_data_1FF8[g_Runners[0].charID]);
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        gl->_125 = 2;
+        break;
+    case 2:
+        fn_3_24708();
+        if (SCENE->_23C < 0x7FFE) {
+            SCENE->_23C += 1;
+        } else {
+            SCENE->_23C = 0x7FFF;
+        }
+        if (fn_3_6C938(1, 0x1100) != 0 && SCENE->_23C < SCENE->_23E - 7 && gs->GameModeSelected != 4) {
+            if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 60) {
+                SCENE->_27C = 1;
+                SCENE->_23C = SCENE->_23E - 8;
+                changeScene(3, 6);
+            }
+        } else if (SCENE->_23C == SCENE->_23E - 7) {
+            changeScene(3, 6);
+        }
+        if (SCENE->_23C == SCENE->_23E) {
+            gl->_125 = 4;
+        }
+        for (i = 0; i < 13; i++) {
+            if ((u32)i <= 1 || i == 9) {
+                fn_8001D074(i, 1);
+            } else {
+                fn_8001D074(i, 0);
+            }
+        }
+        break;
+    case 4:
+        fn_3_24630();
+        fn_3_FBD70();
+        fn_3_FBD58();
+        fn_3_7C1FC(1);
+        for (i = 0; i < 13; i++) {
+            fn_8001D074(i, 1);
+        }
+        break;
+    }
+    BatterVoice();
 }
 
 // .text:0x000240F8 size:0x4A0 mapped:0x8066318C
