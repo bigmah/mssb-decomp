@@ -95,7 +95,7 @@ extern f32 lbl_803CC218;
 
 extern u32 lbl_803CC21C;
 
-extern u32 lbl_803CC1F0;
+extern Light* lbl_803CC1F0; // light used for the specular highlight (fn_800B9EA8)
 
 // fn_800B9AA8, size:0x8
 void fn_800B9AA8(Light* light) {
@@ -401,10 +401,382 @@ void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, MtxPtr camera, u8* numT
 }
 #pragma dont_inline on
 
+// NONMATCHING 98%: stack layout of the stage/coord/map locals and saved-register assignment differ
+#if NONMATCHING
 // .text:0x800BA848 size:0x12E4
 void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxPtr camera) {
-    return;
+    Mtx mv;
+    Mtx scaleMtx;
+    Mtx transMtx;
+    Mtx texMtx;
+    Mtx shadowMtx;
+    GXColor konst;
+    GXColor color;
+    GXColor fogColor;
+    s32 stage;
+    s32 coord;
+    s32 map;
+    s32 chan;
+    u8 numTexGens;
+    u8 numTevStages;
+    u8 texIdx;
+    u8 envMode;
+    u8 shift;
+    u8 numChans;
+    u32 setting;
+    u32 mode;
+    f32 scale;
+    GXTevColorArg konstArg;
+    GXTevColorArg rasColor;
+    GXTevAlphaArg rasAlpha;
+    GXTexGenSrc src;
+    s32 i;
+
+    stage = 0;
+    coord = 0;
+    numChans = 0;
+    shift = 0;
+    envMode = 0;
+    texIdx = 0;
+    map = 0;
+    setting = state->setting;
+    numTevStages = 0;
+    numTexGens = 0;
+    GXSetNumIndStages(0);
+    for (i = 0; i < 16; i++) {
+        GXSetTevDirect(i);
+    }
+
+    // setting holds one 4-bit TEV mode per texture channel.
+    do {
+        mode = (setting >> shift) & 0xF;
+        if (mode == 0) {
+            break;
+        }
+        switch (mode) {
+        case 10: // texture alpha * raster, colour from raster
+            chan = GX_COLOR0A0;
+            numChans++;
+            GXSetTevOrder(stage, coord, map, GX_COLOR0A0);
+            GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + texIdx, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+            GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
+            GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_TEXA, GX_CA_RASA, GX_CA_ZERO);
+            GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            texIdx++;
+            numTexGens++;
+            numTevStages++;
+            break;
+        case 12: // texture * previous
+            chan = GX_COLOR_NULL;
+            GXSetTevOrder(stage, coord, map, GX_COLOR_NULL);
+            GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + texIdx, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+            GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_CPREV, GX_CC_ZERO);
+            GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_TEXA, GX_CA_APREV, GX_CA_ZERO);
+            GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            if (lbl_803CC210[map] == 2) {
+                numTevStages++;
+                GXSetTevOrder(stage + 1, coord, map, chan);
+                GXSetTevColorIn(stage + 1, GX_CC_ZERO, GX_CC_CPREV, GX_CC_APREV, GX_CC_ZERO);
+                GXSetTevColorOp(stage + 1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                GXSetTevAlphaIn(stage + 1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                GXSetTevAlphaOp(stage + 1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            }
+            texIdx++;
+            numTexGens++;
+            numTevStages++;
+            break;
+        case 1: // GX_MODULATE
+        case 2: // GX_DECAL
+        case 3: // GX_BLEND
+        case 4: // GX_REPLACE
+            if (numTevStages != 0 || mode == 4) {
+                chan = GX_COLOR_NULL;
+            } else {
+                chan = GX_COLOR0A0;
+            }
+            GXSetTevOrder(stage, coord, map, chan);
+            GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + texIdx, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+            GXSetTevOp(stage, mode - 1);
+            if (lbl_803CC210[map] == 2) {
+                numTevStages++;
+                GXSetTevOrder(stage + 1, coord, map, GX_COLOR_NULL);
+                GXSetTevColorIn(stage + 1, GX_CC_ZERO, GX_CC_CPREV, GX_CC_APREV, GX_CC_ZERO);
+                GXSetTevColorOp(stage + 1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                GXSetTevAlphaIn(stage + 1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                GXSetTevAlphaOp(stage + 1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            }
+            texIdx++;
+            numTexGens++;
+            numTevStages++;
+            break;
+        case 5: // raster colour only, ends the list
+            if (dispObj->shaderFunc == NULL) {
+                GXSetTevOrder(stage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+                GXSetTevOp(stage, GX_PASSCLR);
+                numTevStages++;
+            }
+            break;
+        case 6: // two textures blended by the second one's alpha, result in TEVREG0
+            if (numTevStages != 0 || mode == 4) {
+                chan = GX_COLOR_NULL;
+            } else {
+                chan = GX_COLOR0A0;
+            }
+            GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + texIdx, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+            numTexGens++;
+            GXSetTexCoordGen2(coord + 1, GX_TG_MTX2X4, GX_TG_TEX0 + texIdx + 1, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+            GXSetTevOrder(stage, coord + 1, map + 1, GX_COLOR0A0);
+            GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
+            GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+            GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_TEXA, GX_CA_RASA, GX_CA_ZERO);
+            GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+            numTevStages++;
+            stage++;
+            GXSetTevOrder(stage, coord, map, chan);
+            GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
+            GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+            GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_A0, GX_CA_TEXA, GX_CA_ZERO);
+            GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+            envMode = 1;
+            texIdx++;
+            numTexGens++;
+            numTevStages++;
+            break;
+        case 7: // combine TEVREG0 with this texture
+            if (envMode == 0) {
+                GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + texIdx, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+                numTexGens++;
+                GXSetTevOrder(stage, coord, map, GX_COLOR0A0);
+                numTevStages++;
+                GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
+                GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+                GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_TEXA, GX_CA_RASA, GX_CA_ZERO);
+                GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+                stage++;
+            }
+            GXSetTevOrder(stage, coord, map, GX_COLOR_NULL);
+            texIdx++;
+            numTevStages++;
+            if (envMode == 1) {
+                switch (lbl_803CC210[map]) {
+                case 1:
+                    GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_C0, GX_CC_C0, GX_CC_CPREV);
+                    GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                    GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    break;
+                case 2:
+                    GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_C0, GX_CC_C0, GX_CC_CPREV);
+                    GXSetTevColorOp(stage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                    GXSetTevAlphaOp(stage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    break;
+                default:
+                    GXSetTevColorIn(stage, GX_CC_CPREV, GX_CC_C0, GX_CC_A0, GX_CC_ZERO);
+                    GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    GXSetTevAlphaIn(stage, GX_CA_A0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                    GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    break;
+                }
+            } else {
+                switch (lbl_803CC210[map]) {
+                case 1:
+                    GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_C0, GX_CC_A0, GX_CC_CPREV);
+                    GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                    GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    break;
+                case 2:
+                    GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_C0, GX_CC_A0, GX_CC_CPREV);
+                    GXSetTevColorOp(stage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                    GXSetTevAlphaOp(stage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    break;
+                default:
+                    GXSetTevColorIn(stage, GX_CC_CPREV, GX_CC_C0, GX_CC_TEXA, GX_CC_ZERO);
+                    GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                    GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+                    break;
+                }
+            }
+            envMode = 2;
+            break;
+        case 8: { // bump mapping; state->listSize / 1000 is the bump scale
+            scale = state->listSize / 1000.0f;
+            color = lbl_803CCFF8;
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+            PSMTXConcat(camera, dispObj->worldMatrix, mv);
+            GXLoadPosMtxImm(mv, GX_PNMTX0);
+            PSMTXScale(scaleMtx, scale, scale, scale);
+            PSMTXConcat(mv, scaleMtx, scaleMtx);
+            GXLoadNrmMtxImm(scaleMtx, GX_PNMTX0);
+            numChans++;
+            GXSetChanCtrl(GX_COLOR0, GX_ENABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT0, GX_DF_CLAMP, GX_AF_NONE);
+            GXSetChanCtrl(GX_ALPHA0, GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_CLAMP, GX_AF_NONE);
+            numTexGens += 2;
+            // (the original uses the stage count, not texIdx, for the texture source here)
+            GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + numTevStages, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+            GXSetTexCoordGen2(coord + 1, GX_TG_BUMP0, GX_TG_TEXCOORD0 + coord, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+            GXSetTevOrder(stage, coord, map, GX_COLOR0A0);
+            GXSetTevOrder(stage + 1, coord + 1, map, GX_COLOR_NULL);
+            GXSetTevColor(GX_TEVREG0, color);
+            if (numTevStages == 0) {
+                GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_A0, GX_CC_RASC);
+            } else {
+                GXSetTevColorIn(stage, GX_CC_CPREV, GX_CC_TEXC, GX_CC_A0, GX_CC_RASC);
+            }
+            GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+            GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            GXSetTevColorIn(stage + 1, GX_CC_ZERO, GX_CC_TEXC, GX_CC_A0, GX_CC_CPREV);
+            GXSetTevColorOp(stage + 1, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(stage + 1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+            GXSetTevAlphaOp(stage + 1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            texIdx += 2;
+            numTevStages += 2;
+            break;
+        }
+        default: // 9, 11 and anything unknown: per-object user TEV mode
+            if (dispObj->tevCallback != NULL) {
+                dispObj->tevCallback(mode, dispObj, camera, &numTexGens, &numTevStages);
+            } else {
+                OSReport(lbl_800E7F20, mode);
+            }
+            break;
+        }
+        if (mode == 5) {
+            break;
+        }
+        coord = texIdx;
+        shift += 4;
+        stage = numTevStages;
+        map = texIdx;
+    } while (map < dispObj->numTextureChannels);
+
+    if (dispObj->lightingData != NULL && envMode != 0) {
+        GXSetTevOrder(stage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+        GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_CPREV, GX_CC_RASC, GX_CC_ZERO);
+        GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_APREV, GX_CA_RASA, GX_CA_ZERO);
+        GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        numTevStages++;
+        stage++;
+    }
+
+    if (state->pad16 & 0x80) {
+        if (fn_800B9AB0(mode, dispObj, state, &stage, &coord, &map, &chan, camera) == 0) {
+            numTexGens++;
+            numTevStages++;
+            if (lbl_803CC1F4 != NULL) {
+                numTexGens++;
+            }
+        }
+    } else if (state->pad8 & 0x80) {
+        if (fn_800B9EA8(mode, dispObj, state, &stage, &coord, &map, &chan, camera) == 0) {
+            if (state->pad16 == 0) {
+                numTexGens++;
+                numTevStages++;
+            } else {
+                numTexGens += 2;
+                numTevStages += 2;
+            }
+        }
+    }
+
+    // Sphere-map environment texture.
+    if (dispObj->shaderFunc != NULL && dispObj->lightingData != NULL) {
+        rasColor = GX_CC_CPREV;
+        rasAlpha = GX_CA_APREV;
+        src = GX_TG_NRM;
+        if (dispObj->lightingData->compCount == 2) {
+            src = GX_TG_BINRM;
+        }
+        chan = GX_COLOR_NULL;
+        if (mode == 5) {
+            chan = GX_COLOR0A0;
+            rasColor = GX_CC_RASC;
+            rasAlpha = GX_CA_RASA;
+        }
+        if (dispObj->unk15 != 0) {
+            konst.r = konst.g = konst.b = konst.a = dispObj->unk15;
+            konstArg = GX_CC_KONST;
+            GXSetTevKColor(GX_KCOLOR0, konst);
+            GXSetTevKColorSel(stage, GX_TEV_KCSEL_K0);
+        } else {
+            konstArg = GX_CC_APREV;
+            rasAlpha = GX_CA_KONST;
+        }
+        PSMTXScale(scaleMtx, 0.5f, -0.5f, 0.0f);
+        PSMTXTrans(transMtx, 0.5f, 0.5f, 1.0f);
+        PSMTXConcat(camera, dispObj->worldMatrix, texMtx);
+        PSMTXInverse(texMtx, texMtx);
+        PSMTXTranspose(texMtx, texMtx);
+        GXLoadTexMtxImm(texMtx, GX_TEXMTX0 + numTevStages * 3, GX_MTX3x4);
+        PSMTXConcat(transMtx, scaleMtx, texMtx);
+        GXLoadTexMtxImm(texMtx, GX_PTTEXMTX0 + numTevStages * 3, GX_MTX3x4);
+        GXSetTexCoordGen2(coord, GX_TG_MTX3X4, src, GX_TEXMTX0 + numTevStages * 3, GX_TRUE,
+                          GX_PTTEXMTX0 + numTevStages * 3);
+        GXLoadTexObj(dispObj->shaderFunc, map);
+        GXSetTevOrder(stage, coord, map, chan);
+        GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, konstArg, rasColor);
+        GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, rasAlpha);
+        GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        numTexGens++;
+        numTevStages++;
+        stage++;
+        coord++;
+        map++;
+    }
+
+    // Projected shadow texture.
+    if (dispObj->shaderData != NULL && fn_800BEBA0() != 0 &&
+        (((u8*)fn_800BF068())[0x4C] & state->pad16)) { // TODO type
+        PSMTXConcat(fn_800BEB80(fn_800BEBA0() - 1), dispObj->worldMatrix, shadowMtx);
+        if (lbl_803CC20C != NULL) {
+            lbl_803CC20C(shadowMtx, &stage, &coord, &map, &numTevStages, &numTexGens);
+        } else {
+            GXSetTevOrder(stage, coord, map, GX_COLOR0A0);
+            GXSetTevColorIn(stage, GX_CC_CPREV, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ZERO);
+            GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(stage, GX_CA_APREV, GX_CA_APREV, GX_CA_ZERO, GX_CA_ZERO);
+            GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTexCoordGen2(coord, GX_TG_MTX3X4, GX_TG_POS, GX_TEXMTX0 + numTevStages * 3, GX_FALSE, GX_PTIDENTITY);
+            fn_800BF008();
+            GXLoadTexObj(dispObj->shaderData, map);
+            GXLoadTexMtxImm(shadowMtx, GX_TEXMTX0 + numTevStages * 3, GX_MTX3x4);
+            numTexGens++;
+            numTevStages++;
+            stage++;
+            coord++;
+            map++;
+        }
+    }
+
+    if (state->pad16 & 0x10) {
+        fogColor.b = 0;
+        fogColor.g = 0;
+        fogColor.r = 0;
+        GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, fogColor);
+    } else {
+        GXSetFog(lbl_80111700.type, lbl_80111700.startz, lbl_80111700.endz, lbl_80111700.nearz, lbl_80111700.farz,
+                 lbl_80111700.color);
+    }
+    if (lbl_803CC200 != NULL) {
+        lbl_803CC200(dispObj, &stage, &coord, &map, &numTevStages, &numTexGens, camera);
+    }
+    GXSetNumTexGens(numTexGens);
+    if (numTevStages != 0) {
+        GXSetNumTevStages(numTevStages);
+    }
+    if (numChans != 0) {
+        GXSetNumChans(numChans);
+    }
 }
+#endif
 
 // NONMATCHING 96%: saved registers for state/camera swapped (r29/r28 in the original), texture-state temps
 // land in different volatile registers
@@ -1048,7 +1420,7 @@ void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj) {
     return skinPositions;
 }
 
-extern u32 lbl_803CC20C;
+extern DOShadowTevCallback lbl_803CC20C;
 
 // fn_800BD190, size:0x58
 void fn_800BD190(GQRValueGroups* groups, s32 value) {
