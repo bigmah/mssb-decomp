@@ -101,6 +101,7 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_1A58;
 extern const f32 lbl_3_rodata_1A18;
 extern f32 lbl_3_data_4780[]; // per fielder class: covering distance
 extern const f32 lbl_3_rodata_19A4;
@@ -2343,9 +2344,74 @@ void fn_3_AAC84(f32* x, f32* z) {
 #endif
 
 // .text:0x000AAFF0 size:0x564 mapped:0x806EA084
-void fn_3_AAFF0(void) {
-    return;
+// NONMATCHING 95.5%: float register allocation differs and one branch in the length/sqrt sequence; fn_3_A6ABC is inlined
+#if NONMATCHING
+void fn_3_AAFF0(f32* x, f32* z) {
+    RepFielder* f;
+    s32 n;
+    f32 dz;
+    f32 a;
+    f32 d;
+    f32 step;
+    f32 dx;
+    f32 len;
+    RepFielder* t;
+    f32 vz;
+    f32 vx;
+    f32 sq;
+    f32 b;
+    f32 speed;
+
+    // inlined fn_3_A6ABC(receiver x, z)
+    f = &g_Fielders[g_Ball.fielderWBallIndex];
+    t = &g_Fielders[g_FieldingLogic._0BE];
+    dx = t->pos.x - f->pos.x;
+    step = (f32)f->_1CD / lbl_3_rodata_1938;
+    dz = t->pos.z - f->pos.z;
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        step = lbl_3_rodata_1958;
+    }
+    if (d > lbl_3_rodata_195C) {
+        n = (s32)(lbl_3_rodata_1960 * d / step);
+    } else if (d > lbl_3_rodata_1964) {
+        n = (s32)(d / step);
+    } else {
+        n = (s32)(lbl_3_rodata_1968 * d / step);
+    }
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+    }
+    if (t->framesToDest < n - 5) {
+        *x = t->dest.x;
+        *z = t->dest.z;
+    } else {
+        vz = t->dest.z - t->pos.z;
+        vx = t->dest.x - t->pos.x;
+        sq = vx * vx + vz * vz;
+        len = sq;
+        SQRT_L(len);
+        if (len == lbl_3_rodata_193C) {
+            sq = lbl_3_rodata_1958;
+        } else {
+            SQRT_L(sq);
+        }
+        if (sq <= lbl_3_rodata_1980) {
+            sq = lbl_3_rodata_1980;
+        }
+        n -= 10;
+        speed = lbl_3_rodata_1A58 * t->maxSpeed;
+        *x = (vx / sq) * speed * (f32)n + t->pos.x;
+        *z = (vz / sq) * speed * (f32)n + t->pos.z;
+    }
+    g_Ball.fielderBeingThrownTo = g_FieldingLogic._0BE;
 }
+#endif
 
 // .text:0x000AB554 size:0x5C mapped:0x806EA5E8
 void fn_3_AB554(void) {
