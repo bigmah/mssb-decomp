@@ -160,4 +160,6 @@ void fn_1_15760(void);
 
 void fn_1_11714(u8* object);
 
+void fn_1_1496C(u8* object);
+
 #endif

@@ -3599,3 +3599,66 @@ void fn_1_11714(u8* object) {
         GXColor1u32(0xFFFFFFFF);
     }
 }
+
+extern void fn_1_16978(void);
+
+// .text:0x1496C size:0x64C
+// Debug menu: pick the challenge character/mode, then (A) reset the scene and start fn_1_16978.
+// NONMATCHING ~80%: the original inlines fn_1_1347C and fn_1_131E4
+#if NONMATCHING
+void fn_1_1496C(u8* object) {
+    u8* queue = lbl_803CC1B8[0];
+    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    s32 i;
+    u8* row;
+
+    ch_5F73 = 0;
+    if (buttons & 1) {
+        for (ch_5F73 = 0; ch_5F73 < 1; ch_5F73++) {
+            if (ch_68FC[0x40 + ch_5F73] != 0) {
+                ch_68FC[0x40 + ch_5F73]--;
+            } else {
+                ch_68FC[0x40 + ch_5F73] = 0x35;
+            }
+        }
+    } else if (buttons & 2) {
+        for (ch_5F73 = 0; ch_5F73 < 1; ch_5F73++) {
+            if (++ch_68FC[0x40 + ch_5F73] == 0x36) {
+                ch_68FC[0x40 + ch_5F73] = 0;
+            }
+        }
+    } else if (lbl_803C77B8._02 & 0x400) {
+        for (ch_5F73 = 0; ch_5F73 < 1; ch_5F73++) {
+            ch_6940[ch_5F73 * 0x48 + 0x46] ^= 1;
+        }
+    } else if (lbl_803C77B8._02 & 0x800) {
+        *(s32*)(ch_3070 + 4) = 0x402 - *(s32*)(ch_3070 + 4);
+    } else if (lbl_803C77B8._02 & 0x40) {
+        ch_3070[0] = 1;
+    } else if (lbl_803C77B8._02 & 0x20) {
+        ch_3070[0] = 0;
+    }
+    if (lbl_803C77B8._02 & 0x100) {
+        row = lbl_8036E548 + 0xC04;
+        memset(row, 0, 0x204C);
+        for (i = 0; i < 13; i++) {
+            ((u8**)(lbl_8036E548 + 0x2C50))[i] = row;
+        }
+        (*(u8**)(lbl_8036E548 + 0x2C50))[0x255] = 0;
+        (*(u8**)(lbl_8036E548 + 0x2C50))[0x254] = 0;
+        fn_1_1347C();
+        fn_1_131E4();
+        queue[0x20] = 0;
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_16978;
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        ch_5F68 = 0;
+        ch_5F64 = 0.0f;
+    } else if (lbl_803C77B8._02 & 0x200) {
+        memset(lbl_8036E548, 0, 0x3154);
+        ch_3070[0] = 0;
+        fn_800AD038(lbl_80366158[2]);
+        *(s16*)(*(u8**)(lbl_803CC1B8[0] + 0xC) + 0x10) = 1;
+    }
+}
+#endif
