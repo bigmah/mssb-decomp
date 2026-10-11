@@ -26,8 +26,43 @@ void* memcpy(void* dst, const void* src, u32 n);
 void* memmove(void* dst, const void* src, u32 n);
 
 // .text:0x80024184 size:0x20C
-void gOz_GXSetTexture(void) {
-    return;
+void gOz_GXSetTexture(GXTevMode tevMode, s32 texFrac, s32 hasNormal) {
+    if (OSGetCurrentThread() != GXGetCurrentGXThread()) {
+        OSPanic(lbl_803CC580, 0x2A2, lbl_800E6720);
+    }
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    if (hasNormal) {
+        GXSetVtxDesc(GX_VA_NRM, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_NBT, GX_F32, 0);
+    }
+    switch (tevMode) {
+    case GX_MODULATE:
+    case GX_PASSCLR:
+        GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+        if (tevMode == GX_PASSCLR) {
+            break;
+        }
+    case GX_REPLACE:
+        GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+        if (texFrac < 0) {
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+        } else {
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, (u8)texFrac);
+        }
+        break;
+    }
+    GXSetTevOrder(GX_TEVSTAGE0, tevMode == GX_PASSCLR ? GX_TEXCOORD_NULL : GX_TEXCOORD0,
+                  tevMode == GX_PASSCLR ? GX_TEXMAP_NULL : GX_TEXMAP0, tevMode == GX_REPLACE ? GX_COLOR_NULL : GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    // 1 is the SDK GX_TG_MTX2x4 (GXEnum.h has the 2x4/3x4 names swapped)
+    GXSetTexCoordGen2(GX_TEXCOORD0, (GXTexGenType)1, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumChans(tevMode != GX_REPLACE);
+    GXSetNumTexGens(tevMode != GX_PASSCLR);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, tevMode);
 }
 
 // .text:0x80024390 size:0x74
