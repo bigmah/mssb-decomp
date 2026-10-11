@@ -2479,9 +2479,131 @@ void fn_8005CCE4(SceneTask* task, s32 port) {
 }
 
 // .text:0x8005DE14 size:0xBC4
+// NONMATCHING 85%: object index sums fold differently; registers differ
+#if NONMATCHING
 void fn_8005DE14(SceneTask* task, s32 port) {
-    return;
+    u8* state = &lbl_803C66B0.steps[9][port + 1];
+    s32 i;
+    s8 slot;
+    s8 prev;
+    s8 old;
+
+    if (*state == 0) {
+        slot = lbl_803297E0.selected[port] - 1;
+        prev = lbl_803297E0._CF3E[port];
+        old = lbl_803297E0.selected2[port] - 1;
+        if (lbl_803297E0._CF52[port] == 0) {
+            if (g_d_GameSettings._06 != 2) {
+                for (i = 0; i < 9; i++) {
+                    TASK_OBJ(task, i + port * 9 + 0x64)->flags &= ~2;
+                }
+                TASK_OBJ(task, slot + port * 9 + 0x40)->_5C = 0;
+                TASK_OBJ(task, slot + port * 9 + 0x40)->_68 = 1;
+                TASK_OBJ(task, slot + port * 9 + 0x1C)->_5C = 0;
+                TASK_OBJ(task, slot + port * 9 + 0x1C)->_68 = 1;
+                TASK_OBJ(task, slot + port * 9 + 0x52)->_5C = 0;
+                TASK_OBJ(task, slot + port * 9 + 0x52)->_68 = 1;
+                TASK_OBJ(task, slot + port * 9 + 0x64)->flags |= 2;
+                TASK_OBJ(task, slot + port * 9 + 0x64)->_64 = 0x2A;
+                TASK_OBJ(task, slot + port * 9 + 0x64)->_68 = 1;
+                fn_8005C830(task, port, slot);
+                TASK_OBJ(task, old + port * 9 + 0x40)->_5C = 0;
+                TASK_OBJ(task, old + port * 9 + 0x40)->_68 = 4;
+                TASK_OBJ(task, old + port * 9 + 0x1C)->_5C = 10 << 16;
+                TASK_OBJ(task, old + port * 9 + 0x1C)->_68 = 4;
+                if (prev != -1) {
+                    TASK_OBJ(task, prev + port * 9 + 0x1C)->_5C = 10 << 16;
+                    TASK_OBJ(task, prev + port * 9 + 0x1C)->_68 = 0;
+                    TASK_OBJ(task, prev + port * 9 + 0x40)->_68 = 1;
+                }
+            } else {
+                s8 pos = lbl_80354720[port][slot].pos;
+                for (i = 0; i < 9; i++) {
+                    TASK_OBJ(task, i + 0x75)->flags &= ~2;
+                    TASK_OBJ(task, i + 0x35)->flags &= ~2;
+                }
+                TASK_OBJ(task, slot + 0x63)->_5C = 0;
+                TASK_OBJ(task, slot + 0x63)->_68 = 1;
+                TASK_OBJ(task, slot + 0x51)->_5C = 0;
+                TASK_OBJ(task, slot + 0x51)->_68 = 1;
+                TASK_OBJ(task, slot + 0x6C)->_5C = 0;
+                TASK_OBJ(task, slot + 0x75)->flags |= 2;
+                TASK_OBJ(task, slot + 0x75)->_64 = 0x2A;
+                TASK_OBJ(task, slot + 0x6C)->_68 = 1;
+                TASK_OBJ(task, slot + 0x75)->_68 = 1;
+                fn_8005C830(task, port, slot);
+                TASK_OBJ(task, old + 0x63)->_5C = 0;
+                TASK_OBJ(task, old + 0x63)->_68 = 4;
+                TASK_OBJ(task, old + 0x51)->_5C = 10 << 16;
+                TASK_OBJ(task, old + 0x51)->_68 = 4;
+                TASK_OBJ(task, pos + 0x35)->flags |= 2;
+                TASK_OBJ(task, pos + 0x35)->_64 = 0x2A;
+                TASK_OBJ(task, pos + 0x35)->_68 = 1;
+                if (prev != -1) {
+                    TASK_OBJ(task, prev + 0x51)->_5C = 10 << 16;
+                    TASK_OBJ(task, prev + 0x51)->_68 = 0;
+                    TASK_OBJ(task, prev + 0x63)->_68 = 1;
+                }
+            }
+        } else {
+            s8 pos = lbl_80354720[port][slot].pos;
+            s8 oldPos = lbl_80354720[port][old].pos;
+            s8 prevPos = 0;
+
+            if (prev != -1) { // the original reads it unconditionally
+                prevPos = lbl_80354720[port][prev].pos;
+            }
+
+            if (g_d_GameSettings._06 != 2) {
+                TASK_OBJ(task, pos + port * 9 + 0x10A)->_68 = 1;
+                TASK_OBJ(task, pos + port * 9 + 0xF8)->_68 = 1;
+                TASK_OBJ(task, pos + port * 9 + 0xE6)->flags |= 2;
+                TASK_OBJ(task, oldPos + port * 9 + 0x10A)->_68 = 4;
+                TASK_OBJ(task, oldPos + port * 9 + 0xF8)->_68 = 4;
+                TASK_OBJ(task, oldPos + port * 9 + 0xE6)->flags &= ~2;
+                for (i = 0; i < 9; i++) {
+                    TASK_OBJ(task, i + port * 9 + 0x12E)->flags &= ~2;
+                }
+                TASK_OBJ(task, pos + port * 9 + 0x12E)->flags |= 2;
+                TASK_OBJ(task, pos + port * 9 + 0x12E)->_64 = 0x2A;
+                TASK_OBJ(task, pos + port * 9 + 0x12E)->_68 = 1;
+                fn_8005C830(task, port, slot);
+                if (prev != -1) {
+                    TASK_OBJ(task, prevPos + port * 9 + 0x10A)->_68 = 1;
+                    TASK_OBJ(task, prevPos + port * 9 + 0xF8)->_68 = 1;
+                }
+            } else {
+                TASK_OBJ(task, pos + 0x23)->_68 = 1;
+                TASK_OBJ(task, pos + 0x1A)->_68 = 1;
+                TASK_OBJ(task, pos + 0x11)->flags |= 2;
+                TASK_OBJ(task, oldPos + 0x23)->_68 = 4;
+                TASK_OBJ(task, oldPos + 0x1A)->_68 = 4;
+                TASK_OBJ(task, oldPos + 0x11)->flags &= ~2;
+                for (i = 0; i < 9; i++) {
+                    TASK_OBJ(task, i + 0x35)->flags &= ~2;
+                    TASK_OBJ(task, i + 0x75)->flags &= ~2;
+                }
+                TASK_OBJ(task, slot + 0x6C)->flags |= 2;
+                TASK_OBJ(task, slot + 0x6C)->_5C = 0;
+                TASK_OBJ(task, slot + 0x6C)->_68 = 1;
+                TASK_OBJ(task, slot + 0x75)->flags |= 2;
+                TASK_OBJ(task, slot + 0x75)->_64 = 0x2A;
+                TASK_OBJ(task, slot + 0x75)->_68 = 1;
+                TASK_OBJ(task, pos + 0x35)->flags |= 2;
+                TASK_OBJ(task, pos + 0x35)->_64 = 0x2A;
+                TASK_OBJ(task, pos + 0x35)->_68 = 1;
+                if (prev != -1) {
+                    TASK_OBJ(task, prevPos + 0x23)->_68 = 1;
+                    TASK_OBJ(task, prevPos + 0x1A)->_68 = 1;
+                }
+                fn_8005C830(task, port, slot);
+            }
+        }
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
+#endif
 
 // .text:0x8005E9D8 size:0x2B0
 void fn_8005E9D8(SceneTask* task, s32 port) {
