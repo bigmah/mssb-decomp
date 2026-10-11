@@ -2515,8 +2515,9 @@ void fn_3_15730C(u32 n, f32 x, f32 y, f32 z) {
     }
 }
 
-// 94%: lbl_3_data_266A8 is this TU's own .data (orig keeps r29 = d+0x23C, t[0] via 0x23c(r31)); also f3/f4 swapped in the int->float divides
+// NONMATCHING 94%: lbl_3_data_266A8 is this TU's own .data (orig keeps r29 = d+0x23C, t[0] via 0x23c(r31)); also f3/f4 swapped in the int->float divides
 // .text:0x001573AC size:0x1C4 mapped:0x80796440
+#if NONMATCHING
 void fn_3_1573AC(u8* o) {
     Vec pos;
     Vec dir;
@@ -2547,6 +2548,7 @@ void fn_3_1573AC(u8* o) {
     fn_80030D88(&pos, &dir, t[1], 0x29);
     fn_80030D88(&pos, &dir, t[2], 0x29);
 }
+#endif
 
 // .text:0x00157570 size:0x18 mapped:0x80796604
 extern u8* lbl_3_bss_B850;
