@@ -29,6 +29,7 @@ extern void fn_3_1608F0(s32, s32, u8);
 extern void fn_3_11D780(void);
 extern void fn_3_EA454(void);
 extern void* memset(void*, s32, u32);
+extern int __abs(int);
 
 // fn_3_12DB54, size:0x2C
 void fn_3_12DB54(void) {
@@ -340,3 +341,31 @@ remove:
     lbl_8034E978._26 = 1;
 }
 
+
+// fn_3_12E084, size:0xF8
+// Sort order for BbTarget: best score first, then by chain length, then
+// prefer the centre column and the middle row.
+s32 fn_3_12E084(void* pa, void* pb) {
+    BbTarget* a = pa;
+    BbTarget* b = pb;
+    MiniGameStruct* mg = &g_Minigame;
+    s8 da;
+    s8 db;
+    if (a->score != b->score) {
+        return b->score - a->score;
+    }
+    if (a->chain != b->chain) {
+        if (mg->bB_cpuPreferLow != 0) {
+            return a->chain - b->chain;
+        }
+        return b->chain - a->chain;
+    }
+    da = __abs(2 - a->barrel / 3);
+    db = __abs(2 - b->barrel / 3);
+    if (da != db) {
+        return da - db;
+    }
+    da = __abs(1 - a->barrel % 3);
+    db = __abs(1 - b->barrel % 3);
+    return da - db;
+}

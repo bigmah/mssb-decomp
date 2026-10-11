@@ -18,6 +18,13 @@ typedef struct HudTask {
     /*0x22*/ s16 _22;
 } HudTask;
 
+// Barrel Batter CPU: one candidate barrel to aim at (sorted by fn_3_12E084).
+typedef struct BbTarget {
+    /*0x0*/ s8 barrel; // index into g_Minigame.barrels (3 per row)
+    /*0x1*/ s8 chain;  // barrels destroyed by hitting it
+    /*0x2*/ s16 score;
+} BbTarget; // size: 0x4
+
 void fn_3_12DB54(void);
 void fn_3_12E808(void);
 u32 fn_3_12DD88(void);
@@ -37,5 +44,6 @@ void fn_3_12C1AC(void);
 void fn_3_129C88(void);
 void fn_3_129FF8(void);
 void fn_3_12BB64(void);
+s32 fn_3_12E084(void* a, void* b);
 
 #endif
