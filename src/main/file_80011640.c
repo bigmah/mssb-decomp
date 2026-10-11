@@ -756,8 +756,21 @@ void fn_8001CA40(u8 stadium) {
 }
 
 // .text:0x8001CB10 size:0xC4
-void fn_8001CB10(void) {
-    return;
+void fn_8001CB10(LightSrc* src, s32 count) {
+    s32 i;
+    LightPos* dst;
+    Vec dir2;
+    Vec dir;
+
+    for (i = 0; i < count; i++) {
+        fn_80023B90(&src[i], &lbl_80367318[i]);
+    }
+    dir.x = lbl_80367318[0].x;
+    dir.y = lbl_80367318[0].y;
+    dir.z = lbl_80367318[0].z;
+    PSVECNormalize(&dir, &dir);
+    dir2 = dir;
+    fn_800BEBCC(0, &dir2);
 }
 
 // .text:0x8001CBD4 size:0xF4
