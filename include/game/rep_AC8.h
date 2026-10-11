@@ -211,7 +211,7 @@ void fn_3_4C9C8(void);
 void fn_3_4CFB0(void);
 void fn_3_4D20C(void);
 int fn_3_4DB84(int i);
-void fn_3_4DC14(void);
+void fn_3_4DC14(int);
 void fn_3_4E1BC(void);
 void fn_3_4E638(void);
 void fn_3_4EBC4(void);
