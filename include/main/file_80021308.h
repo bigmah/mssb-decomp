@@ -128,6 +128,7 @@ void fn_80021AC8(void);
 void* fn_80021ADC(s32 index, void* dst);
 void* fn_80021BBC(s32 index, void* dst);
 void* fn_80021CA4(s32 index, s32 variant, void* dst);
+void* fn_8002204C(s32 index, void* dst);
 void fn_80022620(DiskFileEntry* entry, void* dst, void* user);
 void fn_8002244C(s32 unused, s32* hdr, s32 arg);
 void fn_8002254C(s32 unused, s32* hdr, s32 index);
