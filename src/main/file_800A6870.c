@@ -122,7 +122,92 @@ void fn_800A68D4(u32 request) {
 
 // .text:0x800A6900 size:0x380
 void* fn_800A6900(void* arg) {
-    return 0;
+    s8 status;
+
+    while (TRUE) {
+        OSSleepThread(&lbl_803C7420.retraceQueue);
+        lbl_803C6CF8.driveStatus = DVDGetDriveStatus();
+        lbl_803C6CF8.driveStatusCallbacks[(s8)lbl_803C6CF8.driveStatus + 1]();
+
+        if (lbl_803C6CF8.retryEnabled && lbl_803C6CF8.state == DVDSYS_STATE_READING &&
+            lbl_803C6CF8.retryCount != 0) {
+            switch (lbl_803C6CF8.driveStatus) {
+            case 0:
+                lbl_803C6CF8.retryCount--;
+                break;
+            default:
+                lbl_803C6CF8.retryCount = lbl_803C6CF8.retryLimit;
+                break;
+            }
+        }
+
+        switch (lbl_803C6CF8.state) {
+        case DVDSYS_STATE_NONE:
+            break;
+        case DVDSYS_STATE_START:
+            status = DVDGetCommandBlockStatus(&lbl_803C6CF8.fileInfo->cBlock);
+            if ((status == 0) | (status == 10)) {
+                lbl_803C6CF8.bytesRead = 0;
+                lbl_803C6CF8.readPos = lbl_803C6CF8.bufStart;
+                lbl_803C6CF8.remaining = lbl_803C6CF8.totalSize;
+                if (lbl_803C6CF8.retryEnabled) {
+                    lbl_803C6CF8.retryCount = lbl_803C6CF8.retryLimit;
+                }
+                DVDFastOpen(lbl_803C6CF8.entryNum, lbl_803C6CF8.fileInfo);
+                if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_LZ_TO_RAM) {
+                    SetReadParameters(lbl_803C6CF8.instr, lbl_803C6CF8.tempBuf, lbl_803C6CF8.bufEnd, 1);
+                } else if (lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
+                    SetReadParameters(lbl_803C6CF8.instr, lbl_803C6CF8.tempBuf, lbl_803C6CF8.bufEnd, 2);
+                    lbl_803C6CF8.aramCur = lbl_803C6CF8.aramStart;
+                }
+                lbl_803C6CF8.chunkSize = (lbl_803C6CF8.remaining >= 0x8000) ? 0x8000 : lbl_803C6CF8.remaining;
+                if (lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
+                    DCInvalidateRange(lbl_803C6CF8.readPos, lbl_803C6CF8.chunkSize);
+                    PostAramRead();
+                } else {
+                    DVDReadAsyncPrio(lbl_803C6CF8.fileInfo, lbl_803C6CF8.bufStart, lbl_803C6CF8.chunkSize,
+                                     lbl_803C6CF8.diskOffset, fn_800A7A80, 2);
+                }
+                lbl_803C6CF8.state = DVDSYS_STATE_READING;
+            }
+            break;
+        case DVDSYS_STATE_READING:
+            if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_LZ_TO_RAM || lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
+                if (!gDataDecompressorValues.ShouldWriteDataFlag) {
+                    DCFlushRangeNoSync(lbl_803C6CF8.bufEnd, gDataDecompressorValues.CachedBytesToRead);
+                    if (lbl_803C6CF8.tempBuf != NULL) {
+                        fn_800ACF14(lbl_803C6CF8.tempBuf);
+                        lbl_803C6CF8.tempBuf = NULL;
+                    }
+                    SET_STATE_IDLE(DVDSYS_STATE_NONE, 1);
+                } else if (gDataDecompressorValues.error ||
+                           (lbl_803C6CF8.retryEnabled && lbl_803C6CF8.retryCount == 0)) {
+                    // decode error or stalled drive: restart the decoder and the read thread
+                    DVDCancel(&lbl_803C6CF8.fileInfo->cBlock);
+                    OSCancelThread(&gDataDecompressorValues.t);
+                    StartThreadForReadingFromDisk();
+                    OSCancelThread(&lbl_803C6CF8.readThread);
+                    OSCreateThread(&lbl_803C6CF8.readThread, fn_800A77A0, NULL,
+                                   lbl_802EAF80.stacks[0] + sizeof(lbl_802EAF80.stacks[0]),
+                                   sizeof(lbl_802EAF80.stacks[0]), 8, 1);
+                    OSResumeThread(&lbl_803C6CF8.readThread);
+                    lbl_803C6CF8.state = DVDSYS_STATE_START;
+                    OSReport(STR_DECODE_ERROR, lbl_803C6CF8.entryNum, lbl_803C6CF8.instr->diskLocation,
+                             gDataDecompressorValues.error);
+                }
+            }
+            break;
+        case DVDSYS_STATE_DONE:
+            SET_STATE_IDLE(DVDSYS_STATE_NONE, 1);
+            if (lbl_803C6CF8.tempBuf != NULL) {
+                fn_800ACF14(lbl_803C6CF8.tempBuf);
+                lbl_803C6CF8.tempBuf = NULL;
+            }
+            break;
+        case DVDSYS_STATE_RING:
+            break;
+        }
+    }
 }
 
 // .text:0x800A6C80 size:0x90
