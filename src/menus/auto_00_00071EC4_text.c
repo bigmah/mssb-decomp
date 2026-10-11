@@ -2156,3 +2156,54 @@ void fn_2_808D8(u8* o, s32 index) {
     }
 }
 #endif
+
+// fn_2_7805C, size:0x310
+// NONMATCHING 85%: slot index adds scheduled differently, s8 extensions hoisted
+#if NONMATCHING
+void fn_2_7805C(u8* o, s32 index) {
+    u8* sel = lbl_2_bss_F468 + index;
+    u8 prev = *(sel += 0x61); // F468[0x61 + index]
+    s8 found;
+    s32 j;
+    s32 n;
+    s32 k;
+    u8* e;
+    for (j = 0; j < 9; j++) {
+        if ((s8)lbl_803C6724[index * 9 + j + 0x14] == (s8)prev) {
+            found = j;
+        }
+    }
+    e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        if ((s8)prev != ((s32*)lbl_2_bss_F468)[index]) {
+            MN_OBJ(o, (s8)prev + index * 9 + 0x46)->state = 4;
+            if ((s8)(lbl_803C6724 + index * 9)[found + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[found + 2] != 0x36) {
+                MN_OBJ(o, (s8)prev + index * 9 + 0x34)->state = 1;
+            }
+        }
+        if (lbl_2_bss_F468[index + 0x37] != 0) {
+            MN_OBJ(o, index + 0x93)->anim = 9;
+            MN_OBJ(o, index + 0x93)->frame = 0xA0000;
+            MN_OBJ(o, index + 0x93)->state = 0;
+        }
+        fn_800626EC(index);
+        *e = 1;
+    }
+    if (*e == 1) {
+        n = 0;
+        k = 0;
+        if ((s8)*sel != ((s32*)lbl_2_bss_F468)[index]) {
+            if ((s8)(lbl_803C6724 + index * 9)[found + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[found + 2] != 0x36) {
+                k++;
+                n += fn_80042DA8((s32)o, (s8)prev + index * 9 + 0x34, 0x14) != 0;
+            }
+        }
+        if (n == k) {
+            lbl_2_bss_F468[index + 0x5F] = 0;
+            *sel = -1;
+            fn_80062674(index);
+            *e = 2;
+        }
+    }
+}
+#endif

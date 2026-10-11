@@ -74,5 +74,6 @@ void fn_2_7E194(s32 o, s32 index);
 void fn_2_72A88(u8* o);
 void fn_2_7F8BC(u8* o, s32 index);
 void fn_2_808D8(u8* o, s32 index);
+void fn_2_7805C(u8* o, s32 index);
 
 #endif
