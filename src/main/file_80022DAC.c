@@ -184,8 +184,22 @@ void f_InitActorWithLayout(void) {
 }
 
 // .text:0x8002360C size:0x2D4
-void BuildBoneSkinOrientationMatrix(void) {
-    return;
+void BuildBoneSkinOrientationMatrix(MBone* bone, MtxPtr parent) {
+    Mtx local;
+    Mtx world;
+
+    for (; bone != NULL; bone = (MBone*)bone->branch.Next) {
+        if (bone->inheritanceFlag == 1) {
+            CTRLBuildMatrix(&bone->orientationCtrl.ctrl, local);
+            PSMTXConcat(parent, local, world);
+            PSMTXInverse(world, bone->orientationInvMtx);
+        } else {
+            CTRLBuildInverseMatrix(&bone->orientationCtrl.ctrl, bone->orientationInvMtx);
+        }
+        if (bone->branch.Children != NULL) {
+            BuildBoneSkinOrientationMatrix((MBone*)bone->branch.Children, world);
+        }
+    }
 }
 
 // .text:0x800238E0 size:0xBC

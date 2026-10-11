@@ -207,6 +207,7 @@ typedef struct TexImage {
 
 u8* f_InitBone(MBone* parent, MBoneLayout* layout, MActor* actor, u16* boneIndex, MBone* bones, u8* buffer);
 u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer);
+void BuildBoneSkinOrientationMatrix(MBone* bone, MtxPtr parent);
 
 void fn_80023EEC(VecQueue* queue, Vec* entries, s32 capacity);
 
