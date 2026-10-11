@@ -102,10 +102,10 @@ typedef struct SceneWork {
     /*0x25D*/ u8 mode;
     /*0x25E*/ u8 _25E;
     /*0x25F*/ u8 _25F;
-    /*0x260*/ u8 _260;
+    /*0x260*/ s8 _260; // index into lbl_3_data_1F74 (scene to start)
     /*0x261*/ u8 animSet[13];
     /*0x26E*/ u8 posSet[13];
-    /*0x27B*/ u8 _27B;
+    /*0x27B*/ s8 _27B;
     /*0x27C*/ u8 _27C;
     /*0x27D*/ u8 _27D;
     /*0x27E*/ s8 busy;
@@ -114,9 +114,20 @@ typedef struct SceneWork {
 } SceneWork;
 
 // lbl_3_data_2398 entry.
+// A scripted scene event and the game situation that triggers it (fn_3_21F14); -1 = don't care.
 typedef struct Unk2398Entry {
-    /*0x00*/ u8 _00[0x34];
-    /*0x34*/ s32 _34[3];
+    /*0x00*/ s32 inning;      // compared with g_Scores._AC (4: 4 or later)
+    /*0x04*/ s32 _04;
+    /*0x08*/ s32 outs;
+    /*0x0C*/ s32 runner[3];   // 1: base occupied, 0: base empty
+    /*0x18*/ s32 situation;   // fn_3_22ABC result (-1 none, 1, 2), 0 = none
+    /*0x1C*/ s32 leading;     // fn_3_22A20 result
+    /*0x20*/ s32 captainDuel; // 1: batter/pitcher are the two captains with a pair-table entry
+    /*0x24*/ s32 once;        // nonzero: only plays while _34[0] is clear
+    /*0x28*/ s32 _28;
+    /*0x2C*/ s32 _2C;
+    /*0x30*/ s32 _30;         // copied to SceneWork._27B when played
+    /*0x34*/ s32 _34[3];      // played flags
 } Unk2398Entry; // size: 0x40
 
 // Effect/state block lbl_3_common_bss_32724 (size 0x124, only the fields used here).
@@ -130,7 +141,10 @@ typedef struct Unk32724 {
     /*0x9E*/ s16 _9E; // character ids
     /*0xA0*/ s16 _A0;
     /*0xA2*/ s16 _A2;
-    /*0xA4*/ u8 _A4[0xC8 - 0xA4];
+    /*0xA4*/ u8 _A4[0xAE - 0xA4];
+    /*0xAE*/ u8 _AE; // set when a captain-duel scene event plays
+    /*0xAF*/ s8 _AF; // pitcher roster id for it
+    /*0xB0*/ u8 _B0[0xC8 - 0xB0];
     /*0xC8*/ u8 _C8;
     /*0xC9*/ u8 _C9;
     /*0xCA*/ u8 _CA;

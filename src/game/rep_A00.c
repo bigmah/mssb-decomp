@@ -12,14 +12,31 @@
 #include "game/auto_00_0005985C_text.h"
 #include "game/rep_E08.h"
 #include "main/file_80011640.h"
+#include "game/rep_540.h"
+#include "game/rep_1200.h"
+#include "game/game_batter.h"
+#include "game/rep_13B8.h"
+#include "game/rep_868.h"
+#include "game/rep_AC8.h"
+#include "game/auto_00_001658F0_text.h"
 
 // Views declared here (other units have their own views of these objects).
 extern FielderView g_Fielders[];
 extern SceneWork* lbl_3_common_bss_1323C;
 extern GameScores g_Scores;
 extern ScreenFx lbl_803C5090;
-extern Unk2398Entry lbl_3_data_2398[];
+// lbl_3_data_2398: the scene events, followed by a [batter][pitcher] character pair table.
+typedef struct SceneEventData {
+    /*0x000*/ Unk2398Entry events[0x21];
+    /*0x840*/ u8 captainPair[0x37][0x37]; // 1: this captain pair has a duel cutscene
+} SceneEventData;
+extern SceneEventData lbl_3_data_2398;
+extern u8* lbl_3_data_1F40[]; // followed by s8 eventBlocked[0x21] at +0x10 (lbl_3_data_1F50)
+extern StarChanceState lbl_3_common_bss_37400;
+extern Unk32724 lbl_3_common_bss_32724;
+extern StarChanceOdds lbl_80109420[];
 extern ARAMLoaderView lbl_803C6CF8;
+extern s32 lbl_3_data_1F74[]; // scene ids, indexed by SCENE->_260
 
 extern const f32 lbl_3_rodata_A50;
 extern const f32 lbl_3_rodata_A54; // 0.0f
@@ -142,8 +159,8 @@ void fn_3_21DE4(void) {
 }
 
 // .text:0x00021F14 size:0x828 mapped:0x80660FA8
-void fn_3_21F14(void) {
-    return;
+s32 fn_3_21F14(void) {
+    return 0;
 }
 
 // .text:0x0002273C size:0xE0 mapped:0x806617D0
@@ -179,8 +196,8 @@ s32 fn_3_2281C(s32 i) {
 void fn_3_22850(void) {
     s32 i;
     for (i = 0; i < 0x21; i++) {
-        lbl_3_data_2398[i]._34[1] = 0;
-        lbl_3_data_2398[i]._34[2] = 0;
+        lbl_3_data_2398.events[i]._34[1] = 0;
+        lbl_3_data_2398.events[i]._34[2] = 0;
     }
     SCENE->_27B = 0;
 }
@@ -194,9 +211,9 @@ void fn_3_22944(void) {
 void fn_3_22948(void) {
     s32 i;
     for (i = 0; i < 0x21; i++) {
-        lbl_3_data_2398[i]._34[0] = 0;
-        lbl_3_data_2398[i]._34[1] = 0;
-        lbl_3_data_2398[i]._34[2] = 0;
+        lbl_3_data_2398.events[i]._34[0] = 0;
+        lbl_3_data_2398.events[i]._34[1] = 0;
+        lbl_3_data_2398.events[i]._34[2] = 0;
     }
     SCENE->_27B = 0;
 }
@@ -322,7 +339,69 @@ void fn_3_230D4(void) {
 
 // .text:0x000234BC size:0x3D4 mapped:0x80662550
 void fn_3_234BC(void) {
-    return;
+    GameInitVariables* gs = &g_d_GameSettings;
+    GameControlsStruct* gl = &g_GameLogic;
+    s32 i;
+    switch (gl->_125) {
+    case 0:
+        if ((s32)lbl_803C6CF8.idle == 1) {
+            if (gl->playOverInd == 0 && fn_3_21F14() == 0) {
+                SCENE->_25C = 0;
+                changeScene(1, 6);
+                fn_3_FBD58();
+                fn_3_5A6D4(0);
+            } else {
+                fn_3_F1DC();
+                fn_3_751B4();
+                setDefaultInMemBatter();
+                fn_3_8913C();
+                fn_3_58870();
+                fn_3_1DEB8();
+                g_Pitcher.playStartOfGameAnimation = 0;
+                g_GameLogic.scoutFlag_VsScreenInd = 1;
+                gl->_125 = 1;
+            }
+        }
+        break;
+    case 1:
+        SceneReset(0);
+        if (g_GameLogic.playOverInd == 1) {
+            fn_3_FBDAC(0x6A);
+        } else {
+            fn_3_FBDAC(lbl_3_data_1F74[SCENE->_260]);
+        }
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        gl->_125 = 2;
+        break;
+    case 2:
+        fn_3_24708();
+        if (SCENE->_23C == 9) {
+            changeScene(1, 6);
+        }
+        if (SCENE->_23C < 0x7FFE) {
+            SCENE->_23C += 1;
+        } else {
+            SCENE->_23C = 0x7FFF;
+        }
+        for (i = 0; i < 13; i++) {
+            fn_8001D074(i, 1);
+        }
+        if (fn_3_6C938(1, 0x1100) != 0 && SCENE->_23C < SCENE->_23E - 7 && gs->GameModeSelected != 4
+            && g_GameLogic.FrameCountOfCurrentAtBat_Copy > 60) {
+            SCENE->_23C = SCENE->_23E - 8;
+            changeScene(3, 6);
+        }
+        if (SCENE->_23C == SCENE->_23E) {
+            gl->_125 = 3;
+        }
+        break;
+    case 3:
+        fn_3_24630();
+        fn_3_FBD70();
+        fn_3_FBD58();
+        fn_3_5A6D4(0);
+        break;
+    }
 }
 
 // .text:0x00023890 size:0x45C mapped:0x80662924
