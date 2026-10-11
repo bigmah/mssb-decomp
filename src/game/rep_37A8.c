@@ -578,9 +578,54 @@ void fn_3_142CA8(void) {
 // .text:0x00142DB4 size:0x31C mapped:0x80781E48
 extern f32 lbl_3_data_21BC4[][12];
 
+// NONMATCHING 69.1%: same velocity math as fn_3_1430D0 (which matches) but the original uses 4 non-lmw saved regs and a different schedule
+#if NONMATCHING
 void fn_3_142DB4(s32 idx) {
-    return;
+    MgRunner* r = (MgRunner*)g_Minigame + idx;
+    MgBall* b;
+    s32 i;
+    s16 ch;
+    f32 h;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    s32 k;
+
+    for (i = 0; i < 40; i++) {
+        if (g_Minigame[i * 0x28 + 0xCE] == 0) { // ball[i].used
+            break;
+        }
+    }
+    if (i < 40) {
+        b = &((MgBallView*)g_Minigame)->ball[i];
+        if (r->sel != 0) {
+            b->pos.x = lbl_3_data_21BC4[idx][9];
+            b->pos.y = lbl_3_data_21BC4[idx][10];
+            b->pos.z = lbl_3_data_21BC4[idx][11];
+        } else {
+            b->pos.x = lbl_3_data_21BC4[idx][6];
+            b->pos.y = lbl_3_data_21BC4[idx][7];
+            b->pos.z = lbl_3_data_21BC4[idx][8];
+        }
+        b->_22 = r->player;
+        b->owner = r->player;
+        ch = *(s16*)(g_Fielders + r->fielder * 0x268 + 0x17A);
+        k = g_Minigame[r->player + 0x1CAD];
+        h = lbl_3_rodata_385C * ((f32)lbl_3_data_7F10[ch] * charSizeMultipliers[ch][0]);
+        dx = lbl_3_data_21B94[k].x - b->pos.x;
+        dy = lbl_3_data_21B94[k].y - b->pos.y;
+        dz = lbl_3_data_21B94[k].z - b->pos.z;
+        dy += ((f32*)lbl_3_data_21D2C)[1] + h;
+        b->vel.x = dx / (f32)*(s16*)(lbl_3_data_21E68 + 0x2C);
+        b->vel.y = dy / (f32)*(s16*)(lbl_3_data_21E68 + 0x2C);
+        b->vel.z = dz / (f32)*(s16*)(lbl_3_data_21E68 + 0x2C);
+        b->_18 = lbl_3_rodata_3834;
+        b->used = 2;
+        b->timer = 0;
+        fn_3_15730C(i, b->pos.x, -b->pos.y, b->pos.z);
+    }
 }
+#endif
 
 // .text:0x001430D0 size:0x288 mapped:0x80782164
 
