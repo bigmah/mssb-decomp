@@ -182,9 +182,47 @@ void fn_80035750(void) {
 }
 
 // .text:0x80035838 size:0x1C8
-void fn_80035838(void) {
-    return;
+// NONMATCHING 99.7%: r0/r4 pick for the slot index in case 1
+#if NONMATCHING
+u8 fn_80035838(void* aramAddr, u8 id) {
+    s32 done = 0;
+
+    if (lbl_803CBC90 == 2) {
+        lbl_803CBC90 = 0;
+        lbl_803CBC94 = NULL;
+        lbl_803CB810 = -1;
+    }
+    switch (lbl_803CBC90) {
+    case 0:
+        lbl_803CBC91 = spaniFindFreeSlot();
+        if (lbl_803CBC91 == -1) {
+            OSReport(" SabNo = %d not to add  \n", lbl_803CBC91);
+            OSPanic("spani_default.c", 0x45A, "gasSpani No Empty \n");
+        }
+        lbl_8023D6C0[lbl_803CBC91] = id;
+        lbl_803C4BE0[lbl_803CBC91].data = (void*)ARAMTransfer(aramAddr, 0, 0, 0); // TODO type: ARAMTransfer returns a pointer
+        lbl_803CBC94 = aramAddr;
+        lbl_803CB810 = id;
+        lbl_803CBC90++;
+        break;
+    case 1:
+        if ((s8)lbl_803C6CF8[0x715] == 1) {
+            SpaniTexSlot* s = &lbl_803C4BE0[lbl_803CBC91];
+            SpaniAnim** pa = &s->anim;
+            s32* hdr = s->data;
+            s->tex = (u8*)hdr + hdr[0];
+            *pa = (SpaniAnim*)((u8*)hdr + hdr[1]);
+            convertTextureHeader(s->tex);
+            fn_8000B9C8(*pa);
+            done = 1;
+            lbl_803CBC90++;
+        }
+        break;
+    }
+    return done;
 }
+#endif
+
 
 // .text:0x80035A00 size:0x150
 void fn_80035A00(void) {
