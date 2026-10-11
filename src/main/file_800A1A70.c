@@ -80,7 +80,10 @@ void GDSetTexTlut(GXTexMapID id, u32 tmem_addr, GXTlutFmt format) {
 // .text:0x800A246C size:0x290
 void GDSetTexCoordScale2(GXTexCoordID coord, u16 s_scale, u8 s_bias, u8 s_wrap, u16 t_scale, u8 t_bias,
                          u8 t_wrap) {
-    return;
+    GDWriteBPCmd(0xFE03FFFF);
+    GDWriteBPCmd((u32)(s_scale - 1) << 0 | (u32)s_bias << 16 | (u32)s_wrap << 17 | (u32)0 << 18 | (u32)0 << 19 |
+                 (u32)(coord * 2 + 0x30) << 24);
+    GDWriteBPCmd((u32)(t_scale - 1) << 0 | (u32)t_bias << 16 | (u32)t_wrap << 17 | (u32)(coord * 2 + 0x31) << 24);
 }
 
 // .text:0x800A26FC size:0x460
