@@ -137,10 +137,14 @@ typedef struct AnimFrame {
     /* 0x00 */ u16 type;
     /* 0x02 */ u16 time;
     /* 0x04 */ u8 kind; // what to draw; 3: nested track
-    /* 0x05 */ u8 pad5;
-    /* 0x06 */ u16 subTrack;
-    /* 0x08 */ u8 flags; // bit 4: curved path
-    /* 0x09 */ u8 pad9[0xF];
+    /* 0x05 */ u8 blend; // 0..2: blend mode 1..3
+    /* 0x06 */ u16 subTrack; // nested track, or texture index for sprites
+    /* 0x08 */ u8 flags; // bit 0: perspective scale, bit 3: draw callback, bit 4: curved path, bit 5: per-corner colors
+    /* 0x09 */ u8 flags2; // bit 7: fn_800B1188
+    /* 0x0A */ u8 padA[6];
+    /* 0x10 */ s16 x;
+    /* 0x12 */ s16 y;
+    /* 0x14 */ u8 pad14[4];
     /* 0x18 */ s16 unk18;
     /* 0x1A */ u8 pad1A[0x36];
 } AnimFrame; // size 0x50
@@ -158,9 +162,26 @@ typedef struct Anim {
 } Anim;
 
 // Quad being assembled for drawing.
+// Circle parameters handed to the draw callback instead of vertices.
+typedef struct QuadCircle {
+    /* 0x00 */ Mtx mtx;
+    /* 0x30 */ u8 pad30[0x10];
+    /* 0x40 */ f32 radius;
+    /* 0x44 */ f32 radius2;
+    /* 0x48 */ u32 color0;
+    /* 0x4C */ u32 color1;
+    /* 0x50 */ s16 x;
+    /* 0x52 */ s16 y;
+    /* 0x54 */ u8 segments;
+    /* 0x55 */ u8 arcSegments;
+} QuadCircle;
+
 typedef struct QuadState {
-    /* 0x00 */ QuadVtx v[4];
-    /* 0x50 */ u8 pad50[0x14];
+    /* 0x00 */ union {
+        QuadVtx v[4];
+        QuadCircle circle;
+    } u;
+    /* 0x58 */ u8 pad58[0xC];
     /* 0x64 */ f32 (*mtx)[4];
     /* 0x68 */ u32 color;
     /* 0x6C */ s16* path;
@@ -170,12 +191,18 @@ typedef struct QuadState {
     /* 0x7C */ u16 perCornerColor;
     /* 0x7E */ u8 unk7E;
     /* 0x7F */ u8 unk7F;
-    /* 0x80 */ u8 pad80[8];
+    /* 0x80 */ u8 pad80[4];
+    /* 0x84 */ s32 (*drawCallback)(struct QuadState*); // returns whether to draw
     /* 0x88 */ void (*callback)(struct QuadState*, Mtx);
     /* 0x8C */ u8 pad8C[4];
 } QuadState; // size 0x90
 
 extern QuadState lbl_80366188;
+
+typedef struct MtxBox {
+    Mtx m;
+} MtxBox;
+extern const MtxBox lbl_800E65D0; // zero matrix
 extern SpriteTexInfo* lbl_803CBBD8;
 
 void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
@@ -188,6 +215,7 @@ void fn_8000D8A4(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
 BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out);
 void fn_8000CC4C(Anim* anim, AnimBlock* block, u8* src, u32 ofs, u32 len);
 s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, s16* path);
+s32 fn_8000C194(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, SpriteBank* bank);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
