@@ -40,8 +40,82 @@ void fn_3_249E8(s32 idx) {
 }
 
 // .text:0x00024ADC size:0x2E0 mapped:0x80663B70
-void fn_3_24ADC(void) {
-    return;
+void fn_3_24ADC(s32 idx, s32 queued) {
+    SceneActorSetup* e = &lbl_3_data_1E434[idx];
+    s32 a = e->actor;
+    GameActorView* actor;
+    InMemRunnerType* runner;
+    u8 m;
+
+    lbl_3_common_bss_1323C->actorSetup[a] = idx;
+    if (a <= 8) {
+        actor = lbl_8036E548.actors[a];
+        if (!e->keepPos) {
+            memcpy(&g_Fielders[a], e, 0xC);
+            if (actor != NULL) {
+                memcpy(&actor->pos, e, 0xC);
+            }
+        }
+        g_Fielders[a].rotY = lbl_3_common_bss_1323C->actors[a].rotY = e->rotY;
+        if (actor != NULL) {
+            actor->rotY = e->rotY;
+            actor->_25D = 1;
+        }
+        if (e->anim >= 0x69 && e->anim < 0x75) {
+            m = 0;
+        } else {
+            m = g_Fielders[a]._1C7;
+        }
+        lbl_3_common_bss_1323C->animSet[a] = 1;
+        lbl_3_common_bss_1323C->posSet[a] = 1;
+    } else if (a <= 12) {
+        actor = lbl_8036E548.actors[a];
+        if (a == 10) {
+            if (actor == NULL) {
+                return;
+            }
+        } else if (a == 11) {
+            if (actor == NULL) {
+                return;
+            }
+        } else if (a == 12) {
+            if (actor == NULL) {
+                return;
+            }
+        }
+        runner = &g_Runners[a - 9];
+        if (!e->keepPos) {
+            memcpy(runner, e, 0xC);
+            if (actor != NULL) {
+                memcpy(&actor->pos, e, 0xC);
+            }
+        }
+        runner->runningAngle = lbl_3_common_bss_1323C->actors[a].rotY = e->rotY;
+        if (actor != NULL) {
+            actor->rotY = e->rotY;
+            actor->_25D = 1;
+        }
+        lbl_3_common_bss_1323C->animSet[a] = 1;
+        lbl_3_common_bss_1323C->posSet[a] = 1;
+        if (a == 9) {
+            if (lbl_3_common_bss_1323C->mode == 0 || lbl_3_common_bss_1323C->mode == 1) {
+                if (g_Batter.batterHand == 1) {
+                    m = 0;
+                } else {
+                    m = 1;
+                }
+            } else {
+                m = 0;
+            }
+        } else {
+            m = 0;
+        }
+    }
+    if (queued == 0) {
+        AnimateCharacter(a, e->anim, e->animA, e->animMode, e->animB, e->animArg, m, 0);
+    } else {
+        QueueCharacterAnimation(a, e->anim, e->animA, e->animB, e->animArg, m, 0);
+    }
 }
 
 // .text:0x00024DBC size:0xE4 mapped:0x80663E50
