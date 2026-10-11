@@ -533,7 +533,59 @@ void fn_8004A7D0(void) {
 
 // .text:0x8004A9E0 size:0x1F8
 void fn_8004A9E0(void) {
-    return;
+    MsgTask* task = lbl_803CC1B8;
+    MsgTask* parent;
+    PadStatus* pads = gPads;
+    u8 port = task->box->port;
+    u16 buttons = pads[port].pressed;
+
+    lbl_803CBBCC->_10 |= 1 << port;
+    switch (task->state) {
+    case 0:
+        task->timer = 15;
+        task->state++;
+        break;
+    case 1:
+        fn_8004CC4C(lbl_803C50E8.kind, 1, lbl_803C50E8._4E, lbl_803C50E8.arg, lbl_803C50E8.msg);
+        if (lbl_803C50E8._4F != 0) {
+            lbl_803C5F74._1E = 1;
+        }
+        fn_800B0A5C_insertQueue(fn_8004D0F0, 0x3000);
+        task->state++;
+        break;
+    case 2:
+        if (task->timer != 0) {
+            task->timer--;
+        } else {
+            task->result = 0;
+            task->state = 3;
+        }
+        break;
+    case 3:
+        if (buttons & 0x100) {
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            task->state++;
+            task->result = 1;
+        } else if (buttons & 0x200) {
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            task->state++;
+            task->result = 4;
+        }
+        break;
+    case 4:
+        task->timer = 15;
+        task->state++;
+        break;
+    case 5:
+        if (task->timer != 0) {
+            task->timer--;
+        } else {
+            parent = ((MsgTask*)lbl_803CC1B8)->parent;
+            parent->result16 = task->result;
+            fn_800B0A14_removeQueue(parent);
+        }
+        break;
+    }
 }
 
 extern s32 lbl_803CBCFC;
