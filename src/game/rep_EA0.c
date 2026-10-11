@@ -307,10 +307,157 @@ void fn_3_67C34(TrailNode* node) {
 // Builds the trail vertices from the position history. Returns which way the trail
 // faces the camera (-1/1), which picks the strip draw order.
 // .text:0x00067EF0 size:0x700 mapped:0x806A6F84
+// NONMATCHING 85%: stack slot order and register allocation differ; same calls and math
+#if NONMATCHING
 s32 fn_3_67EF0(VecQueue* queue, s32 maxPoints, Vec* positions, u32* colors, u32 color, Vec* capPositions,
                u32* capColors, Vec* dir, f32 width) {
-    return 0;
+    Vec side;     // 0x08
+    Vec offset;   // 0x14
+    Vec pt[2];    // 0x20
+    Vec near;     // 0x38
+    Vec far;      // 0x44
+    Mtx view;     // 0x50
+    s32 cur;
+    s32 count;
+    s32 alpha;
+    s32 segs;
+    s32 i;
+    s32 facing;
+    u32 rgb;
+    u32 headAlpha;
+    s32 capAlpha;
+    f32 angle;
+    Vec* p;
+    Vec* prev;
+    Vec* out;
+
+    colors[0] = color;
+    alpha = color & 0xFF;
+    PSMTXCopy(((camera_803c639c_s*)fn_80052734(0))->view, view);
+    cur = 1;
+    count = 0;
+    fn_80023DFC(queue, &pt[0]);
+    PSMTXMultVec(view, &pt[0], &pt[0]);
+    out = positions;
+    while (p = &pt[cur], fn_80023D98(queue, p) != 0) {
+        PSMTXMultVec(view, p, p);
+        prev = &pt[cur == 0];
+        if (p->z == prev->z) {
+            memcpy(&near, prev, sizeof(Vec));
+            memcpy(&far, p, sizeof(Vec));
+        } else if (0.0f != prev->z) {
+            near.x = prev->x * p->z / prev->z;
+            near.y = prev->y * p->z / prev->z;
+            near.z = prev->z;
+            memcpy(&far, p, sizeof(Vec));
+        } else {
+            memcpy(&near, prev, sizeof(Vec));
+            far.x = p->x * prev->z / p->z;
+            far.y = p->y * prev->z / p->z;
+            far.z = p->z;
+        }
+        PSVECSubtract(&near, &far, &side);
+        side.z = 0.0f;
+        if (PSVECMag(&side) != 0.0f) {
+            PSVECNormalize(&side, &offset);
+            memcpy(out, prev, sizeof(Vec));
+            PSVECScale(&offset, width, &positions[count * 2 + 1]);
+            cur ^= 1;
+            out += 2;
+            count++;
+        }
+    }
+    prev = &pt[cur == 0];
+    memcpy(&positions[count * 2], prev, sizeof(Vec));
+    memcpy(&positions[count * 2 + 1], prev, sizeof(Vec));
+    segs = count * alpha / 255;
+    colors[count] = 0xFFFFFF00;
+    PSVECNormalize(&positions[1], &side);
+    PSVECSubtract(&positions[0], &positions[2], &pt[0]);
+    if (PSVECMag(&pt[0]) != 0.0f) {
+        PSVECNormalize(&pt[0], &pt[0]);
+    }
+    angle = acos(PSVECDotProduct(&pt[0], &side));
+    side.z = -side.y;
+    side.y = side.x;
+    side.x = side.z;
+    side.z = 0.0f;
+
+    // Turn each center point + offset pair into the two edge vertices.
+    rgb = color & 0xFFFFFF00;
+    for (i = 0; i < segs; i++) {
+        memcpy(&pt[0], &positions[i * 2], sizeof(Vec));
+        if (dir != NULL) {
+            PSVECScale(dir, width * (f32)(segs - i) / (f32)segs, &offset);
+        } else {
+            PSVECScale(&positions[i * 2 + 1], (f32)(segs - i) / (f32)segs, &offset);
+            offset.z = -offset.y;
+            offset.y = offset.x;
+            offset.x = offset.z;
+            offset.z = 0.0f;
+        }
+        PSVECAdd(&pt[0], &offset, &positions[i * 2]);
+        PSVECSubtract(&pt[0], &offset, &positions[i * 2 + 1]);
+        colors[i] = rgb | (u8)(alpha * (segs - i) / segs);
+    }
+
+    if (positions[0].z >= positions[(segs - 1) * 2].z) {
+        facing = -1;
+    } else {
+        facing = 1;
+    }
+    PSMTXRotAxisRad(view, &side, angle * (f32)-facing);
+
+    // Head cap: a fan of 3 x 2 vertices around the first two edge vertices.
+    for (i = 0; i < 2; i++) {
+        if (dir != NULL) {
+            f32 t;
+            PSVECScale(dir, width, &side);
+            t = side.y;
+            side.y = side.x;
+            side.x = -t;
+        } else {
+            PSVECSubtract(&positions[i], &positions[i + 2], &side);
+            if (PSVECMag(&side) != 0.0f) {
+                PSVECNormalize(&side, &side);
+            } else {
+                side.y = 0.0f;
+                side.z = 0.0f;
+                side.x = 1.0f;
+            }
+            PSVECScale(&side, width, &side);
+        }
+        PSMTXMultVec(view, &side, &side);
+        PSVECAdd(&positions[i], &side, &capPositions[i]);
+        memcpy(&capPositions[i + 2], &positions[i], sizeof(Vec));
+        PSVECSubtract(&positions[i], &side, &capPositions[i + 4]);
+    }
+
+    capColors[0] = colors[0];
+    capColors[1] = colors[0];
+    capColors[2] = colors[0];
+    if (angle > 1.5707964f) {
+        angle = 3.1415927f - angle;
+    }
+    angle = angle / 1.5707964f;
+    headAlpha = colors[0] & 0xFF;
+    capColors[1] &= 0xFFFFFF00;
+    capColors[2] &= 0xFFFFFF00;
+    colors[0] &= 0xFFFFFF00;
+    capAlpha = (f32)headAlpha * angle;
+    capColors[1] |= (u8)capAlpha;
+    capColors[2] |= (u8)capAlpha;
+    colors[0] |= (u8)(headAlpha - capAlpha);
+
+    memset(&positions[segs * 2], 0, (maxPoints - segs) * 2 * sizeof(Vec));
+    memset(&colors[segs], 0, (maxPoints - segs) * sizeof(u32));
+    DCStoreRangeNoSync(positions, maxPoints * 2 * sizeof(Vec));
+    DCStoreRangeNoSync(colors, maxPoints * sizeof(u32));
+    DCStoreRangeNoSync(capPositions, 6 * sizeof(Vec));
+    DCStoreRangeNoSync(capColors, 6 * sizeof(u32));
+    return facing;
 }
+#endif
 
 // Picks the trail type for the current pitch / hit.
 // .text:0x000685F0 size:0x5C4 mapped:0x806A7684
