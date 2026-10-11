@@ -46,40 +46,6 @@ typedef struct PracticeMsgEntry {
     /*0x2*/ s16 msg;
 } PracticeMsgEntry;
 
-// View of lbl_3_common_bss_32724 (practice HUD flags), only the fields used here.
-typedef struct PracticeHudBss {
-    /*0x00*/ u8 _00[0x96 - 0x00];
-    /*0x96*/ u8 _96;
-    /*0x97*/ u8 _97[0x9C - 0x97];
-    /*0x9C*/ u8 _9C;
-    /*0x9D*/ u8 _9D[0xA5 - 0x9D];
-    /*0xA5*/ u8 _A5;
-    /*0xA6*/ u8 _A6;
-    /*0xA7*/ u8 _A7;
-    /*0xA8*/ u8 _A8[0xAA - 0xA8];
-    /*0xAA*/ u8 _AA;
-    /*0xAB*/ u8 _AB[0xBC - 0xAB];
-    /*0xBC*/ u8 _BC;
-    /*0xBD*/ u8 _BD[0xC0 - 0xBD];
-    /*0xC0*/ u8 _C0;
-    /*0xC1*/ u8 _C1;
-    /*0xC2*/ u8 _C2;
-    /*0xC3*/ u8 _C3[0xC6 - 0xC3];
-    /*0xC6*/ u8 _C6;
-    /*0xC7*/ u8 _C7;
-    /*0xC8*/ u8 _C8[0xD9 - 0xC8];
-    /*0xD9*/ u8 _D9;
-} PracticeHudBss;
-
-// View of lbl_3_common_bss_34C90 (practice tutorial state), only the fields used here.
-typedef struct PracticeTutorBss {
-    /*0x000*/ u8 _000[0x1D2];
-    /*0x1D2*/ u8 _1D2;
-    /*0x1D3*/ u8 _1D3;
-    /*0x1D4*/ u8 _1D4;
-    /*0x1D5*/ u8 _1D5;
-} PracticeTutorBss;
-
 void fn_3_157DB8(s32 arg0);
 void fn_3_1580AC(void);
 void fn_3_1581FC(void);

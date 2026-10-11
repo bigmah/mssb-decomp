@@ -6,6 +6,7 @@
 #include "main/file_80011640.h"
 #include "game/auto_00_000B3B70_text.h"
 #include "main/file_8000F150.h"
+#include "main/file_80069BDC.h"
 #include "game/rep_1770.h"
 #include "game/auto_00_001293D0_text.h"
 #include "main/menu_globals.h"
@@ -23,7 +24,6 @@ extern u8 lbl_800EF808[];
 extern void fn_80034E20(void*, void*);
 extern void* fn_80033A24(void*, int, int, int, int, int);
 extern void fn_3_6B870(void);
-extern void* lbl_803CC1B8[];
 extern u32 fn_3_157AC4(u8* o);
 extern void fn_3_5F154(void);
 extern void fn_3_5EFEC(void);
@@ -33,8 +33,6 @@ extern void fn_3_5CD24(void);
 extern void fn_3_9669C(void);
 extern u8 lbl_3_data_FAF4[];
 extern u8 lbl_3_data_B85C[];
-extern PracticeHudBss lbl_3_common_bss_32724;
-extern PracticeTutorBss lbl_3_common_bss_34C90;
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
@@ -45,7 +43,6 @@ extern u16 lbl_3_data_BA5C[10];
 static inline LayoutObj* practiceSprite(s32 idx) {
     return lbl_80371C30[idx].obj;
 }
-extern CharTableEntry lbl_800E8558[];
 extern u8 lbl_3_data_9D50[][5];
 extern u8 lbl_3_data_A594[4];
 extern u8 lbl_3_data_B5D4[];
@@ -73,18 +70,18 @@ void fn_3_157DB8(s32 arg0) {
 
 // fn_3_1580AC, size:0x60
 void fn_3_1580AC(void) {
-    PracticeMsgTask* o = lbl_803CC1B8[0];
+    PracticeMsgTask* o = (PracticeMsgTask*)lbl_803CC1B8;
     fn_80034E20(o, lbl_3_data_BD90);
     o->state = 0;
     o->text = 0;
-    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_157E28;
+    lbl_803CC1B8->func = fn_3_157E28;
 }
 
 // fn_3_15810C, size:0xF0
 void fn_3_15810C(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeTask* o = (PracticeTask*)lbl_803CC1B8;
     s32 lim;
-    if (lbl_3_common_bss_32724._96 == 0) {
+    if (lbl_3_common_bss_32724.hudOff == 0) {
         lim = 0x96;
         if (g_Practice.practiceType_2 == 0) {
             lim = 0x5A;
@@ -97,7 +94,7 @@ void fn_3_15810C(void) {
         } else {
             lbl_80371C30[o->baseIdx].obj->_68 = 1;
         }
-        if (g_Practice._1C7 == 0 || lbl_3_common_bss_34C90._1D2 != 0) {
+        if (g_Practice._1C7 == 0 || lbl_3_common_bss_34C90.state != 0) {
             return;
         }
     }
@@ -106,11 +103,11 @@ void fn_3_15810C(void) {
 
 // fn_3_1581FC, size:0x68
 void fn_3_1581FC(void) {
-    fn_80034E20(lbl_803CC1B8[0], lbl_3_data_BD50);
+    fn_80034E20(lbl_803CC1B8, lbl_3_data_BD50);
     if (lbl_800EF808[0x398] == 1) {
         playSoundEffect(0x1AD);
     }
-    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_15810C;
+    lbl_803CC1B8->func = fn_3_15810C;
 }
 
 // fn_3_158264, size:0x148
@@ -181,12 +178,12 @@ void fn_3_1590C8(void) {
 
 // fn_3_159590, size:0x64
 void fn_3_159590(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeTask* o = (PracticeTask*)lbl_803CC1B8;
     fn_80034E20(o, lbl_3_data_B3F4);
     o->timer = 0;
     o->_1A = 0;
     o->text[0] = 0;
-    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_159114;
+    lbl_803CC1B8->func = fn_3_159114;
 }
 
 // fn_3_15AD94, size:0x40
@@ -267,7 +264,7 @@ void fn_3_158FE4(void) {
     PracticeMsgTask* o;
     LayoutObj* w;
     LayoutSlot* e;
-    fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_B85C);
+    fn_80034E20(o = (PracticeMsgTask*)lbl_803CC1B8, lbl_3_data_B85C);
     e = lbl_80371C30;
     e += o->baseIdx;
     w = e[8].obj;
@@ -281,7 +278,7 @@ void fn_3_158FE4(void) {
     o->state = 0;
     o->text = 0;
     o->_20 = 0;
-    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_158B64;
+    lbl_803CC1B8->func = fn_3_158B64;
 }
 
 // .text:0x0015B0D8 size:0x12C
@@ -426,7 +423,7 @@ void fn_3_15B494(void) {
 
 // .text:0x0015A244 size:0x204
 void fn_3_15A244(void) {
-    PracticeMsgTask* o = lbl_803CC1B8[0];
+    PracticeMsgTask* o = (PracticeMsgTask*)lbl_803CC1B8;
     s32 i;
 
     fn_80034E20(o, lbl_3_data_B1BC);
@@ -444,15 +441,15 @@ void fn_3_15A244(void) {
         o->state = 5;
     }
     lbl_3_common_bss_32724._C0 = 1;
-    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_159D50;
+    lbl_803CC1B8->func = fn_3_159D50;
 }
 
 // .text:0x00157E28 size:0x284
 void fn_3_157E28(void) {
-    PracticeMsgTask* o = lbl_803CC1B8[0];
+    PracticeMsgTask* o = (PracticeMsgTask*)lbl_803CC1B8;
     LayoutObj* obj;
 
-    if (lbl_3_common_bss_32724._96 != 0) {
+    if (lbl_3_common_bss_32724.hudOff != 0) {
         goto end;
     }
     if (o->state == 0) {
@@ -589,12 +586,12 @@ void fn_3_15A75C(void) {
             lbl_3_common_bss_32724._A7 = 0xF0;
         }
         if (g_Practice._19F != 0 &&
-            (lbl_3_common_bss_34C90._1D2 == 7 || lbl_3_common_bss_34C90._1D2 == 9 || lbl_3_common_bss_34C90._1D2 == 0xB)) {
+            (lbl_3_common_bss_34C90.state == 7 || lbl_3_common_bss_34C90.state == 9 || lbl_3_common_bss_34C90.state == 0xB)) {
             lbl_3_common_bss_32724._A7 = 0;
             lbl_3_common_bss_32724._A5 = 0;
         }
         if (g_Practice._1C7 != 0 &&
-            (lbl_3_common_bss_34C90._1D2 == 5 || lbl_3_common_bss_34C90._1D2 == 0xB || lbl_3_common_bss_34C90._1D2 == 7)) {
+            (lbl_3_common_bss_34C90.state == 5 || lbl_3_common_bss_34C90.state == 0xB || lbl_3_common_bss_34C90.state == 7)) {
             lbl_3_common_bss_32724._A7 = 0;
             lbl_3_common_bss_32724._A5 = 0;
         }
@@ -607,14 +604,14 @@ void fn_3_15A75C(void) {
 
 // .text:0x001583AC size:0x304
 void fn_3_1583AC(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeTask* o = (PracticeTask*)lbl_803CC1B8;
     s32 v;
     s32 c;
     s32 i;
     s32 any;
 
-    if (lbl_3_common_bss_32724._96 == 0 && (g_Practice._1C7 == 0 || lbl_3_common_bss_34C90._1D2 != 0) &&
-        (g_Practice._19F == 0 || (lbl_3_common_bss_34C90._1D2 != 7 && lbl_3_common_bss_34C90._1D2 != 0xB))) {
+    if (lbl_3_common_bss_32724.hudOff == 0 && (g_Practice._1C7 == 0 || lbl_3_common_bss_34C90.state != 0) &&
+        (g_Practice._19F == 0 || (lbl_3_common_bss_34C90.state != 7 && lbl_3_common_bss_34C90.state != 0xB))) {
         if (o->timer == 0) {
             for (i = 0; i < 4; i++) {
                 PracticeMsgEntry* e = &lbl_3_data_103B8[g_Practice.practiceType_2][g_Practice.practiceLevel][i];
@@ -733,7 +730,7 @@ void fn_3_15A448(void) {
 
 // .text:0x001586B0 size:0x314
 void fn_3_1586B0(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeTask* o = (PracticeTask*)lbl_803CC1B8;
     s32 i;
     s16 msg;
 
@@ -756,12 +753,12 @@ void fn_3_1586B0(void) {
         }
     }
     o->timer = 0;
-    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_1583AC;
+    lbl_803CC1B8->func = fn_3_1583AC;
 }
 
 // .text:0x001599B8 size:0x398
 void fn_3_1599B8(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeTask* o = (PracticeTask*)lbl_803CC1B8;
     s32 i;
 
     fn_80034E20(o, lbl_3_data_B5D4);
@@ -792,7 +789,7 @@ void fn_3_1599B8(void) {
     }
     lbl_3_common_bss_32724._C1 = 1;
     o->_1A = 0;
-    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_1595F4;
+    lbl_803CC1B8->func = fn_3_1595F4;
 }
 
 // .text:0x0015A9F4 size:0x3A0
@@ -814,13 +811,13 @@ void fn_3_15A9F4(void) {
             fn_800B0A5C_insertQueue(fn_3_9894C, 2);
         }
     } else if (g_Practice._19F != 0) {
-        if (lbl_3_common_bss_34C90._1D2 == 1 && g_Practice.frames_onPauseScreen2 == 1) {
-            if (lbl_3_common_bss_32724._AA == 0) {
+        if (lbl_3_common_bss_34C90.state == 1 && g_Practice.frames_onPauseScreen2 == 1) {
+            if (lbl_3_common_bss_32724.pauseTitleShown == 0) {
                 fn_800B0A5C_insertQueue(fn_3_98DE0, 2);
             }
             fn_800B0A5C_insertQueue(fn_3_9894C, 2);
         }
-        if (lbl_3_common_bss_34C90._1D2 == 3 && lbl_3_common_bss_34C90._1D3 == 3) {
+        if (lbl_3_common_bss_34C90.state == 3 && lbl_3_common_bss_34C90._1D3 == 3) {
             fn_800B0A5C_insertQueue(fn_3_983B8, 2);
         }
     }
@@ -842,7 +839,7 @@ void fn_3_15A9F4(void) {
 
 // .text:0x001595F4 size:0x3C4
 void fn_3_1595F4(void) {
-    PracticeTask* o = lbl_803CC1B8[0];
+    PracticeTask* o = (PracticeTask*)lbl_803CC1B8;
     s32 i;
 
     if (g_GameLogic.secondaryGameMode == 0xA &&
@@ -914,7 +911,7 @@ void fn_3_1595F4(void) {
 // NONMATCHING 99.8%: r0/r4/r6 coloring around the 0xD sprite frame compare in the common block
 #if NONMATCHING
 void fn_3_159114(void) {
-    PracticeStepTask* o = lbl_803CC1B8[0];
+    PracticeStepTask* o = (PracticeStepTask*)lbl_803CC1B8;
     s32 done;
 
     if (o->frames < 0xFFFE) {
@@ -922,7 +919,7 @@ void fn_3_159114(void) {
     } else {
         o->frames = 0xFFFF;
     }
-    if (lbl_3_common_bss_32724._96 != 0 || g_Practice.practiceType_1 != 6) {
+    if (lbl_3_common_bss_32724.hudOff != 0 || g_Practice.practiceType_1 != 6) {
         goto end;
     }
     if (o->step == 0) {
@@ -941,7 +938,7 @@ void fn_3_159114(void) {
     } else if (o->step == 2) {
         s32 id = g_Minigame._19E8[g_Practice.homeAway]._0;
         lbl_80371C30[o->baseIdx + 5].obj->_5C = lbl_3_data_A594[g_Minigame.battingHandedness[g_Practice.homeAway]] << 16;
-        if (lbl_800E8558[id]._0 != 0 &&
+        if (lbl_800E8558[id]._0[0] != 0 &&
             (s8)g_Minigame._19E8[g_Practice.homeAway]._1 == 0 && (s8)g_Minigame._19E8[g_Practice.homeAway]._4[2] == 0) {
             lbl_80371C30[o->baseIdx + 7].obj->flags |= 2;
         } else {
@@ -961,7 +958,7 @@ void fn_3_159114(void) {
         }
     }
     if (g_Minigame._19DA[0] >= 0) {
-        CharTableEntry* c;
+        ChallengeTeamInfo* c; // lbl_800E8558 (CharTableEntry in main/file_8004C5F8.h)
         if (g_Minigame._19E8[0]._0 != (practiceSprite(o->baseIdx + 0xD)->_5C >> 16)) {
             practiceSprite(o->baseIdx + 8)->_5C = 0;
             practiceSprite(o->baseIdx + 9)->_5C = 0;
@@ -974,7 +971,7 @@ void fn_3_159114(void) {
         practiceSprite(o->baseIdx + 0xB)->flags |= 2;
         practiceSprite(o->baseIdx + 0xB)->_68 = 1;
         c = &lbl_800E8558[g_Minigame._19E8[0]._0];
-        practiceSprite(o->baseIdx + 0xC)->_5C = lbl_3_data_9D50[c->_0][c->_5] << 16;
+        practiceSprite(o->baseIdx + 0xC)->_5C = lbl_3_data_9D50[c->_0[0]][c->_4[1]] << 16;
     } else {
         practiceSprite(o->baseIdx + 8)->_5C = 0;
         practiceSprite(o->baseIdx + 8)->flags &= ~2;
@@ -999,8 +996,8 @@ void fn_3_158B64(void) {
     s16 idx;
 
     shown = 0;
-    o = lbl_803CC1B8[0];
-    if (lbl_3_common_bss_32724._96 == 0 && (g_Practice.tutorialState != 2 || g_Practice.practiceState != 3)) {
+    o = (PracticeMsgTask*)lbl_803CC1B8;
+    if (lbl_3_common_bss_32724.hudOff == 0 && (g_Practice.tutorialState != 2 || g_Practice.practiceState != 3)) {
         if (o->state == 0) {
             o->state++;
             idx = g_Practice.laukituTextChannelIndex = fn_8000F988((LayoutGroup*)o, 9, 0, 5, 0, 0);
@@ -1078,13 +1075,13 @@ void fn_3_158B64(void) {
 
 // .text:0x00159D50 size:0x4F4
 void fn_3_159D50(void) {
-    PracticeMsgTask* o = lbl_803CC1B8[0];
+    PracticeMsgTask* o = (PracticeMsgTask*)lbl_803CC1B8;
     LayoutObj* obj;
     u32 frame;
     s32 i;
     s32 done;
 
-    if (lbl_3_common_bss_32724._96 == 0 && g_Practice.practiceType_1 != 6 && g_GameLogic.secondaryGameMode == 0xA) {
+    if (lbl_3_common_bss_32724.hudOff == 0 && g_Practice.practiceType_1 != 6 && g_GameLogic.secondaryGameMode == 0xA) {
         if (o->state == 1) {
             obj = lbl_80371C30[o->baseIdx].obj;
             if ((obj->_5C >> 16) >= 0x19) {
