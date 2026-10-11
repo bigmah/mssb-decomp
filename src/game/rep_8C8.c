@@ -165,20 +165,24 @@ void fn_3_1EAA8(void) {
 }
 
 // .text:0x0001EFE4 size:0x1E8 mapped:0x8065E078
-// 99%: v (r6) vs r3/r5 regalloc differs in the first branch / subtraction chain
 s32 fn_3_1EFE4(void) {
     s32 v;
+    s32 t;
     if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 3) {
         return 0;
     }
     if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 1) {
         if (g_AiLogic._70 != 0 && g_AiLogic.lastPitchType != 0xFF) {
-            v = ((s16*)&g_Pitcher.windupCountdownUntilBallReleased)[2 - g_AiLogic.lastPitchType] + g_AiLogic.lastPitchFramesUntilPitchGetsToBatter - lbl_3_data_19C4[4];
+            s16 windup = // TODO type: windup frames per pitch type at 0x126..0x12A
+                ((s16*)&g_Pitcher.windupCountdownUntilBallReleased)[2 - g_AiLogic.lastPitchType];
+            v = windup + g_AiLogic.lastPitchFramesUntilPitchGetsToBatter;
+            v -= lbl_3_data_19C4[4];
         } else {
             v = g_Pitcher.curvePitchWindupFrames + 0x14;
         }
-        v -= g_Pitcher.pitchTotalTimeCounter;
-        if (v - g_Batter.frameFullyCharged <= 0 || g_Pitcher.windupCountdownUntilBallReleased < 8) {
+        t = v - g_Pitcher.pitchTotalTimeCounter;
+        t -= g_Batter.frameFullyCharged;
+        if (t <= 0 || g_Pitcher.windupCountdownUntilBallReleased < 8) {
             g_Batter.chargeStatus = 1;
             g_Batter.hitGeneralType = 1;
         }
