@@ -2539,9 +2539,42 @@ u32 fn_800AD490(ThpPlayer* p) {
 #endif
 
 // .text:0x800AD500 size:0x1BC
+// NONMATCHING 85%: register allocation and the order of the size computations differ
+#if NONMATCHING
 void fn_800AD500(ThpPlayer* p, u8* work) {
-    return;
+    u16 width = p->video.width;
+    u16 height = p->video.height;
+    u8 mcuX = p->video.mcuX;
+    u8 mcuY = p->video.mcuY;
+    u32 audioBlocks = lbl_803CBAE4 * ((OSRoundUp32B(p->audioBufSize) + (lbl_803CBAE4 - 1)) / lbl_803CBAE4);
+    u32 pixels = width * height;
+    u32 audioSize = audioBlocks * 0x1C;
+    u32 texSize = pixels << (p->format + 1);
+    u32 mcus;
+    u32 frameSize;
+
+    fn_800E4B90(&p->video, work);
+    texSize = OSRoundUp32B(texSize);
+    p->texBuf[0] = work + OSRoundUp32B(fn_800E4B1C(&p->video));
+    p->texBuf[1] = p->texBuf[0] + texSize;
+    memset(p->texBuf[0], 0, texSize * 2);
+    GXInitTexObj(&lbl_803C78A4, p->texBuf[0], width, height, lbl_803CBAD8[p->format], GX_CLAMP, GX_CLAMP, GX_FALSE);
+    p->texIndex = 0;
+    p->readBuf = p->texBuf[1] + texSize;
+    p->audioBuf = p->readBuf + OSRoundUp32B(p->readBufSize);
+    memset(p->audioBuf, 0, audioSize);
+    mcus = mcuX * mcuY;
+    p->_154 = p->_E8 = p->_D0 = p->audioBuf + OSRoundUp32B(p->audioBufSize);
+    p->_158 = p->_160 = p->_154;
+    p->frames[0].data = p->_15C = p->_EC = p->_D4 = p->_154 + audioSize;
+    frameSize = OSRoundUp32B(pixels * (mcus + 2) / mcus);
+    p->frames[1].data = p->frames[0].data + frameSize;
+    p->frames[2].data = p->frames[1].data + frameSize;
+    p->frames[3].data = p->frames[2].data + frameSize;
+    p->frames[4].data = p->frames[3].data + frameSize;
+    p->frames[5].data = p->frames[4].data + frameSize;
 }
+#endif
 
 // .text:0x800AD6BC size:0xC4
 // NONMATCHING 78%: the size terms are computed and summed in a different order
