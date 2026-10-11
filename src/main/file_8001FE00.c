@@ -149,7 +149,25 @@ void fn_800203E0(u8 scene, s8 variant) {
 
 // .text:0x800204CC size:0xD0
 void changeScene(s32 scene, s32 duration) {
-    return;
+    if ((u8)scene == 7) {
+        lbl_8037169C.requestDuration = duration;
+        lbl_8037169C.state = 7;
+        fn_800B0A5C_insertQueue(fn_80020624, 2);
+        return;
+    }
+    if ((u8)scene == 1 || (u8)scene == 6 || (u8)scene == 13) {
+        if (lbl_8037169C.state >= 4 && lbl_8037169C.state <= 6) {
+            scene = 6;
+        } else if (lbl_8037169C.state >= 10 && lbl_8037169C.state <= 12) {
+            scene = 10;
+        } else if (lbl_8037169C.state >= 13 && lbl_8037169C.state <= 15) {
+            scene = 13;
+        } else {
+            scene = 1;
+        }
+    }
+    lbl_8037169C.request = scene;
+    lbl_8037169C.requestDuration = duration;
 }
 
 // .text:0x8002059C size:0x88
