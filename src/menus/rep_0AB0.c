@@ -1,6 +1,16 @@
 #include "menus/rep_0AB0.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "main/file_8000F150.h"
+#include "main/file_8004207C.h"
+#include "main/file_800527C4.h"
+#include "menus/auto_00_0004B1AC_text.h"
+#include "menus/rep_0788.h"
+
+extern u8* lbl_2_bss_1A8234[]; // menu layout work area (byte offsets, as elsewhere in menus)
+extern void* lbl_803CC1B8;
+extern InitEntry lbl_2_data_20C68[];
+extern InitEntry lbl_2_data_268A8[];
 
 // .text:0x0005979C size:0x55C
 void fn_2_5979C(void) {
@@ -19,7 +29,27 @@ void fn_2_5A224(void) {
 
 // .text:0x0005AE54 size:0xD0
 void fn_2_5AE54(void) {
-    return;
+    MenuQueueState* queue = lbl_803CC1B8;
+    switch ((s32)queue->stateA) {
+    case 1:
+        break;
+    case 0:
+        fn_2_4E878(queue, lbl_2_data_20C68);
+        queue->stateA = 1;
+        queue->timerA = 0;
+        break;
+    }
+    fn_2_53F88((s32)queue);
+    fn_2_54120();
+    if (lbl_2_bss_1A8234[0][0x162992] != 0) {
+        fn_2_53DF8((u8*)queue);
+        fn_8000F8F4((LayoutGroup*)queue);
+        fn_8000FE54();
+        fn_800B0A14_removeQueue(fn_2_4E858(queue));
+        queue->stateA = 0;
+        queue->stateB = 0;
+        lbl_2_bss_1A8234[0][0x162992] = 0;
+    }
 }
 
 // .text:0x0005AF24 size:0x8C
