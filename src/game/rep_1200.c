@@ -910,12 +910,9 @@ void fn_3_7310C(void) {
             getAnimRelatedCoordinates(player, 0x13, &pos);
         }
     }
-    g_Pitcher.ballCurrentPosition.x = pos.x;
-    g_Pitcher.pitchRelease.x = pos.x;
-    g_Pitcher.ballCurrentPosition.y = -pos.y;
-    g_Pitcher.pitchRelease.y = -pos.y;
-    g_Pitcher.ballCurrentPosition.z = pos.z;
-    g_Pitcher.pitchRelease.z = pos.z;
+    g_Pitcher.pitchRelease.x = g_Pitcher.ballCurrentPosition.x = pos.x;
+    g_Pitcher.pitchRelease.y = g_Pitcher.ballCurrentPosition.y = -pos.y;
+    g_Pitcher.pitchRelease.z = g_Pitcher.ballCurrentPosition.z = pos.z;
     if (g_Pitcher.nonCaptainStarPitchTriggeredType != 0) {
         g_Pitcher.TypeOfPitch = 0;
     } else if (g_Pitcher.starPitchType != 0) {
