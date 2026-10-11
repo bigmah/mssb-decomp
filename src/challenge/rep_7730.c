@@ -951,8 +951,9 @@ void fn_1_22644(void) {
 
 extern u8 lbl_1_data_10518[];
 
-// 99.5%: saved regs q=r25/i=r26 in orig, ours q=r26/i=r25 (decl/assign order variants did not help)
+// NONMATCHING 99.5%: saved regs q=r25/i=r26 in orig, ours q=r26/i=r25 (decl/assign order variants did not help)
 // .text:0x2004C size:0x258
+#if NONMATCHING
 void fn_1_2004C(void) {
     u8* q = lbl_803CC1B8[0];
     s32 ids[9] = { 5, 6, 7, 8, 9, 13, 0x60, 0x61, 0x55 };
@@ -982,6 +983,7 @@ void fn_1_2004C(void) {
         break;
     }
 }
+#endif
 
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memcpy(void*, const void*, u32);
