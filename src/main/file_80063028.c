@@ -277,6 +277,7 @@ s32 fn_800637DC(GameBone* bone, GameBone* target, Mtx m, f32 t) {
 
 // .text:0x800638B4 size:0x18
 s32 fn_800638B4(void* player, GameActor** actor) {
+    (*actor)->boneCallback = fn_800637DC;
     return 0;
 }
 
