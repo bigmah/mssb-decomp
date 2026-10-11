@@ -119,10 +119,11 @@ typedef struct {
     u16 cnt : 12;
 } H154238;
 
-// 83%: table index (p[0x4C]==1 ? 0 : 10) is recomputed per access in the orig with a different load order
+// NONMATCHING 83%: table index (p[0x4C]==1 ? 0 : 10) is recomputed per access in the orig with a different load order
 // .text:0x0014737C size:0x3FC mapped:0x80786410
 #pragma dont_inline off
 static inline s32 k737c(u8* p) { s32 k = 10; if (p[0x4C] == 1) k = 0; return k; }
+#if NONMATCHING
 u32 fn_3_14737C(u8* o) {
     s32 n;
     u8* p;
@@ -197,6 +198,7 @@ u32 fn_3_14737C(u8* o) {
     } while (p != NULL);
     return n == 0;
 }
+#endif
 #pragma dont_inline on
 
 // .text:0x00147778 size:0x488 mapped:0x8078680C
@@ -1408,8 +1410,8 @@ void fn_3_14E810(void) {
     pitchingMachinePitching(0x1E);
 }
 
+// 94%: orig has `li r30,0; mr r31,r30` for the zero store reg (ours li r31)
 // .text:0x0014E894 size:0x8C mapped:0x8078D928
-// 99%: orig has `li r30,0; mr r31,r30` for zero store reg (li r31 instead)
 void fn_3_14E894(void) {
     u32 i = 0;
     s16 z = 0;
