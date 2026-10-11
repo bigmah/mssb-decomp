@@ -774,7 +774,12 @@ void fn_2_15E80(u8 port) {
 
 // .text:0x0001641C size:0x44
 void fn_2_1641C(void) {
-    return;
+    fn_2_1A88();
+    lbl_8034E9A0.joined[0] = 0;
+    lbl_8034E9A0.joined[1] = -1;
+    lbl_8034E9A0.joined[2] = -1;
+    lbl_8034E9A0.joined[3] = -1;
+    lbl_8034E9A0._4729 = 0;
 }
 
 // .text:0x00016460 size:0x204
