@@ -427,9 +427,48 @@ void fn_800330CC(void) {
 }
 
 // .text:0x800332B8 size:0x304
-void fn_800332B8(void) {
-    return;
+// NONMATCHING 80%: float register allocation; the original also stores yawMin/360*360 into out->x first (dead store)
+#if NONMATCHING
+void fn_800332B8(Vec* axis, Vec* out, f32 yawMin, f32 yawMax, f32 pitchMin, f32 pitchMax) {
+    Mtx m;
+    Vec cross;
+    Vec ref;
+    Vec axisCopy;
+    f32 angle;
+    Quaternion q;
+    s32 yaw;
+    s32 pitch;
+
+    ref = lbl_800E6778;
+    if (axis != NULL) {
+        memcpy(&axisCopy, axis, sizeof(Vec));
+        axis = &axisCopy;
+    }
+    yaw = (s32)(2048.0f * (yawMin / 360.0f) + 0.5f);
+    if (yawMax != yawMin) {
+        yaw += rand() % (s32)(2048.0f * ((yawMax - yawMin) / 360.0f) + 0.5f);
+    }
+    out->x = CosIdx(yaw);
+    out->y = SinIdx(yaw);
+    pitch = (s32)(2048.0f * (pitchMin / 360.0f) + 0.5f);
+    if (pitchMax != pitchMin) {
+        pitch += rand() % (s32)(2048.0f * ((pitchMax - pitchMin) / 360.0f) + 0.5f);
+    }
+    out->z = out->x * SinIdx(pitch);
+    out->x = out->x * CosIdx(pitch);
+    if (axis != NULL && PSVECMag(axis) != 0.0f) {
+        angle = acos(PSVECDotProduct(&ref, axis));
+        PSVECCrossProduct(&ref, axis, &cross);
+        if (PSVECMag(&cross) != 0.0f) {
+            C_QUATRotAxisRad(&q, &cross, angle);
+            PSMTXQuat(m, &q);
+            PSMTXMultVec(m, out, out);
+        } else {
+            PSVECScale(out, PSVECMag(axis), out);
+        }
+    }
 }
+#endif
 
 // .text:0x800335BC size:0x30
 f32 fn_800335BC(s32 angle) {
