@@ -179,9 +179,165 @@ void fn_3_15C6E4(ScoreBookTask* task, s32 idx, s32 value, s32 format) {
 }
 
 // .text:0x0015D1D8 size:0x96C mapped:0x8079C26C
-void fn_3_15D1D8(void) {
-    return;
+// Fills the five visible scorebook rows (and the team totals) for the current page.
+// NONMATCHING 98.7%: saved-register coloring (row/i and team/order swapped; the original seems to
+// reuse one pointer for order/bat and roster/b) plus one extra `li` for the first unrolled total.
+#if NONMATCHING
+void fn_3_15D1D8(ScoreBookTask* task) {
+    s32 rows[5];
+    BatterRecord* bat;
+    ScoreOrderEntry* order;
+    s32 team;
+    s32* out;
+    s32 i;
+    PitcherRecord* pit;
+    s32* row;
+    CharacterStats* roster;
+    s32 j;
+    PitcherRecord* p;
+    BatterRecord* b;
+    s32 sum;
+    s32 sum2;
+    s32 avg;
+
+    row = rows;
+    out = row;
+    team = task->team ^ g_GameLogic._000;
+    order = lbl_80354720[team];
+    roster = inMemRoster[team];
+    for (i = 0; i < 5; i++, out++) {
+        for (j = 0; j < 9; j++) {
+            if (i + task->scroll == order[j].row) {
+                *out = j;
+                fn_800363D8(task, i + 2, 1, 0xD, roster[j].stats.CharID);
+                break;
+            }
+        }
+    }
+
+    if (task->page == 0) {
+        bat = lbl_803537E4[team];
+        for (i = 0; i < 5; i++, row++) {
+            b = &bat[*row];
+            fn_3_15C6E4(task, i + 7, b->hits, 3);
+            fn_3_15C6E4(task, i + 0xD, b->_10, 3);
+            fn_3_15C6E4(task, i + 0x13, b->_09, 3);
+            fn_3_15C6E4(task, i + 0x19, b->_12, 3);
+            fn_3_15C6E4(task, i + 0x1F, b->_24, 3);
+            if (b->atBats == 0) {
+                fn_3_15C6E4(task, i + 0x25, 0, 0x16);
+            } else {
+                avg = b->hits * 10000 / b->atBats;
+                if (avg % 10 >= 5) {
+                    avg += 10;
+                }
+                fn_3_15C6E4(task, i + 0x25, avg / 10, 10);
+            }
+        }
+
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += bat[j].hits;
+        }
+        fn_3_15C6E4(task, 0xC, sum, 3);
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += bat[j]._10;
+        }
+        fn_3_15C6E4(task, 0x12, sum, 3);
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += bat[j]._09;
+        }
+        fn_3_15C6E4(task, 0x18, sum, 3);
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += bat[j]._12;
+        }
+        fn_3_15C6E4(task, 0x1E, sum, 3);
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += bat[j]._24;
+        }
+        fn_3_15C6E4(task, 0x24, sum, 3);
+        for (j = 0, sum = 0, sum2 = 0; j < 9; j++) {
+            sum += bat[j].hits;
+            sum2 += bat[j].atBats;
+        }
+        avg = sum * 10000 / sum2;
+        if (avg % 10 >= 5) {
+            avg += 10;
+        }
+        fn_3_15C6E4(task, 0x2A, avg / 10, 10);
+    } else {
+        bat = lbl_803537E4[team];
+        pit = lbl_803535C8[team];
+        for (i = 0; i < 5; i++, row++) {
+            b = &bat[*row];
+            p = &pit[*row];
+            fn_3_15C6E4(task, i + 7, b->_23, 3);
+            if (p->_00 == 0) {
+                fn_3_15C6E4(task, i + 0xD, 0, 0x15);
+                fn_3_15C6E4(task, i + 0x13, 0, 0x15);
+                fn_3_15C6E4(task, i + 0x19, 0, 0x15);
+                fn_3_15C6E4(task, i + 0x1F, 0, 0x15);
+            } else {
+                fn_3_15C6E4(task, i + 0xD, p->_0A, 3);
+                fn_3_15C6E4(task, i + 0x13, p->_1C, 3);
+                fn_3_15C6E4(task, i + 0x19, p->_02, 3);
+                fn_3_15C6E4(task, i + 0x1F, p->_1D, 3);
+            }
+            // ERA x100: earned runs * 9 innings * 3 outs * 1000 / outs, rounded
+            if (p->outs != 0) {
+                avg = p->earnedRuns * 27000 / p->outs;
+                if (avg % 10 >= 5) {
+                    avg += 10;
+                }
+                avg /= 10;
+            } else if (p->_00 != 0) {
+                avg = 9999;
+            } else {
+                avg = 0;
+            }
+            if (p->_00 == 0) {
+                fn_3_15C6E4(task, i + 0x25, 0, 0x16);
+            } else {
+                fn_3_15C6E4(task, i + 0x25, avg, 11);
+            }
+        }
+
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += bat[j]._23;
+        }
+        fn_3_15C6E4(task, 0xC, sum, 3);
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += pit[j]._0A;
+        }
+        fn_3_15C6E4(task, 0x12, sum, 3);
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += pit[j]._1C;
+        }
+        fn_3_15C6E4(task, 0x18, sum, 3);
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += pit[j]._02;
+        }
+        fn_3_15C6E4(task, 0x1E, sum, 3);
+        for (j = 0, sum = 0; j < 9; j++) {
+            sum += pit[j]._1D;
+        }
+        fn_3_15C6E4(task, 0x24, sum, 3);
+        for (j = 0, sum = 0, sum2 = 0; j < 9; j++) {
+            sum += pit[j].earnedRuns;
+            sum2 += pit[j].outs;
+        }
+        if (sum2 == 0) {
+            avg = 9999;
+        } else {
+            avg = sum * 27000 / sum2;
+            if (avg % 10 >= 5) {
+                avg += 10;
+            }
+            avg /= 10;
+        }
+        fn_3_15C6E4(task, 0x2A, avg, 11);
+    }
 }
+#endif
 
 // .text:0x0015DB44 size:0x12E8 mapped:0x8079CBD8
 void fn_3_15DB44(void) {
