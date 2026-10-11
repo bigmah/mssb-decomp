@@ -49,6 +49,18 @@ BOOL checkFieldingStat(int team, int idx, E(int, FIELDING_ABILITY) ability) {
 }
 
 // .text:0x0006D658 size:0x7C mapped:0x806AC6EC
-void fn_3_6D658(void) {
-    return;
+// NONMATCHING 90%: the roster index mulli/addi is scheduled around the GameSettings load differently
+#if NONMATCHING
+s32 fn_3_6D658(s32 team, s32 charId, s32 otherId) {
+    s32 chem = ((u8*)&lbl_8034E9A0[charId].chemistry)[otherId];
+
+    if (!g_d_GameSettings.exhibitionMatchInd && g_d_GameSettings.humanTeamNumber == team &&
+        (s8)g_d_GameSettings.challengeCaptainStarBought[5] != 0) {
+        chem += (s32)lbl_3_data_5FC4[10];
+    }
+    if (chem > 100) {
+        chem = 100;
+    }
+    return chem;
 }
+#endif
