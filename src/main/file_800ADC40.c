@@ -1082,7 +1082,40 @@ BOOL fn_800B0008(u32 len) {
 
 // .text:0x800B0134 size:0xFC
 BOOL fn_800B0134(u32 len) {
-    return MovStoreToAram(len);
+    u8* cur;
+    u32 first;
+    u32 second;
+    u8* src;
+    u8* wrap;
+    BOOL intr;
+
+    while (lbl_803C6CF8.streamAvail < len) {}
+    intr = OSDisableInterrupts();
+    cur = lbl_803C6CF8.streamRead;
+    if (cur + len < lbl_803C7A00.dvdBufStart + lbl_803C7A00.dvdBufSize) {
+        src = cur;
+        first = len;
+        wrap = NULL;
+        second = 0;
+    } else {
+        first = lbl_803C7A00.dvdBufStart + lbl_803C7A00.dvdBufSize - cur;
+        src = cur;
+        wrap = lbl_803C7A00.dvdBufStart;
+        second = len - first;
+    }
+    OSRestoreInterrupts(intr);
+    if (len >= first) {
+        fn_800B03F4(src, len);
+    } else {
+        fn_800B03F4(src, first);
+        while (lbl_803C79D4.busy) {}
+        fn_800B03F4(wrap, second);
+    }
+    while (lbl_803C79D4.busy) {}
+    if (len != 0) {
+        fn_800A6D10(len);
+    }
+    return TRUE;
 }
 
 // .text:0x800B0230 size:0x160
