@@ -195,6 +195,21 @@ typedef struct LightPos {
     /*0xC*/ u32 color;
 } LightPos;
 
+// Stadium object files (ARAMTransfer'd into lbl_8036E548.stadiumFiles).
+typedef struct StadiumFiles {
+    /*0x000*/ struct {
+        void* layout;
+        void* geo;
+        void* tex;
+    } obj[24];
+    /*0x120*/ void* bank;
+    /*0x124*/ u8 _124[0xC];
+    /*0x130*/ struct {
+        void* shape;
+        ShapeAnimSet* set;
+    } anim[2];
+} StadiumFiles;
+
 // lbl_8036E548
 typedef struct CharMgr {
     /*0x0000*/ u8 _0000[0x4];
@@ -212,7 +227,7 @@ typedef struct CharMgr {
     /*0x0140*/ CharParts partsPool[13];
     /*0x0C04*/ CharActor actors[13];
     /*0x2C50*/ CharActor* active[13];
-    /*0x2C84*/ void* _2C84;
+    /*0x2C84*/ StadiumFiles* stadiumFiles;
     /*0x2C88*/ void* _2C88;
     /*0x2C8C*/ u8* fileBuf;
     /*0x2C90*/ u32 bankSize[5];
@@ -255,7 +270,8 @@ typedef struct CharMgr {
     /*0x3087*/ u8 _3087;
     /*0x3088*/ u8 _3088[0x308C - 0x3088];
     /*0x308C*/ void (*callback)(void);
-    /*0x3090*/ u8 _3090[0x3154 - 0x3090];
+    /*0x3090*/ u8 _3090[0x309C - 0x3090];
+    /*0x309C*/ ShapeAnimPlayer stadiumAnim[2];
 } CharMgr; // size: 0x3154
 
 extern CharMgr lbl_8036E548;
@@ -384,6 +400,8 @@ void fn_8001BA44(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
 
 void fn_8001E0D8(CharSlotList* list, s32 pass, Mtx view);
 void fn_8001E488(void);
+
+void fn_8001F8A4(void);
 
 void fn_8001B200(void);
 

@@ -119,7 +119,7 @@ extern void LITAlloc(void** light);
 extern void LITInitAttn(void* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 extern void LITInitPos(void* light, f32 x, f32 y, f32 z);
 extern void LITInitColor(void* light, u32* color);
-extern void ACTSetAnimation(void* act, s32 a, u16 anim, f32 frame, f32 speed);
+extern void ACTSetAnimation(void* act, void* bank, s32 a, u16 anim, f32 frame, f32 speed);
 extern void fn_800B4CA0(CharModel* model, f32 v);
 extern void fn_800B4C04(CharModel* model, f32 v);
 extern void fn_800B4AFC(CharModel* model, s32 v);
@@ -170,6 +170,7 @@ extern void fn_800B2B4C(CharModel* model, f32 v);
 extern void fn_800B9948(s32 value);
 extern void fn_800B993C(void);
 extern CharActor* lbl_803CBC18;
+extern u8 lbl_800EEA58[25];
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -3383,9 +3384,84 @@ void fn_8001F5E8(void) {
 #endif
 
 // .text:0x8001F8A4 size:0x3A8
+// NONMATCHING 89%: register allocation; light-kind range checks scheduled differently
+#if NONMATCHING
 void fn_8001F8A4(void) {
-    return;
+    s32 i;
+    void* layout;
+    void* geo;
+    void* tex;
+    u8* kind;
+    CharSlot* slot;
+
+    for (i = 0; i < 24; i++) {
+        layout = lbl_8036E548.stadiumFiles->obj[i].layout;
+        geo = lbl_8036E548.stadiumFiles->obj[i].geo;
+        tex = lbl_8036E548.stadiumFiles->obj[i].tex;
+        LoadActorLayout(layout);
+        convertGeometryAndSknHeader(geo, NULL);
+        haveActLayoutPointToGeoHeader(layout, geo);
+        if (i == 11) {
+            tex = lbl_8036E548.stadiumFiles->obj[10].tex;
+        } else {
+            convertTextureHeader(tex);
+        }
+        fn_800BD190(geo, tex);
+    }
+    ANIMGet(lbl_8036E548.stadiumFiles->bank);
+    fn_80025DDC(lbl_8036E548.stadiumFiles->anim[0].shape);
+    lbl_8036E548.stadiumAnim[0].set = lbl_8036E548.stadiumFiles->anim[0].set;
+    fn_80025FFC(lbl_8036E548.stadiumFiles->anim[0].shape, &lbl_8036E548.stadiumAnim[0]);
+    fn_80025EEC(&lbl_8036E548.stadiumAnim[0], 0, 0);
+    fn_80025DDC(lbl_8036E548.stadiumFiles->anim[1].shape);
+    lbl_8036E548.stadiumAnim[1].set = lbl_8036E548.stadiumFiles->anim[1].set;
+    fn_80025FFC(lbl_8036E548.stadiumFiles->anim[1].shape, &lbl_8036E548.stadiumAnim[1]);
+    fn_80025EEC(&lbl_8036E548.stadiumAnim[1], 0, 0);
+    lbl_8036E548.slots64 = ActorObjectInitTable(25);
+    kind = lbl_800EEA58;
+    for (i = 0; i < 25; i++) {
+        layout = lbl_8036E548.stadiumFiles->obj[*kind].layout;
+        if (*kind < 0x10) {
+            fn_800BDC88(lbl_8036E548.slots64, i, i, layout, 0, 0);
+        } else {
+            fn_800BDC88(lbl_8036E548.slots64, i, i, lbl_8036E548.stadiumFiles->bank, 0, 0);
+            slot = &lbl_8036E548.slots64->slots[i];
+            slot->animId = 0;
+            slot->_5C = 0.0f;
+            slot->_58 = 1;
+            slot->_59 = slot->act != NULL;
+            slot->_5A = slot->act != NULL;
+            slot->_60 = 0.0f;
+            ACTSetAnimation(slot->model, slot->act, 0, slot->animId, 0.0f, slot->_60);
+            fn_800B4AFC(slot->model, 0);
+        }
+        if (*kind == 0 || *kind == 4 || (*kind >= 7 && *kind <= 10) || (*kind >= 12 && *kind <= 18) || *kind == 19) {
+            fn_800BD548(&lbl_8036E548.slots64->slots[i], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+        } else {
+            fn_800BD548(&lbl_8036E548.slots64->slots[i], 0, 0, 0, 0);
+        }
+        CTRLSetTranslation(&lbl_8036E548.slots64->slots[i].ctrl, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(&lbl_8036E548.slots64->slots[i].ctrl, 0.0f, 0.0f, 0.0f);
+        if (i == 5) {
+            fn_80025C58(lbl_8036E548.stadiumAnim[0].model, (ShapeModel**)&lbl_8036E548.slots64->slots[i].model);
+        } else if (i == 6) {
+            fn_80025C58(lbl_8036E548.stadiumAnim[1].model, (ShapeModel**)&lbl_8036E548.slots64->slots[i].model);
+        }
+        kind++;
+    }
+    lbl_8036E548.trail = _OSAllocFromHeap(0x20, 25 * sizeof(CharTrail));
+    for (i = 0; i < 25; i++) {
+        lbl_8036E548.trail[i]._04[0] = 0.0f;
+        lbl_8036E548.trail[i]._04[1] = 0.0f;
+        lbl_8036E548.trail[i]._04[2] = 0.0f;
+        lbl_8036E548.trail[i]._04[3] = 0.0f;
+        lbl_8036E548.trail[i]._04[4] = 0.0f;
+        lbl_8036E548.trail[i]._04[5] = 0.0f;
+        lbl_8036E548.trail[i]._26 = 0;
+        lbl_8036E548.trail[i]._00 = 0;
+    }
 }
+#endif
 
 // .text:0x8001FC4C size:0x188
 static inline void mirrorJointPairs(CharActor* actor, u16* pairs) {
