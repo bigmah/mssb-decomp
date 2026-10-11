@@ -60,7 +60,10 @@ typedef struct CharParts {
 
 typedef struct CharActor {
     /*0x000*/ CharModel* model;
-    /*0x004*/ u8 _004[0x28];
+    /*0x004*/ u8 _004[0x4];
+    /*0x008*/ void** files; // file offsets, relocated in place
+    /*0x00C*/ void** _0C;
+    /*0x010*/ u8 _010[0x1C];
     /*0x02C*/ CharPart* part;
     /*0x030*/ CharParts* parts;
     /*0x034*/ u8 _034[0x60 - 0x34];
@@ -71,10 +74,18 @@ typedef struct CharActor {
     /*0x068*/ s16 _068;
     /*0x06A*/ s16 _06A[3];
     /*0x070*/ u8 _070[0x2];
-    /*0x072*/ u8 _072[0x254 - 0x72];
+    /*0x072*/ u8 _072[0x162 - 0x72];
+    /*0x162*/ u16 jointIdx[0x78];
+    /*0x252*/ s8 kind;
+    /*0x253*/ u8 _253;
     /*0x254*/ s8 index;
     /*0x255*/ s8 modelIndex;
-    /*0x256*/ u8 _256[0x6];
+    /*0x256*/ u8 team;
+    /*0x257*/ u8 roster;
+    /*0x258*/ s8 _258;
+    /*0x259*/ u8 _259;
+    /*0x25A*/ u8 _25A;
+    /*0x25B*/ u8 _25B;
     /*0x25C*/ u8 _25C;
     /*0x25D*/ u8 mode[2];
     /*0x25F*/ u8 _25F[3];
@@ -84,8 +95,18 @@ typedef struct CharActor {
     /*0x269*/ u8 _269[3];
     /*0x26C*/ u8 _26C[3];
     /*0x26F*/ u8 _26F;
-    /*0x270*/ u8 _270[0x27C - 0x270];
+    /*0x270*/ u8 _270[0x278 - 0x270];
+    /*0x278*/ u8 _278;
+    /*0x279*/ u8 _279[0x3];
 } CharActor; // size: 0x27C
+
+// A file streamed from ARAM into a fixed buffer.
+typedef struct CharPreload {
+    /*0x0*/ void* buffer;
+    /*0x4*/ u32 size;
+    /*0x8*/ s16 id;
+    /*0xA*/ u8 state;
+} CharPreload; // size: 0xC
 
 // lbl_8036E548
 typedef struct CharMgr {
@@ -100,11 +121,15 @@ typedef struct CharMgr {
     /*0x2C50*/ CharActor* active[13];
     /*0x2C84*/ u8 _2C84[0x4];
     /*0x2C88*/ void* _2C88;
-    /*0x2C8C*/ u8 _2C8C[0x2D68 - 0x2C8C];
+    /*0x2C8C*/ u8 _2C8C[0x2D3C - 0x2C8C];
+    /*0x2D3C*/ CharPreload preload[3];
+    /*0x2D60*/ u8 _2D60[0x2D68 - 0x2D60];
     /*0x2D68*/ s16 _2D68;
     /*0x2D6A*/ s8 _2D6A[13];
     /*0x2D77*/ u8 state;
-    /*0x2D78*/ u8 _2D78[0x3082 - 0x2D78];
+    /*0x2D78*/ u8 _2D78[0x307A - 0x2D78];
+    /*0x307A*/ u8 _307A;
+    /*0x307B*/ u8 _307B[0x3082 - 0x307B];
     /*0x3082*/ u8 _3082;
     /*0x3083*/ u8 _3083[0x308C - 0x3083];
     /*0x308C*/ void (*callback)(void);
@@ -169,6 +194,16 @@ void QueueCharacterAnimation(s32 index, s32 anim, s32 a, s32 b, s32 c, s32 d, s3
 void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, s32 e);
 s32 fn_8001758C(u8* state, s32 actor, u8 kind, u8 team, u8 roster, s8 arg5, u8 index, u8 arg7);
 void challengeMapRelated(void);
+
+void fn_80014990(s32 index, void* model, ShapeAnimSet* set);
+void fn_80017D28(CharActor* src);
+void fn_8001B224(void);
+void fn_8001F16C(void);
+s32 fn_80014F40(s32 id);
+s32 fn_80014E50(s32 id);
+s32 fn_80014D4C(s32 id);
+void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharLoadObj*));
+void fn_8001BE50(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
 
 void fn_8001B200(void);
 

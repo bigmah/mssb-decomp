@@ -1,11 +1,50 @@
 #include "main/file_80011640.h"
 #include "Dolphin/mtx.h"
-#include "static/UnknownHomes_Static.h"
 #include "PowerPC_EABI_Support/Runtime/__mem.h"
 
-extern void fn_8003AC90(void);
+// Globals owned by other units (only the fields used here).
+typedef struct GameSettingsView {
+    /*0x00*/ u8 _00[0x7];
+    /*0x07*/ u8 GameModeSelected;
+    /*0x08*/ u8 _08;
+    /*0x09*/ u8 StadiumID;
+    /*0x0A*/ u8 _0A[0x7];
+    /*0x11*/ u8 minigamesEnabled;
+    /*0x12*/ u8 _12[0x54 - 0x12];
+    /*0x54*/ u8 _54;
+} GameSettingsView;
+
+typedef struct AramState {
+    /*0x000*/ u8 _000[0x715];
+    /*0x715*/ u8 transferDone;
+} AramState;
+
+typedef struct Unk803716B8 {
+    /*0x000*/ u8 _000[0x1E8];
+    /*0x1E8*/ u8 _1E8;
+} Unk803716B8;
+
+// ARAM file table entry.
+typedef struct AramFile {
+    /*0x00*/ u8 _00[0x10];
+} AramFile;
+
+extern GameSettingsView g_d_GameSettings;
+extern AramState lbl_803C6CF8;
+extern Unk803716B8 lbl_803716B8;
+extern AramFile* lbl_803CB790;
 extern s32 lbl_803CBBF0;
 extern CharLoadTask* lbl_803CC1B8;
+extern CharPart lbl_80118220[13];
+
+extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
+extern u32 fn_8002204C(s32 id, void* buffer);
+extern void fn_8003AC90(void);
+extern void fn_800ACFB0(void* object);
+extern void fn_800B9AA8(void* object);
+extern void fn_800B2D5C(CharModel* model);
+extern void fn_800B0A14_removeQueue(void* unused);
+extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
 
 // .text:0x80011640 size:0x9C
 void fn_80011640(Mtx a, Mtx out) {
@@ -239,8 +278,25 @@ void fn_800145F8(void) {
 }
 
 // .text:0x80014990 size:0x88
-void fn_80014990(void) {
+void fn_80014990(s32 index, void* model, ShapeAnimSet* set) {
+    CharActor* actor;
+    CharPart* part;
+
+    if (index >= 0 && index < 13) {
+        actor = lbl_8036E548.active[index];
+        if (actor != NULL) {
+            goto found;
+        }
+    }
     return;
+found:
+    part = &lbl_80118220[index];
+    actor->part = part;
+    part->slot = actor->kind;
+    part->_61 = actor->index;
+    part->player.set = set;
+    part->player.model = model;
+    fn_80025FFC(model, &part->player);
 }
 
 // .text:0x80014A18 size:0x334
