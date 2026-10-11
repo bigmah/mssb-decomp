@@ -74,10 +74,13 @@ typedef struct LayoutObj {
     /*0x3C*/ u8 _3C[0x18];
     /*0x54*/ u32 flags;
     /*0x58*/ u32 color;
-    /*0x5C*/ u8 _5C[0x8];
+    /*0x5C*/ u32 _5C;
+    /*0x60*/ u8 _60[0x4];
     /*0x64*/ u16 _64;
     /*0x66*/ u8 _66;
     /*0x67*/ u8 layer;
+    /*0x68*/ u8 _68;
+    /*0x69*/ u8 _69;
 } LayoutObj;
 
 typedef struct LayoutSlot {
@@ -87,10 +90,16 @@ typedef struct LayoutSlot {
 
 extern LayoutSlot lbl_80371C30[];
 
+// Also the queue item that lbl_803CC1B8 points at.
 typedef struct LayoutGroup {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ void (*callback)(void);
+    /*0x04*/ u8 _04[0x10];
     /*0x14*/ u16 start;
     /*0x16*/ u16 count;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ u16 textIndex;
+    /*0x1E*/ u16 _1E;
 } LayoutGroup;
 
 typedef struct TextOwner {
