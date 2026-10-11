@@ -6,6 +6,6 @@
 void fn_3_219CC(void);
 void fn_3_21AA8(void);
 void fn_3_21BDC(void);
-void fn_3_21C7C(void);
+void fn_3_21C7C(s32 idx, s32 value);
 
 #endif
