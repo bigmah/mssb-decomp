@@ -12,6 +12,9 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_800EF808[];
+extern void fn_80021AC8(void);
+extern void fn_2_74D8C(void);
 extern s8 lbl_80108DB8[];
 extern u8 lbl_803CBBC4[];
 extern u8 lbl_803C50E8[];
@@ -3259,6 +3262,140 @@ void fn_2_F200(u8 team) {
         row[i + 2] = id;
         lbl_8034E9A0[id + 0x4757] = 1;
         row[i + 0x26] = (lbl_8034E9A0 + cap)[(id / 9) * 0x5A0 + (id % 9) * 0xA0 + 0x3B];
+    }
+}
+#endif
+
+// NONMATCHING 95%: inlines fn_2_1A88/fn_2_1BAC/fn_2_1800 (the last NONMATCHING); the case-2 button copy reloads one word
+#if NONMATCHING
+static inline void fn_2_1F30_unload(void) {
+    fn_80035B50(0xF);
+    fn_80035B50(0x12);
+    fn_80035B50(9);
+    fn_80035B50(6);
+    fn_800AD054(*(void**)(lbl_8034E9A0 + 0x46F0), *(void**)(lbl_8034E9A0 + 0x46F4));
+}
+
+// fn_2_1F30, size:0x8B0
+void fn_2_1F30(void) {
+    switch (*(u16*)(lbl_803CBBCC[0] + 4)) {
+    case 0:
+        if (*(u16*)(lbl_803CBBCC[0] + 6) < 5) {
+            fn_2_1A88();
+        }
+        fn_2_1BAC();
+        memset(lbl_8034E9A0 + 0x4712, 0, 2);
+        ((s32*)lbl_2_bss_F410)[0] = lbl_8034E9A0[0x4712];
+        ((s32*)lbl_2_bss_F410)[1] = lbl_8034E9A0[0x4713];
+        g_d_GameSettings._10 = 0;
+        lbl_803C66B0[0] = 0;
+        memset(lbl_803C66B0 + 1, 0, 6);
+        lbl_8034E9A0[0x472A] = 0xFF;
+        fn_2_74D8C();
+        fn_800625A4(0, 0x54);
+        (*(u16*)(lbl_803CBBCC[0] + 4))++;
+        break;
+    case 1:
+        (*(u16*)(lbl_803CBBCC[0] + 4))++;
+        break;
+    case 2:
+        fn_2_1800();
+        break;
+    case 3:
+        lbl_8034E9A0[0x4728] = g_d_GameSettings.GameModeSelected;
+        lbl_8034E9A0[0x4729] = g_d_GameSettings._10;
+        g_d_GameSettings.exhibitionMatchInd = 1;
+        if (g_d_GameSettings.GameModeSelected == 0) {
+            fn_2_11A0(9);
+        } else if (g_d_GameSettings.GameModeSelected == 5) {
+            if (lbl_803C50E8[0x47] != 0) {
+                g_d_GameSettings._10 = 0;
+                fn_2_11A0(0xC);
+            } else {
+                fn_2_11A0(0xF);
+            }
+        } else {
+            fn_80062A74();
+            fn_2_1F30_unload();
+            fn_80021410();
+            fn_800ACFB0(*(void**)(lbl_800EF808 + 0x98));
+            fn_2_11A0(4);
+        }
+        lbl_2_bss_20[0] = 0;
+        break;
+    case 4:
+        lbl_8034E9A0[0x48AF] = 1;
+        lbl_8034E9A0[0x48B1] = 1;
+        *(u16*)(lbl_803CBBCC[0] + 4) = 3;
+        break;
+    case 5:
+        if (lbl_803C66B0[0x55] == 0) {
+            lbl_8034E9A0[0x4712] = ((s32*)lbl_2_bss_F410)[0];
+            lbl_8034E9A0[0x4713] = ((s32*)lbl_2_bss_F410)[1];
+            switch (lbl_8034E9A0[0x4708]) {
+            case 0:
+                fn_80021AC8();
+                fn_2_82E58();
+                changeScene(3, 6);
+                *(u16*)(lbl_803CBBCC[0] + 4) = 3;
+                break;
+            default:
+                *(u16*)(lbl_803CBBCC[0] + 4) = 4;
+                break;
+            case 6:
+                lbl_8034E9A0[0x48AF] = 1;
+                lbl_8034E9A0[0x48B1] = 1;
+                changeScene(3, 6);
+                *(u16*)(lbl_803CBBCC[0] + 4) = 8;
+                break;
+            case 5:
+                lbl_8034E9A0[0x48AF] = 1;
+                lbl_8034E9A0[0x48B1] = 1;
+                changeScene(3, 6);
+                *(u16*)(lbl_803CBBCC[0] + 4) = 0xA;
+                break;
+            case 1:
+                lbl_8034E9A0[0x4756] = 0;
+                lbl_8034E9A0[0x48AF] = 1;
+                lbl_8034E9A0[0x48B1] = 1;
+                changeScene(3, 6);
+                *(u16*)(lbl_803CBBCC[0] + 4) = 3;
+                break;
+            }
+            lbl_8034E9A0[0x472A] = 0;
+        }
+        break;
+    case 6:
+        lbl_803CBCE0[0] = 0;
+        lbl_8034E9A0[0x48B4] = 0;
+        fn_80062A74();
+        fn_2_1F30_unload();
+        fn_2_11A0(1);
+        lbl_2_bss_20[0] = 0;
+        break;
+    case 7:
+        lbl_8034E9A0[0x472A] = 0;
+        fn_2_11A0(1);
+        lbl_803CBCE0[0] = 0;
+        lbl_8034E9A0[0x48B4] = 0;
+        break;
+    case 8:
+        fn_2_11A0(6);
+        lbl_2_bss_20[0] = 0;
+        break;
+    case 9:
+        fn_80062A74();
+        fn_2_1F30_unload();
+        fn_80021410();
+        fn_800ACFB0(*(void**)(lbl_800EF808 + 0x98));
+        fn_2_11A0(7);
+        lbl_2_bss_20[0] = 0;
+        break;
+    case 10:
+        fn_2_1F30_unload();
+        fn_2_11A0(8);
+        lbl_2_bss_20[0] = 0;
+        break;
     }
 }
 #endif
