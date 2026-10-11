@@ -220,9 +220,280 @@ void fn_3_133320(void) {
 #pragma opt_unroll_loops reset
 
 // .text:0x0013334C size:0x1170 mapped:0x807723E0
-void fn_3_13334C(void) {
-    return;
+extern void* _OSAllocFromHeap(s32 align, s32 size);
+extern u8 lbl_803CBBC0;
+extern s16 lbl_3_data_21A88[];
+extern f32 lbl_3_data_21B28[];
+extern f32 lbl_3_data_21B38[];
+extern f32 lbl_3_data_21B48[];
+extern f32 lbl_3_data_21B58[];
+extern f32 lbl_3_data_21B68[];
+extern f32 lbl_3_data_21B78[];
+extern f32 lbl_3_rodata_35D4;
+extern f32 lbl_3_rodata_35F8;
+extern f32 lbl_3_rodata_35FC;
+extern f32 lbl_3_rodata_3600;
+extern f32 lbl_3_rodata_35D8;
+extern f32 lbl_3_rodata_35DC;
+static inline void h133320(void);
+static inline int quad_i(f32 x, f32 y);
+// Per-player CPU state, 8 bytes at g_Minigame+0x1DCC (see fn_3_1356F8).
+typedef struct CpuSlot3520 {
+    /*0x0*/ f32 radius;   // extra keep-out radius around the arena
+    /*0x4*/ s16 lastStick; // stick angle last frame (-1: none)
+    /*0x6*/ u8 state;     // 0 roam, 1 start dash, 2 dashing, 3 wait for landing
+    /*0x7*/ s8 timer;
+} CpuSlot3520;
+typedef struct CpuState3520 {
+    /*0x00*/ CpuSlot3520 slot[4];
+    /*0x20*/ f32 rotSin; // sin/cos of the arena rotation (-_1D64)
+    /*0x24*/ f32 rotCos;
+} CpuState3520;
+#define CPU_STATE ((CpuState3520*)(G8 + 0x1DCC))
+static inline void arenaRot(CpuState3520* cpu, f32* outX, f32* outZ, f32 x, f32 z) {
+    x = x - lbl_3_data_21A48[0];
+    z = z - lbl_3_data_21A48[2];
+    *outX = x * cpu->rotCos - z * cpu->rotSin;
+    *outZ = x * cpu->rotSin + z * cpu->rotCos;
 }
+// Quadrant (0..3) of a world point in the rotating arena frame.
+static inline s32 arenaQuad(CpuState3520* cpu, f32 x, f32 z) {
+    f32 qx, qz;
+    arenaRot(cpu, &qx, &qz, x, z);
+    return quad_i(qx, qz);
+}
+// Turn from angle a toward b by at most 1/lbl_3_data_21B8C[c] of the difference (fn_3_1345AC).
+static inline s16 h1345AC(s16 a, s16 b, s32 c) {
+    s16 d;
+    if (a < 0 || b < 0) {
+        return b;
+    }
+    d = fn_3_9FCA4(b, a) / lbl_3_data_21B8C[c];
+    if (d == 0 || (((d >> 31) ^ d) - (d >> 31)) > 0x5DC) {
+        return b;
+    }
+    return fn_3_9FE6C_normalizeAngle(a + d);
+}
+// No active obstacle within the box half-size of (x, z).
+static inline int noObstacleNear(f32 x, f32 z) {
+    s8 k = 0;
+    do {
+        u8 st = G8[k * 0x40 + 0xBED];
+        if (st >= 1 && st <= 3) {
+            f32 ax = fabs(*(f32*)(G8 + k * 0x40 + 0xBB0) - x);
+            f32 az = fabs(*(f32*)(G8 + k * 0x40 + 0xBB8) - z);
+            if (ax <= lbl_3_rodata_35D8 && az <= lbl_3_rodata_35DC) {
+                break;
+            }
+        }
+        k++;
+    } while (k < lbl_3_data_21A88[g_Minigame.soloMinigameDifficulty]);
+    return k >= lbl_3_data_21A88[g_Minigame.soloMinigameDifficulty];
+}
+// NONMATCHING 89%: the original keeps &g_Minigame copies on the stack and allocates the
+// per-player loop registers differently; logic and calls are the same
+#if NONMATCHING
+// CPU control for the minigame players: pick a target (ball, coin bag, item or
+// best coin), steer around obstacles and the powered-up player, and dash.
+void fn_3_13334C(void) {
+    CpuState3520* cpu = CPU_STATE;
+    CoinCand* cands = _OSAllocFromHeap(4, 1000);
+    s32 ballQuad, bagQuad, itemQuad;
+    u32 nCands;
+    s8 i;
+    h133320();
+    cpu->rotSin = sin(-fn_3_9FDD8(g_Minigame._1D64));
+    cpu->rotCos = cos(-fn_3_9FDD8(g_Minigame._1D64));
+    ballQuad = g_Minigame._72A != 0 ? arenaQuad(cpu, g_Minigame._6E8, g_Minigame._6F0) : 4;
+    bagQuad = g_Minigame._B6C._40[0] != 0 ? arenaQuad(cpu, g_Minigame._B6C._0.x, g_Minigame._B6C._0.z) : 4;
+    itemQuad = g_Minigame._CCE[0] == 1 ? arenaQuad(cpu, g_Minigame._CB0, g_Minigame._CB8) : 4;
+    // collect the free coins
+    nCands = 0;
+    {
+        CoinCand* c = cands;
+        s8 n;
+        for (n = 0; n < 100; n++) {
+            if (COIN_STATE(n) == 1) {
+                c->coin = n;
+                arenaRot(cpu, &c->x, &c->z, COIN_POS(n).x, COIN_POS(n).z);
+                c->quad = quad_i(c->x, c->z);
+                c++;
+                nCands++;
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        s8 ch = g_Minigame.minigameControlStruct[0].characterIndex[i];
+        CpuSlot3520* slot = &cpu->slot[i];
+        InputStruct* in;
+        u8* f;
+        u8 ai;
+        f32 qx, qz;
+        u32 quad;
+        if (ch < 0 || ch >= 4 || g_Minigame.minigameControlStruct[0].battingHandedness[i] == 0) {
+            continue;
+        }
+        g_Minigame._1DC8[ch] = 1;
+        memset(&g_Minigame._1D7C[ch], 0, sizeof(InputStruct));
+        g_Minigame._1D7C[ch].controlStickAngle = -1;
+        in = &g_Minigame._1D7C[ch];
+        ai = g_Minigame.minigameControlStruct[0].aIStrength[i];
+        f = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+        arenaRot(cpu, &qx, &qz, *(f32*)(f + 0), *(f32*)(f + 8));
+        quad = quad_i(qx, qz);
+        switch (slot->state) {
+        case 0: {
+            f32 tx, tz;
+            u32 tq;
+            // TODO type: per-player g_FieldingLogic record (stride 0x1C), f32 at +8
+            if (lbl_803CBBC0 != 0 && *(f32*)((u8*)&g_FieldingLogic + i * 0x1C + 8) <= lbl_3_data_21B28[ai] &&
+                (g_Minigame._1D72 == 0 || i == g_Minigame._1D6D || fn_3_135520(qx, qz, lbl_3_rodata_35D4) == 0)) {
+                in->buttonInput = in->newButtonInput |= 0x200;
+            }
+            tq = 4;
+            if (i == g_Minigame._1D6D) {
+                fn_3_134658(i, &tx, &tz, (s32*)&tq);
+            }
+            if (tq == 4 && g_Minigame._72A != 0) {
+                tx = g_Minigame._6E8;
+                tz = g_Minigame._6F0;
+                tq = ballQuad;
+            }
+            if (tq == 4 && g_Minigame._B6C._40[0] != 0) {
+                u8* m = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                f32 dz = *(f32*)(m + 8) - g_Minigame._B6C._0.z;
+                f32 dx = *(f32*)(m + 0) - g_Minigame._B6C._0.x;
+                if (dx * dx + dz * dz <= lbl_3_data_21B78[ai] * lbl_3_data_21B78[ai] &&
+                    noObstacleNear(g_Minigame._B6C._0.x, g_Minigame._B6C._0.z)) {
+                    tx = g_Minigame._B6C._0.x;
+                    tz = g_Minigame._B6C._0.z;
+                    tq = bagQuad;
+                }
+            }
+            if (tq == 4 && g_Minigame._CCE[0] == 1) {
+                u8* m = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                f32 dz = *(f32*)(m + 8) - g_Minigame._CB8;
+                f32 dx = *(f32*)(m + 0) - g_Minigame._CB0;
+                if (dx * dx + dz * dz <= lbl_3_data_21B68[ai] * lbl_3_data_21B68[ai] &&
+                    noObstacleNear(g_Minigame._CB0, g_Minigame._CB8)) {
+                    tx = g_Minigame._CB0;
+                    tz = g_Minigame._CB8;
+                    tq = itemQuad;
+                }
+            }
+            if (tq == 4 && (u32)g_Minigame._17C4 != 0) {
+                CoinCand* best = fn_3_1350BC(i, quad, nCands, cands);
+                if (best != NULL && best->valid != 0) {
+                    tx = COIN_POS(best->coin).x;
+                    tz = COIN_POS(best->coin).z;
+                    tq = best->quad;
+                }
+            }
+            if (tq != 4) {
+                u8* m;
+                if (fn_3_134C80(i, quad, tq, tx, tz)) {
+                    tq = fn_3_13493C(i, &tx, &tz, 2);
+                }
+                m = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                in->controlStickAngle = h1345AC(slot->lastStick, radToShortAngle(atan2(tz - *(f32*)(m + 8), tx - *(f32*)(m + 0))), ai);
+            }
+            // keep away from the powered-up player
+            if (g_Minigame._1D6D >= 0 && i != g_Minigame._1D6D) {
+                u8* m = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                u8* h = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[g_Minigame._1D6D]];
+                f32 dz = *(f32*)(m + 8) - *(f32*)(h + 8);
+                f32 dx = *(f32*)(m + 0) - *(f32*)(h + 0);
+                if (dx * dx + dz * dz <= lbl_3_data_21B38[ai] * lbl_3_data_21B38[ai]) {
+                    s16 off, away, tangent, d;
+                    u8* p;
+                    {
+                        // fn_3_1344BC(g_Minigame._1D6D, i)
+                        u8* pi = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                        f32 angH = atan2(*(f32*)(h + 8) - lbl_3_data_21A48[2], *(f32*)(h + 0) - lbl_3_data_21A48[0]);
+                        s16 si = radToShortAngle(atan2(*(f32*)(pi + 8) - lbl_3_data_21A48[2], *(f32*)(pi + 0) - lbl_3_data_21A48[0]));
+                        off = fn_3_9FCA4(radToShortAngle(angH), si) >= 0 ? 0 : 0x800;
+                    }
+                    away = radToShortAngle(atan2(dz, dx));
+                    p = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                    tangent = fn_3_9FE6C_normalizeAngle(
+                        radToShortAngle(atan2(-(*(f32*)(p + 0) - lbl_3_data_21A48[0]), *(f32*)(p + 8) - lbl_3_data_21A48[2])) + off);
+                    d = fn_3_9FCA4(tangent, away) / 2;
+                    in->controlStickAngle = fn_3_9FE6C_normalizeAngle(radToShortAngle(atan2(dz, dx)) + d);
+                }
+            }
+            // steer around obstacles
+            if (i != g_Minigame._1D6D) {
+                s8 k = 0;
+                do {
+                    u8 st = G8[k * 0x40 + 0xBED];
+                    if (st >= 1 && st <= 3) {
+                        u8* m = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                        f32 dz = *(f32*)(m + 8) - *(f32*)(G8 + k * 0x40 + 0xBB8);
+                        f32 dx = *(f32*)(m + 0) - *(f32*)(G8 + k * 0x40 + 0xBB0);
+                        if (dx * dx + dz * dz <= lbl_3_data_21B48[ai] * lbl_3_data_21B48[ai]) {
+                            s16 a = fn_3_9FCA4(radToShortAngle(atan2(dz, dx)), in->controlStickAngle);
+                            in->controlStickAngle =
+                                h1345AC(in->controlStickAngle, fn_3_9FE6C_normalizeAngle(in->controlStickAngle + a / 2), ai);
+                        }
+                    }
+                    k++;
+                } while (k < lbl_3_data_21A88[g_Minigame.soloMinigameDifficulty]);
+            }
+            // steer away from a dropped item
+            if (g_Minigame._CCE[0] == 2) {
+                u8* m = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                f32 dz = *(f32*)(m + 8) - g_Minigame._CB8;
+                f32 dx = *(f32*)(m + 0) - g_Minigame._CB0;
+                if (dx * dx + dz * dz <= lbl_3_data_21B58[ai] * lbl_3_data_21B58[ai]) {
+                    s16 a = fn_3_9FCA4(radToShortAngle(atan2(dz, dx)), in->controlStickAngle);
+                    in->controlStickAngle =
+                        h1345AC(in->controlStickAngle, fn_3_9FE6C_normalizeAngle(in->controlStickAngle + a / 2), ai);
+                }
+            }
+            // spokes are spinning: dash out of the way when near one
+            if (g_Minigame._1D72 != 0 && i != g_Minigame._1D6D) {
+                f32 r = dolsqrtf2(qx * qx + qz * qz);
+                if (fn_3_135520(qx, qz, lbl_3_rodata_35F8 * r + slot->radius) == 1) {
+                    u8* m;
+                    if (RandomInt_Game(100) < lbl_3_data_21B88[ai]) {
+                        slot->radius = lbl_3_rodata_35FC;
+                    } else {
+                        slot->radius = lbl_3_rodata_3600;
+                    }
+                    m = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+                    in->controlStickAngle = fn_3_9FE6C_normalizeAngle(
+                        radToShortAngle(atan2(-(*(f32*)(m + 0) - lbl_3_data_21A48[0]), *(f32*)(m + 8) - lbl_3_data_21A48[2])));
+                    slot->state = 1;
+                }
+            }
+            break;
+        }
+        case 1:
+            slot->timer = 1;
+            slot->state = 2;
+            // fallthrough
+        case 2: {
+            u8* m = (u8*)&g_Fielders[g_Minigame.minigameFielderIndex[i]];
+            in->controlStickAngle = fn_3_9FE6C_normalizeAngle(
+                radToShortAngle(atan2(-(*(f32*)(m + 0) - lbl_3_data_21A48[0]), *(f32*)(m + 8) - lbl_3_data_21A48[2])));
+            if (slot->timer-- <= 0) {
+                g_Minigame._1D7C[ch].buttonInput |= 0x100;
+                g_Minigame._1D7C[ch].newButtonInput |= 0x100;
+                slot->state = 3;
+            }
+            break;
+        }
+        case 3:
+            if (f[0x203] == 0) {
+                slot->state = 0;
+            }
+            break;
+        }
+        slot->lastStick = in->controlStickAngle;
+    }
+    fn_800ACFB0(cands);
+}
+#endif
 
 // .text:0x001344BC size:0xF0 mapped:0x80773550
 int fn_3_1344BC(int a, int b) {
