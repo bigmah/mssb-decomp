@@ -237,8 +237,11 @@ void fn_80036824(void) {
 }
 
 // .text:0x800369DC size:0x60
-void fn_800369DC(void) {
-    return;
+void fn_800369DC(f32 zoom) {
+    if (0.0f != zoom) {
+        f32 s = 1.0f / zoom;
+        C_MTXFrustum(lbl_801F8640, -0.175f * s, 0.175f * s, 0.25f * s, -0.25f * s, 1.0f, 512.0f);
+    }
 }
 
 // .text:0x80036A3C size:0x24C

@@ -129,5 +129,6 @@ s32 fn_80036214(SpaniOwner* owner, s32 idx, u32 track, u32 frame);
 void fn_80036270(SpaniOwner* owner, s32 idx, u32 track, u32 frame, s16* outX, s16* outY);
 void fn_800362F0(SpaniOwner* owner, s32 idx);
 void fn_800363D8(SpaniOwner* owner, s32 idx, u32 slot, u16 animId, u32 frame);
+void fn_800369DC(f32 zoom);
 
 #endif
