@@ -4461,3 +4461,204 @@ void fn_2_81628(void) {
     }
 }
 #endif
+
+// fn_2_7AE3C, size:0x11BC
+// NONMATCHING 88%: same stores and calls; register allocation and some slot-index scheduling differ
+#if NONMATCHING
+void fn_2_7AE3C(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        s32 j;
+        s8 cpos;
+        s32 other;
+        MN_SLOT(6 + BASE(o))->state = 1;
+        MN_SLOT(8 + BASE(o))->state = 1;
+        MN_SLOT(0x1C + BASE(o))->flags |= 2;
+        MN_SLOT(0x1D + BASE(o))->flags |= 2;
+        MN_SLOT(0x1E + BASE(o))->flags |= 2;
+        MN_SLOT(0x1F + BASE(o))->flags |= 2;
+        MN_SLOT(0x78 + BASE(o))->flags &= ~2;
+        MN_SLOT(0x79 + BASE(o))->flags &= ~2;
+        MN_SLOT(0x7C + BASE(o))->flags &= ~2;
+        MN_SLOT(0x7D + BASE(o))->flags &= ~2;
+        MN_SLOT(0x80 + BASE(o))->flags &= ~2;
+        MN_SLOT(0x81 + BASE(o))->flags &= ~2;
+        MN_SLOT(0x97 + BASE(o) + index)->anim = 0x77;
+        MN_SLOT(0x99 + BASE(o) + index)->anim = 0x76;
+        for (j = 0; j < 9; j++) {
+            MN_SLOT(0x22 + BASE(o) + j + index * 9)->flags &= ~2;
+        }
+        MN_SLOT(BASE(o) + index)->anim = 0x48;
+        MN_SLOT(2 + BASE(o) + index)->anim = 0x48;
+        MN_SLOT(4 + BASE(o) + index)->anim = 0x51;
+        MN_SLOT(BASE(o) + index)->frame = 0;
+        MN_SLOT(2 + BASE(o) + index)->frame = 0;
+        MN_SLOT(4 + BASE(o) + index)->frame = 0;
+        MN_SLOT(BASE(o) + index)->state = 1;
+        MN_SLOT(2 + BASE(o) + index)->state = 1;
+        MN_SLOT(4 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x12 + BASE(o) + index)->frame = 0xA0000;
+        MN_SLOT(0x12 + BASE(o) + index)->state = 4;
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            s32 captain;
+            MN_SLOT(0x1C + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x1C + BASE(o) + index)->state = 1;
+            captain = *(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4);
+            for (j = 0; j < 9; j++) {
+                if (TEAM_TBL->roster[index][j] == captain) {
+                    cpos = TEAM_TBL->pos[index][j];
+                }
+            }
+            *(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) = captain; // the original writes it back
+            for (j = 0; j < 9; j++) {
+                s8 p = TEAM_TBL->pos[index][j];
+                if (g_d_GameSettings._10 == 0 && lbl_2_bss_F468[0x37 + index] == 0 && index == 1) {
+                    // single player: only the CPU captain's marker is shown
+                    if (j == cpos) {
+                        other = (s8)lbl_8034E9A0[0x46F8] == 0;
+                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->anim = other + 0x11;
+                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags |= 2;
+                    } else {
+                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags &= ~2;
+                    }
+                } else {
+                    if (g_d_GameSettings._10 == 0) {
+                        if ((s8)lbl_8034E9A0[0x46F8] == 0) {
+                            other = 1;
+                        } else {
+                            other = 0;
+                        }
+                    }
+                    if (g_d_GameSettings._10 == 0 && index != 0) {
+                        MN_SLOT(0x46 + BASE(o) + p + index * 9)->anim = other + 0x11;
+                    } else {
+                        MN_SLOT(0x46 + BASE(o) + p + index * 9)->anim = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
+                    }
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->frame = 0;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->flags |= 2;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->state = 0;
+                }
+                if (TEAM_TBL->roster[index][j] != -1) {
+                    MN_SLOT(0x34 + BASE(o) + p + index * 9)->flags |= 2;
+                    if (j == F468_S32(index * 4)) {
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->frame = 0xA0000;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->state = 0;
+                        MN_SLOT(0x22 + BASE(o) + p + index * 9)->flags |= 2;
+                        MN_SLOT(0x22 + BASE(o) + p + index * 9)->state = 1;
+                    } else {
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->frame = 0x140000;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->state = 0;
+                        MN_SLOT(0x22 + BASE(o) + p + index * 9)->flags &= ~2;
+                    }
+                    MN_SLOT(0x58 + BASE(o) + p + index * 9)->frame = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + p + index * 9)->state = 0;
+                } else {
+                    MN_SLOT(0x34 + BASE(o) + p + index * 9)->flags &= ~2;
+                    MN_SLOT(0x22 + BASE(o) + p + index * 9)->flags &= ~2;
+                }
+            }
+            MN_SLOT(0x6A + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x6A + BASE(o) + index)->state = 1;
+            for (j = 0; j < 5; j++) {
+                MN_SLOT(0x6E + BASE(o) + index * 5 + j)->frame = 0;
+                MN_SLOT(0x6E + BASE(o) + index * 5 + j)->state = 0;
+            }
+            if (g_d_GameSettings._10 != 0 || index == 0) {
+                MN_SLOT(0x8F + BASE(o) + index)->state = 1;
+                MN_SLOT(0x91 + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x91 + BASE(o) + index)->state = 1;
+            }
+        } else {
+            MN_SLOT(0x80 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x80 + BASE(o) + index)->state = 0;
+            MN_SLOT(0x82 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x82 + BASE(o) + index)->state = 0;
+            MN_SLOT(0x78 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x78 + BASE(o) + index)->state = 0;
+            MN_SLOT(0x7A + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x7A + BASE(o) + index)->state = 0;
+            MN_SLOT(0x97 + BASE(o) + index)->anim = 0x77;
+            MN_SLOT(0x98 + BASE(o))->flags &= ~2;
+            MN_SLOT(0x97 + BASE(o))->frame = 0;
+            MN_SLOT(0x97 + BASE(o))->flags &= ~2;
+            MN_SLOT(0xB0 + BASE(o) + index)->flags &= ~2;
+            MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x89 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x85 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x85 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x1C + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x1C + BASE(o) + index)->state = 1;
+            if (g_d_GameSettings._10 == 0) {
+                if ((s8)lbl_8034E9A0[0x46F8] == 0) {
+                    other = 1;
+                } else {
+                    other = 0;
+                }
+            }
+            for (j = 0; j < 9; j++) {
+                s8 p = TEAM_TBL->pos[index][j];
+                if (index != 0) {
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->anim = other + 0x11;
+                } else {
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->anim = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
+                }
+                if (j == F468_S32(index * 4)) {
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->flags |= 2;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->state = 1;
+                } else {
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->flags |= 2;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->state = 0;
+                }
+                if (TEAM_TBL->roster[index][j] != -1) {
+                    MN_SLOT(0x34 + BASE(o) + p + index * 9)->flags |= 2;
+                    if (j == F468_S32(index * 4)) {
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->frame = 0xA0000;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->state = 0;
+                    } else {
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->frame = 0x140000;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->state = 0;
+                    }
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->frame = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->state = 0;
+                } else {
+                    MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags &= ~2;
+                }
+            }
+            if (*(u16*)(lbl_803CBBCC[0] + 6) == 0xB && index == 0 && g_d_GameSettings._10 == 0) {
+                MN_SLOT(0x6A + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x6A + BASE(o) + index)->state = 0;
+            } else {
+                MN_SLOT(0x6A + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x6A + BASE(o) + index)->state = 1;
+            }
+            fn_2_75BE4(o, index);
+        }
+        if (*(u16*)(lbl_803CBBCC[0] + 6) == 0xB || g_d_GameSettings.GameModeSelected == 5) {
+            if (g_d_GameSettings.GameModeSelected != 5 || index == 0) {
+                MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x93 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x95 + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x95 + BASE(o) + index)->state = 1;
+            }
+            if (g_d_GameSettings.GameModeSelected != 5) {
+                MN_SLOT(0x8F + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x8F + BASE(o) + index)->state = 1;
+                MN_SLOT(0x91 + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x91 + BASE(o) + index)->state = 0;
+            }
+        }
+        if (lbl_2_bss_F468[0x3F] != 0 && lbl_2_bss_F468[0x37] != 0 && g_d_GameSettings.GameModeSelected == 5) {
+            if (index == 0) {
+                MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x93 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x95 + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x95 + BASE(o) + index)->state = 1;
+            } else {
+                MN_SLOT(0x93 + BASE(o) + index)->flags &= ~2;
+            }
+        }
+        fn_800626EC(index);
+        *e = 1;
+    }
+}
+#endif
