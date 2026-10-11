@@ -18,8 +18,29 @@ void fn_8000A0AC(void) {
 }
 
 // .text:0x8000A1E8 size:0x204
-void interpolatePointsBezier_Vec2s(void) {
-    return;
+void interpolatePointsBezier_Vec2s(f32 t, BezierPoint* out, PathPoint* p0, PathPoint* p1, PathPoint* p2,
+                                   PathPoint* p3, u32 segment) {
+    BezierPoint pts[10];
+
+    pts[0].x = p0->x;
+    pts[0].y = p0->y;
+    pts[3].x = p1->x;
+    pts[3].y = p1->y;
+    pts[6].x = p2->x;
+    pts[6].y = p2->y;
+    pts[9].x = p3->x;
+    pts[9].y = p3->y;
+    if (segment == 0) {
+        interpolatePointsUnknown(3, pts, 1, 0);
+        BezierInterpolate(t, out, &pts[0], &pts[1], &pts[2], &pts[3]);
+    } else if (segment == 1) {
+        interpolatePointsUnknown(3, pts, 1, 0);
+        interpolatePointsUnknown(6, pts, 0, 1);
+        BezierInterpolate(t, out, &pts[3], &pts[4], &pts[5], &pts[6]);
+    } else {
+        interpolatePointsUnknown(6, pts, 0, 1);
+        BezierInterpolate(t, out, &pts[6], &pts[7], &pts[8], &pts[9]);
+    }
 }
 
 // .text:0x8000A3EC size:0xB30
