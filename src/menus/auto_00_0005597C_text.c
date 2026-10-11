@@ -9,6 +9,8 @@ extern u8* lbl_2_bss_1A823C[];
 extern u8 lbl_800EF808[];
 extern s16 lbl_2_data_1FD84[];
 extern s16 fn_2_53BC8(void*);
+struct SpaniOwner;
+void fn_80036134(struct SpaniOwner* owner, s32 srcIdx, u32 track, s32 dstIdx);
 extern void fn_2_4E7EC(void);
 extern void fn_8001F228(void);
 extern s32 fn_80021410(void);
@@ -238,8 +240,33 @@ void fn_2_56E8C(void) {
 }
 
 // .text:0x000570E4 size:0x1B0
-void fn_2_570E4(void) {
-    return;
+void fn_2_570E4(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_5C = 0;
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags |= 2;
+        fn_80036134((struct SpaniOwner*)menu, 0x1C, *(s16*)(lbl_2_bss_1A824C[0] + 0x1976F4), 0x1A);
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 0x25:
+        fn_80036134((struct SpaniOwner*)menu, 0x1C, *(s16*)(lbl_2_bss_1A824C[0] + 0x1976F4), 0x1A);
+        break;
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 1:
+        break;
+    }
 }
 
 // .text:0x00057294 size:0x2B8

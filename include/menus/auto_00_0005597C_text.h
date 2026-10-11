@@ -16,7 +16,7 @@ void fn_2_56688(void);
 void fn_2_5699C(void);
 void fn_2_56C34(void);
 void fn_2_56E8C(void);
-void fn_2_570E4(void);
+void fn_2_570E4(MenuTableContext* menu, MenuItemState* item);
 void fn_2_57294(void);
 void fn_2_5754C(void);
 void fn_2_57724(MenuTableContext* menu, MenuItemState* item);
