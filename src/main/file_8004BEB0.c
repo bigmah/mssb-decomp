@@ -60,7 +60,16 @@ extern s32 lbl_803CBD0C;
 
 // .text:0x8004C094 size:0x74
 void fn_8004C094(Vec* pos) {
-    return;
+    EffectParams params;
+    EffectParams* p = &params;
+
+    if (pos != NULL) {
+        memcpy(p, lbl_803CB860, sizeof(EffectParams));
+        p->stamp = lbl_803CBD0C;
+        p->unk0C = 120000;
+        p->unk10 = 60000;
+        fn_80031CA4(pos, (u32*)p);
+    }
 }
 
 // .text:0x8004C108 size:0x94
