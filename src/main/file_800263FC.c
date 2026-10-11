@@ -184,7 +184,7 @@ void fn_80027918(u8 type, f32 v) {
     Emitter* e;
     Emitter* f = NULL;
     while (e = FindEmitter(f, type), f = e, e != NULL) {
-        f->unk1C = v;
+        f->u.f[1] = v;
     }
 }
 #endif
@@ -386,9 +386,71 @@ void fn_8002DC68(Vec* pos) {
 }
 
 // .text:0x8002DCE4 size:0x6F8
-void fn_8002DCE4(void) {
-    return;
+// NONMATCHING 73%: float load scheduling/registers; the cos index uses a branchy abs in the original
+#if NONMATCHING
+void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm) {
+    Vec d;
+    s32 sign = 1;
+    f32 sizeMin = (f32)prm->sizeMin / 100000.0f;
+    f32 yawMin = (f32)prm->yawMin / 100000.0f;
+    f32 yawMax = (f32)prm->yawMax / 100000.0f;
+    f32 pitchMin = (f32)prm->pitchMin / 100000.0f;
+    f32 pitchMax = (f32)prm->pitchMax / 100000.0f;
+    f32 angleRange = (f32)(prm->angleMax - prm->angleMin) / 100000.0f;
+    f32 sizeRange = (f32)prm->sizeMax / 100000.0f - sizeMin;
+    f32 angleBase = 45.0f + (f32)prm->angleMin / 100000.0f;
+    f32 speed;
+    f32 r;
+    s32 ang;
+    Emitter* e;
+    Particle* p;
+
+    PSVECSubtract(to, from, &d);
+    speed = (f32)prm->speed / 100000.0f;
+    e = NewEmitter(fn_8002D82C, 0x80, 0, prm->count, 1, 9);
+    if (e == NULL) {
+        return;
+    }
+    e->tex = prm->tex;
+    e->u.t9.fadeLife = prm->fadeLife;
+    memcpy(&e->u.t9.pos, to, sizeof(Vec));
+    memcpy(&e->u.t9.prevPos, to, sizeof(Vec));
+    p = e->particles;
+    do {
+        p->delay = rand() % prm->delayRange;
+        p->life = prm->life - p->delay - rand() % prm->lifeRange;
+        p->pos.x = from->x;
+        p->pos.y = from->y;
+        p->pos.z = from->z;
+        p->u.phys.vel.x = d.x / (f32)(p->life - 1);
+        p->u.phys.vel.y = d.y / (f32)(p->life - 1);
+        p->u.phys.vel.z = d.z / (f32)(p->life - 1);
+        fn_800332B8(NULL, &p->u.phys.force, yawMin, yawMax, pitchMin, pitchMax);
+        PSVECScale(&p->u.phys.force, speed * (0.5f * (f32)(rand() % 256) + 0.75f), &p->u.phys.force);
+        p->u.phys.force.x = p->u.phys.force.x * (f32)sign;
+        sign = -sign;
+        PSVECScale(&p->u.phys.force, 0.5f * (f32)-p->life, &p->u.phys.accel);
+        PSVECAdd(&p->u.phys.vel, &p->u.phys.accel, &p->u.phys.vel);
+        p->u.phys.mass = 1.0f;
+        if (angleRange != 0.0f) {
+            ang = (s32)(0.5f + (2048.0f * (angleBase + (angleRange * (f32)rand()) / 32767.0f)) / 360.0f);
+            r = 1.4142135f * ((sizeMin + (sizeRange * (f32)rand()) / 32767.0f) * 0.5f);
+            p->sizeX = r * CosIdx(ang);
+            p->sizeY = r * SinIdx(ang);
+            p->uvOrder = (rand() & 1) ? 0x1B : 0xE4;
+        } else {
+            r = (sizeMin + (sizeRange * (f32)rand()) / 32767.0f) * 0.5f;
+            p->sizeX = r;
+            p->sizeY = r;
+            p->uvOrder = 0xB1;
+        }
+        p->color.rgba = 0xFFFFFFFF;
+        p->colorStep.all = 0;
+        p->texIndex = prm->texIndex;
+        p = p->next;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x8002E3DC size:0x44C
 void fn_8002E3DC(void) {
@@ -676,25 +738,7 @@ Emitter* fn_80033A24(EmitterUpdateFn update, u8 priority, s32 unk14, s32 n, s32 
 
 // .text:0x80033B58 size:0x170
 void fn_80033B58(TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT) {
-    GXTexObj texObj;
-    GXTlutObj tlutObj;
-    TexImage* img;
-
-    if (arc == NULL) {
-        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-        return;
-    }
-    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
-    img = &arc->entries[arc->entries[idx].index].img;
-    if (img->tlut != NULL) {
-        GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE, 0);
-        GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
-        GXLoadTlut(&tlutObj, GX_TLUT0);
-    } else {
-        GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE);
-    }
-    GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
-    GXLoadTexObj(&texObj, GX_TEXMAP1);
+    LoadParticleTex(arc, idx, wrapS, wrapT);
 }
 
 // .text:0x80033CC8 size:0x29C
