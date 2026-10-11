@@ -1130,8 +1130,67 @@ void fn_8004FDA0(s32 id) {
 }
 
 // .text:0x8004FDE8 size:0x350
-void fn_8004FDE8(void) {
-    return;
+s32 fn_8004FDE8(s32 p, s32 q) {
+    s32 occ[0x24];
+    s32 cand[8];
+    s32 k;
+    s32 n;
+    s32 cur;
+    s32 pick;
+
+    if (lbl_803C6028.cursor[p] != lbl_803C6028.cursor[q]) {
+        return -2;
+    }
+    for (k = 0; k < 0x24; k++) {
+        occ[k] = -1;
+        if (lbl_803C6028.slotLocked[k] != 0) {
+            occ[k] = 0;
+        } else if (lbl_803C6028.slotOwner[k] >= 0) {
+            occ[k] = 0;
+        } else if (lbl_800FDE84[k] == 0xFF) {
+            occ[k] = 5;
+        } else {
+            for (n = 0; n < 4; n++) {
+                if (lbl_803C6028.cursor[n] == k && lbl_803C6028._78[n] != 0) {
+                    occ[k] = n + 1;
+                    break;
+                }
+            }
+        }
+    }
+    cur = lbl_803C6028.cursor[p];
+    n = 0;
+    for (k = 0; k < 8; k++) {
+        cand[k] = -1;
+    }
+    if (cur - 13 >= 0 && occ[cur - 13] < 0) {
+        n = 1;
+        cand[0] = cur - 13;
+    }
+    if (cur - 12 >= 0 && occ[cur - 12] < 0) {
+        cand[n++] = cur - 12;
+    }
+    if (cur - 11 >= 0 && occ[cur - 11] < 0) {
+        cand[n++] = cur - 11;
+    }
+    if (cur - 1 >= 0 && occ[cur - 1] < 0) {
+        cand[n++] = cur - 1;
+    }
+    if (cur + 1 < 0x24 && occ[cur + 1] < 0) {
+        cand[n++] = cur + 1;
+    }
+    if (cur + 11 < 0x24 && occ[cur + 11] < 0) {
+        cand[n++] = cur + 11;
+    }
+    if (cur + 12 < 0x24 && occ[cur + 12] < 0) {
+        cand[n++] = cur + 12;
+    }
+    if (cur + 13 < 0x24 && occ[cur + 13] < 0) {
+        cand[n++] = cur + 13;
+    }
+    pick = cand[rand() % n];
+    lbl_803C6028.cursor[q] = pick;
+    return lbl_800FDE84[pick];
 }
 
 // .text:0x80050138 size:0x5B0

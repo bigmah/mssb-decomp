@@ -173,6 +173,8 @@ s32 fn_8004FD64(s32 player);
 
 void fn_8004FDA0(s32 id);
 
+s32 fn_8004FDE8(s32 p, s32 q);
+
 s32 fn_80050F78(s32 arg);
 
 void fn_80052188(void);
