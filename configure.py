@@ -892,7 +892,7 @@ config.libs = [
             Object(NonMatching, "game/rep_1FD8.c"),
             Object(NonMatching, "game/rep_21F8.c"),
             Object(NonMatching, "game/sta_c0.c"),
-            Object(NonMatching, "game/rep_2308.c"),
+            Object(Matching, "game/rep_2308.c", extra_cflags=["-pool off"]),
             Object(NonMatching, "game/rep_2390.c"),
             Object(Matching, "game/rep_23E8.c"),
             Object(NonMatching, "game/sta_c2.c"),
