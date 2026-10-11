@@ -32,6 +32,13 @@ extern Fielder540 g_Fielders[9];
 extern f32 lbl_3_data_450C[2]; // ball start x, z
 extern f32 lbl_3_data_4428[];
 extern f32 lbl_3_data_4930[];
+extern struct {
+    f32 _00; // Bob-omb Derby gravity
+    f32 _04;
+    f32 _08;
+} lbl_3_data_21438;
+extern void fn_3_15C000(void);
+extern u32 fn_3_15C014(void);
 extern int fn_3_51DF0(f32 x, f32 z); // infield zone of point (x, z)
 extern f32 lbl_3_data_47BC[]; // garlic-hit catch radius, by fielder _1C9
 extern int fn_3_253A4(int fielder, s16 angle);
@@ -986,9 +993,216 @@ void fn_3_A83C(void) {
 }
 
 // .text:0x0000A970 size:0xAD0 mapped:0x80649A04
+// Per-frame ball update while in play: counters, history, physics step, star-hit effects.
+// NONMATCHING 95%: original indexes g_hitShorts by star-swing id; branch layout of the early returns
+#if NONMATCHING
 void fn_3_A970(s32 arg) {
-    return;
+    f32 drag;
+    f32 speed;
+    f32 ang;
+    s32 handled;
+    int i;
+    VecXYZ* p;
+    if (arg != 1) {
+        if (g_Ball.framesSinceHit < 0x7FFE) {
+            g_Ball.framesSinceHit++;
+        } else {
+            g_Ball.framesSinceHit = 0x7FFF;
+        }
+        if (g_Ball.AtBat_ContactResult != 0) {
+            if (g_Ball.framesSinceBallHitGroundOrWasCaught == -1) {
+                g_Ball.framesSinceBallHitGroundOrWasCaught = 1;
+            } else if (g_Ball.framesSinceBallHitGroundOrWasCaught < 0x7FFE) {
+                g_Ball.framesSinceBallHitGroundOrWasCaught++;
+            } else {
+                g_Ball.framesSinceBallHitGroundOrWasCaught = 0x7FFF;
+            }
+        }
+        if (g_Ball.framesSinceLastBounce >= 0) {
+            if (g_Ball.framesSinceLastBounce < 0x7FFE) {
+                g_Ball.framesSinceLastBounce++;
+            } else {
+                g_Ball.framesSinceLastBounce = 0x7FFF;
+            }
+        }
+        if (g_Ball.ballBounceState != 0) {
+            g_Ball.ballBounceState--;
+        }
+        if (g_Ball.ballState == BALL_STATE_THROWN) {
+            if (g_Ball.framesSinceThrowStarted < 0x7FFE) {
+                g_Ball.framesSinceThrowStarted++;
+            } else {
+                g_Ball.framesSinceThrowStarted = 0x7FFF;
+            }
+            if (g_Ball.framesSinceThrowStarted == 2) {
+                fn_3_B440();
+            } else {
+                g_Ball.framesUntilThrowReachesDest--;
+                if (g_Ball.framesUntilThrowReachesDest < -1) {
+                    g_Ball.framesUntilThrowReachesDest = -1;
+                }
+            }
+        }
+    }
+    // same as fn_3_A83C
+    p = &BALL_PAST(54);
+    for (i = 0x3B; i != 0; i--) {
+        p[5].x = p[4].x;
+        p[5].y = p[4].y;
+        p[5].z = p[4].z;
+        p--;
+    }
+    if (g_Ball.catchAnimationTotalFrames != 0 || g_Ball.fielderActionOccuring != 0) {
+        g_Ball.pastCoordinates[0].x = g_Ball.fielderActionCatchCoords.x;
+        g_Ball.pastCoordinates[0].y = g_Ball.fielderActionCatchCoords.y;
+        g_Ball.pastCoordinates[0].z = g_Ball.fielderActionCatchCoords.z;
+    } else {
+        g_Ball.pastCoordinates[0].x = g_Ball.AtBat_Contact_BallPos.x;
+        g_Ball.pastCoordinates[0].y = g_Ball.AtBat_Contact_BallPos.y;
+        g_Ball.pastCoordinates[0].z = g_Ball.AtBat_Contact_BallPos.z;
+    }
+    if (g_Ball.currentStarSwing == 3 || g_Ball.currentStarSwing == 4) {
+        for (i = 9; i > 0; i--) {
+            g_Ball.warioStarHitCoords[i + 3].x = g_Ball.warioStarHitCoords[i + 2].x;
+            g_Ball.warioStarHitCoords[i + 3].y = g_Ball.warioStarHitCoords[i + 2].y;
+            g_Ball.warioStarHitCoords[i + 3].z = g_Ball.warioStarHitCoords[i + 2].z;
+        }
+        g_Ball.warioStarHitCoords[3].x = g_Ball.warioStarHitCoords[0].x;
+        g_Ball.warioStarHitCoords[3].y = g_Ball.warioStarHitCoords[0].y;
+        g_Ball.warioStarHitCoords[3].z = g_Ball.warioStarHitCoords[0].z;
+    }
+    if (g_Ball.pauseBallMovementWhenInPlant != 0) {
+        if (g_Ball.matchFramesAndBallAngle.framesInsidePlant < 0x7FFE) {
+            g_Ball.matchFramesAndBallAngle.framesInsidePlant++;
+        } else {
+            g_Ball.matchFramesAndBallAngle.framesInsidePlant = 0x7FFF;
+        }
+        return;
+    }
+    if (g_Ball.catchAnimationTotalFrames != 0) {
+        return;
+    }
+    if (g_Ball.warioWaluGarlicIsActive != 0) {
+        g_Ball.AtBat_Contact_BallPos.x = g_Ball.warioStarHitCoords[0].x;
+        g_Ball.AtBat_Contact_BallPos.y = g_Ball.warioStarHitCoords[0].y;
+        g_Ball.AtBat_Contact_BallPos.z = g_Ball.warioStarHitCoords[0].z;
+    }
+    if (g_Minigame.GameMode_MiniGame == 1 && g_Ball.bODQualifyingHitInd != 0) {
+        g_Ball.physicsSubstruct.velocity.y -= lbl_3_data_21438._00;
+    } else {
+        drag = 1.0f - (f32)g_Ball.airResistance / 10000.0f;
+        g_Ball.physicsSubstruct.velocity.y -= g_Ball.physicsSubstruct.gravity;
+        g_Ball.physicsSubstruct.velocity.x *= drag;
+        g_Ball.physicsSubstruct.velocity.y *= drag;
+        g_Ball.physicsSubstruct.velocity.z *= drag;
+    }
+    g_Ball.physicsSubstruct.velocity.x += g_Ball.physicsSubstruct.acceleration.x;
+    g_Ball.physicsSubstruct.velocity.y += g_Ball.physicsSubstruct.acceleration.y;
+    g_Ball.physicsSubstruct.velocity.z += g_Ball.physicsSubstruct.acceleration.z;
+    // banana (DK/Diddy star) hit curves for a window of frames
+    if ((g_Ball.currentStarSwing == 5 || g_Ball.currentStarSwing == 6) &&
+        g_Ball.framesSinceHit > g_Ball.matchFramesAndBallAngle.bananaHitStartFrame &&
+        g_Ball.framesSinceHit < g_Ball.matchFramesAndBallAngle.bananaHitEndFrame) {
+        speed = sqrt540(g_Ball.physicsSubstruct.velocity.x * g_Ball.physicsSubstruct.velocity.x +
+                        g_Ball.physicsSubstruct.velocity.z * g_Ball.physicsSubstruct.velocity.z);
+        ang = game_atan2(g_Ball.physicsSubstruct.velocity.x, g_Ball.physicsSubstruct.velocity.z);
+        if (g_Ball.directionOfBananaHit != 0) {
+            ang += g_hitFloats.DKStarAngleDelta;
+        } else {
+            ang -= g_hitFloats.DKStarAngleDelta;
+        }
+        getComponentsFromRad(ang, &g_Ball.physicsSubstruct.velocity.x, &g_Ball.physicsSubstruct.velocity.z);
+        g_Ball.physicsSubstruct.velocity.x *= speed;
+        g_Ball.physicsSubstruct.velocity.z *= speed;
+    }
+    g_Ball.AtBat_Contact_BallPos.x += g_Ball.physicsSubstruct.velocity.x;
+    g_Ball.AtBat_Contact_BallPos.y += g_Ball.physicsSubstruct.velocity.y;
+    g_Ball.AtBat_Contact_BallPos.z += g_Ball.physicsSubstruct.velocity.z;
+    if (g_Ball.currentStarSwing == 3 || g_Ball.currentStarSwing == 4) {
+        fn_3_A198();
+    }
+    fn_3_6C38();
+    if ((g_d_GameSettings.StadiumID == 0 || (g_d_GameSettings.StadiumID >= 2 && g_d_GameSettings.StadiumID <= 4) ||
+         g_d_GameSettings.StadiumID == 5) &&
+        g_Ball.AtBat_Contact_BallPos.y < g_Ball.groundYForBounces) {
+        g_Ball.AtBat_Contact_BallPos.y = g_Ball.groundYForBounces;
+        if (g_Ball.physicsSubstruct.velocity.y < 0.0f) {
+            g_Ball.physicsSubstruct.velocity.y *= -1.0f;
+        }
+    }
+    g_Ball.ballDistanceFromHome = sqrt540(g_Ball.AtBat_Contact_BallPos.x * g_Ball.AtBat_Contact_BallPos.x +
+                                          g_Ball.AtBat_Contact_BallPos.z * g_Ball.AtBat_Contact_BallPos.z);
+    if (g_Minigame.GameMode_MiniGame == 1) {
+        return;
+    }
+    estimateAndSetFutureCoords(1);
+    if (g_Ball.currentStarSwing == 0) {
+        return;
+    }
+    handled = 0;
+    if (g_Ball.someCollisionInd != 0) {
+        handled = 1;
+    } else if (g_Ball.numFieldersWhoHandledBallDuringPlay != 0) {
+        handled = 1;
+    }
+    if (g_Ball.currentStarSwing == 0xB || g_Ball.currentStarSwing == 0xC) {
+        // Peach / Daisy star hit: ball turns invisible for a while
+        if (handled || g_Ball.AtBat_ContactResult != 0) {
+            g_Ball.currentStarSwing = 0;
+            g_Batter.invisibleBallForPeachStarHit = 0;
+            if (fn_3_15C014() != 0) {
+                fn_3_15C000();
+            }
+        } else if (g_Ball.currentStarSwing == 0xC) {
+            if (g_Ball.framesSinceHit >= (s32)fn_3_15C014()) {
+                g_Ball.currentStarSwing = 0;
+                g_Batter.invisibleBallForPeachStarHit = 0;
+            } else if (g_Ball.framesSinceHit >= g_hitShorts.FrameWhenDaisyHitAppearsAgain) {
+                g_Batter.invisibleBallForPeachStarHit = 1;
+            }
+        } else {
+            if (g_Ball.framesSinceHit >= g_hitShorts._16) {
+                g_Ball.currentStarSwing = 0;
+                g_Batter.invisibleBallForPeachStarHit = 0;
+            } else if (g_Ball.framesSinceHit >= g_hitShorts.FrameWhenPeachHitAppearsAgain) {
+                g_Batter.invisibleBallForPeachStarHit = 1;
+            }
+        }
+        if (g_Batter.invisibleBallForPeachStarHit == 0) {
+            g_Ball.autoFielderAvoidDropSpotForPeachesStarHit = 0;
+        }
+    } else if (handled) {
+        g_Ball.currentStarSwing = 0;
+    } else if (g_Ball.ballIsRollingIndicator != 0) {
+        g_Ball.currentStarSwing = 0;
+    } else if (g_Ball.framesSinceLastBounce == 0) {
+        switch (g_Ball.currentStarSwing) {
+        case 5:
+        case 6:
+            g_Ball.currentStarSwing = 0;
+            break;
+        case 7:
+        case 8:
+            g_Ball.currentStarSwing = 0;
+            break;
+        case 9:
+        case 10:
+            if (g_Ball.framesOnGroundUntilPickedUp >= g_hitShorts.NEggBounces) {
+                g_Ball.currentStarSwing = 0;
+            }
+            break;
+        default:
+            if (g_Ball.framesOnGroundUntilPickedUp >= g_hitShorts.framesOnGroundBeforeCheckingMinStarVelo) {
+                if (sqrt540(g_Ball.physicsSubstruct.velocity.x * g_Ball.physicsSubstruct.velocity.x +
+                            g_Ball.physicsSubstruct.velocity.z * g_Ball.physicsSubstruct.velocity.z) < g_hitFloats.minStarHitVelo) {
+                    g_Ball.currentStarSwing = 0;
+                }
+            }
+            break;
+        }
+    }
 }
+#endif
 
 // .text:0x0000B440 size:0x500 mapped:0x8064A4D4
 // Find the first future frame the throw passes its target (coarse then fine search).
