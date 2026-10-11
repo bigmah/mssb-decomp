@@ -1199,9 +1199,187 @@ void fn_3_810C4(int idx, int base) {
 }
 
 // .text:0x00081190 size:0x928 mapped:0x806C0224
-void fn_3_81190(int i) {
-    return;
+extern const f32 lbl_3_rodata_1474;
+// Stops runner r standing on base `base` and sets up the leg to the next base.
+static inline void standOnBase13B8(u8* r, int base) {
+    int next = (base + 1) & 3;
+    if (g_GameLogic[0x121] == 6) {
+        *(f32*)(r + 0x30) = *(f32*)(lbl_3_data_4B58 + base * 0xC + 8);
+        *(f32*)(r + 0x68) = lbl_3_rodata_1414;
+    } else {
+        *(f32*)(r + 0x68) = *(f32*)(r + 0x54);
+    }
+    *(f32*)(r + 0x64) = *(f32*)(r + 0x68) + (f32)base;
+    *(s16*)(r + 0xE6) = base;
+    *(f32*)(r + 0x3C) = lbl_3_data_4A34[base * 2];
+    *(f32*)(r + 0x44) = lbl_3_data_4A34[base * 2 + 1];
+    *(f32*)(r + 0x48) = lbl_3_data_4A34[next * 2];
+    *(f32*)(r + 0x50) = lbl_3_data_4A34[next * 2 + 1];
 }
+
+// Base arrival / touch handling for runner i.
+// NONMATCHING 99.3%: branch layout of the status check, constant reload in the wrap-around path
+#if NONMATCHING
+void fn_3_81190(int i) {
+    u8* r = g_Runners + i * 0x154;
+    int stopBase = -1;
+    int wrap = 0;
+    s16 prevBase = *(s16*)(r + 0xE6);
+    int whole;
+    f32 progress;
+
+    if (r[0x123] != 1 && r[0x123] != 2 && r[0x123] != 4) {
+        return;
+    }
+    if (*(f32*)(r + 0x84) > lbl_3_rodata_1414) {
+        whole = (int)*(f32*)(r + 0x64);
+        if (whole > (int)*(f32*)(r + 0x7C)) {
+            if (r[0x13E] == 2) {
+                *(f32*)(r + 0x64) = (f32)whole;
+                *(f32*)(r + 0x68) = lbl_3_rodata_1414;
+                if (g_GameLogic[0x121] == 6) {
+                    if (*(f32*)(r + 0x64) >= lbl_3_rodata_1470) {
+                        *(f32*)(r + 0x64) = *(f32*)(r + 0x64) - lbl_3_rodata_1470;
+                    }
+                } else if (r[0x135] != 1) {
+                    r[0x137] = 2;
+                    r[0x136] = 2;
+                    r[0x142] = 1;
+                }
+            } else if (r[0x13E] == 1) {
+                *(f32*)(r + 0x64) = (f32)whole;
+                *(f32*)(r + 0x68) = lbl_3_rodata_1414;
+            } else if (r[0x13A] != 0) {
+                *(f32*)(r + 0x64) = (f32)whole;
+                *(f32*)(r + 0x68) = lbl_3_rodata_1414;
+                if (r[0x123] != 1) {
+                    fn_3_8307C(i);
+                }
+            } else {
+                stopBase = whole & 3;
+            }
+        }
+    } else if (*(f32*)(r + 0x84) < lbl_3_rodata_1414) {
+        if (g_GameLogic[0x121] == 6) {
+            wrap = 1;
+        }
+        if (g_Ball.s.acr == 3 && r[0x128] == 2 && r[0x125] > r[0x124]) {
+            wrap = 1;
+        }
+        if (wrap != 0) {
+            if (*(f32*)(r + 0x64) < lbl_3_rodata_1414) {
+                *(f32*)(r + 0x64) = *(f32*)(r + 0x64) + lbl_3_rodata_1470;
+                *(f32*)(r + 0x68) = *(f32*)(r + 0x68) + lbl_3_rodata_1408;
+            }
+        } else if (*(f32*)(r + 0x68) <= *(f32*)(r + 0x54)) {
+            if (r[0x13A] != 0) {
+                *(f32*)(r + 0x64) = (f32)(int)*(f32*)(r + 0x64) + *(f32*)(r + 0x54);
+                *(f32*)(r + 0x68) = *(f32*)(r + 0x54);
+            } else {
+                stopBase = r[0x125];
+            }
+        }
+    }
+    if (stopBase >= 0) {
+        r[0x137] = 2;
+        r[0x136] = 2;
+        *(f32*)(r + 0x84) = lbl_3_rodata_1414;
+        *(f32*)(r + 0xA4) = lbl_3_rodata_1414;
+        *(f32*)(r + 0xB0) = lbl_3_rodata_1414;
+        standOnBase13B8(r, stopBase);
+    }
+    if (!(r[0x123] == 1 || (r[0x123] == 4 && g_Ball.s.acr == -1))) {
+        return;
+    }
+    // Which base (if any) the runner is touching.
+    *(s16*)(r + 0xE6) = -1;
+    progress = *(f32*)(r + 0x64);
+    if (progress > lbl_3_rodata_1450 || g_GameLogic[0x121] == 6) {
+        if (progress >= lbl_3_rodata_1470) {
+            *(s16*)(r + 0xE6) = 0;
+        } else if (*(f32*)(r + 0x68) <= *(f32*)(r + 0x54)) {
+            *(s16*)(r + 0xE6) = (int)progress;
+        } else if (*(f32*)(r + 0x68) >= lbl_3_rodata_1408 - *(f32*)(r + 0x58)) {
+            *(s16*)(r + 0xE6) = ((int)progress + 1) & 3;
+        }
+    }
+    if (*(s16*)(r + 0xE6) >= 0) {
+        if (lbl_3_rodata_1414 == *(f32*)(r + 0x84) && *(f32*)(r + 0x68) > lbl_3_rodata_1450) {
+            standOnBase13B8(r, *(s16*)(r + 0xE6));
+        }
+        if (*(s16*)(r + 0xE6) == *(s16*)(g_Ball.b + 0x1B86) && prevBase == -1) {
+            // Ball holder is on the base the runner just reached.
+            g_FieldingLogic[0x125] = -1;
+            if (g_FieldingLogic[0x116] == 1) {
+                if (!(g_Pitcher[0x14E] == 2 && (r[0x14D] > r[0x125] || (r[0x12D] != 0 && r[0x125] == r[0x124])))) {
+                    r[0x12F] = *(s16*)(r + 0xE6);
+                    *(s16*)(r + 0xE6) = -1;
+                    g_FieldingLogic[0x111] = 1;
+                    *(s16*)(g_FieldingLogic + 0xE8) = i;
+                }
+            } else if (g_Strikes[2] < 3 && (r[0x128] != 2 || *(s16*)(g_Ball.b + 0x1B86) == r[0x124])) {
+                fn_3_59918(2, 0);
+            }
+        } else if (prevBase == -1 && *(s16*)(g_Ball.b + 0x1B66) > 100 && *(s16*)(g_Ball.b + 0x1B78) >= 0 &&
+                   ((f32*)(g_Ball.b + 0x1A04))[*(s16*)(r + 0xE6)] < lbl_3_rodata_1474) {
+            if (*(s16*)(r + 0xEE) == 1) {
+                fn_3_59918(2, 0);
+            } else if (r[0x128] == 2) {
+                fn_3_59918(2, 0);
+            } else if ((s8)r[0x12F] < 0 && r[0x130] != 2 && r[0x123] != 2 &&
+                       (g_FieldingLogic[0x111] == 2 || g_FieldingLogic[0x111] == 4)) {
+                fn_3_59918(2, 0);
+            }
+        }
+        fn_3_8307C(i);
+        if (*(s16*)(r + 0xE6) == r[0x124] && r[0x128] == 2) {
+            r[0x128] = 0;
+        }
+        if (r[0x137] == 1) {
+            if (*(f32*)(r + 0x68) < lbl_3_rodata_1450) {
+                r[0x144] = 0;
+                r[0x143] = 0;
+            }
+        } else if (r[0x137] == 3) {
+            if (*(f32*)(r + 0x68) > lbl_3_rodata_1450) {
+                r[0x144] = 0;
+                r[0x143] = 0;
+            }
+        } else {
+            r[0x144] = 0;
+            r[0x143] = 0;
+        }
+        r[0x141] = 0;
+    }
+    if (*(s16*)(r + 0xE6) == 0) {
+        // Reached home.
+        if (g_Strikes[2] < 3 && g_d_GameSettings[7] != 7 &&
+            (g_Ball.s.acr == 1 || g_Ball.s.acr == 2 || (g_Ball.s.acr == 3 && r[0x128] == 0) ||
+             (g_Ball.s.acr == 0 && g_Strikes[3] == 2) || g_Practice[0x193] == 3)) {
+            r[0x137] = 0;
+            r[0x123] = 3;
+            if (g_GameLogic[0x127] != 0) {
+                r[0x123] = 4;
+            } else if (g_Ball.b[0x1BD1] != 0) {
+                r[0x123] = 4;
+            } else {
+                *(s16*)(g_Scores + 0x9C) += 1;
+            }
+            if (r[0x13A] != 0) {
+                r[0x145] = 2;
+            } else {
+                r[0x145] = 3;
+            }
+            r[0x146] = 0;
+        }
+        if (r[0x13A] != 0 && *(s16*)(r + 0x114) == 0 && g_GameLogic[0x121] != 6) {
+            *(s16*)(r + 0x114) = lbl_3_data_4C54[0];
+        }
+    } else if (*(f32*)(r + 0x64) >= lbl_3_rodata_1470 && g_GameLogic[0x127] != 0 && r[0x13A] != 0) {
+        r[0x145] = 2;
+    }
+}
+#endif
 
 // .text:0x00081AB8 size:0x34 mapped:0x806C0B4C
 void fn_3_81AB8(int i) {
