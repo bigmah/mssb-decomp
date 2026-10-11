@@ -38,9 +38,61 @@ extern s32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
 #define SPRITE_I(task, k, i) (lbl_80371C30[(k) + (task)->baseIdx + (i)].obj)
 
 // .text:0x0011D3AC size:0x2F4 mapped:0x8075C440
+// Relocates the result-screen asset file loaded from ARAM.
+// NONMATCHING 78%: relocation loop index/base registers differ and the remainder-loop guard is placed differently
+#if NONMATCHING
 void fn_3_11D3AC(void) {
-    return;
+    u32* file;
+    s32 i;
+    s32 k;
+    s32 skip;
+
+    file = lbl_8036E548.file;
+    lbl_8036E548._3078 = 0;
+    for (i = 0; i < 81; i++) {
+        lbl_8036E548.data.ptr[i] = (u8*)file + file[i];
+    }
+    lbl_3_common_bss_32724.model = (u8*)file + file[i++];
+    lbl_3_common_bss_32724.anim.set = (void*)((u8*)file + file[i++]);
+    lbl_3_common_bss_32724.skin = (u8*)file + file[i++];
+    lbl_3_common_bss_32724.animBanks[0] = (ANIMBank*)((u8*)file + file[i++]);
+    ANIMGet(lbl_3_common_bss_32724.animBanks[0]);
+    lbl_3_common_bss_32724.animBanks[1] = (ANIMBank*)((u8*)file + file[i++]);
+    ANIMGet(lbl_3_common_bss_32724.animBanks[1]);
+    lbl_3_common_bss_32724.animBanks[2] = (ANIMBank*)((u8*)file + file[i++]);
+    ANIMGet(lbl_3_common_bss_32724.animBanks[2]);
+    lbl_3_common_bss_32724.textures[0] = (u8*)file + file[i++];
+    lbl_3_common_bss_32724.textures[1] = (u8*)file + file[i++];
+    lbl_3_common_bss_32724.textures[2] = (u8*)file + file[i++];
+
+    for (k = 0; k < 27; k++) {
+        void* layout = lbl_8036E548.data.actor[k].layout;
+        void* geometry = lbl_8036E548.data.actor[k].geometry;
+        void* textures = lbl_8036E548.data.actor[k].textures;
+
+        LoadActorLayout(layout);
+        if (k == 17) {
+            convertGeometryAndSknHeader(geometry, lbl_3_common_bss_32724.skin);
+        } else {
+            convertGeometryAndSknHeader(geometry, NULL);
+        }
+        haveActLayoutPointToGeoHeader(layout, geometry);
+        convertTextureHeader(textures);
+        fn_800BD190(geometry, (s32)textures); // TODO type: (GQRValueGroups*, void*) in file_80011640.c
+    }
+
+    skip = 0;
+    fn_80025DDC(lbl_3_common_bss_32724.model);
+    fn_80025FFC(lbl_3_common_bss_32724.model, &lbl_3_common_bss_32724.anim);
+    fn_80025EEC(&lbl_3_common_bss_32724.anim, 0, 0);
+    if (skip == 0) {
+        lbl_3_common_bss_32724.anim.state.loops = 1;
+    }
+    convertTextureHeader(lbl_3_common_bss_32724.textures[0]);
+    convertTextureHeader(lbl_3_common_bss_32724.textures[1]);
+    convertTextureHeader(lbl_3_common_bss_32724.textures[2]);
 }
+#endif
 
 // .text:0x0011D6A0 size:0xE0 mapped:0x8075C734
 // Loads the result-screen assets; returns 1 once done.
