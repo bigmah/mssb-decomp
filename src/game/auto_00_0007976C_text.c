@@ -81,6 +81,33 @@ void fn_3_7AB34(void) {
     *(u16*)(r + 0xE) = *(u16*)(r + 0xE) + 1;
 }
 
+// fn_3_7AD68, size:0x140
+// NONMATCHING 89%: original walks the batting-order rows with a pointer and uses lbzu for the stat bytes
+#if NONMATCHING
+void fn_3_7AD68(void) {
+    s32 i;
+    s32 t;
+    s32 f;
+
+    t = g_GameLogic.awayTeamBattingInd_battingTeam;
+    f = g_GameLogic.teamFielding;
+    if (lbl_3_common_bss_32A38[f][g_GameLogic.battingOrderAndPositionMapping[t][0][0]]._2 < 0) {
+        lbl_3_common_bss_32A38[f][g_GameLogic.battingOrderAndPositionMapping[t][0][0]]._2 = 0;
+    } else {
+        lbl_3_common_bss_32A38[f][g_GameLogic.battingOrderAndPositionMapping[t][0][0]]._4 = 0;
+    }
+    for (i = 1; i < 10; i++) {
+        if (g_GameLogic.battingOrderAndPositionMapping[t][i][1] > 0 &&
+            lbl_3_common_bss_32A38[f][g_GameLogic.battingOrderAndPositionMapping[t][i][0]]._2 == 0 &&
+            g_GameLogic.battingOrderAndPositionMapping[t][i][1] !=
+                lbl_3_common_bss_32A38[f][g_GameLogic.battingOrderAndPositionMapping[t][i][0]]._3) {
+            lbl_3_common_bss_32A38[f][g_GameLogic.battingOrderAndPositionMapping[t][i][0]]._3 =
+                g_GameLogic.battingOrderAndPositionMapping[t][i][1];
+        }
+    }
+}
+#endif
+
 // fn_3_7AEA8, size:0x40
 s32 fn_3_7AEA8(void) {
     return g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] + (((s16*)((u8*)&lbl_3_common_bss_32A94 + 0x44))[g_GameLogic.homeTeamBattingInd_fieldingTeam] - 1) * 9 - 1;

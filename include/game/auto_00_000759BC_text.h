@@ -111,9 +111,11 @@ typedef struct LineScore {
 
 // lbl_3_common_bss_32A38: per-pitcher game counters, [2 teams][9].
 typedef struct PitcherGameStat {
-    /*0x0*/ u8 _0;
-    /*0x1*/ u8 _1;
-    /*0x2*/ u8 _2[3];
+    /*0x0*/ u8 _0; // outs recorded while leading
+    /*0x1*/ u8 _1; // save situation
+    /*0x2*/ s8 _2;
+    /*0x3*/ s8 _3; // fielding position
+    /*0x4*/ s8 _4;
 } PitcherGameStat; // size: 0x5
 
 // lbl_8034E9A0 + 0x4908: play-by-play log, [2 teams][100].
