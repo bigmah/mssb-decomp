@@ -96,7 +96,14 @@ static inline void ReadRingChunk(void) {
 
 // .text:0x800A6870 size:0x20
 u32 fn_800A6870(u8 enable, u32 limit) {
-    return 0;
+    u32 old;
+
+    lbl_803C6CF8.retryEnabled = enable;
+    old = lbl_803C6CF8.retryLimit;
+    if (enable) {
+        lbl_803C6CF8.retryLimit = limit;
+    }
+    return old;
 }
 
 // .text:0x800A6890 size:0x44
