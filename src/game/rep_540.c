@@ -16,7 +16,9 @@ typedef struct Fielder540 {
     /*0x17A*/ s16 animID; // index into lbl_800E8558 (6 bytes per entry)
     /*0x17C*/ u8 _17C[0x1C7 - 0x17C];
     /*0x1C7*/ u8 _1C7;
-    /*0x1C8*/ u8 _1C8[0x268 - 0x1C8];
+    /*0x1C8*/ u8 _1C8;
+    /*0x1C9*/ u8 _1C9;
+    /*0x1CA*/ u8 _1CA[0x268 - 0x1CA];
 } Fielder540; // size: 0x268
 
 extern Fielder540 g_Fielders[9];
@@ -28,6 +30,8 @@ extern Fielder540 g_Fielders[9];
 extern u8 lbl_3_data_450C[];
 extern f32 lbl_3_data_4428[];
 extern f32 lbl_3_data_4930[];
+extern f32 lbl_3_data_47BC[]; // garlic-hit catch radius, by fielder _1C9
+extern int fn_3_253A4(int fielder, s16 angle);
 extern f32 lbl_3_data_45FC; // default ball gravity
 extern f32 lbl_3_data_45F4[2]; // ground y for bounces [normal, game mode 6]
 extern u8 lbl_3_data_4600; // default air resistance // fielding tuning floats
@@ -818,9 +822,126 @@ void fn_3_A0F0(void) {
 }
 
 // .text:0x0000A198 size:0x6A4 mapped:0x8064922C
+// Garlic (Wario/Waluigi star) hit: split into two balls and fly them until one lands near a fielder.
+// NONMATCHING 86%: original reloads the split-ball vectors after every store; float regalloc
+#if NONMATCHING
 void fn_3_A198(void) {
-    return;
+    s32 i;
+    f32 angle;
+    f32 speed;
+    f32 ax, az, bx, bz;
+    f32 drag;
+    f32 best;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    s32 nearest;
+    Fielder540* f;
+    if (g_Ball.framesUntilBallHitsGround > g_Ball.matchFramesAndBallAngle.garlicHitFramesUntilHitGroundForSplit) {
+        return;
+    }
+    if (g_Ball.framesUntilBallHitsGround == g_Ball.matchFramesAndBallAngle.garlicHitFramesUntilHitGroundForSplit) {
+        for (i = 9; i >= 0; i--) {
+            g_Ball.warioStarHitCoords[i + 3].x = BALL_PAST(i).x;
+            g_Ball.warioStarHitCoords[i + 3].y = BALL_PAST(i).y;
+            g_Ball.warioStarHitCoords[i + 3].z = BALL_PAST(i).z;
+        }
+        g_Ball.physicsSubstruct.acceleration.x = 0.0f;
+        g_Ball.physicsSubstruct.acceleration.y = 0.0f;
+        g_Ball.physicsSubstruct.acceleration.z = 0.0f;
+        g_Ball.warioStarHitCoords[0].x = g_Ball.AtBat_Contact_BallPos.x;
+        g_Ball.warioStarHitCoords[0].y = g_Ball.AtBat_Contact_BallPos.y;
+        g_Ball.warioStarHitCoords[0].z = g_Ball.AtBat_Contact_BallPos.z;
+        g_Ball.warioStarHitCoords[1].x = g_Ball.AtBat_Contact_BallPos.x;
+        g_Ball.warioStarHitCoords[1].y = g_Ball.AtBat_Contact_BallPos.y;
+        g_Ball.warioStarHitCoords[1].z = g_Ball.AtBat_Contact_BallPos.z;
+        g_Ball.warioStarHitCoords[2].x = g_Ball.AtBat_Contact_BallPos.x;
+        g_Ball.warioStarHitCoords[2].y = g_Ball.AtBat_Contact_BallPos.y;
+        g_Ball.warioStarHitCoords[2].z = g_Ball.AtBat_Contact_BallPos.z;
+        angle = game_atan2(g_Ball.physicsSubstruct.velocity.x, g_Ball.physicsSubstruct.velocity.z);
+        speed = sqrt540(g_Ball.physicsSubstruct.velocity.x * g_Ball.physicsSubstruct.velocity.x + g_Ball.physicsSubstruct.velocity.z * g_Ball.physicsSubstruct.velocity.z);
+        getComponentsFromRad(angle + RandomF32_Game_Range(g_hitFloats.garlicSpreadLower, g_hitFloats.garlicSpreadUpper), &ax, &az);
+        getComponentsFromRad(angle - RandomF32_Game_Range(g_hitFloats.garlicSpreadLower, g_hitFloats.garlicSpreadUpper), &bx, &bz);
+        ax *= speed;
+        az *= speed;
+        bx *= speed;
+        bz *= speed;
+        if (g_Ball.warioWaluStarHitDirection != 0) {
+            g_Ball.warioStarHitCoords[13].x = ax;
+            g_Ball.warioStarHitCoords[13].y = g_Ball.physicsSubstruct.velocity.y;
+            g_Ball.warioStarHitCoords[13].z = az;
+            g_Ball.warioStarHitCoords[14].x = bx;
+            g_Ball.warioStarHitCoords[14].y = g_Ball.physicsSubstruct.velocity.y;
+            g_Ball.warioStarHitCoords[14].z = bz;
+        } else {
+            g_Ball.warioStarHitCoords[13].x = bx;
+            g_Ball.warioStarHitCoords[13].y = g_Ball.physicsSubstruct.velocity.y;
+            g_Ball.warioStarHitCoords[13].z = bz;
+            g_Ball.warioStarHitCoords[14].x = ax;
+            g_Ball.warioStarHitCoords[14].y = g_Ball.physicsSubstruct.velocity.y;
+            g_Ball.warioStarHitCoords[14].z = az;
+        }
+        g_Ball.matchFramesAndBallAngle.garlicHitFramesSinceSplit = 0;
+    } else {
+        g_Ball.warioStarHitCoords[0].x = g_Ball.AtBat_Contact_BallPos.x;
+        g_Ball.warioStarHitCoords[0].y = g_Ball.AtBat_Contact_BallPos.y;
+        g_Ball.warioStarHitCoords[0].z = g_Ball.AtBat_Contact_BallPos.z;
+        if (g_Ball.matchFramesAndBallAngle.garlicHitFramesSinceSplit == 3) {
+            g_AiLogic._79[0] = RandomInt_Game(2);
+            g_FieldingLogic._13B = 1;
+        }
+        drag = 1.0f - (f32)g_Ball.airResistance / 10000.0f;
+        // [13]/[14] are the two split balls' velocities, [1]/[2] their positions
+        g_Ball.warioStarHitCoords[13].y -= g_Ball.physicsSubstruct.gravity;
+        g_Ball.warioStarHitCoords[13].x *= drag;
+        g_Ball.warioStarHitCoords[13].y *= drag;
+        g_Ball.warioStarHitCoords[13].z *= drag;
+        g_Ball.warioStarHitCoords[1].x += g_Ball.warioStarHitCoords[13].x;
+        g_Ball.warioStarHitCoords[1].y += g_Ball.warioStarHitCoords[13].y;
+        g_Ball.warioStarHitCoords[1].z += g_Ball.warioStarHitCoords[13].z;
+        g_Ball.warioStarHitCoords[14].y -= g_Ball.physicsSubstruct.gravity;
+        g_Ball.warioStarHitCoords[14].x *= drag;
+        g_Ball.warioStarHitCoords[14].y *= drag;
+        g_Ball.warioStarHitCoords[14].z *= drag;
+        g_Ball.warioStarHitCoords[2].x += g_Ball.warioStarHitCoords[14].x;
+        g_Ball.warioStarHitCoords[2].y += g_Ball.warioStarHitCoords[14].y;
+        g_Ball.warioStarHitCoords[2].z += g_Ball.warioStarHitCoords[14].z;
+        g_Ball.AtBat_Contact_BallPos.x = g_Ball.warioStarHitCoords[1].x;
+        g_Ball.AtBat_Contact_BallPos.y = g_Ball.warioStarHitCoords[1].y;
+        g_Ball.AtBat_Contact_BallPos.z = g_Ball.warioStarHitCoords[1].z;
+        if (g_Ball.warioStarHitCoords[1].y < 2.0f && g_Ball.framesUntilBallHitsGround < 30) {
+            best = 999.9f;
+            nearest = -1;
+            f = g_Fielders;
+            for (i = 0; i < 9; i++) {
+                dx = g_Ball.warioStarHitCoords[2].x - f->pos.x;
+                dz = g_Ball.warioStarHitCoords[2].z - f->pos.z;
+                d = sqrt540(dx * dx + dz * dz);
+                if (d < best) {
+                    nearest = i;
+                    best = d;
+                }
+                f++;
+            }
+            if (best < lbl_3_data_47BC[g_Fielders[nearest]._1C9]) {
+                fn_3_253A4(nearest, fn_3_9FB8C(g_Fielders[nearest].pos.x - g_Ball.warioStarHitCoords[2].x, g_Fielders[nearest].pos.z - g_Ball.warioStarHitCoords[2].z));
+                g_Ball.currentStarSwing = 0;
+                g_Ball.warioWaluGarlicIsActive = 0;
+                return;
+            }
+        }
+    }
+    if (g_Ball.matchFramesAndBallAngle.garlicHitFramesSinceSplit < 0x7FFE) {
+        g_Ball.matchFramesAndBallAngle.garlicHitFramesSinceSplit++;
+    } else {
+        g_Ball.matchFramesAndBallAngle.garlicHitFramesSinceSplit = 0x7FFF;
+    }
+    if (g_Ball.warioWaluGarlicIsActive == 0) {
+        playSoundEffect(0x1B3);
+    }
+    g_Ball.warioWaluGarlicIsActive = 1;
 }
+#endif
 
 // .text:0x0000A83C size:0x134 mapped:0x806498D0
 void fn_3_A83C(void) {
