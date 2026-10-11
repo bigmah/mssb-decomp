@@ -212,8 +212,20 @@ void fn_80040C14(void) {
 }
 
 // .text:0x80040FE0 size:0x94
-void fn_80040FE0(void) {
-    return;
+s32 fn_80040FE0(SaveImage* img) {
+    u8* shared = img->_48;
+    SaveChallengeBlock* blk;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if (i == 0) {
+            img->crc = fn_800ABB14(shared, 0x5B0);
+        } else {
+            blk = &img->challenge[i - 1];
+            blk->crc = fn_800ABB14(blk->data, sizeof(blk->data));
+        }
+    }
+    return 0x11;
 }
 
 // .text:0x80041074 size:0xDC
