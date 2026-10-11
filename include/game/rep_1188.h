@@ -8,7 +8,7 @@ void fn_3_6D964(void);
 void setInMemBatterConstants(int rosterID);
 u8 fn_3_6E1D4(u8 v);
 void fn_3_6E24C(void);
-void fn_3_6EBB4(void);
+void fn_3_6EBB4(int rosterID);
 void fn_3_6EF1C(void);
 
 #endif // !__GAME_rep_1188_H_

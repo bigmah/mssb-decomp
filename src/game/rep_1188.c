@@ -126,8 +126,80 @@ void fn_3_6E24C(void) {
 }
 
 // .text:0x0006EBB4 size:0x368 mapped:0x806ADC48
-void fn_3_6EBB4(void) {
-    return;
+// setInMemPitcherConstants: pitcher counterpart of setInMemBatterConstants.
+// Default pitcher stats used when no pitcher is selected (rosterID < 0):
+// curve ball speed, fast ball speed, cursed ball, curve control, curve, captain star pitch.
+extern s16 lbl_3_data_460C[6];
+
+void fn_3_6EBB4(int rosterID) {
+    int index;
+    CharacterStats* char_stats;
+    CharacterStats* team = inMemRoster[g_GameLogic.teamFielding];
+    ChallengeTrackingStruct* starMissions = starMissionCompletionTracker;
+
+    char_stats = &team[rosterID];
+    if (rosterID < 0) {
+        g_Pitcher.rosterID = 0;
+        g_Pitcher.charID = 0;
+        g_Pitcher.handedness = 0;
+        g_Pitcher.curveBallSpeed = lbl_3_data_460C[0];
+        g_Pitcher.fastBallSpeed = lbl_3_data_460C[1];
+        g_Pitcher.cursedBallStat = lbl_3_data_460C[2];
+        g_Pitcher.curveControlStat = lbl_3_data_460C[3];
+        g_Pitcher.curveStat = lbl_3_data_460C[4];
+        g_Pitcher.captainStarPitch = lbl_3_data_460C[5];
+        return;
+    }
+
+    if (g_d_GameSettings.GameModeSelected == GAME_TYPE_PRACTICE) {
+        if (g_Practice.practiceType_2 == 0 || g_Practice.practiceType_2 == 1 || g_Practice.practiceType_2 == 2 ||
+            g_Practice.practiceType_2 == 3) {
+            rosterID = 0;
+            char_stats = &team[g_Minigame.minigamePlayerSelectedOrder];
+        }
+    } else if (g_d_GameSettings.minigamesEnabled) {
+        rosterID = g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame.minigamePlayerSelectedOrder];
+        char_stats = &inMemRoster[0][rosterID];
+    }
+
+    g_Pitcher.rosterID = rosterID;
+    g_Pitcher.charID = (u8)char_stats->stats.CharID;
+    g_Pitcher.handedness = char_stats->stats.FieldingArm;
+    g_Pitcher.curveBallSpeed = char_stats->stats.CurveBallSpeed;
+    g_Pitcher.fastBallSpeed = char_stats->stats.FastBallSpeed;
+    g_Pitcher.cursedBallStat = char_stats->stats.cursedBall;
+    g_Pitcher.curveControlStat = char_stats->stats.curveControl;
+    g_Pitcher.curveStat = char_stats->stats.Curve;
+    g_Pitcher.charClass = char_stats->stats.CharacterClass;
+    g_Pitcher.aiLevel = g_GameLogic.AIDifficulty0Special3Weak[g_GameLogic.awayTeamBattingInd_battingTeam];
+
+    if (!g_d_GameSettings.exhibitionMatchInd) {
+        g_Pitcher.scoutFlagRelated = -1;
+        for (index = 0; index < 54; index++) {
+            if ((g_Pitcher.charID == index) && (starMissions[index].variantClassification <= 3)) {
+                g_Pitcher.scoutFlagRelated = index;
+                break;
+            }
+        }
+    }
+
+    if (g_d_GameSettings.minigamesEnabled) {
+        s8 idx;
+        g_Pitcher.captainStarPitch = 0;
+        g_Pitcher.nonCaptainStarPitch = 0;
+        if (g_Minigame.battingHandedness[rosterID] <= 1) {
+            g_Pitcher.handedness = 0;
+        } else {
+            g_Pitcher.handedness = 1;
+        }
+        idx = g_Minigame.minigameControlStruct[0].characterIndex[rosterID];
+        if (g_Minigame.minigameControlStruct[0].battingHandedness[idx] != 0) {
+            g_Pitcher.aiLevel = aILevel[g_Minigame.minigameControlStruct[0].aIStrength[idx]];
+        }
+    } else {
+        g_Pitcher.captainStarPitch = char_stats->stats.CaptainStarHitPitch;
+        g_Pitcher.nonCaptainStarPitch = char_stats->stats.NonCaptainStarPitch;
+    }
 }
 
 // .text:0x0006EF1C size:0x5CC mapped:0x806ADFB0
