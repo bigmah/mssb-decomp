@@ -184,7 +184,9 @@ typedef struct MenuWork {
 // lbl_8034E9A0 (size 0x4C28): base character stats by CharID, plus other state.
 typedef struct RosterData {
     /*0x0000*/ CharacterStats chars[6][9];
-    /*0x21C0*/ u8 _21C0[0x46F8 - 0x21C0];
+    /*0x21C0*/ u8 _21C0[0x46E0 - 0x21C0];
+    /*0x46E0*/ s8 _46E0[2][4];
+    /*0x46E8*/ u8 _46E8[0x10];
     /*0x46F8*/ s8 _46F8[2];
     /*0x46FA*/ u8 _46FA[0x470D - 0x46FA];
     /*0x470D*/ u8 _470D[2];
@@ -216,7 +218,8 @@ typedef struct RosterSlot {
 
 // lbl_803C5EE0: tutorial task flags.
 typedef struct TutorialTask {
-    /*0x00*/ u8 _00[0x15];
+    /*0x00*/ s16 cur[4]; // copy of TutorialInput.cur
+    /*0x08*/ u8 _08[0xD];
     /*0x15*/ u8 done;
     /*0x16*/ u8 _16[2];
 } TutorialTask; // size: 0x18
