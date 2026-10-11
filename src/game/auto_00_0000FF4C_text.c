@@ -21,7 +21,11 @@ void fn_3_FF4C(void) {
 
 // .text:0x0000FF98 size:0x98 mapped:0x8064F02C
 void fn_3_FF98(void) {
-    return;
+    s32 a;
+    a = (((lbl_3_data_228.counter % 10) + 1) * (g_Ball.StaticRandomInt2 * g_Ball.StaticRandomInt1) + g_Ball.StaticRandomInt2 * 16 + (s32)(lbl_3_data_228.counter >> 1) + g_d_GameSettings.FrameCountWhileNotAtMainMenu) & 0x7FFF;
+    g_Ball.StaticRandomInt1 = a;
+    g_Ball.StaticRandomInt1_prePitch = a;
+    g_Ball.StaticRandomInt2 = (((lbl_3_data_228.counter % 10) + 1) * (g_Ball.StaticRandomInt2 * (g_Ball.StaticRandomInt2 + 1)) + a * 8 + (s32)(lbl_3_data_228.counter >> 1) + (g_d_GameSettings.FrameCountWhileNotAtMainMenu >> 1)) & 0x7FFF;
 }
 
 // .text:0x00010030 size:0x11C mapped:0x8064F0C4
