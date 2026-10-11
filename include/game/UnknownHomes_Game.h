@@ -2871,12 +2871,57 @@ typedef struct {
 extern g_FieldingLogic_s g_FieldingLogic;
 
 typedef struct {
-    /* 0x0 */ s16 _0;
-    /* 0x2 */ s16 _2;
-    /* 0x4 */ s16 _4;
-} lbl_3_common_bss_32A94_s;
+    /* 0x00 */ s16 _0;
+    /* 0x02 */ s16 _2;
+    /* 0x04 */ s16 _4;
+    /* 0x06 */ s16 _6[5]; // history of _0 (fn_3_9DB5C)
+    /* 0x10 */ s8 _10[0x10];
+    /* 0x20 */ u8 _20[2];
+    /* 0x22 */ s8 _22;
+    /* 0x23 */ u8 _23;
+    /* 0x24 */ u8 _24;
+    /* 0x25 */ u8 _25[0x7D - 0x25];
+    /* 0x7D */ u8 _7D;
+    /* 0x7E */ u8 _7E;
+    /* 0x7F */ u8 _7F;
+    /* 0x80 */ u8 _80;
+    /* 0x81 */ u8 _81;
+    /* 0x82 */ u8 _82;
+    /* 0x83 */ u8 _83;
+    /* 0x84 */ u8 _84;
+    /* 0x85 */ u8 _85;
+    /* 0x86 */ u8 _86;
+    /* 0x87 */ u8 _87;
+    /* 0x88 */ u8 _88;
+    /* 0x89 */ u8 _89;
+    /* 0x8A */ u8 _8A;
+    /* 0x8B */ u8 _8B;
+} lbl_3_common_bss_32A94_s; // size: 0x8C
 
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
+
+// g_Scores layout (0xC8 bytes); declare `extern GameScores g_Scores;` in the unit header.
+typedef struct GameScoresTeam {
+    /* 0x00 */ s16 runs;
+    /* 0x02 */ u8 _02[0x26 - 0x2];
+} GameScoresTeam; // size: 0x26
+
+typedef struct GameScores {
+    /* 0x00 */ s32 inning;
+    /* 0x04 */ GameScoresTeam team[2];
+    /* 0x50 */ u8 _50[0x9C - 0x50];
+    /* 0x9C */ s16 _9C;
+    /* 0x9E */ s16 _9E;
+    /* 0xA0 */ s16 _A0;
+    /* 0xA2 */ u8 _A2[0xAA - 0xA2];
+    /* 0xAA */ u8 maxInnings;
+    /* 0xAB */ u8 _AB;
+    /* 0xAC */ u8 _AC;
+    /* 0xAD */ u8 _AD;
+    /* 0xAE */ u8 _AE[0xC2 - 0xAE];
+    /* 0xC2 */ u8 _C2;
+    /* 0xC3 */ u8 _C3[0xC8 - 0xC3];
+} GameScores; // size: 0xC8
 
 typedef struct {
     u8 pad[0xa0];

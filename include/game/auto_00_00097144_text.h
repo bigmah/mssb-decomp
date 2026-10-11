@@ -73,7 +73,9 @@ typedef struct GamePauseState {
     /*0x1D1*/ u8 menu;
     /*0x1D2*/ u8 state;
     /*0x1D3*/ u8 _1D3;
-    /*0x1D4*/ u8 _1D4[0x1D9 - 0x1D4];
+    /*0x1D4*/ u8 _1D4;
+    /*0x1D5*/ u8 _1D5;
+    /*0x1D6*/ u8 _1D6[0x1D9 - 0x1D6];
     /*0x1D9*/ u8 itemsState; // 0: opening, 2: closed, 3: done
     /*0x1DA*/ s8 cursor;
     /*0x1DB*/ u8 _1DB[0x221 - 0x1DB];
@@ -140,15 +142,7 @@ typedef struct HudSavedSettings {
 extern HudSavedSettings lbl_800E8754;
 extern MenuDef lbl_800FEF70[];
 
-// g_Scores (0xC8 bytes); only the fields used here.
-typedef struct HudScores {
-    /*0x00*/ s32 inning;
-    /*0x04*/ u8 _04[0xAD - 0x4];
-    /*0xAD*/ u8 _AD;
-    /*0xAE*/ u8 _AE[0xC8 - 0xAE];
-} HudScores;
-
-extern HudScores g_Scores;
+extern GameScores g_Scores;
 
 // Main.dol calls used here.
 extern void fn_80035CA4(s32 id);
