@@ -268,9 +268,14 @@ u32 multBottomBits_asFloat(u32 color, u32 scale) {
 #endif
 
 // .text:0x800249D8 size:0x128
-void byteWiseMultiply(void) {
-    return;
+// Scale each byte of color by scale/255.
+// NONMATCHING 42%: same operations, the four byte conversions are scheduled differently
+#if NONMATCHING
+u32 byteWiseMultiply(u32 scale, u32 color) {
+    return scaleByte(scale, color) | (scaleByte(scale, color >> 8) << 8) | (scaleByte(scale, color >> 16) << 16) |
+           (scaleByte(scale, color >> 24) << 24);
 }
+#endif
 
 // .text:0x80024B00 size:0xB4
 void LERPToNewRange_Float(void) {
