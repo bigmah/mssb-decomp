@@ -2307,6 +2307,8 @@ void fn_3_833EC(int i) {
 
 // .text:0x000835B0 size:0x164 mapped:0x806C2644
 // 99.5%: 12 diff lines, post-RandomInt_Game table temps (r0/r4/r5 allocation of idx*8 + DATA base)
+// NONMATCHING 99.5%: register allocation of the AI table temps after RandomInt_Game
+#if NONMATCHING
 void fn_3_835B0(void) {
     u8* ai;
     s32* t;
@@ -2339,6 +2341,7 @@ void fn_3_835B0(void) {
         }
     }
 }
+#endif
 
 // .text:0x00083714 size:0xAAC mapped:0x806C27A8
 // 1 = go, -1 = hold: compares the runner's frames to the next base with the
