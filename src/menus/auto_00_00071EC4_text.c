@@ -3376,3 +3376,34 @@ void fn_2_80F5C(u8* o, s32 index) {
         e[index] = 1;
     }
 }
+
+// fn_2_7308C, size:0x6CC
+// Team-select header state machine; each case is a pair of the small helpers above.
+// NONMATCHING 45%: structure is right (CW inlines the matched helpers); fn_2_72E54/fn_2_72A88 must match and be defined above it to inline too
+#if NONMATCHING
+void fn_2_7308C(void) {
+    u8* o = lbl_803CC1B8;
+    switch (lbl_803CBBC4[0]) {
+    case 1:
+        fn_2_72E54(o);
+        fn_2_72DDC((s32)o);
+        break;
+    case 2:
+        fn_2_728C0(o);
+        fn_2_72814((s32)o);
+        break;
+    case 3:
+        fn_2_72A88(o);
+        fn_2_72A58();
+        break;
+    case 0x47:
+        fn_2_72D60(o);
+        fn_2_72CB4((s32)o);
+        break;
+    }
+    if (lbl_803CBCD8[5] != 0) {
+        lbl_803CBCD8[5] = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(o));
+    }
+}
+#endif
