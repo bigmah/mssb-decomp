@@ -442,9 +442,22 @@ void fn_800ACFB0(void* block) {
 }
 
 // .text:0x800ACFD0 size:0x4C
-void _OSAllocFromHeap(void) {
-    return;
+// NONMATCHING 72%: original computes (align + 7) before adding lo; ours reassociates to (lo + align) + 7
+#if NONMATCHING
+void* _OSAllocFromHeap(s32 align, s32 size) {
+    u8* lo = lbl_803C7898.lo;
+    u8* hi = lbl_803C7898.hi;
+    u8* block;
+    size = (size + 3) & ~3;
+    block = (u8*)(-align & (u32)(lo + (align + 7)));
+    ((HeapBlockHeader*)block)[-1].prev = lo;
+    ((HeapBlockHeader*)block)[-1].size = (block - lo) + size;
+    lo = size + block;
+    lbl_803C7898.freeSize = hi - lo;
+    lbl_803C7898.lo = lo;
+    return block;
 }
+#endif
 
 // .text:0x800AD01C size:0x1C
 void fn_800AD01C(void* hi) {
