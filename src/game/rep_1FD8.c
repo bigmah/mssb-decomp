@@ -772,8 +772,9 @@ extern s32 lbl_3_bss_9F0C;
 extern u8 lbl_3_data_17514[];
 extern const f32 lbl_3_rodata_21A8;
 extern f64 pow(f64, f64);
-// 97%: only f-reg numbering of hoisted consts (213C should be f1, loaded after first fadds); const externs help
 // .text:0x000C4724 size:0x1AC mapped:0x807037B8
+// NONMATCHING 97%: only f-reg numbering of hoisted consts (213C should be f1, loaded after first fadds)
+#if NONMATCHING
 u32 fn_3_C4724(void* hv) {
     C4724Hdr* h = hv;
     C4724P* p = h->head;
@@ -812,6 +813,7 @@ u32 fn_3_C4724(void* hv) {
     }
     return 0;
 }
+#endif
 
 // 99%: only the x/y load order of the src->pos copy (we load y before x)
 // .text:0x000C48D0 size:0x2B0 mapped:0x80703964
