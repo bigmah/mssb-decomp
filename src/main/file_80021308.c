@@ -468,8 +468,23 @@ void fn_800229CC(void) {
 }
 
 // .text:0x80022A24 size:0xF0
-void fn_80022A24(void) {
-    return;
+s32 fn_80022A24(s32 stadium, s32 variant) {
+    if (lbl_803716B8.stadiumAramPending != 0) {
+        fn_800A7568();
+    } else {
+        if (DVD_STATE_IDLE != 1) {
+            return 0;
+        }
+        if (lbl_803716B8.stadiumAram != 0) {
+            lbl_803716B8.stadiumAramPending = lbl_803716B8.stadiumAram;
+        } else {
+            lbl_803716B8.stadiumAramPending = fn_800A6354(0xED440);
+        }
+    }
+    lbl_803716B8.stadiumAram = 0;
+    ARAMTransfer(&lbl_800EFBE8[variant + stadium * 3], (void*)lbl_803716B8.stadiumAramPending, 2, 0);
+    fn_800B0A5C_insertQueue(fn_80022B14, lbl_803CC1B8->priority + 1);
+    return 1;
 }
 
 // .text:0x80022B14 size:0x54
