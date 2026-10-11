@@ -59,6 +59,18 @@ typedef struct {
     s8 menu;
 } ChallengeRosterQueue;
 
+// Debug viewer camera (lbl_1_bss_6B7C).
+typedef struct ChallengeCamera {
+    /*0x00*/ Mtx view;
+    /*0x30*/ s16 rotX;
+    /*0x32*/ s16 rotY;
+    /*0x34*/ f32 panX;
+    /*0x38*/ f32 panY;
+    /*0x3C*/ Vec eye;
+    /*0x48*/ Vec target;
+    /*0x54*/ u8 pad54[8];
+} ChallengeCamera;
+
 // View of a controller entry in lbl_803C77B8 (PadState in main/file_800A7C08.h,
 // which can't be included next to UnknownHomes_Static.h).
 typedef struct ChallengePad {
@@ -100,6 +112,8 @@ void fn_1_1A774(void);
 void fn_1_1D514(void);
 
 void fn_1_1B038(void);
+
+void fn_1_1ADA4(void);
 
 void fn_1_1B0FC(void);
 
