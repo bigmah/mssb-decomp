@@ -326,6 +326,47 @@ s32 fn_80024C04(s32 index) {
 }
 
 // .text:0x80024C6C size:0xC0
-void fn_80024C6C(void) {
-    return;
+s32 fn_80024C6C(FielderSortInfo* info, s32 team) {
+    if (!info->active) {
+        return -1;
+    }
+    if (info->unk254 >= 9) {
+        return -1;
+    }
+    if (info->team != team) {
+        switch (info->kind) {
+        case 0x26:
+        case 0x28:
+        case 0x29:
+            return -1;
+        case 0xE:
+        case 0x10:
+        case 0x25:
+        case 0x2C:
+        case 0x2D:
+        case 0x2E:
+        case 0x2F:
+            return 2;
+        default:
+            return 2;
+        }
+    } else {
+        switch (info->kind) {
+        case 0x12:
+        case 0x26:
+        case 0x28:
+        case 0x29:
+            return -1;
+        case 0xE:
+        case 0x10:
+        case 0x25:
+        case 0x2C:
+        case 0x2D:
+        case 0x2E:
+        case 0x2F:
+            return 0;
+        default:
+            return 1;
+        }
+    }
 }

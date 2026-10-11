@@ -64,5 +64,6 @@ u32 byteWiseMultiply(u32 scale, u32 color);
 s32 LERPToNewRange_Float(s32 value, s32 inMin, s32 inMax, s32 outMin, s32 outMax);
 f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 s32 fn_80024C04(s32 index);
+s32 fn_80024C6C(FielderSortInfo* info, s32 team);
 
 #endif
