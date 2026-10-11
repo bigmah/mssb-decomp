@@ -3186,9 +3186,34 @@ void fn_8001E474(void) {
 }
 
 // .text:0x8001E488 size:0x2FC
+// NONMATCHING 99%: slot/loop-counter registers swapped
+#if NONMATCHING
 void fn_8001E488(void) {
-    return;
+    s32 i;
+    CharActor* actor;
+    CharSlot* slot;
+    f32 x;
+    f32 y;
+    Mtx44 proj;
+
+    GXSetZMode(GX_ENABLE, GX_LEQUAL, GX_ENABLE);
+    GXSetCullMode(GX_CULL_BACK);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    for (i = 0; i < lbl_8036E548.slots->count; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor != NULL) {
+            slot = &lbl_8036E548.slots->slots[i];
+            if (slot->model != NULL && slot->_6C != 0) {
+                x = actor->pos.x / 1280.0f;
+                y = actor->pos.y / 1280.0f;
+                C_MTXFrustum(proj, -0.175f + y, 0.175f + y, 0.25f + x, -0.25f + x, 1.0f, 512.0f);
+                GXSetProjection(proj, GX_PERSPECTIVE);
+                fn_8001DEA4(slot, 0, fn_80052734(0)->view);
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8001E784 size:0x9E8
 void fn_8001E784(void) {
