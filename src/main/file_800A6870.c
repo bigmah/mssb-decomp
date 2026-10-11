@@ -379,7 +379,7 @@ BOOL fn_800A750C(void* unused, DVDFileInfo* fileInfo) {
 
 // .text:0x800A7544 size:0x24
 s32 ConvertPathToEntryNum(void* file) {
-    return 0;
+    return DVDConvertPathToEntrynum(*(char**)file);
 }
 
 // .text:0x800A7568 size:0x84
