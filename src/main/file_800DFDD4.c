@@ -495,57 +495,49 @@ void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
 #endif
 
 // .text:0x800E156C size:0x19C
-// NONMATCHING 31%: clip lookups compile to add+lbz instead of lbzx; register allocation
+// NONMATCHING 94%: register allocation/scheduling of the setup terms. MWCC 1.2.5 only emits the
+// original's lbzx clip lookups with copy propagation off (otherwise add+lbz).
+#pragma opt_propagation off
 #if NONMATCHING
 void fn_800E156C(u8* dst, s32 stride, u8 dc, u8 top, u8 bottom, u8 left, u8 right) {
-    s32 dc2 = dc * 2;
+    u8* clip = lbl_80328DA0;
+    s32 base = ((dc + 0x80) << 3) + 4;
     s32 tb = top - bottom;
     s32 lr = left - right;
-    s32 base = ((dc + 0x80) << 3) + 4;
-    s32 tl = top + left - dc2;
-    s32 tr = top + right - dc2;
+    s32 bmL = bottom - left;
     s32 sum = tb + lr;
-    s32 diff = tb - lr;
-    s32 baseSum = base + sum;
+    s32 dc2 = dc * 2;
+    s32 bl = left + bottom - dc2;
+    s32 tr = top + right - dc2;
+    s32 bs = base + sum;
     s32 br = bottom + right - dc2;
-    s32 tmL = top - left;
-    s32 tmR = top - right;
-    s32 baseDiff;
-    s32 bl;
-    s32 baseNDiff;
-    s32 bmL;
-    s32 bmR;
-    s32 baseNSum;
-    u8* clip;
+    s32 tl = top + left - dc2;
+    s32 diff = tb - lr;
+    s32 bd = base + diff;
 
-    clip = lbl_80328DA0;
-    dst[0] = clip[(tl + baseSum) >> 3];
-    baseDiff = base + diff;
-    dst[1] = clip[(tmL + baseSum) >> 3];
-    bl = left + bottom - dc2;
-    dst[2] = clip[(tmR + baseDiff) >> 3];
-    baseNDiff = base - diff;
-    bmL = bottom - left;
-    dst[3] = clip[(tr + baseDiff) >> 3];
+    dst[0] = clip[(bs + tl) >> 3];
+    dst[1] = clip[((top - left) + bs) >> 3];
+    dst[2] = clip[((top - right) + bd) >> 3];
+    dst[3] = clip[(tr + bd) >> 3];
     dst += stride;
-    dst[0] = clip[(baseSum - tmL) >> 3];
+    dst[0] = clip[(bs - (top - left)) >> 3];
     dst[1] = clip[(base - br) >> 3];
-    bmR = bottom - right;
     dst[2] = clip[(base - bl) >> 3];
-    baseNSum = base - sum;
-    dst[3] = clip[(baseDiff - tmR) >> 3];
+    dst[3] = clip[(bd - (top - right)) >> 3];
     dst += stride;
-    dst[0] = clip[(baseNDiff - bmL) >> 3];
+    dst[0] = clip[((base - diff) - bmL) >> 3];
     dst[1] = clip[(base - tr) >> 3];
     dst[2] = clip[(base - tl) >> 3];
-    dst[3] = clip[(baseNSum - bmR) >> 3];
+    dst[3] = clip[((base - sum) - (bottom - right)) >> 3];
     dst += stride;
-    dst[0] = clip[(bl + baseNDiff) >> 3];
-    dst[1] = clip[(bmL + baseNDiff) >> 3];
-    dst[2] = clip[(bmR + baseNSum) >> 3];
-    dst[3] = clip[(br + baseNSum) >> 3];
+    dst[0] = clip[((base - diff) + bl) >> 3];
+    dst[1] = clip[(bmL + (base - diff)) >> 3];
+    dst[2] = clip[((bottom - right) + (base - sum)) >> 3];
+    dst[3] = clip[((base - sum) + br) >> 3];
 }
 #endif
+
+#pragma opt_propagation reset
 
 // .text:0x800E1708 size:0x4AC
 // NONMATCHING 85%: row pointer arithmetic order and register allocation
