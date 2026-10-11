@@ -80,6 +80,7 @@ extern void GXInitTexObjTlut(GXTexObj* obj, u32 tlutName);
 extern void __GetImageTileCount(GXTexFmt format, u16 width, u16 height, u32* a, u32* b, u32* c);
 
 extern u32 GXGetTexObjWidth(GXTexObj* obj);
+extern u32 GXGetTexObjHeight(GXTexObj* obj);
 
 
 ////////////////////////////////////////////
