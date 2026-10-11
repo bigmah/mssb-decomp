@@ -379,6 +379,8 @@ void BezierInterpolate(f32 t, BezierPoint* out, BezierPoint* p0, BezierPoint* p1
 #endif
 
 // .text:0x8000A094 size:0x18
-void fn_8000A094(void) {
-    return;
+u32 fn_8000A094(u32 value) {
+    u32 previous = lbl_80366188._88;
+    lbl_80366188._88 = value;
+    return previous;
 }
