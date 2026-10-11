@@ -398,9 +398,26 @@ void fn_800ACF14(void* block) {
 }
 
 // .text:0x800ACF34 size:0x44
-void fn_800ACF34(void) {
-    return;
+// NONMATCHING 97%: register allocation (heap pointer in r4 instead of r5, lo/result regs differ)
+#if NONMATCHING
+void* fn_800ACF34(s32 align, s32 size) {
+    HeapArena* heap = &lbl_803C7898;
+    u8* lo;
+    u8* oldHi;
+    u8* block;
+    u8* newHi;
+    size = (size + 3) & ~3;
+    oldHi = heap->hi;
+    lo = heap->lo;
+    block = (u8*)(-align & (u32)(oldHi - size));
+    newHi = block - sizeof(HeapBlockHeader);
+    ((HeapBlockHeader*)block)[-1].prev = oldHi;
+    ((HeapBlockHeader*)block)[-1].size = oldHi - newHi;
+    heap->freeSize = newHi - lo;
+    heap->hi = newHi;
+    return block;
 }
+#endif
 
 // .text:0x800ACF78 size:0x38
 void fn_800ACF78(void) {
