@@ -2802,7 +2802,6 @@ typedef struct {
     /* 0x0039 */ u8 _39;
     /* 0x003A */ u8 _3A;
     /* 0x003B */ u8 _3B;
-    /* 0x003C */ u8 _3C; // stadium id (unsure)
     /* 0x003C */ u8 _3C;
     /* 0x003D */ u8 _3D;
     /* 0x003E */ u8 _3E;
