@@ -430,8 +430,18 @@ void fn_2_150D0(u8 index) {
 }
 
 // .text:0x00015104 size:0xB8
+// Request the model load once the cursor has rested for 15 frames.
 s32 fn_2_15104(s32 cur, s32 prev, u8 index, u8 value) {
-    return 0;
+    if (prev != cur) {
+        lbl_2_bss_100B8.timer[index] = 1;
+    } else if (lbl_2_bss_100B8.timer[index] != 0) {
+        if (++lbl_2_bss_100B8.timer[index] >= 15) {
+            lbl_2_bss_100B8.loadReq[index] = 1;
+            lbl_2_bss_100B8.timer[index] = 0;
+            fn_2_16A48(index, value);
+        }
+    }
+    return lbl_2_bss_100B8.timer[index] == 0;
 }
 
 // .text:0x000151BC size:0x450
