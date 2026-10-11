@@ -106,6 +106,7 @@ typedef struct SoundGroupRequest {
     /* 0x8 */ SoundLoadTask* task;
 } SoundGroupRequest;
 
+void fn_80021308(void);
 void fn_800213F4(void* p);
 void* fn_800213F8(u32 size);
 void fn_80021AC0(void);

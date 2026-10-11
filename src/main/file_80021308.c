@@ -110,7 +110,21 @@ static inline s32 aramQueuePush(DiskFileEntry* entry, void* dst, s32 mode, u32 a
 
 // .text:0x80021308 size:0xEC
 void fn_80021308(void) {
-    return;
+    lbl_803CBC40 = lbl_80118740;
+    sndSetHooks(&lbl_803CB7D8);
+    lbl_800EF808.reverb.tempDisableFX = 0;
+    lbl_800EF808.reverb.time = lbl_803CC548;
+    lbl_800EF808.reverb.preDelay = lbl_803CC54C;
+    lbl_800EF808.reverb.damping = lbl_803CC550;
+    lbl_800EF808.reverb.coloration = lbl_803CC554;
+    lbl_800EF808.reverb.crosstalk = lbl_803CC558;
+    lbl_800EF808.reverb.mix = lbl_803CC55C;
+    sndAuxCallbackPrepareReverbHI(&lbl_800EF808.reverb);
+    lbl_800EF808.chorus.baseDelay = 5;
+    lbl_800EF808.chorus.variation = 0;
+    lbl_800EF808.chorus.period = 500;
+    sndAuxCallbackPrepareChorus(&lbl_800EF808.chorus);
+    sndSetAuxProcessingCallbacks(0, sndAuxCallbackReverbHI, &lbl_800EF808.reverb, 0xFF, 0, sndAuxCallbackChorus, &lbl_800EF808.chorus, 0xFF, 0);
 }
 
 // fn_800213F4, size:0x4
