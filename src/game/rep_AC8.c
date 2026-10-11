@@ -56,6 +56,9 @@ extern f32 lbl_3_data_5D08[];
 extern s16 lbl_3_data_79B4[];
 u8 fn_3_107D70(s8 i);
 extern f32 lbl_3_rodata_BBC;
+extern f32 lbl_3_rodata_B84;
+extern f32 lbl_3_rodata_B88;
+extern f32 lbl_3_rodata_B6C;
 extern u8 g_Batter[];
 BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern u8 lbl_3_common_bss_34C90[];
@@ -1006,9 +1009,127 @@ int fn_3_2A288(int i) {
 #endif
 
 // .text:0x0002A69C size:0x63C mapped:0x80669730
-void fn_3_2A69C(int i) {
-    return;
+// NONMATCHING 80%: register allocation (original keeps the base-table offset and radius-table pointer in saved regs) and lfsx/lfsu addressing; tail is fn_3_2B5C0's body inlined
+#if NONMATCHING
+int fn_3_2A69C(int i) {
+    s16 base = *(s16*)(g_FieldingLogic + 0xC4);
+    u8* f = g_Fielders + i * 0x268;
+    f32* bpos;
+    f32 lim;
+    f32 r;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 t;
+    s16 a;
+    s16 diff;
+    if (base < 0 || base > 3) {
+        return 0;
+    }
+    if (i != *(s16*)(g_Ball + 0x1B8A)) {
+        return 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B6C) <= 3) {
+        return 0;
+    }
+    if (*(s16*)(f + 0x1A8) != 0) {
+        return 0;
+    }
+    if (f[0x252] == 2) {
+        return 0;
+    }
+    bpos = (f32*)(lbl_3_data_4444 + base * 8);
+    if (!(fn_3_9CE0(bpos[0], bpos[1]) < *(f32*)(f + 0xE8))) {
+        return 0;
+    }
+    if (*(s8*)(f + 0x1F5) == base) {
+        return 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B62) > lbl_3_data_49DC[0x13]) {
+        return 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B62) < lbl_3_data_49DC[0x14]) {
+        return 0;
+    }
+    lim = lbl_3_rodata_B84 * *(f32*)(f + 0x58) * *(s16*)(g_Ball + 0x1B62);
+    r = ((f32*)(f + 0xA8))[base] - lbl_3_data_47D0[f[0x1CA]].d;
+    if (r - lim > lbl_3_rodata_B78) {
+        return 0;
+    }
+    if (r < lim) {
+        *(s16*)(f + 0x24C) = *(s16*)(g_Ball + 0x1B62);
+        *(s16*)(f + 0x24E) = 0;
+        f[0x252] = 8;
+        f[0x253] = 0;
+        f[0x254] = 0;
+        f[0x255] = 0;
+        f[0x25B] = 0;
+        f[0x259] = 0;
+        f[0x25C] = 0;
+        f[0x25D] = 0;
+        f[0x25E] = 0;
+        f[0x25F] = 0;
+        f[0x264] = 0;
+        f[0x260] = 0;
+        if (*(s16*)(g_Ball + 0x1B62) < *(s16*)(g_Ball + 0x1B60)) {
+            f[0x264] = 1;
+        }
+        g_Ball[0x1BF0] = 0;
+        *(f32*)(f + 0x234) = *(f32*)(g_Ball + *(s16*)(g_Ball + 0x1B62) * 16 + 0x354);
+        *(f32*)(f + 0x238) = *(f32*)(g_Ball + *(s16*)(g_Ball + 0x1B62) * 16 + 0x358);
+        *(f32*)(f + 0x23C) = *(f32*)(g_Ball + *(s16*)(g_Ball + 0x1B62) * 16 + 0x35C);
+        dz = *(f32*)(f + 0x23C) - *(f32*)(f + 8);
+        dx = *(f32*)(f + 0x234) - *(f32*)f;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        r = d - lbl_3_data_47D0[f[0x1CA]].d;
+        if (r / *(s16*)(g_Ball + 0x1B62) < lbl_3_rodata_B6C) {
+            *(f32*)(f + 0x21C) = *(f32*)(f + 0x234);
+            *(f32*)(f + 0x224) = *(f32*)(f + 0x23C);
+        } else {
+            t = r / d;
+            *(f32*)(f + 0x21C) = dx * t + *(f32*)f;
+            *(f32*)(f + 0x224) = dz * t + *(f32*)(f + 8);
+        }
+    } else {
+        *(s16*)(f + 0x24C) = *(s16*)(g_Ball + 0x1B62);
+        *(s16*)(f + 0x24E) = 0;
+        f[0x252] = 8;
+        f[0x253] = 0;
+        f[0x254] = 0;
+        f[0x255] = 0;
+        f[0x25B] = 1;
+        f[0x259] = 0;
+        f[0x25C] = 0;
+        f[0x25D] = 0;
+        f[0x25E] = 0;
+        f[0x25F] = 0;
+        f[0x264] = 0;
+        f[0x260] = 0;
+        if (*(s16*)(g_Ball + 0x1B62) < *(s16*)(g_Ball + 0x1B60)) {
+            f[0x264] = 1;
+        }
+        dz = bpos[1] - *(f32*)(f + 8);
+        dx = bpos[0] - *(f32*)f;
+        g_Ball[0x1BF0] = 0;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x21C) = lbl_3_rodata_B88 * (*(f32*)(f + 0x58) * (dx / d)) * *(s16*)(g_Ball + 0x1B62) + *(f32*)f;
+        *(f32*)(f + 0x224) = lbl_3_rodata_B88 * (*(f32*)(f + 0x58) * (dz / d)) * *(s16*)(g_Ball + 0x1B62) + *(f32*)(f + 8);
+    }
+    f[0x261] = 0;
+    a = fn_3_9FB8C(*(f32*)g_Ball - *(f32*)f, *(f32*)(g_Ball + 8) - *(f32*)(f + 8));
+    diff = fn_3_9FCA4(a, fn_3_9FB8C(*(f32*)(f + 0x21C) - *(f32*)f, *(f32*)(f + 0x224) - *(f32*)(f + 8)));
+    if (diff < -0x500 || diff > 0x500) {
+        f[0x261] = 3;
+    } else if (diff < -0x200) {
+        f[0x261] = 1;
+    } else if (diff > 0x200) {
+        f[0x261] = 2;
+    }
+    return 1;
 }
+#endif
 
 // .text:0x0002ACD8 size:0x90 mapped:0x80669D6C
 int fn_3_2ACD8(int i, int j) {

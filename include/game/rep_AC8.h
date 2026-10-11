@@ -23,7 +23,7 @@ int fn_3_28224(int);
 int fn_3_28CA8(int);
 int fn_3_2A164(int);
 int fn_3_2A288(int);
-void fn_3_2A69C(int);
+int fn_3_2A69C(int);
 int fn_3_2ACD8(int, int);
 int fn_3_2AD68(int);
 void fn_3_2B5C0(int);
