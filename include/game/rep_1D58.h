@@ -19,7 +19,7 @@ u32 fn_3_B85A8(int idx, u32* out);
 void fn_3_B85DC(s32 i, void* a, void* b);
 s32 fn_3_B8658(f32* a, f32* b);
 void fn_3_B867C(void* mtx, struct SortEnt* out);
-void fn_3_B8828(void);
+void fn_3_B8828(float (*view)[4], s32 translucent, u32 layer);
 void fn_3_B8C08(void);
 void fn_3_B902C(void);
 void fn_3_B908C(void);

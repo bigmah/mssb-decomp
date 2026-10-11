@@ -30,6 +30,12 @@ typedef struct { f32 x, y, z; } V3;
 
 typedef struct SortEnt SortEnt;
 
+// Expanded stadium light: position and colour.
+typedef struct LitPos {
+    f32 x, y, z;
+    GXColor color;
+} LitPos;
+
 // Shape (texture) animation attached to a stadium object.
 typedef struct StadiumObjShape {
     /* 0x00 */ u8 pad0[0xC];
@@ -399,9 +405,97 @@ void fn_3_B867C(void* mtx, SortEnt* out) {
     }
 }
 
+extern LitPos lbl_80367318[4];
+// Per-stadium light setup (packed lights for fn_80023B90, then the ambient colour).
+typedef struct StadiumLightRow {
+    /* 0x00 */ u8 light[4][0xA];
+    /* 0x28 */ GXColor ambient;
+} StadiumLightRow; // size: 0x2C
+extern StadiumLightRow lbl_800F7478[];
+
+// Draw callback: draws the visible stadium objects of one layer, in sort order.
 // .text:0x000B8828 size:0x3E0 mapped:0x806F78BC
-void fn_3_B8828(void) {
-    return;
+void fn_3_B8828(MtxPtr view, s32 translucent, u32 layer) {
+    Light light;
+    Mtx inv;
+    Mtx modelView;
+    Vec dir;
+    GXColor drawColor;
+    GXColor ambient;
+    GXColor color;
+    LitPos* lights;
+    StadiumObj* obj;
+    s32 i;
+    s32 j;
+
+    drawColor = lbl_800F7478[g_d_GameSettings._54].ambient;
+    ambient = drawColor;
+    lights = lbl_80367318;
+    if (lbl_8036E548[0x3088] == 0) { // TODO type: CharMgr._3088 (stadium loaded)
+        return;
+    }
+    GXSetCullMode(GX_CULL_BACK);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    for (i = 0; i < 4; i++) {
+        if (sStadiumMgr.lights[i] != NULL) {
+            LITInitAttn(sStadiumMgr.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+            LITInitPos(sStadiumMgr.lights[i], lights[i].x, lights[i].y, lights[i].z);
+            color = lights[i].color;
+            LITInitColor(sStadiumMgr.lights[i], &color);
+            dir.x = lights[i].x;
+            dir.y = lights[i].y;
+            dir.z = lights[i].z;
+            if (PSVECMag(&dir)) {
+                PSVECNormalize(&dir, &dir);
+                LITInitDir(sStadiumMgr.lights[i], dir.x, dir.y, dir.z);
+            }
+        }
+    }
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, GX_PERSPECTIVE);
+    for (i = 0; i < sStadiumMgr.count; i++) {
+        obj = &sStadiumMgr.objs[sStadiumMgr.sort[i].idx];
+        if (obj->visible && obj->actor != NULL && layer == obj->layer &&
+            (layer != 1 || translucent == obj->depthFade)) {
+            PSMTXConcat(view, obj->mtx, modelView);
+            if (obj->depthFade) {
+                drawColor.a = obj->alpha * sStadiumMgr.sort[i].z;
+            } else {
+                drawColor.a = obj->alpha;
+            }
+            fn_800BD2CC(1, drawColor);
+            for (j = 0; j < 4; j++) {
+                LITXForm(sStadiumMgr.lights[j], view);
+            }
+            CTRLBuildMatrix(&obj->ctrl, inv);
+            PSMTXInverse(inv, inv);
+            light = *sStadiumMgr.lights[0];
+            PSMTXMultVecSR(inv, &light.direction, &light.direction);
+            fn_800B9AA8(&light);
+            obj->actor->actor->flags = obj->viewFlags;
+            if (obj->customZ) {
+                GXSetZMode(obj->zCompare, obj->zAlways ? GX_ALWAYS : GX_LEQUAL, obj->zUpdate);
+            } else if (translucent) {
+                GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+            } else {
+                GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+            }
+            if (obj->preDraw != NULL) {
+                obj->preDraw(obj);
+            }
+            fn_800BDA94(obj->actor, modelView);
+            for (j = 0; j < 16; j++) {
+                if (lbl_3_data_11168[j] != 0) {
+                    GXSetTevDirect(j);
+                    lbl_3_data_11168[j] = 0;
+                }
+            }
+            fn_800BD2CC(1, ambient);
+            if (obj->postDraw != NULL) {
+                obj->postDraw(obj);
+            }
+        }
+    }
+    fn_800B9AA8(sStadiumMgr.lights[0]);
 }
 
 // .text:0x000B8C08 size:0x424 mapped:0x806F7C9C
@@ -701,16 +795,6 @@ void fn_3_B98E8(void* p) {
 }
 
 // .text:0x000B99E4 size:0x1D0 mapped:0x806F8A78
-typedef struct LitPos {
-    f32 x, y, z;
-    GXColor color;
-} LitPos;
-// Per-stadium light setup (packed lights for fn_80023B90, then the ambient colour).
-typedef struct StadiumLightRow {
-    /* 0x00 */ u8 light[4][0xA];
-    /* 0x28 */ GXColor ambient;
-} StadiumLightRow; // size: 0x2C
-extern StadiumLightRow lbl_800F7478[];
 extern void (*lbl_3_data_10AB0[])(void*);
 extern void fn_3_35E4(u32 val);
 extern void fn_80023B90(void*, LitPos*);
