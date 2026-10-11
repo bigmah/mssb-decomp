@@ -4239,9 +4239,91 @@ void fn_3_3E468(void) {
 }
 
 // .text:0x0003E690 size:0x4DC mapped:0x8067D724
+// NONMATCHING 78%: sel/pick are uninitialised in the original (we zero them); per-base search loop unrolled differently; distance sum unfused there; calls fn_3_4EFC8 through a cast until its prototype gains (int, int)
+#if NONMATCHING
 void fn_3_3E690(void) {
-    return;
+    /* sel and pick start uninitialised in the original */
+    s32 sel = 0;
+    s32 best = 0x270F;
+    u8* f = g_Fielders;
+    s32 i;
+    s32 k;
+    s32 eta;
+    s32 pick = 0;
+    f32 bx = *(f32*)(g_Ball + 0x714);
+    f32 bz = *(f32*)(g_Ball + 0x71C);
+    u8 phase = g_Ball[0x1BBE];
+    for (i = 0; i < 9; i++, f += 0x268) {
+        if (bx == *(f32*)f && bz == *(f32*)(f + 8)) {
+            eta = 1;
+        } else {
+            f32 dx = bx - *(f32*)f;
+            f32 dz = bz - *(f32*)(f + 8);
+            f32 d = dx * dx + dz * dz;
+            f32 sp;
+            SQRT_L(d);
+            sp = *(f32*)(f + 0x58);
+            if (lbl_3_rodata_B20 == sp) {
+                sp = lbl_3_rodata_B60;
+            }
+            eta = (f[0x1D1] >> 1) + (s32)(d / sp);
+        }
+        if (f[0x1D3] == 2) {
+            eta -= 0xF;
+        }
+        if (*(s16*)(f + 0x18C) >= 0 && *(s16*)(f + 0x18C) <= 3) {
+            eta += 0x1E;
+        }
+        if (f[0x210] != 0) {
+            eta += *(s16*)(f + 0x1C0);
+        } else if (f[0x212] == 3) {
+            eta += 0x5A;
+        }
+        if (f[0x20F] != 0) {
+            eta += *(s16*)(f + 0x1BA);
+        }
+        if (phase >= 3 && i <= 5) {
+            eta += 0x1E;
+        }
+        if (eta < best) {
+            sel = i;
+            best = eta;
+        }
+    }
+    SetFielderAct(sel, 3, 0x18);
+    /* TODO: fn_3_4EFC8 takes (fielder, int); its prototype (other range) is still (void) */
+    ((void (*)(int, int))fn_3_4EFC8)(sel, 0);
+    g_Fielders[sel * 0x268 + 0x1DC] = 4;
+    for (i = 0; i < 9; i++) {
+        *(s16*)(g_Fielders + i * 0x268 + 0x18C) = -1;
+        g_Fielders[i * 0x268 + 0x1D7] = 0;
+    }
+    *(s16*)(g_FieldingLogic + 0xD0) = -1;
+    g_FieldingLogic[0x101] = 0;
+    *(s16*)(g_FieldingLogic + 0xD2) = -1;
+    g_FieldingLogic[0x102] = 0;
+    *(s16*)(g_FieldingLogic + 0xD4) = -1;
+    g_FieldingLogic[0x103] = 0;
+    *(s16*)(g_FieldingLogic + 0xD6) = -1;
+    g_FieldingLogic[0x104] = 0;
+    *(s16*)(g_FieldingLogic + 0xD8) = -1;
+    g_FieldingLogic[0x105] = 0;
+    for (k = 0; k < 4; k++) {
+        f32 dmin = lbl_3_rodata_C24;
+        for (i = 0; i < 6; i++) {
+            if (g_FieldingLogic[i + 0xF8] == 0 && ((f32*)(g_Fielders + i * 0x268 + 0xA8))[k] < dmin) {
+                dmin = ((f32*)(g_Fielders + i * 0x268 + 0xA8))[k];
+                pick = i;
+            }
+        }
+        *(s16*)(g_Fielders + pick * 0x268 + 0x18C) = k;
+        g_Fielders[pick * 0x268 + 0x1D7] = 1;
+        SetFielderAct(pick, 1, 8);
+        ((s16*)(g_FieldingLogic + 0xD0))[k] = pick;
+    }
+    *(s16*)(g_FieldingLogic + 0xBE) = -1;
 }
+#endif
 
 // .text:0x0003EB6C size:0x4C8 mapped:0x8067DC00
 void fn_3_3EB6C(void) {
