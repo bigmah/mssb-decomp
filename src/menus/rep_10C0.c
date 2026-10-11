@@ -109,6 +109,43 @@ void fn_2_927C8(MenuCamera* cam, Vec* goal) {
     }
 }
 
+// fn_2_92A34, size:0x27C
+void fn_2_92A34(MenuCamera* cam, Vec* goal) {
+    if (WORK->springOn) {
+        Vec res;
+        Vec cur;
+        Vec next;
+        Vec prev;
+        f32 stiffness;
+        f32 damping;
+        f32 rest;
+
+        goal->x = fn_2_4A18C(goal->x);
+        goal->y = fn_2_4A18C(goal->y);
+        cur.x = WORK->targetSpring.x;
+        cur.y = WORK->targetSpring.y;
+        cur.z = WORK->targetSpring.z;
+        next.x = goal->x;
+        next.y = goal->y;
+        next.z = lbl_2_rodata_1144;
+        prev.x = WORK->targetPrev.x;
+        prev.y = WORK->targetPrev.y;
+        prev.z = WORK->targetPrev.z;
+        rest = WORK->targetParams.rest;
+        damping = WORK->targetParams.damping;
+        stiffness = WORK->targetParams.stiffness;
+        res = CameraSpringStep(cur, next, prev, stiffness, damping, rest);
+        WORK->targetPrev.x = goal->x;
+        WORK->targetPrev.y = goal->y;
+        WORK->targetPrev.z = lbl_2_rodata_1144;
+        WORK->targetSpring.x = res.x;
+        WORK->targetSpring.y = res.y;
+        WORK->targetSpring.z = res.z;
+        goal->x = res.x;
+        goal->y = res.y;
+    }
+}
+
 // fn_2_93BF8, size:0x6C
 void fn_2_93BF8(MenuCamera* cam) {
     switch (WORK->cameraMode) {
