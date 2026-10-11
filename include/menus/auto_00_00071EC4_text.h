@@ -67,5 +67,32 @@ void fn_2_805DC(u8* o, s32 i);
 void fn_2_836A4(void);
 
 void fn_2_738C8(void);
+s32 fn_2_7302C(void);
+void fn_2_7265C(void);
+void fn_2_72E54(u8* o);
+void fn_2_7E194(s32 o, s32 index);
+void fn_2_72A88(u8* o);
+void fn_2_7F8BC(u8* o, s32 index);
+void fn_2_808D8(u8* o, s32 index);
+void fn_2_7805C(u8* o, s32 index);
+void fn_2_7630C(u8* o, u8 index);
+void fn_2_7F2BC(u8* o, s32 index);
+void fn_2_78AC0(u8* o, s32 index);
+void fn_2_73EFC(u8* o);
+void fn_2_7E380(u8* o, s32 index);
+void fn_2_7E974(u8* o, s32 index);
+void fn_2_81628(void);
+void fn_2_76874(u8* o, u8 index);
+void fn_2_7FAFC(u8* o, s32 index);
+void fn_2_82EC0(void);
+void fn_2_83B34(u8* o, s8 sel);
+void fn_2_80F5C(u8* o, s32 index);
+void fn_2_7DAB8(u8* o, s32 index);
+void fn_2_7836C(u8* o, s8 index);
+void fn_2_76DF0(u8* o, u8 index);
+void fn_2_776A0(u8* o, s32 port);
+void fn_2_845A8(void);
+void fn_2_7AE3C(u8* o, s32 index);
+void fn_2_7BFF8(u8* o, s32 index);
 
 #endif

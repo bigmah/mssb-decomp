@@ -3,21 +3,10 @@
 
 #include "mssbTypes.h"
 #include "game/UnknownHomes_Game.h"
+#include "main/file_80024184.h" // TexImage, TexArchive
 
-// Game texture descriptor (consumed by SetDisplayStateTexture).
-typedef struct TexDesc {
-    /*0x00*/ void* image;
-    /*0x04*/ void* palette;
-    /*0x08*/ u16 height;
-    /*0x0A*/ u16 width;
-    /*0x0C*/ u8 _0C[0x20 - 0x0C];
-} TexDesc; // size: 0x20
-
-// Texture set used by the logo/warning screens: a count word followed by descriptors.
-typedef struct TexSet {
-    /*0x00*/ u32 count;
-    /*0x04*/ TexDesc tex[1];
-} TexSet;
+// Texture set used by the logo/warning screens is a TexArchive.
+typedef TexArchive TexSet;
 
 // Display-list node passed to fn_800A7D4C (two per task, indexed by lbl_803CBBC0).
 typedef struct DrawNode {

@@ -65,7 +65,7 @@ typedef struct ShapeAnimPlayer {
     /*0x2C*/ void* model;
     /*0x30*/ s8* tables[10];
     /*0x58*/ s8 curIdx; // -128: none
-    /*0x59*/ u8 unk59;
+    /*0x59*/ u8 active; // AnimSlot.active in file_8004B284
 } ShapeAnimPlayer;
 
 // Vertex attribute arrays of a model (0x10 each).

@@ -4,6 +4,7 @@
 #include "main/file_80008E00.h"
 #include "main/file_8004207C.h"
 #include "main/file_80069BDC.h"
+#include "main/file_8004C5F8.h"
 
 extern s32 fn_80022B68(void);
 // From main/file_80021308.h (not includable here: its sound prototypes clash
@@ -17,6 +18,15 @@ typedef struct DiskFileEntry {
 typedef void (*AramQueueCallback)(DiskFileEntry* entry, void* dst, void* user);
 extern s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
 extern DiskFileEntry lbl_800F1D78[];
+
+// View of lbl_803C6CF8 (ARAMLoader in main/file_800A6870.h, whose ARAMTransfer
+// prototype clashes with include/static/UnknownHomes_Static.h).
+typedef struct {
+    /*0x000*/ u8 _000[0x715];
+    /*0x715*/ u8 _715; // 1 when the pending disc/ARAM transfer finished (ARAMLoader.idle)
+    /*0x716*/ u8 _716[0x724 - 0x716];
+} ARAMLoaderView; // size: 0x724
+extern ARAMLoaderView lbl_803C6CF8;
 extern DiskFileEntry lbl_3_data_3D60;
 extern DiskFileEntry lbl_3_data_3D70;
 extern u8 lbl_3_data_3D80[0x430];
@@ -76,8 +86,6 @@ extern s32 fn_80014D4C(s32 id);
 extern s32 fn_80014E50(s32 id);
 extern s32 fn_3_6B5D8(void);
 extern void fn_3_8C104(s32 v);
-extern void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, s16 value);
-extern void fn_8004CA48(s16 a, s16 b, s16 c, s16 d);
 extern s8 lbl_80353A90[0x108];
 extern u8 lbl_3_data_6130[0x3E0];
 extern void fn_3_164A74(void);
@@ -280,7 +288,6 @@ extern void fn_3_8FF18(void);
 extern void fn_3_250FC(void);
 extern void fn_3_8BE8C(void);
 extern void initializeUnknown(void);
-extern s32 fn_8004CA6C(u16 buttons);
 extern s32 fn_3_10007C(void);
 extern void fn_3_E19E8(void);
 extern void fn_3_6C1D8(void);
@@ -308,7 +315,6 @@ typedef struct {
     /*0x1E*/ s16 _1E;
 } CoinRewardTable; // size: 0x20
 extern CoinRewardTable lbl_3_data_607C;
-extern void fn_8004CC2C(void);
 
 #pragma dont_inline on
 

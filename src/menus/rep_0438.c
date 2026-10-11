@@ -6,6 +6,10 @@
 #include "main/file_8004C5F8.h"
 #include "main/menu_globals.h"
 #include "static/GameSettings.h"
+#include "main/file_8001FE00.h"
+#include "main/file_80011640.h" // lbl_8036E548
+#include "main/file_80034F50.h"
+#include "main/file_800B0724.h"
 #include "menus/rep_04B0.h"
 #include "menus/rep_0568.h"
 #include "menus/auto_00_00071EC4_text.h"
@@ -77,7 +81,6 @@ typedef struct Unk800EF808 {
 
 extern Unk800EF808 lbl_800EF808;
 
-extern struct CharModelTable lbl_8036E548; // type in main/file_800527C4.h
 
 // main.dol functions whose headers clash with static/UnknownHomes_Static.h.
 s32 fn_80021410(void);                 // main/file_80021308.h
@@ -478,7 +481,7 @@ void fn_2_12F88(void) {
         } else {
             lbl_8034E9A0._48AF = 1;
             fn_8006496C();
-            if (lbl_8036E548._0E56 != lbl_8034E9A0.captain[0]) {
+            if (lbl_8036E548.actors[1].kind != lbl_8034E9A0.captain[0]) {
                 lbl_2_bss_100B8._14[0] = 1;
             }
             fn_2_11EA8();

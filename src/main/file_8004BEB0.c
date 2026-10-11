@@ -1,5 +1,9 @@
 #include "main/file_8004BEB0.h"
-#include "static/UnknownHomes_Static.h"
+#include "main/file_80011640.h"
+#include "main/file_800263FC.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 #include "stl/mem.h"
 
 typedef struct UnkState_80366158 {
@@ -18,7 +22,7 @@ extern f32 lbl_803CC82C; // 0.0f
 extern f32 lbl_803CC830; // 1.0f
 
 // .text:0x8004BEB0 size:0x1E4
-void fn_8004BEB0(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
+void fn_8004BEB0(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     Vec pos;
     Vec dir;
     Mtx m;
@@ -28,14 +32,14 @@ void fn_8004BEB0(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
     if (lbl_80366158.unk28 == 1) {
         return;
     }
-    if (frame < lbl_800FBCA8[model->charID] || frame > lbl_800FBD14[model->charID]) {
+    if (frame < lbl_800FBCA8[model->kind] || frame > lbl_800FBD14[model->kind]) {
         return;
     }
 
-    pos.x = lbl_800FC494[model->charID][0] / 100000.0f;
-    pos.y = lbl_800FC494[model->charID][1] / 100000.0f;
-    pos.z = lbl_800FC494[model->charID][2] / 100000.0f;
-    fn_8001B728(model->playerIdx, 4, &pos);
+    pos.x = lbl_800FC494[model->kind][0] / 100000.0f;
+    pos.y = lbl_800FC494[model->kind][1] / 100000.0f;
+    pos.z = lbl_800FC494[model->kind][2] / 100000.0f;
+    fn_8001B728(model->index, 4, &pos);
 
     ctrl.base.type = 0;
     CTRLSetRotation(&ctrl.base, model->rot.x, model->rot.y, model->rot.z);
@@ -49,9 +53,9 @@ void fn_8004BEB0(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
     lbl_800FC488[2]->stamp = stamp;
     lbl_800FC488[1]->stamp = stamp;
     lbl_800FC488[0]->stamp = stamp;
-    fn_80030D88(&pos, &dir, lbl_800FC488[0], 5);
-    fn_80030D88(&pos, &dir, lbl_800FC488[1], 5);
-    fn_80030D88(&pos, &dir, lbl_800FC488[2], 5);
+    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[0], 5); // TODO type
+    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[1], 5); // TODO type
+    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[2], 5); // TODO type
 }
 
 extern EffectParams* lbl_803CB860;
@@ -68,7 +72,7 @@ void fn_8004C094(Vec* pos) {
         p->stamp = lbl_803CBD0C;
         p->unk0C = 120000;
         p->unk10 = 60000;
-        fn_80031CA4(pos, (u32*)p);
+        fn_80031CA4(pos, (ParticleParams5 *)(u32*)p); // TODO type
     }
 }
 
@@ -82,6 +86,6 @@ void fn_8004C108(Vec* pos, u8 colorIdx) {
         p->stamp = lbl_803CBD0C;
         p->rgb = (lbl_803CB864[colorIdx].r << 24) | ((lbl_803CB864[colorIdx].g & 0xFF) << 16) |
                  (lbl_803CB864[colorIdx].b << 8);
-        fn_80031CA4(pos, (u32*)p);
+        fn_80031CA4(pos, (ParticleParams5 *)(u32*)p); // TODO type
     }
 }
