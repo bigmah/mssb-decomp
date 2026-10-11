@@ -882,7 +882,7 @@ s32 fn_80017340(s32 actorIdx) {
                 other = lbl_8036E548.active[j];
                 if (other != NULL) {
                     if (actor->kind == lbl_8036E548.bankOwner[k]) {
-                        actor->banks.b[1] = lbl_8036E548.bankBuf[k];
+                        actor->banks.b[1] = lbl_8036E548.animBufs[k + 1];
                         return 1;
                     }
                     if (other->kind == lbl_8036E548.bankOwner[k]) {
@@ -918,7 +918,7 @@ s32 fn_80017340(s32 actorIdx) {
             }
         }
         lbl_8036E548.bankOwner[k] = actor->kind;
-        actor->banks.b[1] = lbl_8036E548.bankBuf[k];
+        actor->banks.b[1] = lbl_8036E548.animBufs[k + 1];
         if (g_d_GameSettings.GameModeSelected == 2) {
             file = actor->kind * 0x13 + 0xB;
         } else {
@@ -1976,12 +1976,12 @@ s32 fn_8001C588(s32 id) {
         lbl_803CBC3C[3] = 1;
     }
     if (lbl_803CBC3C[3] == 1) {
-        ARAMTransfer(&lbl_803CB790[id * 0x13 + 6], lbl_8036E548._2CE8, 0, 0);
+        ARAMTransfer(&lbl_803CB790[id * 0x13 + 6], lbl_8036E548.animBufs[15], 0, 0);
         lbl_803CBC3C[3] = 2;
     } else if (lbl_803CBC3C[3] == 2 && (s32)lbl_803C6CF8.transferDone == 1) {
-        ANIMGet(lbl_8036E548._2CE8);
+        ANIMGet(lbl_8036E548.animBufs[15]);
         if (lbl_8036E548.active[1]->banks.b[4] == NULL) {
-            lbl_8036E548.active[1]->banks.b[4] = lbl_8036E548._2CE8;
+            lbl_8036E548.active[1]->banks.b[4] = lbl_8036E548.animBufs[15];
         }
         return 1;
     }
@@ -2011,12 +2011,12 @@ s32 fn_8001C920(s32 id) {
         } else {
             file = id * 0x13 + 5;
         }
-        ARAMTransfer(&lbl_803CB790[file], lbl_8036E548._2CE4, 0, 0);
+        ARAMTransfer(&lbl_803CB790[file], lbl_8036E548.animBufs[14], 0, 0);
         lbl_803CBC3C[1] = 2;
     } else if (lbl_803CBC3C[1] == 2 && (s32)lbl_803C6CF8.transferDone == 1) {
-        ANIMGet(lbl_8036E548._2CE4);
+        ANIMGet(lbl_8036E548.animBufs[14]);
         if (lbl_8036E548.active[0]->banks.b[3] == NULL) {
-            lbl_8036E548.active[0]->banks.b[3] = lbl_8036E548._2CE4;
+            lbl_8036E548.active[0]->banks.b[3] = lbl_8036E548.animBufs[14];
         }
         return 1;
     }
