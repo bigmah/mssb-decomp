@@ -19,7 +19,7 @@ extern MenuCamera lbl_2_bss_1A81D4;
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_2_data_2E9B4[][8];
 extern void fn_2_48D54(void);
-extern void fn_2_86470(void);
+
 extern void fn_2_85D6C(Mtx);
 extern void fn_2_190DC(ActorObjectTable*, Mtx);
 extern void fn_800A7D4C(s32, void*);
@@ -365,3 +365,64 @@ void fn_2_87350(void) {
     }
 }
 #endif
+
+extern Vec lbl_2_data_2E9DC;
+extern Vec lbl_2_data_2E9E8;
+extern f32 lbl_2_bss_B2A0;
+extern u8 lbl_2_bss_33FBF0[];
+extern const f32 lbl_2_rodata_EB0;
+extern const f32 lbl_2_rodata_EB4;
+extern const f32 lbl_2_rodata_EB8;
+extern const f32 lbl_2_rodata_EBC;
+extern const f32 lbl_2_rodata_EC0;
+extern const f32 lbl_2_rodata_EC4;
+extern const f32 lbl_2_rodata_EC8;
+extern const f32 lbl_2_rodata_ECC;
+
+// Lays the background objects out in a grid (per-stadium spacing) and applies the shared rotation.
+// .text:0x86470 size:0x458
+void fn_2_86470(void) {
+    Vec position;
+    Vec difference;
+    MenuDrawState* state;
+    s32 i;
+    f32 x;
+    f32 z;
+
+    for (i = 0; i < lbl_2_bss_340140[0]->count; i++) {
+        state = &lbl_2_bss_340140[0]->states[i];
+        memcpy(&position, &state->position, sizeof(Vec));
+        PSVECSubtract(&position, &lbl_2_data_2E9E8, &difference);
+        x = difference.x * lbl_2_rodata_EAC;
+        z = difference.z * lbl_2_rodata_EAC;
+        difference.x = x;
+        difference.z = z;
+        if (0.0f != x || 0.0f != z) {
+            lbl_2_bss_B2A0 = fn_2_4A1E8(difference.z, x);
+        }
+        memcpy(&lbl_2_data_2E9E8, &state->position, sizeof(Vec));
+        state->position.x = position.x;
+        state->position.y = position.y;
+        state->position.z = position.z;
+        state->rotation.x = lbl_2_data_2E9DC.x;
+        state->rotation.y = lbl_2_data_2E9DC.y;
+        state->rotation.z = lbl_2_data_2E9DC.z;
+        if (lbl_2_bss_33FBF5 == 0) {
+            CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+                position.x + (i % 5) * lbl_2_rodata_EB0, position.y, position.z - (i / 5) * lbl_2_rodata_EB4);
+        } else if (lbl_2_bss_33FBF5 == 1) {
+            CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+                position.x + (i % 6) * lbl_2_rodata_EB8, position.y, position.z - (i / 6) * lbl_2_rodata_EBC);
+        } else if (lbl_2_bss_33FBF5 == 2) {
+            CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+                position.x + (i % 5) * lbl_2_rodata_EC0, position.y, position.z - (i / 5) * lbl_2_rodata_EC4);
+        } else {
+            CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+                position.x + (i % 6) * lbl_2_rodata_EC8, position.y, position.z - (i / 6) * lbl_2_rodata_ECC);
+        }
+        CTRLSetRotation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+            57.29578f * lbl_2_data_2E9DC.x, 57.29578f * lbl_2_data_2E9DC.y,
+            57.29578f * lbl_2_data_2E9DC.z);
+        lbl_2_bss_340140[0]->table->objects[i].animateBones = lbl_2_bss_33FBF0[i];
+    }
+}
