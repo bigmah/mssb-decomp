@@ -121,7 +121,19 @@ void fn_8003E8D8(void) {
 
 // .text:0x8003F23C size:0x7C
 void fn_8003F23C(void) {
-    return;
+    SaveTask* task = fn_800B0A5C_insertQueue(fn_8003F2B8, 0x8000);
+    task->state = 0;
+    task->_15 = 0;
+    task->_16 = 0;
+    task->slot = 0;
+    task->_18 = 0;
+    task->_1A = 0;
+    task->_1B = 7;
+    task->_1D = 0;
+    task->_21 = 0;
+    lbl_803CC1B8->result = 0;
+    lbl_802D4AE0[1] = 0;
+    lbl_802D4AE0[0] = 0;
 }
 
 // .text:0x8003F2B8 size:0x1284
