@@ -30,7 +30,7 @@ void fn_3_2B5C0(int);
 void fn_3_2B694(void);
 int fn_3_2BB04(int);
 void fn_3_2C238(int, int, int, int, int);
-void fn_3_2C2F0(void);
+void fn_3_2C2F0(int);
 void fn_3_2C698(void);
 int fn_3_2CBE0(int);
 void fn_3_2CEF4(int);

@@ -107,6 +107,8 @@ extern void fn_3_58F58(int, f32*, f32*);
             (x) = NAN;                                                                             \
         }                                                                                          \
     } while (0)
+/* squared xz distance, written out so CW does not fuse it into fmadds */
+#define DIST2_XZ(ax, az, bx, bz) (((ax) - (bx)) * ((ax) - (bx)) + ((az) - (bz)) * ((az) - (bz)))
 #pragma dont_inline on
 #pragma dont_inline off
 static inline void SetFielderAct(int i, int state, int off) {
@@ -718,8 +720,46 @@ void fn_3_2C238(int i, int a, int b, int c, int d) {
 }
 
 // .text:0x0002C2F0 size:0x3A8 mapped:0x8066B384
-void fn_3_2C2F0(void) {
-    return;
+void fn_3_2C2F0(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int k;
+    int idx;
+    f32 half;
+    f32 d;
+    if (i != *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0x14) && g_Ball[0x1BEB] == 0 && *(s16*)(g_Ball + 0x1B7A) == 0) {
+        half = lbl_3_rodata_B80 * *(f32*)(f + 0xF4);
+        for (k = 0; k < 20; k++) {
+            idx = *(s16*)(g_Ball + 0x1B60) - k;
+            if (half < *(f32*)(g_Ball + idx * 16 + 0x358)) {
+                k--;
+                break;
+            }
+        }
+        if (k < 20) {
+            d = DIST2_XZ(*(f32*)(g_Ball + idx * 16 + 0x354), *(f32*)(g_Ball + idx * 16 + 0x35C), *(f32*)f,
+                         *(f32*)(f + 8));
+            SQRT_L(d);
+            *(f32*)(f + 0x248) = d;
+            if (*(f32*)(f + 0x248) < lbl_3_rodata_B64) {
+                if (*(s16*)(f + 0x250) == 0 && *(s16*)(g_Ball + 0x1B60) < 45) {
+                    if (*(s16*)(g_Ball + 0x1B60) > 30) {
+                        if (f[0x257] != 0) {
+                            if (*(f32*)(f + 0x248) < lbl_3_rodata_B8C) {
+                                f[0x256] = 1;
+                            }
+                        } else if (*(f32*)(f + 0x248) < lbl_3_rodata_B78) {
+                            f[0x256] = 1;
+                        }
+                    }
+                } else {
+                    f[0x256] = 1;
+                }
+                if (*(f32*)(f + 0x248) < *(f32*)(f + 0xE8)) {
+                    g_FieldingLogic[0x144] = 1;
+                }
+            }
+        }
+    }
 }
 
 // .text:0x0002C698 size:0x548 mapped:0x8066B72C
@@ -949,8 +989,8 @@ void fn_3_2D47C(int i) {
         bestD = lbl_3_rodata_BA4;
         for (k = 0; k < 100; k++) {
             if (g_Minigame[0x193A + k] != 0) {
-                d = (*(f32*)f - *(f32*)(g_Minigame + k * 12 + 0xCD0)) * (*(f32*)f - *(f32*)(g_Minigame + k * 12 + 0xCD0)) +
-                    (*(f32*)(f + 8) - *(f32*)(g_Minigame + k * 12 + 0xCD8)) * (*(f32*)(f + 8) - *(f32*)(g_Minigame + k * 12 + 0xCD8));
+                d = DIST2_XZ(*(f32*)f, *(f32*)(f + 8), *(f32*)(g_Minigame + k * 12 + 0xCD0),
+                             *(f32*)(g_Minigame + k * 12 + 0xCD8));
                 SQRT_L(d);
                 if (d < bestD) {
                     best = k;
