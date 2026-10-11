@@ -642,9 +642,93 @@ void fn_80038EC4(CharModelObj* obj, Model** model, s32 joint) {
 }
 
 // .text:0x80038F08 size:0x408
+// NONMATCHING 92%: the original addresses lbl_800F79A0 and lbl_800F79B8 (= lbl_800F79A0 + 0x18)
+// through one base register; with two separate symbols we load each address separately.
+#if NONMATCHING
 void fn_80038F08(CharModelObj* obj, Model* model, u8 joint) {
-    return;
+    Mtx dm;
+    Mtx m;
+    Vec v;
+    Vec prev;
+    BatSim* bat = &lbl_800F79B8;
+    f32 frameDt = lbl_803CC720 * lbl_803CB81C;
+    ModelJoint* hand = model->joints[obj->jointMap[bat->jointBase + joint]];
+    ModelJoint* batJoint;
+    s32 i;
+
+    if (bat->state < 0) {
+        return;
+    }
+    if (bat->state == 0) {
+        PSMTXCopy(hand->mtx, bat->mtx);
+        PSMTXMultVec(hand->mtx, &bat->tip, &v);
+        bat->mtx[0][3] = v.x;
+        bat->mtx[1][3] = v.y;
+        bat->mtx[2][3] = v.z;
+        batJoint = model->joints[obj->jointMap[bat->joint]];
+        PSMTXCopy(bat->mtx, batJoint->mtx);
+        PSVECScale(&bat->tip, lbl_803CC75C, &v);
+        PSMTXMultVec(bat->mtx, &v, &v);
+        batJoint->mtx[0][3] = v.x;
+        batJoint->mtx[1][3] = v.y;
+        batJoint->mtx[2][3] = v.z;
+        bat->state++;
+    } else if (bat->state == 1) {
+        // derive the swing velocity from the hand motion
+        PSMTXMultVec(hand->mtx, &bat->tip, &v);
+        prev.x = bat->mtx[0][3];
+        prev.y = bat->mtx[1][3];
+        prev.z = bat->mtx[2][3];
+        PSVECSubtract(&v, &prev, &bat->vel);
+        if (lbl_803CBCA0 != 0) {
+            memcpy(&bat->vel, &lbl_800F79A0[1], sizeof(Vec));
+        } else {
+            PSVECAdd(&bat->vel, &lbl_800F79A0[0], &bat->vel);
+        }
+        PSVECScale(&bat->vel, lbl_803CB824, &bat->vel);
+        PSVECScale(&bat->vel, lbl_803CC73C / frameDt, &bat->vel);
+        for (i = 0; i < 3; i++) {
+            dm[i][0] = (hand->mtx[i][0] - bat->mtx[i][0]) / frameDt;
+            dm[i][1] = (hand->mtx[i][1] - bat->mtx[i][1]) / frameDt;
+            dm[i][2] = (hand->mtx[i][2] - bat->mtx[i][2]) / frameDt;
+        }
+        dm[2][3] = lbl_803CC728;
+        dm[1][3] = lbl_803CC728;
+        dm[0][3] = lbl_803CC728;
+        PSMTXTranspose(hand->mtx, m);
+        PSMTXConcat(dm, m, dm);
+        bat->angVel.x = dm[2][1];
+        bat->angVel.y = dm[0][2];
+        bat->angVel.z = dm[1][0];
+        PSMTXMultVec(m, &bat->angVel, &bat->angVel);
+        PSMTXCopy(hand->mtx, bat->mtx);
+        bat->mtx[0][3] = v.x;
+        bat->mtx[1][3] = v.y;
+        bat->mtx[2][3] = v.z;
+        PSVECScale(&bat->angVel, lbl_803CC72C * lbl_803CB824, &bat->angVel);
+        batJoint = model->joints[obj->jointMap[bat->joint]];
+        PSMTXCopy(bat->mtx, batJoint->mtx);
+        PSVECScale(&bat->tip, lbl_803CC75C, &v);
+        PSMTXMultVec(bat->mtx, &v, &v);
+        batJoint->mtx[0][3] = v.x;
+        batJoint->mtx[1][3] = v.y;
+        batJoint->mtx[2][3] = v.z;
+        bat->state++;
+    } else {
+        PSMTXTrans(m, lbl_8036E548.unkC38.x, lbl_8036E548.unkC38.y, lbl_8036E548.unkC38.z);
+        PSMTXInverse(m, m);
+        fn_80039310(bat, lbl_803CC774, lbl_803CC778);
+        batJoint = model->joints[obj->jointMap[bat->joint]];
+        PSMTXCopy(bat->mtx, batJoint->mtx);
+        PSVECScale(&bat->tip, lbl_803CC75C, &v);
+        PSMTXMultVec(bat->mtx, &v, &v);
+        batJoint->mtx[0][3] = v.x;
+        batJoint->mtx[1][3] = v.y;
+        batJoint->mtx[2][3] = v.z;
+        bat->state += (bat->state == 2);
+    }
 }
+#endif
 
 // .text:0x80039310 size:0x73C
 void fn_80039310(BatSim* bat, f32 floorY, f32 minEnergy) {
