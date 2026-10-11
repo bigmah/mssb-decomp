@@ -227,7 +227,13 @@ void fn_800E4AE8(void* ctx, void* info) {
 
 // .text:0x800E4B1C size:0x74
 u32 fn_800E4B1C(void* ctx) {
-    return 0;
+    HVQM4SeqObj* seq = ctx;
+    s32 lumaW = seq->frameWidth / 4;
+    s32 chromaW = seq->hSamp == 2 ? lumaW >> 1 : lumaW;
+    s32 lumaH = seq->frameHeight / 4;
+    s32 chromaH = seq->vSamp == 2 ? lumaH >> 1 : lumaH;
+
+    return sizeof(HVQState) + ((lumaW + 2) * (lumaH + 2) + (chromaW + 2) * (chromaH + 2) * 2) * sizeof(HVQBlock);
 }
 
 // .text:0x800E4B90 size:0x464
