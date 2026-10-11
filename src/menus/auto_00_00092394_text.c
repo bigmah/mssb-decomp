@@ -15,6 +15,7 @@ typedef struct MenuObject {
     u8 padAC[0x10];
 } MenuObject;
 extern MenuState* lbl_2_bss_1A8248[];
+extern u8* lbl_2_bss_1A824C[];
 extern void* lbl_2_bss_340140[];
 extern u8 lbl_2_data_30900[];
 
@@ -76,6 +77,30 @@ void fn_2_92504(u8* object) {
 void fn_2_9253C(u8* object) {
     *(void (**)(u8*))(object + 0xB8) = lbl_2_data_308B4[object[0xAB]];
     (*(void (**)(u8*))(object + 0xB8))(object);
+}
+
+// fn_2_9257C, size:0xD8
+void fn_2_9257C(void) {
+    s32 i;
+    u8* work;
+
+    // TODO type: lbl_2_bss_1A8248[0] state byte 0x44F2
+    if (((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 1 || ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 2 ||
+        ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 3) {
+        return;
+    }
+    for (i = 0; i < 29; i++) {
+        fn_2_9253C((u8*)lbl_2_bss_1A8248[0] + i * 0xBC + 0x21E0);
+    }
+    work = lbl_2_bss_1A824C[0];
+    if (work[0x1972C0] != 0) {
+        work[0x1972C0] = 0;
+#if NONMATCHING
+        fn_800B0A14_removeQueue(NULL); // the argument is unused
+#else
+        ((void (*)(void))fn_800B0A14_removeQueue)(); // original passes a stale r3
+#endif
+    }
 }
 
 // fn_2_92654, size:0x28

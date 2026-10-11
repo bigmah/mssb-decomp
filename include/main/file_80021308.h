@@ -122,7 +122,7 @@ void fn_80021954(SoundGroupData** data);
 void fn_80021980(SoundGroupData* data);
 void f_initSound(void);
 void fn_80021AA0(void);
-void fn_80021AC0(void);
+void fn_80021AC0(s32 team, s32 arg1);
 void fn_80021AC4(void);
 void fn_80021AC8(void);
 void* fn_80021ADC(s32 index, void* dst);
