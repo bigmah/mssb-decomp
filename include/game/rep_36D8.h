@@ -68,8 +68,15 @@ typedef struct RepMinigameView {
     /*0x1B08*/ s16 _1B08[6];
     /*0x1B14*/ u8 _1B14[0x1B19 - 0x1B14];
     /*0x1B19*/ u8 phase;
-    /*0x1B1A*/ u8 _1B1A[6]; // per item type (1..6, stored at [type - 1]): scoring kind + 2
-    /*0x1B20*/ u8 _1B20[15];
+    /*0x1B1A*/ u8 _1B1A[6]; // per item type: 0 = spawn, 1 = respawn delay, else scoring kind + 2
+    /*0x1B20*/ union {
+        u8 pos[15]; // searched by fn_3_13E3A4
+        struct {
+            u8 _0[6];
+            s8 pair[4][2]; // 0x1B26: item type index, -1: none
+            u8 _E;
+        } it;
+    } _1B20;
     /*0x1B2F*/ u8 _1B2F[4]; // per runner slot; 0xFF: none
     /*0x1B33*/ u8 _1B33;
     /*0x1B34*/ u8 _1B34[0x1D58 - 0x1B34];
@@ -103,7 +110,7 @@ void fn_3_13E670(void);
 void fn_3_13E6D4(void);
 void fn_3_13E7D4(void);
 void fn_3_13EA30(void);
-void fn_3_13EC44(void);
+void fn_3_13EC44(s32 type);
 void fn_3_13F484(void);
 void fn_3_13F6C8(void);
 void fn_3_13F7E4(void);

@@ -25,7 +25,7 @@ extern int RandomInt_Game_Range(int, int);
 extern int RandomInt_Game(int);
 extern void* memset(void*, int, u32);
 extern u8 lbl_800EFBA4[];
-extern s16 lbl_3_data_21904;
+extern s16 lbl_3_data_21904[];
 extern void fn_3_151798(void);
 extern void fn_3_11F480(void);
 extern void fn_80011578(void);
@@ -360,7 +360,7 @@ void fn_3_13E3A4(RepTarget* t) {
             }
             p = &cand[0];
             for (i = 0; i < 15; i++) {
-                if (REP_MG->_1B20[i] == cand[0]) {
+                if (REP_MG->_1B20.pos[i] == cand[0]) {
                     p = &cand[1];
                     break;
                 }
@@ -468,13 +468,55 @@ void fn_3_13EA30(void) {
 #endif
 
 // .text:0x0013EC44 size:0x840 mapped:0x8077DCD8
-void fn_3_13EC44(void) {
+void fn_3_13EC44(s32 type) {
     return;
 }
 
 // .text:0x0013F484 size:0x244 mapped:0x8077E518
+// Per item type: count down the respawn delay, spawn new items (fn_3_13EC44), or
+// once enough items of the type are collected, clear them and start the delay.
 void fn_3_13F484(void) {
-    return;
+    s32 k;
+    s32 i;
+    s32 collected;
+    s32 n;
+    for (k = 0; k < 6; k++) {
+        if (REP_MG->_1B1A[k] == 1) {
+            REP_MG->_1B08[k]--;
+            if (REP_MG->_1B08[k] <= 0) {
+                REP_MG->_1B1A[k] = 0;
+            }
+        } else if (REP_MG->_1B1A[k] == 0) {
+            fn_3_13EC44(k);
+        } else {
+            collected = k + 101;
+            n = 0;
+            for (i = 0; i < 15; i++) {
+                if (REP_MG->itemState[i] == collected) {
+                    n++;
+                }
+            }
+            if (n >= lbl_3_data_21884[REP_MG->_1B1A[k] - 2][0]) {
+                for (i = 0; i < 15; i++) {
+                    if (REP_MG->itemState[i] == collected) {
+                        REP_MG->itemState[i] = 0;
+                    }
+                }
+                REP_MG->_1B1A[k] = 1;
+                for (i = 0; i < 4; i++) {
+                    if (REP_MG->_1B20.it.pair[i][0] == k) {
+                        REP_MG->_1B20.it.pair[i][0] = -1;
+                        break;
+                    }
+                    if (REP_MG->_1B20.it.pair[i][1] == k) {
+                        REP_MG->_1B20.it.pair[i][1] = -1;
+                        break;
+                    }
+                }
+                REP_MG->_1B08[k] = RandomInt_Game_Range(lbl_3_data_21904[3], lbl_3_data_21904[4]);
+            }
+        }
+    }
 }
 
 // .text:0x0013F6C8 size:0x11C mapped:0x8077E75C
@@ -623,7 +665,7 @@ void fn_3_140484(void) {
         } else if (a > 0.0f) {
             *(f32*)(m + 0x1AF0) -= lbl_3_data_218BC[6];
         }
-        if (*(s16*)(g_Minigame + 0x1AFA) >= *(s16*)((u8*)&lbl_3_data_21904 + 0x12)) {
+        if (*(s16*)(g_Minigame + 0x1AFA) >= lbl_3_data_21904[9]) {
             g_Minigame[0x1B19] = 2;
             *(s16*)(g_Minigame + 0x1AFA) = 0;
             *(f32*)(m + 0x1AF0) = lbl_3_data_218BC[4];
@@ -744,7 +786,7 @@ void fn_3_1406F4(void) {
             } else if (x > 0.0f) {
                 *(f32*)(m + 0x1AF0) -= lbl_3_data_218BC[6];
             }
-            if (*(s16*)(a + 0x1AFA) >= *(s16*)((u8*)&lbl_3_data_21904 + 0x12)) {
+            if (*(s16*)(a + 0x1AFA) >= lbl_3_data_21904[9]) {
                 m[0x1B19] = 2;
                 *(s16*)(a + 0x1AFA) = 0;
                 *(f32*)(m + 0x1AF0) = lbl_3_data_218BC[4];
@@ -833,7 +875,7 @@ void fn_3_140BCC(void) {
     } else {
         if (m[0x190B] == 1) {
             m[0x190B] = 2;
-            *(s16*)(g_GameLogic + 0x100) = lbl_3_data_21904;
+            *(s16*)(g_GameLogic + 0x100) = lbl_3_data_21904[0];
         }
         if (g_Minigame[0x1B19] != 3) {
             *(s16*)(g_GameLogic + 0x100) -= 1;
