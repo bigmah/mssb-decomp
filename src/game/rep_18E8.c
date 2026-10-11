@@ -3,6 +3,7 @@
 #include "static/GameSettings.h"
 #include "game/rep_1838.h"
 #include "game/rep_AC8.h"
+#include "game/rep_D0.h"
 #include "game/auto_00_0005985C_text.h"
 #include "main/file_8004207C.h"
 #include "header_rep_data.h"
@@ -1444,8 +1445,81 @@ void fn_3_A89D4(void) {
 }
 
 // .text:0x000A9354 size:0x3A8 mapped:0x806E83E8
-void fn_3_A9354(int a, int b) {
-    return;
+void fn_3_A9354(int fi, int mode) {
+    RepFielder* f = &g_Fielders[fi];
+    VecSrcDst ray;
+    CollisionStruct hit;
+    u32 type;
+    s32 ang;
+    f32 cx;
+    f32 cz;
+    f32 speed;
+    s32 i;
+
+    if (g_Ball.fielderWBallIndex != fi) {
+        return;
+    }
+    g_Ball.AtBat_Contact_BallPos.x = f->pos.x + g_Ball.offsetWhilePickedUpHistory[0].x;
+    g_Ball.AtBat_Contact_BallPos.y = f->pos.y + g_Ball.offsetWhilePickedUpHistory[0].y;
+    g_Ball.AtBat_Contact_BallPos.z = f->pos.z + g_Ball.offsetWhilePickedUpHistory[0].z;
+    ray.src.x = g_Ball.AtBat_Contact_BallPos.x;
+    ray.src.y = lbl_3_rodata_1978;
+    ray.src.z = g_Ball.AtBat_Contact_BallPos.z;
+    ray.dst.x = g_Ball.AtBat_Contact_BallPos.x;
+    ray.dst.y = lbl_3_rodata_1994;
+    ray.dst.z = g_Ball.AtBat_Contact_BallPos.z;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        type = checkCollision(&ray, &hit, 2, 0);
+    } else {
+        type = checkCollision(&ray, &hit, 1, 0);
+    }
+    type &= 0x7F;
+    if (!(type == 1 || type == 6 || type == 9 || type == 10)) {
+        g_Ball.AtBat_Contact_BallPos.y = f->pos.y;
+        g_Ball.AtBat_Contact_BallPos.x = f->pos.x;
+        g_Ball.AtBat_Contact_BallPos.z = f->pos.z;
+        g_Ball.AtBat_Contact_BallPos.y = g_Ball.offsetWhilePickedUpHistory[0].y;
+    }
+    if (g_Ball.AtBat_Contact_BallPos.y < 0.5f) {
+        g_Ball.AtBat_Contact_BallPos.y = 0.5f;
+    }
+    if (mode == 0) {
+        ang = RandomInt_Game_Range(lbl_3_data_4860[f->_214].a, lbl_3_data_4860[f->_214].b);
+    } else if (mode == 1) {
+        ang = f->_1C2;
+    } else {
+        ang = fn_3_9FE6C_normalizeAngle(g_Ball.ballAngleFromHome + 0x800);
+    }
+    getComponentsFromSAng(ang, &cx, &cz);
+    g_Ball.physicsSubstruct.velocity.y = 0.0001f * (f32)RandomInt_Game(300) + 0.02f;
+    speed = 0.0001f * (f32)RandomInt_Game(200) + 0.05f;
+    g_Ball.physicsSubstruct.velocity.x = cx * speed;
+    g_Ball.physicsSubstruct.velocity.z = cz * speed;
+    g_Ball.framesSinceThrowStarted = 0;
+    g_Ball.ballState = BALL_STATE_LOOSE;
+    g_Ball.fielderWBallIndex = -1;
+    g_Ball.baseBallAndFielderAreOn = -1;
+    g_Ball.ballIsLooseInd_unused = 0;
+    g_Ball.fielderAboutToGetBall_hasBall = -1;
+    g_Ball.thrownBallHasHitGround = 0;
+    g_Ball.matchFramesAndBallAngle.framesSinceLastThrow = g_Ball.timeSinceBallPickedUp;
+    g_Ball.timeSinceBallPickedUp = -1;
+    g_Ball.ballIsRollingIndicator = 0;
+    g_Ball.groundRuleDoubleInd = 0;
+    g_FieldingLogic._124 = 0;
+    g_FieldingLogic._125 = -1;
+    g_FieldingLogic._12A = 0;
+    for (i = 0; i < 4; i++) {
+        if (g_Runners[i].runnerOnFieldOrOutOrScored == 1) {
+            if (g_Runners[i].tagUpInd == 2) {
+                g_Runners[i].baseReachedAtTimeOfThrow = g_Runners[i].startingBase_baseAchieved;
+            } else {
+                g_Runners[i].baseReachedAtTimeOfThrow = g_Runners[i].currentBase;
+            }
+        } else {
+            g_Runners[i].baseReachedAtTimeOfThrow = -1;
+        }
+    }
 }
 
 // .text:0x000A96FC size:0x288 mapped:0x806E8790

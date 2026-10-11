@@ -60,7 +60,7 @@ typedef struct RepFielder {
     /*0x211*/ u8 _211;
     /*0x212*/ u8 _212; // state
     /*0x213*/ u8 _213; // runner index
-    /*0x214*/ u8 _214;
+    /*0x214*/ u8 _214; // lbl_3_data_4860 index
     /*0x215*/ u8 _215;
     /*0x216*/ u8 _216[0x268 - 0x216];
 } RepFielder; // size: 0x268
@@ -123,7 +123,7 @@ void fn_3_A8338(s32 idx);
 s32 fn_3_A8478(s32* out0, s32* out1);
 void fn_3_A85C8(void);
 void fn_3_A89D4(void);
-void fn_3_A9354(int, int);
+void fn_3_A9354(int fi, int mode);
 void fn_3_A96FC(int);
 void fn_3_A9984(int);
 void fn_3_A9C74(int);
