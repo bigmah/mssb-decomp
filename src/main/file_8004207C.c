@@ -479,7 +479,9 @@ void fn_8004B1B8(u32 value) {
 
 // .text:0x8004B1C0 size:0x48
 void fn_8004B1C0(s32 kind, CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
-    return;
+    if (kind != 11) {
+        lbl_800FBE64[kind](model, animID, colorIdx, frame);
+    }
 }
 
 // .text:0x8004B208 size:0x68
