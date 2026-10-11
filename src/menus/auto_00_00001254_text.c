@@ -943,3 +943,36 @@ s32 fn_2_14F8(s32 a, s32 b) {
     return (s32)(fn_2_1554() >> 16) % (hi - lo + 1) + lo;
 }
 #endif
+
+// NONMATCHING 95%: (base + i + 9)[2] folded into one displacement; loop counters in other regs
+#if NONMATCHING
+// fn_2_A1A0, size:0xE8
+void fn_2_A1A0(s32 count, s32 team) {
+    s32 i;
+    s32 v;
+    u8* row = lbl_803C6724 + (u8)team * 9;
+retry:
+    while (lbl_8034E9A0[0x4757] != 0) {
+    }
+    for (i = 0; i < (u8)count; i++) {
+        s32 idx = i + 2;
+        if (g_d_GameSettings._10 == 0 && lbl_2_bss_100B8[0x2E] != 0) {
+            v = (s8)(lbl_803C6724 + i)[2];
+        } else {
+            v = (s8)row[idx];
+        }
+        if (v == 0) {
+            goto retry;
+        }
+        if (g_d_GameSettings._10 == 0 && lbl_2_bss_100B8[0x2E] != 0) {
+            v = (s8)(lbl_803C6724 + i + 9)[2];
+        } else {
+            v = (s8)row[idx];
+        }
+        if (v == 0) {
+            goto retry;
+        }
+    }
+    (lbl_803C6724 + (u8)team * 9 + (u8)count)[2] = 0;
+}
+#endif

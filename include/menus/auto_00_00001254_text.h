@@ -100,4 +100,6 @@ void fn_2_87A8(void);
 
 s32 fn_2_14F8(s32 a, s32 b);
 
+void fn_2_A1A0(s32 count, s32 team);
+
 #endif
