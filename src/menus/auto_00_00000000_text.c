@@ -291,6 +291,31 @@ void fn_2_940(void) {
     }
 }
 
+// NONMATCHING 90%: switch compiles to a compare tree instead of the original jump table (empty cases 2-6/8 do not help)
+#if NONMATCHING
+// fn_2_978, size:0x9C
+void fn_2_978(void) {
+    u8 mode = lbl_80366158._1D;
+    fn_800B0A5C_insertQueue(fn_2_11D8, 0x2000);
+    // Next menu scene for the boot mode.
+    switch (mode) {
+    case 0:
+        fn_2_11A0(0x11);
+        break;
+    case 1:
+        fn_2_11A0(0xE);
+        break;
+    case 7:
+        fn_2_11A0(1);
+        break;
+    case 9:
+        fn_2_11A0(1);
+        break;
+    }
+    lbl_80366158._1D = 1;
+}
+#endif
+
 // fn_2_A14, size:0x5C
 void fn_2_A14(void) {
     fn_800B0A5C_insertQueue(fn_2_160, 0x1000);
