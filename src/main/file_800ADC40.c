@@ -990,10 +990,10 @@ static inline BOOL MovFillFromAram(u32 len) {
 
 // Copies len bytes from the DVD stream buffer into the ARAM ring.
 static inline BOOL MovStoreToAram(u32 len) {
-    u8* src;
-    u8* wrap;
     u32 first;
     u32 second;
+    u8* src;
+    u8* wrap;
     BOOL intr;
 
     while (lbl_803C6CF8.streamAvail < len) {}
@@ -1054,6 +1054,7 @@ BOOL fn_800AFD4C(void) {
     MovStoreToAram(len);
     if (lbl_803C79D4.totalIn >= aram->size) {
         MovFillFromAram(lbl_803C7A00.size);
+        (void)lbl_803C79D4.totalIn; // leftover read (debug print compiled out?)
         fn_800A6C80();
         while (MOV_DVD_DONE() != 1) {}
         aram->full = TRUE;
