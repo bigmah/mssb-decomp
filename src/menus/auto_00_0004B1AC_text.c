@@ -44,9 +44,18 @@ extern void fn_2_47CFC(void);
 
 typedef struct MenuDrawEntry MenuDrawEntry;
 struct MenuDrawEntry {
-    void (*draw)(s32 context, MenuDrawEntry* entry);
-    u8 data[0x14];
-};
+    /*0x00*/ void (*draw)(s32 context, MenuDrawEntry* entry);
+    /*0x04*/ s16 _04;
+    /*0x06*/ s16 _06;
+    /*0x08*/ s16 _08;
+    /*0x0A*/ s16 _0A;
+    /*0x0C*/ s16 _0C;
+    /*0x0E*/ s16 _0E; // layout object index
+    /*0x10*/ s16 _10;
+    /*0x12*/ s16 _12;
+    /*0x14*/ s16 _14;
+    /*0x16*/ u8 _16[2];
+}; // size: 0x18
 extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A8230[];
 
@@ -605,8 +614,8 @@ void fn_2_53CEC(u8* menu) {
         for (column = 0; column < 864; column++) {
             entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8230[0])[row][column];
             if (entry->draw != NULL) {
-                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].obj->_68 = 0;
-                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].obj->flags &= ~2;
+                lbl_80371C30[*(u16*)(menu + 0x14) + entry->_0E].obj->_68 = 0;
+                lbl_80371C30[*(u16*)(menu + 0x14) + entry->_0E].obj->flags &= ~2;
             }
         }
     }
@@ -621,8 +630,8 @@ void fn_2_53DF8(u8* menu) {
         for (column = 0; column < 864; column++) {
             entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8234[0])[row][column];
             if (entry->draw != NULL) {
-                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].obj->_68 = 0;
-                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].obj->flags &= ~2;
+                lbl_80371C30[*(u16*)(menu + 0x14) + entry->_0E].obj->_68 = 0;
+                lbl_80371C30[*(u16*)(menu + 0x14) + entry->_0E].obj->flags &= ~2;
             }
         }
     }
@@ -1836,3 +1845,40 @@ void fn_2_535B0(void) {
     }
 }
 #endif
+
+// fn_2_54474, size:0x3D0
+void fn_2_54474(void) {
+    MenuDrawEntry* entry;
+    s32 row;
+    s32 column;
+    for (row = 0; row < 70; row++) {
+        for (column = 0; column < 864; column++) {
+            entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8234[0])[row][column];
+            entry->draw = NULL;
+            entry->_04 = 0;
+            entry->_06 = 0;
+            entry->_10 = 0;
+            entry->_08 = 0;
+            entry->_0A = 0;
+            entry->_0C = 0;
+            entry->_0E = 0;
+            entry->_12 = 0;
+            entry->_14 = 0;
+        }
+    }
+    for (row = 0; row < 10; row++) {
+        for (column = 0; column < 864; column++) {
+            entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8230[0])[row][column];
+            entry->draw = NULL;
+            entry->_04 = 0;
+            entry->_06 = 0;
+            entry->_10 = 0;
+            entry->_08 = 0;
+            entry->_0A = 0;
+            entry->_0C = 0;
+            entry->_0E = 0;
+            entry->_12 = 0;
+            entry->_14 = 0;
+        }
+    }
+}
