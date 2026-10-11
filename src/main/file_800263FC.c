@@ -363,8 +363,12 @@ void fn_800332B8(void) {
 }
 
 // .text:0x800335BC size:0x30
-void fn_800335BC(void) {
-    return;
+f32 fn_800335BC(s32 angle) {
+    s32 i = __abs(angle) & 0x7FF;
+    if (i >= 0x401) {
+        i = 0x800 - i;
+    }
+    return lbl_8017ED68[i];
 }
 
 // .text:0x800335EC size:0x34
