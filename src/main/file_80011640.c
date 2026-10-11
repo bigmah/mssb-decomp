@@ -140,8 +140,28 @@ void fn_80011A60(void) {
 #endif
 
 // .text:0x80011B64 size:0x80
-void fn_80011B64(void) {
-    return;
+void fn_80011B64(s32 index) {
+    CharActor* actor;
+    CharPart* part;
+    CharParts* parts;
+
+    actor = lbl_8036E548.active[index];
+    if (actor != NULL) {
+        part = actor->part;
+        if (part != NULL) {
+            part->_61 = -1;
+            part->_5C = -2;
+            lbl_8036E548.active[index]->part = NULL;
+        }
+        parts = lbl_8036E548.active[index]->parts;
+        if (parts != NULL) {
+            parts->_D1 = parts->_D0;
+            parts->_D0 = -1;
+            parts->part[0]._5C = -2;
+            parts->part[1]._5C = -2;
+            lbl_8036E548.active[index]->parts = NULL;
+        }
+    }
 }
 
 // .text:0x80011BE4 size:0xC4
