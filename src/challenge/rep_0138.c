@@ -343,7 +343,6 @@ extern f32 lbl_1_data_200[];
 extern const f32 lbl_1_rodata_210;
 extern const f32 lbl_1_rodata_218;
 
-// 90%+: only float regs differ (magic double f7/k f6 swapped); fn_1_8368, size:0x240
 void fn_1_8368(void) {
     s32 v1;
     if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
@@ -438,7 +437,10 @@ void fn_1_5698(void) {
     GXSetTevDirect(GX_TEVSTAGE0);
 }
 
-// 85%: float regs differ in the 4 start/end cases (k f1/zero f0 in orig, f0/f1 here); fn_1_7FF8, size:0x370
+// fn_1_7FF8, size:0x370
+// Debug pad editor for the fog settings (mode, colour, start, end).
+// NONMATCHING 99%: in the two `+1` clamps the 512 limit and the field load swap f0/f2
+#if NONMATCHING
 void fn_1_7FF8(void) {
     s32 t;
     s32 u;
@@ -553,6 +555,7 @@ void fn_1_7FF8(void) {
         break;
     }
 }
+#endif
 
 // Display-list opcodes not in GXEnum.h.
 #define DL_NOP 0x00
