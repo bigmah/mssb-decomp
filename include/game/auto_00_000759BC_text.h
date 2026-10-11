@@ -27,7 +27,8 @@
 // lbl_803537E4: per-player batting/fielding record, [2 teams][9].
 typedef struct BattingRecord {
     /*0x00*/ u8 rosterSlot;
-    /*0x01*/ u8 _01[2];
+    /*0x01*/ u8 _01;
+    /*0x02*/ u8 played; // appeared in the game
     /*0x03*/ u8 plateAppearances;
     /*0x04*/ u8 atBats;
     /*0x05*/ u8 hits;
@@ -67,7 +68,8 @@ typedef struct PitchingRecord {
     /*0x0A*/ u16 hitsAllowed;
     /*0x0C*/ u16 homeRunsAllowed;
     /*0x0E*/ u16 _0E;
-    /*0x10*/ u8 _10[3];
+    /*0x10*/ u16 _10; // fn_3_6D564 adds to it
+    /*0x12*/ u8 played;
     /*0x13*/ u8 wins;
     /*0x14*/ u8 losses;
     /*0x15*/ u8 saves;
@@ -76,9 +78,9 @@ typedef struct PitchingRecord {
     /*0x18*/ u8 _18;
     /*0x19*/ u8 _19;
     /*0x1A*/ u8 outsPitched;
-    /*0x1B*/ u8 _1B;
+    /*0x1B*/ u8 topPitchSpeed;
     /*0x1C*/ u8 strikeouts;
-    /*0x1D*/ u8 _1D;
+    /*0x1D*/ u8 starPitches;
 } PitchingRecord; // size: 0x1E
 
 // lbl_80353A90: line score and game summary (size 0x108).

@@ -9,6 +9,26 @@ extern PitcherGameStat lbl_3_common_bss_32A38[2][9];
 extern Bss8034E9A0View lbl_8034E9A0;
 extern Lbl80354720Entry lbl_80354720[2][9];
 extern LineScore lbl_80353A90;
+extern FielderView g_Fielders[];
+extern RunningLogicView g_RunningLogic;
+extern s16 lbl_3_data_5EDC[];
+extern void fn_3_6D564(s32 team, s32 rosterIdx, s32 delta);
+extern void fn_3_9C794(void);
+extern void fn_3_162080(void);
+
+// Saturating counters updated in place (no address temp).
+#define STAT_INC_U8_FIELD(x)     \
+    if ((x) < 0xFE) {            \
+        (x)++;                   \
+    } else {                     \
+        (x) = 0xFF;              \
+    }
+#define STAT_INC_U16_FIELD(x)    \
+    if ((x) < 0xFFFE) {          \
+        (x)++;                   \
+    } else {                     \
+        (x) = 0xFFFF;            \
+    }
 
 extern PitchingRecord lbl_803535C8[2][9];
 extern BattingRecord lbl_803537E4[2][9];
@@ -272,6 +292,174 @@ void fn_3_79ACC(void) {
         }
     }
 }
+
+// fn_3_7A154, size:0x9E0
+// End of a pitch: appearance flags, pitcher stats, runs charged to pitchers.
+// NONMATCHING 91%: register allocation/scheduling; original addresses lbl_8034E9A0+0x48C0 directly
+#if NONMATCHING
+void fn_3_7A154(s32 inPlay) {
+    s32 charge = 0;
+    s32 lead;
+    s32 d;
+    s32 i;
+    s32 n;
+    s32 any;
+    s32 scored[4];
+    s32 pitch;
+    PitchingRecord* pit;
+    PitchingRecord* team;
+    InMemRunnerType* runner;
+
+    pit = &lbl_803535C8[g_GameLogic.teamFielding]
+                       [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]];
+    if (g_Stats.replayInd != 0) {
+        return;
+    }
+    for (i = 0; i < 9; i++) {
+        lbl_803537E4[g_GameLogic.teamFielding][g_Fielders[i].rosterID].played = 1;
+    }
+    for (i = 0; i < 4; i++) {
+        if (g_Runners[i].runnerOnFieldOrOutOrScored != 0 && g_Runners[i].rosterID >= 0) {
+            lbl_803537E4[g_GameLogic.teamBatting][g_Runners[i].rosterID].played = 1;
+        }
+    }
+    lbl_803535C8[g_GameLogic.teamFielding]
+                [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]]
+                    .played = 1;
+    fn_3_7AB78(0);
+    if (pit->topPitchSpeed < g_Pitcher.pitchSpeed) {
+        pit->topPitchSpeed = g_Pitcher.pitchSpeed;
+    }
+    if (g_FieldingLogic._107 == 0) {
+        if (g_Pitcher.starPitchType != 0 || g_Pitcher.nonCaptainStarPitchTriggeredType != 0) {
+            fn_3_6D564(g_GameLogic.teamFielding, g_Pitcher.rosterID, lbl_3_data_5EDC[1]);
+            STAT_INC_U8_FIELD(lbl_803535C8[g_GameLogic.teamFielding]
+                                    [g_GameLogic.battingOrderAndPositionMapping
+                                         [g_GameLogic.awayTeamBattingInd_battingTeam][0][0]]
+                                        .starPitches);
+        }
+        if ((g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3) && g_RunningLogic._12 >= 4) {
+            fn_3_6D564(g_GameLogic.teamFielding, g_Pitcher.rosterID, lbl_3_data_5EDC[2]);
+        } else if (g_Scores._C2 != 0) {
+            fn_3_6D564(g_GameLogic.teamFielding, g_Pitcher.rosterID, lbl_3_data_5EDC[2] * g_Scores._C2);
+        }
+    }
+    for (i = 1; i < 10; i++) {
+        RosterLogEntry* e =
+            &lbl_8034E9A0.rosterLog[g_GameLogic.teamFielding]
+                                   [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][i][0]];
+        if (e->position == 0xA) {
+            e->position = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][i][1];
+        }
+    }
+
+    lead = g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0] -
+           g_Scores.runs[g_GameLogic.awayTeamBattingInd_battingTeam][0];
+    d = lead - (g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][g_Scores.inning] - g_Scores._9E);
+    if (lead >= 0 && d <= 0) {
+        charge = 1;
+    }
+    if (inPlay == 0) {
+        // walk / hit-by-pitch with the bases loaded
+        if ((g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3) && g_RunningLogic._12 >= 4 &&
+            g_Runners[3].pitcherWhoLetRunnerOnBase >= 0) {
+            team = lbl_803535C8[g_GameLogic.teamFielding];
+            STAT_INC_U16_FIELD(team[g_Runners[3].pitcherWhoLetRunnerOnBase]._02);
+            if (g_Runners[3].runnerDidntReachOnError != 0) {
+                STAT_INC_U16_FIELD(team[g_Runners[3].pitcherWhoLetRunnerOnBase]._04);
+            }
+            if (charge != 0 && d + 1 >= 0) {
+                lbl_3_common_bss_32A38[g_GameLogic.teamFielding][g_Runners[3].pitcherWhoLetRunnerOnBase]._1 = 0;
+            }
+        }
+    } else {
+        n = g_Scores._9C;
+        for (i = 0; i < 4; i++) {
+            scored[i] = 0;
+            if (g_Runners[i].runnerOnFieldOrOutOrScored == 3 || g_Runners[i].scoredOnGRD != 0) {
+                if (n <= 0) {
+                    scored[i] = 1;
+                } else {
+                    n--;
+                }
+            }
+        }
+        if (g_Strikes.storedOuts == 2) {
+            any = 0;
+            if (g_Ball.AtBat_ContactResult == 3) {
+                any = 1;
+            } else {
+                for (i = 0; i < 4; i++) {
+                    if (g_Runners[i].forceOutCd == 2) {
+                        any = 1;
+                    }
+                }
+            }
+            if (any != 0) {
+                scored[0] = scored[1] = scored[2] = scored[3] = 0;
+            }
+        }
+        if (g_Strikes.storedOuts == 1) {
+            n = 2;
+            if (g_Runners[0].forceOutCd == 2) {
+                n = 1;
+            }
+            for (i = 1; i < 4; i++) {
+                if (g_Runners[i].forceOutCd == 2) {
+                    n--;
+                }
+            }
+            if (n <= 0) {
+                scored[0] = scored[1] = scored[2] = scored[3] = 0;
+            }
+        }
+        team = lbl_803535C8[g_GameLogic.teamFielding];
+        for (i = 3, runner = &g_Runners[3]; i >= 0; i--, runner--) {
+            if (scored[i] != 0 && runner->pitcherWhoLetRunnerOnBase >= 0) {
+                STAT_INC_U16_FIELD(team[runner->pitcherWhoLetRunnerOnBase]._02);
+                if (runner->runnerDidntReachOnError != 0) {
+                    if (g_FieldingLogic._113 == 9) {
+                        if (i == 3 && g_FieldingLogic._132 == 1 && g_Ball.landingSpotZoneAwayFromHome == 4) {
+                            STAT_INC_U16_FIELD(team[runner->pitcherWhoLetRunnerOnBase]._04);
+                        }
+                    } else {
+                        STAT_INC_U16_FIELD(team[runner->pitcherWhoLetRunnerOnBase]._04);
+                    }
+                }
+                if (charge != 0 && ++d >= 0) {
+                    lbl_3_common_bss_32A38[g_GameLogic.teamFielding][runner->pitcherWhoLetRunnerOnBase]._1 = 0;
+                }
+            }
+        }
+    }
+
+    if (lbl_3_common_bss_32A94._50[g_GameLogic.awayTeamBattingInd_battingTeam].pitcher !=
+        g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]) {
+        lbl_3_common_bss_32A94._50[g_GameLogic.awayTeamBattingInd_battingTeam].pitcher =
+            g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0];
+        lbl_3_common_bss_32A94._50[g_GameLogic.awayTeamBattingInd_battingTeam]._2 = 0;
+        lbl_3_common_bss_32A94._34 = 0;
+    }
+    pitch = g_Strikes.balls + g_Strikes.strikes * 16;
+    for (i = 0; i < 7; i++) {
+        if (lbl_3_common_bss_32A94.pitchCountLog[i] == 0) {
+            if (i <= 0 || lbl_3_common_bss_32A94.pitchCountLog[i - 1] != pitch) {
+                lbl_3_common_bss_32A94.pitchCountLog[i] = pitch;
+            }
+            break;
+        }
+    }
+    if (lbl_3_common_bss_32A94._34 < 0x7FFE) {
+        lbl_3_common_bss_32A94._34++;
+    } else {
+        lbl_3_common_bss_32A94._34 = 0x7FFF;
+    }
+    fn_3_9C794();
+    if (g_d_GameSettings.exhibitionMatchInd == 0) {
+        fn_3_162080();
+    }
+}
+#endif
 
 // fn_3_7AB34, size:0x44
 void fn_3_7AB34(void) {
