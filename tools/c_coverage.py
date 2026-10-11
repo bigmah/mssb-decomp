@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Count functions that still have no C: unmatched in report.json and with no
-`#if NONMATCHING` definition in their unit's source. This is the headline
+non-stub definition (in or out of `#if NONMATCHING`) in their unit's source. This is the headline
 metric for the port (see plan.md, "End goal")."""
 import argparse, json, os, re
 from collections import defaultdict
@@ -10,9 +10,31 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def unit_source(unit, cfg_sources):
     parts = unit.split("/")
-    if len(parts) == 3:
-        return os.path.join(ROOT, "src", parts[1], parts[2] + ".c")
-    return cfg_sources.get(parts[1])
+    if parts[1] in cfg_sources:
+        return cfg_sources[parts[1]]
+    for ext in (".c", ".cpp", ".s"):
+        path = os.path.join(ROOT, "src", *parts[1:]) + ext
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def has_real_body(text, name):
+    """True if `name` is defined in `text` with a body that isn't an empty stub."""
+    for m in re.finditer(r"\b" + re.escape(name) + r"\s*\([^;{]*\)\s*\{", text):
+        i = m.end()
+        depth = 1
+        j = i
+        while j < len(text) and depth:
+            if text[j] == "{":
+                depth += 1
+            elif text[j] == "}":
+                depth -= 1
+            j += 1
+        body = re.sub(r"//[^\n]*|/\*.*?\*/", "", text[i:j - 1], flags=re.S).strip()
+        if body not in ("", "return;", "return 0;", "return NULL;"):
+            return True
+    return False
 
 
 def nonmatching_defs(path):
@@ -61,12 +83,16 @@ def main():
             continue
         src = unit_source(u["name"], cfg_sources)
         nm = nonmatching_defs(src) if src else set()
+        try:
+            text = open(src, encoding="utf-8", errors="replace").read() if src else ""
+        except OSError:
+            text = ""
         left = []
         for f in funcs:
             per_mod[mod][0] += 1
             if f.get("fuzzy_match_percent") == 100.0:
                 per_mod[mod][1] += 1
-            elif f["name"] in nm:
+            elif f["name"] in nm or has_real_body(text, f["name"]):
                 per_mod[mod][2] += 1
             else:
                 per_mod[mod][3] += 1

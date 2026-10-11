@@ -2777,7 +2777,7 @@ void fn_800AD9F4(ThpPlayer* p) {
 }
 
 // fn_800ADAFC, size:0x8
-u8 fn_800ADAFC(void) {
+BOOL fn_800ADAFC(void) {
     return lbl_803CC17D;
 }
 
