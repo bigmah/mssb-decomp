@@ -2238,6 +2238,7 @@ extern u8 lbl_1_data_AC7C[];
 
 // .text:0x1770C size:0x248
 // NONMATCHING ~90%: the original reaches lbl_1_data_A9E4..AC7C and 1F1A through one pooled .data base (needs the data split)
+// nmverify: lbl_1_bss_3215 lbl_1_data_1F1A lbl_1_data_A9E4 lbl_1_data_AA54 lbl_1_data_AAC4 lbl_1_data_AB34 lbl_1_data_ABB4 lbl_1_data_AC7C reached through a pooled base in original
 #if NONMATCHING
 void fn_1_1770C(u8* object) {
     u8 active;
@@ -2288,6 +2289,7 @@ void fn_800B4CA0(ActorInst* actor, f32 time);
 
 // .text:0x12F8C size:0x258
 // NONMATCHING ~85%: register allocation, pooled .bss base and the inlined fn_1_1073C differ
+// nmverify: lbl_1_bss_67E0 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_12F8C(void* tableArg, void* matrixArg) {
     ActorObjectTable* table = tableArg;
@@ -2490,6 +2492,7 @@ static inline void fn_1_ECF8_bind(u8 player, u16 id, s32 slot) {
     }
 }
 
+// nmverify: lbl_1_bss_5F7C reached through a pooled base in original
 void fn_1_ECF8(u8 player, u8 group, u8 flag) {
     u8* row;
     u16 idA;
@@ -2532,6 +2535,7 @@ extern u32 fn_80024D2C(struct ShapeAnimState* st);
 
 // .text:0xCDC8 size:0x374
 // NONMATCHING ~85%: bone search loops use ctr in the original; register allocation
+// nmverify: lbl_1_bss_5F7C reached through a pooled base in original
 #if NONMATCHING
 void fn_1_CDC8(void) {
     void* states[2];
@@ -2650,6 +2654,7 @@ extern void fn_800330CC(s32 count, s32 type, Vec* pos, Vec* dir, s32 arg4, s32 a
 
 // .text:0x10044 size:0x414
 // NONMATCHING ~85%: the original reaches the emitter settings through the pooled .data base
+// nmverify: lbl_1_data_ADE0 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_10044(void) {
     ChallengeEmitterParams* params = (ChallengeEmitterParams*)(lbl_1_data_ADE0 + 0x10);
@@ -2904,6 +2909,7 @@ static inline void fn_1_C5AC_quad(f32 z, u32 color) {
 
 // .text:0xC5AC size:0x434
 // NONMATCHING ~85%: the overlay settings are reached through the pooled .data base
+// nmverify: lbl_1_data_F570 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_C5AC(void) {
     ChallengeOverlay* overlay = (ChallengeOverlay*)lbl_1_data_F570;
@@ -3123,6 +3129,7 @@ extern u8 lbl_1_data_D838[];
 
 // .text:0xFB98 size:0x4AC
 // NONMATCHING ~90%: the original reaches the parameters through the pooled .data base
+// nmverify: lbl_1_data_D838 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_FB98(void) {
     ChallengeFxParams* params = (ChallengeFxParams*)(lbl_1_data_D838 + 0x184C);
@@ -3247,6 +3254,9 @@ extern const f32 lbl_1_rodata_7460;
 
 // .text:0x129D0 size:0x548
 // NONMATCHING ~85%: the original inlines fn_1_D4BC, fn_1_11C98 and fn_1_D590 and uses the pooled .bss/.data bases
+// nmverify: fn_80024FA4 original calls it once per shape branch; here once after picking the shape
+// nmverify: lbl_1_bss_5F7C lbl_1_bss_68FC lbl_1_data_A938 lbl_1_data_A978 lbl_1_data_ABA4 lbl_1_data_AC9C reached through a pooled base in original
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_129D0(void) {
     u8* state = lbl_1_bss_3070;
@@ -3664,6 +3674,7 @@ void fn_1_1496C(u8* object) {
 // .text:0xE098 size:0x83C
 // Debug editor for the challenge animation script (8 steps x 4 columns, plus script select / play rows).
 // NONMATCHING ~85%: the original inlines fn_1_D7A4 and fn_1_D300
+// nmverify: lbl_1_bss_3218 lbl_1_bss_5F73 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_E098(void) {
     ChallengeStep* step = (ChallengeStep*)ch_3218;
@@ -3861,6 +3872,9 @@ extern u8 lbl_1_data_A950[];
 // Challenge loader state machine (queue state at +0x10): streams the player's animation banks,
 // models and textures from ARAM, then hands over to fn_1_168C8.
 // NONMATCHING ~60%: the per-group states (6..19) are folded into shared cases; pooled .data/.bss bases
+// nmverify: ANIMGet ARAMTransfer original has one call per group state (6..19); here the states share cases
+// nmverify: lbl_1_bss_3098 lbl_1_bss_3218 lbl_1_bss_5F73 lbl_1_data_2390 lbl_1_data_A3D8 lbl_1_data_A3F8 lbl_1_data_A5D8 lbl_1_data_A950 lbl_1_data_A978 lbl_1_data_F4D4 reached through a pooled base in original
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_16978(void) {
     u8* state = lbl_1_bss_3070;
@@ -4087,6 +4101,7 @@ static inline void fn_1_135C0_bone(ActorInst* actor, u16 bone) {
 // Challenge scene setup: builds the actor tables from the loaded files, binds animation/shape
 // players, initialises the player row and starts the mode-specific controller.
 // NONMATCHING ~60%: the original inlines fn_1_D13C and fn_1_D300 (three copies); pooled .bss base
+// nmverify: lbl_1_bss_5F7C reached through a pooled base in original
 #if NONMATCHING
 void fn_1_135C0(void) {
     ActorObjectTable* main;

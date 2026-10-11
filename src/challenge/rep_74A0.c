@@ -1448,6 +1448,7 @@ extern void fn_800A7D4C(s32 layer, void* node);
 // fn_1_1C3CC, size:0x4F4
 // Debug viewer main update: menu, actor/camera control, then queue the draws.
 // NONMATCHING 58%: the original addresses lbl_1_data_FB0C/FB18/FAE8/FAF8 from one .data base (lbl_1_data_F888 + off); plus the scheduling of the inlined fn_1_1B2C8/fn_1_1B424
+// nmverify: lbl_1_bss_69FC lbl_1_bss_6B7C lbl_1_data_FAE8 lbl_1_data_FAF8 lbl_1_data_FB0C lbl_1_data_FB18 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_1C3CC(u8* object) {
     Mtx44 proj;

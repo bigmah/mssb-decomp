@@ -923,6 +923,7 @@ u8 fn_8006C100(s16 value) {
 
 // .text:0x8006C13C size:0x12C
 // NONMATCHING: fn_8006C2B4 and fn_8006C268 inlined; those don't match yet (rolled loops)
+// nmverify: fn_8006C268 fn_8006C2B4 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s16 fn_8006C13C(StatInput* in) {
     StatOutput out;
