@@ -366,8 +366,40 @@ void fn_2_14BB8(u8 index, s32 mode) {
 }
 
 // .text:0x00014CA0 size:0x318
+// Move a player's captain cursor.
 void fn_2_14CA0(u8 player, PortInput* in) {
-    return;
+    s32 port;
+    s32 id;
+    s32 i;
+    u8* p;
+
+    if (g_d_GameSettings.GameModeSelected != 5) {
+        if (g_d_GameSettings._10 == 0 && player != 0) {
+            port = lbl_8034E9A0.teamPort[0] == 0;
+            lbl_803C6028._74[port] = 1;
+        } else {
+            port = lbl_8034E9A0.teamPort[player];
+            lbl_803C6028._74[port] = 0;
+        }
+        SHOW_CAPTAIN_CURSOR(port, lbl_2_bss_F410.sel[player])
+        id = fn_8004E62C(port, in->held, in->pressed, in->repeat);
+        for (i = 0, p = lbl_800FE5D4; i < 12; p++, i++) {
+            if (*p == id) {
+                id = i;
+                break;
+            }
+        }
+        lbl_2_bss_F410.sel[player] = id;
+    } else {
+        id = fn_8004D57C(in->held, in->pressed, in->repeat);
+        for (i = 0; i < 6; i++) {
+            if (id == lbl_800FE930[lbl_80361B20._F4][i]) {
+                id = i;
+                break;
+            }
+        }
+        lbl_2_bss_F410.sel[0] = id;
+    }
 }
 
 // .text:0x00014FB8 size:0x118
