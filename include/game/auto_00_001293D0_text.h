@@ -25,6 +25,12 @@ typedef struct BbTarget {
     /*0x2*/ s16 score;
 } BbTarget; // size: 0x4
 
+// Barrel Batter CPU: copy of one barrel's state/colour (g_Minigame.barrels).
+typedef struct BbCell {
+    /*0x0*/ u8 state; // 2: standing
+    /*0x1*/ u8 colour;
+} BbCell;
+
 void fn_3_12DB54(void);
 void fn_3_12E808(void);
 u32 fn_3_12DD88(void);
@@ -46,5 +52,6 @@ void fn_3_129FF8(void);
 void fn_3_12BB64(void);
 s32 fn_3_12E084(void* a, void* b);
 void fn_3_12A2B8(void);
+u8 fn_3_12E384(BbCell* grid, s8 idx, u8 colour);
 
 #endif

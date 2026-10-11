@@ -397,3 +397,28 @@ void fn_3_12A2B8(void) {
     lbl_3_common_bss_32724[0xBE] = 1;
     lbl_803CC1B8->func = fn_3_129FF8;
 }
+
+// fn_3_12E384, size:0x484
+// Flood fill: knock down the standing barrel at idx and every standing
+// neighbour of the same colour (5 rows of 3); returns how many fell.
+u8 fn_3_12E384(BbCell* grid, s8 idx, u8 colour) {
+    u8 count;
+    if (colour == grid[idx].colour && grid[idx].state == 2) {
+        grid[idx].state = 0;
+        count = 1;
+        if (idx / 3 > 0) {
+            count += fn_3_12E384(grid, idx - 3, colour);
+        }
+        if (idx / 3 < 4) {
+            count += fn_3_12E384(grid, idx + 3, colour);
+        }
+        if (idx % 3 > 0) {
+            count += fn_3_12E384(grid, idx - 1, colour);
+        }
+        if (idx % 3 < 2) {
+            count += fn_3_12E384(grid, idx + 1, colour);
+        }
+        return count;
+    }
+    return 0;
+}
