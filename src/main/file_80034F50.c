@@ -143,7 +143,13 @@ void fn_80035838(void) {
 
 // .text:0x80035A00 size:0x150
 void fn_80035A00(void) {
-    return;
+    s32 id;
+
+    for (id = 0; id < 25; id++) {
+        if ((u32)id > 1) {
+            spaniClearSlot(id);
+        }
+    }
 }
 
 // .text:0x80035B50 size:0x154
