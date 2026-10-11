@@ -344,9 +344,66 @@ void fn_3_111AC4(void) {
 }
 
 // .text:0x00111C5C size:0x324 mapped:0x80750CF0
-void fn_3_111C5C(void) {
-    return;
+extern s32 fn_3_108854(void);
+extern void fn_3_75560(void);
+extern void atBat_batter(void);
+extern void fn_3_2EA24(void);
+extern void fn_3_8A958(void);
+
+// NONMATCHING 97%: the inlined fn_3_111AC4 tail reuses a different g_Minigame base; one extsb is CSE'd
+#if NONMATCHING
+static inline void clearHitFlags_31F0(void) {
+    s8 i = 0;
+    do {
+        g_Minigame[0x1DBC + i] = 0;
+        i++;
+    } while (i < 4);
 }
+
+void fn_3_111C5C(void) {
+    u8* e;
+    u8 ci;
+    s8 i;
+    if (g_Minigame[0x190B] == 0) {
+        if (fn_3_108854() != 0) {
+            return;
+        }
+        fn_3_75560();
+        clearHitFlags_31F0();
+        i = 0;
+        do {
+            ci = g_Minigame[0x18CC + i];
+            if ((s8)ci >= 0 && (s8)ci < 4 && i == *(s8*)(g_Minigame + 0x1905) && g_Minigame[0x18D8 + i] != 0) {
+                e = g_Minigame + (s8)ci * 0x10;
+                g_Minigame[0x1DBC + (s8)ci] = 1;
+                memset(e + 0x1D7C, 0, 0x10);
+                switch (g_Pitcher[0x13E]) {
+                case 2:
+                    if (g_Minigame[0x1DD0] == 0) {
+                        fn_3_110634();
+                        g_Minigame[0x1DD0] = 1;
+                    }
+                    if (*(s16*)(g_Pitcher + 0x126) <= *(s16*)(g_Minigame + 0x1DCC)) {
+                        *(u16*)(e + 0x1D80) |= 0x100;
+                    }
+                    break;
+                case 3:
+                    if (*(s16*)(g_Ball + 0x1B68) < *(s16*)(g_Pitcher + 0x122) - *(s16*)(g_Minigame + 0x1DCE)) {
+                        *(u16*)(e + 0x1D80) |= 0x100;
+                    }
+                    break;
+                }
+            }
+            i++;
+        } while (i < 4);
+        atBat_batter();
+        clearHitFlags_31F0();
+        fn_3_2EA24();
+        fn_3_8A958();
+    }
+    fn_3_111AC4();
+}
+#endif
 
 // .text:0x00111F80 size:0xF0 mapped:0x80751014
 void fn_3_111F80(void) {
