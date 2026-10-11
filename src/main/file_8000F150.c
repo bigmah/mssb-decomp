@@ -65,7 +65,17 @@ void fn_8000FD78(s32 index, s16 a, s16 b, s16 c, s16 d) {
 
 // .text:0x8000FD9C size:0x6C
 void fn_8000FD9C(s32 index, s32 speed, s32 limit) {
-    return;
+    if (speed == 0) {
+        lbl_80366B18.entries[index].charLimit = -1;
+        lbl_80366B18.entries[index].typeSpeed = 0;
+        lbl_80366B18.entries[index].typeTimer = 0;
+        return;
+    }
+    if (limit >= 0) {
+        lbl_80366B18.entries[index].charLimit = limit;
+    }
+    lbl_80366B18.entries[index].typeSpeed = speed;
+    lbl_80366B18.entries[index].typeTimer = 0;
 }
 
 // .text:0x8000FE08 size:0x4C
