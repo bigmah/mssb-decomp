@@ -68,7 +68,63 @@ s32 fn_3_6B5D8(void) {
 
 // .text:0x0006B674 size:0x1FC mapped:0x806AA708
 void fn_3_6B674(void) {
-    return;
+    GameActorView* actor;
+    s32 i;
+    s32 visible;
+    u8 status;
+    ActorModel* model;
+
+    if (!g_d_GameSettings.minigamesEnabled || g_Minigame.GameMode_MiniGame == 0) {
+        if (g_GameLogic.sceneID == 1) {
+            fn_800BDE8C(2);
+        } else {
+            fn_800BDE8C(1);
+        }
+    } else {
+        switch (g_Minigame.GameMode_MiniGame) {
+        case 1:
+        case 3:
+            fn_800BDE8C(2);
+            break;
+        case 2:
+        case 4:
+        case 5:
+        case 6:
+            fn_800BDE8C(1);
+            break;
+        }
+    }
+
+    for (i = 0; i < 13; i++) {
+        actor = lbl_8036E548.actors[i];
+        if (actor != NULL && *fn_800111D8((ActorMgrActor*)actor) != NULL) {
+            visible = 1;
+            if (g_d_GameSettings.minigamesEnabled) {
+                status = g_GameLogic.gameStatus;
+                if (status == 0x1C || (u8)(status - 0x1D) <= 1 || status == 0x1F) {
+                    if (status == 0x1F) {
+                        visible = 0;
+                    }
+                }
+                if (g_d_GameSettings.GameModeSelected == 6 && g_GameLogic.sceneID == 1 &&
+                    (s8)g_Minigame.minigameFielderIndex[i] >= 1) { // TODO type: indexed up to 12
+                    visible = 0;
+                }
+            } else if (g_GameLogic.secondaryGameMode != 0xE && g_Stats.replayInd == 0 && i != 0 && i != 9 &&
+                       g_GameLogic.sceneID == 1) {
+                visible = 0;
+            }
+            if (actor->_25D == 2) {
+                visible = 0;
+            }
+            model = *fn_800111D8((ActorMgrActor*)actor);
+            if (visible) {
+                model->_98 |= 4;
+            } else {
+                model->_98 &= 0xFB;
+            }
+        }
+    }
 }
 
 // .text:0x0006B870 size:0x1F4 mapped:0x806AA904
