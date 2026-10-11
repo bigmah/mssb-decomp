@@ -2,6 +2,19 @@
 #define __GAME_rep_1E08_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/mtx.h"
+
+typedef struct { f32 x, y; } V2f;
+
+// Ring-burst effect instance (one per frame buffer, filled by fn_3_BDCA4, drawn by fn_3_BD8FC).
+typedef struct BDCA4E {
+    u8 pad[8];
+    /* 0x08 */ Mtx m;
+    /* 0x38 */ f32 x, y, z;
+    /* 0x44 */ s32 n;
+    /* 0x48 */ f32 s;
+    /* 0x4C */ V2f pts[0x60];
+} BDCA4E; // size 0x34C
 
 void fn_3_BA538(u8* p);
 void fn_3_BA7F4(u8* a);
@@ -31,7 +44,7 @@ void fn_3_BD7D8(void);
 void fn_3_BD7DC(u32 a);
 void fn_3_BD80C(u32 a);
 void fn_3_BD8D8(void);
-void fn_3_BD8FC(void);
+void fn_3_BD8FC(BDCA4E* e);
 void fn_3_BDCA4(void);
 void fn_3_BDE14(void);
 void fn_3_BDF74(void);

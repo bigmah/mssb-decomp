@@ -1,7 +1,6 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
 #include "Dolphin/GX.h"
-typedef struct { f32 x, y; } V2f;
 extern V2f lbl_3_data_111C8[];
 extern void fn_8003A688(f32, f32);
 
@@ -871,16 +870,98 @@ void fn_3_BD8D8(void) {
 }
 
 // .text:0x000BD8FC size:0x3A8 mapped:0x806FC990
-void fn_3_BD8FC(void) {
-    return;
+extern s32 lbl_3_bss_9960;
+extern s32 lbl_3_data_12350;
+extern u8 lbl_3_data_A3C[];
+extern const f32 lbl_3_rodata_1EE8;
+extern const f32 lbl_3_rodata_1F28;
+extern const f32 lbl_3_rodata_1F2C;
+extern const f32 lbl_3_rodata_1F30;
+extern const f32 lbl_3_rodata_1F34;
+extern void fn_800245EC(Mtx44 proj, Mtx view, Vec* points, f32* out, s32 count, s32 ySign);
+// NONMATCHING 99%: cTip=cBase copy is li not mr in the 9960 branch, cTip constant re-materialised in the last alpha branch, fmuls operand order of sx/sy
+#if NONMATCHING
+void fn_3_BD8FC(BDCA4E* e) {
+    Mtx ident;
+    Vec v1;
+    Vec v2;
+    f32 scr[2];
+    u32 cBase;
+    u32 cTip;
+    s32 lim;
+    s32 n;
+    s32 i;
+    f32 sx;
+    f32 sy;
+    f32 px;
+    f32 py;
+    f32 sc;
+    if (lbl_3_bss_9960 != 0) {
+        cBase = 0xFFFFFFFF;
+        cTip = cBase;
+    } else {
+        n = e->n;
+        lim = lbl_3_data_A3C[1] - 0x12;
+        if (n < lim) {
+            cTip = ((n * 0xFF) / lim) | 0xFFFFFF00;
+            cBase = cTip;
+        } else if (n < lbl_3_data_A3C[1] - 0xA) {
+            cBase = 0xFFFFFFFF;
+            cTip = (((n - lim) * 0x7F8) / 8) | 0xFFFFFF00;
+        } else {
+            cTip = 0xFFFFFF00;
+            cBase = ((((lbl_3_data_A3C[1] - 2) - n) * 0xFF) / 8) | 0xFFFFFF00;
+        }
+    }
+    sc = lbl_3_rodata_1F28 * e->s;
+    fn_800245EC(fn_80052768_getCamera(0)->proj, e->m, (Vec*)&e->x, scr, 1, lbl_3_data_12350);
+    sx = -(lbl_3_rodata_1EE0 * scr[0] + lbl_3_rodata_1F2C) * sc;
+    sy = -(lbl_3_rodata_1EE8 * scr[1] + lbl_3_rodata_1F30) * sc;
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    PSMTXIdentity(ident);
+    GXLoadPosMtxImm(ident, 0);
+    GXSetCurrentMtx(0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXSetProjection(fn_80052768_getCamera(0)->proj, GX_PERSPECTIVE);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+    GXSetCullMode(GX_CULL_NONE);
+    GXBegin(GX_TRIANGLES, GX_VTXFMT0, 0x120);
+    for (i = 0; i < 0x60; i++) {
+        px = e->pts[i].x * sc;
+        py = e->pts[i].y * sc;
+        v1.x = sx - px;
+        v1.y = sy - py;
+        v1.z = lbl_3_rodata_1E68;
+        PSVECScale(&v1, lbl_3_rodata_1ED8, &v1);
+        v2.x = v1.y;
+        v2.y = -v1.x;
+        v2.z = lbl_3_rodata_1E68;
+        PSVECNormalize(&v2, &v2);
+        PSVECScale(&v2, lbl_3_rodata_1F34, &v2);
+        GXPosition3f32(px - v2.x, py - v2.y, -1.0f);
+        GXColor1u32(cBase);
+        GXPosition3f32(px + v2.x, py + v2.y, -1.0f);
+        GXColor1u32(cBase);
+        GXPosition3f32(px + v1.x, py + v1.y, -1.0f);
+        GXColor1u32(cTip);
+    }
 }
+#endif
 
 // .text:0x000BDCA4 size:0x170 mapped:0x806FCD38
 extern u8 lbl_803CBBC0;
 extern const f32 lbl_3_rodata_1E84;
 extern u8 lbl_80366158[];
 extern void fn_800A7D4C(int, void*);
-typedef struct { u8 pad[8]; Mtx m; f32 x, y, z; s32 n; f32 s; u8 pad2[0x34C - 0x4C]; } BDCA4E;
 void fn_3_BDCA4(void) {
     u8* o = lbl_803CC1B8;
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154[0x479] != 0) {
