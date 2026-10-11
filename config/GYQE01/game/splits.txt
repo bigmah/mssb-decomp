@@ -290,6 +290,10 @@ game/sta_c4.c:
 	.rodata     start:0x00002F68 end:0x00003090
 	.bss        start:0x0000B570 end:0x0000B678
 
+auto_00_000FBCD0_text:
+	.text       start:0x000FBCD0 end:0x000FC448
+	.data       start:0x00021010 end:0x00021048
+
 game/rep_3090.c:
 	.text       start:0x000FC448 end:0x00106DFC
 	.rodata     start:0x00003090 end:0x000031A0
@@ -394,6 +398,10 @@ game/rep_3E58.c:
 	.text       start:0x001666B0 end:0x00167CC4
 	.rodata     start:0x00003E58 end:0x00003F60
 	.bss        start:0x0000B9E0 end:0x0000BA00
+
+auto_00_00167CC4_text:
+	.text       start:0x00167CC4 end:0x00168414
+	.data       start:0x00028570 end:0x000285A8
 
 game/rep_3F60.c:
 	.text       start:0x00168414 end:0x001690C0
