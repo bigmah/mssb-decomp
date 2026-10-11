@@ -2935,6 +2935,37 @@ s32 fn_8004AD54(u32 stadium, u8 flags) {
 }
 #endif
 
+
+#pragma dont_inline off
+// Copy of fn_8004AE18 (below) that the original inlines into fn_8004AFA8; the standalone
+// body keeps its own copy because calling this from it changes the early-return branch.
+static inline void fn_8004AE18_inline(s32 idx) {
+    CharActor* model = lbl_8036E548.active[idx];
+    Vec dir;
+    Mtx m;
+
+    lbl_800FBEA4.rgb = (lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].r << 24) |
+                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].g << 16) & 0xFF0000) |
+                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].b << 8) & 0xFF00);
+    dir.x = 0.0f;
+    dir.y = 0.0f;
+    dir.z = 1.0f;
+    PSMTXRotRad(m, 'Y', model->rot.y);
+    PSMTXMultVec(m, &dir, &dir);
+    fn_80030D88(&model->pos, &dir, (ParticleParams5 *)lbl_803CB84C, 5); // TODO type
+    if (model->kind == 0xE || model->kind == 0x25) {
+        return;
+    }
+    if (model->_276 & 2) {
+        getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&dir);
+        fn_8002F1AC(&dir, idx * 2);
+    }
+    if (model->_276 & 4) {
+        getAnimRelatedCoordinates(idx, 0x22, (VecXYZ*)&dir);
+        fn_8002F1AC(&dir, idx * 2 + 1);
+    }
+}
+
 // .text:0x8004AE18 size:0x190
 void fn_8004AE18(s32 idx) {
     CharActor* model = lbl_8036E548.active[idx];
@@ -2964,9 +2995,6 @@ void fn_8004AE18(s32 idx) {
 }
 
 // .text:0x8004AFA8 size:0x210
-// NONMATCHING ~45%: the original inlines fn_8004AE18; ours calls it
-// nmverify: fn_8004AE18 inlined on one side (calls match once expanded)
-#if NONMATCHING
 void fn_8004AFA8(s32 idx) {
     CharActor* model = lbl_8036E548.active[idx];
     Vec pos;
@@ -2976,7 +3004,7 @@ void fn_8004AFA8(s32 idx) {
     if (model->kind == 0xE || model->kind == 0x25) {
         return;
     }
-    fn_8004AE18(idx);
+    fn_8004AE18_inline(idx);
     if (model->_276 & 2) {
         getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&pos);
         fn_8002F258(&pos, idx * 2, (ParticleParams *)lbl_800FBE90); // TODO type
@@ -2986,7 +3014,7 @@ void fn_8004AFA8(s32 idx) {
         fn_8002F258(&pos, idx * 2 + 1, (ParticleParams *)lbl_800FBE90); // TODO type
     }
 }
-#endif
+#pragma dont_inline on
 
 // fn_8004B1B8, size:0x8
 void fn_8004B1B8(void* value) {
