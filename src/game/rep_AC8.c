@@ -2315,9 +2315,75 @@ void fn_3_417D4(int i) {
 }
 
 // .text:0x0004197C size:0x3FC mapped:0x80680A10
-void fn_3_4197C(int i) {
-    return;
+extern f32 lbl_3_rodata_BA4;
+// NONMATCHING 94.0%: register allocation and constant-load scheduling in the distance loop
+#if NONMATCHING
+// Pick the fielder closest to the ball's landing spot and send it after the ball.
+// mode 1: a nearby fielder that is free takes it immediately.
+void fn_3_4197C(int mode) {
+    u8* f;
+    f32 best;
+    f32 d;
+    f32 e;
+    f32 dx, dz;
+    int j;
+    int idx;
+    s16 t;
+    best = lbl_3_rodata_BA4;
+    for (j = 0; j < 9; j++) {
+        f = g_Fielders + j * 0x268;
+        dx = *(f32*)(g_Ball + 0x8F4) - *(f32*)f;
+        dz = *(f32*)(g_Ball + 0x8FC) - *(f32*)(f + 8);
+        dx = dx * dx;
+        dz = dz * dz;
+        d = dx + dz;
+        SQRT_L(d);
+        e = d;
+        if (mode == 1 && *(s16*)(f + 0x19C) != 0 && f[0x1E0] != 1 && f[0x1E0] != 2 && d < lbl_3_rodata_B78) {
+            SetFielderAct(j, 0x12, 0x90);
+            fn_3_43038(j);
+            return;
+        }
+        if (g_FieldingLogic[j + 0xF8] == 4) {
+            e -= lbl_3_rodata_B78;
+        }
+        if (g_FieldingLogic[j + 0xF8] == 1) {
+            if (best > e - lbl_3_rodata_B64) {
+                best = e;
+                idx = j;
+            }
+        } else if (best > e) {
+            idx = j;
+            best = e;
+        }
+    }
+    f = g_Fielders + idx * 0x268;
+    t = *(s16*)(f + 0x18C);
+    if (t != 0) {
+        if (t >= 0 && t <= 3) {
+            if (*(s16*)(g_FieldingLogic + 0xD0 + t * 2) == idx) {
+                *(s16*)(g_FieldingLogic + 0xD0 + t * 2) = -1;
+                g_FieldingLogic[t + 0x101] = 0;
+            }
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            if (f[0x1D3] == 1) {
+                SetFielderAct(idx, 0xC, 0x60);
+            }
+        } else if (t == 5) {
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            *(s16*)(g_FieldingLogic + 0xD8) = -1;
+            g_FieldingLogic[0x105] = 0;
+            if (f[0x1D3] == 0xE) {
+                SetFielderAct(idx, 0xC, 0x60);
+            }
+        }
+    }
+    SetFielderAct(idx, 0x12, 0x90);
+    fn_3_43038(idx);
 }
+#endif
 
 // .text:0x00041D78 size:0x304 mapped:0x80680E0C
 // NONMATCHING 98.7%: second loop's counter/state registers swapped (orig inits counter with mr from busy)
