@@ -22,7 +22,7 @@ typedef struct CharVoiceAnim {
     /*0x0*/ s16 anim;  // batter animation frame that triggers the voice (fn_3_23CEC)
     /*0x2*/ u8 _2[2];
     /*0x4*/ s16 anim2; // same for fn_3_240F8
-    /*0x6*/ u8 _6[2];
+    /*0x6*/ s16 sceneFrame; // scene frame for the captain's voice (fn_3_22C20)
 } CharVoiceAnim; // size: 0x8
 
 void fn_3_21C90(void);

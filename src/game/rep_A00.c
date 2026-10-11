@@ -21,6 +21,9 @@
 #include "game/auto_00_001658F0_text.h"
 #include "game/rep_1330.h"
 #include "game/auto_00_000219CC_text.h"
+#include "game/rep_3880.h"
+#include "game/auto_00_0006B4C8_text.h"
+#include "main/file_8001FE00.h"
 
 // Views declared here (other units have their own views of these objects).
 extern FielderView g_Fielders[];
@@ -38,6 +41,8 @@ extern StarChanceState lbl_3_common_bss_37400;
 extern Unk32724 lbl_3_common_bss_32724;
 extern StarChanceOdds lbl_80109420[];
 extern ARAMLoaderView lbl_803C6CF8;
+extern s32 lbl_3_data_2368[]; // scene ids by challenge stage (_8A set)
+extern s32 lbl_3_data_2380[]; // scene ids by challenge stage
 extern s32 lbl_3_data_1F74[]; // scene ids, indexed by SCENE->_260
 extern s32 lbl_3_data_1FF8[4][0x37]; // scene ids per runner character: [0] fn_3_23CEC, [1..3] by base
 extern CharVoiceAnim lbl_3_data_7F7C[];
@@ -54,7 +59,8 @@ extern s32 lbl_3_bss_9C;
 void fn_80052798(s32 count); // main/file_8004C5F8.h
 f32 fn_3_9FEA8(f32 v);        // game/rep_1838.h: wrap angle
 u32 fn_3_90220(s32 idx, s32 off);
-void fn_3_8C07C(void); // game/m_sound.h (conflicts with another header here)
+void fn_3_8C07C(void);
+void fn_3_8C104(s32 v); // game/m_sound.h (conflicts with another header here)
 
 #define SCENE lbl_3_common_bss_1323C
 #define FADE_TASK ((FadeTask*)lbl_803CC1B8)
@@ -531,7 +537,85 @@ void fn_3_22C10(void) {
 
 // .text:0x00022C20 size:0x4B4 mapped:0x80661CB4
 void fn_3_22C20(void) {
-    return;
+    GameInitVariables* gs = &g_d_GameSettings;
+    s32 i;
+    lbl_3_common_bss_32A94_s* ch = &lbl_3_common_bss_32A94;
+    GameControlsStruct* gl = &g_GameLogic;
+    s16 human;
+    s16 captain;
+    switch (gl->_125) {
+    case 0:
+        if ((s32)lbl_803C6CF8.idle == 1) {
+            fn_3_147DFC();
+            lbl_3_common_bss_32724._9A = 0;
+            gl->_125 = 1;
+        }
+        break;
+    case 1:
+        if (fn_3_6B4C8() != 0) {
+            gl->_125 = 2;
+        }
+        break;
+    case 2: {
+        ChallengeState* cs;
+        fn_3_8C104(-1);
+        SceneReset(2);
+        cs = &gChallengeState;
+        if (ch->_8A != 0) {
+            fn_3_FBDAC(lbl_3_data_2368[cs->_441C]);
+        } else {
+            fn_3_FBDAC(lbl_3_data_2380[cs->_441C]);
+        }
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        gl->_125 = 3;
+        break;
+    }
+    case 3:
+        if (SCENE->_23C == 9) {
+            changeScene(1, 0x5A);
+        }
+        if (SCENE->_23C < 0x7FFE) {
+            SCENE->_23C += 1;
+        } else {
+            SCENE->_23C = 0x7FFF;
+        }
+        for (i = 0; i < 13; i++) {
+            fn_8001D074(i, 1);
+        }
+        if (fn_3_6C938(1, 0x1100) != 0 && SCENE->_23C < SCENE->_23E - 0x5B && gs->GameModeSelected != 4) {
+            if ((s32)SCENE->_280 == 1 && g_GameLogic.FrameCountOfCurrentAtBat_Copy > 60) {
+                SCENE->_23C = SCENE->_23E - 0x5C;
+                changeScene(3, 0x5A);
+                lbl_3_common_bss_34C58._2A = 1;
+                lbl_3_common_bss_34C58._24 = 0x5A;
+            }
+        } else if (SCENE->_23C == SCENE->_23E - 0x5B) {
+            changeScene(3, 0x5A);
+            lbl_3_common_bss_34C58._2A = 1;
+            lbl_3_common_bss_34C58._24 = 0x5A;
+        }
+        if (SCENE->_23C == SCENE->_23E) {
+            gl->_125 = 4;
+        }
+        break;
+    case 4:
+        if (lbl_8037169C._13 != 0) {
+            fn_3_24630();
+            fn_3_FBD70();
+            fn_3_FBD58();
+            gl->_125 = 5;
+        }
+        break;
+    case 5:
+        gl->_128 = 1;
+        gl->framesOfExitingToMenu = 1;
+        break;
+    }
+    human = lbl_3_common_bss_37400.humanPlayer;
+    captain = inMemRoster[human][g_GameLogic.Team_CaptainRosterLoc[human]].stats.CharID;
+    if (SCENE->_23C == lbl_3_data_7F7C[lbl_800E8558[captain]._2].sceneFrame) {
+        fn_3_90220(captain, 7);
+    }
 }
 
 // .text:0x000230D4 size:0x3E8 mapped:0x80662168
