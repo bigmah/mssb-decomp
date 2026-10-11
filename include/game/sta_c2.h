@@ -27,6 +27,12 @@ typedef struct CC438Cfg {
     /*0x24*/ f32 inv;   // 1 / (2 * h)
 } CC438Cfg;
 
+// One entry of the stadium draw order built by fn_3_D55EC.
+typedef struct C2SortEnt {
+    f32 z;   // view-space depth while sorting, then the draw alpha
+    s32 idx; // object index
+} C2SortEnt;
+
 void fn_3_CB8A8(u8*);
 void fn_3_CBA9C(u8* p);
 void fn_3_CBAFC(u8* p);
@@ -107,7 +113,7 @@ s32 fn_3_D53C0(u8 id);
 s32 fn_3_D5444(u32* a, u32* b);
 s32 fn_3_D5470(f32* a, f32* b);
 void fn_3_D5494(f32 (*m)[4]);
-void fn_3_D55EC(void);
+void fn_3_D55EC(f32 (*view)[4], C2SortEnt* out);
 void fn_3_D5B6C(s32* a);
 void fn_3_D5C8C(s32* a);
 void fn_3_D5E80(s32* a);

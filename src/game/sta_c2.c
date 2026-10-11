@@ -2574,9 +2574,139 @@ void fn_3_D5494(f32 (*m)[4]) {
 }
 
 // .text:0x000D55EC size:0x580 mapped:0x80714680
-void fn_3_D55EC(void) {
-    return;
+// The extra fields of the stadium object list (lbl_3_common_bss_350E4) used by the sort.
+typedef struct C2SortMgr {
+    /*0x00*/ PiranhaPlant* objs;
+    /*0x04*/ u8 _04[0x14 - 0x04];
+    /*0x14*/ C2SortEnt* sorted;
+    /*0x18*/ u8 _18[0x30 - 0x18];
+    /*0x30*/ s32 count;
+    /*0x34*/ u8 _34[0x6C - 0x34];
+    /*0x6C*/ u8 sortByDepth;
+} C2SortMgr;
+
+extern u8 lbl_3_bss_A026;
+extern u8 lbl_3_bss_A027;
+
+extern void* fn_800ACF34(s32 align, s32 size);
+extern void fn_800ACF14(void* block);
+extern void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*));
+
+static inline s32 D55EC_findSorted(s32 idx) {
+    C2SortMgr* g = (C2SortMgr*)lbl_3_common_bss_350E4;
+    s32 n;
+    for (n = g->count; n != 0; n--) {
+        if (idx == g->sorted[n - 1].idx) {
+            return n - 1;
+        }
+    }
+    OSPanic("sta_c2.c", 0x863, lbl_3_rodata_2878);
+    return 0;
 }
+
+// NONMATCHING 90%: the index search loops (inlined assert helper) compile to a different loop shape; register numbering
+#if NONMATCHING
+// Builds the stadium draw order in out[] (back to front by view depth; hidden objects
+// first at -512), keeps each of the lbl_3_bss_A026.. groups (obj, its +0xA0->D2 and
+// +0xA4->C0 partners) in index order, then turns depth into a fade alpha behind the ball.
+void fn_3_D55EC(MtxPtr view, C2SortEnt* out) {
+    C2SortMgr* g = (C2SortMgr*)lbl_3_common_bss_350E4;
+    PiranhaPlant* obj;
+    Vec v;
+    Vec ball;
+    s32 pos[3];
+    C2SortEnt save[3];
+    void* tmp;
+    s32 i;
+    s32 k;
+    s32 n;
+    u32 j;
+    u8* o;
+    C2SortEnt* e;
+    u8 type;
+    f32 near;
+    if (g->sortByDepth != 0) {
+        n = 0;
+        i = g->count - 1;
+        obj = &g->objs[i];
+        do {
+            if (!obj->visible) {
+                out[n].z = lbl_3_rodata_26CC;
+                out[n].idx = i;
+                n++;
+            }
+            obj--;
+        } while (i-- != 0);
+        k = g->count;
+        i = g->count - 1;
+        obj = &((C2SortMgr*)lbl_3_common_bss_350E4)->objs[i];
+        do {
+            if (obj->visible) {
+                if (obj->bit5) {
+                    CTRLGetTranslation(&obj->ctrl.base, &v.x, &v.y, &v.z);
+                    PSMTXMultVec(view, &v, &v);
+                    k--;
+                    out[k].z = v.z;
+                    out[k].idx = i;
+                } else {
+                    out[n].z = lbl_3_rodata_26CC;
+                    out[n].idx = i;
+                    n++;
+                }
+            }
+            obj--;
+        } while (i-- != 0);
+        tmp = fn_800ACF34(0x20, (g->count - k) * 8);
+        fn_800C07BC(out + k, tmp, g->count - k, 8, (s32 (*)(const void*, const void*))fn_3_D5470);
+        fn_800ACF14(tmp);
+        tmp = fn_800ACF34(0x20, (g->count - k) * 8);
+        for (i = 0; i < lbl_3_bss_A027; i++) {
+            o = (u8*)&((C2SortMgr*)lbl_3_common_bss_350E4)->objs[lbl_3_bss_A026 + i];
+            if ((*(u8**)(o + 0xA0))[0xD1] != 0) {
+                pos[0] = D55EC_findSorted(o[0xAC]);
+                pos[1] = D55EC_findSorted((*(u8**)(o + 0xA0))[0xD2]);
+                pos[2] = D55EC_findSorted((*(u8**)(o + 0xA4))[0xC0]);
+                save[0] = out[pos[0]];
+                save[1] = out[pos[1]];
+                save[2] = out[pos[2]];
+                fn_800C07BC(pos, tmp, 3, 4, (s32 (*)(const void*, const void*))fn_3_D5444);
+                out[pos[0]] = save[0];
+                out[pos[1]] = save[1];
+                out[pos[2]] = save[2];
+            }
+        }
+        fn_800ACF14(tmp);
+        memcpy(&ball, g_Ball, sizeof(Vec));
+        PSMTXMultVec(view, &ball, &ball);
+        for (j = 0; j < g->count; j++) {
+            e = &((C2SortMgr*)lbl_3_common_bss_350E4)->sorted[j];
+            obj = &g->objs[e->idx];
+            if (obj->visible) {
+                type = obj->isDummy;
+                if (type == 0 || (u8)(type - 4) <= 1 || (type > 7 && type < 11)) {
+                    e->z = lbl_3_rodata_2698;
+                } else {
+                    near = lbl_3_rodata_26B8 + ball.z;
+                    if (e->z < near) {
+                        e->z = lbl_3_rodata_2698;
+                    } else if (e->z > lbl_3_rodata_27E0 + ball.z) {
+                        e->z = lbl_3_rodata_289C;
+                    } else {
+                        e->z = lbl_3_rodata_27A8 - lbl_3_rodata_26C8 * ((e->z - near) * lbl_3_rodata_28A0);
+                    }
+                }
+            }
+        }
+    } else {
+        obj = g->objs;
+        for (i = 0; i < g->count; i++) {
+            CTRLGetTranslation(&obj->ctrl.base, &v.x, &v.y, &v.z);
+            out[i].z = lbl_3_rodata_2698;
+            out[i].idx = i;
+        }
+    }
+}
+#endif
 
 // .text:0x000D5B6C size:0x120 mapped:0x80714C00
 typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } D5B6CCtl;
