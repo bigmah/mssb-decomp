@@ -17,6 +17,10 @@ extern f32 lbl_801093E8[6];
 extern s16 lbl_803CB8E0[4];
 extern s16 lbl_803CB8E8;
 extern f32 lbl_8010B590[4][7];
+extern f32 lbl_8010B4B4[5][11];
+extern s16 lbl_8010B444[5][11];
+
+extern BOOL challengeStarRelatedInd(s32 team, s32 mission);
 
 // .text:0x80069BDC size:0x5B8
 void fn_80069BDC(void) {
@@ -190,8 +194,17 @@ void fn_8006C5CC(void) {
 }
 
 // .text:0x8006C6C4 size:0xD8
-void fn_8006C6C4(void) {
-    return;
+s32 fn_8006C6C4(void) {
+    s32 count = 0;
+    s32 i;
+
+    for (i = 0; i < 54; i++) {
+        s32 status = starMissionCompletionTracker[i]._31;
+        if (status == 1) {
+            count++;
+        }
+    }
+    return count;
 }
 
 // .text:0x8006C79C size:0x28
