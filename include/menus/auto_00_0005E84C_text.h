@@ -209,7 +209,7 @@ void fn_2_64128(MenuTask* task, MenuItem* item);
 void fn_2_642F8(MenuTask* task, MenuItem* item);
 void fn_2_6452C(MenuTask* task, MenuItem* item);
 void fn_2_646FC(MenuTask* task, MenuItem* item);
-void fn_2_648CC(void);
+void fn_2_648CC(MenuTask* task, MenuItem* item);
 void fn_2_64C50(MenuTask* task, MenuItem* item);
 void fn_2_64E20(MenuTask* task, MenuItem* item);
 void fn_2_650A4(MenuTask* task, MenuItem* item);

@@ -1621,8 +1621,70 @@ void fn_2_646FC(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x000648CC size:0x384
-void fn_2_648CC(void) {
-    return;
+void fn_2_648CC(MenuTask* task, MenuItem* item) {
+    s32 mode;
+    GameInitVariables* settings = &g_d_GameSettings;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        if (item->key == 6) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 6 << 16;
+        } else {
+            mode = lbl_2_bss_1A824C->_1976FA;
+            if (mode == 5 && settings->_12 == 0) {
+                lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+                item->state = 0x25;
+                break;
+            }
+            if (mode == 6 && settings->_12 <= 1) {
+                lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+                item->state = 0x25;
+                break;
+            }
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = lbl_2_data_20C38[mode] << 16;
+        }
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        item->state = 0x25;
+        break;
+    case 0x11:
+        if (item->key == 6) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 6 << 16;
+        } else {
+            mode = lbl_2_bss_1A824C->_1976FA;
+            if (mode == 5 && settings->_12 == 0) {
+                lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+                item->state = 0x25;
+                break;
+            }
+            if (mode == 6 && settings->_12 <= 1) {
+                lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+                item->state = 0x25;
+                break;
+            }
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = lbl_2_data_20C38[mode] << 16;
+        }
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 26;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00064C50 size:0x1D0
