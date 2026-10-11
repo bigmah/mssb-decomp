@@ -79,7 +79,7 @@ extern MenuCharEntry lbl_800E8558[54];
 
 extern void fn_2_7DDC(void);
 extern void fn_2_3624(s32);
-extern void fn_2_104FC(s32);
+extern void fn_2_104FC(u16 port);
 extern void fn_2_87A8(void);
 extern void fn_2_7504(void);
 
@@ -3948,6 +3948,175 @@ assign:
     fn_800625A4(team, 0xF);
     if (lbl_2_bss_F468[0x37 + team] != 0) {
         lbl_2_bss_F468[0x41 + team] = 0;
+    }
+}
+#endif
+
+// NONMATCHING 70%: plain C; the original inlines fn_2_35D0, fn_2_A040 and fn_2_C698 and
+// unrolls the slot searches.
+#if NONMATCHING
+// fn_2_104FC, size:0xBB4
+void fn_2_104FC(u16 port) {
+    u8 team = lbl_803C66B0[0x59 + port];
+    s32* state = (s32*)lbl_2_bss_F468;
+    s32* sel = (s32*)lbl_2_bss_F410 + 8;
+    u8* row = lbl_803C6724 + team * 9;
+    u16 held;
+    u16 down;
+    u16 repeat;
+    s32 slot = 0;
+    s32 n = 0;
+    s32 i;
+    s32 g;
+    s32 k;
+    s8 owner;
+    if (lbl_803C66B0[0x5D + team] != 0) {
+        down = 0;
+        repeat = 0;
+        held = 0;
+    } else if (g_d_GameSettings._10 == 1 && lbl_2_bss_100B8[0x2E + team] != 0) {
+        held = *(u16*)(lbl_8034E9A0 + port * 6 + 0x472C) & 0x200;
+        down = *(u16*)(lbl_8034E9A0 + port * 6 + 0x472E) & 0x200;
+        repeat = *(u16*)(lbl_8034E9A0 + port * 6 + 0x4730) & 0x200;
+    } else if (lbl_2_bss_F468[0x52 + team] != 0) {
+        down = 0;
+        repeat = 0;
+        held = 0;
+    } else {
+        held = *(u16*)(lbl_8034E9A0 + port * 6 + 0x472C);
+        down = *(u16*)(lbl_8034E9A0 + port * 6 + 0x472E);
+        repeat = *(u16*)(lbl_8034E9A0 + port * 6 + 0x4730);
+    }
+    if (down & 0x1000) {
+        return;
+    }
+    if (down & 0x40) {
+        if (fn_2_35D0(team)) {
+            return;
+        }
+        if (lbl_2_bss_F468[0x41 + team] != 0) {
+            if (g_d_GameSettings.GameModeSelected != 5 && lbl_8034E9A0[sel[team] + 0x4757] == 0) {
+                owner = *(s8*)(lbl_8034E9A0 + 0x46F8 + team);
+                if (*(s8*)(lbl_8034E9A0 + 0x46FC + owner) != 0) {
+                    owner = *(s8*)(lbl_8034E9A0 + 0x46F8) == 0;
+                }
+                sel[team] = fn_80050760(owner, held, down, repeat, 0);
+            }
+        } else if (g_d_GameSettings.GameModeSelected != 5) {
+            s8 v;
+            for (i = 0; i < 9; i++) {
+                if ((s8)row[i + 0x14] == state[team]) {
+                    slot = i;
+                    break;
+                }
+            }
+            v = row[slot + 2];
+            if (v == -1 || v == 0x36) {
+                sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+                return;
+            }
+            if (state[team] == 9 || state[team] == 10) {
+                sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+                return;
+            }
+            lbl_2_bss_F468[0x50 + team] = 0;
+            for (g = 0; g < 9; g++) {
+                for (k = 0; k < 5; k++) {
+                    if (v == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
+                        lbl_2_bss_F468[0x50 + team] = 1;
+                        goto found;
+                    }
+                }
+            }
+        found:
+            if (lbl_2_bss_F468[0x50 + team] != 0) {
+                fn_2_A040(g, k, team, slot);
+                fn_2_C698(slot, team);
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+    } else if (down & 0x800) {
+        if (fn_2_35D0(team)) {
+            return;
+        }
+        for (i = 0; i < 9; i++) {
+            s8 v = row[i + 2];
+            if (v != -1 && v != 0x36) {
+                n++;
+            }
+        }
+        if (n != 1 && g_d_GameSettings.GameModeSelected != 5) {
+            for (i = 1; i < 9; i++) {
+                s8 v = row[i + 2];
+                if (v != -1 && v != 0x36) {
+                    lbl_8034E9A0[v + 0x4757] = 0;
+                    fn_800506E8(*(s8*)(lbl_8034E9A0 + 0x46F8 + team), v, 0);
+                    fn_80067B40(team, row[i + 2], 0);
+                    row[i + 2] = -1;
+                    row[i + 0x4A] = 0;
+                    row[i + 0x26] = 0;
+                }
+            }
+            lbl_2_bss_F468[0x37 + team] = 0;
+            lbl_2_bss_F468[0x41 + team] = 0;
+            lbl_2_bss_F468[0x50 + team] = 0;
+            state[team + 2] = state[team];
+            state[team] = 0xA;
+            lbl_2_bss_F468[0x3D + team] = 0;
+            lbl_2_bss_F468[0x52 + team] = 1;
+        }
+    } else if (down & 0x10) {
+        if (fn_2_35D0(team)) {
+            return;
+        }
+        for (i = 0; i < 9; i++) {
+            if ((s8)row[i + 0x14] == state[team]) {
+                slot = i;
+                break;
+            }
+        }
+        if (state[team] != 0xA && state[team] != 9) {
+            s8 v = row[slot + 2];
+            if (v != -1 && v != 0x36 && lbl_2_bss_F468[0x41 + team] == 0) {
+                lbl_2_bss_F468[0x45 + team] = 1;
+                lbl_2_bss_F468[0x4B + team] = 1;
+                lbl_2_bss_F468[0x47 + team] = 0;
+                sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
+                return;
+            }
+        }
+        if (lbl_2_bss_F468[0x41 + team] != 0) {
+            if (lbl_8034E9A0[sel[team] + 0x4757] == 0 && sel[team] != -1) {
+                lbl_2_bss_F468[0x45 + team] = 1;
+                lbl_2_bss_F468[0x4B + team] = 1;
+                lbl_2_bss_F468[0x47 + team] = 0;
+                sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
+            }
+        }
+    } else if (down & 0x20) {
+        if (fn_2_35D0(team)) {
+            return;
+        }
+        if (lbl_2_bss_F468[0x59 + team] == 0) {
+            lbl_2_bss_F468[0x59 + team] = 1;
+            lbl_2_bss_F468[0x61 + team] = -1;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            if (lbl_2_bss_F468[0x41 + team] != 0) {
+                lbl_2_bss_F468[0x41 + team] = 0;
+                fn_800625A4(team, 0xD);
+                return;
+            }
+            if (state[team] == 0xA) {
+                lbl_2_bss_F468[0x63 + team] = 1;
+                state[team + 2] = state[team];
+                state[team] = 1;
+                fn_800625A4(team, 0xE);
+                return;
+            }
+            fn_800625A4(team, 0x1A);
+        }
+    } else {
+        fn_2_ED94(team, held, down, repeat);
     }
 }
 #endif
