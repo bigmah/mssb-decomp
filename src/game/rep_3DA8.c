@@ -28,6 +28,25 @@ typedef struct {
 extern MissionIdx lbl_800E8558[];
 extern MissionRec lbl_80109AE8[][10];
 
+// Only the fields used here.
+typedef struct {
+    /*0x000*/ u8 _000[0x17A];
+    /*0x17A*/ s16 charID;
+    /*0x17C*/ u8 _17C[0x268 - 0x17C];
+} MissionFielderView; // g_Fielders entry, size 0x268
+extern MissionFielderView g_Fielders[9];
+extern GameScores g_Scores;
+// lbl_803537E4[2][9] per-player game record (BatterRecord in game/auto_00_0015C5F4_text.h).
+typedef struct {
+    /*0x00*/ u8 _00[0x9];
+    /*0x09*/ u8 _09;
+    /*0x0A*/ u8 _0A[0x26 - 0xA];
+} MissionBatterRecord;
+extern MissionBatterRecord lbl_803537E4[2][9];
+
+// Star mission status as a signed value (< 0: done).
+#define MISSION_STATUS(t, i) (*(s8*)&(t)->inGameMissionTracker[i].starMissionStatus)
+
 static inline void gatherIds(s16* ids) {
     s32 i;
     for (i = 0; i < 9; i++) {
@@ -127,10 +146,288 @@ void fn_3_162080(void) {
     }
 }
 
+// Star mission progress after an at-bat (result: play result code, rbi: runs batted in).
+// NONMATCHING 65%: control flow and stores line up; register allocation differs throughout, the original
+// keeps q on the stack and the opponent's mission row as a byte pointer, and rbi is not re-masked there
 // .text:0x0016230C size:0xA48 mapped:0x807A13A0
-void fn_3_16230C(void) {
-    return;
+#if NONMATCHING
+void fn_3_16230C(s32 result, u8 rbi) {
+    u8* q = lbl_3_common_bss_37400;
+    InMemPitcherType* pi;
+    GameScores* sc;
+    InMemBallType* ball;
+    MissionIdx* mi;
+    MissionIdx* other;
+    ChallengeTrackingStruct* trk;
+    MissionRec* rec;
+    s32 i;
+    s32 k;
+    s32 f;
+    s32 p;
+    s32 done;
+    s32 flags;
+    s32 n;
+    s8 fielder;
+
+    if (*(s16*)(q + 0x40) == g_GameLogic.teamFielding) { // TODO type
+        // Pitcher missions.
+        mi = &lbl_800E8558[g_Pitcher.charID];
+        trk = &starMissionCompletionTracker[mi->trk];
+        rec = lbl_80109AE8[mi->row];
+        for (i = 0; i < 10; i++, rec++) {
+            if (MISSION_STATUS(trk, i) >= 0) {
+                done = 0;
+                if (rec->type == 2) {
+                    if (g_GameLogic.IsStarChance == 2) {
+                        MISSION_STATUS(trk, i)++;
+                        if (MISSION_STATUS(trk, i) >= rec->target) {
+                            MISSION_STATUS(trk, i) = -1;
+                        }
+                    }
+                } else {
+                    other = &lbl_800E8558[g_Batter.charID];
+                    for (k = 4; k < 13; k++) {
+                        if (rec->type == k) {
+                            switch (k) {
+                            case 4:
+                                if (result == 1 && rec->target == other->row) {
+                                    done = 1;
+                                }
+                                break;
+                            case 5:
+                                if (result == 3 && rec->target == other->row) {
+                                    done = 1;
+                                }
+                                break;
+                            case 10:
+                                if (result == 1) {
+                                    MISSION_STATUS(trk, i)++;
+                                    if (MISSION_STATUS(trk, i) >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            }
+                            if (done) {
+                                MISSION_STATUS(trk, i) = -1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fielder missions (type 43: take part in a double play with a given teammate).
+        for (f = 0; f < 9; f++) {
+            mi = &lbl_800E8558[g_Fielders[f].charID];
+            trk = &starMissionCompletionTracker[mi->trk];
+            rec = lbl_80109AE8[mi->row];
+            for (i = 0; i < 10; i++, rec++) {
+                if (MISSION_STATUS(trk, i) >= 0 && rec->type == 0x2B &&
+                    g_Strikes.storedOuts + 2 <= g_Strikes.outs) {
+                    flags = 0;
+                    for (p = 0; p < 5; p++) {
+                        fielder = lbl_3_common_bss_32A94.plays[p].fielder;
+                        if (fielder >= 0) {
+                            if (fielder == f) {
+                                flags |= 1;
+                            } else if (rec->target == lbl_800E8558[g_Fielders[fielder].charID].row) {
+                                flags |= 0x10;
+                            }
+                            if (p == 1 && lbl_3_common_bss_32A94.plays[p].outs == 2) {
+                                break;
+                            }
+                        }
+                    }
+                    if (flags == 0x11) {
+                        MISSION_STATUS(trk, i) = -1;
+                    }
+                }
+            }
+        }
+    }
+
+    if (*(s16*)(q + 0x40) == g_GameLogic.teamBatting) { // TODO type
+        // Batter missions.
+        mi = &lbl_800E8558[g_Batter.charID];
+        pi = &g_Pitcher;
+        sc = &g_Scores;
+        ball = &g_Ball;
+        trk = &starMissionCompletionTracker[mi->trk];
+        rec = lbl_80109AE8[mi->row];
+        for (i = 0; i < 10; i++, rec++) {
+            if (MISSION_STATUS(trk, i) >= 0) {
+                done = 0;
+                if (rec->type == 2) {
+                    if (g_GameLogic.IsStarChance == 3 || g_GameLogic.stadiumStarObtained != 0) {
+                        MISSION_STATUS(trk, i)++;
+                        if (MISSION_STATUS(trk, i) >= rec->target) {
+                            MISSION_STATUS(trk, i) = -1;
+                        }
+                    }
+                } else {
+                    other = &lbl_800E8558[pi->charID];
+                    for (k = 13; k <= 32; k++) {
+                        if (rec->type == k) {
+                            switch (k) {
+                            case 13:
+                                if (result == 10 && sc->inning == rec->target) {
+                                    done = 1;
+                                }
+                                break;
+                            case 14:
+                                if (result == 10 && rbi >= rec->target) {
+                                    done = 1;
+                                }
+                                break;
+                            case 15:
+                                if (result >= rec->target + 6 && result <= 10) {
+                                    done = 1;
+                                }
+                                break;
+                            case 16:
+                                if (result >= 7 && result <= 10 && pi->charID == rec->target) {
+                                    done = 1;
+                                }
+                                break;
+                            case 17:
+                                if (result == 10 && rec->target == other->row) {
+                                    done = 1;
+                                }
+                                break;
+                            case 18:
+                                if (rbi != 0 && rec->target == other->row) {
+                                    done = 1;
+                                }
+                                break;
+                            case 19:
+                                if (result >= 7 && result <= 10) {
+                                    MISSION_STATUS(trk, i)++;
+                                    if (MISSION_STATUS(trk, i) >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            case 20:
+                            case 21:
+                                if (result == 13) {
+                                    if (k == 21) {
+                                        if (sc->team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] > sc->_A0 &&
+                                            g_Runners[3].runnerOnFieldOrOutOrScored != 0 &&
+                                            g_Runners[3].furthestBaseForcedToGoToOnWalk != 0) {
+                                            MISSION_STATUS(trk, i)++;
+                                            if (MISSION_STATUS(trk, i) >= rec->target) {
+                                                done = 1;
+                                            }
+                                        }
+                                    } else {
+                                        MISSION_STATUS(trk, i)++;
+                                        if (MISSION_STATUS(trk, i) >= rec->target) {
+                                            done = 1;
+                                        }
+                                    }
+                                }
+                                break;
+                            case 22:
+                                if (rbi != 0) {
+                                    MISSION_STATUS(trk, i) += rbi;
+                                    if (MISSION_STATUS(trk, i) >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            case 23:
+                                if (result == 10) {
+                                    MISSION_STATUS(trk, i)++;
+                                    if (MISSION_STATUS(trk, i) >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            case 24:
+                                if (ball->currentStarSwing2 != 0 && rbi != 0) {
+                                    MISSION_STATUS(trk, i) += rbi;
+                                    if (MISSION_STATUS(trk, i) >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            case 27:
+                                if (result >= 7 && result <= 10 && g_Batter.hitGeneralType == 1 && g_Batter.chargeUp >= 1.0f &&
+                                    g_Batter.nonCaptainStarSwingActivated == 0) {
+                                    MISSION_STATUS(trk, i)++;
+                                    if (MISSION_STATUS(trk, i) >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            case 28:
+                                if (result == 10) {
+                                    n = 0;
+                                    if (g_Runners[1].runnerOnFieldOrOutOrScored != 0 &&
+                                        (g_Runners[1].charID == 3 || g_Runners[1].charID == 0x27)) {
+                                        n = 1;
+                                    }
+                                    if (g_Runners[2].runnerOnFieldOrOutOrScored != 0 &&
+                                        (g_Runners[2].charID == 3 || g_Runners[2].charID == 0x27)) {
+                                        n++;
+                                    }
+                                    if (g_Runners[3].runnerOnFieldOrOutOrScored != 0 &&
+                                        (g_Runners[3].charID == 3 || g_Runners[3].charID == 0x27)) {
+                                        n++;
+                                    }
+                                    if (n == 2) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            case 29:
+                                if (result >= 7 && result <= 10 && g_Batter.hitGeneralType == 3) {
+                                    MISSION_STATUS(trk, i)++;
+                                    if (MISSION_STATUS(trk, i) >= rec->target) {
+                                        done = 1;
+                                    }
+                                }
+                                break;
+                            case 30:
+                                if (result == 10) {
+                                    for (p = 0; p < 9; p++) {
+                                        if (rec->target == lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].row &&
+                                            lbl_803537E4[*(s16*)(q + 0x40)][p]._09 != 0) {
+                                            MISSION_STATUS(trk, i) = -1;
+                                            break;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                            if (done) {
+                                MISSION_STATUS(trk, i) = -1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // A home run also completes teammates' type-30 missions naming this batter.
+        if (result == 10) {
+            other = &lbl_800E8558[g_Batter.charID];
+            for (p = 0; p < 9; p++) {
+                mi = &lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID];
+                trk = &starMissionCompletionTracker[mi->trk];
+                rec = lbl_80109AE8[mi->row];
+                for (i = 0; i < 10; i++, rec++) {
+                    if (MISSION_STATUS(trk, i) >= 0 && rec->type == 30 &&
+                        rec->target == other->row && lbl_803537E4[*(s16*)(q + 0x40)][p]._09 != 0) {
+                        MISSION_STATUS(trk, i) = -1;
+                    }
+                }
+            }
+        }
+    }
 }
+#endif
 
 
 // .text:0x001637EC size:0x15C
