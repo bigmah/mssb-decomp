@@ -1104,8 +1104,28 @@ s32 fn_80034BCC(SpaniAttach* a) {
 }
 
 // .text:0x80034CEC size:0x134
-void fn_80034CEC(void) {
-    return;
+void fn_80034CEC(SpaniGroup* g) {
+    s32 base = g->baseIdx;
+    s32 i;
+    s32 dst;
+
+    for (i = 0; i < g->count; i++) {
+        if (lbl_80371C30[base + i].obj != NULL) {
+            lbl_80371C30[base + i].obj->flags = 0;
+        }
+    }
+    dst = base;
+    for (i += base; i < 0x360; i++, dst++) {
+        lbl_80371C30[dst].obj = lbl_80371C30[i].obj;
+        lbl_80371C30[dst].owner = lbl_80371C30[i].owner;
+        if (lbl_80371C30[dst].owner != NULL) {
+            lbl_80371C30[dst].owner->baseIdx = dst;
+        }
+    }
+    for (i = dst; i < 0x360; i++) {
+        lbl_80371C30[i].obj = NULL;
+        lbl_80371C30[i].owner = NULL;
+    }
 }
 
 // .text:0x80034E20 size:0x130
