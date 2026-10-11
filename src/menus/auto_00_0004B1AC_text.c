@@ -1,4 +1,5 @@
 #include "menus/auto_00_0004B1AC_text.h"
+#include "main/file_800A7C08.h"
 
 #include <string.h>
 #include "Dolphin/GX.h"
@@ -12,7 +13,6 @@ extern u8 lbl_8034E9A0[];
 #include "static/UnknownHomes_Static.h"
 #include "main/file_8000F150.h"
 
-extern u32 lbl_803C7898[];
 extern void fn_80034E20(void* object, void* data);
 
 extern u8* lbl_2_bss_1A824C[];
@@ -232,8 +232,8 @@ void fn_2_4E7EC(void) {
 
 // fn_2_4E824, size:0x34
 void fn_2_4E824(void) {
-    *(u32*)(lbl_2_bss_1A824C[0] + 0x195424) = lbl_803C7898[1];
-    *(u32*)(lbl_2_bss_1A824C[0] + 0x195428) = lbl_803C7898[2];
+    *(u8**)(lbl_2_bss_1A824C[0] + 0x195424) = lbl_803C7898.lo;
+    *(u8**)(lbl_2_bss_1A824C[0] + 0x195428) = lbl_803C7898.hi;
 }
 
 // fn_2_54BAC, size:0x4
@@ -1761,7 +1761,6 @@ void fn_2_4E1C0(void) {
 }
 #endif
 
-#include "main/file_800A7C08.h"
 #include "menus/rep_0788.h"
 #include "menus/rep_08E8.h"
 

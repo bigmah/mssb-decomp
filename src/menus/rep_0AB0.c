@@ -9,7 +9,6 @@
 #include "menus/auto_00_0004B1AC_text.h"
 #include "menus/rep_0788.h"
 #include "menus/auto_00_0005597C_text.h"
-#include "menus/auto_00_0005E84C_text.h"
 #include "menus/auto_00_00013BA4_text.h"
 #include "menus/rep_08E8.h"
 #include "menus/rep_0B08.h"
@@ -37,6 +36,8 @@ extern s16 lbl_2_data_296B8[6 * 6]; // character grid: id per [row * 6 + column]
 extern u8 lbl_800E869C[]; // grid id -> character id
 extern s8 lbl_2_bss_A169;
 extern void fn_2_93C64(void);
+extern void fn_2_5EB78(void); // menus/auto_00_0005E84C_text.h (clashes over lbl_803CC1B8)
+extern void fn_2_5ED3C(void);
 extern void fn_2_68E68(void);
 extern void fn_2_8AEE0(void);
 extern void fn_2_8DFB0(void);
@@ -58,7 +59,7 @@ extern void fn_800ACFB0(void* block);
 extern void fn_2_11A0(u16 value);
 extern u8 lbl_2_bss_33FBF0[]; // per actor
 // lbl_803CC1B8 (SceneTask*, main/file_80069BDC.h) is the running menu task.
-#define CUR_TASK ((MenuTask*)lbl_803CC1B8)
+#define CUR_TASK ((MenuScreenTask*)lbl_803CC1B8)
 extern InitEntry lbl_2_data_20C68[];
 extern InitEntry lbl_2_data_268A8[];
 extern MenuDef lbl_800FEF70[];
@@ -72,7 +73,7 @@ extern PadState lbl_803C77B8[4];
 
 // .text:0x0005979C size:0x55C
 void fn_2_5979C(void) {
-    MenuTask* task = CUR_TASK;
+    MenuScreenTask* task = CUR_TASK;
     s32 i;
     switch (task->step) {
     case 0:
@@ -180,7 +181,7 @@ void fn_2_5979C(void) {
         }
         break;
     case 4: {
-        MenuTask* parent = task->parent;
+        MenuScreenTask* parent = task->parent;
         parent->signal = 1;
         fn_800B0A14_removeQueue(parent);
         task->step = 0;
@@ -191,7 +192,7 @@ void fn_2_5979C(void) {
 
 // .text:0x00059CF8 size:0x52C
 void fn_2_59CF8(void) {
-    MenuTask* task = CUR_TASK;
+    MenuScreenTask* task = CUR_TASK;
     MenuSaveProgress* save = &lbl_80354768;
     s32 i;
     s32 j;
@@ -268,7 +269,7 @@ void fn_2_59CF8(void) {
         }
         break;
     case 3: {
-        MenuTask* parent = task->parent;
+        MenuScreenTask* parent = task->parent;
         parent->signal = 1;
         fn_800B0A14_removeQueue(parent);
         task->step = 0;
@@ -280,7 +281,7 @@ void fn_2_59CF8(void) {
 // .text:0x0005A224 size:0xC30
 void fn_2_5A224(void) {
     MenuSaveProgress* save = &lbl_80354768;
-    MenuTask* task = CUR_TASK;
+    MenuScreenTask* task = CUR_TASK;
     switch (lbl_2_bss_1A823C->state) {
     case 0:
         lbl_2_bss_1A824C->_197848 = 2;
@@ -434,7 +435,7 @@ void fn_2_5A224(void) {
         lbl_2_bss_1A823C->state = 14;
         break;
     case 14: {
-        MenuTask* child;
+        MenuScreenTask* child;
         lbl_2_bss_1A824C->_197746 = 1;
         child = fn_800B0A5C_insertQueue(fn_2_8E6A4, 2);
         child->step = 0;
@@ -504,14 +505,14 @@ void fn_2_5A224(void) {
         break;
     case 23:
         if (lbl_2_bss_1A8234->timer-- == 0) {
-            MenuTask* parent = CUR_TASK->parent;
+            MenuScreenTask* parent = CUR_TASK->parent;
             parent->signal = 1;
             fn_800B0A14_removeQueue(parent);
             lbl_2_bss_1A823C->state = 0;
         }
         break;
     case 24: {
-        MenuTask* child = fn_800B0A5C_insertQueue(fn_2_59CF8, 2);
+        MenuScreenTask* child = fn_800B0A5C_insertQueue(fn_2_59CF8, 2);
         child->step = 0;
         task->signal = 0;
         lbl_2_bss_1A823C->state = 25;
@@ -533,7 +534,7 @@ void fn_2_5A224(void) {
 
 // .text:0x0005AE54 size:0xD0
 void fn_2_5AE54(void) {
-    MenuTask* task = CUR_TASK;
+    MenuScreenTask* task = CUR_TASK;
     switch ((s32)task->state) {
     case 1:
         break;
@@ -558,7 +559,7 @@ void fn_2_5AE54(void) {
 
 // .text:0x0005AF24 size:0x8C
 void fn_2_5AF24(void) {
-    MenuTask* task;
+    MenuScreenTask* task;
     lbl_8034E978.menu = 0x53;
     fn_800B0A5C_insertQueue(fn_80053FE8, 0);
     task = fn_800B0A5C_insertQueue(fn_2_5AE54, 0);
@@ -732,7 +733,7 @@ void fn_2_5AFB0(void) {
         break;
     case 16:
         if (lbl_2_bss_1A8234->timer-- == 0) {
-            MenuTask* parent = CUR_TASK->parent;
+            MenuScreenTask* parent = CUR_TASK->parent;
             parent->signal = 1;
             fn_800B0A14_removeQueue(parent);
             lbl_2_bss_1A823C->state = 0;
@@ -979,7 +980,7 @@ void fn_2_5B7DC(void) {
         break;
     case 18:
         if (lbl_2_bss_1A8234->timer-- == 0) {
-            MenuTask* parent = CUR_TASK->parent;
+            MenuScreenTask* parent = CUR_TASK->parent;
             parent->signal = 1;
             fn_800B0A14_removeQueue(parent);
             lbl_2_bss_1A823C->state = 0;
@@ -1099,7 +1100,7 @@ void fn_2_5C5B8(void) {
         break;
     case 14:
         if (lbl_2_bss_1A8234->timer-- == 0) {
-            MenuTask* parent = CUR_TASK->parent;
+            MenuScreenTask* parent = CUR_TASK->parent;
             parent->signal = 1;
             fn_800B0A14_removeQueue(parent);
             lbl_2_bss_1A823C->state = 0;
@@ -1247,7 +1248,7 @@ void fn_2_5CB5C(void) {
         break;
     case 16:
         if (lbl_2_bss_1A8234->timer-- == 0) {
-            MenuTask* parent = CUR_TASK->parent;
+            MenuScreenTask* parent = CUR_TASK->parent;
             parent->signal = 1;
             fn_800B0A14_removeQueue(parent);
             lbl_2_bss_1A823C->state = 0;
@@ -1258,11 +1259,11 @@ void fn_2_5CB5C(void) {
 
 // .text:0x0005D26C size:0x9F0
 void fn_2_5D26C(void) {
-    MenuTask* task = CUR_TASK;
+    MenuScreenTask* task = CUR_TASK;
     s32 i;
     switch (lbl_2_bss_1A823C->state) {
     case 0: {
-        MenuTask* child;
+        MenuScreenTask* child;
         fn_8001F228();
         lbl_2_bss_1A824C->_197848 = 2;
         lbl_2_bss_1A824C->_197702 = 0;
@@ -1297,7 +1298,7 @@ void fn_2_5D26C(void) {
         lbl_2_bss_1A823C->state = 8;
         break;
     case 5: {
-        MenuTask* child;
+        MenuScreenTask* child;
         lbl_2_bss_1A824C->_197702 = 0;
         child = fn_800B0A5C_insertQueue(fn_2_8DFB0, 2);
         child->step = 0;
@@ -1460,7 +1461,7 @@ void fn_2_5D26C(void) {
         break;
     case 21:
         if (lbl_2_bss_1A8234->timer-- == 0) {
-            MenuTask* parent;
+            MenuScreenTask* parent;
             fn_2_4E7EC();
             parent = CUR_TASK->parent;
             parent->signal = 1;
@@ -1469,7 +1470,7 @@ void fn_2_5D26C(void) {
         }
         break;
     case 22: {
-        MenuTask* child = fn_800B0A5C_insertQueue(fn_2_5979C, 2);
+        MenuScreenTask* child = fn_800B0A5C_insertQueue(fn_2_5979C, 2);
         child->step = 0;
         task->signal = 0;
         lbl_2_bss_1A823C->state = 23;
@@ -1491,7 +1492,7 @@ void fn_2_5D26C(void) {
 
 // .text:0x0005DC5C size:0x4A8
 void fn_2_5DC5C(void) {
-    MenuTask* task = CUR_TASK;
+    MenuScreenTask* task = CUR_TASK;
     switch (lbl_2_bss_1A823C->state) {
     case 0:
         lbl_8034E978.menu = 0x53;
@@ -1578,14 +1579,14 @@ void fn_2_5DC5C(void) {
         }
         break;
     case 9: {
-        MenuTask* parent = task->parent;
+        MenuScreenTask* parent = task->parent;
         parent->signal = 1;
         fn_800B0A14_removeQueue(parent);
         lbl_2_bss_1A823C->state = 0;
         break;
     }
     case 10: {
-        MenuTask* child = fn_800B0A5C_insertQueue(fn_2_587F8, 2);
+        MenuScreenTask* child = fn_800B0A5C_insertQueue(fn_2_587F8, 2);
         child->step = 0;
         task->signal = 0;
         lbl_2_bss_1A823C->state = 11;
@@ -1603,7 +1604,7 @@ void fn_2_5DC5C(void) {
 // NONMATCHING 93%: same code; register allocation differs and the original reloads lbl_2_bss_1A8230/1A824C in steps 7/8 instead of reusing the values stored at the top
 #if NONMATCHING
 void fn_2_5E104(void) {
-    MenuTask* task;
+    MenuScreenTask* task;
     s32 i;
     s32 j;
     CharSelWork* sel = &lbl_8034E9A0;
@@ -1666,7 +1667,7 @@ void fn_2_5E104(void) {
         lbl_2_bss_1A823C->state = 0;
         break;
     case 1: {
-        MenuTask* child = fn_800B0A5C_insertQueue(fn_2_5ED3C, 2);
+        MenuScreenTask* child = fn_800B0A5C_insertQueue(fn_2_5ED3C, 2);
         child->step = 0;
         task->signal = 0;
         lbl_803CBBCC->step = 2;

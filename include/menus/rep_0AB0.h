@@ -22,11 +22,11 @@ typedef struct MenuCharLayout {
 } MenuCharLayout; // size: 0x454
 
 // Menu task as seen by the rep_0AB0 menu screens (lbl_803CC1B8 while one of them runs).
-typedef struct MenuTask {
+typedef struct MenuScreenTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ struct MenuTask* prev;
-    /*0x08*/ struct MenuTask* next;
-    /*0x0C*/ struct MenuTask* parent;
+    /*0x04*/ struct MenuScreenTask* prev;
+    /*0x08*/ struct MenuScreenTask* next;
+    /*0x0C*/ struct MenuScreenTask* parent;
     /*0x10*/ s16 signal; // set to 1 by a child task when it is done
     /*0x12*/ u16 priority;
     /*0x14*/ u8 _14[2];
@@ -37,7 +37,7 @@ typedef struct MenuTask {
     /*0x1E*/ u16 subState;
     /*0x20*/ u8 _20[8];
     /*0x28*/ s8 step;
-} MenuTask;
+} MenuScreenTask;
 
 // Scene state shared by the menu screens (lbl_2_bss_1A823C -> lbl_800E877C).
 typedef struct MenuSceneState {
