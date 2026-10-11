@@ -2,7 +2,6 @@
 #include "header_rep_data.h"
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 
-#pragma dont_inline on
 
 extern u8 g_Minigame[];
 extern u8 lbl_3_data_21804[];
@@ -199,57 +198,6 @@ extern void fn_800528B4(void);
 extern const f32 lbl_3_rodata_3730; // 10.0f
 extern const f32 lbl_3_rodata_375C; // 0.5f
 
-// Inlined copy of fn_3_13DDE0 (the original inlines it into fn_3_13DA50/13DC48 with these
-// constants loaded from rodata). Distance in bases from a to b around the diamond,
-// forwards (mode 1) or backwards (mode 0).
-#pragma dont_inline off
-static inline f32 baseDistance(f32 a, f32 b, u8 mode) {
-    if (a < 0.0f) {
-        a += lbl_3_rodata_3738;
-    } else if (a >= lbl_3_rodata_3738) {
-        a -= lbl_3_rodata_3738;
-    }
-    if (b < 0.0f) {
-        b += lbl_3_rodata_3738;
-    } else if (b >= lbl_3_rodata_3738) {
-        b -= lbl_3_rodata_3738;
-    }
-    if (mode == 1) {
-        if (a > b) {
-            return (lbl_3_rodata_3738 + b) - a;
-        }
-        return b - a;
-    }
-    if (a < b) {
-        return (lbl_3_rodata_3738 + a) - b;
-    }
-    return a - b;
-}
-
-
-// Inlined copy of fn_3_13DA50.
-static inline f32 nearestDir(s8 idx, f32 ang, s8* dir) {
-    f32 fwd;
-    f32 back;
-    fwd = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 1);
-    if (g_Runners[idx].runningDirectionCode == 3) {
-        fwd += lbl_3_rodata_373C;
-    }
-    back = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 0);
-    if (g_Runners[idx].runningDirectionCode == 1) {
-        back += lbl_3_rodata_373C;
-    }
-    if (fwd < back) {
-        *dir = 1;
-        return fwd;
-    }
-    if (fwd > back) {
-        *dir = 3;
-        return back;
-    }
-    *dir = RandomInt_Game(2) ? 1 : 3;
-    return fwd;
-}
 
 // .text:0x0013C7BC size:0xDBC mapped:0x8077B850
 // CPU players: per frame, decide whether to run forward/back to grab items or to
@@ -347,11 +295,11 @@ void fn_3_13C7BC(void) {
             ai->reason = 0;
             if (special >= 0) {
                 pos = special / lbl_3_rodata_3730;
-                fwd = baseDistance(r->fractionalBasesRan, pos, 1);
+                fwd = fn_3_13DDE0(r->fractionalBasesRan, pos, 1);
                 if (r->runningDirectionCode == 3) {
                     fwd += lbl_3_rodata_373C;
                 }
-                back = baseDistance(r->fractionalBasesRan, pos, 0);
+                back = fn_3_13DDE0(r->fractionalBasesRan, pos, 0);
                 if (r->runningDirectionCode == 1) {
                     back += lbl_3_rodata_373C;
                 }
@@ -531,33 +479,8 @@ s32 fn_3_13D5E8(void* a, void* b) {
 }
 
 // .text:0x0013D618 size:0x408 mapped:0x8077C6AC
-// NONMATCHING 94%: the 0.15f constant is hoisted out of the runner loop (the original reloads it)
+// NONMATCHING 94%: the 4.0f/0.15f constants are hoisted out of the runner loop (the original reloads them)
 #if NONMATCHING
-// baseDistance with literal constants: the original reloads them inside the
-// runner loop of fn_3_13D618 instead of hoisting them.
-static inline f32 baseDistanceLit(f32 a, f32 b, u8 mode) {
-    if (a < 0.0f) {
-        a += 4.0f;
-    } else if (a >= 4.0f) {
-        a -= 4.0f;
-    }
-    if (b < 0.0f) {
-        b += 4.0f;
-    } else if (b >= 4.0f) {
-        b -= 4.0f;
-    }
-    if (mode == 1) {
-        if (a > b) {
-            return (4.0f + b) - a;
-        }
-        return b - a;
-    }
-    if (a < b) {
-        return (4.0f + a) - b;
-    }
-    return a - b;
-}
-
 // Shortest distance (and direction, see fn_3_13DA50) from runner idx to base
 // position ang, minus the shortest such distance over all active runners.
 f32 fn_3_13D618(s8 idx, f32 ang, s8* dir) {
@@ -567,18 +490,11 @@ f32 fn_3_13D618(s8 idx, f32 ang, s8* dir) {
     f32 back;
     s8 n;
     s8 j;
-    best = nearestDir(idx, ang, dir);
+    best = fn_3_13DA50(idx, ang, dir);
     n = 0;
     for (j = 0; j < 4; j++) {
         if (REP_MG->characterIndex[j] >= 0 && REP_MG->characterIndex[j] < 4 && REP_MG->_1B15[j] == 0) {
-            fwd = baseDistanceLit(g_Runners[j].fractionalBasesRan, ang, 1);
-            if (g_Runners[j].runningDirectionCode == 3) {
-                fwd += lbl_3_rodata_373C;
-            }
-            back = baseDistanceLit(g_Runners[j].fractionalBasesRan, ang, 0);
-            if (g_Runners[j].runningDirectionCode == 1) {
-                back += lbl_3_rodata_373C;
-            }
+            fn_3_13DC48(j, ang, &fwd, &back);
             dist[n++] = fwd < back ? fwd : back;
         }
     }
@@ -599,11 +515,11 @@ s32 fn_3_13DA20(void* a, void* b) {
 f32 fn_3_13DA50(s8 idx, f32 ang, s8* dir) {
     f32 fwd;
     f32 back;
-    fwd = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 1);
+    fwd = fn_3_13DDE0(g_Runners[idx].fractionalBasesRan, ang, 1);
     if (g_Runners[idx].runningDirectionCode == 3) {
         fwd += lbl_3_rodata_373C;
     }
-    back = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 0);
+    back = fn_3_13DDE0(g_Runners[idx].fractionalBasesRan, ang, 0);
     if (g_Runners[idx].runningDirectionCode == 1) {
         back += lbl_3_rodata_373C;
     }
@@ -621,17 +537,16 @@ f32 fn_3_13DA50(s8 idx, f32 ang, s8* dir) {
 
 // .text:0x0013DC48 size:0x198 mapped:0x8077CCDC
 void fn_3_13DC48(s8 idx, f32 ang, f32* out1, f32* out2) {
-    *out1 = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 1);
+    *out1 = fn_3_13DDE0(g_Runners[idx].fractionalBasesRan, ang, 1);
     if (g_Runners[idx].runningDirectionCode == 3) {
         *out1 += lbl_3_rodata_373C;
     }
-    *out2 = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 0);
+    *out2 = fn_3_13DDE0(g_Runners[idx].fractionalBasesRan, ang, 0);
     if (g_Runners[idx].runningDirectionCode == 1) {
         *out2 += lbl_3_rodata_373C;
     }
 }
 
-#pragma dont_inline on
 // .text:0x0013DDE0 size:0xC4 mapped:0x8077CE74
 f32 fn_3_13DDE0(f32 a, f32 b, u8 mode) {
     if (a < 0.0f) {
@@ -872,7 +787,6 @@ void fn_3_13E6D4(void) {
 
 // Single-precision sin/cos; the original inlines these (each call result is
 // rounded to f32 before use).
-#pragma dont_inline off
 static inline f32 sinF(f32 x) {
     return sin(x);
 }
@@ -928,7 +842,6 @@ void fn_3_13E7D4(s32 p) {
         }
     }
 }
-#pragma dont_inline on
 
 // .text:0x0013EA30 size:0x214 mapped:0x8077DAC4
 // Award items lying near a runner: each item on the field goes to a random runner
@@ -1304,7 +1217,7 @@ void fn_3_13F8C4(void) {
 // .text:0x0013FC24 size:0x660 mapped:0x8077ECB8
 // Phase 3: once the marked runners have stopped, throw the ball at each of them
 // in turn; a hit shakes the camera, knocks out coins and halves the points.
-// NONMATCHING 90%: original jumps into the hit code with a goto and inlines fn_3_13E174; register allocation differs
+// NONMATCHING 92%: original jumps into the hit code with a goto; register allocation differs
 #if NONMATCHING
 void fn_3_13FC24(void) {
     RepRunnerView* r;
@@ -1701,8 +1614,7 @@ void fn_3_140BCC(void) {
     }
 }
 // .text:0x00140CE0 size:0x410 mapped:0x8077FD74
-// NONMATCHING: the original inlines fn_3_13F7E4, fn_3_13F6C8, fn_3_13E670 and fn_3_140BCC here
-#if NONMATCHING
+// NONMATCHING 91%: register allocation differs around the inlined fn_3_13F7E4/13F6C8/13E670/140BCC
 // Per-frame update of the minigame.
 void fn_3_140CE0(void) {
     s8 i;
@@ -1727,16 +1639,17 @@ void fn_3_140CE0(void) {
     }
     fn_3_13C7BC();
     fn_3_7DD6C();
-    for (i = 0; i < 4; i++) {
+    i = 0;
+    do {
         REP_MG->_1DC0[i] = 0;
-    }
+        i++;
+    } while (i < 4);
     fn_3_13F7E4();
     fn_3_13F6C8();
     fn_3_1406F4();
     fn_3_13E670();
     fn_3_140BCC();
 }
-#endif
 
 // .text:0x001410F0 size:0x1CC mapped:0x80780184
 void fn_3_1410F0(void) {
@@ -1786,40 +1699,9 @@ void fn_3_1410F0(void) {
     fn_3_5A6D4(0xE);
 }
 
-// Same body as fn_3_13DEA4; the original inlines it into fn_3_1412BC, which
-// needs dont_inline off from here to the end of the file.
-#pragma dont_inline off
-static inline void initSlots(void) {
-    u8* p;
-    u32 k;
-    u8* e;
-    s16* t;
-    s8 i;
-    e = g_Minigame + 0x1DCC;
-    memset(g_Minigame + 0x1D7C, 0, 0x78);
-    i = 0;
-    do {
-        p = e + i * 8;
-        k = g_Minigame[0x18DC + i];
-        t = (s16*)(lbl_3_data_2194C + k * 4);
-        *(s16*)p = RandomInt_Game_Range(t[0], t[1]);
-        if (RandomInt_Game(100) < *(s8*)(lbl_3_data_2197C + k)) {
-            if (*(s8*)(lbl_3_data_21980 + k) < 8) {
-                p[6] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21980 + k), 8);
-            } else {
-                p[6] = 8;
-            }
-        } else {
-            p[6] = 0x7F;
-        }
-        p[5] = 2;
-        p[7] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21944 + k * 2), *(s8*)(lbl_3_data_21944 + k * 2 + 1));
-        i++;
-    } while (i < 4);
-}
 // .text:0x001412BC size:0x128 mapped:0x80780350
 void fn_3_1412BC(void) {
-    initSlots();
+    fn_3_13DEA4();
     changeScene(1, 6);
     fn_3_5A6D4(2);
 }
