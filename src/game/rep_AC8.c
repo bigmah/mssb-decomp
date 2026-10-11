@@ -3184,9 +3184,59 @@ void fn_3_48A54(void) {
 }
 
 // .text:0x000494F4 size:0x4D0 mapped:0x80688588
+// NONMATCHING 96.7%: orig recomputes the fielder pointer (g_Fielders + saved i*0x268) for the stop block; float regs differ
+#if NONMATCHING
+// Fielder i closes in on the ball; stops (target = own position) once close enough.
 void fn_3_494F4(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dz, dx, d, r, tx, tz;
+    if (g_Ball[0x1BF3] != 0) {
+        dz = *(f32*)(g_Ball + 8) - *(f32*)(f + 8);
+        dx = *(f32*)g_Ball - *(f32*)f;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        if (d < *(f32*)(lbl_3_data_4930 + 0x94)) {
+            goto stop;
+        }
+        dx = dx / d;
+        dz = dz / d;
+        r = *(f32*)(lbl_3_data_4930 + 0x90) - lbl_3_rodata_B60;
+        tx = r * dx + *(f32*)f;
+        tz = r * dz + *(f32*)(f + 8);
+        SetTargetAC8b(i, tx, tz);
+    }
+    if (g_Ball[0x1BCC] != 0) {
+        if (*(f32*)(f + 0x74) < *(f32*)(lbl_3_data_4930 + 4)) {
+            goto stop;
+        }
+    } else {
+        dx = *(f32*)g_Ball - *(f32*)(g_Ball + 0x19D8);
+        dz = *(f32*)(g_Ball + 8) - *(f32*)(g_Ball + 0x19DC);
+        dx = dx * dx;
+        dz = dz * dz;
+        d = dx + dz;
+        SQRT_L(d);
+        if (d < *(f32*)(lbl_3_data_4930 + 8) && *(f32*)(f + 0x7C) < *(f32*)(lbl_3_data_4930 + 0xC)) {
+            goto stop;
+        }
+    }
+    if (g_Ball[0x1BC3] == 2 && *(f32*)(f + 0x7C) < *(f32*)(lbl_3_data_4930 + 0xC)) {
+        goto stop;
+    }
     return;
+stop:
+    {
+        u8* g = g_Fielders + i * 0x268;
+        *(f32*)(g + 0x14) = *(f32*)f;
+        *(f32*)(g + 0x18) = *(f32*)(f + 4);
+        *(f32*)(g + 0x1C) = *(f32*)(f + 8);
+        *(f32*)(g + 0x30) = 0.0f;
+        *(f32*)(g + 0x34) = 0.0f;
+        *(f32*)(g + 0x50) = 0.0f;
+        *(f32*)(g + 0x68) = 0.0f;
+    }
 }
+#endif
 
 // .text:0x000499C4 size:0x254 mapped:0x80688A58
 // Pick the spot (out x/z) where fielder i should go to meet the ball's flight path.
