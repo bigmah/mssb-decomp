@@ -541,9 +541,42 @@ void fn_80031CA4(void) {
 }
 
 // .text:0x80031F34 size:0x104
-void fn_80031F34(void) {
-    return;
+// NONMATCHING 62%: the original keeps n and the countdown copy in separate saved regs
+#if NONMATCHING
+Particle* fn_80031F34(Particle* list, s32 n) {
+    Vec v;
+    s32 i = 0;
+    s32 left = n;
+    ParticleSortEntry* buf;
+    ParticleSortEntry* ent;
+    Particle* p;
+
+    if (n != 0) {
+        buf = _OSAllocFromHeap(0x20, n * 2 * sizeof(ParticleSortEntry));
+        for (p = list, ent = buf; p != NULL; p = p->next) {
+            if (i >= n) {
+                OSReport("zsort particle err.\n");
+                break;
+            }
+            ent->p = p;
+            PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
+            i++;
+            ent->z = v.z;
+            ent++;
+        }
+        fn_800C07BC(buf, buf + n, n, sizeof(ParticleSortEntry), fn_80032038);
+        list = buf[0].p;
+        ent = buf;
+        while (--left != 0) {
+            ent->p->next = ent[1].p;
+            ent++;
+        }
+        ent->p->next = NULL;
+        fn_800ACFB0(buf);
+    }
+    return list;
 }
+#endif
 
 // .text:0x80032038 size:0x2C
 s32 fn_80032038(const void* a, const void* b) {
