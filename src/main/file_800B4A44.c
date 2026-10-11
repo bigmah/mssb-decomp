@@ -92,8 +92,17 @@ void fn_800B4C04(GameActor* actor, f32 speed) {
 }
 
 // .text:0x800B4C40 size:0x60
-void fn_800B4C40(void) {
-    return;
+f32 fn_800B4C40(GameActor* actor) {
+    u32 i;
+    GameAnimPipe* pipe;
+
+    for (i = 0; i < actor->totalBones; i++) {
+        pipe = actor->boneArray[i]->animPipe;
+        if (pipe != NULL && pipe->currentTrack != NULL) {
+            return actor->boneArray[i]->animPipe->time;
+        }
+    }
+    return lbl_803CCF78;
 }
 
 // .text:0x800B4CA0 size:0x3C
