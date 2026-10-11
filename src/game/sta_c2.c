@@ -4,6 +4,7 @@
 #include "Dolphin/stl.h"
 #include "Dolphin/vec.h"
 #include "C3/control.h"
+#include "game/rep_2998.h"
 extern u8 lbl_3_common_bss_350E4[];
 extern char lbl_3_rodata_286C[];
 extern char lbl_3_rodata_2878[];
@@ -249,10 +250,10 @@ extern const f64 lbl_3_rodata_2688;
 extern const f32 lbl_3_rodata_2690;
 // Lays the 4-node chain out hanging from the object (p+0xA0 pos, p+0xC0 yaw, p+0xC4 nodes),
 // folding it along +z where it would go below the ground.
-// NONMATCHING 96%: frame 0x10 smaller; 0.15 double reloaded inside the fold branch in target; f30/f31 swapped
+// NONMATCHING 97%: target reloads the 0.15/2.4 constants inside the fold branch; f30/f31 swapped
 #if NONMATCHING
 void fn_3_CBF80(u8* p) {
-    Control ctrl;
+    GameControl ctrl;
     Mtx m;
     Vec v;
     Vec cur;
@@ -260,9 +261,9 @@ void fn_3_CBF80(u8* p) {
     u32 i;
     v = lbl_3_rodata_24E8[0];
     v.y = lbl_3_rodata_2674;
-    ctrl.type = 0;
-    CTRLSetRotation(&ctrl, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
-    CTRLBuildMatrix(&ctrl, m);
+    ctrl.base.type = 0;
+    CTRLSetRotation(&ctrl.base, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    CTRLBuildMatrix(&ctrl.base, m);
     PSMTXMultVec(m, &v, &v);
     v.y = v.y * lbl_3_rodata_2678;
     v.x += *(f32*)(p + 0xA0);
