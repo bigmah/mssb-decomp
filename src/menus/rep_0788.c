@@ -5254,3 +5254,67 @@ void fn_2_2BB34(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 #endif
+
+// fn_2_2BF20, size:0x288
+void fn_2_2BF20(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2:
+    case 8: {
+        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        s32 row = *(s16*)(ctx + 0x7706);
+        if (lbl_80109AE8[row][item->index].type != -1) {
+            s32 first;
+            s32 second;
+            s16 firstValue;
+            u8* record;
+            first = *(s16*)(ctx + 0x7710);
+            record = lbl_2_bss_1A8248 + lbl_800E869C[row] * 0x34;
+            firstValue = record[9 + first * 2];
+            if ((s8)firstValue < 0 && (s8)record[9 + (second = *(s16*)(ctx + 0x7712)) * 2] < 0 &&
+                first != second) {
+            } else if ((s8)firstValue < 0) {
+                u8* object;
+                *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+                object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        item->state = 37;
+        break;
+    }
+    case 5:
+        item->timer = 9;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+        break;
+    }
+}
