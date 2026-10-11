@@ -258,6 +258,38 @@ void fn_80025EEC(ShapeAnimPlayer* p, s32 table, s32 entry) {
 #endif
 
 // .text:0x80025FFC size:0x134
-void fn_80025FFC(void) {
-    return;
+// Relocates the player's animation set and binds it to model.
+// NONMATCHING 95%: `p == NULL` early return emitted as bne/blr; st in r7 instead of r6
+#if NONMATCHING
+void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
+    ShapeAnimState* st;
+    u32 i;
+    if (model == NULL) {
+        return;
+    }
+    if (p == NULL) {
+        return;
+    }
+    if (p->set == NULL) {
+        return;
+    }
+    p->model = model;
+    p->set->seqs = (ShapeSeqData**)((u8*)p->set + (size_t)p->set->seqs);
+    p->set->tables = (s8**)((u8*)p->set + (size_t)p->set->tables);
+    p->seqs = p->set->seqs;
+    for (i = 0; i < p->set->seqCount; i++) {
+        p->seqs[i] = (ShapeSeqData*)((u8*)p->set + (size_t)p->seqs[i]);
+    }
+    p->tableList = p->set->tables;
+    for (i = 0; i < p->set->tableCount; i++) {
+        p->tableList[i] = (s8*)((u8*)p->set + (size_t)p->tableList[i]);
+        p->tables[i] = p->tableList[i];
+    }
+    st = &p->state;
+    shapeStateReset(st);
+    st->seqs[0].hdr = lbl_803CB7F0;
+    st->seqs[0].keys = lbl_803CB7F4;
+    p->curIdx = -128;
+    p->unk59 = 1;
 }
+#endif
