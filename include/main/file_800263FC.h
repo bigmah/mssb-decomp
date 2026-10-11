@@ -111,7 +111,9 @@ typedef struct Particle {
     /* 0x4D */ u8 texIndex;
     /* 0x4E */ u8 uvFrame;
     /* 0x4F */ u8 uvOrder;      // 2 bits per corner: index into lbl_800F78C0
-    /* 0x50 */ u8 unk50[0x60 - 0x50];
+    /* 0x50 */ f32 dSize;  // type 15: size change per frame
+    /* 0x54 */ s32 dAlpha; // type 15: alpha change per frame
+    /* 0x58 */ u8 unk58[0x60 - 0x58];
 } Particle; // size 0x60
 
 struct Emitter;
@@ -481,6 +483,26 @@ typedef struct ParticleParamsA {
     /* 0x80 */ s32 unk80;
 } ParticleParamsA;
 
+// Spawn parameters of the type-15 (smoke) emitter.
+typedef struct ParticleParamsF {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 life;
+    /* 0x10 */ Vec vel;
+    /* 0x1C */ f32 velScale;
+    /* 0x20 */ Vec accel;
+    /* 0x2C */ f32 accelScale;
+    /* 0x30 */ f32 size0;
+    /* 0x34 */ f32 size1;
+    /* 0x38 */ s32 alpha0;
+    /* 0x3C */ s32 alpha1;
+    /* 0x40 */ Vec pos;
+    /* 0x4C */ u8 r;
+    /* 0x4D */ u8 g;
+    /* 0x4E */ u8 b;
+} ParticleParamsF;
+
 // Queue task that flashes the stadium lights (fn_8002852C).
 typedef struct LightFlashTask {
     /* 0x00 */ u8 unk0[0x14];
@@ -519,6 +541,8 @@ typedef struct ParticleSortEntry {
 
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm);
+s32 fn_800263FC(Emitter* e);
+void fn_80026998(ParticleParamsF* prm);
 void fn_8002852C(void);
 u8 fn_8002A85C(Emitter* e, Particle* p);
 u8 fn_8002AC68(Emitter* e, Particle* p);

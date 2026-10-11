@@ -278,6 +278,7 @@ static inline void QuadCorners(f32 width, f32 height) {
 }
 
 s32 fn_8002E3DC(Emitter* e);
+s32 fn_800263FC(Emitter* e);
 s32 fn_8002E828(Emitter* e);
 s32 fn_8002ECA0(Emitter* e);
 s32 fn_80027968(Emitter* e);
@@ -325,6 +326,29 @@ static inline f32 EaseFrac(u16 rem, u16 dur, f32* whole) {
     return frac;
 }
 
+static inline void InitSmoke(Particle* p, ParticleParamsF* prm) {
+    do {
+        p->texIndex = prm->texIndex;
+        p->life = prm->life;
+        p->delay = 0;
+        p->u.phys.vel.x = prm->vel.x * prm->velScale;
+        p->u.phys.vel.y = prm->vel.y * prm->velScale;
+        p->u.phys.vel.z = prm->vel.z * prm->velScale;
+        p->u.phys.accel.x = prm->accel.x * prm->accelScale;
+        p->u.phys.accel.y = prm->accel.y * prm->accelScale;
+        p->u.phys.accel.z = prm->accel.z * prm->accelScale;
+        p->sizeY = p->sizeX = prm->size0;
+        p->color.c.r = prm->r;
+        p->color.c.g = prm->g;
+        p->color.c.b = prm->b;
+        p->color.c.a = prm->alpha0;
+        memcpy(&p->pos, &prm->pos, sizeof(Vec));
+        p->dSize = (prm->size1 - prm->size0) / (f32)prm->life;
+        p->dAlpha = (prm->alpha1 - prm->alpha0) / prm->life;
+        p = p->next;
+    } while (p != NULL);
+}
+
 static inline u32 Expand4444(u16 c) {
     // 0xRGBA nibbles -> 0xRRGGBBAA
     return ((c & 0xF) << 4) | (c & 0xF) | ((c << 4) & 0xF00) | ((c << 8) & 0xF000) | ((c << 8) & 0xF0000) |
@@ -332,9 +356,68 @@ static inline u32 Expand4444(u16 c) {
 }
 
 // .text:0x800263FC size:0x59C
-void fn_800263FC(void) {
-    return;
+// NONMATCHING 43%: the original inlines the z-sort (fn_80031F34) and the corner setup with the file-static bss base
+#if NONMATCHING
+s32 fn_800263FC(Emitter* e) {
+    s32 alive = 0;
+    s32 a;
+    Particle* p;
+    Particle** link;
+    Particle* lastDead = NULL;
+    Particle* deadHead = NULL;
+
+    p = fn_80031F34(e->particles, e->count);
+    e->particles = p;
+    link = &e->particles;
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+    do {
+        if (p->life != 0) {
+            QuadCorners(p->sizeX, p->sizeY);
+            DrawParticleQuad(p, e->tex);
+            p->sizeX = p->sizeX + p->dSize;
+            p->sizeY = p->sizeX;
+            a = p->color.c.a + p->dAlpha;
+            if (a > 0xFF) {
+                a = 0xFF;
+            } else if (a < 0) {
+                a = 0;
+            }
+            p->color.c.a = a;
+            p->pos.x = p->pos.x + p->u.phys.vel.x;
+            p->pos.y = p->pos.y - p->u.phys.vel.y;
+            p->pos.z = p->pos.z + p->u.phys.vel.z;
+            p->u.phys.vel.x = p->u.phys.vel.x + p->u.phys.accel.x;
+            p->u.phys.vel.y = p->u.phys.vel.y + p->u.phys.accel.y;
+            p->u.phys.vel.z = p->u.phys.vel.z + p->u.phys.accel.z;
+            p->life--;
+        }
+        if (p->life == 0) {
+            *link = p->next;
+            if (lastDead != NULL) {
+                lastDead->next = p;
+            } else {
+                deadHead = p;
+            }
+            p->next = NULL;
+            lastDead = p;
+            e->count--;
+        } else {
+            link = &p->next;
+            alive++;
+        }
+        p = *link;
+    } while (p != NULL);
+    if (deadHead != NULL) {
+        for (p = deadHead; p != NULL; p = p->next) {
+            p->unk4C = 0;
+            p->delay = 0;
+        }
+        FreeParticles(deadHead);
+    }
+    return alive == 0;
 }
+#endif
 
 // .text:0x80026998 size:0x4C0
 void fn_80026998(void) {
