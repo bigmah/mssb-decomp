@@ -75,6 +75,35 @@ extern struct {
 } lbl_8034E9A0;
 #include "static/GameSettings.h"
 
+// lbl_3_common_bss_37400 as used by fn_3_164A74 (the other functions here index it as bytes).
+typedef struct {
+    /*0x00*/ u8 _00[0x12];
+    /*0x12*/ struct {
+        u8 achieved;
+        u8 max;
+        s8 bonus;
+        u8 active;
+        s8 charID;
+    } award[9]; // scout flags handed out (fn_3_16440C / fn_3_163E94)
+    /*0x3F*/ u8 _3F;
+    /*0x40*/ s16 team;
+    /*0x42*/ u8 _42[4];
+    /*0x46*/ u8 kind;   // lbl_80109420 index (the challenge being played)
+    /*0x47*/ u8 result; // 0 running, 1 failed, 2 cleared
+    /*0x48*/ u8 _48;
+    /*0x49*/ s8 bonus;
+} MissionChallengeState;
+// g_RunningLogic (GameRunningLogic in game/auto_00_0009CD90_text.h); only the fields used here.
+extern struct {
+    /*0x00*/ s16 _00;
+    /*0x02*/ s16 occupiedBases; // one nibble per base
+    /*0x04*/ u8 _04[0x10 - 0x4];
+    /*0x10*/ u8 _10;
+    /*0x11*/ u8 _11;
+    /*0x12*/ u8 _12; // runs scored on the play
+    /*0x13*/ u8 _13[0x20 - 0x13];
+} g_RunningLogic;
+
 // Star mission status as a signed value (< 0: done).
 #define MISSION_STATUS(t, i) (*(s8*)&(t)->inGameMissionTracker[i].starMissionStatus)
 
@@ -1030,6 +1059,307 @@ void fn_3_164664(void) {
             if (!fn_3_163BD4()) {
                 break;
             }
+        }
+    }
+}
+#endif
+
+// Decides whether the current challenge (lbl_80109420[kind]) was cleared after a play
+// and hands out its scout flag reward.
+// NONMATCHING 88%: register allocation; the original also preloads the scout-flag indices and g_Runners
+// at entry and compares the award flags signed
+// .text:0x00164A74 size:0xE7C
+#if NONMATCHING
+void fn_3_164A74(void) {
+    MissionChallengeState* st = (MissionChallengeState*)lbl_3_common_bss_37400; // TODO type
+    s32 reward = 0;
+    s32 outcome = 0;
+    s32 forced;
+    s8 v;
+    s32 j;
+    ChallengeTrackingStruct* e;
+    u8 m;
+
+    st->result = 1;
+    st->bonus = lbl_80109420[st->kind].v;
+    switch (st->kind) {
+    case 1:
+        if (g_FieldingLogic._107 != 0) {
+            if (g_Strikes.outs >= 3) {
+                st->result = 2;
+            } else if (g_Pitcher.strikeOutOrWalk == 1) {
+                st->_48 = 0;
+            } else {
+                st->result = 0;
+            }
+        } else if ((g_Strikes.outs > g_Strikes.storedOuts && lbl_3_common_bss_32A94._22 == 0) ||
+                   g_Pitcher.strikeOutOrWalk == 1) {
+            if (g_Pitcher.strikeOutOrWalk == 1 || lbl_3_common_bss_32A94._24 == 0xE) {
+                reward = 1;
+                st->result = 2;
+            } else {
+                reward = 0;
+                st->result = 2;
+            }
+        }
+        break;
+    case 2:
+        if (g_FieldingLogic._107 != 0) {
+            if (g_Strikes.outs >= 3) {
+                st->_48 = 0;
+            } else if (g_Pitcher.strikeOutOrWalk == 1) {
+                st->_48 = 0;
+            } else {
+                st->result = 0;
+            }
+        } else if ((g_Strikes.allForcedRunnersReachedTheirBaseInd == 1 || lbl_3_common_bss_32A94._22 >= 1) &&
+                   lbl_3_common_bss_32A94._24 == 0 && lbl_3_common_bss_32A94._20 <= 0) {
+            if (lbl_3_common_bss_32A94._23 == 1) {
+                if ((u8)lbl_3_common_bss_32A94._26 == 1) {
+                    reward = 1;
+                } else if ((u8)lbl_3_common_bss_32A94._26 >= 2) {
+                    reward = 2;
+                } else {
+                    reward = 0;
+                }
+            } else if (lbl_3_common_bss_32A94._23 == 2) {
+                reward = 1;
+            } else if (lbl_3_common_bss_32A94._23 >= 3) {
+                reward = 2;
+            }
+            st->result = 2;
+        }
+        break;
+    case 3:
+        if (g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] > g_Scores._A0 || g_Ball.deadBallReason == 1 ||
+            ((g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3) && g_RunningLogic._12 >= 4)) {
+            st->result = 2;
+            st->_48 = 0;
+        } else if (g_Strikes.outs >= 3 ||
+                   (g_Strikes.outs == 2 && g_Pitcher.strikeOutOrWalk == 1 && g_FieldingLogic._107 == 0)) {
+            st->_48 = 0;
+        } else {
+            st->_48 = 1;
+            st->result = 0;
+        }
+        break;
+    case 4: {
+        s16 batting = g_Scores.team[g_GameLogic.awayTeamBattingInd_battingTeam].runs[0];
+        if (g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] > batting ||
+            (g_Ball.deadBallReason == 1 && g_Scores._A0 + g_RunningLogic._12 > batting) ||
+            ((g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3) && g_RunningLogic._12 >= 4 &&
+             g_Scores._A0 == batting)) {
+            st->result = 2;
+            st->_48 = 0;
+        } else if (g_Strikes.outs >= 3 || (g_Strikes.outs == 2 && g_Pitcher.strikeOutOrWalk == 1)) {
+            st->_48 = 0;
+        } else {
+            st->_48 = 1;
+            st->result = 0;
+        }
+        break;
+    }
+    case 5:
+        if (g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] > g_Scores._A0 || g_Ball.deadBallReason == 1 ||
+            (g_RunningLogic.occupiedBases == 0x1111 && (g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3))) {
+            st->_48 = 0;
+        } else if ((g_Strikes.outs >= 2 && g_Pitcher.strikeOutOrWalk == 1 && g_FieldingLogic._107 == 0) ||
+                   g_Strikes.outs >= 3) {
+            st->result = 2;
+            st->_48 = 0;
+        } else {
+            st->_48 = 1;
+            st->result = 0;
+        }
+        break;
+    case 6:
+        if (g_Strikes.outs >= g_Strikes.storedOuts + 2) {
+            st->result = 2;
+            st->_48 = 0;
+        } else if (g_FieldingLogic._107 != 0) {
+            st->_48 = 1;
+            st->result = 0;
+        } else {
+            st->_48 = 0;
+        }
+        break;
+    case 7:
+        if (g_Pitcher.strikeOutOrWalk == 1) {
+            st->result = 2;
+            st->_48 = 0;
+        } else if (g_FieldingLogic._107 != 0) {
+            if (g_Strikes.outs >= 3) {
+                st->_48 = 0;
+            } else {
+                st->_48 = 1;
+                st->result = 0;
+            }
+        }
+        break;
+    case 8:
+        if (lbl_3_common_bss_32A94._61 == 3 &&
+            ((g_Strikes.outs >= 2 && g_Pitcher.strikeOutOrWalk == 1 && g_FieldingLogic._107 == 0) || g_Strikes.outs >= 3)) {
+            st->result = 2;
+            st->_48 = 0;
+        } else {
+            forced = 0;
+            if (g_Ball.deadBallReason == 3) {
+                if (g_RunningLogic.occupiedBases & 0x1100) {
+                    forced = 1;
+                }
+            } else if (g_Ball.deadBallReason == 4) {
+                if (g_RunningLogic.occupiedBases & 0x1100) {
+                    forced = 1;
+                } else {
+                    if (g_Runners[1].runnerOnFieldOrOutOrScored == 1 && g_Runners[1].baseReachedAtTimeOfThrow >= 2) {
+                        forced = 1;
+                    }
+                    if (g_Runners[0].runnerOnFieldOrOutOrScored == 1 && g_Runners[0].baseReachedAtTimeOfThrow >= 2) {
+                        forced = 1;
+                    }
+                }
+            }
+            if (lbl_3_common_bss_32A94._61 == 3 && g_FieldingLogic._107 == 0) {
+                st->_48 = 0;
+            } else if (g_Scores._A0 < g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0]) {
+                st->_48 = 0;
+            } else if (g_Ball.deadBallReason == 1 || forced) {
+                st->_48 = 0;
+            } else {
+                st->_48 = 1;
+                st->result = 0;
+            }
+        }
+        break;
+    case 9:
+        if (lbl_3_common_bss_32A94._24 == 1) {
+            st->result = 2;
+            st->_48 = 0;
+        } else if (g_FieldingLogic._107 != 0) {
+            if (g_Strikes.outs >= 3) {
+                st->_48 = 0;
+            } else if (g_Pitcher.strikeOutOrWalk == 1) {
+                st->_48 = 0;
+            } else {
+                st->_48 = 1;
+                st->result = 0;
+            }
+        } else {
+            st->_48 = 0;
+        }
+        break;
+    case 10:
+        if (g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] > g_Scores._A0 &&
+            g_Runners[3].furthestBaseForcedToGoToOnWalk != 0 && g_Ball.maybeBuntInd != 0) {
+            outcome = 1;
+        }
+        if (outcome) {
+            st->result = 2;
+            st->_48 = 0;
+        } else if (g_FieldingLogic._107 != 0) {
+            if (g_Strikes.outs >= 3) {
+                st->_48 = 0;
+            } else if (g_Pitcher.strikeOutOrWalk == 1) {
+                st->_48 = 0;
+            } else if (g_Runners[3].runnerOnFieldOrOutOrScored != 1) {
+                st->_48 = 0;
+            } else {
+                st->_48 = 1;
+                st->result = 0;
+            }
+        } else {
+            st->_48 = 0;
+        }
+        break;
+    case 11:
+        if (g_FieldingLogic._107 == 1 || g_FieldingLogic._107 == 2) {
+            if ((g_Runners[1].runnerOnFieldOrOutOrScored == 1 || g_Runners[1].runnerOnFieldOrOutOrScored == 3) &&
+                g_Runners[1].currentBase > 1) {
+                outcome = 1;
+            }
+            if (g_Runners[1].runnerOnFieldOrOutOrScored == 2) {
+                outcome = 2;
+            }
+        }
+        if (outcome == 2) {
+            st->result = 1;
+            st->_48 = 0;
+        } else if (outcome != 0) {
+            st->result = 2;
+            st->_48 = 0;
+        } else if (g_FieldingLogic._107 != 0) {
+            if (g_Strikes.outs >= 3) {
+                st->_48 = 0;
+            } else if (g_Pitcher.strikeOutOrWalk == 1) {
+                st->_48 = 0;
+            } else {
+                st->_48 = 1;
+                st->result = 0;
+            }
+        } else {
+            st->_48 = 0;
+        }
+        break;
+    case 12:
+        if (g_GameLogic.EventTriggers_EndOfGame != 0) {
+            if ((g_GameLogic._000 ^ (g_Scores._A4 == g_d_GameSettings.humanTeamNumber)) != 0 && g_Scores._A4 != 2) {
+                st->result = 2;
+            } else {
+                st->result = 1;
+            }
+            st->_48 = 0;
+        } else if (g_Scores.inning >= g_Scores.maxInnings && g_Scores._AD != 0) {
+            if (g_Ball.deadBallReason == 1 &&
+                g_Scores._A0 + g_RunningLogic._12 > g_Scores.team[g_GameLogic.awayTeamBattingInd_battingTeam].runs[0]) {
+                if (g_GameLogic.teamBatting == g_d_GameSettings.humanTeamNumber) {
+                    st->result = 2;
+                }
+                st->_48 = 0;
+            } else if (g_Strikes.outs >= 2 && g_Pitcher.strikeOutOrWalk == 1) {
+                if ((g_Scores.team[1].runs[0] > g_Scores.team[0].runs[0] && st->team == g_GameLogic.teamBatting) ||
+                    (g_Scores.team[1].runs[0] < g_Scores.team[0].runs[0] && st->team == g_GameLogic.teamFielding)) {
+                    st->result = 2;
+                }
+                st->_48 = 0;
+            } else if (g_RunningLogic._10 == 4 && (g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3)) {
+                if (g_Scores.team[1].runs[0] == g_Scores.team[0].runs[0]) {
+                    if (g_GameLogic.teamBatting == g_d_GameSettings.humanTeamNumber) {
+                        st->result = 2;
+                    }
+                    st->_48 = 0;
+                } else {
+                    st->_48 = 1;
+                    st->result = 0;
+                }
+            } else {
+                st->_48 = 1;
+                st->result = 0;
+            }
+        } else {
+            st->_48 = 1;
+            st->result = 0;
+        }
+        break;
+    }
+
+    if (st->result == 2) {
+        if (st->kind == 2 || st->kind == 1) {
+            // Reward (lbl_80109420[kind].v + reward) for the scouted character.
+            v = (&lbl_80109420[st->kind].v)[reward];
+            e = &starMissionCompletionTracker[*((u8*)starMissionCompletionTracker + 0x43C0)]; // TODO type
+            for (j = 0; j < 9; j++) {
+                if (st->award[j].active == 1) {
+                    st->award[j].bonus = v;
+                }
+            }
+            e->scoutFlagsAchieved += v;
+            m = *((u8*)e->scoutFlagPointer + 4 + *((u8*)starMissionCompletionTracker + 0x4415) * 6 +
+                  *((u8*)starMissionCompletionTracker + 0x441C));
+            if ((s8)e->scoutFlagsAchieved > (s8)m) {
+                e->scoutFlagsAchieved = m;
+            }
+        } else {
+            fn_3_164554();
         }
     }
 }
