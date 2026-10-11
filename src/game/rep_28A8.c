@@ -1,6 +1,7 @@
 #include "game/rep_28A8.h"
 #include "header_rep_data.h"
 #include "musyx/musyx.h"
+#include "math.h"
 
 extern void fn_3_6EBB4(s32);
 extern void fn_3_F1DC(void);
@@ -107,10 +108,144 @@ static inline void playCrowdSound(s32 n) {
     sndFXCtrl(voice, 0x5B, vol);
 }
 
-// .text:0x000D9EA0 size:0x7A0 mapped:0x80718F34
-void fn_3_D9EA0(void) {
-    return;
+// Wall Ball coin state in g_Minigame.
+typedef struct {
+    /* 0x0000 */ u8 pad0[0xCD0];
+    /* 0x0CD0 */ V3X coinPos[30];
+    /* 0x0E38 */ u8 pad1[0x1180 - 0xE38];
+    /* 0x1180 */ V3X coinVel[30];
+    /* 0x12E8 */ u8 pad2[0x17C8 - 0x12E8];
+    /* 0x17C8 */ s16 coinFrames;
+    /* 0x17CA */ u8 pad3[0x1890 - 0x17CA];
+    /* 0x1890 */ s16 points[4];
+    /* 0x1898 */ s16 latestPoints[4];
+    /* 0x18A0 */ u8 pad4[0x18BC - 0x18A0];
+    /* 0x18BC */ s16 out[4][2];
+    /* 0x18CC */ u8 pad5[0x18F4 - 0x18CC];
+    /* 0x18F4 */ s8 fielderSlot[4];
+    /* 0x18F8 */ s8 fielderIndex[4];
+    /* 0x18FC */ u8 pad6[0x1905 - 0x18FC];
+    /* 0x1905 */ s8 rosterID;
+    /* 0x1906 */ u8 pad7[0x190B - 0x1906];
+    /* 0x190B */ u8 turnOverStatus;
+    /* 0x190C */ u8 pad8[0x1939 - 0x190C];
+    /* 0x1939 */ u8 coinsLeft;
+    /* 0x193A */ u8 coinVisible[100];
+    /* 0x199E */ u8 level;
+    /* 0x199F */ u8 pad9[0x19CB - 0x199F];
+    /* 0x19CB */ u8 multiplier;
+} WallBallMG;
+
+// lbl_3_data_18AC8: per-level coin spawn areas, then catch radii and coin physics.
+typedef struct {
+    /* 0x00 */ T18AC8 areas[12];
+    /* 0xC0 */ f32 catchRadius[5]; // by fielder size class (g_Fielders + 0x1C9)
+    /* 0xD4 */ f32 gravity;
+    /* 0xD8 */ f32 drag;
+    /* 0xDC */ f32 bounce;
+    /* 0xE0 */ f32 floorY;
+} WallBallData;
+
+extern s16 lbl_3_data_18BB0[]; // [level * 2]: coin lifetime in frames
+extern u8 lbl_3_common_bss_34C58[]; // TODO type: sound state (0x30: coin sound cooldown)
+extern u8 lbl_3_data_88DC;
+
+static inline f32 coinDistToFielder(WallBallMG* mg, s32 i, s32 slot) {
+    u8* f = g_Fielders + mg->fielderIndex[slot] * 0x268;
+    f32 dx = mg->coinPos[i].x - *(f32*)(f + 0x0);
+    f32 dz = mg->coinPos[i].z - *(f32*)(f + 0x8);
+    f32 sx = dx * dx;
+    f32 sz = dz * dz;
+    return dolsqrtf2(sx + sz);
 }
+
+// NONMATCHING 82%: original reaches 18AC8/18BB0/18C48 via the pooled base lbl_3_data_188E8 and re-materialises g_Minigame bases (lbz/extsb/add vs our lbzx)
+// .text:0x000D9EA0 size:0x7A0 mapped:0x80718F34
+#if NONMATCHING
+void fn_3_D9EA0(void) {
+    WallBallMG* mg = (WallBallMG*)g_Minigame;
+    WallBallData* wb = (WallBallData*)lbl_3_data_18AC8;
+    s32 i;
+
+    if (mg->coinsLeft == 0) {
+        return;
+    }
+    if (mg->coinFrames < 0x7FFE) {
+        mg->coinFrames++;
+    } else {
+        mg->coinFrames = 0x7FFF;
+    }
+    for (i = 0; i < 100; i++) {
+        if (mg->coinVisible[i] != 0) {
+            if (mg->coinFrames > lbl_3_data_18BB0[mg->level * 2]) {
+                mg->coinVisible[i] = 0;
+            } else {
+                mg->coinVel[i].y -= wb->gravity;
+                mg->coinVel[i].x *= wb->drag;
+                mg->coinVel[i].y *= wb->drag;
+                mg->coinVel[i].z *= wb->drag;
+                mg->coinPos[i].x += mg->coinVel[i].x;
+                mg->coinPos[i].y += mg->coinVel[i].y;
+                mg->coinPos[i].z += mg->coinVel[i].z;
+                if (mg->coinPos[i].y <= wb->floorY) {
+                    mg->coinPos[i].y = wb->floorY;
+                    mg->coinVel[i].y = -mg->coinVel[i].y;
+                    mg->coinVel[i].x *= wb->bounce;
+                    mg->coinVel[i].y *= wb->bounce;
+                    mg->coinVel[i].z *= wb->bounce;
+                }
+            }
+        }
+    }
+    for (i = 0; i < 100; i++) {
+        if (mg->coinVisible[i] != 0) {
+            f32 d0;
+            f32 d1 = 999.9f;
+            f32 d2 = 999.9f;
+            s8 who;
+
+            d0 = coinDistToFielder(mg, i, mg->fielderSlot[0]);
+            if (mg->fielderSlot[1] >= 0) {
+                d1 = coinDistToFielder(mg, i, mg->fielderSlot[1]);
+            }
+            if (mg->fielderSlot[2] >= 0) {
+                d2 = coinDistToFielder(mg, i, mg->fielderSlot[2]);
+            }
+            if (d0 < d2 && d0 < d1) {
+                d1 = d0;
+                who = mg->fielderSlot[0];
+            } else if (d1 < d2) {
+                who = mg->fielderSlot[1];
+            } else {
+                d1 = d2;
+                who = mg->fielderSlot[2];
+            }
+            if (d1 < wb->catchRadius[g_Fielders[mg->fielderIndex[who] * 0x268 + 0x1C9]]) {
+                mg->coinVisible[i] = 0;
+                mg->points[who] += *(s16*)(lbl_3_data_18C48 + 0x10) * mg->multiplier;
+                if (--mg->coinsLeft == 0 && mg->turnOverStatus == 0) {
+                    mg->turnOverStatus = 1;
+                }
+                if (lbl_3_common_bss_34C58[0x30] == 0) {
+                    playCrowdSound(0xC);
+                    lbl_3_common_bss_34C58[0x30] = lbl_3_data_88DC;
+                }
+            }
+        }
+    }
+    if (mg->coinFrames > lbl_3_data_18BB0[mg->level * 2]) {
+        if (mg->turnOverStatus == 0) {
+            mg->turnOverStatus = 1;
+        }
+        if (mg->coinsLeft != 0) {
+            mg->latestPoints[mg->rosterID] = mg->coinsLeft * mg->multiplier;
+            mg->out[mg->rosterID][0] = mg->points[mg->rosterID];
+            mg->out[mg->rosterID][1] = mg->latestPoints[mg->rosterID];
+            mg->coinsLeft = 0;
+        }
+    }
+}
+#endif
 
 // NONMATCHING 99%: only GPR order of loop invariants differs (orig range=r29, t=r27; ours swapped); decl orders tried
 // .text:0x000DA640 size:0x1F4 mapped:0x807196D4
