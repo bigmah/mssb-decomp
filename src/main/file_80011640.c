@@ -920,7 +920,7 @@ void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(C
     if (j != 0xFFFF) {
         fn_800B2B54(actor->model, j, 0xD);
     }
-    fn_800BD548(slot, 4, lbl_8036E548._0AC[0], lbl_8036E548._0AC[1], lbl_8036E548._0AC[2], lbl_8036E548._0AC[3]);
+    fn_800BD548(slot, 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
     CTRLSetTranslation(&slot->ctrl, 0.0f, 0.0f, 0.0f);
     CTRLSetRotation(&slot->ctrl, 0.0f, 0.0f, 0.0f);
     slot->_54 = 0.5f;
