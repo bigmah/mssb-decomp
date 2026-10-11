@@ -22,3 +22,4 @@ Call arguments, prototypes, sign/zero extension, tail calls, varargs. One patter
 - **String args to `OSPanic`:** use `extern char lbl_3_rodata_XXXX[]` per string symbol (names in the asm reloc) instead of literals, or the reloc names differ (`fn_3_90064`).
 - **`*(p += OFF)`** gives a load with an offset followed by `addi` on the pointer (`fn_3_49EA8`). Re-deriving `g_Fielders` per access via a padded `typedef struct { u8 b[0x268]; } FldT;` array also matched.
 - **`addi r0, idx, K; lbzx` from a pointer-in-global:** `u8* menu = g[0]; u8* entry = menu + idx * 0x34; entry[K]` (separate base and entry pointers); `g[0][idx*0x34+K]` folds K into the displacement (fn_2_4668C).
+- **Extra `extsh r3,r3` between an s16-returning call and an s16-param call (fn_2_607DC):** the result went through an `s32` local first (`s32 total = fn_8006C268(...); fn_8006C100(total)`); no prototype change needed.
