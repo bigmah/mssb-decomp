@@ -108,6 +108,9 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_19C4;
+extern const f32 lbl_3_rodata_19C8;
+extern u8 lbl_3_data_4710[2]; // AI reaction delay range
 extern s16 lbl_3_data_4638[2]; // chemistry thresholds (good, bad)
 extern u8 lbl_3_data_4908[2];  // bad-chemistry miss chance range
 extern void fn_3_161588(int, s16);
@@ -179,9 +182,247 @@ static inline s32 ballFielderFramesTo(f32 x, f32 z) {
 #pragma dont_inline on
 
 // .text:0x000A009C size:0x1C68 mapped:0x806DF130
+// AI fielder fi holding the ball: decide where to throw (g_FieldingLogic._0C4) or which
+// base to run to (_0CC). The per-situation predicates (fn_3_A1D04 .. fn_3_A3C00, fn_3_AB554)
+// are inlined into this function in the original.
+// NONMATCHING 38%: the original inlines the situation predicates (fn_3_A1D04, fn_3_A1DA0, fn_3_A1F3C, fn_3_A295C, fn_3_A2B6C, fn_3_A2C9C, fn_3_A2DDC, fn_3_A2FD8, fn_3_A31E8, fn_3_A32B8, fn_3_A37BC, fn_3_A384C, fn_3_A3B30, fn_3_A3C00, fn_3_AB554); here they are called. Decision order follows the asm
+#if NONMATCHING
 void fn_3_A009C(s32 fi) {
-    return;
+    s32 lockout;
+    RepFielder* f;
+    s32 limit;
+    s32 i;
+    s32 lead;
+    s32 b;
+    InMemRunnerType* r;
+    s16 target;
+    s16 cover;
+
+    lockout = 0;
+    f = &g_Fielders[fi];
+    if (g_FieldingLogic._130 != 0) {
+        if (g_RunningLogic._10 == 0) {
+            if (g_Ball.ballZoneAwayFromHome < 2) {
+                return;
+            }
+            g_FieldingLogic._0C4 = 6;
+        }
+    } else {
+        limit = lbl_3_data_4710[0] + (s32)((f32)(lbl_3_data_4710[1] - lbl_3_data_4710[0]) *
+                                          g_AiLogic.aIDifficultyMultiplierArray[g_GameLogic.awayTeamBattingInd_battingTeam]);
+        if (g_Ball.numberOfThrowsDuringPlay <= 1 && g_Ball.timeSinceBallPickedUp < limit &&
+            g_Ball.numberOfThrowsDuringPlay <= 1 &&
+            (g_FieldingLogic._107 != 2 || fi != 1 || g_Ball.framesSinceHit >= 200)) {
+            // AI reaction delay
+            g_FieldingLogic._0C4 = -1;
+            g_FieldingLogic._0CC = -1;
+            return;
+        }
+        if (g_FieldingLogic._116 != 0) {
+            return;
+        }
+        if (g_Strikes.outs >= 3 || g_Ball.AtBat_ContactResult == -1 || g_Ball.deadBallReason != 0) {
+            g_FieldingLogic._0C4 = -1;
+            g_FieldingLogic._0CC = -1;
+            return;
+        }
+        if (g_RunningLogic._10 == 0 && g_Ball.timeSinceBallPickedUp < 0x3C) {
+            g_FieldingLogic._0C4 = -1;
+            g_FieldingLogic._0CC = -1;
+            return;
+        }
+    }
+
+    // gather the situation
+    lbl_3_bss_1820 = 0;
+    lbl_3_bss_1804 = 0;
+    lbl_3_bss_1818 = 0;
+    for (i = 0; i < 4; i++) {
+        if (g_Runners[i].forceOutCd == 1) {
+            lbl_3_bss_1804 |= 1 << (i * 4);
+        }
+        if (g_Runners[i].runnerOnFieldOrOutOrScored == 1) {
+            lbl_3_bss_1820++;
+        }
+    }
+    if (g_FieldingLogic._10D != 0) {
+        f->_192 = 0x2D;
+    }
+    fn_3_A3B30();
+    fn_3_A4A10();
+    fn_3_A3C00();
+    fn_3_A384C();
+    lead = fn_3_A1D04();
+
+    // decide
+    if ((g_Ball.ballZoneAwayFromHome == 4 || (g_Ball.ballZoneAwayFromHome == 3 && fi >= 6)) &&
+        g_FieldingLogic._0BE >= 0 && g_FieldingLogic._0BE != fi) {
+        // deep ball with a cutoff man available
+        if (fn_3_A222C() || fn_3_A3374()) {
+            goto decided;
+        }
+        if (!fn_3_A1DA0()) {
+            g_FieldingLogic._0C4 = 6;
+            g_FieldingLogic._0CC = -1;
+            g_FieldingLogic._0DE = -1;
+        }
+        goto decided;
+    }
+    if (g_Strikes.outs == 2) {
+        if (g_Runners[1].forceOutCd == 1 && lbl_3_bss_1858[1] <= 2) {
+            if (f->_1C4 <= 1 && lbl_3_bss_1858[1] <= 0) {
+                lockout = 1;
+            }
+            if (fn_3_A37BC() && fn_3_A46A0(lbl_3_bss_1808[1])) {
+                goto decided;
+            }
+        }
+        if ((lbl_3_bss_1824 & 1) && lbl_3_bss_1858[0] <= 6) {
+            if (lbl_3_bss_1858[0] >= 4) {
+                for (b = 1; b <= 3; b++) {
+                    r = &g_Runners[b];
+                    if (r->runnerOnFieldOrOutOrScored == 1 && (r->runningDirectionCode == 1 || r->runningDirectionCode == 2) &&
+                        b == r->currentBase && f->distToBase[r->nextBase] < lbl_3_rodata_199C &&
+                        lbl_3_bss_1858[lbl_3_bss_1808[b]] <= 3 && r->distanceFromBall < lbl_3_rodata_1994 &&
+                        fn_3_A46A0(lbl_3_bss_1808[b])) {
+                        goto decided;
+                    }
+                }
+            }
+            if (f->_1C4 <= 1 && lbl_3_bss_1858[0] <= 0) {
+                lockout = 1;
+            }
+            fn_3_A46A0(lbl_3_bss_1808[0]);
+            goto decided;
+        }
+    }
+    if (lbl_3_bss_1824 == 0x1) {
+        if (f->_1C4 <= 1 && lbl_3_bss_1858[0] <= 0) {
+            lockout = 1;
+        }
+        if (lbl_3_bss_1858[0] <= 6 && fn_3_A46A0(lbl_3_bss_1808[0])) {
+            goto decided;
+        }
+    }
+    if (lbl_3_bss_181C == 3 && fn_3_A32B8()) {
+        goto decided;
+    }
+    if (lbl_3_bss_181C == 2 && fn_3_A31E8()) {
+        goto decided;
+    }
+    if (lbl_3_bss_1824 == 0x1000 && lbl_3_bss_1858[lbl_3_bss_1808[3]] <= 6 && fn_3_A46A0(lbl_3_bss_1808[3])) {
+        goto decided;
+    }
+    if (lbl_3_bss_1824 == 0x100 && lbl_3_bss_1858[lbl_3_bss_1808[2]] <= 6 && fn_3_A46A0(lbl_3_bss_1808[2])) {
+        goto decided;
+    }
+    if (lbl_3_bss_1824 == 0x10 && lbl_3_bss_1858[lbl_3_bss_1808[1]] <= 5 &&
+        g_Runners[lbl_3_bss_1808[1]].overrunBaseStage == 0 && fn_3_A46A0(lbl_3_bss_1808[1])) {
+        goto decided;
+    }
+    if (lbl_3_bss_1824 == 0x1111 && fn_3_A2FD8()) {
+        goto decided;
+    }
+    if (lbl_3_bss_1824 == 0x1011 && fn_3_A2DDC()) {
+        goto decided;
+    }
+    if ((lbl_3_bss_1824 == 0x111 || lbl_3_bss_1824 == 0x11) && fn_3_A2C9C()) {
+        goto decided;
+    }
+    if ((lbl_3_bss_1824 == 0x1001 || lbl_3_bss_1824 == 0x1101) && fn_3_A2B6C()) {
+        goto decided;
+    }
+    if (lbl_3_bss_1824 == 0x101 && fn_3_A295C()) {
+        goto decided;
+    }
+    if ((lbl_3_bss_1824 & 1) && g_Ball.ballZoneAwayFromHome <= 1) {
+        if ((s8)g_Ball.ballZoneWhenCaught <= 1) {
+            if (lbl_3_bss_1858[0] <= 6 && fn_3_A46A0(lbl_3_bss_1808[0])) {
+                goto decided;
+            }
+        } else if (lbl_3_bss_1858[0] <= 4 && fn_3_A46A0(lbl_3_bss_1808[0])) {
+            goto decided;
+        }
+    }
+    if (fn_3_A2404() || fn_3_A25C4()) {
+        goto decided;
+    }
+    if ((lbl_3_bss_1824 & 1) && lbl_3_bss_1858[0] <= 6 && fn_3_A46A0(lbl_3_bss_1808[0])) {
+        goto decided;
+    }
+    if ((lbl_3_bss_1824 & 0x1000) && fn_3_A1F3C()) {
+        goto decided;
+    }
+    if (g_Ball.ballZoneAwayFromHome >= 2 && fn_3_A2048()) {
+        goto decided;
+    }
+    if (lead >= 0) {
+        fn_3_A46A0(lead);
+        goto decided;
+    }
+    // otherwise go after the lead runner caught off base
+    for (i = 3; i >= 0; i--) {
+        r = &g_Runners[i];
+        if (r->runnerOnFieldOrOutOrScored == 1 && r->baseStandingOn < 0 && r->runningDirectionCode == 2) {
+            fn_3_A46A0(i);
+            break;
+        }
+    }
+
+decided:
+    target = g_FieldingLogic._0C4;
+    if (target >= 0 && target <= 3) {
+        cover = g_FieldingLogic._0D0[target];
+        if (cover >= 0 && (g_Fielders[cover]._20F != 0 || g_Fielders[cover]._210 != 0 || g_Fielders[cover]._211 != 0)) {
+            // the covering fielder is busy: run there instead
+            g_FieldingLogic._0C4 = -1;
+            g_FieldingLogic._0CC = target;
+        }
+    }
+    if (g_RunningLogic._12 > 1 && g_Strikes.storedOuts <= 1 && (lbl_3_bss_1824 & 1) && g_Ball.ballZoneAwayFromHome <= 1 &&
+        (s8)g_Ball.ballZoneWhenCaught <= 1 && g_FieldingLogic._0C4 == 1 && lbl_3_bss_1858[0] <= 2) {
+        if (g_Runners[2].runnerOnFieldOrOutOrScored == 1 &&
+            (g_Runners[2].runningDirectionCode == 1 || g_Runners[2].runningDirectionCode == 2) &&
+            g_Runners[2].fractionalBasesRan <= lbl_3_rodata_19C4 && g_Runners[2].baseStandingOn < 0) {
+            g_FieldingLogic._0C4 = -1;
+        }
+        if (g_Runners[3].runnerOnFieldOrOutOrScored == 1 &&
+            (g_Runners[3].runningDirectionCode == 1 || g_Runners[3].runningDirectionCode == 2) &&
+            g_Runners[3].fractionalBasesRan <= lbl_3_rodata_19C8 && g_Runners[3].baseStandingOn < 0) {
+            g_FieldingLogic._0C4 = -1;
+        }
+    }
+    if (lockout && g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3 && f->_1E0 == 1) {
+        g_FieldingLogic._0C4 = -1;
+    }
+    if (g_FieldingLogic._0C4 == 6) {
+        if (g_FieldingLogic._0BE < 0) {
+            g_FieldingLogic._0C4 = -1;
+        } else if (g_FieldingLogic._0BE == fi) {
+            g_FieldingLogic._0C4 = -1;
+        } else {
+            if (lbl_3_rodata_1994 + g_Fielders[g_FieldingLogic._0BE]._0B8 > f->_0B8) {
+                g_FieldingLogic._0C4 = -1;
+            }
+            if (f->distToFielder[g_FieldingLogic._0BE] < lbl_3_rodata_1994) {
+                g_FieldingLogic._0C4 = -1;
+            }
+        }
+    }
+    if (f->_1ED == 0) {
+        if (g_FieldingLogic._0CC >= 0) {
+            if (g_Ball.numberOfThrowsDuringPlay == 1 && g_Ball.timeSinceBallPickedUp < 0x2D && g_FieldingLogic._114 != 0) {
+                g_FieldingLogic._0CC = -1;
+            } else {
+                fn_3_A3CC0();
+            }
+        }
+    } else {
+        g_FieldingLogic._0CC = -1;
+    }
+    fn_3_AB554();
 }
+#endif
 
 // .text:0x000A1D04 size:0x9C mapped:0x806E0D98
 s32 fn_3_A1D04(void) {
@@ -518,12 +759,14 @@ int fn_3_A295C(void) {
         t = 0;
     }
     if (t) {
-        if (lbl_3_bss_1858[lbl_3_bss_1808[2]] <= 4 && g_Strikes.outs == g_Strikes.storedOuts && r->percentTowardsNextBase > lbl_3_rodata_19A0 && fn_3_A46A0(lbl_3_bss_1808[2])) {
-            return 1;
+        if (lbl_3_bss_1858[lbl_3_bss_1808[2]] <= 4 && g_Strikes.outs == g_Strikes.storedOuts) {
+            if (r->percentTowardsNextBase > lbl_3_rodata_19A0 && fn_3_A46A0(lbl_3_bss_1808[2])) {
+                return 1;
+            }
+            if ((lbl_3_bss_1800 & 0x10) && r->percentTowardsNextBase > lbl_3_rodata_19BC && fn_3_A46A0(lbl_3_bss_1808[2])) {
+                return 1;
+            }
         }
-    }
-    if ((lbl_3_bss_1800 & 0x10) && r->percentTowardsNextBase > lbl_3_rodata_19BC && fn_3_A46A0(lbl_3_bss_1808[2])) {
-        return 1;
     }
     return 0;
 }

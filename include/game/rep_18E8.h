@@ -53,7 +53,8 @@ typedef struct RepFielder {
     /*0x1AC*/ s16 _1AC;
     /*0x1AE*/ u8 _1AE[0x1C2 - 0x1AE];
     /*0x1C2*/ s16 _1C2; // angle
-    /*0x1C4*/ u8 _1C4[0x1C6 - 0x1C4];
+    /*0x1C4*/ u8 _1C4; // throw skill?
+    /*0x1C5*/ u8 _1C5;
     /*0x1C6*/ u8 _1C6;
     /*0x1C7*/ u8 _1C7[0x1C9 - 0x1C7];
     /*0x1C9*/ u8 _1C9; // lbl_3_data_4780 index
@@ -113,7 +114,11 @@ typedef struct RepRunningLogic {
     /*0x00*/ s16 _00; // one nibble per base
     /*0x02*/ s16 _02;
     /*0x04*/ s16 _04; // one nibble per base
-    /*0x06*/ u8 _06[0x20 - 0x6];
+    /*0x06*/ u8 _06[0x10 - 0x6];
+    /*0x10*/ u8 _10;
+    /*0x11*/ u8 _11;
+    /*0x12*/ u8 _12;
+    /*0x13*/ u8 _13[0x20 - 0x13];
 } RepRunningLogic;
 
 extern RepRunningLogic g_RunningLogic;
