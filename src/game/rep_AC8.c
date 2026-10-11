@@ -1685,9 +1685,182 @@ void fn_3_34450(void) {
 #endif
 
 // .text:0x00034A40 size:0x12E8 mapped:0x80673AD4
-void fn_3_34A40(int i) {
-    return;
+extern f32 lbl_3_rodata_B60;
+extern f32 lbl_3_rodata_B48;
+extern f32 lbl_3_rodata_BB0;
+extern f32 lbl_3_rodata_BDC;
+#pragma dont_inline off
+/* point fielder f at (x, z): sets target, heading and remaining distance */
+static inline void SetRunTargetInline(u8* f, f32 x, f32 z) {
+    f32 dx;
+    f32 dz;
+    f32 d;
+    *(f32*)(f + 0x14) = x;
+    *(f32*)(f + 0x1C) = z;
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    if (lbl_3_rodata_B20 == dx && lbl_3_rodata_B20 == dz) {
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+    } else {
+        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
 }
+#pragma dont_inline on
+#pragma dont_inline off
+/* frames for fielder f to reach (x, z) */
+static inline s32 EtaToInline(u8* f, f32 x, f32 z) {
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 sp;
+    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
+        return 1;
+    }
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    sp = *(f32*)(f + 0x58);
+    if (sp == lbl_3_rodata_B20) {
+        sp = lbl_3_rodata_B60;
+    }
+    return (s32)((u32)f[0x1D1] >> 1) + (s32)(d / sp);
+}
+#pragma dont_inline on
+extern f32 lbl_3_rodata_BE0;
+// NONMATCHING 96%: f-reg numbering throughout; three distance sums unfused in the original; calls fn_3_526DC through a cast until its prototype gains the index arg
+#if NONMATCHING
+void fn_3_34A40(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    s32 k;
+    s32 t;
+    if (*(s16*)(g_Ball + 0x1B78) >= 0 && *(s16*)(g_Ball + 0x1B78) != i) {
+        if (*(f32*)(f + 0x50) == lbl_3_rodata_B20) {
+            *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+            *(f32*)(f + 0x14) = *(f32*)f;
+            *(f32*)(f + 0x18) = *(f32*)(f + 4);
+            *(f32*)(f + 0x1C) = *(f32*)(f + 8);
+            *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+            *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+        }
+    } else {
+        f[0x1D6] = 0;
+        f[0x1EB] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        if (*(s16*)(g_Ball + 0x1B7E) >= 0 && !(*(s16*)(g_Ball + 0x1B7A) == 0 && g_Ball[0x1BC3] == 2)) {
+            goto track;
+        }
+        if (*(s16*)(g_Ball + 0x1B7E) >= 0) {
+            /* ground ball fielded on the infield: go to / cut off the ball */
+            dx = *(f32*)(g_Ball + 0x19D8) - *(f32*)(g_Ball + 0x348);
+            dz = *(f32*)(g_Ball + 0x19DC) - *(f32*)(g_Ball + 0x34C);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            if (*(f32*)(g_Ball + 0x1A14) > lbl_3_rodata_B20 || d > lbl_3_rodata_B9C) {
+                if (*(f32*)(g_Ball + 0x350) < lbl_3_rodata_B78) {
+                    f32 r = *(f32*)(f + 0x70);
+                    if (r < lbl_3_rodata_B70) {
+                        SetRunTargetInline(f, *(f32*)f, *(f32*)(f + 8));
+                    } else {
+                        SetRunTargetInline(f, lbl_3_rodata_B70 * (*(f32*)f / r), lbl_3_rodata_B70 * (*(f32*)(f + 8) / r));
+                    }
+                } else {
+                    SetRunTargetInline(f,
+                                       lbl_3_rodata_B70 * (*(f32*)(g_Ball + 0x348) / *(f32*)(g_Ball + 0x350)) +
+                                           *(f32*)(g_Ball + 0x348),
+                                       lbl_3_rodata_B70 * (*(f32*)(g_Ball + 0x34C) / *(f32*)(g_Ball + 0x350)) +
+                                           *(f32*)(g_Ball + 0x34C));
+                }
+            } else {
+                SetRunTargetInline(f, *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C));
+            }
+            if (*(f32*)(f + 0x68) < lbl_3_rodata_BA0) {
+                f[0x1D6] = 8;
+            }
+        } else if (*(s16*)(g_Ball + 0x1B7A) == 0) {
+            /* ball on the ground, nobody assigned: chase the landing point or a later trajectory point */
+            if (*(s16*)(g_Ball + 0x1B60) - EtaToInline(f, *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C)) > 0xA) {
+                SetRunTargetInline(f, *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C));
+            } else {
+                for (k = 10; k <= 60; k += 10) {
+                    if (k == 60) {
+                        t = *(s16*)(g_Ball + 0x1B60) + k;
+                        SetRunTargetInline(f, *(f32*)(g_Ball + t * 16 + 0x354), *(f32*)(g_Ball + t * 16 + 0x35C));
+                        break;
+                    }
+                    t = *(s16*)(g_Ball + 0x1B60) + k;
+                    if (t - EtaToInline(f, *(f32*)(g_Ball + t * 16 + 0x354), *(f32*)(g_Ball + t * 16 + 0x35C)) > 5) {
+                        SetRunTargetInline(f, *(f32*)(g_Ball + t * 16 + 0x354), *(f32*)(g_Ball + t * 16 + 0x35C));
+                        break;
+                    }
+                }
+            }
+            if (i <= 5) {
+                if (*(f32*)(f + 0x80) < lbl_3_rodata_BA0) {
+                    f[0x1D6] = 8;
+                }
+            } else if (*(s16*)(g_FieldingLogic + 0xB0) <= 5 &&
+                       *(f32*)(g_Ball + 0x1A00) <
+                           *(f32*)(g_Fielders + *(s16*)(g_FieldingLogic + 0xB0) * 0x268 + 0x70)) {
+                if (*(f32*)(f + 0x80) < lbl_3_rodata_B64) {
+                    f[0x1D6] = 8;
+                }
+            } else if (*(f32*)(f + 0x80) < lbl_3_rodata_BA0) {
+                f[0x1D6] = 8;
+            }
+        } else {
+            f32 near;
+            f32 reach;
+            f32 lead;
+            f32 tx;
+            f32 tz;
+        track:
+            /* ball in flight: lead the ball along its velocity */
+            near = *(f32*)(f + 0x7C);
+            reach = *(f32*)(f + 0x74);
+            lead = lbl_3_rodata_B60 + ((near - lbl_3_rodata_B70) / lbl_3_rodata_BDC + (*(f32*)(g_Ball + 0x1A14) - lbl_3_rodata_BE0));
+            tx = lead * (reach * *(f32*)(g_Ball + 0x1A18)) + *(f32*)g_Ball;
+            tz = lead * (reach * *(f32*)(g_Ball + 0x1A1C)) + *(f32*)(g_Ball + 8);
+            if (i >= 6 && *(f32*)(f + 0x70) < lbl_3_rodata_BB0) {
+                tx = *(f32*)f;
+                tz = *(f32*)(f + 8);
+            }
+            SetRunTargetInline(f, tx, tz);
+            if (*(f32*)(f + 0x74) < lbl_3_rodata_B9C && near < lbl_3_rodata_B64) {
+                if (lbl_3_bss_170 >= 0) {
+                    s16 a = radToShortAngle(atan2(*(f32*)(g_Ball + 8) - *(f32*)(f + 8), *(f32*)g_Ball - *(f32*)f));
+                    if (__abs(lbl_3_bss_170 - a) > 0x80) {
+                        f[0x1D6] = 8;
+                    }
+                } else {
+                    f[0x1D6] = 8;
+                }
+            }
+        }
+    }
+    if (*(f32*)(f + 0x50) < lbl_3_rodata_B48 && f[0x1D6] == 8) {
+        *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x14) = *(f32*)f;
+        *(f32*)(f + 0x1C) = *(f32*)(f + 8);
+        *(s16*)(f + 0x1A0) = 0;
+        f[0x1D6] = 0;
+    }
+    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
+    ((void (*)(int))fn_3_526DC)(i);
+    if (*(f32*)(f + 0x50) != lbl_3_rodata_B20) {
+        *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x50);
+    }
+}
+#endif
 
 // .text:0x00035D28 size:0xF4 mapped:0x80674DBC
 void fn_3_35D28(int i) {
@@ -4498,28 +4671,6 @@ int fn_3_3D7D4(int i) {
 }
 
 // .text:0x0003DB78 size:0x7D4 mapped:0x8067CC0C
-#pragma dont_inline off
-/* point fielder f at (x, z): sets target, heading and remaining distance */
-static inline void SetRunTargetInline(u8* f, f32 x, f32 z) {
-    f32 dx;
-    f32 dz;
-    f32 d;
-    *(f32*)(f + 0x14) = x;
-    *(f32*)(f + 0x1C) = z;
-    dx = x - *(f32*)f;
-    dz = z - *(f32*)(f + 8);
-    if (lbl_3_rodata_B20 == dx && lbl_3_rodata_B20 == dz) {
-        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
-        *(f32*)(f + 0x68) = lbl_3_rodata_B20;
-    } else {
-        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
-        d = dx * dx + dz * dz;
-        SQRT_L(d);
-        *(f32*)(f + 0x68) = d;
-    }
-    f[0x1D9] = 1;
-}
-#pragma dont_inline on
 extern void fn_3_A7C88(void);
 extern u8 lbl_3_data_4484[];
 extern u8 lbl_3_data_44B4[];
