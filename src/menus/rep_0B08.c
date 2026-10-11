@@ -75,10 +75,21 @@ typedef struct {
     u8 padding[0xB0];
 } MenuLocationRecord;
 
+// 10-byte per-location records at menu + 0x40F0.
+typedef struct {
+    u8 _00[2];
+    u8 kind;
+    u8 _03;
+    u8 occupied;
+    u8 _05[5];
+} MenuSlot;
+
 typedef struct {
     u8 _00[0x1610];
     MenuEntry entries[14];
     MenuLocationRecord locations[4];
+    u8 _24D0[0x40F0 - 0x24D0];
+    MenuSlot slots[57];
 } MenuEntries;
 
 extern MenuEntries* lbl_2_bss_1A8248[];
@@ -1163,7 +1174,7 @@ s32 fn_2_68B54(s32 first, s32 second) {
     return 0;
 }
 
-extern s16 lbl_2_data_3D30[];
+extern s16 lbl_2_data_3D30[][4];
 
 // fn_2_6CCB8
 void fn_2_6CCB8(MenuEntry* owner) {
@@ -2737,3 +2748,77 @@ void fn_2_69E1C(s32 index) {
         entry->flagBC = 1;
     }
 }
+
+// .text:0x6F104 size:0x5F0
+// NONMATCHING 99%: r5/r8 swapped for the candidate pointer and the locationIndex offset in the loop
+#if NONMATCHING
+void fn_2_6F104(MenuEntry* owner) {
+    s16 candidates[4];
+    s16* out;
+    s32 i;
+    s32 count;
+    s32 id;
+    s32 other;
+    s32 mode;
+    s32 who;
+    s16 location;
+    MenuEntries* menu;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    count = 0;
+    candidates[3] = 0;
+    candidates[2] = 0;
+    candidates[1] = 0;
+    candidates[0] = 0;
+    id = owner->objectId;
+    other = *(s32*)((u8*)lbl_2_bss_1A8248[0] + 0x1690);
+    fn_2_68F08(owner->objectId, 1);
+    out = candidates;
+    menu = lbl_2_bss_1A8248[0];
+    for (i = 0; i < 4; i++) {
+        location = lbl_2_data_3D30[menu->entries[id].locationIndex][i];
+        if (location != -1 && menu->slots[location].occupied == 0 &&
+            menu->slots[location].kind != 7 && menu->slots[location].kind != 8) {
+            *out++ = location;
+            count++;
+        }
+    }
+    lbl_2_bss_1A8248[0]->entries[id].targetLocation = candidates[(s16)(rand() % count)];
+    memcpy(&owner->target, &lbl_2_data_2EA4[lbl_2_bss_1A8248[0]->entries[id].targetLocation], sizeof(Vec));
+    pz = owner->target.z;
+    px = owner->target.x;
+    fn_2_6A450(id, px, pz);
+    owner->mode = 13;
+    fn_2_69E1C(id);
+    fn_2_68FBC(id, 0);
+    if (id >= 2 && id <= 6 && (mode = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DD), who = *(s8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DC), mode == 1) && who == id) {
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 2;
+        owner->flagCB = 0;
+        owner->state = 3;
+        return;
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1 && *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x44F3) == 0) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 3;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            owner->flagCB = 0;
+        } else {
+            owner->flagCB = -1;
+            owner->state = 1;
+        }
+    } else {
+        owner->flagCB = -1;
+        owner->state = 1;
+    }
+}
+#endif
