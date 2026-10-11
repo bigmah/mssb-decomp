@@ -219,4 +219,10 @@ void fn_2_C484(s32 owner, s16 id);
 
 void fn_2_11EA8(void);
 
+void fn_2_ABC0(u8 team);
+
+void fn_2_FCB4(u8 team);
+
+void fn_2_F200(u8 team);
+
 #endif

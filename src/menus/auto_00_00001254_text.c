@@ -11,6 +11,8 @@ extern u8 lbl_803CBD24[];
 extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
+extern void fn_800678CC(s32 team);
+extern void unsure_FillRosterPositions(u8 team);
 extern MenuCharEntry lbl_800E8558[54];
 extern void fn_2_2FC0(u8, s32, s32);
 
@@ -1283,3 +1285,57 @@ void fn_2_11EA8(void) {
         lbl_80354720[i * 4 + 0] = i;
     }
 }
+
+// NONMATCHING 88%: original keeps raw + two clrlwi copies of team (r27/r29/r30); we keep one
+#if NONMATCHING
+// fn_2_102C8, size:0x234
+void fn_2_102C8(u8 team) {
+    s32 i;
+    s32 empty = 0;
+    s32 other;
+    u8* flag;
+    for (i = 0; i < 9; i++) {
+        s32 v = (s8)(lbl_803C6724 + team * 9)[i + 2];
+        if (v == -1 || v == 0x36) {
+            empty++;
+        }
+    }
+    other = team ^ 1;
+    if (lbl_2_bss_F468[other + 0x41] != 0) {
+        flag = &lbl_8034E9A0[((s32*)lbl_2_bss_F410)[other + 8] + 0x4757];
+        if (*flag == 0) {
+            *flag = 1;
+            lbl_2_bss_F468[team + 0x3B] = 1;
+        }
+    }
+    if (empty != 0) {
+        do {
+            lbl_803CBD24[2] = randRange_FUN_80042bf0(0, 2);
+        } while (lbl_803CBD24[3] == lbl_803CBD24[2]);
+        fn_2_ABC0(team);
+        switch (lbl_803CBD24[2]) {
+        case 0:
+            fn_2_FCB4(team);
+            break;
+        case 1:
+            fn_2_FAA0(team);
+            break;
+        case 2:
+            fn_2_F200(team);
+            break;
+        }
+        fn_800678CC(team);
+        unsure_FillRosterPositions(team);
+        fn_800625A4(team, 0x16);
+        lbl_803CBD24[3] = lbl_803CBD24[2];
+        lbl_2_bss_F468[team + 0x37] = 1;
+    } else {
+        ((s32*)lbl_2_bss_F468)[team] = 9;
+        fn_800625A4(team, 0x11);
+    }
+    if (lbl_2_bss_F468[team + 0x3B] != 0) {
+        lbl_2_bss_F468[team + 0x3B] = 0;
+        lbl_8034E9A0[((s32*)lbl_2_bss_F410)[other + 8] + 0x4757] = 0;
+    }
+}
+#endif
