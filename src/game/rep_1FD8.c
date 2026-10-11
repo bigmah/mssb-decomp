@@ -588,12 +588,20 @@ void fn_3_C3A38(u8* obj) {
 }
 
 // .text:0x000C3C2C size:0x268 mapped:0x80702CC0
+// lbl_3_bss_9D80: this unit's state block (9D81/9D82/9DE0/9DE4/9F0C are views into it).
 typedef struct {
-    u8 pad0[0x67];
+    u8 pad0[2];
+    u8 f2; // 9D82: stop fn_3_C5DDC
+    u8 pad3[0x62 - 3];
+    u8 sprayStart; // 9DE2: first object fn_3_C5DDC watches
+    u8 sprayCount; // 9DE3
+    u8 pad64[0x67 - 0x64];
     u8 f67;
     Vec pos[8];
     u8 state[8];
     u8* fD0;
+    u8 padD4[0x18C - 0xD4];
+    void* tex; // 9F0C
 } C3C2CBss;
 extern C3C2CBss lbl_3_bss_9D80;
 #define C3C2C_SLOT(o, i) (((u8**)lbl_80371C30)[(*(u16*)((o) + 0x14) + (i)) * 2])
@@ -1267,7 +1275,7 @@ void fn_3_C597C(s32 idx) {
 }
 
 // .text:0x000C5CE0 size:0xFC mapped:0x80704D74
-u32 fn_3_C5CE0(u8* a) {
+u8 fn_3_C5CE0(u8* a) {
     Vec pos = lbl_3_rodata_2080;
     Vec d;
     u32 i;
@@ -1291,9 +1299,38 @@ u32 fn_3_C5CE0(u8* a) {
 }
 
 // .text:0x000C5DDC size:0x480 mapped:0x80704E70
+// Task: for each object of group lbl_3_bss_9DE0[2..] still in state 1, once a
+// runner comes near it (fn_3_C5CE0) bursts it into a particle spray.
+// NONMATCHING ~90%: inlines fn_3_C5CE0 and fn_3_C48D0 like the original, but fn_3_C48D0's volatile src reads (needed for its own match) stop the x/y/z loads being hoisted out of the loop, so 3 fewer saved FPRs
+#if NONMATCHING
 void fn_3_C5DDC(void) {
-    return;
+    C3C2CBss* g = &lbl_3_bss_9D80;
+    u32 i;
+    C597CEnt* e;
+    C4724Hdr* h;
+    Vec pos;
+    if (g->f2 != 0) {
+        g->f2 = 0;
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    for (i = 0; i < g->sprayCount; i++) {
+        e = (C597CEnt*)(*(u8**)&lbl_3_common_bss_350E4 + (g->sprayStart + i) * 0xE8);
+        if (e->fBD == 1 && fn_3_C5CE0((u8*)e)) {
+            h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(e->fA8 + 0x34));
+            if (h != NULL) {
+                pos = *(Vec*)&e->px;
+                fn_3_C48D0(h, &pos);
+                h->tex = g->tex;
+                h->f24 = 30;
+            }
+            e->fBD = 2;
+            e->b90_7 = 0;
+            e->py = lbl_3_rodata_2160[0];
+        }
+    }
 }
+#endif
 
 // .text:0x000C625C size:0x174 mapped:0x807052F0
 u32 fn_3_C625C(u8* a) {
