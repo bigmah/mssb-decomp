@@ -213,9 +213,42 @@ void characterSelectScreen(void) {
 }
 
 // .text:0x80066EAC size:0x1F4
-void fn_80066EAC(void) {
-    return;
+// NONMATCHING 95%: saved-register assignment of the roster pointers differs
+#if NONMATCHING
+void fn_80066EAC(u8 team) {
+    // The sort pass compares against buf[9] as well (one past the 9 ids); the
+    // original buffer is 9 bytes there, so that byte is uninitialised.
+    s8 buf[10];
+    s32 i;
+    s32 j;
+    s32 k;
+    s16 id;
+    u8 chem;
+    s8 t;
+
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            id = inMemRoster[team][j].stats.CharID;
+            chem = ((u8*)&inMemRoster[team][i])[id + 0x3B]; // chemistry[id]
+            if (chem < 90 || chem == 100) {
+                buf[j] = -1;
+            } else {
+                buf[j] = id;
+            }
+        }
+        for (j = 0; j < 9; j++) {
+            for (k = 0; k < 10; k++) {
+                if (buf[j] > buf[k]) {
+                    t = buf[j];
+                    buf[j] = buf[k];
+                    buf[k] = t;
+                }
+            }
+        }
+        memcpy(lbl_8034E9A0.chemPartners[team][i], buf, 9);
+    }
 }
+#endif
 
 // .text:0x800670A0 size:0x15C
 void fn_800670A0(u8 team) {
