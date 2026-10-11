@@ -2258,16 +2258,18 @@ void fn_2_7630C(u8* o, u8 index) {
 #define F468_S32(off) (*(s32*)(lbl_2_bss_F468 + (off)))
 
 // fn_2_7F2BC, size:0x458
-// NONMATCHING 95%: register allocation only
+// NONMATCHING 99%: one add has its operands swapped (add r4,r3,r31 vs r31,r3) when forming &F468[index*4] for the lwzu
 #if NONMATCHING
 void fn_2_7F2BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
-        s32 cur = F468_S32(8 + index * 4);
-        s32 sel = F468_S32(index * 4);
-        s32 fs;
         s32 fc;
+        s32 sel;
+        s32 cur;
         s32 j;
+        s32 fs;
+        cur = F468_S32(8 + index * 4);
+        sel = F468_S32(index * 4);
         for (j = 0; j < 9; j++) {
             s8 t = lbl_803C6724[index * 9 + j + 0x14];
             if (t == sel) {
