@@ -118,5 +118,6 @@ void fn_2_38F48(void);
 void fn_2_391B4(void);
 void fn_2_397AC(void);
 void fn_2_37630(void);
+void fn_2_35A14(u8* a, u8* b);
 
 #endif

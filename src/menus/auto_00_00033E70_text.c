@@ -1999,6 +1999,83 @@ void fn_2_353FC(u8* a, u8* b) {
     }
 }
 
+// fn_2_35A14, size:0x3A0
+void fn_2_35A14(u8* a, u8* b) {
+    s16 r = fn_2_53BC8(b);
+    if (r != -1) {
+        *(s16*)(b + 4) = r;
+    }
+    switch (*(s16*)(b + 4)) {
+    case 0: {
+        u8* p = FN353FC_ENT(a, b);
+        *(u32*)(p + 0x54) &= ~2;
+        *(s16*)(b + 4) = 0x26;
+        break;
+    }
+    case 2:
+        fn_800363D8(a, *(s16*)(b + 0xE), 1, 0xCF, *(s16*)(b + 0x10));
+        *(u32*)(FN353FC_ENT(a, b) + 0x54) |= 2;
+        *(u32*)(FN353FC_ENT(a, b) + 0x5C) = 0;
+        FN353FC_ENT(a, b)[0x68] = 1;
+        *(s16*)(b + 4) = 3;
+        break;
+    case 3: {
+        u8* p = FN353FC_ENT(a, b);
+        if ((*(u32*)(p + 0x5C) >> 16) >= 3) {
+            *(u32*)(p + 0x5C) = 0x30000;
+            FN353FC_ENT(a, b)[0x68] = 0;
+            *(s16*)(b + 4) = 0x25;
+        }
+        break;
+    }
+    case 0x25:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) == *(s16*)(b + 0xA)) {
+            u8* p = FN353FC_ENT(a, b);
+            if ((*(u32*)(p + 0x5C) >> 16) >= 8) {
+                *(u32*)(p + 0x5C) = 0x80000;
+                FN353FC_ENT(a, b)[0x68] = 0;
+            } else {
+                p[0x68] = 1;
+            }
+        } else {
+            u8* p = FN353FC_ENT(a, b);
+            if ((*(u32*)(p + 0x5C) >> 16) <= 3) {
+                *(u32*)(p + 0x5C) = 0x30000;
+                FN353FC_ENT(a, b)[0x68] = 0;
+            } else {
+                p[0x68] = 4;
+            }
+        }
+        break;
+    case 5:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) == *(s16*)(b + 0xA)) {
+            FN353FC_ENT(a, b)[0x68] = 1;
+        } else {
+            FN353FC_ENT(a, b)[0x68] = 4;
+        }
+        *(s16*)(b + 4) = 6;
+        break;
+    case 6:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) == *(s16*)(b + 0xA)) {
+            u8* p = FN353FC_ENT(a, b);
+            if ((*(u32*)(p + 0x5C) >> 16) >= 0xB) {
+                p[0x68] = 0;
+                *(s16*)(b + 4) = 7;
+            }
+        } else {
+            u8* p = FN353FC_ENT(a, b);
+            if ((*(u32*)(p + 0x5C) >> 16) == 0) {
+                p[0x68] = 0;
+                *(s16*)(b + 4) = 7;
+            }
+        }
+        break;
+    case 7:
+        *(u32*)(FN353FC_ENT(a, b) + 0x54) &= ~2;
+        break;
+    }
+}
+
 // fn_2_38F48, size:0x26C
 void fn_2_38F48(void) {
     u8* p = lbl_803CC1B8;
