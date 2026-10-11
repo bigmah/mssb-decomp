@@ -635,8 +635,6 @@ void fn_3_12DB80(void) {
 
 // fn_3_129C88, size:0x2C0
 // Minigame level icons (3 levels): highlight the level reached.
-// NONMATCHING 99.7%: add operand order (base, i) in the sprite index sums
-#if NONMATCHING
 void fn_3_129C88(void) {
     HudTask* task = lbl_803CC1B8;
     s32 i;
@@ -667,19 +665,19 @@ void fn_3_129C88(void) {
             for (i = 0; i < 3; i++) {
                 if (i == g_Minigame._19E4) {
                     if (g_Minigame._19DE >= 8 || g_GameLogic._125 >= 6) {
-                        if ((lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C >> 16) <= 0x5A) {
-                            lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0x5A << 16;
+                        if ((lbl_80371C30[task->baseIdx + 2 + i].obj->_5C >> 16) <= 0x5A) {
+                            lbl_80371C30[task->baseIdx + 2 + i].obj->_5C = 0x5A << 16;
                         }
-                        lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 1;
+                        lbl_80371C30[task->baseIdx + 2 + i].obj->_68 = 1;
                     } else {
-                        if ((lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C >> 16) >= 0x5A) {
-                            lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0xA << 16;
+                        if ((lbl_80371C30[task->baseIdx + 2 + i].obj->_5C >> 16) >= 0x5A) {
+                            lbl_80371C30[task->baseIdx + 2 + i].obj->_5C = 0xA << 16;
                         }
-                        lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 1;
+                        lbl_80371C30[task->baseIdx + 2 + i].obj->_68 = 1;
                     }
                 } else {
-                    lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 0;
-                    lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0;
+                    lbl_80371C30[task->baseIdx + 2 + i].obj->_68 = 0;
+                    lbl_80371C30[task->baseIdx + 2 + i].obj->_5C = 0;
                 }
             }
             if (g_Minigame._19DE == 0) {
@@ -700,12 +698,9 @@ remove:
     fn_800B0A14_removeQueue(fn_80034CEC(task));
     lbl_3_common_bss_32724[0xBE] = 0;
 }
-#endif
 
 // fn_3_129FF8, size:0x2C0
 // Minigame level icons (4 levels): highlight the level reached.
-// NONMATCHING 99.7%: add operand order (base, i) in the sprite index sums (same as fn_3_129C88)
-#if NONMATCHING
 void fn_3_129FF8(void) {
     HudTask* task = lbl_803CC1B8;
     s32 i;
@@ -736,19 +731,19 @@ void fn_3_129FF8(void) {
             for (i = 0; i < 4; i++) {
                 if (i == g_Minigame._19E4) {
                     if (g_Minigame._19DE >= 8 || g_GameLogic._125 >= 6) {
-                        if ((lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C >> 16) <= 0x37) {
-                            lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0x37 << 16;
+                        if ((lbl_80371C30[task->baseIdx + 2 + i].obj->_5C >> 16) <= 0x37) {
+                            lbl_80371C30[task->baseIdx + 2 + i].obj->_5C = 0x37 << 16;
                         }
-                        lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 1;
+                        lbl_80371C30[task->baseIdx + 2 + i].obj->_68 = 1;
                     } else {
-                        if ((lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C >> 16) >= 0x37) {
-                            lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0x5 << 16;
+                        if ((lbl_80371C30[task->baseIdx + 2 + i].obj->_5C >> 16) >= 0x37) {
+                            lbl_80371C30[task->baseIdx + 2 + i].obj->_5C = 0x5 << 16;
                         }
-                        lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 1;
+                        lbl_80371C30[task->baseIdx + 2 + i].obj->_68 = 1;
                     }
                 } else {
-                    lbl_80371C30[(i + 2) + task->baseIdx].obj->_68 = 0;
-                    lbl_80371C30[(i + 2) + task->baseIdx].obj->_5C = 0;
+                    lbl_80371C30[task->baseIdx + 2 + i].obj->_68 = 0;
+                    lbl_80371C30[task->baseIdx + 2 + i].obj->_5C = 0;
                 }
             }
             if (g_Minigame._19DE == 0) {
@@ -769,7 +764,6 @@ remove:
     fn_800B0A14_removeQueue(fn_80034CEC(task));
     lbl_3_common_bss_32724[0xBE] = 0;
 }
-#endif
 
 // fn_3_12A6C4, size:0x24C
 void fn_3_12A6C4(void) {
