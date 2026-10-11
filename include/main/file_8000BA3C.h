@@ -241,6 +241,7 @@ void fn_8000CC4C(Anim* anim, AnimBlock* block, u8* src, u32 ofs, u32 len);
 s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, s16* path);
 s32 fn_8000C194(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, SpriteBank* bank);
 s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, SpriteBank* bank);
+s32 fn_8000D838(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, SpriteBank* bank);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 

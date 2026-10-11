@@ -856,8 +856,19 @@ s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
 #endif
 
 // .text:0x8000D838 size:0x6C
-void fn_8000D838(void) {
-    return;
+s32 fn_8000D838(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, SpriteBank* bank) {
+    s16 path[60];
+
+    if (anim->unk6 == 0) {
+        return fn_8000D164(time, anim, trackIdx, mtx, flags, color, outLoop, bank);
+    }
+    // TODO type: anim->table->tracks[trackIdx]->count
+    if ((*(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8))->count & 0x80000000) {
+        path[0] = -1;
+        path[1] = 0;
+        return fn_8000BA3C(time, anim, trackIdx, mtx, flags, color, outLoop, &path[2]);
+    }
+    return fn_8000C194(time, anim, trackIdx, mtx, flags, color, outLoop, bank);
 }
 
 // .text:0x8000D8A4 size:0x3F8
