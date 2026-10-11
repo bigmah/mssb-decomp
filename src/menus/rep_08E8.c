@@ -939,3 +939,66 @@ void fn_2_4AB1C(void) {
     starMissionRelated2();
 }
 #endif
+
+struct Light;
+void LITAlloc(struct Light** light);
+void LITInitColor(struct Light* light, GXColor* color);
+void LITInitDir(struct Light* light, f32 x, f32 y, f32 z);
+void LITInitPos(struct Light* light, f32 x, f32 y, f32 z);
+void LITInitAttn(struct Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
+extern const GXColor lbl_2_rodata_938;
+extern const GXColor lbl_2_rodata_93C;
+extern const GXColor lbl_2_rodata_940[2];
+
+extern const f32 lbl_2_rodata_960;
+extern const f32 lbl_2_rodata_974;
+extern const f32 lbl_2_rodata_978;
+extern const f32 lbl_2_rodata_97C;
+extern const f32 lbl_2_rodata_980;
+extern const f32 lbl_2_rodata_984;
+extern const f32 lbl_2_rodata_988;
+
+// .text:0x48DB4 size:0x2B8
+// Set up the four menu lights.
+// NONMATCHING ~93%: same instructions; prologue scheduling of the GXColor copies and the LITInitAttn 1.0/0.0 load order (docs/patterns/unsolved.md, rep_74A0 (a))
+#if NONMATCHING
+void fn_2_48DB4(void) {
+    GXColor color2 = lbl_2_rodata_938;
+    GXColor color1 = lbl_2_rodata_93C;
+    GXColor color0 = lbl_2_rodata_940[0];
+    GXColor c0;
+    GXColor c1;
+    GXColor c2;
+    GXColor c3;
+
+    LITAlloc(&MENU_CHARMGR.lights[0]);
+    LITAlloc(&MENU_CHARMGR.lights[1]);
+    LITAlloc(&MENU_CHARMGR.lights[2]);
+    LITAlloc(&MENU_CHARMGR.lights[3]);
+
+    LITInitAttn(MENU_CHARMGR.lights[0], lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C);
+    LITInitPos(MENU_CHARMGR.lights[0], lbl_2_rodata_974, lbl_2_rodata_978, lbl_2_rodata_97C);
+    LITInitDir(MENU_CHARMGR.lights[0], lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_94C);
+    c0 = color0;
+    LITInitColor(MENU_CHARMGR.lights[0], &c0);
+    LITInitDir(MENU_CHARMGR.lights[0], lbl_2_rodata_980, lbl_2_rodata_978, lbl_2_rodata_97C);
+
+    LITInitAttn(MENU_CHARMGR.lights[1], lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C);
+    LITInitPos(MENU_CHARMGR.lights[1], lbl_2_rodata_980, lbl_2_rodata_984, lbl_2_rodata_988);
+    LITInitDir(MENU_CHARMGR.lights[1], lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_94C);
+    c1 = color1;
+    LITInitColor(MENU_CHARMGR.lights[1], &c1);
+
+    LITInitAttn(MENU_CHARMGR.lights[2], lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C);
+    LITInitPos(MENU_CHARMGR.lights[2], lbl_2_rodata_94C, lbl_2_rodata_978, lbl_2_rodata_97C);
+    LITInitDir(MENU_CHARMGR.lights[2], lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_94C);
+    c2 = color2;
+    LITInitColor(MENU_CHARMGR.lights[2], &c2);
+
+    LITInitAttn(MENU_CHARMGR.lights[3], lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C);
+    LITInitPos(MENU_CHARMGR.lights[3], lbl_2_rodata_94C, lbl_2_rodata_978, lbl_2_rodata_97C);
+    LITInitDir(MENU_CHARMGR.lights[3], lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_94C);
+    c3 = color2;
+    LITInitColor(MENU_CHARMGR.lights[3], &c3);
+}
+#endif

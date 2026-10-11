@@ -12,7 +12,9 @@ typedef struct MenuCharActor {
 } MenuCharActor; // size: 0x27C
 
 typedef struct MenuCharMgr {
-    /*0x0000*/ u8 _0000[0xC04];
+    /*0x0000*/ u8 _0000[0xAC];
+    /*0x00AC*/ struct Light* lights[4];
+    /*0x00BC*/ u8 _00BC[0xC04 - 0xBC];
     /*0x0C04*/ MenuCharActor actors[13];
     /*0x2C50*/ void* active[13];
     /*0x2C84*/ void* stadiumFiles;
@@ -103,5 +105,7 @@ u16* fn_2_49F7C(u16* string, s32 capacity, u16 character, s32 position);
 void fn_2_4AB1C(void);
 
 void fn_2_47540(void);
+
+void fn_2_48DB4(void);
 
 #endif
