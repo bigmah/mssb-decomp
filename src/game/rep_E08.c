@@ -1,6 +1,7 @@
 #include "game/rep_E08.h"
 #include "header_rep_data.h"
 #include "math.h"
+#include "game/rep_D0.h"
 
 #pragma dont_inline on
 
@@ -40,6 +41,12 @@ extern u8 lbl_3_data_7F0C;
 extern s32 g_Strikes[];
 extern u8 lbl_80353A90[];
 extern u8 g_Batter[];
+extern u8 g_Practice[];
+extern s16 lbl_3_data_5EDC[];
+extern u8 lbl_3_common_bss_32230[];
+extern s32 fn_3_6D564(s32 team, s32 idx, s32 delta);
+extern const f32 lbl_3_rodata_E98;
+extern const f32 lbl_3_rodata_E9C;
 extern u8 lbl_3_common_bss_32220[];
 extern u8 lbl_3_common_bss_32234[];
 extern u32 fn_3_90150(s32 a, s32 b);
@@ -1660,9 +1667,244 @@ done:
 #endif
 
 // .text:0x00064BDC size:0xC08 mapped:0x806A3C70
-void fn_3_64BDC(void) {
-    return;
+// NONMATCHING 90%: register allocation and branch layout differ. Like the original, the later
+// branches read the actor without re-checking it for NULL.
+#if NONMATCHING
+static inline BOOL fn_3_64BDC_isSpecialChar(s8 c) {
+    return c == 3 || c == 0xE || c == 0x25 || c == 0x26 || lbl_800E8558[c * 6 + 2] == 0x17;
 }
+
+void fn_3_64BDC(void) {
+    s32 k = 0;
+    u8 inv = 0;
+    u8* o;
+    u8* st = lbl_3_common_bss_32230;
+    u8 mode;
+    s32 taunt;
+    s32 next;
+    if (g_Pitcher[0x141] != 0) {
+        inv = 1;
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        if (*(s8*)(g_Minigame + 0x1904) < 0) {
+            return;
+        }
+        k = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+    }
+    o = ((u8**)(lbl_8036E548 + 0x2C50))[k];
+    if (o != NULL) {
+        if (*(s16*)(o + 0x62) == 0x44 && *(s16*)(o + 0x6A) == 1) {
+            fn_3_90220(*(s8*)(o + 0x252), 4);
+        } else if (*(s16*)(o + 0x62) == 0x45 && *(s16*)(o + 0x6A) == 1) {
+            fn_3_90220(*(s8*)(o + 0x252), 3);
+        }
+    }
+    mode = g_GameLogic[0x11E];
+    if (mode != 0 && mode != 1 && mode != 2 && mode != 0x16 && !(g_Minigame[0x1A2A] == 2 && mode == 7) &&
+        !(mode == 0xB && lbl_3_common_bss_32234[0] != 0)) {
+        if (g_d_GameSettings[0x11] != 0 && mode == 0x1A) {
+            AnimateCharacter(k, 0x3F, 1, 2, 1, 0, inv, -1);
+            st[2] = 1;
+        } else {
+            st[2] = 0;
+        }
+        return;
+    }
+    if (g_GameLogic[0x121] == 0xB && *(s8*)(g_Practice + 0x1C2) < 0 && g_Practice[0x1C7] != 0) {
+        return;
+    }
+    if (g_d_GameSettings[7] == 2 && g_Practice[0x194] == 4) {
+        return;
+    }
+    if (g_FieldingLogic[0x107] != 0) {
+        st[2] = 0;
+        return;
+    }
+    if (g_Minigame[0x1A2A] == 2) {
+        if (g_Minigame[0x1A7E] != 0) {
+            return;
+        }
+        k = *(s8*)(g_Minigame + 0x1904);
+    }
+    if (lbl_3_common_bss_32234[0] != 0) {
+        // between pitches
+        taunt = 0;
+        if (g_d_GameSettings[7] != 2 && g_d_GameSettings[0x11] == 0) {
+            if (g_Pitcher[0x173] != 0) {
+                g_Pitcher[0x173] = 0;
+                taunt = 1;
+                if (fn_3_6D564(*(s32*)(g_GameLogic + 8), *(s16*)(g_Pitcher + 0x118), 0) < lbl_3_data_5EDC[3]) {
+                    taunt = 2;
+                }
+            } else if (g_Pitcher[0x159] == 0 && g_Pitcher[0x15A] == 0 &&
+                       fn_3_6D564(*(s32*)(g_GameLogic + 8), *(s16*)(g_Pitcher + 0x118), 0) < lbl_3_data_5EDC[3]) {
+                taunt = 2;
+            }
+        }
+        if (taunt == 2) {
+            AnimateCharacter(k, 0x46, 0, 1, 1, 0, inv, 0);
+            QueueCharacterAnimation(k, 0x3F, 1, 1, 0, inv, -1);
+        } else if (taunt == 1) {
+            AnimateCharacter(k, 0x48, 0, 1, 1, 0, inv, 0);
+            QueueCharacterAnimation(k, 0x3F, 1, 1, 0, inv, -1);
+        } else {
+            AnimateCharacter(k, 0x3F, 1, 1, 1, 0, inv, 0);
+            st[2] = 1;
+        }
+        return;
+    }
+    if (*(s16*)(g_Pitcher + 0x11E) == 0) {
+        // idle on the mound
+        if (st[2] != 1 && !(g_GameLogic[0x121] == 0xB && *(s8*)(g_Practice + 0x1C2) < 0 && g_Practice[0x1C8] != 0) &&
+            *(s16*)(o + 0x64) != 0x41 && *(s16*)(o + 0x64) != 0x43) {
+            if (g_Minigame[0x1A2A] == 2) {
+                if (g_Minigame[0x1A2B] != 3) {
+                    AnimateCharacter(k, 0x3F, 1, 1, 1, 0, inv, 0xC);
+                } else if (g_Minigame[0x1A2D] == 0) {
+                    AnimateCharacter(k, 0x3F, 1, 1, 1, 0, inv, 0xC);
+                } else {
+                    AnimateCharacter(k, 0x3F, 1, 2, 1, 0, inv, 0xC);
+                }
+            } else {
+                AnimateCharacter(k, 0x3F, 1, 2, 1, 0, inv, 0xC);
+            }
+        }
+        st[2] = 1;
+        if (g_d_GameSettings[7] != 2 && g_d_GameSettings[7] != 6 && g_d_GameSettings[7] != 7) {
+            s16 n = 0x7FFF;
+            if (*(s16*)(st + 0) < 0x7FFE) {
+                n = *(s16*)(st + 0) + 1;
+            }
+            *(s16*)(st + 0) = n;
+            if (n > 0x244 && *(s32*)(g_Ball + 0x1B4C) % 120 == 0) {
+                *(s16*)(st + 0) = 0;
+                AnimateCharacter(k, 0x47, 0, 2, 1, 0, inv, -1);
+                QueueCharacterAnimation(k, 0x3F, 1, 1, 0, inv, 0xC);
+            }
+        }
+        return;
+    }
+    *(s16*)(st + 0) = 0;
+    if (*(s16*)(g_Pitcher + 0x11E) == 1) {
+        // wind-up start
+        next = 1;
+        if (g_Pitcher[0x15F] >= 1 || g_Pitcher[0x161] != 0) {
+            AnimateCharacter(k, 0x40, 0, 1, 1, 0, inv, -1);
+            next = 0;
+            *(s16*)(g_Pitcher + 0x126) = *(s16*)(g_Pitcher + 0x128);
+        } else {
+            AnimateCharacter(k, 0x42, 0, 1, 1, 0, inv, -1);
+            *(s16*)(g_Pitcher + 0x126) = *(s16*)(g_Pitcher + 0x12A);
+        }
+        if (*(s8*)(o + 0x252) == 0xB || *(s8*)(o + 0x252) == 0x1B) {
+            next = 0;
+        }
+        if (fn_3_64BDC_isSpecialChar(*(s8*)(o + 0x252))) {
+            QueueCharacterAnimation(k, 0x3F, 1, 1, 0, inv, 0xC);
+        } else {
+            QueueCharacterAnimation(k, next + 0x49, 1, 1, 0, inv, -1);
+        }
+        st[2] = 2;
+        return;
+    }
+    if (g_Minigame[0x1A2A] == 2 && g_Minigame[0x1A2B] == 3) {
+        if (g_Minigame[0x1A8C] != 0) {
+            if (*(s16*)(o + 0x62) == 0x40) {
+                AnimateCharacter(k, 0x41, 0, 1, 1, 0, inv, -1);
+            } else {
+                AnimateCharacter(k, 0x43, 0, 1, 1, 0, inv, -1);
+            }
+            QueueCharacterAnimation(k, 0x3F, 1, 1, 0, inv, 0xC);
+            st[2] = 3;
+            g_Minigame[0x1A8C] = 0;
+        }
+        return;
+    }
+    if (g_Pitcher[0x13E] == 4 && *(s16*)(g_Ball + 0x1B6A) > 1 && st[2] != 3) {
+        // release
+        if (g_Minigame[0x1A2A] == 2 && g_Minigame[0x1A2B] != 3) {
+            return;
+        }
+        if (g_GameLogic[0x121] == 0xB && *(s8*)(g_Practice + 0x1C2) < 0 && g_Practice[0x1C8] != 0) {
+            if (st[2] != 4) {
+                AnimateCharacter(k, 0x44, 0, 2, 1, 0, inv, -1);
+            }
+            st[2] = 4;
+            return;
+        }
+        if (g_Pitcher[0x158] == 0) {
+            return;
+        }
+        if (fn_3_64BDC_isSpecialChar(*(s8*)(o + 0x252))) {
+            AnimateCharacter(k, 0x3F, 1, 2, 1, 0, inv, 0xC);
+            st[2] = 3;
+            return;
+        }
+        {
+            s16 anim = *(s16*)(o + 0x62);
+            u8 speed;
+            if (anim == 0x40 || anim == 0x42) {
+                speed = 2;
+            } else {
+                speed = 1;
+            }
+            if (anim == 0x40 || anim == 0x49) {
+                AnimateCharacter(k, 0x41, 0, speed, 1, 0, inv, 0xC);
+            } else {
+                AnimateCharacter(k, 0x43, 0, speed, 1, 0, inv, 0xC);
+            }
+        }
+        QueueCharacterAnimation(k, 0x3F, 1, 1, 0, inv, 0xC);
+        st[2] = 3;
+        return;
+    }
+    if (g_Pitcher[0x13E] != 5) {
+        return;
+    }
+    if (!((g_Pitcher[0x14E] == 1 && st[2] != 4) || ((g_Pitcher[0x14E] == 2 || g_Pitcher[0x14E] == 3) && st[2] != 5))) {
+        return;
+    }
+    if (*(s16*)(o + 0x68) != 0 && *(s16*)(o + 0x62) != 0x49 && *(s16*)(o + 0x62) != 0x4A) {
+        return;
+    }
+    if (g_Pitcher[0x14E] == 1) {
+        if (lbl_800E8558[*(s8*)(o + 0x252) * 6 + 2] == 0xB) {
+            AnimateCharacter(k, 0x44, 0, 1, 1, 0, inv, 0);
+        } else {
+            AnimateCharacter(k, 0x44, 0, 1, 1, 0, inv, -1);
+        }
+        st[2] = 4;
+    } else {
+        AnimateCharacter(k, 0x45, 0, 1, 1, 0, inv, -1);
+        st[2] = 5;
+    }
+    {
+        f32 x = *(f32*)(g_UnkAnimation_31EAC + 0x2C);
+        f32 z = *(f32*)(g_UnkAnimation_31EAC + 0x34);
+        VecSrcDst ray;
+        CollisionStruct hit;
+        *(f32*)(g_Pitcher + 0x8C) = x;
+        *(f32*)(g_Pitcher + 0x90) = z;
+        if (g_d_GameSettings[0x11] != 0) {
+            u8* f = g_Fielders + *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18F8) * 0x268;
+            *(f32*)(f + 0) = x;
+            *(f32*)(f + 8) = z;
+        } else {
+            *(f32*)(g_Fielders + 0) = x;
+            *(f32*)(g_Fielders + 8) = z;
+        }
+        ray.src.x = *(f32*)(g_Fielders + 0);
+        ray.src.y = lbl_3_rodata_E98;
+        ray.src.z = *(f32*)(g_Fielders + 8);
+        ray.dst.x = *(f32*)(g_Fielders + 0);
+        ray.dst.y = lbl_3_rodata_E9C;
+        ray.dst.z = *(f32*)(g_Fielders + 8);
+        checkCollision(&ray, &hit, 0, 0);
+        *(f32*)(g_Fielders + 0xC) = -hit.position.y;
+        *(f32*)(g_Fielders + 0x10) = -hit.position.y;
+    }
+}
+#endif
 
 // .text:0x000657E4 size:0x7FC mapped:0x806A4878
 // NONMATCHING 86%: loop shapes/unrolling and bss addressing differ
