@@ -2910,9 +2910,57 @@ void fn_8004ACF4(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
 }
 
 // .text:0x8004AD54 size:0xC4
+// NONMATCHING ~90%: nested switches instead of the original if/return chain (MWCC folds that to cntlzw)
+#if NONMATCHING
 s32 fn_8004AD54(u32 stadium, u8 flags) {
+    s32 variant = flags & 0x7F;
+
+    switch (stadium) {
+    case 0:
+        switch (variant) {
+        case 1:
+            return 1;
+        default:
+            return 0;
+        }
+    case 1:
+        return 5;
+    case 2:
+        switch (variant) {
+        case 1:
+            return 11;
+        default:
+            return 10;
+        }
+    case 3:
+        switch (variant) {
+        case 1:
+            return 7;
+        default:
+            return 6;
+        }
+    case 4:
+        switch (variant) {
+        case 10:
+            return 4;
+        case 1:
+            return 3;
+        default:
+            return 2;
+        }
+    case 5:
+        switch (variant) {
+        case 10:
+            return 9;
+        default:
+            return 8;
+        }
+    case 6:
+        return 12;
+    }
     return 0;
 }
+#endif
 
 // .text:0x8004AE18 size:0x190
 void fn_8004AE18(s32 idx) {
