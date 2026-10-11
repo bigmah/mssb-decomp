@@ -2099,7 +2099,7 @@ void fn_2_72A88(u8* o) {
 #endif
 
 // fn_2_7F8BC, size:0x240
-// NONMATCHING 92%: instruction scheduling only
+// NONMATCHING 99%: the loaded roster byte x lands in r4 instead of r11 (see docs/patterns/loops.md)
 #if NONMATCHING
 void fn_2_7F8BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
@@ -2107,17 +2107,20 @@ void fn_2_7F8BC(u8* o, s32 index) {
         s8 v;
         s8 found;
         s32 j;
+        s32 x;
         v = ((s32*)lbl_2_bss_F468)[index];
         for (j = 0; j < 9; j++) {
-            if ((s8)lbl_803C6724[index * 9 + j + 0x14] == v) {
+            s8 t = lbl_803C6724[index * 9 + j + 0x14];
+            if (t == v) {
                 found = j;
                 break;
             }
         }
+        x = (s8)(lbl_803C6724 + index * 9)[found + 2];
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->flags |= 2;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->frame = 0;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->state = 1;
-        MN_SLOT(0x58 + BASE(o) + v + index * 9)->frame = (s8)(lbl_803C6724 + index * 9)[found + 2] << 16;
+        MN_SLOT(0x58 + BASE(o) + v + index * 9)->frame = x << 16;
         fn_2_75BE4(o, index);
         fn_2_74F40(o, index);
         fn_800626EC(index);
