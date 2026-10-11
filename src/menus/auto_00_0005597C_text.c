@@ -378,8 +378,58 @@ void fn_2_56688(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // .text:0x0005699C size:0x298
-void fn_2_5699C(void) {
-    return;
+void fn_2_5699C(MenuTableContext* menu, MenuItemState* item) {
+    s16 msg;
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    msg = *(s16*)(lbl_2_bss_1A824C[0] + 0x1976FE) + *(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA);
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->unk12 = 0;
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 2, 0, 0);
+        item->state = 0x26;
+        break;
+    case 2:
+        fn_8000FE08(item->unk14, 2, msg);
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags |= 2;
+        fn_8000FE08(item->unk14, 2, msg);
+        item->state = 3;
+        break;
+    case 3:
+        item->unk12 += (0xFF - item->unk12) / 4;
+        item->unk12++;
+        if (item->unk12 > 0xFF) {
+            item->unk12 = 0xFF;
+        }
+        if (item->unk12 >= 0xFF) {
+            item->state = 0x25;
+        }
+        break;
+    case 0x25:
+        fn_8000FE08(item->unk14, 2, msg);
+        item->state = 0x25;
+        break;
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->state = 6;
+        break;
+    case 6:
+        item->unk12 += (0 - item->unk12) / 4;
+        item->unk12--;
+        if (item->unk12 < 0) {
+            item->unk12 = 0;
+        }
+        break;
+    case 1:
+    case 4:
+        break;
+    }
+    lbl_80366B18.entries[item->unk14].hAlign = 1;
+    lbl_80371C30[menu->firstIndex + item->offset].obj->color =
+        (lbl_80371C30[menu->firstIndex + item->offset].obj->color & ~0xFF) | item->unk12;
 }
 
 // .text:0x00056C34 size:0x258
