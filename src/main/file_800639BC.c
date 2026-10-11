@@ -209,8 +209,24 @@ void fn_800678CC(void) {
 }
 
 // .text:0x80067AC8 size:0x78
-void fn_80067AC8(void) {
-    return;
+s16 fn_80067AC8(s16 id, s8 col) {
+    s32 row;
+    s32 i;
+
+    for (row = 0; row < 9; row++) {
+        for (i = 0; i < 5; i++) {
+            if (id == lbl_80108EDC[row][i]) {
+                if (col == -1) {
+                    return id;
+                }
+                return lbl_80108EDC[row][col];
+            }
+            if (lbl_80108EDC[row][i] == -1) {
+                break;
+            }
+        }
+    }
+    return -1;
 }
 
 // .text:0x80067B40 size:0x108
