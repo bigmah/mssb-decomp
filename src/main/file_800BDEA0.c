@@ -549,8 +549,11 @@ void SKNLoadFile(SKNHeader* hdr) {
 }
 
 // .text:0x800BF1A4 size:0x1C
-void SKNFlushByIndex1(void) {
-    return;
+#if NONMATCHING
+void SKNFlushByIndex1(u16* indices, u32 count, void* base) {
+    do {
+        DCFlushRange((u8*)base + *indices++ * 0x18, 1);
+    } while (--count);
 }
 #else
 asm void SKNFlushByIndex1(register u16* indices, register u32 count, register void* base) {
