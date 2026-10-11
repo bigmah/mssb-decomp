@@ -38,6 +38,16 @@ typedef struct ChFileMenu {
 
 extern ChFileMenu lbl_1_common_bss_49A78;
 
+// .text:0x00009EA0 size:0x64
+// Same as fn_800216F8: queues fn_1_9F04 to load sound group `group` from lbl_1_data_196C.
+void fn_1_9EA0(u8 group, s32 (*callback)(u8* state)) {
+    ChSoundLoadTask* task = fn_800B0A5C_insertQueue(fn_1_9F04, 1);
+    task->step = 0;
+    task->group = group;
+    task->callback = callback;
+    ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
+}
+
 // .text:0x0000A1F4 size:0x1C
 void fn_1_A1F4(ChListCursor* list, ChListItem* items, s32 count, s32 visible) {
     list->items = items;
