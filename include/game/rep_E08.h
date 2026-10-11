@@ -30,6 +30,6 @@ void fn_3_66140(void);
 void fn_3_664FC(void);
 void fn_3_668BC(void);
 void fn_3_67130(void);
-void fn_3_6714C(void);
+void fn_3_6714C(s32 player);
 
 #endif // !__GAME_rep_E08_H_

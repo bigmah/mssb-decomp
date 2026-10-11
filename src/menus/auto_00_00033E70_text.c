@@ -21,7 +21,6 @@ extern void fn_2_90428(s32);
 extern void fn_2_92654(s32, u8);
 extern u8 fn_8006862C(s32, s32);
 extern u8 lbl_8037169C[];
-extern void fn_800363D8(void*, s32, s32, s32, s32);
 extern void fn_80036134(void*, s32, s32, s32);
 extern s16 fn_8000F988(void*, s16, u16, s32, s32, s32);
 extern u8 lbl_80366B18[];
@@ -2373,7 +2372,6 @@ void fn_2_37630(void) {
 
 extern u8* lbl_2_bss_1A8230[];
 extern GXColor lbl_2_data_12270;
-extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_2_54474(void);
 extern BOOL fn_80068514(u32 frames, u8 target);
 extern void fn_8006877C(u8 track);

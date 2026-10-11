@@ -1,5 +1,7 @@
 #include "game/rep_10E8.h"
 #include "header_rep_data.h"
+#include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
 
 #pragma dont_inline on
 
@@ -16,17 +18,7 @@ typedef struct _Ctl {
     u8 pad;
 } Ctl;
 
-typedef struct _RawPad {
-    u16 s0, s2, s4;
-    u8 pad6[10];
-    u8 b10, b11;
-    u8 pad12[2];
-    u8 b14, b15;
-    u8 pad16[10];
-} RawPad;
-
 extern Ctl g_Controls[];
-extern RawPad lbl_803C77B8[];
 
 // .text:0x0006CD88 size:0x57C mapped:0x806ABE1C
 void fn_3_6CD88(int i) {
@@ -38,17 +30,17 @@ void fn_3_6D304(void) {
     int i;
     for (i = 0; i < 4; i++) {
         Ctl* c = &g_Controls[i];
-        RawPad* r = &lbl_803C77B8[i];
+        PadState* r = &lbl_803C77B8[i];
         u16 prev;
         c->pad = 0;
         prev = c->held;
-        c->held = r->s0;
-        c->pressed = r->s2;
-        c->x8 = r->s4;
-        c->a = r->b10;
-        c->b = r->b11;
-        c->trigL = r->b14;
-        c->trigR = r->b15;
+        c->held = r->held;
+        c->pressed = r->down;
+        c->x8 = r->repeat;
+        c->a = r->sticks.stickX;
+        c->b = r->sticks.stickY;
+        c->trigL = r->analog.triggerLeft;
+        c->trigR = r->analog.triggerRight;
         if ((c->pressed & 0x40) && (prev & 0x40)) {
             c->pressed = c->pressed & 0xFFBF;
         }

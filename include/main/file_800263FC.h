@@ -13,18 +13,6 @@
 // particles and sitting in a priority-sorted doubly linked active list
 // (head lbl_803CBC84).
 
-// Texture archive: a count followed by 0x20-byte entries; entry[i].index
-// selects which entry's image is used for texture i.
-typedef struct TexArchiveEntry {
-    /* 0x00 */ TexImage img;
-    /* 0x1C */ u16 index;
-    /* 0x1E */ u8 pad1E[2];
-} TexArchiveEntry; // size 0x20
-
-typedef struct TexArchive {
-    /* 0x00 */ s32 count;
-    /* 0x04 */ TexArchiveEntry entries[1]; // variable length
-} TexArchive;
 
 typedef struct Particle {
     /* 0x00 */ struct Particle* next;
@@ -669,7 +657,7 @@ typedef struct SpaniAttach {
     /* 0x6C */ s16* key; // [0]: anim id, [1]: tag
 } SpaniAttach;
 
-s32 fn_80034BCC(SpaniAttach* a);
+s32 fn_80034BCC(SpaniAttach* a, Mtx unused); // a QuadCallback
 void fn_80034CEC(SpaniGroup* g);
 void fn_80034E20(SpaniGroup* g, SpaniDesc* descs);
 

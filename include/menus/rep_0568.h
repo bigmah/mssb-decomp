@@ -5,8 +5,8 @@
 #include "Dolphin/mtx.h"
 
 struct CharActor;
-struct CharSlotList;
-struct CharSlot;
+struct ActorObjectTable;
+struct ActorObject;
 
 // Scene task (fn_800B0A5C_insertQueue) that streams the menu characters in (fn_2_18748).
 typedef struct MenuCharLoadTask {
@@ -23,7 +23,7 @@ typedef struct MenuCharLoadTask {
     /*0x21*/ u8 step;
 } MenuCharLoadTask;
 
-void fn_2_190B8(struct CharSlot* slot);
+void fn_2_190B8(struct ActorObject* slot);
 
 void fn_2_16CE0(void);
 
@@ -33,7 +33,7 @@ s32 fn_2_18650(s32 a);
 
 void fn_2_18FBC(void);
 
-void fn_2_1937C(struct CharSlotList* list, MtxPtr view);
+void fn_2_1937C(struct ActorObjectTable* list, MtxPtr view);
 
 void fn_2_17AB8(void);
 
@@ -43,9 +43,9 @@ void fn_2_18748(void);
 
 void fn_2_16DA8(void);
 void fn_2_16F0C(u8 index);
-void fn_2_190DC(struct CharSlotList* list, MtxPtr view);
+void fn_2_190DC(struct ActorObjectTable* list, MtxPtr view);
 
-void fn_2_19224(struct CharSlotList* list, MtxPtr view);
+void fn_2_19224(struct ActorObjectTable* list, MtxPtr view);
 void fn_2_16A98(s32 index, s32 anim, u8 loop, u8 b, s16 frame, u8 d, u8 blend);
 void fn_2_17C88(void);
 void fn_2_17ED8(void);

@@ -6,6 +6,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "main/file_80008E00.h"
 #include "Unknown/File_0x800a64e0.h"
+extern u8 lbl_803C6CF8[]; // TODO type: ARAMLoader (main/file_800A6870.h); idle at 0x715
 
 extern void fn_800A7D4C(s32 list, void* node);
 extern u8 lbl_803CBBC0; // frame buffer index (0/1)
@@ -62,7 +63,7 @@ void fn_1_1538(void) {
 void fn_1_15CC(void) {
     ChTexViewTask* task = lbl_803CC1B8;
 
-    if ((s32)lbl_803C6CF8._715 == 1) {
+    if ((s32)lbl_803C6CF8[0x715] == 1) {
         task->tex = (ChTexArchive*)((u8*)task->file + *task->file);
         convertTextureHeader(task->tex);
         ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1538;
@@ -71,7 +72,7 @@ void fn_1_15CC(void) {
 
 // .text:0x00001634 size:0x6C
 void fn_1_1634(void) {
-    if ((s32)lbl_803C6CF8._715 == 1) {
+    if ((s32)lbl_803C6CF8[0x715] == 1) {
         // TODO port: ARAMTransfer returns the destination pointer (declared s32 in UnknownHomes_Static.h)
         ((ChTexViewTask*)lbl_803CC1B8)->file = (s32*)ARAMTransfer(&lbl_1_data_0.files[3], 0, 0, 0);
         ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_15CC;

@@ -1,4 +1,6 @@
 #include "main/file_80069BDC.h"
+#include "main/file_80021308.h"
+#include "main/file_800A6870.h"
 #include "main/file_800B0724.h"
 #include "Dolphin/vi.h"
 #include "Dolphin/gx.h"
@@ -22,7 +24,6 @@ extern f32 lbl_8010B590[4][7];
 extern f32 lbl_8010B4B4[5][11];
 extern s16 lbl_8010B444[5][11];
 
-extern BOOL challengeStarRelatedInd(s32 team, s32 mission);
 
 typedef struct MissionDef {
     /*0x0*/ s16 _0;
@@ -59,7 +60,6 @@ extern void* fn_80034CEC(void* task);
 extern u8 fn_8000F988(void* task, s32 idx, s32 a, s32 b, s32 c, s32 d);
 extern void fn_8000FEE8(u8 idx);
 extern void fn_8000F8F4(void* task);
-extern void fn_80022B68(void);
 extern void changeScene(s32 scene, s32 state);
 
 typedef struct Unk803716B8 {
@@ -70,26 +70,14 @@ typedef struct Unk803716B8 {
 
 extern Unk803716B8 lbl_803716B8;
 extern u8 lbl_801092F8[0x80]; // TODO type
-// ARAM file table entry.
-typedef struct AramFile {
-    /*0x0*/ u32 id;
-    /*0x4*/ u32 sizeFlags; // low 28 bits: size
-    /*0x8*/ u32 aramAddr;
-    /*0xC*/ u32 _C;
-} AramFile;
 
-extern AramFile lbl_801092C8[2]; // [0]: intro movie, [1]: logo textures
-extern AramFile lbl_801092E8;    // logo sound data
+extern DiskFileEntry lbl_801092C8[2]; // [0]: intro movie, [1]: logo textures
+extern DiskFileEntry lbl_801092E8;    // logo sound data
 
-typedef struct Unk801093B8 {
-    /*0x0*/ u32 _0;
-    /*0x4*/ u32 _4;
-    /*0x8*/ SceneTask* task;
-} Unk801093B8;
 
 typedef struct Unk80109378 {
     /*0x00*/ u8 _00[0x40];
-    /*0x40*/ Unk801093B8 _40;
+    /*0x40*/ SoundGroupRequest _40;
 } Unk80109378;
 
 extern Unk80109378 lbl_80109378;
@@ -104,10 +92,8 @@ typedef struct RelocPair {
 // TODO port: file data stores 32-bit offsets that are turned into pointers in place.
 #define RELOCATE(base, field) ((field) = (void*)((u8*)(base) + (u32)(field)))
 
-extern s32 ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern void* fn_800ACF34(s32 heap, u32 size);
 extern void fn_80035750(void* a, void* b, s32 c);
-extern void fn_800215F8(Unk801093B8* p);
 extern void convertTextureHeader(void* textures);
 typedef struct PadState {
     /*0x00*/ u16 _00;
@@ -153,12 +139,7 @@ extern void fn_8000900C(void);
 extern void fn_80008E00(void (*cb)(s32 alt));
 extern void fn_800A7F10(s32 alt);
 
-typedef struct Unk803C6CF8 {
-    /*0x000*/ u8 _000[0x715];
-    /*0x715*/ u8 _715; // 1 once the ARAM transfer has finished
-} Unk803C6CF8;
 
-extern Unk803C6CF8 lbl_803C6CF8;
 extern u8 lbl_803CBBC0;
 
 extern void fn_800A7D4C(s32 layer, DrawNode* node);
@@ -166,7 +147,7 @@ extern void* fn_80009018(void* value);
 extern void* _OSAllocFromHeap(s32 heap, u32 size);
 extern BOOL fn_800ADAFC(void); // returns a u8 flag (lbz)
 extern void fn_800ADC40(void* work, u32 size);
-extern BOOL fn_800ADB04(AramFile* file, void* player, s32 a, s32 b);
+extern BOOL fn_800ADB04(DiskFileEntry* file, void* player, s32 a, s32 b);
 extern u32 fn_800AD6BC(void* player);
 extern void fn_800AD500(void* player, void* buffer);
 extern void fn_800AD95C(void* player, s32 a);
@@ -176,8 +157,6 @@ extern void fn_800ADBFC(void);
 extern void fn_800ACFB0(void* p);
 extern void fn_800AD830(void* player);
 extern void fn_800AD070(void);
-extern void gOz_GXSetTexture(s32 a, s32 b, s32 c);
-extern void SetDisplayStateTexture(TexDesc* tex, s32 a, s32 b);
 
 // .text:0x80069BDC size:0x5B8
 void fn_80069BDC(TexSet* set, s32 idx, f32 alpha, s32 idx2, f32 alpha2) {
@@ -189,8 +168,8 @@ void fn_80069BDC(TexSet* set, s32 idx, f32 alpha, s32 idx2, f32 alpha2) {
     GXSetDispCopyYScale((f32)lbl_80109250.xfbHeight / (f32)mode->efbHeight);
     GXSetScissor(0, 0, 608, 448);
     GXSetViewport(0.0f, 0.0f, 608.0f, 448.0f, -1.0f, 1.0f);
-    SetDisplayStateTexture(&set->tex[idx], 0, 0);
-    SetDisplayStateTexture(&set->tex[idx2], 1, 1);
+    SetDisplayStateTexture(&set->entries[idx], 0, 0);
+    SetDisplayStateTexture(&set->entries[idx2], 1, 1);
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_U16, 0);
@@ -269,7 +248,7 @@ void fn_8006A194(TexSet* set, s32 idx, f32 alpha) {
     GXSetDispCopyYScale((f32)lbl_80109250.xfbHeight / (f32)mode->efbHeight);
     GXSetScissor(0, 0, 608, 448);
     GXSetViewport(0.0f, 0.0f, 608.0f, 448.0f, -1.0f, 1.0f);
-    SetDisplayStateTexture(&set->tex[idx], 0, 0);
+    SetDisplayStateTexture(&set->entries[idx], 0, 0);
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_U16, 0);
@@ -317,7 +296,7 @@ void fn_8006A500(TexSet* set, s32 idx, f32 alpha) {
     GXSetDispCopyYScale((f32)lbl_80109250.xfbHeight / (f32)mode->efbHeight);
     GXSetScissor(0, 0, 608, 448);
     GXSetViewport(0.0f, 0.0f, 608.0f, 448.0f, -1.0f, 1.0f);
-    SetDisplayStateTexture(&set->tex[idx], 0, 0);
+    SetDisplayStateTexture(&set->entries[idx], 0, 0);
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_U16, 0);
@@ -333,8 +312,8 @@ void fn_8006A500(TexSet* set, s32 idx, f32 alpha) {
     GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
     GXSetNumTevStages(1);
 
-    halfW = (u32)set->tex[idx].width >> 1;
-    halfH = (u32)set->tex[idx].height >> 1;
+    halfW = (u32)set->entries[idx].width >> 1;
+    halfH = (u32)set->entries[idx].height >> 1;
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     c = 255.0f * alpha;
     GXPosition3u16(304 - halfW, 224 - halfH, 0);
@@ -362,7 +341,7 @@ void fn_8006A824(TexSet* set, s32 idx, f32 alpha) {
     GXSetDispCopyYScale((f32)lbl_80109250.xfbHeight / (f32)mode->efbHeight);
     GXSetScissor(0, 0, 608, 448);
     GXSetViewport(0.0f, 0.0f, 608.0f, 448.0f, -1.0f, 1.0f);
-    SetDisplayStateTexture(&set->tex[idx], 0, 0);
+    SetDisplayStateTexture(&set->entries[idx], 0, 0);
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_U16, 0);
@@ -728,7 +707,7 @@ void fn_8006B78C(void) {
             busy = 1;
         } else {
             s32 ready;
-            if (state != 8 || (ready = lbl_803C6CF8._715) == 1) {
+            if (state != 8 || (ready = lbl_803C6CF8.idle) == 1) {
                 task->state++;
             }
         }
@@ -849,7 +828,7 @@ void fn_8006BE00(void) {
         ARAMTransfer(&lbl_801092E8, task->res28, 0, 0);
         task->state++;
     case 1:
-        if (lbl_803C6CF8._715 == 1) {
+        if (lbl_803C6CF8.idle == 1) {
             RelocPair* snd = task->res28;
             RELOCATE(snd, snd->a);
             RELOCATE(snd, snd->b);
@@ -864,11 +843,11 @@ void fn_8006BE00(void) {
             task->_36--;
             break;
         }
-        if ((task->_3A == 0 || lbl_8037169C._12 != 0) && lbl_803C6CF8._715 == 1) {
+        if ((task->_3A == 0 || lbl_8037169C._12 != 0) && lbl_803C6CF8.idle == 1) {
             if (lbl_80366158[0x29] == 0 || lbl_80366158[0x29] == 1) {
                 fn_80008E00(fn_8006C088);
             }
-            lbl_80109378._40.task = lbl_803CC1B8;
+            lbl_80109378._40.task = (SoundLoadTask*)lbl_803CC1B8; // TODO type: the scene task
             fn_800215F8(&lbl_80109378._40);
             RELOCATE(task->u14.res, task->u14.res->data);
             convertTextureHeader(task->u14.res->data);
