@@ -161,9 +161,71 @@ void fn_3_116B38(void) {
 }
 
 // .text:0x00116B74 size:0x8A8 mapped:0x80755C08
-void fn_3_116B74(void) {
-    return;
+// NONMATCHING 56%: the original inlines every per-mode helper (fn_3_1169D0 is a bl here) and unrolls the 40-sprite clear loop by 8; it also reaches lbl_3_data_226C4 through the lbl_3_data_225F0 pooled base
+#if NONMATCHING
+extern void fn_8001D110(s32 i, f32 a, f32 b, f32 c);
+extern u8 lbl_3_data_21BC4[];
+extern f32 lbl_3_data_226C4[];
+static inline void hideSprites_116B74(void) {
+    s32 i;
+    for (i = 0; i < 40; i++) {
+        lbl_8036E548.sprites[i].visible = 0;
+        lbl_8036E548.sprites[i].draw = NULL;
+    }
 }
+// Per-frame sprite placement for the current minigame (g_Minigame[0x1A2A]).
+void fn_3_116B74(void) {
+    Rep3310Sprite* e;
+    f32* v;
+    s32 i;
+
+    switch (g_Minigame[0x1A2A]) {
+    case 1:
+        fn_3_116B38();
+        break;
+    case 2:
+        fn_3_1169D0();
+        break;
+    case 3:
+        fn_3_116B38();
+        fn_3_119F6C();
+        break;
+    case 4:
+        fn_3_119934();
+        fn_3_117494();
+        break;
+    case 6:
+        fn_3_118164();
+        fn_3_117FC8();
+        hideSprites_116B74();
+        fn_3_1179EC();
+        fn_3_117494();
+        break;
+    case 5:
+        fn_3_1194FC();
+        fn_3_116840();
+        hideSprites_116B74();
+        for (i = 0; i < 7; i++) {
+            e = &lbl_8036E548.sprites[i + 0xE9];
+            e->visible = 0;
+            if (i >= 4) {
+                v = (f32*)(lbl_3_data_21BC4 + i * 0x30 - 0xC0);
+                e->visible = 1;
+                e->pos[0] = v[0];
+                e->pos[1] = -v[1];
+                e->pos[2] = v[2];
+                fn_8001D110(i + 0xE9, lbl_3_data_226C4[0], lbl_3_data_226C4[1], lbl_3_data_226C4[0]);
+                e->draw = fn_3_11881C;
+            }
+        }
+        lbl_8036E548.sprites[0xF0].visible = 0;
+        lbl_8036E548.sprites[0xF1].visible = 0;
+        lbl_8036E548.sprites[0xF2].visible = 0;
+        lbl_8036E548.sprites[0xF3].visible = 0;
+        break;
+    }
+}
+#endif
 
 // .text:0x0011741C size:0x78 mapped:0x807564B0
 void fn_3_11741C(s32 i) {
