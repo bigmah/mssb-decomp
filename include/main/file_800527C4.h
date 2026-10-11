@@ -127,7 +127,7 @@ void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);
 
 BOOL fn_80062578(void);
 void fn_800625A4(s32 index, s32 step);
-void fn_800626EC(s32 index);
+s32 fn_800626EC(s32 index); // returns the count before incrementing
 void fn_80062674(s32 index);
 void fn_80062744(void);
 void fn_80062764(struct SoundLoadTask* task);

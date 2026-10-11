@@ -192,7 +192,7 @@ u32 ReadBits(u32 bits)
             // signal a thread to update the cache of data to read
             interrupts = OSDisableInterrupts();
             gDataDecompressorValues.segmentCount--;
-            OSSignalSemaphore(&gDataDecompressorValues.s);
+            OSSignalSemaphore(gDataDecompressorValues.s);
             OSRestoreInterrupts(interrupts);
         }
     }

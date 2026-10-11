@@ -464,7 +464,7 @@ void CTRLBuildInverseMatrix(Control *control, Mtx m) {
         q.y = -control->controlParams.srt.r.y;
         q.z = -control->controlParams.srt.r.z;
         q.w = -control->controlParams.srt.r.w;
-        MTXQuat(m, &q);
+        PSMTXQuat(m, &q);
     } else if (control->type & CTRL_ROT_EULER) {
         if (0.0f != control->controlParams.srt.r.z) {
             nRad = 0.0174532925f * -control->controlParams.srt.r.x;

@@ -273,8 +273,13 @@ void fn_1_786C(void) {
     GXSetCopyClear(clear, 0xFFFFFF);
     fog = lbl_1_bss_4E0[0];
     color = fog->color.color;
-    // This call passes the packed colour through the GXColor value ABI.
+#if NONMATCHING
+    SetFog((GXFogType)fog->color.color.a, &color, fog->start, fog->end, lbl_1_rodata_1D8, lbl_1_rodata_208);
+#else
+    // The original passes the colour by value (PPC: pointer to a copy) and the
+    // distances as floats; same registers as SetFog's (GXFogType, GXColor*, f64...).
     ((void (*)(u8, GXColor, f32, f32, f32, f32))SetFog)(fog->color.color.a, color, fog->start, fog->end, lbl_1_rodata_1D8, lbl_1_rodata_208);
+#endif
 }
 
 // fn_1_54E0, size:0x60

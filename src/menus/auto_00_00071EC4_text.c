@@ -29,7 +29,7 @@ extern void fn_80053FE8(void);
 extern void fn_8004E2EC(void);
 extern void fn_8004F964(void);
 extern void fn_80062674(s32 index);
-extern void fn_800626EC(s32 index);
+extern s32 fn_800626EC(s32 index);
 extern void fn_800625A4(s32 a, s32 b);
 extern u8* lbl_803CC1B8;
 extern s32 fn_80042DA8(void* owner, s32 b, s32 c); // owner: LayoutOwner*
@@ -908,14 +908,19 @@ void fn_2_837D8(u8* o) {
                 v -= 1;
             }
             lbl_2_data_2E2EC = v;
+#if NONMATCHING
+            fn_80062674(0);
+#else
+            // fn_80062674 ignores a second argument; the original passes &lbl_2_data_2E2EC in r4.
             ((void (*)(s32, s8*))fn_80062674)(0, &lbl_2_data_2E2EC);
+#endif
             lbl_803C66B0[0x2B] = 2;
         }
     }
 }
 
 extern void fn_80062674(s32 index);
-extern void fn_800626EC(s32 index);
+extern s32 fn_800626EC(s32 index);
 
 // fn_2_78F78, size:0x1B4
 void fn_2_78F78(u8* o, s32 i) {
@@ -1027,7 +1032,7 @@ s32 fn_2_7463C(u8* o) {
         }
         *(s32*)(((u8**)(lbl_80371C30 + 0x100))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
         ((u8**)(lbl_80371C30 + 0x100))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        ok = ((s32 (*)(s32))fn_800626EC)(0);
+        ok = fn_800626EC(0);
         lbl_803C66B0[7] = 1;
     }
     return ok;

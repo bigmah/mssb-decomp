@@ -3910,13 +3910,13 @@ void fn_800625A4(s32 index, s32 step) {
 
 
 // fn_800626EC, size:0x58
-void fn_800626EC(s32 index) {
+s32 fn_800626EC(s32 index) {
     if (((u8*)&g_d_GameSettings)[0x10] == 0) {
         lbl_803C66B0.active[0] = 1;
     } else {
         lbl_803C66B0.active[index] = 1;
     }
-    lbl_803C663C[index]++;
+    return lbl_803C663C[index]++; // the old count
 }
 
 // fn_80062674, size:0x78

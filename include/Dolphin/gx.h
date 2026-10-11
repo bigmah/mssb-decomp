@@ -16,6 +16,10 @@ extern "C" {
 #include "Dolphin/GX/GXFrameBuffer.h"
 #include "Dolphin/GX/GXPerf.h"
 #include "Dolphin/GX/GXPixel.h"
+
+struct OSThread;
+struct OSThread* GXSetCurrentGXThread(void);
+struct OSThread* GXGetCurrentGXThread(void);
 #include "Dolphin/GX/GXTev.h"
 #include "Dolphin/GX/GXTexture.h"
 #include "Dolphin/GX/GXGeometry.h"

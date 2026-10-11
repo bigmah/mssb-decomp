@@ -1120,7 +1120,7 @@ void fn_3_7FD90(int i) {
                 }
             }
         }
-        v = ((int (*)(void))fn_3_7FA78)();
+        v = fn_3_7FA78(i);
         if (v != 0) {
             r[0x136] = v;
         }

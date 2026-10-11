@@ -71,7 +71,7 @@ void fn_2_96D20(void) {
 }
 
 extern s32 fn_80042DA8(void*, s32, s32);
-extern void fn_800626EC(s32);
+extern s32 fn_800626EC(s32 index);
 
 // fn_2_95E80, size:0xBC
 void fn_2_95E80(u8* object) {

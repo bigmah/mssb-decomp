@@ -2,6 +2,7 @@
 #define __GAME_rep_3090_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/vec.h"
 
 /* Replay camera path types (rep_3090). Pointers to arrays of these live in the camera script state. */
 typedef struct { struct { f32 x, y, z; } pos; f32 u; f32 v; u8 pad[0x28]; f32 t; } PathPt; /* size 0x40 */

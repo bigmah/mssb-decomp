@@ -208,6 +208,8 @@ typedef struct {
 } OSSemaphore;
 
 void OSInitSemaphore(OSSemaphore *a, BOOL b);
+s32 OSWaitSemaphore(OSSemaphore volatile *a);
+s32 OSSignalSemaphore(OSSemaphore *a);
 
 // RTC defines.
 #define RTC_CMD_READ  0x20000000

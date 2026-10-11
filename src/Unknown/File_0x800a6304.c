@@ -1,4 +1,5 @@
 #include "Unknown/File_0x800a6304.h"
+#include "stl/mem.h"
 
 typedef struct
 {

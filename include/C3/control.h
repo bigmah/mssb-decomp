@@ -38,6 +38,8 @@ typedef struct Control {
 void CTRLSetScale(Control *control, f32 x, f32 y, f32 z);
 void CTRLSetRotation(Control *control, f32 x, f32 y, f32 z);
 void CTRLSetQuat(Control *control, f32 x, f32 y, f32 z, f32 w);
+void CTRL_SetQuatUnk(Control *control, f32 x, f32 y, f32 z, f32 w);
+void CTRL_GetQuatUnk(const Control *control, f32 *x, f32 *y, f32 *z, f32 *w);
 void CTRLSetTranslation(Control *control, f32 x, f32 y, f32 z);
 void CTRLSetMatrix(Control *control, MtxPtr m);
 void CTRLGetScale(Control *control, f32 *x, f32 *y, f32 *z);

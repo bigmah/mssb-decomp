@@ -2377,7 +2377,6 @@ void fn_3_105C84(u8* p) {
 
 // .text:0x00105CDC size:0x124 mapped:0x80744D70
 void fn_3_105CDC(void) {
-    extern void fn_3_105E00(s16, s16, s32, s32);
     Vec* arr = *(Vec**)(lbl_3_common_bss_DE94 + 0x98);
     s32 i;
     for (i = 0; i < 1000; i++) {
@@ -2394,7 +2393,12 @@ void fn_3_105CDC(void) {
         if (i == 5) {
             i = 5;
         }
-        fn_3_105E00(x / 50 + 150, -z / 50 + 400, 2, 2);
+#if NONMATCHING
+        fn_3_105E00((s16)(x / 50 + 150), (s16)(-z / 50 + 400), 2, 2);
+#else
+        // The original prototype took s16 coordinates (same PPC ABI); keeps the extsh scheduling.
+        ((void (*)(s16, s16, s32, s32))fn_3_105E00)(x / 50 + 150, -z / 50 + 400, 2, 2);
+#endif
     }
 }
 
