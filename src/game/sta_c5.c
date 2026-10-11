@@ -1294,7 +1294,8 @@ extern const f64 lbl_3_rodata_2EC8;
 extern const f64 lbl_3_rodata_2ED0;
 extern const f32 lbl_3_rodata_2ED8;
 extern const f64 lbl_3_rodata_2EE0;
-u32 fn_3_F3CD0(u8* a) {
+s32 fn_3_F3CD0(struct Emitter* em) {
+    u8* a = (u8*)em; /* TODO type: Emitter/Particle from main/file_800263FC.h */
     u8* e = *(u8**)(a + 0xC);
     u32 cnt = 0;
     fn_80033620();
@@ -1329,6 +1330,7 @@ u32 fn_3_F3CD0(u8* a) {
     return cnt == 0;
 }
 
+#pragma dont_inline off
 // .text:0x000F3EFC size:0x3A4 mapped:0x80732F90
 extern u32 lbl_3_bss_B560[];
 extern const f32 lbl_3_rodata_2E90;
@@ -1338,7 +1340,8 @@ extern const f64 lbl_3_rodata_2E98;
 extern const f64 lbl_3_rodata_2EA0;
 extern const f64 lbl_3_rodata_2EA8;
 extern const f64 lbl_3_rodata_2EB0;
-void fn_3_F3EFC(u8* a) {
+void fn_3_F3EFC(struct Emitter* em) {
+    u8* a = (u8*)em; /* TODO type */
     u8* e;
     u8 i;
     e = *(u8**)(a + 0xC);
@@ -1369,9 +1372,14 @@ void fn_3_F3EFC(u8* a) {
     }
 }
 
+#pragma dont_inline on
 // .text:0x000F42A0 size:0x3CC mapped:0x80733334
+struct Emitter* fn_80033A24(s32 (*update)(struct Emitter* e), u8 priority, s32 unk14, s32 n, s32 strict, u8 type);
 void fn_3_F42A0(void) {
-    return;
+    struct Emitter* e = fn_80033A24(fn_3_F3CD0, 0x80, 0, 8, 1, 0);
+    if (e != NULL) {
+        fn_3_F3EFC(e);
+    }
 }
 
 // .text:0x000F466C size:0x30 mapped:0x80733700
