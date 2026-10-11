@@ -1869,9 +1869,40 @@ void fn_80048C1C(void) {
 }
 
 // .text:0x80048C28 size:0x124
+// NONMATCHING ~92%: min/max loop uses ctr in ours, a decrementing counter in the original
+#if NONMATCHING
 void fn_80048C28(void) {
-    return;
+    u32* p;
+    s32 n;
+
+    if (lbl_803CBCE8 == 0) {
+        return;
+    }
+    GXSetDrawSync(0xABCD);
+    while (GXReadDrawSync() != 0xABCD) {
+    }
+    GXReadGPMetric(&lbl_802E4B28.cur[0], &lbl_802E4B28.cur[1]);
+    GXReadVCacheMetric(&lbl_802E4B28.cur[2], &lbl_802E4B28.cur[3], &lbl_802E4B28.cur[4]);
+    GXReadPixMetric(&lbl_802E4B28.cur[5], &lbl_802E4B28.cur[6], &lbl_802E4B28.cur[7],
+                    &lbl_802E4B28.cur[8], &lbl_802E4B28.cur[9], &lbl_802E4B28.cur[10]);
+    if (--lbl_803CB838 == 0) {
+        memset(lbl_802E4B28.max, 0, sizeof(lbl_802E4B28.max));
+        memset(lbl_802E4B28.min, 0xFF, sizeof(lbl_802E4B28.min));
+        lbl_803CB838 = 300;
+    }
+    p = lbl_802E4B28.min;
+    n = 11;
+    while (n-- != 0) {
+        p--;
+        if (p[11] > p[0]) {
+            p[11] = p[0];
+        }
+        if (p[22] < p[0]) {
+            p[22] = p[0];
+        }
+    }
 }
+#endif
 
 // .text:0x80048D4C size:0xB4
 void fn_80048D4C(void) {
