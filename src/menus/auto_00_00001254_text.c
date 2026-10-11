@@ -12,6 +12,7 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_2_data_E64[];
 extern u8 lbl_80366158[];
 extern u8 lbl_2_bss_3E0[];
 extern void fn_800649BC(void);
@@ -1685,6 +1686,33 @@ void fn_2_1578(void) {
         }
         fn_800625A4(0, 0x56);
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
+}
+#endif
+
+// NONMATCHING 93%: same instructions, scheduling/register rotation in the unrolled pick loop
+#if NONMATCHING
+// fn_2_2D1C, size:0x2A4
+void fn_2_2D1C(void) {
+    s32 t;
+    s32 i;
+    *(s32*)(lbl_8034E9A0 + 0x46E0) = 10;
+    *(s32*)(lbl_8034E9A0 + 0x46E4) = 2;
+    for (t = 0; t < 2; t++) {
+        s16* tbl = (s16*)lbl_2_data_E64 + t * 9;
+        for (i = 0; i < 9; i++) {
+            s32 v = tbl[i];
+            lbl_803C6724[t * 9 + i + 2] = v;
+            lbl_803C6724[t * 9 + i + 0x26] =
+                (lbl_8034E9A0 + *(s32*)(lbl_8034E9A0 + 0x46E0 + t * 4) + (v / 9) * 0x5A0 + (v % 9) * 0xA0)[0x3B];
+        }
+    }
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 9; i++) {
+            lbl_80354720[t * 0x24 + i * 4 + 2] = i;
+            lbl_80354720[t * 0x24 + i * 4 + 1] = i;
+            lbl_80354720[t * 0x24 + i * 4 + 0] = i;
+        }
     }
 }
 #endif

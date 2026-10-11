@@ -256,4 +256,6 @@ void fn_2_1800(void);
 
 void fn_2_1578(void);
 
+void fn_2_2D1C(void);
+
 #endif
