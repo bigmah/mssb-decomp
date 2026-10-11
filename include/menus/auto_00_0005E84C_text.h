@@ -95,6 +95,9 @@ s16 fn_2_53BC8(void* item);
 
 extern s16 lbl_2_data_2E80[][3];
 extern u8 lbl_2_data_20BF0[];
+extern s16 lbl_2_data_20C38[];
+extern s16 lbl_2_data_20C48[];
+extern s16 lbl_2_data_20C58[];
 extern AssetLoadInstructions lbl_2_data_20C00;
 
 extern MenuTask* lbl_803CC1B8;
@@ -208,7 +211,7 @@ void fn_2_6452C(MenuTask* task, MenuItem* item);
 void fn_2_646FC(MenuTask* task, MenuItem* item);
 void fn_2_648CC(void);
 void fn_2_64C50(MenuTask* task, MenuItem* item);
-void fn_2_64E20(void);
+void fn_2_64E20(MenuTask* task, MenuItem* item);
 void fn_2_650A4(MenuTask* task, MenuItem* item);
 void fn_2_65258(MenuTask* task, MenuItem* item);
 void fn_2_653D4(void);

@@ -1562,8 +1562,59 @@ void fn_2_64C50(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x00064E20 size:0x284
-void fn_2_64E20(void) {
-    return;
+void fn_2_64E20(MenuTask* task, MenuItem* item) {
+    LayoutObj* obj;
+    s32 idx;
+    s32 frame;
+    GameInitVariables* settings = &g_d_GameSettings;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        idx = item->_0A;
+        frame = lbl_2_data_20C58[idx];
+        if (idx == 5 && settings->_12 == 0) {
+            frame = 7;
+        } else if (idx == 6 && settings->_12 <= 1) {
+            frame = 7;
+        }
+        fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x1D, frame);
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        if (lbl_2_bss_1A824C->_1976FA == item->_0A) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        }
+        item->state = 0x25;
+        break;
+    case 0x11:
+        if (lbl_2_bss_1A824C->_1976FA == item->_0A) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        } else {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
+        }
+        break;
+    case 5:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
+        item->state = 6;
+        break;
+    case 6:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) == 0) {
+            obj->_68 = 0;
+            item->state = 7;
+        }
+        break;
+    case 7:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        break;
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x000650A4 size:0x1B4
