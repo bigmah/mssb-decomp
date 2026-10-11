@@ -534,9 +534,73 @@ void DrawSprite(void) {
 }
 
 // .text:0x800B1EBC size:0x2A4
-void fn_800B1EBC(void) {
-    return;
+// NONMATCHING 99%: map/width/height parameters get different saved registers
+#if NONMATCHING
+// Loads tex into texture map `map` of the current display list (if it isn't already)
+// and sets the texcoord scale. Returns whether anything was written.
+s32 fn_800B1EBC(SpriteTexInfo* tex, s32 map, u32 width, u32 height) {
+    s32 id = map + 1;
+    s32 written;
+    lbl_803CBB34->texSerial[map] = lbl_803CBB34->serial;
+    written = FALSE;
+    lbl_803CBB34->serial++;
+    if (lbl_803CBB34->tex[map] != tex) {
+        lbl_803CBB34->tex[map] = tex;
+        SpriteReserve(((tex->tlut != NULL) * 7 + 4) * 5);
+        if (tex->tlut != NULL) {
+            u32 tmem;
+            u32 tlutSize = GX_TLUT_16;
+            while (tlutSize * 16 < tex->tlutCount) {
+                tlutSize *= 2;
+            }
+            tmem = (map << 13) + 0xC0000;
+            fn_800A26FC(tex->tlut, tmem, tlutSize);
+            fn_800A237C(id, tmem, tex->tlutFormat);
+        }
+        {
+            s32 wrapS = tex->wrapS;
+            s32 wrapT;
+            // Only power-of-two dimensions can repeat/mirror.
+            if (wrapS != GX_CLAMP) {
+                u16 n = tex->width;
+                u16 bits = 0;
+                while (n != 0) {
+                    bits += n & 1;
+                    n >>= 1;
+                }
+                if (bits > 1) {
+                    wrapS = GX_CLAMP;
+                }
+            }
+            wrapT = tex->wrapT;
+            if (wrapT != GX_CLAMP) {
+                u16 n = tex->height;
+                u16 bits = 0;
+                while (n != 0) {
+                    bits += n & 1;
+                    n >>= 1;
+                }
+                if (bits > 1) {
+                    wrapT = GX_CLAMP;
+                }
+            }
+            fn_800A1F40(id, wrapS, wrapT, tex->minFilter, tex->magFilter, tex->minLod, tex->maxLod, tex->lodBias,
+                        GX_FALSE, GX_FALSE, GX_ANISO_1);
+        }
+        fn_800A2194(id, tex->width, tex->height, tex->format);
+        fn_800A2294(id, tex->image);
+        written = TRUE;
+    }
+    if (lbl_803CBB34->texWidth != width || lbl_803CBB34->texHeight != height) {
+        lbl_803CBB34->texWidth = width;
+        lbl_803CBB34->texHeight = height;
+        SpriteReserve(0xF);
+        fn_800A246C(map, width, GX_FALSE, GX_FALSE, height, GX_FALSE, GX_FALSE);
+        written = TRUE;
+    }
+    return written;
 }
+#endif
 
 // fn_800B2160, size:0xC
 void fn_800B2160(u8 value) {

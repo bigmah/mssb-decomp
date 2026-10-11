@@ -123,6 +123,7 @@ void SndFree(void* ptr);
 void* SndAlloc(u32 size);
 
 s32 AllocateSprite(s32 layer, s32 needed);
+s32 fn_800B1EBC(struct SpriteTexInfo* tex, s32 map, u32 width, u32 height);
 
 void fn_800B0934(void);
 
