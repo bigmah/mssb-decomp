@@ -329,6 +329,55 @@ typedef struct TrailShape {
     /* 0x8 */ TrailShapeEntry entries[1]; // count entries
 } TrailShape;
 
+// Spark particle (type 12): a different view of a Particle pool entry.
+typedef struct SparkParticle {
+    /* 0x00 */ Particle* next;
+    /* 0x04 */ Vec pos;
+    /* 0x10 */ Vec vel;
+    /* 0x1C */ Vec accel;
+    /* 0x28 */ f32 angle;
+    /* 0x2C */ f32 spin;
+    /* 0x30 */ f32 size;
+    /* 0x34 */ union {
+        u32 rgba;
+        u8 v[4];
+    } color;
+    /* 0x38 */ s16 delay;
+    /* 0x3A */ s16 life;
+    /* 0x3C */ u8 texIndex;
+    /* 0x3D */ s8 fadeIn;
+    /* 0x3E */ s8 fadeOut;
+    /* 0x3F */ u8 fadeStart; // fade out when life drops below this
+    /* 0x40 */ u8 alphaMax;
+    /* 0x41 */ u8 additive;
+    /* 0x42 */ u8 zTest;
+    /* 0x43 */ u8 pad43[0x60 - 0x43];
+} SparkParticle;
+
+typedef struct ParticleParamsC {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s32 unk28;
+    /* 0x2C */ s32 unk2C;
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ s32 unk34;
+    /* 0x38 */ s32 unk38;
+    /* 0x3C */ s32 unk3C;
+    /* 0x40 */ s32 unk40;
+    /* 0x44 */ s32 unk44;
+    /* 0x48 */ s32 unk48;
+    /* 0x4C */ s32 unk4C;
+    /* 0x50 */ s32 unk50;
+} ParticleParamsC;
+
 // Queue task that flashes the stadium lights (fn_8002852C).
 typedef struct LightFlashTask {
     /* 0x00 */ u8 unk0[0x14];
@@ -368,6 +417,9 @@ typedef struct ParticleSortEntry {
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002852C(void);
+s32 fn_80028F48(Emitter* e);
+void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm);
+void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm);
 void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u32* palette, s32 arg5, s32 flash);
 void fn_8002CDD0(Vec* end);
 s32 fn_8002D82C(Emitter* e);

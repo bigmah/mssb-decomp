@@ -52,6 +52,7 @@ typedef struct MtxBox {
 } MtxBox;
 extern const MtxBox lbl_800E67C0; // identity
 extern const MtxBox lbl_800E682C; // identity
+extern const MtxBox lbl_800E67F0; // identity
 // Scratch for drawing type-4 trails.
 typedef struct TrailScratch {
     /* 0x00 */ f32 width[18];
@@ -713,9 +714,119 @@ void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u3
 #endif
 
 // .text:0x80028F48 size:0x614
-void fn_80028F48(void) {
-    return;
+// NONMATCHING 79%: register allocation
+#if NONMATCHING
+s32 fn_80028F48(Emitter* e) {
+    MtxBox ident;
+    Vec v;
+    s32 lastTex = -1;
+    s32 lastZ = -1;
+    s32 lastBlend = -1;
+    s32 a;
+    s32 ang;
+    f32 h;
+    f32 cx;
+    f32 sx;
+    SparkParticle* p = (SparkParticle*)e->particles;
+    Particle** link = &e->particles;
+    Particle* lastDead = NULL;
+    Particle* deadHead = NULL;
+
+    ident = lbl_800E67F0;
+    GXLoadPosMtxImm(ident.m, GX_PNMTX0);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    do {
+        if (p->delay != 0) {
+            p->delay -= (lbl_80366158._28 == 0);
+        } else if (p->life > 0) {
+            if (p->texIndex != lastTex) {
+                lastTex = p->texIndex;
+                LoadParticleTex(e->tex, lastTex, GX_CLAMP, GX_CLAMP);
+            }
+            if (p->additive != lastBlend) {
+                lastBlend = p->additive;
+                if (lastBlend != 0) {
+                    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+                } else {
+                    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+                }
+            }
+            if (p->zTest != lastZ) {
+                lastZ = p->zTest;
+                if (lastZ != 0) {
+                    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+                } else {
+                    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+                }
+            }
+            if (lbl_80366158._28 == 0) {
+                PSVECAdd(&p->vel, &p->accel, &p->vel);
+                PSVECAdd(&p->pos, &p->vel, &p->pos);
+                // bounce off the ground
+                if (p->pos.y >= -p->size) {
+                    p->pos.y = -p->size;
+                    p->vel.y = -0.5f * p->vel.y;
+                }
+                p->angle = p->angle + p->spin;
+                if (p->angle > 2048.0f) {
+                    p->angle = p->angle - 2048.0f;
+                }
+                if (p->life < p->fadeStart) {
+                    a = p->color.v[3] - p->fadeOut;
+                    if (a < 0) {
+                        a = 0;
+                    }
+                    p->color.v[3] = a;
+                } else if (p->fadeIn != 0 && p->color.v[3] < p->alphaMax) {
+                    a = p->color.v[3] + p->fadeIn;
+                    if (a > p->alphaMax) {
+                        a = p->alphaMax;
+                    }
+                    p->color.v[3] = a;
+                }
+            }
+            PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
+            ang = (s32)(2048.0f * p->angle);
+            h = p->size * 0.5f;
+            cx = h * CosIdx(ang);
+            sx = h * SinIdx(ang);
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            GXPosition3f32(v.x + cx, v.y + sx, v.z);
+            GXColor1u32(p->color.rgba);
+            GXTexCoord2f32(0.0f, 0.0f);
+            GXPosition3f32(v.x + sx, v.y - cx, v.z);
+            GXColor1u32(p->color.rgba);
+            GXTexCoord2f32(0.0f, 1.0f);
+            GXPosition3f32(v.x - cx, v.y - sx, v.z);
+            GXColor1u32(p->color.rgba);
+            GXTexCoord2f32(1.0f, 1.0f);
+            GXPosition3f32(v.x - sx, v.y + cx, v.z);
+            GXColor1u32(p->color.rgba);
+            GXTexCoord2f32(1.0f, 0.0f);
+            p->life -= (lbl_80366158._28 == 0);
+        }
+        if (p->life == 0) {
+            *link = p->next;
+            if (lastDead != NULL) {
+                lastDead->next = (Particle*)p;
+            } else {
+                deadHead = (Particle*)p;
+            }
+            p->next = NULL;
+            lastDead = (Particle*)p;
+            e->count--;
+        } else {
+            link = &p->next;
+        }
+        p = (SparkParticle*)*link;
+    } while (p != NULL);
+    if (deadHead != NULL) {
+        FreeParticles(deadHead);
+    }
+    GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
+    return e->count == 0;
 }
+#endif
 
 // .text:0x8002955C size:0x294
 void fn_8002955C(void) {
