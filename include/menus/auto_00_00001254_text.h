@@ -274,4 +274,12 @@ void fn_2_1F30(void);
 
 void fn_2_27E0(void);
 
+void fn_2_57F0(u8 team, u16 held, u16 pressed, s32 dirs);
+
+void fn_2_DFAC(u8 team);
+
+void fn_2_CE44(u8 team);
+
+s32 fn_2_ED94(u8 team, u16 held, u16 pressed, s32 dirs);
+
 #endif

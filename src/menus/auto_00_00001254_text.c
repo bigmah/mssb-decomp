@@ -12,6 +12,8 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_803C6028[];
+extern s32 fn_80050760(s32 p, s32 held, s32 pressed, s32 dirs, s32 mode);
 extern u8 lbl_2_bss_20[];
 extern u8 lbl_2_data_180[];
 extern u8* lbl_803CC1B8;
@@ -2257,5 +2259,90 @@ void fn_2_AEE8(void) {
             lbl_8034E9A0[0x478D + t * 0x36 + i] = ids[t][i];
         }
     }
+}
+#endif
+
+// NONMATCHING 85%: register allocation and branch layout differ; fn_2_35D0 inlines as in the original
+#if NONMATCHING
+static inline void fn_2_ED94_toggle(u8 team, u16 held) {
+    if (lbl_2_bss_F468[team + 0x47] == 0 && (held & 2)) {
+        lbl_2_bss_F468[team + 0x47] = 1;
+        lbl_2_bss_F468[team + 0x49] = 0;
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else if (lbl_2_bss_F468[team + 0x47] == 1 && (held & 1)) {
+        lbl_2_bss_F468[team + 0x47] = 0;
+        lbl_2_bss_F468[team + 0x49] = 0;
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
+}
+
+// fn_2_ED94, size:0x46C
+s32 fn_2_ED94(u8 team, u16 held, u16 pressed, s32 dirs) {
+    s8 owner;
+    if (lbl_2_bss_F468[team + 0x41] == 0) {
+        if ((held & 8) || (held & 4) || (held & 1) || (held & 2)) {
+            if (lbl_2_bss_F468[team + 0x45] != 0) {
+                fn_2_ED94_toggle(team, held);
+                dirs = 0;
+                pressed = 0;
+                held = 0;
+            }
+            if (lbl_2_bss_F468[team + 0x59] != 0) {
+                dirs = 0;
+                pressed = 0;
+                held = 0;
+            }
+            fn_2_57F0(team, held, pressed, dirs);
+            return 1;
+        }
+    } else {
+        if (lbl_2_bss_F468[team + 0x59] != 0) {
+            lbl_2_bss_F468[team + 0x41] = 0;
+            fn_800625A4(team, 0xD);
+            return 1;
+        }
+        if (((s32*)lbl_2_bss_F468)[team] != 9) {
+            ((s32*)lbl_2_bss_F468)[team + 8] = ((s32*)lbl_2_bss_F410)[team + 8];
+            if (lbl_2_bss_F468[team + 0x45] != 0) {
+                fn_2_ED94_toggle(team, held);
+                if (g_d_GameSettings._10 == 0 && team != 0) {
+                    owner = *(s8*)(lbl_8034E9A0 + 0x46F8) == 0;
+                    lbl_803C6028[0x74 + owner] = 1;
+                    ((s32*)lbl_2_bss_F410)[team + 8] = fn_80050760(owner, 0, 0, 0, 0);
+                } else {
+                    owner = *(s8*)(lbl_8034E9A0 + 0x46F8 + team);
+                    if (*(s8*)(lbl_8034E9A0 + 0x46FC + owner) != 0) {
+                        owner = *(s8*)(lbl_8034E9A0 + 0x46F8) == 0;
+                    }
+                    ((s32*)lbl_2_bss_F410)[team + 8] = fn_80050760(owner, 0, 0, 0, 0);
+                }
+            } else if (g_d_GameSettings._10 == 0 && team != 0) {
+                owner = *(s8*)(lbl_8034E9A0 + 0x46F8) == 0;
+                lbl_803C6028[0x74 + owner] = 1;
+                ((s32*)lbl_2_bss_F410)[team + 8] = fn_80050760(owner, held, pressed, dirs, 0);
+            } else {
+                owner = *(s8*)(lbl_8034E9A0 + 0x46F8 + team);
+                if (*(s8*)(lbl_8034E9A0 + 0x46FC + owner) != 0) {
+                    owner = *(s8*)(lbl_8034E9A0 + 0x46F8) == 0;
+                }
+                ((s32*)lbl_2_bss_F410)[team + 8] = fn_80050760(owner, held, pressed, dirs, 0);
+            }
+        }
+    }
+    if (pressed & 0x100) {
+        if (fn_2_35D0(team)) {
+            return 1;
+        }
+        fn_2_DFAC(team);
+        return 1;
+    }
+    if (pressed & 0x200) {
+        if (fn_2_35D0(team)) {
+            return 1;
+        }
+        fn_2_CE44(team);
+        return 1;
+    }
+    return 0;
 }
 #endif
