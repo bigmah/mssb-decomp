@@ -218,7 +218,24 @@ void fn_800E2AB0(HVQState* state, s32 planeIdx, u8* dst) {
 
 // .text:0x800E2B8C size:0x8C
 void fn_800E2B8C(HVQState* state, HVQMCPlane* mc, u8* dst, u8* ref0, u8* ref1) {
-    return;
+    HVQPlaneDesc* plane = state->planes;
+    s32 i;
+
+    for (i = 0; i < 3; i++, plane++, mc++) {
+        mc->run = 0;
+        mc->dcPred = 0x7F;
+        mc->dstRow = dst;
+        mc->ref0 = ref0;
+        mc->ref1 = ref1;
+        mc->blkRow = mc->blk = plane->payload;
+        mc->mbStepX = 8 >> plane->widthShift;
+        mc->mbStepY = (8 >> plane->heightShift) * plane->widthInSamples;
+        mc->blkStepX = plane->widthInMB;
+        mc->blkStepY = plane->blocksPerRow * plane->heightInMB;
+        dst += plane->sizeInSamples;
+        ref0 += plane->sizeInSamples;
+        ref1 += plane->sizeInSamples;
+    }
 }
 
 // .text:0x800E2C18 size:0x6D0
