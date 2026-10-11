@@ -106,4 +106,8 @@ void fn_3_AD3BC(void);
 
 void fn_3_AD8CC(void);
 
+void fn_3_AC9F8(void);
+
+void fn_3_ACAF8(void);
+
 #endif

@@ -1356,3 +1356,68 @@ void fn_3_AD8CC(void) {
         break;
     }
 }
+
+// fn_3_ACAF8, size:0x240
+void fn_3_ACAF8(void) {
+    switch (lbl_3_common_bss_34C90.subState) {
+    case 0:
+        lbl_3_common_bss_34C90.subFrames = 0;
+        lbl_3_common_bss_34C90.optionCursor = 1;
+        lbl_3_common_bss_34C90.optionCount = 3;
+        lbl_3_common_bss_34C90.subState = 2;
+        break;
+    case 1:
+        break;
+    case 2:
+        lbl_3_common_bss_34C90.subFrames = 0;
+        lbl_3_common_bss_34C90.subState = 3;
+        break;
+    case 3:
+        changeScene(1, 6);
+        if (lbl_3_common_bss_34C90.subFrames > 20) {
+            lbl_3_common_bss_34C90.subState = 4;
+        }
+        break;
+    case 4:
+        if (lbl_3_common_bss_32724[0xC3] == 0) {
+            if (lbl_3_common_bss_34C90.newButtons & 0x200) {
+                lbl_3_common_bss_34C90.subState = 5;
+                sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            } else if (g_d_GameSettings.GameModeSelected != 6) {
+                if ((lbl_3_common_bss_34C90.repeatButtons & 1) && lbl_3_common_bss_34C90.optionCursor != 0) {
+                    lbl_3_common_bss_34C90.optionCursor -= 1;
+                    sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                } else if ((lbl_3_common_bss_34C90.repeatButtons & 2) &&
+                           lbl_3_common_bss_34C90.optionCursor < lbl_3_common_bss_34C90.optionCount - 1) {
+                    lbl_3_common_bss_34C90.optionCursor += 1;
+                    sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+                }
+            }
+        }
+        lbl_3_common_bss_34C90.subFrames = 0;
+        break;
+    case 5:
+        if (lbl_3_common_bss_34C90.subFrames > 20 && lbl_3_common_bss_32724[0xC3] == 0) {
+            lbl_3_common_bss_34C90.subState = 6;
+        }
+        break;
+    case 6:
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            lbl_3_common_bss_34C90.subState = 0;
+            fn_3_5A6D4(0xB);
+        } else if (lbl_3_common_bss_34C90.openedByBattingTeam == 0) {
+            lbl_3_common_bss_34C90.state = 2;
+            lbl_3_common_bss_34C90.subState = 0;
+            lbl_3_common_bss_34C90.frames = 0;
+            lbl_3_common_bss_34C90._0E = 0;
+            lbl_3_common_bss_34C90._10 = 0;
+        } else {
+            lbl_3_common_bss_34C90.state = 9;
+            lbl_3_common_bss_34C90.subState = 0;
+            lbl_3_common_bss_34C90.frames = 0;
+            lbl_3_common_bss_34C90._0E = 0;
+            lbl_3_common_bss_34C90._10 = 0;
+        }
+        break;
+    }
+}
