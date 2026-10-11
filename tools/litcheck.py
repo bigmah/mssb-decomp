@@ -4,11 +4,16 @@
 objdiff/report.json and fndiff anonymise literals (`@123`, `lbl_3_sdata2_*`), so a
 function can count as 100% matched while loading 360.0f where the original loads 180.0f.
 This tool resolves every relocation from .text into .sdata2/.rodata to the value it
-points at (through the section data of each object) and compares, per function, the set
-of values the target object loads with the set ours loads:
-  - float (lfs), double (lfd), paired single (psq_l), integer (lwz/lhz/lbz) loads
-  - addresses (addi / la): a NUL-terminated string, else the bytes of the object
-    (pooled float tables are split into their floats/doubles)
+points at (through the section data of each object; an extern lbl_N_rodata_ADDR is
+looked up in the target object that defines it) and compares what each function loads:
+  - float (lfs), double (lfd), paired single (psq_l), integer (lwz/lhz/lbz) loads,
+    directly or through a base register (`addi rB, lbl@l` / lwzu, then `lfs f1, 8(rB)`;
+    followed with a small forward dataflow over the function's branches)
+  - addresses passed on, stored or indexed: a NUL-terminated string, else the bytes of
+    the object (a "blob")
+Matched functions (100% in report.json, same size and load offsets) are compared value
+by value at each instruction, which also catches a wrong label whose value the function
+loads elsewhere too. Other functions compare the set of values (--counts: multiset).
 
 Our object is the normal build (build/GYQE01/src/...o) for units without `#if
 NONMATCHING`, else a -DNONMATCHING=1 compile (as nmverify does), so matched and
@@ -17,9 +22,9 @@ half the target's size) are skipped.
 
 Accepted automatically:
   - int->float magic doubles (0x43300000_xxxxxxxx) compare equal to each other
-  - a value ours loads on its own that lies inside a pooled block the target addresses
-    (and vice versa), or a float/double of the same value on the other side when
-    the only difference is the precision of a pooled block entry
+  - a value one side loads that lies inside a blob the other side addresses, a blob
+    whose words all show up on the other side, and blobs/strings that are a prefix of
+    the other side's (the target's objects may include padding or unlabeled neighbours)
   - values of a helper from the same source inlined on one side only
 Reviewed by hand: values on a `// litcheck: ...` line in the comment block above the
 function are left out (write them as printed, e.g. `// litcheck: 0.5 "abc" pooled`);
