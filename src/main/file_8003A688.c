@@ -262,8 +262,42 @@ u8 fn_80041074(SaveImage* img, s32 length, u32 mask) {
 }
 
 // .text:0x80041150 size:0x1F8
-void fn_80041150(void) {
-    return;
+void fn_80041150(u8 mask, u8 slot) {
+    SaveImage* img = &lbl_802D4B00;
+    SaveChallengeBlock* blk = img->challenge;
+    u8* p8E = img->_8E;
+    u8* p48 = img->_48;
+    u8* p7E = img->_7E;
+    u8* dst;
+    s32 i;
+
+    if (mask & 5) {
+        fn_8002128C(img->soundMode);
+        lbl_800EF808.unk398 = img->_95;
+        lbl_80366158._1F = img->_96;
+        memcpy(lbl_80361B20, img->_97, sizeof(img->_97));
+        memcpy(lbl_803616CC, img->_190, sizeof(img->_190));
+        g_d_GameSettings._12 = img->_5E4;
+        memcpy(g_d_GameSettings._14, img->_5E5, sizeof(img->_5E5));
+        memcpy(g_d_GameSettings._1A, img->_5EB, sizeof(img->_5EB));
+        g_d_GameSettings._00 = img->_5F4;
+        memcpy(lbl_80354768._CF18, p48, sizeof(lbl_80354768._CF18));
+        memcpy(lbl_80354768._CF4E, p7E, sizeof(lbl_80354768._CF4E));
+    }
+    if (mask & 2) {
+        if (slot != 3) {
+            dst = lbl_80354768.challenge[slot];
+            memcpy(dst, blk[slot].data, sizeof(blk->data));
+            memcpy(&starMissionCompletionTracker, dst, sizeof(blk->data));
+            return;
+        }
+        for (i = 0; i < 3; i++) {
+            memcpy(lbl_80354768.challenge[i], blk[i].data, sizeof(blk->data));
+        }
+        memcpy(lbl_80354768._CF5E, p8E, sizeof(lbl_80354768._CF5E));
+        memcpy(lbl_80354768._CF18, p48, sizeof(lbl_80354768._CF18));
+        memcpy(lbl_80354768._CF4E, p7E, sizeof(lbl_80354768._CF4E));
+    }
 }
 
 // .text:0x80041348 size:0x1F4
