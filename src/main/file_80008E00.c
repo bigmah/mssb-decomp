@@ -261,8 +261,10 @@ BOOL fn_80008E08(void) {
 }
 
 // .text:0x80008FD0 size:0x3C
-void PostRetraceCallback(void) {
-    return;
+void PostRetraceCallback(u32 retraceCount) {
+    if (OSGetResetButtonState() && lbl_803CBBAC != 0) {
+        lbl_803CBBC2 = 1;
+    }
 }
 
 // fn_8000900C, size:0xC
