@@ -31,6 +31,9 @@ void fn_3_53F48(void);
 extern f32 lbl_3_rodata_BB4;
 extern f32 lbl_3_rodata_B64;
 void getComponentsFromRad(f32 v, f32* x, f32* y);
+extern u8 lbl_3_data_4714[][4][6];
+extern f32 lbl_3_data_5FC4[];
+void playSoundEffect(int);
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
@@ -409,8 +412,80 @@ void fn_3_261E8(void) {
 }
 
 // .text:0x00026664 size:0x410 mapped:0x806656F8
-void fn_3_26664(void) {
+void fn_3_26664(int i) {
+    int who = i;
+    u8* f = g_Fielders + i * 0x268;
+    int mode;
+    int pct;
+    f[0x258] = 0;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            who = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            who = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    if ((g_d_GameSettings[7] != 2 || *(s8*)(g_Practice + 0x1C2) < 0) && g_Ball[0x1BD8] == 0 && g_Ball[0x1BCC] == 0) {
+        if (g_Ball[0x1BD6] < 5) {
+            goto go;
+        }
+    }
     return;
+go:
+    if (checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 10) != 0) {
+        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 10);
+        playSoundEffect(0x1A8);
+        return;
+    }
+    mode = 0;
+    if (g_d_GameSettings[7] == 6) {
+        mode = 1;
+    }
+    if (g_Ball[0x1BE5] != 0) {
+        if (f[0x259] != 0) {
+            pct = lbl_3_data_4714[mode][f[0x1C8]][5];
+        } else if (f[0x260] != 0) {
+            pct = lbl_3_data_4714[mode][f[0x1C8]][4];
+        } else if (f[0x254] == 0) {
+            pct = lbl_3_data_4714[mode][f[0x1C8]][3];
+        } else {
+            pct = lbl_3_data_4714[mode][f[0x1C8]][4];
+        }
+        if (i == 0) {
+            pct *= 2;
+        }
+        pct *= 10;
+        if (g_d_GameSettings[8] == 0 && g_d_GameSettings[0x34] == *(int*)(g_GameLogic + 8) &&
+            (*(s8*)(g_d_GameSettings + 0x3F) != 0 || *(s8*)(g_d_GameSettings + 0x4F) != 0)) {
+            pct = pct * lbl_3_data_5FC4[6];
+        }
+        if (RandomInt_Game(1000) < pct) {
+            f[0x258] = 3;
+        } else {
+            f[0x258] = 1;
+        }
+    } else {
+        if (f[0x259] != 0) {
+            pct = lbl_3_data_4714[mode][f[0x1C8]][2];
+        } else if (f[0x260] != 0) {
+            pct = lbl_3_data_4714[mode][f[0x1C8]][1];
+        } else if (f[0x254] == 0) {
+            pct = lbl_3_data_4714[mode][f[0x1C8]][0];
+        } else {
+            pct = lbl_3_data_4714[mode][f[0x1C8]][1];
+        }
+        pct *= 10;
+        if (g_d_GameSettings[8] == 0 && g_d_GameSettings[0x34] == *(int*)(g_GameLogic + 8) &&
+            (*(s8*)(g_d_GameSettings + 0x3F) != 0 || *(s8*)(g_d_GameSettings + 0x4F) != 0)) {
+            pct = pct * lbl_3_data_5FC4[6];
+        }
+        if (RandomInt_Game(1000) < pct) {
+            f[0x258] = 2;
+        } else {
+            f[0x258] = 0;
+        }
+    }
+    g_Ball[0x1BE5] = 0;
 }
 
 // .text:0x00026A74 size:0xBD4 mapped:0x80665B08

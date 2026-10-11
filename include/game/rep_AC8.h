@@ -11,7 +11,7 @@ int fn_3_258D8(int);
 void fn_3_25A68(int);
 void fn_3_25C40(void);
 void fn_3_261E8(void);
-void fn_3_26664(void);
+void fn_3_26664(int);
 void fn_3_26A74(void);
 void fn_3_27648(void);
 void fn_3_27738(s32 i);
