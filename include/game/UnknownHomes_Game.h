@@ -361,7 +361,7 @@ typedef struct _InMemBallType {
     /*0x1B2C*/ VecXYZ diveCatchLocationOffset;
     /*0x1B38*/ VecXYZ fielderActionCatchCoords;
     /*0x1B44*/ s32 collisionCode;
-    /*0x1B48*/ f32 maybeCollisionRelated;
+    /*0x1B48*/ s32 maybeCollisionRelated; // previous frame's collisionCode
     /*0x1B4C*/ s32 StaticRandomInt1;
     /*0x1B50*/ s32 StaticRandomInt2;
     /*0x1B54*/ u32 StaticRandomInt1_prePitch;
@@ -3003,14 +3003,18 @@ typedef struct GameScores {
     /* 0x9C */ s16 _9C;
     /* 0x9E */ s16 _9E;
     /* 0xA0 */ s16 _A0;
-    /* 0xA2 */ u8 _A2[0xAA - 0xA2];
+    /* 0xA2 */ u8 _A2[0xA6 - 0xA2];
+    /* 0xA6 */ s16 _A6;
+    /* 0xA8 */ u8 _A8[0xAA - 0xA8];
     /* 0xAA */ u8 maxInnings;
     /* 0xAB */ u8 _AB;
     /* 0xAC */ u8 _AC;
     /* 0xAD */ u8 _AD;
     /* 0xAE */ u8 _AE[0xC2 - 0xAE];
     /* 0xC2 */ u8 _C2;
-    /* 0xC3 */ u8 _C3[0xC8 - 0xC3];
+    /* 0xC3 */ u8 _C3[0xC6 - 0xC3];
+    /* 0xC6 */ u8 _C6;
+    /* 0xC7 */ u8 _C7;
 } GameScores; // size: 0xC8
 
 typedef struct {

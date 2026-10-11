@@ -62,7 +62,8 @@ typedef struct GameHudFlags {
     /*0xD2*/ u8 _D2; // scorebook (game/auto_00_0015C5F4_text) busy this frame
     /*0xD3*/ u8 _D3[0xD6 - 0xD3];
     /*0xD6*/ u8 _D6;
-    /*0xD7*/ u8 _D7[0xD9 - 0xD7];
+    /*0xD7*/ u8 _D7;
+    /*0xD8*/ u8 loadStep; // fn_3_1665E4 trail-file load state
     /*0xD9*/ u8 _D9;
     /*0xDA*/ u8 _DA;
     /*0xDB*/ u8 _DB;
@@ -110,7 +111,7 @@ typedef struct HudTask {
     /*0x1C*/ u16 state;
     /*0x1E*/ u16 _1E;
     /*0x20*/ u16 _20;
-    /*0x22*/ s16 _22;
+    /*0x22*/ u16 _22; // read with lhz in fn_3_9C28C
 } HudTask;
 
 #define HUD_TASK ((HudTask*)lbl_803CC1B8)
