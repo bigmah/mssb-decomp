@@ -1605,9 +1605,86 @@ void fn_8002CDD0(Vec* end) {
 }
 
 // .text:0x8002CE4C size:0x9E0
-void fn_8002CE4C(void) {
-    return;
+// NONMATCHING 20%: the original converts all parameters up front (many float registers); same calls and stores
+#if NONMATCHING
+void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
+    Vec n;
+    s32 sign = 1;
+    s32 total;
+    s32 totalMin;
+    s32 totalRange;
+    s32 p3Min = prm->unk24;
+    s32 p3Range = prm->unk28 - prm->unk24;
+    s32 fadeMin = prm->unk2C;
+    s32 fadeRange = prm->unk30 - prm->unk2C;
+    s32 a;
+    s32 ang;
+    f32 r;
+    f32 split;
+    f32 splitRange;
+    f32 yawMin;
+    f32 yawMax;
+    f32 pitchMin;
+    f32 pitchMax;
+    f32 dirLen;
+    f32 dirLenRange;
+    Emitter* e;
+    StreakParticle* p;
+
+    e = NewEmitter(fn_8002C56C, 0x80, 0, prm->count, 1, 10);
+    if (e == NULL) {
+        return;
+    }
+    totalMin = (s32)((f32)prm->unk10 * ((f32)prm->unk14 / 100000.0f));
+    totalRange = (s32)((f32)prm->unk10 * ((f32)prm->unk18 / 100000.0f) - (f32)totalMin);
+    split = (f32)prm->unk1C / 100000.0f;
+    splitRange = (f32)(prm->unk20 - prm->unk1C) / 100000.0f;
+    yawMin = (f32)prm->unk3C / 100000.0f;
+    yawMax = (f32)prm->unk40 / 100000.0f;
+    pitchMin = (f32)prm->unk44 / 100000.0f;
+    pitchMax = (f32)prm->unk48 / 100000.0f;
+    dirLen = (f32)prm->unk4C / 100000.0f;
+    dirLenRange = (f32)(prm->unk50 - prm->unk4C) / 100000.0f;
+    e->tex = prm->tex;
+    e->u.t10.texIndex = prm->texIndex;
+    e->u.t10.unk40 = prm->unk10;
+    e->u.t10.start.x = start->x;
+    e->u.t10.start.y = start->y;
+    e->u.t10.start.z = start->z;
+    e->u.t10.end.x = end->x;
+    e->u.t10.end.y = end->y;
+    e->u.t10.end.z = end->z;
+    PSVECSubtract(end, start, &e->u.t10.dir);
+    p = (StreakParticle*)e->particles;
+    do {
+        p->delay = (prm->unkC * rand()) / 32767;
+        total = totalMin + (totalRange * rand()) / 32767;
+        p->dur[0] = p->rem[0] = (s16)((f32)total * (split + (splitRange * (f32)rand()) / 32767.0f));
+        p->dur[1] = p->rem[1] = total - p->dur[0];
+        p->dur[2] = p->rem[2] = p3Min + (p3Range * rand()) / 32767;
+        p->dir.x = dirLen + (dirLenRange * (f32)rand()) / 32767.0f;
+        p->dir.y = 0.0f;
+        p->dir.z = 0.0f;
+        fn_800332B8(&p->dir, &p->dir, yawMin, yawMax, pitchMin, pitchMax);
+        p->dir.x = p->dir.x * (f32)sign;
+        sign *= -1;
+        PSVECNormalize(&p->dir, &n);
+        PSVECScale(&n, (f32)prm->unk7C / 100000.0f + (((f32)(prm->unk80 - prm->unk7C) / 100000.0f) * (f32)rand()) / 32767.0f, &p->offset);
+        p->lenA = (f32)prm->unk64 / 100000.0f + (((f32)(prm->unk68 - prm->unk64) / 100000.0f) * (f32)rand()) / 32767.0f;
+        p->lenB = ((f32)prm->unk6C / 100000.0f + (((f32)(prm->unk70 - prm->unk6C) / 100000.0f) * (f32)rand()) / 32767.0f) - p->lenA;
+        p->reach = (f32)prm->unk74 / 100000.0f + (((f32)(prm->unk78 - prm->unk74) / 100000.0f) * (f32)rand()) / 32767.0f;
+        p->spin = (f32)prm->unk5C / 100000.0f + (((f32)(prm->unk60 - prm->unk5C) / 100000.0f) * (f32)rand()) / 32767.0f;
+        ang = (s32)(0.5f + (2048.0f * ((f32)prm->unk54 / 100000.0f + (((f32)(prm->unk58 - prm->unk54) / 100000.0f) * (f32)rand()) / 32767.0f)) / 360.0f);
+        r = 1.4142135f * (((f32)prm->unk34 / 100000.0f + (((f32)(prm->unk38 - prm->unk34) / 100000.0f) * (f32)rand()) / 32767.0f) * 0.5f);
+        p->sizeX = r * CosIdx(ang);
+        p->sizeY = r * SinIdx(ang);
+        p->color.rgba = 0xFFFFFFFF;
+        p->uvOrder = (rand() & 1) ? 0x123 : 0x321;
+        p->fade = fadeMin + (fadeRange * rand()) / 32767;
+        p = (StreakParticle*)p->next;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x8002D82C size:0x43C
 // NONMATCHING 94%: register allocation of the color/physics loop walkers (r4/r5) differs
