@@ -3262,9 +3262,123 @@ void fn_3_3ACC0(int i) {
 }
 
 // .text:0x0003AE34 size:0x53C mapped:0x80679EC8
-void fn_3_3AE34(void) {
-    return;
+// NONMATCHING 94%: fn_3_53130 result switch layout; fielder pointer kept in r29 vs r28; calls fn_3_261E8/fn_3_433E0 through casts until their prototypes gain the index arg
+#if NONMATCHING
+void fn_3_3AE34(int i) {
+    s32 off = i * 0x268;
+    u8* f = g_Fielders + off;
+    s32 r;
+    s32 tgt;
+    s16 k;
+    if (*(s16*)(g_Ball + 0x1B66) <= 0) {
+        return;
+    }
+    if (f[0x1FF] == 0) {
+        f[0x201] = 0;
+        if (*(s16*)(g_FieldingLogic + 0xB6) == i && i >= 6 && i <= 8) {
+            f[0x201] = 1;
+        }
+        f[0x1FF] = 1;
+    }
+    if (g_d_GameSettings[7] == 2 && g_GameLogic[0x121] == 0xC) {
+        return;
+    }
+    r = fn_3_53130(i);
+    if (r == 2) {
+        return;
+    }
+    if (r != 1) {
+        if (f[0x1FF] == 1) {
+            if (*(s16*)(g_Ball + 0x1B66) == f[0x1D2]) {
+                fn_3_447C4(i);
+            }
+            if (f[0x252] != 0) {
+                /* TODO: fn_3_261E8 / fn_3_433E0 take the fielder index; prototypes (other range) are still (void) */
+                ((void (*)(int))fn_3_261E8)(i);
+                *(s16*)(f + 0x1A2) = 0;
+                f[0x1FF] = 2;
+            } else {
+                ((void (*)(int))fn_3_433E0)(i);
+            }
+            fn_3_3ACC0(i);
+        } else {
+            if (f[0x1FF] == 2) {
+                g_FieldingLogic[0x139] = 0;
+            }
+            tgt = lbl_3_bss_170;
+            if (g_FieldingLogic[0x10E] != 0) {
+                tgt = -1;
+            }
+            *(s16*)(f + 0x19E) = tgt;
+            if (g_GameLogic[*(int*)(g_GameLogic + 0x10) + 0x144] == 0 && tgt >= 0 && *(s16*)(f + 0x1A0) > 0xA) {
+                *(s16*)(g_FieldingLogic + 0xCC) = -1;
+            }
+            if (tgt >= 0) {
+                u8* t = *(u8**)(g_FieldingLogic + 0x70);
+                if (t[0x1A] != 3 && t[0x1A] != 4) {
+                    if (*(u16*)(g_FieldingLogic + 0x14A) & 0x200) {
+                        *(s16*)(t + 0xC) = 0;
+                    }
+                    if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0 && g_Practice[0x1C5] != 0) {
+                        *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0xC) = 0;
+                    }
+                }
+            }
+            fn_3_3A584(i);
+        }
+    }
+    if (g_Ball[0x1BC9] != 0 && g_Ball[0x1BC9] != 3) {
+        if (*(s16*)(f + 0x18C) == 6) {
+            SetFielderAct(i, 0xB, 0x58);
+        } else {
+            SetFielderAct(i, 0xC, 0x60);
+        }
+        if (i <= 5) {
+            f[0x1D5] = 3;
+        } else {
+            f[0x1D5] = 2;
+        }
+        *(s16*)(g_FieldingLogic + 0xB0) = -1;
+    }
+    k = *(s16*)(f + 0x18C);
+    if (k >= 0 && k <= 3 && *(f32*)(f + k * 4 + 0xA8) > lbl_3_rodata_B78) {
+        if (k >= 0 && k <= 3) {
+            if (((s16*)(g_FieldingLogic + 0xD0))[k] == i) {
+                ((s16*)(g_FieldingLogic + 0xD0))[k] = -1;
+                g_FieldingLogic[k + 0x101] = 0;
+            }
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            if (f[0x1D3] == 1) {
+                SetFielderActP(f, i, 12, 0x60);
+            }
+        } else if (k == 5) {
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            *(s16*)(g_FieldingLogic + 0xD8) = -1;
+            g_FieldingLogic[0x105] = 0;
+            if (f[0x1D3] == 14) {
+                SetFielderActP(f, i, 12, 0x60);
+            }
+        }
+    }
+    if (*(s16*)(g_FieldingLogic + 0xB0) != i) {
+        s16 cur = *(s16*)(g_FieldingLogic + 0xB0);
+        u8* c = g_Fielders + cur * 0x268;
+        if (*(s16*)(g_Ball + 0x1B66) >= lbl_3_data_484C[0] && g_FieldingLogic[0x139] == 0 &&
+            ((c[0x256] == 1 && *(f32*)(f + cur * 4 + 0x84) < lbl_3_rodata_B70) || (c[0x252] != 0 && c[0x25B] == 0))) {
+            u8* g = g_Fielders + off;
+            *(f32*)(g + 0x14) = *(f32*)f;
+            *(f32*)(g + 0x18) = *(f32*)(f + 4);
+            *(f32*)(g + 0x1C) = *(f32*)(f + 8);
+            *(f32*)(g + 0x30) = lbl_3_rodata_B20;
+            *(f32*)(g + 0x34) = lbl_3_rodata_B20;
+            *(f32*)(g + 0x50) = lbl_3_rodata_B20;
+            *(f32*)(g + 0x68) = lbl_3_rodata_B20;
+        }
+    }
 }
+#endif
 
 // .text:0x0003B370 size:0x3F4 mapped:0x8067A404
 void fn_3_3B370(void) {
