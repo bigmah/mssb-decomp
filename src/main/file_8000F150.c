@@ -17,7 +17,8 @@ void fn_8000F3E8(s32 arg) {
 
 // .text:0x8000F48C size:0x2C
 void somethingSetTexturePointer(void) {
-    return;
+    lbl_803CBBE8 = lbl_800E9920;
+    convertTextureHeader(lbl_800E9920);
 }
 
 // .text:0x8000F4B8 size:0x7C
