@@ -110,6 +110,15 @@ typedef struct RepPauseView {
     /*0x1D5*/ u8 _1D5;
 } RepPauseView;
 
+// 5-byte entries at lbl_3_common_bss_37400 + 0x12 (9 of them), read by fn_3_94BC4.
+typedef struct RepGaugeEntry {
+    /*0x0*/ s8 full;
+    /*0x1*/ s8 total;
+    /*0x2*/ s8 partial;
+    /*0x3*/ s8 active;
+    /*0x4*/ s8 value;
+} RepGaugeEntry;
+
 #define REP_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
 
 void fn_3_91520(void);

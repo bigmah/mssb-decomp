@@ -865,78 +865,68 @@ remove:
 #endif
 
 // .text:0x00094BC4 size:0x2A4 mapped:0x806D3C58
-// 99%: only the loop-setup copies differ (original `addi r7,r4,bss@l` / `addi r8,r3,DATA@l` direct; ours adds `mr r7,r4` / `mr r8,r0`)
+// NONMATCHING 99% (raw-offset version; this typed rewrite allocates registers differently): only the loop-setup
+// copies differed (original `addi r7,r4,bss@l` / `addi r8,r3,DATA@l` direct; ours added `mr r7,r4` / `mr r8,r0`)
+#if NONMATCHING
 void fn_3_94BC4(void) {
-    u8* o = lbl_803CC1B8[0];
-    s8* pb;
-    s8* pa;
-    s8* pc;
-    u8* p;
-    u8* d;
-    s32 b;
-    u8* t;
+    RepTask* task = lbl_803CC1B8[0];
+    RepGaugeEntry* e;
+    u8* order;
     s32 i;
-    u8* e;
     s32 j;
-    s32 s;
     s32 n;
+    s32 first;
     s32 k;
     if (lbl_3_common_bss_32724[0xB4] != 0) {
-        *(u16*)(o + 0x1C) = 2;
-    } else if (((u8*)&g_GameLogic)[0x11E] == 0x16) {
-        *(u16*)(o + 0x1C) = 1;
+        task->_1C = 2;
+    } else if (g_GameLogic.gameStatus == 0x16) {
+        task->_1C = 1;
     } else {
-        *(u16*)(o + 0x1C) = 0;
+        task->_1C = 0;
     }
-    fn_80034E20(o, lbl_3_data_E378);
-    p = lbl_3_common_bss_37400;
-    i = 0;
-    d = lbl_3_data_E758;
+    fn_80034E20(task, lbl_3_data_E378);
+    e = (RepGaugeEntry*)(lbl_3_common_bss_37400 + 0x12); // TODO type: lbl_3_common_bss_37400
+    order = lbl_3_data_E758;
     n = 0;
-    do {
-        if (*(s8*)(p + 0x15) != 0) {
-            b = *d;
-            *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + b) * 2] + 0x5C) = *(s8*)(p + 0x16) << 16;
-            pb = (s8*)(p + 0x13);
-            pa = (s8*)(p + 0x12);
-            pc = (s8*)(p + 0x14);
-            for (j = 0; j < 5; j++) {
-                k = b + j + 1;
-                if (j >= *pb) {
-                    t = ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + k) * 2];
-                    *(u32*)(t + 0x54) &= ~2;
-                } else {
-                    t = ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + k) * 2];
-                    *(u32*)(t + 0x54) |= 2;
-                    ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + k) * 2][0x68] = 0;
-                    *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + k) * 2] + 0x5C) = 0;
-                    s = *pa;
-                    if (j < s) {
-                        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + k) * 2] + 0x5C) = 0x10000;
-                    } else if (j < *pc + s) {
-                        if (*(u16*)(o + 0x1C) == 2) {
-                            *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + k) * 2] + 0x5C) = 0x280000;
-                        } else {
-                            *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + k) * 2] + 0x5C) = 0x3C0000;
-                        }
-                        ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + k) * 2][0x68] = 1;
+    for (i = 0; i < 9; i++, e++) {
+        if (e->active == 0) {
+            continue;
+        }
+        first = *order;
+        lbl_80371C30[task->baseIdx + first].obj->_5C = e->value << 16;
+        for (j = 0; j < 5; j++) {
+            k = first + j + 1;
+            if (j >= e->total) {
+                lbl_80371C30[task->baseIdx + k].obj->flags &= ~2;
+            } else {
+                lbl_80371C30[task->baseIdx + k].obj->flags |= 2;
+                lbl_80371C30[task->baseIdx + k].obj->_68 = 0;
+                lbl_80371C30[task->baseIdx + k].obj->_5C = 0;
+                if (j < e->full) {
+                    lbl_80371C30[task->baseIdx + k].obj->_5C = 1 << 16;
+                } else if (j < e->partial + e->full) {
+                    if (task->_1C == 2) {
+                        lbl_80371C30[task->baseIdx + k].obj->_5C = 40 << 16;
+                    } else {
+                        lbl_80371C30[task->baseIdx + k].obj->_5C = 60 << 16;
                     }
+                    lbl_80371C30[task->baseIdx + k].obj->_68 = 1;
                 }
             }
-            d++;
-            n++;
         }
-        i++;
-        p += 5;
-    } while (i < 9);
+        order++;
+        n++;
+    }
     if (n < 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        // unreachable (n >= 0); the original calls fn_800B0A14_removeQueue with a stale r3 here
+        fn_800B0A14_removeQueue(task);
         return;
     }
-    *(s32*)(((u8**)(((u8*)lbl_80371C30) + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = (n - 1) << 16;
-    *(u16*)(o + 0x1A) = n;
+    REP_OBJ(task, 1)->_5C = (n - 1) << 16;
+    task->_1A = n;
     *(void**)lbl_803CC1B8[0] = fn_3_9497C;
 }
+#endif
 
 // .text:0x00094E68 size:0x198 mapped:0x806D3EFC
 void fn_3_94E68(void) {
