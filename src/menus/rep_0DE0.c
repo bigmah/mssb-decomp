@@ -420,8 +420,8 @@ void fn_2_86470(void) {
                 position.x + (i % 6) * lbl_2_rodata_EC8, position.y, position.z - (i / 6) * lbl_2_rodata_ECC);
         }
         CTRLSetRotation(&lbl_2_bss_340140[0]->table->objects[i].worldControl.base,
-            57.29578f * lbl_2_data_2E9DC.x, 57.29578f * lbl_2_data_2E9DC.y,
-            57.29578f * lbl_2_data_2E9DC.z);
+            57.295776f * lbl_2_data_2E9DC.x, 57.295776f * lbl_2_data_2E9DC.y,
+            57.295776f * lbl_2_data_2E9DC.z);
         lbl_2_bss_340140[0]->table->objects[i].animateBones = lbl_2_bss_33FBF0[i];
     }
 }
