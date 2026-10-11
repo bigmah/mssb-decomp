@@ -1973,9 +1973,98 @@ void fn_8005EC88(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005F068 size:0x6CC
-void fn_8005F068(void) {
-    return;
+// NONMATCHING 85%: object index sums are folded differently; registers differ
+#if NONMATCHING
+void fn_8005F068(SceneTask* task, s32 port) {
+    u8* state = &lbl_803C66B0.steps[9][port + 1];
+    s32 i;
+    s8 slot;
+    s8 pos;
+    s8 prev = 0;
+    s8 prevPos = 0;
+    u8 prevSlot;
+
+    if (*state == 0) {
+        prevSlot = lbl_803297E0._CF3E[port];
+        slot = lbl_803297E0.selected[port] - 1;
+        pos = lbl_80354720[port][slot].pos;
+        if (prevSlot != 0xFF) {
+            prev = prevSlot;
+            prevPos = lbl_80354720[port][prev].pos;
+        }
+        switch (lbl_803297E0._CF52[port]) {
+        case 0:
+            if (lbl_803297E0._CF54[port] == 1) {
+                TASK_OBJ(task, port + 0x14)->_5C = 20 << 16;
+                TASK_OBJ(task, port + 0x14)->_68 = 4;
+                TASK_OBJ(task, port + 0x1A)->_68 = 1;
+                TASK_OBJ(task, port + 0xE2)->_68 = 4;
+                TASK_OBJ(task, port + 0xE4)->_68 = 4;
+                for (i = 0; i < 9; i++) {
+                    TASK_OBJ(task, i + port * 9 + 0x64)->flags &= ~2;
+                    TASK_OBJ(task, i + port * 9 + 0x1C)->_5C = 0;
+                    TASK_OBJ(task, i + port * 9 + 0x1C)->_68 = 0;
+                    TASK_OBJ(task, i + port * 9 + 0x40)->_5C = 0;
+                    TASK_OBJ(task, i + port * 9 + 0x40)->_68 = 0;
+                }
+                if (slot >= 0 && slot < 9) {
+                    TASK_OBJ(task, slot + port * 9 + 0x1C)->_5C = 0;
+                    TASK_OBJ(task, slot + port * 9 + 0x1C)->_68 = 1;
+                    TASK_OBJ(task, slot + port * 9 + 0x52)->_5C = 0;
+                    TASK_OBJ(task, slot + port * 9 + 0x52)->_68 = 1;
+                    TASK_OBJ(task, slot + port * 9 + 0x64)->flags |= 2;
+                    TASK_OBJ(task, slot + port * 9 + 0x64)->_64 = 0x2A;
+                    TASK_OBJ(task, slot + port * 9 + 0x64)->_68 = 1;
+                    fn_8005C830(task, port, slot);
+                    TASK_OBJ(task, slot + port * 9 + 0x40)->_5C = 0;
+                    TASK_OBJ(task, slot + port * 9 + 0x40)->_68 = 1;
+                    if (lbl_803297E0._CF3E[port] != 0xFF) {
+                        TASK_OBJ(task, prev + port * 9 + 0x1C)->_5C = 10 << 16;
+                        TASK_OBJ(task, prev + port * 9 + 0x1C)->_68 = 0;
+                        TASK_OBJ(task, prev + port * 9 + 0x40)->_5C = 0;
+                        TASK_OBJ(task, prev + port * 9 + 0x40)->_68 = 1;
+                    }
+                }
+            }
+            break;
+        case 1:
+            if (lbl_803297E0._CF54[port] != 1) {
+                for (i = 0; i < 9; i++) {
+                    TASK_OBJ(task, i + port * 9 + 0x10A)->_5C = 0;
+                    TASK_OBJ(task, i + port * 9 + 0x10A)->_68 = 0;
+                    TASK_OBJ(task, i + port * 9 + 0xF8)->_5C = 0;
+                    TASK_OBJ(task, i + port * 9 + 0xF8)->_68 = 0;
+                    TASK_OBJ(task, i + port * 9 + 0xE6)->flags &= ~2;
+                    TASK_OBJ(task, i + port * 9 + 0x12E)->flags &= ~2;
+                }
+                TASK_OBJ(task, port + 0x14)->_5C = 10 << 16;
+                TASK_OBJ(task, port + 0x14)->_68 = 1;
+                TASK_OBJ(task, port + 0x1A)->_68 = 4;
+                TASK_OBJ(task, port + 0xE2)->_68 = 1;
+                TASK_OBJ(task, port + 0xE4)->_68 = 1;
+                TASK_OBJ(task, port + 0xE2)->flags |= 2;
+                TASK_OBJ(task, port + 0xE4)->flags |= 2;
+                if (slot >= 0 && slot < 9) {
+                    TASK_OBJ(task, pos + port * 9 + 0x10A)->_68 = 1;
+                    TASK_OBJ(task, pos + port * 9 + 0xF8)->_68 = 1;
+                    TASK_OBJ(task, pos + port * 9 + 0xE6)->flags |= 2;
+                    TASK_OBJ(task, pos + port * 9 + 0x12E)->flags |= 2;
+                    TASK_OBJ(task, pos + port * 9 + 0x12E)->_64 = 0x2A;
+                    TASK_OBJ(task, pos + port * 9 + 0x12E)->_68 = 1;
+                    fn_8005C830(task, port, slot);
+                    if (lbl_803297E0._CF3E[port] != 0xFF) {
+                        TASK_OBJ(task, prevPos + port * 9 + 0x10A)->_68 = 1;
+                        TASK_OBJ(task, prevPos + port * 9 + 0xF8)->_68 = 1;
+                    }
+                }
+            }
+            break;
+        }
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
+#endif
 
 // .text:0x8005F734 size:0x29C
 // NONMATCHING 95%: add operand order objIdx+port and r4/r8 swapped throughout

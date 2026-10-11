@@ -83,6 +83,7 @@ void fn_80053810(void);
 void fn_800531D0(SceneTask* task);
 void fn_800542C4(u8 which, u8 cur, SceneTask* task);
 void fn_80058E0C(SceneTask* task, u8 port);
+void fn_8005F068(SceneTask* task, s32 port);
 void fn_80056120(void);
 void fn_800569C8(void);
 void challengeCheckStarsMenuLoading(void);
@@ -136,7 +137,8 @@ typedef struct MenuWork {
     /*0xCF48*/ s8 selected2[2];
     /*0xCF4A*/ u8 _CF4A[8];
     /*0xCF52*/ u8 _CF52[2];
-    /*0xCF54*/ u8 _CF54[7];
+    /*0xCF54*/ u8 _CF54[2];
+    /*0xCF56*/ u8 _CF56[5];
     /*0xCF5B*/ u8 ready[2]; // per port, two-player tutorial sync
     /*0xCF5D*/ u8 _CF5D[6];
     /*0xCF63*/ u8 starShown[2];
