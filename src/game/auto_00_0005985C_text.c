@@ -1579,7 +1579,7 @@ void fn_3_59C2C(void) {
         }
         break;
     case 9:
-        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D70, 0, 0, 0); // TODO type: pointer in u32
+        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D70, 0, 0, 0);
         unkSimulationRelatedStruct._04++;
         break;
     case 10:
@@ -1656,7 +1656,7 @@ void fn_3_59F40(void) {
         }
         break;
     case 3:
-        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D60, 0, 0, 0); // TODO type: pointer in u32
+        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D60, 0, 0, 0);
         unkSimulationRelatedStruct._04++;
         break;
     case 4:
@@ -1702,7 +1702,6 @@ void fn_3_59F40(void) {
         }
         break;
     case 12:
-        // TODO type: static ARAMTransfer prototype returns s32 (main/file_800A6870.h has void*)
         lbl_80366B18.tables[6] = (MsgTable*)ARAMTransfer(lbl_3_data_3D80 + 0x400, 0, 1, 0);
         unkSimulationRelatedStruct._04++;
         break;
@@ -1839,7 +1838,7 @@ void fn_3_5A28C(void) {
         unkSimulationRelatedStruct._04 = 17;
         break;
     case 17:
-        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D60, 0, 0, 0); // TODO type: pointer in u32
+        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D60, 0, 0, 0);
         unkSimulationRelatedStruct._04++;
         break;
     case 18:

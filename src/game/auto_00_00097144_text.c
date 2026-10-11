@@ -311,7 +311,8 @@ void fn_3_978DC(void) {
             }
         }
     } else {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -446,7 +447,8 @@ void fn_3_98028(void) {
             }
         }
     }
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_32724._C3 = 0;
 }
 
@@ -578,7 +580,8 @@ void fn_3_98434(void) {
     }
     return;
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_34C90.itemsState = 3;
     lbl_3_common_bss_32724.pauseMenuShown = 0;
 }
@@ -678,7 +681,8 @@ void fn_3_98C20(void) {
         return;
     }
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_32724.pauseTitleShown = 0;
 }
 

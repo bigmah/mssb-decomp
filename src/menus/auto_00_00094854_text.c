@@ -42,7 +42,7 @@ void fn_2_9486C(void) {
     if (lbl_2_bss_1033C[0xF] != 0) {
         lbl_2_bss_1033C[0xF] = 0;
         fn_80034CEC(object);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -266,7 +266,7 @@ void fn_2_96698(void) {
     if (lbl_2_bss_1033C[0xE] != 0) {
         lbl_2_bss_1033C[0xE] = 0;
         fn_80034CEC(object);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 

@@ -74,23 +74,33 @@ extern u8 lbl_803CBC3C[4];
 extern DiskFileEntry lbl_800EE910[2];
 
 extern void fn_80023B90(LightSrc* src, LightPos* dst);
-extern void fn_800BEBCC(s32 index, Vec* dir);
+// fn_800BEBCC takes its Vec by value. The PPC ABI passes a pointer to a caller-made copy,
+// and these matched callers make that copy themselves (dir2 = dir), so the matching build
+// passes the copy's address; the port passes the value.
+#if NONMATCHING
+#define VEC_ARG(v) (v)
+typedef Vec VecArg;
+#else
+#define VEC_ARG(v) (&(v))
+typedef Vec* VecArg;
+#endif
+extern void fn_800BEBCC(u8 index, VecArg dir);
 extern void fn_800B2C10(GameActor* model, u16 joint, Vec* out);
 extern void fn_800B2C44(GameActor* model, u16 joint, Vec* out);
 extern void convertTextureHeader(void* textures);
 extern void convertGeometryAndSknHeader(void* geo, void* skn);
-extern void fn_800BD190(void* geo, void* tex);
+extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
 extern void fn_8002399C(ActorObject* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
 extern void fn_800B2B74(GameActor* model, u16 joint);
 extern void fn_800B2B54(GameActor* model, u16 joint, s32 arg);
-extern void fn_800B2BA8(GameActor* model, u16 joint, s32 a, s32 b);
+extern struct DODisplayObj* fn_800B2BA8(GameActor* model, u16 joint, GameActor* src, u16 srcJoint);
 extern void fn_800B2C08(GameActor* model, u16 joint);
 extern void fn_800BD548(ActorObject* slot, s32 count, ...);
-extern void fn_80063010(CharActor* actor, ActorObject* slot);
-extern void fn_8004B7B4(CharActor* actor, ActorObject* slot);
-extern void fn_8004BD6C(CharActor* actor, ActorObject* slot);
+extern s32 fn_80063010(CharActor* actor, ActorObject* slot);
+extern s32 fn_8004B7B4(CharActor* actor, ActorObject* slot);
+extern s32 fn_8004BD6C(CharActor* actor, ActorObject* slot);
 extern void fn_80052634(CharActor* actor, ActorObject* slot);
-extern void fn_80062ED4(CharActor* actor, ActorObject* slot);
+extern s32 fn_80062ED4(CharActor* actor, ActorObject* slot);
 extern void fn_800238E0(ActorObjectTable* list, u8 first, u8 last, void* layout);
 extern void OSPanic(const char* file, int line, const char* msg, ...);
 extern u8 lbl_803CB7B4[8];
@@ -115,7 +125,7 @@ extern CameraView* fn_80052734(u16 index);
 extern s32 fn_8003A538(void);
 extern void fn_8003A4C8(void);
 extern u16 fn_8005268C(void);
-extern void fn_800BD1E8(u32 value);
+extern void fn_800BD1E8(void (*callback)(Mtx m, s32* stage, s32* coord, s32* map, u8* numTevStages, u8* numTexGens));
 extern u8 GetDrawShadows(void);
 extern void DrawShadows(u8 enable);
 extern void fn_800BEC00(s32 reverse);
@@ -185,7 +195,7 @@ extern void fn_8004B7F4(CharActor* actor, ActorObject* slot);
 extern void fn_8004BAEC(CharActor* actor, ActorObject* slot);
 extern void fn_8005240C(CharActor* actor, ActorObject* slot);
 extern s32 fn_80024C6C(CharActor* actor, s32 which);
-extern void fn_800BEA04(Vec* pos);
+extern void fn_800BEA04(Vec pos);
 extern void fn_800BD8C4(ActorObjectTable* list, MtxPtr view);
 extern CharDrawCallback lbl_803CB7AC[2];
 extern u8 lbl_803CBBC0;
@@ -3013,7 +3023,7 @@ void fn_800196D8(void) {
         lbl_8036E548._3086 = 1;
         DrawShadows(1);
         dir2 = dir;
-        fn_800BEBCC(0, &dir2);
+        fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
         // TODO type: the stadium file header holds offsets, relocated in place.
@@ -3182,7 +3192,7 @@ void fn_80019C00(void) {
         lbl_8036E548._3086 = 1;
         DrawShadows(1);
         dir2 = dir;
-        fn_800BEBCC(0, &dir2);
+        fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
         // TODO type: the stadium file header holds offsets, relocated in place.
@@ -3371,7 +3381,7 @@ void challengeMapRelated(void) {
         lbl_8036E548._3086 = 1;
         DrawShadows(1);
         dir2 = dir;
-        fn_800BEBCC(0, &dir2);
+        fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
         // TODO type: the stadium file header holds offsets, relocated in place.
@@ -3529,10 +3539,10 @@ void fn_8001AF98(void) {
         if (PSVECMag(&dir)) {
             PSVECNormalize(&dir, &dir);
             dir2 = dir;
-            fn_800BEBCC(0, &dir2);
+            fn_800BEBCC(0, VEC_ARG(dir2));
         }
     } else {
-        fn_800BD1E8(0);
+        fn_800BD1E8(NULL);
     }
     if (GetDrawShadows()) {
         view.eye = fn_80052734(0)->eye;
@@ -4215,7 +4225,7 @@ static inline void loadLights(LightSrc* src, s32 count) {
     dir.z = lbl_80367318[0].z;
     PSVECNormalize(&dir, &dir);
     dir2 = dir;
-    fn_800BEBCC(0, &dir2);
+    fn_800BEBCC(0, VEC_ARG(dir2));
 }
 
 void fn_8001CA40(u8 stadium) {
@@ -4238,7 +4248,7 @@ void fn_8001CB10(LightSrc* src, s32 count) {
     dir.z = lbl_80367318[0].z;
     PSVECNormalize(&dir, &dir);
     dir2 = dir;
-    fn_800BEBCC(0, &dir2);
+    fn_800BEBCC(0, VEC_ARG(dir2));
 }
 
 // .text:0x8001CBD4 size:0xF4
@@ -4425,7 +4435,6 @@ void fn_8001D2D4(void) {
     f32 scale;
     CharTrail* t;
     Vec p;
-    Vec q;
     Mtx m;
 
     if (lbl_8036E548._307A == 0 || lbl_8036E548._307C == 0) {
@@ -4579,8 +4588,7 @@ void fn_8001D2D4(void) {
             fn_800B2C88(model, model->rootBone, m);
             PSMTXTransApply(m, m, actor->pos.x, actor->pos.y, actor->pos.z);
             PSMTXMultVec(m, &p, &p);
-            q = p;
-            fn_800BEA04(&q);
+            fn_800BEA04(p);
         }
         if (actor->part != NULL) {
             fn_80024FA4((ShapeModel**)&slot->actor, actor->part->player.model, &actor->part->player.state, -1);

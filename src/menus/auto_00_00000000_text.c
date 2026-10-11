@@ -9,7 +9,18 @@ extern u8 lbl_803C6CF8[]; // TODO type: ARAMLoader (main/file_800A6870.h); idle 
 
 extern void fn_800A7D4C(s32, void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
-extern void fn_800B0A14_removeQueue(void);
+extern void fn_800B0A14_removeQueue(void* unused);
+
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
 
 extern void fn_8001F228(void);
 extern void fn_80062744(void);
@@ -24,7 +35,7 @@ extern void fn_8004153C(void);
 extern void fn_800A97D0(s32, s32);
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_803C66B0[];
-extern s32 ARAMTransfer(void*, void*, int, int); // TODO type: main/file_800A6870.h
+extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_800216F8(s32, void*);
 extern u32 lbl_2_bss_B644;
 extern u8 lbl_2_data_C8[];
@@ -278,7 +289,7 @@ void fn_2_794(void) {
             *(u16*)lbl_803CBBCC[0] = 5;
     case 5:
             *(s16*)(*(u8**)(task + 0xC) + 0x10) = *(s16*)(task + 0x10);
-            fn_800B0A14_removeQueue();
+            REMOVE_QUEUE_NOARG();
         }
         break;
     }
@@ -288,7 +299,7 @@ void fn_2_794(void) {
 // fn_2_940, size:0x38
 void fn_2_940(void) {
     if (*(u16*)lbl_803CBBCC[0] == 5) {
-        fn_800B0A14_removeQueue();
+        REMOVE_QUEUE_NOARG();
     }
 }
 

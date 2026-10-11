@@ -27,7 +27,7 @@ void manageStadiumLoading(void) {
     switch (*(s16*)(p + 0x10)) {
     case 0:
         fn_8001CBD4();
-        *(s32*)(lbl_8036E548 + 4) =
+        *(void**)(lbl_8036E548 + 4) =
             ARAMTransfer(lbl_800EFBE8 + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 0, 0);
         *(s16*)(p + 0x10) += 1;
         break;
@@ -70,18 +70,18 @@ void manageLoadingState(void) {
         r = lbl_803716B8;
         if (*(u32*)(r + 0x1CC) != 0) {
             if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
-                s32 t = ARAMTransfer(lbl_800EFBE8 + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 3,
+                void* t = ARAMTransfer(lbl_800EFBE8 + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 3,
                                      *(u32*)(r + 0x1CC));
-                *(s32*)(p + 0x14) = t;
-                *(s32*)(lbl_8036E548 + 4) = t;
+                *(void**)(p + 0x14) = t;
+                *(void**)(lbl_8036E548 + 4) = t;
                 OSReport("Sta %d-%d aram:%x -> mem:%x\n", g_d_GameSettings.StadiumID, g_d_GameSettings.miniGameStadiumIndicator,
                          *(u32*)(r + 0x1CC), *(s32*)(p + 0x14));
                 goto set1;
             }
         } else {
-            s32 t = ARAMTransfer(lbl_800EFBE8 + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 0, 0);
-            *(s32*)(p + 0x14) = t;
-            *(s32*)(lbl_8036E548 + 4) = t;
+            void* t = ARAMTransfer(lbl_800EFBE8 + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 0, 0);
+            *(void**)(p + 0x14) = t;
+            *(void**)(lbl_8036E548 + 4) = t;
         set1:
             *(s16*)(p + 0x10) = 1;
         }

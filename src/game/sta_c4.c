@@ -20,6 +20,17 @@
 #pragma dont_inline on
 extern void fn_800B0A14_removeQueue(void*);
 
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
+
 // TODO type: defined as (s16* sx, s16* sy, f32 x, f32 y, f32 z) in main/file_800527C4.h (same ABI);
 // the original callers evaluate the floats first, as do sta_c2 and rep_1FD8.
 extern void fn_800528C0(f32 x, f32 y, f32 z, s16* sx, s16* sy);
@@ -379,7 +390,7 @@ void fn_3_F8E20(void) {
         }
     }
     if (lbl_3_bss_B5D4 != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         fn_80034CEC(lbl_3_bss_B628[0]);
         lbl_3_bss_B5D4 = 0;
     }

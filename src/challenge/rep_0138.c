@@ -205,7 +205,7 @@ void fn_1_717C(ChallengeModelOffsets* model) {
     fn_800BCE38((struct DODisplayData *)geometry); // TODO type
     convertTextureHeader(textures);
     lbl_1_common_bss_472B4.texBank = textures + 4;
-    fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
+    fn_800BD190((struct GQRValueGroups*)geometry, textures);
     haveActLayoutPointToGeoHeader(actor, geometry);
     lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
     lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
@@ -214,7 +214,7 @@ void fn_1_717C(ChallengeModelOffsets* model) {
     geometry = (u8*)model + model->secondaryGeometry;
     fn_800B49E4((struct ActorLayout *)actor); // TODO type
     fn_800BCE38((struct DODisplayData *)geometry); // TODO type
-    fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
+    fn_800BD190((struct GQRValueGroups*)geometry, textures);
     haveActLayoutPointToGeoHeader(actor, geometry);
     lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
     lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
@@ -1362,7 +1362,6 @@ void fn_1_6848(void) {
         break;
     case 2:
         task->modelIdx = lbl_1_common_bss_472B4.variantSel + lbl_1_common_bss_472B4.stageSel * 3;
-        // TODO type: ARAMTransfer returns the destination pointer as s32
         task->model = (ChallengeModelOffsets*)ARAMTransfer(&lbl_1_data_8D0[task->modelIdx], 0, 0, 0);
         task->state = 3;
         lbl_1_bss_C0.fog = &lbl_1_data_2A8[lbl_1_common_bss_472B4.stageSel].fog[lbl_1_common_bss_472B4.variantSel];
@@ -1378,7 +1377,7 @@ void fn_1_6848(void) {
             fn_800BCE38((struct DODisplayData *)geometry); // TODO type
             convertTextureHeader(textures);
             lbl_1_common_bss_472B4.texBank = textures + 4;
-            fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
+            fn_800BD190((struct GQRValueGroups*)geometry, textures);
             haveActLayoutPointToGeoHeader(actor, geometry);
             lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
             lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
@@ -1387,7 +1386,7 @@ void fn_1_6848(void) {
             geometry = (u8*)model + model->secondaryGeometry;
             fn_800B49E4((struct ActorLayout *)actor); // TODO type
             fn_800BCE38((struct DODisplayData *)geometry); // TODO type
-            fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
+            fn_800BD190((struct GQRValueGroups*)geometry, textures);
             haveActLayoutPointToGeoHeader(actor, geometry);
             lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
             lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;

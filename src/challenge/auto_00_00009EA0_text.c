@@ -56,7 +56,6 @@ void fn_1_9F04(void) {
 
     switch (task->step) {
     case 0:
-        // TODO port: ARAMTransfer returns the destination pointer (declared s32 in UnknownHomes_Static.h)
         lbl_800EF808.groups[task->group] = (struct SoundGroupData*)ARAMTransfer(&lbl_1_data_196C[task->group], 0, 1, 0);
         task->step = 1;
         break;

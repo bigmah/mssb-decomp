@@ -14,7 +14,7 @@ void fn_3_CB738(void) {
     u8* b = lbl_3_common_bss_35154;
     if (*(u8*)((u8*)&g_d_GameSettings + 0x55) != 0 || b[0x479] != 0 || (*(s16*)(b + 0x404))-- == 0) {
         b[0x40A] = 0;
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     } else {
         fn_3_BD8D8();
         *(f32*)(b + 0x3EC) = *(f32*)(b + 0x3EC) + lbl_3_rodata_2438;

@@ -1137,7 +1137,6 @@ void fn_1_1CBE4(u8* object) {
             path == lbl_1_rodata_76E4 || path == lbl_1_rodata_7708) {
             lbl_1_bss_6A94[idx] = 1;
         }
-        // TODO type: ARAMTransfer returns the loaded data (void*), UnknownHomes_Static.h says s32
         ((ChallengeActorMgr*)lbl_8036E548)->actors[task->actorIndex].model =
             (ChallengeFileRef*)ARAMTransfer(&lbl_1_data_F968[task->actorIndex], 0, 0, 0);
         lbl_803CC1B8->state++;
@@ -1218,7 +1217,7 @@ void fn_1_1C8C0(u8* object) {
             }
             *banks = textures;
             haveActLayoutPointToGeoHeader(layout, geometry);
-            fn_800BD190(geometry, (s32)textures); // TODO type: UnknownHomes_Static.h takes s32
+            fn_800BD190(geometry, textures);
         }
         fn_800BDC88(mgr->collection, i, i, layout, *isTest != 0 ? mgr->actors[i].anim : NULL, skin);
         fn_800BD548(&mgr->collection->nodes[i], 3, mgr->lights[0], mgr->lights[1], mgr->lights[2], mgr->lights[3]);

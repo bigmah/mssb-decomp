@@ -93,19 +93,19 @@ void fn_3_168704(void) {
 
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
         // removeQueue ignores its argument; the original passes whatever is in r3.
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (d->shown[task->actor] != 0) {
         if (lbl_80366158._28 != 0) {
             d->flags[task->actor] &= ~1;
         }
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (!(d->flags[task->actor] & 2)) {
         d->flags[task->actor] &= ~1;
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     d->shown[task->actor] = 1;
@@ -226,12 +226,12 @@ void fn_3_168DFC(void) {
 
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
         // removeQueue ignores its argument; the original passes whatever is in r3.
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     shown = d->shown;
     if (shown[task->actor] != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     shown[task->actor] = 1;
@@ -251,7 +251,7 @@ void fn_3_168DFC(void) {
     }
     fn_800A7D4C(0, node);
     if (task->frame >= lbl_3_common_bss_35154.anim[task->animIdx].state.seqs[0].hdr.length) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 #endif

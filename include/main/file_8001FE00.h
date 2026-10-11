@@ -40,8 +40,8 @@ void fn_8002059C(void);
 void fn_80020624(void);
 void fn_800206FC(void);
 void fn_80021064(void);
-s32 fn_80021188(void);
-s32 fn_800211BC(void);
+s32 fn_80021188(BOOL (*callback)(void)); // callback unused
+s32 fn_800211BC(BOOL (*callback)(void)); // callback unused
 
 u8 fn_800211F0(void);
 

@@ -4,9 +4,10 @@
 #include "main/file_800B0724.h"
 
 // main/file_8000A0AC
-void fn_8000A0AC(f32* curve, AnimFrame* a, AnimFrame* b, f32 t);
+// Same functions as main/file_8000A0AC.h, seen through this file's key views.
+void fn_8000A0AC(f32 t, f32* curve, AnimFrame* a, AnimFrame* b);
 s32 fn_8000A3EC(Mtx out, SpriteDrawParams* params, AnimFrame* a, AnimFrame* b, f32* curve, f32 t, f32 z);
-void interpolatePointsBezier_Vec2s(f32* curve, AnimKeyV0* p0, AnimKeyV0* p1, AnimKeyV0* p2, AnimKeyV0* p3, s32 mode, f32 t);
+void interpolatePointsBezier_Vec2s(f32 t, f32* curve, AnimKeyV0* p0, AnimKeyV0* p1, AnimKeyV0* p2, AnimKeyV0* p3, u32 mode);
 s32 fn_8000AF1C(Mtx out, SpriteDrawParams* params, AnimKeyV0* a, AnimKeyV0* b, void* animC, f32* curve, f32 t);
 
 // Copy four transformed quad corners (in the given order) into the vertex positions.
@@ -213,7 +214,7 @@ s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
                     f = (f32)dt / (f32)span;
                 }
                 if ((frames[0].flags >> 4) & 1) {
-                    fn_8000A0AC(curve, &frames[0], next, f);
+                    fn_8000A0AC(f, curve, &frames[0], next);
                 }
                 flags |= fn_8000A3EC(m, &params, &frames[0], next, curve, f, next->unk18);
                 PSMTXConcat(mtx, m, m);
@@ -361,7 +362,7 @@ s32 fn_8000C194(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
                     f = (f32)dt / (f32)span;
                 }
                 if ((frames[0].flags >> 4) & 1) {
-                    fn_8000A0AC(curve, &frames[0], next, f);
+                    fn_8000A0AC(f, curve, &frames[0], next);
                 }
                 flags |= fn_8000A3EC(m, &params, &frames[0], next, curve, f, next->unk18);
                 PSMTXConcat(mtx, m, m);
@@ -761,14 +762,14 @@ s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
             if (key->curved) {
                 if (key[-1].curved && idx != 0) {
                     if (key[1].curved) {
-                        interpolatePointsBezier_Vec2s(curve, key - 1, key, key + 1, key + 2, 1, f);
+                        interpolatePointsBezier_Vec2s(f, curve, key - 1, key, key + 1, key + 2, 1);
                     } else {
-                        interpolatePointsBezier_Vec2s(curve, key - 1, key - 1, key, key + 1, 2, f);
+                        interpolatePointsBezier_Vec2s(f, curve, key - 1, key - 1, key, key + 1, 2);
                     }
                 } else if (idx == 0) {
-                    interpolatePointsBezier_Vec2s(curve, key, key + 1, key + 1, key + 2, 0, f);
+                    interpolatePointsBezier_Vec2s(f, curve, key, key + 1, key + 1, key + 2, 0);
                 } else {
-                    interpolatePointsBezier_Vec2s(curve, key, key + 1, key + 2, key + 2, 0, f);
+                    interpolatePointsBezier_Vec2s(f, curve, key, key + 1, key + 2, key + 2, 0);
                 }
             }
             flags |= fn_8000AF1C(m, &params, key, next, animC, curve, f);

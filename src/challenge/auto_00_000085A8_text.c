@@ -50,7 +50,8 @@ void fn_1_8624(void) {
         task->timer = 0;
     }
     if (lbl_1_common_bss_47674.cur != 0 || lbl_1_common_bss_47674.loadStep == 0) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
     }
     task->timer++;
 }

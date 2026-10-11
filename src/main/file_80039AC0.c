@@ -233,7 +233,7 @@ void fn_8003A1D0(void) {
         fn_800A7D4C(8, node);
     }
     fn_80039AC0();
-    ((void (*)(void))fn_800B0A14_removeQueue)();
+    REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x8003A2C0 size:0x2C

@@ -286,7 +286,7 @@ static inline char* SaveBanner_Text(SaveBannerData* banner, s32 lang) {
 static inline void SaveTask_Finish(s16 outcome) {
     lbl_803CC1B8->parent->_10 = outcome;
     fn_8000FE54();
-    ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+    REMOVE_QUEUE_NOARG(); // removes the running task
 }
 
 extern u8 lbl_803CBCB4;

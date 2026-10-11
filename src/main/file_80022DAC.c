@@ -19,7 +19,7 @@ extern u8 lbl_8036E548[]; // TODO type
 // TODO: these belong in their own units' headers.
 void* _OSAllocFromHeap(u32 align, u32 size);
 ActorSlotTable* ActorObjectInitTable(u16 count);
-void fn_800B4724(MActor* actor, u32 value);
+void fn_800B4724(MActor* actor, struct sHdr* skHeader); // GameActor* in main/file_800B2C44.h
 void fn_800A7E00(void);
 void OSReport(const char* msg, ...);
 void OSPanic(const char* file, int line, const char* msg, ...);
@@ -326,11 +326,11 @@ void fn_800238E0(ActorSlotTable* table, u16 index, s16 id, MActorLayout* layout)
 // NONMATCHING 83%: the original recomputes &lbl_8017EBB0[index] after memset (6 saved regs) where we
 // keep it in a register; otherwise identical.
 #if NONMATCHING
-void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, u32 anim, u32 arg5) {
+void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, void* anim, struct sHdr* skin) {
     memset(lbl_8017EBB0[index], 0, lbl_803CBC5C);
     layout->actorID = id;
     slot->actor = f_InitActorWithLayout(layout, lbl_8017EBB0[index]);
-    fn_800B4724(slot->actor, arg5);
+    fn_800B4724(slot->actor, skin);
     slot->unkE = 0;
     slot->speed = lbl_803CC564;
     slot->unk64 = 0;
@@ -347,7 +347,7 @@ void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, u32 a
     slot->unk70[7] = 0;
     slot->id = id;
     slot->unk6C = 1;
-    if (anim != 0) {
+    if (anim != NULL) {
         slot->anim = anim;
         slot->unk58 = 1;
         slot->unk5A = 1;

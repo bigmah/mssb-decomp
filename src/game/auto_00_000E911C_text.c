@@ -66,11 +66,13 @@ void fn_3_E911C(void) {
 
     if (mode != 0) {
         if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic.gameStatus != 0x26) {
-            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            fn_80034CEC(task);
+            REMOVE_QUEUE_NOARG();
             return;
         }
     } else if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic.gameStatus != 3) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
         return;
     }
 

@@ -56,11 +56,11 @@ void fn_3_1666B0(Vec* pos) {
 void fn_3_16689C(void) {
     // removeQueue ignores its argument; the original passes whatever is in r3.
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL || g_GameLogic.framesOfExitingToMenu != 0 || g_Ball.fielderWBallIndex < 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (g_d_GameSettings.GameModeSelected == 6 && g_Minigame.TF_ballDespawnedInd) {
@@ -218,7 +218,7 @@ void fn_3_166E04(void) {
         spawnSparkleAt(task->actor, joint);
     } else {
         // removeQueue ignores its argument; the original passes whatever is in r3.
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -259,7 +259,7 @@ void fn_3_167178(void) {
 
     // removeQueue ignores its argument; the original passes whatever is in r3.
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
@@ -288,7 +288,7 @@ void fn_3_167178(void) {
         prm.b = rand() % 256;
         fn_80026998(&prm);
     }
-    ((void (*)(void))fn_800B0A14_removeQueue)();
+    REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x001674D0 size:0x3D8 mapped:0x807A6564

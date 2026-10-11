@@ -88,7 +88,7 @@ void fn_1_1E0(void) {
         break;
     case 2:
         if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 0x100) {
-            *(s32*)(queue + 0x14) = ARAMTransfer(lbl_800F1D78 + queue[0x18] * 16, 0, 0, 0);
+            *(void**)(queue + 0x14) = ARAMTransfer(lbl_800F1D78 + queue[0x18] * 16, 0, 0, 0);
             *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
         }
         break;
@@ -128,7 +128,7 @@ void fn_1_1E0(void) {
             } else {
                 s32 n = queue[0x18] + 1;
                 queue[0x18] = n;
-                *(s32*)(queue + 0x14) = ARAMTransfer(lbl_800F1D78 + (u8)n * 16, 0, 0, 0);
+                *(void**)(queue + 0x14) = ARAMTransfer(lbl_800F1D78 + (u8)n * 16, 0, 0, 0);
             }
         }
         break;

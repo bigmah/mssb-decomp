@@ -130,7 +130,7 @@ extern u8 lbl_803C6CF8[];
 extern u8 lbl_8036E548[];
 extern void* memset(void*, int, u32);
 extern u8 lbl_3_data_10ACC[];
-extern s32 ARAMTransfer(void*, int, int, int);
+extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void* lbl_3_bss_9940;
 extern u8 lbl_3_bss_1901;
 extern void minigamesSetSomePointers(void);
@@ -891,13 +891,24 @@ extern void (*lbl_3_data_10AB0[])(void*);
 extern void fn_3_35E4(u32 val);
 extern void fn_80023B90(void*, LitPos*);
 extern void fn_8001B214(void (*)(void));
-extern void fn_800B0A14_removeQueue(void); // TODO type: takes a task pointer (main/file_800B0724.h); this caller passes none
+extern void fn_800B0A14_removeQueue(void* unused);
+
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
 
 void fn_3_B99E4(void) {
     if ((s32)lbl_803C6CF8[0x715] == 1) {
         lbl_3_common_bss_350E4[0x6A] = 0;
         fn_3_B9FB8(g_d_GameSettings.StadiumID, *(void**)(lbl_8036E548 + 8));
-        fn_800B0A14_removeQueue();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -906,25 +917,25 @@ s32 fn_3_B9BB4(u32 type) {
     if ((s32)lbl_803C6CF8[0x715] == 1) {
     switch (type) {
         case 0:
-            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC, 0, 0, 0);
+            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC, 0, 0, 0);
             break;
         case 1:
-            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x10, 0, 0, 0);
+            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x10, 0, 0, 0);
             break;
         case 2:
-            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x20, 0, 0, 0);
+            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x20, 0, 0, 0);
             break;
         case 3:
-            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x30, 0, 0, 0);
+            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x30, 0, 0, 0);
             break;
         case 4:
-            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x40, 0, 0, 0);
+            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x40, 0, 0, 0);
             break;
         case 5:
-            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x50, 0, 0, 0);
+            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x50, 0, 0, 0);
             break;
         case 6:
-            *(s32*)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x60, 0, 0, 0);
+            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC + 0x60, 0, 0, 0);
             break;
         default:
             return -1;
@@ -976,7 +987,7 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
             LoadActorLayout(layout);
             convertGeometryAndSknHeader(geo, skn);
             skn = NULL;
-            fn_800BD190(geo, (s32)tex); // TODO type: second argument is a pointer
+            fn_800BD190(geo, tex);
             haveActLayoutPointToGeoHeader(layout, geo);
             break;
         case 6: {

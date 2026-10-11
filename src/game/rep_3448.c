@@ -27,8 +27,19 @@ extern u32 sndFXStartEx(int, u8, u8, u8);
 extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_23894[];
 extern u8 lbl_3_data_238F4[];
-extern void* fn_80034CEC(void*);
+extern void fn_80034CEC(void*);
 extern void fn_800B0A14_removeQueue(void*);
+
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
 extern u8 g_GameLogic[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_common_bss_34C90[];
@@ -163,7 +174,7 @@ void fn_3_11EC28(void) {
     q = REP_TASK;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (q->state) {
@@ -254,7 +265,7 @@ void fn_3_11F02C(void) {
     u32 v;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (q->state) {
@@ -356,7 +367,7 @@ void fn_3_11F508(void) {
     u8* q = lbl_803CC1B8;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -397,7 +408,7 @@ void fn_3_11F778(void) {
     u8* q = lbl_803CC1B8;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -444,7 +455,7 @@ void fn_3_11FA58(void) {
     u8* q = lbl_803CC1B8;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -502,7 +513,7 @@ void fn_3_11FDB0(void) {
     u8* t;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -607,7 +618,7 @@ void fn_3_12026C(void) {
     s32 msg;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (g_GameLogic[0x11E] == 7) {
@@ -725,7 +736,7 @@ void fn_3_12089C(void) {
     u32 found;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (g_GameLogic[0x11E] == 0) {
@@ -856,7 +867,7 @@ void fn_3_120FF8(void) {
     u8* t;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -935,7 +946,7 @@ void fn_3_121304(void) {
     u32 x;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (q->state) {
@@ -1058,7 +1069,7 @@ void fn_3_121908(void) {
             q->u24.voice = 0xFFFFFFFF;
         }
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (q->u24.voice != 0xFFFFFFFF) {
@@ -1221,7 +1232,7 @@ void fn_3_122334(void) {
     u32 v;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -1300,7 +1311,7 @@ void fn_3_1226D4(void) {
     u32 k;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (q->state) {
@@ -1427,7 +1438,7 @@ void fn_3_122D24(void) {
     u32 v;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (q->state) {
@@ -1506,7 +1517,7 @@ void fn_3_1231D4(void) {
     s32 v;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -1574,7 +1585,7 @@ void fn_3_1235B8(void) {
     u32 d;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -1643,7 +1654,7 @@ void fn_3_123990(void) {
     s16 sy;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (q->state) {
@@ -1744,7 +1755,7 @@ void fn_3_123EBC(void) {
     u32 i;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -1847,7 +1858,7 @@ void fn_3_1243A4(void) {
     u32 b;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -1926,7 +1937,7 @@ void fn_3_124738(void) {
     u32 f;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -2047,13 +2058,13 @@ void fn_3_124CE0(void) {
     u32 t;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
     case 0:
         if (g_Minigame[0x1909] != 0) {
-            ((void (*)(void))fn_800B0A14_removeQueue)();
+            REMOVE_QUEUE_NOARG();
             break;
         }
         if (g_Minigame[0x1909] == 0 && g_Minigame[0x1A3C] == 0 && g_Minigame[0x1A2B] == 3) {
@@ -2061,7 +2072,7 @@ void fn_3_124CE0(void) {
         } else if (g_Minigame[0x1A2A] == 1 || g_Minigame[0x1A2A] == 3) {
             *(u16*)(q + 0x1E) = 0;
         } else {
-            ((void (*)(void))fn_800B0A14_removeQueue)();
+            REMOVE_QUEUE_NOARG();
             break;
         }
         fn_80034E20(q, lbl_3_data_23904);
@@ -2238,7 +2249,7 @@ void fn_3_1254F8(void) {
     if (g_GameLogic[0x11E] != 5) {
         g_Minigame[0x1E02] = 0;
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (*(u16*)(q + 0x1C)) {
@@ -2311,7 +2322,7 @@ void fn_3_125604(void) {
         }
     } else {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -2542,7 +2553,7 @@ void fn_3_1258C0(void) {
     return;
 remove:
     fn_80034CEC(q);
-    ((void (*)(void))fn_800B0A14_removeQueue)();
+    REMOVE_QUEUE_NOARG();
     if (g_GameLogic[0x11E] == 0x29) {
         lbl_8034E978._26 = 1;
     }
@@ -2771,12 +2782,12 @@ void fn_3_1274B4(void) {
     u32 x;
     if (lbl_3_common_bss_32724[0x96] != 0) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (g_GameLogic[0x11E] == 0x22) {
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (q->state) {
@@ -2885,13 +2896,13 @@ void fn_3_127B68(void) {
     if (q->state >= 6) {
         *(void**)(g_Minigame + 0x1E04) = NULL; // TODO type: g_Minigame minigame task pointer
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (g_GameLogic[0x11E] != 0x24) {
         *(void**)(g_Minigame + 0x1E04) = NULL;
         fn_80034CEC(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     fn_3_10754C((struct StatInput*)&in);
@@ -3102,7 +3113,7 @@ void fn_3_128A38(void) {
     }
 rem:
         ((void (*)(u8*))fn_80034CEC)(q);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x00128B90 size:0x88 mapped:0x80767C24
@@ -3239,7 +3250,7 @@ void fn_3_128C18(void) {
     return;
 remove:
     fn_80034CEC(q);
-    ((void (*)(void))fn_800B0A14_removeQueue)();
+    REMOVE_QUEUE_NOARG();
     if (g_Minigame[0x190A] != 0) {
         lbl_8034E978._26 = 1;
     }

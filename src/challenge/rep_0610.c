@@ -542,7 +542,8 @@ void fn_1_CCC8(void) {
             fn_800385F0((struct RigidBody *)lbl_1_bss_30C0, lbl_1_rodata_73A4[0], lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC); // TODO type
         }
         *(f32*)(lbl_1_bss_30C0 + 0x50) = lbl_1_data_F568[0];
-        fn_800B0A14_removeQueue(fn_80037AA0((struct RigidBody *)lbl_1_bss_30C0, 0, (void*)fn_1_CB9C, *(u16*)(queue + 0x18), *(void**)(queue + 0x14))); // TODO type
+        fn_80037AA0((struct RigidBody *)lbl_1_bss_30C0, 0, (void (*)(void))fn_1_CB9C, *(u16*)(queue + 0x18), *(void**)(queue + 0x14)); // TODO type
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -599,14 +600,14 @@ void fn_1_10560(void* object) {
             u8* data = *(u8**)(state + 0x24);
             *(u8**)(state + 0x28) = data + *(u32*)data;
             convertTextureHeader(*(u8**)(state + 0x28));
-            *(s32*)(state + 0x3074) = ARAMTransfer(lbl_1_data_A940, 0, 1, 0);
+            *(void**)(state + 0x3074) = ARAMTransfer(lbl_1_data_A940, 0, 1, 0);
             *(s16*)(lbl_803CC1B8[0] + 0x10) = 2;
         }
         break;
     case 2:
         if ((s32)lbl_803C6CF8[0x715] == 1) {
             convertTextureHeader(*(void**)(state + 0x3074));
-            ((void (*)(void))fn_800B0A14_removeQueue)();
+            REMOVE_QUEUE_NOARG();
         }
         break;
     }
@@ -678,7 +679,7 @@ void fn_1_F1D8(void* unused) {
     fn_80030D88(&coordinates, &direction, lbl_1_data_F278[1], 5);
     fn_80030D88(&coordinates, &direction, lbl_1_data_F278[2], 5);
     if (--*(s32*)(queue + 0x20) == 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -1185,7 +1186,7 @@ void fn_1_F50C(void) {
     PSVECAdd((Vec*)(queue + 0x20), (Vec*)(queue + 0x14), (Vec*)(queue + 0x14));
     *(s16*)(queue + 0x3C) = *(u16*)(queue + 0x3C) - 1;
     if (*(u16*)(queue + 0x3C) == 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -4048,7 +4049,7 @@ void fn_1_16978(void) {
                 case 2:
                     textures = ((void**)ch_60DC)[i];
                     convertTextureHeader(textures);
-                    fn_800BD190(geometry, (s32)textures); // TODO type: fn_800BD190 takes (geometry, textures)
+                    fn_800BD190(geometry, textures);
                     fn_800BDC88((ActorObjectTable*)ch_60E0, i / 3, i / 3, layout, NULL, 0);
                     break;
                 }
@@ -4146,7 +4147,7 @@ void fn_1_135C0(void) {
         LoadActorLayout(layout);
         convertGeometryAndSknHeader(geometry, skin);
         haveActLayoutPointToGeoHeader(layout, geometry);
-        fn_800BD190(geometry, (s32)textures); // TODO type: fn_800BD190 takes (geometry, textures)
+        fn_800BD190(geometry, textures);
         if (lbl_1_data_A978[ch_68FC[0x40]] >= 0) {
             files = ch_60A0;
             for (k = 0; k <= 7; k += 2) {
@@ -4155,7 +4156,7 @@ void fn_1_135C0(void) {
                 LoadActorLayout(extraLayout);
                 convertGeometryAndSknHeader(extraGeometry, NULL);
                 haveActLayoutPointToGeoHeader(extraLayout, extraGeometry);
-                fn_800BD190(extraGeometry, (s32)textures);
+                fn_800BD190(extraGeometry, textures);
                 fn_800BDC88(lbl_1_bss_5F7C[0], k / 2, k / 2, extraLayout, NULL, 0);
             }
             extra = lbl_1_bss_5F7C[0];

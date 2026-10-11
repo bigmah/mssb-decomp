@@ -110,7 +110,7 @@ typedef struct PracticeGlobals80366158 {
 extern PracticeGlobals80366158 lbl_80366158;
 typedef struct PracticeTextSystem {
     u8 _000[0x7AC];
-    s32 msgTable; // 0x7AC: ARAMTransfer result (TODO type: void*; ARAMTransfer is declared s32 here)
+    void* msgTable; // 0x7AC: ARAMTransfer result
 } PracticeTextSystem;
 extern PracticeTextSystem lbl_80366B18;
 typedef struct PracticeAramLoader {
@@ -1314,7 +1314,7 @@ void fn_3_B43E8(void) {
         break;
     case 2:
         if (lbl_803C6CF8.done == 1) {
-            fn_800111B4((void*)lbl_80366B18.msgTable);
+            fn_800111B4(lbl_80366B18.msgTable);
             lbl_3_common_bss_34C58._2C = 0;
             g_GameLogic._125++;
             fn_8000F4B8(g_Practice._192, -1, -1, -1);

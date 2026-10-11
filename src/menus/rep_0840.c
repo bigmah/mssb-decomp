@@ -8,6 +8,17 @@
 #include "menus/auto_00_00092394_text.h"
 
 extern void fn_800B0A14_removeQueue(void* unused);
+
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
 extern u32 fn_80062890(s32 index);
 
 // Menu world state (lbl_2_bss_1A8248[0]), only the fields used here.
@@ -100,13 +111,13 @@ void fn_2_3BD88(void) {
         break;
     case 7:
         task->parent->result = 1;
-        ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+        REMOVE_QUEUE_NOARG(); // arg unused
         task->state = 0;
         break;
     }
     if (lbl_2_bss_1A824C[0]->abort == 1) {
         lbl_803CC1B8->parent->result = 1;
-        ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+        REMOVE_QUEUE_NOARG(); // arg unused
         task->state = 0;
     }
 }

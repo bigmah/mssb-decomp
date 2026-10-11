@@ -53,7 +53,7 @@ s32 fn_2_4EB2C(void);
 
 s32 fn_2_4EB64(void);
 
-void* fn_2_4E858(void* object);
+void fn_2_4E858(void* object); // fn_80034CEC wrapper
 
 s32 fn_2_512B8(void);
 

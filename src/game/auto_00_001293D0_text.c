@@ -372,7 +372,8 @@ void fn_3_12C1AC(void) {
         return;
     }
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_32724._D9 = 0;
     lbl_8034E978._26 = 1;
 }
@@ -720,7 +721,8 @@ void fn_3_129C88(void) {
         return;
     }
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_32724._BE = 0;
 }
 
@@ -786,7 +788,8 @@ void fn_3_129FF8(void) {
         return;
     }
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_32724._BE = 0;
 }
 
@@ -876,7 +879,8 @@ void fn_3_12A3F0(void) {
     }
     return;
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
 }
 
 // fn_3_129A18, size:0x270
@@ -1013,7 +1017,8 @@ void fn_3_12955C(void) {
     }
     return;
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
 }
 #endif
 
@@ -1139,7 +1144,8 @@ void fn_3_12BB64(void) {
 remove:
     fn_8000FEE8(task->_1E);
     fn_8000F8F4((LayoutGroup*)task);
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_32724._BC = 0;
 }
 
@@ -1583,7 +1589,8 @@ void fn_3_12A910(void) {
     }
     return;
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_32724._DA = 2;
 }
 #endif

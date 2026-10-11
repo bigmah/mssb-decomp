@@ -20,7 +20,7 @@ void fn_800BC824(struct DODisplayObj* dispObj, void* shaderData);
 
 typedef struct GQRValueEntry {
     u8 pad[0xC];
-    s32 value;
+    void* value; // texture archive (TexArchive*), set by fn_800BD190
 } GQRValueEntry;
 
 typedef struct GQRValueGroup {
@@ -41,7 +41,7 @@ typedef struct GQRValueGroups {
     GQRGroupSlot* groups;
 } GQRValueGroups;
 
-void fn_800BD190(GQRValueGroups* groups, s32 value);
+void fn_800BD190(GQRValueGroups* groups, void* textures);
 
 void __MTGQR5(u32 value);
 

@@ -201,7 +201,7 @@ void fn_2_8B2C0(void) {
         convertGeometryAndSknHeader(g, 0);
         haveActLayoutPointToGeoHeader(a, g);
         convertTextureHeader(x);
-        fn_800BD190((struct GQRValueGroups*)g, (s32)x);
+        fn_800BD190((struct GQRValueGroups*)g, x);
         i++;
         off += 0xC;
     } while (i < 4);
@@ -296,7 +296,7 @@ void fn_2_8E478(void) {
         o[0x28] = 1;
         break;
     case 1:
-        *(s32*)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(lbl_2_data_2FE48, 0, 0, 0);
+        *(void**)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(lbl_2_data_2FE48, 0, 0, 0);
         *(s16*)(o + 0x14) = *(s16*)(o + 0x14) + 1;
         o[0x28] = 2;
         break;
@@ -542,7 +542,7 @@ void fn_2_8C910(void) {
         convertGeometryAndSknHeader(g, 0);
         haveActLayoutPointToGeoHeader(a, g);
         convertTextureHeader(x);
-        fn_800BD190((struct GQRValueGroups*)g, (s32)x);
+        fn_800BD190((struct GQRValueGroups*)g, x);
     }
 }
 #endif
@@ -569,7 +569,7 @@ void fn_2_8DFB0(void) {
         break;
     case 1:
         *(s16*)(lbl_2_bss_1A824C + 0x197746) = 0;
-        *(s32*)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(lbl_2_data_2FE58, 0, 0, 0); // TODO type: ARAMTransfer returns a pointer
+        *(void**)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(lbl_2_data_2FE58, 0, 0, 0);
         *(s16*)(task + 0x14) = *(s16*)(task + 0x14) + 1;
         task[0x28] = 2;
         break;
@@ -677,7 +677,7 @@ void fn_2_8D270(u8 index) {
         LoadActorLayout(layout);
         convertGeometryAndSknHeader(geo, skn);
         haveActLayoutPointToGeoHeader(layout, geo);
-        fn_800BD190((struct GQRValueGroups*)geo, (s32)tex); // TODO type: second argument is a pointer
+        fn_800BD190((struct GQRValueGroups*)geo, tex);
     } else {
         return;
     }

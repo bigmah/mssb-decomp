@@ -125,7 +125,7 @@ void fn_3_21C90(void) {
         p->frame = p->frame + 1;
         if (g_pCamera->_AAC <= p->frame) {
             g_pCamera->_AA8 = 0;
-            ((void (*)(void))fn_800B0A14_removeQueue)();
+            REMOVE_QUEUE_NOARG();
             lbl_3_bss_A0 = 0;
             return;
         }
@@ -168,7 +168,7 @@ void fn_3_21DE4(void) {
         p->frame = p->frame + 1;
         if (g_pCamera->_AAE <= p->frame) {
             g_pCamera->_AAA = 0;
-            ((void (*)(void))fn_800B0A14_removeQueue)();
+            REMOVE_QUEUE_NOARG();
             lbl_3_bss_9C = 0;
         }
         return;

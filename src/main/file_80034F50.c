@@ -51,7 +51,7 @@ extern void* lbl_803CBC94;
 extern s32 lbl_803CBC98;
 extern SpaniObj* lbl_803CBC9C;
 
-extern s32 ARAMTransfer(void*, int, int, int);
+extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void convertTextureHeader(void* textures);
 extern void fn_800B24D4(u32);
 extern void fn_800ACFB0(void* object);
@@ -370,7 +370,7 @@ s32 fn_80035838(void* aramAddr, u8 id) {
             OSPanic("spani_default.c", 0x45A, "gasSpani No Empty \n");
         }
         lbl_8023D6C0[lbl_803CBC91] = id;
-        lbl_803C4BE0[lbl_803CBC91].data = (void*)ARAMTransfer(aramAddr, 0, 0, 0); // TODO type: ARAMTransfer returns a pointer
+        lbl_803C4BE0[lbl_803CBC91].data = ARAMTransfer(aramAddr, 0, 0, 0);
         lbl_803CBC94 = aramAddr;
         lbl_803CB810 = id;
         lbl_803CBC90++;

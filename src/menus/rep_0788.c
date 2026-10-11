@@ -82,7 +82,7 @@ void fn_2_2025C(void) {
 extern u8* lbl_2_bss_1A8230[];
 extern u8 lbl_2_data_1048C[];
 extern void fn_2_4E878(void*, void*);
-extern void* fn_2_4E858(void*);
+extern void fn_2_4E858(void* object);
 extern void fn_2_53F04(void*);
 extern void fn_2_5400C(void);
 extern void fn_2_53CEC(void*);
@@ -161,7 +161,8 @@ void fn_2_242FC(void) {
     fn_2_5400C();
     if (lbl_2_bss_1A8230[0][0x32A86] != 0) {
         fn_2_53CEC(queue);
-        fn_800B0A14_removeQueue(fn_2_4E858(queue));
+        fn_2_4E858(queue);
+        REMOVE_QUEUE_NOARG();
         queue->stateB = 0;
         lbl_2_bss_1A8230[0][0x32A86] = 0;
     }
@@ -337,7 +338,8 @@ void fn_2_24238(void) {
     if (lbl_2_bss_1A8234[0][0x162992] != 0) {
         fn_8000FE54();
         fn_2_53DF8(queue);
-        fn_800B0A14_removeQueue(fn_2_4E858(queue));
+        fn_2_4E858(queue);
+        REMOVE_QUEUE_NOARG();
         queue->stateA = 0;
         lbl_2_bss_1A8234[0][0x162992] = 0;
     }
@@ -364,7 +366,8 @@ void fn_2_243BC(void) {
         fn_8000FE54();
         fn_2_53DF8(queue);
         fn_8000F8F4(queue);
-        fn_800B0A14_removeQueue(fn_2_4E858(queue));
+        fn_2_4E858(queue);
+        REMOVE_QUEUE_NOARG();
         queue->stateA = 0;
         lbl_2_bss_1A8234[0][0x162992] = 0;
     }
@@ -390,7 +393,8 @@ void fn_2_2416C(void) {
         fn_8000FE54();
         fn_2_53DF8(queue);
         fn_8000F8F4(queue);
-        fn_800B0A14_removeQueue(fn_2_4E858(queue));
+        fn_2_4E858(queue);
+        REMOVE_QUEUE_NOARG();
         queue->stateA = 0;
         lbl_2_bss_1A8234[0][0x162992] = 0;
     }
@@ -565,7 +569,8 @@ void fn_2_24488(void) {
         fn_8000FE54();
         fn_2_53DF8(queue);
         fn_8000F8F4(queue);
-        fn_800B0A14_removeQueue(fn_2_4E858(queue));
+        fn_2_4E858(queue);
+        REMOVE_QUEUE_NOARG();
         queue->stateA = 0;
         lbl_2_bss_1A8234[0][0x162992] = 0;
     }

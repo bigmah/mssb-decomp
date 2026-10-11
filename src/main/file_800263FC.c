@@ -801,7 +801,7 @@ void fn_8002852C(void) {
     if (--q->timer == 0) {
         lbl_803CBC70 = NULL;
         fn_80023B90(&lbl_800F7478[g_d_GameSettings.stadiumId].light, &lbl_80367318);
-        ((void (*)(void))fn_800B0A14_removeQueue)(); // argument unused
+        REMOVE_QUEUE_NOARG(); // argument unused
     } else {
         q->light.r = q->r;
         q->light.g = q->g;

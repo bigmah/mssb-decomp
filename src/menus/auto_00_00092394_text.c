@@ -98,7 +98,7 @@ void fn_2_9257C(void) {
 #if NONMATCHING
         fn_800B0A14_removeQueue(NULL); // the argument is unused
 #else
-        ((void (*)(void))fn_800B0A14_removeQueue)(); // original passes a stale r3
+        REMOVE_QUEUE_NOARG(); // original passes a stale r3
 #endif
     }
 }

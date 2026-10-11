@@ -4,10 +4,10 @@
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_common_bss_32724[];
 extern void LoadActorLayout(void*);
-extern void convertGeometryAndSknHeader(void*, int);
+extern void convertGeometryAndSknHeader(void* geo, void* skn);
 extern void haveActLayoutPointToGeoHeader(void*, void*);
 extern void convertTextureHeader(void*);
-extern void fn_800BD190(void*, void*);
+extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
 extern void fn_80025DDC(void*);
 extern void fn_80025FFC(void*, void*);
 extern void fn_80025EEC(void*, int, int);
@@ -45,10 +45,10 @@ void fn_3_166448(void) {
     c = *(u8* volatile*)(lbl_8036E548 + 0x2DA8);
     *(u8**)(bss + 4) = hdr + *(u32*)(p + 4);
     LoadActorLayout(a);
-    convertGeometryAndSknHeader(b, 0);
+    convertGeometryAndSknHeader(b, NULL);
     haveActLayoutPointToGeoHeader(a, b);
     convertTextureHeader(c);
-    fn_800BD190(b, c);
+    fn_800BD190((struct GQRValueGroups*)b, c);
     {
     int one = 1;
     int zero = 0;

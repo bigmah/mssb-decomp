@@ -503,6 +503,17 @@ void fn_3_169E70(u8* base) {
 extern u8 lbl_803CBBC0; // index of the display list buffer in use
 extern void fn_800A7D4C(s32 list, void* node);
 extern void fn_800B0A14_removeQueue(void*);
+
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
 extern u8 g_Minigame[];
 #define KINOKO_RIBBON(r) (lbl_3_data_28928 + (r) * 0x44C)   // 6 ribbons of 25 segments (0x2C each)
 #define KINOKO_TICK (*(s32*)(lbl_3_data_28928 + 0x19D4))
@@ -525,12 +536,12 @@ void fn_3_16A07C(void) {
     u8 v;
 
     if (g_d_GameSettings._55 != 0 || g_Minigame[0x1A40] != 0) { // TODO type: g_Minigame._1A40
-        ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+        REMOVE_QUEUE_NOARG(); // removes the running task
         memset(lbl_3_data_28928, 0, 0x19E0);
         return;
     }
     if (*(s8*)(g_Minigame + 0x1D74) == -1 || lbl_3_data_28928[0x19DD] == 0) { // TODO type: g_Minigame.playerIDWithPowerup[0]
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         memset(lbl_3_data_28928, 0, 0x19E0);
         return;
     }

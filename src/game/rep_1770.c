@@ -83,7 +83,8 @@ void fn_3_993A8(void) {
             task->state = 0;
         }
     } else {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -175,7 +176,8 @@ void fn_3_99818(void) {
     }
     return;
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x00099BDC size:0xAC mapped:0x806D8C70
@@ -201,7 +203,8 @@ void fn_3_99C88(void) {
         w = v | (w & ~0xFF);
         o->color = w;
     } else {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -365,7 +368,8 @@ void fn_3_99E10(void) {
     }
     return;
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
     lbl_3_common_bss_32724._A8 = 0;
 }
 #endif
@@ -487,7 +491,8 @@ void fn_3_9B320(void) {
     s32 i;
     task->timer++;
     if (lbl_3_common_bss_32724.hudOff != 0 || lbl_3_common_bss_32724._A7 == 0) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (task->state != g_Scores.team[0].runs[0] || task->_1E != g_Scores.team[1].runs[0]) {
@@ -606,7 +611,8 @@ void fn_3_9C014(void) {
     HudTask* task = HUD_TASK;
     s32 i;
     if (lbl_3_common_bss_32724.hudOff != 0 || lbl_3_common_bss_32724._A7 == 0) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
         return;
     }
     task->timer++;

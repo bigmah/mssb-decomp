@@ -75,6 +75,17 @@ extern void fn_800B9AA8(void* light);
 extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
 extern void fn_800B0A14_removeQueue(void* unused);
 
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
+
 extern void ACTSetAnimation(void* act, void* bank, s32 a, u16 anim, f32 frame, f32 speed);
 extern void fn_800B4CA0(GameActor* model, f32 v);
 extern void fn_800B4C04(GameActor* model, f32 v);
@@ -92,7 +103,7 @@ extern void convertTextureHeader(void* textures);
 extern void LoadActorLayout(void* layout);
 extern void convertGeometryAndSknHeader(void* geo, void* skn);
 extern void haveActLayoutPointToGeoHeader(void* layout, void* geo);
-extern void fn_800BD190(void* geo, void* tex);
+extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
 extern void fn_8002399C(ActorObject* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
 extern void fn_800B2B74(GameActor* model, u16 joint);
 extern void fn_800B2BA8(GameActor* model, u16 joint, s32 a, s32 b);
@@ -295,14 +306,14 @@ void fn_2_18748(void) {
                 task->index = 0;
                 task->state = 0;
                 lbl_2_bss_100B8[0x19] = 1;
-                ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+                REMOVE_QUEUE_NOARG(); // arg unused
             } else {
                 task->state = 0;
             }
         } else if (lbl_2_bss_100B4[0] != 0) {
             task->index = 0;
             task->state = 0;
-            ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+            REMOVE_QUEUE_NOARG(); // arg unused
         }
         break;
     }
@@ -762,7 +773,7 @@ void fn_2_18398(void) {
             lbl_2_bss_100B8[0x1A] = 0;
             lbl_2_bss_100B8[0x32] = 0;
             lbl_2_bss_1224 = NULL;
-            ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+            REMOVE_QUEUE_NOARG(); // arg unused
             return;
         }
         task->index = next;
@@ -806,7 +817,7 @@ void fn_2_18398(void) {
             lbl_2_bss_100B8[0x1A] = 0;
             lbl_2_bss_100B8[0x32] = 0;
             task->state = 0;
-            ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+            REMOVE_QUEUE_NOARG(); // arg unused
             return;
         }
         if (lbl_2_bss_100B8[0x18] != 0) {
@@ -873,7 +884,7 @@ void fn_2_188EC(void) {
             for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
                 lbl_8036E548.active[i] = NULL;
             }
-            ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+            REMOVE_QUEUE_NOARG(); // arg unused
             return;
         }
     loading:

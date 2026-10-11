@@ -285,14 +285,14 @@ void fn_8002059C(void) {
     }
     lbl_8037169C._16 = 0;
     fn_80034CEC((SpaniGroup *)group); // TODO type
-    ((void (*)(void))fn_800B0A14_removeQueue)();
+    REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x80020624 size:0xD8
 void fn_80020624(void) {
     LayoutGroup* group = lbl_803CC1B8;
     if (lbl_8037169C._16 != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     fn_80034E20((SpaniGroup *)group, (SpaniDesc *)lbl_800EF470); // TODO type
@@ -582,13 +582,13 @@ void fn_80021064(void) {
 }
 
 // .text:0x80021188 size:0x34
-s32 fn_80021188(void) {
+s32 fn_80021188(BOOL (*callback)(void)) {
     sndMasterVolume(0x7F, 1, 1, 1);
     return 0;
 }
 
 // .text:0x800211BC size:0x34
-s32 fn_800211BC(void) {
+s32 fn_800211BC(BOOL (*callback)(void)) {
     sndMasterVolume(0, 1, 1, 1);
     return 0;
 }

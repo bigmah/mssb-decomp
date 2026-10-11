@@ -19,7 +19,7 @@ extern f64 cos(f64);
 extern s32 lbl_3_data_170D8[];
 extern const f32 lbl_3_rodata_1EC0;
 extern const f32 lbl_3_rodata_1E68;
-extern s32 ARAMTransfer(void*, int, int, int);
+extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_8006C43C(int);
 extern void fn_8006C3F0(int);
 extern void fn_8003A688(f32, f32);
@@ -1189,7 +1189,7 @@ extern void fn_800A7D4C(int, void*);
 void fn_3_BDCA4(void) {
     u8* o = lbl_803CC1B8;
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154[0x479] != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     *(s32*)(o + 0x20) -= (lbl_80366158[0x28] != 2);
@@ -1201,7 +1201,7 @@ void fn_3_BDCA4(void) {
     PSMTXCopy(*(Mtx*)((u8*)fn_80052768_getCamera(0) + 0x40), (*(BDCA4E**)(o + 0x24))[lbl_803CBBC0].m);
     fn_800A7D4C(0, &(*(BDCA4E**)(o + 0x24))[lbl_803CBBC0]);
     if (*(s32*)(o + 0x20) == 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -1238,7 +1238,7 @@ void fn_3_BDF74(void) {
     int i;
     f32 a;
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154[0x479] != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (*(s16*)(o + 0x10) != 0) {
@@ -1323,7 +1323,7 @@ void fn_3_BE1D4(void) {
     BOOL done;
     struct GameActor** pa;
     if (BE1D4_W->task == NULL) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     // Hit marker (kind 0..4; kind 4 uses slot 3 and also triggers the star burst).
@@ -1658,7 +1658,7 @@ void fn_3_BF238(void) {
         case 3: case 11: case 21: case 27: case 33: case 39:
             anm = BF238_W->assets[i];
             ANIMGet(anm);
-            fn_800BD190((struct GQRValueGroups*)geo, (s32)tex); // TODO type: value is the texture archive pointer
+            fn_800BD190((struct GQRValueGroups*)geo, tex);
             haveActLayoutPointToGeoHeader(lay, geo);
             fn_800BDC88(BF238_W->actors, k, k, lay, anm, NULL);
             ao = &BF238_W->actors->objects[k];
@@ -1705,7 +1705,7 @@ void fn_3_BF238(void) {
     }
     BF238_W->loaded = 0;
     fn_800B0A5C_insertQueue(fn_3_BEFF8, 6);
-    ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the current task
+    REMOVE_QUEUE_NOARG(); // removes the current task
 }
 #endif
 
@@ -1742,7 +1742,7 @@ void fn_3_BF6C0(void) {
             }
         }
         fn_3_6750C(*(s32*)(lbl_3_common_bss_35154 + 4));
-        *(s32*)(lbl_3_common_bss_35154 + 0xC) = ARAMTransfer(s_BF070f, 0, 0, 0);
+        *(void**)(lbl_3_common_bss_35154 + 0xC) = ARAMTransfer(s_BF070f, 0, 0, 0);
         *(void**)lbl_803CC1B8 = fn_3_BF238;
     }
 }
@@ -1750,7 +1750,7 @@ void fn_3_BF6C0(void) {
 // .text:0x000BF878 size:0x80 mapped:0x806FE90C
 int fn_3_BF878(void) {
     if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
-        *(s32*)(lbl_3_common_bss_35154 + 8) = ARAMTransfer(lbl_3_data_11380, 0, 0, 0);
+        *(void**)(lbl_3_common_bss_35154 + 8) = ARAMTransfer(lbl_3_data_11380, 0, 0, 0);
         fn_800B0A5C_insertQueue(fn_3_BF6C0, 0);
         lbl_3_common_bss_35154[0x3B0] = 1;
         return 1;

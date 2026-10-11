@@ -18,7 +18,7 @@ typedef struct MenuLoadTask {
 // One character actor in lbl_8036E548 (stride 0x27C).
 typedef struct MenuActor {
     /*0x000*/ u8 _000[8];
-    /*0x008*/ s32 aram; // ARAMTransfer handle of the model file
+    /*0x008*/ void* aram; // model file loaded by ARAMTransfer
     /*0x00C*/ u8 _00C[0x252 - 0xC];
     /*0x252*/ u8 _252;
     /*0x253*/ u8 _253;

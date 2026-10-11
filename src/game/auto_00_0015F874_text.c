@@ -47,13 +47,13 @@ void fn_3_15F9AC(void) {
 void fn_3_15F9C0(void) {
 
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154.disabled != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     lbl_803CC1B8->_10--;
     lbl_3_common_bss_35154.level = lbl_3_data_27F10.scale * (lbl_3_data_27F10.duration - lbl_803CC1B8->_10) / lbl_3_data_27F10.duration;
     if (lbl_803CC1B8->_10 == 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 

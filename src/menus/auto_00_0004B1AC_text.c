@@ -198,8 +198,8 @@ s32 fn_2_4EB64(void) {
 
 // fn_2_4E858, size:0x20
 #pragma dont_inline on
-void* fn_2_4E858(void* object) {
-    return fn_80034CEC(object);
+void fn_2_4E858(void* object) {
+    fn_80034CEC(object);
 }
 #pragma dont_inline reset
 
@@ -1308,7 +1308,8 @@ void fn_2_5389C(void) {
     if (lbl_2_bss_1A8234[0][0x162992] != 0) {
         fn_8000F8F4((LayoutGroup*)o);
         fn_8000FE54();
-        fn_800B0A14_removeQueue(fn_2_4E858(o));
+        fn_2_4E858(o);
+        REMOVE_QUEUE_NOARG();
         *(u16*)(o + 0x1C) = 0;
         *(u16*)(o + 0x1E) = 0;
         lbl_2_bss_1A8234[0][0x162992] = 0;

@@ -150,7 +150,7 @@ typedef struct MActor {
 // One actor slot in an ActorObjectInitTable() table.
 typedef struct ActorSlot {
     /* 0x00 */ MActor* actor;
-    /* 0x04 */ u32 anim;
+    /* 0x04 */ void* anim; // animation bank
     /* 0x08 */ u32 unk8;
     /* 0x0C */ s16 id;
     /* 0x0E */ s16 unkE;
@@ -201,7 +201,7 @@ u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer);
 MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer);
 void BuildBoneSkinOrientationMatrix(MBone* bone, MtxPtr parent);
 void fn_800238E0(ActorSlotTable* table, u16 index, s16 id, MActorLayout* layout);
-void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, u32 anim, u32 arg5);
+void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, void* anim, struct sHdr* skin);
 ActorSlotTable* fn_80023AA4(void);
 void fn_80023B04(s32 count);
 void fn_80023B90(StadiumLight* light, StadiumLightPos* out);

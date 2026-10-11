@@ -56,7 +56,7 @@ extern void fn_3_1079C8(u8*, s32);
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_800E86F0[];
 extern void* _OSAllocFromHeap(s32, s32);
-extern s32 ARAMTransfer(void*, int, int, int);
+extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_3_90064(s32);
 extern void fn_3_5A6D4(s32);
 extern void fn_3_5E60(void);
@@ -123,7 +123,7 @@ void fn_3_106DFC(void) {
 // fn_3_106E50, size:0x60
 s32 fn_3_106E50(void) {
     if ((s32)lbl_803C6CF8[0x715] == 1) {
-        *(s32*)(g_Camera + 0x1B4) = ARAMTransfer(lbl_3_data_20FDC, 0, 0, 0);
+        *(void**)(g_Camera + 0x1B4) = ARAMTransfer(lbl_3_data_20FDC, 0, 0, 0);
         return 1;
     }
     return 0;

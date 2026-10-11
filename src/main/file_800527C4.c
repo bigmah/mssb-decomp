@@ -4010,7 +4010,7 @@ void fn_8006295C(void) {
             lbl_803C6714.voiceB = 0;
             lbl_803C6714.stopB = 0;
             lbl_803C6714.activeB = 0;
-            ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+            REMOVE_QUEUE_NOARG(); // removes the running task
         }
     } else {
         sndFXKeyOff(lbl_803C6714.voiceB);
@@ -4018,7 +4018,7 @@ void fn_8006295C(void) {
         lbl_803C6714.stopB = 0;
         lbl_803C6714.activeB = 0;
         OSReport(lbl_800E69A8);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -4060,7 +4060,7 @@ void fn_80062A94(void) {
             lbl_803C6714.stopA = 0;
             lbl_803C6714.voiceA = 0;
             lbl_803C6714.activeA = 0;
-            ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+            REMOVE_QUEUE_NOARG(); // removes the running task
         }
     } else {
         sndFXKeyOff(lbl_803C6714.voiceA);
@@ -4068,7 +4068,7 @@ void fn_80062A94(void) {
         lbl_803C6714.stopA = 0;
         lbl_803C6714.activeA = 0;
         OSReport(lbl_800E69A8);
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 

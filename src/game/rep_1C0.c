@@ -1006,7 +1006,7 @@ void fn_3_5EC0(StadiumArchive* arc) {
     fn_800B49E4(layout);
     fn_800BCE38(geometry);
     convertTextureHeader(textures);
-    fn_800BD190(geometry, (s32)textures); // TODO type: second argument is a pointer
+    fn_800BD190(geometry, textures);
     haveActLayoutPointToGeoHeader(layout, geometry);
     fn_800B2AC8(layout);
     sStadiumGfx.texArchive = textures;
@@ -1027,7 +1027,7 @@ void fn_3_5EC0(StadiumArchive* arc) {
     geometry = (u8*)arc + arc->skyGeometry;
     fn_800B49E4(layout);
     fn_800BCE38(geometry);
-    fn_800BD190(geometry, (s32)textures); // TODO type: second argument is a pointer
+    fn_800BD190(geometry, textures);
     haveActLayoutPointToGeoHeader(layout, geometry);
     sStadiumGfx.sky[0][0].link = 2;
     sStadiumGfx.sky[0][0].func = (void (*)(StadiumSkyObj*))fn_3_3638;

@@ -313,7 +313,8 @@ void fn_3_911A8(void) {
     u8* o = lbl_803CC1B8;
     if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic.gameStatus != 2) {
         lbl_3_common_bss_32724[0x97] = 0;
-        fn_800B0A14_removeQueue(fn_80034CEC(o));
+        fn_80034CEC(o);
+        REMOVE_QUEUE_NOARG();
         return;
     }
     *(u16*)(o + 0x18) = *(u16*)(o + 0x18) + 1;

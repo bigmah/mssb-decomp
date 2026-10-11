@@ -1423,7 +1423,7 @@ void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj) {
 extern DOShadowTevCallback lbl_803CC20C;
 
 // fn_800BD190, size:0x58
-void fn_800BD190(GQRValueGroups* groups, s32 value) {
+void fn_800BD190(GQRValueGroups* groups, void* value) {
     u32 i;
     s32 j;
     for (i = 0; i < groups->count; i++) {

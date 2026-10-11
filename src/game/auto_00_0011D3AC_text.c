@@ -78,7 +78,7 @@ void fn_3_11D3AC(void) {
         }
         haveActLayoutPointToGeoHeader(layout, geometry);
         convertTextureHeader(textures);
-        fn_800BD190(geometry, (s32)textures); // TODO type: (GQRValueGroups*, void*) in file_80011640.c
+        fn_800BD190(geometry, textures);
     }
 
     skip = 0;
@@ -128,30 +128,36 @@ void fn_3_11D780(void) {
     u32 i;
 
     if (lbl_3_common_bss_32724.quit != 0) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (g_Minigame._1A3C != 0) {
         if (g_GameLogic._125 == 4) {
-            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            fn_80034CEC(task);
+            REMOVE_QUEUE_NOARG();
             return;
         }
         if (g_GameLogic.gameStatus != 0x24) {
-            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            fn_80034CEC(task);
+            REMOVE_QUEUE_NOARG();
             return;
         }
     } else {
         if (g_GameLogic._125 == 3) {
-            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            fn_80034CEC(task);
+            REMOVE_QUEUE_NOARG();
             return;
         }
         if (g_GameLogic.gameStatus != 0xE) {
-            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            fn_80034CEC(task);
+            REMOVE_QUEUE_NOARG();
             return;
         }
     }
     if (g_Minigame._1907 != 1) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
         return;
     }
 
@@ -332,7 +338,8 @@ void fn_3_11DECC(void) {
             task->sfx = 0xFFFFFFFF;
         }
         MG11D3->rouletteTask = NULL;
-        fn_800B0A14_removeQueue(fn_80034CEC(t));
+        fn_80034CEC(t);
+        REMOVE_QUEUE_NOARG();
         return;
     }
 
@@ -463,7 +470,8 @@ void fn_3_11E364(void) {
     s32 diff;
 
     if (ScoreBoard_ShouldClose()) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (task->state) {
@@ -542,7 +550,8 @@ void fn_3_11E7C4(void) {
     s32 diff;
 
     if (ScoreBoard_ShouldClose()) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
         return;
     }
     switch (task->state) {

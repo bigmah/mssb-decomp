@@ -98,7 +98,8 @@ void fn_3_15810C(void) {
             return;
         }
     }
-    fn_800B0A14_removeQueue(fn_80034CEC(o));
+    fn_80034CEC(o);
+    REMOVE_QUEUE_NOARG();
 }
 
 // fn_3_1581FC, size:0x68
@@ -491,7 +492,8 @@ void fn_3_157E28(void) {
 end:
     fn_8000FEE8(o->text);
     fn_8000F8F4((LayoutGroup*)o);
-    fn_800B0A14_removeQueue(fn_80034CEC(o));
+    fn_80034CEC(o);
+    REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x0015B204 size:0x290
@@ -659,7 +661,8 @@ void fn_3_1583AC(void) {
             fn_8000F8F4((LayoutGroup*)o);
         }
         lbl_3_common_bss_32724._C6 = 0;
-        fn_800B0A14_removeQueue(fn_80034CEC(o));
+        fn_80034CEC(o);
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -904,7 +907,8 @@ void fn_3_1595F4(void) {
         }
     }
     fn_8000F8F4((LayoutGroup*)o);
-    fn_800B0A14_removeQueue(fn_80034CEC(o));
+    fn_80034CEC(o);
+    REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x00159114 size:0x47C
@@ -983,7 +987,8 @@ void fn_3_159114(void) {
     }
     return;
 end:
-    fn_800B0A14_removeQueue(fn_80034CEC(o));
+    fn_80034CEC(o);
+    REMOVE_QUEUE_NOARG();
 }
 #endif
 
@@ -1070,7 +1075,8 @@ void fn_3_158B64(void) {
         fn_8000F8F4((LayoutGroup*)o);
     }
     lbl_8034E978._26 = 1;
-    fn_800B0A14_removeQueue(fn_80034CEC(o));
+    fn_80034CEC(o);
+    REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x00159D50 size:0x4F4
@@ -1168,7 +1174,8 @@ void fn_3_159D50(void) {
             }
         }
     } else {
-        fn_800B0A14_removeQueue(fn_80034CEC(o));
+        fn_80034CEC(o);
+        REMOVE_QUEUE_NOARG();
         lbl_3_common_bss_32724._C0 = 0;
     }
 }

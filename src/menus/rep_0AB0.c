@@ -550,7 +550,8 @@ void fn_2_5AE54(void) {
         fn_2_53DF8((u8*)task);
         fn_8000F8F4((LayoutGroup*)task);
         fn_8000FE54();
-        fn_800B0A14_removeQueue(fn_2_4E858(task));
+        fn_2_4E858(task);
+        REMOVE_QUEUE_NOARG();
         task->state = 0;
         task->subState = 0;
         lbl_2_bss_1A8234->done = 0;

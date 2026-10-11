@@ -26,12 +26,12 @@ void fn_3_160578(void) {
     s32 k;
     Vec* p29;
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154[0x479] != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (lbl_3_common_bss_35154[0x466] == 0) {
         lbl_3_bss_B9B8[0] = 0;
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (lbl_80366158[0x28] == 0) {

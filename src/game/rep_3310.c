@@ -49,8 +49,19 @@ extern void* lbl_803CC1B8[];
 extern u8 lbl_80371C30[];
 extern u8 lbl_3_data_69D0[];
 extern void fn_80024DB0(void*);
-extern void* fn_80034CEC(void*);
+extern void fn_80034CEC(void*);
 extern void fn_800B0A14_removeQueue(void*);
+
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
 extern void fn_80024FA4(void*, u32, void*, int);
 extern void* _OSAllocFromHeap(int, int);
 extern void fn_80025C58(void*, void*);
@@ -587,7 +598,8 @@ void fn_3_118508(void) {
     u8* m;
     s32 i;
     if (g_GameLogic[0x11E] == 0xF) {
-        fn_800B0A14_removeQueue(fn_80034CEC(p));
+        fn_80034CEC(p);
+        REMOVE_QUEUE_NOARG();
         return;
     }
     for (i = 0, m = g_Minigame; i < 0x28; m += 0x28, i++) {

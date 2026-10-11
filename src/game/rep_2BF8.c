@@ -142,6 +142,7 @@ void fn_3_E9D30(void) {
         return;
     }
     lbl_3_common_bss_32724._97 = 0;
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
 }
 #endif

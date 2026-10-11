@@ -259,7 +259,7 @@ void fn_2_409CC(void) {
     u8* q;
     switch ((s8)o[0x28]) {
     case 0:
-        *(s32*)(lbl_80366B18 + 0x7A8) = ARAMTransfer(lbl_2_data_12298, 0, 1, 0);
+        *(void**)(lbl_80366B18 + 0x7A8) = ARAMTransfer(lbl_2_data_12298, 0, 1, 0);
         o[0x28] = 1;
         break;
     case 1:

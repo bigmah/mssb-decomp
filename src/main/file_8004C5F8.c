@@ -387,7 +387,7 @@ close:
 void fn_8004D0F0(void) {
     LayoutGroup* task = lbl_803CC1B8;
     if (lbl_803C5F74.active != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     lbl_803C5F74.active = 1;
@@ -2062,7 +2062,7 @@ void fn_800521B0(void) {
     f32 frame;
     s32 row;
     if (actor->_25C == 0 || (s8)actor->kind != (s8)task->kind) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
         return;
     }
     if (anim->setTime != 0) {

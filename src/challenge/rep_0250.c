@@ -11,7 +11,7 @@ static u16 ch_FBE = 1;
 extern u8* lbl_803CC1B8[];
 extern u8 lbl_1_bss_2FAA;
 extern u8 lbl_1_bss_2FB9;
-extern void* fn_80034CEC(void*);
+extern void fn_80034CEC(void*);
 extern u8 lbl_1_data_B88[];
 extern u8* lbl_80371C30[];
 extern void fn_80034E20(void*, void*);
@@ -50,7 +50,7 @@ extern void fn_1_9290(void);
 extern u32 lbl_1_data_B80;
 extern u8 lbl_1_data_FBC;
 extern void* lbl_80366158[];
-extern void fn_80035A00(void*);
+extern void fn_80035A00(void);
 extern u8 lbl_8039C3E0[];
 
 // .text:0x96D0 size:0x4
@@ -74,7 +74,8 @@ void fn_1_96D4(void) {
     u8* queue = *(u8**)lbl_803CC1B8;
     *(u16*)(queue + 0x18) += 1;
     if ((lbl_803C77B8._02 & 1) || (lbl_803C77B8._02 & 2)) {
-        fn_800B0A14_removeQueue(fn_80034CEC(queue));
+        fn_80034CEC(queue);
+        REMOVE_QUEUE_NOARG();
     }
     lbl_1_bss_2FB9 = lbl_1_bss_2FAA;
 }
@@ -118,10 +119,11 @@ void fn_1_9290(void) {
         fn_80035ED0(3);
     }
     if (b->shownPage != (s8)b->page) {
-        fn_800B0A14_removeQueue(fn_80034CEC(queue));
+        fn_80034CEC(queue);
+        REMOVE_QUEUE_NOARG();
     }
     if (lbl_803C77B8._02 & 0x200) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -134,7 +136,7 @@ void fn_1_8DBC(void) {
         if (lbl_8039C3E0[0x69] == 1) {
             s16* result;
             if (b->_06 == 0) {
-                ((void (*)(void))fn_800B0A14_removeQueue)();
+                REMOVE_QUEUE_NOARG();
                 b->_06 = 1;
                 return;
             }
@@ -151,7 +153,8 @@ void fn_1_8DBC(void) {
         fn_80035ED0(3);
     }
     if ((lbl_803C77B8._02 & 1) || (lbl_803C77B8._02 & 2)) {
-        fn_800B0A14_removeQueue(fn_80034CEC(queue));
+        fn_80034CEC(queue);
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -160,7 +163,8 @@ void fn_1_8F34(void* object) {
     ChalScoreState* b = &lbl_1_bss_2FA8;
     u8* queue = *(u8**)lbl_803CC1B8;
     if (lbl_803C77B8._02 & 0x200) {
-        fn_800B0A14_removeQueue(fn_80034CEC(b->scoreObj));
+        fn_80034CEC(b->scoreObj);
+        REMOVE_QUEUE_NOARG();
         return;
     }
     b->scoreObj = queue;
@@ -269,7 +273,8 @@ void fn_1_97E4(void) {
         break;
     }
     case 0x200:
-        fn_80035A00(fn_80034CEC(b->scoreObj));
+        fn_80034CEC(b->scoreObj);
+        fn_80035A00(); // r3 still holds fn_80034CEC's leftover; fn_80035A00 takes none
         fn_800AD038(lbl_80366158[2]);
         *(s16*)(*(u8**)(queue + 0xC) + 0x10) = 1;
         break;

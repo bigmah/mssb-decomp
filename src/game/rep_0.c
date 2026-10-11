@@ -11,7 +11,7 @@ extern u8* lbl_3_bss_4;
 extern u8 lbl_3_data_0[];
 extern u8 lbl_80354720[];
 extern u8 lbl_803C6CF8[];
-extern s32 ARAMTransfer(void*, int, int, int);
+extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void** lbl_803CC1B8;
 #define PAD_BTN (*(u16*)((u8*)&lbl_803C77B8 + 4))
 

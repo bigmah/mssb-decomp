@@ -103,7 +103,7 @@ void fn_1_28118(void) {
     switch (state) {
     case 0:
         *(s16*)(object + 0x10) = state + 1;
-        *(s32*)(object + 0x18) = ARAMTransfer(sXfer, 0, 0, 0);
+        *(void**)(object + 0x18) = ARAMTransfer(sXfer, 0, 0, 0);
     case 1:
         ready = lbl_803C6CF8[0x715];
         if (ready == 1) {

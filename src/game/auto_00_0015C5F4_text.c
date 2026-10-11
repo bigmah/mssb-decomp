@@ -7,7 +7,8 @@ void fn_3_15C5F4(void) {
     SceneTask* task = lbl_803CC1B8;
 
     if (g_GameLogic._125 == 7) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -667,7 +668,8 @@ void fn_3_15DB44(void) {
     return;
 
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
 }
 #endif
 
@@ -745,7 +747,8 @@ void fn_3_15F088(void) {
         return;
     }
 remove:
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC(task);
+    REMOVE_QUEUE_NOARG();
 }
 
 // .text:0x0015F220 size:0x160 mapped:0x8079E2B4
@@ -775,7 +778,8 @@ void fn_3_15F380(void) {
     SceneTask* task = lbl_803CC1B8;
 
     if (g_GameLogic._125 == 10) {
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
     }
 }
 

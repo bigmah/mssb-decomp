@@ -57,7 +57,7 @@ void fn_2_8782C(void) {
         convertGeometryAndSknHeader(geometry, NULL);
         haveActLayoutPointToGeoHeader(actor, geometry);
         convertTextureHeader(textures);
-        fn_800BD190(geometry, (s32)textures); // TODO type: UnknownHomes_Static.h takes s32
+        fn_800BD190(geometry, textures);
     }
     convertTextureHeader(lbl_2_bss_34009C.tex64);
     convertTextureHeader(lbl_2_bss_34009C.tex68);
@@ -713,7 +713,8 @@ void fn_2_8975C(void) {
 
     if (lbl_2_bss_33FBCC.closing != 0 && lbl_2_bss_33FBCC.btnRunning == 0) {
         lbl_2_bss_33FBCC.closing = 0;
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
     }
 }
 
@@ -909,7 +910,8 @@ void fn_2_8A824(void) {
         lbl_2_bss_33FBCC.anim = 0;
         lbl_2_bss_33FBCC.animStarted = 0;
         lbl_2_bss_33FBCC.animRunning = 0;
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
         lbl_8034E978[3] = 0;
     }
 }

@@ -56,7 +56,7 @@ extern Unk80366B18 lbl_80366B18[36];
 extern u8 lbl_801075A8[0xE0]; // TODO type
 
 extern void fn_80034E20(void* task, void* desc);
-extern void* fn_80034CEC(void* task);
+extern void fn_80034CEC(void* task);
 extern u8 fn_8000F988(void* task, s32 idx, s32 a, s32 b, s32 c, s32 d);
 extern void fn_8000FEE8(u8 idx);
 extern void fn_8000F8F4(void* task);
@@ -633,7 +633,7 @@ void fn_8006B230(void) {
                 p->_3B = 3;
                 break;
             }
-            ((void (*)(void))fn_800B0A14_removeQueue)();
+            REMOVE_QUEUE_NOARG();
         }
         break;
     }
@@ -1263,7 +1263,8 @@ void fn_8006CEBC(void) {
             fn_8000FEE8(lbl_803297E0._CF6C[i]);
         }
         fn_8000F8F4(task);
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC(task);
+        REMOVE_QUEUE_NOARG();
     }
     if (lbl_803297E0._CF69 == 0) {
         lbl_803297E0._CF69 = 1;

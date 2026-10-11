@@ -35,12 +35,21 @@ extern camera_803c639c_s* fn_80052768_getCamera(int);
 extern int fn_8001C67C_animation(int, int);
 extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 extern void* fn_800339F0(void* after, u8 type); // TODO type: Emitter* (Emitter*, u8)
-extern void* fn_80034CEC(void*); // TODO type: void (SpaniGroup*); REL callers pass its "result" on to fn_800B0A14_removeQueue
-// TODO types: kept as before until a claimed unit (see comment) is updated; the real
-// prototype is in the defining main/ header.
-extern s32 ARAMTransfer(void*, int, int, int); // menus/rep_0568, rep_0F60: void* (AssetLoadInstructions*, void*, u8, u32)
+extern void fn_80034CEC(void* group); // (SpaniGroup*)
+extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr); // instr: AssetLoadInstructions* (main/file_800A6870.h)
 extern void sndFXRelated(u16);
 extern void fn_800B0A14_removeQueue(void*);
+
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
 extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority); // TODO type: u16 priority in main/file_800B0724.h; REL callers match with s32
 extern void fn_800BD670(void*, u32); // TODO type: menus/rep_08E8 passes the camera as u32; (ActorObjectTable*, MtxPtr)
 extern void LITXForm(void* light, void* matrix); // TODO type: menus/rep_08E8; (Light*, MtxPtr)
@@ -56,7 +65,7 @@ extern void fn_800BCE38(struct DODisplayData* pal);
 extern void convertTextureHeader(void* textures); // TODO type: menus/rep_0F60; (TexArchive*)
 extern void haveActLayoutPointToGeoHeader(void* actor, void* geometry); // TODO type: menus/rep_0F60; (ActorLayout*, DODisplayData*)
 struct GQRValueGroups;
-extern void fn_800BD190(struct GQRValueGroups* groups, s32 value);
+extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
 extern void fn_800B806C(s32 index, f32 bottom, f32 top, f32 left, f32 right,
                       f32 near, f32 far, f32 focalLength);
 extern void pitchingMachinePitching(u8);
@@ -126,7 +135,7 @@ extern void fn_800363D8(void*, s32, s32, s32, s32); // TODO type: menus/rep_0788
 extern void fn_8002955C(Vec* pos, Vec* axis, struct ParticleParamsC* prm);
 extern void fn_80031CA4(Vec*, u32*); // TODO type: menus/rep_08E8; (Vec*, ParticleParams5*)
 
-extern void* fn_80037AA0(void*, s32, void*, u16, void*); // TODO type: void (RigidBody*, s32, void (*)(void), u16, void*); challenge/rep_0610 passes its "result" to fn_800B0A14_removeQueue
+extern void fn_80037AA0(struct RigidBody* body, s32 charIdx, void (*callback)(void), u16 joint, void* anim);
 
 #include "Unknown/File_0x800a6304.h" // ARAM stack allocator
 

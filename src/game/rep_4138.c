@@ -42,7 +42,7 @@ void fn_3_16E1EC(void) {
         lbl_3_bss_D6E4 = NULL;
         lbl_3_bss_D6E8 = -1;
         lbl_3_bss_D6EC = 0;
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        REMOVE_QUEUE_NOARG();
     }
     x = g_GameLogic[0x11E];
     if ((x != 0x13) & (x != 0x14)) {
