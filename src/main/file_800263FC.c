@@ -1348,27 +1348,25 @@ s32 fn_80029CC8(Emitter* e) {
 #endif
 
 // .text:0x8002A1CC size:0x690
-// NONMATCHING 44%: float register allocation/scheduling of the 14 parameter conversions
-#if NONMATCHING
 void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
-    Emitter* e;
-    Particle* p;
-    f32 speedMin = (f32)prm->speedMin / 100000.0f;
-    f32 speedRange = (f32)prm->speedMax / 100000.0f - speedMin;
-    f32 velMin = (f32)prm->velMin / 100000.0f;
-    f32 velRange = (f32)prm->velMax / 100000.0f - velMin;
-    f32 sizeXMin = (f32)prm->sizeXMin / 100000.0f;
-    f32 sizeXRange = (f32)prm->sizeXMax / 100000.0f - sizeXMin;
-    f32 sizeYMin = (f32)prm->sizeYMin / 100000.0f;
-    f32 sizeYRange = (f32)prm->sizeYMax / 100000.0f - sizeYMin;
-    f32 endXMin = (f32)prm->endXMin / 100000.0f;
-    f32 endXRange = (f32)prm->endXMax / 100000.0f - endXMin;
-    f32 endYMin;
-    f32 endYRange;
-    s32 lifeRange;
-    s32 instant;
     f32 step;
     f32 yaw;
+    Emitter* e;
+    Particle* p;
+    f32 speedMin;
+    f32 speedRange;
+    f32 velMin;
+    f32 velRange;
+    f32 sizeXMin;
+    f32 sizeXRange;
+    f32 endXMin;
+    f32 endXRange;
+    f32 sizeYMin;
+    f32 sizeYRange;
+    f32 endYMin;
+    f32 endYRange;
+    s32 instant;
+    s32 lifeRange;
     f32 pitch;
 
     e = NewEmitter(fn_80029CC8, 0x80, 0, prm->count, 1, 11);
@@ -1377,10 +1375,20 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
     }
     e->tex = prm->tex;
     memcpy(&e->u.t9.pos, pos, sizeof(Vec));
-    instant = prm->instant;
-    lifeRange = prm->lifeMax - prm->lifeMin;
+    speedMin = (f32)prm->speedMin / 100000.0f;
+    speedRange = (f32)prm->speedMax / 100000.0f - speedMin;
+    velMin = (f32)prm->velMin / 100000.0f;
+    velRange = (f32)prm->velMax / 100000.0f - velMin;
+    sizeXMin = (f32)prm->sizeXMin / 100000.0f;
+    sizeXRange = (f32)prm->sizeXMax / 100000.0f - sizeXMin;
+    endXMin = (f32)prm->endXMin / 100000.0f;
+    endXRange = (f32)prm->endXMax / 100000.0f - endXMin;
+    sizeYMin = (f32)prm->sizeYMin / 100000.0f;
+    sizeYRange = (f32)prm->sizeYMax / 100000.0f - sizeYMin;
     endYMin = (f32)prm->endYMin / 100000.0f;
     endYRange = (f32)prm->endYMax / 100000.0f - endYMin;
+    instant = prm->instant;
+    lifeRange = prm->lifeMax - prm->lifeMin;
     step = 360.0f / (f32)(s32)(f32)sqrt(prm->instant);
     pitch = -180.0f;
     yaw = -180.0f;
@@ -1392,7 +1400,7 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
         } else {
             p->delay = (prm->delayMax * rand()) / 32767;
         }
-        p->life = p->colorStep.tB.maxLife = prm->lifeMin + (lifeRange * rand()) / 32767;
+        p->colorStep.tB.maxLife = p->life = prm->lifeMin + (lifeRange * rand()) / 32767;
         memcpy(&p->pos, pos, sizeof(Vec));
         fn_800332B8(NULL, &p->u.tB.dir, yaw, yaw + step, pitch, pitch + step);
         yaw += step;
@@ -1414,7 +1422,6 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
         p = p->next;
     } while (p != NULL);
 }
-#endif
 
 // .text:0x8002A85C size:0x40C
 // NONMATCHING 67%: register allocation; the original inlines the corner setup and quad draw with different scheduling
