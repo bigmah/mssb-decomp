@@ -304,3 +304,49 @@ void fn_3_15B0D8(void) {
     g_GameLogic.currentBatterPerTeam[0] = 1;
     g_GameLogic.currentBatterPerTeam[1] = 1;
 }
+
+// .text:0x0015AE34 size:0x144
+
+// NONMATCHING 97%: register coloring of the ids[] constants and second-loop pointer (r7/r9), stw scheduling
+// .text:0x0015AE34 size:0x144
+#if NONMATCHING
+void fn_3_15AE34(void) {
+    s32 ids[4];
+    InMemRunnerType* r;
+    s32* q;
+    s32* p;
+    s32 i;
+    s32 j;
+
+    if (g_GameLogic.secondaryGameMode == 0xF) {
+        q = ids;
+        ids[0] = 1;
+        ids[1] = 2;
+        ids[2] = 3;
+        ids[3] = 4;
+        for (i = 0, p = q; i < 4; i++, p++) {
+            for (j = 1, r = &g_Runners[1]; j < 4; j++, r++) {
+                if (r->rosterID == *p) {
+                    *p = -1;
+                }
+            }
+        }
+        for (i = 0; i < 4; q++, i++) {
+            if (*q >= 0) {
+                g_Practice.rosterID = ids[i];
+                break;
+            }
+        }
+    }
+    if (g_GameLogic.TeamStars[0] == 0) {
+        g_GameLogic.TeamStars[0] = 5;
+    }
+    if (g_GameLogic.TeamStars[1] == 0) {
+        g_GameLogic.TeamStars[1] = 5;
+    }
+    if (g_Strikes.outs >= 3) {
+        g_Strikes.outs = 0;
+    }
+    g_Practice.guidedPracticeCompletionRelated = 0;
+}
+#endif
