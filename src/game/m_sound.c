@@ -10,7 +10,11 @@ typedef struct SndState34C58 {
     s32 unk14;
     s32 unk18;
     s32 unk1C;
-    u8 pad20[8];
+    s16 unk20;
+    s16 unk22;
+    s16 unk24;
+    u8 unk26; // crowd reaction level for the current play
+    u8 unk27;
     u8 unk28;
     u8 pad29[6];
     u8 unk2F;
@@ -551,8 +555,197 @@ void fn_3_8F1C8(void) {
 }
 
 // .text:0x0008F21C size:0x9F0 mapped:0x806CE2B0
+// Game-state views used by the crowd-reaction code below.
+// TODO type: m_sound.c can't include game/UnknownHomes_Game.h yet (its local
+// u8[] declarations conflict); these macros name the real fields so the
+// switch-over is mechanical.
+extern u8 g_Runners[];        // InMemRunnerType[4], stride 0x154
+extern u8 g_FieldingLogic[];
+extern u8 g_Strikes[];
+extern u8 g_Stats[];
+extern u8 g_Batter[];
+extern u8 g_RunningLogic[];
+extern u8 g_Scores[];
+extern u8 lbl_3_common_bss_32A94[];
+extern int fn_3_B7D6C(f32 a, f32 b);
+extern int fn_3_B7E10(f32 a, f32 b);
+#define RUNNER(i) (g_Runners + (i) * 0x154)
+#define RUNNER_STATUS(i) (RUNNER(i)[0x123])                      // runnerOnFieldOrOutOrScored
+#define RUNNER_CUR_BASE(i) (RUNNER(i)[0x125])                    // currentBase
+#define RUNNER_WALK_FORCED(i) (RUNNER(i)[0x14D])                 // furthestBaseForcedToGoToOnWalk
+#define RUNNER_BASE_STANDING(i) (*(s16*)(RUNNER(i) + 0xE6))      // baseStandingOn
+#define RUNNER_FORCE_OUT(i) (*(s16*)(RUNNER(i) + 0xEE))          // forceOutCd
+#define RUNNER_FRAMES_SINCE_OUT(i) (*(s16*)(RUNNER(i) + 0xF4))   // framesSinceOut
+#define RUNNER_BASES_RAN(i) (*(f32*)(RUNNER(i) + 0x64))          // fractionalBasesRan
+#define GAME_STATUS (g_GameLogic[0x11E])                         // g_GameLogic.gameStatus
+#define FIELDING_107 (g_FieldingLogic[0x107])                    // g_FieldingLogic._107
+#define STRIKES_OUTS (*(s32*)(g_Strikes + 0x8))                  // g_Strikes.outs
+#define STRIKES_STORED_OUTS (*(s32*)(g_Strikes + 0xC))           // g_Strikes.storedOuts
+#define STATS_REPLAY (g_Stats[0x36])                             // g_Stats.replayInd
+#define BATTER_BUNTING (g_Batter[0x8E])                          // g_Batter.isBunting
+#define RUNNING_LOGIC_2 (*(s16*)(g_RunningLogic + 0x2))
+#define SCORES_C2 (g_Scores[0xC2])
+#define BSS32A94_2 (*(s16*)(lbl_3_common_bss_32A94 + 0x2))
+#define BALL_FRAMES_SINCE_HIT (*(s16*)(g_Ball + 0x1B66))         // framesSinceHit
+#define BALL_PITCH_HANGTIME (*(s16*)(g_Ball + 0x1B68))           // pitchHangtimeCounter
+#define BALL_FRAMES_SINCE_GROUND (*(s16*)(g_Ball + 0x1B72))      // framesSinceBallHitGroundOrWasCaught
+#define BALL_CONTACT_RESULT (*(s16*)(g_Ball + 0x1B7A))           // AtBat_ContactResult
+#define BALL_HIT_VANGLE (*(s16*)(g_Ball + 0x1B9A))               // Hit_VerticalAngle
+#define BALL_HIT_HANGLE (*(s16*)(g_Ball + 0x1B9C))               // Hit_HorizontalAngle
+#define BALL_HIT_POWER (*(s16*)(g_Ball + 0x1B9E))                // Hit_HorizontalPower
+#define BALL_OVER_WALL_FRAMES (*(s16*)(g_Ball + 0x1BA4))         // matchFramesAndBallAngle.ballOverWallFrames
+#define BALL_ZONE (g_Ball[0x1BBE])                               // ballZoneAwayFromHome
+#define BALL_HIT_DONE (g_Ball[0x1BC6])                           // ballInitialHitDoneInd
+#define BALL_DEAD_REASON (g_Ball[0x1BD1])                        // deadBallReason
+#define BALL_DEADBALL_LOC ((f32*)(g_Ball + 0x1A3C))              // deadballLastLoc
+#define BALL_LANDING_SPOT ((f32*)(g_Ball + 0x1A2C))              // landingSpotLocation (x, z)
+
+// Crowd-reaction sounds (cheer / groan / "ooh") for the current play.
 void fn_3_8F21C(void) {
-    return;
+    s32 stop = 0;
+    s32 special = 0;
+    s32 i;
+    if (!(g_d_GameSettings.StadiumID != 1 && g_d_GameSettings.StadiumID != 2 && g_d_GameSettings.StadiumID != 3 && g_d_GameSettings.StadiumID != 5)) {
+        special = 1;
+    }
+    special = special != 0;
+    if (special) {
+        if (FIELDING_107 != 0) {
+            for (i = 1; i < 4; i++) {
+                if (S34C58.unk26 <= 1 && RUNNER_STATUS(i) == 2) {
+                    stop = 1;
+                    goto stop_sounds;
+                }
+            }
+        }
+        if (BALL_FRAMES_SINCE_HIT > 0 &&
+            ((BALL_HIT_DONE != 0 && BALL_CONTACT_RESULT == 1 && BALL_ZONE >= 3 && S34C58.unk26 < 2) ||
+             (RUNNER_STATUS(0) == 1 && RUNNER_CUR_BASE(0) != 0 && RUNNER_FORCE_OUT(0) == 0 &&
+              (BALL_CONTACT_RESULT == 1 || BALL_CONTACT_RESULT == 2) && STRIKES_OUTS == STRIKES_STORED_OUTS))) {
+            S34C58.unk26 = 2;
+            if ((u32)S34C58.unk14 == 0xFFFFFFFF) {
+                S34C58.unk14 = sndFXStartEx(0x156, 0, 0x3F, 0);
+                if (STATS_REPLAY == 0 && g_d_GameSettings.GameModeSelected != 7) {
+                    playSoundEffect(0x196);
+                }
+            }
+        }
+        return;
+    }
+
+    if (GAME_STATUS == 3) {
+        stop = 1;
+    } else if (GAME_STATUS == 1) {
+        if (BALL_PITCH_HANGTIME == 10) {
+            for (i = 1; i < 4; i++) {
+                if (RUNNER_STATUS(i) == 1 && RUNNER_WALK_FORCED(i) != 0) {
+                    if ((u32)S34C58.unk10 == 0xFFFFFFFF) {
+                        S34C58.unk10 = playSoundEffect(0x155);
+                    }
+                    break;
+                }
+            }
+        }
+    } else if (FIELDING_107 != 0) {
+        for (i = 1; i < 4; i++) {
+            if (S34C58.unk26 == 0 &&
+                ((RUNNER_STATUS(i) == 1 && RUNNER_BASE_STANDING(i) > i) || RUNNER_STATUS(i) == 3)) {
+                S34C58.unk26 = 1;
+                if ((u32)S34C58.unk10 == 0xFFFFFFFF) {
+                    S34C58.unk10 = playSoundEffect(0x155);
+                }
+            } else if (S34C58.unk26 <= 1 && RUNNER_STATUS(i) == 2) {
+                S34C58.unk26 = 2;
+                playSoundEffect(0x158);
+                stop = 1;
+                break;
+            }
+        }
+    } else if (BALL_FRAMES_SINCE_HIT > 0) {
+        if (BALL_FRAMES_SINCE_HIT > 20 && S34C58.unk26 == 0) {
+            S34C58.unk26 = 1;
+            if (BATTER_BUNTING != 0) {
+                if ((RUNNING_LOGIC_2 == 1 || (RUNNING_LOGIC_2 & 0x1000)) && (u32)S34C58.unk10 == 0xFFFFFFFF) {
+                    S34C58.unk10 = playSoundEffect(0x155);
+                }
+            } else if (BALL_HIT_POWER > 150 && (BALL_HIT_VANGLE > 0xF80 || BALL_HIT_VANGLE < 0x200) &&
+                       BALL_HIT_HANGLE > 0x80 && BALL_HIT_HANGLE < 0x780 && (u32)S34C58.unk10 == 0xFFFFFFFF) {
+                S34C58.unk10 = playSoundEffect(0x155);
+            }
+        }
+        if ((BALL_HIT_DONE != 0 && BALL_CONTACT_RESULT == 1 && BALL_ZONE >= 3 && S34C58.unk26 < 2) ||
+            (RUNNER_STATUS(0) == 1 && RUNNER_CUR_BASE(0) != 0 && RUNNER_FORCE_OUT(0) == 0 &&
+             (BALL_CONTACT_RESULT == 1 || BALL_CONTACT_RESULT == 2) && STRIKES_OUTS == STRIKES_STORED_OUTS)) {
+            S34C58.unk26 = 2;
+            if ((u32)S34C58.unk14 == 0xFFFFFFFF) {
+                S34C58.unk14 = playSoundEffect(0x156);
+                if (STATS_REPLAY == 0 && g_d_GameSettings.GameModeSelected != 7) {
+                    playSoundEffect(0x196);
+                }
+            }
+        }
+        if (BALL_DEAD_REASON == 1 && S34C58.unk26 < 9) {
+            S34C58.unk26 = 9;
+            if ((u32)S34C58.unk14 == 0xFFFFFFFF) {
+                S34C58.unk14 = playSoundEffect(0x156);
+            }
+        }
+        if (BALL_CONTACT_RESULT == -1 && S34C58.unk26 < 9) {
+            if (BALL_DEAD_REASON == 2) {
+                if (BALL_OVER_WALL_FRAMES == 30) {
+                    S34C58.unk26 = 9;
+                    stop = 1;
+                    if (fn_3_B7D6C(BALL_DEADBALL_LOC[0], BALL_DEADBALL_LOC[2])) {
+                        playSoundEffect(0x158);
+                    }
+                }
+            } else if (BALL_FRAMES_SINCE_GROUND == 30) {
+                S34C58.unk26 = 9;
+                stop = 1;
+                if (fn_3_B7D6C(BALL_LANDING_SPOT[0], BALL_LANDING_SPOT[1]) &&
+                    (BALL_ZONE == 4 || (BALL_HIT_POWER > 150 && (BALL_HIT_VANGLE > 0xFC0 || BALL_HIT_VANGLE < 0x200)))) {
+                    playSoundEffect(0x157);
+                }
+            }
+        }
+        if (RUNNER_STATUS(0) == 2 && RUNNER_FRAMES_SINCE_OUT(0) == 20 && SCORES_C2 == 0 &&
+            (RUNNER_STATUS(3) != 1 || !(RUNNER_BASES_RAN(3) > 3.5f))) {
+            s32 react = 0;
+            if (BSS32A94_2 == 0x15 || BSS32A94_2 == 0x18 || BSS32A94_2 == 0x16) {
+                react = 1;
+            }
+            if (BSS32A94_2 == 0x12 && (BALL_ZONE <= 1 || fn_3_B7E10(BALL_POS[0], BALL_POS[2]))) {
+                react = 1;
+            }
+            if (BSS32A94_2 == 0x13 && BALL_ZONE <= 1 && BALL_HIT_POWER > 180) {
+                react = 1;
+            }
+            if (react) {
+                stop = 1;
+                playSoundEffect(0x157);
+            }
+        }
+    }
+
+stop_sounds:
+    if (stop) {
+        if ((u32)S34C58.unk10 != 0xFFFFFFFF) {
+            sndFXKeyOff(S34C58.unk10);
+            S34C58.unk10 = -1;
+        }
+        if ((u32)S34C58.unk14 != 0xFFFFFFFF) {
+            sndFXKeyOff(S34C58.unk14);
+            S34C58.unk14 = -1;
+        }
+    }
+    if (GAME_STATUS == 0xB) {
+        for (i = 0; i < 3; i++) {
+            if ((u32)(&S34C58.unkC)[i] != 0xFFFFFFFF) {
+                sndFXKeyOff((&S34C58.unkC)[i]);
+                (&S34C58.unkC)[i] = -1;
+            }
+        }
+    }
 }
 
 // .text:0x0008FC0C size:0x74 mapped:0x806CECA0
