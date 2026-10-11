@@ -1,8 +1,17 @@
 #include "main/file_8003A688.h"
+#include "main/file_80039AC0.h"
+#include "main/file_800A7C08.h"
+#include "main/file_800B0724.h"
+#include "stl/string.h"
+
+extern TrailSystem lbl_802D3D80;
+// Current process-queue task (typed per caller, see SceneTask in file_80069BDC.h).
+extern SaveTask* lbl_803CC1B8;
 
 // .text:0x8003A688 size:0x28
-void fn_8003A688(void) {
-    return;
+void fn_8003A688(s32 type, f32 speed, f32 spread) {
+    lbl_802D3D80.params[type].speed = speed / 2;
+    lbl_802D3D80.params[type].spread = spread / 2;
 }
 
 // .text:0x8003A6B0 size:0x198
