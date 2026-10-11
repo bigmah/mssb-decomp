@@ -440,7 +440,7 @@ void fn_8001B224(void) {
 
 // .text:0x8001B2D0 size:0x38
 void fn_8001B2D0(void) {
-    return;
+    memcpy(lbl_8036C4FC, lbl_8036E548.actors, sizeof(lbl_8036E548.actors));
 }
 
 // .text:0x8001B308 size:0x54
