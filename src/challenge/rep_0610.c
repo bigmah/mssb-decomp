@@ -2634,3 +2634,118 @@ void fn_1_CDC8(void) {
     }
 }
 #endif
+
+// Debug particle emitter settings edited by fn_1_10044 (lbl_1_data_ADE0 + 0x10).
+typedef struct {
+    /* 0x00 */ s32 type;
+    /* 0x04 */ s32 count;
+    /* 0x08 */ f32 speed;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ Vec pos;
+    /* 0x20 */ s16 pitch;
+    /* 0x22 */ s16 yaw;
+    /* 0x24 */ Vec dir;
+} ChallengeEmitterParams;
+
+extern void fn_800330CC(s32 count, s32 type, Vec* pos, Vec* dir, s32 arg4, s32 arg5, f32 speed, f32 arg7);
+
+// .text:0x10044 size:0x414
+// NONMATCHING ~85%: the original reaches the emitter settings through the pooled .data base
+#if NONMATCHING
+void fn_1_10044(void) {
+    ChallengeEmitterParams* params = (ChallengeEmitterParams*)(lbl_1_data_ADE0 + 0x10);
+    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    s32 step;
+    Mtx rotX;
+    Mtx rotY;
+
+    if (buttons & 8) {
+        if (ch_307C != 0) {
+            ch_307C--;
+        } else {
+            ch_307C = 4;
+        }
+    } else if (buttons & 4) {
+        if (++ch_307C == 5) {
+            ch_307C = 0;
+        }
+    } else if (buttons & 1) {
+        if (lbl_803C77B8._00 & 0x400) {
+            step = 10;
+        } else if (lbl_803C77B8._00 & 0x800) {
+            step = 100;
+        } else {
+            step = 1;
+        }
+        switch (ch_307C) {
+        case 0:
+            params->count -= step;
+            if (params->count < 0) {
+                params->count = 0;
+            }
+            break;
+        case 2:
+            params->speed -= 0.001f * step;
+            if (params->speed < 0.001f) {
+                params->speed = 0.001f;
+            }
+            break;
+        case 3:
+            params->pitch -= step;
+            if (params->pitch < 1) {
+                params->pitch = 1;
+            }
+            break;
+        case 4:
+            params->yaw = (params->yaw - step) & 0xFFF;
+            break;
+        }
+    } else if (buttons & 2) {
+        if (lbl_803C77B8._00 & 0x400) {
+            step = 10;
+        } else if (lbl_803C77B8._00 & 0x800) {
+            step = 100;
+        } else {
+            step = 1;
+        }
+        switch (ch_307C) {
+        case 0:
+            params->count += step;
+            if (params->count >= 0x1400) {
+                params->count = 0x1400;
+            }
+            break;
+        case 2:
+            params->speed += 0.001f * step;
+            if (params->speed > 10.0f) {
+                params->speed = 10.0f;
+            }
+            break;
+        case 3:
+            params->pitch += step;
+            if (params->pitch > 0x200) {
+                params->pitch = 0x200;
+            }
+            break;
+        case 4:
+            params->yaw = (params->yaw + step) & 0xFFF;
+            break;
+        }
+    } else if (lbl_803C77B8._00 & 0x100) {
+        if (lbl_803C77B8._02 & 0x100) {
+            params->dir.x = 0.0f;
+            params->dir.y = -1.0f;
+            params->dir.z = 0.0f;
+            PSMTXRotRad(rotX, 'x', (f32)(0.01745329238474369 * ((360.0 * params->pitch) / 4096.0)));
+            PSMTXRotRad(rotY, 'y', (f32)(0.01745329238474369 * ((360.0 * params->yaw) / 4096.0)));
+            PSMTXConcat(rotY, rotX, rotX);
+            PSMTXMultVec(rotX, &params->dir, &params->dir);
+            fn_800330CC(params->count, params->type, &params->pos, &params->dir, params->unkC, 0, params->speed, params->unk10);
+        }
+    } else if (buttons & 0x200) {
+        ch_307C = 0;
+        ch_5F71 = 10;
+    }
+}
+#endif
