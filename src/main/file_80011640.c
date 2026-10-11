@@ -223,6 +223,13 @@ extern void fn_800BDA94(CharSlot* slot, MtxPtr view);
 extern void fn_800BD670(CharSlotList* list, MtxPtr view);
 extern void LITInitDir(void* light, f32 x, f32 y, f32 z);
 extern void LITXForm(void* light, MtxPtr view);
+extern u8 lbl_803CBBFB;
+extern u8 lbl_803CBBFC;
+extern u8 lbl_803CBBFD;
+extern void* lbl_803CBC00;
+extern u8 lbl_803CBC0C;
+extern CharPart* lbl_803CBC1C;
+extern CharParts* lbl_803CBC20;
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -718,9 +725,159 @@ u8 fn_80012B90(CharActor* actor) {
 }
 
 // .text:0x80013680 size:0xB84
-u8 fn_80013680(CharActor* actor) {
-    return 0;
+static inline BOOL loadPartModel(CharPart* part, s8 kind, s32 mode, void* tex) {
+    void** files;
+
+    if (lbl_803CBC0C == 0 && (s32)lbl_803C6CF8.transferDone == 1) {
+        lbl_803CBC1C = part;
+        lbl_803CBC0C = 1;
+        fn_80021CA4(kind, mode, part->files);
+    }
+    if (lbl_803716B8._1E8 == 0) {
+        part = lbl_803CBC1C;
+        lbl_803CBC0C = 0;
+        // TODO type: the file header holds offsets that are relocated in place.
+        files = part->files;
+        if (files[0] != NULL) {
+            files[0] = (u8*)files + (u32)files[0];
+        }
+        files = part->files;
+        if (files[1] != NULL) {
+            files[1] = (u8*)files + (u32)files[1];
+        }
+        files = part->files;
+        if (files[2] != NULL) {
+            files[2] = (u8*)files + (u32)files[2];
+        }
+        files = part->files;
+        if (files[3] != NULL) {
+            files[3] = (u8*)files + (u32)files[3];
+        }
+        fn_800126EC(part, tex, lbl_803CB7C4);
+        lbl_803CBC1C = NULL;
+        return TRUE;
+    }
+    return FALSE;
 }
+
+static inline void claimParts(CharParts* p, void* tex, s8 kind, s8 idx, CharActor* actor) {
+    p->tex = tex;
+    p->_CF = kind;
+    p->_D1 = p->_D0;
+    p->_D0 = idx;
+    p->_CD = actor->_25A;
+    p->_CE = actor->_25B;
+}
+
+// NONMATCHING 85%: register allocation and pool-entry addressing in the search loops
+#if NONMATCHING
+u8 fn_80013680(CharActor* actor) {
+    s8 kind = actor->kind;
+    s8 idx = actor->index;
+    void* tex;
+    CharParts* p;
+    CharActor* other;
+    u8 i;
+    u8 k;
+    BOOL lo;
+    BOOL same;
+    BOOL alt;
+
+    if (lbl_803CBBFB == 0) {
+        lbl_803CBBFB = 1;
+        tex = actor->files[0];
+        lbl_803CBC00 = tex;
+        for (i = 0; i < 13; i++) {
+            p = &lbl_8036E548.partsPool[i];
+            if (p->_CF == kind && p->_CD == actor->_25A && p->_CE == actor->_25B && p->_D0 == -1 && p->tex == tex
+                && ((actor->index < 9 && p->_D1 < 9) || (actor->index >= 9 && p->_D1 >= 9))) {
+                lbl_8036E548.partsPool[i]._D0 = idx;
+                actor->parts = &lbl_8036E548.partsPool[i];
+                actor->parts->_CC = 1;
+                copyPartJointData(lbl_8036E548.active[actor->index], 0);
+                copyPartJointData(lbl_8036E548.active[actor->index], 1);
+                lbl_803CBBFD = 0;
+                lbl_803CBBFC = 0;
+                lbl_803CBBFB = 0;
+                lbl_803CBC00 = NULL;
+                return 1;
+            }
+        }
+        if (lbl_803CBBFC == 0 && lbl_803CBBFD == 0) {
+            for (i = 0; i < 13; i++) {
+                if (lbl_8036E548.partsPool[i]._D0 == actor->index && lbl_8036E548.partsPool[i]._D0 < 9) {
+                    lbl_8036E548.partsPool[i]._D0 = -1;
+                    break;
+                }
+            }
+            for (i = 0; i < 13; i++) {
+                p = &lbl_8036E548.partsPool[i];
+                if (p->_D0 == -1) {
+                    lbl_803CBC20 = p;
+                    claimParts(p, tex, kind, idx, actor);
+                    break;
+                }
+            }
+            if (i == 13) {
+                for (i = 0; i < 13; i++) {
+                    p = &lbl_8036E548.partsPool[i];
+                    lbl_803CBC20 = p;
+                    for (k = 0; k < 13; k++) {
+                        other = lbl_8036E548.active[k];
+                        if (other != NULL && p->_CF == other->kind) {
+                            break;
+                        }
+                    }
+                    if (k == 13) {
+                        claimParts(p, lbl_803CBC00, kind, idx, actor);
+                        break;
+                    }
+                }
+            }
+        }
+        lbl_803CBC20->part[1].player.unk59 = 0;
+        lbl_803CBC20->part[0].player.unk59 = 0;
+    }
+    if (lbl_803CBBFB == 0) {
+        return 0;
+    }
+    if (idx < 9) {
+        alt = actor->_25A != 0;
+    } else {
+        alt = actor->_25B != 0;
+    }
+    lo = idx < 9;
+    same = alt == lo;
+    for (;;) {
+        if (lbl_803CBBFC == 0) {
+            p = lbl_803CBC20;
+            if (loadPartModel(&p->part[1], p->_CF, (lo && p->_CD != 0) ? 3 : (same ? 5 : 1), lbl_803CBC00)) {
+                lbl_803CBBFC = 1;
+                continue;
+            }
+        } else if (lbl_803CBBFD == 0) {
+            p = lbl_803CBC20;
+            if (loadPartModel(&p->part[0], p->_CF, (lo && p->_CD != 1) ? 2 : (same ? 4 : 0), lbl_803CBC00)) {
+                lbl_803CBBFD = 1;
+            }
+        }
+        break;
+    }
+    if (lbl_803CBBFC == 0 || lbl_803CBBFD == 0) {
+        return 0;
+    }
+    actor->parts = lbl_803CBC20;
+    copyPartJointData(lbl_8036E548.active[actor->index], 0);
+    copyPartJointData(lbl_8036E548.active[actor->index], 1);
+    actor->parts->_CC = 1;
+    lbl_803CBC20 = NULL;
+    lbl_803CBBFB = 0;
+    lbl_803CBBFD = 0;
+    lbl_803CBBFC = 0;
+    lbl_803CBC00 = NULL;
+    return 1;
+}
+#endif
 
 // .text:0x80014204 size:0x3F4
 // NONMATCHING 88%: unrolled size/slot loops scheduled differently
