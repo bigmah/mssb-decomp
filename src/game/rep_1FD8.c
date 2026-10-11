@@ -85,7 +85,7 @@ extern void GXSetTevColorIn(int, int, int, int, int);
 extern void GXSetTevColorOp(int, int, int, int, int, int);
 extern void GXSetTevAlphaIn(int, int, int, int, int);
 extern void GXSetTevAlphaOp(int, int, int, int, int, int);
-extern void fn_8005268C(void);
+extern u32 fn_8005268C(void);
 extern u8* fn_80052734(void);
 extern Vec lbl_3_rodata_2080;
 extern f32 lbl_3_rodata_2178;
@@ -156,6 +156,7 @@ extern void CTRLGetTranslation(void*, f32*, f32*, f32*);
 extern void fn_3_CB7E8(f32, f32, f32);
 extern f32 lbl_3_rodata_2150;
 extern void* lbl_3_bss_9F0C; // TexArchive*
+extern void fn_80033620(void* emitter); // sets up drawing for the emitter
 
 void fn_3_C1964(void) {
     lbl_3_bss_9D9C = 1;
@@ -487,12 +488,6 @@ void fn_3_C2EDC(void* pv) {
 }
 #endif
 
-// .text:0x000C30F0 size:0x57C mapped:0x80702184
-void fn_3_C30F0(void) {
-    return;
-}
-
-// .text:0x000C366C size:0x35C mapped:0x80702700
 // Emitter view used by the fn_3_C30F0 smoke effects: spawn point and slot.
 typedef struct C366CHdr {
     void* prev;
@@ -504,6 +499,50 @@ typedef struct C366CHdr {
     Vec pos;
     u8 idx;
 } C366CHdr;
+// .text:0x000C30F0 size:0x57C mapped:0x80702184
+extern const f32 lbl_3_rodata_2148;
+extern void GXSetZMode(int, int, int);
+extern void GXSetBlendMode(int, int, int, int);
+extern void fn_8003403C(f32, f32);
+extern void fn_80033CC8(void*, void*);
+// Update/draw of a smoke emitter (started by fn_3_C366C): grows and fades the
+// puffs and respawns dead ones at the emitter position.
+// NONMATCHING ~97% (with fn_3_C2EDC enabled: same 351 insns, only the f-reg/scheduling of the inlined fn_3_C2EDC, which is itself 96%); inlines fn_3_C2EDC and fn_3_C2C80
+#if NONMATCHING
+s32 fn_3_C30F0(C366CHdr* h) {
+    C4724P* p = h->head;
+    Vec pos;
+    if (g_GameLogic[0x11E] >= 0x1B && g_GameLogic[0x11E] <= 0x21) {
+        return 0;
+    }
+    if (g_GameLogic[0x11E] == 2 || g_GameLogic[0x11E] == 1) {
+        pos = h->pos;
+        if (!fn_3_C2AA0(&pos, lbl_3_rodata_2148, lbl_3_rodata_2148)) {
+            return 0;
+        }
+    }
+    fn_80033620(h);
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 1, 1, 0);
+    do {
+        if (p->s48 <= 0 && p->s4A != 0) {
+            fn_8003403C(p->f38, p->f3C);
+            fn_80033CC8(p, h->tex);
+            if (fn_8005268C() == 0) {
+                fn_3_C2EDC(p);
+            }
+        }
+        p->s48 -= (fn_8005268C() == 0);
+        if (p->s4A == 0) {
+            fn_3_C2C80(p, (u8*)h);
+        }
+        p = p->next;
+    } while (p != NULL);
+    return 0;
+}
+#endif
+
+// .text:0x000C366C size:0x35C mapped:0x80702700
 extern const Vec lbl_3_rodata_202C[6];
 // Starts smoke emitter `idx` at its fixed spawn point (lbl_3_rodata_202C).
 void fn_3_C366C(void* hv, u8 idx) {
@@ -856,7 +895,6 @@ void fn_3_C444C(void* hv, u8* b) {
 }
 
 extern u8 lbl_80366158[];
-extern void fn_80033620(void);
 extern void fn_8003403C(f32, f32);
 extern void fn_80033CC8(void*, void*);
 extern void GXSetZMode(int, int, int);
@@ -876,7 +914,7 @@ u32 fn_3_C4724(void* hv) {
     u32 n = 0;
     f32 k;
     f32 c;
-    fn_80033620();
+    fn_80033620(h);
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 5, 0);
     do {
@@ -1045,7 +1083,7 @@ s32 fn_3_C4F00(void* hv) {
     f32 k;
     f32 c;
     f32 r;
-    fn_80033620();
+    fn_80033620(h);
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 5, 0);
     p = h->head;
@@ -1480,7 +1518,7 @@ u32 fn_3_C75B8(void* hv) {
     C4724Hdr* h = hv;
     C4724P* p;
     s32 n = -h->f24;
-    fn_80033620();
+    fn_80033620(h);
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 5, 0);
     p = h->head;
