@@ -2,6 +2,7 @@
 #include "header_rep_data.h"
 #include "game/auto_00_00106DFC_text.h"
 #include "game/auto_00_000D8A10_text.h"
+#include "Dolphin/vec.h"
 
 typedef struct {
     u8* p;
@@ -73,6 +74,12 @@ extern MinigameSoundParams lbl_3_data_84B8[];
 extern u16 lbl_3_data_81FC[];
 extern s32 sndFXCtrl(u32 vid, u8 ctrl, u8 value);
 extern u8 fn_8006C100(s16 value);
+extern u16 lbl_3_data_AA98[];
+extern s16 lbl_3_data_7F10[];
+extern f32 charSizeMultipliers[][2];
+extern u8 lbl_8034E978[]; // TODO type: MenuState (main/menu_globals.h)
+extern BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
+extern BOOL fn_3_1650C(int* outX, int* outY, BOOL r5, f32 pX, f32 pY, f32 pZ);
 
 static inline void playCrowdSound(s32 n) {
     s32 stadium;
@@ -2302,9 +2309,132 @@ void fn_3_128B90(void) {
 }
 
 // .text:0x00128C18 size:0x758 mapped:0x80767CAC
+// NONMATCHING 62%: orig reloads g_Minigame per test, uses named rodata floats and walks m + j for the player bytes; register allocation
+#if NONMATCHING
 void fn_3_128C18(void) {
+    RepTask* q = REP_TASK;
+    RepObj* o;
+    u8* m;
+    u32 found;
+    s32 j;
+    s32 k;
+    u8 c;
+    Vec pos;
+    int sx;
+    int sy;
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        goto remove;
+    }
+    if (g_d_GameSettings[7] == 6) {
+        if (lbl_3_common_bss_34C90[0x1D2] == 5) {
+            goto remove;
+        }
+    } else if (g_GameLogic[0x11E] == 0x22 && (lbl_3_common_bss_34C90[0x1D2] == 7 || g_GameLogic[0x122] != 0)) {
+        goto remove;
+    }
+    if (g_GameLogic[0x11E] == 0x26 || g_GameLogic[0x11E] == 0x24) {
+        goto remove;
+    }
+    if (lbl_3_common_bss_32724[0xB8] == 2) {
+        lbl_3_common_bss_32724[0xB8] = 0;
+        REP_OBJC(q, 0)->mode = 4;
+        return;
+    }
+    if (lbl_3_common_bss_32724[0xB8] == 0) {
+        return;
+    }
+    lbl_3_common_bss_32724[0xB8] = 0;
+    m = g_Minigame;
+    if (g_GameLogic[0x11E] == 0x27 && m[0x1A3D] == 1) {
+        found = 0;
+        for (j = 0; j < 4; j++) {
+            if (m[0x1E08 + j * 2] == *(s8*)(m + 0x1908) && m[0x1E09 + j * 2] == 0) {
+                found = 1;
+                break;
+            }
+        }
+        if (m[0x1E09] == 0 && m[0x1E0B] == 0 && m[0x1E0D] == 0 && m[0x1E0F] == 0) {
+            REP_OBJC(q, 0)->anim = lbl_3_data_AA98[2];
+        } else if (found != 0) {
+            REP_OBJC(q, 0)->anim = lbl_3_data_AA98[8];
+        } else {
+            REP_OBJC(q, 0)->anim = lbl_3_data_AA98[10];
+        }
+        REP_OBJC(q, 0)->flags |= 2;
+        REP_OBJC(q, 0)->mode = 1;
+        REP_OBJC(q, 0)->frame = 0;
+        REP_OBJC(q, 0)->x = 0.0f;
+        REP_OBJC(q, 0)->y = 0.0f;
+        return;
+    }
+    if (m[0x1A2B] == 3 || (g_d_GameSettings[7] == 6 && *(s8*)(m + 0x1908) >= 0 && m[0x1A43] != 0)) {
+        if (m[0x1A43] == 1) {
+            REP_OBJC(q, 0)->anim = lbl_3_data_AA98[7];
+        } else if (m[0x1A43] != 0) {
+            REP_OBJC(q, 0)->anim = lbl_3_data_AA98[6];
+        } else {
+            REP_OBJC(q, 0)->anim = lbl_3_data_AA98[5];
+        }
+        REP_OBJC(q, 0)->flags |= 2;
+        REP_OBJC(q, 0)->mode = 1;
+        REP_OBJC(q, 0)->frame = 0;
+        REP_OBJC(q, 0)->x = 0.0f;
+        REP_OBJC(q, 0)->y = 0.0f;
+        return;
+    }
+    if (m[0x1906] > 1) {
+        if (m[0x19A8] != 0) {
+            REP_OBJC(q, 0)->flags |= 2;
+            REP_OBJC(q, 0)->mode = 1;
+            REP_OBJC(q, 0)->anim = lbl_3_data_AA98[2];
+            REP_OBJC(q, 0)->x = 0.0f;
+            REP_OBJC(q, 0)->y = 0.0f;
+            return;
+        }
+        k = 0;
+        for (j = 0; j < 4; j++) {
+            if (m[0x18E8 + j] == 1) {
+                getAnimRelatedCoordinates(*(s8*)(m + 0x18CC + j), 9, &pos);
+                c = m[0x18D0 + j];
+                pos.y = 0.01f * -(f32)lbl_3_data_7F10[c] * charSizeMultipliers[c][0] - 0.5f;
+                fn_3_1650C(&sx, &sy, 0, pos.x, pos.y, pos.z);
+                // fixed x position per player count (lbl_3_data_226E0: [count - 1][4])
+                sx = *(s16*)(lbl_3_data_226E0 + m[0x1906] * 8 + j * 2 - 8);
+                o = REP_OBJ(q, k);
+                o->flags |= 2;
+                REP_OBJ(q, k)->mode = 1;
+                REP_OBJ(q, k)->x = sx;
+                REP_OBJ(q, k)->y = sy;
+                REP_OBJ(q, k)->anim = lbl_3_data_AA98[1];
+                k++;
+            }
+        }
+        return;
+    }
+    if (*(s16*)(m + 0x1A26) != 0) {
+        k = 0;
+        for (j = 0; j < 4; j++) {
+            if (*(s8*)(m + 0x18CC + j) >= 0) {
+                REP_OBJ(q, k)->flags |= 2;
+                REP_OBJ(q, k)->mode = 1;
+                if (m[0x1A37] == 1) {
+                    REP_OBJ(q, k)->anim = lbl_3_data_AA98[0];
+                } else {
+                    REP_OBJ(q, k)->anim = lbl_3_data_AA98[4];
+                }
+                k++;
+            }
+        }
+    }
     return;
+remove:
+    fn_80034CEC(q);
+    ((void (*)(void))fn_800B0A14_removeQueue)();
+    if (g_Minigame[0x190A] != 0) {
+        lbl_8034E978[0x26] = 1;
+    }
 }
+#endif
 
 // .text:0x00129370 size:0x60 mapped:0x80768404
 void fn_3_129370(void) {
