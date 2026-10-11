@@ -15,12 +15,17 @@ struct ANIMAnimTrack {
     /* 0x0F */ u8 replaceHierarchyCtrl;
 };
 
+// MSSB layout (differs from the SDK ANIMPipe).
 struct ANIMPipe {
     /* 0x00 */ f32 time;
-    /* 0x04 */ f32 speed;
-    /* 0x08 */ struct ANIMAnimTrack * currentTrack;
-    /* 0x0C */ struct Control * control;
-    /* 0x10 */ u8 replaceHierarchyCtrl;
+    /* 0x04 */ f32 prevTime;
+    /* 0x08 */ f32 speed;
+    /* 0x0C */ struct ANIMAnimTrack * currentTrack;
+    /* 0x10 */ struct Control * control;
+    /* 0x14 */ u16 keyFrameCache;
+    /* 0x16 */ u8 replaceHierarchyCtrl;
+    /* 0x17 */ u8 forward;
+    /* 0x18 */ u8 loop;
 };
 
 typedef struct ANIMSequences {
@@ -46,7 +51,7 @@ void ANIMGet(ANIMBank **animBank, char *name);
 void ANIMRelease(ANIMBank **animBank);
 ANIMSequences *ANIMGetSequence(ANIMBank *animBank, char *sequenceName, u16 seqNum);
 struct ANIMAnimTrack *ANIMGetTrackFromSeq(ANIMSequences *animSeq, u16 animTrackID);
-void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack * animTrack, f32 time, KeyFrame **currentFrame, KeyFrame **nextFrame);
+void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack * animTrack, f32 time, KeyFrame **currentFrame, KeyFrame **nextFrame, u16 *cache);
 u32 ANIMGetUserDataSize(ANIMBank *animBank);
 char *ANIMGetUserData(ANIMBank *animBank);
 
@@ -54,6 +59,6 @@ char *ANIMGetUserData(ANIMBank *animBank);
 void ANIMBind(struct ANIMPipe *animPipe, Control *control, struct ANIMAnimTrack *animTrack, f32 time);
 void ANIMSetTime(struct ANIMPipe * animPipe, f32 time);
 void ANIMSetSpeed(struct ANIMPipe * animPipe, f32 speed);
-void ANIMTick(struct ANIMPipe * animPipe);
+void ANIMTick(struct ANIMPipe * animPipe, u8 unused);
 
 #endif // _DOLPHIN_CP_ANIM_H_
