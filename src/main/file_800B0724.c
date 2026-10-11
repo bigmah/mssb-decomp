@@ -1,8 +1,45 @@
 #include "main/file_800B0724.h"
+#include "Dolphin/os.h"
+#include "Dolphin/ai.h"
+#include "Dolphin/ar.h"
+#include "musyx/musyx.h"
+
+extern const f32 lbl_803CCF08; // -1.0f
+extern const f32 lbl_803CCF0C; // 0.0f
+extern const f32 lbl_803CCF10; // 1.0f
+extern SoundConfig lbl_801112F0;
+extern SndHeap* lbl_803CBB10;
 
 // .text:0x800B0724 size:0xD8
-void makeLookAtMatrix(void) {
-    return;
+// Like C_MTXLookAt, but handles a camera looking straight up or down.
+void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target) {
+    if (camPos->x == target->x && camPos->z == target->z) {
+        m[0][0] = lbl_803CCF08;
+        m[0][1] = lbl_803CCF0C;
+        m[0][2] = lbl_803CCF0C;
+        m[0][3] = camPos->x;
+        if (camPos->y - target->y <= lbl_803CCF0C) {
+            m[1][0] = lbl_803CCF0C;
+            m[1][1] = lbl_803CCF0C;
+            m[1][2] = lbl_803CCF08;
+            m[1][3] = camPos->z;
+            m[2][0] = lbl_803CCF0C;
+            m[2][1] = lbl_803CCF08;
+            m[2][2] = lbl_803CCF0C;
+            m[2][3] = camPos->y;
+        } else {
+            m[1][0] = lbl_803CCF0C;
+            m[1][1] = lbl_803CCF0C;
+            m[1][2] = lbl_803CCF10;
+            m[1][3] = -camPos->z;
+            m[2][0] = lbl_803CCF0C;
+            m[2][1] = lbl_803CCF10;
+            m[2][2] = lbl_803CCF0C;
+            m[2][3] = -camPos->y;
+        }
+    } else {
+        C_MTXLookAt(m, camPos, camUp, target);
+    }
 }
 
 // .text:0x800B07FC size:0x38
