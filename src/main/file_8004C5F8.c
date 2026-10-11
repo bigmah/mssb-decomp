@@ -22,6 +22,7 @@ extern DialogTables lbl_800FEAAC;
 extern u8 lbl_800FE93C[];
 extern u8 lbl_800FE924[][6];
 extern u8 lbl_800FE5C8[];
+extern u8 lbl_800E854C[];
 // Sub-tables inside lbl_800FE5D4 / lbl_800FE93C (no symbols of their own).
 #define lbl_800FE5D4_colOrder ((u8(*)[6])&lbl_800FE5D4[0xC])
 #define lbl_800FE93C_alts ((u8(*)[5])lbl_800FE93C)
@@ -1040,9 +1041,73 @@ finish:
 #endif
 
 // .text:0x8004F964 size:0x400
+// NONMATCHING: the original addresses lbl_800FDE84/lbl_800FE5C8/lbl_800FE5D4
+// through one lbl_800FCA60 base (same-TU data; the .data split ends too early)
+#if NONMATCHING
 void fn_8004F964(void) {
-    return;
+    LayoutGroup* task = lbl_803CC1B8;
+    s32 i;
+    s32 j;
+    s8 owner;
+
+    fn_80034E20(task, &lbl_800FDE84[0xC4]);
+    if (lbl_803C6028._90 != 0) {
+        lbl_80371C30[task->start + 2].obj->_5C = 55 << 16;
+        lbl_80371C30[task->start + 2].obj->_68 = 4;
+    }
+    if (lbl_803C6028._90 != 0) {
+        lbl_80371C30[task->start + 1].obj->_5C = 50 << 16;
+        lbl_80371C30[task->start + 1].obj->_68 = 4;
+    } else {
+        lbl_80371C30[task->start + 1].obj->_5C = 0;
+        lbl_80371C30[task->start + 1].obj->_68 = 1;
+    }
+    for (i = 0; i < 12; i++) {
+        fn_800363D8(task, i + 0x17, 1, 0x19, lbl_800FE5D4[i]);
+        lbl_80371C30[task->start + i + 0x17].obj->_72 = lbl_800FE5C8[i];
+        if (lbl_803C6028._90 != 0) {
+            for (j = 0; j < 12; j++) {
+                if (lbl_800E854C[j] == lbl_800FE5D4[i]) {
+                    lbl_80371C30[task->start + i + 0x17].obj->_5C = 5 << 16;
+                    lbl_80371C30[task->start + i + 0x17].obj->_68 = 0;
+                    break;
+                }
+            }
+        }
+        lbl_80371C30[task->start + i + 0x23].obj->flags &= ~2;
+        lbl_80371C30[task->start + i + 0x23].obj->_72 = lbl_800FE5C8[i];
+        lbl_80371C30[task->start + i + 3].obj->_72 = lbl_800FE5C8[i];
+        if (lbl_803C6028.slotOwner[i] >= 0) {
+            lbl_80371C30[task->start + i + 0x17].obj->_5C = 25 << 16;
+            lbl_80371C30[task->start + i + 0x17].obj->_68 = 0;
+            lbl_80371C30[task->start + i + 3].obj->_5C = 25 << 16;
+            lbl_80371C30[task->start + i + 3].obj->_68 = 0;
+            lbl_80371C30[task->start + i + 0x23].obj->flags |= 2;
+            lbl_80371C30[task->start + i + 0x23].obj->_5C = 25 << 16;
+            lbl_80371C30[task->start + i + 0x23].obj->_68 = 0;
+            owner = lbl_803C6028.slotOwner[i];
+            if (lbl_803C6028._74[owner] != 0) {
+                fn_800363D8(task, i + 0x23, 1, 0x1A, owner + 4);
+            } else {
+                fn_800363D8(task, i + 0x23, 1, 0x1A, owner);
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        lbl_80371C30[task->start + i + 0x13].obj->_5C = i << 16;
+        if (lbl_803C6028._74[i] != 0) {
+            fn_800363D8(task, i + 0x2F, 1, 0x1A, i + 4);
+        } else {
+            fn_800363D8(task, i + 0x2F, 1, 0x1A, i);
+        }
+    }
+    lbl_803C6028.state7D = 0;
+    lbl_803C6028._92 = 0;
+    task->textIndex = 0;
+    lbl_803C6028._8E = 1;
+    lbl_803CC1B8->callback = fn_8004F10C;
 }
+#endif
 
 // .text:0x8004FD64 size:0x3C
 s32 fn_8004FD64(s32 player) {
