@@ -928,7 +928,9 @@ void fn_2_8ABFC(void) {
 
 // .text:0x0008AC84 size:0x2C
 void fn_2_8AC84(s32 index, s32 value) {
-    return;
+    if (lbl_2_bss_340140->entries != NULL) {
+        lbl_2_bss_3401BC->_50[index] = value;
+    }
 }
 
 // .text:0x0008ACB0 size:0x2C
