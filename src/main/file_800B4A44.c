@@ -66,8 +66,16 @@ void AnimateActorBones(GameActor* actor) {
 }
 
 // .text:0x800B4BC8 size:0x3C
-void fn_800B4BC8(void) {
-    return;
+void fn_800B4BC8(GameActor* actor, u8 forward) {
+    u32 i;
+    GameAnimPipe* pipe;
+
+    for (i = 0; i < actor->totalBones; i++) {
+        pipe = actor->boneArray[i]->animPipe;
+        if (pipe != NULL) {
+            pipe->forward = forward;
+        }
+    }
 }
 
 // .text:0x800B4C04 size:0x3C
