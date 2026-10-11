@@ -118,7 +118,7 @@ void fn_8000F150(TextWindow* window) {
     GXSetNumTexGens(1);
     GXSetNumTevStages(1);
     GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-    SetDisplayStateTexture(TEX_ARCHIVE_OBJ(lbl_803CBBE8, 0), 0, 0);
+    SetDisplayStateTexture((struct TexImage*)TEX_ARCHIVE_OBJ(lbl_803CBBE8, 0), 0, 0); // TODO type: TexRecord vs TexImage
     GXSetArray(GX_VA_POS, lbl_800E8F60.positions, 6);
     GXSetArray(GX_VA_CLR0, &lbl_803CB780, 4);
     GXSetArray(GX_VA_TEX0, lbl_800E8F60.texCoords, 4);
