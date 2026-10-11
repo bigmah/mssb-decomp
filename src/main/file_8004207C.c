@@ -460,7 +460,38 @@ void fn_8004A0FC(void) {
 
 // .text:0x8004A1BC size:0x100
 void fn_8004A1BC(void) {
-    return;
+    s32 i;
+
+    switch (lbl_803C5F04.state) {
+    case 0:
+        fn_80049C80();
+        break;
+    case 1:
+        if (lbl_803C66B0._5D == 0) {
+            lbl_803C5F04.state++;
+        }
+        break;
+    case 2:
+        for (i = 0; i < 2; i++) {
+            fn_800494CC(i);
+        }
+        break;
+    case 3:
+        for (i = 0; i < 2; i++) {
+            fn_80049220(i);
+        }
+        break;
+    case 4:
+        if (fn_80035838(lbl_800FB5B0, 6) != 0) {
+            lbl_803C5F04._32 = 1;
+            lbl_803C5F04.state = 0;
+        }
+        break;
+    case 5:
+        startGameRelated();
+        break;
+    }
+    fn_80049D3C();
 }
 
 // .text:0x8004A2BC size:0x6C
