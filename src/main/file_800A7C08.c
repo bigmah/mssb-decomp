@@ -32,7 +32,11 @@ void fn_800A7D7C(DrawLink* list, s32 count) {
 
 // .text:0x800A7DB0 size:0x50
 void fn_800A7DB0(void) {
-    return;
+    OSSleepThread(&lbl_803C7420.retraceQueue);
+    GXSetColorUpdate(GX_TRUE);
+    VIFlush();
+    GXDrawDone();
+    GXCopyDisp(lbl_803C7420.xfb, GX_TRUE);
 }
 
 // .text:0x800A7E00 size:0x110
