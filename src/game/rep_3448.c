@@ -65,6 +65,9 @@ extern u8 lbl_3_data_23E04[];
 extern u8 lbl_3_data_23C84[];
 extern u8 lbl_3_data_240A4[];
 extern u8 lbl_3_data_24844[];
+extern u8 lbl_3_data_23E64[];
+extern u16 lbl_3_data_2145C[];
+extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
 extern RepFielder g_Fielders[];
 extern RepRosterEnt inMemRoster[];
 extern RepRunner g_Runners[4];
@@ -1055,9 +1058,135 @@ void fn_3_122334(void) {
 }
 
 // .text:0x001226D4 size:0x650 mapped:0x80761768
+// NONMATCHING 66%: slot accesses use per-k table bases (lbl_80371C30 + k*8) in orig, g_Minigame hoisted into the prelude, inlined fn_3_125424(q, 0, 0x10)
+#if NONMATCHING
 void fn_3_1226D4(void) {
-    return;
+    RepTask* q = REP_TASK;
+    RepSlot* s;
+    RepObj* o;
+    u32 x;
+    u32 done;
+    s32 d;
+    s32 step;
+    u32 v;
+    u32 k;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (q->state) {
+    case 0:
+        fn_800B0A5C_insertQueue(fn_3_122D24, q->priority);
+        fn_800B0A5C_insertQueue(fn_3_1231D4, q->priority);
+        fn_80034E20(q, lbl_3_data_23E64);
+        q->state = 1;
+        break;
+    case 1:
+        REP_OBJ(q, 0)->mode = 0;
+        REP_OBJ(q, 0)->frame = 0;
+        REP_OBJ(q, 1)->mode = 0;
+        REP_OBJ(q, 1)->frame = 0;
+        REP_OBJ(q, 2)->mode = 0;
+        REP_OBJ(q, 2)->frame = 0;
+        REP_OBJ(q, 3)->mode = 0;
+        REP_OBJ(q, 3)->frame = 0;
+        REP_OBJ(q, 4)->mode = 0;
+        REP_OBJ(q, 4)->frame = 0;
+        if (g_Minigame[0x1DF7] != 0) {
+            g_Minigame[0x1DF7] = 0;
+            q->timer = 0;
+            q->_1A = 0;
+            q->state = 2;
+        }
+        break;
+    case 2:
+        REP_OBJ(q, 1)->mode = 1;
+        REP_OBJ(q, 1)->frame = 0;
+        REP_OBJ(q, 2)->mode = 1;
+        REP_OBJ(q, 2)->frame = 0;
+        REP_OBJ(q, 3)->mode = 1;
+        REP_OBJ(q, 3)->frame = 0;
+        REP_OBJ(q, 4)->mode = 1;
+        REP_OBJ(q, 4)->frame = 0;
+        q->state = 3;
+        break;
+    case 3:
+        o = REP_OBJ(q, 0);
+        x = o->frame >> 16;
+        if (x < 0x10) {
+            done = 0;
+            o->mode = 1;
+        } else if (x > 0x10) {
+            done = 0;
+            o->mode = 4;
+        } else {
+            done = 1;
+            o->mode = 0;
+        }
+        if (done != 0) {
+            if (q->timer < 0xFFFE) {
+                q->timer++;
+            } else {
+                q->timer = 0xFFFF;
+            }
+            if (q->timer >= lbl_3_data_2145C[q->_1A]) {
+                q->timer = 0;
+                q->_1A++;
+            }
+            if (q->_1A == 2) {
+                q->state = 4;
+            }
+        }
+        break;
+    case 4:
+        s = (RepSlot*)lbl_80371C30 + q->baseIdx;
+        if (s[4].obj->status == 2 && s[3].obj->status == 2 && s[2].obj->status == 2 && s[1].obj->status == 2) {
+            s[0].obj->mode = 1;
+            q->state = 5;
+        }
+        break;
+    case 5:
+        if (REP_OBJ(q, 0)->status == 2) {
+            q->state = 1;
+        }
+        break;
+    }
+    if (q->_1A != 0) {
+        d = *(s16*)(g_Minigame + 0x1898 + *(s8*)(g_Minigame + 0x1905) * 2) - q->_1E;
+        if (d != 0) {
+            step = d / 4;
+            if (step != 0) {
+                q->_1E += step;
+            } else {
+                q->_1E += d / (d < 0 ? -d : d);
+            }
+        }
+    } else {
+        q->_1E = *(s16*)(g_Ball + 0x1B9E);
+    }
+    v = q->_1E;
+    if (v > 999) {
+        v = 999;
+    }
+    if (v >= 100) {
+        REP_OBJ(q, 0)->anim = 0x107;
+    } else if (v >= 10) {
+        REP_OBJ(q, 0)->anim = 0x109;
+    } else {
+        REP_OBJ(q, 0)->anim = 0x10A;
+    }
+    for (k = 1; k <= 3; k++) {
+        fn_800363D8(q, 4, k, 0x11B, (v % 1000) / 100);
+    }
+    for (k = 1; k <= 3; k++) {
+        fn_800363D8(q, 3, k, 0x11B, (v % 100) / 10);
+    }
+    for (k = 1; k <= 3; k++) {
+        fn_800363D8(q, 2, k, 0x11B, v % 10);
+    }
 }
+#endif
 
 // .text:0x00122D24 size:0x4B0 mapped:0x80761DB8
 // NONMATCHING 98%: registers only (q/cnt swapped r29/r30; same as fn_3_1231D4: orig keeps the parent pointer in r3)

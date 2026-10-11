@@ -32,7 +32,8 @@ typedef struct RepTask {
     /*0x00*/ void (*func)(void);
     /*0x04*/ u8 _04[0x8];
     /*0x0C*/ struct RepTask* parent;
-    /*0x10*/ u8 _10[0x4];
+    /*0x10*/ u8 _10[0x2];
+    /*0x12*/ u16 priority;
     /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
     /*0x16*/ u16 count;
     /*0x18*/ u16 timer;
