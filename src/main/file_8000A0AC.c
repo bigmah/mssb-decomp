@@ -12,10 +12,32 @@ extern const f32 lbl_803CC454; // pi / 180
 
 void fn_8000E764(f32* sinCos, f32 angle);
 
+// NONMATCHING 99%: r9/r10/r11 assignment of the handle pointers and &pts[1] differs
 // .text:0x8000A0AC size:0x13C
-void fn_8000A0AC(void) {
-    return;
+#if NONMATCHING
+void fn_8000A0AC(f32 t, BezierPoint* out, LayoutKey* a, LayoutKey* b) {
+    s16* outHandle;
+    s16* inHandle;
+    BezierPoint pts[4];
+
+    if (a->type == 2) {
+        outHandle = a->handles;
+        inHandle = b->handles;
+    } else {
+        outHandle = a->handles;
+        inHandle = b->handles;
+    }
+    pts[0].x = a->pos[0];
+    pts[0].y = a->pos[1];
+    pts[1].x = outHandle[2];
+    pts[1].y = outHandle[3];
+    pts[2].x = inHandle[0];
+    pts[2].y = inHandle[1];
+    pts[3].x = b->pos[0];
+    pts[3].y = b->pos[1];
+    BezierInterpolate(t, out, &pts[0], &pts[1], &pts[2], &pts[3]);
 }
+#endif
 
 // .text:0x8000A1E8 size:0x204
 void interpolatePointsBezier_Vec2s(f32 t, BezierPoint* out, PathPoint* p0, PathPoint* p1, PathPoint* p2,

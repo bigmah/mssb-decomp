@@ -77,6 +77,7 @@ typedef struct {
     /*0x06*/ s16 y;
 } PathPoint;
 
+void fn_8000A0AC(f32 t, BezierPoint* out, LayoutKey* a, LayoutKey* b);
 void interpolatePointsBezier_Vec2s(f32 t, BezierPoint* out, PathPoint* p0, PathPoint* p1, PathPoint* p2,
                                    PathPoint* p3, u32 segment);
 void fn_8000B9C8(void* file);
