@@ -172,8 +172,12 @@ s32 fn_800214D0(void) {
 }
 
 // .text:0x80021518 size:0x74
-void fn_80021518(void) {
-    return;
+s32 fn_80021518(u16 gid, SoundGroupData* data) {
+    if (sndPushGroup(data->proj, gid, data->samp, data->sdir, data->pool) == 0) {
+        return 0;
+    }
+    lbl_800EF808.groupStack[lbl_800EF808.groupStackCount++] = gid;
+    return 1;
 }
 
 // .text:0x8002158C size:0x6C
