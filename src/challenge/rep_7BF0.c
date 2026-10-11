@@ -357,6 +357,14 @@ void fn_1_295E8(void) {
 }
 
 // .text:0x00029A9C size:0x1C0
+// NONMATCHING 92%: register allocation/scheduling of the inlined fn_1_2935C prologue
+#if NONMATCHING
 void fn_1_29A9C(void) {
-    return;
+    fn_1_2935C(&lbl_1_bss_47068);
+    fn_1_289C0(&lbl_1_bss_471D8);
+    lbl_1_data_11300.simulationState = 0;
+    fn_1_28C34(&lbl_1_bss_471BC, 0, NULL);
+    fn_800B806C(0, -240.0f, 240.0f, -320.0f, 320.0f, -512.0f, -1.0f, 1280.0f);
+    lbl_803CC1B8->func = fn_1_295E8;
 }
+#endif
