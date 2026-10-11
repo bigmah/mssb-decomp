@@ -1727,10 +1727,71 @@ void fn_3_150120(u8* o, u8* p) {
 }
 #endif
 
+// NONMATCHING 92%: respawn block (inlined twice) gets f29/f31 swapped for x/z, and the half-life divide is scheduled later in the fade branch
 // .text:0x001504EC size:0x454 mapped:0x8078F580
-void fn_3_1504EC(void) {
-    return;
+#if NONMATCHING
+static inline void respawn_1504EC(u8* o, u8* p) {
+    Mtx m;
+    u8* obj;
+    f32* src;
+    f32 x;
+    f32 y;
+    f32 z;
+    *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C3C + 0x18);
+    obj = (*(u8***)(**(u8***)(o + 0x18) + 0x18))[*(s32*)(lbl_3_data_26C3C + 0x1C)];
+    PSMTXIdentity(m);
+    src = *(f32**)(obj + 0xEC);
+    x = src[3];
+    y = src[7];
+    z = src[11];
+    x += (rand() % 100 - 50) / lbl_3_rodata_39E8;
+    y += (rand() % 150 - 75) / lbl_3_rodata_39E8;
+    *(f32*)(p + 4) = x;
+    *(f32*)(p + 8) = y;
+    *(f32*)(p + 0xC) = z;
+    *(f32*)(p + 0x3C) = *(f32*)(p + 0x38) = *(s32*)(lbl_3_data_26C3C + 8);
+    p[0x43] = *(s32*)(lbl_3_data_26C3C + 0x10);
 }
+
+void fn_3_1504EC(u8* o, u8* p) {
+    s32 half;
+    s32 da;
+    f32 ds;
+    s32 a;
+    if (*(s16*)(p + 0x48) != 0) {
+        *(s16*)(p + 0x48) -= 1;
+        if (*(s16*)(p + 0x48) == 0) {
+            respawn_1504EC(o, p);
+        }
+    } else {
+        fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+        fn_80033CC8(p, *(void**)(o + 0x10));
+        a = p[0x43];
+        if (*(s32*)(lbl_3_data_26C3C + 0x18) / *(s16*)(p + 0x4A) < 2) {
+            half = *(s32*)(lbl_3_data_26C3C + 0x18) / 2;
+            da = *(s32*)(lbl_3_data_26C3C + 0x14) / half;
+            ds = ((f32)*(s32*)(lbl_3_data_26C3C + 0xC) / lbl_3_rodata_3930) / (f32)half;
+        } else {
+            half = *(s32*)(lbl_3_data_26C3C + 0x18) / 2;
+            da = -*(s32*)(lbl_3_data_26C3C + 0x14) / half;
+            ds = -((f32)*(s32*)(lbl_3_data_26C3C + 0xC) / lbl_3_rodata_3930) / (f32)half;
+        }
+        a += da;
+        if (a > 0xFF) {
+            a = 0xFF;
+        } else if (a < 0) {
+            a = 0;
+        }
+        p[0x43] = a;
+        *(f32*)(p + 0x38) += ds;
+        *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+        *(s16*)(p + 0x4A) -= 1;
+        if (*(s16*)(p + 0x4A) == 0) {
+            respawn_1504EC(o, p);
+        }
+    }
+}
+#endif
 
 // .text:0x00150940 size:0x444 mapped:0x8078F9D4
 void fn_3_150940(void) {

@@ -77,7 +77,7 @@ void fn_3_150010(s8 a);
 void fn_3_150070(void);
 void fn_3_1500C8(void);
 void fn_3_150120(u8* o, u8* p);
-void fn_3_1504EC(void);
+void fn_3_1504EC(u8* o, u8* p);
 void fn_3_150940(void);
 void fn_3_150D84(u8* a, u8* o);
 void fn_3_151068(u8* a, u8* o);
