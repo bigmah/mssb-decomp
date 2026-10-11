@@ -244,7 +244,8 @@ s32 fn_800A8518(s32 cmd) {
 
 // .text:0x800A86B4 size:0x1B0
 void fn_800A86B4(s32 cmd) {
-    return;
+    while (StreamCommand(cmd) == 0) {
+    }
 }
 
 // fn_800A8864, size:0x14
