@@ -303,9 +303,10 @@ void fn_3_706B8(int idx) {
 }
 
 // .text:0x00070768 size:0xD0 mapped:0x806AF7FC
-// near-match (13 diff lines): only the trailing lerp differs (orig computes z-pz before z-target and does not fuse px + dx*t into fmadds); ~1000 variants tried
 extern const f32 lbl_3_rodata_128C;
-extern const f32 lbl_3_rodata_1290;
+// NONMATCHING 96%: only the trailing lerp differs (orig computes z-pz before z-target and does not fuse
+// px + dx*t into fmadds); ~1000 variants tried (docs/patterns/unsolved.md)
+#if NONMATCHING
 int fn_3_70768(f32* out, int flag, f32 target) {
     int n = 0;
     f32 z = g_Pitcher.ballCurrentPosition.z;
@@ -352,6 +353,7 @@ int fn_3_70768(f32* out, int flag, f32 target) {
     }
     return n;
 }
+#endif
 
 // .text:0x00070838 size:0x17C mapped:0x806AF8CC
 // Egg-ball bounce params: [0] y, [1..2] z range, [3] x range, [4..5] bounce z range, [6..7] x range.
