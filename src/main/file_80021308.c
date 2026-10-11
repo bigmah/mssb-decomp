@@ -525,5 +525,8 @@ s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQue
 
 // .text:0x80022D58 size:0x54
 void fn_80022D58(void) {
-    return;
+    lbl_803716B8.tail = 0;
+    lbl_803716B8.head = 0;
+    memset(&lbl_803716B8.current, 0, sizeof(AramQueueEntry));
+    memset(lbl_803716B8.queue, 0, sizeof(lbl_803716B8.queue));
 }

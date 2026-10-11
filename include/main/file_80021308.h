@@ -138,5 +138,6 @@ s32 fn_80022A24(s32 stadium, s32 variant);
 void fn_80022B14(void);
 s32 fn_80022B68(void);
 s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
+void fn_80022D58(void);
 
 #endif
