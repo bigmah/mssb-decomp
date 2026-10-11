@@ -3611,3 +3611,127 @@ void fn_2_7836C(u8* o, s8 index) {
     }
 }
 #endif
+
+extern u8 fn_80064918(s16 charId);
+
+// fn_2_76DF0, size:0x8B0
+// Show the selected character's stat page (bat/throw hands, ability icons).
+// NONMATCHING 90%: register allocation (index kept in r31 vs r29) and the shown-flag pointer walk
+#if NONMATCHING
+void fn_2_76DF0(u8* o, u8 index) {
+    u8* shown = lbl_2_bss_F468 + index;
+    if (*(shown += 0x49) == 0) {
+        s32 c;
+        s32 j;
+        s32 frame;
+        u8* stats;
+        u32 mask;
+        u8 bat;
+        u8 thr;
+        u8 flag;
+        if (*(u16*)(lbl_803CBBCC[0] + 2) == 9) {
+            if (g_d_GameSettings.GameModeSelected != 5) {
+                c = lbl_800FE5D4[F410_S32(0x10 + index * 4)];
+            } else {
+                c = lbl_800FE930[lbl_80361B20[0xF4] * 6 + F410_S32(0x10 + index * 4)];
+            }
+        } else {
+            if (lbl_2_bss_F468[0x41 + index] == 0) {
+                for (j = 0; j < 9; j++) {
+                    if (TEAM_TBL->pos[index][j] == F468_S32(index * 4)) {
+                        break;
+                    }
+                }
+                c = TEAM_TBL->roster[index][j];
+            } else {
+                c = F410_S32(0x20 + index * 4);
+                if (c == -1) {
+                    *shown = 0;
+                    return;
+                }
+            }
+            lbl_2_bss_F468[0x4D + index] = c;
+        }
+        frame = c << 16;
+        stats = lbl_8034E9A0 + (s8)(c / 9) * 0x5A0 + (s8)(c % 9) * 0xA0;
+        mask = *(u32*)(stats + 0x20);
+        bat = stats[0x2D];
+        thr = stats[0x2E];
+        flag = stats[0x27];
+        MN_SLOT(0xB4 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xCA + BASE(o) + index)->frame = frame;
+        MN_SLOT(0xCC + BASE(o) + index)->frame = fn_80064918(c) << 16;
+        MN_SLOT(0xC6 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0xDE + BASE(o) + index)->frame = frame;
+        fn_2_76650(o, index, mask);
+        for (j = 0; j < 6; j++) {
+            MN_SLOT(0xD2 + BASE(o) + index + j * 2)->frame = j << 16;
+        }
+        for (j = 0; j < 6; j++) {
+            MN_SLOT(0xBA + BASE(o) + index + j * 2)->frame = 0;
+        }
+        switch (bat) {
+        case 0:
+            MN_SLOT(0xBA + BASE(o) + index)->state = 1;
+            MN_SLOT(0xBC + BASE(o) + index)->state = 0;
+            MN_SLOT(0xBE + BASE(o) + index)->state = 0;
+            break;
+        case 1:
+            if (flag == 0) {
+                MN_SLOT(0xBA + BASE(o) + index)->state = 0;
+                MN_SLOT(0xBC + BASE(o) + index)->state = 1;
+                MN_SLOT(0xBE + BASE(o) + index)->state = 0;
+            } else {
+                MN_SLOT(0xBA + BASE(o) + index)->state = 0;
+                MN_SLOT(0xBC + BASE(o) + index)->state = 0;
+                MN_SLOT(0xBE + BASE(o) + index)->state = 1;
+            }
+            break;
+        case 2:
+            if (flag == 0) {
+                MN_SLOT(0xBA + BASE(o) + index)->state = 0;
+                MN_SLOT(0xBC + BASE(o) + index)->state = 0;
+                MN_SLOT(0xBE + BASE(o) + index)->state = 1;
+            } else {
+                MN_SLOT(0xBA + BASE(o) + index)->state = 0;
+                MN_SLOT(0xBC + BASE(o) + index)->state = 1;
+                MN_SLOT(0xBE + BASE(o) + index)->state = 0;
+            }
+            break;
+        }
+        switch (thr) {
+        case 0:
+            MN_SLOT(0xC0 + BASE(o) + index)->state = 1;
+            MN_SLOT(0xC2 + BASE(o) + index)->state = 0;
+            MN_SLOT(0xC4 + BASE(o) + index)->state = 0;
+            break;
+        case 1:
+            MN_SLOT(0xC0 + BASE(o) + index)->state = 0;
+            MN_SLOT(0xC2 + BASE(o) + index)->state = 1;
+            MN_SLOT(0xC4 + BASE(o) + index)->state = 0;
+            break;
+        case 2:
+            MN_SLOT(0xC0 + BASE(o) + index)->state = 0;
+            MN_SLOT(0xC2 + BASE(o) + index)->state = 0;
+            MN_SLOT(0xC4 + BASE(o) + index)->state = 1;
+            break;
+        }
+        MN_SLOT(0xE0 + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0xE0 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xB6 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xC6 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0xC6 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xEA + BASE(o) + index)->flags &= ~2;
+        MN_SLOT(0xEA + BASE(o) + index)->state = 0;
+        MN_SLOT(0xE2 + BASE(o) + index)->state = 4;
+        *shown = 1;
+    }
+    if (*(u16*)(lbl_803CBBCC[0] + 2) == 0xA) {
+        u8* sel = lbl_2_bss_F468 + index;
+        if (sel[0x41] != 0 && sel[0x4D] != F410_S32(0x20 + index * 4)) {
+            fn_2_74F40(o, index);
+            *shown = 0;
+        }
+    }
+}
+#endif
