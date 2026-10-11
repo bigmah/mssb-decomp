@@ -956,7 +956,8 @@ typedef struct _PracticeStruct {
     /*0x1E1*/ u8 hitVariablesSetIndicator;
     /*0x1E2*/ u8 _1E2;
     /*0x1E3*/ u8 aiBuntIndicator; // unsure
-    artificial_padding(0x1e3, 0x1ee, u8);
+    /*0x1E4*/ u8 _1E4;
+    artificial_padding(0x1e4, 0x1ee, u8);
     /*0x1EE*/ u8 _1EE;
     /*0x1EF*/ u8 rosterID; // unsure
 } PracticeStruct;          // size: 0x1f0
@@ -2787,7 +2788,11 @@ typedef struct {
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0x105];
+    u8 pad[0xAE];
+    /* 0x0AE */ s16 _AE;
+    u8 pad_B0[0xEE - 0xB0];
+    /* 0x0EE */ s16 _EE;
+    u8 pad_F0[0x105 - 0xF0];
     /* 0x105 */ u8 playerAtMoundCutoffLocation;
     /* 0x106 */ u8 throwSpeedType;
     /* 0x107 */ u8 _107;

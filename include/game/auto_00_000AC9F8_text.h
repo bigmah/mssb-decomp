@@ -118,4 +118,6 @@ void fn_3_B056C(void);
 
 void fn_3_AF10C(void);
 
+void fn_3_B0E00(void);
+
 #endif
