@@ -250,6 +250,33 @@ void fn_2_1C21C(void) {
     fn_2_68DAC(0, buf);
 }
 
+// NONMATCHING 96%: ours emits a dead blr after the final hang loop (original ends on the loop)
+#if NONMATCHING
+// fn_2_1C33C, size:0x68
+// Debug sanity checks: hang if the menu state is out of range.
+void fn_2_1C33C(void) {
+    u8* g = lbl_2_bss_1A8248;
+    s16 v;
+    if (g[0x441C] >= 6) {
+        while (1) {
+        }
+    }
+    if (g[0x4415] >= 4) {
+        while (1) {
+        }
+    }
+    v = *(s16*)(g + 0x43BC);
+    if (v < 0 || v > 999) {
+        while (1) {
+        }
+    }
+    if (*(s16*)(lbl_2_bss_1A823C[0] + 0x30) == 5 && g[0x4420] >= 5) {
+        while (1) {
+        }
+    }
+}
+#endif
+
 // fn_2_1C3A4, size:0x4
 void fn_2_1C3A4(void) {
     return;

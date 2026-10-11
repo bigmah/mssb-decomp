@@ -10,6 +10,7 @@ void fn_2_1B6CC(void);
 void fn_2_1BF50(void);
 void fn_2_1BFD0(void);
 void fn_2_1C21C(void);
+void fn_2_1C33C(void);
 void fn_2_1C3A4(void);
 void fn_2_1C3A8(void);
 void fn_2_1C41C(void);
