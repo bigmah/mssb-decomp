@@ -131,8 +131,31 @@ void fn_800B4CDC(GameActor* actor) {
 }
 
 // .text:0x800B4D64 size:0x138
-void ACTSetAnimation(void) {
-    return;
+void ACTSetAnimation(GameActor* actor, ANIMBank* animBank, char* sequenceName, u16 seqNum, f32 time, f32 blendSpeed) {
+    u16 i;
+    ANIMSequences* seq = ANIMGetSequence(animBank, sequenceName, seqNum);
+    struct ANIMAnimTrack* track = NULL;
+    GameBone* bone;
+    u8 blendFlag;
+
+    for (i = 0; i < actor->totalBones; i++) {
+        if (seq != NULL) {
+            track = ANIMGetTrackFromSequence(seq, actor->boneArray[i]->boneID);
+        }
+        bone = actor->boneArray[i];
+        blendFlag = 0;
+        if (actor->blend < 1.0f && bone->flags != 0) {
+            blendFlag = 1;
+        }
+        ACTSetBoneTrack(bone, track, time, blendFlag);
+        if (actor->boneArray[i]->flags & 0x1C) {
+            actor->boneArray[i]->flags |= 0x20;
+        } else {
+            actor->boneArray[i]->flags &= 0xFFDF;
+        }
+    }
+    actor->blend = (blendSpeed != lbl_803CCF78) ? lbl_803CCF78 : lbl_803CCF7C;
+    actor->blendSpeed = blendSpeed;
 }
 
 // .text:0x800B4E9C size:0x100
