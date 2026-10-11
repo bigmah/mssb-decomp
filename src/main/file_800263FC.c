@@ -36,6 +36,12 @@ extern s32 lbl_803CB7F8;          // respawn delay mask
 extern f32 lbl_803CB7FC;          // respawn angle spread (0..1)
 extern ParticleParams lbl_800F787C; // default spawn parameters
 extern TexArchive* lbl_803CBD0C;
+typedef struct ActorTable {
+    /* 0x0000 */ u8 pad0[0x2C50];
+    /* 0x2C50 */ void* actors[13];
+} ActorTable;
+extern ActorTable lbl_8036E548; // only the field used here
+s32 getAnimRelatedCoordinates(s32 actor, s32 anim, Vec* out); // TODO: UnknownHomes_Game.h has (int, int, VecXYZ*)
 extern SpaniSlot lbl_80371C30[0x360];
 extern SpaniObj* lbl_803CBC9C;
 extern Particle* lbl_803CBC74; // free particle list
@@ -1052,9 +1058,52 @@ void fn_80032284(Vec* pos) {
 #endif
 
 // .text:0x800324EC size:0x3F4
-void fn_800324EC(void) {
-    return;
+// NONMATCHING 35%: the original also builds an unused 32-entry color table on the stack; inlined emitter allocation registers
+#if NONMATCHING
+void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
+    Vec q;
+    Vec pos;
+    Emitter* e;
+    Particle* p;
+    f32 size;
+
+    if (a < 0 || a >= 13 || lbl_8036E548.actors[a] == NULL) {
+        return;
+    }
+    getAnimRelatedCoordinates(a, anim, &pos);
+    if (b >= 0 && b < 13 && lbl_8036E548.actors[b] != NULL) {
+        // midpoint between the two actors
+        getAnimRelatedCoordinates(b, anim, &q);
+        PSVECSubtract(&q, &pos, &q);
+        PSVECScale(&q, 0.5f, &q);
+        PSVECAdd(&pos, &q, &pos);
+    }
+    // (the original also fills a never-read stack table of 32 colors built from
+    // lbl_800F787C words 0x38/0x3C/0x40 and copies the camera translation; omitted)
+    lbl_800F787C.tex = lbl_803CBD0C;
+    e = NewEmitter(fn_8002E828, 0x80, 0, 1, 1, 6);
+    if (e != NULL) {
+        e->tex = lbl_800F787C.tex;
+        p = e->particles;
+        p->pos.x = pos.x;
+        p->pos.y = pos.y;
+        p->pos.z = pos.z;
+        p->color.rgba = 0xFFFFFF00;
+        p->u.t6.unk18 = lbl_800F787C.unk10;
+        p->u.t6.unk1C = p->life = lbl_800F787C.life;
+        p->u.t6.unk20 = lbl_800F787C.life / 2;
+        size = (f32)lbl_800F787C.size / 100000.0f;
+        p->u.t6.unk10 = size;
+        p->sizeY = size;
+        p->sizeX = size;
+        p->u.t6.unk14 = (f32)lbl_800F787C.unkC / 100000.0f;
+        p->texIndex = lbl_800F787C.texIndex;
+    }
+    if (prm != NULL) {
+        fn_8002A1CC(&pos, prm);
+    }
 }
+#endif
 
 // .text:0x800328E0 size:0x7EC
 // NONMATCHING 59%: the original inlines fn_8003403C with the file-static bss base (lbl_8017EC00 + offset); calls fn_8003403C here

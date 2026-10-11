@@ -224,6 +224,7 @@ void fn_800330CC(s32 n, u32 color, Vec* pos, Vec* dir, s32 spawnFrames, TexArchi
 void fn_8002A1CC(Vec* pos, ParticleParamsB* prm);
 void fn_80032064(Vec* pos, ParticleParamsB* prm);
 void fn_80032284(Vec* pos);
+void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm);
 void fn_80033620(Emitter* e);
 void fn_80033794(Particle* list);
 Emitter* fn_800337CC(Emitter* e, s32 n, s32 strict);
