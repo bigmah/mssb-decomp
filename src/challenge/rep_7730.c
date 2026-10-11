@@ -84,7 +84,7 @@ void fn_1_20640(ChallengeTextureStages* stages, u32* indices) {
     GXSetNumTexGens(stages->stageCount);
     image = indices;
     for (stage = 0; stage < (s32)stages->stageCount; image++, stage++) {
-        GXSetTexCoordGen2(stage, GX_TG_MTX3X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+        GXSetTexCoordGen2(stage, GX_TG_MTX2X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
         if (stage != 0) {
             GXSetTevColorIn(stage, GX_CC_CPREV, GX_CC_TEXC, GX_CC_RASA, GX_CC_ZERO);
             GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);

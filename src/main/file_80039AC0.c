@@ -8,10 +8,8 @@
 #include "stl/stdlib.h"
 
 extern OSThread* GXGetCurrentGXThread(void);
-extern void DrawSprite_TexObj(SpriteVertex* verts, TexDesc* tex);
 extern void SetDisplayStateTexture(void* object, s32 map, s32 b);
 extern void fn_800A7D4C(s32 list, void* node);
-extern void fn_800B24D4(u32);
 extern void fn_800BD1E8(void (*func)(Mtx, s32*, s32*, s32*, u8*, u8*));
 
 extern TexDesc lbl_800F7A40;
@@ -121,7 +119,7 @@ void fn_80039AC0(void) {
                 v[3].s = s + 0x80;
                 v[3].t = t0;
                 do {
-                    DrawSprite_TexObj(v, &lbl_800F7A40);
+                    DrawSprite_TexObj((struct QuadState*)v, (struct SpriteTexInfo*)&lbl_800F7A40);
                     lbl_803C5090.repeat -= (lbl_803C5090.repeat != 0);
                 } while (lbl_803C5090.repeat != 0);
                 s += 0x80;
@@ -159,7 +157,7 @@ void fn_80039AC0(void) {
         v[3].s = 0x400;
         v[3].t = 0;
         do {
-            DrawSprite_TexObj(v, &lbl_800F7A40);
+            DrawSprite_TexObj((struct QuadState*)v, (struct SpriteTexInfo*)&lbl_800F7A40);
             lbl_803C5090.repeat -= (lbl_803C5090.repeat != 0);
         } while (lbl_803C5090.repeat != 0);
     }
@@ -269,7 +267,7 @@ void fn_8003A37C(Mtx mtx, s32* stage, s32* coord, s32* map, u8* count, u8* texMt
     GXSetTevColorOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     GXSetTevAlphaIn(*stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
     GXSetTevAlphaOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-    GXSetTexCoordGen2(*coord, GX_TG_MTX2X4, GX_TG_POS, *texMtx * 3 + GX_TEXMTX0, GX_FALSE, GX_PTIDENTITY);
+    GXSetTexCoordGen2(*coord, GX_TG_MTX3X4, GX_TG_POS, *texMtx * 3 + GX_TEXMTX0, GX_FALSE, GX_PTIDENTITY);
     GXLoadTexMtxImm(mtx, *texMtx * 3 + GX_TEXMTX0, GX_MTX3x4);
     (*count)++;
     (*texMtx)++;
