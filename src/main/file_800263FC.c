@@ -34,6 +34,7 @@ extern const MtxBox lbl_800E67C0; // identity
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB800;
 extern f32 lbl_803CB80C;
+extern const Vec lbl_800E6790;    // (0, -1, 0)
 extern const Vec lbl_800E67A8[2]; // (1, 0, 0), (0, 0, 0)
 extern s32 lbl_803CB7F8;          // respawn delay mask
 extern f32 lbl_803CB7FC;          // respawn angle spread (0..1)
@@ -248,6 +249,7 @@ s32 fn_8002E828(Emitter* e);
 s32 fn_8002ECA0(Emitter* e);
 s32 fn_80031034(Emitter* e);
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
+void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 s32 fn_80029CC8(Emitter* e);
 
 // .text:0x800263FC size:0x59C
@@ -1009,9 +1011,84 @@ void fn_80030470(void) {
 }
 
 // .text:0x80030720 size:0x668
-void fn_80030720(void) {
-    return;
+// NONMATCHING 60%: float register allocation and scheduling
+#if NONMATCHING
+void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm) {
+    Mtx rot;
+    Mtx base;
+    Quaternion q;
+    Vec up;
+    Vec dirN;
+    Vec axis;
+    Vec v;
+    f32 mag;
+    f32 yaw;
+    f32 lo;
+    f32 half;
+    f32 speed;
+    f32 a;
+    f32 sn;
+    f32 cs;
+    s32 i;
+    Particle* p = e->particles;
+
+    up = lbl_800E6790;
+    e->tex = prm->tex;
+    PSVECNormalize(dir, &dirN);
+    PSVECCrossProduct(&up, &dirN, &axis);
+    mag = PSVECMag(&axis);
+    for (i = 0; i < e->count; i++) {
+        if (i & 1) {
+            // odd particles mirror the previous one
+            yaw = -yaw;
+        } else {
+            if (0.0f == mag) {
+                PSMTXIdentity(base);
+            } else {
+                lo = (6.2831855f * ((f32)prm->unk38 / 100000.0f)) / 360.0f;
+                half = ((6.2831855f * ((f32)prm->unk3C / 100000.0f)) / 360.0f - lo) * 0.5f;
+                C_QUATRotAxisRad(&q, &axis, -((half * (f32)(8 - rand() % 16)) * 0.125f + (lo + half)));
+                PSMTXQuat(base, &q);
+            }
+            yaw = ((6.2831855f * ((f32)prm->unk34 / 100000.0f)) / 360.0f) * (f32)(8 - rand() % 16) * 0.125f;
+        }
+        PSMTXRotRad(rot, 'Y', yaw);
+        PSMTXConcat(rot, base, rot);
+        PSMTXMultVec(rot, &dirN, &v);
+        p->pos.x = pos->x;
+        p->pos.y = pos->y;
+        p->pos.z = pos->z;
+        speed = ((f32)prm->unk10 / 100000.0f) *
+                (0.02 * lbl_803CB800 * (rand() % 256) * 0.00390625 + (1.0f - 0.01f * lbl_803CB800));
+        p->u.t5.vel.x = v.x * speed;
+        p->u.t5.vel.y = v.y;
+        p->u.t5.vel.z = v.z * speed;
+        p->u.t5.unk34 = 0.0f;
+        a = (((f32)prm->unk30 / 100000.0f) * 3.1415927f / 180.0f) * (f32)(0x80 - rand() % 256) * 0.0078125f +
+            ((f32)prm->unk44 / 100000.0f) * 3.1415927f / 180.0f;
+        sn = sin(a);
+        cs = cos(a);
+        p->sizeX = ((f32)prm->unkC / 100000.0f) * (sn - cs);
+        p->sizeY = ((f32)prm->unkC / 100000.0f) * (cs + sn);
+        p->u.t5.unk1C = 0.01f * (f32)(8 - rand() % 16) + (f32)prm->unkC / 100000.0f;
+        p->u.t5.unk20 = (f32)prm->unk20 / 100000.0f;
+        p->u.t5.unk24 = (f32)prm->unk24 / 100000.0f;
+        p->u.t5.unk2C = prm->unk18 - prm->unk1C;
+        p->u.t5.unk28 = ((f32)prm->unk14 / 100000.0f) *
+                        (0.02 * lbl_803CB800 * (rand() % 256) * 0.00390625 + (1.0f - 0.01f * lbl_803CB800));
+        p->color.rgba = prm->unk40;
+        p->u.t5.unk30 = prm->unk2C;
+        p->u.t5.unk34 = (f32)prm->unk48 / 100000.0f;
+        p->colorStep.v[0] = prm->unk4C;
+        p->life = p->delay = prm->unk18;
+        p->unk4C = 1;
+        p->uvFrame = 0;
+        p->texIndex = prm->texIndex;
+        p->uvOrder = prm->unk28;
+        p = p->next;
+    }
 }
+#endif
 
 // .text:0x80030D88 size:0x2AC
 void fn_80030D88(void) {
