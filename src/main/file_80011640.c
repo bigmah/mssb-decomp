@@ -775,7 +775,14 @@ void fn_8001CB10(LightSrc* src, s32 count) {
 
 // .text:0x8001CBD4 size:0xF4
 void fn_8001CBD4(void) {
-    return;
+    s32 stadium;
+
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        stadium = g_d_GameSettings.StadiumID + 7;
+    } else {
+        stadium = g_d_GameSettings.StadiumID;
+    }
+    fn_8001CA40(stadium);
 }
 
 // .text:0x8001CCC8 size:0x1AC
