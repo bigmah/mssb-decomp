@@ -40,7 +40,6 @@ extern u8* lbl_803CC1B8;
 extern u8 g_Fielders[];
 extern u8 LoadModel(void*);
 extern void fn_800B0A14_removeQueue(void*);
-typedef struct { Vec pos; f32 u; f32 v; u8 pad[0x28]; f32 t; } PathPt; /* size 0x40 */
 #pragma dont_inline on
 
 static inline void CamsResetUp(void);
@@ -156,9 +155,59 @@ void fn_3_FCF20(void) {
 }
 
 // .text:0x000FCF24 size:0x4E4 mapped:0x8073BFB8
+// NONMATCHING 75%: indexing/addressing schedule differs (original uses indexed stfsx/lwzx forms).
+// Builds the camera path: for each window of 4 keys, samples a cubic B-spline (mode 0) or Catmull-Rom (mode 1)
+// into the PathPt array. Per-segment sample counts live in the table at +0x128.
+#if NONMATCHING
 void fn_3_FCF24(void) {
-    return;
+    s32 total = 0;
+    s32 i;
+    for (i = 0; i < *(s32*)(lbl_3_common_bss_DE94 + 0x20) - 3; i++) {
+        SplineCtrl* c;
+        s32 j;
+        s32 k;
+        for (j = 0; j < 4; j++) {
+            for (k = 0; k < 5; k++) {
+                (*(SplineCtrl**)(lbl_3_common_bss_DE94 + 0x1C))[i + j].v[k] = (*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[i + j].v[k];
+            }
+        }
+        *(s32*)(lbl_3_common_bss_DE94 + 0x38) = ((s32*)(lbl_3_common_bss_DE94 + 0x128))[i];
+        c = &(*(SplineCtrl**)(lbl_3_common_bss_DE94 + 0x1C))[i];
+        if (c[1].v[0] == c[2].v[0] && c[2].v[0] == c[3].v[0] && c[1].v[1] == c[2].v[1] && c[2].v[1] == c[3].v[1] &&
+            c[1].v[2] == c[2].v[2] && c[2].v[2] == c[3].v[2]) {
+            ((s32*)(lbl_3_common_bss_DE94 + 0x128))[i] = 0;
+            *(s32*)(lbl_3_common_bss_DE94 + 0x38) = 0;
+        }
+        for (j = 0; j < *(s32*)(lbl_3_common_bss_DE94 + 0x38); j++) {
+            f32 t = (f32)j / (f32)*(s32*)(lbl_3_common_bss_DE94 + 0x38);
+            f32 t2 = t * t;
+            f32 t3 = t2 * t;
+            f32* out = (f32*)&(*(PathPt**)(lbl_3_common_bss_DE94 + 0x34))[total];
+            if (*(s32*)(lbl_3_common_bss_DE94 + 0x44) == 0) {
+                f32 w0 = -1.0f * t3 + 3.0f * t2 - 3.0f * t + 1.0f;
+                f32 w1 = 3.0f * t3 - 6.0f * t2 + 4.0f;
+                f32 w2 = -3.0f * t3 + 3.0f * t2 + 3.0f * t + 1.0f;
+                f32 w3 = t3;
+                for (k = 0; k < 5; k++) {
+                    c = &(*(SplineCtrl**)(lbl_3_common_bss_DE94 + 0x1C))[i];
+                    out[k] = (w0 * c[0].v[k] + w1 * c[1].v[k] + w2 * c[2].v[k] + w3 * c[3].v[k]) / 6.0f;
+                }
+            } else {
+                f32 w0 = -1.0f * t3 + 2.0f * t2 - t;
+                f32 w1 = 3.0f * t3 - 5.0f * t2 + 2.0f;
+                f32 w2 = -3.0f * t3 + 4.0f * t2 + t;
+                f32 w3 = t3 - t2;
+                for (k = 0; k < 5; k++) {
+                    c = &(*(SplineCtrl**)(lbl_3_common_bss_DE94 + 0x1C))[i];
+                    out[k] = (w0 * c[0].v[k] + w1 * c[1].v[k] + w2 * c[2].v[k] + w3 * c[3].v[k]) * 0.5f;
+                }
+            }
+            total++;
+        }
+    }
+    *(s32*)(lbl_3_common_bss_DE94 + 0x3C) = total;
 }
+#endif
 
 // .text:0x000FD408 size:0xD4 mapped:0x8073C49C
 void fn_3_FD408(u32 i, void* out, f32* uv) {

@@ -3,6 +3,11 @@
 
 #include "mssbTypes.h"
 
+/* Replay camera path types (rep_3090). Pointers to arrays of these live in the camera script state. */
+typedef struct { struct { f32 x, y, z; } pos; f32 u; f32 v; u8 pad[0x28]; f32 t; } PathPt; /* size 0x40 */
+typedef struct { u8 pad0[4]; f32 v[5]; u8 pad18[0x20 - 0x18]; } SplineKey; /* size 0x20 */
+typedef struct { f32 v[5]; u8 pad14[0x34 - 0x14]; } SplineCtrl; /* size 0x34 */
+
 void fn_3_FC448(void);
 void fn_3_FC938(void);
 s32 fn_3_FCE38(s32 i, f32 t);
