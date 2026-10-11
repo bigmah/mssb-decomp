@@ -62,12 +62,12 @@ typedef struct {
 // Debug viewer camera (lbl_1_bss_6B7C).
 typedef struct ChallengeCamera {
     /*0x00*/ Mtx view;
-    /*0x30*/ s16 rotX;
-    /*0x32*/ s16 rotY;
+    /*0x30*/ u16 rotX;
+    /*0x32*/ u16 rotY;
     /*0x34*/ f32 panX;
     /*0x38*/ f32 panY;
-    /*0x3C*/ Vec eye;
-    /*0x48*/ Vec target;
+    /*0x3C*/ Vec target;
+    /*0x48*/ Vec pos;
     /*0x54*/ u8 pad54[8];
 } ChallengeCamera;
 
@@ -114,6 +114,10 @@ void fn_1_1D514(void);
 void fn_1_1B038(void);
 
 void fn_1_1ADA4(void);
+
+void fn_1_1B424(void);
+
+void fn_1_1B6BC(void);
 
 void fn_1_1B0FC(void);
 

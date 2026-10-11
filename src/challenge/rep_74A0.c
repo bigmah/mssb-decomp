@@ -177,12 +177,12 @@ extern const f32 lbl_1_rodata_760C;
 void fn_1_1B6BC(void) {
     Mtx44 proj;
     ChallengeCamera* st = &lbl_1_bss_6B7C;
+    st->pos.x = lbl_1_rodata_7520;
+    st->pos.y = lbl_1_rodata_75F0;
+    st->pos.z = lbl_1_rodata_7520;
     st->target.x = lbl_1_rodata_7520;
-    st->target.y = lbl_1_rodata_75F0;
-    st->target.z = lbl_1_rodata_7520;
-    st->eye.x = lbl_1_rodata_7520;
-    st->eye.y = lbl_1_rodata_7520;
-    st->eye.z = lbl_1_rodata_75F4;
+    st->target.y = lbl_1_rodata_7520;
+    st->target.z = lbl_1_rodata_75F4;
     C_MTXFrustum(proj, lbl_1_rodata_752C, lbl_1_rodata_7530, lbl_1_rodata_7534, lbl_1_rodata_7538, lbl_1_rodata_753C, lbl_1_rodata_7540);
     GXSetProjection(proj, GX_PERSPECTIVE);
     fn_800B806C(0, lbl_1_rodata_75F8, lbl_1_rodata_75FC, lbl_1_rodata_7600, lbl_1_rodata_7604, lbl_1_rodata_7608, lbl_1_rodata_7550, lbl_1_rodata_760C);
@@ -338,3 +338,55 @@ void fn_1_1ADA4(void) {
         GXColor4u8(0, 0xFF, 0, 0xC8);
     }
 }
+
+void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
+extern Vec lbl_1_data_FB0C;
+extern const Vec lbl_1_rodata_74F4;
+extern const f32 lbl_1_rodata_75E0;
+extern const f32 lbl_1_rodata_75E4;
+extern const f32 lbl_1_rodata_75E8;
+extern const f32 lbl_1_rodata_75EC;
+
+// fn_1_1B424, size:0x298
+// Debug viewer: orbit/pan the camera with the pad (Z held = freeze) and build the view matrix.
+// NONMATCHING 83%: everything after the pad block matches; the pad reads/int->float conversions are scheduled differently
+#if NONMATCHING
+void fn_1_1B424(void) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx rot;
+    Vec angles;
+    Vec offset = lbl_1_rodata_74F4;
+    ChallengePad* pad = (ChallengePad*)&lbl_803C77B8;
+    ChallengeCamera* cam;
+    f32 sideX;
+    f32 sideZ;
+
+    if (!(lbl_803C77B8._00 & 0x10 /* Z */)) {
+        cam = &lbl_1_bss_6B7C;
+        cam->pos.y += pad->triggerR * lbl_1_rodata_75E8;
+        cam->rotX -= pad->substickY;
+        cam->rotY += pad->substickX;
+        cam->panX = pad->stickX / lbl_1_rodata_75E0;
+        cam->panY = pad->stickY * lbl_1_rodata_75E4;
+        cam->pos.y -= pad->triggerL * lbl_1_rodata_75E8;
+    }
+    angles.x = lbl_1_bss_6B7C.rotX;
+    angles.y = lbl_1_bss_6B7C.rotY;
+    angles.z = lbl_1_rodata_7520;
+    PSVECScale(&angles, lbl_1_rodata_75EC, &angles);
+    PSMTXRotRad(rotX, 'X', angles.x);
+    PSMTXRotRad(rotY, 'Y', angles.y);
+    sideZ = rotY[0][2];
+    sideX = rotY[0][0];
+    PSMTXConcat(rotY, rotX, rot);
+    PSMTXMultVec(rot, &offset, &lbl_1_bss_6B7C.target);
+    cam = &lbl_1_bss_6B7C;
+    cam->pos.x += cam->panY * sideZ - cam->panX * sideX;
+    cam->pos.z += cam->panY * sideX + cam->panX * sideZ;
+    cam->target.x += cam->pos.x;
+    cam->target.y += cam->pos.y;
+    cam->target.z += cam->pos.z;
+    makeLookAtMatrix(cam->view, &cam->pos, &lbl_1_data_FB0C, &cam->target);
+}
+#endif
