@@ -316,8 +316,8 @@ void fn_800B2B54(GameActor* actor, u16 bone, u8 value) {
 }
 
 // .text:0x800B2B6C size:0x8
-void Set_FUN_800b2b6c(void) {
-    return;
+void Set_FUN_800b2b6c(GameActor* actor, s32 value) {
+    actor->unk88 = value;
 }
 
 // .text:0x800B2B74 size:0x34
