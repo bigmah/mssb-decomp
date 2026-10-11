@@ -1100,11 +1100,11 @@ void fn_3_9B74(void) {
     } else {
         v = g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z + g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x;
     }
-    if (v < -5.0f) {
+    if (v < -20.0f) {
         g_Ball.howFoulTheBallWillBe = 3;
-    } else if (v < -20.0f) {
-        g_Ball.howFoulTheBallWillBe = 2;
     } else if (v < -10.0f) {
+        g_Ball.howFoulTheBallWillBe = 2;
+    } else if (v < -5.0f) {
         g_Ball.howFoulTheBallWillBe = 1;
     } else {
         g_Ball.howFoulTheBallWillBe = 0;
@@ -1115,11 +1115,11 @@ void fn_3_9B74(void) {
             a = -a;
         }
         v = g_Ball.ballWillHitBallPos.z - a;
-        if (v < -5.0f) {
+        if (v < -20.0f) {
             g_Ball.howFoulTheBallWillBe = 3;
-        } else if (v < -20.0f) {
-            g_Ball.howFoulTheBallWillBe = 2;
         } else if (v < -10.0f) {
+            g_Ball.howFoulTheBallWillBe = 2;
+        } else if (v < -5.0f) {
             g_Ball.howFoulTheBallWillBe = 1;
         } else {
             g_Ball.howFoulTheBallWillBe = 0;
