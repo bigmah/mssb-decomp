@@ -63,7 +63,26 @@ def disasm(obj: Path, out: Path) -> None:
     )
 
 
-def extract(asm: Path, fn_name: str) -> list:
+LITERAL_SECTIONS = (".sdata2", ".rodata")
+
+
+def literal_names(asm: Path) -> set:
+    """Names of objects the target defines in its own .sdata2/.rodata (float/string literals).
+    Our build emits these as anonymous @NNN, so they are compared as DATA on both sides."""
+    names, sec = set(), None
+    for line in asm.read_text().splitlines():
+        s = line.strip()
+        if s.startswith(".section"):
+            sec = s.split()[1].rstrip(",")
+        elif s in (".text", ".data", ".rodata", ".bss", ".sdata", ".sbss", ".sdata2", ".sbss2"):
+            sec = s
+        elif s.startswith(".obj ") and sec in LITERAL_SECTIONS:
+            names.add(s.split()[1].rstrip(",").strip('"'))
+    return names
+
+
+def extract(asm: Path, fn_name: str, literals: set = frozenset()) -> list:
+    lit_re = re.compile(r"\b(?:" + "|".join(map(re.escape, sorted(literals))) + r")\b") if literals else None
     lines = []
     inside = False
     for line in asm.read_text().splitlines():
@@ -73,6 +92,8 @@ def extract(asm: Path, fn_name: str) -> list:
             line = COMMENT_RE.sub("", line)
             line = LOCAL_LABEL_RE.sub("L", line)
             line = ANON_DATA_RE.sub("DATA", line)
+            if lit_re:
+                line = lit_re.sub("DATA", line)
             lines.append(line.rstrip())
             if line.startswith(f".endfn {fn_name}"):
                 break
@@ -103,8 +124,9 @@ def diff_fn(fn_name: str, unit_name: str, quiet: bool = False, full: bool = Fals
         disasm(target, target_s)
     disasm(base, base_s)
 
-    t = extract(target_s, fn_name)
-    b = extract(base_s, fn_name)
+    literals = literal_names(target_s)
+    t = extract(target_s, fn_name, literals)
+    b = extract(base_s, fn_name, literals)
     if not t:
         sys.exit(f"{fn_name} not found in target object {target}")
     if not b:
