@@ -1225,16 +1225,16 @@ void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* lay
     dispObj->shaderFunc = NULL;
     dispObj->shaderData = NULL;
     dispObj->unk15 = layout->unk15;
-    memcpy(dispObj->unk54[1], layout->unk1C[1], 4);
-    memcpy(dispObj->unk54[0], layout->unk1C[0], 4);
-    memcpy(dispObj->unk54[3], layout->unk1C[3], 4);
-    memcpy(dispObj->unk54[2], layout->unk1C[2], 4);
-    memcpy(dispObj->unk54[5], layout->unk1C[5], 4);
-    memcpy(dispObj->unk54[4], layout->unk1C[4], 4);
+    memcpy(&dispObj->bounds[1], &layout->bounds[1], 4);
+    memcpy(&dispObj->bounds[0], &layout->bounds[0], 4);
+    memcpy(&dispObj->bounds[3], &layout->bounds[3], 4);
+    memcpy(&dispObj->bounds[2], &layout->bounds[2], 4);
+    memcpy(&dispObj->bounds[5], &layout->bounds[5], 4);
+    memcpy(&dispObj->bounds[4], &layout->bounds[4], 4);
 }
 
 // .text:0x800BCAB8 size:0x8C
-void DOGet(struct DODisplayObj** dispObj, DODisplayDataPtr pal, u16 id, char* name) {
+void DOGet(struct DODisplayObj** dispObj, DODisplayDataPtr pal, u16 id) {
     DODisplayLayout* layout;
 
     if (id >= pal->numDescriptors) {
@@ -1411,12 +1411,12 @@ void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj) {
     dispObj->tevCallback = fn_800BA44C;
     dispObj->shaderFunc = NULL;
     dispObj->shaderData = NULL;
-    memcpy(dispObj->unk54[1], layout->unk1C[1], 4);
-    memcpy(dispObj->unk54[0], layout->unk1C[0], 4);
-    memcpy(dispObj->unk54[3], layout->unk1C[3], 4);
-    memcpy(dispObj->unk54[2], layout->unk1C[2], 4);
-    memcpy(dispObj->unk54[5], layout->unk1C[5], 4);
-    memcpy(dispObj->unk54[4], layout->unk1C[4], 4);
+    memcpy(&dispObj->bounds[1], &layout->bounds[1], 4);
+    memcpy(&dispObj->bounds[0], &layout->bounds[0], 4);
+    memcpy(&dispObj->bounds[3], &layout->bounds[3], 4);
+    memcpy(&dispObj->bounds[2], &layout->bounds[2], 4);
+    memcpy(&dispObj->bounds[5], &layout->bounds[5], 4);
+    memcpy(&dispObj->bounds[4], &layout->bounds[4], 4);
     return skinPositions;
 }
 

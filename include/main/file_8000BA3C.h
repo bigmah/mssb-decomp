@@ -40,10 +40,22 @@ typedef struct QuadVtx {
 
 // Texture info record in a sprite bank (0x20 bytes, starting at bank + 4).
 typedef struct SpriteTexInfo {
-    /* 0x00 */ u8 pad0[8];
+    /* 0x00 */ void* image;
+    /* 0x04 */ void* tlut;      // palette, NULL if none
     /* 0x08 */ u16 height;
     /* 0x0A */ u16 width;
-    /* 0x0C */ u8 padC[0x10];
+    /* 0x0C */ u8 wrapS;        // GXTexWrapMode
+    /* 0x0D */ u8 wrapT;
+    /* 0x0E */ u8 minFilter;    // GXTexFilter
+    /* 0x0F */ u8 magFilter;
+    /* 0x10 */ f32 lodBias;
+    /* 0x14 */ u8 pad14;
+    /* 0x15 */ u8 minLod;
+    /* 0x16 */ u8 maxLod;
+    /* 0x17 */ u8 format;       // GXTexFmt
+    /* 0x18 */ u16 tlutCount;   // palette entries
+    /* 0x1A */ u8 tlutFormat;   // GXTlutFmt
+    /* 0x1B */ u8 pad1B;
     /* 0x1C */ u16 texIndex; // index of the record holding the image
     /* 0x1E */ u8 pad1E[2];
 } SpriteTexInfo;

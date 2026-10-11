@@ -54,7 +54,7 @@ typedef struct {
     /* 0x15 */ u8 unk15;
     /* 0x16 */ u16 pad16;
     /* 0x18 */ void *unk18;
-    /* 0x1C */ u8 unk1C[6][4];
+    /* 0x1C */ f32 bounds[6]; // copied into DODisplayObj.bounds
 } DODisplayLayout; // size 0x34 (MSSB layout)
 
 // Per-object TEV setup callback (fn_800BA44C is the default), called from Custom_SetState.
@@ -74,7 +74,7 @@ struct DODisplayObj {
     /* 0x48 */ DOTevCallback tevCallback;
     /* 0x4C */ void *shaderFunc; // GXTexObj* of the sphere-map (environment) texture, see Custom_SetState
     /* 0x50 */ void *shaderData; // GXTexObj* of the projected shadow texture, see Custom_SetState
-    /* 0x54 */ u8 unk54[6][4];
+    /* 0x54 */ f32 bounds[6]; // bounding box: x {0x54, 0x58}, y {0x5C, 0x60}, z {0x64, 0x68}
 }; // size 0x6C (MSSB layout)
 
 typedef struct {
@@ -118,7 +118,7 @@ struct sHdr *GEOGetPalette(DODisplayDataPtr *pal, char *name);
 void GEOReleasePalette(DODisplayDataPtr *pal);
 u32 GEOGetUserDataSize(DODisplayDataPtr pal);
 char *GEOGetUserData(DODisplayDataPtr pal);
-void DOGet(struct DODisplayObj **dispObj, DODisplayDataPtr pal, u16 id, char *name);
+void DOGet(struct DODisplayObj **dispObj, DODisplayDataPtr pal, u16 id);
 
 // normalTable.c
 extern u8 normalTableQuantizeInfo;

@@ -1,9 +1,9 @@
 #include "main/file_800BD3EC.h"
 #include "main/file_800B9974.h"
-#include "main/file_800BDEA0.h"
 #include "Dolphin/gx.h"
 
 extern void* _OSAllocFromHeap(s32 align, s32 size);
+extern void* fn_800BF068(void); // declared in main/file_800BDEA0.h, whose SKNIt prototype clashes with C3/skinning.h
 // TODO: move to file_800B2C44.h once fn_800B3A78 (DORender-like, variadic) has C there
 extern void fn_800B3A78(struct DODisplayObj* dispObj, MtxPtr camera, u8 numArgs, ...);
 
@@ -29,7 +29,7 @@ void fn_800BD478(Actor** actor, ActorLayoutFile* layout) {
     struct DODisplayObj* obj;
 
     for (i = 0; i < layout->header.totalBones; i++) {
-        if (layout->bones[i].pad16 & 0x18) {
+        if (layout->bones[i].flags & 0x18) {
             for (j = 0; j < (*actor)->totalBones; j++) {
                 if (layout->bones[i].boneID == (*actor)->boneArray[j]->boneID) {
                     if (layout->bones[i].geoFileID != 0xFFFF) {

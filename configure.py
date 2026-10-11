@@ -698,7 +698,7 @@ config.libs = [
             Object(NonMatching, "main/file_800639BC.c"),
             Object(NonMatching, "main/file_80069BDC.c"),
             Object(NonMatching, "main/file_80091450.c"),
-            Object(NonMatching, "main/file_800A1A70.c"),
+            Object(NonMatching, "main/file_800A1A70.c", mw_version="GC/1.2.5n", cflags=cflags_base),  # Dolphin SDK GD library
             Object(NonMatching, "main/file_800A6870.c"),
             Object(NonMatching, "main/file_800A7C08.c"),
             Object(NonMatching, "main/file_800ADC40.c"),
