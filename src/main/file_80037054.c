@@ -731,9 +731,167 @@ void fn_80038F08(CharModelObj* obj, Model* model, u8 joint) {
 #endif
 
 // .text:0x80039310 size:0x73C
+// NONMATCHING 98%: float register allocation differs (the original keeps one more callee-saved FPR, f24)
+#if NONMATCHING
 void fn_80039310(BatSim* bat, f32 floorY, f32 minEnergy) {
-    return;
+    Mtx rotM;
+    Mtx m2;
+    Mtx m3;
+    Quaternion q;
+    Vec t;
+    Vec acc;
+    Vec w;
+    Vec k;
+    Vec imp;
+    Quaternion q2;
+    Vec up;
+    Vec b;
+    Vec a;
+    f32 invIx = lbl_803CC73C / bat->inertia.x;
+    f32 invIy = lbl_803CC73C / bat->inertia.y;
+    f32 invIz = lbl_803CC73C / bat->inertia.z;
+    f32 dt = lbl_803CC720 * lbl_803CB81C;
+    f32 mag;
+    f32 half;
+    f32 inv;
+    f32 y;
+    f32 energy;
+    f32 sn;
+    f32 cs;
+    s32 i;
+
+    mag = PSVECMag(&bat->angVel);
+    if (mag >= lbl_803CC77C) {
+        PSVECScale(&bat->angVel, lbl_803CC77C / mag, &bat->angVel);
+    }
+
+    // linear motion (midpoint step with gravity)
+    half = lbl_803CC72C * dt;
+    PSVECScale(&bat->vel, half, &t);
+    PSMTXTransApply(bat->mtx, bat->mtx, t.x, t.y, t.z);
+    PSVECScale(&bat->vel, lbl_803CC72C * -dt, &t);
+    PSVECAdd(&bat->vel, &t, &bat->vel);
+    bat->vel.y = lbl_803CC750 * dt + bat->vel.y;
+    PSVECScale(&bat->vel, half, &t);
+    PSMTXTransApply(bat->mtx, bat->mtx, t.x, t.y, t.z);
+
+    // angular motion (Euler equations, 4 sub-steps)
+    memcpy(&w, &bat->angVel, sizeof(Vec));
+    memset(&acc, 0, sizeof(Vec));
+    k.x = invIx * (bat->inertia.y - bat->inertia.z);
+    k.y = invIy * (bat->inertia.z - bat->inertia.x);
+    k.z = invIz * (bat->inertia.x - bat->inertia.y);
+    PSVECScale(&k, dt, &k);
+    for (i = 0; i < 4; i++) {
+        t.y = k.y * (w.z * w.x - lbl_803CC780 * w.y);
+        t.x = k.x * (w.y * w.z - lbl_803CC780 * w.x);
+        t.z = k.z * (w.x * w.y - lbl_803CC780 * w.z);
+        if (i == 1 || i == 2) {
+            PSVECScale(&t, lbl_803CC754, &t);
+        }
+        PSVECAdd(&acc, &t, &acc);
+        PSVECScale(&t, lbl_803CC72C, &w);
+    }
+    PSVECScale(&acc, lbl_803CC784, &t);
+    PSVECAdd(&bat->angVel, &t, &bat->angVel);
+
+    mag = PSVECMag(&bat->angVel);
+    inv = lbl_803CC73C / mag;
+    if (mag > lbl_803CC788) {
+        half = lbl_803CC72C * (-mag * dt);
+        acc.x = sin(half);
+        acc.y = cos(half);
+        PSVECScale(&bat->angVel, inv * acc.x, (Vec*)&q);
+        q.w = acc.y;
+    } else {
+        q.w = lbl_803CC73C;
+        q.z = lbl_803CC728;
+        q.y = lbl_803CC728;
+        q.x = lbl_803CC728;
+    }
+    PSMTXQuat(rotM, &q);
+    PSMTXConcat(bat->mtx, rotM, bat->mtx);
+
+    // collision of both ends with the ground
+    for (i = 0; i < 2; i++) {
+        PSMTXMultVec(bat->mtx, &bat->ends[i], &t);
+        y = t.y;
+        if (y > floorY) {
+            PSMTXCopy(bat->mtx, m2);
+            m2[2][3] = lbl_803CC728;
+            m2[1][3] = lbl_803CC728;
+            m2[0][3] = lbl_803CC728;
+            PSVECCrossProduct(&bat->angVel, &bat->ends[i], &t);
+            PSMTXMultVec(m2, &t, &t);
+            PSVECAdd(&bat->vel, &t, &t);
+            imp.x = t.x;
+            imp.y = lbl_803CC78C * -t.y;
+            imp.z = t.z;
+            acc.x = lbl_803CC728;
+            acc.y = lbl_803CC75C;
+            acc.z = lbl_803CC728;
+            PSMTXMultVec(m2, &bat->ends[i], &w);
+            PSMTXScale(m2, invIx, invIy, invIz);
+            PSMTXConcat(bat->mtx, m2, m2);
+            PSMTXTranspose(bat->mtx, rotM);
+            PSMTXConcat(m2, rotM, m2);
+            PSVECCrossProduct(&w, &acc, &t);
+            PSMTXMultVec(m2, &t, &t);
+            PSVECCrossProduct(&t, &w, &t);
+            imp.y = imp.y / (lbl_803CC790 + PSVECDotProduct(&t, &acc));
+            imp.x = imp.x * lbl_803CC794;
+            imp.z = imp.z * lbl_803CC794;
+            bat->vel.y = bat->vel.y + imp.y / lbl_803CC798;
+            bat->vel.x = bat->vel.x + imp.x;
+            bat->vel.z = bat->vel.z + imp.z;
+            PSMTXTranspose(bat->mtx, rotM);
+            rotM[2][3] = lbl_803CC728;
+            rotM[1][3] = lbl_803CC728;
+            rotM[0][3] = lbl_803CC728;
+            PSMTXMultVec(rotM, &imp, &t);
+            PSVECCrossProduct(&bat->ends[i], &t, &t);
+            acc.x = bat->angVel.x * bat->inertia.x;
+            acc.y = bat->angVel.y * bat->inertia.y;
+            acc.z = bat->angVel.z * bat->inertia.z;
+            PSVECAdd(&acc, &t, &t);
+            bat->angVel.x = t.x * invIx;
+            bat->angVel.y = t.y * invIy;
+            bat->angVel.z = t.z * invIz;
+            bat->mtx[1][3] = bat->mtx[1][3] - (y - floorY);
+            lbl_803CBCA1 = 1;
+        }
+    }
+
+    // come to rest when the energy is low enough
+    energy = lbl_803CC72C * (bat->vel.x * bat->vel.x + bat->vel.y * bat->vel.y + bat->vel.z * bat->vel.z) +
+             lbl_803CC72C * (bat->angVel.x * (bat->inertia.x * bat->angVel.x) + bat->angVel.y * (bat->inertia.y * bat->angVel.y) +
+                             bat->angVel.z * (bat->inertia.z * bat->angVel.z));
+    if (bat->mtx[1][3] > lbl_803CC728) {
+        energy = bat->mtx[1][3] * lbl_803CC750 + energy;
+    } else {
+        energy = energy - bat->mtx[1][3] * lbl_803CC750;
+    }
+    if (energy <= minEnergy) {
+        bat->mtx[1][3] = floorY;
+        bat->angVel.x = bat->angVel.y = bat->angVel.z = bat->vel.x = bat->vel.y = bat->vel.z = lbl_803CC728;
+        PSMTXMultVec(bat->mtx, &bat->ends[0], &a);
+        PSMTXMultVec(bat->mtx, &bat->ends[1], &b);
+        PSVECSubtract(&a, &b, &a);
+        half = lbl_803CC72C * (f32)sin(a.y / PSVECMag(&a));
+        sn = sin(half);
+        cs = cos(half);
+        up.x = lbl_803CC728;
+        up.y = lbl_803CC75C;
+        up.z = lbl_803CC728;
+        PSVECCrossProduct(&up, &a, &a);
+        PSVECScale(&a, sn / PSVECMag(&a), (Vec*)&q2);
+        q2.w = cs;
+        PSMTXQuat(m3, &q2);
+        PSMTXConcat(m3, bat->mtx, m3);
+        PSMTXCopy(m3, bat->mtx);
+    }
 }
+#endif
 
 // .text:0x80039A4C size:0x5C
 void fn_80039A4C(void) {
