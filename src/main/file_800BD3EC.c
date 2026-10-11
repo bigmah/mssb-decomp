@@ -23,8 +23,26 @@ void LITAlloc(Light** light) {
 }
 
 // .text:0x800BD478 size:0xD0
-void fn_800BD478(void) {
-    return;
+void fn_800BD478(Actor** actor, ActorLayoutFile* layout) {
+    s32 j;
+    s32 i;
+    struct DODisplayObj* obj;
+
+    for (i = 0; i < layout->header.totalBones; i++) {
+        if (layout->bones[i].pad16 & 0x18) {
+            for (j = 0; j < (*actor)->totalBones; j++) {
+                if (layout->bones[i].boneID == (*actor)->boneArray[j]->boneID) {
+                    if (layout->bones[i].geoFileID != 0xFFFF) {
+                        obj = (*actor)->boneArray[j]->dispObj;
+                        if (obj != NULL) {
+                            fn_800BC824(obj, *(void**)((u8*)fn_800BF068() + 8)); // TODO type
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
 
 // .text:0x800BD548 size:0x128
