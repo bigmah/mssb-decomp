@@ -32,7 +32,7 @@ void fn_3_BC54(void);
 void fn_3_BD78(void);
 void fn_3_C034(void);
 void fn_3_C9F4(void);
-void estimateAndSetFutureCoords(int);
+void estimateAndSetFutureCoords(int mode);
 void fn_3_D9EC(void);
 void fn_3_DBD0(void);
 void fn_3_DC48(BOOL fromPitcher);

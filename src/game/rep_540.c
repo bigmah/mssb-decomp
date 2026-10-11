@@ -29,7 +29,7 @@ extern Fielder540 g_Fielders[9];
 // physicsSubstruct.startOfWallJumpChecksMaybe[33] (contiguous VecXYZ).
 #define BALL_PAST(i) (g_Ball.pastCoordinates[i])
 
-extern u8 lbl_3_data_450C[];
+extern f32 lbl_3_data_450C[2]; // ball start x, z
 extern f32 lbl_3_data_4428[];
 extern f32 lbl_3_data_4930[];
 extern int fn_3_51DF0(f32 x, f32 z); // infield zone of point (x, z)
@@ -46,12 +46,12 @@ typedef struct {
     f32 f0, f4, f8, fC, f10;
 } Row4388;
 extern Row4388 lbl_3_data_4388[];
-extern u8 lbl_3_data_4414[];
+extern Row4388 lbl_3_data_4414; // bounce factors for game mode 6 surfaces 0x70-0x78
 extern int fn_3_B7E10(f32, f32);
 extern void fn_3_8C5C8(void);
 extern u8 lbl_3_data_4444[];
-extern u8 lbl_3_data_4604[];
-extern u8 lbl_3_data_4608;
+extern f32 lbl_3_data_4604; // min bounce speed
+extern u8 lbl_3_data_4608; // min bounce count before stopping
 extern int fn_3_B7DD8(f32, f32);
 extern f64 lbl_3_rodata_600;
 extern void fn_3_88D88(s32);
@@ -391,16 +391,16 @@ void fn_3_8CF0(f32* p, s32 n, u8* flag, s32 skip) {
         fn_3_27648();
     } else if (g_d_GameSettings.GameModeSelected == 6 && low >= 0x70 && low < 0x79) {
         if (n == 0) {
-            *p *= *(f32*)(lbl_3_data_4414 + 0);
+            *p *= lbl_3_data_4414.f0;
         } else {
-            *p *= *(f32*)(lbl_3_data_4414 + 4);
+            *p *= lbl_3_data_4414.f4;
         }
     } else if (n == 0) {
         *p *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f0;
     } else {
         *p *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f4;
     }
-    if (*flag == 0 && *p < *(f32*)(lbl_3_data_4604) && n >= lbl_3_data_4608) {
+    if (*flag == 0 && *p < lbl_3_data_4604 && n >= lbl_3_data_4608) {
         *flag = 1;
     }
     if (*flag != 0) {
@@ -513,11 +513,11 @@ void fn_3_9508(void) {
         g_Ball.knockoutProcessedFlag = 0;
     } else if (g_d_GameSettings.GameModeSelected == 6 && low >= 0x70 && low < 0x79) {
         if (flag != 0) {
-            g_Ball.physicsSubstruct.velocity.x *= *(f32*)(lbl_3_data_4414 + 0x10);
-            g_Ball.physicsSubstruct.velocity.z *= *(f32*)(lbl_3_data_4414 + 0x10);
+            g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_4414.f10;
+            g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_4414.f10;
         } else {
-            g_Ball.physicsSubstruct.velocity.x *= *(f32*)(lbl_3_data_4414 + 0xC);
-            g_Ball.physicsSubstruct.velocity.z *= *(f32*)(lbl_3_data_4414 + 0xC);
+            g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_4414.fC;
+            g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_4414.fC;
         }
     } else if (flag != 0) {
         VecXYZ* a = &g_Ball.physicsSubstruct.velocity;
@@ -585,8 +585,8 @@ void fn_3_9808(void) {
         g_Ball.knockoutProcessedFlag = 0;
     } else if (g_d_GameSettings.GameModeSelected == 6 && low >= 0x70 && low < 0x79) {
         g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy = 0;
-        g_Ball.physicsSubstruct.velocity.x *= *(f32*)(lbl_3_data_4414 + 8);
-        g_Ball.physicsSubstruct.velocity.z *= *(f32*)(lbl_3_data_4414 + 8);
+        g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_4414.f8;
+        g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_4414.f8;
     } else {
         VecXYZ* a = &g_Ball.physicsSubstruct.velocity;
         f32 m = lbl_3_data_4388[g_d_GameSettings.StadiumID].f8;
@@ -1444,9 +1444,277 @@ void fn_3_C9F4(void) {
 }
 
 // .text:0x0000CE28 size:0xBC4 mapped:0x8064BEBC
-void estimateAndSetFutureCoords(int) {
-    return;
+// Simulate the ball's flight (with bounces) and record 360 future positions.
+// mode 0: live ball, 1: after a bounce, 2: fresh hit (also classifies it).
+// NONMATCHING 93.6%: regalloc; flag tests (u8 vs int) and fmadds contraction differ
+#if NONMATCHING
+void estimateAndSetFutureCoords(int mode) {
+    s32 frame = 1;
+    u8 bounces = 0;
+    s32 pastApex = 0;
+    s32 landed = 0;
+    u8 stopped = 0;
+    u8 secondBall = 0;
+    f32 x, y, z;
+    f32 vx, vy, vz;
+    f32 ax, ay, az;
+    f32 drag;
+    f32 px, py, pz;
+    f32 t, rest, bounceVy;
+    s32 surface;
+    s32 i;
+    CoordAndDist* fc;
+    do {
+        if (mode == 1) {
+            bounces = g_Ball.framesOnGroundUntilPickedUp;
+        }
+        if (mode == 2) {
+            x = g_Pitcher._30.x;
+            y = g_Pitcher._30.y;
+            z = g_Pitcher._30.z;
+        } else if (g_Ball.warioWaluGarlicIsActive != 0) {
+            if (secondBall) {
+                x = g_Ball.warioStarHitCoords[2].x;
+                y = g_Ball.warioStarHitCoords[2].y;
+                z = g_Ball.warioStarHitCoords[2].z;
+            } else {
+                x = g_Ball.warioStarHitCoords[1].x;
+                y = g_Ball.warioStarHitCoords[1].y;
+                z = g_Ball.warioStarHitCoords[1].z;
+            }
+        } else {
+            x = g_Ball.AtBat_Contact_BallPos.x;
+            y = g_Ball.AtBat_Contact_BallPos.y;
+            z = g_Ball.AtBat_Contact_BallPos.z;
+        }
+        if (g_Ball.warioWaluGarlicIsActive != 0) {
+            if (secondBall) {
+                vx = g_Ball.warioStarHitCoords[14].x;
+                vy = g_Ball.warioStarHitCoords[14].y;
+                vz = g_Ball.warioStarHitCoords[14].z;
+            } else {
+                vx = g_Ball.warioStarHitCoords[13].x;
+                vy = g_Ball.warioStarHitCoords[13].y;
+                vz = g_Ball.warioStarHitCoords[13].z;
+            }
+        } else {
+            vx = g_Ball.physicsSubstruct.velocity.x;
+            vy = g_Ball.physicsSubstruct.velocity.y;
+            vz = g_Ball.physicsSubstruct.velocity.z;
+        }
+        ax = g_Ball.physicsSubstruct.acceleration.x;
+        ay = g_Ball.physicsSubstruct.acceleration.y;
+        az = g_Ball.physicsSubstruct.acceleration.z;
+        drag = 1.0f - (f32)g_Ball.airResistance / 10000.0f;
+        if (!secondBall) {
+            g_Ball.physicsSubstruct.futureCoordsAndDist[0].pos.x = x;
+            g_Ball.physicsSubstruct.futureCoordsAndDist[0].pos.y = y;
+            g_Ball.physicsSubstruct.futureCoordsAndDist[0].pos.z = z;
+            // note: stored at [frame] (1), not [0]; overwritten below
+            g_Ball.physicsSubstruct.futureCoordsAndDist[frame].dist = sqrt540(x * x + z * z);
+            if (0.0f == g_Ball.physicsSubstruct.velocity.x && 0.0f == g_Ball.physicsSubstruct.velocity.y &&
+                0.0f == g_Ball.physicsSubstruct.velocity.z) {
+                stopped = 1;
+            }
+            if (g_Ball.AtBat_ContactResult != 0) {
+                landed = 1;
+            }
+        }
+        fc = &g_Ball.physicsSubstruct.futureCoordsAndDist[frame];
+        for (;;) {
+            px = x;
+            py = y;
+            pz = z;
+            vy -= g_Ball.physicsSubstruct.gravity;
+            if (!pastApex && !landed && vy < 0.0f) {
+                if (g_Ball.maxYOfHit < y) {
+                    g_Ball.maxYOfHit = y;
+                }
+                pastApex = 1;
+            }
+            vy = vy * drag + ay;
+            vx = vx * drag + ax;
+            vz = vz * drag + az;
+            y += vy;
+            x += vx;
+            z += vz;
+            if (y < g_Ball.groundYForBounces) {
+                t = (py - g_Ball.groundYForBounces) / (py - y);
+                x = t * (x - px) + px;
+                rest = 1.0f - t;
+                z = t * (z - pz) + pz;
+                bounceVy = -vy;
+                if (secondBall) {
+                    g_Ball.peachDaisyStarHitFielderLoc.x = x;
+                    g_Ball.peachDaisyStarHitFielderLoc.z = z;
+                    return;
+                }
+                if (!landed) {
+                    // first landing
+                    g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x = x;
+                    g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z = z;
+                    g_Ball.landingSpotAngle = fn_3_9FB8C(x, z);
+                    if (mode == 0) {
+                        g_Ball.landingSpotLocation.x = x;
+                        g_Ball.landingSpotLocation.z = z;
+                    } else if (mode == 1 && g_Ball.AtBat_ContactResult == 0) {
+                        g_Ball.landingSpotLocation.x = x;
+                        g_Ball.landingSpotLocation.z = z;
+                    }
+                    if (g_Ball.AtBat_ContactResult == 0) {
+                        g_Ball.hangtimeOfHit = frame + g_Ball.framesSinceHit;
+                    }
+                    landed = 1;
+                    g_Ball.framesUntilBallHitsGround = frame;
+                    if (g_Ball.AtBat_ContactResult == 0) {
+                        surface = g_Ball.collisionCode & 0x7F;
+                        vx *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f8;
+                        vz *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f8;
+                        if (g_d_GameSettings.GameModeSelected == 6 && surface >= 0x70 && surface < 0x79) {
+                            vy = bounceVy * lbl_3_data_4414.f0;
+                        } else {
+                            vy = bounceVy * lbl_3_data_4388[g_d_GameSettings.StadiumID].f0;
+                        }
+                        if (!stopped && vy < lbl_3_data_4604 && 0 >= lbl_3_data_4608) {
+                            stopped = 1;
+                        }
+                        if (stopped) {
+                            vy = 0.0f;
+                        }
+                    } else {
+                        surface = g_Ball.collisionCode & 0x7F;
+                        if (g_d_GameSettings.GameModeSelected == 6 && surface >= 0x70 && surface < 0x79) {
+                            if (bounces == 0) {
+                                vy = bounceVy * lbl_3_data_4414.f0;
+                            } else {
+                                vy = bounceVy * lbl_3_data_4414.f4;
+                            }
+                        } else if (bounces == 0) {
+                            vy = bounceVy * lbl_3_data_4388[g_d_GameSettings.StadiumID].f0;
+                        } else {
+                            vy = bounceVy * lbl_3_data_4388[g_d_GameSettings.StadiumID].f4;
+                        }
+                        if (!stopped && vy < lbl_3_data_4604 && bounces >= lbl_3_data_4608) {
+                            stopped = 1;
+                        }
+                        if (stopped) {
+                            vy = 0.0f;
+                        }
+                        if (g_d_GameSettings.GameModeSelected == 6 && surface >= 0x70 && surface < 0x79) {
+                            if (stopped) {
+                                vx *= lbl_3_data_4414.f10;
+                                vz *= lbl_3_data_4414.f10;
+                            } else {
+                                vx *= lbl_3_data_4414.fC;
+                                vz *= lbl_3_data_4414.fC;
+                            }
+                        } else if (stopped) {
+                            vx *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f10;
+                            vz *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f10;
+                        } else {
+                            vx *= lbl_3_data_4388[g_d_GameSettings.StadiumID].fC;
+                            vz *= lbl_3_data_4388[g_d_GameSettings.StadiumID].fC;
+                        }
+                    }
+                } else {
+                    // later bounces (same as fn_3_8CF0 / fn_3_9508)
+                    surface = g_Ball.collisionCode & 0x7F;
+                    if (g_d_GameSettings.GameModeSelected == 6 && surface >= 0x70 && surface < 0x79) {
+                        if (bounces == 0) {
+                            vy = bounceVy * lbl_3_data_4414.f0;
+                        } else {
+                            vy = bounceVy * lbl_3_data_4414.f4;
+                        }
+                    } else if (bounces == 0) {
+                        vy = bounceVy * lbl_3_data_4388[g_d_GameSettings.StadiumID].f0;
+                    } else {
+                        vy = bounceVy * lbl_3_data_4388[g_d_GameSettings.StadiumID].f4;
+                    }
+                    if (!stopped && vy < lbl_3_data_4604 && bounces >= lbl_3_data_4608) {
+                        stopped = 1;
+                    }
+                    if (stopped) {
+                        vy = 0.0f;
+                    }
+                    if (g_d_GameSettings.GameModeSelected == 6 && surface >= 0x70 && surface < 0x79) {
+                        if (stopped) {
+                            vx *= lbl_3_data_4414.f10;
+                            vz *= lbl_3_data_4414.f10;
+                        } else {
+                            vx *= lbl_3_data_4414.fC;
+                            vz *= lbl_3_data_4414.fC;
+                        }
+                    } else if (stopped) {
+                        vx *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f10;
+                        vz *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f10;
+                    } else {
+                        vx *= lbl_3_data_4388[g_d_GameSettings.StadiumID].fC;
+                        vz *= lbl_3_data_4388[g_d_GameSettings.StadiumID].fC;
+                    }
+                }
+                x = vx * rest + x;
+                z = vz * rest + z;
+                bounces++;
+                ax *= 0.5f;
+                az *= 0.5f;
+                y = vy * rest + (0.005f + g_Ball.groundYForBounces);
+            }
+            if (frame < 360 && !secondBall) {
+                fc->pos.x = x;
+                fc->pos.y = y;
+                fc->pos.z = z;
+                fc->dist = fc->pos.x * fc->pos.x + fc->pos.z * fc->pos.z;
+                if (mode == 0 && g_Ball.someYCoord < 0.0f && fc->dist > 1089.0f) {
+                    g_Ball.someYCoord = fc->pos.y;
+                }
+            }
+            fc++;
+            frame++;
+            if (landed && frame >= 360) {
+                break;
+            }
+        }
+        for (frame = 0; frame < 360; frame++) {
+            g_Ball.physicsSubstruct.futureCoordsAndDist[frame].dist = sqrt540(g_Ball.physicsSubstruct.futureCoordsAndDist[frame].dist);
+        }
+        if (mode == 0 && g_Ball.someYCoord < 0.0f) {
+            g_Ball.someYCoord = 0.0f;
+        }
+        if (g_Ball.AtBat_ContactResult == 0) {
+            g_Ball.physicsSubstruct.hitLandingSpotDistFromHome = sqrt540(
+                g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x * g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x +
+                g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z * g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z);
+            if (mode == 2) {
+                fn_3_DC48(TRUE);
+            }
+            if (g_Ball.framesUntilBallHitsGround < 360) {
+                for (frame = g_Ball.framesUntilBallHitsGround; frame > 0; frame--) {
+                    if (g_Ball.physicsSubstruct.futureCoordsAndDist[frame].pos.y > 1.3f) {
+                        g_Ball._1B98 = frame;
+                        break;
+                    }
+                }
+                if (frame == 0) {
+                    g_Ball._1B98 = -1;
+                }
+            } else {
+                g_Ball._1B98 = 0;
+            }
+        }
+        if (mode == 2) {
+            fn_3_C034();
+        }
+        if (g_Ball.warioWaluGarlicIsActive == 0 || g_Ball.matchFramesAndBallAngle.garlicHitFramesSinceSplit != 1) {
+            return;
+        }
+        // garlic hit just split: simulate the second ball too
+        pastApex = 0;
+        landed = 0;
+        stopped = 0;
+        secondBall = 1;
+    } while (1);
 }
+#endif
 
 // .text:0x0000D9EC size:0x1E4 mapped:0x8064CA80
 void fn_3_D9EC(void) {
@@ -1678,9 +1946,9 @@ void fn_3_EE4C(void) {
 #if NONMATCHING
 void fn_3_F1DC(void) {
     s32 i;
-    g_Ball.AtBat_Contact_BallPos.x = *(f32*)(lbl_3_data_450C + 0);
+    g_Ball.AtBat_Contact_BallPos.x = lbl_3_data_450C[0];
     g_Ball.AtBat_Contact_BallPos.y = 0.0f;
-    g_Ball.AtBat_Contact_BallPos.z = *(f32*)(lbl_3_data_450C + 4);
+    g_Ball.AtBat_Contact_BallPos.z = lbl_3_data_450C[1];
     if (g_Minigame.GameMode_MiniGame == 6) {
         g_Ball.AtBat_Contact_BallPos.x = 0.0f;
         g_Ball.AtBat_Contact_BallPos.z = 0.0f;
@@ -1783,9 +2051,9 @@ void fn_3_F1DC(void) {
 // .text:0x0000F578 size:0x240 mapped:0x8064E60C
 void fn_3_F578(void) {
     s32 i;
-    g_Ball.AtBat_Contact_BallPos.x = *(f32*)(lbl_3_data_450C + 0);
+    g_Ball.AtBat_Contact_BallPos.x = lbl_3_data_450C[0];
     g_Ball.AtBat_Contact_BallPos.y = 0.0f;
-    g_Ball.AtBat_Contact_BallPos.z = *(f32*)(lbl_3_data_450C + 4);
+    g_Ball.AtBat_Contact_BallPos.z = lbl_3_data_450C[1];
     if (g_Minigame.GameMode_MiniGame == 6) {
         g_Ball.AtBat_Contact_BallPos.x = 0.0f;
         g_Ball.AtBat_Contact_BallPos.z = 0.0f;
@@ -1809,9 +2077,9 @@ void fn_3_F578(void) {
 // .text:0x0000F7B8 size:0x240 mapped:0x8064E84C
 void fn_3_F7B8(void) {
     s32 i;
-    g_Ball.AtBat_Contact_BallPos.x = *(f32*)(lbl_3_data_450C + 0);
+    g_Ball.AtBat_Contact_BallPos.x = lbl_3_data_450C[0];
     g_Ball.AtBat_Contact_BallPos.y = 0.0f;
-    g_Ball.AtBat_Contact_BallPos.z = *(f32*)(lbl_3_data_450C + 4);
+    g_Ball.AtBat_Contact_BallPos.z = lbl_3_data_450C[1];
     if (g_Minigame.GameMode_MiniGame == 6) {
         g_Ball.AtBat_Contact_BallPos.x = 0.0f;
         g_Ball.AtBat_Contact_BallPos.z = 0.0f;
@@ -1835,9 +2103,9 @@ void fn_3_F7B8(void) {
 // .text:0x0000F9F8 size:0x1B0 mapped:0x8064EA8C
 void fn_3_F9F8(void) {
     s32 i;
-    g_Ball.AtBat_Contact_BallPos.x = *(f32*)(lbl_3_data_450C + 0);
+    g_Ball.AtBat_Contact_BallPos.x = lbl_3_data_450C[0];
     g_Ball.AtBat_Contact_BallPos.y = 0.0f;
-    g_Ball.AtBat_Contact_BallPos.z = *(f32*)(lbl_3_data_450C + 4);
+    g_Ball.AtBat_Contact_BallPos.z = lbl_3_data_450C[1];
     if (g_Minigame.GameMode_MiniGame == 6) {
         g_Ball.AtBat_Contact_BallPos.x = 0.0f;
         g_Ball.AtBat_Contact_BallPos.z = 0.0f;
@@ -1860,9 +2128,9 @@ void fn_3_F9F8(void) {
 void fn_3_FBA8(void) {
     s32 i;
     s32 t;
-    g_Ball.AtBat_Contact_BallPos.x = *(f32*)(lbl_3_data_450C + 0);
+    g_Ball.AtBat_Contact_BallPos.x = lbl_3_data_450C[0];
     g_Ball.AtBat_Contact_BallPos.y = 0.0f;
-    g_Ball.AtBat_Contact_BallPos.z = *(f32*)(lbl_3_data_450C + 4);
+    g_Ball.AtBat_Contact_BallPos.z = lbl_3_data_450C[1];
     if (g_Minigame.GameMode_MiniGame == 6) {
         g_Ball.AtBat_Contact_BallPos.x = 0.0f;
         g_Ball.AtBat_Contact_BallPos.z = 0.0f;
