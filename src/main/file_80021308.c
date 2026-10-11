@@ -163,8 +163,12 @@ void fn_8002149C(s32 group) {
 }
 
 // .text:0x800214D0 size:0x48
-void fn_800214D0(void) {
-    return;
+s32 fn_800214D0(void) {
+    if (sndPopGroup() == 0) {
+        return 0;
+    }
+    lbl_800EF808.groupStackCount--;
+    return 1;
 }
 
 // .text:0x80021518 size:0x74
