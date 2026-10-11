@@ -193,7 +193,22 @@ void fn_800E2898(HVQState* state, u8* dst, s32 stride, HVQIpicCtx* ctx) {
 
 // .text:0x800E29DC size:0xD4
 void fn_800E29DC(HVQState* state, u8* dst, s32 stride, HVQIpicCtx* ctx, s32 count) {
-    return;
+    s32 i;
+
+    ctx->next = *ctx->cur;
+    ctx->left = ctx->cur->value;
+    for (i = count - 1; i > 0; i--) {
+        ctx->curBlk = ctx->next;
+        ctx->next = *++ctx->cur;
+        fn_800E2898(state, dst, stride, ctx);
+        dst += 4;
+    }
+    // last block: its right neighbour is itself; skip the border to the next row
+    ctx->curBlk = ctx->next;
+    ctx->cur += 3;
+    fn_800E2898(state, dst, stride, ctx);
+    ctx->above += 2;
+    ctx->below += 2;
 }
 
 // .text:0x800E2AB0 size:0xDC
