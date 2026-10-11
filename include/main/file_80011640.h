@@ -343,7 +343,7 @@ u8 LoadModel(CharActor* actor);
 void fn_8001B5EC(s32 index, s32 enable);
 void fn_8001D180(s32 index, s32 which, s32 enable);
 void fn_800189E4(void);
-void fn_8001DD58(CharModel* model, s32 pass, s32 a, s32 b, ...);
+void fn_8001DD58(CharModel* model, s32 pass, MtxPtr view, s32 n, ...);
 
 s32 fn_8001B35C(s32 index, s32 kind);
 void fn_80019A60(void);
@@ -355,7 +355,7 @@ void fn_8001CCC8(void);
 void fn_8001DB74(CharSlotList* list);
 
 void fn_8001CE74(void);
-void fn_8001DEA4(CharSlot* slot, s32 pass, s32 a);
+void fn_8001DEA4(CharSlot* slot, s32 pass, MtxPtr view);
 
 s32 fn_80017340(s32 actorIdx);
 void fn_80018024(void);
@@ -381,6 +381,9 @@ void fn_80018270(s32 mode);
 void fn_8001C234(u32* doneMask);
 void fn_8001F5E8(void);
 void fn_8001BA44(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
+
+void fn_8001E0D8(CharSlotList* list, s32 pass, Mtx view);
+void fn_8001E488(void);
 
 void fn_8001B200(void);
 

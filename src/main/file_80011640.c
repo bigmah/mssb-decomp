@@ -110,8 +110,8 @@ extern CharPart* lbl_803CBC10;
 extern u8 lbl_803CBC14;
 extern u8 lbl_803CBC15;
 extern void* _OSAllocFromHeap(s32 heap, u32 size);
-extern void DOVARender(void* display, s32 a, s32 b, va_list args);
-extern void DOVARenderSkin(void* display, s32 a, void* p, void* q, s32 b);
+extern void DOVARender(void* display, MtxPtr view, s32 n, va_list args);
+extern void DOVARenderSkin(void* display, MtxPtr view, void* p, void* q, s32 n);
 extern void DOSetWorldMatrix(void* display, MtxPtr mtx);
 extern void fn_800BD2DC(void);
 extern void fn_800BD2CC(s32 channel, GXColor color);
@@ -167,6 +167,9 @@ extern void fn_8004B208(CharActor* actor, s16 anim, s32 a, f32 t);
 extern CharSlotList* ActorObjectInitTable(s32 count);
 extern void fn_800BDC88(CharSlotList* list, u16 first, u16 last, void* layout, s32 a, s32 b);
 extern void fn_800B2B4C(CharModel* model, f32 v);
+extern void fn_800B9948(s32 value);
+extern void fn_800B993C(void);
+extern CharActor* lbl_803CBC18;
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -3057,33 +3060,33 @@ void fn_8001DB74(CharSlotList* list) {
 // .text:0x8001DD58 size:0x14C
 // NONMATCHING 98%: register allocation only
 #if NONMATCHING
-void fn_8001DD58(CharModel* model, s32 pass, s32 a, s32 b, ...) {
+void fn_8001DD58(CharModel* model, s32 pass, MtxPtr view, s32 n, ...) {
     va_list args;
     CharJoint* joint;
 
     if (model->flags & (1 << (pass * 3))) {
         if (model->display != NULL) {
             GXInvalidateVtxCache();
-            va_start(args, b);
+            va_start(args, n);
             if (model->_7C != NULL) {
-                DOVARender(model->display, a, b, args);
+                DOVARender(model->display, view, n, args);
             } else {
-                DOVARenderSkin(model->display, a, model->_64, model->_68, b);
+                DOVARenderSkin(model->display, view, model->_64, model->_68, n);
             }
         }
         for (joint = model->firstJoint; joint != NULL; joint = joint->next) {
             if (joint->display != NULL) {
                 DOSetWorldMatrix(joint->display, joint->worldMtx);
             }
-            va_start(args, b);
-            DOVARender(joint->display, a, b, args);
+            va_start(args, n);
+            DOVARender(joint->display, view, n, args);
         }
     }
 }
 #endif
 
 // .text:0x8001DEA4 size:0x234
-void fn_8001DEA4(CharSlot* slot, s32 pass, s32 a) {
+void fn_8001DEA4(CharSlot* slot, s32 pass, MtxPtr view) {
     CharModel* model = slot->model;
 
     if (slot->callback != NULL) {
@@ -3091,39 +3094,81 @@ void fn_8001DEA4(CharSlot* slot, s32 pass, s32 a) {
     }
     switch (slot->lightCount) {
     case 0:
-        fn_8001DD58(model, pass, a, 0);
+        fn_8001DD58(model, pass, view, 0);
         break;
     case 1:
-        fn_8001DD58(model, pass, a, 1, slot->lights[0]);
+        fn_8001DD58(model, pass, view, 1, slot->lights[0]);
         break;
     case 2:
-        fn_8001DD58(model, pass, a, 2, slot->lights[0], slot->lights[1]);
+        fn_8001DD58(model, pass, view, 2, slot->lights[0], slot->lights[1]);
         break;
     case 3:
-        fn_8001DD58(model, pass, a, 3, slot->lights[0], slot->lights[1], slot->lights[2]);
+        fn_8001DD58(model, pass, view, 3, slot->lights[0], slot->lights[1], slot->lights[2]);
         break;
     case 4:
-        fn_8001DD58(model, pass, a, 4, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3]);
+        fn_8001DD58(model, pass, view, 4, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3]);
         break;
     case 5:
-        fn_8001DD58(model, pass, a, 5, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4]);
+        fn_8001DD58(model, pass, view, 5, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4]);
         break;
     case 6:
-        fn_8001DD58(model, pass, a, 6, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5]);
+        fn_8001DD58(model, pass, view, 6, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5]);
         break;
     case 7:
-        fn_8001DD58(model, pass, a, 7, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6]);
+        fn_8001DD58(model, pass, view, 7, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6]);
         break;
     case 8:
-        fn_8001DD58(model, pass, a, 8, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6], slot->lights[7]);
+        fn_8001DD58(model, pass, view, 8, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6], slot->lights[7]);
         break;
     }
 }
 
 // .text:0x8001E0D8 size:0x388
-void fn_8001E0D8(void) {
-    return;
+// NONMATCHING 99%: slot/loop-counter registers swapped
+#if NONMATCHING
+void fn_8001E0D8(CharSlotList* list, s32 pass, Mtx view) {
+    u8 last = 0xFF;
+    GXColor amb = lbl_800F7478[g_d_GameSettings._54].ambient;
+    GXColor c;
+    u16 i;
+    CharActor* actor;
+    CharSlot* slot;
+    Mtx m;
+
+    GXSetZMode(GX_ENABLE, GX_LEQUAL, GX_ENABLE);
+    GXSetCullMode(GX_CULL_BACK);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    for (i = 0; i < list->count; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor == NULL || actor->mode[0] == 2) {
+            continue;
+        }
+        slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+        if (slot->model == NULL || slot->_6C == 0) {
+            continue;
+        }
+        if (last != actor->_277) {
+            last = actor->_277;
+            if (0xFF - last != 0) {
+                amb.a = last;
+                if (last == 0) {
+                    continue;
+                }
+                c = amb;
+                fn_800BD2CC(1, c);
+            } else {
+                fn_800BD2CC(1, lbl_800F7478[g_d_GameSettings._54].ambient);
+            }
+        }
+        PSMTXTrans(m, actor->pos.x, actor->pos.y, actor->pos.z);
+        PSMTXConcat(view, m, m);
+        fn_800B9948(actor->_05C);
+        lbl_803CBC18 = actor;
+        fn_8001DEA4(slot, pass, m);
+    }
+    fn_800B993C();
 }
+#endif
 
 extern void* lbl_803CB7AC[2];
 
