@@ -121,5 +121,6 @@ void fn_80067C48(u8 team);
 void fn_80067F70(u8 team);
 s32 fn_800639BC(s8 idx, Vec* a, Vec* b);
 void unsure_FillRosterPositions(u8 team);
+void characterSelectScreen(u8 team);
 
 #endif

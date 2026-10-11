@@ -563,9 +563,150 @@ void unsure_FillRosterPositions(u8 team) {
 #endif
 
 // .text:0x80065DEC size:0x10C0
-void characterSelectScreen(void) {
-    return;
+// NONMATCHING 77%: the original inlines placeByClass, chemRank, copyCharacterStats and
+// fn_80066EAC; logic and calls otherwise line up
+#if NONMATCHING
+static void placeByClass(s8* field, s8 c) {
+    u8* pref = lbl_80109054[0][lbl_8034E9A0.roster[c / 9][c % 9].stats.CharacterClass];
+    s32 p;
+    u8 r;
+
+    for (p = 0; p < 5; p++) {
+        if (field[pref[p]] == -1) {
+            field[pref[p]] = c;
+            return;
+        }
+    }
+    do {
+        r = randRange_FUN_80042bf0(0, 8);
+    } while (field[r] != -1);
+    field[r] = c;
 }
+
+
+// Assigns field positions to a team's 9 players: the captain first, then the
+// captain-type characters and then the others in chemistry order, each at the
+// first free position preferred by its class. Then copies the players' stats
+// into inMemRoster in field-position order.
+void characterSelectScreen(u8 team) {
+    s16 charIds[9];
+    s8 field[9];
+    s8 captains[9];
+    s8 others[9];
+    u8 savedPos[10]; // [9] is read when a player is not found (as in the original)
+    u8 nc;
+    u8 no;
+    u8 isCaptain;
+    s32 i;
+    s32 k;
+    s32 a;
+    s32 b;
+    s32 rankA = 0;
+    s32 rankB = 0;
+    s8 c;
+    s8 t;
+
+    for (i = 0; i < 9; i++) {
+        others[i] = -1;
+        charIds[i] = inMemRoster[team][i].stats.CharID;
+        captains[i] = -1;
+        field[i] = -1;
+        savedPos[i] = lbl_803C6724.pos[team][i];
+    }
+
+    field[lbl_80109054[0][inMemRoster[team][0].stats.CharacterClass][0]] = inMemRoster[team][0].stats.CharID;
+    nc = 0;
+    for (i = 1; i < 9; i++) {
+        for (k = 0; k < 12; k++) {
+            if (lbl_80108EC4[k] == inMemRoster[team][i].stats.CharID) {
+                captains[nc++] = inMemRoster[team][i].stats.CharID;
+            }
+        }
+    }
+
+    if (captains[0] != -1) {
+        if (captains[1] == -1) {
+            placeByClass(field, captains[0]);
+        } else {
+            for (a = 0; a < 8; a++) {
+                if (captains[a] == -1) {
+                    break;
+                }
+                // NOTE: indexes the roster slot by character id (as in the original)
+                rankA = chemRank(team, inMemRoster[team][captains[a]].stats.CharID, rankA);
+                for (b = a + 1; b < 9; b++) {
+                    if (captains[b] == -1) {
+                        break;
+                    }
+                    rankB = chemRank(team, captains[b], rankB);
+                    if (rankA > rankB) {
+                        t = captains[b];
+                        captains[b] = captains[a];
+                        captains[a] = t;
+                    }
+                }
+            }
+            for (k = 0; k < 9; k++) {
+                if (captains[k] == -1) {
+                    break;
+                }
+                placeByClass(field, captains[k]);
+            }
+        }
+    }
+
+    no = 0;
+    for (i = 1; i < 9; i++) {
+        isCaptain = FALSE;
+        for (k = 0; k < 12; k++) {
+            if (lbl_80108EC4[k] == inMemRoster[team][i].stats.CharID) {
+                isCaptain = TRUE;
+            }
+        }
+        if (!isCaptain) {
+            others[no++] = inMemRoster[team][i].stats.CharID;
+        }
+    }
+    for (a = 0; a < 8; a++) {
+        if (others[a] == -1) {
+            break;
+        }
+        rankA = chemRank(team, others[a], rankA);
+        for (b = a + 1; b < 9; b++) {
+            if (others[b] == -1) {
+                break;
+            }
+            rankB = chemRank(team, others[b], rankB);
+            if (rankA > rankB) {
+                t = others[b];
+                others[b] = others[a];
+                others[a] = t;
+            }
+        }
+    }
+    for (k = 0; k < 9; k++) {
+        if (others[k] == -1) {
+            break;
+        }
+        placeByClass(field, others[k]);
+    }
+
+    for (i = 0; i < 9; i++) {
+        c = field[i];
+        copyCharacterStats(&inMemRoster[team][i], &lbl_8034E9A0.roster[c / 9][c % 9]);
+        fn_80066EAC(team);
+        lbl_80354720[team][i][0] = i;
+        lbl_80354720[team][i][1] = i;
+        for (k = 0; k < 9; k++) {
+            if (field[i] == charIds[k] && charIds[k] != -1) {
+                charIds[k] = -1;
+                break;
+            }
+        }
+        lbl_80354720[team][i][2] = savedPos[k];
+    }
+}
+#endif
 
 // .text:0x80066EAC size:0x1F4
 // NONMATCHING 95%: saved-register assignment of the roster pointers differs
