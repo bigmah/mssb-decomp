@@ -297,19 +297,20 @@ s32 fn_3_1EFE4(void) {
         return 0;
     }
     if (g_GameLogic.secondaryGameMode == 0xD) {
-        return fn_3_B0D2C();
-    }
-    if (g_AiLogic.aISwingDecisionRelated_noSwingOverride != 0) {
-        return 0;
-    }
-    if (g_Ball.pitchHangtimeCounter == 1) {
-        fn_3_1EAA8();
-    }
-    if (g_Pitcher.framesUntilBallReachesBatterZ == g_AiLogic.batterAIZPosition && fn_3_1E7F4() == 0) {
-        g_AiLogic.someNotAISwingInd = 1;
-    }
-    if (g_Ball.pitchHangtimeCounter == g_AiLogic.frameToStartSwing + 1 && g_AiLogic.frameToStartSwing != 0 && g_AiLogic.someNotAISwingInd == 0) {
-        g_AiLogic.batterAISwingInd = 1;
+        fn_3_B0D2C(); // result unused: the original falls through to the batterAISwingInd test
+    } else {
+        if (g_AiLogic.aISwingDecisionRelated_noSwingOverride != 0) {
+            return 0;
+        }
+        if (g_Ball.pitchHangtimeCounter == 1) {
+            fn_3_1EAA8();
+        }
+        if (g_Pitcher.framesUntilBallReachesBatterZ == g_AiLogic.batterAIZPosition && fn_3_1E7F4() == 0) {
+            g_AiLogic.someNotAISwingInd = 1;
+        }
+        if (g_Ball.pitchHangtimeCounter == g_AiLogic.frameToStartSwing + 1 && g_AiLogic.frameToStartSwing != 0 && g_AiLogic.someNotAISwingInd == 0) {
+            g_AiLogic.batterAISwingInd = 1;
+        }
     }
     return g_AiLogic.batterAISwingInd != 0;
 }
