@@ -65,7 +65,8 @@ extern MinigameBss32234View lbl_3_common_bss_32234;
 
 // View of lbl_803CBC3C, only the fields used here.
 typedef struct MinigameCBC3CView {
-    /*0x00*/ u8 _00[2];
+    /*0x00*/ u8 _00;
+    /*0x01*/ u8 _01;
     /*0x02*/ u8 _02;
 } MinigameCBC3CView;
 
@@ -81,6 +82,38 @@ typedef struct MinigameFielderView {
 extern MinigameFielderView g_Fielders[];
 
 void fn_3_59918(s32 x, s32 unused);
+
+// View of lbl_3_common_bss_34C90 (minigame pause / quit state), only the fields used here.
+typedef struct MinigameBss34C90View {
+    /*0x000*/ s32 port; // controller that paused
+    /*0x004*/ u16 buttonInput;
+    /*0x006*/ u16 newButtonInput;
+    /*0x008*/ s16 _08;
+    /*0x00A*/ u8 _0A[2];
+    /*0x00C*/ s16 pauseFrames;
+    /*0x00E*/ u8 _0E[4];
+    /*0x012*/ s16 _12;
+    /*0x014*/ u8 _14[0x1D2 - 0x14];
+    /*0x1D2*/ u8 _1D2;
+    /*0x1D3*/ u8 _1D3[2];
+    /*0x1D5*/ u8 paused;
+} MinigameBss34C90View;
+
+extern MinigameBss34C90View lbl_3_common_bss_34C90;
+
+// Points awarded per turn result (lbl_3_data_18BB8).
+typedef struct MinigamePointsAward {
+    /*0x0*/ s16 batter;
+    /*0x2*/ s16 pitcher;
+    /*0x4*/ s16 fielder;
+} MinigamePointsAward;
+
+void fn_3_10F3D8(void);
+void fn_3_10E60C(void);
+void fn_3_10B8D0(void);
+void fn_3_10A0A0(void);
+void fn_3_ACAF8(void);
+void fn_3_109254(void);
 
 // View of lbl_3_common_bss_37400, only the fields used here.
 typedef struct MinigameBss37400View {

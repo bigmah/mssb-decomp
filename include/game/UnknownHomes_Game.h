@@ -1501,6 +1501,11 @@ typedef enum _WALL_BALL_GAME_STATE {
     WALL_BALL_GAME_STATE_PITCH_OR_WAITING_FOR_PITCH = 2
 } WALL_BALL_GAME_STATE;
 
+typedef struct _MiniGamePointsPair {
+    /*0x0*/ s16 current;
+    /*0x2*/ s16 latest;
+} MiniGamePointsPair; // size: 0x4
+
 typedef struct _MiniGameRoleStreak {
     /*0x0*/ u8 role;
     /*0x1*/ u8 count;
@@ -1967,7 +1972,7 @@ typedef struct _MiniGameStruct {
     /*0x18AC*/ u8 pad12[12];
     /*0x18B8*/ s16 _18B8;
     /*0x18BA*/ s16 _18BA;
-    /*0x18BC*/ s32 minigamePoints_current_Latest[4];
+    /*0x18BC*/ MiniGamePointsPair minigamePoints_current_Latest[4];
     /*0x18CC*/ MiniGameControlStruct minigameControlStruct[1];
     /*0x18F8*/ s8 minigameFielderIndex[4];
     /*0x18FC*/ s8 _18FC[4];
