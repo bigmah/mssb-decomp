@@ -161,8 +161,58 @@ void fn_3_6B870(void) {
 }
 
 // .text:0x0006BA64 size:0x308 mapped:0x806AAAF8
-void fn_3_6BA64(void) {
-    return;
+s32 fn_3_6BA64(void) {
+    s32 k;
+    s32 next;
+    u8 mode;
+
+    if (lbl_3_common_bss_32724._9A == 0) {
+        lbl_8036E548._2D7A = 0;
+        lbl_8036E548._2D77 = 0;
+        lbl_3_common_bss_32724._9A = 1;
+    }
+    do {
+        k = 3 - lbl_8036E548._2D7A;
+        if (g_Runners[k].rosterID >= 0) {
+            if (fn_8001500C(g_GameLogic.teamBatting, g_Runners[k].rosterID, k + 9) == 0) {
+                return 0;
+            }
+        }
+    } while (++lbl_8036E548._2D7A < 4);
+
+    mode = g_d_GameSettings.GameModeSelected;
+    if (mode == 0 || mode == 4 || mode == 5 || (mode == 2 && g_GameLogic.secondaryGameMode == 0x10)) {
+        lbl_3_common_bss_32724._9E = g_Runners[0].charID;
+    } else if (mode == 2 && g_GameLogic.secondaryGameMode == 0xF) {
+        lbl_3_common_bss_32724._9E = lbl_3_data_FAA8[g_Practice.rosterID];
+    }
+    if (mode == 0 || mode == 4 || mode == 5 || (mode == 2 && g_GameLogic.secondaryGameMode == 0x10)) {
+        next = g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] + 1;
+        if (next > 9) {
+            next = 1;
+        }
+        lbl_3_common_bss_32724._A0 =
+            inMemRoster[g_GameLogic.teamBatting]
+                       [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][next][0]]
+                           .stats.CharID;
+    } else if (mode == 2 && g_GameLogic.secondaryGameMode == 0xF) {
+        next = g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam];
+        lbl_3_common_bss_32724._A0 =
+            inMemRoster[g_GameLogic.teamBatting]
+                       [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][next][0]]
+                           .stats.CharID;
+    }
+    if (mode == 0 || mode == 5 || mode == 4) {
+        next = g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] + 1;
+        if (next > 9) {
+            next = 1;
+        }
+        lbl_3_common_bss_32724._A2 =
+            inMemRoster[g_GameLogic.teamBatting]
+                       [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][next][0]]
+                           .stats.CharID;
+    }
+    return 1;
 }
 
 // .text:0x0006BD6C size:0x138 mapped:0x806AAE00
