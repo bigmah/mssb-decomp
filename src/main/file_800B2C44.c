@@ -348,8 +348,75 @@ s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u16 actorID) {
 }
 
 // .text:0x800B4084 size:0x1F4
-void fn_800B4084(void) {
-    return;
+// Creates the bones of one layout sibling chain (and their children) under parent.
+void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16* boneIndex, GameBone* boneMem) {
+    GameBone* bone;
+
+    for (; layoutBone != NULL; layoutBone = (ActorBone*)layoutBone->branch.Next) {
+        bone = &boneMem[*boneIndex];
+        bone->branch.Children = NULL;
+        DSInsertBranchBelow(&actor->hierarchy, (Ptr)parent, (Ptr)bone);
+        actor->boneArray[*boneIndex] = bone;
+        bone->boneID = layoutBone->boneID;
+        bone->inheritanceFlag = layoutBone->inheritanceFlag;
+        bone->drawingPriority = layoutBone->drawingPriority;
+        bone->orientationCtrl.base.type = 0;
+        if (layoutBone->orientationCtrl != NULL) {
+            bone->orientationCtrl = *(GameControl*)layoutBone->orientationCtrl;
+        }
+        bone->dispObj = NULL;
+        if (layoutBone->geoFileID != 0xFFFF) {
+            DOGet(&bone->dispObj, actor->pal, layoutBone->geoFileID);
+        }
+        bone->baseDispObj = bone->dispObj;
+        bone->animPipe = NULL;
+        bone->animCtrl.type = 0;
+        bone->blendCtrl.type = 0;
+        bone->flags = 1;
+        bone->unk136 = 0;
+        bone->rotAxis = 0;
+        bone->forwardMtx = actor->forwardMtxArray[*boneIndex];
+        PSMTXIdentity(bone->forwardMtx);
+        if (actor->skinObject != NULL) {
+            bone->skinMtx = actor->skinMtxArray[*boneIndex];
+            PSMTXIdentity(bone->skinMtx);
+            bone->orientationInvMtx = actor->orientationInvMtxArray[*boneIndex];
+            PSMTXIdentity(bone->orientationInvMtx);
+            if (actor->skinObject->lightingData != NULL) {
+                bone->skinInvTransposeMtx = actor->skinInvTransposeMtxArray[*boneIndex];
+                PSMTXIdentity(bone->skinInvTransposeMtx);
+            } else {
+                bone->skinInvTransposeMtx = NULL;
+            }
+        } else {
+            bone->skinMtx = NULL;
+            bone->orientationInvMtx = NULL;
+            bone->skinInvTransposeMtx = NULL;
+        }
+        (*boneIndex)++;
+        if (layoutBone->branch.Children != NULL) {
+            fn_800B4084(bone, (ActorBone*)layoutBone->branch.Children, actor, boneIndex, boneMem);
+        }
+    }
+}
+
+static inline void ReleaseDisplayObj(struct DODisplayObj* obj) {
+    if (obj->displayData != NULL) {
+        fn_800ACFB0(obj->displayData);
+    }
+    if (obj->lightingData != NULL) {
+        fn_800ACFB0(obj->lightingData);
+    }
+    if (obj->textureData != NULL) {
+        fn_800ACFB0(obj->textureData);
+    }
+    if (obj->colorData != NULL) {
+        fn_800ACFB0(obj->colorData);
+    }
+    if (obj->positionData != NULL) {
+        fn_800ACFB0(obj->positionData);
+    }
+    fn_800ACFB0(obj);
 }
 
 // .text:0x800B4278 size:0x128
