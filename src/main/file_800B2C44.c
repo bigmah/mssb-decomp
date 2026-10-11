@@ -318,8 +318,26 @@ u8 fn_800B3C04(void* frustum, GameActor* actor, Mtx camera) {
 }
 
 // .text:0x800B3F20 size:0x128
-void fn_800B3F20(void) {
-    return;
+// Moves the actor so that anchorBoneA lands where anchorBoneB mirrored about it was.
+void fn_800B3F20(GameActor* actor) {
+    Vec posA;
+    Vec posB;
+    Mtx world;
+
+    if (actor->anchorBoneA == actor->anchorBoneB) {
+        return;
+    }
+    CTRLBuildMatrix(&actor->worldControl.base, world);
+    if (actor->boneRemap != NULL) {
+        PSMTXConcat(world, lbl_80111640, world);
+    }
+    fn_800B34B4(actor, actor->boneArray[actor->anchorBoneA], world);
+    fn_800B34B4(actor, actor->boneArray[actor->anchorBoneB], world);
+    fn_800B2C44(actor, actor->anchorBoneB, &posB);
+    fn_800B2C44(actor, actor->anchorBoneA, &posA);
+    posA.x = posA.x - (posB.x - posA.x);
+    posA.z = posA.z - (posB.z - posA.z);
+    CTRLSetTranslation(&actor->worldControl.base, posA.x, posA.y, posA.z);
 }
 
 // .text:0x800B4048 size:0x3C
