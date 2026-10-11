@@ -176,7 +176,9 @@ typedef struct MsgTask {
 
 // Voice/text playback state owned by file_8004C5F8 (only the fields used here).
 typedef struct VoiceCtl {
-    /*0x00*/ u8 _00[0x1E];
+    /*0x00*/ u8 _00[0x3];
+    /*0x03*/ u8 state; // confirm dialog: 4 closed (ConfirmDialog in main/file_8004C5F8.h)
+    /*0x04*/ u8 _04[0x1E - 0x4];
     /*0x1E*/ u8 _1E;
 } VoiceCtl;
 

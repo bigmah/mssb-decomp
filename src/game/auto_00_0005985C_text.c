@@ -74,6 +74,12 @@ extern void fn_3_8FC80(void);
 extern s32 fn_80014F40(s32 id);
 extern s32 fn_80014D4C(s32 id);
 extern s32 fn_80014E50(s32 id);
+extern s32 fn_3_6B5D8(void);
+extern void fn_3_8C104(s32 v);
+extern void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, s16 value);
+extern void fn_8004CA48(s16 a, s16 b, s16 c, s16 d);
+extern s8 lbl_80353A90[0x108];
+extern u8 lbl_3_data_6130[0x3E0];
 extern s16 lbl_3_data_6074[4]; // AI difficulty per challenge difficulty
 // Bowser Jr. match starting situations: [home/away][difficulty][2]
 typedef struct {
@@ -2899,3 +2905,186 @@ void fn_3_6011C(void) {
         }
     }
 }
+
+// fn_3_5BD40, size:0x6D8
+// Post-game: results, coin rewards, MVP and scorebook screens.
+// NONMATCHING 97%: regalloc (_125 and the controller index kept in other registers); fn_3_5B41C and fn_3_5B220 are inlined by hand
+#if NONMATCHING
+void fn_3_5BD40(void) {
+    InputStruct* input = &g_Controls[lbl_80366158._27];
+    if (g_GameLogic._125 >= 3) {
+        s16* timer = (s16*)(lbl_3_common_bss_34C90 + 0x12); // TODO type
+        if (*timer < 0x7FFE) {
+            *timer += 1;
+        } else {
+            *timer = 0x7FFF;
+        }
+    }
+    switch (g_GameLogic._125) {
+    case 0:
+        lbl_3_common_bss_34C90[0x1DA] = 0;
+        lbl_3_common_bss_34C90[0x1DB] = 0;
+        lbl_3_common_bss_34C90[0x1D8] = 0;
+        *(s16*)(lbl_3_common_bss_34C90 + 0x12) = 0;
+        g_GameLogic.scoreBook_teamDisplayed = 0;
+        g_GameLogic.scoreBook_batter_pitcherStatsDisplayed = 0;
+        g_GameLogic.scoreBook_scrollIndex = 0;
+        g_GameLogic.scoreBook_logoFadeDirectionLeft_Right = 0;
+        g_GameLogic._118 = 0;
+        g_GameLogic._11A = -1;
+        if (g_d_GameSettings.exhibitionMatchInd == 0) {
+            // inlined fn_3_5B41C
+            s32 result = 2;
+            s32 margin;
+            if (g_Scores.winningTeam == 2) {
+                result = 1;
+            } else if (g_Scores.winningTeam == g_GameLogic._000) {
+                result = 0;
+            }
+            if (g_d_GameSettings.bJMatchInd == 0) {
+                g_d_GameSettings.challengeMinigame_baseCoinsEarned += lbl_3_data_607C.resultCoins[result];
+                margin = __abs(g_Scores.runs[g_GameLogic._000][0] - g_Scores.runs[g_GameLogic._000 ^ 1][0]);
+                if (result == 0) {
+                    g_d_GameSettings.challengeMinigame_baseCoinsEarned += margin * lbl_3_data_607C.winMarginPercent / 100;
+                } else if (result == 2) {
+                    g_d_GameSettings.challengeMinigame_baseCoinsEarned += margin * lbl_3_data_607C.lossMarginPercent / 100;
+                }
+                g_d_GameSettings.challengeMinigame_baseCoinsEarned += g_GameLogic.TeamStars[0] * lbl_3_data_607C.starPercent / 100;
+            } else {
+                g_d_GameSettings.challengeMinigame_baseCoinsEarned += lbl_3_data_607C.bjCoins[result];
+                g_d_GameSettings.bJMatchRelated += lbl_3_data_607C.bjPoints[result];
+            }
+        }
+        g_GameLogic._125 = 1;
+        break;
+    case 1:
+        if (fn_80035838(lbl_3_data_6130 + 0x10, 0xC) != 0) {
+            lbl_3_common_bss_32724[0x9A] = 0;
+            lbl_3_common_bss_32724[0xD1] = 1;
+            g_GameLogic._125 = 2;
+        }
+        break;
+    case 2:
+        if (fn_3_6B5D8() != 0) {
+            fn_3_8C104(-1);
+            g_GameLogic._125 = 3;
+        }
+        break;
+    case 3:
+        changeScene(1, 6);
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        g_GameLogic._125 = 4;
+        break;
+    case 4:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 180) {
+            u8 mvp = g_GameLogic._13D;
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            if (mvp != 0) {
+                if (g_d_GameSettings.exhibitionMatchInd == 0) {
+                    g_GameLogic._125 = 7;
+                } else {
+                    g_GameLogic._125 = 6;
+                }
+            } else {
+                g_GameLogic._125 = 7;
+            }
+        }
+        break;
+    case 5:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+            fn_8004CC4C(7, 0, 0, 0, 0x8B);
+            if (lbl_80353A90[0x101] >= 0) {
+                fn_8004CA48(inMemRoster[0][lbl_80353A90[0x101]].stats.CharID, 0, 0, 0);
+            } else if (lbl_80353A90[0x102] >= 0) {
+                fn_8004CA48(inMemRoster[0][lbl_80353A90[0x102]].stats.CharID, 0, 0, 0);
+            }
+        }
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy >= 20 && (input->newButtonInput & 0x100)) {
+            fn_8004CC2C();
+        }
+        if (lbl_803C5F74.state == 4) {
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            g_GameLogic._125 = 6;
+        }
+        break;
+    case 6: { // inlined fn_3_5B220(0)
+        s32 done;
+        if (g_GameLogic.frames_memoryCardWriteOnMVP < 0x7FFE) {
+            g_GameLogic.frames_memoryCardWriteOnMVP += 1;
+        } else {
+            g_GameLogic.frames_memoryCardWriteOnMVP = 0x7FFF;
+        }
+        switch ((s32)g_GameLogic.endGameStage) {
+        case 0:
+            fn_8003BF54(lbl_80366158._27, 0, 0, 1, 0, 4, 5, 0, 0);
+            g_GameLogic.endGameStage += 1;
+            done = 0;
+            break;
+        case 1: {
+            s16 v = lbl_803CC1B8->_10;
+            if (v == 1 || (u16)(v - 0xB) <= 1U || v == 7) {
+                g_GameLogic.endGameStage += 1;
+            }
+            done = 0;
+            break;
+        }
+        default:
+            done = 1;
+            break;
+        }
+        if (done != 0) {
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            g_GameLogic._125 = 7;
+        }
+        break;
+    }
+    case 7:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 45) {
+            fn_3_5BA2C();
+        }
+        break;
+    case 8:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 45) {
+            *(s16*)(lbl_3_common_bss_34C90 + 0x12) = 0;
+            lbl_3_common_bss_34C90[0x1D8] ^= 1;
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            g_GameLogic._125 = 7;
+        }
+        break;
+    case 9:
+        if (g_GameLogic.playOverFadeOutStarted >= 0) {
+            changeScene(3, 6);
+        } else if (g_d_GameSettings.exhibitionMatchInd == 0) {
+            if (g_d_GameSettings.bJMatchInd == 1) {
+                fn_800203E0(0xC, (s8)lbl_3_data_6104[gChallengeState._441C]);
+            } else {
+                fn_800203E0(0xC, (s8)lbl_3_data_6104[gChallengeState._441E]);
+            }
+        } else {
+            changeScene(4, 6);
+        }
+        if (lbl_8037169C._13 != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+            g_GameLogic._125 = 10;
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        }
+        break;
+    case 10:
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 10) {
+            fn_3_8C07C();
+            g_GameLogic._125 = 11;
+            lbl_3_common_bss_32724[0xCD] = 1;
+        }
+        break;
+    case 11:
+        if (g_GameLogic.playOverFadeOutStarted >= 0) {
+            fn_3_5A6D4(0x17);
+        } else {
+            g_GameLogic._128 = 1;
+            g_GameLogic.framesOfExitingToMenu = 1;
+        }
+        break;
+    }
+}
+#endif
