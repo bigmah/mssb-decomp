@@ -477,9 +477,48 @@ void fn_8005C2B0(void) {
 }
 
 // .text:0x8005C5C4 size:0x26C
-void fn_8005C5C4(void) {
-    return;
+// NONMATCHING 97%: r5/r7 and r0/r4 swapped in the frame-30 branch
+#if NONMATCHING
+void fn_8005C5C4(SceneTask* task, s32 port) {
+    u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
+
+    if ((*(state += 0x37) == 0) ? TRUE : FALSE) {
+        if (g_d_GameSettings._06 == 2) {
+            TASK_OBJ(task, 0)->_5C = 20 << 16;
+            TASK_OBJ(task, 0)->_68 = 4;
+        } else if (g_d_GameSettings.GameModeSelected == 5) {
+            TASK_OBJ(task, 0)->_5C = 20 << 16;
+            TASK_OBJ(task, 1)->_5C = 20 << 16;
+            TASK_OBJ(task, 0)->_68 = 4;
+            TASK_OBJ(task, 1)->_68 = 4;
+        } else if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+            if (port != 0) {
+                TASK_OBJ(task, port)->_5C = 20 << 16;
+                TASK_OBJ(task, port)->_68 = 4;
+            } else {
+                TASK_OBJ(task, port)->_5C = 30 << 16;
+                TASK_OBJ(task, port)->_68 = 1;
+            }
+        } else {
+            LayoutSlot* slots = lbl_80371C30;
+            LayoutObj* obj = slots[task->u14.objIdx + port].obj;
+            if ((obj->_5C >> 16) == 30) {
+                obj->_5C = 30 << 16;
+                slots[task->u14.objIdx + port].obj->_68 = 1;
+            } else {
+                obj->_5C = 20 << 16;
+                slots[task->u14.objIdx + port].obj->_68 = 4;
+            }
+        }
+        TASK_OBJ(task, port + 0x16)->_5C = 10 << 16;
+        TASK_OBJ(task, port + 0x18)->_68 = 4;
+        TASK_OBJ(task, port + 0x12)->_5C = 20 << 16;
+        TASK_OBJ(task, port + 0x12)->_68 = 1;
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
+#endif
 
 // .text:0x8005C830 size:0x4B4
 void fn_8005C830(void) {
