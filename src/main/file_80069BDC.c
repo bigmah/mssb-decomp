@@ -150,9 +150,15 @@ u8 fn_8006C100(s16 value) {
 #endif
 
 // .text:0x8006C13C size:0x12C
-void fn_8006C13C(void) {
-    return;
+// NONMATCHING: fn_8006C2B4 and fn_8006C268 inlined; those don't match yet (rolled loops)
+#if NONMATCHING
+s16 fn_8006C13C(StatInput* in) {
+    StatOutput out;
+
+    fn_8006C2B4(&out, in);
+    return fn_8006C268(&out);
 }
+#endif
 
 // .text:0x8006C268 size:0x4C
 // NONMATCHING 70%: the original keeps the 6-iteration sum loop rolled; CW fully unrolls it here
