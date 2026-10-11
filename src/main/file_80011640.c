@@ -423,6 +423,83 @@ void fn_80016710(void) {
 
 // .text:0x80016B60 size:0x41C
 s32 fn_80016B60(CharActor* actor) {
+    s32 file;
+
+    if (lbl_8036E548.loadStep == 0) {
+        lbl_8036E548.loadStep = 1;
+    }
+    if (lbl_8036E548.loadStep == 1) {
+        actor->banks.b[2] = lbl_8036E548.bankSets[actor->modelIndex][0];
+        if (g_d_GameSettings.GameModeSelected == 7) {
+            file = actor->kind * 0x13 + 0xD;
+        } else {
+            file = actor->kind * 0x13 + 4;
+        }
+        ARAMTransfer(&lbl_803CB790[file], actor->banks.b[2], 0, 0);
+        lbl_8036E548.loadStep = 2;
+    } else if (lbl_8036E548.loadStep == 2) {
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            ANIMGet(actor->banks.b[2]);
+            lbl_8036E548.loadStep = 3;
+        }
+    } else if (lbl_8036E548.loadStep == 3) {
+        actor->banks.b[1] = lbl_8036E548.bankSets[actor->modelIndex][1];
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            file = actor->kind * 0x13 + 0xB;
+        } else if (g_d_GameSettings.GameModeSelected == 6) {
+            file = actor->kind * 0x13 + 0xE;
+        } else {
+            file = actor->kind * 0x13 + 0xC;
+        }
+        ARAMTransfer(&lbl_803CB790[file], actor->banks.b[1], 0, 0);
+        lbl_8036E548.loadStep = 4;
+    } else if (lbl_8036E548.loadStep == 4) {
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            ANIMGet(actor->banks.b[1]);
+            lbl_8036E548.loadStep = 5;
+        }
+    } else if (lbl_8036E548.loadStep == 5) {
+        actor->banks.b[3] = lbl_8036E548.bankSets[actor->modelIndex][2];
+        if (g_d_GameSettings.minigamesEnabled != 0 || g_d_GameSettings.GameModeSelected == 2) {
+            file = actor->kind * 0x13 + 0x12;
+        } else {
+            file = actor->kind * 0x13 + 5;
+        }
+        ARAMTransfer(&lbl_803CB790[file], actor->banks.b[3], 0, 0);
+        lbl_8036E548.loadStep = 6;
+    } else if (lbl_8036E548.loadStep == 6) {
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            ANIMGet(actor->banks.b[3]);
+            actor->banks.b[0] = lbl_8036E548.bankSets[0][3];
+            lbl_8036E548.loadStep = 9;
+        }
+    } else if (lbl_8036E548.loadStep == 7) {
+        actor->banks.b[0] = lbl_8036E548.bankSets[actor->modelIndex][3];
+        if (g_d_GameSettings.GameModeSelected == 7) {
+            file = actor->kind * 0x13 + 9;
+        } else if (g_d_GameSettings.GameModeSelected == 2) {
+            file = actor->kind * 0x13 + 0xA;
+        } else {
+            file = actor->kind * 0x13 + 2;
+        }
+        ARAMTransfer(&lbl_803CB790[file], actor->banks.b[0], 0, 0);
+        lbl_8036E548.loadStep = 8;
+    } else if (lbl_8036E548.loadStep == 8) {
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            ANIMGet(actor->banks.b[0]);
+            lbl_8036E548.loadStep = 9;
+        }
+    } else if (lbl_8036E548.loadStep == 9) {
+        actor->banks.b[5] = lbl_8036E548.bankSets[actor->modelIndex][4];
+        ARAMTransfer(&lbl_803CB790[actor->kind * 0x13 + 0x10], actor->banks.b[5], 0, 0);
+        lbl_8036E548.loadStep = 10;
+    } else if (lbl_8036E548.loadStep == 10) {
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            ANIMGet(actor->banks.b[5]);
+            lbl_8036E548.loadStep = 0;
+            return 1;
+        }
+    }
     return 0;
 }
 
