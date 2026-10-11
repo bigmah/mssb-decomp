@@ -109,5 +109,6 @@ void fn_3_5A28C(void);
 void fn_3_5F3FC(void);
 void fn_3_5D094(s32 checkType);
 void fn_3_5DF54(void);
+void fn_3_5D5E8(void);
 
 #endif
