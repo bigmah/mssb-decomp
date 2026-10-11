@@ -1679,3 +1679,27 @@ void fn_2_4DC24(void) {
     }
 }
 #endif
+
+// fn_2_4DEE8, size:0x2D8
+// NONMATCHING 93%: same first-loop `li` vs `mr` offset init as fn_2_4D960, plus prologue lis/addi scheduling
+#if NONMATCHING
+void fn_2_4DEE8(void) {
+    s32 i;
+    s32 j;
+    *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = -1;
+    lbl_2_bss_1A8248[0][0x441E] = 1;
+    lbl_2_bss_1A8248[0][0x441F] = 0x13;
+    lbl_2_bss_1A8248[0][0x444A] = 0;
+    for (i = 0; i < 0x36; i++) {
+        MenuRosterSlot* e = (MenuRosterSlot*)lbl_2_bss_1A8248[0] + i;
+        e->_07 = e->_06;
+    }
+    for (i = 0; i < 0x36; i++) {
+        MenuRosterSlot* slot = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];
+        for (j = 0; j < 10; j++) {
+            slot->_1D[j * 2] = slot->_09[j * 2];
+            slot->_1D[j * 2 + 1] = slot->_09[j * 2 + 1];
+        }
+    }
+}
+#endif
