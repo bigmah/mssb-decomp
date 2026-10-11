@@ -100,5 +100,6 @@ void fn_3_5FF10(void);
 void fn_3_5CDB4(void);
 void fn_3_5DD30(void);
 void fn_3_5AE9C(void);
+void fn_3_5DA9C(void);
 
 #endif

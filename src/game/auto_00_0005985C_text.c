@@ -154,6 +154,7 @@ extern void fn_3_59338(void);
 extern void fn_3_7B130(void);
 extern void fn_3_22850(void);
 extern int __abs(int);
+extern void fn_3_76558(void);
 extern void* memset(void*, int, unsigned long);
 extern void sndVolume(u8 volume, u16 time, u8 volGroup);
 extern void fn_3_59F40(void);
@@ -1226,5 +1227,52 @@ void fn_3_5AE9C(void) {
         lbl_803CC1B8->func = fn_3_59C2C;
     } else {
         lbl_803CC1B8->func = fn_3_5A28C;
+    }
+}
+
+// fn_3_5DA9C, size:0x244
+void fn_3_5DA9C(void) {
+    fn_3_6B870();
+    if (g_GameLogic.EventTriggers_EndOfGame != 0) {
+        if (g_d_GameSettings.exhibitionMatchInd == 0 &&
+            (g_GameLogic._000 ^ (g_Scores.winningTeam == g_d_GameSettings.humanTeamNumber)) != 0 &&
+            (g_d_GameSettings.bJMatchInd != 1 ||
+             (g_GameLogic._000 ^ (g_Scores.winningTeam != g_d_GameSettings.humanTeamNumber)) == 0)) {
+            fn_8006C9D8();
+        }
+        fn_3_76558();
+    }
+    g_GameLogic._135 = 0;
+    g_GameLogic._136 = 0;
+    g_GameLogic.playOverInd = 0;
+    g_Scores._C1 = g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0] - g_Scores._A0;
+    g_Pitcher._15D = 0;
+    if (g_d_GameSettings.GameModeSelected == 4 &&
+        (lbl_3_data_228.simulatedFrames >= 0x2A30U || unkSimulationRelatedStruct._08 != 0)) {
+        g_GameLogic.framesOfExitingToMenu = 1;
+    } else if (g_GameLogic.EventTriggers_EndOfGame != 0) {
+        if (g_Stats.replayInd == 0) { // inlined fn_3_5D9F8
+            g_Pitcher._15C = 0;
+            if (g_d_GameSettings.GameModeSelected == 4 && g_Scores.bottomHalf == 0) {
+                g_GameLogic.framesOfExitingToMenu = 1;
+            } else if (g_GameLogic.EventTriggers_EndOfGame != 0) {
+                fn_3_5A6D4(9);
+            } else {
+                fn_3_5A6D4(3);
+            }
+        }
+    } else if (g_Strikes.outs >= 3) {
+        if (g_Stats.replayInd == 0) { // inlined fn_3_5D9F8
+            g_Pitcher._15C = 0;
+            if (g_d_GameSettings.GameModeSelected == 4 && g_Scores.bottomHalf == 0) {
+                g_GameLogic.framesOfExitingToMenu = 1;
+            } else if (g_GameLogic.EventTriggers_EndOfGame != 0) {
+                fn_3_5A6D4(9);
+            } else {
+                fn_3_5A6D4(3);
+            }
+        }
+    } else {
+        fn_3_5A6D4(7);
     }
 }
