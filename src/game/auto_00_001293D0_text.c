@@ -369,3 +369,31 @@ s32 fn_3_12E084(void* pa, void* pb) {
     db = __abs(1 - b->barrel % 3);
     return da - db;
 }
+
+// fn_3_12A2B8, size:0x138
+void fn_3_12A2B8(void) {
+    HudTask* task = lbl_803CC1B8;
+    s32 level;
+    s32 i;
+    level = g_d_GameSettings._14[g_Minigame.GameMode_MiniGame - 1];
+    if (g_Minigame._190A != 0) {
+        level = 2;
+    }
+    fn_80034E20(task, lbl_3_data_9ECC);
+    for (i = 0; i < 4; i++) {
+        if (level >= i) {
+            fn_800363D8(task, i + 2, 1, 0x6B, i);
+        } else {
+            fn_800363D8(task, i + 2, 1, 0x6B, 4);
+        }
+    }
+    task->state = 0;
+    if (lbl_3_common_bss_32724[0xBF] != 0) {
+        lbl_80371C30[task->baseIdx].obj->_5C = 0x160000;
+        task->state = 2;
+    }
+    task->timer = 0;
+    task->_1A = 0;
+    lbl_3_common_bss_32724[0xBE] = 1;
+    lbl_803CC1B8->func = fn_3_129FF8;
+}

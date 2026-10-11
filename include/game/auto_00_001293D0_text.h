@@ -45,5 +45,6 @@ void fn_3_129C88(void);
 void fn_3_129FF8(void);
 void fn_3_12BB64(void);
 s32 fn_3_12E084(void* a, void* b);
+void fn_3_12A2B8(void);
 
 #endif
