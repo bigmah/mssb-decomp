@@ -1973,7 +1973,7 @@ typedef struct MnOwner {
     /*0x00*/ u8 _00[0x14];
     /*0x14*/ u16 baseIdx;
     /*0x16*/ u16 count;
-    /*0x18*/ s16 _18;
+    /*0x18*/ u16 _18;
 } MnOwner;
 
 #define MN_SLOTS ((MnSlot*)lbl_80371C30)
@@ -3874,6 +3874,189 @@ void fn_2_776A0(u8* o, s32 port) {
                 }
             }
             lbl_2_bss_F468[0x49 + team] = 0;
+        }
+    }
+}
+#endif
+
+extern u8 lbl_2_bss_ABC0;
+
+// fn_2_845A8, size:0xA00
+// NONMATCHING 85%: switch arms schedule slot loads differently; register allocation
+#if NONMATCHING
+void fn_2_845A8(void) {
+    u8* o = lbl_803CC1B8;
+    s32 i;
+    s32 n;
+    s32 k;
+    if (lbl_803CBCD8[4] != 0) {
+        lbl_803CBCD8[4] = 0;
+        lbl_2_data_2D998[0x954] = -1;
+        fn_800B0A14_removeQueue(fn_80034CEC(o));
+        return;
+    }
+    lbl_2_data_2D998[0x955] = -1;
+    switch (lbl_803C66B0[0x5D]) {
+    case 39:
+        if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
+            MN_SLOT(BASE(o))->frame = 0;
+            MN_SLOT(BASE(o))->state = 1;
+            MN_SLOT(4 + BASE(o))->frame = 0;
+            MN_SLOT(4 + BASE(o))->state = 1;
+            for (i = 0; i < 6; i++) {
+                MN_SLOT(6 + BASE(o) + i)->color = (MN_SLOT(6 + BASE(o) + i)->color & ~0xFF) | 0xFF;
+            }
+            MN_SLOT(6 + BASE(o) + F410_S32(0x44))->frame = 0x10000;
+            MN_SLOT(6 + BASE(o) + F410_S32(0x44))->state = 1;
+            fn_800626EC(0);
+            lbl_803C66B0[0x2B] = 1;
+        }
+        if (lbl_803C66B0[0x2B] == 1) {
+            n = fn_80042DA8((s32)o, 0, 0xA) != 0;
+            n += fn_80042DA8((s32)o, 4, 0x14) != 0;
+            if (n == 2) {
+                lbl_2_data_2D998[0x954] = F410_S32(0x44);
+                fn_80062674(0);
+                lbl_803C66B0[0x2B] = 2;
+            }
+        }
+        break;
+    case 36:
+        if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
+            MN_SLOT(BASE(o))->frame = 0xA0000;
+            MN_SLOT(1 + BASE(o))->frame = 0xA0000;
+            MN_SLOT(BASE(o))->state = 4;
+            MN_SLOT(1 + BASE(o))->state = 4;
+            MN_SLOT(2 + BASE(o))->state = 4;
+            MN_SLOT(3 + BASE(o))->state = 4;
+            MN_SLOT(5 + BASE(o))->state = 4;
+            MN_SLOT(4 + BASE(o))->state = 4;
+            fn_800626EC(0);
+            lbl_803C66B0[0x2B] = 1;
+        }
+        if (lbl_803C66B0[0x2B] == 1) {
+            n = fn_80042DA8((s32)o, 0, 0) != 0;
+            n += fn_80042DA8((s32)o, 1, 0) != 0;
+            n += fn_80042DA8((s32)o, 2, 0) != 0;
+            n += fn_80042DA8((s32)o, 3, 0) != 0;
+            n += fn_80042DA8((s32)o, 5, 0) != 0;
+            if (n == 5) {
+                lbl_2_data_2D998[0x954] = F410_S32(0x44);
+                fn_80062674(0);
+                lbl_803C66B0[0x2B] = 2;
+                lbl_2_data_2D998[0x954] = -1;
+                fn_800B0A14_removeQueue(fn_80034CEC(o));
+            }
+        }
+        break;
+    case 38:
+        if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
+            MN_SLOT(BASE(o))->state = 4;
+            MN_SLOT(1 + BASE(o))->frame = 0;
+            MN_SLOT(1 + BASE(o))->state = 0;
+            MN_SLOT(2 + BASE(o))->state = 1;
+            MN_SLOT(5 + BASE(o))->state = 1;
+            MN_SLOT(3 + BASE(o))->state = 1;
+            MN_SLOT(4 + BASE(o))->frame = 0x280000;
+            MN_SLOT(4 + BASE(o))->state = 4;
+            fn_800626EC(0);
+            lbl_803C66B0[0x2B] = 1;
+        }
+        if (lbl_803C66B0[0x2B] == 1) {
+            n = fn_80042DA8((s32)o, 0, 0xA) != 0;
+            n += fn_80042DA8((s32)o, 4, 0x14) != 0;
+            if (n == 2) {
+                s32 sel = F410_S32(0x44);
+                if (lbl_80361B20[0xF5] == 0 && sel != 0) {
+                    sel--;
+                }
+                lbl_2_data_2D998[0x954] = sel;
+                fn_80062674(0);
+                lbl_803C66B0[0x2B] = 2;
+            }
+        }
+        break;
+    case 37:
+        if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
+            MN_SLOT(BASE(o))->frame = 0xA0000;
+            MN_SLOT(1 + BASE(o))->frame = 0;
+            MN_SLOT(BASE(o))->state = 1;
+            MN_SLOT(1 + BASE(o))->state = 0;
+            MN_SLOT(2 + BASE(o))->state = 4;
+            MN_SLOT(3 + BASE(o))->state = 4;
+            MN_SLOT(5 + BASE(o))->state = 4;
+            MN_SLOT(4 + BASE(o))->state = 1;
+            fn_800626EC(0);
+            lbl_803C66B0[0x2B] = 1;
+        }
+        if (lbl_803C66B0[0x2B] == 1) {
+            n = fn_80042DA8((s32)o, 0, 0x14) != 0;
+            n += fn_80042DA8((s32)o, 2, 0) != 0;
+            n += fn_80042DA8((s32)o, 5, 0) != 0;
+            n += fn_80042DA8((s32)o, 3, 0) != 0;
+            if (n == 4) {
+                lbl_2_data_2D998[0x954] = F410_S32(0x44);
+                fn_80062674(0);
+                lbl_803C66B0[0x2B] = 2;
+            }
+        }
+        break;
+    case 49:
+        if ((MN_SLOT(BASE(o))->frame >> 16) == 0x14) {
+            MN_SLOT(BASE(o))->state = 1;
+        }
+        if ((MN_SLOT(BASE(o))->frame >> 16) == 0x1E) {
+            lbl_803CBCD8[4] = 1;
+            fn_80062674(0);
+            lbl_803C66B0[0x31] = 2;
+        }
+        break;
+    case 40:
+        fn_2_83B34(o, F410_S32(0x44));
+        break;
+    }
+    if (lbl_803CBCD8[4] == 0 && lbl_803C66B0[0x5D] != 0x25 && lbl_803C66B0[0x5D] != 0x24) {
+        s32 sel = F410_S32(0x44);
+        if (*(u16*)(lbl_803CBBCC[0] + 2) != 0xD && lbl_2_bss_F468[0x58] == 0 &&
+            (s8)lbl_2_data_2D998[0x954] == sel && (s8)lbl_2_data_2D998[0x955] == -1) {
+            s32 t;
+            s32 off;
+            u8 icon;
+            u8 icon2;
+            if (lbl_80361B20[0xF5] == 0 && lbl_2_data_2D998[0x2EC + sel] == 1) {
+                fn_800363D8(o, 0, 1, 0x20, 0x12);
+                fn_800363D8(o, 1, 1, 0x20, 0x12);
+                return;
+            }
+            // Cycle the icon animation every 100 frames.
+            for (t = 0, off = 0, i = 0; i < 3; i++, off += 6, t += 100) {
+                if (((MnOwner*)o)->_18 == t) {
+                    icon = lbl_2_data_2D998[0x2EC + sel];
+                    if (lbl_2_bss_ABC0 != 0) {
+                        icon2 = icon + 0xC;
+                        lbl_2_bss_ABC0 = 0;
+                    } else if (i != 0) {
+                        icon2 = icon + (i - 1) * 6;
+                    } else {
+                        icon2 = icon;
+                    }
+                    MN_SLOT(BASE(o))->frame = 0;
+                    MN_SLOT(1 + BASE(o))->frame = 0xA0000;
+                    fn_800363D8(o, 0, 1, 0x20, icon + off);
+                    fn_800363D8(o, 1, 1, 0x20, icon2);
+                    MN_SLOT(BASE(o))->color = (MN_SLOT(BASE(o))->color & ~0xFF) | 0xFF;
+                    MN_SLOT(1 + BASE(o))->color = (MN_SLOT(1 + BASE(o))->color & ~0xFF) | 0xFF;
+                    MN_SLOT(BASE(o))->state = 1;
+                    MN_SLOT(1 + BASE(o))->state = 4;
+                }
+            }
+            fn_80042DA8((s32)o, 0, 0xA);
+            fn_80042DA8((s32)o, 1, 0);
+            ((MnOwner*)o)->_18++;
+            if (((MnOwner*)o)->_18 > 300) {
+                ((MnOwner*)o)->_18 = 0;
+                lbl_2_bss_ABC0 = 1;
+            }
         }
     }
 }
