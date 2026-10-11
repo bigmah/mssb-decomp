@@ -98,7 +98,7 @@ void fn_800BDF70(ActorObject* obj) {
     u8 flags;
 
     if (state->enabled && state->drawCallback != NULL && obj->animateBones) {
-        flags = obj->actor->flags98;
+        flags = obj->actor->flags;
         if ((flags & 0x24) && (flags & 0x12)) {
             state->drawCallback(obj, state->cameras->view);
         }
@@ -116,7 +116,7 @@ void fn_800BDFE0(ActorObjectTable* table) {
     if (state->enabled && state->drawCallback != NULL) {
         for (i = 0; i < table->count; i++) {
             if (table->objects[i].animateBones) {
-                flags = table->objects[i].actor->flags98;
+                flags = table->objects[i].actor->flags;
                 if ((flags & 0x24) && (flags & 0x12)) {
                     state->drawCallback(&table->objects[i], state->cameras->view);
                 }
@@ -1593,15 +1593,15 @@ L_800C06B0:
 #endif
 
 // .text:0x800C0770 size:0x4C
-void convertTextureHeader(TextureHeader* hdr) {
+void convertTextureHeader(TexArchive* hdr) {
     s32 i;
 
     for (i = 0; i < hdr->count; i++) {
         if (hdr->entries[i].data != NULL) {
             hdr->entries[i].data = (u8*)hdr + (u32)hdr->entries[i].data;
         }
-        if (hdr->entries[i].palette != NULL) {
-            hdr->entries[i].palette = (u8*)hdr + (u32)hdr->entries[i].palette;
+        if (hdr->entries[i].tlut != NULL) {
+            hdr->entries[i].tlut = (u8*)hdr + (u32)hdr->entries[i].tlut;
         }
         hdr->entries[i].index = i;
     }
@@ -1610,7 +1610,7 @@ void convertTextureHeader(TextureHeader* hdr) {
 // .text:0x800C07BC size:0x2D0
 // NONMATCHING 61%: original keeps half*size and the second-half pointers live across the self-inlined recursion
 #if NONMATCHING
-void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(void*, void*)) {
+void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*)) {
     u32 half;
     u32 i;
     u32 j;

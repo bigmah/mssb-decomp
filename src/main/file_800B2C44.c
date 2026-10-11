@@ -547,7 +547,7 @@ void fn_800B3F20(GameActor* actor) {
 }
 
 // .text:0x800B4048 size:0x3C
-s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u16 actorID) {
+s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u32 actorID) {
     layout->actorID = actorID;
     *actor = fn_800B43A0(layout);
     return 1;

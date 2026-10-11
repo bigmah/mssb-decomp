@@ -1,4 +1,5 @@
 #include "main/file_800639BC.h"
+#include "main/file_800A6870.h"
 #include "static/GameSettings.h"
 #include "game/UnknownHomes_Game.h"
 #include "main/file_80008E00.h"
@@ -12,6 +13,7 @@
 #include "Unknown/File_0x800a64e0.h"
 #include "Dolphin/mtx.h"
 #include "string.h"
+#include "main/file_800263FC.h"
 
 extern SoundManager lbl_800EF808;
 extern AssetLoadInstructions lbl_801092E8; // logo sound data
@@ -34,7 +36,6 @@ extern MenuSlotSrc lbl_800E8A2C[5];
 extern MenuSlotSrc lbl_800E8A68[5];
 extern u8 lbl_800E869C[32];
 extern u8 lbl_80109054[2][4][5]; // preferred field positions per character class
-extern ActorMgr lbl_8036E548;
 extern s8 lbl_803CB8C8[3]; // characters without foot dust
 extern s8 lbl_803CB8BC[5]; // characters with medium dust
 extern s8 lbl_80108D30[0x18]; // [0..11]: big characters, [12..21]: heavy steps
@@ -67,10 +68,7 @@ extern EffectDesc lbl_80108D48;
 extern s32 lbl_803CBD0C;
 
 extern s32 randRange_FUN_80042bf0(s32 lo, s32 hi);
-extern void fn_8002B7F8(Vec* pos, EffectDesc* desc, s32 count);
 extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr);
-extern void fn_80034E20(void* task, void* desc);
-extern void* fn_80034CEC(void* task);
 
 
 // Field-by-field copy of a character's stats (inlined by the original).
@@ -123,7 +121,7 @@ static s32 chemRank(u8 team, s32 id, s32 rank) {
 // defined later in the file); control flow and register use otherwise line up
 #if NONMATCHING
 s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
-    ActorMgrActor* actor = lbl_8036E548.active[idx];
+    CharActor* actor = lbl_8036E548.active[idx];
     PlayerVecSlot* fx = &lbl_802E4BC0[idx]; // a/b: last foot positions, unk18: timer, unk1C: flags
     s32 result = 0;
     Vec pos;
@@ -249,11 +247,11 @@ void fn_80064344(Vec* pos, Vec* v) {
     desc._54[0] *= scale;
     desc._54[1] *= scale;
     desc._54[2] *= scale;
-    fn_8002B7F8(pos, &desc, 1);
+    fn_8002B7F8(pos, (ParticleParamsE *)&desc, 1); // TODO type
 }
 
 // .text:0x80064430 size:0x104
-void fn_80064430(Vec* pos, s32 count, f32 scale2, f32 scale) {
+void fn_80064430(Vec* pos, u8 count, f32 scale2, f32 scale) {
     EffectDesc desc;
 
     memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
@@ -268,7 +266,7 @@ void fn_80064430(Vec* pos, s32 count, f32 scale2, f32 scale) {
     desc._54[0] *= scale2;
     desc._54[1] *= scale2;
     desc._54[2] *= scale2;
-    fn_8002B7F8(pos, &desc, count);
+    fn_8002B7F8(pos, (ParticleParamsE *)&desc, count); // TODO type
 }
 
 // .text:0x80064534 size:0x220
@@ -1333,7 +1331,7 @@ BOOL fn_800697B0(void) {
         lbl_803CBD24++;
         break;
     case 1:
-        if ((s8)lbl_803C6CF8._715 == 1) {
+        if ((s8)lbl_803C6CF8.idle == 1) {
             fn_800111B4(lbl_80366B18.tables[1]);
             lbl_803CBD24 = 0;
             return FALSE;
@@ -1450,7 +1448,7 @@ void fn_80069B08(void) {
 BOOL fn_80069B68(void) {
     if (fn_80035838(&lbl_801092E8, 0x16) != 0) {
         lbl_803CBD30 = fn_800B0A5C_insertQueue(fn_80069B08, lbl_803CC1B8->priority);
-        fn_80034E20(lbl_803CBD30, lbl_80109378);
+        fn_80034E20(lbl_803CBD30, (SpaniDesc *)lbl_80109378); // TODO type
         lbl_80366158._2A = 0;
         return TRUE;
     }

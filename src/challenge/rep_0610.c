@@ -224,7 +224,7 @@ void fn_1_15170(void) {
 // fn_1_14888, size:0x44
 void fn_1_14888(u8* object) {
     if (lbl_1_bss_67E0[0x118]) {
-        fn_800B9AA8(lbl_1_bss_67E0 + 0x30);
+        fn_800B9AA8((struct Light *)(lbl_1_bss_67E0 + 0x30)); // TODO type
     } else {
         fn_800B9AA8(*(void**)(object + 0x70));
     }
@@ -416,7 +416,7 @@ void fn_1_F040(void) {
     buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
     if (buttons & 0x100) {
         lbl_1_data_F2A0 = *(s32*)(challenge + 0x28);
-        fn_8002955C(&command, 0, &lbl_1_data_F2A0);
+        fn_8002955C((Vec *)&command, 0, (struct ParticleParamsC *)&lbl_1_data_F2A0); // TODO type
     } else if (buttons & 0x200) {
         *(s32*)(challenge + 0xC) = 0;
         challenge[0x2F01] = 10;
@@ -474,7 +474,6 @@ void fn_1_160F8(s32 direction) {
 #pragma fp_contract on
 
 extern const f32 lbl_1_rodata_73C8;
-extern s32 getAnimRelatedCoordinates(s32, s32, void*);
 
 // .text:0xD4BC size:0xD4
 void fn_1_D4BC(void) {
@@ -538,12 +537,12 @@ void fn_1_CCC8(void) {
     f32* animation = *(f32**)(queue + 0x14);
     if (animation != NULL && animation[0] < animation[1]) {
         if (lbl_1_bss_5F69 != 0) {
-            fn_800385F0(lbl_1_bss_30C0, lbl_1_rodata_73BC, lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC);
+            fn_800385F0((struct RigidBody *)lbl_1_bss_30C0, lbl_1_rodata_73BC, lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC); // TODO type
         } else {
-            fn_800385F0(lbl_1_bss_30C0, lbl_1_rodata_73A4[0], lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC);
+            fn_800385F0((struct RigidBody *)lbl_1_bss_30C0, lbl_1_rodata_73A4[0], lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC); // TODO type
         }
         *(f32*)(lbl_1_bss_30C0 + 0x50) = lbl_1_data_F568[0];
-        fn_800B0A14_removeQueue(fn_80037AA0(lbl_1_bss_30C0, 0, (void*)fn_1_CB9C, *(u16*)(queue + 0x18), *(void**)(queue + 0x14)));
+        fn_800B0A14_removeQueue(fn_80037AA0((struct RigidBody *)lbl_1_bss_30C0, 0, (void*)fn_1_CB9C, *(u16*)(queue + 0x18), *(void**)(queue + 0x14))); // TODO type
     }
 }
 
@@ -777,7 +776,6 @@ void fn_1_D7A4(s32 index) {
 
 extern u8 lbl_1_data_ABA8;
 extern void fn_1_10E2C(void*, f32(*)[4], u32, u32, u32);
-extern void fn_800B2C88(void*, u16, void*);
 
 // .text:0x10CEC size:0x140
 void fn_1_10CEC(u8* object) {
@@ -813,7 +811,7 @@ void fn_1_10CEC(u8* object) {
                     c = -1;
                 }
             }
-            fn_800B2C88(*(u8**)(*(u8**)(scene + 0x60) + k + 0x34), (u16)i, buffer);
+            fn_800B2C88((struct GameActor *)*(u8**)(*(u8**)(scene + 0x60) + k + 0x34), (u16)i, (f32 (*)[4])buffer); // TODO type
             fn_1_10E2C(buffer, matrix, a, b, c);
         }
     }
@@ -1621,7 +1619,8 @@ void fn_1_165E0(void) {
 }
 
 extern void fn_1_C2DC(void*, void*, s32, s32, s32, s32*, s32*, s32*);
-extern void fn_800B2BA8(void*, u16, void*, u16);
+struct GameActor;
+extern struct DODisplayObj* fn_800B2BA8(struct GameActor* actor, u16 bone, struct GameActor* src, u16 srcBone); // main/file_800B0724.h
 extern s8 lbl_1_data_AC90;
 
 typedef struct {
@@ -1712,7 +1711,7 @@ void fn_1_1540C(void) {
             s32 i;
             for (i = 0; i < *(u16*)(actor + 6); i++) {
                 if (*(u32*)((*(u8***)(actor + 0x18))[i] + 0x14) != 0) {
-                    fn_800B2BA8(*(void**)(*(u8**)(lbl_8036E548 + 0x60) + 0x34), id, actor, i);
+                    fn_800B2BA8(*(void**)(*(u8**)(lbl_8036E548 + 0x60) + 0x34), id, (struct GameActor *)actor, i); // TODO type
                 }
             }
         } else {
@@ -2090,7 +2089,7 @@ void fn_1_12820(void* tableArg, void* matrixArg) {
         row = lbl_8036E548 + i * 0x27C;
         data = row + 0xC04;
         if (object->actor == NULL) continue;
-        object->actor->flags98 = 0xFF;
+        object->actor->flags = 0xFF;
         if (entry[0xA0] == 0) continue;
         alpha = data[0x277];
         if (lastAlpha != alpha) {
@@ -2279,12 +2278,11 @@ void fn_1_1770C(u8* object) {
 #endif
 
 #include "Dolphin/OS/OSError.h"
-void ACTSetAnimation(ActorInst* actor, void* animBank, int seqName, u16 seqNum, f32 time, f32 speed);
-void Set_FUN_800b2b6c(ActorInst* actor, s32 value);
-u8 fn_800B3C04(s32 arg0, ActorInst* actor, MtxPtr matrix);
-void fn_800B4AFC(ActorInst* actor, u8 value);
-void fn_800B4C04(ActorInst* actor, f32 value);
-void fn_800B4CA0(ActorInst* actor, f32 time);
+struct GameActor;
+extern void Set_FUN_800b2b6c(struct GameActor* actor, u16* boneRemap); // main/file_800B0724.h
+struct GameActor;
+extern u8 fn_800B3C04(s32 viewIndex, struct GameActor* actor, Mtx camera); // main/file_800B2C44.h
+#include "main/file_800B4A44.h"
 
 // .text:0x12F8C size:0x258
 // NONMATCHING ~85%: register allocation, pooled .bss base and the inlined fn_1_1073C differ
@@ -2293,7 +2291,7 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
     ActorObjectTable* table = tableArg;
     Mtx transform;
     ActorObject* object;
-    ActorInst* actor;
+    GameActor* actor;
     u8* row;
     u8* bone;
     u16 i;
@@ -2315,7 +2313,7 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
         if (object->visFlags & 2) {
             fn_800B4AFC(object->actor, object->visFlags & 1);
         }
-        Set_FUN_800b2b6c(object->actor, object->unk68);
+        Set_FUN_800b2b6c(object->actor, object->boneRemap);
         if (object->animateBones) {
             fn_800BDA24(object);
             if (ch_3081 != 0) {
@@ -2324,8 +2322,8 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
             if (ch_308C != 0) {
                 ch_308C = 0;
                 // Debug bone dump. The original reuses the outer loop counter here.
-                for (i = 0; i < *(u16*)((u8*)object->actor + 0x6); i++) { // TODO type: ActorInst bone count / table
-                    bone = (*(u8***)((u8*)object->actor + 0x18))[i];
+                for (i = 0; i < object->actor->totalBones; i++) {
+                    bone = (u8*)object->actor->boneArray[i]; // TODO type: GameBone
                     OSReport("#%3d %f %f %f\n", *(u16*)bone, *(f32*)(bone + 0x64), *(f32*)(bone + 0x68), *(f32*)(bone + 0x6C));
                 }
             }
@@ -2334,7 +2332,7 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
         PSMTXTrans(transform, *(f32*)(row + 0xC38), *(f32*)(row + 0xC3C), *(f32*)(row + 0xC40));
         PSMTXConcat((f32(*)[4])matrixArg, transform, transform);
         actor = object->actor;
-        actor->flags98 = (actor->flags98 & 0xFC) | fn_800B3C04(0, actor, transform);
+        actor->flags = (actor->flags & 0xFC) | fn_800B3C04(0, actor, transform);
         object = (ActorObject*)((u8*)table + i * 0x90 + 0x34);
         object->setAnimation = 0;
         object->setTime = 0;
@@ -2481,9 +2479,9 @@ static inline void fn_1_ECF8_bind(u8 player, u16 id, s32 slot) {
     ActorObjectTable* table = lbl_1_bss_5F7C[0];
     u8* actor = (u8*)table->objects[slot - 1].actor;
     u16 i;
-    for (i = 0; i < *(u16*)(actor + 6); i++) { // TODO type: ActorInst bone count / table
+    for (i = 0; i < *(u16*)(actor + 6); i++) { // TODO type: GameActor bone count / table
         if (*(u32*)((*(u8***)(actor + 0x18))[i] + 0x14) != 0) {
-            fn_800B2BA8(((ChallengeModelEntry*)(*(u8**)(lbl_8036E548 + 0x60)))[player].actor, id,
+            fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)(*(u8**)(lbl_8036E548 + 0x60)))[player].actor, id, // TODO type
                         table->objects[slot - 1].actor, i);
             break;
         }
@@ -2535,7 +2533,7 @@ extern u32 fn_80024D2C(struct ShapeAnimState* st);
 #if NONMATCHING
 void fn_1_CDC8(void) {
     void* states[2];
-    ActorInst** tables[2];
+    GameActor** tables[2];
     u16 bones[2];
     u8* row;
     u16 idB;
@@ -2543,7 +2541,7 @@ void fn_1_CDC8(void) {
     s32 both;
     s32 i;
     u16 j;
-    ActorInst* actor;
+    GameActor* actor;
     u8 group;
 
     if (ch_fill30B8[0] != 0) {
@@ -2553,8 +2551,8 @@ void fn_1_CDC8(void) {
     }
     row = lbl_8036E548 + ch_5F73 * 0x27C;
     idB = *(u16*)(row + 0xD98);
-    fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, *(u16*)(row + 0xD8C), NULL, 0);
-    fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, idB, NULL, 0);
+    fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, *(u16*)(row + 0xD8C), NULL, 0); // TODO type
+    fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, idB, NULL, 0); // TODO type
     switch ((ch_68FC + ch_5F73)[0x40]) {
     case 38:
         kind = 0;
@@ -2604,14 +2602,14 @@ void fn_1_CDC8(void) {
         if (states[i] != NULL) {
             if (fn_80024D2C(states[i]) & 0x20000000) {
                 actor = *tables[i];
-                for (j = 0; j < *(u16*)((u8*)actor + 6); j++) { // TODO type: ActorInst bone count / table
+                for (j = 0; j < *(u16*)((u8*)actor + 6); j++) { // TODO type: GameActor bone count / table
                     if (*(u32*)((*(u8***)((u8*)actor + 0x18))[j] + 0x14) != 0) {
-                        fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], actor, j);
+                        fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], actor, j); // TODO type
                         break;
                     }
                 }
             } else {
-                fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], NULL, 0);
+                fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], NULL, 0); // TODO type
             }
         }
         i++;
@@ -2625,7 +2623,7 @@ void fn_1_CDC8(void) {
         actor = *tables[0];
         for (j = 0; j < *(u16*)((u8*)actor + 6); j++) {
             if (*(u32*)((*(u8***)((u8*)(*tables[0]) + 0x18))[j] + 0x14) != 0) {
-                fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], actor, j);
+                fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], actor, j); // TODO type
                 break;
             }
         }
@@ -2964,7 +2962,7 @@ void fn_1_D9B8(void) {
     ChallengeStep* steps = (ChallengeStep*)ch_3218;
     u8* queue = lbl_803CC1B8[0];
     u8* actor = (u8*)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor;
-    u16 count = *(u16*)(actor + 6); // TODO type: ActorInst bone count / table
+    u16 count = *(u16*)(actor + 6); // TODO type: GameActor bone count / table
     s32 i;
     s32 frame;
     s16 target;
@@ -3275,7 +3273,7 @@ void fn_1_129D0(void) {
     }
     if (speed != 0.0f && state[0x1A5] != 0) {
         u8* actor = (u8*)((ActorObjectTable*)table)->objects[0].actor;
-        u16 count = *(u16*)(actor + 6); // TODO type: ActorInst bone count / table
+        u16 count = *(u16*)(actor + 6); // TODO type: GameActor bone count / table
         s32 i;
         f32 frame;
         u8* entry;
@@ -3331,7 +3329,7 @@ void fn_1_129D0(void) {
     ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AC9C + lbl_803CBBC0[0] * 0x38);
     if (lbl_1_data_A978[ch_68FC[0x40]] >= 0) {
         // TODO type: fn_800BD8C4's second parameter is the view matrix
-        fn_800BD8C4(lbl_1_bss_5F7C[0], (s32)(ch_68FC + 0x10));
+        fn_800BD8C4(lbl_1_bss_5F7C[0], (MtxPtr)(ch_68FC + 0x10));
     }
     table = *(u8**)(lbl_8036E548 + 0x60);
     ((ActorObjectTable*)table)->objects[0].animateBones = 1;
@@ -3848,7 +3846,6 @@ extern void fn_8004B1B8(u32 value);
 extern void convertGeometryAndSknHeader(struct DODisplayData* pal, void* sknHeader);
 extern void LoadActorLayout(struct ActorLayout* layout);
 extern ActorObjectTable* ActorObjectInitTable(u16 count);
-extern void fn_800BDC88(ActorObjectTable* table, u16 index, u16 id, void* layout, void* animBank, s32 arg5);
 extern u8 lbl_1_data_2398[][0x10]; // ARAM file descriptors
 extern u8 lbl_1_data_A3D8[];
 extern u8 lbl_1_data_A3F8[];
@@ -4068,18 +4065,16 @@ extern void fn_80025EEC(void* player, s32 table, s32 entry);
 extern void fn_800BD548(struct DOListEntry* entry, u8 numArgs, ...);
 extern void fn_800B2C08(struct GameActor* actor, u16 bone);
 extern void fn_8001FC4C(void* player);
-extern void fn_80063010(void* player, ActorInst** actor);
-extern void* fn_800638B4(void* player, ActorInst** actor);
-extern void* fn_8004B7B4(void* player, ActorInst** actor);
-extern void* fn_800637BC(void* player, ActorInst** actor);
-extern void* fn_800637D4(void* player, ActorInst** actor);
-extern void* fn_80052634(void* player, ActorInst** actor);
-extern void* fn_80062ED4(void* player, ActorInst** actor);
+struct CharActor;
+extern s32 fn_80063010(struct CharActor* player, struct ActorObject* obj); // main/file_800527C4.h
+extern s32 fn_8004B7B4(struct CharActor* model, struct ActorObject* obj); // main/file_8004B284.h
+extern void* fn_80052634(void* player, GameActor** actor);
+extern void* fn_80062ED4(void* player, GameActor** actor);
 
-static inline void fn_1_135C0_bone(ActorInst* actor, u16 bone) {
+static inline void fn_1_135C0_bone(GameActor* actor, u16 bone) {
     if (bone != 0xFFFF) {
         fn_800B2BA8(actor, bone, NULL, 0);
-        (*(u8***)((u8*)actor + 0x18))[bone][0x136] = 1; // TODO type: ActorInst bone table
+        (*(u8***)((u8*)actor + 0x18))[bone][0x136] = 1; // TODO type: GameActor bone table
     }
 }
 
@@ -4151,8 +4146,8 @@ void fn_1_135C0(void) {
             extra = lbl_1_bss_5F7C[0];
             for (k = 0; k < extra->count; k++) {
                 ((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[k].animateBones = 1;
-                CTRLSetTranslation((Control*)((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[k].worldControl, (f32)k, 0.0f, 0.0f);
-                CTRLSetRotation((Control*)((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[k].worldControl, 0.0f, 0.0f, 0.0f);
+                CTRLSetTranslation(&((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[k].worldControl.base, (f32)k, 0.0f, 0.0f);
+                CTRLSetRotation(&((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[k].worldControl.base, 0.0f, 0.0f, 0.0f);
             }
         }
     }
@@ -4219,7 +4214,7 @@ void fn_1_135C0(void) {
 
     // Bone id -> bone index map.
     main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
-    count = *(u16*)((u8*)main->objects[0].actor + 6); // TODO type: ActorInst bone count / table
+    count = *(u16*)((u8*)main->objects[0].actor + 6); // TODO type: GameActor bone count / table
     memset(lbl_8036E548 + 0xD66, 0xFF, 0xF0);
     for (i = 0; i < count; i++) {
         u16 id = *(u16*)(*(u8***)((u8*)(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].actor + 0x18))[i];
@@ -4236,8 +4231,8 @@ void fn_1_135C0(void) {
     *(f32*)(lbl_8036E548 + 0xC48) = 0.0f;
     *(f32*)(lbl_8036E548 + 0xC44) = 0.0f;
     main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
-    CTRLSetTranslation((Control*)main->objects[0].worldControl, 0.0f, 0.0f, 0.0f);
-    CTRLSetRotation((Control*)(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].worldControl, 0.0f, 0.0f, 0.0f);
+    CTRLSetTranslation(&main->objects[0].worldControl.base, 0.0f, 0.0f, 0.0f);
+    CTRLSetRotation(&(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].worldControl.base, 0.0f, 0.0f, 0.0f);
     main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
     main->objects[0].unk54 = lbl_1_rodata_73C0[0];
     main->objects[0].setSpeed = 1;
@@ -4252,7 +4247,7 @@ void fn_1_135C0(void) {
     fn_8001FC4C(*(void**)(lbl_8036E548 + 0x2C50));
 
     main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
-    *(ActorInst**)(row + 0x4) = main->objects[0].actor;
+    *(GameActor**)(row + 0x4) = main->objects[0].actor;
     *(f32*)(row + 0x34) = 0.0f;
     *(f32*)(row + 0x38) = 0.0f;
     *(f32*)(row + 0x3C) = lbl_1_rodata_73F8;
@@ -4276,25 +4271,29 @@ void fn_1_135C0(void) {
     case 34:
     case 35:
     case 36:
-        fn_80063010(row, &main->objects[0].actor);
+        fn_80063010((struct CharActor*)row, &main->objects[0]); // TODO type: row is a CharActor
         break;
     case 2:
-        ch_60E8 = fn_800638B4(row, &main->objects[(s8)row[0x255]].actor);
+        fn_800638B4((struct CharActor*)row, &main->objects[(s8)row[0x255]]); // TODO type: row is a CharActor
+        ch_60E8 = NULL; // the callback returns 0
         break;
     case 19:
-        ch_60E8 = fn_8004B7B4(row, &main->objects[(s8)row[0x255]].actor);
+        fn_8004B7B4((struct CharActor*)row, &main->objects[(s8)row[0x255]]); // TODO type: row is a CharActor
+        ch_60E8 = NULL; // the callback returns 0
         break;
     case 20:
     case 43:
-        ch_60E8 = fn_800637BC(row, &main->objects[(s8)row[0x255]].actor);
+        fn_800637BC((struct CharActor*)row, &main->objects[(s8)row[0x255]]); // TODO type: row is a CharActor
+        ch_60E8 = NULL; // the callback returns 0
         break;
     case 38:
-        main->objects[(s8)row[0x255]].actor->unk99 = 1;
+        main->objects[(s8)row[0x255]].actor->tickFlag = 1;
         fn_1_D13C();
         fn_1_D300(lbl_8036E548 + ch_5F73 * 0x27C + 0xC04);
         break;
     case 41:
-        ch_60E8 = fn_800637D4(row, &main->objects[(s8)row[0x255]].actor);
+        fn_800637D4((struct CharActor*)row, &main->objects[(s8)row[0x255]]); // TODO type: row is a CharActor
+        ch_60E8 = NULL; // the callback returns 0
         // fallthrough
     case 18:
     case 40:

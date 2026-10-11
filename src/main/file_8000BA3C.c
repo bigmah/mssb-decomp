@@ -470,7 +470,7 @@ s32 fn_8000C194(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
                         drawOk = lbl_80366188.drawCallback(&lbl_80366188);
                     }
                     if (drawOk) {
-                        DrawSprite_TexObj(&lbl_80366188, lbl_803CBBD8);
+                        DrawSprite_TexObj(lbl_80366188.u.v, lbl_803CBBD8);
                     }
                     break;
                 }
@@ -832,7 +832,7 @@ s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
                     drawOk = lbl_80366188.drawCallback(&lbl_80366188);
                 }
                 if (drawOk) {
-                    DrawSprite_TexObj(&lbl_80366188, lbl_803CBBD8);
+                    DrawSprite_TexObj(lbl_80366188.u.v, lbl_803CBBD8);
                 }
                 break;
             case 5:
@@ -1281,11 +1281,11 @@ void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCor
 // .text:0x8000E900 size:0x30C
 void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
-    SpriteTexInfo* tex;
+    TexImage* tex;
     f32 x = 0.0f;
     f32 y = 0.0f;
 
-    tex = &bank->tex[bank->tex[elem->texIdx].texIndex];
+    tex = TEX_ARCHIVE_IMG(bank, elem->texIdx);
     lbl_803CBBD8 = tex;
     q.xy[0][0] = x;
     q.xy[0][1] = y;
@@ -1325,11 +1325,11 @@ void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawPa
 // .text:0x8000EC0C size:0x310
 void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
-    SpriteTexInfo* tex;
+    TexImage* tex;
     f32 x = 0.0f;
     f32 y = 0.0f;
 
-    tex = &bank->tex[bank->tex[elem->texIdx].texIndex];
+    tex = TEX_ARCHIVE_IMG(bank, elem->texIdx);
     lbl_803CBBD8 = tex;
     q.xy[0][0] = x;
     q.xy[0][1] = y;

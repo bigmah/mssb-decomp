@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
+#include "main/file_80024184.h" // TexImage, TexArchive
 
 typedef struct Vec2f {
     f32 x;
@@ -38,32 +39,8 @@ typedef struct QuadVtx {
     /* 0x12 */ s16 t;
 } QuadVtx; // size 0x14
 
-// Texture info record in a sprite bank (0x20 bytes, starting at bank + 4).
-typedef struct SpriteTexInfo {
-    /* 0x00 */ void* image;
-    /* 0x04 */ void* tlut;      // palette, NULL if none
-    /* 0x08 */ u16 height;
-    /* 0x0A */ u16 width;
-    /* 0x0C */ u8 wrapS;        // GXTexWrapMode
-    /* 0x0D */ u8 wrapT;
-    /* 0x0E */ u8 minFilter;    // GXTexFilter
-    /* 0x0F */ u8 magFilter;
-    /* 0x10 */ f32 lodBias;
-    /* 0x14 */ u8 pad14;
-    /* 0x15 */ u8 minLod;
-    /* 0x16 */ u8 maxLod;
-    /* 0x17 */ u8 format;       // GXTexFmt
-    /* 0x18 */ u16 tlutCount;   // palette entries
-    /* 0x1A */ u8 tlutFormat;   // GXTlutFmt
-    /* 0x1B */ u8 pad1B;
-    /* 0x1C */ u16 texIndex; // index of the record holding the image
-    /* 0x1E */ u8 pad1E[2];
-} SpriteTexInfo;
-
-typedef struct SpriteBank {
-    /* 0x00 */ u32 unk0;
-    /* 0x04 */ SpriteTexInfo tex[1]; // variable length
-} SpriteBank;
+// A sprite bank is a texture archive (TexImage records starting at bank + 4).
+typedef TexArchive SpriteBank;
 
 // Generic sprite element header.
 typedef struct SpriteElem {
@@ -212,6 +189,10 @@ typedef struct QuadCircle {
     /* 0x55 */ u8 arcSegments;
 } QuadCircle;
 
+struct QuadState;
+// Path callback (fn_8000A094 installs it; e.g. fn_80034BCC). The result is ignored.
+typedef s32 (*QuadCallback)(struct QuadState* quad, Mtx m);
+
 typedef struct QuadState {
     /* 0x00 */ union {
         QuadVtx v[4];
@@ -229,7 +210,7 @@ typedef struct QuadState {
     /* 0x7F */ u8 unk7F;
     /* 0x80 */ u8 pad80[4];
     /* 0x84 */ s32 (*drawCallback)(struct QuadState*); // returns whether to draw
-    /* 0x88 */ void (*callback)(struct QuadState*, Mtx);
+    /* 0x88 */ QuadCallback callback;
     /* 0x8C */ u8 pad8C[4];
 } QuadState; // size 0x90
 
@@ -239,7 +220,7 @@ typedef struct MtxBox {
     Mtx m;
 } MtxBox;
 extern const MtxBox lbl_800E65D0; // zero matrix
-extern SpriteTexInfo* lbl_803CBBD8;
+extern TexImage* lbl_803CBBD8;
 
 void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);

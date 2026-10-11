@@ -28,7 +28,7 @@ void f_BuildBoneSkinOrientationMatrix(GameBone* bone, Mtx parent);
 void fn_800B3A78(GameActor* actor, Mtx camera, u8 numLights, ...);
 u8 fn_800B3C04(s32 viewIndex, GameActor* actor, Mtx camera);
 void fn_800B3F20(GameActor* actor);
-s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u16 actorID);
+s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u32 actorID);
 void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16* boneIndex, GameBone* boneMem);
 void fn_800B4278(GameActor* actor);
 GameActor* fn_800B43A0(ActorLayout* layout);

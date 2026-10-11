@@ -2,7 +2,9 @@
 #include "Dolphin/os.h"
 #include "Dolphin/mtxext.h"
 #include "game/UnknownHomes_Game.h"
-#include "static/UnknownHomes_Static.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 
 // GX setup helpers ("sub.c") and small math/texture utilities.
 

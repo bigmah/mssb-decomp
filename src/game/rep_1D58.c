@@ -318,7 +318,7 @@ typedef struct StadObjList2 {
 extern void CTRLGetTranslation(void*, f32*, f32*, f32*);
 extern void* fn_800ACF34(s32, s32);
 extern void fn_800ACF14(void*);
-extern void fn_800C07BC(void*, void*, s32, s32, s32 (*)(f32*, f32*));
+extern void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*)); // main/file_800BDEA0.h
 
 void fn_3_B867C(void* mtx, SortEnt* out) {
     StadObjList2* c = (StadObjList2*)lbl_3_common_bss_350E4;
@@ -360,7 +360,7 @@ void fn_3_B867C(void* mtx, SortEnt* out) {
             obj--;
         } while (i-- != 0);
         tmp = fn_800ACF34(0x20, (c->count - k) * 8);
-        fn_800C07BC(out + k, tmp, c->count - k, 8, fn_3_B8658);
+        fn_800C07BC(out + k, tmp, c->count - k, 8, (s32 (*)(const void*, const void*))fn_3_B8658);
         fn_800ACF14(tmp);
     } else {
         for (i = 0; i < c->count; i++) {

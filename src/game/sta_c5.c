@@ -75,7 +75,7 @@ extern const f32 lbl_3_rodata_2D54;
 extern const f32 lbl_3_rodata_2DD8;
 extern u8 lbl_3_data_1B820[];
 extern u8 fn_800527C4(void*);
-extern void fn_80064430(void*, s32, f32, f32);
+extern void fn_80064430(Vec* pos, u8 count, f32 scale2, f32 scale); // main/file_800639BC.h
 extern f64 acos(f64);
 extern const f64 lbl_3_rodata_2DE0;
 extern const f32 lbl_3_rodata_2D70;
@@ -532,13 +532,13 @@ void fn_3_EF21C(u8* p) {
         switch (p[0xC6]) {
         case 0:
             if (p[0xC7] % *(s32*)(d + 0x154) == 0) {
-                fn_80064430(p + 0xA0, 0, *(f32*)(d + 0x160), lbl_3_rodata_2D5C);
+                fn_80064430((Vec *)(p + 0xA0), 0, *(f32*)(d + 0x160), lbl_3_rodata_2D5C); // TODO type
                 return;
             }
             break;
         case 1:
             if (p[0xC7] % *(s32*)(d + 0x158) == 0) {
-                fn_80064430(p + 0xA0, 0, *(f32*)(d + 0x164), lbl_3_rodata_2D5C);
+                fn_80064430((Vec *)(p + 0xA0), 0, *(f32*)(d + 0x164), lbl_3_rodata_2D5C); // TODO type
                 return;
             }
             break;
@@ -547,7 +547,7 @@ void fn_3_EF21C(u8* p) {
                 u32 stad;
                 u32 h;
                 u8 v;
-                fn_80064430(p + 0xA0, 1, *(f32*)(d + 0x168), *(f32*)(d + 0x174));
+                fn_80064430((Vec *)(p + 0xA0), 1, *(f32*)(d + 0x168), *(f32*)(d + 0x174)); // TODO type
                 stad = g_d_GameSettings[9];
                 if (g_d_GameSettings[7] == 6) {
                     v = lbl_3_data_84B8[0x10];

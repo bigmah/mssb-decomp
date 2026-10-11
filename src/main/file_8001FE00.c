@@ -1,19 +1,21 @@
 #include "main/file_8001FE00.h"
-#include "static/UnknownHomes_Static.h"
+#include "main/file_80021308.h"
+#include "main/file_800A6870.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 #include "Dolphin/os.h"
 #include "musyx/musyx.h"
+#include "main/file_800B0724.h"
+#include "main/file_800BDEA0.h"
+#include "main/file_800263FC.h"
+#include "main/file_80034F50.h"
 
 typedef struct PaddedVec {
     Vec v;
     f32 _pad;
 } PaddedVec;
 
-// ARAM file descriptor (16 bytes).
-typedef struct AramFile {
-    /*0x0*/ u32 _00;
-    /*0x4*/ u32 size; // top 4 bits are flags
-    /*0x8*/ u8 _08[0x8];
-} AramFile;
 
 typedef struct StadiumWeight {
     /*0x0*/ s8 stadium; // < 0: any stadium
@@ -44,39 +46,30 @@ typedef struct UnkSettings_800EFBC0 {
     /*0x18*/ u32 _18;
 } UnkSettings_800EFBC0;
 
-typedef struct AramState {
-    /*0x000*/ u8 _000[0x715];
-    /*0x715*/ u8 transferDone;
-} AramState;
 
 extern LayoutGroup* lbl_803CC1B8;
 extern f32 lbl_803CBBDC;
 extern f32 lbl_803CBBE0;
 extern StadiumWeight lbl_800E86BC[17];
-extern AramFile lbl_800EEFD0[];
+extern DiskFileEntry lbl_800EEFD0[];
 extern u8 lbl_800EF3B0[];
 extern u8 lbl_800EF470[];
 extern s32 lbl_800EF4B0[];
 extern u16 lbl_803CB7C8[2];
 extern u8 lbl_803CB7CC[8];
-extern AramState lbl_803C6CF8;
 extern SoundOptions lbl_800EF808;
 extern OptionsDefaults lbl_800E8754;
 extern UnkSettings_800EFBC0 lbl_800EFBC0;
 
 extern int rand(void);
-extern void fn_800B2160(s32);
-extern void DrawSprite_TexObj(SpriteVtx* quad, TexRecord* tex);
 extern void* fn_800ACF34(s32 heap, s32 size);
 extern void fn_800ACF14(void* p);
-extern void fn_80034E20(void* group, void* data);
-extern void fn_8003649C(void* group, s32 a, s32 b, s32 c, s32 d);
 
 // NONMATCHING 99%: original adds 0.0f + 640.0f / 256.0f at runtime (fadds); ours folds the constants
 // .text:0x8001FE00 size:0x248
 #if NONMATCHING
 void fn_8001FE00(LayoutGroup* group) {
-    SpriteVtx quad[4];
+    QuadVtx quad[4];
     PaddedVec p[4];
     Mtx trans;
     Mtx m;
@@ -124,15 +117,15 @@ void fn_8001FE00(LayoutGroup* group) {
     PSMTXMultVec(m, &p[1].v, &p[1].v);
     PSMTXMultVec(m, &p[2].v, &p[2].v);
     PSMTXMultVec(m, &p[3].v, &p[3].v);
-    quad[0].x = p[0].v.x;
-    quad[0].y = p[0].v.y;
-    quad[1].x = p[2].v.x;
-    quad[1].y = p[2].v.y;
-    quad[2].x = p[3].v.x;
-    quad[2].y = p[3].v.y;
-    quad[3].x = p[1].v.x;
-    quad[3].y = p[1].v.y;
-    quad[0].z = quad[1].z = quad[2].z = quad[3].z = -lbl_803CBBE0;
+    quad[0].pos.x = p[0].v.x;
+    quad[0].pos.y = p[0].v.y;
+    quad[1].pos.x = p[2].v.x;
+    quad[1].pos.y = p[2].v.y;
+    quad[2].pos.x = p[3].v.x;
+    quad[2].pos.y = p[3].v.y;
+    quad[3].pos.x = p[1].v.x;
+    quad[3].pos.y = p[1].v.y;
+    quad[0].pos.z = quad[1].pos.z = quad[2].pos.z = quad[3].pos.z = -lbl_803CBBE0;
     quad[0].color = quad[1].color = quad[2].color = quad[3].color = lbl_8037169C.fadeAlpha - 0x100;
     quad[1].s = 0;
     quad[0].s = 0;
@@ -207,18 +200,18 @@ void fn_8002024C(void) {
 // .text:0x80020278 size:0x110
 s32 fn_80020278(s32 index) {
     if (lbl_8037169C.loadState == 0) {
-        AramFile* file = &lbl_800EEFD0[index + 0x2D];
-        lbl_8037169C.tex = fn_800ACF34(0x20, file->size & 0x0FFFFFFF);
-        ARAMTransfer(file, (s32)lbl_8037169C.tex, 1, 0); // TODO type: 2nd param is the destination
+        DiskFileEntry* file = &lbl_800EEFD0[index + 0x2D];
+        lbl_8037169C.tex = fn_800ACF34(0x20, file->sizeFlags & 0x0FFFFFFF);
+        ARAMTransfer(file, lbl_8037169C.tex, 1, 0);
         lbl_8037169C.loadIndex = index;
         lbl_8037169C.fadeAlpha = 0;
         lbl_8037169C.loadState++;
     } else if (lbl_8037169C.loadState == 1) {
-        if ((s32)lbl_803C6CF8.transferDone != 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle != 1) {
             return 0;
         }
         convertTextureHeader(lbl_8037169C.tex);
-        lbl_8037169C.texObj = TEX_ARCHIVE_OBJ(lbl_8037169C.tex, 0);
+        lbl_8037169C.texObj = TEX_ARCHIVE_IMG(lbl_8037169C.tex, 0);
         lbl_8037169C.loadState = 2;
         return 1;
     }
@@ -290,7 +283,7 @@ void fn_8002059C(void) {
         return;
     }
     lbl_8037169C._16 = 0;
-    fn_80034CEC(group);
+    fn_80034CEC((SpaniGroup *)group); // TODO type
     ((void (*)(void))fn_800B0A14_removeQueue)();
 }
 
@@ -301,7 +294,7 @@ void fn_80020624(void) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
         return;
     }
-    fn_80034E20(group, lbl_800EF470);
+    fn_80034E20((SpaniGroup *)group, (SpaniDesc *)lbl_800EF470); // TODO type
     if (lbl_8037169C.state == 7) {
         lbl_80371C30[group->start].obj->_68 = 1;
         lbl_80371C30[group->start].obj->_5C = 0;
@@ -533,7 +526,7 @@ void fn_800206FC(void) {
         lbl_8037169C.done = 0;
         lbl_80371C30[group->start + 2].obj->flags |= 2;
         for (k = 2; k <= 13; k++) {
-            fn_8003649C(group, 2, k, 0x13, lbl_800EF4B0[lbl_8037169C.variant]);
+            fn_8003649C((SpaniOwner *)group, 2, k, 0x13, lbl_800EF4B0[lbl_8037169C.variant]); // TODO type
         }
     } else {
         lbl_80371C30[group->start + 2].obj->flags &= ~2;
@@ -563,7 +556,7 @@ void fn_800206FC(void) {
 // .text:0x80021064 size:0x124
 void fn_80021064(void) {
     LayoutGroup* group = lbl_803CC1B8;
-    fn_80034E20(group, lbl_800EF3B0);
+    fn_80034E20((SpaniGroup *)group, (SpaniDesc *)lbl_800EF3B0); // TODO type
     lbl_80371C30[group->start].obj->flags &= ~2;
     lbl_80371C30[group->start + 1].obj->flags &= ~2;
     lbl_80371C30[group->start + 2].obj->flags &= ~2;

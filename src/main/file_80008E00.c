@@ -1,5 +1,8 @@
 #include "main/file_80008E00.h"
-#include "static/UnknownHomes_Static.h"
+#include "main/file_800A6870.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 #include "Dolphin/OS/OSReset.h"
 #include "Dolphin/OS/OSModule.h"
 #include "Dolphin/OS/OSCache.h"
@@ -11,6 +14,12 @@
 #include "Dolphin/ai.h"
 #include "Dolphin/dvd.h"
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/rand.h"
+#include "main/file_80034F50.h"
+#include "main/file_800A7C08.h"
+#include "main/file_800B0724.h"
+#include "main/file_8000F150.h"
+#include "main/file_8000BA3C.h"
+#include "main/file_80021308.h"
 
 extern void (*lbl_803CBBB8)(void);
 extern u32 lbl_803CBBB0;
@@ -26,50 +35,29 @@ extern const f32 lbl_803CC414; // -3.0f
 extern const f32 lbl_803CC418; // 1.0f
 extern const f32 lbl_803CC41C; // -6.0f
 
-typedef struct {
-    /*0x00*/ u8 _00[0x88];
-    /*0x88*/ u32 _88;
-    /*0x8C*/ u8 _8C[4];
-} lbl_80366188_s; // size: 0x90
-extern lbl_80366188_s lbl_80366188;
 
-// Streamed audio/movie object; see fn_800AD490.
-typedef struct {
-    /*0x000*/ u8 _000[0x1B9];
-    /*0x1B9*/ u8 _1B9;
-    /*0x1BA*/ u8 _1BA;
-} StreamObject;
 
 void fn_8001D2D4(void);
 void fn_80035168(void);
 void fn_80010FA0(void);
 void fn_80011000(void);
-void fn_800111B4(void* data);
 void fn_80021064(void);
 void fn_80021308(void);
-void fn_80021410(void);
-void fn_8002158C(void);
-void fn_800216F8(s32 id, void (*callback)(void));
 void fn_800227E4(void);
 void fn_80022D58(void);
 void fn_80023CF4(u32 progressive);
 void fn_80023D44(u32 value);
-void fn_800A8B78(void);
-u32 fn_800A88C0(void);
 s32 fn_800A8518(s32 mode);
 void fn_800AD01C(void* end);
 void fn_800B0C80(void (*draw)(void));
 void resetAllDrawingStructs(void);
 s32 ConvertPathToEntryNum(void* file);
-void* _OSAllocFromHeap(s32 align, u32 size);
 void DrawShadows(u8 enable);
 u8 GetDrawShadows(void);
-void initRenderMode(s32 mode, s32 a, s32 b);
 void fn_800BEC30(s32 value);
 void somethingSetTexturePointer(void);
 void fn_800A7AD8(void);
 void fn_800A76BC(void);
-void fn_800A6870(u8 enable, s32 value);
 void StartThreadForReadingFromDisk(void);
 void f_initSound(void);
 void fn_800A983C(void);
@@ -90,9 +78,6 @@ void fn_8001E784(void);
 void fn_800A9520(void);
 s32 fn_80021188(BOOL (*callback)(void));
 s32 fn_800211BC(BOOL (*callback)(void));
-u32 fn_800AD490(StreamObject* stream);
-void fn_800AD914(StreamObject* stream);
-void fn_800AD95C(StreamObject* stream, u8 value);
 void fn_8000F3E8(s32 mode);
 void RunDrawScripts_with_stack_variables(void);
 void fn_800B251C(void);
@@ -122,18 +107,11 @@ typedef struct {
 } MainTask;
 extern MainTask* lbl_803CC1B8;
 
-// Disc file table entry; size has flags in the top nibble.
-typedef struct {
-    /*0x00*/ u32 _00;
-    /*0x04*/ u32 size;
-    /*0x08*/ u32 offset;
-    /*0x0C*/ u32 _0C;
-} FileTableEntry;
 
 typedef struct {
-    /*0x000*/ FileTableEntry dll[3];
-    /*0x030*/ FileTableEntry boot[3];
-    /*0x060*/ FileTableEntry files[62];
+    /*0x000*/ DiskFileEntry dll[3];
+    /*0x030*/ DiskFileEntry boot[3];
+    /*0x060*/ DiskFileEntry files[62];
 } FileTable; // size: 0x440
 extern FileTable lbl_800E8AA8;
 
@@ -153,29 +131,7 @@ typedef struct {
 } Arena;
 extern Arena lbl_803C7898;
 
-typedef struct {
-    /*0x000*/ u8 _000[0x780];
-    /*0x780*/ void* _780;
-    /*0x784*/ u8 _784[0x10];
-    /*0x794*/ void* _794;
-    /*0x798*/ void* _798;
-    /*0x79C*/ u8 _79C[0x64];
-} lbl_80366B18_s; // size: 0x800
-extern lbl_80366B18_s lbl_80366B18;
 
-typedef struct {
-    /*0x00*/ u32 _00;
-    /*0x04*/ u32 _04;
-    /*0x08*/ u8 _08[0x48];
-    /*0x50*/ void* arenaStart;
-    /*0x54*/ void* arenaEnd;
-    /*0x58*/ u8 _58[0x330];
-    /*0x388*/ OSSemaphore semaphore;
-    /*0x394*/ u8 _394[2];
-    /*0x396*/ volatile u8 _396;
-    /*0x397*/ u8 _397;
-} lbl_803C7420_s; // size: 0x398
-extern lbl_803C7420_s lbl_803C7420;
 
 typedef struct {
     /*0x00*/ u8 _00[5];
@@ -184,12 +140,6 @@ typedef struct {
 } lbl_80110080_s; // size: 0x10
 extern lbl_80110080_s lbl_80110080;
 
-// Controller state, one 0x20 block per port.
-typedef struct {
-    /*0x00*/ u16 held;
-    /*0x02*/ u8 _02[0x1E];
-} PadState;
-#define g_PadState ((PadState*)&lbl_803C77B8) // TODO type: lbl_803C77B8_s is only the first pad
 
 extern s32 lbl_803CBBD0;
 extern s32 lbl_803CBBD4;
@@ -203,7 +153,7 @@ void fn_80008E00(void (*value)(void)) {
     lbl_803CBBB8 = value;
 }
 
-extern StreamObject* lbl_803CBBBC;
+extern ThpPlayer* lbl_803CBBBC;
 
 extern s32 lbl_803CBBAC;
 
@@ -211,7 +161,7 @@ extern s32 lbl_803CBBA0;
 extern u8 lbl_803CBBA4;
 
 static inline u8 updateInGameFlag(void) {
-    switch (lbl_803C6CF8._722) {
+    switch (lbl_803C6CF8.driveStatus) {
     case 0:
         lbl_803CBBA4 = 0;
         break;
@@ -220,7 +170,7 @@ static inline u8 updateInGameFlag(void) {
     case 5:
     case 6:
     case 11:
-        lbl_803CBBA0 = lbl_803C6CF8._722;
+        lbl_803CBBA0 = lbl_803C6CF8.driveStatus;
         lbl_803CBBA4 = 1;
         break;
     }
@@ -228,7 +178,7 @@ static inline u8 updateInGameFlag(void) {
 }
 
 static inline BOOL checkResetRequested(u8 inGame) {
-    u16 buttons = lbl_803C77B8._00;
+    u16 buttons = lbl_803C77B8[0].held;
 
     if (lbl_803CBBAC != 0) {
         if ((buttons & 0x1600) != 0x1600) {
@@ -248,7 +198,7 @@ static inline BOOL checkResetRequested(u8 inGame) {
     if (lbl_80366158.resetRequested) {
         return TRUE;
     }
-    if ((lbl_803CBBC2 || lbl_803CBBC1) && !OSGetResetButtonState() && (!inGame || lbl_803C6CF8._722 != -1) &&
+    if ((lbl_803CBBC2 || lbl_803CBBC1) && !OSGetResetButtonState() && (!inGame || lbl_803C6CF8.driveStatus != -1) &&
         lbl_80366158._20) {
         return TRUE;
     }
@@ -310,7 +260,7 @@ static inline void updateStream(s32 inGame) {
         if (inGame && (status == 1 || (status & 0x80000000))) {
             fn_800AD914(lbl_803CBBBC);
         } else if (!inGame && fn_800AD490(lbl_803CBBBC) == 2) {
-            fn_800AD95C(lbl_803CBBBC, lbl_803CBBBC->_1B9);
+            fn_800AD95C(lbl_803CBBBC, lbl_803CBBBC->flags);
         }
     }
 }
@@ -360,7 +310,7 @@ void main(void) {
     lbl_80366158._28 = 0;
     fn_80052188();
     fn_80064534();
-    sem = &lbl_803C7420.semaphore;
+    sem = &lbl_803C7420.drawDone;
 
     do {
         if (!wasInGame) {
@@ -403,7 +353,7 @@ void main(void) {
         OSWaitSemaphore(sem);
         GXSetCurrentGXThread();
         fn_8003A090();
-        while (lbl_803C7420._396 != 0) {
+        while (*(volatile u8*)&lbl_803C7420.drawing != 0) {
         }
         GXSetCurrentGXThread();
         GXFlush();
@@ -457,9 +407,9 @@ void main(void) {
 void PrepFilesToBeLoaded(void) {
     MainTask* task;
 
-    lbl_80366158.arenaStart = lbl_803C7420.arenaStart;
+    lbl_80366158.arenaStart = lbl_803C7420.heapLo;
     task = lbl_803CC1B8;
-    lbl_80366158.arenaEnd = lbl_803C7420.arenaEnd;
+    lbl_80366158.arenaEnd = lbl_803C7420.heapHi;
     lbl_803CBBD4 = ConvertPathToEntryNum(&lbl_800E8EE8);
     lbl_803CBBD0 = ConvertPathToEntryNum(&lbl_800E8EF8);
     task->state = 0;
@@ -478,7 +428,7 @@ void PrepFilesToBeLoaded(void) {
 void fn_800097A0(void) {
     MainTask* task;
     OSModuleHeader* module;
-    FileTableEntry* file;
+    DiskFileEntry* file;
     BOOL progressive;
     FileTable* table = &lbl_800E8AA8;
 
@@ -491,31 +441,31 @@ void fn_800097A0(void) {
         fn_800AD054(lbl_80366158.arenaStart, lbl_80366158.arenaEnd);
         fn_80021308();
         lbl_803C6CF8.entryNum = lbl_803CBBD0;
-        lbl_80366B18._780 = (void*)ARAMTransfer(table->boot, 0, 0, 0); // TODO type: returns a pointer
+        lbl_80366B18.fontArchive = ARAMTransfer(table->boot, 0, 0, 0);
         task->state = 1;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8._715 == 1) {
-            lbl_80366B18._794 = (void*)ARAMTransfer(&table->boot[2], 0, 1, 0);
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
+            lbl_80366B18.iconArchive = ARAMTransfer(&table->boot[2], 0, 1, 0);
             task->state = 2;
         }
         break;
     case 2:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             fn_80011000();
-            lbl_80366B18._798 = (void*)ARAMTransfer(&table->boot[1], 0, 1, 0);
+            lbl_80366B18.tables[0] = ARAMTransfer(&table->boot[1], 0, 1, 0);
             task->state = 3;
         }
         break;
     case 3:
-        if ((s32)lbl_803C6CF8._715 == 1) {
-            fn_800111B4(lbl_80366B18._798);
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
+            fn_800111B4(lbl_80366B18.tables[0]);
             fn_80010FA0();
             task->state = 4;
         }
         break;
     case 4:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             task->state = 5;
         }
         break;
@@ -546,7 +496,7 @@ void fn_800097A0(void) {
         } else {
             progressive = FALSE;
             if (OSGetProgressiveMode() == 1 ||
-                ((g_PadState[0].held | g_PadState[1].held | g_PadState[2].held | g_PadState[3].held) & 0x200)) {
+                ((lbl_803C77B8[0].held | lbl_803C77B8[1].held | lbl_803C77B8[2].held | lbl_803C77B8[3].held) & 0x200)) {
                 progressive = TRUE;
             }
         }
@@ -570,12 +520,12 @@ void fn_800097A0(void) {
         fn_800AD038(lbl_80366158.arenaStart);
         lbl_803C6CF8.entryNum = lbl_803CBBD4;
         task->module = (OSModuleHeader*)ARAMTransfer(&table->dll[0], 0, 0, 0);
-        task->moduleSize = table->dll[0].size & 0x0FFFFFFF;
+        task->moduleSize = table->dll[0].sizeFlags & 0x0FFFFFFF;
         OSReport(lbl_800E6588, 0, task->module);
         task->state = 9;
         break;
     case 9:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             module = task->module;
             lbl_803C6CF8.entryNum = lbl_803CBBD0;
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
@@ -608,13 +558,13 @@ void fn_800097A0(void) {
         lbl_803C6CF8.entryNum = lbl_803CBBD4;
         file = &table->dll[1];
         task->module = (OSModuleHeader*)ARAMTransfer(file, 0, 0, 0);
-        task->moduleSize = file->size & 0x0FFFFFFF;
+        task->moduleSize = file->sizeFlags & 0x0FFFFFFF;
         OSReport(lbl_800E6588, 1, task->module);
         task->state = 12;
         lbl_80366158._1C = 0;
         break;
     case 12:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             module = task->module;
             lbl_803C6CF8.entryNum = lbl_803CBBD0;
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
@@ -635,8 +585,7 @@ void fn_800097A0(void) {
         // fallthrough
     case 14:
         if (lbl_80366158._1C != 0 && fn_800A8518(3) != 0) {
-            fn_800A88C0();
-            fn_800A8B78();
+            fn_800A8B78(fn_800A88C0());
             fn_80021410();
             resetAllDrawingStructs();
             fn_80009144();
@@ -710,8 +659,8 @@ void BezierInterpolate(f32 t, BezierPoint* out, BezierPoint* p0, BezierPoint* p1
 #endif
 
 // .text:0x8000A094 size:0x18
-u32 fn_8000A094(u32 value) {
-    u32 previous = lbl_80366188._88;
-    lbl_80366188._88 = value;
+QuadCallback fn_8000A094(QuadCallback value) {
+    QuadCallback previous = lbl_80366188.callback;
+    lbl_80366188.callback = value;
     return previous;
 }

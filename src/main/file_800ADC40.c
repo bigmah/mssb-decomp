@@ -1,6 +1,9 @@
 #include "main/file_800ADC40.h"
+#include "main/file_800A6870.h"
 #include "main/file_80008E00.h"
-#include "static/UnknownHomes_Static.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 #include "Dolphin/os.h"
 #include "Dolphin/ai.h"
 #include "Dolphin/ar.h"
@@ -8,6 +11,8 @@
 #include "Dolphin/mtx.h"
 #include "Dolphin/stl.h"
 #include "string.h"
+#include "Unknown/File_0x800a6304.h"
+#include "main/file_800DFDD4.h"
 
 void* _OSAllocFromHeap(s32 align, u32 size);
 
@@ -106,7 +111,7 @@ extern char lbl_803CCF00[8]; // lbl_803CCF00
 #define MOV_STR_NO_BUFFER 0x11C    // "...failed to allocate the working buffer\n"
 
 #define MOV_STATE_STOP 4
-#define MOV_DVD_DONE() ((s32)*(volatile u8*)&lbl_803C6CF8._715)
+#define MOV_DVD_DONE() ((s32)*(volatile u8*)&lbl_803C6CF8.idle)
 
 // NONMATCHING 73%: the movie.c bss is not split into this unit; the original addresses all of it relative to lbl_802F93A0 (also float rodata names)
 #if NONMATCHING
@@ -1013,9 +1018,9 @@ static inline BOOL MovStoreToAram(u32 len) {
     u8* wrap;
     BOOL intr;
 
-    while (lbl_803C6CF8.streamAvail < len) {}
+    while (lbl_803C6CF8.buffered < len) {}
     intr = OSDisableInterrupts();
-    src = lbl_803C6CF8.streamRead;
+    src = lbl_803C6CF8.readPos;
     if (src + len < lbl_803C7A00.dvdBufStart + lbl_803C7A00.dvdBufSize) {
         wrap = NULL;
         first = len;
@@ -1144,9 +1149,9 @@ BOOL fn_800B0134(u32 len) {
     u8* wrap;
     BOOL intr;
 
-    while (lbl_803C6CF8.streamAvail < len) {}
+    while (lbl_803C6CF8.buffered < len) {}
     intr = OSDisableInterrupts();
-    cur = lbl_803C6CF8.streamRead;
+    cur = lbl_803C6CF8.readPos;
     if (cur + len < lbl_803C7A00.dvdBufStart + lbl_803C7A00.dvdBufSize) {
         src = cur;
         first = len;
@@ -1310,9 +1315,9 @@ void fn_800B05E4(s32 aramSize, u32 mramSize) {
     ARQSetChunkSize(0x1000);
     ARQFlushQueue();
     mramSize = OSRoundUp32B(mramSize);
-    mram->dvdBufSize = lbl_803C6CF8.streamSize;
-    mram->dvdBufStart = lbl_803C6CF8.streamEnd - lbl_803C6CF8.streamSize;
-    mram->dvdBufSize = lbl_803C6CF8.streamSize;
+    mram->dvdBufSize = lbl_803C6CF8.ringSize;
+    mram->dvdBufStart = lbl_803C6CF8.bufEnd - lbl_803C6CF8.ringSize;
+    mram->dvdBufSize = lbl_803C6CF8.ringSize;
     mram->start = _OSAllocFromHeap(0x20, mramSize);
     mram->end = mram->start + mramSize;
     mram->readPtr = mram->writePtr = mram->start;

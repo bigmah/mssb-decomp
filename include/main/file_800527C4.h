@@ -12,17 +12,6 @@ struct SoundLoadTask;
 #include "Dolphin/mtx.h"
 
 
-// Per-character model object: maps game joint ids to model joints.
-typedef struct CharJointMapObj {
-    /*0x000*/ u8 _000[0x162];
-    /*0x162*/ u16 jointMap[0x79];
-} CharJointMapObj;
-
-// lbl_8036E548 (character actors and models), only the fields used here.
-typedef struct CharModelTable {
-    /*0x0000*/ u8 _0000[0x2C50];
-    /*0x2C50*/ CharJointMapObj* chars[13];
-} CharModelTable;
 
 
 // lbl_803C6714: two looping sound effects driven by queue tasks.
@@ -152,11 +141,18 @@ void initializeUnknown(void);
 void fn_80062A74(void);
 void fn_80062BE4(Vec* pos);
 void fn_80062C24(Vec* pos);
-void fn_80062C60(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
-void fn_80062D94(CharModel* model);
-void fn_80062E6C(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
-s32 fn_80062ED4(void* player, struct GameActor** actor);
+void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_80062D94(CharActor* model);
+void fn_80062E6C(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+s32 fn_80062ED4(CharActor* player, struct ActorObject* obj);
 s32 fn_80062F38(struct GameBone* bone, struct GameBone* target, Mtx m, f32 t);
-s32 fn_80063010(void* player, struct GameActor** actor);
+s32 fn_80063010(CharActor* player, struct ActorObject* obj);
+
+// Camera setup (fn_800528AC is defined in this unit).
+#include "static/Camera.h"
+void fn_800528AC(fn_800528AC_parameter value);
+// Not yet decompiled (asm in this unit's range).
+u32 fn_80062890(s32 index);
+void fn_80062A94(void);
 
 #endif

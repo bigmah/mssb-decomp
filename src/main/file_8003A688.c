@@ -2,11 +2,15 @@
 #include "main/file_80039AC0.h"
 #include "main/file_80008E00.h"
 #include "main/file_8001FE00.h"
-#include "static/UnknownHomes_Static.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/os.h"
 #include "Dolphin/ar.h"
 #include "stl/string.h"
+#include "Unknown/File_0x800a6304.h"
+#include "main/file_800B0724.h"
 
 extern TrailSystem lbl_802D3D80;
 // SoundManager (main/file_80021308.h, whose prototypes clash with UnknownHomes_Static.h).
@@ -155,7 +159,7 @@ void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused) {
         case MODEL_CMD_TEXTURE: {
             u32 map = (cmd->param >> 13) & 7;
             TexArchive* textures = model->texCoords[map].textures;
-            SetDisplayStateTexture((TexImage*)TEX_ARCHIVE_OBJ(textures, cmd->param & 0x1FFF), map, map);
+            SetDisplayStateTexture(TEX_ARCHIVE_IMG(textures, cmd->param & 0x1FFF), map, map);
             break;
         }
         case MODEL_CMD_VTXDESC:
@@ -311,7 +315,7 @@ extern u8 lbl_803CBCAC;
 
 // .text:0x8003AD84 size:0xD0
 void fn_8003AD84(TexArchive* arc) {
-    TexImage* tex = (TexImage*)arc->recs; // TODO type: archive records are TexImage headers
+    TexImage* tex = arc->entries;
 
     GXInitTexObjCI(&lbl_803C50B0, tex->data, tex->width, tex->height, GX_TF_C4, tex->wrapS, tex->wrapT, GX_FALSE, GX_TLUT0);
     GXInitTlutObj(&lbl_803C50DC, lbl_800F7AC0, GX_TL_IA8, 16);

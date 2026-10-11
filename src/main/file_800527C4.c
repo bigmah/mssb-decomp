@@ -3,7 +3,9 @@
 // UnknownHomes_Static.h declares fn_80021518 with placeholder argument types;
 // use the real prototype from file_80021308.h instead.
 #define fn_80021518 fn_80021518_placeholder
-#include "static/UnknownHomes_Static.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 #undef fn_80021518
 #include "main/file_80021308.h"
 #include "main/file_80008E00.h"
@@ -15,6 +17,10 @@
 #include "Dolphin/mtxext.h"
 #include "stl/math.h"
 #include "stl/string.h"
+#include "main/file_800B0724.h"
+#include "main/file_800B79D0.h"
+#include "main/file_800263FC.h"
+#include "main/file_80034F50.h"
 
 extern SoundManager lbl_800EF808;
 extern SoundGroupRequest lbl_80108B84;
@@ -32,12 +38,9 @@ extern u8 lbl_803CB889;
 extern char lbl_800E6970[]; // "...(%d) Step No %d \n"
 extern char lbl_800E69A8[]; // "sound end \n"
 extern s32 lbl_803CBD0C;
-extern CharModelTable lbl_8036E548;
 
 extern s32 fn_800698F8(s32 kind);
-extern void fn_80032064(Vec* pos, s32* params);
 extern void fn_80032284(Vec* pos);
-extern void fn_800324EC(u16 id, s32 charIndex, s32 c, s32* params);
 
 extern camera_803c639c_s lbl_803C639C[4];
 extern Unk803C60BC lbl_803C60BC;
@@ -59,7 +62,6 @@ extern s32 fn_80064918(s16 charID);
 extern void challengeDrawStarsOnMissionMenu(void);
 extern u8 lbl_800EFBA4[16]; // sound volumes
 
-extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
 extern void makeLookAtMatrix(Mtx m, Vec* eye, Vec* up, Vec* target);
 extern void fn_80011640(Mtx src, Mtx dst);
@@ -343,7 +345,7 @@ void fn_80053810(void) {
             }
             if (lbl_8034E978.prevMenu != lbl_8034E978.menu || lbl_8034E978.prev03 != lbl_8034E978._03) {
                 TASK_OBJ(task, 6)->_5C = (lbl_8034E978._03 + lbl_800FEF70[lbl_8034E978.menu]._00) << 16;
-                fn_800363D8(task, 5, 1, 0xEF, lbl_800FEF70[lbl_8034E978.menu]._02);
+                fn_800363D8((SpaniOwner *)task, 5, 1, 0xEF, lbl_800FEF70[lbl_8034E978.menu]._02); // TODO type
                 TASK_OBJ(task, 5)->_5C = lbl_800FEF70[lbl_8034E978.menu]._06 << 16;
                 TASK_OBJ(task, 6)->_5C = lbl_800FEF70[lbl_8034E978.menu]._04 << 16;
                 TASK_OBJ(task, 1)->_5C = 0;
@@ -426,7 +428,8 @@ void fn_80053810(void) {
         fn_8000FEE8(lbl_8034E978.text[i]);
     }
     fn_8000F8F4((LayoutGroup*)task);
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC((SpaniGroup *)task);
+    fn_800B0A14_removeQueue(NULL);
 }
 #endif
 
@@ -445,10 +448,10 @@ void fn_80053FE8(void) {
     for (i = 0; i < 10; i++) {
         lbl_8034E978.text[i] = -1;
     }
-    fn_80034E20(task, &lbl_800FEB30);
+    fn_80034E20((SpaniGroup *)task, &lbl_800FEB30); // TODO type
     TASK_OBJ(task, 6)->_5C = (lbl_8034E978._03 + lbl_800FEF70[lbl_8034E978.menu]._00) << 16;
     TASK_OBJ(task, 5)->_5C = lbl_800FEF70[lbl_8034E978.menu]._06 << 16;
-    fn_800363D8(task, 5, 1, 0xEF, lbl_800FEF70[lbl_8034E978.menu]._02);
+    fn_800363D8((SpaniOwner *)task, 5, 1, 0xEF, lbl_800FEF70[lbl_8034E978.menu]._02); // TODO type
     TASK_OBJ(task, 4)->_5C = lbl_800FEF70[lbl_8034E978.menu]._04 << 16;
     TASK_OBJ(task, 3)->_5C = lbl_800FEF70[lbl_8034E978.menu]._06 << 16;
     lbl_8034E978._27 = 1;
@@ -512,8 +515,8 @@ void fn_800542C4(u8 cur, u8 target, SceneTask* task) {
         }
         TASK_OBJ(task, 32)->_5C = 0;
         TASK_OBJ(task, 35)->_5C = 10 << 16;
-        fn_800363D8(task, 0x20, 1, 0xF9, lbl_803C5F04.option[2] ^ 1);
-        fn_800363D8(task, 0x23, 1, 0xF9, lbl_803C5F04.prevOption[2] ^ 1);
+        fn_800363D8((SpaniOwner *)task, 0x20, 1, 0xF9, lbl_803C5F04.option[2] ^ 1); // TODO type
+        fn_800363D8((SpaniOwner *)task, 0x23, 1, 0xF9, lbl_803C5F04.prevOption[2] ^ 1); // TODO type
         TASK_OBJ(task, 32)->_68 = 1;
         TASK_OBJ(task, 35)->_68 = 4;
         return;
@@ -530,8 +533,8 @@ void fn_800542C4(u8 cur, u8 target, SceneTask* task) {
         }
         TASK_OBJ(task, 33)->_5C = 0;
         TASK_OBJ(task, 36)->_5C = 10 << 16;
-        fn_800363D8(task, 0x21, 1, 0xF9, lbl_803C5F04.option[3] + 2);
-        fn_800363D8(task, 0x24, 1, 0xF9, lbl_803C5F04.prevOption[3] + 2);
+        fn_800363D8((SpaniOwner *)task, 0x21, 1, 0xF9, lbl_803C5F04.option[3] + 2); // TODO type
+        fn_800363D8((SpaniOwner *)task, 0x24, 1, 0xF9, lbl_803C5F04.prevOption[3] + 2); // TODO type
         TASK_OBJ(task, 33)->_68 = 1;
         TASK_OBJ(task, 36)->_68 = 4;
         return;
@@ -547,8 +550,8 @@ void fn_800542C4(u8 cur, u8 target, SceneTask* task) {
         }
         TASK_OBJ(task, 34)->_5C = 0;
         TASK_OBJ(task, 37)->_5C = 10 << 16;
-        fn_800363D8(task, 0x22, 1, 0xF9, lbl_803C5F04.option[4] ^ 1);
-        fn_800363D8(task, 0x25, 1, 0xF9, lbl_803C5F04.prevOption[4] ^ 1);
+        fn_800363D8((SpaniOwner *)task, 0x22, 1, 0xF9, lbl_803C5F04.option[4] ^ 1); // TODO type
+        fn_800363D8((SpaniOwner *)task, 0x25, 1, 0xF9, lbl_803C5F04.prevOption[4] ^ 1); // TODO type
         TASK_OBJ(task, 34)->_68 = 1;
         TASK_OBJ(task, 37)->_68 = 4;
         return;
@@ -977,7 +980,8 @@ void fn_800559EC(void) {
     }
     if (lbl_803C5EE0._15 != 0) {
         lbl_803C5EE0._15 = 0;
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC((SpaniGroup *)task);
+        fn_800B0A14_removeQueue(NULL);
     }
 }
 #endif
@@ -1005,9 +1009,9 @@ void fn_80056120(void) {
     lbl_803C5EE0.cursor[1] = lbl_803C5F04.cursor[1];
     lbl_803C5EE0.cursor[2] = lbl_803C5F04.cursor[2];
     lbl_803C5EE0.cursor[3] = lbl_803C5F04.cursor[3];
-    fn_80034E20(task, &lbl_800FF540);
+    fn_80034E20((SpaniGroup *)task, &lbl_800FF540); // TODO type
     for (i = 1; i < 5; i++) {
-        fn_800363D8(task, i + 1, 1, 0x110, i - 1);
+        fn_800363D8((SpaniOwner *)task, i + 1, 1, 0x110, i - 1); // TODO type
         if (i > 1) {
             TASK_OBJ(task, i + 0x1B)->_5C = (i - 2) << 16;
             TASK_OBJ(task, i + 0x1B)->flags &= ~2;
@@ -1015,34 +1019,34 @@ void fn_80056120(void) {
     }
     TASK_OBJ(task, lbl_803C5F04.option[1] + 0xC)->_64 = 0x107;
     TASK_OBJ(task, (lbl_803C5F04.option[2] ^ 1) + 0xE)->_64 = 0x107;
-    fn_800363D8(task, 0x20, 1, 0xF9, lbl_803C5F04.option[2] ^ 1);
+    fn_800363D8((SpaniOwner *)task, 0x20, 1, 0xF9, lbl_803C5F04.option[2] ^ 1); // TODO type
     TASK_OBJ(task, lbl_803C5F04.option[3] + 0x10)->_64 = 0x109;
-    fn_800363D8(task, 0x21, 1, 0xF9, lbl_803C5F04.option[3] + 2);
+    fn_800363D8((SpaniOwner *)task, 0x21, 1, 0xF9, lbl_803C5F04.option[3] + 2); // TODO type
     TASK_OBJ(task, (lbl_803C5F04.option[4] ^ 1) + 0x15)->_64 = 0x107;
-    fn_800363D8(task, 0x22, 1, 0xF9, lbl_803C5F04.option[4] ^ 1);
+    fn_800363D8((SpaniOwner *)task, 0x22, 1, 0xF9, lbl_803C5F04.option[4] ^ 1); // TODO type
     for (p = 0; p < 2; p++) {
         if (((u8*)&g_d_GameSettings)[0x10] == 0 && p != 0) { // TODO type
-            fn_800363D8(task, p + 0xC, 1, 0x116, 0xD);
+            fn_800363D8((SpaniOwner *)task, p + 0xC, 1, 0x116, 0xD); // TODO type
         } else {
-            fn_800363D8(task, p + 0xC, 1, 0x116, lbl_8034E9A0.teamPort[p] + 9);
+            fn_800363D8((SpaniOwner *)task, p + 0xC, 1, 0x116, lbl_8034E9A0.teamPort[p] + 9); // TODO type
         }
-        fn_800363D8(task, p + 0xE, 1, 0x116, p + 2);
-        fn_800363D8(task, p + 0x15, 1, 0x116, p + 2);
+        fn_800363D8((SpaniOwner *)task, p + 0xE, 1, 0x116, p + 2); // TODO type
+        fn_800363D8((SpaniOwner *)task, p + 0x15, 1, 0x116, p + 2); // TODO type
     }
     for (i = 0; i < 5; i++) {
-        fn_800363D8(task, i + 0x10, 1, 0x116, i + 4);
+        fn_800363D8((SpaniOwner *)task, i + 0x10, 1, 0x116, i + 4); // TODO type
     }
     TASK_OBJ(task, 0x18)->_5C = lbl_8034E9A0._470D[0] << 16;
     TASK_OBJ(task, 0x19)->_5C = lbl_8034E9A0._470D[1] << 16;
     for (p = 0; p < 2; p++) {
         if (((u8*)&g_d_GameSettings)[0x10] == 0 && p != 0) { // TODO type
             if (lbl_8034E9A0.teamPort[0] == 0) {
-                fn_800363D8(task, p + 0x27, 1, 0x46, 5);
+                fn_800363D8((SpaniOwner *)task, p + 0x27, 1, 0x46, 5); // TODO type
             } else {
-                fn_800363D8(task, p + 0x27, 1, 0x46, 4);
+                fn_800363D8((SpaniOwner *)task, p + 0x27, 1, 0x46, 4); // TODO type
             }
         } else {
-            fn_800363D8(task, p + 0x27, 1, 0x46, lbl_8034E9A0.teamPort[p]);
+            fn_800363D8((SpaniOwner *)task, p + 0x27, 1, 0x46, lbl_8034E9A0.teamPort[p]); // TODO type
         }
         if (g_d_GameSettings.GameModeSelected == 5 && p != 0) {
             v = gChallengeState._441F;
@@ -1050,23 +1054,23 @@ void fn_80056120(void) {
             v = lbl_8034E9A0._46E0[p][0];
         }
         TASK_OBJ(task, p + 0x3D)->_5C = v << 16;
-        fn_800363D8(task, p * 4 + 0x2B, 1, 0x11A, 0);
-        fn_800363D8(task, p * 4 + 0x2C, 1, 0x11A, 1);
-        fn_800363D8(task, p * 4 + 0x2D, 1, 0x11A, 2);
-        fn_800363D8(task, p * 4 + 0x2E, 1, 0x11A, 3);
+        fn_800363D8((SpaniOwner *)task, p * 4 + 0x2B, 1, 0x11A, 0); // TODO type
+        fn_800363D8((SpaniOwner *)task, p * 4 + 0x2C, 1, 0x11A, 1); // TODO type
+        fn_800363D8((SpaniOwner *)task, p * 4 + 0x2D, 1, 0x11A, 2); // TODO type
+        fn_800363D8((SpaniOwner *)task, p * 4 + 0x2E, 1, 0x11A, 3); // TODO type
         for (j = 0; j < 4; j++) {
             s8 c = lbl_803C5F04.playerOption[p][j];
             if (j == 0) {
-                fn_800363D8(task, j + p * 4 + 0x33, 1, 0x116, 1);
-                fn_800363D8(task, j + p * 4 + 0x33, 2, 0x116, 0);
+                fn_800363D8((SpaniOwner *)task, j + p * 4 + 0x33, 1, 0x116, 1); // TODO type
+                fn_800363D8((SpaniOwner *)task, j + p * 4 + 0x33, 2, 0x116, 0); // TODO type
                 TASK_OBJ(task, j + p * 4 + 0x33)->_5C = c * (10 << 16);
             } else if (j == 3) {
-                fn_800363D8(task, j + p * 4 + 0x33, 1, 0x116, 2);
-                fn_800363D8(task, j + p * 4 + 0x33, 2, 0x116, 3);
+                fn_800363D8((SpaniOwner *)task, j + p * 4 + 0x33, 1, 0x116, 2); // TODO type
+                fn_800363D8((SpaniOwner *)task, j + p * 4 + 0x33, 2, 0x116, 3); // TODO type
                 TASK_OBJ(task, j + p * 4 + 0x33)->_5C = (c ^ 1) * (10 << 16);
             } else {
-                fn_800363D8(task, j + p * 4 + 0x33, 1, 0x116, 1);
-                fn_800363D8(task, j + p * 4 + 0x33, 2, 0x116, 0xE);
+                fn_800363D8((SpaniOwner *)task, j + p * 4 + 0x33, 1, 0x116, 1); // TODO type
+                fn_800363D8((SpaniOwner *)task, j + p * 4 + 0x33, 2, 0x116, 0xE); // TODO type
                 TASK_OBJ(task, j + p * 4 + 0x33)->_5C = c * (10 << 16);
             }
             if (lbl_803C5F04.playerOption[p][j] != 0) {
@@ -1087,7 +1091,7 @@ void fn_80056120(void) {
         }
     }
     if (g_d_GameSettings.GameModeSelected == 5) {
-        fn_800363D8(task, 0x57, 1, 0x20, g_d_GameSettings.StadiumID);
+        fn_800363D8((SpaniOwner *)task, 0x57, 1, 0x20, g_d_GameSettings.StadiumID); // TODO type
     } else {
         TASK_OBJ(task, 87)->flags &= ~2;
     }
@@ -1371,7 +1375,8 @@ void challengeCheckStarsMenuLoading(void) {
     }
     if (lbl_803297E0.menuDone != 0) {
         lbl_803297E0.menuDone = 0;
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC((SpaniGroup *)task);
+        fn_800B0A14_removeQueue(NULL);
     }
 }
 #endif
@@ -1381,10 +1386,10 @@ void starMenu(void) {
     SceneTask* task;
     s32 i;
 
-    fn_80034E20(task = lbl_803CC1B8, &lbl_80108048);
+    fn_80034E20((SpaniGroup*)(task = lbl_803CC1B8), &lbl_80108048); // TODO type
     for (i = 0; i < 9; i++) {
         lbl_80371C30[12 + task->u14.objIdx + i].obj->_5C = i << 16;
-        fn_800363D8(task, i + 0x15, 1, 0x83, inMemRoster[0][i].stats.CharID);
+        fn_800363D8((SpaniOwner *)task, i + 0x15, 1, 0x83, inMemRoster[0][i].stats.CharID); // TODO type
     }
     lbl_803CC1B8->func = challengeCheckStarsMenuLoading;
 }
@@ -1447,7 +1452,8 @@ void fn_80057CAC(void) {
     }
     if (lbl_803297E0.scoutDone != 0) {
         lbl_803297E0.scoutDone = 0;
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC((SpaniGroup *)task);
+        fn_800B0A14_removeQueue(NULL);
     }
 }
 #endif
@@ -1463,7 +1469,7 @@ void fn_80058050(void) {
     s32 base;
     ChallengeTrackingStruct* tracker;
 
-    fn_80034E20(task, &lbl_80107688);
+    fn_80034E20((SpaniGroup *)task, &lbl_80107688); // TODO type
     for (i = 0, base = 0, player = inMemRoster[1]; i < 9; i++, player++, base += 5) {
         tracker = &gChallengeState.trackers[player->stats.CharID];
         lbl_803297E0.scoutTotal[i] = ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C];
@@ -1476,7 +1482,7 @@ void fn_80058050(void) {
             }
         }
         TASK_OBJ(task, i + 5)->_5C = i << 16;
-        fn_800363D8(task, i + 0xE, 1, 0x83, player->stats.CharID);
+        fn_800363D8((SpaniOwner *)task, i + 0xE, 1, 0x83, player->stats.CharID); // TODO type
     }
     TASK_OBJ(task, 4)->_5C = 5 << 16;
     if (gChallengeState._441F == 0x13) {
@@ -2262,7 +2268,7 @@ void fn_8005AF68(SceneTask* task) {
     for (i = 0; i < 9; i++, player++, slot++) {
         if (lbl_803297E0._CFA2[team] != 2) {
             s8 pos = slot->slot;
-            fn_800363D8(task, pos + 0x23, 1, 0x83, player->stats.CharID);
+            fn_800363D8((SpaniOwner *)task, pos + 0x23, 1, 0x83, player->stats.CharID); // TODO type
             TASK_OBJ(task, i + 0x11)->flags &= ~2;
             if (g_d_GameSettings.GameModeSelected == 5) {
                 flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
@@ -2308,7 +2314,7 @@ void fn_8005B298(SceneTask* task) {
         TASK_OBJ(task, i + 0x5A)->_5C = i << 16;
         TASK_OBJ(task, i + 0x6C)->flags &= ~2;
         if (lbl_803297E0._CFA2[team] == 0) {
-            fn_800363D8(task, i + 0x63, 1, 0x83, player->stats.CharID);
+            fn_800363D8((SpaniOwner *)task, i + 0x63, 1, 0x83, player->stats.CharID); // TODO type
             TASK_OBJ(task, i + 0xAB)->_5C = player->stats.CharacterClass << 16;
             TASK_OBJ(task, i + 0x99)->_5C = (player->stats.BattingStance + player->stats.FieldingArm * 2) << 16;
             TASK_OBJ(task, i + 0x134)->flags &= ~2;
@@ -2317,7 +2323,7 @@ void fn_8005B298(SceneTask* task) {
             s8 total;
             s32 left;
 
-            fn_800363D8(task, i + 0x63, 1, 0x83, inMemRoster[1][i].stats.CharID);
+            fn_800363D8((SpaniOwner *)task, i + 0x63, 1, 0x83, inMemRoster[1][i].stats.CharID); // TODO type
             tracker = &gChallengeState.trackers[inMemRoster[1][i].stats.CharID];
             total = ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C];
             left = total - (s8)tracker->scoutFlagsAchieved;
@@ -2424,7 +2430,7 @@ void fn_8005BB5C(SceneTask* task) {
     for (team = 0, base = 0; team < 2; team++, base += 9) {
         for (i = 0; i < 9; i++) {
             player = &inMemRoster[team][i];
-            fn_800363D8(task, i + base + 0x40, 1, 0x83, player->stats.CharID);
+            fn_800363D8((SpaniOwner *)task, i + base + 0x40, 1, 0x83, player->stats.CharID); // TODO type
             TASK_OBJ(task, i + base + 0x2E)->_5C = i << 16;
             if (team == 0) {
                 TASK_OBJ(task, i + 0xD0)->_5C = inMemRoster[0][i].stats.CharacterClass << 16;
@@ -2481,7 +2487,7 @@ void fn_8005BF40(SceneTask* task) {
         player = inMemRoster[team];
         slot = lbl_80354720[team];
         for (i = 0; i < 9; i++, player++, slot++) {
-            fn_800363D8(task, slot->slot + base + 0x10A, 1, 0x83, player->stats.CharID);
+            fn_800363D8((SpaniOwner *)task, slot->slot + base + 0x10A, 1, 0x83, player->stats.CharID); // TODO type
             TASK_OBJ(task, i + base + 0xE6)->flags &= ~2;
             if (g_d_GameSettings.GameModeSelected == 5) {
                 flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
@@ -2525,7 +2531,7 @@ void fn_8005C2B0(SceneTask* task) {
     for (team = 0, base = 0; team < 2; team++, base += 9) {
         for (i = 0; i < 9; i++) {
             player = &inMemRoster[team][i];
-            fn_800363D8(task, i + base + 0x40, 1, 0x83, player->stats.CharID);
+            fn_800363D8((SpaniOwner *)task, i + base + 0x40, 1, 0x83, player->stats.CharID); // TODO type
             TASK_OBJ(task, i + base + 0x2E)->_5C = i << 16;
             TASK_OBJ(task, i + base + 0xD0)->_5C = player->stats.CharacterClass << 16;
             TASK_OBJ(task, i + base + 0xAC)->_5C = (player->stats.BattingStance + player->stats.FieldingArm * 2) << 16;
@@ -2687,8 +2693,8 @@ void fn_8005CCE4(SceneTask* task, s32 port) {
             TASK_OBJ(task, prev + port * 9 + 0x1C)->_68 = 4;
         }
         TASK_OBJ(task, prev + port * 9 + 0x40)->_68 = 4;
-        fn_800363D8(task, slot + port * 9 + 0x40, 1, 0x83, players[slot].stats.CharID);
-        fn_800363D8(task, prev + port * 9 + 0x40, 1, 0x83, players[prev].stats.CharID);
+        fn_800363D8((SpaniOwner *)task, slot + port * 9 + 0x40, 1, 0x83, players[slot].stats.CharID); // TODO type
+        fn_800363D8((SpaniOwner *)task, prev + port * 9 + 0x40, 1, 0x83, players[prev].stats.CharID); // TODO type
         TASK_OBJ(task, slot + port * 9 + 0xD0)->_5C = players[slot].stats.CharacterClass << 16;
         TASK_OBJ(task, prev + port * 9 + 0xD0)->_5C = players[prev].stats.CharacterClass << 16;
         TASK_OBJ(task, slot + port * 9 + 0xAC)->_5C = (players[slot].stats.BattingStance + players[slot].stats.FieldingArm * 2) << 16;
@@ -2730,8 +2736,8 @@ void fn_8005CCE4(SceneTask* task, s32 port) {
         fn_8005C830(task, port, slot);
     } else {
         if (g_d_GameSettings._06 != 2) {
-            fn_800363D8(task, prevPos + port * 9 + 0x10A, 1, 0x83, players[prev].stats.CharID);
-            fn_800363D8(task, slotPos + port * 9 + 0x10A, 1, 0x83, players[slot].stats.CharID);
+            fn_800363D8((SpaniOwner *)task, prevPos + port * 9 + 0x10A, 1, 0x83, players[prev].stats.CharID); // TODO type
+            fn_800363D8((SpaniOwner *)task, slotPos + port * 9 + 0x10A, 1, 0x83, players[slot].stats.CharID); // TODO type
             TASK_OBJ(task, slotPos + port * 9 + 0x10A)->_68 = 4;
             TASK_OBJ(task, slotPos + port * 9 + 0xF8)->_68 = 4;
             TASK_OBJ(task, prevPos + port * 9 + 0x10A)->_68 = 1;
@@ -2769,8 +2775,8 @@ void fn_8005CCE4(SceneTask* task, s32 port) {
             TASK_OBJ(task, prevPos + port * 9 + 0x12E)->_64 = 0x2A;
             TASK_OBJ(task, prevPos + port * 9 + 0x12E)->_68 = 1;
         } else {
-            fn_800363D8(task, prevPos + 0x23, 1, 0x83, players[prev].stats.CharID);
-            fn_800363D8(task, slotPos + 0x23, 1, 0x83, players[slot].stats.CharID);
+            fn_800363D8((SpaniOwner *)task, prevPos + 0x23, 1, 0x83, players[prev].stats.CharID); // TODO type
+            fn_800363D8((SpaniOwner *)task, slotPos + 0x23, 1, 0x83, players[slot].stats.CharID); // TODO type
             TASK_OBJ(task, slotPos + 0x23)->_68 = 4;
             TASK_OBJ(task, slotPos + 0x1A)->_68 = 4;
             TASK_OBJ(task, prevPos + 0x23)->_68 = 1;
@@ -3710,7 +3716,8 @@ void fn_80060184(void) {
     }
     if (lbl_803297E0._CF45 != 0) {
         lbl_803297E0._CF45 = 0;
-        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        fn_80034CEC((SpaniGroup *)task);
+        fn_800B0A14_removeQueue(NULL);
     }
 }
 #endif
@@ -3729,7 +3736,7 @@ void fn_80061B9C(void) {
     lbl_803297E0._CF45 = 0;
     team = lbl_803297E0._CF3B;
     if (g_d_GameSettings._06 != 2) {
-        fn_80034E20(task, &lbl_801000A8);
+        fn_80034E20((SpaniGroup *)task, &lbl_801000A8); // TODO type
         TASK_OBJ(task, 16)->_5C = lbl_8034E9A0.teamPort[0] << 16;
         if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
             TASK_OBJ(task, 17)->_5C = ((s8)(lbl_8034E9A0.teamPort[0] == 0) + 4) << 16;
@@ -3751,7 +3758,7 @@ void fn_80061B9C(void) {
             fn_8005BB5C(task);
             for (i = 0; i < 9; i++, player++, slot++) {
                 s8 pos = slot->slot;
-                fn_800363D8(task, pos + 0x10A, 1, 0x83, player->stats.CharID);
+                fn_800363D8((SpaniOwner *)task, pos + 0x10A, 1, 0x83, player->stats.CharID); // TODO type
                 TASK_OBJ(task, i + 0xE6)->flags &= ~2;
                 if (g_d_GameSettings.GameModeSelected == 5) {
                     flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
@@ -3774,7 +3781,7 @@ void fn_80061B9C(void) {
             TASK_OBJ(task, 23)->flags &= ~2;
         }
     } else {
-        fn_80034E20(task, &lbl_801041C8);
+        fn_80034E20((SpaniGroup *)task, &lbl_801041C8); // TODO type
         if (g_d_GameSettings.home_AwaySetting != 0) {
             if (g_d_GameSettings.GameModeSelected == 5 && gChallengeState._441F == 0x13) {
                 show = team != 0;
@@ -4059,7 +4066,7 @@ void fn_80062A94(void) {
 void fn_80062BE4(Vec* pos) {
     if (lbl_80366158._28 != 1) {
         lbl_80108B90[0] = lbl_803CBD0C;
-        fn_80032064(pos, lbl_80108B90);
+        fn_80032064(pos, (ParticleParamsB *)lbl_80108B90); // TODO type
     }
 }
 
@@ -4070,15 +4077,15 @@ void fn_80062C24(Vec* pos) {
     }
 }
 
-static inline s32 CharJointSound(CharModel* obj, u16 joint) {
-    CharJointMapObj* model = lbl_8036E548.chars[obj->playerIdx];
+static inline s32 CharJointSound(CharActor* obj, u16 joint) {
+    CharActor* model = lbl_8036E548.active[obj->index];
     if (model != NULL) {
-        return model->jointMap[joint];
+        return model->jointIdx[joint];
     }
     return 0xFFFF;
 }
 
-static inline void PlayCharJointSound(CharModel* obj) {
+static inline void PlayCharJointSound(CharActor* obj) {
     s32 i;
 
     if (lbl_80366158._28 != 1) {
@@ -4086,7 +4093,7 @@ static inline void PlayCharJointSound(CharModel* obj) {
         }
         if (lbl_80108BE0[i] != 0xFFFF) {
             lbl_80108B90[0] = lbl_803CBD0C;
-            fn_800324EC(lbl_80108BE0[i], obj->playerIdx, -1, lbl_80108B90);
+            fn_800324EC(lbl_80108BE0[i], obj->index, -1, (ParticleParamsB *)lbl_80108B90); // TODO type
         }
     }
 }
@@ -4094,7 +4101,7 @@ static inline void PlayCharJointSound(CharModel* obj) {
 // .text:0x80062C60 size:0x134
 // NONMATCHING 95%: r7/r8 swapped in the inlined joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
-void fn_80062C60(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
+void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     if (lbl_80366158._28 != 1) {
         if (frame == 0.5f) {
             PlayCharJointSound(model);
@@ -4107,26 +4114,26 @@ void fn_80062C60(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
 // .text:0x80062D94 size:0xD8
 // NONMATCHING 95%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
-void fn_80062D94(CharModel* model) {
+void fn_80062D94(CharActor* model) {
     PlayCharJointSound(model);
 }
 #endif
 
 // .text:0x80062E6C size:0x68
-void fn_80062E6C(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
+void fn_80062E6C(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     s32 index = animID - 0x28;
     if (lbl_80366158._28 != 1) {
-        fn_8004B1C0(lbl_80108BF0[index][model->charID], model, animID, colorIdx, frame);
+        fn_8004B1C0(lbl_80108BF0[index][model->kind], model, animID, colorIdx, frame);
     }
 }
 
 // .text:0x80062ED4 size:0x64
 // NONMATCHING 90%: r8/r9 swapped; jump table is in another unit's .data
 #if NONMATCHING
-s32 fn_80062ED4(void* player, GameActor** actorp) {
+s32 fn_80062ED4(CharActor* player, ActorObject* obj) {
     GameBone* bone;
     s32 i;
-    GameActor* actor = *actorp;
+    GameActor* actor = obj->actor;
 
     for (i = 0; i < actor->totalBones; i++) {
         bone = actor->boneArray[i];
@@ -4165,7 +4172,7 @@ s32 fn_80062F38(GameBone* bone, GameBone* target, Mtx m, f32 t) {
 }
 
 // .text:0x80063010 size:0x18
-s32 fn_80063010(void* player, GameActor** actor) {
-    (*actor)->boneCallback = fn_80062F38;
+s32 fn_80063010(CharActor* player, ActorObject* obj) {
+    obj->actor->boneCallback = fn_80062F38;
     return 0;
 }

@@ -1,4 +1,5 @@
 #include "main/file_800A7C08.h"
+#include "main/file_800A6870.h"
 #include "Dolphin/os.h"
 #include "Dolphin/gx.h"
 #include "Dolphin/vi.h"
@@ -257,7 +258,6 @@ extern DVDCommandBlock lbl_802EF230;
 extern DVDCommandBlock lbl_802EF260;
 extern DVDCommandBlock lbl_802EF290;
 
-extern GlobalState6CF8 lbl_803C6CF8;
 
 extern s32 ConvertPathToEntryNum(void* file);
 extern BOOL fn_800A750C(void* file, DVDFileInfo* fileInfo);
@@ -788,7 +788,6 @@ void fn_800A94A8(s32 result, DVDCommandBlock* block) {
 
 extern void SISetSamplingRate(u32 msec);
 extern PadConfig lbl_80110080;
-extern PadState lbl_803C77B8[PAD_MAX_CONTROLLERS];
 
 // .text:0x800A94C4 size:0x5C
 void fn_800A94C4(void) {
@@ -2534,11 +2533,11 @@ static inline u32 ThpGetState(ThpPlayer* p) {
     if (state & 4) {
         return 4;
     }
-    switch (lbl_803C6CF8._722) {
+    switch (lbl_803C6CF8.driveStatus) {
     case -1:
         return 0xA0000000;
     default:
-        return lbl_803C6CF8._722 | 0x80000000;
+        return lbl_803C6CF8.driveStatus | 0x80000000;
     case 0:
         if (state & 2) {
             return state & 0x12;
@@ -2607,7 +2606,7 @@ void fn_800AD070(void) {
         return;
     }
     if (!(p->flags & 1)) {
-        if (!(p->state & 0x10) && lbl_803C6CF8._722 == 5) {
+        if (!(p->state & 0x10) && lbl_803C6CF8.driveStatus == 5) {
             ThpPause(p);
             p->state |= 0x10;
         }
@@ -2676,11 +2675,11 @@ u32 fn_800AD490(ThpPlayer* p) {
     if (state & 4) {
         return 4;
     }
-    switch (lbl_803C6CF8._722) {
+    switch (lbl_803C6CF8.driveStatus) {
     case -1:
         return 0xA0000000;
     default:
-        return lbl_803C6CF8._722 | 0x80000000;
+        return lbl_803C6CF8.driveStatus | 0x80000000;
     case 0:
         if (state & 2) {
             return state & 0x12;

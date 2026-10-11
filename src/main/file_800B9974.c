@@ -1,4 +1,5 @@
 #include "main/file_800B9974.h"
+#include "main/file_800B993C.h" // lbl_803CC200, lbl_803CC1F4
 #include "C3/geoPalette.h"
 #include "Dolphin/os.h"
 #include "string.h"
@@ -25,11 +26,8 @@ extern char lbl_800E7F58[]; // "DOVARender: Invalid component count for normals 
 extern char lbl_800E7F8C[]; // "Display object id %d is greater than number of objects %d"
 
 extern void* lbl_803CBB58;      // must be non-NULL for the environment-map passes
-extern void (*lbl_803CC1F4)(s32 stage, s32 a, s32 b, s32 coord, s32 map); // extra pass after fn_800B9AB0
 extern f32 lbl_803CC1F8;         // environment map scroll (s)
 extern f32 lbl_803CC1FC;         // environment map scroll (t)
-extern void (*lbl_803CC200)(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map, u8* numTevStages,
-                            u8* numTexGens, MtxPtr camera); // final user TEV hook
 extern const Vec lbl_800E7E78;
 extern GXColor lbl_803CCFF8;     // GXColor {0, 0, 0, 0x80} (bump-map TEVREG0)
 extern u8 fn_800BEBA0(void);

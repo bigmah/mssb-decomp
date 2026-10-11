@@ -13,9 +13,9 @@ typedef struct RepeatFxData { // lbl_800FC720; frames are fixed point (x100000)
     /*0x80*/ EffectParams params[3];
 } RepeatFxData;
 
-void fn_80062D94(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_80062D94(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
-void fn_8004C19C(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
-void fn_8004C510(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_8004C19C(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_8004C510(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
 #endif

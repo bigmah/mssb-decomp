@@ -104,7 +104,7 @@ void fn_800684A4(void);
 void fn_80068720(u8 track);
 void fn_8006877C(u8 track);
 void fn_80064344(Vec* pos, Vec* v);
-void fn_80064430(Vec* pos, s32 count, f32 scale2, f32 scale);
+void fn_80064430(Vec* pos, u8 count, f32 scale2, f32 scale);
 BOOL fn_80068514(u32 frames, u8 target);
 BOOL fn_8006862C(u32 frames, u8 target);
 BOOL fn_800697B0(void);

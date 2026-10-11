@@ -20,7 +20,6 @@ extern s32 lbl_3_data_170D8[];
 extern const f32 lbl_3_rodata_1EC0;
 extern const f32 lbl_3_rodata_1E68;
 extern s32 ARAMTransfer(void*, int, int, int);
-extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void fn_8006C43C(int);
 extern void fn_8006C3F0(int);
 extern void fn_8003A688(f32, f32);
@@ -380,7 +379,6 @@ extern f32 lbl_3_bss_9964;
 extern f32 lbl_3_data_12CB4;
 extern const f32 lbl_3_rodata_1E68;
 extern void fn_8003A550(s32, Vec*, Vec*, s32);
-extern BOOL getAnimRelatedCoordinates(int, int, void*);
 // 99%: loop pointer init emits addi r0; mr r30,r0 (known open pattern); jumptable reloc name differs
 void fn_3_BBF94(void) {
     Mtx m;
@@ -549,7 +547,6 @@ void fn_3_BC850(int a, int i) {
 extern f32 lbl_3_bss_9964;
 extern f32 lbl_3_data_12CB4;
 extern void fn_8003A550(s32, Vec*, Vec*, s32);
-extern BOOL getAnimRelatedCoordinates(int, int, void*);
 void fn_3_BC888(void) {
     Mtx m;
     Vec c;
@@ -854,7 +851,6 @@ extern const f32 lbl_3_rodata_1F38;
 extern const f64 lbl_3_rodata_1F40;
 extern int rand(void);
 extern void* memcpy(void*, const void*, u32);
-extern BOOL getAnimRelatedCoordinates(int, int, void*);
 extern u8 lbl_3_data_A3C[];
 extern u8 lbl_3_data_11620[];
 typedef struct { u8 pad[0x4C]; V2f pts[0x60]; V2f pts2[0x60]; } BDE14T;
@@ -864,7 +860,7 @@ void fn_3_BDE14(void) {
     int i;
     f32 a;
     q = fn_800B0A5C_insertQueue(fn_3_BDCA4, 3);
-    getAnimRelatedCoordinates(0, 7, q + 0x14);
+    getAnimRelatedCoordinates(0, 7, (Vec *)(q + 0x14)); // TODO type
     *(s32*)(q + 0x20) = lbl_3_data_A3C[1] - 2;
     *(BDE14T**)(q + 0x24) = p = (BDE14T*)lbl_3_data_11620;
     for (i = 0; i < 0x60; i++) {

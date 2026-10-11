@@ -286,7 +286,7 @@ void fn_1_207D4(void) {
 
 // fn_1_1F23C, size:0x9C
 void fn_1_1F23C(ChallengeProjectionState* state) {
-    fn_800385F0(lbl_1_bss_6BF4,
+    fn_800385F0((struct RigidBody *)lbl_1_bss_6BF4, // TODO type
         *(f32*)(lbl_803CC1B8[0] + 0x14), *(f32*)(lbl_803CC1B8[0] + 0x18),
         *(f32*)(lbl_803CC1B8[0] + 0x1C), *(f32*)(lbl_803CC1B8[0] + 0x20));
     state->depth = -*(f32*)(lbl_803CC1B8[0] + 0x24);

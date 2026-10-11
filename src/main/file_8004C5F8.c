@@ -4,6 +4,9 @@
 #include "main/file_80008E00.h"
 #include "Dolphin/gx.h"
 #include "musyx/musyx.h"
+#include "main/file_800B0724.h"
+#include "main/file_800263FC.h"
+#include "main/file_80034F50.h"
 
 extern LayoutGroup* lbl_803CC1B8;
 extern int rand(void);
@@ -19,13 +22,11 @@ extern s32 lbl_803CB880;
 void fn_800521B0(void);
 extern f32 fn_800335BC(s32 angle);
 extern f32 fn_800335EC(s32 angle);
-extern BOOL getAnimRelatedCoordinates(int charIdx, int joint, Vec* out);
-extern void fn_80030D88(Vec* pos, Vec* dir, void* params, int kind);
 extern SwingFx lbl_800FC890;
 extern BatFxTables lbl_800FC0FC;
 extern s32 lbl_803CBD0C;
 extern u8 lbl_803CBBC0;
-extern f32 fn_800B4C40(s32 id);
+#include "main/file_800B4A44.h"
 extern s16 lbl_800FEB08[5][4];
 extern DialogTables lbl_800FEAAC;
 extern u8 lbl_800FE93C[];
@@ -42,8 +43,6 @@ extern u8 starMissionCompletionTracker[]; // TODO type (ChallengeTrackingStruct[
 #define lbl_800FE93C_alts ((u8(*)[5])lbl_800FE93C)
 #define lbl_800FDE84_colOrder ((u8(*)[12])&lbl_800FDE84[0x34])
 extern u16 lbl_803CB870[];
-extern void fn_80034E20(void* group, void* desc);
-extern s32 fn_80036214(void* owner, s32 idx, u32 track, u32 frame);
 
 // .text:0x8004C5F8 size:0x404
 // NONMATCHING 93%: register allocation (saved-register order)
@@ -59,10 +58,10 @@ void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind) {
     if (lbl_80366158._28 == 1) {
         return;
     }
-    dir.x = fn_800335EC((s32)(0.5f + 1024.0f * actor->angle / 3.1415927f));
-    dir.z = fn_800335BC((s32)(0.5f + 1024.0f * actor->angle / 3.1415927f));
+    dir.x = fn_800335EC((s32)(0.5f + 1024.0f * actor->rot.y / 3.1415927f));
+    dir.z = fn_800335BC((s32)(0.5f + 1024.0f * actor->rot.y / 3.1415927f));
     dir.y = 0.0f;
-    hasBat = actor->flags & 1;
+    hasBat = actor->_276 & 1;
     switch (kind) {
     case 1:
     case 3:
@@ -70,7 +69,7 @@ void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind) {
         if (hasBat) {
             trail = &tbl->trails[1];
             fx = &tbl->params[1];
-            if (actor->_27A != 0) {
+            if (actor->_279[1] != 0) {
                 fx = &tbl->params[2];
             }
             fx->stamp = lbl_803CBD0C;
@@ -80,33 +79,33 @@ void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind) {
             trail = &tbl->trails[0];
         }
         trail->stamp = lbl_803CBD0C;
-        if (hasBat && actor->_27A != 0) {
-            actor->_27A = 0;
+        if (hasBat && actor->_279[1] != 0) {
+            actor->_279[1] = 0;
             if (lbl_803CBBC0 != 0) {
-                getAnimRelatedCoordinates(actor->_254, 0x1E, &pos);
+                getAnimRelatedCoordinates(actor->index, 0x1E, &pos);
                 pos.y = 0.0f;
-                fn_80030D88(&pos, &dir, fx, 5);
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
             } else {
-                getAnimRelatedCoordinates(actor->_254, 0x22, &pos);
+                getAnimRelatedCoordinates(actor->index, 0x22, &pos);
                 pos.y = 0.0f;
-                fn_80030D88(&pos, &dir, fx, 5);
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
             }
         }
-        if ((actor->flags & 0xA) == 2) {
-            getAnimRelatedCoordinates(actor->_254, 0x1E, &pos);
+        if ((actor->_276 & 0xA) == 2) {
+            getAnimRelatedCoordinates(actor->index, 0x1E, &pos);
             pos.y = 0.0f;
-            if (hasBat && actor->_27A == 0) {
-                fn_80030D88(&pos, &dir, fx, 5);
+            if (hasBat && actor->_279[1] == 0) {
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
             }
-            fn_8002955C(&pos, &dir, trail);
+            fn_8002955C(&pos, &dir, (ParticleParamsC *)trail); // TODO type
         }
-        if ((actor->flags & 0x14) == 4) {
-            getAnimRelatedCoordinates(actor->_254, 0x22, &pos);
+        if ((actor->_276 & 0x14) == 4) {
+            getAnimRelatedCoordinates(actor->index, 0x22, &pos);
             pos.y = 0.0f;
-            if (hasBat && actor->_27A == 0) {
-                fn_80030D88(&pos, &dir, fx, 5);
+            if (hasBat && actor->_279[1] == 0) {
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
             }
-            fn_8002955C(&pos, &dir, trail);
+            fn_8002955C(&pos, &dir, (ParticleParamsC *)trail); // TODO type
         }
         break;
     case 0:
@@ -119,7 +118,7 @@ void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind) {
     case 12:
         if (!hasBat) {
             fx = &tbl->params[0];
-        } else if (actor->_27A != 0) {
+        } else if (actor->_279[1] != 0) {
             fx = &tbl->params[2];
         } else {
             fx = &tbl->params[1];
@@ -127,28 +126,28 @@ void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind) {
         fx->stamp = lbl_803CBD0C;
         fx->rgb = (lbl_800FC0FC.colors[kind].r << 24) | ((lbl_800FC0FC.colors[kind].g & 0xFF) << 16) |
                   (lbl_800FC0FC.colors[kind].b << 8);
-        if (hasBat && actor->_27A != 0) {
-            actor->_27A = 0;
+        if (hasBat && actor->_279[1] != 0) {
+            actor->_279[1] = 0;
             if (lbl_803CBBC0 != 0) {
-                getAnimRelatedCoordinates(actor->_254, 0x1E, &pos);
+                getAnimRelatedCoordinates(actor->index, 0x1E, &pos);
                 pos.y = 0.0f;
-                fn_80030D88(&pos, &dir, fx, 5);
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
             } else {
-                getAnimRelatedCoordinates(actor->_254, 0x22, &pos);
+                getAnimRelatedCoordinates(actor->index, 0x22, &pos);
                 pos.y = 0.0f;
-                fn_80030D88(&pos, &dir, fx, 5);
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
             }
             break;
         }
-        if ((actor->flags & 0xA) == 2) {
-            getAnimRelatedCoordinates(actor->_254, 0x1E, &pos);
+        if ((actor->_276 & 0xA) == 2) {
+            getAnimRelatedCoordinates(actor->index, 0x1E, &pos);
             pos.y = 0.0f;
-            fn_80030D88(&pos, &dir, fx, 5);
+            fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
         }
-        if ((actor->flags & 0x14) == 4) {
-            getAnimRelatedCoordinates(actor->_254, 0x22, &pos);
+        if ((actor->_276 & 0x14) == 4) {
+            getAnimRelatedCoordinates(actor->index, 0x22, &pos);
             pos.y = 0.0f;
-            fn_80030D88(&pos, &dir, fx, 5);
+            fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
         }
         break;
     }
@@ -240,7 +239,7 @@ void fn_8004CC2C(void) {
 }
 
 // fn_8004CC4C, size:0x74
-void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, s16 value) {
+void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, u16 value) {
     ConfirmDialog* dlg = &lbl_803C5F74;
     if (dlg->active == 0) {
         dlg->kind = first;
@@ -374,7 +373,8 @@ close:
     }
     lbl_803C5F74.state = 4;
     lbl_803C5F74.active = 0;
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC((SpaniGroup *)task);
+    fn_800B0A14_removeQueue(NULL);
     lbl_80366158._20 = 1;
 }
 #endif
@@ -390,7 +390,7 @@ void fn_8004D0F0(void) {
         return;
     }
     lbl_803C5F74.active = 1;
-    fn_80034E20(task, &lbl_800FE93C[0x30]);
+    fn_80034E20((SpaniGroup *)task, (SpaniDesc *)&lbl_800FE93C[0x30]); // TODO type
     if (lbl_803C5F74._04 == 0) {
         lbl_80371C30[task->start].obj->flags &= ~2;
     }
@@ -414,7 +414,7 @@ void fn_8004D0F0(void) {
         lbl_80371C30[task->start + 4].obj->flags &= ~2;
         lbl_80371C30[task->start + 5].obj->flags &= ~2;
     } else {
-        fn_800363D8(task, 4, 1, 0xCD, lbl_803C5F74.cursor);
+        fn_800363D8((SpaniOwner *)task, 4, 1, 0xCD, lbl_803C5F74.cursor); // TODO type
         lbl_80371C30[task->start + 3].obj->flags &= ~2;
     }
     if (lbl_803C5F74.kind != 10) {
@@ -661,7 +661,7 @@ void fn_8004DB90(void) {
             } else if (lbl_803C6028.slotOwner[i] >= 0) {
                 lbl_80371C30[task->start + icon].obj->_68 = 1;
                 obj = lbl_80371C30[task->start + bg].obj;
-                obj->color = (obj->color & 0xFF) | (fn_80036214(task, 0, 0, lbl_803C6028._8D) & 0xFFFFFF00);
+                obj->color = (obj->color & 0xFF) | (fn_80036214((SpaniOwner *)task, 0, 0, lbl_803C6028._8D) & 0xFFFFFF00); // TODO type
                 lbl_80371C30[task->start + bg].obj->_68 = 1;
                 lbl_80371C30[task->start + name].obj->flags |= 2;
                 obj = lbl_80371C30[task->start + name].obj;
@@ -674,7 +674,7 @@ void fn_8004DB90(void) {
                         }
                     }
                 }
-                fn_800363D8(task, name, 1, 0x1A, lbl_803C6028.slotOwner[i]);
+                fn_800363D8((SpaniOwner *)task, name, 1, 0x1A, lbl_803C6028.slotOwner[i]); // TODO type
             } else {
                 obj = lbl_80371C30[task->start + name].obj;
                 if ((obj->_5C >> 16) > 12) {
@@ -752,7 +752,8 @@ void fn_8004DB90(void) {
 
 finish:
     lbl_803C6028.state7E = 2;
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC((SpaniGroup *)task);
+    fn_800B0A14_removeQueue(NULL);
 }
 #endif
 
@@ -766,20 +767,20 @@ void fn_8004E2EC(void) {
     LayoutDesc* desc = (LayoutDesc*)&lbl_800FE5D4[0x30]; // TODO type
     s32 i;
     desc->_42 = lbl_803CB870[table];
-    fn_80034E20(task, desc);
+    fn_80034E20((SpaniGroup *)task, (SpaniDesc *)desc); // TODO type
     for (i = 0; i < 6; i++) {
         if (i == 5 && table == 0) {
             continue;
         }
-        fn_800363D8(task, i + 0xB, 1, 0x19, lbl_800FE930[table][i]);
+        fn_800363D8((SpaniOwner *)task, i + 0xB, 1, 0x19, lbl_800FE930[table][i]); // TODO type
         lbl_80371C30[task->start + i + 0xB].obj->_72 = lbl_800FE924[table][i];
         lbl_80371C30[task->start + i + 0x11].obj->flags &= ~2;
         lbl_80371C30[task->start + i + 0x11].obj->_72 = lbl_800FE924[table][i];
-        fn_800363D8(task, i + 0x11, 1, 0x1A, lbl_803C6028._8D);
+        fn_800363D8((SpaniOwner *)task, i + 0x11, 1, 0x1A, lbl_803C6028._8D); // TODO type
         lbl_80371C30[task->start + i + 3].obj->_72 = lbl_800FE924[table][i];
     }
     lbl_80371C30[task->start + 10].obj->_5C = lbl_803C6028._8D << 16;
-    fn_800363D8(task, 0x17, 1, 0x1A, lbl_803C6028._8D);
+    fn_800363D8((SpaniOwner *)task, 0x17, 1, 0x1A, lbl_803C6028._8D); // TODO type
     if (table == 0) {
         lbl_80371C30[task->start + 8].obj->flags &= ~2;
         lbl_80371C30[task->start + 16].obj->flags &= ~2;
@@ -1138,9 +1139,9 @@ void fn_8004F10C(void) {
                 }
                 owner = lbl_803C6028.slotOwner[i];
                 if (lbl_803C6028._74[owner] != 0) {
-                    fn_800363D8(task, name, 1, 0x1A, owner + 4);
+                    fn_800363D8((SpaniOwner *)task, name, 1, 0x1A, owner + 4); // TODO type
                 } else {
-                    fn_800363D8(task, name, 1, 0x1A, owner);
+                    fn_800363D8((SpaniOwner *)task, name, 1, 0x1A, owner); // TODO type
                 }
             } else {
                 obj = lbl_80371C30[task->start + name].obj;
@@ -1192,9 +1193,9 @@ void fn_8004F10C(void) {
     for (i = 0; i < 4; i++) {
         if (lbl_803C6028._78[i] != 0 && task->textIndex == 1) {
             if (lbl_803C6028._74[i] != 0) {
-                fn_800363D8(task, i + 0x2F, 1, 0x1A, i + 4);
+                fn_800363D8((SpaniOwner *)task, i + 0x2F, 1, 0x1A, i + 4); // TODO type
             } else {
-                fn_800363D8(task, i + 0x2F, 1, 0x1A, i);
+                fn_800363D8((SpaniOwner *)task, i + 0x2F, 1, 0x1A, i); // TODO type
             }
             lbl_80371C30[task->start + i + 19].obj->flags |= 2;
             lbl_80371C30[task->start + i + 15].obj->flags |= 2;
@@ -1226,7 +1227,8 @@ void fn_8004F10C(void) {
 finish:
     lbl_803C6028.state7D = 2;
     lbl_803C6028._8E = 0;
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC((SpaniGroup *)task);
+    fn_800B0A14_removeQueue(NULL);
 }
 #endif
 
@@ -1240,7 +1242,7 @@ void fn_8004F964(void) {
     s32 j;
     s8 owner;
 
-    fn_80034E20(task, &lbl_800FDE84[0xC4]);
+    fn_80034E20((SpaniGroup *)task, (SpaniDesc *)&lbl_800FDE84[0xC4]); // TODO type
     if (lbl_803C6028._90 != 0) {
         lbl_80371C30[task->start + 2].obj->_5C = 55 << 16;
         lbl_80371C30[task->start + 2].obj->_68 = 4;
@@ -1253,7 +1255,7 @@ void fn_8004F964(void) {
         lbl_80371C30[task->start + 1].obj->_68 = 1;
     }
     for (i = 0; i < 12; i++) {
-        fn_800363D8(task, i + 0x17, 1, 0x19, lbl_800FE5D4[i]);
+        fn_800363D8((SpaniOwner *)task, i + 0x17, 1, 0x19, lbl_800FE5D4[i]); // TODO type
         lbl_80371C30[task->start + i + 0x17].obj->_72 = lbl_800FE5C8[i];
         if (lbl_803C6028._90 != 0) {
             for (j = 0; j < 12; j++) {
@@ -1277,18 +1279,18 @@ void fn_8004F964(void) {
             lbl_80371C30[task->start + i + 0x23].obj->_68 = 0;
             owner = lbl_803C6028.slotOwner[i];
             if (lbl_803C6028._74[owner] != 0) {
-                fn_800363D8(task, i + 0x23, 1, 0x1A, owner + 4);
+                fn_800363D8((SpaniOwner *)task, i + 0x23, 1, 0x1A, owner + 4); // TODO type
             } else {
-                fn_800363D8(task, i + 0x23, 1, 0x1A, owner);
+                fn_800363D8((SpaniOwner *)task, i + 0x23, 1, 0x1A, owner); // TODO type
             }
         }
     }
     for (i = 0; i < 4; i++) {
         lbl_80371C30[task->start + i + 0x13].obj->_5C = i << 16;
         if (lbl_803C6028._74[i] != 0) {
-            fn_800363D8(task, i + 0x2F, 1, 0x1A, i + 4);
+            fn_800363D8((SpaniOwner *)task, i + 0x2F, 1, 0x1A, i + 4); // TODO type
         } else {
-            fn_800363D8(task, i + 0x2F, 1, 0x1A, i);
+            fn_800363D8((SpaniOwner *)task, i + 0x2F, 1, 0x1A, i); // TODO type
         }
     }
     lbl_803C6028.state7D = 0;
@@ -1837,9 +1839,9 @@ void fn_8005138C(void) {
                 }
                 owner = lbl_803C6028.slotOwner[i];
                 if (lbl_803C6028._74[owner] != 0) {
-                    fn_800363D8(task, name, 1, 0x1A, owner + 4);
+                    fn_800363D8((SpaniOwner *)task, name, 1, 0x1A, owner + 4); // TODO type
                 } else {
-                    fn_800363D8(task, name, 1, 0x1A, owner);
+                    fn_800363D8((SpaniOwner *)task, name, 1, 0x1A, owner); // TODO type
                 }
             } else {
                 obj = lbl_80371C30[task->start + name].obj;
@@ -1898,9 +1900,9 @@ void fn_8005138C(void) {
     for (i = 0; i < 4; i++) {
         if (lbl_803C6028._78[i] != 0 && task->textIndex <= 1) {
             if (lbl_803C6028._74[i] != 0) {
-                fn_800363D8(task, i + 0x9B, 1, 0x1A, i + 4);
+                fn_800363D8((SpaniOwner *)task, i + 0x9B, 1, 0x1A, i + 4); // TODO type
             } else {
-                fn_800363D8(task, i + 0x9B, 1, 0x1A, i);
+                fn_800363D8((SpaniOwner *)task, i + 0x9B, 1, 0x1A, i); // TODO type
             }
             lbl_80371C30[task->start + i + 0x2B].obj->flags |= 2;
             lbl_80371C30[task->start + i + 0x27].obj->flags |= 2;
@@ -1932,7 +1934,8 @@ void fn_8005138C(void) {
 finish:
     lbl_803C6028._8F = 0;
     lbl_803C6028.state7C = 2;
-    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    fn_80034CEC((SpaniGroup *)task);
+    fn_800B0A14_removeQueue(NULL);
 }
 #endif
 
@@ -1950,7 +1953,7 @@ void fn_80051D00(void) {
     if (lbl_803C6028._8E == 1) {
         return;
     }
-    fn_80034E20(task, lbl_800FCA60);
+    fn_80034E20((SpaniGroup *)task, (SpaniDesc *)lbl_800FCA60); // TODO type
     if (lbl_803C6028._8F == 1) {
         lbl_80371C30[task->start + 2].obj->_64 = 0x14;
     }
@@ -1964,7 +1967,7 @@ void fn_80051D00(void) {
             if (lbl_803C6028.slotLocked[i] != 0) {
                 id = 0x36;
             }
-            fn_800363D8(task, i + 0x2F, 1, 0x19, id);
+            fn_800363D8((SpaniOwner *)task, i + 0x2F, 1, 0x19, id); // TODO type
             lbl_80371C30[task->start + i + 0x2F].obj->_72 = lbl_800FDE60[i];
             if (lbl_803C6028._8F == 1) {
                 for (j = 0; j < 12; j++) {
@@ -1997,18 +2000,18 @@ void fn_80051D00(void) {
             lbl_80371C30[task->start + i + 0x77].obj->_68 = 0;
             owner = lbl_803C6028.slotOwner[i];
             if (lbl_803C6028._74[owner] != 0) {
-                fn_800363D8(task, i + 0x77, 1, 0x1A, owner + 4);
+                fn_800363D8((SpaniOwner *)task, i + 0x77, 1, 0x1A, owner + 4); // TODO type
             } else {
-                fn_800363D8(task, i + 0x77, 1, 0x1A, owner);
+                fn_800363D8((SpaniOwner *)task, i + 0x77, 1, 0x1A, owner); // TODO type
             }
         }
     }
     for (i = 0; i < 4; i++) {
         lbl_80371C30[task->start + i + 0x2B].obj->_5C = i << 16;
         if (lbl_803C6028._74[i] != 0) {
-            fn_800363D8(task, i + 0x9B, 1, 0x1A, i + 4);
+            fn_800363D8((SpaniOwner *)task, i + 0x9B, 1, 0x1A, i + 4); // TODO type
         } else {
-            fn_800363D8(task, i + 0x9B, 1, 0x1A, i);
+            fn_800363D8((SpaniOwner *)task, i + 0x9B, 1, 0x1A, i); // TODO type
         }
     }
     lbl_803C6028.state7C = 0;
@@ -2054,21 +2057,21 @@ static inline u8 calcMeterAlpha(s32 row, f32 frame) {
 void fn_800521B0(void) {
     MeterTask* task = (MeterTask*)lbl_803CC1B8;
     CharActor* actor = task->actor;
-    AnimCtl* anim = task->anim;
+    ActorObject* anim = task->anim;
     f32 frame;
     s32 row;
     if (actor->_25C == 0 || (s8)actor->kind != (s8)task->kind) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
         return;
     }
-    if (anim->hasFrame != 0) {
-        frame = anim->frame;
+    if (anim->setTime != 0) {
+        frame = anim->time;
     } else {
-        frame = fn_800B4C40(anim->id);
+        frame = fn_800B4C40(anim->actor);
     }
-    switch (actor->anim) {
+    switch (actor->anim[0]) {
     case 0x67:
-        if ((s32)actor->kind == 0xE) {
+        if ((s32)(u8)actor->kind == 0xE) {
             row = 0;
         } else {
             row = 1;
@@ -2084,24 +2087,24 @@ void fn_800521B0(void) {
         row = 4;
         break;
     default:
-        actor->meterAlpha = 0xFF;
+        actor->_277 = 0xFF;
         return;
     }
-    actor->meterAlpha = calcMeterAlpha(row, frame);
+    actor->_277 = calcMeterAlpha(row, frame);
 }
 
 // .text:0x8005240C size:0x228
-void fn_8005240C(CharActor* actor, AnimCtl* anim) {
+void fn_8005240C(CharActor* actor, ActorObject* anim) {
     f32 frame;
     u16 row;
-    if (anim->hasFrame != 0) {
-        frame = anim->frame;
+    if (anim->setTime != 0) {
+        frame = anim->time;
     } else {
-        frame = fn_800B4C40(anim->id);
+        frame = fn_800B4C40(anim->actor);
     }
-    switch (actor->anim) {
+    switch (actor->anim[0]) {
     case 0x67:
-        if ((s32)actor->kind == 0xE) {
+        if ((s32)(u8)actor->kind == 0xE) {
             row = 0;
         } else {
             row = 1;
@@ -2117,14 +2120,14 @@ void fn_8005240C(CharActor* actor, AnimCtl* anim) {
         row = 4;
         break;
     default:
-        actor->meterAlpha = 0xFF;
+        actor->_277 = 0xFF;
         return;
     }
-    actor->meterAlpha = calcMeterAlpha(row, frame);
+    actor->_277 = calcMeterAlpha(row, frame);
 }
 
 // .text:0x80052634 size:0x58
-void fn_80052634(CharActor* actor, AnimCtl* anim) {
+void fn_80052634(CharActor* actor, ActorObject* anim) {
     MeterTask* task = fn_800B0A5C_insertQueue(fn_800521B0, 4);
     task->actor = actor;
     task->anim = anim;
