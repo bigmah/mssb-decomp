@@ -1246,6 +1246,195 @@ void fn_1_1C8C0(u8* object) {
 }
 #endif
 
+extern const GXColor lbl_1_rodata_74F0; // black
+extern GXColor lbl_1_data_FB08; // fog colour
+extern u8 lbl_80366158[];
+
+// fn_1_1B7DC, size:0xBF0
+// Debug viewer menu: B quits; up/down select an item, left/right change it.
+// Items: 0 actor, 1 view mode, 2 stick mode, 3 texture view, 4 fog, 5 confetti, 6 colour edit,
+// 7-10 material red/green/blue/alpha (only while colour edit is on).
+// NONMATCHING 81%: same structure and calls; saved-register numbering in the two inlined confetti init loops differs
+#if NONMATCHING
+void fn_1_1B7DC(void) {
+    ChallengePad* pad = (ChallengePad*)&lbl_803C77B8;
+    GXColor black = lbl_1_rodata_74F0;
+    GXColor exitFog;
+    GXColor leftFogOn;
+    GXColor leftFogOff;
+    GXColor rightFogOn;
+    GXColor rightFogOff;
+    ChallengeRosterQueue* task = lbl_803CC1B8;
+    ChallengeBoneSelection* sel = &lbl_1_bss_69F0;
+
+    if (pad->down & 0x200) {
+        fn_800AD038(*(void**)(lbl_80366158 + 8)); // TODO type
+        exitFog = black;
+        SetFog(0, (s32*)&exitFog, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
+        ((ChallengeRosterQueue*)lbl_803CC1B8->_0C)->state = 1;
+        minigamesSetSomePointers();
+    } else if (pad->repeat & 8) { // up
+        if (task->menu != 0) {
+            task->menu--;
+        } else if (sel->colorEdit != 0) {
+            task->menu = 10;
+        } else {
+            task->menu = 6;
+        }
+    } else if (pad->repeat & 4) { // down
+        task->menu++;
+        if (task->menu > 6 && task->menu < 11 && sel->colorEdit == 0) {
+            task->menu = 0;
+        }
+        if (task->menu == 11) {
+            task->menu = 0;
+        }
+    } else if (pad->repeat & 1) { // left
+        switch (task->menu) {
+        case 0:
+            if (task->actorIndex != 0) {
+                task->actorIndex--;
+            } else {
+                task->actorIndex = 23;
+            }
+            break;
+        case 1:
+            if (task->viewMode != 0) {
+                task->viewMode--;
+            } else {
+                task->viewMode = 2;
+            }
+            break;
+        case 2:
+            if (task->_17 != 0) {
+                task->_17--;
+            } else {
+                task->_17 = 1;
+            }
+            break;
+        case 3:
+            if (task->_18 != 0) {
+                task->_18--;
+            } else {
+                task->_18 = 1;
+            }
+            break;
+        case 4:
+            if ((sel->fog = !sel->fog)) {
+                leftFogOn = lbl_1_data_FB08;
+                SetFog(4, (s32*)&leftFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540);
+            } else {
+                leftFogOff = black;
+                SetFog(0, (s32*)&leftFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
+            }
+            break;
+        case 5:
+            if ((sel->confetti = !sel->confetti)) {
+                ChallengeConfettiTask* confetti = fn_80033A24(fn_1_1857C, 0, 0, lbl_1_data_FB24.count, 1, 0x80);
+                if (confetti != NULL) {
+                    initConfetti(confetti);
+                }
+            } else {
+                minigamesSetSomePointers();
+            }
+            break;
+        case 6:
+            sel->colorEdit = !sel->colorEdit;
+            break;
+        case 7:
+            if (sel->colorEdit != 0) {
+                sel->matRed--;
+            }
+            break;
+        case 8:
+            if (sel->colorEdit != 0) {
+                sel->matGreen--;
+            }
+            break;
+        case 9:
+            if (sel->colorEdit != 0) {
+                sel->matBlue--;
+            }
+            break;
+        case 10:
+            if (sel->colorEdit != 0) {
+                sel->matAlpha--;
+            }
+            break;
+        }
+    } else if (pad->repeat & 2) { // right
+        switch (task->menu) {
+        case 0:
+            task->actorIndex++;
+            if (task->actorIndex == 24) {
+                task->actorIndex = 0;
+            }
+            break;
+        case 1:
+            task->viewMode++;
+            if (task->viewMode == 3) {
+                task->viewMode = 0;
+            }
+            break;
+        case 2:
+            task->_17++;
+            if (task->_17 == 2) {
+                task->_17 = 0;
+            }
+            break;
+        case 3:
+            task->_18++;
+            if (task->_18 == 2) {
+                task->_18 = 0;
+            }
+            break;
+        case 4:
+            if ((sel->fog = !sel->fog)) {
+                rightFogOn = lbl_1_data_FB08;
+                SetFog(4, (s32*)&rightFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540);
+            } else {
+                rightFogOff = black;
+                SetFog(0, (s32*)&rightFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
+            }
+            break;
+        case 5:
+            if ((sel->confetti = !sel->confetti)) {
+                ChallengeConfettiTask* confetti = fn_80033A24(fn_1_1857C, 0, 0, lbl_1_data_FB24.count, 1, 0x80);
+                if (confetti != NULL) {
+                    initConfetti(confetti);
+                }
+            } else {
+                minigamesSetSomePointers();
+            }
+            break;
+        case 6:
+            sel->colorEdit = !sel->colorEdit;
+            break;
+        case 7:
+            if (sel->colorEdit != 0) {
+                sel->matRed++;
+            }
+            break;
+        case 8:
+            if (sel->colorEdit != 0) {
+                sel->matGreen++;
+            }
+            break;
+        case 9:
+            if (sel->colorEdit != 0) {
+                sel->matBlue++;
+            }
+            break;
+        case 10:
+            if (sel->colorEdit != 0) {
+                sel->matAlpha++;
+            }
+            break;
+        }
+    }
+}
+#endif
+
 extern u8 lbl_803CBBC0; // current frame buffer (0/1)
 // Minimal draw-list links (cf. DrawNode in main/file_80069BDC.h), one per frame buffer.
 typedef struct ChallengeDrawLink {
@@ -1255,7 +1444,6 @@ typedef struct ChallengeDrawLink {
 extern ChallengeDrawLink lbl_1_data_FAE8[2]; // fn_1_1ADA4 (grid)
 extern ChallengeDrawLink lbl_1_data_FAF8[2]; // fn_1_1A774 (bones)
 extern void fn_800A7D4C(s32 layer, void* node);
-void fn_1_1B7DC(void);
 
 // fn_1_1C3CC, size:0x4F4
 // Debug viewer main update: menu, actor/camera control, then queue the draws.

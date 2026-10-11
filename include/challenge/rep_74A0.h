@@ -49,9 +49,9 @@ typedef struct {
 typedef struct {
     u16 selectedBone;
     u8 selectedActor;
-    u8 _03;
-    u8 _04;
-    u8 _05;
+    u8 confetti;  // viewer menu toggles
+    u8 fog;
+    u8 colorEdit; // material colour items visible in the menu
     u8 matAlpha; // material colour for fn_1_19D60, stored a, b, g, r
     u8 matBlue;
     u8 matGreen;
@@ -62,11 +62,12 @@ typedef struct {
 
 typedef struct {
     void (*update)(u8*);
-    u8 padding[0x0C];
+    u8 padding04[8];
+    void* _0C; // child task
     s16 state;
     u8 padding12[2];
     u8 actorIndex; // viewer: selected actor in lbl_8036E548
-    s8 menu;
+    u8 menu;
     u8 viewMode; // 1 = show all actors
     u8 _17;
     u8 _18;
@@ -139,7 +140,10 @@ typedef struct ChallengeCamera {
 // View of a controller entry in lbl_803C77B8 (PadState in main/file_800A7C08.h,
 // which can't be included next to UnknownHomes_Static.h).
 typedef struct ChallengePad {
-    u8 pad00[0x10];
+    u16 held;
+    u16 down;
+    u16 repeat;
+    u8 pad06[0xA];
     s8 stickX;
     s8 stickY;
     s8 substickX;
@@ -204,6 +208,8 @@ void fn_1_1CBE4(u8* object);
 void fn_1_1C8C0(u8* object);
 
 void fn_1_1C3CC(u8* object);
+
+void fn_1_1B7DC(void);
 
 void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 
