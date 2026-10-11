@@ -653,8 +653,8 @@ u8 LoadModel(CharActor* actor) {
 #endif
 
 // .text:0x80012B90 size:0xAF0
-void fn_80012B90(void) {
-    return;
+u8 fn_80012B90(CharActor* actor) {
+    return 0;
 }
 
 // .text:0x80013680 size:0xB84
@@ -1375,9 +1375,120 @@ s32 fn_80016344(u8 kind, s32 index, u8 arg2, s32 roster) {
 #endif
 
 // .text:0x80016710 size:0x450
-void fn_80016710(void) {
-    return;
+// NONMATCHING 86%: register allocation / stub callee inlining (fn_80012B90, fn_80013680)
+#if NONMATCHING
+s32 fn_80016710(u8 kind, s32 index) {
+    CharActor* actor;
+    CharPart* part;
+    BOOL ok;
+
+    if (lbl_8036E548.state == 6) {
+        return 1;
+    }
+    if (lbl_8036E548.state == 1) {
+        return 0;
+    }
+    if (lbl_8036E548.state == 2) {
+        lbl_8036E548.active[index] = &lbl_8036E548.actors[index];
+        lbl_8036E548.loadStep = 0;
+        lbl_8036E548.state = 3;
+    }
+    if (lbl_8036E548.state == 3) {
+        actor = &lbl_8036E548.actors[index];
+        if (lbl_8036E548.loadStep == 0) {
+            lbl_8036E548.loadStep = 1;
+            lbl_8036E548._2D7F[index] = actor->kind;
+            if (g_d_GameSettings.GameModeSelected == 2) {
+                actor->banks.b[5] = lbl_8036E548.animBufs[0];
+                fn_80021BBC(actor->kind, actor->banks.b[5]);
+            } else if (index >= 9) {
+                actor->banks.b[5] = lbl_8036E548.animBufs[0];
+                ARAMTransfer(&lbl_803CB790[actor->kind * 0x13 + 0x10], actor->banks.b[5], 0, 0);
+            } else {
+                actor->banks.b[5] = lbl_8036E548.bankSets[index][4];
+                fn_80021BBC(actor->kind, actor->banks.b[5]);
+            }
+            ok = FALSE;
+        } else if ((s32)lbl_803C6CF8.transferDone == 1) {
+            ANIMGet(actor->banks.b[5]);
+            ok = TRUE;
+        } else {
+            ok = FALSE;
+        }
+        if (!ok) {
+            return 0;
+        }
+        lbl_8036E548.state = 4;
+    }
+    if (lbl_8036E548.state == 4) {
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            if (lbl_800EEB18[kind] == -1 || lbl_8036E548.actors[index].files[4] == NULL) {
+                lbl_8036E548.actors[index].part = NULL;
+                ok = TRUE;
+            } else {
+                if (lbl_803CBBFA == 0) {
+                    fn_80021ADC(lbl_800EEB18[kind], lbl_80118220[0].files);
+                    lbl_803CBBFA = 1;
+                }
+                if ((s32)lbl_803C6CF8.transferDone == 1) {
+                    lbl_80118220[0].slot = kind;
+                    lbl_80118220[0]._61 = index;
+                    lbl_80118220[0].player.set = (ShapeAnimSet*)lbl_80118220[0].files;
+                    fn_80025FFC(lbl_8036E548.actors[index].files[4], &lbl_80118220[0].player);
+                    lbl_803CBBFA = 0;
+                    lbl_8036E548.actors[index].part = &lbl_80118220[0];
+                    ok = TRUE;
+                } else {
+                    ok = FALSE;
+                }
+            }
+            if (!ok) {
+                return 0;
+            }
+        } else {
+            if (lbl_800EEB18[kind] == -1 || lbl_8036E548.actors[index].files[4] == NULL) {
+                lbl_8036E548.actors[index].part = NULL;
+                ok = TRUE;
+            } else {
+                if (lbl_803CBBFA == 0) {
+                    fn_80021ADC(lbl_800EEB18[kind], lbl_80118220[index].files);
+                    lbl_803CBBFA = 1;
+                }
+                if ((s32)lbl_803C6CF8.transferDone == 1) {
+                    part = &lbl_80118220[index];
+                    part->slot = kind;
+                    part->_61 = index;
+                    part->player.set = (ShapeAnimSet*)part->files;
+                    fn_80025FFC(lbl_8036E548.actors[index].files[4], &part->player);
+                    lbl_803CBBFA = 0;
+                    lbl_8036E548.actors[index].part = part;
+                    ok = TRUE;
+                } else {
+                    ok = FALSE;
+                }
+            }
+            if (!ok) {
+                return 0;
+            }
+        }
+        lbl_8036E548.state = 5;
+    }
+    if (lbl_8036E548.state == 5) {
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            if (!fn_80013680(&lbl_8036E548.actors[index])) {
+                return 0;
+            }
+        } else {
+            if (!fn_80012B90(&lbl_8036E548.actors[index])) {
+                return 0;
+            }
+        }
+        return 1;
+    }
+    fn_80017098(0, 0, 0, index, 1, kind);
+    return 0;
 }
+#endif
 
 // .text:0x80016B60 size:0x41C
 s32 fn_80016B60(CharActor* actor) {
