@@ -27,7 +27,29 @@ s32 fn_3_BA174(void* key, void* elem) {
 
 // .text:0x000BA1A0 size:0xC8 mapped:0x806F9234
 SortListNode* fn_3_BA1A0(SortListNode* list, s32 count) {
-    return 0;
+    SortKeyEntry* arr;
+    SortKeyEntry* q;
+    SortListNode* n;
+
+    arr = _OSAllocFromHeap(0x20, count << 3);
+    q = arr;
+    n = list;
+    while (n != NULL) {
+        q->node = n;
+        q->key = n->key;
+        q++;
+        n = n->next;
+    }
+    fn_800246D4(fn_3_BA174, (u8*)arr, (u8*)arr, 8, count);
+    list = arr[0].node;
+    q = arr;
+    while (--count != 0) {
+        q->node->next = q[1].node;
+        q++;
+    }
+    q->node->next = NULL;
+    fn_800ACFB0(arr);
+    return list;
 }
 
 // .text:0x000BA268 size:0x184 mapped:0x806F92FC
