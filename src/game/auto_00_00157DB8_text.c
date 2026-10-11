@@ -3,6 +3,8 @@
 #include "game/auto_00_0005985C_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "main/file_80011640.h"
+#include "game/auto_00_000B3B70_text.h"
 
 extern s16 lbl_3_data_FC1C;
 extern u8 lbl_3_data_BD90[];
@@ -14,22 +16,15 @@ extern void* fn_80033A24(void*, int, int, int, int, int);
 extern void fn_3_6B870(void);
 extern void* lbl_803CC1B8[];
 extern u32 fn_3_157AC4(u8* o);
-extern void fn_3_158FE4(void);
-extern void fn_3_157E28(void);
-extern void fn_3_159114(void);
 typedef struct {
     u8* p;
     s32 pad;
 } QEnt;
-extern void fn_3_158B64(void);
 extern void fn_3_5F154(void);
 extern void fn_3_5EFEC(void);
 extern void fn_3_5EDD8(void);
 extern void fn_3_5F3FC(void);
 extern void fn_3_5CD24(void);
-extern void fn_3_15AE34(void);
-extern void fn_3_15B494(void);
-extern void fn_3_1586B0(void);
 extern void fn_3_9669C(void);
 extern u8 lbl_3_data_FAF4[];
 extern u8 lbl_3_data_B85C[];
@@ -348,5 +343,58 @@ void fn_3_15AE34(void) {
         g_Strikes.outs = 0;
     }
     g_Practice.guidedPracticeCompletionRelated = 0;
+}
+#endif
+
+// .text:0x0015B494 size:0x17C
+// NONMATCHING 95%: case 3 roster lookup address arithmetic scheduled differently (r4/r5 swap); rest only jumptable label
+#if NONMATCHING
+void fn_3_15B494(void) {
+    switch (g_Practice.practiceState) {
+    case 0:
+        lbl_8036E548.state = 0;
+        lbl_8036E548._2D7A[1] = 0;
+        lbl_8036E548._2D7C = 0;
+        lbl_3_common_bss_32724[0x9C] = 0;
+        g_Practice._1D9 = 0;
+        g_Practice._1C7 = 0;
+        lbl_8036E548._307D = 0;
+        fn_3_15B204();
+        fn_3_15B0D8();
+        fn_80011BE4(9);
+        fn_3_B3C94(1);
+        break;
+    case 1:
+        if (fn_8001594C(g_GameLogic.teamFielding) != 0) {
+            fn_3_B3C94(2);
+        }
+        break;
+    case 2:
+        if (fn_3_750DC() != 0) {
+            fn_3_B3C94(3);
+        }
+        break;
+    case 3:
+        {
+            s32 t = g_GameLogic.homeTeamBattingInd_fieldingTeam;
+            if (fn_80014D4C(inMemRoster[g_GameLogic.teamBatting][g_GameLogic.battingOrderAndPositionMapping[t][g_GameLogic.currentBatterPerTeam[t]][0]].stats.CharID) != 0) {
+                fn_3_B3C94(4);
+            }
+        }
+        break;
+    case 4:
+        if (fn_3_B3CD4() != 0) {
+            fn_3_B3C94(7);
+        }
+        break;
+    case 7:
+        fn_3_B3B70();
+        g_GameLogic.freeFieldingPracticeInd = 1;
+        g_GameLogic.TeamStars[0] = 5;
+        g_GameLogic.TeamStars[1] = 5;
+        fn_3_5A6D4(7);
+        fn_3_B3C78(3);
+        break;
+    }
 }
 #endif
