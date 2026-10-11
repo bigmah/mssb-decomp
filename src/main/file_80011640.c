@@ -309,8 +309,8 @@ void fn_80017340(void) {
 }
 
 // .text:0x8001758C size:0x228
-void fn_8001758C(void) {
-    return;
+s32 fn_8001758C(u8* state, s32 actor, u8 kind, u8 team, u8 roster, s8 arg5, u8 index, u8 arg7) {
+    return 0;
 }
 
 // .text:0x800177B4 size:0x60
@@ -583,8 +583,8 @@ void fn_8001C588(void) {
 }
 
 // .text:0x8001C67C size:0x2A4
-void fn_8001C67C_animation(void) {
-    return;
+int fn_8001C67C_animation(int a, int b) {
+    return 0;
 }
 
 // .text:0x8001C920 size:0x120
