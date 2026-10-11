@@ -26,6 +26,10 @@ void fn_3_CB6B4(void** file) {
 
 // .text:0x000CB6EC size:0x4C mapped:0x8070A780
 void fn_3_CB6EC(f32 x, f32 y, f32 z) {
-    return;
+    Vec pos;
+    pos.x = x;
+    pos.y = y;
+    pos.z = z;
+    lbl_3_data_18268.tex = lbl_3_common_bss_35154.tex;
+    fn_8002955C(&pos, NULL, &lbl_3_data_18268);
 }
-
