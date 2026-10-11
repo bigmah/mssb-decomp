@@ -836,7 +836,7 @@ config.libs = [
             Object(NonMatching, "auto_00_001293D0_text", source="game/auto_00_001293D0_text.c"),
             Object(NonMatching, "auto_00_0007976C_text", source="game/auto_00_0007976C_text.c"),
             Object(NonMatching, "auto_00_00114FC0_text", source="game/auto_00_00114FC0_text.c"),
-            Object(NonMatching, "auto_00_00090754_text", source="game/auto_00_00090754_text.c"),
+            Object(Matching, "auto_00_00090754_text", source="game/auto_00_00090754_text.c"),
             Object(NonMatching, "auto_00_00106DFC_text", source="game/auto_00_00106DFC_text.c"),
             Object(NonMatching, "game/rep_0.c"),
             Object(NonMatching, "game/rep_60.c"),
