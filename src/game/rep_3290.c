@@ -29,7 +29,18 @@ typedef struct {
     u8 framesAHeldForChargePitches; // 0x160
 } PitcherVel_3290;
 extern PitcherVel_3290 g_Pitcher;
-typedef struct { u8 pad0[0x28]; u8 s28; u8 pad29; u8 s2a; u8 pad2b; } MgEnt_3290;
+// Target-board entity at g_Minigame + 0x72C + i * 0x2C (7 of them).
+typedef struct {
+    Vec3_3290 pos;  // 0x00
+    Vec3_3290 home; // 0x0C
+    Vec3_3290 vel;  // 0x18
+    s16 width;      // 0x24
+    s16 timer;      // 0x26
+    u8 state;       // 0x28
+    u8 type;        // 0x29
+    u8 slot;        // 0x2A
+    u8 pad2b;
+} MgEnt_3290;
 
 extern void fn_3_1500C8(void);
 extern f32 lbl_3_data_215C8[];
@@ -446,21 +457,182 @@ void fn_3_114204(void) {
 }
 
 // .text:0x00114384 size:0x634 mapped:0x80753418
+extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
+extern Vec3_3290 lbl_3_data_21520[14];
+extern u8 g_Scores[];
+
+#define MG_ENT_3290(idx) ((MgEnt_3290*)(g_Minigame + (idx) * 0x2C + 0x72C))
+
+// NONMATCHING 95%: saved-register numbering (list base not kept in r28) and one lwzx/lwz in the removal loop
+#if NONMATCHING
+// Sets up a new round of targets: sorts the order list, places them and picks the special ones.
 void fn_3_114384(void) {
-    return;
+    s32 maxNormal;
+    u32 i;
+    u32 j;
+    u32 placed;
+    u32 k;
+    u32 last;
+    s32 m;
+    u8 n;
+    u8 pick;
+    MgEnt_3290* e;
+    u8 cand[8];
+    u32 counts[3];
+    u32 list[7];
+
+    if (g_Minigame[0x1909] != 0 || g_Minigame[0x1A3C] != 0 || g_Minigame[0x1A2B] != 3) {
+        switch (*(s32*)g_Scores) {
+        case 1:
+            maxNormal = 1;
+            break;
+        case 2:
+            maxNormal = 2;
+            break;
+        default:
+            maxNormal = 3;
+            break;
+        }
+    } else if (g_Minigame[0x1A2D] < 6) {
+        maxNormal = 1;
+    } else if (g_Minigame[0x1A2D] < 11) {
+        maxNormal = 2;
+    } else if (g_Minigame[0x1A2D] < 16) {
+        maxNormal = 3;
+    } else {
+        maxNormal = 4;
+    }
+    fn_800246D4(fn_3_1149B8, g_Minigame + 0x1A82, g_Minigame + 0x1A82, 1, 7);
+    i = 0;
+    do {
+        MG_ENT_3290(g_Minigame[0x1A82 + i])->slot = i;
+        i++;
+    } while (i < 7);
+    i = 0;
+    do {
+        counts[i] = 0;
+        i++;
+    } while (i < 3);
+    placed = 0;
+    i = 0;
+    do {
+        e = MG_ENT_3290(g_Minigame[0x1A82 + i]);
+        if (e->state == 3) {
+            placed++;
+            counts[e->type]++;
+        }
+        i++;
+    } while (i < 7);
+    i = 0;
+    do {
+        e = MG_ENT_3290(g_Minigame[0x1A82 + i]);
+        e->home.x = lbl_3_data_21520[e->slot].x;
+        e->home.y = lbl_3_data_21520[e->slot].y;
+        e->home.z = lbl_3_data_21520[e->slot].z;
+        if (i < placed) {
+            e->state = 2;
+        } else {
+            e->pos.x = e->home.x;
+            e->pos.y = e->home.y;
+            e->pos.z = e->home.z;
+            e->pos.x += lbl_3_data_21520[e->slot + 7].x;
+            e->pos.y += lbl_3_data_21520[e->slot + 7].y;
+            e->pos.z += lbl_3_data_21520[e->slot + 7].z;
+            e->state = 1;
+            e->type = 1;
+            counts[e->type]++;
+            e->width = lbl_3_data_21654[4 + e->type];
+        }
+        e->timer = 0;
+        e->vel.x = 0.0f;
+        e->vel.y = 0.0f;
+        e->vel.z = 0.0f;
+        i++;
+    } while (i < 7);
+    if (placed < 7) {
+        if (counts[2] == 0) {
+            // place one type-2 target, avoiding the last two slots that had one
+            n = 0;
+            for (j = placed; j < 7; j++) {
+                k = 0;
+                do {
+                    if (j == g_Minigame[0x1A7C + k]) {
+                        break;
+                    }
+                    k++;
+                } while (k < 2);
+                if (k >= 2) {
+                    cand[n++] = j;
+                }
+            }
+            if (n != 0) {
+                pick = cand[RandomInt_Game(n)];
+            } else {
+                pick = RandomInt_Game_Range(placed, 6);
+            }
+            counts[1]--;
+            e = MG_ENT_3290((g_Minigame + 0x1A82)[pick]);
+            e->type = 2;
+            e->width = lbl_3_data_21654[4 + e->type];
+        }
+        if (counts[1] > maxNormal) {
+            // turn surplus type-1 targets into type 0, never next to a type-2 one
+            m = 0;
+            for (j = placed; j < 7; j++) {
+                if (MG_ENT_3290(g_Minigame[0x1A82 + j])->type != 2 &&
+                    (j == 0 || MG_ENT_3290(g_Minigame[0x1A81 + j])->type != 2) &&
+                    (j == 6 || maxNormal <= 1 || MG_ENT_3290(g_Minigame[0x1A83 + j])->type != 2)) {
+                    list[m] = j;
+                    m++;
+                }
+            }
+            if (m != 0) {
+                while (counts[1] > maxNormal) {
+                    k = RandomInt_Game(m);
+                    last = m - 1;
+                    counts[1]--;
+                    e = MG_ENT_3290(g_Minigame[0x1A82 + list[k]]);
+                    e->type = 0;
+                    e->width = lbl_3_data_21654[4 + e->type];
+                    for (j = k; j < last; j++) {
+                        list[j] = list[j + 1];
+                    }
+                    if (--m <= 0) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    i = 0;
+    do {
+        g_Minigame[0x1A7D + i] = g_Minigame[0x1A7C + i];
+        i++;
+    } while (i < 1);
+    i = 0;
+    do {
+        if (MG_ENT_3290(g_Minigame[0x1A82 + i])->type == 2) {
+            g_Minigame[0x1A7C] = i;
+            break;
+        }
+        i++;
+    } while (i < 7);
+    g_Minigame[0x1A7F] = 1;
+    g_Minigame[0x1A80] = 7;
 }
+#endif
 
 // .text:0x001149B8 size:0x74 mapped:0x80753A4C
-int fn_3_1149B8(u8* a, u8* b) {
-    MgEnt_3290* ea = (MgEnt_3290*)(g_Minigame + 0x72C + *a * 0x2C);
-    MgEnt_3290* eb = (MgEnt_3290*)(g_Minigame + 0x72C + *b * 0x2C);
-    if (ea->s28 == 3 && eb->s28 != 3) {
+s32 fn_3_1149B8(void* a, void* b) {
+    MgEnt_3290* ea = (MgEnt_3290*)(g_Minigame + 0x72C + *(u8*)a * 0x2C);
+    MgEnt_3290* eb = (MgEnt_3290*)(g_Minigame + 0x72C + *(u8*)b * 0x2C);
+    if (ea->state == 3 && eb->state != 3) {
         return -1;
     }
-    if (ea->s28 != 3 && eb->s28 == 3) {
+    if (ea->state != 3 && eb->state == 3) {
         return 1;
     }
-    return ea->s2a - eb->s2a;
+    return ea->slot - eb->slot;
 }
 
 // .text:0x00114A2C size:0x5C mapped:0x80753AC0
