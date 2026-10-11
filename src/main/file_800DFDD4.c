@@ -79,9 +79,104 @@ const s32 lbl_800E82D8[2][3] = {
 #pragma dont_inline on
 
 // .text:0x800DFDD4 size:0x6B4
+// NONMATCHING 85%: register allocation and loop shape of the per-channel loops
+#if NONMATCHING
 void fn_800DFDD4(u8* src, u8* dst, u32 numChannels, u32 format, u32 count, void* chans) {
-    return;
+    HVQAudioChan* chan = chans;
+    s16* out = (s16*)dst;
+    s32 n = numChannels;
+    s32 index[2];
+    s32 pred[2];
+    s32 step[2];
+    s32 diff[2];
+    s32 hiNibble;
+    s32 i;
+
+    if (src == NULL) {
+        return;
+    }
+    if (format == 1) {
+        // block header: initial predictor and step index per channel
+        for (i = 0; i < n; i++) {
+            chan[i].pred = (src[0] << 8) | (src[1] & 0x80);
+            chan[i].index = src[1] & 0x7F;
+            src += 2;
+        }
+        for (i = n - 1; i >= 0; i--) {
+            *out++ = chan[i].pred;
+            if (chan[i].bufEnd != NULL && out > chan[i].bufEnd) {
+                out = chan[i].bufStart;
+            }
+        }
+        count--;
+    }
+
+    hiNibble = 1;
+    for (i = 0; i < n; i++) {
+        pred[i] = chan[i].pred;
+        index[i] = chan[i].index;
+    }
+    while (count != 0) {
+        for (i = 0; i < n; i++) {
+            s32 nibble;
+
+            if (hiNibble) {
+                nibble = *src >> 4;
+            } else {
+                nibble = *src++ & 0xF;
+            }
+            step[i] = lbl_80118020[index[i]];
+            diff[i] = step[i] >> 3;
+            if (nibble & 1) {
+                diff[i] += step[i] >> 2;
+            }
+            if (nibble & 2) {
+                diff[i] += step[i] >> 1;
+            }
+            if (nibble & 4) {
+                diff[i] += step[i];
+            }
+            if (nibble & 8) {
+                diff[i] = -diff[i];
+            }
+            pred[i] += diff[i];
+            if (pred[i] > 0x7FFF) {
+                pred[i] = 0x7FFF;
+            } else if (pred[i] < -0x8000) {
+                pred[i] = -0x8000;
+            }
+            index[i] += lbl_80117FE0[nibble];
+            if (index[i] < 0) {
+                index[i] = 0;
+            } else if (index[i] > 88) {
+                index[i] = 88;
+            }
+            hiNibble ^= 1;
+        }
+        for (i = n - 1; i >= 0; i--) {
+            if (n == 2) {
+                *out++ = pred[i];
+            } else {
+                // mono: duplicate into both output channels
+                out[0] = pred[i];
+                out[1] = pred[i];
+                out += 2;
+            }
+            if (chan[i].bufEnd != NULL && out >= chan[i].bufEnd) {
+                out = chan[i].bufStart;
+            }
+        }
+        for (i = 0; i < n; i++) {
+            chan[i].src = src;
+            chan[i].hiNibble = hiNibble;
+            chan[i].dst = out;
+            chan[i].pred = pred[i];
+            chan[i].index = index[i];
+        }
+        count--;
+    }
 }
+#endif
 
 // .text:0x800E0488 size:0x360
 // NONMATCHING 75%: clip and div tables are separate externs here; the original addresses both from one base (static bss in this TU)
