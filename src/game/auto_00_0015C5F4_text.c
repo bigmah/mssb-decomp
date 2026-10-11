@@ -714,7 +714,38 @@ void fn_3_15EE2C(void) {
 
 // .text:0x0015F088 size:0x198 mapped:0x8079E11C
 void fn_3_15F088(void) {
-    return;
+    ScoreBookTask* task = SB_TASK;
+    LayoutObj* o;
+
+    if (g_GameLogic._125 != 10) {
+        if (lbl_3_common_bss_34C90.cursor == 0) {
+            SB_OBJ(task, 1)->_68 = 1;
+            SB_OBJ(task, 2)->_68 = 4;
+            o = SB_OBJ(task, 2);
+            if ((o->_5C >> 16) > 10) {
+                o->_5C = 10 << 16;
+            }
+        } else {
+            SB_OBJ(task, 1)->_68 = 4;
+            o = SB_OBJ(task, 1);
+            if ((o->_5C >> 16) > 10) {
+                o->_5C = 10 << 16;
+            }
+            SB_OBJ(task, 2)->_68 = 1;
+        }
+        if (lbl_3_common_bss_32724._CE != 0) {
+            SB_OBJ(task, 0)->_68 = 4;
+            SB_OBJ(task, 3)->_68 = 4;
+            SB_OBJ(task, 4)->flags &= ~2;
+            task->state++;
+            if (task->state >= 0x2D) {
+                goto remove;
+            }
+        }
+        return;
+    }
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
 
 // .text:0x0015F220 size:0x160 mapped:0x8079E2B4
