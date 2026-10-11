@@ -2041,10 +2041,7 @@ typedef struct _MiniGameStruct {
     /*0x1919*/ u8 _1919;
     /*0x191A*/ u8 _191A;
     /*0x191B*/ u8 _191B;
-    /*0x191C*/ u8 _191C;
-    /*0x191D*/ u8 _191D;
-    /*0x191E*/ u8 _191E;
-    /*0x191F*/ u8 _191F;
+    /*0x191C*/ s8 _191C[4]; // per player: panel progress
     /*0x1920*/ E(u8, TOY_FIELD_RESULT) toyFieldBallStateResult2;
     /*0x1921*/ u8 _1921;
     /*0x1922*/ u8 _1922;
@@ -2835,7 +2832,8 @@ extern g_Stats_s g_Stats;
 typedef struct {
     u8 pad[0xAE];
     /* 0x0AE */ s16 _0AE;
-    u8 _0B0[0xBC - 0xB0];
+    /* 0x0B0 */ s16 _0B0; // fielder index (g_Fielders), < 0 if none
+    u8 _0B2[0xBC - 0xB2];
     /* 0x0BC */ s16 _0BC;
     u8 _0BE[0xE4 - 0xBE];
     /* 0x0E4 */ s16 _0E4;
@@ -2999,11 +2997,12 @@ typedef struct GameScoresTeam {
 typedef struct GameScores {
     /* 0x00 */ s32 inning;
     /* 0x04 */ GameScoresTeam team[2];
-    /* 0x50 */ u8 _50[0x9C - 0x50];
+    /* 0x50 */ GameScoresTeam hits[2]; // same layout as team[]: [0] total, [1..] per inning
     /* 0x9C */ s16 _9C;
     /* 0x9E */ s16 _9E;
     /* 0xA0 */ s16 _A0;
-    /* 0xA2 */ u8 _A2[0xA6 - 0xA2];
+    /* 0xA2 */ s16 _A2;
+    /* 0xA4 */ s16 _A4; // 0: away won, 1: home won, else tie
     /* 0xA6 */ s16 _A6;
     /* 0xA8 */ u8 _A8[0xAA - 0xA8];
     /* 0xAA */ u8 maxInnings;
