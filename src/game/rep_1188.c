@@ -3,6 +3,7 @@
 
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "main/file_800639BC.h"
 
 extern u8 aILevel[4];
 extern f32 runnerVelocityLookup[];
@@ -248,6 +249,117 @@ void fn_3_6EBB4(int rosterID) {
 }
 
 // .text:0x0006EF1C size:0x5CC mapped:0x806ADFB0
+// Batting order per team, filled in on the order screen (see game/auto_00_0015C5F4_text.h).
+typedef struct OrderEntry {
+    /*0x0*/ s8 rosterID;
+    /*0x1*/ s8 row; // batting-order row, 9 = pitcher only (not batting)
+    /*0x2*/ s8 position;
+    /*0x3*/ u8 _3;
+} OrderEntry;
+extern OrderEntry lbl_80354720[2][9];
+extern CharSelectState lbl_8034E9A0;
+// Captain-star stat multipliers bought in challenge mode:
+// [0] contact, [2] power, [4] pitch speed bonus, [5] curve, [7] throwing arm, [8] speed.
+extern f32 lbl_3_data_5FC4[12];
+
+#define CAPTAIN_STAR(id, bought, value)                                                                          \
+    if (stats->CharID == (id)) {                                                                                 \
+        if (bought) {                                                                                            \
+            stats->CaptainStarHitPitch = (value);                                                                \
+        } else {                                                                                                 \
+            stats->CaptainStarHitPitch = 0;                                                                      \
+        }                                                                                                        \
+    }
+
+// NONMATCHING 83%: the batting-order stores go through an indexed address (stwx) instead of
+// team base + row*8 with 0x44/0x48 displacements; the rest is register allocation (r20..r31 vs r21..r31)
+#if NONMATCHING
 void fn_3_6EF1C(void) {
-    return;
+    int team;
+    int j;
+
+    for (team = 0; team < 2; team++) {
+        int t = team ^ g_GameLogic._000;
+        OrderEntry* e = lbl_80354720[team];
+        g_GameLogic.battingOrderAndPositionMapping[t][0][1] = 0;
+        for (j = 0; j < 9; j++, e++) {
+            if (e->row == 9) {
+                g_GameLogic.battingOrderAndPositionMapping[t][0][0] = e->rosterID;
+            } else {
+                g_GameLogic.battingOrderAndPositionMapping[t][e->row + 1][0] = e->rosterID;
+                g_GameLogic.battingOrderAndPositionMapping[t][e->row + 1][1] = e->position;
+                if (e->position == 0) {
+                    g_GameLogic.battingOrderAndPositionMapping[t][0][0] = e->rosterID;
+                }
+            }
+        }
+    }
+
+    g_GameLogic.Team_CaptainRosterLoc[0] = lbl_8034E9A0.captainSlot[0];
+    g_GameLogic.Team_CaptainRosterLoc[1] = lbl_8034E9A0.captainSlot[1];
+
+    if (!g_d_GameSettings.exhibitionMatchInd) {
+        CharacterStats* roster = inMemRoster[g_d_GameSettings.humanTeamNumber];
+        s8* bought = (s8*)g_d_GameSettings.challengeCaptainStarBought;
+        s8 contact = bought[0];
+        s8 all = g_d_GameSettings._4F;
+        s8 power = bought[1];
+        s8 pitch = bought[2];
+        s8 arm = bought[3];
+        s8 speed = bought[4];
+        s8 star0 = bought[6];
+        s8 star1 = bought[7];
+        s8 star2 = bought[0xE];
+        s8 star3 = bought[0xF];
+        s8 star4 = bought[8];
+        s8 star5 = bought[9];
+        s8 star6 = bought[0xC];
+        s8 star11 = bought[0xD];
+        s8 starA = bought[0xA];
+        s8 starB = bought[0xB];
+        s8 star9 = bought[0x10];
+        s8 star13 = bought[0x11];
+        f32 contactMul = lbl_3_data_5FC4[0];
+        f32 powerMul = lbl_3_data_5FC4[2];
+        f32 pitchAdd = lbl_3_data_5FC4[4];
+        f32 curveMul = lbl_3_data_5FC4[5];
+        f32 armMul = lbl_3_data_5FC4[7];
+        f32 speedMul = lbl_3_data_5FC4[8];
+        for (j = 0; j < 9; j++, roster++) {
+            StatTable* stats = &roster->stats;
+            if (contact || all) {
+                stats->SlapContactSize = stats->SlapContactSize * contactMul;
+                stats->ChargeContactSize = stats->ChargeContactSize * contactMul;
+            }
+            if (power || all) {
+                stats->SlapHitPower = stats->SlapHitPower * powerMul;
+                stats->ChargeHitPower = stats->ChargeHitPower * powerMul;
+            }
+            // the original tests bought[2] twice (not _4F)
+            if (pitch || pitch) {
+                stats->CurveBallSpeed += (s32)pitchAdd;
+                stats->FastBallSpeed += (s32)pitchAdd;
+                stats->Curve = stats->Curve * curveMul;
+            }
+            if (arm || all) {
+                stats->ThrowingArm = stats->ThrowingArm * armMul;
+            }
+            if (speed || all) {
+                stats->Speed = stats->Speed * speedMul;
+            }
+            CAPTAIN_STAR(0, star0, 1)
+            CAPTAIN_STAR(1, star1, 2)
+            CAPTAIN_STAR(2, star2, 5)
+            CAPTAIN_STAR(3, star3, 6)
+            CAPTAIN_STAR(4, star4, 0xB)
+            CAPTAIN_STAR(5, star5, 0xC)
+            CAPTAIN_STAR(6, star6, 9)
+            CAPTAIN_STAR(0x11, star11, 0xA)
+            CAPTAIN_STAR(0xA, starA, 3)
+            CAPTAIN_STAR(0xB, starB, 4)
+            CAPTAIN_STAR(9, star9, 7)
+            CAPTAIN_STAR(0x13, star13, 8)
+        }
+    }
 }
+#endif
