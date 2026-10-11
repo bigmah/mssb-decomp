@@ -1122,7 +1122,7 @@ void fn_2_84194(u8* o) {
     }
 }
 
-extern void fn_2_7630C(u8* o, s32 a);
+extern void fn_2_7630C(u8* o, u8 index);
 
 // fn_2_802EC, size:0x214
 void fn_2_802EC(u8* o) {
@@ -2114,6 +2114,42 @@ void fn_2_7F8BC(u8* o, s32 index) {
         MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x34].obj->state = 1;
         MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x58].obj->frame = (s8)(lbl_803C6724 + index * 9)[found + 2] << 16;
         fn_2_75BE4(o, index);
+        fn_2_74F40(o, index);
+        fn_800626EC(index);
+        *e = 1;
+    }
+}
+#endif
+
+// fn_2_808D8, size:0x284
+// NONMATCHING 85%: original hoists the five slot pointers (base+0x78..0x8B) into registers before the stores; frame/stack layout differs
+#if NONMATCHING
+void fn_2_808D8(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            fn_2_7630C(o, index);
+        } else {
+            u8* chars = lbl_800FE930 + lbl_80361B20[0xF4] * 6;
+            s32 a = chars[F410_S32(0x10)];
+            s32 b = chars[lbl_803C6724[0]];
+            u8 x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
+            u8 y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
+            MN_OBJ(o, 0x82)->frame = lbl_2_data_2B3A4[x] << 16;
+            fn_800363D8(o, 0x89, 1, 3, lbl_2_data_2B3A4[x]);
+            fn_800363D8(o, 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
+            MN_OBJ(o, 0x7E)->frame = lbl_2_data_2B3A4[x] << 16;
+            MN_OBJ(o, 0x80)->frame = 0;
+            MN_OBJ(o, 0x89)->frame = 0;
+            MN_OBJ(o, 0x8B)->frame = 0xA0000;
+            MN_OBJ(o, 0x78)->frame = 0;
+            MN_OBJ(o, 0x7C)->frame = 0;
+            MN_OBJ(o, 0x80)->state = 1;
+            MN_OBJ(o, 0x89)->state = 1;
+            MN_OBJ(o, 0x8B)->state = 4;
+            MN_OBJ(o, 0x78)->state = 1;
+            MN_OBJ(o, 0x7C)->state = 1;
+        }
         fn_2_74F40(o, index);
         fn_800626EC(index);
         *e = 1;
