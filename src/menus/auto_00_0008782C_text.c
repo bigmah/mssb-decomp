@@ -202,7 +202,23 @@ void fn_2_87FB0(SceneTask* task) {
 
 // .text:0x00088250 size:0x178
 void fn_2_88250(SceneTask* task) {
-    return;
+    if ((lbl_2_bss_33FBCC.animStarted == 0) ? TRUE : FALSE) {
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._0F, 7)->_64 = 0x14;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._0F, 7)->flags |= 2;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._0F, 7)->_5C = 0;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._0F, 7)->_68 = 1;
+        SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->_64 = 0x13;
+        SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->_68 = 1;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._0F, 0x42)->flags |= 2;
+        SLOT_OBJ(task, lbl_2_bss_33FBCC._0F, 0x42)->_68 = 1;
+        lbl_2_bss_33FBCC.animStarted = 1;
+        lbl_2_bss_33FBCC.animRunning = 1;
+    }
+    if ((lbl_2_bss_33FBCC.animRunning == 1) ? TRUE : FALSE) {
+        lbl_2_bss_33FBCC.anim = 0;
+        lbl_2_bss_33FBCC.animStarted = 0;
+        lbl_2_bss_33FBCC.animRunning = 0;
+    }
 }
 
 // .text:0x000883C8 size:0x430
