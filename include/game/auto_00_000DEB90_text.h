@@ -2,6 +2,148 @@
 #define __GAME_AUTO_00_000DEB90_TEXT_H_
 
 #include "mssbTypes.h"
+#include "game/UnknownHomes_Game.h"
+
+// One coin sprite in lbl_8036E548.trail2 (CharTrail in main/file_80011640.h).
+typedef struct MinigameCoinSprite {
+    /*0x00*/ void (*draw)(void);
+    /*0x04*/ f32 x;
+    /*0x08*/ f32 y;
+    /*0x0C*/ f32 z;
+    /*0x10*/ f32 _10;
+    /*0x14*/ f32 angle;
+    /*0x18*/ u8 _18[0x26 - 0x18];
+    /*0x26*/ u8 visible;
+    /*0x27*/ u8 _27;
+} MinigameCoinSprite; // size: 0x28
+
+// View of lbl_8036E548 (CharMgr in main/file_80011640.h), only the fields used here.
+// A character actor placed on the result screen (CharActor in main/file_80011640.h).
+typedef struct MinigameActorView {
+    /*0x000*/ u8 _000[0x34];
+    /*0x034*/ VecXYZ pos;
+    /*0x040*/ f32 _40;
+    /*0x044*/ f32 rotY;
+    /*0x048*/ u8 _048[0x25D - 0x48];
+    /*0x25D*/ u8 visible;
+} MinigameActorView;
+
+typedef struct MinigameCharMgrView {
+    /*0x0000*/ u8 _0000[0x2294];
+    /*0x2294*/ VecXYZ camera;
+    /*0x22A0*/ f32 _22A0;
+    /*0x22A4*/ f32 cameraAngle;
+    /*0x22A8*/ u8 _22A8[0x24BD - 0x22A8];
+    /*0x24BD*/ u8 _24BD;
+    /*0x24BE*/ u8 _24BE[0x2C50 - 0x24BE];
+    /*0x2C50*/ MinigameActorView* actors[4];
+    /*0x2C60*/ u8 _2C60[0x2D8E - 0x2C60];
+    /*0x2D8E*/ u8 _2D8E;
+    /*0x2D8F*/ u8 _2D8F[0x2D94 - 0x2D8F];
+    /*0x2D94*/ MinigameCoinSprite* trail2; // [30]
+    /*0x2D98*/ u8 _2D98[0x307A - 0x2D98];
+    /*0x307A*/ u8 _307A;
+    /*0x307B*/ u8 _307B[3];
+    /*0x307E*/ u8 _307E;
+} MinigameCharMgrView;
+
+// Per-difficulty coin timing table (lbl_3_data_18BB0).
+typedef struct MinigameCoinTiming {
+    /*0x0*/ s16 _0;
+    /*0x2*/ s16 blinkStart; // coins blink once the visible counter passes this
+} MinigameCoinTiming;
+
+// View of g_Scores, only the fields used here.
+typedef struct MinigameScoresView {
+    /*0x00*/ s32 inning;
+    /*0x04*/ u8 _04[0xAA - 0x4];
+    /*0xAA*/ u8 minigameRelated;
+    /*0xAB*/ u8 _AB;
+    /*0xAC*/ u8 _AC;
+} MinigameScoresView;
+
+// View of lbl_3_common_bss_32724, only the fields used here.
+typedef struct MinigameBss32724View {
+    /*0x00*/ u8 _00[0xD5];
+    /*0xD5*/ u8 _D5;
+} MinigameBss32724View;
+
+// View of lbl_3_common_bss_32234, only the fields used here.
+typedef struct MinigameBss32234View {
+    /*0x00*/ u8 _00;
+    /*0x01*/ u8 _01;
+} MinigameBss32234View;
+
+// View of lbl_803CBC3C, only the fields used here.
+typedef struct MinigameCBC3CView {
+    /*0x00*/ u8 _00;
+    /*0x01*/ u8 _01;
+    /*0x02*/ u8 _02;
+} MinigameCBC3CView;
+
+// View of one g_Fielders entry, only the fields used here.
+typedef struct MinigameFielderView {
+    /*0x000*/ u8 _000[0x20D];
+    /*0x20D*/ s8 rosterID;
+    /*0x20E*/ u8 _20E[0x268 - 0x20E];
+} MinigameFielderView; // size: 0x268
+
+void fn_3_59918(s32 x, s32 unused);
+
+// lbl_3_common_bss_34C90 is PauseMenuState (game/auto_00_000AC9F8_text.h).
+
+// Points awarded per turn result (lbl_3_data_18BB8).
+typedef struct MinigamePointsAward {
+    /*0x0*/ s16 batter;
+    /*0x2*/ s16 pitcher;
+    /*0x4*/ s16 fielder;
+} MinigamePointsAward;
+
+void fn_3_10F3D8(void);
+void fn_3_10E60C(void);
+void fn_3_10B8D0(void);
+void fn_3_10A0A0(void);
+void fn_3_ACAF8(void);
+void fn_3_109254(void);
+void fn_3_149BA8(void);
+void fn_3_14A070(s32* src, s32 n);
+void fn_3_15F9AC(void);
+void fn_3_15FA58(s32 n, s32* list);
+
+// View of lbl_80353A90 (per-game line score), only the fields used here.
+typedef struct MinigameLineScoreView {
+    /*0x000*/ u8 _000[0x104];
+    /*0x104*/ u8 _104;
+} MinigameLineScoreView;
+
+// Result-screen camera/actor placement rows (lbl_3_data_2130C), one per stadium / minigame.
+typedef struct MinigameStageCamera {
+    /*0x0*/ f32 _0;
+    /*0x4*/ f32 y;
+    /*0x8*/ f32 _8;
+    /*0xC*/ f32 angle;
+} MinigameStageCamera;
+
+// View of lbl_3_common_bss_37400, only the fields used here.
+typedef struct MinigameBss37400View {
+    /*0x00*/ u8 _00[0x40];
+    /*0x40*/ s16 humanPlayer;
+} MinigameBss37400View;
+
+void fn_8001D0D0(s32 index, f32 scale);
+void fn_800203E0(u8 scene, s8 variant);
+s32 fn_80016F7C(void);
+s32 fn_3_6C938(s32 a, s32 b);
+void fn_3_59B20(void);
+
+// View of lbl_8037169C (SceneFade in main/file_8001FE00.h), only the fields used here.
+typedef struct MinigameSceneFadeView {
+    /*0x00*/ u8 _00[0x12];
+    /*0x12*/ u8 done;
+    /*0x13*/ u8 _13;
+} MinigameSceneFadeView;
+
+void fn_3_10C81C(void);
 
 void fn_3_DEB90(void);
 void fn_3_DF00C(void);

@@ -92,6 +92,7 @@ extern void SetDisplayStateTexture(struct TexImage* tex, s32 map, u32 tlutName);
 
 extern void fn_800AD038(void* object);
 extern void fn_800A97D0(u8 shift, s32 threshold);
+extern void fn_800A97EC(s32 index, u32 duration, u8 mode);
 extern void fn_80048BEC(void*, u32, u32);
 extern s32 fn_80048820(void*, u16, u16, u16, u8);
 extern void fn_800B2D5C(struct GameActor* actor);

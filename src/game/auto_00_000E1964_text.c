@@ -127,19 +127,18 @@ void fn_3_E19E8(void) {
         fn_3_E1478();
         fn_3_6B674();
         if (g_d_GameSettings.GameModeSelected == 6) {
-            // TODO type: wallBall_coinCoordinates/coinsVisibleInd are really [30] arrays
             for (i = 0; i < 30; i++) {
                 trail = &lbl_8036E548.trail2[i];
-                if ((&g_Minigame.wallBall_coinsVisibleInd)[i] == 0) {
+                if (g_Minigame.wallBall_coinsVisibleInd[i] == 0) {
                     trail->visible = 0;
                 } else if (g_Minigame.wallBall_coinsVisibleFrameCounter > lbl_3_data_18BB0[g_Minigame._199E][1] &&
                            (g_Minigame.wallBall_coinsVisibleFrameCounter & 1)) {
                     trail->visible = 0;
                 } else {
                     trail->visible = 1;
-                    trail->pos.x = (&g_Minigame.wallBall_coinCoordinates)[i].x;
-                    trail->pos.y = -(&g_Minigame.wallBall_coinCoordinates)[i].y;
-                    trail->pos.z = (&g_Minigame.wallBall_coinCoordinates)[i].z;
+                    trail->pos.x = g_Minigame.wallBall_coinCoordinates[i].x;
+                    trail->pos.y = -g_Minigame.wallBall_coinCoordinates[i].y;
+                    trail->pos.z = g_Minigame.wallBall_coinCoordinates[i].z;
                     trail->angle = fn_3_9FEA8(trail->angle + lbl_3_data_18DD0);
                 }
             }

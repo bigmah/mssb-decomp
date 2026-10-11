@@ -47,4 +47,14 @@ void fn_3_B61C0(void);
 
 void fn_3_B5F7C(void);
 
+void fn_3_B3FE8(void);
+void fn_3_B42A8(void);
+void fn_3_B4124(s32 team, s32 slot, s32 charId, s32 handedness);
+void fn_3_B49D4(void);
+s32 fn_3_B3CD4(void);
+void fn_3_B7620(void);
+void fn_3_B77DC(void);
+void fn_3_B43E8(void);
+void fn_3_B4C40(void);
+
 #endif
