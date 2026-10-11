@@ -2556,6 +2556,7 @@ void fn_3_1524E8(u8* o, u8 flag) {
     *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
 }
 
+#pragma dont_inline off
 // .text:0x00152794 size:0x320 mapped:0x80791828
 void fn_3_152794(u8* o) {
     Mtx m;
@@ -2690,10 +2691,24 @@ void fn_3_1534C0(u8* o) {
     *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
 }
 
+// NONMATCHING 26%: the original inlines 1534C0/1531A4/152794 (one per case); CW only auto-inlines the first. With explicit static-inline copies of the three bodies it reaches 93% (rest is the pooled lbl_3_data_266A8 base), so the structure is right; kept as plain calls
 // .text:0x001536A8 size:0x7E4 mapped:0x8079273C
+#if NONMATCHING
 void fn_3_1536A8(u8* obj, u8 mode) {
-    return;
+    switch (mode) {
+    case 1:
+        fn_3_1534C0(obj);
+        break;
+    case 2:
+        fn_3_1531A4(obj);
+        break;
+    case 3:
+        fn_3_152794(obj);
+        break;
+    }
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x00153E8C size:0x100 mapped:0x80792F20
 void fn_3_153E8C(u8* obj, f32* pos, u8 b, u8 c, u8 d) {
