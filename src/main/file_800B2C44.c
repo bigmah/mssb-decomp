@@ -533,6 +533,16 @@ void LoadActorLayout(void) {
 }
 
 // .text:0x800B49E4 size:0x60
-void fn_800B49E4(void) {
-    return;
+// Same as LoadActorLayout for static layouts (no null checks, no branches).
+void fn_800B49E4(ActorLayout* layout) {
+    ActorLayoutFile* file = (ActorLayoutFile*)layout;
+    s32 i;
+
+    layout->hierarchy.Offset = (u32)layout + layout->hierarchy.Offset;
+    layout->hierarchy.Root = (Ptr)layout + (u32)layout->hierarchy.Root;
+    layout->geoPaletteName = (char*)layout + (u32)layout->geoPaletteName;
+    layout->userData = (char*)layout + (u32)layout->userData;
+    for (i = 0; i < layout->totalBones; i++) {
+        file->bones[i].orientationCtrl = (Control*)((u8*)layout + (u32)file->bones[i].orientationCtrl);
+    }
 }
