@@ -8,8 +8,28 @@
 
 extern u8 lbl_800EF808[];          // TODO type: options block (0x398: sound/rumble setting)
 extern u16 lbl_3_data_81DC[];      // per stadium: crowd sound id base
-extern MinigameStadiumSound lbl_3_data_8404[]; // per stadium; accessed one row past the symbol
-extern MinigameStadiumSound lbl_3_data_84B8[]; // GameModeSelected 6
+extern MinigameSoundParams lbl_3_data_8404[];
+extern MinigameSoundParams lbl_3_data_84B8[];
+
+static inline void playCrowdSound(s32 n) {
+    s32 stadium;
+    u8 vol;
+    SND_VOICEID voice;
+
+    stadium = g_d_GameSettings.StadiumID;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        vol = lbl_3_data_84B8[n].vol;
+    } else {
+        vol = lbl_3_data_8404[stadium * 15 + n].vol;
+    }
+    voice = sndFXStartEx(lbl_3_data_81DC[stadium] + n, vol, 0x3F, 0);
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        vol = lbl_3_data_84B8[n].ctrl;
+    } else {
+        vol = lbl_3_data_8404[stadium * 15 + n].ctrl;
+    }
+    sndFXCtrl(voice, 0x5B, vol);
+}
 extern MinigamePointsAward lbl_3_data_18BB8[];
 extern s16 lbl_3_data_18C48[];
 extern s16 lbl_3_data_189AC[];             // [10] near-miss chance, [11] jackpot chance (percent)
@@ -18,9 +38,6 @@ extern MinigameSlotData lbl_3_data_189C4;
 // .text:0x000D8A10 size:0x2C0 mapped:0x80717AA4
 void fn_3_D8A10(void) {
     s32 i;
-    s32 stadium;
-    u8 vol;
-    SND_VOICEID voice;
 
     if (g_Minigame._19CE == 1) {
         g_Minigame.miniGameLatestPoints[g_Minigame.rosterID] += g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[12].batter;
@@ -44,19 +61,7 @@ void fn_3_D8A10(void) {
             }
         }
         if (lbl_800EF808[0x398] == 1) {
-            stadium = g_d_GameSettings.StadiumID;
-            if (g_d_GameSettings.GameModeSelected == 6) {
-                vol = lbl_3_data_84B8[1].vol;
-            } else {
-                vol = lbl_3_data_8404[stadium + 1].vol;
-            }
-            voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 0x1A, vol, 0x3F, 0);
-            if (g_d_GameSettings.GameModeSelected == 6) {
-                vol = lbl_3_data_84B8[1].ctrl;
-            } else {
-                vol = lbl_3_data_8404[stadium + 1].ctrl;
-            }
-            sndFXCtrl(voice, 0x5B, vol);
+            playCrowdSound(26);
         }
     }
     if (g_Minigame._19BA < 0x7FFE) {
@@ -70,8 +75,114 @@ void fn_3_D8A10(void) {
 }
 
 // .text:0x000D8CD0 size:0xB98 mapped:0x80717D64
+static inline void awardTurnPoints(s32 row) {
+    g_Minigame.miniGameLatestPoints[g_Minigame.rosterID] += g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[row].batter;
+    g_Minigame.miniGameLatestPoints[g_Minigame.minigamePlayerSelectedOrder] +=
+        g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[row].pitcher;
+    g_Minigame.miniGameLatestPoints[g_Minigame.minigameControlStruct[0].fieldOrder[1]] +=
+        g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[row].fielder;
+    g_Minigame.miniGameLatestPoints[g_Minigame.minigameControlStruct[0].fieldOrder[2]] +=
+        g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[row].fielder;
+}
+
+static inline void snapshotPoints(void) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if (g_Minigame.miniGameLatestPoints[i] != 0) {
+            g_Minigame.minigamePoints_current_Latest[i].current = g_Minigame.miniGameCurrentPoints[i];
+            g_Minigame.minigamePoints_current_Latest[i].latest = g_Minigame.miniGameLatestPoints[i];
+        }
+    }
+}
+
 void fn_3_D8CD0(void) {
-    return;
+    s32 k;
+    s32 amount;
+    s16 tmp;
+
+    g_Minigame._18BA = 0;
+    if (g_Minigame._192D == 0 || (u8)(g_Minigame._192D - 3) <= 1 || g_Minigame._192D == 5) {
+        switch (g_Minigame._192D) {
+        case 0:
+            // The batter takes points from everyone else.
+            g_Minigame.miniGameLatestPoints[g_Minigame.playerOrder[0]] = 0;
+            k = 1;
+            do {
+                amount = lbl_3_data_18BB8[15].batter * g_Minigame.toyField_pointMultiplier;
+                if (g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[k]] < amount) {
+                    amount = g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[k]];
+                }
+                g_Minigame.miniGameLatestPoints[g_Minigame.playerOrder[0]] += amount;
+                g_Minigame.miniGameLatestPoints[g_Minigame.playerOrder[k]] = -amount;
+            } while (++k < g_Minigame.miniGameNumberOfParticipants);
+            playCrowdSound(1);
+            break;
+        case 3:
+            amount = lbl_3_data_18BB8[13].batter * g_Minigame.toyField_pointMultiplier;
+            if (g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[1]] < amount) {
+                amount = g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[1]];
+            }
+            g_Minigame.miniGameLatestPoints[g_Minigame.playerOrder[0]] = amount;
+            g_Minigame.miniGameLatestPoints[g_Minigame.playerOrder[1]] = -amount;
+            playCrowdSound(1);
+            break;
+        case 4:
+            amount = lbl_3_data_18BB8[14].batter * g_Minigame.toyField_pointMultiplier;
+            if (g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[1]] < amount) {
+                amount = g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[1]];
+            }
+            g_Minigame.miniGameLatestPoints[g_Minigame.playerOrder[0]] = amount;
+            g_Minigame.miniGameLatestPoints[g_Minigame.playerOrder[1]] = -amount;
+            playCrowdSound(1);
+            break;
+        case 5:
+            // Swap scores.
+            tmp = g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[0]];
+            g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[0]] =
+                g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[1]];
+            g_Minigame.miniGameCurrentPoints[g_Minigame.playerOrder[1]] = tmp;
+            playCrowdSound(10);
+            break;
+        }
+        if (g_Minigame._192D != 5) {
+            snapshotPoints();
+        }
+    } else {
+        if (g_Minigame._192D == 7) {
+            g_Minigame.toyFieldBallStateResult2 = 2;
+            playCrowdSound(9);
+            awardTurnPoints(18);
+            snapshotPoints();
+        } else if (g_Minigame._192D == 2) {
+            g_Minigame._19A2 = 2;
+            g_Minigame._19C6 = g_Minigame.rosterID;
+            playCrowdSound(5);
+            awardTurnPoints(16);
+            snapshotPoints();
+            g_Minigame._1915 = 1;
+            g_Minigame._1916 = 1;
+            g_Minigame._1917 = 1;
+        } else if (g_Minigame._192D == 6) {
+            g_Minigame._19C6 = g_Minigame.rosterID;
+            playCrowdSound(11);
+            awardTurnPoints(17);
+            snapshotPoints();
+        }
+    }
+    g_Minigame.turnOverStatus = 1;
+    if (g_Minigame._192D == 7 || g_Minigame._192D == 8) {
+        g_Strikes.outs++;
+        fn_3_59918(1, 0);
+        if (g_Minigame.rosterID == g_Minigame._19C6) {
+            g_Minigame._19C6 = g_Minigame.minigamePlayerSelectedOrder;
+        }
+    }
+    if (g_Minigame._192D == 2) {
+        g_Minigame._1910 = g_Minigame._190D;
+    } else {
+        g_Minigame.pointsTargetReachedInd = 1;
+    }
 }
 
 // NONMATCHING 98%: second count loop: original does `li r3,0; mr r6,r3` (we get two li) and loads the count later

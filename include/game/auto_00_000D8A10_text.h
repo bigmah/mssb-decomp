@@ -3,13 +3,12 @@
 
 #include "mssbTypes.h"
 
-// Per-stadium crowd sound settings (lbl_3_data_8404, 0x1E bytes each).
-typedef struct MinigameStadiumSound {
-    /*0x00*/ u8 _00[0x16];
-    /*0x16*/ u8 vol;
-    /*0x17*/ u8 ctrl;
-    /*0x18*/ u8 _18[0x1E - 0x18];
-} MinigameStadiumSound; // size: 0x1E
+// Crowd sound settings (lbl_3_data_8404: [stadium * 15 + sound], lbl_3_data_84B8: [sound] for GameModeSelected 6).
+// Sound n plays id lbl_3_data_81DC[stadium] + n; some n are >= 15 and run into the next stadium's row.
+typedef struct MinigameSoundParams {
+    /*0x0*/ u8 vol;
+    /*0x1*/ u8 ctrl;
+} MinigameSoundParams;
 
 // Toy field slot machine data (lbl_3_data_189C4).
 typedef struct MinigameSlotData {
