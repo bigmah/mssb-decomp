@@ -59,6 +59,16 @@ typedef struct Particle {
             /* 0x28 */ s32 maxLife;
             /* 0x2C */ u8 pad2C[0x38 - 0x2C];
         } trail;
+        struct {
+            /* 0x10 */ Vec vel;
+            /* 0x1C */ f32 unk1C;
+            /* 0x20 */ f32 unk20;
+            /* 0x24 */ f32 unk24;
+            /* 0x28 */ f32 unk28;
+            /* 0x2C */ s32 unk2C;
+            /* 0x30 */ s32 unk30;
+            /* 0x34 */ f32 unk34;
+        } t5;
     } u;
     /* 0x38 */ f32 sizeX;
     /* 0x3C */ f32 sizeY;
@@ -110,6 +120,9 @@ typedef struct Emitter {
             /* 0x40 */ u32 color;
             /* 0x44 */ f32 size;
         } t1;
+        struct {
+            /* 0x18 */ u8 unk18;
+        } t5;
         struct {
             /* 0x18 */ Vec pos;
             /* 0x24 */ Vec prevPos;
@@ -186,6 +199,32 @@ typedef struct ParticleParamsB {
     /* 0x4C */ u32 color;
 } ParticleParamsB;
 
+// Spawn parameters of the type-5 emitters (ring/burst variants). Fixed
+// point x100000 where floats are meant; the meaning of most words depends
+// on the init function.
+typedef struct ParticleParams5 {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s32 unk28;
+    /* 0x2C */ s32 unk2C;
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ s32 unk34;
+    /* 0x38 */ s32 unk38;
+    /* 0x3C */ s32 unk3C;
+    /* 0x40 */ u32 unk40;
+    /* 0x44 */ s32 unk44;
+    /* 0x48 */ s32 unk48;
+    /* 0x4C */ s32 unk4C;
+} ParticleParams5;
+
 // Head of the active emitter list; aliases the prev/next of an Emitter.
 typedef struct EmitterHead {
     /* 0x0 */ struct Emitter* prev;
@@ -215,6 +254,8 @@ void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm);
 s32 fn_8002ECA0(Emitter* e);
 s32 fn_8002F1AC(Vec* pos, s32 id);
 void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm);
+void fn_800317C4(Emitter* e, Vec* pos, ParticleParams5* prm);
+void fn_80031CA4(Vec* pos, ParticleParams5* prm);
 Particle* fn_80031F34(Particle* list, s32 n);
 s32 fn_80032038(const void* a, const void* b);
 f32 fn_800335BC(s32 angle);

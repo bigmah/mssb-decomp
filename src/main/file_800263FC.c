@@ -32,6 +32,7 @@ typedef struct MtxBox {
 } MtxBox;
 extern const MtxBox lbl_800E67C0; // identity
 extern const Vec lbl_800E6784;    // (0, -1, 0)
+extern s32 lbl_803CB800;
 extern s32 lbl_803CB7F8;          // respawn delay mask
 extern f32 lbl_803CB7FC;          // respawn angle spread (0..1)
 extern ParticleParams lbl_800F787C; // default spawn parameters
@@ -243,6 +244,7 @@ static inline void QuadCorners(f32 width, f32 height) {
 s32 fn_8002E3DC(Emitter* e);
 s32 fn_8002E828(Emitter* e);
 s32 fn_8002ECA0(Emitter* e);
+s32 fn_80031034(Emitter* e);
 s32 fn_80029CC8(Emitter* e);
 
 // .text:0x800263FC size:0x59C
@@ -931,9 +933,56 @@ void fn_80031034(void) {
 }
 
 // .text:0x800317C4 size:0x4E0
-void fn_800317C4(void) {
-    return;
+// NONMATCHING 85%: float register allocation in the per-particle setup
+#if NONMATCHING
+void fn_800317C4(Emitter* e, Vec* pos, ParticleParams5* prm) {
+    Particle* p = e->particles;
+    s32 i;
+    s32 ang;
+    f32 s;
+    f32 c;
+    f32 speed;
+    f32 a;
+
+    e->tex = prm->tex;
+    for (i = 0; i < e->count; i++) {
+        ang = ((i * 0x5000) / e->count + 5) / 10;
+        s = SinIdx(ang);
+        c = CosIdx(ang);
+        p->pos.x = pos->x;
+        p->pos.y = pos->y;
+        p->pos.z = pos->z;
+        speed = ((f32)prm->unk10 / 100000.0f) *
+                (0.02 * lbl_803CB800 * (rand() % 256) * 0.00390625 + (1.0f - 0.01f * lbl_803CB800));
+        p->u.t5.vel.x = s * speed;
+        p->u.t5.vel.y = 0.0f;
+        p->u.t5.vel.z = c * speed;
+        p->u.t5.unk34 = 0.0f;
+        a = (((f32)prm->unk30 / 100000.0f) * 3.1415927f / 180.0f) * (f32)(0x80 - rand() % 256) * 0.0078125f +
+            ((f32)prm->unk44 / 100000.0f) * 3.1415927f / 180.0f;
+        s = sin(a);
+        c = cos(a);
+        p->sizeX = ((f32)prm->unkC / 100000.0f) * (s - c);
+        p->sizeY = ((f32)prm->unkC / 100000.0f) * (c + s);
+        p->u.t5.unk1C = 0.01f * (f32)(8 - rand() % 16) + (f32)prm->unkC / 100000.0f;
+        p->u.t5.unk20 = (f32)prm->unk20 / 100000.0f;
+        p->u.t5.unk24 = (f32)prm->unk24 / 100000.0f;
+        p->u.t5.unk2C = prm->unk18 - prm->unk1C;
+        p->u.t5.unk28 = ((f32)prm->unk14 / 100000.0f) *
+                        (0.02 * lbl_803CB800 * (rand() % 256) * 0.00390625 + (1.0f - 0.01f * lbl_803CB800));
+        p->color.rgba = prm->unk40;
+        p->u.t5.unk30 = prm->unk2C;
+        p->u.t5.unk34 = (f32)prm->unk48 / 100000.0f;
+        p->colorStep.v[0] = prm->unk4C;
+        p->life = p->delay = prm->unk18;
+        p->unk4C = 1;
+        p->uvFrame = 0;
+        p->texIndex = prm->texIndex;
+        p->uvOrder = prm->unk28;
+        p = p->next;
+    }
 }
+#endif
 
 // .text:0x80031CA4 size:0x290
 void fn_80031CA4(void) {
