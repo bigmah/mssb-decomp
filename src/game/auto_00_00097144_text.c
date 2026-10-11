@@ -177,7 +177,17 @@ void fn_3_98C20(void) {
 
 // .text:0x00098DE0 size:0xC8 mapped:0x806D7E74
 void fn_3_98DE0(void) {
-    return;
+    HudTask* task = HUD_TASK;
+
+    fn_80034E20(task, lbl_3_data_D7A8);
+    if (g_d_GameSettings.minigamesEnabled != 0) {
+        HUD_OBJ(task, 0)->layer = 5;
+    } else if (g_d_GameSettings.GameModeSelected == 2) {
+        HUD_OBJ(task, 0)->layer = 6;
+    }
+    lbl_3_common_bss_32724.pauseTitleShown = 1;
+    task->state = 0;
+    HUD_TASK->func = fn_3_98C20;
 }
 
 // .text:0x00098EA8 size:0x1BC mapped:0x806D7F3C
