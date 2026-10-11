@@ -219,7 +219,19 @@ void fn_800A6C80(void) {
 
 // .text:0x800A6D10 size:0x114
 void fn_800A6D10(s32 consumed) {
-    return;
+    BOOL intr = OSDisableInterrupts();
+
+    lbl_803C6CF8.readPos += consumed;
+    if (lbl_803C6CF8.readPos >= lbl_803C6CF8.bufEnd) {
+        lbl_803C6CF8.readPos -= lbl_803C6CF8.ringSize;
+    }
+    lbl_803C6CF8.buffered -= consumed;
+    if (lbl_803C6CF8.ringFull) {
+        lbl_803C6CF8.state = DVDSYS_STATE_RING;
+        lbl_803C6CF8.ringFull = FALSE;
+        ReadRingChunk();
+    }
+    OSRestoreInterrupts(intr);
 }
 
 // .text:0x800A6E24 size:0x170
