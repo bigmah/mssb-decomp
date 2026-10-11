@@ -182,12 +182,15 @@ typedef struct LightPos {
 
 // lbl_8036E548
 typedef struct CharMgr {
-    /*0x0000*/ u8 _0000[0x60];
+    /*0x0000*/ u8 _0000[0x4];
+    /*0x0004*/ u32 _0004[2];
+    /*0x000C*/ u32 _000C[21];
     /*0x0060*/ CharSlotList* slots;
     /*0x0064*/ CharSlotList* slots64;
     /*0x0068*/ CharSlotList* slots68;
     /*0x006C*/ CharSlotList* slots6C;
-    /*0x0070*/ u8 _0070[0xAC - 0x70];
+    /*0x0070*/ u32 _0070;
+    /*0x0074*/ u8 _0074[0xAC - 0x74];
     /*0x00AC*/ void* lights[4];
     /*0x00BC*/ u8 _00BC[0x13C - 0xBC];
     /*0x013C*/ CharSlotList* partSlots;
@@ -200,11 +203,8 @@ typedef struct CharMgr {
     /*0x2C90*/ u32 bankSize[4];
     /*0x2CA0*/ u8 _2CA0[0x4];
     /*0x2CA4*/ u32 _2CA4;
-    /*0x2CA8*/ u8 _2CA8[0x8];
-    /*0x2CB0*/ void* bankBuf[4];
-    /*0x2CC0*/ u8 _2CC0[0x2CE4 - 0x2CC0];
-    /*0x2CE4*/ void* _2CE4;
-    /*0x2CE8*/ void* _2CE8;
+    /*0x2CA8*/ u8 _2CA8[0x4];
+    /*0x2CAC*/ void* animBufs[16]; // [1..4]: shared bank buffers, [14]/[15]: extra banks
     /*0x2CEC*/ void* bankSets[4][5];
     /*0x2D3C*/ CharPreload preload[3];
     /*0x2D60*/ u32 _2D60;
@@ -219,11 +219,13 @@ typedef struct CharMgr {
     /*0x2D8E*/ u8 _2D8E;
     /*0x2D8F*/ u8 _2D8F;
     /*0x2D90*/ CharTrail* trail; // [25]
-    /*0x2D94*/ u8 _2D94[0x3078 - 0x2D94];
+    /*0x2D94*/ u32 _2D94[3];
+    /*0x2DA0*/ u8 _2DA0[0x3078 - 0x2DA0];
     /*0x3078*/ s16 _3078;
     /*0x307A*/ u8 _307A;
     /*0x307B*/ u8 _307B;
-    /*0x307C*/ u8 _307C[0x3082 - 0x307C];
+    /*0x307C*/ u8 _307C;
+    /*0x307D*/ u8 _307D[0x3082 - 0x307D];
     /*0x3082*/ u8 _3082;
     /*0x3083*/ u8 _3083[0x2];
     /*0x3085*/ u8 _3085;
@@ -342,6 +344,8 @@ void fn_8001AF98(void);
 void fn_8001AB10(CharSlot* slot, s32 a, s32 b);
 
 void fn_80017DBC(CharActor* actor, s32 modelIndex);
+
+void fn_8001F228(void);
 
 void fn_8001B200(void);
 

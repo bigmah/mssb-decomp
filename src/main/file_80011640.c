@@ -2412,7 +2412,48 @@ void fn_8001F16C(void) {
 
 // .text:0x8001F228 size:0x298
 void fn_8001F228(void) {
-    return;
+    s32 i;
+    s32 j;
+
+    lbl_8036E548._307A = 0;
+    lbl_8036E548._0004[0] = 0;
+    lbl_8036E548._0004[1] = 0;
+    for (i = 0; i < 21; i++) {
+        lbl_8036E548._000C[i] = 0;
+    }
+    lbl_8036E548.slots = NULL;
+    lbl_8036E548.slots64 = NULL;
+    lbl_8036E548.slots68 = NULL;
+    lbl_8036E548.slots6C = NULL;
+    lbl_8036E548._0070 = 0;
+    for (i = 0; i < 13; i++) {
+        lbl_8036E548.actors[i]._25C = 0;
+        lbl_8036E548.active[i] = NULL;
+    }
+    lbl_8036E548._2C84 = NULL;
+    lbl_8036E548._2C88 = NULL;
+    lbl_8036E548.fileBuf = NULL;
+    // NOTE: the original clears 16 entries per bankSets row, running past the
+    // end of bankSets into preload[] and _2D60/_2D64.
+    for (i = 0; i < 16; i++) {
+        lbl_8036E548.animBufs[i] = NULL;
+        for (j = 0; j < 4; j++) {
+            lbl_8036E548.bankSets[j][i] = NULL;
+        }
+    }
+    for (i = 0; i < 13; i++) {
+        lbl_8036E548._2D6A[i] = -1;
+    }
+    lbl_8036E548.trail = NULL;
+    lbl_8036E548._2D94[0] = 0;
+    lbl_8036E548._2D94[1] = 0;
+    lbl_8036E548._2D94[2] = 0;
+    lbl_8036E548._307C = 0;
+    lbl_8036E548._3085 = 0;
+    lbl_8036E548.callback = NULL;
+    lbl_8036E548._3087 = 0;
+    lbl_8036E548._3086 = 0;
+    DrawShadows(0);
 }
 
 // .text:0x8001F4C0 size:0x128
