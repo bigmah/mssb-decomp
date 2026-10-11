@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_E587C(void);
-void fn_3_E5924(void);
+s32 fn_3_E587C(void);
+s32 fn_3_E5924(void);
 
 #endif
