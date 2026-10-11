@@ -232,6 +232,16 @@ extern u32 lbl_803CB890;
 
 // .text:0x80063718 size:0xA4
 s32 fn_80063718(GameBone* bone, GameBone* target, Mtx m, f32 t) {
+    switch (bone->boneID) {
+    case 0x4A:
+        fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, t);
+        fn_800633AC(&target->animCtrl, m, lbl_803CB890);
+        return 1;
+    case 0x4B:
+        fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, t);
+        fn_800633AC(&target->animCtrl, m, lbl_803CB890);
+        return 1;
+    }
     return 0;
 }
 
