@@ -137,7 +137,97 @@ void fn_3_97800(void) {
 
 // .text:0x000978DC size:0x410 mapped:0x806D6970
 void fn_3_978DC(void) {
-    return;
+    HudTask* task = HUD_TASK;
+    s32 dim;
+    s32 sw;
+    s32 icon;
+    s32 lit;
+    s32 on;
+    s32 i;
+    s32 t;
+    s32 mark;
+
+    if (lbl_3_common_bss_32724.hudOff == 0 && lbl_3_common_bss_34C90.state != 6) {
+        if (lbl_3_common_bss_34C90.state == 4) {
+            HUD_OBJ(task, 0)->_68 = 4;
+            HUD_OBJ(task, 2)->_68 = 4;
+            lbl_8034E978._26 = 1;
+            task->timer = 9;
+        }
+        if (task->timer != 9) {
+            if (lbl_3_common_bss_34C90._23F[lbl_3_common_bss_34C90.team] == 0) {
+                HUD_OBJ(task, 1)->_68 = 1;
+            } else {
+                if ((HUD_OBJ(task, 1)->_5C >> 16) > 10) {
+                    HUD_OBJ(task, 1)->_5C = 0xA0000;
+                }
+                HUD_OBJ(task, 1)->_68 = 4;
+            }
+            for (t = 0; t < 2; t++) {
+                for (i = 0; i < 4; i++) {
+                    icon = i + 0x1D;
+                    if (t == 0) {
+                        icon = i + 5;
+                    }
+                    if (lbl_3_common_bss_34C90._23F[t] == i + 1) {
+                        HUD_OBJ(task, icon)->_68 = 1;
+                    } else {
+                        if ((HUD_OBJ(task, icon)->_5C >> 16) > 10) {
+                            HUD_OBJ(task, icon)->_5C = 0xA0000;
+                        }
+                        HUD_OBJ(task, icon)->_68 = 4;
+                    }
+                    sw = i + 0x21;
+                    if (t == 0) {
+                        sw = i + 9;
+                    }
+                    if (i == 0) {
+                        on = lbl_800E8754.port[g_GameLogic.teams[t]]._6;
+                    } else if (i == 1) {
+                        on = lbl_800E8754.port[g_GameLogic.teams[t]]._3;
+                    } else if (i == 2) {
+                        on = lbl_800E8754.port[g_GameLogic.teams[t]]._2;
+                    } else {
+                        on = lbl_800E8754.port[g_GameLogic.teams[t]]._4 ^ 1;
+                    }
+                    if (on != 0) {
+                        HUD_OBJ(task, sw)->_68 = 1;
+                    } else {
+                        HUD_OBJ(task, sw)->_68 = 4;
+                    }
+                    if (t == 0) {
+                        if (on != 0) {
+                            lit = i + 0x11;
+                            dim = i + 0x15;
+                        } else {
+                            lit = i + 0x15;
+                            dim = i + 0x11;
+                        }
+                        mark = i + 0xD;
+                    } else {
+                        if (on != 0) {
+                            lit = i + 0x29;
+                            dim = i + 0x2D;
+                        } else {
+                            lit = i + 0x2D;
+                            dim = i + 0x29;
+                        }
+                        mark = i + 0x25;
+                    }
+                    if (lbl_3_common_bss_34C90._23F[t] == i + 1) {
+                        HUD_OBJ(task, lit)->flags |= 2;
+                        HUD_OBJ(task, mark)->_68 = 1;
+                    } else {
+                        HUD_OBJ(task, lit)->flags &= ~2;
+                        HUD_OBJ(task, mark)->_68 = 4;
+                    }
+                    HUD_OBJ(task, dim)->flags &= ~2;
+                }
+            }
+        }
+    } else {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
 }
 
 // .text:0x00097CEC size:0x33C mapped:0x806D6D80
