@@ -58,6 +58,7 @@ extern u8 lbl_800EF808[];
 extern void* lbl_3_bss_1768;
 extern void fn_3_8B094(void);
 #include "musyx/musyx.h"
+extern u8 lbl_3_data_8148[];
 
 void fn_3_902FC(void) {
     sndVolume(0, 10, 0xFF);
@@ -79,6 +80,67 @@ s32 fn_3_8B258(u8 a, u8 b, u8 c) {
 void fn_3_8B2E4(void) {
     lbl_3_bss_1768 = fn_800B0A5C_insertQueue(fn_3_8B094, 0);
 }
+
+// .text:0x0008B318 size:0x400
+// Sets the per-voice reverb/ctrl tables. The tables are reached through the
+// pooled data base lbl_3_data_8148 (as in the original):
+//   +0x128 (7 bytes)   -> +0x370 = lbl_3_data_84B8, odd bytes
+//   +0x130 (12 bytes)  -> +0x568 = lbl_3_data_8530 + 0x180
+//   +0x13C (102 bytes) -> +0x1F0 = lbl_3_data_8338, odd bytes (ctrl of each FX pair)
+typedef struct SndFxPair { u8 vol, ctrl; } SndFxPair;
+// NONMATCHING 82%: orig materialises each table address (addi base,off) before the unrolled copies;
+// that comes from the tables being separate static arrays pooled in this TU, which we can't reproduce
+#if NONMATCHING
+void fn_3_8B318(s32 mode) {
+    u8* d = lbl_3_data_8148;
+    s32 i;
+    u32 n;
+    if (mode == -1) {
+        u8* src = d + 0x130;
+        u8* dst = d + 0x3E8;
+        for (i = 0; i < 12; i++) {
+            dst[0x180 + i] = src[i];
+        }
+    } else if (mode == 6) {
+        u8* src7 = d + 0x128;
+        SndFxPair* dst7 = (SndFxPair*)(d + 0x370);
+        for (i = 0; i < 7; i++) {
+            dst7[i].ctrl = src7[i];
+        }
+        {
+            u8* src = d + 0x130;
+            u8* dst = d + 0x3E8;
+            for (i = 0; i < 12; i++) {
+                dst[0x180 + i] = src[i];
+            }
+        }
+        {
+            u8* src = d + 0x13C;
+            SndFxPair* dst = (SndFxPair*)(d + 0x1F0);
+            for (n = 0; n < 102; n++) {
+                dst[n].ctrl = src[n];
+            }
+        }
+    } else {
+        SndFxPair* dst7 = (SndFxPair*)(d + 0x370);
+        for (i = 0; i < 7; i++) {
+            dst7[i].ctrl = 0;
+        }
+        {
+            u8* dst = d + 0x3E8;
+            for (i = 0; i < 12; i++) {
+                dst[0x180 + i] = 0;
+            }
+        }
+        {
+            SndFxPair* dst = (SndFxPair*)(d + 0x1F0);
+            for (n = 0; n < 102; n++) {
+                dst[n].ctrl = 0;
+            }
+        }
+    }
+}
+#endif
 
 // .text:0x0008B718 size:0xC4 mapped:0x806CA7AC
 void fn_3_8B718(f32* a, f32* b, f32* c) {
@@ -543,7 +605,6 @@ void fn_3_90064(s32 id) {
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4
-extern u8 lbl_3_data_8148[];
 // NONMATCHING 36%: orig converts the u8 table entries as signed int (xoris) and schedules both conversions before the call; data reached through pooled base lbl_3_data_8148 (+0x20 = lbl_3_data_8168, +0x3E8 = lbl_3_data_8530)
 #if NONMATCHING
 u32 fn_3_90150(s32 a, s32 b) {
