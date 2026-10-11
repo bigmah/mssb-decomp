@@ -89,6 +89,50 @@ typedef struct {
     /* 0x2C */ u8 buffer;
 } ChallengeWaveState;
 
+// Queue object of the sprite-animation viewer (fn_1_25F98).
+typedef struct {
+    /* 0x00 */ void (*func)(void);
+    /* 0x04 */ u8 pad4[0x10];
+    /* 0x14 */ struct ChallengeSpriteTask* sprite;
+    /* 0x18 */ u16 trackCount;
+    /* 0x1A */ s16 x;
+    /* 0x1C */ s16 y;
+    /* 0x1E */ u8 pad1E[3];
+    /* 0x21 */ u8 track;
+    /* 0x22 */ u8 cursor;
+    /* 0x23 */ u8 hold;
+    /* 0x24 */ u8 frame;
+} ChallengeSpriteViewer;
+
+// Sprite task created by fn_80034E20 (only the fields used here).
+typedef struct ChallengeSpriteTask {
+    /* 0x00 */ u8 pad0[0x10];
+    /* 0x10 */ u16 done;
+    /* 0x12 */ u8 pad12[2];
+    /* 0x14 */ u16 slot; // index into lbl_80371C30
+} ChallengeSpriteTask;
+
+// Texture/animation bank (same layout as SpaniTexSlot in main/file_80034F50.h).
+typedef struct {
+    /* 0x00 */ Mtx mtx;
+    /* 0x30 */ void* data;
+    /* 0x34 */ u8* tex;
+    /* 0x38 */ struct Anim* anim;
+} ChallengeTexSlot;
+
+typedef struct {
+    Mtx m;
+} ChallengeMtxBox;
+
+// Sprite descriptor passed to fn_80034E20 (lbl_1_data_10344, 0x40 bytes).
+typedef struct {
+    /* 0x00 */ u16 unk0;
+    /* 0x02 */ s16 track;
+    /* 0x04 */ f32 x;
+    /* 0x08 */ f32 y;
+    /* 0x0C */ u8 padC[0x34];
+} ChallengeSpriteDesc;
+
 // Rope mass point used by fn_1_24C4C (0x3C bytes, cf. RopeNode in main/file_80037054.h).
 typedef struct {
     /* 0x00 */ f32 mass;
@@ -260,5 +304,6 @@ s32 fn_1_23098(Mtx44 proj, Mtx camera, s32 lines, s32 cols, f32 nearZ, f32 farZ)
 void fn_1_23B54(void);
 void fn_1_21CE8(void);
 void fn_1_21408(void);
+void fn_1_25F98(void);
 
 #endif

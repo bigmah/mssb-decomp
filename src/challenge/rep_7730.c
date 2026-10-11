@@ -3,6 +3,8 @@
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
 #include "main/file_800BD8C4.h"
+#include "main/file_8000BA3C.h"
+#include "main/file_8000F150.h"
 #include "C3/control.h"
 #include "stl/math.h"
 
@@ -473,11 +475,10 @@ void fn_1_2040C(void) {
 
 #include "Dolphin/os.h"
 extern s32 fn_80035DD4(s32);
-extern void fn_80034E20(void*, void*, void*);
+extern void fn_80034E20(void* group, void* desc);
 extern void fn_1_267BC(void);
-extern void fn_1_25F98(void);
 extern u8 lbl_1_data_FB98[];
-extern u8 lbl_1_data_10344[];
+extern ChallengeSpriteDesc lbl_1_data_10344;
 extern u8 lbl_803C4BE0[];
 extern char lbl_1_rodata_78F0[];
 extern char lbl_1_rodata_78F8[];
@@ -503,7 +504,7 @@ void fn_1_267F4(void) {
         entry = lbl_803C4BE0;
         entry += index * 0x3C;
         *(s16*)(queue + 0x18) = **(s32**)(*(u8**)(entry + 0x38) + 8);
-        fn_80034E20(*(u8**)(queue + 0x14), lbl_1_data_10344, entry);
+        fn_80034E20(*(u8**)(queue + 0x14), &lbl_1_data_10344);
         queue[0x21] = 0;
         queue[0x22] = 0;
         queue[0x24] = 0;
@@ -2642,6 +2643,191 @@ void fn_1_21408(void) {
     fn_1_21298(q);
     if (lbl_1_bss_6BE0[0] != NULL) {
         fn_1_20950(lbl_1_bss_6FE0, q->pointCount - 1, lbl_1_bss_43EE0.view);
+    }
+}
+#endif
+
+extern void fn_80035A00(void);
+extern void fn_1_26928(void);
+extern const ChallengeMtxBox lbl_1_rodata_7780;
+extern const f32 lbl_1_rodata_78E4;
+extern const f32 lbl_1_rodata_78E8;
+extern const f32 lbl_1_rodata_78EC;
+
+#define CHALLENGE_TEX_SLOTS ((ChallengeTexSlot*)lbl_803C4BE0) // TODO type: lbl_803C4BE0 is SpaniTexSlot[] in main
+#define CHALLENGE_SPRITE_OBJ(q) (lbl_80371C30[(q)->sprite->slot].obj)
+
+// NONMATCHING 99%: scheduling only, in the case-3 write-back and the SetDisplayStateTexture argument setup
+// .text:0x25F98 size:0x824
+#if NONMATCHING
+void fn_1_25F98(void) {
+    ChallengeSpriteViewer* q = (ChallengeSpriteViewer*)lbl_803CC1B8[0];
+    AnimFrame frame;
+    ChallengeMtxBox mtx;
+    ChallengeTexSlot* bank;
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        switch (i) {
+        case 0:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 2) {
+                    fn_80034CEC(q->sprite);
+                    q->track++;
+                    if (q->track == q->trackCount) {
+                        q->track = 0;
+                    }
+                    q->frame = 0;
+                    lbl_1_data_10344.track = q->track;
+                    fn_80034E20(q->sprite, &lbl_1_data_10344);
+                } else if (CHALLENGE_PAD_TRIGGER & 1) {
+                    fn_80034CEC(q->sprite);
+                    if (q->track == 0) {
+                        q->track = q->trackCount;
+                    }
+                    q->track--;
+                    q->frame = 0;
+                    lbl_1_data_10344.track = q->track;
+                    fn_80034E20(q->sprite, &lbl_1_data_10344);
+                } else if (lbl_803C77B8._02 & 0x100) {
+                    CHALLENGE_SPRITE_OBJ(q)->_68 = 1;
+                } else if (lbl_803C77B8._02 & 0x200) {
+                    CHALLENGE_SPRITE_OBJ(q)->_68 = 0;
+                } else if (lbl_803C77B8._02 & 0x400) {
+                    CHALLENGE_SPRITE_OBJ(q)->_5C = 0;
+                }
+            }
+            break;
+        case 1:
+            if (i == q->cursor) {
+                if (lbl_803C77B8._02 & 0x100) {
+                    q->hold = !q->hold;
+                }
+                if (q->hold != 0) {
+                    CHALLENGE_SPRITE_OBJ(q)->_68 = 0;
+                } else {
+                    CHALLENGE_SPRITE_OBJ(q)->_68 = 1;
+                }
+                if (CHALLENGE_PAD_TRIGGER & 2) {
+                    if (q->hold != 0) {
+                        CHALLENGE_SPRITE_OBJ(q)->_68 = 1;
+                    }
+                } else if ((CHALLENGE_PAD_TRIGGER & 1) && q->hold != 0) {
+                    CHALLENGE_SPRITE_OBJ(q)->_68 = 4;
+                }
+            }
+            break;
+        case 2:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->frame++;
+                } else if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->frame--;
+                }
+            }
+            fn_8000CEF0(CHALLENGE_TEX_SLOTS[CHALLENGE_SPRITE_OBJ(q)->_66].anim, q->track, 0, q->frame, (u32*)&frame);
+            break;
+        case 3:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 2) {
+                    frame.subTrack++;
+                } else if (CHALLENGE_PAD_TRIGGER & 1) {
+                    frame.subTrack--;
+                }
+                // write the edited texture index back into the track's first entry
+                CHALLENGE_TEX_SLOTS[CHALLENGE_SPRITE_OBJ(q)->_66].anim->table->tracks[q->track]->blocks[0]->entries[0].size
+                    = frame.subTrack;
+            }
+            break;
+        case 4:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 0x800) {
+                    q->x = 0;
+                } else if (CHALLENGE_PAD_TRIGGER & 0x400) {
+                    q->x = 320;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->x += 8;
+                } else if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->x -= 8;
+                }
+                lbl_1_data_10344.x = q->x;
+                CHALLENGE_SPRITE_OBJ(q)->x = q->x;
+            }
+            break;
+        case 5:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 0x800) {
+                    q->y = 0;
+                } else if (CHALLENGE_PAD_TRIGGER & 0x400) {
+                    q->y = 224;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->y += 8;
+                } else if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->y -= 8;
+                }
+                lbl_1_data_10344.y = q->y;
+                CHALLENGE_SPRITE_OBJ(q)->y = q->y;
+            }
+            break;
+        }
+    }
+    if (lbl_803C77B8._02 & 4) {
+        q->cursor++;
+        if (q->cursor == 6) {
+            q->cursor = 0;
+        }
+    } else if (lbl_803C77B8._02 & 8) {
+        if (q->cursor == 0) {
+            q->cursor = 6;
+        }
+        q->cursor--;
+    }
+    if (lbl_803C77B8._02 & 0x1000) {
+        fn_80034CEC(q->sprite);
+        q->sprite->done = 1;
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_26928;
+        fn_80035A00();
+    }
+
+    // draw the selected texture of the bank as a quad
+    mtx = lbl_1_rodata_7780;
+    if (lbl_1_bss_6BD8 != 0) {
+        GXClearVtxDesc();
+        GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+        GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, 0);
+        GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+        GXSetNumChans(0);
+        GXSetNumTexGens(1);
+        GXSetNumTevStages(1);
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+        GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
+        GXLoadPosMtxImm(mtx.m, 0);
+        GXSetCurrentMtx(0);
+        bank = &CHALLENGE_TEX_SLOTS[CHALLENGE_SPRITE_OBJ(q)->_66];
+        SetDisplayStateTexture((struct TexImage*)(bank->tex + lbl_1_bss_6BDC * 32 + 4), 0, 0);
+        GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78E4;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78E8;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78EC;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78E8;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.u16 = 1;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7814[0];
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78EC;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78E8;
+        GXWGFifo.u16 = 1;
+        GXWGFifo.u16 = 1;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7814[0];
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78E4;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78E8;
+        GXWGFifo.u16 = 1;
+        GXWGFifo.u16 = 0;
     }
 }
 #endif
