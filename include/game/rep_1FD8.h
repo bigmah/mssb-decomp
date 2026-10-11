@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/vec.h"
+#include "Dolphin/mtx.h"
 
 void fn_3_C19C8(void);
 struct Rep1FD8Ent;
@@ -51,7 +52,7 @@ void fn_3_C77AC(void* h, u8* b);
 struct C7A0CEnt;
 void fn_3_C7A0C(struct C7A0CEnt* e);
 void fn_3_C805C(s32* a, s32* b);
-s32 fn_3_C823C(s32, f32*);
+void* fn_3_C823C(s32 idx, Mtx out);
 void fn_3_C82B4(void);
 void fn_3_C8650(void);
 

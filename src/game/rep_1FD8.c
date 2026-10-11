@@ -6,6 +6,8 @@
 #include "Dolphin/mtxext.h"
 #include "Dolphin/GX/GXFifo.h"
 #include "main/file_80024184.h"
+#include "main/file_800BD8C4.h"
+#include "C3/control.h"
 typedef struct C4724P {
     struct C4724P* next;
     f32 x, y, z;
@@ -51,8 +53,6 @@ extern u32 lbl_3_bss_9D8C;
 extern const f32 lbl_3_rodata_214C;
 extern void fn_800528B4(void);
 extern int rand(void);
-extern void CTRLBuildMatrix(void*);
-extern void CTRLSetTranslation(void*, f32, f32, f32);
 extern TexImage* lbl_3_bss_9D98; // 3 textures of the fn_3_C1C18 effect
 extern u8* lbl_3_common_bss_350E4[];
 extern void fn_3_B8184(void);
@@ -86,7 +86,7 @@ extern void fn_3_25844(u32, int);
 extern u8 g_GameLogic[];
 extern u8 g_Minigame[];
 extern u8* lbl_803CC1B8;
-extern u32 lbl_3_bss_9D94;
+extern Control* lbl_3_bss_9D94;
 typedef struct DspObj2 DspObj2;
 struct DspObj2 {
     u8 pad0[0x14];
@@ -144,7 +144,6 @@ extern u8 lbl_803C5090[];
 extern u8 lbl_8036E548[];
 extern void fn_800BEBCC(int, Vec*);
 extern const f32 lbl_3_rodata_20F0;
-extern void CTRLGetTranslation(void*, f32*, f32*, f32*);
 extern void fn_3_CB7E8(f32, f32, f32);
 extern f32 lbl_3_rodata_2150;
 extern void* lbl_3_bss_9F0C; // TexArchive*
@@ -321,7 +320,7 @@ void fn_3_C2310(void* pp, void* cam) {
     Mtx m;
     DspObj2* o;
     DspObj2* n;
-    ((void (*)(u32, void*))CTRLBuildMatrix)(lbl_3_bss_9D94, m);
+    CTRLBuildMatrix(lbl_3_bss_9D94, m);
     PSMTXConcat((f32 (*)[4])cam, m, m2);
     o = *(DspObj2**)pp;
     n = o->child;
@@ -858,7 +857,7 @@ void fn_3_C414C(int idx) {
     u8 hit = 0;
     Vec t;
     u8* c = *(u8**)&lbl_3_common_bss_350E4 + idx * 0xE8;
-    CTRLGetTranslation(c, &t.x, &t.y, &t.z);
+    CTRLGetTranslation((Control*)c, &t.x, &t.y, &t.z);
     if (*(s16*)(g_Ball + 0x1B7A) != 2) {
         if (c[0xA9] == 5 && lbl_800E8754[4] != 0) {
             fn_3_CB7E8(t.x, t.y - lbl_3_rodata_2150, t.z);
@@ -880,7 +879,14 @@ void fn_3_C414C(int idx) {
 }
 
 // .text:0x000C42A4 size:0x1A8 mapped:0x80703338
-typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } C42A4Ctl;
+typedef struct {
+    union {
+        Control ctrl;
+        u8 raw[0x78];
+    } u;
+    void* f78; // model drawn by fn_3_B8464
+    u8 pad2[0xE8 - 0x7C];
+} C42A4Ctl;
 // Stadium object list (lbl_3_common_bss_350E4) and the per-group shadow/collision batch
 // buffers built by fn_3_C82B4: p48 = n pairs of Vec (bounds), p3C = counts, p44 = indices,
 // p40 = u16 first-index per group.
@@ -928,10 +934,10 @@ void fn_3_C42A4(s32* a, s32* b) {
                     off += 4;
                     g->p3C[*a] += 1;
                     c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE0[0]];
-                    ((void (*)(void*, void*))CTRLBuildMatrix)(c, m);
-                    fn_3_B8464(m, (void*)c->f78);
+                    CTRLBuildMatrix(&c->u.ctrl, m);
+                    fn_3_B8464(m, c->f78);
                     m[1][3] = m[1][3] * lbl_3_rodata_2154;
-                    fn_3_B8464(m, (void*)c->f78);
+                    fn_3_B8464(m, c->f78);
                     *b += 1;
                 }
             }
@@ -1148,7 +1154,7 @@ typedef struct { u8 pad0[0x20]; void* f20; } C4F00H;
         t.x = r * cos(a); \
         t.z = r * sin(a); \
         t.y = lbl_3_rodata_216C; \
-        ((void (*)(void*, void*))CTRLBuildMatrix)(*(void**)((u8*)h + 0x20), m); \
+        CTRLBuildMatrix((Control*)h->f20, m); \
         PSMTXMultVec(m, &t, (Vec*)&p->x); \
     } while (0)
 // .text:0x000C4F00 size:0x404 mapped:0x80703F94
@@ -1519,16 +1525,16 @@ void fn_3_C71CC(s32* a, s32* b) {
                     c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[*b];
                     off += 4;
                     t = *(C71CCCopy*)c;
-                    ((void (*)(void*, void*))CTRLBuildMatrix)(c, m);
-                    fn_3_B8464(m, (void*)c->f78);
+                    CTRLBuildMatrix(&c->u.ctrl, m);
+                    fn_3_B8464(m, c->f78);
                     y = (f32)D;
                     d = lbl_3_data_175F0[2] * lbl_3_rodata_21A0;
-                    CTRLSetTranslation(&t, d + e->x, y + e->y, d + e->z);
-                    ((void (*)(void*, void*))CTRLBuildMatrix)(&t, m);
-                    fn_3_B8464(m, (void*)c->f78);
-                    CTRLSetTranslation(&t, e->x - d, y + e->y, e->z - d);
-                    ((void (*)(void*, void*))CTRLBuildMatrix)(&t, m);
-                    fn_3_B8464(m, (void*)c->f78);
+                    CTRLSetTranslation((Control*)&t, d + e->x, y + e->y, d + e->z);
+                    CTRLBuildMatrix((Control*)&t, m);
+                    fn_3_B8464(m, c->f78);
+                    CTRLSetTranslation((Control*)&t, e->x - d, y + e->y, e->z - d);
+                    CTRLBuildMatrix((Control*)&t, m);
+                    fn_3_B8464(m, c->f78);
                     *b += 1;
                 }
             }
@@ -1665,7 +1671,11 @@ void fn_3_C77AC(void* hv, u8* b) {
 // height, rises when a ball is about to hit it, drops with a splash + sound,
 // waits, then rises back.
 typedef struct C7A0CEnt {
-    u8 pad0[0x99];
+    union {
+        Control ctrl;
+        u8 raw[0x98];
+    } u;
+    u8 pad98;
     u8 placed; // 0x99
     u8 pad9A[0x9C - 0x9A];
     Vec pos; // 0x9C
@@ -1708,7 +1718,7 @@ void fn_3_C7A0C(C7A0CEnt* e) {
             e->pos.y = C7A0C_TBL[e->idx].y;
             e->state = 0;
             e->armed = 1;
-            CTRLSetTranslation(e, e->pos.x, e->pos.y, e->pos.z);
+            CTRLSetTranslation(&e->u.ctrl, e->pos.x, e->pos.y, e->pos.z);
             pitchingMachinePitching((u8)(e->idx + 0x3E));
             e->placed = 1;
         }
@@ -1785,7 +1795,7 @@ void fn_3_C7A0C(C7A0CEnt* e) {
         }
         break;
     }
-    CTRLSetTranslation(e, e->pos.x, e->pos.y, e->pos.z);
+    CTRLSetTranslation(&e->u.ctrl, e->pos.x, e->pos.y, e->pos.z);
 }
 #endif
 
@@ -1793,7 +1803,6 @@ typedef struct { u32 w[17]; } C42A4Cpy;
 extern u8 lbl_3_bss_9DE4[];
 extern u8 lbl_3_data_17514[];
 extern f32 lbl_3_rodata_21E0;
-extern void CTRLSetTranslation(void*, f32, f32, f32);
 // .text:0x000C805C size:0x1E0 mapped:0x807070F0
 void fn_3_C805C(s32* a, s32* b) {
     Mtx m;
@@ -1822,11 +1831,11 @@ void fn_3_C805C(s32* a, s32* b) {
                     c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE4[0]];
                     off += 4;
                     cpy = *(C42A4Cpy*)c;
-                    ((void (*)(void*, void*))CTRLBuildMatrix)(c, m);
-                    fn_3_B8464(m, (void*)c->f78);
-                    CTRLSetTranslation(&cpy, ((f32*)e)[0], lbl_3_rodata_21E0, ((f32*)e)[2]);
-                    ((void (*)(void*, void*))CTRLBuildMatrix)(&cpy, m);
-                    fn_3_B8464(m, (void*)c->f78);
+                    CTRLBuildMatrix(&c->u.ctrl, m);
+                    fn_3_B8464(m, c->f78);
+                    CTRLSetTranslation((Control*)&cpy, ((f32*)e)[0], lbl_3_rodata_21E0, ((f32*)e)[2]);
+                    CTRLBuildMatrix((Control*)&cpy, m);
+                    fn_3_B8464(m, c->f78);
                     *b += 1;
                 }
             }
@@ -1839,12 +1848,23 @@ void fn_3_C805C(s32* a, s32* b) {
 }
 
 // .text:0x000C823C size:0x78 mapped:0x807072D0
-typedef struct { u8 _0[0x78]; s32 f78; u8 _7C[0xA9 - 0x7C]; u8 fA9; u8 _AA[0xE8 - 0xAA]; } C823CEnt;
-s32 fn_3_C823C(s32 idx, f32* out) {
+typedef struct {
+    union {
+        Control ctrl;
+        u8 raw[0x78];
+    } u;
+    void* f78;
+    u8 _7C[0xA9 - 0x7C];
+    u8 fA9;
+    u8 _AA[0xE8 - 0xAA];
+} C823CEnt;
+// Builds object idx's matrix into out (dropping it slightly while in state 5)
+// and returns its model.
+void* fn_3_C823C(s32 idx, Mtx out) {
     C823CEnt* p = *(C823CEnt**)&lbl_3_common_bss_350E4 + idx;
-    CTRLBuildMatrix(p);
+    CTRLBuildMatrix(&p->u.ctrl, out);
     if (p->fA9 == 5) {
-        out[7] = -0.002f;
+        out[1][3] = -0.002f;
     }
     return (*(C823CEnt**)&lbl_3_common_bss_350E4 + idx)->f78;
 }
