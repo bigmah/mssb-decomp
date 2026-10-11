@@ -753,7 +753,6 @@ void fn_2_4906C(void) {
 
 extern u8 lbl_2_data_12EC0[];
 
-typedef struct { u32 a; u32 size; u32 c; u32 d; } Entry08E8;
 
 // .text:0x477C0 size:0x134
 void fn_2_477C0(void) {
@@ -777,7 +776,62 @@ void fn_2_477C0(void) {
     }
 }
 
-extern void fn_2_47540(void);
+// .text:0x47540 size:0x23C
+// NONMATCHING ~85%: same instructions; volatile register assignment of the four maxima and the saved regs of the aligned sizes differ (decl permutations tried)
+#if NONMATCHING
+void fn_2_47540(void) {
+    u32 max2 = 0;
+    u32 max3 = 0;
+    u32 max0 = 0;
+    u32 max1 = 0;
+    u32 size;
+    u32 s1;
+    u32 s3;
+    u32 s2;
+    u32 s0;
+    s32 k;
+    s32 m;
+    u8* p;
+    Entry08E8* f;
+
+    for (k = 0; k < 4; k++) {
+        f = &((Entry08E8*)lbl_2_data_12EC0)[k * 19];
+        size = f[4].size & 0x0FFFFFFF;
+        if (max0 < size) max0 = size;
+        size = f[3].size & 0x0FFFFFFF;
+        if (max1 < size) max1 = size;
+        size = f[5].size & 0x0FFFFFFF;
+        if (max2 < size) max2 = size;
+        size = f[2].size & 0x0FFFFFFF;
+        if (max3 < size) max3 = size;
+    }
+    s1 = (max1 + 0x1F) & ~0x1F;
+    s2 = (max2 + 0x1F) & ~0x1F;
+    s3 = (max3 + 0x1F) & ~0x1F;
+    s0 = (max0 + 0x1F) & ~0x1F;
+    MENU_CHARMGR.bankSize[2] = s0;
+    MENU_CHARMGR.bankSize[1] = s1;
+    MENU_CHARMGR.bankSize[3] = s2;
+    MENU_CHARMGR.bankSize[0] = s3;
+    p = _OSAllocFromHeap(0x20, (s0 + (s1 + s2 + s3)) * 4);
+    MENU_CHARMGR.bankBuf = p;
+    for (m = 0; m < 4; m++) {
+        MENU_CHARMGR.bankSets[m][0] = p;
+        p += s0;
+        MENU_CHARMGR.bankSets[m][1] = p;
+        p += s1;
+        MENU_CHARMGR.bankSets[m][2] = p;
+        p += s2;
+        MENU_CHARMGR.bankSets[m][3] = p;
+        p += s3;
+        MENU_CHARMGR.actors[m].banks[0] = NULL;
+        MENU_CHARMGR.actors[m].banks[3] = NULL;
+        MENU_CHARMGR.actors[m].banks[4] = NULL;
+        MENU_CHARMGR.actors[m].banks[1] = NULL;
+        MENU_CHARMGR.actors[m].banks[2] = NULL;
+    }
+}
+#endif
 extern void fn_80023B04(s32);
 extern void fn_80014204(s32);
 extern u32 fn_80023AA4(void);
