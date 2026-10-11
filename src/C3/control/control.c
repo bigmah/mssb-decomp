@@ -778,3 +778,95 @@ void fn_800B806C(s32 index, f32 bottom, f32 top, f32 left, f32 right, f32 near, 
 }
 #endif
 
+// NONMATCHING 83.6%: original keeps the corner loop as a counted loop (not ctr) and tests the
+// and-code with unsigned compares on a u8 copy
+#if NONMATCHING
+// Tests the box (8 corners, transformed by `m`) against frustum `index`.
+// Returns 1 if visible, 0 if outside, 2 if no face of either volume reaches the other.
+s32 fn_800B7D3C(s32 index, Vec *box, Mtx m)
+{
+    Vec quad[4];
+    Vec world[8];
+    Vec clip[8];
+    CTRLFrustum *fr;
+    u32 andCode;
+    u32 orCode;
+    u8 code;
+    f32 near;
+    f32 far;
+    s32 i;
+    s32 hits;
+    u8 *face;
+
+    PSMTXMultVecArray(m, box, world, 8);
+    fr = &sFrustums[index];
+    PSMTX44MultVecArray(fr->proj, world, clip, 8);
+
+    near = fr->near;
+    far = fr->far;
+    andCode = 0x3F;
+    orCode = 0;
+    for (i = 0; i < 8; i++) {
+        code = (clip[i].x < -1.0f);
+        code |= (clip[i].x > 1.0f) << 1;
+        code |= (clip[i].y < -1.0f) << 2;
+        code |= (clip[i].y > 1.0f) << 3;
+        code |= (world[i].z < near) << 4;
+        code |= (world[i].z > far) << 5;
+        if (code == 0) {
+            return 1;
+        }
+        andCode &= code;
+        orCode |= code;
+    }
+
+    if ((andCode & 0x30) == 0x10 || (andCode & 0x30) == 0x20) {
+        return 0;
+    }
+    if (!(orCode & 0x20)) {
+        if ((andCode & 3) == 1 || (andCode & 3) == 2) {
+            return 0;
+        }
+        if ((andCode & 0xC) == 4 || (andCode & 0xC) == 8) {
+            return 0;
+        }
+    }
+
+    hits = 0;
+    face = sBoxFaces[0];
+    for (i = 6; i != 0; i--, face += 4) {
+        s32 r;
+        quad[0] = fr->corners[face[0]];
+        quad[1] = fr->corners[face[1]];
+        quad[2] = fr->corners[face[2]];
+        quad[3] = fr->corners[face[3]];
+        r = fn_800B81C0(quad, world);
+        if (r > 0) {
+            return 1;
+        }
+        hits |= r;
+    }
+    if (hits == 0) {
+        return 2;
+    }
+
+    hits = 0;
+    face = sBoxFaces[0];
+    for (i = 6; i != 0; i--, face += 4) {
+        s32 r;
+        quad[0] = world[face[0]];
+        quad[1] = world[face[1]];
+        quad[2] = world[face[2]];
+        quad[3] = world[face[3]];
+        r = fn_800B81C0(quad, fr->corners);
+        if (r > 0) {
+            return 1;
+        }
+        hits |= r;
+    }
+    if (hits == 0) {
+        return 2;
+    }
+    return 0;
+}
+#endif
