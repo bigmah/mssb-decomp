@@ -146,10 +146,50 @@ void fn_8001FE00(LayoutGroup* group) {
 }
 #endif
 
+// NONMATCHING 99%: the li r9,0 / li r29,0 initialisations are scheduled in the other order
 // .text:0x80020048 size:0x1D0
+#if NONMATCHING
 s32 calledWhenStartingMatch(void) {
+    WeightedPick picks[10];
+    s32 i;
+    s32 count;
+    s32 total;
+    s32 r;
+
+    if ((u32)g_d_GameSettings._00 == 0) {
+        g_d_GameSettings._00 |= 1;
+        return 0;
+    }
+    for (i = 0; i < 10; i++) {
+        picks[i].weight = 0;
+        picks[i].index = -1;
+    }
+    total = 0;
+    count = 0;
+    for (i = 0; i < 17; i++) {
+        if ((lbl_800E86BC[i].stadium < 0 || g_d_GameSettings.StadiumID == lbl_800E86BC[i].stadium) &&
+            lbl_8037169C.lastPick != i) {
+            if (g_d_GameSettings._00 & (1 << i)) {
+                picks[count].weight = lbl_800E86BC[i].weightSeen;
+            } else {
+                picks[count].weight = lbl_800E86BC[i].weight;
+            }
+            total += picks[count].weight;
+            picks[count].index = i;
+            count++;
+        }
+    }
+    r = rand() % total;
+    for (i = 0; i < count; i++) {
+        r -= picks[i].weight;
+        if (r < 0) {
+            g_d_GameSettings._00 |= 1 << picks[i].index;
+            return picks[i].index;
+        }
+    }
     return 0;
 }
+#endif
 
 // .text:0x80020218 size:0x34
 s32 fn_80020218(void) {
