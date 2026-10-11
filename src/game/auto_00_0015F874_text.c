@@ -35,7 +35,7 @@ void fn_3_15F874(s32 useB) {
 
 // .text:0x0015F998 size:0x14 mapped:0x8079EA2C
 void fn_3_15F998(void) {
-    return;
+    lbl_3_common_bss_35154.active = 0;
 }
 
 // .text:0x0015F9AC size:0x14 mapped:0x8079EA40
