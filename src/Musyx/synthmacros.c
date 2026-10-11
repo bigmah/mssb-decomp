@@ -824,7 +824,7 @@ static u32 mcmdPitchSweep(SYNTH_VOICE* svoice, MSTEP* cstep, int num) {
   }
   svoice->sweepAdd[num] = delta << 0x10;
   cstep->para[0] = 0;
-  mcmdWait(svoice, cstep);
+  return mcmdWait(svoice, cstep);
 }
 
 static void DoPanningSetup(SYNTH_VOICE* svoice, MSTEP* cstep, u8 pi) {
@@ -853,15 +853,11 @@ static void mcmdSetSurroundPanning(SYNTH_VOICE* svoice, MSTEP* cstep) {
 static void mcmdSetPianoPanning(SYNTH_VOICE* svoice, MSTEP* cstep) {
   s32 delta; // r31
   s32 scale; // r30
-  delta = (svoice->curNote << 16) - EXTRACT_3RDNYBBLE(cstep->para[0]);
-  scale = (s8)(u8)(cstep->para[0] >> 8);
+  delta = (svoice->curNote << 16) - ((u8)(cstep->para[0] >> 16) << 16);
+  scale = (s8)((u8)(cstep->para[0] >> 8));
   delta = ((delta * scale) >> 7);
   delta += (u8)(cstep->para[0] >> 0x18) << 16;
-  if (delta < 0) {
-    delta = 0;
-  } else if (delta > 0x7f0000) {
-    delta = 0x7f0000;
-  }
+  delta = delta < 0 ? 0 : delta > 0x7f0000 ? 0x7f0000 : delta;
   svoice->panTarget[0] = delta;
   svoice->panning[0] = delta;
 }
@@ -1347,7 +1343,7 @@ static void mcmdSetupTremolo(SYNTH_VOICE* svoice, MSTEP* cstep) {
   svoice->treCurScale = 1.f;
 }
 
-static void macHandleActive(SYNTH_VOICE* svoice) {
+void macHandleActive(SYNTH_VOICE* svoice) {
   u8 i;                              // r29
   u8 lastNote;                       // r27
   u32 ex;                            // r30
@@ -1657,6 +1653,12 @@ static void macHandleActive(SYNTH_VOICE* svoice) {
     case 0x5a:
       mcmdSRCModeSelect(svoice, &cstep);
       break;
+    case 0x5e:
+      mcmdFilterSwitchSelect(svoice, &cstep);
+      break;
+    case 0x5f:
+      mcmdFilterParameterSelect(svoice, &cstep);
+      break;
     case 0x60:
       mcmdVarCalculation(svoice, &cstep, 0);
       break;
@@ -1680,6 +1682,7 @@ static void macHandleActive(SYNTH_VOICE* svoice) {
       break;
     case 0x71:
       mcmdIfVarCompare(svoice, &cstep, 1);
+      break;
     }
   } while (!ex);
 }
