@@ -237,41 +237,41 @@ void fn_3_91D1C(void) {
 }
 
 // .text:0x00091E4C size:0x178 mapped:0x806D0EE0
-// 99%: only the tail differs: original `bge remove; b end`, ours `blt end` after the 0x1A counter check
+// NONMATCHING 99%: only the tail differs: original `bge remove; b end`, ours `blt end` after the 0x1A counter check
+// (tried goto/else-return/switch fallthrough forms)
+#if NONMATCHING
 void fn_3_91E4C(void) {
-    u8* o = lbl_803CC1B8[0];
-    u8** t;
+    RepTask* task = lbl_803CC1B8[0];
     s32 i;
     s32 v;
     if (lbl_3_common_bss_32724[0xCD] == 0) {
         if (lbl_3_common_bss_32724[0xCE] == 0) {
             return;
         }
-        t = (u8**)((u8*)lbl_80371C30);
-        t[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        t = (u8**)(((u8*)lbl_80371C30) + 8);
-        t[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        v = *(u32*)(t[*(u16*)(o + 0x14) * 2] + 0x5C) >> 16;
+        REP_OBJ(task, 0)->_68 = 4;
+        REP_OBJ(task, 1)->_68 = 4;
+        v = REP_OBJ(task, 1)->_5C >> 16;
         for (i = 0; i < 11; i++) {
             if (v <= lbl_3_data_F200[0][i]) {
                 if (i == 0) {
-                    ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2 + 4][0x68] = 4;
-                    ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2 + 6][0x68] = 4;
+                    REP_OBJ(task, 2)->_68 = 4;
+                    REP_OBJ(task, 3)->_68 = 4;
                 }
-                ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) - (-6) - (-i)) * 2][0x68] = 4;
-                ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) - (-0x11) - (-i)) * 2][0x68] = 4;
+                lbl_80371C30[task->baseIdx + 6 + i].obj->_68 = 4;
+                lbl_80371C30[task->baseIdx + 17 + i].obj->_68 = 4;
             }
         }
-        *(u16*)(o + 0x1A) = *(u16*)(o + 0x1A) + 1;
-        if (*(u16*)(o + 0x1A) < 0x2D) {
+        task->_1A++;
+        if (task->_1A < 45) {
             return;
         }
     }
-    fn_800B0A14_removeQueue(fn_80034CEC(o));
-    if (((u8*)&g_GameLogic)[0x11E] == 3) {
-        ((u8*)&lbl_8034E978)[0x26] = 1;
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    if (g_GameLogic.gameStatus == 3) {
+        lbl_8034E978._26 = 1;
     }
 }
+#endif
 
 // .text:0x00091FC4 size:0xD14 mapped:0x806D1058
 // NONMATCHING 87% (with the two helpers inlined): the original reaches lbl_3_data_EC1C/F200/F430 through the
