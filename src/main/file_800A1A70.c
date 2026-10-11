@@ -74,7 +74,7 @@ void GDSetTexImgPtr(GXTexMapID id, void* image_ptr) {
 
 // .text:0x800A237C size:0xF0
 void GDSetTexTlut(GXTexMapID id, u32 tmem_addr, GXTlutFmt format) {
-    return;
+    GDWriteBPCmd((u32)((tmem_addr - 0x80000) >> 9) << 0 | (u32)format << 10 | (u32)lbl_803CBAB8[id] << 24);
 }
 
 // .text:0x800A246C size:0x290
