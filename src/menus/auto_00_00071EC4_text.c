@@ -3735,3 +3735,146 @@ void fn_2_76DF0(u8* o, u8 index) {
     }
 }
 #endif
+
+// NONMATCHING 85%: register allocation; captain search/flag pointers scheduled differently
+#if NONMATCHING
+// Field position of the team's captain (player id at lbl_8034E9A0 + 0x46E0).
+static inline u8 CaptainPos(s32 team, u8 pos) {
+    s32 j;
+    for (j = 0; j < 9; j++) {
+        if (*(s32*)(lbl_8034E9A0 + 0x46E0 + team * 4) == TEAM_TBL->roster[team][j]) {
+            pos = TEAM_TBL->pos[team][j];
+            break;
+        }
+    }
+    return pos;
+}
+
+// fn_2_776A0, size:0x994
+void fn_2_776A0(u8* o, s32 port) {
+    u8 team = lbl_803C66B0[0x59 + port];
+    u16 buttons = *(u16*)(lbl_8034E9A0 + 0x472E + port * 6);
+    u8 pos;
+    s32 j;
+    u8* t;
+    if (lbl_803C66B0[0] == 2) {
+        t = lbl_2_bss_F468 + team;
+        if (t[0x45] == 0) {
+            if (t[0x41] == 0) {
+                if (F468_S32(8 + team * 4) != F468_S32(team * 4)) {
+                    fn_2_74F40(o, team);
+                }
+            } else {
+                if (F468_S32(0x20 + team * 4) != F410_S32(0x20 + team * 4)) {
+                    fn_2_74F40(o, team);
+                }
+            }
+        }
+    }
+    if ((buttons & 0x800) && *(u16*)(lbl_803CBBCC[0] + 2) == 0xA) {
+        u8* sel = lbl_2_bss_F468 + team;
+        if (sel[0x52] != 0 && g_d_GameSettings.GameModeSelected != 5 && sel[0x54] == 0) {
+            u8* st = lbl_803C66B0 + team;
+            s32 cur;
+            if (st[0x55] != 0) {
+                fn_80062674(team);
+                lbl_803C66B0[0xD + team] = 2;
+            } else {
+                if (g_d_GameSettings._10 == 0 && team != 0) {
+                    st[0x5D] = 0;
+                }
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            }
+            pos = CaptainPos(team, pos);
+            for (j = 0; j < 9; j++) {
+                if (j != (s8)pos) {
+                    MN_SLOT(0x34 + BASE(o) + j + team * 9)->state = 4;
+                }
+            }
+            MN_SLOT(0x34 + BASE(o) + (s8)pos + team * 9)->state = 1;
+            fn_2_75BE4(o, team);
+            MN_SLOT(0x91 + BASE(o) + team)->state = 1;
+            cur = F468_S32(8 + team * 4);
+            if (cur == 9) {
+                MN_SLOT(0x93 + BASE(o) + team)->state = 4;
+                MN_SLOT(0x95 + BASE(o) + port)->frame = 0xA0000;
+                MN_SLOT(0x95 + BASE(o) + team)->state = 4;
+            } else if (cur == 10) {
+                MN_SLOT(0x93 + BASE(o) + team)->state = 4;
+            } else {
+                MN_SLOT(0x46 + BASE(o) + cur + team * 9)->frame = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + cur + team * 9)->state = 4;
+                MN_SLOT(0x93 + BASE(o) + team)->state = 4;
+            }
+            for (j = 0; j < 9; j++) {
+                MN_SLOT(0x97 + BASE(o) + team)->flags &= ~2;
+                MN_SLOT(0xAC + BASE(o) + team)->flags &= ~2;
+                MN_SLOT(0x22 + BASE(o) + j + team * 9)->flags &= ~2;
+            }
+            sel[0x54] = 1;
+        }
+    }
+    if (lbl_803C66B0[0] == 2) {
+        t = lbl_2_bss_F468 + team;
+        if (t[0x45] == 0 && t[0x50] != 0) {
+            s32 sp = F468_S32(team * 4);
+            for (j = 0; j < 9; j++) {
+                if (TEAM_TBL->pos[team][j] == sp) {
+                    break;
+                }
+            }
+            MN_SLOT(0x58 + BASE(o) + sp + team * 9)->frame = TEAM_TBL->roster[team][j] << 16;
+            fn_2_74F40(o, team);
+            t[0x50] = 0;
+        }
+    }
+    t = lbl_2_bss_F468 + team;
+    if (t[0x54] != 0) {
+        pos = CaptainPos(team, pos);
+        if ((fn_80042DA8((s32)o, (s8)pos + team * 9 + 0x34, 0x14) != 0) == 1) {
+            t[0x54] = 0;
+            lbl_2_bss_F468[0x52 + team] = 0;
+        }
+    }
+    t = lbl_2_bss_F468 + team;
+    if (t[0x4B] != 0) {
+        u8* u = lbl_2_bss_F468 + team;
+        if (u[0x45] != 0) {
+            switch (u[0x47]) {
+            case 0:
+                fn_2_76DF0(o, team);
+                return;
+            case 1:
+                fn_2_76874(o, team);
+                return;
+            }
+        } else {
+            if (u[0x47] == 0) {
+                s32 n;
+                if ((MN_SLOT(0xB4 + BASE(o) + team)->frame >> 16) > 5) {
+                    MN_SLOT(0xB4 + BASE(o) + team)->frame = 0x50000;
+                }
+                MN_SLOT(0xB4 + BASE(o) + team)->state = 4;
+                MN_SLOT(0xB6 + BASE(o) + team)->state = 4;
+                MN_SLOT(0xC6 + BASE(o) + team)->state = 4;
+                n = fn_80042DA8((s32)o, team + 0xB4, 0) != 0;
+                n += fn_80042DA8((s32)o, team + 0xB6, 0) != 0;
+                n += fn_80042DA8((s32)o, team + 0xC6, 0) != 0;
+                if (n == 3) {
+                    t[0x4B] = 0;
+                }
+            } else {
+                if ((MN_SLOT(0xB4 + BASE(o) + team)->frame >> 16) > 5) {
+                    MN_SLOT(0xB4 + BASE(o) + team)->frame = 0x50000;
+                }
+                MN_SLOT(0xB4 + BASE(o) + team)->state = 4;
+                MN_SLOT(0xE2 + BASE(o) + team)->state = 4;
+                if ((fn_80042DA8((s32)o, team + 0xE2, 0) != 0) == 1) {
+                    t[0x4B] = 0;
+                }
+            }
+            lbl_2_bss_F468[0x49 + team] = 0;
+        }
+    }
+}
+#endif
