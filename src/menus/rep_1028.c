@@ -1300,6 +1300,41 @@ void fn_2_90CD0(u8* object) {
     *(s16*)(object + 0x90) = 1;
 }
 
+// .text:0x91D74 size:0x620
+void fn_2_91D74(u8* object) {
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    if (*(s32*)(object + 0x78) >= 1 && *(s32*)(object + 0x78) <= 7) {
+        setupEffect(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 8) {
+        setupEffect(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) >= 10 && *(s32*)(object + 0x78) <= 15) {
+        fn_2_8FAE0(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 22) {
+        fn_2_8FA58(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 24) {
+        fn_2_8F9D0(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 27) {
+        fn_2_8F948(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 25) {
+        fn_2_8F8C0(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 26) {
+        fn_2_8F838(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 28) {
+        fn_2_8F7B0(*(s32*)(object + 0x78), 0);
+    }
+    {
+        // inlined fn_2_8F6D0(index, 0)
+        s32 index = *(s32*)(object + 0x78);
+        u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+        u8* anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+        if (anim != NULL) {
+            *(s16*)(slot + 0xA6) = 0;
+            *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        }
+    }
+    *(s16*)(object + 0x90) = 1;
+}
+
 // .text:0x91788 size:0x11C
 void fn_2_91788(u8* object) {
     fn_2_8AC84(*(s32*)(object + 0x78), 1);

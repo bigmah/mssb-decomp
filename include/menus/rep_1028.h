@@ -79,6 +79,8 @@ void fn_2_8FE9C(s32 index);
 
 void fn_2_9007C(void);
 
+void fn_2_91D74(u8* object);
+
 void fn_2_90C14(u8* object);
 
 void fn_2_90838(u8* object);
