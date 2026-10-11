@@ -449,8 +449,19 @@ void fn_8001B2D0(void) {
 }
 
 // .text:0x8001B308 size:0x54
-void fn_8001B308(void) {
-    return;
+void fn_8001B308(s32 index, s32 enable) {
+    CharActor* actor = lbl_8036E548.active[index];
+    CharModel** model;
+
+    if (actor != NULL) {
+        // TODO type: the original stores 0x68 bytes past &slot->model.
+        model = &lbl_8036E548.slots[actor->modelIndex].model;
+        if (enable == 0) {
+            *(void**)((u8*)model + 0x68) = NULL;
+        } else {
+            *(void**)((u8*)model + 0x68) = actor->_072;
+        }
+    }
 }
 
 // .text:0x8001B35C size:0x17C
