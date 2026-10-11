@@ -453,9 +453,149 @@ void fn_800E156C(u8* dst, s32 stride, u8 dc, u8 top, u8 bottom, u8 left, u8 righ
 #endif
 
 // .text:0x800E1708 size:0x4AC
+// NONMATCHING 85%: row pointer arithmetic order and register allocation
+#if NONMATCHING
 s32 fn_800E1708(HVQState* state, u8* basis, s32* sum, u8* src, s32 srcStride, s32 planeIdx) {
-    return 0;
+    u8 hi = *state->fixvl[planeIdx].ptr++;
+    u8 lo = *state->fixvl[planeIdx].ptr++;
+    u16 bits = (hi << 8) | lo;
+    u8* row;
+    u8* p;
+    s32 xStep;
+    s32 yStep;
+    u8 max;
+    u8 min;
+    s16 value;
+    s32 inverse;
+
+    if (state->isLandscape) {
+        row = src + ((bits >> 6) & 0x1F) * srcStride;
+        row += bits & 0x3F;
+        xStep = 1 << ((bits >> 11) & 1);
+        yStep = srcStride << ((bits >> 12) & 1);
+    } else {
+        row = src + (bits & 0x3F) * srcStride;
+        row += (bits >> 6) & 0x1F;
+        xStep = 1 << ((bits >> 12) & 1);
+        yStep = srcStride << ((bits >> 11) & 1);
+    }
+    // 4x4 samples, unrolled; track the value range
+    basis[0] = *row;
+    max = min = basis[0];
+    p = row + xStep;
+    if ((basis[1] = *p) > max) {
+        max = basis[1];
+    }
+    if (basis[1] < min) {
+        min = basis[1];
+    }
+    p += xStep;
+    if ((basis[2] = *p) > max) {
+        max = basis[2];
+    }
+    if (basis[2] < min) {
+        min = basis[2];
+    }
+    p += xStep;
+    if ((basis[3] = *p) > max) {
+        max = basis[3];
+    }
+    if (basis[3] < min) {
+        min = basis[3];
+    }
+    row += yStep;
+    if ((basis[4] = *row) > max) {
+        max = basis[4];
+    }
+    if (basis[4] < min) {
+        min = basis[4];
+    }
+    p = row + xStep;
+    if ((basis[5] = *p) > max) {
+        max = basis[5];
+    }
+    if (basis[5] < min) {
+        min = basis[5];
+    }
+    p += xStep;
+    if ((basis[6] = *p) > max) {
+        max = basis[6];
+    }
+    if (basis[6] < min) {
+        min = basis[6];
+    }
+    p += xStep;
+    if ((basis[7] = *p) > max) {
+        max = basis[7];
+    }
+    if (basis[7] < min) {
+        min = basis[7];
+    }
+    row += yStep;
+    if ((basis[8] = *row) > max) {
+        max = basis[8];
+    }
+    if (basis[8] < min) {
+        min = basis[8];
+    }
+    p = row + xStep;
+    if ((basis[9] = *p) > max) {
+        max = basis[9];
+    }
+    if (basis[9] < min) {
+        min = basis[9];
+    }
+    p += xStep;
+    if ((basis[10] = *p) > max) {
+        max = basis[10];
+    }
+    if (basis[10] < min) {
+        min = basis[10];
+    }
+    p += xStep;
+    if ((basis[11] = *p) > max) {
+        max = basis[11];
+    }
+    if (basis[11] < min) {
+        min = basis[11];
+    }
+    row += yStep;
+    if ((basis[12] = *row) > max) {
+        max = basis[12];
+    }
+    if (basis[12] < min) {
+        min = basis[12];
+    }
+    p = row + xStep;
+    if ((basis[13] = *p) > max) {
+        max = basis[13];
+    }
+    if (basis[13] < min) {
+        min = basis[13];
+    }
+    p += xStep;
+    if ((basis[14] = *p) > max) {
+        max = basis[14];
+    }
+    if (basis[14] < min) {
+        min = basis[14];
+    }
+    p += xStep;
+    if ((basis[15] = *p) > max) {
+        max = basis[15];
+    }
+    if (basis[15] < min) {
+        min = basis[15];
+    }
+    HVQ_DECODE(&state->bufTree0[planeIdx], value);
+    *sum += value;
+    inverse = lbl_80328FA0.divTable[max - min];
+    if (bits & 0x8000) {
+        inverse = -inverse;
+    }
+    return (*sum + ((bits >> 13) & 3)) * inverse;
 }
+#endif
 
 // .text:0x800E1BB4 size:0x4EC
 s32 fn_800E1BB4(HVQState* state, u8* basis, s32* sum, u8* src, s32 srcStride, s32 planeIdx) {
