@@ -1603,12 +1603,12 @@ s32 fn_8002B014(Emitter* e) {
 #endif
 
 // .text:0x8002B400 size:0x3F8
-// NONMATCHING 64%: float register allocation and scheduling
+// NONMATCHING 95%: register allocation (the delay/uvFrame zero and p in the sub loop)
 #if NONMATCHING
 void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
     Particle* p = e->particles;
-    s32 i = 0;
     s32 delay;
+    s32 i = 0;
     f32 ang;
 
     do {
@@ -1616,8 +1616,8 @@ void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
         p->uvFrame = 0;
         p->life = prm->life;
         p->texIndex = prm->texIndex;
-        p->sizeY = p->sizeX = prm->size[0];
-        p->color.c.b = p->color.c.g = p->color.c.r = 0xFF;
+        p->sizeX = p->sizeY = prm->size[0];
+        p->color.c.r = p->color.c.g = p->color.c.b = 0xFF;
         p->color.c.a = prm->alpha[0];
         p->unk4C = 2;
         p->pos.x = pos->x;
@@ -1638,7 +1638,7 @@ void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
         p->texIndex = prm->subTexIndex;
         p->sizeX = prm->subSizeX[0];
         p->sizeY = prm->subSizeY[0];
-        p->color.c.b = p->color.c.g = p->color.c.r = 0xFF;
+        p->color.c.r = p->color.c.g = p->color.c.b = 0xFF;
         p->color.c.a = prm->subAlpha[0];
         p->unk4C = 1;
         ang = 0.017453292f * prm->angle0 + (f32)i * (0.017453292f * (prm->angleSpan / (f32)prm->subCount));
