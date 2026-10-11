@@ -47,6 +47,7 @@ typedef struct RepTask {
         u8 flag[4]; // per-player "counting" flags (fn_3_11F02C, fn_3_121304)
         s16 delta[4]; // per-player score change shown (fn_3_12026C)
         u32 voice; // looping sound voice, 0xFFFFFFFF when none (fn_3_121908)
+        s16 disp[8]; // counted-up stat values shown (fn_3_127B68)
     } u24;
 } RepTask;
 
@@ -86,6 +87,21 @@ typedef struct RepMenuDef {
     /*0x8*/ u16 track;
     /*0xA*/ u8 _A[0x6];
 } RepMenuDef; // size: 0x10
+
+// Stat-total input/output (main/file_80069BDC.h StatInput / StatOutput).
+typedef struct RepStatInput {
+    /*0x00*/ s16 vals[6];
+    /*0x0C*/ u8 order[6]; // 1-based indices into vals
+    /*0x12*/ u8 _12;
+    /*0x13*/ u8 _13;
+    /*0x14*/ u8 _14[2];
+} RepStatInput; // size: 0x16
+
+typedef struct RepStatOutput {
+    /*0x00*/ s16 vals[6];
+    /*0x0C*/ s16 _C;
+    /*0x0E*/ s16 _E;
+} RepStatOutput; // size: 0x10
 
 // One minigame high-score entry (fn_3_109D88 returns 5 of them).
 typedef struct RepRankEnt {

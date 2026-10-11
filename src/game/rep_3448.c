@@ -94,6 +94,9 @@ extern u16 lbl_3_data_B0D8[];
 extern u16 lbl_3_data_B010[]; // [minigame][5]
 extern s16 lbl_3_data_21400[]; // [level][2]
 extern s16 lbl_3_data_21790[];
+// main/file_80069BDC.h; RepStatInput/RepStatOutput mirror StatInput/StatOutput.
+extern void fn_8006C2B4(struct StatOutput* out, struct StatInput* in);
+extern s16 fn_8006C268(struct StatOutput* stats);
 
 static inline void setMenu(u8 menu) {
     lbl_8034E978.menu = menu;
@@ -2864,9 +2867,206 @@ void fn_3_1274B4(void) {
 #endif
 
 // .text:0x00127B68 size:0xED0 mapped:0x80766BFC
+// Challenge-mode stat tally screen.
+// NONMATCHING 80%: register allocation, orig walks q + 2*i for the shown values and keeps a second copy of q
+#if NONMATCHING
 void fn_3_127B68(void) {
-    return;
+    u8* d = lbl_3_data_226E0;
+    RepTask* q = REP_TASK;
+    RepStatOutput out;
+    RepStatInput in;
+    u16* thr;
+    u8* order;
+    u8* nums;
+    u32 i;
+    s16 v;
+    s16 diff;
+    s16 step;
+    if (q->state >= 6) {
+        *(void**)(g_Minigame + 0x1E04) = NULL; // TODO type: g_Minigame minigame task pointer
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (g_GameLogic[0x11E] != 0x24) {
+        *(void**)(g_Minigame + 0x1E04) = NULL;
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    fn_3_10754C((struct StatInput*)&in);
+    fn_8006C2B4((struct StatOutput*)&out, (struct StatInput*)&in);
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, d + 0x20);
+        REP_OBJC(q, 2)->frame = inMemRoster[*(s8*)(g_Minigame + 0x18CC + *(s8*)(g_Minigame + 0x1908))].charId << 16;
+        nums = d + 0x420;
+        order = in.order;
+        i = 0;
+        do {
+            i++;
+            REP_OBJ(q, *order + 3)->_72 = *nums;
+            nums++;
+            order++;
+        } while (i < 6);
+        v = in.vals[0];
+        if (v > 9999) {
+            v = 9999;
+        }
+        fn_800363D8(q, 4, 4, 6, v >= 1000 ? (v % 10000) / 1000 : 10);
+        fn_800363D8(q, 4, 3, 6, v >= 100 ? (v % 1000) / 100 : 10);
+        fn_800363D8(q, 4, 2, 6, v >= 10 ? (v % 100) / 10 : 10);
+        fn_800363D8(q, 4, 1, 6, v % 10);
+        v = in.vals[1];
+        if (v > 9999) {
+            v = 9999;
+        }
+        if (v >= 1000) {
+            REP_OBJC(q, 5)->anim = 0x76;
+        } else if (v >= 100) {
+            REP_OBJC(q, 5)->anim = 0x77;
+        } else if (v >= 10) {
+            REP_OBJC(q, 5)->anim = 0x78;
+        } else {
+            REP_OBJC(q, 5)->anim = 0x79;
+        }
+        fn_800363D8(q, 5, 4, 6, (v % 10000) / 1000);
+        fn_800363D8(q, 5, 3, 6, (v % 1000) / 100);
+        fn_800363D8(q, 5, 2, 6, (v % 100) / 10);
+        fn_800363D8(q, 5, 1, 6, v % 10);
+        v = in.vals[2];
+        if (v > 9999) {
+            v = 9999;
+        }
+        fn_800363D8(q, 6, 4, 6, v >= 1000 ? (v % 10000) / 1000 : 10);
+        fn_800363D8(q, 6, 3, 6, v >= 100 ? (v % 1000) / 100 : 10);
+        fn_800363D8(q, 6, 2, 6, v >= 10 ? (v % 100) / 10 : 10);
+        fn_800363D8(q, 6, 1, 6, v % 10);
+        v = in.vals[3];
+        if (v > 99) {
+            v = 99;
+        }
+        if (v >= 10) {
+            REP_OBJC(q, 7)->anim = 0x7C;
+        } else {
+            REP_OBJC(q, 7)->anim = 0x7D;
+        }
+        fn_800363D8(q, 7, 2, 6, (v % 100) / 10);
+        fn_800363D8(q, 7, 1, 6, v % 10);
+        v = in.vals[4];
+        if (v > 999) {
+            v = 999;
+        }
+        fn_800363D8(q, 8, 3, 6, v >= 100 ? (v % 1000) / 100 : 10);
+        fn_800363D8(q, 8, 2, 6, v >= 10 ? (v % 100) / 10 : 10);
+        fn_800363D8(q, 8, 1, 6, v % 10);
+        v = in.vals[5];
+        if (v > 999) {
+            v = 999;
+        }
+        if (v >= 100) {
+            REP_OBJC(q, 9)->anim = 0x7E;
+        } else if (v >= 10) {
+            REP_OBJC(q, 9)->anim = 0x7F;
+        } else {
+            REP_OBJC(q, 9)->anim = 0x80;
+        }
+        fn_800363D8(q, 9, 3, 6, (v % 1000) / 100);
+        fn_800363D8(q, 9, 2, 6, (v % 100) / 10);
+        fn_800363D8(q, 9, 1, 6, v % 10);
+        fn_800363D8(q, 0xA, 1, 0x71, in._12);
+        v = in._13;
+        if (v > 99) {
+            v = 99;
+        }
+        fn_800363D8(q, 0xB, 2, 6, v >= 10 ? (v % 100) / 10 : 10);
+        fn_800363D8(q, 0xB, 1, 6, v % 10);
+        v = fn_8006C268((struct StatOutput*)&out);
+        if (v > 9999) {
+            v = 9999;
+        }
+        fn_800363D8(q, 0x1D, 4, 0x74, (v % 10000) / 1000);
+        fn_800363D8(q, 0x1D, 3, 0x74, (v % 1000) / 100);
+        fn_800363D8(q, 0x1D, 2, 0x74, (v % 100) / 10);
+        fn_800363D8(q, 0x1D, 1, 0x74, v % 10);
+        v = fn_8006C268((struct StatOutput*)&out);
+        if (v > 9999) {
+            v = 9999;
+        }
+        // rank letter for the total
+        REP_OBJC(q, 30)->anim = ((u16*)(d + 0x428))[fn_8006C100(v)];
+        q->state = 1;
+        break;
+    case 1:
+        if (REP_OBJC(q, 0)->status == 2 && REP_OBJC(q, 1)->status == 2 && REP_OBJC(q, 3)->status == 2) {
+            REP_OBJC(q, 28)->mode = 1;
+            REP_OBJC(q, 29)->mode = 1;
+            fn_3_90064(lbl_3_data_81FC[0x30]);
+            q->state = 2;
+        }
+        break;
+    case 2:
+        if (REP_OBJC(q, 29)->status == 2) {
+            REP_OBJC(q, 30)->mode = 1;
+            fn_3_90064(lbl_3_data_81FC[0x31]);
+            q->state = 3;
+        }
+        break;
+    case 3:
+        if (REP_OBJC(q, 30)->status == 2) {
+            q->state = 4;
+        }
+        break;
+    case 4:
+        q->timer = 1;
+        if (q->_1A != 0) {
+            q->state = 5;
+        }
+        break;
+    case 5:
+        q->state = 6;
+        break;
+    case 6:
+        break;
+    }
+    // count each stat up once the tally bar (slot 3) reaches its frame
+    thr = (u16*)(d + 0x438);
+    order = in.order;
+    for (i = 0; i < 8; i++) {
+        if ((REP_OBJC(q, 3)->frame >> 16) >= *thr) {
+            if ((REP_OBJC(q, 3)->frame >> 16) == *thr) {
+                fn_3_90064(lbl_3_data_81FC[0x2F]);
+            }
+            if (i < 6) {
+                diff = out.vals[*order - 1] - q->u24.disp[i];
+            } else if (i == 6) {
+                diff = out._C - q->u24.disp[i];
+            } else {
+                diff = out._E - q->u24.disp[i];
+            }
+            if (diff != 0) {
+                step = diff / 3;
+                if (step != 0) {
+                    q->u24.disp[i] += step;
+                } else {
+                    q->u24.disp[i] += 1;
+                }
+            }
+            v = q->u24.disp[i];
+            if (v > 999) {
+                v = 999;
+            }
+        } else {
+            v = 0;
+        }
+        fn_800363D8(q, i + 0x14, 3, 0x74, (v % 1000) / 100);
+        fn_800363D8(q, i + 0x14, 2, 0x74, (v % 100) / 10);
+        fn_800363D8(q, i + 0x14, 1, 0x74, v % 10);
+        order++;
+        thr++;
+    }
 }
+#endif
 
 // .text:0x00128A38 size:0x158 mapped:0x80767ACC
 void fn_3_128A38(void) {
