@@ -117,6 +117,8 @@ extern MenuFlags* lbl_2_bss_1A823C;
 // Saved record tables (lbl_2_bss_1A8240 points at them): 8 lists of 5.
 typedef struct MenuRecords {
     /*0x000*/ MenuRecord lists[8][5];
+    /*0x140*/ u8 _140[0x400 - 0x140];
+    /*0x400*/ u8 _400[1]; // indexed by character
 } MenuRecords;
 
 extern MenuRecords* lbl_2_bss_1A8240;
@@ -137,6 +139,15 @@ extern MenuFlags4 lbl_2_bss_33FBF0;
 extern u8 lbl_2_bss_33FBF5;
 
 extern u8 lbl_800E869C[];
+
+// Same layout as SaveProgress (main/file_8003A688.h), which can't be included
+// next to the headers above.
+typedef struct MenuSaveProgress {
+    /*0x0000*/ u8 challenge[3][0x4508];
+    /*0xCF18*/ u8 _CF18[0x36]; // indexed by lbl_800E869C[character]
+} MenuSaveProgress;
+
+extern MenuSaveProgress lbl_80354768;
 
 void fn_800ACFB0(void* block);
 
@@ -196,14 +207,14 @@ void fn_2_650A4(MenuTask* task, MenuItem* item);
 void fn_2_65258(MenuTask* task, MenuItem* item);
 void fn_2_653D4(void);
 void fn_2_65648(void);
-void fn_2_65850(void);
+void fn_2_65850(MenuTask* task, MenuItem* item);
 void fn_2_65A00(void);
 void fn_2_65C84(void);
 void fn_2_65E50(void);
 void fn_2_66038(MenuTask* task, MenuItem* item);
 void fn_2_66188(MenuTask* task, MenuItem* item);
 void fn_2_6633C(void);
-void fn_2_665C0(void);
+void fn_2_665C0(MenuTask* task, MenuItem* item);
 void fn_2_6675C(MenuTask* task, MenuItem* item);
 void fn_2_66884(void);
 void fn_2_66AEC(void);

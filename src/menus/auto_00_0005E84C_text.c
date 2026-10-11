@@ -1644,8 +1644,38 @@ void fn_2_65648(void) {
 }
 
 // .text:0x00065850 size:0x1B0
-void fn_2_65850(void) {
-    return;
+void fn_2_65850(MenuTask* task, MenuItem* item) {
+    MenuSaveProgress* save = &lbl_80354768;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        if (save->_CF18[lbl_800E869C[item->_10]] != 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        } else {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        }
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 40;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 1:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00065A00 size:0x284
@@ -1736,8 +1766,37 @@ void fn_2_6633C(void) {
 }
 
 // .text:0x000665C0 size:0x19C
-void fn_2_665C0(void) {
-    return;
+void fn_2_665C0(MenuTask* task, MenuItem* item) {
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        if ((s32)lbl_2_bss_1A8240->_400[item->_10] == 3) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        } else {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        }
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 40;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 1:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x0006675C size:0x128
