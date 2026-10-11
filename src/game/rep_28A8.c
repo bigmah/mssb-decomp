@@ -1,5 +1,6 @@
 #include "game/rep_28A8.h"
 #include "header_rep_data.h"
+#include "musyx/musyx.h"
 
 extern void fn_3_6EBB4(s32);
 extern void fn_3_F1DC(void);
@@ -43,7 +44,6 @@ typedef struct { u8 pad[0x18D8]; u8 f18D8[4]; } SM;
 typedef struct { u8 p0[6]; u16 b6; u16 b8; u8 pad[0x1D2 - 0xA]; u8 b1D2; u8 pad1; u8 b1D4; u8 pad2[5]; s8 b1DA; } SC;
 extern s32 fn_3_6C938(s32, s32);
 extern void fn_3_5B408(void);
-extern s32 sndFXStartEx(s32, u8, u8, u8);
 extern u8 lbl_800EFBA4[];
 extern u8 g_Controls[];
 typedef struct { s32 a; u16 b4; u16 b6; u16 b8; u8 pad0[2]; s16 c; u8 pad1[4]; s16 d12; u8 pad2[0x1D0 - 0x14]; u8 b1D0; u8 pad3; u8 b1D2; u8 pad4[2]; u8 b1D5; u8 pad5[3]; u8 b1D9; u8 b1DA; u8 pad6[0x220 - 0x1DB]; u8 b220; } SD;
@@ -76,6 +76,36 @@ extern void fn_3_A0F0(void);
 extern u8 g_GameLogic[];
 extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
+
+extern void ballPhysica(void);
+extern s16 lbl_3_data_49DC[];
+extern u8 lbl_800EF808[]; // TODO type: options block (0x398: sound setting)
+extern void fn_3_2F484(void);
+extern u16 lbl_3_data_81DC[]; // per stadium: crowd sound id base
+typedef struct { u8 vol; u8 ctrl; } CrowdSnd;
+extern CrowdSnd lbl_3_data_8404[]; // [stadium * 15 + sound]
+extern CrowdSnd lbl_3_data_84B8[]; // [sound], GameModeSelected 6
+
+// Same helper as in auto_00_000D8A10_text.c.
+static inline void playCrowdSound(s32 n) {
+    s32 stadium;
+    u8 vol;
+    SND_VOICEID voice;
+
+    stadium = g_d_GameSettings[9]; // StadiumID
+    if (g_d_GameSettings[7] == 6) { // GameModeSelected
+        vol = lbl_3_data_84B8[n].vol;
+    } else {
+        vol = lbl_3_data_8404[stadium * 15 + n].vol;
+    }
+    voice = sndFXStartEx(lbl_3_data_81DC[stadium] + n, vol, 0x3F, 0);
+    if (g_d_GameSettings[7] == 6) {
+        vol = lbl_3_data_84B8[n].ctrl;
+    } else {
+        vol = lbl_3_data_8404[stadium * 15 + n].ctrl;
+    }
+    sndFXCtrl(voice, 0x5B, vol);
+}
 
 // .text:0x000D9EA0 size:0x7A0 mapped:0x80718F34
 void fn_3_D9EA0(void) {
@@ -645,14 +675,125 @@ void fn_3_DD37C(void) {
     fn_3_5A6D4(8);
 }
 
+// NONMATCHING: original reaches lbl_3_data_1899C/18BB8/18C48 through the pooled base lbl_3_data_188E8 (data defined in this TU), so base registers and stmw differ
 // .text:0x000DD3FC size:0x5A8 mapped:0x8071C490
+#if NONMATCHING
 void fn_3_DD3FC(void) {
-    return;
+    s16* timer = (s16*)(g_GameLogic + 0x100);
+    s32 i;
+
+    if (g_Minigame[0x190B] == 1) {
+        g_Minigame[0x190B] = 2;
+        *timer = *(s16*)lbl_3_data_1899C;
+        if (g_Minigame[0x1920] == 1 && g_Ball[0x1BD3] == 0) {
+            *timer = *(s16*)(lbl_3_data_1899C + 4);
+        }
+    }
+    *timer -= 1;
+    if (g_Minigame[0x19A0] != 0 && g_Minigame[0x19CE] == 0 && *timer < *(s16*)(lbl_3_data_1899C + 2)) {
+        *timer = *(s16*)(lbl_3_data_1899C + 2);
+    }
+    if (g_Minigame[0x1939] != 0 && *timer < *(s16*)(lbl_3_data_1899C + 2)) {
+        *timer = *(s16*)(lbl_3_data_1899C + 2);
+    }
+    if (g_Minigame[0x19CE] != 0 && g_Minigame[0x19CE] < 3) {
+        if (*timer <= *(s16*)(lbl_3_data_1899C + 2) - 0xA) {
+            *timer += 1;
+        }
+        if (g_Minigame[0x19CE] == 1) {
+            fn_3_DE308(0xC);
+            *(s16*)(g_Minigame + 0x19BA) = 0;
+            g_Minigame[0x19CE] = 2;
+            for (i = 0; i < 4; i++) {
+                if (g_Minigame[0x1918 + i] != 0) {
+                    g_Minigame[0x1914 + i] = 0;
+                }
+            }
+            if (lbl_800EF808[0x398] == 1) {
+                playCrowdSound(0x1A);
+            }
+        }
+        if (*(s16*)(g_Minigame + 0x19BA) < 0x7FFE) {
+            *(s16*)(g_Minigame + 0x19BA) += 1;
+        } else {
+            *(s16*)(g_Minigame + 0x19BA) = 0x7FFF;
+        }
+        if (*(s16*)(g_Minigame + 0x19BA) > *(s16*)(lbl_3_data_18C48 + 6)) {
+            g_Minigame[0x19CE] = 3;
+        }
+    }
+    if (g_Minigame[0x19A4] == 0 && *(s16*)(g_Ball + 0x1B78) < 0 && g_Ball[0x1BD1] == 0 && *(s16*)(g_Ball + 0x1B7A) >= 0 &&
+        *timer <= *(s16*)(lbl_3_data_1899C + 2) + lbl_3_data_49DC[0x16 / 2] - 0xA) {
+        *timer += 1;
+    }
+    if (*timer == *(s16*)(lbl_3_data_1899C + 2) - 0xA) {
+        u8 st = g_Minigame[0x19CD];
+        if (st == 1 || st == 2 || (st != 3 && g_Minigame[0x1921] != 0)) {
+            *timer += 1;
+        } else if (*(s16*)(g_Minigame + 0x19B6) >= *(s16*)(g_Minigame + 0x19B4) && g_Minigame[(s8)g_Minigame[0x1905] + 0x18E8] == 1) {
+            fn_3_59918(0xD, 0);
+        } else if ((s32)g_Minigame[0x1905] != (s8)g_Minigame[0x19C6]) {
+            if (*(s16*)(g_Minigame + 0x19B6) >= *(s16*)(g_Minigame + 0x19B4)) {
+                fn_3_59918(0xD, 0);
+            } else {
+                fn_3_59918(5, 0);
+            }
+        }
+        if (*(s16*)(g_Minigame + 0x19BC) < 0x7FFE) {
+            *(s16*)(g_Minigame + 0x19BC) += 1;
+        } else {
+            *(s16*)(g_Minigame + 0x19BC) = 0x7FFF;
+        }
+    }
+    if (*timer == 7) {
+        changeScene(3, 6);
+    }
+    if (*timer <= 0) {
+        if (g_Minigame[0x19CE] != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+        }
+        g_GameLogic[0x12B] = 1;
+        g_GameLogic[0x12C] = 1;
+        g_GameLogic[0x12E] = 1;
+        fn_3_1DD48(g_GameLogic);
+        if (g_Minigame[0x1912] == 0) {
+            fn_3_2E87C();
+            fn_3_5A6D4(0);
+            return;
+        }
+        fn_3_5A6D4(8);
+    }
 }
+#endif
 
 // .text:0x000DD9A4 size:0x3BC mapped:0x8071CA38
 void fn_3_DD9A4(void) {
-    return;
+    if (*(s16*)(g_Minigame + 0x19B8) != 0 && *(s16*)(g_Ball + 0x1B78) < 0) {
+        if (*(s16*)(g_Minigame + 0x19B8) < *(s16*)(lbl_3_data_18C48 + 0xC)) {
+            *(s16*)(g_Minigame + 0x19B8) += 1;
+        } else if (g_Minigame[0x19A4] == 0) {
+            g_Minigame[0x19A4] = 1;
+            playCrowdSound(0x15);
+        }
+    }
+    ballPhysica();
+    fn_3_2F484();
+    if (g_Minigame[0x19CF] != 0) {
+        if (g_Minigame[0x19CE] == 0) {
+            fn_3_DC240();
+        }
+    } else if (g_Minigame[0x19C9] != 0 && g_Minigame[0x1920] == 0) {
+        fn_3_DC240();
+    } else if (g_Minigame[0x1920] == 0) {
+        fn_3_DC380();
+    }
+    if (g_Minigame[0x1920] != 0) {
+        fn_3_DA834();
+    }
+    if (g_Minigame[0x190B] != 0) {
+        fn_3_DD3FC();
+    }
 }
 
 // .text:0x000DDD60 size:0x1BC mapped:0x8071CDF4
