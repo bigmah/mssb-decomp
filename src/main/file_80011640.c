@@ -1236,27 +1236,27 @@ void fn_8001B35C(void) {
 }
 
 // .text:0x8001B4D8 size:0x114
-// NONMATCHING 93%: saved-register numbering of actor/list/joints/offset
-#if NONMATCHING
-void fn_8001B4D8(s32 index, s32 enable) {
-    CharActor* actor = lbl_8036E548.active[index];
-    u16 j0;
-    u16 j1;
-    u16 idx;
-    CharSlotList* list;
-    Vec d;
+static inline void getRootOffset(CharActor* actor, u16 idx, s32 k, Vec* out) {
+    u16 j0 = getJoint(actor, k);
+    u16 j1 = getJoint(actor, 0);
+    CharSlotList* list = lbl_8036E548.slots;
     Vec v;
 
+    fn_800B2C44(list->slots[idx].model, list->slots[idx].model->_80, &v);
+    list->slots[idx]._64 = j1;
+    list->slots[idx]._66 = j0;
+    *out = v;
+}
+
+void fn_8001B4D8(s32 index, s32 enable) {
+    CharActor* actor = lbl_8036E548.active[index];
+    s32 modelIndex;
+    Vec d;
+
     if (actor != NULL) {
-        idx = actor->modelIndex;
+        modelIndex = actor->modelIndex;
         if (enable != 0 && actor->_268 == 0) {
-            j0 = getJoint(actor, 0);
-            j1 = getJoint(actor, 0);
-            list = lbl_8036E548.slots;
-            fn_800B2C44(list->slots[idx].model, list->slots[idx].model->_80, &v);
-            list->slots[idx]._64 = j1;
-            list->slots[idx]._66 = j0;
-            d = v;
+            getRootOffset(actor, modelIndex, 0, &d);
             actor->pos.x += d.x;
             actor->pos.y += d.y;
             actor->pos.z += d.z;
@@ -1264,7 +1264,6 @@ void fn_8001B4D8(s32 index, s32 enable) {
         }
     }
 }
-#endif
 
 // .text:0x8001B5EC size:0x13C
 static inline void setRootJoints(CharActor* actor, u16 idx, s32 k) {
