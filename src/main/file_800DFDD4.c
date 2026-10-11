@@ -1096,9 +1096,80 @@ void fn_800E32E8(HVQState* state, HVQMCPlane* mc, s32 mvX, s32 mvY) {
 #endif
 
 // .text:0x800E33AC size:0x4B4
+// NONMATCHING 91%: register allocation
+#if NONMATCHING
 void fn_800E33AC(HVQState* state, HVQMCPlane* mc, s32 flag, s32 proc) {
-    return;
+    u8 tag = (proc << 5) | (flag << 4);
+    s32 i;
+    s32 k;
+    u16* blockOffs;
+    HVQBlock* blk;
+    HVQBlock* blkV;
+    s16 value;
+    s16 run;
+
+    if (flag == 1) {
+        HVQPlaneDesc* plane = state->planes;
+
+        for (i = 0; i < 3; i++, plane++, mc++) {
+            u8 n = plane->blocksPerMB;
+
+            blockOffs = plane->blockOffs;
+            blk = mc->blk;
+            for (k = 0; k < n; k++) {
+                blk[*blockOffs++].type = tag;
+            }
+        }
+        return;
+    }
+
+    // luma
+    blk = mc[0].blk;
+    blockOffs = state->planes[0].blockOffs;
+    for (k = state->planes[0].blocksPerMB; k > 0; k--) {
+        u16 off = *blockOffs++;
+
+        if (mc[0].run == 0) {
+            HVQ_DECODE(&state->basisNum[0], value);
+            if (value == 0) {
+                blk[off].type = tag;
+                HVQ_DECODE(&state->basisNumRun[0], run);
+                mc[0].run = run;
+            } else {
+                blk[off].type = tag | value;
+            }
+        } else {
+            blk[off].type = tag;
+            mc[0].run--;
+        }
+    }
+
+    // chroma: U in the low nibble, V in the high nibble
+    blk = mc[1].blk;
+    blkV = mc[2].blk;
+    blockOffs = state->planes[1].blockOffs;
+    for (k = state->planes[1].blocksPerMB; k > 0; k--) {
+        u16 off = *blockOffs++;
+
+        if (mc[1].run == 0) {
+            HVQ_DECODE(&state->basisNum[1], value);
+            if (value == 0) {
+                blk[off].type = tag;
+                blkV[off].type = tag;
+                HVQ_DECODE(&state->basisNumRun[1], run);
+                mc[1].run = run;
+            } else {
+                blk[off].type = tag | (value & 0xF);
+                blkV[off].type = tag | ((value >> 4) & 0xF);
+            }
+        } else {
+            blk[off].type = tag;
+            blkV[off].type = tag;
+            mc[1].run--;
+        }
+    }
 }
+#endif
 
 // .text:0x800E3860 size:0x5DC
 void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nest, u16 nestStride, s32 planeIdx,
