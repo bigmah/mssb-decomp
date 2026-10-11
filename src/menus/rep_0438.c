@@ -8,6 +8,8 @@
 #include "static/GameSettings.h"
 #include "menus/rep_04B0.h"
 #include "menus/rep_0568.h"
+#include "menus/auto_00_00071EC4_text.h"
+#include "menus/auto_00_00016870_text.h"
 #include "Dolphin/os.h"
 #include <string.h>
 
@@ -37,10 +39,123 @@ void fn_2_12238(void) {
 }
 #endif
 
+// NONMATCHING 99.9%: register allocation of the constant 1 / port byte before fn_8004E5B4
+#if NONMATCHING
+// Mark the controller ports in use by the two teams and hand them to fn_8004EEF4.
+static inline void fn_2_123CC_setPorts(void) {
+    s8 ports[4];
+
+    memset(ports, 2, 4);
+    if (g_d_GameSettings._10 == 0) {
+        ports[((s8*)lbl_8034E9A0.ports)[0]] = 1;
+        if (!((s8*)lbl_8034E9A0.ports)[0]) {
+            ports[1] = 2;
+        } else {
+            ports[0] = 2;
+        }
+    } else {
+        ports[((s8*)lbl_8034E9A0.ports)[1]] = 1;
+        ports[((s8*)lbl_8034E9A0.ports)[0]] = 1;
+    }
+    fn_8004EEF4(ports[0], ports[1], ports[2], ports[3], 1);
+}
+
 // .text:0x000123CC size:0x5BC
 void fn_2_123CC(void) {
-    return;
+    s32 i;
+    s32 j;
+    s32 prev;
+    u8 mode;
+    u16 scene;
+
+    memset(lbl_8034E9A0.charFlag, 0, sizeof(lbl_8034E9A0.charFlag));
+    lbl_8034E9A0.teamRating[1] = 0;
+    lbl_8034E9A0.teamRating[0] = 0;
+    mode = g_d_GameSettings.GameModeSelected;
+    if (mode == 5) {
+        lbl_803C5EA4._36 = 1;
+        lbl_803C5EA4.prevMode = lbl_803C5EA4.mode;
+        lbl_803C5EA4.mode = 5;
+    }
+    scene = lbl_803CBBCC->prevScene;
+    if (scene == 5 || (scene == 12 && mode == 5)) {
+        fn_2_129D0();
+        lbl_8034E9A0._472A = 0xFF;
+        lbl_8034E9A0.captain[1] = -1;
+        lbl_8034E9A0.captain[0] = -1;
+        fn_2_1641C();
+        switch (lbl_2_bss_100B8._20) {
+        case 0:
+            break;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            lbl_8034E9A0._4729 = 0;
+            g_d_GameSettings._10 = 0;
+            lbl_803C5EA4._05 = 0;
+            break;
+        }
+        memset(&lbl_2_bss_100B8, 0, sizeof(lbl_2_bss_100B8));
+        lbl_803C6724._00[1] = 0;
+        lbl_803C6724._00[0] = 0;
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            fn_800625A4(0, 1);
+            fn_800625A4(1, 1);
+        } else {
+            fn_2_82E58();
+            fn_800B0A5C_insertQueue(fn_2_73758, 0x3000);
+            fn_800625A4(0, 1);
+            lbl_803CBBC4[0] = 1;
+        }
+        lbl_803C66B0.portOf[0] = 0;
+        lbl_803C66B0.portOf[1] = 1;
+        lbl_2_bss_F410._10[0] = 0;
+        lbl_2_bss_F410._10[1] = 1;
+        fn_2_16A48(0, 1);
+        fn_2_16A48(1, 0);
+        fn_2_123CC_setPorts();
+    } else {
+        if (mode != 5 && g_d_GameSettings._10 != 0) {
+            lbl_2_bss_100B8._10[0] = 0;
+            lbl_2_bss_100B8._12[0] = 0;
+            lbl_2_bss_100B8._10[1] = 0;
+            lbl_2_bss_100B8._12[1] = 0;
+        }
+        for (i = 0; i < 2; i++) {
+            for (j = 0; j < 12; j++) {
+                if (lbl_8034E9A0.captain[i] == lbl_800FE5D4[j]) {
+                    lbl_2_bss_F410._10[i] = j;
+                    break;
+                }
+            }
+            if (g_d_GameSettings.GameModeSelected != 5) {
+                prev = -1;
+                while (fn_2_15104(lbl_2_bss_F410._10[i], prev, i, 1) == 0) {
+                    prev = lbl_2_bss_F410._10[i];
+                }
+            }
+        }
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            fn_2_123CC_setPorts();
+        }
+        if (g_d_GameSettings._10 == 0 && g_d_GameSettings.GameModeSelected != 5) {
+            lbl_2_bss_100B8._10[0] = 1;
+            lbl_2_bss_100B8._12[0] = 1;
+            lbl_803C66B0.portOf[0] = 1;
+            fn_8004E5B4(lbl_8034E9A0.ports[0], lbl_8034E9A0.captain[0], 1);
+        } else if (g_d_GameSettings.GameModeSelected == 5) {
+            lbl_2_bss_100B8._10[0] = 0;
+            lbl_2_bss_100B8._12[0] = 0;
+            lbl_803C66B0.portOf[0] = 0;
+        }
+        fn_800625A4(0, 8);
+        fn_800625A4(1, 8);
+    }
+    lbl_2_bss_100B4 = 0;
+    lbl_8034E9A0._472A = 0xFF;
 }
+#endif
 
 // .text:0x00012988 size:0x24
 void fn_2_12988(void) {
