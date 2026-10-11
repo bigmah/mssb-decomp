@@ -434,7 +434,9 @@ void fn_80049D8C(u8 dir, u8 team) {
 
 // .text:0x8004A0FC size:0xC0
 void fn_8004A0FC(void) {
-    return;
+    s32 i;
+
+    RESET_MATCH_OPTIONS(i);
 }
 
 // .text:0x8004A1BC size:0x100
