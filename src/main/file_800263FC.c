@@ -22,6 +22,17 @@ typedef struct GameSettingsView {
 } GameSettingsView;
 extern GameSettingsView g_d_GameSettings; // GameInitVariables (UnknownHomes_Static.h clashes with this unit's prototypes)
 void fn_800B0A14_removeQueue(void* unused);
+
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
 typedef struct StadiumLightRow {
     StadiumLight light;
     u8 pad[0x2C - sizeof(StadiumLight)];
