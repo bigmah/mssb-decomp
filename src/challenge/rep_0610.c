@@ -63,7 +63,7 @@ extern u32 lbl_1_bss_30BC;
 extern u8 lbl_1_bss_30C0[];
 extern u8 lbl_1_data_F4F8[];
 extern u8 lbl_803CBBC0[];
-extern void fn_800A7D4C(s32, void*, u8);
+extern void fn_800A7D4C(s32 list, void* node);
 
 extern u32 lbl_80108B90;
 extern u16 lbl_1_data_F17C[];
@@ -78,7 +78,7 @@ extern void* lbl_1_bss_5F7C[];
 
 #include "Dolphin/vec.h"
 extern void fn_80026134(s32, Vec*);
-extern void fn_80026130(s32, void*, f32);
+extern void fn_80026130(s32 unused0, void* unused1, f32 unused2);
 extern f32 lbl_1_data_ADC0[];
 extern u8 lbl_1_data_ADC4[];
 
@@ -346,7 +346,7 @@ void fn_1_CB9C(s32 reset) {
         u8* entry = lbl_1_data_F4F8 + lbl_803CBBC0[0] * 0x38;
         PSMTXCopy((f32(*)[4])(lbl_1_bss_30C0 + 0x58), (f32(*)[4])(entry + 8));
         index = lbl_803CBBC0[0];
-        ((void (*)(s32, void*))fn_800A7D4C)(8, lbl_1_data_F4F8 + index * 0x38);
+        fn_800A7D4C(8, lbl_1_data_F4F8 + index * 0x38);
     }
 }
 
@@ -629,11 +629,11 @@ void fn_1_D8A0(void) {
     GXSetProjection(projection, GX_PERSPECTIVE);
     fn_1_179CC();
     PSMTXCopy((f32(*)[4])ch_67E0, (f32(*)[4])(ch_68FC + 0x10));
-    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AA54 + lbl_803CBBC0[0] * 0x38);
+    fn_800A7D4C(7, lbl_1_data_AA54 + lbl_803CBBC0[0] * 0x38);
     if (ch_3078 != 0) {
-        ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AB34 + lbl_803CBBC0[0] * 0x38);
+        fn_800A7D4C(7, lbl_1_data_AB34 + lbl_803CBBC0[0] * 0x38);
     }
-    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38);
+    fn_800A7D4C(7, lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38);
     fn_1_129D0();
 }
 
@@ -1147,7 +1147,7 @@ void fn_1_F37C(void) {
 }
 
 extern void fn_8002F258(void*, s32, void*);
-extern void fn_8002F1AC(void*, s32);
+extern s32 fn_8002F1AC(void*, s32);
 
 // .text:0xF50C size:0x1D8
 void fn_1_F50C(void) {
@@ -1619,7 +1619,7 @@ void fn_1_165E0(void) {
     }
 }
 
-extern void fn_1_C2DC(void*, void*, s32, s32, s32, s32*, s32*, s32*);
+extern s32 fn_1_C2DC(void*, void*, s32, s32, s32, s32*, s32*, s32*);
 struct GameActor;
 extern struct DODisplayObj* fn_800B2BA8(struct GameActor* actor, u16 bone, struct GameActor* src, u16 srcBone); // main/file_800B0724.h
 extern s8 lbl_1_data_AC90;
@@ -2257,15 +2257,15 @@ void fn_1_1770C(u8* object) {
     PSMTXCopy((f32(*)[4])ch_67E0, (f32(*)[4])(ch_68FC + 0x10));
     fn_1_129D0();
     PSMTXCopy((f32(*)[4])(ch_68FC + 0x10), (f32(*)[4])(lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38 + 8));
-    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38);
+    fn_800A7D4C(7, lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38);
     if (ch_3078 != 0) {
-        ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AB34 + lbl_803CBBC0[0] * 0x38);
+        fn_800A7D4C(7, lbl_1_data_AB34 + lbl_803CBBC0[0] * 0x38);
     }
     PSMTXCopy((f32(*)[4])(ch_68FC + 0x10), (f32(*)[4])(lbl_1_data_AA54 + lbl_803CBBC0[0] * 0x38 + 8));
-    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AA54 + lbl_803CBBC0[0] * 0x38);
+    fn_800A7D4C(7, lbl_1_data_AA54 + lbl_803CBBC0[0] * 0x38);
     if (lbl_1_data_1F1A != 0) {
         PSMTXCopy((f32(*)[4])(ch_68FC + 0x10), (f32(*)[4])(lbl_1_data_A9E4 + lbl_803CBBC0[0] * 0x38 + 8));
-        ((void (*)(s32, void*))fn_800A7D4C)(9, lbl_1_data_A9E4 + lbl_803CBBC0[0] * 0x38);
+        fn_800A7D4C(9, lbl_1_data_A9E4 + lbl_803CBBC0[0] * 0x38);
     }
     lbl_803C5090[0x1D] = 1;                // flags
     *(f32*)(lbl_803C5090 + 0x0) = 1.0f;    // scale
@@ -2275,7 +2275,7 @@ void fn_1_1770C(u8* object) {
     *(f32*)(lbl_803C5090 + 0xC) = 0.0f;    // jitterY
     *(u16*)(lbl_803C5090 + 0x14) = 0x1C0;  // lines
     fn_8003A2C0();
-    ((void (*)(s32, void*))fn_800A7D4C)(0, lbl_1_data_AC7C + lbl_803CBBC0[0] * 8);
+    fn_800A7D4C(0, lbl_1_data_AC7C + lbl_803CBBC0[0] * 8);
 }
 #endif
 
@@ -3337,7 +3337,7 @@ void fn_1_129D0(void) {
         }
     }
     PSMTXCopy((f32(*)[4])(ch_68FC + 0x10), (f32(*)[4])(lbl_1_data_AC9C + lbl_803CBBC0[0] * 0x38 + 8));
-    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AC9C + lbl_803CBBC0[0] * 0x38);
+    fn_800A7D4C(7, lbl_1_data_AC9C + lbl_803CBBC0[0] * 0x38);
     if (lbl_1_data_A978[ch_68FC[0x40]] >= 0) {
         // TODO type: fn_800BD8C4's second parameter is the view matrix
         fn_800BD8C4(lbl_1_bss_5F7C[0], (MtxPtr)(ch_68FC + 0x10));

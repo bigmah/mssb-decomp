@@ -3,7 +3,7 @@
 #include "static/UnknownHomes_Static.h"
 
 extern s32 fn_80036214(u8* o, s32 a, s32 b, s32 c);
-extern void fn_8004A34C(u8* a, s32 b, s32 c, s32 d, s32 e);
+extern s32 fn_8004A34C(u8* a, s32 b, s32 c, s32 d, s32 e);
 extern void fn_80023CF4(s32 a);
 extern void fn_8004C9FC(void);
 extern void fn_2_11A0(u16 v);

@@ -60,7 +60,7 @@ extern const f32 lbl_3_rodata_39AC;
 extern const f64 lbl_3_rodata_39C8;
 extern u8 lbl_80366158[];
 extern u8 lbl_3_data_26E40[];
-extern void fn_80033620(void);
+extern void fn_80033620(void* emitter); // Emitter*
 extern void fn_80033F64(f32, f32, f32);
 extern void fn_80033CC8(void*, void*);
 extern u8 lbl_3_data_26D50[];
@@ -677,7 +677,7 @@ u32 fn_3_14A188(u8* o) {
     if (lbl_80366158[0x28] != 0) {
         return 0;
     }
-    fn_80033620();
+    fn_80033620(o);
     p = *(u8**)(o + 0xC);
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 5, 0);
@@ -867,7 +867,7 @@ u32 fn_3_14AC40(u8* o) {
     if (lbl_80366158[0x28] != 0) {
         return 0;
     }
-    fn_80033620();
+    fn_80033620(o);
     p = *(u8**)(o + 0xC);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
@@ -1478,7 +1478,7 @@ u32 fn_3_14CECC(u8* o) {
     if (lbl_80366158[0x28] != 0) {
         return 0;
     }
-    fn_80033620();
+    fn_80033620(o);
     p = *(u8**)(o + 0xC);
     GXSetZMode(1, 3, 0);
     do {
@@ -1898,7 +1898,7 @@ u32 fn_3_14ED24(u8* o) {
     u8* p;
     s32* d;
     s32 a;
-    fn_80033620();
+    fn_80033620(o);
     p = *(u8**)(o + 0xC);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     do {
@@ -2198,7 +2198,7 @@ u32 fn_3_150940(u8* o) {
     if ((*(u8**)(o + 0x18))[0x6C] == 0) {
         return 0;
     }
-    fn_80033620();
+    fn_80033620(o);
     p = *(u8**)(o + 0xC);
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 6, 0);
@@ -2525,7 +2525,7 @@ u32 fn_3_151F2C(u8* e) {
     if (lbl_80366158[0x28] != 0) {
         return 0;
     }
-    fn_80033620();
+    fn_80033620(e);
     p = *(u8**)(e + 0xC);
     if (p[0x4C] != 3) {
         GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
@@ -3198,7 +3198,7 @@ u32 fn_3_1552AC(u8* e) {
     if (lbl_80366158[0x28] != 0) {
         return 0;
     }
-    fn_80033620();
+    fn_80033620(e);
     p = *(u8**)(e + 0xC);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);

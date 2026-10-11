@@ -26,7 +26,7 @@ extern void fn_2_94634(u8);
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A8230[];
-extern void fn_2_20218(void*);
+extern void fn_2_20218(void);
 extern void fn_2_1BF50(void);
 extern u8* lbl_2_bss_1A8244[];
 extern u8* lbl_2_bss_1A823C[];
@@ -115,7 +115,7 @@ s32 fn_2_45938(s32 index) {
 }
 
 // fn_2_460EC, size:0x4
-void fn_2_460EC(void) {
+void fn_2_460EC(u8 unused) {
     return;
 }
 
@@ -714,7 +714,7 @@ void fn_2_40A9C(void) {
         break;
     case 1:
         lbl_8036E548[0x307A] = 0;
-        fn_2_20218(lbl_8036E548);
+        fn_2_20218();
         lbl_2_bss_1A8234[0][0x162992] = 1;
         lbl_2_bss_1A8230[0][0x32A86] = 1;
         o[0x28] = 2;
@@ -743,7 +743,7 @@ void fn_2_40B90(void) {
         break;
     case 1:
         lbl_8036E548[0x307A] = 0;
-        fn_2_20218(lbl_8036E548);
+        fn_2_20218();
         lbl_2_bss_1A8234[0][0x162992] = 1;
         lbl_2_bss_1A8230[0][0x32A86] = 1;
         o[0x28] = 2;

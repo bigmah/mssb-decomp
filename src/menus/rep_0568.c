@@ -106,10 +106,10 @@ extern void haveActLayoutPointToGeoHeader(void* layout, void* geo);
 extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
 extern void fn_8002399C(ActorObject* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
 extern void fn_800B2B74(GameActor* model, u16 joint);
-extern void fn_800B2BA8(GameActor* model, u16 joint, s32 a, s32 b);
+extern struct DODisplayObj* fn_800B2BA8(GameActor* model, u16 joint, GameActor* src, u16 srcJoint);
 extern void fn_800B2C08(GameActor* model, u16 joint);
 extern void fn_800BD548(ActorObject* slot, s32 count, ...);
-extern void fn_8004B7B4(CharActor* actor, ActorObject* slot);
+extern s32 fn_8004B7B4(CharActor* actor, ActorObject* slot);
 extern Vec lbl_2_data_20F8[]; // menu actor positions
 extern u8 lbl_2_data_278C[];  // part file indices (fn_800126EC), 4 per part
 extern Mtx lbl_2_bss_1010C;   // menu camera view matrix

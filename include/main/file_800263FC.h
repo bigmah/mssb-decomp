@@ -147,7 +147,7 @@ typedef struct Emitter {
                 Vec max;
             } boxes[2]; // particles entering a box stop
 
-            /* 0x48 */ s32 unk48;
+            /* 0x48 */ void* unk48; // ParticleParams5* sparks (fn_80028628), or NULL
             /* 0x4C */ u8 unk4C;
             /* 0x4D */ u8 unk4D;
             /* 0x4E */ u8 unk4E;
@@ -588,7 +588,7 @@ void fn_8002B7F8(Vec* pos, ParticleParamsE* prm, u8 withSub);
 s32 fn_80028F48(Emitter* e);
 void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm);
 void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm);
-void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u32* palette, s32 arg5, s32 flash);
+void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u32* palette, struct ParticleParams5* spark, s32 flash); // spark: trail sparks (ParticleParams5*), may be NULL
 s32 fn_8002C56C(Emitter* e);
 void fn_8002CDD0(Vec* end);
 void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm);

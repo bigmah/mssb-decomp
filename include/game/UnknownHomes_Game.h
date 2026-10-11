@@ -3082,7 +3082,7 @@ extern s16 bODHitVertTraj[5][5][2];
 extern s16 HitVertTrajRanges[2][5][5][2];
 
 extern void fn_3_6C854(int, int);
-extern void playSoundEffect(int);
+extern u32 playSoundEffect(s32);
 extern void fn_3_5ED98(void);
 extern int RandomIndexFromWeights(u8* weights, int count);
 extern void fn_3_FBDAC(int);

@@ -48,7 +48,7 @@ extern void fn_80034E20(void*, void*);
 extern void* lbl_803CC1B8[];
 extern u8 lbl_80371C30[];
 extern u8 lbl_3_data_69D0[];
-extern void fn_80024DB0(void*);
+extern s32 fn_80024DB0(void*);
 extern void fn_80034CEC(void*);
 extern void fn_800B0A14_removeQueue(void*);
 

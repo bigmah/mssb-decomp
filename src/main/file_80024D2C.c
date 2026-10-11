@@ -462,7 +462,7 @@ void fn_80025C58(ShapeData* shape, ShapeModel** model) {
 #endif
 
 // fn_80026130, size:0x4
-void fn_80026130(void) {
+void fn_80026130(s32 unused0, void* unused1, f32 unused2) {
 }
 
 // fn_80025DDC, size:0x110

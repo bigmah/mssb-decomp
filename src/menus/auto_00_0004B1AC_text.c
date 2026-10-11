@@ -267,7 +267,7 @@ void fn_2_513E4(void) {
 }
 
 // fn_2_513E0, size:0x4
-void fn_2_513E0(void) {
+void fn_2_513E0(void* buffer, s32 x, s32 y, s32 option, s32 style, s32 first, s32 second, s32 third) {
     return;
 }
 
@@ -1125,7 +1125,7 @@ extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_1FF84[];
 extern u8 lbl_2_data_1FF94[];
 extern void fn_800216F8(s32, void*);
-extern void fn_800627C4(void);
+extern s32 fn_800627C4(void);
 extern void fn_2_8E8A4(void);
 
 // fn_2_549B4, size:0x184
@@ -1317,7 +1317,7 @@ void fn_2_5389C(void) {
 }
 
 extern u8 lbl_2_bss_33FB4C[];
-extern void fn_8004A34C(void*, s32, s32, s32, s32);
+extern s32 fn_8004A34C(void*, s32, s32, s32, s32);
 extern s32 fn_8004CA6C(u16);
 extern void fn_8004CC2C(void);
 extern void fn_2_460EC(u8);
@@ -2070,7 +2070,7 @@ void fn_2_51C58(void) {
 extern u8 lbl_803C5EA4[];
 extern u8 lbl_8037169C[];
 extern u8 lbl_800EF808[];
-extern void fn_80021410(void);
+extern s32 fn_80021410(void);
 extern void fn_80062A74(void);
 
 // fn_2_52690, size:0xD78

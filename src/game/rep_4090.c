@@ -227,7 +227,7 @@ void fn_3_16CC2C(Vec* pos, u8 who) {
 
 // .text:0x0016D4D8 size:0x10C mapped:0x807AC56C
 extern u8 lbl_8036E548[];
-extern void fn_8001B728(u8 a, s32 b, Vec* v);
+extern s32 fn_8001B728(u8 a, s32 b, Vec* v);
 
 s32 fn_3_16D4D8(s32 id_, f32 x) {
     u8 id = id_;

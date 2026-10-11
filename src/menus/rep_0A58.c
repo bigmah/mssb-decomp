@@ -39,7 +39,7 @@ extern void fn_2_47FF8(void);
 extern void fn_2_47CFC(void);
 extern void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
 extern void fn_8001F228(void);
-extern void fn_80021410(void);
+extern s32 fn_80021410(void);
 
 #define WORK_S16(off) (*(s16*)(lbl_2_bss_1A824C[0] + (off))) // TODO type
 #define DIRECT_S16(off) (*(s16*)(lbl_2_bss_1A8250 + (off)))   // same memory as WORK_S16

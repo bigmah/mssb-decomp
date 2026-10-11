@@ -60,7 +60,7 @@ extern u8 lbl_3_common_bss_32234[];
 extern u32 fn_3_90150(s32 a, s32 b);
 extern u8 lbl_800E8558[];
 extern u8 lbl_3_data_7760[];
-extern void playSoundEffect(int);
+extern u32 playSoundEffect(s32);
 extern const f32 lbl_3_rodata_E88;
 extern const f32 lbl_3_rodata_E8C;
 extern const f32 lbl_3_rodata_E90;

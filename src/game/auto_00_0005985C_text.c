@@ -197,7 +197,7 @@ extern void fn_3_BBF94(void);
 extern void fn_3_B93CC(void);
 extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
 extern u8 lbl_3_common_bss_34C90[];
-extern void fn_3_6C13C(void*, void*);
+extern void fn_3_6C13C(void);
 extern void fn_3_16598C(void);
 extern u8 g_RunningLogic[];
 extern void fn_800A7568(void);
@@ -231,7 +231,7 @@ extern void fn_3_58870(void);
 extern void fn_3_1DEB8(void);
 extern void Set_803cb848(s32);
 extern void fn_3_6EBB4(s32);
-extern void fn_3_8A1D8(void*);
+extern void fn_3_8A1D8(void);
 extern void fn_3_6C108(void);
 extern void fn_3_6B870(void);
 extern s32 fn_3_6BA64(void);
@@ -241,11 +241,11 @@ extern void fn_3_6D4A0(void);
 extern void fn_3_5A87C(void);
 extern void fn_3_DFA20(void);
 extern void fn_3_10FBE4(void);
-extern void fn_3_6C150(void*);
+extern void fn_3_6C150(void);
 extern void fn_3_8F1C8(void);
 extern void fn_3_5B0C4(void);
 extern ScoresStruct g_Scores;
-extern void fn_3_32090(void*, void*);
+extern void fn_3_32090(void);
 extern void fn_3_8911C(void);
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
@@ -352,7 +352,7 @@ void fn_3_5C69C(s32 type) {
     fn_3_5A6D4(2);
     g_FieldingLogic._0AE = 0;
     g_Pitcher.peachDaisyStarAnimationOn = 0;
-    fn_3_32090(&g_Pitcher, &g_FieldingLogic);
+    fn_3_32090();
     fn_3_8911C();
     if (g_Strikes.balls >= 4) {
         g_Runners[0].runnerOnFieldOrOutOrScored = 5;
@@ -411,7 +411,7 @@ void fn_3_5AE0C(void) {
         fn_3_10FBE4();
     }
     g_Minigame._19AB = 0;
-    fn_3_6C150(&g_Minigame);
+    fn_3_6C150();
     fn_3_8F1C8();
     lbl_803CC1B8->func = fn_3_5B0C4;
 }
@@ -421,7 +421,7 @@ void fn_3_5CD24(void) {
     GameControlsStruct* game = &g_GameLogic;
     if (game->_125 == 0) {
         lbl_3_common_bss_32724[0x9A] = 0;
-        fn_3_8A1D8(lbl_3_common_bss_32724);
+        fn_3_8A1D8();
         fn_3_6C108();
         fn_3_6B870();
         game->_125++;
@@ -721,7 +721,7 @@ void fn_3_5D3FC(void) {
     g_Scores._C1 = 0;
     g_Scores._C6 = 0;
     lbl_3_common_bss_37400[0x48] = 0;
-    fn_3_6C13C(lbl_3_common_bss_37400, &g_Scores);
+    fn_3_6C13C();
     if (gs->exhibitionMatchInd == 0) {
         fn_3_16598C();
     }
@@ -1005,7 +1005,7 @@ void fn_3_5F7A8(void) {
     g_Scores._C1 = 0;
     g_Scores._C6 = 0;
     lbl_3_common_bss_37400[0x48] = 0;
-    fn_3_6C13C(lbl_3_common_bss_37400, &g_Scores);
+    fn_3_6C13C();
     if (gs->exhibitionMatchInd == 0) {
         fn_3_16598C();
     }
@@ -2163,7 +2163,7 @@ void fn_3_5D5E8(void) {
             g_Scores._C1 = 0;
             g_Scores._C6 = 0;
             lbl_3_common_bss_37400[0x48] = 0;
-            fn_3_6C13C(lbl_3_common_bss_37400, &g_Scores);
+            fn_3_6C13C();
             if (gs->exhibitionMatchInd == 0) {
                 fn_3_16598C();
             }
@@ -2493,7 +2493,7 @@ void fn_3_5F930(void) {
             g_Scores._C1 = 0;
             g_Scores._C6 = 0;
             lbl_3_common_bss_37400[0x48] = 0;
-            fn_3_6C13C(lbl_3_common_bss_37400, &g_Scores);
+            fn_3_6C13C();
             if (gs->exhibitionMatchInd == 0) {
                 fn_3_16598C();
             }
@@ -2846,7 +2846,7 @@ void fn_3_6011C(void) {
         GameControlsStruct* game = &g_GameLogic;
         if (game->_125 == 0) {
             lbl_3_common_bss_32724[0x9A] = 0;
-            fn_3_8A1D8(lbl_3_common_bss_32724);
+            fn_3_8A1D8();
             fn_3_6C108();
             fn_3_6B870();
             game->_125++;

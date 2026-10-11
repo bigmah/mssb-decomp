@@ -130,7 +130,7 @@ void fn_3_168704(void) {
 #endif
 
 // .text:0x0016892C size:0x140 mapped:0x807A79C0
-void fn_3_16892C(CharActor* actor, f32 frame, s32 b) {
+void fn_3_16892C(CharActor* actor, f32 frame, s32 b, s32 unused) {
     s32 a = actor->index;
     EffectTask* task;
     if (frame == FIXED(lbl_3_data_28680[0x40 / 4])) {
@@ -198,7 +198,7 @@ void fn_3_168A6C(EffectNode* node) {
 #endif
 
 // .text:0x00168CD8 size:0x124 mapped:0x807A7D6C
-void fn_3_168CD8(CharActor* actor, f32 frame) {
+void fn_3_168CD8(CharActor* actor, f32 frame, s32 unused0, s32 unused1) {
     s32 a = actor->index;
     EffectTask* task;
     if (frame == FIXED(lbl_3_data_28680[0x38 / 4]) && actor != NULL) {

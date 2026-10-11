@@ -82,7 +82,7 @@ extern void fn_800415A8(void);
 extern void unsure_FillRosterPositions(s32 team);
 extern void SetMenuNumber(void);
 extern void fn_800671FC(void);
-extern void fn_80069854(MenuWork* work);
+extern void fn_80069854(void);
 extern u8 lbl_803CBCC9;
 typedef struct Unk803CBD24 {
     /*0x0*/ u8 _0[4];
@@ -1594,7 +1594,7 @@ void pauseMenuSelection(void) {
             lbl_803297E0._CF50[0] = 0;
             lbl_803297E0._CF4E[1] = 0;
             lbl_803297E0._CF4E[0] = 0;
-            fn_80069854(&lbl_803297E0);
+            fn_80069854();
             if (g_d_GameSettings._06 != 2 && g_d_GameSettings.GameModeSelected == 5) {
                 SET_SCENE(0xD);
             } else if (g_d_GameSettings._06 == 2) {

@@ -9,7 +9,7 @@
 
 extern u8 lbl_3_common_bss_32724[];
 extern void fn_3_8FC0C(void);
-extern void fn_8001B224(void*);
+extern void fn_8001B224(void);
 extern void fn_3_B908C(void);
 extern void fn_3_21C7C(s32, s32);
 extern u32 lbl_3_bss_1748[];
@@ -191,7 +191,7 @@ void fn_3_7C9D8(s32 flag) {
     fn_3_1CBCC();
     fn_3_8FC0C();
     lbl_3_common_bss_32724[0xC8] = 0;
-    fn_8001B224(lbl_3_common_bss_32724);
+    fn_8001B224();
     fn_3_B908C();
     for (i = 0; i < 13; i++) {
         fn_3_21C7C(i, 1);

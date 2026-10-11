@@ -92,12 +92,12 @@ BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStru
     Mtx m1;
     Vec a;
     Vec b;
-    u32 list;
+    u32* list;
     u32 n;
     u32 allOut;
     u8* fp;
     u32 c;
-    s32 t;
+    u8* t;
     f32 dist;
     memset(flags, 1, *(s16*)(lbl_3_common_bss_350E4 + 0x64));
     n = *(s16*)(lbl_3_common_bss_350E4 + 0x64);
@@ -131,11 +131,11 @@ BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStru
         if (*fp++ == 0) {
             c = fn_3_B85A8(n, &list);
             while (c--) {
-                t = fn_3_B91C8(g_d_GameSettings.StadiumID, ((u32*)list)[c], (s32)tc.mtx1);
+                t = fn_3_B91C8(g_d_GameSettings.StadiumID, list[c], tc.mtx1);
                 if (t != 0) {
                     PSMTXConcat(m1, tc.mtx1, tc.mtx1);
                     if (checkTriangleCollisions(&tc, *(TriangleGroup**)(t + 8))) {
-                        *(u32*)v = ((u32*)list)[c];
+                        *(u32*)v = list[c];
                     }
                 }
             }

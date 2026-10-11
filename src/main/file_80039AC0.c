@@ -287,7 +287,7 @@ void fn_8003A4C8(void) {
     }
 }
 
-extern u32 lbl_803CBCA8;
+extern void (*lbl_803CBCA8)(void); // model draw callback (run in fn_8003A8A0's caller, file_8003A688)
 
 extern u32 lbl_803CBCB0;
 
@@ -302,8 +302,8 @@ void fn_8003A540(u32 value) {
 }
 
 // fn_8003A548, size:0x8
-void fn_8003A548(u32 value) {
-    lbl_803CBCA8 = value;
+void fn_8003A548(void (*callback)(void)) {
+    lbl_803CBCA8 = callback;
 }
 
 // .text:0x8003A550 size:0x138

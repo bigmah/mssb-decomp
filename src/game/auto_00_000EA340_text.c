@@ -38,7 +38,7 @@ extern void fn_3_EB6E0(void);
 extern void fn_3_129458(void);
 extern void fn_3_9143C(void);
 extern void fn_3_96914(void);
-extern void fn_3_97144(void*);
+extern void fn_3_97144(void);
 extern void fn_3_EAEF4(void);
 extern void fn_3_EDA3C(void);
 extern void fn_3_1254F8(void);
@@ -52,7 +52,7 @@ extern void fn_3_12A6C4(void);
 extern void fn_80053FE8(void);
 extern void fn_80051D00(void);
 extern void fn_8004D0F0(void);
-extern void fn_80050F78(s32);
+extern s32 fn_80050F78(s32);
 extern void fn_8004CC4C(u8, u8, u8, s32, s16);
 extern u8 lbl_8034E978[];
 extern u8 lbl_800FEF70[];
@@ -1405,7 +1405,7 @@ void fn_3_EDD10(void) {
         return;
     }
     lbl_3_common_bss_32724[0xDA] = 0;
-    fn_3_97144(lbl_3_common_bss_32724);
+    fn_3_97144();
     fn_3_96914();
     fn_3_ED818();
     fn_3_9143C();

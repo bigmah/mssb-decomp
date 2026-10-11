@@ -171,7 +171,7 @@ void fn_3_E1D00(void) {
     s32 i;
 
     fn_800BF058((ShadowDrawCallback)fn_3_B8184);
-    fn_8003A548((u32)fn_3_E1C60); // TODO type: callback stored as u32
+    fn_8003A548(fn_3_E1C60);
     for (i = 0; i < lbl_3_common_bss_350E4.count; i++) {
         if (lbl_3_data_18ED0[i].kind == 2) {
             break;

@@ -19,7 +19,7 @@ extern u16 lbl_2_data_13238[];
 
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_2_data_13228[];
-extern void fn_800A7D4C(s32, void*, u8);
+extern void fn_800A7D4C(s32 list, void* node);
 
 extern const f32 lbl_2_rodata_9B0;
 
@@ -38,7 +38,7 @@ extern u8* lbl_2_bss_1A8248[];
 extern u8* lbl_2_bss_1A824C[];
 
 extern void* _OSAllocFromHeap(s32 alignment, s32 size);
-extern void fn_2_513E0(void*, s32, s32, s32, s32, s32, s32, s32);
+extern void fn_2_513E0(void* buffer, s32 x, s32 y, s32 option, s32 style, s32 first, s32 second, s32 third);
 
 extern f32 lbl_2_bss_55B8;
 extern Vec lbl_2_data_132EC;
@@ -231,7 +231,7 @@ void fn_2_46D34(s32 delta) {
 // fn_2_489DC, size:0x40
 void fn_2_489DC(void) {
     s32 index = lbl_803CBBC0[0];
-    fn_800A7D4C(0xC, lbl_2_data_13228 + index * 8, index);
+    fn_800A7D4C(0xC, lbl_2_data_13228 + index * 8);
 }
 
 // fn_2_49EFC, size:0x80
@@ -339,8 +339,8 @@ void fn_2_4ACF8(void) {
 }
 
 extern void* fn_800111D8(void*);
-extern void ACTSetAnimation(void*, void*, int, u16, f32, f32);
-extern void Set_FUN_800b2b6c(void*, s32);
+extern void ACTSetAnimation(void* actor, void* bank, char* name, u16 anim, f32 frame, f32 speed);
+extern void Set_FUN_800b2b6c(void* actor, u16* boneRemap);
 extern void fn_800B4CA0(void*, f32);
 extern void fn_800B4C04(void*, f32);
 extern void fn_800B4AFC(void*, s32);
@@ -368,7 +368,7 @@ void fn_2_47B24(u16* count) {
                 p = fn_800111D8(actor);
                 if (*(void**)p != NULL) {
                     if (p[0x58] != 0) {
-                        ACTSetAnimation(*(void**)p, *(void**)(p + 4), 0, *(u16*)(p + 0xE), lbl_2_rodata_9B0, *(f32*)(p + 0x60));
+                        ACTSetAnimation(*(void**)p, *(void**)(p + 4), NULL, *(u16*)(p + 0xE), lbl_2_rodata_9B0, *(f32*)(p + 0x60));
                     }
                     if (p[0x59] != 0) {
                         fn_800B4CA0(*(void**)p, *(f32*)(p + 0x5C));
@@ -380,7 +380,7 @@ void fn_2_47B24(u16* count) {
                     if (f & 2) {
                         fn_800B4AFC(*(void**)p, (u8)(f & 1));
                     }
-                    Set_FUN_800b2b6c(*(void**)p, *(s32*)(p + 0x68));
+                    Set_FUN_800b2b6c(*(void**)p, *(u16**)(p + 0x68));
                     if (p[0x6C] != 0) {
                         fn_800BDA24(p);
                     }
@@ -710,8 +710,8 @@ void fn_2_4AEE4(void) {
 extern void CTRLSetScale(void* control, f32 x, f32 y, f32 z);
 extern void CTRLSetRotation(void* control, f32 x, f32 y, f32 z);
 extern void CTRLSetTranslation(void* control, f32 x, f32 y, f32 z);
-extern void fn_80024DB0(void*);
-extern void fn_80024FA4(void*, u32, void*, s32);
+extern s32 fn_80024DB0(void*);
+extern void fn_80024FA4(void* model, void* data, void* state, s32 frame);
 extern void fn_2_8D024(void);
 extern Vec lbl_2_data_12EA8;
 extern Vec lbl_2_data_12EB4;
@@ -736,7 +736,7 @@ static inline void attachModel(u8* sub, u8* dst) {
         ((BitFlag08E8*)(q + 0x11))->b = 1;
     }
     fn_80024DB0(q);
-    fn_80024FA4(dst, *(u32*)(sub + 0x2C), sub + 0xC, -1);
+    fn_80024FA4(dst, *(void**)(sub + 0x2C), sub + 0xC, -1);
 }
 
 // .text:0x47CFC size:0x2FC
@@ -1010,7 +1010,7 @@ void fn_2_47540(void) {
 #endif
 extern void fn_80023B04(s32);
 extern void fn_80014204(s32);
-extern u32 fn_80023AA4(void);
+extern void* fn_80023AA4(void);
 
 // .text:0x478F4 size:0x208
 void fn_2_478F4(void) {
@@ -1019,7 +1019,7 @@ void fn_2_478F4(void) {
     fn_2_47540();
     fn_80023B04(0xD);
     fn_80014204(4);
-    *(u32*)(lbl_8036E548 + 0x13C) = fn_80023AA4();
+    *(void**)(lbl_8036E548 + 0x13C) = fn_80023AA4();
     for (i = 0; i < 4; i++) {
         (lbl_8036E548 + i * 0x27C)[0xE59] = i;
         ((u32*)(lbl_8036E548 + 0x2C50))[i] = 0;

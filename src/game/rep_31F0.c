@@ -183,13 +183,12 @@ void fn_3_110AD4(void) {
         v.z = *(f32*)(g_Ball + 0x8);
         *(s16*)(g_Minigame + 0x18A2) = fn_3_9FB8C(v.x, v.z);
         *(s16*)(g_Minigame + 0x18A4) = fn_3_9FB8C(*(f32*)(g_Ball + 0x1A00), -v.y);
-        // TODO type: fn_3_BC6D8 takes Vec* from/to (rep_1E08 declares them int)
         if (g_Pitcher[0x164] != 0) {
-            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(0, 3), 1);
+            fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(0, 3), 1);
         } else if (g_Minigame[0x1AD5] != 0) {
-            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, 13, 1);
+            fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, 13, 1);
         } else {
-            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(8, 12), 1);
+            fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(8, 12), 1);
         }
         mg[0x1AD4] = 1;
         g_Minigame[0x1DF7] = 1;
@@ -223,11 +222,11 @@ void fn_3_110AD4(void) {
         v.z *= lbl_3_data_21438[3];
         v.y = v.y * -lbl_3_data_21438[3];
         if (g_Pitcher[0x164] != 0) {
-            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(0, 3), 1);
+            fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(0, 3), 1);
         } else if (*(u16*)(g_Minigame + 0x18A0) & 1) {
-            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(4, 7), 1);
+            fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(4, 7), 1);
         } else {
-            fn_3_BC6D8((int)&v, (int)&fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(8, 12), 1);
+            fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(8, 12), 1);
         }
         *(s16*)(mg + 0x18A6) = RandomInt_Game_Range(lbl_3_data_213E0[2], lbl_3_data_213E0[3]);
         *(u16*)(g_Minigame + 0x18A0) += 1;
@@ -896,8 +895,7 @@ void fn_3_1128EC(void) {
         } else {
             idx = rand() % 4 + 4;
         }
-        // TODO type: fn_3_BC6D8 takes Vec* from/to (rep_1E08 declares them int)
-        fn_3_BC6D8((int)&dir, (int)&cam->pos, idx, 0);
+        fn_3_BC6D8(&dir, &cam->pos, idx, 0);
         lbl_3_bss_B699 = !lbl_3_bss_B699;
         *(s16*)(g_Minigame + 0x18A6) = rand() % 60 + 60;
     } else {

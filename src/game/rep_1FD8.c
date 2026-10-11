@@ -56,7 +56,7 @@ extern void fn_800528B4(void);
 extern int rand(void);
 extern TexImage* lbl_3_bss_9D98; // 3 textures of the fn_3_C1C18 effect
 extern u8* lbl_3_common_bss_350E4[];
-extern void fn_3_B8184(void);
+extern void fn_3_B8184(void* pp, void* cam);
 extern void fn_3_B828C(void*);
 extern void fn_800BF058(void*);
 extern void fn_800BDF70(void*);
@@ -106,7 +106,7 @@ struct DspObj2 {
 };
 extern void DOSetWorldMatrix(void*, void*);
 extern void DOVARenderSkin(void*, void*, void*, void*, int, int);
-extern void fn_8003A8A0();
+extern void fn_8003A8A0(void* model, Mtx viewMtx, s32 unused);
 extern u32 lbl_3_bss_9D88;
 extern u16 lbl_3_data_177F0;
 typedef struct Rep1FD8Ent {
@@ -162,7 +162,7 @@ void fn_3_C1974(u8* a) {
 }
 
 // .text:0x000C19C8 size:0x250 mapped:0x80700A5C
-extern void fn_3_B7FC8(s32, s32);
+extern s32 fn_3_B7FC8(s32 id, s32 kind);
 extern s16 lbl_3_data_17880[];
 // NONMATCHING 99%: mullw operands swapped (rand() * a; both operand orders give r27,r3)
 #if NONMATCHING

@@ -79,7 +79,7 @@ void fn_2_5146C(void);
 
 void fn_2_513E4(void);
 
-void fn_2_513E0(void);
+void fn_2_513E0(void* buffer, s32 x, s32 y, s32 option, s32 style, s32 first, s32 second, s32 third); // empty
 
 void fn_2_513DC(void);
 

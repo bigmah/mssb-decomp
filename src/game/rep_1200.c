@@ -1546,7 +1546,7 @@ typedef struct Rep1200Bss80366158View {
 extern Rep1200Bss80366158View lbl_80366158;
 extern s16 lbl_3_data_5F3C[]; // [0] frames A is held to charge, [2] perfect-charge window
 extern s16 lbl_3_data_5FC0[]; // pause frames on release: [0] normal, [1] star pitch
-extern void fn_3_CAF9C(lbl_3_common_bss_32718_struct* s);
+extern void fn_3_CAF9C(void);
 extern void fn_3_156218(void);
 static inline f32 windupProportion(void) {
     return lbl_3_rodata_1290 - (f32)(g_Pitcher.windupCountdownUntilBallReleased - 1) / (f32)g_Pitcher.pitchWindUpCountDown;
@@ -1672,7 +1672,7 @@ void fn_3_74128(void) {
         fn_3_7310C();
         if (g_Pitcher.ChargePitchType == 3) {
             g_UnkSound_32718._08 = 1;
-            fn_3_CAF9C(&g_UnkSound_32718);
+            fn_3_CAF9C();
         }
         if (g_Pitcher.specialPitchTypeCode != 1 && g_Pitcher.specialPitchTypeCode != 2 && g_Pitcher.specialPitchTypeCode != 3 &&
             g_Pitcher.nonCaptainStarPitchTriggeredType == 0 && g_d_GameSettings.GameModeSelected != 7) {

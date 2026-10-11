@@ -12,7 +12,7 @@ extern u8 lbl_3_data_8148[];
 extern u8 lbl_800E8558[];
 extern void fn_800216F8(u8, void*);
 
-extern void fn_8006285C(void);
+extern s32 fn_8006285C(void);
 
 // fn_3_90754, size:0x10
 void fn_3_90754(u8* p, s8 a, s8 b) {

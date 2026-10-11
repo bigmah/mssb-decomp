@@ -833,7 +833,7 @@ void fn_8002852C(void) {
 // .text:0x80028628 size:0x920
 // NONMATCHING 75%: register allocation and float scheduling
 #if NONMATCHING
-void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u32* palette, s32 arg5, s32 flash) {
+void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u32* palette, struct ParticleParams5* spark, s32 flash) {
     Mtx m;
     Quaternion q;
     Vec ref;
@@ -930,7 +930,7 @@ void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u3
     }
     e->u.t4.unk54 = prm->unk28;
     e->tex = prm->tex;
-    e->u.t4.unk48 = arg5;
+    e->u.t4.unk48 = spark;
     e->u.t4.unk4C = e->u.t4.unk4D = prm->unk30;
     e->u.t4.unk4E = prm->unk2C;
     e->u.t4.unk4F = 0;

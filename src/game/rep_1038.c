@@ -115,7 +115,7 @@ void fn_3_6C13C(void) {
 }
 
 // .text:0x0006C150 size:0x88 mapped:0x806AB1E4
-extern void fn_3_6916C(void*);
+extern void fn_3_6916C(void);
 extern void fn_3_674E0(void);
 extern void fn_3_97800(void);
 
@@ -123,7 +123,7 @@ void fn_3_6C150(void) {
     *(s16*)(lbl_3_common_bss_32724 + 0x9E) = -1;
     *(s16*)(lbl_3_common_bss_32724 + 0xA0) = -1;
     *(s16*)(lbl_3_common_bss_32724 + 0xA2) = -1;
-    fn_3_6916C(lbl_3_common_bss_32724);
+    fn_3_6916C();
     fn_3_674E0();
     fn_3_97800();
     if (((u8*)&g_d_GameSettings)[0x11] != 0) {

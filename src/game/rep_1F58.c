@@ -59,7 +59,7 @@ extern D1F58 lbl_3_data_17248;
 extern u8 lbl_3_data_17258[];
 extern s32 fn_8005268C(void);
 extern u8* fn_80052734(s32);
-extern void fn_80024DB0(void*);
+extern s32 fn_80024DB0(void*);
 extern void fn_80024FA4(void*, void*, void*, s32);
 extern void fn_800B4CA0(void*, f32);
 extern void fn_800B4C04(void*, f32);

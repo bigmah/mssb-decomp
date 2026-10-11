@@ -132,7 +132,7 @@ extern void fn_80052694(void*);
 extern camera_803c639c_s* fn_80052734(s32);
 extern s32 lbl_3_rodata_210;
 extern void DCStoreRange(void*, u32);
-extern void fn_80023F0C(void*, void*, int, int, int, int, int, int);
+extern s32 fn_80023F0C(void*, void*, int, int, int, int, int, int);
 
 // .text:0x000035D4 size:0x10
 u32 setFanObjPtr(void) {

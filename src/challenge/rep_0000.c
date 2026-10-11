@@ -15,7 +15,7 @@ extern u8 lbl_800F1D78[];
 extern void LoadFile(void*, void*, s32, s32, s32);
 extern s32 fn_800A8518(s32);
 extern u32 fn_800A88C8(void);
-extern void fn_800A8B78(void*);
+extern s32 fn_800A8B78(void*);
 
 void fn_1_0(void* bank, char* name) {
     ANIMGet(bank, name);

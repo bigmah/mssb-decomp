@@ -26,7 +26,7 @@ void fn_3_B939C(void);
 // m_sound.h (can't be included next to UnknownHomes_Game.h: playSoundEffect differs)
 void fn_3_8B890(s32 i);
 s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type);
-void fn_3_B7FC8(s32 id, s32 type);
+s32 fn_3_B7FC8(s32 id, s32 type);
 void fn_3_B8414(Vec* min, Vec* max);
 void fn_3_B8464(Mtx m, void* shadow);
 void fn_3_B8574(void);

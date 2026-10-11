@@ -14,7 +14,7 @@ void fn_2_4668C(s32 index);
 
 s32 fn_2_45938(s32 index);
 
-void fn_2_460EC(void);
+void fn_2_460EC(u8 unused); // empty
 
 void fn_2_460F0(void);
 

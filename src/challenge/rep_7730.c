@@ -752,7 +752,7 @@ void fn_1_24A8C(void) {
 
 extern void fn_1_26D28(void*, u16, u16, u16, void*);
 extern void fn_1_27330(void*);
-extern void fn_80037BAC(void*);
+extern s32 fn_80037BAC(void*);
 
 // .text:0x1F05C size:0x1E0
 void fn_1_1F05C(void) {
@@ -1102,7 +1102,7 @@ void fn_1_24410(void) {
 }
 
 extern const f32 lbl_1_rodata_77E8;
-extern void fn_80023F0C(void*, ChallengeTextureHeader*, s32, s32, s32, s32, s32, s32);
+extern s32 fn_80023F0C(void*, ChallengeTextureHeader*, s32, s32, s32, s32, s32, s32);
 extern void DCStoreRange(void*, u32);
 
 // NONMATCHING 91%: orig divides height/64, width/32 with srawi/addze (signed); ours srwi (CW knows u16 >= 0); loop regs rotate

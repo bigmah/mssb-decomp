@@ -2444,7 +2444,7 @@ void fn_2_272E8(MenuTableContext* menu, MenuItemState* item) {
 }
 
 extern u8 lbl_800E869C[];
-extern void determineIfMissionDescriptionIsShown(s32 index);
+extern s16 determineIfMissionDescriptionIsShown(s32 index);
 
 // fn_2_2AD30, size:0x1AC
 void fn_2_2AD30(MenuTableContext* menu, MenuItemState* item) {
@@ -2989,7 +2989,7 @@ void fn_2_2F8A4(MenuTableContext* menu, MenuItemState* item) {
 }
 
 extern u8 lbl_800E869C[];
-extern void determineIfMissionDescriptionIsShown(s32 index);
+extern s16 determineIfMissionDescriptionIsShown(s32 index);
 
 
 // fn_2_2CBCC, size:0x1D8

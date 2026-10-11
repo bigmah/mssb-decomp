@@ -13,7 +13,7 @@ extern LineScore lbl_80353A90;
 extern FielderView g_Fielders[];
 extern RunningLogicView g_RunningLogic;
 extern s16 lbl_3_data_5EDC[];
-extern void fn_3_6D564(s32 team, s32 rosterIdx, s32 delta);
+extern s32 fn_3_6D564(s32 team, s32 rosterIdx, s32 delta);
 extern void fn_3_9C794(void);
 extern void fn_3_162080(void);
 

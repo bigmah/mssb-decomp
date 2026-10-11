@@ -79,7 +79,7 @@ u32 fn_8003A538(void);
 
 void fn_8003A540(u32 value);
 
-void fn_8003A548(u32 value);
+void fn_8003A548(void (*callback)(void));
 
 void fn_8003A550(s32 type, Vec* pos, Vec* dir, u8 flag);
 

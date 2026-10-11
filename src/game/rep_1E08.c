@@ -3,11 +3,11 @@
 #include "Dolphin/GX.h"
 #include "Dolphin/mtxext.h"
 extern V2f lbl_3_data_111C8[];
-extern void fn_8003A688(f32, f32);
+extern void fn_8003A688(s32 index, f32 x, f32 y);
 
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_data_1146C[];
-extern void fn_80034E20(void*, void*, void*);
+extern void fn_80034E20(void* group, void* descs);
 extern u8* lbl_803CC1B8;
 extern void* (*lbl_3_data_11390[])(void*);
 extern u8 lbl_803C6CF8[];
@@ -20,9 +20,10 @@ extern s32 lbl_3_data_170D8[];
 extern const f32 lbl_3_rodata_1EC0;
 extern const f32 lbl_3_rodata_1E68;
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
-extern void fn_8006C43C(int);
-extern void fn_8006C3F0(int);
-extern void fn_8003A688(f32, f32);
+typedef void (*AnimEventCallback)(void* obj, f32 frame, s32 a, s32 b); // main/file_80069BDC.h
+extern void fn_8006C43C(AnimEventCallback cb);
+extern void fn_8006C3F0(AnimEventCallback cb);
+extern void fn_8003A688(s32 index, f32 x, f32 y);
 
 extern void fn_3_BDF74(void);
 
@@ -374,11 +375,12 @@ extern u8 g_GameLogic[];
 extern void fn_3_15FB84(u8, ...);
 extern void fn_3_169150(void);
 extern void fn_3_CB3AC(void);
-extern void fn_3_168CD8(void);
-extern void fn_3_16892C(void);
+struct CharActor;
+extern void fn_3_168CD8(struct CharActor* actor, f32 frame, s32 unused0, s32 unused1);
+extern void fn_3_16892C(struct CharActor* actor, f32 frame, s32 b, s32 unused);
 extern int fn_8004ABE8(int);
 extern int fn_8004ABE0(void);
-extern void playSoundEffect(int);
+extern u32 playSoundEffect(s32);
 extern f32 lbl_3_bss_9964;
 extern f32 lbl_3_data_12CB4;
 extern const f32 lbl_3_rodata_1E68;
@@ -469,8 +471,8 @@ void fn_3_BBF94(void) {
                     lbl_3_common_bss_35154[0x475], lbl_3_common_bss_35154[0x476]);
     }
     fn_3_169150();
-    fn_8006C43C((int)fn_3_168CD8);
-    fn_8006C3F0((int)fn_3_16892C);
+    fn_8006C43C((AnimEventCallback)fn_3_168CD8);
+    fn_8006C3F0((AnimEventCallback)fn_3_16892C);
     if (fn_8004ABE8(1) != 0) {
         fn_3_CB3AC();
         if (fn_8004ABE0() != 0) {
@@ -561,13 +563,13 @@ extern s32 lbl_3_bss_9968;
 extern s32 g_UNK_StadiumDetails[];
 extern int rand(void);
 extern void fn_3_90064(int);
-extern void fn_80028628(int, int, void*, int, void*, void*, int);
+extern void fn_80028628(Vec* from, Vec* to, void* prm, void* shape, u32* palette, void* spark, s32 flash);
 static u8 s_BF070a[8] = {0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0};
 static u8 s_BF070b[8][3] = {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x5C, 0x40, 0x16}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}};
 static V2f s_BF070c[0x36] = {{1.2f, 1.2f}, {1.2f, 1.2f}, {1.5f, 1.5f}, {0.6f, 0.6f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.4f, 1.4f}, {0.5f, 0.5f}, {0.5f, 0.5f}, {1.5f, 1.5f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.0f, 1.0f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.0f, 1.0f}, {1.4f, 1.4f}, {0.7f, 0.7f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.3f, 1.3f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}, {1.2f, 1.2f}};
 static u8 s_BF070e[0x274] = {1};
 static u8 s_BF070f[0x5864] = {1};
-static s32 s_BC6D8_a[14] = {1};
+static void* s_BC6D8_a[14] = {(void*)1}; // TrailShape* (TODO data: placeholder)
 static s32 s_BC6D8_b[14] = {1};
 static u8 s_BC6D8_pad1[0xC] = {1};
 static u32 s_BC6D8_c[14] = {1};
@@ -576,15 +578,15 @@ static u8 s_BC6D8_pad2[0x20] = {1};
 static s32 s_BC6D8_e[18] = {1};
 static s32 s_BC6D8_f[1] = {1};
 // 99%: only the null-test compare differs (original cmplwi, the switch form that gives the right beq/b shape emits cmpwi)
-void fn_3_BC6D8(int a, int b, int idx, int c) {
+void fn_3_BC6D8(Vec* a, Vec* b, int idx, int c) {
     s32 old = s_BC6D8_e[3];
-    u32 p;
+    u32* p;
     s_BC6D8_e[0] = g_UNK_StadiumDetails[1];
     s_BC6D8_f[0] = g_UNK_StadiumDetails[1];
     s_BC6D8_e[3] = (s32)((f32)old * ((f32)s_BC6D8_b[idx % 14] / lbl_3_rodata_1EC4));
-    p = s_BC6D8_c[idx];
-    switch (p) { case 0: p = (u32)&s_BC6D8_d[lbl_3_bss_9968 & 0xF]; break; }
-    fn_80028628(a, b, s_BC6D8_e, s_BC6D8_a[idx % 14], (void*)p, s_BC6D8_f, c);
+    p = (u32*)s_BC6D8_c[idx]; // TODO data: s_BC6D8_c holds u32* palettes (placeholder ints)
+    switch ((u32)p) { case 0: p = (u32*)&s_BC6D8_d[lbl_3_bss_9968 & 0xF]; break; }
+    fn_80028628(a, b, s_BC6D8_e, s_BC6D8_a[idx % 14], p, s_BC6D8_f, c);
     lbl_3_bss_9968 += rand();
     s_BC6D8_e[3] = old;
     if (idx == 13) {
@@ -598,7 +600,7 @@ void fn_3_BC6D8(int a, int b, int idx, int c) {
 
 // .text:0x000BC850 size:0x38 mapped:0x806FB8E4
 void fn_3_BC850(int a, int i) {
-    ((void (*)(int, f32, f32))fn_8003A688)(a, lbl_3_data_111C8[i].x, lbl_3_data_111C8[i].y);
+    fn_8003A688(a, lbl_3_data_111C8[i].x, lbl_3_data_111C8[i].y);
 }
 
 // .text:0x000BC888 size:0x198 mapped:0x806FB91C
@@ -1532,7 +1534,7 @@ void fn_3_BE1D4(void) {
 void fn_3_BEFF8(void) {
     u8* q = lbl_803CC1B8;
     *(u8**)lbl_3_common_bss_35154 = q;
-    fn_80034E20(q, lbl_3_data_1146C, lbl_3_common_bss_35154);
+    fn_80034E20(q, lbl_3_data_1146C);
     *(s16*)(q + 0x18) = 0;
     *(void**)lbl_803CC1B8 = fn_3_BE1D4;
     *(u32*)(lbl_3_common_bss_35154 + 0x3AC) = 0;
@@ -1592,8 +1594,8 @@ void fn_3_BF1AC(void) {
 
 // .text:0x000BF20C size:0x2C mapped:0x806FE2A0
 void fn_3_BF20C(void) {
-    fn_8006C43C(0);
-    fn_8006C3F0(0);
+    fn_8006C43C(NULL);
+    fn_8006C3F0(NULL);
 }
 
 // .text:0x000BF238 size:0x488 mapped:0x806FE2CC
@@ -1711,8 +1713,8 @@ void fn_3_BF238(void) {
 
 // .text:0x000BF6C0 size:0x1B8 mapped:0x806FE754
 extern void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx);
-extern void fn_8004B1B8(s32, void*);
-extern void fn_80035750(s32, s32, int);
+extern void fn_8004B1B8(u32 value);
+extern void fn_80035750(void* a, void* b, s16 c);
 extern void fn_3_6750C(s32);
 void fn_3_BF6C0(void) {
     s32 buf[8];
@@ -1724,8 +1726,8 @@ void fn_3_BF6C0(void) {
         fn_3_B9D68(s_BF070e, 6, *(void**)(lbl_3_common_bss_35154 + 8), buf);
         c = lbl_3_common_bss_35154;
         *(s32*)(lbl_3_common_bss_35154 + 4) = **(s32**)(c + 8);
-        fn_8004B1B8(**(s32**)(c + 8), *(void**)(c + 8));
-        fn_80035750(*(s32*)(*(u8**)(c + 8) + 4), *(s32*)(*(u8**)(c + 8) + 8), 4);
+        fn_8004B1B8(**(s32**)(c + 8));
+        fn_80035750(*(void**)(*(u8**)(c + 8) + 4), *(void**)(*(u8**)(c + 8) + 8), 4);
         t = ActorObjectInitTable(1);
         *(void**)(lbl_8036E548 + 0x70) = t;
         fn_800BDC88(t, 0, 0, ((ActorLayout**)*(u8**)(c + 8))[buf[4]], 0, 0);

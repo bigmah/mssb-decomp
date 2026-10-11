@@ -25,7 +25,7 @@ extern void fn_800B0A14_removeQueue(void* unused);
 extern void fn_8001F228(void);
 extern void fn_80062744(void);
 extern void fn_8001E474(void);
-extern void fn_80036C88(s32*, s32*);
+extern s32 fn_80036C88(s32*, s32*);
 extern void fn_800B0D28(s32*);
 extern u8 lbl_800E877C[]; // TODO type: backing storage for the SceneFlow at lbl_803CBBCC
 extern s32 lbl_2_data_0[];

@@ -25,7 +25,7 @@ extern f32 lbl_3_rodata_1DC8;
 extern f64 cos(f64);
 extern f64 sin(f64);
 extern int rand(void);
-extern void fn_3_8BBC4(void);
+extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* vel, s32 kind);
 extern f32 lbl_3_data_11178[];
 typedef struct { f32 x, y, z; } V3;
 
@@ -50,7 +50,7 @@ typedef struct StadiumObj {
     /* 0x3C */ u8 pad3C[8];
     /* 0x44 */ Mtx mtx;
     /* 0x74 */ ActorObject* actor;
-    /* 0x78 */ s32 unk78;
+    /* 0x78 */ void* unk78; // collision model
     /* 0x7C */ u8 pad7C[4];
     /* 0x80 */ void (*func)(int, int, void*);
     /* 0x84 */ void (*preDraw)(struct StadiumObj* obj);
@@ -110,7 +110,7 @@ struct DspObj {
     DspObj* next;
 };
 extern struct StadiumObj* lbl_3_bss_190C;
-extern void fn_8003A548(void*);
+extern void fn_8003A548(void (*callback)(void));
 extern u8 g_Ball[];
 typedef struct StadW78 {
     u8 pad[0x78];
@@ -121,10 +121,11 @@ typedef struct StadObj78 {
     s32 w78;
     u8 pad7C[0xE8 - 0x7C];
 } StadObj78;
-extern s32 fn_3_C823C(s32, s32);
-extern s32 fn_3_E4BE8(s32, s32);
+extern void* fn_3_C823C(s32 idx, Mtx out);
+extern void* fn_3_E4BE8(s32 idx, Mtx m);
+// TODO type (sta_c5, sta_c6): these return the collision model pointer and take the matrix
 extern s32 fn_3_F6504(s32, s32);
-extern s32 fn_3_E751C(s32, s32);
+extern s32 fn_3_E751C(s32, Mtx);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_8036E548[];
@@ -141,11 +142,11 @@ extern void fn_3_C1964(void);
 extern void fn_3_16E328(void);
 extern void fn_800528B4(void);
 extern void fn_8001E474(void);
-extern void fn_8003A8A0();
+extern void fn_8003A8A0(void* model, Mtx viewMtx, s32 unused);
 extern f32 lbl_3_rodata_1DD4;
 extern u8 lbl_3_common_bss_350E4[];
-extern u32 lbl_3_bss_1904;
-extern void fn_800ACFB0(u32);
+extern void* lbl_3_bss_1904;
+extern void fn_800ACFB0(void* block);
 extern void* _OSAllocFromHeap(s32, s32);
 
 typedef struct StadExtra {
@@ -179,14 +180,14 @@ typedef struct StadObjList {
 } StadObjList;
 
 // .text:0x000B7FC8 size:0x108 mapped:0x806F705C
-void fn_3_B7FC8(void* a, void* b) {
+s32 fn_3_B7FC8(s32 a, s32 b) {
     V3 v = *(V3*)lbl_3_rodata_1DB4;
     f32 ang;
     ang = lbl_3_rodata_1DC0 * lbl_3_data_11178[rand() % 5];
     v.x = lbl_3_rodata_1DC4 * (f32)cos(ang) + v.x;
     v.y = v.y + lbl_3_rodata_1DC8;
     v.z = lbl_3_rodata_1DC4 * (f32)sin(ang) + v.z;
-    ((void (*)(void*, V3*, int, void*))fn_3_8BBC4)(a, &v, 0, b);
+    return fn_3_8BBC4(a, (f32*)&v, NULL, b);
 }
 
 // .text:0x000B80D0 size:0xB4 mapped:0x806F7164
@@ -263,7 +264,7 @@ void fn_3_B8298(void) {
         }
         off += 0xE8;
     }
-    fn_8003A548(0);
+    fn_8003A548(NULL);
 }
 
 // .text:0x000B8414 size:0x50 mapped:0x806F74A8
@@ -326,8 +327,8 @@ void fn_3_B8574(void) {
 }
 
 // .text:0x000B85A8 size:0x34 mapped:0x806F763C
-u32 fn_3_B85A8(int idx, u32* out) {
-    *out = *(u32*)(lbl_3_common_bss_350E4 + 0x44) + (*(u16*)(*(u8**)(lbl_3_common_bss_350E4 + 0x40) + idx * 2)) * 4;
+u32 fn_3_B85A8(int idx, u32** out) {
+    *out = *(u32**)(lbl_3_common_bss_350E4 + 0x44) + *(u16*)(*(u8**)(lbl_3_common_bss_350E4 + 0x40) + idx * 2);
     return (*(u32**)(lbl_3_common_bss_350E4 + 0x3C))[idx];
 }
 
@@ -598,19 +599,19 @@ void fn_3_B8C08(MtxPtr view) {
 
 // .text:0x000B902C size:0x60 mapped:0x806F80C0
 void fn_3_B902C(void) {
-    if (lbl_3_bss_1904 != 0) {
-        memcpy(*(void**)lbl_3_common_bss_350E4, (void*)lbl_3_bss_1904, *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
+    if (lbl_3_bss_1904 != NULL) {
+        memcpy(*(void**)lbl_3_common_bss_350E4, lbl_3_bss_1904, *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
         fn_800ACFB0(lbl_3_bss_1904);
-        lbl_3_bss_1904 = 0;
+        lbl_3_bss_1904 = NULL;
     }
 }
 
 // .text:0x000B908C size:0x98 mapped:0x806F8120
 void fn_3_B908C(void) {
-    if (lbl_3_bss_1904 == 0) {
+    if (lbl_3_bss_1904 == NULL) {
         u8* c = lbl_3_common_bss_350E4;
-        lbl_3_bss_1904 = (u32)_OSAllocFromHeap(0x20, *(s32*)(c + 0x30) * 0xE8);
-        memcpy((void*)lbl_3_bss_1904, *(void**)lbl_3_common_bss_350E4, *(s32*)(c + 0x30) * 0xE8);
+        lbl_3_bss_1904 = _OSAllocFromHeap(0x20, *(s32*)(c + 0x30) * 0xE8);
+        memcpy(lbl_3_bss_1904, *(void**)lbl_3_common_bss_350E4, *(s32*)(c + 0x30) * 0xE8);
     }
     memcpy(*(void**)lbl_3_common_bss_350E4, *(void**)(lbl_3_common_bss_350E4 + 4), *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
     *(s16*)(lbl_3_common_bss_350E4 + 0x66) = *(s16*)(lbl_3_common_bss_350E4 + 0x68);
@@ -635,7 +636,7 @@ void processStadiumObjectFunction(int stadium, void* a, int b, void* c) {
 }
 
 // .text:0x000B91C8 size:0x1D4 mapped:0x806F825C
-s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
+void* fn_3_B91C8(s32 type, s32 idx0, Mtx arg) {
     s32 idx = idx0;
     if (type == 1) {
         return fn_3_C823C(idx, arg);
@@ -644,7 +645,7 @@ s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
         if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
             return 0;
         }
-        CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, (MtxPtr)arg); // TODO type: arg is a matrix pointer
+        CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, arg);
         return sStadiumMgr.objs[idx].unk78;
     }
     if (type == 3) {
@@ -657,19 +658,19 @@ s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
         if ((*(s16*)(g_Ball + 0x1B7A) >= 2) | (g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
             return 0;
         }
-        CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, (MtxPtr)arg); // TODO type: arg is a matrix pointer
+        CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, arg);
         return sStadiumMgr.objs[idx].unk78;
     }
     if (type == 5) {
         if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
             return 0;
         }
-        return fn_3_F6504(idx, arg);
+        return (void*)fn_3_F6504(idx, (s32)arg);
     }
     if (type == 6) {
-        return fn_3_E751C(idx, arg);
+        return (void*)fn_3_E751C(idx, arg);
     }
-    CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, (MtxPtr)arg); // TODO type: arg is a matrix pointer
+    CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, arg);
     return sStadiumMgr.objs[idx].unk78;
 }
 
@@ -686,7 +687,7 @@ void fn_3_B93C4(void) {
 }
 
 // .text:0x000B93C8 size:0x4 mapped:0x806F845C
-void fn_3_B93C8(void) {
+void fn_3_B93C8(s32 unused) {
     return;
 }
 
@@ -769,41 +770,41 @@ void fn_3_B95EC(void) {
     }
     if (g_d_GameSettings.minigamesEnabled != 0) {
         fn_8001B200();
-        if (*(u32*)(lbl_3_common_bss_350E4 + 0x14) != 0) {
-            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x14));
+        if (*(void**)(lbl_3_common_bss_350E4 + 0x14) != 0) {
+            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x14));
         }
-        if (*(u32*)(lbl_3_common_bss_350E4 + 0x48) != 0) {
-            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x48));
+        if (*(void**)(lbl_3_common_bss_350E4 + 0x48) != 0) {
+            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x48));
         }
-        if (*(u32*)(lbl_3_common_bss_350E4 + 0x4) != 0) {
-            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x4));
+        if (*(void**)(lbl_3_common_bss_350E4 + 0x4) != 0) {
+            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x4));
         }
-        if (*(u32*)(lbl_3_common_bss_350E4 + 0x0) != 0) {
-            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x0));
+        if (*(void**)(lbl_3_common_bss_350E4 + 0x0) != 0) {
+            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x0));
         }
         d = lbl_8036E548;
-        if (*(u32*)(d + 0x6C) != 0) {
+        if (*(void**)(d + 0x6C) != 0) {
             n = lbl_3_common_bss_350E4[0x6D];
             while (n != 0) {
                 fn_800B4278(*(void**)(*(u8**)(d + 0x6C) + n * 0x90 - 0x5C));
                 n--;
             }
-            fn_800ACFB0(*(u32*)(d + 0x6C));
-            *(u32*)(d + 0x6C) = 0;
+            fn_800ACFB0(*(void**)(d + 0x6C));
+            *(void**)(d + 0x6C) = 0;
         }
-        if (*(u32*)(lbl_3_common_bss_350E4 + 0x34) != 0) {
-            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x34));
+        if (*(void**)(lbl_3_common_bss_350E4 + 0x34) != 0) {
+            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x34));
         }
         c = lbl_3_common_bss_350E4;
         n = 4;
         while (n != 0) {
-            if (((u32*)(c + 0x1C))[n] != 0) {
-                fn_800ACFB0(((u32*)(c + 0x1C))[n]);
+            if (((void**)(c + 0x1C))[n] != 0) {
+                fn_800ACFB0(((void**)(c + 0x1C))[n]);
             }
             n--;
         }
-        if (*(u32*)(lbl_3_common_bss_350E4 + 0x38) != 0) {
-            fn_800ACFB0(*(u32*)(lbl_3_common_bss_350E4 + 0x38));
+        if (*(void**)(lbl_3_common_bss_350E4 + 0x38) != 0) {
+            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x38));
         }
         lbl_8036E548[0x3088] = 0;
         fn_3_C1964();

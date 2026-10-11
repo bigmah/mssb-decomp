@@ -67,9 +67,9 @@ typedef struct EffectData {
 
 void fn_3_168414(EffectNode* node);
 void fn_3_168704(void);
-void fn_3_16892C(CharActor* actor, f32 frame, s32 b);
+void fn_3_16892C(CharActor* actor, f32 frame, s32 b, s32 unused); // AnimEventCallback (fn_8006C3F0)
 void fn_3_168A6C(EffectNode* node);
-void fn_3_168CD8(CharActor* actor, f32 frame);
+void fn_3_168CD8(CharActor* actor, f32 frame, s32 unused0, s32 unused1); // AnimEventCallback (fn_8006C43C)
 void fn_3_168DFC(void);
 void fn_3_168FA0(s32 actor, s32 b);
 

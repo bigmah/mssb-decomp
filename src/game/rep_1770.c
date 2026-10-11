@@ -15,7 +15,7 @@ extern s16 lbl_3_data_5F3C[4];
 extern u8 lbl_3_data_C22C[];
 extern u8 lbl_3_data_D378[];
 extern u8 lbl_3_data_D4F8[];
-extern void playSoundEffect(int);
+extern u32 playSoundEffect(s32);
 
 // .text:0x000993A8 size:0x3C4 mapped:0x806D843C
 void fn_3_993A8(void) {

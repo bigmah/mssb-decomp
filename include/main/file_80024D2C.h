@@ -175,7 +175,7 @@ void fn_80025C58(ShapeData* shape, ShapeModel** model);
 void fn_80025EEC(ShapeAnimPlayer* p, s32 table, s32 entry);
 void fn_80025FFC(void* model, ShapeAnimPlayer* p);
 
-void fn_80026130(void);
+void fn_80026130(s32 unused0, void* unused1, f32 unused2); // empty; challenge passes (0, data, f32)
 
 void fn_80025DDC(u8* h);
 

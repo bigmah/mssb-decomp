@@ -122,7 +122,7 @@ void fn_3_258(void) {
 extern void fn_800BF038(int);
 extern void fn_3_C0824(void);
 extern void fn_3_5AE9C(void);
-extern void fn_80036C88(void*, void*);
+extern s32 fn_80036C88(void*, void*);
 extern void fn_800B0D28(void*);
 extern void fn_8004B270(void);
 extern u8 lbl_3_data_118[];
