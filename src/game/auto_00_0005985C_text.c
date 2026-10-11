@@ -17,6 +17,7 @@ typedef struct DiskFileEntry {
 typedef void (*AramQueueCallback)(DiskFileEntry* entry, void* dst, void* user);
 extern s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
 extern DiskFileEntry lbl_800F1D78[];
+extern DiskFileEntry lbl_3_data_3D60;
 extern DiskFileEntry lbl_3_data_3D70;
 extern u8 lbl_3_data_3D80[0x430];
 extern void fn_800216F8(u8 group, s32 (*callback)(void));
@@ -32,6 +33,11 @@ extern void fn_80019A60(void);
 extern s32 fn_3_1665E4(void);
 extern s32 fn_3_106E50(void);
 extern void fn_3_106DFC(void);
+extern s32 fn_3_90764(void);
+extern void fn_8001A25C(void);
+extern s32 fn_3_BF878(void);
+extern s32 fn_3_11D6A0(void);
+extern u8 lbl_3_common_bss_35154[];
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h, which can't be
 // included here next to main/file_8004207C.h: their fn_80024D2C prototypes clash).
@@ -1546,3 +1552,117 @@ void fn_3_59C2C(void) {
         break;
     }
 }
+
+// fn_3_59F40, size:0x34C
+// NONMATCHING 92%: the original reaches lbl_3_data_3D60/3D80 (this unit's .data) through one pooled base
+// (nmverify flags lbl_3_data_3D80 for that reason)
+#if NONMATCHING
+void fn_3_59F40(void) {
+    SceneTask* task = lbl_803CC1B8;
+    switch (unkSimulationRelatedStruct._04) {
+    case 0:
+        task->_10 = 0;
+        lbl_3_common_bss_32724[0xD8] = 0;
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 1:
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            fn_800216F8(0x2D, fn_3_90798);
+        } else {
+            fn_800216F8(0x2E, fn_3_90764);
+        }
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 2:
+        if (task->_10 != 0) {
+            task->_10 = 0;
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 3:
+        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D60, 0, 0, 0); // TODO type: pointer in u32
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 4:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            fn_3_906FC();
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 5:
+        fn_8001CE74();
+        lbl_8036E548._2D7D = 0;
+        fn_8001A25C();
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 6:
+        if (lbl_8036E548._2D7D != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 7:
+        if (fn_3_BF878() != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 8:
+        if (lbl_3_common_bss_35154[0x3B0] == 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 9:
+        if (fn_3_11D6A0() != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 10:
+        fn_3_106E50();
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 11:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            fn_3_106DFC();
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 12:
+        // TODO type: static ARAMTransfer prototype returns s32 (main/file_800A6870.h has void*)
+        lbl_80366B18.tables[6] = (MsgTable*)ARAMTransfer(lbl_3_data_3D80 + 0x400, 0, 1, 0);
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 13:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            fn_800111B4(lbl_80366B18.tables[6]);
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 14:
+        if (fn_80035838(lbl_3_data_3D80, 2) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 15:
+        if (fn_80035838(lbl_3_data_3D80 + 0x30, 3) != 0) {
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                unkSimulationRelatedStruct._04 = 16;
+            } else {
+                unkSimulationRelatedStruct._04 = 17;
+            }
+        }
+        break;
+    case 16:
+        if (fn_80035838(lbl_3_data_3D80 + 0x40, 0xE) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 17:
+        if (fn_80035838(lbl_3_data_3D80 + 0x50, 0x14) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 18:
+        task->func = fn_3_5AE0C;
+        break;
+    }
+}
+#endif
