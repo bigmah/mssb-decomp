@@ -1980,3 +1980,28 @@ void fn_1_15CE0(void) {
         ch_5F71 = 1;
     }
 }
+
+extern f32 lbl_1_data_AD0C[3];
+
+// .text:0x126CC size:0x154
+// NONMATCHING ~85%: same instructions, float/int load scheduling differs (49 diff lines)
+#if NONMATCHING
+void fn_1_126CC(void) {
+    u8* row = lbl_8036E548 + ch_5F73 * 0x27C + 0xC04;
+    f32 x = *(f32*)(row + 0x34);
+    f32 y = *(f32*)(row + 0x38);
+    f32 z = *(f32*)(row + 0x3C);
+    x += (f32)((s8*)&lbl_803C77B8)[0x10] / 768.0f;
+    z += (f32)((s8*)&lbl_803C77B8)[0x11] / 768.0f;
+    y += (f32)((u8*)&lbl_803C77B8)[0x15] / 768.0f;
+    y -= (f32)((u8*)&lbl_803C77B8)[0x14] / 768.0f;
+    lbl_1_data_AD0C[1] -= (f32)((s8*)&lbl_803C77B8)[0x12] * 0.001953125f;
+    lbl_1_data_AD0C[0] -= (f32)((s8*)&lbl_803C77B8)[0x13] * 0.001953125f;
+    *(f32*)(row + 0x34) = x;
+    *(f32*)(row + 0x38) = y;
+    *(f32*)(row + 0x3C) = z;
+    *(f32*)(row + 0x40) = lbl_1_data_AD0C[0];
+    *(f32*)(row + 0x44) = lbl_1_data_AD0C[1];
+    *(f32*)(row + 0x48) = lbl_1_data_AD0C[2];
+}
+#endif
