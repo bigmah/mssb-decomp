@@ -217,8 +217,8 @@ void LITXForm(Light* light, MtxPtr view) {
 }
 
 // .text:0x800BD3A0 size:0xC
-void LITInitColor(void) {
-    return;
+void LITInitColor(Light* light, GXColor* color) {
+    light->color = *color;
 }
 
 // .text:0x800BD3AC size:0x10
