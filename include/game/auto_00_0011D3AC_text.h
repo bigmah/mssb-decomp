@@ -31,7 +31,10 @@ typedef struct MinigameActorData {
 typedef struct MinigameCharMgrAssets {
     /*0x0000*/ u8 _0000[0x2D9C];
     /*0x2D9C*/ u32* file;                    // offset table at the start of the loaded file
-    /*0x2DA0*/ MinigameActorData actors[27];
+    /*0x2DA0*/ union {
+        void* ptr[81]; // relocated file entries 0..80
+        MinigameActorData actor[27];
+    } data;
     /*0x2EE4*/ u8 _2EE4[0x3078 - 0x2EE4];
     /*0x3078*/ s16 _3078;
 } MinigameCharMgrAssets;
@@ -69,7 +72,7 @@ typedef struct PasswordTask {
     /*0x1E*/ u16 _1E;
     /*0x20*/ u16 bits;
     /*0x22*/ u16 key;
-    /*0x24*/ s32 sfx;     // roulette spin voice, -1: none
+    /*0x24*/ u32 sfx;     // roulette spin voice, 0xFFFFFFFF: none
 } PasswordTask;
 
 // Score-board task: same header, per-player "counting" flags at 0x24.

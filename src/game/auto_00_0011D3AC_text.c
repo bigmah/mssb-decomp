@@ -27,13 +27,15 @@ extern void fn_3_109DE0(PasswordRecord* out);
 extern s32 fn_3_107988(u32 pick);
 extern s32 fn_3_107C88(void);
 extern u8 fn_3_107CD0(void);
-extern s32 fn_3_90064(s32 id);
-extern s32 sndFXKeyOff(s32 voice);
-extern s32 sndFXCtrl(s32 voice, u8 ctrl, u8 value);
+extern u32 fn_3_90064(s32 id);
+extern s32 sndFXKeyOff(u32 voice);
+extern s32 sndFXCtrl(u32 voice, u8 ctrl, u8 value);
 extern s32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
 
 #define MG11D3 ((MG11D3View*)&g_Minigame)
 #define SPRITE(task, n) (lbl_80371C30[(task)->baseIdx + (n)].obj)
+// Sprite k + i of a task; this operand order is what the original compiles to.
+#define SPRITE_I(task, k, i) (lbl_80371C30[(k) + (task)->baseIdx + (i)].obj)
 
 // .text:0x0011D3AC size:0x2F4 mapped:0x8075C440
 void fn_3_11D3AC(void) {
@@ -66,8 +68,88 @@ s32 fn_3_11D6A0(void) {
 }
 
 // .text:0x0011D780 size:0x34C mapped:0x8075C814
+// Password display task.
 void fn_3_11D780(void) {
-    return;
+    PasswordTask* task = lbl_803CC1B8;
+    u8 raw[8];
+    u8 code[16];
+    u32 i;
+
+    if (lbl_3_common_bss_32724.quit != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (g_Minigame._1A3C != 0) {
+        if (g_GameLogic._125 == 4) {
+            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            return;
+        }
+        if (g_GameLogic.gameStatus != 0x24) {
+            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            return;
+        }
+    } else {
+        if (g_GameLogic._125 == 3) {
+            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            return;
+        }
+        if (g_GameLogic.gameStatus != 0xE) {
+            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            return;
+        }
+    }
+    if (g_Minigame._1907 != 1) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, lbl_3_data_26254);
+        if (g_Minigame._1A3C != 0) {
+            SPRITE(task, 0)->anim = 0xBF;
+            task->_1E = 3;
+        } else {
+            SPRITE(task, 0)->anim = 0xBE;
+            task->_1E = 7;
+        }
+        task->bits = random_fn_3_9EE24(0x100);
+        task->key = random_fn_3_9EE24(0x1A);
+        task->state = 1;
+        // fallthrough
+    case 1:
+        fn_3_11DACC(code, raw, task->bits, task->key);
+        i = 0;
+        do {
+            fn_800363D8(task, i + 2, 1, 0xBD, code[i]);
+            fn_800363D8(task, i + 2, 2, 0xBD, code[i]);
+            i++;
+        } while (i < 16);
+        task->state = 2;
+        break;
+    case 2:
+        if (g_GameLogic._125 == task->_1E) {
+            SPRITE(task, 0)->visible = 1;
+            SPRITE(task, 0)->frame = 0;
+            SPRITE(task, 1)->visible = 1;
+            SPRITE(task, 1)->frame = 0;
+            i = 0;
+            do {
+                SPRITE_I(task, 2, i)->frame = 0;
+                i++;
+            } while (i < 16);
+            task->state = 3;
+        }
+        break;
+    case 3:
+        if (g_GameLogic._125 != task->_1E) {
+            SPRITE(task, 0)->visible = 4;
+            SPRITE(task, 0)->frame = 0x140000;
+            SPRITE(task, 1)->visible = 4;
+            task->state = 2;
+        }
+        break;
+    }
 }
 
 // .text:0x0011DACC size:0x2F8 mapped:0x8075CB60
