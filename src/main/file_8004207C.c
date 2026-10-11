@@ -112,9 +112,101 @@ extern GXPerf1 lbl_800FB554[];
     v = scale * (f32)(field);                \
     (field) = v > 100 ? 100 : v
 
+// NONMATCHING ~95%: chemistry loop walks a pointer instead of the original unrolled base+0x3B offsets
+#if NONMATCHING
 void capApplicationFunction(void) {
-    return;
+    s32 team;
+    s32 i;
+    s32 j;
+    u8 bonus = 0;
+    s32 barBonus = 0;
+    s32 v;
+    f32 scale;
+    CharacterStats* c;
+
+    for (team = 0; team < 2; team++) {
+        for (i = 0; i < 9; i++) {
+            c = &inMemRoster[team][i];
+            if (team == 0) {
+                scale = (100.0f + starMissionMenu(c->stats.CharID)) / 100.0f;
+            } else {
+                scale = (100.0f + fn_8006CA9C()) / 100.0f;
+            }
+            SCALE_STAT(c->stats.SlapContactSize);
+            SCALE_STAT(c->stats.ChargeContactSize);
+            SCALE_STAT(c->stats.SlapHitPower);
+            SCALE_STAT(c->stats.ChargeHitPower);
+            SCALE_STAT(c->stats.BuntingContactSize);
+            SCALE_STAT(c->stats.Speed);
+            SCALE_STAT(c->stats.ThrowingArm);
+            c->stats.CurveBallSpeed += 10;
+            if (c->stats.CurveBallSpeed > 200) {
+                c->stats.CurveBallSpeed = 200;
+            }
+            c->stats.FastBallSpeed += 10;
+            if (c->stats.FastBallSpeed > 200) {
+                c->stats.FastBallSpeed = 200;
+            }
+            SCALE_STAT(c->stats.Curve);
+            SCALE_STAT(c->stats.curveControl);
+            if (team == 0) {
+                u8* chem = (u8*)&c->chemistry;
+                bonus = gChallengeSave.chemistryBonus;
+                for (j = 0; j < (s32)sizeof(ChemistryTable); j++) {
+                    chem[j] += bonus * 5;
+                    if (chem[j] > 100) {
+                        chem[j] = 100;
+                    }
+                }
+            }
+            switch (bonus) {
+            case 0:
+                barBonus = -1;
+                break;
+            case 1:
+                barBonus = 0;
+                break;
+            case 2:
+                barBonus = 1;
+                break;
+            case 3:
+                if (starMissionCompletionTracker[c->stats.CharID].variantClassification == 0 ||
+                    starMissionCompletionTracker[c->stats.CharID].variantClassification == 1) {
+                    barBonus = 2;
+                } else {
+                    barBonus = 1;
+                }
+                break;
+            case 4:
+                if (starMissionCompletionTracker[c->stats.CharID].variantClassification == 0) {
+                    barBonus = 3;
+                } else if (starMissionCompletionTracker[c->stats.CharID].variantClassification == 1) {
+                    barBonus = 2;
+                } else {
+                    barBonus = 1;
+                }
+                break;
+            }
+            c->stats.BattingStatBar += barBonus;
+            if (c->stats.BattingStatBar > 10) {
+                c->stats.BattingStatBar = 10;
+            }
+            c->stats.PitchingStatBar += barBonus;
+            if (c->stats.PitchingStatBar > 10) {
+                c->stats.PitchingStatBar = 10;
+            }
+            c->stats.RunningStatBar += barBonus;
+            if (c->stats.RunningStatBar > 10) {
+                c->stats.RunningStatBar = 10;
+            }
+            c->stats.FieldingStatBar += barBonus;
+            if (c->stats.FieldingStatBar > 10) {
+                c->stats.FieldingStatBar = 10;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x80042598 size:0x144
 s32 fn_80042598(u8 team, s32 slot) {
