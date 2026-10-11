@@ -310,8 +310,28 @@ void fn_80014D4C(void) {
 }
 
 // .text:0x80014E50 size:0xF0
-void fn_80014E50(void) {
-    return;
+s32 fn_80014E50(s32 id) {
+    s32 file;
+
+    if (id < 0) {
+        return 1;
+    }
+    if (lbl_8036E548.preload[2].state <= 1) {
+        file = id * 0x13;
+        if ((s32)lbl_803C6CF8.transferDone != 1) {
+            lbl_8036E548.preload[2].state = 1;
+            return 0;
+        }
+        if (fn_8002204C(id, lbl_8036E548.preload[2].buffer) == 0) {
+            ARAMTransfer(&lbl_803CB790[file], lbl_8036E548.preload[2].buffer, 0, 0);
+        }
+        lbl_8036E548.preload[2].state = 2;
+    } else if (lbl_803716B8._1E8 == 0 && (s32)lbl_803C6CF8.transferDone == 1) {
+        lbl_8036E548.preload[2].id = id;
+        lbl_8036E548.preload[2].state = 0;
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x80014F40 size:0xCC
