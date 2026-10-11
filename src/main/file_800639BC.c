@@ -385,8 +385,21 @@ void fn_80068838(void) {
 }
 
 // .text:0x800697B0 size:0xA4
-void fn_800697B0(void) {
-    return;
+BOOL fn_800697B0(void) {
+    switch (lbl_803CBD24) {
+    case 0:
+        lbl_80366B18.tables[1] = ARAMTransfer(&lbl_80109044, NULL, 1, 0);
+        lbl_803CBD24++;
+        break;
+    case 1:
+        if ((s8)lbl_803C6CF8._715 == 1) {
+            fn_800111B4(lbl_80366B18.tables[1]);
+            lbl_803CBD24 = 0;
+            return FALSE;
+        }
+        break;
+    }
+    return TRUE;
 }
 
 // .text:0x80069854 size:0xA4
