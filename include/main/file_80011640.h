@@ -4,6 +4,7 @@
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
 #include "C3/control.h"
+#include "main/file_80024D2C.h"
 
 // model.c: character models, their parts data and animation state.
 
@@ -25,24 +26,25 @@ typedef struct CharModel {
 
 // One loaded model and its root control.
 typedef struct CharSlot {
-    /*0x00*/ u8 _00[0x34];
-    /*0x34*/ CharModel* model;
-    /*0x38*/ u8 _38[0xC];
-    /*0x44*/ Control ctrl;
-    /*0x80*/ u8 _80[0x90 - 0x44 - sizeof(Control)];
+    /*0x00*/ CharModel* model;
+    /*0x04*/ u8 _04[0xC];
+    /*0x10*/ Control ctrl;
+    /*0x4C*/ u8 _4C[0x68 - 0x10 - sizeof(Control)];
+    /*0x68*/ void* _68;
+    /*0x6C*/ u8 _6C;
+    /*0x6D*/ u8 _6D[0x90 - 0x6D];
 } CharSlot; // size: 0x90
 
-// Character parts data: a file table plus a model slot.
+typedef struct CharSlotList {
+    /*0x00*/ u16 count;
+    /*0x02*/ u8 _02[0x32];
+    /*0x34*/ CharSlot slots[1];
+} CharSlotList;
+
+// Character parts data: a file table plus a shape animation player.
 typedef struct CharPart {
     /*0x00*/ void** files;
-    /*0x04*/ void* _04;
-    /*0x08*/ void* _08;
-    /*0x0C*/ void* _0C;
-    /*0x10*/ u8 _10[0x20];
-    /*0x30*/ void* _30;
-    /*0x34*/ u8 _34[0x28];
-    /*0x5C*/ s8 _5C;
-    /*0x5D*/ u8 _5D[0x3];
+    /*0x04*/ ShapeAnimPlayer player; // player.curIdx at 0x5C
     /*0x60*/ u8 slot;
     /*0x61*/ s8 _61;
     /*0x62*/ u8 _62[0x2];
@@ -88,11 +90,11 @@ typedef struct CharActor {
 // lbl_8036E548
 typedef struct CharMgr {
     /*0x0000*/ u8 _0000[0x60];
-    /*0x0060*/ CharSlot* slots;
-    /*0x0064*/ CharSlot* slots64;
-    /*0x0068*/ CharSlot* slots68;
+    /*0x0060*/ CharSlotList* slots;
+    /*0x0064*/ CharSlotList* slots64;
+    /*0x0068*/ CharSlotList* slots68;
     /*0x006C*/ u8 _006C[0x13C - 0x6C];
-    /*0x013C*/ CharSlot* partSlots;
+    /*0x013C*/ CharSlotList* partSlots;
     /*0x0140*/ CharParts partsPool[13];
     /*0x0C04*/ CharActor actors[13];
     /*0x2C50*/ CharActor* active[13];

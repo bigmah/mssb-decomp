@@ -92,7 +92,7 @@ static inline void detachOwnedPart(s32 index) {
     actor = lbl_8036E548.active[index];
     if (actor != NULL && (part = actor->part) != NULL && actor->index == index) {
         part->_61 = -1;
-        part->_5C = -2;
+        part->player.curIdx = -2;
         lbl_8036E548.active[index]->part = NULL;
     }
 }
@@ -105,8 +105,8 @@ static inline void detachOwnedParts(s32 index) {
     if (actor != NULL && (parts = actor->parts) != NULL && actor->index == index) {
         parts->_D1 = parts->_D0;
         parts->_D0 = -1;
-        parts->part[0]._5C = -2;
-        parts->part[1]._5C = -2;
+        parts->part[0].player.curIdx = -2;
+        parts->part[1].player.curIdx = -2;
         lbl_8036E548.active[index]->parts = NULL;
     }
 }
@@ -156,15 +156,15 @@ void fn_80011B64(s32 index) {
         part = actor->part;
         if (part != NULL) {
             part->_61 = -1;
-            part->_5C = -2;
+            part->player.curIdx = -2;
             lbl_8036E548.active[index]->part = NULL;
         }
         parts = lbl_8036E548.active[index]->parts;
         if (parts != NULL) {
             parts->_D1 = parts->_D0;
             parts->_D0 = -1;
-            parts->part[0]._5C = -2;
-            parts->part[1]._5C = -2;
+            parts->part[0].player.curIdx = -2;
+            parts->part[1].player.curIdx = -2;
             lbl_8036E548.active[index]->parts = NULL;
         }
     }
@@ -182,15 +182,15 @@ void fn_80011BE4(s32 index) {
         part = actor->part;
         if (part != NULL) {
             part->_61 = -1;
-            part->_5C = -2;
+            part->player.curIdx = -2;
             lbl_8036E548.active[index]->part = NULL;
         }
         parts = lbl_8036E548.active[index]->parts;
         if (parts != NULL) {
             parts->_D1 = parts->_D0;
             parts->_D0 = -1;
-            parts->part[0]._5C = -2;
-            parts->part[1]._5C = -2;
+            parts->part[0].player.curIdx = -2;
+            parts->part[1].player.curIdx = -2;
             lbl_8036E548.active[index]->parts = NULL;
         }
         lbl_8036E548.active[index]->_25C = 0;
@@ -451,15 +451,14 @@ void fn_8001B2D0(void) {
 // .text:0x8001B308 size:0x54
 void fn_8001B308(s32 index, s32 enable) {
     CharActor* actor = lbl_8036E548.active[index];
-    CharModel** model;
+    CharSlot* slot;
 
     if (actor != NULL) {
-        // TODO type: the original stores 0x68 bytes past &slot->model.
-        model = &lbl_8036E548.slots[actor->modelIndex].model;
+        slot = &lbl_8036E548.slots->slots[actor->modelIndex];
         if (enable == 0) {
-            *(void**)((u8*)model + 0x68) = NULL;
+            slot->_68 = NULL;
         } else {
-            *(void**)((u8*)model + 0x68) = actor->_072;
+            slot->_68 = actor->_072;
         }
     }
 }
@@ -623,7 +622,7 @@ void fn_8001D074(s32 index, s32 enable) {
     CharModel* model;
 
     if (actor != NULL) {
-        model = lbl_8036E548.slots[actor->modelIndex].model;
+        model = lbl_8036E548.slots->slots[actor->modelIndex].model;
         if (enable != 0) {
             model->flags |= 4;
         } else {
@@ -634,17 +633,17 @@ void fn_8001D074(s32 index, s32 enable) {
 
 // .text:0x8001D0D0 size:0x40
 void fn_8001D0D0(s32 index, f32 scale) {
-    CTRLSetScale(&lbl_8036E548.slots68[index].ctrl, scale, scale, scale);
+    CTRLSetScale(&lbl_8036E548.slots68->slots[index].ctrl, scale, scale, scale);
 }
 
 // .text:0x8001D110 size:0x38
 void fn_8001D110(s32 index, f32 x, f32 y, f32 z) {
-    CTRLSetScale(&lbl_8036E548.slots68[index].ctrl, x, y, z);
+    CTRLSetScale(&lbl_8036E548.slots68->slots[index].ctrl, x, y, z);
 }
 
 // .text:0x8001D148 size:0x38
 void fn_8001D148(s32 index, f32 x, f32 y, f32 z) {
-    CTRLSetScale(&lbl_8036E548.slots64[index].ctrl, x, y, z);
+    CTRLSetScale(&lbl_8036E548.slots64->slots[index].ctrl, x, y, z);
 }
 
 // .text:0x8001D180 size:0x154
