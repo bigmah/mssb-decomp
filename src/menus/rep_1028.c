@@ -23,6 +23,7 @@ typedef struct {
 #include <math.h>
 
 #include "static/UnknownHomes_Static.h"
+#include "main/file_800A7C08.h"
 extern void* lbl_2_bss_340140[];
 extern u8* lbl_803CC1B8;
 extern u8* lbl_2_bss_1A824C[];
@@ -1269,3 +1270,159 @@ void fn_2_91C4C(u8* object) {
         }
     }
 }
+
+static inline void setupEffect(s32 index, s16 type) {
+    if (lbl_2_bss_3401BC != NULL) {
+        s32 resource;
+        MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+        u8 valid;
+        resource = ((s32*)((u8*)lbl_2_bss_3401BC + 0xC))[index];
+        effect->resource = resource;
+        effect->type = type;
+        valid = resource != 0;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->enabled = 1;
+        effect->flag5A = effect->flag59 = valid;
+        effect->f60 = lbl_2_rodata_1080;
+        effect->f54 = lbl_2_rodata_1078;
+        effect->flag5A = 1;
+        effect->f5C = lbl_2_rodata_1080;
+        effect->flag59 = 1;
+        effect->mode = 3;
+    }
+}
+
+// .text:0x90CD0 size:0xDC
+void fn_2_90CD0(u8* object) {
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    setupEffect(*(s32*)(object + 0x78), 0);
+    *(s16*)(object + 0x9C) = 0x1C;
+    *(s16*)(object + 0x90) = 1;
+}
+
+// .text:0x91D74 size:0x620
+void fn_2_91D74(u8* object) {
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    if (*(s32*)(object + 0x78) >= 1 && *(s32*)(object + 0x78) <= 7) {
+        setupEffect(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 8) {
+        setupEffect(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) >= 10 && *(s32*)(object + 0x78) <= 15) {
+        fn_2_8FAE0(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 22) {
+        fn_2_8FA58(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 24) {
+        fn_2_8F9D0(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 27) {
+        fn_2_8F948(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 25) {
+        fn_2_8F8C0(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 26) {
+        fn_2_8F838(*(s32*)(object + 0x78), 0);
+    } else if (*(s32*)(object + 0x78) == 28) {
+        fn_2_8F7B0(*(s32*)(object + 0x78), 0);
+    }
+    {
+        // inlined fn_2_8F6D0(index, 0)
+        s32 index = *(s32*)(object + 0x78);
+        u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+        u8* anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+        if (anim != NULL) {
+            *(s16*)(slot + 0xA6) = 0;
+            *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        }
+    }
+    *(s16*)(object + 0x90) = 1;
+}
+
+// .text:0x91788 size:0x11C
+void fn_2_91788(u8* object) {
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    setupEffect(*(s32*)(object + 0x78), 1);
+    {
+        // inlined fn_2_8F6D0(index, 0)
+        s32 index = *(s32*)(object + 0x78);
+        u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+        u8* anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+        if (anim != NULL) {
+            *(s16*)(slot + 0xA6) = 0;
+            *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        }
+    }
+    *(s16*)(object + 0x90) = 1;
+}
+
+extern f32 fn_2_4A1E8(f32 x, f32 y);
+extern f32 lbl_2_bss_B640;
+extern Vec lbl_2_data_308F4;
+extern const f32 lbl_2_rodata_1090;
+extern const f32 lbl_2_rodata_1094;
+extern const f32 lbl_2_rodata_1098;
+
+#if NONMATCHING
+// Moves cursor slot `index` with the stick (x/z) and d-pad up/down (y); body of fn_2_8FE9C.
+static inline void moveSlotWithPad(s32 index) {
+    f32 x;
+    f32 z;
+    Vec position;
+    Vec direction;
+    PadState* pad;
+    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    memcpy(&position, slot, sizeof(Vec));
+    PSVECSubtract(&position, &lbl_2_data_308F4, &direction);
+    x = direction.x * lbl_2_rodata_1090;
+    z = direction.z * lbl_2_rodata_1090;
+    direction.x = x;
+    direction.z = z;
+    pad = &((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)];
+    position.x += pad->sticks.stickX / lbl_2_rodata_1094;
+    position.z += pad->sticks.stickY / lbl_2_rodata_1094;
+    if (lbl_2_rodata_1080 != x || lbl_2_rodata_1080 != z) {
+        lbl_2_bss_B640 = fn_2_4A1E8(direction.z, x);
+    }
+    if (((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].repeat & 0x40) {
+        position.y -= lbl_2_rodata_1098;
+    } else if (((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].repeat & 0x20) {
+        position.y += lbl_2_rodata_1098;
+    }
+    memcpy(&lbl_2_data_308F4, slot, sizeof(Vec));
+    *(f32*)(slot + 0x0) = position.x;
+    *(f32*)(slot + 0x4) = position.y;
+    *(f32*)(slot + 0x8) = position.z;
+    *(f32*)(slot + 0x44) = lbl_2_bss_B640;
+}
+
+// NONMATCHING 89%: scheduling only (lbl_803C77B8 address hoisted to the top, f-reg numbering)
+// .text:0x8FE9C size:0x1E0
+void fn_2_8FE9C(s32 index) {
+    moveSlotWithPad(index);
+}
+
+// NONMATCHING 92%: inlined fn_2_8FE9C body has the same scheduling difference, stack slots differ
+// .text:0x9007C size:0x2C0
+void fn_2_9007C(void) {
+    Mtx m;
+    Vec v;
+    s32 index = *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE);
+    u8* slot;
+    moveSlotWithPad(index);
+    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    if (!(*(f32*)(slot + 0x30) <= lbl_2_rodata_1080)) {
+        PSMTXRotRad(m, 'Y', *(f32*)(slot + 0x44));
+        v.x = lbl_2_rodata_1080;
+        v.y = lbl_2_rodata_1080;
+        v.z = -*(f32*)(slot + 0x30);
+        PSMTXMultVec(m, &v, &v);
+        *(f32*)(slot + 0x18) = v.x;
+        *(f32*)(slot + 0x1C) = v.z;
+        *(f32*)(slot + 0x0) = *(f32*)(slot + 0x0) + *(f32*)(slot + 0x18);
+        *(f32*)(slot + 0x8) = *(f32*)(slot + 0x8) + *(f32*)(slot + 0x1C);
+    }
+    *(f32*)(slot + 0xC) = *(f32*)(slot + 0x0);
+    *(f32*)(slot + 0x14) = *(f32*)(slot + 0x8);
+    if (lbl_2_rodata_1080 == *(f32*)(slot + 0x30)) {
+        *(f32*)(slot + 0x20) = lbl_2_rodata_1080;
+        *(f32*)(slot + 0x24) = lbl_2_rodata_1080;
+    }
+}
+#endif

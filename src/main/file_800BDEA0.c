@@ -659,6 +659,7 @@ static inline void SKNLCAccTouchData(u8 buffer, void* src, void* indices, void* 
 
 // .text:0x800BF2A8 size:0x5F4
 // NONMATCHING 90.6%: scheduling/regalloc in the sk2 and acc double-buffer loops
+// nmverify: SKNBzero32B SKNFlushByIndex2 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800BF2A8(SKNBone** bones, SKNHeader* hdr, u8* base) {
     u16 sizes[2];
@@ -745,6 +746,7 @@ void fn_800BF2A8(SKNBone** bones, SKNHeader* hdr, u8* base) {
 
 // .text:0x800BF89C size:0x5F4
 // NONMATCHING 90.6%: scheduling/regalloc in the sk2 and acc double-buffer loops
+// nmverify: SKNBzero32B SKNFlushByIndex1 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void SKNIt(SKNBone** bones, SKNHeader* hdr, u8* base) {
     u16 sizes[2];
