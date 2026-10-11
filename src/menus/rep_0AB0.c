@@ -1326,7 +1326,7 @@ void fn_2_5D26C(void) {
         break;
     case 8:
         if (lbl_2_bss_1A8234->timer == 0xE) {
-            for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+            for (i = 0; i < lbl_2_bss_340140->actorCount; i++) {
                 if (lbl_2_bss_33FBF0[i] == 1) {
                     fn_2_903A8(i);
                     fn_2_92654(i, 0xD);
@@ -1359,7 +1359,7 @@ void fn_2_5D26C(void) {
         break;
     }
     case 10:
-        for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+        for (i = 0; i < lbl_2_bss_340140->actorCount; i++) {
             fn_2_92654(i, 0);
         }
         lbl_2_bss_1A823C->state = 11;
@@ -1406,7 +1406,7 @@ void fn_2_5D26C(void) {
     case 15:
         lbl_2_bss_1A8234->layerFlags[8][3] = 1;
         lbl_2_bss_1A8234->layerFlags[8][4] = 1;
-        for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+        for (i = 0; i < lbl_2_bss_340140->actorCount; i++) {
             fn_2_92654(i, 0);
         }
         lbl_2_bss_1A8234->timer = 0x10;
@@ -1448,7 +1448,7 @@ void fn_2_5D26C(void) {
         break;
     case 20:
         changeScene(3, 6);
-        for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+        for (i = 0; i < lbl_2_bss_340140->actorCount; i++) {
             fn_2_92654(i, 0);
         }
         lbl_2_bss_1A8234->layerFlags[8][2] = 1;
@@ -1691,7 +1691,7 @@ void fn_2_5E104(void) {
         fn_2_72054(0, 0);
         fn_2_904A8();
         fn_800B0A5C_insertQueue(fn_2_9257C, 2);
-        for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+        for (i = 0; i < lbl_2_bss_340140->actorCount; i++) {
             fn_2_903A8(i);
             fn_2_92654(i, 0);
         }

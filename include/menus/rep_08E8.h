@@ -27,6 +27,9 @@ typedef struct MenuCharMgr {
     /*0x2C90*/ u32 bankSize[5];
     /*0x2CA4*/ u8 _2CA4[0x2CEC - 0x2CA4];
     /*0x2CEC*/ u8* bankSets[4][5];
+    /*0x2D3C*/ u8 _2D3C[0x3078 - 0x2D3C];
+    /*0x3078*/ u16 actorCount; // CharMgr._3078
+    /*0x307A*/ u8 _307A;
 } MenuCharMgr;
 
 // lbl_2_bss_55C0: small file-static state of this unit.
