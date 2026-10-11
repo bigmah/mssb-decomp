@@ -30,6 +30,7 @@ extern u8 lbl_3_common_bss_34C90[];
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
+extern s16 lbl_3_data_104B8[][2][3];
 extern u8 lbl_3_data_B1BC[];
 extern u16 lbl_3_data_B3DC[6];
 extern u16 lbl_3_data_B3E8[6];
@@ -50,8 +51,8 @@ void fn_3_157DB8(s32 arg0) {
 void fn_3_1580AC(void) {
     PracticeTask* o = lbl_803CC1B8[0];
     fn_80034E20(o, lbl_3_data_BD90);
-    o->_1C = 0;
-    o->_1E = 0;
+    o->state = 0;
+    o->text = 0;
     ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_157E28;
 }
 
@@ -160,7 +161,7 @@ void fn_3_159590(void) {
     fn_80034E20(o, lbl_3_data_B3F4);
     o->_18 = 0;
     o->_1A = 0;
-    o->_1C = 0;
+    o->state = 0;
     ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_159114;
 }
 
@@ -253,8 +254,8 @@ void fn_3_158FE4(void) {
     g_Practice.diagramTextChannelIndex = -1;
     o->_18 = 0;
     o->_1A = 0;
-    o->_1C = 0;
-    o->_1E = 0;
+    o->state = 0;
+    o->text = 0;
     o->_20 = 0;
     ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_158B64;
 }
@@ -408,7 +409,7 @@ void fn_3_15A244(void) {
     for (i = 0; i < 5; i++) {
         lbl_80371C30[o->baseIdx + i + 6].obj->_5C = lbl_3_data_B3DC[lbl_3_data_FAC4[i]] << 16;
     }
-    o->_1C = 1;
+    o->state = 1;
     if (g_Practice.practiceType_1 == 1 || (u8)(g_Practice.practiceType_1 - 2) <= 2 ||
         g_Practice.practiceType_1 == 5) {
         lbl_80371C30[o->baseIdx].obj->_64 = lbl_3_data_B3E8[g_Practice.practiceType];
@@ -416,8 +417,58 @@ void fn_3_15A244(void) {
         lbl_80371C30[o->baseIdx].obj->_68 = 4;
         lbl_80371C30[o->baseIdx + 1 + g_Practice.practiceType].obj->_5C = 0x690000;
         lbl_80371C30[o->baseIdx + 11 + g_Practice.practiceType].obj->_5C = 0x690000;
-        o->_1C = 5;
+        o->state = 5;
     }
     lbl_3_common_bss_32724[0xC0] = 1;
     ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_159D50;
+}
+
+// .text:0x00157E28 size:0x284
+void fn_3_157E28(void) {
+    PracticeTask* o = lbl_803CC1B8[0];
+    LayoutObj* obj;
+
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        goto end;
+    }
+    if (o->state == 0) {
+        o->text = fn_8000F988((LayoutGroup*)o, 4, 0, 5, 0, 0);
+        lbl_80366B18.entries[o->text].hAlign = 0;
+        lbl_80366B18.entries[o->text].vAlign = 1;
+        fn_8000FD9C(o->text, 2, 0);
+        o->state++;
+    } else if (o->state == 1) {
+        obj = lbl_80371C30[o->baseIdx].obj;
+        if ((obj->_5C >> 16) >= 0xF) {
+            obj->_68 = 0;
+        }
+        if (g_Practice.loadingGuidedPractice == 0) {
+            if (g_Practice._1C7 != 0) {
+                goto end;
+            }
+            lbl_80371C30[o->baseIdx + 1].obj->_68 = 4;
+            lbl_80371C30[o->baseIdx + 2].obj->_68 = 4;
+            lbl_80371C30[o->baseIdx + 2].obj->_5C = 0x90000;
+            o->state++;
+        }
+    } else if (o->state == 2) {
+        if ((lbl_80371C30[o->baseIdx + 1].obj->_5C >> 16) == 0) {
+            goto end;
+        }
+    }
+    if (g_Practice._1C7 != 0) {
+        lbl_80371C30[o->baseIdx + 3].obj->flags &= ~2;
+    } else {
+        lbl_80371C30[o->baseIdx + 3].obj->flags |= 2;
+    }
+    if (g_Practice._188 == 1) {
+        fn_8000FE08(o->text, 5,
+            lbl_3_data_104B8[g_Practice.practiceLevel_2][g_Practice._1D7][g_Practice._1D8]);
+    }
+    g_Practice.currentMessageDoneTyping = lbl_80366B18.entries[o->text].finished;
+    return;
+end:
+    fn_8000FEE8(o->text);
+    fn_8000F8F4((LayoutGroup*)o);
+    fn_800B0A14_removeQueue(fn_80034CEC(o));
 }

@@ -12,8 +12,8 @@ typedef struct PracticeTask {
     /*0x16*/ u16 count;
     /*0x18*/ s16 _18;
     /*0x1A*/ u16 _1A;
-    /*0x1C*/ s16 _1C;
-    /*0x1E*/ s16 _1E;
+    /*0x1C*/ u16 state;
+    /*0x1E*/ u16 text; // lbl_80366B18 entry
     /*0x20*/ s16 _20;
 } PracticeTask;
 
