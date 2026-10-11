@@ -61,6 +61,7 @@ extern u8 lbl_80366158[];
 extern u8 lbl_3_data_23AE4[];
 extern u8 lbl_3_data_25344[];
 extern u8 lbl_3_data_24E04[];
+extern u8 lbl_3_data_23E04[];
 extern RepRosterEnt inMemRoster[];
 extern RepRunner g_Runners[4];
 extern void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);
@@ -154,7 +155,7 @@ void fn_3_11EC28(void) {
 #endif
 
 // .text:0x0011F02C size:0x454 mapped:0x8075E0C0
-// NONMATCHING 70%: loop induction variables and slot index folding differ (orig strength-reduces 2*i counters), fn_3_107CD0 return not zero-extended in orig
+// NONMATCHING 66%: loop induction variables and slot index folding differ (orig strength-reduces 2*i counters), fn_3_107CD0 return not zero-extended in orig
 #if NONMATCHING
 void fn_3_11F02C(void) {
     u32 snd = 0;
@@ -820,9 +821,83 @@ void fn_3_1226D4(void) {
 }
 
 // .text:0x00122D24 size:0x4B0 mapped:0x80761DB8
+// NONMATCHING 98%: registers only (q/cnt swapped r29/r30; same as fn_3_1231D4: orig keeps the parent pointer in r3)
+#if NONMATCHING
 void fn_3_122D24(void) {
-    return;
+    RepTask* q = REP_TASK;
+    RepTask* r = q->parent;
+    u8* cnt;
+    u32 n;
+    u32 v;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_23E04);
+        q->state = 1;
+        break;
+    case 1:
+        REP_OBJ(q, 0)->mode = 4;
+        if (r->_1A == 1) {
+            cnt = g_Minigame + 0x1ACC;
+            if (cnt[*(s8*)(g_Minigame + 0x1905) * 2] >= 2) {
+                if (g_Minigame[0x1AD5] != 0) {
+                    REP_OBJ(q, 0)->anim = 0x164;
+                    (((RepSlot*)lbl_80371C30) + q->baseIdx)[1].obj->_72 = 1;
+                } else {
+                    REP_OBJ(q, 0)->anim = 0x163;
+                    (((RepSlot*)lbl_80371C30) + q->baseIdx)[1].obj->_72 = 0;
+                }
+                n = cnt[*(s8*)(g_Minigame + 0x1905) * 2];
+                if (n > 99) {
+                    n = 99;
+                }
+                if (n >= 10) {
+                    fn_800363D8(q, 1, 6, 0x166, (n % 100) / 10);
+                } else {
+                    fn_800363D8(q, 1, 6, 0x166, 10);
+                }
+                fn_800363D8(q, 1, 5, 0x166, n % 10);
+                v = *(s16*)(lbl_3_data_213EC + 0x10) * cnt[*(s8*)(g_Minigame + 0x1905) * 2];
+                if (v > 9999) {
+                    v = 9999;
+                }
+                if (v >= 1000) {
+                    fn_800363D8(q, 1, 4, 0x167, (v % 10000) / 1000);
+                } else if (v >= 100) {
+                    fn_800363D8(q, 1, 4, 0x167, 11);
+                } else {
+                    fn_800363D8(q, 1, 4, 0x167, 10);
+                }
+                if (v >= 100) {
+                    fn_800363D8(q, 1, 3, 0x167, (v % 1000) / 100);
+                } else if (v >= 10) {
+                    fn_800363D8(q, 1, 3, 0x167, 11);
+                } else {
+                    fn_800363D8(q, 1, 3, 0x167, 10);
+                }
+                if (v >= 10) {
+                    fn_800363D8(q, 1, 2, 0x167, (v % 100) / 10);
+                } else {
+                    fn_800363D8(q, 1, 2, 0x167, 11);
+                }
+                fn_800363D8(q, 1, 1, 0x167, v % 10);
+                q->state = 2;
+            }
+        }
+        break;
+    case 2:
+        REP_OBJ(q, 0)->mode = 1;
+        if (r->_1A != 1) {
+            q->state = 1;
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x001231D4 size:0x3E4 mapped:0x80762268
 // NONMATCHING 98%: reg alloc only (orig keeps *(q+0xC) in r3 and prelude base in r4; ours swaps them)
