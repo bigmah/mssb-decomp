@@ -48,6 +48,9 @@ typedef struct LoopSfxState {
 } LoopSfxState; // size: 0x10
 
 BOOL fn_800527C4(Vec* pos);
+void fn_80052968(void);
+void fn_80052D70(void);
+void possiblyTransitionBlackScreen(void);
 void fn_80053FE8(void);
 void fn_80054910(SceneTask* task, s32 port);
 void fn_80056120(void);
@@ -96,6 +99,20 @@ typedef struct TutorialInput {
     /*0x69*/ s8 target[4];
     /*0x6D*/ u8 _6D[3];
 } TutorialInput; // size: 0x70
+
+// lbl_803C60BC (size 0x2E0, directly before the cameras), only the fields used here.
+typedef struct Unk803C60BC {
+    /*0x00*/ Vec dir;
+    /*0x0C*/ Vec dir2;
+    /*0x18*/ u8 _18[0xC];
+    /*0x24*/ f32 angle;
+    /*0x28*/ f32 _28;
+    /*0x2C*/ f32 _2C;
+    /*0x30*/ u8 _30[0xC];
+    /*0x3C*/ u8 _3C;
+    /*0x3D*/ u8 _3D;
+    /*0x3E*/ u8 _3E[0x2E0 - 0x3E];
+} Unk803C60BC; // size: 0x2E0
 
 void fn_800528B4(void);
 void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);

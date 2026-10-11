@@ -41,6 +41,8 @@ extern void fn_800324EC(u16 id, s32 charIndex, s32 c, s32* params);
 extern void fn_8004B1C0(s32 sound, CharSoundObj* obj, s32 kind, s32 c);
 
 extern camera_803c639c_s lbl_803C639C[4];
+extern Unk803C60BC lbl_803C60BC;
+extern u32 lbl_803CB880;
 extern MenuState lbl_8034E978;
 extern MenuDef lbl_800FEF70[0x5D];
 extern MenuWork lbl_803297E0;
@@ -104,14 +106,51 @@ void fn_80052968(void) {
     return;
 }
 
+static inline void InitCameras(void) {
+    s32 i;
+    camera_803c639c_s* cam;
+    f32 scale;
+
+    lbl_803CB880 = 1;
+    cam = lbl_803C639C;
+    for (i = 0; i < 2; i++, cam++) {
+        cam->eye.x = 0.0f;
+        cam->eye.y = -1.0f;
+        cam->eye.z = -5.0f;
+        cam->target.x = 0.0f;
+        cam->target.y = -1.0f;
+        cam->target.z = -4.0f;
+        cam->Up.x = 0.0f;
+        cam->Up.y = 1.0f;
+        cam->Up.z = 0.0f;
+        cam->zoom = 1.0f;
+        scale = 1.0f / cam->zoom;
+        C_MTXFrustum(cam->proj, -0.175f * scale, 0.175f * scale, 0.25f * scale, -0.25f * scale, 1.0f, 512.0f);
+        fn_800B806C(0, -240.0f * scale, 240.0f * scale, -320.0f * scale, 320.0f * scale, -512.0f, -1.0f, 1280.0f);
+    }
+    lbl_803C60BC.dir.x = 0.0f;
+    lbl_803C60BC.dir.y = -1.0f;
+    lbl_803C60BC.dir.z = 0.0f;
+    lbl_803C60BC.dir2.x = 0.0f;
+    lbl_803C60BC.dir2.y = -1.0f;
+    lbl_803C60BC.dir2.z = 1.0f;
+    lbl_803C60BC.angle = -3.1415927f;
+    lbl_803C60BC._28 = 0.0f;
+    lbl_803C60BC._2C = 0.0f;
+    lbl_803C60BC._3C = 1;
+    lbl_803C60BC._3D = 0;
+    lbl_803CBD10 = NULL;
+}
+
 // .text:0x80052D70 size:0x228
 void fn_80052D70(void) {
-    return;
+    InitCameras();
 }
 
 // .text:0x80052F98 size:0x238
 void possiblyTransitionBlackScreen(void) {
-    return;
+    InitCameras();
+    lbl_803CC1B8->func = fn_80052968;
 }
 
 // .text:0x800531D0 size:0x640
