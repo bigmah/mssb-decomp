@@ -1513,7 +1513,37 @@ void fn_3_308B8(int i, f32 x, f32 z) {
 
 // .text:0x00030A58 size:0x31C mapped:0x8066FAEC
 void fn_3_30A58(void) {
-    return;
+    int i;
+    u8* f;
+    f32 x;
+    f32 z;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    for (i = 2; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        fn_3_58F58(i, &x, &z);
+        d = (*(f32*)f - x) * (*(f32*)f - x) + (*(f32*)(f + 8) - z) * (*(f32*)(f + 8) - z);
+        SQRT_L(d);
+        if (d < 0.1f) {
+            x = *(f32*)f;
+            z = *(f32*)(f + 8);
+        }
+        *(f32*)(f + 0x14) = x;
+        *(f32*)(f + 0x1C) = z;
+        dx = x - *(f32*)f;
+        dz = z - *(f32*)(f + 8);
+        if (0.0f == dx && 0.0f == dz) {
+            *(f32*)(f + 0x50) = 0.0f;
+            *(f32*)(f + 0x68) = 0.0f;
+        } else {
+            *(f32*)(f + 0x64) = atan2(dz, dx);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            *(f32*)(f + 0x68) = d;
+            f[0x1D9] = 1;
+        }
+    }
 }
 
 // .text:0x00030D74 size:0x63C mapped:0x8066FE08
