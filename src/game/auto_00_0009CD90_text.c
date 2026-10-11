@@ -139,6 +139,54 @@ void fn_3_9CE78(void) {
     }
 }
 
+// .text:0x0009D140 size:0x234
+void fn_3_9D140(void) {
+    s32 n;
+    s32 i;
+
+    if (g_Ball.AtBat_ContactResult == 3 || g_FieldingLogic._108 == 2) {
+        n = 0;
+        for (i = 1; i < 3; i++) {
+            if (g_Runners[i].runnerOnFieldOrOutOrScored == 2 && g_Runners[i].outType == 4) {
+                n++;
+            }
+        }
+        if (n == 2) {
+            lbl_3_common_bss_32A94._0 = 0x17;
+            return;
+        }
+        if (n == 1) {
+            lbl_3_common_bss_32A94._2 = 0x1A;
+        }
+    }
+    if (g_Strikes.storedOuts + 3 == g_Strikes.outs && g_Ball.AtBat_ContactResult == 2 &&
+        (g_Strikes.outs == 3 || g_RunningLogic._10 == 0)) {
+        lbl_3_common_bss_32A94._0 = 0x17;
+        if (lbl_3_common_bss_32A94.plays[2].outs == 3 || lbl_3_common_bss_32A94.plays[3].outs == 3) {
+            lbl_3_common_bss_32A94._0 = 0x16;
+            return;
+        }
+    }
+    if (g_Strikes.storedOuts + 2 == g_Strikes.outs && g_Ball.AtBat_ContactResult == 2) {
+        lbl_3_common_bss_32A94._2 = 0x19;
+        if (lbl_3_common_bss_32A94.plays[2].fielder == 2 && lbl_3_common_bss_32A94.plays[0].outs == 0 &&
+            lbl_3_common_bss_32A94.plays[1].outs == 1) {
+            lbl_3_common_bss_32A94._2 = 0x18;
+        }
+        if (lbl_3_common_bss_32A94.plays[3].fielder >= 0 && lbl_3_common_bss_32A94.plays[2].outs == 2) {
+            lbl_3_common_bss_32A94._0 = lbl_3_common_bss_32A94._2;
+            return;
+        }
+    }
+    if (g_Strikes.storedOuts + 1 == g_Strikes.outs && g_Ball.AtBat_ContactResult == 2 && lbl_3_common_bss_32A94.plays[2].fielder == 2 &&
+               lbl_3_common_bss_32A94.plays[0].outs == 0 && g_Runners[(lbl_3_common_bss_32A94.plays[1].base + 3) & 3].forcedToAdvanceInd != 0 &&
+               lbl_3_common_bss_32A94.plays[1].base >= 0 && lbl_3_common_bss_32A94.plays[1].base != 1 && lbl_3_common_bss_32A94.plays[1].outs == 1 &&
+               lbl_3_common_bss_32A94.plays[2].outs == 1 && lbl_3_common_bss_32A94.plays[2].base == 1) {
+        lbl_3_common_bss_32A94._2 = 0x14;
+    }
+}
+
+
 // .text:0x0009D374 size:0x1DC
 s32 fn_3_9D374(void) {
     s16 earned;
