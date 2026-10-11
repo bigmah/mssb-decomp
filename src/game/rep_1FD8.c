@@ -4,6 +4,8 @@
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/vec.h"
 #include "Dolphin/mtxext.h"
+#include "Dolphin/GX/GXFifo.h"
+#include "main/file_80024184.h"
 typedef struct C4724P {
     struct C4724P* next;
     f32 x, y, z;
@@ -69,24 +71,13 @@ extern void sndFXCtrl(int, int, u8);
 extern u8 g_Ball[];
 extern const f32 lbl_3_rodata_20F4;
 extern const f32 lbl_3_rodata_20F8;
-extern void GXClearVtxDesc(void);
-extern void GXSetVtxDesc(int, int);
-extern void GXSetVtxAttrFmt(int, int, int, int, int);
-extern void GXSetChanCtrl(int, int, int, int, int, int, int);
-extern void GXSetNumChans(int);
-extern void GXSetNumTexGens(int);
-extern void GXSetCullMode(int);
-extern void GXSetProjection(void*, int);
-extern void GXLoadPosMtxImm(void*, int);
-extern void GXSetCurrentMtx(int);
-extern void GXSetNumTevStages(int);
-extern void GXSetTevOrder(int, int, int, int);
-extern void GXSetTevColorIn(int, int, int, int, int);
-extern void GXSetTevColorOp(int, int, int, int, int, int);
-extern void GXSetTevAlphaIn(int, int, int, int, int);
-extern void GXSetTevAlphaOp(int, int, int, int, int, int);
 extern u32 fn_8005268C(void);
-extern u8* fn_80052734(void);
+// Current camera's matrices (fn_80052734(fn_8005268C()), main/file_8004C5F8).
+typedef struct CamMtx {
+    Mtx44 proj;
+    Mtx view;
+} CamMtx;
+extern CamMtx* fn_80052734(s32 index);
 extern Vec lbl_3_rodata_2080;
 extern f32 lbl_3_rodata_2178;
 extern void* memset(void*, int, u32);
@@ -389,7 +380,7 @@ u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h) {
     f32 hw;
     f32 hh;
     Vec v[4];
-    u8* m;
+    CamMtx* m;
     u32 i;
     u32 t;
     f32 z;
@@ -398,9 +389,8 @@ u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h) {
     u8 acc;
     u8 f;
     acc = 0;
-    fn_8005268C();
-    m = fn_80052734();
-    PSMTXMultVec((f32(*)[4])(m + 0x40), pos, pos);
+    m = fn_80052734(fn_8005268C());
+    PSMTXMultVec(m->view, pos, pos);
     z = pos->z;
     if (z > lbl_3_rodata_20F4 || z < lbl_3_rodata_20F8) {
         return 0;
@@ -415,7 +405,7 @@ u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h) {
     v[0].y = v[1].y = y - hh;
     v[2].y = v[3].y = y + hh;
     for (i = 0; i < 4; i++) {
-        PSMTX44MultVec((f32(*)[4])m, &v[i], &out);
+        PSMTX44MultVec(m->proj, &v[i], &out);
         f = (out.x < lbl_3_rodata_20F4);
         f |= (out.x > lbl_3_rodata_20F0) << 1;
         f |= (out.y < lbl_3_rodata_20F4) << 2;
@@ -501,8 +491,6 @@ typedef struct C366CHdr {
 } C366CHdr;
 // .text:0x000C30F0 size:0x57C mapped:0x80702184
 extern const f32 lbl_3_rodata_2148;
-extern void GXSetZMode(int, int, int);
-extern void GXSetBlendMode(int, int, int, int);
 extern void fn_8003403C(f32, f32);
 extern void fn_80033CC8(void*, void*);
 // Update/draw of a smoke emitter (started by fn_3_C366C): grows and fades the
@@ -897,8 +885,6 @@ void fn_3_C444C(void* hv, u8* b) {
 extern u8 lbl_80366158[];
 extern void fn_8003403C(f32, f32);
 extern void fn_80033CC8(void*, void*);
-extern void GXSetZMode(int, int, int);
-extern void GXSetBlendMode(int, int, int, int);
 extern const f32 lbl_3_rodata_2168[];
 extern const f32 lbl_3_rodata_21A4;
 extern const f32 lbl_3_rodata_21AC;
@@ -1009,10 +995,8 @@ void fn_3_C4B80(void) {
     GXSetTevOrder(0, 0, 0, 4);
     GXSetTevColorOp(0, 0, 0, 0, 0, 0);
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
-    fn_8005268C();
-    GXSetProjection(fn_80052734(), 0);
-    fn_8005268C();
-    GXLoadPosMtxImm(fn_80052734() + 0x40, 0);
+    GXSetProjection(fn_80052734(fn_8005268C())->proj, GX_PERSPECTIVE);
+    GXLoadPosMtxImm(fn_80052734(fn_8005268C())->view, GX_PNMTX0);
     GXSetCurrentMtx(0);
 }
 
@@ -1039,10 +1023,8 @@ void fn_3_C4CF4(void* hv, u8 type) {
     GXSetTevOrder(0, 0, 0, 4);
     GXSetTevColorOp(0, 0, 0, 0, 0, 0);
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
-    fn_8005268C();
-    GXSetProjection(fn_80052734(), 0);
-    fn_8005268C();
-    GXLoadPosMtxImm(fn_80052734() + 0x40, 0);
+    GXSetProjection(fn_80052734(fn_8005268C())->proj, GX_PERSPECTIVE);
+    GXLoadPosMtxImm(fn_80052734(fn_8005268C())->view, GX_PNMTX0);
     GXSetCurrentMtx(0);
     while (p != NULL) {
         if (p->s48 <= 0 && p->s4A > 0 && type == p->f50) {
@@ -1182,10 +1164,8 @@ void fn_3_C54D0(u8* a) {
     GXSetTevOrder(0, 0, 0, 4);
     GXSetTevColorOp(0, 0, 0, 0, 0, 0);
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
-    fn_8005268C();
-    GXSetProjection(fn_80052734(), 0);
-    fn_8005268C();
-    GXLoadPosMtxImm(fn_80052734() + 0x40, 0);
+    GXSetProjection(fn_80052734(fn_8005268C())->proj, GX_PERSPECTIVE);
+    GXLoadPosMtxImm(fn_80052734(fn_8005268C())->view, GX_PNMTX0);
     GXSetCurrentMtx(0);
     while (p != NULL) {
         if (p->s48 <= 0 && p->s4A > 0 && p->f50 == 1) {
@@ -1202,15 +1182,13 @@ void fn_3_C56E8(u8* a) {
     Vec v2;
     C4724Hdr* h;
     C4724P* p;
-    fn_8005268C();
-    PSMTXMultVec((MtxPtr)(fn_80052734() + 0x40), (Vec*)(a + 0x9C), &v1);
+    PSMTXMultVec(fn_80052734(fn_8005268C())->view, (Vec*)(a + 0x9C), &v1);
     h = fn_800339F0(0, (u8)(a[0xA8] + 0x2A));
     if (h == NULL) {
         return;
     }
     for (p = h->head; p != NULL; p = p->next) {
-        fn_8005268C();
-        PSMTXMultVec((MtxPtr)(fn_80052734() + 0x40), (Vec*)&p->x, &v2);
+        PSMTXMultVec(fn_80052734(fn_8005268C())->view, (Vec*)&p->x, &v2);
         if (v1.z >= v2.z) {
             p->f50 = 0;
         } else {
@@ -1237,10 +1215,8 @@ void fn_3_C56E8(u8* a) {
     GXSetTevOrder(0, 0, 0, 4);
     GXSetTevColorOp(0, 0, 0, 0, 0, 0);
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
-    fn_8005268C();
-    GXSetProjection(fn_80052734(), 0);
-    fn_8005268C();
-    GXLoadPosMtxImm(fn_80052734() + 0x40, 0);
+    GXSetProjection(fn_80052734(fn_8005268C())->proj, GX_PERSPECTIVE);
+    GXLoadPosMtxImm(fn_80052734(fn_8005268C())->view, GX_PNMTX0);
     GXSetCurrentMtx(0);
     while (p != NULL) {
         if (p->s48 <= 0 && p->s4A > 0 && p->f50 == 0) {
