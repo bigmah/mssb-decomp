@@ -81,6 +81,8 @@ void fn_8005C830(SceneTask* task, s32 port, s32 slot);
 void fn_8005F9D0(SceneTask* task, s32 port);
 void fn_80053810(void);
 void fn_800531D0(SceneTask* task);
+void fn_800559EC(void);
+void fn_80054B00(SceneTask* task, s32 port);
 void fn_800542C4(u8 which, u8 cur, SceneTask* task);
 void fn_80058E0C(SceneTask* task, u8 port);
 void fn_8005F068(SceneTask* task, s32 port);
@@ -205,6 +207,13 @@ typedef struct RosterSlot {
     /*0x2*/ s8 pos;
     /*0x3*/ u8 _3;
 } RosterSlot; // size: 0x4
+
+// lbl_803C5EE0: tutorial task flags.
+typedef struct TutorialTask {
+    /*0x00*/ u8 _00[0x15];
+    /*0x15*/ u8 done;
+    /*0x16*/ u8 _16[2];
+} TutorialTask; // size: 0x18
 
 // lbl_803C5F04: input state for the tutorial step checks (size 0x70).
 typedef struct TutorialInput {
