@@ -123,7 +123,28 @@ s32 fn_80020388(void) {
 
 // .text:0x800203E0 size:0xEC
 void fn_800203E0(u8 scene, s8 variant) {
-    return;
+    if (variant >= 0) {
+        lbl_8037169C.variant = variant;
+    }
+    if (scene == 7) {
+        lbl_8037169C.state = 7;
+        lbl_8037169C.requestDuration = 1;
+        fn_800B0A5C_insertQueue(fn_80020624, 2);
+        return;
+    }
+    if (scene == 1 || scene == 6 || scene == 13) {
+        if (lbl_8037169C.state >= 4 && lbl_8037169C.state <= 6) {
+            scene = 6;
+        } else if (lbl_8037169C.state >= 10 && lbl_8037169C.state <= 12) {
+            scene = 10;
+        } else if (lbl_8037169C.state >= 13 && lbl_8037169C.state <= 15) {
+            scene = 13;
+        } else {
+            scene = 1;
+        }
+    }
+    lbl_8037169C.request = scene;
+    lbl_8037169C.requestDuration = 1;
 }
 
 // .text:0x800204CC size:0xD0
