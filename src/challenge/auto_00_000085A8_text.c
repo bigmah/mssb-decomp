@@ -55,6 +55,12 @@ void fn_1_8624(void) {
     task->timer++;
 }
 
+// .text:0x000086BC size:0x28
+void fn_1_86BC(void) {
+    ((ChAnimTask*)lbl_803CC1B8)->timer = 0;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_8624;
+}
+
 // .text:0x000088CC size:0x4
 void fn_1_88CC(void) {
     return;
