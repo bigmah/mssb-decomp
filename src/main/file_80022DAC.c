@@ -395,8 +395,24 @@ void fn_80023B04(s32 count) {
 }
 
 // .text:0x80023B90 size:0x164
-void fn_80023B90(void) {
-    return;
+void fn_80023B90(StadiumLight* light, StadiumLightPos* out) {
+    Mtx m;
+    Mtx rot;
+    Vec axis = lbl_800E6708;
+    Vec pos = lbl_800E6714;
+
+    PSMTXRotAxisRad(rot, &axis, lbl_803CC568 * light->yaw / lbl_803CC56C);
+    PSMTXConcat(m, rot, m);
+    PSMTXRotAxisRad(m, &pos, lbl_803CC568 * (light->pitch + 0x800) / lbl_803CC56C);
+    PSMTXConcat(m, rot, m);
+    pos.y = light->height;
+    PSMTXMultVec(m, &pos, &pos);
+    out->x = pos.x;
+    out->y = pos.y;
+    out->z = pos.z;
+    out->r = light->r;
+    out->g = light->g;
+    out->b = light->b;
 }
 
 // .text:0x80023CF4 size:0x48
