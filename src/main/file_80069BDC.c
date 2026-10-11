@@ -240,8 +240,22 @@ f32 fn_8006CA9C(void) {
 }
 
 // .text:0x8006CAC8 size:0x11C
-void starMissionMenu(void) {
-    return;
+f32 starMissionMenu(s32 team) {
+    ChallengeTrackingStruct* t = &starMissionCompletionTracker[team];
+    s32 count;
+    s32 i;
+
+    if (lbl_800E8558[team].hasMissions == 0) {
+        count = 0;
+    } else {
+        count = 0;
+        for (i = 0; i < 10; i++) {
+            if ((s8)t->inGameMissionTracker[i].starMissionStatus < 0) {
+                count++;
+            }
+        }
+    }
+    return lbl_8010B4B4[t->variantClassification][count];
 }
 
 // .text:0x8006CBE4 size:0xC0
