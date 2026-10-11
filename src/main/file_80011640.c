@@ -496,7 +496,16 @@ void fn_8001B214(void (*callback)(void)) {
 
 // .text:0x8001B224 size:0xAC
 void fn_8001B224(void) {
-    return;
+    s32 i;
+    CharActor* actor;
+
+    memcpy(lbl_8036E548.actors, lbl_8036C4FC, sizeof(lbl_8036E548.actors));
+    for (i = 0; i < 13; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor != NULL && (actor->mode[0] != 0 || i <= 8)) {
+            fn_8001BE50(i, actor->anim[0], actor->_25F[0], actor->_262[0], actor->_06A[0] + 1, actor->_265[0], 0);
+        }
+    }
 }
 
 // .text:0x8001B2D0 size:0x38
