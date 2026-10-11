@@ -780,13 +780,13 @@ s32 fn_800AF1A8(MovPlayer* mov) {
 // .text:0x800AF5FC size:0x3B8
 // Decodes one video frame into a free slot of the frame queue.
 // Returns 0 = decoded, 1 = unknown format, 2 = no free slot, 3 = frame is late / refs missing.
-s32 fn_800AF5FC(MovPlayer* mov, s32 format, u32 frame) {
+s32 fn_800AF5FC(MovPlayer* mov, u32 format, u32 frame) {
     u32 decodeFrames;
     u32 now;
     u32 margin;
     u8 i;
     u8 found;
-    MovFrame* slot;
+    MovFrame* tmp;
 
     if (mov->decodedFrames != 0) {
         decodeFrames = mov->decodeTime / mov->decodedFrames / mov->usecPerFrame;
@@ -794,29 +794,22 @@ s32 fn_800AF5FC(MovPlayer* mov, s32 format, u32 frame) {
         decodeFrames = 0;
     }
     if (mov->flags & 1) {
-        if (mov->samplesPlayed != 0) {
-            now = mov->samplesPlayed * 1000000 / (mov->sampleRate * 4) / mov->usecPerFrame;
-        } else {
-            now = 0;
-        }
+        now = mov->samplesPlayed != 0 ? (u32)(mov->samplesPlayed * 1000000 / (mov->sampleRate * 4) / mov->usecPerFrame) : 0;
     } else {
-        now = 0;
-        if (mov->startTime != 0) {
-            now = OSTicksToMicroseconds(OSGetTime() - mov->startTime) / mov->usecPerFrame;
-        }
+        now = mov->startTime != 0 ? (u32)(OSTicksToMicroseconds(OSGetTime() - mov->startTime) / mov->usecPerFrame) : 0;
     }
     margin = (now != 0) ? decodeFrames + 1 : 0;
 
-    switch (format) {
+    switch ((s32)format) {
     case 0x10:
     case 0x20:
         found = FALSE;
         for (i = 2; i < 6; i++) {
-            slot = mov->frameQueue[i];
-            if (slot->ready != 1 || now > slot->frame) {
+            if (mov->frameQueue[i]->ready != 1 || now > mov->frameQueue[i]->frame) {
+                tmp = mov->frameQueue[i];
                 mov->frameQueue[i] = mov->frameQueue[0];
                 mov->frameQueue[0] = mov->frameQueue[1];
-                mov->frameQueue[1] = slot;
+                mov->frameQueue[1] = tmp;
                 found = TRUE;
                 break;
             }
@@ -841,7 +834,7 @@ s32 fn_800AF5FC(MovPlayer* mov, s32 format, u32 frame) {
             return 0;
         }
         mov->frameQueue[1]->ready = 1;
-        return 0;
+        break;
     case 0x30:
         if (!mov->frameQueue[0]->ready) {
             return 3;
@@ -853,8 +846,7 @@ s32 fn_800AF5FC(MovPlayer* mov, s32 format, u32 frame) {
             return 3;
         }
         for (i = 2; i < 6; i++) {
-            slot = mov->frameQueue[i];
-            if (slot->ready != 1 || now > slot->frame) {
+            if (mov->frameQueue[i]->ready != 1 || now > mov->frameQueue[i]->frame) {
                 mov->frameQueue[i]->ready = 0;
                 fn_800E5940(&mov->video, mov->videoBuf, mov->frameQueue[i]->buf, mov->frameQueue[0]->buf, mov->frameQueue[1]->buf);
                 mov->frameQueue[i]->frame = frame + mov->frameBase;
@@ -869,6 +861,7 @@ s32 fn_800AF5FC(MovPlayer* mov, s32 format, u32 frame) {
     default:
         return 1;
     }
+    return 0;
 }
 
 // .text:0x800AF9B4 size:0x23C

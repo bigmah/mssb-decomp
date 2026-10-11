@@ -130,7 +130,7 @@ BOOL MovStreamThread(MovPlayer* mov);
 s32 fn_800AED24(void);
 s32 MovDecodeThread(void* arg);
 s32 fn_800AF1A8(MovPlayer* mov);
-s32 fn_800AF5FC(MovPlayer* mov, s32 format, u32 frame);
+s32 fn_800AF5FC(MovPlayer* mov, u32 format, u32 frame);
 BOOL fn_800AF9B4(void* dst, u32 len);
 void fn_800AFBF0(void);
 void fn_800AFC10(void);
