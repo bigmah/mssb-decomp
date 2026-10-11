@@ -1481,9 +1481,101 @@ void fn_3_341E8(void) {
 #endif
 
 // .text:0x00034450 size:0x5F0 mapped:0x806734E4
-void fn_3_34450(void) {
-    return;
+#pragma dont_inline off
+/* same body as fn_3_33458, which the original inlines into fn_3_34450 */
+static inline void PairPlayInline(void) {
+    u8* f;
+    s16 i;
+    fn_3_334EC(1);
+    fn_3_33088();
+    i = *(s16*)(g_FieldingLogic + 0xB2);
+    f = g_Fielders + i * 0x268;
+    if (i != -1) {
+        f[0x1D3] = 0x16;
+        if (*(int*)(lbl_3_data_3C40 + 0xB0) >= 0) {
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0xB0);
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
+    fn_3_4C9C8();
+    fn_3_47778();
+    fn_3_4A124();
 }
+#pragma dont_inline on
+// NONMATCHING 98%: loop-variable register order; one distance sum unfused in the original; calls fn_3_4F504/fn_3_4FB34 through casts until their prototypes gain the index arg
+#if NONMATCHING
+void fn_3_34450(void) {
+    u8* f = g_Fielders;
+    s64 mask = 0;
+    s32 i = 0;
+    s32 sh = 0;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    s32 a;
+    for (; i < 9; i++, sh += 3, f += 0x268) {
+        if (i == 1) {
+            *(s16*)(f + 0x182) = 0x400;
+        } else if (lbl_3_rodata_B20 == *(f32*)f) {
+            *(s16*)(f + 0x182) = 0x400;
+        } else {
+            a = (s32)(lbl_3_rodata_BC4 * (f32)atan2(*(f32*)(f + 8), *(f32*)f) / lbl_3_rodata_BC8);
+            if (a < 0) {
+                a += 0x800;
+            }
+            *(s16*)(f + 0x182) = a;
+        }
+        d = *(f32*)f * *(f32*)f + *(f32*)(f + 8) * *(f32*)(f + 8);
+        SQRT_L(d);
+        *(f32*)(f + 0x70) = d;
+        dx = *(f32*)(g_Ball + 0x1A2C) - *(f32*)f;
+        dz = *(f32*)(g_Ball + 0x1A30) - *(f32*)(f + 8);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x80) = d;
+        /* TODO: fn_3_4F504 / fn_3_4FB34 take the fielder index; prototypes (other range) are still (void) */
+        if (i == 1) {
+            ((void (*)(int))fn_3_4F504)(1);
+        } else {
+            ((void (*)(int))fn_3_4FB34)(i);
+        }
+        if (f[0x1DD] == 1) {
+            mask |= 4 << sh;
+        } else if (f[0x1DD] == 2) {
+            mask |= 2 << sh;
+        } else if (f[0x1DD] == 3) {
+            mask |= 1 << sh;
+        }
+    }
+    if (g_d_GameSettings[7] == 2 && g_GameLogic[0x121] == 0xC) {
+        SetFielderAct(0, 0x15, 0xA8);
+        return;
+    }
+    if (g_Ball[0x1BCE] != 0) {
+        fn_3_32810();
+    } else if (g_Ball[0x1BC5] == 7 || g_Ball[0x1BC5] == 8) {
+        fn_3_329A4();
+    } else if ((mask & 0x3FFFF) == 0 || (g_Ball[0x1BBF] == 4 && *(f32*)(g_Ball + 0x19D4) > lbl_3_rodata_BD8)) {
+        if (*(f32*)(g_Ball + 0x19D4) < lbl_3_rodata_B64) {
+            PairPlayInline();
+        } else {
+            fn_3_341E8();
+        }
+    } else if ((mask & 0x2DB6D) != 0) {
+        fn_3_334EC(0);
+    } else if ((mask & 0x12480) != 0) {
+        PairPlayInline();
+    } else if ((mask & 2) != 0) {
+        fn_3_334EC(0);
+    }
+    *(s16*)(g_FieldingLogic + 0xB8) = *(s16*)(g_FieldingLogic + 0xB2);
+    *(s16*)(g_FieldingLogic + 0xBA) = *(s16*)(g_FieldingLogic + 0xB4);
+}
+#endif
 
 // .text:0x00034A40 size:0x12E8 mapped:0x80673AD4
 void fn_3_34A40(int i) {
