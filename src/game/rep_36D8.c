@@ -28,6 +28,9 @@ extern const f64 lbl_3_rodata_37A0; // 0.0
 extern int __float_nan[];
 extern f64 __frsqrte(f64);
 extern s16 fn_3_9FB8C(f32 x, f32 y);
+extern s32 fn_3_108854(void);
+extern u16 lbl_3_data_81FC[]; // sound ids
+extern u8 lbl_3_bss_B791;
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
 
 // Inlined single-precision sqrt (MSL sqrtf with the rodata constants of this unit).
@@ -97,6 +100,9 @@ extern const f64 lbl_3_rodata_37A0; // 0.0
 extern int __float_nan[];
 extern f64 __frsqrte(f64);
 extern s16 fn_3_9FB8C(f32 x, f32 y);
+extern s32 fn_3_108854(void);
+extern u16 lbl_3_data_81FC[]; // sound ids
+extern u8 lbl_3_bss_B791;
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
 
 // Inlined single-precision sqrt (MSL sqrtf with the rodata constants of this unit).
@@ -1131,9 +1137,42 @@ void fn_3_140BCC(void) {
     }
 }
 // .text:0x00140CE0 size:0x410 mapped:0x8077FD74
+// NONMATCHING: the original inlines fn_3_13F7E4, fn_3_13F6C8, fn_3_13E670 and fn_3_140BCC here
+#if NONMATCHING
+// Per-frame update of the minigame.
 void fn_3_140CE0(void) {
-    return;
+    s8 i;
+    if (fn_3_108854() != 0) {
+        return;
+    }
+    if (lbl_3_bss_B791 != 0) {
+        lbl_3_bss_B791 = 0;
+    }
+    if (REP_MG->turnOverStatus == 0) {
+        if (++REP_MG->_17C0 >= 3600) {
+            REP_MG->_1A3A = 2;
+        } else if (REP_MG->_17C0 >= 1800) {
+            REP_MG->_1A3A = 1;
+        }
+    }
+    if (REP_MG->_17C4 != 0) {
+        REP_MG->_17C4--;
+        if (REP_MG->_17C4 < 600 && REP_MG->_17C4 != 0 && REP_MG->_17C4 % 60 == 0) {
+            fn_3_90064(lbl_3_data_81FC[0x28]);
+        }
+    }
+    fn_3_13C7BC();
+    fn_3_7DD6C();
+    for (i = 0; i < 4; i++) {
+        REP_MG->_1DC0[i] = 0;
+    }
+    fn_3_13F7E4();
+    fn_3_13F6C8();
+    fn_3_1406F4();
+    fn_3_13E670();
+    fn_3_140BCC();
 }
+#endif
 
 // .text:0x001410F0 size:0x1CC mapped:0x80780184
 void fn_3_1410F0(void) {

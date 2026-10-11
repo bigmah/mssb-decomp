@@ -38,8 +38,8 @@ typedef struct RepMinigameView {
     /*0x1180*/ Vec coinVel[100];
     /*0x1630*/ f32 itemBases[15]; // item position along the base path
     /*0x166C*/ u8 _166C[0x17C0 - 0x166C];
-    /*0x17C0*/ s32 _17C0;
-    /*0x17C4*/ s32 _17C4;
+    /*0x17C0*/ u32 _17C0; // frames played
+    /*0x17C4*/ u32 _17C4; // frames left
     /*0x17C8*/ s16 coinFrames[100];
     /*0x1890*/ s16 points[4];
     /*0x1898*/ s16 latestPoints[4];
@@ -87,7 +87,9 @@ typedef struct RepMinigameView {
     /*0x1D58*/ s16 _1D58;
     /*0x1D5A*/ u8 _1D5A[0x1D74 - 0x1D5A];
     /*0x1D74*/ s8 _1D74; // -1: none
-    /*0x1D75*/ u8 _1D75[0x1E00 - 0x1D75];
+    /*0x1D75*/ u8 _1D75[0x1DC0 - 0x1D75];
+    /*0x1DC0*/ u8 _1DC0[4];
+    /*0x1DC4*/ u8 _1DC4[0x1E00 - 0x1DC4];
     /*0x1E00*/ u8 _1E00;
 } RepMinigameView;
 
