@@ -34,21 +34,28 @@ typedef struct DrawNode {
 // Scene/task object pointed to by lbl_803CC1B8.
 typedef struct SceneTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x10 - 0x04];
+    /*0x04*/ u8 _04[0x0C - 0x04];
+    /*0x0C*/ struct SceneTask* parent;
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;
-    /*0x14*/ u8 _14[0x18 - 0x14];
+    /*0x14*/ union {
+        void* res;   // resource freed with fn_800ACF14
+        u16 objIdx;  // index into lbl_80371C30 (child tasks)
+    } u14;
     /*0x18*/ DrawNode* nodes;
     /*0x1C*/ void* player;
     /*0x20*/ void* work;
     /*0x24*/ void* buffer;
-    /*0x28*/ u8 _28[0x34 - 0x28];
+    /*0x28*/ void* res28;
+    /*0x2C*/ u8 _2C[0x30 - 0x2C];
+    /*0x30*/ u32 voice;
     /*0x34*/ s16 state;
-    /*0x36*/ s16 _36;
+    /*0x36*/ u16 _36;
     /*0x38*/ u8 _38;
     /*0x39*/ u8 _39;
     /*0x3A*/ u8 _3A;
     /*0x3B*/ u8 _3B;
+    /*0x3C*/ s8 volStep;
 } SceneTask;
 
 extern SceneTask* lbl_803CC1B8;

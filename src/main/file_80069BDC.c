@@ -5,6 +5,7 @@
 #include "Dolphin/mtx.h"
 
 #include "string.h"
+#include "musyx/musyx.h"
 
 extern AnimEventCallback lbl_803CBD38;
 extern AnimEventCallback lbl_803CBD3C;
@@ -70,7 +71,45 @@ typedef struct Unk803716B8 {
 extern Unk803716B8 lbl_803716B8;
 extern u8 lbl_801092F8[0x80]; // TODO type
 extern char lbl_801092C8[0x20];
-extern u16 lbl_803C77B8[0x40]; // TODO type: pad state, [2] = buttons pressed this frame
+typedef struct PadState {
+    /*0x00*/ u16 _00;
+    /*0x02*/ u16 trig;
+    /*0x04*/ u16 trig2;
+    /*0x06*/ u8 _06[0x20 - 0x06];
+} PadState; // size: 0x20
+
+extern PadState lbl_803C77B8[4];
+
+typedef struct AnimObj {
+    /*0x00*/ u8 _00[0x54];
+    /*0x54*/ u32 flags;
+    /*0x58*/ u8 _58[4];
+    /*0x5C*/ u32 frame; // 16.16
+    /*0x60*/ u8 _60[8];
+    /*0x68*/ u8 _68;
+} AnimObj;
+
+typedef struct AnimSlot {
+    /*0x0*/ AnimObj* obj;
+    /*0x4*/ u32 _4;
+} AnimSlot;
+
+extern AnimSlot lbl_80371C30[0x2A7B0 / 8];
+
+typedef struct Unk8037169C {
+    /*0x00*/ u8 _00[0x12];
+    /*0x12*/ u8 _12;
+    /*0x13*/ u8 _13[0x1C - 0x13];
+} Unk8037169C;
+
+extern Unk8037169C lbl_8037169C;
+extern u8 lbl_800EFBA4[16];
+extern s32 lbl_803CB8D8;
+
+extern void fn_800ACF14(void* p);
+extern s32 fn_800214D0(void);
+extern void fn_8002149C(s32 a);
+extern void fn_80035CA4(s32 a);
 extern u8 lbl_803CBBC0;
 
 extern void fn_800A7D4C(s32 layer, DrawNode* node);
@@ -469,7 +508,107 @@ void fn_8006AF9C(void) {
 
 // .text:0x8006B230 size:0x438
 void fn_8006B230(void) {
-    return;
+    SceneTask* self = lbl_803CC1B8;
+    SceneTask* p = self->parent;
+
+    switch (p->state) {
+    case 1:
+        if (p->_36 != 0) {
+            p->_36 = 0;
+            changeScene(1, 6);
+            lbl_80371C30[self->u14.objIdx].obj->flags |= 2;
+            lbl_80371C30[self->u14.objIdx + 1].obj->frame = 0;
+            lbl_80371C30[self->u14.objIdx + 2].obj->frame = 0;
+            lbl_80371C30[self->u14.objIdx + 1].obj->flags |= 2;
+            lbl_80371C30[self->u14.objIdx + 2].obj->flags |= 2;
+            lbl_80371C30[self->u14.objIdx + 1].obj->_68 = 0;
+            lbl_80371C30[self->u14.objIdx + 2].obj->_68 = 0;
+        } else if (lbl_8037169C._12 != 0) {
+            lbl_80371C30[self->u14.objIdx + 1].obj->_68 = 1;
+            lbl_80371C30[self->u14.objIdx + 2].obj->_68 = 1;
+            p->volStep = 8;
+            p->voice = sndFXStartEx(0x318, 110, 255, 0);
+            p->_36 = 300;
+            p->state++;
+        }
+        break;
+    case 2:
+        if ((lbl_80371C30[self->u14.objIdx + 2].obj->frame >> 16) == 100) {
+            p->state++;
+        }
+        break;
+    case 3:
+        if (lbl_803C77B8[0].trig & 0x1100) {
+            PadState* pad = lbl_803C77B8;
+            s32 i;
+            for (i = 0; i < 4; pad++, i++) {
+                if (pad->trig & 0x1100) {
+                    lbl_80366158[0x27] = i;
+                    break;
+                }
+            }
+            p->state = 4;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (sndFXCheck(p->voice) == SND_ID_ERROR) {
+            if (lbl_803CB8D8 != 0) {
+                p->state = 6;
+            } else {
+                p->state = 5;
+            }
+            lbl_803CB8D8 ^= 1;
+        }
+        if (p->state != 3) {
+            lbl_80371C30[self->u14.objIdx + 1].obj->_68 = 0;
+            lbl_80371C30[self->u14.objIdx + 2].obj->_68 = 0;
+            lbl_80371C30[self->u14.objIdx].obj->frame = 0;
+            lbl_80371C30[self->u14.objIdx].obj->_68 = 1;
+        }
+        break;
+    case 4:
+    case 5:
+    case 6:
+        if (sndFXCheck(p->voice) != SND_ID_ERROR) {
+            if (p->volStep > 0) {
+                if (sndFXCtrl(p->voice, 7, --p->volStep * 110 / 8) != 0) {
+                    break;
+                }
+            }
+            if (p->volStep >= 0) {
+                p->volStep = -1;
+                sndFXKeyOff(p->voice);
+            }
+        }
+        if ((lbl_80371C30[self->u14.objIdx].obj->frame >> 16) == 20) {
+            fn_80034CEC(self);
+            switch (p->state) {
+            case 4:
+                fn_800214D0();
+                fn_8002149C(0x2F);
+                fn_800ACF14(p->u14.res);
+                fn_80035CA4(0x16);
+                fn_800ACF14(p->res28);
+                fn_800ACF14(p->nodes);
+                p->_3B = 2;
+                break;
+            case 5:
+                p->_3B = 1;
+                break;
+            case 6:
+                fn_800214D0();
+                fn_8002149C(0x2F);
+                fn_800214D0();
+                fn_8002149C(0x25);
+                fn_800ACF14(p->u14.res);
+                fn_80035CA4(0x16);
+                fn_800ACF14(p->res28);
+                fn_800ACF14(p->nodes);
+                p->_3B = 3;
+                break;
+            }
+            ((void (*)(void))fn_800B0A14_removeQueue)();
+        }
+        break;
+    }
 }
 
 // .text:0x8006B668 size:0x124
