@@ -1250,7 +1250,7 @@ void fn_800B03F4(u8* src, u32 len) {
         while (aram->busy) {}
         aram->busy = 1;
         DCFlushRangeNoSync(src + first, second);
-        ARQPostRequest(&lbl_803C7994[1], 0, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, (u32)(src + first), aram->start, second, fn_800B0580);
+        ARQPostRequest(&lbl_803C7994[1], 0, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, (u32)src + first, aram->start, second, fn_800B0580);
     }
 }
 
