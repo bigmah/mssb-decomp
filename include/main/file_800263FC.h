@@ -247,6 +247,8 @@ typedef struct ParticleSortEntry {
     /* 0x4 */ f32 z;
 } ParticleSortEntry;
 
+void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
+void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002CDD0(Vec* end);
 s32 fn_8002D82C(Emitter* e);
 void fn_8002DC68(Vec* pos);

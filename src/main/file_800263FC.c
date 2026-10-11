@@ -33,6 +33,8 @@ typedef struct MtxBox {
 extern const MtxBox lbl_800E67C0; // identity
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB800;
+extern f32 lbl_803CB80C;
+extern const Vec lbl_800E67A8[2]; // (1, 0, 0), (0, 0, 0)
 extern s32 lbl_803CB7F8;          // respawn delay mask
 extern f32 lbl_803CB7FC;          // respawn angle spread (0..1)
 extern ParticleParams lbl_800F787C; // default spawn parameters
@@ -245,6 +247,7 @@ s32 fn_8002E3DC(Emitter* e);
 s32 fn_8002E828(Emitter* e);
 s32 fn_8002ECA0(Emitter* e);
 s32 fn_80031034(Emitter* e);
+void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 s32 fn_80029CC8(Emitter* e);
 
 // .text:0x800263FC size:0x59C
@@ -484,9 +487,74 @@ void fn_8002B7F8(void) {
 }
 
 // .text:0x8002BC84 size:0x64C
-void fn_8002BC84(void) {
-    return;
+// NONMATCHING 78%: float register allocation/scheduling
+#if NONMATCHING
+void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm) {
+    Mtx m;
+    Vec ref;
+    Vec v;
+    f32 angle;
+    f32 sizeScale;
+    f32 velMin;
+    f32 velRange;
+    f32 a;
+    f32 sn;
+    f32 cs;
+    Particle* p = e->particles;
+
+    ref = lbl_800E67A8[0];
+    v = lbl_800E67A8[1];
+    e->tex = prm->tex;
+    velMin = (f32)prm->unk34 / 100000.0f;
+    velRange = (f32)(prm->unk38 - prm->unk34) / 100000.0f;
+    PSVECNormalize(dir, &v);
+    angle = acos(PSVECDotProduct(&ref, &v));
+    PSVECCrossProduct(&ref, &v, &v);
+    PSMTXRotAxisRad(m, &v, angle);
+    angle = ((360.0f * (f32)rand()) / (f32)prm->count) / 32767.0f;
+    sizeScale = (f32)prm->unkC / 100000.0f;
+    do {
+        if (prm->count == 1) {
+            memcpy(&p->pos, pos, sizeof(Vec));
+            memcpy(&p->u.t5.vel, dir, sizeof(Vec));
+            PSVECScale(&p->u.t5.vel, ((f32)prm->unk10 / 100000.0f) * (0.95f + (0.1f * (f32)rand()) / 32767.0f), &p->u.t5.vel);
+        } else {
+            // spread the particles around a ring perpendicular to dir
+            v.x = 0.0f;
+            v.y = cos(angle);
+            v.z = sin(angle);
+            angle += 360.0f / (f32)prm->count;
+            PSMTXMultVec(m, &v, &v);
+            PSVECScale(&v, (f32)prm->unk3C / 100000.0f, &v);
+            PSVECAdd(pos, &v, &p->pos);
+            PSVECScale(&v, velMin + (velRange * (f32)rand()) / 32767.0f, &p->u.t5.vel);
+            PSVECScale(dir, ((f32)prm->unk10 / 100000.0f) * (0.95f + (0.1f * (f32)rand()) / 32767.0f), &v);
+            PSVECAdd(&p->u.t5.vel, &v, &p->u.t5.vel);
+        }
+        a = (((3.1415927f * ((f32)prm->unk2C / 100000.0f)) / 180.0f) * (f32)(0x3FFF - rand())) / 32767.0f;
+        sn = sin(a);
+        cs = cos(a);
+        p->sizeX = sizeScale * (sn - cs);
+        p->sizeY = sizeScale * (cs + sn);
+        p->u.t5.unk1C = 0.01f * (f32)(8 - rand() % 16) + (f32)prm->unkC / 100000.0f;
+        p->u.t5.unk20 = (f32)prm->unk20 / 100000.0f;
+        p->u.t5.unk24 = (f32)prm->unk24 / 100000.0f;
+        p->u.t5.unk2C = prm->unk18 - prm->unk1C;
+        p->u.t5.unk28 = ((f32)prm->unk14 / 100000.0f) *
+                        (0.02 * lbl_803CB80C * (rand() % 256) * 0.00390625 + (1.0f - 0.01f * lbl_803CB80C));
+        p->color.rgba = prm->unk30;
+        p->u.t5.unk30 = prm->unk28;
+        p->u.t5.unk34 = 0.0f;
+        p->colorStep.v[0] = 0;
+        p->life = p->delay = prm->unk18;
+        p->unk4C = 1;
+        p->uvFrame = 0;
+        p->texIndex = prm->texIndex;
+        p->uvOrder = 0;
+        p = p->next;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x8002C2D0 size:0x29C
 void fn_8002C2D0(void) {
