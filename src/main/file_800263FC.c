@@ -612,9 +612,34 @@ void fn_80034120(Mtx m) {
 }
 
 // .text:0x8003414C size:0xD4
-void fn_8003414C(void) {
-    return;
+// NONMATCHING 43%: the original addresses these file-static bss objects off one base (lbl_8017EC00 + offset); needs the .bss split into this unit
+#if NONMATCHING
+void fn_8003414C(Mtx view) {
+    s32 i;
+
+    PSMTXCopy(view, lbl_8017FFE0);
+    fn_800118AC(view, lbl_8017FF78[1]);
+    PSMTXCopy(lbl_8017FF78[1], lbl_8017FF78[0]);
+    lbl_8017FF78[0][2][3] = 0.0f;
+    lbl_8017FF78[0][1][3] = 0.0f;
+    lbl_8017FF78[0][0][3] = 0.0f;
+    lbl_80180010[0].x = -0.5f;
+    lbl_80180010[0].y = -0.5f;
+    lbl_80180010[0].z = 0.0f;
+    lbl_80180010[1].x = 0.5f;
+    lbl_80180010[1].y = -0.5f;
+    lbl_80180010[1].z = 0.0f;
+    lbl_80180010[2].x = 0.5f;
+    lbl_80180010[2].y = 0.5f;
+    lbl_80180010[2].z = 0.0f;
+    lbl_80180010[3].x = -0.5f;
+    lbl_80180010[3].y = 0.5f;
+    lbl_80180010[3].z = 0.0f;
+    for (i = 0; i < 4; i++) {
+        PSMTXMultVec(lbl_8017FF78[0], &lbl_80180010[i], &lbl_80180010[i]);
+    }
 }
+#endif
 
 // .text:0x80034220 size:0x30C
 void minigamesSetSomePointers(void) {
