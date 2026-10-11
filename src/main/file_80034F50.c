@@ -29,7 +29,7 @@ extern Mtx lbl_800F78E0[4];
 extern Mtx44 lbl_801F8640;
 extern Mtx44 lbl_801F8680;
 extern u8 lbl_801F86C0[];
-extern u8 lbl_803C5F74[];
+extern u8 lbl_803C5F74[]; // TODO type: ConfirmDialog (main/file_8004C5F8.h)
 
 typedef struct SpaniStrings {
     char noSlot[0x1C];  // " SabNo = %d not to add  \n"
@@ -55,12 +55,14 @@ extern s32 ARAMTransfer(void*, int, int, int);
 extern void convertTextureHeader(void* textures);
 extern void fn_800B24D4(u32);
 extern void fn_800ACFB0(void* object);
-extern void fn_80034BCC(void);
 extern void* fn_80052734(s32 index);
 extern void fn_800B0D38(s32 index, s32 value);
 extern s32 fn_800B216C(u8 flag, u32 mode, u8 index);
 extern void fn_800B21A8(s32 mode);
-extern void (*fn_8000A094(void (*cb)(void)))(void);
+struct QuadState;
+struct SpaniAttach;
+extern s32 fn_80034BCC(struct SpaniAttach* a, Mtx unused); // main/file_800263FC.h
+extern s32 (*fn_8000A094(s32 (*callback)(struct QuadState*, Mtx)))(struct QuadState*, Mtx); // TODO: main/file_80008E00.h (Anim/Spani types clash)
 extern void fn_8000B9C8(SpaniAnim* anim);
 extern void fn_8000CC4C(SpaniAnim* anim, SpaniTrack* track, void* src, u32 offset, u32 size);
 extern u32 fn_8000CEF0(SpaniAnim* anim, u16 animId, u32 track, u32 frame, SpaniKey* out);
@@ -185,7 +187,7 @@ void fn_80035168(void) {
             lbl_803CBC98++;
         }
     }
-    fn_8000A094(fn_80034BCC);
+    fn_8000A094((s32 (*)(struct QuadState*, Mtx))fn_80034BCC); // TODO type: SpaniAttach is the QuadState (lbl_80366188)
     for (i = lbl_803CBC98, obj = &lbl_8039C3E0[i]; i < lbl_803CB814; i++, obj++) {
         u32 flags = obj->flags;
         if (flags == 0) {
@@ -352,7 +354,7 @@ void fn_80035750(void* data, void* tex, s16 id) {
 // .text:0x80035838 size:0x1C8
 // NONMATCHING 99.7%: r0/r4 pick for the slot index in case 1
 #if NONMATCHING
-u8 fn_80035838(void* aramAddr, u8 id) {
+s32 fn_80035838(void* aramAddr, u8 id) {
     s32 done = 0;
 
     if (lbl_803CBC90 == 2) {

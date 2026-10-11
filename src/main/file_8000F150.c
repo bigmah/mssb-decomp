@@ -1,6 +1,15 @@
 #include "main/file_8000F150.h"
-#include "static/UnknownHomes_Static.h"
+#include "main/file_80011640.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
 #include "Dolphin/gx.h"
+#include "main/file_800B0724.h"
+#include "main/file_800BDEA0.h"
+#include "main/file_8004B284.h"
+#include "main/file_800527C4.h"
+#include "main/file_8004C5F8.h"
 
 extern u16 lbl_80366218[];
 extern TexArchive* lbl_803CBBE8;
@@ -33,15 +42,11 @@ typedef struct LayoutAnimSlot {
 } LayoutAnimSlot; // size: 0x3C
 
 extern LayoutAnimSlot lbl_803C4BE0[];
-extern u32 fn_8000CEF0(void* anim, u16 id, s32 shadow, u16 frame, LayoutInfo* out);
 extern u32 byteWiseMultiply(u32 a, u32 b);
 extern u32 multBottomBits_asFloat(u32 a, u32 b);
 
 extern f32 lbl_803CBBDC;
 extern f32 lbl_803CBBE0;
-extern void fn_800B2160(s32);
-extern void DrawSprite_TexObj(SpriteVtx* quad, TexRecord* tex);
-extern void fn_800B1314(SpriteVtx* quad, TexRecord* tex, u16 sScale, u16 tScale);
 extern void GXSetTexCoordScaleManually(GXTexCoordID coord, GXBool enable, u16 ss, u16 ts);
 
 typedef struct TextDisplayList {
@@ -67,14 +72,7 @@ typedef struct TextStatics {
 } TextStatics;
 extern TextStatics lbl_800E8F60;
 extern u8 lbl_800E90F4[][4]; // glyph widths for codes past lbl_800E8F60's table
-extern u32 lbl_803CBC18;
-extern ActorMgr lbl_8036E548;
-extern void fn_8001BA44(s32 slot, s16 charId, u8 a, u8 b, s32 c, u8 d, u8 e);
-extern void fn_800B2BA8(ActorModel* model, u16 anim, ActorModel* source, u16 sourceAnim);
-extern void fn_8004B6EC(ActorMgrActor* actor, ActorModel** model);
-extern void fn_8004B7F4(ActorMgrActor* actor, ActorModel** model);
-extern void fn_8004BAEC(ActorMgrActor* actor, ActorModel** model);
-extern void fn_8005240C(ActorMgrActor* actor, ActorModel** model);
+extern CharMgr lbl_8036E548;
 
 typedef struct FogSetting {
     /*0x0*/ u8 _00[0x8];
@@ -118,7 +116,7 @@ void fn_8000F150(TextWindow* window) {
     GXSetNumTexGens(1);
     GXSetNumTevStages(1);
     GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-    SetDisplayStateTexture((struct TexImage*)TEX_ARCHIVE_OBJ(lbl_803CBBE8, 0), 0, 0); // TODO type: TexRecord vs TexImage
+    SetDisplayStateTexture(TEX_ARCHIVE_IMG(lbl_803CBBE8, 0), 0, 0);
     GXSetArray(GX_VA_POS, lbl_800E8F60.positions, 6);
     GXSetArray(GX_VA_CLR0, &lbl_803CB780, 4);
     GXSetArray(GX_VA_TEX0, lbl_800E8F60.texCoords, 4);
@@ -206,7 +204,7 @@ void fn_8000F534(LayoutObj* obj, s32 visible) {
     lbl_80366B18.entries[owner->entry].state = 2;
     animId = obj->_64;
     anim = &lbl_803C4BE0[obj->_66].anim;
-    fn_8000CEF0(*anim, animId, 0, owner->_06, &info);
+    fn_8000CEF0(*anim, animId, 0, owner->_06, (u32*)&info); // TODO type: out is a LayoutInfo (SpaniKey)
     x = info.x;
     y = info.y;
     if (obj->flags & 8) {
@@ -224,7 +222,7 @@ void fn_8000F534(LayoutObj* obj, s32 visible) {
     } else if (size == 22) {
         lbl_80366B18.entries[owner->entry].fontSize = 0;
     } else {
-        fn_8000CEF0(*anim, info._06, 0, 0, &info2);
+        fn_8000CEF0(*anim, info._06, 0, 0, (u32*)&info2);
         size = (info2.size << 8) / 1024;
         if (size < 17) {
             lbl_80366B18.entries[owner->entry].fontSize = 2;
@@ -244,7 +242,7 @@ void fn_8000F534(LayoutObj* obj, s32 visible) {
         e->x = x;
         e->y = y;
     }
-    if (fn_8000CEF0(*anim, animId, 1, owner->_06, &info) != 0) {
+    if (fn_8000CEF0(*anim, animId, 1, owner->_06, (u32*)&info) != 0) {
         lbl_80366B18.entries[owner->entry].shadowColor = multBottomBits_asFloat(info.color, obj->color);
         lbl_80366B18.entries[owner->entry].shadowX = info.x - lbl_80366B18.entries[owner->entry].x;
         lbl_80366B18.entries[owner->entry].shadowY = info.y - lbl_80366B18.entries[owner->entry].y;
@@ -537,7 +535,7 @@ s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSi
 // .text:0x800100A4 size:0x3F4
 #if NONMATCHING
 void fn_800100A4(s32 x, s32 y, u16 s, u16 t, u16 w, u32 color, s32 kind, MtxPtr mtx) {
-    SpriteVtx quad[4];
+    QuadVtx quad[4];
     Mtx trans;
     Mtx m;
     PaddedVec p[4];
@@ -588,21 +586,21 @@ void fn_800100A4(s32 x, s32 y, u16 s, u16 t, u16 w, u32 color, s32 kind, MtxPtr 
     PSMTXMultVec(m, &p[1].v, &p[1].v);
     PSMTXMultVec(m, &p[2].v, &p[2].v);
     PSMTXMultVec(m, &p[3].v, &p[3].v);
-    quad[0].x = p[0].v.x;
-    quad[0].y = p[0].v.y;
-    quad[1].x = p[2].v.x;
-    quad[1].y = p[2].v.y;
-    quad[2].x = p[3].v.x;
-    quad[2].y = p[3].v.y;
-    quad[3].x = p[1].v.x;
-    quad[3].y = p[1].v.y;
+    quad[0].pos.x = p[0].v.x;
+    quad[0].pos.y = p[0].v.y;
+    quad[1].pos.x = p[2].v.x;
+    quad[1].pos.y = p[2].v.y;
+    quad[2].pos.x = p[3].v.x;
+    quad[2].pos.y = p[3].v.y;
+    quad[3].pos.x = p[1].v.x;
+    quad[3].pos.y = p[1].v.y;
     if (mtx != NULL) {
-        quad[0].z = p[0].v.z;
-        quad[1].z = p[2].v.z;
-        quad[2].z = p[3].v.z;
-        quad[3].z = p[1].v.z;
+        quad[0].pos.z = p[0].v.z;
+        quad[1].pos.z = p[2].v.z;
+        quad[2].pos.z = p[3].v.z;
+        quad[3].pos.z = p[1].v.z;
     } else {
-        quad[0].z = quad[1].z = quad[2].z = quad[3].z = -lbl_803CBBE0;
+        quad[0].pos.z = quad[1].pos.z = quad[2].pos.z = quad[3].pos.z = -lbl_803CBBE0;
     }
     quad[3].color = color;
     quad[2].color = color;
@@ -682,10 +680,10 @@ void DrawText(s32 index) {
     s32 speed;
 
     if (e->charLimit >= 3) {
-        if (((lbl_803C77B8._02 & 0x1100) && (lbl_80366B18.padMask & 1)) ||
-            ((lbl_803C77B8._22 & 0x1100) && (lbl_80366B18.padMask & 2)) ||
-            ((lbl_803C77B8._42 & 0x1100) && (lbl_80366B18.padMask & 4)) ||
-            ((lbl_803C77B8._62 & 0x1100) && (lbl_80366B18.padMask & 8))) {
+        if (((lbl_803C77B8[0].down & 0x1100) && (lbl_80366B18.padMask & 1)) ||
+            ((lbl_803C77B8[1].down & 0x1100) && (lbl_80366B18.padMask & 2)) ||
+            ((lbl_803C77B8[2].down & 0x1100) && (lbl_80366B18.padMask & 4)) ||
+            ((lbl_803C77B8[3].down & 0x1100) && (lbl_80366B18.padMask & 8))) {
             e->finished = 1;
             e->charLimit = 10000;
         }
@@ -1060,11 +1058,11 @@ void fn_80011000(void) {
     lbl_80366B18.fontTex[3] = (TexArchive*)((u8*)lbl_80366B18.fontArchive + lbl_80366B18.fontArchive[3]);
     for (i = 0; i < 4; i++) {
         convertTextureHeader(lbl_80366B18.fontTex[i]);
-        lbl_80366B18.fontTexObj[i] = TEX_ARCHIVE_OBJ(lbl_80366B18.fontTex[i], 0);
+        lbl_80366B18.fontTexObj[i] = TEX_ARCHIVE_IMG(lbl_80366B18.fontTex[i], 0);
     }
     convertTextureHeader(lbl_80366B18.iconArchive);
     for (i = 0; i < 9; i++) {
-        lbl_80366B18.iconTexObj[i] = TEX_ARCHIVE_OBJ(lbl_80366B18.iconArchive, i);
+        lbl_80366B18.iconTexObj[i] = TEX_ARCHIVE_IMG(lbl_80366B18.iconArchive, i);
     }
     lbl_80366B18.scaleX = 1;
     lbl_80366B18.scaleY = 1;
@@ -1092,41 +1090,41 @@ void fn_800111B4(MsgTable* table) {
 }
 
 // .text:0x800111D8 size:0x24
-ActorModel** fn_800111D8(ActorMgrActor* actor) {
-    return &lbl_8036E548.models[actor->modelIndex].model;
+GameActor** fn_800111D8(CharActor* actor) {
+    return &lbl_8036E548.slots->objects[actor->modelIndex].actor;
 }
 
 // NONMATCHING 99%: original keeps &actors[i] (addi 0xc04) in r5 and copies it to r31; ours folds the offset
 // .text:0x800111FC size:0x15C
 #if NONMATCHING
-ActorMgrActor* fn_800111FC(ActorMgrActor* actor, s32 second) {
+CharActor* fn_800111FC(CharActor* actor, s32 second) {
     s32 slot;
-    ActorMgrActor* next;
+    CharActor* next;
     if (g_d_GameSettings.GameModeSelected != 6) {
         return actor;
     }
     slot = actor->modelIndex % 4;
-    lbl_8036E548.actors[slot + 4]._25D = 0;
-    lbl_8036E548.actors[slot]._25D = 0;
+    lbl_8036E548.actors[slot + 4].mode[0] = 0;
+    lbl_8036E548.actors[slot].mode[0] = 0;
     next = &lbl_8036E548.actors[slot + ((second != 0) << 2)];
     lbl_8036E548.active[slot] = next;
     if (next->modelIndex != actor->modelIndex) {
-        fn_8001BA44(slot, actor->_062, actor->_25F, actor->_262, 0, actor->_265, actor->_269);
-        next->_064 = actor->_064;
-        next->_06C = actor->_06C;
-        next->_25E = actor->_25E;
-        next->_260 = actor->_260;
-        next->_263 = actor->_263;
-        next->_266 = actor->_266;
-        next->_26A = actor->_26A;
-        next->_26D = actor->_26D;
-        next->_066 = actor->_066;
-        next->_06E = actor->_06E;
-        next->_261 = actor->_261;
-        next->_264 = actor->_264;
-        next->_267 = actor->_267;
-        next->_26B = actor->_26B;
-        next->_26E = actor->_26E;
+        fn_8001BA44(slot, actor->anim[0], actor->_25F[0], actor->_262[0], 0, actor->_265[0], actor->_269[0]);
+        next->anim[1] = actor->anim[1];
+        next->_06A[1] = actor->_06A[1];
+        next->mode[1] = actor->mode[1];
+        next->_25F[1] = actor->_25F[1];
+        next->_262[1] = actor->_262[1];
+        next->_265[1] = actor->_265[1];
+        next->_269[1] = actor->_269[1];
+        next->_26C[1] = actor->_26C[1];
+        next->anim[2] = actor->anim[2];
+        next->_06A[2] = actor->_06A[2];
+        next->_25F[2] = actor->_25F[2];
+        next->_262[2] = actor->_262[2];
+        next->_265[2] = actor->_265[2];
+        next->_269[2] = actor->_269[2];
+        next->_26C[2] = actor->_26C[2];
     }
     return next;
 }
@@ -1134,35 +1132,35 @@ ActorMgrActor* fn_800111FC(ActorMgrActor* actor, s32 second) {
 
 // .text:0x80011358 size:0x110
 void fn_80011358(s32 index, s32 kind) {
-    ActorMgrActor* actor;
-    ActorModelSlot* models;
-    ActorModelSlot* models2;
-    ActorModel* model;
-    ActorModel** target;
+    CharActor* actor;
+    ActorObjectTable* models;
+    ActorObjectTable* models2;
+    GameActor* model;
+    GameActor** target;
     u16 anim;
     s32 i;
     if (index < 0 || index >= 13) {
         return;
     }
     actor = lbl_8036E548.active[index];
-    if (actor == NULL || (models = lbl_8036E548.models) == NULL || (models2 = lbl_8036E548.models2) == NULL) {
+    if (actor == NULL || (models = lbl_8036E548.slots) == NULL || (models2 = lbl_8036E548.slots64) == NULL) {
         return;
     }
-    anim = actor->anim;
+    anim = actor->jointIdx[36];
     if (anim == 0xFFFF) {
         return;
     }
     if (kind < 0 || kind >= 5) {
         kind = 4;
     }
-    target = &models[actor->modelIndex].model;
+    target = &models->objects[actor->modelIndex].actor;
     if (kind == 4) {
         fn_800B2BA8(*target, anim, NULL, 0);
         return;
     }
-    model = models2[kind + 21].model;
-    for (i = 0; i < model->animCount; i++) {
-        if (model->anims[i]->_14 != NULL) {
+    model = models2->objects[kind + 21].actor;
+    for (i = 0; i < model->totalBones; i++) {
+        if (model->boneArray[i]->dispObj != NULL) {
             fn_800B2BA8(*target, anim, model, i);
             return;
         }
@@ -1173,25 +1171,25 @@ void fn_80011358(s32 index, s32 kind) {
 void fn_80011468(void) {
     s32 i;
     for (i = 0; i < 13; i++) {
-        ActorMgrActor* actor = lbl_8036E548.active[i];
+        CharActor* actor = lbl_8036E548.active[i];
         if (actor != NULL) {
-            ActorModel** model = &lbl_8036E548.models[actor->modelIndex].model;
+            ActorObject* obj = &lbl_8036E548.slots->objects[actor->modelIndex];
             switch (actor->kind) {
             case 19:
-                fn_8004B6EC(actor, model);
+                fn_8004B6EC(actor, obj);
                 break;
             case 40:
             case 41:
-                fn_8004B7F4(actor, model);
+                fn_8004B7F4(actor, obj);
                 break;
             case 38:
-                (*model)->_99 = 1;
+                obj->actor->tickFlag = 1;
             case 18:
-                fn_8004BAEC(actor, model);
+                fn_8004BAEC(actor, obj);
                 break;
             case 14:
             case 37:
-                fn_8005240C(actor, model);
+                fn_8005240C(actor, obj);
                 break;
             case 6:
             case 10:
@@ -1200,14 +1198,14 @@ void fn_80011468(void) {
             case 25:
             case 26:
             case 42:
-                (*model)->_99 = 1;
+                obj->actor->tickFlag = 1;
                 break;
             case 20:
             case 43:
-                if (actor->_062 == 0x40) {
-                    (*model)->_99 = 0;
+                if (actor->anim[0] == 0x40) {
+                    obj->actor->tickFlag = 0;
                 } else {
-                    (*model)->_99 = 1;
+                    obj->actor->tickFlag = 1;
                 }
                 break;
             }
@@ -1221,9 +1219,9 @@ void fn_80011578(void) {
     s32 n;
     for (n = 13; n != 0; n--) {
         if (i >= 0 && i < 13) {
-            ActorMgrActor* actor = lbl_8036E548.active[(u32)i];
+            CharActor* actor = lbl_8036E548.active[(u32)i];
             if (actor != NULL) {
-                actor->_05C = 0;
+                actor->tevHook = NULL;
             }
         }
         i++;
@@ -1233,26 +1231,26 @@ void fn_80011578(void) {
 // fn_800115C8, size:0x3C
 void fn_800115C8(s8 index) {
     if (index >= 0 && index < 13) {
-        ActorMgrActor* actor = lbl_8036E548.active[index];
+        CharActor* actor = lbl_8036E548.active[index];
         if (actor != NULL) {
-            actor->_05C = 0;
+            actor->tevHook = NULL;
         }
     }
 }
 
 // fn_80011570, size:0x8
-u32 fn_80011570(void) {
+CharActor* fn_80011570(void) {
     return lbl_803CBC18;
 }
 
 // fn_80011604, size:0x3C
-void fn_80011604(s8 index, u32 value) {
-    ActorMgrActor* actor;
+void fn_80011604(s8 index, DOTevHook value) {
+    CharActor* actor;
     if (index < 0 || index >= 13) {
         return;
     }
     actor = lbl_8036E548.active[index];
     if (actor != NULL) {
-        actor->_05C = value;
+        actor->tevHook = value;
     }
 }

@@ -2,8 +2,12 @@
 #define __MAIN_FILE_8004C5F8_H__
 
 #include "mssbTypes.h"
-#include "static/UnknownHomes_Static.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
 #include "main/file_8004B284.h"
+struct CharActor;
+struct ActorObject;
 
 // Yes/no confirmation dialog (lbl_803C5F74).
 typedef struct ConfirmDialog {
@@ -88,43 +92,17 @@ typedef struct CharTableEntry {
     /*0x5*/ u8 _5;
 } CharTableEntry; // size: 0x6
 
-// Character actor (only the fields used here).
-typedef struct CharActor {
-    /*0x000*/ u8 _000[0x44];
-    /*0x044*/ f32 angle;
-    /*0x048*/ u8 _048[0x62 - 0x48];
-    /*0x062*/ s16 anim;
-    /*0x064*/ u8 _064[0x252 - 0x64];
-    /*0x252*/ u8 kind;
-    /*0x253*/ u8 _253;
-    /*0x254*/ s8 _254;
-    /*0x255*/ u8 _255[0x25C - 0x255];
-    /*0x25C*/ u8 _25C;
-    /*0x25D*/ u8 _25D[0x276 - 0x25D];
-    /*0x276*/ u8 flags;
-    /*0x277*/ u8 meterAlpha;
-    /*0x278*/ u8 _278[2];
-    /*0x27A*/ u8 _27A;
-} CharActor;
 
-// Animation controller handed to fn_80052634.
-typedef struct AnimCtl {
-    /*0x00*/ s32 id;
-    /*0x04*/ u8 _04[0x59 - 0x04];
-    /*0x59*/ u8 hasFrame;
-    /*0x5A*/ u8 _5A[2];
-    /*0x5C*/ f32 frame;
-} AnimCtl;
 
 // Queue task created by fn_80052634.
 typedef struct MeterTask {
     /*0x00*/ u8 _00[0x14];
-    /*0x14*/ AnimCtl* anim;
-    /*0x18*/ CharActor* actor;
+    /*0x14*/ struct ActorObject* anim;
+    /*0x18*/ struct CharActor* actor;
     /*0x1C*/ u8 kind;
 } MeterTask;
 
-void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind);
+void fn_8004C5F8(struct CharActor* actor, s32 unused, u32 kind);
 
 void fn_8004C9FC(void);
 
@@ -148,7 +126,7 @@ void fn_8004CC18(void);
 
 void fn_8004CC2C(void);
 
-void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, s16 value);
+void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, u16 value);
 
 void fn_8004D460(s32 byId, s32 entry);
 
@@ -166,9 +144,9 @@ void fn_800506E8(s8 owner, s32 entry, s32 set);
 
 s16 fn_80050760(s32 p, s32 unused, s32 pressed, u16 dirs, s32 mode);
 
-void fn_8005240C(CharActor* actor, AnimCtl* anim);
+void fn_8005240C(struct CharActor* actor, struct ActorObject* anim);
 
-void fn_80052634(CharActor* actor, AnimCtl* anim);
+void fn_80052634(struct CharActor* actor, struct ActorObject* anim);
 
 void fn_80052694(s32 index);
 

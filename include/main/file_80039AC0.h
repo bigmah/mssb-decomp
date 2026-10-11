@@ -2,6 +2,7 @@
 #define __MAIN_FILE_80039AC0_H__
 
 #include "mssbTypes.h"
+#include "main/file_8000BA3C.h" // QuadVtx
 #include "Dolphin/mtx.h"
 #include "Dolphin/GX/GXTypes.h"
 #include "main/file_80069BDC.h" // TexDesc
@@ -33,14 +34,6 @@ typedef struct ScreenFxNode {
 } ScreenFxNode; // size 0x28
 
 
-typedef struct SpriteVertex {
-    /*0x00*/ f32 x;
-    /*0x04*/ f32 y;
-    /*0x08*/ f32 z;
-    /*0x0C*/ u32 color;
-    /*0x10*/ u16 s;
-    /*0x12*/ u16 t;
-} SpriteVertex; // size 0x14
 
 typedef struct TrailEntry {
     /*0x00*/ Vec pos;

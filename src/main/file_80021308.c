@@ -28,7 +28,6 @@ extern f32 lbl_803CC554;
 extern f32 lbl_803CC558;
 extern f32 lbl_803CC55C;
 extern u8 lbl_803C6CF8[];           // TODO type: DVD/ARAM transfer state
-extern u8 gDataDecompressorValues[]; // TODO type
 
 // TODO: these belong in their own units' headers.
 void* ARAMTransfer(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr);
@@ -180,7 +179,7 @@ s32 fn_80021518(u16 gid, SoundGroupData* data) {
 }
 
 // .text:0x8002158C size:0x6C
-s32 fn_8002158C(void) {
+s32 fn_8002158C(u8* state) {
     fn_80021518(0x1E, lbl_800EF808.groups[0]);
     return 0;
 }
@@ -235,7 +234,7 @@ void fn_80021758(void) {
         task->state = 1;
         break;
     case 1:
-        if (DVD_STATE_IDLE != 1 || gDataDecompressorValues[0x366] != 0) {
+        if (DVD_STATE_IDLE != 1 || gDataDecompressorValues.ShouldWriteDataFlag != 0) {
             break;
         }
         data = lbl_800EF808.groups[task->group];

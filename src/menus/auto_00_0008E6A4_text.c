@@ -10,6 +10,7 @@
 #include "menus/auto_00_00094854_text.h"
 #include "menus/rep_10C0.h"
 #include "Dolphin/os.h"
+extern u8 lbl_803C6CF8[]; // TODO type: ARAMLoader (main/file_800A6870.h); idle at 0x715
 
 // Functions of other menus units without a header prototype yet.
 extern void fn_2_2FC0(u8, s32, s32);
@@ -63,7 +64,7 @@ void fn_2_8E6A4(void) {
         task->step = 2;
         break;
     case 2:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
             task->step = 5;
         }
         break;
@@ -113,7 +114,7 @@ void fn_2_8E8A4(void) {
         task->step = 2;
         break;
     case 2:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
             task->step = 5;
         }
         break;
@@ -166,7 +167,7 @@ void fn_2_8EA80(void) {
         task->step = 2;
         break;
     case 2:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
             task->step = 3;
         }
         break;
@@ -176,7 +177,7 @@ void fn_2_8EA80(void) {
         task->step = 4;
         break;
     case 4:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
             if (task->count == MENU_ACTOR_COUNT) {
                 task->step = 5;
             } else {

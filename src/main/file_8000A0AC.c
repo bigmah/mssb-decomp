@@ -10,7 +10,6 @@ extern const f32 lbl_803CC44C; // 0.5f
 extern const f32 lbl_803CC450; // pi / 2
 extern const f32 lbl_803CC454; // pi / 180
 
-void fn_8000E764(f32* sinCos, f32 angle);
 
 // NONMATCHING 99%: r9/r10/r11 assignment of the handle pointers and &pts[1] differs
 // .text:0x8000A0AC size:0x13C
@@ -255,10 +254,10 @@ BOOL fn_8000AF1C(Mtx out, LayoutFrame* frame, LayoutKey2* a, LayoutKey2* b, void
         if (flipA != flipB) {
             // the rotation axis changes between z and y: blend it over the segment
             angle *= lbl_803CC44C;
-            fn_8000E764(sc, lbl_803CC450 * t);
+            fn_8000E764(lbl_803CC450 * t, (Vec2f*)sc);
             axisA = sc[flipA];
             axisB = sc[flipB];
-            fn_8000E764(sc, lbl_803CC454 * angle);
+            fn_8000E764(lbl_803CC454 * angle, (Vec2f*)sc);
             q.x = lbl_803CC42C;
             q.y = axisA * sc[0];
             q.z = axisB * sc[0];

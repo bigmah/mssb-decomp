@@ -7,6 +7,7 @@
 #define SQRT2_LINKAGE extern
 #include "math.h"
 #include "Dolphin/mtx.h"
+#include "Dolphin/vec.h"
 
 #define SINF(x) ((f32)sin(x))
 #define COSF(x) ((f32)cos(x))
@@ -69,9 +70,7 @@ typedef struct _VecXZ {
     f32 x, z;
 } VecXZ;
 
-typedef struct _VecXYZ {
-    f32 x, y, z;
-} VecXYZ;
+typedef Vec VecXYZ; // same object as Dolphin Vec
 
 typedef struct _Orientationf {
     s16 yaw, pitch, roll;
@@ -2890,7 +2889,6 @@ extern s16 toyFieldHitVertTraj[2][5][5][2];
 extern s16 bODHitVertTraj[5][5][2];
 extern s16 HitVertTrajRanges[2][5][5][2];
 
-extern BOOL getAnimRelatedCoordinates(int, int, VecXYZ*);
 extern void fn_3_6C854(int, int);
 extern void playSoundEffect(int);
 extern void fn_3_5ED98(void);

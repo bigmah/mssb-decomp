@@ -1,14 +1,22 @@
 #include "main/file_8004207C.h"
-#include "static/UnknownHomes_Static.h"
+#include "main/file_80011640.h"
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
 #include "game/UnknownHomes_Game.h"
 #include "main/file_800527C4.h"
-extern s32 fn_80021410(void);
 #include "Dolphin/GX/GXPerf.h"
 #include "Dolphin/GX/GXMisc.h"
 #include "musyx/musyx.h"
 #include "Dolphin/os.h"
 #include "Dolphin/mtx.h"
 #include "stl/mem.h"
+#include "main/file_800B0724.h"
+#include "main/file_8004C5F8.h" // ConfirmDialog lbl_803C5F74
+#include "main/file_80021308.h"
+#include "main/file_800263FC.h"
+#include "main/file_80034F50.h"
 
 #pragma dont_inline on
 
@@ -43,21 +51,12 @@ typedef struct Unk80366158 {
 } Unk80366158;
 extern Unk80366158 lbl_80366158;
 
-extern void fn_8004CA14(s32 a, u16 msg);
 extern void fn_8004CC18(void);
 extern void fn_8004CC2C(void);
-extern void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, u16 value); // TODO: file_8004C5F8.h says s16; callers pass u16 unextended
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004D0F0(void);
-extern void fn_8004C19C(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
-extern void fn_8004C510(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
-// Controller status, one 0x20 block per port.
-typedef struct PadStatus {
-    /*0x00*/ u16 held;
-    /*0x02*/ u16 pressed;
-    /*0x04*/ u8 _04[0x1C];
-} PadStatus;
-#define gPads ((PadStatus*)&lbl_803C77B8) // TODO type: lbl_803C77B8_s only describes the first pad
+extern void fn_8004C19C(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+extern void fn_8004C510(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
 extern void fn_800569C8(void);
 extern void fn_800625A4(s32 port, s32 sound);
@@ -68,19 +67,11 @@ extern s32 lbl_803CBCF0;
 extern u8 lbl_80361B20[]; // per character: can be boosted
 extern u8 lbl_800E86F0[12]; // stat boosts
 extern u8 lbl_802E4B00[2][9];
-// Character actor table (owned by another unit; only active[] is used here).
-typedef struct CharActors {
-    /*0x0000*/ u8 _0000[0x2C50];
-    /*0x2C50*/ CharModel* active[13];
-} CharActors;
-extern CharActors lbl_8036E548;
 extern BatFxTables lbl_800FC0FC;
 extern EffectParams lbl_800FBEA4;
 extern EffectParams* lbl_803CB84C; // &lbl_800FBEA4
 extern s32 lbl_800FBE90[5];
 extern u32 lbl_803CBD0C;
-extern void fn_8002F1AC(Vec* pos, s32 idx);
-extern void fn_8002F258(Vec* pos, s32 idx, s32* params);
 extern char lbl_800E6920[]; // "orderchange.c"
 extern char lbl_800E6930[]; // "//OZ" + SJIS "no return value"
 extern f32 starMissionMenu(s16 charID);
@@ -1660,7 +1651,7 @@ void pauseMenuSelection(void) {
 #endif
 
 // .text:0x800486E0 size:0x84
-void fn_800486E0(s32 priority, s8 a, s8 b) {
+void fn_800486E0(u16 priority, s8 a, s8 b) {
     fn_800B0A5C_insertQueue(pauseMenuSelection, priority);
     lbl_803297E0._CF38 = 0;
     lbl_803297E0._CF3A = a;
@@ -2642,9 +2633,9 @@ s32 fn_8004A34C(MsgBox* box, s8 a, u8 msgId, s8 b, u8 arg) {
 // .text:0x8004A5B8 size:0x218
 void fn_8004A5B8(void) {
     MsgTask* task = lbl_803CC1B8;
-    PadStatus* pads = gPads;
+    PadState* pads = lbl_803C77B8;
     u8 port = task->box->port;
-    u16 buttons = pads[port].pressed & 0x100;
+    u16 buttons = pads[port].down & 0x100;
 
     lbl_803CBBCC->_10 |= 1 << port;
     switch (task->state) {
@@ -2711,9 +2702,9 @@ void fn_8004A5B8(void) {
 // .text:0x8004A7D0 size:0x210
 void fn_8004A7D0(void) {
     MsgTask* task = lbl_803CC1B8;
-    PadStatus* pads = gPads;
+    PadState* pads = lbl_803C77B8;
     u8 port = task->box->port;
-    u16 buttons = pads[port].pressed;
+    u16 buttons = pads[port].down;
 
     lbl_803CBBCC->_10 |= 1 << port;
     switch (task->state) {
@@ -2780,9 +2771,9 @@ void fn_8004A7D0(void) {
 void fn_8004A9E0(void) {
     MsgTask* task = lbl_803CC1B8;
     MsgTask* parent;
-    PadStatus* pads = gPads;
+    PadState* pads = lbl_803C77B8;
     u8 port = task->box->port;
-    u16 buttons = pads[port].pressed;
+    u16 buttons = pads[port].down;
 
     lbl_803CBBCC->_10 |= 1 << port;
     switch (task->state) {
@@ -2858,11 +2849,11 @@ s32 fn_8004ABE8(s32 clear) {
 }
 
 // .text:0x8004AC00 size:0xC4
-void fn_8004AC00(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
+void fn_8004AC00(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     if (lbl_80366158._28 == 1) {
         return;
     }
-    if (model->charID == 0) {
+    if (model->kind == 0) {
         if (frame >= (f32)lbl_803CBCF8 && frame <= (f32)lbl_803CB850) {
             lbl_803CBD00 = 1;
             if (frame == 0.5) {
@@ -2871,7 +2862,7 @@ void fn_8004AC00(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
                 lbl_803CBCFC = 0;
             }
         }
-    } else if (model->charID == 0x12) {
+    } else if (model->kind == 0x12) {
         fn_8004C19C(model, animID, colorIdx, frame);
     }
 }
@@ -2899,8 +2890,8 @@ u32 fn_8004ACDC(s32 clear) {
 }
 
 // .text:0x8004ACF4 size:0x60
-void fn_8004ACF4(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
-    switch (model->charID) {
+void fn_8004ACF4(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
+    switch (model->kind) {
     case 0x30:
     case 0x31:
     case 0x32:
@@ -2968,27 +2959,27 @@ s32 fn_8004AD54(u32 stadium, u8 flags) {
 
 // .text:0x8004AE18 size:0x190
 void fn_8004AE18(s32 idx) {
-    CharModel* model = lbl_8036E548.active[idx];
+    CharActor* model = lbl_8036E548.active[idx];
     Vec dir;
     Mtx m;
 
-    lbl_800FBEA4.rgb = (lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->unk275)].r << 24) |
-                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->unk275)].g << 16) & 0xFF0000) |
-                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->unk275)].b << 8) & 0xFF00);
+    lbl_800FBEA4.rgb = (lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].r << 24) |
+                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].g << 16) & 0xFF0000) |
+                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].b << 8) & 0xFF00);
     dir.x = 0.0f;
     dir.y = 0.0f;
     dir.z = 1.0f;
     PSMTXRotRad(m, 'Y', model->rot.y);
     PSMTXMultVec(m, &dir, &dir);
-    fn_80030D88(&model->pos, &dir, lbl_803CB84C, 5);
-    if (model->charID == 0xE || model->charID == 0x25) {
+    fn_80030D88(&model->pos, &dir, (ParticleParams5 *)lbl_803CB84C, 5); // TODO type
+    if (model->kind == 0xE || model->kind == 0x25) {
         return;
     }
-    if (model->unk276 & 2) {
+    if (model->_276 & 2) {
         getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&dir);
         fn_8002F1AC(&dir, idx * 2);
     }
-    if (model->unk276 & 4) {
+    if (model->_276 & 4) {
         getAnimRelatedCoordinates(idx, 0x22, (VecXYZ*)&dir);
         fn_8002F1AC(&dir, idx * 2 + 1);
     }
@@ -2999,22 +2990,22 @@ void fn_8004AE18(s32 idx) {
 // nmverify: fn_8004AE18 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_8004AFA8(s32 idx) {
-    CharModel* model = lbl_8036E548.active[idx];
+    CharActor* model = lbl_8036E548.active[idx];
     Vec pos;
 
     lbl_803CB84C->stamp = lbl_803CBD0C;
     lbl_800FBE90[0] = lbl_803CBD0C;
-    if (model->charID == 0xE || model->charID == 0x25) {
+    if (model->kind == 0xE || model->kind == 0x25) {
         return;
     }
     fn_8004AE18(idx);
-    if (model->unk276 & 2) {
+    if (model->_276 & 2) {
         getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&pos);
-        fn_8002F258(&pos, idx * 2, lbl_800FBE90);
+        fn_8002F258(&pos, idx * 2, (ParticleParams *)lbl_800FBE90); // TODO type
     }
-    if (model->unk276 & 4) {
+    if (model->_276 & 4) {
         getAnimRelatedCoordinates(idx, 0x22, (VecXYZ*)&pos);
-        fn_8002F258(&pos, idx * 2 + 1, lbl_800FBE90);
+        fn_8002F258(&pos, idx * 2 + 1, (ParticleParams *)lbl_800FBE90); // TODO type
     }
 }
 #endif
@@ -3025,14 +3016,14 @@ void fn_8004B1B8(u32 value) {
 }
 
 // .text:0x8004B1C0 size:0x48
-void fn_8004B1C0(s32 kind, CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
+void fn_8004B1C0(s32 kind, CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     if (kind != 11) {
         lbl_800FBE64[kind](model, animID, colorIdx, frame);
     }
 }
 
 // .text:0x8004B208 size:0x68
-void fn_8004B208(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
+void fn_8004B208(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     s8 kind;
 
     if (lbl_803CB848 != 0 && animID >= 0 && animID < 0x75) {

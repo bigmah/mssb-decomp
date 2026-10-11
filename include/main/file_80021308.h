@@ -3,14 +3,10 @@
 
 #include "mssbTypes.h"
 #include "musyx/musyx.h"
+#include "Unknown/File_0x800a64e0.h" // AssetLoadInstructions
 
 // One entry of the game's disc file tables (lbl_800EFD38 and friends).
-typedef struct DiskFileEntry {
-    /* 0x0 */ u32 offset;
-    /* 0x4 */ u32 sizeFlags; // low 28 bits: size, top 4 bits: flags
-    /* 0x8 */ u32 aramOffset;
-    /* 0xC */ u32 unkC;
-} DiskFileEntry; // size: 0x10
+typedef AssetLoadInstructions DiskFileEntry;
 
 #define DISK_FILE_SIZE(e) ((e)->sizeFlags & 0x0FFFFFFF)
 // Same as &table[id], but keeps the original's (id * 16) address arithmetic.
@@ -113,7 +109,7 @@ s32 fn_80021410(void);
 void fn_8002149C(s32 group);
 s32 fn_800214D0(void);
 s32 fn_80021518(u16 gid, SoundGroupData* data);
-s32 fn_8002158C(void);
+s32 fn_8002158C(u8* state); // fn_800216F8 callback
 void fn_800215F8(SoundGroupRequest* req);
 void fn_80021650(DiskFileEntry* entry, void* dst, void* user);
 void fn_800216F8(u8 group, s32 (*callback)(u8* state));

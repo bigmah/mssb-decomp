@@ -36,7 +36,7 @@ extern const f32 lbl_2_rodata_5DC;
 extern const f32 lbl_2_rodata_5E0;
 extern const f32 lbl_2_rodata_5E4;
 extern const f32 lbl_2_rodata_5E8;
-extern void fn_800BDA94(CharSlot* slot, MtxPtr view);
+extern void fn_800BDA94(ActorObject* slot, MtxPtr view);
 // lbl_8034E9A0 (character select state, cf. CharSelectState in main/file_800639BC.h).
 typedef struct MenuRosterChar {
     /*0x00*/ u8 _00[0x24];
@@ -76,16 +76,16 @@ extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
 extern void fn_800B0A14_removeQueue(void* unused);
 
 extern void ACTSetAnimation(void* act, void* bank, s32 a, u16 anim, f32 frame, f32 speed);
-extern void fn_800B4CA0(CharModel* model, f32 v);
-extern void fn_800B4C04(CharModel* model, f32 v);
-extern void fn_800B4AFC(CharModel* model, u8 loop);
-extern void Set_FUN_800b2b6c(CharModel* model, void* p);
-extern void fn_800BDA24(CharSlot* slot);
-extern void fn_800B2B54(CharModel* model, u16 joint, s32 arg);
-extern CharSlot* fn_800111D8(CharActor* actor);
+extern void fn_800B4CA0(GameActor* model, f32 v);
+extern void fn_800B4C04(GameActor* model, f32 v);
+extern void fn_800B4AFC(GameActor* model, u8 loop);
+extern void Set_FUN_800b2b6c(GameActor* model, void* p);
+extern void fn_800BDA24(ActorObject* slot);
+extern void fn_800B2B54(GameActor* model, u16 joint, s32 arg);
+extern ActorObject* fn_800111D8(CharActor* actor);
 extern u8 lbl_2_data_2794[];
 extern void fn_80014204(s32 count);
-extern CharSlotList* fn_80023AA4(void);
+extern ActorObjectTable* fn_80023AA4(void);
 extern void fn_80023B04(s32 count);
 extern void ANIMGet(void* bank);
 extern void convertTextureHeader(void* textures);
@@ -93,13 +93,12 @@ extern void LoadActorLayout(void* layout);
 extern void convertGeometryAndSknHeader(void* geo, void* skn);
 extern void haveActLayoutPointToGeoHeader(void* layout, void* geo);
 extern void fn_800BD190(void* geo, void* tex);
-extern void fn_8002399C(CharSlot* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
-extern void fn_800B2B74(CharModel* model, u16 joint);
-extern void fn_800B2BA8(CharModel* model, u16 joint, s32 a, s32 b);
-extern void fn_800B2C08(CharModel* model, u16 joint);
-extern void fn_800BD548(CharSlot* slot, s32 count, ...);
-extern void fn_800638B4(CharActor* actor, CharSlot* slot);
-extern void fn_8004B7B4(CharActor* actor, CharSlot* slot);
+extern void fn_8002399C(ActorObject* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
+extern void fn_800B2B74(GameActor* model, u16 joint);
+extern void fn_800B2BA8(GameActor* model, u16 joint, s32 a, s32 b);
+extern void fn_800B2C08(GameActor* model, u16 joint);
+extern void fn_800BD548(ActorObject* slot, s32 count, ...);
+extern void fn_8004B7B4(CharActor* actor, ActorObject* slot);
 extern Vec lbl_2_data_20F8[]; // menu actor positions
 extern u8 lbl_2_data_278C[];  // part file indices (fn_800126EC), 4 per part
 extern Mtx lbl_2_bss_1010C;   // menu camera view matrix
@@ -115,7 +114,7 @@ extern MenuCamera0568* fn_80052768_getCamera(int index);
 
 
 // fn_2_190B8, size:0x24
-void fn_2_190B8(CharSlot* slot) {
+void fn_2_190B8(ActorObject* slot) {
     fn_800B9AA8(slot->lights[0]);
 }
 
@@ -186,21 +185,21 @@ void fn_2_18FBC(void) {
 }
 
 // fn_2_1937C, size:0x140
-void fn_2_1937C(CharSlotList* list, MtxPtr view) {
+void fn_2_1937C(ActorObjectTable* list, MtxPtr view) {
     Mtx44 m;
     u16 i;
     f32 fx;
     f32 fy;
     CharActor* actor;
-    CharSlot* slot;
+    ActorObject* slot;
     GXSetZMode(1, GX_LEQUAL, 1);
     GXSetCullMode(GX_CULL_BACK);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     for (i = 0; i < list->count; i++) {
         actor = lbl_8036E548.active[i];
         if (actor != NULL) {
-            slot = &list->slots[i];
-            if (slot->model != NULL && slot->_6C != 0) {
+            slot = &list->objects[i];
+            if (slot->actor != NULL && slot->animateBones != 0) {
                 fx = actor->pos.x / lbl_2_rodata_5D4;
                 fy = actor->pos.y / lbl_2_rodata_5D4;
                 C_MTXFrustum(m, lbl_2_rodata_5D8 + fy, lbl_2_rodata_5DC + fy, lbl_2_rodata_5E0 + fx, lbl_2_rodata_5E4 + fx, lbl_2_rodata_5BC, lbl_2_rodata_5E8);
@@ -344,80 +343,80 @@ void fn_2_16F0C(u8 index) {
 }
 
 // fn_2_190DC, size:0x148
-void fn_2_190DC(CharSlotList* list, MtxPtr view) {
+void fn_2_190DC(ActorObjectTable* list, MtxPtr view) {
     u16 i;
-    CharSlot* slot;
+    ActorObject* slot;
     u8 flags;
     for (i = 0; i < list->count; i++) {
         if (&lbl_8036E548.trail2[i] == NULL) {
             continue;
         }
-        slot = &list->slots[i];
-        if (slot->model == NULL) {
+        slot = &list->objects[i];
+        if (slot->actor == NULL) {
             continue;
         }
-        if (slot->_58 != 0) {
-            ACTSetAnimation(slot->model, slot->act, 0, slot->animId, 0.0f, slot->_60);
+        if (slot->setAnimation != 0) {
+            ACTSetAnimation(slot->actor, slot->animBank, 0, slot->seqNum, 0.0f, slot->speed);
         }
-        if (slot->_59 != 0) {
-            fn_800B4CA0(slot->model, slot->_5C);
+        if (slot->setTime != 0) {
+            fn_800B4CA0(slot->actor, slot->time);
         }
-        if (slot->_5A != 0) {
-            fn_800B4C04(slot->model, slot->_54);
+        if (slot->setSpeed != 0) {
+            fn_800B4C04(slot->actor, slot->unk54);
         }
-        flags = slot->_5B;
+        flags = slot->visFlags;
         if (flags & 2) {
-            fn_800B4AFC(slot->model, flags & 1);
+            fn_800B4AFC(slot->actor, flags & 1);
         }
-        Set_FUN_800b2b6c(slot->model, slot->mirror);
-        if (slot->_6C != 0) {
+        Set_FUN_800b2b6c(slot->actor, slot->boneRemap);
+        if (slot->animateBones != 0) {
             fn_800BDA24(slot);
         }
-        slot->model->flags = 1;
-        slot->_58 = 0;
-        slot->_59 = 0;
-        slot->_5A = 0;
-        slot->_5B &= 1;
+        slot->actor->flags = 1;
+        slot->setAnimation = 0;
+        slot->setTime = 0;
+        slot->setSpeed = 0;
+        slot->visFlags &= 1;
     }
 }
 
 // fn_2_19224, size:0x158
-void fn_2_19224(CharSlotList* list, MtxPtr view) {
+void fn_2_19224(ActorObjectTable* list, MtxPtr view) {
     u16 i;
     CharActor* actor;
-    CharSlot* slot;
+    ActorObject* slot;
     u8 flags;
     for (i = 0; i < list->count; i++) {
         actor = lbl_8036E548.active[i];
         if (actor == NULL || actor->mode[0] == 0) {
             continue;
         }
-        slot = &list->slots[i];
-        if (slot->model == NULL) {
+        slot = &list->objects[i];
+        if (slot->actor == NULL) {
             continue;
         }
-        if (slot->_58 != 0) {
-            ACTSetAnimation(slot->model, slot->act, 0, slot->animId, 0.0f, slot->_60);
+        if (slot->setAnimation != 0) {
+            ACTSetAnimation(slot->actor, slot->animBank, 0, slot->seqNum, 0.0f, slot->speed);
         }
-        if (slot->_59 != 0) {
-            fn_800B4CA0(slot->model, slot->_5C);
+        if (slot->setTime != 0) {
+            fn_800B4CA0(slot->actor, slot->time);
         }
-        if (slot->_5A != 0) {
-            fn_800B4C04(slot->model, slot->_54);
+        if (slot->setSpeed != 0) {
+            fn_800B4C04(slot->actor, slot->unk54);
         }
-        flags = slot->_5B;
+        flags = slot->visFlags;
         if (flags & 2) {
-            fn_800B4AFC(slot->model, flags & 1);
+            fn_800B4AFC(slot->actor, flags & 1);
         }
-        Set_FUN_800b2b6c(slot->model, slot->mirror);
-        if (slot->_6C != 0) {
+        Set_FUN_800b2b6c(slot->actor, slot->boneRemap);
+        if (slot->animateBones != 0) {
             fn_800BDA24(slot);
         }
-        slot->model->flags = 1;
-        slot->_58 = 0;
-        slot->_59 = 0;
-        slot->_5A = 0;
-        slot->_5B &= 1;
+        slot->actor->flags = 1;
+        slot->setAnimation = 0;
+        slot->setTime = 0;
+        slot->setSpeed = 0;
+        slot->visFlags &= 1;
     }
 }
 
@@ -435,8 +434,8 @@ void fn_2_16F78(u8 index) {
     void* geo;
     void* skn;
     void* bank;
-    CharSlot* slot;
-    CharSlot* menuSlot;
+    ActorObject* slot;
+    ActorObject* menuSlot;
     s32 count;
     s32 i;
     s32 j;
@@ -472,64 +471,64 @@ void fn_2_16F78(u8 index) {
     slot = fn_800111D8(actor);
     fn_8002399C(slot, index, index, layout, bank, skn);
 
-    menuSlot = &lbl_8036E548.slots->slots[index];
-    menuSlot->act = actor->banks.b[5];
-    menuSlot->animId = 0;
-    menuSlot->_5C = 0.0f;
-    menuSlot->_58 = 1;
-    menuSlot->_59 = menuSlot->_5A = menuSlot->act != NULL;
-    menuSlot->_60 = 0.0f;
-    count = lbl_8036E548.slots->slots[index].model->jointCount;
+    menuSlot = &lbl_8036E548.slots->objects[index];
+    menuSlot->animBank = actor->banks.b[5];
+    menuSlot->seqNum = 0;
+    menuSlot->time = 0.0f;
+    menuSlot->setAnimation = 1;
+    menuSlot->setTime = menuSlot->setSpeed = menuSlot->animBank != NULL;
+    menuSlot->speed = 0.0f;
+    count = lbl_8036E548.slots->objects[index].actor->totalBones;
     memset(actor->jointIdx, 0xFF, 0x64);
     for (i = 0; i < count; i++) {
-        if (lbl_8036E548.slots->slots[index].model->joints[i]->id != 0xFFFF) {
-            actor->jointIdx[lbl_8036E548.slots->slots[index].model->joints[i]->id] = i;
+        if (lbl_8036E548.slots->objects[index].actor->boneArray[i]->boneID != 0xFFFF) {
+            actor->jointIdx[lbl_8036E548.slots->objects[index].actor->boneArray[i]->boneID] = i;
         }
     }
-    fn_800BD548(&lbl_8036E548.slots->slots[index], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
-    actor->_040.x = actor->_040.y = actor->_040.z = 0.0f;
-    CTRLSetTranslation(&lbl_8036E548.slots->slots[index].ctrl, 0.0f, 0.0f, 0.0f);
-    CTRLSetRotation(&lbl_8036E548.slots->slots[index].ctrl, 0.0f, 0.0f, 0.0f);
-    lbl_8036E548.slots->slots[index]._54 = 0.5f;
-    lbl_8036E548.slots->slots[index]._5A = 1;
-    fn_800B2C08(lbl_8036E548.slots->slots[index].model, lbl_8036E548.active[index] != NULL ? lbl_8036E548.active[index]->jointIdx[4] : 0xFFFF);
+    fn_800BD548(&lbl_8036E548.slots->objects[index], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+    actor->rot.x = actor->rot.y = actor->rot.z = 0.0f;
+    CTRLSetTranslation(&lbl_8036E548.slots->objects[index].worldControl.base, 0.0f, 0.0f, 0.0f);
+    CTRLSetRotation(&lbl_8036E548.slots->objects[index].worldControl.base, 0.0f, 0.0f, 0.0f);
+    lbl_8036E548.slots->objects[index].unk54 = 0.5f;
+    lbl_8036E548.slots->objects[index].setSpeed = 1;
+    fn_800B2C08(lbl_8036E548.slots->objects[index].actor, lbl_8036E548.active[index] != NULL ? lbl_8036E548.active[index]->jointIdx[4] : 0xFFFF);
     fn_8001FC4C(lbl_8036E548.active[index]);
     actor->pos.x = lbl_2_data_20F8[index].x;
     actor->pos.y = lbl_2_data_20F8[index].y;
     actor->pos.z = lbl_2_data_20F8[index].z;
     actor->_04C = 0.5f;
     actor->mode[0] = 0;
-    lbl_8036E548.slots->slots[index].callback = fn_2_190B8;
-    actor->model = slot->model;
-    fn_800B2B74(slot->model, actor->jointIdx[19]);
-    fn_800B2B74(slot->model, actor->jointIdx[25]);
+    lbl_8036E548.slots->objects[index].callback = fn_2_190B8;
+    actor->model = slot->actor;
+    fn_800B2B74(slot->actor, actor->jointIdx[19]);
+    fn_800B2B74(slot->actor, actor->jointIdx[25]);
     j = actor->jointIdx[3];
     if (j != 0xFFFF) {
         fn_800B2B54(actor->model, j, 0xD);
     }
     j = actor->jointIdx[3];
     if (j != 0xFFFF) {
-        fn_800B2BA8(slot->model, j, 0, 0);
-        slot->model->joints[(u16)j]->_136 = 1;
+        fn_800B2BA8(slot->actor, j, 0, 0);
+        slot->actor->boneArray[(u16)j]->stepTranslation = 1;
     }
     j = actor->jointIdx[2];
     if (j != 0xFFFF) {
-        fn_800B2BA8(slot->model, j, 0, 0);
-        slot->model->joints[(u16)j]->_136 = 1;
+        fn_800B2BA8(slot->actor, j, 0, 0);
+        slot->actor->boneArray[(u16)j]->stepTranslation = 1;
     }
     j = actor->jointIdx[1];
     if (j != 0xFFFF) {
-        fn_800B2BA8(slot->model, j, 0, 0);
-        slot->model->joints[(u16)j]->_136 = 1;
+        fn_800B2BA8(slot->actor, j, 0, 0);
+        slot->actor->boneArray[(u16)j]->stepTranslation = 1;
     }
     j = actor->jointIdx[36];
     if (j != 0xFFFF) {
-        fn_800B2BA8(slot->model, j, 0, 0);
+        fn_800B2BA8(slot->actor, j, 0, 0);
     }
     j = actor->jointIdx[46];
     if (j != 0xFFFF) {
-        fn_800B2BA8(slot->model, j, 0, 0);
-        slot->model->joints[(u16)j]->_136 = 1;
+        fn_800B2BA8(slot->actor, j, 0, 0);
+        slot->actor->boneArray[(u16)j]->stepTranslation = 1;
     }
 
     parts = &lbl_8036E548.partsPool[actor->modelIndex];
@@ -572,7 +571,7 @@ void fn_2_16F78(u8 index) {
         if (set != NULL) {
             fn_80025DDC(shape);
             fn_80014990(index, shape, set);
-            fn_80025C58(shape, (ShapeModel**)&slot->model);
+            fn_80025C58(shape, (ShapeModel**)&slot->actor);
         }
     }
     actor->parts->_CC = 1;
@@ -687,7 +686,7 @@ void fn_2_17ED8(void) {
 #if NONMATCHING
 void fn_2_16A98(s32 index, s32 anim, u8 loop, u8 b, s16 frame, u8 d, u8 blend) {
     CharActor* actor;
-    CharSlot* slot;
+    ActorObject* slot;
     CharAnimBank* bankData;
     s32 bank;
     s32 idx;
@@ -723,21 +722,21 @@ void fn_2_16A98(s32 index, s32 anim, u8 loop, u8 b, s16 frame, u8 d, u8 blend) {
         if (idx >= bankData->count) {
             return;
         }
-        slot->act = bankData;
-        slot->animId = idx;
-        slot->_5C = 0.0f;
-        slot->_58 = 1;
-        slot->_59 = bankData != NULL;
-        slot->_5A = bankData != NULL;
-        slot->_60 = speed;
+        slot->animBank = bankData;
+        slot->seqNum = idx;
+        slot->time = 0.0f;
+        slot->setAnimation = 1;
+        slot->setTime = bankData != NULL;
+        slot->setSpeed = bankData != NULL;
+        slot->speed = speed;
     }
     if (loop != 0) {
-        slot->_5B = 3;
+        slot->visFlags = 3;
     } else {
-        slot->_5B = 2;
+        slot->visFlags = 2;
     }
-    slot->_5C = frame * actor->_04C;
-    slot->_59 = 1;
+    slot->time = frame * actor->_04C;
+    slot->setTime = 1;
     actor->_268 = b;
 }
 #endif

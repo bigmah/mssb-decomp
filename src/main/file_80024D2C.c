@@ -570,6 +570,6 @@ void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
     st->seqs[0].hdr = lbl_803CB7F0;
     st->seqs[0].keys = lbl_803CB7F4;
     p->curIdx = -128;
-    p->unk59 = 1;
+    p->active = 1;
 }
 #endif

@@ -525,13 +525,13 @@ void fn_800B12DC(QuadVtx* verts, s32 count) {
 }
 
 // .text:0x800B1314 size:0x3C
-void fn_800B1314(QuadVtx* verts, SpriteTexInfo* tex, u16 width, u16 height) {
+void fn_800B1314(QuadVtx* verts, TexImage* tex, u16 width, u16 height) {
     DrawSprite(GX_QUADS, verts, 4, tex, width, height);
 }
 
 // .text:0x800B1350 size:0x38
-void DrawSprite_TexObj(QuadState* quad, SpriteTexInfo* tex) {
-    DrawSprite(GX_QUADS, quad->u.v, 4, tex, tex->width, tex->height);
+void DrawSprite_TexObj(QuadVtx* verts, TexImage* tex) {
+    DrawSprite(GX_QUADS, verts, 4, tex, tex->width, tex->height);
 }
 
 // .text:0x800B1388 size:0x38
@@ -552,7 +552,7 @@ void fn_800B13C0(Vec* pos, u32* colors, s32 count) {
 }
 
 // .text:0x800B1468 size:0x98
-void fn_800B1468(Vec* pos, u32 color, SpriteTexInfo* tex) {
+void fn_800B1468(Vec* pos, u32 color, TexImage* tex) {
     QuadVtx verts[4];
     s32 i;
     for (i = 0; i < 4; i++) {
@@ -570,7 +570,7 @@ void fn_800B1468(Vec* pos, u32 color, SpriteTexInfo* tex) {
 // Appends a primitive to the current layer's display list, first writing any state
 // (projection, matrix, blend, alpha test, Z mode, texture) that differs from what the
 // list already has. Consecutive quads with no state change are merged into one draw.
-void DrawSprite(s32 prim, QuadVtx* verts, s32 count, SpriteTexInfo* tex, u16 width, u16 height) {
+void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u16 height) {
     BOOL dirty = FALSE;
     BOOL changed;
     s32 alphaTest;
@@ -736,7 +736,7 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, SpriteTexInfo* tex, u16 wid
 #if NONMATCHING
 // Loads tex into texture map `map` of the current display list (if it isn't already)
 // and sets the texcoord scale. Returns whether anything was written.
-s32 fn_800B1EBC(SpriteTexInfo* tex, s32 map, u32 width, u32 height) {
+s32 fn_800B1EBC(TexImage* tex, s32 map, u32 width, u32 height) {
     s32 id = map + 1;
     s32 written;
     lbl_803CBB34->texSerial[map] = lbl_803CBB34->serial;
@@ -748,7 +748,7 @@ s32 fn_800B1EBC(SpriteTexInfo* tex, s32 map, u32 width, u32 height) {
         if (tex->tlut != NULL) {
             u32 tmem;
             u32 tlutSize = GX_TLUT_16;
-            while (tlutSize * 16 < tex->tlutCount) {
+            while (tlutSize * 16 < tex->tlutEntries) {
                 tlutSize *= 2;
             }
             tmem = (map << 13) + 0xC0000;
@@ -782,11 +782,11 @@ s32 fn_800B1EBC(SpriteTexInfo* tex, s32 map, u32 width, u32 height) {
                     wrapT = GX_CLAMP;
                 }
             }
-            GDSetTexLookupMode(id, wrapS, wrapT, tex->minFilter, tex->magFilter, tex->minLod, tex->maxLod, tex->lodBias,
+            GDSetTexLookupMode(id, wrapS, wrapT, tex->minFilter, tex->magFilter, tex->minLOD, tex->maxLOD, tex->lodBias,
                         GX_FALSE, GX_FALSE, GX_ANISO_1);
         }
         GDSetTexImgAttr(id, tex->width, tex->height, tex->format);
-        GDSetTexImgPtr(id, tex->image);
+        GDSetTexImgPtr(id, tex->data);
         written = TRUE;
     }
     if (lbl_803CBB34->texWidth != width || lbl_803CBB34->texHeight != height) {

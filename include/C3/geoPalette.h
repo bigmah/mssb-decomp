@@ -5,6 +5,8 @@
 #include "stdarg.h"
 #include "C3/unktypes.h"
 
+struct DODisplayObj;
+
 enum DOTextureState {
     DOTS_WRAP_S = 0,
     DOTS_WRAP_T = 1,

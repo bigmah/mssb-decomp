@@ -138,7 +138,7 @@ void fn_3_142088(void) {
 
 // .text:0x0014225C size:0x28 mapped:0x807812F0
 void fn_3_14225C(void) {
-    fn_800B9948(fn_3_141C8C);
+    fn_800B9948((DOTevHook)fn_3_141C8C); // TODO type: check fn_3_141C8C against DOTevHook
 }
 
 // .text:0x00142284 size:0x2EC mapped:0x80781318

@@ -2,6 +2,9 @@
 #define __MAIN_FILE_8004207C_H__
 
 #include "mssbTypes.h"
+
+struct CharActor;
+struct ActorObject;
 #include "game/UnknownHomes_Game.h"
 #include "main/file_8000F150.h"
 #include "main/file_8004B284.h"
@@ -15,7 +18,7 @@ typedef struct LayoutOwner {
 } LayoutOwner;
 
 // Per-character swing effect callback (table lbl_800FBE64).
-typedef void (*SwingFxFunc)(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
+typedef void (*SwingFxFunc)(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
 
 // Character/team select work area (lbl_8034E9A0, only the fields used here).
@@ -174,13 +177,7 @@ typedef struct MsgTask {
     /*0x1B*/ u8 _1B;
 } MsgTask;
 
-// Voice/text playback state owned by file_8004C5F8 (only the fields used here).
-typedef struct VoiceCtl {
-    /*0x00*/ u8 _00[0x1E];
-    /*0x1E*/ u8 _1E;
-} VoiceCtl;
-
-extern VoiceCtl lbl_803C5F74;
+// lbl_803C5F74 is the ConfirmDialog (main/file_8004C5F8.h).
 
 void capApplicationFunction(void);
 void transferStatsToInMemRoster(u8 team);
@@ -193,7 +190,7 @@ s32 fn_80042DA8(LayoutOwner* owner, s32 idx, s32 value);
 void pauseMenuSelection(void);
 void fn_80047CE0(void);
 u8 fn_800471F4(u8 mode, u8 team);
-void fn_800486E0(s32 priority, s8 a, s8 b);
+void fn_800486E0(u16 priority, s8 a, s8 b);
 void fn_80048764(void);
 
 #include "main/debug_menu.h"
@@ -243,18 +240,18 @@ s32 fn_8004AD54(u32 stadium, u8 flags);
 void fn_8004AE18(s32 idx);
 void fn_8004AFA8(s32 idx);
 
-void fn_8004AC00(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_8004AC00(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
 u32 fn_8004ACC4(s32 clear);
 
 u32 fn_8004ACDC(s32 clear);
 
-void fn_8004ACF4(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_8004ACF4(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
 void fn_8004B1B8(u32 value);
 
-void fn_8004B1C0(s32 kind, CharModel* model, s32 animID, u32 colorIdx, f32 frame);
-void fn_8004B208(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_8004B1C0(s32 kind, struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_8004B208(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
 void fn_8004B270(void);
 

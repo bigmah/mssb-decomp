@@ -47,6 +47,8 @@ void CTRLGetTranslation(Control *control, f32 *x, f32 *y, f32 *z);
 void CTRLBuildMatrix(Control *control, Mtx m);
 void CTRLBuildInverseMatrix(Control *control, Mtx m);
 void CTRLBuildMatrix_Flip(Control *control, Mtx m, u32 r5);
+void CTRLBuildMatrix_FlipX(Control *control, Mtx m);
+void CTRLBuildMatrix_FlipY(Control *control, Mtx m);
 void fn_800B84AC(Control *dst, Control *from, Control *to, f32 t);
 s32 fn_800B81C0(Vec *quad, Vec *box);
 s32 fn_800B7D3C(s32 index, Vec *box, Mtx m);

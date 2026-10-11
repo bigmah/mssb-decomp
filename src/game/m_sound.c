@@ -26,9 +26,10 @@ extern u8 lbl_3_data_8D70[];
 extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
 extern u8 lbl_3_common_bss_32B20[];
 extern void sndRemoveListener(void*);
-extern void fn_800A86B4(int);
-extern void fn_800A88C0(void);
-extern void fn_800A8B78(void);
+struct StreamTrack;
+extern void fn_800A86B4(s32 cmd); // main/file_800A7C08.h
+extern struct StreamTrack* fn_800A88C0(void);
+extern s32 fn_800A8B78(struct StreamTrack* track);
 extern void OSPanic(const char*, int, const char*, ...);
 extern char lbl_3_rodata_1590[];
 extern char lbl_3_rodata_15DC[];
@@ -620,8 +621,7 @@ void fn_3_90434(void) {
     SndState34C58* s;
     s32 i;
     fn_800A86B4(3);
-    fn_800A88C0();
-    fn_800A8B78();
+    fn_800A8B78(fn_800A88C0());
     s = &S34C58;
     if (sndSeqGetValid(s->unk4)) {
         sndSeqVolume(0, 0, s->unk4, 1);

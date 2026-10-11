@@ -4,18 +4,26 @@
 #include "types.h"
 #include "Dolphin/os.h"
 
-typedef struct 
+// One entry of the game's ARAM file tables (lbl_800EFD38 and friends); also
+// called DiskFileEntry (main/file_80021308.h).
+typedef struct AssetLoadInstructions
 {
-    u32 compressionConstants;
+    /* 0x0 */ u32 compressionConstants; // repetition size << 8 | look-back size
 
-    struct {
-        u8 compressionFlag:2;
-        u8 unused:2;
-        u32 originalDiskSize:28;
+    /* 0x4 */ union {
+        struct {
+            u8 compressionFlag:2;
+            u8 unused:2;
+            u32 originalDiskSize:28;
+        };
+        u32 sizeFlags; // low 28 bits: size, top 4 bits: flags
     };
-    u32 diskLocation;
-    u32 compressedSize;
-} AssetLoadInstructions;
+    /* 0x8 */ union {
+        u32 diskLocation;
+        u32 aramOffset; // relative to the table's ARAM base
+    };
+    /* 0xC */ u32 compressedSize;
+} AssetLoadInstructions; // size: 0x10
 
 u32 ReadBits(u32 bits);
 
