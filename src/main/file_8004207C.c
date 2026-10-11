@@ -190,7 +190,99 @@ void challengeStarMenu(void) {
 
 // .text:0x8004338C size:0x4F4
 void starMenuCursor(void) {
-    return;
+    u8 fixed = 0;
+    PortInput in;
+    u8 count;
+    s8 cls;
+
+    memset(&in, 0, sizeof(in));
+    in.held = g_d_GameSettings._06 == 2 ? lbl_803297E0.input[lbl_8034E9A0.teamPort[0]].held
+                                        : lbl_8034E9A0.input[0].held;
+    in.pressed = g_d_GameSettings._06 == 2 ? lbl_803297E0.input[lbl_8034E9A0.teamPort[0]].pressed
+                                           : lbl_8034E9A0.input[0].pressed;
+    in.repeat = g_d_GameSettings._06 == 2 ? lbl_803297E0.input[lbl_8034E9A0.teamPort[0]].repeat
+                                          : lbl_8034E9A0.input[0].repeat;
+    cls = starMissionCompletionTracker[lbl_803297E0._CF9C].variantClassification;
+    count = lbl_8010B42C[cls];
+    if (cls == 3) {
+        fixed = 1;
+    }
+    if (in.repeat & 8) {
+        if (fixed) {
+            return;
+        }
+        lbl_803297E0.prevStarCursor = lbl_803297E0.starCursor;
+        lbl_803297E0.starCursor -= count >> 1;
+        if (lbl_803297E0.starCursor < 0) {
+            lbl_803297E0.starCursor += count;
+        }
+        if (lbl_803297E0.prevStarCursor != lbl_803297E0.starCursor) {
+            lbl_803297E0._CF74 = 2;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+    } else if (in.repeat & 4) {
+        if (fixed) {
+            return;
+        }
+        lbl_803297E0.prevStarCursor = lbl_803297E0.starCursor;
+        lbl_803297E0.starCursor += count >> 1;
+        if (lbl_803297E0.starCursor >= count) {
+            lbl_803297E0.starCursor = lbl_803297E0.starCursor - count;
+        }
+        if (lbl_803297E0.prevStarCursor != lbl_803297E0.starCursor) {
+            lbl_803297E0._CF74 = 2;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+    } else if (in.repeat & 1) {
+        if (!fixed) {
+            lbl_803297E0.prevStarCursor = lbl_803297E0.starCursor;
+            lbl_803297E0.starCursor--;
+            if (lbl_803297E0.starCursor < 0 && lbl_803297E0.starCursor < (count >> 1)) {
+                lbl_803297E0.starCursor = (count >> 1) - 1;
+            } else if (lbl_803297E0.starCursor < (count >> 1) &&
+                       lbl_803297E0.starCursor >= (count >> 1) - 1) {
+                lbl_803297E0.starCursor = count - 1;
+            }
+        } else {
+            lbl_803297E0.prevStarCursor = lbl_803297E0.starCursor;
+            lbl_803297E0.starCursor--;
+            if (lbl_803297E0.starCursor < 0) {
+                lbl_803297E0.starCursor = count - 1;
+            }
+        }
+        if (lbl_803297E0.prevStarCursor != lbl_803297E0.starCursor) {
+            lbl_803297E0._CF74 = 2;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+    } else if (in.repeat & 2) {
+        if (!fixed) {
+            lbl_803297E0.prevStarCursor = lbl_803297E0.starCursor;
+            lbl_803297E0.starCursor++;
+            if (lbl_803297E0.starCursor > (count >> 1) - 1 && lbl_803297E0.starCursor <= (count >> 1)) {
+                lbl_803297E0.starCursor = 0;
+            } else if (lbl_803297E0.starCursor > count - 1 && lbl_803297E0.starCursor >= (count >> 1)) {
+                lbl_803297E0.starCursor = count >> 1;
+            }
+        } else {
+            lbl_803297E0.prevStarCursor = lbl_803297E0.starCursor;
+            lbl_803297E0.starCursor++;
+            if (lbl_803297E0.starCursor == count) {
+                lbl_803297E0.starCursor = 0;
+            }
+        }
+        if (lbl_803297E0.prevStarCursor != lbl_803297E0.starCursor) {
+            lbl_803297E0._CF74 = 2;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+    } else if ((in.pressed & 0x100) || (in.pressed & 0x200)) {
+        lbl_803297E0._CF74 = 3;
+        if (in.pressed & 0x100) {
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else {
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        lbl_803297E0._CF38 = 2;
+    }
 }
 
 // .text:0x80043880 size:0x1418
