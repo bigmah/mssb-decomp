@@ -154,6 +154,8 @@ extern void fn_3_59338(void);
 extern void fn_3_7B130(void);
 extern void fn_3_22850(void);
 extern int __abs(int);
+extern u32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
+extern u8 lbl_800EFBA4[]; // menu sound volumes
 extern void fn_3_7AF68(void);
 extern void fn_3_9DB5C(void);
 extern void fn_3_6C0E0(void);
@@ -1366,3 +1368,65 @@ void fn_3_5F154(void) {
     }
 }
 #endif
+
+// fn_3_5BA2C, size:0x314
+void fn_3_5BA2C(void) {
+    InputStruct* input = &g_Controls[lbl_80366158._27];
+    if (lbl_3_common_bss_34C90[0x1D8] == 0) {
+        if (input->newButtonInput & 0x100) {
+            if ((s8)lbl_3_common_bss_34C90[0x1DA] == 0) {
+                g_GameLogic._125 = 9;
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            } else {
+                lbl_3_common_bss_32724[0xCE] = 1;
+                g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+                g_GameLogic._125 = 8;
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            }
+        } else if (input->newButtonInput & 2) {
+            if ((s8)lbl_3_common_bss_34C90[0x1DA] == 0) {
+                lbl_3_common_bss_34C90[0x1DA] = 1;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        } else if (input->newButtonInput & 1) {
+            if ((s32)lbl_3_common_bss_34C90[0x1DA] == 1) {
+                lbl_3_common_bss_34C90[0x1DA] = 0;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+    } else if (lbl_3_common_bss_32724[0xD2] == 0) {
+        if (input->newButtonInput & 0x200) {
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            g_GameLogic._125 = 8;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        } else if ((input->newButtonInput & 0x20) || (input->newButtonInput & 0x40)) {
+            if (input->newButtonInput & 0x40) {
+                g_GameLogic.scoreBook_logoFadeDirectionLeft_Right = 0;
+            } else {
+                g_GameLogic.scoreBook_logoFadeDirectionLeft_Right = 1;
+            }
+            g_GameLogic.scoreBook_teamDisplayed ^= 1;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (input->newButtonInput & 2) {
+            if (g_GameLogic.scoreBook_batter_pitcherStatsDisplayed == 0) {
+                g_GameLogic.scoreBook_batter_pitcherStatsDisplayed = 1;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        } else if (input->newButtonInput & 1) {
+            if (g_GameLogic.scoreBook_batter_pitcherStatsDisplayed == 1) {
+                g_GameLogic.scoreBook_batter_pitcherStatsDisplayed = 0;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        } else if (input->buttonInput & 8) {
+            if (g_GameLogic.scoreBook_scrollIndex != 0) {
+                g_GameLogic.scoreBook_scrollIndex--;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        } else if (input->buttonInput & 4) {
+            if (g_GameLogic.scoreBook_scrollIndex < 4) {
+                g_GameLogic.scoreBook_scrollIndex++;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+    }
+}
