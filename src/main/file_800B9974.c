@@ -291,8 +291,69 @@ void fn_800BCE38(void) {
 }
 
 // .text:0x800BCEF8 size:0x298
-void fn_800BCEF8(void) {
-    return;
+void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj) {
+    void* skinPositions;
+    s32 i;
+
+    skinPositions = NULL;
+    if (layout->positionData != NULL) {
+        dispObj->positionData = GEO_RELOC(layout, layout->positionData);
+        dispObj->positionData->positionArray = GEO_RELOC(layout, dispObj->positionData->positionArray);
+        if (dispObj->positionData->compCount == 6) {
+            skinPositions = dispObj->positionData->positionArray;
+        }
+    } else {
+        dispObj->positionData = NULL;
+    }
+    if (layout->colorData != NULL) {
+        dispObj->colorData = GEO_RELOC(layout, layout->colorData);
+        dispObj->colorData->colorArray = GEO_RELOC(layout, dispObj->colorData->colorArray);
+    } else {
+        dispObj->colorData = NULL;
+    }
+    if (layout->textureData != NULL && layout->numTextureChannels != 0) {
+        dispObj->textureData = _OSAllocFromHeap(0x20, layout->numTextureChannels * sizeof(TextureData));
+        dispObj->numTextureChannels = layout->numTextureChannels;
+        for (i = 0; i < layout->numTextureChannels; i++) {
+            dispObj->textureData[i] = *(TextureData*)GEO_RELOC(&layout->textureData[i], layout);
+            dispObj->textureData[i].textureCoordArray = GEO_RELOC(layout, dispObj->textureData[i].textureCoordArray);
+        }
+    } else {
+        dispObj->textureData = NULL;
+        dispObj->numTextureChannels = 0;
+    }
+    if (layout->lightingData != NULL) {
+        dispObj->lightingData = GEO_RELOC(layout, layout->lightingData);
+        dispObj->lightingData->normalArray = GEO_RELOC(layout, dispObj->lightingData->normalArray);
+    } else {
+        dispObj->lightingData = NULL;
+    }
+    if (layout->displayData != NULL) {
+        dispObj->displayData = GEO_RELOC(layout, layout->displayData);
+        dispObj->displayData->primitiveBank = GEO_RELOC(layout, dispObj->displayData->primitiveBank);
+        dispObj->displayData->displayStateList = GEO_RELOC(layout, dispObj->displayData->displayStateList);
+        for (i = 0; i < dispObj->displayData->numStateEntries; i++) {
+            if (dispObj->displayData->displayStateList[i].primitiveList != NULL) {
+                dispObj->displayData->displayStateList[i].primitiveList =
+                    GEO_RELOC(layout, dispObj->displayData->displayStateList[i].primitiveList);
+            }
+        }
+    } else {
+        dispObj->displayData = NULL;
+    }
+    dispObj->unk15 = layout->unk15;
+    dispObj->visibility = 1;
+    dispObj->unk17 = 0;
+    dispObj->tevCallback = fn_800BA44C;
+    dispObj->shaderFunc = NULL;
+    dispObj->shaderData = NULL;
+    memcpy(dispObj->unk54[1], layout->unk1C[1], 4);
+    memcpy(dispObj->unk54[0], layout->unk1C[0], 4);
+    memcpy(dispObj->unk54[3], layout->unk1C[3], 4);
+    memcpy(dispObj->unk54[2], layout->unk1C[2], 4);
+    memcpy(dispObj->unk54[5], layout->unk1C[5], 4);
+    memcpy(dispObj->unk54[4], layout->unk1C[4], 4);
+    return skinPositions;
 }
 
 extern u32 lbl_803CC20C;
