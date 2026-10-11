@@ -35,8 +35,9 @@ static CHANNEL_DEFAULTS inpChannelDefaults[8][16];
 
 static CHANNEL_DEFAULTS inpFXChannelDefaults[64];
 
-static u32 inpLpfUpperDefault;
+// .sbss is laid out in reverse definition order.
 static u32 inpLpfLowerDefault;
+static u32 inpLpfUpperDefault;
 
 inline bool32 GetGlobalFlagSet(u8 chan, u8 midiSet, s32 flag) {
   return (flag & inpGlobalMIDIDirtyFlags[midiSet][chan]) != 0;

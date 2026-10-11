@@ -1101,6 +1101,7 @@ Musyx/seq.c:
 
 Musyx/synth.c:
 	.text       start:0x800C4AB4 end:0x800C7F60
+	.bss        start:0x8030E388 end:0x8030F970
 	.sbss       start:0x803CC248 end:0x803CC290
 	.sdata2     start:0x803CD100 end:0x803CD140
 
@@ -1118,6 +1119,7 @@ Musyx/stream.c:
 
 Musyx/synthdata.c:
 	.text       start:0x800C9324 end:0x800CB030
+	.bss        start:0x80311370 end:0x8031BBA8
 	.sbss       start:0x803CC2A0 end:0x803CC2F0
 
 Musyx/synthmacros.c:
@@ -1129,6 +1131,7 @@ Musyx/synthmacros.c:
 
 Musyx/synthvoice.c:
 	.text       start:0x800CFF18 end:0x800D1BDC
+	.bss        start:0x8031BBC8 end:0x8031CB88
 	.sbss       start:0x803CC310 end:0x803CC328
 
 Musyx/synth_ac.c:
@@ -1142,9 +1145,11 @@ Musyx/synth_adsr.c:
 
 Musyx/synth_vsamples.c:
 	.text       start:0x800D24BC end:0x800D2E54
+	.bss        start:0x8031CB88 end:0x8031D6D8
 
 Musyx/s_data.c:
 	.text       start:0x800D2E54 end:0x800D3A34
+	.bss        start:0x8031D6D8 end:0x8031DCF0
 	.sbss       start:0x803CC328 end:0x803CC338
 
 Musyx/hw_dspctrl.c:
@@ -1174,25 +1179,32 @@ Musyx/snd_math.c:
 
 Musyx/snd_midictrl.c:
 	.text       start:0x800DA13C end:0x800DC44C
+	.rodata     start:0x800E8098 end:0x800E81A8
+	.data       start:0x80115060 end:0x801150F0
+	.bss        start:0x8031F620 end:0x80326420
 	.sbss       start:0x803CC398 end:0x803CC3A0
 
 Musyx/snd_service.c:
 	.text       start:0x800DC44C end:0x800DC720
 	.data       start:0x801150F0 end:0x80115900
+	.sdata      start:0x803CBB70 end:0x803CBB78
 
 Musyx/hardware.c:
 	.text       start:0x800DC720 end:0x800DD7A0
 	.rodata     start:0x800E81D8 end:0x800E82D8
+	.bss        start:0x80326420 end:0x80326430
 	.sdata      start:0x803CBB78 end:0x803CBB88
 	.sbss       start:0x803CC3A0 end:0x803CC3A8
-	.sdata2     start:0x803CD27C end:0x803CD298
+	.sdata2     start:0x803CD270 end:0x803CD298
 
 Musyx/hw_aramdma.c:
 	.text       start:0x800DD7A0 end:0x800DE2A0
+	.bss        start:0x80326430 end:0x80326D40
 	.sbss       start:0x803CC3A8 end:0x803CC3C8
 
 Musyx/hw_dolphin.c:
 	.text       start:0x800DE2A0 end:0x800DE7F0
+	.bss        start:0x80326D40 end:0x80328DA0
 	.sbss       start:0x803CC3C8 end:0x803CC3F8
 
 Musyx/hw_memory.c:
