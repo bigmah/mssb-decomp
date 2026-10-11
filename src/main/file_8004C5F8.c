@@ -23,6 +23,7 @@ extern u8 lbl_800FE93C[];
 extern u8 lbl_800FE924[][6];
 extern u8 lbl_800FE5C8[];
 extern u8 lbl_800E854C[];
+extern s32 fn_80024C04(s32 index);
 // Sub-tables inside lbl_800FE5D4 / lbl_800FE93C (no symbols of their own).
 #define lbl_800FE5D4_colOrder ((u8(*)[6])&lbl_800FE5D4[0xC])
 #define lbl_800FE93C_alts ((u8(*)[5])lbl_800FE93C)
@@ -1352,9 +1353,75 @@ s32 fn_80050F78(s32 arg) {
 }
 
 // .text:0x80050FE8 size:0x3A4
-void fn_80050FE8(void) {
-    return;
+// NONMATCHING 95%: same cursor-reset constant hoisting issue as fn_8004D990
+#if NONMATCHING
+void fn_80050FE8(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4, s32 lockMode) {
+    RosterSelect* rs;
+    s32 i;
+    lbl_803C6028._91 = lockMode;
+    for (i = 0; i < 0x24; i++) {
+        lbl_803C6028.slotLocked[i] = 0;
+    }
+    if (lockMode != 0) {
+        for (i = 0; i < 0x24; i++) {
+            if (lbl_800FDE84[i] != 0xFF && fn_80024C04(lbl_800FDE84[i]) == 0) {
+                lbl_803C6028.slotLocked[i] = 1;
+            }
+        }
+    }
+    rs = &lbl_803C6028;
+    if (arg4 != 0) {
+        for (i = 0; i < 4; i++) {
+            rs->_78[i] = 0;
+            rs->cursor[i] = -1;
+            rs->_74[i] = 0;
+            rs->_7F[i] = -1;
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            rs->_78[i] = 0;
+            rs->cursor[i] = -1;
+            rs->_74[i] = 0;
+            rs->_7F[i] = -2;
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        rs->_83[i] = 0;
+    }
+    if (p0 != 0) {
+        lbl_803C6028.cursor[0] = 0;
+        if (p0 == 2) {
+            lbl_803C6028._74[0] = 1;
+        }
+    }
+    if (p1 != 0) {
+        lbl_803C6028.cursor[1] = 1;
+        if (p1 == 2) {
+            lbl_803C6028._74[1] = 1;
+        }
+    }
+    if (p2 != 0) {
+        lbl_803C6028.cursor[2] = 3;
+        if (p2 == 2) {
+            lbl_803C6028._74[2] = 1;
+        }
+    }
+    if (p3 != 0) {
+        lbl_803C6028.cursor[3] = 4;
+        if (p3 == 2) {
+            lbl_803C6028._74[3] = 1;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        if (lbl_803C6028.cursor[i] >= 0) {
+            lbl_803C6028.charId[i] = lbl_800FDE84[lbl_803C6028.cursor[i]];
+        }
+    }
+    for (i = 0; i < 0x24; i++) {
+        lbl_803C6028.slotOwner[i] = -1;
+    }
 }
+#endif
 
 // .text:0x8005138C size:0x974
 void fn_8005138C(void) {

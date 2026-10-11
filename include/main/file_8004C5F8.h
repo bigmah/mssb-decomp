@@ -179,6 +179,8 @@ s32 fn_8004FDE8(s32 p, s32 q);
 
 s32 fn_80050F78(s32 arg);
 
+void fn_80050FE8(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4, s32 lockMode);
+
 void fn_80052188(void);
 
 s32 fn_8005268C(void);
