@@ -38,7 +38,7 @@ extern Unk32724 lbl_3_common_bss_32724;
 extern StarChanceOdds lbl_80109420[];
 extern ARAMLoaderView lbl_803C6CF8;
 extern s32 lbl_3_data_1F74[]; // scene ids, indexed by SCENE->_260
-extern s32 lbl_3_data_1FF8[]; // scene ids per runner character
+extern s32 lbl_3_data_1FF8[4][0x37]; // scene ids per runner character: [0] fn_3_23CEC, [1..3] by base
 extern CharVoiceAnim lbl_3_data_7F7C[];
 
 extern const f32 lbl_3_rodata_A50;
@@ -668,7 +668,7 @@ void fn_3_23CEC(void) {
         break;
     case 1:
         SceneReset(3);
-        fn_3_FBDAC(lbl_3_data_1FF8[g_Runners[0].charID]);
+        fn_3_FBDAC(lbl_3_data_1FF8[0][g_Runners[0].charID]);
         g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
         gl->_125 = 2;
         break;
@@ -713,9 +713,83 @@ void fn_3_23CEC(void) {
 }
 
 // .text:0x000240F8 size:0x4A0 mapped:0x8066318C
+// NONMATCHING 96%: the original reads lbl_3_data_1FF8 rows through the pooled lbl_3_data_1D28 base (addi + lwzx)
+#if NONMATCHING
 void fn_3_240F8(void) {
-    return;
+    GameControlsStruct* gl = &g_GameLogic;
+    s32 (*scenes)[0x37] = lbl_3_data_1FF8;
+    GameInitVariables* gs = &g_d_GameSettings;
+    s32 i;
+    CharActor* a;
+    switch (gl->_125) {
+    case 0:
+        if ((s32)lbl_803C6CF8.idle == 1) {
+            g_pCamera->_AAA = 1;
+            g_pCamera->_AAE = 2;
+            fn_800B0A5C_insertQueue(fn_3_21DE4, 6);
+            gl->_125 = 1;
+        }
+        break;
+    case 1:
+        changeScene(1, 6);
+        SceneReset(5);
+        if (g_Runners[0].baseStandingOn == 1) {
+            fn_3_FBDAC(scenes[1][g_Runners[0].charID]);
+        } else if (g_Runners[0].baseStandingOn == 2) {
+            fn_3_FBDAC(scenes[2][g_Runners[0].charID]);
+        } else if (g_Runners[0].baseStandingOn == 3) {
+            fn_3_FBDAC(scenes[3][g_Runners[0].charID]);
+        } else {
+            fn_3_FBDAC(scenes[1][g_Runners[0].charID]);
+        }
+        gl->_125 = 2;
+        break;
+    case 2:
+        gl->FrameCountOfCurrentAtBat_Copy = 0;
+        gl->_125 = 3;
+    case 3:
+        fn_3_24708();
+        if (SCENE->_23C < 0x7FFE) {
+            SCENE->_23C += 1;
+        } else {
+            SCENE->_23C = 0x7FFF;
+        }
+        if (fn_3_6C938(1, 0x1100) != 0 && SCENE->_23C < SCENE->_23E - 8 && gs->GameModeSelected != 4) {
+            if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 60) {
+                SCENE->_27C = 1;
+                SCENE->_23C = SCENE->_23E - 8;
+                changeScene(3, 6);
+            }
+        } else if (SCENE->_23C == SCENE->_23E - 7) {
+            changeScene(3, 6);
+        }
+        if (SCENE->_23C == SCENE->_23E) {
+            gl->_125 = 5;
+        }
+        for (i = 0; i < 13; i++) {
+            if ((u32)i <= 1 || i == 9) {
+                fn_8001D074(i, 1);
+            } else {
+                fn_8001D074(i, 0);
+            }
+        }
+        break;
+    case 5:
+        fn_3_24630();
+        fn_3_FBD70();
+        fn_3_FBD58();
+        fn_3_7C1FC(1);
+        for (i = 0; i < 13; i++) {
+            fn_8001D074(i, 1);
+        }
+        break;
+    }
+    a = lbl_8036E548.active[9];
+    if (a->anim[0] == 0x3A && a->_06A[0] == lbl_3_data_7F7C[lbl_800E8558[g_Batter.charID]._2].anim2) {
+        fn_3_90220(g_Batter.charID, 0);
+    }
 }
+#endif
 
 // .text:0x00024598 size:0x98 mapped:0x8066362C
 void fn_3_24598(void) {

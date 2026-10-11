@@ -18,8 +18,10 @@ typedef struct ARAMLoaderView {
 
 // lbl_3_data_7F7C entry (indexed by lbl_800E8558[char]._2); only the fields used here.
 typedef struct CharVoiceAnim {
-    /*0x0*/ s16 anim; // batter animation that triggers the voice
-    /*0x2*/ u8 _2[6];
+    /*0x0*/ s16 anim;  // batter animation frame that triggers the voice (fn_3_23CEC)
+    /*0x2*/ u8 _2[2];
+    /*0x4*/ s16 anim2; // same for fn_3_240F8
+    /*0x6*/ u8 _6[2];
 } CharVoiceAnim; // size: 0x8
 
 void fn_3_21C90(void);
