@@ -2221,6 +2221,7 @@ extern f32 lbl_3_rodata_C28;
 extern f32 lbl_3_rodata_C2C;
 extern f32 lbl_3_rodata_C30;
 extern f32 lbl_3_rodata_C34;
+extern f32 lbl_3_rodata_BD0;
 extern f32 lbl_3_rodata_BC4;
 extern f32 lbl_3_rodata_BC8;
 extern f32 lbl_3_rodata_B8C;
@@ -2248,6 +2249,19 @@ static inline int FramesToReachAC8(int i, f32 x, f32 z) {
     SQRT_L(d);
     spd = *(f32*)(f + 0x58);
     return ((u32)f[0x1D1] >> 1) + (int)(d / (lbl_3_rodata_B20 == spd ? lbl_3_rodata_B60 : spd));
+}
+// Fielder i goes to cover its assigned base (0x18C), or relays/backs up.
+static inline void FielderGoCoverAC8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (f[0x1D7] == 1) {
+        SetFielderAct(i, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD0 + *(s16*)(f + 0x18C) * 2) = i;
+    } else if (*(s16*)(f + 0x18C) == 6) {
+        SetFielderAct(i, 0xB, 0x58);
+    } else {
+        SetFielderAct(i, 0xC, 0x60);
+        f[0x1D5] = 4;
+    }
 }
 // Same as SetTargetAC8 (defined later in this file).
 static inline void SetTargetAC8b(int i, f32 x, f32 z) {
@@ -2774,9 +2788,92 @@ void fn_3_41D78(void) {
 #endif
 
 // .text:0x0004207C size:0x7D4 mapped:0x80681110
+// NONMATCHING 98.8%: loop constant/pointer setup order and one early-return shape; registers
+#if NONMATCHING
+// Infielder i decides whether to cover a base, relay, or back up (after a hit).
 void fn_3_4207C(int i) {
-    return;
+    u8* f = g_Fielders + i * 0x268;
+    s16 t;
+    int j;
+    int k;
+    u8* g;
+    if (g_Ball[0x1BD1] != 0) {
+        SetFielderAct(i, 0xC, 0x60);
+        return;
+    }
+    if (i <= 5) {
+        if (g_Ball[0x1BC9] == 3) {
+            if (g_Ball[0x1BBE] > 2) {
+                SetFielderAct(i, 0xB, 0x58);
+            }
+            return;
+        }
+        t = *(s16*)(g_Ball + 0x1B7A);
+        if (t == 1 && lbl_3_rodata_B60 + *(f32*)(f + 0x70) < *(f32*)(g_Ball + 0x1A00)) {
+            if (i == 0) {
+                SetFielderAct(i, 9, 0x48);
+                return;
+            }
+            if (i != 1) {
+                if (g_Ball[0x1BBE] > 1) {
+                    SetFielderAct(i, 0xB, 0x58);
+                    return;
+                }
+                SetFielderAct(i, 0xC, 0x60);
+                f[0x1D5] = 4;
+                return;
+            }
+        }
+        if (*(f32*)(g_Ball + 0x350) > lbl_3_rodata_BD0 && *(f32*)(f + 0x68) < lbl_3_rodata_BA0 && t == 0) {
+            for (j = 6; j < 9; j++) {
+                g = g_Fielders + j * 0x268;
+                if (g[0x1DB] == 0 && *(s16*)(g + 0x17E) > 0 && *(s16*)(f + 0x17E) > *(s16*)(g + 0x17E) - 20) {
+                    FielderGoCoverAC8(i);
+                    return;
+                }
+            }
+        }
+        if (t == 0) {
+            for (j = 0; j < 6; j++) {
+                if (j != 1 && lbl_3_rodata_BA0 + *(f32*)(f + 0x70) < *(f32*)(g_Ball + 0x1A00)) {
+                    FielderGoCoverAC8(i);
+                    return;
+                }
+            }
+        }
+    }
+    for (j = 0; j < 9; j++) {
+        if (j != i && g_FieldingLogic[j + 0xF8] == 1 && ((f32*)(f + 0x84))[j] < lbl_3_rodata_B78) {
+            g = g_Fielders + j * 0x268;
+            if (*(s16*)(f + 0x17E) < *(s16*)(g + 0x17E)) {
+                g[0x1D6] = 9;
+                f[0x1D6] = 0;
+            } else {
+                g[0x1D6] = 0;
+                f[0x1D6] = 9;
+            }
+        }
+    }
+    k = *(s16*)(g_Ball + 0x1B7E);
+    if (k == -1 || i == k) {
+        return;
+    }
+    if (f[0x1D7] == 1) {
+        SetFielderAct(i, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD0 + *(s16*)(f + 0x18C) * 2) = i;
+    } else if (*(s16*)(f + 0x18C) == 6) {
+        SetFielderAct(i, 0xB, 0x58);
+    } else if (i >= 6 || *(f32*)(f + 0x70) > *(f32*)(g_Fielders + k * 0x268 + 0x70)) {
+        if (f[0x1C5] != 0) {
+            SetFielderAct(i, 0xD, 0x68);
+        } else {
+            SetFielderAct(i, 0x10, 0x80);
+        }
+    } else {
+        SetFielderAct(i, 0xC, 0x60);
+    }
 }
+#endif
 
 // .text:0x00042850 size:0x1B0 mapped:0x806818E4
 void fn_3_42850(int i) {
