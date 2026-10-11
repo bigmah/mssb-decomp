@@ -1344,3 +1344,46 @@ void fn_3_10F3D8(void) {
         break;
     }
 }
+
+typedef struct {
+    /*0x00*/ s16 resultCoins[3];
+    /*0x06*/ s16 winMarginPercent;
+    /*0x08*/ s16 lossMarginPercent;
+    /*0x0A*/ s16 starPercent;
+    /*0x0C*/ s16 _0C[3];
+    /*0x12*/ s16 bjCoins[3];
+    /*0x18*/ s16 bjPoints[3];
+    /*0x1E*/ s16 _1E;
+} CoinRewardTable; // size: 0x20
+extern CoinRewardTable lbl_3_data_607C;
+extern void fn_3_161078(void);
+
+// fn_3_106ED4, size:0x1A4
+void fn_3_106ED4(void) {
+    s32 i;
+    if (g_d_GameSettings[7] == 6) {
+        if (g_Minigame[0x19A8] == 0) {
+            if (g_Minigame[0x18E8 + g_d_GameSettings[0x35]] == 1) {
+                *(s16*)(g_d_GameSettings + 0x30) += *(s16*)(g_Minigame + 0x1890 + g_d_GameSettings[0x35] * 2);
+            } else {
+                *(s16*)(g_d_GameSettings + 0x30) += lbl_3_data_607C._1E;
+            }
+        }
+    } else if (g_Minigame[0x19A8] != 0) {
+        *(s16*)(g_d_GameSettings + 0x30) += lbl_3_data_607C._0C[1];
+    } else if (g_Minigame[0x18E8 + g_d_GameSettings[0x35]] == 1) {
+        for (i = 0; i < 4; i++) {
+            if (g_Minigame[0x18E8 + i] > 1) {
+                break;
+            }
+        }
+        *(s16*)(g_d_GameSettings + 0x30) += lbl_3_data_607C._0C[0];
+    } else if (g_d_GameSettings[0x37] != 0) {
+        *(s16*)(g_d_GameSettings + 0x30) += lbl_3_data_607C._0C[2];
+    }
+    for (i = 0; i < 4; i++) {
+        *(s16*)(g_d_GameSettings + 0x20 + i * 4) = *(s16*)(g_Minigame + 0x1890 + i * 2);
+        *(s16*)(g_d_GameSettings + 0x22 + i * 4) = g_Minigame[0x18E8 + i];
+    }
+    fn_3_161078();
+}
