@@ -948,6 +948,4 @@ void fn_2_8ACB0(s32 index, s32 value) {
 
 // .text:0x0008ACDC size:0x4
 void fn_2_8ACDC(void) {
-    return;
 }
-
