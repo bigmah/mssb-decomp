@@ -765,6 +765,7 @@ u32 fn_3_EF7B4(V3i v, s32 x) {
     return ((u8 (*)(V3i, s32))fn_3_EF55C)(v, x) != 0;
 }
 
+#pragma dont_inline off
 // .text:0x000EF800 size:0x90 mapped:0x8072E894
 void fn_3_EF800(u8* p) {
     typedef struct { u8 pad[0x90]; u8 f : 1; u8 rest : 7; } FObj;
@@ -783,11 +784,12 @@ void fn_3_EF800(u8* p) {
 // .text:0x000EF890 size:0xA0 mapped:0x8072E924
 void fn_3_EF890(u8* p) {
     fn_3_F13F8(p);
-    CTRLSetScale((Control*)p, 2.0f, 0.1f, 2.0f);
+    CTRLSetScale((Control*)p, lbl_3_rodata_2D74, lbl_3_rodata_2DF0, lbl_3_rodata_2D74);
     p[0xC6] = 6;
     p[0xC7] = 0x4B;
 }
 
+#pragma dont_inline on
 // .text:0x000EF930 size:0x224 mapped:0x8072E9C4
 extern char lbl_3_rodata_2D24[];
 extern const f64 lbl_3_rodata_2DF8;
@@ -854,19 +856,60 @@ void fn_3_F0184(void) {
 }
 
 // .text:0x000F0224 size:0x608 mapped:0x8072F2B8
-void fn_3_F0224(void) {
+void fn_3_F0224(StadCtlA* p) {
     return;
 }
 
 // .text:0x000F082C size:0x778 mapped:0x8072F8C0
-void fn_3_F082C(void) {
+void fn_3_F082C(StadCtlA* p) {
     return;
 }
 
 // .text:0x000F0FA4 size:0x454 mapped:0x80730038
-void fn_3_F0FA4(void) {
-    return;
+// NONMATCHING 98.5%: inlines fn_3_F1518/fn_3_EF890/fn_3_EF800; only the p->obj load is scheduled later (orig loads it into r3 right after mr r31,r3, g_GameLogic base in r4)
+#if NONMATCHING
+void fn_3_F0FA4(StadCtlA* p) {
+    if (g_GameLogic[0x11E] == 0xB) {
+        return;
+    }
+    if (g_GameLogic[0x11E] == 3) {
+        if (p->f99 == 0) {
+            fn_3_F1518(p);
+        }
+        return;
+    }
+    if (p->f99 != 0) {
+        p->f99 = 0;
+    }
+    if (g_GameLogic[0x11E] == 0) {
+        if (p->fc6 >= 4) {
+            fn_3_F1518(p);
+        }
+        return;
+    }
+    if (((u8*)p->obj)[0x58] != 0) {
+        AnimateActorBones(*p->obj);
+    }
+    switch (p->fc6) {
+    case 0:
+    case 1:
+        fn_3_F082C(p);
+        break;
+    case 2:
+        fn_3_F0224(p);
+        break;
+    case 4:
+        fn_3_EF930((u8*)p);
+        break;
+    case 5:
+        fn_3_EF890((u8*)p);
+        break;
+    case 6:
+        fn_3_EF800((u8*)p);
+        break;
+    }
 }
+#endif
 
 
 // .text:0x000F1448 size:0xD0 mapped:0x807304DC
@@ -882,6 +925,7 @@ void fn_3_F1448(u8* p) {
 }
 
 
+#pragma dont_inline off
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
 extern u32 lbl_3_bss_B154[];
 void fn_3_F1518(StadCtlA* p) {
@@ -893,7 +937,7 @@ void fn_3_F1518(StadCtlA* p) {
         p->fl90_hi = 1;
     }
     p->f99 = 1;
-    p->zb0 = 0.0f;
+    p->zb0 = lbl_3_rodata_2D5C;
     p->xa0 = lbl_3_data_1B9A4[p->idx].a;
     p->ya4 = lbl_3_data_1B9A4[p->idx].b;
     p->za8 = lbl_3_data_1B9A4[p->idx].c;
@@ -901,12 +945,13 @@ void fn_3_F1518(StadCtlA* p) {
     p->c.type = 0;
     CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
     CTRLSetRotation(&p->c, 0.0f, p->xac, 0.0f);
-    CTRLSetScale(&p->c, 1.0f, 1.0f, 1.0f);
+    CTRLSetScale(&p->c, lbl_3_rodata_2D50, lbl_3_rodata_2D50, lbl_3_rodata_2D50);
     fn_3_B97DC(p->obj, lbl_3_bss_B154[0]);
     ((u8*)p->obj)[0x58] = 1;
     p->fc0 = 0;
 }
 
+#pragma dont_inline on
 // .text:0x000F1674 size:0xDC mapped:0x80730708
 void fn_3_F1674(void) {
     u32 stad = g_d_GameSettings[9];
