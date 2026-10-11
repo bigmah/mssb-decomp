@@ -194,7 +194,7 @@ int fn_3_5164C(int, f32*);
 int fn_3_51798(int, f32*);
 void fn_3_51DF0(void);
 f32 fn_3_52084(int i, f32 x, f32 z);
-void fn_3_522E0(void);
+void fn_3_522E0(int i, int k, f32* outX, f32* outZ, f32* reach, f32 dx, f32 dz);
 int fn_3_52560(int, f32, f32);
 void fn_3_526DC(void);
 void fn_3_52F4C(int, f32, f32);

@@ -23,6 +23,13 @@ extern u8 lbl_800E8558[];
 extern u16 lbl_3_data_81DC[];
 extern u8 lbl_3_data_8404[];
 extern u8 lbl_3_data_84B8[];
+void fn_3_522E0(int i, int k, f32* outX, f32* outZ, f32* reach, f32 dx, f32 dz);
+int fn_3_B7C2C(Vec* a, Vec* b);
+s32 fn_3_BBBC(f32* out, s32 n, s32 step, f32 x, f32 z);
+extern u8 lbl_3_data_4924[];
+extern u8 lbl_3_data_490C[];
+typedef struct { f32 a, b, c, d, e; } Ent14;
+extern Ent14 lbl_3_data_47D0[];
 extern f32 lbl_3_rodata_C54;
 extern f32 lbl_3_rodata_C48;
 extern u8 g_Strikes[];
@@ -1345,13 +1352,354 @@ int fn_3_28224(int i) {
 #undef BALLPT
 
 // .text:0x00028CA8 size:0x14BC mapped:0x80667D3C
+#define BALLPT(n, off) (*(f32*)(g_Ball + (n) * 16 + (off)))
+/* Sets the fielder's catch state (252) and resets the per-catch flags. */
+#define SET_CATCH(f, k, st, jump)                                                                                      \
+    do {                                                                                                               \
+        *(s16*)((f) + 0x24C) = (k);                                                                                    \
+        *(s16*)((f) + 0x24E) = 0;                                                                                      \
+        (f)[0x252] = (st);                                                                                             \
+        (f)[0x253] = 0;                                                                                                \
+        (f)[0x254] = 0;                                                                                                \
+        (f)[0x255] = 0;                                                                                                \
+        (f)[0x25B] = (jump);                                                                                           \
+        (f)[0x259] = 0;                                                                                                \
+        (f)[0x25C] = 0;                                                                                                \
+        (f)[0x25D] = 0;                                                                                                \
+        (f)[0x25E] = 0;                                                                                                \
+        (f)[0x25F] = 0;                                                                                                \
+        (f)[0x264] = 0;                                                                                                \
+        (f)[0x260] = 0;                                                                                                \
+    } while (0)
+// NONMATCHING 80%: register allocation and table addressing (lhax) differ; fn_3_522E0 takes the dx/dz the original leaves in f1/f2 from the preceding distance calc
+#if NONMATCHING
 int fn_3_28CA8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int who = i;
+    int target = -1;
+    int stat3;
+    int stat8;
+    int stat9;
+    int k;
+    int k0;
+    int best;
+    int j;
+    int dbl;
+    s16* tbl;
+    f32* lim;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    f32 vx;
+    f32 vz;
+    f32 t;
+    f32 ox;
+    f32 oz;
+    f32 reach;
+    f32 sp34[3];
+    Vec mid;
+    s16 a;
+    s16 diff;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            who = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            who = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    stat3 = checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 3);
+    stat8 = checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 8);
+    stat9 = checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 9);
+    tbl = (s16*)(lbl_3_data_4924 + stat3 * 6);
+    lim = (f32*)(lbl_3_data_490C + stat3 * 12);
+    if (*(f32*)(g_Ball + 0x19D4) >= lbl_3_rodata_B64 && *(s16*)(g_Ball + 0x1B7A) == 0) {
+        /* line drive already in flight: try to snag it at the end of its path */
+        if (*(s16*)(g_Ball + 0x1B60) > tbl[0]) {
+            goto notCaught;
+        }
+        target = *(s16*)(g_Ball + 0x1B60) - 1;
+        if (fn_3_B7CDC(BALLPT(target, 0x354), BALLPT(target, 0x35C)) != 0) {
+            goto notCaught;
+        }
+        if (target < tbl[1]) {
+            goto notCaught;
+        }
+        dz = *(f32*)(g_Ball + 0x34C) - *(f32*)(f + 8);
+        dx = *(f32*)(g_Ball + 0x348) - *(f32*)f;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        fn_3_522E0(i, target, &ox, &oz, &reach, dx, dz);
+        if (i == *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0x14)) {
+            reach *= *(f32*)(*(u8**)(g_FieldingLogic + 0x70) + 8);
+        }
+        if (d - reach <= 0.0f) {
+            if (target > lbl_3_data_49DC[0xE]) {
+                goto notCaught;
+            }
+            if (d / target < lbl_3_rodata_B6C) {
+                goto notCaught;
+            }
+            goto dive;
+        }
+        if (d < reach * lim[0] + *(f32*)(f + 0x104)) {
+            goto run;
+        }
+        if (d >= reach + *(f32*)(f + 0x104) + lim[1] || d - reach <= 0.0f ||
+            *(f32*)(g_Ball + 4) < lbl_3_rodata_B64) {
+            goto notCaught;
+        }
+        goto chase;
+    }
+    if (fn_3_9FCF8(*(s16*)(g_Ball + 0x1B80), *(s16*)(f + 0x180)) > 0x100) {
+        goto notCaught;
+    }
+    if (lbl_3_rodata_B70 + *(f32*)(f + 0x70) < *(f32*)(g_Ball + 0x1A00)) {
+        goto notCaught;
+    }
+    if (*(f32*)(g_Ball + 0x1A14) > lbl_3_rodata_B74) {
+        k0 = fn_3_BBBC(sp34, tbl[0] + 15, 2, *(f32*)f, *(f32*)(f + 8));
+        if (k0 < 0) {
+            goto notCaught;
+        }
+        best = -1;
+        if (k0 < 3) {
+            k0 = 3;
+        }
+        for (k = k0, j = 0; j < 30 && k <= tbl[0]; j += 2, k += 2) {
+            if (!(BALLPT(k, 0x358) > *(f32*)(f + 0x108))) {
+                if (lbl_3_rodata_B64 + *(f32*)(f + 0x70) < BALLPT(k, 0x360) && *(f32*)(f + 0x7C) < lbl_3_rodata_B78) {
+                    break;
+                }
+                dz = BALLPT(k, 0x35C) - *(f32*)(f + 8);
+                dx = BALLPT(k, 0x354) - *(f32*)f;
+                d = dx * dx + dz * dz;
+                SQRT_L(d);
+                fn_3_522E0(i, k, &ox, &oz, &reach, dx, dz);
+                if (i == *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0x14)) {
+                    reach *= *(f32*)(*(u8**)(g_FieldingLogic + 0x70) + 8);
+                }
+                if (d - reach <= 0.0f) {
+                    k0 = k;
+                    goto searchDive;
+                }
+                if (d < reach * lim[0] + *(f32*)(f + 0x104)) {
+                    target = k;
+                    goto run;
+                }
+                if (d < reach + *(f32*)(f + 0x104) + lim[1] && d - reach > 0.0f && best < 0) {
+                    best = k;
+                }
+            }
+        }
+        if (best < 0) {
+            goto notCaught;
+        }
+        target = best;
+        goto chase;
+    }
+    for (k = tbl[1]; k < tbl[0]; k += 2) {
+        if (BALLPT(k, 0x358) > *(f32*)(f + 0xF4)) {
+            continue;
+        }
+        dz = BALLPT(k, 0x35C) - *(f32*)(f + 8);
+        dx = BALLPT(k, 0x354) - *(f32*)f;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        fn_3_522E0(i, k, &ox, &oz, &reach, dx, dz);
+        if (i == *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0x14)) {
+            reach *= *(f32*)(*(u8**)(g_FieldingLogic + 0x70) + 8);
+        }
+        if (d - reach <= 0.0f) {
+            k0 = k;
+            goto searchDive;
+        }
+        if (d < reach * lim[0] + *(f32*)(f + 0x104)) {
+            target = k;
+            goto run;
+        }
+    }
+    goto notCaught;
+
+run:
+    /* reachable on foot: run to the catch point */
+    if (f[0x1C5] != 0 && BALLPT(target, 0x360) < *(f32*)(f + 0x70)) {
+        return 0;
+    }
+    if (fn_3_B7C2C((Vec*)f, (Vec*)(g_Ball + target * 16 + 0x354)) != 0) {
+        goto chase;
+    }
+    if (stat9 != 0 || checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 7) != 0) {
+        fn_3_26664(i);
+        if (f[0x258] == 2) {
+            goto chase;
+        }
+    } else if (fn_3_B7CDC(BALLPT(target, 0x354), BALLPT(target, 0x35C)) != 0) {
+        goto chase;
+    }
+    SET_CATCH(f, target, 3, 0);
+    if (target < *(s16*)(g_Ball + 0x1B60)) {
+        f[0x264] = 1;
+    }
+    g_Ball[0x1BF0] = 0;
+    f[0x259] = 2;
+    *(f32*)(f + 0x234) = BALLPT(target, 0x354);
+    *(f32*)(f + 0x238) = BALLPT(target, 0x358);
+    *(f32*)(f + 0x23C) = BALLPT(target, 0x35C);
+    dz = *(f32*)(f + 0x23C) - *(f32*)(f + 8);
+    dx = *(f32*)(f + 0x234) - *(f32*)f;
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    reach = d - *(f32*)(f + 0x104);
+    t = reach / d;
+    if (t <= lbl_3_rodata_B7C) {
+        t = lbl_3_rodata_B7C;
+    }
+    *(f32*)(f + 0x21C) = dx * t + *(f32*)f;
+    *(f32*)(f + 0x224) = dz * t + *(f32*)(f + 8);
+    *(f32*)(f + 0x140) = game_atan2(dx, dz);
+    if (stat3 != 0) {
+        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 3);
+        playSoundEffect(0x1A8);
+    } else if (stat8 != 0) {
+        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 8);
+        playSoundEffect(0x1A8);
+    } else if (stat9 != 0) {
+        f[0x265] = 1;
+        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 8);
+        playSoundEffect(0x1A8);
+    }
+    dbl = 0;
+    if (checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 7) != 0) {
+        dbl = 1;
+        playSoundEffect(0x1A8);
+    }
+    if (target < *(s16*)(g_Ball + 0x1B60) && g_Ball[0x1BD6] == 0) {
+        if (stat8 != 0 || stat9 != 0 || dbl != 0) {
+            mid.x = *(f32*)(f + 0x21C) + *(f32*)(f + 0x234);
+            mid.y = *(f32*)(f + 0x220) + *(f32*)(f + 0x238);
+            mid.z = *(f32*)(f + 0x224) + *(f32*)(f + 0x23C);
+            mid.x = lbl_3_rodata_B80 * mid.x;
+            mid.y = lbl_3_rodata_B80 * mid.y;
+            mid.z = lbl_3_rodata_B80 * mid.z;
+            fn_3_1AE44(1, target - 25, mid.x, mid.y, mid.z);
+        } else {
+            fn_3_1AE44(0, target - 25, *(f32*)(f + 0x234), *(f32*)(f + 0x238), *(f32*)(f + 0x23C));
+        }
+    }
+    return 1;
+
+notCaught:
+    if (*(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0x14) != i) {
+        return 0;
+    }
+chase:
+    /* can't make the catch cleanly: head for the ball (or keep running) */
+    if (f[0x1C5] != 0 && (*(u8**)(g_FieldingLogic + 0x8C))[3] != 0) {
+        return 0;
+    }
+    if (target <= 0) {
+        vz = *(f32*)(f + 0x3C);
+        vx = *(f32*)(f + 0x38);
+        d = vx * vx + vz * vz;
+        SQRT_L(d);
+        if (d <= 0.0f) {
+            return 0;
+        }
+        SET_CATCH(f, tbl[2], 3, 1);
+        if (tbl[2] < *(s16*)(g_Ball + 0x1B60)) {
+            f[0x264] = 1;
+        }
+        f[0x259] = 2;
+        target = tbl[2];
+        g_Ball[0x1BF0] = 0;
+    } else {
+        if (target < tbl[2]) {
+            target = tbl[2];
+        }
+        SET_CATCH(f, target, 3, 1);
+        if (target < *(s16*)(g_Ball + 0x1B60)) {
+            f[0x264] = 1;
+        }
+        f[0x259] = 2;
+        g_Ball[0x1BF0] = 0;
+        vz = BALLPT(target, 0x35C) - *(f32*)(f + 8);
+        vx = BALLPT(target, 0x354) - *(f32*)f;
+        d = vx * vx + vz * vz;
+        SQRT_L(d);
+    }
+    vx = vx / d;
+    vz = vz / d;
+    fn_3_522E0(i, target, &ox, &oz, &reach, vx, vz);
+    *(f32*)(f + 0x21C) = vx * reach + *(f32*)f;
+    *(f32*)(f + 0x224) = vz * reach + *(f32*)(f + 8);
+    *(f32*)(f + 0x140) = game_atan2(vx, vz);
+    if (stat9 != 0) {
+        f[0x265] = 1;
+    }
+    return 1;
+
+searchDive:
+    /* the ball passes right by: look back along the path for a diving catch */
+    if (k0 > lbl_3_data_49DC[0xE]) {
+        return 0;
+    }
+    for (target = k0; target > lbl_3_data_49DC[0xF]; target -= 2) {
+        if (fn_3_B7CDC(BALLPT(target, 0x354), BALLPT(target, 0x35C)) != 0) {
+            continue;
+        }
+        if (BALLPT(target, 0x358) > *(f32*)(f + 0xF4)) {
+            continue;
+        }
+        dz = BALLPT(target, 0x35C) - *(f32*)(f + 8);
+        dx = BALLPT(target, 0x354) - *(f32*)f;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        fn_3_522E0(i, target, &ox, &oz, &reach, dx, dz);
+        if (i == *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0x14)) {
+            reach *= *(f32*)(*(u8**)(g_FieldingLogic + 0x70) + 8);
+        }
+        if (d / target < lbl_3_rodata_B6C) {
+            continue;
+        }
+        goto dive;
+    }
     return 0;
+
+dive:
+    SET_CATCH(f, target, 7, 0);
+    f[0x260] = 1;
+    if (target < *(s16*)(g_Ball + 0x1B60)) {
+        f[0x264] = 1;
+    }
+    g_Ball[0x1BF0] = 0;
+    *(f32*)(f + 0x234) = BALLPT(target, 0x354);
+    *(f32*)(f + 0x238) = BALLPT(target, 0x358);
+    *(f32*)(f + 0x23C) = BALLPT(target, 0x35C);
+    dz = *(f32*)(f + 0x23C) - *(f32*)(f + 8);
+    dx = *(f32*)(f + 0x234) - *(f32*)f;
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    reach = d - lbl_3_data_47D0[f[0x1CA]].e;
+    t = reach / d;
+    *(f32*)(f + 0x21C) = dx * t + *(f32*)f;
+    *(f32*)(f + 0x224) = dz * t + *(f32*)(f + 8);
+    f[0x261] = 0;
+    a = fn_3_9FB8C(*(f32*)g_Ball - *(f32*)f, *(f32*)(g_Ball + 8) - *(f32*)(f + 8));
+    diff = fn_3_9FCA4(a, fn_3_9FB8C(*(f32*)(f + 0x21C) - *(f32*)f, *(f32*)(f + 0x224) - *(f32*)(f + 8)));
+    if (diff < -0x500 || diff > 0x500) {
+        f[0x261] = 3;
+    } else if (diff < -0x200) {
+        f[0x261] = 1;
+    } else if (diff > 0x200) {
+        f[0x261] = 2;
+    }
+    return 1;
 }
+#endif
+#undef SET_CATCH
+#undef BALLPT
 
 // .text:0x0002A164 size:0x124 mapped:0x806691F8
-typedef struct { f32 a, b, c, d, e; } Ent14;
-extern Ent14 lbl_3_data_47D0[];
 extern int fn_3_B7CDC(f32, f32);
 int fn_3_2A164(int i) {
     u8* f = g_Fielders + i * 0x268;
@@ -5994,7 +6342,7 @@ f32 fn_3_52084(int i, f32 x, f32 z) {
 }
 
 // .text:0x000522E0 size:0x280 mapped:0x80691374
-void fn_3_522E0(void) {
+void fn_3_522E0(int i, int k, f32* outX, f32* outZ, f32* reach, f32 dx, f32 dz) {
     return;
 }
 
