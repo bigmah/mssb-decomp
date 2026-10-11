@@ -21,7 +21,7 @@ typedef struct CharSelectState {
     /*0x470F*/ s8 teamRating[2]; // 0-5, from the average of fn_800670A0
     /*0x4711*/ u8 _4711[0x4757 - 0x4711];
     /*0x4757*/ u8 charFlag[0x36]; // per character id
-    /*0x478D*/ u8 _478D[0x47F9 - 0x478D];
+    /*0x478D*/ u8 chemOrder[2][0x36]; // character ids sorted by chemistry with the captain
     /*0x47F9*/ s8 chemPartners[2][9][9]; // per player: ids of teammates with good chemistry, sorted
     /*0x489B*/ u8 _489B[0x48AE - 0x489B];
     /*0x48AE*/ u8 _48AE;
@@ -116,5 +116,6 @@ u8 fn_80067264(s32 team, s32 captain);
 u8 fn_800675C4(s32 team, s32 captain);
 void fn_800678CC(s32 team);
 void fn_80064534(void);
+void fn_80067C48(u8 team);
 
 #endif

@@ -527,9 +527,42 @@ BOOL fn_80067B40(s32 unused, u8 charId, u8 flag) {
 }
 
 // .text:0x80067C48 size:0x328
-void fn_80067C48(void) {
-    return;
+// NONMATCHING 96%: order of the roster[c / 9][c % 9] address arithmetic differs
+#if NONMATCHING
+void fn_80067C48(u8 team) {
+    u8 order[0x36];
+    u8 chem[0x36];
+    CharacterStats* captain;
+    s32 i;
+    s32 j;
+    u8 best;
+    u8 to;
+    u8 tc;
+
+    captain = &lbl_8034E9A0.roster[0][lbl_8034E9A0.captain[team] % 9] + (lbl_8034E9A0.captain[team] / 9) * 9;
+    for (i = 0; i < 0x36; i++) {
+        chem[i] = ((u8*)captain)[i + 0x3B];
+        order[i] = i;
+    }
+    for (i = 0; i < 0x36; i++) {
+        best = chem[i];
+        for (j = i + 1; j < 0x36; j++) {
+            if (best < chem[j]) {
+                tc = chem[i];
+                best = chem[j];
+                to = order[i];
+                chem[i] = chem[j];
+                order[i] = order[j];
+                chem[j] = tc;
+                order[j] = to;
+            }
+        }
+    }
+    for (i = 0; i < 0x36; i++) {
+        lbl_8034E9A0.chemOrder[team][i] = order[i];
+    }
 }
+#endif
 
 // .text:0x80067F70 size:0x534
 void fn_80067F70(void) {
