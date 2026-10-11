@@ -194,8 +194,73 @@ void DOGet(struct DODisplayObj** dispObj, DODisplayDataPtr pal, u16 id, char* na
 }
 
 // .text:0x800BCB44 size:0x21C
-void LoadGeoPalette(void) {
-    return;
+void* LoadGeoPalette(DODisplayDataPtr pal) {
+    u16 j;
+    void* skinPositions;
+    DODisplayLayout* layout;
+    u16 i;
+
+    skinPositions = NULL;
+    if (pal->userDataSize != 0 && pal->userData != NULL) {
+        pal->userData = GEO_RELOC(pal->userData, pal);
+    }
+    pal->descriptorArray = GEO_RELOC(pal->descriptorArray, pal);
+    for (i = 0; i < pal->numDescriptors; i++) {
+        pal->descriptorArray[i].layout = GEO_RELOC(pal, pal->descriptorArray[i].layout);
+        pal->descriptorArray[i].name = GEO_RELOC(pal, pal->descriptorArray[i].name);
+        layout = pal->descriptorArray[i].layout;
+        if (layout->positionData != NULL) {
+            layout->positionData = GEO_RELOC(layout->positionData, layout);
+            if (layout->positionData->positionArray != NULL) {
+                layout->positionData->positionArray = GEO_RELOC(layout->positionData->positionArray, layout);
+            }
+            if (layout->positionData->compCount == 6) {
+                skinPositions = layout->positionData->positionArray;
+            }
+        }
+        if (layout->colorData != NULL) {
+            layout->colorData = GEO_RELOC(layout->colorData, layout);
+            if (layout->colorData->colorArray != NULL) {
+                layout->colorData->colorArray = GEO_RELOC(layout->colorData->colorArray, layout);
+            }
+        }
+        if (layout->textureData != NULL) {
+            layout->textureData = GEO_RELOC(layout->textureData, layout);
+            for (j = 0; j < layout->numTextureChannels; j++) {
+                if (layout->textureData[j].textureCoordArray != NULL) {
+                    layout->textureData[j].textureCoordArray = GEO_RELOC(layout, layout->textureData[j].textureCoordArray);
+                }
+                if (layout->textureData[j].texturePaletteName != NULL) {
+                    layout->textureData[j].texturePaletteName = GEO_RELOC(layout, layout->textureData[j].texturePaletteName);
+                }
+            }
+        }
+        if (layout->lightingData != NULL) {
+            layout->lightingData = GEO_RELOC(layout->lightingData, layout);
+            if (layout->lightingData->normalArray != NULL) {
+                layout->lightingData->normalArray = GEO_RELOC(layout->lightingData->normalArray, layout);
+            }
+        }
+        if (layout->displayData != NULL) {
+            layout->displayData = GEO_RELOC(layout->displayData, layout);
+            if (layout->displayData->primitiveBank != NULL) {
+                layout->displayData->primitiveBank = GEO_RELOC(layout->displayData->primitiveBank, layout);
+            }
+            if (layout->displayData->displayStateList != NULL) {
+                layout->displayData->displayStateList = GEO_RELOC(layout->displayData->displayStateList, layout);
+            }
+            for (j = 0; j < layout->displayData->numStateEntries; j++) {
+                if (layout->displayData->displayStateList[j].primitiveList != NULL) {
+                    layout->displayData->displayStateList[j].primitiveList =
+                        GEO_RELOC(layout, layout->displayData->displayStateList[j].primitiveList);
+                }
+            }
+        }
+        if (layout->unk18 != NULL) {
+            layout->unk18 = GEO_RELOC(layout->unk18, layout);
+        }
+    }
+    return skinPositions;
 }
 
 // .text:0x800BCD60 size:0x5C
