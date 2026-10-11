@@ -31,7 +31,8 @@ static inline void updateProjection(ChallengeDebugCamera* camera) {
 
 // .text:0x00027330 size:0xA8
 void fn_1_27330(ChallengeDebugCamera* camera) {
-    return;
+    updateView(camera);
+    updateProjection(camera);
 }
 
 // .text:0x000273D8 size:0x188
