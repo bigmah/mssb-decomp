@@ -28,7 +28,8 @@ struct MenuEntry {
     u8 _3C[0x10];
     f32 heading;
     f32 _50;
-    u8 _54[0x18];
+    f32 _54;
+    u8 _58[0x14];
     f32 storedX;
     f32 storedZ;
     Vec target;
@@ -2563,6 +2564,174 @@ void fn_2_699D4(s32 index) {
             }
         }
         entry->heading = entry->angle34;
+    }
+    if (lbl_2_rodata_B58 == entry->_38 && entry->flagBD == 0) {
+        entry->flagBC = 1;
+    }
+}
+
+extern const f32 lbl_2_rodata_BF0;
+extern const f32 lbl_2_rodata_BF4;
+extern const f32 lbl_2_rodata_BF8;
+extern const f32 lbl_2_rodata_BFC;
+extern const f32 lbl_2_rodata_C00;
+extern const f32 lbl_2_rodata_C04;
+extern const f32 lbl_2_rodata_C08;
+extern const f32 lbl_2_rodata_C0C;
+extern f32 lbl_2_data_3F44[];
+
+// .text:0x69E1C size:0x634
+void fn_2_69E1C(s32 index) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    Mtx rotation;
+    Vec movement;
+    f32 dx;
+    f32 dz;
+    f32 distance;
+    f32 difference;
+    f32 magnitude;
+    f32 step;
+
+    if (entry->_50 > lbl_2_rodata_B58) {
+        s16 heading = fn_2_4A2C4(entry->heading);
+        fn_2_4A310(heading, fn_2_4A2C4(entry->_54));
+        entry->flagBC = 0;
+        entry->flagBD = 0;
+        if (entry->_9E < 0x7FFE) {
+            entry->_9E++;
+        } else {
+            entry->_9E = 0x7FFF;
+        }
+    } else {
+        entry->flagBC = 1;
+        if (entry->_9E > 45) {
+            entry->_9E = 45;
+        }
+        if (entry->_9E != 0) {
+            entry->_9E--;
+        }
+    }
+    switch (entry->mode) {
+    case 0:
+        fn_2_69710(index);
+        break;
+    case 1:
+    case 5:
+        entry->_38 -= lbl_2_rodata_BF0;
+        break;
+    case 2:
+    case 6:
+        entry->_38 -= lbl_2_rodata_BF4;
+        break;
+    case 3:
+    case 7:
+        entry->_38 -= lbl_2_rodata_BF8;
+        break;
+    case 4:
+    case 8:
+        entry->mode += 20;
+        break;
+    case 24:
+    case 28:
+        entry->_38 -= lbl_2_rodata_BFC;
+        break;
+    case 9:
+        entry->_38 = lbl_2_rodata_B58;
+        break;
+    case 10:
+        entry->_38 = lbl_2_rodata_C00;
+        break;
+    case 11:
+        entry->_38 = lbl_2_rodata_BA4;
+        break;
+    case 12:
+        if (index == 0) {
+            entry->_38 = lbl_2_data_3F44[((u8*)lbl_2_bss_1A8248[0])[0x441C]];
+        } else {
+            entry->_38 = lbl_2_rodata_C04;
+        }
+        break;
+    case 13:
+        entry->_38 = lbl_2_rodata_C08;
+        break;
+    case 14:
+        entry->_38 = lbl_2_rodata_C0C;
+        break;
+    }
+    if (entry->_38 <= 0.0f) {
+        entry->_38 = 0.0f;
+    }
+    entry->_50 -= entry->_38;
+    dx = entry->position.x - entry->previousPosition.x;
+    dz = entry->position.z - entry->previousPosition.z;
+    {
+        f32 xx = dx * dx;
+        f32 zz = dz * dz;
+        distance = xx + zz;
+        if (distance > 0.0f) {
+            f64 xd = (f64)distance;
+            f64 guess = __frsqrte(xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            distance = (f32)(xd * guess);
+        } else if (distance < lbl_2_rodata_B88) {
+            distance = NAN;
+        } else if (isnan(distance)) {
+            distance = NAN;
+        }
+    }
+    if (distance < entry->_38) {
+        entry->_50 = lbl_2_rodata_BB0;
+    }
+    if (!(entry->_38 <= lbl_2_rodata_B58)) {
+        if (entry->mode != 4 && entry->mode != 24 && entry->_50 > lbl_2_rodata_B58) {
+            entry->heading = (f32)atan2(-(entry->previousPosition.x - entry->position.x),
+                -(entry->previousPosition.z - entry->position.z));
+        }
+        PSMTXRotRad(rotation, 'Y', entry->angle34);
+        movement.x = lbl_2_rodata_B58;
+        movement.y = lbl_2_rodata_B58;
+        movement.z = -entry->_38;
+        PSMTXMultVec(rotation, &movement, &movement);
+        entry->velocity.x = movement.x;
+        entry->velocity.z = movement.z;
+        entry->position.x += entry->velocity.x;
+        entry->position.z += entry->velocity.z;
+        if (entry->mode != 4 && entry->mode != 24 && entry->_50 > lbl_2_rodata_B58) {
+            entry->heading = (f32)atan2(-(entry->previousPosition.x - entry->position.x),
+                -(entry->previousPosition.z - entry->position.z));
+            difference = fn_2_4A18C(entry->angle34 - entry->heading);
+            magnitude = (f32)__fabs(difference);
+            if (magnitude > lbl_2_rodata_BB4) {
+                step = lbl_2_rodata_BB8;
+            } else if (magnitude > lbl_2_rodata_BB8) {
+                step = lbl_2_rodata_BBC;
+            } else if (magnitude > lbl_2_rodata_BBC) {
+                step = lbl_2_rodata_BC0;
+            } else if (magnitude > lbl_2_rodata_BC0) {
+                step = lbl_2_rodata_BC4;
+            } else if (magnitude > lbl_2_rodata_BC4) {
+                step = lbl_2_rodata_BC8;
+            } else if (magnitude > lbl_2_rodata_BC8) {
+                step = lbl_2_rodata_BCC;
+            } else if (magnitude > lbl_2_rodata_BCC) {
+                step = lbl_2_rodata_BD0;
+            } else if (magnitude > lbl_2_rodata_BD0) {
+                step = lbl_2_rodata_BD4;
+            } else if (magnitude < lbl_2_rodata_BD0) {
+                step = lbl_2_rodata_BD8;
+            }
+            if (!((difference < lbl_2_rodata_BE0 && difference > lbl_2_rodata_B58) ||
+                  (difference > lbl_2_rodata_BE8 && difference < lbl_2_rodata_B58))) {
+                if (difference < lbl_2_rodata_B58) {
+                    entry->angle34 += step;
+                } else {
+                    entry->angle34 -= step;
+                }
+            }
+            entry->heading = entry->angle34;
+        }
     }
     if (lbl_2_rodata_B58 == entry->_38 && entry->flagBD == 0) {
         entry->flagBC = 1;
