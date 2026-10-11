@@ -68,6 +68,17 @@ typedef struct {
     s32 mode;
 } ChallengeCurvePoint;
 
+// Rope mass point used by fn_1_24C4C (0x3C bytes, cf. RopeNode in main/file_80037054.h).
+typedef struct {
+    /* 0x00 */ f32 mass;
+    /* 0x04 */ f32 invMass;
+    /* 0x08 */ Vec pos;
+    /* 0x14 */ Vec prevPos;
+    /* 0x20 */ Vec vel;
+    /* 0x2C */ Vec force;
+    /* 0x38 */ u32 fixed;
+} ChallengeRopeNode;
+
 typedef struct {
     f32 params[6];
     f32 step;
@@ -222,5 +233,6 @@ s16 fn_1_1E290(s16 sel, u16 held, u16 pressed, u16 repeat);
 s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat);
 s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat);
 void fn_1_1F900(ChallengeTextureStages* stages);
+void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f32 damping, f32 restLen, f32 dtScale);
 
 #endif

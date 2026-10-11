@@ -1915,3 +1915,98 @@ void fn_1_1F900(ChallengeTextureStages* stages) {
     }
 }
 #endif
+
+extern const f32 lbl_1_rodata_78CC;
+extern const f32 lbl_1_rodata_78D0;
+
+// .text:0x24C4C size:0x418
+void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f32 damping, f32 restLen, f32 dtScale) {
+    u8* q = lbl_803CC1B8[0];
+    f32 drag;
+    s32 k;
+    ChallengeRopeNode* node;
+    ChallengeRopeNode* prev;
+    Vec d;
+    Vec dv;
+    Vec n;
+    f32 first;
+    f32 speed;
+    f32 len;
+    f32 damp;
+    f32 stretch;
+    f32 friction;
+    f32 mag;
+    f32 coef;
+    s32 i;
+    s32 j;
+
+    drag = lbl_1_rodata_7820[0] * dtScale;
+    first = lbl_1_rodata_77E4;
+    i = count;
+    while (i-- != 0) {
+        node = &nodes[i];
+        if (node->fixed != 0) {
+            node->force.x = node->force.y = node->force.z = lbl_1_rodata_77D8;
+        } else {
+            node->force.x = node->force.z = lbl_1_rodata_77D8;
+            node->force.y = lbl_1_rodata_78CC * node->mass;
+        }
+        speed = PSVECMag(&node->vel);
+        if (speed != lbl_1_rodata_77D8) {
+            PSVECScale(&node->vel, drag, &d);
+            PSVECNormalize(&d, &d);
+            PSVECScale(&d, (*(u16*)(q + 0x20) / lbl_1_rodata_78C8[0]) * (speed * speed), &d);
+            PSVECAdd(&node->force, &d, &node->force);
+        }
+        if (first != lbl_1_rodata_77D8) {
+            PSVECAdd(&node->force, force, &node->force);
+            first = lbl_1_rodata_77D8;
+        }
+    }
+
+    j = count;
+    while (--j != 0) {
+        node = &nodes[j];
+        prev = &nodes[j - 1];
+        PSVECSubtract(&node->pos, &prev->pos, &d);
+        PSVECSubtract(&node->vel, &prev->vel, &dv);
+        PSVECScale(&dv, dtScale, &dv);
+        len = PSVECMag(&d);
+        damp = damping * (PSVECDotProduct(&dv, &d) / len);
+        PSVECNormalize(&d, &n);
+        stretch = springK * (len - restLen);
+        PSVECScale(&n, -(stretch + damp), &n);
+        if (node->fixed == 0) {
+            PSVECAdd(&node->force, &n, &node->force);
+        }
+        PSVECScale(&n, lbl_1_rodata_7820[0], &n);
+        if (prev->fixed == 0) {
+            PSVECAdd(&prev->force, &n, &prev->force);
+        }
+    }
+
+    k = count;
+    while (k-- != 0) {
+        node = &nodes[k];
+        if (node->fixed == 0 && node->pos.y <= *(u16*)(q + 0x28) / lbl_1_rodata_78D0
+            && lbl_1_rodata_77D8 != PSVECMag(&node->vel)) {
+            coef = *(u16*)(q + 0x1E) * lbl_1_rodata_78C4[0];
+            friction = coef * node->force.y;
+            if (friction < lbl_1_rodata_77D8) {
+                friction = -friction;
+            }
+            memcpy(&d, &node->force, sizeof(Vec));
+            d.y = lbl_1_rodata_77D8;
+            mag = PSVECMag(&d);
+            if (mag != lbl_1_rodata_77D8) {
+                PSVECNormalize(&d, &d);
+                if (friction > mag) {
+                    PSVECScale(&d, -mag, &d);
+                } else {
+                    PSVECScale(&d, -friction, &d);
+                }
+                PSVECAdd(&d, &node->force, &node->force);
+            }
+        }
+    }
+}
