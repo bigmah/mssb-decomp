@@ -683,6 +683,7 @@ void fn_3_B02A8(void) {
     }
 }
 
+#pragma dont_inline off
 // fn_3_B12F8, size:0x178
 void fn_3_B12F8(void) {
     fn_3_F578();
@@ -701,6 +702,7 @@ void fn_3_B12F8(void) {
     fn_3_B11D0();
     fn_3_6714C(0);
 }
+#pragma dont_inline on
 
 #pragma dont_inline off
 // fn_3_AF428, size:0x17C
@@ -2521,3 +2523,54 @@ void fn_3_ADA3C(void) {
     }
 }
 #endif
+
+// fn_3_B1578, size:0x4B8
+void fn_3_B1578(void) {
+    g_GameLogic.hudElementLoadingInd = 0;
+    g_GameLogic.hudLoadingRelated = 0;
+    if (g_Ball.totalFramesAtPlay < 0x7FFE) {
+        g_Ball.totalFramesAtPlay += 1;
+    } else {
+        g_Ball.totalFramesAtPlay = 0x7FFF;
+    }
+    if (g_Practice._1C7 != 0) {
+        fn_3_B3620();
+        return;
+    }
+    if (fn_3_B1CB0() != 0) {
+        return;
+    }
+    if (g_Practice.instructionNumber >= 0) {
+        fn_3_B2630();
+        if (g_Practice.readyToMoveToNextInstruction != 0) {
+            return;
+        }
+        if (g_Practice.tutorialState == 2) {
+            return;
+        }
+    } else if (fn_3_B1470() != 0) {
+        return;
+    }
+    if (g_Practice.frames_sinceMovedToFromMenu < 0xFFFE) {
+        g_Practice.frames_sinceMovedToFromMenu += 1;
+    } else {
+        g_Practice.frames_sinceMovedToFromMenu = 0xFFFF;
+    }
+    switch (g_GameLogic.gameStatus) {
+    case 0:
+        fn_3_B11D0();
+        break;
+    case 1:
+        fn_3_B116C();
+        break;
+    case 2:
+        fn_3_B1120();
+        break;
+    case 7:
+        fn_3_B12F8();
+        break;
+    }
+    g_Strikes.strikes = 0;
+    g_Strikes.balls = 0;
+    g_Strikes.outs = 0;
+}
