@@ -2222,6 +2222,7 @@ extern f32 lbl_3_rodata_C2C;
 extern f32 lbl_3_rodata_C30;
 extern f32 lbl_3_rodata_C34;
 extern f32 lbl_3_rodata_BD0;
+extern f32 lbl_3_data_4780[];
 extern f32 lbl_3_rodata_BF4;
 extern f32 lbl_3_rodata_C58;
 extern f32 lbl_3_rodata_C5C;
@@ -2272,16 +2273,10 @@ static inline void FielderGoCoverAC8(int i) {
         f[0x1D5] = 4;
     }
 }
-void fn_3_48480(int);
-// After becoming the ball chaser, fielder i runs fn_3_48480 and gives up any base it was covering.
-static inline void FielderTakeOverAC8(int i) {
+// Fielder i stops covering its base (0x18C), clearing the base's cover slot if it held it.
+static inline void FielderReleaseCoverAC8(int i) {
     u8* f = g_Fielders + i * 0x268;
-    s16 t;
-    fn_3_48480(i);
-    if (*(s16*)(g_FieldingLogic + 0xD8) != i && *(s16*)(f + 0x18C) < 0) {
-        return;
-    }
-    t = *(s16*)(f + 0x18C);
+    s16 t = *(s16*)(f + 0x18C);
     if (t < 0) {
         return;
     }
@@ -2304,6 +2299,15 @@ static inline void FielderTakeOverAC8(int i) {
             SetFielderAct(i, 0xC, 0x60);
         }
     }
+}
+void fn_3_48480(int);
+// After becoming the ball chaser, fielder i runs fn_3_48480 and gives up any base it was covering.
+static inline void FielderTakeOverAC8(int i) {
+    fn_3_48480(i);
+    if (*(s16*)(g_FieldingLogic + 0xD8) != i && *(s16*)(g_Fielders + i * 0x268 + 0x18C) < 0) {
+        return;
+    }
+    FielderReleaseCoverAC8(i);
 }
 // Same as SetTargetAC8 (defined later in this file).
 static inline void SetTargetAC8b(int i, f32 x, f32 z) {
@@ -4927,9 +4931,210 @@ void fn_3_4B8D0(int i) {
 }
 
 // .text:0x0004BA0C size:0xFBC mapped:0x8068AAA0
+#define BASE_COVER(b) (*(s16*)(g_FieldingLogic + 0xD0 + (b) * 2)) // fielder covering base b (0-3), 4 = backup
+#define BASE_DIST(f, b) (((f32*)((f) + 0xA8))[b])               // fielder f's distance to base b
+// NONMATCHING 85.8%: register allocation over the whole function (orig keeps loop pointers in r7-r10/r12) and lfsx/lhax indexed loads; control flow follows the asm, including the original reading c1's distance for c2 in the backup pick
+#if NONMATCHING
+// Keep every base covered while runners are moving: release covers that are no longer
+// needed, then give the first uncovered base (or a base needing help) to the nearest free fielder.
 void fn_3_4BA0C(void) {
-    return;
+    int n;
+    int b;
+    int j;
+    int k;
+    int help = -1;
+    int c0, c1, c2;
+    int best;
+    u8 s;
+    u8* h;
+    f32 d0, d1, d2;
+    if (*(int*)(g_Strikes + 8) >= 3 || g_RunningLogic[0x10] == 0) {
+        return;
+    }
+    for (n = 0; n < 4; n++) {
+        if (BASE_COVER(n) == -1) {
+            break;
+        }
+    }
+    if (FLD(0)[0x1D8] == 1 && *(s16*)(FLD(0) + 0x18C) != 1 && *(s16*)(FLD(0) + 0x18C) != 3) {
+        FLD(0)[0x1D8] = 0;
+    }
+    for (b = 0; b < 4; b++) {
+        if (g_FieldingLogic[0x101 + b] != 0 || (k = BASE_COVER(b)) < 0) {
+            continue;
+        }
+        s = g_FieldingLogic[0xF8 + k];
+        if (s == 7) {
+            if (b == *(s16*)(g_FieldingLogic + 0xCC)) {
+                if (!(BASE_DIST(FLD(k), *(s16*)(g_FieldingLogic + 0xCC)) < lbl_3_rodata_B78)) {
+                    FielderReleaseCoverAC8(k);
+                }
+            } else if (BASE_DIST(FLD(k), b) > lbl_3_rodata_C08) {
+                FielderReleaseCoverAC8(k);
+            }
+        } else if (s == 1 || s == 10 || s == 11) {
+            if (BASE_DIST(FLD(k), b) > lbl_3_rodata_B68) {
+                FielderReleaseCoverAC8(k);
+            }
+        }
+        if (s == 2 && BASE_DIST(FLD(BASE_COVER(b)), b) > lbl_3_rodata_B90 && help == -1) {
+            help = b;
+        }
+    }
+    c0 = c1 = c2 = -1;
+    k = *(s16*)(g_FieldingLogic + 0xD8);
+    for (j = 0; j < 6; j++) {
+        if (FLD(j)[0x1ED] != 0) {
+            continue;
+        }
+        s = g_FieldingLogic[0xF8 + j];
+        if (s == 0 || s == 8 || s == 9 || (s == 9 && k == j)) {
+            if (c0 == -1) {
+                c0 = j;
+            } else if (c1 == -1) {
+                c1 = j;
+            } else {
+                c2 = j;
+            }
+        }
+    }
+    if (n < 4) {
+        // An uncovered base: the ball holder takes it if close, else the nearest free fielder.
+        k = *(s16*)(g_Ball + 0x1B78);
+        if (k >= 0) {
+            h = FLD(k);
+            if (BASE_DIST(h, n) <= lbl_3_data_4780[h[0x1C9]]) {
+                *(s16*)(h + 0x18C) = n;
+                BASE_COVER(n) = k;
+                h[0x1D7] = 1;
+                g_FieldingLogic[0x101 + n] = 1;
+                return;
+            }
+        }
+        if (c0 == -1) {
+            return;
+        }
+        {
+            f32 bx = ((VecXZ*)lbl_3_data_4444)[n].x;
+            f32 bz = ((VecXZ*)lbl_3_data_4444)[n].z;
+            f32 dx, dz;
+            d1 = d2 = lbl_3_rodata_BA4;
+            dx = *(f32*)FLD(c0) - bx;
+            dz = *(f32*)(FLD(c0) + 8) - bz;
+            dx = dx * dx;
+            dz = dz * dz;
+            d0 = dx + dz;
+            SQRT_L(d0);
+            if (c1 >= 0) {
+                dx = *(f32*)FLD(c1) - bx;
+                dz = *(f32*)(FLD(c1) + 8) - bz;
+                dx = dx * dx;
+                dz = dz * dz;
+                d1 = dx + dz;
+                SQRT_L(d1);
+            }
+            if (c2 >= 0) {
+                dx = *(f32*)FLD(c2) - bx;
+                dz = *(f32*)(FLD(c2) + 8) - bz;
+                dx = dx * dx;
+                dz = dz * dz;
+                d2 = dx + dz;
+                SQRT_L(d2);
+            }
+        }
+        best = c2;
+        if (d0 < d1) {
+            if (d0 < d2) {
+                best = c0;
+            }
+        } else if (d1 < d2) {
+            best = c1;
+        }
+        *(s16*)(FLD(best) + 0x18C) = n;
+        FLD(best)[0x1D7] = 1;
+        SetFielderAct(best, 1, 8);
+        BASE_COVER(n) = best;
+        if (*(s16*)(g_FieldingLogic + 0xD8) == best) {
+            *(s16*)(g_FieldingLogic + 0xD8) = -1;
+            g_FieldingLogic[0x105] = 0;
+        }
+        return;
+    }
+    if (help >= 0) {
+        // The fielder covering base `help` is busy: hand the base to the nearest free fielder.
+        best = -1;
+        for (j = 0; j < 6; j++) {
+            s = g_FieldingLogic[0xF8 + j];
+            if ((s == 0 || s == 8 || s == 9) && BASE_DIST(FLD(j), help) < lbl_3_rodata_B9C) {
+                if (best == -1) {
+                    best = j;
+                } else if (lbl_3_rodata_B78 + BASE_DIST(FLD(j), help) < BASE_DIST(FLD(best), help)) {
+                    best = j;
+                }
+            }
+        }
+        if (best < 0) {
+            return;
+        }
+        SetFielderAct(BASE_COVER(help), 0xC, 0x60);
+        k = BASE_COVER(help);
+        FLD(k)[0x1D5] = 3;
+        FielderReleaseCoverAC8(k);
+        *(s16*)(FLD(best) + 0x18C) = help;
+        FLD(best)[0x1D7] = 1;
+        SetFielderAct(best, 1, 8);
+        BASE_COVER(help) = best;
+        if (*(s16*)(g_FieldingLogic + 0xD8) == best) {
+            *(s16*)(g_FieldingLogic + 0xD8) = -1;
+            g_FieldingLogic[0x105] = 0;
+        }
+        return;
+    }
+    // All bases covered: pick a backup fielder (0x18C = 5) if there isn't one.
+    k = *(s16*)(g_FieldingLogic + 0xD8);
+    if (k != -1 && *(s16*)(FLD(k) + 0x18C) == 5) {
+        return;
+    }
+    d1 = d2 = lbl_3_rodata_BA4;
+    if (g_Ball[0x1BC9] == 0 && g_Ball[0x1BBE] <= 1) {
+        return;
+    }
+    for (j = 0; j < 9; j++) {
+        if (g_FieldingLogic[0xF8 + j] == 7) {
+            if (BASE_DIST(FLD(j), 4) < lbl_3_rodata_BD8) {
+                return;
+            }
+            break;
+        }
+    }
+    if (c0 < 0) {
+        return;
+    }
+    d0 = BASE_DIST(FLD(c0), 4);
+    if (c1 >= 0) {
+        d1 = BASE_DIST(FLD(c1), 4);
+    }
+    if (c2 >= 0) {
+        d2 = BASE_DIST(FLD(c1), 4); // sic: the original reads c1 here too
+    }
+    best = c0;
+    if (d0 < d1) {
+        if (!(d0 < d2)) {
+            best = c2;
+        }
+    } else if (d1 < d2) {
+        best = c1;
+    } else {
+        best = c2;
+    }
+    *(s16*)(FLD(best) + 0x18C) = 5;
+    FLD(best)[0x1D7] = 2;
+    SetFielderAct(best, 0xE, 0x70);
+    *(s16*)(g_FieldingLogic + 0xD8) = best;
 }
+#endif
+#undef BASE_COVER
+#undef BASE_DIST
 
 // .text:0x0004C9C8 size:0x5E8 mapped:0x8068BA5C
 void fn_3_4C9C8(void) {
