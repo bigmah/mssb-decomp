@@ -20,7 +20,9 @@ typedef struct Fielder540 {
     /*0x1C7*/ u8 _1C7;
     /*0x1C8*/ u8 _1C8;
     /*0x1C9*/ u8 _1C9;
-    /*0x1CA*/ u8 _1CA[0x268 - 0x1CA];
+    /*0x1CA*/ u8 _1CA[0x1E1 - 0x1CA];
+    /*0x1E1*/ u8 _1E1;
+    /*0x1E2*/ u8 _1E2[0x268 - 0x1E2];
 } Fielder540; // size: 0x268
 
 extern Fielder540 g_Fielders[9];
@@ -32,6 +34,27 @@ extern Fielder540 g_Fielders[9];
 extern f32 lbl_3_data_450C[2]; // ball start x, z
 extern f32 lbl_3_data_4428[];
 extern f32 lbl_3_data_4930[];
+// Common BSS blocks touched by fn_3_6C38 (only the bytes used here).
+extern struct {
+    u8 _00[0xCA];
+    u8 _CA; // surface sound set
+} lbl_3_common_bss_32724;
+extern struct {
+    u8 _00[0x6B];
+    u8 _6B; // note block hit still animating
+} lbl_3_common_bss_350E4;
+extern struct {
+    u8 _00[0x40];
+    s16 _40; // team whose stats feed fn_3_161588
+} lbl_3_common_bss_37400;
+extern f32 lbl_3_data_610C[6]; // speed factor for collision codes 0x10-0x15
+extern f32 lbl_3_data_6124[2]; // speed factor for collision codes 0x20-0x21
+extern void fn_3_15F648(u8 surface, u8 soundSet, VecXYZ* vel);
+extern void fn_3_161588(int arg, s16 rosterID);
+extern void fn_3_16D5E4(int arg);
+extern void fn_3_E7350(void);
+extern void fn_80064344(Vec* pos, Vec* v);
+extern void vecCrossProduct(VecXYZ* out, VecXYZ* a, VecXYZ* b);
 extern struct {
     f32 _00; // Bob-omb Derby gravity
     f32 _04;
@@ -121,6 +144,46 @@ static inline float sqrt540(float x) {
         return NAN;
     else
         return x;
+}
+
+// Horizontal friction after a bounce (thrown ball / foul ball); same tables as fn_3_9508.
+static inline void ballBounceFriction(void) {
+    s32 surface = g_Ball.collisionCode & 0x7F;
+    u8 rolling = g_Ball.ballIsRollingIndicator;
+    if (g_Ball.knockoutProcessedFlag != 0) {
+        g_Ball.physicsSubstruct.velocity.x = g_Ball.savedVelocity.x;
+        g_Ball.physicsSubstruct.velocity.z = g_Ball.savedVelocity.z;
+        g_Ball.knockoutProcessedFlag = 0;
+    } else if (g_d_GameSettings.GameModeSelected == 6 && surface >= 0x70 && surface < 0x79) {
+        if (rolling != 0) {
+            g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_4414.f10;
+            g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_4414.f10;
+        } else {
+            g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_4414.fC;
+            g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_4414.fC;
+        }
+    } else if (rolling != 0) {
+        g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f10;
+        g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_4388[g_d_GameSettings.StadiumID].f10;
+    } else {
+        g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_4388[g_d_GameSettings.StadiumID].fC;
+        g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_4388[g_d_GameSettings.StadiumID].fC;
+    }
+}
+
+// Keep a slow ball moving at least 0.03 horizontally (away from home if stopped).
+static inline void ballMinSpeed(void) {
+    f32 speed = sqrt540(g_Ball.physicsSubstruct.velocity.x * g_Ball.physicsSubstruct.velocity.x +
+                        g_Ball.physicsSubstruct.velocity.z * g_Ball.physicsSubstruct.velocity.z);
+    if (speed < 0.03f) {
+        if (speed == 0.0f) {
+            g_Ball.physicsSubstruct.velocity.x = 0.03f * (g_Ball.AtBat_Contact_BallPos.x / g_Ball.ballDistanceFromHome);
+            g_Ball.physicsSubstruct.velocity.z = 0.03f * (g_Ball.AtBat_Contact_BallPos.z / g_Ball.ballDistanceFromHome);
+        } else {
+            g_Ball.physicsSubstruct.velocity.x = 0.03f * (g_Ball.physicsSubstruct.velocity.x / speed);
+            g_Ball.physicsSubstruct.velocity.z = 0.03f * (g_Ball.physicsSubstruct.velocity.z / speed);
+        }
+    }
 }
 
 // .text:0x00006530 size:0x78 mapped:0x806455C4
@@ -366,9 +429,365 @@ void fn_3_6694(void) {
 }
 
 // .text:0x00006C38 size:0x20B8 mapped:0x80645CCC
+// Ball collision with the ground, walls and stadium objects for this frame.
+// NONMATCHING 90%: register allocation; dead-ball/strike helpers (fn_3_9E84/9FA4/A0F0) and the friction block are inlined in the original
+#if NONMATCHING
 void fn_3_6C38(void) {
-    return;
+    VecSrcDst ray;
+    CollisionStruct hit;
+    VecXYZ up;
+    VecXYZ t1;
+    VecXYZ t2;
+    VecXYZ vel;
+    BALL_COLLISION_TYPE type;
+    u32 c;
+    f32 rest;
+    f32 nx;
+    f32 k;
+    f32 a, b, n;
+    s32 i;
+    g_Ball.ballOnMoundInd = 0;
+    ray.src.x = g_Ball.AtBat_Contact_BallPos.x;
+    ray.src.y = -g_Ball.AtBat_Contact_BallPos.y;
+    ray.src.z = g_Ball.AtBat_Contact_BallPos.z;
+    ray.dst.x = g_Ball.AtBat_Contact_BallPos.x;
+    ray.dst.y = 10.0f;
+    ray.dst.z = g_Ball.AtBat_Contact_BallPos.z;
+    if (ray.src.y >= -0.1f) {
+        ray.src.y = -0.1f;
+    }
+    // ground below the ball (game y is negated for the collision system)
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        ray.src.y -= 1.0f;
+        type = checkCollision(&ray, &hit, 1, FALSE);
+    } else {
+        type = checkCollision(&ray, &hit, 0, FALSE);
+    }
+    g_Ball.maybeCollisionRelated = g_Ball.collisionCode;
+    g_Ball.physicsSubstruct.twoFrameLookback[1] = -hit.position.y;
+    if (type != 0) {
+        g_Ball.collisionCode = type;
+    }
+    if ((g_Ball.collisionCode & 0x7F) == 9) {
+        fn_3_16D5E4(0);
+    }
+    if (g_Ball.ballState == BALL_STATE_THROWN && g_Ball.framesSinceThrowStarted < 20) {
+        return;
+    }
+    if (g_Ball.hitNoteBlockInd != 0) {
+        if (lbl_3_common_bss_350E4._6B != 0) {
+            return;
+        }
+        g_Ball.hitNoteBlockInd = 0;
+        g_FieldingLogic._13B = 1;
+        if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400._40 == g_GameLogic.teamBatting) {
+            fn_3_161588(0, g_Batter.rosterID);
+        }
+    }
+    // swept test from last frame's position to this one
+    ray.src.x = g_Ball.pastCoordinates[0].x;
+    ray.src.y = -(g_Ball.pastCoordinates[0].y - g_Ball.groundYForBounces);
+    ray.src.z = g_Ball.pastCoordinates[0].z;
+    ray.dst.x = g_Ball.AtBat_Contact_BallPos.x;
+    ray.dst.y = -(g_Ball.AtBat_Contact_BallPos.y - g_Ball.groundYForBounces);
+    ray.dst.z = g_Ball.AtBat_Contact_BallPos.z;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        type = checkCollision(&ray, &hit, 2, TRUE);
+    } else {
+        type = checkCollision(&ray, &hit, 1, TRUE);
+    }
+    if (type == 0) {
+        fn_3_6694();
+        return;
+    }
+    c = type & 0x7F;
+    if (g_Ball.ballState == BALL_STATE_THROWN) {
+        if ((c >= 0x10 && c <= 0x15) || c == 0x21 || c == 0x30 || c == 0x40 || c == 0x60 || c == 0x61) {
+            return;
+        }
+    }
+    if (g_Ball.someCollisionInd != 0) {
+        if (c == 0x21 || c == 0x30 || c == 0x40 || c == 0x60 || c == 0x61) {
+            return;
+        }
+    }
+    if ((g_Ball.currentStarSwing2 == 0xB || g_Ball.currentStarSwing2 == 0xC) && g_Ball.AtBat_ContactResult == 0) {
+        if ((c >= 0x10 && c <= 0x15) || c == 0x21 || c == 0x40) {
+            return;
+        }
+    }
+    if (g_Minigame.GameMode_MiniGame == 1 && g_Ball.bODQualifyingHitInd != 0) {
+        return;
+    }
+    if (g_Ball.matchFramesAndBallAngle.framesOnGround < 0x7FFE) {
+        g_Ball.matchFramesAndBallAngle.framesOnGround++;
+    } else {
+        g_Ball.matchFramesAndBallAngle.framesOnGround = 0x7FFF;
+    }
+    // fraction of this frame's movement left after the hit
+    if (0.0f == ray.src.y - ray.dst.y) {
+        rest = 1.0f;
+    } else {
+        rest = 1.0f - (ray.src.y - hit.position.y) / (ray.src.y - ray.dst.y);
+    }
+    k = 0.005f + g_Ball.groundYForBounces;
+    nx = hit.normal.x;
+    g_Ball.AtBat_Contact_BallPos.x = hit.normal.x * k + hit.position.x;
+    g_Ball.AtBat_Contact_BallPos.y = -(hit.normal.y * k + hit.position.y);
+    g_Ball.AtBat_Contact_BallPos.z = hit.normal.z * k + hit.position.z;
+    vel.x = g_Ball.physicsSubstruct.velocity.x;
+    vel.y = -g_Ball.physicsSubstruct.velocity.y;
+    vel.z = g_Ball.physicsSubstruct.velocity.z;
+    if (nx < 0.0f) {
+        nx = -nx;
+    }
+    if (nx < 0.5f) {
+        up.x = 1.0f;
+        up.y = 0.0f;
+        up.z = 0.0f;
+    } else {
+        up.x = 0.0f;
+        up.y = 1.0f;
+        up.z = 0.0f;
+    }
+    // reflect the velocity about the surface normal
+    vecCrossProduct(&t1, &hit.normal, &up);
+    vecCrossProduct(&t2, &hit.normal, &t1);
+    a = vecDotProduct(&vel, &t1);
+    b = vecDotProduct(&vel, &t2);
+    n = -vecDotProduct(&vel, &hit.normal);
+    g_Ball.physicsSubstruct.velocity.y = hit.normal.y * n + (t1.y * a + t2.y * b);
+    g_Ball.physicsSubstruct.velocity.x = hit.normal.x * n + (t1.x * a + t2.x * b);
+    g_Ball.physicsSubstruct.velocity.z = hit.normal.z * n + (t1.z * a + t2.z * b);
+    g_Ball.physicsSubstruct.velocity.y *= -1.0f;
+    if (c == 1 || c == 6 || c == 9 || c == 10 || c == 0x22 || c == 0x32) {
+        // ground bounce
+        if (g_Ball.ballIsRollingIndicator == 0) {
+            fn_3_15F648(c, lbl_3_common_bss_32724._CA, &g_Ball.physicsSubstruct.velocity);
+        } else if (c == 10) {
+            fn_80064344(&g_Ball.AtBat_Contact_BallPos, &g_Ball.physicsSubstruct.velocity);
+        }
+        if (g_Ball.AtBat_ContactResult == 0) {
+            fn_3_8CF0(&g_Ball.physicsSubstruct.velocity.y, 0, &g_Ball.ballIsRollingIndicator, 0);
+        } else {
+            fn_3_8CF0(&g_Ball.physicsSubstruct.velocity.y, g_Ball.framesOnGroundUntilPickedUp, &g_Ball.ballIsRollingIndicator, 0);
+        }
+        g_Ball.physicsSubstruct.acceleration.x *= 0.5f;
+        g_Ball.physicsSubstruct.acceleration.z *= 0.5f;
+        if (g_Ball.ballState == BALL_STATE_THROWN) {
+            ballBounceFriction();
+            g_Ball.thrownBallHasHitGround = 1;
+        } else {
+            switch (g_Ball.AtBat_ContactResult) {
+            case 0:
+                fn_3_9808();
+                break;
+            case 1:
+                fn_3_9508();
+                break;
+            case -1:
+                ballBounceFriction();
+                break;
+            default:
+                ballBounceFriction();
+                break;
+            }
+        }
+        ray.src.x = g_Ball.AtBat_Contact_BallPos.x;
+        ray.src.y = -(g_Ball.AtBat_Contact_BallPos.y - g_Ball.groundYForBounces);
+        ray.src.z = g_Ball.AtBat_Contact_BallPos.z;
+        ray.dst.x = g_Ball.physicsSubstruct.velocity.x * rest + g_Ball.AtBat_Contact_BallPos.x;
+        ray.dst.y = -((g_Ball.physicsSubstruct.velocity.y * rest + g_Ball.AtBat_Contact_BallPos.y) - g_Ball.groundYForBounces);
+        ray.dst.z = g_Ball.physicsSubstruct.velocity.z * rest + g_Ball.AtBat_Contact_BallPos.z;
+        if (checkCollision(&ray, &hit, 1, FALSE) == 0) {
+            g_Ball.AtBat_Contact_BallPos.x += g_Ball.physicsSubstruct.velocity.x * rest;
+            g_Ball.AtBat_Contact_BallPos.y += g_Ball.physicsSubstruct.velocity.y * rest;
+            g_Ball.AtBat_Contact_BallPos.z += g_Ball.physicsSubstruct.velocity.z * rest;
+        }
+        if (g_Ball.distLandingSpotToMound <= 3.0f) {
+            g_Ball.ballOnMoundInd = 1;
+        }
+        if (g_Ball.framesOnGroundUntilPickedUp < 0xFE) {
+            g_Ball.framesOnGroundUntilPickedUp++;
+        } else {
+            g_Ball.framesOnGroundUntilPickedUp = 0xFF;
+        }
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            fn_3_E7350();
+        }
+    } else {
+        // wall / object
+        g_Ball.framesSinceBallHitWall = 1;
+        g_Ball.AtBat_Contact_BallPos.y += g_Ball.groundYForBounces;
+        g_Ball.physicsSubstruct.acceleration.x = 0.0f;
+        g_Ball.physicsSubstruct.acceleration.y = 0.0f;
+        g_Ball.physicsSubstruct.acceleration.z = 0.0f;
+        if (c == 4) {
+            fn_3_904C();
+            g_Ball.currentStarSwing = 0;
+        } else if (c == 2 || c == 5 || c == 0x20) {
+            fn_3_9260(type);
+            fn_3_27648();
+            g_Ball.currentStarSwing = 0;
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                fn_3_E7350();
+            }
+        } else if (c == 0xB) {
+            fn_3_9260(type);
+            fn_3_27648();
+            g_Ball.currentStarSwing = 0;
+        } else if ((c == 3 || c == 7 || c == 8 || c == 0x23) && g_Ball.AtBat_ContactResult == 0) {
+            // foul pole / stands on a fresh hit
+            if (g_Ball.bobbleLocation_1fair_2foul == 1) {
+                if (g_d_GameSettings.GameModeSelected == 6 && (c == 7 || c == 8)) {
+                    fn_3_A0F0();
+                } else if (g_Ball.numberOfThrowsDuringPlay == 0 && g_Ball.numFieldersWhoHandledBallDuringPlay != 0 &&
+                           g_Ball.framesOnGroundUntilPickedUp == 0) {
+                    if (fn_3_B7E10(g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.z) != 0) {
+                        fn_3_9E84();
+                    } else {
+                        fn_3_9FA4();
+                    }
+                } else {
+                    fn_3_9E84();
+                }
+            } else if (!(type & BALL_COLLISION_TYPE_FOUL)) {
+                fn_3_9FA4();
+            } else {
+                fn_3_A0F0();
+            }
+            g_Ball.currentStarSwing = 0;
+            g_Ball.physicsSubstruct.velocity.x *= 0.3f;
+            g_Ball.physicsSubstruct.velocity.y *= 0.3f;
+            g_Ball.physicsSubstruct.velocity.z *= 0.3f;
+        } else if ((c >= 0x10 && c <= 0x14) || c == 0x15) {
+            if (c == 0x12 || c == 0x15) {
+                g_Ball.hitNoteBlockInd = 1;
+            } else {
+                g_FieldingLogic._13B = 1;
+            }
+            g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_610C[c - 0x10];
+            g_Ball.physicsSubstruct.velocity.y *= lbl_3_data_610C[c - 0x10];
+            g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_610C[c - 0x10];
+            ballMinSpeed();
+            if (g_Ball.ballState == BALL_STATE_THROWN) {
+                g_Ball.ballState = BALL_STATE_HELD;
+            }
+            fn_3_27648();
+            g_Ball.someCollisionVariable = 0;
+            g_Ball.someCollisionInd = 1;
+        } else if (c == 0x20 || c == 0x21) {
+            g_Ball.physicsSubstruct.velocity.x *= lbl_3_data_6124[c - 0x20];
+            g_Ball.physicsSubstruct.velocity.y *= lbl_3_data_6124[c - 0x20];
+            g_Ball.physicsSubstruct.velocity.z *= lbl_3_data_6124[c - 0x20];
+            ballMinSpeed();
+            g_Ball.someCollisionVariable = 0;
+            if (g_Ball.ballState == BALL_STATE_THROWN) {
+                g_Ball.ballState = BALL_STATE_HELD;
+            }
+            g_Ball.someCollisionInd = 1;
+        } else if (c == 0x30 || c == 0x40 || c == 0x60 || c == 0x61) {
+            g_Ball.physicsSubstruct.velocity.x *= 0.5f;
+            g_Ball.physicsSubstruct.velocity.y *= 0.5f;
+            g_Ball.physicsSubstruct.velocity.z *= 0.5f;
+            ballMinSpeed();
+            if (g_Ball.ballState == BALL_STATE_THROWN) {
+                g_Ball.ballState = BALL_STATE_HELD;
+            }
+            fn_3_27648();
+            g_Ball.someCollisionVariable = 0;
+            g_Ball.someCollisionInd = 1;
+        } else if (c >= 0x70 && c < 0x79) {
+            // toy field (game mode 6) targets
+            if (c == 0x70) {
+                g_Ball.physicsSubstruct.velocity.x *= 0.3f;
+                g_Ball.physicsSubstruct.velocity.y *= 0.3f;
+                g_Ball.physicsSubstruct.velocity.z *= 0.3f;
+            } else {
+                if (g_Minigame.toyFieldStateInd_collisionRelated == 0) {
+                    g_Minigame.toyFieldStateInd_collisionRelated = c;
+                }
+                g_Ball.physicsSubstruct.velocity.x *= 0.3f;
+                g_Ball.physicsSubstruct.velocity.y *= 0.3f;
+                g_Ball.physicsSubstruct.velocity.z *= 0.3f;
+            }
+        } else {
+            if (g_Ball.ballState != BALL_STATE_HIT) {
+                g_Ball.physicsSubstruct.velocity.x *= 0.05f;
+                g_Ball.physicsSubstruct.velocity.y *= 0.05f;
+                g_Ball.physicsSubstruct.velocity.z *= 0.05f;
+            } else {
+                g_Ball.physicsSubstruct.velocity.x *= 0.3f;
+                g_Ball.physicsSubstruct.velocity.y *= 0.3f;
+                g_Ball.physicsSubstruct.velocity.z *= 0.3f;
+            }
+            if (c == 7 || c == 8) {
+                if (g_d_GameSettings.GameModeSelected == 6) {
+                    fn_3_A0F0();
+                } else if (g_Ball.AtBat_ContactResult == -1) {
+                    fn_3_A0F0();
+                } else if (g_Ball.AtBat_ContactResult > 0) {
+                    fn_3_9E84();
+                } else if (g_Ball.numberOfThrowsDuringPlay == 0) {
+                    if (g_Ball.numFieldersWhoHandledBallDuringPlay != 0) {
+                        if (g_Ball.bobbleLocation_1fair_2foul == 2) {
+                            fn_3_A0F0();
+                        } else {
+                            fn_3_9E84();
+                        }
+                    } else if (type & BALL_COLLISION_TYPE_FOUL) {
+                        fn_3_A0F0();
+                    } else {
+                        fn_3_9E84();
+                    }
+                } else {
+                    fn_3_9E84();
+                }
+            }
+            g_Ball.collisionRelated++;
+            if (g_Ball.deadBallReason == 3) {
+                g_Ball.collisionRelated = 2;
+            }
+            g_Ball.currentStarSwing = 0;
+            fn_3_27648();
+        }
+        if (g_d_GameSettings.StadiumID == 0 || (g_d_GameSettings.StadiumID >= 2 && g_d_GameSettings.StadiumID <= 4) ||
+            g_d_GameSettings.StadiumID == 5) {
+            if (g_Ball.AtBat_Contact_BallPos.y < 0.005f + g_Ball.groundYForBounces) {
+                g_Ball.AtBat_Contact_BallPos.y = 0.005f + g_Ball.groundYForBounces;
+                if (g_Ball.physicsSubstruct.velocity.y < 0.0f) {
+                    g_Ball.physicsSubstruct.velocity.y *= -1.0f;
+                }
+            }
+        }
+        if (g_Ball.ballIsRollingIndicator != 0 && g_Ball.physicsSubstruct.velocity.y < 0.0f) {
+            g_Ball.physicsSubstruct.velocity.y *= -1.0f;
+        }
+        g_Ball.ballBounceState = 3;
+        g_Ball.hitWallInd = 1;
+        if (g_Ball.framesOnGroundUntilPickedUp < 0xFE) {
+            g_Ball.framesOnGroundUntilPickedUp++;
+        } else {
+            g_Ball.framesOnGroundUntilPickedUp = 0xFF;
+        }
+        if (g_GameLogic.teamAIInd[g_GameLogic.awayTeamBattingInd_battingTeam] != 0) {
+            for (i = 0; i < 9; i++) {
+                g_Fielders[i]._1E1 = 0;
+            }
+        }
+    }
+    if (sqrt540(g_Ball.physicsSubstruct.velocity.x * g_Ball.physicsSubstruct.velocity.x +
+                g_Ball.physicsSubstruct.velocity.z * g_Ball.physicsSubstruct.velocity.z) < 0.0001f) {
+        g_Ball.physicsSubstruct.velocity.x = 0.0f;
+        g_Ball.physicsSubstruct.velocity.z = 0.0f;
+    }
+    g_Ball.framesSinceLastBounce = 0;
+    if (g_Ball.currentStarSwing == 3 || g_Ball.currentStarSwing == 4) {
+        g_Ball.currentStarSwing = 0;
+    }
+    g_Ball.warioWaluGarlicIsActive = 0;
 }
+#endif
 
 // .text:0x00008CF0 size:0x35C mapped:0x80647D84
 void fn_3_8CF0(f32* p, s32 n, u8* flag, s32 skip) {
