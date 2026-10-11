@@ -4459,9 +4459,48 @@ void fn_3_3F124(void) {
 }
 
 // .text:0x0003F24C size:0x514 mapped:0x8067E2E0
+// NONMATCHING 98%: SetFielderAct state/table regs (see docs/patterns/unsolved.md)
+#if NONMATCHING
 void fn_3_3F24C(void) {
-    return;
+    s16 ang = *(s16*)(g_Ball + 0x1B9C);
+    if (*(s16*)(g_Ball + 0x1B9A) >= 0x400 && *(s16*)(g_Ball + 0x1B9A) <= 0xC00) {
+        ang += 0x800;
+        if (ang > 0x1000) {
+            ang -= 0x1000;
+        }
+    }
+    if (ang > 0xA00 && ang < 0xE00) {
+        SetFielderAct(1, 3, 0x18);
+    } else if (ang >= 0xE00 || ang < 0x200) {
+        if (*(s16*)(g_Ball + 0x1B9A) > 0x800) {
+            SetFielderAct(2, 3, 0x18);
+        } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_BA0) {
+            SetFielderAct(1, 3, 0x18);
+            SetFielderAct(2, 3, 0x18);
+        } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_B9C) {
+            SetFielderAct(2, 3, 0x18);
+            SetFielderAct(3, 3, 0x18);
+        } else {
+            SetFielderAct(3, 3, 0x18);
+            SetFielderAct(8, 3, 0x18);
+        }
+    } else if (*(s16*)(g_Ball + 0x1B9A) > 0x800) {
+        SetFielderAct(4, 3, 0x18);
+    } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_BA0) {
+        SetFielderAct(1, 3, 0x18);
+        SetFielderAct(4, 3, 0x18);
+    } else if (*(f32*)(g_Ball + 0x34C) < lbl_3_rodata_B9C) {
+        SetFielderAct(4, 3, 0x18);
+        SetFielderAct(5, 3, 0x18);
+    } else {
+        SetFielderAct(5, 3, 0x18);
+        SetFielderAct(6, 3, 0x18);
+    }
+    fn_3_4C9C8();
+    fn_3_47778();
+    fn_3_4A124();
 }
+#endif
 
 // .text:0x0003F760 size:0x590 mapped:0x8067E7F4
 void fn_3_3F760(void) {
