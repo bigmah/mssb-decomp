@@ -3262,12 +3262,11 @@ void fn_3_3ACC0(int i) {
 }
 
 // .text:0x0003AE34 size:0x53C mapped:0x80679EC8
-// NONMATCHING 94%: fn_3_53130 result switch layout; fielder pointer kept in r29 vs r28; calls fn_3_261E8/fn_3_433E0 through casts until their prototypes gain the index arg
+// NONMATCHING 96%: fielder pointer kept in r29 vs r28; calls fn_3_261E8/fn_3_433E0 through casts until their prototypes gain the index arg
 #if NONMATCHING
 void fn_3_3AE34(int i) {
     s32 off = i * 0x268;
     u8* f = g_Fielders + off;
-    s32 r;
     s32 tgt;
     s16 k;
     if (*(s16*)(g_Ball + 0x1B66) <= 0) {
@@ -3283,11 +3282,12 @@ void fn_3_3AE34(int i) {
     if (g_d_GameSettings[7] == 2 && g_GameLogic[0x121] == 0xC) {
         return;
     }
-    r = fn_3_53130(i);
-    if (r == 2) {
+    switch (fn_3_53130(i)) {
+    case 2:
         return;
-    }
-    if (r != 1) {
+    case 1:
+        break;
+    default:
         if (f[0x1FF] == 1) {
             if (*(s16*)(g_Ball + 0x1B66) == f[0x1D2]) {
                 fn_3_447C4(i);
@@ -3326,6 +3326,7 @@ void fn_3_3AE34(int i) {
             }
             fn_3_3A584(i);
         }
+        break;
     }
     if (g_Ball[0x1BC9] != 0 && g_Ball[0x1BC9] != 3) {
         if (*(s16*)(f + 0x18C) == 6) {
@@ -3341,7 +3342,7 @@ void fn_3_3AE34(int i) {
         *(s16*)(g_FieldingLogic + 0xB0) = -1;
     }
     k = *(s16*)(f + 0x18C);
-    if (k >= 0 && k <= 3 && *(f32*)(f + k * 4 + 0xA8) > lbl_3_rodata_B78) {
+    if (k >= 0 && k <= 3 && ((f32*)(f + 0xA8))[k] > lbl_3_rodata_B78) {
         if (k >= 0 && k <= 3) {
             if (((s16*)(g_FieldingLogic + 0xD0))[k] == i) {
                 ((s16*)(g_FieldingLogic + 0xD0))[k] = -1;
