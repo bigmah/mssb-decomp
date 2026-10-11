@@ -3272,7 +3272,7 @@ void fn_3_13BCB8(void) {
         g_Minigame.minigameControlStruct[0].fieldOrder[i] = -1;
         g_Minigame.minigameFielderIndex[i] = -1;
         g_Minigame._18FC[i] = -1;
-        (&g_Minigame._1900)[i] = -1;
+        g_Minigame._1900[i] = -1;
         g_Minigame.minigameControlStruct[0]._24[i] = 0;
     }
     g_Minigame.pointsReqToWin_challenge = 0;
