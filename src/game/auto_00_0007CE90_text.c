@@ -68,10 +68,10 @@ void fn_3_7CE90(void) {
     if (g_Stats.recording != 0) {
         g_Stats.recording = 0;
         g_Stats.endFrame = g_Stats.playFrameCounter;
-        g_Stats._2A = g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs;
+        g_Stats._2A = g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0];
         g_Stats._2C = g_Scores._A0;
         g_Stats._2E = g_Scores._C2;
-        g_Stats._30 = g_Scores.team[g_GameLogic.awayTeamBattingInd_battingTeam].runs;
+        g_Stats._30 = g_Scores.runs[g_GameLogic.awayTeamBattingInd_battingTeam][0];
         if (g_Ball.deadBallReason == 1) {
             g_Stats._2E = g_RunningLogic._12;
             g_Stats._2A = g_Scores._A0 + g_RunningLogic._12;

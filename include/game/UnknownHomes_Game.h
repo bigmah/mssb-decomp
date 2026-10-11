@@ -1107,7 +1107,7 @@ typedef struct _LogoInfoStruct {
 } LogoInfoStruct; // size: 0xC
 
 typedef struct _GameControlsStruct {
-    /*0x000*/ s16 homeTeamInd[2];
+    /*0x000*/ s32 homeTeamInd; // team index of the home team
     /*0x004*/ int teamBatting;
     /*0x008*/ int teamFielding;
     /*0x00C*/ int homeTeamBattingInd_fieldingTeam;
@@ -1165,7 +1165,9 @@ typedef struct _GameControlsStruct {
     /*0x13A*/ u8 walkOffWinInd; // unsure
     /*0x13B*/ u8 gameOverInd;
     /*0x13C*/ u8 scoutFlag_VsScreenInd;
-    artificial_padding(0x13C, 0x142, u8);
+    /*0x13D*/ u8 _13D; // set when the MVP counts for the record (fn_3_759BC)
+    /*0x13E*/ u8 _13E[2]; // per team
+    /*0x140*/ u8 _140[2];
     /*0x142*/ u8 teamAIInd[2];
     /*0x144*/ u8 autoFielding[2];
     /*0x146*/ u8 batterHandedness[2];
@@ -2842,7 +2844,9 @@ typedef struct {
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0x105];
+    u8 pad[0xEA];
+    /* 0x0EA */ s16 _EA; // fielder index (g_Fielders)
+    u8 _EC[0x105 - 0xEC];
     /* 0x105 */ u8 playerAtMoundCutoffLocation;
     /* 0x106 */ u8 throwSpeedType;
     /* 0x107 */ u8 _107;
@@ -2923,9 +2927,22 @@ typedef struct {
 extern g_FieldingLogic_s g_FieldingLogic;
 
 typedef struct {
-    /* 0x0 */ s16 _0;
-    /* 0x2 */ s16 _2;
-    /* 0x4 */ s16 _4;
+    /* 0x0 */ s16 rosterIdx;
+    /* 0x2 */ s16 score;
+} MvpCandidate;
+
+typedef struct {
+    /* 0x00 */ s16 _0;
+    /* 0x02 */ s16 _2;
+    /* 0x04 */ s16 _4;
+    /* 0x06 */ u8 _06[0x44 - 0x6];
+    /* 0x44 */ s16 _44[2]; // per team: times through the batting order
+    /* 0x48 */ u8 _48[4];
+    /* 0x4C */ s16 _4C[2]; // per team
+    /* 0x50 */ u8 _50[8];
+    /* 0x58 */ MvpCandidate mvp[2]; // per team (fn_3_759BC)
+    /* 0x60 */ u8 _60[3];
+    /* 0x63 */ u8 _63[2]; // per team
 } lbl_3_common_bss_32A94_s;
 
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
