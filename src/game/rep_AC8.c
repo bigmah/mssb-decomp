@@ -1263,9 +1263,53 @@ void fn_3_329A4(void) {
 }
 
 // .text:0x00033088 size:0x3D0 mapped:0x8067211C
+// NONMATCHING 94%: distance sums unfused (fmuls+fadds) in the original; g_Fielders base kept in r31 there
+#if NONMATCHING
 void fn_3_33088(void) {
-    return;
+    u8* c;
+    s16 ang = fn_3_9FB8C(*(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C));
+    s32 other = 6;
+    u8* o;
+    f32 dc;
+    f32 dother;
+    f32 dx;
+    f32 dz;
+    c = g_Fielders + 7 * 0x268;
+    if (ang < *(s16*)(c + 0x182)) {
+        other = 8;
+    }
+    o = g_Fielders + other * 0x268;
+    if (c[0x1DD] == 1 && o[0x1DD] == 1) {
+        if (c[0x1DB] == 0 && o[0x1DB] == 0 && *(s16*)(c + 0x186) == *(s16*)(o + 0x186)) {
+            dx = ((f32*)(g_Ball + 0x354))[*(s16*)(c + 0x186) * 4] - *(f32*)c;
+            dz = ((f32*)(g_Ball + 0x35C))[*(s16*)(c + 0x186) * 4] - *(f32*)(c + 8);
+            dc = dx * dx + dz * dz;
+            SQRT_L(dc);
+            dx = ((f32*)(g_Ball + 0x354))[*(s16*)(o + 0x186) * 4] - *(f32*)o;
+            dz = ((f32*)(g_Ball + 0x35C))[*(s16*)(o + 0x186) * 4] - *(f32*)(o + 8);
+            dother = dx * dx + dz * dz;
+            SQRT_L(dother);
+            if (dc < dother) {
+                *(s16*)(g_FieldingLogic + 0xB2) = 7;
+            } else {
+                *(s16*)(g_FieldingLogic + 0xB2) = other;
+            }
+        } else if (*(s16*)(c + 0x186) <= *(s16*)(o + 0x186)) {
+            *(s16*)(g_FieldingLogic + 0xB2) = 7;
+        } else {
+            *(s16*)(g_FieldingLogic + 0xB2) = other;
+        }
+    } else if (c[0x1DD] == 1) {
+        *(s16*)(g_FieldingLogic + 0xB2) = 7;
+    } else if (o[0x1DD] == 1) {
+        *(s16*)(g_FieldingLogic + 0xB2) = other;
+    } else if (__abs(ang - *(s16*)(c + 0x182)) < __abs(ang - *(s16*)(o + 0x182)) + 0x60) {
+        *(s16*)(g_FieldingLogic + 0xB2) = 7;
+    } else {
+        *(s16*)(g_FieldingLogic + 0xB2) = other;
+    }
 }
+#endif
 
 // .text:0x00033458 size:0x94 mapped:0x806724EC
 void fn_3_33458(void) {
