@@ -84,7 +84,8 @@ void fn_1_3E38(Vec* pos, u32 id) {
 
 // .text:0x00004074 size:0x21C
 void fn_1_4074(Vec* pos) {
-    return;
+    GDPosition3f32(pos->x, pos->y, pos->z);
+    GDColor1x8(0x12);
 }
 
 // .text:0x00004290 size:0x498
