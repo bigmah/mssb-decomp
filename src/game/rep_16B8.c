@@ -788,18 +788,20 @@ void fn_3_94708(void) {
 }
 
 // .text:0x00094760 size:0x158 mapped:0x806D37F4
-// 98%: only the scheduling of `li r6,0x25` / `li r4,5` (original hoists them above the first stores)
+// NONMATCHING 98%: only the scheduling of `li r6,0x25` / `li r4,5` (original hoists them above the first stores)
+#if NONMATCHING
 void fn_3_94760(void) {
-    u8* o;
-    fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_E75C);
-    *(s16*)(((u8**)(((u8*)lbl_80371C30) + 0x18))[*(u16*)(o + 0x14) * 2] + 0x64) = lbl_3_data_F430[*(s32*)(((u8*)&g_GameLogic) + 0x2C) * 2];
-    *(s16*)(((u8**)(((u8*)lbl_80371C30) + 0x20))[*(u16*)(o + 0x14) * 2] + 0x64) = lbl_3_data_F430[*(s32*)(((u8*)&g_GameLogic) + 0x38) * 2];
-    *(s32*)(((u8**)(((u8*)lbl_80371C30) + 0x18))[*(u16*)(o + 0x14) * 2] + 0x5C) = *(s32*)(((u8*)&g_GameLogic) + 0x28) << 16;
-    *(s32*)(((u8**)(((u8*)lbl_80371C30) + 0x20))[*(u16*)(o + 0x14) * 2] + 0x5C) = *(s32*)(((u8*)&g_GameLogic) + 0x34) << 16;
-    fn_800363D8(o, 5, 1, 0x25, (s32)(((u8**)(((u8*)&g_GameLogic) + 0xEC))[*(s32*)((u8*)&g_GameLogic)] + (((u8*)&g_GameLogic) + 0x13E)[*(s32*)((u8*)&g_GameLogic)] * 4));
-    fn_800363D8(o, 6, 1, 0x25, (s32)(((u8**)(((u8*)&g_GameLogic) + 0xEC))[*(s32*)((u8*)&g_GameLogic) ^ 1] + (((u8*)&g_GameLogic) + 0x13E)[*(s32*)((u8*)&g_GameLogic) ^ 1] * 4));
+    RepTask* task;
+    fn_80034E20(task = lbl_803CC1B8[0], lbl_3_data_E75C);
+    REP_OBJ(task, 3)->_64 = lbl_3_data_F430[g_GameLogic.logo[0].captain * 2];
+    REP_OBJ(task, 4)->_64 = lbl_3_data_F430[g_GameLogic.logo[1].captain * 2];
+    REP_OBJ(task, 3)->_5C = g_GameLogic.logo[0].variationID << 16;
+    REP_OBJ(task, 4)->_5C = g_GameLogic.logo[1].variationID << 16;
+    fn_800363D8(task, 5, 1, 0x25, g_GameLogic.teams[g_GameLogic._000] + g_GameLogic._13E[g_GameLogic._000] * 4);
+    fn_800363D8(task, 6, 1, 0x25, g_GameLogic.teams[g_GameLogic._000 ^ 1] + g_GameLogic._13E[g_GameLogic._000 ^ 1] * 4);
     *(void**)lbl_803CC1B8[0] = fn_3_94708;
 }
+#endif
 
 // .text:0x000948B8 size:0x78 mapped:0x806D394C
 void fn_3_948B8(void) {
