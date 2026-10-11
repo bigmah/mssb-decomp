@@ -26,12 +26,14 @@ typedef struct PauseMenuState {
     /*0x1D8*/ u8 openedByBattingTeam;
     /*0x1D9*/ u8 _1D9;
     /*0x1DA*/ s8 cursor;
-    /*0x1DB*/ u8 _1DB[0x201 - 0x1DB];
+    /*0x1DB*/ u8 _1DB[2];
+    /*0x1DD*/ u8 _1DD[0x201 - 0x1DD];
     /*0x201*/ u8 _201;
     /*0x202*/ u8 requestOpen[2];
     /*0x204*/ u8 _204[2];
     /*0x206*/ s8 inputCooldown;
-    /*0x207*/ u8 _207[0x221 - 0x207];
+    /*0x207*/ u8 _207[2];
+    /*0x209*/ u8 _209[0x221 - 0x209];
     /*0x221*/ u8 optionCursor;
     /*0x222*/ u8 optionCount;
     /*0x223*/ u8 _223[0x23F - 0x223];
@@ -113,5 +115,7 @@ void fn_3_ACAF8(void);
 void fn_3_B3620(void);
 
 void fn_3_B056C(void);
+
+void fn_3_AF10C(void);
 
 #endif
