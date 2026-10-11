@@ -1,6 +1,7 @@
 #include "menus/rep_0788.h"
 #include "Dolphin/gx.h"
 #include "main/file_80024184.h"
+#include "game/UnknownHomes_Game.h"
 
 #include "static/UnknownHomes_Static.h"
 #include "static/UnknownHomes_Static.h"
@@ -3057,6 +3058,7 @@ void fn_2_2DCA8(MenuTableContext* menu, MenuItemState* item) {
 }
 
 extern u8 lbl_8034E9A0[];
+extern void* memcpy(void* dest, const void* src, u32 n);
 
 // fn_2_2C1A8, size:0x1D8
 void fn_2_2C1A8(MenuTableContext* menu, MenuItemState* item) {
@@ -5788,3 +5790,128 @@ void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 #endif
+
+extern u8 lbl_8034E9A0[];
+extern void* memcpy(void* dest, const void* src, u32 n);
+extern u8 lbl_2_data_3F98[][0x1FE];
+extern u8 lbl_2_data_3F60[][9];
+extern s16 lbl_2_data_3EC8[];
+extern u8 lbl_2_data_2E40[];
+extern void fn_2_6AE08(void);
+extern void fn_2_90538(void);
+extern void fn_2_46ADC(void);
+extern void fn_2_45978(void);
+extern void fn_2_42EB0(void);
+extern void fn_2_432EC(void);
+
+static inline u8 fn_2_20328_mode(void) {
+    u8 mode = 0;
+    switch (*(s32*)(lbl_8034E9A0 + 0x46E0)) { // TODO type: CharSelectState.captain[0]
+    case 0:
+        mode = 0;
+        break;
+    case 4:
+        mode = 1;
+        break;
+    case 10:
+        mode = 2;
+        break;
+    case 2:
+        mode = 3;
+        break;
+    case 6:
+        mode = 4;
+        break;
+    case 9:
+        mode = 5;
+        break;
+    }
+    return mode;
+}
+
+// fn_2_20328, size:0x4D4
+void fn_2_20328(void) {
+    u8 mode = fn_2_20328_mode();
+    u8 level;
+    s32 i;
+
+    lbl_2_bss_1A8248[0x441C] = mode;
+    level = lbl_8034E9A0[0x4711];
+    lbl_2_bss_1A8248[0x4416] = level;
+    lbl_2_bss_1A8248[0x4415] = level;
+    lbl_2_bss_1A8248[0x441D] = lbl_803CB8F0[lbl_2_bss_1A8248[0x441C]];
+    memcpy(lbl_2_bss_1A8248 + 0x40EE, lbl_2_data_3F98[lbl_2_bss_1A8248[0x441C]], 0x1FE);
+    memcpy(lbl_2_bss_1A8248 + 0x440C, lbl_2_data_3F60[lbl_2_bss_1A8248[0x441C]], 9);
+    fn_2_6AE08();
+    *(s16*)(lbl_2_bss_1A8248 + 0x16C2) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
+    *(s16*)(lbl_2_bss_1A8248 + 0x16C0) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
+    *(s16*)(lbl_2_bss_1A8248 + 0x16BE) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
+    *(s16*)(lbl_2_bss_1A8248 + 0x1798) = -1;
+    *(s16*)(lbl_2_bss_1A8248 + 0x1796) = -1;
+    fn_2_90538();
+    lbl_2_bss_1A8248[0x4418] = lbl_2_data_2E40[lbl_2_bss_1A8248[0x4415]];
+    lbl_2_bss_1A8248[0x4419] = lbl_2_data_2E40[lbl_2_bss_1A8248[0x4415]];
+    *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 0;
+    *(s16*)(lbl_2_bss_1A8248 + 0x43BE) = 0;
+    lbl_2_bss_1A8248[0x4422] = 0;
+    lbl_2_bss_1A8248[0x4423] = 0;
+    lbl_2_bss_1A8248[0x4424] = 0;
+    lbl_2_bss_1A8248[0x4426] = 0;
+    lbl_2_bss_1A8248[0x4427] = 0;
+    lbl_2_bss_1A8248[0x4428] = 0;
+    lbl_2_bss_1A8248[0x4449] = 0;
+    if (lbl_2_bss_1A8248[0x441C] == 5) {
+        lbl_2_bss_1A8248[0x4439] = 0;
+    } else {
+        lbl_2_bss_1A8248[0x4439] = 1;
+    }
+    lbl_2_bss_1A8248[0x441A] = 0;
+    lbl_2_bss_1A8248[0x444A] = 0;
+    lbl_2_bss_1A8248[0x4446] = 0;
+    lbl_2_bss_1A8248[0x4447] = 0;
+    lbl_2_bss_1A8248[0x44EF] = 0;
+    lbl_2_bss_1A8248[0x44F0] = 0;
+    lbl_2_bss_1A8248[0x44F4] = 0;
+    lbl_2_bss_1A8248[0x442A] = 0;
+    *(s8*)(lbl_2_bss_1A8248 + 0x444C) = -1;
+    *(s8*)(lbl_2_bss_1A8248 + 0x444B) = -1;
+    for (i = 0; i < 20; i++) {
+        lbl_2_bss_1A8248[0x43C2 + i] = lbl_2_bss_1A8248[0x15F1 + i];
+    }
+    lbl_2_bss_1A8248[0x442B] = 0;
+    lbl_2_bss_1A8248[0x442F] = 0;
+    lbl_2_bss_1A8248[0x442C] = 0;
+    lbl_2_bss_1A8248[0x442D] = 0;
+    lbl_2_bss_1A8248[0x442E] = 0;
+    lbl_2_bss_1A8248[0x4438] = 0;
+    lbl_2_bss_1A8248[0x4445] = 1;
+    *(s32*)(lbl_2_bss_1A8248 + 0x42EC) = 0;
+    lbl_2_bss_1A8248[0x4431] = 0;
+    lbl_2_bss_1A8248[0x4432] = 0;
+    lbl_2_bss_1A8248[0x4433] = 0;
+    lbl_2_bss_1A8248[0x4434] = 0;
+    lbl_2_bss_1A8248[0x4435] = 0;
+    fn_2_46ADC();
+    fn_2_45978();
+    for (i = 0; i < 9; i++) {
+        *(s16*)(lbl_2_bss_1A8248 + 0x40B8 + i * 6) = inMemRoster[0][i].stats.CharID;
+    }
+    lbl_2_bss_1A8248[0x44F6] = 0;
+    lbl_2_bss_1A8248[0x44F7] = 0;
+    fn_2_42EB0();
+    fn_2_432EC();
+    lbl_2_bss_1A8248[0x44F8] = 3;
+    lbl_2_bss_1A8248[0x44F9] = 3;
+    lbl_2_bss_1A8248[0x44FA] = 3;
+    lbl_2_bss_1A8248[0x44FB] = 3;
+    lbl_2_bss_1A8248[0x44FC] = 3;
+    lbl_2_bss_1A8248[0x44FD] = 3;
+    lbl_2_bss_1A8248[0x44FE] = 0;
+    lbl_2_bss_1A8248[0x44FF] = 0;
+    lbl_2_bss_1A8248[0x4500] = 0;
+    lbl_2_bss_1A8248[0x4501] = 0;
+    lbl_2_bss_1A8248[0x4502] = 0;
+    lbl_2_bss_1A8248[0x4503] = 0;
+    lbl_2_bss_1A8248[0x4504] = 0;
+    lbl_2_bss_1A8248[0x4505] = 0;
+}
