@@ -2,13 +2,14 @@
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
 #include <string.h>
+#include "Dolphin/OS/OSCache.h"
+#include "C3/charPipeline.h"
 
 
 extern u8* lbl_2_bss_1A8248[];
 extern MenuDrawWorld* lbl_2_bss_340140[];
 extern const f32 lbl_2_rodata_E88;
 extern MenuDrawWorld lbl_8036E548;
-extern void fn_800BDA94(void*, void*);
 extern const f32 lbl_2_rodata_EE0[];
 extern const f32 lbl_2_rodata_EE4[];
 extern const f32 lbl_2_rodata_EE8[];
@@ -21,7 +22,7 @@ extern u8 lbl_2_data_2E9B4[][8];
 extern void fn_2_48D54(void);
 extern void fn_2_86470(void);
 extern void fn_2_85D6C(Mtx);
-extern void fn_2_190DC(MenuDrawCollection*, Mtx);
+extern void fn_2_190DC(ActorObjectTable*, Mtx);
 extern void fn_800A7D4C(s32, void*);
 extern f32 fn_2_4A1E8(f32, f32);
 extern const f32 lbl_2_rodata_EAC;
@@ -66,20 +67,20 @@ void fn_2_86FEC(void) {
     fn_2_85D6C(lbl_2_bss_1A81D4.view);
     PSMTXCopy(lbl_2_bss_1A81D4.view, fn_80052768_getCamera(0)->view);
     fn_800A7D4C(0, lbl_2_data_2E9B4[lbl_803CBBC0[0]]);
-    fn_2_190DC(lbl_2_bss_340140[0]->collection, fn_80052768_getCamera(0)->view);
+    fn_2_190DC(lbl_2_bss_340140[0]->table, fn_80052768_getCamera(0)->view);
 }
 
 // fn_2_86F40, size:0xAC
 void fn_2_86F40(void) {
-    MenuDrawDescriptor* descriptor;
+    ActorObject* object;
     s32 index;
-    for (index = 0; index < (s32)lbl_8036E548.collection->count; index++) {
-        descriptor = &lbl_8036E548.collection->rows[index].descriptor;
-        if (descriptor->actor != NULL && lbl_8036E548.collection->rows[index].visible != 0) {
+    for (index = 0; index < (s32)lbl_8036E548.table->count; index++) {
+        object = &lbl_8036E548.table->objects[index];
+        if (object->actor != NULL && lbl_8036E548.table->objects[index].animateBones != 0) {
             if (lbl_8036E548.states[index].draw != NULL) {
                 lbl_8036E548.states[index].draw(index);
             }
-            fn_800BDA94(descriptor, fn_80052768_getCamera(0)->view);
+            fn_800BDA94(object, fn_80052768_getCamera(0)->view);
         }
     }
 }
@@ -282,3 +283,50 @@ void fn_2_85AC0(MenuCamera* camera) {
     camera->target.z += camera->eye.z;
     makeLookAtMatrix(camera->view, &camera->eye, &up, &camera->target);
 }
+
+extern MenuStageData lbl_2_data_2E608;
+extern const f32 lbl_2_rodata_F0C;
+extern void fn_800BD548(ActorObject* entry, u8 numArgs, ...);
+extern void CTRLSetTranslation(Control* control, f32 x, f32 y, f32 z);
+extern void CTRLSetRotation(Control* control, f32 x, f32 y, f32 z);
+
+// Creates actor objects [start, start + count) for the current stadium's background.
+// .text:0x87654 size:0x1D8
+// NONMATCHING 74%: the original reaches lbl_2_data_2E608's sub-tables through one anchored .data pool base (file statics), we index a struct
+#if NONMATCHING
+static void menuStageApplyTexSet(s32 i, s32 model, s32 texSet) {
+    s32 j;
+    s32 k;
+    s16* texIndex;
+    for (j = 0; j < lbl_2_data_2E608.boneCount[model]; j++) {
+        texIndex = lbl_2_data_2E608.texIndex[texSet];
+        for (k = 0; k < lbl_2_data_2E608.texCount[model]; k++) {
+            lbl_2_bss_340140[0]->table->objects[i].actor->boneArray[j]->dispObj->textureData
+                ->texturePalette->tex[k].texIndex = j + *texIndex++;
+        }
+    }
+}
+
+void fn_2_87654(s32 unused, s32 start, s32 count, void* animBank, s32 arg5) {
+    s32 i;
+    s32 model;
+    s32 texSet;
+    s32 hasTexSet;
+    MenuStageObject* object;
+
+    for (i = start; i < start + count; i++) {
+        object = &lbl_2_data_2E608.objects[lbl_2_bss_33FBF5][i];
+        model = object->model;
+        texSet = object->texSet;
+        hasTexSet = object->hasTexSet;
+        fn_800BDC88(lbl_2_bss_340140[0]->table, i, i, lbl_2_bss_340140[0]->models[model].layout, animBank, arg5);
+        fn_800BD548(&lbl_2_bss_340140[0]->table->objects[i], 4, lbl_2_bss_340140[0]->lights[0],
+            lbl_2_bss_340140[0]->lights[1], lbl_2_bss_340140[0]->lights[2], lbl_2_bss_340140[0]->lights[3]);
+        CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl, -90.0f, 0.0f, 0.0f);
+        if (hasTexSet != 0) {
+            menuStageApplyTexSet(i, model, texSet);
+        }
+    }
+}
+#endif
