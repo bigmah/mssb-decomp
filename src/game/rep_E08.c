@@ -27,6 +27,14 @@ extern f32 shortAngleToRad_Capped(s16 a);
 extern u32 fn_3_90220(s32 idx, s32 off);
 extern int getAnimRelatedCoordinates(int, int, f32*);
 extern void fn_8001B4D8(void);
+extern void fn_8001B5EC(s32 index, s32 enable);
+extern int fn_3_B7CDC(f32 a, f32 b);
+extern int fn_3_B7E10(f32 a, f32 b);
+extern f32 charSizeMultipliers[][2];
+extern s16 lbl_3_data_7F10[];
+extern f32 lbl_3_data_476C[];
+extern const f32 lbl_3_rodata_E78;
+extern const f32 lbl_3_rodata_E7C;
 extern const f32 lbl_3_rodata_E58;
 extern const f64 lbl_3_rodata_E60;
 extern const f64 lbl_3_rodata_E68;
@@ -118,9 +126,62 @@ void fn_3_60804(s32 a, s32 b) {
 }
 
 // .text:0x00060A98 size:0x2E8 mapped:0x8069FB2C
-void fn_3_60A98(void) {
-    return;
+// NONMATCHING 97%: r29/r30 (anim/a) and f1-f4 swapped (see docs/patterns/regalloc.md)
+#if NONMATCHING
+void fn_3_60A98(s32 a, u8* o) {
+    u8* f;
+    s16 anim;
+    u8* e;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 sx;
+    f32 sz;
+    e = g_UnkAnimation_31EAC + a * 0x54;
+    f = g_Fielders + a * 0x268;
+    if (o == NULL) {
+        return;
+    }
+    anim = *(s16*)(o + 0x62); // original reads this before the NULL check
+    if (*(f32*)(f + 0xA8) < lbl_3_rodata_E78 && fn_3_B7E10(*(f32*)(f + 0), *(f32*)(f + 8)) == 0) {
+        return;
+    }
+    dz = *(f32*)(f + 8) - *(f32*)(e + 0x18);
+    dx = *(f32*)(f + 0) - *(f32*)(e + 0x10);
+    d = sqrt_E08(dx * dx + dz * dz);
+    if (d <= lbl_3_rodata_E58) {
+        return;
+    }
+    sx = dx / d;
+    sz = dz / d;
+    if (anim == 0x1A || anim == 0x1B) {
+        s16 c = *(s16*)(f + 0x17A);
+        f32 m = lbl_3_rodata_E7C * (f32)(lbl_3_data_7F10[c] + 0x1E) * charSizeMultipliers[c][0];
+        sx *= m;
+        sz *= m;
+    } else {
+        f32 m = lbl_3_data_476C[f[0x1C9]];
+        sx *= m;
+        sz *= m;
+    }
+    if (fn_3_B7CDC(sx + *(f32*)(f + 0), sz + *(f32*)(f + 8)) != 0) {
+        fn_3_60804(a, 0);
+        if (g_d_GameSettings[0x11] != 0) {
+            if (a == 0) {
+                u8* m = g_Minigame;
+                m += *(s8*)(m + 0x1904);
+                a = *(s8*)(m + 0x18CC);
+            } else {
+                a = *(s8*)(g_Minigame + a + 0x18F2);
+            }
+        }
+        fn_8001B5EC(a, 0);
+        *(f32*)(f + 0) = *(f32*)(f + 0xD4);
+        *(f32*)(f + 8) = *(f32*)(f + 0xD8);
+        f[0x1FB] = 0;
+    }
 }
+#endif
 
 // .text:0x00060D80 size:0x110 mapped:0x8069FE14
 s32 fn_3_60D80(s32 a) {
