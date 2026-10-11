@@ -161,6 +161,8 @@ s32 fn_8004D93C(s32 arg);
 
 void fn_8004D990(s8 arg0, s32 arg1, u8 table);
 
+void fn_8004F10C(void);
+
 void fn_8004EEF4(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4);
 
 s32 fn_8004EE84(s32 arg);
