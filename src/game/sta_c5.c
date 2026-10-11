@@ -106,6 +106,30 @@ extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
 extern u32 lbl_3_bss_B154[];
 extern void fn_3_B97DC(void*, u32);
+struct StadCtlA {
+    Control c;
+    u8 pad34[0x74 - 0x3C];
+    u8** obj;
+    u8 pad78[0x90 - 0x78];
+    u8 fl90_hi : 1;
+    u8 fl90_lo : 7;
+    u8 pad91[8];
+    u8 f99;
+    u8 pad9A[2];
+    u8 idx;
+    u8 pad9D[3];
+    f32 xa0, ya4, za8, xac, zb0, rb4;
+    u8 padB8[0xC0 - 0xB8];
+    u8 fc0;
+    s8 fc1;
+    u8 padC2[2];
+    u8 fc4;
+    u8 fc5;
+    u8 fc6;
+    u8 fc7;
+};
+typedef struct StadCtlA StadCtlA;
+extern Vec lbl_3_bss_B260[]; /* bezier control points */
 
 void fn_3_EDFAC(void) {
     u8* st = lbl_3_bss_AEE0;
@@ -786,29 +810,6 @@ void fn_3_F1448(u8* p) {
     CTRLSetScale((Control*)p, lbl_3_rodata_2D50, lbl_3_rodata_2D50, lbl_3_rodata_2D50);
 }
 
-struct StadCtlA {
-    Control c;
-    u8 pad34[0x74 - 0x3C];
-    u8** obj;
-    u8 pad78[0x90 - 0x78];
-    u8 fl90_hi : 1;
-    u8 fl90_lo : 7;
-    u8 pad91[8];
-    u8 f99;
-    u8 pad9A[2];
-    u8 idx;
-    u8 pad9D[3];
-    f32 xa0, ya4, za8, xac, zb0, rb4;
-    u8 padB8[0xC0 - 0xB8];
-    u8 fc0;
-    s8 fc1;
-    u8 padC2[2];
-    u8 fc4;
-    u8 fc5;
-    u8 fc6;
-    u8 fc7;
-};
-typedef struct StadCtlA StadCtlA;
 
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
 extern u32 lbl_3_bss_B154[];
@@ -1085,10 +1086,50 @@ void fn_3_F2938(void) {
     return;
 }
 
+extern const f32 lbl_3_rodata_2E80;
+extern const f32 lbl_3_rodata_2E84;
+extern const f32 lbl_3_rodata_2E30;
 // .text:0x000F2FFC size:0x1E4 mapped:0x80732090
-void fn_3_F2FFC(void) {
-    return;
+// NONMATCHING 75%: float scheduling/register order of the bezier control-point stores differs
+#if NONMATCHING
+void fn_3_F2FFC(StadCtlA* p, f32 x, f32 z) {
+    Vec dir;
+    s8 side;
+    s32 end;
+    f32 d = x - p->xac;
+    side = d / __fabs(d);
+    if (side == 0) {
+        d = p->xac;
+        side = -(d / __fabs(d));
+    }
+    dir.x = x - p->xac;
+    dir.y = lbl_3_rodata_2D5C;
+    dir.z = z - p->zb0;
+    PSVECNormalize(&dir, &dir);
+    end = side * 80;
+    lbl_3_bss_B260[0].x = lbl_3_rodata_2E30 * dir.x + p->xac;
+    lbl_3_bss_B260[0].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[0].z = lbl_3_rodata_2E30 * dir.z + p->zb0;
+    lbl_3_bss_B260[1].x = lbl_3_rodata_2E80 * (x - p->xac) + p->xac;
+    lbl_3_bss_B260[1].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[1].z = lbl_3_rodata_2E80 * (z - p->zb0) + p->zb0;
+    lbl_3_bss_B260[2].x = lbl_3_rodata_2E84 * (x - p->xac) + p->xac;
+    lbl_3_bss_B260[2].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[2].z = lbl_3_rodata_2E84 * (z - p->zb0) + p->zb0;
+    lbl_3_bss_B260[3].x = x;
+    lbl_3_bss_B260[3].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[3].z = z;
+    lbl_3_bss_B260[4].x = x + (end - x) / lbl_3_rodata_2E88;
+    lbl_3_bss_B260[4].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[4].z = z;
+    lbl_3_bss_B260[5].x = x + lbl_3_rodata_2D74 * (end - x) / lbl_3_rodata_2E88;
+    lbl_3_bss_B260[5].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[5].z = z;
+    lbl_3_bss_B260[6].x = end;
+    lbl_3_bss_B260[6].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[6].z = z;
 }
+#endif
 
 // .text:0x000F31E0 size:0x5DC mapped:0x80732274
 void fn_3_F31E0(void) {
@@ -1219,7 +1260,6 @@ u32 fn_3_F3CD0(u8* a) {
 
 // .text:0x000F3EFC size:0x3A4 mapped:0x80732F90
 extern u32 lbl_3_bss_B560[];
-extern f32 lbl_3_bss_B260[];
 extern const f32 lbl_3_rodata_2E90;
 extern const f32 lbl_3_rodata_2DEC;
 extern const f64 lbl_3_rodata_2DF8;
@@ -1237,9 +1277,9 @@ void fn_3_F3EFC(u8* a) {
         *(f32*)(e + 0x38) = *(f32*)(e + 0x3C) = lbl_3_rodata_2E30;
         *(f32*)(e + 0x10) = *(f32*)(e + 0x18) = lbl_3_rodata_2D5C;
         *(f32*)(e + 0x14) = lbl_3_rodata_2E90;
-        *(f32*)(e + 0x4) = lbl_3_bss_B260[0] + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0x4) = lbl_3_bss_B260[0].x + (rand() % 600 - 300) / lbl_3_rodata_2E98;
         *(f32*)(e + 0x8) = lbl_3_rodata_2EA0 + (rand() % 600 - 300) / lbl_3_rodata_2E98;
-        *(f32*)(e + 0xC) = lbl_3_bss_B260[2] + (rand() % 600 - 300) / lbl_3_rodata_2E98;
+        *(f32*)(e + 0xC) = lbl_3_bss_B260[0].z + (rand() % 600 - 300) / lbl_3_rodata_2E98;
         *(f32*)(e + 0x28) = lbl_3_rodata_2EA8 + (rand() % 300 - 150) / lbl_3_rodata_2E30;
         *(f32*)(e + 0x2C) = lbl_3_rodata_2EB0 + (rand() % 300 - 150) / lbl_3_rodata_2E30;
         e[0x4F] = i;

@@ -43,7 +43,7 @@ void fn_3_F22FC(u8* p, s32 idx);
 s32 fn_3_F2448(u8* p);
 void fn_3_F2724(u8* p, u8* q);
 void fn_3_F2938(void);
-void fn_3_F2FFC(void);
+void fn_3_F2FFC(struct StadCtlA* p, f32 x, f32 z);
 void fn_3_F31E0(void);
 u32 fn_3_F37BC(u32 n, u32 k);
 void fn_3_F38D4(void);
