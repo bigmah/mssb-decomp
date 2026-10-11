@@ -122,6 +122,7 @@ void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* 
 void fn_8000E030(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000E2D4(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000DC9C(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
+void fn_8000D8A4(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
