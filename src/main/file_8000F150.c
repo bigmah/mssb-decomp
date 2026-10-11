@@ -151,7 +151,12 @@ void fn_80011000(void) {
 
 // .text:0x80011140 size:0x74
 void fn_80011140(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 30; i++) {
+        lbl_80366B18.entries[i].state = 0;
+        lbl_80366B18.owners[i].object = NULL;
+    }
+    lbl_80366B18.padMask = 0;
 }
 
 // .text:0x800111B4 size:0x24
