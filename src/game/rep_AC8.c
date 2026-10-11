@@ -2925,9 +2925,81 @@ void fn_3_3A1FC(int i) {
 }
 
 // .text:0x0003A234 size:0x350 mapped:0x806792C8
-void fn_3_3A234(void) {
-    return;
+extern f32 lbl_3_data_46F0;
+extern f32 lbl_3_data_46F4;
+extern u8 lbl_3_data_21A14[];
+extern int checkFieldingStat(int, int, int);
+// NONMATCHING 98%: extsh on the radToShortAngle results; 0x2C50 slot pointer reached via lwzu in the original
+#if NONMATCHING
+void fn_3_3A234(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s32 who = i;
+    f32 cap = *(f32*)(f + 0x58);
+    s16 rel;
+    s32 n;
+    s32 k;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            who = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            who = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    if (*(s16*)(f + 0x1A0) == 0) {
+        s16 a = radToShortAngle(*(f32*)(f + 0x64));
+        rel = fn_3_9FE6C_normalizeAngle(a - radToShortAngle(*(f32*)(f + 0x48)));
+        if (rel < 0x200) {
+            f[0x1F3] = 0;
+        } else if (rel < 0x600) {
+            f[0x1F3] = 3;
+        } else if (rel < 0xA00) {
+            f[0x1F3] = 1;
+        } else if (rel < 0xE00) {
+            f[0x1F3] = 2;
+        } else {
+            f[0x1F3] = 0;
+        }
+        if (f[0x1E3] != 1) {
+            if (f[0x1F3] == 1) {
+                f[0x1F3] = 5;
+            } else {
+                f[0x1F3] = 4;
+            }
+        }
+    }
+    if (f[0x1F3] == 4 || f[0x1F3] == 5) {
+        *(f32*)(f + 0x50) = lbl_3_rodata_B80 * *(f32*)(f + 0x5C) + *(f32*)(f + 0x50);
+    } else {
+        *(f32*)(f + 0x50) = *(f32*)(f + 0x50) + *(f32*)(f + 0x5C);
+    }
+    n = f[0x217];
+    for (k = 0; k < n; k++) {
+        cap *= lbl_3_data_46F4;
+    }
+    if (*(f32*)(f + 0x50) > cap) {
+        *(f32*)(f + 0x50) = cap;
+    }
+    if (*(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0x14) == i) {
+        *(f32*)(f + 0x50) = *(f32*)(*(u8**)(g_FieldingLogic + 0x70) + 8) * cap;
+    }
+    if (*(s16*)(g_Ball + 0x1B78) == i && checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 0xB) != 0) {
+        u8** slot = (u8**)(lbl_8036E548 + 0x2C50) + who;
+        *(f32*)(f + 0x50) = *(f32*)(f + 0x50) * lbl_3_data_46F0;
+        (*slot)[0x27A] = 1;
+        if (*(s16*)(f + 0x1A0) == 1) {
+            fn_3_1682AC(((int*)lbl_8036E548)[who + 0xB14], 0xB);
+        }
+    }
+    if (g_Minigame[0x1A2A] == 6) {
+        if (*(s8*)(g_Minigame + 0x1D6D) == f[0x20D]) {
+            *(f32*)(f + 0x50) = *(f32*)(f + 0x50) * *(f32*)(lbl_3_data_21A14 + 0x18);
+        }
+        if (*(s8*)(g_Minigame + 0x1D74) == f[0x20D]) {
+            *(f32*)(f + 0x50) = *(f32*)(f + 0x50) * **(f32**)(g_Minigame + 0x1D4C);
+        }
+    }
 }
+#endif
 
 // .text:0x0003A584 size:0x574 mapped:0x80679618
 void fn_3_3A584(int a) {

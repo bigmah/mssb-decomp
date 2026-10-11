@@ -99,7 +99,7 @@ void fn_3_39858(void);
 void fn_3_39DC4(void);
 void fn_3_39EB0(void);
 void fn_3_3A1FC(int);
-void fn_3_3A234(void);
+void fn_3_3A234(int i);
 void fn_3_3A584(int);
 void fn_3_3AAF8(int);
 void fn_3_3ABF0(int i);
