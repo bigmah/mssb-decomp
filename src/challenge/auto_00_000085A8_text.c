@@ -115,6 +115,22 @@ void fn_1_88CC(void) {
     return;
 }
 
+// .text:0x000088D0 size:0x1C0
+void fn_1_88D0(void) {
+    switch (lbl_1_common_bss_47674.loadStep) {
+    case 0:
+        if (fn_80035838(lbl_1_data_B70, 6) != 0) {
+            lbl_1_common_bss_47674.request = 0;
+            lbl_1_common_bss_47674.prev = 3;
+            lbl_1_common_bss_47674.loadStep++;
+        }
+        break;
+    case 1:
+        fn_1_8770();
+        break;
+    }
+}
+
 // .text:0x00008B8C size:0x4
 void fn_1_8B8C(void) {
     return;
