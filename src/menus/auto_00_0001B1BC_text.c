@@ -24,7 +24,7 @@ extern u8 lbl_80366B18[];
 extern void fn_2_68DAC(s32 index, void* result);
 extern void fn_80068720(s32);
 extern void fn_8001F228(void);
-extern void fn_80021410(void);
+extern s32 fn_80021410(void);
 extern void fn_2_54474(void);
 extern u8* lbl_2_bss_1A8230[];
 extern u8* lbl_2_bss_1A8238;

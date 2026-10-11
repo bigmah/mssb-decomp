@@ -2,12 +2,34 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 
+typedef struct CB6B4State {
+    u8 pad0[0x4];
+    void* tex; // 0x04
+} CB6B4State;
+
+extern CB6B4State lbl_3_common_bss_35154;
+extern void* lbl_3_bss_9FDC;
+// Completes the forward declaration from UnknownHomes_Static.h with the one field used here
+// (full layout: ParticleParamsC in main/file_800263FC.h).
+struct ParticleParamsC {
+    void* tex; // 0x00: TexArchive*
+    u8 pad4[0x54 - 0x4];
+};
+extern struct ParticleParamsC lbl_3_data_18268;
+
 // .text:0x000CB6B4 size:0x38 mapped:0x8070A748
-void fn_3_CB6B4(void) {
-    return;
+// Relocates the texture-archive offset stored at the head of a loaded file.
+void fn_3_CB6B4(void** file) {
+    *file = (u8*)*file + (u32)file;
+    convertTextureHeader(lbl_3_bss_9FDC = *file);
 }
 
 // .text:0x000CB6EC size:0x4C mapped:0x8070A780
-void fn_3_CB6EC(void) {
-    return;
+void fn_3_CB6EC(f32 x, f32 y, f32 z) {
+    Vec pos;
+    pos.x = x;
+    pos.y = y;
+    pos.z = z;
+    lbl_3_data_18268.tex = lbl_3_common_bss_35154.tex;
+    fn_8002955C(&pos, NULL, &lbl_3_data_18268);
 }
