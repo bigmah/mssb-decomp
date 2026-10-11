@@ -1,4 +1,28 @@
 #include "main/file_800639BC.h"
+#include "static/GameSettings.h"
+#include "game/UnknownHomes_Game.h"
+#include "main/file_80008E00.h"
+#include "main/file_8000F150.h"
+#include "main/file_80069BDC.h"
+#include "main/file_800B0724.h"
+#include "main/file_800A7C08.h"
+#include "main/file_80021308.h"
+#include "main/file_80034F50.h"
+#include "main/file_8004B284.h"
+#include "Unknown/File_0x800a64e0.h"
+#include "Dolphin/mtx.h"
+#include "string.h"
+
+extern SoundManager lbl_800EF808;
+extern AssetLoadInstructions lbl_801092E8; // logo sound data
+extern AssetLoadInstructions lbl_80109044; // message table
+extern u8 lbl_80109378[]; // TODO type (spani creation desc)
+extern void* lbl_803CBD30; // queue node of the logo screen task
+extern u16 lbl_803CBD24;
+
+extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr);
+extern void fn_80034E20(void* task, void* desc);
+extern void* fn_80034CEC(void* task);
 
 // .text:0x800639BC size:0x988
 void fn_800639BC(void) {
@@ -157,7 +181,7 @@ void fn_800698F8(void) {
 
 // .text:0x80069A68 size:0x30
 void fn_80069A68(void) {
-    return;
+    fn_80021518(0x35, lbl_800EF808.groups[47]);
 }
 
 // .text:0x80069A98 size:0x3C

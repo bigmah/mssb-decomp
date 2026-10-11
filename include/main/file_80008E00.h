@@ -23,7 +23,8 @@ typedef struct {
     /*0x27*/ u8 _27;
     /*0x28*/ u8 _28;
     /*0x29*/ u8 _29;
-    /*0x2A*/ u8 _2A[6];
+    /*0x2A*/ u8 _2A; // logo screen state (0: loading, 2: done)
+    /*0x2B*/ u8 _2B[5];
 } lbl_80366158_s; // size: 0x30
 
 extern lbl_80366158_s lbl_80366158;

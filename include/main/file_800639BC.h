@@ -3,4 +3,6 @@
 
 #include "mssbTypes.h"
 
+void fn_80069A68(void);
+
 #endif
