@@ -543,7 +543,55 @@ void fn_3_16B5B4(u8* out, s8 id, int t) {
 }
 
 // .text:0x0016B884 size:0xB10 mapped:0x807AA918
+// Resets the six mushroom ribbons: each ribbon is 25 segments of 0x2C bytes
+// (stride 0x44C); segment +0x24 is the RGBA colour, +0x27 its alpha,
+// +0x28/+0x29 the from/to colour indices into lbl_3_data_2A308.
+// NONMATCHING 13%: the original inlines fn_3_16B5B4 (with t = 0, so k folds to 0.0f) for every ribbon;
+// this file is built with dont_inline. With inlining enabled this C scores 63% (diff: k not folded)
+#if NONMATCHING
 void fn_3_16B884(void) {
-    return;
+    u8* src;
+    u8* dst;
+    u32 i;
+    u8 alpha;
+
+    lbl_3_data_28928[0x28] = 0;
+    lbl_3_data_28928[0x29] = 1;
+    fn_3_16B5B4(lbl_3_data_28928, 0x1C, 0);
+    lbl_3_data_28928[0x44C + 0x28] = 1;
+    lbl_3_data_28928[0x44C + 0x29] = 2;
+    fn_3_16B5B4(lbl_3_data_28928 + 0x44C, 0x20, 0);
+    lbl_3_data_28928[0x898 + 0x28] = 2;
+    lbl_3_data_28928[0x898 + 0x29] = 3;
+    fn_3_16B5B4(lbl_3_data_28928 + 0x898, 4, 0);
+    lbl_3_data_28928[0xCE4 + 0x28] = 3;
+    lbl_3_data_28928[0xCE4 + 0x29] = 4;
+    fn_3_16B5B4(lbl_3_data_28928 + 0xCE4, 7, 0);
+    lbl_3_data_28928[0x1130 + 0x28] = 4;
+    lbl_3_data_28928[0x1130 + 0x29] = 5;
+    fn_3_16B5B4(lbl_3_data_28928 + 0x1130, 0x12, 0);
+    lbl_3_data_28928[0x157C + 0x28] = 5;
+    lbl_3_data_28928[0x157C + 0x29] = 0;
+    fn_3_16B5B4(lbl_3_data_28928 + 0x157C, 0x18, 0);
+
+    dst = lbl_3_data_28928 + 0x2C;
+    for (i = 1; i < 25; i++) {
+        alpha = (24 - i) * 8;
+        src = lbl_3_data_28928 + (i - 1) * 0x2C;
+        memcpy(dst, src, 0x2C);
+        dst[0x27] = alpha;
+        memcpy(dst + 0x44C, src + 0x44C, 0x2C);
+        dst[0x44C + 0x27] = alpha;
+        memcpy(dst + 0x898, src + 0x898, 0x2C);
+        dst[0x898 + 0x27] = alpha;
+        memcpy(dst + 0xCE4, src + 0xCE4, 0x2C);
+        dst[0xCE4 + 0x27] = alpha;
+        memcpy(dst + 0x1130, src + 0x1130, 0x2C);
+        dst[0x1130 + 0x27] = alpha;
+        memcpy(dst + 0x157C, src + 0x157C, 0x2C);
+        dst[0x157C + 0x27] = alpha;
+        dst += 0x2C;
+    }
 }
+#endif
 
