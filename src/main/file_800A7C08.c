@@ -239,7 +239,7 @@ static inline s32 StreamCommand(s32 cmd) {
 
 // .text:0x800A8518 size:0x19C
 s32 fn_800A8518(s32 cmd) {
-    return 0;
+    return StreamCommand(cmd);
 }
 
 // .text:0x800A86B4 size:0x1B0
