@@ -172,7 +172,53 @@ void fn_3_9894C(void) {
 
 // .text:0x00098C20 size:0x1C0 mapped:0x806D7CB4
 void fn_3_98C20(void) {
-    return;
+    HudTask* task = HUD_TASK;
+
+    if (lbl_3_common_bss_32724.hudOff == 0) {
+        if (task->state == 0) {
+            task->state = 1;
+            return;
+        } else if (task->state == 1) {
+            if (g_d_GameSettings.GameModeSelected == 2) {
+                if (g_Practice._19F == 0) {
+                    goto remove;
+                }
+                if (lbl_3_common_bss_34C90.state == 4) {
+                    task->state = 2;
+                }
+                return;
+            } else if (g_d_GameSettings.minigamesEnabled != 0) {
+                if (g_GameLogic.gameStatus == 0xB && lbl_3_common_bss_34C90.state == 4) {
+                    task->state = 2;
+                }
+                if (g_d_GameSettings.GameModeSelected != 7) {
+                    return;
+                }
+                if (lbl_3_common_bss_34C90.state == 4) {
+                    task->state = 2;
+                }
+                if (lbl_3_common_bss_34C90.state != 7 && lbl_3_common_bss_34C90.state != 0xD) {
+                    return;
+                }
+                goto remove;
+            } else {
+                if ((((lbl_3_common_bss_34C90.menu != 2 && lbl_3_common_bss_34C90.menu != 9)) || lbl_3_common_bss_34C90.state != 4) &&
+                    lbl_3_common_bss_34C90.itemsState != 2) {
+                    return;
+                }
+                goto remove;
+            }
+        } else if (task->state == 2) {
+            HUD_OBJ(task, 0)->_68 = 4;
+            if ((HUD_OBJ(task, 0)->_5C >> 16) == 0) {
+                goto remove;
+            }
+        }
+        return;
+    }
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    lbl_3_common_bss_32724.pauseTitleShown = 0;
 }
 
 // .text:0x00098DE0 size:0xC8 mapped:0x806D7E74
