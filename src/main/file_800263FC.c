@@ -557,9 +557,32 @@ void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm) {
 #endif
 
 // .text:0x8002C2D0 size:0x29C
-void fn_8002C2D0(void) {
-    return;
+// NONMATCHING 98%: register allocation in the inlined allocations
+#if NONMATCHING
+void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm) {
+    Emitter tmp;
+    Emitter* e = FindEmitter(NULL, 5);
+    Emitter* t;
+    Particle* last;
+
+    if (e != NULL) {
+        t = AllocParticles(&tmp, prm->count, 1);
+        if (t != NULL) {
+            fn_8002BC84(t, pos, dir, prm);
+            for (last = e->particles; last->next != NULL; last = last->next) {
+            }
+            last->next = t->particles;
+            e->count += t->count;
+        }
+    } else {
+        e = NewEmitter(fn_80031034, 0x11, 0, prm->count, 1, 5);
+        if (e != NULL) {
+            e->u.t5.unk18 = 0;
+            fn_8002BC84(e, pos, dir, prm);
+        }
+    }
 }
+#endif
 
 // .text:0x8002C56C size:0x864
 void fn_8002C56C(void) {
