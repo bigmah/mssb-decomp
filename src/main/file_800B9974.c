@@ -1,5 +1,31 @@
 #include "main/file_800B9974.h"
 #include "C3/geoPalette.h"
+#include "Dolphin/os.h"
+#include "string.h"
+
+#pragma dont_inline on
+
+typedef struct FogState {
+    /* 0x00 */ GXFogType type;
+    /* 0x04 */ f32 startz;
+    /* 0x08 */ f32 endz;
+    /* 0x0C */ f32 nearz;
+    /* 0x10 */ f32 farz;
+    /* 0x14 */ GXColor color;
+} FogState;
+
+extern FogState lbl_80111700; // current fog settings
+extern MtxPtr lbl_803CC204;   // skin matrix array for the current DOVARenderSkin call
+extern MtxPtr lbl_803CC208;   // skin inverse-transpose matrix array
+
+extern char lbl_800E7F8C[]; // "Display object id %d is greater than number of objects %d"
+
+extern void* _OSAllocFromHeap(s32 align, s32 size);
+extern void fn_800ACFB0(void* ptr); // heap free
+extern void SKNLoadFile(void* sknHeader, void* skinPositions);
+
+// Geometry palette files store pointers as offsets from a base; turn one into a pointer (32-bit file format).
+#define GEO_RELOC(a, b) ((void*)((u32)(a) + (u32)(b)))
 
 // .text:0x800B9974 size:0x50
 void SetFogNone(void) {
@@ -44,7 +70,7 @@ void fn_800B9EA8(void) {
 }
 
 // .text:0x800BA44C size:0x3FC
-void fn_800BA44C(void) {
+void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* tevStage, u8* texCoord) {
     return;
 }
 
@@ -160,8 +186,8 @@ void __MTGQR7(register u32 value) {
 }
 
 // .text:0x800BD208 size:0x38
-void GQRSetup7(void) {
-    return;
+void GQRSetup7(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType) {
+    __MTGQR7((((loadScale << 8) + loadType) << 16) | ((storeScale << 8) + storeType));
 }
 
 // .text:0x800BD240 size:0x38

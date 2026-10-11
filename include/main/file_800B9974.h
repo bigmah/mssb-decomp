@@ -4,12 +4,11 @@
 #include "mssbTypes.h"
 #include "C3/control.h"
 #include "C3/light.h"
+#include "C3/geoPalette.h"
 
 void fn_800B9AA8(u32 value);
 
 void fn_800B9A9C(u32 flag, f32 value);
-
-struct DODisplayObj;
 
 void fn_800BC824(struct DODisplayObj* dispObj, void* shaderData);
 
@@ -61,5 +60,25 @@ void LITInitDir(Light* light, f32 x, f32 y, f32 z);
 void LITInitPos(Light* light, f32 x, f32 y, f32 z);
 
 void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
+
+void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* tevStage, u8* texCoord);
+
+void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* layout);
+
+void* LoadGeoPalette(DODisplayDataPtr pal);
+
+void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader);
+
+void fn_800BCDBC(DODisplayDataPtr pal);
+
+void fn_800BCE38(DODisplayDataPtr pal);
+
+void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj);
+
+void GQRSetup7(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType);
+
+void GQRSetup6(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType);
+
+void GQRSetup5(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType);
 
 #endif

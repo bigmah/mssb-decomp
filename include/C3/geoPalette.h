@@ -51,9 +51,14 @@ typedef struct {
     /* 0x0C */ LightingData *lightingData;
     /* 0x10 */ DisplayData *displayData;
     /* 0x14 */ u8 numTextureChannels;
-    /* 0x15 */ u8 pad8;
+    /* 0x15 */ u8 unk15;
     /* 0x16 */ u16 pad16;
-} DODisplayLayout;
+    /* 0x18 */ void *unk18;
+    /* 0x1C */ u8 unk1C[6][4];
+} DODisplayLayout; // size 0x34 (MSSB layout)
+
+// Per-object TEV setup callback (fn_800BA44C is the default), called from Custom_SetState.
+typedef void (*DOTevCallback)(s32 type, struct DODisplayObj *dispObj, void *data, u8 *tevStage, u8 *texCoord);
 
 struct DODisplayObj {
     /* 0x00 */ PositionData *positionData;
@@ -62,21 +67,29 @@ struct DODisplayObj {
     /* 0x0C */ LightingData *lightingData;
     /* 0x10 */ DisplayData *displayData;
     /* 0x14 */ u8 numTextureChannels;
-    /* 0x15 */ u8 pad8;
-    /* 0x16 */ u16 pad16;
-    /* 0x18 */ int visibility;
-    /* 0x1C */ Mtx worldMatrix;
-    /* 0x4C */ unkCB shaderFunc;
+    /* 0x15 */ u8 unk15;
+    /* 0x16 */ u8 visibility;
+    /* 0x17 */ u8 unk17;
+    /* 0x18 */ Mtx worldMatrix;
+    /* 0x48 */ DOTevCallback tevCallback;
+    /* 0x4C */ void *shaderFunc;
     /* 0x50 */ void *shaderData;
-};
+    /* 0x54 */ u8 unk54[6][4];
+}; // size 0x6C (MSSB layout)
 
 typedef struct {
-    /* 0x00 */ DODisplayLayout *layout;
+    union {
+        /* 0x00 */ DODisplayLayout *layout;
+        /* 0x00 */ struct DODisplayObj *dispObj; // after fn_800BCE38 builds the objects in place
+    };
     /* 0x04 */ char *name;
 } DODescriptor, *DODescriptorPtr;
 
 typedef struct DODisplayData {
-    /* 0x00 */ u32 versionNumber;
+    union {
+        /* 0x00 */ u32 versionNumber;
+        /* 0x00 */ void *skinPositions; // set by convertGeometryAndSknHeader
+    };
     /* 0x04 */ u32 userDataSize;
     /* 0x08 */ void *userData;
     /* 0x0C */ u32 numDescriptors;
