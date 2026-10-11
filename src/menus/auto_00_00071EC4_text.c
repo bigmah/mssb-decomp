@@ -3001,3 +3001,76 @@ void fn_2_7FAFC(u8* o, s32 index) {
         }
     }
 }
+
+// fn_2_73EFC, size:0x5CC
+// NONMATCHING 88%: inlined fn_2_73BF0/fn_2_73B54 results allocated differently; register allocation
+#if NONMATCHING
+void fn_2_73EFC(u8* o) {
+    s32 mode = lbl_2_bss_F410;
+    s32 prev = F410_S32(4);
+    s32 i;
+    if ((lbl_803C66B0[7] == 0) ? 1 : 0) {
+        for (i = 0; i < 7; i++) {
+            if (*(u16*)(lbl_8034E9A0 + 0x472E) == 0 && *(u16*)(lbl_8034E9A0 + 0x4730) != 0) {
+                lbl_8034E9A0[0x4751] = 1;
+                if (mode == i) {
+                    MN_SLOT(3 + BASE(o) + i)->flags |= 2;
+                    MN_SLOT(3 + BASE(o) + i)->frame = 0xE0000;
+                    MN_SLOT(3 + BASE(o) + i)->state = 0;
+                } else {
+                    MN_SLOT(3 + BASE(o) + i)->flags &= ~2;
+                }
+                MN_SLOT(0x20 + BASE(o))->frame = 0xA0000;
+                MN_SLOT(0x21 + BASE(o))->frame = 0;
+                fn_800363D8(o, 0x20, 1, 0x32, mode);
+                fn_800363D8(o, 0x21, 1, 0x32, prev);
+                MN_SLOT(0x20 + BASE(o))->state = 0;
+                MN_SLOT(0x21 + BASE(o))->state = 0;
+            } else {
+                s32 frame;
+                s8 state;
+                lbl_8034E9A0[0x4751] = 0;
+                frame = fn_2_73BF0(mode);
+                state = fn_2_73B54(mode);
+                if (mode == i) {
+                    MN_SLOT(3 + BASE(o) + i)->flags |= 2;
+                    MN_SLOT(3 + BASE(o) + i)->frame = frame << 16;
+                    MN_SLOT(3 + BASE(o) + i)->state = state;
+                } else {
+                    MN_SLOT(3 + BASE(o) + i)->flags &= ~2;
+                }
+                if (lbl_2_bss_A840 == 0 && mode == 6 && i == lbl_2_bss_A840) {
+                    MN_SLOT(3 + BASE(o) + i)->flags |= 2;
+                    MN_SLOT(3 + BASE(o) + i)->frame = 0x80000;
+                    MN_SLOT(3 + BASE(o) + i)->state = 4;
+                } else if (lbl_2_bss_A840 == 6 && mode == 0 && i == lbl_2_bss_A840) {
+                    MN_SLOT(3 + BASE(o) + i)->flags |= 2;
+                    MN_SLOT(3 + BASE(o) + i)->frame = 0x2D0000;
+                    MN_SLOT(3 + BASE(o) + i)->state = 1;
+                }
+                MN_SLOT(0x20 + BASE(o))->frame = 0;
+                MN_SLOT(0x21 + BASE(o))->frame = 0xA0000;
+                fn_800363D8(o, 0x20, 1, 0x32, mode);
+                fn_800363D8(o, 0x21, 1, 0x32, prev);
+                MN_SLOT(0x20 + BASE(o))->state = 1;
+                MN_SLOT(0x21 + BASE(o))->state = 1;
+            }
+        }
+        MN_SLOT(0x18 + BASE(o) + mode)->frame = 0;
+        MN_SLOT(0x18 + BASE(o) + mode)->state = 1;
+        MN_SLOT(0x18 + BASE(o) + prev)->frame = 0;
+        MN_SLOT(0x18 + BASE(o) + prev)->state = 0;
+        if (lbl_8034E9A0[0x4751] == 0) {
+            MN_SLOT(0x11 + BASE(o) + mode)->frame = 0;
+            MN_SLOT(0x11 + BASE(o) + mode)->state = 1;
+        } else {
+            MN_SLOT(0x11 + BASE(o) + mode)->frame = 0;
+            MN_SLOT(0x11 + BASE(o) + mode)->state = 0;
+        }
+        if (lbl_8034E9A0[0x4751] == 0) {
+            fn_800626EC(0);
+        }
+        lbl_803C66B0[7] = 1;
+    }
+}
+#endif
