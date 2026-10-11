@@ -3,21 +3,10 @@
 
 #include "mssbTypes.h"
 #include "game/UnknownHomes_Game.h"
+#include "main/file_80024184.h" // TexImage, TexArchive
 
-// Game texture descriptor (consumed by SetDisplayStateTexture).
-typedef struct TexDesc {
-    /*0x00*/ void* image;
-    /*0x04*/ void* palette;
-    /*0x08*/ u16 height;
-    /*0x0A*/ u16 width;
-    /*0x0C*/ u8 _0C[0x20 - 0x0C];
-} TexDesc; // size: 0x20
-
-// Texture set used by the logo/warning screens: a count word followed by descriptors.
-typedef struct TexSet {
-    /*0x00*/ u32 count;
-    /*0x04*/ TexDesc tex[1];
-} TexSet;
+// Texture set used by the logo/warning screens is a TexArchive.
+typedef TexArchive TexSet;
 
 // Display-list node passed to fn_800A7D4C (two per task, indexed by lbl_803CBBC0).
 typedef struct DrawNode {
@@ -95,7 +84,9 @@ typedef struct ChallengeState {
     /*0x0000*/ ChallengeTrackingStruct trackers[54];
     /*0x0AF8*/ u8 _AF8[0x1606 - 0xAF8];
     /*0x1606*/ s8 _1606;
-    /*0x1607*/ u8 _1607[0x40B8 - 0x1607];
+    /*0x1607*/ u8 _1607[0x16C2 - 0x1607];
+    /*0x16C2*/ s16 _16C2;
+    /*0x16C4*/ u8 _16C4[0x40B8 - 0x16C4];
     /*0x40B8*/ ChallengeTeamEntry teams[9]; // ids must be unique
     /*0x40EE*/ u8 _40EE[0x43BC - 0x40EE];
     /*0x43BC*/ s16 _43BC; // 0..1000

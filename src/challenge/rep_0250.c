@@ -354,6 +354,7 @@ extern u8 lbl_1_common_bss_47698[]; // TODO type
 // Score-screen task: loads the messages and 12 pages, then runs the page handlers and
 // (in mode 1) counts the displayed score down.
 // NONMATCHING 67%: the original reaches .data/.bss through pooled bases and keeps the clear loop rolled
+// nmverify: lbl_1_bss_2FCC lbl_1_data_BC8 lbl_1_data_CC8 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_9AB0(void) {
     ChalScoreState* b;

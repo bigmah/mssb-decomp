@@ -11,6 +11,8 @@ struct DODisplayData;
 struct sHdr;
 struct ANIMPipe;
 struct ActorLayout;
+struct ActorObject;
+struct CharActor;
 
 // MSSB's Control is 0x44 bytes (C3/control.h's Control is 0x3C).
 typedef struct GameControl {
@@ -93,10 +95,10 @@ extern PlayerVecSlot lbl_802E4BC0[9];
 void fn_80063028(Control* control, Mtx m, u32 flipFlags);
 void fn_800633AC(Control* control, Mtx m, u32 flipFlags);
 s32 fn_80063718(GameBone* bone, GameBone* target, Mtx m, f32 t);
-s32 fn_800637BC(void* player, GameActor** actor);
-s32 fn_800637D4(void);
+s32 fn_800637BC(struct CharActor* player, struct ActorObject* obj);
+s32 fn_800637D4(struct CharActor* player, struct ActorObject* obj);
 s32 fn_800637DC(GameBone* bone, GameBone* target, Mtx m, f32 t);
-s32 fn_800638B4(void* player, GameActor** actor);
+s32 fn_800638B4(struct CharActor* player, struct ActorObject* obj);
 void fn_800638CC(void);
 void fn_80063958(s8 index);
 

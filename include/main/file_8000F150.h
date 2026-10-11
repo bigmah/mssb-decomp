@@ -3,6 +3,12 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
+#include "main/file_80024184.h" // TexImage, TexArchive
+#include "main/file_8000BA3C.h" // QuadVtx
+struct CharActor;
+struct ActorObject;
+struct GameActor;
+#include "main/file_800B993C.h" // DOTevHook
 
 // One on-screen text string (0x38 bytes). Text is a u16 stream: values with
 // bit 0x4000 set are control codes (low 14 bits), others are glyphs.
@@ -34,29 +40,7 @@ typedef struct TextEntry {
     /*0x37*/ u8 _37;
 } TextEntry; // size: 0x38
 
-// Texture archive as used by convertTextureHeader: 0x20-byte records after a
-// 4-byte header; record i's _1C picks the texture object for image i.
-typedef struct TexRecord {
-    /*0x00*/ u8 _00[0x1C];
-    /*0x1C*/ u16 obj;
-    /*0x1E*/ u16 _1E;
-} TexRecord; // size: 0x20
 
-typedef struct TexArchive {
-    /*0x0*/ u32 _00;
-    /*0x4*/ TexRecord recs[1];
-} TexArchive;
-
-#define TEX_ARCHIVE_OBJ(arc, i) (&(arc)->recs[(arc)->recs[i].obj])
-
-typedef struct SpriteVtx {
-    /*0x00*/ f32 x;
-    /*0x04*/ f32 y;
-    /*0x08*/ f32 z;
-    /*0x0C*/ u32 color;
-    /*0x10*/ u16 s;
-    /*0x12*/ u16 t;
-} SpriteVtx; // size: 0x14
 
 // Message table as loaded from disc; msgs[] hold file offsets until
 // fn_800111B4 relocates them.
@@ -121,8 +105,8 @@ typedef struct TextSystem {
     /*0x794*/ TexArchive* iconArchive;
     /*0x798*/ MsgTable* tables[7];
     /*0x7B4*/ u16** msgs;
-    /*0x7B8*/ TexRecord* fontTexObj[4];
-    /*0x7C8*/ TexRecord* iconTexObj[9];
+    /*0x7B8*/ TexImage* fontTexObj[4];
+    /*0x7C8*/ TexImage* iconTexObj[9];
     /*0x7EC*/ u16* _7EC;
     /*0x7F0*/ u16* _7F0;
     /*0x7F4*/ u16* _7F4;
@@ -135,79 +119,6 @@ typedef struct TextSystem {
 
 extern TextSystem lbl_80366B18;
 
-// lbl_8036E548: character actors and their models (owned by other units;
-// only the fields used here).
-typedef struct ActorModelAnim {
-    /*0x00*/ u8 _00[0x14];
-    /*0x14*/ void* _14;
-} ActorModelAnim;
-
-typedef struct ActorModel {
-    /*0x00*/ u8 _00[0x6];
-    /*0x06*/ u16 animCount;
-    /*0x08*/ u8 _08[0x10];
-    /*0x18*/ ActorModelAnim** anims;
-    /*0x1C*/ u8 _1C[0x7D];
-    /*0x99*/ u8 _99;
-} ActorModel;
-
-typedef struct ActorModelSlot {
-    /*0x00*/ u8 _00[0x34];
-    /*0x34*/ ActorModel* model;
-    /*0x38*/ u8 _38[0x58];
-} ActorModelSlot; // size: 0x90
-
-typedef struct ActorMgrActor {
-    /*0x000*/ u8 _000[0x34];
-    /*0x034*/ Vec pos;
-    /*0x040*/ u8 _040[0x1C];
-    /*0x05C*/ u32 _05C;
-    /*0x060*/ u8 _060[0x2];
-    /*0x062*/ s16 _062;
-    /*0x064*/ s16 _064;
-    /*0x066*/ s16 _066;
-    /*0x068*/ u8 _068[0x4];
-    /*0x06C*/ s16 _06C;
-    /*0x06E*/ s16 _06E;
-    /*0x070*/ u8 _070[0x13A];
-    /*0x1AA*/ u16 anim;
-    /*0x1AC*/ u8 _1AC[0xA6];
-    /*0x252*/ s8 kind;
-    /*0x253*/ u8 _253[0x2];
-    /*0x255*/ s8 modelIndex;
-    /*0x256*/ u8 _256[0x7];
-    /*0x25D*/ u8 _25D;
-    /*0x25E*/ u8 _25E;
-    /*0x25F*/ u8 _25F;
-    /*0x260*/ u8 _260;
-    /*0x261*/ u8 _261;
-    /*0x262*/ u8 _262;
-    /*0x263*/ u8 _263;
-    /*0x264*/ u8 _264;
-    /*0x265*/ u8 _265;
-    /*0x266*/ u8 _266;
-    /*0x267*/ u8 _267;
-    /*0x268*/ u8 _268;
-    /*0x269*/ u8 _269;
-    /*0x26A*/ u8 _26A;
-    /*0x26B*/ u8 _26B;
-    /*0x26C*/ u8 _26C;
-    /*0x26D*/ u8 _26D;
-    /*0x26E*/ u8 _26E;
-    /*0x26F*/ u8 _26F[0x7];
-    /*0x276*/ u8 _276; // flags (bit 1, bit 2: feet on the ground?)
-    /*0x277*/ u8 _277[0x5];
-} ActorMgrActor; // size: 0x27C
-
-typedef struct ActorMgr {
-    /*0x0000*/ u8 _0000[0x60];
-    /*0x0060*/ ActorModelSlot* models;
-    /*0x0064*/ ActorModelSlot* models2;
-    /*0x0068*/ u8 _0068[0xB9C];
-    /*0x0C04*/ ActorMgrActor actors[13];
-    /*0x2C50*/ ActorMgrActor* active[13];
-    /*0x2C84*/ u8 _2C84[0x4D0];
-} ActorMgr; // size: 0x3154
 
 typedef struct TextWindow {
     /*0x0*/ u8 _00[0x8];
@@ -236,15 +147,15 @@ void fn_80010FA0(void);
 void fn_80011000(void);
 void fn_80011140(void);
 void fn_800111B4(MsgTable* table);
-ActorModel** fn_800111D8(ActorMgrActor* actor);
-ActorMgrActor* fn_800111FC(ActorMgrActor* actor, s32 second);
+struct GameActor** fn_800111D8(struct CharActor* actor);
+struct CharActor* fn_800111FC(struct CharActor* actor, s32 second);
 void fn_80011358(s32 index, s32 kind);
 void fn_80011468(void);
 
-u32 fn_80011570(void);
+struct CharActor* fn_80011570(void); // actor being drawn (lbl_803CBC18)
 
 void fn_800115C8(s8 index);
 
-void fn_80011604(s8 index, u32 value);
+void fn_80011604(s8 index, DOTevHook value);
 
 #endif

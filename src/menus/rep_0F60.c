@@ -3,7 +3,6 @@
 #include "static/UnknownHomes_Static.h"
 
 
-extern u8* lbl_2_bss_1A8248[];
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_340140;
 extern u8* lbl_2_bss_1A824C;
@@ -23,9 +22,9 @@ void fn_2_8D24C(u8* object) {
 // fn_2_8B118, size:0x40
 void fn_2_8B118(f32 value) {
     if (value) {
-        lbl_2_bss_1A8248[0][0x307A] = 3;
+        lbl_2_bss_340140[0x307A] = 3;
     } else {
-        lbl_2_bss_1A8248[0][0x307A] = 0;
+        lbl_2_bss_340140[0x307A] = 0;
     }
 }
 
@@ -142,8 +141,9 @@ void fn_2_8C80C(s32 a, s32 b, s32 c, s32 d, s32 e) {
 
 extern u8 lbl_2_data_3CD0[];
 extern u8 lbl_800E869C[];
-extern void fn_2_8D270(u8 a);
 
+// NONMATCHING 95%: lis of lbl_800E869C scheduled before the lbl_2_bss_1A824C load in case 2
+#if NONMATCHING
 // fn_2_8D9DC, size:0x138
 void fn_2_8D9DC(s32 mode) {
     s32 i;
@@ -166,11 +166,14 @@ void fn_2_8D9DC(s32 mode) {
         fn_2_8D270(i);
     }
 }
+#endif
 
 extern void LoadActorLayout(void* a);
-extern void convertGeometryAndSknHeader(void* a, s32 b);
+extern void convertGeometryAndSknHeader(void* geometry, void* sknHeader);
 extern void* ActorObjectInitTable(u16 n);
 
+// NONMATCHING 96%: original copies i into off (mr r30,r29) and swaps r3/r4 in the pointer table setup
+#if NONMATCHING
 // fn_2_8B2C0, size:0x158
 void fn_2_8B2C0(void) {
     s32 off;
@@ -203,6 +206,7 @@ void fn_2_8B2C0(void) {
         off += 0xC;
     } while (i < 4);
 }
+#endif
 
 // fn_2_8B158, size:0x168
 void fn_2_8B158(void) {
@@ -219,7 +223,6 @@ extern u8 lbl_80366158[];
 extern u8 lbl_803CBC3C;
 extern s32* fn_800111D8(u8* o);
 extern f32 fn_800B4A44(s32 a, u16 b);
-extern void fn_2_8CD58(s32, s16, u8, u8, s16, u8, u8);
 
 // fn_2_8D024, size:0x228
 void fn_2_8D024(void) {
@@ -279,10 +282,10 @@ void fn_2_8D024(void) {
 extern u8* lbl_803CC1B8;
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_2FE48[];
-extern void fn_2_8C910(void);
-extern void fn_2_8B418(void);
 extern void fn_80052D70(void);
 
+// NONMATCHING 97%: li r6,1 scheduled before the lbl_2_bss_1A824C load in state 6
+#if NONMATCHING
 // fn_2_8E478, size:0x22C
 void fn_2_8E478(void) {
     u8* o = lbl_803CC1B8;
@@ -323,9 +326,10 @@ void fn_2_8E478(void) {
         break;
     }
 }
+#endif
 
 extern void* memcpy(void* d, const void* s, u32 n);
-extern f32 fn_2_4A1E8(f32 x);
+extern f32 fn_2_4A1E8(f32 x, f32 y);
 extern Vec lbl_2_data_2FEE0;
 extern f32 lbl_2_data_2FED4[];
 extern f32 lbl_2_bss_B2B8;
@@ -341,6 +345,8 @@ extern const f32 lbl_2_rodata_FBC;
 
 // fn_2_8ACE0, size:0x200
 void fn_2_8ACE0(void) {
+    f32 x;
+    f32 z;
     Vec a;
     Vec b;
     u8* ent;
@@ -350,10 +356,12 @@ void fn_2_8ACE0(void) {
         ent = *(u8**)(lbl_2_bss_340140 + 0x2D94) + i * 0x28;
         memcpy(&a, ent + 4, 0xC);
         PSVECSubtract(&a, &lbl_2_data_2FEE0, &b);
-        b.x = b.x * lbl_2_rodata_FB0;
-        b.z = b.z * lbl_2_rodata_FB0;
-        if (0.0f != b.x || 0.0f != b.z) {
-            lbl_2_bss_B2B8 = fn_2_4A1E8(b.z);
+        x = b.x * lbl_2_rodata_FB0;
+        z = b.z * lbl_2_rodata_FB0;
+        b.x = x;
+        b.z = z;
+        if (0.0f != x || 0.0f != z) {
+            lbl_2_bss_B2B8 = fn_2_4A1E8(b.z, x);
         }
         memcpy(&lbl_2_data_2FEE0, ent + 4, 0xC);
         if (0.0f != a.x) *(f32*)(ent + 4) = a.x * lbl_2_rodata_FB8;
@@ -374,4 +382,508 @@ void fn_2_8AEE0(void) {
     fn_2_8ACE0();
     PSMTXCopy(lbl_2_bss_1A81D4, fn_80052768_getCamera(0)->view);
     fn_2_190DC(*(u8**)(lbl_2_bss_340140 + 0x68), fn_80052768_getCamera(0)->view);
+}
+
+extern void fn_80023B04(s32 count);
+extern void fn_80014204(s32 count);
+extern void* fn_80023AA4(void);
+
+// NONMATCHING 97%: original keeps &lbl_2_data_2F990 in r31 across the inlined fn_2_8DC00/fn_2_8DB14 table scans
+#if NONMATCHING
+// .text:0x8DCD8 size:0x2D8
+void fn_2_8DCD8(void) {
+    s32 i;
+    fn_2_8DC00();
+    fn_2_8DB14();
+    fn_80023B04(*(s16*)(lbl_2_bss_1A824C + 0x197746));
+    fn_80014204(*(s16*)(lbl_2_bss_1A824C + 0x197746));
+    *(void**)(lbl_2_bss_340140 + 0x13C) = fn_80023AA4();
+    for (i = 0; i < *(s16*)(lbl_2_bss_1A824C + 0x197746); i++) {
+        *(s8*)(lbl_2_bss_340140 + i * 0x27C + 0xE59) = i;
+        *(u8**)(lbl_2_bss_340140 + i * 4 + 0x2C50) = NULL;
+        *(s8*)(lbl_2_bss_340140 + i + 0x2D6A) = -1;
+        *(s8*)(lbl_2_bss_340140 + i * 0x27C + 0xE5B) = -1;
+    }
+    for (i = 0; i < 9; i++) {
+        *(s8*)(lbl_2_bss_340140 + i + 0x2D7F) = -1;
+    }
+    for (i = 0; i < 4; i++) {
+        *(s8*)(lbl_2_bss_340140 + i + 0x2D89) = -1;
+    }
+    lbl_2_bss_340140[0x2D77] = 0;
+    lbl_2_bss_340140[0x2D7B] = 0;
+}
+#endif
+
+extern void fn_800B2B54(struct GameActor* actor, u16 bone, u8 value);
+extern void fn_800B2B4C(struct GameActor* actor, f32 speed);
+extern void fn_8001B308(s32 index, s32 enable);
+extern void fn_8001B5EC(s32 index, s32 enable);
+extern s32 lbl_2_data_2FE84[];
+extern s32 lbl_2_data_2FEAC[];
+extern const f32 lbl_2_rodata_FC0;
+extern const f32 lbl_2_rodata_FC4;
+
+// Joint 4 of active actor `index` in lbl_8036E548, or 0xFFFF.
+#define ACTIVE_JOINT4(index) \
+    (((MenuActor**)(lbl_8036E548 + 0x2C50))[index] != NULL ? ((MenuActor**)(lbl_8036E548 + 0x2C50))[index]->joints[4] : 0xFFFF)
+
+// .text:0x8CD58 size:0x2CC
+void fn_2_8CD58(s32 index, s32 anim, u8 loop, u8 face, s16 time, u8 eyes, u8 frames) {
+    MenuActor* actor;
+    s32 shapeTable;
+    s32 shapeEntry;
+    MenuAnimObject* obj;
+    f32 speed = lbl_2_rodata_FB4;
+    MenuAnimBank* bank;
+    u8 valid;
+    actor = ((MenuActor**)(lbl_2_bss_340140 + 0x2C50))[index];
+    if (index == 4) {
+        shapeTable = 1;
+        shapeEntry = 0;
+    } else {
+        shapeTable = lbl_2_data_2FE84[anim];
+        shapeEntry = lbl_2_data_2FEAC[anim];
+    }
+    if (actor == NULL) {
+        return;
+    }
+    obj = (MenuAnimObject*)fn_800111D8((u8*)actor);
+    if (frames != 0) {
+        speed = lbl_2_rodata_FC0 / frames;
+    }
+    if (actor->blend == 0) {
+        fn_800B2B54(actor->actor, ACTIVE_JOINT4(index), 13);
+    } else {
+        fn_800B2B54(actor->actor, ACTIVE_JOINT4(index), 1);
+        fn_800B2B54(obj->actor, ACTIVE_JOINT4(index), 1);
+        fn_800B2B4C(obj->actor, lbl_2_rodata_FC4);
+        ((MenuModel*)obj->actor)->blend = lbl_2_rodata_FB4;
+    }
+    if (actor->face != NULL) {
+        fn_80025EEC(&actor->face->main.anim, shapeTable, shapeEntry);
+    }
+    if (actor->faceSub != NULL && actor->faceSub->hasSub) {
+        fn_80025EEC(&actor->faceSub->sub.anim, shapeTable, shapeEntry);
+        fn_80025EEC(&actor->faceSub->main.anim, shapeTable, shapeEntry);
+    }
+    bank = actor->animBank;
+    if (bank != NULL) {
+        if (anim >= bank->count) return;
+        if (anim < 0) return;
+        obj->animBank = bank;
+        obj->seqNum = anim;
+        obj->time = lbl_2_rodata_FB4;
+        obj->setAnimation = 1;
+        valid = bank != NULL;
+        obj->setTime = valid;
+        obj->setSpeed = valid;
+        obj->speed = speed;
+    }
+    if (loop) {
+        obj->visFlags = 3;
+    } else {
+        obj->visFlags = 2;
+    }
+    obj->time = time * actor->animFrames;
+    obj->setTime = 1;
+    fn_8001B5EC(index, face);
+    fn_8001B308(index, eyes);
+    actor->faceMode = face;
+}
+
+#include "C3/anim.h"
+
+// Relocated resource pointers at lbl_2_bss_340140 + 0x2DA0: 19 x (actor layout, geometry, textures).
+#define MENU_RES(i) (*(u8**)(lbl_2_bss_340140 + (i) * 4 + 0x2DA0))
+// Animation banks at lbl_2_bss_3401BC + 0xC, indexed like the menu slots.
+#define MENU_ANIM_BANK(i) (*(ANIMBank**)(lbl_2_bss_3401BC + (i) * 4 + 0xC))
+
+// NONMATCHING 83%: original folds the i<57 precheck of the unrolled first loop and swaps r30/r31 (i/file)
+#if NONMATCHING
+// .text:0x8C910 size:0x378
+void fn_2_8C910(void) {
+    s32 i;
+    s32 j;
+    u8* file;
+    *(u16*)(lbl_2_bss_340140 + 0x3078) = 0;
+    file = *(u8**)(lbl_2_bss_340140 + 0x2D9C);
+    for (i = 0; i < 19 * 3; i++) {
+        MENU_RES(i) = file + ((s32*)file)[i];
+    }
+    for (j = 0; j < 7; j++, i++) {
+        MENU_ANIM_BANK(1 + j) = (ANIMBank*)(file + ((s32*)file)[i]);
+        ANIMGet(MENU_ANIM_BANK(1 + j));
+    }
+    for (j = 0; j < 2; j++, i++) {
+        MENU_ANIM_BANK(8 + j) = (ANIMBank*)(file + ((s32*)file)[i]);
+        ANIMGet(MENU_ANIM_BANK(8 + j));
+    }
+    MENU_ANIM_BANK(10) = (ANIMBank*)(file + ((s32*)file)[i]);
+    ANIMGet(MENU_ANIM_BANK(10));
+    MENU_ANIM_BANK(11) = (ANIMBank*)(file + ((s32*)file)[i + 1]);
+    ANIMGet(MENU_ANIM_BANK(11));
+    MENU_ANIM_BANK(12) = (ANIMBank*)(file + ((s32*)file)[i + 2]);
+    ANIMGet(MENU_ANIM_BANK(12));
+    MENU_ANIM_BANK(13) = (ANIMBank*)(file + ((s32*)file)[i + 3]);
+    ANIMGet(MENU_ANIM_BANK(13));
+    MENU_ANIM_BANK(14) = (ANIMBank*)(file + ((s32*)file)[i + 4]);
+    ANIMGet(MENU_ANIM_BANK(14));
+    MENU_ANIM_BANK(15) = (ANIMBank*)(file + ((s32*)file)[i + 5]);
+    ANIMGet(MENU_ANIM_BANK(15));
+    MENU_ANIM_BANK(16) = (ANIMBank*)(file + ((s32*)file)[i + 6]);
+    ANIMGet(MENU_ANIM_BANK(16));
+    for (j = 0; j < 19; j++) {
+        u8* e = lbl_2_bss_340140 + j * 0xC;
+        u8* a = *(u8**)(e + 0x2DA0);
+        u8* g = *(u8**)(e + 0x2DA4);
+        u8* x = *(u8**)(e + 0x2DA8);
+        LoadActorLayout(a);
+        convertGeometryAndSknHeader(g, 0);
+        haveActLayoutPointToGeoHeader(a, g);
+        convertTextureHeader(x);
+        fn_800BD190((struct GQRValueGroups*)g, (s32)x);
+    }
+}
+#endif
+
+extern void fn_2_4E824(void);
+extern void fn_2_48DB4(void);
+extern void fn_2_93C64(void);
+extern u8 lbl_2_data_2FE58[];
+
+// NONMATCHING 98%: the inlined fn_2_8B2C0 has the same i/off copy and r3/r4 swap as fn_2_8B2C0
+#if NONMATCHING
+// .text:0x8DFB0 size:0x4C8
+void fn_2_8DFB0(void) {
+    u8* task = lbl_803CC1B8;
+    switch (*(s8*)(task + 0x28)) {
+    case 0:
+        lbl_2_bss_340140 = lbl_8036E548;
+        *(s16*)(task + 0x14) = 0;
+        fn_2_4E824();
+        fn_80052D70();
+        fn_2_48DB4();
+        fn_2_93C64();
+        task[0x28] = 1;
+        break;
+    case 1:
+        *(s16*)(lbl_2_bss_1A824C + 0x197746) = 0;
+        *(s32*)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(lbl_2_data_2FE58, 0, 0, 0); // TODO type: ARAMTransfer returns a pointer
+        *(s16*)(task + 0x14) = *(s16*)(task + 0x14) + 1;
+        task[0x28] = 2;
+        break;
+    case 2: {
+        s32 st = lbl_803C6CF8[0x715];
+        if (st == 1) {
+            task[0x28] = 5;
+        }
+        break;
+    }
+    case 5:
+        fn_2_8B2C0();
+        task[0x28] = 6;
+        break;
+    case 6:
+        fn_2_8B158();
+        fn_2_8C724();
+        fn_80052D70();
+        task[0x28] = 7;
+        break;
+    case 7:
+        task[0x28] = 8;
+        break;
+    case 8:
+        lbl_2_bss_340140[0x307A] = 3;
+        task[0x28] = 9;
+        break;
+    case 9:
+        task[0x28] = 10;
+        break;
+    case 10: {
+        u8* q;
+        lbl_2_bss_340140[0x307A] = 3;
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        task[0x28] = 0;
+        break;
+    }
+    }
+}
+#endif
+
+struct ActorSlot;
+extern void fn_8002399C(struct ActorSlot* slot, u16 index, s16 id, void* layout, void* anim, void* arg5);
+extern void fn_800B2B74(struct GameActor* actor, u16 bone);
+extern struct DODisplayObj* fn_800B2BA8(struct GameActor* actor, u16 bone, struct GameActor* src, u16 srcBone);
+extern void fn_800B2C08(struct GameActor* actor, u16 bone);
+extern void fn_800126EC(MenuFacePart* part, void* tex, u8* fileIdx);
+extern void fn_8001D180(s32 index, s32 which, s32 enable);
+extern void fn_80014990(s32 index, void* model, void* set);
+extern void fn_8001FC4C(MenuActor* actor);
+extern s32 fn_800638B4(void* player, void* slot);
+extern s32 fn_80063010(void* player, void* slot);
+extern s32 fn_8004B7B4(void* player, void* slot);
+extern s32 fn_800637BC(void* player, void* slot);
+extern s32 fn_8004BD6C(void* player, void* slot);
+extern s32 fn_800637D4(void* player, void* slot);
+extern void fn_80052634(void* player, void* slot);
+extern s32 fn_80062ED4(void* player, void* slot);
+extern void* memset(void* str, int c, u32 n);
+extern u8 lbl_2_data_2FE7C[];
+extern const f32 lbl_2_rodata_FB8;
+
+// Sets bone `j` of the slot's model up as a separately drawn part (0xFFFF: no such bone).
+#define MENU_DETACH_JOINT(slot, j) \
+    if ((j) != 0xFFFF) { \
+        fn_800B2BA8((slot)->actor, (j), NULL, 0); \
+        ((MenuModel*)(slot)->actor)->joints[(u16)(j)]->_136 = 1; \
+    }
+
+// NONMATCHING 94%: register allocation (slot r28/r29), joint ids compared as s32 (addis), kind test via a flag
+#if NONMATCHING
+// Menu version of fn_80017814: relocates and sets up the model of actor `index`.
+// .text:0x8D270 size:0x76C
+void fn_2_8D270(u8 index) {
+    MenuActor* actor = (MenuActor*)(lbl_2_bss_340140 + index * 0x27C + 0xC04);
+    MenuAnimObject* slot = (MenuAnimObject*)fn_800111D8((u8*)actor);
+    void** files = actor->files;
+    void* tex;
+    void* layout;
+    void* geo;
+    void* skn;
+    MenuAnimObject* modelSlot;
+    MenuFaceAnim* face;
+    s32 count;
+    s32 i;
+    u16 j;
+    s32 partA;
+    s32 partB;
+
+    // TODO type: the file header holds offsets that are relocated in place.
+    for (i = 0; i < 15; i++) {
+        if (actor->files[i] == NULL) {
+            break;
+        }
+        actor->files[i] = (u8*)files + (u32)files[i];
+    }
+    tex = actor->files[0];
+    convertTextureHeader(tex);
+    if (actor->files[1] != NULL) {
+        layout = actor->files[1];
+        geo = actor->files[2];
+        skn = actor->files[3];
+        LoadActorLayout(layout);
+        convertGeometryAndSknHeader(geo, skn);
+        haveActLayoutPointToGeoHeader(layout, geo);
+        fn_800BD190((struct GQRValueGroups*)geo, (s32)tex); // TODO type: second argument is a pointer
+    } else {
+        return;
+    }
+    actor->animBank = (MenuAnimBank*)actor->files[4];
+    ANIMGet((ANIMBank*)actor->animBank);
+    fn_8002399C((struct ActorSlot*)slot, actor->modelIndex, index, layout, actor->animBank, skn);
+
+    modelSlot = (MenuAnimObject*)(*(u8**)(lbl_2_bss_340140 + 0x60) + index * 0x90 + 0x34);
+    if (actor == NULL && *(u8**)(lbl_2_bss_340140 + 0x60) == NULL && modelSlot == NULL) {
+        return;
+    }
+    count = ((MenuModel*)modelSlot->actor)->jointCount;
+    memset(actor->joints, 0xFF, sizeof(actor->joints));
+    for (i = 0; i < count; i++) {
+        if (((MenuModel*)modelSlot->actor)->joints[i]->id != 0xFFFF) {
+            actor->joints[((MenuModel*)modelSlot->actor)->joints[i]->id] = i;
+        }
+    }
+    fn_800B2B74(slot->actor, actor->joints[19]);
+    fn_800B2B74(slot->actor, actor->joints[25]);
+    fn_800B2B74(slot->actor, actor->joints[36]);
+    actor->actor = slot->actor;
+    if (actor->joints[3] != 0xFFFF) {
+        fn_800B2B54(actor->actor, actor->joints[3], 0xD);
+    }
+    fn_800BD548((u8*)slot, 4, *(s32*)(lbl_2_bss_340140 + 0xAC), *(s32*)(lbl_2_bss_340140 + 0xB0),
+                *(s32*)(lbl_2_bss_340140 + 0xB4), *(s32*)(lbl_2_bss_340140 + 0xB8));
+    actor->rot.x = actor->rot.y = actor->rot.z = lbl_2_rodata_FB4;
+    CTRLSetTranslation(slot->ctrl, lbl_2_rodata_FB4, lbl_2_rodata_FB4, lbl_2_rodata_FB4);
+    CTRLSetRotation(slot->ctrl, lbl_2_rodata_FB4, lbl_2_rodata_FB4, lbl_2_rodata_FB4);
+    slot->_54 = lbl_2_rodata_FB8;
+    slot->setSpeed = 1;
+    j = actor->joints[3];
+    MENU_DETACH_JOINT(slot, j)
+    j = actor->joints[2];
+    MENU_DETACH_JOINT(slot, j)
+    j = actor->joints[1];
+    MENU_DETACH_JOINT(slot, j)
+    if (actor->joints[36] != 0xFFFF) {
+        fn_800B2BA8(slot->actor, actor->joints[36], NULL, 0);
+    }
+    j = actor->joints[46];
+    MENU_DETACH_JOINT(slot, j)
+
+    face = (MenuFaceAnim*)(lbl_2_bss_340140 + actor->modelIndex * 0xD4 + 0x140);
+    if (actor->files[5] != NULL) {
+        actor->faceSub = (MenuFaceAnim*)(lbl_2_bss_340140 + index * 0xD4 + 0x140);
+        face->main.files = actor->files;
+        fn_800126EC(&face->main, tex, lbl_2_data_2FE7C);
+        face->sub.files = actor->files;
+        fn_800126EC(&face->sub, tex, lbl_2_data_2FE7C + 4);
+    }
+    if (actor->kind == 18 || actor->kind == 38 || actor->kind == 40 || actor->kind == 41) {
+        switch (actor->kind) {
+        case 18:
+            partA = 4;
+            partB = 5;
+            break;
+        case 38:
+            partA = 2;
+            partB = 3;
+            break;
+        case 40:
+        case 41:
+            partA = 6;
+            partB = 7;
+            break;
+        }
+    } else {
+        partA = 1;
+        partB = 0;
+    }
+    fn_8001D180(index, partA, 1);
+    fn_8001D180(index, partB, 1);
+    actor->face = NULL;
+    if (actor->files[13] != NULL && actor->files[14] != NULL) {
+        u8* shape = actor->files[13];
+        void* set = actor->files[14];
+        fn_80025DDC(shape);
+        fn_80014990(index, shape, set);
+        fn_80025C58((ShapeData*)shape, (ShapeModel**)&slot->actor);
+    }
+    actor->faceSub->hasSub = 1;
+    actor->faceSub->sub.anim.state.speed = lbl_2_rodata_FB8;
+    actor->faceSub->main.anim.state.speed = lbl_2_rodata_FB8;
+    fn_800B2C08(slot->actor, actor->joints[4]);
+    fn_8001FC4C(actor);
+    slot->callback = fn_2_8D24C;
+    for (i = 0; i < 8; i++) {
+        actor->anims[i] = -1;
+    }
+    actor->_25D[0] = 0;
+    actor->_25D[1] = 0;
+    actor->_25D[2] = 0;
+    actor->_25D[3] = 0;
+    actor->_25D[4] = 0;
+    actor->_25D[5] = 1;
+    actor->_25D[6] = 1;
+    actor->_25D[7] = 1;
+    actor->_25D[8] = 0;
+    actor->_25D[9] = 0;
+    actor->_25D[10] = 0;
+    actor->faceMode = 0;
+    actor->_269[0] = 0;
+    actor->_269[1] = 0;
+    actor->_269[2] = 0;
+    actor->blend = 0;
+    actor->_26D[0] = 0;
+    actor->_26D[1] = 0;
+    actor->_270[0] = 0;
+    actor->_270[1] = 0;
+    actor->_270[2] = 0;
+    actor->_270[3] = 0;
+    actor->_277 = 0xFF;
+    actor->_05C = 0;
+    actor->animFrames = lbl_2_rodata_FB8;
+    switch (actor->kind) {
+    case 2:
+        fn_800638B4(actor, slot);
+        break;
+    case 33:
+    case 34:
+    case 35:
+    case 36:
+        fn_80063010(actor, slot);
+        break;
+    case 19:
+        fn_8004B7B4(actor, slot);
+        break;
+    case 6:
+    case 10:
+        ((MenuModel*)slot->actor)->_99 = 1;
+        break;
+    case 12:
+    case 42:
+        ((MenuModel*)slot->actor)->_99 = 1;
+        break;
+    case 24:
+    case 25:
+    case 26:
+        ((MenuModel*)slot->actor)->_99 = 1;
+        break;
+    case 20:
+    case 43:
+        fn_800637BC(actor, slot);
+        break;
+    case 38:
+        ((MenuModel*)slot->actor)->_99 = 1;
+        fn_8004BD6C(actor, slot);
+        break;
+    case 41:
+        fn_800637D4(actor, slot);
+    case 18:
+    case 40:
+        fn_8004BD6C(actor, slot);
+        break;
+    case 14:
+    case 37:
+        fn_80052634(actor, slot);
+        break;
+    case 16:
+    case 44:
+    case 45:
+    case 46:
+    case 47:
+        fn_80062ED4(actor, slot);
+        break;
+    }
+    fn_2_8CD58(index, 0, 1, 1, 0, 0, 0);
+}
+#endif
+
+// Sets up the 29 actor objects of the menu scene from the 19 resource sets
+// (objects 10..15 share set 10, objects 16..21 share set 11).
+// .text:0x8B418 size:0x130C
+void fn_2_8B418(void) {
+    *(u16*)(lbl_2_bss_340140 + 0x3078) = 29;
+    *(void**)(lbl_2_bss_340140 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_2_bss_340140 + 0x3078) * 0x28);
+    *(void**)(lbl_2_bss_340140 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_2_bss_340140 + 0x3078));
+    fn_2_8C80C(0, 0, 1, 0, 0);
+    fn_2_8C80C(1, 1, 1, 0, 0);
+    fn_2_8C80C(2, 2, 1, 0, 0);
+    fn_2_8C80C(3, 3, 1, 0, 0);
+    fn_2_8C80C(4, 4, 1, 0, 0);
+    fn_2_8C80C(5, 5, 1, 0, 0);
+    fn_2_8C80C(6, 6, 1, 0, 0);
+    fn_2_8C80C(7, 7, 1, 0, 0);
+    fn_2_8C80C(8, 8, 1, 0, 0);
+    fn_2_8C80C(9, 9, 1, 0, 0);
+    fn_2_8C80C(10, 10, 1, 0, 0);
+    fn_2_8C80C(10, 11, 1, 0, 0);
+    fn_2_8C80C(10, 12, 1, 0, 0);
+    fn_2_8C80C(10, 13, 1, 0, 0);
+    fn_2_8C80C(10, 14, 1, 0, 0);
+    fn_2_8C80C(10, 15, 1, 0, 0);
+    fn_2_8C80C(11, 16, 1, 0, 0);
+    fn_2_8C80C(11, 17, 1, 0, 0);
+    fn_2_8C80C(11, 18, 1, 0, 0);
+    fn_2_8C80C(11, 19, 1, 0, 0);
+    fn_2_8C80C(11, 20, 1, 0, 0);
+    fn_2_8C80C(11, 21, 1, 0, 0);
+    fn_2_8C80C(12, 22, 1, 0, 0);
+    fn_2_8C80C(13, 23, 1, 0, 0);
+    fn_2_8C80C(14, 24, 1, 0, 0);
+    fn_2_8C80C(15, 25, 1, 0, 0);
+    fn_2_8C80C(16, 26, 1, 0, 0);
+    fn_2_8C80C(17, 27, 1, 0, 0);
+    fn_2_8C80C(18, 28, 1, 0, 0);
 }

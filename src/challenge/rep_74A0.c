@@ -46,7 +46,7 @@ void fn_1_1A774(void) {
                 blue = 0x80;
                 alpha = 0x40;
             }
-            fn_800B2C88((*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[lbl_1_bss_69F0.selectedActor].drawing.actor, index, matrix);
+            fn_800B2C88((struct GameActor *)(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[lbl_1_bss_69F0.selectedActor].drawing.actor, index, matrix); // TODO type
             fn_1_1A850(matrix, lbl_1_bss_69F0.matrix, red, green, blue, alpha);
         }
     }
@@ -89,7 +89,7 @@ void fn_1_1A1EC(ChallengeActorDrawing* drawing, MtxPtr camera) {
         drawing->prepare(drawing);
     }
     if (actor->display != NULL) {
-        fn_800B2D5C(actor);
+        fn_800B2D5C((struct GameActor *)actor); // TODO type
         GXInvalidateVtxCache();
         fn_1_19D60(actor->display, camera);
     } else {
@@ -1270,7 +1270,7 @@ void fn_1_1B7DC(void) {
     if (pad->down & 0x200) {
         fn_800AD038(*(void**)(lbl_80366158 + 8)); // TODO type
         exitFog = black;
-        SetFog(0, (s32*)&exitFog, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
+        SetFog(0, (GXColor *)(s32*)&exitFog, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520); // TODO type
         ((ChallengeRosterQueue*)lbl_803CC1B8->_0C)->state = 1;
         minigamesSetSomePointers();
     } else if (pad->repeat & 8) { // up
@@ -1322,10 +1322,10 @@ void fn_1_1B7DC(void) {
         case 4:
             if ((sel->fog = !sel->fog)) {
                 leftFogOn = lbl_1_data_FB08;
-                SetFog(4, (s32*)&leftFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540);
+                SetFog(4, (GXColor *)(s32*)&leftFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540); // TODO type
             } else {
                 leftFogOff = black;
-                SetFog(0, (s32*)&leftFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
+                SetFog(0, (GXColor *)(s32*)&leftFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520); // TODO type
             }
             break;
         case 5:
@@ -1391,10 +1391,10 @@ void fn_1_1B7DC(void) {
         case 4:
             if ((sel->fog = !sel->fog)) {
                 rightFogOn = lbl_1_data_FB08;
-                SetFog(4, (s32*)&rightFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540);
+                SetFog(4, (GXColor *)(s32*)&rightFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540); // TODO type
             } else {
                 rightFogOff = black;
-                SetFog(0, (s32*)&rightFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
+                SetFog(0, (GXColor *)(s32*)&rightFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520); // TODO type
             }
             break;
         case 5:
@@ -1448,6 +1448,7 @@ extern void fn_800A7D4C(s32 layer, void* node);
 // fn_1_1C3CC, size:0x4F4
 // Debug viewer main update: menu, actor/camera control, then queue the draws.
 // NONMATCHING 58%: the original addresses lbl_1_data_FB0C/FB18/FAE8/FAF8 from one .data base (lbl_1_data_F888 + off); plus the scheduling of the inlined fn_1_1B2C8/fn_1_1B424
+// nmverify: lbl_1_bss_69FC lbl_1_bss_6B7C lbl_1_data_FAE8 lbl_1_data_FAF8 lbl_1_data_FB0C lbl_1_data_FB18 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_1C3CC(u8* object) {
     Mtx44 proj;

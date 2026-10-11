@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_2_94854(u8 value);
+void fn_2_94854(s32 value);
 
 void fn_2_95604(void);
 

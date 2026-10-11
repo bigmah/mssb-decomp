@@ -310,16 +310,16 @@ extern u8 lbl_80111580[]; // 4x4 white RGB5A3 texture
 void fn_800A7D4C(s32 layer, DrawNode* node); // queue a draw node on a layer
 
 // GD (display-list) functions; they write to lbl_803CC0F0.
-void fn_800A1A70(GDCurrentDL* dl, u8* start, s32 length); // GDInitGDLObj
-void fn_800A1BB0(GXBlendMode type, GXBlendFactor src, GXBlendFactor dst, GXLogicOp op); // GDSetBlendMode
-void fn_800A1E3C(GXCompare comp0, u8 ref0, GXAlphaOp op, GXCompare comp1, u8 ref1); // GDSetAlphaCompare
-void fn_800A1F40(GXTexMapID id, GXTexWrapMode wrapS, GXTexWrapMode wrapT, GXTexFilter minFilt, GXTexFilter magFilt,
-                 f32 minLod, f32 maxLod, f32 lodBias, GXBool biasClamp, GXBool edgeLod, GXAnisotropy maxAniso); // GDSetTexLookupMode
-void fn_800A2194(GXTexMapID id, u16 width, u16 height, GXTexFmt format); // GDSetTexImgAttr
-void fn_800A2294(GXTexMapID id, void* image); // GDSetTexImgPtr
-void fn_800A237C(GXTexMapID id, u32 tmemAddr, GXTlutFmt format); // GDSetTexTlut
-void fn_800A246C(GXTexCoordID coord, u16 sScale, GXBool sBias, GXBool sWrap, u16 tScale, GXBool tBias, GXBool tWrap); // GDSetTexCoordScaleAndTOEs
-void fn_800A26FC(void* tlut, u32 tmemAddr, GXTlutSize size); // GDLoadTlut
+void GDInitGDLObj(GDCurrentDL* dl, u8* start, s32 length);
+void GDSetBlendMode(GXBlendMode type, GXBlendFactor src, GXBlendFactor dst, GXLogicOp op);
+void GDSetAlphaCompare(GXCompare comp0, u8 ref0, GXAlphaOp op, GXCompare comp1, u8 ref1);
+void GDSetTexLookupMode(GXTexMapID id, GXTexWrapMode wrapS, GXTexWrapMode wrapT, GXTexFilter minFilt, GXTexFilter magFilt,
+                        f32 minLod, f32 maxLod, f32 lodBias, GXBool biasClamp, GXBool edgeLod, GXAnisotropy maxAniso);
+void GDSetTexImgAttr(GXTexMapID id, u16 width, u16 height, GXTexFmt format);
+void GDSetTexImgPtr(GXTexMapID id, void* image);
+void GDSetTexTlut(GXTexMapID id, u32 tmemAddr, GXTlutFmt format);
+void GDSetTexCoordScale2(GXTexCoordID coord, u16 sScale, GXBool sBias, GXBool sWrap, u16 tScale, GXBool tBias, GXBool tWrap);
+void GDLoadTlut(void* tlut, u32 tmemAddr, GXTlutSize size);
 
 // Fills a projection from a 4x4 matrix, like GXSetProjection.
 static inline void SpriteProjFromMtx(SpriteProj* proj, Mtx44 m, s32 type) {
@@ -525,13 +525,13 @@ void fn_800B12DC(QuadVtx* verts, s32 count) {
 }
 
 // .text:0x800B1314 size:0x3C
-void fn_800B1314(QuadVtx* verts, SpriteTexInfo* tex, u16 width, u16 height) {
+void fn_800B1314(QuadVtx* verts, TexImage* tex, u16 width, u16 height) {
     DrawSprite(GX_QUADS, verts, 4, tex, width, height);
 }
 
 // .text:0x800B1350 size:0x38
-void DrawSprite_TexObj(QuadState* quad, SpriteTexInfo* tex) {
-    DrawSprite(GX_QUADS, quad->u.v, 4, tex, tex->width, tex->height);
+void DrawSprite_TexObj(QuadVtx* verts, TexImage* tex) {
+    DrawSprite(GX_QUADS, verts, 4, tex, tex->width, tex->height);
 }
 
 // .text:0x800B1388 size:0x38
@@ -552,7 +552,7 @@ void fn_800B13C0(Vec* pos, u32* colors, s32 count) {
 }
 
 // .text:0x800B1468 size:0x98
-void fn_800B1468(Vec* pos, u32 color, SpriteTexInfo* tex) {
+void fn_800B1468(Vec* pos, u32 color, TexImage* tex) {
     QuadVtx verts[4];
     s32 i;
     for (i = 0; i < 4; i++) {
@@ -570,7 +570,7 @@ void fn_800B1468(Vec* pos, u32 color, SpriteTexInfo* tex) {
 // Appends a primitive to the current layer's display list, first writing any state
 // (projection, matrix, blend, alpha test, Z mode, texture) that differs from what the
 // list already has. Consecutive quads with no state change are merged into one draw.
-void DrawSprite(s32 prim, QuadVtx* verts, s32 count, SpriteTexInfo* tex, u16 width, u16 height) {
+void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u16 height) {
     BOOL dirty = FALSE;
     BOOL changed;
     s32 alphaTest;
@@ -631,16 +631,16 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, SpriteTexInfo* tex, u16 wid
         lbl_803CC0F0 = lbl_803CC1C0;
         switch (lbl_803CBB34->blendMode) {
         case 0:
-            fn_800A1BB0(GX_BM_NONE, GX_BL_ZERO, GX_BL_ZERO, GX_LO_CLEAR);
+            GDSetBlendMode(GX_BM_NONE, GX_BL_ZERO, GX_BL_ZERO, GX_LO_CLEAR);
             break;
         case 1:
-            fn_800A1BB0(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+            GDSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
             break;
         case 2:
-            fn_800A1BB0(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+            GDSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
             break;
         case 3:
-            fn_800A1BB0(GX_BM_SUBTRACT, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+            GDSetBlendMode(GX_BM_SUBTRACT, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
             break;
         }
         changed = TRUE;
@@ -667,7 +667,7 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, SpriteTexInfo* tex, u16 wid
             }
             SpriteReserve(5);
             lbl_803CC0F0 = lbl_803CC1C0;
-            fn_800A1E3C(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+            GDSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
             lbl_803CC0F0 = NULL;
         } else {
             if (lbl_803CBB38->zMode != lbl_803CBB34->zMode) {
@@ -679,7 +679,7 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, SpriteTexInfo* tex, u16 wid
             }
             SpriteReserve(5);
             lbl_803CC0F0 = lbl_803CC1C0;
-            fn_800A1E3C(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
+            GDSetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
             lbl_803CC0F0 = NULL;
         }
         changed = TRUE;
@@ -736,7 +736,7 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, SpriteTexInfo* tex, u16 wid
 #if NONMATCHING
 // Loads tex into texture map `map` of the current display list (if it isn't already)
 // and sets the texcoord scale. Returns whether anything was written.
-s32 fn_800B1EBC(SpriteTexInfo* tex, s32 map, u32 width, u32 height) {
+s32 fn_800B1EBC(TexImage* tex, s32 map, u32 width, u32 height) {
     s32 id = map + 1;
     s32 written;
     lbl_803CBB34->texSerial[map] = lbl_803CBB34->serial;
@@ -748,12 +748,12 @@ s32 fn_800B1EBC(SpriteTexInfo* tex, s32 map, u32 width, u32 height) {
         if (tex->tlut != NULL) {
             u32 tmem;
             u32 tlutSize = GX_TLUT_16;
-            while (tlutSize * 16 < tex->tlutCount) {
+            while (tlutSize * 16 < tex->tlutEntries) {
                 tlutSize *= 2;
             }
             tmem = (map << 13) + 0xC0000;
-            fn_800A26FC(tex->tlut, tmem, tlutSize);
-            fn_800A237C(id, tmem, tex->tlutFormat);
+            GDLoadTlut(tex->tlut, tmem, tlutSize);
+            GDSetTexTlut(id, tmem, tex->tlutFormat);
         }
         {
             s32 wrapS = tex->wrapS;
@@ -782,18 +782,18 @@ s32 fn_800B1EBC(SpriteTexInfo* tex, s32 map, u32 width, u32 height) {
                     wrapT = GX_CLAMP;
                 }
             }
-            fn_800A1F40(id, wrapS, wrapT, tex->minFilter, tex->magFilter, tex->minLod, tex->maxLod, tex->lodBias,
+            GDSetTexLookupMode(id, wrapS, wrapT, tex->minFilter, tex->magFilter, tex->minLOD, tex->maxLOD, tex->lodBias,
                         GX_FALSE, GX_FALSE, GX_ANISO_1);
         }
-        fn_800A2194(id, tex->width, tex->height, tex->format);
-        fn_800A2294(id, tex->image);
+        GDSetTexImgAttr(id, tex->width, tex->height, tex->format);
+        GDSetTexImgPtr(id, tex->data);
         written = TRUE;
     }
     if (lbl_803CBB34->texWidth != width || lbl_803CBB34->texHeight != height) {
         lbl_803CBB34->texWidth = width;
         lbl_803CBB34->texHeight = height;
         SpriteReserve(0xF);
-        fn_800A246C(map, width, GX_FALSE, GX_FALSE, height, GX_FALSE, GX_FALSE);
+        GDSetTexCoordScale2(map, width, GX_FALSE, GX_FALSE, height, GX_FALSE, GX_FALSE);
         written = TRUE;
     }
     return written;
@@ -1027,8 +1027,8 @@ void fn_800B2854(u8* buf, s32 bufSize, Mtx44 proj, s32 projType, s32 numLayers, 
         } else {
             size = defaultSize;
         }
-        fn_800A1A70(&dl[0], buf0, size);
-        fn_800A1A70(&dl[SPRITE_MAX_LAYERS], buf1, size);
+        GDInitGDLObj(&dl[0], buf0, size);
+        GDInitGDLObj(&dl[SPRITE_MAX_LAYERS], buf1, size);
         SpriteProjFromMtx(&lbl_803CBB40[i], proj, projType);
         buf0 += size;
         buf1 += size;

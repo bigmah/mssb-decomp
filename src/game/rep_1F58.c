@@ -38,7 +38,8 @@ extern void fn_800B4CA0(void*, f32);
 extern void fn_800B4C04(void*, f32);
 extern void fn_800BDA24(void*);
 extern void fn_800BDA94(void*, void*);
-extern void* fn_80011570();
+struct CharActor;
+extern struct CharActor* fn_80011570(void); // main/file_8000F150.h
 extern void* memset(void*, s32, u32);
 extern void GXLoadTexObj(void*, s32);
 extern void GXLoadTexMtxImm(void*, s32, s32);
@@ -196,7 +197,7 @@ void fn_3_C0DD8(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
     f32 m[12];
     s32 k;
     s16* q;
-    s32 a = *(s8*)((u8*)fn_80011570() + 0x254);
+    s32 a = *(s8*)((u8*)fn_80011570() + 0x254); // TODO type: CharActor.index
     k = 1;
     q = (s16*)(lbl_3_data_17260 + 0x20);
     do {
