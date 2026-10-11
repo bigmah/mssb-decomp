@@ -279,7 +279,57 @@ void fn_3_93688(RepTask* task) {
 
 // .text:0x00093960 size:0x3FC mapped:0x806D29F4
 void fn_3_93960(void) {
-    return;
+    RepTask* task = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724[0x98] == 2) {
+        lbl_3_common_bss_32724[0x98] = 1;
+        task->timer = 0;
+    }
+    if (task->timer < 0xFFFE) {
+        task->timer++;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    if (lbl_3_common_bss_32724[0x96] == 0 && (g_GameLogic.gameStatus != 3 || g_GameLogic._125 != 9) &&
+        (g_GameLogic.gameStatus != 9 || g_GameLogic._125 != 4) &&
+        (g_GameLogic.gameStatus != 5 || (g_GameLogic._125 != 0xA && g_GameLogic._125 != 0xB)) &&
+        ((g_UnkSound_32718._07 != 7 && g_UnkSound_32718._07 != 0x14) || task->timer <= 30) &&
+        g_GameLogic.gameStatus != 8 && g_GameLogic.gameStatus != 6 && (g_GameLogic.gameStatus != 2 || task->timer <= 90)) {
+        s32 n = g_Scores.team[0].runs[0];
+        if (n >= 10) {
+            if (n >= 99) {
+                n = 99;
+            }
+            REP_OBJ(task, 4)->flags &= ~2;
+            REP_OBJ(task, 5)->flags |= 2;
+            REP_OBJ(task, 6)->flags |= 2;
+            fn_8003649C(task, 5, 2, 0xF6, n / 10);
+            fn_8003649C(task, 6, 3, 0xF6, n % 10);
+        } else {
+            REP_OBJ(task, 4)->flags |= 2;
+            REP_OBJ(task, 5)->flags &= ~2;
+            REP_OBJ(task, 6)->flags &= ~2;
+            fn_8003649C(task, 4, 1, 0xF6, g_Scores.team[0].runs[0]);
+        }
+        n = g_Scores.team[1].runs[0];
+        if (n >= 10) {
+            if (n >= 99) {
+                n = 99;
+            }
+            REP_OBJ(task, 7)->flags &= ~2;
+            REP_OBJ(task, 8)->flags |= 2;
+            REP_OBJ(task, 9)->flags |= 2;
+            fn_8003649C(task, 8, 5, 0xF6, n / 10);
+            fn_8003649C(task, 9, 6, 0xF6, n % 10);
+        } else {
+            REP_OBJ(task, 7)->flags |= 2;
+            REP_OBJ(task, 8)->flags &= ~2;
+            REP_OBJ(task, 9)->flags &= ~2;
+            fn_8003649C(task, 7, 4, 0xF6, g_Scores.team[1].runs[0]);
+        }
+        return;
+    }
+    lbl_3_common_bss_32724[0x98] = 0;
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
 
 // .text:0x00093D5C size:0x3E0 mapped:0x806D2DF0
