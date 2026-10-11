@@ -49,11 +49,18 @@ void GDSetAlphaCompare(GXCompare comp0, u8 ref0, GXAlphaOp op, GXCompare comp1, 
 }
 
 // .text:0x800A1F40 size:0x254
+// NONMATCHING 99%: code is identical; the 32.0f/16.0f literals land in our own .sdata2 instead of
+// lbl_803CCEC0/lbl_803CCEC4 (needs a .sdata2 split 0x803CCEC0-0x803CCEC8 for this unit; extern f32 schedules differently)
+#if NONMATCHING
 void GDSetTexLookupMode(GXTexMapID id, GXTexWrapMode wrap_s, GXTexWrapMode wrap_t, GXTexFilter min_filt,
                         GXTexFilter mag_filt, f32 min_lod, f32 max_lod, f32 lod_bias, u8 bias_clamp,
                         u8 do_edge_lod, GXAnisotropy max_aniso) {
-    return;
+    GDWriteBPCmd((u32)wrap_s << 0 | (u32)wrap_t << 2 | (u32)(mag_filt == GX_LINEAR) << 4 |
+                 (u32)lbl_8010F158[min_filt] << 5 | (u32)(!do_edge_lod) << 8 | (u32)(u8)(32.0f * lod_bias) << 9 |
+                 (u32)max_aniso << 19 | (u32)bias_clamp << 21 | (u32)lbl_803CBA98[id] << 24);
+    GDWriteBPCmd((u32)(u8)(16.0f * min_lod) << 0 | (u32)(u8)(16.0f * max_lod) << 8 | (u32)lbl_803CBAA0[id] << 24);
 }
+#endif
 
 // .text:0x800A2194 size:0x100
 void GDSetTexImgAttr(GXTexMapID id, u16 width, u16 height, GXTexFmt format) {
