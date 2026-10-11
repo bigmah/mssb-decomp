@@ -55,9 +55,110 @@ void fn_800B2D5C(GameActor* actor) {
 }
 
 // .text:0x800B2DD0 size:0x36C
-void fn_800B2DD0(void) {
-    return;
+// NONMATCHING 98%: blend switch is missing a dead `b` after case 0; `mr r30,r4` scheduled differently
+#if NONMATCHING
+void fn_800B2DD0(GameActor* actor, GameBone* bone) {
+    Mtx world; // never initialised in the original
+    Mtx m;
+    Mtx ctrlMtx;
+    Mtx rot;
+    GameControl blended;
+    f32 blend;
+    GameBone* parent;
+    GameBone* target;
+    GameBone* child;
+    u16 i;
+
+    blend = actor->blend;
+    switch (bone->flags & 3) {
+    case 0:
+        blend = 1.0f;
+        break;
+    case 1:
+        break;
+    case 2:
+        blend = blend * blend;
+        break;
+    default:
+        blend = 1.0f;
+        break;
+    }
+
+    if (bone->flags & 0x20) {
+        if (bone->flags & 4) {
+            bone->blendCtrl.controlParams.srt.t.x = bone->animCtrl.controlParams.srt.t.x;
+        }
+        if (bone->flags & 8) {
+            bone->blendCtrl.controlParams.srt.t.y = bone->animCtrl.controlParams.srt.t.y;
+        }
+        if (bone->flags & 0x10) {
+            bone->blendCtrl.controlParams.srt.t.z = bone->animCtrl.controlParams.srt.t.z;
+        }
+    }
+
+    if (bone->animCtrl.type != 0) {
+        if (actor->boneRemap == NULL) {
+            fn_800B84AC(&bone->animCtrl, &bone->blendCtrl, &bone->animCtrl, blend);
+            CTRLBuildMatrix(&bone->animCtrl, m);
+        } else if (actor->boneCallback == NULL ||
+                   actor->boneCallback(bone, actor->boneArray[actor->boneRemap[0]], m, blend) == 0) {
+            for (i = 0; i < actor->totalBones; i++) {
+                if (bone->boneID == actor->boneArray[i]->boneID) {
+                    target = actor->boneArray[actor->boneRemap[i]];
+                    break;
+                }
+            }
+            fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, blend);
+            if (bone->branch.Parent != NULL) {
+                CTRLBuildMatrix_FlipY(&target->animCtrl, m);
+            } else {
+                CTRLBuildMatrix_FlipX(&target->animCtrl, m);
+            }
+            switch (bone->rotAxis) {
+            case 1:
+                PSMTXRotRad(rot, 'X', 3.1415927f);
+                PSMTXConcat(m, rot, m);
+                break;
+            case 2:
+                PSMTXRotRad(rot, 'Y', 3.1415927f);
+                PSMTXConcat(m, rot, m);
+                break;
+            case 3:
+                PSMTXRotRad(rot, 'Z', 3.1415927f);
+                PSMTXConcat(m, rot, m);
+                break;
+            }
+        }
+        if (bone->animPipe->replaceHierarchyCtrl == 0) {
+            CTRLBuildMatrix(&bone->orientationCtrl.base, ctrlMtx);
+            PSMTXConcat(ctrlMtx, m, m);
+        }
+    } else {
+        fn_800B84AC(&blended.base, &bone->blendCtrl, &bone->orientationCtrl.base, blend);
+        CTRLBuildMatrix(&blended.base, m);
+    }
+
+    parent = (GameBone*)bone->branch.Parent;
+    if (bone->inheritanceFlag == 1 && parent != NULL) {
+        PSMTXConcat(parent->forwardMtx, m, bone->forwardMtx);
+    } else {
+        PSMTXConcat(world, m, bone->forwardMtx);
+    }
+    if (bone->dispObj != NULL) {
+        DOSetWorldMatrix(bone->dispObj, bone->forwardMtx);
+    }
+    if (actor->skinObject != NULL) {
+        PSMTXConcat(bone->forwardMtx, bone->orientationInvMtx, bone->skinMtx);
+        if (actor->skinObject->lightingData != NULL) {
+            PSMTXInverse(bone->skinMtx, m);
+            PSMTXTranspose(m, bone->skinInvTransposeMtx);
+        }
+    }
+    for (child = (GameBone*)bone->branch.Children; child != NULL; child = (GameBone*)child->branch.Next) {
+        fn_800B2DD0(actor, child);
+    }
 }
+#endif
 
 // .text:0x800B313C size:0x378
 void fn_800B313C(void) {
