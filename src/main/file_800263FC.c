@@ -286,9 +286,95 @@ void fn_8002CE4C(void) {
 }
 
 // .text:0x8002D82C size:0x43C
-void fn_8002D82C(void) {
-    return;
+// NONMATCHING 94%: register allocation of the color/physics loop walkers (r4/r5) differs
+#if NONMATCHING
+s32 fn_8002D82C(Emitter* e) {
+    Mtx ident;
+    Vec v;
+    TexCoordF* uv = lbl_800F78C0;
+    Particle* p = e->particles;
+    s32 alive = 0;
+    TexArchive* arc = e->tex;
+    s32 tex = p->texIndex;
+    TexImage* img;
+    GXTexObj texObj;
+    GXTlutObj tlutObj;
+    s32 k;
+    s32 c;
+
+    if (arc == NULL) {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    } else {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+        img = &arc->entries[arc->entries[tex].index].img;
+        if (img->tlut != NULL) {
+            GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
+            GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
+            GXLoadTlut(&tlutObj, GX_TLUT0);
+        } else {
+            GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+        }
+        GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        GXLoadTexObj(&texObj, GX_TEXMAP1);
+    }
+    PSMTXIdentity(ident);
+    GXLoadPosMtxImm(ident, GX_PNMTX0);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+    do {
+        if (p->life != 0) {
+            alive++;
+            if (p->delay != 0) {
+                p->delay -= (lbl_80366158._28 == 0);
+            } else {
+                PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
+                GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+                GXPosition3f32(v.x - p->sizeX, v.y - p->sizeY, v.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(uv[p->uvOrder & 3].s, uv[p->uvOrder & 3].t);
+                GXPosition3f32(v.x + p->sizeY, v.y - p->sizeX, v.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(uv[(p->uvOrder >> 2) & 3].s, uv[(p->uvOrder >> 2) & 3].t);
+                GXPosition3f32(v.x + p->sizeX, v.y + p->sizeY, v.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(uv[(p->uvOrder >> 4) & 3].s, uv[(p->uvOrder >> 4) & 3].t);
+                GXPosition3f32(v.x - p->sizeY, v.y + p->sizeX, v.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(uv[(p->uvOrder >> 6) & 3].s, uv[(p->uvOrder >> 6) & 3].t);
+                if (lbl_80366158._28 == 0) {
+                    p->life--;
+                    for (k = 0; k < 3; k++) {
+                        c = p->color.v[k] + (s8)p->colorStep.v[k];
+                        if (c < 0) {
+                            c = 0;
+                        } else if (c > 0xFF) {
+                            c = 0xFF;
+                        }
+                        p->color.v[k] = c;
+                        (&p->u.phys.accel.x)[k] = (&p->u.phys.force.x)[k] / p->u.phys.mass;
+                        (&p->u.phys.vel.x)[k] += (&p->u.phys.accel.x)[k];
+                        (&p->pos.x)[k] += (&p->u.phys.vel.x)[k];
+                    }
+                    c = p->color.v[k] + (s8)p->colorStep.v[k];
+                    if (c < 0) {
+                        c = 0;
+                    } else if (c > 0xFF) {
+                        c = 0xFF;
+                    }
+                    p->color.v[k] = c;
+                    if (p->life <= e->u.t9.fadeLife && p->colorStep.v[3] == 0) {
+                        p->colorStep.v[3] = -0x100 / p->life;
+                    }
+                }
+            }
+        }
+        p = p->next;
+    } while (p != NULL);
+    GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
+    return alive == 0;
 }
+#endif
 
 // .text:0x8002DC68 size:0x7C
 void fn_8002DC68(Vec* pos) {
