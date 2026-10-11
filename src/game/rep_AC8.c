@@ -2865,8 +2865,63 @@ void fn_3_4597C(int i) {
 }
 
 // .text:0x00045B88 size:0x310 mapped:0x80684C1C
-void fn_3_45B88(void) {
-    return;
+// Fielder i runs to cut off the ball's travel line, then hands over to the normal chase.
+void fn_3_45B88(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    VecXZ out;
+    VecXZ perp[2];
+    VecXZ line[2];
+    f32 dz, dx, d;
+    f32 lx, lz;
+    g_FieldingLogic[0x13C] = 0;
+    if (f[0x1FF] == 0) {
+        f[0x1FF] = 1;
+        f[0x202] = 1;
+        *(s16*)(g_FieldingLogic + 0xB0) = i;
+        line[0].x = *(f32*)g_Ball;
+        line[0].z = *(f32*)(g_Ball + 8);
+        line[1].x = *(f32*)(g_Ball + 0x19F8);
+        line[1].z = *(f32*)(g_Ball + 0x19FC);
+        perp[0].x = *(f32*)f;
+        perp[0].z = *(f32*)(f + 8);
+        lx = line[1].x - line[0].x;
+        lz = -(line[1].z - line[0].z);
+        perp[1].x = perp[0].x + lz;
+        perp[1].z = perp[0].z + lx;
+        calculateLineIntersection(&out, line, perp);
+        *(f32*)(f + 0x14) = out.x;
+        *(f32*)(f + 0x1C) = out.z;
+        dx = out.x - *(f32*)f;
+        dz = out.z - *(f32*)(f + 8);
+        if (0.0f == dx && 0.0f == dz) {
+            *(f32*)(f + 0x50) = 0.0f;
+            *(f32*)(f + 0x68) = 0.0f;
+        } else {
+            *(f32*)(f + 0x64) = atan2(dz, dx);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            *(f32*)(f + 0x68) = d;
+        }
+        f[0x1D9] = 1;
+    }
+    switch (fn_3_53130(i)) {
+    case 2:
+        return;
+    default:
+        if (f[0x202] != 0) {
+            ((void (*)(int))fn_3_526DC)(i);
+            if (*(u16*)(g_FieldingLogic + 0x14A) & 0x100) {
+                g_FieldingLogic[0x13C] = 1;
+            }
+        }
+    case 1:
+        if (g_Ball[0x1BC9] != 2) {
+            *(s16*)(g_FieldingLogic + 0xC2) = -1;
+            f[0x202] = 0;
+            SetFielderAct(i, 9, 0x48);
+        }
+        break;
+    }
 }
 
 // .text:0x00045E98 size:0x7F0 mapped:0x80684F2C
