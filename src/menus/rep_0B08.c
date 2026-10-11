@@ -2177,3 +2177,13 @@ void fn_2_6A708(void) {
     player->heading = lbl_2_bss_A170;
 }
 #endif
+
+// .text:0x6A87C size:0x23C
+// NONMATCHING 88%: original inlines fn_2_6A708 and fn_2_6A628; same scheduling issue as fn_2_6A708
+#if NONMATCHING
+void fn_2_6A87C(void) {
+    lbl_2_bss_1A8248[0]->entries[0].flagBB = 0;
+    fn_2_6A708();
+    fn_2_6A628();
+}
+#endif
