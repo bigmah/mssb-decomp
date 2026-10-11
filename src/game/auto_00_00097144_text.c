@@ -95,7 +95,42 @@ void fn_3_973EC(void) {
 
 // .text:0x00097800 size:0xDC mapped:0x806D6894
 void fn_3_97800(void) {
-    return;
+    lbl_3_common_bss_32724.hudOff = 0;
+    lbl_3_common_bss_32724._A5 = 0;
+    lbl_3_common_bss_32724._97 = 0;
+    lbl_3_common_bss_32724._A8 = 0;
+    lbl_3_common_bss_32724._98 = 0;
+    lbl_3_common_bss_32724._99 = 0;
+    lbl_3_common_bss_32724._D1 = 0;
+    lbl_3_common_bss_32724._AD = 0;
+    lbl_3_common_bss_32724._AE = 0;
+    lbl_3_common_bss_32724._B0 = 0;
+    lbl_3_common_bss_32724._B1 = 0;
+    lbl_3_common_bss_32724._B2 = 0;
+    lbl_3_common_bss_32724._C7 = 0;
+    lbl_3_common_bss_32724._D6 = 0;
+    lbl_3_common_bss_32724._B6 = 0;
+    lbl_3_common_bss_32724._D9 = 0;
+    lbl_3_common_bss_32724._DA = 0;
+    lbl_3_common_bss_32724._BC = 0;
+    lbl_3_common_bss_32724._C0 = 0;
+    lbl_3_common_bss_32724._C1 = 0;
+    lbl_3_common_bss_32724._C2 = 0;
+    lbl_3_common_bss_32724._C6 = 0;
+    lbl_3_common_bss_32724.pauseTitleShown = 0;
+    lbl_3_common_bss_32724.pauseMenuShown = 0;
+    lbl_3_common_bss_32724._C3 = 0;
+    lbl_3_common_bss_32724._C4 = 0;
+    lbl_3_common_bss_32724._BE = 0;
+    lbl_3_common_bss_32724._BF = 0;
+    lbl_3_common_bss_32724._B3 = 0;
+    lbl_3_common_bss_32724._B4 = 0;
+    lbl_3_common_bss_32724._B5 = 0;
+    lbl_3_common_bss_32724._C5 = 0;
+    if (g_d_GameSettings.minigamesEnabled == 0) {
+        fn_800B0A5C_insertQueue(fn_3_95970, 2);
+    }
+    fn_800B0A5C_insertQueue(fn_3_91A60, 2);
 }
 
 // .text:0x000978DC size:0x410 mapped:0x806D6970
