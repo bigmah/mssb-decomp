@@ -21,8 +21,22 @@ f32 fn_800B4A44(GameActor* actor, u16 boneIndex) {
 }
 
 // .text:0x800B4A94 size:0x68
-void fn_800B4A94(void) {
-    return;
+f32 fn_800B4A94(GameActor* actor) {
+    u32 i;
+    GameBone* bone;
+
+    for (i = 0; i < actor->totalBones; i++) {
+        bone = actor->boneArray[i];
+        if (bone->animPipe != NULL) {
+            if (bone->animPipe->forward == 0) {
+                return bone->animPipe->time;
+            }
+            if (bone->animPipe->currentTrack != NULL) {
+                return bone->animPipe->currentTrack->animTime - bone->animPipe->time;
+            }
+        }
+    }
+    return lbl_803CCF78;
 }
 
 // .text:0x800B4AFC size:0x3C
