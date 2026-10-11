@@ -29,6 +29,13 @@ extern void fn_3_C39C8(void);
 extern void fn_3_CE8E4(void);
 extern void fn_3_F8ABC(void);
 #include "static/UnknownHomes_Static.h"
+#include "main/file_800BD8C4.h"
+#include "main/file_80024D2C.h"
+#include "C3/actor.h"
+extern void LoadActorLayout(ActorLayout* layout); // main/file_800B2C44.h
+#include "C3/geoPalette.h"
+extern void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader); // main/file_800B9974.h
+#include "C3/anim.h"
 
 extern s16 lbl_3_bss_9952;
 
@@ -39,9 +46,6 @@ void fn_3_C0770(void) {
 
 extern u8 lbl_3_common_bss_35154[];
 extern void fn_800BD548(void*, int, ...);
-extern void fn_800BD8C4(void*, u32);
-extern void CTRLSetTranslation(void*, f32, f32, f32);
-extern void CTRLSetRotation(void*, f32, f32, f32);
 extern u8 lbl_80366158[];
 extern u8 lbl_3_data_12354[];
 extern f32 lbl_3_rodata_1F18;
@@ -71,7 +75,6 @@ void fn_3_C07B0(void) {
 }
 
 // .text:0x000BA538 size:0x2BC mapped:0x806F95CC
-extern void CTRLBuildMatrix(void*, Mtx);
 extern const f32 lbl_3_rodata_1E6C;
 extern const f32 lbl_3_rodata_1E70;
 extern const f32 lbl_3_rodata_1E74;
@@ -108,14 +111,14 @@ void fn_3_BA538(u8* p) {
     q[8] = 0.0f;
     q[5] = 0.0f;
     q[2] = 0.0f;
-    CTRLSetRotation(ctrl, *(f32*)(p + 0x1C), *(f32*)(p + 0x20), *(f32*)(p + 0x24));
+    CTRLSetRotation((Control*)ctrl, *(f32*)(p + 0x1C), *(f32*)(p + 0x20), *(f32*)(p + 0x24));
     sc = *(f32*)(p + 0xC);
     tx = lbl_3_rodata_1E64 * *(f32*)(p + 4);
     ty = 0.35f * *(f32*)(p + 8);
     ux = tx * lbl_3_rodata_1E64;
     uy = ty * lbl_3_rodata_1E64;
-    CTRLSetTranslation(ctrl, ux * sc, uy * sc, lbl_3_rodata_1E70);
-    CTRLBuildMatrix(ctrl, m);
+    CTRLSetTranslation((Control*)ctrl, ux * sc, uy * sc, lbl_3_rodata_1E70);
+    CTRLBuildMatrix((Control*)ctrl, m);
     GXLoadPosMtxImm(m, 0);
     GXSetCurrentMtx(0);
     C_MTXOrtho(proj, lbl_3_rodata_1E74 * *(f32*)(p + 0xC), lbl_3_rodata_1E78 * *(f32*)(p + 0xC),
@@ -849,15 +852,15 @@ void fn_3_BD7DC(u32 a) {
 
 // .text:0x000BD80C size:0xCC mapped:0x806FC8A0
 // 97%: compiler folds base+0x3E4 into offsets off one reg; original keeps bss base in r5 and c=r5+0x3e4 in r30
-void fn_3_BD80C(u32 a) {
+void fn_3_BD80C(MtxPtr a) {
     f32* c;
     u8* g;
     u8* bs = lbl_3_common_bss_35154;
     c = (f32*)(bs + 0x3E4);
     g = lbl_8036E548;
     if (bs[0x40A] != 0) {
-        CTRLSetTranslation(*(u8**)(g + 0x70) + 0x44, c[1], c[2], c[3]);
-        CTRLSetRotation(*(u8**)(g + 0x70) + 0x44, 57.295776f * c[4], 57.295776f * c[5], 57.295776f * c[6]);
+        CTRLSetTranslation((Control*)(*(u8**)(g + 0x70) + 0x44), c[1], c[2], c[3]);
+        CTRLSetRotation((Control*)(*(u8**)(g + 0x70) + 0x44), 57.295776f * c[4], 57.295776f * c[5], 57.295776f * c[6]);
         fn_800BD548(*(u8**)(g + 0x70) + 0x34, 4, *(s32*)(g + 0xAC), *(s32*)(g + 0xB0), *(s32*)(g + 0xB4), *(s32*)(g + 0xB8));
     }
     fn_800BD8C4(*(void**)(g + 0x70), a);
@@ -1129,21 +1132,127 @@ void fn_3_BF20C(void) {
 }
 
 // .text:0x000BF238 size:0x488 mapped:0x806FE2CC
-void fn_3_BF238(void) {
-    return;
+// Stadium-effect work area (lbl_3_common_bss_35154); only the fields used by fn_3_BF238.
+typedef struct {
+    /* 0x000 */ void* task;
+    /* 0x004 */ s32 _04;
+    /* 0x008 */ void* _08;
+    /* 0x00C */ void** assets; // 44 file offsets, relocated in place to pointers
+    /* 0x010 */ ActorObjectTable* actors;
+    /* 0x014 */ ShapeAnimPlayer shapes[10];
+    /* 0x3AC */ u32 flags;
+    /* 0x3B0 */ u8 loaded;
+} BF238Work;
+#define BF238_W ((BF238Work*)lbl_3_common_bss_35154) // TODO type: lbl_3_common_bss_35154 as BF238Work
+// NONMATCHING 80%: original recomputes &shapes[i-K] from the bss symbol in every case (no strength reduction) and uses one fewer saved reg
+#if NONMATCHING
+static inline void fn_3_BF238_shape(s32 idx, void* data, ActorObject* obj) {
+    BF238_W->shapes[idx].model = data;
+    fn_80025DDC(data);
+    fn_80025C58(data, (ShapeModel**)obj);
 }
+static inline void fn_3_BF238_anim(s32 idx, void* data) {
+    ShapeAnimPlayer* sp = &BF238_W->shapes[idx];
+    sp->set = data;
+    fn_80025FFC(sp->model, sp);
+    fn_80025EEC(sp, 0, 0);
+}
+void fn_3_BF238(void) {
+    void** tbl;
+    void* tex;
+    ActorLayout* lay;
+    DODisplayData* geo;
+    void* anm;
+    ActorObject* ao;
+    s32 i;
+    u32 k;
+    if (*(s8*)(lbl_803C6CF8 + 0x715) != 1) {
+        return;
+    }
+    k = 0;
+    BF238_W->actors = ActorObjectInitTable(7);
+    for (i = 0; i < 0x2C; i++) {
+        tbl = BF238_W->assets;
+        if (tbl[i] == NULL) {
+            continue;
+        }
+        tbl[i] = (u8*)tbl + (u32)tbl[i]; // TODO type: 32-bit file offset
+        switch (i) {
+        case 0: case 8: case 18: case 24: case 30: case 36:
+            tex = BF238_W->assets[i];
+            convertTextureHeader(tex);
+            break;
+        case 1: case 9: case 19: case 25: case 31: case 37:
+            lay = BF238_W->assets[i];
+            LoadActorLayout(lay);
+            break;
+        case 2: case 10: case 20: case 26: case 32: case 38:
+            geo = BF238_W->assets[i];
+            convertGeometryAndSknHeader(geo, NULL);
+            break;
+        case 3: case 11: case 21: case 27: case 33: case 39:
+            anm = BF238_W->assets[i];
+            ANIMGet(anm);
+            fn_800BD190((struct GQRValueGroups*)geo, (s32)tex); // TODO type: value is the texture archive pointer
+            haveActLayoutPointToGeoHeader(lay, geo);
+            fn_800BDC88(BF238_W->actors, k, k, lay, anm, NULL);
+            ao = &BF238_W->actors->objects[k];
+            ACTSetAnimation(ao->actor, ao->animBank, NULL, ao->seqNum, lbl_3_rodata_1E68, ao->speed);
+            k++;
+            break;
+        case 4: case 5:
+            fn_3_BF238_shape(i - 4, BF238_W->assets[i], &BF238_W->actors->objects[0]);
+            break;
+        case 12: case 13: case 14:
+            fn_3_BF238_shape(i - 10, BF238_W->assets[i], &BF238_W->actors->objects[1]);
+            break;
+        case 22:
+            fn_3_BF238_shape(i - 17, BF238_W->assets[i], &BF238_W->actors->objects[2]);
+            break;
+        case 28:
+            fn_3_BF238_shape(i - 22, BF238_W->assets[i], &BF238_W->actors->objects[3]);
+            break;
+        case 34:
+            fn_3_BF238_shape(i - 27, BF238_W->assets[i], &BF238_W->actors->objects[4]);
+            break;
+        case 40: case 41:
+            fn_3_BF238_shape(i - 32, BF238_W->assets[i], &BF238_W->actors->objects[5]);
+            break;
+        case 6: case 7:
+            fn_3_BF238_anim(i - 6, BF238_W->assets[i]);
+            break;
+        case 15: case 16: case 17:
+            fn_3_BF238_anim(i - 13, BF238_W->assets[i]);
+            break;
+        case 23:
+            fn_3_BF238_anim(i - 18, BF238_W->assets[i]);
+            break;
+        case 29:
+            fn_3_BF238_anim(i - 23, BF238_W->assets[i]);
+            break;
+        case 35:
+            fn_3_BF238_anim(i - 28, BF238_W->assets[i]);
+            break;
+        case 42: case 43:
+            fn_3_BF238_anim(i - 34, BF238_W->assets[i]);
+            break;
+        }
+    }
+    BF238_W->loaded = 0;
+    fn_800B0A5C_insertQueue(fn_3_BEFF8, 6);
+    ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the current task
+}
+#endif
 
 // .text:0x000BF6C0 size:0x1B8 mapped:0x806FE754
 extern void fn_3_B9D68(void*, int, void*, void*);
 extern void fn_8004B1B8(s32, void*);
 extern void fn_80035750(s32, s32, int);
-extern void* ActorObjectInitTable(int);
-extern void fn_800BDC88(void*, int, int, s32, int, int);
 extern void fn_3_6750C(s32);
 void fn_3_BF6C0(void) {
     s32 buf[8];
     u8* c;
-    u8* t;
+    ActorObjectTable* t;
     u8* w;
     s32 i;
     if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
@@ -1154,7 +1263,7 @@ void fn_3_BF6C0(void) {
         fn_80035750(*(s32*)(*(u8**)(c + 8) + 4), *(s32*)(*(u8**)(c + 8) + 8), 4);
         t = ActorObjectInitTable(1);
         *(void**)(lbl_8036E548 + 0x70) = t;
-        fn_800BDC88(t, 0, 0, ((s32*)*(u8**)(c + 8))[buf[4]], 0, 0);
+        fn_800BDC88(t, 0, 0, ((ActorLayout**)*(u8**)(c + 8))[buf[4]], 0, 0);
         fn_8003A85C(s_BF070a[g_d_GameSettings.StadiumID]);
         fn_8003A848(s_BF070b[g_d_GameSettings.StadiumID][0], s_BF070b[g_d_GameSettings.StadiumID][1], s_BF070b[g_d_GameSettings.StadiumID][2]);
         w = *(u8**)(*(u8**)(c + 8) + 0x18);
