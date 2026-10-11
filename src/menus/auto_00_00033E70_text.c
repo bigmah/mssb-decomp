@@ -1,5 +1,9 @@
 #include "menus/auto_00_00033E70_text.h"
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/GX.h"
+#include "menus/auto_00_0003C03C_text.h"
+#include "menus/auto_00_0004B1AC_text.h"
+#include "menus/rep_0788.h"
 extern s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSize);
 
 extern void fn_2_4E7EC(void);
@@ -2364,5 +2368,113 @@ void fn_2_37630(void) {
         fn_800B0A14_removeQueue(p);
         o[0x28] = 0;
         return;
+    }
+}
+
+extern u8* lbl_2_bss_1A8230[];
+extern GXColor lbl_2_data_12270;
+extern void* fn_800B0A5C_insertQueue(void*, s32);
+extern void fn_2_54474(void);
+extern BOOL fn_80068514(u32 frames, u8 target);
+extern void fn_8006877C(u8 track);
+extern void fn_800A86B4(s32 cmd);
+
+// fn_2_379D0, size:0x3A0
+void fn_2_379D0(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    switch ((s8)o[0x28]) {
+    case 0:
+        if (fn_2_4EABC() == 1) {
+            o[0x28] = 1;
+        }
+        break;
+    case 1: {
+        GXColor clear = lbl_2_data_12270;
+        GXSetCopyClear(clear, 0xFFFFFF);
+        changeScene(1, 6);
+        fn_2_515DC(4);
+        lbl_2_bss_1A8234[0][0x160000 + 0x2992] = 0;
+        lbl_2_bss_1A8230[0][0x32A86] = 0;
+        fn_2_54474();
+        fn_2_245C8();
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E4) = 0x168;
+        lbl_2_bss_15A0.skipped = 0;
+        o[0x28] = 2;
+        break;
+    }
+    case 2:
+        o[0x28] = 3;
+        break;
+    case 3:
+        if (lbl_8037169C[0x12] != 0) {
+            q = fn_800B0A5C_insertQueue(fn_2_37630, 2);
+            q[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            o[0x28] = 4;
+        }
+        break;
+    case 4:
+        if (*(s16*)(o + 0x10) != 0) {
+            if (lbl_2_bss_15A0.skipped) {
+                changeScene(3, 6);
+                lbl_2_bss_1A8234[0][0x160000 + 0x2838] = 1;
+                lbl_2_bss_1A8234[0][0x160000 + 0x2839] = 1;
+                lbl_2_bss_1A8234[0][0x160000 + 0x2835] = 1;
+                lbl_2_bss_1A8234[0][0x160000 + 0x2837] = 1;
+                o[0x28] = 7;
+            } else {
+                fn_8006877C(0xB);
+                if (lbl_2_bss_1A8248[0][0x441C] == 5) {
+                    fn_2_422FC(1);
+                } else {
+                    fn_2_422FC(0);
+                }
+                q = fn_800B0A5C_insertQueue(fn_2_42388, 2);
+                q[0x28] = 0;
+                *(s16*)(o + 0x10) = 0;
+                o[0x28] = 5;
+            }
+        }
+        break;
+    case 5: {
+        BOOL fading = fn_80068514(0x78, 0x7F);
+        if (*(s16*)(o + 0x10) == 1) {
+            lbl_2_bss_1A824C[0][0x19783F] = 0;
+            changeScene(3, 6);
+            lbl_2_bss_1A8234[0][0x160000 + 0x2838] = 1;
+            lbl_2_bss_1A8234[0][0x160000 + 0x2839] = 1;
+            lbl_2_bss_1A8234[0][0x160000 + 0x2835] = 1;
+            lbl_2_bss_1A8234[0][0x160000 + 0x2837] = 1;
+            o[0x28] = 6;
+        }
+        if ((((u16*)((u8*)&lbl_803C77B8 + 2))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10] & 0x1000) && (u8)fading == 0) {
+            lbl_2_bss_1A824C[0][0x19783F] = 1;
+        }
+        break;
+    }
+    case 6:
+        if (fn_8006862C(0x78, 0) == 0) {
+            o[0x28] = 7;
+        }
+        break;
+    case 7:
+        if (lbl_8037169C[0x13] != 0) {
+            GXColor clear;
+            fn_800A86B4(3);
+            clear = lbl_2_data_12270;
+            GXSetCopyClear(clear, 0xFFFFFF);
+            lbl_2_bss_1A8234[0][0x160000 + 0x2992] = 1;
+            lbl_2_bss_1A8230[0][0x32A86] = 1;
+            o[0x28] = 8;
+        }
+        break;
+    case 8:
+        fn_2_4E8E0();
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
     }
 }
