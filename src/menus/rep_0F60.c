@@ -1,7 +1,6 @@
 #include "menus/rep_0F60.h"
 
 #include "static/UnknownHomes_Static.h"
-#include "main/file_80024D2C.h"
 
 
 extern u8 lbl_8036E548[];
@@ -225,7 +224,6 @@ extern u8 lbl_80366158[];
 extern u8 lbl_803CBC3C;
 extern s32* fn_800111D8(u8* o);
 extern f32 fn_800B4A44(s32 a, u16 b);
-extern void fn_2_8CD58(s32, s16, u8, u8, s16, u8, u8);
 
 // fn_2_8D024, size:0x228
 void fn_2_8D024(void) {
@@ -419,3 +417,80 @@ void fn_2_8DCD8(void) {
     lbl_2_bss_340140[0x2D7B] = 0;
 }
 #endif
+
+extern void fn_800B2B54(struct GameActor* actor, u16 bone, u8 value);
+extern void fn_800B2B4C(struct GameActor* actor, f32 speed);
+extern void fn_8001B308(s32 index, s32 enable);
+extern void fn_8001B5EC(s32 index, s32 enable);
+extern s32 lbl_2_data_2FE84[];
+extern s32 lbl_2_data_2FEAC[];
+extern const f32 lbl_2_rodata_FC0;
+extern const f32 lbl_2_rodata_FC4;
+
+// Joint 4 of active actor `index` in lbl_8036E548, or 0xFFFF.
+#define ACTIVE_JOINT4(index) \
+    (((MenuActor**)(lbl_8036E548 + 0x2C50))[index] != NULL ? ((MenuActor**)(lbl_8036E548 + 0x2C50))[index]->joints[4] : 0xFFFF)
+
+// .text:0x8CD58 size:0x2CC
+void fn_2_8CD58(s32 index, s32 anim, u8 loop, u8 face, s16 time, u8 eyes, u8 frames) {
+    MenuActor* actor;
+    s32 shapeTable;
+    s32 shapeEntry;
+    MenuAnimObject* obj;
+    f32 speed = lbl_2_rodata_FB4;
+    MenuAnimBank* bank;
+    u8 valid;
+    actor = ((MenuActor**)(lbl_2_bss_340140 + 0x2C50))[index];
+    if (index == 4) {
+        shapeTable = 1;
+        shapeEntry = 0;
+    } else {
+        shapeTable = lbl_2_data_2FE84[anim];
+        shapeEntry = lbl_2_data_2FEAC[anim];
+    }
+    if (actor == NULL) {
+        return;
+    }
+    obj = (MenuAnimObject*)fn_800111D8((u8*)actor);
+    if (frames != 0) {
+        speed = lbl_2_rodata_FC0 / frames;
+    }
+    if (actor->blend == 0) {
+        fn_800B2B54(actor->actor, ACTIVE_JOINT4(index), 13);
+    } else {
+        fn_800B2B54(actor->actor, ACTIVE_JOINT4(index), 1);
+        fn_800B2B54(obj->actor, ACTIVE_JOINT4(index), 1);
+        fn_800B2B4C(obj->actor, lbl_2_rodata_FC4);
+        ((MenuModelBlend*)obj->actor)->blend = lbl_2_rodata_FB4;
+    }
+    if (actor->face != NULL) {
+        fn_80025EEC(&actor->face->main, shapeTable, shapeEntry);
+    }
+    if (actor->faceSub != NULL && actor->faceSub->hasSub) {
+        fn_80025EEC(&actor->faceSub->sub, shapeTable, shapeEntry);
+        fn_80025EEC(&actor->faceSub->main, shapeTable, shapeEntry);
+    }
+    bank = actor->animBank;
+    if (bank != NULL) {
+        if (anim >= bank->count) return;
+        if (anim < 0) return;
+        obj->animBank = bank;
+        obj->seqNum = anim;
+        obj->time = lbl_2_rodata_FB4;
+        obj->setAnimation = 1;
+        valid = bank != NULL;
+        obj->setTime = valid;
+        obj->setSpeed = valid;
+        obj->speed = speed;
+    }
+    if (loop) {
+        obj->visFlags = 3;
+    } else {
+        obj->visFlags = 2;
+    }
+    obj->time = time * actor->animFrames;
+    obj->setTime = 1;
+    fn_8001B5EC(index, face);
+    fn_8001B308(index, eyes);
+    actor->faceMode = face;
+}
