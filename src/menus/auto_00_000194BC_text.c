@@ -289,7 +289,65 @@ void fn_2_197AC(u8 port) {
 // fn_2_19D04, size:0x228
 // Options menu scene state machine.
 void fn_2_19D04(void) {
-    return;
+    OptionsMenu* menu = &lbl_2_bss_1033C;
+    switch (menu->state) {
+    case 0:
+        if (lbl_8037169C[0x13] == 0) {
+            break;
+        }
+        menu->state = 1;
+    case 1:
+        changeScene(1, 6);
+        *(s32*)(lbl_2_bss_F410 + 8) = 0; // TODO type
+        *(s32*)(lbl_2_bss_F410 + 0xC) = 0;
+        fn_2_96D20();
+        fn_800625A4(0, 0x59);
+        lbl_2_bss_1033C.prevCursor = 0;
+        lbl_2_bss_1033C.cursor = 0;
+        lbl_2_bss_1033C.editing = 0;
+        fn_2_19778();
+        lbl_2_bss_1033C._0D = lbl_2_bss_1033C.rumble != 0;
+        lbl_2_bss_1033C.state = 2;
+        break;
+    case 2:
+        if (lbl_803C66B0[0x5D] == 0) {
+            menu->state = 3;
+        }
+        break;
+    case 3:
+        fn_2_197AC(lbl_8034E9A0.teamPort[0]);
+        break;
+    case 5:
+        fn_2_194E8();
+        fn_8003BF54(0, 0, 0, 0, 1, 4, 1, 0, 4);
+        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        lbl_2_bss_1033C.state = 6;
+        break;
+    case 6: {
+        s16 result = *(s16*)(lbl_803CC1B8[0] + 0x10);
+        if (result != 0) {
+            switch (result) {
+            case 1:
+            case 11:
+                fn_800625A4(0, 0x5A);
+                lbl_2_bss_1033C.state = 4;
+                break;
+            default:
+                lbl_2_bss_1033C.state = 5;
+                break;
+            }
+        }
+        break;
+    }
+    case 4:
+        if (lbl_803C66B0[0x55] == 0) {
+            menu->_0F = 1;
+            menu->state = 0;
+            lbl_8034E978[0x26] = 1;
+            fn_2_11A0(5);
+        }
+        break;
+    }
 }
 
 // fn_2_19F2C, size:0x288
