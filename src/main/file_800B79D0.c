@@ -1,7 +1,7 @@
 #include "main/file_800B79D0.h"
 
 // .text:0x800B79D0 size:0x36C
-void ACTSetBoneTrack(GameBone* bone, struct ANIMAnimTrack* track, s32 blend, f32 time) {
+void ACTSetBoneTrack(GameBone* bone, struct ANIMAnimTrack* track, f32 time, s32 blend) {
     u8 orientType;
     Quaternion pose; // x,y,z(,w) of whichever component is being copied
 

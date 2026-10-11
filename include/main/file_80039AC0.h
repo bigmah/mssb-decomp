@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
+#include "Dolphin/GX/GXTypes.h"
+#include "main/file_80069BDC.h" // TexDesc
 
 // Full-screen copy / blur effect state (lbl_803C5090).
 typedef struct ScreenFx {
@@ -30,14 +32,6 @@ typedef struct ScreenFxNode {
     /*0x08*/ ScreenFx fx;
 } ScreenFxNode; // size 0x28
 
-// Texture descriptor used by DrawSprite_TexObj / SetDisplayStateTexture.
-typedef struct TexDesc {
-    /*0x00*/ void* image;
-    /*0x04*/ u32 _04;
-    /*0x08*/ u16 height;
-    /*0x0A*/ u16 width;
-    /*0x0C*/ u8 _0C[0x20 - 0x0C];
-} TexDesc; // size 0x20
 
 typedef struct SpriteVertex {
     /*0x00*/ f32 x;
@@ -68,7 +62,11 @@ typedef struct TrailSystem {
     /*0x000*/ TrailEntry entries[64];
     /*0xA00*/ u16 head;
     /*0xA02*/ u16 tail;
-    /*0xA04*/ u8 _A04[0xCD0 - 0xA04];
+    /*0xA04*/ u8 _A04[0xA84 - 0xA04];
+    /*0xA84*/ GXTexObj texObj[13];
+    /*0xC24*/ GXTlutObj tlutObj[13];
+    /*0xCC0*/ u8 texMode[13]; // 0 none, 1 direct, 2 color-indexed
+    /*0xCCD*/ u8 _CCD[3];
     /*0xCD0*/ TrailParams params[13];
     /*0xD38*/ u8 enabled;
     /*0xD39*/ u8 _D39[7];
