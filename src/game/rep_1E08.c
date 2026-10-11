@@ -1797,7 +1797,7 @@ void fn_3_BF8F8(u8* a, f32 (*in)[4], f32* pos, f32 (*cb)(u8*, s32, f32 (*)[4], f
         if ((u8)alpha != 0) {
             u8* e;
             b = *(u8**)a;
-            e = (u8*)((u32)b + off);
+            e = b + off;
             x = *(f32*)(b + off);
             y = *(f32*)(b + (off + 4));
             quad[0] = x;

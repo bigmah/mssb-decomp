@@ -159,7 +159,7 @@ void fn_2_6138(void) {
 
 // fn_2_35D0, size:0x54
 s32 fn_2_35D0(u8 index) {
-    u8* flag = (u8*)((u32)lbl_2_bss_F468 + 0x45 + index);
+    u8* flag = (u8*)((u32)lbl_2_bss_F468 + 0x45 + index); // TODO port: pointer math through u32 (needed to match)
     if (*flag != 0) {
         *flag = 0;
         sndFXRelated(0x200);
@@ -183,7 +183,7 @@ u32 fn_2_1258(const void* base, u32 offset, s32 size) {
     u32 value = 0;
     switch (size) {
     case 1:
-        value = *(const u8*)(offset + (u32)base);
+        value = *((const u8*)base + offset);
         break;
     case 2:
         value = *(const u16*)((const u8*)base + offset);

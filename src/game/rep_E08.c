@@ -915,7 +915,7 @@ void fn_3_62904(void) {
     for (i = 0; i < 9; p += 0x268, i++) {
         if (p[0x211] != 0) {
             if (g_Fielders[i * 0x268 + 0x211] != 0) {
-                u8* q = (u8*)((u32)g_UnkAnimation_31EAC + 0x51 + i * 0x54);
+                u8* q = (u8*)((u32)g_UnkAnimation_31EAC + 0x51 + i * 0x54); // TODO port: pointer math through u32 (needed to match)
                 if (*q != 8 && *q != 9) {
                     *q = 8;
                 }
