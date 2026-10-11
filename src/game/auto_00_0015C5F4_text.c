@@ -786,6 +786,33 @@ void fn_3_15F3C4(void) {
 }
 
 // .text:0x0015F410 size:0x164 mapped:0x8079E4A4
+// Starts the HUD tasks for the current transition.
 void fn_3_15F410(void) {
-    return;
+    if (g_GameLogic._125 < 3) {
+        return;
+    }
+    if (g_GameLogic._125 == 3) {
+        lbl_3_common_bss_32724._CF = g_Scores.inning;
+        lbl_3_common_bss_32724._D0 = g_Scores._AD;
+        fn_800B0A5C_insertQueue(fn_3_15F3C4, 2);
+    }
+    if (g_GameLogic._125 == 4 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+        fn_800B0A5C_insertQueue(fn_3_15C638, 2);
+    }
+    if (g_GameLogic._125 == 7) {
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+            if (lbl_3_common_bss_34C90._1D8 == 0 && g_GameLogic._11A != 0) {
+                fn_800B0A5C_insertQueue(fn_3_91FC4, 2);
+                fn_800B0A5C_insertQueue(fn_3_15F220, 2);
+                g_GameLogic._11A = 0;
+            } else if (g_GameLogic._11A != 1) {
+                fn_800B0A5C_insertQueue(fn_3_15EE2C, 2);
+                g_GameLogic._11A = 1;
+            }
+        }
+    } else if (g_GameLogic._125 == 5) {
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+            fn_800B0A5C_insertQueue(fn_8004D0F0, 2);
+        }
+    }
 }
