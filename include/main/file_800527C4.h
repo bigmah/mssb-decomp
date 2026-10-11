@@ -81,6 +81,7 @@ void fn_8005C830(SceneTask* task, s32 port, s32 slot);
 void fn_8005F9D0(SceneTask* task, s32 port);
 void fn_80053810(void);
 void fn_800531D0(SceneTask* task);
+void fn_800542C4(u8 which, u8 cur, SceneTask* task);
 void fn_80056120(void);
 void fn_800569C8(void);
 void challengeCheckStarsMenuLoading(void);

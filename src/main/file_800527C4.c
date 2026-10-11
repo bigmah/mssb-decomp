@@ -359,9 +359,88 @@ void fn_80053FE8(void) {
 #endif
 
 // .text:0x800542C4 size:0x64C
-void fn_800542C4(void) {
-    return;
+// NONMATCHING 93%: the i != a tests use a cntlzw/xori boolean in the original; registers differ
+#if NONMATCHING
+void fn_800542C4(u8 which, u8 cur, SceneTask* task) {
+    s8 a = lbl_803C5F04.tblA[which];
+    s32 i;
+
+    switch (which) {
+    case 1:
+        for (i = 0; i < 2; i++) {
+            TASK_OBJ(task, i + 0xC)->_64 = 0x106;
+            if (i == a) {
+                TASK_OBJ(task, i + 0xC)->_68 = 1;
+            } else if (which == cur) {
+                TASK_OBJ(task, i + 0xC)->_5C = 10 << 16;
+                TASK_OBJ(task, i + 0xC)->_68 = 4;
+            }
+            if (which == cur) {
+                if (a != 0) {
+                    TASK_OBJ(task, 26)->_5C = 25 << 16;
+                    TASK_OBJ(task, 26)->_68 = 4;
+                } else {
+                    TASK_OBJ(task, 26)->_5C = 5 << 16;
+                    TASK_OBJ(task, 26)->_68 = 1;
+                }
+            }
+        }
+        return;
+    case 2:
+        for (i = 0; i < 2; i++) {
+            TASK_OBJ(task, i + 0xE)->_64 = 0x106;
+            if (i != a) {
+                TASK_OBJ(task, i + 0xE)->_68 = 1;
+            } else if (which == cur) {
+                TASK_OBJ(task, i + 0xE)->_5C = 10 << 16;
+                TASK_OBJ(task, i + 0xE)->_68 = 4;
+            }
+        }
+        TASK_OBJ(task, 32)->_5C = 0;
+        TASK_OBJ(task, 35)->_5C = 10 << 16;
+        fn_800363D8(task, 0x20, 1, 0xF9, lbl_803C5F04.tblA[2] ^ 1);
+        fn_800363D8(task, 0x23, 1, 0xF9, lbl_803C5F04.tblB[2] ^ 1);
+        TASK_OBJ(task, 32)->_68 = 1;
+        TASK_OBJ(task, 35)->_68 = 4;
+        return;
+    case 3:
+        for (i = 0; i < 5; i++) {
+            if (i == a) {
+                TASK_OBJ(task, i + 0x10)->_64 = 0x108;
+                TASK_OBJ(task, i + 0x10)->_68 = 1;
+            } else if (i == lbl_803C5F04.tblB[which] && which == cur) {
+                TASK_OBJ(task, i + 0x10)->_64 = 0x108;
+                TASK_OBJ(task, i + 0x10)->_5C = 10 << 16;
+                TASK_OBJ(task, i + 0x10)->_68 = 4;
+            }
+        }
+        TASK_OBJ(task, 33)->_5C = 0;
+        TASK_OBJ(task, 36)->_5C = 10 << 16;
+        fn_800363D8(task, 0x21, 1, 0xF9, lbl_803C5F04.tblA[3] + 2);
+        fn_800363D8(task, 0x24, 1, 0xF9, lbl_803C5F04.tblB[3] + 2);
+        TASK_OBJ(task, 33)->_68 = 1;
+        TASK_OBJ(task, 36)->_68 = 4;
+        return;
+    case 4:
+        for (i = 0; i < 2; i++) {
+            TASK_OBJ(task, i + 0x15)->_64 = 0x106;
+            if (i != a) {
+                TASK_OBJ(task, i + 0x15)->_68 = 1;
+            } else if (which == cur) {
+                TASK_OBJ(task, i + 0x15)->_5C = 10 << 16;
+                TASK_OBJ(task, i + 0x15)->_68 = 4;
+            }
+        }
+        TASK_OBJ(task, 34)->_5C = 0;
+        TASK_OBJ(task, 37)->_5C = 10 << 16;
+        fn_800363D8(task, 0x22, 1, 0xF9, lbl_803C5F04.tblA[4] ^ 1);
+        fn_800363D8(task, 0x25, 1, 0xF9, lbl_803C5F04.tblB[4] ^ 1);
+        TASK_OBJ(task, 34)->_68 = 1;
+        TASK_OBJ(task, 37)->_68 = 4;
+        return;
+    }
 }
+#endif
 
 // .text:0x80054910 size:0x1F0
 // NONMATCHING 96%: expected=TRUE scheduled before the call args and a missing mr for done
