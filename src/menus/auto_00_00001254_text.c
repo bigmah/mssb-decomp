@@ -12,6 +12,11 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_2_data_720[];
+extern void fn_800216F8(s32 group, void* callback);
+extern void fn_8006285C(void);
+extern void fn_8006496C(void);
+extern void fn_2_82E58(void);
 extern u8 lbl_2_bss_E8CC[];
 extern u8 lbl_2_bss_DCE8[];
 extern u8 lbl_803C6028[];
@@ -2874,5 +2879,71 @@ void fn_2_57F0(u8 team, u16 held, u16 pressed, u16 repeat) {
         }
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
+}
+#endif
+
+// NONMATCHING 70%: the original inlines fn_2_6784, fn_2_6AF4 and fn_2_6884 (the latter two NONMATCHING here)
+#if NONMATCHING
+// fn_2_6D3C, size:0x7C8
+void fn_2_6D3C(void) {
+    if (g_d_GameSettings.GameModeSelected == 5 && lbl_803C5EA4[0x11] == 0) {
+        if (lbl_2_bss_F468[0x2C] == 0) {
+            if (lbl_2_bss_F468[0x2D] == 0) {
+                fn_800216F8(0x25, fn_8006285C);
+                lbl_2_bss_F468[0x2D] = 1;
+                return;
+            }
+            if (lbl_2_bss_F468[0x2D] == 1) {
+                if (*(s16*)(lbl_803CC1B8 + 0x10) == 0) {
+                    return;
+                }
+                *(s16*)(lbl_803CC1B8 + 0x10) = 0;
+                initializeUnknown();
+                fn_800B0A5C_insertQueue(fn_80062A94, 0x1000);
+                lbl_2_bss_F468[0x2D] = 0;
+            }
+        }
+        lbl_2_bss_F468[0x2C] = 1;
+        if (lbl_2_bss_F468[0x28] == 0 && fn_800697B0() != 0) {
+            return;
+        }
+        lbl_2_bss_F468[0x28] = 1;
+        if (lbl_2_bss_F468[0x29] == 0 && fn_80035838(lbl_2_data_720 + 0x5F4, 6) == 0) {
+            return;
+        }
+        lbl_2_bss_F468[0x29] = 1;
+        if (lbl_2_bss_F468[0x2A] == 0 && fn_80035838(lbl_2_data_720 + 0x604, 9) == 0) {
+            return;
+        }
+        lbl_2_bss_F468[0x2A] = 1;
+        if (lbl_2_bss_F468[0x2B] == 0 && fn_80035838(lbl_2_data_720 + 0x624, 0xF) == 0) {
+            return;
+        }
+        lbl_2_bss_F468[0x2B] = 1;
+    }
+    if (g_d_GameSettings.GameModeSelected == 5 && starMissionCompletionTracker[0x4445] != 0) {
+        starMissionCompletionTracker[0x4445] = 0;
+        lbl_803297E0[0xCFA1] = 1;
+        if (lbl_80361B20[0xE4] != 0) {
+            lbl_803297E0[0xCF70] = 0;
+        } else {
+            lbl_803297E0[0xCF70] = 1;
+        }
+        fn_2_BF90();
+        unsure_FillRosterPositions(1);
+    } else if (g_d_GameSettings.GameModeSelected == 5 && starMissionCompletionTracker[0x4445] == 0) {
+        if (starMissionCompletionTracker[0x441D] == 9 && (s8)starMissionCompletionTracker[0x44EF] != 0) {
+            fn_2_6784();
+        } else {
+            fn_2_6AF4();
+        }
+        fn_2_6884();
+        lbl_803297E0[0xCFA1] = 0;
+    }
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        fn_8006496C();
+    }
+    fn_2_82E58();
+    *(u16*)(lbl_803CBBCC[0] + 4) = 1;
 }
 #endif
