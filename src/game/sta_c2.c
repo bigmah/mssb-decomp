@@ -11,7 +11,7 @@ extern char lbl_3_rodata_2878[];
 #include "Dolphin/mtx.h"
 #include "Dolphin/mtxext.h"
 #pragma dont_inline on
-extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
+extern void* fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern const f64 lbl_3_rodata_2800;
 extern f32 lbl_3_rodata_2664;
 extern const f32 lbl_3_rodata_280C[];
@@ -44,6 +44,8 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern const Vec lbl_3_rodata_24A0[];
+extern const f32 lbl_3_rodata_2708;
 extern s32 lbl_3_bss_ADD0[];
 extern const f32 lbl_3_rodata_2730;
 extern const f64 lbl_3_rodata_2788;
@@ -102,12 +104,12 @@ extern f64 lbl_3_rodata_27A8;
 extern f64 lbl_3_rodata_27B0;
 extern int rand(void);
 typedef struct { u8 pad[0x90]; u8 f : 1; } BF90_c2;
-extern void fn_80033964(u32);
+extern void fn_80033964(void*);
 extern const f32 lbl_3_rodata_27A0;
 extern const f32 lbl_3_rodata_27A4;
 typedef struct { f32 x, y, z, w; } T16;
 extern T16 lbl_3_data_18730[];
-extern f32 lbl_3_rodata_2700;
+extern const f32 lbl_3_rodata_2700;
 extern f32 lbl_3_rodata_2778;
 extern const f32 lbl_3_rodata_26A0;
 extern f32 lbl_3_rodata_27E8;
@@ -142,7 +144,7 @@ extern f64 cos(f64);
 extern f64 sin(f64);
 extern f32 lbl_3_rodata_27F0;
 extern Vec lbl_3_rodata_25F8;
-extern f32 lbl_3_rodata_2658[];
+extern const f32 lbl_3_rodata_2658[];
 typedef struct { f32 x, y, z, w, r; u8 pad[0xC]; f32 a, b, c, d; u8 pad2[4]; } T34;
 extern T34 lbl_3_data_18364[];
 typedef struct { f32 x, y, z, w, b, c, d, e, f, g; u8 pad[0xC]; } T52;
@@ -641,15 +643,51 @@ void fn_3_CDFA4(void) {
 }
 
 // .text:0x000CE56C size:0x378 mapped:0x8070D600
-void fn_3_CE56C(u32 a, u8 b) {
-    return;
+// Seeds smoke emitter h (from fn_3_CE8E4) at spot idx of lbl_3_rodata_24A0: each particle
+// gets a random heading, size and fade, and starts 4 frames after the previous one.
+void fn_3_CE56C(u8* h, u8 idx) {
+    s16 delay;
+    PEnt* e = *(PEnt**)(h + 0xC);
+    s8 n;
+    f32 a;
+    s16 t;
+    *(s32*)(h + 0x10) = lbl_3_bss_ADD0[0];
+    *(Vec*)(h + 0x18) = lbl_3_rodata_24A0[idx];
+    h[0x24] = idx;
+    h[0x25] = 1;
+    n = 0;
+    delay = 0;
+    for (; e != NULL; e = e->next) {
+        a = lbl_3_rodata_2658[0] * (f32)(rand() % 360);
+        e->f10 = lbl_3_rodata_26D0 * (f32)cos(a);
+        e->f18 = lbl_3_rodata_26D0 * (f32)sin(a);
+        e->f14 = lbl_3_rodata_2708;
+        e->s48 = delay;
+        e->f1C = lbl_3_rodata_26A0;
+        e->f1C = e->f1C + (f64)((u32)rand() % 2500) / lbl_3_rodata_26E0;
+        e->f38 = lbl_3_rodata_26E8 * e->f1C;
+        e->f3C = lbl_3_rodata_26F0 * e->f1C;
+        e->f20 = (f64)(rand() % 101) / lbl_3_rodata_26F8;
+        e->f4 = *(f32*)(h + 0x18);
+        e->f8 = *(f32*)(h + 0x1C);
+        e->fC = *(f32*)(h + 0x20);
+        e->c43 = e->f24 = lbl_3_rodata_2700;
+        t = rand() % 24 + 0x48;
+        delay += 4;
+        e->s4A = t;
+        e->c4F = t;
+        e->c4D = 0x15;
+        e->c4E = 0;
+        e->c4C = n;
+        n++;
+    }
 }
 
 // .text:0x000CE8E4 size:0x70 mapped:0x8070D978
 void fn_3_CE8E4(void) {
     u32 i = 0;
     do {
-        u32 r = fn_80033A24(fn_3_CDFA4, 0x80, 0, 0x15, 1, 0);
+        u8* r = fn_80033A24(fn_3_CDFA4, 0x80, 0, 0x15, 1, 0);
         if (r != 0) {
             fn_3_CE56C(r, (u8)i);
         }
@@ -867,12 +905,12 @@ void fn_3_CF72C(s32 idx) {
             fn_3_CB7E8(t.x, t.y - lbl_3_rodata_2778, t.z);
             p[0xA4] = 1;
         }
-        if (*(u32*)(p + 0xA0) != 0) {
-            fn_80033964(*(u32*)(p + 0xA0));
-            *(u32*)(p + 0xA0) = 0;
+        if (*(void**)(p + 0xA0) != NULL) {
+            fn_80033964(*(void**)(p + 0xA0));
+            *(void**)(p + 0xA0) = NULL;
         }
-        *(u32*)(p + 0xA0) = fn_80033A24(fn_3_CEFA8, 0x80, 0, 0x1E, 1, 0);
-        if (*(u32*)(p + 0xA0) != 0) {
+        *(void**)(p + 0xA0) = fn_80033A24(fn_3_CEFA8, 0x80, 0, 0x1E, 1, 0);
+        if (*(void**)(p + 0xA0) != NULL) {
             a.x = *(f32*)(g_Ball + 0);
             a.y = *(f32*)(g_Ball + 4);
             a.z = *(f32*)(g_Ball + 8);
@@ -1088,17 +1126,17 @@ void fn_3_D00D0(u8* p) {
         if (p[0x92] != 0xFF) {
             p[0x92] = 0xFF;
         }
-        if (*(u32*)(p + 0xA8) != 0) {
-            fn_80033964(*(u32*)(p + 0xA8));
-            *(u32*)(p + 0xA8) = 0;
+        if (*(void**)(p + 0xA8) != NULL) {
+            fn_80033964(*(void**)(p + 0xA8));
+            *(void**)(p + 0xA8) = NULL;
         }
     } else {
         if (!((BF90_c2*)p)->f) {
             ((BF90_c2*)p)->f = 1;
         }
-        if (*(u32*)(p + 0xA8) == 0) {
-            *(u32*)(p + 0xA8) = fn_80033A24(fn_3_CFB44, 0x80, 0, 0x1E, 0, 1);
-            if (*(u32*)(p + 0xA8) != 0) {
+        if (*(void**)(p + 0xA8) == NULL) {
+            *(void**)(p + 0xA8) = fn_80033A24(fn_3_CFB44, 0x80, 0, 0x1E, 0, 1);
+            if (*(void**)(p + 0xA8) != NULL) {
                 fn_3_CFD58(p);
             }
         }
