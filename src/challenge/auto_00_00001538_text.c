@@ -59,3 +59,71 @@ void fn_1_1634(void) {
     }
 }
 
+// .text:0x000016A0 size:0x2A8
+// Test menu: up/down picks a test, A starts it, Z quits.
+void fn_1_16A0(void) {
+    ChMenuTask* task = lbl_803CC1B8;
+
+    if (lbl_803C77B8._04 == 8) {
+        if (--task->cursor < 0) {
+            task->cursor = 9;
+        }
+    } else if (lbl_803C77B8._04 == 4) {
+        if (++task->cursor >= 10) {
+            task->cursor = 0;
+        }
+    } else if (lbl_803C77B8._02 == 0x100) {
+        switch ((u8)task->cursor) {
+        case 0:
+            fn_800B0A5C_insertQueue(fn_1_66C4, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 1:
+            fn_800B0A5C_insertQueue(fn_1_8B90, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 2:
+            fn_800B0A5C_insertQueue(fn_1_17D90, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 3:
+            fn_800B0A5C_insertQueue(fn_1_28200, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 4:
+            fn_800B0A5C_insertQueue(fn_1_1D514, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 5:
+            fn_800B0A5C_insertQueue(fn_1_26AF8, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 6:
+            fn_800B0A5C_insertQueue(fn_1_A2E4, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 7:
+            fn_800B0A5C_insertQueue(fn_1_24778, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 8:
+            fn_800B0A5C_insertQueue(fn_1_2852C, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 9:
+            fn_800B0A5C_insertQueue(fn_1_29A9C, 10);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1948;
+            break;
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+            break;
+        }
+    } else if (lbl_803C77B8._02 == 0x1000) {
+        task->h.parent->result = 1;
+    } else if ((lbl_803C77B8._00 & 0xA00) == 0xA00) {
+        task->h.func = fn_1_58C;
+    }
+}
+
