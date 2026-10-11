@@ -16,9 +16,41 @@ void DSInitList(DSListPtr list, Ptr obj, DSLinkPtr link) {
 #endif
 
 // .text:0x80091478 size:0x94
-void DSInsertListObject(void) {
-    return;
+// NONMATCHING 86%: cursor+Offset folded into lwzx/stwx instead of a shared add
+#if NONMATCHING
+void DSInsertListObject(DSListPtr list, Ptr cursor, Ptr obj) {
+    DSLinkPtr link = (DSLinkPtr)(obj + list->Offset);
+    DSLinkPtr cursorLink;
+    DSLinkPtr prevLink;
+
+    if (list->Head) {
+        if (!cursor) {
+            ((DSLinkPtr)(list->Tail + list->Offset))->Next = obj;
+            link->Prev = list->Tail;
+            link->Next = NULL;
+            list->Tail = obj;
+            return;
+        }
+        cursorLink = (DSLinkPtr)(cursor + list->Offset);
+        if (cursor == list->Head) {
+            list->Head = obj;
+            link->Next = cursor;
+            cursorLink->Prev = obj;
+            return;
+        }
+        prevLink = (DSLinkPtr)(cursorLink->Prev + list->Offset);
+        link->Next = cursor;
+        link->Prev = cursorLink->Prev;
+        cursorLink->Prev = obj;
+        prevLink->Next = obj;
+        return;
+    }
+    list->Tail = obj;
+    list->Head = obj;
+    link->Prev = NULL;
+    link->Next = NULL;
 }
+#endif
 
 // .text:0x8009150C size:0x50
 s8 Strcmp(char* str1, char* str2) {
