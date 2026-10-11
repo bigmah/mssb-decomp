@@ -128,4 +128,6 @@ void fn_1_D13C(void);
 
 void fn_1_D300(u8* row);
 
+void fn_1_17B5C(void);
+
 #endif

@@ -12,7 +12,14 @@ static u8 ch_60EC[0x5C * 5];
 static u8* ch_60E8;
 static u8 ch_fill60E4[0x4];
 static u8* ch_60E0;
-static u8 ch_fill5F74[0x16C];
+static u8 ch_fill60DF;
+static u8 ch_fill60DE;
+static u8 ch_fill60DD;
+static u8 ch_fill60DC;
+static u8 ch_fill60DB;
+static u8 ch_fill60DA;
+static u8 ch_60A4[0x36];
+static u8 ch_fill5F74[0x130];
 static u8 ch_5F73;
 static u8 ch_5F72;
 static u8 ch_5F71;
@@ -2184,5 +2191,35 @@ void fn_1_D300(u8* row) {
     (*(u8**)(actors[ch_5F73] + 0x30))[0xCF] = ch_5F73;
     (*(u8**)(actors[ch_5F73] + 0x30))[0xD0] = ch_5F73;
     *(void**)actors[ch_5F73] = (*(ChallengeModelEntry**)(lbl_8036E548 + 0x60))[ch_5F73].actor;
+}
+#endif
+
+extern s16 lbl_1_data_A978[];
+extern u8 lbl_1_data_2390[];
+extern void fn_80052D70(void);
+
+// .text:0x17B5C size:0x234
+// NONMATCHING ~85%: the 7-entry search is fully unrolled with fixed offsets in the original (an if-chain gets ~92%); zero-store scheduling
+#if NONMATCHING
+void fn_1_17B5C(void) {
+    s32 i;
+    u8* entry;
+
+    ch_5F62 = -1;
+    ch_5F60 = 4;
+    for (i = 0; i < 0x36; i++) {
+        ch_60A4[i] = lbl_1_data_A978[i] != -1;
+    }
+    for (i = 0; i < 7; i++) {
+        if (lbl_1_data_2390[i] != 0) break;
+    }
+    ch_68FC[0x40] = 0;
+    entry = ch_6940;
+    entry[0x44] = i;
+    entry[0x45] = 0;
+    entry[0x46] = 0;
+    ch_5F5C = 0;
+    *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_176EC;
+    fn_80052D70();
 }
 #endif
