@@ -406,7 +406,11 @@ void challengeMapRelated(void) {
 
 // .text:0x8001AAA4 size:0x4C
 void fn_8001AAA4(void) {
-    return;
+    CharQueueTask* task = fn_800B0A5C_insertQueue(challengeMapRelated, 0);
+    task->_14 = 0;
+    task->parent->_10 = 0;
+    lbl_8036E548._3082 = 0;
+    lbl_803CBBF0 = 0;
 }
 
 // .text:0x8001AAF0 size:0x20
