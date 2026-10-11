@@ -23,7 +23,11 @@ extern void fn_800A7D4C(s32, void*);
 
 // .text:0x000FBCD0 size:0x88 mapped:0x8073AD64
 void fn_3_FBCD0(void) {
-    return;
+    fn_3_B939C();
+    if (g_GameLogic.bOD_framesInLiveBallScene >= 0) {
+        PSMTXCopy(fn_80052768_getCamera(0)->view, lbl_3_data_1BE94[lbl_803CBBC0].view);
+        fn_800A7D4C(1, &lbl_3_data_1BE94[lbl_803CBBC0]);
+    }
 }
 
 // .text:0x000FBD58 size:0x18 mapped:0x8073ADEC
