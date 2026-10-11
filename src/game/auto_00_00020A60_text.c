@@ -32,9 +32,19 @@ void fn_3_20AB0(void) {
 }
 
 // .text:0x00020AE0 size:0x50 mapped:0x8065FB74
+// NONMATCHING 90%: one rodata constant is loaded through a pooled addi+lfs 0 instead of lfs @l
+#if NONMATCHING
 void fn_3_20AE0(void) {
-    return;
+    g_AiLogic.batterAIDesiredXPosInBox = lbl_3_rodata_930;
+    g_AiLogic.batterAIDesiredZPosInBox = maybeInitialBatPos.z;
+    g_AiLogic._10 = lbl_3_rodata_938;
+    g_AiLogic._14 = lbl_3_rodata_93C;
+    g_AiLogic._18 = lbl_3_rodata_938;
+    g_AiLogic._1C = lbl_3_rodata_93C;
+    g_AiLogic.batterAIDesiredXPosInBox = lbl_3_rodata_930;
+    g_AiLogic.batterAIDesiredZPosInBox = maybeInitialBatPos.z;
 }
+#endif
 
 // .text:0x00020B30 size:0x104 mapped:0x8065FBC4
 s32 fn_3_20B30(void) {
