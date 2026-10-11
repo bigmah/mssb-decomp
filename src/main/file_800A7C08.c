@@ -20,8 +20,14 @@ void fn_800A7D4C(s32 index, DrawCallbackNode* node) {
 }
 
 // .text:0x800A7D7C size:0x34
-void fn_800A7D7C(void) {
-    return;
+void fn_800A7D7C(DrawLink* list, s32 count) {
+    lbl_803C7420.drawList = list;
+    count--;
+    do {
+        list->raw = (u32)(list + 1) | 1;
+        list++;
+    } while (--count != 0);
+    list->raw = 0;
 }
 
 // .text:0x800A7DB0 size:0x50
