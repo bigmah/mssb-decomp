@@ -15,7 +15,7 @@ extern const f32 lbl_2_rodata_EE8[];
 extern const f32 lbl_2_rodata_EEC[];
 extern const f32 lbl_2_rodata_ED4[];
 extern const f32 lbl_2_rodata_EF0[];
-extern Mtx lbl_2_bss_1A81D4;
+extern MenuCamera lbl_2_bss_1A81D4;
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_2_data_2E9B4[][8];
 extern void fn_2_48D54(void);
@@ -63,8 +63,8 @@ void fn_2_86FEC(void) {
     GXSetProjection(projection, GX_PERSPECTIVE);
     fn_2_48D54();
     fn_2_86470();
-    fn_2_85D6C(lbl_2_bss_1A81D4);
-    PSMTXCopy(lbl_2_bss_1A81D4, fn_80052768_getCamera(0)->view);
+    fn_2_85D6C(lbl_2_bss_1A81D4.view);
+    PSMTXCopy(lbl_2_bss_1A81D4.view, fn_80052768_getCamera(0)->view);
     fn_800A7D4C(0, lbl_2_data_2E9B4[lbl_803CBBC0[0]]);
     fn_2_190DC(lbl_2_bss_340140[0]->collection, fn_80052768_getCamera(0)->view);
 }
@@ -167,3 +167,38 @@ void fn_2_8563C(MenuCamera* camera) {
     camera->target.z = lbl_2_data_2E944[lbl_2_bss_33FBF5][5];
     makeLookAtMatrix(camera, &camera->eye, &up, &camera->target);
 }
+
+extern const f32 lbl_2_rodata_EF4[];
+extern const f32 lbl_2_rodata_EF8[];
+extern const f32 lbl_2_rodata_EFC[];
+extern const f32 lbl_2_rodata_F00[];
+extern const f32 lbl_2_rodata_F04[];
+extern const f32 lbl_2_rodata_F08[];
+extern s8 lbl_2_bss_B2A4;
+extern s8 lbl_2_bss_B2A5;
+
+// .text:0x86DCC size:0x174
+// NONMATCHING 90%: only register allocation differs (preset base r11 vs r31)
+#if NONMATCHING
+void fn_2_86DCC(void) {
+    Mtx44 projection;
+
+    lbl_2_bss_1A81D4.eye.x = lbl_2_data_2E944[lbl_2_bss_33FBF5][0];
+    lbl_2_bss_1A81D4.eye.y = lbl_2_data_2E944[lbl_2_bss_33FBF5][1];
+    lbl_2_bss_1A81D4.eye.z = lbl_2_data_2E944[lbl_2_bss_33FBF5][2];
+    lbl_2_bss_1A81D4.target.x = lbl_2_data_2E944[lbl_2_bss_33FBF5][3];
+    lbl_2_bss_B2A5 = 0;
+    lbl_2_bss_B2A4 = 0;
+    lbl_2_bss_1A81D4.target.y = lbl_2_data_2E944[lbl_2_bss_33FBF5][4];
+    lbl_2_bss_1A81D4.target.z = lbl_2_data_2E944[lbl_2_bss_33FBF5][5];
+    C_MTXFrustum(projection, lbl_2_rodata_EE0[0], lbl_2_rodata_EE4[0],
+        lbl_2_rodata_EE8[0], lbl_2_rodata_EEC[0], lbl_2_rodata_ED4[0], lbl_2_rodata_EF0[0]);
+    GXSetProjection(projection, GX_PERSPECTIVE);
+    fn_800B806C(0, lbl_2_rodata_EF4[0], lbl_2_rodata_EF8[0], lbl_2_rodata_EFC[0],
+        lbl_2_rodata_F00[0], lbl_2_rodata_F04[0], lbl_2_rodata_EAC, lbl_2_rodata_F08[0]);
+    lbl_2_bss_1A81D4.unk54 = 0;
+    lbl_2_bss_1A81D4.offsetZ = lbl_2_rodata_E88;
+    lbl_2_bss_1A81D4.yaw = 0xC19F;
+    lbl_2_bss_1A81D4.pitch = 0;
+}
+#endif

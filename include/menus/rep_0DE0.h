@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/vec.h"
+#include "Dolphin/mtx.h"
 
 typedef struct {
     void (*draw)(s32);
@@ -41,13 +42,14 @@ typedef struct {
 } MenuDrawWorld;
 
 typedef struct {
-    u8 pad00[0x30];
+    Mtx view;
     u16 yaw;
     u16 pitch;
     f32 offsetX;
     f32 offsetZ;
     Vec target;
     Vec eye;
+    s32 unk54;
 } MenuCamera;
 
 void fn_2_8563C(MenuCamera* camera);
@@ -65,5 +67,7 @@ void fn_2_86F40(void);
 void fn_2_86FEC(void);
 
 void fn_2_868C8(void);
+
+void fn_2_86DCC(void);
 
 #endif
