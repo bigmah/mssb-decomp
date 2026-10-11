@@ -366,8 +366,15 @@ void fn_800BE498(Mtx view, f32 width, f32 height, f32 near, f32 far, f32 depth) 
 #endif
 
 // .text:0x800BEA04 size:0x138
-void fn_800BEA04(void) {
-    return;
+void fn_800BEA04(Vec point) {
+    lbl_803009F8.minX = (lbl_803009F8.minX <= point.x) ? lbl_803009F8.minX : point.x;
+    lbl_803009F8.maxX = (lbl_803009F8.maxX >= point.x) ? lbl_803009F8.maxX : point.x;
+    lbl_803009F8.minY = (lbl_803009F8.minY <= point.y) ? lbl_803009F8.minY : point.y;
+    lbl_803009F8.maxY = (lbl_803009F8.maxY >= point.y) ? lbl_803009F8.maxY : point.y;
+    lbl_803009F8.minZ = (lbl_803009F8.minZ <= point.z) ? lbl_803009F8.minZ : point.z;
+    lbl_803009F8.maxZ = (lbl_803009F8.maxZ >= point.z) ? lbl_803009F8.maxZ : point.z;
+    PSVECAdd(&lbl_803009F8.sum, &point, &lbl_803009F8.sum);
+    lbl_803009F8.numPoints++;
 }
 
 // fn_800BEB3C, size:0x44
