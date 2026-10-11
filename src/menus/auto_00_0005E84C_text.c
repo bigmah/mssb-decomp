@@ -370,8 +370,58 @@ void fn_2_60394(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x0006051C size:0x2C0
-void fn_2_6051C(void) {
-    return;
+void fn_2_6051C(MenuTask* task, MenuItem* item) {
+    s32 value;
+    s32 thousands;
+    s32 hundreds;
+    s32 tens;
+    s32 ones;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        value = fn_8006C268((struct StatOutput*)lbl_2_bss_1A824C->stats);
+        thousands = (value / 1000) % 10;
+        hundreds = (value / 100) % 10;
+        tens = (value / 10) % 10;
+        ones = value % 10;
+        if (value < 1000) {
+            thousands = 10;
+        }
+        if (value < 100) {
+            hundreds = 10;
+        }
+        if (value < 10) {
+            tens = 10;
+        }
+        fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x74, ones);
+        fn_800363D8((SpaniOwner*)task, item->sprite, 2, 0x74, tens);
+        fn_800363D8((SpaniOwner*)task, item->sprite, 3, 0x74, hundreds);
+        fn_800363D8((SpaniOwner*)task, item->sprite, 4, 0x74, thousands);
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 10;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 1:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x000607DC size:0x18C
