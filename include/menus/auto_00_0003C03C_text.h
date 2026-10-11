@@ -126,4 +126,38 @@ void fn_2_44014(void);
 
 void fn_2_43E8C(void);
 
+void fn_2_42490(void);
+
+void fn_2_430F4(void);
+
+void fn_2_42BE8(void);
+
+void fn_2_460F8(void);
+
+void fn_2_454E8(void);
+
+void fn_2_3E058(void);
+
+void fn_2_3F66C(void);
+
+void fn_2_3FA14(void);
+
+void fn_2_4358C(void);
+
+void fn_2_3E38C(void);
+
+void fn_2_439D0(void);
+
+void fn_2_42708(void);
+
+void fn_2_3C7DC(void);
+
+void fn_2_3FDE0(void);
+
+void fn_2_3CD34(void);
+
+void fn_2_44504(void);
+
+s32 fn_2_40CB8(void);
+
 #endif
