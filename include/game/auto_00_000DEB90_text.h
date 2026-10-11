@@ -36,10 +36,18 @@ typedef struct MinigameScoresView {
     /*0x04*/ u8 _04[0xAA - 0x4];
     /*0xAA*/ u8 minigameRelated;
     /*0xAB*/ u8 _AB;
-    /*0xAC*/ s8 _AC;
+    /*0xAC*/ u8 _AC;
 } MinigameScoresView;
 
 extern MinigameScoresView g_Scores;
+
+// View of lbl_3_common_bss_32724, only the fields used here.
+typedef struct MinigameBss32724View {
+    /*0x00*/ u8 _00[0xD5];
+    /*0xD5*/ u8 _D5;
+} MinigameBss32724View;
+
+extern MinigameBss32724View lbl_3_common_bss_32724;
 
 // View of lbl_3_common_bss_37400, only the fields used here.
 typedef struct MinigameBss37400View {

@@ -34,7 +34,51 @@ void fn_3_DF00C(void) {
 
 // .text:0x000DF25C size:0x17C mapped:0x8071E2F0
 void fn_3_DF25C(void) {
-    return;
+    s32 i;
+    s32 pick;
+    s32 slot;
+    s32 n;
+    s32 remaining;
+
+    g_Scores._AC = fn_3_5C530(++g_Scores.inning);
+    g_Strikes.outs = 0;
+    g_Strikes.storedOuts = 0;
+    lbl_3_common_bss_32724._D5 = 1;
+    g_Minigame.turnNumberWithinRound = 0;
+    g_Minigame._190D = 3;
+    g_Minigame.panelHitInd = 0;
+    g_Minigame._19A5 = 1;
+    g_Minigame._190F = 0;
+    g_Minigame._1910 = 3;
+    g_Minigame._1911 = 0;
+    g_Minigame._1914 = 0;
+    g_Minigame._1915 = 0;
+    g_Minigame._1916 = 0;
+    g_Minigame._1917 = 0;
+    for (i = 0; i < g_Minigame.miniGameNumberOfParticipants; i++) {
+        g_Minigame.minigameControlStruct[0]._18[i] = i;
+    }
+
+    // Shuffle the participants into a random turn order.
+    remaining = g_Minigame.miniGameNumberOfParticipants;
+    slot = 0;
+    for (n = 0; n < g_Minigame.miniGameNumberOfParticipants; n++) {
+        pick = random_fn_3_9EE24(remaining);
+        for (i = 0; i < g_Minigame.miniGameNumberOfParticipants; i++) {
+            if (g_Minigame.minigameControlStruct[0]._18[i] >= 0) {
+                if (pick == 0) {
+                    g_Minigame.minigameControlStruct[0].turnOrder[slot] = i;
+                    g_Minigame.minigameControlStruct[0]._18[i] = -1;
+                    remaining--;
+                    slot++;
+                    break;
+                }
+                pick--;
+            }
+        }
+    }
+    changeScene(1, 6);
+    fn_3_5A6D4(3);
 }
 
 // .text:0x000DF3D8 size:0x230 mapped:0x8071E46C
