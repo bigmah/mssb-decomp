@@ -75,8 +75,22 @@ void fn_80064344(void* obj, Vec* v) {
 }
 
 // .text:0x80064430 size:0x104
-void fn_80064430(void) {
-    return;
+void fn_80064430(void* obj, s32 count, f32 scale2, f32 scale) {
+    EffectDesc desc;
+
+    memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
+    desc.id = lbl_803CBD0C;
+    desc.size[0] *= scale;
+    desc.size[1] *= scale;
+    desc.size[2] *= scale;
+    desc.size[3] *= scale;
+    desc.size[4] *= scale;
+    desc.size[5] *= scale;
+    desc._38 *= scale;
+    desc._54[0] *= scale2;
+    desc._54[1] *= scale2;
+    desc._54[2] *= scale2;
+    fn_8002B7F8(obj, &desc, count);
 }
 
 // .text:0x80064534 size:0x220

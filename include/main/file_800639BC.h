@@ -51,5 +51,6 @@ void fn_800684A4(void);
 void fn_80068720(u8 track);
 void fn_8006877C(u8 track);
 void fn_80064344(void* obj, Vec* v);
+void fn_80064430(void* obj, s32 count, f32 scale2, f32 scale);
 
 #endif
