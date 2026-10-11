@@ -701,9 +701,33 @@ s32 fn_8002E3DC(Emitter* e) {
 #endif
 
 // .text:0x8002E828 size:0x478
+// NONMATCHING 72%: register allocation only (same instructions)
+#if NONMATCHING
 s32 fn_8002E828(Emitter* e) {
-    return 0;
+    s32 alive = 0;
+    Particle* p = e->particles;
+    f32 size;
+
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    do {
+        p->life -= (p->life > 0) & (lbl_80366158._28 == 0);
+        if (p->life > p->u.t6.unk20) {
+            p->color.c.a = (p->u.t6.unk18 * (p->u.t6.unk1C - p->life)) / p->u.t6.unk20;
+        } else {
+            p->color.c.a = (p->u.t6.unk18 * p->life) / p->u.t6.unk20;
+        }
+        size = p->u.t6.unk10 + ((p->u.t6.unk14 - p->u.t6.unk10) * (f32)(p->u.t6.unk1C - p->life)) / (f32)p->u.t6.unk1C;
+        p->sizeY = size;
+        p->sizeX = size;
+        QuadCorners(p->sizeX, p->sizeY);
+        DrawParticleQuad(p, e->tex);
+        alive += (p->life > 0);
+        p = p->next;
+    } while (p != NULL);
+    return alive == 0;
 }
+#endif
 
 // .text:0x8002ECA0 size:0x50C
 void fn_8002ECA0(void) {
