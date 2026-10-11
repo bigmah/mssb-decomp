@@ -2569,3 +2569,153 @@ void fn_2_39408(void) {
         break;
     }
 }
+
+// Grid layouts for the selection cursor: highest column and row index.
+typedef struct GridSize {
+    s16 maxCol;
+    s16 maxRow;
+} GridSize;
+
+extern GridSize lbl_2_data_122A8[4];
+
+#define GRID_COL (*(s16*)(lbl_2_bss_1A824C[0] + 0x19770C))
+#define GRID_ROW (*(s16*)(lbl_2_bss_1A824C[0] + 0x19770E))
+#define GRID_SEL (*(s16*)(lbl_2_bss_1A824C[0] + 0x197710))
+#define GRID_PREV (*(s16*)(lbl_2_bss_1A824C[0] + 0x197712))
+#define GRID_LAYOUT (*(s16*)(lbl_2_bss_1A824C[0] + 0x197714))
+
+// fn_2_3A8FC, size:0x60C
+// NONMATCHING 99.7%: r30/r31 swapped between the task pointer and the pad pointer (see docs/patterns/regalloc.md)
+#if NONMATCHING
+void fn_2_3A8FC(void) {
+    u8* repeat;
+    u8* p = lbl_803CC1B8;
+    u8* q;
+    u16 btn;
+    s32 pad;
+    switch (*(s8*)(p + 0x28)) {
+    case 0:
+        if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
+            lbl_2_bss_1A8234[0][0x160000 + 0x267F] = 1;
+        } else {
+            lbl_2_bss_1A8234[0][0x160000 + 0x2651] = 1;
+        }
+        *(s16*)(p + 0x14) = 0xC;
+        p[0x28] = 1;
+        break;
+    case 1: {
+        s16 t = *(s16*)(p + 0x14);
+        *(s16*)(p + 0x14) = t - 1;
+        if (t == 0) {
+            p[0x28] = 2;
+        }
+        break;
+    }
+    case 2:
+        repeat = (u8*)&lbl_803C77B8 + 4;
+        btn = *(u16*)(repeat + *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20);
+        if (btn & 1) {
+            GRID_PREV = GRID_SEL;
+            GRID_COL--;
+            if (GRID_COL < 0) {
+                GRID_COL = lbl_2_data_122A8[GRID_LAYOUT].maxCol;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (btn & 2) {
+            GRID_PREV = GRID_SEL;
+            GRID_COL++;
+            if (GRID_COL > lbl_2_data_122A8[GRID_LAYOUT].maxCol) {
+                GRID_COL = 0;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+        btn = *(u16*)(repeat + *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20);
+        if (btn & 8) {
+            if (lbl_2_data_122A8[GRID_LAYOUT].maxRow != 0) {
+                GRID_PREV = GRID_SEL;
+                GRID_ROW--;
+                if (GRID_ROW < 0) {
+                    GRID_ROW = lbl_2_data_122A8[GRID_LAYOUT].maxRow;
+                }
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        } else if (btn & 4) {
+            if (lbl_2_data_122A8[GRID_LAYOUT].maxRow != 0) {
+                GRID_PREV = GRID_SEL;
+                GRID_ROW++;
+                if (GRID_ROW > lbl_2_data_122A8[GRID_LAYOUT].maxRow) {
+                    GRID_ROW = 0;
+                }
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+        }
+        GRID_SEL = GRID_COL + GRID_ROW * (lbl_2_data_122A8[GRID_LAYOUT].maxCol + 1);
+        pad = *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        btn = *(u16*)(repeat + pad);
+        if ((btn & 8) || (btn & 4)) {
+            if (lbl_2_data_122A8[GRID_LAYOUT].maxRow == 0) {
+                goto check_confirm;
+            }
+            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
+                lbl_2_bss_1A8234[0][0x160000 + 0x270B] = 1;
+            } else {
+                lbl_2_bss_1A8234[0][0x160000 + 0x26DD] = 1;
+            }
+            p[0x28] = 3;
+        } else if ((btn & 1) || (btn & 2)) {
+            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
+                lbl_2_bss_1A8234[0][0x160000 + 0x270B] = 1;
+            } else {
+                lbl_2_bss_1A8234[0][0x160000 + 0x26DD] = 1;
+            }
+            p[0x28] = 3;
+        } else {
+        check_confirm:
+            btn = *(u16*)((u8*)&lbl_803C77B8 + pad + 2);
+            if (btn & 0x100) {
+                if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
+                    lbl_2_bss_1A8234[0][0x160000 + 0x2869] = 1;
+                } else {
+                    lbl_2_bss_1A8234[0][0x160000 + 0x283B] = 1;
+                }
+                *(s16*)(p + 0x14) = 0xC;
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                p[0x28] = 4;
+            } else if (btn & 0x200) {
+                if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
+                    lbl_2_bss_1A8234[0][0x160000 + 0x2869] = 1;
+                } else {
+                    lbl_2_bss_1A8234[0][0x160000 + 0x283B] = 1;
+                }
+                *(s16*)(p + 0x14) = 0xC;
+                sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+                p[0x28] = 4;
+            }
+        }
+        break;
+    case 3:
+        p[0x28] = 2;
+        break;
+    case 4: {
+        s16 t = *(s16*)(p + 0x14);
+        *(s16*)(p + 0x14) = t - 1;
+        if (t == 0) {
+            p[0x28] = 5;
+        }
+        break;
+    }
+    case 5:
+        q = *(u8**)(p + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        p[0x28] = 0;
+        break;
+    }
+    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        p[0x28] = 0;
+    }
+}
+#endif
