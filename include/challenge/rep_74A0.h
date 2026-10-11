@@ -80,6 +80,13 @@ typedef struct ChallengeConfetti {
     /*0x4A*/ s16 index;
 } ChallengeConfetti;
 
+// Texture bank (lbl_1_bss_6AAC entries): like DOTexBank but with a 16-bit count.
+typedef struct ChallengeTexBank {
+    u16 count;
+    u16 pad02;
+    DOTexInfo tex[1]; // variable length
+} ChallengeTexBank;
+
 // Depth-sort entry used by fn_1_1857C.
 typedef struct ChallengeConfettiSort {
     ChallengeConfetti* piece;
@@ -147,6 +154,8 @@ s32 fn_1_19D1C(u8 value);
 void fn_1_1D470(void);
 
 void fn_1_1A1EC(ChallengeActorDrawing* drawing, MtxPtr camera);
+
+void fn_1_1A3B4(void);
 
 void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 

@@ -790,3 +790,85 @@ void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera) {
         state++;
     }
 }
+
+extern ChallengeTexBank* lbl_1_bss_6AAC[];
+extern const GXColor lbl_1_rodata_750C;
+extern const f32 lbl_1_rodata_7590;
+extern const f32 lbl_1_rodata_7594;
+
+// fn_1_1A3B4, size:0x3C0
+// Debug viewer: show the selected texture bank's first texture on a quad.
+// NONMATCHING 99%: prologue scheduling of the GXColor copy and an extra mr for the texture record pointer
+#if NONMATCHING
+void fn_1_1A3B4(void) {
+    GXTexObj texObj;
+    GXTlutObj tlutObj;
+    GXColor white = lbl_1_rodata_750C;
+    GXColor color;
+    ChallengeTexBank* bank = lbl_1_bss_6AAC[lbl_803CC1B8->actorIndex];
+    DOTexInfo* rec;
+    u32 count = bank->count;
+    u32 i;
+
+    rec = bank->tex + bank->tex[0].texIndex;
+
+    if (rec->tlut != NULL) {
+        for (i = 0; i < count; i++) {
+            GXInitTlutObj(&tlutObj, rec->tlut, rec->tlutFormat, rec->tlutEntries);
+            GXLoadTlut(&tlutObj, GX_TLUT0);
+            GXInitTexObjCI(&texObj, rec->image, rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE, GX_TLUT0);
+            GXInitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+            GXLoadTexObj(&texObj, GX_TEXMAP0);
+            rec++;
+        }
+    } else {
+        for (i = 0; i < count; i++) {
+            GXInitTexObj(&texObj, rec->image, rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+            GXInitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+            GXLoadTexObj(&texObj, GX_TEXMAP0);
+            rec++;
+        }
+    }
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    color = white;
+    GXSetTevColor(GX_TEVREG0, color);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+    GXSetCullMode(GX_CULL_NONE);
+    GXLoadPosMtxImm(lbl_1_bss_6B7C.view, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7590;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7520;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7594;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7520;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_753C;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7590;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7590;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7594;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7520;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7520;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7520;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7590;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7594;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_753C;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7520;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7520;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7520;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7594;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_753C;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_753C;
+}
+#endif
