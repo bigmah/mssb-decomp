@@ -61,6 +61,8 @@ void fn_80058394(SceneTask* task);
 void fn_80058B20(SceneTask* task, u8 port);
 void fn_8005C2B0(SceneTask* task);
 void fn_8005AF68(SceneTask* task);
+void fn_8005BF40(SceneTask* task);
+void someChallengeStarFunction(SceneTask* task);
 void fn_80057CAC(void);
 void fn_8005CCE4(SceneTask* task, s32 port);
 void fn_8005DE14(SceneTask* task, s32 port);
@@ -122,10 +124,20 @@ typedef struct MenuWork {
     /*0xCF63*/ u8 starShown[2];
     /*0xCF65*/ u8 _CF65[0xB];
     /*0xCF70*/ u8 _CF70;
-    /*0xCF71*/ u8 _CF71[0xF];
+    /*0xCF71*/ u8 _CF71[0xB];
+    /*0xCF7C*/ u8 missionText; // text entry index
+    /*0xCF7D*/ u8 _CF7D[3];
     /*0xCF80*/ s8 scoutTotal[9];
     /*0xCF89*/ s8 scoutGot[9];
-    /*0xCF92*/ u8 _CF92[0x10];
+    /*0xCF92*/ u8 _CF92;
+    /*0xCF93*/ u8 missionShown;
+    /*0xCF94*/ u8 _CF94[4];
+    /*0xCF98*/ s8 mission;
+    /*0xCF99*/ u8 _CF99;
+    /*0xCF9A*/ u8 missionCount;
+    /*0xCF9B*/ u8 _CF9B;
+    /*0xCF9C*/ s16 challengeTeam;
+    /*0xCF9E*/ u8 _CF9E[4];
     /*0xCFA2*/ u8 teamKind[0x36];
 } MenuWork;
 
@@ -144,6 +156,15 @@ typedef struct RosterData {
     /*0x48B3*/ u8 _48B3;
     /*0x48B4*/ u8 _48B4[0x4C28 - 0x48B4];
 } RosterData; // size: 0x4C28
+
+// lbl_8010A768: challenge mission definitions [mission set][mission].
+typedef struct ChallengeMission {
+    /*0x0*/ s16 msg;
+    /*0x2*/ s16 type;
+    /*0x4*/ s16 starsNeeded;
+    /*0x6*/ s16 _6;
+    /*0x8*/ s16 _8;
+} ChallengeMission; // size: 0xA
 
 // lbl_80354720: per-port roster slots.
 typedef struct RosterSlot {

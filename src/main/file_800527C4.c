@@ -50,6 +50,7 @@ extern u8 lbl_80361B20[0xF8];
 extern struct SpaniDesc lbl_80108048;
 extern struct SpaniDesc lbl_800FEB30;
 extern struct SpaniDesc lbl_80107688;
+extern ChallengeMission lbl_8010A768[20][10];
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
@@ -412,9 +413,50 @@ void drawStarProgressionMenu(void) {
 }
 
 // .text:0x80056F70 size:0x350
-void someChallengeStarFunction(void) {
-    return;
+// NONMATCHING 94%: shownOnPauseMenu read as s8 and (fn != 0) == 1 kept unfolded in the original
+#if NONMATCHING
+void someChallengeStarFunction(SceneTask* task) {
+    s32 i;
+    u8 set;
+    s16 msg;
+
+    if (lbl_803297E0.missionShown == 0) {
+        set = lbl_800E8558[lbl_803297E0.challengeTeam]._2;
+        TASK_OBJ(task, 1)->_68 = 4;
+        TASK_OBJ(task, 0)->_68 = 4;
+        for (i = 0; i < lbl_803297E0.missionCount; i++) {
+            TASK_OBJ(task, i + 0x31)->flags &= ~2;
+            TASK_OBJ(task, i + 0x45)->_5C = 0;
+            TASK_OBJ(task, i + 0x45)->flags &= ~2;
+        }
+        TASK_OBJ(task, 35)->flags &= ~2;
+        if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.mission) != 0) {
+            TASK_OBJ(task, 35)->flags |= 2;
+            TASK_OBJ(task, 35)->_5C = 0;
+            TASK_OBJ(task, 35)->_68 = 1;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x31)->flags |= 2;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x31)->_5C = 0;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x31)->_68 = 1;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x45)->_5C = 1 << 16;
+        }
+        if (gChallengeState.trackers[lbl_803297E0.challengeTeam].inGameMissionTracker[lbl_803297E0.mission].shownOnPauseMenu != 0) {
+            msg = lbl_8010A768[(s16)set][lbl_803297E0.mission].msg;
+        } else if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.mission) != 0) {
+            msg = lbl_8010A768[(s16)set][lbl_803297E0.mission].msg;
+        } else if (lbl_8010A768[(s16)set][lbl_803297E0.mission]._6 <= gChallengeState._4415) {
+            msg = 0x1C5;
+        } else {
+            msg = 0x1C6;
+        }
+        fn_8000FE08(lbl_803297E0.missionText, 0, msg);
+        lbl_803297E0.missionShown = 1;
+    }
+    if (lbl_803297E0.missionShown != 0 && (fn_80042DA8(task, 1, 10) != 0) == 1) {
+        lbl_803297E0.missionShown = 0;
+        lbl_803297E0._CF92 = 0;
+    }
 }
+#endif
 
 // .text:0x800572C0 size:0x430
 void someChallengeStarFunction2(void) {
@@ -764,9 +806,50 @@ void fn_8005BB5C(void) {
 }
 
 // .text:0x8005BF40 size:0x370
-void fn_8005BF40(void) {
-    return;
+// NONMATCHING 90%: loop registers and index sums differ
+#if NONMATCHING
+void fn_8005BF40(SceneTask* task) {
+    s32 team;
+    s32 base;
+    s32 i;
+    CharacterStats* player;
+    RosterSlot* slot;
+    u8 flag;
+
+    for (team = 0, base = 0; team < 2; team++, base += 9) {
+        player = inMemRoster[team];
+        slot = lbl_80354720[team];
+        for (i = 0; i < 9; i++, player++, slot++) {
+            fn_800363D8(task, slot->pos + base + 0x10A, 1, 0x83, player->stats.CharID);
+            TASK_OBJ(task, i + base + 0xE6)->flags &= ~2;
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+            } else {
+                flag = lbl_8034E9A0._489B[team][i];
+            }
+            if (flag != 0) {
+                TASK_OBJ(task, slot->pos + base + 0x140)->_68 = 1;
+                TASK_OBJ(task, slot->pos + base + 0x152)->flags |= 2;
+                TASK_OBJ(task, slot->pos + base + 0x152)->_5C = 0;
+                TASK_OBJ(task, slot->pos + base + 0x152)->_68 = 1;
+            } else if (lbl_80361B20[player->stats.CharID] != 0) {
+                TASK_OBJ(task, slot->pos + base + 0x140)->_68 = 1;
+                TASK_OBJ(task, slot->pos + base + 0x152)->flags |= 2;
+                TASK_OBJ(task, slot->pos + base + 0x152)->_5C = 0;
+                TASK_OBJ(task, slot->pos + base + 0x152)->_68 = 0;
+            } else {
+                TASK_OBJ(task, slot->pos + base + 0x152)->flags &= ~2;
+            }
+            TASK_OBJ(task, i + base + 0x12E)->flags &= ~2;
+            if (((u8*)&g_d_GameSettings)[0x10] == 0 && team != 0) { // TODO type
+                TASK_OBJ(task, i + base + 0xF8)->_64 = (s8)(lbl_8034E9A0._46F8[0] == 0) + 30;
+            } else {
+                TASK_OBJ(task, i + base + 0xF8)->_64 = lbl_8034E9A0._46F8[team] + 30;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8005C2B0 size:0x314
 // NONMATCHING 90%: index sums associate differently (objIdx+i+base+K) and loop registers differ
