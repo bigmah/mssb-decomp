@@ -255,8 +255,23 @@ void determineIfMissionDescriptionIsShown(void) {
 }
 
 // .text:0x8006CDC0 size:0xFC
-void fn_8006CDC0(void) {
-    return;
+s32 fn_8006CDC0(s32 team) {
+    ChallengeTrackingStruct* base = starMissionCompletionTracker;
+    ChallengeTrackingStruct* t;
+    s32 count;
+    s32 i;
+
+    if (lbl_800E8558[team].hasMissions == 0) {
+        return 0;
+    }
+    count = 0;
+    t = &base[team];
+    for (i = 0; i < 10; i++) {
+        if ((s8)t->inGameMissionTracker[i].starMissionStatus < 0) {
+            count++;
+        }
+    }
+    return count;
 }
 
 // .text:0x8006CEBC size:0xB0
