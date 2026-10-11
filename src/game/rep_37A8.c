@@ -442,9 +442,102 @@ s32 fn_3_142570(s8 i) {
 
 
 // CPU picks a target (or swings at nothing). Returns 1 if it acted this frame.
+// NONMATCHING 91.1%: original keeps the bomb kind in an extra saved register (r23) and loads the RandomInt range with lhax
+#if NONMATCHING
 u8 fn_3_1428F0(s8 i, s32 force) {
-    return 0;
+    MgCpu* cpu;
+    MgRunner* e;
+    MgPad* pad;
+    s8 idx;
+    u8 hit;
+    s8 cnt;
+    u8 pick;
+    u8 port;
+    u8 diff;
+    s8 tgt;
+    u8 kind;
+    s8 k;
+
+    idx = -1;
+    cpu = (MgCpu*)(g_Minigame + 0x1DCC) + i;
+    hit = 0;
+    cnt = 0;
+    pick = cpu->_3;
+    port = g_Minigame[i + 0x18CC];
+    diff = g_Minigame[i + 0x18DC];
+    if (cpu->timer >= 0) {
+        cpu->timer--;
+    }
+    tgt = g_Minigame[i * 3 + 0x1C7E];
+    if (tgt < 0) {
+        return 0;
+    }
+    e = (MgRunner*)g_Minigame;
+    for (k = 0; k < 3; k++, e++) {
+        if (e->st == 2) {
+            cnt++;
+            if (((MgRunner*)g_Minigame)[(s8)pick].who == 4) {
+                idx = k;
+                break;
+            }
+        }
+    }
+    if (idx < 0 && cpu->timer >= 0 && (u8)force == 0) {
+        return 0;
+    }
+    kind = g_Minigame[tgt + 0x1B84];
+    if (kind != 5 || (cnt != 0 && RandomInt_Game(100) >= lbl_3_data_21EC0[diff])) {
+        if (cnt == 0) {
+            return 0;
+        }
+        if (RandomInt_Game(100) < lbl_3_data_21EBC[diff]) {
+            hit = 1;
+        }
+        if (!hit) {
+            e = &((MgRunner*)g_Minigame)[(s8)pick];
+            if (e->st == 2 && (kind == e->who || kind == 5 || e->who == 4)) {
+                hit = 1;
+            }
+        }
+        if (!hit) {
+            e = (MgRunner*)g_Minigame;
+            for (k = 0; k < 3; k++, e++) {
+                if (e->st == 2 && (kind == e->who || kind == 5 || e->who == 4)) {
+                    pick = k;
+                    hit = 1;
+                    break;
+                }
+            }
+        }
+    }
+    if (hit) {
+        switch ((s8)pick) {
+        case 0:
+            pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)port;
+            pad->trig |= 0x102;
+            pad->held |= 0x102;
+            break;
+        case 1:
+            pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)port;
+            pad->trig |= 0x108;
+            pad->held |= 0x108;
+            break;
+        case 2:
+            pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)port;
+            pad->trig |= 0x101;
+            pad->held |= 0x101;
+            break;
+        }
+        cpu->_3 = pick;
+    } else {
+        pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)port;
+        pad->trig |= 0x200;
+        pad->held |= 0x200;
+    }
+    cpu->timer = RandomInt_Game_Range(((MgRange*)lbl_3_data_21EAC)[diff].lo, ((MgRange*)lbl_3_data_21EAC)[diff].hi);
+    return 1;
 }
+#endif
 
 // .text:0x00142C18 size:0x90 mapped:0x80781CAC
 
