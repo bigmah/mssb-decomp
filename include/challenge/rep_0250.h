@@ -29,4 +29,6 @@ void fn_1_9380(void* object);
 
 void fn_1_97E4(void);
 
+void fn_1_9AB0(void);
+
 #endif

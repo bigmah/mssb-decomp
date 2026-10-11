@@ -82,7 +82,7 @@ void fn_1_168C8(void);
 void fn_1_10560(void* object);
 void fn_1_D8A0(void);
 void fn_1_CC24(void);
-void fn_1_D590(s32 a, s32 b, f32 value);
+void fn_1_D590(void* row, s32 id, f32 value);
 
 void fn_1_DE1C(void);
 
@@ -117,5 +117,55 @@ void fn_1_F798(void* paramsArg, void* typesArg, s32 count);
 void fn_1_121D4(u8* camera);
 
 void fn_1_15CE0(void);
+
+void fn_1_126CC(void);
+
+void fn_1_179CC(void);
+
+void fn_1_12820(void* table, void* matrix);
+
+void fn_1_D13C(void);
+
+void fn_1_D300(u8* row);
+
+void fn_1_17B5C(void);
+
+void fn_1_1770C(u8* object);
+
+void fn_1_12F8C(void* table, void* matrix);
+
+void fn_1_EA20(void);
+
+void fn_1_107B8(void);
+
+void fn_1_ECF8(u8 player, u8 group, u8 flag);
+
+void fn_1_CDC8(void);
+
+void fn_1_10044(void);
+
+void fn_1_10E2C(void* model, f32 (*view)[4], u32 colorX, u32 colorY, u32 colorZ);
+
+void fn_1_C5AC(void);
+
+void fn_1_D9B8(void);
+
+void fn_1_1125C(u8* object);
+
+void fn_1_FB98(void);
+
+void fn_1_129D0(void);
+
+void fn_1_15760(void);
+
+void fn_1_11714(u8* object);
+
+void fn_1_1496C(u8* object);
+
+void fn_1_E098(void);
+
+void fn_1_16978(void);
+
+void fn_1_135C0(void);
 
 #endif

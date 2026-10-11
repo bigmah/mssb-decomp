@@ -74,7 +74,7 @@ extern void fn_800B9AA8(void* object);
 extern void SetDisplayStateTexture(struct TexImage* tex, s32 map, u32 tlutName);
 
 extern void fn_800AD038(void* object);
-extern void fn_800A97D0(s32, s32);
+extern void fn_800A97D0(u8 shift, s32 threshold);
 extern void fn_80048BEC(void*, u32, u32);
 extern s32 fn_80048820(void*, u16, u16, u16, u8);
 extern void fn_800B2D5C(void* actor);
