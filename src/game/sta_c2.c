@@ -44,6 +44,11 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern const Vec lbl_3_rodata_24D0;
+extern const Vec lbl_3_rodata_24DC;
+extern const f32 lbl_3_rodata_2848;
+extern const f32 lbl_3_rodata_2864;
+extern const f32 lbl_3_rodata_2868;
 extern const Vec lbl_3_rodata_2514;
 extern const f64 lbl_3_rodata_2830;
 extern const f64 lbl_3_rodata_2840;
@@ -156,7 +161,7 @@ extern void* fn_80052734(s32 index);
 #include "static/Camera.h"
 extern f64 cos(f64);
 extern f64 sin(f64);
-extern f32 lbl_3_rodata_27F0;
+extern const f32 lbl_3_rodata_27F0;
 extern Vec lbl_3_rodata_25F8;
 extern const f32 lbl_3_rodata_2658[];
 typedef struct { f32 x, y, z, w, r; u8 pad[0xC]; f32 a, b, c, d; u8 pad2[4]; } T34;
@@ -2279,9 +2284,65 @@ void fn_3_D3F54(void) {
 }
 
 // .text:0x000D4780 size:0x524 mapped:0x80713814
-void fn_3_D4780(void) {
-    return;
+// NONMATCHING 93%: the folded i/7 constants come from a pooled base register in our build; saved-register numbering
+#if NONMATCHING
+// Lays the 8-node chain from its anchor (lbl_3_rodata_24D0/24DC by the spot's side flag)
+// to p's hook, sagging by 7.125 - len/2 along a half sine, and clears its motion.
+void fn_3_D4780(u8* p) {
+    Vec anchor;
+    Vec top;
+    Vec d;
+    Mtx m;
+    GameControl ctrl;
+    T52* t;
+    f32 len;
+    f32 sag;
+    u32 i;
+    top = lbl_3_rodata_24E8[0];
+    memcpy(&top, &lbl_3_rodata_24E8[0], sizeof(Vec));
+    if (((u8*)&lbl_3_data_182C8[p[0x9C]])[0x30] == 0) {
+        memcpy(&anchor, &lbl_3_rodata_24DC, sizeof(Vec));
+    } else {
+        memcpy(&anchor, &lbl_3_rodata_24D0, sizeof(Vec));
+    }
+    anchor.y = lbl_3_rodata_26A0;
+    top.y = lbl_3_rodata_2848;
+    ctrl.base.type = 0;
+    if (p[0xCA] == 0) {
+        t = &lbl_3_data_182C8[p[0x9C]];
+        CTRLSetRotation(&ctrl.base, t->e, -t->f, t->g);
+    } else {
+        t = &lbl_3_data_182C8[p[0x9C]];
+        CTRLSetRotation(&ctrl.base, t->b, -t->c, t->d);
+    }
+    CTRLBuildMatrix(&ctrl.base, m);
+    PSMTXMultVec(m, &top, &top);
+    top.y = top.y * lbl_3_rodata_2678;
+    top.x += *(f32*)(p + 0xA0);
+    top.y += *(f32*)(p + 0xA4);
+    top.z += *(f32*)(p + 0xA8);
+    PSVECSubtract(&top, &anchor, &d);
+    len = PSVECMag(&d);
+    for (i = 0; i < 8; i++) {
+        f32 k = (f32)i / 7.0f;
+        (*(RopeNode**)(p + 0xC4))[i].pos.x = k * d.x + anchor.x;
+        (*(RopeNode**)(p + 0xC4))[i].pos.y = k * d.y + anchor.y;
+        (*(RopeNode**)(p + 0xC4))[i].pos.z = k * d.z + anchor.z;
+    }
+    sag = lbl_3_rodata_2868 - len * lbl_3_rodata_26A0;
+    for (i = 0; i < 8; i++) {
+        (*(RopeNode**)(p + 0xC4))[i].pos.y -= sag * (f32)sin(lbl_3_rodata_27F0 * ((f32)i / lbl_3_rodata_2864));
+        if ((*(RopeNode**)(p + 0xC4))[i].pos.y < (*(RopeNode**)(p + 0xC4))[i].radius) {
+            (*(RopeNode**)(p + 0xC4))[i].pos.y = (*(RopeNode**)(p + 0xC4))[i].radius;
+        }
+    }
+    for (i = 0; i < 8; i++) {
+        memcpy(&(*(RopeNode**)(p + 0xC4))[i].prev, &(*(RopeNode**)(p + 0xC4))[i].pos, sizeof(Vec));
+        memset(&(*(RopeNode**)(p + 0xC4))[i].vel, 0, sizeof(Vec));
+        memset(&(*(RopeNode**)(p + 0xC4))[i].force, 0, sizeof(Vec));
+    }
 }
+#endif
 
 // .text:0x000D4CA4 size:0x15C mapped:0x80713D38
 void fn_3_D4CA4(u8* p) {
@@ -2307,7 +2368,7 @@ void fn_3_D4CA4(u8* p) {
     *(f32*)(p + 0xA0) = ((f32*)lbl_3_data_182C8)[p[0x9C] * 13];
     *(f32*)(p + 0xA4) = -yb[p[0x9C] * 13];
     *(f32*)(p + 0xA8) = zb[p[0x9C] * 13];
-    ((void (*)(u8*))fn_3_D4780)(p);
+    fn_3_D4780(p);
 }
 
 // .text:0x000D4E00 size:0x21C mapped:0x80713E94
@@ -2344,7 +2405,7 @@ void fn_3_D4E00(u8* p) {
     *(f32*)(p + 0xA0) = ((f32*)lbl_3_data_182C8)[p[0x9C] * 13];
     *(f32*)(p + 0xA4) = -yb[p[0x9C] * 13];
     *(f32*)(p + 0xA8) = zb[p[0x9C] * 13];
-    ((void (*)(u8*))fn_3_D4780)(p);
+    fn_3_D4780(p);
     p[0x99] = 0;
     *(s16*)(p + 0xC8) = 1;
     if (lbl_3_data_182C4 != -1) {
