@@ -549,8 +549,38 @@ void fn_2_61104(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x000612A8 size:0x1C0
-void fn_2_612A8(void) {
-    return;
+void fn_2_612A8(MenuTask* task, MenuItem* item) {
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        if ((s32)lbl_2_bss_1A8244->_00[lbl_800E869C[item->_10]] == 1) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        } else {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 40;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 1:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00061468 size:0x1DC
