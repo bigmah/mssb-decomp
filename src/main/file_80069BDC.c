@@ -111,6 +111,15 @@ extern s32 fn_800214D0(void);
 extern void fn_8002149C(s32 a);
 extern void fn_80035CA4(s32 a);
 extern void fn_8000900C(void);
+extern void fn_80008E00(void (*cb)(s32 alt));
+extern void fn_800A7F10(s32 alt);
+
+typedef struct Unk803C6CF8 {
+    /*0x000*/ u8 _000[0x715];
+    /*0x715*/ u8 _715; // 1 once the ARAM transfer has finished
+} Unk803C6CF8;
+
+extern Unk803C6CF8 lbl_803C6CF8;
 extern u8 lbl_803CBBC0;
 
 extern void fn_800A7D4C(s32 layer, DrawNode* node);
@@ -647,7 +656,90 @@ void fn_8006B668(void) {
 
 // .text:0x8006B78C size:0x3D4
 void fn_8006B78C(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    s32 busy = 1;
+    s16 state = task->state;
+
+    switch (state) {
+    case 0:
+        fn_8000900C();
+        lbl_80366158[0x20] = 1;
+    case 3:
+    case 6:
+        if (++task->_38 == 30) {
+            task->_36 = 60;
+            task->state++;
+        }
+        break;
+    case 1:
+    case 4:
+    case 7:
+        if (task->_36 != 0) {
+            task->_36--;
+        } else {
+            task->state++;
+        }
+        break;
+    case 8:
+        busy = 0;
+    case 2:
+    case 5:
+        if (task->_38 != 0) {
+            task->_38--;
+            busy = 1;
+        } else {
+            s32 ready;
+            if (state != 8 || (ready = lbl_803C6CF8._715) == 1) {
+                task->state++;
+            }
+        }
+        break;
+    }
+    if (busy) {
+        fn_80022B68();
+    }
+    if (task->state == 9) {
+        task->_36 = 0;
+        task->state = 0;
+        fn_80008E00(fn_800A7F10);
+        lbl_803CC1B8->func = fn_8006AF9C;
+        return;
+    }
+    switch (task->state) {
+    case 6:
+    case 7:
+    case 8:
+        task->nodes[lbl_803CBBC0].kind = 3;
+        task->nodes[lbl_803CBBC0].texSet = task->u14.res->data;
+        task->nodes[lbl_803CBBC0].texIdx = 0;
+        task->nodes[lbl_803CBBC0].alpha = task->_38 / 30.0f;
+        task->nodes[lbl_803CBBC0].next = NULL;
+        task->nodes[lbl_803CBBC0].draw = fn_8006AC24;
+        fn_800A7D4C(0, &task->nodes[lbl_803CBBC0]);
+        break;
+    case 3:
+    case 4:
+    case 5:
+        task->nodes[lbl_803CBBC0].kind = 2;
+        task->nodes[lbl_803CBBC0].texSet = task->u14.res->data;
+        task->nodes[lbl_803CBBC0].texIdx = 2;
+        task->nodes[lbl_803CBBC0].alpha = task->_38 / 30.0f;
+        task->nodes[lbl_803CBBC0].next = NULL;
+        task->nodes[lbl_803CBBC0].draw = fn_8006AC24;
+        fn_800A7D4C(0, &task->nodes[lbl_803CBBC0]);
+        break;
+    case 0:
+    case 1:
+    case 2:
+        task->nodes[lbl_803CBBC0].kind = 1;
+        task->nodes[lbl_803CBBC0].texSet = task->u14.res->data;
+        task->nodes[lbl_803CBBC0].texIdx = 1;
+        task->nodes[lbl_803CBBC0].alpha = task->_38 / 30.0f;
+        task->nodes[lbl_803CBBC0].next = NULL;
+        task->nodes[lbl_803CBBC0].draw = fn_8006AC24;
+        fn_800A7D4C(0, &task->nodes[lbl_803CBBC0]);
+        break;
+    }
 }
 
 // .text:0x8006BB60 size:0x2A0
