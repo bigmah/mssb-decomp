@@ -469,3 +469,93 @@ void fn_1_BA64(void) {
     }
 }
 
+// .text:0x0000B5B8 size:0x4AC
+// NONMATCHING: the original addresses lbl_1_bss_2FD8 / lbl_1_data_FC0 as pools through a base register
+#if NONMATCHING
+void fn_1_B5B8(void) {
+    u16 down = lbl_803C77B8._02;
+    u16 repeat = lbl_803C77B8._04;
+    s16 next;
+
+    if (repeat & 0x800) {
+        lbl_1_bss_2FE0 = 0;
+    } else if (repeat & 0x400) {
+        lbl_1_bss_2FE0 = 1;
+    } else if (lbl_1_bss_2FE0 == 0) {
+        if (down & 0x100) {
+            if (lbl_1_bss_2FE1 == 0) {
+                fn_1_BEF4((s16)lbl_1_bss_3050);
+                lbl_1_bss_3050 = fn_1_BF34(lbl_1_data_1CA2);
+            } else if (lbl_1_bss_2FE1 == 1) {
+                u16 effect = lbl_1_data_188C[lbl_1_bss_2FE2];
+                fn_1_BEF4((s16)lbl_1_bss_304C);
+                lbl_1_bss_304C = fn_1_BF34(effect);
+            } else if (lbl_1_bss_2FE1 == 2) {
+                u16 effect = lbl_1_data_18EC[lbl_1_bss_2FE4];
+                fn_1_BEF4((s16)lbl_1_bss_3048);
+                lbl_1_bss_3048 = fn_1_BF34(effect);
+            } else if (lbl_1_bss_2FE1 == 3) {
+                lbl_1_bss_3044 = fn_80062890(lbl_1_bss_2FE6);
+            }
+        } else if (down & 0x1200) {
+            fn_1_A718();
+            // TODO type: lbl_800EF808 is the sound manager (groups[41], groups[1])
+            fn_800ACFB0((void*)lbl_800EF808[0x2A]);
+            fn_800ACFB0((void*)lbl_800EF808[2]);
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
+        } else if (repeat & 1) {
+            if (lbl_1_bss_2FE1 == 0) {
+                if (repeat & 0x800) {
+                    lbl_1_data_1CA2 -= 10;
+                } else {
+                    lbl_1_data_1CA2--;
+                }
+                if (lbl_1_data_1CA2 < 0x151) {
+                    lbl_1_data_1CA2 = 0x1B6;
+                }
+            } else if (lbl_1_bss_2FE1 == 1) {
+                if (--lbl_1_bss_2FE2 < 0) {
+                    lbl_1_bss_2FE2 = 47;
+                }
+            } else if (lbl_1_bss_2FE1 == 2) {
+                if (--lbl_1_bss_2FE4 < 0) {
+                    lbl_1_bss_2FE4 = 23;
+                }
+            } else if (lbl_1_bss_2FE1 == 3) {
+                if (--lbl_1_bss_2FE6 < 0) {
+                    lbl_1_bss_2FE6 = 68;
+                }
+            }
+        } else if (repeat & 2) {
+            if (lbl_1_bss_2FE1 == 0) {
+                next = lbl_1_data_1CA2 + 1;
+                if (repeat & 0x800) {
+                    next = lbl_1_data_1CA2 + 10;
+                }
+                lbl_1_data_1CA2 = next;
+                if (next > 0x1B6) {
+                    lbl_1_data_1CA2 = 0x151;
+                }
+            } else if (lbl_1_bss_2FE1 == 1) {
+                if (++lbl_1_bss_2FE2 > 47) {
+                    lbl_1_bss_2FE2 = 0;
+                }
+            } else if (lbl_1_bss_2FE1 == 2) {
+                if (++lbl_1_bss_2FE4 > 23) {
+                    lbl_1_bss_2FE4 = 0;
+                }
+            } else if (lbl_1_bss_2FE1 == 3) {
+                if (++lbl_1_bss_2FE6 > 68) {
+                    lbl_1_bss_2FE6 = 0;
+                }
+            }
+        } else if (repeat & 8) {
+            lbl_1_bss_2FE1--;
+        } else if (repeat & 4) {
+            if (++lbl_1_bss_2FE1 > 3) {
+                lbl_1_bss_2FE1 = 0;
+            }
+        }
+    }
+}
+#endif
