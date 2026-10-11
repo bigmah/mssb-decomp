@@ -222,7 +222,7 @@ u32 fn_3_14737C(u8* o) {
 #endif
 #pragma dont_inline on
 
-// NONMATCHING 99%: only the ring-angle int->double conversions in the first branch are scheduled in the other order
+// NONMATCHING 98%: only the ring-angle int->double conversions in the first branch are scheduled in the other order
 // .text:0x00147778 size:0x488 mapped:0x8078680C
 #if NONMATCHING
 void fn_3_147778(u8* e, Vec* pos) {
@@ -2060,13 +2060,60 @@ void fn_3_151068(u8* a, u8* o) {
     o[0x43] = *(s32*)(lbl_3_data_26C3C + 0x10);
 }
 
+// NONMATCHING 97% (with respawn_1504EC visible): CW hoists the rnd_range table addresses (d+0x2C, ...) into extra saved regs; otherwise only register numbering
 // .text:0x00151204 size:0x490 mapped:0x80790298
-void fn_3_151204(void* p, u32 a, u32 b) {
-    return;
+#if NONMATCHING
+void fn_3_151204(u8* o, void* owner, Vec* pos) {
+    u8* p;
+    s32 i;
+    s32 j;
+    f32 ang;
+    f32 speed;
+    i = 0;
+    j = 0;
+    *(void**)(o + 0x10) = *(void**)(lbl_3_common_bss_32724 + 0x6C);
+    *(void**)(o + 0x18) = owner;
+    memcpy(o + 0x1C, pos, sizeof(Vec));
+    p = *(u8**)(o + 0xC);
+    do {
+        if (i < *(u32*)(lbl_3_data_26C3C + 4)) {
+            *(s16*)(p + 0x48) = ++i;
+            p[0x4D] = *(s32*)lbl_3_data_26C3C;
+            p[0x4C] = 1;
+            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C3C + 0x18);
+            if (*(s16*)(p + 0x48) == 0) {
+                respawn_1504EC(o, p);
+            }
+        } else {
+            *(s16*)(p + 0x48) = j++;
+            p[0x4D] = *(s32*)(lbl_3_data_26C3C + 0x20);
+            p[0x4C] = 2;
+            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C3C + 0x50);
+            *(f32*)(p + 4) = *(f32*)(o + 0x1C);
+            *(f32*)(p + 8) = -*(f32*)(o + 0x20);
+            *(f32*)(p + 0xC) = *(f32*)(o + 0x24);
+            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) =
+                (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x28)) / lbl_3_rodata_3930;
+            *(f32*)(p + 0x14) = (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x30)) / lbl_3_rodata_3930;
+            ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 36000) / lbl_3_rodata_39E8);
+            speed = (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x40)) / lbl_3_rodata_3930;
+            *(f32*)(p + 0x10) = speed * (f32)cos(ang);
+            *(f32*)(p + 0x18) = speed * (f32)sin(ang);
+            *(f32*)(p + 0x1C) = lbl_3_rodata_39AC * ((f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x48)) / lbl_3_rodata_3930);
+            *(f32*)(p + 0x1C) *= (f32)(-((rand() % 2) * 2) + 1);
+            p[0x43] = 0xFF;
+            p[0x42] = 0xFF;
+            p[0x41] = 0xFF;
+            p[0x40] = 0xFF;
+        }
+        p[0x4E] = 0;
+        p = *(u8**)p;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x00151694 size:0x7C mapped:0x80790728
-void fn_3_151694(u32 a, u32 b) {
+void fn_3_151694(void* a, Vec* b) {
     void* p = fn_80033A24(fn_3_150940, 0x80, 0, *(int*)(lbl_3_data_26C3C + 4) + *(int*)(lbl_3_data_26C3C + 0x24), 1, 0x1D);
     if (p != 0) {
         fn_3_151204(p, a, b);
@@ -2074,8 +2121,8 @@ void fn_3_151694(u32 a, u32 b) {
 }
 
 // .text:0x00151710 size:0x50 mapped:0x807907A4
-void fn_3_151710(u32 a, u32 b) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 2 && a != 0) {
+void fn_3_151710(void* a, Vec* b) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 2 && a != NULL) {
         fn_3_151694(a, b);
     }
 }
