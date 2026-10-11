@@ -127,7 +127,7 @@ extern const Vec lbl_2_rodata_E7C;
 extern const f32 lbl_2_rodata_E8C[];
 extern f32 lbl_2_data_2E944[][6];
 extern s8 lbl_2_bss_33FBF5;
-extern void makeLookAtMatrix(void*, void*, void*, void*);
+extern void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
 
 // .text:0x8563C size:0x268
 void fn_2_8563C(MenuCamera* camera) {
@@ -165,7 +165,7 @@ void fn_2_8563C(MenuCamera* camera) {
     camera->target.x = lbl_2_data_2E944[lbl_2_bss_33FBF5][3];
     camera->target.y = lbl_2_data_2E944[lbl_2_bss_33FBF5][4];
     camera->target.z = lbl_2_data_2E944[lbl_2_bss_33FBF5][5];
-    makeLookAtMatrix(camera, &camera->eye, &up, &camera->target);
+    makeLookAtMatrix(camera->view, &camera->eye, &up, &camera->target);
 }
 
 extern const f32 lbl_2_rodata_EF4[];
@@ -202,3 +202,40 @@ void fn_2_86DCC(void) {
     lbl_2_bss_1A81D4.pitch = 0;
 }
 #endif
+
+extern Vec lbl_2_rodata_E58;
+extern Vec lbl_2_rodata_E64;
+extern const f32 lbl_2_rodata_E98[];
+extern const f32 lbl_2_rodata_E9C;
+
+// Debug fly camera: sticks orbit/zoom, triggers move the target up/down.
+// .text:0x858A4 size:0x21C
+void fn_2_858A4(MenuCamera* camera) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx combined;
+    Vec up = lbl_2_rodata_E58;
+    Vec angles;
+    Vec offset = lbl_2_rodata_E64;
+    MenuDebugPad* pad = g_MenuDebugPad;
+
+    if (!(pad->held & 0x10)) {
+        camera->yaw -= pad->substickY;
+        camera->pitch += pad->substickX;
+        camera->offsetZ += pad->stickY * lbl_2_rodata_E98[0];
+        camera->target.y += pad->triggerRight * lbl_2_rodata_E9C;
+        camera->target.y -= pad->triggerLeft * lbl_2_rodata_E9C;
+    }
+    angles.x = camera->yaw;
+    angles.y = camera->pitch;
+    angles.z = lbl_2_rodata_E88;
+    PSVECScale(&angles, lbl_2_rodata_E8C[0], &angles);
+    PSMTXRotRad(rotX, 'X', angles.x);
+    PSMTXRotRad(rotY, 'Y', angles.y);
+    PSMTXConcat(rotX, rotY, combined);
+    offset.z = -camera->offsetZ;
+    PSMTXMultVec(combined, &offset, &offset);
+    PSVECAdd(&offset, &camera->target, &camera->eye);
+    PSMTXMultVec(combined, &up, &offset);
+    makeLookAtMatrix(camera->view, &camera->eye, &offset, &camera->target);
+}

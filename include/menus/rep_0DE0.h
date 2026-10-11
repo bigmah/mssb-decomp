@@ -52,7 +52,28 @@ typedef struct {
     s32 unk54;
 } MenuCamera;
 
+// View of one controller entry in lbl_803C77B8 (PadState in main/file_800A7C08.h,
+// which can't be included next to UnknownHomes_Static.h).
+typedef struct MenuDebugPad {
+    /*0x00*/ u16 held;
+    /*0x02*/ u16 down;
+    /*0x04*/ u16 repeat;
+    /*0x06*/ u16 prev;
+    /*0x08*/ u8 _08[0x10 - 0x08];
+    /*0x10*/ s8 stickX;
+    /*0x11*/ s8 stickY;
+    /*0x12*/ s8 substickX;
+    /*0x13*/ s8 substickY;
+    /*0x14*/ u8 triggerLeft;
+    /*0x15*/ u8 triggerRight;
+    /*0x16*/ u8 _16[0x20 - 0x16];
+} MenuDebugPad;
+
+#define g_MenuDebugPad ((MenuDebugPad*)&lbl_803C77B8)
+
 void fn_2_8563C(MenuCamera* camera);
+
+void fn_2_858A4(MenuCamera* camera);
 
 void fn_2_87114(void);
 
