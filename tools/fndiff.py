@@ -67,7 +67,8 @@ LITERAL_SECTIONS = (".sdata2", ".rodata")
 
 
 def literal_names(asm: Path) -> set:
-    """Names of objects the target defines in its own .sdata2/.rodata (float/string literals).
+    """Names of objects the target defines in its own .sdata2/.rodata (float/string literals)
+    and its own switch jump tables.
     Our build emits these as anonymous @NNN, so they are compared as DATA on both sides."""
     names, sec = set(), None
     for line in asm.read_text().splitlines():
@@ -76,8 +77,10 @@ def literal_names(asm: Path) -> set:
             sec = s.split()[1].rstrip(",")
         elif s in (".text", ".data", ".rodata", ".bss", ".sdata", ".sbss", ".sdata2", ".sbss2"):
             sec = s
-        elif s.startswith(".obj ") and sec in LITERAL_SECTIONS:
-            names.add(s.split()[1].rstrip(",").strip('"'))
+        elif s.startswith(".obj "):
+            name = s.split()[1].rstrip(",").strip('"')
+            if sec in LITERAL_SECTIONS or (sec == ".data" and name.startswith("jumptable_")):
+                names.add(name)
     return names
 
 
