@@ -1,6 +1,7 @@
 #include "game/auto_00_0005985C_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "main/file_80008E00.h"
 
 extern s32 fn_80022B68(void);
 extern void fn_80022CB4(void*, s32, s32, s32, void (*)(s32, s32, void*), void*);
@@ -46,7 +47,6 @@ extern void fn_3_664FC(void);
 extern void fn_3_BBF94(void);
 extern void fn_3_B93CC(void);
 extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
-extern u8 lbl_80366158[];
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_common_bss_34C90[];
 extern void fn_3_6C13C(void*, void*);
@@ -54,7 +54,6 @@ extern void fn_3_16598C(void);
 extern u8 g_RunningLogic[];
 extern void fn_800A7568(void);
 extern u8 lbl_8037169C[];
-extern u8 lbl_803C6CF8[];
 extern void starMissionRelated2(void);
 extern u8 lbl_3_common_bss_37400[];
 
@@ -111,6 +110,21 @@ extern void fn_3_59338(void);
 extern void fn_3_7B130(void);
 extern void fn_3_22850(void);
 extern s32 fn_8004CA6C(u16 buttons);
+extern s32 fn_3_10007C(void);
+extern void fn_3_E19E8(void);
+extern void fn_3_6C1D8(void);
+extern void fn_3_1663AC(void);
+extern void fn_3_1CE90(void);
+extern void fn_3_8DA80(void);
+
+typedef struct {
+    /*0x00*/ s32 simulatedFrames; // frames the game logic actually ran
+    /*0x04*/ s32 totalFrames;
+    /*0x08*/ s32 randomInt1; // copy of g_Ball.StaticRandomInt1
+    /*0x0C*/ s32 randomInt2; // copy of g_Ball.StaticRandomInt2
+    /*0x10*/ u8 _10;
+} FrameCounters; // size: 0x14
+extern FrameCounters lbl_3_data_228;
 extern void fn_8004CC2C(void);
 
 #pragma dont_inline on
@@ -472,7 +486,7 @@ void fn_3_5C418(void) {
             changeScene(3, 6);
         }
         if (lbl_8037169C[0x13] != 0 && inScene != 0) {
-            if ((s32)lbl_803C6CF8[0x715] == 1) {
+            if ((s32)lbl_803C6CF8._715 == 1) {
                 lbl_3_common_bss_32724[0x96] = 1;
                 g_GameLogic.framesOfExitingToMenu = 1;
                 return;
@@ -537,7 +551,7 @@ s32 fn_3_5B220(s32 arg) {
         if (arg == 1 && g_Minigame._1A3C == 0 && g_Minigame._1A44 == 0 && g_Minigame._1A45 == 0 && g_Minigame._1A43 == 0) {
             return 1;
         }
-        fn_8003BF54(lbl_80366158[0x27], 0, 0, 1, 0, 4, 5, 0, 0);
+        fn_8003BF54(lbl_80366158._27, 0, 0, 1, 0, 4, 5, 0, 0);
         g_GameLogic.endGameStage += 1;
         break;
     case 1: {
@@ -595,13 +609,13 @@ void fn_3_5ACA0(void) {
     if (lbl_8036E548[0x3088] != 0) {
         fn_3_B93CC();
     }
-    if (gs->GameModeSelected == 4 && lbl_80366158[0x2A] == 0) {
-        lbl_80366158[0x2A] = 1;
+    if (gs->GameModeSelected == 4 && lbl_80366158._2A == 0) {
+        lbl_80366158._2A = 1;
     }
 }
 
 // fn_3_59918, size:0x178
-void fn_3_59918(s32 x) {
+void fn_3_59918(s32 x, s32 unused) {
     u8 gs;
     s32 i;
     if (g_Stats.replayInd != 0) {
@@ -686,9 +700,9 @@ void fn_3_5A6FC(void) {
         return;
     case 30:
         if (g_GameLogic._128 != 0) {
-            lbl_80366158[0x1C] = 2;
+            lbl_80366158._1C = 2;
         } else {
-            lbl_80366158[0x1C] = 1;
+            lbl_80366158._1C = 1;
         }
         g_d_GameSettings.minigamesEnabled = 0;
         return;
@@ -758,9 +772,9 @@ void fn_3_5EFEC(void) {
         g_GameLogic.EventTriggers_EndOfGame == 0) {
         fn_3_5D094(0);
         if (g_GameLogic.EventTriggers_EndOfGame != 0) {
-            ((void (*)(s32, s32))fn_3_59918)(0xD, 0);
+            fn_3_59918(0xD, 0);
         } else if (g_Scores[0xC3] == 0) {
-            ((void (*)(s32, s32))fn_3_59918)(5, 0);
+            fn_3_59918(5, 0);
             g_Scores[0xC3] = 1;
         }
     }
@@ -847,4 +861,46 @@ s32 fn_3_5B380(void) {
         }
     }
     return 0;
+}
+
+// fn_3_5B0C4, size:0x15C
+void fn_3_5B0C4(void) {
+    g_d_GameSettings.FrameCountWhileNotAtMainMenu++;
+    lbl_80366158._28 = 0;
+    lbl_80366158._28 = 0;
+    fn_3_10007C();
+    if (unkSimulationRelatedStruct._05 != 0) {
+        if (unkSimulationRelatedStruct._06 == 0) {
+            unkSimulationRelatedStruct._05 = 0;
+        } else {
+            unkSimulationRelatedStruct._06 -= 1;
+            *lbl_803CBC3C = 1;
+            goto skip;
+        }
+    }
+    if (g_GameLogic.PauseSimulationFrameCount != 0) {
+        if (--g_GameLogic.PauseSimulationFrameCount != 0) {
+            lbl_80366158._28 = 1;
+        } else {
+            lbl_80366158._28 = 0;
+        }
+    }
+    if (lbl_80366158._28 == 0) {
+        lbl_3_data_228.simulatedFrames += 1;
+        fn_3_5ACA0();
+    }
+skip:
+    if (g_d_GameSettings.minigamesEnabled != 0) {
+        fn_3_E19E8();
+    } else {
+        fn_3_6C1D8();
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            fn_3_1663AC();
+        }
+    }
+    fn_3_1CE90();
+    fn_3_8DA80();
+    lbl_3_data_228.randomInt1 = g_Ball.StaticRandomInt1;
+    lbl_3_data_228.randomInt2 = g_Ball.StaticRandomInt2;
+    lbl_3_data_228.totalFrames += 1;
 }

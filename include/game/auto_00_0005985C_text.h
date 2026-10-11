@@ -53,10 +53,11 @@ void fn_3_5C418(void);
 void fn_3_5D3FC(void);
 s32 fn_3_5B220(s32 arg);
 void fn_3_5ACA0(void);
-void fn_3_59918(s32 x);
+void fn_3_59918(s32 x, s32 unused);
 void fn_3_5EE58(void);
 void fn_3_5EFEC(void);
 void fn_3_5F7A8(void);
 s32 fn_3_5B380(void);
+void fn_3_5B0C4(void);
 
 #endif
