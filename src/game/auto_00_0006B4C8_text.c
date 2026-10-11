@@ -216,6 +216,27 @@ s32 fn_3_6BA64(void) {
 }
 
 // .text:0x0006BD6C size:0x138 mapped:0x806AAE00
-void fn_3_6BD6C(void) {
-    return;
+s32 fn_3_6BD6C(void) {
+    s32 i;
+    s32 t;
+
+    if (lbl_3_common_bss_32724._9B == 0) {
+        fn_8001196C();
+        lbl_8036E548._2D77 = 0;
+        lbl_3_common_bss_32724._9B = 1;
+        lbl_8036E548._2D7B = 0;
+        lbl_8036E548._2D7C = 0;
+        if (g_GameLogic.gameStatus == 9) {
+            lbl_8036E548._2D7C = 1;
+            for (t = 0; t < 2; t++) {
+                for (i = 0; i < 9; i++) {
+                    if (lbl_800E8558[inMemRoster[t][i].stats.CharID]._2 == 0x19) {
+                        inMemRoster[t][i].stats.FieldingArm = 0;
+                        inMemRoster[t][i].stats.BattingStance = 1;
+                    }
+                }
+            }
+        }
+    }
+    return !!fn_8001594C(g_GameLogic.teamFielding);
 }
