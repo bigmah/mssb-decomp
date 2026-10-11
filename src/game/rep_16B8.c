@@ -818,56 +818,51 @@ void fn_3_94930(void) {
 }
 
 // .text:0x0009497C size:0x248 mapped:0x806D3A10
-// ~90%: structure matches; register allocation differs (tbl/q/temp regs) in the unrolled j loop
+// NONMATCHING 99%: same instructions; the unrolled j loop loads order[i] before baseIdx and allocates temps differently
+#if NONMATCHING
 void fn_3_9497C(void) {
-    u8* o = lbl_803CC1B8[0];
-    u16 w;
+    RepTask* task = lbl_803CC1B8[0];
+    u16 mode;
     s32 i;
-    u8* d;
-    u8* q;
-    u8** t;
     s32 j;
+    LayoutObj* obj;
     if (lbl_3_common_bss_32724[0x96] != 0) {
-        goto rm;
+        goto remove;
     }
-    if (((u8*)&g_UnkSound_32718)[7] == 0 || ((u8*)&g_GameLogic)[0x11E] == 1) {
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        (*(u8**)(((u8*)lbl_80371C30) + *(u16*)(o + 0x14) * 8 + 0x10))[0x68] = 1;
-        (*(u8**)(((u8*)lbl_80371C30) + *(u16*)(o + 0x14) * 8 + 0x18))[0x68] = 1;
-        (*(u8**)(((u8*)lbl_80371C30) + *(u16*)(o + 0x14) * 8 + 0x20))[0x68] = 1;
-        (*(u8**)(((u8*)lbl_80371C30) + *(u16*)(o + 0x14) * 8 + 0x28))[0x68] = 1;
+    if (g_UnkSound_32718._07 == 0 || g_GameLogic.gameStatus == 1) {
+        REP_OBJ(task, 0)->_68 = 1;
+        REP_OBJ(task, 2)->_68 = 1;
+        REP_OBJ(task, 3)->_68 = 1;
+        REP_OBJ(task, 4)->_68 = 1;
+        REP_OBJ(task, 5)->_68 = 1;
     }
-    w = *(u16*)(o + 0x1C);
-    if (w == 2) {
+    mode = task->_1C;
+    if (mode == 2) {
         if (lbl_3_common_bss_32724[0xB4] == 0) {
-            goto rm;
+            goto remove;
         }
-        goto b11;
-    }
-    if (w != 0) {
-        if (((u8*)&g_GameLogic)[0x11E] != 0x16) {
-            goto rm;
+    } else if (mode != 0) {
+        if (g_GameLogic.gameStatus != 0x16) {
+            goto remove;
         }
-        goto b11;
+    } else if (lbl_3_common_bss_32724[0xB3] == 0) {
+        goto remove;
     }
-    if (lbl_3_common_bss_32724[0xB3] == 0) {
-        goto rm;
-    }
-b11:
-    if (w != 2) {
-        t = (u8**)((u8*)lbl_80371C30);
-        d = lbl_3_data_E758;
-        for (i = 0; i < *(u16*)(o + 0x1A); i++) {
+    if (mode != 2) {
+        for (i = 0; i < task->_1A; i++) {
             for (j = 1; j < 6; j++) {
-                q = t[(*(u16*)(o + 0x14) + (lbl_3_data_E758[i] + j)) * 2];
-                if ((*(u32*)(q + 0x5C) >> 16) > 0x28) *(u32*)(q + 0x5C) = 0x3C0000;
+                obj = lbl_80371C30[task->baseIdx + (lbl_3_data_E758[i] + j)].obj;
+                if ((obj->_5C >> 16) > 40) {
+                    obj->_5C = 60 << 16;
+                }
             }
         }
     }
     return;
-rm:
-    fn_800B0A14_removeQueue(fn_80034CEC(o));
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
+#endif
 
 // .text:0x00094BC4 size:0x2A4 mapped:0x806D3C58
 // 99%: only the loop-setup copies differ (original `addi r7,r4,bss@l` / `addi r8,r3,DATA@l` direct; ours adds `mr r7,r4` / `mr r8,r0`)
