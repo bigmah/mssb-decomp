@@ -877,9 +877,12 @@ void fn_800B27A4(s32 fracBits) {
 }
 
 // .text:0x800B27DC size:0x78
-void fn_800B27DC(void) {
-    return;
+// NONMATCHING 77%: int-to-float conversion and column index are scheduled in a different order
+#if NONMATCHING
+void fn_800B27DC(Mtx44 m, s32 type) {
+    SpriteSetProjection(m, type);
 }
+#endif
 
 // .text:0x800B2854 size:0x274
 void fn_800B2854(void) {
