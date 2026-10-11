@@ -223,7 +223,69 @@ void fn_2_88250(SceneTask* task) {
 
 // .text:0x000883C8 size:0x430
 void fn_2_883C8(SceneTask* task) {
-    return;
+    s32 i;
+    s32 done;
+    s32 total;
+    ChallengeState* save;
+
+    if (((lbl_2_bss_33FBCC.animStarted == 0) ? TRUE : FALSE) && lbl_2_bss_33FBCC.prevSlot != lbl_2_bss_F410.slot) {
+        for (i = 0; i < 3; i++) {
+            if (lbl_80354768._CF5E[i] != 0) {
+                save = CHALLENGE_SAVE(i);
+                if (lbl_2_bss_F410.slot == i) {
+                    SLOT_OBJ(task, i, 4)->_68 = 1;
+                    SLOT_OBJ(task, i, 7)->_64 = 0x13;
+                    SLOT_OBJ(task, i, 7)->_68 = 1;
+                    if (save->_1606 == 0 || (save->_1606 != 0 && save->_441B != 0)) {
+                        SLOT_OBJ(task, i, 0xB)->_5C = 0x1A0000;
+                        SLOT_OBJ(task, i, 0xB)->_68 = 4;
+                    }
+                } else if (lbl_2_bss_33FBCC.prevSlot == i && i != lbl_2_bss_33FBCC._0F) {
+                    SLOT_OBJ(task, i, 4)->_68 = 1;
+                    SLOT_OBJ(task, i, 7)->_64 = 0x12;
+                    SLOT_OBJ(task, i, 7)->_68 = 1;
+                    if (save->_1606 == 0 || (save->_1606 != 0 && save->_441B != 0)) {
+                        SLOT_OBJ(task, i, 0xB)->_5C = 0x160000;
+                        SLOT_OBJ(task, i, 0xB)->_68 = 1;
+                    }
+                }
+            } else if (lbl_2_bss_F410.slot == i) {
+                SLOT_OBJ(task, i, 7)->_64 = 0x13;
+                SLOT_OBJ(task, i, 7)->_68 = 1;
+            } else {
+                SLOT_OBJ(task, i, 7)->_64 = 0x12;
+                SLOT_OBJ(task, i, 7)->_68 = 1;
+            }
+        }
+        lbl_2_bss_33FBCC.animStarted = 1;
+        lbl_2_bss_33FBCC.animRunning = 1;
+    }
+    if (((lbl_2_bss_33FBCC.animRunning == 1) ? TRUE : FALSE) && lbl_2_bss_33FBCC.prevSlot != lbl_2_bss_F410.slot) {
+        done = 0;
+        total = 0;
+        for (i = 0; i < 3; i++) {
+            if (lbl_80354768._CF5E[i] != 0) {
+                save = CHALLENGE_SAVE(i);
+                if (lbl_2_bss_F410.slot == i) {
+                    if (save->_1606 == 0 || (save->_1606 != 0 && save->_441B != 0)) {
+                        total++;
+                        done += fn_80042DA8(task, i + 0xB, 0x16) != 0;
+                    }
+                } else if (lbl_2_bss_33FBCC.prevSlot == i && i != lbl_2_bss_33FBCC._0F) {
+                    if (save->_1606 == 0 || (save->_1606 != 0 && save->_441B != 0)) {
+                        total++;
+                        done += fn_80042DA8(task, i + 0xB, 0x1A) != 0;
+                    }
+                }
+            }
+        }
+        if (done == total) {
+            lbl_2_bss_33FBCC.prevSlot = lbl_2_bss_F410.slot;
+            lbl_2_bss_33FBCC.anim = 0;
+            lbl_2_bss_33FBCC.animStarted = 0;
+            lbl_2_bss_33FBCC.animRunning = 0;
+        }
+    }
 }
 
 // .text:0x000887F8 size:0x598
