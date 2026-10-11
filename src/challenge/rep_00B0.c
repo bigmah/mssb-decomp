@@ -58,7 +58,61 @@ Vec lbl_1_bss_60[8];
 
 // .text:0x000019AC size:0x24C
 void fn_1_19AC(void) {
-    return;
+    Vec hit[2];
+    u32 size;
+    u32 i;
+    ChalColBlock** blocks;
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXSetCopyClear(lbl_1_data_294, 0xFFFFFF);
+    GXSetCullMode(GX_CULL_FRONT);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetArray(GX_VA_CLR0, lbl_1_data_240, 4);
+    GXSetLineWidth(0x12, GX_TO_ONE);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXLoadPosMtxImm(lbl_1_common_bss_472B4.viewMtx, GX_PNMTX0);
+
+    blocks = lbl_1_common_bss_472B4.colModel->blocks;
+    GDInitGDLObj(&lbl_1_common_bss_472B4.dl, lbl_1_common_bss_472B4.dlBuf, 0x80000);
+    __GDCurrentDL = &lbl_1_common_bss_472B4.dl;
+
+    if (lbl_1_common_bss_472B4.selBlock < 0) {
+        for (i = 0; i < lbl_1_common_bss_472B4.numBlocks; i++) {
+            fn_1_25BC(*blocks++);
+        }
+        fn_1_4290(lbl_1_data_200);
+    } else {
+        fn_1_25BC(blocks[lbl_1_common_bss_472B4.selBlock]);
+        fn_1_4290(lbl_1_data_200);
+        if (lbl_1_common_bss_472B4.showBox) {
+            fn_1_1BF8(lbl_1_common_bss_472B4.colModel->boxes, lbl_1_common_bss_472B4.selBlock);
+        }
+    }
+
+    if (fn_1_4728(lbl_1_data_200, hit)) {
+        PSVECAdd(&hit[0], &hit[1], &hit[1]);
+        fn_1_4290(hit);
+    }
+
+    GDPadCurr32();
+    size = lbl_1_common_bss_472B4.dl.ptr - lbl_1_common_bss_472B4.dl.start;
+    DCFlushRangeNoSync(lbl_1_common_bss_472B4.dlBuf, size);
+    lbl_1_common_bss_472B4.dlSize = size;
+    if (size > 0x80000) {
+        OSReport("Gd Buffer overflow:%d\n", size);
+        while (1) {
+        }
+    }
+    GXCallDisplayList(lbl_1_common_bss_472B4.dlBuf, size);
 }
 
 // .text:0x00001BF8 size:0x1C4
