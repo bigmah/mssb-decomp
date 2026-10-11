@@ -2034,9 +2034,88 @@ void startGameRelated(void) {
 }
 
 // .text:0x80049220 size:0x2AC
+// NONMATCHING ~85%: input copy goes through a zeroed stack struct; register allocation
+#if NONMATCHING
 void fn_80049220(u8 team) {
-    return;
+    u8 found = 0;
+    s8 t;
+    PortInput in;
+    s32 count;
+    s8 cursor;
+
+    if (g_d_GameSettings.PlayerPorts[team] == lbl_8034E9A0.teamPort[team]) {
+        t = team;
+        found = 1;
+    }
+    if (!found) {
+        return;
+    }
+    if (lbl_803C66B0._5D != 0 || lbl_803C66B0._5E != 0) {
+        return;
+    }
+    in.held = 0;
+    in.pressed = 0;
+    in.repeat = 0;
+    in = lbl_8034E9A0.input[t];
+    if ((in.repeat & 8) || (in.repeat & 4)) {
+        lbl_803C5F04.prevCursor[(u8)t] = lbl_803C5F04.cursor[(u8)t];
+        cursor = lbl_803C5F04.cursor[(u8)t];
+        if (lbl_803C5F04._36 == 0) {
+            count = 5;
+        } else if (g_d_GameSettings.GameModeSelected != 6) {
+            count = 4;
+        } else {
+            count = 2;
+        }
+        if (in.repeat & 8) {
+            if (--cursor < 0) {
+                if (lbl_803C5F04._36 == 0) {
+                    cursor = 4;
+                } else {
+                    cursor = 3;
+                }
+            }
+            fn_800625A4((u8)t, 0x30);
+            sndFXRelated(8);
+        } else if (in.repeat & 4) {
+            if (++cursor == count) {
+                cursor = 0;
+            }
+            fn_800625A4((u8)t, 0x30);
+            sndFXRelated(4);
+        }
+        lbl_803C5F04.cursor[(u8)t] = cursor;
+    } else if (in.repeat & 1) {
+        fn_80049D8C(0, t);
+    } else if (in.repeat & 2) {
+        fn_80049D8C(1, t);
+    } else if ((in.pressed & 0x40) || (in.pressed & 0x200)) {
+        if (g_d_GameSettings._06 == 2) {
+            return;
+        }
+        if (lbl_803C5F04._36 != 1) {
+            return;
+        }
+        lbl_803C5F04._36 = 0;
+        lbl_803C5F04.state = 2;
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            lbl_8034E978._00 = 0x14;
+            lbl_8034E978._09 = lbl_8034E978._08;
+            lbl_8034E978._08 = lbl_800FEF70[0x148];
+        } else {
+            lbl_8034E978._00 = 6;
+            lbl_8034E978._09 = lbl_8034E978._08;
+            lbl_8034E978._08 = lbl_800FEF70[0x68];
+        }
+        fn_800625A4(0, 0x2C);
+        if (in.pressed & 0x200) {
+            sndFXRelated(0x200);
+        } else {
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+    }
 }
+#endif
 
 // .text:0x800494CC size:0x3AC
 void fn_800494CC(u8 team) {
