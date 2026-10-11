@@ -1834,10 +1834,121 @@ void fn_800596D4(SceneTask* task) {
 }
 #endif
 
+// Pause-menu object index: the in-game layout puts the same object 0x69 earlier.
+#define PAUSE_OBJ(n) (g_d_GameSettings._06 == 2 ? (n) - 0x69 : (n))
+
 // .text:0x80059B38 size:0x818
-void starMissionRelated1(void) {
-    return;
+// NONMATCHING 90%: register numbering differs
+#if NONMATCHING
+void starMissionRelated1(SceneTask* task) {
+    s8 rank;
+    s32 count;
+    u8 set;
+    s16 msg;
+    s8 i;
+    s32 base;
+    s32 idx;
+
+    if (lbl_803297E0.pauseShown == 0) {
+        lbl_803297E0.challengeTeam = lbl_800E8558[lbl_803297E0.pauseChar]._0[1];
+        rank = gChallengeState.trackers[lbl_803297E0.challengeTeam].variantClassification;
+        set = lbl_800E8558[lbl_803297E0.pauseChar]._2;
+        switch (rank) {
+        case 0:
+            rank = 3;
+            count = 10;
+            break;
+        case 1:
+            rank = 2;
+            count = 8;
+            break;
+        case 2:
+            rank = 1;
+            count = 6;
+            break;
+        case 3:
+            rank = 0;
+            count = 4;
+            break;
+        }
+        idx = PAUSE_OBJ(0x1D7);
+        TASK_OBJ(task, idx)->flags |= 2;
+        idx = PAUSE_OBJ(0x1D7);
+        TASK_OBJ(task, idx)->_68 = 1;
+        idx = PAUSE_OBJ(0x1D3);
+        TASK_OBJ(task, idx)->flags |= 2;
+        idx = PAUSE_OBJ(0x1D3);
+        TASK_OBJ(task, idx)->_68 = 1;
+        idx = PAUSE_OBJ(0x1D4);
+        TASK_OBJ(task, idx)->flags |= 2;
+        idx = PAUSE_OBJ(0x1D4);
+        TASK_OBJ(task, idx)->_5C = rank << 16;
+        idx = PAUSE_OBJ(0x1D5);
+        TASK_OBJ(task, idx)->flags |= 2;
+        idx = PAUSE_OBJ(0x1D5);
+        TASK_OBJ(task, idx)->_68 = 1;
+        idx = PAUSE_OBJ(0x1D6);
+        TASK_OBJ(task, idx)->_68 = 1;
+        idx = PAUSE_OBJ(0x1DA);
+        TASK_OBJ(task, idx)->_5C = lbl_8034E9A0.chars[lbl_803297E0.pauseChar / 9][lbl_803297E0.pauseChar % 9].stats.CharacterClass << 16;
+        idx = PAUSE_OBJ(0x1DB);
+        TASK_OBJ(task, idx)->_5C = lbl_803297E0.pauseChar << 16;
+        lbl_803297E0.nameText = fn_8000F988((LayoutGroup*)task, g_d_GameSettings._06 == 2 ? 0x19B : 0x205, 0, 0, lbl_803297E0.challengeTeam + 8, 0);
+        lbl_803297E0.descText = fn_8000F988((LayoutGroup*)task, g_d_GameSettings._06 == 2 ? 0x19C : 0x206, 1, 0, lbl_8010B3E8[set] + determineIfMissionDescriptionIsShown(lbl_803297E0.challengeTeam), 0);
+        TASK_OBJ(task, 476)->_5C = (4 - determineIfMissionDescriptionIsShown(lbl_803297E0.challengeTeam)) << 16;
+        if ((s8)gChallengeState.trackers[lbl_803297E0.challengeTeam].inGameMissionTracker[lbl_803297E0.pauseMission].shownOnPauseMenu != 0) {
+            msg = lbl_8010A768[set][lbl_803297E0.pauseMission].msg;
+        } else if (lbl_8010A768[set][lbl_803297E0.pauseMission]._6 <= gChallengeState._4415) {
+            msg = 0x1C5;
+        } else {
+            msg = 0x1C6;
+        }
+        lbl_803297E0.missionText = fn_8000F988((LayoutGroup*)task, g_d_GameSettings._06 == 2 ? 0x19D : 0x207, 0, 0, msg, 0);
+        lbl_80366B18.entries[lbl_803297E0.missionText].hAlign = 1;
+        for (i = 0; i < count; i++) {
+            if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, i) != 0) {
+                TASK_OBJ(task, i + 0x1F1)->flags |= 2;
+                TASK_OBJ(task, i + 0x1F1)->_68 = 1;
+            } else {
+                TASK_OBJ(task, i + 0x1F1)->flags &= ~2;
+            }
+            base = 0x1DD;
+            TASK_OBJ(task, i + 0x1FB)->flags &= ~2;
+            TASK_OBJ(task, i + 0x1E7)->flags &= ~2;
+            if (g_d_GameSettings._06 == 2) {
+                base = 0x173;
+            }
+            TASK_OBJ(task, base + i)->_5C = 0;
+        }
+        if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.pauseMission) != 0) {
+            base = 0x1DD;
+            TASK_OBJ(task, 473)->flags |= 2;
+            TASK_OBJ(task, 473)->_68 = 1;
+            TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1E7)->flags |= 2;
+            TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1E7)->_68 = 1;
+            if (g_d_GameSettings._06 == 2) {
+                base = 0x173;
+            }
+            TASK_OBJ(task, base + lbl_803297E0.pauseMission)->_5C = 1 << 16;
+        } else {
+            base = 0x1DD;
+            TASK_OBJ(task, 473)->flags &= ~2;
+            TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1E7)->flags &= ~2;
+            if (g_d_GameSettings._06 == 2) {
+                base = 0x173;
+            }
+            TASK_OBJ(task, base + lbl_803297E0.pauseMission)->_5C = 0;
+        }
+        TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1FB)->flags |= 2;
+        TASK_OBJ(task, lbl_803297E0.pauseMission + 0x1FB)->_68 = 1;
+        lbl_803297E0.pauseShown = 1;
+    }
+    if (lbl_803297E0.pauseShown != 0) {
+        lbl_803297E0._CF74 = 0;
+        lbl_803297E0.pauseShown = 0;
+    }
 }
+#endif
 
 // .text:0x8005A350 size:0xC18
 void fn_8005A350(void) {
