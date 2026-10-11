@@ -1722,13 +1722,14 @@ void fn_3_151798(void) {
     pitchingMachinePitching(0x1C);
 }
 
-// 98%: only schedule order of the first lwz of the tx struct copy vs the hx/hy loads differs
+// NONMATCHING 98%: only schedule order of the first lwz of the tx struct copy vs the hx/hy loads differs
 // .text:0x001517D0 size:0x228 mapped:0x80790864
 typedef struct { f32 f[8]; } Tex8;
 extern const Tex8 lbl_3_rodata_38E8;
 extern void fn_80033B58(void*, s32, s32, s32);
 
 typedef struct { f32 u, v; } UV;
+#if NONMATCHING
 void fn_3_1517D0(u8* a, u8* o) {
     Mtx m;
     Mtx44 m44;
@@ -1779,6 +1780,7 @@ void fn_3_1517D0(u8* a, u8* o) {
     GXSetCurrentMtx(0);
     GXSetProjection((void*)fn_80052768_getCamera(0), 0);
 }
+#endif
 
 // .text:0x001519F8 size:0x1B4 mapped:0x80790A8C
 void fn_3_1519F8(u8* a, u8* o) {
