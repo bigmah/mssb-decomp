@@ -174,7 +174,7 @@ void fn_2_61D90(MenuTask* task, MenuItem* item);
 void fn_2_61F5C(MenuTask* task, MenuItem* item);
 void fn_2_62110(MenuTask* task, MenuItem* item);
 void fn_2_623AC(MenuTask* task, MenuItem* item);
-void fn_2_625B0(void);
+void fn_2_625B0(MenuTask* task, MenuItem* item);
 void fn_2_627F4(void);
 void fn_2_62A38(void);
 void fn_2_62D18(void);
