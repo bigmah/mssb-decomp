@@ -592,8 +592,20 @@ void fn_2_1560C(u8 player) {
 #endif
 
 // .text:0x00015A90 size:0x6C
+// Step *value with left/right, wrapping in [0, max].
 void fn_2_15A90(s32* value, u8 port, s32 max) {
-    return;
+    u16 repeat = lbl_8034E9A0.input[port].repeat;
+    if (repeat & 1) {
+        (*value)--;
+        if (*value < 0) {
+            *value = max;
+        }
+    } else if (repeat & 2) {
+        (*value)++;
+        if (*value > max) {
+            *value = 0;
+        }
+    }
 }
 
 // .text:0x00015AFC size:0x384
