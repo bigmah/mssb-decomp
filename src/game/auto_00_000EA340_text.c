@@ -184,6 +184,109 @@ void fn_3_ED0F4(void) {
 }
 #endif
 
+// The game data around lbl_3_data_19770 is addressed from that symbol as a pool
+// base; these are the tables at lbl_3_data_19830 + 0xE0/0x140/0x148/0x150.
+typedef struct EaPool {
+    /*0x000*/ u8 _000[0x1A0];
+    /*0x1A0*/ u8 desc1A0[0x60];  // sprite layout for fn_3_EC804
+    /*0x200*/ u16 anim200[4];
+    /*0x208*/ u16 stop208[4];
+    /*0x210*/ u16 end210[4];
+} EaPool;
+#define EA_POOL ((EaPool*)lbl_3_data_19770)
+typedef struct EaMgFlags {
+    /*0x1934*/ u8 _1934;
+    /*0x1935*/ s8 _1935;
+    /*0x1936*/ s8 _1936;
+} EaMgFlags;
+#define EA_MG_FLAGS (*(EaMgFlags*)(g_Minigame + 0x1934)) // TODO type
+
+// .text:0x000EC804 size:0x3AC mapped:0x8072B898
+// NONMATCHING 93%: original indexes the pooled tables as `addi rT, pool, 0x200; lhzx` (data lives in another
+// unit, so the pool can't be reproduced); prologue scheduling
+#if NONMATCHING
+void fn_3_EC804(void) {
+    EaTask* task = EA_TASK;
+    u8* q = g_Minigame + 0x1DF4;
+    EaPool* pool = EA_POOL;
+    u32 stadium;
+    u8 vol;
+    s32 voice;
+
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (g_GameLogic[0x11E] == 8) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, pool->desc1A0);
+        EA_SPRITE(task, 0)->anim = pool->anim200[EA_MG_FLAGS._1936];
+        EA_SPRITE(task, 1)->anim = (task->timer != 0) + 0xF;
+        task->_1E = pool->stop208[EA_MG_FLAGS._1936];
+        task->_20 = pool->end210[EA_MG_FLAGS._1936];
+        stadium = g_d_GameSettings.StadiumID;
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            vol = lbl_3_data_84B8[0x20];
+        } else {
+            vol = lbl_3_data_8404[stadium * 0x1E + 0x20];
+        }
+        voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 0x10, vol, 0x3F, 0);
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            vol = lbl_3_data_84B8[0x21];
+        } else {
+            vol = lbl_3_data_8404[stadium * 0x1E + 0x21];
+        }
+        sndFXCtrl(voice, 0x5B, vol);
+        task->state = 1;
+        break;
+    case 1:
+        if (task->_1E == EA_SPRITE(task, 0)->frame >> 16) {
+            if (task->timer != 0) {
+                stadium = g_d_GameSettings.StadiumID;
+                if (g_d_GameSettings.GameModeSelected == 6) {
+                    vol = lbl_3_data_84B8[0xE];
+                } else {
+                    vol = lbl_3_data_8404[stadium * 0x1E + 0xE];
+                }
+                voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 7, vol, 0x3F, 0);
+                if (g_d_GameSettings.GameModeSelected == 6) {
+                    vol = lbl_3_data_84B8[0xF];
+                } else {
+                    vol = lbl_3_data_8404[stadium * 0x1E + 0xF];
+                }
+                sndFXCtrl(voice, 0x5B, vol);
+            } else {
+                stadium = g_d_GameSettings.StadiumID;
+                if (g_d_GameSettings.GameModeSelected == 6) {
+                    vol = lbl_3_data_84B8[0xC];
+                } else {
+                    vol = lbl_3_data_8404[stadium * 0x1E + 0xC];
+                }
+                voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 6, vol, 0x3F, 0);
+                if (g_d_GameSettings.GameModeSelected == 6) {
+                    vol = lbl_3_data_84B8[0xD];
+                } else {
+                    vol = lbl_3_data_8404[stadium * 0x1E + 0xD];
+                }
+                sndFXCtrl(voice, 0x5B, vol);
+            }
+        }
+        if (EA_SPRITE(task, 0)->frame >> 16 >= task->_20) {
+            q[EA_MG_FLAGS._1936] = 2;
+            EA_MG_FLAGS._1934 = 2;
+            task->state = 2;
+        }
+        break;
+    case 2:
+        break;
+    }
+}
+#endif
+
 // fn_3_EBFD4, size:0x40
 s32 fn_3_EBFD4(void) {
     if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] == 2 || g_GameLogic[0x11E] == 8) {
