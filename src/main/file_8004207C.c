@@ -294,7 +294,20 @@ void fn_80048C28(void) {
 
 // .text:0x80048D4C size:0xB4
 void fn_80048D4C(void) {
-    return;
+    if (lbl_803CBCE8 == 0) {
+        return;
+    }
+    GXSetGPMetric(lbl_800FB4C8[lbl_803CB83C[0]], lbl_800FB554[lbl_803CB83C[1]]);
+    GXClearGPMetric();
+    if (lbl_800FB4C8[lbl_803CB83C[0]] == GX_PERF0_CLOCKS) {
+        GXReadGP0Metric();
+    }
+    if (lbl_800FB554[lbl_803CB83C[1]] == GX_PERF1_CLOCKS) {
+        GXReadGP1Metric();
+    }
+    GXSetVCacheMetric(GX_VC_ALL);
+    GXClearVCacheMetric();
+    GXClearPixMetric();
 }
 
 // .text:0x80048E00 size:0xA8
