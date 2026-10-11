@@ -1,6 +1,18 @@
 #include "game/auto_00_00097144_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/stl.h"
+
+extern s16 lbl_3_data_BE50[][4];  // TODO type: 8-byte entries, first field read here
+extern u8 lbl_3_data_D648[];      // sprite descriptors for fn_80034E20
+extern u8 lbl_3_data_D7A8[];
+extern u8 lbl_3_data_D9E4[];
+extern u8 lbl_3_data_DA50[];
+extern u8 lbl_3_common_bss_37400[];
+
+extern void fn_3_96CA4(void);
+extern void fn_3_95970(void);
+extern void fn_3_91A60(void);
 
 // .text:0x00097144 size:0x15C mapped:0x806D61D8
 void fn_3_97144(void) {
@@ -8,8 +20,8 @@ void fn_3_97144(void) {
 }
 
 // .text:0x000972A0 size:0x28 mapped:0x806D6334
-void fn_3_972A0(void) {
-    return;
+void fn_3_972A0(void* owner, s32 idx, s32 track, u32 frame) {
+    fn_8003649C(owner, idx, track, 0x28, frame);
 }
 
 // .text:0x000972C8 size:0x124 mapped:0x806D635C
