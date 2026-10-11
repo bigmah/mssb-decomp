@@ -2,6 +2,117 @@
 #define __MENUS_REP_08E8_H__
 
 #include "mssbTypes.h"
+#include "Dolphin/vec.h"
+
+// View of lbl_8036E548 (CharMgr in main/file_80011640.h; that header can't be
+// included here), only the fields used by this unit.
+typedef struct MenuCharActor {
+    /*0x000*/ u8 _000[0x10];
+    /*0x010*/ void* banks[7];
+    /*0x02C*/ u8 _02C[0x34 - 0x2C];
+    /*0x034*/ Vec pos;
+    /*0x040*/ Vec rot;
+    /*0x04C*/ u8 _04C[0x27C - 0x4C];
+} MenuCharActor; // size: 0x27C
+
+typedef struct MenuCharMgr {
+    /*0x0000*/ u8 _0000[0xAC];
+    /*0x00AC*/ struct Light* lights[4];
+    /*0x00BC*/ u8 _00BC[0xC04 - 0xBC];
+    /*0x0C04*/ MenuCharActor actors[13];
+    /*0x2C50*/ void* active[13];
+    /*0x2C84*/ void* stadiumFiles;
+    /*0x2C88*/ u8* bankBuf;
+    /*0x2C8C*/ u8* fileBuf;
+    /*0x2C90*/ u32 bankSize[5];
+    /*0x2CA4*/ u8 _2CA4[0x2CEC - 0x2CA4];
+    /*0x2CEC*/ u8* bankSets[4][5];
+} MenuCharMgr;
+
+// lbl_2_bss_55C0: small file-static state of this unit.
+typedef struct MenuNumberState {
+    /*0x00*/ u8 viewerState; // fn_2_481F4
+    /*0x01*/ u8 _01;
+    /*0x02*/ u16 halfSpace;  // 0x4002 or 0x4003 (fn_2_4917C)
+    /*0x04*/ u16 minus;      // minus-sign glyph
+    /*0x06*/ u16 space;      // padding/separator glyph
+    /*0x08*/ u16 text[16];   // last number formatted by fn_2_4917C
+} MenuNumberState;
+
+// The running scene task (lbl_803CC1B8; SceneTask in main/file_80069BDC.h),
+// only the fields used here.
+typedef struct MenuSceneTask {
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ struct MenuSceneTask* parent;
+    /*0x10*/ s16 _10;
+    /*0x12*/ u8 _12[0x16 - 0x12];
+    /*0x16*/ s16 _16; // character index to load (fn_2_481F4)
+} MenuSceneTask;
+
+// Use as MENU_CHARMGR.field where lbl_8036E548 is declared as a u8 array.
+#define MENU_CHARMGR (*(MenuCharMgr*)lbl_8036E548)
+
+// Entry of the ARAM file table (19 per character).
+typedef struct { u32 a; u32 size; u32 c; u32 d; } Entry08E8;
+
+// lbl_80353A90: per-game line score (main.dol .bss, size 0x108).
+typedef struct MenuLineScore {
+    /*0x00*/ u8 _00[0x8];
+    /*0x08*/ u16 scores[4][19]; // [0] total, [1..] per inning; rows 0/1 and 2/3 per team
+    /*0xA0*/ s8 _A0[30];
+    /*0xBE*/ u8 _BE[0xF0 - 0xBE];
+    /*0xF0*/ u8 _F0[2]; // per team
+    /*0xF2*/ u8 result; // 0: team 0 ahead, 1: team 1 ahead, 2: tie
+    /*0xF3*/ u8 _F3[0xF6 - 0xF3];
+    /*0xF6*/ u8 innings;
+    /*0xF7*/ u8 _F7[0x108 - 0xF7];
+} MenuLineScore;
+
+
+// lbl_803537E4: [2 teams][9] records, 0x26 bytes each (only fields used here).
+typedef struct MenuRosterRecord {
+    /*0x00*/ u8 _00[0x4];
+    /*0x04*/ s8 _04;
+    /*0x05*/ s8 _05;
+    /*0x06*/ u8 _06[0x10 - 0x6];
+    /*0x10*/ s8 _10;
+    /*0x11*/ u8 _11;
+    /*0x12*/ s8 _12;
+    /*0x13*/ u8 _13[0x18 - 0x13];
+    /*0x18*/ s8 _18;
+    /*0x19*/ u8 _19[0x26 - 0x19];
+} MenuRosterRecord;
+
+
+// lbl_803535C8: [2 teams][9] records, 0x1E bytes each (only fields used here).
+typedef struct MenuFieldRecord {
+    /*0x00*/ u8 _00[0x2];
+    /*0x02*/ s16 _02;
+    /*0x04*/ u8 _04[0xA - 0x4];
+    /*0x0A*/ s16 _0A;
+    /*0x0C*/ u8 _0C[0x1A - 0xC];
+    /*0x1A*/ s8 _1A;
+    /*0x1B*/ u8 _1B;
+    /*0x1C*/ s8 _1C;
+    /*0x1D*/ u8 _1D;
+} MenuFieldRecord;
+
+
+// lbl_8034E9A0 + 0x4908: three 4-byte slots.
+typedef struct MenuSlot4908 {
+    /*0x0*/ u8 _0;
+    /*0x1*/ u8 _1_hi : 5;
+    /*0x1*/ u8 _1_lo : 3;
+    /*0x2*/ u8 _2;
+    /*0x3*/ u8 _3;
+} MenuSlot4908;
+
+// lbl_8034E9A0 (character/team select work area), only the fields used here.
+typedef struct MenuSelectState {
+    /*0x0000*/ u8 _0000[0x4908];
+    /*0x4908*/ MenuSlot4908 _4908[3];
+} MenuSelectState;
+
 
 void fn_2_4A064(void);
 
@@ -72,5 +183,23 @@ void fn_2_4906C(void);
 void fn_2_477C0(void);
 
 void fn_2_478F4(void);
+
+u16* fn_2_49F7C(u16* string, s32 capacity, u16 character, s32 position);
+
+void fn_2_4AB1C(void);
+
+void fn_2_47540(void);
+
+void fn_2_48DB4(void);
+
+void fn_2_4A340(void);
+
+void fn_2_4A6E8(void);
+
+void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
+
+void fn_2_481F4(void);
+
+u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style);
 
 #endif

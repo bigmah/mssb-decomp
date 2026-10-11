@@ -103,6 +103,23 @@ def extract(asm: Path, fn_name: str, literals: set = frozenset()) -> list:
     return lines
 
 
+DATA_REF_RE = re.compile(r"\blbl_\d+_(?:data|bss|sdata|sbss)_[0-9A-F]+\b")
+
+
+def data_refs(asm: Path, fn_name: str, literals: set = frozenset()) -> set:
+    """lbl_N_{data,bss,...} names a function references (anonymised as DATA in the diff).
+    Compared separately so equivalent C that reads the wrong global still shows up."""
+    refs, inside = set(), False
+    for line in asm.read_text().splitlines():
+        if line.startswith(f".fn {fn_name},"):
+            inside = True
+        if inside:
+            refs.update(n for n in DATA_REF_RE.findall(COMMENT_RE.sub("", line)) if n not in literals)
+            if line.startswith(f".endfn {fn_name}"):
+                break
+    return refs
+
+
 def diff_fn(fn_name: str, unit_name: str, quiet: bool = False, full: bool = False, max_hunks: int = 5) -> int:
     """Returns the number of differing lines (0 == match)."""
     unit = load_unit(unit_name)
@@ -136,6 +153,12 @@ def diff_fn(fn_name: str, unit_name: str, quiet: bool = False, full: bool = Fals
         if not quiet:
             print(f"{fn_name} not found in our build of {base}")
         return -1
+    # Names only we reference (the target may reach the same object through a
+    # pooled base + offset, so names only the target uses are not reported).
+    extra = sorted(data_refs(base_s, fn_name, literals) - data_refs(target_s, fn_name, literals))
+    if extra and not quiet:
+        print(f"DATA REFS: ours references {', '.join(extra)}, which the target does not "
+              f"(wrong global, or the target reaches it via a pooled base; check the asm)")
     if t == b:
         if not quiet:
             print("MATCH")
