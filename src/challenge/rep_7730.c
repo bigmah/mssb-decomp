@@ -722,8 +722,9 @@ extern const f32 lbl_1_rodata_7808[];
 extern const f32 lbl_1_rodata_78C4[];
 extern const f32 lbl_1_rodata_78C8[];
 
-// 91%: f3/f6 swap for 1.0f vs int->float magic, and the tail 78C4 load is CSE'd with the head (orig reloads, addi form)
+// NONMATCHING 91%: f3/f6 swap for 1.0f vs int->float magic, and the tail 78C4 load is CSE'd with the head (orig reloads, addi form)
 // .text:0x24A8C size:0x1C0
+#if NONMATCHING
 void fn_1_24A8C(void) {
     u8* q = lbl_803CC1B8[0];
     s32 n;
@@ -747,6 +748,7 @@ void fn_1_24A8C(void) {
     }
     fn_80038CD0(q[0x2B], &lbl_1_bss_45868, lbl_1_bss_43F68, lbl_1_rodata_7808[0], *(u16*)(q + 0x24) * lbl_1_rodata_78C4[0]);
 }
+#endif
 
 extern void fn_1_26D28(void*, u16, u16, u16, void*);
 extern void fn_1_27330(void*);
