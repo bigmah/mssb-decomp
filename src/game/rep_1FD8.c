@@ -22,7 +22,8 @@ typedef struct C4724P {
     u8 f4F;
     u8 f50;
 } C4724P;
-typedef struct { u8 pad0[0xC]; C4724P* head; s32 f10; u16 f14; u8 pad16[2]; Vec* f18; u8 pad1C[4]; void* f20; s32 f24; } C4724Hdr;
+// Particle emitter (Emitter in main/file_800263FC.h), the fields these effects use.
+typedef struct C4724Hdr { void* prev; void* next; void* update; C4724P* head; void* tex; u16 f14; u8 pad16[2]; Vec* f18; u8 pad1C[4]; void* f20; s32 f24; } C4724Hdr;
 extern const u8 lbl_3_rodata_2028[];
 extern const f32 lbl_3_rodata_20FC;
 extern const f64 lbl_3_rodata_2100;
@@ -57,7 +58,7 @@ extern void fn_3_B828C(void*);
 extern void fn_800BF058(void*);
 extern void fn_800BDF70(void*);
 extern u32 lbl_3_bss_9D84;
-extern u32 fn_80033A24(void*, int, int, int, int, u8);
+extern void* fn_80033A24(void*, int, int, int, int, u8); // Emitter* (update, priority, unk14, n, strict, type)
 
 extern u32 lbl_3_bss_9D9C;
 extern u8 lbl_3_data_8404[];
@@ -154,6 +155,7 @@ extern const f32 lbl_3_rodata_20F0;
 extern void CTRLGetTranslation(void*, f32*, f32*, f32*);
 extern void fn_3_CB7E8(f32, f32, f32);
 extern f32 lbl_3_rodata_2150;
+extern void* lbl_3_bss_9F0C; // TexArchive*
 
 void fn_3_C1964(void) {
     lbl_3_bss_9D9C = 1;
@@ -366,10 +368,10 @@ void fn_3_C298C(void) {
     do {
         u8* o = *(u8**)(e + 0x14);
         if (o == NULL || *(u32*)(o + 8) == 0) {
-            u32 r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
-            *(u32*)(e + 0x14) = r;
-            r = *(u32*)(e + 0x14);
-            if (r != 0) {
+            void* r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
+            *(void**)(e + 0x14) = r;
+            r = *(void**)(e + 0x14);
+            if (r != NULL) {
                 fn_3_C366C(r, i);
             }
         }
@@ -491,18 +493,64 @@ void fn_3_C30F0(void) {
 }
 
 // .text:0x000C366C size:0x35C mapped:0x80702700
-#pragma dont_inline on
-void fn_3_C366C(u32 a, u8 b) {
-    return;
+// Emitter view used by the fn_3_C30F0 smoke effects: spawn point and slot.
+typedef struct C366CHdr {
+    void* prev;
+    void* next;
+    void* update;
+    C4724P* head;
+    void* tex;
+    u8 pad14[4];
+    Vec pos;
+    u8 idx;
+} C366CHdr;
+extern const Vec lbl_3_rodata_202C[6];
+// Starts smoke emitter `idx` at its fixed spawn point (lbl_3_rodata_202C).
+void fn_3_C366C(void* hv, u8 idx) {
+    C366CHdr* h = hv;
+    s16 delay;
+    C4724P* p = h->head;
+    s16 t;
+    f32 a;
+    h->tex = lbl_3_bss_9F0C;
+    h->pos = lbl_3_rodata_202C[idx];
+    h->idx = idx;
+    delay = 0;
+    while (p != NULL) {
+        a = lbl_3_rodata_20FC * (f32)(rand() % 360);
+        p->vx = lbl_3_rodata_2100 * (f32)cos(a);
+        p->vz = lbl_3_rodata_2100 * (f32)sin(a);
+        p->vy = lbl_3_rodata_2108;
+        p->s48 = delay;
+        p->f1C = lbl_3_rodata_20D4;
+        p->f1C = p->f1C + (f64)((u32)rand() % 2500) / lbl_3_rodata_2110;
+        p->f38 = p->f1C;
+        p->f3C = lbl_3_rodata_2118 * p->f1C;
+        p->f20 = (f64)(rand() % 101) / lbl_3_rodata_2120;
+        p->x = h->pos.x;
+        p->y = h->pos.y;
+        p->z = h->pos.z;
+        p->a40 = lbl_3_rodata_2028[0];
+        p->a41 = lbl_3_rodata_2028[1];
+        p->a42 = lbl_3_rodata_2028[2];
+        p->f24 = lbl_3_rodata_2128;
+        p->a43 = lbl_3_rodata_2128;
+        t = rand() % 24 + 0x48;
+        delay += 4;
+        p->s4A = t;
+        p->f4F = t;
+        p->f4D = 0x1D;
+        p->f4E = 0;
+        p = p->next;
+    }
 }
-#pragma dont_inline reset
 
 // .text:0x000C39C8 size:0x70 mapped:0x80702A5C
 void fn_3_C39C8(void) {
     u32 i = 0;
     do {
-        u32 r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
-        if (r != 0) {
+        void* r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
+        if (r != NULL) {
             fn_3_C366C(r, i);
         }
         i++;
@@ -788,13 +836,12 @@ void fn_3_C444C(void* hv, u8* b) {
 extern u8 lbl_80366158[];
 extern void fn_80033620(void);
 extern void fn_8003403C(f32, f32);
-extern void fn_80033CC8(void*, s32);
+extern void fn_80033CC8(void*, void*);
 extern void GXSetZMode(int, int, int);
 extern void GXSetBlendMode(int, int, int, int);
 extern const f32 lbl_3_rodata_2168[];
 extern const f32 lbl_3_rodata_21A4;
 extern const f32 lbl_3_rodata_21AC;
-extern s32 lbl_3_bss_9F0C;
 extern u8 lbl_3_data_17514[];
 extern const f32 lbl_3_rodata_21A8;
 extern f64 pow(f64, f64);
@@ -815,7 +862,7 @@ u32 fn_3_C4724(void* hv) {
             p->s48 -= (lbl_80366158[0x28] == 0);
         } else if (p->s4A != 0) {
             fn_8003403C(p->f38, p->f3C);
-            fn_80033CC8(p, h->f10);
+            fn_80033CC8(p, h->tex);
             if (lbl_80366158[0x28] == 0) {
                 k = lbl_3_rodata_2168[0];
                 c = lbl_3_rodata_213C;
@@ -940,7 +987,7 @@ void fn_3_C4CF4(void* hv, u8 type) {
     while (p != NULL) {
         if (p->s48 <= 0 && p->s4A > 0 && type == p->f50) {
             fn_8003403C(p->f38, p->f3C);
-            fn_80033CC8(p, h->f10);
+            fn_80033CC8(p, h->tex);
         }
         p = p->next;
     }
@@ -1083,7 +1130,7 @@ void fn_3_C54D0(u8* a) {
     while (p != NULL) {
         if (p->s48 <= 0 && p->s4A > 0 && p->f50 == 1) {
             fn_8003403C(p->f38, p->f3C);
-            fn_80033CC8(p, h->f10);
+            fn_80033CC8(p, h->tex);
         }
         p = p->next;
     }
@@ -1138,7 +1185,7 @@ void fn_3_C56E8(u8* a) {
     while (p != NULL) {
         if (p->s48 <= 0 && p->s4A > 0 && p->f50 == 0) {
             fn_8003403C(p->f38, p->f3C);
-            fn_80033CC8(p, h->f10);
+            fn_80033CC8(p, h->tex);
         }
         p = p->next;
     }
@@ -1168,7 +1215,7 @@ void fn_3_C597C(s32 idx) {
     C597CEnt* e;
     e = (C597CEnt*)(*(u8**)&lbl_3_common_bss_350E4 + idx * 0xE8);
     pitchingMachinePitching((u8)(e->fA8 + 0x2A));
-    h = (C4724Hdr*)fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(e->fA8 + 0x34));
+    h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(e->fA8 + 0x34));
     if (h != NULL) {
         p = h->head;
         px = e->px;
@@ -1197,7 +1244,7 @@ void fn_3_C597C(s32 idx) {
             p->s4A = 1;
             p = p->next;
         }
-        h->f10 = lbl_3_bss_9F0C;
+        h->tex = lbl_3_bss_9F0C;
         h->f24 = 0x1E;
     }
     e->fBD = 2;
@@ -1391,7 +1438,7 @@ u32 fn_3_C75B8(void* hv) {
             p->s48 -= (lbl_80366158[0x28] == 0);
         } else if (p->s4A != 0) {
             fn_8003403C(p->f38, p->f3C);
-            fn_80033CC8(p, h->f10);
+            fn_80033CC8(p, h->tex);
             if (lbl_80366158[0x28] == 0) {
                 if (p->f38 < p->f1C) {
                     p->f38 += p->f1C / lbl_3_rodata_21A4;
@@ -1423,7 +1470,7 @@ void fn_3_C77AC(void* hv, u8* b) {
     p = h->head;
     h->f18 = (Vec*)(b + 0x9C);
     h->f20 = b;
-    h->f10 = lbl_3_bss_9F0C;
+    h->tex = lbl_3_bss_9F0C;
     h->f24 = 30;
     i = 0;
     ang = 0;
