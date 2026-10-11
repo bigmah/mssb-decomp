@@ -1172,3 +1172,41 @@ void fn_1_1D694(u8* obj) {
     GXWGFifo.u16 = 1;
     GXWGFifo.u16 = 0;
 }
+
+extern const f32 lbl_1_rodata_7844;
+extern const f32 lbl_1_rodata_7848;
+
+// .text:0x21040 size:0x140
+void fn_1_21040(void) {
+    u32 color;
+    s32 pos;
+    s32 i;
+
+    GXBegin(GX_LINES, GX_VTXFMT0, 44);
+    for (i = 0; i < 11; i++) {
+        color = 0xFFFFFFFF;
+        if (i == 5) {
+            color = 0xFF0000FF;
+        }
+        pos = (i - 5) * 10;
+        GXWGFifo.f32 = pos;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7844;
+        GXWGFifo.u32 = color;
+        GXWGFifo.f32 = pos;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7848;
+        GXWGFifo.u32 = color;
+        if (i == 5) {
+            color = 0x00FF00FF;
+        }
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7844;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = pos;
+        GXWGFifo.u32 = color;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7848;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.f32 = pos;
+        GXWGFifo.u32 = color;
+    }
+}
