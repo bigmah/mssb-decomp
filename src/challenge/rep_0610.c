@@ -6,7 +6,7 @@ static u8 ch_fill692C[0x14];
 static u8 ch_68FC[0x30];
 static u8 ch_fill68F8[0x4];
 static u8 ch_67E0[0x118];
-static s32 ch_67B8[0xA];
+static void* ch_67B8[0xA];
 static u8 ch_fill62B8[0x500];
 static u8 ch_60EC[0x5C * 5];
 static u8* ch_60E8;
@@ -649,10 +649,10 @@ void fn_1_CC24(void) {
         ch_30BC = 1;
         object = fn_800B0A5C_insertQueue((void*)fn_1_CCC8, (u16)(*(u16*)(lbl_803CC1B8[0] + 0x12) + 1));
         if (ch_5F69 != 0) {
-            *(s32*)(object + 0x14) = ch_67B8[1];
+            *(void**)(object + 0x14) = ch_67B8[1];
             *(u16*)(object + 0x18) = lbl_1_data_F56C;
         } else {
-            *(s32*)(object + 0x14) = ch_67B8[2];
+            *(void**)(object + 0x14) = ch_67B8[2];
             *(u16*)(object + 0x18) = lbl_1_data_F56E;
         }
     }
@@ -2526,5 +2526,111 @@ void fn_1_ECF8(u8 player, u8 group, u8 flag) {
     fn_1_ECF8_bind(player, idA, first);
     fn_1_ECF8_bind(player, idB, second);
     fn_1_D300(lbl_8036E548 + ch_5F73 * 0x27C + 0xC04);
+}
+#endif
+
+struct ShapeAnimState;
+extern u32 fn_80024D2C(struct ShapeAnimState* st);
+
+// .text:0xCDC8 size:0x374
+// NONMATCHING ~85%: bone search loops use ctr in the original; register allocation
+#if NONMATCHING
+void fn_1_CDC8(void) {
+    void* states[2];
+    ActorInst** tables[2];
+    u16 bones[2];
+    u8* row;
+    u16 idB;
+    s32 kind;
+    s32 both;
+    s32 i;
+    u16 j;
+    ActorInst* actor;
+    u8 group;
+
+    if (ch_fill30B8[0] != 0) {
+        ch_fill30B8[0] = 0;
+        fn_800B0A14_removeQueue(NULL);
+        return;
+    }
+    row = lbl_8036E548 + ch_5F73 * 0x27C;
+    idB = *(u16*)(row + 0xD98);
+    fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, *(u16*)(row + 0xD8C), NULL, 0);
+    fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, idB, NULL, 0);
+    switch ((ch_68FC + ch_5F73)[0x40]) {
+    case 38:
+        kind = 0;
+        break;
+    case 18:
+        kind = 3;
+        break;
+    case 40:
+        kind = 1;
+        break;
+    case 41:
+        kind = 2;
+        break;
+    default:
+        kind = 0; // uninitialized in the original
+        break;
+    }
+    group = (ch_6940 + ch_5F73 * 0x48)[0x44];
+    (row + 0xC04)[0x25A] = ((ch_6940 + ch_5F73 * 0x48)[0x44] < 2) == (ch_5F69 == 0);
+    states[ch_5F69] = ch_67B8[2];
+    states[ch_5F69 == 0] = ch_67B8[1];
+    {
+        u16* ids = (u16*)(lbl_8036E548 + ch_5F73 * 0x27C + 0xD66);
+        bones[0] = ids[lbl_1_data_F4E8[kind][1]];
+        bones[1] = ids[lbl_1_data_F4E8[kind][0]];
+    }
+    tables[0] = &((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[1].actor;
+    tables[1] = &((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[0].actor;
+    switch (group) {
+    case 0:
+    case 1:
+    case 5:
+    case 6:
+        both = 1;
+        break;
+    case 2:
+    case 3:
+    case 4:
+        both = 0;
+        break;
+    default:
+        both = 0; // uninitialized in the original
+        break;
+    }
+    i = 0;
+    do {
+        if (states[i] != NULL) {
+            if (fn_80024D2C(states[i]) & 0x20000000) {
+                actor = *tables[i];
+                for (j = 0; j < *(u16*)((u8*)actor + 6); j++) { // TODO type: ActorInst bone count / table
+                    if (*(u32*)((*(u8***)((u8*)actor + 0x18))[j] + 0x14) != 0) {
+                        fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], actor, j);
+                        break;
+                    }
+                }
+            } else {
+                fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], NULL, 0);
+            }
+        }
+        i++;
+    } while ((both != 0 || (ch_68FC + ch_5F73)[0x40] == 38) && i < 2);
+    if (i == 1) {
+        if (ch_5F69 != 0) {
+            tables[0] = &((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[2].actor;
+        } else {
+            tables[0] = &((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[2].actor;
+        }
+        actor = *tables[0];
+        for (j = 0; j < *(u16*)((u8*)actor + 6); j++) {
+            if (*(u32*)((*(u8***)((u8*)(*tables[0]) + 0x18))[j] + 0x14) != 0) {
+                fn_800B2BA8(((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor, bones[i], actor, j);
+                break;
+            }
+        }
+    }
 }
 #endif
