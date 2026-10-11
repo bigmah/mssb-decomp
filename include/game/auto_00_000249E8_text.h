@@ -10,13 +10,16 @@ typedef struct GameActorView {
     /*0x034*/ VecXYZ pos;
     /*0x040*/ f32 _040;
     /*0x044*/ f32 rotY;
-    /*0x048*/ u8 _048[0x257 - 0x48];
+    /*0x048*/ u8 _048[0x252 - 0x48];
+    /*0x252*/ s8 kind; // character id
+    /*0x253*/ u8 _253[0x257 - 0x253];
     /*0x257*/ s8 team;
     /*0x258*/ u8 _258[0x25D - 0x258];
     /*0x25D*/ u8 _25D;
     /*0x25E*/ u8 _25E[0x279 - 0x25E];
     /*0x279*/ u8 flags;
-} GameActorView;
+    /*0x27A*/ u8 _27A[0x27C - 0x27A];
+} GameActorView; // size: 0x27C
 
 typedef struct StadiumPartView {
     /*0x00*/ u8 active;
@@ -33,9 +36,16 @@ typedef struct StadiumObjView {
 
 // Actor manager lbl_8036E548 (see ActorManager in main/file_80026134.h).
 typedef struct ActorMgrView {
-    /*0x0000*/ u8 _0000[0x2C50];
+    /*0x0000*/ u8 _0000[0xC04];
+    /*0x0C04*/ GameActorView storage[13];
     /*0x2C50*/ GameActorView* actors[13]; // 0-8 fielders, 9-12 batter and runners
-    /*0x2C84*/ u8 _2C84[0x2D90 - 0x2C84];
+    /*0x2C84*/ u8 _2C84[0x2D77 - 0x2C84];
+    /*0x2D77*/ u8 _2D77;
+    /*0x2D78*/ u8 _2D78[2];
+    /*0x2D7A*/ u8 _2D7A; // runner load counter (fn_3_6BA64)
+    /*0x2D7B*/ u8 _2D7B;
+    /*0x2D7C*/ u8 _2D7C;
+    /*0x2D7D*/ u8 _2D7D[0x2D90 - 0x2D7D];
     /*0x2D90*/ StadiumObjView* stadium;
 } ActorMgrView;
 extern ActorMgrView lbl_8036E548;
@@ -101,7 +111,14 @@ extern SceneWork* lbl_3_common_bss_1323C;
 typedef struct Unk32724 {
     /*0x00*/ u8 _00[0x90];
     /*0x90*/ s16 _90;
-    /*0x92*/ u8 _92[0xC8 - 0x92];
+    /*0x92*/ u8 _92[0x9A - 0x92];
+    /*0x9A*/ u8 _9A; // load step (fn_3_6B4C8, fn_3_6B5D8, fn_3_6BA64)
+    /*0x9B*/ u8 _9B;
+    /*0x9C*/ u8 _9C[2];
+    /*0x9E*/ s16 _9E; // character ids
+    /*0xA0*/ s16 _A0;
+    /*0xA2*/ s16 _A2;
+    /*0xA4*/ u8 _A4[0xC8 - 0xA4];
     /*0xC8*/ u8 _C8;
     /*0xC9*/ u8 _C9;
     /*0xCA*/ u8 _CA;

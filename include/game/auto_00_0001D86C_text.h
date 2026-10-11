@@ -48,7 +48,9 @@ extern ScoreStruct g_Scores;
 typedef struct RunningLogicStruct {
     /*0x00*/ s16 _00;
     /*0x02*/ s16 runnerBits; // one nibble per base; 0x100 = 2nd, 0x1000 = 3rd
-    /*0x04*/ u8 _04[0x20 - 0x4];
+    /*0x04*/ s16 _04;
+    /*0x06*/ s16 _06[4]; // per base, -1 = empty
+    /*0x0E*/ u8 _0E[0x20 - 0xE];
 } RunningLogicStruct; // size: 0x20
 
 extern RunningLogicStruct g_RunningLogic;

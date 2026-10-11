@@ -147,7 +147,8 @@ typedef struct ActorModel {
     /*0x06*/ u16 animCount;
     /*0x08*/ u8 _08[0x10];
     /*0x18*/ ActorModelAnim** anims;
-    /*0x1C*/ u8 _1C[0x7D];
+    /*0x1C*/ u8 _1C[0x7C];
+    /*0x98*/ u8 _98; // bit 2: drawn
     /*0x99*/ u8 _99;
 } ActorModel;
 
