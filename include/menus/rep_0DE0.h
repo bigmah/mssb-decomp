@@ -104,4 +104,6 @@ void fn_2_86DCC(void);
 
 void fn_2_87654(s32 unused, s32 start, s32 count, void* animBank, s32 arg5);
 
+void fn_2_87118(void);
+
 #endif

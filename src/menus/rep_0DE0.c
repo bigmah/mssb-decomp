@@ -330,3 +330,17 @@ void fn_2_87654(s32 unused, s32 start, s32 count, void* animBank, s32 arg5) {
     }
 }
 #endif
+
+extern void* _OSAllocFromHeap(s32 align, s32 size);
+
+// Allocates the draw states and actor table for the current stadium's background objects.
+// .text:0x87118 size:0x238
+// NONMATCHING 72%: inlines fn_2_87654; same data-pool anchor difference
+#if NONMATCHING
+void fn_2_87118(void) {
+    lbl_2_bss_340140[0]->count = lbl_2_data_2E608.objectCount[lbl_2_bss_33FBF5];
+    lbl_2_bss_340140[0]->states = _OSAllocFromHeap(0x20, lbl_2_bss_340140[0]->count * sizeof(MenuDrawState));
+    lbl_2_bss_340140[0]->table = ActorObjectInitTable(lbl_2_bss_340140[0]->count);
+    fn_2_87654(0, 0, lbl_2_bss_340140[0]->count, NULL, 0);
+}
+#endif
