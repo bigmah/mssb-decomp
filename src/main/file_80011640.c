@@ -1719,9 +1719,38 @@ void fn_8001CCC8(void) {
 #endif
 
 // .text:0x8001CE74 size:0x200
+// NONMATCHING 96%: light-table base register and scheduling
+#if NONMATCHING
 void fn_8001CE74(void) {
-    return;
+    LightPos* lp = lbl_80367318;
+    s32 i;
+    StadiumLights* st;
+    GXColor color;
+    u32 c;
+
+    lbl_8036E548._3085 = 4;
+    fn_8001CBD4();
+    fn_800BD2DC();
+    st = &lbl_800F7478[g_d_GameSettings._54];
+    if (st->ambient.a != 0) {
+        color = st->ambient;
+        fn_800BD2CC(1, color);
+    }
+    for (i = 0; i < 4; i++) {
+        LITAlloc(&lbl_8036E548.lights[i]);
+        LITInitAttn(lbl_8036E548.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+        LITInitPos(lbl_8036E548.lights[i], lp->x, lp->y, lp->z);
+        c = lp->color;
+        LITInitColor(lbl_8036E548.lights[i], &c);
+        lp++;
+    }
+    if (lbl_8036E548.slots6C != NULL) {
+        for (i = 0; i < lbl_8036E548.slots6C->count; i++) {
+            fn_800BD548(&lbl_8036E548.slots6C->slots[i], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+        }
+    }
 }
+#endif
 
 // .text:0x8001D074 size:0x5C
 void fn_8001D074(s32 index, s32 enable) {
