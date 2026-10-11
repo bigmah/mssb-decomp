@@ -1,5 +1,6 @@
 #include "game/rep_3448.h"
 #include "header_rep_data.h"
+#include "game/auto_00_00106DFC_text.h"
 
 typedef struct {
     u8* p;
@@ -59,6 +60,8 @@ extern u8 lbl_3_data_23F24[];
 extern u8 lbl_80366158[];
 extern u8 lbl_3_data_23AE4[];
 extern u8 lbl_3_data_25344[];
+extern u8 lbl_3_data_24E04[];
+extern RepRosterEnt inMemRoster[];
 extern RepRunner g_Runners[4];
 extern void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);
 
@@ -151,9 +154,94 @@ void fn_3_11EC28(void) {
 #endif
 
 // .text:0x0011F02C size:0x454 mapped:0x8075E0C0
+// NONMATCHING 70%: loop induction variables and slot index folding differ (orig strength-reduces 2*i counters), fn_3_107CD0 return not zero-extended in orig
+#if NONMATCHING
 void fn_3_11F02C(void) {
-    return;
+    u32 snd = 0;
+    RepTask* q = REP_TASK;
+    RepRosterEnt* ros;
+    RepObj* o;
+    u8* m;
+    u32 i;
+    s32 n;
+    s32 lead;
+    s32 tied;
+    s32 d;
+    u32 v;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_24E04);
+        ros = inMemRoster;
+        i = 0;
+        do {
+            fn_800363D8(q, i + 9, 1, 0x65, i);
+            d = ros->charId;
+            ros++;
+            n = q->baseIdx + i;
+            i++;
+            (*(RepObj**)((u8*)lbl_80371C30 + (n + 0x11) * sizeof(RepSlot)))->frame = d << 16;
+        } while (i < 4);
+        i = 0;
+        do {
+            n = q->baseIdx + i;
+            i++;
+            o = *(RepObj**)((u8*)lbl_80371C30 + (n + 0x25) * sizeof(RepSlot));
+            o->flags &= ~2;
+        } while (i < 4);
+        q->state = 1;
+        break;
+    case 1:
+        lead = fn_3_107CD0();
+        tied = fn_3_107C88();
+        m = g_Minigame;
+        for (i = 0; i < 4; i++) {
+            if (m[0x1DFC + i] != 0) {
+                m[0x1DFC + i] = 0;
+                REP_OBJ(q, i + 1)->frame = 0;
+                REP_OBJ(q, i + 1)->mode = 1;
+            }
+            if (*(s16*)(m + 0x1DF4 + i * 2) > *(s16*)(m + 0x1890 + i * 2)) {
+                *(s16*)(m + 0x1DF4 + i * 2) = *(s16*)(m + 0x1890 + i * 2);
+            }
+            d = *(s16*)(m + 0x1DF4 + i * 2) - *(s16*)(m + 0x18BC + i * 4);
+            if (d > 0) {
+                *(s16*)(m + 0x18BC + i * 4) += 1;
+                snd = 1;
+                q->_24[i] = 1;
+            } else if (d < 0) {
+                snd = 1;
+                *(s16*)(m + 0x18BC + i * 4) -= 1;
+            } else if (q->_24[i] != 0) {
+                q->_24[i] = 0;
+                REP_OBJ(q, i + 0x19)->frame = 0;
+                REP_OBJ(q, i + 0x19)->mode = 1;
+                REP_OBJ(q, i * 2 + 0x1D)->frame = 0;
+                REP_OBJ(q, i * 2 + 0x1E)->frame = 0;
+            }
+            v = *(s16*)(m + 0x18BC + i * 4);
+            if (v > 99) {
+                v = 99;
+            }
+            fn_800363D8(q, i * 2 + 0x1D, 1, 0x66, (v % 100) / 10);
+            fn_800363D8(q, i * 2 + 0x1E, 1, 0x66, v % 10);
+            if (tied == 0 && *(s16*)(m + 0x18BC + i * 4) == *(s16*)(m + 0x18BC + lead * 4)) {
+                REP_OBJ(q, i + 0x25)->flags |= 2;
+            } else {
+                REP_OBJ(q, i + 0x25)->flags &= ~2;
+            }
+        }
+        break;
+    }
+    if (snd != 0) {
+        sndFXStartEx(0x1C0, lbl_800EFBA4[9], 0x3F, 0);
+    }
 }
+#endif
 
 // .text:0x0011F480 size:0x34 mapped:0x8075E514
 void fn_3_11F480(void) {

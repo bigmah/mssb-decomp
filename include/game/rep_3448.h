@@ -41,8 +41,7 @@ typedef struct RepTask {
     /*0x1E*/ u16 _1E;
     /*0x20*/ u16 _20;
     /*0x22*/ u16 _22;
-    /*0x24*/ s8 _24;
-    /*0x25*/ u8 _25;
+    /*0x24*/ u8 _24[4]; // per-player "counting" flags (fn_3_11F02C)
 } RepTask;
 
 // Runner position (game/UnknownHomes_Game.h InMemRunnerType, size 0x154).
@@ -53,8 +52,15 @@ typedef struct RepRunner {
     /*0x00C*/ u8 _00C[0x154 - 0xC];
 } RepRunner;
 
+// Roster entry (game/UnknownHomes_Game.h CharacterStats, size 0xA0).
+typedef struct RepRosterEnt {
+    /*0x00*/ u8 _00[0x24];
+    /*0x24*/ s16 charId;
+    /*0x26*/ u8 _26[0xA0 - 0x26];
+} RepRosterEnt;
+
 #define REP_TASK ((RepTask*)lbl_803CC1B8)
-#define REP_OBJ(t, i) (((RepSlot*)lbl_80371C30)[(t)->baseIdx + (i)].obj)
+#define REP_OBJ(t, i) (*(RepObj**)((u8*)lbl_80371C30 + ((t)->baseIdx + (i)) * sizeof(RepSlot)))
 
 void fn_3_11EC28(void);
 void fn_3_11F02C(void);
