@@ -492,11 +492,65 @@ s32 fn_3_BC274(u8* a, u8* b, u8* c) {
 }
 
 // .text:0x000BC2DC size:0x3FC mapped:0x806FB370
-#pragma dont_inline on
+// Per-fielder slot inside g_FieldingLogic (stride 0x1C); only fields used here.
+typedef struct {
+    u8 _00[0x14];
+    /* 0x14 */ s16 slotIdx;
+    u8 _16[0x1A - 0x16];
+    /* 0x1A */ u8 active;
+    u8 _1B[0x1C - 0x1B];
+} BC2DCFieldSlot;
+// g_Runners entry (InMemRunnerType, size 0x154); only fields used here.
+typedef struct {
+    u8 _00[0xC8];
+    /* 0xC8 */ f32 mashPercent;
+    u8 _CC[0x154 - 0xCC];
+} BC2DCRunner;
+extern BC2DCFieldSlot g_FieldingLogic[];
+extern BC2DCRunner g_Runners[4];
+extern const f32 lbl_3_rodata_1ED8;
 void fn_3_BC2DC(void) {
-    return;
+    Vec pos;
+    u8* o;
+    s32 i;
+    s32 j;
+    BC2DCFieldSlot* fl;
+    BC2DCRunner* rn;
+    for (i = 0; i < 13; i++) {
+        o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+        if (o != NULL) {
+            o[0x276] = (s32)o[0x276] >> 1;
+            o[0x276] = (u8)(o[0x276] << 3);
+            getAnimRelatedCoordinates(i, 0x1E, &pos);
+            o[0x276] |= fn_3_BC274(o, o + 0x34, (u8*)&pos) << 1;
+            getAnimRelatedCoordinates(i, 0x22, &pos);
+            o[0x276] |= fn_3_BC274(o, o + 0x34, (u8*)&pos) << 2;
+        }
+    }
+    if (g_d_GameSettings.minigamesEnabled != 0) {
+        fl = g_FieldingLogic;
+        for (j = 0; j < 4; j++, fl++) {
+            o = ((u8**)lbl_8036E548)[j + 0x2C50 / 4];
+            if (o != NULL && fl->active != 0 && j == fl->slotIdx) {
+                o[0x276] |= 1;
+            }
+        }
+    } else {
+        for (j = 0; j < 9; j++) {
+            o = ((u8**)lbl_8036E548)[j + 0x2C50 / 4];
+            if (o != NULL && g_FieldingLogic[0].active != 0 && j == g_FieldingLogic[0].slotIdx) {
+                o[0x276] |= 1;
+            }
+        }
+    }
+    rn = g_Runners;
+    for (i = 0; i < 4; i++, rn++) {
+        o = ((u8**)lbl_8036E548)[i + 9 + 0x2C50 / 4];
+        if (o != NULL && rn->mashPercent >= lbl_3_rodata_1ED8) {
+            o[0x276] |= 1;
+        }
+    }
 }
-#pragma dont_inline reset
 
 // .text:0x000BC6D8 size:0x178 mapped:0x806FB76C
 extern s32 lbl_3_bss_9968;
