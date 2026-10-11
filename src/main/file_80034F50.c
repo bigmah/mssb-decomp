@@ -505,9 +505,41 @@ void fn_8003664C(void) {
 }
 
 // .text:0x80036824 size:0x1B8
-void fn_80036824(void) {
-    return;
+// NONMATCHING 94%: original indexes seqs/tracks as word arrays ([i + 2], lwzx) and computes the track pointer from t
+#if NONMATCHING
+u16 fn_80036824(s32 texId, s32 animId, u16 keyIdx) {
+    s32 slot;
+    SpaniSeq* seq;
+    u32 t;
+    SpaniTrack** pp;
+    SpaniTrack* tr;
+    SpaniKey* key;
+    s32 n;
+
+    slot = spaniFindSlot(texId);
+    if (slot == -1) {
+        OSPanic(lbl_800E68C4, 0x12A, lbl_800E68E8);
+    }
+    seq = lbl_803C4BE0[slot].anim->seqList->seqs[animId];
+    t = seq->trackCount - 1;
+    pp = &((SpaniTrack**)seq)[t + 2];
+    do {
+        tr = *pp--;
+        n = tr->keyCount;
+        key = &tr->keys[n];
+        do {
+            n--;
+            key--;
+            if (n == keyIdx) {
+                return key->texIdx;
+            }
+        } while (n != 0);
+        t--;
+    } while (t != 0);
+    return 0;
 }
+#endif
+
 
 // .text:0x800369DC size:0x60
 void fn_800369DC(f32 zoom) {
