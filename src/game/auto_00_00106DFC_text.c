@@ -152,20 +152,6 @@ u8* fn_3_109D88(void) {
     return lbl_803616CC;
 }
 
-// fn_3_10FB74, size:0x70
-void fn_3_10FB74(void) {
-    u8 s = g_GameLogic[0x125];
-    switch (s) {
-    case 0:
-        lbl_3_common_bss_32724[0xD8] = 0;
-        lbl_3_common_bss_34C58[0x2C] = 0;
-        g_GameLogic[0x125] = s + 1;
-        break;
-    }
-    lbl_8036E548[0x307A] = 0;
-    fn_3_5A6D4(0x1D);
-}
-
 // fn_3_10A01C, size:0x84
 void fn_3_10A01C(void) {
     u8 m = g_Minigame[0x1A2A];
@@ -642,6 +628,20 @@ void fn_3_10B200(void) {
     fn_3_9081C();
     fn_80035B50(0x11);
     g_Minigame[0x19DF] = 0x1E;
+    fn_3_5A6D4(0x1D);
+}
+
+// fn_3_10FB74, size:0x70
+void fn_3_10FB74(void) {
+    u8 s = g_GameLogic[0x125];
+    switch (s) {
+    case 0:
+        lbl_3_common_bss_32724[0xD8] = 0;
+        lbl_3_common_bss_34C58[0x2C] = 0;
+        g_GameLogic[0x125] = s + 1;
+        break;
+    }
+    lbl_8036E548[0x307A] = 0;
     fn_3_5A6D4(0x1D);
 }
 
@@ -1570,10 +1570,9 @@ void fn_3_10F684(void) {
 }
 #endif
 
-// NONMATCHING 97%: loop induction registers (i/roster/g+9i/g+i) rotated, increments scheduled differently
-#if NONMATCHING
-// fn_3_10F91C, size:0x258
-void fn_3_10F91C(void) {
+// Body of fn_3_10F91C (sets up the minigame player slots and their rosters); the original
+// inlines it into fn_3_10FDC8, so it lives in a static inline that both use.
+static inline void setupMinigamePlayersInline(void) {
     s32 i;
     u8* mg;
     switch (g_GameLogic[0x125]) {
@@ -1605,6 +1604,13 @@ void fn_3_10F91C(void) {
         }
     }
     fn_3_5A6D4(0x21);
+}
+
+// NONMATCHING 97%: loop induction registers (i/roster/g+9i/g+i) rotated, increments scheduled differently
+#if NONMATCHING
+// fn_3_10F91C, size:0x258
+void fn_3_10F91C(void) {
+    setupMinigamePlayersInline();
 }
 #endif
 
@@ -2463,5 +2469,131 @@ void fn_3_10B27C(void) {
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
         }
+    }
+}
+
+extern void fn_3_112BD8(void);
+extern void fn_3_1160BC(void);
+extern void fn_3_1324E8(void);
+extern void fn_3_141A30(void);
+extern void fn_3_1471C4(void);
+extern void fn_3_13C468(void);
+extern void fn_3_10E60C(void);
+extern void fn_3_10A0A0(void);
+
+// fn_3_10FDC8, size:0x6E0
+void fn_3_10FDC8(void) {
+    s32 order[4];
+    s32 i;
+    u8 m;
+
+    if (g_Minigame[0x1A3B] != 0) {
+        fn_3_1084B4();
+        return;
+    }
+    g_GameLogic[0x12D] = 0;
+    g_GameLogic[0x12E] = 0;
+    satInc16((s16*)(g_Ball + 0x1B64));
+    switch (g_GameLogic[0x11E]) {
+    case 27:
+        fn_3_10FB74();
+        break;
+    case 28:
+        fn_3_10F1D4();
+        break;
+    case 29:
+        fn_3_10F3D8();
+        break;
+    case 30:
+        fn_3_10E60C();
+        break;
+    case 33:
+        fn_3_10B8D0();
+        break;
+    case 5:
+        fn_3_10AEF0();
+        break;
+    case 35:
+        for (i = 0; i < 4; i++) {
+            order[i] = -1;
+        }
+        for (i = 0; i < 4; i++) {
+            if (*(s8*)(g_Minigame + 0x18CC + i) >= 0) {
+                order[i] = i;
+            }
+        }
+        fn_3_9E078(order, g_Minigame[0x1906], 0);
+        for (i = 0; i < 4; i++) {
+            g_Minigame[0x18E0 + i] = order[i];
+        }
+        fn_3_5A6D4(0x1A);
+        break;
+    case 14:
+        fn_3_10A0A0();
+        break;
+    case 36:
+        fn_3_109254();
+        break;
+    case 34:
+        fn_3_108C54();
+        break;
+    case 38:
+        fn_3_10722C();
+        break;
+    case 40:
+        fn_3_107784();
+        break;
+    case 41:
+        switch (g_GameLogic[0x125]) {
+        case 0:
+            g_Minigame[0x1A2A] = g_Minigame[0x1E1C + g_Minigame[0x1E2A]++];
+            changeScene(1, 6);
+            g_GameLogic[0x125] = 1;
+            break;
+        case 1:
+            // TODO type: pointer field at g_Minigame+0x1E04
+            if (*(u16*)(*(u8**)(g_Minigame + 0x1E04) + 0x1A) != 0) {
+                changeScene(3, 6);
+                g_GameLogic[0x125] = 2;
+            }
+            break;
+        case 2:
+            if (lbl_8037169C[0x13] != 0) {
+                g_GameLogic[0x125] = 3;
+            }
+            break;
+        case 3:
+            g_GameLogic[0x125] = 4;
+            break;
+        case 4:
+            fn_3_5A6D4(0x21);
+            break;
+        }
+        break;
+    case 39:
+        fn_3_1070A4();
+        break;
+    case 37:
+        setupMinigamePlayersInline();
+        break;
+    default:
+        m = g_Minigame[0x1A2A];
+        if (m == 1) {
+            fn_3_112BD8();
+        } else if (m == 2) {
+            fn_3_1160BC();
+        } else if (m == 3) {
+            fn_3_1324E8();
+        } else if (m == 4) {
+            fn_3_141A30();
+        } else if (m == 5) {
+            fn_3_1471C4();
+        } else if (m == 6) {
+            fn_3_13C468();
+        }
+        if (*(u32*)(g_Minigame + 0x17C4) == 0x258) {
+            fn_3_90064(0x2FD);
+        }
+        break;
     }
 }
