@@ -36,7 +36,10 @@ void GDOverflowed(void) {
 
 // .text:0x800A1BB0 size:0x28C
 void GDSetBlendMode(GXBlendMode type, GXBlendFactor src_factor, GXBlendFactor dst_factor, GXLogicOp logic_op) {
-    return;
+    GDWriteBPCmd(0xFE00FFE3);
+    GDWriteBPCmd((u32)(type == GX_BM_BLEND || type == GX_BM_SUBTRACT) << 0 | (u32)(type == GX_BM_LOGIC) << 1 |
+                 (u32)0 << 2 | (u32)0 << 3 | (u32)0 << 4 | (u32)dst_factor << 5 | (u32)src_factor << 8 |
+                 (u32)(type == GX_BM_SUBTRACT) << 11 | (u32)logic_op << 12 | (u32)0x41 << 24);
 }
 
 // .text:0x800A1E3C size:0x104
