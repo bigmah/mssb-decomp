@@ -750,7 +750,21 @@ void fn_3_C414C(int idx) {
 
 // .text:0x000C42A4 size:0x1A8 mapped:0x80703338
 typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } C42A4Ctl;
-typedef struct { C42A4Ctl* arr; u8 pad0[0x3C - 4]; u32* p3C; u16* p40; u32* p44; u8* p48; } C42A4Bss;
+// Stadium object list (lbl_3_common_bss_350E4) and the per-group shadow/collision batch
+// buffers built by fn_3_C82B4: p48 = n pairs of Vec (bounds), p3C = counts, p44 = indices,
+// p40 = u16 first-index per group.
+typedef struct {
+    C42A4Ctl* arr;
+    u8 pad4[0x30 - 4];
+    s32 count;
+    u8 pad34[0x3C - 0x34];
+    u32* p3C;
+    u16* p40;
+    u32* p44;
+    u8* p48;
+    u8 pad4C[0x64 - 0x4C];
+    s16 groups;
+} C42A4Bss;
 typedef struct { u8 pad[0x10]; u8 f10; u8 f11; u8 f12; u8 f13; } C42A4Ent;
 extern u8 lbl_3_bss_9DE0[];
 extern u8 lbl_3_data_17704[];
@@ -1565,9 +1579,33 @@ s32 fn_3_C823C(s32 idx, f32* out) {
 }
 
 // .text:0x000C82B4 size:0x39C mapped:0x80707348
+extern void* _OSAllocFromHeap(s32 heap, s32 size);
+// Builds the object groups: allocates the batch buffers once, then lets
+// fn_3_C805C and fn_3_C42A4 fill one group per pass.
+// NONMATCHING ~85%: the original inlines fn_3_C805C and fn_3_C42A4 (CW won't auto-inline them here; with both marked inline the body is 233 vs 231 insns, rest regalloc)
+#if NONMATCHING
 void fn_3_C82B4(void) {
-    return;
+    C42A4Bss* g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    s32 n;
+    s32 size;
+    s32 groups;
+    s32 objs;
+    size = g->count * 2 + g->count * 4 + g->count * 0x18 + g->count * 4;
+    if (g->p48 == NULL) {
+        g->p48 = _OSAllocFromHeap(4, size);
+        n = g->count;
+        ((C42A4Bss*)lbl_3_common_bss_350E4)->p3C = (u32*)(g->p48 + n * 0x18);
+        ((C42A4Bss*)lbl_3_common_bss_350E4)->p44 = (u32*)((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->p3C + n * 4);
+        ((C42A4Bss*)lbl_3_common_bss_350E4)->p40 = (u16*)((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->p44 + n * 4);
+    }
+    memset(g->p48, 0, size);
+    groups = 0;
+    objs = 0;
+    fn_3_C805C(&groups, &objs);
+    fn_3_C42A4(&groups, &objs);
+    ((C42A4Bss*)lbl_3_common_bss_350E4)->groups = groups;
 }
+#endif
 
 // .text:0x000C8650 size:0xD2C mapped:0x807076E4
 void fn_3_C8650(void) {
