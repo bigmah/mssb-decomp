@@ -1116,7 +1116,8 @@ void fn_3_19770(void) {
 }
 
 // .text:0x000195BC size:0x1B4 mapped:0x80658650
-// 97.9%: pointer-induction form (f32* b/sp, b[j*3+15]); only diff is an extra `addi r0; mr r7,r0` for the g_Ball pointer
+// NONMATCHING 97.9%: pointer-induction form (f32* b/sp, b[j*3+15]); only diff is an extra `addi r0; mr r7,r0` for the g_Ball pointer
+#if NONMATCHING
 void fn_3_195BC(void) {
     inMemCamera* cam;
     Vec sp8;
@@ -1126,7 +1127,7 @@ void fn_3_195BC(void) {
     f32* sp;
     cam = g_pCamera;
     sp8.x = sp8.y = sp8.z = 0.f;
-    b = (f32*)&g_Ball;
+    b = (f32*)&g_Ball; // TODO type: b[15 + j * 3 + i] is g_Ball.pastCoordinates[j] component i
     sp = &sp8.x;
     for (i = 0; i < 3; i++, b++, sp++) {
         for (j = 0; j < 10; j++) {
@@ -1150,6 +1151,7 @@ void fn_3_195BC(void) {
         VEC_ADD(&cam->_0F0, &cam->_0F0, &sp8);
     }
 }
+#endif
 
 // .text:0x000193E8 size:0x1D4 mapped:0x8065847C
 void fn_3_193E8(void) {
