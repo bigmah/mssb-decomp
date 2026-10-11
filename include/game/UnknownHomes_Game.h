@@ -1502,6 +1502,19 @@ typedef enum _WALL_BALL_GAME_STATE {
     WALL_BALL_GAME_STATE_PITCH_OR_WAITING_FOR_PITCH = 2
 } WALL_BALL_GAME_STATE;
 
+typedef struct _MiniGameRoleStreak {
+    /*0x0*/ u8 role;
+    /*0x1*/ u8 count;
+} MiniGameRoleStreak; // size: 0x2
+
+typedef struct _MiniGameSlot9 {
+    /*0x0*/ s8 _0;
+    /*0x1*/ u8 _1;
+    /*0x2*/ s8 _2;
+    /*0x3*/ s8 _3;
+    /*0x4*/ u8 _4[5];
+} MiniGameSlot9; // size: 0x9
+
 typedef struct _MiniGameStruct {
     /*0x000*/ u8 _0;
     /*0x001*/ u8 _1;
@@ -2135,11 +2148,7 @@ typedef struct _MiniGameStruct {
     /*0x19B8*/ s16 TF_framesSinceHittingPanel;
     /*0x19BA*/ s16 _19BA;
     /*0x19BC*/ s16 _19BC;
-    /*0x19BE*/ u8 _19BE;
-    /*0x19BF*/ u8 _19BF;
-    /*0x19C0*/ s16 _19C0;
-    /*0x19C2*/ s16 _19C2;
-    /*0x19C4*/ s16 _19C4;
+    /*0x19BE*/ MiniGameRoleStreak roleStreak[4]; // per player: last role (0 pitcher, 1 batter, 2 fielder) and repeat count
     /*0x19C6*/ u8 _19C6;
     /*0x19C7*/ u8 _19C7;
     /*0x19C8*/ u8 maybeTFCollisionResultState;
@@ -2151,14 +2160,8 @@ typedef struct _MiniGameStruct {
     /*0x19CE*/ u8 _19CE;
     /*0x19CF*/ u8 _19CF;
     /*0x19D0*/ s16 _19D0;
-    /*0x19D2*/ s16 _19D2;
-    /*0x19D4*/ s16 _19D4;
-    /*0x19D6*/ s16 _19D6;
-    /*0x19D8*/ s16 _19D8;
-    /*0x19DA*/ u8 _19DA;
-    /*0x19DB*/ u8 _19DB;
-    /*0x19DC*/ u8 _19DC;
-    /*0x19DD*/ u8 _19DD;
+    /*0x19D2*/ s16 _19D2[4];
+    /*0x19DA*/ u8 _19DA[4];
     /*0x19DE*/ u8 _19DE;
     /*0x19DF*/ u8 _19DF;
     /*0x19E0*/ u8 _19E0;
@@ -2168,50 +2171,12 @@ typedef struct _MiniGameStruct {
     /*0x19E4*/ s16 _19E4;
     /*0x19E6*/ u8 _19E6;
     /*0x19E7*/ u8 _19E7;
-    /*0x19E8*/ u8 _19E8;
-    /*0x19E9*/ u8 _19E9;
-    /*0x19EA*/ u8 _19EA;
-    /*0x19EB*/ u8 _19EB;
-    /*0x19EC*/ u8 _19EC;
-    /*0x19ED*/ u8 _19ED;
-    /*0x19EE*/ u8 _19EE;
-    /*0x19EF*/ u8 _19EF;
-    /*0x19F0*/ u8 _19F0;
-    /*0x19F1*/ u8 _19F1;
-    /*0x19F2*/ u8 _19F2;
-    /*0x19F3*/ u8 _19F3;
-    /*0x19F4*/ u8 _19F4;
-    /*0x19F5*/ u8 _19F5;
-    /*0x19F6*/ u8 pad14[2];
-    /*0x19F8*/ u8 _19F8;
-    /*0x19F9*/ u8 _19F9;
-    /*0x19FA*/ u8 _19FA;
-    /*0x19FB*/ u8 _19FB;
-    /*0x19FC*/ u8 _19FC;
-    /*0x19FD*/ u8 _19FD;
-    /*0x19FE*/ u8 _19FE;
-    /*0x19FF*/ u8 pad15[2];
-    /*0x1A01*/ u8 _1A01;
-    /*0x1A02*/ u8 _1A02;
-    /*0x1A03*/ u8 _1A03;
-    /*0x1A04*/ u8 _1A04;
-    /*0x1A05*/ u8 _1A05;
-    /*0x1A06*/ u8 _1A06;
-    /*0x1A07*/ u8 _1A07;
-    /*0x1A08*/ u8 pad16[2];
-    /*0x1A0A*/ u8 _1A0A;
-    /*0x1A0B*/ u8 _1A0B;
+    /*0x19E8*/ MiniGameSlot9 _19E8[4];
     /*0x1A0C*/ u8 _1A0C;
     /*0x1A0D*/ u8 _1A0D;
     /*0x1A0E*/ u8 _1A0E;
-    /*0x1A0F*/ u8 _1A0F;
-    /*0x1A10*/ u8 _1A10;
-    /*0x1A11*/ u8 _1A11;
-    /*0x1A12*/ u8 _1A12;
-    /*0x1A13*/ u8 _1A13;
-    /*0x1A14*/ u8 _1A14;
-    /*0x1A15*/ u8 _1A15;
-    /*0x1A16*/ u8 _1A16;
+    /*0x1A0F*/ s8 _1A0F[4];
+    /*0x1A13*/ u8 _1A13[4];
     /*0x1A17*/ u8 battingHandedness[9];
     /*0x1A20*/ u8 _1A20;
     /*0x1A21*/ u8 _1A21;

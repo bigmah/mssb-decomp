@@ -1,6 +1,11 @@
 #include "game/auto_00_000DEB90_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "game/auto_00_0005985C_text.h"
+#include "game/rep_1838.h"
+#include <stdlib.h>
+
+extern f32 lbl_3_data_18D98[];
 
 // .text:0x000DEB90 size:0x47C mapped:0x8071DC24
 void fn_3_DEB90(void) {
@@ -34,7 +39,17 @@ void fn_3_DF6D4(void) {
 
 // .text:0x000DF820 size:0xB4 mapped:0x8071E8B4
 void fn_3_DF820(void) {
-    return;
+    s32 i;
+
+    fn_3_10C81C();
+    for (i = 0; i < 4; i++) {
+        if (g_Minigame._19E8[i]._0 != g_Minigame._19E8[i]._2) {
+            break;
+        }
+    }
+    if (i >= 4) {
+        fn_3_5A6D4(0x1D);
+    }
 }
 
 // .text:0x000DF8D4 size:0x14C mapped:0x8071E968
