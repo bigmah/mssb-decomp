@@ -63,7 +63,7 @@ void fn_3_137F14(u8* o);
 void fn_3_13802C(u8* o);
 void fn_3_1382E0(u8* o);
 void fn_3_138448(u8* a);
-void fn_3_1384B4(void);
+void fn_3_1384B4(u8* o);
 void fn_3_138AA4(void);
 void fn_3_1391C0(void);
 void fn_3_139700(void);

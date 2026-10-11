@@ -1603,15 +1603,127 @@ void fn_3_138448(u8* a) {
         }
         if (*(s16*)(a + 0x3A) >= *(s16*)(a + 0x38)) {
             a[0x3E] = 0;
-            fn_3_1384B4();
+            fn_3_1384B4(a);
         }
     }
 }
 
 // .text:0x001384B4 size:0x5F0 mapped:0x80777548
-void fn_3_1384B4(void) {
-    return;
+// Respawn obstacle o at a spot chosen from the free coins inside its angular
+// sector [o+0x30, o+0x34] (degrees) around the field center.
+extern f32 lbl_3_rodata_36A0;
+extern f32 lbl_3_rodata_35D4;
+extern f32 lbl_3_rodata_36A4;
+extern f32 lbl_3_rodata_36A8;
+// NONMATCHING 95.6%: float saved-register numbering and zero-init/store scheduling differ
+#if NONMATCHING
+void fn_3_1384B4(u8* o) {
+    Vec center = { 0.0f, 0.0f, 20.0f };
+    Vec rel;
+    Vec n;
+    Vec off;
+    Vec axis = { 1.0f, 0.0f, 0.0f };
+    u32 idx[100];
+    f32 sx = lbl_3_rodata_35D0;
+    f32 sz = sx;
+    u32 cnt = 0;
+    u32 i;
+    u32* list = idx;
+    u32* w = list;
+    for (i = 0; i < 100; i++) {
+        if (COIN_STATE(i) == 1) {
+            f32 ang;
+            rel.y = lbl_3_rodata_35D0;
+            rel.x = COIN_POS(i).x - center.x;
+            rel.z = COIN_POS(i).z - center.z;
+            PSVECNormalize(&rel, &n);
+            ang = lbl_3_rodata_36A0 * (f32)acos(PSVECDotProduct(&axis, &n));
+            if (n.z < lbl_3_rodata_35D0) {
+                ang = lbl_3_rodata_3658 - ang;
+            }
+            if (ang >= *(f32*)(o + 0x30) && ang <= *(f32*)(o + 0x34)) {
+                cnt++;
+                sx += rel.x;
+                *w = i;
+                sz += rel.z;
+                w++;
+            }
+        }
+    }
+    if (cnt != 0) {
+        f32 vz = lbl_3_rodata_35D0;
+        f32 vx = vz;
+        f32 sdx, sdz, len;
+        u32 k;
+        sx = sx / (f32)cnt;
+        sz = sz / (f32)cnt;
+        for (k = 0; k < cnt; k++) {
+            u32 c = *list;
+            rel.x = COIN_POS(c).x - center.x;
+            rel.z = COIN_POS(c).z - center.z;
+            vx = vx + pow(rel.x - sx, 2.0);
+            vz = vz + pow(rel.z - sz, 2.0);
+            list++;
+        }
+        sdx = sqrt(vx / (f32)cnt);
+        sdz = sqrt(vz / (f32)cnt);
+        off.x = off.y = off.z = lbl_3_rodata_35D0;
+        if (sdx > lbl_3_rodata_364C) {
+            off.x = sdx * (fabs(sx) / sx) + sx;
+        } else {
+            off.x = sx;
+        }
+        if (sdz > lbl_3_rodata_3690) {
+            off.z = sdz * (fabs(sz) / sz) + sz;
+        } else {
+            off.z = sz;
+        }
+        len = sqrt(pow(off.x, 2.0) + pow(off.z, 2.0));
+        if (len < lbl_3_rodata_35D4) {
+            PSVECNormalize(&off, &off);
+            off.x *= lbl_3_rodata_35D4;
+            off.z *= lbl_3_rodata_35D4;
+        } else if (len > lbl_3_rodata_36A4) {
+            PSVECNormalize(&off, &off);
+            off.x *= lbl_3_rodata_36A4;
+            off.z *= lbl_3_rodata_36A4;
+        }
+    } else {
+        f32 lo = *(f32*)(o + 0x30);
+        f32 ang = lbl_3_rodata_3660 * ((*(f32*)(o + 0x34) - lo) * ((f32)rand() / lbl_3_rodata_365C) + lo);
+        off.x = cos(ang);
+        off.z = sin(ang);
+        off.y = lbl_3_rodata_35D0;
+        PSVECNormalize(&off, &off);
+        PSVECScale(&off, lbl_3_rodata_36A8 * ((f32)rand() / lbl_3_rodata_365C) + lbl_3_rodata_35D4, &off);
+    }
+    {
+        // keep the spot at least a box half-size away from the sector's edge line
+        f32 c = cos(lbl_3_rodata_3660 * *(f32*)(o + 0x34));
+        f32 s = sin(lbl_3_rodata_3660 * *(f32*)(o + 0x34));
+        f32 dot = off.x * c + off.z * s;
+        f32 px = c * dot;
+        f32 pz = s * dot;
+        f32 ex = off.x - px;
+        f32 ez = off.z - pz;
+        f32 bx = 3.5 * (fabs(ex) / ex);
+        f32 bz = 3.125 * (fabs(ez) / ez);
+        if (fabs(ex) < fabs(bx)) {
+            off.x = px + bx;
+        }
+        if (fabs(ez) < fabs(bz)) {
+            off.z = pz + bz;
+        }
+    }
+    *(f32*)(o + 0) = off.x + center.x;
+    *(f32*)(o + 4) = lbl_3_data_21A64;
+    *(f32*)(o + 8) = off.z + center.z;
+    memset(o + 0x18, 0, sizeof(Vec));
+    memset(o + 0x24, 0, sizeof(Vec));
+    *(s16*)(o + 0x3A) = 0;
+    o[0x3D] = 1;
 }
+#endif
 
 // .text:0x00138AA4 size:0x71C mapped:0x80777B38
 void fn_3_138AA4(void) {
