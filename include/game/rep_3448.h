@@ -45,6 +45,7 @@ typedef struct RepTask {
     /*0x24*/ union {
         u8 flag[4]; // per-player "counting" flags (fn_3_11F02C, fn_3_121304)
         s16 delta[4]; // per-player score change shown (fn_3_12026C)
+        u32 voice; // looping sound voice, 0xFFFFFFFF when none (fn_3_121908)
     } u24;
 } RepTask;
 
@@ -70,6 +71,13 @@ typedef struct RepRosterEnt {
     /*0x24*/ s16 charId;
     /*0x26*/ u8 _26[0xA0 - 0x26];
 } RepRosterEnt;
+
+// Controller state (game/UnknownHomes_Game.h InputStruct, size 0x10).
+typedef struct RepInput {
+    /*0x0*/ u8 _0[0x6];
+    /*0x6*/ u16 newButtonInput; // pressed this frame
+    /*0x8*/ u8 _8[0x8];
+} RepInput;
 
 // One minigame high-score entry (fn_3_109D88 returns 5 of them).
 typedef struct RepRankEnt {

@@ -71,10 +71,19 @@ extern u8 lbl_3_data_23E64[];
 extern u16 lbl_3_data_81DC[];
 extern MinigameSoundParams lbl_3_data_8404[];
 extern MinigameSoundParams lbl_3_data_84B8[];
-extern u16 lbl_3_data_81FC[];
 extern s32 sndFXCtrl(u32 vid, u8 ctrl, u8 value);
 extern u8 fn_8006C100(s16 value);
+extern u16 lbl_3_data_81FC[];
 extern u16 lbl_3_data_AA98[];
+extern u8 lbl_3_data_23F64[];
+extern u8 lbl_3_data_21460[]; // 7 reel symbols
+extern u8 lbl_3_data_21468[]; // [4][6] symbol weights
+extern u8 lbl_3_data_21480[];
+extern u8 lbl_3_data_84F4[];
+extern RepInput g_Controls[];
+extern void sndFXKeyOff(u32);
+extern int random_fn_3_9EE24(int max);
+extern int RandomIndexFromWeights(u8* weights, int count);
 extern s16 lbl_3_data_7F10[];
 extern f32 charSizeMultipliers[][2];
 extern u8 lbl_8034E978[]; // TODO type: MenuState (main/menu_globals.h)
@@ -1015,9 +1024,178 @@ void fn_3_121304(void) {
 #endif
 
 // .text:0x00121908 size:0xA2C mapped:0x8076099C
+// Slot reel shown during a minigame pitch.
+// NONMATCHING 79%: controller loop unrolled by 2 in ours, slot status tests use the __cntlzw form in orig, register allocation
+#if NONMATCHING
 void fn_3_121908(void) {
-    return;
+    u8* m = g_Minigame;
+    RepTask* q = REP_TASK;
+    u32 row;
+    u32 i;
+    s8 p;
+    u8 mode;
+    u8 sym;
+    if (fn_3_12536C()) {
+        if (q->state != 0 && q->u24.voice != 0xFFFFFFFF) {
+            sndFXKeyOff(q->u24.voice);
+            sndFXCtrl(q->u24.voice, 7, 0);
+            q->u24.voice = 0xFFFFFFFF;
+        }
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (q->u24.voice != 0xFFFFFFFF) {
+        sndFXCtrl(q->u24.voice, 7, g_Minigame[0x1A3B] != 0 ? 0 : lbl_3_data_84F4[0x1C]);
+    }
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_23F64);
+        REP_OBJC(q, 8)->flags &= ~2;
+        q->_1E = random_fn_3_9EE24(6);
+        q->u24.voice = 0xFFFFFFFF;
+        q->state = 1;
+    case 1:
+        m[0x1DF4] = 0;
+        if (g_GameLogic[0x11E] == 1 && g_Pitcher[0x13E] == 1) {
+            q->state = 2;
+        }
+        break;
+    case 2:
+        if (g_Batter[0x7B] != 0) {
+            REP_OBJC(q, 0)->anim = 0x156;
+            REP_OBJC(q, 1)->anim = 0x153;
+            REP_OBJC(q, 6)->anim = 0x151;
+            REP_OBJC(q, 7)->frame = 0;
+        } else {
+            REP_OBJC(q, 0)->anim = 0x157;
+            REP_OBJC(q, 1)->anim = 0x154;
+            REP_OBJC(q, 6)->anim = 0x152;
+            REP_OBJC(q, 7)->frame = 0x10000;
+        }
+        if (g_Minigame[0x1909] == 0 && g_Minigame[0x1A3C] == 0) {
+            if (g_Minigame[0x1909] == 0 && g_Minigame[0x1A3C] == 0 && g_Minigame[0x1A2B] == 3) {
+                row = g_Minigame[0x1A2D] / 5;
+                if (row >= 4) {
+                    row = 3;
+                }
+            } else {
+                row = g_Minigame[0x1A2B];
+            }
+            if (g_Minigame[0x1A2D] % 10 == g_Minigame[0x1AD8]) {
+                q->_20 = 3;
+            } else {
+                q->_20 = RandomIndexFromWeights(lbl_3_data_21468 + row * 6, 6);
+            }
+            q->_22 = 1;
+        } else if (g_Minigame[0x1A3C] != 0 && g_Minigame[0x1907] == 1 &&
+                   g_Minigame[0x18D8 + *(s8*)(g_Minigame + 0x1905)] == 0) {
+            if (g_Minigame[0x1A2D] % 10 == g_Minigame[0x1AD8] && *(s32*)g_Scores == g_Minigame[0x1AD9]) {
+                q->_20 = 3;
+            } else {
+                q->_20 = RandomIndexFromWeights(lbl_3_data_21480, 6);
+            }
+            q->_22 = 1;
+        } else {
+            q->_20 = random_fn_3_9EE24(6);
+            q->_22 = 1;
+        }
+        q->timer = 0;
+        q->_1A = 0;
+        q->state = 3;
+    case 3:
+        mode = g_Minigame[0x1A3B] == 0;
+        REP_OBJC(q, 1)->mode = mode;
+        REP_OBJC(q, 6)->mode = mode;
+        if (REP_OBJC(q, 6)->status == 2 && REP_OBJC(q, 1)->status == 2) {
+            // TODO type: fn_3_90064 returns the voice id (declared void in game/m_sound.h)
+            q->u24.voice = ((u32 (*)(s32))fn_3_90064)(lbl_3_data_81FC[0x1C]);
+            q->state = 4;
+        }
+        break;
+    case 4:
+        if (q->timer < 0xFFFE) {
+            q->timer++;
+        } else {
+            q->timer = 0xFFFF;
+        }
+        if (g_Minigame[0x1907] - (g_Minigame[0x18D8 + *(s8*)(g_Minigame + 0x1905)] == 0) != 0) {
+            if (q->timer >= 110 && lbl_3_data_21460[(q->_1E + 1U) % 7] == q->_20) {
+                q->_1A = 1;
+            }
+            for (i = 0; i < 4; i++) {
+                p = g_Minigame[0x18CC + i];
+                if (p >= 0 && p < 4 && i != *(s8*)(g_Minigame + 0x1905) && g_Minigame[0x18D8 + i] == 0 &&
+                    g_Minigame[0x1A3B] == 0 && (g_Controls[p].newButtonInput & 0x100)) {
+                    q->_1A = 1;
+                    break;
+                }
+            }
+            if (q->_1A == 0) {
+                REP_OBJC(q, 8)->flags |= 2;
+            } else {
+                REP_OBJC(q, 8)->flags &= ~2;
+            }
+        } else if (q->timer >= 50 && lbl_3_data_21460[(q->_1E + 1U) % 7] == q->_20) {
+            q->_1A = 1;
+        }
+        REP_OBJC(q, 2)->mode = g_Minigame[0x1A3B] == 0;
+        if (REP_OBJC(q, 2)->status == 2) {
+            REP_OBJC(q, 2)->frame = 0;
+            q->_1E = (q->_1E + 1U) % 7;
+            if (q->_1A != 0) {
+                REP_OBJC(q, 2)->mode = 0;
+                sndFXKeyOff(q->u24.voice);
+                sndFXCtrl(q->u24.voice, 7, 0);
+                q->u24.voice = 0xFFFFFFFF;
+                fn_3_90064(lbl_3_data_81FC[0x1D]);
+                q->state = 5;
+            }
+        }
+        break;
+    case 5:
+        REP_OBJC(q, 3)->mode = g_Minigame[0x1A3B] == 0;
+        if (REP_OBJC(q, 3)->status == 2) {
+            REP_OBJC(q, 3)->frame = 0;
+            REP_OBJC(q, 3)->mode = 0;
+            q->state = 6;
+        }
+        break;
+    case 6:
+        mode = 4;
+        if (g_Minigame[0x1A3B] != 0) {
+            mode = 0;
+        }
+        REP_OBJC(q, 1)->mode = mode;
+        REP_OBJC(q, 6)->mode = mode;
+        if ((REP_OBJC(q, 6)->frame >> 16) == 0 && (REP_OBJC(q, 1)->frame >> 16) == 0) {
+            m[0x1DF4] = 1;
+            m[0x1DF5] = sym = lbl_3_data_21460[q->_1E];
+            if (sym == 5) {
+                do {
+                    m[0x1DF5] = sym = random_fn_3_9EE24(5);
+                } while (q->_22 != 0 && sym == 3);
+                m[0x1DF6] = 1;
+            } else {
+                m[0x1DF6] = 0;
+            }
+            q->state = 7;
+        }
+        break;
+    case 7:
+        if (g_Pitcher[0x13E] != 1) {
+            q->state = 1;
+        }
+        break;
+    }
+    sym = lbl_3_data_21460[q->_1E];
+    fn_800363D8(q, 3, 1, 0x15B, sym);
+    fn_800363D8(q, 3, 2, 0x15C, sym);
+    sym = lbl_3_data_21460[(q->_1E + 1U) % 7];
+    fn_800363D8(q, 4, 1, 0x15B, sym);
+    fn_800363D8(q, 4, 2, 0x15C, sym);
 }
+#endif
 
 // .text:0x00122334 size:0x3A0 mapped:0x807613C8
 void fn_3_122334(void) {
