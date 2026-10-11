@@ -9,10 +9,13 @@
 // model.c: character models, their parts data and animation state.
 
 typedef struct CharJoint {
-    /*0x00*/ u8 _00[0x14];
-    /*0x14*/ void* _14;
-    /*0x18*/ u8 _18[0xEC - 0x18];
-    /*0xEC*/ MtxPtr worldMtx;
+    /*0x000*/ u16 id;
+    /*0x002*/ u8 _02[0x12];
+    /*0x014*/ void* _14;
+    /*0x018*/ u8 _18[0xEC - 0x18];
+    /*0x0EC*/ MtxPtr worldMtx;
+    /*0x0F0*/ u8 _F0[0x136 - 0xF0];
+    /*0x136*/ u8 _136;
 } CharJoint;
 
 typedef struct CharModel {
@@ -24,19 +27,28 @@ typedef struct CharModel {
     /*0x80*/ u16 _80;
     /*0x82*/ u8 _82[0x98 - 0x82];
     /*0x98*/ u8 flags;
+    /*0x99*/ u8 _99;
 } CharModel;
 
 // One loaded model and its root control.
 typedef struct CharSlot {
     /*0x00*/ CharModel* model;
-    /*0x04*/ u8 _04[0xC];
+    /*0x04*/ u8 _04[0x4];
+    /*0x08*/ void (*callback)(struct CharSlot* slot);
+    /*0x0C*/ u8 _0C[0x4];
     /*0x10*/ Control ctrl;
-    /*0x4C*/ u8 _4C[0x64 - 0x10 - sizeof(Control)];
+    /*0x4C*/ u8 _4C[0x54 - 0x10 - sizeof(Control)];
+    /*0x54*/ f32 _54;
+    /*0x58*/ u8 _58[0x2];
+    /*0x5A*/ u8 _5A;
+    /*0x5B*/ u8 _5B[0x64 - 0x5B];
     /*0x64*/ u16 _64;
     /*0x66*/ u16 _66;
     /*0x68*/ void* _68;
     /*0x6C*/ u8 _6C;
-    /*0x6D*/ u8 _6D[0x90 - 0x6D];
+    /*0x6D*/ u8 _6D[0x3];
+    /*0x70*/ void* _70;
+    /*0x74*/ u8 _74[0x90 - 0x74];
 } CharSlot; // size: 0x90
 
 typedef struct CharSlotList {
@@ -119,7 +131,8 @@ typedef struct CharActor {
     /*0x270*/ u8 _270[0x3];
     /*0x273*/ u8 _273;
     /*0x274*/ u8 _274;
-    /*0x275*/ u8 _275[0x3];
+    /*0x275*/ u8 _275[0x2];
+    /*0x277*/ u8 _277;
     /*0x278*/ u8 _278;
     /*0x279*/ u8 _279[0x3];
 } CharActor; // size: 0x27C
@@ -155,7 +168,9 @@ typedef struct CharMgr {
     /*0x0060*/ CharSlotList* slots;
     /*0x0064*/ CharSlotList* slots64;
     /*0x0068*/ CharSlotList* slots68;
-    /*0x006C*/ u8 _006C[0x13C - 0x6C];
+    /*0x006C*/ u8 _006C[0xAC - 0x6C];
+    /*0x00AC*/ u32 _0AC[4];
+    /*0x00BC*/ u8 _00BC[0x13C - 0xBC];
     /*0x013C*/ CharSlotList* partSlots;
     /*0x0140*/ CharParts partsPool[13];
     /*0x0C04*/ CharActor actors[13];
@@ -192,12 +207,6 @@ typedef struct CharMgr {
 extern CharMgr lbl_8036E548;
 extern CharActor lbl_8036C4FC[13]; // backup of lbl_8036E548.actors
 
-// Object handed to fn_8001FDD4 (the fn_80017814 load callback).
-typedef struct CharLoadObj {
-    /*0x00*/ u8 _00[0x70];
-    /*0x70*/ void* _70;
-} CharLoadObj;
-
 // Task object (lbl_803CC1B8) running fn_800177B4.
 typedef struct CharLoadTask {
     /*0x00*/ u8 _00[0x14];
@@ -232,7 +241,7 @@ void fn_80011BE4(s32 index);
 
 void fn_8001AAF0(void);
 void fn_800189B8(void);
-void fn_8001FDD4(CharLoadObj* obj);
+void fn_8001FDD4(CharSlot* slot);
 void fn_8001B2D0(void);
 void fn_8001D110(s32 index, f32 x, f32 y, f32 z);
 void fn_8001D148(s32 index, f32 x, f32 y, f32 z);
@@ -255,7 +264,7 @@ void fn_8001F16C(void);
 s32 fn_80014F40(s32 id);
 s32 fn_80014E50(s32 id);
 s32 fn_80014D4C(s32 id);
-void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharLoadObj*));
+void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharSlot*));
 void fn_8001BE50(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
 
 void fn_8001CA40(u8 stadium);
@@ -270,6 +279,8 @@ void fn_8001B4D8(s32 index, s32 enable);
 s32 fn_80016F7C(void);
 s32 fn_80016B60(CharActor* actor);
 void challengeMapMaybe(void);
+
+void fn_8001FC4C(CharActor* actor);
 
 void fn_8001B200(void);
 

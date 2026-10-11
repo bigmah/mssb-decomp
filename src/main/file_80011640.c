@@ -56,6 +56,25 @@ extern void fn_800BEBCC(s32 index, Vec* dir);
 extern void ANIMGet(void* bank);
 extern void fn_800B2C10(CharModel* model, u16 joint, Vec* out);
 extern void fn_800B2C44(CharModel* model, u16 joint, Vec* out);
+extern void convertTextureHeader(void* textures);
+extern void LoadActorLayout(void* layout);
+extern void convertGeometryAndSknHeader(void* geo, void* skn);
+extern void haveActLayoutPointToGeoHeader(void* layout, void* geo);
+extern void fn_800BD190(void* geo, void* tex);
+extern void fn_8002399C(CharSlot* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
+extern void fn_800B2B74(CharModel* model, u16 joint);
+extern void fn_800B2B54(CharModel* model, u16 joint, s32 arg);
+extern void fn_800B2BA8(CharModel* model, u16 joint, s32 a, s32 b);
+extern void fn_800B2C08(CharModel* model, u16 joint);
+extern void fn_800BD548(CharSlot* slot, s32 count, ...);
+extern void fn_800638B4(CharActor* actor, CharSlot* slot);
+extern void fn_80063010(CharActor* actor, CharSlot* slot);
+extern void fn_8004B7B4(CharActor* actor, CharSlot* slot);
+extern void fn_800637BC(CharActor* actor, CharSlot* slot);
+extern void fn_800637D4(CharActor* actor, CharSlot* slot);
+extern void fn_8004BD6C(CharActor* actor, CharSlot* slot);
+extern void fn_80052634(CharActor* actor, CharSlot* slot);
+extern void fn_80062ED4(CharActor* actor, CharSlot* slot);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -619,9 +638,190 @@ void fn_800177B4(void) {
 #endif
 
 // .text:0x80017814 size:0x514
-void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharLoadObj*)) {
-    return;
+// NONMATCHING 95%: register allocation (joint temps, relocation base)
+#if NONMATCHING
+void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharSlot*)) {
+    CharSlot* slot = &lbl_8036E548.slots->slots[modelIndex];
+    void** files = actor->files;
+    void* tex;
+    void* layout;
+    void* geo;
+    void* skn;
+    void* bank;
+    s32 count;
+    s32 i;
+    s32 j;
+
+    // TODO type: the file header holds offsets that are relocated in place.
+    if (files[0] != NULL) {
+        actor->files[0] = (u8*)files + (u32)files[0];
+        if (actor->files[1] != NULL) {
+            actor->files[1] = (u8*)files + (u32)files[1];
+            if (actor->files[2] != NULL) {
+                actor->files[2] = (u8*)files + (u32)files[2];
+                if (actor->files[3] != NULL) {
+                    actor->files[3] = (u8*)files + (u32)files[3];
+                    if (actor->files[4] != NULL) {
+                        actor->files[4] = (u8*)files + (u32)files[4];
+                    }
+                }
+            }
+        }
+    }
+    tex = actor->files[0];
+    convertTextureHeader(tex);
+    if (actor->files[1] != NULL) {
+        layout = actor->files[1];
+        geo = actor->files[2];
+        skn = actor->files[3];
+        LoadActorLayout(layout);
+        convertGeometryAndSknHeader(geo, skn);
+        haveActLayoutPointToGeoHeader(layout, geo);
+        fn_800BD190(geo, tex);
+    } else {
+        return;
+    }
+    if (index < 9) {
+        bank = actor->banks.b[2];
+    } else {
+        bank = actor->banks.b[1];
+    }
+    fn_8002399C(slot, actor->modelIndex, (u16)modelIndex, layout, bank, skn);
+    if (actor->files[4] != NULL) {
+        fn_80025DDC(actor->files[4]);
+        fn_80025C58(actor->files[4], (ShapeModel**)&slot->model);
+    }
+    count = slot->model->jointCount;
+    memset(actor->jointIdx, 0xFF, sizeof(actor->jointIdx));
+    for (i = 0; i < count; i++) {
+        if (slot->model->joints[i]->id != 0xFFFF) {
+            actor->jointIdx[slot->model->joints[i]->id] = i;
+        }
+    }
+    fn_800B2B74(slot->model, actor->jointIdx[19]);
+    fn_800B2B74(slot->model, actor->jointIdx[25]);
+    fn_800B2B74(slot->model, actor->jointIdx[36]);
+    actor->model = slot->model;
+    j = actor->jointIdx[3];
+    if (j != 0xFFFF) {
+        fn_800B2B54(actor->model, j, 0xD);
+    }
+    fn_800BD548(slot, 4, lbl_8036E548._0AC[0], lbl_8036E548._0AC[1], lbl_8036E548._0AC[2], lbl_8036E548._0AC[3]);
+    CTRLSetTranslation(&slot->ctrl, 0.0f, 0.0f, 0.0f);
+    CTRLSetRotation(&slot->ctrl, 0.0f, 0.0f, 0.0f);
+    slot->_54 = 0.5f;
+    slot->_5A = 1;
+    j = actor->jointIdx[3];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[2];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[1];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[36];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+    }
+    j = actor->jointIdx[46];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    fn_800B2C08(slot->model, actor->jointIdx[4]);
+    fn_8001FC4C(actor);
+    slot->callback = callback;
+    actor->_060 = -1;
+    actor->anim[0] = -1;
+    actor->anim[1] = -1;
+    actor->anim[2] = -1;
+    actor->_068 = -1;
+    actor->_06A[0] = -1;
+    actor->_06A[1] = -1;
+    actor->_06A[2] = -1;
+    actor->mode[0] = 0;
+    actor->mode[1] = 0;
+    actor->_25F[0] = 0;
+    actor->_25F[1] = 0;
+    actor->_25F[2] = 0;
+    actor->_262[0] = 0;
+    actor->_262[1] = 0;
+    actor->_262[2] = 0;
+    actor->_265[0] = 0;
+    actor->_265[1] = 0;
+    actor->_265[2] = 0;
+    actor->_268 = 0;
+    actor->_269[0] = 0;
+    actor->_269[1] = 0;
+    actor->_269[2] = 0;
+    actor->_26C[0] = 0;
+    actor->_26C[1] = 0;
+    actor->_26C[2] = 0;
+    actor->_270[0] = 0;
+    actor->_270[1] = 0;
+    actor->_270[2] = 0;
+    actor->_273 = 0;
+    actor->_277 = 0xFF;
+    switch (actor->kind) {
+    case 2:
+        fn_800638B4(actor, slot);
+        break;
+    case 33:
+    case 34:
+    case 35:
+    case 36:
+        fn_80063010(actor, slot);
+        break;
+    case 19:
+        fn_8004B7B4(actor, slot);
+        break;
+    case 12:
+    case 21:
+    case 22:
+    case 23:
+    case 42:
+        slot->model->_99 = 1;
+        break;
+    case 24:
+    case 25:
+    case 26:
+        slot->model->_99 = 1;
+        break;
+    case 20:
+    case 43:
+        fn_800637BC(actor, slot);
+        break;
+    case 38:
+        slot->model->_99 = 1;
+        fn_8004BD6C(actor, slot);
+        break;
+    case 41:
+        fn_800637D4(actor, slot);
+    case 18:
+    case 40:
+        fn_8004BD6C(actor, slot);
+        break;
+    case 14:
+    case 37:
+        fn_80052634(actor, slot);
+        break;
+    case 16:
+    case 44:
+    case 45:
+    case 46:
+    case 47:
+        fn_80062ED4(actor, slot);
+        break;
+    }
 }
+#endif
 
 // .text:0x80017D28 size:0x94
 void fn_80017D28(void) {
@@ -1261,13 +1461,13 @@ void fn_8001F8A4(void) {
 }
 
 // .text:0x8001FC4C size:0x188
-void fn_8001FC4C(void) {
+void fn_8001FC4C(CharActor* actor) {
     return;
 }
 
 // .text:0x8001FDD4 size:0x2C
-void fn_8001FDD4(CharLoadObj* obj) {
-    if (obj->_70 != NULL) {
-        fn_800B9AA8(obj->_70);
+void fn_8001FDD4(CharSlot* slot) {
+    if (slot->_70 != NULL) {
+        fn_800B9AA8(slot->_70);
     }
 }
