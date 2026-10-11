@@ -108,11 +108,60 @@ void fn_3_16D9B0(void) {
 }
 
 // .text:0x0016DB6C size:0x458 mapped:0x807ACC00
-#pragma dont_inline on
+extern f32 lbl_3_rodata_41A0; // -15.438f: x of column 0
+extern f32 lbl_3_rodata_41A4; // -12.96f: y of row 0
+extern f32 lbl_3_rodata_41A8; // -10.878f: x of column 1
+extern f32 lbl_3_rodata_41AC; // -6.318f: x of column 2
+extern f32 lbl_3_rodata_41B0; // -9.0f: y of row 1
+extern f32 lbl_3_rodata_41B4; // 1.8f: digit width
+
+// Draws two-digit counter i (0-5, see fn_3_16E1A0) of the scoreboard overlay.
 void fn_3_16DB6C(u8 i) {
-    return;
+    f32 x;
+    f32 y;
+    s32 value;
+    s32 tens;
+
+    switch (i) {
+    case 0:
+        x = lbl_3_rodata_41A0;
+        y = lbl_3_rodata_41A4;
+        value = lbl_3_bss_D6F0[0];
+        break;
+    case 1:
+        x = lbl_3_rodata_41A8;
+        y = lbl_3_rodata_41A4;
+        value = lbl_3_bss_D6F0[2];
+        break;
+    case 2:
+        x = lbl_3_rodata_41AC;
+        y = lbl_3_rodata_41A4;
+        value = lbl_3_bss_D6F0[1];
+        break;
+    case 3:
+        x = lbl_3_rodata_41A0;
+        y = lbl_3_rodata_41B0;
+        value = lbl_3_bss_D6F0[4];
+        break;
+    case 4:
+        x = lbl_3_rodata_41A8;
+        y = lbl_3_rodata_41B0;
+        value = lbl_3_bss_D6F0[3];
+        break;
+    case 5:
+        x = lbl_3_rodata_41AC;
+        y = lbl_3_rodata_41B0;
+        value = lbl_3_bss_D6F0[5];
+        break;
+    default:
+        return;
+    }
+    tens = (value % 100) / 10;
+    if (tens != 0) {
+        fn_3_16D810(tens, x, y);
+    }
+    fn_3_16D810(value % 10, x + lbl_3_rodata_41B4, y);
 }
-#pragma dont_inline reset
 
 // .text:0x0016DFC4 size:0x1DC
 void fn_3_16DFC4(void) {
@@ -142,7 +191,8 @@ void fn_3_16DFC4(void) {
     fn_80033B58(lbl_3_bss_D6E4, lbl_3_bss_D6E8, 0, 0);
     i = 0;
     do {
-        fn_3_16DB6C(i);
+        // Called through a pointer so it stays a call (the original does not inline it here).
+        ((void (*)(u8))fn_3_16DB6C)(i);
         i += 1;
     } while (i < 6U);
 }
