@@ -59,6 +59,12 @@ extern f32 lbl_3_rodata_BBC;
 extern f32 lbl_3_rodata_B84;
 extern f32 lbl_3_rodata_B88;
 extern f32 lbl_3_rodata_B6C;
+extern f32 lbl_3_rodata_BA8;
+extern f32 lbl_3_rodata_BAC;
+extern f32 lbl_3_rodata_BB0;
+extern f32 lbl_3_data_1C44[];
+extern s16 lbl_3_data_1C54[];
+int RandomInt_Game_Range(int min, int max);
 extern u8 g_Batter[];
 BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern u8 lbl_3_common_bss_34C90[];
@@ -1784,9 +1790,82 @@ void fn_3_2DCF4(int i) {
 }
 
 // .text:0x0002DDB4 size:0x668 mapped:0x8066CE48
+// NONMATCHING 80%: original re-materialises g_AiLogic per access (lis/addi/add) and uses lhau; we keep one base pointer
+#if NONMATCHING
 void fn_3_2DDB4(void) {
-    return;
+    u8 p = g_Minigame[0x1922];
+    u8* ai = (u8*)g_AiLogic;
+    u8* f = g_Fielders + g_Minigame[0x1923] * 0x268;
+    f32 d;
+    f32 k;
+    f32 dx;
+    f32 dz;
+    if (*(s16*)(ai + p * 2 + 0x9C) < 0x7FFE) {
+        *(s16*)(ai + p * 2 + 0x9C) = *(s16*)(ai + p * 2 + 0x9C) + 1;
+    } else {
+        *(s16*)(ai + p * 2 + 0x9C) = 0x7FFF;
+    }
+    if (ai[p + 0xB4] == 0) {
+        if (ai[p + 0xB8] == 0) {
+            d = *(f32*)f * *(f32*)f + *(f32*)(f + 8) * *(f32*)(f + 8);
+            k = lbl_3_data_1C44[g_Batter[0x89]];
+            SQRT_L(d);
+            *(f32*)(ai + p * 8 + 0x7C) = (*(f32*)f / d) * k + *(f32*)f;
+            *(f32*)(ai + p * 8 + 0x80) = (*(f32*)(f + 8) / d) * k + *(f32*)(f + 8);
+            *(s16*)(ai + p * 2 + 0x9C) = 0;
+            ai[p + 0xB8] = 1;
+        } else if (ai[p + 0xB8] == 2) {
+            if (f[0x1C8] == 2 || f[0x1C8] == 3) {
+                ai[p + 0xB4] = 1;
+                *(s16*)(ai + p * 2 + 0xAC) = *(s16*)(f + 0x180);
+            } else {
+                ai[p + 0xB4] = 2;
+            }
+            ai[p + 0xB8] = 0;
+        }
+    } else if (ai[p + 0xB4] == 1) {
+        if (ai[p + 0xB8] == 0) {
+            d = *(f32*)f * *(f32*)f + *(f32*)(f + 8) * *(f32*)(f + 8);
+            SQRT_L(d);
+            if (*(f32*)f < lbl_3_rodata_BA8) {
+                *(s16*)(ai + p * 2 + 0xAC) = *(s16*)(f + 0x180) + RandomInt_Game(0x400) - 0x600;
+            } else if (*(f32*)f > lbl_3_rodata_B70) {
+                *(s16*)(ai + p * 2 + 0xAC) = *(s16*)(f + 0x180) + RandomInt_Game(0x400) + 0x200;
+            } else if (d > lbl_3_rodata_BAC) {
+                *(s16*)(ai + p * 2 + 0xAC) = RandomInt_Game(0x800) + *(s16*)(f + 0x180) + 0x400;
+            } else if (d < lbl_3_rodata_BB0) {
+                *(s16*)(ai + p * 2 + 0xAC) = RandomInt_Game(0x800) + *(s16*)(f + 0x180) - 0x400;
+            } else if (RandomInt_Game(2) != 0) {
+                *(s16*)(ai + p * 2 + 0xAC) = RandomInt_Game(0x400) + *(s16*)(ai + p * 2 + 0xAC) - 0x200;
+            } else {
+                *(s16*)(ai + p * 2 + 0xAC) = RandomInt_Game(0x1000);
+            }
+            *(s16*)(ai + p * 2 + 0xAC) = fn_3_9FE6C_normalizeAngle(*(s16*)(ai + p * 2 + 0xAC));
+            *(s16*)(ai + p * 2 + 0xA4) = RandomInt_Game_Range(lbl_3_data_1C54[0], lbl_3_data_1C54[1]);
+            *(s16*)(ai + p * 2 + 0x9C) = 0;
+            ai[p + 0xB8] = 1;
+        }
+    }
+    if (ai[p + 0xB8] == 1) {
+        if (ai[p + 0xB4] == 1) {
+            *(s16*)(g_Controls + p * 16) = *(s16*)(ai + p * 2 + 0xAC);
+            if (*(s16*)(ai + p * 2 + 0x9C) >= *(s16*)(ai + p * 2 + 0xA4)) {
+                ai[p + 0xB8] = 0;
+            }
+        } else {
+            dz = *(f32*)(ai + p * 8 + 0x80) - *(f32*)(f + 8);
+            dx = *(f32*)(ai + p * 8 + 0x7C) - *(f32*)f;
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            if (d < lbl_3_rodata_B80) {
+                ai[p + 0xB8] = 2;
+                return;
+            }
+            *(s16*)(g_Controls + p * 16) = fn_3_9FB8C(dx, dz);
+        }
+    }
 }
+#endif
 
 // .text:0x0002E41C size:0x460 mapped:0x8066D4B0
 // NONMATCHING 85%: bss base hoisting, history-fill loop guard and stfsx addressing of the pitcher copy differ; logic and calls match
