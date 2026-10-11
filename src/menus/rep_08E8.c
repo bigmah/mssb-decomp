@@ -806,3 +806,23 @@ void fn_2_478F4(void) {
     lbl_8036E548[0x2D7B] = 0;
     lbl_8036E548[0x2D7C] = 0;
 }
+
+// .text:0x49F7C size:0xE8
+// NONMATCHING 98%: original places the copy loop's pointer init after the final blr (out-of-line preheader, docs/patterns/unsolved.md); a goto layout gets within one extra blr
+#if NONMATCHING
+u16* fn_2_49F7C(u16* string, s32 capacity, u16 character, s32 position) {
+    s32 length = fn_2_4A068(string);
+    s32 i;
+    u16* p;
+    if (length < position || character == 0x4000 || length + 2 > capacity) {
+        return NULL;
+    }
+    p = &string[length];
+    for (i = length; i >= position; i--) {
+        p[1] = p[0];
+        p--;
+    }
+    string[position] = character;
+    return string;
+}
+#endif
