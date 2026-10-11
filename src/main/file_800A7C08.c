@@ -915,9 +915,21 @@ u16 fn_800ABB14(u8* data, s32 len) {
 }
 
 // .text:0x800ABB60 size:0x70
+// NONMATCHING 96%: removeQueue is called with whatever r3 holds; our call passes &lbl_803C7838 explicitly
+#if NONMATCHING
 void fn_800ABB60(void) {
-    return;
+    CardSlot* slot = lbl_803C7838.slots;
+    s32 chan;
+
+    if (lbl_803C7838.op == 7) {
+        fn_800B0A14_removeQueue(slot);
+        return;
+    }
+    for (chan = 0; chan < 2; chan++, slot++) {
+        slot->probeResult = CARDProbeEx(chan, &slot->memSize, &slot->sectorSize);
+    }
 }
+#endif
 
 // .text:0x800ABBD0 size:0x374
 void fn_800ABBD0(void) {
