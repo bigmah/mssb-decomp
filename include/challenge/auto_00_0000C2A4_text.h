@@ -14,5 +14,6 @@ typedef struct ChBoneNode {
 void fn_1_C2A4(void);
 s32 fn_1_C2DC(ChBoneNode* bone, char* buf, s32 col, s32 width, s32 ret, s32* line, s32* skip,
               s32* remaining);
+void fn_1_C5A8(void);
 
 #endif

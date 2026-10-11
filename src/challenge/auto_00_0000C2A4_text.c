@@ -46,3 +46,8 @@ s32 fn_1_C2DC(ChBoneNode* bone, char* buf, s32 col, s32 width, s32 ret, s32* lin
     }
     return ret;
 }
+
+// .text:0x0000C5A8 size:0x4
+void fn_1_C5A8(void) {
+    return;
+}
