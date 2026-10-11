@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "static/UnknownHomes_Static.h"
+#include "main/file_8004B284.h"
 
 // Yes/no confirmation dialog (lbl_803C5F74).
 typedef struct ConfirmDialog {
@@ -25,6 +26,12 @@ typedef struct ConfirmDialog {
 } ConfirmDialog; // size: 0xB4
 
 extern ConfirmDialog lbl_803C5F74;
+
+// Swing effect templates (lbl_800FC890).
+typedef struct SwingFx {
+    /*0x000*/ EffectParams params[3];
+    /*0x0F0*/ EffectParamsB trails[2];
+} SwingFx; // size: 0x198
 
 // Per-dialog-kind layout (lbl_800FEAAC).
 typedef struct DialogLayout {
@@ -116,6 +123,8 @@ typedef struct MeterTask {
     /*0x18*/ CharActor* actor;
     /*0x1C*/ u8 kind;
 } MeterTask;
+
+void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind);
 
 void fn_8004C9FC(void);
 

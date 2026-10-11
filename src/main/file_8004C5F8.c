@@ -1,5 +1,6 @@
 #include "main/file_8004C5F8.h"
 #include "main/file_8000F150.h"
+#include "main/file_8004B284.h"
 #include "main/file_80008E00.h"
 #include "Dolphin/gx.h"
 #include "musyx/musyx.h"
@@ -16,6 +17,14 @@ extern s32 lbl_803CBD14;
 extern s32 lbl_803CB880;
 
 void fn_800521B0(void);
+extern f32 fn_800335BC(s32 angle);
+extern f32 fn_800335EC(s32 angle);
+extern BOOL getAnimRelatedCoordinates(int charIdx, int joint, Vec* out);
+extern void fn_80030D88(Vec* pos, Vec* dir, void* params, int kind);
+extern SwingFx lbl_800FC890;
+extern BatFxTables lbl_800FC0FC;
+extern s32 lbl_803CBD0C;
+extern u8 lbl_803CBBC0;
 extern f32 fn_800B4C40(s32 id);
 extern s16 lbl_800FEB08[5][4];
 extern DialogTables lbl_800FEAAC;
@@ -37,9 +46,114 @@ extern void fn_80034E20(void* group, void* desc);
 extern s32 fn_80036214(void* owner, s32 idx, u32 track, u32 frame);
 
 // .text:0x8004C5F8 size:0x404
-void fn_8004C5F8(void) {
-    return;
+// NONMATCHING 93%: register allocation (saved-register order)
+#if NONMATCHING
+void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind) {
+    SwingFx* tbl = &lbl_800FC890;
+    Vec dir;
+    Vec pos;
+    s32 hasBat;
+    EffectParams* fx;
+    EffectParamsB* trail;
+
+    if (lbl_80366158._28 == 1) {
+        return;
+    }
+    dir.x = fn_800335EC((s32)(0.5f + 1024.0f * actor->angle / 3.1415927f));
+    dir.z = fn_800335BC((s32)(0.5f + 1024.0f * actor->angle / 3.1415927f));
+    dir.y = 0.0f;
+    hasBat = actor->flags & 1;
+    switch (kind) {
+    case 1:
+    case 3:
+    case 7:
+        if (hasBat) {
+            trail = &tbl->trails[1];
+            fx = &tbl->params[1];
+            if (actor->_27A != 0) {
+                fx = &tbl->params[2];
+            }
+            fx->stamp = lbl_803CBD0C;
+            fx->rgb = (lbl_800FC0FC.colors[kind].r << 24) | ((lbl_800FC0FC.colors[kind].g & 0xFF) << 16) |
+                      (lbl_800FC0FC.colors[kind].b << 8);
+        } else {
+            trail = &tbl->trails[0];
+        }
+        trail->stamp = lbl_803CBD0C;
+        if (hasBat && actor->_27A != 0) {
+            actor->_27A = 0;
+            if (lbl_803CBBC0 != 0) {
+                getAnimRelatedCoordinates(actor->_254, 0x1E, &pos);
+                pos.y = 0.0f;
+                fn_80030D88(&pos, &dir, fx, 5);
+            } else {
+                getAnimRelatedCoordinates(actor->_254, 0x22, &pos);
+                pos.y = 0.0f;
+                fn_80030D88(&pos, &dir, fx, 5);
+            }
+        }
+        if ((actor->flags & 0xA) == 2) {
+            getAnimRelatedCoordinates(actor->_254, 0x1E, &pos);
+            pos.y = 0.0f;
+            if (hasBat && actor->_27A == 0) {
+                fn_80030D88(&pos, &dir, fx, 5);
+            }
+            fn_8002955C(&pos, &dir, trail);
+        }
+        if ((actor->flags & 0x14) == 4) {
+            getAnimRelatedCoordinates(actor->_254, 0x22, &pos);
+            pos.y = 0.0f;
+            if (hasBat && actor->_27A == 0) {
+                fn_80030D88(&pos, &dir, fx, 5);
+            }
+            fn_8002955C(&pos, &dir, trail);
+        }
+        break;
+    case 0:
+    case 2:
+    case 5:
+    case 6:
+    case 8:
+    case 10:
+    case 11:
+    case 12:
+        if (!hasBat) {
+            fx = &tbl->params[0];
+        } else if (actor->_27A != 0) {
+            fx = &tbl->params[2];
+        } else {
+            fx = &tbl->params[1];
+        }
+        fx->stamp = lbl_803CBD0C;
+        fx->rgb = (lbl_800FC0FC.colors[kind].r << 24) | ((lbl_800FC0FC.colors[kind].g & 0xFF) << 16) |
+                  (lbl_800FC0FC.colors[kind].b << 8);
+        if (hasBat && actor->_27A != 0) {
+            actor->_27A = 0;
+            if (lbl_803CBBC0 != 0) {
+                getAnimRelatedCoordinates(actor->_254, 0x1E, &pos);
+                pos.y = 0.0f;
+                fn_80030D88(&pos, &dir, fx, 5);
+            } else {
+                getAnimRelatedCoordinates(actor->_254, 0x22, &pos);
+                pos.y = 0.0f;
+                fn_80030D88(&pos, &dir, fx, 5);
+            }
+            break;
+        }
+        if ((actor->flags & 0xA) == 2) {
+            getAnimRelatedCoordinates(actor->_254, 0x1E, &pos);
+            pos.y = 0.0f;
+            fn_80030D88(&pos, &dir, fx, 5);
+        }
+        if ((actor->flags & 0x14) == 4) {
+            getAnimRelatedCoordinates(actor->_254, 0x22, &pos);
+            pos.y = 0.0f;
+            fn_80030D88(&pos, &dir, fx, 5);
+        }
+        break;
+    }
 }
+#endif
 
 extern s32 lbl_803CB878;
 
