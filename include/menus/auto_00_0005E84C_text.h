@@ -183,7 +183,7 @@ void fn_2_636A4(MenuTask* task, MenuItem* item);
 void fn_2_63874(MenuTask* task, MenuItem* item);
 void fn_2_63A64(MenuTask* task, MenuItem* item);
 void fn_2_63BEC(MenuTask* task, MenuItem* item);
-void fn_2_63DBC(void);
+void fn_2_63DBC(MenuTask* task, MenuItem* item);
 void fn_2_63F58(MenuTask* task, MenuItem* item);
 void fn_2_64128(MenuTask* task, MenuItem* item);
 void fn_2_642F8(void);

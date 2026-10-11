@@ -1284,8 +1284,41 @@ void fn_2_63BEC(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x00063DBC size:0x19C
-void fn_2_63DBC(void) {
-    return;
+void fn_2_63DBC(MenuTask* task, MenuItem* item) {
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 0x11:
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 26;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 0;
+            item->state = 7;
+        }
+        break;
+    case 7:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        break;
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00063F58 size:0x1D0
