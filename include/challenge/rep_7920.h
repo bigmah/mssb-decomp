@@ -3,6 +3,12 @@
 
 #include "mssbTypes.h"
 
+typedef struct ChallengeResource {
+    u16 first;
+    u16 second;
+    void* data;
+} ChallengeResource;
+
 void* fn_1_26BFC(u16* resource, s32 index);
 
 typedef struct ChallengeAnimation {
@@ -25,5 +31,6 @@ typedef struct ChallengeAnimation {
 } ChallengeAnimation;
 
 void fn_1_26B7C(ChallengeAnimation* animation);
+ChallengeAnimation* fn_1_26C2C(ChallengeResource* resource, s32 index);
 
 #endif

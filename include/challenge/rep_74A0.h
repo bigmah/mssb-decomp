@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "C3/geoPalette.h"
+#include "C3/control.h"
 
 typedef struct ChallengeDrawActor {
     u8 padding[6];
@@ -11,7 +12,9 @@ typedef struct ChallengeDrawActor {
     struct DODisplayObj* display;
     u8 padding18[0x5C];
     struct ChallengeDrawActor* children;
-    u8 padding78[0x74];
+    u8 padding78[0x20];
+    u8 flags98;
+    u8 padding99[0x53];
     MtxPtr worldMatrix;
     u8 paddingF0[0x10];
     struct ChallengeDrawActor* next;
@@ -24,10 +27,17 @@ typedef struct ChallengeActorDrawing {
 } ChallengeActorDrawing;
 
 typedef struct {
-    ChallengeActorDrawing drawing;
-    u8 padding0C[0x60];
-    u8 visible;
-    u8 padding6D[0x23];
+    // (ActorObject in include/main/file_800BD8C4.h)
+    /*0x00*/ ChallengeActorDrawing drawing;
+    /*0x0C*/ u8 padding0C[4];
+    /*0x10*/ Control worldControl;
+    /*0x4C*/ u8 padding4C[8];
+    /*0x54*/ f32 scale;
+    /*0x58*/ u8 padding58[2];
+    /*0x5A*/ u8 setSpeed;
+    /*0x5B*/ u8 padding5B[0x11];
+    /*0x6C*/ u8 visible; // animateBones in ActorObject
+    /*0x6D*/ u8 padding6D[0x23];
 } ChallengeDrawNode;
 
 typedef struct {
@@ -37,26 +47,143 @@ typedef struct {
 } ChallengeDrawCollection;
 
 typedef struct {
-    u8 padding[0x10];
-    f32 x;
-    f32 y;
-    f32 z;
-} ChallengeOrbitPosition;
-
-typedef struct {
     u16 selectedBone;
     u8 selectedActor;
-    u8 padding03[0x189];
-    Mtx matrix;
+    u8 confetti;  // viewer menu toggles
+    u8 fog;
+    u8 colorEdit; // material colour items visible in the menu
+    u8 matAlpha; // material colour for fn_1_19D60, stored a, b, g, r
+    u8 matBlue;
+    u8 matGreen;
+    u8 matRed;
+    u8 padding0A[0x182];
+    Mtx matrix; // lbl_1_bss_6B7C (camera view)
 } ChallengeBoneSelection;
 
 typedef struct {
     void (*update)(u8*);
-    u8 padding[0x0C];
-    u16 state;
-    u8 padding12[3];
-    s8 menu;
+    u8 padding04[8];
+    void* _0C; // child task
+    s16 state;
+    u8 padding12[2];
+    u8 actorIndex; // viewer: selected actor in lbl_8036E548
+    u8 menu;
+    u8 viewMode; // 1 = show all actors
+    u8 _17;
+    u8 _18;
 } ChallengeRosterQueue;
+
+// One falling confetti piece (linked list, drawn by fn_1_182C0).
+typedef union ChallengeConfettiColor {
+    u32 rgba;
+    GXColor c;
+} ChallengeConfettiColor;
+
+typedef struct ChallengeConfetti {
+    /*0x00*/ struct ChallengeConfetti* next;
+    /*0x04*/ Vec pos; // x/y in screen units (-1..1), z = depth scale
+    /*0x10*/ Vec vel;
+    /*0x1C*/ Vec rot;
+    /*0x28*/ Vec rotVel;
+    /*0x34*/ u8 pad34[4];
+    /*0x38*/ f32 width;
+    /*0x3C*/ f32 height;
+    /*0x40*/ ChallengeConfettiColor front;
+    /*0x44*/ ChallengeConfettiColor back;
+    /*0x48*/ s16 delay;
+    /*0x4A*/ s16 index;
+} ChallengeConfetti;
+
+// Texture bank (lbl_1_bss_6AAC entries): like DOTexBank but with a 16-bit count.
+typedef struct ChallengeTexBank {
+    u16 count;
+    u16 pad02;
+    DOTexInfo tex[1]; // variable length
+} ChallengeTexBank;
+
+// Depth-sort entry used by fn_1_1857C.
+typedef struct ChallengeConfettiSort {
+    ChallengeConfetti* piece;
+    f32 depth;
+} ChallengeConfettiSort;
+
+// Task that owns the confetti list.
+typedef struct ChallengeConfettiTask {
+    /*0x00*/ u8 pad00[0xC];
+    /*0x0C*/ ChallengeConfetti* pieces;
+    /*0x10*/ u8 pad10[4];
+    /*0x14*/ u16 count; // low 12 bits
+} ChallengeConfettiTask;
+
+// Confetti settings (lbl_1_data_FB24).
+typedef struct ChallengeConfettiConfig {
+    s32 count;
+    s32 speed; // / 100000
+    s32 spin;  // / 100000
+    s32 width; // / 100000
+    s32 height; // / 100000
+    s32 colorMin;
+} ChallengeConfettiConfig;
+
+// Debug viewer camera (lbl_1_bss_6B7C).
+typedef struct ChallengeCamera {
+    /*0x00*/ Mtx view;
+    /*0x30*/ u16 rotX;
+    /*0x32*/ u16 rotY;
+    /*0x34*/ f32 panX;
+    /*0x38*/ f32 panY;
+    /*0x3C*/ Vec target;
+    /*0x48*/ Vec pos;
+    /*0x54*/ u8 pad54[8];
+} ChallengeCamera;
+
+// View of a controller entry in lbl_803C77B8 (PadState in main/file_800A7C08.h,
+// which can't be included next to UnknownHomes_Static.h).
+typedef struct ChallengePad {
+    u16 held;
+    u16 down;
+    u16 repeat;
+    u8 pad06[0xA];
+    s8 stickX;
+    s8 stickY;
+    s8 substickX;
+    s8 substickY;
+    u8 triggerL;
+    u8 triggerR;
+} ChallengePad;
+
+// View of an actor entry in lbl_8036E548 (+0xC04, stride 0x27C).
+// A loaded model file: a table of file offsets that fn_1_1C8C0 relocates in place
+// (0 textures, 1 geometry, 2 actor layout, 3 skin header, 4 animation bank).
+typedef union ChallengeFileRef {
+    u32 offset;
+    void* ptr;
+} ChallengeFileRef;
+
+typedef struct ChallengeViewerActor {
+    /*0x000*/ u8 pad00[4];
+    /*0x004*/ ChallengeDrawActor* drawActor;
+    /*0x008*/ ChallengeFileRef* model; // loaded by fn_1_1CBE4
+    /*0x00C*/ u8 pad0C[4];
+    /*0x010*/ void* anim;
+    /*0x014*/ u8 pad14[0x34 - 0x14];
+    /*0x034*/ Vec pos;
+    /*0x040*/ Vec rot;
+    /*0x04C*/ f32 scale;
+    /*0x050*/ u8 pad50[0x25D - 0x50];
+    /*0x25D*/ u8 _25D;
+    /*0x25E*/ u8 pad25E[0x27C - 0x25E];
+} ChallengeViewerActor;
+
+// View of lbl_8036E548 (global actor manager, cf. ActorManager in main/file_80026134.h).
+typedef struct ChallengeActorMgr {
+    /*0x000*/ u8 pad000[0x60];
+    /*0x060*/ ChallengeDrawCollection* collection;
+    /*0x064*/ u8 pad064[0xAC - 0x64];
+    /*0x0AC*/ struct Light* lights[4];
+    /*0x0BC*/ u8 pad0BC[0xC04 - 0xBC];
+    /*0xC04*/ ChallengeViewerActor actors[24];
+} ChallengeActorMgr;
 
 void fn_1_1D10C(void);
 
@@ -68,14 +195,54 @@ s32 fn_1_19D1C(u8 value);
 
 void fn_1_1D470(void);
 
-void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode);
+void fn_1_1A1EC(ChallengeActorDrawing* drawing, MtxPtr camera);
 
-void fn_1_18E04(ChallengeOrbitPosition* position, f32 degrees);
+void fn_1_1A3B4(void);
 
-void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode);
+void fn_1_1A850(MtxPtr bone, MtxPtr camera, u8 r, u8 g, u8 b, u8 a);
+
+void fn_1_1D110(void);
+
+void fn_1_1CBE4(u8* object);
+
+void fn_1_1C8C0(u8* object);
+
+void fn_1_1C3CC(u8* object);
+
+void fn_1_1B7DC(void);
+
+void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
+
+void fn_1_1A290(ChallengeDrawCollection* collection, MtxPtr camera);
+
+void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera);
 
 void fn_1_1A774(void);
 
 void fn_1_1D514(void);
+
+void fn_1_1B038(void);
+
+void fn_1_182C0(ChallengeConfetti* piece);
+
+void fn_1_18EE4(ChallengeConfetti* piece);
+
+void fn_1_191DC(ChallengeConfettiTask* task);
+
+s32 fn_1_1857C(ChallengeConfettiTask* task);
+
+void fn_1_1957C(void);
+
+void fn_1_1994C(void);
+
+void fn_1_1ADA4(void);
+
+void fn_1_1B424(void);
+
+void fn_1_1B6BC(void);
+
+void fn_1_1B0FC(void);
+
+void fn_1_1B2C8(void);
 
 #endif
