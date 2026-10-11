@@ -30,7 +30,7 @@ typedef struct CC438Cfg {
 void fn_3_CB8A8(u8*);
 void fn_3_CBA9C(u8* p);
 void fn_3_CBAFC(u8* p);
-void fn_3_CBC18(void);
+void fn_3_CBC18(u8* p);
 void fn_3_CBF80(u8* p);
 void fn_3_CC1D4(void);
 void fn_3_CC354(f32* p);

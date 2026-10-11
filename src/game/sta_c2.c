@@ -249,9 +249,64 @@ void fn_3_CBAFC(u8* p) {
 }
 
 // .text:0x000CBC18 size:0x368 mapped:0x8070ACAC
-void fn_3_CBC18(void) {
-    return;
+// NONMATCHING 97%: r30/r31 swapped (g_Minigame base vs chain nodes); fn_3_CBAFC and fn_3_CB8A8 are inlined copies
+#if NONMATCHING
+#pragma dont_inline off
+static inline void CB8A8_inl(u8* p) {
+    switch (p[0xCA]) {
+    case 0:
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+        CC1D4_inl();
+        break;
+    case 3:
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 4);
+        break;
+    case 1:
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 3);
+        break;
+    case 2:
+    default:
+        fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        break;
+    }
 }
+
+static inline void CBAFC_inl(u8* p) {
+    u8* c;
+    Mtx m;
+    Vec axis;
+    Vec dir;
+    Vec v;
+    c = *(u8**)(p + 0xC4);
+    axis = lbl_3_rodata_2640;
+    dir = lbl_3_rodata_264C;
+    PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSMTXMultVec(m, lbl_3_rodata_24E8, &v);
+    PSVECAdd(&v, (Vec*)(p + 0xA0), &v);
+    v.y += lbl_3_rodata_2668;
+    *(Vec*)(c + 0xCC) = v;
+    *(Vec*)(c + 0xD8) = *(Vec*)(c + 0xCC);
+    fn_3_D1F2C((CC438Cfg*)lbl_3_bss_A8A8, *(RopeNode**)(p + 0xC4), 4, &dir, p);
+}
+#pragma dont_inline on
+
+// Per-frame update: follows the minigame position/yaw, steps the chain, and reapplies
+// the model state when g_Minigame[0x1B19] changes.
+void fn_3_CBC18(u8* p) {
+    *(f32*)(p + 0xA0) = *(f32*)(g_Minigame + 0x1AE0);
+    *(f32*)(p + 0xA4) = *(f32*)(g_Minigame + 0x1AE4);
+    *(f32*)(p + 0xA8) = *(f32*)(g_Minigame + 0x1AE8);
+    *(f32*)(p + 0xC0) = -(lbl_3_rodata_2670 * shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8)));
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    CBAFC_inl(p);
+    if (g_Minigame[0x1B19] != p[0xCA]) {
+        p[0xCA] = g_Minigame[0x1B19];
+        CB8A8_inl(p);
+        fn_3_CBF80(p);
+    }
+}
+#endif
 
 // .text:0x000CBF80 size:0x254 mapped:0x8070B014
 extern const f32 lbl_3_rodata_2674;
