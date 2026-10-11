@@ -150,4 +150,6 @@ void fn_1_C5AC(void);
 
 void fn_1_D9B8(void);
 
+void fn_1_1125C(u8* object);
+
 #endif

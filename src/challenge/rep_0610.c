@@ -10,7 +10,7 @@ static void* ch_67B8[0xA];
 static u8 ch_fill62B8[0x500];
 static u8 ch_60EC[0x5C * 5];
 static u8* ch_60E8;
-static u8 ch_fill60E4[0x4];
+static u8* ch_60E4;
 static u8* ch_60E0;
 static u8 ch_fill60DF;
 static u8 ch_fill60DE;
@@ -3032,5 +3032,82 @@ void fn_1_D9B8(void) {
         *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_1770C;
     }
     fn_1_D8A0();
+}
+#endif
+
+// .text:0x1125C size:0x4B8
+// Draws the floor: a green line grid, or the selected floor texture tiled ch_5F60 times.
+// NONMATCHING ~90%: the original reloads the float constants after every FIFO write (non-const rodata); register allocation
+#if NONMATCHING
+void fn_1_1125C(u8* object) {
+    Mtx44 projection;
+    s32 i;
+    f32 t;
+
+    C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
+                 lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
+                 lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
+    GXSetProjection(projection, GX_PERSPECTIVE);
+    GXLoadPosMtxImm((f32(*)[4])(object + 8), 0);
+    GXSetCurrentMtx(0);
+    GXSetColorUpdate(1);
+    if (ch_5F62 < 0) {
+        GXClearVtxDesc();
+        GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+        GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+        GXSetNumTevStages(1);
+        GXSetNumChans(1);
+        GXSetNumTexGens(0);
+        GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+        GXSetChanCtrl(GX_COLOR0, 0, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+        GXSetChanCtrl(GX_ALPHA0, 0, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_COPY);
+        for (i = -24; i < 25; i++) {
+            t = i;
+            GXBegin(GX_LINES, GX_VTXFMT0, 4);
+            GXPosition3f32(-24.0f, 0.0f, t);
+            GXColor4u8(0, 255, 0, 200);
+            GXPosition3f32(24.0f, 0.0f, t);
+            GXColor4u8(0, 255, 0, 200);
+            GXPosition3f32(t, 0.0f, -24.0f);
+            GXColor4u8(0, 255, 0, 200);
+            GXPosition3f32(t, 0.0f, 24.0f);
+            GXColor4u8(0, 255, 0, 200);
+        }
+        return;
+    }
+    SetDisplayStateTexture((struct TexImage*)(ch_60E4 + ch_5F62 * 0x20 + 4), 0, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, 0);
+    GXSetNumTevStages(1);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_TEX0, 0x3C, 0, 0x7D);
+    GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0, 0, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetChanCtrl(GX_ALPHA0, 0, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_COPY);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(-24.0f, 0.0f, -24.0f);
+    GXColor1u32(0xFFFFFFFF);
+    GXTexCoord2u16(0, 0);
+    GXPosition3f32(-24.0f, 0.0f, 24.0f);
+    GXColor1u32(0xFFFFFFFF);
+    GXTexCoord2u16(0, ch_5F60);
+    GXPosition3f32(24.0f, 0.0f, 24.0f);
+    GXColor1u32(0xFFFFFFFF);
+    GXTexCoord2u16(ch_5F60, ch_5F60);
+    GXPosition3f32(24.0f, 0.0f, -24.0f);
+    GXColor1u32(0xFFFFFFFF);
+    GXTexCoord2u16(ch_5F60, 0);
 }
 #endif
