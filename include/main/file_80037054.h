@@ -123,9 +123,9 @@ typedef struct JointAttachTask {
 
 void fn_80037054(RigidBody* rb, RigidBodyParams* params);
 void fn_8003731C(RigidBody* rb, RigidBodyParams* params);
-void fn_80037768(RigidBody* rb, s8 axis, s32 steps, f32 len, f32 frac, f32 radius, f32 mass);
+void fn_80037768(RigidBody* rb, s32 axis, s32 steps, f32 len, f32 frac, f32 radius, f32 mass);
 void fn_80037964(JointAttachTask* task);
-void fn_80037984(JointAttachTask* task);
+void fn_80037984(void);
 void fn_80037AA0(RigidBody* body, s32 charIdx, void (*callback)(void), u16 joint, void* anim);
 void fn_80037B18(RigidBody* rb, Vec* force);
 void fn_80037BAC(RigidBody* rb);

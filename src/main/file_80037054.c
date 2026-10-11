@@ -21,6 +21,7 @@ typedef struct Unk8036E548 {
 extern Unk8036E548 lbl_8036E548;
 extern JointAttachTask* lbl_803CC1B8;
 extern u32 fn_80024D2C(void* anim);
+extern BOOL getAnimRelatedCoordinates(int charIdx, int joint, Vec* out);
 
 extern const f32 lbl_803CC720; // 1/60
 extern const f32 lbl_803CC724; // 100000
@@ -73,8 +74,54 @@ void fn_8003731C(RigidBody* rb, RigidBodyParams* params) {
 }
 
 // .text:0x80037768 size:0x1FC
-void fn_80037768(RigidBody* rb, s8 axis, s32 steps, f32 len, f32 frac, f32 radius, f32 mass) {
-    return;
+void fn_80037768(RigidBody* rb, s32 axis, s32 steps, f32 len, f32 frac, f32 radius, f32 mass) {
+    f32 inertia;
+
+    rb->axis = axis;
+    rb->p1.x = lbl_803CC728;
+    rb->p1.y = lbl_803CC728;
+    rb->p1.z = lbl_803CC728;
+    (&rb->p1.x)[axis] = -len * frac;
+    rb->p0.x = lbl_803CC728;
+    rb->p0.y = lbl_803CC728;
+    rb->p0.z = lbl_803CC728;
+    (&rb->p0.x)[axis] = len + (&rb->p1.x)[axis];
+    PSVECSubtract(&rb->p0, &rb->p1, &rb->d);
+    rb->mass = mass;
+    rb->invMass = lbl_803CC73C / mass;
+    rb->radius = radius;
+    {
+        f32 r2 = radius * radius;
+        f32 l2 = len * len;
+        inertia = mass * (r2 * lbl_803CC740 + l2 / lbl_803CC744);
+    }
+    rb->inertia.z = inertia;
+    rb->inertia.y = inertia;
+    rb->inertia.x = inertia;
+    {
+        f32 axial = radius * (mass * radius);
+        (&rb->inertia.x)[axis] = axial * lbl_803CC72C;
+    }
+    rb->invInertia.x = lbl_803CC73C / rb->inertia.x;
+    rb->invInertia.y = lbl_803CC73C / rb->inertia.y;
+    rb->invInertia.z = lbl_803CC73C / rb->inertia.z;
+    rb->steps = steps;
+    rb->dt = lbl_803CC720 / rb->steps;
+    rb->unk50 = lbl_803CC728;
+    rb->unk54 = lbl_803CC72C;
+    PSMTXIdentity(rb->rot);
+    PSMTXIdentity(rb->invRot);
+    PSMTXIdentity(rb->world);
+    rb->pos.x = rb->pos.y = rb->pos.z = lbl_803CC728;
+    rb->quat.x = rb->quat.y = rb->quat.z = lbl_803CC728;
+    rb->quat.w = lbl_803CC73C;
+    rb->forceLocal.x = rb->forceLocal.y = rb->forceLocal.z = lbl_803CC728;
+    rb->vel.x = rb->vel.y = rb->vel.z = lbl_803CC728;
+    rb->velLocal.x = rb->velLocal.y = rb->velLocal.z = lbl_803CC728;
+    rb->torque.x = rb->torque.y = rb->torque.z = lbl_803CC728;
+    rb->angVel.x = rb->angVel.y = rb->angVel.z = lbl_803CC728;
+    rb->unk14D = 0;
+    rb->unk14C = 0;
 }
 
 // .text:0x80037964 size:0x20
@@ -83,8 +130,37 @@ void fn_80037964(JointAttachTask* task) {
 }
 
 // .text:0x80037984 size:0x11C
-void fn_80037984(JointAttachTask* task) {
-    return;
+static inline MtxPtr getJointMtx(JointAttachTask* task) {
+    CharModelObj* obj = lbl_8036E548.chars[task->charIdx];
+    ModelJoint** joints = lbl_8036E548.slots[obj->slot].model->joints;
+    u16 joint;
+    if (obj != NULL) {
+        joint = obj->jointMap[task->joint];
+    } else {
+        joint = 0xFFFF;
+    }
+    return joints[joint]->mtx;
+}
+
+void fn_80037984(void) {
+    JointAttachTask* task = lbl_803CC1B8;
+    Mtx m;
+    Vec pos;
+    Quaternion q;
+
+    PSMTXCopy(getJointMtx(task), m);
+    m[2][3] = lbl_803CC728;
+    m[1][3] = lbl_803CC728;
+    m[0][3] = lbl_803CC728;
+    C_QUATMtx(&q, m);
+    getAnimRelatedCoordinates(task->charIdx, task->joint, &pos);
+    if (fn_80024D2C(task->anim) & 0x10000000) {
+        fn_80038418(task->body, &pos, &q, &task->pos, &task->quat);
+        lbl_803CC1B8->func = fn_80037964;
+    } else {
+        memcpy(&task->pos, &pos, sizeof(Vec));
+        memcpy(&task->quat, &q, sizeof(Quaternion));
+    }
 }
 
 // .text:0x80037AA0 size:0x78
@@ -140,7 +216,40 @@ void fn_80038418(RigidBody* rb, Vec* pos, Quaternion* quat, Vec* prevPos, Quater
 
 // .text:0x800385F0 size:0x1C0
 void fn_800385F0(RigidBody* rb, f32 len, f32 frac, f32 radius, f32 mass) {
-    return;
+    f32 inertia;
+
+    rb->p1.x = lbl_803CC728;
+    rb->p1.y = -len * frac;
+    rb->p1.z = lbl_803CC728;
+    rb->p0.x = lbl_803CC728;
+    rb->p0.y = len + rb->p1.y;
+    rb->p0.z = lbl_803CC728;
+    PSVECSubtract(&rb->p0, &rb->p1, &rb->d);
+    rb->mass = mass;
+    rb->invMass = lbl_803CC73C / mass;
+    rb->radius = radius;
+    inertia = mass * (radius * radius * lbl_803CC740 + len * len / lbl_803CC744);
+    rb->inertia.z = inertia;
+    rb->inertia.x = inertia;
+    rb->inertia.y = lbl_803CC72C * (radius * (mass * radius));
+    rb->invInertia.x = rb->invInertia.z = lbl_803CC73C / rb->inertia.x;
+    rb->invInertia.y = lbl_803CC73C / rb->inertia.y;
+    rb->steps = 1;
+    rb->dt = lbl_803CC720 / rb->steps;
+    rb->unk50 = lbl_803CC728;
+    rb->unk54 = lbl_803CC72C;
+    PSMTXIdentity(rb->rot);
+    PSMTXIdentity(rb->world);
+    rb->pos.x = rb->pos.y = rb->pos.z = lbl_803CC728;
+    rb->quat.x = rb->quat.y = rb->quat.z = lbl_803CC728;
+    rb->quat.w = lbl_803CC73C;
+    rb->forceLocal.x = rb->forceLocal.y = rb->forceLocal.z = lbl_803CC728;
+    rb->vel.x = rb->vel.y = rb->vel.z = lbl_803CC728;
+    rb->velLocal.x = rb->velLocal.y = rb->velLocal.z = lbl_803CC728;
+    rb->torque.x = rb->torque.y = rb->torque.z = lbl_803CC728;
+    rb->angVel.x = rb->angVel.y = rb->angVel.z = lbl_803CC728;
+    rb->unk14D = 0;
+    rb->unk14C = 0;
 }
 
 // .text:0x800387B0 size:0x398
@@ -150,12 +259,72 @@ void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* gravity) {
 
 // .text:0x80038B48 size:0x188
 void fn_80038B48(RopeParams* p, RopeNode* nodes, s32 count, Vec* gravity) {
-    return;
+    Vec accel;
+    Vec g;
+    Vec step;
+    Vec next;
+    RopeNode* node;
+    s32 iter;
+    s32 i;
+    f32 dtSq;
+    f32 damp;
+    f32 under;
+
+    PSVECScale(gravity, p->dt, &g);
+    for (iter = 0; iter < p->iterations; iter++) {
+        fn_800387B0(p, nodes, count, &g);
+        node = nodes;
+        for (i = 0; i < count; i++) {
+            PSVECScale(&node->force, node->invMass, &accel);
+            damp = p->invTwoDt;
+            dtSq = p->dtSq;
+            PSVECScale(&node->pos, lbl_803CC754, &next);
+            PSVECSubtract(&next, &node->prevPos, &next);
+            PSVECScale(&accel, dtSq, &step);
+            PSVECAdd(&next, &step, &next);
+            PSVECSubtract(&next, &node->prevPos, &node->vel);
+            PSVECScale(&node->vel, damp, &node->vel);
+            memcpy(&node->prevPos, &node->pos, sizeof(Vec));
+            memcpy(&node->pos, &next, sizeof(Vec));
+            if (node->fixed == 0) {
+                under = node->pos.y - node->floorY;
+                if (under < lbl_803CC728) {
+                    node->pos.y = node->pos.y - under * p->bounce;
+                    node->prevPos.y = node->prevPos.y - (node->prevPos.y - node->floorY) * p->bounce;
+                }
+            }
+            node++;
+        }
+    }
 }
 
 // .text:0x80038CD0 size:0x15C
 RopeNode* fn_80038CD0(s32 count, f32* spacing, RopeNode* nodes, f32 floorY, f32 mass) {
-    return 0;
+    RopeNode* node;
+    s32 i;
+    f32 midMass;
+
+    memset(nodes, 0, count * sizeof(RopeNode));
+    node = nodes;
+    midMass = lbl_803CC754 * mass;
+    for (i = 0; i < count; i++) {
+        if (i == 0) {
+            node->mass = mass;
+        } else if (i == count - 1) {
+            node->mass = mass;
+        } else {
+            node->mass = midMass;
+        }
+        node->floorY = floorY;
+        node->invMass = lbl_803CC73C / node->mass;
+        node->pos.x = lbl_803CC728;
+        node->pos.y = *spacing * i + floorY;
+        node->pos.z = lbl_803CC728;
+        memcpy(&node->prevPos, &node->pos, sizeof(Vec));
+        node->fixed = (i == 0);
+        node++;
+    }
+    return nodes;
 }
 
 // .text:0x80038E2C size:0x98
