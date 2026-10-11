@@ -88,5 +88,10 @@ void GDSetTexCoordScale2(GXTexCoordID coord, u16 s_scale, u8 s_bias, u8 s_wrap, 
 
 // .text:0x800A26FC size:0x460
 void GDLoadTlut(void* tlut_ptr, u32 tmem_addr, GXTlutSize size) {
-    return;
+    GDWriteBPCmd(0xFEFFFF00);
+    GDWriteBPCmd(0x0F000000);
+    GDWriteBPCmd((u32)(OSCachedToPhysical(tlut_ptr) >> 5) << 0 | (u32)0x64 << 24);
+    GDWriteBPCmd((u32)((tmem_addr - 0x80000) >> 9) << 0 | (u32)size << 10 | (u32)0x65 << 24);
+    GDWriteBPCmd(0xFEFFFF00);
+    GDWriteBPCmd(0x0F000000);
 }
