@@ -6,8 +6,18 @@ extern f32 lbl_803CCF78; // 0.0f
 extern f32 lbl_803CCF7C; // 1.0f
 
 // .text:0x800B4A44 size:0x50
-void fn_800B4A44(void) {
-    return;
+f32 fn_800B4A44(GameActor* actor, u16 boneIndex) {
+    GameBone* bone = actor->boneArray[boneIndex];
+
+    if (bone->animPipe != NULL) {
+        if (bone->animPipe->forward == 0) {
+            return bone->animPipe->time;
+        }
+        if (bone->animPipe->currentTrack != NULL) {
+            return bone->animPipe->currentTrack->animTime - bone->animPipe->time;
+        }
+    }
+    return lbl_803CCF78;
 }
 
 // .text:0x800B4A94 size:0x68
