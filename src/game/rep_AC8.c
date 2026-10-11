@@ -53,6 +53,9 @@ extern f32 lbl_3_data_4794[];
 extern int fn_3_B7CDC(f32, f32);
 extern f32 lbl_3_data_5CDC[];
 extern f32 lbl_3_data_5D08[];
+extern s16 lbl_3_data_79B4[];
+extern u8 g_Batter[];
+BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern u8 lbl_3_common_bss_34C90[];
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
@@ -422,9 +425,98 @@ void fn_3_25A68(int i) {
 }
 
 // .text:0x00025C40 size:0x5A8 mapped:0x80664CD4
+// NONMATCHING 88%: float register allocation and lhax/lfsu addressing of the pitch table / ball position differ
+#if NONMATCHING
 void fn_3_25C40(int i) {
-    return;
+    u8* f = g_Fielders + i * 0x268;
+    int who = i;
+    Vec v;
+    f32 dx;
+    f32 dz;
+    f32 dy;
+    f32 d;
+    f32 t;
+    s16 cnt;
+    s16* tbl;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            who = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            who = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    if (g_Ball[0x1BF0] == 0) {
+        if (f[0x252] == 3) {
+            if (*(s16*)(f + 0x24C) > lbl_3_data_49DC[0x1A]) {
+                return;
+            }
+            dz = *(f32*)(f + 0x224) - *(f32*)(f + 8);
+            dx = *(f32*)(f + 0x21C) - *(f32*)f;
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            tbl = lbl_3_data_79B4 + *(s16*)(f + 0x17A) * 8;
+            t = lbl_3_rodata_B48 * tbl[4] / d;
+            *(f32*)(g_Ball + 0x1B30) = lbl_3_rodata_B48 * tbl[7];
+            dx *= t;
+            dz *= t;
+            *(f32*)(g_Ball + 0x1B2C) = *(f32*)f + dx;
+            *(f32*)(g_Ball + 0x1B34) = *(f32*)(f + 8) + dz;
+        } else {
+            if (*(s16*)(f + 0x24C) > lbl_3_data_49DC[0x18]) {
+                return;
+            }
+            dz = *(f32*)(f + 0x224) - *(f32*)(f + 8);
+            dx = *(f32*)(f + 0x21C) - *(f32*)f;
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            tbl = lbl_3_data_79B4 + *(s16*)(f + 0x17A) * 8;
+            t = lbl_3_rodata_B48 * tbl[0] / d;
+            dx *= t;
+            dz *= t;
+            *(f32*)(g_Ball + 0x1B2C) = *(f32*)f + dx;
+            *(f32*)(g_Ball + 0x1B34) = *(f32*)(f + 8) + dz;
+            *(f32*)(g_Ball + 0x1B30) = lbl_3_rodata_B48 * tbl[2];
+        }
+        *(f32*)(g_Ball + 0x1B38) = *(f32*)(g_Ball + 0);
+        *(f32*)(g_Ball + 0x1B3C) = *(f32*)(g_Ball + 4);
+        *(f32*)(g_Ball + 0x1B40) = *(f32*)(g_Ball + 8);
+        g_Ball[0x1BF0] = *(s16*)(f + 0x24C);
+        if (f[0x265] == 0 && f[0x252] == 3) {
+            *(s16*)(f + 0x24C) = lbl_3_data_49DC[0x25];
+            g_Ball[0x1BF0] = lbl_3_data_49DC[0x25];
+        }
+        g_Batter[0xA8] = 0;
+    } else {
+        if (f[0x265] != 0) {
+            getAnimRelatedCoordinates(who, 0x42, &v);
+            v.y = -v.y;
+        } else if (f[0x252] == 3) {
+            v.x = *(f32*)(g_Ball + 0x1B2C);
+            v.y = *(f32*)(g_Ball + 0x1B30);
+            v.z = *(f32*)(g_Ball + 0x1B34);
+        } else if (f[0x1C7] == 0) {
+            getAnimRelatedCoordinates(who, 0x4F, &v);
+        } else {
+            getAnimRelatedCoordinates(who, 0x4E, &v);
+        }
+        cnt = *(s16*)(f + 0x24C);
+        t = (f32)cnt / (f32)g_Ball[0x1BF0];
+        dy = *(f32*)(g_Ball + 4) - v.y;
+        dx = *(f32*)(g_Ball + 0) - v.x;
+        dz = *(f32*)(g_Ball + 8) - v.z;
+        dy *= t;
+        dx *= t;
+        dz *= t;
+        *(f32*)(g_Ball + 0x1B3C) = v.y + dy;
+        *(f32*)(g_Ball + 0x1B38) = v.x + dx;
+        *(f32*)(g_Ball + 0x1B40) = v.z + dz;
+        if (cnt == 1) {
+            g_Ball[0x1BF0] = 0;
+        }
+        g_Ball[0x1BEF] = 1;
+    }
 }
+#endif
 
 // .text:0x000261E8 size:0x47C mapped:0x8066527C
 // NONMATCHING 98%: load order of 0x12C/0x148 in the height lerp and one f0/f1 swap
