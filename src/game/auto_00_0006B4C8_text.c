@@ -129,7 +129,35 @@ void fn_3_6B674(void) {
 
 // .text:0x0006B870 size:0x1F4 mapped:0x806AA904
 void fn_3_6B870(void) {
-    return;
+    s32 i;
+
+    if (g_Strikes.outs >= 3) {
+        for (i = 0; i < 4; i++) {
+            if (g_d_GameSettings.GameModeSelected != 2 || g_GameLogic.secondaryGameMode != 0xF || i != 0) {
+                fn_80011BE4(i + 9);
+            }
+        }
+    } else if (g_GameLogic.gameStatus == 10) {
+        for (i = 1; i < 4; i++) {
+            if (g_RunningLogic._06[i] == -1) {
+                fn_80011BE4(i + 9);
+            }
+        }
+    } else {
+        for (i = 1; i < 4; i++) {
+            if (g_RunningLogic._06[i] == -1) {
+                fn_80011BE4(i + 9);
+            }
+        }
+        if (g_d_GameSettings.GameModeSelected != 2 || g_GameLogic.secondaryGameMode != 0xF) {
+            fn_80011BE4(9);
+        }
+    }
+    for (i = 9; i < 13; i++) {
+        if (g_d_GameSettings.GameModeSelected != 2 || g_GameLogic.secondaryGameMode != 0xF || i != 9) {
+            lbl_8036E548.actors[i] = NULL;
+        }
+    }
 }
 
 // .text:0x0006BA64 size:0x308 mapped:0x806AAAF8
