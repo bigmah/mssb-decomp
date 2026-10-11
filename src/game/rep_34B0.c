@@ -14,6 +14,7 @@ extern u8 lbl_3_common_bss_32724[]; // GameHudFlags (game/auto_00_00097144_text.
 
 extern void setInMemBatterConstants(s32);
 extern void fn_3_F1DC(void);
+extern void ballPhysica(void);
 extern void fn_3_751B4(void);
 extern void setDefaultInMemBatter(void);
 extern void fn_3_8913C(void);
@@ -130,7 +131,7 @@ void fn_3_12EB10(void) {
 #endif
 
 // .text:0x0012ED80 size:0xE8 mapped:0x8076DE14
-s32 fn_3_12ED80(void) {
+u8 fn_3_12ED80(void) {
     s32 i;
     for (i = 1; i < 15; i += 3) {
         if (g_Minigame.barrels[i].replacingBarrelInd != 0) {
@@ -488,13 +489,74 @@ void fn_3_12FFD4(void) {
 #endif
 
 // .text:0x00130288 size:0x548 mapped:0x8076F31C
+// Barrel Batter: end-of-pitch bookkeeping; once all barrels have settled,
+// refill the rack and move on to the next pitch or end the turn.
+// NONMATCHING 52%: only difference is that the original inlines fn_3_12FFD4
+// (which inlines fn_3_12EB10); both are NONMATCHING so ours keeps the call.
+#if NONMATCHING
 void fn_3_130288(void) {
-    return;
+    if (g_Minigame.turnOverStatus == 0 && g_Ball.framesSinceHit >= lbl_3_data_217A4[4]) {
+        g_Minigame.turnOverStatus = 1;
+        if (g_Minigame.multiPlayerInd == 0 && g_Minigame.soloMinigameDifficulty <= 2 &&
+            g_Minigame.miniGameCurrentPoints[g_Minigame.rosterID] >= g_Minigame.pointsReqToWin_challenge) {
+            g_Minigame.pointsTargetReachedInd = 2;
+            g_Minigame._1A37 = 1;
+            g_Minigame.challenge_minigame_haven_tWonYetIndicator = 0;
+            fn_3_10F550(1, lbl_3_data_217A4[10]);
+        }
+        if (g_Minigame.bB_bombBarrelHitInd != 0) {
+            g_Minigame.bB_pitchesRemainingInTurn += lbl_3_data_21798[g_Minigame.multiPlayerInd + 6];
+        }
+        if (g_Minigame.bB_pitchesRemainingInTurn == 0) {
+            g_Minigame.pointsTargetReachedInd = 2;
+        }
+    }
+    if (g_Minigame.turnOverStatus != 0) {
+        if (g_Minigame.turnOverStatus == 1) {
+            g_Minigame.turnOverStatus = 2;
+            g_GameLogic.CountdownUntilFade = lbl_3_data_217A4[1];
+        }
+        if (--g_GameLogic.CountdownUntilFade <= 0) {
+            if (fn_3_12ED80()) {
+                fn_3_12FFD4();
+            }
+        }
+        if (g_Minigame.pointsTargetReachedInd != 0
+            && (g_Minigame.multiPlayerInd == 0
+                || (g_Minigame.multiPlayerInd != 0 && g_Minigame.turnNumberWithinRound + 1 >= g_Minigame.miniGameNumberOfParticipants
+                    && g_Scores.inning >= g_Scores.maxInnings))
+            && g_Minigame._1A37 == 0 && g_GameLogic.CountdownUntilFade == 1) {
+            sndFXStartEx(0x1BE, lbl_800EFBA4[7], 0x3F, 0);
+        }
+    }
 }
+#endif
 
 // .text:0x001307D0 size:0x2B0 mapped:0x8076F864
 void fn_3_1307D0(void) {
-    return;
+    BB_barrelStruct* b;
+    s32 i;
+
+    ballPhysica();
+    fn_3_12F624();
+    for (i = 0; i < 15; i++) {
+        b = &g_Minigame.barrels[i];
+        if (b->animationCounter < 0x7FFE) {
+            b->animationCounter += 1;
+        } else {
+            b->animationCounter = 0x7FFF;
+        }
+        if (b->barrelState == 1) {
+            fn_3_12F9D4(i);
+        }
+        if (b->barrelState == 3) {
+            fn_3_12F28C(i);
+        }
+        if (b->replacingBarrelInd != 0) {
+            fn_3_12EFA4(i);
+        }
+    }
+    fn_3_130288();
 }
 
 // .text:0x00130A80 size:0x4C mapped:0x8076FB14
