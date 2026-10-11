@@ -29,7 +29,9 @@ void GDPadCurr32(void) {
 
 // .text:0x800A1B80 size:0x30
 void GDOverflowed(void) {
-    return;
+    if (lbl_803CC0F4 != NULL) {
+        lbl_803CC0F4();
+    }
 }
 
 // .text:0x800A1BB0 size:0x28C
