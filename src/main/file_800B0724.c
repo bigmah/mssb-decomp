@@ -353,8 +353,8 @@ void fn_800B2BFC(GameActor* actor, s16 a, s16 b) {
 }
 
 // .text:0x800B2C08 size:0x8
-void fn_800B2C08(void) {
-    return;
+void fn_800B2C08(GameActor* actor, s16 value) {
+    actor->unk84 = value;
 }
 
 // .text:0x800B2C10 size:0x34
