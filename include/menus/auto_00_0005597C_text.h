@@ -2,8 +2,9 @@
 #define __MENUS_AUTO_00_0005597C_TEXT_H_
 
 #include "mssbTypes.h"
+#include "menus/rep_0788.h"
 
-void fn_2_5597C(void);
+s32 fn_2_5597C(void);
 void fn_2_55A40(void);
 void fn_2_55AD4(void);
 void fn_2_55C5C(void);
@@ -26,8 +27,8 @@ void fn_2_57F50(void);
 void fn_2_58098(void);
 void fn_2_581E0(void);
 void fn_2_58328(void);
-void fn_2_58470(void);
-void fn_2_58510(void);
+void fn_2_58470(MenuTableContext* menu, MenuItemState* item);
+void fn_2_58510(MenuTableContext* menu, MenuItemState* item);
 void fn_2_5853C(void);
 void fn_2_587F8(void);
 

@@ -1,15 +1,61 @@
 #include "menus/auto_00_0005597C_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "main/file_8000F150.h"
+#include "menus/rep_0788.h"
+
+extern u8* lbl_2_bss_1A824C[];
+extern u8* lbl_2_bss_1A823C[];
+extern u8 lbl_800EF808[];
+extern s16 fn_2_53BC8(void*);
+extern void fn_2_4E7EC(void);
+extern void fn_8001F228(void);
+extern s32 fn_80021410(void);
 
 // .text:0x0005597C size:0xC4
-void fn_2_5597C(void) {
-    return;
+s32 fn_2_5597C(void) {
+    u8* menu = lbl_2_bss_1A824C[0];
+    s32 n = *(s16*)(menu + 0x1976FE) + *(s16*)(menu + 0x1976FA);
+    s32 r;
+    if (n < 0x1A) {
+        r = 0;
+    } else if (n < 0x34) {
+        r = 1;
+    } else if (n < 0x6A) {
+        r = 2;
+    } else if (n < 0x8C) {
+        r = 3;
+    } else if (n < 0x91) {
+        r = 4;
+    } else if (n < 0xC1) {
+        r = 5;
+    } else if (n < 0xC3) {
+        r = 6;
+    } else if (n < 0xC4) {
+        r = 7;
+    } else if (n < 0xD2) {
+        r = 8;
+    } else if (n < 0xD5) {
+        r = 9;
+    } else {
+        r = 10;
+    }
+    return r;
 }
 
 // .text:0x00055A40 size:0x94
 void fn_2_55A40(void) {
-    return;
+    lbl_2_bss_1A824C[0][0x1972BC] = 1;
+    fn_2_4E7EC();
+    fn_8001F228();
+    fn_80021410();
+    fn_800ACFB0(*(void**)(lbl_800EF808 + 0x14)); // TODO type
+    fn_80035B50(10);
+    if (lbl_80366B18.tables[2] != NULL) {
+        fn_800ACFB0(lbl_80366B18.tables[2]);
+        lbl_80366B18.tables[2] = NULL;
+    }
+    lbl_2_bss_1A823C[0][0x34] = 0;
 }
 
 // .text:0x00055AD4 size:0x188
@@ -118,13 +164,30 @@ void fn_2_58328(void) {
 }
 
 // .text:0x00058470 size:0xA0
-void fn_2_58470(void) {
-    return;
+void fn_2_58470(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0:
+        item->state = 0x26;
+        break;
+    case 2:
+        item->state = 0x25;
+        break;
+    case 1:
+    case 5:
+    case 8:
+    case 0x24:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00058510 size:0x2C
-void fn_2_58510(void) {
-    return;
+void fn_2_58510(MenuTableContext* menu, MenuItemState* item) {
+    lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
 }
 
 // .text:0x0005853C size:0x2BC
