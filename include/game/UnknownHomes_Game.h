@@ -2481,7 +2481,10 @@ typedef struct _MiniGameStruct {
     /*0x1DD2*/ s8 bB_cpuPreferLow;    // sort order for the CPU's target choice (fn_3_12E084)
     /*0x1DD3*/ u8 _1DD3[0x1DF4 - 0x1DD3];
     /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
-    /*0x1E02*/ u8 _1E02[0x1E22 - 0x1E02];
+    /*0x1E02*/ u8 _1E02;
+    /*0x1E03*/ u8 _1E03;
+    /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)
+    /*0x1E08*/ u8 _1E08[0x1E22 - 0x1E08];
     /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
     /*0x1E26*/ u8 _1E26[4];
     /*0x1E2A*/ u8 _1E2A;    // round counter

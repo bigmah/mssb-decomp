@@ -7,6 +7,10 @@
 #include "game/rep_1838.h"
 #include "main/file_800527C4.h" // MenuDef
 #include "main/file_8004C5F8.h"
+#include "main/file_8001FE00.h" // lbl_8037169C
+#include "game/auto_00_00097144_text.h"
+#include "game/auto_00_0011D3AC_text.h"
+#include "game/auto_00_000E911C_text.h"
 
 extern HudTask* lbl_803CC1B8;
 extern LayoutSlot lbl_80371C30[];
@@ -1250,6 +1254,89 @@ void fn_3_12CA90(void) {
         if (g_GameLogic._125 == 1) {
             fn_800B0A5C_insertQueue(fn_3_126604, 2);
             setMenu(0x39);
+        }
+    }
+}
+
+// fn_3_12D1F4, size:0x960
+// Minigame per-frame dispatcher: start the HUD/logic tasks for the current
+// game status and minigame.
+void fn_3_12D1F4(void) {
+    u8 status = g_GameLogic.gameStatus;
+
+    if (status == 0x1C || (u8)(status - 0x1D) <= 4 || status == 0x28) {
+        fn_3_12CA90();
+    } else if (status == 0x26) {
+        if (g_GameLogic._125 == 1 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
+            ((ResultsTask*)fn_800B0A5C_insertQueue(fn_3_E911C, 2))->mode = 1;
+        }
+    } else if (status == 0x29) {
+        if (lbl_3_common_bss_32724[0xD9] == 0 && g_GameLogic.framesOfExitingToMenu == 0) {
+            fn_800B0A5C_insertQueue(fn_3_12C3F0, 2);
+        }
+        if (g_GameLogic._125 == 0) {
+            g_Minigame._1E04 = fn_800B0A5C_insertQueue(fn_3_11DECC, 2);
+        }
+    } else {
+        if (status == 0x22) {
+            if (lbl_3_common_bss_34C90[0x1D2] == 1) {
+                fn_800B0A5C_insertQueue(fn_3_9894C, 2);
+            }
+        } else {
+            lbl_3_common_bss_32724[0xDA] = 0;
+        }
+        if (g_GameLogic.gameStatus == 0xE || g_GameLogic.gameStatus == 0x22) {
+            fn_3_129458();
+        } else if (g_GameLogic.gameStatus == 0x24) {
+            if (g_GameLogic._125 == 1 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
+                if (g_Minigame._1907 == 1) {
+                    fn_800B0A5C_insertQueue(fn_3_11D780, 2);
+                }
+                g_Minigame._1E04 = fn_800B0A5C_insertQueue(fn_3_127B68, 2);
+            }
+            if (g_GameLogic._125 == 5 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
+                fn_800B0A5C_insertQueue(fn_3_1274B4, 2);
+            }
+        } else if (g_GameLogic.gameStatus == 0x27) {
+            fn_3_1293D0();
+        } else if (g_GameLogic.gameStatus == 5) {
+            if (lbl_8037169C.done != 0 && g_Minigame._1E02 == 0) {
+                fn_800B0A5C_insertQueue(fn_3_1254F8, 2);
+            }
+        }
+        if (g_Minigame.pauseInd != 0) {
+            if (*(s16*)(lbl_3_common_bss_34C90 + 0xA) == 1 && lbl_3_common_bss_32724[0xAA] == 0) { // TODO type
+                fn_800B0A5C_insertQueue(fn_3_98DE0, 2);
+            }
+            if (lbl_3_common_bss_34C90[0x1D2] == 0xA) {
+                if (lbl_3_common_bss_34C90[0x1D4] == 2) {
+                    fn_800B0A5C_insertQueue(fn_3_128B90, 2);
+                }
+            } else if (lbl_3_common_bss_34C90[0x1D2] == 0xB) {
+                if (lbl_3_common_bss_34C90[0x1D4] == 2) {
+                    fn_800B0A5C_insertQueue(fn_3_126604, 2);
+                }
+            } else if (lbl_3_common_bss_32724[0xAB] == 0) {
+                fn_800B0A5C_insertQueue(fn_3_9894C, 2);
+            }
+        }
+        if (g_Minigame.GameMode_MiniGame == 1) {
+            fn_3_12C984();
+        }
+        if (g_Minigame.GameMode_MiniGame == 2) {
+            fn_3_12C868();
+        }
+        if (g_Minigame.GameMode_MiniGame == 3) {
+            fn_3_12C74C();
+        }
+        if (g_Minigame.GameMode_MiniGame == 4) {
+            fn_3_12C684();
+        }
+        if (g_Minigame.GameMode_MiniGame == 6) {
+            fn_3_12C5CC();
+        }
+        if (g_Minigame.GameMode_MiniGame == 5) {
+            fn_3_12C514();
         }
     }
 }
