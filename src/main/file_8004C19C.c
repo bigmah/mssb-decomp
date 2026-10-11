@@ -102,5 +102,22 @@ void fn_8004C19C(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
 
 // .text:0x8004C510 size:0xE8
 void fn_8004C510(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
-    return;
+    Vec pos;
+
+    if (0.0f == frame) {
+        fn_80062D94(model, animID, colorIdx, frame);
+        return;
+    }
+    if (frame == lbl_800FBD80[model->charID]) {
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        pos.z = 0.0f;
+        fn_8001B728(model->playerIdx, 4, &pos);
+        pos.y = 0.0f;
+        lbl_803CB860->stamp = lbl_803CBD0C;
+        lbl_803CB860->rgb = (lbl_800FC0FC.colors[colorIdx].r << 24) |
+                            ((lbl_800FC0FC.colors[colorIdx].g & 0xFF) << 16) |
+                            (lbl_800FC0FC.colors[colorIdx].b << 8);
+        fn_80031CA4(&pos, (u32*)lbl_803CB860);
+    }
 }
