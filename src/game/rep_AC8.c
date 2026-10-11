@@ -1520,9 +1520,70 @@ void fn_3_35D28(int i) {
 }
 
 // .text:0x00035E1C size:0x3BC mapped:0x80674EB0
+// NONMATCHING 79%: the original unrolls the 6-entry search loop by 3 (ctr=2); ours (s16 counter) is not unrolled, an s32 counter unrolls it fully
+#if NONMATCHING
 void fn_3_35E1C(void) {
-    return;
+    s32 a = -1;
+    s32 mode = 0;
+    s32 b = -1;
+    s16 i;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    if (g_Ball[0x1BBE] >= 3 && *(s16*)(g_FieldingLogic + 0xC4) == 0) {
+        mode = 1;
+    } else if (g_Ball[0x1BBE] <= 1) {
+        mode = 2;
+    }
+    for (i = 0; i < 6; i++) {
+        if (g_FieldingLogic[i + 0xF8] != 2 && i != *(s16*)(g_Ball + 0x1B94)) {
+            if (a != -1) {
+                b = i;
+                break;
+            }
+            a = i;
+        }
+    }
+    if (mode != 0 && a >= 0 && b >= 0) {
+        if (!(*(f32*)(g_Fielders + a * 0x268 + 0xB8) < *(f32*)(g_Fielders + b * 0x268 + 0xB8))) {
+            a = b;
+        }
+    } else {
+        dx = *(f32*)(g_Ball + 0x19F8) - *(f32*)g_Ball;
+        dz = *(f32*)(g_Ball + 0x19FC) - *(f32*)(g_Ball + 8);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        if (d < *(f32*)(g_Fielders + a * 0x268 + 0x74)) {
+            a = -1;
+        }
+        if (d < *(f32*)(g_Fielders + b * 0x268 + 0x74)) {
+            b = -1;
+        }
+        if (a < 0) {
+            a = b;
+            b = -1;
+        }
+        if (a < 0) {
+            return;
+        }
+        if (b >= 0 && *(f32*)(g_Fielders + a * 0x268 + 0x7C) > *(f32*)(g_Fielders + b * 0x268 + 0x7C)) {
+            a = b;
+        }
+    }
+    if (a < 0) {
+        return;
+    }
+    if (mode == 2) {
+        if (*(f32*)(g_Fielders + a * 0x268 + 0x7C) > lbl_3_rodata_B68) {
+            return;
+        }
+    } else if (mode == 0 && *(f32*)(g_Fielders + a * 0x268 + 0x7C) > lbl_3_rodata_B8C) {
+        return;
+    }
+    SetFielderAct(a, 0x19, 0xC8);
+    *(s16*)(g_FieldingLogic + 0xC2) = a;
 }
+#endif
 
 #pragma dont_inline off
 /* same body as fn_3_365D0, inlined into fn_3_361D8 */
