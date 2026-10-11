@@ -25,6 +25,30 @@ extern void fn_80068720(s32);
 extern void fn_8001F228(void);
 extern void fn_80021410(void);
 extern void fn_2_54474(void);
+extern void fn_2_46D94(s16* a, s16* b, s16 count, s32 c, s32 d);
+
+// One controller's latched buttons in lbl_803C77B8 (see PadState in main/file_800A7C08.h).
+typedef struct MenuPad {
+    /*0x00*/ u16 held;
+    /*0x02*/ u16 down;
+    /*0x04*/ u16 repeat;
+    /*0x06*/ u8 _06[0x1A];
+} MenuPad; // size: 0x20
+#define MENU_PADS ((MenuPad*)&lbl_803C77B8)
+#define MENU_PAD_REPEAT(port) (*(u16*)((u8*)&lbl_803C77B8._04 + (port) * 0x20))
+#define MENU_PAD_DOWN(port) (*(u16*)((u8*)&lbl_803C77B8._02 + (port) * 0x20))
+
+// Entries at the start of the block lbl_2_bss_1A8248 points at.
+typedef struct MenuRosterEntry {
+    /*0x00*/ s8* limits; // indexed by [_4415 * 6 + _441C + 4]
+    /*0x04*/ u8 _04[2];
+    /*0x06*/ s8 value;
+    /*0x07*/ u8 _07[0x31 - 0x07];
+    /*0x31*/ u8 _31;
+    /*0x32*/ u8 _32[2];
+} MenuRosterEntry; // size: 0x34
+#define ROSTER ((MenuRosterEntry*)lbl_2_bss_1A8248)
+#define ROSTER_LIMIT(e) ((e)->limits[lbl_2_bss_1A8248[0x4415] * 6 + lbl_2_bss_1A8248[0x441C] + 4])
 extern void fn_8004B1B8(u32 value);
 extern u8 lbl_803C6CF8[];
 
@@ -325,6 +349,82 @@ void fn_2_1C0D4(void) {
     lbl_2_bss_1A824C[0][0x197863] = sel[0x46F8];
     lbl_2_bss_1A824C[0][0x197848] = 0;
 }
+
+// NONMATCHING 97%: register allocation (o/pad base swapped r30/r31); the original also keeps a dead
+// induction register (+4 per unrolled group) in the 10x inner loops
+#if NONMATCHING
+// fn_2_1CF94, size:0x4AC
+void fn_2_1CF94(void) {
+    u8* o = lbl_803CC1B8;
+    MenuRosterEntry* e;
+    u16 buttons;
+    s32 i;
+    s32 j;
+    s8 limit;
+    switch ((s8)o[0x28]) {
+    case 0:
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19771A) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19771C) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19771E) = 0x36;
+        o[0x28] = 1;
+        break;
+    case 1:
+        buttons = MENU_PAD_REPEAT(*(s8*)(lbl_2_bss_1A824C[0] + 0x197863));
+        if (buttons == 8 || buttons == 4) {
+            fn_2_46D94((s16*)(lbl_2_bss_1A824C[0] + 0x19771A), (s16*)(lbl_2_bss_1A824C[0] + 0x19771C),
+                       *(s16*)(lbl_2_bss_1A824C[0] + 0x19771E), 10, 9);
+        }
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197716) =
+            *(s16*)(lbl_2_bss_1A824C[0] + 0x19771A) + *(s16*)(lbl_2_bss_1A824C[0] + 0x19771C);
+        buttons = MENU_PAD_REPEAT(*(s8*)(lbl_2_bss_1A824C[0] + 0x197863));
+        e = &ROSTER[*(s16*)(lbl_2_bss_1A824C[0] + 0x197716)];
+        if (buttons & 1) {
+            if (e->value > 0 && e->value != ROSTER_LIMIT(e)) {
+                e->value--;
+            }
+        } else if (buttons & 2) {
+            if (e->value < ROSTER_LIMIT(e)) {
+                e->value++;
+            }
+        }
+        if (MENU_PAD_DOWN(*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)) & 0x300) {
+            *(s16*)(o + 0x14) = 0x10;
+            o[0x28] = 2;
+        }
+        buttons = MENU_PAD_DOWN(*(s8*)(lbl_2_bss_1A824C[0] + 0x197863));
+        if (buttons & 0x40) {
+            for (i = 0; i < 0x36; i++) {
+                e = &ROSTER[i];
+                for (j = 0; j < 10; j++) {
+                    if (ROSTER_LIMIT(e) != 0) {
+                        e->value = 0;
+                    }
+                }
+                lbl_2_bss_1A8248[0x444D + i] = 0;
+                e->_31 = 0;
+            }
+        } else if (buttons & 0x20) {
+            for (i = 0; i < 0x36; i++) {
+                e = &ROSTER[i];
+                for (j = 0; j < 10; j++) {
+                    limit = ROSTER_LIMIT(e);
+                    if (limit != 0) {
+                        e->value = limit;
+                    }
+                }
+            }
+        }
+        break;
+    case 2: {
+        u8* q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    }
+}
+#endif
 
 // fn_2_1C21C, size:0x28
 void fn_2_1C21C(void) {
