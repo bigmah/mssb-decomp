@@ -12972,9 +12972,9 @@ void fn_3_522E0(int i, int frames, f32* outX, f32* outZ, f32* outDist, f32 dx, f
     nz = dz / d;
     // TODO type: fn_3_9FB8C returns s16; only this caller uses the result without re-extending it
     ang = ((s16 (*)(f32, f32))fn_3_9FB8C)(nx, nz);
-    if (!(*(f32*)(f + 0x50) < 0.0f) && *(s16*)(f + 0x19A) >= 0) {
+    if (!(*(f32*)(f + 0x50) < lbl_3_rodata_B7C) && *(s16*)(f + 0x19A) >= 0) {
         if (fn_3_9FCF8(ang, *(s16*)(f + 0x19A)) > 0x2A8) {
-            spd = lbl_3_rodata_B7C;
+            spd = 0.0f;
         }
     }
     n = f[0x1D1];
