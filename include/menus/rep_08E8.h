@@ -30,6 +30,69 @@ typedef struct MenuCharMgr {
 // Entry of the ARAM file table (19 per character).
 typedef struct { u32 a; u32 size; u32 c; u32 d; } Entry08E8;
 
+// lbl_80353A90: per-game line score (main.dol .bss, size 0x108).
+typedef struct MenuLineScore {
+    /*0x00*/ u8 _00[0x8];
+    /*0x08*/ u16 scores[4][19]; // [0] total, [1..] per inning; rows 0/1 and 2/3 per team
+    /*0xA0*/ s8 _A0[30];
+    /*0xBE*/ u8 _BE[0xF0 - 0xBE];
+    /*0xF0*/ u8 _F0[2]; // per team
+    /*0xF2*/ u8 result; // 0: team 0 ahead, 1: team 1 ahead, 2: tie
+    /*0xF3*/ u8 _F3[0xF6 - 0xF3];
+    /*0xF6*/ u8 innings;
+    /*0xF7*/ u8 _F7[0x108 - 0xF7];
+} MenuLineScore;
+
+extern MenuLineScore lbl_80353A90;
+
+// lbl_803537E4: [2 teams][9] records, 0x26 bytes each (only fields used here).
+typedef struct MenuRosterRecord {
+    /*0x00*/ u8 _00[0x4];
+    /*0x04*/ s8 _04;
+    /*0x05*/ s8 _05;
+    /*0x06*/ u8 _06[0x10 - 0x6];
+    /*0x10*/ s8 _10;
+    /*0x11*/ u8 _11;
+    /*0x12*/ s8 _12;
+    /*0x13*/ u8 _13[0x18 - 0x13];
+    /*0x18*/ s8 _18;
+    /*0x19*/ u8 _19[0x26 - 0x19];
+} MenuRosterRecord;
+
+extern MenuRosterRecord lbl_803537E4[2][9];
+
+// lbl_803535C8: [2 teams][9] records, 0x1E bytes each (only fields used here).
+typedef struct MenuFieldRecord {
+    /*0x00*/ u8 _00[0x2];
+    /*0x02*/ s16 _02;
+    /*0x04*/ u8 _04[0xA - 0x4];
+    /*0x0A*/ s16 _0A;
+    /*0x0C*/ u8 _0C[0x1A - 0xC];
+    /*0x1A*/ s8 _1A;
+    /*0x1B*/ u8 _1B;
+    /*0x1C*/ s8 _1C;
+    /*0x1D*/ u8 _1D;
+} MenuFieldRecord;
+
+extern MenuFieldRecord lbl_803535C8[2][9];
+
+// lbl_8034E9A0 + 0x4908: three 4-byte slots.
+typedef struct MenuSlot4908 {
+    /*0x0*/ u8 _0;
+    /*0x1*/ u8 _1_hi : 5;
+    /*0x1*/ u8 _1_lo : 3;
+    /*0x2*/ u8 _2;
+    /*0x3*/ u8 _3;
+} MenuSlot4908;
+
+// lbl_8034E9A0 (character/team select work area), only the fields used here.
+typedef struct MenuSelectState {
+    /*0x0000*/ u8 _0000[0x4908];
+    /*0x4908*/ MenuSlot4908 _4908[3];
+} MenuSelectState;
+
+extern MenuSelectState lbl_8034E9A0;
+
 void fn_2_4A064(void);
 
 void fn_2_474F8(void);
@@ -107,5 +170,7 @@ void fn_2_4AB1C(void);
 void fn_2_47540(void);
 
 void fn_2_48DB4(void);
+
+void fn_2_4A340(void);
 
 #endif

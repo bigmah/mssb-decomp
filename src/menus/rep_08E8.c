@@ -881,18 +881,10 @@ u16* fn_2_49F7C(u16* string, s32 capacity, u16 character, s32 position) {
 }
 #endif
 
-typedef struct {
-    u8 _00[0x8];
-    u16 _08; // clamped to 0..99 (unused) by fn_2_4AB1C
-    u8 _0A[0x2E - 0xA];
-    u16 _2E; // clamped to <= 99 (unused) by fn_2_4AB1C
-    u8 _30[0x108 - 0x30];
-} Struct80353A90;
-extern Struct80353A90 lbl_80353A90;
 extern void starMissionRelated2(void);
 
 // .text:0x4AB1C size:0x1DC
-// NONMATCHING 89%: the original keeps the dead clamp of lbl_80353A90._08/_2E to 0..99 (13 insns); every form we tried lets CW drop it
+// NONMATCHING 89%: the original keeps the dead clamp of lbl_80353A90.scores[0/1][0] to 0..99 (13 insns); every form we tried lets CW drop it
 #if NONMATCHING
 void fn_2_4AB1C(void) {
     s32 mode;
@@ -901,8 +893,8 @@ void fn_2_4AB1C(void) {
     u8* menu;
 
     fn_2_4B2D0();
-    hits = lbl_80353A90._08;
-    runs = lbl_80353A90._2E;
+    hits = lbl_80353A90.scores[0][0];
+    runs = lbl_80353A90.scores[1][0];
     if (hits < 0) hits = 0;
     if (hits > 99) hits = 99;
     if (runs > 99) runs = 99;
@@ -1000,5 +992,115 @@ void fn_2_48DB4(void) {
     LITInitDir(MENU_CHARMGR.lights[3], lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_94C);
     c3 = color2;
     LITInitColor(MENU_CHARMGR.lights[3], &c3);
+}
+#endif
+
+
+// .text:0x4A340 size:0x3A8
+// Debug/default line score and roster setup.
+// NONMATCHING ~93%: register rotation in the prologue, and the original addresses lbl_8034E9A0+0x4908 directly (we get base + 0x4909 offsets)
+#if NONMATCHING
+void fn_2_4A340(void) {
+    s32 home = g_d_GameSettings.home_AwaySetting;
+    s32 away = home ^ 1;
+    s32 i;
+    s32 t;
+    s32 p;
+    u8* menu = lbl_2_bss_1A8248[0];
+    u8 homeAway2;
+
+    g_d_GameSettings.maybeHomeAway = menu[0x441C];
+    homeAway2 = menu[*(s16*)(menu + 0x16C2) * 10 + 0x40F3];
+    lbl_80353A90.innings = 9;
+    lbl_80353A90.scores[0][0] = 0;
+    lbl_80353A90.scores[0][1] = 4;
+    lbl_80353A90.scores[0][2] = 0;
+    lbl_80353A90.scores[0][3] = 2;
+    lbl_80353A90.scores[0][4] = 0;
+    lbl_80353A90.scores[0][5] = 10;
+    lbl_80353A90.scores[0][6] = 0;
+    lbl_80353A90.scores[0][7] = 0;
+    lbl_80353A90.scores[0][8] = 0;
+    lbl_80353A90.scores[0][9] = 0;
+    lbl_80353A90.scores[home][10] = 0;
+    lbl_80353A90.scores[1][0] = 0;
+    lbl_80353A90.scores[1][1] = 0;
+    lbl_80353A90.scores[1][2] = 0;
+    lbl_80353A90.scores[1][3] = 0;
+    lbl_80353A90.scores[1][4] = 0;
+    lbl_80353A90.scores[1][5] = 0;
+    lbl_80353A90.scores[1][6] = 0;
+    lbl_80353A90.scores[1][7] = 0;
+    lbl_80353A90.scores[1][8] = 0;
+    lbl_80353A90.scores[1][9] = 0;
+    lbl_80353A90.scores[1][10] = 0;
+    lbl_80353A90.scores[1][11] = 0;
+    lbl_80353A90.scores[2 + home][0] = 0;
+    lbl_80353A90.scores[2 + away][0] = 0;
+    lbl_80353A90.scores[2][0] = 0;
+    lbl_80353A90.scores[2][1] = 0;
+    lbl_80353A90.scores[2][2] = 1;
+    lbl_80353A90.scores[2][3] = 2;
+    lbl_80353A90.scores[2][4] = 0;
+    lbl_80353A90.scores[2][5] = 0;
+    lbl_80353A90.scores[2][6] = 0;
+    lbl_80353A90.scores[2][7] = 3;
+    lbl_80353A90.scores[2][8] = 0;
+    lbl_80353A90.scores[2][9] = 0;
+    lbl_80353A90.scores[2][10] = 0;
+    lbl_80353A90.scores[2][11] = 0;
+    lbl_80353A90.scores[3][0] = 1;
+    lbl_80353A90.scores[3][1] = 0;
+    lbl_80353A90.scores[3][2] = 0;
+    lbl_80353A90.scores[3][3] = 3;
+    lbl_80353A90.scores[3][4] = 0;
+    lbl_80353A90.scores[3][5] = 0;
+    lbl_80353A90.scores[3][6] = 0;
+    lbl_80353A90.scores[3][7] = 0;
+    lbl_80353A90.scores[3][8] = 0;
+    lbl_80353A90.scores[3][9] = 12;
+    lbl_80353A90.scores[3][10] = 0;
+    lbl_80353A90.scores[3][11] = 0;
+    lbl_80353A90._F0[home] = 1;
+    g_d_GameSettings.maybeHomeAway2 = homeAway2;
+    lbl_80353A90._F0[away] = 1;
+
+    for (i = 1; i <= lbl_80353A90.innings; i++) {
+        lbl_80353A90.scores[0][0] += lbl_80353A90.scores[0][i];
+        lbl_80353A90.scores[1][0] += lbl_80353A90.scores[1][i];
+        lbl_80353A90.scores[2][0] += lbl_80353A90.scores[2][i];
+        lbl_80353A90.scores[3][0] += lbl_80353A90.scores[3][i];
+    }
+    if (lbl_80353A90.scores[0][0] > lbl_80353A90.scores[1][0]) {
+        lbl_80353A90.result = 0;
+    } else if (lbl_80353A90.scores[0][0] < lbl_80353A90.scores[1][0]) {
+        lbl_80353A90.result = 1;
+    } else {
+        lbl_80353A90.result = 2;
+    }
+    for (i = 0; i < 30; i++) {
+        lbl_80353A90._A0[i] = -1;
+    }
+
+    for (i = 0; i < 3; i++) {
+        lbl_8034E9A0._4908[i]._2 = 0;
+        lbl_8034E9A0._4908[i]._1_lo = 1;
+        lbl_8034E9A0._4908[i]._3 = 10;
+        lbl_80353A90._A0[i] = i;
+    }
+
+    for (t = 0; t < 2; t++) {
+        for (p = 0; p < 9; p++) {
+            lbl_803537E4[t][p]._04 = (1 - t) * 12 + p * t;
+            lbl_803535C8[t][p]._1A = t * 10 + p * 3;
+            lbl_803537E4[t][p]._05 = t + p;
+            lbl_803537E4[t][p]._18 = p;
+            lbl_803537E4[t][p]._10 = p * 2;
+            lbl_803535C8[t][p]._1C = 2;
+            lbl_803535C8[t][p]._0A = t + p + 2;
+            lbl_803537E4[t][p]._12 = t + 1;
+            lbl_803535C8[t][p]._02 = 3;
+        }
+    }
 }
 #endif
