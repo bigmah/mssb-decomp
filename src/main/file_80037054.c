@@ -198,7 +198,44 @@ void fn_80037BAC(RigidBody* rb) {
 
 // .text:0x8003819C size:0x220
 void fn_8003819C(RigidBody* rb) {
-    return;
+    Vec pt;
+    Vec f;
+    Vec v;
+    Vec g;
+    Vec t;
+    s32 i;
+
+    f.x = lbl_803CC728;
+    f.y = lbl_803CC748 * rb->mass;
+    f.z = lbl_803CC728;
+    PSMTXMultVec(rb->invRot, &f, &f);
+    PSVECAdd(&rb->forceLocal, &f, &rb->forceLocal);
+    for (i = 0; i <= 10; i++) {
+        PSVECScale(&rb->d, i / lbl_803CC74C, &pt);
+        PSVECAdd(&rb->p1, &pt, &pt);
+        PSVECCrossProduct(&rb->angVel, &pt, &v);
+        PSVECAdd(&v, &rb->velLocal, &v);
+        PSVECScale(&v, rb->unk50, &f);
+        if (rb->unk14D != 0 && rb->unk14C != 0) {
+            g.x = lbl_803CC728;
+            g.y = lbl_803CC738 * rb->mass / lbl_803CC750;
+            g.z = lbl_803CC728;
+            if (i > 0 && i < 10) {
+                g.y = g.y * lbl_803CC754;
+            }
+            PSMTXMultVec(rb->invRot, &g, &g);
+            PSVECAdd(&f, &g, &f);
+        } else if ((rb->unk14D != 0 && i == 0) || (rb->unk14C != 0 && i == 10)) {
+            g.x = lbl_803CC728;
+            g.y = lbl_803CC738 * rb->mass;
+            g.z = lbl_803CC728;
+            PSMTXMultVec(rb->invRot, &g, &g);
+            PSVECAdd(&f, &g, &f);
+        }
+        PSVECAdd(&rb->forceLocal, &f, &rb->forceLocal);
+        PSVECCrossProduct(&pt, &f, &t);
+        PSVECAdd(&rb->torque, &t, &rb->torque);
+    }
 }
 
 // .text:0x800383BC size:0x5C
