@@ -219,8 +219,91 @@ void fn_3_E5E70(u8* out, u8 fmt, void* src) {
 }
 
 // .text:0x000E5FEC size:0x424 mapped:0x80725080
+// Write the overlay colour and the body colour into the models' colour arrays.
+// (Format 4 overwrites instead of or-ing, as in the original.)
 void fn_3_E5FEC(StaC6Obj* o) {
-    return;
+    ColorData* cd;
+    void* dst;
+
+    cd = BONE(o->subObj, 1)->dispObj->colorData;
+    dst = cd->colorArray;
+    switch ((u8)((s32)cd->quantizeInfo >> 4)) {
+    case 0:
+        *(u16*)dst = ((u16)(o->color[0] >> 3) & 0x1F) << 11;
+        *(u16*)dst = *(u16*)dst | (((u16)(o->color[1] >> 2) & 0x3F) << 5);
+        *(u16*)dst = *(u16*)dst | (((u16)(o->color[2] >> 3) & 0x1F));
+        DCStoreRange(dst, 2);
+        break;
+    case 3:
+        *(u16*)dst = ((u16)(o->color[0] >> 4) & 0xF) << 12;
+        *(u16*)dst = *(u16*)dst | (((u16)(o->color[1] >> 4) & 0xF) << 8);
+        *(u16*)dst = *(u16*)dst | (((u16)(o->color[2] >> 4) & 0xF) << 4);
+        *(u16*)dst = *(u16*)dst | (((u16)(o->color[3] >> 4) & 0xF));
+        DCStoreRange(dst, 2);
+        break;
+    case 5:
+        memcpy(dst, o->color, 4);
+        DCStoreRange(dst, 4);
+        break;
+    case 1:
+    case 2:
+        *(u32*)dst = o->color[0] << 16;
+        *(u32*)dst = *(u32*)dst | (o->color[1] << 8);
+        *(u32*)dst = *(u32*)dst | o->color[2];
+        DCStoreRange(dst, 3);
+        break;
+    case 4:
+        *(u32*)dst = (o->color[0] << 24) & 0xFC000000;
+        *(u32*)dst = (o->color[1] << 18) & 0x3F00000;
+        *(u32*)dst = (o->color[2] << 12) & 0xFC000;
+        *(u32*)dst = (o->color[3] << 6) & 0x3F00;
+        DCStoreRange(dst, 3);
+        break;
+    }
+    if (lbl_3_data_1976C != 0) {
+        if (o->lit != 0) {
+            BONE(o->subObj, 2)->dispObj = BONE(o->subObj, 2)->baseDispObj;
+        } else {
+            BONE(o->subObj, 2)->dispObj = NULL;
+        }
+    } else {
+        BONE(o->subObj, 2)->dispObj = NULL;
+    }
+    cd = BONE(o->actorObj, 0)->dispObj->colorData;
+    dst = cd->colorArray;
+    switch ((u8)((s32)cd->quantizeInfo >> 4)) {
+    case 0:
+        *(u16*)dst = ((u16)(o->bodyColor[0] >> 3) & 0x1F) << 11;
+        *(u16*)dst = *(u16*)dst | (((u16)(o->bodyColor[1] >> 2) & 0x3F) << 5);
+        *(u16*)dst = *(u16*)dst | (((u16)(o->bodyColor[2] >> 3) & 0x1F));
+        DCStoreRange(dst, 2);
+        break;
+    case 3:
+        *(u16*)dst = ((u16)(o->bodyColor[0] >> 4) & 0xF) << 12;
+        *(u16*)dst = *(u16*)dst | (((u16)(o->bodyColor[1] >> 4) & 0xF) << 8);
+        *(u16*)dst = *(u16*)dst | (((u16)(o->bodyColor[2] >> 4) & 0xF) << 4);
+        *(u16*)dst = *(u16*)dst | (((u16)(o->bodyColor[3] >> 4) & 0xF));
+        DCStoreRange(dst, 2);
+        break;
+    case 5:
+        memcpy(dst, o->bodyColor, 4);
+        DCStoreRange(dst, 4);
+        break;
+    case 1:
+    case 2:
+        *(u32*)dst = o->bodyColor[0] << 16;
+        *(u32*)dst = *(u32*)dst | (o->bodyColor[1] << 8);
+        *(u32*)dst = *(u32*)dst | o->bodyColor[2];
+        DCStoreRange(dst, 3);
+        break;
+    case 4:
+        *(u32*)dst = (o->bodyColor[0] << 24) & 0xFC000000;
+        *(u32*)dst = (o->bodyColor[1] << 18) & 0x3F00000;
+        *(u32*)dst = (o->bodyColor[2] << 12) & 0xFC000;
+        *(u32*)dst = (o->bodyColor[3] << 6) & 0x3F00;
+        DCStoreRange(dst, 3);
+        break;
+    }
 }
 
 // .text:0x000E6410 size:0x98 mapped:0x807254A4
