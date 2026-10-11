@@ -16,7 +16,14 @@ extern f32 lbl_3_data_219B8[];
 extern s16 lbl_3_data_2167C[];
 extern f32 lbl_3_data_21674;
 typedef struct { f32 x, y, z; } Vec3_3290;
-typedef struct { u8 pad0[0x18]; Vec3_3290 vel; } PitcherVel_3290;
+typedef struct {
+    u8 pad0[0x18];
+    Vec3_3290 vel;          // 0x18
+    u8 pad24[0xE0 - 0x24];
+    f32 pitchChargeUp;      // 0xE0
+    u8 padE4[0x15F - 0xE4];
+    u8 ChargePitchType;     // 0x15F
+} PitcherVel_3290;
 extern PitcherVel_3290 g_Pitcher;
 typedef struct { u8 pad0[0x28]; u8 s28; u8 pad29; u8 s2a; u8 pad2b; } MgEnt_3290;
 
@@ -127,8 +134,60 @@ void fn_3_113950(void) {
 }
 
 // .text:0x00113A48 size:0x2D8 mapped:0x80752ADC
+extern u8 g_Ball[];
+extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
+
 void fn_3_113A48(void) {
-    return;
+    u8* p;
+    s32 i;
+    s32 sum;
+    s16 rem;
+    if (*(s16*)(g_Ball + 0x1B68) == 1) {
+        *(s16*)(g_Minigame + 0x1A74) = lbl_3_data_21654[3];
+        if (g_Pitcher.ChargePitchType == 3) {
+            *(s16*)(g_Minigame + 0x1A74) = lbl_3_data_21654[2];
+        } else if (g_Pitcher.ChargePitchType >= 2) {
+            *(s16*)(g_Minigame + 0x1A74) = LinearInterpolateToNewRange(g_Pitcher.pitchChargeUp, 0.0f, 1.0f,
+                                                                       lbl_3_data_21654[0], lbl_3_data_21654[1]);
+        }
+        *(s16*)(g_Minigame + 0x1A76) = *(s16*)(g_Minigame + 0x1A74);
+        sum = 0;
+        p = g_Minigame;
+        i = 0;
+        do {
+            u8* e = g_Minigame + p[0x1A82] * 0x2C;
+            sum += *(s16*)(e + 0x750);
+            if (e[0x755] == 2) {
+                i++;
+                break;
+            }
+            i++;
+            p++;
+        } while (i < 7);
+        if (*(s16*)(g_Minigame + 0x1A74) >= sum) {
+            if (i < 7) {
+                if (*(s16*)(g_Minigame + 0x1A74) <= sum + *(s16*)(g_Minigame + g_Minigame[0x1A82 + i] * 0x2C + 0x750) - 1) {
+                    g_Minigame[0x1A89] = 1;
+                }
+            } else {
+                g_Minigame[0x1A89] = 1;
+            }
+        }
+        if (g_Minigame[0x1A89] != 1) {
+            rem = *(s16*)(g_Minigame + 0x1A74);
+            for (i = 0; i < 7; i++) {
+                rem -= *(s16*)(g_Minigame + g_Minigame[0x1A82 + i] * 0x2C + 0x750);
+                if (rem < 0) {
+                    break;
+                }
+            }
+            i--;
+            if (i >= 0 && g_Minigame[g_Minigame[0x1A82 + i] * 0x2C + 0x755] == 1) {
+                g_Minigame[0x1A8B] = i;
+                g_Minigame[0x1A8A] = 1;
+            }
+        }
+    }
 }
 
 // .text:0x00113D20 size:0x1A0 mapped:0x80752DB4
