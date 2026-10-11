@@ -2955,8 +2955,6 @@ void fn_2_6D3C(void) {
 }
 #endif
 
-// NONMATCHING 98%: case 11 shares the scene+8 reset tail in the original
-#if NONMATCHING
 // fn_2_11698, size:0x810
 void fn_2_11698(void) {
     s8 best = -1;
@@ -3123,7 +3121,7 @@ void fn_2_11698(void) {
                 lbl_803CBCD8[1] = 0;
                 lbl_803CBCD8[0] = 0;
                 fn_2_11A0(0xB);
-                *(u16*)(lbl_803CBBCC[0] + 8) = 0;
+                goto reset;
             }
         } else {
             lbl_803CBBC4[4] = 1;
@@ -3134,6 +3132,7 @@ void fn_2_11698(void) {
                 lbl_8034E9A0[0x48AF] = 1;
                 fn_2_11A0(5);
             }
+        reset:
             *(u16*)(lbl_803CBBCC[0] + 8) = 0;
         }
         break;
@@ -3156,4 +3155,3 @@ void fn_2_11698(void) {
         break;
     }
 }
-#endif
