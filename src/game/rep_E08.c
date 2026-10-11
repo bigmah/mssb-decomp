@@ -34,6 +34,23 @@ extern f32 charSizeMultipliers[][2];
 extern s16 lbl_3_data_7F10[];
 extern f32 lbl_3_data_476C[];
 extern const f32 lbl_3_rodata_E78;
+extern BOOL checkFieldingStat(int, int, int);
+extern void fn_8004AE18(s32 idx);
+extern u8 lbl_3_data_7F0C;
+// Fielder animation timing table (0x70 bytes).
+typedef struct {
+    /*0x00*/ u8 _00[0x10];
+    /*0x10*/ u8 u10;
+    /*0x11*/ u8 _11[0x40 - 0x11];
+    /*0x40*/ u8 u40[2];
+    /*0x42*/ u8 _42[0x54 - 0x42];
+    /*0x54*/ s16 anims[3][3];
+    /*0x66*/ u8 _66[2];
+    /*0x68*/ u8 u68;
+    /*0x69*/ u8 _69[3];
+    /*0x6C*/ s16 windup[2];
+} E08AnimTable;
+extern E08AnimTable lbl_3_data_65F0;
 extern const f32 lbl_3_rodata_E7C;
 extern const f32 lbl_3_rodata_E58;
 extern const f64 lbl_3_rodata_E60;
@@ -417,9 +434,169 @@ u32 fn_3_61228(s32 a) {
 }
 
 // .text:0x00061544 size:0x620 mapped:0x806A05D8
-void fn_3_61544(void) {
-    return;
+// NONMATCHING 92%: original reads the 65F0 table rows through addi base pointers; e/o regs swapped
+#if NONMATCHING
+u32 fn_3_61544(s32 a) {
+    s32 anim = -1;
+    s32 k = a;
+    u8* f = g_Fielders + a * 0x268;
+    u8* e = g_UnkAnimation_31EAC + a * 0x54;
+    E08AnimTable* tbl = &lbl_3_data_65F0;
+    s32 delay = 0;
+    u8* o;
+    s32 v;
+    u8 t;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (a == 0) {
+            u8* m = g_Minigame;
+            m += *(s8*)(m + 0x1904);
+            k = *(s8*)(m + 0x18CC);
+        } else {
+            k = *(s8*)(g_Minigame + a + 0x18F2);
+        }
+    }
+    o = ((u8**)(lbl_8036E548 + 0x2C50))[k];
+    if (e[0x43] != 0) {
+        return 0;
+    }
+    if (e[0x4F] == 0) {
+        if (f[0x20F] != 0) {
+            return 0;
+        }
+        if (f[0x210] != 0) {
+            return 0;
+        }
+        if (f[0x207] != 0) {
+            return 0;
+        }
+        if (e[0x4C] != 0) {
+        (*(s16*)(e + 0x4A))--;
+        t = e[0x4C];
+        if (t == 1 || t == 2) {
+            s16 cur = *(s16*)(e + 0x4A);
+            s16 lim = tbl->windup[0];
+            if (cur <= lim) {
+                t = f[0x254];
+                if (t == 0) {
+                    anim = tbl->anims[0][e[0x4E]];
+                } else if ((t == 1 && f[0x1C7] == 0) || (t == 2 && f[0x1C7] != 0)) {
+                    anim = tbl->anims[1][e[0x4E]];
+                } else {
+                    anim = tbl->anims[2][e[0x4E]];
+                }
+                delay = lim - cur;
+            }
+        } else if (t == 7 || t == 8) {
+            t = f[0x261];
+            if (t == 1) {
+                if (e[0x40] != 0) {
+                    v = 0xE;
+                } else {
+                    v = 0xD;
+                }
+            } else if (t == 2) {
+                if (e[0x40] != 0) {
+                    v = 0xD;
+                } else {
+                    v = 0xE;
+                }
+            } else {
+                v = 0xC;
+            }
+            AnimateCharacter(k, v, 1, 1, 0, 0, e[0x40], -1);
+            e[0x46] = v;
+            e[0x4F] = 1;
+            return 1;
+        } else if (t == 3) {
+            s16 cur = *(s16*)(e + 0x4A);
+            s16 lim = tbl->windup[1];
+            if (cur <= lim) {
+                delay = lim - cur;
+                anim = 0x1B;
+            }
+        } else if (t == 4) {
+            AnimateCharacter(k, 0x26, 0, 1, 0, (s16)(lbl_3_data_7F0C - f[0x25C]), e[0x40], -1);
+            e[0x46] = 0x26;
+            e[0x4F] = 1;
+            return 1;
+        } else if (t == 5) {
+            anim = 0x29;
+            delay = tbl->u10 - *(s16*)(e + 0x4A);
+        }
+        if (anim >= 0 && delay >= 0) {
+            AnimateCharacter(k, anim, 0, 1, 0, (s16)delay, e[0x40], -1);
+            e[0x46] = anim;
+            e[0x4F] = 1;
+            e[0x50] = tbl->u68;
+            return 1;
+        }
+        }
+        return 0;
+    }
+    if (f[0x20F] == 0) {
+        if (f[0x200] != 0) {
+            o[0x26F] = 1;
+            if (g_d_GameSettings[0x11] != 0) {
+                fn_8004AE18(f[0x20D]);
+            } else {
+                fn_8004AE18(a);
+            }
+        }
+        if (e[0x50] != 0) {
+            e[0x50]--;
+        }
+        (*(s16*)(e + 0x4A))--;
+        if (e[0x46] == 0x26) {
+            if (f[0x25C] == 1) {
+                AnimateCharacter(k, 0x28, 0, 1, 0, 0, e[0x40], 0);
+            }
+            if (f[0x25E] != 4) {
+                return 1;
+            }
+            goto reset;
+        }
+        if (*(s16*)(e + 0x4A) == 1 && (f[0x258] != 1 || f[0x252] != 1)) {
+            t = e[0x4C];
+            if (t != 7 && t != 8 && *(s16*)(o + 0x62) != 0x29) {
+                if (f[0x258] == 3 && t != 3) {
+                    AnimateCharacter(k, 0x1C, 0, 1, 1, 0, e[0x40], 10);
+                    fn_3_60804(a, 1);
+                } else {
+                    fn_3_60804(a, 1);
+                }
+            }
+        }
+        if (*(s16*)(o + 0x62) == 0x1B && *(s16*)(g_Ball + 0x1B6E) >= tbl->u40[0] &&
+            *(s16*)(g_Ball + 0x1B6E) <= tbl->u40[1] &&
+            checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 7) == 0 &&
+            checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 8) == 0 &&
+            checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 9) == 0 &&
+            (*(s16*)(g_FieldingLogic + 0xC4) >= 0 || *(s16*)(g_FieldingLogic + 0xC6) >= 0) && e[0x42] != 0) {
+            AnimateCharacter(k, 0x1A, 0, 1, 1, 0, e[0x40], -1);
+            fn_3_60804(a, 1);
+        }
+        t = e[0x4C];
+        if (t == 7 || t == 8) {
+            if (f[0x262] == 0 && f[0x252] == 0 && f[0x1EE] == 0) {
+                AnimateCharacter(k, 0, 0, 1, 1, 0, e[0x40], -1);
+                goto reset;
+            }
+            return 1;
+        }
+        if (*(s16*)(o + 0x68) > 1) {
+            return 1;
+        }
+    }
+reset:
+    e[0x4C] = 0;
+    e[0x4F] = 0;
+    e[0x47] = 0;
+    e[0x46] = 0;
+    e[0x50] = 0;
+    fn_3_60804(a, 0);
+    return 0;
 }
+#endif
 
 // .text:0x00061B64 size:0xDA0 mapped:0x806A0BF8
 void fn_3_61B64(s32 i) {
