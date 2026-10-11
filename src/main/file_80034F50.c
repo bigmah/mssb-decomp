@@ -173,8 +173,12 @@ void fn_80036134(void) {
 }
 
 // .text:0x80036214 size:0x5C
-void fn_80036214(void) {
-    return;
+s32 fn_80036214(SpaniOwner* owner, s32 idx, u32 track, u32 frame) {
+    SpaniKey key;
+    SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+
+    fn_8000CEF0(lbl_803C4BE0[obj->texSlot].anim, obj->animId, track, frame, &key);
+    return key.unk1C;
 }
 
 // .text:0x80036270 size:0x80
