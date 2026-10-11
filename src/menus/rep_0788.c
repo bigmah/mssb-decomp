@@ -5148,7 +5148,7 @@ void fn_2_2F544(MenuTableContext* menu, MenuItemState* item) {
 #endif
 
 // fn_2_2B654, size:0x230
-// NONMATCHING 98%: byte offset (row*0x34+9)+index*2 folded into lbz displacement instead of lbzx
+// NONMATCHING 99%: (row*0x34+9)+index*2 summed in a different order before the lbzx
 #if NONMATCHING
 void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
     s16 state = fn_2_53BC8(item);
@@ -5163,11 +5163,11 @@ void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
     case 2: {
-        s16 index = item->index;
-        s16 row = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
+        s32 index = item->index;
+        s32 row = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
         u8* object;
         if (lbl_80109AE8[row][index].type != -1) {
-            if (((s8*)lbl_2_bss_1A8248)[lbl_800E869C[row] * 0x34 + 9 + index * 2] < 0) {
+            if (((s8(*)[0x34])lbl_2_bss_1A8248)[lbl_800E869C[row]][9 + index * 2] < 0) {
                 object = lbl_80371C30[menu->firstIndex + item->offset].object;
                 *(u32*)(object + 0x54) |= 2;
                 lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
