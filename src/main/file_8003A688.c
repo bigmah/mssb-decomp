@@ -24,6 +24,7 @@ void fn_8000FE54(void);
 s32 fn_8004A34C(SaveDialog* dialog, u8 port, u8 msg, u8 mode, u8 arg4);
 // main/file_800A7C08 (memory card / CRC)
 void fn_800A9E34(u8 chan, u8 mode, u64 serial);
+void fn_800AA930(SaveCardRequest* req, u64 serial);
 s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
 u16 fn_800ABB14(u8* data, s32 len);
 
@@ -214,6 +215,44 @@ static inline void SaveTask_CheckCard(SaveTask* task) {
         task->noCard = 1;
         break;
     }
+}
+
+// Which blocks of the save image a task touches (bit 0 = shared, 1..3 = challenge saves).
+static inline u32 SaveTask_BlockMask(u32 flags, s32 slot) {
+    u32 mask = 0;
+    if ((flags & 7) == 7) {
+        mask = 0xF;
+    } else if (flags & 2) {
+        if (slot == 3) {
+            mask |= 3;
+        } else {
+            mask = 1 << (slot + 1);
+        }
+    }
+    return mask;
+}
+
+// Returns the blocks in mask whose stored size is wrong.
+static inline u32 SaveImage_CheckSizes(SaveImage* img, u32 mask) {
+    u32 bad = 0;
+    u32 bit;
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        bit = 1 << i;
+        if (mask & bit) {
+            if (i == 0) {
+                if (img->size != 0x5B4) {
+                    bad |= bit;
+                }
+            } else {
+                SaveChallengeBlock* blk = &img->challenge[i - 1];
+                if (blk->size != 0x450C) {
+                    bad |= bit;
+                }
+            }
+        }
+    }
+    return bad;
 }
 
 // Finishes the task: hands the outcome to the parent and removes it from the queue.
@@ -423,9 +462,9 @@ void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h) {
     task->mode = c;
     task->_19 = d;
     task->_1A = e;
-    task->_1B = f;
+    task->saveFlags = f;
     task->noCard = 0;
-    task->_20 = g;
+    task->challengeSlot = g;
     task->_21 = h;
     lbl_802D4AE0[slot] = 0;
     task->_1F = 2;
@@ -451,7 +490,7 @@ void fn_8003F23C(void) {
     task->slot = 0;
     task->mode = 0;
     task->_1A = 0;
-    task->_1B = 7;
+    task->saveFlags = 7;
     task->noCard = 0;
     task->_21 = 0;
     lbl_803CC1B8->_10 = 0;
@@ -470,9 +509,92 @@ void fn_8004053C(void) {
 }
 
 // .text:0x80040C14 size:0x3CC
+// Load task: reads the save file from the card into lbl_802D4B00.
+// NONMATCHING 99%: register allocation only in the inlined block-mask/size checks (r6/r7/r8/r9 rotated)
+#if NONMATCHING
 void fn_80040C14(void) {
-    return;
+    SaveTask* task = (SaveTask*)lbl_803CC1B8;
+    SaveCardRequest req;
+    s32 status;
+
+    switch (lbl_803C7838.slots[task->slot].probeResult) {
+    case 0:
+        status = 0x11;
+        break;
+    case -1:
+        status = 0xF;
+        break;
+    case -3:
+        status = 0;
+        break;
+    case -2:
+        status = 4;
+        break;
+    default:
+        status = -1;
+        break;
+    }
+    switch (status) {
+    case 4:
+    case 0:
+        task->noCard = 1;
+        break;
+    }
+
+    switch (task->state) {
+    case 0:
+        task->noCard = 0;
+        req.chan = task->slot;
+        req.mode = task->mode;
+        req.buffer = &lbl_802D4B00;
+        req.length = 0x10000;
+        req.fileName = "MarioBaseball";
+        req.permissions = 0;
+        req.verify = fn_80041074;
+        req.verifyArg = SaveTask_BlockMask(task->saveFlags, task->challengeSlot);
+        req.flags = 1;
+        fn_800AA930(&req, lbl_802D4AE0[task->slot]);
+        task->state++;
+        break;
+    case 1:
+        if (lbl_803CC1B8->_10 != 0) {
+            if (task->noCard) {
+                task->outcome = 9;
+            } else {
+                switch (lbl_803C7838.status) {
+                case 0x11:
+                    if (SaveImage_CheckSizes(&lbl_802D4B00, SaveTask_BlockMask(task->saveFlags, task->challengeSlot)) == 0) {
+                        task->outcome = 1;
+                    } else {
+                        task->outcome = 4;
+                    }
+                    break;
+                case 0:
+                    task->outcome = 9;
+                    break;
+                case 0x10:
+                    task->outcome = 8;
+                    break;
+                case 0xB:
+                    task->outcome = 4;
+                    break;
+                case 3:
+                    task->outcome = 5;
+                    break;
+                default:
+                    task->outcome = 2;
+                    break;
+                }
+            }
+            task->state = 2;
+        }
+        break;
+    case 2:
+        SaveTask_Finish(task->outcome);
+        break;
+    }
 }
+#endif
 
 // .text:0x80040FE0 size:0x94
 s32 fn_80040FE0(SaveImage* img) {
@@ -492,7 +614,8 @@ s32 fn_80040FE0(SaveImage* img) {
 }
 
 // .text:0x80041074 size:0xDC
-u8 fn_80041074(SaveImage* img, s32 length, u32 mask) {
+u8 fn_80041074(void* buffer, s32 length, u32 mask) {
+    SaveImage* img = buffer;
     u8* shared = img->_48;
     u32 bit;
     SaveChallengeBlock* blk;

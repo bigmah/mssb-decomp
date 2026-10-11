@@ -59,12 +59,12 @@ typedef struct SaveTask {
     /*0x18*/ u8 mode;
     /*0x19*/ u8 _19;
     /*0x1A*/ u8 _1A;
-    /*0x1B*/ u8 _1B;
+    /*0x1B*/ u8 saveFlags; // bit 1: challenge save, 7: everything
     /*0x1C*/ u8 outcome; // result handed to the parent task
     /*0x1D*/ u8 noCard;
     /*0x1E*/ u8 cardReady;
     /*0x1F*/ u8 _1F;
-    /*0x20*/ u8 _20;
+    /*0x20*/ u8 challengeSlot; // 3: all
     /*0x21*/ u8 _21;
 } SaveTask;
 
@@ -89,10 +89,24 @@ typedef struct SaveCardSystem {
 
 extern SaveCardSystem lbl_803C7838;
 
+// TODO merge: same layout as CardRequest in main/file_800A7C08.h.
+typedef struct SaveCardRequest {
+    /*0x00*/ char* fileName;
+    /*0x04*/ void* buffer;
+    /*0x08*/ s32 length;
+    /*0x0C*/ u8 chan;
+    /*0x0D*/ u8 mode;
+    /*0x0E*/ u8 permissions;
+    /*0x0F*/ u8 _0F;
+    /*0x10*/ u8 (*verify)(void* buffer, s32 length, u32 arg);
+    /*0x14*/ u32 verifyArg;
+    /*0x18*/ u32 flags;
+} SaveCardRequest;
+
 // One challenge-mode save in the card image.
 typedef struct SaveChallengeBlock {
     /*0x0*/ u16 crc; // CRC-16 of data
-    /*0x2*/ u16 _2;
+    /*0x2*/ u16 size; // 0x450C
     /*0x4*/ u8 data[0x4508];
 } SaveChallengeBlock; // size: 0x450C
 
@@ -101,8 +115,8 @@ typedef struct SaveImage {
     /*0x000*/ char comment[2][0x20];
     /*0x040*/ u16 cardCrc;
     /*0x042*/ u16 _42;
-    /*0x044*/ u16 crc; // CRC-16 of _48 .. _5F4
-    /*0x046*/ u16 _46;
+    /*0x044*/ u16 crc;  // CRC-16 of _48 .. _5F4
+    /*0x046*/ u16 size; // 0x5B4
     /*0x048*/ u8 _48[0x36];
     /*0x07E*/ u8 _7E[0x10];
     /*0x08E*/ u8 _8E[3];
@@ -177,7 +191,8 @@ void fn_8003BB90(void);
 void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
 void fn_8003C00C(void);
 s32 fn_80040FE0(SaveImage* img);
-u8 fn_80041074(SaveImage* img, s32 length, u32 mask);
+void fn_80040C14(void);
+u8 fn_80041074(void* buffer, s32 length, u32 mask);
 void fn_80041150(u8 mask, u8 slot);
 s32 fn_80041348(void);
 void fn_8004153C(void);
