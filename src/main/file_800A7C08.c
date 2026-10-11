@@ -14,8 +14,9 @@ void fn_800A7C08(void) {
 }
 
 // .text:0x800A7D4C size:0x30
-void fn_800A7D4C(void) {
-    return;
+void fn_800A7D4C(s32 index, DrawCallbackNode* node) {
+    node->next.bits.addr = lbl_803C7420.drawList[index].bits.addr;
+    lbl_803C7420.drawList[index].raw = (u32)node | 1;
 }
 
 // .text:0x800A7D7C size:0x34
