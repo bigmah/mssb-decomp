@@ -1543,9 +1543,60 @@ void fn_3_11AB2C(void) {
 }
 
 // .text:0x0011AC6C size:0xAF0 mapped:0x80759D00
+// NONMATCHING 94%: all helpers inline as in the original; left: register allocation and the original reaching lbl_3_data_226C4/226D4/226DC through the lbl_3_data_225F0 pooled base
+#if NONMATCHING
+// Per-frame sprite update for the current minigame (g_Minigame[0x1A2A]); hides every
+// sprite while the game logic is in states 0x1B..0x29.
 void fn_3_11AC6C(void) {
-    return;
+    Rep3310Sprite* e;
+    s32 i;
+
+    if (g_GameLogic[0x11E] >= 0x1B && g_GameLogic[0x11E] <= 0x29) {
+        if (lbl_8036E548.count != 0) {
+            for (i = 0; i < lbl_8036E548.count; i++) {
+                e = &lbl_8036E548.sprites[i];
+                if (e != NULL) {
+                    e->visible = 0;
+                }
+            }
+        }
+        return;
+    }
+    switch (g_Minigame[0x1A2A]) {
+    case 1:
+        fn_3_11AB2C();
+        break;
+    case 2:
+        fn_3_11A408();
+        fn_3_11A210();
+        break;
+    case 3:
+        fn_3_119F6C();
+        fn_3_119D34();
+        break;
+    case 4:
+        fn_3_119934();
+        fn_3_119878();
+        break;
+    case 6:
+        fn_3_118164();
+        fn_3_1180A4();
+        fn_3_117FC8();
+        fn_3_11874C();
+        fn_3_117AE4();
+        fn_3_1179EC();
+        fn_3_117494();
+        break;
+    case 5:
+        fn_3_1194FC();
+        fn_3_1192B8();
+        fn_3_11874C();
+        fn_3_11887C();
+        fn_3_1183FC();
+        break;
+    }
 }
+#endif
 
 // .text:0x0011B75C size:0x448 mapped:0x8075A7F0
 void fn_3_11B75C(void) {
