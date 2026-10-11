@@ -1747,3 +1747,92 @@ void fn_2_4E1C0(void) {
     }
 }
 #endif
+
+#include "main/file_800A7C08.h"
+#include "menus/rep_0788.h"
+#include "menus/rep_08E8.h"
+
+extern s8 lbl_2_bss_9E10;
+extern void fn_2_93C64(void);
+
+// lbl_803C77B8 is the PadState[4] array (main/file_800A7C08.h).
+#define MENU_PADS ((PadState*)&lbl_803C77B8)
+
+// fn_2_535B0, size:0x2EC
+// NONMATCHING 99%: post-loop pad lookup computes `lbl_803C77B8 + off` with base/offset registers swapped (r0/r3)
+#if NONMATCHING
+void fn_2_535B0(void) {
+    u8* o = lbl_803CC1B8[0];
+    s32 i;
+    switch (*(s8*)(o + 0x28)) {
+    case 0:
+        *(s32*)(lbl_2_bss_1A824C[0] + 0x1976A4) = 0; // TODO type
+        *(s32*)(lbl_2_bss_1A824C[0] + 0x1976A0) = 0;
+        o[0x28] = 1;
+        break;
+    case 1:
+        fn_2_1FFC4(2);
+        for (i = 0; i < 2; i++) {
+            fn_2_1FF10(i);
+            switch (i) {
+            case 0:
+                if (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976A0) == i &&
+                    ((MENU_PADS[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].down & 0x100) ||
+                     MENU_PADS[0].sticks.substickY > 0x32)) {
+                    o[0x28] = 3;
+                }
+                break;
+            case 1:
+                if (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976A0) == i &&
+                    (MENU_PADS[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].down & 0x102)) {
+                    lbl_2_bss_1A824C[0][0x19784A] = 1;
+                    lbl_2_bss_1A824C[0][0x197846] = 0;
+                    lbl_2_bss_1A824C[0][0x197845] = 1;
+                    lbl_2_bss_9E10 = 1;
+                    o[0x28] = 2;
+                }
+                break;
+            }
+        }
+        if ((MENU_PADS[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].down & 0x200) ||
+            MENU_PADS[0].sticks.substickY > 0x32) {
+            o[0x28] = 3;
+        }
+        break;
+    case 2:
+        fn_2_1FF14(1);
+        for (i = 0; i < 1; i++) {
+            fn_2_1FF0C(i);
+            switch (i) {
+            case 0:
+                if (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976A4) == i) {
+                    u16 down = MENU_PADS[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].down;
+                    if (down & 0x200) {
+                        lbl_2_bss_1A824C[0][0x19784A] = 0;
+                        lbl_2_bss_1A824C[0][0x197846] = 0;
+                        *(s32*)(lbl_2_bss_1A824C[0] + 0x1976A4) = 0;
+                        lbl_2_bss_1A824C[0][0x197845] = 0;
+                        o[0x28] = 1;
+                    } else if (down & 0x100) {
+                        lbl_2_bss_9E10 ^= 1;
+                    } else if (down & 0x1000) {
+                        fn_2_93C64();
+                    }
+                    if (lbl_2_bss_9E10 != 0) {
+                        fn_2_489DC();
+                    }
+                }
+                break;
+            }
+        }
+        break;
+    case 3: {
+        u8* q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    }
+}
+#endif
