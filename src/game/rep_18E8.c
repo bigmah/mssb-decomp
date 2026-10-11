@@ -101,6 +101,7 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_19A4;
 extern const f32 lbl_3_rodata_1A40;
 
 // Frames for the fielder holding the ball to reach (x, z). Same body as fn_3_A6ABC, which the
@@ -1001,9 +1002,90 @@ void fn_3_A4A10(void) {
 }
 
 // .text:0x000A4F50 size:0x48C mapped:0x806E3FE4
-void fn_3_A4F50(void) {
-    return;
+// NONMATCHING 90.6%: register allocation and scheduling differ; fn_3_A6ABC is inlined
+#if NONMATCHING
+void fn_3_A4F50(s32 i) {
+    RepFielder* f;
+    InMemRunnerType* r;
+    s32 base;
+    f32 tx;
+    f32 tz;
+    f32 dz;
+    f32 dx;
+    s16 cover;
+    f32 step;
+    f32 a;
+    f32 b;
+    s32 n;
+    f32 ballDist;
+    s32 frames;
+    s32 throwFrames;
+    s32 runnerFrames;
+    f32 d;
+    s16 coverFrames;
+
+    f = &g_Fielders[g_Ball.fielderWBallIndex];
+    r = &g_Runners[i];
+    base = r->startingBase_baseAchieved;
+    // inlined fn_3_A6ABC(base x, z)
+    step = (f32)f->_1CD / lbl_3_rodata_1938;
+    tx = lbl_3_data_4444[base * 2];
+    tz = lbl_3_data_4444[base * 2 + 1];
+    dx = tx - f->pos.x;
+    dz = tz - f->pos.z;
+    cover = g_FieldingLogic._0D0[base];
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        step = lbl_3_rodata_1958;
+    }
+    if (d > lbl_3_rodata_195C) {
+        n = (s32)(lbl_3_rodata_1960 * d / step);
+    } else if (d > lbl_3_rodata_1964) {
+        n = (s32)(d / step);
+    } else {
+        n = (s32)(lbl_3_rodata_1968 * d / step);
+    }
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+    }
+    ballDist = g_Ball.ballDistanceFromBase[base];
+    frames = f->_192 + (n + 0x14) + lbl_3_data_1C40;
+    throwFrames = fn_3_52560(g_Ball.fielderWBallIndex, tx, tz);
+    if (r->currentBase == r->startingBase_baseAchieved) {
+        runnerFrames = r->framesToPreviousBase;
+    } else {
+        runnerFrames = r->framesToPreviousBase + 0xB4;
+    }
+    if (cover == g_Ball.fielderWBallIndex || cover == -1 || ballDist < lbl_3_rodata_19A4 ||
+        ((coverFrames = g_Fielders[cover].framesToDest) < 0 && g_FieldingLogic._101[base] == 0) ||
+        g_Ball.framesSinceHit < 0x46) {
+        lbl_3_bss_1838[i] = base;
+        lbl_3_bss_1828[i] = -1;
+        lbl_3_bss_1848[i] = throwFrames - runnerFrames;
+        return;
+    }
+    if (throwFrames < coverFrames + 5) {
+        lbl_3_bss_1838[i] = base;
+        lbl_3_bss_1828[i] = -1;
+        lbl_3_bss_1848[i] = throwFrames - runnerFrames;
+        return;
+    }
+    if (frames < coverFrames || (coverFrames < 0 && g_Fielders[cover]._1D2 <= g_Ball.framesSinceHit)) {
+        lbl_3_bss_1828[i] = base + 10;
+        lbl_3_bss_1838[i] = -1;
+        lbl_3_bss_1848[i] = coverFrames - runnerFrames;
+        return;
+    }
+    lbl_3_bss_1828[i] = base;
+    lbl_3_bss_1838[i] = -1;
+    lbl_3_bss_1848[i] = frames - runnerFrames;
 }
+#endif
 
 // .text:0x000A53DC size:0x328 mapped:0x806E4470
 // NONMATCHING 87.5%: instruction scheduling and register allocation differ; fn_3_A6ABC is inlined

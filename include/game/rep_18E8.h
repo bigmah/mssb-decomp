@@ -42,7 +42,9 @@ typedef struct RepFielder {
     /*0x1C4*/ u8 _1C4[0x1CD - 0x1C4];
     /*0x1CD*/ u8 _1CD; // speed-related stat
     /*0x1CE*/ u8 _1CE;
-    /*0x1CF*/ u8 _1CF[0x1D7 - 0x1CF];
+    /*0x1CF*/ u8 _1CF[0x1D2 - 0x1CF];
+    /*0x1D2*/ u8 _1D2;
+    /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3];
     /*0x1D7*/ u8 _1D7;
     /*0x1D8*/ u8 _1D8[0x1E2 - 0x1D8];
     /*0x1E2*/ u8 _1E2;
@@ -106,7 +108,7 @@ void fn_3_A4158(int);
 void fn_3_A41E8(void);
 int fn_3_A46A0(s32 i);
 void fn_3_A4A10(void);
-void fn_3_A4F50(void);
+void fn_3_A4F50(s32 i);
 void fn_3_A53DC(s32 i);
 void fn_3_A5704(s32 i);
 void fn_3_A5B4C(void);
