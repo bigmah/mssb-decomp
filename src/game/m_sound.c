@@ -1,5 +1,6 @@
 #include "game/m_sound.h"
 #include "header_rep_data.h"
+#include "main/file_80011640.h"
 
 typedef struct SndState34C58 {
     s32 unk0;
@@ -16,10 +17,14 @@ typedef struct SndState34C58 {
     u8 unk26; // crowd reaction level for the current play
     u8 unk27;
     u8 unk28;
-    u8 pad29[6];
+    u8 unk29;
+    u8 unk2A;
+    u8 unk2B; // swing sound pending
+    u8 pad2C[3];
     u8 unk2F;
     u8 pad30[3];
     u8 unk33;
+    u8 unk34; // pitch-release sound played
 } SndState34C58;
 extern SndState34C58 lbl_3_common_bss_34C58;
 #define S34C58 lbl_3_common_bss_34C58
@@ -51,7 +56,18 @@ extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
 extern void sndRemoveEmitter(void*);
 extern u8 lbl_3_bss_1760[];
-typedef struct Snd1760 { u8 pad0; u8 on; u8 pad2[0xE]; u8 lo; u8 hi; } Snd1760;
+// View over the pooled m_sound .bss statics starting at lbl_3_bss_1760
+// (0x10/0x11 live in lbl_3_bss_176C, 0x18/0x1C in lbl_3_bss_1774).
+typedef struct Snd1760 {
+    u8 starSwingDone;
+    u8 on;
+    u8 pad2[0xE];
+    u8 lo;
+    u8 hi;
+    u8 pad12[6];
+    u32 swingVid;
+    u32 pitchVid;
+} Snd1760;
 extern u16 fn_800A8864(void);
 extern void fn_800A8878(u8, u8);
 extern s32 fn_3_1650C(int* outX, int* outY, s32 r5, f32 pX, f32 pY, f32 pZ);
@@ -445,6 +461,7 @@ s32 fn_3_8C4F0(u32 div, u8 lim) {
     return 1;
 }
 
+extern u8 g_Practice[];
 // .text:0x0008C5C8 size:0x7AC mapped:0x806CB65C
 // Ball-collision sound: pick an FX by stadium and collision code and play it
 // panned to the ball position (fn_3_8FF5C is inlined in the original).
@@ -513,48 +530,6 @@ void fn_3_8C5C8(void) {
 #endif
 
 // .text:0x0008CD74 size:0xC4C mapped:0x806CBE08
-void fn_3_8CD74(void) {
-    return;
-}
-
-// .text:0x0008D9C0 size:0xC0 mapped:0x806CCA54
-void fn_3_8D9C0(void) {
-    f32 pos[3];
-    f32 up[3];
-    Vec dir;
-    u8* cam;
-    ((void (*)(void))fn_3_8CD74)();
-    cam = fn_80052734(0);
-    pos[0] = *(f32*)(cam + 0x70);
-    pos[1] = *(f32*)(cam + 0x74);
-    pos[2] = *(f32*)(cam + 0x78);
-    up[0] = 0.0f;
-    up[1] = 0.0f;
-    up[2] = 0.0f;
-    PSVECSubtract((Vec*)(cam + 0x7C), (Vec*)(cam + 0x70), &dir);
-    if (PSVECMag(&dir)) {
-        PSVECNormalize(&dir, &dir);
-    }
-    if (*(u32*)(lbl_3_common_bss_32B20 + 8) != 0) {
-        sndUpdateListener(lbl_3_common_bss_32B20, pos, up, &dir, lbl_3_data_8D70, 0x7F, 0);
-    }
-}
-
-// .text:0x0008DA80 size:0x1748 mapped:0x806CCB14
-void fn_3_8DA80(void) {
-    return;
-}
-
-// .text:0x0008F1C8 size:0x54 mapped:0x806CE25C
-void fn_3_8F1C8(void) {
-    *(s16*)(B34C58 + 0x20) = -1;
-    *(s16*)(B34C58 + 0x22) = -1;
-    B34C58[0x29] = 0;
-    B34C58[0x2A] = 0;
-    lbl_3_bss_1768 = fn_800B0A5C_insertQueue(fn_3_8B094, 0);
-}
-
-// .text:0x0008F21C size:0x9F0 mapped:0x806CE2B0
 // Game-state views used by the crowd-reaction code below.
 // TODO type: m_sound.c can't include game/UnknownHomes_Game.h yet (its local
 // u8[] declarations conflict); these macros name the real fields so the
@@ -599,6 +574,229 @@ extern int fn_3_B7E10(f32 a, f32 b);
 #define BALL_DEAD_REASON (g_Ball[0x1BD1])                        // deadBallReason
 #define BALL_DEADBALL_LOC ((f32*)(g_Ball + 0x1A3C))              // deadballLastLoc
 #define BALL_LANDING_SPOT ((f32*)(g_Ball + 0x1A2C))              // landingSpotLocation (x, z)
+extern u8 g_Pitcher[];
+extern u8 g_Minigame[];
+#define PITCHER_WINDUP (*(s16*)(g_Pitcher + 0x126))          // windupCountdownUntilBallReleased
+#define PITCHER_CHAR (*(s16*)(g_Pitcher + 0x11A))            // charID
+#define PITCHER_STRIKEOUT_WALK (g_Pitcher[0x14E])            // strikeOutOrWalk
+#define PITCHER_UNHITTABLE (g_Pitcher[0x155])                // framesUntilUnhittable
+#define PITCHER_CHARGE_TYPE (g_Pitcher[0x15F])               // ChargePitchType
+#define PITCHER_PITCH_TYPE (g_Pitcher[0x161])                // TypeOfPitch
+#define PITCHER_STAR_IND (g_Pitcher[0x164])                  // starPitchInd
+#define PITCHER_STAR_TYPE (g_Pitcher[0x165])                 // starPitchType
+#define MINIGAME_ROSTER_ID (*(s8*)(g_Minigame + 0x1905))     // rosterID
+#define MINIGAME_CHAR_INDEX(i) (((s8*)(g_Minigame + 0x18CC))[i]) // minigameControlStruct[0].characterIndex
+#define MINIGAME_MODE (g_Minigame[0x1A2A])                   // GameMode_MiniGame
+#define MINIGAME_PAUSED (g_Minigame[0x1A3B])                 // pauseInd
+#define PRACTICE_LEVEL (g_Practice[0x194])                   // practiceLevel
+#define GAME_PAUSE_FRAMES (g_GameLogic[0x14E])               // PauseSimulationFrameCount
+#define BATTER_CHAR (*(s16*)(g_Batter + 0x62))               // charID
+#define BATTER_CHARGE_DOWN (*(s16*)(g_Batter + 0x72))        // frameChargeDownBegins
+#define BATTER_CHARGE_FRAMES (*(s16*)(g_Batter + 0x74))      // chargeFrames
+#define BATTER_CONTACT_TYPE (g_Batter[0x92])                 // contactType
+#define BATTER_CONTACT_SPRITE (g_Batter[0x97])               // displayContactSprite
+#define BATTER_CHARGE_STATUS (g_Batter[0x9D])                // chargeStatus
+#define BATTER_CAPTAIN_STAR (g_Batter[0xA2])                 // captainStarSwingActivated
+#define BALL_STAR_SWING (g_Ball[0x1BE7])                     // currentStarSwing
+#define BALL_31C (*(f32*)(g_Ball + 0x31C))                   // physicsSubstruct + 0x19C
+
+// Pitch / swing / star-move sounds.
+// NONMATCHING 63%: orig inlines playSoundEffect/fn_3_90220 and reaches their tables through the pooled
+// base lbl_3_data_8148 (+0x1F0, +0x20, +0x3E8); the control flow and calls are the same
+#if NONMATCHING
+void fn_3_8CD74(void) {
+    Snd1760* st = (Snd1760*)lbl_3_bss_1760;
+    if (GAME_STATUS == 0xB) {
+        return;
+    }
+    if (MINIGAME_PAUSED != 0) {
+        return;
+    }
+    if (GAME_STATUS == 1) {
+        if (PITCHER_WINDUP == 0 && BALL_PITCH_HANGTIME == 0) {
+            if (S34C58.unk34 == 0) {
+                if (g_d_GameSettings.GameModeSelected == 2 && PRACTICE_LEVEL == 4) {
+                    playSoundEffect(0x1AE);
+                } else if (MINIGAME_MODE != 1 && MINIGAME_MODE != 3) {
+                    if (GAME_PAUSE_FRAMES == 5) {
+                        fn_3_90220(PITCHER_CHAR, 6);
+                    } else if (PITCHER_CHARGE_TYPE == 3) {
+                        playSoundEffect(0x188);
+                        fn_3_90220(PITCHER_CHAR, 6);
+                    } else if (PITCHER_CHARGE_TYPE != 0) {
+                        if (PITCHER_STAR_TYPE == 0) {
+                            fn_3_90220(PITCHER_CHAR, 5);
+                        }
+                        playSoundEffect(0x187);
+                    } else if (PITCHER_PITCH_TYPE == 2) {
+                        playSoundEffect(0x17D);
+                    } else {
+                        playSoundEffect(0x186);
+                    }
+                }
+            }
+            S34C58.unk34 = 1;
+        }
+        if (MINIGAME_MODE == 1 && BALL_PITCH_HANGTIME == 1 && PITCHER_STAR_IND != 0) {
+            playSoundEffect(0x19E);
+            st->pitchVid = playSoundEffect(0x18F);
+        }
+        if (GAME_PAUSE_FRAMES == 1 && PITCHER_STAR_TYPE != 0) {
+            playSoundEffect(0x19E);
+            switch (PITCHER_STAR_TYPE) {
+            case 1:
+            case 2:
+                st->pitchVid = playSoundEffect(0x18F);
+                break;
+            case 3:
+            case 4:
+                st->pitchVid = playSoundEffect(0x18C);
+                break;
+            case 5:
+            case 6:
+                st->pitchVid = playSoundEffect(0x18D);
+                break;
+            case 7:
+            case 8:
+                st->pitchVid = playSoundEffect(0x190);
+                break;
+            case 9:
+            case 10:
+                st->pitchVid = playSoundEffect(0x18E);
+                break;
+            case 11:
+            case 12:
+                st->pitchVid = playSoundEffect(0x19A);
+                break;
+            }
+        }
+        if (BALL_PITCH_HANGTIME > 0 && PITCHER_UNHITTABLE < 30 && lbl_8036E548._307D == 0) {
+            CharActor* batter = lbl_8036E548.active[9];
+            if (g_d_GameSettings.minigamesEnabled) {
+                batter = &lbl_8036E548.actors[MINIGAME_CHAR_INDEX(MINIGAME_ROSTER_ID)];
+            }
+            if (batter != NULL && batter->anim[0] == 0x60 && batter->_06A[0] == 5) {
+                fn_3_90220(BATTER_CHAR, 3);
+            }
+        }
+    }
+    if (lbl_8036E548._307D == 0) {
+        if (S34C58.unk2B != 0 && BALL_FRAMES_SINCE_HIT == 2) {
+            S34C58.unk2B = 0;
+            sndFXKeyOff(st->pitchVid);
+            if (BATTER_BUNTING != 0) {
+                playSoundEffect(0x153);
+            } else if (BATTER_CAPTAIN_STAR != 0) {
+                switch (BATTER_CAPTAIN_STAR) {
+                case 1:
+                case 2:
+                    st->swingVid = playSoundEffect(0x194);
+                    break;
+                case 3:
+                case 4:
+                    st->swingVid = playSoundEffect(0x191);
+                    break;
+                case 5:
+                case 6:
+                    st->swingVid = playSoundEffect(0x192);
+                    break;
+                case 7:
+                case 8:
+                    st->swingVid = playSoundEffect(0x195);
+                    break;
+                case 9:
+                case 10:
+                    st->swingVid = playSoundEffect(0x193);
+                    break;
+                case 11:
+                case 12:
+                    st->swingVid = playSoundEffect(0x199);
+                    st->starSwingDone = 0;
+                    break;
+                }
+                playSoundEffect(0x184);
+                playSoundEffect(0x185);
+                fn_3_90220(BATTER_CHAR, 0);
+            } else if (BATTER_CHAR == 2) {
+                playSoundEffect(0x1AF);
+            } else if (BATTER_CHAR == 0x26) {
+                playSoundEffect(0x1B0);
+            } else if (BATTER_CONTACT_SPRITE != 0) {
+                playSoundEffect(0x184);
+                playSoundEffect(0x185);
+            } else if (BATTER_CONTACT_TYPE == 2) {
+                playSoundEffect(0x184);
+                fn_3_90220(BATTER_CHAR, 0);
+            } else if (BATTER_CONTACT_TYPE >= 1 && BATTER_CONTACT_TYPE <= 3) {
+                fn_3_90220(BATTER_CHAR, 0);
+                playSoundEffect(0x184);
+            } else {
+                playSoundEffect(0x183);
+            }
+        }
+        if (BATTER_CHARGE_STATUS == 1 && GAME_STATUS == 1 && BATTER_CHARGE_FRAMES < BATTER_CHARGE_DOWN &&
+            BATTER_CHARGE_FRAMES == 1) {
+            S34C58.unk1C = fn_3_90220(BATTER_CHAR, 2);
+        }
+    }
+    if (BATTER_CAPTAIN_STAR == 11 && st->starSwingDone == 0 && BALL_31C <= -0.09 && BALL_31C >= -0.1) {
+        sndFXKeyOff(st->pitchVid);
+        st->swingVid = playSoundEffect(0x19B);
+        st->starSwingDone = 1;
+    }
+    if (GAME_STATUS != 1 && GAME_STATUS != 2 && st->pitchVid != 0) {
+        sndFXKeyOff(st->pitchVid);
+    }
+    if (BALL_POS[2] < -3.0f && st->pitchVid != 0) {
+        sndFXKeyOff(st->pitchVid);
+    }
+    if (PITCHER_STRIKEOUT_WALK == 3) {
+        sndFXKeyOff(st->pitchVid);
+    }
+    if (st->swingVid != 0 && (BALL_STAR_SWING == 0 || BALL_DEAD_REASON != 0)) {
+        sndFXKeyOff(st->swingVid);
+    }
+}
+#endif
+
+// .text:0x0008D9C0 size:0xC0 mapped:0x806CCA54
+void fn_3_8D9C0(void) {
+    f32 pos[3];
+    f32 up[3];
+    Vec dir;
+    u8* cam;
+    ((void (*)(void))fn_3_8CD74)();
+    cam = fn_80052734(0);
+    pos[0] = *(f32*)(cam + 0x70);
+    pos[1] = *(f32*)(cam + 0x74);
+    pos[2] = *(f32*)(cam + 0x78);
+    up[0] = 0.0f;
+    up[1] = 0.0f;
+    up[2] = 0.0f;
+    PSVECSubtract((Vec*)(cam + 0x7C), (Vec*)(cam + 0x70), &dir);
+    if (PSVECMag(&dir)) {
+        PSVECNormalize(&dir, &dir);
+    }
+    if (*(u32*)(lbl_3_common_bss_32B20 + 8) != 0) {
+        sndUpdateListener(lbl_3_common_bss_32B20, pos, up, &dir, lbl_3_data_8D70, 0x7F, 0);
+    }
+}
+
+// .text:0x0008DA80 size:0x1748 mapped:0x806CCB14
+void fn_3_8DA80(void) {
+    return;
+}
+
+// .text:0x0008F1C8 size:0x54 mapped:0x806CE25C
+void fn_3_8F1C8(void) {
+    *(s16*)(B34C58 + 0x20) = -1;
+    *(s16*)(B34C58 + 0x22) = -1;
+    B34C58[0x29] = 0;
+    B34C58[0x2A] = 0;
+    lbl_3_bss_1768 = fn_800B0A5C_insertQueue(fn_3_8B094, 0);
+}
+
+// .text:0x0008F21C size:0x9F0 mapped:0x806CE2B0
 
 // Crowd-reaction sounds (cheer / groan / "ooh") for the current play.
 void fn_3_8F21C(void) {
@@ -762,7 +960,6 @@ void fn_3_8FC0C(void) {
 }
 
 // .text:0x0008FC80 size:0x298 mapped:0x806CED14
-extern u8 g_Practice[];
 extern s16 lbl_3_data_88B8[];
 extern f32 lbl_3_rodata_1604;
 extern f32 lbl_3_rodata_1608;
