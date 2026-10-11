@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
+void fn_3_1079C8(u8* out, s32 mode);
+
 void fn_3_D8A10(void);
 void fn_3_D8CD0(void);
 void fn_3_D9868(void);
