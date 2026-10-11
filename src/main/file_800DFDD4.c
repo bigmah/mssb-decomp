@@ -1172,10 +1172,76 @@ void fn_800E33AC(HVQState* state, HVQMCPlane* mc, s32 flag, s32 proc) {
 #endif
 
 // .text:0x800E3860 size:0x5DC
+// NONMATCHING 53%: original fully unrolls the min/max and output loops
+#if NONMATCHING
 void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nest, u16 nestStride, s32 planeIdx,
                  s32 halfX, s32 halfY) {
-    return;
+    s32 block[16];
+    u8 pred[16];
+    s32 diff[16];
+    s32 avg;
+    s32 mean;
+    s32 min;
+    s32 max;
+    s32 i;
+    s32 shift;
+    s16 dcMax;
+    s16 dcMin;
+    s32 sum;
+    s16 v;
+    s32 bias;
+    s32 scale;
+
+    avg = fn_800E2310(state, block, type - 1, nest, nestStride, planeIdx);
+    fn_800E2C18(pred, 4, src, stride, halfX, halfY);
+    mean = (pred[0] + pred[1] + pred[2] + pred[3] + pred[4] + pred[5] + pred[6] + pred[7] + pred[8] + pred[9] +
+            pred[10] + pred[11] + pred[12] + pred[13] + pred[14] + pred[15] + 8) >> 4;
+    min = max = diff[0] = pred[0] - mean;
+    for (i = 1; i < 16; i++) {
+        diff[i] = pred[i] - mean;
+        if (diff[i] < min) {
+            min = diff[i];
+        }
+        if (diff[i] > max) {
+            max = diff[i];
+        }
+    }
+
+    shift = state->basisShift;
+    dcMax = state->dcMax;
+    dcMin = state->dcMin;
+    sum = 0;
+    do {
+        do {
+            v = fn_800E0CC8(&state->dcValues[planeIdx]);
+            sum += v;
+        } while (dcMin >= v);
+    } while (v >= dcMax);
+    bias = ((sum >> state->dcShift) << shift) - avg;
+
+    dcMax = state->dcMax;
+    dcMin = state->dcMin;
+    sum = 0;
+    do {
+        do {
+            v = fn_800E0CC8(&state->dcValues[planeIdx]);
+            sum += v;
+        } while (dcMin >= v);
+    } while (v >= dcMax);
+    scale = lbl_80328FA0.mcdivTable[max - min] * (sum >> state->dcShift);
+
+    for (i = 0; i < 16; i++) {
+        block[i] = bias + scale * diff[i] + block[i];
+    }
+    for (i = 0; i < 4; i++) {
+        dst[0] = lbl_80328DA0[pred[i * 4 + 0] + (block[i * 4 + 0] >> shift) + 0x80];
+        dst[1] = lbl_80328DA0[pred[i * 4 + 1] + (block[i * 4 + 1] >> shift) + 0x80];
+        dst[2] = lbl_80328DA0[pred[i * 4 + 2] + (block[i * 4 + 2] >> shift) + 0x80];
+        dst[3] = lbl_80328DA0[pred[i * 4 + 3] + (block[i * 4 + 3] >> shift) + 0x80];
+        dst += stride;
+    }
 }
+#endif
 
 // .text:0x800E3E3C size:0x2A8
 void fn_800E3E3C(HVQState* state, HVQMCPlane* mc, s32 mvX, s32 mvY) {
