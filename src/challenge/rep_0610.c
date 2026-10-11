@@ -41,8 +41,8 @@ static u8 ch_3218[0x40];
 static u8 ch_fill30C0[0x158];
 static s32 ch_30BC;
 static u8 ch_fill30B8[0x4];
-static u8 ch_fill30B7;
-static u8 ch_fill30B6;
+static u8 ch_30B7;
+static u8 ch_30B6;
 static s16 ch_30B4;
 static s32 ch_30B0;
 static u8 ch_fill3090[0x20];
@@ -3659,6 +3659,184 @@ void fn_1_1496C(u8* object) {
         ch_3070[0] = 0;
         fn_800AD038(lbl_80366158[2]);
         *(s16*)(*(u8**)(lbl_803CC1B8[0] + 0xC) + 0x10) = 1;
+    }
+}
+#endif
+
+// .text:0xE098 size:0x83C
+// Debug editor for the challenge animation script (8 steps x 4 columns, plus script select / play rows).
+// NONMATCHING ~85%: the original inlines fn_1_D7A4 and fn_1_D300
+#if NONMATCHING
+void fn_1_E098(void) {
+    ChallengeStep* step = (ChallengeStep*)ch_3218;
+    s16* scripts = (s16*)lbl_1_data_F4D4; // [0] count, [1] current
+    u16 buttons;
+    s32 row;
+    s32 col;
+
+    for (row = 0; row < 11; row++, step++) {
+        switch (row) {
+        case 8:
+            if (row == ch_30B6) {
+                s16 old = scripts[1];
+                buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+                if (buttons & 1) {
+                    if (scripts[1] == 0) {
+                        scripts[1] = scripts[0];
+                    }
+                    scripts[1]--;
+                } else if (buttons & 2) {
+                    if (++scripts[1] == scripts[0]) {
+                        scripts[1] = 0;
+                    }
+                }
+                if (old != scripts[1]) {
+                    fn_1_D7A4(scripts[1]);
+                }
+            }
+            break;
+        case 9:
+            if (row == ch_30B6 && (lbl_803C77B8._02 & 0x100)) {
+                *(void**)lbl_803CC1B8[0] = (void*)fn_1_DE1C;
+                lbl_803CC1B8[0][0x14] = 0;
+                lbl_803CC1B8[0][0x15] = 8;
+            }
+            break;
+        case 10:
+            if (row == ch_30B6 && (lbl_803C77B8._02 & 0x100)) {
+                u8* queue = lbl_803CC1B8[0];
+                ChallengeStep* steps = (ChallengeStep*)ch_3218;
+                u8* entry;
+                ActorObject* object;
+                void* table;
+                s32 k;
+
+                *(void**)queue = (void*)fn_1_DE1C;
+                queue[0x15] = 0;
+                entry = ch_6940 + ch_5F73 * 0x48;
+                entry[0x44] = steps[(s8)queue[0x15]].group;
+                entry[0x45] = steps[(s8)queue[0x15]].index;
+                object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34);
+                table = *(void**)(lbl_8036E548 + ch_5F73 * 0x27C + entry[0x44] * 4 + 0xC14);
+                object->animBank = table;
+                object->seqNum = entry[0x45];
+                object->time = 0.0f;
+                object->setAnimation = 1;
+                object->setTime = table != NULL;
+                object->setSpeed = table != NULL;
+                object->speed = 0.0f;
+                for (k = 4; k >= 0; k--) {
+                    u8* anims = ch_3258 + (s8)queue[0x15] * 0xA0;
+                    if (*(u16*)(anims + k * 0x20 + 8) != 0) {
+                        // The original indexes with the row counter (row * 0x20) instead of k.
+                        ch_67B8[k] = anims + row * 0x20;
+                        *(f32*)ch_67B8[k] = 0.0f;
+                    } else {
+                        ch_67B8[k] = NULL;
+                    }
+                }
+                fn_1_D300(lbl_8036E548 + ch_5F73 * 0x27C + 0xC04);
+            }
+            break;
+        default: {
+            u8* table;
+            u8* anim;
+            u16 highlight;
+            u16 pad0;
+
+            if (step->group >= 0) {
+                table = *(u8**)(lbl_8036E548 + ch_5F73 * 0x27C + step->group * 4 + 0xC14);
+                anim = *(u8**)(table + 4) + step->index * 0xC;
+            } else {
+                table = NULL;
+                anim = NULL;
+            }
+            buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+            pad0 = lbl_803C77B8._00;
+            for (col = 0; col < 4; col++) {
+                if (row != ch_30B6 || col != ch_30B7) {
+                    highlight = 0xFFFF;
+                } else if (pad0 & 0x100) {
+                    highlight = 0xF00F;
+                } else {
+                    highlight = 0xFF0F;
+                }
+                switch (col) {
+                case 0:
+                    if (highlight == 0xF00F && table != NULL) {
+                        if (buttons & 1) {
+                            if (step->frame >= 0) {
+                                step->frame--;
+                            }
+                        } else if (buttons & 2) {
+                            if (step->frame < (s16)(s32)**(f32**)(anim + 4)) {
+                                step->frame++;
+                            }
+                        }
+                    }
+                    break;
+                case 1:
+                    if (highlight == 0xF00F) {
+                        s16 old = step->group;
+                        if (buttons & 1) {
+                            if (old >= 0) {
+                                step->group = old - 1;
+                            }
+                        } else if ((buttons & 2) && old < 6) {
+                            step->group = old + 1;
+                        }
+                        if (old != step->group) {
+                            step->index = 0;
+                        }
+                    }
+                    break;
+                case 2:
+                    if (highlight == 0xF00F && table != NULL) {
+                        if (buttons & 1) {
+                            if (step->index > 0) {
+                                step->index--;
+                            }
+                        } else if (buttons & 2) {
+                            if (step->index < *(u16*)(table + 0xA) - 1) {
+                                step->index++;
+                            }
+                        }
+                    }
+                    break;
+                case 3:
+                    if (highlight == 0xF00F && table != NULL && (buttons & 3)) {
+                        step->sync = step->sync == 0;
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+        }
+    }
+    if (!(lbl_803C77B8._00 & 0x100)) {
+        buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+        if (buttons & 8) {
+            if (ch_30B6 == 0) {
+                ch_30B6 = 11;
+            }
+            ch_30B6--;
+        } else if (buttons & 4) {
+            if (++ch_30B6 == 11) {
+                ch_30B6 = 0;
+            }
+        } else if (buttons & 1) {
+            if (ch_30B7 == 0) {
+                ch_30B7 = 4;
+            }
+            ch_30B7--;
+        } else if (buttons & 2) {
+            if (++ch_30B7 == 4) {
+                ch_30B7 = 0;
+            }
+        } else if (buttons & 0x200) {
+            ch_5F71 = 1;
+        }
     }
 }
 #endif
