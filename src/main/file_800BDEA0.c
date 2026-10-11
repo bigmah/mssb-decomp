@@ -594,8 +594,14 @@ L_800BF1C8:
 #endif
 
 // .text:0x800BF1E8 size:0x1C
-void SKNBzero32B(void) {
-    return;
+#if NONMATCHING
+void SKNBzero32B(void* base, u32 size) {
+    u32 n = size >> 5;
+
+    do {
+        memset(base, 0, 32);
+        base = (u8*)base + 32;
+    } while (--n);
 }
 #else
 asm void SKNBzero32B(register void* base, register u32 size) {
