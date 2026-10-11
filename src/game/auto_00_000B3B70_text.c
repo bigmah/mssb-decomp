@@ -8,6 +8,29 @@ extern void possiblyTransitionBlackScreen(void);
 extern void fn_3_5BAC(void);
 
 // Saved practice clear flags: lbl_80354768 is SaveProgress (main/file_8003A688.h), _CF4E[type * 4 + level].
+extern void* memcpy(void*, const void*, u32);
+
+// Practice-mode default roster (lbl_3_data_FAA8).
+typedef struct PracticeRosterTbl {
+    u8 pitcher;     // 0x00
+    u8 _01[8];      // 0x01
+    u8 batters[9];  // 0x09
+    u8 _12[0x1C - 0x12];
+} PracticeRosterTbl;
+extern PracticeRosterTbl lbl_3_data_FAA8;
+
+// Batting order per team (lbl_80354720, OrderEntry in main/file_8004207C.h).
+typedef struct PracticeOrderEntry {
+    u8 _0;
+    u8 _1;
+    s8 slot;
+    u8 _3;
+} PracticeOrderEntry;
+extern PracticeOrderEntry lbl_80354720[2][9];
+
+// Character stats table (lbl_8034E9A0 viewed as CharacterStats records).
+extern CharacterStats lbl_8034E9A0[];
+
 #define SAVE_LEVEL_CLEARED(type) (lbl_80354768 + 0xCF4E + (type) * 4)
 
 extern u8 lbl_3_common_bss_34C90[];
@@ -833,3 +856,26 @@ void fn_3_B3FE8(void) {
     }
 }
 #endif
+
+// .text:0x000B42A8 size:0x140
+void fn_3_B42A8(void) {
+    s32 k;
+    s32 t;
+
+    g_GameLogic.battingOrderAndPositionMapping[0][0][0] = lbl_3_data_FAA8.pitcher;
+    g_GameLogic.battingOrderAndPositionMapping[1][0][0] = lbl_3_data_FAA8.pitcher;
+    for (t = 0; t < 2; t++) {
+        for (k = 0; k < 9; k++) {
+            g_GameLogic.battingOrderAndPositionMapping[t][k + 1][0] = lbl_3_data_FAA8.batters[k];
+            g_GameLogic.battingOrderAndPositionMapping[t][k + 1][1] = lbl_3_data_FAA8.batters[k];
+            lbl_80354720[t][k]._0 = k;
+            lbl_80354720[t][k]._1 = k;
+            lbl_80354720[t][k].slot = k;
+        }
+    }
+    for (t = 0; t < 2; t++) {
+        for (k = 0; k < 9; k++) {
+            memcpy(&inMemRoster[t][k], &lbl_8034E9A0[g_GameLogic.battingOrderAndPositionMapping[t][k + 1][0]], sizeof(CharacterStats));
+        }
+    }
+}
