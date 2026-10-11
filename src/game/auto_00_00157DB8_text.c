@@ -939,7 +939,7 @@ void fn_3_159114(void) {
         s32 id = g_Minigame._19E8[g_Practice.homeAway]._0;
         lbl_80371C30[o->baseIdx + 5].obj->_5C = lbl_3_data_A594[g_Minigame.battingHandedness[g_Practice.homeAway]] << 16;
         if (lbl_800E8558[id]._0[0] != 0 &&
-            (s8)g_Minigame._19E8[g_Practice.homeAway]._1 == 0 && (s8)g_Minigame._19E8[g_Practice.homeAway]._4[2] == 0) {
+            (s8)g_Minigame._19E8[g_Practice.homeAway]._1 == 0 && g_Minigame._19E8[g_Practice.homeAway]._6 == 0) {
             lbl_80371C30[o->baseIdx + 7].obj->flags |= 2;
         } else {
             lbl_80371C30[o->baseIdx + 7].obj->flags &= ~2;
