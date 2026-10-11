@@ -54,7 +54,15 @@ void fn_2_5AE54(void) {
 
 // .text:0x0005AF24 size:0x8C
 void fn_2_5AF24(void) {
-    return;
+    MenuQueueState* queue;
+    lbl_8034E978.menu = 0x53;
+    fn_800B0A5C_insertQueue(fn_80053FE8, 0);
+    queue = fn_800B0A5C_insertQueue(fn_2_5AE54, 0);
+    queue->stateA = 0;
+    queue->stateB = 0;
+    fn_2_54354(lbl_2_data_268A8, 0x2E0);
+    lbl_2_bss_1A8234[0][0x162604] = 1;
+    lbl_2_bss_1A8234[0][0x162605] = 1;
 }
 
 // .text:0x0005AFB0 size:0x82C
