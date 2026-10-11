@@ -344,10 +344,203 @@ void PrepFilesToBeLoaded(void) {
     lbl_80366158._1D = 1;
 }
 
+// NONMATCHING 95%: the original addresses lbl_800E8AA8 and the tables after it through one pooled
+// base register (they are data of this unit, not split yet); fn_80009144 is not inlined (pragma)
 // .text:0x800097A0 size:0x6F4
+#if NONMATCHING
+#pragma dont_inline on
 void fn_800097A0(void) {
-    return;
+    MainTask* task;
+    OSModuleHeader* module;
+    FileTableEntry* file;
+    BOOL progressive;
+    FileTable* table = &lbl_800E8AA8;
+
+    lbl_80366158._26 = 0;
+    lbl_80366158._25 = 0;
+    task = lbl_803CC1B8;
+    switch (task->state) {
+    case 0:
+        g_d_GameSettings._06 = 0;
+        fn_800AD054(lbl_80366158.arenaStart, lbl_80366158.arenaEnd);
+        fn_80021308();
+        lbl_803C6CF8.entryNum = lbl_803CBBD0;
+        lbl_80366B18._780 = (void*)ARAMTransfer(table->boot, 0, 0, 0); // TODO type: returns a pointer
+        task->state = 1;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            lbl_80366B18._794 = (void*)ARAMTransfer(&table->boot[2], 0, 1, 0);
+            task->state = 2;
+        }
+        break;
+    case 2:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            fn_80011000();
+            lbl_80366B18._798 = (void*)ARAMTransfer(&table->boot[1], 0, 1, 0);
+            task->state = 3;
+        }
+        break;
+    case 3:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            fn_800111B4(lbl_80366B18._798);
+            fn_80010FA0();
+            task->state = 4;
+        }
+        break;
+    case 4:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            task->state = 5;
+        }
+        break;
+    case 5:
+        if (fn_80035838(&table->files[0x25], 0)) {
+            fn_800B0C80(fn_80021064);
+            task->state = 6;
+        }
+        break;
+    case 6:
+        if (fn_80035838(&table->files[0xF], 1)) {
+            fn_800216F8(0, fn_8002158C);
+            task->_10 = 0;
+            task->state = 7;
+        }
+        break;
+    case 7:
+        if (task->_10 == 0) {
+            break;
+        }
+        lbl_80366158.arenaStart = lbl_803C7898.cur;
+        if ((lbl_80366158.resetCode & 1) && (lbl_80366158.resetCode & 0x80000000)) {
+            fn_80023CF4((lbl_80366158.resetCode >> 1) & 1);
+            progressive = FALSE;
+        } else if (VIGetDTVStatus() == 0) {
+            fn_80023D44(0);
+            progressive = FALSE;
+        } else {
+            progressive = FALSE;
+            if (OSGetProgressiveMode() == 1 ||
+                ((g_PadState[0].held | g_PadState[1].held | g_PadState[2].held | g_PadState[3].held) & 0x200)) {
+                progressive = TRUE;
+            }
+        }
+        if (progressive) {
+            lbl_80366158._1D = 0;
+        } else {
+            lbl_80366158._1D = 9;
+        }
+        if ((lbl_80366158.resetCode & 1) && (lbl_80366158.resetCode & 0x80000000)) {
+            lbl_80366158._29 = 1;
+        } else {
+            lbl_80366158._29 = 0;
+        }
+        fn_800AD01C(lbl_80366158.arenaEnd);
+        fn_80022D58();
+        fn_800227E4();
+        fn_80009144();
+        // fallthrough
+    case 8:
+        g_d_GameSettings._06 = 1;
+        fn_800AD038(lbl_80366158.arenaStart);
+        lbl_803C6CF8.entryNum = lbl_803CBBD4;
+        task->module = (OSModuleHeader*)ARAMTransfer(&table->dll[0], 0, 0, 0);
+        task->moduleSize = table->dll[0].size & 0x0FFFFFFF;
+        OSReport(lbl_800E6588, 0, task->module);
+        task->state = 9;
+        break;
+    case 9:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            module = task->module;
+            lbl_803C6CF8.entryNum = lbl_803CBBD0;
+            OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
+            ICInvalidateRange(task->module, task->moduleSize);
+            lbl_80366158.arenaAfterDll = lbl_803C7898.cur;
+            ((void (*)(void))module->prolog)(); // TODO type: relocated by OSLink
+            task->_10 = 0;
+            OSReport(lbl_800E65A0);
+            task->state = 10;
+        }
+        break;
+    case 10:
+        if (task->_10 != 0) {
+            fn_80021410();
+            resetAllDrawingStructs();
+            fn_80009144();
+            module = task->module;
+            ((void (*)(void))module->epilog)();
+            OSUnlink(&module->info);
+            switch (task->_10) {
+            case 1:
+                task->state = 11;
+                break;
+            }
+        }
+        break;
+    case 11:
+        g_d_GameSettings._06 = 2;
+        fn_800AD038(lbl_80366158.arenaStart);
+        lbl_803C6CF8.entryNum = lbl_803CBBD4;
+        file = &table->dll[1];
+        task->module = (OSModuleHeader*)ARAMTransfer(file, 0, 0, 0);
+        task->moduleSize = file->size & 0x0FFFFFFF;
+        OSReport(lbl_800E6588, 1, task->module);
+        task->state = 12;
+        lbl_80366158._1C = 0;
+        break;
+    case 12:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            module = task->module;
+            lbl_803C6CF8.entryNum = lbl_803CBBD0;
+            OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
+            ICInvalidateRange(task->module, task->moduleSize);
+            lbl_80366158.arenaAfterDll = lbl_803C7898.cur;
+            ((void (*)(void))module->prolog)();
+            task->_10 = 0;
+            OSReport(lbl_800E65A0);
+            task->state = 13;
+        }
+        break;
+    case 13:
+        if (lbl_80366158._1C) {
+            DrawShadows(0);
+            sndSilence();
+        }
+        task->state = 14;
+        // fallthrough
+    case 14:
+        if (lbl_80366158._1C != 0 && fn_800A8518(3) != 0) {
+            fn_800A88C0();
+            fn_800A8B78();
+            fn_80021410();
+            resetAllDrawingStructs();
+            fn_80009144();
+            module = task->module;
+            ((void (*)(void))module->epilog)();
+            OSUnlink(&module->info);
+            task->state = 8;
+            g_d_GameSettings.miniGameStadiumIndicator = 0;
+            if (g_d_GameSettings.GameModeSelected == 4) {
+                lbl_80366158._1D = 7;
+                lbl_80366158._29 = 2;
+            } else if (!g_d_GameSettings.exhibitionMatchInd) {
+                if (g_d_GameSettings.GameModeSelected == 5 && g_d_GameSettings.bJMatchInd == 0) {
+                    lbl_80366158._1D = 1;
+                } else {
+                    g_d_GameSettings.GameModeSelected = 5;
+                }
+            } else if ((u8)(g_d_GameSettings.GameModeSelected - 6) <= 1 || g_d_GameSettings.GameModeSelected == 2) {
+                lbl_80366158._1D = 1;
+            } else if (lbl_80366158._1C == 1) {
+                lbl_80366158._1D = 1;
+            } else {
+                lbl_80366158._1D = 1;
+            }
+        }
+        break;
+    }
 }
+#pragma dont_inline reset
+#endif
 
 // .text:0x80009E94 size:0x178
 void interpolatePointsUnknown(s32 i, BezierPoint* pts, u32 first, u32 last) {
