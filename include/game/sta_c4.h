@@ -38,6 +38,15 @@ typedef struct StaTimerTask {
     /* 0x14 */ StaObj* obj;
 } StaTimerTask;
 
+// Draw node (lbl_3_data_1BE94[2], queued with fn_800A7D4C) whose callback is fn_3_FB3D8.
+typedef struct StaHazeNode {
+    /* 0x00 */ u32 link;
+    /* 0x04 */ void (*draw)(struct StaHazeNode* node);
+    /* 0x08 */ u8 _08[0x38 - 0x08];
+    /* 0x38 */ Mtx view; // camera view matrix for this frame
+    /* 0x68 */ u8 _68[4];
+} StaHazeNode; // size: 0x6C
+
 // lbl_3_data_1BA98: where each object stands.
 typedef struct StaObjDef {
     /*0x00*/ Vec pos;
@@ -83,8 +92,8 @@ void fn_3_F9D94(StaObj* o);
 void fn_3_F9E78(s32 idx, s32 b, u8* c);
 void fn_3_FA3C0(void);
 void fn_3_FA58C(void);
-void fn_3_FB3D8(void);
-void fn_3_FBBA0(u8* t);
+void fn_3_FB3D8(StaHazeNode* node);
+void fn_3_FBBA0(TexImage* t);
 void fn_3_F8444(void);
 void fn_3_F8454(void);
 

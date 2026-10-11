@@ -6,8 +6,12 @@
 #include "main/file_8004207C.h"
 #include "game/rep_23E8.h"
 #include "main/file_800B4A44.h"
+#include "main/file_80039AC0.h"
+#include "main/file_80037054.h"
+#include "main/file_800A7C08.h"
+#include "static/Camera.h"
+#include "main/file_8004C5F8.h"
 #pragma dont_inline on
-extern void* lbl_803CC1B8;
 extern void fn_800B0A14_removeQueue(void*);
 
 // TODO type: defined as (s16* sx, s16* sy, f32 x, f32 y, f32 z) in main/file_800527C4.h (same ABI);
@@ -18,7 +22,6 @@ extern void fn_800528C0(f32 x, f32 y, f32 z, s16* sx, s16* sy);
 extern void fn_3_B9510(s32);
 #include "Dolphin/GX/GXPixel.h"
 
-extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_81DC[];
 extern const f32 lbl_3_rodata_3064;
 extern void fn_3_8B890(s32);
@@ -87,6 +90,14 @@ static u8 lbl_3_bss_B570;
 extern void (*lbl_3_data_1BA88[])(s32, s32, u8*);
 extern void fn_3_F92FC(void);
 extern const f32 lbl_3_rodata_3060;
+extern const f32 lbl_3_rodata_3078;
+extern const f32 lbl_3_rodata_307C;
+extern const f32 lbl_3_rodata_3080;
+extern const f32 lbl_3_rodata_3084;
+extern const f32 lbl_3_rodata_3088;
+extern const f32 lbl_3_rodata_308C;
+extern Vec lbl_3_data_1BF6C[21]; // haze fan: 20 rim points, then the center
+extern u8 lbl_3_data_1C068[20][3]; // per strip: tip point, then the two spokes
 extern const f32 lbl_3_rodata_3050;
 extern const f64 lbl_3_rodata_3058;
 extern f64 __fabs(f64);
@@ -109,7 +120,7 @@ void fn_3_F8454(void) {
             lbl_3_bss_B664[0] = 1;
         }
     } else if (lbl_3_bss_B664[0] != 0) {
-        lbl_3_bss_B574[0] = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 3, 0, 0, 2);
+        lbl_3_bss_B574[0] = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings.StadiumID] + 3, 0, 0, 2);
         lbl_3_bss_B664[0] = 0;
     } else {
         fn_3_8BA60(lbl_3_bss_B574[0], 0, 0);
@@ -309,7 +320,7 @@ void fn_3_F8D00(void) {
 void fn_3_F8E20(void) {
     u8* state = lbl_3_bss_B620;
     Vec* pos = lbl_3_bss_B5D8;
-    SpaniGroup* st = lbl_803CC1B8;
+    SpaniGroup* st = (SpaniGroup*)lbl_803CC1B8;
     s32 i;
     for (i = 0; i < 6; i++, state++, pos++) {
         switch (*state) {
@@ -372,14 +383,14 @@ void fn_3_F9164(StaObj* o) {
             slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 4;
             break;
     }
-    stad = g_d_GameSettings[9];
-    if (g_d_GameSettings[7] == 6) {
+    stad = g_d_GameSettings.StadiumID;
+    if (g_d_GameSettings.GameModeSelected == 6) {
         v = lbl_3_data_84B8[snd * 2];
     } else {
         v = lbl_3_data_8404[stad * 0x1E + snd * 2];
     }
     h = sndFXStartEx((u16)(snd + ((u16*)lbl_3_data_81DC)[stad]), v, 0x3F, 0);
-    if (g_d_GameSettings[7] == 6) {
+    if (g_d_GameSettings.GameModeSelected == 6) {
         v = lbl_3_data_84B8[snd * 2 + 1];
     } else {
         v = lbl_3_data_8404[stad * 0x1E + snd * 2 + 1];
@@ -471,14 +482,14 @@ static inline void F9164_inl(StaObj* o) {
             slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 4;
             break;
     }
-    stad = g_d_GameSettings[9];
-    if (g_d_GameSettings[7] == 6) {
+    stad = g_d_GameSettings.StadiumID;
+    if (g_d_GameSettings.GameModeSelected == 6) {
         v = lbl_3_data_84B8[snd * 2];
     } else {
         v = lbl_3_data_8404[stad * 0x1E + snd * 2];
     }
     h = sndFXStartEx((u16)(snd + ((u16*)lbl_3_data_81DC)[stad]), v, 0x3F, 0);
-    if (g_d_GameSettings[7] == 6) {
+    if (g_d_GameSettings.GameModeSelected == 6) {
         v = lbl_3_data_84B8[snd * 2 + 1];
     } else {
         v = lbl_3_data_8404[stad * 0x1E + snd * 2 + 1];
@@ -541,14 +552,14 @@ void fn_3_F99F0(s32 idx) {
             slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 4;
             break;
     }
-    stad = g_d_GameSettings[9];
-    if (g_d_GameSettings[7] == 6) {
+    stad = g_d_GameSettings.StadiumID;
+    if (g_d_GameSettings.GameModeSelected == 6) {
         v = lbl_3_data_84B8[snd * 2];
     } else {
         v = lbl_3_data_8404[stad * 0x1E + snd * 2];
     }
     h = sndFXStartEx((u16)(snd + ((u16*)lbl_3_data_81DC)[stad]), v, 0x3F, 0);
-    if (g_d_GameSettings[7] == 6) {
+    if (g_d_GameSettings.GameModeSelected == 6) {
         v = lbl_3_data_84B8[snd * 2 + 1];
     } else {
         v = lbl_3_data_8404[stad * 0x1E + snd * 2 + 1];
@@ -737,24 +748,150 @@ void fn_3_FA58C(void) {
 }
 
 // .text:0x000FB3D8 size:0x7C8 mapped:0x8073A46C
-void fn_3_FB3D8(void) {
-    return;
+// NONMATCHING 96%: register allocation only (min/max floats f0-f3 vs ours f1-f4, saved gprs rotated)
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_FB3D8(StaHazeNode* node) {
+    f32 base2d[21][2];
+    Vec d;
+    Vec step;
+    f32* scr;
+    Vec* pts;
+    Vec* out;
+    Vec* src;
+    Vec* o;
+    const u8* tri;
+    s32 i;
+    s32 k;
+    s32 b;
+    s32 c;
+    f32 minX;
+    f32 maxX;
+    f32 minY;
+    f32 maxY;
+    f32 rx;
+    f32 ry;
+
+    fn_8003A144();
+    scr = _OSAllocFromHeap(4, 0x20D0);
+    pts = (Vec*)((u8*)scr + 0xD20); // 400 screen positions (f32[2]), then 400 Vecs
+    src = lbl_3_data_1BF6C;
+    out = pts;
+    for (i = 0; i < 21; i++, src++) {
+        if (i != 20) {
+            PSVECSubtract(src, &lbl_3_data_1BF6C[20], &d);
+            o = out;
+            for (k = 1; k <= 20; k++) {
+                PSVECScale(&d, (f32)k / lbl_3_rodata_3078, &step);
+                PSVECAdd(&lbl_3_data_1BF6C[20], &step, o);
+                out++;
+                o++;
+            }
+        }
+    }
+    fn_800245EC(fn_80052768_getCamera(0)->proj, node->view, lbl_3_data_1BF6C, &base2d[0][0], 21, 1);
+    fn_800245EC(fn_80052768_getCamera(0)->proj, node->view, pts, scr, 400, 1);
+
+    minX = lbl_3_rodata_307C;
+    maxX = -minX;
+    minY = minX;
+    maxY = maxX;
+    for (i = 0; i < 400; i++) {
+        if (minX > scr[i * 2]) {
+            minX = scr[i * 2];
+        }
+        if (maxX < scr[i * 2]) {
+            maxX = scr[i * 2];
+        }
+        if (minY > scr[i * 2 + 1]) {
+            minY = scr[i * 2 + 1];
+        }
+        if (maxY < scr[i * 2 + 1]) {
+            maxY = scr[i * 2 + 1];
+        }
+    }
+    rx = lbl_3_rodata_3080 * (maxX - minX);
+    ry = lbl_3_rodata_3080 * (maxY - minY);
+    for (i = 0; i < 800; i += 2) {
+        scr[i] += rx * (f32)(rand() % 256) * lbl_3_rodata_3084 - lbl_3_rodata_3088;
+        scr[i + 1] += ry * (f32)(rand() % 256) * lbl_3_rodata_3084 - lbl_3_rodata_3088;
+    }
+
+    fn_3_FBBA0(fn_80039AB4());
+    GXSetZMode(1, GX_LEQUAL, 0);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+    GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetNumTevStages(1);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_TEX0, GX_IDENTITY, 0, GX_PTIDENTITY);
+    GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0, 0, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetChanCtrl(GX_ALPHA0, 0, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_COPY);
+    GXLoadPosMtxImm(node->view, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+
+    for (i = 0, tri = lbl_3_data_1C068[0]; i < 20; i++, tri += 3) {
+        GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT0, 43);
+        GXWGFifo.f32 = lbl_3_data_1BF6C[tri[0]].x;
+        GXWGFifo.f32 = lbl_3_rodata_308C + lbl_3_data_1BF6C[tri[0]].y;
+        GXWGFifo.f32 = lbl_3_data_1BF6C[tri[0]].z;
+        GXWGFifo.u32 = 0xFFFFFFFF;
+        GXWGFifo.f32 = base2d[tri[0]][0];
+        GXWGFifo.f32 = base2d[tri[0]][1];
+        b = tri[1];
+        c = tri[2];
+        for (k = 0; k < 20; k++) {
+            GXPosition3f32(pts[b * 20 + k].x, lbl_3_rodata_308C + pts[b * 20 + k].y, pts[b * 20 + k].z);
+            GXColor1u32(0xFFFFFFFF);
+            GXTexCoord2f32(scr[(b * 20 + k) * 2], scr[(b * 20 + k) * 2 + 1]);
+            GXPosition3f32(pts[c * 20 + k].x, lbl_3_rodata_308C + pts[c * 20 + k].y, pts[c * 20 + k].z);
+            GXColor1u32(0xFFFFFFFF);
+            GXTexCoord2f32(scr[(c * 20 + k) * 2], scr[(c * 20 + k) * 2 + 1]);
+        }
+        GXWGFifo.f32 = lbl_3_data_1BF6C[b].x;
+        GXWGFifo.f32 = lbl_3_rodata_308C + lbl_3_data_1BF6C[b].y;
+        GXWGFifo.f32 = lbl_3_data_1BF6C[b].z;
+        GXWGFifo.u32 = 0xFFFFFFFF;
+        GXWGFifo.f32 = base2d[b][0];
+        GXWGFifo.f32 = base2d[b][1];
+        GXWGFifo.f32 = lbl_3_data_1BF6C[c].x;
+        GXWGFifo.f32 = lbl_3_rodata_308C + lbl_3_data_1BF6C[c].y;
+        GXWGFifo.f32 = lbl_3_data_1BF6C[c].z;
+        GXWGFifo.u32 = 0xFFFFFFFF;
+        GXWGFifo.f32 = base2d[c][0];
+        GXWGFifo.f32 = base2d[c][1];
+    }
+    fn_800ACFB0(scr);
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x000FBBA0 size:0x130 mapped:0x8073AC34
-void fn_3_FBBA0(u8* t) {
+#pragma dont_inline off
+void fn_3_FBBA0(TexImage* t) {
     GXTexObj tex;
     GXTlutObj tlut;
-    if (*(u32*)(t + 4) != 0) {
-        GXInitTexObjCI(&tex, *(void**)t, *(u16*)(t + 0xA), *(u16*)(t + 8), (GXCITexFmt) * (u8*)(t + 0x17), (GXTexWrapMode) * (u8*)(t + 0xC),
-                       (GXTexWrapMode) * (u8*)(t + 0xD), t[0x15] != t[0x16], 0);
-        GXInitTlutObj(&tlut, *(void**)(t + 4), (GXTlutFmt) * (u8*)(t + 0x1A), *(u16*)(t + 0x18));
+    if (t->tlut != NULL) {
+        GXInitTexObjCI(&tex, t->data, t->width, t->height, (GXCITexFmt)t->format, (GXTexWrapMode)t->wrapS, (GXTexWrapMode)t->wrapT,
+                       t->minLOD != t->maxLOD, 0);
+        GXInitTlutObj(&tlut, t->tlut, (GXTlutFmt)t->tlutFormat, t->tlutEntries);
         GXLoadTlut(&tlut, 0);
     } else {
-        GXInitTexObj(&tex, *(void**)t, *(u16*)(t + 0xA), *(u16*)(t + 8), (GXTexFmt) * (u8*)(t + 0x17), (GXTexWrapMode) * (u8*)(t + 0xC),
-                     (GXTexWrapMode) * (u8*)(t + 0xD), t[0x15] != t[0x16]);
+        GXInitTexObj(&tex, t->data, t->width, t->height, (GXTexFmt)t->format, (GXTexWrapMode)t->wrapS, (GXTexWrapMode)t->wrapT,
+                     t->minLOD != t->maxLOD);
     }
-    GXInitTexObjLOD(&tex, (GXTexFilter)t[0xE], (GXTexFilter)t[0xF], (f32)t[0x15], (f32)t[0x16], *(f32*)(t + 0x10), 0, 0, GX_ANISO_1);
+    GXInitTexObjLOD(&tex, (GXTexFilter)t->minFilter, (GXTexFilter)t->magFilter, (f32)t->minLOD, (f32)t->maxLOD, t->lodBias, 0, 0, GX_ANISO_1);
     GXLoadTexObj(&tex, GX_TEXMAP0);
 }
 
