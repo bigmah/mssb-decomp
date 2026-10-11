@@ -25,7 +25,8 @@ typedef struct RepRunnerView {
     /*0x126*/ u8 _126; // base index (ahead)
     /*0x127*/ u8 _127[0x133 - 0x127];
     /*0x133*/ u8 _133;
-    /*0x134*/ u8 _134[0x137 - 0x134];
+    /*0x134*/ u8 _134[2];
+    /*0x136*/ u8 _136; // requested running direction
     /*0x137*/ u8 runningDirectionCode;
     /*0x138*/ u8 _138[0x152 - 0x138];
     /*0x152*/ s8 _152; // player slot
@@ -40,6 +41,43 @@ typedef struct RepTarget {
     /*0x1C*/ s16 timer;
     /*0x1E*/ u8 active;
 } RepTarget;
+
+// CPU controller input (g_Minigame + 0x1D7C + character * 0x10).
+typedef struct RepPad {
+    /*0x0*/ u8 _0[4];
+    /*0x4*/ u16 trig;
+    /*0x6*/ u16 held;
+    /*0x8*/ u8 _8[8];
+} RepPad;
+
+// CPU state per player (g_Minigame + 0x1DCC + player * 8).
+typedef struct RepAISlot {
+    /*0x0*/ s16 timer; // run when the throw countdown is this low
+    /*0x2*/ u8 state;
+    /*0x3*/ s8 wait;
+    /*0x4*/ s8 _4;     // countdown to the next 0x200 press
+    /*0x5*/ u8 reason; // why it started running: 2/3/4 = item kind
+    /*0x6*/ s8 _6;     // 0x7F: none
+    /*0x7*/ s8 _7;     // countdown to the next decision
+} RepAISlot;
+
+// Ranges per AI strength.
+typedef struct RepRange8 {
+    s8 min;
+    s8 max;
+} RepRange8;
+
+typedef struct RepRange16 {
+    s16 min;
+    s16 max;
+} RepRange16;
+
+// Sorted candidate target (fn_3_13C7BC).
+typedef struct RepAITarget {
+    /*0x0*/ f32 dist;
+    /*0x4*/ s8 dir;
+    /*0x5*/ s8 pos;
+} RepAITarget;
 
 // This minigame's view of g_Minigame. This unit declares g_Minigame as bytes,
 // so new code reaches the fields through this view (REP_MG).
@@ -116,9 +154,13 @@ typedef struct RepMinigameView {
     /*0x1D58*/ s16 _1D58;
     /*0x1D5A*/ u8 _1D5A[0x1D74 - 0x1D5A];
     /*0x1D74*/ s8 _1D74; // -1: none
-    /*0x1D75*/ u8 _1D75[0x1DC0 - 0x1D75];
+    /*0x1D75*/ u8 _1D75[0x1D7C - 0x1D75];
+    /*0x1D7C*/ RepPad pad[4]; // CPU controller input per character
+    /*0x1DBC*/ u8 _1DBC[4];
     /*0x1DC0*/ u8 _1DC0[4];
-    /*0x1DC4*/ u8 _1DC4[0x1DFC - 0x1DC4];
+    /*0x1DC4*/ u8 _1DC4[0x1DCC - 0x1DC4];
+    /*0x1DCC*/ RepAISlot ai[4]; // CPU state per player
+    /*0x1DEC*/ u8 _1DEC[0x1DFC - 0x1DEC];
     /*0x1DFC*/ u8 _1DFC[4];
     /*0x1E00*/ u8 _1E00;
 } RepMinigameView;

@@ -50,6 +50,12 @@ extern int RandomIndexFromWeights(u8* weights, int count);
 extern int random_fn_3_9EE24(int max);
 extern void fn_3_1541C4(u8 slot, u8 kind, Vec* pos);
 extern void fn_3_106EB0(void);
+extern u8 lbl_3_data_2192C[];
+extern u8 lbl_3_data_2195C[];
+extern u8 lbl_3_data_2196C[];
+extern u8 lbl_3_data_21974[];
+extern f32 lbl_3_data_21934[]; // per AI strength: max distance to go for an item
+extern const f32 lbl_3_rodata_372C; // 0.001f
 extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
 extern u8 lbl_3_bss_B791;
@@ -144,6 +150,12 @@ extern int RandomIndexFromWeights(u8* weights, int count);
 extern int random_fn_3_9EE24(int max);
 extern void fn_3_1541C4(u8 slot, u8 kind, Vec* pos);
 extern void fn_3_106EB0(void);
+extern u8 lbl_3_data_2192C[];
+extern u8 lbl_3_data_2195C[];
+extern u8 lbl_3_data_2196C[];
+extern u8 lbl_3_data_21974[];
+extern f32 lbl_3_data_21934[]; // per AI strength: max distance to go for an item
+extern const f32 lbl_3_rodata_372C; // 0.001f
 extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
 extern u8 lbl_3_bss_B791;
@@ -176,30 +188,6 @@ extern void fn_800115C8(s8 index);
 #define REP_MG ((RepMinigameView*)g_Minigame)
 #define REP_GL ((RepGameLogicView*)g_GameLogic)
 
-
-// .text:0x0013C7BC size:0xDBC mapped:0x8077B850
-void fn_3_13C7BC(void) {
-    return;
-}
-
-// .text:0x0013D578 size:0x70 mapped:0x8077C60C
-u32 fn_3_13D578(s8 a) {
- u8* m = g_Minigame; s16* sp=(s16*)g_Minigame; s16* tp=(s16*)(g_Minigame+0x1890+a*2); s8 i=0;
- do {
-     s8 t = *(s8*)(m + 0x18CC);
-        if (t >= 0 && t < 4 && *(s16*)((u8*)sp + 0x1890) > *tp) { return 1; }
-        i++; m += 1; sp += 1;
-    } while (i < 4);
-    return 0;
-}
-
-// .text:0x0013D5E8 size:0x30 mapped:0x8077C67C
-s32 fn_3_13D5E8(void* a, void* b) {
-    f32 c = 100.0f;
-    f32 y = *(f32*)b;
-    f32 x = *(f32*)a;
-    return (s32)(c * x - c * y);
-}
 
 extern const f32 lbl_3_rodata_3738; // 4.0f
 extern const f32 lbl_3_rodata_373C; // 0.15f
@@ -261,6 +249,285 @@ static inline f32 nearestDir(s8 idx, f32 ang, s8* dir) {
     }
     *dir = RandomInt_Game(2) ? 1 : 3;
     return fwd;
+}
+
+// .text:0x0013C7BC size:0xDBC mapped:0x8077B850
+// CPU players: per frame, decide whether to run forward/back to grab items or to
+// get out of the ball's way, and press the matching buttons.
+// NONMATCHING 88%: loop shapes, stack layout and register allocation differ
+#if NONMATCHING
+void fn_3_13C7BC(void) {
+    RepAITarget tgt[16];
+    u8 list[16];
+    s8 dirOut;
+    s8 special;
+    s8 target3;
+    s8 n;
+    s8 i;
+    s8 k;
+    s8 j;
+    s8 c;
+    s8 t;
+    u8 str;
+    s32 lim;
+    s32 behind;
+    f32 f;
+    f32 fwd;
+    f32 back;
+    f32 pos;
+    RepAISlot* ai;
+    RepPad* pad;
+    RepRunnerView* r;
+
+    special = -1;
+    target3 = -1;
+    n = 0;
+    for (i = 0; i < 4; i++) {
+        REP_MG->_1DC0[i] = 0;
+    }
+    for (i = 0; i < 4; i++) {
+        for (k = 0; k < 2; k++) {
+            t = REP_MG->_1B20.it.pair[i][k];
+            if (t < 0) {
+                continue;
+            }
+            switch (REP_MG->_1B1A[t]) {
+            case 4:
+                special = REP_MG->_1B20.it.pos[t];
+                break;
+            case 3:
+                target3 = REP_MG->_1B20.it.pos[t] + 1;
+                for (j = 0; j < 15; j++) {
+                    if (REP_MG->itemState[j] - 1 == t) {
+                        f = lbl_3_rodata_372C + REP_MG->itemBases[j];
+                        if ((s32)(lbl_3_rodata_3728 * f) == target3 * 10) {
+                            break;
+                        }
+                        list[n++] = (s32)(lbl_3_rodata_3730 * f);
+                    }
+                }
+                if (j >= 15) {
+                    target3 = -1;
+                }
+                break;
+            case 2:
+                list[n++] = REP_MG->_1B20.it.pos[t];
+                break;
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        c = REP_MG->characterIndex[i];
+        if (c < 0 || c >= 4 || REP_MG->_18D8[i] == 0) {
+            continue;
+        }
+        ai = &REP_MG->ai[i];
+        r = &g_Runners[i];
+        pad = &REP_MG->pad[c];
+        REP_MG->_1DC0[c] = 1;
+        memset(pad, 0, sizeof(RepPad));
+        str = REP_MG->aiStrength[i];
+        if ((ai->state < 10 || ai->state > 13) && (REP_MG->phase == 1 || REP_MG->_1B06 - REP_MG->frames <= ai->timer)) {
+            ai->state = 10;
+        }
+        switch (ai->state) {
+        case 0:
+            if (REP_MG->frames / 120 == ai->_6 - 1 && REP_MG->frames % 120 >= 48) {
+                ai->state = 7;
+                break;
+            }
+            if (ai->_4-- <= 0) {
+                pad->trig = pad->held |= 0x200;
+                ai->_4 = RandomInt_Game_Range(((RepRange8*)lbl_3_data_2192C)[str].min, ((RepRange8*)lbl_3_data_2192C)[str].max);
+            }
+            if (ai->_7-- > 0) {
+                break;
+            }
+            ai->_7 = RandomInt_Game_Range(((RepRange8*)lbl_3_data_21944)[str].min, ((RepRange8*)lbl_3_data_21944)[str].max);
+            ai->reason = 0;
+            if (special >= 0) {
+                pos = special / lbl_3_rodata_3730;
+                fwd = baseDistance(r->fractionalBasesRan, pos, 1);
+                if (r->runningDirectionCode == 3) {
+                    fwd += lbl_3_rodata_373C;
+                }
+                back = baseDistance(r->fractionalBasesRan, pos, 0);
+                if (r->runningDirectionCode == 1) {
+                    back += lbl_3_rodata_373C;
+                }
+                if (fwd < back) {
+                    ai->state = 1;
+                } else if (fwd > back) {
+                    ai->state = 4;
+                } else if (r->runningDirectionCode == 2 || r->_136 == 2) {
+                    ai->state = RandomInt_Game(2) ? 1 : 4;
+                }
+                ai->reason = 4;
+            } else if (target3 >= 0) {
+                if (fn_3_13D618(i, target3 / lbl_3_rodata_3730, &dirOut) <= lbl_3_data_21934[str]) {
+                    ai->state = dirOut == 1 ? 1 : 4;
+                    ai->reason = 3;
+                }
+            }
+            if (ai->reason == 0 && n != 0) {
+                for (j = 0; j < n; j++) {
+                    tgt[j].pos = list[j];
+                    tgt[j].dist = fn_3_13DA50(i, tgt[j].pos / lbl_3_rodata_3730, &tgt[j].dir);
+                }
+                fn_800246D4(fn_3_13D5E8, (u8*)tgt, (u8*)tgt, sizeof(RepAITarget), n);
+                for (j = 0; j < n; j++) {
+                    if (fn_3_13D618(i, tgt[j].pos / lbl_3_rodata_3730, &dirOut) <= lbl_3_data_21934[str]) {
+                        ai->state = dirOut == 1 ? 1 : 4;
+                        ai->reason = 2;
+                        break;
+                    }
+                }
+            }
+            if (ai->reason == 0 && (r->runningDirectionCode == 2 || r->_136 == 2)) {
+                ai->state = RandomInt_Game(2) ? 1 : 4;
+            }
+            break;
+        case 1:
+            if (r->runningDirectionCode == 1 || r->_136 == 1) {
+                ai->state = 0;
+            } else {
+                pad->trig = pad->held |= 0x800;
+                ai->state = 2;
+            }
+            break;
+        case 2:
+            ai->state = 3;
+            break;
+        case 3:
+            pad->trig = pad->held |= 0x800;
+            ai->state = 0;
+            break;
+        case 4:
+            if (r->runningDirectionCode == 3 || r->_136 == 3) {
+                ai->state = 0;
+            } else {
+                pad->trig = pad->held |= 0x400;
+                ai->state = 5;
+            }
+            break;
+        case 5:
+            ai->state = 6;
+            break;
+        case 6:
+            pad->trig = pad->held |= 0x400;
+            ai->state = 0;
+            break;
+        case 7:
+            if (r->runningDirectionCode == 1) {
+                pad->trig = pad->held |= 0x400;
+            } else if (r->runningDirectionCode == 3) {
+                pad->trig = pad->held |= 0x800;
+            }
+            ai->state = 8;
+            break;
+        case 8:
+            if (r->runningDirectionCode == 2 || r->_136 == 2) {
+                ai->state = 9;
+            } else {
+                ai->state = 7;
+            }
+            break;
+        case 9:
+            if (REP_MG->frames % 120 < 96) {
+                break;
+            }
+            if (RandomInt_Game(100) < ((s8*)lbl_3_data_2197C)[str]) {
+                lim = REP_MG->_1B06 / 120 + 1;
+                if (REP_MG->frames / 120 + 2 < lim) {
+                    ai->_6 = RandomInt_Game_Range(REP_MG->frames / 120 + 2, lim);
+                } else {
+                    ai->_6 = lim;
+                }
+            } else {
+                ai->_6 = 0x7F;
+            }
+            ai->state = 0;
+            break;
+        case 10:
+            if (r->runningDirectionCode == 2 || r->_136 == 2) {
+                ai->state = 13;
+                break;
+            }
+            if (ai->reason == 4) {
+                ai->wait = RandomInt_Game_Range(((RepRange8*)lbl_3_data_21974)[str].min, ((RepRange8*)lbl_3_data_21974)[str].max);
+            } else {
+                ai->wait = RandomInt_Game_Range(((RepRange8*)lbl_3_data_2196C)[str].min, ((RepRange8*)lbl_3_data_2196C)[str].max);
+            }
+            ai->state = 11;
+            // fallthrough
+        case 11:
+            if (ai->wait-- <= 0) {
+                if (r->runningDirectionCode == 1) {
+                    pad->trig = pad->held |= 0x400;
+                } else if (r->runningDirectionCode == 3) {
+                    pad->trig = pad->held |= 0x800;
+                }
+                ai->state = 12;
+            }
+            break;
+        case 12:
+            if (r->runningDirectionCode == 2 || r->_136 == 2) {
+                ai->state = 13;
+            } else {
+                ai->wait = 1;
+                ai->state = 11;
+            }
+            break;
+        case 13:
+            if (REP_MG->phase != 0 && REP_MG->phase != 4) {
+                break;
+            }
+            behind = 0;
+            for (j = 0; j < 4; j++) {
+                if (REP_MG->characterIndex[j] >= 0 && REP_MG->characterIndex[j] < 4 && REP_MG->points[j] > REP_MG->points[i]) {
+                    behind = 1;
+                    break;
+                }
+            }
+            if (behind || REP_MG->_17C4 <= 1200) {
+                ai->timer = RandomInt_Game_Range(((RepRange16*)lbl_3_data_2195C)[str].min, ((RepRange16*)lbl_3_data_2195C)[str].max);
+            } else {
+                ai->timer = RandomInt_Game_Range(((RepRange16*)lbl_3_data_2194C)[str].min, ((RepRange16*)lbl_3_data_2194C)[str].max);
+            }
+            if (RandomInt_Game(100) < ((s8*)lbl_3_data_2197C)[str]) {
+                lim = REP_MG->_1B06 / 120 + 1;
+                if (((s8*)lbl_3_data_21980)[str] < lim) {
+                    ai->_6 = RandomInt_Game_Range(((s8*)lbl_3_data_21980)[str], lim);
+                } else {
+                    ai->_6 = lim;
+                }
+            } else {
+                ai->_6 = 0x7F;
+            }
+            ai->state = 0;
+            break;
+        }
+    }
+}
+#endif
+
+// .text:0x0013D578 size:0x70 mapped:0x8077C60C
+u32 fn_3_13D578(s8 a) {
+ u8* m = g_Minigame; s16* sp=(s16*)g_Minigame; s16* tp=(s16*)(g_Minigame+0x1890+a*2); s8 i=0;
+ do {
+     s8 t = *(s8*)(m + 0x18CC);
+        if (t >= 0 && t < 4 && *(s16*)((u8*)sp + 0x1890) > *tp) { return 1; }
+        i++; m += 1; sp += 1;
+    } while (i < 4);
+    return 0;
+}
+
+// .text:0x0013D5E8 size:0x30 mapped:0x8077C67C
+s32 fn_3_13D5E8(void* a, void* b) {
+    f32 c = 100.0f;
+    f32 y = *(f32*)b;
+    f32 x = *(f32*)a;
+    return (s32)(c * x - c * y);
 }
 
 // .text:0x0013D618 size:0x408 mapped:0x8077C6AC
