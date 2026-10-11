@@ -27,8 +27,14 @@ void fn_800BD8C4(void) {
 }
 
 // .text:0x800BDA24 size:0x70
-void fn_800BDA24(void) {
-    return;
+void fn_800BDA24(ActorObject* obj) {
+    ActorInst* actor = obj->actor;
+
+    memcpy(obj->actor->worldControl, obj->worldControl, sizeof(obj->worldControl));
+    fn_800B2BFC(obj->actor, obj->unk64, obj->unk66);
+    AnimateActorBones(actor);
+    fn_800B3F20(actor);
+    fn_800B313C(actor);
 }
 
 // .text:0x800BDA94 size:0x1F4
