@@ -1840,10 +1840,59 @@ void fn_3_14EAF4(u8* o) {
 }
 #pragma dont_inline on
 
+// NONMATCHING 93%: 14F544/14EAF4 inlined; the original keeps the lbl_3_data_26C94 base in a saved reg across the loop (pooled TU data), so register use and scheduling differ
 // .text:0x0014ED24 size:0x6A8 mapped:0x8078DDB8
-void fn_3_14ED24(void) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+u32 fn_3_14ED24(u8* o) {
+    u8* p;
+    s32* d;
+    s32 a;
+    fn_80033620();
+    p = *(u8**)(o + 0xC);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    do {
+        if (*(s16*)(p + 0x4A) != 0) {
+            if (*(s16*)(p + 0x48) <= 0) {
+                GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+                fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+                fn_80033CC8(p, *(void**)(o + 0x10));
+                d = (s32*)lbl_3_data_26C94;
+                if (d[7] / *(s16*)(p + 0x4A) < 2) {
+                    a = p[0x43] + d[6] / (d[7] / 2);
+                    if (a > d[6]) {
+                        a = d[6];
+                    }
+                    p[0x43] = a;
+                    *(f32*)(p + 0x38) += (f32)(d[3] - d[2]) / lbl_3_rodata_3930 / (f32)(d[7] / 2);
+                    *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                } else {
+                    a = p[0x43] - d[6] / (d[7] / 2);
+                    if (a < d[5]) {
+                        a = d[5];
+                    }
+                    p[0x43] = a;
+                    *(f32*)(p + 0x38) += (f32)(d[4] - d[3]) / lbl_3_rodata_3930 / (f32)(d[7] / 2);
+                    *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                }
+                *(s16*)(p + 0x4A) -= 1;
+                if (*(s16*)(p + 0x4A) == 0) {
+                    fn_3_14F544(p);
+                    fn_3_14EAF4(p);
+                }
+            } else {
+                *(s16*)(p + 0x48) -= 1;
+                if (*(s16*)(p + 0x48) == 0) {
+                    fn_3_14EAF4(p);
+                }
+            }
+        }
+        p = *(u8**)p;
+    } while (p != NULL);
+    return 0;
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x0014F3CC size:0x178 mapped:0x8078E460
 void fn_3_14F3CC(u8* o) {
