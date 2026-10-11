@@ -299,8 +299,28 @@ s16 fn_80067AC8(s16 id, s8 col) {
 }
 
 // .text:0x80067B40 size:0x108
-void fn_80067B40(void) {
-    return;
+BOOL fn_80067B40(s32 unused, u8 charId, u8 flag) {
+    s32 row;
+    s32 i;
+    s16* group;
+
+    if (charId == -1) {
+        return FALSE;
+    }
+    for (row = 0; row < 9; row++) {
+        for (i = 0; i < 5; i++) {
+            if (charId == lbl_80108EDC[row][i]) {
+                group = lbl_80108EDC[row];
+                for (i = 0; i < 5; i++) {
+                    if (group[i] != -1 && flag != 2) {
+                        lbl_8034E9A0.charFlag[group[i]] = flag;
+                    }
+                }
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
 }
 
 // .text:0x80067C48 size:0x328

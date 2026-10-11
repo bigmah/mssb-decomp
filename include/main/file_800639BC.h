@@ -73,5 +73,6 @@ BOOL fn_800697B0(void);
 void fn_80069854(void);
 s32 fn_800698F8(s32 charId);
 void fn_800670A0(u8 team);
+BOOL fn_80067B40(s32 unused, u8 charId, u8 flag);
 
 #endif
