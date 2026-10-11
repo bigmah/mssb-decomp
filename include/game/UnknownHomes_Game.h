@@ -2464,7 +2464,12 @@ typedef struct _MiniGameStruct {
     /*0x1D7A*/ u8 _1D7A;
     /*0x1D7B*/ u8 _1D7B;
     /*0x1D7C*/ InputStruct _1D7C[4];
-} MiniGameStruct; // size: 0x1D7C
+    /*0x1DBC*/ u8 _1DBC[0x1E22 - 0x1DBC];
+    /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
+    /*0x1E26*/ u8 _1E26[4];
+    /*0x1E2A*/ u8 _1E2A;    // round counter
+    /*0x1E2B*/ u8 _1E2B;
+} MiniGameStruct; // size: 0x1E2C
 
 extern MiniGameStruct g_Minigame;
 
