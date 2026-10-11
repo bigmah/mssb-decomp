@@ -343,6 +343,10 @@ extern f32 lbl_1_data_200[];
 extern const f32 lbl_1_rodata_210;
 extern const f32 lbl_1_rodata_218;
 
+// fn_1_8368, size:0x240
+// Debug pad control: steps the selected bone (0x22E) and moves the two vectors in lbl_1_data_200.
+// NONMATCHING 99%: int->float magic constant and the scale constant swap f6/f7
+#if NONMATCHING
 void fn_1_8368(void) {
     s32 v1;
     if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
@@ -375,6 +379,7 @@ void fn_1_8368(void) {
         lbl_1_data_200[4] = (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_218 + lbl_1_data_200[4];
     }
 }
+#endif
 
 extern GXTexObj lbl_1_bss_4E4;
 extern const f32 lbl_1_rodata_1AC;
