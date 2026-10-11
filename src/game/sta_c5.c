@@ -274,8 +274,9 @@ s32 fn_3_EE0BC(u32 v) {
 }
 #include "Dolphin/GX/GXPixel.h"
 
-// 70%: matrix setup is right; instruction scheduling of the first PSMTXCopy/scale block and const load forms differ
 // .text:0x000EE100 size:0x288 mapped:0x8072D194
+// NONMATCHING 93%: matrix setup is right; scheduling of the first PSMTXCopy/scale block and const load forms differ
+#if NONMATCHING
 void fn_3_EE100(u8* obj, f32 (*mtx)[4]) {
     Mtx b;
     Mtx a;
@@ -330,6 +331,7 @@ void fn_3_EE100(u8* obj, f32 (*mtx)[4]) {
     GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_RASA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
     GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
 }
+#endif
 
 // .text:0x000EE388 size:0x2F4 mapped:0x8072D41C
 // NONMATCHING 86%: original reaches windVel.y/windPos.y/wind.z through a second addi'd pointer reg (separate static Vecs); float reg order differs
@@ -644,7 +646,6 @@ void fn_3_F13F8(u8* p) {
 }
 #pragma dont_inline on
 
-// 99%: only the position of stfs f2,0xB8 relative to the inlined fn_3_F13F8 zero-reg movs differs (one slot late)
 // .text:0x000EEFD4 size:0x244 mapped:0x8072E068
 void fn_3_EEFD4(s32 idx) {
     Vec d;
