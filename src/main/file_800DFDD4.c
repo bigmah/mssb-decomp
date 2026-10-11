@@ -906,9 +906,30 @@ void fn_800E29DC(HVQState* state, u8* dst, s32 stride, HVQIpicCtx* ctx, s32 coun
 }
 
 // .text:0x800E2AB0 size:0xDC
+// NONMATCHING 71%: register allocation and stack layout
+#if NONMATCHING
 void fn_800E2AB0(HVQState* state, s32 planeIdx, u8* dst) {
-    return;
+    HVQPlaneDesc* plane = &state->planes[planeIdx];
+    u16 width = plane->widthInSamples;
+    u16 widthInBlocks = plane->widthInBlocks;
+    HVQIpicCtx ctx;
+    s32 y;
+
+    ctx.planeIdx = planeIdx;
+    ctx.above = plane->payload;
+    ctx.cur = plane->payload;
+    ctx.below = plane->payload + plane->blocksPerRow;
+    fn_800E29DC(state, dst, width, &ctx, widthInBlocks);
+    dst += width * 4;
+    ctx.above = plane->payload;
+    for (y = plane->heightInBlocks - 2; y > 0; y--) {
+        fn_800E29DC(state, dst, width, &ctx, widthInBlocks);
+        dst += width * 4;
+    }
+    ctx.below = ctx.cur;
+    fn_800E29DC(state, dst, width, &ctx, widthInBlocks);
 }
+#endif
 
 // .text:0x800E2B8C size:0x8C
 void fn_800E2B8C(HVQState* state, HVQMCPlane* mc, u8* dst, u8* ref0, u8* ref1) {
