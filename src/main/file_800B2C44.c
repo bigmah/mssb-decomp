@@ -420,8 +420,24 @@ static inline void ReleaseDisplayObj(struct DODisplayObj* obj) {
 }
 
 // .text:0x800B4278 size:0x128
-void fn_800B4278(void) {
-    return;
+// ACTRelease. Note: the original reads actor->skinObject after freeing actor.
+void fn_800B4278(GameActor* actor) {
+    struct DODisplayObj* obj;
+    s32 i;
+    struct DODisplayObj* skin;
+
+    skin = actor->skinObject;
+    fn_800B4CDC(actor);
+    for (i = actor->totalBones - 1; i >= 0; i--) {
+        obj = actor->boneArray[i]->dispObj;
+        if (obj != NULL) {
+            ReleaseDisplayObj(obj);
+        }
+    }
+    fn_800ACFB0(actor);
+    if (skin != NULL) {
+        ReleaseDisplayObj(actor->skinObject);
+    }
 }
 
 // .text:0x800B43A0 size:0x384
