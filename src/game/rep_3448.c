@@ -230,7 +230,8 @@ void fn_3_11FA58(void) {
 }
 
 // .text:0x0011FDB0 size:0x4BC mapped:0x8075EE44
-// near-match: only reg numbers in the last (4x unrolled) loop: orig base r5 / n r4, ours base r4 / n r5
+// NONMATCHING 98%: last (4x unrolled) loop swaps base/n regs (r4/r5) and the slot table base is not rematerialised
+#if NONMATCHING
 void fn_3_11FDB0(void) {
     u8* q = lbl_803CC1B8;
     u32 i;
@@ -329,6 +330,7 @@ void fn_3_11FDB0(void) {
         fn_3_90064(0x2FC);
     }
 }
+#endif
 
 // .text:0x0012026C size:0x630 mapped:0x8075F300
 void fn_3_12026C(void) {
