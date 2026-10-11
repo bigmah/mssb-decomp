@@ -43,15 +43,19 @@ typedef struct CharModel {
 // One loaded model and its root control.
 typedef struct CharSlot {
     /*0x00*/ CharModel* model;
-    /*0x04*/ u8 _04[0x4];
+    /*0x04*/ void* act;
     /*0x08*/ void (*callback)(struct CharSlot* slot);
-    /*0x0C*/ u8 _0C[0x4];
+    /*0x0C*/ u8 _0C[0x2];
+    /*0x0E*/ u16 animId;
     /*0x10*/ Control ctrl;
     /*0x4C*/ u8 _4C[0x54 - 0x10 - sizeof(Control)];
     /*0x54*/ f32 _54;
-    /*0x58*/ u8 _58[0x2];
+    /*0x58*/ u8 _58;
+    /*0x59*/ u8 _59;
     /*0x5A*/ u8 _5A;
-    /*0x5B*/ u8 _5B[0x64 - 0x5B];
+    /*0x5B*/ u8 _5B;
+    /*0x5C*/ f32 _5C;
+    /*0x60*/ f32 _60;
     /*0x64*/ u16 _64;
     /*0x66*/ u16 _66;
     /*0x68*/ void* _68;
@@ -216,7 +220,9 @@ typedef struct CharMgr {
     /*0x307B*/ u8 _307B;
     /*0x307C*/ u8 _307C[0x3082 - 0x307C];
     /*0x3082*/ u8 _3082;
-    /*0x3083*/ u8 _3083[0x308C - 0x3083];
+    /*0x3083*/ u8 _3083[0x2];
+    /*0x3085*/ u8 _3085;
+    /*0x3086*/ u8 _3086[0x308C - 0x3086];
     /*0x308C*/ void (*callback)(void);
     /*0x3090*/ u8 _3090[0x3154 - 0x3090];
 } CharMgr; // size: 0x3154
@@ -311,6 +317,11 @@ void fn_8001DD58(CharModel* model, s32 pass, s32 a, s32 b, ...);
 s32 fn_8001B35C(s32 index, s32 kind);
 void fn_80019A60(void);
 void fn_800196D8(void);
+
+void fn_8001A25C(void);
+void fn_80019C00(void);
+void fn_8001CCC8(void);
+void fn_8001DB74(CharSlotList* list);
 
 void fn_8001B200(void);
 

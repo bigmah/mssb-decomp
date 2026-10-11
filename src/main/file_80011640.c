@@ -98,6 +98,15 @@ extern void LITAlloc(void** light);
 extern void LITInitAttn(void* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 extern void LITInitPos(void* light, f32 x, f32 y, f32 z);
 extern void LITInitColor(void* light, u32* color);
+extern void ACTSetAnimation(void* act, s32 a, u16 anim, f32 frame, f32 speed);
+extern void fn_800B4CA0(CharModel* model, f32 v);
+extern void fn_800B4C04(CharModel* model, f32 v);
+extern void fn_800B4AFC(CharModel* model, s32 v);
+extern void Set_FUN_800b2b6c(CharModel* model, void* p);
+extern void fn_800BDA24(CharSlot* slot);
+extern s32 fn_800527BC(void);
+extern void* fn_80052734(u16 index);
+extern u8 fn_800B3C04(u16 index, CharModel* model, Mtx m);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -1191,9 +1200,45 @@ void fn_80019C00(void) {
 }
 
 // .text:0x8001A25C size:0x1A0
+// NONMATCHING 99%: light-table base register and colour temp stack slots
+#if NONMATCHING
 void fn_8001A25C(void) {
-    return;
+    LightPos* lights = lbl_80367318;
+    CharQueueTask* task;
+    s32 i;
+    StadiumLights* st;
+    LightPos* lp;
+    u32 c;
+    GXColor color;
+
+    task = fn_800B0A5C_insertQueue(fn_80019C00, 0);
+    task->_14 = 0;
+    task->parent->_10 = 0;
+    for (i = 0; i < 4; i++) {
+        fn_80023B90(&lbl_800F7478[g_d_GameSettings._54].light[i], &lbl_80367318[i]);
+    }
+    fn_800BD2DC();
+    st = &lbl_800F7478[g_d_GameSettings._54];
+    if (st->ambient.a != 0) {
+        color = st->ambient;
+        fn_800BD2CC(1, color);
+    }
+    lp = lights;
+    for (i = 0; i < 4; i++) {
+        LITAlloc(&lbl_8036E548.lights[i]);
+        LITInitAttn(lbl_8036E548.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+        LITInitPos(lbl_8036E548.lights[i], lp->x, lp->y, lp->z);
+        c = lp->color;
+        LITInitColor(lbl_8036E548.lights[i], &c);
+        lp++;
+    }
+    if (lbl_8036E548.slots6C != NULL) {
+        for (i = 0; i < lbl_8036E548.slots6C->count; i++) {
+            fn_800BD548(&lbl_8036E548.slots6C->slots[i], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+        }
+    }
 }
+#endif
 
 // .text:0x8001A3FC size:0x2B4
 void fn_8001A3FC(void) {
