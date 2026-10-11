@@ -1077,7 +1077,40 @@ void fn_800AFFC0(u32 count) {
 
 // .text:0x800B0008 size:0x12C
 BOOL fn_800B0008(u32 len) {
-    return MovFillFromAram(len);
+    MovMramRing* mram = &lbl_803C7A00;
+    u32 first;
+    u32 second;
+    u8* wrap;
+
+    len = OSRoundUp32B(len);
+    if (mram->filled >= mram->size) {
+        return TRUE;
+    }
+    if (mram->writePtr + len > mram->end) {
+        first = mram->end - mram->writePtr;
+        wrap = mram->start;
+        second = len - first;
+    } else {
+        first = len;
+        wrap = NULL;
+        second = 0;
+    }
+    fn_800B0230(mram->writePtr, first);
+    while (lbl_803C79D4.busy) {}
+    if (second != 0) {
+        fn_800B0230(wrap, second);
+        while (lbl_803C79D4.busy) {}
+    }
+    if (mram->writePtr + len < mram->end) {
+        mram->writePtr += first;
+    } else {
+        mram->writePtr = mram->start + second;
+    }
+    mram->filled += len;
+    if (lbl_803C79D4.totalOut > lbl_803CC1AC) {
+        memset(mram->writePtr - (lbl_803C79D4.totalOut - lbl_803CC1AC), 0, lbl_803C79D4.totalOut - lbl_803CC1AC);
+    }
+    return TRUE;
 }
 
 // .text:0x800B0134 size:0xFC
