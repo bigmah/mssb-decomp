@@ -230,6 +230,8 @@ extern void* lbl_803CBC00;
 extern u8 lbl_803CBC0C;
 extern CharPart* lbl_803CBC1C;
 extern CharParts* lbl_803CBC20;
+extern u8 lbl_803CBC04;
+extern void* lbl_803CBC08;
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -719,12 +721,6 @@ u8 LoadModel(CharActor* actor) {
 }
 #endif
 
-// .text:0x80012B90 size:0xAF0
-u8 fn_80012B90(CharActor* actor) {
-    return 0;
-}
-
-// .text:0x80013680 size:0xB84
 static inline BOOL loadPartModel(CharPart* part, s8 kind, s32 mode, void* tex) {
     void** files;
 
@@ -759,6 +755,92 @@ static inline BOOL loadPartModel(CharPart* part, s8 kind, s32 mode, void* tex) {
     }
     return FALSE;
 }
+
+// .text:0x80012B90 size:0xAF0
+// NONMATCHING 89%: state-machine register allocation and part-model loader scheduling
+#if NONMATCHING
+u8 fn_80012B90(CharActor* actor) {
+    s8 kind = actor->kind;
+    s8 idx = actor->index;
+    u8 st = lbl_803CBC04;
+    CharParts* p;
+    void* tex;
+    s32 n;
+    s32 flag;
+    s32 mode;
+
+    if (st < 3) {
+        p = &lbl_8036E548.partsPool[idx * 3];
+    } else if (st < 6) {
+        p = &lbl_8036E548.partsPool[idx * 3 + 1];
+    } else if (st < 9) {
+        p = &lbl_8036E548.partsPool[idx * 3 + 2];
+    }
+    switch (st) {
+    case 0:
+    case 3:
+    case 6:
+        tex = actor->files[0];
+        p->tex = tex;
+        lbl_803CBC08 = tex;
+        p->_CF = kind;
+        if (lbl_803CBC04 == 0) {
+            p->_D1 = p->_D0;
+            p->_D0 = actor->index;
+        } else {
+            p->_D1 = 9;
+            p->_D0 = 9;
+        }
+        n = lbl_803CBC04 / 3 + idx * 3;
+        p->_CD = actor->_25A;
+        p->_CE = actor->_25B;
+        p->_CC = 1;
+        lbl_803CBC04++;
+        p->part[0].slot = n * 2;
+        p->part[1].slot = n * 2 + 1;
+        break;
+    case 1:
+    case 2:
+        flag = p->_CD == 0;
+        if (flag == p->_CD) {
+            mode = 1 - flag;
+        } else {
+            mode = 3 - flag;
+        }
+        if (loadPartModel(flag ? &p->part[0] : &p->part[1], p->_CF, mode, lbl_803CBC08)) {
+            p->_CD = p->_CD == 0;
+            lbl_803CBC04++;
+        }
+        break;
+    case 4:
+        if (loadPartModel(&p->part[1], p->_CF, 1, lbl_803CBC08)) {
+            lbl_803CBC04 = 5;
+        }
+        break;
+    case 5:
+        if (loadPartModel(&p->part[0], p->_CF, 0, lbl_803CBC08)) {
+            lbl_803CBC04 = 6;
+        }
+        break;
+    case 7:
+        if (loadPartModel(&p->part[1], p->_CF, 5, lbl_803CBC08)) {
+            lbl_803CBC04 = 8;
+        }
+        break;
+    case 8:
+        if (loadPartModel(&p->part[0], p->_CF, 4, lbl_803CBC08)) {
+            actor->parts = &lbl_8036E548.partsPool[idx * 3];
+            lbl_803CBC04 = 0;
+            lbl_803CBC08 = NULL;
+            return 1;
+        }
+        break;
+    }
+    return 0;
+}
+#endif
+
+// .text:0x80013680 size:0xB84
 
 static inline void claimParts(CharParts* p, void* tex, s8 kind, s8 idx, CharActor* actor) {
     p->tex = tex;
