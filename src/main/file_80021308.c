@@ -499,8 +499,8 @@ void fn_80022B14(void) {
 }
 
 // .text:0x80022B68 size:0x14C
-void fn_80022B68(void) {
-    return;
+s32 fn_80022B68(void) {
+    return aramQueueUpdate();
 }
 
 // .text:0x80022CB4 size:0xA4
