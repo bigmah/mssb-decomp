@@ -28,6 +28,7 @@ extern const f64 lbl_3_rodata_37A0; // 0.0
 extern int __float_nan[];
 extern f64 __frsqrte(f64);
 extern s16 fn_3_9FB8C(f32 x, f32 y);
+extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
 
 // Inlined single-precision sqrt (MSL sqrtf with the rodata constants of this unit).
 #define REP_SQRTF(x)                                                                    \
@@ -96,6 +97,7 @@ extern const f64 lbl_3_rodata_37A0; // 0.0
 extern int __float_nan[];
 extern f64 __frsqrte(f64);
 extern s16 fn_3_9FB8C(f32 x, f32 y);
+extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
 
 // Inlined single-precision sqrt (MSL sqrtf with the rodata constants of this unit).
 #define REP_SQRTF(x)                                                                    \
@@ -141,23 +143,10 @@ u32 fn_3_13D578(s8 a) {
 }
 
 // .text:0x0013D5E8 size:0x30 mapped:0x8077C67C
-s32 fn_3_13D5E8(f32* a, f32* b) {
+s32 fn_3_13D5E8(void* a, void* b) {
     f32 c = 100.0f;
-    f32 y = *b;
-    f32 x = *a;
-    return (s32)(c * x - c * y);
-}
-
-// .text:0x0013D618 size:0x408 mapped:0x8077C6AC
-void fn_3_13D618(void) {
-    return;
-}
-
-// .text:0x0013DA20 size:0x30 mapped:0x8077CAB4
-s32 fn_3_13DA20(f32* a, f32* b) {
-    f32 c = 100.0f;
-    f32 y = *b;
-    f32 x = *a;
+    f32 y = *(f32*)b;
+    f32 x = *(f32*)a;
     return (s32)(c * x - c * y);
 }
 
@@ -196,6 +185,96 @@ static inline f32 baseDistance(f32 a, f32 b, u8 mode) {
         return (lbl_3_rodata_3738 + a) - b;
     }
     return a - b;
+}
+
+
+// Inlined copy of fn_3_13DA50.
+static inline f32 nearestDir(s8 idx, f32 ang, s8* dir) {
+    f32 fwd;
+    f32 back;
+    fwd = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 1);
+    if (g_Runners[idx].runningDirectionCode == 3) {
+        fwd += lbl_3_rodata_373C;
+    }
+    back = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 0);
+    if (g_Runners[idx].runningDirectionCode == 1) {
+        back += lbl_3_rodata_373C;
+    }
+    if (fwd < back) {
+        *dir = 1;
+        return fwd;
+    }
+    if (fwd > back) {
+        *dir = 3;
+        return back;
+    }
+    *dir = RandomInt_Game(2) ? 1 : 3;
+    return fwd;
+}
+
+// .text:0x0013D618 size:0x408 mapped:0x8077C6AC
+// NONMATCHING 94%: the 0.15f constant is hoisted out of the runner loop (the original reloads it)
+#if NONMATCHING
+// baseDistance with literal constants: the original reloads them inside the
+// runner loop of fn_3_13D618 instead of hoisting them.
+static inline f32 baseDistanceLit(f32 a, f32 b, u8 mode) {
+    if (a < 0.0f) {
+        a += 4.0f;
+    } else if (a >= 4.0f) {
+        a -= 4.0f;
+    }
+    if (b < 0.0f) {
+        b += 4.0f;
+    } else if (b >= 4.0f) {
+        b -= 4.0f;
+    }
+    if (mode == 1) {
+        if (a > b) {
+            return (4.0f + b) - a;
+        }
+        return b - a;
+    }
+    if (a < b) {
+        return (4.0f + a) - b;
+    }
+    return a - b;
+}
+
+// Shortest distance (and direction, see fn_3_13DA50) from runner idx to base
+// position ang, minus the shortest such distance over all active runners.
+f32 fn_3_13D618(s8 idx, f32 ang, s8* dir) {
+    f32 dist[4];
+    f32 best;
+    f32 fwd;
+    f32 back;
+    s8 n;
+    s8 j;
+    best = nearestDir(idx, ang, dir);
+    n = 0;
+    for (j = 0; j < 4; j++) {
+        if (REP_MG->characterIndex[j] >= 0 && REP_MG->characterIndex[j] < 4 && REP_MG->_1B15[j] == 0) {
+            fwd = baseDistanceLit(g_Runners[j].fractionalBasesRan, ang, 1);
+            if (g_Runners[j].runningDirectionCode == 3) {
+                fwd += lbl_3_rodata_373C;
+            }
+            back = baseDistanceLit(g_Runners[j].fractionalBasesRan, ang, 0);
+            if (g_Runners[j].runningDirectionCode == 1) {
+                back += lbl_3_rodata_373C;
+            }
+            dist[n++] = fwd < back ? fwd : back;
+        }
+    }
+    fn_800246D4(fn_3_13DA20, (u8*)dist, (u8*)dist, 4, n);
+    return best - dist[0];
+}
+#endif
+
+// .text:0x0013DA20 size:0x30 mapped:0x8077CAB4
+s32 fn_3_13DA20(void* a, void* b) {
+    f32 c = 100.0f;
+    f32 y = *(f32*)b;
+    f32 x = *(f32*)a;
+    return (s32)(c * x - c * y);
 }
 
 // .text:0x0013DA50 size:0x1F8 mapped:0x8077CAE4

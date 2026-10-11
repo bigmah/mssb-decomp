@@ -69,7 +69,8 @@ typedef struct RepMinigameView {
     /*0x1AFE*/ s16 _1AFE[4]; // per runner slot: frames spent running
     /*0x1B06*/ s16 _1B06;
     /*0x1B08*/ s16 _1B08[6];
-    /*0x1B14*/ u8 _1B14[0x1B19 - 0x1B14];
+    /*0x1B14*/ u8 _1B14;
+    /*0x1B15*/ u8 _1B15[4]; // per player
     /*0x1B19*/ u8 phase;
     /*0x1B1A*/ u8 _1B1A[6]; // per item type: 0 = spawn, 1 = respawn delay, else scoring kind + 2
     /*0x1B20*/ union {
@@ -98,9 +99,9 @@ typedef struct RepBss37400View {
 
 void fn_3_13C7BC(void);
 u32 fn_3_13D578(s8 a);
-s32 fn_3_13D5E8(f32* a, f32* b);
-void fn_3_13D618(void);
-s32 fn_3_13DA20(f32* a, f32* b);
+s32 fn_3_13D5E8(void* a, void* b);
+f32 fn_3_13D618(s8 idx, f32 ang, s8* dir);
+s32 fn_3_13DA20(void* a, void* b);
 f32 fn_3_13DA50(s8 idx, f32 ang, s8* dir);
 void fn_3_13DC48(s8 idx, f32 ang, f32* out1, f32* out2);
 f32 fn_3_13DDE0(f32 a, f32 b, u8 mode);
