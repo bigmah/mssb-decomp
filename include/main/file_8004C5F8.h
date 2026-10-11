@@ -39,6 +39,12 @@ typedef struct DialogTables {
     /*0x44*/ u8 colors[12][2];
 } DialogTables; // size: 0x5C
 
+// Sprite layout descriptor handed to fn_80034E20 (only the fields used here).
+typedef struct LayoutDesc {
+    /*0x00*/ u8 _00[0x42];
+    /*0x42*/ u16 _42;
+} LayoutDesc;
+
 // Character select state for up to 4 cursors (lbl_803C6028).
 typedef struct RosterSelect {
     /*0x00*/ u8 _00[0x18];
@@ -122,6 +128,10 @@ s32 fn_8004CA6C(u16 buttons);
 void fn_8004CCC0(void);
 
 void fn_8004D0F0(void);
+
+void fn_8004DB90(void);
+
+void fn_8004E2EC(void);
 
 void fn_8004CC18(void);
 

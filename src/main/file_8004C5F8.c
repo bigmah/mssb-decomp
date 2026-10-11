@@ -19,6 +19,8 @@ extern f32 fn_800B4C40(s32 id);
 extern s16 lbl_800FEB08[5][4];
 extern DialogTables lbl_800FEAAC;
 extern u8 lbl_800FE93C[];
+extern u8 lbl_800FE924[][6];
+extern u16 lbl_803CB870[];
 extern void fn_80034E20(void* group, void* desc);
 
 // .text:0x8004C5F8 size:0x404
@@ -413,9 +415,40 @@ void fn_8004DB90(void) {
 }
 
 // .text:0x8004E2EC size:0x218
+// NONMATCHING: the original addresses lbl_800FE5D4/lbl_800FE924/lbl_800FE930
+// through one lbl_800FCA60 base (same-TU data; the .data split ends too early)
+#if NONMATCHING
 void fn_8004E2EC(void) {
-    return;
+    u8 table = lbl_803C6028._8C;
+    LayoutGroup* task = lbl_803CC1B8;
+    LayoutDesc* desc = (LayoutDesc*)&lbl_800FE5D4[0x30]; // TODO type
+    s32 i;
+    desc->_42 = lbl_803CB870[table];
+    fn_80034E20(task, desc);
+    for (i = 0; i < 6; i++) {
+        if (i == 5 && table == 0) {
+            continue;
+        }
+        fn_800363D8(task, i + 0xB, 1, 0x19, lbl_800FE930[table][i]);
+        lbl_80371C30[task->start + i + 0xB].obj->_72 = lbl_800FE924[table][i];
+        lbl_80371C30[task->start + i + 0x11].obj->flags &= ~2;
+        lbl_80371C30[task->start + i + 0x11].obj->_72 = lbl_800FE924[table][i];
+        fn_800363D8(task, i + 0x11, 1, 0x1A, lbl_803C6028._8D);
+        lbl_80371C30[task->start + i + 3].obj->_72 = lbl_800FE924[table][i];
+    }
+    lbl_80371C30[task->start + 10].obj->_5C = lbl_803C6028._8D << 16;
+    fn_800363D8(task, 0x17, 1, 0x1A, lbl_803C6028._8D);
+    if (table == 0) {
+        lbl_80371C30[task->start + 8].obj->flags &= ~2;
+        lbl_80371C30[task->start + 16].obj->flags &= ~2;
+        lbl_80371C30[task->start + 22].obj->flags &= ~2;
+    }
+    lbl_803C6028.state7E = 0;
+    lbl_803C6028._92 = 0;
+    task->textIndex = 0;
+    lbl_803CC1B8->callback = fn_8004DB90;
 }
+#endif
 
 // .text:0x8004E504 size:0xB0
 void fn_8004E504(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3) {
