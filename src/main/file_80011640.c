@@ -1986,9 +1986,63 @@ void fn_8001A25C(void) {
 #endif
 
 // .text:0x8001A3FC size:0x2B4
-void fn_8001A3FC(void) {
-    return;
+// NONMATCHING 62%: unrolled init loops and the 13-actor reset loop are laid out differently
+#if NONMATCHING
+void fn_8001A3FC(s32 arg) {
+    s32 count;
+    s32 i;
+    s32 k;
+    s32 idx;
+    u32 max;
+    u32 size;
+    void* p;
+
+    fn_80018270(arg);
+    count = 1;
+    lbl_803CBC34[0] = 0;
+    lbl_803CBC34[1] = 0;
+    lbl_803CBC34[2] = 0;
+    lbl_803CBC34[3] = 0;
+    lbl_803CBC34[4] = count;
+    for (i = count; i < 13; i++) {
+        lbl_80118220[i]._61 = -2;
+    }
+    if (count != 0) {
+        max = 0;
+        for (k = 0; k < 54; k++) {
+            idx = lbl_800EEB18[k];
+            if (idx >= 0) {
+                size = lbl_803CB794[idx].size & 0x0FFFFFFF;
+                if (max < size) {
+                    max = size;
+                }
+            }
+        }
+        p = _OSAllocFromHeap(0x20, (max + 0x1F) & ~0x1F);
+        lbl_80118220[0].files = p;
+        lbl_803CBC30 = p;
+        lbl_80118220[0]._61 = -1;
+        lbl_80118220[0].slot = 0xFF;
+    }
+    fn_800145F8(arg);
+    lbl_8036E548.partSlots = fn_80023AA4();
+    fn_80018DEC(arg);
+    fn_80023B04(0xD);
+    for (i = 0; i < 13; i++) {
+        lbl_8036E548.actors[i].modelIndex = i;
+        lbl_8036E548.active[i] = NULL;
+        lbl_8036E548._2D6A[i] = -1;
+        lbl_8036E548.actors[i].roster = -1;
+    }
+    for (i = 0; i < 9; i++) {
+        lbl_8036E548._2D7F[i] = -1;
+    }
+    lbl_8036E548.bankOwner[0] = -1;
+    lbl_8036E548.bankOwner[1] = -1;
+    lbl_8036E548.bankOwner[2] = -1;
+    lbl_8036E548.bankOwner[3] = -1;
 }
+#endif
 
 // .text:0x8001A6B0 size:0x3F4
 void challengeMapRelated(void) {
