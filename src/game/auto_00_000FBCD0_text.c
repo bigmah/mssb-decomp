@@ -33,7 +33,13 @@ void fn_3_FBD58(void) {
 
 // .text:0x000FBD70 size:0x3C mapped:0x8073AE04
 void fn_3_FBD70(void) {
-    return;
+    lbl_3_common_bss_DE94_s2* p = lbl_3_common_bss_DE94._0000;
+    p->_09AF = 0;
+    lbl_3_common_bss_DE94._0000->_09B0 = 0;
+    lbl_3_common_bss_DE94._0000->_09AE = 0;
+    lbl_3_common_bss_DE94._0000->_09AB = 0;
+    lbl_3_common_bss_DE94._0000->_09B6 = 0;
+    p->_0018 = 0;
 }
 
 // .text:0x000FBDAC size:0x78 mapped:0x8073AE40
