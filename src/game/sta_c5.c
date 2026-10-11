@@ -166,7 +166,12 @@ typedef struct StaC5Work {
 } StaC5Work;
 /* View of this file's pooled .data starting at lbl_3_data_1B820. */
 typedef struct StaC5Data {
-    u8 pad0[0x24D];
+    u8 pad0[0x178];
+    s32 dustRate;  /* 0x178 */
+    f32 dustScale; /* 0x17C */
+    u8 pad180[0x22C - 0x180];
+    f32 footprint[2][2]; /* 0x22C: (x, z) offsets of two ground probes */
+    u8 pad23C[0x24D - 0x23C];
     u8 windReset;  /* 0x24D */
     u8 wobReset;   /* 0x24E */
     u8 pad24F;
@@ -1110,9 +1115,108 @@ void fn_3_F193C(StadCtlA* p) {
 #endif
 
 // .text:0x000F1E2C size:0x4D0 mapped:0x80730EC0
-void fn_3_F1E2C(void) {
-    return;
+extern char lbl_3_rodata_2CF4[];
+extern const f64 lbl_3_rodata_2E48;
+// NONMATCHING 98.8%: saved-register numbering (d/r0/r1/r2, f29/f30) rotated; original reads footprint[0][1]/[1][*] through an addi'd pointer (separate static array)
+#if NONMATCHING
+void fn_3_F1E2C(StadCtlA* p) {
+    VecSrcDst seg;
+    CollisionStruct col;
+    Vec mid1;
+    Vec mid2;
+    Vec center;
+    Vec k;
+    f32 a;
+    f32 s;
+    f32 c;
+    u32 r0;
+    u32 r1;
+    u32 r2;
+    StaC5Data* d;
+    d = (StaC5Data*)lbl_3_data_1B820;
+    k = *(Vec*)lbl_3_rodata_2CF4;
+    if (p->ya4 > lbl_3_rodata_2D5C) {
+        return;
+    }
+    a = -(lbl_3_rodata_2DDC * p->rb4);
+    s = sin(a);
+    c = cos(a);
+    center.x = lbl_3_rodata_2E48 * (k.x * c + k.z * -s);
+    c = cos(a);
+    s = sin(a);
+    center.z = lbl_3_rodata_2E48 * (k.x * s + k.z * c);
+    PSVECAdd(&center, (Vec*)&p->xa0, &center);
+    center.y = lbl_3_rodata_2D5C;
+    seg.src.x = seg.dst.x = center.x;
+    seg.src.z = seg.dst.z = center.z;
+    seg.src.y = lbl_3_rodata_2D70;
+    seg.dst.y = lbl_3_rodata_2D50;
+    r0 = checkCollision(&seg, &col, 0, 0) & 0x7F;
+    if (r0 == 10) {
+        if (p->fc4 % d->dustRate != 0) {
+            p->fc4++;
+            return;
+        }
+        fn_80064430(&seg.src, 1, lbl_3_rodata_2D5C, d->dustScale);
+    }
+    s = sin(a);
+    c = cos(a);
+    seg.src.x = d->footprint[0][0] * c + d->footprint[0][1] * -s;
+    c = cos(a);
+    s = sin(a);
+    seg.src.z = d->footprint[0][0] * s + d->footprint[0][1] * c;
+    PSVECAdd(&center, &seg.src, &seg.src);
+    seg.dst.x = seg.src.x;
+    seg.dst.z = seg.src.z;
+    seg.src.y = lbl_3_rodata_2D70;
+    seg.dst.y = lbl_3_rodata_2D50;
+    r1 = checkCollision(&seg, &col, 0, 0) & 0x7F;
+    if (r1 == 10) {
+        if (p->fc4 % d->dustRate != 0) {
+            p->fc4++;
+            return;
+        }
+        fn_80064430(&seg.src, 1, lbl_3_rodata_2D5C, d->dustScale);
+    }
+    s = sin(a);
+    c = cos(a);
+    seg.src.x = d->footprint[1][0] * c + d->footprint[1][1] * -s;
+    c = cos(a);
+    s = sin(a);
+    seg.src.z = d->footprint[1][0] * s + d->footprint[1][1] * c;
+    PSVECAdd(&center, &seg.src, &seg.src);
+    seg.dst.x = seg.src.x;
+    seg.dst.z = seg.src.z;
+    seg.src.y = lbl_3_rodata_2D70;
+    seg.dst.y = lbl_3_rodata_2D50;
+    r2 = checkCollision(&seg, &col, 0, 0) & 0x7F;
+    if (r2 == 10) {
+        if (p->fc4 % d->dustRate != 0) {
+            p->fc4++;
+            return;
+        }
+        fn_80064430(&seg.src, 1, lbl_3_rodata_2D5C, d->dustScale);
+    }
+    if (r0 == 10) {
+        /* both use the last probe position still held in seg.src */
+        if (r1 == 10) {
+            PSVECSubtract(&seg.src, &center, &mid1);
+            mid1.x *= lbl_3_rodata_2D54;
+            mid1.z *= lbl_3_rodata_2D54;
+            PSVECAdd(&mid1, &center, &mid1);
+            fn_80064430(&mid1, 1, lbl_3_rodata_2D5C, d->dustScale);
+        }
+        if (r2 == 10) {
+            PSVECSubtract(&seg.src, &center, &mid2);
+            mid2.x *= lbl_3_rodata_2D54;
+            mid2.z *= lbl_3_rodata_2D54;
+            PSVECAdd(&mid2, &center, &mid2);
+            fn_80064430(&mid2, 1, lbl_3_rodata_2D5C, d->dustScale);
+        }
+    }
+    p->fc4 += ((r0 | r1 | r2) & 0xA) != 0;
 }
+#endif
 
 #pragma dont_inline off
 // .text:0x000F22FC size:0x14C mapped:0x80731390
