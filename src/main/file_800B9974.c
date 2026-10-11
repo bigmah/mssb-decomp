@@ -37,10 +37,22 @@ void SetFogNone(void) {
     GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, color);
 }
 
+// NONMATCHING 75%: original keeps the f64 args in f5-f7 and rounds them twice (frsp for GXSetFog, stfs for the
+// stores); ours rounds once and stores the rounded copies
+#if NONMATCHING
 // .text:0x800B99C4 size:0x6C
-void SetFog(void) {
-    return;
+void SetFog(GXFogType type, GXColor* color, f64 startz, f64 endz, f64 nearz, f64 farz) {
+    GXColor c = *color;
+
+    lbl_80111700.type = type;
+    lbl_80111700.startz = startz;
+    lbl_80111700.endz = endz;
+    lbl_80111700.nearz = nearz;
+    lbl_80111700.farz = farz;
+    lbl_80111700.color = c;
+    GXSetFog(type, startz, endz, nearz, farz, c);
 }
+#endif
 
 // .text:0x800B9A30 size:0x6C
 void SetFogNoneAgain(void) {

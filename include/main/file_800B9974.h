@@ -6,6 +6,12 @@
 #include "C3/light.h"
 #include "C3/geoPalette.h"
 
+void SetFogNone(void);
+
+void SetFog(GXFogType type, GXColor* color, f64 startz, f64 endz, f64 nearz, f64 farz);
+
+void SetFogNoneAgain(void);
+
 void fn_800B9AA8(u32 value);
 
 void fn_800B9A9C(u32 flag, f32 value);
