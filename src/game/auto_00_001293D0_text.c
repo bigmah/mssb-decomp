@@ -575,3 +575,57 @@ void fn_3_12DDCC(void) {
         mg->bB_cpuStickInput = 0;
     }
 }
+
+// fn_3_12DB80, size:0x208
+// Barrel Batter CPU: drive the batting player's controller when it is
+// CPU-controlled.
+void fn_3_12DB80(void) {
+    MiniGameStruct* mg = &g_Minigame;
+    s8 i;
+    s8 ch;
+
+    i = 0;
+    do {
+        g_Minigame._1DBC[i] = 0;
+        i++;
+    } while (i < 4);
+    i = 0;
+    do {
+        ch = g_Minigame.minigameControlStruct[0].characterIndex[i];
+        // battingHandedness[] here is really the per-player "CPU controlled" flag
+        if (ch >= 0 && ch < 4 && i == g_Minigame.rosterID && g_Minigame.minigameControlStruct[0].battingHandedness[i] != 0) {
+            g_Minigame._1DBC[ch] = 1;
+            memset(&g_Minigame._1D7C[ch], 0, sizeof(InputStruct));
+            switch (g_Pitcher.pitcherActionState) {
+            case 3:
+                if (mg->bB_cpuSwingPlanned != 0) {
+                    if (g_Pitcher.framesUntilBallReachesBatterZ <= mg->bB_cpuSwingFrame) {
+                        switch (mg->bB_cpuSwingStep) {
+                        case 0:
+                            g_Minigame._1D7C[ch].newButtonInput |= 0x100;
+                            g_Minigame._1D7C[ch].buttonInput |= 0x100;
+                            mg->bB_cpuSwingStep++;
+                            break;
+                        case 1:
+                            g_Minigame._1D7C[ch].newButtonInput |= mg->bB_cpuStickInput;
+                            g_Minigame._1D7C[ch].buttonInput |= mg->bB_cpuStickInput | 0x100;
+                            mg->bB_cpuSwingStep++;
+                            break;
+                        case 2:
+                            g_Minigame._1D7C[ch].buttonInput |= 0x100;
+                            if (g_Batter.framesSinceStartOfSwing > 0) {
+                                g_Minigame._1D7C[ch].buttonInput |= mg->bB_cpuStickInput;
+                            }
+                            break;
+                        }
+                    }
+                } else if (fn_3_12DD88()) {
+                    fn_3_12DDCC();
+                    mg->bB_cpuSwingPlanned = 1;
+                }
+                break;
+            }
+        }
+        i++;
+    } while (i < 4);
+}
