@@ -1,8 +1,57 @@
 #include "main/file_80024D2C.h"
+#include "Dolphin/stl.h"
+
+extern u8 lbl_803CBBC0; // current frame buffer (0/1)
+extern s32 lbl_803CBC68;
+extern ShapeSeqHdr lbl_803CB7F0; // default sequence: {100, 2}
+extern ShapeKey* lbl_803CB7F4;   // default sequence keys
+extern void DCFlushRangeNoSync(void* addr, u32 nBytes);
+
+static inline s32 shapeDirtyA(ShapeAnimState* st) {
+    return st != NULL ? st->dirtyA & (1 << (lbl_803CBBC0 != 0)) : 0;
+}
+
+static inline s32 shapeDirtyB(ShapeAnimState* st) {
+    return st != NULL ? st->dirtyB & (1 << (lbl_803CBBC0 != 0)) : 0;
+}
+
+static inline void shapeSetDirtyA(ShapeAnimState* st) {
+    if (st != NULL) {
+        st->dirtyA = 3;
+    }
+}
+
+static inline void shapeSetDirtyB(ShapeAnimState* st) {
+    if (st != NULL) {
+        st->dirtyB = 3;
+    }
+}
+
+static inline void shapeStateReset(ShapeAnimState* st) {
+    if (st != NULL) {
+        st->frame = 0.0f;
+        st->speed = 0.5f;
+        st->unk8 = 1;
+        st->seqIdx = 0;
+        st->keyIdx = 0;
+        st->loops = -1;
+        st->unk10 = 1;
+        st->unk14 = 0;
+    }
+}
 
 // .text:0x80024D2C size:0x84
-void fn_80024D2C(void) {
-    return;
+// Flags (top nibble) of the last key at or before the current frame.
+u32 fn_80024D2C(ShapeAnimState* st) {
+    ShapeSeq* seq = &st->seqs[st->seqIdx];
+    s32 i = seq->hdr.keyCount;
+
+    while (i-- != 0) {
+        if ((f32)seq->keys[i].frame <= st->frame) {
+            return *(u32*)&seq->keys[i] & 0xF0000000;
+        }
+    }
+    return 0;
 }
 
 // .text:0x80024DB0 size:0x1F4
