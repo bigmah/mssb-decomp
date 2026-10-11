@@ -236,3 +236,55 @@ void fn_1_11D0(void) {
     ((ChMenuTask*)lbl_803CC1B8)->h.func = fn_1_16A0;
 }
 
+// .text:0x00001240 size:0x2F8
+// Draws texture node->texIdx of node->tex as a 256x256 quad in the top-left corner.
+void fn_1_1240(ChTexDrawNode* node) {
+    Mtx44 p;
+    Mtx m;
+    GXColor color;
+
+    SetDisplayStateTexture((struct TexImage*)node->tex->images[node->texIdx], GX_TEXMAP0, 0);
+    PSMTXIdentity(m);
+    C_MTXOrtho(p, 0.0f, 448.0f, 0.0f, 640.0f, 0.0f, 1.0f);
+    GXLoadPosMtxImm(m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetProjection(p, GX_ORTHOGRAPHIC);
+    gOz_GXSetTexture(GX_MODULATE, 0, 0);
+    color.r = node->color.r;
+    color.g = node->color.g;
+    color.b = node->color.b;
+    color.a = node->color.a;
+    GXSetChanMatColor(GX_COLOR0A0, color);
+    GXSetNumChans(1);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_RASC, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_RASA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTexCoordGen2(GX_TEXCOORD0, (GXTexGenType)1, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumTexGens(1);
+    if (node->mode == 1) {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
+        GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+    } else if (node->mode == 2) {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+        GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+    }
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXColor1u32(0xFFFFFFFF);
+    GXTexCoord2u16(0, 0);
+    GXPosition3f32(256.0f, 0.0f, 0.0f);
+    GXColor1u32(0xFFFFFFFF);
+    GXTexCoord2u16(1, 0);
+    GXPosition3f32(256.0f, 256.0f, 0.0f);
+    GXColor1u32(0xFFFFFFFF);
+    GXTexCoord2u16(1, 1);
+    GXPosition3f32(0.0f, 256.0f, 0.0f);
+    GXColor1u32(0xFFFFFFFF);
+    GXTexCoord2u16(0, 1);
+    GXEnd();
+}
