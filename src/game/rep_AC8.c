@@ -4280,9 +4280,97 @@ void fn_3_53EE8(int i) {
 }
 
 // .text:0x00053F48 size:0x570 mapped:0x80692FDC
+// NONMATCHING 98%: float register allocation in the overlap/midpoint math differs (f3/f4/f5 shifted)
+#if NONMATCHING
+extern f32 lbl_3_data_476C[];
+extern void fn_3_13A048(int i, int j);
+// push overlapping fielders apart (radius per fielder type)
 void fn_3_53F48(void) {
-    return;
+    int i;
+    int j;
+    u8* a;
+    u8* b;
+    f32 d;
+    f32 rsum;
+    f32 t;
+    f32 mx;
+    f32 mz;
+    f32 dx;
+    f32 dz;
+    f32 dist;
+    s8 ka;
+    s8 kb;
+    f32 tmp[3];
+    for (i = 0; i < 8; i++) {
+        a = g_Fielders + i * 0x268;
+        if (*(s16*)(a + 0x178) < 0) {
+            continue;
+        }
+        for (j = i + 1; j < 9; j++) {
+            b = g_Fielders + j * 0x268;
+            if (*(s16*)(b + 0x178) < 0) {
+                continue;
+            }
+            d = (*(f32*)b - *(f32*)a) * (*(f32*)b - *(f32*)a) + (*(f32*)(b + 8) - *(f32*)(a + 8)) * (*(f32*)(b + 8) - *(f32*)(a + 8));
+            SQRT_L(d);
+            rsum = lbl_3_data_476C[a[0x1C9]] + lbl_3_data_476C[b[0x1C9]];
+            if (!(d < rsum)) {
+                continue;
+            }
+            t = lbl_3_data_476C[a[0x1C9]] / rsum;
+            mz = t * (*(f32*)(b + 8) - *(f32*)(a + 8)) + *(f32*)(a + 8);
+            mx = t * (*(f32*)b - *(f32*)a) + *(f32*)a;
+            dz = mz - *(f32*)(a + 8);
+            dx = mx - *(f32*)a;
+            dist = dx * dx + dz * dz;
+            SQRT_L(dist);
+            if (!(dist > 0.0f)) {
+                continue;
+            }
+            dx /= dist;
+            dz /= dist;
+            if (g_Minigame[0x1A2A] == 6) {
+                ka = g_Minigame[i + 0x18F2];
+                kb = g_Minigame[j + 0x18F2];
+                if (g_Minigame[ka + 0x1D6E] == 0 && g_Minigame[kb + 0x1D6E] == 0) {
+                    if (ka == (s8)g_Minigame[0x1D6D]) {
+                        g_Minigame[kb + 0x1D6E] = 1;
+                        *(f32*)(g_Minigame + kb * 0xC + 0x1CB8) = *(f32*)b - *(f32*)a;
+                        *(f32*)(g_Minigame + kb * 0xC + 0x1CC0) = *(f32*)(b + 8) - *(f32*)(a + 8);
+                        fn_3_13A048(ka, kb);
+                    } else if (kb == (s8)g_Minigame[0x1D6D]) {
+                        g_Minigame[ka + 0x1D6E] = 1;
+                        *(f32*)(g_Minigame + ka * 0xC + 0x1CB8) = *(f32*)a - *(f32*)b;
+                        *(f32*)(g_Minigame + ka * 0xC + 0x1CC0) = *(f32*)(a + 8) - *(f32*)(b + 8);
+                        fn_3_13A048(kb, ka);
+                    }
+                }
+                continue;
+            }
+            if (*(f32*)(a + 0x50) <= lbl_3_rodata_B20) {
+                *(f32*)b = dx * (lbl_3_data_476C[a[0x1C9]] + lbl_3_data_476C[b[0x1C9]]) + *(f32*)a;
+                *(f32*)(b + 8) = dz * (lbl_3_data_476C[a[0x1C9]] + lbl_3_data_476C[b[0x1C9]]) + *(f32*)(a + 8);
+            } else if (*(f32*)(b + 0x50) <= lbl_3_rodata_B20) {
+                *(f32*)a = *(f32*)b - dx * (lbl_3_data_476C[a[0x1C9]] + lbl_3_data_476C[b[0x1C9]]);
+                *(f32*)(a + 8) = *(f32*)(b + 8) - dz * (lbl_3_data_476C[a[0x1C9]] + lbl_3_data_476C[b[0x1C9]]);
+            } else {
+                *(f32*)a = mx - dx * lbl_3_data_476C[a[0x1C9]];
+                *(f32*)(a + 8) = mz - dz * lbl_3_data_476C[a[0x1C9]];
+                *(f32*)b = dx * lbl_3_data_476C[b[0x1C9]] + mx;
+                *(f32*)(b + 8) = dz * lbl_3_data_476C[b[0x1C9]] + mz;
+            }
+            if (fn_3_51798(i, tmp) != 0) {
+                *(f32*)a = *(f32*)(a + 0xD4);
+                *(f32*)(a + 8) = *(f32*)(a + 0xD8);
+            }
+            if (fn_3_51798(j, tmp) != 0) {
+                *(f32*)b = *(f32*)(b + 0xD4);
+                *(f32*)(b + 8) = *(f32*)(b + 0xD8);
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x000544B8 size:0x448 mapped:0x8069354C
 #include "game/rep_D0.h"
