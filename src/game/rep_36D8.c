@@ -44,6 +44,8 @@ extern void minigamesGXStuff(void);
 extern void fn_3_CC81C(void);
 extern void fn_3_F1DC(void);
 extern void fn_3_169600(void);
+extern void fn_3_7D9DC(int i);
+extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
 extern u8 lbl_3_bss_B791;
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
@@ -131,6 +133,8 @@ extern void minigamesGXStuff(void);
 extern void fn_3_CC81C(void);
 extern void fn_3_F1DC(void);
 extern void fn_3_169600(void);
+extern void fn_3_7D9DC(int i);
+extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
 extern u8 lbl_3_bss_B791;
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
@@ -863,9 +867,103 @@ void fn_3_13F8C4(void) {
 }
 
 // .text:0x0013FC24 size:0x660 mapped:0x8077ECB8
+// Phase 3: once the marked runners have stopped, throw the ball at each of them
+// in turn; a hit shakes the camera, knocks out coins and halves the points.
+// NONMATCHING 90%: original jumps into the hit code with a goto and inlines fn_3_13E174; register allocation differs
+#if NONMATCHING
 void fn_3_13FC24(void) {
-    return;
+    RepRunnerView* r;
+    s32 i;
+    s32 hit;
+    f32 dx;
+    f32 dz;
+    f32 dist;
+    f32 s;
+    f32 vy;
+    if (REP_MG->_1AFC < 1) {
+        for (i = 0; i < 4; i++) {
+            if (REP_MG->_1B2F[i] == 1) {
+                r = &g_Runners[REP_MG->_1900[i]];
+                if (__fabs(r->pos.x - r->prevPos.x) > lbl_3_rodata_3760 || __fabs(r->pos.z - r->prevPos.z) > lbl_3_rodata_3760) {
+                    return;
+                }
+            }
+        }
+    }
+    hit = 0;
+    if (++REP_MG->_1AFC <= 1) {
+        for (i = 0; i < 4; i++) {
+            if (REP_MG->_1B2F[i] == 1) {
+                REP_MG->_1B14 = i;
+                REP_MG->_1B2F[i] = 0;
+                break;
+            }
+        }
+        r = &g_Runners[REP_MG->_1900[i]];
+        dz = r->pos.z - REP_MG->ballPos.z;
+        dx = r->pos.x - REP_MG->ballPos.x;
+        dist = dx * dx + dz * dz;
+        REP_SQRTF(dist);
+        REP_MG->_1AF8 = fn_3_9FB8C(dx, dz);
+        if (dist < lbl_3_data_218BC[0]) {
+            REP_MG->ballVel.x = dx;
+            REP_MG->ballVel.z = dz;
+            hit = 1;
+        } else {
+            s = lbl_3_data_218BC[1] / dist;
+            REP_MG->ballVel.x = dx * s;
+            REP_MG->ballVel.z = dz * s;
+        }
+    }
+    if (!hit) {
+        vy = REP_MG->ballVel.y;
+        r = &g_Runners[REP_MG->_1900[REP_MG->_1B14]];
+        REP_MG->ballPos.x += REP_MG->ballVel.x;
+        REP_MG->ballPos.y += vy;
+        REP_MG->ballPos.z += REP_MG->ballVel.z;
+        if (REP_MG->ballPos.y <= lbl_3_rodata_3734) {
+            REP_MG->ballPos.y = lbl_3_rodata_3734;
+            REP_MG->ballVel.y = lbl_3_data_218BC[4];
+            fn_8004C094(&REP_MG->ballPos);
+            fn_3_90064(0x2DF);
+        } else {
+            REP_MG->ballVel.y = vy - lbl_3_data_218BC[6];
+            if (vy > lbl_3_rodata_3734 && REP_MG->ballVel.y <= lbl_3_rodata_3734) {
+                fn_3_90064(0x2DE);
+            }
+        }
+        dz = r->pos.z - REP_MG->ballPos.z;
+        dx = r->pos.x - REP_MG->ballPos.x;
+        dist = dx * dx + dz * dz;
+        REP_SQRTF(dist);
+        if (dist < lbl_3_data_218BC[0]) {
+            hit = 1;
+        }
+    }
+    if (!hit) {
+        return;
+    }
+    fn_3_13E174(1);
+    REP_MG->_1B15[REP_MG->_1B14] = 1;
+    fn_3_7D9DC(REP_MG->_1900[REP_MG->_1B14]);
+    fn_3_13E7D4(REP_MG->_1B14);
+    if (REP_MG->_1D74 == REP_MG->_1B14) {
+        fn_800115C8(REP_MG->_1D74);
+        REP_MG->_1D74 = -1;
+    }
+    REP_MG->points[REP_MG->_1B14] /= 2;
+    REP_MG->_1DFC[REP_MG->_1B14] = 1;
+    fn_3_6C854(REP_MG->_1B14, 2);
+    if (--REP_MG->_1B33 == 0) {
+        REP_MG->phase = 4;
+        REP_MG->frames = 0;
+        REP_MG->_1B14 = -1;
+        REP_MG->ballVel.y = lbl_3_data_218BC[5];
+        return;
+    }
+    REP_MG->_1AFC = 0;
 }
+#endif
 
 // .text:0x00140284 size:0x200 mapped:0x8077F318
 void fn_3_140284(void) {

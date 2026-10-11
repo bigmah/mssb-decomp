@@ -9,7 +9,7 @@
 // This unit declares g_Runners as bytes, so it reaches the fields through this view.
 typedef struct RepRunnerView {
     /*0x000*/ Vec pos;
-    /*0x00C*/ u8 _00C[0x18 - 0xC];
+    /*0x00C*/ Vec prevPos;
     /*0x018*/ Vec _018; // movement direction
     /*0x024*/ u8 _024[0x64 - 0x24];
     /*0x064*/ f32 fractionalBasesRan;
@@ -95,7 +95,7 @@ typedef struct RepMinigameView {
     /*0x1AFE*/ s16 _1AFE[4]; // per runner slot: frames spent running
     /*0x1B06*/ s16 _1B06;
     /*0x1B08*/ s16 _1B08[6];
-    /*0x1B14*/ u8 _1B14;
+    /*0x1B14*/ s8 _1B14; // slot being targeted by the ball, -1: none
     /*0x1B15*/ u8 _1B15[4]; // per player
     /*0x1B19*/ u8 phase;
     /*0x1B1A*/ u8 _1B1A[6]; // per item type: 0 = spawn, 1 = respawn delay, else scoring kind + 2
@@ -115,7 +115,8 @@ typedef struct RepMinigameView {
     /*0x1D74*/ s8 _1D74; // -1: none
     /*0x1D75*/ u8 _1D75[0x1DC0 - 0x1D75];
     /*0x1DC0*/ u8 _1DC0[4];
-    /*0x1DC4*/ u8 _1DC4[0x1E00 - 0x1DC4];
+    /*0x1DC4*/ u8 _1DC4[0x1DFC - 0x1DC4];
+    /*0x1DFC*/ u8 _1DFC[4];
     /*0x1E00*/ u8 _1E00;
 } RepMinigameView;
 
