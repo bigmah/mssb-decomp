@@ -57,6 +57,16 @@ typedef struct SpriteElem {
     /* 0x02 */ u16 texIdx;
 } SpriteElem;
 
+// Sprite rectangle element.
+typedef struct SpriteRectElem {
+    /* 0x00 */ u8 pad0[6];
+    /* 0x06 */ u16 texIdx;
+    /* 0x08 */ u8 flipX : 1;
+    /* 0x08 */ u8 flipY : 1;
+    /* 0x08 */ u8 perCorner : 1; // per-corner vertex colors
+    /* 0x08 */ u8 unk8_b4 : 5;
+} SpriteRectElem;
+
 // Quad being assembled for drawing.
 typedef struct QuadState {
     /* 0x00 */ QuadVtx v[4];
@@ -79,6 +89,7 @@ extern QuadState lbl_80366188;
 extern SpriteTexInfo* lbl_803CBBD8;
 
 void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
+void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
