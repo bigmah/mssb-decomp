@@ -169,8 +169,48 @@ void fn_3_12EE68(s32 i) {
 }
 
 // .text:0x0012EFA4 size:0x2E8 mapped:0x8076E038
-void fn_3_12EFA4(void) {
-    return;
+// Move a barrel that is dropping into a freed slot (replacingBarrelInd set).
+void fn_3_12EFA4(s32 i) {
+    BB_barrelStruct* a = &g_Minigame.barrels[i];
+    BB_barrelStruct* b;
+    f32 v[3];
+
+    a->currentPos.y += a->velo_bounceUpOnBlowUp;
+    if (a->velo_bounceUpOnBlowUp > lbl_3_rodata_3518 && i % 3 == 1) {
+        b = &g_Minigame.barrels[i + 1];
+        if (b->barrelState != 4 && b->replacingBarrelInd == 0) {
+            fn_3_12EE68(i);
+        }
+        if (b->currentPos.y - a->currentPos.y < lbl_3_data_21770[3]) {
+            a->velo_bounceUpOnBlowUp -= lbl_3_data_21770[5];
+        }
+    }
+    a->velo_bounceUpOnBlowUp -= lbl_3_data_21770[5];
+    if (a->velo_bounceUpOnBlowUp > lbl_3_rodata_3518 && i % 3 == 2) {
+        b = &g_Minigame.barrels[i - 1];
+        if (a->currentPos.y - b->currentPos.y < lbl_3_data_21770[3]) {
+            a->velo_bounceUpOnBlowUp += lbl_3_data_21770[5];
+        }
+    }
+    if (a->currentPos.y < a->_28) {
+        a->currentPos.y = a->_28;
+        a->velo_bounceUpOnBlowUp = lbl_3_rodata_3518;
+        a->replacingBarrelInd = 0;
+        if (a->barrelState != 4) {
+            v[1] = a->currentPos.y;
+            v[2] = a->currentPos.z;
+            v[0] = a->currentPos.x;
+            v[2] = v[2] - lbl_3_rodata_351C[0];
+            v[1] = -a->_28;
+            if (lbl_3_rodata_3518 == a->_28) {
+                fn_8004C108(v, 1);
+                fn_3_90064(0x2E4);
+            } else {
+                fn_8004C108(v, 0);
+                fn_3_90064(0x2E5);
+            }
+        }
+    }
 }
 
 // .text:0x0012F28C size:0x198 mapped:0x8076E320
@@ -309,7 +349,7 @@ void fn_3_12FAC4(void) {
             fn_3_12F28C(i);
         }
         if (p->replacingBarrelInd != 0) {
-            ((void (*)(s32))fn_3_12EFA4)(i);
+            fn_3_12EFA4(i);
         }
     }
 }
