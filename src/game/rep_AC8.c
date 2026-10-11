@@ -3166,9 +3166,124 @@ void fn_3_4E638(void) {
 }
 
 // .text:0x0004EBC4 size:0x404 mapped:0x8068DC58
+// NONMATCHING 95%: loop base pointers / best-time regs allocated differently; the eta compare tail is duplicated instead of shared
+#if NONMATCHING
 void fn_3_4EBC4(void) {
-    return;
+    int bestIdx = -1;
+    s16 best = 9999;
+    s16 second = 9999;
+    int flag = 0;
+    int eta;
+    s16 raw;
+    u8 kind;
+    int i;
+    int found;
+    u8* f;
+    if (*(s16*)(g_FieldingLogic + 0xC4) >= 0) {
+        *(s16*)(g_Ball + 0x1B7E) = -1;
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B7E) >= 0) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1BA0) > 0 && *(s16*)(g_Ball + 0x1BA0) < 0x19) {
+        return;
+    }
+    eta = -1;
+    if (g_Ball[0x1BBE] <= 1 && *(f32*)(g_Ball + 0x19D4) <= lbl_3_rodata_B78) {
+        flag = 1;
+    }
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        if (g_FieldingLogic[i + 0xF8] != 1) {
+            continue;
+        }
+        raw = *(s16*)(f + 0x17E);
+        if (raw == -1 && *(s16*)(g_Ball + 0x1B7E) == i) {
+            *(s16*)(g_Ball + 0x1B7E) = -1;
+            continue;
+        }
+        kind = f[0x1DD];
+        if (kind == 1 && i <= 5 && *(f32*)(f + 0x80) > lbl_3_rodata_B64) {
+            flag = 1;
+            continue;
+        }
+        if (i >= 6 && flag != 0) {
+            break;
+        }
+        eta = raw;
+        if (raw < 0) {
+            continue;
+        }
+        if (*(s16*)(f + 0x19C) != 0) {
+            eta = raw + 0x3C;
+        } else if (f[0x1ED] != 0) {
+            eta = raw + 0x3C;
+        }
+        if (i == 0 && kind == 1 && *(f32*)(f + 0x80) > *(f32*)(f + 0x70)) {
+            eta += 0x1E;
+        }
+        if (eta < best) {
+            bestIdx = i;
+            best = eta;
+        } else if (eta < second) {
+            second = eta;
+        }
+    }
+    if (bestIdx >= 0) {
+        f = g_Fielders + bestIdx * 0x268;
+        if (f[0x1DD] == 1 && best < 0x3C) {
+            if (best + 0x3C < second) {
+                *(s16*)(g_Ball + 0x1B7E) = bestIdx;
+            }
+            if (best < 0x1E) {
+                *(s16*)(g_Ball + 0x1B7E) = bestIdx;
+            }
+            if (*(s16*)(g_Ball + 0x1B7A) == 0) {
+                if (f[0x1DB] == 0) {
+                    *(s16*)(g_Ball + 0x1B7E) = bestIdx;
+                } else if (eta == bestIdx) {
+                    *(s16*)(g_Ball + 0x1B7E) = bestIdx;
+                }
+            } else {
+                *(s16*)(g_Ball + 0x1B7E) = bestIdx;
+            }
+        }
+        kind = f[0x1DC];
+        if (kind == 4 && best < 0x3C) {
+            *(s16*)(g_Ball + 0x1B7E) = bestIdx;
+        }
+        if (kind == 2 && best < 0x1E) {
+            found = 0;
+            for (i = 0; i < 9; i++) {
+                f = g_Fielders + i * 0x268;
+                if (g_FieldingLogic[i + 0xF8] == 1) {
+                    if (f[0x1DD] == 0) {
+                        found = 1;
+                        break;
+                    }
+                    if (f[0x1DB] == 0) {
+                        found = 1;
+                        break;
+                    }
+                    if (f[0x1DC] == 0 || f[0x1DC] == 1) {
+                        found = 1;
+                        break;
+                    }
+                }
+            }
+            if (found == 0) {
+                *(s16*)(g_Ball + 0x1B7E) = bestIdx;
+            }
+        }
+    }
+    if (*(s16*)(g_Ball + 0x1B7E) >= 0) {
+        g_Ball[0x1BCA] = 0;
+        g_Ball[0x1BE1] = 0;
+        *(s16*)(g_Ball + 0x1B8A) = -1;
+    }
 }
+#endif
 
 // .text:0x0004EFC8 size:0x53C mapped:0x8068E05C
 void fn_3_4EFC8(void) {
