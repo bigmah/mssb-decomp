@@ -3586,9 +3586,110 @@ void fn_3_4A408(int i, f32* outX, f32* outZ) {
 #endif
 
 // .text:0x0004A9AC size:0x77C mapped:0x80689A40
-void fn_3_4A9AC(void) {
-    return;
+extern int fn_3_B7E44(s16 a, f32 y);
+// NONMATCHING 98.2%: stack slot of the sqrt classify temp, fn_3_B7E44 arg load order, and the unrolled 9-fielder loop's pointer/regs
+#if NONMATCHING
+// Fielder i chases the ball (or covers the fielder at ball+0x1B7E), choosing a catch action by distance.
+void fn_3_4A9AC(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int k = *(s16*)(g_Ball + 0x1B7E);
+    int j;
+    int r;
+    f32 x;
+    f32 z;
+    f32 d;
+    switch (fn_3_53130(i)) {
+    case 2:
+        return;
+    default:
+        if (f[0x1C5] == 0) {
+            fn_3_4A408(i, &x, &z);
+        } else if (k == -1) {
+            x = *(f32*)f;
+            z = *(f32*)(f + 8);
+        } else if (*(f32*)(f + 0x74) < lbl_3_rodata_B64) {
+            x = *(f32*)f;
+            z = *(f32*)(f + 8);
+        } else if (g_Ball[0x1BC9] == 3) {
+            x = lbl_3_rodata_BA0 * *(f32*)(g_Ball + 0x1A18) + *(f32*)g_Ball;
+            z = lbl_3_rodata_BA0 * *(f32*)(g_Ball + 0x1A1C) + *(f32*)(g_Ball + 8);
+        } else if (0.0f == *(f32*)(f + 0x50) && ((f32*)(f + 0x84))[k] < lbl_3_rodata_B70) {
+            x = *(f32*)f;
+            z = *(f32*)(f + 8);
+        } else {
+            u8* g = g_Fielders + k * 0x268;
+            x = lbl_3_rodata_BA0 * *(f32*)(g_Ball + 0x1A18) + *(f32*)(g + 0x14);
+            z = lbl_3_rodata_BA0 * *(f32*)(g_Ball + 0x1A1C) + *(f32*)(g + 0x1C);
+        }
+        {
+            f32 dz, dx, dd;
+            *(f32*)(f + 0x14) = x;
+            *(f32*)(f + 0x1C) = z;
+            dx = x - *(f32*)f;
+            dz = z - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                dd = dx * dx + dz * dz;
+                SQRT_L(dd);
+                *(f32*)(f + 0x68) = dd;
+            }
+            f[0x1D9] = 1;
+        }
+        if (i >= 6) {
+            if (k >= 6 && *(f32*)(f + 0x68) < lbl_3_rodata_B9C) {
+                f[0x1D6] = 5;
+            }
+            if (*(f32*)(f + 0x68) < lbl_3_rodata_B70) {
+                f[0x1D6] = 7;
+            } else if (*(f32*)(f + 0x68) < lbl_3_rodata_B9C) {
+                f[0x1D6] = 6;
+            }
+            r = fn_3_B7E44(*(s16*)(f + 0x180), *(f32*)(f + 0x70));
+            if (r == 2) {
+                f[0x1D6] = 8;
+            }
+            if (r == 1) {
+                f[0x1D6] = 5;
+            }
+        } else if (k <= 5 && *(f32*)(f + 0x68) < lbl_3_rodata_BA0) {
+            f[0x1D6] = 7;
+        }
+        for (j = 0; j < 9; j++) {
+            if (j != i && ((f32*)(f + 0x84))[j] < lbl_3_rodata_B78) {
+                f[0x1D6] = 9;
+                break;
+            }
+        }
+        ((void (*)(int))fn_3_526DC)(i);
+    case 1:
+        if (g_Ball[0x1BC9] != 0 && g_Ball[0x1BC9] != 3) {
+            SetFielderAct(i, 0xC, 0x60);
+            if (i <= 5) {
+                f[0x1D6] = 7;
+            } else {
+                f[0x1D6] = 6;
+            }
+        }
+        break;
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) != 0 && ((f32*)(f + 0x84))[k] > lbl_3_rodata_B64 + *(f32*)(f + 0x74)) {
+        f32 dx = *(f32*)(g_Ball + 0x3A4) - *(f32*)f;
+        f32 dz = *(f32*)(g_Ball + 0x3AC) - *(f32*)(f + 8);
+        dx = dx * dx;
+        dz = dz * dz;
+        d = dx + dz;
+        SQRT_L(d);
+        if (d < *(f32*)(f + 0x74) && f[0x1C5] != 0) {
+            fn_3_43038(i);
+            SetFielderAct(i, 0x12, 0x90);
+            *(s16*)(g_Ball + 0x1B7E) = -1;
+        }
+    }
 }
+#endif
 
 // .text:0x0004B128 size:0x3EC mapped:0x8068A1BC
 // NONMATCHING 99.5%: sqrt temp gets f2 instead of f4 in the inlined set-target block
