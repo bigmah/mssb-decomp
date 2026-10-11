@@ -925,7 +925,7 @@ config.libs = [
             Object(Matching, "game/rep_3D50.c"),
             Object(NonMatching, "game/rep_3DA8.c"),
             Object(NonMatching, "game/rep_3E00.c"),
-            Object(NonMatching, "game/rep_3E58.c"),
+            Object(Matching, "game/rep_3E58.c"),
             Object(NonMatching, "game/rep_3F60.c"),
             Object(NonMatching, "game/kinoko.c"),
             Object(NonMatching, "game/rep_4090.c"),
