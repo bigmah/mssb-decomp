@@ -53,8 +53,10 @@ typedef struct TextDisplayList {
 // This file's .data (0x800E8F60-0x800EE6A0). The original code reaches all of it
 // from one base, so it is declared as one block here.
 typedef struct TextStatics {
-    /*0x0000*/ u8 glyphWidths[101][4];      // [glyph][fontSize]
-    /*0x0194*/ u8 glyphWidthsExt[0x1FB][4]; // [glyph][fontSize]
+    /*0x0000*/ u8 altWidth[101][4]; // [char][fontSize], alternate font
+    /*0x0194*/ u8 width[203][4];    // [glyph][fontSize] (lbl_800E90F4)
+    /*0x04C0*/ u8 altYOff[101][4];
+    /*0x0654*/ u8 yOff[203][4];
     /*0x0980*/ u32 colors[10];
     /*0x09A8*/ u8 _09A8[0x18];              // lbl_800E9908
     /*0x09C0*/ u8 texArchive[0x3060];       // lbl_800E9920
@@ -418,7 +420,7 @@ s32 fn_8000FA9C(s32 index) {
                 n = c - (*base & 0x7FFF) - 1;
                 c = lbl_800E90F4[n][e->fontSize];
             } else {
-                c = lbl_800E8F60.glyphWidths[c][e->fontSize];
+                c = lbl_800E8F60.altWidth[c][e->fontSize];
             }
             width += c;
             width += e->charSpacing;
@@ -642,10 +644,373 @@ void fn_800100A4(s32 x, s32 y, u16 s, u16 t, u16 w, u32 color, s32 kind, MtxPtr 
 }
 #endif
 
+// NONMATCHING 86%: register allocation/spills differ (original spills narrow and the text pointers to the stack); control flow and calls match
 // .text:0x80010498 size:0xA94
 #if NONMATCHING
 void DrawText(s32 index) {
-    return;
+    TextEntry* e = &lbl_80366B18.entries[index];
+    TextStatics* data = &lbl_800E8F60;
+    s32 charW = 22;
+    s32 narrow = 11;
+    s32 lineH = 22;
+    s32 count = 0;
+    s32 kind = 0;
+    s32 printed = 1;
+    u16* text = e->text;
+    u16* sub;
+    s32 inSub = 0;
+    s32 speedOverride = -1;
+    u32 color = e->color;
+    s32 startX;
+    s32 x;
+    s32 y;
+    s32 lines;
+    s32 total;
+    s32 lh;
+    u16* p;
+    u16 c;
+    u32 code;
+    s32 n;
+    s32 k;
+    s32 digits[5];
+    u16 glyph;
+    u16 col;
+    u16 s;
+    u16 t;
+    u16 w;
+    s32 yoff;
+    s32 speed;
+
+    if (e->charLimit >= 3) {
+        if (((lbl_803C77B8._02 & 0x1100) && (lbl_80366B18.padMask & 1)) ||
+            ((lbl_803C77B8._22 & 0x1100) && (lbl_80366B18.padMask & 2)) ||
+            ((lbl_803C77B8._42 & 0x1100) && (lbl_80366B18.padMask & 4)) ||
+            ((lbl_803C77B8._62 & 0x1100) && (lbl_80366B18.padMask & 8))) {
+            e->finished = 1;
+            e->charLimit = 10000;
+        }
+    }
+    if (e->fontSize == 2) {
+        narrow = 9;
+        kind = 2;
+        charW = 18;
+        lineH = 18;
+    } else if (e->fontSize != 0) {
+        narrow = 9;
+        kind = 1;
+        charW = 18;
+        lineH = 18;
+    }
+
+    startX = e->x;
+    x = startX;
+    y = e->y;
+    if (e->hAlign == 1) {
+        startX = x = narrow + (startX - fn_8000FA9C(index) / 2);
+    } else if (e->hAlign == 2) {
+        startX = x = charW + (startX - fn_8000FA9C(index));
+    }
+
+    if (e->vAlign == 1) {
+        lines = 1;
+        p = e->text;
+        lh = 22;
+        if (e->fontSize == 2) {
+            lh = 18;
+        } else if (e->fontSize == 1) {
+            lh = 18;
+        }
+        for (;;) {
+            c = *p++;
+            if (!(c & 0x4000)) {
+                continue;
+            }
+            code = c & 0x3FFF;
+            if (code == 0) {
+                break;
+            }
+            if (code == 1) {
+                lines++;
+            }
+        }
+        total = lines * lh;
+        if (lines > 1) {
+            total += e->lineSpacing * (lines - 1);
+        }
+        y = lineH / 2 + (y - total / 2);
+    } else if (e->vAlign == 2) {
+        lines = 1;
+        p = e->text;
+        lh = 22;
+        if (e->fontSize == 2) {
+            lh = 18;
+        } else if (e->fontSize == 1) {
+            lh = 18;
+        }
+        for (;;) {
+            c = *p++;
+            if (!(c & 0x4000)) {
+                continue;
+            }
+            code = c & 0x3FFF;
+            if (code == 0) {
+                break;
+            }
+            if (code == 1) {
+                lines++;
+            }
+        }
+        total = lines * lh;
+        if (lines > 1) {
+            total += e->lineSpacing * (lines - 1);
+        }
+        y = (y + total) - lineH;
+    }
+
+    for (;;) {
+        if (e->charLimit >= 0 && !e->finished) {
+            if (count > e->charLimit) {
+                break;
+            }
+            speedOverride = -1;
+        }
+        printed = 1;
+        if (inSub) {
+            c = *sub++;
+        } else {
+            c = *text++;
+        }
+
+        if (c & 0x4000) {
+            code = c & 0x3FFF;
+            if (code == 0) {
+                if (inSub) {
+                    inSub = 0;
+                    continue;
+                }
+                printed = 0;
+                e->finished = 1;
+                break;
+            }
+            if (code >= 0x4B && code <= 0x72) {
+                if (!e->_35) {
+                    if (g_d_GameSettings.GameModeSelected == 5) {
+                        fn_80062890(code - 0x39);
+                    }
+                    e->_35 = 1;
+                }
+                printed = 0;
+                continue;
+            }
+            switch (code) {
+            case 2:
+                printed = 0;
+                count++;
+                x += narrow;
+                x += e->charSpacing;
+                break;
+            case 3:
+                x += charW;
+                printed = 0;
+                count++;
+                x += e->charSpacing;
+                break;
+            case 1:
+                y += lineH;
+                x = startX;
+                printed = 0;
+                count++;
+                y += e->lineSpacing;
+                break;
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+                if (code - 5 == 0) {
+                    color = e->color;
+                } else {
+                    color = (color & 0xFF) | data->colors[code - 5];
+                }
+                printed = 0;
+                break;
+            case 15:
+            case 16:
+            case 17:
+            case 18:
+                n = e->numbers[code - 15];
+                if (n < 0) {
+                    glyph = (lbl_80366B18._7EC[10] & 0x7FFF) % 0x844;
+                    w = charW;
+                    n = -n;
+                    col = glyph % 46;
+                    t = (glyph / 46) * lineH;
+                    s = col * charW;
+                    if (e->shadowColor != 0) {
+                        fn_800100A4(x + e->shadowX, y + e->shadowY, s, t, w, e->shadowColor, kind, e->mtx);
+                    }
+                    fn_800100A4(x, y, s, t, w, color, kind, e->mtx);
+                    x += w;
+                    x += e->charSpacing;
+                }
+                k = 0;
+                for (;;) {
+                    digits[k] = n % 10;
+                    if (n < 10) {
+                        break;
+                    }
+                    n /= 10;
+                    k++;
+                }
+                w = charW;
+                for (; k >= 0; k--) {
+                    glyph = (lbl_80366B18._7EC[digits[k]] & 0x7FFF) % 0x844;
+                    col = glyph % 46;
+                    t = (glyph / 46) * lineH;
+                    s = col * charW;
+                    if (e->shadowColor != 0) {
+                        fn_800100A4(x + e->shadowX, y + e->shadowY, s, t, w, e->shadowColor, kind, e->mtx);
+                    }
+                    fn_800100A4(x, y, s, t, w, color, kind, e->mtx);
+                    x += w;
+                    count++;
+                    x += e->charSpacing;
+                }
+                break;
+            case 25:
+            case 26:
+            case 27:
+            case 28:
+            case 35:
+            case 36:
+            case 37:
+            case 38:
+                n = code - 15;
+                if (n >= 10) {
+                    n = e->strings[n - 10] + 0x3E;
+                } else {
+                    n = e->strings[n] + 8;
+                }
+                inSub = 1;
+                sub = lbl_80366B18.tables[0]->msgs[n];
+                break;
+            case 45:
+            case 46:
+            case 47:
+            case 48:
+            case 49:
+            case 50:
+            case 51:
+            case 52:
+            case 53:
+                fn_800100A4(x, y - 1, 0, 0, 0, color | 0xFFFFFF00, code - 0x23, e->mtx);
+                x += 28;
+                count++;
+                x += e->charSpacing;
+                break;
+            case 55:
+                narrow = 11;
+                charW = 22;
+                lineH = 22;
+                kind = 3;
+                printed = 0;
+                break;
+            case 56:
+                kind = e->fontSize;
+                if (kind == 2) {
+                    narrow = 9;
+                    charW = 18;
+                    lineH = 18;
+                } else if (kind != 0) {
+                    narrow = 9;
+                    charW = 18;
+                    lineH = 18;
+                } else {
+                    narrow = 11;
+                    charW = 22;
+                    lineH = 22;
+                }
+                printed = 0;
+                break;
+            case 57:
+                e->_36 = 1;
+                break;
+            case 58:
+                e->_36 = 0;
+                break;
+            case 66:
+            case 67:
+            case 68:
+            case 69:
+            case 70:
+            case 71:
+            case 72:
+            case 73:
+            case 74:
+                printed = 0;
+                count++;
+                speedOverride = (code - 0x41) * 10;
+                break;
+            }
+        } else {
+            count++;
+            if (e->_36 == 0) {
+                if (c & 0x8000) {
+                    glyph = c & 0x7FFF;
+                } else {
+                    glyph = lbl_80366218[c] & 0x7FFF;
+                }
+                glyph = glyph % 0x844;
+                n = glyph - (*lbl_80366B18._7F4 & 0x7FFF) - 1;
+                w = data->width[n][kind];
+                yoff = data->yOff[n][kind];
+                col = glyph % 46;
+                t = (glyph / 46) * lineH;
+                s = col * charW;
+            } else {
+                yoff = data->altYOff[c][kind];
+                w = data->altWidth[c][kind];
+                col = c % 92;
+                t = (c / 92) * lineH;
+                s = narrow * ((col / 2) * 2 + col % 2);
+            }
+            if (e->shadowColor != 0) {
+                fn_800100A4(x + e->shadowX, y + (e->shadowY + yoff), s, t, w, e->shadowColor, kind, e->mtx);
+            }
+            fn_800100A4(x, y + yoff, s, t, w, color, kind, e->mtx);
+            x += w;
+            x += e->charSpacing;
+        }
+    }
+
+    // typewriter effect
+    if (e->charLimit >= 0 && e->charLimit < 10000) {
+        speed = e->typeSpeed;
+        if (speedOverride >= 0) {
+            speed = speedOverride;
+        }
+        if (e->finished) {
+            e->charLimit = 10000;
+            e->_35 = 1;
+        } else if (e->typeTimer > speed) {
+            e->typeTimer = 0;
+            if (e->charLimit < 0x7FFE) {
+                e->charLimit++;
+            } else {
+                e->charLimit = 0x7FFF;
+            }
+            if (printed && g_d_GameSettings.GameModeSelected == 5 && e->charLimit > 2) {
+                fn_80062890(2);
+            }
+        } else {
+            e->typeTimer++;
+        }
+    }
 }
 #endif
 
