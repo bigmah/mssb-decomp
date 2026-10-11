@@ -279,6 +279,8 @@ void fn_3_7DD24(int a) {
 // .text:0x0007DD6C size:0x550 mapped:0x806BCE00
 // 99%: body matches (88C24 tail written out inline with `base`, switch as an if-chain, 7D920/7D79C/833EC bodies copied inline).
 // Left: (1) orig does `addi r25,base; mr r27,r25`, we get `addi r27; mr r25,r27`; (2) tail hoisted-load order (orig: lha, li counter, lbz fl, ...).
+// NONMATCHING 99%: register copy direction for the runner base and tail load order (see note above)
+#if NONMATCHING
 void fn_3_7DD6C(void) {
     u8* r;
     u8* mp;
@@ -434,6 +436,7 @@ void fn_3_7DD6C(void) {
     }
     fn_3_8781C();
 }
+#endif
 
 // .text:0x0007E2BC size:0x7AC mapped:0x806BD350
 // Steal / return input for the runners (controller stick + buttons).
