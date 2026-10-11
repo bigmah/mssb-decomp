@@ -166,5 +166,6 @@ void fn_2_52690(void);
 void fn_2_4B2D0(void);
 
 s16 fn_2_4EB9C(void);
+void fn_2_53408(void);
 
 #endif

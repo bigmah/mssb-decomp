@@ -940,7 +940,7 @@ config.libs = [
             Object(NonMatching, "menus/rep_00B0.c"),
             Object(NonMatching, "menus/rep_0100.c"),
             Object(NonMatching, "menus/rep_0150.c"),
-            Object(NonMatching, "menus/rep_01A0.c"),
+            Object(Matching, "menus/rep_01A0.c"),
             Object(NonMatching, "menus/rep_0200.c"),
             Object(NonMatching, "menus/rep_0278.c"),
             Object(NonMatching, "menus/rep_02C8.c"),
