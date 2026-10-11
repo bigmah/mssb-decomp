@@ -3084,9 +3084,147 @@ void fn_3_433E0(void) {
 }
 
 // .text:0x000447C4 size:0xBD0 mapped:0x80683858
+// NONMATCHING 98.3%: float register choice in the set-target blocks and t*16 kept in r31 by orig for the traj[t+30] read
+#if NONMATCHING
+// Fielder i chases a batted ball: pick a target on the ball's path (or the throw line) and run there.
 void fn_3_447C4(int i) {
-    return;
+    u8* f = g_Fielders + i * 0x268;
+    int t;
+    int mg = 0;
+    u8* e;
+    f32 px, pz, dP, dL, d, k;
+    f32 x;
+    f32 z;
+    t = *(s16*)(f + 0x186) - *(s16*)(g_Ball + 0x1B66) + 1;
+    if (t < 0) {
+        t *= -1;
+    }
+    if (t >= 0x168) {
+        t = 0x167;
+    }
+    e = g_Ball + t * 0x10;
+    px = *(f32*)(e + 0x354);
+    pz = *(f32*)(e + 0x35C);
+    if (g_Ball[0x1BEB] != 0) {
+        if (((u8*)g_AiLogic)[0x79] != 0) {
+            px = *(f32*)(g_Ball + 0x1B1C);
+            pz = *(f32*)(g_Ball + 0x1B20);
+        } else {
+            px = *(f32*)(g_Ball + 0x348);
+            pz = *(f32*)(g_Ball + 0x34C);
+        }
+    } else if (g_Ball[0x1BED] != 0) {
+        px = *(f32*)(g_Ball + 0x1B1C);
+        pz = *(f32*)(g_Ball + 0x1B20);
+    }
+    if (g_d_GameSettings[0x11] != 0 && i >= 2) {
+        mg = 1;
+    }
+    if (i >= 6 || mg != 0) {
+        dP = px * px + pz * pz;
+        SQRT_L(dP);
+        if (g_Ball[0x1BC0] != 0 && g_Ball[0x1BF1] == 0) {
+            {
+                f32 a = *(f32*)(g_Ball + 0x19D8) * *(f32*)(g_Ball + 0x19D8);
+                f32 b = *(f32*)(g_Ball + 0x19DC) * *(f32*)(g_Ball + 0x19DC);
+                dL = a + b;
+                SQRT_L(dL);
+            }
+            if (g_Ball[0x1BC1] >= 2) {
+                x = *(f32*)f - *(f32*)(g_Ball + 0x19D8);
+                z = *(f32*)(f + 8) - *(f32*)(g_Ball + 0x19DC);
+                {
+                    f32 a = x * x;
+                    f32 b = z * z;
+                    d = a + b;
+                    SQRT_L(d);
+                }
+                k = lbl_3_rodata_B64 / d;
+                x = x * k + *(f32*)(g_Ball + 0x19D8);
+                z = z * k + *(f32*)(g_Ball + 0x19DC);
+                *(f32*)(f + 0x28) = x;
+                *(f32*)(f + 0x2C) = z;
+                ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                f[0x1DC] = 2;
+                goto tail;
+            }
+            if (dP > dL) {
+                if (f[0x1DD] != 1 || (f[0x1C5] != 0 && f[0x1C4] >= 3)) {
+                    x = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E4) + *(f32*)(g_Ball + 0x19D8);
+                    z = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E8) + *(f32*)(g_Ball + 0x19DC);
+                    *(f32*)(f + 0x28) = x;
+                    *(f32*)(f + 0x2C) = z;
+                    ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                    f[0x1DC] = 2;
+                } else {
+                    x = *(f32*)(g_Ball + 0x19D8);
+                    z = *(f32*)(g_Ball + 0x19DC);
+                    *(f32*)(f + 0x28) = x;
+                    *(f32*)(f + 0x2C) = z;
+                    ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                    f[0x1DC] = 1;
+                }
+                {
+                    f32 dz, dx, dd;
+                    *(f32*)(f + 0x14) = x;
+                    *(f32*)(f + 0x1C) = z;
+                    dx = x - *(f32*)f;
+                    dz = z - *(f32*)(f + 8);
+                    if (0.0f == dx && 0.0f == dz) {
+                        *(f32*)(f + 0x50) = 0.0f;
+                        *(f32*)(f + 0x68) = 0.0f;
+                    } else {
+                        *(f32*)(f + 0x64) = atan2(dz, dx);
+                        dd = dx * dx + dz * dz;
+                        SQRT_L(dd);
+                        *(f32*)(f + 0x68) = dd;
+                    }
+                    f[0x1D9] = 1;
+                }
+                goto tail;
+            }
+        }
+        if (f[0x1DD] == 3 || f[0x1DD] == 4) {
+            if (fn_3_B7E44(*(s16*)(g_Ball + 0x1B80), dP) != 0) {
+                x = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E4) + *(f32*)(g_Ball + 0x19D8);
+                z = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E8) + *(f32*)(g_Ball + 0x19DC);
+                *(f32*)(f + 0x28) = x;
+                *(f32*)(f + 0x2C) = z;
+                ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                f[0x1DC] = 2;
+            } else {
+                x = *(f32*)(g_Ball + t * 0x10 + 0x534);
+                z = *(f32*)(g_Ball + t * 0x10 + 0x53C);
+                *(f32*)(f + 0x28) = x;
+                *(f32*)(f + 0x2C) = z;
+                ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                f[0x1DC] = 3;
+            }
+            SetTargetAC8b(i, x, z);
+            goto tail;
+        }
+    }
+    d = px * px + pz * pz;
+    SQRT_L(d);
+    if (d <= lbl_3_rodata_B24) {
+        x = px;
+        z = pz;
+    } else {
+        x = lbl_3_rodata_B80 * (px / d) + px;
+        z = lbl_3_rodata_B80 * (pz / d) + pz;
+    }
+    if (g_Ball[0x1BEB] == 0 && g_Ball[0x1BE7] != 9 && g_Ball[0x1BE7] != 10 && g_Ball[0x1BF1] == 0 && g_Ball[0x1BD8] == 0) {
+        ((int (*)(int, f32*, f32*, int))fn_3_50DD8)(i, &x, &z, 0);
+    }
+    SetTargetAC8b(i, x, z);
+    f[0x1DC] = 0;
+tail:
+    *(f32*)(f + 0x20) = *(f32*)(f + 0x14);
+    *(f32*)(f + 0x24) = *(f32*)(f + 0x1C);
+    ((void (*)(int))fn_3_526DC)(i);
+    *(s16*)(f + 0x184) = t;
 }
+#endif
 
 // .text:0x00045394 size:0x220 mapped:0x80684428
 void fn_3_45394(int i) {
