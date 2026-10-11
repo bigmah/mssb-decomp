@@ -1266,9 +1266,67 @@ void fn_3_A9354(int a, int b) {
 }
 
 // .text:0x000A96FC size:0x288 mapped:0x806E8790
+// NONMATCHING 88%: saved-register assignment differs (fi/fielder/g_FieldingLogic in r30/r31/r29 vs r29/r30/r31) and minor scheduling
+#if NONMATCHING
 void fn_3_A96FC(int fi) {
-    return;
+    RepFielder* f = &g_Fielders[fi];
+    InMemRunnerType* r = &g_Runners[f->_213];
+    u8 state = f->_212;
+    s16 base;
+    f32 cx;
+    f32 cz;
+
+    if (state == 0) {
+        f->_212 = 1;
+        g_FieldingLogic._0F6 = r->actionFrames_countDown - 1;
+        return;
+    }
+    if (state == 1) {
+        if (--g_FieldingLogic._0F6 <= 0) {
+            if (f->_211 == 1) {
+                f->_212 = 2;
+                g_FieldingLogic._0F6 = lbl_3_data_4880;
+                return;
+            }
+            f->_212 = 3;
+            f->_174 = lbl_3_data_4878[0];
+            g_FieldingLogic._0F6 = lbl_3_data_7E34[f->_17A].b;
+            f->_1C2 = lbl_3_data_4860[f->_1F7].c;
+        }
+    } else {
+        Tbl4* t = &lbl_3_data_7E34[f->_17A];
+        if (t->b - t->c == --g_FieldingLogic._0F6 && state == 3) {
+            fn_3_A9354(fi, 0);
+            g_FieldingLogic._13B = 1;
+            g_FieldingLogic._111 = 0;
+        }
+        if (f->_212 == 3) {
+            getComponentsFromSAng(f->_1C2, &cx, &cz);
+            f->_174 = f->_174 * lbl_3_data_4878[1];
+            f->velX = cx * f->_174;
+            f->velZ = cz * f->_174;
+            f->speed = f->_174;
+            f->pos.x += f->velX;
+            f->pos.z += f->velZ;
+        }
+        if (g_FieldingLogic._0F6 <= 0) {
+            if (f->_212 == 3) {
+                fn_3_5985C(fi, 9);
+                base = f->coveringBase;
+                f->coveringBase = -1;
+                g_FieldingLogic._0D0[base] = -1;
+                g_FieldingLogic._101[base] = 0;
+                f->_1D7 = 0;
+                if (g_Ball.fielderWBallIndex == -1) {
+                    g_FieldingLogic._13B = 1;
+                }
+            }
+            f->_212 = 0;
+            f->_211 = 0;
+        }
+    }
 }
+#endif
 
 // .text:0x000A9984 size:0x2F0 mapped:0x806E8A18
 void fn_3_A9984(int fi) {
