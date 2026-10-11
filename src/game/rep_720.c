@@ -7,6 +7,7 @@
 #include "Dolphin/gx.h"
 #include "Dolphin/rand.h"
 #include "game/rep_D0.h"
+#include "game/rep_140.h"
 #include "main/file_8004C5F8.h"
 #include "game/auto_00_000249E8_text.h"
 
@@ -218,8 +219,6 @@ inline void fn_3_17B2C_inline(lbl_3_data_A40_s* p) {
 }
 
 // .text:0x0001CE90 size:0x9DC mapped:0x8065BF24
-// NONMATCHING 98.4%: the three fn_3_1850C calls are tail-merged into one here, and f28-f30 are allocated differently in the inlined view setup
-#if NONMATCHING
 void fn_3_1C8AC_inline(Vec* v, f32 c, f32 s);
 
 // Body of fn_3_17110 for any table entry.
@@ -247,6 +246,8 @@ static inline void fn_3_1CE90_setView(lbl_3_data_A40_s* p) {
     fn_3_1C8AC_inline(&v, _f31, _f6);
 }
 
+// NONMATCHING 98.4%: the three fn_3_1850C calls are tail-merged into one here, and f28-f30 are allocated differently in the inlined view setup
+#if NONMATCHING
 // TODO type: inMemCamera holds 4 views of 0x9BC bytes from 0x120 (lbl_3_common_bss_DE94_s2).
 #define CAMERA_VIEW(cam, i) ((lbl_3_common_bss_DE94_s2*)((u8*)(cam) + 0x120 + (i) * 0x9BC))
 
@@ -867,8 +868,16 @@ void fn_3_1AE44(u8 arg4, u16 arg5, f32 arg1, f32 arg2, f32 arg3) {
 }
 
 // .text:0x00019FA4 size:0xEA0 mapped:0x80659038
+// NONMATCHING 93.8%: same calls and control flow; register allocation and stack slots differ (inlined fn_3_19B3C / fn_3_1C8AC)
+#if NONMATCHING
 void fn_3_19FA4(void) {
-    int r31;
+    int segFrames;
+    int i;
+    int total;
+    f32 t;
+    lbl_3_data_A40_s* from;
+    lbl_3_data_A40_s* to;
+
     if (g_pCamera->_000E < S16_MAX - 1) {
         g_pCamera->_000E++;
     } else {
@@ -877,57 +886,105 @@ void fn_3_19FA4(void) {
     if (g_pCamera->_0015 != 0 && g_pCamera->_0015 != 1) {
         g_pCamera->_0015 = 0;
     }
-
     if (g_pCamera->_0014 == 0) {
-        r31 = g_pCamera->_000A[g_pCamera->_0013];
-        if (g_pCamera->_000E > r31) {
+        segFrames = g_pCamera->_000A[g_pCamera->_0013];
+        if (g_pCamera->_000E > segFrames) {
             g_pCamera->_000E = 1;
             g_pCamera->_0013++;
-            r31 = g_pCamera->_000A[(u8)g_pCamera->_0013];
+            segFrames = g_pCamera->_000A[g_pCamera->_0013];
             if (g_pCamera->_0013 >= g_pCamera->_0012 - 1) {
                 g_pCamera->_0014 = 1;
             }
         }
     }
-    if (g_pCamera->_0014 != 0)
-    {
-        f32 f28;
-        lbl_3_data_A40_s* p = &lbl_3_data_A40[g_pCamera->_0004[g_pCamera->_0013]];
-        VEC_COPY(&g_pCamera->_2858, &p->_00);
-        g_pCamera->_289C = p->_10[0];
-        g_pCamera->_289E = p->_10[1];
-        g_pCamera->_2878 = p->_0C;
-        {
-            Vec v;
-            f32 _f30 = shortAngleToRad_Capped(g_pCamera->_289E);
-            f32 f30 = COSF(_f30) * 20.f;
-            f32 _f29 = SINF(_f30);
 
-            f32 _f28 = shortAngleToRad_Capped(g_pCamera->_289C);
-            f32 _f31 = COSF(_f28);
-            f32 _f6 = SINF(_f28);
-
-            v.x = _f31 * f30;
-            v.z = _f6 * f30;
-            v.y = _f29 * 20.f;
-            fn_3_1C8AC_inline(&v, _f31, _f6);
-        }
+    if (g_pCamera->_0014 != 0) {
+        // last key reached: hold it
+        fn_3_1CE90_setView(&lbl_3_data_A40[g_pCamera->_0004[g_pCamera->_0013]]);
     } else if (g_pCamera->_0015 != 0) {
-        int i;
-        int r9;
-        Vec sp50[5];
+        // spline through all keys
+        Vec points[5];
+        VecXZ keys[3];
+        VecXZ out;
+        f32* angles = &points[0].x; // the key angles reuse the points buffer
+
         for (i = 0; i < g_pCamera->_0012; i++) {
-            VEC_COPY(&sp50[i], &lbl_3_data_A40[i]._00);
+            lbl_3_data_A40_s* key = &lbl_3_data_A40[g_pCamera->_0004[i]];
+            VEC_COPY(&points[i], &key->_00);
         }
-        r9 = 0;
+        total = 0;
+        for (i = 0; i < g_pCamera->_0012 - 1; i++) {
+            total += g_pCamera->_000A[i];
+        }
+        t = (f32)g_pCamera->_0010 / (f32)total;
+        fn_3_28E4(&g_pCamera->_2858, points, g_pCamera->_0012, t);
+
+        keys[0].z = 0.0f;
+        total = 0;
+        for (i = 1; i < g_pCamera->_0012; i++) {
+            total += g_pCamera->_000A[i - 1];
+            keys[i].z = total;
+        }
+
+        fn_3_19B3C(0, angles);
         for (i = 0; i < g_pCamera->_0012; i++) {
-            r9 += g_pCamera->_000A[i];
+            keys[i].x = angles[i];
         }
-        
-        // fn_3_28E4();
+        running_roundBasePosition(t, &out, keys, g_pCamera->_0012);
+        g_pCamera->_2870 = fn_3_9FDD8(out.x);
+
+        fn_3_19B3C(1, angles);
+        for (i = 0; i < g_pCamera->_0012; i++) {
+            keys[i].x = angles[i];
+        }
+        running_roundBasePosition(t, &out, keys, g_pCamera->_0012);
+        g_pCamera->_2874 = fn_3_9FDD8(out.x);
+
+        from = &lbl_3_data_A40[g_pCamera->_0004[g_pCamera->_0013]];
+        to = &lbl_3_data_A40[g_pCamera->_0004[g_pCamera->_0013 + 1]];
+        g_pCamera->_2878 = g_pCamera->_000E * (to->_0C - from->_0C) / segFrames + from->_0C;
+        fn_3_1C8AC(TRUE);
+        g_pCamera->_289C = radToShortAngle(g_pCamera->_2870);
+        g_pCamera->_289E = fn_3_9FF04(g_pCamera->_2874);
+        if (g_pCamera->_0010 < S16_MAX - 1) {
+            g_pCamera->_0010++;
+        } else {
+            g_pCamera->_0010 = S16_MAX;
+        }
+    } else {
+        // linear blend between the current and next key
+        f32 a;
+        f32 d;
+        from = &lbl_3_data_A40[g_pCamera->_0004[g_pCamera->_0013]];
+        to = &lbl_3_data_A40[g_pCamera->_0004[g_pCamera->_0013 + 1]];
+        g_pCamera->_2858.x = g_pCamera->_000E * (to->_00.x - from->_00.x) / segFrames + from->_00.x;
+        g_pCamera->_2858.y = g_pCamera->_000E * (to->_00.y - from->_00.y) / segFrames + from->_00.y;
+        g_pCamera->_2858.z = g_pCamera->_000E * (to->_00.z - from->_00.z) / segFrames + from->_00.z;
+        for (i = 0; i < 2; i++) {
+            a = shortAngleToRad_Capped(from->_10[i]);
+            d = shortAngleToRad_Capped(to->_10[i]) - a;
+            if (d > PI) {
+                d = -(2.0f * PI - d);
+            }
+            if (d < -PI) {
+                d += 2.0f * PI;
+            }
+            d = d * g_pCamera->_000E / segFrames;
+            if (i == 0) {
+                g_pCamera->_2870 = d + a;
+                g_pCamera->_2870 = fn_3_9FEA8(g_pCamera->_2870);
+            } else {
+                g_pCamera->_2874 = d + a;
+                g_pCamera->_2874 = fn_3_9FEA8(g_pCamera->_2874);
+            }
+        }
+        g_pCamera->_2878 = g_pCamera->_000E * (to->_0C - from->_0C) / segFrames + from->_0C;
+        fn_3_1C8AC(TRUE);
+        g_pCamera->_289C = radToShortAngle(g_pCamera->_2870);
+        g_pCamera->_289E = fn_3_9FF04(g_pCamera->_2874);
     }
-    cos(r31);
 }
+#endif
 
 // .text:0x00019CB0 size:0x2F4 mapped:0x80658D44
 void fn_3_19CB0(s16 arg) {
