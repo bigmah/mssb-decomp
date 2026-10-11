@@ -1139,9 +1139,58 @@ void fn_80017DBC(void) {
 }
 
 // .text:0x80018024 size:0x24C
+// NONMATCHING 76%: original indexes the ARAM table with lwzx instead of strength-reduced pointers
+#if NONMATCHING
 void fn_80018024(void) {
-    return;
+    u32 max0 = 0;
+    u32 max1 = 0;
+    u32 size;
+    u32 size0;
+    u32 size1;
+    s32 k;
+    s32 i;
+    u8* p;
+
+    for (k = 0; k < 54 * 0x13; k += 0x13) {
+        size = lbl_803CB790[k].size & 0x0FFFFFFF;
+        if (max0 < size) {
+            max0 = size;
+        }
+        size = lbl_803CB790[k + 1].size & 0x0FFFFFFF;
+        if (max1 < size) {
+            max1 = size;
+        }
+    }
+    size0 = (max0 + 0x1F) & ~0x1F;
+    lbl_8036E548._2D64 = size0;
+    size1 = (max1 + 0x1F) & ~0x1F;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        lbl_8036E548.fileBuf = _OSAllocFromHeap(0x20, (size0 + size1) * 4);
+    } else {
+        lbl_8036E548.fileBuf = _OSAllocFromHeap(0x20, size0 * 4);
+    }
+    p = lbl_8036E548.fileBuf;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        for (i = 0; i < 4; i++) {
+            lbl_8036E548.actors[i].files = (void**)p;
+            p += size0;
+            lbl_8036E548.actors[i].part = NULL;
+            lbl_8036E548.actors[i].parts = NULL;
+            lbl_8036E548.actors[i]._0C = (void**)p;
+            p += size1;
+            lbl_8036E548.actors[i + 4].part = NULL;
+            lbl_8036E548.actors[i + 4].parts = NULL;
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            lbl_8036E548.actors[i].files = (void**)p;
+            p += size0;
+            lbl_8036E548.actors[i].part = NULL;
+            lbl_8036E548.actors[i].parts = NULL;
+        }
+    }
 }
+#endif
 
 // .text:0x80018270 size:0x650
 void fn_80018270(void) {
