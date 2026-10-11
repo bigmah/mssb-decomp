@@ -4,7 +4,7 @@
 #include "mssbTypes.h"
 #include "main/file_8004B284.h"
 
-void fn_8004BEB0(CharModel* model, f32 frame);
+void fn_8004BEB0(CharModel* model, s32 animID, u32 colorIdx, f32 frame);
 void fn_8004C094(Vec* pos);
 void fn_8004C108(Vec* pos, u8 colorIdx);
 

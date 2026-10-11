@@ -18,7 +18,7 @@ extern f32 lbl_803CC82C; // 0.0f
 extern f32 lbl_803CC830; // 1.0f
 
 // .text:0x8004BEB0 size:0x1E4
-void fn_8004BEB0(CharModel* model, f32 frame) {
+void fn_8004BEB0(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
     Vec pos;
     Vec dir;
     Mtx m;
