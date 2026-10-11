@@ -311,8 +311,19 @@ void fn_80021AC8(void) {
 }
 
 // .text:0x80021ADC size:0xE0
-void fn_80021ADC(void) {
-    return;
+void* fn_80021ADC(s32 index, void* dst) {
+    if (index < 0 || index >= 0x1D) {
+        return NULL;
+    }
+    if (dst == NULL) {
+        dst = _OSAllocFromHeap(0x20, DISK_FILE_SIZE(DISK_FILE_ENTRY(lbl_800EFD38, index + 0x1E6)));
+    }
+    if (lbl_803716B8.loadedFlags & 8) {
+        ARAMTransfer(&lbl_800EFD38[index + 0x1E6], dst, 3, lbl_803716B8.aramAddrs[3][index]);
+    } else {
+        ARAMTransfer(&lbl_800F71D8.files[index], dst, 0, 0);
+    }
+    return dst;
 }
 
 // .text:0x80021BBC size:0xE8
