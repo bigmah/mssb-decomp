@@ -1145,9 +1145,45 @@ void fn_800196D8(void) {
 }
 
 // .text:0x80019A60 size:0x1A0
+// NONMATCHING 97%: light-table base register and colour temp stack slots
+#if NONMATCHING
 void fn_80019A60(void) {
-    return;
+    LightPos* lights = lbl_80367318;
+    CharQueueTask* task;
+    s32 i;
+    StadiumLights* st;
+    LightPos* lp;
+    u32 c;
+    GXColor color;
+
+    task = fn_800B0A5C_insertQueue(fn_800196D8, 0);
+    task->_14 = 0;
+    task->parent->_10 = 0;
+    for (i = 0; i < 4; i++) {
+        fn_80023B90(&lbl_800F7478[g_d_GameSettings._54].light[i], &lbl_80367318[i]);
+    }
+    fn_800BD2DC();
+    st = &lbl_800F7478[g_d_GameSettings._54];
+    if (st->ambient.a != 0) {
+        color = st->ambient;
+        fn_800BD2CC(1, color);
+    }
+    lp = lights;
+    for (i = 0; i < 4; i++) {
+        LITAlloc(&lbl_8036E548.lights[i]);
+        LITInitAttn(lbl_8036E548.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+        LITInitPos(lbl_8036E548.lights[i], lp->x, lp->y, lp->z);
+        c = lp->color;
+        LITInitColor(lbl_8036E548.lights[i], &c);
+        lp++;
+    }
+    if (lbl_8036E548.slots6C != NULL) {
+        for (i = 0; i < lbl_8036E548.slots6C->count; i++) {
+            fn_800BD548(&lbl_8036E548.slots6C->slots[i], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+        }
+    }
 }
+#endif
 
 // .text:0x80019C00 size:0x65C
 void fn_80019C00(void) {
