@@ -4004,9 +4004,231 @@ void fn_3_4F504(int i) {
 #endif
 
 // .text:0x0004FB34 size:0xD64 mapped:0x8068EBC8
-void fn_3_4FB34(void) {
-    return;
+extern s16 lbl_3_data_1C3C;
+extern f32 lbl_3_rodata_B9C;
+extern f32 lbl_3_rodata_B8C;
+extern f32 lbl_3_rodata_C70;
+extern f32 lbl_3_rodata_C74;
+extern f32 lbl_3_rodata_C78;
+extern f32 lbl_3_rodata_C7C;
+extern f32 lbl_3_rodata_C80;
+#pragma dont_inline off
+// same body as fn_3_51DF0: infield zone of point (x, z)
+static inline int FieldZoneInl(f32 x, f32 z) {
+    f32 d;
+    f32 xx;
+    if (40.0f + (x - z) > 0.0f && 40.0f + (-x - z) > 0.0f) {
+        return 0;
+    }
+    xx = x * x;
+    d = xx + z * z;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_C70) {
+        return 1;
+    }
+    z -= lbl_3_rodata_C74;
+    d = xx + z * z;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_C78) {
+        return 1;
+    }
+    if (d < lbl_3_rodata_C7C) {
+        return 2;
+    }
+    if (d < lbl_3_rodata_C80) {
+        return 3;
+    }
+    return 4;
 }
+#pragma dont_inline on
+// NONMATCHING 95%: same flight search as fn_3_4F504 (with the inlined fn_3_51DF0 zone test); loop locals use different registers, smaller stack frame
+#if NONMATCHING
+// find where fielder i (an outfielder or infielder) can meet the fly ball; fills f+0x186 / 0x1DD / 0x1DA / 0x1DB
+void fn_3_4FB34(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 minH = lbl_3_rodata_B94;
+    f32 hmax = lbl_3_rodata_B98;
+    int best = 0;
+    int found = 0;
+    int near = 0;
+    int prevT = 9999;
+    int res = 0;
+    int step = 5;
+    int margin;
+    int start;
+    int k;
+    int t = 0; // original leaves this uninitialised if the loop never runs
+    int m;
+    int diff;
+    u8 zone;
+    u8 type;
+    u8* p;
+    f32 h;
+    f32 d;
+    f32* tx;
+    f32* tz;
+    if (g_d_GameSettings[0x11] != 0) {
+        step = 3;
+        margin = lbl_3_data_1C3C;
+    } else {
+        type = f[0x1C4];
+        if (type == 0) {
+            step = 2;
+        }
+        if (type == 1) {
+            step = 3;
+        }
+        if (type == 3) {
+            step = *(s32*)(g_Ball + 0x1B4C) % 3 + 6;
+        }
+        if (type == 4) {
+            step = *(s32*)(g_Ball + 0x1B4C) % 4 + 8;
+        }
+        margin = lbl_3_data_1C3C;
+        if (i >= 6) {
+            hmax = *(f32*)(f + 0xF4) - lbl_3_rodata_B24;
+        }
+    }
+    start = f[0x1D2] - *(s16*)(g_Ball + 0x1B66);
+    if (start < 1) {
+        start = 1;
+    }
+    k = start;
+    while (k < 0x168) {
+        p = g_Ball + k * 16;
+        h = *(f32*)(p + 0x358);
+        if (h > hmax) {
+            if (h > lbl_3_rodata_B9C) {
+                k += 10;
+            } else if (h > lbl_3_rodata_BA0) {
+                k += 6;
+            } else {
+                k += 3;
+            }
+            continue;
+        }
+        t = start + FramesToReachInl(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C));
+        if (t < k - margin) {
+            h = *(f32*)(p + 0x358);
+            if (h < *(f32*)(f + 0xF4)) {
+                res = 1;
+                break;
+            }
+            if (found != 0 && minH < h) {
+                k = best;
+                res = 2;
+                break;
+            }
+            minH = h;
+            best = k;
+            found = 1;
+        } else {
+            if (t < k + 0x1E) {
+                if (i >= 2 && i <= 5 && *(f32*)(p + 0x360) > lbl_3_rodata_B64 + *(f32*)(f + 0x70)) {
+                    if (t < k + 10) {
+                        near = 1;
+                    }
+                } else {
+                    near = 1;
+                }
+            }
+            if (found != 0) {
+                k = best;
+                res = 2;
+                break;
+            }
+        }
+        if (t > prevT && found == 0) {
+            // ball is moving away from us: look a bit further down the flight for a better spot
+            if (f[0x1C4] <= 1 && i >= 6 && prevT + 0xF > k) {
+                diff = prevT - k;
+                best = 0;
+                for (m = 5; m < 75; m += 5) {
+                    p = g_Ball + (k + m) * 16;
+                    if (start + FramesToReachInl(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) < k + m) {
+                        best = m;
+                        break;
+                    }
+                }
+                best += 10;
+                for (m = 5; m < 30; m += 5) {
+                    p = g_Ball + (k + m) * 16;
+                    t = start + FramesToReachInl(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) - (k + m);
+                    if (diff <= t) {
+                        break;
+                    }
+                    best = m;
+                    diff = t;
+                }
+                k += best;
+            }
+            res = 3;
+            break;
+        }
+        prevT = t;
+        k += step;
+    }
+    if (k >= 0x168) {
+        k = 0x167;
+    }
+    *(s16*)(f + 0x186) = k;
+    if (res == 2 && *(f32*)(g_Ball + k * 16 + 0x358) < lbl_3_rodata_B68) {
+        res = 1;
+    }
+    if (res == 3 && near == 0) {
+        res = 4;
+    }
+    f[0x1DD] = res;
+    f[0x1DA] = 0;
+    if (res != 1 && res != 2) {
+        f[0x1DA] = 1;
+    }
+    tx = (f32*)(g_Ball + 0x354);
+    tz = (f32*)(g_Ball + 0x35C);
+    d = (*(f32*)(g_Ball + 0x1A2C) - tx[k * 4]) * (*(f32*)(g_Ball + 0x1A2C) - tx[k * 4]) +
+        (*(f32*)(g_Ball + 0x1A30) - tz[k * 4]) * (*(f32*)(g_Ball + 0x1A30) - tz[k * 4]);
+    SQRT_L(d);
+    if (d < lbl_3_rodata_B8C && res == 1) {
+        f[0x1DB] = 0;
+    } else if (d < lbl_3_rodata_B64 && res == 1 && i >= 6) {
+        f[0x1DB] = 0;
+    } else {
+        f[0x1DB] = 1;
+    }
+    if (i <= 5 && (f[0x1DD] == 1 || f[0x1DD] == 2)) {
+        zone = FieldZoneInl(tx[k * 4], tz[k * 4]);
+        if (f[0x1DD] == 2) {
+            if (zone >= 2) {
+                f[0x1DD] = 4;
+            }
+        } else if (zone >= 4) {
+            f[0x1DD] = 4;
+        }
+    }
+    if (g_Ball[0x1BC7] != 0 && *(f32*)(g_Ball + 0x19D4) >= lbl_3_rodata_B70 && f[0x1DB] != 0) {
+        *(s16*)(f + 0x186) = *(s16*)(g_Ball + 0x1B60) - 3;
+        f[0x1DD] = 3;
+        f[0x1DA] = 1;
+        f[0x1DB] = 0;
+    }
+    if (g_d_GameSettings[0x11] == 0) {
+        if (f[0x1DB] == 0) {
+            if (t + 0xF < *(s16*)(f + 0x186)) {
+                *(s16*)(g_FieldingLogic + 0xF2) |= 1 << i;
+            }
+        } else if (i <= 5 && res == 1) {
+            k = *(s16*)(f + 0x186);
+            if (fn_3_9FCF8(fn_3_9FB8C(tx[k * 4], tz[k * 4]), *(s16*)(f + 0x180)) < 0x80) {
+                k = *(s16*)(f + 0x186);
+                if (*(s16*)(g_RunningLogic + 0xE) - 0x14 >
+                    *(s16*)(f + 0x186) + fn_3_A6810(tx[k * 4], tz[k * 4], *(f32*)(lbl_3_data_4444 + 8), *(f32*)(lbl_3_data_4444 + 0xC)) + 0x14) {
+                    *(s16*)(g_FieldingLogic + 0xF2) |= 1 << i;
+                }
+            }
+        }
+    }
+}
+#endif
 
 // .text:0x00050898 size:0x388 mapped:0x8068F92C
 // NONMATCHING 99%: r28/r31 (trajectory x base / frame index) swapped
