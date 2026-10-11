@@ -1686,6 +1686,7 @@ static inline s32 rnd_range(s32* r) {
     return lo + rand() % (r[1] - lo);
 }
 
+#pragma dont_inline off
 // NONMATCHING 99%: only the last rnd_range block schedules the 57.29578f/100000 constant loads in the other order
 // .text:0x00150120 size:0x3CC mapped:0x8078F1B4
 #if NONMATCHING
@@ -1726,6 +1727,7 @@ void fn_3_150120(u8* o, u8* p) {
     }
 }
 #endif
+#pragma dont_inline on
 
 // NONMATCHING 92%: respawn block (inlined twice) gets f29/f31 swapped for x/z, and the half-life divide is scheduled later in the fade branch
 // .text:0x001504EC size:0x454 mapped:0x8078F580
@@ -1793,10 +1795,34 @@ void fn_3_1504EC(u8* o, u8* p) {
 }
 #endif
 
+// NONMATCHING 98% (measured with 150120 unwrapped and inlined): o/p saved regs r28/r29 swapped, plus 150120's constant-load order
 // .text:0x00150940 size:0x444 mapped:0x8078F9D4
-void fn_3_150940(void) {
-    return;
+#if NONMATCHING
+u32 fn_3_150940(u8* o) {
+    u8* p;
+    if (lbl_80366158[0x28] != 0) {
+        return 0;
+    }
+    if ((*(u8**)(o + 0x18))[0x6C] == 0) {
+        return 0;
+    }
+    fn_80033620();
+    p = *(u8**)(o + 0xC);
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 6, 0);
+    do {
+        if (*(s16*)(p + 0x4A) != 0) {
+            if (p[0x4C] == 1) {
+                fn_3_1504EC(o, p);
+            } else if (p[0x4C] == 2) {
+                fn_3_150120(o, p);
+            }
+        }
+        p = *(u8**)p;
+    } while (p != NULL);
+    return 0;
 }
+#endif
 
 // .text:0x00150D84 size:0x2E4 mapped:0x8078FE18
 void fn_3_150D84(u8* a, u8* o) {
