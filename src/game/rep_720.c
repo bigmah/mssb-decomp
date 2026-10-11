@@ -520,6 +520,8 @@ void fn_3_1C684(void) {
 }
 
 // .text:0x0001C1B0 size:0x4D4 mapped:0x8065B244
+// NONMATCHING 99.9%: f1/f2 swapped in the lbl_3_data_12CC interpolation
+#if NONMATCHING
 void fn_3_1C1B0(void) {
     int i;
     f32 f0;
@@ -594,6 +596,7 @@ void fn_3_1C1B0(void) {
         fn_3_1AEB8();
     }   
 }
+#endif
 
 // .text:0x0001C130 size:0x80 mapped:0x8065B1C4
 void fn_3_1C130(void) {
