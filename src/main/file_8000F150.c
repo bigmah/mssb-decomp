@@ -1,9 +1,35 @@
 #include "main/file_8000F150.h"
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/gx.h"
 
 extern u16 lbl_80366218[];
-extern void* lbl_803CBBE8;
-extern u8 lbl_800E9920[];
+extern TexArchive* lbl_803CBBE8;
+extern TexArchive lbl_800E9920;
+extern GXColor lbl_803CB784;
+extern u32 lbl_803CB788;
+extern u32 lbl_803CB780;
+extern void GXSetTexCoordScaleManually(GXTexCoordID coord, GXBool enable, u16 ss, u16 ts);
+
+typedef struct TextDisplayList {
+    /*0x0*/ u32 size;
+    /*0x4*/ u32 width;  // in 9-pixel cells
+    /*0x8*/ u32 height; // in 18-pixel cells
+} TextDisplayList;
+
+// This file's .data (0x800E8F60-0x800EE6A0). The original code reaches all of it
+// from one base, so it is declared as one block here.
+typedef struct TextStatics {
+    /*0x0000*/ u8 glyphWidths[101][4];      // [glyph][fontSize]
+    /*0x0194*/ u8 glyphWidthsExt[0x1FB][4]; // [glyph][fontSize]
+    /*0x0980*/ u32 colors[10];
+    /*0x09A8*/ u8 _09A8[0x18];              // lbl_800E9908
+    /*0x09C0*/ u8 texArchive[0x3060];       // lbl_800E9920
+    /*0x3A20*/ s16 positions[0x440 / 2];
+    /*0x3E60*/ u16 texCoords[0x1820 / 2];
+    /*0x5680*/ void* displayLists[12];
+    /*0x56B0*/ TextDisplayList dlInfo[12];
+} TextStatics;
+extern TextStatics lbl_800E8F60;
 extern u32 lbl_803CBC18;
 extern ActorMgr lbl_8036E548;
 extern void fn_8001BA44(s32 slot, s16 charId, u8 a, u8 b, s32 c, u8 d, u8 e);
@@ -22,10 +48,47 @@ extern u8 lbl_803CBBC0;
 extern u8 lbl_803CB760[5];
 extern void fn_800A7D4C(s32, void*);
 
+// NONMATCHING 89%: the original keeps this file's .data base (lbl_800E8F60) in r31; that needs the data defined in this TU
 // .text:0x8000F150 size:0x298
-void fn_8000F150(void* arg) {
-    return;
+#if NONMATCHING
+void fn_8000F150(TextWindow* window) {
+    Mtx44 proj;
+    Mtx mv;
+    TextDisplayList* dl;
+
+    GXSetCopyClear(lbl_803CB784, lbl_803CB788);
+    C_MTXOrtho(proj, 0.0f, 448.0f, 0.0f, 640.0f, 0.0f, 2.0f);
+    dl = &lbl_800E8F60.dlInfo[window->size];
+    PSMTXTrans(mv, (640 - dl->width * 9) >> 1, (448 - dl->height * 18) >> 1, 0.0f);
+    GXSetProjection(proj, GX_ORTHOGRAPHIC);
+    GXLoadPosMtxImm(mv, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
+    GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
+    GXSetVtxDesc(GX_VA_TEX0, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, 10);
+    GXSetTexCoordScaleManually(GX_TEXCOORD0, GX_TRUE, 0x400, 0x400);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX3X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+    SetDisplayStateTexture(TEX_ARCHIVE_OBJ(lbl_803CBBE8, 0), 0, 0);
+    GXSetArray(GX_VA_POS, lbl_800E8F60.positions, 6);
+    GXSetArray(GX_VA_CLR0, &lbl_803CB780, 4);
+    GXSetArray(GX_VA_TEX0, lbl_800E8F60.texCoords, 4);
+    GXCallDisplayList(lbl_800E8F60.displayLists[window->size], lbl_800E8F60.dlInfo[window->size].size);
+    GXSetTexCoordScaleManually(GX_TEXCOORD0, GX_FALSE, 0x400, 0x400);
 }
+#endif
 
 // .text:0x8000F3E8 size:0xA4
 void fn_8000F3E8(s32 arg) {
@@ -52,8 +115,8 @@ void fn_8000F3E8(s32 arg) {
 
 // .text:0x8000F48C size:0x2C
 void somethingSetTexturePointer(void) {
-    lbl_803CBBE8 = lbl_800E9920;
-    convertTextureHeader(lbl_800E9920);
+    lbl_803CBBE8 = &lbl_800E9920;
+    convertTextureHeader(&lbl_800E9920);
 }
 
 // .text:0x8000F4B8 size:0x7C

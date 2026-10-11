@@ -182,7 +182,12 @@ typedef struct ActorMgr {
     /*0x2C84*/ u8 _2C84[0x4D0];
 } ActorMgr; // size: 0x3154
 
-void fn_8000F150(void* arg);
+typedef struct TextWindow {
+    /*0x0*/ u8 _00[0x8];
+    /*0x8*/ s32 size;
+} TextWindow;
+
+void fn_8000F150(TextWindow* window);
 void fn_8000F3E8(s32 arg);
 void somethingSetTexturePointer(void);
 void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
