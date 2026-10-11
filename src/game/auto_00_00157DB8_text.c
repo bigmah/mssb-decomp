@@ -828,3 +828,73 @@ void fn_3_15A9F4(void) {
     }
     fn_3_1589C4();
 }
+
+// .text:0x001595F4 size:0x3C4
+void fn_3_1595F4(void) {
+    PracticeTask* o = lbl_803CC1B8[0];
+    s32 i;
+
+    if (g_GameLogic.secondaryGameMode == 0xA &&
+        (g_Practice.practiceType_1 == 1 || g_Practice.practiceType_1 == 2 || g_Practice.practiceType_1 == 3 ||
+         g_Practice.practiceType_1 == 4 || g_Practice.practiceType_1 == 5 || g_Practice.practiceType_1 == 6)) {
+        if (o->timer == 0) {
+            o->timer = 1;
+        } else if (o->timer == 1) {
+            if ((s32)(lbl_80371C30[o->baseIdx].obj->_5C >> 16) >= 0xF) {
+                o->timer = 2;
+            }
+        } else if (o->timer == 2) {
+            o->_1A += 0x20;
+            if (o->_1A > 0xFF) {
+                o->_1A = 0xFF;
+            }
+            for (i = 0; i < 4; i++) {
+                if (g_Practice.subMenuCursor == i) {
+                    if (g_Practice.practiceState == 3 || g_Practice.practiceState == 4) {
+                        lbl_80371C30[o->baseIdx + 2 + i].obj->_68 = 1;
+                        lbl_80371C30[o->baseIdx + 6 + i].obj->_68 = 1;
+                    } else {
+                        LayoutObj* obj = lbl_80371C30[o->baseIdx + 2 + i].obj;
+                        if ((s32)(obj->_5C >> 16) < 9) {
+                            obj->_68 = 1;
+                        } else {
+                            obj->_68 = 0;
+                        }
+                        lbl_80371C30[o->baseIdx + 6 + i].obj->_5C = 0x10000;
+                        lbl_80371C30[o->baseIdx + 6 + i].obj->_68 = 0;
+                    }
+                } else {
+                    lbl_80371C30[o->baseIdx + 2 + i].obj->_5C = 0;
+                    lbl_80371C30[o->baseIdx + 2 + i].obj->_68 = 0;
+                    lbl_80371C30[o->baseIdx + 6 + i].obj->_5C = 0;
+                    lbl_80371C30[o->baseIdx + 6 + i].obj->_68 = 0;
+                }
+            }
+            if (g_Practice.practiceType_1 != 6 && g_Practice.practiceState == 6) {
+                o->timer = 3;
+            }
+        } else if (o->timer == 3) {
+            if (o->_1A >= 0x20) {
+                o->_1A -= 0x20;
+            } else {
+                o->_1A = 0;
+            }
+            lbl_80371C30[o->baseIdx].obj->_68 = 4;
+            lbl_80371C30[o->baseIdx + 1].obj->_68 = 4;
+        }
+        for (i = 0; i < 4; i++) {
+            LayoutObj* obj = lbl_80371C30[o->baseIdx + 0xE + i].obj;
+            obj->color = o->_1A | (obj->color & ~0xFF);
+        }
+        return;
+    }
+    lbl_3_common_bss_32724._C1 = 0;
+    lbl_3_common_bss_32724._C2 = 0;
+    for (i = 0; i < 4; i++) {
+        if (o->text[i] != 0xFFFF) {
+            fn_8000FEE8(o->text[i]);
+        }
+    }
+    fn_8000F8F4((LayoutGroup*)o);
+    fn_800B0A14_removeQueue(fn_80034CEC(o));
+}
