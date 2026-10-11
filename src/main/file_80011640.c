@@ -662,8 +662,31 @@ s32 fn_8001B728(s32 index, s32 joint, Vec* out) {
 }
 
 // .text:0x8001B80C size:0x10C
-void getAnimRelatedCoordinates(void) {
-    return;
+BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out) {
+    CharActor* actor = lbl_8036E548.active[index];
+    s32 j;
+    CharSlot* slot;
+    Vec pos;
+
+    if (actor == NULL) {
+        return FALSE;
+    }
+    j = getJoint(actor, joint);
+    if (j == 0xFFFF) {
+        out->x = 0.0f;
+        out->y = 0.0f;
+        out->z = 0.0f;
+        return FALSE;
+    }
+    slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+    fn_800B2C44(slot->model, j, &pos);
+    out->x = pos.x;
+    out->y = pos.y;
+    out->z = pos.z;
+    out->x += actor->pos.x;
+    out->y += actor->pos.y;
+    out->z += actor->pos.z;
+    return TRUE;
 }
 
 // .text:0x8001B918 size:0x78
