@@ -5,6 +5,7 @@
 #include "Dolphin/card.h"
 #include "Dolphin/dvd.h"
 #include "Dolphin/ai.h"
+#include "Dolphin/pad.h"
 
 extern OSThread* GXSetCurrentGXThread(void);
 extern s32 OSSignalSemaphore(OSSemaphore* sem);
@@ -697,6 +698,10 @@ void fn_800A94A8(s32 result, DVDCommandBlock* block) {
     }
 }
 
+extern void SISetSamplingRate(u32 msec);
+extern PadConfig lbl_80110080;
+extern PadState lbl_803C77B8[PAD_MAX_CONTROLLERS];
+
 // .text:0x800A94C4 size:0x5C
 void fn_800A94C4(void) {
     return;
@@ -707,28 +712,24 @@ void fn_800A9520(void) {
     return;
 }
 
-extern u8 lbl_80110080[];
-
-extern u8 lbl_803C77B8[];
-
 // fn_800A97EC, size:0x50
-void fn_800A97EC(s32 index, u32 enable, u8 type) {
-    u8* entry = lbl_803C77B8 + index * 0x20;
-    if (!(lbl_80110080[6] & (1 << index))) {
-        entry[0xA] = enable;
-        entry[0xB] = 0;
-        if (enable != 0) {
-            entry[0xB] = type;
+void fn_800A97EC(s32 index, u32 duration, u8 mode) {
+    PadState* pad = &lbl_803C77B8[index];
+    if (!(lbl_80110080.rumbleLockMask & (1 << index))) {
+        pad->rumbleTimer = duration;
+        pad->rumbleMode = 0;
+        if (duration != 0) {
+            pad->rumbleMode = mode;
         }
-        entry[9] = 1;
+        pad->rumbleCmd = 1;
     }
 }
 
 // fn_800A97D0, size:0x1C
-void fn_800A97D0(u8 value, s32 index) {
-    lbl_80110080[7] = value;
-    lbl_80110080[8] = -index;
-    lbl_80110080[9] = index;
+void fn_800A97D0(u8 shift, s32 threshold) {
+    lbl_80110080.stickShift = shift;
+    lbl_80110080.stickNeg = -threshold;
+    lbl_80110080.stickPos = threshold;
 }
 
 // .text:0x800A983C size:0x28
