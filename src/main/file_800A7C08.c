@@ -499,9 +499,66 @@ void fn_800A9168(u32 count) {
 }
 
 // .text:0x800A91B0 size:0x1FC
+// NONMATCHING 91%: the two STREAM_MODE_ONCE branches are laid out in the opposite order
+#if NONMATCHING
 void fn_800A91B0(s32 result, DVDCommandBlock* block) {
-    return;
+    StreamTrack* track;
+
+    lbl_803CC13C = result;
+    if (lbl_803CC12C != 0) {
+        track = lbl_803CC154;
+        lbl_803CC12C = 0;
+        STREAM_NOTIFY(track, STREAM_EVENT_END);
+        lbl_803CC148 = STREAM_STATE_BUSY;
+        switch (lbl_803CC140) {
+        case STREAM_MODE_LOOP:
+            if (lbl_803CC154 != NULL) {
+                if (lbl_803CC154->next != NULL) {
+                    lbl_803CC154 = lbl_803CC154->next;
+                    AISetStreamVolLeft(0);
+                    AISetStreamVolRight(0);
+                    AISetStreamPlayState(0);
+                    DVDPrepareStreamAsync(&lbl_803CC154->fileInfo, 0, 0, fn_800A9424);
+                } else {
+                    lbl_803CC154 = lbl_803CC150;
+                    AISetStreamVolLeft(0);
+                    AISetStreamVolRight(0);
+                    AISetStreamPlayState(0);
+                    DVDPrepareStreamAsync(&lbl_803CC154->fileInfo, 0, 0, fn_800A9424);
+                }
+            }
+            break;
+        case STREAM_MODE_ONCE:
+            if (lbl_803CC154 != NULL) {
+                if (lbl_803CC154->next != NULL) {
+                    lbl_803CC154 = lbl_803CC154->next;
+                    AISetStreamVolLeft(0);
+                    AISetStreamVolRight(0);
+                    AISetStreamPlayState(0);
+                    DVDPrepareStreamAsync(&lbl_803CC154->fileInfo, 0, 0, fn_800A9424);
+                } else {
+                    lbl_803CC154 = lbl_803CC150;
+                    AISetStreamVolLeft(0);
+                    AISetStreamVolRight(0);
+                    AISetStreamPlayState(0);
+                    lbl_803CC148 = STREAM_STATE_STOP;
+                }
+            }
+            break;
+        case STREAM_MODE_REPEAT:
+            if (lbl_803CC154 != NULL) {
+                AISetStreamVolLeft(0);
+                AISetStreamVolRight(0);
+                AISetStreamPlayState(0);
+                DVDPrepareStreamAsync(&lbl_803CC154->fileInfo, 0, 0, fn_800A9424);
+            }
+            break;
+        }
+    } else {
+        DVDGetStreamErrorStatusAsync(&lbl_802EF230, fn_800A94A8);
+    }
 }
+#endif
 
 // .text:0x800A93AC size:0x78
 void fn_800A93AC(s32 result, DVDFileInfo* fileInfo) {
