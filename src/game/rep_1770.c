@@ -4,6 +4,7 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_3_data_D258[];
+extern s16 lbl_3_data_5F3C[4];
 extern u8 lbl_3_data_C22C[];
 extern u8 lbl_3_data_D378[];
 extern u8 lbl_3_data_D4F8[];
@@ -94,7 +95,80 @@ void fn_3_9976C(void) {
 
 // .text:0x00099818 size:0x3C4 mapped:0x806D88AC
 void fn_3_99818(void) {
+    HudTask* task = HUD_TASK;
+    s32 level = 0;
+    LayoutObj* o;
+    f32 t;
+    if (lbl_3_common_bss_32724.hudOff != 0) {
+        goto remove;
+    }
+    if (g_Minigame.GameMode_MiniGame == 2) {
+        if (g_GameLogic.gameStatus == 0xF) {
+            goto remove;
+        }
+        if (g_Minigame.pauseInd != 0 && (lbl_3_common_bss_34C90.state == 7 || lbl_3_common_bss_34C90.state == 0xD)) {
+            goto remove;
+        }
+    } else if (lbl_3_common_bss_32724._A7 == 0) {
+        goto remove;
+    }
+    if (g_Pitcher.ChargePitchType != 0) {
+        t = (f32)g_Pitcher.unknownFrameCounter / (f32)(g_Pitcher.pitchWindUpCountDown - lbl_3_data_5F3C[2]);
+        if (t >= 1.0f) {
+            t = 1.0f;
+        }
+        HUD_OBJ(task, 3)->_68 = 0;
+        level = 106.0f * t;
+        if (g_Pitcher.ChargePitchType == 3) {
+            HUD_OBJ(task, 3)->_5C = 0x6A << 16;
+            o = HUD_OBJ(task, 2);
+            if ((s32)(o->_5C >> 16) < 0x6A) {
+                o->_5C = 0x6A << 16;
+            } else {
+                o->_68 = 1;
+            }
+            level = 0x6A;
+        } else if (g_Pitcher.overChargeInd != 0) {
+            level = 106.0f * g_Pitcher.pitchChargeUp;
+            HUD_OBJ(task, 3)->_5C = level << 16;
+        } else {
+            HUD_OBJ(task, 3)->_5C = level << 16;
+        }
+    } else {
+        HUD_OBJ(task, 3)->_5C = 0;
+        HUD_OBJ(task, 3)->_68 = 0;
+        HUD_OBJ(task, 2)->_5C = 0;
+    }
+    if (g_Pitcher.ChargePitchType != 0) {
+        HUD_OBJ(task, 5)->_68 = 0;
+        if (g_Pitcher.ChargePitchType == 3) {
+            HUD_OBJ(task, 5)->_68 = 1;
+        } else {
+            HUD_OBJ(task, 5)->_5C = (level + 10) << 16;
+        }
+    } else {
+        if ((HUD_OBJ(task, 5)->_5C >> 16) < 10) {
+            HUD_OBJ(task, 5)->_68 = 1;
+        } else {
+            HUD_OBJ(task, 5)->_5C = 10 << 16;
+            HUD_OBJ(task, 5)->_68 = 0;
+        }
+    }
+    if (g_Pitcher.ChargePitchType >= 2) {
+        if (task->state == 0) {
+            HUD_OBJ(task, 6)->flags |= 2;
+            HUD_OBJ(task, 6)->_5C = level << 16;
+            HUD_OBJ(task, 7)->_5C = 0;
+            HUD_OBJ(task, 7)->_68 = 1;
+            task->state = 1;
+        }
+    } else {
+        HUD_OBJ(task, 6)->flags &= ~2;
+        task->state = 0;
+    }
     return;
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
 
 // .text:0x00099BDC size:0xAC mapped:0x806D8C70
