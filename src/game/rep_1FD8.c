@@ -53,7 +53,7 @@ extern void fn_800528B4(void);
 extern int rand(void);
 extern void CTRLBuildMatrix(void*);
 extern void CTRLSetTranslation(void*, f32, f32, f32);
-extern u8* lbl_3_bss_9D98;
+extern TexImage* lbl_3_bss_9D98; // 3 textures of the fn_3_C1C18 effect
 extern u8* lbl_3_common_bss_350E4[];
 extern void fn_3_B8184(void);
 extern void fn_3_B828C(void*);
@@ -124,7 +124,7 @@ extern void fn_800528C0(f32, f32, f32, s16*, s16*);
 typedef struct C2244Task {
     /*0x00*/ u8 hdr[0x14];
     /*0x14*/ f32 pos[3];
-    /*0x20*/ u16 f20[2];
+    /*0x20*/ s16 f20[2]; // spin angle of the two extra quads
     /*0x24*/ u8 f24;
     /*0x25*/ u8 f25[2];
     /*0x27*/ u8 f27[2];
@@ -132,6 +132,7 @@ typedef struct C2244Task {
     /*0x2A*/ u8 f2A;
 } C2244Task;
 extern C2244Task* lbl_3_bss_9D90;
+extern f32 lbl_3_data_1787C; // alpha scale of the first quad
 extern void fn_800A7D4C(int, Rep1FD8Ent*);
 extern u8 lbl_800E8754[];
 extern Vec lbl_80367318;
@@ -156,7 +157,7 @@ void fn_3_C1964(void) {
 void fn_3_C1974(u8* a) {
     u8* p = fn_800B0A5C_insertQueue(fn_3_C2644, 4);
     *(s16*)(p + 0x10) = 0;
-    lbl_3_bss_9D98 = a + 0x3C4;
+    lbl_3_bss_9D98 = (TexImage*)(a + 0x3C4);
     lbl_3_bss_9D9C = 0;
 }
 
@@ -200,9 +201,104 @@ void fn_3_C19C8(void) {
 #endif
 
 // .text:0x000C1C18 size:0x62C mapped:0x80700CAC
-void fn_3_C1C18(void) {
-    return;
+typedef struct { Mtx m; } C1C18Mtx;
+extern const C1C18Mtx lbl_3_rodata_208C; // identity
+extern const f32 lbl_3_rodata_20C8; // 512.0f
+extern const f32 lbl_3_rodata_20CC; // 100.0f
+extern const f32 lbl_3_rodata_20D0; // 1280.0f
+extern const f32 lbl_3_rodata_20D8; // 256.0f
+extern const f32 lbl_3_rodata_20DC; // 0.25f
+extern const f32 lbl_3_rodata_20E0; // 0.75f
+extern const f32 lbl_3_rodata_20E4; // 2pi / 65536
+// Draw callback of the fn_3_C2244 task: a camera-facing quad at the task's
+// position, then two spinning quads that walk along their diagonal.
+// NONMATCHING ~93%: 398 vs 395 insns, constant-load scheduling and f-reg allocation only
+#if NONMATCHING
+void fn_3_C1C18(Rep1FD8Ent* ent) {
+    Mtx m;
+    Vec v;
+    C2244Task* t;
+    s32 i;
+    u32 color;
+    f32 scale;
+    f32 w;
+    f32 h;
+    f32 c;
+    f32 sn;
+
+    *(C1C18Mtx*)m = lbl_3_rodata_208C;
+    t = ent->w38;
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U16, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+    GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+    GXLoadPosMtxImm(m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    for (i = 0; i <= 2; i++) {
+        SetDisplayStateTexture(&lbl_3_bss_9D98[i], i, i);
+    }
+    color = (s32)(t->f2A * lbl_3_data_1787C) | 0xFFFFFF00;
+    PSMTXMultVec(ent->m, (Vec*)t->pos, &v);
+    scale = (lbl_3_rodata_20CC + (s8)t->f24) / lbl_3_rodata_20CC;
+    w = (lbl_3_rodata_20C8 * scale * -v.z) / lbl_3_rodata_20D0;
+    h = (lbl_3_rodata_20D8 * scale * -v.z) / lbl_3_rodata_20D0;
+    w *= lbl_3_rodata_20D4;
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(v.x - w, v.y - lbl_3_rodata_20DC * h, v.z);
+    GXColor1u32(color);
+    GXTexCoord2s16(0, 0);
+    GXPosition3f32(v.x - w, v.y + lbl_3_rodata_20E0 * h, v.z);
+    GXColor1u32(color);
+    GXTexCoord2s16(0, 1);
+    GXPosition3f32(v.x + w, v.y + lbl_3_rodata_20E0 * h, v.z);
+    GXColor1u32(color);
+    GXTexCoord2s16(1, 1);
+    GXPosition3f32(v.x + w, v.y - lbl_3_rodata_20DC * h, v.z);
+    GXColor1u32(color);
+    GXTexCoord2s16(1, 0);
+    GXEnd();
+
+    h = (lbl_3_rodata_20D8 * -v.z) / lbl_3_rodata_20D0;
+    color = t->f2A | 0xFFFFFF00;
+    for (i = t->f29; i < 2; i++) {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, t->f27[i], GX_COLOR0A0);
+        SetDisplayStateTexture(&lbl_3_bss_9D98[t->f27[i]], 0, 0);
+        c = (lbl_3_rodata_20CC + (s8)t->f25[i]) / lbl_3_rodata_20CC * h * cos(lbl_3_rodata_20E4 * t->f20[i]);
+        sn = (lbl_3_rodata_20CC + (s8)t->f25[i]) / lbl_3_rodata_20CC * h * sin(lbl_3_rodata_20E4 * t->f20[i]);
+        GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+        GXPosition3f32(v.x, v.y, v.z);
+        GXColor1u32(color);
+        GXTexCoord2s16(0, 0);
+        GXPosition3f32(v.x - sn, v.y + c, v.z);
+        GXColor1u32(color);
+        GXTexCoord2s16(0, 1);
+        GXPosition3f32(v.x + c - sn, sn + (v.y + c), v.z);
+        GXColor1u32(color);
+        GXTexCoord2s16(1, 1);
+        GXPosition3f32(v.x + c, v.y + sn, v.z);
+        GXColor1u32(color);
+        GXTexCoord2s16(1, 0);
+        GXEnd();
+        v.x += (c - sn) * lbl_3_rodata_20D4;
+        v.y += (c + sn) * lbl_3_rodata_20D4;
+    }
+    t->f29 -= (t->f29 != 0);
+    i = t->f2A - (t->f29 == 0) * 42;
+    t->f2A = i * (i > 0);
 }
+#endif
 
 // .text:0x000C2244 size:0xCC mapped:0x807012D8
 void fn_3_C2244(void) {
