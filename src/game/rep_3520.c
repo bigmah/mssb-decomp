@@ -45,7 +45,7 @@ extern f32 lbl_3_rodata_365C;
 extern void fn_800528B4(void);
 extern int rand();
 extern void fn_3_90064(s32);
-extern void fn_3_150010(s32, s32, s32, void*);
+extern void fn_3_150010(s8 a);
 extern void fn_3_106EB0(void);
 extern f32 lbl_3_data_21A64;
 extern s16 lbl_3_data_21A90[];
@@ -950,7 +950,7 @@ void fn_3_136CF4(u8* o) {
         *(s16*)(g + 0x1D58) = --t;
         if (t <= 0) {
             if ((s8)g[0x1D6D] != pu) {
-                fn_800115C8();
+                fn_800115C8(g[0x1D74]);
             }
             ((s8*)g)[0x1D74] = -1;
         }
@@ -993,7 +993,7 @@ void fn_3_136EA4(void) {
             *(s16*)(g + 0x1D58) = --t;
             if (t <= 0) {
                 if ((s8)g[0x1D6D] != pu) {
-                    fn_800115C8();
+                    fn_800115C8(g[0x1D74]);
                 }
                 ((s8*)g)[0x1D74] = -1;
             }
@@ -1515,7 +1515,7 @@ void fn_3_13A0AC(void) {
 }
 
 // .text:0x0013A724 size:0x178 mapped:0x807797B8
-void fn_3_13A724(void) {
+static inline void aim_13A724(void) {
     Vec v;
     f32 r;
     g_Minigame._6F4 = g_Minigame._6E8;
@@ -1526,84 +1526,66 @@ void fn_3_13A724(void) {
     v.x = lbl_3_data_219AC[0] - g_Minigame._6E8;
     v.y = lbl_3_data_219AC[1] - g_Minigame._6EC;
     v.z = lbl_3_data_219AC[2] - g_Minigame._6F0;
+    // result unused: the original computes the distance and drops it
 #pragma dont_inline off
-    dolsqrtf2(v.x*v.x + v.z*v.z);
+    dolsqrtf2(v.x * v.x + v.z * v.z);
 #pragma dont_inline on
-        getComponentsFromSAng(random_fn_3_9EE24(0x1000), &v.x, &v.z);
+    getComponentsFromSAng(random_fn_3_9EE24(0x1000), &v.x, &v.z);
     {
-    f32 nz, nx;
-    nx = v.x * r + g_Minigame._6F4;
-    nz = v.z * r + g_Minigame._6FC;
-    g_Minigame._70C = nx;
-    g_Minigame._714 = nz;
-    g_Minigame._710 = lbl_3_data_21A14[4];
-    g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._6F4 + nx);
-    g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._6FC + nz);
+        f32 nx, nz;
+        nx = v.x * r + g_Minigame._6F4;
+        nz = v.z * r + g_Minigame._6FC;
+        g_Minigame._70C = nx;
+        g_Minigame._714 = nz;
+        g_Minigame._710 = lbl_3_data_21A14[4];
+        g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._6F4 + nx);
+        g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._6FC + nz);
     }
     g_Minigame._704 = g_Minigame._6F8 + RandomF32_Game_Range(lbl_3_data_21A14[2], lbl_3_data_21A14[3]);
     g_Minigame._726 = 0;
 }
 
-// .text:0x0013A89C size:0x1DC mapped:0x80779930
-// 97%: only tail consts differ (orig shares li r5=0/r4=1 between the 726/72A/724 stores and the fn_3_150010 args)
-// dolsqrtf2(..) with unused result under dont_inline off reproduces the dead fcmpo
-#pragma dont_inline off
-static inline void h89c(s32 a, s32 b, s32 c) {
-    g_Minigame._726 = c;
-    g_Minigame._72A = b;
-    g_Minigame._724 = c;
-    g_Minigame._1D52 = lbl_3_data_21A30[2];
-    fn_3_150010(a, b, c, &g_Minigame);
+void fn_3_13A724(void) {
+    aim_13A724();
 }
-#pragma dont_inline on
-void fn_3_13A89C(void) {
-    Vec v;
-    f32 r;
-    s32 zero = 0;
-    s32 one = 1;
+
+// .text:0x0013A89C size:0x1DC mapped:0x80779930
+static inline void launch_13A89C(void) {
     if (g_Minigame.turnOverStatus == 0) {
         if ((g_Minigame._1D52 -= 1) <= 0) {
             g_Minigame._6E8 = lbl_3_data_219AC[0];
             g_Minigame._6EC = lbl_3_data_219AC[1];
             g_Minigame._6F0 = lbl_3_data_219AC[2];
             g_Minigame._72B = 0;
-            g_Minigame._6F4 = g_Minigame._6E8;
-            g_Minigame._6F8 = g_Minigame._6EC;
-            g_Minigame._6FC = g_Minigame._6F0;
-            g_Minigame._728 = RandomInt_Game_Range(lbl_3_data_21A30[3], lbl_3_data_21A30[4]);
-            r = RandomF32_Game_Range(lbl_3_data_21A14[0], lbl_3_data_21A14[1]);
-            v.x = lbl_3_data_219AC[0] - g_Minigame._6E8;
-            v.y = lbl_3_data_219AC[1] - g_Minigame._6EC;
-            v.z = lbl_3_data_219AC[2] - g_Minigame._6F0;
-#pragma dont_inline off
-            dolsqrtf2(v.x*v.x + v.z*v.z);
-#pragma dont_inline on
-            getComponentsFromSAng(random_fn_3_9EE24(0x1000), &v.x, &v.z);
-            {
-                f32 nz, nx;
-                nx = v.x * r + g_Minigame._6F4;
-                nz = v.z * r + g_Minigame._6FC;
-                g_Minigame._70C = nx;
-                g_Minigame._714 = nz;
-                g_Minigame._710 = lbl_3_data_21A14[4];
-                g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._6F4 + nx);
-                g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._6FC + nz);
-            }
-            g_Minigame._704 = g_Minigame._6F8 + RandomF32_Game_Range(lbl_3_data_21A14[2], lbl_3_data_21A14[3]);
-            g_Minigame._726 = zero;
-            g_Minigame._72A = one;
-            g_Minigame._724 = zero;
+            aim_13A724();
+            g_Minigame._72A = 1;
+            g_Minigame._724 = 0;
             g_Minigame._1D52 = lbl_3_data_21A30[2];
-            fn_3_150010(4, one, zero, &g_Minigame);
+            fn_3_150010(4);
             fn_3_106EB0();
         }
     }
 }
 
-// .text:0x0013AA78 size:0x23C mapped:0x80779B0C
-void fn_3_13AA78(void) {
-    return;
+void fn_3_13A89C(void) {
+    launch_13A89C();
 }
+
+// .text:0x0013AA78 size:0x23C mapped:0x80779B0C
+#pragma dont_inline off
+void fn_3_13AA78(void) {
+    if (g_Minigame._72A != 0) {
+        fn_3_13A0AC();
+    } else {
+        launch_13A89C();
+    }
+    if ((s8)g_Minigame._1D6D >= 0 && (--g_Minigame._1D56 < 0 || g_Minigame.turnOverStatus != 0)) {
+        fn_3_14E988((u8)g_Minigame._1D6D);
+        fn_800115C8((u8)g_Minigame._1D6D);
+        g_Minigame._1D6D = -1;
+    }
+}
+#pragma dont_inline on
 
 // .text:0x0013ACB4 size:0x10C mapped:0x80779D48
 void fn_3_13ACB4(f32* p) {
