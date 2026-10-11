@@ -30,6 +30,7 @@ void fn_2_6B238(MenuEntry* owner);
 void fn_2_6B744(MenuEntry* owner);
 void fn_2_6DB30(MenuEntry* owner);
 void fn_2_705C0(MenuEntry* owner);
+void fn_2_699D4(s32 index);
 void fn_2_6B4FC(MenuEntry* owner);
 void fn_2_71A38(u8* object);
 void fn_2_6ACF4(void);
