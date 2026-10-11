@@ -10,7 +10,8 @@ typedef struct { f32 v[5]; u8 pad14[0x34 - 0x14]; } SplineCtrl; /* size 0x34 */
 
 /* Replay camera animation file (relocated in place by fn_3_105C84). */
 typedef struct AnimKey { u16 frame; u8 pad2[2]; struct { f32 x, y, z; } pos; f32 a; f32 b; } AnimKey; /* stride varies by track type */
-typedef struct AnimTrack { u8 pad0[4]; u16 count; u8 type; u8 pad7[5]; u8 keys[1]; } AnimTrack; /* keys at 0xC */
+typedef struct AnimTrack { s16 parent; u8 pad2[2]; u16 count; u8 type; u8 flags; s32 target; u8 keys[1]; } AnimTrack; /* keys at 0xC */
+typedef struct AnimKeyF { u16 frame; u8 pad2[2]; f32 f[15]; } AnimKeyF; /* generic view of a key: groups of Vec3 */
 typedef struct ReplayAnim { u8 pad0[4]; u16 numFrames; s16 numTracks; u16* frameTbl; AnimTrack* tracks[1]; } ReplayAnim;
 
 void fn_3_FC448(void);

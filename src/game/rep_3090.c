@@ -6,6 +6,33 @@
 extern u8 lbl_80366158[];
 extern Vec lbl_3_data_21004;
 extern s32 lbl_3_data_20FC4[]; /* AnimKey stride per AnimTrack type */
+extern s32 lbl_3_data_20FD0[]; /* number of Vec3 groups per AnimKey, per AnimTrack type */
+extern f64 atan2(f64, f64);
+extern f64 fabs(f64);
+#ifdef __MWERKS__
+#define FABSF(x) ((f32)__fabs(x))
+#else
+#define FABSF(x) ((f32)fabs(x))
+#endif
+extern const f32 lbl_3_rodata_3164;
+extern const f32 lbl_3_rodata_3168;
+extern const f32 lbl_3_rodata_316C;
+/* Camera evaluation result (0x88 bytes): matrix plus the decomposed camera parameters. */
+typedef struct CamMtx {
+    /* 0x00 */ Mtx44 m;
+    /* 0x40 */ f32 f40;
+    /* 0x44 */ f32 f44;
+    /* 0x48 */ f32 f48;
+    /* 0x4C */ f32 f4C;
+    /* 0x50 */ f32 f50;
+    /* 0x54 */ f32 f54;
+    /* 0x58 */ Vec pos;
+    /* 0x64 */ Vec target;
+    /* 0x70 */ Vec scale;
+    /* 0x7C */ f32 rx;
+    /* 0x80 */ f32 ry;
+    /* 0x84 */ u8 type;
+} CamMtx;
 /* The original pools .data from lbl_3_data_1C0A8; the axis vectors sit at +0x4F44. Pad reproduces that offset. */
 static u8 s_axpad[0x4F44] = {1};
 static Vec s_axa = {0.0f, 1.0f, 0.0f};
@@ -761,9 +788,262 @@ void fn_3_104B20(Vec* dst, Mtx44 src) {
 #endif
 
 // .text:0x00104B3C size:0x990 mapped:0x80743BD0
-void fn_3_104B3C(s32 a, s32 b, s32 c, s32 d, void* m) {
-    return;
+// NONMATCHING 93%: register allocation and stack layout differ.
+// Evaluates track `track` of the replay camera animation at `key` (frame << 16 | frac) into the camera matrix `m`:
+// first its parent chain (up to `depth` levels), then interpolates the surrounding keys and appends
+// translation * rotation * scale. Track type 2 is a look-at camera aimed at the position of track `target`.
+#if NONMATCHING
+void fn_3_104B3C(s32 a, s32 b, s32 c, s32 d, void* mp) {
+    ReplayAnim* anim = (ReplayAnim*)a; /* TODO type: callers pass the animation pointer as s32 */
+    u32 key = b;
+    s16 track = c;
+    u8 depth = d;
+    CamMtx* m = mp;
+    AnimTrack* trk = anim->tracks[track];
+    u8* first = trk->keys;
+    AnimKeyF* k;
+    s32 stride;
+    u16 count;
+    u32 frame;
+    u16 lo;
+    Mtx44 rotY;
+    Mtx44 rotX;
+    Mtx44 tmp;
+    Mtx44 S;
+    Mtx44 R;
+    Mtx44 T;
+    Mtx44 I;
+    AnimKeyF interp;
+    CamMtx sub;
+    Vec rot;    /* rot angles (types 0/1) or position (type 2) */
+    Vec tgt;
+    Vec right;
+    Vec fwd;
+    Vec up;
+    Vec a0;
+    Vec b0;
+
+    if (trk->parent >= 0 && depth != 0) {
+        fn_3_104B3C(a, key, trk->parent, (u8)(depth - 1), m);
+    }
+    count = trk->count;
+    frame = key >> 16;
+    stride = lbl_3_data_20FC4[trk->type];
+    lo = key;
+    k = (AnimKeyF*)(first + (count - 1) * stride);
+    if (count != 1 && frame < k->frame) {
+        AnimKeyF* cur = (AnimKeyF*)first;
+        AnimKeyF* next = (AnimKeyF*)(first + stride);
+        while ((u32)(next->frame << 16) <= key) {
+            cur = next;
+            next = (AnimKeyF*)((u8*)next + stride);
+        }
+        k = cur;
+        if (cur->frame != frame || lo != 0) {
+            f32 t = ((f32)(key - (cur->frame << 16)) / lbl_3_rodata_3164) / (f32)(next->frame - cur->frame);
+            f32 omt = lbl_3_rodata_30FC - t;
+            u32 n;
+            Vec va;
+            Vec vb;
+            Vec vr;
+            for (n = 0; n < (u32)lbl_3_data_20FD0[trk->type]; n++) {
+                memcpy(&va, &next->f[n * 3], 12);
+                memcpy(&vb, &cur->f[n * 3], 12);
+                vr.x = va.x * t + vb.x * omt;
+                vr.y = va.y * t + vb.y * omt;
+                vr.z = va.z * t + vb.z * omt;
+                memcpy(&interp.f[n * 3], &vr, 12);
+            }
+            k = &interp;
+        }
+    }
+
+    PSMTX44Identity(I);
+    switch (trk->type) {
+    case 0:
+        m->type = 0;
+        PSMTX44Identity(T);
+        T[3][0] = k->f[0];
+        T[3][1] = lbl_3_rodata_3110 * k->f[1];
+        T[3][2] = k->f[2];
+        m->pos.x = k->f[0];
+        m->pos.y = lbl_3_rodata_3110 * k->f[1];
+        m->pos.z = k->f[2];
+        m->rx = lbl_3_rodata_3110 * k->f[4] + lbl_3_rodata_314C;
+        m->ry = k->f[3] - lbl_3_rodata_314C;
+        rot.x = lbl_3_rodata_3110 * k->f[4] + lbl_3_rodata_314C;
+        rot.y = k->f[3] - lbl_3_rodata_314C;
+        rot.z = k->f[5];
+        PSMTX44Identity(R);
+        PSMTX44RotRad(rotX, 'X', rot.x);
+        PSMTX44RotRad(rotY, 'Y', rot.y);
+        PSMTX44Concat(R, rotX, R);
+        PSMTX44Concat(R, rotY, R);
+        PSMTX44Identity(S);
+        S[0][0] = k->f[6];
+        S[1][1] = k->f[7];
+        S[2][2] = k->f[8];
+        m->scale.x = k->f[6];
+        m->scale.y = k->f[7];
+        m->scale.z = k->f[8];
+        if (trk->flags & 1) {
+            m->f40 = m->f40 * k->f[9];
+        } else {
+            m->f40 = k->f[9];
+        }
+        m->f44 = k->f[10];
+        if (m->f44 >= lbl_3_rodata_30F8) {
+            while (FABSF(m->f44) > lbl_3_rodata_30FC) {
+                m->f44 -= lbl_3_rodata_30FC;
+            }
+        } else {
+            while (FABSF(m->f44) > lbl_3_rodata_30FC) {
+                m->f44 += lbl_3_rodata_30FC;
+            }
+        }
+        m->f48 = k->f[11];
+        if (m->f48 >= lbl_3_rodata_30F8) {
+            while (FABSF(m->f48) > lbl_3_rodata_30FC) {
+                m->f48 -= lbl_3_rodata_30FC;
+            }
+        } else {
+            while (FABSF(m->f48) > lbl_3_rodata_30FC) {
+                m->f48 += lbl_3_rodata_30FC;
+            }
+        }
+        break;
+    case 1:
+        m->type = 1;
+        PSMTX44Identity(T);
+        T[3][0] = k->f[0];
+        T[3][1] = lbl_3_rodata_3110 * k->f[1];
+        T[3][2] = k->f[2];
+        m->pos.x = k->f[0];
+        m->pos.y = lbl_3_rodata_3110 * k->f[1];
+        m->pos.z = k->f[2];
+        m->rx = lbl_3_rodata_3110 * k->f[4] + lbl_3_rodata_314C;
+        m->ry = k->f[3] - lbl_3_rodata_314C;
+        rot.x = k->f[3] - lbl_3_rodata_314C;
+        rot.y = lbl_3_rodata_3110 * k->f[4] + lbl_3_rodata_314C;
+        rot.z = k->f[5];
+        PSMTX44Identity(R);
+        PSMTX44RotRad(rotX, 'X', rot.x);
+        PSMTX44RotRad(rotY, 'Y', rot.y);
+        PSMTX44Concat(R, rotX, R);
+        PSMTX44Concat(R, rotY, R);
+        PSMTX44Identity(S);
+        S[0][0] = k->f[6];
+        S[1][1] = k->f[7];
+        S[2][2] = k->f[8];
+        m->scale.x = k->f[6];
+        m->scale.y = k->f[7];
+        m->scale.z = k->f[8];
+        m->f4C = k->f[10];
+        m->f50 = k->f[11];
+        m->f54 = k->f[11];
+        break;
+    case 2: {
+        f32 ang;
+        m->type = 2;
+        PSMTX44Identity(T);
+        T[3][0] = k->f[0];
+        T[3][1] = lbl_3_rodata_3110 * k->f[1];
+        T[3][2] = k->f[2];
+        rot.x = T[3][0];
+        rot.y = T[3][1];
+        rot.z = T[3][2];
+        PSMTX44Identity(R);
+        memset(&sub, 0, sizeof(CamMtx));
+        sub.m[3][3] = lbl_3_rodata_30FC;
+        sub.m[2][2] = lbl_3_rodata_30FC;
+        sub.m[1][1] = lbl_3_rodata_30FC;
+        sub.m[0][0] = lbl_3_rodata_30FC;
+        sub.f40 = lbl_3_rodata_30FC;
+        fn_3_104B3C(a, key, (s16)trk->target, 0xFF, &sub);
+        m->target.x = tgt.x = sub.pos.x;
+        m->target.y = tgt.y = sub.pos.y;
+        m->target.z = tgt.z = sub.pos.z;
+        if (lbl_3_common_bss_DE94[0x9B5] == 1) {
+            PSVECSubtract(&rot, &tgt, &rot);
+            fn_3_106270(&tgt);
+            PSVECAdd(&tgt, &rot, &rot);
+            memcpy(&m->pos, &rot, 12);
+        } else {
+            memcpy(&m->pos, &rot, 12);
+        }
+        PSVECSubtract(&m->target, &m->pos, &rot);
+        m->rx = atan2(-rot.x, -rot.z);
+        m->ry = atan2(-rot.z, -rot.y);
+        fwd.x = R[1][0];
+        fwd.y = R[1][1];
+        fwd.z = R[1][2];
+        a0.x = sub.m[3][0];
+        a0.y = sub.m[3][1];
+        a0.z = sub.m[3][2];
+        b0.x = T[3][0];
+        b0.y = T[3][1];
+        b0.z = T[3][2];
+        PSVECSubtract(&a0, &b0, &fwd);
+        PSVECNormalize(&fwd, &fwd);
+        R[1][0] = fwd.x;
+        R[1][1] = fwd.y;
+        R[1][2] = fwd.z;
+        if (lbl_3_rodata_30F8 == fwd.x && lbl_3_rodata_30F8 == fwd.z) {
+            rot.y = lbl_3_rodata_30F8;
+            rot.x = lbl_3_rodata_30F8;
+            rot.z = lbl_3_rodata_30FC;
+        } else {
+            rot.z = lbl_3_rodata_30F8;
+            rot.x = lbl_3_rodata_30F8;
+            rot.y = lbl_3_rodata_3110;
+        }
+        right.x = R[0][0];
+        right.y = R[0][1];
+        right.z = R[0][2];
+        PSVECCrossProduct(&fwd, &rot, &right);
+        PSVECNormalize(&right, &right);
+        PSVECCrossProduct(&right, &fwd, &up);
+        PSVECNormalize(&up, &up);
+        R[0][0] = right.x;
+        R[0][1] = right.y;
+        R[0][2] = right.z;
+        R[1][0] = fwd.x;
+        R[1][1] = fwd.y;
+        R[1][2] = fwd.z;
+        R[2][0] = up.x;
+        R[2][1] = up.y;
+        R[2][2] = up.z;
+        ang = k->f[3];
+        if (ang >= lbl_3_rodata_30F8) {
+            while (FABSF(ang) > lbl_3_rodata_316C) {
+                ang -= lbl_3_rodata_3168;
+            }
+        } else {
+            while (FABSF(ang) > lbl_3_rodata_316C) {
+                ang += lbl_3_rodata_3168;
+            }
+        }
+        PSMTX44RotRad(rotY, 'Y', -ang);
+        PSMTX44Concat(I, rotY, tmp);
+        PSMTX44Concat(R, tmp, R);
+        PSMTX44Identity(S);
+        S[0][0] = k->f[4];
+        S[1][1] = k->f[5];
+        S[2][2] = k->f[6];
+        m->scale.x = k->f[4];
+        m->scale.y = k->f[5];
+        m->scale.z = k->f[6];
+        m->f4C = k->f[8];
+        m->f50 = k->f[9];
+        m->f54 = k->f[9];
+        break;
+    }
+    }
+    PSMTX44Concat(m->m, T, m->m);
+    PSMTX44Concat(m->m, R, m->m);
+    PSMTX44Concat(m->m, S, m->m);
 }
+#endif
 
 // .text:0x001054CC size:0x4 mapped:0x80744560
 void fn_3_1054CC(void) {
