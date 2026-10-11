@@ -25,8 +25,58 @@ extern void fn_800B4CA0(GameActor* actor, f32 time);
 // NONMATCHING 99%: only scratch registers for the two index loads and the bone pointer (r27 vs r24) differ
 #if NONMATCHING
 // .text:0x00168414 size:0x2F0 mapped:0x807A74A8
+// Draws an effect model blended from two shape animations; bones 1-4 face the camera.
 void fn_3_168414(EffectNode* node) {
-    return;
+    ShapeData* shapes[2];
+    ShapeAnimState* states[2];
+    Mtx m;
+    Mtx tmp;
+    ActorObject* obj;
+    MtxPtr view;
+    s32* ofs;
+    s32 i;
+    GameBone* bone;
+
+    shapes[0] = lbl_3_common_bss_35154.anim[node->animIdx].shape;
+    shapes[1] = lbl_3_common_bss_35154.anim[node->animIdx2].shape;
+    states[0] = &lbl_3_common_bss_35154.anim[node->animIdx].state;
+    states[1] = &lbl_3_common_bss_35154.anim[node->animIdx2].state;
+    obj = &lbl_3_common_bss_35154.anim[0].table->objects[node->objIdx];
+    view = ((camera_803c639c_s*)fn_80052734(fn_8005268C()))->view;
+    ofs = &lbl_3_data_28680[node->ofsIdx * 3];
+    PSMTXTrans(m, FIXED(ofs[1]), FIXED(ofs[2]), FIXED(ofs[3]));
+    PSMTXScaleApply(m, m, node->scale, node->scale, node->scale);
+    PSMTXTransApply(m, m, node->pos.x, node->pos.y, node->pos.z);
+    PSMTXConcat(view, m, m);
+    for (i = 0; i < 2; i++) {
+        states[i]->frame = 0.0f;
+        states[i]->keyIdx = 0;
+        states[i]->speed = node->frame;
+        fn_80024DB0(states[i]);
+        // TODO type: ShapeModel is a view of the GameActor that obj->actor points to.
+        fn_80024FA4((ShapeModel**)&obj->actor, shapes[i], states[i], -1);
+    }
+    obj->actor->tickFlag = 1;
+    ACTSetAnimation(obj->actor, obj->animBank, NULL, obj->seqNum, 0.0f, obj->speed);
+    fn_800B4CA0(obj->actor, node->frame + 15);
+    fn_800B4C04(obj->actor, 1.0f);
+    fn_800BDA24(obj);
+    for (i = 0; i < obj->actor->totalBones; i++) {
+        switch (i) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            bone = obj->actor->boneArray[i];
+            PSMTXConcat(view, bone->forwardMtx, tmp);
+            PSMTXInverse(tmp, tmp);
+            tmp[0][3] = tmp[1][3] = tmp[2][3] = 0.0f;
+            PSMTXConcat(bone->forwardMtx, tmp, bone->forwardMtx);
+            break;
+        }
+    }
+    obj->actor->flags = 0xFF;
+    fn_800BDA94(obj, m);
 }
 #endif
 
