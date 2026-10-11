@@ -130,12 +130,10 @@ void fn_8006C3F8(void* obj, f32 frame, s32 a, s32 b) {
 }
 
 // .text:0x8006C444 size:0x44
-void fn_8006C444(void) {
-    return;
-}
-
-// fn_8006C488, size:0x4
-void fn_8006C488(void) {
+void fn_8006C444(void* obj, f32 frame, s32 a, s32 b) {
+    if (lbl_80366158[0x28] != 1 && lbl_803CBD3C != NULL) {
+        lbl_803CBD3C(obj, frame, a, b);
+    }
 }
 
 // .text:0x8006C48C size:0x140
