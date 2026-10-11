@@ -5,6 +5,7 @@
 
 extern u8 lbl_80366158[];
 extern Vec lbl_3_data_21004;
+extern s32 lbl_3_data_20FC4[]; /* AnimKey stride per AnimTrack type */
 /* The original pools .data from lbl_3_data_1C0A8; the axis vectors sit at +0x4F44. Pad reproduces that offset. */
 static u8 s_axpad[0x4F44] = {1};
 static Vec s_axa = {0.0f, 1.0f, 0.0f};
@@ -33,6 +34,9 @@ extern const f32 lbl_3_rodata_3198;
 extern const f32 lbl_3_rodata_311C;
 extern const f32 lbl_3_rodata_3134;
 extern const f32 lbl_3_rodata_315C;
+extern const f64 lbl_3_rodata_3178;
+extern const f32 lbl_3_rodata_3110;
+extern const f32 lbl_3_rodata_314C;
 extern u8 lbl_8036E548[];
 extern void** fn_800111D8(void*);
 extern void fn_800B2C44(void*, u16, Vec*);
@@ -760,10 +764,94 @@ void fn_3_1054CC(void) {
     return;
 }
 
+/* TODO type: lbl_3_common_bss_DE94 should become a struct; these name its fields. */
+typedef struct { u8 pad[0x124]; s32 n; s32 arr[0x200]; } Z1069;
+#define RCAM_N (((Z1069*)lbl_3_common_bss_DE94)->n)
+#define RCAM_TBL(i) (((Z1069*)lbl_3_common_bss_DE94)->arr[i])
+#define RCAM_KEY(i) ((*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[i])
 // .text:0x001054D0 size:0x540 mapped:0x80744564
-void fn_3_1054D0(void) {
-    return;
+// NONMATCHING 97.5%: table stores use addi+stwx instead of add+stw 0x128 (see docs/patterns/regalloc.md).
+// If `key` (frame << 16 | frac) lands exactly on a key of track `track`, append that key to the camera spline key list
+// (+0x9C) and store the frame count until the next key in the table at +0x128.
+#if NONMATCHING
+void fn_3_1054D0(ReplayAnim* anim, u32 key, s16 track) {
+    u16 lo = key;
+    u32 frame = key >> 16;
+    u8 hit = 0;
+    AnimTrack* trk = anim->tracks[track];
+    u8* first = trk->keys;
+    u16 count = trk->count;
+    s32 stride = lbl_3_data_20FC4[trk->type];
+    AnimKey* cur = (AnimKey*)(first + (count - 1) * stride);
+
+    if (count == 1) {
+        hit = 1;
+        RCAM_TBL(RCAM_N) = cur->frame;
+    } else if (frame <= cur->frame) {
+        if (frame == cur->frame) {
+            hit = 1;
+            RCAM_TBL(RCAM_N) = cur->frame;
+        } else {
+            AnimKey* next;
+            cur = (AnimKey*)first;
+            next = (AnimKey*)(first + stride);
+            while ((u32)(next->frame << 16) <= key) {
+                cur = next;
+                next = (AnimKey*)((u8*)next + stride);
+            }
+            if (cur->frame == frame && lo == 0) {
+                hit = 1;
+                RCAM_TBL(RCAM_N) = next->frame - cur->frame;
+            }
+        }
+    }
+    if (hit) {
+        switch (trk->type) {
+        case 0:
+            if (*(s32*)(lbl_3_common_bss_DE94 + 0x124) == 1) {
+                memcpy(&(*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[0], &cur->pos, 12);
+                (*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[1] *= lbl_3_rodata_3178;
+                (*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[3] = lbl_3_rodata_3110 * cur->b + lbl_3_rodata_314C;
+                (*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[4] = cur->a - lbl_3_rodata_314C;
+                RCAM_TBL(0) = RCAM_TBL(RCAM_N);
+            }
+            memcpy(&RCAM_KEY(RCAM_N).v[0], &cur->pos, 12);
+            RCAM_KEY(RCAM_N).v[1] *= lbl_3_rodata_3178;
+            RCAM_KEY(RCAM_N).v[3] = lbl_3_rodata_3110 * cur->b + lbl_3_rodata_314C;
+            RCAM_KEY(RCAM_N).v[4] = cur->a - lbl_3_rodata_314C;
+            RCAM_KEY(RCAM_N).frame = frame;
+            break;
+        case 1:
+            if (*(s32*)(lbl_3_common_bss_DE94 + 0x124) == 1) {
+                memcpy(&(*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[0], &cur->pos, 12);
+                (*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[1] *= lbl_3_rodata_3178;
+                (*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[3] = lbl_3_rodata_3110 * cur->b + lbl_3_rodata_314C;
+                (*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[4] = cur->a - lbl_3_rodata_314C;
+                RCAM_TBL(0) = RCAM_TBL(RCAM_N);
+            }
+            memcpy(&RCAM_KEY(RCAM_N).v[0], &cur->pos, 12);
+            RCAM_KEY(RCAM_N).v[1] *= lbl_3_rodata_3178;
+            RCAM_KEY(RCAM_N).v[3] = lbl_3_rodata_3110 * cur->b + lbl_3_rodata_314C;
+            RCAM_KEY(RCAM_N).v[4] = cur->a - lbl_3_rodata_314C;
+            RCAM_KEY(RCAM_N).frame = frame;
+            break;
+        case 2:
+            if (*(s32*)(lbl_3_common_bss_DE94 + 0x124) == 1) {
+                memcpy(&(*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[0], &cur->pos, 12);
+                (*(SplineKey**)(lbl_3_common_bss_DE94 + 0x9C))[0].v[1] *= lbl_3_rodata_3178;
+                RCAM_TBL(0) = RCAM_TBL(RCAM_N);
+            }
+            memcpy(&RCAM_KEY(RCAM_N).v[0], &cur->pos, 12);
+            RCAM_KEY(RCAM_N).v[1] *= lbl_3_rodata_3178;
+            RCAM_KEY(RCAM_N).frame = frame;
+            break;
+        }
+        if (RCAM_N < 0x200) {
+            RCAM_N += 1;
+        }
+    }
 }
+#endif
 
 // .text:0x00105A10 size:0xBC mapped:0x80744AA4
 void fn_3_105A10(f32* out, f32* a, f32* b, f32 t) {
@@ -1017,8 +1105,6 @@ s32 fn_3_10698C(u32* p) {
 void* fn_3_1069B0(s32* base, s32 idx) {
     return (u8*)base + base[idx];
 }
-
-typedef struct { u8 pad[0x128]; s32 arr[0x200]; } Z1069;
 
 // .text:0x001069C0 size:0x1E0 mapped:0x80745A54
 void fn_3_1069C0(void) {
