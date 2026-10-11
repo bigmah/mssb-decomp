@@ -189,8 +189,20 @@ void challengeDrawStarsOnMissionMenu(void) {
 }
 
 // .text:0x8006C5CC size:0xF8
-void fn_8006C5CC(void) {
-    return;
+BOOL fn_8006C5CC(void) {
+    s32 count = 0;
+    s32 i;
+
+    for (i = 0; i < 54; i++) {
+        s32 status = starMissionCompletionTracker[i]._31;
+        if (status == 1) {
+            s32 captain = starMissionCompletionTracker[i].challengeCaptain;
+            if (captain != 5) {
+                count++;
+            }
+        }
+    }
+    return count >= 28;
 }
 
 // .text:0x8006C6C4 size:0xD8
