@@ -114,18 +114,17 @@ extern void fn_8003A548(void (*callback)(void));
 extern u8 g_Ball[];
 typedef struct StadW78 {
     u8 pad[0x78];
-    s32 w78;
+    void* w78;
 } StadW78;
 typedef struct StadObj78 {
     u8 pad[0x78];
-    s32 w78;
+    void* w78;
     u8 pad7C[0xE8 - 0x7C];
 } StadObj78;
 extern void* fn_3_C823C(s32 idx, Mtx out);
 extern void* fn_3_E4BE8(s32 idx, Mtx m);
-// TODO type (sta_c5, sta_c6): these return the collision model pointer and take the matrix
-extern s32 fn_3_F6504(s32, s32);
-extern s32 fn_3_E751C(s32, Mtx);
+extern void* fn_3_F6504(s32 idx, Mtx m);
+extern void* fn_3_E751C(s32 idx, Mtx m);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_8036E548[];
@@ -508,7 +507,7 @@ extern void fn_800117CC(Mtx src, Mtx m, Mtx dst);
 extern void fn_800B2BFC(GameActor* actor, u16 boneA, u16 boneB);
 extern void fn_3_D55EC(MtxPtr view, SortEnt* sort);
 extern void fn_3_F6084(MtxPtr view, SortEnt* sort);
-extern void fn_3_E7388(MtxPtr view, SortEnt* sort);
+extern void fn_3_E7388(MtxPtr view, void* sort); // sort: E7388Pair* in sta_c6
 f32 lbl_3_bss_1908; // depth fade floor
 extern const f32 lbl_3_rodata_1DE8; // 0.25f
 extern const f32 lbl_3_rodata_1DEC; // 2.0f
@@ -665,10 +664,10 @@ void* fn_3_B91C8(s32 type, s32 idx0, Mtx arg) {
         if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
             return 0;
         }
-        return (void*)fn_3_F6504(idx, (s32)arg);
+        return fn_3_F6504(idx, arg);
     }
     if (type == 6) {
-        return (void*)fn_3_E751C(idx, arg);
+        return fn_3_E751C(idx, arg);
     }
     CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, arg);
     return sStadiumMgr.objs[idx].unk78;

@@ -1715,7 +1715,7 @@ void fn_3_BF238(void) {
 extern void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx);
 extern void fn_8004B1B8(void* tex);
 extern void fn_80035750(void* a, void* b, s16 c);
-extern void fn_3_6750C(s32);
+extern void fn_3_6750C(void* tex); // TexArchive*
 void fn_3_BF6C0(void) {
     s32 buf[8];
     u8* c;
@@ -1743,7 +1743,7 @@ void fn_3_BF6C0(void) {
                 fn_8003A6B0(i, w + 4, s_BF070c[0].x, s_BF070c[0].y);
             }
         }
-        fn_3_6750C(*(s32*)(lbl_3_common_bss_35154 + 4));
+        fn_3_6750C(*(void**)(lbl_3_common_bss_35154 + 4));
         *(void**)(lbl_3_common_bss_35154 + 0xC) = ARAMTransfer(s_BF070f, 0, 0, 0);
         *(void**)lbl_803CC1B8 = fn_3_BF238;
     }

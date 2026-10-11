@@ -12,7 +12,14 @@ extern void fn_3_CB284(int who, s16 a, f32 f);
 extern void fn_3_C07A0(void);
 extern void fn_3_C1770(int who);
 extern void fn_3_C11CC(int who, int a);
-extern void fn_3_C1344(int who, int a, f32 x, f32 y, f32 z);
+extern void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2);
+// The original passes a fifth float (k) that fn_3_C1344 ignores; only the matching
+// build reproduces that through a cast.
+#if NONMATCHING
+#define fn_3_C1344_k(who, track, t, t2, k) fn_3_C1344(who, track, t, t2)
+#else
+#define fn_3_C1344_k(who, track, t, t2, k) ((void (*)(s32, s32, f32, f32, f32))fn_3_C1344)(who, track, t, t2, k)
+#endif
 extern void fn_3_C0770(void);
 extern void fn_3_C07B0(void);
 extern void fn_3_BF1AC(void);
@@ -238,7 +245,7 @@ void fn_3_6A9B0(void) {
             f32 x = g_Batter.chargeUp;
             x = k * x;
             y = k * y;
-            fn_3_C1344(who, x >= k, x, y, k);
+            fn_3_C1344_k(who, x >= k, x, y, k);
         }
         return;
     }
@@ -294,7 +301,7 @@ static inline void fn_3_6A9B0_i(void) {
             f32 y = g_Batter.chargeDown;
             x = k * x;
             y = k * y;
-            fn_3_C1344(who, x >= k, x, y, k);
+            fn_3_C1344_k(who, x >= k, x, y, k);
         }
         return;
     }

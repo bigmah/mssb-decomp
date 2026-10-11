@@ -16,7 +16,7 @@ extern u32 sndFXStartEx(int, u8, u8, u8);
 extern void sndFXCtrl(int, int, u8);
 extern void fn_3_65A8(void);
 extern void fn_3_27648(void);
-typedef struct { u8 pad[0x78]; s32 w78; u8 pad2[0xE8 - 0x7C]; } StadObj78;
+typedef struct { u8 pad[0x78]; void* w78; u8 pad2[0xE8 - 0x7C]; } StadObj78; // w78: collision model
 extern char lbl_3_rodata_2DB8[];
 extern char lbl_3_rodata_2F10[];
 static inline u32 binomIn(u32 n, u32 k) {
@@ -82,9 +82,9 @@ extern const f32 lbl_3_rodata_2D70;
 extern const f32 lbl_3_rodata_2DE8;
 extern f64 cos(f64);
 extern u8 lbl_803C5090[];
-extern void fn_8003A144(u8*, u8*);
-extern s32 fn_80039AB4(void);
-extern void SetDisplayStateTexture(s32, s32, s32);
+extern void fn_8003A144(void);
+extern void* fn_80039AB4(void);
+extern void SetDisplayStateTexture(void* tex, s32 map, u32 tlutName); // tex: TexImage*
 extern s32 fn_8005268C(void);
 extern u8* fn_80052734(s32);
 extern u8 lbl_8036E548[];
@@ -101,8 +101,19 @@ extern u8 lbl_3_bss_AEE0[];
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_3_data_1BA5C[];
 
-extern void fn_800B0A14_removeQueue();
-extern void fn_800A7D4C();
+extern void fn_800B0A14_removeQueue(void* unused);
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
+
+extern void fn_800A7D4C(s32 list, void* node);
 typedef struct { f32 a, b, c; } V3w;
 extern void* lbl_3_bss_B154[]; /* actor anim banks */
 extern void fn_3_B97DC(void* obj, void* animBank);
@@ -593,7 +604,7 @@ void fn_3_EEE3C(void) {
     u8* o = *(u8**)b;
     Vec v;
     lbl_803C5090[0x1D] = 1;
-    fn_8003A144(lbl_803C5090, b);
+    fn_8003A144();
     SetDisplayStateTexture(fn_80039AB4(), 0, 0);
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 5, 0);
@@ -1065,7 +1076,7 @@ void fn_3_EFB54(StadCtlA* p) {
 void fn_3_F0184(void) {
     u32 i;
     if (lbl_3_bss_AEE0[8] != 0) {
-        fn_800B0A14_removeQueue();
+        REMOVE_QUEUE_NOARG();
         lbl_3_bss_AEE0[8] = 0;
         return;
     }
@@ -1569,7 +1580,7 @@ void fn_3_F1E2C(StadCtlA* p) {
 
 #pragma dont_inline off
 // .text:0x000F22FC size:0x14C mapped:0x80731390
-extern void fn_3_253A4(s8, s16);
+extern int fn_3_253A4(s8, s16);
 extern s16 fn_3_9FB8C(f32, f32);
 extern u8 g_Fielders[];
 extern u8 lbl_3_bss_B21B;
@@ -1975,9 +1986,9 @@ void fn_3_F3BB0(u8* p) {
 
 #pragma dont_inline on
 // .text:0x000F3CD0 size:0x22C mapped:0x80732D64
-extern void fn_80033620(void);
+extern void fn_80033620(struct Emitter* em);
 extern void fn_80033F64(f32, f32, f32);
-extern void fn_80033CC8(u8*, s32);
+extern void fn_80033CC8(void* p, void* tex); // (Particle*, TexArchive*)
 extern const f64 lbl_3_rodata_2EC0;
 extern const f64 lbl_3_rodata_2EC8;
 extern const f64 lbl_3_rodata_2ED0;
@@ -1987,11 +1998,11 @@ s32 fn_3_F3CD0(struct Emitter* em) {
     u8* a = (u8*)em; /* TODO type: Emitter/Particle from main/file_800263FC.h */
     u8* e = *(u8**)(a + 0xC);
     u32 cnt = 0;
-    fn_80033620();
+    fn_80033620(em);
     do {
         if (*(s16*)(e + 0x48) <= 0 && *(s16*)(e + 0x4A) != 0) {
             fn_80033F64(*(f32*)(e + 0x38), *(f32*)(e + 0x3C), *(f32*)(e + 0x20));
-            fn_80033CC8(e, *(s32*)(a + 0x10));
+            fn_80033CC8(e, *(void**)(a + 0x10));
             if (-*(s16*)(e + 0x48) < 5) {
                 *(f32*)(e + 0x38) = *(f32*)(e + 0x38) + (*(f32*)(e + 0x28) - lbl_3_rodata_2EC0) / lbl_3_rodata_2EC8;
                 *(f32*)(e + 0x3C) = *(f32*)(e + 0x38);
@@ -2598,10 +2609,10 @@ void fn_3_F6084(MtxPtr view, struct SortEnt* out) {
 
 #pragma dont_inline on
 // .text:0x000F6504 size:0xC4 mapped:0x80735598
-s32 fn_3_F6504(s32 idx, s32 arg) {
+void* fn_3_F6504(s32 idx, Mtx arg) {
     u8* c = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
     u8 t = c[0x9D];
-    void* m = (void*)arg;
+    void* m = arg;
     if (t == 2) {
         if (c[0xC6] < 3 && g_Ball[0x1BC9] != 1) {
             CTRLBuildMatrix((Control*)c, m);
@@ -2629,7 +2640,7 @@ void fn_3_F65C8(s32* n) {
     (*(u16**)(lbl_3_common_bss_350E4 + 0x40))[*n] = k;
     (*(u32**)(lbl_3_common_bss_350E4 + 0x44))[k] = lbl_3_bss_B21A;
     (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
-    o = (void*)so->w78;
+    o = so->w78;
     c.c.type = 0;
     CTRLBuildMatrix(&c.c, m);
     fn_3_B8464(m, o);
@@ -2678,7 +2689,7 @@ void fn_3_F66C8(s32* n) {
             t = pt->z;
             if (zmin > t) zmin = t; else if (zmax < t) zmax = t;
         }
-        o = (void*)((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21B].w78;
+        o = ((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21B].w78;
         CTRLSetTranslation(&c.c, xmin, ((f32*)&lbl_3_rodata_2D5C)[0], zmax);
         CTRLBuildMatrix(&c.c, m);
         fn_3_B8464(m, o);
@@ -2747,7 +2758,7 @@ void fn_3_F6A94(s32* n) {
         (*(s32**)(lbl_3_common_bss_350E4 + 0x3C))[*n]++;
     }
     fn_3_B8574();
-    o = (void*)((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21D[0]].w78;
+    o = ((StadObj78**)lbl_3_common_bss_350E4)[0][lbl_3_bss_B21D[0]].w78;
     c.c.type = 0;
     CTRLSetTranslation(&c.c, lbl_3_rodata_2F44[0], ((f32*)&lbl_3_rodata_2D5C)[0], lbl_3_rodata_2F48[0]);
     CTRLBuildMatrix(&c.c, m);

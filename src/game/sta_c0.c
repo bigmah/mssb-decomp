@@ -32,12 +32,12 @@ extern u8* fn_3_B9534(s32 width, s32 height, GXTexObj* obj);
 extern void fn_3_B97DC(ActorObject* obj, void* animBank);
 extern void fn_3_B9D68(void* names, s32 n, void** files, u32* out);
 extern s32 fn_3_B7FC8(s32 id, s32 type);
-extern void fn_3_35E4(u32 val); // TODO type: stores a callback (rep_1C0)
+extern void fn_3_35E4(void (*val)(void));
 extern void fn_3_16E338(u16* p, s32 i);
 // m_sound
 extern void fn_3_8B890(s32);
-extern void fn_3_8BA60(s32, s32, s32);
-extern s32 fn_3_8BBC4(s32, s32, s32, s32);
+extern void fn_3_8BA60(s32 handle, f32* pos, f32* vel);
+extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* vel, s32 kind);
 
 // lbl_3_bss_9F38.._9FDC are separate statics in the original, addressed through one
 // pooled base; the ones also used through their own symbol are declared on their own.
@@ -76,15 +76,15 @@ void fn_3_C9744(void) {
             }
         } else {
             if (s->flag != 0) {
-                s->h0 = fn_3_8BBC4(lbl_3_data_81DC[gs->StadiumID] + 1, 0, 0, 1);
+                s->h0 = fn_3_8BBC4(lbl_3_data_81DC[gs->StadiumID] + 1, NULL, NULL, 1);
                 if (gs->GameModeSelected != GAME_TYPE_MINIGAMES) {
                     s->h1 = fn_3_B7FC8(lbl_3_data_81DC[gs->StadiumID], 0);
                 }
                 s->flag = 0;
             } else {
-                fn_3_8BA60(s->h0, 0, 0);
+                fn_3_8BA60(s->h0, NULL, NULL);
                 if (gs->GameModeSelected != GAME_TYPE_MINIGAMES) {
-                    fn_3_8BA60(s->h1, 0, 0);
+                    fn_3_8BA60(s->h1, NULL, NULL);
                 }
             }
         }
@@ -498,7 +498,7 @@ void fn_3_C9DB4(void** files) {
             }
         }
 
-        fn_3_35E4((u32)fn_3_C9878); // TODO type: pointer passed as u32
+        fn_3_35E4(fn_3_C9878);
         lights = lbl_3_common_bss_350E4.lights;
         lights->panels = g_UNK_StadiumDetails._00;
         lights->count = 2;

@@ -131,7 +131,7 @@ void fn_3_E6A48(StaC6Obj* o);
 void fn_3_E6D90(StaC6Obj* o);
 void fn_3_E7350(void);
 void fn_3_E7364(s32 i);
-void fn_3_E7388(s32 unused, E7388Pair* out);
+void fn_3_E7388(MtxPtr unused, E7388Pair* out);
 void fn_3_E7424(void);
 void* fn_3_E751C(s32 idx, Mtx m);
 void fn_3_E763C(void);

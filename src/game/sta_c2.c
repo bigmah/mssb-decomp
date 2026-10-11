@@ -111,8 +111,27 @@ typedef struct PEnt {
 } PEnt;
 extern u8 lbl_3_bss_A018[];
 extern u8* lbl_803CC1B8;
-extern void fn_800528C0(f32, f32, f32, s16*, s16*);
-extern void fn_800B0A14_removeQueue(void);
+extern void fn_800528C0(s16* sx, s16* sy, f32 x, f32 y, f32 z);
+// Matched callers evaluate the floats first; the matching build calls through a
+// float-first cast (same PPC registers), the port uses the real prototype.
+#if NONMATCHING
+#define fn_800528C0_xyz(x, y, z, sx, sy) fn_800528C0(sx, sy, x, y, z)
+#else
+#define fn_800528C0_xyz(x, y, z, sx, sy) ((void (*)(f32, f32, f32, s16*, s16*))fn_800528C0)(x, y, z, sx, sy)
+#endif
+
+extern void fn_800B0A14_removeQueue(void* unused);
+// fn_800B0A14_removeQueue ignores its argument. Some callers pass nothing: r3 is
+// whatever the previous call left (e.g. right after fn_80034CEC). The matching
+// build calls it through a (void) cast there; the port passes NULL.
+#ifndef REMOVE_QUEUE_NOARG
+#if NONMATCHING
+#define REMOVE_QUEUE_NOARG() fn_800B0A14_removeQueue(NULL)
+#else
+#define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
+#endif
+#endif
+
 extern void fn_80034CEC(void*);
 extern const f64 lbl_3_rodata_2728;
 extern const f64 lbl_3_rodata_2770;
@@ -189,7 +208,7 @@ extern u8 lbl_80371C30[];
 extern u8 lbl_3_bss_A898[];
 extern u8* lbl_3_bss_A8A4;
 extern s32 fn_3_9FB8C(f32, f32);
-extern void fn_3_253A4(s8, s16);
+extern int fn_3_253A4(s8, s16);
 extern void AnimateActorBones(void*);
 extern void fn_8003403C(f32 w, f32 h);
 extern void fn_80033CC8(void* particle, void* tex);
@@ -1096,7 +1115,7 @@ void fn_3_CE954(void) {
         case 1: {
             s16 b1;
             s16 a1;
-            fn_800528C0(v[0], v[1], v[2], &a1, &b1);
+            fn_800528C0_xyz(v[0], v[1], v[2], &a1, &b1);
             *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x48) = a1;
             *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x4C) = b1;
             *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x50) = 0.0f;
@@ -1109,7 +1128,7 @@ void fn_3_CE954(void) {
             s16 b2;
             s16 a2;
             u8* t;
-            fn_800528C0(v[0], v[1], v[2], &a2, &b2);
+            fn_800528C0_xyz(v[0], v[1], v[2], &a2, &b2);
             *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x48) = a2;
             *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x4C) = b2;
             *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0x88C) + 0x14) + i) * 8) + 0x50) = 0.0f;
@@ -1127,18 +1146,17 @@ void fn_3_CE954(void) {
         v += 3;
     } while (i < 10);
     if (b[0x804] != 0) {
-        fn_800B0A14_removeQueue();
+        REMOVE_QUEUE_NOARG();
         fn_80034CEC(*(u8**)(b + 0x88C));
         b[0x804] = 0;
     }
 }
 
 // .text:0x000CEBBC size:0xDC mapped:0x8070DC50
-extern void fn_800528C0(f32,f32,f32,s16*,s16*);
 void fn_3_CEBBC(f32* v, s32 k) {
     s16 a;
     s16 b;
-    fn_800528C0(v[0], v[1], v[2], &a, &b);
+    fn_800528C0_xyz(v[0], v[1], v[2], &a, &b);
     *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x48) = a;
     *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x4C) = b;
     *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_A8A4 + 0x14) + k) * 8) + 0x50) = 0.0f;

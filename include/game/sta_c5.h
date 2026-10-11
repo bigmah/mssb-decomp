@@ -2,6 +2,7 @@
 #define __GAME_sta_c5_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/mtx.h"
 
 void fn_3_EE100(u8* obj, f32 (*mtx)[4]);
 void fn_3_EE388(void);
@@ -74,7 +75,7 @@ s32 fn_3_F5F28(f32* a, f32* b);
 void fn_3_F5F4C(f32 (*m)[4]);
 struct SortEnt;
 void fn_3_F6084(f32 (*view)[4], struct SortEnt* out);
-s32 fn_3_F6504(s32 idx, s32 arg);
+void* fn_3_F6504(s32 idx, Mtx m); // collision model, or NULL
 void fn_3_F65C8(s32* n);
 void fn_3_F66C8(s32* n);
 void fn_3_F6938(s32* n);

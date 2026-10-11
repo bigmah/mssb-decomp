@@ -631,7 +631,7 @@ void fn_3_E7364(s32 i) {
 }
 
 // .text:0x000E7388 size:0x9C mapped:0x8072641C
-void fn_3_E7388(s32 unused, E7388Pair* out) {
+void fn_3_E7388(MtxPtr unused, E7388Pair* out) {
     StaC6Obj* e;
     E7388Pair* p = out;
     s32 i;
