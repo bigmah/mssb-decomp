@@ -830,9 +830,29 @@ void fn_8001E784(void) {
 }
 
 // .text:0x8001F16C size:0xBC
+// NONMATCHING 96%: loop counter and active[] walker swap r28/r30
+#if NONMATCHING
 void fn_8001F16C(void) {
-    return;
+    CharSlotList* list;
+    s32 i;
+    CharActor* actor;
+    CharSlot* slot;
+    u8 st = lbl_8036E548._307A;
+
+    if (st != 0 && st != 3) {
+        list = lbl_8036E548.slots;
+        for (i = 0; i < list->count; i++) {
+            actor = lbl_8036E548.active[i];
+            if (actor != NULL) {
+                slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+                if (slot->model != NULL && slot->_6C != 0) {
+                    fn_800B2D5C(slot->model);
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8001F228 size:0x298
 void fn_8001F228(void) {
