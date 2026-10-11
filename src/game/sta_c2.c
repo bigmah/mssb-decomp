@@ -44,6 +44,8 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern const Vec lbl_3_rodata_2520;
+extern const f32 lbl_3_rodata_27C8;
 extern const Vec lbl_3_rodata_252C;
 extern const f64 lbl_3_rodata_2818;
 extern const f64 lbl_3_rodata_2820;
@@ -2255,9 +2257,131 @@ void fn_3_D2A0C(u8* p) {
 #endif
 
 // .text:0x000D30D0 size:0x5E0 mapped:0x80712164
-void fn_3_D30D0(void) {
-    return;
+// NONMATCHING ~90%: the inlined fielder search (fn_3_D255C) is structured differently; register numbering
+#if NONMATCHING
+// Hopping state: bounces p up and down (p+0xB0 vertical speed); on each landing it turns
+// towards the ball and lunges (state 4) when the ball is near and low, or gives up
+// (state 1) when it is far. Then steps the chain and knocks back a fielder it lands on.
+void fn_3_D30D0(u8* p) {
+    Vec x;
+    Vec from;
+    Vec to;
+    Vec d;
+    Vec n;
+    Vec w;
+    Vec v;
+    Vec dir;
+    Vec axis;
+    Mtx m;
+    Vec fd;
+    Vec kd;
+    B9 a;
+    B9 b;
+    u8* t;
+    u8* c;
+    u32 i;
+    s32 idx;
+    f32 vy;
+    f32 dot;
+    f32 ang;
+    x = lbl_3_rodata_2520;
+    vy = *(f32*)(p + 0xB0);
+    *(f32*)(p + 0xA4) += vy;
+    *(f32*)(p + 0xB0) -= lbl_3_rodata_280C[0];
+    if (vy > lbl_3_rodata_2664 && *(f32*)(p + 0xB0) <= lbl_3_rodata_2664) {
+        memcpy(&w, p + 0xA0, sizeof(Vec));
+        w.y = w.y * lbl_3_rodata_2678;
+        fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 3, (f32*)&w, 0, 0xB);
+    }
+    if (*(f32*)(p + 0xA4) < lbl_3_rodata_2664) {
+        *(f32*)(p + 0xA4) = lbl_3_rodata_2664;
+        *(f32*)(p + 0xB0) = lbl_3_rodata_2828;
+        from.x = *(f32*)(p + 0xA0);
+        from.y = lbl_3_rodata_2664;
+        from.z = *(f32*)(p + 0xA8);
+        to.x = ((Vec*)g_Ball)->x;
+        to.y = lbl_3_rodata_2664;
+        to.z = ((Vec*)g_Ball)->z;
+        PSVECSubtract(&to, &from, &d);
+        if (PSVECMag(&d) == lbl_3_rodata_2664) {
+            d.z = lbl_3_rodata_2664;
+            d.y = lbl_3_rodata_2664;
+            d.x = lbl_3_rodata_2698;
+        }
+        PSVECNormalize(&d, &n);
+        dot = PSVECDotProduct(&x, &n);
+        if (dot > lbl_3_rodata_2698) {
+            dot = lbl_3_rodata_2698;
+        } else if (dot < lbl_3_rodata_2678) {
+            dot = lbl_3_rodata_2678;
+        }
+        ang = acos(dot);
+        if (n.z < lbl_3_rodata_2664) {
+            ang = lbl_3_rodata_27C8 - ang;
+        }
+        ang = lbl_3_rodata_2670 * ang;
+        if ((PSVECMag(&d) <= lbl_3_rodata_2808 || g_Ball[0x1BC9] == 1) && *(s16*)(p + 0xC8) > 0 &&
+            ((Vec*)g_Ball)->y <= lbl_3_rodata_2830) {
+            p[0xCA] = 4;
+            *(f32*)(p + 0xBC) = ang;
+            *(f32*)(p + 0xAC) = lbl_3_rodata_2838 * (f32)cos(lbl_3_rodata_2658[0] * *(f32*)(p + 0xBC));
+            *(f32*)(p + 0xB0) = lbl_3_rodata_2664;
+            *(f32*)(p + 0xB4) = lbl_3_rodata_2838 * (f32)sin(lbl_3_rodata_2658[0] * *(f32*)(p + 0xBC));
+            *(s16*)(p + 0xC8) -= 1;
+        } else if (PSVECMag(&d) > lbl_3_rodata_2840) {
+            p[0xCA] = 1;
+            *(f32*)(p + 0xB0) = lbl_3_rodata_2664;
+            fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        }
+        memcpy(&w, p + 0xA0, sizeof(Vec));
+        w.y = w.y * lbl_3_rodata_2678;
+        fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 2, (f32*)&w, 0, 0xA);
+        *(f32*)(p + 0xC0) = -ang;
+        fn_8004C094(p + 0xA0);
+    }
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    // fn_3_D2220, inlined
+    c = *(u8**)(p + 0xC4);
+    axis = lbl_3_rodata_25B0;
+    dir = lbl_3_rodata_25BC;
+    PSMTXRotAxisRad(m, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSMTXMultVec(m, lbl_3_rodata_24E8, &v);
+    PSVECAdd(&v, (Vec*)(p + 0xA0), &v);
+    v.y += lbl_3_rodata_2668;
+    *(Vec*)(c + 0x1CC) = v;
+    *(Vec*)(c + 0x1D8) = *(Vec*)(c + 0x1CC);
+    fn_3_D1F2C((CC438Cfg*)lbl_3_bss_A8A8, *(RopeNode**)(p + 0xC4), 8, &dir, p);
+    // fn_3_D255C, inlined
+    a = lbl_3_rodata_255C;
+    b = lbl_3_rodata_2568;
+    idx = -1;
+    if (!(*(f32*)(p + 0xA4) > lbl_3_rodata_2770)) {
+        if (*(f32*)(p + 0xA0) > lbl_3_rodata_2664) {
+            t = a.b;
+        } else {
+            t = b.b;
+        }
+        for (i = 0; i < 9; i++) {
+            u8* o = g_Fielders + t[i] * 0x268;
+            if (o != NULL && o[0x210] == 0) {
+                PSVECSubtract((Vec*)(p + 0xA0), (Vec*)o, &fd);
+                if (PSVECMag(&fd) <= lbl_3_rodata_2668) {
+                    idx = (s8)t[i];
+                    break;
+                }
+            }
+        }
+    }
+    // fn_3_D24E8, inlined
+    if (idx >= 0) {
+        PSVECSubtract((Vec*)(g_Fielders + idx * 0x268), (Vec*)(p + 0xA0), &kd);
+        kd.y = lbl_3_rodata_2664;
+        PSVECNormalize(&kd, &kd);
+        fn_3_253A4(idx, fn_3_9FB8C(kd.x, kd.z));
+    }
 }
+#endif
 
 // .text:0x000D36B0 size:0x1D0 mapped:0x80712744
 void fn_3_D36B0(u8* p) {

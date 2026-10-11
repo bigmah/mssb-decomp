@@ -99,7 +99,7 @@ s32 fn_3_D255C(u8* p);
 u8* fn_3_D2684(u8* p);
 void fn_3_D278C(u8* p);
 void fn_3_D2A0C(u8* p);
-void fn_3_D30D0(void);
+void fn_3_D30D0(u8* p);
 void fn_3_D36B0(u8* p);
 void fn_3_D3880(u8* p);
 void fn_3_D3CDC(u8* p);
