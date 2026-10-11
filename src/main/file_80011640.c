@@ -146,6 +146,8 @@ extern u8 lbl_803CBC34[8];
 extern s16 lbl_800EEB18[54];
 extern CharSlotList* fn_80023AA4(void);
 extern void fn_80023B04(s32 count);
+extern AramFile* lbl_803CB7A8;
+extern u8* lbl_803CBC24;
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -614,9 +616,66 @@ void fn_80014204(void) {
 }
 
 // .text:0x800145F8 size:0x398
-void fn_800145F8(s32 arg) {
-    return;
+static inline u32 maxPartSize(u32 max, s32 idx) {
+    s32 j;
+    u32 size;
+
+    for (j = 0; j < 6; j++) {
+        size = lbl_803CB7A8[idx + j].size & 0x0FFFFFFF;
+        if (max < size) {
+            max = size;
+        }
+    }
+    return max;
 }
+
+// NONMATCHING 84%: max-size loops unrolled/scheduled differently
+#if NONMATCHING
+void fn_800145F8(s32 mode) {
+    u32 max = 0;
+    u32 s;
+    u8* buf;
+    s32 t;
+    s32 i;
+    s32 idx;
+
+    if (mode == 0) {
+        for (t = 0; t < 2; t++) {
+            for (i = 0; i < 9; i++) {
+                idx = lbl_800EEAAC[inMemRoster[t][i].charId];
+                if (idx >= 0) {
+                    max = maxPartSize(max, idx);
+                }
+            }
+        }
+    } else {
+        for (i = 0; i < 54; i++) {
+            idx = lbl_800EEAAC[i];
+            if (idx >= 0) {
+                max = maxPartSize(max, idx);
+            }
+        }
+    }
+    s = (max + 0x1F) & ~0x1F;
+    buf = _OSAllocFromHeap(0x20, s * 26);
+    lbl_803CBC24 = buf;
+    for (i = 0; i < 13; i++) {
+        lbl_8036E548.partsPool[i].part[0].files = (void**)(buf + s * (i * 2));
+        lbl_8036E548.partsPool[i].part[1].files = (void**)(buf + s * (i * 2 + 1));
+    }
+    for (i = 0; i < 13; i++) {
+        lbl_8036E548.partsPool[i]._CF = -1;
+        lbl_8036E548.partsPool[i]._D1 = -1;
+        lbl_8036E548.partsPool[i]._D0 = -1;
+        lbl_8036E548.partsPool[i]._CD = 0xFF;
+        lbl_8036E548.partsPool[i]._CE = 0xFF;
+        lbl_8036E548.partsPool[i].tex = NULL;
+        lbl_8036E548.partsPool[i]._CC = 0;
+        lbl_8036E548.partsPool[i].part[0].slot = i * 2;
+        lbl_8036E548.partsPool[i].part[1].slot = i * 2 + 1;
+    }
+}
+#endif
 
 // .text:0x80014990 size:0x88
 void fn_80014990(s32 index, void* model, ShapeAnimSet* set) {
