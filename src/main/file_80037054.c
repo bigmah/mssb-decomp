@@ -551,10 +551,17 @@ void fn_800385F0(RigidBody* rb, f32 len, f32 frac, f32 radius, f32 mass) {
     rb->mass = mass;
     rb->invMass = lbl_803CC73C / mass;
     rb->radius = radius;
-    inertia = mass * (radius * radius * lbl_803CC740 + len * len / lbl_803CC744);
+    {
+        f32 r2 = radius * radius;
+        f32 l2 = len * len;
+        inertia = mass * (r2 * lbl_803CC740 + l2 / lbl_803CC744);
+    }
     rb->inertia.z = inertia;
     rb->inertia.x = inertia;
-    rb->inertia.y = lbl_803CC72C * (radius * (mass * radius));
+    {
+        f32 axial = radius * (mass * radius);
+        rb->inertia.y = axial * lbl_803CC72C;
+    }
     rb->invInertia.x = rb->invInertia.z = lbl_803CC73C / rb->inertia.x;
     rb->invInertia.y = lbl_803CC73C / rb->inertia.y;
     rb->steps = 1;
