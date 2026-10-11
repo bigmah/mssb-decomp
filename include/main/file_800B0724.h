@@ -34,5 +34,6 @@ s32 fn_800B216C(u8 flag, u32 mode, u8 index);
 
 void fn_800B21A8(s32 mode);
 
-void fn_800B2B4C(GameActor* actor, f32 value);
+void fn_800B2B4C(GameActor* actor, f32 value);void fn_800B2B54(GameActor* actor, u16 bone, u8 value);
+
 #endif

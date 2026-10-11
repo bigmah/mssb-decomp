@@ -311,8 +311,8 @@ void fn_800B2B4C(GameActor* actor, f32 value) {
 }
 
 // .text:0x800B2B54 size:0x18
-void fn_800B2B54(void) {
-    return;
+void fn_800B2B54(GameActor* actor, u16 bone, u8 value) {
+    actor->boneArray[bone]->unk134 = value;
 }
 
 // .text:0x800B2B6C size:0x8
