@@ -119,9 +119,45 @@ void fn_800E07E8(HVQM4SeqObj* seq, s32 planeIdx, u8 hSamp, u8 vSamp) {
 }
 
 // .text:0x800E0904 size:0x3C4
+// NONMATCHING 98%: original frame is 16 bytes larger (unused locals?), r5/r6 swapped; leaf shift written as a multiply (negative values)
+#if NONMATCHING
 s16 fn_800E0904(HVQTree* tree, HVQBitBuf* buf) {
-    return 0;
+    u8 bit;
+    s32 pos;
+    s16 value;
+    s16 leaf;
+
+    HVQ_READBIT(buf, bit);
+    if (bit) {
+        pos = tree->pos++;
+        tree->node[0][pos] = fn_800E0904(tree, buf);
+        tree->node[1][pos] = fn_800E0904(tree, buf);
+        return pos;
+    }
+    HVQ_READBIT(buf, bit);
+    value = bit ? 0x80 : 0;
+    HVQ_READBIT(buf, bit);
+    value |= bit ? 0x40 : 0;
+    HVQ_READBIT(buf, bit);
+    value |= bit ? 0x20 : 0;
+    HVQ_READBIT(buf, bit);
+    value |= bit ? 0x10 : 0;
+    HVQ_READBIT(buf, bit);
+    value |= bit ? 8 : 0;
+    HVQ_READBIT(buf, bit);
+    value |= bit ? 4 : 0;
+    HVQ_READBIT(buf, bit);
+    value |= bit ? 2 : 0;
+    HVQ_READBIT(buf, bit);
+    value |= bit ? 1 : 0;
+    leaf = value;
+    if (lbl_803CC3F8 != 0 && value > 0x7F) {
+        leaf -= 0x100;
+    }
+    tree->node[0][value] = leaf * (1 << lbl_803CC3FC);
+    return value;
 }
+#endif
 
 // .text:0x800E0CC8 size:0x98
 s16 fn_800E0CC8(HVQBitBufTree* buf) {
