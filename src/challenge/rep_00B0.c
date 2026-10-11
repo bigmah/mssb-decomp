@@ -63,7 +63,40 @@ void fn_1_19AC(void) {
 
 // .text:0x00001BF8 size:0x1C4
 void fn_1_1BF8(ChalColBox* boxes, s32 index) {
-    return;
+    ChalColBox* box = &boxes[index];
+
+    lbl_1_bss_60[0].x = box->min.x;
+    lbl_1_bss_60[0].y = box->min.y;
+    lbl_1_bss_60[0].z = box->max.z;
+    lbl_1_bss_60[1].x = box->max.x;
+    lbl_1_bss_60[1].y = box->min.y;
+    lbl_1_bss_60[1].z = box->max.z;
+    lbl_1_bss_60[2].x = box->max.x;
+    lbl_1_bss_60[2].y = box->min.y;
+    lbl_1_bss_60[2].z = box->min.z;
+    lbl_1_bss_60[3].x = box->min.x;
+    lbl_1_bss_60[3].y = box->min.y;
+    lbl_1_bss_60[3].z = box->min.z;
+    lbl_1_bss_60[4].x = box->min.x;
+    lbl_1_bss_60[4].y = box->max.y;
+    lbl_1_bss_60[4].z = box->max.z;
+    lbl_1_bss_60[5].x = box->max.x;
+    lbl_1_bss_60[5].y = box->max.y;
+    lbl_1_bss_60[5].z = box->max.z;
+    lbl_1_bss_60[6].x = box->max.x;
+    lbl_1_bss_60[6].y = box->max.y;
+    lbl_1_bss_60[6].z = box->min.z;
+    lbl_1_bss_60[7].x = box->min.x;
+    lbl_1_bss_60[7].y = box->max.y;
+    lbl_1_bss_60[7].z = box->min.z;
+
+    GDBegin(GX_QUADS, GX_VTXFMT0, 24);
+    fn_1_1DBC(7, 6, 2, 3, 0xC);
+    fn_1_1DBC(5, 4, 0, 1, 0xD);
+    fn_1_1DBC(3, 2, 1, 0, 0xE);
+    fn_1_1DBC(4, 5, 6, 7, 0xF);
+    fn_1_1DBC(4, 7, 3, 0, 0x10);
+    fn_1_1DBC(6, 5, 1, 2, 0x11);
 }
 
 // .text:0x00001DBC size:0x800
