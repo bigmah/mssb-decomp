@@ -13,7 +13,7 @@ typedef struct {
     /*0xA0*/ s16 _A0;
     /*0xA2*/ s16 _A2;
     /*0xA4*/ s16 winningTeam; // 2: tie
-    /*0xA6*/ u8 _A6[2];
+    /*0xA6*/ s16 _A6; // |run difference|
     /*0xA8*/ u8 _A8[2];
     /*0xAA*/ u8 finalInning;
     /*0xAB*/ u8 _AB;
@@ -101,5 +101,6 @@ void fn_3_5CDB4(void);
 void fn_3_5DD30(void);
 void fn_3_5AE9C(void);
 void fn_3_5DA9C(void);
+void fn_3_5F154(void);
 
 #endif

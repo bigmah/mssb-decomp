@@ -154,6 +154,11 @@ extern void fn_3_59338(void);
 extern void fn_3_7B130(void);
 extern void fn_3_22850(void);
 extern int __abs(int);
+extern void fn_3_7AF68(void);
+extern void fn_3_9DB5C(void);
+extern void fn_3_6C0E0(void);
+extern void fn_3_67130(void);
+extern void fn_3_8FC0C(void);
 extern void fn_3_76558(void);
 extern void* memset(void*, int, unsigned long);
 extern void sndVolume(u8 volume, u16 time, u8 volGroup);
@@ -245,7 +250,7 @@ void fn_3_5C69C(s32 type) {
     g_FieldingLogic._107 = type + 1;
     g_FieldingLogic.throwSpeedType = 3;
     fn_3_5A6D4(2);
-    *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+    g_FieldingLogic._0AE = 0;
     g_Pitcher.peachDaisyStarAnimationOn = 0;
     fn_3_32090(&g_Pitcher, &g_FieldingLogic);
     fn_3_8911C();
@@ -338,7 +343,7 @@ void fn_3_5F720(void) {
     fn_3_1DEB8();
     Set_803cb848(1);
     fn_3_6EBB4(g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]);
-    *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+    g_FieldingLogic._0AE = 0;
     g_GameLogic.homeRunWordAnimationCompletedInd = 0;
     unkSimulationRelatedStruct._05 = 0;
     unkSimulationRelatedStruct._06 = 4;
@@ -419,7 +424,7 @@ void fn_3_5985C(s32 arg0, s32 arg1) {
     fielder[0x1D3] = arg1;
     v = *(s32*)(lbl_3_data_3C40 + arg1 * 8);
     if (v >= 0) {
-        *((u8*)&g_FieldingLogic + 0xF8 + arg0) = v;
+        g_FieldingLogic._0F8[arg0] = v;
     }
     fielder[0x1D5] = 0;
     fielder[0x1D6] = 0;
@@ -427,7 +432,7 @@ void fn_3_5985C(s32 arg0, s32 arg1) {
     *(s16*)(fielder + 0x1AC) = 0;
     fielder[0x1FF] = 0;
     if (arg1 == 0x18) {
-        *(s16*)((u8*)&g_FieldingLogic + 0xBC) = arg0;
+        g_FieldingLogic._0BC = arg0;
     }
 }
 
@@ -511,7 +516,7 @@ void fn_3_5A6D4(u8 status) {
 // fn_3_5ED98, size:0x40
 void fn_3_5ED98(void) {
     fn_3_5A6D4(2);
-    *(s16*)((u8*)&g_FieldingLogic + 0xAE) = 0;
+    g_FieldingLogic._0AE = 0;
     g_Pitcher.peachDaisyStarAnimationOn = 0;
 }
 
@@ -1276,3 +1281,88 @@ void fn_3_5DA9C(void) {
         fn_3_5A6D4(7);
     }
 }
+
+// fn_3_5F154, size:0x2A8
+// NONMATCHING 99%: register allocation only (g_Scores base r8 vs r7 in the inlined fn_3_5F720 block)
+#if NONMATCHING
+void fn_3_5F154(void) {
+    s32 diff;
+    // inlined fn_3_5F720
+    fn_3_F1DC();
+    fn_3_751B4();
+    setDefaultInMemBatter();
+    fn_3_8913C();
+    fn_3_58870();
+    fn_3_1DEB8();
+    Set_803cb848(1);
+    fn_3_6EBB4(g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]);
+    g_FieldingLogic._0AE = 0;
+    g_GameLogic.homeRunWordAnimationCompletedInd = 0;
+    unkSimulationRelatedStruct._05 = 0;
+    unkSimulationRelatedStruct._06 = 4;
+    g_Scores._9C = 0;
+    g_Scores._9E = g_Scores.runs[g_Scores.bottomHalf][g_Scores.inning];
+    g_Scores._A2 = g_Scores._A0;
+    g_GameLogic._12F = 0;
+    g_GameLogic._123 = 0;
+    g_GameLogic.CountdownUntilFade = 999;
+    g_GameLogic.PauseSimulationFrameCount = 0;
+    g_GameLogic.playOver = 0;
+    g_GameLogic.walkOffWinInd = 0;
+    g_GameLogic.stadiumStarObtained = 0;
+    g_Scores._A0 = g_Scores.runs[g_Scores.bottomHalf][0];
+    g_Scores._C2 = 0;
+    g_Scores._C4 = 0;
+    g_Scores._C5 = 0;
+    diff = g_Scores.runs[0][0] - g_Scores.runs[1][0];
+    if (diff < -0x8000) {
+        diff = -0x8000;
+    }
+    if (diff > 0x7FFF) {
+        diff = 0x7FFF;
+    }
+    g_Scores._A6 = __abs(diff);
+    g_Strikes.storedOuts = g_Strikes.outs;
+    g_Strikes.runnerIndexForEachOutThisPitch[0] = -1;
+    g_Strikes.runnerIndexForEachOutThisPitch[1] = -1;
+    g_Strikes.runnerIndexForEachOutThisPitch[2] = -1;
+    g_Strikes.GameControls_StrikeBallBitVector = g_Strikes.balls + g_Strikes.strikes * 16;
+    g_Strikes.allForcedRunnersReachedTheirBaseInd = 0;
+    g_Ball.totalFramesAtPlay = 0;
+    g_FieldingLogic._10E = 0;
+    g_FieldingLogic._0EE = 0;
+    g_FieldingLogic._10F = 0;
+    g_FieldingLogic._110 = 0;
+    g_FieldingLogic._128 = 0;
+    g_FieldingLogic._129 = 0;
+    g_FieldingLogic._0E4 = 0;
+    g_RunningLogic[0x13] = 0;
+    lbl_3_common_bss_34C90[0x1D5] = 0;
+    g_Practice._1B0 = 0;
+    if (g_GameLogic.pre_PostMiniGameInd != 0) {
+        g_GameLogic.minigameLastTurnSuccessInd = 1;
+        g_GameLogic.hudElementLoadingInd = 1;
+        changeScene(1, 6);
+    } else {
+        g_GameLogic.minigameLastTurnSuccessInd = 0;
+    }
+    g_GameLogic.pre_PostMiniGameInd = 0;
+    fn_3_5A6D4(1);
+    if (g_GameLogic.playOverInd != 0) {
+        g_GameLogic.playOverInd -= 1;
+    }
+    if (g_GameLogic.freeFieldingPracticeInd == 0 && g_GameLogic.EventTriggers_GameHasStarted == 0) {
+        fn_3_59918(0xC, 0);
+        g_GameLogic.EventTriggers_GameHasStarted = 1;
+    }
+    fn_3_7AF68();
+    fn_3_9DB5C();
+    fn_3_6C0E0();
+    fn_3_67130();
+    fn_3_8FC0C();
+    if (lbl_3_common_bss_34C58._2A != 0) {
+        lbl_3_common_bss_34C58._2A = 2;
+        lbl_3_common_bss_34C58._24 = 120;
+    }
+}
+#endif

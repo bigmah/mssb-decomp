@@ -930,7 +930,8 @@ typedef struct _PracticeStruct {
     /*0x1AA*/ u8 transitioningIndicator; // unsure
     artificial_padding(0x1aa, 0x1af, u8);
     /*0x1AF*/ u8 returnToPracticeMenuState;
-    artificial_padding(0x1af, 0x1c2, u8);
+    /*0x1B0*/ u8 _1B0;
+    artificial_padding(0x1b0, 0x1c2, u8);
     /*0x1C2*/ s8 instructionNumber;
     /*0x1C3*/ u8 readyToMoveToNextInstruction; // unsure
     /*0x1C4*/ u8 practice_runner_countInputForMashing;
@@ -2784,7 +2785,16 @@ typedef struct {
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0x105];
+    u8 pad[0xAE];
+    /* 0x0AE */ s16 _0AE;
+    u8 _0B0[0xBC - 0xB0];
+    /* 0x0BC */ s16 _0BC;
+    u8 _0BE[0xE4 - 0xBE];
+    /* 0x0E4 */ s16 _0E4;
+    u8 _0E6[0xEE - 0xE6];
+    /* 0x0EE */ s16 _0EE;
+    u8 _0F0[0xF8 - 0xF0];
+    /* 0x0F8 */ u8 _0F8[0x105 - 0xF8]; // per fielder
     /* 0x105 */ u8 playerAtMoundCutoffLocation;
     /* 0x106 */ u8 throwSpeedType;
     /* 0x107 */ u8 _107;
