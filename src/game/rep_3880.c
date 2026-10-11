@@ -2578,8 +2578,9 @@ void* fn_3_1575F0(u32 n) {
     return NULL;
 }
 
-// 91%: orig hoists copies of d+8 (addi r25; mr r24/r23/r22) -> needs the .data defined in this TU
+// NONMATCHING 91%: orig hoists copies of d+8 (addi r25; mr r24/r23/r22) -> needs the .data defined in this TU
 // .text:0x0015767C size:0x27C mapped:0x80796710
+#if NONMATCHING
 void fn_3_15767C(void) {
     Vec pos;
     Vec dir;
@@ -2643,6 +2644,7 @@ void fn_3_15767C(void) {
         ((u8**)&lbl_3_bss_B850)[0] = NULL;
     }
 }
+#endif
 
 // .text:0x001578F8 size:0x24 mapped:0x8079698C
 void fn_3_1578F8(void) {
