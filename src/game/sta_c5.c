@@ -121,7 +121,7 @@ struct StadCtlA {
     u8 idx;
     u8 pad9D[3];
     f32 xa0, ya4, za8, xac, zb0, rb4;
-    u8 padB8[4];
+    f32 fb8; /* 0xB8 */
     f32* yawSrc; /* 0xBC */
     u8 fc0;
     s8 fc1;
@@ -179,13 +179,17 @@ typedef struct StaC5Work {
     u8 pad0;
     u8 cartBusy; /* 0x01 */
     u8 flag2;    /* 0x02 */
-    u8 pad3[0xC - 0x3];
+    u8 pad3;
+    u32 pathStep; /* 0x04 */
+    u8 pad8[0xC - 0x8];
     f32 targetX; /* 0x0C */
     u8 pad10[0x20 - 0x10];
     f32 wobVel; /* 0x20 */
     f32 wob;    /* 0x24 */
     f32 wobAmp; /* 0x28 */
     Vec wind;   /* 0x2C */
+    u8 pad38[0x344 - 0x38];
+    f32 pathSpeed; /* 0x344 */
 } StaC5Work;
 /* View of this file's pooled .data starting at lbl_3_data_1B820. */
 typedef struct StaC5Data {
@@ -1465,9 +1469,20 @@ void fn_3_F2FFC(StadCtlA* p, f32 x, f32 z) {
 #endif
 
 // .text:0x000F31E0 size:0x5DC mapped:0x80732274
+extern const f32 lbl_3_rodata_2E8C;
+extern const f32 lbl_3_rodata_2EB8;
+// NONMATCHING 68%: the original inlines fn_3_F2FFC (itself NONMATCHING, CW won't auto-inline it here), fn_3_F42A0 and fn_3_F3A5C; the inlined code reaches lbl_3_bss_B260/B560 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected)
+#if NONMATCHING
 void fn_3_F31E0(StadCtlA* p, f32 x, f32 z) {
-    return;
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    w->pathSpeed = lbl_3_rodata_2D68;
+    p->fb8 = lbl_3_rodata_2E8C;
+    fn_3_F2FFC(p, x, z);
+    fn_3_F42A0();
+    fn_3_F3A5C((u8*)p, lbl_3_bss_B260[0].x, lbl_3_rodata_2EB8, lbl_3_bss_B260[0].z, *p->yawSrc);
+    w->pathStep = 0;
 }
+#endif
 
 // .text:0x000F37BC size:0x118 mapped:0x80732850
 u32 fn_3_F37BC(u32 n, u32 k) {
@@ -1497,7 +1512,6 @@ void fn_3_F3A04(u8* p) {
     }
 }
 
-#pragma dont_inline on
 // .text:0x000F3A5C size:0x84 mapped:0x80732AF0
 void fn_3_F3A5C(u8* p, f32 x, f32 y, f32 z, f32 r) {
     *(f32*)(p + 0xA0) = x;
@@ -1509,6 +1523,7 @@ void fn_3_F3A5C(u8* p, f32 x, f32 y, f32 z, f32 r) {
     CTRLSetRotation((Control*)p, 0.0f, r, 0.0f);
 }
 
+#pragma dont_inline on
 // .text:0x000F3AE0 size:0xD0 mapped:0x80732B74
 void fn_3_F3AE0(u8* p) {
     f32 rot, x, z;
@@ -1638,7 +1653,6 @@ void fn_3_F3EFC(struct Emitter* em) {
     }
 }
 
-#pragma dont_inline on
 // .text:0x000F42A0 size:0x3CC mapped:0x80733334
 struct Emitter* fn_80033A24(s32 (*update)(struct Emitter* e), u8 priority, s32 unk14, s32 n, s32 strict, u8 type);
 void fn_3_F42A0(void) {
@@ -1648,6 +1662,7 @@ void fn_3_F42A0(void) {
     }
 }
 
+#pragma dont_inline on
 // .text:0x000F466C size:0x30 mapped:0x80733700
 extern void fn_3_27648(void);
 
