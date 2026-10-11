@@ -5,6 +5,7 @@ extern u8 lbl_3_data_26C94[];
 extern const f32 lbl_3_rodata_39F8;
 extern const f32 lbl_3_rodata_39F4;
 extern const f32 lbl_3_rodata_39FC;
+extern const f32 lbl_3_rodata_39BC;
 extern const f64 lbl_3_rodata_39E8;
 extern s32 lbl_3_data_26D00[];
 extern void fn_8003403C(f32, f32);
@@ -410,6 +411,7 @@ void fn_3_14841C(void) {
     return;
 }
 
+#pragma dont_inline off
 // .text:0x00148EF0 size:0xE0 mapped:0x80787F84
 void fn_3_148EF0(u8* o, f32 ang) {
     f32 s;
@@ -422,11 +424,40 @@ void fn_3_148EF0(u8* o, f32 ang) {
     *(f32*)(o + 0x14) = c * (f32)*(s32*)(lbl_3_data_26E7C + 4) / lbl_3_rodata_3930;
     *(f32*)(o + 0x18) = 0.0f;
 }
+#pragma dont_inline on
 
+// NONMATCHING 89%: 148EF0 inlined; orig keeps a clrlwi copy of the colour base in its own saved reg (r30), ours folds it into the stb, shifting saved regs
 // .text:0x00148FD0 size:0x370 mapped:0x80788064
-void fn_3_148FD0(void) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_148FD0(u8* a, u8* p) {
+    s32 base = ((s32*)lbl_3_data_26E7C)[6];
+    u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[(s8)a[0x18]];
+    u8 lo;
+    u8 range;
+    s32 r;
+    lo = base;
+    *(f32*)(p + 4) = lbl_3_rodata_3934[0];
+    *(f32*)(p + 8) = -((f32)((s32*)lbl_3_data_26E7C)[5] / lbl_3_rodata_3930 + *(f32*)(t + 0x38));
+    *(f32*)(p + 0xC) = lbl_3_rodata_3934[0];
+    fn_3_148EF0(p, lbl_3_rodata_39BC * ((f32)(((s32*)lbl_3_data_26E7C)[0] / 2 - *(s16*)(p + 0x4A)) / ((f32)((s32*)lbl_3_data_26E7C)[0] * lbl_3_rodata_39A8)));
+    *(f32*)(p + 0x24) = *(f32*)(p + 0x20) = *(f32*)(p + 0x1C) = 0.0f;
+    r = lbl_3_rodata_39C0 * ((f32)((s32*)lbl_3_data_26E7C)[2] / lbl_3_rodata_3930);
+    *(f32*)(p + 0x28) = (f32)(rand() % r) / lbl_3_rodata_39C0;
+    *(f32*)(p + 0x2C) = (f32)(rand() % r) / lbl_3_rodata_39C0;
+    *(f32*)(p + 0x30) = (f32)(rand() % r) / lbl_3_rodata_39C0;
+    p[0x47] = 0xFF;
+    p[0x43] = 0xFF;
+    range = 0xFF - base;
+    p[0x41] = lo + rand() % range;
+    p[0x42] = lo + rand() % range;
+    p[0x44] = lo + rand() % range;
+    p[0x45] = lo + rand() % range;
+    p[0x46] = lo + rand() % range;
+    p[0x4C] = 0;
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x00149340 size:0x41C mapped:0x807883D4
 void fn_3_149340(void) {
