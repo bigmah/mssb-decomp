@@ -899,9 +899,140 @@ void fn_3_EF930(u8* p) {
 }
 
 // .text:0x000EFB54 size:0x630 mapped:0x8072EBE8
-void fn_3_EFB54(u8* p) {
-    return;
+extern char lbl_3_rodata_2D0C[];
+extern char lbl_3_rodata_2D18[];
+extern const f32 lbl_3_rodata_2E08;
+extern const f32 lbl_3_rodata_2E0C;
+extern const f32 lbl_3_rodata_2E10;
+extern s32 fn_8001B728(s32, s32, void*);
+/* Held in a fielder's hand: follow the actor's hand joint and face along the arm. */
+// NONMATCHING 82-86%: stack frame 0x10 larger and float regalloc/scheduling differ; the original leaves the yaw uninitialized when fc0 >= 3 (initialized to 0 here)
+#if NONMATCHING
+void fn_3_EFB54(StadCtlA* p) {
+    Vec pos;
+    Vec off;
+    Vec ref;
+    Vec flat;
+    Vec tilt;
+    Vec axis;
+    Quaternion q;
+    Quaternion qYaw;
+    Quaternion qPitch;
+    u8* a;
+    u32 i;
+    s32 dir;
+    f32 yaw;
+    f32 h;
+    f32 r;
+    pos = *(Vec*)lbl_3_rodata_2D0C;
+    ref = *(Vec*)lbl_3_rodata_2D18;
+    a = *(u8**)(lbl_8036E548 + p->fc1 * 4 + 0x2C50);
+    if (a == NULL) {
+        return;
+    }
+    if ((s8)a[0x255] != (s8)p->fc3) {
+        /* the fielder changed; find the actor that still has our id (a ends as the last one checked) */
+        for (i = 0; i < 9; i++) {
+            a = ((u8**)(lbl_8036E548 + 0x2C50))[i];
+            if (a != NULL && (s8)p->fc3 == (s8)a[0x255]) {
+                p->fc1 = a[0x254];
+                break;
+            }
+        }
+    }
+    if (a == NULL) {
+        return;
+    }
+    memset(&pos, 0, 0xC);
+    if (a[0x25A] == 0) {
+        fn_8001B728((s8)a[0x254], 0x22, &pos);
+        dir = -1;
+    } else {
+        fn_8001B728((s8)a[0x254], 0x1E, &pos);
+        dir = 1;
+    }
+    yaw = 0.0f; /* uninitialized in the original for fc0 >= 3 */
+    switch (p->fc0) {
+    case 0:
+        yaw = -*(f32*)(a + 0x44) - lbl_3_rodata_2DDC * (f32)(dir * 30 + 90);
+        break;
+    case 1:
+        yaw = -*(f32*)(a + 0x44) - lbl_3_rodata_2DDC * (f32)(dir * 30 + 60);
+        break;
+    case 2:
+        yaw = -*(f32*)(a + 0x44) - lbl_3_rodata_2DDC * (f32)(dir * 30 + 120);
+        break;
+    }
+    if (pos.y < lbl_3_rodata_2D5C) {
+        h = pos.y;
+        if (h < lbl_3_rodata_2E08) {
+            h = lbl_3_rodata_2E08;
+        }
+        r = sqrt(lbl_3_rodata_2E0C - h * h);
+    } else {
+        h = lbl_3_rodata_2D5C;
+        r = lbl_3_rodata_2E10;
+    }
+    off.x = -r * (f32)cos(yaw);
+    off.y = -h;
+    off.z = -r * (f32)sin(yaw);
+    pos.x += off.x * lbl_3_rodata_2D54;
+    pos.y += off.y * lbl_3_rodata_2D54;
+    pos.z += off.z * lbl_3_rodata_2D54;
+    off.x *= lbl_3_rodata_2D70;
+    off.y *= lbl_3_rodata_2D70;
+    off.z *= lbl_3_rodata_2D70;
+    pos.y *= lbl_3_rodata_2D70;
+    p->xa0 = pos.x;
+    p->ya4 = pos.y;
+    p->za8 = pos.z;
+    tilt.x = off.x;
+    tilt.y = off.y;
+    tilt.z = off.z;
+    flat.x = off.x;
+    flat.y = off.y;
+    flat.z = off.z;
+    tilt.z = lbl_3_rodata_2D5C;
+    flat.y = lbl_3_rodata_2D5C;
+    tilt.x = sqrt(pow(off.x, lbl_3_rodata_2D80) + pow(off.z, lbl_3_rodata_2D80));
+    if (r != lbl_3_rodata_2D5C) {
+        PSVECNormalize(&flat, &flat);
+    }
+    PSVECNormalize(&tilt, &tilt);
+    p->xac = lbl_3_rodata_2DE8 * -(f32)acos(PSVECDotProduct(&flat, &ref));
+    if (flat.z < lbl_3_rodata_2D5C) {
+        p->xac = lbl_3_rodata_2E14 - p->xac;
+    }
+    axis.x = lbl_3_rodata_2D5C;
+    axis.y = lbl_3_rodata_2D50;
+    axis.z = lbl_3_rodata_2D5C;
+    C_QUATRotAxisRad(&qYaw, &axis, lbl_3_rodata_2DDC * p->xac);
+    /* zb0 holds the pitch (degrees) for this object kind */
+    p->zb0 = lbl_3_rodata_2DE8 * (f32)acos(PSVECDotProduct(&tilt, &ref));
+    if (tilt.y < lbl_3_rodata_2D5C) {
+        p->zb0 = lbl_3_rodata_2E14 - p->zb0;
+    }
+    axis.x = lbl_3_rodata_2D5C;
+    axis.y = lbl_3_rodata_2D5C;
+    axis.z = lbl_3_rodata_2D50;
+    C_QUATRotAxisRad(&qPitch, &axis, lbl_3_rodata_2DDC * p->zb0);
+    PSQUATMultiply(&qYaw, &qPitch, &q);
+    PSQUATNormalize(&q, &q);
+    if (PSQUATDotProduct(&q, &q) == lbl_3_rodata_2D5C) {
+        axis.x = lbl_3_rodata_2D5C;
+        axis.y = lbl_3_rodata_2D50;
+        axis.z = lbl_3_rodata_2D5C;
+        C_QUATRotAxisRad(&q, &axis, lbl_3_rodata_2D5C);
+    }
+    if (a[0x25D] != 1) {
+        p->fl90_hi = 0;
+    } else {
+        p->fl90_hi = 1;
+    }
+    CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+    CTRLSetQuat(&p->c, q.x, q.y, q.z, q.w);
 }
+#endif
 
 // .text:0x000F0184 size:0xA0 mapped:0x8072F218
 void fn_3_F0184(void) {
@@ -914,7 +1045,7 @@ void fn_3_F0184(void) {
     for (i = 0; i < lbl_3_bss_AEE0[0x33C]; i++) {
         u8* e = *(u8**)lbl_3_common_bss_350E4 + (i + lbl_3_bss_AEE0[0x33B]) * 0xE8;
         if (e != NULL && e[0xC6] == 3) {
-            fn_3_EFB54(e);
+            fn_3_EFB54((StadCtlA*)e);
         }
     }
 }
