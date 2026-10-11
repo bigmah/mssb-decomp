@@ -69,6 +69,7 @@ void someChallengeStarFunction2(SceneTask* task);
 void fn_800596D4(SceneTask* task);
 void drawStarProgressionMenu(SceneTask* task);
 void fn_8005B298(SceneTask* task);
+void fn_80058644(SceneTask* task);
 void someChallengeStarFunction(SceneTask* task);
 void fn_80057CAC(void);
 void fn_8005CCE4(SceneTask* task, s32 port);

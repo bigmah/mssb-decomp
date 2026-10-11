@@ -54,6 +54,7 @@ extern ChallengeMission lbl_8010A768[20][10];
 extern s16 lbl_8010B3E8[];
 extern s32 determineIfMissionDescriptionIsShown(s16 charID);
 extern s32 challengeRelated(s16 team);
+extern s32 fn_80064918(s16 charID);
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
@@ -825,9 +826,97 @@ void fn_80058394(SceneTask* task) {
 #endif
 
 // .text:0x80058644 size:0x4DC
-void fn_80058644(void) {
-    return;
+// NONMATCHING 99%: the roster address adds are scheduled in a different order
+#if NONMATCHING
+void fn_80058644(SceneTask* task) {
+    CharacterStats* player;
+    s16 charID;
+    u32 fielding;
+    u8 pushPull;
+    u8 highLow;
+    u8 stance;
+
+    if (lbl_803297E0.starShown[lbl_803297E0.team] == 0) {
+        player = &inMemRoster[lbl_803297E0.team][lbl_803297E0.selected[lbl_803297E0.team] - 1];
+        charID = player->stats.CharID;
+        fielding = player->stats.FieldingStats;
+        pushPull = player->stats.HitTrajectoryPushPull;
+        highLow = player->stats.HitTrajectoryHighLow;
+        stance = player->stats.BattingStance;
+        TASK_OBJ(task, 291)->_5C = charID << 16;
+        TASK_OBJ(task, 292)->_5C = fn_80064918(charID) << 16;
+        TASK_OBJ(task, 301)->_5C = charID << 16;
+        fn_80059458(task, lbl_803297E0.team, fielding);
+        TASK_OBJ(task, 295)->_5C = 0;
+        TASK_OBJ(task, 296)->_5C = 1 << 16;
+        TASK_OBJ(task, 297)->_5C = 2 << 16;
+        TASK_OBJ(task, 298)->_5C = 3 << 16;
+        TASK_OBJ(task, 299)->_5C = 4 << 16;
+        TASK_OBJ(task, 300)->_5C = 5 << 16;
+        TASK_OBJ(task, 283)->_5C = 0;
+        TASK_OBJ(task, 284)->_5C = 0;
+        TASK_OBJ(task, 285)->_5C = 0;
+        TASK_OBJ(task, 286)->_5C = 0;
+        TASK_OBJ(task, 287)->_5C = 0;
+        TASK_OBJ(task, 288)->_5C = 0;
+        switch (pushPull) {
+        case 0:
+            TASK_OBJ(task, 283)->_68 = 1;
+            TASK_OBJ(task, 284)->_68 = 0;
+            TASK_OBJ(task, 285)->_68 = 0;
+            break;
+        case 1:
+            if (stance == 0) {
+                TASK_OBJ(task, 283)->_68 = 0;
+                TASK_OBJ(task, 284)->_68 = 1;
+                TASK_OBJ(task, 285)->_68 = 0;
+            } else {
+                TASK_OBJ(task, 283)->_68 = 0;
+                TASK_OBJ(task, 284)->_68 = 0;
+                TASK_OBJ(task, 285)->_68 = 1;
+            }
+            break;
+        case 2:
+            if (stance == 0) {
+                TASK_OBJ(task, 283)->_68 = 0;
+                TASK_OBJ(task, 284)->_68 = 0;
+                TASK_OBJ(task, 285)->_68 = 1;
+            } else {
+                TASK_OBJ(task, 283)->_68 = 0;
+                TASK_OBJ(task, 284)->_68 = 1;
+                TASK_OBJ(task, 285)->_68 = 0;
+            }
+            break;
+        }
+        switch (highLow) {
+        case 0:
+            TASK_OBJ(task, 286)->_68 = 1;
+            TASK_OBJ(task, 287)->_68 = 0;
+            TASK_OBJ(task, 288)->_68 = 0;
+            break;
+        case 1:
+            TASK_OBJ(task, 286)->_68 = 0;
+            TASK_OBJ(task, 287)->_68 = 1;
+            TASK_OBJ(task, 288)->_68 = 0;
+            break;
+        case 2:
+            TASK_OBJ(task, 286)->_68 = 0;
+            TASK_OBJ(task, 287)->_68 = 0;
+            TASK_OBJ(task, 288)->_68 = 1;
+            break;
+        }
+        TASK_OBJ(task, 302)->flags |= 2;
+        TASK_OBJ(task, 302)->_68 = 1;
+        TASK_OBJ(task, 281)->_68 = 1;
+        TASK_OBJ(task, 289)->_5C = 0;
+        TASK_OBJ(task, 289)->_68 = 1;
+        TASK_OBJ(task, 307)->flags &= ~2;
+        TASK_OBJ(task, 307)->_68 = 0;
+        TASK_OBJ(task, 303)->_68 = 4;
+        lbl_803297E0.starShown[lbl_803297E0.team] = 1;
+    }
 }
+#endif
 
 // .text:0x80058B20 size:0x2EC
 // NONMATCHING 95%: same star-select register differences as fn_80058394
