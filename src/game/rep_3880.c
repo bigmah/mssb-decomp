@@ -458,8 +458,9 @@ void fn_3_14A164(void) {
     pitchingMachinePitching(0x24);
 }
 
-// 99%: only the flag base addr is addi r3 (orig: lis/addi r4 before stmw); computing delta after df in the else branch fixed the float regs
+// NONMATCHING 99%: only the flag base addr is addi r3 (orig: lis/addi r4 before stmw); computing delta after df in the else branch fixed the float regs
 // .text:0x0014A188 size:0x1F4 mapped:0x8078921C
+#if NONMATCHING
 u32 fn_3_14A188(u8* o) {
     u8* p;
     u8* d;
@@ -511,6 +512,7 @@ u32 fn_3_14A188(u8* o) {
     } while (p != NULL);
     return alive == 0;
 }
+#endif
 
 // .text:0x0014A37C size:0x2B0 mapped:0x80789410
 void fn_3_14A37C(u8* o, f32* v) {
