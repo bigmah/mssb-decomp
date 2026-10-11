@@ -211,7 +211,47 @@ MtxPtr fn_800383BC(RigidBody* rb) {
 
 // .text:0x80038418 size:0x1D8
 void fn_80038418(RigidBody* rb, Vec* pos, Quaternion* quat, Vec* prevPos, Quaternion* prevQuat) {
-    return;
+    Mtx m1;
+    Mtx m2;
+    Vec v;
+    Quaternion q;
+    f32 angle;
+
+    v.x = -rb->p1.x;
+    v.y = -rb->p1.y;
+    v.z = -rb->p1.z;
+    PSMTXQuat(rb->rot, quat);
+    PSMTXInverse(rb->rot, rb->invRot);
+    PSMTXTransApply(rb->rot, rb->world, pos->x, pos->y, pos->z);
+    PSMTXMultVec(rb->world, &v, &rb->pos);
+    memcpy(&rb->quat, quat, sizeof(Quaternion));
+
+    // linear velocity from the previous pose
+    PSMTXQuat(m2, prevQuat);
+    PSMTXTransApply(m2, m1, prevPos->x, prevPos->y, prevPos->z);
+    PSMTXMultVec(m1, &v, &v);
+    PSVECSubtract(&rb->pos, &v, &v);
+    PSVECScale(&v, lbl_803CC758, &rb->vel);
+    PSMTXMultVec(rb->invRot, &rb->vel, &rb->velLocal);
+    memset(&rb->vel, 0, sizeof(Vec));
+    memset(&rb->velLocal, 0, sizeof(Vec));
+
+    // angular velocity from the rotation delta
+    PSMTXQuat(m1, quat);
+    PSMTXQuat(m2, prevQuat);
+    PSMTXInverse(m2, m2);
+    PSMTXConcat(m1, m2, m1);
+    C_QUATMtx(&q, m1);
+    q.w = acos(q.w);
+    angle = lbl_803CC758 * (lbl_803CC754 * q.w);
+    q.w = sin(q.w);
+    if (q.w != lbl_803CC728) {
+        PSVECScale((Vec*)&q, angle / q.w, &rb->angVel);
+    } else {
+        rb->angVel.x = angle;
+        rb->angVel.y = lbl_803CC728;
+        rb->angVel.z = lbl_803CC728;
+    }
 }
 
 // .text:0x800385F0 size:0x1C0
