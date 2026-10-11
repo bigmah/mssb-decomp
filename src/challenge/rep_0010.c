@@ -212,3 +212,17 @@ void _prolog(void) {
     fn_800AD054(lbl_80366158.arenaAfterDll, lbl_80366158.arenaEnd);
 }
 
+// .text:0x00001148 size:0x88
+// Root task of the challenge test module: resets the menu and the display.
+void fn_1_1148(void) {
+    ChMenuTask* task = lbl_803CC1B8;
+
+    task->cursor = 0;
+    task->_14 = 0;
+    resetAllDrawingStructs();
+    fn_80009144();
+    fn_800AD054(lbl_80366158.arenaAfterDll, lbl_80366158.arenaEnd);
+    GXSetCopyClear(lbl_1_data_A8, 0xFFFFFF);
+    ((ChMenuTask*)lbl_803CC1B8)->h.func = fn_1_16A0;
+}
+
