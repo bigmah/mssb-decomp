@@ -123,15 +123,10 @@ void fn_8006C3F0(u32 value) {
 }
 
 // .text:0x8006C3F8 size:0x44
-void fn_8006C3F8(void) {
-    return;
-}
-
-extern u32 lbl_803CBD3C;
-
-// fn_8006C43C, size:0x8
-void fn_8006C43C(u32 value) {
-    lbl_803CBD3C = value;
+void fn_8006C3F8(void* obj, f32 frame, s32 a, s32 b) {
+    if (lbl_80366158[0x28] != 1 && lbl_803CBD38 != NULL) {
+        lbl_803CBD38(obj, frame, a, b);
+    }
 }
 
 // .text:0x8006C444 size:0x44
