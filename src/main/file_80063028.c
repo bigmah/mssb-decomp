@@ -283,7 +283,16 @@ s32 fn_800638B4(void* player, GameActor** actor) {
 
 // .text:0x800638CC size:0x8C
 void fn_800638CC(void) {
-    return;
+    PlayerVecSlot* slot;
+    u32 i;
+
+    for (i = 0; i < 9; i++) {
+        slot = &lbl_802E4BC0[(s8)i];
+        memset(&slot->a, 0, sizeof(Vec));
+        memset(&slot->b, 0, sizeof(Vec));
+        slot->unk18 = 0;
+        slot->unk1C = 0;
+    }
 }
 
 // .text:0x80063958 size:0x64
