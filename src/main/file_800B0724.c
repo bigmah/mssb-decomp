@@ -489,8 +489,29 @@ void fn_800B117C(u8 value) {
 }
 
 // .text:0x800B1188 size:0x11C
+// Draws the full-screen quad lbl_801115F0 with the screen projection lbl_801115B0.
 void fn_800B1188(void) {
-    return;
+    SpriteProj savedProj;
+    u8 savedNoAlphaTest;
+    u32 savedZMode;
+    s16 one;
+    memcpy(&savedProj, &lbl_803CBB38->proj, sizeof(SpriteProj));
+    savedZMode = lbl_803CBB38->zMode;
+    savedNoAlphaTest = lbl_803CBB38->noAlphaTest;
+    one = 1 << lbl_803CC1C8;
+    lbl_801115F0[3].s = one;
+    lbl_801115F0[2].s = one;
+    lbl_801115F0[2].t = one;
+    lbl_801115F0[1].t = one;
+    SpriteSetProjection(lbl_801115B0, GX_ORTHOGRAPHIC);
+    lbl_803CBB34->noAlphaTest = 1;
+    if (lbl_803CBB34->zMode != 0x4000001F) {
+        lbl_803CBB34->zMode = 0x4000001F;
+    }
+    DrawSprite(GX_QUADS, lbl_801115F0, 4, NULL, 0, 0);
+    memcpy(&lbl_803CBB34->proj, &savedProj, sizeof(SpriteProj));
+    lbl_803CBB34->noAlphaTest = savedNoAlphaTest;
+    lbl_803CBB34->zMode = savedZMode;
 }
 
 // .text:0x800B12A4 size:0x38
