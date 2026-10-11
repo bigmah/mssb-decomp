@@ -38,6 +38,18 @@ extern void fn_8001A25C(void);
 extern s32 fn_3_BF878(void);
 extern s32 fn_3_11D6A0(void);
 extern u8 lbl_3_common_bss_35154[];
+extern s32 fn_3_910AC(void);
+extern s32 fn_3_90F48(void);
+extern s32 fn_800698F8(s32 charId);
+extern s32 fn_80069B68(void);
+
+// View of lbl_800EF808 (SoundManager in main/file_80021308.h).
+typedef struct {
+    /*0x000*/ u8 _000[0x39A];
+    /*0x39A*/ u8 loadIndex; // roster slot whose sound bank is being loaded
+    /*0x39B*/ u8 _39B;
+} SoundManagerView; // size: 0x39C
+extern SoundManagerView lbl_800EF808;
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h, which can't be
 // included here next to main/file_8004207C.h: their fn_80024D2C prototypes clash).
@@ -1661,6 +1673,120 @@ void fn_3_59F40(void) {
         }
         break;
     case 18:
+        task->func = fn_3_5AE0C;
+        break;
+    }
+}
+#endif
+
+// fn_3_5A28C, size:0x3F0
+// NONMATCHING 99%: scheduling only (lis inMemRoster placed one slot early in case 4)
+#if NONMATCHING
+void fn_3_5A28C(void) {
+    SceneTask* task = lbl_803CC1B8;
+    switch (unkSimulationRelatedStruct._04) {
+    case 0:
+        lbl_8037169C.lastPick = calledWhenStartingMatch();
+        unkSimulationRelatedStruct._04++;
+    case 1:
+        lbl_3_common_bss_32724[0xA4] = 0;
+        if (fn_80020218() != 0) {
+            if (fn_80020278(lbl_8037169C.lastPick) != 0) {
+                lbl_3_common_bss_32724[0xA4] = 1;
+                unkSimulationRelatedStruct._04++;
+            }
+        } else {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 2:
+        task->_10 = 0;
+        fn_800216F8(1, fn_3_910AC);
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 3:
+        if (task->_10 != 0) {
+            task->_10 = 0;
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 4:
+        {
+            s16 id = fn_800698F8(inMemRoster[lbl_800EF808.loadIndex / 9][lbl_800EF808.loadIndex % 9].stats.CharID);
+            fn_800216F8(id + 5, fn_3_90F48);
+        }
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 5:
+        if (task->_10 != 0) {
+            if (lbl_800EF808.loadIndex != 17) {
+                lbl_800EF808.loadIndex++;
+                unkSimulationRelatedStruct._04 = 4;
+            } else {
+                lbl_800EF808.loadIndex = 0;
+                task->_10 = 0;
+                unkSimulationRelatedStruct._04++;
+            }
+        }
+        break;
+    case 6:
+        fn_800216F8(g_d_GameSettings.StadiumID + 0x27, fn_3_90798);
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 7:
+        if (task->_10 != 0) {
+            task->_10 = 0;
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 8:
+        lbl_3_data_228._10 = 0;
+        fn_800B0A5C_insertQueue(manageLoadingState, 0);
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 9:
+        if (lbl_3_data_228._10 != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 10:
+        if (fn_80035838(lbl_3_data_3D80, 2) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 11:
+        if (fn_80035838(lbl_3_data_3D80 + (g_GameLogic.logo[0].ID / 4 + 0x11) * 16, 0xF) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 12:
+        if (fn_80035838(lbl_3_data_3D80 + (g_GameLogic.logo[1].ID / 4 + 0x11) * 16, 0x10) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 13:
+        if (g_d_GameSettings.GameModeSelected == 4 && fn_80069B68() == 0) {
+            break;
+        }
+        unkSimulationRelatedStruct._04++;
+    case 14:
+        fn_8001CE74();
+        fn_8001A3FC(0);
+        unkSimulationRelatedStruct._04 = 17;
+        break;
+    case 17:
+        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D60, 0, 0, 0); // TODO type: pointer in u32
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 18:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            fn_3_906FC();
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 15:
+    case 16:
+    default:
         task->func = fn_3_5AE0C;
         break;
     }

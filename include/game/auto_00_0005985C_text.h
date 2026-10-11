@@ -105,5 +105,6 @@ void fn_3_5F154(void);
 void fn_3_5BA2C(void);
 void fn_3_59C2C(void);
 void fn_3_59F40(void);
+void fn_3_5A28C(void);
 
 #endif
