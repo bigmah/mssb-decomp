@@ -268,4 +268,6 @@ void fn_2_11340(u8 team);
 
 void fn_2_BF90(void);
 
+void fn_2_5444(u8 team);
+
 #endif

@@ -1995,3 +1995,48 @@ void fn_2_BF90(void) {
     }
 }
 #endif
+
+// NONMATCHING 90%: mode-5 copy loop register/scheduling; inlined fn_2_52CC indexes F468 via slwi/stwx in the original
+#if NONMATCHING
+// fn_2_5444, size:0x3A4
+void fn_2_5444(u8 team) {
+    s32 i;
+    u8 s10;
+    lbl_2_bss_F468[team + 0x3D] = 0;
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        for (i = 0; i < 9; i++) {
+            s16 id = (s8)lbl_803C6724[i + 2];
+            u8 pos = lbl_803C6724[i + 0x14];
+            *(s16*)(starMissionCompletionTracker + i * 6 + 0x40B8) = id;
+            starMissionCompletionTracker[i * 6 + 0x40BA] = i;
+            starMissionCompletionTracker[i * 6 + 0x40BB] = pos;
+            g_Roster[i].h24 = id;
+            lbl_80354720[i * 4 + 2] = pos;
+        }
+        fn_800625A4(0, 0x13);
+        fn_800625A4(1, 0x13);
+        lbl_2_bss_F468[0x2E] = 0;
+        lbl_2_bss_100B4 = 1;
+        *(s16*)(lbl_803CBBCC[0] + 4) = 8;
+        return;
+    }
+    s10 = g_d_GameSettings._10;
+    if (s10 == 0 && lbl_2_bss_100B8[0x2E] != 0) {
+        fn_800625A4(1, 0x11);
+        lbl_8034E9A0[0x472A] = 0xFF;
+        lbl_2_bss_F468[0x36] = 0x1E;
+        *(s16*)(lbl_803CBBCC[0] + 4) = 3;
+    } else if (s10 == 0) {
+        fn_2_52CC();
+        fn_800625A4(0, 0x11);
+    } else if (s10 == 1) {
+        lbl_2_bss_100B8[0x2E + team] = 1;
+        fn_800625A4(team, 0x11);
+        if (lbl_2_bss_100B8[0x2E] != 0 && lbl_2_bss_100B8[0x2F] != 0) {
+            lbl_2_bss_F468[0x4F] = 1;
+            lbl_2_bss_F468[0x36] = 0x1E;
+            *(s16*)(lbl_803CBBCC[0] + 4) = 7;
+        }
+    }
+}
+#endif
