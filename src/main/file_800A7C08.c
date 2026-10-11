@@ -1457,9 +1457,65 @@ void fn_800AA930(CardRequest* req, u64 serial) {
 }
 
 // .text:0x800AAA70 size:0x474
+// NONMATCHING 76%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+#if NONMATCHING
 void fn_800AAA70(void) {
-    return;
+    CardFileTask* task = (CardFileTask*)lbl_803CC1B8;
+    u8 status;
+
+    switch (task->step) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+        CardMountSteps(&task->step, task->chan, task->mode, 9);
+        break;
+    case 4:
+        CardCheckResultStep(&task->step, task->chan, 9);
+        break;
+    case 5:
+        CardSerialStep(&task->step, task->chan, 9);
+        break;
+    case 6:
+        memset(((Task*)fn_800B0A5C_insertQueue(fn_800ABBD0, 0xFF))->data, 0, sizeof(((Task*)0)->data));
+        task->step = 7;
+        lbl_803CC1B8->result = 0;
+        break;
+    case 7:
+        switch (task->result) {
+        case 1:
+            if (lbl_803CC15C != NULL) {
+                status = lbl_803CC15C(task->buffer, task->length, lbl_803CC158);
+                if (status != CARD_STATUS_READY) {
+                    lbl_803C7838.status = status;
+                    task->step = 9;
+                    break;
+                }
+            }
+            task->step = 8;
+            break;
+        case 2:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 8:
+        fn_800ACD64(CARDUnmount(task->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        default:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 9:
+        task->parent->result = 1;
+        fn_800B0A14_removeQueue(task->parent);
+        break;
+    }
 }
+#endif
 
 // .text:0x800AAEE4 size:0x108
 void fn_800AAEE4(CardRequest* req, u64 serial) {
