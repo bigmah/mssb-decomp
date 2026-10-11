@@ -5,6 +5,7 @@
 #include "game/rep_1CB8.h"
 #include "game/rep_3520.h"
 #include "game/rep_3E58.h"
+#include "game/rep_1188.h"
 #include "game/m_sound.h"
 #include "game/auto_00_0006C854_text.h"
 #include "game/auto_00_00106DFC_text.h"
@@ -256,7 +257,6 @@ void fn_3_161588(int, s16);
 // TODO type: these disagree with their own units' headers
 void fn_3_59918(s32 x);           // defined as (s32 x, s32 unused)
 void fn_3_1682AC(int, int);       // header: (CharActor* actor, s8 kind); callers pass the actor as an int
-void fn_3_6E24C(int, int);        // rep_1188.h still has the (void) stub
 void fn_3_16D5E4(u8);             // rep_4090.h still has the (void) stub
 int __abs(int);
 
