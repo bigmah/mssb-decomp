@@ -338,9 +338,85 @@ u8 fn_80067264(s32 team, s32 captain) {
 #endif
 
 // .text:0x800675C4 size:0x308
-void fn_800675C4(void) {
-    return;
+// NONMATCHING 82%: the original addresses lbl_80108ED0/lbl_80108EDC relative to lbl_80108DB8 (data defined in this TU)
+#if NONMATCHING
+u8 fn_800675C4(s32 team, s32 captain) {
+    s32 found[4];
+    s32 idx = -1;
+    s32 count = 0;
+    s32 set;
+    s32 k;
+    s32 i;
+    s32 row;
+    s32 m;
+    u16 want;
+
+    found[0] = 0;
+    found[1] = 0;
+    found[2] = 0;
+    found[3] = 0;
+    for (i = 0; i < 12; i++) {
+        if (captain == lbl_80108ED0[i]) {
+            idx = i;
+            break;
+        }
+    }
+    for (set = 0; set < 2; set++) {
+        // Count the set's characters that were picked directly.
+        for (k = 0; k < 4; k++) {
+            want = lbl_80108EDC.variants[idx][set][k];
+            for (i = 0; i < 9; i++) {
+                if (lbl_803C6724.picks[team][i] == want) {
+                    found[k] = 1;
+                    count++;
+                }
+            }
+            lbl_80108EDC.variants[idx][set][k] = want;
+        }
+        if (count == 4) {
+            return set + 1;
+        }
+        // For the rest, accept any character from the same group.
+        for (k = 0; k < 4; k++) {
+            if (found[k] == 1) {
+                continue;
+            }
+            want = lbl_80108EDC.variants[idx][set][k];
+            for (row = 0; row < 9; row++) {
+                for (m = 0; m < 5; m++) {
+                    if (want == lbl_80108EDC.groups[row][m]) {
+                        goto found_row;
+                    }
+                }
+            }
+            row = -1;
+        found_row:
+            if (row == -1) {
+                continue;
+            }
+            for (m = 1; m < 5; m++) {
+                for (i = 0; i < 9; i++) {
+                    if (lbl_803C6724.picks[team][i] == lbl_80108EDC.groups[row][m]) {
+                        count++;
+                        found[k] = 1;
+                        if (count == 4) {
+                            return set + 1;
+                        }
+                        goto next;
+                    }
+                }
+            }
+        next:;
+        }
+        found[0] = 0;
+        found[1] = 0;
+        found[2] = 0;
+        found[3] = 0;
+        count = 0;
+    }
+    return 0;
 }
+#endif
 
 // .text:0x800678CC size:0x1FC
 void fn_800678CC(void) {

@@ -88,5 +88,6 @@ void fn_800670A0(u8 team);
 BOOL fn_80067B40(s32 unused, u8 charId, u8 flag);
 void fn_80066EAC(u8 team);
 u8 fn_80067264(s32 team, s32 captain);
+u8 fn_800675C4(s32 team, s32 captain);
 
 #endif
