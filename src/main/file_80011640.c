@@ -510,8 +510,34 @@ void QueueCharacterAnimation(s32 index, s32 anim, s32 a, s32 b, s32 c, s32 d, s3
 }
 
 // .text:0x8001B990 size:0xB4
-void AnimateCharacter(void) {
-    return;
+void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, s32 e) {
+    CharActor* actor = lbl_8036E548.active[index];
+
+    if (actor == NULL) {
+        return;
+    }
+    if (mode == 1 && actor->anim[0] == anim) {
+        return;
+    }
+    if (mode == 3) {
+        mode = 1;
+    }
+    actor->anim[1] = anim;
+    actor->_06A[1] = c;
+    actor->_25F[1] = a;
+    actor->mode[1] = mode;
+    actor->_262[1] = b;
+    actor->_265[1] = d;
+    actor->_26C[1] = 0;
+    if (e == -1) {
+        actor->_269[1] = 5;
+    } else {
+        actor->_269[1] = e;
+    }
+    actor->anim[2] = -1;
+    if ((anim >= 0x3F && anim < 0x4B) || (anim >= 0x4B && anim < 0x69)) {
+        lbl_8036E548.active[index]->_26C[1] = 1;
+    }
 }
 
 // .text:0x8001BA44 size:0x40C
