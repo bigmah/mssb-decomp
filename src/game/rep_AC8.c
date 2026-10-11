@@ -1623,9 +1623,203 @@ int fn_3_365D0(int a, int b, int c, f32 x, f32 y) {
 }
 
 // .text:0x00036678 size:0xA9C mapped:0x8067570C
-int fn_3_36678(int a, int b, f32 x, f32 y, int c) {
-    return 0;
+extern f32 lbl_3_rodata_BE8;
+extern f32 lbl_3_rodata_BEC;
+extern f32 lbl_3_rodata_BF0;
+extern f32 lbl_3_rodata_BF4;
+extern f32 lbl_3_rodata_BBC;
+// NONMATCHING 91%: fielder x/z read via lfsx in the original; dist sums are unfused fmuls+fadds there; f-reg numbering
+#if NONMATCHING
+int fn_3_36678(int a, int b, f32 x, f32 z, int mode) {
+    u8* fa;
+    u8* fb;
+    s16 angA;
+    s16 angB;
+    s16 angDiff;
+    f32 distA;
+    f32 distB;
+    f32 dx;
+    f32 dz;
+    s16 dA;
+    s16 dB;
+    if (lbl_3_bss_16C < 0) {
+        return -1;
+    }
+    fa = g_Fielders + a * 0x268;
+    fb = g_Fielders + b * 0x268;
+    angA = radToShortAngle(atan2(z - *(f32*)(fa + 8), x - *(f32*)fa));
+    angB = radToShortAngle(atan2(z - *(f32*)(fb + 8), x - *(f32*)fb));
+    angDiff = fn_3_9FCF8(angA, angB);
+    dx = *(f32*)fa - x;
+    dz = *(f32*)(fa + 8) - z;
+    distA = dx * dx + dz * dz;
+    SQRT_L(distA);
+    dx = *(f32*)fb - x;
+    dz = *(f32*)(fb + 8) - z;
+    distB = dx * dx + dz * dz;
+    SQRT_L(distB);
+    if (angDiff <= 0x100) {
+        if (distA < distB) {
+            return a;
+        }
+        return b;
+    }
+    if (mode < 2) {
+        s32 sel;
+        s32 d;
+        if (*(s16*)(g_FieldingLogic + 0xB0) == a) {
+            distA -= lbl_3_rodata_B78;
+            if (distA < lbl_3_rodata_B20) {
+                distA = lbl_3_rodata_B20;
+            }
+        } else if (*(s16*)(g_FieldingLogic + 0xB0) == b) {
+            distB -= lbl_3_rodata_B78;
+            if (distB < lbl_3_rodata_B20) {
+                distB = lbl_3_rodata_B20;
+            }
+        }
+        if ((&lbl_3_bss_170)[3] >= 0) {
+            d = __abs((&lbl_3_bss_170)[0] - (&lbl_3_bss_170)[3]);
+            if (d > 0x800) {
+                d = 0x1000 - d;
+            }
+            if (d <= 0x400) {
+                f32 home;
+                f32 step;
+                f32 lim;
+                sel = -1;
+                if (a == *(s16*)(g_FieldingLogic + 0xB0)) {
+                    sel = a;
+                }
+                if (b == *(s16*)(g_FieldingLogic + 0xB0)) {
+                    sel = b;
+                }
+                if (sel >= 0) {
+                    u8* fs = g_Fielders + sel * 0x268;
+                    f32 dSel;
+                    f32 dTgt;
+                    dx = *(f32*)fs - x;
+                    dz = *(f32*)(fs + 8) - z;
+                    dSel = dx * dx + dz * dz;
+                    SQRT_L(dSel);
+                    dx = *(f32*)(fs + 0xD4) - x;
+                    dz = *(f32*)(fs + 0xD8) - z;
+                    dTgt = dx * dx + dz * dz;
+                    SQRT_L(dTgt);
+                    if (dSel > dTgt) {
+                        goto compare;
+                    }
+                }
+                step = lbl_3_rodata_BE4;
+                home = x * x + z * z;
+                SQRT_L(home);
+                if (home < lbl_3_rodata_BE8) {
+                    step = lbl_3_rodata_B8C;
+                } else if (home < lbl_3_rodata_BEC) {
+                    step = lbl_3_rodata_B64;
+                } else if (home < lbl_3_rodata_BF0) {
+                    step = lbl_3_rodata_BF4;
+                }
+                lim = lbl_3_rodata_BD8;
+                if (home < lbl_3_rodata_BEC) {
+                    lim = lbl_3_rodata_B8C;
+                } else if (home < lbl_3_rodata_BF0) {
+                    lim = lbl_3_rodata_BBC * (home - lbl_3_rodata_BE8) + lbl_3_rodata_B8C;
+                }
+                if (a == *(s16*)(g_FieldingLogic + 0xB0)) {
+                    if (distA > lim) {
+                        distA -= step;
+                    } else {
+                        distA = lbl_3_rodata_B20;
+                    }
+                }
+                /* the original compares and subtracts distA here, not distB */
+                if (b == *(s16*)(g_FieldingLogic + 0xB0) && distA > lim) {
+                    distB = distA - step;
+                }
+            }
+        }
+    }
+compare:
+    if (distB < distA) {
+        f32 tf = distA;
+        int ti = a;
+        s16 ta = angA;
+        distA = distB;
+        a = b;
+        angA = angB;
+        distB = tf;
+        b = ti;
+        angB = ta;
+    }
+    if (mode < 3) {
+        f32 gap;
+        if (distA < lbl_3_rodata_B68) {
+            return a;
+        }
+        gap = distB - distA;
+        if (gap > lbl_3_rodata_B70) {
+            if (gap > lbl_3_rodata_B9C && *(s16*)(g_Ball + 0x1B7A) == 1 && a >= 6) {
+                return a;
+            }
+            if (g_Ball[0x1BC9] != 0 || *(s16*)(g_Ball + 0x1B7A) != 1) {
+                return a;
+            }
+            if (a == 1 && gap > lbl_3_rodata_B9C) {
+                return a;
+            }
+        }
+        if (gap > lbl_3_rodata_BA0 && distA < lbl_3_rodata_BE4) {
+            return a;
+        }
+        if (distA < lbl_3_rodata_B64 && distB < lbl_3_rodata_B64 && angDiff <= 0x400) {
+            if (mode == 0) {
+                return -1;
+            }
+            return a;
+        }
+        if (angDiff <= 0x200 && gap > lbl_3_rodata_B64 && distA < lbl_3_rodata_B70) {
+            return a;
+        }
+    }
+    dA = __abs(lbl_3_bss_16C - angA);
+    dB = __abs(lbl_3_bss_16C - angB);
+    if (dA > 0x800) {
+        dA = 0x1000 - dA;
+    }
+    if (dB > 0x800) {
+        dB = 0x1000 - dB;
+    }
+    if (__abs(dA - dB) <= 0x100) {
+        return a;
+    }
+    if (dA > 0x400) {
+        if (g_Ball[0x1BC9] == 0 && *(s16*)(g_Ball + 0x1B7A) == 1 && b == 1) {
+            if (dB <= 0x200) {
+                return b;
+            }
+        } else if (dB <= 0x400) {
+            return b;
+        }
+        if (mode == 0) {
+            return -1;
+        }
+    }
+    if (dB > 0x400) {
+        if (g_Ball[0x1BC9] == 0 && *(s16*)(g_Ball + 0x1B7A) == 1 && b == 1) {
+            if (dA <= 0x200) {
+                return a;
+            }
+        } else {
+            return a;
+        }
+    }
+    if (dA > dB) {
+        return b;
+    }
+    return a;
 }
+#endif
 
 // .text:0x00037114 size:0x2F8 mapped:0x806761A8
 // NONMATCHING 98%: angA/fb share r29 in the original, ours uses r26 (one extra saved reg)
