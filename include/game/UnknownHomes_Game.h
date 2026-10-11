@@ -1114,7 +1114,7 @@ typedef struct _GameControlsStruct {
     /*0x00C*/ int homeTeamBattingInd_fieldingTeam;
     /*0x010*/ int awayTeamBattingInd_battingTeam;
     /*0x014*/ u32 AIDifficulty0Special3Weak[2];
-    artificial_padding(0x14, 0x24, u32[2]);
+    /*0x01C*/ s32 _01C[2]; // per team, from g_d_GameSettings.maybeHomeAway[]
     /*0x024*/ LogoInfoStruct logo[2];
     /*0x03C*/ int battingOrderAndPositionMapping[2][10][2]; // first Pair Is Pitcher
     /*0x0DC*/ int currentBatterPerTeam[2];
@@ -1163,14 +1163,15 @@ typedef struct _GameControlsStruct {
     /*0x134*/ u8 _134;
     /*0x135*/ u8 _135;
     /*0x136*/ u8 _136;
-    /*0x137*/ u8 playOverFadeOutStarted;
+    /*0x137*/ s8 playOverFadeOutStarted; // also: scorebook team selection (-1: none)
     /*0x138*/ u8 playOver;
     /*0x139*/ u8 playOverInd;
     /*0x13A*/ u8 walkOffWinInd; // unsure
     /*0x13B*/ u8 gameOverInd;
     /*0x13C*/ u8 scoutFlag_VsScreenInd;
     /*0x13D*/ u8 _13D;
-    /*0x13E*/ u8 _13E[4];
+    /*0x13E*/ u8 _13E[2]; // per team: AI controlled
+    /*0x140*/ u8 _140[2];
     /*0x142*/ u8 teamAIInd[2];
     /*0x144*/ u8 autoFielding[2];
     /*0x146*/ u8 batterHandedness[2];
