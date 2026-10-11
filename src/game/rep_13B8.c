@@ -3828,6 +3828,8 @@ void fn_3_870AC(void) {
 
 // .text:0x000871BC size:0x110 mapped:0x806C6250
 // ~90%: body matches; prologue base-register order and hoisted lha/lfs scheduling differ (tried ~200 decl/init/loop-form variants)
+// NONMATCHING 90%: prologue base-register order and load scheduling (see note above)
+#if NONMATCHING
 void fn_3_871BC(void) {
     int n;
     f32 c1 = lbl_3_data_4C44[1];
@@ -3860,6 +3862,7 @@ void fn_3_871BC(void) {
         }
     }
 }
+#endif
 
 // .text:0x000872CC size:0x158 mapped:0x806C6360
 void fn_3_872CC(void) {
