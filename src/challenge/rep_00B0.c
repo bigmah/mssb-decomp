@@ -169,9 +169,108 @@ void fn_1_1DBC(s32 a, s32 b, s32 c, s32 d, s8 color) {
 #endif
 
 // .text:0x000025BC size:0x187C
+// NONMATCHING 98.3%: register allocation (one extra saved register, r23); the GD list pointer lives in r30 instead of r29,
+// and count + 2 is computed once instead of per loop
+#if NONMATCHING
 void fn_1_25BC(ChalColBlock* block) {
-    return;
+    ChalColVtx* v;
+    ChalColVtx* p;
+    ChalColVtx* first;
+    u32 n;
+    u32 i;
+    u16 count;
+    u32 nverts;
+    u32 id;
+    u32 prevId;
+
+    do {
+        count = block->hdr.h.count;
+        if (block->hdr.h.isStrip == 0) {
+            // filled triangles
+            v = block->v;
+            n = count * 3;
+            GDBegin(GX_TRIANGLES, GX_VTXFMT0, n);
+            while (n != 0) {
+                GDPosition3f32(v->pos.x, v->pos.y, v->pos.z);
+                GDColor1x8(CHAL_COLOR(v->id));
+                v++;
+                n--;
+            }
+            // outlines
+            i = count;
+            p = block->v;
+            while (i != 0) {
+                GDBegin(GX_LINESTRIP, GX_VTXFMT0, 4);
+                first = p;
+                fn_1_4074(&p[0].pos);
+                fn_1_4074(&p[1].pos);
+                fn_1_4074(&p[2].pos);
+                p += 3;
+                fn_1_4074(&first->pos);
+                i--;
+            }
+        } else {
+            // count the vertices needed, with two degenerate vertices per color change
+            v = block->v;
+            prevId = v->id;
+            nverts = 0;
+            for (i = count + 2; i != 0; i--) {
+                nverts++;
+                if (prevId != v->id) {
+                    prevId = v->id;
+                    nverts += 2;
+                }
+                v++;
+            }
+
+            prevId = block->v[0].id;
+            p = block->v;
+            GDBegin(GX_TRIANGLESTRIP, GX_VTXFMT0, nverts);
+            i = count + 2;
+            while (i != 0) {
+                id = p->id;
+                if (prevId != id) {
+                    prevId = id;
+                    GDPosition3f32(p[-2].pos.x, p[-2].pos.y, p[-2].pos.z);
+                    GDColor1x8(CHAL_COLOR(id));
+                    GDPosition3f32(p[-1].pos.x, p[-1].pos.y, p[-1].pos.z);
+                    GDColor1x8(CHAL_COLOR(id));
+                }
+                fn_1_3E38(&p->pos, id);
+                p++;
+                i--;
+            }
+
+            // outlines: along the strip, then both edges
+            n = count + 2;
+            v = block->v;
+            GDBegin(GX_LINESTRIP, GX_VTXFMT0, n);
+            while (n != 0) {
+                fn_1_4074(&v->pos);
+                v++;
+                n--;
+            }
+            n = (u32)(count + 3) >> 1;
+            v = block->v;
+            GDBegin(GX_LINESTRIP, GX_VTXFMT0, n);
+            while (n != 0) {
+                fn_1_4074(&v->pos);
+                v += 2;
+                n--;
+            }
+            n = (u32)(count + 2) >> 1;
+            v = &block->v[1];
+            GDBegin(GX_LINESTRIP, GX_VTXFMT0, n);
+            while (n != 0) {
+                fn_1_4074(&v->pos);
+                v += 2;
+                n--;
+            }
+        }
+        block = (ChalColBlock*)p;
+    } while (block->hdr.word != 0);
 }
+#endif
 
 // .text:0x00003E38 size:0x23C
 void fn_1_3E38(Vec* pos, u32 id) {
