@@ -180,7 +180,7 @@ void fn_2_62A38(MenuTask* task, MenuItem* item);
 void fn_2_62D18(void);
 void fn_2_63570(MenuTask* task, MenuItem* item);
 void fn_2_636A4(MenuTask* task, MenuItem* item);
-void fn_2_63874(void);
+void fn_2_63874(MenuTask* task, MenuItem* item);
 void fn_2_63A64(void);
 void fn_2_63BEC(MenuTask* task, MenuItem* item);
 void fn_2_63DBC(void);
