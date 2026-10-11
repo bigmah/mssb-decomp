@@ -291,7 +291,9 @@ void fn_80009094(void) {
 
 // .text:0x800090B4 size:0x90
 void fn_800090B4(void) {
-    return;
+    if (fn_80009028() != 1) {
+        fn_8001D2D4();
+    }
 }
 
 // .text:0x80009144 size:0x3C
