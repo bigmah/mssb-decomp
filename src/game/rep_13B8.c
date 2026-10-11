@@ -1179,9 +1179,286 @@ void fn_3_7FFD0(f32* out, int a, int b, f32 t) {
 #pragma fp_contract on
 
 // .text:0x00080028 size:0x109C mapped:0x806BF0BC
-void fn_3_80028(int i) {
-    return;
+// Dugout entrance per stadium (g_d_GameSettings+9) and team.
+extern XZ13B8 lbl_3_data_4290[7][2];
+extern f32 lbl_3_data_4B24;
+extern XZ13B8 lbl_3_data_4B28[3];
+extern f32 lbl_3_data_4B50;
+extern s16 lbl_3_data_4B54;
+
+// Aim runner r at its team's dugout and start walking there (state 2).
+static inline void walkToDugout13B8(u8* r) {
+    XZ13B8* dugout = &lbl_3_data_4290[g_d_GameSettings[9]][*(s32*)(g_GameLogic + 0xC)];
+    f32 dx;
+    f32 dz;
+    f32 dist;
+    *(f32*)(r + 0x48) = dugout->x;
+    *(f32*)(r + 0x50) = dugout->z;
+    dx = *(f32*)(r + 0x48) - *(f32*)(r + 0x0);
+    dz = *(f32*)(r + 0x50) - *(f32*)(r + 0x8);
+    dist = sqrt13B8(dx * dx + dz * dz);
+    *(f32*)(r + 0x18) = (dx / dist) * lbl_3_data_4B50;
+    *(f32*)(r + 0x20) = (dz / dist) * lbl_3_data_4B50;
+    *(f32*)(r + 0x1C) = lbl_3_rodata_1414;
+    *(s16*)(r + 0x108) = 0;
+    *(s16*)(r + 0x10A) = (int)(dist / lbl_3_data_4B50) + 1;
+    r[0x146] = 2;
 }
+
+static inline void stepToDugout13B8(u8* r) {
+    *(s16*)(r + 0x108) += 1;
+    *(s16*)(r + 0x10A) -= 1;
+    *(f32*)(r + 0x0) += *(f32*)(r + 0x18);
+    *(f32*)(r + 0x4) += *(f32*)(r + 0x1C);
+    *(f32*)(r + 0x8) += *(f32*)(r + 0x20);
+    if (*(s16*)(r + 0x10A) < 0) {
+        *(f32*)(r + 0x18) = lbl_3_rodata_1414;
+        *(f32*)(r + 0x1C) = lbl_3_rodata_1414;
+        *(f32*)(r + 0x20) = lbl_3_rodata_1414;
+        r[0x146] = 3;
+    }
+}
+
+// Point on the leg from the stored position (0xC) towards the base ahead/behind,
+// scaled by how far along the leg the runner is now vs. when it was stored.
+static inline void legPoint13B8(u8* r, f32* out, f32 a, f32 b, f32 tx, f32 ty, f32 tz, f32 px, f32 py, f32 pz) {
+    f32 t;
+    if (lbl_3_rodata_1414 == a) {
+        out[0] = px;
+        out[1] = py;
+        out[2] = pz;
+    } else {
+        t = lbl_3_rodata_1408 - b / a;
+        out[0] = *(f32*)(r + 0xC) + scaleValue(tx - *(f32*)(r + 0xC), t);
+        out[1] = *(f32*)(r + 0x10) + scaleValue(ty - *(f32*)(r + 0x10), t);
+        out[2] = *(f32*)(r + 0x14) + scaleValue(tz - *(f32*)(r + 0x14), t);
+    }
+}
+
+// Updates runner i's world position from its baserunning state.
+// NONMATCHING 82%: float scheduling/register allocation, branch layout of the 0x140 state switch; the original also computes an unused distance to the dugout in the knock-back path
+#if NONMATCHING
+void fn_3_80028(int i) {
+    u8* r = g_Runners + i * 0x154;
+    XZ13B8 round;
+    f32 pos[3];
+    f32 px;
+    f32 py;
+    f32 pz;
+    f32 tx;
+    f32 tz;
+    f32 a;
+    f32 b;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    int n;
+    int base;
+    int idx;
+    int count;
+
+    if (g_GameLogic[0x121] != 6) {
+        if (*(s16*)(g_Ball.b + 0x1B66) <= 0 && i == 0) {
+            // Still in the batter's box.
+            *(f32*)(r + 0x0) = *(f32*)(g_Batter + 0x0);
+            *(f32*)(r + 0x4) = lbl_3_rodata_1414;
+            *(f32*)(r + 0x8) = *(f32*)(g_Batter + 0x4);
+            *(f32*)(r + 0x64) = lbl_3_rodata_1414;
+            *(f32*)(r + 0x68) = lbl_3_rodata_1414;
+            *(f32*)(r + 0x7C) = lbl_3_rodata_1414;
+            *(f32*)(r + 0x80) = lbl_3_rodata_1414;
+            *(f32*)(r + 0x84) = lbl_3_rodata_1414;
+            r[0x137] = 0;
+            r[0x136] = 0;
+            goto done;
+        }
+        if (r[0x140] == 2) {
+            running_roundBasePosition(*(f32*)(r + 0xB8), (XZ13B8*)pos, lbl_3_data_4B28, 3);
+            *(f32*)(r + 0x0) = pos[0];
+            *(f32*)(r + 0x8) = pos[1];
+            goto done;
+        }
+        if (r[0x140] == 3) {
+            // Walking back to first after overrunning.
+            n = *(s16*)(r + 0x106);
+            tx = scaleValue(lbl_3_data_4A34[4] - lbl_3_data_4A34[2], *(f32*)(r + 0x54)) + lbl_3_data_4A34[2];
+            tz = scaleValue(lbl_3_data_4A34[5] - lbl_3_data_4A34[3], *(f32*)(r + 0x54)) + lbl_3_data_4A34[3];
+            pos[0] = (tx - *(f32*)(r + 0x0)) / (f32)n;
+            *(f32*)(r + 0x0) += pos[0];
+            pos[1] = (lbl_3_rodata_1414 - *(f32*)(r + 0x4)) / (f32)n;
+            *(f32*)(r + 0x4) += pos[1];
+            pos[2] = (tz - *(f32*)(r + 0x8)) / (f32)n;
+            *(f32*)(r + 0x8) += pos[2];
+            goto done;
+        }
+        if (r[0x140] > 3) {
+            goto done;
+        }
+        if (*(s16*)(r + 0x114) != 0) {
+            *(s16*)(r + 0x114) -= 1;
+            goto done;
+        }
+        if (r[0x13A] != 0 && r[0x13C] == 2) {
+            // Sliding into a base.
+            if (*(s16*)(r + 0xFA) < 6) {
+                goto done;
+            }
+            if ((s8)r[0x12F] >= 0) {
+                base = (s8)r[0x12F];
+            } else {
+                base = *(s16*)(r + 0xE6);
+            }
+            tx = scaleValue(lbl_3_data_4A34[((base + 1) & 3) * 2] - lbl_3_data_4A34[base * 2], *(f32*)(r + 0x54)) + lbl_3_data_4A34[base * 2];
+            tz = scaleValue(lbl_3_data_4A34[((base + 1) & 3) * 2 + 1] - lbl_3_data_4A34[base * 2 + 1], *(f32*)(r + 0x54)) +
+                 lbl_3_data_4A34[base * 2 + 1];
+            n = *(s16*)(r + 0x102);
+            pos[0] = (tx - *(f32*)(r + 0x0)) / (f32)n;
+            *(f32*)(r + 0x0) += pos[0];
+            pos[1] = (lbl_3_rodata_1414 - *(f32*)(r + 0x4)) / (f32)n;
+            *(f32*)(r + 0x4) += pos[1];
+            pos[2] = (tz - *(f32*)(r + 0x8)) / (f32)n;
+            *(f32*)(r + 0x8) += pos[2];
+            goto done;
+        }
+        if (r[0x145] == 1) {
+            if (r[0x146] == 0) {
+                walkToDugout13B8(r);
+            }
+            if (r[0x146] == 2) {
+                stepToDugout13B8(r);
+            }
+            goto done;
+        }
+        if (r[0x145] == 3) {
+            // Knocked back first, then walk to the dugout.
+            if (r[0x146] == 0) {
+                XZ13B8* dugout = &lbl_3_data_4290[g_d_GameSettings[9]][*(s32*)(g_GameLogic + 0xC)];
+                *(f32*)(r + 0x48) = dugout->x;
+                *(f32*)(r + 0x50) = dugout->z;
+                d = sqrt13B8(*(f32*)(r + 0x18) * *(f32*)(r + 0x18) + *(f32*)(r + 0x20) * *(f32*)(r + 0x20));
+                if (d <= lbl_3_rodata_1414) {
+                    *(f32*)(r + 0x18) = lbl_3_rodata_1408;
+                    *(f32*)(r + 0x20) = lbl_3_rodata_1460;
+                } else {
+                    *(f32*)(r + 0x18) /= d;
+                    *(f32*)(r + 0x20) /= d;
+                }
+                *(f32*)(r + 0x1C) = lbl_3_rodata_1414;
+                *(f32*)(r + 0x18) *= *(f32*)(r + 0xA0);
+                *(f32*)(r + 0x20) *= *(f32*)(r + 0xA0);
+                *(s16*)(r + 0x108) = 0;
+                *(s16*)(r + 0x10A) = lbl_3_data_4B54;
+                r[0x146] = 1;
+            }
+            if (r[0x146] == 1) {
+                *(s16*)(r + 0x10A) -= 1;
+                *(f32*)(r + 0x0) += *(f32*)(r + 0x18);
+                *(f32*)(r + 0x4) += *(f32*)(r + 0x1C);
+                *(f32*)(r + 0x8) += *(f32*)(r + 0x20);
+                if (*(s16*)(r + 0x10A) <= 0) {
+                    walkToDugout13B8(r);
+                }
+            }
+            if (r[0x146] == 2) {
+                stepToDugout13B8(r);
+            }
+            goto done;
+        }
+        if (r[0x145] != 0) {
+            if (r[0x146] == 0) {
+                walkToDugout13B8(r);
+            }
+            if (r[0x146] == 2) {
+                stepToDugout13B8(r);
+            }
+            goto done;
+        }
+    }
+    // Normal running: straight-line point on the current leg, and the rounded path.
+    px = *(f32*)(r + 0x3C) + scaleValue(*(f32*)(r + 0x48) - *(f32*)(r + 0x3C), *(f32*)(r + 0x68));
+    py = *(f32*)(r + 0x40) + scaleValue(*(f32*)(r + 0x4C) - *(f32*)(r + 0x40), *(f32*)(r + 0x68));
+    pz = *(f32*)(r + 0x44) + scaleValue(*(f32*)(r + 0x50) - *(f32*)(r + 0x44), *(f32*)(r + 0x68));
+    if (*(f32*)(r + 0x64) < lbl_3_rodata_1408) {
+        idx = 0;
+        count = 4;
+    } else if (*(f32*)(r + 0x64) < lbl_3_rodata_140C) {
+        idx = 3;
+        count = 4;
+    } else if (*(f32*)(r + 0x64) < lbl_3_rodata_1410) {
+        idx = 6;
+        count = 4;
+    } else if (g_GameLogic[0x121] == 6) {
+        idx = 9;
+        count = 4;
+    } else {
+        idx = 9;
+        count = 3;
+    }
+    running_roundBasePosition(*(f32*)(r + 0x68), &round, &lbl_3_data_4A54[g_GameLogic[0x121] == 6][idx], count);
+    pos[0] = round.x;
+    pos[2] = round.z;
+    pos[1] = lbl_3_rodata_1414;
+    if (r[0x141] != 0 && *(f32*)(r + 0x64) < lbl_3_rodata_140C) {
+        // Overrunning first base.
+        if (r[0x137] == 1) {
+            a = lbl_3_rodata_1408 - *(f32*)(r + 0x80);
+            b = lbl_3_rodata_1408 - *(f32*)(r + 0x68);
+            legPoint13B8(r, pos, a, b, *(f32*)(r + 0x48), *(f32*)(r + 0x4C), *(f32*)(r + 0x50), px, py, pz);
+        } else {
+            a = -*(f32*)(r + 0x80);
+            b = -*(f32*)(r + 0x68);
+            legPoint13B8(r, pos, a, b, *(f32*)(r + 0x3C), *(f32*)(r + 0x40), *(f32*)(r + 0x44), px, py, pz);
+        }
+        *(f32*)(r + 0x0) = pos[0];
+        *(f32*)(r + 0x4) = pos[1];
+        *(f32*)(r + 0x8) = pos[2];
+    } else if (r[0x139] != 0 && r[0x144] == 0) {
+        // Blend from the straight line into the rounded path.
+        if (r[0x137] != 2 && r[0x136] == 0 && r[0x148] != 1) {
+            *(f32*)(r + 0xB0) += lbl_3_data_4B24;
+        }
+        if (*(f32*)(r + 0xB0) < lbl_3_rodata_1414) {
+            *(f32*)(r + 0xB0) = lbl_3_rodata_1414;
+        }
+        if (*(f32*)(r + 0xB0) > lbl_3_rodata_1408) {
+            *(f32*)(r + 0xB0) = lbl_3_rodata_1408;
+        }
+        *(f32*)(r + 0x0) = px + scaleValue(pos[0] - px, *(f32*)(r + 0xB0));
+        *(f32*)(r + 0x4) = py + scaleValue(pos[1] - py, *(f32*)(r + 0xB0));
+        *(f32*)(r + 0x8) = pz + scaleValue(pos[2] - pz, *(f32*)(r + 0xB0));
+        r[0x143] = 1;
+        *(s16*)(r + 0x110) = 0;
+    } else {
+        *(f32*)(r + 0xB0) = lbl_3_rodata_1414;
+        if (r[0x143] == 0) {
+            *(f32*)(r + 0x0) = px;
+            *(f32*)(r + 0x4) = py;
+            *(f32*)(r + 0x8) = pz;
+        } else {
+            if (g_GameLogic[0x121] != 6) {
+                r[0x144] = 1;
+            }
+            if (r[0x137] == 1) {
+                a = lbl_3_rodata_1408 - *(f32*)(r + 0x80);
+                b = lbl_3_rodata_1408 - *(f32*)(r + 0x68);
+                if (b > a) {
+                    a += lbl_3_rodata_1408;
+                }
+                legPoint13B8(r, pos, a, b, *(f32*)(r + 0x48), *(f32*)(r + 0x4C), *(f32*)(r + 0x50), px, py, pz);
+            } else {
+                a = -*(f32*)(r + 0x80);
+                b = -*(f32*)(r + 0x68);
+                legPoint13B8(r, pos, a, b, *(f32*)(r + 0x3C), *(f32*)(r + 0x40), *(f32*)(r + 0x44), px, py, pz);
+            }
+            *(f32*)(r + 0x0) = pos[0];
+            *(f32*)(r + 0x4) = pos[1];
+            *(f32*)(r + 0x8) = pos[2];
+        }
+    }
+done:
+    *(f32*)(r + 0x4) = lbl_3_rodata_1414;
+}
+#endif
 
 // .text:0x000810C4 size:0xCC mapped:0x806C0158
 void fn_3_810C4(int idx, int base) {
