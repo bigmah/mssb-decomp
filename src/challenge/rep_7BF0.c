@@ -266,7 +266,35 @@ void fn_1_28CE8(ChallengeQueueEntry* task) {
 // .text:0x0002905C size:0x300
 // Steps the rigid-body simulation according to lbl_1_data_11300.simulationState.
 void fn_1_2905C(void) {
-    return;
+    Mtx m;
+
+    switch (lbl_1_data_11300.simulationState) {
+    case 0:
+        fn_1_2935C(&lbl_1_bss_47068);
+        lbl_1_bss_47068.pos.x = 0.0f;
+        lbl_1_bss_47068.pos.y = (f32)lbl_1_data_11300.height / 100000.0f;
+        lbl_1_bss_47068.pos.z = 0.0f;
+        lbl_1_bss_47068.vel.x = (f32)lbl_1_data_11300.vel[0] / 100000.0f;
+        lbl_1_bss_47068.vel.y = (f32)lbl_1_data_11300.vel[1] / 100000.0f;
+        lbl_1_bss_47068.vel.z = (f32)lbl_1_data_11300.vel[2] / 100000.0f;
+        PSMTXMultVec(lbl_1_bss_47068.invRot, &lbl_1_bss_47068.vel, &lbl_1_bss_47068.velLocal);
+        lbl_1_bss_47068.angVel.x = (f32)lbl_1_data_11300.angVel[0] / 100000.0f;
+        lbl_1_bss_47068.angVel.y = (f32)lbl_1_data_11300.angVel[1] / 100000.0f;
+        lbl_1_bss_47068.angVel.z = (f32)lbl_1_data_11300.angVel[2] / 100000.0f;
+        PSMTXRotRad(m, 'X', 0.017453292f * ((f32)lbl_1_data_11300.angle / 100000.0f));
+        C_QUATMtx(&lbl_1_bss_47068.quat, m);
+        fn_800383BC(&lbl_1_bss_47068);
+        break;
+    case 1:
+        if (lbl_1_data_11300.stepRequested == 0) {
+            break;
+        }
+        lbl_1_data_11300.stepRequested = 0;
+    case 2:
+        lbl_1_bss_47068.unk50 = (f32)lbl_1_data_11300.unk50 / 100000.0f;
+        fn_80037054(&lbl_1_bss_47068, &sSimParams);
+        break;
+    }
 }
 
 // .text:0x000295E8 size:0x460
