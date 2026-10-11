@@ -1076,9 +1076,69 @@ extern u8 lbl_3_data_21E1C[];
 #define MG_OBJ_VEL(n) ((Vec*)(g_Minigame + 0x1180) + (n))
 
 // Player p releases the object it is holding: place it at the hand and aim it at the fielder's target.
+// NONMATCHING 93.2%: original addresses pos/vel through g_Minigame + obj*0xC with an extra pointer to pos.z; register shifts
+#if NONMATCHING
 void fn_3_14471C(s32 p) {
-    return;
+    u8* f;
+    s32 port;
+    u8 obj;
+    Vec* pos;
+    u8* st;
+    f32 len;
+    f32 k;
+    s32 n;
+    f32 t;
+    Vec d;
+
+    port = (s8)g_Minigame[p + 0x18CC];
+    obj = g_Minigame[p + 0x1C8E];
+    f = g_Fielders + (s8)g_Minigame[p + 0x18F8] * 0x268;
+    if (*(s16*)(f + 0x17A) == 0x26) {
+        getAnimRelatedCoordinates(port, 9, &d);
+    } else if (f[0x1C7] == 0) {
+        getAnimRelatedCoordinates(port, 0x19, &d);
+    } else {
+        getAnimRelatedCoordinates(port, 0x13, &d);
+    }
+    pos = MG_OBJ_POS(obj);
+    pos->x = d.x;
+    pos->y = -d.y;
+    pos->z = d.z;
+    d.x = *(f32*)(f + 0x10C) - pos->x;
+    d.y = *(f32*)(f + 0x110) - pos->y;
+    d.z = *(f32*)(f + 0x114) - pos->z;
+    st = &g_Minigame[obj + 0x193A];
+    if (*st == 4) {
+        if (g_Minigame[obj + 0x1B84] != 5) {
+            len = sqrt37A8(d.x * d.x + d.z * d.z);
+            if (p == 0 || p == 3) {
+                k = lbl_3_data_21E24[8] / len;
+            } else {
+                k = lbl_3_data_21E24[9] / len;
+            }
+            MG_OBJ_VEL(obj)->x = d.x * k;
+            MG_OBJ_VEL(obj)->z = d.z * k;
+            MG_OBJ_VEL(obj)->y = lbl_3_data_21E24[10];
+        } else {
+            n = *(s16*)(lbl_3_data_21E68 + 0x2E) + 10;
+            MG_OBJ_VEL(obj)->x = d.x / (f32)n;
+            MG_OBJ_VEL(obj)->z = (*(f32*)(f + 0x114) - pos->z) / (f32)n;
+            MG_OBJ_VEL(obj)->y = -lbl_3_data_21E24[11] * (f32)n * lbl_3_rodata_382C;
+        }
+        *st = 6;
+    } else {
+        t = LERPToNewRange_Float(f[0x1CE], 0, 100, lbl_3_data_21E1C[0], lbl_3_data_21E1C[1]);
+        MG_OBJ_VEL(obj)->x = d.x / t;
+        MG_OBJ_VEL(obj)->y = d.y / t;
+        MG_OBJ_VEL(obj)->z = d.z / t;
+        *st = 5;
+    }
+    ((s16*)(g_Minigame + 0x17C8))[obj] = 0;
+    if (g_Minigame[obj + 0x1B84] == 5) {
+        fn_3_90064(0x308);
+    }
 }
+#endif
 
 // .text:0x00144ADC size:0x1DC mapped:0x80783B70
 void fn_3_144ADC(s32 p) {
