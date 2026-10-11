@@ -16,8 +16,20 @@ void DSInsertListObject(void) {
 }
 
 // .text:0x8009150C size:0x50
-void Strcmp(void) {
-    return;
+s8 Strcmp(char* str1, char* str2) {
+    for (;;) {
+        if (*str1 < *str2) {
+            return 1;
+        }
+        if (*str1 > *str2) {
+            return -1;
+        }
+        str1++;
+        str2++;
+        if (*str1 == '\0' || *str2 == '\0') {
+            return 0;
+        }
+    }
 }
 
 // .text:0x8009155C size:0x14
