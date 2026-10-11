@@ -17,7 +17,8 @@ extern void fn_3_BD7D8(void);
 extern s32 fn_3_106E50(void);
 extern void fn_3_106DFC(void);
 extern void fn_8001CBD4(void);
-extern void fn_3_5EC0(s32);
+struct StadiumArchive;
+extern void fn_3_5EC0(struct StadiumArchive* arc); // game/rep_1C0.h
 extern s32 fn_3_B9BB4(u8);
 
 // .text:0x000004F4 size:0x168
@@ -32,7 +33,7 @@ void manageStadiumLoading(void) {
         break;
     case 1:
         if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
-            fn_3_5EC0(*(s32*)(lbl_8036E548 + 4));
+            fn_3_5EC0(*(struct StadiumArchive**)(lbl_8036E548 + 4));
             *(s16*)(p + 0x10) += 1;
         }
         break;
@@ -87,7 +88,7 @@ void manageLoadingState(void) {
         break;
     case 1:
         if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
-            fn_3_5EC0(*(s32*)(p + 0x14));
+            fn_3_5EC0(*(struct StadiumArchive**)(p + 0x14));
             *(s16*)(p + 0x10) = 2;
             fn_800229CC();
         }

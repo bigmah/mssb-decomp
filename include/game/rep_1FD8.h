@@ -3,9 +3,11 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/vec.h"
+#include "Dolphin/mtx.h"
 
 void fn_3_C19C8(void);
-void fn_3_C1C18(void);
+struct Rep1FD8Ent;
+void fn_3_C1C18(struct Rep1FD8Ent* ent);
 void fn_3_C2244(void);
 void fn_3_C2310(void* pp, void* cam);
 void fn_3_C23E0(void);
@@ -16,8 +18,9 @@ void fn_3_C298C(void);
 u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h);
 void fn_3_C2C80(void* p, u8* h);
 void fn_3_C2EDC(void* p);
-void fn_3_C30F0(void);
-void fn_3_C366C(u32 a, u8 b);
+struct C366CHdr;
+s32 fn_3_C30F0(struct C366CHdr* h);
+void fn_3_C366C(void* hv, u8 idx);
 void fn_3_C39C8(void);
 void fn_3_C3A38(u8* obj);
 void fn_3_C3C2C(void);
@@ -37,20 +40,22 @@ void fn_3_C5304(void* h, u8* b);
 void fn_3_C54D0(u8* a);
 void fn_3_C56E8(u8* a);
 void fn_3_C597C(s32 idx);
-u32 fn_3_C5CE0(u8* a);
+u8 fn_3_C5CE0(u8* a);
 void fn_3_C5DDC(void);
-u32 fn_3_C625C(u8* a);
-void fn_3_C63D0(void);
+u8 fn_3_C625C(u8* a);
+struct StadObj1FD8;
+void fn_3_C63D0(struct StadObj1FD8* o);
 void fn_3_C71CC(s32* a, s32* b);
 void fn_3_C7444(u8* a);
 void fn_3_C749C(void);
 u32 fn_3_C75B8(void* h);
 void fn_3_C77AC(void* h, u8* b);
-void fn_3_C7A0C(void);
+struct C7A0CEnt;
+void fn_3_C7A0C(struct C7A0CEnt* e);
 void fn_3_C805C(s32* a, s32* b);
-s32 fn_3_C823C(s32, f32*);
+void* fn_3_C823C(s32 idx, Mtx out);
 void fn_3_C82B4(void);
-void fn_3_C8650(void);
+void fn_3_C8650(void** files);
 
 void fn_3_C1964(void);
 
