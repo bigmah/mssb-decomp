@@ -3024,9 +3024,50 @@ int fn_3_468DC(f32* x, f32* z) {
 }
 
 // .text:0x00046ABC size:0x34C mapped:0x80685B50
-void fn_3_46ABC(void) {
-    return;
+// NONMATCHING 97.7%: float register coloring of the predicted ball position (orig keeps x/z in f0/f7)
+#if NONMATCHING
+// Fielder i follows the batted ball along its path at its own reach distance (0x74).
+void fn_3_46ABC(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 t, px, pz, ex, ez, e;
+    f32 dz, dx, d;
+    if (*(s16*)(g_Ball + 0x1B6C) == 5 && *(f32*)(g_Ball + 0x1A14) != 0.0f) {
+        t = *(f32*)(f + 0x74) / *(f32*)(g_Ball + 0x1A14);
+        px = *(f32*)(g_Ball + 0x318) * t + *(f32*)g_Ball;
+        pz = *(f32*)(g_Ball + 0x320) * t + *(f32*)(g_Ball + 8);
+        ex = *(f32*)f - px;
+        ez = *(f32*)(f + 8) - pz;
+        ex = ex * ex;
+        ez = ez * ez;
+        e = ex + ez;
+        SQRT_L(e);
+        if (e > *(f32*)(f + 0xE8)) {
+            f[0x1E9] = 1;
+            *(f32*)(f + 0x14) = px;
+            *(f32*)(f + 0x1C) = pz;
+            dx = px - *(f32*)f;
+            dz = pz - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                d = dx * dx + dz * dz;
+                SQRT_L(d);
+                *(f32*)(f + 0x68) = d;
+            }
+            f[0x1D9] = 1;
+        }
+    }
+    ((void (*)(int))fn_3_526DC)(i);
+    if (f[0x1E9] != 0 && *(f32*)(f + 0x50) == 0.0f) {
+        f[0x1E9] = 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B8A) == i) {
+        fn_3_4E638();
+    }
 }
+#endif
 
 // .text:0x00046E08 size:0x820 mapped:0x80685E9C
 void fn_3_46E08(void) {
