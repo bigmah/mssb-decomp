@@ -2506,9 +2506,78 @@ static inline void ThpResume(ThpPlayer* p, u8 flags) {
 }
 
 // .text:0x800AD070 size:0x420
+// NONMATCHING 81%: register allocation and block layout differ
+#if NONMATCHING
 void fn_800AD070(void) {
-    return;
+    ThpPlayer* p;
+    u32 state;
+    u8 i;
+    ThpFrame* frame;
+    OSTime elapsed;
+    u64 base;
+    u16 width;
+    u16 height;
+    void* tex;
+
+    if (!lbl_803CC17F || (p = lbl_803CC170) == NULL) {
+        return;
+    }
+    if (!(p->flags & 1)) {
+        if (!(p->state & 0x10) && lbl_803C6CF8._722 == 5) {
+            ThpPause(p);
+            p->state |= 0x10;
+        }
+    }
+    state = ThpGetState(p);
+    if ((state == 0x12 || state == 0x80000003) && p != NULL) {
+        ThpResume(p, p->flags);
+    }
+    if (p->state & 1) {
+        if (p->state & 8) {
+            for (i = 0; i < 6; i++) {
+                if (p->frames[i].state != 1) {
+                    goto queue;
+                }
+            }
+            if (p->flags & 1) {
+                p->startFrameTime = 0;
+            } else {
+                p->startTime = OSGetTime();
+            }
+            p->state = 1;
+        }
+        elapsed = OSGetTime() - p->startTime;
+        if (p->flags & 1) {
+            base = p->startFrameTime * 1000000 / (p->audioRate * 4);
+            p->currentFrame = (base + OSTicksToMicroseconds(elapsed)) / p->frameTime;
+        } else {
+            p->currentFrame = OSTicksToMicroseconds(elapsed) / p->frameTime;
+        }
+        for (i = 0, frame = p->frames; i < 6; i++, frame++) {
+            if (frame->state == 1 && p->currentFrame == frame->frameNo) {
+                frame->state = 2;
+                width = p->video.width;
+                height = p->video.height;
+                p->texIndex ^= 1;
+                tex = p->texBuf[p->texIndex];
+                lbl_803CBB08[p->format](frame->data, tex, width, height);
+                GXInitTexObj(&lbl_803C78A4, tex, width, height, lbl_803CBAD8[p->format], GX_CLAMP, GX_CLAMP,
+                             GX_FALSE);
+                lbl_803CC182 = TRUE;
+            }
+        }
+    }
+queue:
+    if (lbl_803CC182) {
+        if (lbl_803CC190 != NULL) {
+            lbl_803CC190(p->currentFrame);
+            return;
+        }
+        fn_800A7D4C(0, &lbl_801112E0[lbl_803CC198]);
+        lbl_803CC198 ^= 1;
+    }
 }
+#endif
 
 // .text:0x800AD490 size:0x70
 // NONMATCHING 87%: the 'state & 2' branch is folded into beqlr with a speculative clrlwi; the original keeps two returns
