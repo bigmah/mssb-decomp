@@ -314,9 +314,31 @@ void fn_3_C24A0(void) {
 }
 
 // .text:0x000C2644 size:0x330 mapped:0x807016D8
+// Stadium ambient task: every 1800 frames it fires the event at ticks 300, 310
+// and 1200 (fn_3_C24A0 fade + fn_3_C19C8).
+// NONMATCHING ~90% (192 of 204 insns, rest regalloc): inlines fn_3_C19C8 (itself 99%); the original keeps an empty-bodied minigamesEnabled/g_GameLogic[0x11E] in 0x1B..0x29 test that CW drops for us
+#if NONMATCHING
 void fn_3_C2644(void) {
-    return;
+    s16 tick;
+    if (g_GameLogic[0x11E] == 0x17) {
+        lbl_3_bss_9D9C = 1;
+    }
+    if (*(s32*)&lbl_3_bss_9D9C != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    tick = (*(s16*)(lbl_803CC1B8 + 0x10) + 1) % 1800;
+    *(s16*)(lbl_803CC1B8 + 0x10) = tick;
+    switch (tick) {
+    case 300:
+    case 310:
+    case 1200:
+        *(s16*)((u8*)fn_800B0A5C_insertQueue(fn_3_C24A0, 5) + 0x10) = 0x10;
+        fn_3_C19C8();
+        break;
+    }
 }
+#endif
 
 // .text:0x000C2974 size:0x18 mapped:0x80701A08
 extern u8 lbl_3_bss_9DE7;
