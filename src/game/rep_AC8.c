@@ -586,7 +586,7 @@ go:
 }
 
 // .text:0x00026A74 size:0xBD4 mapped:0x80665B08
-void fn_3_26A74(void) {
+void fn_3_26A74(int i) {
     return;
 }
 
@@ -652,9 +652,65 @@ void fn_3_27764(int i) {
 }
 
 // .text:0x00027860 size:0x508 mapped:0x806668F4
-void fn_3_27860(void) {
-    return;
+// NONMATCHING 65%: the original inlines fn_3_27764 in both cancel branches; we call it (same behaviour)
+// nmverify: fn_3_27764 inlined on one side (calls match once expanded)
+#if NONMATCHING
+void fn_3_27860(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    u8* m;
+    f32 d;
+    *(s16*)(f + 0x24C) = *(s16*)(f + 0x24C) - 1;
+    *(s16*)(f + 0x24E) = *(s16*)(f + 0x24E) + 1;
+    if (f[0x25B] != 0) {
+        if (*(s16*)(f + 0x24C) <= 0) {
+            f[0x252] = 0;
+        }
+    } else if (*(s16*)(g_Ball + 0x1B78) >= 0) {
+        fn_3_27764(i);
+    } else if (g_Ball[0x1BD1] != 0) {
+        fn_3_27764(i);
+    } else if (*(s16*)(f + 0x24C) > 0) {
+        if (f[0x264] != 0) {
+            d = DIST2_XZ(*(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C), *(f32*)f, *(f32*)(f + 8));
+            SQRT_L(d);
+            if (d < lbl_3_rodata_B64) {
+                g_FieldingLogic[0x144] = 1;
+            }
+        }
+    } else {
+        (*(u8**)(g_FieldingLogic + 0x70))[0x1A] = 0;
+        *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0x14) = -1;
+        *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0xC) = -1;
+        *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0xE) = -1;
+        if (g_Ball[0x1BE7] == 1 || g_Ball[0x1BE7] == 2) {
+            f[0x258] = 4;
+            fn_3_4DC14(i);
+        } else if (f[0x258] == 2 || f[0x258] == 3) {
+            fn_3_4DC14(i);
+            if (g_d_GameSettings[0x11] != 0) {
+                m = g_Minigame + f[0x20D];
+                if (m[0x18D8] == 0) {
+                    fn_3_6C854(*(s8*)(m + 0x18CC), 0);
+                }
+            } else if (g_GameLogic[*(int*)(g_GameLogic + 8) + 0x13E] == 0) {
+                fn_3_6C854(*(int*)(g_GameLogic + 8), 0);
+            }
+        } else {
+            fn_3_26A74(i);
+            if (f[0x258] == 0 || f[0x258] == 1) {
+                if (g_d_GameSettings[0x11] != 0) {
+                    m = g_Minigame + f[0x20D];
+                    if (m[0x18D8] == 0) {
+                        fn_3_6C854(*(s8*)(m + 0x18CC), 0);
+                    }
+                } else if (g_GameLogic[*(int*)(g_GameLogic + 8) + 0x13E] == 0) {
+                    fn_3_6C854(*(int*)(g_GameLogic + 8), 0);
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x00027D68 size:0x28C mapped:0x80666DFC
 // NONMATCHING 92%: registers only; the loop-invariant height window lo/hi gets f5/f4 instead of f0/f1, shifting every float reg
@@ -4446,7 +4502,7 @@ int fn_3_4DB84(int i) {
 }
 
 // .text:0x0004DC14 size:0x5A8 mapped:0x8068CCA8
-void fn_3_4DC14(void) {
+void fn_3_4DC14(int i) {
     return;
 }
 
