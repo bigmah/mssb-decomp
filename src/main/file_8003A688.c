@@ -82,8 +82,13 @@ extern u16 lbl_800F7AC0[16];
 extern u8 lbl_803CBCAC;
 
 // .text:0x8003AD84 size:0xD0
-void fn_8003AD84(void) {
-    return;
+void fn_8003AD84(TrailTexSet* set) {
+    GXInitTexObjCI(&lbl_803C50B0, set->tex[0].image, set->tex[0].width, set->tex[0].height, GX_TF_C4, set->tex[0].wrapS,
+                   set->tex[0].wrapT, GX_FALSE, GX_TLUT0);
+    GXInitTlutObj(&lbl_803C50DC, lbl_800F7AC0, GX_TL_IA8, 16);
+    GXInitTexObjLOD(&lbl_803C50B0, set->tex[0].minFilter, set->tex[0].magFilter, set->tex[0].minLod, set->tex[0].maxLod,
+                    set->tex[0].lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    lbl_803CBCAC = 1;
 }
 
 extern u8 lbl_802D4B00[];
