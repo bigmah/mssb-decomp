@@ -46,6 +46,16 @@ typedef struct Model {
     /*0x18*/ Mtx mtx;
 } Model;
 
+// Memory card banner, icon and comment data (lbl_800F7B00).
+typedef struct SaveBannerData {
+    /*0x0000*/ u8 _0000[0x40];
+    /*0x0040*/ u8 iconTpl[0x2380];
+    /*0x23C0*/ u8 bannerTpl[0xE60];
+    /*0x3220*/ char text[2][2][0x20];
+} SaveBannerData; // size: 0x32A0
+
+extern SaveBannerData lbl_800F7B00;
+
 // Process-queue task used by the memory-card save/load state machines.
 typedef struct SaveTask {
     /*0x00*/ void (*func)(void);
@@ -190,7 +200,7 @@ void fn_8003F2B8(void);
 void fn_8003BB90(void);
 void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
 void fn_8003C00C(void);
-s32 fn_80040FE0(SaveImage* img);
+u8 fn_80040FE0(void* buffer, s32 length, u32 mask);
 void fn_80040C14(void);
 u8 fn_80041074(void* buffer, s32 length, u32 mask);
 void fn_80041150(u8 mask, u8 slot);

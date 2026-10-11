@@ -4,6 +4,7 @@
 #include "main/file_8001FE00.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
+#include "Dolphin/os.h"
 #include "stl/string.h"
 
 extern TrailSystem lbl_802D3D80;
@@ -25,6 +26,10 @@ s32 fn_8004A34C(SaveDialog* dialog, u8 port, u8 msg, u8 mode, u8 arg4);
 // main/file_800A7C08 (memory card / CRC)
 void fn_800A9E34(u8 chan, u8 mode, u64 serial);
 void fn_800AA930(SaveCardRequest* req, u64 serial);
+void fn_800AAEE4(SaveCardRequest* req, u64 serial);
+void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial);
+void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl, s32 iconSize, u32 iconSpeed,
+                 u32 bannerFlags, char* comment, char* subComment, s32 blocks);
 s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
 u16 fn_800ABB14(u8* data, s32 len);
 
@@ -255,6 +260,10 @@ static inline u32 SaveImage_CheckSizes(SaveImage* img, u32 mask) {
     return bad;
 }
 
+static inline char* SaveBanner_Text(SaveBannerData* banner, s32 lang) {
+    return banner->text[lang][1];
+}
+
 // Finishes the task: hands the outcome to the parent and removes it from the queue.
 static inline void SaveTask_Finish(s16 outcome) {
     lbl_803CC1B8->parent->_10 = outcome;
@@ -336,6 +345,7 @@ void fn_8003AECC(void) {
 }
 
 // .text:0x8003B5B0 size:0x5E0
+// Save task: creates the save file if needed and writes lbl_802D4B00 to the card.
 void fn_8003B5B0(void) {
     return;
 }
@@ -390,8 +400,8 @@ void fn_8003BB90(void) {
                         break;
                     }
                 }
-                task->cardReady = 0;
             }
+            task->cardReady = 0;
         }
         break;
     case 3:
@@ -597,7 +607,8 @@ void fn_80040C14(void) {
 #endif
 
 // .text:0x80040FE0 size:0x94
-s32 fn_80040FE0(SaveImage* img) {
+u8 fn_80040FE0(void* buffer, s32 length, u32 mask) {
+    SaveImage* img = buffer;
     u8* shared = img->_48;
     SaveChallengeBlock* blk;
     s32 i;
