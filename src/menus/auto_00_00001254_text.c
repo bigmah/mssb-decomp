@@ -1198,3 +1198,52 @@ void fn_2_B324(void) {
     }
 }
 #endif
+
+// NONMATCHING 90%: team passed raw to fn_80067B40 in the original; extra mr/extsh around the random id
+#if NONMATCHING
+// fn_2_FAA0, size:0x214
+void fn_2_FAA0(u8 team) {
+    s32 i;
+    s32 g;
+    s32 k;
+    s16 id;
+    s32 w = *(s32*)(lbl_8034E9A0 + team * 4 + 0x46E0);
+    u8* row = lbl_803C6724 + team * 9;
+    for (i = 0; i < 9; i++) {
+        s32 v = (s8)row[2];
+        if (v == -1 || v == 0x36) {
+            do {
+                id = randRange_FUN_80042bf0(0, 0x35);
+            } while (lbl_8034E9A0[id + 0x4757] != 0);
+            fn_80067B40(team, id, 1);
+            for (g = 0; g < 9; g++) {
+                for (k = 0; k < 5; k++) {
+                    if (id == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
+                        s16* grp = (s16*)(lbl_80108EDC + g * 10);
+                        lbl_8034E9A0[grp[1] + 0x4757] = 1;
+                        lbl_8034E9A0[grp[2] + 0x4757] = 1;
+                        lbl_8034E9A0[grp[3] + 0x4757] = 1;
+                        lbl_8034E9A0[grp[4] + 0x4757] = 1;
+                        id = grp[0];
+                        goto found;
+                    }
+                }
+            }
+        found:
+            if (g_d_GameSettings._10 == 0 && team != 0) {
+                if (*(s8*)(lbl_8034E9A0 + 0x46F8) == 0) {
+                    fn_800506E8(1, id, 1);
+                } else {
+                    fn_800506E8(1, id, 1);
+                }
+            } else {
+                fn_800506E8(*(s8*)(lbl_8034E9A0 + team + 0x46F8), id, 1);
+            }
+            row[2] = id;
+            lbl_8034E9A0[id + 0x4757] = 1;
+            row[0x26] = (lbl_8034E9A0 + w)[(id / 9) * 0x5A0 + (id % 9) * 0xA0 + 0x3B];
+        }
+        row++;
+    }
+}
+#endif

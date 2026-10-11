@@ -140,4 +140,6 @@ void fn_2_323C(void);
 
 void fn_2_B324(void);
 
+void fn_2_FAA0(u8 team);
+
 #endif
