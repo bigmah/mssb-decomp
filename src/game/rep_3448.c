@@ -489,7 +489,8 @@ s32 fn_3_120F5C(void) {
 }
 
 // .text:0x00120FF8 size:0x30C mapped:0x8076008C
-// near-match (12 lines): case 1 gt-2 block base reg r5/r6 swap only
+// NONMATCHING 99%: case 1 gt-2 block, base/constant regs r5/r6 swapped
+#if NONMATCHING
 void fn_3_120FF8(void) {
     u8* q = lbl_803CC1B8;
     u32 v;
@@ -553,6 +554,7 @@ void fn_3_120FF8(void) {
         break;
     }
 }
+#endif
 
 // .text:0x00121304 size:0x604 mapped:0x80760398
 void fn_3_121304(void) {
