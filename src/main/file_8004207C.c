@@ -1691,9 +1691,161 @@ void fn_80048764(void) {
 }
 
 // .text:0x80048820 size:0x3CC
+// NONMATCHING ~90%: register allocation only
+#if NONMATCHING
 s32 fn_80048820(void* menuPtr, u16 held, u16 trig, u16 repeat, u8 holdTime) {
+    DebugMenu* menu = menuPtr;
+    DebugMenuItem* item;
+    s32 speed;
+    s32 visible;
+    s32 delta;
+    s32 v;
+
+    if (holdTime >= 0x91) {
+        speed = 2;
+    } else if (holdTime >= 0x50) {
+        speed = 1;
+    } else {
+        speed = 0;
+    }
+    visible = menu->visible;
+    if (menu->count < visible) {
+        visible = menu->count;
+    }
+    if (repeat & 8) {
+        menu->cursor--;
+        if (menu->wrap != 0) {
+            if (menu->cursor < 0) {
+                menu->cursor += menu->count;
+                menu->top = menu->count - visible;
+            }
+            if (menu->cursor < menu->top) {
+                menu->top = menu->cursor;
+            }
+        } else {
+            if (menu->cursor < 0) {
+                menu->cursor = 0;
+            }
+            if (menu->cursor < menu->top) {
+                menu->top = menu->cursor;
+            }
+        }
+    } else if (repeat & 4) {
+        menu->cursor++;
+        if (menu->wrap != 0) {
+            if (menu->cursor >= menu->count) {
+                menu->cursor -= menu->count;
+                menu->top = 0;
+            }
+            while (menu->cursor - menu->top >= visible) {
+                menu->top++;
+            }
+        } else {
+            if (menu->cursor >= menu->count) {
+                menu->cursor = menu->count - 1;
+            }
+            while (menu->cursor - menu->top >= visible) {
+                menu->top++;
+            }
+        }
+    } else if (repeat & 1) {
+        item = &menu->items[menu->cursor];
+        delta = -item->step[speed];
+        if (item->value != NULL) {
+            switch (item->type) {
+            case 2:
+                v = delta + *(s8*)item->value;
+                if (v < item->min) {
+                    v = item->min;
+                }
+                *(s8*)item->value = v;
+                break;
+            case 3:
+            case 4:
+            case 5:
+                v = delta + *(u8*)item->value;
+                if (v < item->min) {
+                    v = item->min;
+                }
+                *(u8*)item->value = v;
+                break;
+            case 6:
+            case 7:
+            case 8:
+                break;
+            default:
+                v = delta + *(s32*)item->value;
+                if (v < item->min) {
+                    v = item->min;
+                }
+                *(s32*)item->value = v;
+                break;
+            }
+        }
+    } else if (repeat & 2) {
+        item = &menu->items[menu->cursor];
+        delta = item->step[speed];
+        if (item->value != NULL) {
+            switch (item->type) {
+            case 2:
+                v = delta + *(s8*)item->value;
+                if (v > item->max) {
+                    v = item->max;
+                }
+                *(s8*)item->value = v;
+                break;
+            case 3:
+            case 4:
+            case 5:
+                v = delta + *(u8*)item->value;
+                if (v > item->max) {
+                    v = item->max;
+                }
+                *(u8*)item->value = v;
+                break;
+            case 6:
+            case 7:
+            case 8:
+                break;
+            default:
+                v = delta + *(s32*)item->value;
+                if (v > item->max) {
+                    v = item->max;
+                }
+                *(s32*)item->value = v;
+                break;
+            }
+        }
+    }
+    item = &menu->items[menu->cursor];
+    if (item->func != NULL) {
+        if (item->value != NULL) {
+            if (repeat & item->mask) {
+                return item->func(menu, repeat);
+            }
+        } else {
+            switch (item->type) {
+            case 6:
+                if (held & item->mask) {
+                    return item->func(menu, held);
+                }
+                break;
+            case 7:
+                if (trig & item->mask) {
+                    return item->func(menu, trig);
+                }
+                break;
+            case 8:
+                if (repeat & item->mask) {
+                    return item->func(menu, repeat);
+                }
+                break;
+            }
+        }
+    }
     return 0;
 }
+#endif
 
 // fn_80048BEC, size:0x28
 void fn_80048BEC(void* menuPtr, u32 a, u32 b) {
