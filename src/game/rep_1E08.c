@@ -1,6 +1,7 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
 #include "Dolphin/GX.h"
+#include "Dolphin/mtxext.h"
 extern V2f lbl_3_data_111C8[];
 extern void fn_8003A688(f32, f32);
 
@@ -32,6 +33,7 @@ extern void fn_3_F8ABC(void);
 #include "main/file_800BD8C4.h"
 #include "main/file_80024D2C.h"
 #include "main/file_80024184.h"
+#include "main/file_8000F150.h"
 #include "C3/actor.h"
 extern void LoadActorLayout(ActorLayout* layout); // main/file_800B2C44.h
 #include "C3/geoPalette.h"
@@ -1278,8 +1280,252 @@ void fn_3_BE174(s32 a, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x000BE1D4 size:0xE24 mapped:0x806FD268
+// Layout-sprite effect requests in lbl_3_common_bss_35154 (only the fields used by fn_3_BE1D4).
+typedef struct {
+    /* 0x000 */ void* task;
+    u8 _004[0x3AC - 0x4];
+    /* 0x3AC */ u32 flags;
+    u8 _3B0[0x3E8 - 0x3B0];
+    /* 0x3E8 */ Vec catchPos;
+    u8 _3F4[0x40A - 0x3F4];
+    /* 0x40A */ u8 catchShown;
+    u8 _40B[0x419 - 0x40B];
+    /* 0x419 */ u8 kind;
+    /* 0x41A */ u8 slot;
+    u8 _41B;
+    /* 0x41C */ Vec kindPos;
+    /* 0x428 */ Vec hitPos;
+    /* 0x434 */ Vec starPos;
+    u8 _440[0x467 - 0x440];
+    /* 0x467 */ s8 level;
+    u8 _468[0x479 - 0x468];
+    /* 0x479 */ u8 hide;
+} BE1D4Work;
+#define BE1D4_W ((BE1D4Work*)lbl_3_common_bss_35154) // TODO type: lbl_3_common_bss_35154
+#define BE1D4_OBJ(k) (lbl_80371C30[*(u16*)(task + 0x14) + (k)].obj) // TODO type: task base index
+extern u8 g_Stats[];
+extern u8 g_Ball[];
+extern void fn_8003656C(void* owner, s32 idx, s32 track, u16 animId, u32 frame); // main/file_80034F50.h
+extern const f32 lbl_3_rodata_1F48;
+extern const f32 lbl_3_rodata_1F4C;
+extern void* fn_80052734(s32 index);
+static void fn_3_BE1D4_project(Vec* src, Vec* dst) {
+    PSMTXMultVec((f32(*)[4])((u8*)fn_80052734(0) + 0x40), src, dst);
+    PSMTX44MultVec((f32(*)[4])fn_80052734(0), dst, dst);
+}
 void fn_3_BE1D4(void) {
-    return;
+    Vec scr;
+    u8* task = lbl_803CC1B8;
+    LayoutObj* o;
+    u8 alpha;
+    s32 i;
+    s16 pid;
+    BOOL done;
+    struct GameActor** pa;
+    if (BE1D4_W->task == NULL) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    // Hit marker (kind 0..4; kind 4 uses slot 3 and also triggers the star burst).
+    if (BE1D4_W->flags & 3) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(BE1D4_W->slot)->flags &= ~2;
+            BE1D4_OBJ(BE1D4_W->slot)->_5C = 0;
+            BE1D4_W->flags &= ~3;
+        } else {
+            BE1D4_OBJ(BE1D4_W->kind)->x = BE1D4_W->kindPos.x;
+            BE1D4_OBJ(BE1D4_W->kind)->y = BE1D4_W->kindPos.y;
+            BE1D4_OBJ(BE1D4_W->kind)->z = BE1D4_W->kindPos.z;
+            if (BE1D4_W->flags & 1) {
+                if (BE1D4_W->kind == 4) {
+                    BE1D4_W->slot = 3;
+                } else {
+                    BE1D4_W->slot = BE1D4_W->kind;
+                }
+                BE1D4_OBJ(BE1D4_W->slot)->flags |= 2;
+                BE1D4_W->flags &= ~3;
+                BE1D4_W->flags |= 2;
+                if (BE1D4_W->kind == 4) {
+                    BE1D4_W->flags |= 0x40;
+                }
+            } else {
+                done = (o = BE1D4_OBJ(BE1D4_W->slot))->_69 == 2;
+                if (done && *(s16*)(g_Ball + 0x1B66) > 0) { // TODO type: InMemBallType
+                    o->flags &= ~2;
+                    BE1D4_OBJ(BE1D4_W->slot)->_5C = 0;
+                    BE1D4_W->flags &= ~3;
+                }
+            }
+        }
+    }
+    // Hit-point burst (slots 7..9).
+    if (BE1D4_W->flags & 0x30) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(7)->flags &= ~2;
+            BE1D4_OBJ(7)->_5C = 0;
+            BE1D4_OBJ(8)->flags &= ~2;
+            BE1D4_OBJ(9)->flags &= ~2;
+            BE1D4_OBJ(8)->_5C = 0;
+            BE1D4_OBJ(9)->_5C = 0;
+            BE1D4_W->flags &= ~0x30;
+        } else {
+            pa = NULL;
+            pid = *(s16*)(g_Pitcher + 0x11A); // TODO type: InMemPitcherType
+            for (i = 0; i < 9; i++) {
+                u8* a = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+                if (a != NULL && (s8)a[0x252] == pid) { // TODO type: CharActor
+                    pa = fn_800111D8((struct CharActor*)a);
+                    break;
+                }
+            }
+            if (pa != NULL && ((*pa)->flags & 9) == 0) {
+                alpha = 0;
+            } else {
+                alpha = 0xFF;
+            }
+            fn_3_BE1D4_project(&BE1D4_W->hitPos, &scr);
+            if (g_Stats[0x36] != 0) { // TODO type: g_Stats_s
+                scr.y = lbl_3_rodata_1E68;
+            }
+            scr.x *= lbl_3_rodata_1F48;
+            scr.y *= lbl_3_rodata_1F4C;
+            for (i = 4; i < 10; i++) {
+                fn_800363D8(task, 8, i, 0xD, BE1D4_W->level - 1);
+            }
+            for (i = 1; i < 5; i++) {
+                fn_8003656C(task, 6, i, 0x11, BE1D4_W->level - 1);
+            }
+            if (BE1D4_W->flags & 0x10) {
+                BE1D4_W->flags &= ~0x30;
+                BE1D4_W->flags |= 0x20;
+                BE1D4_OBJ(7)->x = lbl_3_rodata_1F48 + scr.x;
+                BE1D4_OBJ(7)->y = lbl_3_rodata_1F4C - scr.y;
+                BE1D4_OBJ(7)->z = lbl_3_rodata_1E68;
+                BE1D4_OBJ(7)->flags |= 2;
+                BE1D4_OBJ(7)->color = (BE1D4_OBJ(7)->color & ~0xFF) | alpha;
+                playSoundEffect(0x1A5);
+            } else if ((BE1D4_OBJ(7)->_5C >> 16) == 0x23) {
+                BE1D4_OBJ(7)->flags &= ~2;
+                BE1D4_OBJ(7)->_5C = 0;
+                if (BE1D4_W->level != 0) {
+                    BE1D4_OBJ(8)->x = lbl_3_rodata_1F48;
+                    BE1D4_OBJ(8)->y = lbl_3_rodata_1F4C - scr.y;
+                    BE1D4_OBJ(8)->z = lbl_3_rodata_1E68;
+                    BE1D4_OBJ(9)->x = lbl_3_rodata_1F48;
+                    BE1D4_OBJ(9)->y = lbl_3_rodata_1F4C;
+                    BE1D4_OBJ(9)->z = lbl_3_rodata_1E68;
+                    BE1D4_OBJ(8)->flags |= 2;
+                    BE1D4_OBJ(9)->flags |= 2;
+                    BE1D4_OBJ(8)->color = (BE1D4_OBJ(8)->color & ~0xFF) | alpha;
+                    BE1D4_OBJ(9)->color = (BE1D4_OBJ(9)->color & ~0xFF) | alpha;
+                    fn_3_BDE14();
+                    playSoundEffect(0x1A6);
+                } else {
+                    BE1D4_W->flags &= ~0x30;
+                }
+            } else if ((BE1D4_OBJ(8)->_5C >> 16) == 0x3C) {
+                BE1D4_OBJ(8)->flags &= ~2;
+                BE1D4_OBJ(9)->flags &= ~2;
+                BE1D4_OBJ(8)->_5C = 0;
+                BE1D4_OBJ(9)->_5C = 0;
+                BE1D4_W->flags &= ~0x30;
+            }
+        }
+    }
+    // Star burst (slots 5, 6).
+    if (BE1D4_W->flags & 0xC0) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(5)->flags &= ~2;
+            BE1D4_OBJ(6)->flags &= ~2;
+            BE1D4_OBJ(5)->_5C = 0;
+            BE1D4_OBJ(6)->_5C = 0;
+            BE1D4_W->flags &= ~0xC0;
+        } else if (BE1D4_W->level != 0) {
+            fn_3_BE1D4_project(&BE1D4_W->starPos, &scr);
+            scr.x *= lbl_3_rodata_1F48;
+            scr.y *= lbl_3_rodata_1F4C;
+            for (i = 4; i < 10; i++) {
+                fn_800363D8(task, 5, i, 0xD, BE1D4_W->level - 1);
+            }
+            for (i = 1; i < 5; i++) {
+                fn_8003656C(task, 6, i, 0x11, BE1D4_W->level - 1);
+            }
+            BE1D4_OBJ(5)->x = lbl_3_rodata_1F48;
+            BE1D4_OBJ(5)->y = lbl_3_rodata_1F4C - scr.y;
+            BE1D4_OBJ(5)->z = lbl_3_rodata_1E68;
+            BE1D4_OBJ(6)->x = lbl_3_rodata_1F48;
+            BE1D4_OBJ(6)->y = lbl_3_rodata_1F4C;
+            BE1D4_OBJ(6)->z = lbl_3_rodata_1E68;
+            if (BE1D4_W->flags & 0x40) {
+                BE1D4_OBJ(5)->flags |= 2;
+                BE1D4_OBJ(6)->flags |= 2;
+                BE1D4_W->flags &= ~0xC0;
+                BE1D4_W->flags |= 0x80;
+            } else if ((BE1D4_OBJ(5)->_5C >> 16) == 0x34) {
+                BE1D4_OBJ(5)->flags &= ~2;
+                BE1D4_OBJ(6)->flags &= ~2;
+                BE1D4_OBJ(5)->_5C = 0;
+                BE1D4_OBJ(6)->_5C = 0;
+                BE1D4_W->flags &= ~0xC0;
+            }
+        } else {
+            BE1D4_W->flags &= ~0xC0;
+        }
+    }
+    // Slot 4 marker.
+    if (BE1D4_W->flags & 0x300) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(4)->flags &= ~2;
+            BE1D4_OBJ(4)->_5C = 0;
+            BE1D4_W->flags &= ~0x300;
+        } else {
+            fn_3_BE1D4_project(&BE1D4_W->starPos, &scr);
+            scr.x *= lbl_3_rodata_1F48;
+            scr.y *= lbl_3_rodata_1F4C;
+            BE1D4_OBJ(4)->x = lbl_3_rodata_1F48 + scr.x;
+            BE1D4_OBJ(4)->y = lbl_3_rodata_1F4C - scr.y;
+            BE1D4_OBJ(4)->z = lbl_3_rodata_1E68;
+            if (BE1D4_W->flags & 0x100) {
+                BE1D4_OBJ(4)->flags |= 2;
+                BE1D4_W->flags &= ~0x300;
+                BE1D4_W->flags |= 0x200;
+                playSoundEffect(0x1A5);
+            } else if ((BE1D4_OBJ(4)->_5C >> 16) == 0x23) {
+                BE1D4_OBJ(4)->flags &= ~2;
+                BE1D4_OBJ(4)->_5C = 0;
+                BE1D4_W->flags &= ~0x300;
+                playSoundEffect(0x1A6);
+            }
+        }
+    }
+    // Catch marker (slot 10).
+    if (BE1D4_W->flags & 0xC) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(10)->flags &= ~2;
+            BE1D4_OBJ(10)->_5C = 0;
+            BE1D4_W->flags &= ~0xC;
+            return;
+        }
+        BE1D4_OBJ(10)->x = BE1D4_W->catchPos.x;
+        BE1D4_OBJ(10)->y = BE1D4_W->catchPos.y;
+        BE1D4_OBJ(10)->z = BE1D4_W->catchPos.z;
+        if (BE1D4_W->flags & 4) {
+            BE1D4_OBJ(10)->flags |= 2;
+            BE1D4_W->flags &= ~0xC;
+            BE1D4_W->flags |= 8;
+            return;
+        }
+        if (BE1D4_W->catchShown == 0) {
+            BE1D4_OBJ(10)->flags &= ~2;
+            BE1D4_OBJ(10)->_5C = 0;
+            BE1D4_W->flags &= ~0xC;
+            return;
+        }
+        done = BE1D4_OBJ(10)->_69 == 2;
+        if (done) {
+            BE1D4_OBJ(10)->_5C = 0;
+        }
+    }
 }
 
 // .text:0x000BEFF8 size:0x78 mapped:0x806FE08C
