@@ -2,10 +2,11 @@
 #define __GAME_sta_c4_H_
 
 #include "mssbTypes.h"
+#include "main/file_800263FC.h"
 
-void fn_3_F8524(u8* p);
-void fn_3_F85B0(void);
-void fn_3_F8878(u8* a);
+void fn_3_F8524(Particle* p);
+s32 fn_3_F85B0(Emitter* e);
+void fn_3_F8878(Emitter* e);
 void fn_3_F8ABC(void);
 void fn_3_F8B04(void);
 void fn_3_F8B30(void);

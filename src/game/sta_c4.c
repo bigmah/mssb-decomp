@@ -1,9 +1,9 @@
 #include "game/sta_c4.h"
 #include "header_rep_data.h"
+#include "main/file_800263FC.h"
 #pragma dont_inline on
 extern void* lbl_803CC1B8;
 extern void fn_800B0A14_removeQueue(void*);
-extern u32 fn_80033A24(void*, s32, s32, s32, s32, s32);
 
 #include "Dolphin/GX/GXBump.h"
 #include "Dolphin/GX/GXTexture.h"
@@ -31,6 +31,12 @@ extern const f32 lbl_3_rodata_2FC4;
 extern const f64 lbl_3_rodata_2FC8;
 extern const f32 lbl_3_rodata_2FD0;
 extern const f32 lbl_3_rodata_2FD4;
+extern const f64 lbl_3_rodata_2FD8;
+extern const f64 lbl_3_rodata_2FE0;
+extern const f64 lbl_3_rodata_2FE8;
+extern const f32 lbl_3_rodata_2FF0;
+extern const f64 lbl_3_rodata_2FF8;
+extern const f64 lbl_3_rodata_3000;
 extern const f32 lbl_3_rodata_3028;
 extern const f32 lbl_3_rodata_302C;
 extern const char lbl_3_rodata_3030[];
@@ -59,7 +65,7 @@ extern StaCommon lbl_3_common_bss_350E4;
 extern u8 g_Ball[];
 extern f64 cos(f64);
 extern f64 sin(f64);
-extern s32 lbl_3_bss_B660;
+extern TexArchive* lbl_3_bss_B660;
 extern const f32 lbl_3_rodata_2FC4;
 extern const f64 lbl_3_rodata_3008;
 extern const f32 lbl_3_rodata_3010;
@@ -67,7 +73,6 @@ extern const f32 lbl_3_rodata_3014;
 extern const f32 lbl_3_rodata_3018;
 extern const f64 lbl_3_rodata_3020;
 extern u8 lbl_3_bss_B570[];
-extern void fn_80034CEC(void*);
 extern u32 sndFXStartEx(int, u8, u8, u8);
 extern void sndFXCtrl(int, int, u8);
 extern u8 lbl_3_data_8404[];
@@ -105,42 +110,79 @@ void fn_3_F8454(void) {
 }
 
 // .text:0x000F8524 size:0x8C mapped:0x807375B8
-void fn_3_F8524(u8* p) {
-    if (p[0x4F] < 0x2A) {
-        *(f32*)(p + 0x14) = lbl_3_rodata_2FC4;
-        *(f32*)(p + 0x4) = lbl_3_rodata_2FB8[0];
-        *(f32*)(p + 0x8) = lbl_3_rodata_2FB8[1] - lbl_3_rodata_2FC8;
-        *(f32*)(p + 0xC) = lbl_3_rodata_2FB8[2];
-        *(f32*)(p + 0x38) = lbl_3_rodata_2FD0;
-        *(f32*)(p + 0x3C) = lbl_3_rodata_2FD4;
+#pragma dont_inline off
+void fn_3_F8524(Particle* p) {
+    if (p->uvOrder < 0x2A) {
+        p->u.phys.vel.y = lbl_3_rodata_2FC4;
+        p->pos.x = lbl_3_rodata_2FB8[0];
+        p->pos.y = lbl_3_rodata_2FB8[1] - lbl_3_rodata_2FC8;
+        p->pos.z = lbl_3_rodata_2FB8[2];
+        p->sizeX = lbl_3_rodata_2FD0;
+        p->sizeY = lbl_3_rodata_2FD4;
     }
-    p[0x42] = 0xFF;
-    p[0x41] = 0xFF;
-    p[0x40] = 0xFF;
-    p[0x43] = 0xFF;
-    *(s16*)(p + 0x4A) = 0x80;
-    *(s16*)(p + 0x48) = 0;
+    p->color.v[2] = 0xFF;
+    p->color.v[1] = 0xFF;
+    p->color.v[0] = 0xFF;
+    p->color.v[3] = 0xFF;
+    p->life = 0x80;
+    p->delay = 0;
 }
+#pragma dont_inline on
 
 // .text:0x000F85B0 size:0x2C8 mapped:0x80737644
-void fn_3_F85B0(void) {
-    return;
+#pragma dont_inline off
+s32 fn_3_F85B0(Emitter* e) {
+    Particle* p = e->particles;
+    if (g_GameLogic[0x11E] >= 0x1B && g_GameLogic[0x11E] <= 0x21) {
+        return 0;
+    }
+    fn_80033620(e);
+    GXSetZMode(1, GX_LEQUAL, 0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    do {
+        if (p->delay <= 0 && p->life != 0) {
+            fn_8003403C(p->sizeX, p->sizeY);
+            fn_80033CC8(p, e->tex);
+            if (-p->delay < 0x40) {
+                p->color.v[3] = p->color.v[3] + lbl_3_rodata_2FD8;
+                p->sizeX = p->sizeX + lbl_3_rodata_2FE0;
+            } else {
+                p->sizeX = p->sizeX + lbl_3_rodata_2FE8;
+                p->color.v[3] = p->color.v[3] + lbl_3_rodata_2FF0;
+                if (p->color.v[3] > lbl_3_rodata_2FF8) {
+                    p->color.v[3] = 0;
+                }
+            }
+            p->pos.x += p->u.phys.vel.x;
+            p->pos.y -= p->u.phys.vel.y;
+            p->pos.z += p->u.phys.vel.z;
+            p->u.phys.vel.y = p->u.phys.vel.y - lbl_3_rodata_3000;
+            p->life--;
+        }
+        p->delay--;
+        if (p->life == 0) {
+            fn_3_F8524(p);
+        }
+        p = p->next;
+    } while (p != NULL);
+    return 0;
 }
+#pragma dont_inline on
 
 // .text:0x000F8878 size:0x244 mapped:0x8073790C
 // 99%: only the stfs of 0.123f (n+0x14) is emitted after the fmuls instead of at loop top (orig keeps it at top yet gives it the lowest f-reg f23; moving it to the top flips f-reg order)
-void fn_3_F8878(u8* a) {
-    s16 k;
-    u8* n;
+void fn_3_F8878(Emitter* e) {
+    s16 delay;
+    Particle* p;
     u32 i;
     f32 prev;
     f32 f;
     f32 ang;
-    n = *(u8**)(a + 0xC);
+    p = e->particles;
     i = 0;
-    k = 0;
-    *(s32*)(a + 0x10) = lbl_3_bss_B660;
-    for (; n != NULL; n = *(u8**)n) {
+    delay = 0;
+    e->tex = lbl_3_bss_B660;
+    for (; p != NULL; p = p->next) {
         if ((i & 1) == 0) {
             f = (f32)((i % 6) * 0x3C);
             if (((i / 6) & 1) == 1) {
@@ -150,34 +192,34 @@ void fn_3_F8878(u8* a) {
             f = lbl_3_rodata_3014 + prev;
         }
         prev = f;
-        *(f32*)(n + 0x14) = lbl_3_rodata_2FC4;
+        p->u.phys.vel.y = lbl_3_rodata_2FC4;
         ang = lbl_3_rodata_3018 * f;
-        *(f32*)(n + 0x10) = lbl_3_rodata_3020 * (f32)cos(ang);
-        *(f32*)(n + 0x18) = lbl_3_rodata_3020 * (f32)sin(ang);
-        *(s16*)(n + 0x48) = k;
-        k += 3;
-        n[0x4F] = i;
+        p->u.phys.vel.x = lbl_3_rodata_3020 * (f32)cos(ang);
+        p->u.phys.vel.z = lbl_3_rodata_3020 * (f32)sin(ang);
+        p->delay = delay;
+        delay += 3;
+        p->uvOrder = i;
         i++;
-        *(f32*)(n + 0x4) = lbl_3_rodata_2FB8[0];
-        *(f32*)(n + 0x8) = lbl_3_rodata_2FB8[1] - lbl_3_rodata_2FC8;
-        *(f32*)(n + 0xC) = lbl_3_rodata_2FB8[2];
-        *(f32*)(n + 0x38) = lbl_3_rodata_2FD0;
-        *(f32*)(n + 0x3C) = lbl_3_rodata_2FD4;
-        n[0x42] = 0xFF;
-        n[0x41] = 0xFF;
-        n[0x40] = 0xFF;
-        n[0x43] = 0xFF;
-        *(s16*)(n + 0x4A) = 0x80;
-        n[0x4D] = 0x1B;
-        n[0x4E] = 0;
+        p->pos.x = lbl_3_rodata_2FB8[0];
+        p->pos.y = lbl_3_rodata_2FB8[1] - lbl_3_rodata_2FC8;
+        p->pos.z = lbl_3_rodata_2FB8[2];
+        p->sizeX = lbl_3_rodata_2FD0;
+        p->sizeY = lbl_3_rodata_2FD4;
+        p->color.v[2] = 0xFF;
+        p->color.v[1] = 0xFF;
+        p->color.v[0] = 0xFF;
+        p->color.v[3] = 0xFF;
+        p->life = 0x80;
+        p->texIndex = 0x1B;
+        p->uvFrame = 0;
     }
 }
 
 // .text:0x000F8ABC size:0x48 mapped:0x80737B50
 void fn_3_F8ABC(void) {
-    u32 r = fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F);
-    if (r != 0) {
-        fn_3_F8878((u8*)r);
+    Emitter* e = fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F);
+    if (e != NULL) {
+        fn_3_F8878(e);
     }
 }
 
@@ -543,7 +585,6 @@ void fn_3_F9E78(void) {
 extern u8 lbl_3_data_1BA98[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
-extern void CTRLBuildMatrix(void*, void*);
 extern void fn_3_B8414(void*, void*);
 extern void fn_3_B8464(void*, void*);
 extern void fn_3_B8574(void);
@@ -573,7 +614,7 @@ void fn_3_FA3C0(void) {
                 idx++;
                 lbl_3_common_bss_350E4.a3C[cnt]++;
                 size = (s32)(lbl_3_common_bss_350E4.p0 + j * 0xE8);
-                CTRLBuildMatrix((void*)size, m);
+                CTRLBuildMatrix((Control*)size, m);
                 fn_3_B8464(m, *(void**)(size + 0x78));
             }
         }
