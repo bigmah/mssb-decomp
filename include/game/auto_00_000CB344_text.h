@@ -3,6 +3,6 @@
 
 #include "mssbTypes.h"
 
-void fn_3_CB344(void);
+void fn_3_CB344(s32 who, u8 val);
 
 #endif

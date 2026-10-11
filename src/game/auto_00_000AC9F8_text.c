@@ -16,7 +16,7 @@ extern void fn_3_6D964(s32, s32);
 extern void setInMemBatterConstants(int rosterID);
 extern s32 fn_3_6BA64(void);
 extern s32 fn_3_B3CD4(void);
-extern void fn_3_B4124(s32, s32, s32, u8);
+extern void fn_3_B4124(s32 team, s32 slot, s32 charId, s32 handedness);
 extern void fn_80011BE4(s32);
 extern void* lbl_3_data_FDE4[];
 extern u8 lbl_3_data_10598[];
