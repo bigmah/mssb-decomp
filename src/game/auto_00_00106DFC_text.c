@@ -1387,3 +1387,75 @@ void fn_3_106ED4(void) {
     }
     fn_3_161078();
 }
+
+extern void possiblyTransitionBlackScreen(void);
+extern void fn_3_5BAC(void);
+extern void fn_3_1658F0(void);
+extern u8 g_Scores[];
+extern u8 lbl_3_common_bss_37400[];
+
+// NONMATCHING 99%: post-loop g_Minigame/lbl_3_common_bss_32724 address loads scheduled in swapped order, r6/r7 swap
+#if NONMATCHING
+// fn_3_10FBE4, size:0x1E4
+void fn_3_10FBE4(void) {
+    s32 i;
+    u8 port;
+    g_GameLogic[0x121] = 2;
+    fn_800B0A5C_insertQueue(possiblyTransitionBlackScreen, 2);
+    fn_800B0A5C_insertQueue(fn_3_5BAC, 4);
+    g_Scores[0xAA] = 5;
+    g_Scores[0xAB] = 5;
+    g_Minigame[0x19DF] = 0x1C;
+    g_Minigame[0x19E1] = 0;
+    g_Minigame[0x19E2] = 0;
+    g_Minigame[0x19E3] = 0;
+    g_Minigame[0x19E6] = 1;
+    g_Minigame[0x19E7] = 1;
+    g_Minigame[0x1A2A] = 1;
+    g_Minigame[0x1A2B] = 0;
+    *(s8*)(g_Minigame + 0x1A2C) = -1;
+    *(s8*)(g_Minigame + 0x1A0C) = -1;
+    g_Minigame[0x19A7] = 4;
+    g_Minigame[0x1A3B] = 0;
+    g_Minigame[0x1A3C] = 0;
+    g_Minigame[0x1A3F] = 0;
+    g_Minigame[0x190A] = 0;
+    *(s8*)(g_Minigame + 0x1D6D) = -1;
+    g_Minigame[0x1A40] = 1;
+    g_Minigame[0x19A8] = 1;
+    g_Minigame[0x19A9] = 0;
+    g_Minigame[0x1A3D] = 0;
+    g_Minigame[0x19E0] = 0;
+    g_Minigame[0x1A38] = 0;
+    g_Minigame[0x1A39] = 0;
+    g_Minigame[0x1A46] = 0;
+    g_Minigame[0x1A1C] = 0;
+    for (i = 0; i < 4; i++) {
+        *(s8*)(g_Minigame + 0x19DA + i) = -1;
+        *(s8*)(g_Minigame + 0x19E8 + i * 9) = -1;
+        *(s8*)(g_Minigame + 0x19EA + i * 9) = -1;
+        *(s8*)(g_Minigame + 0x19EB + i * 9) = -1;
+        g_Minigame[0x19EF + i * 9] = 0;
+        g_Minigame[0x19F0 + i * 9] = 0;
+        *(s8*)(g_Minigame + 0x1A0F + i) = -1;
+        *(s16*)(g_Minigame + 0x19D2 + i * 2) = 0x14;
+        g_Minigame[0x1A13 + i] = 0;
+        g_Minigame[0x18DC + i] = 0;
+        g_Minigame[0x18D4 + i] = 0;
+    }
+    lbl_3_common_bss_32724[0xB9] = 0;
+    g_Minigame[0x1A1B] = 0;
+    if (g_d_GameSettings[8] == 0) {
+        g_Minigame[0x190A] = 1;
+        port = g_d_GameSettings[0x35];
+        g_Minigame[0x19DA + port] = port;
+        *(s16*)(lbl_3_common_bss_37400 + 0x40) = port;
+        g_Minigame[0x1A2A] = g_d_GameSettings[0x33];
+        fn_3_1658F0();
+        g_Minigame[0x19DF] = 0x1E;
+        fn_3_5A6D4(0x1B);
+    } else {
+        fn_3_5A6D4(0x1B);
+    }
+}
+#endif
