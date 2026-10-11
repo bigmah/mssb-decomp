@@ -143,7 +143,12 @@ void fn_80011140(void) {
 
 // .text:0x800111B4 size:0x24
 void fn_800111B4(MsgTable* table) {
-    return;
+    s32 n = table->count;
+    u16** p = table->msgs;
+    do {
+        *p = (u16*)((u32)*p + (u32)table); // file offset -> pointer (32-bit data)
+        p++;
+    } while (--n);
 }
 
 // .text:0x800111D8 size:0x24
