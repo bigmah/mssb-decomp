@@ -1189,9 +1189,160 @@ extern s8 lbl_3_data_21E20[];
 extern const f64 lbl_3_rodata_3870;
 
 // Per-player update: jump/catch animation, then aiming and throwing the held object.
+// NONMATCHING 81.4%: register allocation (more saved regs) and compare/branch shapes of the stick decode differ
+#if NONMATCHING
 void fn_3_144CB8(void) {
-    return;
+    s8 others[4];
+    s32 i;
+    u8* gp;
+    s16* gs;
+    u8* gq;
+    u8* f;
+    MgPad* pad;
+    u8* o;
+    s32 a;
+    s32 b;
+    u8 t;
+    s8 v;
+    s32 d;
+    f32* tgt;
+    s8* q;
+
+    gp = g_Minigame;
+    gs = (s16*)g_Minigame;
+    gq = g_Minigame;
+    for (i = 0; i < 4; i++, gs++, gq += 3, gp++) {
+        if ((s8)gp[0x18F8] < 0) {
+            continue;
+        }
+        f = g_Fielders + (s8)gp[0x18F8] * 0x268;
+        pad = (MgPad*)(g_Controls + (s8)gp[0x18CC] * 16);
+        if (gp[0x18D8] != 0) {
+            pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)gp[0x18CC];
+        }
+        if (gp[0x1CA5] != 0) {
+            fn_3_144ADC(i);
+        } else if (gp[0x1C9A] == 1) {
+            gs[0xD9E]--;
+            if (gs[0xD9E] <= 0) {
+                gp[0x1C9A] = 2;
+                gs[0xD9E] = *(s16*)(lbl_3_data_21E68 + 0x1E);
+            } else {
+                *(f32*)(f + 0x0) = *(f32*)(f + 0x38) * lbl_3_data_21E24[14] + *(f32*)(f + 0x0);
+                *(f32*)(f + 0x4) = *(f32*)(f + 0x4) + *(f32*)(f + 0x50);
+                *(f32*)(f + 0x8) = *(f32*)(f + 0x3C) * lbl_3_data_21E24[14] + *(f32*)(f + 0x8);
+                *(f32*)(f + 0x50) = *(f32*)(f + 0x50) - lbl_3_data_21E24[16];
+            }
+            fn_3_1573AC((u8*)lbl_8036E548.active[i]);
+        } else if (gp[0x1C9A] == 2) {
+            if (g_Minigame[0x190B] == 0) {
+                gs[0xD9E]--;
+                if (gs[0xD9E] <= 0) {
+                    tgt = &lbl_3_data_21B94[gp[0x1CAD]].x;
+                    gp[0x1C9A] = 0;
+                    gp[0x1CA5] = 2;
+                    *(f32*)(f + 0x0) = tgt[0];
+                    *(f32*)(f + 0x4) = tgt[1];
+                    *(f32*)(f + 0x8) = tgt[2];
+                    *(f32*)(f + 0xC) = ((f32*)lbl_3_data_21D2C)[0];
+                }
+            }
+        } else if (gs[0xD9A] >= 0) {
+            gs[0xD9A]++;
+            a = LERPToNewRange_Float(gs[0xDA8], 0, *(s16*)(lbl_3_data_21E68 + 0x26), *(s16*)(lbl_3_data_21E68 + 0x4),
+                                     *(s16*)(lbl_3_data_21E68 + 0x6));
+            if (gs[0xD9A] == *(s16*)(lbl_3_data_21E68 + 0x8)) {
+                fn_3_14471C(i);
+                gq[0x1C7E] = -1;
+            } else if (gs[0xD9A] >= a) {
+                gs[0xD9A] = -1;
+                gp[0x1C92] = -1;
+            }
+        } else if (pad->trig & 0x200) {
+            if (g_Minigame[0x190B] != 0) {
+                continue;
+            }
+            gp[0x1C92] = 3;
+            goto aim;
+        } else if (pad->trig & 0x100) {
+            if (g_Minigame[0x190B] != 0) {
+                continue;
+            }
+            if (pad->stickX >= 0xE00 || (pad->held & 2)) {
+                gp[0x1C92] = 0;
+            } else if (pad->stickX >= 0xA00) {
+                continue;
+            } else if (pad->stickX >= 0x600 || (pad->held & 1)) {
+                gp[0x1C92] = 2;
+            } else if (pad->stickX >= 0x200 || (pad->held & 8)) {
+                gp[0x1C92] = 1;
+            } else if (pad->stickX >= 0 || (pad->held & 2)) {
+                gp[0x1C92] = 0;
+            } else {
+                continue;
+            }
+        aim:
+            o = g_Minigame + (s8)gq[0x1C7E];
+            if (o[0x1B84] != 5 || gp[0x1C92] != 3) {
+                o[0x1BE8] = gp[0x1C92];
+                tgt = lbl_3_data_21BC4[(s8)o[0x1BE8]];
+                *(f32*)(f + 0x10C) = tgt[3];
+                *(f32*)(f + 0x110) = tgt[4];
+                *(f32*)(f + 0x114) = tgt[5];
+            } else {
+                // Aim at another player, weighted towards the leaders.
+                q = others;
+                if (i != 0) {
+                    *q++ = 0;
+                }
+                if (i != 1) {
+                    *q++ = 1;
+                }
+                if (i != 2) {
+                    *q++ = 2;
+                }
+                if (i != 3) {
+                    *q = 3;
+                }
+                for (a = 0; a < 2; a++) {
+                    for (b = a + 1; b < 3; b++) {
+                        if (((s16*)(g_Minigame + 0x1890))[others[a]] < ((s16*)(g_Minigame + 0x1890))[others[b]]) {
+                            t = others[a];
+                            others[a] = others[b];
+                            others[b] = t;
+                        }
+                    }
+                }
+                v = rand() % 100;
+                if ((v -= lbl_3_data_21E20[0]) < 0) {
+                    v = others[0];
+                } else if ((v -= lbl_3_data_21E20[1]) < 0) {
+                    v = others[1];
+                } else if ((v -= lbl_3_data_21E20[2]) < 0) {
+                    v = others[2];
+                }
+                d = v - i;
+                o[0x1BE8] = -1 - v;
+                tgt = &lbl_3_data_21B94[v].x;
+                *(f32*)(f + 0x10C) = lbl_3_rodata_3870 * (s8)(__abs(d) / d) + tgt[0];
+                *(f32*)(f + 0x110) = lbl_3_rodata_3834;
+                *(f32*)(f + 0x114) = tgt[2];
+            }
+            gp[0x1C8E] = gq[0x1C7E];
+            o[0x193A] = 3;
+            gs[0xD9A] = 0;
+            if (gp[0x1C92] == 3) {
+                o[0x193A] = 4;
+            }
+            *(f32*)(f + 0x48) = game_atan2(*(f32*)(f + 0x10C) - *(f32*)(f + 0x0), *(f32*)(f + 0x114) - *(f32*)(f + 0x8));
+        } else if (pad->held & 4) {
+            gp[0x1CA5] = 1;
+            gs[0xDA2] = 0;
+            fn_3_90064(0x2DB);
+        }
+    }
 }
+#endif
 
 // .text:0x001453BC size:0x714 mapped:0x80784450
 extern void fn_3_147CFC(void* arg);
