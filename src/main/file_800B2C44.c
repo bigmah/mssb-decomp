@@ -5,8 +5,11 @@ extern Mtx lbl_80111640; // extra root transform for actors with a bone remap ta
 extern Vec lbl_800E7D28; // {0, 0, 0}
 
 // .text:0x800B2C44 size:0x44
-void fn_800B2C44(void) {
-    return;
+void fn_800B2C44(GameActor* actor, u16 bone, Vec* pos) {
+    pos->x = 0.0f;
+    pos->y = 0.0f;
+    pos->z = 0.0f;
+    PSMTXMultVec(actor->forwardMtxArray[bone], pos, pos);
 }
 
 // .text:0x800B2C88 size:0x34
