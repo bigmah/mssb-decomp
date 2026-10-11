@@ -817,16 +817,16 @@ void fn_3_2B5C0(int i) {
 }
 
 // .text:0x0002B694 size:0x470 mapped:0x8066A728
-// NONMATCHING 88%: register allocation only (saved GPR/FPR assignment differs); the tail writes fn_3_2B5C0's body out as the original inlines it
+// NONMATCHING 90%: register allocation only (saved GPR/FPR assignment differs); the tail writes fn_3_2B5C0's body out as the original inlines it
 #if NONMATCHING
 int fn_3_2B694(int i) {
     u8* f = g_Fielders + i * 0x268;
-    f32 spd;
-    int k;
     u8* pt;
+    int k;
+    f32 d;
+    f32 spd;
     f32 dx;
     f32 dz;
-    f32 d;
     f32 r;
     f32 t;
     s16 a;
