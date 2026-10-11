@@ -1380,9 +1380,90 @@ u8 fn_800471F4(u8 mode, u8 team) {
 #endif
 
 // .text:0x80047CE0 size:0x304
+// NONMATCHING ~93%: (_06 == 2) materialised as cntlzw; dead CF52 stores scheduled differently
+#if NONMATCHING
 void fn_80047CE0(void) {
-    return;
+    s32 i;
+    u8 mode;
+
+    lbl_8034E9A0._4720[0] = 0;
+    lbl_8034E9A0._4720[1] = 0;
+    for (i = 0; i < 2; i++) {
+        lbl_803297E0._CF52[i] = g_d_GameSettings._06 == 2;
+    }
+    lbl_803297E0._CF3E[1] = 0xFF;
+    lbl_803297E0._CF3E[0] = 0xFF;
+    lbl_803297E0._CF3C[1] = 0;
+    lbl_803297E0._CF3C[0] = 0;
+    lbl_803297E0._CF40 = 0;
+    lbl_803297E0._CF41 = 0;
+    lbl_803297E0._CF43 = 0;
+    lbl_803297E0._CF48[1] = 0;
+    lbl_803297E0._CF48[0] = 0;
+    lbl_803297E0.slot[1] = 0;
+    lbl_803297E0.slot[0] = 0;
+    lbl_803297E0._CF4C[1] = 0;
+    lbl_803297E0._CF4C[0] = 0;
+    lbl_803297E0._CF4A[1] = 0;
+    lbl_803297E0._CF4A[0] = 0;
+    lbl_803297E0._CF54[1] = 0;
+    lbl_803297E0._CF54[0] = 0;
+    lbl_803297E0._CF52[1] = 0;
+    lbl_803297E0._CF52[0] = 0;
+    lbl_803297E0._CF4E[1] = 0;
+    lbl_803297E0._CF4E[0] = 0;
+    lbl_803297E0._CF56[1] = 0;
+    lbl_803297E0._CF56[0] = 0;
+    lbl_803297E0._CF58[1] = 0;
+    lbl_803297E0._CF58[0] = 0;
+    lbl_8034E9A0._4705 = 1;
+    lbl_803C66B0._59 = 0;
+    lbl_803C66B0._5A = 1;
+    if (g_d_GameSettings._06 != 2) {
+        if (g_d_GameSettings.GameModeSelected != 5 && lbl_803CBBCC->prevScene == 0xA) {
+            characterSelectScreen(0);
+            characterSelectScreen(1);
+        } else if (g_d_GameSettings.GameModeSelected == 5 && gChallengeSave._4445 == 0) {
+            fn_800415A8();
+            unsure_FillRosterPositions(1);
+            characterSelectScreen(1);
+        }
+        lbl_803297E0._CFA2[1] = 0;
+        lbl_803297E0._CFA2[lbl_803297E0._CF3B] = 0;
+        lbl_803C5EA4._36 = 1;
+        lbl_803C5EA4.prevMode = lbl_803C5EA4.mode;
+        lbl_803C5EA4.mode = 1;
+    } else if (lbl_803297E0._CFA2[lbl_803297E0._CF3B] == 0) {
+        lbl_803297E0._CF52[1] = 1;
+        lbl_803297E0._CF52[0] = 1;
+    } else {
+        lbl_803297E0._CF52[1] = 0;
+        lbl_803297E0._CF52[0] = 0;
+    }
+    SetMenuNumber();
+    if (g_d_GameSettings._06 != 2 && lbl_803CBBCC->prevScene != 0xA &&
+        g_d_GameSettings.__0x11padding[1] == 0 && g_d_GameSettings.GameModeSelected != 5) {
+        lbl_803297E0._CF43 = 1;
+        lbl_803297E0._CF4E[0] = 1;
+        fn_800625A4(0, 0x39);
+        fn_800625A4(1, 0x39);
+        lbl_803297E0._CF38 = 1;
+        return;
+    }
+    mode = lbl_803297E0._CFA2[lbl_803297E0._CF3B];
+    if (mode != 2 && mode != 3) {
+        fn_800625A4(0, 0x38);
+        fn_800625A4(1, 0x38);
+        lbl_803297E0._CF38 = 1;
+    } else if (mode == 2) {
+        lbl_803297E0._CF7D = 1;
+        lbl_803297E0._CF38 = 4;
+    } else {
+        lbl_803297E0._CF92 = 1;
+        lbl_803297E0._CF38 = 5;
+    }
 }
+#endif
 
 // .text:0x80047FE4 size:0x6FC
 // Inline form of fn_80042D38.
