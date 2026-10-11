@@ -150,7 +150,14 @@ void fn_3_98028(void) {
 
 // .text:0x000983B8 size:0x7C mapped:0x806D744C
 void fn_3_983B8(void) {
-    return;
+    HudTask* task = HUD_TASK;
+
+    fn_80034E20(task, lbl_3_data_D9E4);
+    lbl_3_common_bss_32724._C3 = 0;
+    task->state = 0;
+    task->_1E = lbl_3_common_bss_34C90._221;
+    task->_20 = 0;
+    HUD_TASK->func = fn_3_98028;
 }
 
 // .text:0x00098434 size:0x518 mapped:0x806D74C8
