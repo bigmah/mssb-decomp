@@ -29,13 +29,11 @@ extern f32 lbl_3_data_21A14[];
 extern f32 lbl_3_rodata_363C;
 extern f32 lbl_3_rodata_3688;
 extern f32 lbl_3_rodata_368C;
-extern u8 lbl_3_bss_B780;
 extern f64 lbl_3_rodata_3670;
 extern f32 lbl_3_rodata_3628;
 extern f64 lbl_3_rodata_3678;
 extern f64 lbl_3_rodata_3680;
 extern u8 lbl_3_data_21AD0[];
-extern u8 lbl_3_bss_B781;
 extern f32 lbl_3_rodata_3648;
 extern f32 lbl_3_rodata_36C8;
 extern f32 lbl_3_data_21A48[];
@@ -94,6 +92,8 @@ extern void GXSetTevAlphaIn(s32, s32, s32, s32, s32);
 extern void GXSetTevAlphaOp(s32, s32, s32, s32, s32, s32);
 extern void GXInitTexObj(void*, void*, s32, s32, s32, s32, s32, s32);
 extern void GXInitTexObjLOD(void*, s32, s32, f32, f32, f32, s32, s32, s32);
+static u8 lbl_3_bss_B781; // difficulty row for the obstacle drop timings
+static u8 lbl_3_bss_B780; // number of active obstacles
 static u8 s_buf[0x40];
 static u8 s_pad[0x18];
 static u8 s_tex[0x20];
@@ -1567,7 +1567,7 @@ u8 fn_3_137B10(u8* o) {
 }
 
 // .text:0x00137CF8 size:0xEC mapped:0x80776D8C
-void fn_3_137CF8(u8* o) {
+static inline void h137CF8(u8* o) {
     u32 t;
     s16* row;
     int lo;
@@ -1585,9 +1585,12 @@ void fn_3_137CF8(u8* o) {
         *(s16*)(o + 0x38) = t + lo * 60;
     }
 }
+void fn_3_137CF8(u8* o) {
+    h137CF8(o);
+}
 
 // .text:0x00137DE4 size:0x130 mapped:0x80776E78
-void fn_3_137DE4(u8* o) {
+static inline void h137DE4(u8* o) {
     u32 t;
     s16* row;
     int lo;
@@ -1611,9 +1614,12 @@ void fn_3_137DE4(u8* o) {
         *(s16*)(o + 0x38) = t + lo * 60;
     }
 }
+void fn_3_137DE4(u8* o) {
+    h137DE4(o);
+}
 
 // .text:0x00137F14 size:0x118 mapped:0x80776FA8
-void fn_3_137F14(u8* o) {
+static inline void h137F14(u8* o) {
     if (G8[0x72A] != 0) {
         *(f32*)(o + 0x10) = (&lbl_3_data_21A64)[5];
         o[0x3D] = 5;
@@ -1638,8 +1644,36 @@ void fn_3_137F14(u8* o) {
         }
     }
 }
+void fn_3_137F14(u8* o) {
+    h137F14(o);
+}
 
 // .text:0x0013802C size:0x2B4 mapped:0x807770C0
+static inline void h13802C(u8* o) {
+    Vec* vel;
+    if (g_Minigame._72A != 0) {
+        *(f32*)(o + 0x10) = (&lbl_3_data_21A64)[5];
+        o[0x3D] = 5;
+        *(s16*)(o + 0x3A) = 0;
+        return;
+    }
+    PSVECAdd((Vec*)o, vel = (Vec*)(o + 0xC), (Vec*)o);
+    if (fn_3_137B10(o) != 0) {
+        (&g_Minigame._1D78)[(s8)o[0x3C]] = 0;
+        fn_3_90064(0x30D);
+        return;
+    }
+    if (*(f32*)(o + 4) <= 0.0f) {
+        *(f32*)(o + 4) = 0.0f;
+        memset(vel, 0, sizeof(Vec));
+        *(s16*)(o + 0x3A) = 0;
+        o[0x3D] = 3;
+        fn_3_1371E8();
+        fn_3_137224(o);
+        (&g_Minigame._1D78)[(s8)o[0x3C]] = 0;
+        fn_3_90064(0x2F7);
+    }
+}
 void fn_3_13802C(u8* o) {
     if (g_Minigame._72A != 0) {
         *(f32*)(o + 0x10) = (&lbl_3_data_21A64)[5];
@@ -1666,6 +1700,38 @@ void fn_3_13802C(u8* o) {
 }
 
 // .text:0x001382E0 size:0x168 mapped:0x80777374
+static inline void h1382E0(u8* o) {
+    u32 t0 = *(u32*)&G8[0x17C0] / 60 / 20;
+    int t = t0;
+    s16* row;
+    int lo;
+    if (G8[0x72A] != 0) {
+        o[0x3D] = 0;
+        *(s16*)(o + 0x3A) = 0;
+        row = lbl_3_data_21A90 + G8[0x1A2B] * 8;
+        lo = row[t0 * 2];
+        t0 = random_fn_3_9EE24((row[t0 * 2 + 1] - lo) * 60);
+        *(s16*)(o + 0x38) = t0 + lo * 60;
+        return;
+    }
+    if (*(s16*)(o + 0x3A) < 0x7FFE) {
+        (*(s16*)(o + 0x3A))++;
+    } else {
+        *(s16*)(o + 0x3A) = 0x7FFF;
+    }
+    if ((u32)t > 3) {
+        t = 3;
+    }
+    if (*(s16*)(o + 0x3A) / 60 >= *(s16*)(lbl_3_data_21AD0 + lbl_3_bss_B781 * 8 + t * 2)) {
+        f32 z = lbl_3_rodata_35D0;
+        *(f32*)(o + 0x14) = z;
+        *(f32*)(o + 0xC) = z;
+        *(f32*)(o + 0x10) = -(&lbl_3_data_21A64)[1];
+        o[0x3D] = 2;
+        *(s16*)(o + 0x3A) = 0;
+    }
+}
+// (inline copy above is used by fn_3_138AA4; the standalone copy keeps its own register shape)
 void fn_3_1382E0(u8* o) {
     u32 t0 = *(u32*)&G8[0x17C0] / 60 / 20;
     int t = t0;
@@ -1699,6 +1765,19 @@ void fn_3_1382E0(u8* o) {
 }
 
 // .text:0x00138448 size:0x6C mapped:0x807774DC
+static inline void h138448(u8* a) {
+    if (G8[0x72A] == 0) {
+        if (*(s16*)(a + 0x3A) < 0x7FFE) {
+            (*(s16*)(a + 0x3A))++;
+        } else {
+            *(s16*)(a + 0x3A) = 0x7FFF;
+        }
+        if (*(s16*)(a + 0x3A) >= *(s16*)(a + 0x38)) {
+            a[0x3E] = 0;
+            fn_3_1384B4(a);
+        }
+    }
+}
 void fn_3_138448(u8* a) {
     if (G8[0x72A] == 0) {
         s16* t = (s16*)(a + 0x3A);
@@ -1832,9 +1911,40 @@ void fn_3_1384B4(u8* o) {
 #endif
 
 // .text:0x00138AA4 size:0x71C mapped:0x80777B38
+// Run the per-obstacle state handlers (records at g_Minigame+0xBB0, state at +0x3D).
+#pragma dont_inline off
 void fn_3_138AA4(void) {
-    return;
+    u32 n;
+    if (g_Minigame.turnOverStatus != 0) {
+        return;
+    }
+    for (n = 0; n < lbl_3_bss_B780; n++) {
+        if (n >= 4) {
+            break;
+        }
+        switch ((G8 + n * 0x40 + 0xBB0)[0x3D]) {
+        case 0:
+            h138448(G8 + n * 0x40 + 0xBB0);
+            break;
+        case 1:
+            h1382E0(G8 + n * 0x40 + 0xBB0);
+            break;
+        case 2:
+            h13802C(G8 + n * 0x40 + 0xBB0);
+            break;
+        case 3:
+            h137F14(G8 + n * 0x40 + 0xBB0);
+            break;
+        case 4:
+            h137DE4(G8 + n * 0x40 + 0xBB0);
+            break;
+        case 5:
+            h137CF8(G8 + n * 0x40 + 0xBB0);
+            break;
+        }
+    }
 }
+#pragma dont_inline on
 
 // .text:0x001391C0 size:0x540 mapped:0x80778254
 // NONMATCHING 98.4%: registers only; saved-register numbering is rotated (b/n/g/table bases)
