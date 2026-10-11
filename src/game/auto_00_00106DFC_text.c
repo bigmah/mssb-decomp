@@ -38,7 +38,7 @@ extern u8 lbl_803616CC[];
 extern u8 inMemRoster[];
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_800E86F0[];
-extern void fn_3_10BE7C();
+extern void fn_3_10BE7C(void);
 extern u8 inMemRoster[];
 extern void fn_80062A74(void);
 extern void fn_80062A94(void);
@@ -420,26 +420,6 @@ void fn_3_10F5BC(void) {
     fn_800B0A5C_insertQueue(manageStadiumLoading, 0);
 }
 
-// fn_3_10C450, size:0x13C
-void fn_3_10C450(s32 a, s32 b) {
-    u8* r = inMemRoster + a * 0xA0;
-    memcpy(r, lbl_8034E9A0 + b * 0xA0, 0xA0);
-    if (g_Minigame[0x18D4 + a] != 0) {
-        r[0x28] += lbl_800E86F0[0];
-        r[0x29] += lbl_800E86F0[1];
-        r[0x2A] += lbl_800E86F0[2];
-        r[0x2B] += lbl_800E86F0[3];
-        r[0x2C] += lbl_800E86F0[4];
-        r[0x2F] += lbl_800E86F0[5];
-        r[0x30] += lbl_800E86F0[6];
-        r[0x0] += lbl_800E86F0[7];
-        r[0x1] += lbl_800E86F0[8];
-        r[0x2] += lbl_800E86F0[9];
-        r[0x3] += lbl_800E86F0[0xA];
-        r[0x4] += lbl_800E86F0[0xB];
-    }
-}
-
 // fn_3_107784, size:0x17C
 void fn_3_107784(void) {
     switch (g_GameLogic[0x125]) {
@@ -662,6 +642,26 @@ void fn_3_10C7A4(void) {
         fn_80011BE4(i);
         g_Minigame[0x19E9 + i * 9] = 0;
         *(s8*)(g_Minigame + 0x19EA + i * 9) = -1;
+    }
+}
+
+// fn_3_10C450, size:0x13C
+void fn_3_10C450(s32 a, s32 b) {
+    u8* r = inMemRoster + a * 0xA0;
+    memcpy(r, lbl_8034E9A0 + b * 0xA0, 0xA0);
+    if (g_Minigame[0x18D4 + a] != 0) {
+        r[0x28] += lbl_800E86F0[0];
+        r[0x29] += lbl_800E86F0[1];
+        r[0x2A] += lbl_800E86F0[2];
+        r[0x2B] += lbl_800E86F0[3];
+        r[0x2C] += lbl_800E86F0[4];
+        r[0x2F] += lbl_800E86F0[5];
+        r[0x30] += lbl_800E86F0[6];
+        r[0x0] += lbl_800E86F0[7];
+        r[0x1] += lbl_800E86F0[8];
+        r[0x2] += lbl_800E86F0[9];
+        r[0x3] += lbl_800E86F0[0xA];
+        r[0x4] += lbl_800E86F0[0xB];
     }
 }
 
@@ -1501,5 +1501,45 @@ void fn_3_109DE0(MinigameScore* out) {
             out->_4 = 0;
         }
     }
+}
+#endif
+
+extern void fn_3_10F684(void);
+
+// NONMATCHING 97%: loop induction registers (i/roster/g+9i/g+i) rotated, increments scheduled differently
+#if NONMATCHING
+// fn_3_10F91C, size:0x258
+void fn_3_10F91C(void) {
+    s32 i;
+    u8* mg;
+    switch (g_GameLogic[0x125]) {
+    case 0:
+        fn_3_10F684();
+        lbl_3_common_bss_32724[0xD8] = 0;
+        g_GameLogic[0x125]++;
+        break;
+    }
+    mg = g_Minigame;
+    for (i = 0; i < 4; i++) {
+        *(s8*)(mg + 0x18CC + i) = -1;
+        mg[0x18D8 + i] = 0;
+        mg[0x18D0 + i] = 0xFF;
+    }
+    mg[0x1906] = 0;
+    mg[0x1907] = 0;
+    fn_3_10BE7C();
+    for (i = 0; i < 4; i++) {
+        if (*(s8*)(g_Minigame + 0x19DA + i) >= 0) {
+            g_Minigame[0x18CC + mg[0x1906]] = i;
+            g_Minigame[0x18D8 + mg[0x1906]] = g_Minigame[0x19DA + i];
+            if (g_Minigame[0x18D8 + mg[0x1906]] == 0) {
+                mg[0x1907]++;
+            }
+            fn_3_10C450(i, *(s8*)(g_Minigame + 0x19E8 + i * 9));
+            g_Minigame[0x18D0 + mg[0x1906]] = *(s16*)(inMemRoster + i * 0xA0 + 0x24);
+            mg[0x1906]++;
+        }
+    }
+    fn_3_5A6D4(0x21);
 }
 #endif
