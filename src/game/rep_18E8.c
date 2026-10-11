@@ -1052,9 +1052,87 @@ void fn_3_A53DC(s32 i) {
 #endif
 
 // .text:0x000A5704 size:0x448 mapped:0x806E4798
-void fn_3_A5704(void) {
-    return;
+// NONMATCHING 87%: register allocation and scheduling differ; fn_3_A6ABC is inlined
+#if NONMATCHING
+void fn_3_A5704(s32 i) {
+    RepFielder* f;
+    InMemRunnerType* r;
+    RepFielder* c;
+    s32 base;
+    f32 b;
+    f32 step;
+    s16 cover;
+    f32 dx;
+    f32 d;
+    f32 tz;
+    f32 a;
+    f32 tx;
+    s32 n;
+    f32 ballDist;
+    s32 frames;
+    s32 throwFrames;
+    s16 runnerFrames;
+    f32 dz;
+    s16 coverFrames;
+
+    f = &g_Fielders[g_Ball.fielderWBallIndex];
+    r = &g_Runners[i];
+    base = r->nextBase;
+    // inlined fn_3_A6ABC(next base x, z)
+    step = (f32)f->_1CD / lbl_3_rodata_1938;
+    tx = lbl_3_data_4444[base * 2];
+    tz = lbl_3_data_4444[base * 2 + 1];
+    dx = tx - f->pos.x;
+    runnerFrames = r->framesToNextBase;
+    dz = tz - f->pos.z;
+    cover = g_FieldingLogic._0D0[base];
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        step = lbl_3_rodata_1958;
+    }
+    if (d > lbl_3_rodata_195C) {
+        n = (s32)(lbl_3_rodata_1960 * d / step);
+    } else if (d > lbl_3_rodata_1964) {
+        n = (s32)(d / step);
+    } else {
+        n = (s32)(lbl_3_rodata_1968 * d / step);
+    }
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+    }
+    ballDist = g_Ball.ballDistanceFromBase[base];
+    frames = f->_192 + n + lbl_3_data_1C40;
+    throwFrames = fn_3_52560(g_Ball.fielderWBallIndex, tx, tz);
+    if (cover == g_Ball.fielderWBallIndex || cover == -1 || ballDist < lbl_3_rodata_199C ||
+        (c = &g_Fielders[cover], c->_1E2 != 0) ||
+        ((coverFrames = c->framesToDest) < 0 && g_FieldingLogic._101[base] == 0)) {
+        lbl_3_bss_1838[i] = base;
+        lbl_3_bss_1828[i] = -1;
+        lbl_3_bss_1848[i] = throwFrames - runnerFrames;
+        return;
+    }
+    if (throwFrames < coverFrames + 5) {
+        lbl_3_bss_1838[i] = base;
+        lbl_3_bss_1828[i] = -1;
+        lbl_3_bss_1848[i] = throwFrames - runnerFrames;
+        return;
+    }
+    if (frames + 5 < coverFrames) {
+        lbl_3_bss_1828[i] = base + 10;
+        lbl_3_bss_1838[i] = -1;
+        lbl_3_bss_1848[i] = coverFrames - runnerFrames;
+        return;
+    }
+    lbl_3_bss_1828[i] = base;
+    lbl_3_bss_1838[i] = -1;
+    lbl_3_bss_1848[i] = frames - runnerFrames;
 }
+#endif
 
 // .text:0x000A5B4C size:0x898 mapped:0x806E4BE0
 void fn_3_A5B4C(void) {
