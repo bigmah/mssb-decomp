@@ -111,6 +111,7 @@ extern void fn_80030470(Vec*, Vec*, Vec*, void*, int);
 extern u8 lbl_3_common_bss_35154[];
 extern TexImage* lbl_3_bss_B854;
 extern u8 lbl_3_data_26B9C[];
+extern u8 lbl_3_bss_B858;
 extern f32 lbl_3_data_26BAC;
 extern f32 lbl_3_data_26BB0;
 extern const f32 lbl_3_rodata_3A20;
@@ -2896,10 +2897,106 @@ void fn_3_156970(Vec* pos, u32 color, TexImage* tex) {
     }
 }
 
+// NONMATCHING 94%: 1575F0 inlined; colour index *4 scheduled later, sin/cos temps of the trail rotation get different FPRs, (u8) on the tex index as in 156548
 // .text:0x00156D04 size:0x608 mapped:0x80795D98
-void fn_3_156D04(void) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
+    Vec quad[4];
+    Mtx44 proj;
+    Vec oldPos;
+    Vec trail;
+    Vec newPos;
+    Vec tmp;
+    Vec* v;
+    TexArchive* arc;
+    u32* colors;
+    s32 ci;
+    f32 k;
+    f32 ang;
+    f32 scale;
+    f32 size;
+    f32 h;
+    s32 i;
+    colors = (u32*)((u8*)lbl_3_data_266A8 + 0x4DC);
+    ci = *(s32*)(g_Minigame + n * 0x28 + 0xC4);
+    k = lbl_3_rodata_392C / fn_80052768_getCamera(0)->zoom;
+    fn_800B24D4(0xD);
+    v = fn_3_1575F0(n);
+    if (v == NULL) {
+        return;
+    }
+    C_MTXFrustum(proj, lbl_3_rodata_3A20 * k, lbl_3_rodata_3A24 * k, lbl_3_rodata_39F0 * k, lbl_3_rodata_3A28 * k,
+                 lbl_3_rodata_392C, lbl_3_rodata_3A2C);
+    GXSetProjection(proj, GX_PERSPECTIVE);
+    PSMTXMultVec((MtxPtr)((u8*)fn_80052734(0) + 0x40), v, &oldPos);
+    v->x = x;
+    v->y = y;
+    v->z = z;
+    PSMTXMultVec((MtxPtr)((u8*)fn_80052734(0) + 0x40), v, &newPos);
+    PSVECSubtract(&oldPos, &newPos, &oldPos);
+    tmp = oldPos;
+    ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 15000) / lbl_3_rodata_39C8);
+    ang *= (f32)(-((rand() % 2) * 2) + 1);
+    oldPos.x = tmp.x * (f32)cos(ang) + tmp.y * -(f32)sin(ang);
+    oldPos.y = tmp.x * (f32)sin(ang) + tmp.y * (f32)cos(ang);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    i = 7;
+    scale = (f64)(rand() % 500 + 1000) / lbl_3_rodata_39C8;
+    do {
+        switch (i) {
+        case 0:
+        case 4:
+        case 7:
+            PSVECScale(&oldPos, scale * (lbl_3_data_266A8[0x13B] + ((f32)i * (lbl_3_data_266A8[0x13C] - lbl_3_data_266A8[0x13B])) / lbl_3_rodata_3A30), &trail);
+            PSVECAdd(&newPos, &trail, &trail);
+            if (i >= 4) {
+                size = (f32)(7 - i) * lbl_3_rodata_39F0 + lbl_3_rodata_392C;
+            } else {
+                size = lbl_3_rodata_39C4;
+            }
+            h = scale * (size * lbl_3_rodata_39A8);
+            quad[0].x = trail.x - h;
+            quad[0].y = trail.y - h;
+            quad[0].z = trail.z;
+            quad[1].x = trail.x - h;
+            quad[1].y = trail.y + h;
+            quad[1].z = trail.z;
+            quad[2].x = trail.x + h;
+            quad[2].y = trail.y + h;
+            quad[2].z = trail.z;
+            quad[3].x = trail.x + h;
+            quad[3].y = trail.y - h;
+            quad[3].z = trail.z;
+            GXSetBlendMode(GX_BM_SUBTRACT, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+            if (lbl_3_bss_B858 != 0) {
+                arc = *(TexArchive**)(lbl_3_common_bss_32724 + 0x68);
+                fn_3_156970(quad, 0xFFFFFFFF, TEX_ARCHIVE_IMG(arc, 0));
+            }
+            if (i >= 4) {
+                size = (f32)(7 - i) * lbl_3_rodata_39F0 + lbl_3_rodata_392C;
+            } else {
+                size = lbl_3_rodata_39C4;
+            }
+            h = scale * (size * lbl_3_rodata_39A8);
+            quad[0].x = trail.x - h;
+            quad[0].y = trail.y - h;
+            quad[1].x = trail.x - h;
+            quad[1].y = trail.y + h;
+            quad[2].x = trail.x + h;
+            quad[2].y = trail.y + h;
+            quad[3].x = trail.x + h;
+            quad[3].y = trail.y - h;
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+            arc = *(TexArchive**)(lbl_3_common_bss_32724 + 0x6C);
+            fn_3_156970(quad, colors[ci], TEX_ARCHIVE_IMG(arc, (u8)(i + 10)));
+            break;
+        }
+    } while (i-- != 0);
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x0015730C size:0xA0 mapped:0x807963A0
 void fn_3_15730C(u32 n, f32 x, f32 y, f32 z) {
