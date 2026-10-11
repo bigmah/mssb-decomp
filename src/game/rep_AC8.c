@@ -2834,9 +2834,68 @@ void fn_3_494F4(void) {
 }
 
 // .text:0x000499C4 size:0x254 mapped:0x80688A58
-void fn_3_499C4(void) {
-    return;
+// Pick the spot (out x/z) where fielder i should go to meet the ball's flight path.
+// NONMATCHING 98.8%: px/pz pointer setup uses mr+addi in the original (register coalescing); loop compare needs volatile to defeat CSE
+#if NONMATCHING
+void fn_3_499C4(int i, f32* out) {
+    u8* f = g_Fielders + i * 0x268;
+    int k;
+    int res;
+    int t;
+    int j;
+    f32* p;
+    u8* b;
+    f32* pz;
+    f32* px;
+    f32 y;
+    f32 d;
+    f32 s;
+    f32 nx;
+    f32 nz;
+    k = *(s16*)(g_FieldingLogic + 0xB0);
+    out[1] = 0.0f;
+    if (*(s16*)(g_FieldingLogic + 0xB2) >= 0) {
+        k = *(s16*)(g_FieldingLogic + 0xB2);
+    }
+    res = 0;
+    t = *(s16*)(g_Fielders + k * 0x268 + 0x186) - *(s16*)(g_Ball + 0x1B66);
+    if (t > 0) {
+        p = (f32*)(g_Ball + t * 0x10 + 0x360);
+        y = *p + *(f32*)lbl_3_data_4930;
+        for (j = t + 1; j < 0x168; j += 3) {
+            if (y < *(volatile f32*)p) {
+                break;
+            }
+        }
+        if (j < 0x168) {
+            res = j;
+        }
+    }
+    if (res == 0) {
+        t = *(s16*)(f + 0x186) - *(s16*)(g_Ball + 0x1B66);
+        if (t <= 0) {
+            t = 0x5A;
+        } else if (t >= 0x168) {
+            t = 0x167;
+        }
+        b = g_Ball + t * 0x10;
+        pz = (f32*)(b + 0x35C);
+        px = (f32*)(b + 0x354);
+        d = *(f32*)(b + 0x354) * *(f32*)(b + 0x354) + *(f32*)(b + 0x35C) * *(f32*)(b + 0x35C);
+        SQRT_L(d);
+        nx = *px / d;
+        nz = *pz / d;
+        s = d + *(f32*)lbl_3_data_4930;
+        out[0] = nx * s;
+        out[2] = nz * s;
+        return;
+    }
+    b = g_Ball + res * 0x10;
+    out[0] = *(f32*)(b + 0x354);
+    out[2] = *(f32*)(b + 0x35C);
 }
+#endif
+
 
 // .text:0x00049C18 size:0x290 mapped:0x80688CAC
 void fn_3_49C18(void) {

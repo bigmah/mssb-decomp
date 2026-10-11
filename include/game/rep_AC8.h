@@ -163,7 +163,7 @@ void fn_3_483CC(int i);
 void fn_3_48480(void);
 void fn_3_48A54(void);
 void fn_3_494F4(void);
-void fn_3_499C4(void);
+void fn_3_499C4(int, f32*);
 void fn_3_49C18(void);
 void fn_3_49EA8(int);
 void fn_3_49F3C(void);
