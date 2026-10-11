@@ -30,6 +30,7 @@ extern u8 lbl_3_common_bss_34C90[];
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
+extern u8 lbl_3_data_FAA8[3][9];
 extern s16 lbl_3_data_104B8[][2][3];
 extern u8 lbl_3_data_B1BC[];
 extern u16 lbl_3_data_B3DC[6];
@@ -471,4 +472,51 @@ end:
     fn_8000FEE8(o->text);
     fn_8000F8F4((LayoutGroup*)o);
     fn_800B0A14_removeQueue(fn_80034CEC(o));
+}
+
+// .text:0x0015B204 size:0x290
+void fn_3_15B204(void) {
+    s32 i;
+    s32 found;
+
+    for (i = 0; i < 9; i++) {
+        fn_3_B4124(0, i, lbl_3_data_FAA8[1][i], -1);
+        if (g_GameLogic.secondaryGameMode == 0x10) {
+            fn_3_B4124(1, i, lbl_3_data_FAA8[2][i], -1);
+        } else {
+            fn_3_B4124(1, i, lbl_3_data_FAA8[0][i], -1);
+        }
+    }
+    if (g_GameLogic.secondaryGameMode == 0xF) {
+        if (g_Minigame._19E8[g_Practice.homeAway]._0 == 1) {
+            fn_3_B4124(0, 0, 0, -1);
+        } else {
+            fn_3_B4124(0, 0, 1, -1);
+        }
+        fn_3_B4124(1, 0, g_Minigame._19E8[g_Practice.homeAway]._0, g_Minigame.battingHandedness[g_Practice.homeAway]);
+        return;
+    }
+    fn_3_B4124(0, 0, g_Minigame._19E8[g_Practice.homeAway]._0, g_Minigame.battingHandedness[g_Practice.homeAway]);
+    found = 0;
+    for (i = 1; i < 9; i++) {
+        if (g_Minigame._19E8[g_Practice.homeAway]._0 == inMemRoster[0][i].stats.CharID) {
+            fn_3_B4124(0, i, 0x2E, -1);
+            found = 1;
+            break;
+        }
+    }
+    if (found == 0) {
+        for (i = 0; i < 9; i++) {
+            if (inMemRoster[1][i].stats.CharID == g_Minigame._19E8[g_Practice.homeAway]._0) {
+                if (i == 0 || i == 1 || i == 8) {
+                    fn_3_B4124(1, i, 3, -1);
+                } else if (i == 2 || i == 3 || i == 4) {
+                    fn_3_B4124(1, i, 0x13, -1);
+                } else {
+                    fn_3_B4124(1, i, 0x11, -1);
+                }
+                break;
+            }
+        }
+    }
 }
