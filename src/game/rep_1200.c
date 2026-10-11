@@ -15,6 +15,9 @@ extern void fn_3_6EBB4(s32 rosterLoc);
 extern void fn_3_89864(s32 i, s32 d);
 extern s32 fn_8001C920(s32 id);
 extern void fn_3_7A154(s32 inPlay);
+// the callee returns u8, but callers here test the full register (int-returning prototype in the original)
+extern u32 fn_3_107DB4(s8 i);
+extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 
 // View of lbl_3_common_bss_32724 (in-game HUD flags), only the fields used here.
 typedef struct Rep1200Bss32724View {
@@ -66,8 +69,6 @@ typedef struct Rep1200RunningLogicView {
 } Rep1200RunningLogicView;
 extern Rep1200RunningLogicView g_RunningLogic;
 extern s32 fn_3_20B30(void);
-// the callee returns u8, but this caller tests the full register (int-returning prototype in the original)
-extern u32 fn_3_107DB4(s8 i);
 static inline void countPickoffAttempt(void) {
     if (g_Pitcher.nPickoffAttempts < 0xFE) {
         g_Pitcher.nPickoffAttempts += 1;
@@ -531,8 +532,84 @@ void fn_3_70B94(void) {
 }
 
 // .text:0x00070EF4 size:0x354 mapped:0x806AFF88
+// Per special-pitch-type curve parameters (lbl_3_data_5D6C).
+typedef struct PitchCurveParams {
+    /*0x0*/ s16 _0;
+    /*0x2*/ s16 curveMin;
+    /*0x4*/ s16 curveMax;
+    /*0x6*/ s16 _6[4];
+} PitchCurveParams; // size: 0xE
+extern PitchCurveParams lbl_3_data_5D6C[];
+extern f32 lbl_3_data_5E78[];
+extern const f32 lbl_3_rodata_1288;
+extern const f32 lbl_3_rodata_12B0;
+extern s32 fn_3_20CEC(f32 k);
+// Curve input while the pitch is in the air.
 void fn_3_70EF4(void) {
-    return;
+    InputStruct* c = &g_Controls[g_GameLogic.teams[g_GameLogic.teamFielding]];
+    PitchCurveParams* e = &lbl_3_data_5D6C[g_Pitcher.specialPitchTypeCode];
+    s32 dir;
+    f32 maxCurve;
+    f32 control;
+    u16 buttons;
+    g_Pitcher.pitchCurveVeloV1 = lbl_3_rodata_1258;
+    g_Pitcher._60 = lbl_3_rodata_1258;
+    dir = 0;
+    if (g_Pitcher.cancelParabolicAdjustmentInd == 0 && g_Pitcher.calced_curve != 0) {
+        maxCurve = lbl_3_rodata_12B0 *
+                   LinearInterpolateToNewRange(g_Pitcher.calced_curve, lbl_3_rodata_1290, lbl_3_rodata_1288, e->curveMin, e->curveMax);
+        if (g_Pitcher.AIInd != 0) {
+            dir = fn_3_20CEC(maxCurve);
+        } else {
+            if (g_d_GameSettings.GameModeSelected == 2 && g_Practice.instructionNumber >= 0) {
+                c = &g_Practice.inputs[g_GameLogic.teamFielding];
+            } else {
+                MiniGameControlStruct* m = g_Minigame.minigameControlStruct;
+                if (fn_3_107DB4(m->characterIndex[g_Minigame.minigamePlayerSelectedOrder]) != 0) {
+                    c = &g_Minigame._1D7C[m->characterIndex[g_Minigame.minigamePlayerSelectedOrder]];
+                } else if (g_d_GameSettings.minigamesEnabled != 0) {
+                    c = &g_Controls[m->characterIndex[g_Minigame.minigamePlayerSelectedOrder]];
+                }
+            }
+            buttons = c->buttonInput;
+            if (buttons & 1) {
+                dir = -1;
+            } else if (buttons & 2) {
+                dir = 1;
+            }
+        }
+        control = LinearInterpolateToNewRange(g_Pitcher.calced_curveControl, lbl_3_rodata_1290, lbl_3_rodata_1288, lbl_3_data_5E78[0], lbl_3_data_5E78[1]);
+        if (control < lbl_3_rodata_1290) {
+            control = lbl_3_rodata_1290;
+        }
+        if (dir == 0) {
+            f32 step = maxCurve / control;
+            if (g_Pitcher.pitchCurveVeloV2 < lbl_3_rodata_1258) {
+                g_Pitcher.pitchCurveVeloV2 = g_Pitcher.pitchCurveVeloV2 + step;
+                if (g_Pitcher.pitchCurveVeloV2 > lbl_3_rodata_1258) {
+                    g_Pitcher.pitchCurveVeloV2 = lbl_3_rodata_1258;
+                }
+            } else {
+                g_Pitcher.pitchCurveVeloV2 = g_Pitcher.pitchCurveVeloV2 - step;
+                if (g_Pitcher.pitchCurveVeloV2 < lbl_3_rodata_1258) {
+                    g_Pitcher.pitchCurveVeloV2 = lbl_3_rodata_1258;
+                }
+            }
+        } else {
+            g_Pitcher.pitchCurveVeloV2 = g_Pitcher.pitchCurveVeloV2 + (maxCurve * dir) / control;
+            if (dir < 0) {
+                if (g_Pitcher.pitchCurveVeloV2 < -maxCurve) {
+                    g_Pitcher.pitchCurveVeloV2 = -maxCurve;
+                }
+            } else if (g_Pitcher.pitchCurveVeloV2 > maxCurve) {
+                g_Pitcher.pitchCurveVeloV2 = maxCurve;
+            }
+        }
+        g_Pitcher.pitchCurveVeloV1 = g_Pitcher.pitchCurveVeloV2;
+        if (dir != 0) {
+            g_Pitcher.anyCurveInput = 1;
+        }
+    }
 }
 
 #pragma dont_inline on
@@ -718,7 +795,6 @@ void fn_3_73F2C(void) {
 }
 
 // .text:0x00073FAC size:0x124 mapped:0x806B3040
-extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 extern f32 lbl_3_data_5EB0[];
 extern f32 lbl_3_data_4474[];
 extern f32 lbl_3_data_2138C[];
