@@ -280,7 +280,8 @@ def fn_literals(elf, fname, ext=None):
     idx, start, size = elf.functions()[fname]
     text = elf.secs[idx]
     toks, pooled, callees = collections.Counter(), set(), set()
-    rel = {}
+    rel, seq = {}, []
+    toks.seq = seq  # (offset in the function, value) in instruction order
     for off, rtype, si, add in elf.relas.get(idx, []):
         if not (start <= off < start + size):
             continue
@@ -305,11 +306,13 @@ def fn_literals(elf, fname, ext=None):
         if off in rel:
             src, sidx, addr = rel[off]
             if op in LOADS:
-                toks[load_tok(src, sidx, addr, op)] += 1
+                t = load_tok(src, sidx, addr, op)
+                if t:
+                    toks[t] += 1; seq.append((off - start, t))
                 if op in INT_WRITE_RD:
                     regs.pop(rd, None)
             elif op in (14, 24):  # addi/ori: an address in a register
-                base = [src, sidx, addr, False, False]
+                base = [src, sidx, addr, False, False, off - start]
                 bases.append(base)
                 regs[rd if op == 14 else ra] = base
             continue
@@ -319,7 +322,7 @@ def fn_literals(elf, fname, ext=None):
                 d = (insn & 0xFFF) - ((insn & 0x800) << 1)
             t = load_tok(src, sidx, addr + d, op)
             if t:
-                toks[t] += 1
+                toks[t] += 1; seq.append((off - start, t))
             regs[ra][3] = True
             if op in INT_WRITE_RD:
                 regs.pop(rd, None)
@@ -327,14 +330,14 @@ def fn_literals(elf, fname, ext=None):
         if op == 14 and ra in regs and ra != 0:  # addi rD, rBase, d
             b = regs[ra]
             b[3] = True
-            nb = [b[0], b[1], b[2] + d, False, False]
+            nb = [b[0], b[1], b[2] + d, False, False, off - start]
             bases.append(nb)
             regs[rd] = nb
             continue
         if op == 18:  # branch: a call passes bases in r3-r10 on, and clobbers volatiles
             if insn & 1:
                 for r in range(3, 11):
-                    if r in regs:
+                    if r in regs and not regs[r][3]:  # (a used base is just left over)
                         regs[r][4] = True
                 for r in [0] + list(range(3, 13)):
                     regs.pop(r, None)
@@ -343,7 +346,7 @@ def fn_literals(elf, fname, ext=None):
             xo = (insn >> 1) & 0x3FF
             if xo == 444 and rd == rb:  # mr rA, rS
                 if rd in regs:
-                    regs[ra] = regs[rd]; regs[rd][3] = True
+                    regs[ra] = regs[rd]
                 else:
                     regs.pop(ra, None)
                 continue
@@ -372,7 +375,7 @@ def fn_literals(elf, fname, ext=None):
         if b[4] or not b[3]:
             t, pool = addr_tok(b[0], b[1], b[2])
             if t:
-                toks[t] += 1
+                toks[t] += 1; seq.append((b[5], t))
                 pooled |= pool
     return toks, pooled, callees
 
@@ -431,6 +434,23 @@ def waived_by(note, tok):
 
 # ---------------------------------------------------------------- compare -----------
 
+def same(a, b):
+    """Equal values; for blobs (an object's bytes) one may be a prefix of the other: the
+    target's objects are cut from the original's data, so they may include padding or
+    unlabeled neighbours."""
+    if a == b:
+        return True
+    if a[0] == b[0] == "blob":
+        x, y = a[1].rstrip("."), b[1].rstrip(".")
+        return x.startswith(y) or y.startswith(x)
+    if {a[0], b[0]} == {"blob", "str"}:  # the target's object holds this string and more
+        blob, st = (a, b) if a[0] == "blob" else (b, a)
+        return bytes.fromhex(blob[1].rstrip(".")).startswith(st[1].encode("latin-1") + b"\0")
+    if a[0] == b[0] == "str":  # a long string is cut at 256 bytes on one side
+        return a[1].startswith(b[1]) or b[1].startswith(a[1]) if min(len(a[1]), len(b[1])) >= 200 else False
+    return False
+
+
 def compare(tgt, ours, src_text, fname, counts, verbose, label):
     tf, of = tgt.functions(), ours.functions()
     lits = target_literals()
@@ -439,6 +459,17 @@ def compare(tgt, ours, src_text, fname, counts, verbose, label):
     # a stub (or missing C): nothing to compare
     if not ot and of[fname][2] * 2 < tf[fname][2]:
         return None
+    if tf[fname][2] == of[fname][2] and len(tt.seq) == len(ot.seq) and \
+            [o for o, _ in tt.seq] == [o for o, _ in ot.seq]:
+        # same instructions (a matched function): compare value by value, which also catches
+        # a wrong literal whose value the function loads elsewhere too
+        bad = [(o, a, b) for (o, a), (_, b) in zip(sorted(tt.seq), sorted(ot.seq)) if not same(a, b)]
+        note = reviewed(src_text, fname)
+        bad = [x for x in bad if not (waived_by(note, x[1]) or waived_by(note, x[2]))]
+        if not bad:
+            return []
+        return [", ".join(f"+0x{o:X} {show(a)}" for o, a, _ in bad),
+                ", ".join(f"+0x{o:X} {show(b)}" for o, _, b in bad)]
     if not counts:
         tt = collections.Counter(set(tt)); ot = collections.Counter(set(ot))
     tonly, oonly = tt - ot, ot - tt

@@ -1166,6 +1166,7 @@ void fn_8000E030(CircleElem* elem, Mtx mtx, SpriteDrawParams* params) {
 
 // .text:0x8000E2D4 size:0x490
 // NONMATCHING: ~75% (with w left uninitialized as in the original): scheduling and float register allocation differ
+// litcheck: 1.0 (stands in for the uninitialized w)
 #if NONMATCHING
 void fn_8000E2D4(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params) {
     Vec pos[257];
