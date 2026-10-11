@@ -1867,7 +1867,6 @@ void fn_3_F4D00(u8* p) {
     *(f32*)(p + 0xBC) = lbl_3_rodata_2EE8 * d.z;
 }
 
-#pragma dont_inline on
 // .text:0x000F4DAC size:0x210 mapped:0x80733E40
 extern char lbl_3_rodata_2CBC[];
 extern const f32 lbl_3_rodata_2EEC;
@@ -1921,9 +1920,130 @@ void fn_3_F4DAC(void) {
 }
 
 // .text:0x000F4FBC size:0x710 mapped:0x80734050
+#pragma dont_inline on
+extern char lbl_3_rodata_2CB0[];
+extern const f32 lbl_3_rodata_2F08;
+extern const f32 lbl_3_rodata_2F0C;
+// NONMATCHING 89%: inlines fn_3_F4DAC and fn_3_F4C4C; the original reaches lbl_3_bss_B21F/B220 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected); float/gpr allocation differs
+#if NONMATCHING
 void fn_3_F4FBC(StadObjB* p) {
-    return;
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    Vec d;
+    Vec n;
+    Vec ref;
+    f32 c;
+    f32 ang;
+    f32 mag;
+    ref = *(Vec*)lbl_3_rodata_2CB0;
+    if (g_Ball[0x1BD1] == 0) {
+        d.x = *(f32*)(g_Ball + 0x0) - p->pos.x;
+        d.y = lbl_3_rodata_2D5C;
+        d.z = *(f32*)(g_Ball + 0x8) - p->pos.z;
+        PSVECNormalize(&d, &d);
+        c = PSVECDotProduct(&d, &ref);
+        if (c > lbl_3_rodata_2D50) {
+            c = lbl_3_rodata_2D50;
+        } else if (c < lbl_3_rodata_2D70) {
+            c = lbl_3_rodata_2D70;
+        }
+        ang = lbl_3_rodata_2DE8 * (f32)acos(c);
+        if (ang > lbl_3_rodata_2F08) {
+            ang = lbl_3_rodata_2F08;
+        }
+        if (d.x < lbl_3_rodata_2D5C) {
+            ang = lbl_3_rodata_2E14 - ang;
+        }
+        p->yaw = -ang;
+        CTRLSetRotation(&p->c, lbl_3_rodata_2D5C, p->yaw, lbl_3_rodata_2D5C);
+    }
+    switch (p->state) {
+    case 0:
+        if (*(s16*)(g_Ball + 0x1B7A) < 2) {
+            if (w->flag2 == 0) {
+                w->flag2 = 1;
+                if ((s32)(fn_3_B7F70(100) + 1) > 0x3F) {
+                    w->cartBusy = 1;
+                }
+            }
+            if (w->cartBusy == 0) {
+                fn_3_F4DAC();
+                w->cartBusy = 1;
+            }
+        }
+        break;
+    case 1:
+        if (*(f32*)(g_Ball + 0x31C) < lbl_3_rodata_2D5C) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            p->link->fc1 = 1;
+            fn_3_F4C4C((u8*)p);
+            p->state = 3;
+            d.x = *(f32*)(g_Ball + 0x348);
+            d.y = lbl_3_rodata_2D5C;
+            d.z = *(f32*)(g_Ball + 0x34C);
+            mag = PSVECMag(&d);
+            if (mag > lbl_3_rodata_2F0C) {
+                PSVECNormalize(&d, &n);
+                PSVECScale(&n, lbl_3_rodata_2F0C, &d);
+            }
+            if (mag < lbl_3_rodata_2F04) {
+                PSVECNormalize(&d, &n);
+                PSVECScale(&n, lbl_3_rodata_2F04, &d);
+            }
+            fn_3_F31E0(p->link, d.x, d.z);
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0];
+            }
+            h = sndFXStartEx(((u16*)lbl_3_data_81DC)[stad], v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[1];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 1];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        }
+        break;
+    case 2:
+        d.x = *(f32*)(g_Ball + 0x0);
+        d.y = lbl_3_rodata_2D5C;
+        d.z = *(f32*)(g_Ball + 0x8);
+        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+            p->state = 0;
+            break;
+        }
+        if (PSVECMag(&d) > lbl_3_rodata_2F04) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            if (d.z < lbl_3_rodata_2EF0) {
+                d.z = lbl_3_rodata_2EF0;
+            }
+            fn_3_F31E0(p->link, d.x, d.z);
+            fn_3_F4C4C((u8*)p);
+            p->link->fc1 = 1;
+            p->state = 3;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[0];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 0];
+            }
+            h = sndFXStartEx(((u16*)lbl_3_data_81DC)[stad], v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[1];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 1];
+            }
+            sndFXCtrl(h, 0x5B, v);
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x000F56CC size:0x564 mapped:0x80734760
 // NONMATCHING 97%: inlines fn_3_F5C30 (+fn_3_F3BB0) twice and fn_3_F4D00; saved-register numbering of the two table-column pointers differs; original reaches lbl_3_bss_B219 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected)
