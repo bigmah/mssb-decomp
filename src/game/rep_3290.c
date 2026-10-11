@@ -14,7 +14,7 @@ extern s32 RandomInt_Game_Range(s32, s32);
 extern f32 lbl_3_data_21634[];
 extern f32 lbl_3_data_219B8[];
 extern s16 lbl_3_data_2167C[];
-extern f32 lbl_3_data_21674;
+extern f32 lbl_3_data_21674[];
 typedef struct { f32 x, y, z; } Vec3_3290;
 typedef struct {
     u8 pad0[0x18];
@@ -239,15 +239,70 @@ void fn_3_113D20(void) {
 // .text:0x00113EC0 size:0x54 mapped:0x80752F54
 void fn_3_113EC0(void) {
     g_Pitcher.vel.z = -g_Pitcher.vel.z;
-    g_Pitcher.vel.x *= lbl_3_data_21674;
-    g_Pitcher.vel.y *= lbl_3_data_21674;
+    g_Pitcher.vel.x *= lbl_3_data_21674[0];
+    g_Pitcher.vel.y *= lbl_3_data_21674[0];
     g_Minigame[0x1A81] = 1;
-    g_Pitcher.vel.z *= lbl_3_data_21674;
+    g_Pitcher.vel.z *= lbl_3_data_21674[0];
 }
 
 // .text:0x00113F14 size:0x2F0 mapped:0x80752FA8
+extern int rand(void);
+extern void fn_3_6C854(int team, int kind);
+extern u32 lbl_3_data_21648[];
+extern Vec3_3290 lbl_3_data_215E0[];
+
 void fn_3_113F14(void) {
-    return;
+    s32 i;
+    u8* e;
+    s32 j;
+    u8 hit;
+    u8 cnt;
+    f32 ang;
+    f32 y;
+    if (*(s16*)(g_Ball + 0x1B68) >= 1) {
+        hit = g_Minigame[0x1A81];
+        y = *(f32*)(g_Ball + 0x8) - *(f32*)(g_Ball + 0x1A28) - lbl_3_data_21674[1];
+        for (i = 0; i < 7; i++) {
+            e = g_Minigame + i * 0x2C + 0x72C;
+            if (e[0x28] == 3 && y <= *(f32*)(e + 0x8) && hit == 0) {
+                *(s16*)(e + 0x24) -= *(s16*)(g_Minigame + 0x1A76);
+                if (*(s16*)(e + 0x24) <= 0) {
+                    *(s16*)(g_Minigame + 0x1A76) = -*(s16*)(e + 0x24);
+                    e[0x28] = 4;
+                    *(s16*)(g_Minigame + 0x1898 + *(s8*)(g_Minigame + 0x1904) * 2) += lbl_3_data_21654[7 + e[0x29]];
+                    cnt = lbl_3_data_21648[e[0x29]];
+                    for (j = 0; j < 100; j++) {
+                        if (g_Minigame[0x193A + j] == 0) {
+                            *(s16*)(g_Minigame + 0x17C8 + j * 2) = 0;
+                            g_Minigame[0x193A + j] = 1;
+                            *(f32*)(g_Minigame + 0xCD0 + j * 12) = lbl_3_data_215E0[e[0x2A]].x;
+                            *(f32*)(g_Minigame + 0xCD4 + j * 12) = lbl_3_data_215E0[e[0x2A]].y;
+                            *(f32*)(g_Minigame + 0xCD8 + j * 12) = lbl_3_data_215E0[e[0x2A]].z;
+                            ang = 0.017453292f * (rand() % 180);
+                            *(f32*)(g_Minigame + 0x1180 + j * 12) = lbl_3_data_21634[1] * (f32)cos(ang);
+                            *(f32*)(g_Minigame + 0x1188 + j * 12) = lbl_3_data_21634[1] * (f32)sin(ang);
+                            *(f32*)(g_Minigame + 0x1184 + j * 12) = lbl_3_data_21634[0];
+                            if (--cnt == 0) {
+                                break;
+                            }
+                        }
+                    }
+                    fn_3_6C854(((s8*)(g_Minigame + 0x18CC))[*(s8*)(g_Minigame + 0x1904)], 0);
+                } else {
+                    *(f32*)(e + 0x18) = 0.0f;
+                    *(f32*)(e + 0x1C) = lbl_3_data_21688[0];
+                    *(f32*)(e + 0x20) = lbl_3_data_21688[1];
+                    fn_3_90064(0x2E1);
+                    g_Pitcher.vel.z = -g_Pitcher.vel.z;
+                    g_Pitcher.vel.x *= lbl_3_data_21674[0];
+                    g_Pitcher.vel.y *= lbl_3_data_21674[0];
+                    g_Minigame[0x1A81] = 1;
+                    g_Pitcher.vel.z *= lbl_3_data_21674[0];
+                }
+                return;
+            }
+        }
+    }
 }
 
 // .text:0x00114204 size:0x180 mapped:0x80753298
