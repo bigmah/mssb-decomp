@@ -12,6 +12,7 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_80366158[];
 extern u8 lbl_2_bss_3E0[];
 extern void fn_800649BC(void);
 extern void fn_800671FC(void);
@@ -1608,6 +1609,44 @@ void fn_2_A288(void) {
     }
     if (n == 2) {
         lbl_2_bss_3E0[0] = -1;
+    }
+}
+#endif
+
+// NONMATCHING 97%: register choice for the three button words (held/down/repeat); inlines fn_2_1DC8
+#if NONMATCHING
+// fn_2_1800, size:0x288
+void fn_2_1800(void) {
+    MenuButtons b;
+    memset(&b, 0, sizeof(b));
+    b.held = *(u16*)(lbl_8034E9A0 + 0x472C);
+    b.down = *(u16*)(lbl_8034E9A0 + 0x472E);
+    b.repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
+    if (lbl_803C66B0[0x55] != 0) {
+        return;
+    }
+    if (b.down & 0x100) {
+        fn_2_1DC8();
+        lbl_80366158[0x27] = 0;
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+    } else if (b.down & 0x200) {
+        lbl_80366158[0x29] = 2;
+        lbl_8034E9A0[0x472A] = 0;
+        *(s16*)(lbl_803CBBCC[0] + 4) = 6;
+        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+    } else if ((b.repeat & 8) || (b.repeat & 4)) {
+        ((s32*)lbl_2_bss_F410)[1] = ((s32*)lbl_2_bss_F410)[0];
+        if (b.repeat & 8) {
+            if (--((s32*)lbl_2_bss_F410)[0] < 0) {
+                ((s32*)lbl_2_bss_F410)[0] = 6;
+            }
+        } else if (b.repeat & 4) {
+            if (++((s32*)lbl_2_bss_F410)[0] == 7) {
+                ((s32*)lbl_2_bss_F410)[0] = 0;
+            }
+        }
+        fn_800625A4(0, 0x56);
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
 }
 #endif

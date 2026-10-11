@@ -87,6 +87,13 @@ typedef struct MenuCharStats {
         (dst)->us[20] = (src)->us[20];              \
     } while (0)
 
+// Copy of the held/down/repeat words of one pad in CharSelectState (0x472C).
+typedef struct MenuButtons {
+    u16 held;
+    u16 down;
+    u16 repeat;
+} MenuButtons;
+
 // Per-port controller state (lbl_803C77B8); same layout as PadState in main/file_800A7C08.h,
 // which can't be included next to UnknownHomes_Static.h.
 typedef struct MenuPad {
@@ -244,5 +251,7 @@ void fn_2_6884(void);
 void fn_2_C7DC(u8 slot, s32 team);
 
 void fn_2_A288(void);
+
+void fn_2_1800(void);
 
 #endif
