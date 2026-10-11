@@ -744,7 +744,7 @@ void fn_3_2CEF4(int i) {
 }
 
 // .text:0x0002D080 size:0x288 mapped:0x8066C114
-// NONMATCHING 90%: float register allocation and constant-address hoisting differ in the prologue/loop
+// NONMATCHING 90%: constant-address hoisting in the prologue and float/int register allocation differ
 #if NONMATCHING
 int fn_3_2D080(int i) {
     f32 bestY = lbl_3_rodata_B94;
@@ -756,8 +756,6 @@ int fn_3_2D080(int i) {
     int k = 0;
     f32* y;
     int t;
-    f32 dx;
-    f32 dz;
     f32 d;
     f32 spd;
     while (k < 360) {
@@ -775,11 +773,8 @@ int fn_3_2D080(int i) {
         if (*(f32*)(g_Ball + k * 16 + 0x354) == *(f32*)f && *(f32*)(g_Ball + k * 16 + 0x35C) == *(f32*)(f + 8)) {
             t = 1;
         } else {
-            dx = *(f32*)(g_Ball + k * 16 + 0x354) - *(f32*)f;
-            dz = *(f32*)(g_Ball + k * 16 + 0x35C) - *(f32*)(f + 8);
-            dx = dx * dx;
-            dz = dz * dz;
-            d = dx + dz;
+            d = (*(f32*)(g_Ball + k * 16 + 0x354) - *(f32*)f) * (*(f32*)(g_Ball + k * 16 + 0x354) - *(f32*)f) +
+                (*(f32*)(g_Ball + k * 16 + 0x35C) - *(f32*)(f + 8)) * (*(f32*)(g_Ball + k * 16 + 0x35C) - *(f32*)(f + 8));
             SQRT_L(d);
             spd = *(f32*)(f + 0x58);
             if (lbl_3_rodata_B20 == spd) {
