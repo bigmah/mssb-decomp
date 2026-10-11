@@ -5,6 +5,8 @@
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
 #include <string.h>
+#include "stl/math.h"
+#include "Dolphin/os.h"
 #include "C3/geoPalette.h"
 
 extern GXCullMode lbl_1_data_8C4[];
@@ -82,6 +84,11 @@ static f32 sMipScale[4] = {1.0f};
 static f32 sLodBias = 1.0f;
 static GXTexFilter sMinFilter = GX_LINEAR;
 extern const f32 lbl_1_rodata_1A8;
+extern Vec lbl_1_data_A3C;
+extern const f32 lbl_1_rodata_1C8;
+extern const f32 lbl_1_rodata_1CC;
+extern const f32 lbl_1_rodata_1DC;
+extern const f32 lbl_1_rodata_1E0;
 extern const f64 lbl_1_rodata_1E8;
 
 // fn_1_717C, size:0x104
@@ -747,3 +754,115 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
         }
     }
 }
+
+// fn_1_6050, size:0x528
+// Fills an IA8 (4x4-tiled) normal-map texture of a hemisphere, optionally bent towards sUpAxis by scale.
+// NONMATCHING 97%: hoisted float constants land in rotated registers (f26-f31)
+#if NONMATCHING
+void fn_1_6050(u16* image, s32 width, s32 height, f32 scale) {
+    Mtx rot;
+    Vec normal;
+    Vec flat;
+    Vec axis;
+    Quaternion quat;
+    u32 size;
+    s32 y;
+    s32 x;
+    f32 u;
+    f32 v;
+    f32 fy2;
+    f32 fx;
+    f32 fy;
+    f32 baseU;
+    f32 baseV;
+    f32 d;
+    f32 angle;
+    f32 s;
+    f32 mag;
+
+    size = height * (width * 2);
+    memset(image, 0, size);
+    for (y = 0; y < height; y++) {
+        fy = lbl_1_rodata_1C8 * ((f32)y / (f32)height - lbl_1_rodata_1CC);
+        baseV = fy * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
+        fy2 = fy * fy;
+        for (x = 0; x < width; x++) {
+            fx = lbl_1_rodata_1C8 * ((f32)x / (f32)width - lbl_1_rodata_1CC);
+            baseU = fx * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
+            if (y == height / 2) {
+                d = lbl_1_rodata_1D8 - fx * fx;
+            } else {
+                d = lbl_1_rodata_1D8 - fx * fx - fy2;
+            }
+            if (d < lbl_1_rodata_1A8) {
+                normal.x = fx;
+                normal.y = fy;
+                normal.z = lbl_1_rodata_1A8;
+                PSVECNormalize(&normal, &normal);
+            } else {
+                f64 z = -sqrt(d);
+                normal.x = fx;
+                normal.y = fy;
+                normal.z = z;
+            }
+            if (lbl_1_rodata_1D8 != scale) {
+                PSVECCrossProduct(&lbl_1_data_A3C, &normal, &axis);
+                mag = PSVECMag(&axis);
+                if (mag != lbl_1_rodata_1A8) {
+                    PSVECNormalize(&axis, &axis);
+                    angle = acos(PSVECDotProduct(&lbl_1_data_A3C, &normal));
+                    angle = angle * scale * lbl_1_rodata_1CC;
+                    s = sin(angle);
+                    quat.w = cos(angle);
+                    quat.x = axis.x * s;
+                    quat.y = axis.y * s;
+                    quat.z = axis.z * s;
+                    PSMTXQuat(rot, &quat);
+                    PSMTXMultVec(rot, &lbl_1_data_A3C, &normal);
+                }
+            }
+            flat.x = normal.x;
+            flat.y = lbl_1_rodata_1A8;
+            flat.z = normal.z;
+            mag = PSVECMag(&flat);
+            if (mag == lbl_1_rodata_1A8) {
+                u = lbl_1_rodata_1A8;
+                v = lbl_1_rodata_1A8;
+            } else {
+                PSVECNormalize(&flat, &flat);
+                if (lbl_1_rodata_1A8 == fy) {
+                    v = lbl_1_rodata_1CC;
+                } else {
+                    v = acos(PSVECDotProduct(&flat, &normal));
+                    PSVECCrossProduct(&flat, &normal, &axis);
+                    mag = PSVECMag(&axis);
+                    if (mag == lbl_1_rodata_1A8) {
+                        v = lbl_1_rodata_1A8;
+                    } else if (axis.x < lbl_1_rodata_1A8) {
+                        v = -v;
+                    }
+                    v = v / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
+                }
+                if (lbl_1_rodata_1A8 == fx) {
+                    u = lbl_1_rodata_1CC;
+                } else {
+                    u = acos(PSVECDotProduct(&lbl_1_data_A3C, &flat));
+                    PSVECCrossProduct(&lbl_1_data_A3C, &flat, &axis);
+                    mag = PSVECMag(&axis);
+                    if (mag == lbl_1_rodata_1A8) {
+                        u = lbl_1_rodata_1A8;
+                    } else if (axis.y > lbl_1_rodata_1A8) {
+                        u = -u;
+                    }
+                    u = u / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
+                }
+                u -= baseU;
+                v -= baseV;
+            }
+            image[(y / 4) * width * 4 + (x / 4) * 16 + (y % 4) * 4 + x % 4] =
+                (((s32)(lbl_1_rodata_1E0 * u + lbl_1_rodata_1E0) << 8) & 0xFF00) | (u8)(s32)(lbl_1_rodata_1E0 * v + lbl_1_rodata_1E0);
+        }
+    }
+    DCFlushRange(image, size);
+}
+#endif
