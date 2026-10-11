@@ -952,37 +952,38 @@ void fn_800AFBF0(void) {
 
 // Copies len bytes from the ARAM ring into the MRAM ring.
 static inline BOOL MovFillFromAram(u32 len) {
+    MovMramRing* mram = &lbl_803C7A00;
     u32 first;
     u32 second;
     u8* wrap;
 
     len = OSRoundUp32B(len);
-    if (lbl_803C7A00.filled >= lbl_803C7A00.size) {
+    if (mram->filled >= mram->size) {
         return TRUE;
     }
-    if (lbl_803C7A00.writePtr + len > lbl_803C7A00.end) {
-        first = lbl_803C7A00.end - lbl_803C7A00.writePtr;
-        wrap = lbl_803C7A00.start;
+    if (mram->writePtr + len > mram->end) {
+        first = mram->end - mram->writePtr;
+        wrap = mram->start;
         second = len - first;
     } else {
         first = len;
         wrap = NULL;
         second = 0;
     }
-    fn_800B0230(lbl_803C7A00.writePtr, first);
+    fn_800B0230(mram->writePtr, first);
     while (lbl_803C79D4.busy) {}
     if (second != 0) {
         fn_800B0230(wrap, second);
         while (lbl_803C79D4.busy) {}
     }
-    if (lbl_803C7A00.writePtr + len < lbl_803C7A00.end) {
-        lbl_803C7A00.writePtr += first;
+    if (mram->writePtr + len < mram->end) {
+        mram->writePtr += first;
     } else {
-        lbl_803C7A00.writePtr = lbl_803C7A00.start + second;
+        mram->writePtr = mram->start + second;
     }
-    lbl_803C7A00.filled += len;
+    mram->filled += len;
     if (lbl_803C79D4.totalOut > lbl_803CC1AC) {
-        memset(lbl_803C7A00.writePtr - (lbl_803C79D4.totalOut - lbl_803CC1AC), 0, lbl_803C79D4.totalOut - lbl_803CC1AC);
+        memset(mram->writePtr - (lbl_803C79D4.totalOut - lbl_803CC1AC), 0, lbl_803C79D4.totalOut - lbl_803CC1AC);
     }
     return TRUE;
 }
@@ -1025,12 +1026,15 @@ static inline BOOL MovStoreToAram(u32 len) {
 // .text:0x800AFC10 size:0x13C
 // Rewinds both rings to the start of the ARAM copy and refills MRAM.
 void fn_800AFC10(void) {
-    lbl_803C79D4.writePos = lbl_803C79D4.readPos = lbl_803C79D4.start;
-    lbl_803C79D4.totalOut = 0;
-    lbl_803C7A00.writePtr = lbl_803C7A00.readPtr = lbl_803C7A00.start;
-    lbl_803C7A00.filled = 0;
-    lbl_803C7A00.consumed = 0;
-    MovFillFromAram(lbl_803C7A00.size);
+    MovAramRing* aram = &lbl_803C79D4;
+    MovMramRing* mram = &lbl_803C7A00;
+
+    aram->readPos = aram->writePos = aram->start;
+    aram->totalOut = 0;
+    mram->readPtr = mram->writePtr = mram->start;
+    mram->filled = 0;
+    mram->consumed = 0;
+    MovFillFromAram(mram->size);
 }
 
 // .text:0x800AFD4C size:0x264
