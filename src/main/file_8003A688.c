@@ -346,9 +346,178 @@ void fn_8003AECC(void) {
 
 // .text:0x8003B5B0 size:0x5E0
 // Save task: creates the save file if needed and writes lbl_802D4B00 to the card.
+// NONMATCHING 99%: the original reaches the banner comment strings through a pooled .data base (addi 0x3220; addi 0x20), unsplit data
+#if NONMATCHING
 void fn_8003B5B0(void) {
-    return;
+    SaveTask* task = (SaveTask*)lbl_803CC1B8;
+    OSCalendarTime date;
+    SaveCardRequest req;
+    SaveBannerData* banner = &lbl_800F7B00;
+
+    SaveTask_CheckCard(task);
+    switch (task->state) {
+    case 0:
+        task->cardReady = 0;
+        task->noCard = 0;
+        task->state = 1;
+    case 1:
+        fn_800AB474(task->slot, task->mode, lbl_803CBC48, "MarioBaseball", lbl_802D4AE0[task->slot]);
+        task->state++;
+        break;
+    case 2:
+        if (lbl_803CC1B8->_10 != 0) {
+            if (task->noCard) {
+                task->state = 10;
+                break;
+            }
+            switch (lbl_803C7838.status) {
+            case 5:
+                fn_8004A34C(&lbl_803C50E8, task->port, 0xE, 0, 0);
+                task->state++;
+                break;
+            case 6:
+                fn_8004A34C(&lbl_803C50E8, task->port, 0xF, 0, 0);
+                task->state++;
+                break;
+            case 16:
+                task->state = 14;
+                break;
+            case 17:
+                task->state = 5;
+                break;
+            case 3:
+            case 13:
+                task->state = 12;
+                break;
+            default:
+                task->state = 10;
+                break;
+            }
+        }
+        break;
+    case 3:
+        if (task->noCard) {
+            if (lbl_803C50E8.choice != 0) {
+                task->state = 16;
+                task->outcome = 9;
+            }
+        } else {
+            switch (lbl_803C50E8.choice) {
+            case 2:
+                lbl_80366158.resetRequested = 1;
+                task->state = 4;
+                break;
+            case 1:
+            case 3:
+            case 4:
+                task->state = 16;
+                task->outcome = 2;
+                break;
+            }
+        }
+        break;
+    case 5:
+        if (task->noCard) {
+            task->state = 10;
+            break;
+        }
+        fn_8004A34C(&lbl_803C50E8, task->port, 0xC, 0, 0);
+        fn_800415A0(50);
+        task->state++;
+        break;
+    case 6:
+        if (fn_8004157C() == 0) {
+            OSTicksToCalendarTime(OSGetTime(), &date);
+            fn_800AC508("MarioBaseball", banner->bannerTpl, lbl_803CBC4C, banner->iconTpl, lbl_803CBC50, 3, 0,
+                        SaveBanner_Text(banner, 1), SaveBanner_Text(banner, 0), lbl_803CBC48);
+            req.fileName = NULL;
+            req.buffer = &lbl_802D4B00;
+            req.length = 0x10000;
+            req.chan = task->slot;
+            req.mode = task->mode;
+            req.permissions = 4; // CARD_ATTR_NO_COPY
+            req.verify = fn_80040FE0;
+            req.verifyArg = SaveTask_BlockMask(task->saveFlags, task->challengeSlot);
+            req.flags = 1;
+            fn_800AAEE4(&req, lbl_802D4AE0[task->slot]);
+            task->state++;
+        }
+        break;
+    case 7:
+        if (lbl_803CC1B8->_10 != 0) {
+            switch (lbl_803C7838.status) {
+            case 17:
+                if (task->_1A == 0) {
+                    task->state = 16;
+                    task->outcome = 1;
+                } else {
+                    task->state = 8;
+                }
+                break;
+            case 16:
+                task->state = 14;
+                break;
+            case 3:
+            case 13:
+                task->state = 12;
+                break;
+            case 0:
+            case 5:
+            case 6:
+            default:
+                task->state = 10;
+                break;
+            }
+        }
+        break;
+    case 8:
+        fn_8004A34C(&lbl_803C50E8, task->port, 0x18, 0, 0);
+        task->state++;
+        break;
+    case 9:
+        if (lbl_803CC1B8->_10 != 0) {
+            task->state = 16;
+            task->outcome = 1;
+        }
+        break;
+    case 10:
+        task->state = 16;
+        task->outcome = 2;
+        break;
+    case 11:
+        break;
+    case 12:
+        task->state = 16;
+        task->outcome = 5;
+        break;
+    case 13:
+        break;
+    case 14:
+        if (task->noCard) {
+            task->state = 16;
+            task->outcome = 9;
+            break;
+        }
+        fn_8004A34C(&lbl_803C50E8, task->port, 0x13, 0, 0);
+        task->state++;
+        break;
+    case 15:
+        if (task->noCard) {
+            if (lbl_803CC1B8->_10 != 0) {
+                task->state = 16;
+                task->outcome = 9;
+            }
+        } else if (lbl_803CC1B8->_10 != 0) {
+            task->state = 16;
+            task->outcome = 8;
+        }
+        break;
+    case 16:
+        SaveTask_Finish(task->outcome);
+        break;
+    }
 }
+#endif
 
 // .text:0x8003BB90 size:0x3C4
 // Memory card check task (queued with fn_8003BF54-style fields).
