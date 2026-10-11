@@ -1,4 +1,9 @@
 #include "main/file_800B4A44.h"
+extern void fn_800ACFB0(void* object); // free
+#include "charPipeline/structures/dolphinString.h"
+
+extern f32 lbl_803CCF78; // 0.0f
+extern f32 lbl_803CCF7C; // 1.0f
 
 // .text:0x800B4A44 size:0x50
 void fn_800B4A44(void) {
@@ -11,8 +16,16 @@ void fn_800B4A94(void) {
 }
 
 // .text:0x800B4AFC size:0x3C
-void fn_800B4AFC(void) {
-    return;
+void fn_800B4AFC(GameActor* actor, u8 loop) {
+    u32 i;
+    GameAnimPipe* pipe;
+
+    for (i = 0; i < actor->totalBones; i++) {
+        pipe = actor->boneArray[i]->animPipe;
+        if (pipe != NULL) {
+            pipe->loop = loop;
+        }
+    }
 }
 
 // .text:0x800B4B38 size:0x90

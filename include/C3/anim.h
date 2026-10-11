@@ -42,11 +42,11 @@ typedef struct ANIMBank {
 } ANIMBank;
 
 // animBank.c
-void ANIMGet(ANIMBank **animBank, char *name);
+void ANIMGet(ANIMBank *animBank); // MSSB: relocates an already-loaded bank in place
 void ANIMRelease(ANIMBank **animBank);
 ANIMSequences *ANIMGetSequence(ANIMBank *animBank, char *sequenceName, u16 seqNum);
-struct ANIMAnimTrack *ANIMGetTrackFromSeq(ANIMSequences *animSeq, u16 animTrackID);
-void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack * animTrack, f32 time, KeyFrame **currentFrame, KeyFrame **nextFrame);
+struct ANIMAnimTrack *ANIMGetTrackFromSequence(ANIMSequences *animSeq, u16 animTrackID);
+void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack * animTrack, KeyFrame **currentFrame, KeyFrame **nextFrame, u16 *frameIndex, f32 time);
 u32 ANIMGetUserDataSize(ANIMBank *animBank);
 char *ANIMGetUserData(ANIMBank *animBank);
 
@@ -54,6 +54,6 @@ char *ANIMGetUserData(ANIMBank *animBank);
 void ANIMBind(struct ANIMPipe *animPipe, Control *control, struct ANIMAnimTrack *animTrack, f32 time);
 void ANIMSetTime(struct ANIMPipe * animPipe, f32 time);
 void ANIMSetSpeed(struct ANIMPipe * animPipe, f32 speed);
-void ANIMTick(struct ANIMPipe * animPipe);
+void ANIMTick(struct GameAnimPipe * animPipe, u8 flag);
 
 #endif // _DOLPHIN_CP_ANIM_H_
