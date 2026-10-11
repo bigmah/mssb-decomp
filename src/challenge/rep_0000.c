@@ -1,7 +1,7 @@
 #include "challenge/rep_0000.h"
+#include "challenge/rep_0010.h"
 #include "static/UnknownHomes_Static.h"
 
-extern u8* lbl_803CC1B8[];
 extern void fn_1_16A0(void);
 extern void fn_1_1E0(void);
 extern void ANIMGet(void* bank, char* name);
@@ -31,10 +31,18 @@ void fn_1_1B0(u32* table, s32 count) {
 }
 
 void fn_1_568(void) {
-    u8* queue = lbl_803CC1B8[0];
+    u8* queue = lbl_803CC1B8;
     if (*(s16*)(queue + 0x10) == 1) {
         *(void**)queue = (void*)fn_1_16A0;
     }
+}
+
+// .text:0x0000058C size:0x5C
+// Starts the loader task fn_1_1E0 and waits for it in fn_1_568.
+void fn_1_58C(void) {
+    ((ChTaskHeader*)fn_800B0A5C_insertQueue(fn_1_1E0, 0))->result = 0;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_568;
+    ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
 }
 
 void fn_1_5E8(void) {
@@ -68,20 +76,20 @@ void fn_1_E8(ChallengeModelHeader* model) {
 }
 
 void fn_1_1E0(void) {
-    u8* queue = lbl_803CC1B8[0];
+    u8* queue = lbl_803CC1B8;
     switch (*(s16*)(queue + 0x10)) {
     case 0:
         LoadFile(lbl_1_data_AC, lbl_1_bss_4, 0, 0, 1);
-        *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+        *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
     case 1:
         if (fn_800A8518(1) != 0) {
-            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+            *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
         }
         break;
     case 2:
         if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 0x100) {
             *(s32*)(queue + 0x14) = ARAMTransfer(lbl_800F1D78 + queue[0x18] * 16, 0, 0, 0);
-            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+            *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
         }
         break;
     case 3:
@@ -116,7 +124,7 @@ void fn_1_1E0(void) {
             }
             fn_800ACFB0(*(void**)(queue + 0x14));
             if (*(u16*)&lbl_803C77B8 & 0x200) {
-                *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+                *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
             } else {
                 s32 n = queue[0x18] + 1;
                 queue[0x18] = n;
@@ -126,13 +134,13 @@ void fn_1_1E0(void) {
         break;
     case 4:
         if (fn_800A8518(3) != 0) {
-            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+            *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
         }
         break;
     case 5:
         if (fn_800A88C8() == 0) {
             fn_800A8B78(lbl_1_bss_4);
-            *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
+            *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
         }
         break;
     case 6: {

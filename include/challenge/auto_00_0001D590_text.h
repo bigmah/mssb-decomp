@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
-void fn_1_1D590(void);
+struct TexImage;
+
+void fn_1_1D590(struct TexImage* src, struct TexImage* dst, u8* map, s32 cellW, s32 cellH);
 
 #endif

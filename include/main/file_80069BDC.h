@@ -81,9 +81,12 @@ typedef struct StatOutput {
     /*0x0E*/ s16 _E;
 } StatOutput; // size: 0x10
 
+// Saved challenge-mode team member (character id, field positions, handedness).
 typedef struct ChallengeTeamEntry {
     /*0x0*/ s16 id;
-    /*0x2*/ u8 _2[4];
+    /*0x2*/ u8 pos[2];
+    /*0x4*/ s8 hand; // FieldingArm * 2 + BattingStance
+    /*0x5*/ u8 _5;
 } ChallengeTeamEntry; // size: 0x6
 
 // Challenge-mode save state; starMissionCompletionTracker (size 0x4508) starts with this.
@@ -105,7 +108,9 @@ typedef struct ChallengeState {
     /*0x441F*/ u8 _441F;
     /*0x4420*/ u8 _4420[2];
     /*0x4422*/ u8 _4422;
-    /*0x4423*/ u8 _4423[0x444D - 0x4423];
+    /*0x4423*/ u8 _4423[0x4445 - 0x4423];
+    /*0x4445*/ u8 _4445; // nonzero: the team is already set up
+    /*0x4446*/ u8 _4446[0x444D - 0x4446];
     /*0x444D*/ u8 _444D[54];
 } ChallengeState;
 
