@@ -50,9 +50,21 @@ typedef struct WaitTaskView {
 extern WaitTaskView* lbl_803CC1B8;
 
 // .text:0x000219CC size:0xDC mapped:0x80660A60
+// NONMATCHING 85%: original indexes GameLogic with a precomputed (human * 4 + 0xF4) offset (lwzx)
+#if NONMATCHING
 void fn_3_219CC(void) {
-    return;
+    s32 n = 0;
+    s32 i;
+
+    for (i = 0; i < 9; i++) {
+        if (g_GameLogic.Team_CaptainRosterLoc[g_d_GameSettings.humanTeamNumber] == lbl_8036E548.actors[i]->team) {
+            g_Fielders[i].opponentIdx = 0;
+        } else {
+            g_Fielders[i].opponentIdx = ++n;
+        }
+    }
 }
+#endif
 
 // .text:0x00021AA8 size:0x134 mapped:0x80660B3C
 void fn_3_21AA8(void) {
