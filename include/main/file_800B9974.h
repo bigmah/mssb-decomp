@@ -69,6 +69,8 @@ void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 
 void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_list* list);
 
+void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxPtr camera);
+
 void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr camera);
 
 void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a);

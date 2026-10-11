@@ -21,6 +21,9 @@ extern MtxPtr lbl_803CC208;   // skin inverse-transpose matrix array
 extern char lbl_800E7F58[]; // "DOVARender: Invalid component count for normals %d\n"
 extern char lbl_800E7F8C[]; // "Display object id %d is greater than number of objects %d"
 
+extern u8 lbl_803CC210[8];        // per texture map: DisplayStateList.pad16 of the last texture state
+extern GXTexObj lbl_803CB5FC[8];  // texture objects, one per texture map
+extern GXTlutObj lbl_803CB49C[8]; // TLUT objects, one per texture map
 extern u8 lbl_803CBB60;          // quantize info of the built-in normal table
 extern f32 lbl_80111750[][3];    // built-in normal table
 
@@ -104,14 +107,127 @@ void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* tevStag
 }
 
 // .text:0x800BA848 size:0x12E4
-void Custom_SetState(void) {
+void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxPtr camera) {
     return;
 }
 
+// NONMATCHING 96%: saved registers for state/camera swapped (r29/r28 in the original), texture-state temps
+// land in different volatile registers
+#if NONMATCHING
 // .text:0x800BBB2C size:0x430
 void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr camera) {
-    return;
+    Mtx m;
+    GXVtxDescList vcd[27];
+    GXVtxDescList* desc;
+    u32 texMap;
+    DOTexBank* bank;
+    DOTexInfo* tex;
+    GXTexWrapMode wrapS;
+    GXTexWrapMode wrapT;
+    GXBool mipmap;
+    f32 minLOD;
+    f32 maxLOD;
+    f32 lodBias;
+    GXTexFilter minFilter;
+    GXTexFilter magFilter;
+    u32 setting;
+    s32 n;
+    u32 shift;
+    u32 attr;
+    u32 type;
+    u32 slot;
+
+    switch (state->id) {
+    case 1: // texture
+        texMap = (state->setting >> 13) & 7;
+        bank = dispObj->textureData[texMap].texturePalette;
+        tex = &bank->tex[bank->tex[state->setting & 0x1FFF].texIndex];
+        lbl_803CC210[texMap] = state->pad16;
+        wrapS = (state->setting >> 16) & 0xF;
+        switch (wrapS) {
+        case 0:
+            wrapS = GX_CLAMP;
+            break;
+        case 1:
+            wrapS = GX_REPEAT;
+            break;
+        case 2:
+            wrapS = GX_MIRROR;
+            break;
+        }
+        wrapT = (state->setting >> 20) & 0xF;
+        switch (wrapT) {
+        case 0:
+            wrapT = GX_CLAMP;
+            break;
+        case 1:
+            wrapT = GX_REPEAT;
+            break;
+        case 2:
+            wrapT = GX_MIRROR;
+            break;
+        }
+        mipmap = tex->minLOD != tex->maxLOD;
+        minLOD = tex->minLOD;
+        maxLOD = tex->maxLOD;
+        minFilter = tex->minFilter;
+        magFilter = tex->magFilter;
+        lodBias = tex->lodBias;
+        if (tex->tlut != NULL) {
+            GXInitTexObjCI(&lbl_803CB5FC[texMap], tex->image, tex->width, tex->height, tex->format, wrapS, wrapT, mipmap,
+                           texMap);
+            GXInitTlutObj(&lbl_803CB49C[texMap], tex->tlut, tex->tlutFormat, tex->tlutEntries);
+            GXLoadTlut(&lbl_803CB49C[texMap], texMap);
+        } else {
+            GXInitTexObj(&lbl_803CB5FC[texMap], tex->image, tex->width, tex->height, tex->format, wrapS, wrapT, mipmap);
+        }
+        GXInitTexObjLOD(&lbl_803CB5FC[texMap], minFilter, magFilter, minLOD, maxLOD, lodBias, GX_FALSE, GX_FALSE,
+                        GX_ANISO_1);
+        GXLoadTexObj(&lbl_803CB5FC[texMap], texMap);
+        break;
+    case 2: // vertex descriptor: 2 bits per attribute
+        setting = state->setting;
+        GXClearVtxDesc();
+        n = 0;
+        if (setting & 3) {
+            vcd[n].mAttr = GX_VA_PNMTXIDX;
+            vcd[n].mType = setting & 3;
+            n++;
+        }
+        desc = &vcd[n];
+        for (shift = 2, attr = GX_VA_POS; attr <= GX_VA_TEX7; attr++, shift += 2) {
+            type = (setting >> shift) & 3;
+            if (type != 0) {
+                desc->mAttr = attr;
+                desc->mType = type;
+                n++;
+                desc++;
+            }
+        }
+        type = (setting >> 26) & 3;
+        if (type != 0) {
+            vcd[n].mAttr = GX_VA_NBT;
+            vcd[n].mType = type;
+            n++;
+        }
+        vcd[n].mAttr = GX_VA_NULL;
+        GXSetVtxDescv(vcd);
+        break;
+    case 3:
+        Custom_SetState(dispObj, state, camera);
+        break;
+    case 4: // skinning matrix load: high half = matrix index, low half = PNMTX slot
+        slot = (state->setting & 0xFFFF) * 3;
+        PSMTXConcat(camera, lbl_803CC204 + (state->setting >> 16) * 3, m);
+        GXLoadPosMtxImm(m, slot);
+        if (dispObj->lightingData != NULL) {
+            PSMTXConcat(camera, lbl_803CC208 + (state->setting >> 16) * 3, m);
+            GXLoadNrmMtxImm(m, slot);
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x800BBF5C size:0x168
 void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a) {
