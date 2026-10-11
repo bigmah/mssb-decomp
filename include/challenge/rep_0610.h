@@ -138,4 +138,6 @@ void fn_1_EA20(void);
 
 void fn_1_107B8(void);
 
+void fn_1_ECF8(u8 player, u8 group, u8 flag);
+
 #endif

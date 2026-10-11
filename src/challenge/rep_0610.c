@@ -2474,3 +2474,57 @@ void fn_1_107B8(void) {
     fn_800B0A14_removeQueue(NULL); // argument unused (stale r3 in the original)
 }
 #endif
+
+// .text:0xECF8 size:0x348
+// NONMATCHING ~75%: the original inlines fn_1_D300 (itself NONMATCHING), so this calls it
+#if NONMATCHING
+// Mirrors the first animated bone of a challenge actor onto the player actor.
+static inline void fn_1_ECF8_bind(u8 player, u16 id, s32 slot) {
+    ActorObjectTable* table = lbl_1_bss_5F7C[0];
+    u8* actor = (u8*)table->objects[slot - 1].actor;
+    u16 i;
+    for (i = 0; i < *(u16*)(actor + 6); i++) { // TODO type: ActorInst bone count / table
+        if (*(u32*)((*(u8***)(actor + 0x18))[i] + 0x14) != 0) {
+            fn_800B2BA8(((ChallengeModelEntry*)(*(u8**)(lbl_8036E548 + 0x60)))[player].actor, id,
+                        table->objects[slot - 1].actor, i);
+            break;
+        }
+    }
+}
+
+void fn_1_ECF8(u8 player, u8 group, u8 flag) {
+    u8* row;
+    u16 idA;
+    u16 idB;
+    s32 first;
+    s32 second;
+
+    if (ch_60A4[(ch_68FC + player)[0x40]] == 0) {
+        return;
+    }
+    row = lbl_8036E548 + player * 0x27C;
+    idA = *(u16*)(row + 0xD8C);
+    idB = *(u16*)(row + 0xD98);
+    switch (group) {
+    case 0:
+    case 1:
+    case 5:
+    case 6:
+        first = 1;
+        second = 2;
+        break;
+    default:
+        if (flag != 0) {
+            first = 1;
+            second = 4;
+        } else {
+            first = 3;
+            second = 2;
+        }
+        break;
+    }
+    fn_1_ECF8_bind(player, idA, first);
+    fn_1_ECF8_bind(player, idB, second);
+    fn_1_D300(lbl_8036E548 + ch_5F73 * 0x27C + 0xC04);
+}
+#endif
