@@ -565,8 +565,61 @@ void fn_2_570E4(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // .text:0x00057294 size:0x2B8
-void fn_2_57294(void) {
-    return;
+void fn_2_57294(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        fn_80036134((struct SpaniOwner*)menu, 0x1B, item->index, item->index + 0xF);
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_5C = 0;
+        fn_800363D8(menu, item->offset, 1, 0x15, item->index);
+        item->timer = item->index;
+        item->state = 0x26;
+        break;
+    case 2:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[menu->firstIndex + item->offset].obj->flags |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 1;
+            item->state = 3;
+        }
+        break;
+    case 3: {
+        LayoutObj* obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+        if ((obj->_5C >> 16) >= 5) {
+            obj->_68 = 0;
+            item->state = 0x25;
+        }
+        break;
+    }
+    case 0x25:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976F4) == item->index) {
+            LayoutObj* obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+            if ((obj->_5C >> 16) >= 0xF) {
+                obj->_5C = 0xF << 16;
+            } else {
+                obj->_68 = 1;
+            }
+        } else {
+            LayoutObj* obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+            if ((obj->_5C >> 16) <= 5) {
+                obj->_5C = 5 << 16;
+            } else {
+                obj->_68 = 4;
+            }
+        }
+        break;
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_5C = 0;
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 4;
+        item->state = 0x26;
+        break;
+    case 1:
+    case 4:
+        break;
+    }
 }
 
 // .text:0x0005754C size:0x1D8

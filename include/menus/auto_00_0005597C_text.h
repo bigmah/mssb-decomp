@@ -17,7 +17,7 @@ void fn_2_5699C(MenuTableContext* menu, MenuItemState* item);
 void fn_2_56C34(MenuTableContext* menu, MenuItemState* item);
 void fn_2_56E8C(MenuTableContext* menu, MenuItemState* item);
 void fn_2_570E4(MenuTableContext* menu, MenuItemState* item);
-void fn_2_57294(void);
+void fn_2_57294(MenuTableContext* menu, MenuItemState* item);
 void fn_2_5754C(MenuTableContext* menu, MenuItemState* item);
 void fn_2_57724(MenuTableContext* menu, MenuItemState* item);
 void fn_2_5786C(MenuTableContext* menu, MenuItemState* item);
