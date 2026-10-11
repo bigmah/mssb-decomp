@@ -3232,8 +3232,55 @@ void fn_3_4E1BC(void) {
 #endif
 
 // .text:0x0004E638 size:0x58C mapped:0x8068D6CC
+extern f32 lbl_3_rodata_C6C;
 void fn_3_4E638(void) {
-    return;
+    u8* f = g_Fielders + *(s16*)(g_Ball + 0x1B8A) * 0x268;
+    f32 d;
+    f32 dLand;
+    f32 dBall;
+    s16 a;
+    int diff;
+    if (*(s16*)(g_Ball + 0x1B8A) < 0) {
+        return;
+    }
+    d = (*(f32*)(g_Ball + 0x1A34) - *(f32*)(g_Ball + 0)) * (*(f32*)(g_Ball + 0x1A34) - *(f32*)(g_Ball + 0)) +
+        (*(f32*)(g_Ball + 0x1A38) - *(f32*)(g_Ball + 8)) * (*(f32*)(g_Ball + 0x1A38) - *(f32*)(g_Ball + 8));
+    SQRT_L(d);
+    if (!((*(s16*)(g_Ball + 0x1B6C) > 5 && *(f32*)(f + 0x74) > *(f32*)(f + 0x78)) ||
+          (*(s16*)(g_Ball + 0x1B62) < 1 && *(f32*)(f + 0x74) > lbl_3_rodata_B78) ||
+          (*(f32*)(g_Ball + 0x1A14) < lbl_3_rodata_C6C && *(s16*)(g_Ball + 0x1B78) < 0 && *(s16*)(g_Ball + 0x1B6C) > 0x3C) ||
+          d > lbl_3_rodata_B68 + *(f32*)(g_Ball + 0x1A4C) || g_Ball[0x1BD5] != 0)) {
+        return;
+    }
+    if (!(*(f32*)(f + 0x74) > *(f32*)(f + 0xE8))) {
+        return;
+    }
+    if (f[0x252] != 0 && *(s16*)(f + 0x24C) > 0) {
+        return;
+    }
+    dLand = (*(f32*)(g_Ball + 0x19F8) - *(f32*)(g_Ball + 0x1A34)) * (*(f32*)(g_Ball + 0x19F8) - *(f32*)(g_Ball + 0x1A34)) +
+            (*(f32*)(g_Ball + 0x19FC) - *(f32*)(g_Ball + 0x1A38)) * (*(f32*)(g_Ball + 0x19FC) - *(f32*)(g_Ball + 0x1A38));
+    SQRT_L(dLand);
+    dBall = (*(f32*)(g_Ball + 0x1A34) - *(f32*)(g_Ball + 0)) * (*(f32*)(g_Ball + 0x1A34) - *(f32*)(g_Ball + 0)) +
+            (*(f32*)(g_Ball + 0x1A38) - *(f32*)(g_Ball + 8)) * (*(f32*)(g_Ball + 0x1A38) - *(f32*)(g_Ball + 8));
+    SQRT_L(dBall);
+    a = fn_3_9FB8C(*(f32*)(g_Ball + 0x19F8) - *(f32*)(g_Ball + 0x1A34), *(f32*)(g_Ball + 0x19FC) - *(f32*)(g_Ball + 0x1A38));
+    diff = fn_3_9FCF8(a, fn_3_9FB8C(*(f32*)(g_Ball + 0) - *(f32*)(g_Ball + 0x1A34), *(f32*)(g_Ball + 8) - *(f32*)(g_Ball + 0x1A38)));
+    if (*(s16*)(g_Ball + 0x1B6C) > 5 && (lbl_3_rodata_B78 + dLand < dBall || (dLand < dBall && diff < 0x20))) {
+        g_Ball[0x1BE1] = 1;
+        if (g_GameLogic[0x13A] == 0) {
+            g_FieldingLogic[0x128] = 1;
+        }
+    } else {
+        g_Ball[0x1BE1] = 2;
+        g_FieldingLogic[0x12C] = 1;
+    }
+    g_Ball[0x1BCA] = 1;
+    g_Ball[0x1BC9] = 3;
+    fn_3_4E1BC();
+    *(s16*)(g_FieldingLogic + 0xC4) = -1;
+    *(s16*)(g_Ball + 0x1B8A) = -1;
+    g_Ball[0x1BE3] = 5;
 }
 
 // .text:0x0004EBC4 size:0x404 mapped:0x8068DC58
