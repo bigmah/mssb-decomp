@@ -44,6 +44,12 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern f64 pow(f64, f64);
+extern f64 sqrt(f64);
+extern const Vec lbl_3_rodata_25C8;
+extern const Vec lbl_3_rodata_25D4;
+extern const Vec lbl_3_rodata_25E0;
+extern const f32 lbl_3_rodata_27EC;
 extern u8 g_Fielders[];
 extern u8 g_Ball[];
 extern Vec lbl_3_rodata_2640;
@@ -1158,7 +1164,7 @@ void fn_3_D1280(u8* p) {
     if (g_GameLogic[0x11E] == 1 || g_GameLogic[0x11E] == 0) {
         p[0] = 0;
     }
-    ((void (*)(void*))fn_3_D141C)(p);
+    fn_3_D141C(p);
     PSVECAdd((Vec*)(*(u8**)(p + 0xB0) + 0xC), (Vec*)(*(u8**)(p + 0xAC) + 0xC), &s);
     PSVECScale(&s, lbl_3_rodata_26A0, &s);
     if (g_GameLogic[0x11E] == 2 && *(s16*)(g_GameLogic + 0x10A) >= 0) {
@@ -1181,9 +1187,66 @@ void fn_3_D1280(u8* p) {
 }
 
 // .text:0x000D141C size:0x320 mapped:0x807104B0
-void fn_3_D141C(void) {
-    return;
+// Orients p (a Control) along the segment between its two chain nodes (p+0xAC -> p+0xB0):
+// yaw about axis 25D4, pitch about axis 25E0, plus a quarter roll about 25C8 for even p+0x9C.
+// NONMATCHING 98%: f0/f1 swapped for the 0.0f constant vs PSVECMag results
+#if NONMATCHING
+void fn_3_D141C(u8* p) {
+    Vec d;
+    Vec flatY;
+    Vec flatXZ;
+    Quaternion q;
+    Quaternion qRoll;
+    Quaternion qYaw;
+    Quaternion qPitch;
+    Vec axRoll;
+    Vec axYaw;
+    Vec axPitch;
+    f32 roll, yaw, pitch, a;
+    roll = yaw = pitch = lbl_3_rodata_2664;
+    axRoll = lbl_3_rodata_25C8;
+    axYaw = lbl_3_rodata_25D4;
+    axPitch = lbl_3_rodata_25E0;
+    PSVECSubtract(&(*(RopeNode**)(p + 0xB0))->pos, &(*(RopeNode**)(p + 0xAC))->pos, &d);
+    flatY = flatXZ = d;
+    flatXZ.x = sqrt(pow(flatXZ.x, lbl_3_rodata_26E8) + pow(flatXZ.z, lbl_3_rodata_26E8));
+    flatXZ.z = lbl_3_rodata_2664;
+    flatY.y = lbl_3_rodata_2664;
+    PSVECNormalize(&d, &d);
+    if (PSVECMag(&flatY) != lbl_3_rodata_2664) {
+        PSVECNormalize(&flatY, &flatY);
+        a = acos(PSVECDotProduct(&axRoll, &flatY));
+        yaw = a;
+        if (flatY.z > lbl_3_rodata_2664) {
+            yaw = a * lbl_3_rodata_2678;
+        }
+    }
+    if (PSVECMag(&flatXZ) != lbl_3_rodata_2664) {
+        PSVECNormalize(&flatXZ, &flatXZ);
+        a = acos(PSVECDotProduct(&axRoll, &flatXZ));
+        pitch = a;
+        if (flatXZ.y > lbl_3_rodata_2664) {
+            pitch = a * lbl_3_rodata_2678;
+        }
+    }
+    if (roll != lbl_3_rodata_2664 || yaw != lbl_3_rodata_2664 || pitch != lbl_3_rodata_2664) {
+        C_QUATRotAxisRad(&qYaw, &axYaw, yaw);
+        C_QUATRotAxisRad(&qPitch, &axPitch, pitch);
+        if (p[0x9C] % 2 == 0) {
+            roll = lbl_3_rodata_27EC;
+        }
+        C_QUATRotAxisRad(&qRoll, &axRoll, roll);
+        q = qYaw;
+        PSQUATMultiply(&q, &qPitch, &q);
+        PSQUATMultiply(&q, &qRoll, &q);
+        PSQUATNormalize(&q, &q);
+        if (PSQUATDotProduct(&q, &q) == lbl_3_rodata_2664) {
+            C_QUATRotAxisRad(&q, &axRoll, lbl_3_rodata_2664);
+        }
+        CTRLSetQuat((Control*)p, q.x, q.y, q.z, q.w);
+    }
 }
+#endif
 
 // .text:0x000D173C size:0x10C mapped:0x807107D0
 void fn_3_D173C(u8* p) {

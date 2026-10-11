@@ -78,7 +78,7 @@ void fn_3_D1004(u8* p, f32 x, f32 y, f32 z, f32 r, f32 sc);
 void fn_3_D1110(u8* p);
 void fn_3_D127C(void);
 void fn_3_D1280(u8* p);
-void fn_3_D141C(void);
+void fn_3_D141C(u8* p);
 void fn_3_D173C(u8* p);
 void fn_3_D1848(u8* arg);
 void fn_3_D196C(s32 idx);
