@@ -28,6 +28,7 @@ BOOL checkFieldingStat(int, int, int);
 f32 shortAngleToRad_Capped(s16);
 extern f32 lbl_3_rodata_B90;
 void fn_3_53F48(void);
+extern f32 lbl_3_rodata_BB4;
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
@@ -1419,9 +1420,49 @@ void fn_3_300B8(int i) {
 
 
 // .text:0x00030214 size:0x350 mapped:0x8066F2A8
-void fn_3_30214(void) {
-    return;
+// NONMATCHING 90%: float register allocation/scheduling around the wall-normal block after checkCollision
+#if NONMATCHING
+int fn_3_30214(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    VecSrcDst seg;
+    CollisionStruct hit;
+    f32 x, z;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 e;
+    if ((0.0f == *(f32*)(f + 0x38) && 0.0f == *(f32*)(f + 0x3C)) || *(s16*)(f + 0x19A) < 0) {
+        return 0;
+    }
+    x = *(f32*)f;
+    z = *(f32*)(f + 8);
+    seg.src.x = x;
+    seg.dst.y = lbl_3_rodata_BB4;
+    seg.src.y = lbl_3_rodata_BB4;
+    seg.src.z = z;
+    seg.dst.x = *(f32*)(f + 0x38) * *(f32*)(lbl_3_data_4930 + 0x3C) + x;
+    seg.dst.z = *(f32*)(f + 0x3C) * *(f32*)(lbl_3_data_4930 + 0x3C) + z;
+    if ((checkCollision(&seg, &hit, 0, 0) & 0x7F) != 2) {
+        return 0;
+    }
+    f[0x205] = 1;
+    dz = seg.dst.z - *(f32*)(f + 8);
+    dx = seg.dst.x - *(f32*)f;
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    e = hit.normal.x * hit.normal.x + hit.normal.z * hit.normal.z;
+    *(s16*)(f + 0x1B2) = (int)(d / *(f32*)(lbl_3_data_4930 + 0x40)) + 1;
+    *(f32*)(f + 0x128) = hit.normal.x * *(f32*)(lbl_3_data_4930 + 0x6C) + hit.position.x;
+    *(f32*)(f + 0x130) = hit.normal.z * *(f32*)(lbl_3_data_4930 + 0x6C) + hit.position.z;
+    *(f32*)(f + 0x154) = *(f32*)(lbl_3_data_4930 + 0x44);
+    *(f32*)(f + 0x148) = 0.0f;
+    SQRT_L(e);
+    *(f32*)(f + 0x140) = hit.normal.x / e;
+    *(f32*)(f + 0x144) = hit.normal.z / e;
+    *(f32*)(f + 0x50) = 0.0f;
+    return 1;
 }
+#endif
 
 // .text:0x00030564 size:0xB8 mapped:0x8066F5F8
 int fn_3_30564(int i) {

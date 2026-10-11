@@ -54,7 +54,7 @@ void fn_3_2F924(int);
 void fn_3_2FB9C(int);
 void fn_3_2FF2C(int);
 void fn_3_300B8(int);
-void fn_3_30214(void);
+int fn_3_30214(int);
 int fn_3_30564(int);
 void fn_3_3061C(void);
 void fn_3_308B8(int, f32, f32);
