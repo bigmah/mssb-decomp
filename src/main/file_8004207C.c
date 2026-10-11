@@ -2257,9 +2257,94 @@ void fn_800494CC(u8 team) {
     }
 
 
+// NONMATCHING ~99%: lis/addi order of the challenge-save block
+#if NONMATCHING
 void possiblyTransferDataBetweenDifferentRels(void) {
-    return;
+    s32 i;
+    u8 stage;
+
+    for (i = 0; i < 4; i++) {
+        lbl_803C5EF8.a[i] = 0;
+        lbl_803C5EF8.b[i] = 0;
+    }
+    lbl_803C5F04._2E = 0;
+    if (lbl_8034E9A0._4704 == 0) {
+        RESET_MATCH_OPTIONS(i);
+        lbl_8034E9A0._4704 = 1;
+    } else {
+        for (i = 0; i < 2; i++) {
+            if (g_d_GameSettings.PlayerPorts[i] < 4) {
+                lbl_803C5F04.playerOption[i][0] = lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._6;
+                lbl_803C5F04.playerOption[i][1] = lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._3;
+                lbl_803C5F04.playerOption[i][2] = lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._2;
+                lbl_803C5F04.playerOption[i][3] = lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._4;
+            } else {
+                lbl_803C5F04.playerOption[i][0] = lbl_800E8754.port[i]._6;
+                lbl_803C5F04.playerOption[i][1] = lbl_800E8754.port[i]._3;
+                lbl_803C5F04.playerOption[i][2] = lbl_800E8754.port[i]._2;
+                lbl_803C5F04.playerOption[i][3] = lbl_800E8754.port[i]._4;
+            }
+        }
+        lbl_803C5F04.option[1] = g_d_GameSettings.home_AwaySetting;
+        lbl_803C5F04.option[2] = lbl_800E8754._04;
+        lbl_803C5F04.option[3] = (u32)lbl_800E8754.innings >> 1;
+        if (lbl_800E8754._05 == 10) {
+            lbl_803C5F04.option[4] = 1;
+        } else {
+            lbl_803C5F04.option[4] = 0;
+        }
+        lbl_800E8754._06 = 0;
+    }
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        for (i = 0; i < 2; i++) {
+            if (g_d_GameSettings.PlayerPorts[i] < 4) {
+                lbl_803C5F04.playerOption[i][0] = lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._6;
+                lbl_803C5F04.playerOption[i][1] = lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._3;
+                lbl_803C5F04.playerOption[i][2] = lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._2;
+                lbl_803C5F04.playerOption[i][3] = lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._4;
+            } else {
+                lbl_803C5F04.playerOption[i][0] = lbl_800E8754.port[i]._6;
+                lbl_803C5F04.playerOption[i][1] = lbl_800E8754.port[i]._3;
+                lbl_803C5F04.playerOption[i][2] = lbl_800E8754.port[i]._2;
+                lbl_803C5F04.playerOption[i][3] = lbl_800E8754.port[i]._4;
+            }
+        }
+        stage = gChallengeSave._441D;
+        lbl_803C5F04.option[1] = 0;
+        lbl_803C5F04.option[4] = 1;
+        lbl_803C5F04.option[2] = 1;
+        lbl_803C5F04.option[1] = 0;
+        lbl_803C5F04.prevOption[1] = 0;
+        lbl_803C5F04.prevOption[4] = 1;
+        lbl_803C5F04.option[4] = 1;
+        if (stage != 9) {
+            s32 last = gChallengeSave._441F;
+            if (last == 9) {
+                lbl_803C5F04.option[3] = (u32)lbl_8010B600[g_d_GameSettings.challengeDifficulty][1] >> 1;
+            } else if (last != 9 && stage != 9) {
+                lbl_803C5F04.option[3] = (u32)lbl_8010B600[g_d_GameSettings.challengeDifficulty][0] >> 1;
+            }
+        } else if (gChallengeSave._16C2 == 0x2A) {
+            lbl_803C5F04.option[3] = (u32)lbl_8010B600[g_d_GameSettings.challengeDifficulty][1] >> 1;
+        } else {
+            lbl_803C5F04.option[3] = (u32)lbl_8010B600[g_d_GameSettings.challengeDifficulty][0] >> 1;
+        }
+    }
+    if (g_d_GameSettings._06 == 2) {
+        lbl_803C5F04._36 = 1;
+        for (i = 0; i < 4; i++) {
+            lbl_803C5F04.prevCursor[i] = 0;
+            lbl_803C5F04.cursor[i] = 0;
+        }
+        lbl_803C5F04.state = 3;
+    } else {
+        lbl_803C5F04.prevCursor[0] = 0;
+        lbl_803C5F04.cursor[0] = 0;
+        lbl_803C5F04._36 = 0;
+        lbl_803C5F04.state = 1;
+    }
 }
+#endif
 
 // .text:0x80049C80 size:0xBC
 void fn_80049C80(void) {
