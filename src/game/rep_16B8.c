@@ -33,6 +33,8 @@ extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_EC1C[];
 extern u8 lbl_3_data_F430[];
 extern u8 lbl_3_data_EABC[];
+extern s16 lbl_3_data_BE50[][4]; // TODO type: 8-byte entries
+extern void fn_3_ED0F4(void);
 extern u8 lbl_3_data_F224[];
 extern u8 lbl_3_data_F200[];
 extern u8 lbl_3_data_E378[];
@@ -791,7 +793,68 @@ void fn_3_96914(void) {
 
 // .text:0x0009698C size:0x318 mapped:0x806D5A20
 void fn_3_9698C(void) {
+    RepTask* task = lbl_803CC1B8[0];
+    if (task->timer < 0xFFFE) {
+        task->timer++;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_Stats.replayInd != 0) {
+        goto remove;
+    }
+    if (task->_1C == 15) {
+        if (REP_OBJ(task, 0)->_69 == 2) {
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                fn_800B0A5C_insertQueue(fn_3_ED0F4, 2);
+            }
+            goto remove;
+        }
+        if (g_GameLogic.gameStatus != 2 && g_GameLogic.gameStatus != 1 && g_GameLogic.gameStatus != 0 && g_GameLogic.gameStatus != 20) {
+            goto remove;
+        }
+    } else if (task->_1E == 2) {
+        if (REP_OBJ(task, 0)->_69 == 2 || g_GameLogic.hudElementLoadingInd != 0) {
+            goto remove;
+        }
+        if (g_GameLogic.gameStatus != 2 && g_GameLogic.gameStatus != 1 && g_GameLogic.gameStatus != 0) {
+            goto remove;
+        }
+    } else if (task->_1E == 1) {
+        if (g_GameLogic.hudElementLoadingInd != 0) {
+            goto remove;
+        }
+        if (g_GameLogic.gameStatus != 2 && g_GameLogic.gameStatus != 1 && g_GameLogic.gameStatus != 0) {
+            goto remove;
+        }
+    }
+    if (task->_1E == 0) {
+        if ((REP_OBJ(task, 0)->_5C >> 16) >= lbl_3_data_BE50[task->_1C][1]) {
+            task->_1E = 1;
+            REP_OBJ(task, 0)->_68 = 0;
+        }
+    } else if (task->_1E == 1) {
+        if (g_UnkSound_32718._02 != 0 || (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_32724[0xB4] != 0)) {
+            REP_OBJ(task, 0)->_68 = 1;
+            task->_1E = 2;
+        } else {
+            if (task->_1A < 0xFFFE) {
+                task->_1A++;
+            } else {
+                task->_1A = 0xFFFF;
+            }
+            if (task->_1A >= lbl_3_data_BE50[task->_1C][2]) {
+                REP_OBJ(task, 0)->_68 = 1;
+                task->_1E = 2;
+            }
+        }
+    }
+    if ((task->_1C == 0x10 || task->_1C == 0x16) && task->timer == 0x23) {
+        playSoundEffect(0x15C);
+    }
     return;
+remove:
+    g_UnkSound_32718._07 = 0;
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
 
 // .text:0x00096CA4 size:0x4A0 mapped:0x806D5D38
