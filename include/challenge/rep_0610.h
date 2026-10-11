@@ -148,4 +148,6 @@ void fn_1_10E2C(void* model, f32 (*view)[4], u32 colorX, u32 colorY, u32 colorZ)
 
 void fn_1_C5AC(void);
 
+void fn_1_D9B8(void);
+
 #endif

@@ -2950,3 +2950,87 @@ void fn_1_C5AC(void) {
     GXSetAlphaUpdate(1);
 }
 #endif
+
+// One step of the challenge animation script (ch_3218, 8 entries).
+typedef struct {
+    /* 0x0 */ s16 group;  // < 0: unused slot
+    /* 0x2 */ s16 index;
+    /* 0x4 */ s16 frame;  // advance when the animation reaches this frame (< 0: on A press)
+    /* 0x6 */ s16 sync;
+} ChallengeStep;
+
+// .text:0xD9B8 size:0x464
+// NONMATCHING ~80%: the original inlines fn_1_D300 (itself NONMATCHING), so this calls it
+#if NONMATCHING
+void fn_1_D9B8(void) {
+    ChallengeStep* steps = (ChallengeStep*)ch_3218;
+    u8* queue = lbl_803CC1B8[0];
+    u8* actor = (u8*)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[ch_5F73].actor;
+    u16 count = *(u16*)(actor + 6); // TODO type: ActorInst bone count / table
+    s32 i;
+    s32 frame;
+    s16 target;
+
+    for (i = 0; i < count; i++) {
+        u8* anim = *(u8**)((*(u8***)(actor + 0x18))[i] + 0xE8);
+        if (anim != NULL && *(void**)(anim + 0xC) != NULL) {
+            break;
+        }
+    }
+    // The original leaves `frame` uninitialized (it holds the saved LR, a negative s32)
+    // when no bone is animated, so the frame test below fails.
+    frame = -1;
+    if (i < count) {
+        frame = **(f32**)((*(u8***)(actor + 0x18))[i] + 0xE8);
+    }
+    target = steps[(s8)queue[0x15]].frame;
+    if ((target < 0 && (lbl_803C77B8._02 & 0x100)) || (target >= 0 && frame >= target)) {
+        u8* entry;
+        ActorObject* object;
+        void* table;
+        f32 start;
+        s32 k;
+
+        do {
+            queue[0x15]++;
+            if (queue[0x15] == 8) {
+                queue[0x15] = 0;
+            }
+        } while (steps[(s8)queue[0x15]].group < 0);
+        entry = ch_6940 + ch_5F73 * 0x48;
+        entry[0x44] = steps[(s8)queue[0x15]].group;
+        entry[0x45] = steps[(s8)queue[0x15]].index;
+        object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34);
+        table = *(void**)(lbl_8036E548 + ch_5F73 * 0x27C + entry[0x44] * 4 + 0xC14);
+        object->animBank = table;
+        object->seqNum = entry[0x45];
+        object->time = 0.0f;
+        object->setAnimation = 1;
+        object->setTime = table != NULL;
+        object->setSpeed = table != NULL;
+        object->speed = 0.0f;
+        start = *(f32*)ch_67B8[0];
+        for (k = 4; k >= 0; k--) {
+            u8* anim = ch_3258 + (s8)queue[0x15] * 0xA0 + k * 0x20;
+            if (*(u16*)(anim + 8) != 0) {
+                u16 key = *(u16*)((u8*)ch_67B8[0] + 0xC);
+                ch_67B8[k] = anim;
+                if (steps[(s8)queue[0x15]].sync != 0 && (f32)*(u16*)((u8*)ch_67B8[k] + 0x18) < start) {
+                    *(f32*)ch_67B8[k] = start;
+                    *(u16*)((u8*)ch_67B8[k] + 0xC) = key;
+                } else {
+                    *(f32*)ch_67B8[k] = 0.0f;
+                    *(u16*)((u8*)ch_67B8[k] + 0xC) = 0;
+                }
+            } else {
+                ch_67B8[k] = NULL;
+            }
+        }
+        fn_1_D300(lbl_8036E548 + ch_5F73 * 0x27C + 0xC04);
+    }
+    if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 0x200) {
+        *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_1770C;
+    }
+    fn_1_D8A0();
+}
+#endif
