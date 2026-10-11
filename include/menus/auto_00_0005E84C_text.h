@@ -104,7 +104,7 @@ void fn_2_6675C(void);
 void fn_2_66884(void);
 void fn_2_66AEC(void);
 void fn_2_66CC4(void);
-void fn_2_66E14(void);
+void fn_2_66E14(MenuTask* task, MenuItem* item);
 void fn_2_66FC8(void);
 void fn_2_671DC(void);
 void fn_2_67390(void);
