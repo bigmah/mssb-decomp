@@ -209,12 +209,10 @@ void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 si
 
 // .text:0x800247E4 size:0x5C
 // Byte offset of texel (x, y) in a texture of 4x4 texel tiles.
-// NONMATCHING 58%: same arithmetic, the original schedules the y terms first
-#if NONMATCHING
 s32 fn_800247E4(s32 x, s32 y, s32 width, s32 bytesPerTexel) {
-    return bytesPerTexel * (width * (y / 4 * 4) + (x / 4 * 16 + y % 4 * 4 + x % 4));
+    s32 row = ((y / 4) * 4) * width;
+    return bytesPerTexel * ((x % 4) + (((y % 4) << 2) + (row + ((x / 4) << 4))));
 }
-#endif
 
 // .text:0x80024840 size:0x134
 // NONMATCHING 99%: r0/r3 swapped loading the mission status
