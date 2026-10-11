@@ -2920,3 +2920,84 @@ void fn_2_76874(u8* o, u8 index) {
     }
 }
 #endif
+
+// fn_2_7FAFC, size:0x5B4
+void fn_2_7FAFC(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    s32 n;
+    s32 k;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        s32 a;
+        s32 b;
+        u8 y;
+        u8 x;
+        MN_SLOT(BASE(o) + index)->frame = 0x1E0000;
+        MN_SLOT(2 + BASE(o) + index)->frame = 0x1E0000;
+        MN_SLOT(BASE(o) + index)->state = 4;
+        MN_SLOT(2 + BASE(o) + index)->state = 4;
+        MN_SLOT(4 + BASE(o) + index)->anim = 0x50;
+        MN_SLOT(4 + BASE(o) + index)->frame = 0;
+        MN_SLOT(4 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x85 + BASE(o) + index)->frame = 0x140000;
+        MN_SLOT(0x85 + BASE(o) + index)->state = 4;
+        MN_SLOT(0x89 + BASE(o) + index)->frame = 0xA0000;
+        MN_SLOT(0x89 + BASE(o) + index)->state = 4;
+        MN_SLOT(0x82 + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0x7A + BASE(o) + index)->flags |= 2;
+        if (g_d_GameSettings._10 == 0 && index != 0) {
+            if ((s8)lbl_8034E9A0[0x46F8] == 0) {
+                MN_SLOT(0x7A + BASE(o) + index)->frame = 0x10000;
+            } else {
+                MN_SLOT(0x7A + BASE(o) + index)->frame = 0;
+            }
+        } else {
+            MN_SLOT(0x7A + BASE(o) + index)->frame = (s8)lbl_8034E9A0[0x46F8 + index] << 16;
+        }
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            b = lbl_803C6724[index];
+            a = lbl_800FE5D4[((s32*)((u8*)&lbl_2_bss_F410 + 0x10))[index]];
+            b = lbl_800FE5D4[b];
+        } else if (index != 0) {
+            b = ((s8*)starMissionCompletionTracker)[0x441F];
+            a = b;
+        } else {
+            a = b = starMissionCompletionTracker[0x441D];
+        }
+        x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
+        y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
+        MN_SLOT(0x82 + BASE(o) + index)->frame = lbl_2_data_2B3A4[x] << 16;
+        MN_SLOT(0x7E + BASE(o) + index)->frame = lbl_2_data_2B3A4[x] << 16;
+        fn_800363D8(o, index + 0x89, 1, 3, lbl_2_data_2B3A4[x]);
+        fn_800363D8(o, index + 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
+        MN_SLOT(0x80 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x80 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x78 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x78 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x7C + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x7C + BASE(o) + index)->state = 1;
+        MN_SLOT(0x97 + BASE(o) + index)->anim = 0x78;
+        MN_SLOT(0x97 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x97 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x99 + BASE(o) + index)->anim = 0x79;
+        fn_2_74F40(o, index);
+        MN_SLOT(0xAC + BASE(o) + index)->state = 4;
+        fn_800626EC(index);
+        *e = 1;
+    }
+    if (*e == 1) {
+        n = 0;
+        k = 0;
+        k++;
+        n += fn_80042DA8((s32)o, index, 0x14) != 0;
+        k++;
+        n += fn_80042DA8((s32)o, index + 2, 0x14) != 0;
+        k++;
+        n += fn_80042DA8((s32)o, index + 0x85, 0xA) != 0;
+        k++;
+        n += fn_80042DA8((s32)o, index + 0x89, 5) != 0;
+        if (n == k) {
+            fn_80062674(index);
+            *e = 2;
+        }
+    }
+}
