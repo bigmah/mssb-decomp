@@ -742,12 +742,12 @@ void fn_3_CF930(u8* p) {
         n = *(u16*)(a + 0x24);
         d = *(f32*)(a + 0x10);
         if (*(f32*)(a + 0xC) == (f32)n) {
-            CTRLSetTranslation((Control*)p, lbl_3_data_18730[p[0x9C]].x, lbl_3_rodata_2700, lbl_3_data_18730[p[0x9C]].z);
+            CTRLSetTranslation((Control*)p, lbl_3_data_18730[p[0x9C]].x, lbl_3_rodata_2778, lbl_3_data_18730[p[0x9C]].z);
             *(u32*)(p + 0x8C) = 0;
             ((BF90_c2*)p)->f = 0;
         }
         fn = n;
-        t = lbl_3_rodata_2778 / (fn / d);
+        t = lbl_3_rodata_2700 / (fn / d);
         if (p[0x92] <= t) {
             p[0x92] = 0;
         } else {
@@ -802,11 +802,11 @@ s32 fn_3_CFB44(u8* a) {
         if (*(s16*)(e + 0x48) <= 0 && *(s16*)(e + 0x4A) != 0) {
             ((void (*)(f32, f32))fn_8003403C)(*(f32*)(e + 0x38), *(f32*)(e + 0x3C));
             fn_80033CC8(e, *(s32*)(a + 0x10));
-            *(f32*)(e + 0x38) = *(f32*)(e + 0x38) + lbl_3_rodata_2728;
+            *(f32*)(e + 0x38) = *(f32*)(e + 0x38) + lbl_3_rodata_2780;
             if (*(f32*)(e + 0x38) < 0.0f) {
                 *(f32*)(e + 0x38) = 0.0f;
             }
-            *(f32*)(e + 0x3C) = *(f32*)(e + 0x3C) + lbl_3_rodata_2728;
+            *(f32*)(e + 0x3C) = *(f32*)(e + 0x3C) + lbl_3_rodata_2780;
             if (*(f32*)(e + 0x3C) < 0.0f) {
                 *(f32*)(e + 0x3C) = 0.0f;
             }
@@ -833,7 +833,7 @@ s32 fn_3_CFB44(u8* a) {
             e[0x42] = 0xFF;
             e[0x41] = 0xFF;
             e[0x40] = 0xFF;
-            e[0x43] = (u8)(lbl_3_rodata_2780 * *(f32*)(t + 0xBC));
+            e[0x43] = (u8)(lbl_3_rodata_2728 * *(f32*)(t + 0xBC));
             *(s16*)(e + 0x4A) = 0x1E;
             *(s16*)(e + 0x48) = 0;
         }
@@ -1435,8 +1435,8 @@ void fn_3_D3CDC(u8* p) {
     Vec v;
     Vec dir;
     Vec axis;
-    B4 a = lbl_3_rodata_2510;
-    B4 b = lbl_3_rodata_250C;
+    B4 a = lbl_3_rodata_250C;
+    B4 b = lbl_3_rodata_2510;
     u8* t;
     u32 i;
     if (g_GameLogic[0x11E] != 2) {
