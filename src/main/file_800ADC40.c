@@ -56,7 +56,7 @@ extern MovAramRing lbl_803C79D4;
 extern MovMramRing lbl_803C7A00;
 extern MovSync lbl_803C7420;
 // TODO: static in Unknown/File_0x800a6304.c; first word is the free ARAM byte count.
-extern u32 data_803C6780;
+extern u32 data_803C6780[];
 
 extern u16 lbl_801101C0[128]; // volume table
 extern YuvTable lbl_801102C0;
@@ -1279,13 +1279,13 @@ void fn_800B05E4(s32 aramSize, u32 mramSize) {
     lbl_803CC1A8 = 0;
     memset(aram, 0, sizeof(MovAramRing));
     if (aramSize == -1) {
-        aram->size = (lbl_803CC1AC < data_803C6780) ? lbl_803CC1AC : data_803C6780;
+        aram->size = (lbl_803CC1AC < data_803C6780[0]) ? lbl_803CC1AC : data_803C6780[0];
     } else {
         aram->size = (lbl_803CC1AC < (u32)aramSize) ? lbl_803CC1AC : (u32)aramSize;
     }
     aram->size = OSRoundUp32B(aram->size);
     aram->start = fn_800A6418(aram->size);
-    aram->writePos = aram->readPos = aram->start;
+    aram->readPos = aram->writePos = aram->start;
     aram->end = aram->start + aram->size;
     ARQSetChunkSize(0x1000);
     ARQFlushQueue();
@@ -1295,7 +1295,7 @@ void fn_800B05E4(s32 aramSize, u32 mramSize) {
     mram->dvdBufSize = lbl_803C6CF8.streamSize;
     mram->start = _OSAllocFromHeap(0x20, mramSize);
     mram->end = mram->start + mramSize;
-    mram->writePtr = mram->readPtr = mram->start;
+    mram->readPtr = mram->writePtr = mram->start;
     mram->size = mramSize;
     mram->filled = 0;
     mram->consumed = 0;
