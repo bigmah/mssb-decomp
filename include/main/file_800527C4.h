@@ -84,6 +84,7 @@ void fn_800531D0(SceneTask* task);
 void fn_800559EC(void);
 void fn_80060184(void);
 void starMissionRelated1(SceneTask* task);
+void fn_8005A350(SceneTask* task, s32 pad);
 void fn_80054B00(SceneTask* task, s32 port);
 void fn_800542C4(u8 cur, u8 target, SceneTask* task);
 void fn_80058E0C(SceneTask* task, u8 port);
@@ -133,25 +134,41 @@ typedef struct MenuDef {
 } MenuDef; // size: 0x10
 
 // lbl_803297E0: menu work area (size 0x24C98), only the fields used here.
+// Controller state as copied by the menus.
+typedef struct PadInput {
+    /*0x0*/ u16 held;
+    /*0x2*/ u16 pressed;
+    /*0x4*/ u16 _4;
+} PadInput; // size: 0x6
+
 typedef struct MenuWork {
-    /*0x0000*/ u8 _0000[0xCF3B];
+    /*0x0000*/ PadInput pads[2];
+    /*0x000C*/ u8 _000C[0xCF3B - 0xC];
     /*0xCF3B*/ u8 team;
     /*0xCF3C*/ u8 _CF3C[2];
     /*0xCF3E*/ u8 _CF3E[2]; // roster slot per port
-    /*0xCF40*/ u8 _CF40[5];
+    /*0xCF40*/ u8 _CF40[3];
+    /*0xCF43*/ u8 _CF43; // two-player shared pad: controls team 1
+    /*0xCF44*/ u8 _CF44;
     /*0xCF45*/ u8 _CF45;
     /*0xCF46*/ s8 selected[2]; // 1-based roster index per team
     /*0xCF48*/ s8 selected2[2];
     /*0xCF4A*/ u8 _CF4A[8];
     /*0xCF52*/ u8 _CF52[2];
     /*0xCF54*/ u8 _CF54[2];
-    /*0xCF56*/ u8 _CF56[5];
+    /*0xCF56*/ u8 _CF56[2];
+    /*0xCF58*/ u8 _CF58[2];
+    /*0xCF5A*/ u8 _CF5A;
     /*0xCF5B*/ u8 ready[2]; // per port, two-player tutorial sync
-    /*0xCF5D*/ u8 _CF5D[6];
+    /*0xCF5D*/ u8 _CF5D[4];
+    /*0xCF61*/ u8 starOpen[2];
     /*0xCF63*/ u8 starShown[2];
-    /*0xCF65*/ u8 _CF65[0xB];
+    /*0xCF65*/ u8 starPanel[2];
+    /*0xCF67*/ u8 starPage[2];
+    /*0xCF69*/ u8 _CF69[7];
     /*0xCF70*/ u8 _CF70;
-    /*0xCF71*/ u8 _CF71[2];
+    /*0xCF71*/ u8 pauseOpen;
+    /*0xCF72*/ u8 pauseActive;
     /*0xCF73*/ u8 pauseShown;
     /*0xCF74*/ u8 _CF74;
     /*0xCF75*/ s8 pauseMission;
@@ -177,7 +194,8 @@ typedef struct MenuWork {
     /*0xCF9A*/ u8 missionCount;
     /*0xCF9B*/ u8 _CF9B;
     /*0xCF9C*/ s16 challengeTeam;
-    /*0xCF9E*/ u8 _CF9E[4];
+    /*0xCF9E*/ u8 _CF9E[2];
+    /*0xCFA0*/ u8 _CFA0[2];
     /*0xCFA2*/ u8 teamKind[0x36];
 } MenuWork;
 
@@ -190,7 +208,9 @@ typedef struct RosterData {
     /*0x46F8*/ s8 _46F8[2];
     /*0x46FA*/ u8 _46FA[0x470D - 0x46FA];
     /*0x470D*/ u8 _470D[2];
-    /*0x470F*/ u8 _470F[0x47F9 - 0x470F];
+    /*0x470F*/ u8 _470F[0x472C - 0x470F];
+    /*0x472C*/ PadInput pads[4];
+    /*0x4744*/ u8 _4744[0x47F9 - 0x4744];
     /*0x47F9*/ s8 chemPartner[2][9][9]; // CharIDs linked to each roster slot
     /*0x489B*/ u8 _489B[2][9];
     /*0x48AD*/ u8 _48AD;

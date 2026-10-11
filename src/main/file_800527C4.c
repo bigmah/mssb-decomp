@@ -60,6 +60,8 @@ extern s32 determineIfMissionDescriptionIsShown(s16 charID);
 extern s32 challengeRelated(s16 team);
 extern s32 fn_80064918(s16 charID);
 extern void challengeDrawStarsOnMissionMenu(void);
+extern void transferStatsToInMemRoster(u8 team);
+extern u8 lbl_800EFBA4[16]; // sound volumes
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
@@ -78,6 +80,9 @@ extern s16 translateStarSwing(u8 star);
 
 // Layout object number n of a task's sprite run.
 #define TASK_OBJ(task, n) (lbl_80371C30[(task)->u14.objIdx + (n)].obj)
+
+// Pause-menu object index: the in-game layout puts the same object 0x69 earlier.
+#define PAUSE_OBJ(n) (g_d_GameSettings._06 == 2 ? (n) - 0x69 : (n))
 
 static inline BOOL ObjFrameReached(SceneTask* task, s32 idx, s32 frame) {
     return fn_80042D68(task, idx, frame) != 0;
@@ -1945,9 +1950,6 @@ void fn_800596D4(SceneTask* task) {
 }
 #endif
 
-// Pause-menu object index: the in-game layout puts the same object 0x69 earlier.
-#define PAUSE_OBJ(n) (g_d_GameSettings._06 == 2 ? (n) - 0x69 : (n))
-
 // .text:0x80059B38 size:0x818
 // NONMATCHING 90%: register numbering differs
 #if NONMATCHING
@@ -2062,9 +2064,200 @@ void starMissionRelated1(SceneTask* task) {
 #endif
 
 // .text:0x8005A350 size:0xC18
-void fn_8005A350(void) {
-    return;
+// NONMATCHING 88%: index sums fold differently; registers differ
+#if NONMATCHING
+void fn_8005A350(SceneTask* task, s32 pad) {
+    s32 team = pad;
+    u16 pressed;
+    s32 sel;
+    s32 n;
+    CharacterStats* player;
+
+    if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+        if (pad != 0) {
+            return;
+        }
+        if (lbl_803297E0._CF43 != 0) {
+            team = 1;
+        } else {
+            team = 0;
+        }
+    }
+    if (g_d_GameSettings._06 != 2) {
+        pressed = lbl_8034E9A0.pads[pad].pressed;
+    } else {
+        pressed = lbl_803297E0.pads[team].pressed;
+    }
+    if (pressed == 0x400 && lbl_803297E0._CF52[team] == 0 && g_d_GameSettings._06 != 2) {
+        if (lbl_803297E0.selected[team] != 0) {
+            sel = lbl_803297E0.selected[team] - 1;
+            player = &inMemRoster[team][sel];
+            n = player->stats.BattingStance + player->stats.FieldingArm * 2 + 1;
+            if (n == 4) {
+                n = 0;
+            }
+            player->stats.BattingStance = n % 2;
+            player->stats.FieldingArm = n / 2;
+            TASK_OBJ(task, sel + team * 9 + 0xAC)->_5C = n << 16;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+        lbl_803297E0._CF58[team] = 0;
+    }
+    if (lbl_803297E0._CF9E[team] != 0) {
+        if (g_d_GameSettings._06 != 2) {
+            if (lbl_803297E0.selected[team] != 0) {
+                transferStatsToInMemRoster(team);
+                sndFXRelated(0x40);
+            } else {
+                sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+            }
+            if (lbl_803297E0.selected[team] != 0 && g_d_GameSettings.GameModeSelected != 5) {
+                s32 slot = lbl_803297E0.selected[team] - 1;
+                s8 pos = lbl_80354720[team][slot].pos;
+                if (lbl_8034E9A0._489B[team][slot] != 0) {
+                    TASK_OBJ(task, slot + team * 9 + 0x76)->flags |= 2;
+                    TASK_OBJ(task, slot + team * 9 + 0x76)->_68 = 1;
+                    TASK_OBJ(task, slot + team * 9 + 0x88)->flags |= 2;
+                    TASK_OBJ(task, slot + team * 9 + 0x88)->_5C = 0;
+                    TASK_OBJ(task, slot + team * 9 + 0x88)->_68 = 1;
+                    TASK_OBJ(task, pos + team * 9 + 0x140)->flags |= 2;
+                    TASK_OBJ(task, pos + team * 9 + 0x140)->_68 = 1;
+                    TASK_OBJ(task, pos + team * 9 + 0x152)->flags |= 2;
+                    TASK_OBJ(task, pos + team * 9 + 0x152)->_5C = 0;
+                    TASK_OBJ(task, pos + team * 9 + 0x152)->_68 = 1;
+                } else {
+                    TASK_OBJ(task, slot + team * 9 + 0x88)->flags |= 2;
+                    TASK_OBJ(task, slot + team * 9 + 0x88)->_5C = 0;
+                    TASK_OBJ(task, slot + team * 9 + 0x88)->_68 = 0;
+                    TASK_OBJ(task, pos + team * 9 + 0x152)->flags |= 2;
+                    TASK_OBJ(task, pos + team * 9 + 0x152)->_5C = 0;
+                    TASK_OBJ(task, pos + team * 9 + 0x152)->_68 = 0;
+                }
+            }
+        }
+        lbl_803297E0._CF9E[team] = 0;
+    }
+    if (lbl_803297E0.starPanel[team] != 0) {
+        if (g_d_GameSettings._06 != 2) {
+            if (lbl_803297E0.starOpen[team] != 0) {
+                switch (lbl_803297E0.starPage[team]) {
+                case 0:
+                    fn_80058E0C(task, team);
+                    break;
+                case 1:
+                    fn_80058B20(task, team);
+                    break;
+                }
+            } else {
+                if (lbl_803297E0.starPage[team] == 0) {
+                    LayoutObj* obj = TASK_OBJ(task, team + 0x19A);
+                    if ((obj->_5C >> 16) > 5) {
+                        obj->_5C = 5 << 16;
+                    }
+                    TASK_OBJ(task, team + 0x19A)->_68 = 4;
+                    TASK_OBJ(task, team + 0x19C)->_68 = 4;
+                    TASK_OBJ(task, team + 0x1AC)->_68 = 4;
+                    n = fn_80042DA8(task, team + 0x19A, 0) != 0;
+                    n += fn_80042DA8(task, team + 0x19C, 0) != 0;
+                    if (n + (fn_80042DA8(task, team + 0x1AC, 0) != 0) == 3) {
+                        lbl_803297E0.starPanel[team] = 0;
+                    }
+                } else {
+                    LayoutObj* obj = TASK_OBJ(task, team + 0x19A);
+                    if ((obj->_5C >> 16) > 5) {
+                        obj->_5C = 5 << 16;
+                    }
+                    TASK_OBJ(task, team + 0x19A)->_68 = 4;
+                    TASK_OBJ(task, team + 0x1C8)->_68 = 4;
+                    if (ObjAtFrame(task, team + 0x1C8, 0) == 1) {
+                        lbl_803297E0.starPanel[team] = 0;
+                    }
+                }
+                lbl_803297E0.starShown[team] = 0;
+            }
+        } else if (lbl_803297E0.starOpen[lbl_803297E0.team] != 0) {
+            switch (lbl_803297E0.starPage[team]) {
+            case 0:
+                fn_80058644(task);
+                break;
+            case 1:
+                fn_80058394(task);
+                break;
+            }
+        } else {
+            if (lbl_803297E0.starPage[team] == 0) {
+                LayoutObj* obj = TASK_OBJ(task, 280);
+                if ((obj->_5C >> 16) > 5) {
+                    obj->_5C = 5 << 16;
+                }
+                TASK_OBJ(task, 280)->_68 = 4;
+                TASK_OBJ(task, 281)->_68 = 4;
+                TASK_OBJ(task, 289)->_68 = 4;
+                n = fn_80042DA8(task, 0x118, 0) != 0;
+                n += fn_80042DA8(task, 0x119, 0) != 0;
+                if (n + (fn_80042DA8(task, 0x121, 0) != 0) == 3) {
+                    lbl_803297E0.starPanel[team] = 0;
+                }
+            } else {
+                LayoutObj* obj = TASK_OBJ(task, 280);
+                if ((obj->_5C >> 16) > 5) {
+                    obj->_5C = 5 << 16;
+                }
+                TASK_OBJ(task, 280)->_68 = 4;
+                TASK_OBJ(task, 303)->_68 = 4;
+                if (ObjAtFrame(task, 0x12F, 0) == 1) {
+                    lbl_803297E0.starPanel[lbl_803297E0.team] = 0;
+                }
+            }
+            lbl_803297E0.starShown[lbl_803297E0.team] = 0;
+        }
+    }
+    if (lbl_803297E0.pauseOpen != 0) {
+        if (lbl_803297E0.pauseActive != 0) {
+            switch (lbl_803297E0._CF74) {
+            case 1:
+                starMissionRelated1(task);
+                return;
+            case 2:
+                fn_800596D4(task);
+                return;
+            case 3:
+                if (lbl_803297E0.pauseShown == 0) {
+                    TASK_OBJ(task, PAUSE_OBJ(0x1D7))->_68 = 4;
+                    TASK_OBJ(task, PAUSE_OBJ(0x1D3))->_68 = 4;
+                    TASK_OBJ(task, PAUSE_OBJ(0x1D5))->_68 = 4;
+                    lbl_803297E0.pauseShown = 1;
+                }
+                if (lbl_803297E0.pauseShown != 0) {
+                    n = fn_80042DA8(task, PAUSE_OBJ(0x1D7), 0) != 0;
+                    n += fn_80042DA8(task, PAUSE_OBJ(0x1D3), 0) != 0;
+                    if (n + (fn_80042DA8(task, PAUSE_OBJ(0x1D5), 0) != 0) == 3) {
+                        TASK_OBJ(task, PAUSE_OBJ(0x1D3))->flags &= ~2;
+                        TASK_OBJ(task, PAUSE_OBJ(0x1D4))->flags &= ~2;
+                        TASK_OBJ(task, PAUSE_OBJ(0x1D5))->flags &= ~2;
+                        TASK_OBJ(task, PAUSE_OBJ(0x1D7))->flags &= ~2;
+                        fn_8000FEE8(lbl_803297E0.nameText);
+                        fn_8000FEE8(lbl_803297E0.descText);
+                        fn_8000FEE8(lbl_803297E0.missionText);
+                        fn_8000F8F4((LayoutGroup*)task);
+                        lbl_803297E0.pauseActive = 0;
+                        lbl_803297E0._CF74 = 0;
+                        lbl_803297E0.pauseShown = 0;
+                        return;
+                    }
+                }
+                break;
+            }
+        } else {
+            n = fn_80042DA8(task, PAUSE_OBJ(0x1D3), 0) != 0;
+            if (n + (fn_80042DA8(task, PAUSE_OBJ(0x1D5), 0) != 0) == 2) {
+                lbl_803297E0.pauseShown = 0;
+                lbl_803297E0.pauseOpen = 0;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8005AF68 size:0x330
 // NONMATCHING 93%: loop registers rotated; pos+0x3E index folded differently
