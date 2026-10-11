@@ -195,6 +195,7 @@ void fn_8003A85C(u8 enabled);
 void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused);
 void fn_8003AC90(void);
 void fn_8003AD84(TexArchive* arc);
+void fn_8003E8D8(void);
 void fn_8003F23C(void);
 void fn_8003F2B8(void);
 void fn_8003AECC(void);
