@@ -11,9 +11,36 @@ void fn_2_5EB78(void) {
 }
 
 // .text:0x0005ED3C size:0xF8
+// NONMATCHING 98%: the original called fn_80035838 without its u8 return prototype (cmpwi, no clrlwi.)
+#if NONMATCHING
 void fn_2_5ED3C(void) {
-    return;
+    MenuTask* task = lbl_803CC1B8;
+    MenuTask* parent;
+    switch (task->step) {
+    case 0:
+        lbl_80366B18.tables[2] = ARAMTransfer(&lbl_2_data_20C00, NULL, 1, 0);
+        task->step = 1;
+        break;
+    case 1:
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
+            fn_800111B4(lbl_80366B18.tables[2]);
+            task->step = 2;
+        }
+        break;
+    case 2:
+        if (fn_80035838(lbl_2_data_20BF0, 10) != 0) {
+            task->step = 3;
+        }
+        break;
+    case 3:
+        parent = task->parent;
+        parent->_10 = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->step = 0;
+        break;
+    }
 }
+#endif
 
 // .text:0x0005EE34 size:0x88
 void fn_2_5EE34(void) {

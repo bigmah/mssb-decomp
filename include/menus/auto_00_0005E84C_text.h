@@ -5,6 +5,7 @@
 #include "main/file_8000F150.h"
 #include "main/file_80034F50.h"
 #include "main/file_80011640.h"
+#include "main/file_800A6870.h"
 
 // Menu task (queue item) that owns a run of sprites in lbl_80371C30 starting
 // at baseIdx. Only the fields used here.
@@ -80,6 +81,12 @@ extern MenuState* lbl_2_bss_1A8248;
 s16 fn_2_53BC8(void* item);
 
 extern s16 lbl_2_data_2E80[][3];
+extern u8 lbl_2_data_20BF0[];
+extern AssetLoadInstructions lbl_2_data_20C00;
+
+extern MenuTask* lbl_803CC1B8;
+
+void fn_800B0A14_removeQueue(void* unused);
 
 u32 fn_80062890(s32 index);
 
