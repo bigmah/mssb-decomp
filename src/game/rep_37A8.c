@@ -6,12 +6,14 @@ extern u8 g_Minigame[];
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
-extern double acos(double);
+#include "main/file_80011640.h"
+#include "math.h"
 extern const Vec lbl_3_rodata_3808;
 extern const f32 lbl_3_rodata_382C;
 extern const f32 lbl_3_rodata_3830;
 extern const f32 lbl_3_rodata_3834;
 extern const f32 lbl_3_rodata_3838;
+extern const f32 lbl_3_rodata_385C;
 extern const f64 lbl_3_rodata_3868;
 extern void fn_800B993C(void);
 extern u8 g_GameLogic[];
@@ -41,11 +43,11 @@ extern u8 lbl_3_data_26698[];
 extern int random_fn_3_9EE24(int max);
 extern u8 lbl_3_data_21D2C[];
 extern u8 g_Fielders[];
-extern u8 lbl_3_data_21EBC[];
-extern u8 lbl_3_data_21EC0[];
+extern s8 lbl_3_data_21EBC[];
+extern s8 lbl_3_data_21EC0[];
 extern int RandomInt_Game(int);
 extern s16 lbl_3_data_7F10[];
-extern f32 lbl_3_data_21B94[];
+extern Vec lbl_3_data_21B94[]; // home positions per player slot
 extern f32 charSizeMultipliers[][2];
 extern void fn_3_118358(s32, f32*);
 extern void fn_3_15730C(u32, f32, f32, f32);
@@ -53,6 +55,64 @@ extern u8 g_Controls[];
 extern void fn_3_157570(void);
 extern void fn_3_DE4FC(void);
 extern void fn_3_154214(void);
+extern void fn_3_90064(s32 id);
+
+// Thrown-ball slots at g_Minigame + 0xA8 (40 of them).
+typedef struct {
+    /* 0x00 */ Vec pos;
+    /* 0x0C */ Vec vel;
+    /* 0x18 */ f32 _18;
+    /* 0x1C */ s32 owner;
+    /* 0x20 */ s16 timer;
+    /* 0x22 */ s16 _22;
+    /* 0x24 */ u8 _24[2];
+    /* 0x26 */ u8 used;
+    /* 0x27 */ u8 _27;
+} MgBall;
+typedef struct { u8 pad0[0xA8]; MgBall ball[40]; } MgBallView;
+
+// Runner slots at g_Minigame + 0x0 (3 of them, 0x38 each); see MgSpawn below.
+typedef struct MgRunner {
+    /* 0x00 */ Vec pos;
+    /* 0x0C */ f32 _C;
+    /* 0x10 */ f32 _10;
+    /* 0x14 */ f32 _14;
+    /* 0x18 */ s16 _18;
+    /* 0x1A */ s16 _1A;
+    /* 0x1C */ s16 _1C;
+    /* 0x1E */ s16 _1E;
+    /* 0x20 */ s16 throwTimer;
+    /* 0x22 */ s16 _22;
+    /* 0x24 */ s16 _24;
+    /* 0x26 */ s16 queueTimer;
+    /* 0x28 */ u8 _28[2];
+    /* 0x2A */ u8 st;
+    /* 0x2B */ u8 sel;
+    /* 0x2C */ u8 who;
+    /* 0x2D */ u8 _2D;
+    /* 0x2E */ u8 _2E;
+    /* 0x2F */ s8 queue[4];
+    /* 0x33 */ u8 _33;
+    /* 0x34 */ s8 fielder;
+    /* 0x35 */ s8 player;
+    /* 0x36 */ u8 _36[2];
+} MgRunner;
+
+// CPU state per player at g_Minigame + 0x1DCC (see fn_3_142C18).
+typedef struct {
+    /* 0x0 */ s16 timer;
+    /* 0x2 */ s8 state;
+    /* 0x3 */ u8 _3;
+} MgCpu;
+
+// Fake controller input for CPU players at g_Minigame + 0x1D7C (16 bytes per port).
+typedef struct {
+    /* 0x0 */ s16 stickX;
+    /* 0x2 */ u8 _2[2];
+    /* 0x4 */ u16 held;
+    /* 0x6 */ u16 trig;
+    /* 0x8 */ u8 _8[8];
+} MgPad;
 
 // This unit's .bss (B7C0..B850) as statics, declared in reverse address order:
 // a flashing 4x4 RGBA8 texture used by the TEV hook fn_3_141C8C.
@@ -175,18 +235,52 @@ void fn_3_14225C(void) {
 }
 
 // .text:0x00142284 size:0x2EC mapped:0x80781318
+extern int RandomIndexFromWeights(u8* weights, int count);
+s32 LERPToNewRange_Float(s32 value, s32 inMin, s32 inMax, s32 outMin, s32 outMax);
+extern u8 lbl_3_data_21E9C[][4];
+
+
 void fn_3_142284(void) {
     return;
 }
 
 // .text:0x00142570 size:0x380 mapped:0x80781604
-void fn_3_142570(void) {
-    return;
+extern f32 lbl_3_data_21E24[];
+extern f32 lbl_3_data_47BC[];
+extern const f64 lbl_3_rodata_3840;
+extern const f64 lbl_3_rodata_3848;
+extern const f64 lbl_3_rodata_3850;
+extern const f32 lbl_3_rodata_3858;
+
+static inline f32 sqrt37A8(f32 x) {
+    if (x > lbl_3_rodata_3834) {
+        double half = lbl_3_rodata_3840;
+        double three = lbl_3_rodata_3848;
+        double xd = (double)x;
+        double guess = __frsqrte(xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        return (float)(xd * guess);
+    } else if (x < lbl_3_rodata_3850)
+        return NAN;
+    else if (isnan(x))
+        return NAN;
+    else
+        return x;
+}
+
+// Frames until the nearest incoming ball reaches player i's fielder, 0 if one is already in reach, -1 if none.
+s32 fn_3_142570(s8 i) {
+    return 0;
 }
 
 // .text:0x001428F0 size:0x328 mapped:0x80781984
-void fn_3_1428F0(void) {
-    return;
+
+
+// CPU picks a target (or swings at nothing). Returns 1 if it acted this frame.
+u8 fn_3_1428F0(s8 i, s32 force) {
+    return 0;
 }
 
 // .text:0x00142C18 size:0x90 mapped:0x80781CAC
@@ -226,16 +320,53 @@ void fn_3_142CA8(void) {
 }
 
 // .text:0x00142DB4 size:0x31C mapped:0x80781E48
-void fn_3_142DB4(void) {
+extern f32 lbl_3_data_21BC4[][12];
+
+void fn_3_142DB4(s32 idx) {
     return;
 }
 
 // .text:0x001430D0 size:0x288 mapped:0x80782164
-void fn_3_1430D0(void) {
-    return;
+
+void fn_3_1430D0(s32 hand, s32 p) {
+    MgBall* b;
+    s32 i;
+    s16 ch;
+    f32 h;
+    f32 dy;
+    f32 dx;
+    f32 dz;
+    s32 k;
+
+    for (i = 0; i < 40; i++) {
+        if (g_Minigame[i * 0x28 + 0xCE] == 0) { // ball[i].used
+            break;
+        }
+    }
+    if (i < 40) {
+        b = &((MgBallView*)g_Minigame)->ball[i];
+        fn_3_118358(hand, &b->pos.x);
+        ch = *(s16*)(g_Fielders + (s8)g_Minigame[p + 0x18F8] * 0x268 + 0x17A);
+        k = g_Minigame[p + 0x1CAD];
+        h = lbl_3_rodata_385C * ((f32)lbl_3_data_7F10[ch] * charSizeMultipliers[ch][0]);
+        dx = lbl_3_data_21B94[k].x - b->pos.x;
+        dy = lbl_3_data_21B94[k].y - b->pos.y;
+        dz = lbl_3_data_21B94[k].z - b->pos.z;
+        dy += ((f32*)lbl_3_data_21D2C)[1] + h;
+        b->vel.x = dx / (f32)*(s16*)(lbl_3_data_21E68 + 0x2A);
+        b->vel.y = dy / (f32)*(s16*)(lbl_3_data_21E68 + 0x2A);
+        b->vel.z = dz / (f32)*(s16*)(lbl_3_data_21E68 + 0x2A);
+        b->used = 1;
+        b->timer = 0;
+        b->owner = p;
+        fn_3_15730C(i, b->pos.x, -b->pos.y, b->pos.z);
+    }
 }
 
 // .text:0x00143358 size:0x3BC mapped:0x807823EC
+extern void fn_3_6C854(int, int);
+
+// Moves ball i; a fielder whose player is idle catches it when in reach.
 void fn_3_143358(s32 i) {
     return;
 }
@@ -322,7 +453,7 @@ s32 fn_3_143770(u8* p) {
 }
 
 // .text:0x001439EC size:0x5C0 mapped:0x80782A80
-void fn_3_1439EC(void) {
+void fn_3_1439EC(s32 idx) {
     return;
 }
 
@@ -539,7 +670,14 @@ void fn_3_14443C(void) {
 }
 
 // .text:0x0014471C size:0x3C0 mapped:0x807837B0
-void fn_3_14471C(void) {
+extern u8 lbl_3_data_21E1C[];
+
+// Object positions / velocities at g_Minigame + 0xCD0 / + 0x1180 (50 each).
+#define MG_OBJ_POS(n) ((Vec*)(g_Minigame + 0xCD0) + (n))
+#define MG_OBJ_VEL(n) ((Vec*)(g_Minigame + 0x1180) + (n))
+
+// Player p releases the object it is holding: place it at the hand and aim it at the fielder's target.
+void fn_3_14471C(s32 p) {
     return;
 }
 
@@ -584,12 +722,30 @@ void fn_3_144ADC(s32 p) {
 }
 
 // .text:0x00144CB8 size:0x704 mapped:0x80783D4C
+extern f32 game_atan2(f32 x, f32 y);
+extern void fn_3_1573AC(u8* o);
+extern int rand(void);
+extern int __abs(int);
+extern s8 lbl_3_data_21E20[];
+extern const f64 lbl_3_rodata_3870;
+
+// Per-player update: jump/catch animation, then aiming and throwing the held object.
 void fn_3_144CB8(void) {
     return;
 }
 
 // .text:0x001453BC size:0x714 mapped:0x80784450
-void fn_3_1453BC(void) {
+extern void fn_3_147CFC(void* arg);
+extern void fn_3_154238(s16 id);
+extern void fn_3_1608F0(s32 kind, s32 value, s32 extra);
+extern void fn_80062BE4(Vec* pos);
+extern void* memcpy(void*, const void*, u32);
+extern u8 lbl_3_data_21E18[][2];
+extern u8 lbl_3_common_bss_37400[];
+extern const f32 lbl_3_rodata_3878;
+
+// Flight of a thrown object (idx): bombs (kind 5) blow up at their target player, others can hit a runner.
+void fn_3_1453BC(s32 idx) {
     return;
 }
 
@@ -619,6 +775,7 @@ void fn_3_145AD0(s32 p) {
 }
 
 // .text:0x00145B98 size:0x320 mapped:0x80784C2C
+// Refill each active player's queue of 3 held objects (g_Minigame + 0x1C7E + p * 3) from free object slots.
 void fn_3_145B98(void) {
     return;
 }
@@ -632,7 +789,7 @@ void fn_3_145EB8(void) {
     for (i = 0; i < 50; i++) {
         v = g_Minigame[i + 0x193A];
         if (v == 5 || v == 6) {
-            ((void (*)(s32))fn_3_1453BC)(i);
+            fn_3_1453BC(i);
         } else if (v == 2) {
             fn_3_145AD0(i);
         }
@@ -692,6 +849,10 @@ void fn_3_1461A4(void) {
 }
 
 // .text:0x00146408 size:0x520 mapped:0x8078549C
+extern s32 fn_3_108854(void);
+extern u16 lbl_3_data_81FC[];
+
+// Per-frame update of the minigame.
 void fn_3_146408(void) {
     return;
 }
@@ -724,6 +885,20 @@ void fn_3_1469CC(void) {
 }
 
 // .text:0x00146A90 size:0x730 mapped:0x80785B24
+extern void fn_3_59A90(void);
+extern void fn_3_591AC(void);
+extern void fn_3_58870(void);
+extern void fn_3_6E24C(int rosterID, int fielderIdx);
+extern void fn_3_157588(int);
+extern void minigamesSetSomePointers(void);
+extern void minigamesGXStuff(void);
+extern void minigamesSetSomePointers2(void);
+extern s32 g_Scores; // TODO type: first field (inning) of GameScores
+extern u8 lbl_3_data_2127C[][5];
+extern u8 lbl_3_data_21E08[];
+extern const f32 lbl_3_rodata_387C;
+
+// Minigame init (first call), then the texture for the TEV hook.
 void fn_3_146A90(void) {
     return;
 }
