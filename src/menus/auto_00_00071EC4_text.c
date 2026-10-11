@@ -2609,3 +2609,57 @@ void fn_2_7E380(u8* o, s32 index) {
     }
 }
 #endif
+
+// fn_2_7E974, size:0x508
+// NONMATCHING 70%: orig unrolls the 9-slot loop by 3; slot offsets folded into load displacements
+#if NONMATCHING
+void fn_2_7E974(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        s8 other;
+        s32 j;
+        MN_OBJ2(o, index, 0xC)->flags |= 2;
+        MN_OBJ2(o, index, 0x12)->flags |= 2;
+        MN_OBJ2(o, index, 0xC)->frame = 0;
+        MN_OBJ2(o, index, 0xC)->state = 1;
+        MN_OBJ2(o, index, 0xE)->frame = 0;
+        MN_OBJ2(o, index, 0xE)->state = 1;
+        MN_OBJ2(o, index, 0x10)->frame = lbl_8034E9A0[0x470D + index] << 16;
+        MN_OBJ2(o, index, 0x12)->frame = 0;
+        MN_OBJ2(o, index, 0x12)->state = 1;
+        MN_OBJ2(o, index, 0x14)->frame = lbl_8034E9A0[0x470D + index] << 16;
+        MN_OBJ2(o, index, 0xB6)->flags &= ~2;
+        MN_OBJ2(o, index, 0x1C)->frame = 0xA0000;
+        MN_OBJ2(o, index, 0x1C)->state = 1;
+        MN_OBJ2(o, index, 0x6A)->frame = 0xA0000;
+        MN_OBJ2(o, index, 0x6A)->state = 1;
+        MN_OBJ2(o, index, 0x93)->frame = 0xA0000;
+        MN_OBJ2(o, index, 0x93)->state = 4;
+        MN_OBJ2(o, index, 0x8F)->frame = 0xA0000;
+        MN_OBJ2(o, index, 0x8F)->state = 4;
+        MN_OBJ2(o, index, 0x89)->frame = 0x50000;
+        MN_OBJ2(o, index, 0x89)->state = 1;
+        MN_OBJ2(o, index, 0x97)->state = 4;
+        MN_OBJ2(o, index, 0xAC)->state = 4;
+        if (g_d_GameSettings._10 == 0) {
+            other = (s8)lbl_8034E9A0[0x46F8] == 0;
+            if (lbl_2_bss_F468[0x38] != 0) {
+                MN_OBJ(o, 0x98)->state = 4;
+            }
+        }
+        if (g_d_GameSettings._10 == 0 && lbl_2_bss_F468[0x37] != 0 && index == 0) {
+            for (j = 0; j < 9; j++) {
+                MN_OBJ2(o, j, 9 + 0x46)->flags |= 2;
+                MN_OBJ2(o, j, 9 + 0x46)->anim = other + 0x11;
+                MN_OBJ2(o, j, 9 + 0x46)->frame = 0;
+                MN_OBJ2(o, j, 9 + 0x46)->state = 0;
+            }
+            MN_OBJ2(o, other, 0x8F)->state = 1;
+            MN_OBJ2(o, other, 0x91)->frame = 0;
+            MN_OBJ2(o, other, 0x91)->state = 1;
+        }
+        fn_800626EC(index);
+        *e = 1;
+    }
+}
+#endif
