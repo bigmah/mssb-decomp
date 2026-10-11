@@ -404,7 +404,16 @@ BOOL fn_800697B0(void) {
 
 // .text:0x80069854 size:0xA4
 void fn_80069854(void) {
-    return;
+    s32 team;
+    s32 i;
+
+    for (team = 0; team < 2; team++) {
+        for (i = 0; i < 9; i++) {
+            if (lbl_8034E9A0.captain[team] == inMemRoster[team][i].stats.CharID) {
+                lbl_8034E9A0.captainSlot[team] = i;
+            }
+        }
+    }
 }
 
 // .text:0x800698F8 size:0x170
