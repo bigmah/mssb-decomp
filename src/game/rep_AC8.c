@@ -14,6 +14,10 @@ extern u8 g_Strikes[];
 extern u8 g_Ball[];
 extern u8 g_Fielders[];
 extern s16 lbl_3_data_1C3C[];
+extern f32 lbl_3_data_450C[][2];
+extern f32 lbl_3_data_4290[][2][2];
+extern f32 lbl_3_rodata_B74;
+int RandomInt_Game(int max);
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
@@ -1322,9 +1326,48 @@ int fn_3_30564(int i) {
 }
 
 // .text:0x0003061C size:0x29C mapped:0x8066F6B0
+// NONMATCHING 85%: original keeps the 0.3 limit in f30 across the loop; ours keeps a table address instead (regalloc/hoisting)
+#if NONMATCHING
 void fn_3_3061C(void) {
-    return;
+    u8* f = g_Fielders;
+    f32* home = lbl_3_data_450C[0];
+    int i;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    for (i = 0; i < 9; i++) {
+        if (f[0x1F1] == 0) {
+            f[0x1F1] = 1;
+            *(f32*)f = lbl_3_data_4290[g_d_GameSettings[9]][*(int*)(g_GameLogic + 0x10) ^ 1][0];
+            *(f32*)(f + 4) = 0.0f;
+            *(f32*)(f + 8) = lbl_3_data_4290[g_d_GameSettings[9]][*(int*)(g_GameLogic + 0x10) ^ 1][1];
+            *(f32*)(f + 0x14) = home[0];
+            *(f32*)(f + 0x1C) = home[1];
+            *(s16*)(f + 0x1A6) = RandomInt_Game(30);
+        }
+        dz = *(f32*)(f + 0x1C) - *(f32*)(f + 8);
+        dx = *(f32*)(f + 0x14) - *(f32*)f;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        if (d < lbl_3_rodata_BB8 || *(s16*)(f + 0x1A6) > *(u16*)(g_GameLogic + 0xFC)) {
+            *(f32*)(f + 0x30) = 0.0f;
+            *(f32*)(f + 0x34) = 0.0f;
+            *(f32*)(f + 0x50) = 0.0f;
+        } else {
+            *(f32*)(f + 0x30) = lbl_3_rodata_B74 * (dx / d) - lbl_3_rodata_B48;
+            *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+            *(f32*)(f + 0x34) = lbl_3_rodata_B74 * (dz / d) - lbl_3_rodata_B48;
+            *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+            *(f32*)(f + 0x50) = lbl_3_rodata_B74;
+        }
+        home += 2;
+        f += 0x268;
+    }
+    fn_3_313B0();
+    g_FieldingLogic[0x118] = 0;
+    *(s16*)(g_Ball + 0x1B66) = 100;
 }
+#endif
 
 // .text:0x000308B8 size:0x1A0 mapped:0x8066F94C
 void fn_3_308B8(int i, f32 x, f32 z) {
