@@ -19,7 +19,48 @@ extern PadState lbl_803C77B8[4];
 
 // .text:0x000282F4 size:0x1B4
 void fn_1_282F4(void) {
-    return;
+    ChMovieWork* w = &lbl_1_bss_47058;
+    ChMovieTask* task = lbl_803CC1B8;
+    u32 size;
+
+    switch (task->state) {
+    case 0:
+        w->player = _OSAllocFromHeap(0x20, sizeof(ThpPlayer));
+        memset(w->player, 0, sizeof(ThpPlayer));
+        w->readBufSize = 0x400000;
+        w->readBuf = _OSAllocFromHeap(0x20, 0x400000);
+        fn_800ADC40(w->readBuf, w->readBufSize);
+        task->state++;
+        break;
+    case 1:
+        fn_800ADB04(&lbl_1_data_112D8[task->movieIdx], w->player, 1, 0);
+        task->state++;
+    case 2:
+        if (fn_800ADAFC() != 0) {
+            size = fn_800AD6BC(w->player);
+            w->work = _OSAllocFromHeap(0x20, size);
+            fn_800AD500(w->player, w->work);
+            fn_800AD95C(w->player, 1);
+            task->state++;
+        }
+        break;
+    case 3:
+        if (lbl_803C77B8[0].down & 0x200) {
+            fn_800AD830(w->player);
+            task->state++;
+        }
+    case 4:
+        if (fn_800AD780(w->player)) {
+            fn_800AD9F4(w->player);
+            fn_800ADBFC();
+            fn_800AD038(lbl_80366158[2]);
+            task->state = 0;
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_284A8;
+        } else {
+            fn_800AD070();
+        }
+        break;
+    }
 }
 
 // .text:0x000284A8 size:0x84
