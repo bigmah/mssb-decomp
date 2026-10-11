@@ -1621,9 +1621,96 @@ void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial) {
 }
 
 // .text:0x800AB534 size:0x5E0
+// NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+#if NONMATCHING
 void fn_800AB534(void) {
-    return;
+    CardNameTask* task = (CardNameTask*)lbl_803CC1B8;
+    CardSlot* slot;
+    s32 res;
+
+    switch (task->step) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+        CardMountSteps(&task->step, task->chan, task->mode, 9);
+        break;
+    case 4:
+        CardCheckResultStep(&task->step, task->chan, 9);
+        break;
+    case 5:
+        CardSerialStep(&task->step, task->chan, 9);
+        break;
+    case 6:
+        switch (CardFileExists(task->chan, task->fileName)) {
+        case 0:
+            task->outcome = 0;
+            task->step = 8;
+            break;
+        case 1:
+            task->step = 7;
+            break;
+        case 2:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 7:
+        slot = &lbl_803C7838.slots[task->chan];
+        res = CARDFreeBlocks(task->chan, &slot->bytesFree, &slot->filesFree);
+        if (res >= 0) {
+            slot = &lbl_803C7838.slots[task->chan];
+            slot->blocksFree = slot->bytesFree / slot->sectorSize;
+            slot->blocksTotal = ((slot->memSize << 20) / 8) / slot->sectorSize - 5;
+        }
+        fn_800ACD64(res);
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            slot = &lbl_803C7838.slots[task->chan];
+            if (slot->filesFree == 0) {
+                task->outcome = 1;
+            } else if (task->arg > slot->blocksFree) {
+                task->outcome = 2;
+            } else {
+                task->outcome = 0;
+            }
+            task->step = 8;
+            break;
+        default:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 8:
+        fn_800ACD64(CARDUnmount(task->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            switch (task->outcome) {
+            case 1:
+                lbl_803C7838.status = 5;
+                break;
+            case 2:
+                lbl_803C7838.status = 6;
+                break;
+            }
+            task->step = 9;
+            break;
+        default:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 9:
+        task->parent->result = 1;
+        fn_800B0A14_removeQueue(task->parent);
+        break;
+    }
 }
+#endif
 
 // .text:0x800ABB14 size:0x4C
 u16 fn_800ABB14(u8* data, s32 len) {
