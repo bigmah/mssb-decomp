@@ -407,7 +407,11 @@ void fn_800A75EC(s32 result, DVDCommandBlock* block) {
 
 // .text:0x800A7670 size:0x4C
 void fn_800A7670(s32 result, DVDCommandBlock* block) {
-    return;
+    SET_STATE_IDLE(DVDSYS_STATE_NONE, 1);
+    if (lbl_803C6CF8.tempBuf != NULL) {
+        fn_800ACF14(lbl_803C6CF8.tempBuf);
+        lbl_803C6CF8.tempBuf = NULL;
+    }
 }
 
 // .text:0x800A76BC size:0xE4
