@@ -148,7 +148,35 @@ void Squad(Quaternion* p, Quaternion* a, Quaternion* b, Quaternion* q, Quaternio
 
 // .text:0x800B560C size:0x79C
 void GetData(u8 type, void* src, f32* dst, u8 count, f32 scale) {
-    return;
+    u8 i;
+
+    switch (type) {
+    case ANIM_COMP_U8:
+        for (i = 0; i < count; i++) {
+            dst[i] = scale * ((u8*)src)[i];
+        }
+        break;
+    case ANIM_COMP_S8:
+        for (i = 0; i < count; i++) {
+            dst[i] = scale * ((s8*)src)[i];
+        }
+        break;
+    case ANIM_COMP_U16:
+        for (i = 0; i < count; i++) {
+            dst[i] = scale * ((u16*)src)[i];
+        }
+        break;
+    case ANIM_COMP_S16:
+        for (i = 0; i < count; i++) {
+            dst[i] = scale * ((s16*)src)[i];
+        }
+        break;
+    case ANIM_COMP_F32:
+        for (i = 0; i < count; i++) {
+            dst[i] = ((f32*)src)[i];
+        }
+        break;
+    }
 }
 
 // .text:0x800B5DA8 size:0x634
