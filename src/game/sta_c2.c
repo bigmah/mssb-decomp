@@ -1694,9 +1694,58 @@ void fn_3_D501C(f32* p) {
 }
 
 // .text:0x000D511C size:0x2A4 mapped:0x807141B0
-void fn_3_D511C(void) {
-    return;
+// Resets an 8-node chain hanging between two pinned ends (nodes 0 and 7).
+static inline void D511C_initChain(RopeNode* r) {
+    f32 one;
+    u32 i;
+    if (r != NULL) {
+        memset(r, 0, sizeof(RopeNode));
+        one = lbl_3_rodata_2698;
+        for (i = 0; i < 8; i++, r++) {
+            if (i == 7) {
+                r->mass = lbl_3_data_188E0;
+                r->damp = lbl_3_rodata_2694;
+                r->pinned = 1;
+            } else {
+                if (i == 0) {
+                    r->pinned = 1;
+                }
+                r->mass = lbl_3_data_188E0;
+                r->damp = lbl_3_rodata_2694;
+            }
+            r->invMass = one / r->mass;
+            memset(&r->pos, 0, sizeof(Vec) * 2);
+            memset(&r->vel, 0, sizeof(Vec));
+            memset(&r->force, 0, sizeof(Vec));
+        }
+    }
 }
+
+static inline void D511C_initCfg(CC438Cfg* g) {
+    f32 one;
+    g->a = lbl_3_rodata_269C;
+    g->b = lbl_3_rodata_26A0;
+    g->c = lbl_3_rodata_26A4;
+    g->d = lbl_3_rodata_26A8;
+    g->e = lbl_3_rodata_26AC;
+    g->f = lbl_3_rodata_26B0;
+    g->n = 8;
+    one = lbl_3_rodata_2698;
+    g->h = one / (f32)g->n / lbl_3_rodata_26B4;
+    g->hh = g->h * g->h;
+    g->inv = one / (lbl_3_rodata_26B8 * g->h);
+}
+
+// NONMATCHING ~90%: same code, but register choice/scheduling around the cfg base pointer differs
+#if NONMATCHING
+void fn_3_D511C(void) {
+    u8* b = lbl_3_bss_A018;
+    memset(b + 0x890, 0, sizeof(CC438Cfg));
+    D511C_initCfg((CC438Cfg*)(b + 0x890));
+    D511C_initChain((RopeNode*)(b + 0xBB8));
+    D511C_initChain((RopeNode*)(b + 0x9B8));
+}
+#endif
 
 // .text:0x000D53C0 size:0x84 mapped:0x80714454
 s32 fn_3_D53C0(u8 id) {
