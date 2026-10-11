@@ -216,9 +216,54 @@ void fn_3_13E174(u8 a) {
     fn_800528AC((fn_800528AC_parameter)fn_3_13DFBC);
 }
 // .text:0x0013E21C size:0x188 mapped:0x8077D2B0
+// NONMATCHING 97%: register allocation and prologue scheduling differ in the 4-runner loop
+#if NONMATCHING
 void fn_3_13E21C(RepTarget* t) {
-    return;
+    s32 hits[4];
+    s32* out;
+    s32 n;
+    s32 i;
+    s32 pick;
+    f32 d;
+    f32 lim;
+    lim = lbl_3_data_218BC[11];
+    out = hits;
+    n = 0;
+    for (i = 0; i < 4; i++) {
+        hits[i] = 0;
+        if (REP_MG->_18FC[i] >= 0) {
+            d = t->bases - g_Runners[i].fractionalBasesRan;
+            if (d < 0.0f) {
+                d += lbl_3_rodata_3738;
+            }
+            if (d > lbl_3_rodata_3758) {
+                d = lbl_3_rodata_3738 - d;
+            }
+            if (d <= lim) {
+                *out++ = i;
+                n++;
+            }
+        }
+    }
+    if (n != 0) {
+        pick = hits[RandomInt_Game(n)];
+        REP_MG->_1D74 = pick;
+        REP_MG->_1D58 = lbl_3_data_21924[2];
+        t->active = 0;
+        t->timer = lbl_3_data_21924[0];
+        fn_3_90064(0x2F6);
+        fn_3_16C394(pick);
+        return;
+    }
+    if (REP_MG->phase != 2 && REP_MG->phase != 3) {
+        t->timer--;
+    }
+    if (t->timer <= 0) {
+        t->active = 0;
+        t->timer = lbl_3_data_21924[0];
+    }
 }
+#endif
 
 // .text:0x0013E3A4 size:0x2CC mapped:0x8077D438
 void fn_3_13E3A4(RepTarget* t) {
