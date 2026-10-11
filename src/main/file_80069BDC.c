@@ -87,7 +87,7 @@ void fn_8006C088(void) {
 
 // .text:0x8006C0D0 size:0x30
 void fn_8006C0D0(void) {
-    return;
+    fn_800B0A5C_insertQueue(fn_8006BE00, lbl_803CC1B8->priority);
 }
 
 // .text:0x8006C100 size:0x3C
