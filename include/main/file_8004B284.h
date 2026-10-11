@@ -86,7 +86,7 @@ s32 fn_8001B728(s32 playerIdx, s32 kind, Vec* out);
 void fn_80030D88(Vec* pos, Vec* dir, void* params, int kind);
 void fn_8001D180(s32 playerIdx, u32 part, s32 alt);
 void fn_800B2B74(GameActor* actor, u16 bone);
-void fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16 srcBone);
+struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16 srcBone);
 void fn_800B2BE4(GameActor* actor, u16 bone);
 
 // Per-character swing effect callbacks (table lbl_800FBE64) share this signature.

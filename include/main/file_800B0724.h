@@ -38,4 +38,5 @@ void fn_800B2B4C(GameActor* actor, f32 value);void fn_800B2B54(GameActor* actor,
 
 void Set_FUN_800b2b6c(GameActor* actor, s32 value);void fn_800B2B74(GameActor* actor, u16 bone);
 
+struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16 srcBone);
 #endif

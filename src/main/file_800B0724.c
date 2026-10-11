@@ -327,8 +327,16 @@ void fn_800B2B74(GameActor* actor, u16 bone) {
 }
 
 // .text:0x800B2BA8 size:0x3C
-void fn_800B2BA8(void) {
-    return;
+// Gives a bone another actor's bone's display object (or none); returns the old one.
+struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16 srcBone) {
+    GameBone* dst = actor->boneArray[bone];
+    struct DODisplayObj* old = dst->dispObj;
+    if (src != NULL) {
+        dst->dispObj = src->boneArray[srcBone]->dispObj;
+    } else {
+        dst->dispObj = NULL;
+    }
+    return old;
 }
 
 // .text:0x800B2BE4 size:0x18
