@@ -785,9 +785,10 @@ void fn_3_EF408(u8* p) {
     p[0xC6] = 0;
 }
 
-// 60%: two box-edge loops; lfsx/addi index pattern and per-loop register numbering differ
 #pragma dont_inline on
 // .text:0x000EF55C size:0x258 mapped:0x8072E5F0
+// NONMATCHING 92%: two box-edge loops; lfsx/addi index pattern and per-loop register numbering differ
+#if NONMATCHING
 u32 fn_3_EF55C(Vec p, u8 idx) {
     u8 a[4] = {1, 3, 0, 2};
     u8 b[4] = {0, 1, 2, 3};
@@ -848,6 +849,7 @@ u32 fn_3_EF55C(Vec p, u8 idx) {
     }
     return 0;
 }
+#endif
 
 // .text:0x000EF7B4 size:0x4C mapped:0x8072E848
 u32 fn_3_EF7B4(V3i v, s32 x) {
