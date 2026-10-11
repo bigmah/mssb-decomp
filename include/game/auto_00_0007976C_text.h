@@ -2,9 +2,11 @@
 #define __AUTO_00_0007976C_TEXT_GAME_H__
 
 #include "mssbTypes.h"
+#include "game/auto_00_000759BC_text.h"
 
 void fn_3_7976C(void);
 void fn_3_79A00(void);
+void fn_3_79ACC(void);
 void fn_3_79DD4(void);
 void fn_3_79EF4(void);
 void fn_3_7AB34(void);
@@ -16,8 +18,8 @@ void fn_3_7AEEC(void);
 void fn_3_7AF68(void);
 void fn_3_7AFE4(void);
 void fn_3_7B130(void);
-u8* fn_3_7BB74(void);
-u8* fn_3_7BBC0(void);
+BattingRecord* fn_3_7BB74(void);
+PitchingRecord* fn_3_7BBC0(void);
 void fn_3_7BBF8(void);
 void fn_3_7BC0C(void);
 void fn_3_7C190(void);

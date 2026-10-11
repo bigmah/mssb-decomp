@@ -53,7 +53,8 @@ typedef struct BattingRecord {
     /*0x19*/ u8 _19[0x22 - 0x19];
     /*0x22*/ u8 _22;
     /*0x23*/ u8 _23;
-    /*0x24*/ u8 _24[2];
+    /*0x24*/ u8 starSwingHits; // star swings that connected
+    /*0x25*/ u8 _25;
 } BattingRecord; // size: 0x26
 
 // lbl_803535C8: per-player pitching record, [2 teams][9].
