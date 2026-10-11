@@ -3760,9 +3760,111 @@ int fn_3_3C484(int i) {
 }
 
 // .text:0x0003C594 size:0x5F8 mapped:0x8067B628
-void fn_3_3C594(void) {
-    return;
+#pragma dont_inline off
+/* drop fielder i's base assignment (FieldingLogic+0xD0 slots / +0xD8) */
+static inline void ReleaseBaseInline(u8* f, int i) {
+    s16 k = *(s16*)(f + 0x18C);
+    if (k >= 0) {
+        if (k <= 3) {
+            if (((s16*)(g_FieldingLogic + 0xD0))[k] == i) {
+                ((s16*)(g_FieldingLogic + 0xD0))[k] = -1;
+                g_FieldingLogic[k + 0x101] = 0;
+            }
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            if (f[0x1D3] == 1) {
+                SetFielderActP(f, i, 12, 0x60);
+            }
+        } else if (k == 5) {
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            *(s16*)(g_FieldingLogic + 0xD8) = -1;
+            g_FieldingLogic[0x105] = 0;
+            if (f[0x1D3] == 14) {
+                SetFielderActP(f, i, 12, 0x60);
+            }
+        }
+    }
 }
+#pragma dont_inline on
+extern f32 lbl_3_rodata_C10;
+extern f32 lbl_3_rodata_C14;
+// NONMATCHING 77%: our loop hoists the float constants and indexes the base arrays (lhax/sthx) where the original strength-reduces FieldingLogic/fielder pointers
+#if NONMATCHING
+int fn_3_3C594(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s32 k;
+    s32 owner;
+    f32 me;
+    f32 theirs;
+    s16 holder = *(s16*)(g_Ball + 0x1B78);
+    f32 dist = *(f32*)(g_Ball + 0x1A00);
+    f32 spd = *(f32*)(g_Ball + 0x1A14);
+    s16 ang = *(s16*)(g_Ball + 0x1B80);
+    for (k = 0; k < 4; k++) {
+        if (g_FieldingLogic[k + 0x101] != 0) {
+            continue;
+        }
+        owner = ((s16*)(g_FieldingLogic + 0xD0))[k];
+        if (holder == owner) {
+            continue;
+        }
+        me = ((f32*)(f + 0xA8))[k];
+        if (me < lbl_3_rodata_B60) {
+            goto take;
+        }
+        theirs = ((f32*)(g_Fielders + owner * 0x268 + 0xA8))[k];
+        if (!(me < theirs - lbl_3_rodata_B68)) {
+            continue;
+        }
+        if (i != 0 || !(dist < lbl_3_rodata_C10) || !(spd < lbl_3_rodata_C14)) {
+            goto take;
+        }
+        if (k == 1 && ang > 0x200 && ang < 0x400) {
+            if (me < theirs - lbl_3_rodata_B64) {
+                goto take;
+            }
+        } else if (k != 3 || ang <= 0x400 || ang >= 0x600 || me < theirs - lbl_3_rodata_B64) {
+            goto take;
+        }
+    }
+    owner = *(s16*)(g_FieldingLogic + 0xD8);
+    if (g_FieldingLogic[0x105] == 0 && owner != -1 &&
+        (*(f32*)(f + 0xB8) < lbl_3_rodata_B64 ||
+         lbl_3_rodata_B78 + *(f32*)(f + 0xB8) < *(f32*)(g_Fielders + owner * 0x268 + 0xB8))) {
+        goto take_cutoff;
+    }
+    return 0;
+take:
+    /* take base k from its current owner */
+    if (*(s16*)(g_Ball + 0x1B8A) == owner) {
+        *(s16*)(g_Ball + 0x1B8A) = i;
+    }
+    if (owner >= 0) {
+        u8* o = g_Fielders + owner * 0x268;
+        ReleaseBaseInline(o, owner);
+        SetFielderAct(owner, 12, 0x60);
+        g_Fielders[owner * 0x268 + 0x1D5] = 3;
+    }
+    *(s16*)(f + 0x18C) = k;
+    f[0x1D7] = 1;
+    SetFielderAct(i, 1, 8);
+    ((s16*)(g_FieldingLogic + 0xD0))[k] = i;
+    return 1;
+take_cutoff:
+    if (owner >= 0 && holder != owner) {
+        u8* o = g_Fielders + owner * 0x268;
+        ReleaseBaseInline(o, owner);
+        SetFielderAct(owner, 12, 0x60);
+        g_Fielders[owner * 0x268 + 0x1D5] = 4;
+    }
+    *(s16*)(f + 0x18C) = 5;
+    f[0x1D7] = 2;
+    SetFielderAct(i, 0xE, 0x70);
+    *(s16*)(g_FieldingLogic + 0xD8) = i;
+    return 1;
+}
+#endif
 
 // .text:0x0003CB8C size:0x124 mapped:0x8067BC20
 int fn_3_3CB8C(int i) {
