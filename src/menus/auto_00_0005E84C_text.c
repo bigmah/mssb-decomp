@@ -323,9 +323,8 @@ void fn_2_6051C(void) {
 }
 
 // .text:0x000607DC size:0x18C
-// NONMATCHING 99%: the original saw fn_8006C268 as returning int (extra extsh before fn_8006C100)
-#if NONMATCHING
 void fn_2_607DC(MenuTask* task, MenuItem* item) {
+    s32 total;
     s16 ev = fn_2_53BC8(item);
     if (ev != -1) {
         item->state = ev;
@@ -336,8 +335,8 @@ void fn_2_607DC(MenuTask* task, MenuItem* item) {
         item->state = 0x26;
         break;
     case 2:
-        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C =
-            fn_8006C100(fn_8006C268((struct StatOutput*)lbl_2_bss_1A824C->stats)) << 16;
+        total = fn_8006C268((struct StatOutput*)lbl_2_bss_1A824C->stats);
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = fn_8006C100(total) << 16;
         lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
         item->state = 0x25;
         break;
@@ -355,7 +354,6 @@ void fn_2_607DC(MenuTask* task, MenuItem* item) {
         break;
     }
 }
-#endif
 
 // .text:0x00060968 size:0x188
 void fn_2_60968(MenuTask* task, MenuItem* item) {
