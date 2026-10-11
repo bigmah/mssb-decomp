@@ -18,6 +18,8 @@ extern s32 fn_8005268C(void);
 extern camera_803c639c_s* fn_80052768_getCamera(int index);
 extern Rep3310BallCfg lbl_3_data_2265C;
 extern f64 acos(f64);
+extern f64 sin(f64);
+extern f64 cos(f64);
 extern void* memcpy(void* dst, const void* src, u32 n);
 extern u8 lbl_3_common_bss_32724[];
 extern u8 g_GameLogic[];
@@ -322,9 +324,75 @@ void fn_3_117AE4(void) {
 }
 
 // .text:0x00117B78 size:0x450 mapped:0x80756C0C
-void fn_3_117B78(void) {
-    return;
+// NONMATCHING 92%: (measured with the rodata externs) the original builds -1.5 with fneg and schedules the rotation math differently
+#if NONMATCHING
+// Draws the square ground marker under sprite idx, rotated by its yaw (rot[1]).
+void fn_3_117B78(s32 idx) {
+    f32 uv[4][2] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+    Vec quad[4];
+    Vec tmp;
+    GXColor color;
+    Rep3310Sprite* e = &lbl_8036E548.sprites[idx];
+    u32 k;
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_TEXC, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+
+    quad[0].x = -1.5f;
+    quad[0].z = 1.5f;
+    quad[1].x = 1.5f;
+    quad[1].z = 1.5f;
+    quad[2].x = 1.5f;
+    quad[2].z = -1.5f;
+    quad[3].x = -1.5f;
+    quad[3].z = -1.5f;
+    for (k = 0; k < 4; k++) {
+        f32 s;
+        f32 c;
+        memcpy(&tmp, &quad[k], sizeof(Vec));
+        s = sin(-e->rot[1]);
+        quad[k].x = tmp.x * (f32)cos(-e->rot[1]) + tmp.z * -s;
+        c = cos(-e->rot[1]);
+        quad[k].z = tmp.x * (f32)sin(-e->rot[1]) + tmp.z * c;
+    }
+    for (k = 0; k < 4; k++) {
+        quad[k].x += e->pos[0];
+        quad[k].y = -0.06f;
+        quad[k].z += e->pos[2];
+    }
+    color.r = 0;
+    color.g = 0;
+    color.b = 0;
+    color.a = 0x9B;
+
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, GX_PERSPECTIVE);
+    fn_80033B58(*(struct TexArchive**)(lbl_3_common_bss_32724 + 0x6C), 0x14, GX_CLAMP, GX_CLAMP); // TODO type
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (k = 0; k < 4; k++) {
+        GXPosition3f32(quad[k].x, quad[k].y, quad[k].z);
+        GXColor1u32(*(u32*)&color);
+        GXTexCoord2f32(uv[k][0], uv[k][1]);
+    }
 }
+#endif
 
 // .text:0x00117FC8 size:0xDC mapped:0x8075705C
 extern const f32 lbl_3_rodata_33CC;
