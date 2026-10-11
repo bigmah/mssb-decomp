@@ -1443,15 +1443,14 @@ extern f32 lbl_3_rodata_3660;
 void fn_3_136CF4(u8* o) {
     u8* g = G8;
     s32 pu;
-    s16 t;
+    u8 raw;
     f32 ang;
-    pu = (s8)g[0x1D74];
+    raw = g[0x1D74];
+    pu = (s8)raw;
     if (pu != -1) {
-        t = *(s16*)(g + 0x1D58);
-        *(s16*)(g + 0x1D58) = --t;
-        if (t <= 0) {
+        if (--*(s16*)(g + 0x1D58) <= 0) {
             if ((s8)g[0x1D6D] != pu) {
-                fn_800115C8(g[0x1D74]);
+                fn_800115C8(raw);
             }
             ((s8*)g)[0x1D74] = -1;
         }
@@ -1480,7 +1479,7 @@ void fn_3_136CF4(u8* o) {
 void fn_3_136EA4(void) {
     u8* g = G8;
     s32 pu;
-    s16 t;
+    u8 raw;
     f32 ang;
     if (g[0x190B] != 0) {
         ((s8*)g)[0x1D74] = -1;
@@ -1488,13 +1487,12 @@ void fn_3_136EA4(void) {
     } else if (g[0xCCE] != 0) {
         ((void (*)(u8*))fn_3_13688C)(g + 0xCB0);
     } else {
-        pu = (s8)g[0x1D74];
+        raw = g[0x1D74];
+        pu = (s8)raw;
         if (pu != -1) {
-            t = *(s16*)(g + 0x1D58);
-            *(s16*)(g + 0x1D58) = --t;
-            if (t <= 0) {
+            if (--*(s16*)(g + 0x1D58) <= 0) {
                 if ((s8)g[0x1D6D] != pu) {
-                    fn_800115C8(g[0x1D74]);
+                    fn_800115C8(raw);
                 }
                 ((s8*)g)[0x1D74] = -1;
             }
