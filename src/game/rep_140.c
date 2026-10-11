@@ -1,22 +1,131 @@
 #include "game/rep_140.h"
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
+#include "main/file_80022DAC.h"
 
+
+inline f32 fn_3_14A4_inline(f32 distance, const f32* endLengths, const f32* values, const f32* curvature, int keyCount) {
+    int segment = 0;
+    int end = keyCount - 1;
+    while (segment < end) {
+        int half = (segment + end) / 2;
+        if (endLengths[half] < distance) {
+            segment = half + 1;
+        } else {
+            end = half;
+        }
+    }
+    if (segment > 0) {
+        segment--;
+    }
+
+    {
+        f32 localTime = distance - endLengths[segment];
+        f32 intervalLength = endLengths[segment + 1] - endLengths[segment];
+        f32 linearCoeffecient = -(intervalLength * (2.0f * curvature[segment] + curvature[segment + 1]) - (values[segment + 1] - values[segment]) / intervalLength);
+
+        return values[segment] + localTime * (localTime * (3.0f * curvature[segment] + (localTime * (curvature[segment + 1] - curvature[segment])) / intervalLength) + linearCoeffecient);
+    }
+}
+
+inline void fn_3_19B0_inline(f32 distance, VecXZ* out, const f32* valuesX, const f32* valuesZ, const f32* endLengths,
+                const f32* curvatureX, const f32* curvatureZ, int keyCount) {
+    out->x = fn_3_14A4_inline(distance, endLengths, valuesX, curvatureX, keyCount);
+    out->z = fn_3_14A4_inline(distance, endLengths, valuesZ, curvatureZ, keyCount);
+}
 
 // .text:0x0000310C size:0x4C8 mapped:0x806421A0
-void fn_3_310C(void) {
-    return;
+void fn_3_310C(Vec* out, Vec* points, int count, int steps) {
+    f32 timings[2][17];
+    f32 curveX[2][17];
+    f32 curveYZ[2][17];
+    f32 valuesX[17];
+    f32 valuesY[17];
+    f32 valuesZ[17];
+    VecXZ xy;
+    VecXZ xz;
+    int i;
+    for (i = 0; i < count; i++) {
+        valuesX[i] = points[i].x;
+        valuesY[i] = points[i].y;
+        valuesZ[i] = points[i].z;
+    }
+    fn_3_1B24(valuesX, valuesY, timings[0], curveX[0], curveYZ[0], count);
+    fn_3_1B24(valuesX, valuesZ, timings[1], curveX[1], curveYZ[1], count);
+    for (i = 0; i < steps; i++) {
+        f32 frame = (f32)i / (f32)(steps - 1);
+        fn_3_19B0_inline(frame, &xy, valuesX, valuesY, timings[0], curveX[0], curveYZ[0], count);
+        out[i].x = xy.x;
+        out[i].y = xy.z;
+        fn_3_19B0_inline(frame, &xz, valuesX, valuesZ, timings[1], curveX[1], curveYZ[1], count);
+        out[i].z = xz.z;
+    }
 }
 
 // .text:0x00002D6C size:0x3A0 mapped:0x80641E00
-void fn_3_2D6C(void) {
-    return;
+void fn_3_2D6C(Vec* out, VecQueue* queue, int steps) {
+    f32 timings[2][17];
+    f32 curveX[2][17];
+    f32 curveYZ[2][17];
+    f32 valuesX[17];
+    f32 valuesY[17];
+    f32 valuesZ[17];
+    Vec point;
+    VecXZ xy;
+    VecXZ xz;
+    int i;
+    int count;
+    if (queue == NULL) {
+        return;
+    }
+    count = queue->count;
+    fn_80023DFC(queue, &point);
+    i = 0;
+    do {
+        valuesX[i] = point.x;
+        valuesY[i] = point.y;
+        valuesZ[i] = point.z;
+        i++;
+    } while (fn_80023D98(queue, &point) != 0);
+    fn_3_1B24(valuesX, valuesY, timings[0], curveX[0], curveYZ[0], count);
+    fn_3_1B24(valuesX, valuesZ, timings[1], curveX[1], curveYZ[1], count);
+    for (i = 0; i < steps; i++) {
+        f32 frame = (f32)i / (f32)(steps - 1);
+        fn_3_19B0_inline(frame, &xy, valuesX, valuesY, timings[0], curveX[0], curveYZ[0], count);
+        out[i].x = xy.x;
+        out[i].y = xy.z;
+        fn_3_19B0_inline(frame, &xz, valuesX, valuesZ, timings[1], curveX[1], curveYZ[1], count);
+        out[i].z = xz.z;
+    }
 }
 
 // .text:0x000028E4 size:0x488 mapped:0x80641978
-void fn_3_28E4(Vec*, Vec* arr, int count, f32 f1) {
-    return;
+// NONMATCHING 99%: only r29/r30 swapped between count and &curveYZ[1] (declaration order and VecXZ helper forms don't change it)
+#if NONMATCHING
+void fn_3_28E4(Vec* out, Vec* points, int count, f32 frame) {
+    int i;
+    f32 valuesX[17];
+    f32 valuesY[17];
+    f32 valuesZ[17];
+    f32 timings[17];
+    f32 curveX[17];
+    f32 curveYZ[17];
+    VecXZ xy;
+    VecXZ xz;
+    for (i = 0; i < count; i++) {
+        valuesX[i] = points[i].x;
+        valuesY[i] = points[i].y;
+        valuesZ[i] = points[i].z;
+    }
+    fn_3_1B24(valuesX, valuesY, timings, curveX, curveYZ, count);
+    fn_3_19B0_inline(frame, &xy, valuesX, valuesY, timings, curveX, curveYZ, count);
+    out->x = xy.x;
+    out->y = xy.z;
+    fn_3_1B24(valuesX, valuesZ, timings, curveX, curveYZ, count);
+    fn_3_19B0_inline(frame, &xz, valuesX, valuesZ, timings, curveX, curveYZ, count);
+    out->z = xz.z;
 }
+#endif
 
 // .text:0x000025E0 size:0x304 mapped:0x80641674
 void running_roundBasePosition(f32 frame, VecXZ* outPos, VecXZ* points, int count) {

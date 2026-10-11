@@ -1,5 +1,6 @@
 #include "game/m_sound.h"
 #include "header_rep_data.h"
+#include "main/file_80011640.h"
 
 typedef struct SndState34C58 {
     s32 unk0;
@@ -10,12 +11,24 @@ typedef struct SndState34C58 {
     s32 unk14;
     s32 unk18;
     s32 unk1C;
-    u8 pad20[8];
+    s16 unk20;
+    s16 unk22;
+    s16 unk24;
+    u8 unk26; // crowd reaction level for the current play
+    u8 unk27;
     u8 unk28;
-    u8 pad29[6];
+    u8 unk29;
+    u8 unk2A;
+    u8 unk2B; // swing sound pending
+    u8 unk2C;
+    u8 unk2D;
+    u8 unk2E; // victory jingle playing
     u8 unk2F;
-    u8 pad30[3];
+    u8 unk30;
+    u8 unk31;
+    u8 unk32; // 1: game-start fanfare, 2: inning fanfare
     u8 unk33;
+    u8 unk34; // pitch-release sound played
 } SndState34C58;
 extern SndState34C58 lbl_3_common_bss_34C58;
 #define S34C58 lbl_3_common_bss_34C58
@@ -47,7 +60,18 @@ extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
 extern void sndRemoveEmitter(void*);
 extern u8 lbl_3_bss_1760[];
-typedef struct Snd1760 { u8 pad0; u8 on; u8 pad2[0xE]; u8 lo; u8 hi; } Snd1760;
+// View over the pooled m_sound .bss statics starting at lbl_3_bss_1760
+// (0x10/0x11 live in lbl_3_bss_176C, 0x18/0x1C in lbl_3_bss_1774).
+typedef struct Snd1760 {
+    u8 starSwingDone;
+    u8 on;
+    u8 pad2[0xE];
+    u8 lo;
+    u8 hi;
+    u8 pad12[6];
+    u32 swingVid;
+    u32 pitchVid;
+} Snd1760;
 extern u16 fn_800A8864(void);
 extern void fn_800A8878(u8, u8);
 extern s32 fn_3_1650C(int* outX, int* outY, s32 r5, f32 pX, f32 pY, f32 pZ);
@@ -58,6 +82,18 @@ extern u8 lbl_800EF808[];
 extern void* lbl_3_bss_1768;
 extern void fn_3_8B094(void);
 #include "musyx/musyx.h"
+extern u16 lbl_3_data_8168[];
+extern u8 lbl_3_data_8530[];
+extern u8 lbl_3_data_8338[];
+extern u32 sndSeqGetValid(u32);
+extern u32 sndSeqPlayEx(u16 sgid, u16 sid, void* arrfile, void* para, u8 studio);
+extern u32* lbl_3_bss_1774;
+extern u8 lbl_3_data_88E0[];
+extern u8 lbl_3_data_830C[];
+extern u8 lbl_3_data_8148[];
+extern u8 lbl_800EF808[];
+extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
+extern u8 lbl_3_data_8148[];
 
 void fn_3_902FC(void) {
     sndVolume(0, 10, 0xFF);
@@ -79,6 +115,67 @@ s32 fn_3_8B258(u8 a, u8 b, u8 c) {
 void fn_3_8B2E4(void) {
     lbl_3_bss_1768 = fn_800B0A5C_insertQueue(fn_3_8B094, 0);
 }
+
+// .text:0x0008B318 size:0x400
+// Sets the per-voice reverb/ctrl tables. The tables are reached through the
+// pooled data base lbl_3_data_8148 (as in the original):
+//   +0x128 (7 bytes)   -> +0x370 = lbl_3_data_84B8, odd bytes
+//   +0x130 (12 bytes)  -> +0x568 = lbl_3_data_8530 + 0x180
+//   +0x13C (102 bytes) -> +0x1F0 = lbl_3_data_8338, odd bytes (ctrl of each FX pair)
+typedef struct SndFxPair { u8 vol, ctrl; } SndFxPair;
+// NONMATCHING 82%: orig materialises each table address (addi base,off) before the unrolled copies;
+// that comes from the tables being separate static arrays pooled in this TU, which we can't reproduce
+#if NONMATCHING
+void fn_3_8B318(s32 mode) {
+    u8* d = lbl_3_data_8148;
+    s32 i;
+    u32 n;
+    if (mode == -1) {
+        u8* src = d + 0x130;
+        u8* dst = d + 0x3E8;
+        for (i = 0; i < 12; i++) {
+            dst[0x180 + i] = src[i];
+        }
+    } else if (mode == 6) {
+        u8* src7 = d + 0x128;
+        SndFxPair* dst7 = (SndFxPair*)(d + 0x370);
+        for (i = 0; i < 7; i++) {
+            dst7[i].ctrl = src7[i];
+        }
+        {
+            u8* src = d + 0x130;
+            u8* dst = d + 0x3E8;
+            for (i = 0; i < 12; i++) {
+                dst[0x180 + i] = src[i];
+            }
+        }
+        {
+            u8* src = d + 0x13C;
+            SndFxPair* dst = (SndFxPair*)(d + 0x1F0);
+            for (n = 0; n < 102; n++) {
+                dst[n].ctrl = src[n];
+            }
+        }
+    } else {
+        SndFxPair* dst7 = (SndFxPair*)(d + 0x370);
+        for (i = 0; i < 7; i++) {
+            dst7[i].ctrl = 0;
+        }
+        {
+            u8* dst = d + 0x3E8;
+            for (i = 0; i < 12; i++) {
+                dst[0x180 + i] = 0;
+            }
+        }
+        {
+            SndFxPair* dst = (SndFxPair*)(d + 0x1F0);
+            for (n = 0; n < 102; n++) {
+                dst[n].ctrl = 0;
+            }
+        }
+    }
+}
+#endif
 
 // .text:0x0008B718 size:0xC4 mapped:0x806CA7AC
 void fn_3_8B718(f32* a, f32* b, f32* c) {
@@ -379,15 +476,303 @@ s32 fn_3_8C4F0(u32 div, u8 lim) {
     return 1;
 }
 
+extern u8 g_Practice[];
 // .text:0x0008C5C8 size:0x7AC mapped:0x806CB65C
+// Ball-collision sound: pick an FX by stadium and collision code and play it
+// panned to the ball position (fn_3_8FF5C is inlined in the original).
+extern u8 g_Ball[];
+#define BALL_POS ((f32*)(g_Ball + 0x0))            // TODO type: InMemBallType.AtBat_Contact_BallPos
+#define BALL_VELOCITY (*(f32*)(g_Ball + 0x1A14))   // TODO type: InMemBallType.ballVelocity
+#define BALL_COLLISION (*(s32*)(g_Ball + 0x1B44))  // TODO type: InMemBallType.collisionCode
+// NONMATCHING 75%: orig reaches the FX tables through the pooled base lbl_3_data_8148 (ours: lbl_3_data_8338 via inlined fn_3_8FF5C) and allocates registers differently
+#if NONMATCHING
 void fn_3_8C5C8(void) {
-    return;
+    u8* d = lbl_3_data_8148;
+    s32 code = BALL_COLLISION & 0x7F;
+    u8 stadium;
+    u32 vid;
+    if (BALL_VELOCITY < 0.2f) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        /* +0x94 = lbl_3_data_81DC (per-stadium FX base id), +0x2BC = lbl_3_data_8404 (per-stadium vol/ctrl rows), +0x370 = lbl_3_data_84B8 */
+        stadium = g_d_GameSettings.StadiumID;
+        vid = sndFXStartEx((u16)(((u16*)(d + 0x94))[stadium] + 0x18),
+                           (g_d_GameSettings.GameModeSelected == 6 ? d + 0x370 : d + 0x2BC + stadium * 0x1E)[0x30], 0x3F, 0);
+        sndFXCtrl(vid, 0x5B, (g_d_GameSettings.GameModeSelected == 6 ? d + 0x370 : d + 0x2BC + stadium * 0x1E)[0x31]);
+        return;
+    }
+    switch (g_d_GameSettings.StadiumID) {
+    case 1:
+        if (code == 8) {
+            fn_3_8FF5C(0x1A2, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+        } else {
+            fn_3_8FF5C(0x1A1, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+        }
+        return;
+    case 3:
+        if (code == 1) {
+            fn_3_8FF5C(0x1A4, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        break;
+    case 4:
+        if (code == 6) {
+            fn_3_8FF5C(0x1A1, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        if (code == 10) {
+            fn_3_8FF5C(0x1A2, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        if (code == 9) {
+            fn_3_8FF5C(0x1A0, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        break;
+    case 5:
+        if (code == 10) {
+            fn_3_8FF5C(0x1A2, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        break;
+    }
+    fn_3_8FF5C(0x17E, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
 }
+#endif
 
 // .text:0x0008CD74 size:0xC4C mapped:0x806CBE08
+// Game-state views used by the crowd-reaction code below.
+// TODO type: m_sound.c can't include game/UnknownHomes_Game.h yet (its local
+// u8[] declarations conflict); these macros name the real fields so the
+// switch-over is mechanical.
+extern u8 g_Runners[];        // InMemRunnerType[4], stride 0x154
+extern u8 g_FieldingLogic[];
+extern u8 g_Strikes[];
+extern u8 g_Stats[];
+extern u8 g_Batter[];
+extern u8 g_RunningLogic[];
+extern u8 g_Scores[];
+extern u8 lbl_3_common_bss_32A94[];
+extern int fn_3_B7D6C(f32 a, f32 b);
+extern int fn_3_B7E10(f32 a, f32 b);
+#define RUNNER(i) (g_Runners + (i) * 0x154)
+#define RUNNER_STATUS(i) (RUNNER(i)[0x123])                      // runnerOnFieldOrOutOrScored
+#define RUNNER_CUR_BASE(i) (RUNNER(i)[0x125])                    // currentBase
+#define RUNNER_WALK_FORCED(i) (RUNNER(i)[0x14D])                 // furthestBaseForcedToGoToOnWalk
+#define RUNNER_BASE_STANDING(i) (*(s16*)(RUNNER(i) + 0xE6))      // baseStandingOn
+#define RUNNER_FORCE_OUT(i) (*(s16*)(RUNNER(i) + 0xEE))          // forceOutCd
+#define RUNNER_FRAMES_SINCE_OUT(i) (*(s16*)(RUNNER(i) + 0xF4))   // framesSinceOut
+#define RUNNER_BASES_RAN(i) (*(f32*)(RUNNER(i) + 0x64))          // fractionalBasesRan
+#define GAME_STATUS (g_GameLogic[0x11E])                         // g_GameLogic.gameStatus
+#define FIELDING_107 (g_FieldingLogic[0x107])                    // g_FieldingLogic._107
+#define STRIKES_OUTS (*(s32*)(g_Strikes + 0x8))                  // g_Strikes.outs
+#define STRIKES_STORED_OUTS (*(s32*)(g_Strikes + 0xC))           // g_Strikes.storedOuts
+#define STATS_REPLAY (g_Stats[0x36])                             // g_Stats.replayInd
+#define BATTER_BUNTING (g_Batter[0x8E])                          // g_Batter.isBunting
+#define RUNNING_LOGIC_2 (*(s16*)(g_RunningLogic + 0x2))
+#define SCORES_C2 (g_Scores[0xC2])
+#define BSS32A94_2 (*(s16*)(lbl_3_common_bss_32A94 + 0x2))
+#define BALL_FRAMES_SINCE_HIT (*(s16*)(g_Ball + 0x1B66))         // framesSinceHit
+#define BALL_PITCH_HANGTIME (*(s16*)(g_Ball + 0x1B68))           // pitchHangtimeCounter
+#define BALL_FRAMES_SINCE_GROUND (*(s16*)(g_Ball + 0x1B72))      // framesSinceBallHitGroundOrWasCaught
+#define BALL_CONTACT_RESULT (*(s16*)(g_Ball + 0x1B7A))           // AtBat_ContactResult
+#define BALL_HIT_VANGLE (*(s16*)(g_Ball + 0x1B9A))               // Hit_VerticalAngle
+#define BALL_HIT_HANGLE (*(s16*)(g_Ball + 0x1B9C))               // Hit_HorizontalAngle
+#define BALL_HIT_POWER (*(s16*)(g_Ball + 0x1B9E))                // Hit_HorizontalPower
+#define BALL_OVER_WALL_FRAMES (*(s16*)(g_Ball + 0x1BA4))         // matchFramesAndBallAngle.ballOverWallFrames
+#define BALL_ZONE (g_Ball[0x1BBE])                               // ballZoneAwayFromHome
+#define BALL_HIT_DONE (g_Ball[0x1BC6])                           // ballInitialHitDoneInd
+#define BALL_DEAD_REASON (g_Ball[0x1BD1])                        // deadBallReason
+#define BALL_DEADBALL_LOC ((f32*)(g_Ball + 0x1A3C))              // deadballLastLoc
+#define BALL_LANDING_SPOT ((f32*)(g_Ball + 0x1A2C))              // landingSpotLocation (x, z)
+extern u8 g_Pitcher[];
+extern u8 g_Minigame[];
+#define PITCHER_WINDUP (*(s16*)(g_Pitcher + 0x126))          // windupCountdownUntilBallReleased
+#define PITCHER_CHAR (*(s16*)(g_Pitcher + 0x11A))            // charID
+#define PITCHER_STRIKEOUT_WALK (g_Pitcher[0x14E])            // strikeOutOrWalk
+#define PITCHER_UNHITTABLE (g_Pitcher[0x155])                // framesUntilUnhittable
+#define PITCHER_CHARGE_TYPE (g_Pitcher[0x15F])               // ChargePitchType
+#define PITCHER_PITCH_TYPE (g_Pitcher[0x161])                // TypeOfPitch
+#define PITCHER_STAR_IND (g_Pitcher[0x164])                  // starPitchInd
+#define PITCHER_STAR_TYPE (g_Pitcher[0x165])                 // starPitchType
+#define MINIGAME_ROSTER_ID (*(s8*)(g_Minigame + 0x1905))     // rosterID
+#define MINIGAME_CHAR_INDEX(i) (((s8*)(g_Minigame + 0x18CC))[i]) // minigameControlStruct[0].characterIndex
+#define MINIGAME_MODE (g_Minigame[0x1A2A])                   // GameMode_MiniGame
+#define MINIGAME_PAUSED (g_Minigame[0x1A3B])                 // pauseInd
+#define PRACTICE_LEVEL (g_Practice[0x194])                   // practiceLevel
+#define GAME_PAUSE_FRAMES (g_GameLogic[0x14E])               // PauseSimulationFrameCount
+#define BATTER_CHAR (*(s16*)(g_Batter + 0x62))               // charID
+#define BATTER_CHARGE_DOWN (*(s16*)(g_Batter + 0x72))        // frameChargeDownBegins
+#define BATTER_CHARGE_FRAMES (*(s16*)(g_Batter + 0x74))      // chargeFrames
+#define BATTER_CONTACT_TYPE (g_Batter[0x92])                 // contactType
+#define BATTER_CONTACT_SPRITE (g_Batter[0x97])               // displayContactSprite
+#define BATTER_CHARGE_STATUS (g_Batter[0x9D])                // chargeStatus
+#define BATTER_CAPTAIN_STAR (g_Batter[0xA2])                 // captainStarSwingActivated
+#define BALL_STAR_SWING (g_Ball[0x1BE7])                     // currentStarSwing
+#define BALL_31C (*(f32*)(g_Ball + 0x31C))                   // physicsSubstruct + 0x19C
+
+// Pitch / swing / star-move sounds.
+// NONMATCHING 63%: orig inlines playSoundEffect/fn_3_90220 and reaches their tables through the pooled
+// base lbl_3_data_8148 (+0x1F0, +0x20, +0x3E8); the control flow and calls are the same
+#if NONMATCHING
 void fn_3_8CD74(void) {
-    return;
+    Snd1760* st = (Snd1760*)lbl_3_bss_1760;
+    if (GAME_STATUS == 0xB) {
+        return;
+    }
+    if (MINIGAME_PAUSED != 0) {
+        return;
+    }
+    if (GAME_STATUS == 1) {
+        if (PITCHER_WINDUP == 0 && BALL_PITCH_HANGTIME == 0) {
+            if (S34C58.unk34 == 0) {
+                if (g_d_GameSettings.GameModeSelected == 2 && PRACTICE_LEVEL == 4) {
+                    playSoundEffect(0x1AE);
+                } else if (MINIGAME_MODE != 1 && MINIGAME_MODE != 3) {
+                    if (GAME_PAUSE_FRAMES == 5) {
+                        fn_3_90220(PITCHER_CHAR, 6);
+                    } else if (PITCHER_CHARGE_TYPE == 3) {
+                        playSoundEffect(0x188);
+                        fn_3_90220(PITCHER_CHAR, 6);
+                    } else if (PITCHER_CHARGE_TYPE != 0) {
+                        if (PITCHER_STAR_TYPE == 0) {
+                            fn_3_90220(PITCHER_CHAR, 5);
+                        }
+                        playSoundEffect(0x187);
+                    } else if (PITCHER_PITCH_TYPE == 2) {
+                        playSoundEffect(0x17D);
+                    } else {
+                        playSoundEffect(0x186);
+                    }
+                }
+            }
+            S34C58.unk34 = 1;
+        }
+        if (MINIGAME_MODE == 1 && BALL_PITCH_HANGTIME == 1 && PITCHER_STAR_IND != 0) {
+            playSoundEffect(0x19E);
+            st->pitchVid = playSoundEffect(0x18F);
+        }
+        if (GAME_PAUSE_FRAMES == 1 && PITCHER_STAR_TYPE != 0) {
+            playSoundEffect(0x19E);
+            switch (PITCHER_STAR_TYPE) {
+            case 1:
+            case 2:
+                st->pitchVid = playSoundEffect(0x18F);
+                break;
+            case 3:
+            case 4:
+                st->pitchVid = playSoundEffect(0x18C);
+                break;
+            case 5:
+            case 6:
+                st->pitchVid = playSoundEffect(0x18D);
+                break;
+            case 7:
+            case 8:
+                st->pitchVid = playSoundEffect(0x190);
+                break;
+            case 9:
+            case 10:
+                st->pitchVid = playSoundEffect(0x18E);
+                break;
+            case 11:
+            case 12:
+                st->pitchVid = playSoundEffect(0x19A);
+                break;
+            }
+        }
+        if (BALL_PITCH_HANGTIME > 0 && PITCHER_UNHITTABLE < 30 && lbl_8036E548._307D == 0) {
+            CharActor* batter = lbl_8036E548.active[9];
+            if (g_d_GameSettings.minigamesEnabled) {
+                batter = &lbl_8036E548.actors[MINIGAME_CHAR_INDEX(MINIGAME_ROSTER_ID)];
+            }
+            if (batter != NULL && batter->anim[0] == 0x60 && batter->_06A[0] == 5) {
+                fn_3_90220(BATTER_CHAR, 3);
+            }
+        }
+    }
+    if (lbl_8036E548._307D == 0) {
+        if (S34C58.unk2B != 0 && BALL_FRAMES_SINCE_HIT == 2) {
+            S34C58.unk2B = 0;
+            sndFXKeyOff(st->pitchVid);
+            if (BATTER_BUNTING != 0) {
+                playSoundEffect(0x153);
+            } else if (BATTER_CAPTAIN_STAR != 0) {
+                switch (BATTER_CAPTAIN_STAR) {
+                case 1:
+                case 2:
+                    st->swingVid = playSoundEffect(0x194);
+                    break;
+                case 3:
+                case 4:
+                    st->swingVid = playSoundEffect(0x191);
+                    break;
+                case 5:
+                case 6:
+                    st->swingVid = playSoundEffect(0x192);
+                    break;
+                case 7:
+                case 8:
+                    st->swingVid = playSoundEffect(0x195);
+                    break;
+                case 9:
+                case 10:
+                    st->swingVid = playSoundEffect(0x193);
+                    break;
+                case 11:
+                case 12:
+                    st->swingVid = playSoundEffect(0x199);
+                    st->starSwingDone = 0;
+                    break;
+                }
+                playSoundEffect(0x184);
+                playSoundEffect(0x185);
+                fn_3_90220(BATTER_CHAR, 0);
+            } else if (BATTER_CHAR == 2) {
+                playSoundEffect(0x1AF);
+            } else if (BATTER_CHAR == 0x26) {
+                playSoundEffect(0x1B0);
+            } else if (BATTER_CONTACT_SPRITE != 0) {
+                playSoundEffect(0x184);
+                playSoundEffect(0x185);
+            } else if (BATTER_CONTACT_TYPE == 2) {
+                playSoundEffect(0x184);
+                fn_3_90220(BATTER_CHAR, 0);
+            } else if (BATTER_CONTACT_TYPE >= 1 && BATTER_CONTACT_TYPE <= 3) {
+                fn_3_90220(BATTER_CHAR, 0);
+                playSoundEffect(0x184);
+            } else {
+                playSoundEffect(0x183);
+            }
+        }
+        if (BATTER_CHARGE_STATUS == 1 && GAME_STATUS == 1 && BATTER_CHARGE_FRAMES < BATTER_CHARGE_DOWN &&
+            BATTER_CHARGE_FRAMES == 1) {
+            S34C58.unk1C = fn_3_90220(BATTER_CHAR, 2);
+        }
+    }
+    if (BATTER_CAPTAIN_STAR == 11 && st->starSwingDone == 0 && BALL_31C <= -0.09 && BALL_31C >= -0.1) {
+        sndFXKeyOff(st->pitchVid);
+        st->swingVid = playSoundEffect(0x19B);
+        st->starSwingDone = 1;
+    }
+    if (GAME_STATUS != 1 && GAME_STATUS != 2 && st->pitchVid != 0) {
+        sndFXKeyOff(st->pitchVid);
+    }
+    if (BALL_POS[2] < -3.0f && st->pitchVid != 0) {
+        sndFXKeyOff(st->pitchVid);
+    }
+    if (PITCHER_STRIKEOUT_WALK == 3) {
+        sndFXKeyOff(st->pitchVid);
+    }
+    if (st->swingVid != 0 && (BALL_STAR_SWING == 0 || BALL_DEAD_REASON != 0)) {
+        sndFXKeyOff(st->swingVid);
+    }
 }
+#endif
 
 // .text:0x0008D9C0 size:0xC0 mapped:0x806CCA54
 void fn_3_8D9C0(void) {
@@ -413,9 +798,547 @@ void fn_3_8D9C0(void) {
 }
 
 // .text:0x0008DA80 size:0x1748 mapped:0x806CCB14
+extern u8 lbl_3_common_bss_34C90[];
+extern u8 lbl_3_common_bss_37400[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_3_common_bss_134C4[];
+extern u8* lbl_3_common_bss_DE94;
+extern void sndSeqLoop(u32 seqId, bool on);
+#define GAME_TEAM_FIELDING (*(s32*)(g_GameLogic + 0x8))        // teamFielding
+#define GAME_PITCH_FRAME (*(u16*)(g_GameLogic + 0xFC))          // FrameCountOfCurrentPitch
+#define GAME_SECONDARY_MODE (g_GameLogic[0x121])                // secondaryGameMode
+#define GAME_EXITING_TO_MENU (g_GameLogic[0x122])               // framesOfExitingToMenu
+#define GAME_TRANSITION (g_GameLogic[0x125])                    // _125
+#define GAME_END_OF_GAME (g_GameLogic[0x127])                   // EventTriggers_EndOfGame
+#define GAME_133(team) (g_GameLogic[0x133 + (team)])            // _133[team]
+#define GAME_PLAY_OVER (g_GameLogic[0x139])                     // playOverInd
+#define PRACTICE_TYPE2 (g_Practice[0x193])                      // practiceType_2
+#define PRACTICE_STATE (g_Practice[0x195])                      // practiceState
+#define PRACTICE_TUTORIAL (g_Practice[0x196])                   // tutorialState
+#define PRACTICE_19F (g_Practice[0x19F])
+#define PRACTICE_1C7 (g_Practice[0x1C7])
+#define MINIGAME_1907 (g_Minigame[0x1907])
+#define MINIGAME_1908 (*(s8*)(g_Minigame + 0x1908))
+#define MINIGAME_MULTIPLAYER (g_Minigame[0x1909])               // multiPlayerInd
+#define MINIGAME_CTRL_1C(i) (g_Minigame[0x18E8 + (i)])          // minigameControlStruct[0]._1C[i]
+#define MINIGAME_NOT_WON (g_Minigame[0x19A8])                   // challenge_minigame_haven_tWonYetIndicator
+#define MINIGAME_19CE (g_Minigame[0x19CE])
+#define MINIGAME_DIFFICULTY (g_Minigame[0x1A2B])                // soloMinigameDifficulty
+#define MINIGAME_1A37 (g_Minigame[0x1A37])
+#define MINIGAME_1A3C (g_Minigame[0x1A3C])
+#define MINIGAME_1A43 (g_Minigame[0x1A43])
+#define MINIGAME_1D6D (*(s8*)(g_Minigame + 0x1D6D))
+#define STATS_PLAY_FRAMES (*(s32*)(g_Stats + 0x24))             // playFrameCounter
+#define STATS_28 (*(s16*)(g_Stats + 0x28))
+#define STATS_39 (g_Stats[0x39])                                // 1: replay offered, 2: replay done
+#define PITCHER_WALKED_IN_RUN (g_Pitcher[0x175])                // walkedInRunInd
+#define BSS34C90_1D1 (lbl_3_common_bss_34C90[0x1D1])
+#define BSS34C90_1D2 (lbl_3_common_bss_34C90[0x1D2])
+#define BSS32A94_3E (lbl_3_common_bss_32A94[0x3E])
+#define DE94_92C (*(s32*)(lbl_3_common_bss_DE94 + 0x92C))      // lbl_3_common_bss_DE94._0000->_92C
+extern u16 lbl_3_data_81FC[];
+extern u8 lbl_3_data_84F4[];
+
+// Per-frame music director: picks the BGM sequence for the current game state,
+// cross-fades between tracks and handles crowd/ambience volume ramps.
+// NONMATCHING 84%: register allocation differs and the original reaches the inlined helpers' tables
+// (lbl_3_data_8338/830C/88E0/81FC/84F4/8D70) through the pooled base lbl_3_data_8148
+#if NONMATCHING
 void fn_3_8DA80(void) {
+    s16 bgm = -1;
+    s32 cut = 0;
+    Snd1760* st = (Snd1760*)lbl_3_bss_1760;
+    u8 status;
+
+    switch (g_d_GameSettings.GameModeSelected) {
+    case 2:
+        if (PRACTICE_TUTORIAL == 0 && PRACTICE_STATE == 0) {
+            fn_3_8B318(g_d_GameSettings.StadiumID);
+        }
+        break;
+    default:
+        if (GAME_STATUS == 5 && GAME_PITCH_FRAME == 1) {
+            fn_3_8B318(g_d_GameSettings.StadiumID);
+        }
+        break;
+    }
+
+    if (GAME_EXITING_TO_MENU != 0) {
+        return;
+    }
+    status = GAME_STATUS;
+    if (status == 0x17) {
+        return;
+    }
+    if (status == 0xE && !g_d_GameSettings.minigamesEnabled) {
+        return;
+    }
+    if (S34C58.unk33 != 0 && status == 0) {
+        S34C58.unk33--;
+    }
+    fn_3_8D9C0();
+
+    if (lbl_800EF808[0x398] == 0) {
+        if ((u32)S34C58.unk4 != 0xFFFFFFFF) {
+            if (sndSeqGetValid(S34C58.unk4)) {
+                sndSeqVolume(0, 0, S34C58.unk4, 1);
+            }
+            S34C58.unk4 = -1;
+        }
+        return;
+    }
+
+    S34C58.unk22 = S34C58.unk20;
+
+    if (g_d_GameSettings.GameModeSelected == 2) {
+        u8 sec = GAME_SECONDARY_MODE;
+        if (sec == 0xA || sec == 0x11 || sec == 0x12) {
+            bgm = -1;
+            goto apply;
+        }
+        if (PRACTICE_TUTORIAL == 0) {
+            bgm = -1;
+            goto apply;
+        }
+        if (PRACTICE_19F != 0 && (BSS34C90_1D2 == 6 || BSS34C90_1D2 == 7 || BSS34C90_1D2 == 8 || BSS34C90_1D2 == 9)) {
+            bgm = -1;
+            goto apply;
+        }
+        if (PRACTICE_1C7 != 0 && (BSS34C90_1D2 == 6 || BSS34C90_1D2 == 7)) {
+            bgm = -1;
+            goto apply;
+        }
+        if (PRACTICE_TYPE2 == 4) {
+            if (GAME_STATUS == 5) {
+                return;
+            }
+            goto common;
+        }
+        bgm = 0x15;
+        if (BALL_DEAD_REASON != 1 || sec == 0xB) {
+            goto apply;
+        }
+        bgm = 0;
+        goto common;
+    }
+
+    if (g_d_GameSettings.minigamesEnabled && GAME_STATUS == 0x21) {
+        bgm = -1;
+        goto apply;
+    }
+    status = GAME_STATUS;
+    if ((status == 0x27 || status == 0x24 || status == 0x22) && MINIGAME_1908 >= 0 && MINIGAME_1A3C != 0) {
+        if (status == 0x22) {
+            return;
+        }
+        if (status == 0x24) {
+            if (GAME_PITCH_FRAME == 1) {
+                fn_3_8C104(-1);
+            }
+            return;
+        }
+        if (MINIGAME_CTRL_1C(MINIGAME_1908) == 1 && MINIGAME_NOT_WON == 0) {
+            bgm = 0xC;
+        } else {
+            bgm = 0xD;
+        }
+        goto apply;
+    }
+
+    if (g_d_GameSettings.minigamesEnabled &&
+        (status == 0xE || status == 0x24 || GAME_TRANSITION == 8 || status == 0x22 || status == 0x27 || status == 0x26)) {
+        if (status == 0xE || status == 0x24 || status == 0x22 || status == 0x26 || status == 0x27) {
+            if (status == 0x22) {
+                if (g_d_GameSettings.GameModeSelected == 6) {
+                    if (BSS34C90_1D2 == 10 || BSS34C90_1D2 == 4 || BSS34C90_1D2 == 5) {
+                        goto fade_out_quick;
+                    }
+                } else if (BSS34C90_1D2 == 9 || BSS34C90_1D2 == 6 || BSS34C90_1D2 == 7) {
+                    goto fade_out_quick;
+                }
+            }
+            if (status == 0x26) {
+                return;
+            }
+            if (!g_d_GameSettings.exhibitionMatchInd) {
+                if (MINIGAME_MODE == 1 || MINIGAME_MODE == 3) {
+                    if (MINIGAME_1A37 == 1) {
+                        bgm = 0xC;
+                    } else {
+                        bgm = 0xD;
+                    }
+                } else if (MINIGAME_CTRL_1C(MINIGAME_1908) == 1 && MINIGAME_NOT_WON == 0) {
+                    bgm = 0xC;
+                } else {
+                    bgm = 0xD;
+                }
+                goto apply;
+            }
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                if (MINIGAME_1908 >= 0) {
+                    if (MINIGAME_CTRL_1C(MINIGAME_1908) == 1 && MINIGAME_NOT_WON == 0) {
+                        bgm = 5;
+                    } else {
+                        bgm = 7;
+                    }
+                } else {
+                    bgm = 5;
+                }
+                goto apply;
+            }
+            if (MINIGAME_MULTIPLAYER != 0) {
+                if (MINIGAME_1A3C != 0 && MINIGAME_1907 == 1) {
+                    if (MINIGAME_CTRL_1C(MINIGAME_1908) == 1 && MINIGAME_NOT_WON == 0) {
+                        bgm = 5;
+                    } else {
+                        bgm = 7;
+                    }
+                } else if (MINIGAME_NOT_WON != 0) {
+                    bgm = 7;
+                } else {
+                    bgm = 5;
+                }
+                goto apply;
+            }
+            if (MINIGAME_DIFFICULTY == 3 && MINIGAME_1A3C == 0) {
+                if (GAME_PITCH_FRAME == 0) {
+                    return;
+                }
+                if (MINIGAME_1A43 == 1) {
+                    bgm = 0xE;
+                } else if (MINIGAME_1A43 != 0) {
+                    bgm = 0xF;
+                } else {
+                    bgm = 7;
+                }
+                goto apply;
+            }
+            if (MINIGAME_1A37 == 1) {
+                bgm = 5;
+            } else {
+                bgm = 7;
+            }
+            goto apply;
+        }
+        if (GAME_TRANSITION == 8) {
+            sndSeqLoop(S34C58.unk8, 0);
+        }
+        goto by_status;
+    }
+
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        if (status >= 0x1B) {
+            bgm = -1;
+            goto apply;
+        }
+        if (status == 5) {
+            bgm = 6;
+            goto apply;
+        }
+        // BGM volume table entry -1 (lbl_3_data_830C[-2]), i.e. the last bytes of lbl_3_data_81FC
+        sndSeqVolume(((u8*)lbl_3_data_81FC)[0x10E], 15, S34C58.unk4, 0);
+        if (MINIGAME_MODE == 6) {
+            if (MINIGAME_1D6D >= 0) {
+                cut = 1;
+                if (MINIGAME_PAUSED != 0) {
+                    sndFXKeyOff(S34C58.unk4);
+                } else if (S34C58.unk20 == 0x13 && sndFXCheck(S34C58.unk4) == 0xFFFFFFFF) {
+                    /* fn_3_90064(0x2ED), keeping the voice id */
+                    s32 i;
+                    if (g_d_GameSettings.GameModeSelected != 7) {
+                        OSPanic(lbl_3_rodata_1590, 0x402, lbl_3_rodata_15DC);
+                    }
+                    for (i = 0; i < 0x39; i++) {
+                        if (lbl_3_data_81FC[i] == 0x2ED) {
+                            break;
+                        }
+                    }
+                    if (i == 0x39) {
+                        OSPanic(lbl_3_rodata_1590, 0x40D, lbl_3_rodata_15EC);
+                    }
+                    S34C58.unk4 = sndFXStartEx(0x2ED, lbl_3_data_84F4[i], 0x3F, 0);
+                }
+                bgm = 0x13;
+            } else {
+                if (sndFXCheck(S34C58.unk4) != 0xFFFFFFFF) {
+                    sndFXKeyOff(S34C58.unk4);
+                }
+                bgm = 0x15;
+            }
+        } else {
+            bgm = 0x15;
+        }
+        if (MINIGAME_PAUSED != 0) {
+            if (BSS34C90_1D2 == 7 || BSS34C90_1D2 == 9) {
+                bgm = -1;
+            } else {
+                fn_800A8878(lbl_800E88A4[g_d_GameSettings.StadiumID][1], lbl_800E88A4[g_d_GameSettings.StadiumID][1]);
+            }
+        } else {
+            fn_800A8878(lbl_800E88A4[g_d_GameSettings.StadiumID][0], lbl_800E88A4[g_d_GameSettings.StadiumID][0]);
+        }
+        goto apply;
+    }
+
+    if (g_d_GameSettings.minigamesEnabled) {
+        if (status == 0x22 || status == 0xB || status == 0xD || MINIGAME_19CE != 0) {
+            if (S34C58.unk22 != -1) {
+                fn_800A8878(lbl_800E88A4[9][1], lbl_800E88A4[9][1]);
+            }
+            S34C58.unk20 = -1;
+            return;
+        }
+        fn_800A8878(lbl_800E88A4[9][0], lbl_800E88A4[9][0]);
+        if (GAME_STATUS >= 0x1B) {
+            return;
+        }
+        if (GAME_STATUS == 5) {
+            bgm = 0;
+        } else {
+            bgm = 0x15;
+        }
+        goto apply;
+    }
+
+by_status:
+    status = GAME_STATUS;
+    if (status == 5 && g_d_GameSettings.GameModeSelected != 2) {
+        bgm = 0;
+        goto apply;
+    }
+    if (status == 9) {
+        bgm = 1;
+        goto apply;
+    }
+    if (status == 3) {
+        bgm = 2;
+        goto apply;
+    }
+    if (status == 8) {
+        bgm = -1;
+        cut = 1;
+        if (STRIKES_OUTS != 3 && STATS_39 == 0) {
+            if (PITCHER_WALKED_IN_RUN != 0) {
+                playSoundEffect(0x198);
+            } else if (GAME_END_OF_GAME == 0) {
+                playSoundEffect(0x197);
+            }
+        }
+        goto apply;
+    }
+
+common:
+    if (GAME_STATUS == 0xB) {
+        if (BSS34C90_1D1 == 1) {
+            goto apply;
+        }
+        if (S34C58.unk20 != 0x15) {
+            S34C58.unk20 = 0x15;
+            S34C58.unk22 = 0x15;
+            fn_3_8C104(0);
+        }
+    }
+    if (STATS_REPLAY != 0) {
+        bgm = 0x16;
+        if (STATS_39 == 4) {
+            bgm = -1;
+            cut = 1;
+        }
+        if (STATS_PLAY_FRAMES > STATS_28 - 30) {
+            bgm = -1;
+            cut = 1;
+        }
+        goto apply;
+    }
+    status = GAME_STATUS;
+    if (status == 0x13) {
+        bgm = 0x17;
+        goto apply;
+    }
+    if (status == 7 || status == 0) {
+        return;
+    }
+    if (lbl_8036E548.preload[0].state != 0 || lbl_8036E548.preload[1].state != 0) {
+        return;
+    }
+    if (!g_d_GameSettings.exhibitionMatchInd && lbl_3_common_bss_37400[0x46] != 0) {
+        if (status == 0x16 && GAME_133(GAME_TEAM_FIELDING) == 0) {
+            bgm = 9;
+            S34C58.unk32 = 1;
+            goto apply;
+        }
+        if (S34C58.unk32 == 0) {
+            if (status == 1 && GAME_133(GAME_TEAM_FIELDING) == 0) {
+                S34C58.unk32 = 2;
+                bgm = 0x12;
+                goto apply;
+            }
+        } else if (S34C58.unk32 == 2 && lbl_3_common_bss_32724[0xB3] != 0) {
+            S34C58.unk32 = 2;
+            bgm = 0x12;
+            goto apply;
+        }
+        if ((status == 1 || status == 2) && STATS_REPLAY == 0) {
+            if (lbl_3_common_bss_37400[0x47] == 1) {
+                if (BALL_DEAD_REASON != 1) {
+                    bgm = 0xB;
+                    if (FIELDING_107 != 0) {
+                        S34C58.unk33 = 2;
+                    }
+                    goto apply;
+                }
+            } else if (lbl_3_common_bss_37400[0x47] == 2 && BALL_DEAD_REASON != 1) {
+                bgm = 0xA;
+                if (FIELDING_107 != 0) {
+                    S34C58.unk33 = 2;
+                }
+                goto apply;
+            }
+        }
+    }
+    if (status == 0x16 && GAME_PLAY_OVER != 0) {
+        bgm = 0x10;
+        goto apply;
+    }
+    if (status == 0x15) {
+        bgm = 0x11;
+        goto apply;
+    }
+    if (status == 0x16 && DE94_92C == 0x60 && g_d_GameSettings.GameModeSelected != 5) {
+        DE94_92C = 0;
+        bgm = 8;
+        S34C58.unk2E = 1;
+        goto apply;
+    }
+    if (S34C58.unk2E != 0) {
+        if (S34C58.unk27 == 0) {
+            S34C58.unk2E = 0;
+        }
+        bgm = 8;
+        goto apply;
+    }
+    if (lbl_3_common_bss_134C4[0x25C] != 0 && BALL_DEAD_REASON != 1 && DE94_92C != 0) {
+        bgm = 4;
+        goto apply;
+    }
+    if (status == 0x13) {
+        return;
+    }
+    if (BALL_DEAD_REASON == 1) {
+        if (g_d_GameSettings.GameModeSelected != 2) {
+            bgm = 3;
+            goto apply;
+        }
+        bgm = 0;
+    }
+
+    /* crowd/ambience fade out */
+    if (S34C58.unk2A == 1 && S34C58.unk24 != 0) {
+        s16 n = --S34C58.unk24;
+        if (n == 0) {
+            fn_3_8B258(3, 0, 0);
+        } else {
+            fn_3_8C4F0(n, 0);
+        }
+    }
+    /* crowd/ambience fade in */
+    if (S34C58.unk2A == 2) {
+        if (S34C58.unk33 != 0) {
+            S34C58.unk33 = 0;
+            S34C58.unk20 = 0x15;
+        }
+        if (S34C58.unk24 == 0x78) {
+            fn_3_8C104(0);
+        }
+        if (fn_3_8C2DC(S34C58.unk24, GAME_STATUS == 0xB ? 1 : 0) == 0) {
+            S34C58.unk2A = 0;
+        }
+        S34C58.unk24--;
+    }
+
+    if (BALL_DEAD_REASON == 1 && g_d_GameSettings.GameModeSelected == 2) {
+        goto apply;
+    }
+    status = GAME_STATUS;
+    if (status == 2) {
+        if (S34C58.unk29 != 0) {
+            S34C58.unk29--;
+        }
+        return;
+    }
+    if (S34C58.unk2A != 0 || status == 0xB) {
+        return;
+    }
+    if (S34C58.unk33 != 0) {
+        bgm = 0x15;
+        goto apply;
+    }
+    if (STRIKES_STORED_OUTS == 0) {
+        bgm = 0x15;
+        goto apply;
+    }
+    if (BSS32A94_3E != 0) {
+        bgm = 0x15;
+        goto apply;
+    }
+    fn_3_90328(-1);
+    S34C58.unk20 = -1;
     return;
+
+apply:
+    if (S34C58.unk22 == bgm) {
+        return;
+    }
+    if (S34C58.unk20 == 8 && sndSeqGetValid(S34C58.unk8)) {
+        return;
+    }
+    if (S34C58.unk28 == 0) {
+        S34C58.unk28 = 1;
+        S34C58.unk27 = 20;
+        fn_3_903B8();
+    } else if (S34C58.unk27 != 0) {
+        S34C58.unk27--;
+    }
+    if (S34C58.unk27 != 0 && cut == 0) {
+        return;
+    }
+    if ((u32)S34C58.unk4 != 0xFFFFFFFF) {
+        if (sndSeqGetValid(S34C58.unk4)) {
+            sndSeqVolume(0, 0, S34C58.unk4, 1);
+        }
+        S34C58.unk4 = -1;
+        return;
+    }
+    S34C58.unk28 = 0;
+    S34C58.unk20 = bgm;
+    if (bgm == -1) {
+        if (cut) {
+            fn_3_8B258(3, 0, 0);
+        } else {
+            fn_3_8C07C();
+        }
+    } else if (bgm == 0x15 || bgm == 0x16 || bgm == 0x17) {
+        if ((u16)(bgm - 0x15) <= 1 || bgm == 0x17) {
+            if (bgm != S34C58.unk22) {
+                fn_3_8C104(-1);
+            }
+        } else {
+            fn_3_8C07C();
+            fn_3_90674(S34C58.unk20);
+        }
+    } else {
+        fn_3_9056C(bgm);
+        if (!(bgm == 4 || bgm == 0)) {
+            fn_3_8C07C();
+        }
+    }
+    return;
+
+fade_out_quick:
+    fn_3_90328(12);
+    S34C58.unk20 = -1;
 }
+#endif
 
 // .text:0x0008F1C8 size:0x54 mapped:0x806CE25C
 void fn_3_8F1C8(void) {
@@ -427,8 +1350,153 @@ void fn_3_8F1C8(void) {
 }
 
 // .text:0x0008F21C size:0x9F0 mapped:0x806CE2B0
+
+// Crowd-reaction sounds (cheer / groan / "ooh") for the current play.
 void fn_3_8F21C(void) {
-    return;
+    s32 stop = 0;
+    s32 special = 0;
+    s32 i;
+    if (!(g_d_GameSettings.StadiumID != 1 && g_d_GameSettings.StadiumID != 2 && g_d_GameSettings.StadiumID != 3 && g_d_GameSettings.StadiumID != 5)) {
+        special = 1;
+    }
+    special = special != 0;
+    if (special) {
+        if (FIELDING_107 != 0) {
+            for (i = 1; i < 4; i++) {
+                if (S34C58.unk26 <= 1 && RUNNER_STATUS(i) == 2) {
+                    stop = 1;
+                    goto stop_sounds;
+                }
+            }
+        }
+        if (BALL_FRAMES_SINCE_HIT > 0 &&
+            ((BALL_HIT_DONE != 0 && BALL_CONTACT_RESULT == 1 && BALL_ZONE >= 3 && S34C58.unk26 < 2) ||
+             (RUNNER_STATUS(0) == 1 && RUNNER_CUR_BASE(0) != 0 && RUNNER_FORCE_OUT(0) == 0 &&
+              (BALL_CONTACT_RESULT == 1 || BALL_CONTACT_RESULT == 2) && STRIKES_OUTS == STRIKES_STORED_OUTS))) {
+            S34C58.unk26 = 2;
+            if ((u32)S34C58.unk14 == 0xFFFFFFFF) {
+                S34C58.unk14 = sndFXStartEx(0x156, 0, 0x3F, 0);
+                if (STATS_REPLAY == 0 && g_d_GameSettings.GameModeSelected != 7) {
+                    playSoundEffect(0x196);
+                }
+            }
+        }
+        return;
+    }
+
+    if (GAME_STATUS == 3) {
+        stop = 1;
+    } else if (GAME_STATUS == 1) {
+        if (BALL_PITCH_HANGTIME == 10) {
+            for (i = 1; i < 4; i++) {
+                if (RUNNER_STATUS(i) == 1 && RUNNER_WALK_FORCED(i) != 0) {
+                    if ((u32)S34C58.unk10 == 0xFFFFFFFF) {
+                        S34C58.unk10 = playSoundEffect(0x155);
+                    }
+                    break;
+                }
+            }
+        }
+    } else if (FIELDING_107 != 0) {
+        for (i = 1; i < 4; i++) {
+            if (S34C58.unk26 == 0 &&
+                ((RUNNER_STATUS(i) == 1 && RUNNER_BASE_STANDING(i) > i) || RUNNER_STATUS(i) == 3)) {
+                S34C58.unk26 = 1;
+                if ((u32)S34C58.unk10 == 0xFFFFFFFF) {
+                    S34C58.unk10 = playSoundEffect(0x155);
+                }
+            } else if (S34C58.unk26 <= 1 && RUNNER_STATUS(i) == 2) {
+                S34C58.unk26 = 2;
+                playSoundEffect(0x158);
+                stop = 1;
+                break;
+            }
+        }
+    } else if (BALL_FRAMES_SINCE_HIT > 0) {
+        if (BALL_FRAMES_SINCE_HIT > 20 && S34C58.unk26 == 0) {
+            S34C58.unk26 = 1;
+            if (BATTER_BUNTING != 0) {
+                if ((RUNNING_LOGIC_2 == 1 || (RUNNING_LOGIC_2 & 0x1000)) && (u32)S34C58.unk10 == 0xFFFFFFFF) {
+                    S34C58.unk10 = playSoundEffect(0x155);
+                }
+            } else if (BALL_HIT_POWER > 150 && (BALL_HIT_VANGLE > 0xF80 || BALL_HIT_VANGLE < 0x200) &&
+                       BALL_HIT_HANGLE > 0x80 && BALL_HIT_HANGLE < 0x780 && (u32)S34C58.unk10 == 0xFFFFFFFF) {
+                S34C58.unk10 = playSoundEffect(0x155);
+            }
+        }
+        if ((BALL_HIT_DONE != 0 && BALL_CONTACT_RESULT == 1 && BALL_ZONE >= 3 && S34C58.unk26 < 2) ||
+            (RUNNER_STATUS(0) == 1 && RUNNER_CUR_BASE(0) != 0 && RUNNER_FORCE_OUT(0) == 0 &&
+             (BALL_CONTACT_RESULT == 1 || BALL_CONTACT_RESULT == 2) && STRIKES_OUTS == STRIKES_STORED_OUTS)) {
+            S34C58.unk26 = 2;
+            if ((u32)S34C58.unk14 == 0xFFFFFFFF) {
+                S34C58.unk14 = playSoundEffect(0x156);
+                if (STATS_REPLAY == 0 && g_d_GameSettings.GameModeSelected != 7) {
+                    playSoundEffect(0x196);
+                }
+            }
+        }
+        if (BALL_DEAD_REASON == 1 && S34C58.unk26 < 9) {
+            S34C58.unk26 = 9;
+            if ((u32)S34C58.unk14 == 0xFFFFFFFF) {
+                S34C58.unk14 = playSoundEffect(0x156);
+            }
+        }
+        if (BALL_CONTACT_RESULT == -1 && S34C58.unk26 < 9) {
+            if (BALL_DEAD_REASON == 2) {
+                if (BALL_OVER_WALL_FRAMES == 30) {
+                    S34C58.unk26 = 9;
+                    stop = 1;
+                    if (fn_3_B7D6C(BALL_DEADBALL_LOC[0], BALL_DEADBALL_LOC[2])) {
+                        playSoundEffect(0x158);
+                    }
+                }
+            } else if (BALL_FRAMES_SINCE_GROUND == 30) {
+                S34C58.unk26 = 9;
+                stop = 1;
+                if (fn_3_B7D6C(BALL_LANDING_SPOT[0], BALL_LANDING_SPOT[1]) &&
+                    (BALL_ZONE == 4 || (BALL_HIT_POWER > 150 && (BALL_HIT_VANGLE > 0xFC0 || BALL_HIT_VANGLE < 0x200)))) {
+                    playSoundEffect(0x157);
+                }
+            }
+        }
+        if (RUNNER_STATUS(0) == 2 && RUNNER_FRAMES_SINCE_OUT(0) == 20 && SCORES_C2 == 0 &&
+            (RUNNER_STATUS(3) != 1 || !(RUNNER_BASES_RAN(3) > 3.5f))) {
+            s32 react = 0;
+            if (BSS32A94_2 == 0x15 || BSS32A94_2 == 0x18 || BSS32A94_2 == 0x16) {
+                react = 1;
+            }
+            if (BSS32A94_2 == 0x12 && (BALL_ZONE <= 1 || fn_3_B7E10(BALL_POS[0], BALL_POS[2]))) {
+                react = 1;
+            }
+            if (BSS32A94_2 == 0x13 && BALL_ZONE <= 1 && BALL_HIT_POWER > 180) {
+                react = 1;
+            }
+            if (react) {
+                stop = 1;
+                playSoundEffect(0x157);
+            }
+        }
+    }
+
+stop_sounds:
+    if (stop) {
+        if ((u32)S34C58.unk10 != 0xFFFFFFFF) {
+            sndFXKeyOff(S34C58.unk10);
+            S34C58.unk10 = -1;
+        }
+        if ((u32)S34C58.unk14 != 0xFFFFFFFF) {
+            sndFXKeyOff(S34C58.unk14);
+            S34C58.unk14 = -1;
+        }
+    }
+    if (GAME_STATUS == 0xB) {
+        for (i = 0; i < 3; i++) {
+            if ((u32)(&S34C58.unkC)[i] != 0xFFFFFFFF) {
+                sndFXKeyOff((&S34C58.unkC)[i]);
+                (&S34C58.unkC)[i] = -1;
+            }
+        }
+    }
 }
 
 // .text:0x0008FC0C size:0x74 mapped:0x806CECA0
@@ -445,8 +1513,6 @@ void fn_3_8FC0C(void) {
 }
 
 // .text:0x0008FC80 size:0x298 mapped:0x806CED14
-extern u8 g_Ball[];
-extern u8 g_Practice[];
 extern s16 lbl_3_data_88B8[];
 extern f32 lbl_3_rodata_1604;
 extern f32 lbl_3_rodata_1608;
@@ -543,8 +1609,8 @@ void fn_3_90064(s32 id) {
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4
-// ~50%: orig converts t[b] first (slot 0x8/0xc, passed to sndFXStartEx) and keeps the t[b+0x180] result in r31; ours has the two swapped and schedules differently
-extern u8 lbl_3_data_8148[];
+// NONMATCHING 36%: orig converts the u8 table entries as signed int (xoris) and schedules both conversions before the call; data reached through pooled base lbl_3_data_8148 (+0x20 = lbl_3_data_8168, +0x3E8 = lbl_3_data_8530)
+#if NONMATCHING
 u32 fn_3_90150(s32 a, s32 b) {
     u8* d = lbl_3_data_8148;
     u8* t = d + 0x3E8;
@@ -554,19 +1620,9 @@ u32 fn_3_90150(s32 a, s32 b) {
     sndFXCtrl(h, 0x5B, v2);
     return h;
 }
+#endif
 
 
-extern u16 lbl_3_data_8168[];
-extern u8 lbl_3_data_8530[];
-extern u8 lbl_3_data_8338[];
-extern u32 sndSeqGetValid(u32);
-extern u32 sndSeqPlayEx(u16 sgid, u16 sid, void* arrfile, void* para, u8 studio);
-extern u32* lbl_3_bss_1774;
-extern u8 lbl_3_data_88E0[];
-extern u8 lbl_3_data_830C[];
-extern u8 lbl_3_data_8148[];
-extern u8 lbl_800EF808[];
-extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
 
 // .text:0x00090220 size:0x74 mapped:0x806CF2B4
 u32 fn_3_90220(s32 idx, s32 off) {
@@ -661,9 +1717,10 @@ void fn_3_906FC(void) {
 }
 
 // .text:0x0009056C size:0x108 mapped:0x806CF600
-// ~93%: only the vol table read differs (orig: addi r4,r30,0x1c4; lbzx r0,r4,r0; ours folds 0x1c4 into lbz displacement)
 typedef struct { u16 a, b, c; } SeqEnt6;
 typedef struct { u8 v, pad; } SeqVol2;
+// NONMATCHING 92%: only the vol table read differs (orig: addi r4,r30,0x1c4; lbzx r0,r4,r0; ours folds 0x1c4 into lbz displacement). Pooled base lbl_3_data_8148: +0x798 = lbl_3_data_88E0, +0x1C4 = lbl_3_data_830C
+#if NONMATCHING
 u32 fn_3_9056C(s32 idx) {
     u8* d = lbl_3_data_8148;
     SeqEnt6* e;
@@ -689,3 +1746,4 @@ u32 fn_3_9056C(s32 idx) {
     sndSeqVolume(vol, 0, seq, 0);
     return 1;
 }
+#endif
