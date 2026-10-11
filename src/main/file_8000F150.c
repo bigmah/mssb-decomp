@@ -80,7 +80,15 @@ void fn_8000FD9C(s32 index, s32 speed, s32 limit) {
 
 // .text:0x8000FE08 size:0x4C
 void fn_8000FE08(s32 index, s32 table, s32 msg) {
-    return;
+    TextEntry* e;
+    u16* text = lbl_80366B18.tables[table]->msgs[msg];
+    e = &lbl_80366B18.entries[index];
+    e->text = text;
+    if (e->charLimit >= 0) {
+        e->charLimit = 0;
+        e->finished = 0;
+        e->_35 = 0;
+    }
 }
 
 // .text:0x8000FE54 size:0x94
