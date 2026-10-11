@@ -11,6 +11,7 @@ extern u8 lbl_803CBD24[];
 extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
+extern void fn_2_72630(void);
 extern void fn_800678CC(s32 team);
 extern void unsure_FillRosterPositions(u8 team);
 extern MenuCharEntry lbl_800E8558[54];
@@ -1336,6 +1337,73 @@ void fn_2_102C8(u8 team) {
     if (lbl_2_bss_F468[team + 0x3B] != 0) {
         lbl_2_bss_F468[team + 0x3B] = 0;
         lbl_8034E9A0[((s32*)lbl_2_bss_F410)[other + 8] + 0x4757] = 0;
+    }
+}
+#endif
+
+// NONMATCHING 99%: case 3 reloads the s8 timer before the decrement in the original
+#if NONMATCHING
+// fn_2_110B0, size:0x244
+void fn_2_110B0(void) {
+    u8* scene = lbl_803CBBCC[0];
+    s32 ok;
+    switch (*(u16*)(scene + 4)) {
+    case 0:
+        if (g_d_GameSettings.GameModeSelected == 5 || *(u16*)(scene + 6) != 9) {
+            *(u16*)(scene + 4) = 5;
+        } else {
+            lbl_803297E0[0xCFA1] = 0;
+            *(u16*)(scene + 4) = 1;
+        }
+        break;
+    case 1:
+        fn_2_86EC();
+        break;
+    case 2:
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            ok = lbl_8037169C[0x12];
+        } else {
+            ok = 1;
+        }
+        if (ok) {
+            ((void (*)(void))fn_2_6608)();
+        }
+        break;
+    case 3:
+        if ((s8)lbl_2_bss_F468[0x36] < 0) {
+            if (lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
+                fn_2_72630();
+                lbl_2_bss_F468[0x33] = 0;
+                *(u16*)(lbl_803CBBCC[0] + 4) = 4;
+            }
+        } else {
+            lbl_2_bss_F468[0x36]--;
+        }
+        break;
+    case 4:
+        ((void (*)(void))fn_2_6484)();
+        break;
+    case 5:
+        fn_2_6D3C();
+        break;
+    case 6:
+        fn_2_323C();
+        break;
+    case 7:
+        if ((s8)lbl_2_bss_F468[0x36] < 0) {
+            fn_800625A4(0, 0x13);
+            fn_800625A4(1, 0x13);
+            lbl_2_bss_F468[0x4F] = 0;
+            lbl_2_bss_F468[0x2E] = 0;
+            lbl_2_bss_100B4 = 1;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 8;
+        } else {
+            lbl_2_bss_F468[0x36]--;
+        }
+        break;
+    case 8:
+        fn_2_61A0();
+        break;
     }
 }
 #endif

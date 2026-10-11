@@ -225,4 +225,10 @@ void fn_2_FCB4(u8 team);
 
 void fn_2_F200(u8 team);
 
+void fn_2_6D3C(void);
+
+void fn_2_61A0(void);
+
+void fn_2_110B0(void);
+
 #endif
