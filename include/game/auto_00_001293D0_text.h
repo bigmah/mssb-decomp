@@ -3,20 +3,9 @@
 
 #include "mssbTypes.h"
 #include "main/file_8000F150.h" // LayoutSlot
+#include "game/auto_00_00097144_text.h" // HudTask, lbl_3_common_bss_32724, lbl_3_common_bss_34C90
 
-// HUD task (same layout as LayoutGroup in main/file_8000F150.h; queue item in lbl_803CC1B8 while one of this unit's HUD updaters runs).
-typedef struct HudTask {
-    /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x10];
-    /*0x14*/ u16 baseIdx; // first sprite in lbl_80371C30
-    /*0x16*/ u16 _16;
-    /*0x18*/ u16 timer;
-    /*0x1A*/ u16 _1A;
-    /*0x1C*/ u16 state;
-    /*0x1E*/ u16 _1E;
-    /*0x20*/ u16 _20;
-    /*0x22*/ s16 _22;
-} HudTask;
+// HudTask: see game/auto_00_00097144_text.h
 
 // Barrel Batter CPU: one candidate barrel to aim at (sorted by fn_3_12E084).
 typedef struct BbTarget {

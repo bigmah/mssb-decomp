@@ -1464,17 +1464,6 @@ typedef struct _UnkStructMinigame {
 
 // Per-player arrays (index = player slot 0..3).
 typedef struct _MiniGameControlStruct {
-    /*0x000*/ s8 characterIndex[4];
-    /*0x004*/ u8 _4;
-    /*0x005*/ u8 _5;
-    /*0x006*/ u8 _6;
-    /*0x007*/ u8 _7;
-    /*0x008*/ u8 _8[4];
-    /*0x00C*/ u8 battingHandedness[4]; // really: per player CPU-controlled flag (see game_batter.c)
-    /*0x010*/ u8 aIStrength[4];
-    /*0x014*/ u8 _14;
-    /*0x015*/ u8 _15;
-} MiniGameControlStruct; // size: 0x16
     /*0x00*/ s8 characterIndex[4];
     /*0x04*/ u8 charID[4]; // index into lbl_800E8558 (fn_3_90CB0)
     /*0x08*/ u8 _08[4];
@@ -1540,15 +1529,6 @@ typedef enum _WALL_BALL_GAME_STATE {
     WALL_BALL_GAME_STATE_PITCH_OR_WAITING_FOR_PITCH = 2
 } WALL_BALL_GAME_STATE;
 
-// Per-player record in g_Minigame (0x19E8, 4 entries).
-typedef struct _MinigamePlayerInfo {
-    /*0x0*/ s8 charId; // < 0: none
-    /*0x1*/ s8 _1;
-    /*0x2*/ u8 _2[4];
-    /*0x6*/ s8 _6;
-    /*0x7*/ s8 _7;
-    /*0x8*/ u8 _8;
-} MinigamePlayerInfo; // size: 0x9
 typedef struct _MiniGameResultSlot {
     /*0x0*/ u8 player;
     /*0x1*/ u8 taken;
@@ -1565,11 +1545,15 @@ typedef struct _MiniGameRoleStreak {
 } MiniGameRoleStreak; // size: 0x2
 
 typedef struct _MiniGameSlot9 {
-    /*0x0*/ s8 _0;
+    /*0x0*/ s8 _0; // character id, < 0: none
     /*0x1*/ u8 _1;
     /*0x2*/ s8 _2;
     /*0x3*/ s8 _3;
-    /*0x4*/ u8 _4[5];
+    /*0x4*/ u8 _4;
+    /*0x5*/ u8 _5;
+    /*0x6*/ s8 _6;
+    /*0x7*/ s8 _7;
+    /*0x8*/ u8 _8;
 } MiniGameSlot9; // size: 0x9
 
 typedef struct _MiniGameStruct {
@@ -2178,11 +2162,6 @@ typedef struct _MiniGameStruct {
     /*0x19CE*/ u8 _19CE;
     /*0x19CF*/ u8 _19CF;
     /*0x19D0*/ s16 _19D0;
-    /*0x19D2*/ s16 _19D2;
-    /*0x19D4*/ s16 _19D4;
-    /*0x19D6*/ s16 _19D6;
-    /*0x19D8*/ s16 _19D8;
-    /*0x19DA*/ s8 _19DA[4]; // per player; < 0: not playing
     /*0x19D2*/ s16 _19D2[4];
     /*0x19DA*/ s8 _19DA[4];
     /*0x19DE*/ u8 _19DE;
@@ -2195,8 +2174,6 @@ typedef struct _MiniGameStruct {
     /*0x19E5*/ u8 _19E5;
     /*0x19E6*/ u8 _19E6;
     /*0x19E7*/ u8 _19E7;
-    /*0x19E8*/ MinigamePlayerInfo _19E8[4];
-    /*0x1A0C*/ u8 _1A0C;
     /*0x19E8*/ MiniGameSlot9 _19E8[4];
     /*0x1A0C*/ s8 _1A0C;
     /*0x1A0D*/ u8 _1A0D;
@@ -2469,8 +2446,6 @@ typedef struct _MiniGameStruct {
     /*0x1E02*/ u8 _1E02;
     /*0x1E03*/ u8 _1E03;
     /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)
-    /*0x1E08*/ u8 _1E08[0x1E22 - 0x1E08];
-    /*0x1DBC*/ u8 _1DBC[0x1E08 - 0x1DBC];
     /*0x1E08*/ MiniGameResultSlot resultSlot[4];
     /*0x1E10*/ u8 _1E10[0x1E22 - 0x1E10];
     /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)

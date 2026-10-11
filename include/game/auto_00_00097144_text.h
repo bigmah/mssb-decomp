@@ -34,7 +34,11 @@ typedef struct GameHudFlags {
     /*0xB4*/ u8 _B4;
     /*0xB5*/ u8 _B5;
     /*0xB6*/ u8 _B6;
-    /*0xB7*/ u8 _B7[0xBC - 0xB7];
+    /*0xB7*/ u8 _B7;
+    /*0xB8*/ u8 _B8;
+    /*0xB9*/ u8 _B9;
+    /*0xBA*/ u8 _BA;
+    /*0xBB*/ u8 _BB;
     /*0xBC*/ u8 _BC;
     /*0xBD*/ u8 _BD;
     /*0xBE*/ u8 _BE;
@@ -59,7 +63,9 @@ typedef struct GameHudFlags {
     /*0xD7*/ u8 _D7[0xD9 - 0xD7];
     /*0xD9*/ u8 _D9;
     /*0xDA*/ u8 _DA;
-    /*0xDB*/ u8 _DB[0x124 - 0xDB];
+    /*0xDB*/ u8 _DB;
+    /*0xDC*/ u8 _DC;
+    /*0xDD*/ u8 _DD[0x124 - 0xDD];
 } GameHudFlags; // size: 0x124
 
 extern GameHudFlags lbl_3_common_bss_32724;
@@ -67,7 +73,9 @@ extern GameHudFlags lbl_3_common_bss_32724;
 // Pause / in-game menu state (lbl_3_common_bss_34C90, 0x264 bytes); only the fields used here.
 typedef struct GamePauseState {
     /*0x000*/ s32 team; // team that opened the menu
-    /*0x004*/ u8 _004[0x12 - 0x4];
+    /*0x004*/ u8 _004[0xA - 0x4];
+    /*0x00A*/ s16 _00A;
+    /*0x00C*/ u8 _00C[0x12 - 0xC];
     /*0x012*/ s16 _012;
     /*0x014*/ u8 _014[0x1D0 - 0x14];
     /*0x1D0*/ u8 layout;  // index into the item layout table (lbl_3_data_D860)
@@ -100,6 +108,7 @@ typedef struct HudTask {
     /*0x1C*/ u16 state;
     /*0x1E*/ u16 _1E;
     /*0x20*/ u16 _20;
+    /*0x22*/ s16 _22;
 } HudTask;
 
 #define HUD_TASK ((HudTask*)lbl_803CC1B8)
