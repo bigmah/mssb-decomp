@@ -42,7 +42,7 @@ void fn_3_CD958(void);
 u8 fn_3_CD968(Vec* v, f32 w, f32 h);
 void fn_3_CDB48(void* pv, u8* h);
 void fn_3_CDD90(u8* p);
-void fn_3_CDFA4(void);
+s32 fn_3_CDFA4(u8* h);
 void fn_3_CE56C(u8* h, u8 idx);
 void fn_3_CE8E4(void);
 void fn_3_CE954(void);

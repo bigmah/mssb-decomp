@@ -44,6 +44,9 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern const char lbl_3_rodata_249C[];
+extern const u8 lbl_3_rodata_2498[];
+extern const f32 lbl_3_rodata_2734;
 extern const f32 lbl_3_rodata_2750;
 extern const f32 lbl_3_rodata_2754;
 extern const f32 lbl_3_rodata_2758;
@@ -688,8 +691,90 @@ void fn_3_CDD90(u8* p) {
 }
 
 // .text:0x000CDFA4 size:0x5C8 mapped:0x8070D038
-void fn_3_CDFA4(void) {
-    return;
+#pragma dont_inline off
+static inline void CDB48_inl(void* pv, u8* h) {
+    PEnt* p = pv;
+    f32 a;
+    s16 t;
+    a = lbl_3_rodata_2658[0] * (f32)(rand() % 360);
+    p->f10 = lbl_3_rodata_26D0 * (f32)cos(a);
+    p->f18 = lbl_3_rodata_26D0 * (f32)sin(a);
+    p->f14 = lbl_3_rodata_26D8;
+    p->f1C = lbl_3_rodata_26A0;
+    p->f1C = p->f1C + (f64)((u32)rand() % 2500) / lbl_3_rodata_26E0;
+    p->f38 = lbl_3_rodata_26E8 * p->f1C;
+    p->f3C = lbl_3_rodata_26F0 * p->f1C;
+    p->f20 = (f64)(rand() % 101) / lbl_3_rodata_26F8;
+    t = rand() % 24 + 0x48;
+    p->s4A = t;
+    ((u8*)p)[0x4F] = t;
+    p->f4 = *(f32*)(h + 0x18);
+    p->f8 = *(f32*)(h + 0x1C);
+    p->fC = *(f32*)(h + 0x20);
+    p->c43 = p->f24 = 255.0f;
+    p->s4A = ((u8*)p)[0x4F];
+    p->s48 = 0;
+}
+
+static inline void CDD90_inl(u8* p) {
+    *(f32*)(p + 0x38) = *(f32*)(p + 0x20) * (lbl_3_rodata_2710 * *(f32*)(p + 0x1C) / p[0x4F]) + *(f32*)(p + 0x38);
+    *(f32*)(p + 0x3C) = *(f32*)(p + 0x20) * (lbl_3_rodata_2718 * *(f32*)(p + 0x1C) / p[0x4F]) + *(f32*)(p + 0x3C);
+    *(f32*)(p + 0x24) = *(f32*)(p + 0x24) + (lbl_3_rodata_2720 / p[0x4F]);
+    if (*(f32*)(p + 0x24) < 0.0f) {
+        *(f32*)(p + 0x24) = 0.0f;
+    }
+    p[0x43] = *(f32*)(p + 0x24);
+    p[0x40] = lbl_3_bss_A01C[0] * (p[0x43] / lbl_3_rodata_2728);
+    p[0x41] = lbl_3_bss_A01C[1] * (p[0x43] / lbl_3_rodata_2728);
+    p[0x42] = lbl_3_bss_A01C[2] * (p[0x43] / lbl_3_rodata_2728);
+    *(f32*)(p + 4) = *(f32*)(p + 4) + *(f32*)(p + 0x10);
+    *(f32*)(p + 8) = *(f32*)(p + 8) - *(f32*)(p + 0x14);
+    *(f32*)(p + 0xC) = *(f32*)(p + 0xC) + *(f32*)(p + 0x18);
+    *(s16*)(p + 0x4A) = *(s16*)(p + 0x4A) - 1;
+}
+#pragma dont_inline on
+
+// Emitter update for the four stadium smoke plumes (fn_3_CE56C). Skipped (returns 0)
+// during game states 0x1B-0x21 and, in states 1/2, while the plume is off screen.
+// Each live particle grows, fades and drifts (fn_3_CDD90); finished ones respawn (fn_3_CDB48).
+s32 fn_3_CDFA4(u8* h) {
+    PEnt* e = *(PEnt**)(h + 0xC);
+    u8 st = g_GameLogic[0x11E];
+    Vec pos;
+    if (st >= 0x1B && st <= 0x21) {
+        return 0;
+    }
+    if (st == 2 || st == 1) {
+        pos = *(Vec*)(h + 0x18);
+        if (!fn_3_CD968(&pos, lbl_3_rodata_2730, lbl_3_rodata_2734)) {
+            return 0;
+        }
+    }
+    fn_80033620(h);
+    GXSetZMode(1, 3, 0);
+    do {
+        if (e->s48 <= 0 && e->s4A != 0) {
+            if (e->c4C % 3 == 0) {
+                GXSetBlendMode(3, 1, 1, 0);
+                lbl_3_bss_A01C = (u8*)lbl_3_rodata_249C;
+            } else {
+                GXSetBlendMode(1, 1, 1, 0);
+                lbl_3_bss_A01C = (u8*)lbl_3_rodata_2498;
+            }
+            fn_8003403C(e->f38, e->f3C);
+            fn_80033CC8(e, *(void**)(h + 0x10));
+            if ((u32)fn_8005268C() == 0) {
+                CDD90_inl((u8*)e);
+            }
+        }
+        e->s48 -= (fn_8005268C() == 0);
+        if (e->s4A == 0) {
+            CDB48_inl(e, h);
+        }
+        e = e->next;
+    } while (e != NULL);
+    h[0x25] = 1;
+    return 0;
 }
 
 // .text:0x000CE56C size:0x378 mapped:0x8070D600
