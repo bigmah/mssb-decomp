@@ -53,6 +53,7 @@ void fn_80052D70(void);
 void possiblyTransitionBlackScreen(void);
 void fn_80053FE8(void);
 void fn_80054910(SceneTask* task, s32 port);
+void fn_80055798(SceneTask* task, s32 port);
 void fn_80056120(void);
 void fn_800569C8(void);
 void challengeCheckStarsMenuLoading(void);

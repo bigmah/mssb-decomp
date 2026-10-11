@@ -59,6 +59,9 @@ extern BOOL fn_80042D68(SceneTask* owner, s32 idx, s32 frame);
 extern BOOL fn_80042DA8(SceneTask* owner, s32 idx, s32 frame);
 extern TutorialInput lbl_803C5F04;
 
+// Layout object number n of a task's sprite run.
+#define TASK_OBJ(task, n) (lbl_80371C30[(task)->u14.objIdx + (n)].obj)
+
 static inline void SetMenu(s16 menu) {
     lbl_8034E978.menu = menu;
     lbl_8034E978.prevTrack = lbl_8034E978.track;
@@ -296,8 +299,41 @@ void fn_80055374(void) {
 }
 
 // .text:0x80055798 size:0x254
-void fn_80055798(void) {
-    return;
+void fn_80055798(SceneTask* task, s32 port) {
+    u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[8][port + 1]
+    s32 i;
+
+    if ((*(state += 0x31) == 0) ? TRUE : FALSE) {
+        if (lbl_803C5F04.mode == 0) {
+            if (lbl_803C5F04.tblA[1] == 1) {
+                TASK_OBJ(task, 26)->_68 = 1;
+            } else {
+                TASK_OBJ(task, 26)->_5C = 30 << 16;
+                TASK_OBJ(task, 26)->_68 = 4;
+            }
+            TASK_OBJ(task, 6)->_68 = 1;
+            TASK_OBJ(task, 11)->_68 = 1;
+            TASK_OBJ(task, 27)->_68 = 1;
+            TASK_OBJ(task, 28)->_68 = 1;
+            for (i = 0; i < 3; i++) {
+                TASK_OBJ(task, i + 0x20)->_68 = 1;
+            }
+            if (g_d_GameSettings._06 != 2 && g_d_GameSettings.GameModeSelected == 5) {
+                TASK_OBJ(task, 87)->_5C = 30 << 16;
+                TASK_OBJ(task, 87)->_68 = 4;
+            }
+        } else {
+            TASK_OBJ(task, 38)->_68 = 1;
+            TASK_OBJ(task, 41)->_68 = 1;
+            TASK_OBJ(task, 42)->_68 = 1;
+            TASK_OBJ(task, 6)->_68 = 1;
+            TASK_OBJ(task, 11)->_68 = 1;
+            TASK_OBJ(task, 27)->_68 = 1;
+        }
+        TASK_OBJ(task, 88)->_68 = 1;
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
 
 // .text:0x800559EC size:0x734
