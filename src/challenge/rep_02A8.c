@@ -1,4 +1,5 @@
 #include "challenge/rep_02A8.h"
+#include "challenge/rep_0010.h"
 
 
 #include "static/UnknownHomes_Static.h"
@@ -14,7 +15,6 @@ extern u8 lbl_1_data_17A4[];
 extern u8 lbl_1_bss_2FD9[];
 
 extern u8 lbl_1_bss_2FDA[];
-extern u8* lbl_803CC1B8[];
 extern void fn_1_A250(void);
 
 extern u8 lbl_1_bss_2FEE[];
@@ -40,6 +40,21 @@ extern u16 lbl_1_data_17C4[];
 extern s16 lbl_1_bss_3054[];
 extern u16 lbl_1_data_17E8[];
 extern u32 lbl_1_data_1CA8;
+extern u8 lbl_1_bss_2FDF;
+
+// TODO type: these are all part of the file's .bss / .data pools (lbl_1_bss_2FD8, lbl_1_data_FC0).
+extern u8 lbl_1_bss_2FE0;  // sound test page: 0 = test active, 1 = paused (Y/X)
+extern u8 lbl_1_bss_2FE1;  // sound test row 0..3
+extern s16 lbl_1_bss_2FE2; // row 1 index into lbl_1_data_188C, 0..47
+extern s16 lbl_1_bss_2FE4; // row 2 index into lbl_1_data_18EC, 0..23
+extern s16 lbl_1_bss_2FE6; // row 3 argument for fn_80062890, 0..68
+extern u32 lbl_1_bss_3044; // fn_80062890 result
+extern u32 lbl_1_bss_3048; // row 2 voice
+extern u32 lbl_1_bss_304C; // row 1 voice
+extern u32 lbl_1_bss_3050; // row 0 voice
+extern s16 lbl_1_data_1CA2; // row 0 sound effect id, 0x151..0x1B6
+extern u16 lbl_1_data_188C[48];
+extern u16 lbl_1_data_18EC[24];
 
 // fn_1_A464, size:0x1D0
 void fn_1_A464(void) {
@@ -51,7 +66,7 @@ void fn_1_A464(void) {
     } else if (pressed & 0x1200) {
         fn_1_A718();
         fn_800ACFB0((void*)lbl_800EF808[4]);
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_A348;
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
     } else if (held & 1) {
         if (held & 0x800) {
             lbl_1_data_1CA4 -= 10;
@@ -86,20 +101,20 @@ void fn_1_A348(void) {
         return;
     }
     if (pressed & 0x100) {
-        *(void (**)(void))lbl_803CC1B8[0] = lbl_1_data_1C8C[lbl_1_common_bss_49A78[0]];
+        *(void (**)(void))((u8*)lbl_803CC1B8) = lbl_1_data_1C8C[lbl_1_common_bss_49A78[0]];
         lbl_1_common_bss_49A78[1] = 0;
         return;
     }
     if (pressed & 0x1200) {
         lbl_1_bss_2FDA[0] = 0;
         lbl_1_bss_2FD9[0] = 0;
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_C2A4;
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_C2A4;
     }
 }
 
 // fn_1_C188, size:0x11C
 void fn_1_C188(void) {
-    u8* queue = lbl_803CC1B8[0];
+    u8* queue = ((u8*)lbl_803CC1B8);
     switch ((s32)lbl_1_bss_2FDD[0]) {
     case 0: {
         s32 option;
@@ -110,7 +125,7 @@ void fn_1_C188(void) {
         child[0x18] = 0;
         child[0x19] = option;
         *(s32 (**)(void))(child + 0x14) = fn_1_A908;
-        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
         lbl_1_bss_2FDD[0]++;
         break;
     }
@@ -134,7 +149,7 @@ void fn_1_C188(void) {
 
 // fn_1_B4A4, size:0x114
 void fn_1_B4A4(void) {
-    u8* queue = lbl_803CC1B8[0];
+    u8* queue = ((u8*)lbl_803CC1B8);
     switch ((s32)lbl_1_bss_2FE8[0]) {
     case 0: {
         u8* child;
@@ -143,7 +158,7 @@ void fn_1_B4A4(void) {
         child[0x18] = 0;
         child[0x19] = 0x2A;
         *(s32 (**)(void))(child + 0x14) = fn_1_A7E4;
-        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
         lbl_1_bss_2FE8[0]++;
         break;
     }
@@ -165,7 +180,7 @@ void fn_1_B4A4(void) {
 
 // fn_1_A634, size:0xE0
 void fn_1_A634(void) {
-    u8* queue = lbl_803CC1B8[0];
+    u8* queue = ((u8*)lbl_803CC1B8);
     switch ((s32)lbl_1_bss_2FEE[0]) {
     case 0: {
         u8* child;
@@ -174,7 +189,7 @@ void fn_1_A634(void) {
         child[0x18] = 0;
         child[0x19] = 3;
         *(s32 (**)(void))(child + 0x14) = fn_1_A838;
-        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
         lbl_1_bss_2FEE[0]++;
         break;
     }
@@ -221,7 +236,7 @@ void fn_1_A2E4(void) {
         lbl_1_bss_2FDA[0]++;
         break;
     case 2:
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_A250;
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A250;
         break;
     }
 }
@@ -301,7 +316,7 @@ void fn_1_BEF4(s16 voice) {
 
 // fn_1_BDD8, size:0x11C
 void fn_1_BDD8(void) {
-    u8* queue = lbl_803CC1B8[0];
+    u8* queue = ((u8*)lbl_803CC1B8);
     switch ((s32)lbl_1_bss_2FDE[0]) {
     case 0: {
         s32 option;
@@ -312,7 +327,7 @@ void fn_1_BDD8(void) {
         child[0x18] = 0;
         child[0x19] = option;
         *(s32 (**)(void))(child + 0x14) = fn_1_A8B4;
-        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
         lbl_1_bss_2FDE[0]++;
         break;
     }
@@ -343,7 +358,7 @@ void fn_1_BFB0(void) {
         fn_1_BF34(effect);
     } else if (pressed & 0x1200) {
         fn_1_A718();
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_A348;
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
     } else if (held & 1) {
         if (held & 0x800) {
             lbl_1_bss_3056[0] -= 10;
@@ -374,7 +389,7 @@ void fn_1_BC00(void) {
         fn_1_BF34(effect);
     } else if (pressed & 0x1200) {
         fn_1_A718();
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_A348;
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
     } else if (held & 1) {
         if (held & 0x800) {
             lbl_1_bss_3054[0] -= 10;
@@ -395,3 +410,62 @@ void fn_1_BC00(void) {
         }
     }
 }
+
+// .text:0x0000BA64 size:0x19C
+// Sound test: loads the menu sound groups, then hands over to fn_1_B5B8.
+void fn_1_BA64(void) {
+    ChTaskHeader* task = lbl_803CC1B8;
+    ChSoundGroupTask* child;
+
+    switch (lbl_1_bss_2FDF) {
+    case 0:
+        task->result = 0;
+        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
+        child->step = 0;
+        child->group = 1;
+        child->callback = fn_1_A880;
+        ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
+        lbl_1_bss_2FDF++;
+        break;
+    case 1:
+        if (task->result != 0) {
+            task->result = 0;
+            lbl_1_bss_2FDF++;
+        }
+        break;
+    case 2:
+        task->result = 0;
+        lbl_1_bss_2FDF++;
+        break;
+    case 3:
+        task->result = 0;
+        lbl_1_bss_2FDF++;
+        break;
+    case 4:
+        lbl_1_bss_2FDF++;
+        break;
+    case 5:
+        lbl_1_bss_2FDF++;
+        break;
+    case 6:
+        task->result = 0;
+        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
+        child->step = 0;
+        child->group = 0x29;
+        child->callback = fn_1_A77C;
+        ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
+        lbl_1_bss_2FDF++;
+        break;
+    case 7:
+        if (task->result != 0) {
+            task->result = 0;
+            lbl_1_bss_2FDF++;
+        }
+        break;
+    case 8:
+        task->func = fn_1_B5B8;
+        lbl_1_bss_2FDF = 0;
+        break;
+    }
+}
+
