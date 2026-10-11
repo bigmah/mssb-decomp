@@ -1,14 +1,120 @@
 #include "main/file_80021308.h"
+#include "main/file_800B0724.h"
+
+// Sound heap, disc/ARAM loader queue and sound group management.
+
+extern SoundManager lbl_800EF808;
+extern AramLoader lbl_803716B8;
+extern DiskFileEntry lbl_800EF508[];
+extern DiskFileEntry lbl_800EFD38[];
+extern DiskFileEntry lbl_800EFBE8[];
+extern DiskFileEntry lbl_800F1D68;
+extern DiskFileEntry lbl_800F1D78[];
+extern DiskFileEntry lbl_800F5D98[];
+extern SoundFileTables lbl_800F71D8;
+extern u8 lbl_800EFBB4[];
+extern u8 lbl_80118740[];
+extern u8 lbl_80158740[];
+extern u8 lbl_8015C740[];
+extern u32 lbl_8017E320[];
+extern u16 lbl_803CB7E0[4];
+extern SND_HOOKS lbl_803CB7D8;
+extern u8* lbl_803CBC40;
+extern SoundLoadTask* lbl_803CC1B8;
+extern f32 lbl_803CC548;
+extern f32 lbl_803CC54C;
+extern f32 lbl_803CC550;
+extern f32 lbl_803CC554;
+extern f32 lbl_803CC558;
+extern f32 lbl_803CC55C;
+extern u8 lbl_803C6CF8[];           // TODO type: DVD/ARAM transfer state
+extern u8 gDataDecompressorValues[]; // TODO type
+
+// TODO: these belong in their own units' headers.
+void* ARAMTransfer(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr);
+void* _OSAllocFromHeap(u32 align, u32 size);
+void fn_800ACF78(void* block, u32 newSize);
+void fn_800ACFB0(void* block);
+void fn_800ACD44(void);
+u32 fn_800A6354(u32 size);
+u32 fn_800A6418(u32 size);
+void fn_800A6304(void);
+void fn_800A648C(void);
+void fn_800A7568(void);
+void fn_800A8F68(void);
+void initSound(void* config, void* aiStack, void* buffer, u32 bufferSize);
+u32 sndPushGroup(void* prj_data, u16 gid, void* samples, void* sdir, void* pool);
+u32 sndPopGroup(void);
+s32 sndSetAuxProcessingCallbacks(u8 studio, SND_AUX_CALLBACK auxA, void* userA, u8 midiA, u16 seqIDA, SND_AUX_CALLBACK auxB,
+                                 void* userB, u8 midiB, u16 seqIDB);
+u32 OSGetSoundMode(void);
+void OSSetSoundMode(u32 mode);
+void* memset(void* dst, int c, u32 n);
+
+#define DVD_STATE_IDLE (*(s8*)(lbl_803C6CF8 + 0x715)) // TODO type
+
+// The on-disc group data stores its pointers as offsets from the start of the block.
+// TODO port: these 32-bit offset fields can't hold 64-bit pointers.
+static inline void relocateSoundGroup(SoundGroupData* data) {
+    data->proj = (u8*)data->proj + (u32)data;
+    data->sdir = (u8*)data->sdir + (u32)data;
+    data->pool = (u8*)data->pool + (u32)data;
+    data->samp = (u8*)data->samp + (u32)data;
+}
+
+// Advance the ARAM/disc transfer queue; returns 1 once it is empty (inlined into callers).
+static inline s32 aramQueueUpdate(void) {
+    AramQueueEntry* e;
+
+    if (lbl_803716B8.busy == 0) {
+        return 1;
+    }
+    if (DVD_STATE_IDLE != 1) {
+        return 0;
+    }
+    if (lbl_803716B8.current.callback != NULL) {
+        lbl_803716B8.current.callback(lbl_803716B8.current.entry, lbl_803716B8.current.dst, lbl_803716B8.current.user);
+    }
+    if (lbl_803716B8.tail != lbl_803716B8.head) {
+        e = &lbl_803716B8.queue[lbl_803716B8.tail];
+        e->dst = ARAMTransfer(e->entry, e->dst, e->mode, e->aramAddr);
+        lbl_803716B8.current = *e;
+        lbl_803716B8.tail = (lbl_803716B8.tail + 1) % ARAM_QUEUE_LEN;
+    } else {
+        lbl_803716B8.current.callback = NULL;
+        lbl_803716B8.busy = 0;
+        return 1;
+    }
+    return 0;
+}
+
+// Add a transfer to the ARAM/disc queue (inlined into callers).
+static inline s32 aramQueuePush(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user) {
+    AramQueueEntry* e;
+    s8 next = (lbl_803716B8.head + 1) % ARAM_QUEUE_LEN;
+
+    if (next == lbl_803716B8.tail || (dst == NULL && callback == NULL)) {
+        return 0;
+    }
+    lbl_803716B8.busy = 1;
+    e = &lbl_803716B8.queue[lbl_803716B8.head];
+    e->entry = entry;
+    e->dst = dst;
+    e->mode = mode;
+    e->aramAddr = aramAddr;
+    e->callback = callback;
+    e->user = user;
+    lbl_803716B8.head = next;
+    return 1;
+}
 
 // .text:0x80021308 size:0xEC
 void fn_80021308(void) {
     return;
 }
 
-extern u8* lbl_803CBC40;
-
 // fn_800213F4, size:0x4
-void fn_800213F4(void) {
+void fn_800213F4(void* p) {
 }
 
 // fn_800213F8, size:0x18
@@ -83,8 +189,6 @@ void fn_80021AA0(void) {
     return;
 }
 
-extern u8 lbl_803716B8[];
-
 // fn_80021AC0, size:0x4
 void fn_80021AC0(void) {
 }
@@ -95,7 +199,7 @@ void fn_80021AC4(void) {
 
 // fn_80021AC8, size:0x14
 void fn_80021AC8(void) {
-    *(u32*)(lbl_803716B8 + 0x55c) = 0x0;
+    lbl_803716B8.unk55C = 0;
 }
 
 // .text:0x80021ADC size:0xE0
@@ -118,21 +222,9 @@ void fn_8002204C(void) {
     return;
 }
 
-extern u8 lbl_803716B8[];
-extern u8 lbl_800EFD38[];
-
-typedef struct {
-    void* a;
-    void* end;
-    s32 mode;
-    s32 v;
-    void (*cb)(void);
-    s32 z;
-} QEntry8002;
-
 // fn_80022620, size:0x14
-void fn_80022620(void) {
-    *(u8*)(lbl_803716B8 + 0x1e8) = 0x0;
+void fn_80022620(DiskFileEntry* entry, void* dst, void* user) {
+    lbl_803716B8.keepTask = 0;
 }
 
 // fn_8002244C, size:0x100
@@ -140,30 +232,30 @@ void fn_8002244C(s32 unused, s32* hdr, s32 arg) {
     s32 v;
     s8 next;
     s32 h;
-    s32 len = (*(u32*)(lbl_800EFD38 + ((arg >> 16) + 0x36) * 16 + 4) & 0x0FFFFFFF);
+    s32 len = DISK_FILE_SIZE(DISK_FILE_ENTRY(lbl_800EFD38, (arg >> 16) + 0x36));
     len = (len + 0x1F) & ~0x1F;
     hdr[3] = len;
-    hdr = (s32*)(len + (u32)hdr);
-    v = *(s32*)(*(u8**)(lbl_803716B8 + 0x1DC) + (u16)arg * 4);
-    h = (s8)lbl_803716B8[0x1C8];
+    hdr = (s32*)(len + (u32)hdr); // TODO port: pointer through u32 (needed to match)
+    v = *(s32*)((u8*)lbl_803716B8.aramAddrs[1] + (u16)arg * 4);
+    h = lbl_803716B8.head;
     next = (h + 1) % 18;
-    if (next == (s8)lbl_803716B8[0x1C9]) {
+    if (next == lbl_803716B8.tail) {
         return;
     }
     if (hdr == NULL && fn_80022620 == NULL) {
         return;
     }
     {
-        QEntry8002* e;
-        lbl_803716B8[0x1CA] = 1;
-        e = (QEntry8002*)(lbl_803716B8 + (s8)lbl_803716B8[0x1C8] * 0x18) + 1;
-        e->a = lbl_800EFD38 + ((u16)arg + 0x36) * 16;
-        e->end = hdr;
+        AramQueueEntry* e;
+        lbl_803716B8.busy = 1;
+        e = &lbl_803716B8.queue[lbl_803716B8.head];
+        e->entry = DISK_FILE_ENTRY(lbl_800EFD38, (u16)arg + 0x36);
+        e->dst = hdr;
         e->mode = 3;
-        e->v = v;
-        e->cb = fn_80022620;
-        e->z = 0;
-        lbl_803716B8[0x1C8] = next;
+        e->aramAddr = v;
+        e->callback = fn_80022620;
+        e->user = NULL;
+        lbl_803716B8.head = next;
     }
 }
 
