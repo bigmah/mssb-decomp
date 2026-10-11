@@ -3035,15 +3035,15 @@ void fn_3_46E08(void) {
 
 // .text:0x00047628 size:0x150 mapped:0x806866BC
 #pragma opt_unroll_loops off
-// 99%: float load hoisted above cmplwi (lfs f1,0x64(r4) before bne) in loop; orig loads after test
+#pragma dont_inline off
+// 99.8%: f0/f1 swapped between the hoisted 3.7f constant and runner+0x64 in the loop. Inlined into fn_3_480B8.
 int fn_3_47628(void) {
     int i;
     u8* r;
     f32 v;
     for (i = 3; i >= 0; i--) {
         r = g_Runners + i * 0x154;
-        v = *(f32*)(r + 0x64);
-        if (r[0x123] == 1 && (!(v >= lbl_3_rodata_C50) || r[0x137] != 1 || r[0x128] == 2)) {
+        if (r[0x123] == 1 && (!(*(f32*)(r + 0x64) >= lbl_3_rodata_C50) || r[0x137] != 1 || r[0x128] == 2)) {
             r = g_Runners + i * 0x154;
             v = *(f32*)(r + 0x64);
             if (v >= lbl_3_rodata_B78) {
@@ -3066,6 +3066,7 @@ int fn_3_47628(void) {
     }
     return 4;
 }
+#pragma dont_inline on
 #pragma opt_unroll_loops reset
 
 // .text:0x00047778 size:0x940 mapped:0x8068680C
@@ -3074,9 +3075,37 @@ void fn_3_47778(void) {
 }
 
 // .text:0x000480B8 size:0x314 mapped:0x8068714C
-void fn_3_480B8(void) {
-    return;
+// NONMATCHING 99.9%: f0/f1 swapped for the 3.7f constant vs runner+0x64 in the inlined fn_3_47628 loop (same issue as fn_3_47628)
+#if NONMATCHING
+// Fielder i covers the base the lead runner is heading for (fn_3_47628).
+void fn_3_480B8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int base;
+    f32 x;
+    f32 z;
+    f32 dz, dx, d;
+    base = fn_3_47628();
+    if (base != -1) {
+        *(s16*)(f + 0x18E) = base;
+        if (((int (*)(int, f32*, f32*))fn_3_46E08)(i, &x, &z) != 0) {
+            *(f32*)(f + 0x14) = x;
+            *(f32*)(f + 0x1C) = z;
+            dx = x - *(f32*)f;
+            dz = z - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                d = dx * dx + dz * dz;
+                SQRT_L(d);
+                *(f32*)(f + 0x68) = d;
+            }
+            f[0x1D9] = 1;
+        }
+    }
 }
+#endif
 
 // .text:0x000483CC size:0xB4 mapped:0x80687460
 void fn_3_483CC(int i) {
