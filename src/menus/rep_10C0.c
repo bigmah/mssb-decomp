@@ -337,6 +337,95 @@ void fn_2_93BF8(MenuCamera* cam) {
     fn_80011640(cam, cam);
 }
 
+// fn_2_93C64, size:0x9A0
+// NONMATCHING 99.6%: f0/f1 swapped in the cam->pos clamps and f28-f31 rotated in the inlined fn_2_927C8 spring
+#if NONMATCHING
+void fn_2_93C64(void) {
+    Mtx44 proj;
+    Vec pos;
+    Vec focus;
+    Vec target;
+    MenuCamera* cam = &lbl_2_bss_1A81D4;
+    u8 preset = WORK->presetIndex;
+
+    if (WORK->focusMode == 1) {
+        memcpy(&pos, &lbl_2_data_38E0[preset].pos, sizeof(Vec));
+        fn_2_68DE8(WORK->focusIndex, &focus);
+        PSVECAdd(&focus, &pos, &pos);
+        memcpy(&cam->pos, &pos, sizeof(Vec));
+    } else {
+        memcpy(&pos, &lbl_2_data_38E0[preset].pos, sizeof(Vec));
+        memcpy(&cam->pos, &pos, sizeof(Vec));
+    }
+    if (WORK->noClamp == 0) {
+        if (cam->pos.x <= lbl_2_rodata_1168) {
+            cam->pos.x = lbl_2_rodata_1168;
+        }
+        if (cam->pos.x >= lbl_2_rodata_116C) {
+            cam->pos.x = lbl_2_rodata_116C;
+        }
+        if (cam->pos.z <= lbl_2_rodata_1170) {
+            cam->pos.z = lbl_2_rodata_1170;
+        }
+        if (cam->pos.z >= lbl_2_rodata_1174) {
+            cam->pos.z = lbl_2_rodata_1174;
+        }
+        memcpy(&WORK->posClamped, &cam->pos, sizeof(Vec));
+    }
+    memcpy(&WORK->pos, &cam->pos, sizeof(Vec));
+    WORK->posPrev.x = WORK->pos.x;
+    WORK->posPrev.y = WORK->pos.y;
+    WORK->posPrev.z = WORK->pos.z;
+    WORK->posSpring.x = lbl_2_rodata_1180 + WORK->pos.x;
+    WORK->posSpring.y = lbl_2_rodata_1180 + WORK->pos.y;
+    WORK->posSpring.z = lbl_2_rodata_1180 + WORK->pos.z;
+
+    if (WORK->focusIndex != -1) {
+        fn_2_68DE8(WORK->focusIndex, &target);
+    } else {
+        memcpy(&target, &lbl_2_data_38E0[preset].target, sizeof(Vec));
+    }
+    memcpy(&WORK->targetClamped, &target, sizeof(Vec));
+    if (WORK->noClamp == 0) {
+        if (target.x <= lbl_2_rodata_1168) {
+            target.x = lbl_2_rodata_1168;
+        } else if (target.x >= lbl_2_rodata_116C) {
+            target.x = lbl_2_rodata_116C;
+        } else {
+            WORK->targetClamped.x = target.x;
+        }
+        if (target.z <= lbl_2_rodata_1178) {
+            target.z = lbl_2_rodata_1178;
+        } else if (target.z >= lbl_2_rodata_117C) {
+            target.z = lbl_2_rodata_117C;
+        } else {
+            WORK->targetClamped.z = target.z;
+        }
+    }
+    memcpy(&WORK->target, &target, sizeof(Vec));
+    WORK->targetPrev.x = lbl_2_rodata_1180 + WORK->target.x;
+    WORK->targetPrev.y = lbl_2_rodata_1180 + WORK->target.y;
+    WORK->targetPrev.z = lbl_2_rodata_1180 + WORK->target.z;
+    WORK->targetSpring.x = lbl_2_rodata_1184 + WORK->target.x;
+    WORK->targetSpring.y = lbl_2_rodata_1184 + WORK->target.y;
+    WORK->targetSpring.z = lbl_2_rodata_1184 + WORK->target.z;
+    fn_2_927C8(cam, &target);
+    memcpy(&WORK->target, &target, sizeof(Vec));
+    fn_2_92CB0(cam);
+    memcpy(&cam->pos, &WORK->pos, sizeof(Vec));
+    memcpy(&cam->target, &WORK->target, sizeof(Vec));
+
+    C_MTXFrustum(proj, lbl_2_rodata_1188, lbl_2_rodata_118C, lbl_2_rodata_1190, lbl_2_rodata_1194, lbl_2_rodata_1198, lbl_2_rodata_119C);
+    GXSetProjection(proj, GX_PERSPECTIVE);
+    fn_800B806C(0, lbl_2_rodata_11A0, lbl_2_rodata_11A4, lbl_2_rodata_11A8, lbl_2_rodata_11AC, lbl_2_rodata_11B0, lbl_2_rodata_11B4, lbl_2_rodata_11B8);
+    cam->_58 = 0;
+    cam->advance = lbl_2_rodata_1144;
+    cam->rotX = lbl_2_data_38E0[preset].rotX;
+    cam->rotY = lbl_2_data_38E0[preset].rotY;
+    cam->fov = lbl_2_data_38E0[preset].fov;
+}
+#endif
+
 // fn_2_94604, size:0x18
 void fn_2_94604(u8 value) {
     WORK->focusMode = value;
