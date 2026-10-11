@@ -32,7 +32,6 @@ extern u8 lbl_803CB889;
 extern char lbl_800E6970[]; // "...(%d) Step No %d \n"
 extern char lbl_800E69A8[]; // "sound end \n"
 extern s32 lbl_803CBD0C;
-extern u8 lbl_8034E9A0[];
 extern CharModelTable lbl_8036E548;
 
 extern s32 fn_800698F8(s32 kind);
@@ -58,6 +57,11 @@ extern void fn_800369DC(f32 zoom);
 extern BOOL fn_80042D68(SceneTask* owner, s32 idx, s32 frame);
 extern BOOL fn_80042DA8(SceneTask* owner, s32 idx, s32 frame);
 extern TutorialInput lbl_803C5F04;
+extern RosterData lbl_8034E9A0;
+extern RosterSlot lbl_80354720[2][9];
+extern s16 translateStarPitch(u8 star);
+extern s8 translateStarPitchHitIndex(u8 star);
+extern s16 translateStarSwing(u8 star);
 
 // Layout object number n of a task's sprite run.
 #define TASK_OBJ(task, n) (lbl_80371C30[(task)->u14.objIdx + (n)].obj)
@@ -407,9 +411,60 @@ void fn_80058050(void) {
 }
 
 // .text:0x80058394 size:0x2B0
-void fn_80058394(void) {
-    return;
+// NONMATCHING 97%: star-1 kept untruncated in r26 in the challenge branch; ours truncates early
+#if NONMATCHING
+void fn_80058394(SceneTask* task) {
+    CharacterStats* player;
+    s8 row;
+    s8 col;
+    u8 star;
+    u8 swing;
+    u8 pitch;
+    s16 swingAnim;
+    s16 pitchAnim;
+
+    if (lbl_803297E0.starShown[lbl_803297E0.team] == 0) {
+        TASK_OBJ(task, 302)->flags &= ~2;
+        TASK_OBJ(task, 302)->_68 = 0;
+        TASK_OBJ(task, 281)->_68 = 4;
+        TASK_OBJ(task, 289)->_68 = 4;
+        player = &inMemRoster[lbl_803297E0.team][lbl_803297E0.selected[lbl_803297E0.team] - 1];
+        row = player->stats.CharID / 9;
+        col = player->stats.CharID % 9;
+        star = lbl_8034E9A0.chars[row][col].stats.CaptainStarHitPitch;
+        if (star == 0) {
+            swing = lbl_8034E9A0.chars[row][col].stats.NonCaptainStarSwing + 11;
+            pitch = lbl_8034E9A0.chars[row][col].stats.NonCaptainStarPitch + 11;
+        } else if (g_d_GameSettings.GameModeSelected != 5) {
+            swing = star - 1;
+            pitch = swing;
+        } else {
+            s8 idx;
+            pitch = star - 1;
+            idx = translateStarPitchHitIndex(pitch);
+            if (idx != -1 && ((s8*)&gChallengeState)[0x43C2 + idx] == 0) { // TODO type
+                swing = lbl_8034E9A0.chars[row][col].stats.NonCaptainStarSwing + 11;
+                pitch = lbl_8034E9A0.chars[row][col].stats.NonCaptainStarPitch + 11;
+            } else {
+                swing = pitch;
+                pitch = (u8)(star - 1);
+            }
+        }
+        swingAnim = translateStarSwing(swing);
+        pitchAnim = translateStarPitch(pitch);
+        TASK_OBJ(task, 305)->_64 = swingAnim;
+        TASK_OBJ(task, 305)->_5C = 0;
+        TASK_OBJ(task, 305)->_68 = 1;
+        TASK_OBJ(task, 306)->_64 = pitchAnim;
+        TASK_OBJ(task, 306)->_5C = 0;
+        TASK_OBJ(task, 306)->_68 = 1;
+        TASK_OBJ(task, 307)->flags |= 2;
+        TASK_OBJ(task, 307)->_68 = 1;
+        TASK_OBJ(task, 303)->_68 = 1;
+        lbl_803297E0.starShown[lbl_803297E0.team] = 1;
+    }
 }
+#endif
 
 // .text:0x80058644 size:0x4DC
 void fn_80058644(void) {
@@ -597,18 +652,53 @@ void fn_8005C830(void) {
 }
 
 // .text:0x8005CCE4 size:0x1130
-void fn_8005CCE4(void) {
+void fn_8005CCE4(SceneTask* task, s32 port) {
     return;
 }
 
 // .text:0x8005DE14 size:0xBC4
-void fn_8005DE14(void) {
+void fn_8005DE14(SceneTask* task, s32 port) {
     return;
 }
 
 // .text:0x8005E9D8 size:0x2B0
-void fn_8005E9D8(void) {
-    return;
+void fn_8005E9D8(SceneTask* task, s32 port) {
+    u8* state;
+
+    if (lbl_803297E0.selected[port] != lbl_803297E0.selected2[port]) {
+        fn_8005DE14(task, port);
+        state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
+        if ((*(state += 0x37) == 1) ? TRUE : FALSE) {
+            fn_80062674(port);
+            *state = 2;
+        }
+    } else if (lbl_803297E0._CF3C[port] != 0) {
+        state = &lbl_803C66B0.steps[9][port + 1];
+        if (*state == 0) {
+            u8 slot = lbl_803297E0._CF3E[port];
+            s8 pos = lbl_80354720[port][slot].pos;
+            if (lbl_803297E0._CF52[port] == 0) {
+                TASK_OBJ(task, slot + port * 9 + 0x1C)->_5C = 10 << 16;
+                TASK_OBJ(task, slot + port * 9 + 0x1C)->_68 = 0;
+                TASK_OBJ(task, slot + port * 9 + 0x40)->_5C = 0;
+                TASK_OBJ(task, slot + port * 9 + 0x40)->_68 = 1;
+            } else if (g_d_GameSettings._06 != 2) {
+                TASK_OBJ(task, pos + port * 9 + 0x10A)->_5C = 0;
+                TASK_OBJ(task, pos + port * 9 + 0x10A)->_68 = 1;
+                TASK_OBJ(task, pos + port * 9 + 0xF8)->_5C = 0;
+                TASK_OBJ(task, pos + port * 9 + 0xF8)->_68 = 1;
+            } else {
+                TASK_OBJ(task, pos + 0x23)->_5C = 0;
+                TASK_OBJ(task, pos + 0x23)->_68 = 1;
+                TASK_OBJ(task, pos + 0x1A)->_5C = 0;
+                TASK_OBJ(task, pos + 0x1A)->_68 = 1;
+            }
+            lbl_803C66B0.step[port] = 0;
+            *state = 2;
+        }
+    } else {
+        fn_8005CCE4(task, port);
+    }
 }
 
 // .text:0x8005EC88 size:0x3E0
@@ -820,7 +910,7 @@ u32 fn_80062890(s32 index) {
 u32 fn_800628D4(s32 kind) {
     u32 voice;
 
-    lbl_8034E9A0[0x48AE] = 1;
+    lbl_8034E9A0._48AE = 1;
     voice = sndFXStartEx(lbl_80108DF4[fn_800698F8(kind)], lbl_80108B18[0], 0x3F, 0);
     sndFXCtrl(voice, 0x5B, 0);
     return voice;
@@ -860,7 +950,7 @@ void fn_8006295C(void) {
 
 // initializeUnknown, size:0x24
 void initializeUnknown(void) {
-    lbl_8034E9A0[0x48B3] = 0;
+    lbl_8034E9A0._48B3 = 0;
     lbl_803C6714.voiceA = 0;
     lbl_803C6714.stopA = 0;
     lbl_803C6714.activeA = 0;
@@ -869,7 +959,7 @@ void initializeUnknown(void) {
 // fn_80062A74, size:0x20
 void fn_80062A74(void) {
     lbl_803C6714.stopA = 1;
-    lbl_8034E9A0[0x48B3] = 1;
+    lbl_8034E9A0._48B3 = 1;
 }
 
 // .text:0x80062A94 size:0x150

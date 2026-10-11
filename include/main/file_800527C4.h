@@ -57,6 +57,10 @@ void fn_80055798(SceneTask* task, s32 port);
 void fn_8005C5C4(SceneTask* task, s32 port);
 void fn_80059458(SceneTask* task, u8 port, u32 mask);
 void fn_8005F734(SceneTask* task, s32 port);
+void fn_80058394(SceneTask* task);
+void fn_8005CCE4(SceneTask* task, s32 port);
+void fn_8005DE14(SceneTask* task, s32 port);
+void fn_8005E9D8(SceneTask* task, s32 port);
 void fn_80056120(void);
 void fn_800569C8(void);
 void challengeCheckStarsMenuLoading(void);
@@ -84,11 +88,37 @@ typedef struct MenuDef {
 typedef struct MenuWork {
     /*0x0000*/ u8 _0000[0xCF3B];
     /*0xCF3B*/ u8 team;
-    /*0xCF3C*/ u8 _CF3C[0x34];
+    /*0xCF3C*/ u8 _CF3C[2];
+    /*0xCF3E*/ u8 _CF3E[2]; // roster slot per port
+    /*0xCF40*/ u8 _CF40[6];
+    /*0xCF46*/ s8 selected[2]; // 1-based roster index per team
+    /*0xCF48*/ s8 selected2[2];
+    /*0xCF4A*/ u8 _CF4A[8];
+    /*0xCF52*/ u8 _CF52[2];
+    /*0xCF54*/ u8 _CF54[0xF];
+    /*0xCF63*/ u8 starShown[2];
+    /*0xCF65*/ u8 _CF65[0xB];
     /*0xCF70*/ u8 _CF70;
     /*0xCF71*/ u8 _CF71[0x31];
     /*0xCFA2*/ u8 teamKind[0x36];
 } MenuWork;
+
+// lbl_8034E9A0 (size 0x4C28): base character stats by CharID, plus other state.
+typedef struct RosterData {
+    /*0x0000*/ CharacterStats chars[6][9];
+    /*0x21C0*/ u8 _21C0[0x48AE - 0x21C0];
+    /*0x48AE*/ u8 _48AE;
+    /*0x48AF*/ u8 _48AF[4];
+    /*0x48B3*/ u8 _48B3;
+    /*0x48B4*/ u8 _48B4[0x4C28 - 0x48B4];
+} RosterData; // size: 0x4C28
+
+// lbl_80354720: per-port roster slots.
+typedef struct RosterSlot {
+    /*0x0*/ u8 _0[2];
+    /*0x2*/ s8 pos;
+    /*0x3*/ u8 _3;
+} RosterSlot; // size: 0x4
 
 // lbl_803C5F04: input state for the tutorial step checks (size 0x70).
 typedef struct TutorialInput {
