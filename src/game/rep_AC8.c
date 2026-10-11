@@ -2213,6 +2213,16 @@ void fn_3_3F24C(void) {
 
 extern f32 lbl_3_rodata_B60;
 extern f32 lbl_3_rodata_C08;
+extern f32 lbl_3_rodata_BA4;
+extern f32 lbl_3_rodata_BCC;
+#define FLD(n) (g_Fielders + (n) * 0x268) // fielder n's 0x268-byte block
+#define RUN(n) (g_Runners + (n) * 0x154)  // runner n's 0x154-byte block
+extern u8 lbl_3_data_44B4[];
+extern f32 lbl_3_rodata_BD4;
+extern f32 lbl_3_rodata_BE8;
+extern f32 lbl_3_rodata_C64;
+extern f32 lbl_3_rodata_C68;
+extern int fn_3_B7E44(s16 a, f32 y);
 #pragma dont_inline off
 // Inlined copy of fn_3_52560 (frames for fielder i to reach x/z); defined later in this file.
 static inline int FramesToReachAC8(int i, f32 x, f32 z) {
@@ -2251,9 +2261,72 @@ static inline void SetTargetAC8b(int i, f32 x, f32 z) {
 #pragma dont_inline on
 
 // .text:0x0003F760 size:0x590 mapped:0x8067E7F4
+// NONMATCHING 99.2%: registers only; the known SetFielderAct state/table-value r0/r3 swap (see docs/patterns rep_AC8 dead ends)
+#if NONMATCHING
+// Assign base-covering duties (state 3) to infielders at the start of a play.
 void fn_3_3F760(void) {
-    return;
+    int a;
+    int b;
+    s16 t;
+    f32 d;
+    SetFielderAct(0, 3, 0x18);
+    if (FLD(1)[0x1DA] == 0) {
+        if (RUN(3)[0x123] == 1 && RUN(3)[0x137] == 1 && *(f32*)(RUN(3) + 0x64) >= lbl_3_rodata_BCC && (t = *(s16*)(FLD(1) + 0x186)) > 0) {
+            d = *(f32*)(g_Ball + t * 0x10 + 0x354) * *(f32*)(g_Ball + t * 0x10 + 0x354) +
+                *(f32*)(g_Ball + t * 0x10 + 0x35C) * *(f32*)(g_Ball + t * 0x10 + 0x35C);
+            SQRT_L(d);
+            if (d < lbl_3_rodata_B64) {
+                SetFielderAct(1, 3, 0x18);
+            }
+        } else {
+            SetFielderAct(1, 3, 0x18);
+        }
+    }
+    if (*(s16*)(g_Ball + 0x1B9C) < 0x400) {
+        if (FLD(2)[0x1DA] == 0) {
+            a = *(s16*)(FLD(3) + 0x186);
+            b = *(s16*)(FLD(2) + 0x186);
+            if (a - 15 < b) {
+                if (*(s16*)(FLD(0) + 0x186) - a < 0x78) {
+                    SetFielderAct(3, 3, 0x18);
+                }
+            } else if (*(f32*)(g_Ball + b * 0x10 + 0x35C) < *(f32*)(lbl_3_data_4444 + 0xC)) {
+                if (*(s16*)(FLD(0) + 0x186) - b < 0x50) {
+                    SetFielderAct(2, 3, 0x18);
+                }
+            } else if (*(s16*)(FLD(0) + 0x186) - a < 0x78) {
+                SetFielderAct(3, 3, 0x18);
+            }
+        } else if (FLD(3)[0x1DA] == 0) {
+            if (*(s16*)(FLD(0) + 0x186) - *(s16*)(FLD(3) + 0x186) < 0x78) {
+                SetFielderAct(3, 3, 0x18);
+            }
+        }
+    } else {
+        if (FLD(4)[0x1DA] == 0) {
+            a = *(s16*)(FLD(5) + 0x186);
+            b = *(s16*)(FLD(4) + 0x186);
+            if (a - 15 < b) {
+                if (*(s16*)(FLD(0) + 0x186) - a < 0x78) {
+                    SetFielderAct(5, 3, 0x18);
+                }
+            } else if (*(f32*)(g_Ball + b * 0x10 + 0x35C) < *(f32*)(lbl_3_data_4444 + 0xC)) {
+                if (RUN(2)[0x123] != 1 || (s16)b <= 0) {
+                    if (*(s16*)(FLD(0) + 0x186) - b < 0x50) {
+                        SetFielderAct(4, 3, 0x18);
+                    }
+                }
+            } else if (*(s16*)(FLD(0) + 0x186) - a < 0x78) {
+                SetFielderAct(5, 3, 0x18);
+            }
+        } else if (FLD(5)[0x1DA] == 0) {
+            if (*(s16*)(FLD(0) + 0x186) - *(s16*)(FLD(5) + 0x186) < 0x78) {
+                SetFielderAct(5, 3, 0x18);
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x0003FCF0 size:0x5B8 mapped:0x8067ED84
 void fn_3_3FCF0(void) {
@@ -2354,12 +2427,6 @@ void fn_3_417D4(int i) {
 }
 
 // .text:0x0004197C size:0x3FC mapped:0x80680A10
-extern f32 lbl_3_rodata_BA4;
-extern u8 lbl_3_data_44B4[];
-extern f32 lbl_3_rodata_BD4;
-extern f32 lbl_3_rodata_BE8;
-extern f32 lbl_3_rodata_C64;
-extern f32 lbl_3_rodata_C68;
 // NONMATCHING 94.0%: register allocation and constant-load scheduling in the distance loop
 #if NONMATCHING
 // Pick the fielder closest to the ball's landing spot and send it after the ball.
