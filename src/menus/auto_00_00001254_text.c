@@ -1526,3 +1526,46 @@ void fn_2_6884(void) {
     }
 }
 #endif
+
+// NONMATCHING 70%: retry loop shape (slot==0 test inside the loop in the original) and store addressing differ; inlines fn_2_C698
+#if NONMATCHING
+// fn_2_C7DC, size:0x284
+void fn_2_C7DC(u8 slot, s32 team) {
+    s32 id;
+    s32 j;
+    u8* order;
+    u8* order2;
+    if (slot == 0) {
+        order = lbl_80354720 + (u8)team * 0x24 + slot * 4;
+        order2 = lbl_80353B98 + (u8)team * 0x24 + slot * 4;
+        order[1] = slot;
+        order2[1] = slot;
+        order2[0] = slot;
+        order[0] = slot;
+        order[2] = slot;
+        g_Roster[(u8)team * 9 + slot].h24 = *(s32*)(lbl_8034E9A0 + (u8)team * 4 + 0x46E0);
+        order2[2] = slot;
+        return;
+    }
+retry:
+    id = fn_2_14F8(0, 0x35);
+    if (lbl_8034E9A0[lbl_800FDE84[id] + 0x4757] != 0) {
+        goto retry;
+    }
+    for (j = 0; j < slot; j++) {
+        if (g_Roster[j].h24 == id || g_Roster[9 + j].h24 == id) {
+            goto retry;
+        }
+    }
+    order = lbl_80354720 + (u8)team * 0x24 + slot * 4;
+    order2 = lbl_80353B98 + (u8)team * 0x24 + slot * 4;
+    order[1] = slot;
+    order[0] = slot;
+    order2[1] = slot;
+    order2[0] = slot;
+    order[2] = slot;
+    g_Roster[(u8)team * 9 + slot].h24 = id;
+    order2[2] = slot;
+    fn_2_C698(slot, team);
+}
+#endif
