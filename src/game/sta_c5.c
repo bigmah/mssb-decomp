@@ -1,4 +1,5 @@
 #include "game/sta_c5.h"
+#include "game/rep_2998.h"
 #include "header_rep_data.h"
 #include "Dolphin/os.h"
 extern u8 lbl_3_common_bss_350E4[];
@@ -100,7 +101,7 @@ extern void AnimateActorBones(void*);
 extern u8 lbl_3_bss_AEE0[];
 extern u8 lbl_803CBBC0[];
 extern u8 lbl_3_data_1BA5C[];
-extern void fn_800BDA24(s32);
+
 extern void fn_800B0A14_removeQueue();
 extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
@@ -530,7 +531,7 @@ void fn_3_EEF24(void) {
         return;
     }
     if (lbl_8036E548[0x307E] != 0) {
-        fn_800BDA24(*(s32*)lbl_3_bss_B55C);
+        fn_800BDA24(*(ActorObject**)lbl_3_bss_B55C);
         fn_3_EE388();
         fn_3_EEB94();
         fn_800A7D4C(1, lbl_3_data_1BA5C + lbl_803CBBC0[0] * 8);
@@ -1712,6 +1713,7 @@ void fn_3_F66C8(s32* n) {
 }
 
 // .text:0x000F6938 size:0x15C mapped:0x807359CC
+#pragma dont_inline off
 void fn_3_F6938(s32* n) {
     struct { Control c; u8 pad[0x8]; } c;
     Mtx m;
@@ -1781,10 +1783,36 @@ void fn_3_F6A94(s32* n) {
     }
 }
 
+#pragma dont_inline on
 // .text:0x000F6C60 size:0x36C mapped:0x80735CF4
+extern void* _OSAllocFromHeap(s32 align, s32 size);
+// NONMATCHING 78%: fn_3_F6A94/fn_3_F6938 are inlined; the original reaches lbl_3_bss_B21C..B220 through the lbl_3_bss_AEE0 pooled base (nmverify flag expected), regalloc differs
+#if NONMATCHING
 void fn_3_F6C60(void) {
-    return;
+    StadiumObjList* list = (StadiumObjList*)lbl_3_common_bss_350E4;
+    s32 n;
+    s32 size;
+    size = list->count * 2 + list->count * 4 + list->count * 0x18 + list->count * 4;
+    if (list->groupBounds == NULL) {
+        list->groupBounds = _OSAllocFromHeap(4, size);
+        list->groupCount = (u32*)(list->groupBounds + list->count * 2);
+        list->groupObjs = (s32*)(list->groupCount + list->count);
+        list->groupStart = (u16*)(list->groupObjs + list->count);
+    }
+    memset(list->groupBounds, 0, size);
+    n = 0;
+    if (lbl_3_bss_AEE0[0x33E] != 0) {
+        fn_3_F6A94(&n);
+    }
+    if (lbl_3_bss_AEE0[0x340] != 0) {
+        fn_3_F6938(&n);
+    }
+    if (lbl_3_bss_AEE0[0x33C] != 0) {
+        fn_3_F66C8(&n);
+    }
+    list->numGroups = n;
 }
+#endif
 
 // .text:0x000F6FCC size:0x10 mapped:0x80736060
 extern u8 lbl_3_bss_AEE8;
