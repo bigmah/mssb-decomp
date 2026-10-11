@@ -288,9 +288,26 @@ f32 starMissionMenu(s32 team) {
 }
 
 // .text:0x8006CBE4 size:0xC0
-void challengeRelated(void) {
-    return;
+// NONMATCHING 99%: the original copies count into i (mr r30,r31) instead of a second li 0
+#if NONMATCHING
+s16 challengeRelated(s32 team) {
+    s32 count;
+    s32 i;
+    ChallengeTrackingStruct* t = &starMissionCompletionTracker[team];
+
+    if (lbl_800E8558[team].hasMissions == 0) {
+        count = 0;
+    } else {
+        count = 0;
+        for (i = 0; i < 10; i++) {
+            if (challengeStarRelatedInd(team, i)) {
+                count++;
+            }
+        }
+    }
+    return lbl_8010B444[t->variantClassification][count];
 }
+#endif
 
 // .text:0x8006CCA4 size:0x11C
 s16 determineIfMissionDescriptionIsShown(s32 team) {
