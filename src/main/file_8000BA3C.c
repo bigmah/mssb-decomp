@@ -1287,8 +1287,6 @@ void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCor
 }
 
 // .text:0x8000E900 size:0x30C
-// NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
-#if NONMATCHING
 void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
     SpriteTexInfo* tex;
@@ -1331,7 +1329,6 @@ void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawPa
     lbl_80366188.bank = bank;
     lbl_80366188.perCornerColor = perCorner | elem->perCorner;
 }
-#endif
 
 // .text:0x8000EC0C size:0x310
 // NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
