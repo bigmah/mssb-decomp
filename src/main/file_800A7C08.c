@@ -95,9 +95,39 @@ void fn_800A7E00(void) {
 #endif
 
 // .text:0x800A7F10 size:0x1D8
-void fn_800A7F10(void) {
-    return;
+// NONMATCHING 99%: int->float magic constant lives in unsplit .sdata2 (reloc name differs); lis order of &GXNtsc480Int vs &lbl_803C7420 swapped
+#if NONMATCHING
+void fn_800A7F10(BOOL reset) {
+    if (reset) {
+        GXRenderModeObj* rmode = &lbl_803C7420.renderModeCopy;
+        GXAdjustForOverscan(&GXNtsc480Int, rmode, 0, 16);
+        lbl_803C7420.renderMode = rmode;
+        VIConfigure(rmode);
+        VIFlush();
+        VIWaitForRetrace();
+        VIWaitForRetrace();
+        GXSetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+        GXSetDispCopySrc(0, 0, lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->efbHeight);
+        GXSetDispCopyDst(lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->xfbHeight);
+        GXSetDispCopyYScale((f32)lbl_803C7420.renderMode->xfbHeight / (f32)lbl_803C7420.renderMode->efbHeight);
+        GXSetScissor(0, 0, lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->efbHeight);
+        GXSetCopyFilter(lbl_803C7420.renderMode->aa, lbl_803C7420.renderMode->sample_pattern, GX_TRUE,
+                        lbl_803C7420.renderMode->vfilter);
+    } else {
+        VIConfigure(lbl_803C7420.renderMode);
+        VIFlush();
+        VIWaitForRetrace();
+        VIWaitForRetrace();
+        GXSetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+        GXSetDispCopySrc(0, 0, lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->efbHeight);
+        GXSetDispCopyDst(lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->xfbHeight);
+        GXSetDispCopyYScale((f32)lbl_803C7420.renderMode->xfbHeight / (f32)lbl_803C7420.renderMode->efbHeight);
+        GXSetScissor(0, 0, lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->efbHeight);
+        GXSetCopyFilter(lbl_803C7420.renderMode->aa, lbl_803C7420.renderMode->sample_pattern, GX_TRUE,
+                        lbl_803C7420.renderMode->vfilter);
+    }
 }
+#endif
 
 // .text:0x800A80E8 size:0x3DC
 void initRenderMode(void) {
