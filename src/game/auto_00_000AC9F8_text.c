@@ -2645,3 +2645,133 @@ void fn_3_B1578(void) {
     g_Strikes.balls = 0;
     g_Strikes.outs = 0;
 }
+
+// fn_3_AD3BC, size:0x510
+void fn_3_AD3BC(void) {
+    s32 i;
+    u8 state;
+    if (lbl_3_common_bss_34C90._201 != 0) {
+        // CPU-controlled team: drive the menu with scripted inputs
+        u16 btn = 0;
+        if (lbl_3_common_bss_34C90.inputCooldown <= 0) {
+            u8 step = lbl_3_common_bss_34C90._207[0];
+            switch (step) {
+            case 0:
+                btn = 4;
+                if (++lbl_3_common_bss_34C90._207[1] >= 3) {
+                    lbl_3_common_bss_34C90._207[1] = 0;
+                    lbl_3_common_bss_34C90._207[0] = step + 1;
+                }
+                break;
+            case 1:
+                lbl_3_common_bss_34C90._207[1] = 0;
+                btn = 0x100;
+                lbl_3_common_bss_34C90._207[0] = step + 1;
+                break;
+            case 2:
+                if (++lbl_3_common_bss_34C90._207[1] >= 2) {
+                    lbl_3_common_bss_34C90._207[1] = 0;
+                    lbl_3_common_bss_34C90._207[0] = step + 1;
+                }
+                break;
+            case 3: {
+                s16 v; // always set: every lineup has a pitcher (position 0)
+                for (i = 1; i < 10; i++) {
+                    if (lbl_3_common_bss_34C90.lineup[g_GameLogic.teamFielding][i][1] == 0) {
+                        v = lbl_3_common_bss_34C90.lineup[g_GameLogic.teamFielding][i][0];
+                        break;
+                    }
+                }
+                if (lbl_3_common_bss_34C90._207[1] == 0) {
+                    if (v == 1) {
+                        btn = 4;
+                        lbl_3_common_bss_34C90._207[0]++;
+                    } else if (v == 3 || v == 5 || v == 7) {
+                        btn = 8;
+                        if (v == 5) {
+                            lbl_3_common_bss_34C90._207[0]++;
+                        }
+                    } else if (v == 2 || v == 8) {
+                        btn = 2;
+                        if (v == 2) {
+                            lbl_3_common_bss_34C90._207[0]++;
+                        }
+                    } else {
+                        btn = 1;
+                        if (v == 4) {
+                            lbl_3_common_bss_34C90._207[0]++;
+                        }
+                    }
+                    lbl_3_common_bss_34C90._207[1]++;
+                } else {
+                    btn = 8;
+                    if (v == 3) {
+                        btn = 2;
+                    }
+                    lbl_3_common_bss_34C90._207[0]++;
+                }
+                break;
+            }
+            case 4:
+                lbl_3_common_bss_34C90._207[1] = 0;
+                btn = 0x100;
+                lbl_3_common_bss_34C90._207[0] = step + 1;
+                break;
+            case 5:
+                if (++lbl_3_common_bss_34C90._207[1] >= 2) {
+                    lbl_3_common_bss_34C90._207[1] = 0;
+                    btn = 0x200;
+                    lbl_3_common_bss_34C90._207[0] = step + 1;
+                }
+                break;
+            case 6:
+                if (++lbl_3_common_bss_34C90._207[1] >= 2) {
+                    btn = 0x100;
+                    lbl_3_common_bss_34C90._204[g_GameLogic.teamFielding] = 1;
+                }
+                break;
+            }
+        }
+        for (i = 0; i < 4; i++) {
+            if (i == lbl_3_common_bss_34C90.team) {
+                lbl_803297E0.input[i].held = btn;
+                lbl_803297E0.input[i].pressed = btn;
+                lbl_803297E0.input[i].repeat = btn;
+            } else {
+                lbl_803297E0.input[i].held = 0;
+                lbl_803297E0.input[i].pressed = 0;
+                lbl_803297E0.input[i].repeat = 0;
+            }
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            if (i == lbl_3_common_bss_34C90.team) {
+                lbl_803297E0.input[i].held = g_Controls[g_GameLogic.teams[lbl_3_common_bss_34C90.team]].buttonInput;
+                lbl_803297E0.input[i].pressed = g_Controls[g_GameLogic.teams[lbl_3_common_bss_34C90.team]].newButtonInput;
+                lbl_803297E0.input[i].repeat = g_Controls[g_GameLogic.teams[lbl_3_common_bss_34C90.team]]._08;
+            } else {
+                lbl_803297E0.input[i].held = 0;
+                lbl_803297E0.input[i].pressed = 0;
+                lbl_803297E0.input[i].repeat = 0;
+            }
+        }
+    }
+    state = lbl_3_common_bss_34C90.state;
+    if (state == 4 || state == 11 || state == 14 || state == 7 || state == 8 || state == 15) {
+        if (lbl_803297E0._CF42 != 0) {
+            lbl_3_common_bss_34C90.subState = 5;
+            if (lbl_3_common_bss_34C90.state == 4) {
+                for (i = 0; i < 9; i++) {
+                    if (lbl_3_common_bss_34C90.positions[i] != lbl_80354720[lbl_3_common_bss_34C90.team][i].slot) {
+                        if (lbl_80354720[lbl_3_common_bss_34C90.team][i].slot == 0) {
+                            lbl_3_common_bss_34C90._254 = i;
+                        } else if (lbl_80354720[lbl_3_common_bss_34C90.team][i].slot == 1) {
+                            lbl_3_common_bss_34C90._256 = i;
+                        }
+                        lbl_3_common_bss_34C90.positions[i] = lbl_80354720[lbl_3_common_bss_34C90.team][i].slot;
+                    }
+                }
+            }
+        }
+    }
+}

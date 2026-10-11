@@ -14,7 +14,9 @@ typedef struct PauseMenuState {
     /*0x00E*/ s16 _0E;
     /*0x010*/ s16 _10;
     /*0x012*/ s16 subFrames;
-    /*0x014*/ u8 _14[0x1D0 - 0x14];
+    /*0x014*/ u8 _14[4];
+    /*0x018*/ s16 lineup[2][10][4]; // per team: [k][0] = ?, [k][1] = position (0 = pitcher)
+    /*0x0B8*/ u8 _B8[0x1D0 - 0xB8];
     /*0x1D0*/ u8 menuType;
     /*0x1D1*/ u8 state;
     /*0x1D2*/ u8 subState;
@@ -137,6 +139,8 @@ void fn_3_AE770(void);
 
 void fn_3_AF5A4(void);
 
+void fn_3_AD3BC(void);
+
 void fn_3_B056C(void);
 
 void fn_3_AF10C(void);
@@ -166,5 +170,7 @@ void fn_3_B1578(void);
 void fn_3_AE770(void);
 
 void fn_3_AF5A4(void);
+
+void fn_3_AD3BC(void);
 
 #endif
