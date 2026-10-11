@@ -294,7 +294,7 @@ void f_initSound(void) {
 
 // .text:0x80021AA0 size:0x20
 void fn_80021AA0(void) {
-    return;
+    fn_800ACD44();
 }
 
 // fn_80021AC0, size:0x4
