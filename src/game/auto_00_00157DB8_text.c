@@ -263,3 +263,44 @@ void fn_3_158FE4(void) {
     *(s16*)(o + 0x20) = 0;
     *(void**)lbl_803CC1B8[0] = fn_3_158B64;
 }
+
+// .text:0x0015B0D8 size:0x12C
+void fn_3_15B0D8(void) {
+    s32 i;
+    for (i = 0; i < 2; i++) {
+        g_GameLogic._13E[i] = 0;
+        g_GameLogic._140[i] = 0;
+        g_GameLogic.teamAIInd[i] = 0;
+        g_GameLogic.autoFielding[i] = 0;
+        g_GameLogic.batterHandedness[i] = 0;
+        g_GameLogic.battingAIInd[i] = 0;
+    }
+    g_Practice.aIEnabled = 0;
+    g_Practice.practiceBatterHandedness = 0;
+    g_Practice.freePracticeInd_writeOnly = 0;
+    g_Practice._1A4 = 0;
+    if (g_GameLogic.secondaryGameMode == 0xF) {
+        g_Practice.aIEnabled = 1;
+        g_GameLogic._13E[g_GameLogic.teamFielding] = 1;
+        g_Practice.freePracticeInd_writeOnly = 1;
+        g_GameLogic._140[g_GameLogic.awayTeamBattingInd_battingTeam] = 1;
+        g_Practice.rosterID = 1;
+        g_GameLogic.teamAIInd[g_GameLogic.awayTeamBattingInd_battingTeam] = 1;
+        g_GameLogic.autoFielding[g_GameLogic.awayTeamBattingInd_battingTeam] = 1;
+    } else {
+        g_Practice.practiceBatterHandedness = 1;
+        g_GameLogic._13E[g_GameLogic.teamBatting] = 1;
+        g_Practice._1A4 = 1;
+        g_GameLogic.batterHandedness[g_GameLogic.homeTeamBattingInd_fieldingTeam] = 1;
+        g_GameLogic.battingAIInd[g_GameLogic.homeTeamBattingInd_fieldingTeam] = 1;
+    }
+    g_Practice._186 = 0;
+    fn_3_5A684();
+    fn_3_8A350();
+    fn_3_F7B8();
+    fn_3_75434();
+    fn_3_59338();
+    g_GameLogic.EventTriggers_GameHasStarted = 0;
+    g_GameLogic.currentBatterPerTeam[0] = 1;
+    g_GameLogic.currentBatterPerTeam[1] = 1;
+}
