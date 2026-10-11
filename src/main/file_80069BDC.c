@@ -172,8 +172,8 @@ void fn_8006C9D8(void) {
 }
 
 // .text:0x8006CA9C size:0x2C
-void fn_8006CA9C(void) {
-    return;
+f32 fn_8006CA9C(void) {
+    return lbl_8010B590[gChallengeState._4415][gChallengeState._4422];
 }
 
 // .text:0x8006CAC8 size:0x11C
