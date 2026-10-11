@@ -5,6 +5,7 @@
 #include "Dolphin/mtx.h"
 #include "C3/control.h"
 #include "main/file_80024D2C.h"
+#include "Dolphin/GX/GXTypes.h"
 
 // model.c: character models, their parts data and animation state.
 
@@ -165,7 +166,7 @@ typedef struct LightSrc {
 
 typedef struct StadiumLights {
     /*0x00*/ LightSrc light[4];
-    /*0x28*/ u8 _28[0x4];
+    /*0x28*/ GXColor ambient;
 } StadiumLights; // size: 0x2C
 
 typedef struct LightPos {
@@ -181,8 +182,9 @@ typedef struct CharMgr {
     /*0x0060*/ CharSlotList* slots;
     /*0x0064*/ CharSlotList* slots64;
     /*0x0068*/ CharSlotList* slots68;
-    /*0x006C*/ u8 _006C[0xAC - 0x6C];
-    /*0x00AC*/ u32 _0AC[4];
+    /*0x006C*/ CharSlotList* slots6C;
+    /*0x0070*/ u8 _0070[0xAC - 0x70];
+    /*0x00AC*/ void* lights[4];
     /*0x00BC*/ u8 _00BC[0x13C - 0xBC];
     /*0x013C*/ CharSlotList* partSlots;
     /*0x0140*/ CharParts partsPool[13];
@@ -305,6 +307,10 @@ void fn_8001B5EC(s32 index, s32 enable);
 void fn_8001D180(s32 index, s32 which, s32 enable);
 void fn_800189E4(void);
 void fn_8001DD58(CharModel* model, s32 pass, s32 a, s32 b, ...);
+
+s32 fn_8001B35C(s32 index, s32 kind);
+void fn_80019A60(void);
+void fn_800196D8(void);
 
 void fn_8001B200(void);
 

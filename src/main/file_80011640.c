@@ -1,6 +1,7 @@
 #include "main/file_80011640.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/stl.h"
+#include "Dolphin/GX/GXTypes.h"
 
 // Globals owned by other units (only the fields used here).
 typedef struct GameSettingsView {
@@ -91,6 +92,12 @@ extern void GXInvalidateVtxCache(void);
 extern void DOVARender(void* display, s32 a, s32 b, va_list args);
 extern void DOVARenderSkin(void* display, s32 a, void* p, void* q, s32 b);
 extern void DOSetWorldMatrix(void* display, MtxPtr mtx);
+extern void fn_800BD2DC(void);
+extern void fn_800BD2CC(s32 channel, GXColor color);
+extern void LITAlloc(void** light);
+extern void LITInitAttn(void* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
+extern void LITInitPos(void* light, f32 x, f32 y, f32 z);
+extern void LITInitColor(void* light, u32* color);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -1231,8 +1238,69 @@ void fn_8001B308(s32 index, s32 enable) {
 }
 
 // .text:0x8001B35C size:0x17C
-void fn_8001B35C(void) {
-    return;
+static inline f32 getJointHeight(CharActor* actor, s32 k) {
+    f32 y;
+    s32 j;
+    CharSlot* slot;
+    Vec v;
+
+    if (actor != NULL) {
+        j = getJoint(actor, k);
+        if (j == 0xFFFF) {
+            y = 0.0f;
+        } else {
+            slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+            fn_800B2C44(slot->model, j, &v);
+            y = v.y;
+            y += actor->pos.y;
+        }
+    }
+    return y;
+}
+
+s32 fn_8001B35C(s32 index, s32 kind) {
+    CharActor* actor = lbl_8036E548.active[index];
+    s32 k = 1;
+    s32 steps = 0;
+    f32 d;
+    f32 t;
+
+    if (actor == NULL) {
+        return 0;
+    }
+    switch (kind) {
+    case 1:
+        k = 2;
+        break;
+    case 0:
+        k = 3;
+        break;
+    case 2:
+        k = 1;
+        break;
+    }
+    d = getJointHeight(actor, k) - actor->pos.y;
+    if (d < 0.0f && d >= -30.0f) {
+        steps = 1;
+        t = -0.5f;
+        while (TRUE) {
+            if (d > t) {
+                break;
+            }
+            t -= 0.5f;
+            steps++;
+        }
+    } else if (d >= 0.5f && d < 30.0f) {
+        t = 0.5f;
+        while (TRUE) {
+            if (d < t) {
+                break;
+            }
+            t += 0.5f;
+            steps--;
+        }
+    }
+    return steps;
 }
 
 // .text:0x8001B4D8 size:0x114
