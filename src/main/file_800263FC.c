@@ -9,6 +9,10 @@
 int __abs(int);
 int rand(void);
 // TODO: these belong in their own units' headers.
+void SetFogNone(void);
+u32 fn_8005268C(void);       // file_8004C5F8
+void* fn_80052734(s32 index); // file_8004C5F8: projection matrix
+extern u8 lbl_800F7840[]; // 4x4 RGB565 texture
 void* _OSAllocFromHeap(s32 heap, s32 size);
 void fn_800ACFB0(void* p); // free
 void fn_800C07BC(void* base, void* tmp, s32 n, s32 size, s32 (*cmp)(const void*, const void*)); // merge sort
@@ -23,6 +27,8 @@ extern Emitter lbl_801F8040[0x10];    // emitter pool
 extern UVCoord lbl_800F7860[];
 extern TexCoordF lbl_800F78C0[4]; // quad corner texcoords
 extern const Vec lbl_800E6778;    // (1, 0, 0)
+extern SpaniSlot lbl_80371C30[0x360];
+extern SpaniObj* lbl_803CBC9C;
 extern Particle* lbl_803CBC74; // free particle list
 extern u8 lbl_803CBC78;        // nonzero: clear all emitters on next draw
 extern s32 lbl_803CBC7C;
@@ -986,7 +992,64 @@ void minigamesSetSomePointers(void) {
 
 // .text:0x8003452C size:0x39C
 void minigamesGXStuff(void) {
-    return;
+    GXTexObj texObj;
+    Emitter* e;
+    Emitter* dead;
+    s32 done;
+
+    if (lbl_803CBC78 != 0) {
+        lbl_803CBC78 = 0;
+        e = lbl_803CBC84.next;
+        while (e != NULL) {
+            dead = e;
+            e = e->next;
+            FreeEmitter(dead);
+        }
+        lbl_803CBC84.next = NULL;
+        return;
+    }
+    if (lbl_803CBC84.next == NULL) {
+        return;
+    }
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    // 1 is the SDK GX_TG_MTX2x4 (GXEnum.h has the 2x4/3x4 names swapped)
+    GXSetTexCoordGen2(GX_TEXCOORD0, (GXTexGenType)1, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetCullMode(GX_CULL_NONE);
+    GXInitTexObj(&texObj, lbl_800F7840, 4, 4, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXLoadTexObj(&texObj, GX_TEXMAP0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_RASA, GX_CA_TEXA, GX_CA_ZERO);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetProjection(fn_80052734(fn_8005268C()), GX_PERSPECTIVE);
+    GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    SetFogNone();
+    // done/dead deliberately carry over between iterations (as in the original)
+    for (e = lbl_803CBC84.next; e != NULL;) {
+        if (e->update != NULL) {
+            done = e->update(e);
+            if (done) {
+                dead = e;
+            }
+        }
+        e = e->next;
+        if (done) {
+            FreeEmitter(dead);
+        }
+    }
 }
 
 // .text:0x800348C8 size:0x304

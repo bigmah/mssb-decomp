@@ -5,6 +5,7 @@
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
 #include "main/file_80024184.h"
+#include "main/file_80034F50.h"
 
 // Particle effect system: a pool of 0x1400 particles (lbl_80180040) and
 // 16 emitters (lbl_801F8040), each emitter owning a singly linked list of
@@ -189,5 +190,30 @@ void fn_80034120(Mtx m);
 void minigamesSetSomePointers(void);
 void minigamesSetSomePointers2(void);
 void fn_8003414C(Mtx view);
+
+// Owner of a run of sprites in lbl_80371C30.
+typedef struct SpaniGroup {
+    /* 0x00 */ u8 unk0[0x14];
+    /* 0x14 */ u16 baseIdx;
+    /* 0x16 */ u16 count;
+} SpaniGroup;
+
+// lbl_80371C30 entries.
+typedef struct SpaniSlot {
+    /* 0x0 */ SpaniObj* obj;
+    /* 0x4 */ SpaniGroup* owner;
+} SpaniSlot;
+
+// Something that drives attached sprites (fn_80034BCC).
+typedef struct SpaniAttach {
+    /* 0x00 */ u8 unk0[0x64];
+    /* 0x64 */ MtxPtr mtx;
+    /* 0x68 */ u8 color[4];
+    /* 0x6C */ s16* key; // [0]: anim id, [1]: tag
+} SpaniAttach;
+
+s32 fn_80034BCC(SpaniAttach* a);
+void fn_80034CEC(SpaniGroup* g);
+void fn_80034E20(SpaniGroup* g, SpaniDesc* descs);
 
 #endif
