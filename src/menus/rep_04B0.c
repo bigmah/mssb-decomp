@@ -403,8 +403,22 @@ void fn_2_14CA0(u8 player, PortInput* in) {
 }
 
 // .text:0x00014FB8 size:0x118
+// Pick a random captain for a player (different from the other team's).
 void fn_2_14FB8(s32 player) {
-    return;
+    s32 ids[2];
+    s32 i;
+
+    ids[0] = lbl_80108EC4[lbl_2_bss_F410.sel[0]];
+    ids[1] = lbl_80108EC4[lbl_2_bss_F410.sel[1]];
+    do {
+        ids[player] = fn_2_14F8(0, 19);
+        for (i = 0; i < 12; i++) {
+            if (lbl_80108EC4[i] == ids[player]) {
+                break;
+            }
+        }
+    } while (i == 12 || ids[0] == ids[1]);
+    lbl_2_bss_F410.sel[player] = i;
 }
 
 // .text:0x000150D0 size:0x34
