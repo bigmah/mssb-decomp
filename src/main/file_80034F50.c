@@ -105,8 +105,53 @@ static inline void spaniClearSlot(s32 id) {
 }
 
 // .text:0x80034F50 size:0x218
-void fn_80034F50(void) {
-    return;
+SpaniObj* fn_80034F50(SpaniDesc* desc) {
+    s32 i;
+    SpaniObj* obj;
+
+    for (i = 0; i < SPANI_OBJ_COUNT; i++) {
+        if (lbl_8039C3E0[i].flags == 0) {
+            s32 slot;
+            for (slot = 0; slot < SPANI_OBJ_COUNT; slot++) {
+                if (desc->texId == lbl_8023D6C0[slot]) {
+                    break;
+                }
+            }
+            obj = &lbl_8039C3E0[i];
+            obj->flags = 1;
+            if (desc->type == 1) {
+                obj->flags |= 4;
+            }
+            obj->unk58 = desc->unkC;
+            obj->unk74 = desc->unkC;
+            obj->animId = desc->animId;
+            obj->layer = desc->layer;
+            obj->texSlot = slot;
+            obj->baseX = desc->x;
+            obj->baseY = desc->y;
+            obj->baseZ = 0.0f;
+            obj->scale = desc->scale;
+            obj->is3D = desc->is3D;
+            obj->unk4 = 0;
+            obj->unk8 = 0;
+            obj->unk72 = desc->unk1E;
+            obj->unk71 = desc->unk1D;
+            if (desc->playMode == 2) {
+                obj->playMode = 0;
+            } else if (desc->playMode == 3) {
+                obj->playMode = 1;
+            } else {
+                obj->playMode = desc->playMode;
+                obj->flags |= 2;
+            }
+            obj->frame = 0;
+            obj->frameStep = 0x10000;
+            obj->unkA8 = 0;
+            PSMTXIdentity(obj->mtx);
+            return obj;
+        }
+    }
+    return NULL;
 }
 
 // .text:0x80035168 size:0x550
