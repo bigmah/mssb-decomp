@@ -12,11 +12,20 @@ typedef struct GameControl {
 
 // MSSB's actor bone (layout differs from the SDK sBone in C3/skinning.h).
 typedef struct GameBone {
-    /*0x00*/ u16 boneID;
-    /*0x02*/ u8 pad02[0x5E];
-    /*0x60*/ Control animCtrl;
-    /*0x9C*/ u8 pad9C[0x8];
-    /*0xA4*/ Control blendCtrl;
+    /*0x000*/ u16 boneID;
+    /*0x002*/ u8 pad02[0x1A];
+    /*0x01C*/ GameControl orientCtrl;
+    /*0x060*/ union {
+        Control animCtrl;
+        GameControl animCtrlFull;
+    };
+    /*0x0A4*/ union {
+        Control blendCtrl;
+        GameControl blendCtrlFull;
+    };
+    /*0x0E8*/ struct ANIMPipe* animPipe;
+    /*0x0EC*/ u8 padEC[0x4A];
+    /*0x136*/ u8 stepTranslation; // nonzero: ACTSetBoneTrack forces step interpolation for translation
 } GameBone;
 
 // Per-bone matrix override; returns nonzero when it built the matrix itself.
