@@ -2181,3 +2181,179 @@ s32 fn_1_22874(void) {
     return prevCount != q->pointCount;
 }
 #endif
+
+#include "Dolphin/mtxext.h"
+
+extern const f32 lbl_1_rodata_7890;
+
+// NONMATCHING 83%: frustum setup scheduled differently (orig negates farZ via a double temp, frsp) and the grid row pointers are strength-reduced into different saved regs
+// .text:0x23098 size:0x76C
+#if NONMATCHING
+s32 fn_1_23098(Mtx44 proj, Mtx camera, s32 lines, s32 cols, f32 nearZ, f32 farZ) {
+    Mtx44 m;
+    Mtx inv;
+    Vec rays[4];
+    Vec origins[4];
+    Vec dir;
+    Vec eye;
+    f32 t[4];
+    f32 dist;
+    f32 nearH;
+    f32 farH;
+    f32 nearW;
+    f32 farW;
+    f32 height;
+    s32 rows;
+    s32 k;
+    s32 i;
+    s32 c;
+
+    eye.x = lbl_1_rodata_77D8;
+    eye.y = lbl_1_rodata_77D8;
+    eye.z = lbl_1_rodata_77D8;
+    dir.x = lbl_1_rodata_77D8;
+    dir.y = lbl_1_rodata_7820[0];
+    dir.z = lbl_1_rodata_77D8;
+    PSMTXMultVec(camera, &eye, &eye);
+    PSMTXMultVec(camera, &dir, &dir);
+    PSVECSubtract(&dir, &eye, &dir);
+    PSVECNormalize(&dir, &dir);
+    dist = PSVECDotProduct(&dir, &eye);
+
+    nearH = lbl_1_rodata_77DC[0] * nearZ / lbl_1_rodata_7890 * lbl_1_rodata_7814[0];
+    farH = lbl_1_rodata_77DC[0] * farZ / lbl_1_rodata_7890 * lbl_1_rodata_7814[0];
+    nearW = lbl_1_rodata_77E0[0] * nearZ / lbl_1_rodata_7890 * lbl_1_rodata_7814[0];
+    farW = lbl_1_rodata_77E0[0] * farZ / lbl_1_rodata_7890 * lbl_1_rodata_7814[0];
+    nearZ = -nearZ;
+    farZ = -farZ;
+
+    origins[0].x = nearW;
+    origins[0].y = lbl_1_rodata_77D8;
+    origins[0].z = nearZ;
+    origins[1].x = farW;
+    origins[1].y = lbl_1_rodata_77D8;
+    origins[1].z = farZ;
+    origins[2].x = farW;
+    origins[2].y = farH;
+    origins[2].z = farZ;
+    origins[3].x = farW;
+    origins[3].y = -farH;
+    origins[3].z = farZ;
+    rays[0].x = lbl_1_rodata_77D8;
+    rays[0].y = nearH;
+    rays[0].z = lbl_1_rodata_77D8;
+    rays[1].x = lbl_1_rodata_77D8;
+    rays[1].y = farH;
+    rays[1].z = lbl_1_rodata_77D8;
+    rays[2].x = nearW - farW;
+    rays[2].y = nearH - farH;
+    rays[2].z = nearZ - farZ;
+    rays[3].x = nearW - farW;
+    rays[3].y = -(nearH - farH);
+    rays[3].z = nearZ - farZ;
+
+    // Intersect each ray with the plane dot(dir, p) == dist.
+    for (i = 0; i < 4; i++) {
+        t[i] = PSVECDotProduct(&dir, &rays[i]);
+        if (lbl_1_rodata_77D8 == t[i]) {
+            rays[i].z = lbl_1_rodata_77D8;
+        } else {
+            t[i] = -(-dist + PSVECDotProduct(&dir, &origins[i])) / t[i];
+            PSVECScale(&rays[i], t[i], &rays[i]);
+            PSVECAdd(&origins[i], &rays[i], &rays[i]);
+        }
+        if (t[i] < lbl_1_rodata_77D8) {
+            t[i] = -t[i];
+        }
+    }
+
+    if (rays[2].z <= nearZ && rays[2].z >= farZ && rays[3].z <= nearZ && rays[3].z >= farZ) {
+        memcpy(&rays[0], &rays[2], sizeof(Vec));
+        memcpy(&rays[1], &rays[3], sizeof(Vec));
+    } else if (t[0] <= lbl_1_rodata_77E4 && t[1] <= lbl_1_rodata_77E4) {
+    } else if (t[0] <= lbl_1_rodata_77E4 || t[1] <= lbl_1_rodata_77E4) {
+        if (rays[2].z <= nearZ && rays[2].z >= farZ) {
+            memcpy(&rays[3], &rays[2], sizeof(Vec));
+        }
+        if (t[0] < lbl_1_rodata_77E4) {
+            memcpy(&rays[1], &rays[3], sizeof(Vec));
+        } else {
+            memcpy(&rays[0], &rays[3], sizeof(Vec));
+        }
+    } else {
+        return 0;
+    }
+
+    // Corner points of the visible ground quad, in camera space -> world (x, z).
+    PSMTXInverse(camera, inv);
+    PSMTXMultVec(inv, &rays[1], &rays[2]);
+    lbl_1_bss_F6E0[cols - 1][0].x = rays[2].x;
+    lbl_1_bss_F6E0[cols - 1][0].y = rays[2].z;
+    rays[2].x = -rays[1].x;
+    rays[2].y = rays[1].y;
+    rays[2].z = rays[1].z;
+    PSMTXMultVec(inv, &rays[2], &rays[2]);
+    lbl_1_bss_F6E0[0][0].x = rays[2].x;
+    lbl_1_bss_F6E0[0][0].y = rays[2].z;
+    PSMTXMultVec(inv, &rays[0], &rays[2]);
+    lbl_1_bss_F6E0[cols - 1][1].x = rays[2].x;
+    lbl_1_bss_F6E0[cols - 1][1].y = rays[2].z;
+    rays[2].x = -rays[0].x;
+    rays[2].y = rays[0].y;
+    rays[2].z = rays[0].z;
+    PSMTXMultVec(inv, &rays[2], &rays[2]);
+    lbl_1_bss_F6E0[0][1].x = rays[2].x;
+    lbl_1_bss_F6E0[0][1].y = rays[2].z;
+
+    PSMTX44Identity(m);
+    memcpy(m, camera, sizeof(Mtx));
+    PSMTX44Concat(proj, m, m);
+    C_MTX44Inverse(m, m);
+    PSMTX44MultVec(proj, &rays[0], &rays[0]);
+    PSMTX44MultVec(proj, &rays[1], &rays[1]);
+    height = rays[0].y - rays[1].y;
+    if (height < lbl_1_rodata_77D8) {
+        height = -height;
+    }
+    rows = (f32)lines * (height + lbl_1_rodata_780C / (f32)lines) * lbl_1_rodata_7814[0];
+    if (rows < 2) {
+        rows = 2;
+    }
+
+    // Left/right edges: interpolate in screen space and unproject.
+    k = rows - 1;
+    lbl_1_bss_F6E0[0][k].x = lbl_1_bss_F6E0[0][1].x;
+    lbl_1_bss_F6E0[0][k].y = lbl_1_bss_F6E0[0][1].y;
+    lbl_1_bss_F6E0[cols - 1][k].x = lbl_1_bss_F6E0[cols - 1][1].x;
+    lbl_1_bss_F6E0[cols - 1][k].y = lbl_1_bss_F6E0[cols - 1][1].y;
+    PSVECSubtract(&rays[0], &rays[1], &rays[2]);
+    for (i = k; --i != 0;) {
+        PSVECScale(&rays[2], (f32)i / (f32)k, &rays[3]);
+        PSVECAdd(&rays[1], &rays[3], &rays[3]);
+        PSMTX44MultVec(m, &rays[3], &eye);
+        lbl_1_bss_F6E0[cols - 1][i].x = eye.x;
+        lbl_1_bss_F6E0[cols - 1][i].y = eye.z;
+        rays[3].x = -rays[3].x;
+        PSMTX44MultVec(m, &rays[3], &eye);
+        lbl_1_bss_F6E0[0][i].x = eye.x;
+        lbl_1_bss_F6E0[0][i].y = eye.z;
+    }
+
+    // Fill each row between its left and right edge points.
+    rays[0].y = lbl_1_rodata_77D8;
+    rays[1].y = lbl_1_rodata_77D8;
+    for (i = 0; i < rows; i++) {
+        rays[0].x = lbl_1_bss_F6E0[0][i].x;
+        rays[0].z = lbl_1_bss_F6E0[0][i].y;
+        rays[1].x = lbl_1_bss_F6E0[cols - 1][i].x - rays[0].x;
+        rays[1].z = lbl_1_bss_F6E0[cols - 1][i].y - rays[0].z;
+        for (c = cols - 1; --c != 0;) {
+            PSVECScale(&rays[1], (f32)c / (f32)(cols - 1), &rays[2]);
+            PSVECAdd(&rays[0], &rays[2], &rays[2]);
+            lbl_1_bss_F6E0[c][i].x = rays[2].x;
+            lbl_1_bss_F6E0[c][i].y = rays[2].z;
+        }
+    }
+    return rows;
+}
+#endif

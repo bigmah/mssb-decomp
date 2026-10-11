@@ -235,5 +235,6 @@ s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat);
 void fn_1_1F900(ChallengeTextureStages* stages);
 void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f32 damping, f32 restLen, f32 dtScale);
 s32 fn_1_22874(void);
+s32 fn_1_23098(Mtx44 proj, Mtx camera, s32 lines, s32 cols, f32 nearZ, f32 farZ);
 
 #endif
