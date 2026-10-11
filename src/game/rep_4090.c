@@ -182,8 +182,46 @@ static inline void playDustSound(u8 alt) {
     }
 }
 
+// Spawns a puff of dust at pos: adds the particles to the running dust emitter if there is
+// one, else starts a new one. who != 0 is a fielder (1-based), 0 the ball.
 void fn_3_16CC2C(Vec* pos, u8 who) {
-    return;
+    Emitter tmp;
+    Emitter* e;
+    Emitter* add;
+    Particle* last;
+    s32 n;
+
+    if (who) {
+        if (g_d_GameSettings.StadiumID == 4) {
+            n = 3;
+        } else {
+            n = 3;
+        }
+    } else if (g_d_GameSettings.StadiumID == 4) {
+        n = 20;
+    } else {
+        n = 3;
+    }
+    e = fn_800339F0(NULL, 0x1A);
+    if (e != NULL) {
+        add = fn_800337CC(&tmp, n, 1);
+        if (add == NULL) {
+            return;
+        }
+        fn_3_16C878(pos, add, n);
+        for (last = e->particles; last->next != NULL; last = last->next) {
+        }
+        last->next = add->particles;
+        e->count += add->count;
+    } else {
+        e = fn_80033A24((EmitterUpdateFn)fn_3_16C548, 0x80, 0, n, 1, 0x1A);
+        if (e == NULL) {
+            return;
+        }
+        e->count = n;
+        fn_3_16C878(pos, e, n);
+    }
+    playDustSound(who);
 }
 #endif
 
