@@ -2783,6 +2783,8 @@ typedef struct {
     /* 0x0024 */ u32 playFrameCounter;
     artificial_padding(0x24, 0x36, u32);
     /* 0x0036 */ u8 replayInd;
+    /* 0x0037 */ u8 _37[2];
+    /* 0x0039 */ u8 _39; // 1: replay offered, 2: replay done
 } g_Stats_s; // size: 0x4634
 
 // 0x8088a7e4
@@ -2884,6 +2886,8 @@ typedef struct {
     /* 0x4 */ s16 _4;
     /* 0x6 */ u8 _06[0x26 - 0x6];
     /* 0x26 */ s8 _26; // runs scored on the last dead ball
+    /* 0x27 */ u8 _27[0x44 - 0x27];
+    /* 0x44 */ s16 _44[2]; // per team: times through the batting order
 } lbl_3_common_bss_32A94_s;
 
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
