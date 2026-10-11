@@ -13,7 +13,6 @@ void LITInitPos(Light* light, f32 x, f32 y, f32 z);
 void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 #include <math.h>
 
-extern void fn_1_1CBE4(u8* object);
 extern u8 lbl_80366158[];
 extern ChallengeRosterQueue* lbl_803CC1B8;
 extern u8 lbl_1_bss_69FC[];
@@ -256,9 +255,8 @@ extern const f32 lbl_1_rodata_75C8;
 
 // fn_1_1B0FC, size:0x1CC
 // Debug viewer: set up three point lights.
-// NONMATCHING 99%: only the prologue scheduling of the two GXColor rodata loads differs (as fn_2_48DB4)
-#if NONMATCHING
-void fn_1_1B0FC(void) {
+// Shared by fn_1_1B0FC and its inlined copy in fn_1_1CBE4.
+static inline void allocViewerLights(void) {
     GXColor white = lbl_1_rodata_7500;
     GXColor cyan = lbl_1_rodata_7504;
     GXColor color0;
@@ -285,6 +283,12 @@ void fn_1_1B0FC(void) {
     LITInitColor(((ChallengeActorMgr*)lbl_8036E548)->lights[2], &color2);
 
     LITInitDir(((ChallengeActorMgr*)lbl_8036E548)->lights[0], lbl_1_rodata_75BC, lbl_1_rodata_75BC, lbl_1_rodata_75B8);
+}
+
+// NONMATCHING 99%: only the prologue scheduling of the two GXColor rodata loads differs (as fn_2_48DB4)
+#if NONMATCHING
+void fn_1_1B0FC(void) {
+    allocViewerLights();
 }
 #endif
 
@@ -1008,7 +1012,7 @@ void fn_800BD8C4(ChallengeDrawCollection* table, MtxPtr camera);
 
 // fn_1_1D110, size:0x340
 // Debug viewer: place the 24 actors from their viewer positions and draw them.
-// NONMATCHING 99%: saved-register assignment (task/camera/node pointers) and the task load scheduling differ
+// NONMATCHING 93%: saved-register assignment (task/camera/node pointers) and the task load scheduling differ
 #if NONMATCHING
 void fn_1_1D110(void) {
     ChallengeRosterQueue* task = lbl_803CC1B8;
@@ -1041,5 +1045,106 @@ void fn_1_1D110(void) {
         node->visible = 1;
     }
     fn_800BD8C4(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), camera);
+}
+#endif
+
+// Asset table entries (lbl_1_data_F968): load instructions passed to ARAMTransfer.
+typedef struct ChallengeAssetEntry {
+    const char* path;
+    u8 pad04[0xC];
+} ChallengeAssetEntry;
+extern ChallengeAssetEntry lbl_1_data_F968[];
+extern u8 lbl_1_bss_6A94[]; // 1 = actor uses a test model
+extern const char lbl_1_rodata_7610[]; // "test/obj/skin/mario/model11.dat"
+extern const char lbl_1_rodata_7630[]; // "test/obj/skin/test01/model11.dat"
+extern const char lbl_1_rodata_7654[]; // ... test02 .. test07
+extern const char lbl_1_rodata_7678[];
+extern const char lbl_1_rodata_769C[];
+extern const char lbl_1_rodata_76C0[];
+extern const char lbl_1_rodata_76E4[];
+extern const char lbl_1_rodata_7708[];
+// view of the ARAM loader (lbl_803C6CF8, ARAMLoader in main/file_800A6870.h)
+typedef struct ChallengeAramLoader {
+    u8 pad000[0x715];
+    u8 transferDone;
+} ChallengeAramLoader;
+extern ChallengeAramLoader lbl_803C6CF8;
+void fn_1_1C8C0(u8* object);
+
+// fn_1_1CBE4, size:0x504
+// Debug viewer loader: set up camera/lights, then load the 24 actor models one by one.
+// NONMATCHING 92%: case 0 (inlined fn_1_1B6BC/fn_1_1B0FC) uses one saved register less than the original (which reuses r31 and saves r27)
+#if NONMATCHING
+void fn_1_1CBE4(u8* object) {
+    ChallengeRosterQueue* task = lbl_803CC1B8;
+    u8 idx;
+    const char* path;
+
+    switch (task->state) {
+    case 0:
+        lbl_1_bss_6A94[0] = 0;
+        lbl_1_bss_6A94[1] = 0;
+        lbl_1_bss_6A94[2] = 0;
+        lbl_1_bss_6A94[3] = 0;
+        lbl_1_bss_6A94[4] = 0;
+        lbl_1_bss_6A94[5] = 0;
+        lbl_1_bss_6A94[6] = 0;
+        lbl_1_bss_6A94[7] = 0;
+        lbl_1_bss_6A94[8] = 0;
+        lbl_1_bss_6A94[9] = 0;
+        lbl_1_bss_6A94[10] = 0;
+        lbl_1_bss_6A94[11] = 0;
+        lbl_1_bss_6A94[12] = 0;
+        lbl_1_bss_6A94[13] = 0;
+        lbl_1_bss_6A94[14] = 0;
+        lbl_1_bss_6A94[15] = 0;
+        lbl_1_bss_6A94[16] = 0;
+        lbl_1_bss_6A94[17] = 0;
+        lbl_1_bss_6A94[18] = 0;
+        lbl_1_bss_6A94[19] = 0;
+        lbl_1_bss_6A94[20] = 0;
+        lbl_1_bss_6A94[21] = 0;
+        lbl_1_bss_6A94[22] = 0;
+        lbl_1_bss_6A94[23] = 0;
+        task->actorIndex = 0;
+        task->viewMode = 0;
+        task->_17 = 0;
+        task->_18 = 1;
+        fn_1_1B6BC();
+        allocViewerLights();
+        lbl_803CC1B8->state = 2;
+        break;
+    case 1:
+        task->actorIndex++;
+        if (task->actorIndex == 24) {
+            lbl_803CC1B8->state = 8;
+        } else {
+            lbl_803CC1B8->state = 2;
+        }
+        break;
+    case 2:
+        idx = task->actorIndex;
+        path = lbl_1_data_F968[idx].path;
+        if (path == lbl_1_rodata_7610 || path == lbl_1_rodata_7630 || path == lbl_1_rodata_7654 ||
+            path == lbl_1_rodata_7678 || path == lbl_1_rodata_769C || path == lbl_1_rodata_76C0 ||
+            path == lbl_1_rodata_76E4 || path == lbl_1_rodata_7708) {
+            lbl_1_bss_6A94[idx] = 1;
+        }
+        // TODO type: ARAMTransfer returns the loaded data (void*), UnknownHomes_Static.h says s32
+        ((ChallengeActorMgr*)lbl_8036E548)->actors[task->actorIndex].model =
+            (void*)ARAMTransfer(&lbl_1_data_F968[task->actorIndex], 0, 0, 0);
+        lbl_803CC1B8->state++;
+        break;
+    case 3:
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            task->state = 1;
+        }
+        break;
+    case 8:
+        task->actorIndex = 0;
+        lbl_803CC1B8->state = 0;
+        lbl_803CC1B8->update = fn_1_1C8C0;
+        break;
+    }
 }
 #endif

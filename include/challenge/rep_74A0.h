@@ -61,11 +61,13 @@ typedef struct {
 typedef struct {
     void (*update)(u8*);
     u8 padding[0x0C];
-    u16 state;
+    s16 state;
     u8 padding12[2];
     u8 actorIndex; // viewer: selected actor in lbl_8036E548
     s8 menu;
     u8 viewMode; // 1 = show all actors
+    u8 _17;
+    u8 _18;
 } ChallengeRosterQueue;
 
 // One falling confetti piece (linked list, drawn by fn_1_182C0).
@@ -146,7 +148,9 @@ typedef struct ChallengePad {
 
 // View of an actor entry in lbl_8036E548 (+0xC04, stride 0x27C).
 typedef struct ChallengeViewerActor {
-    u8 pad00[0x34];
+    u8 pad00[8];
+    void* model; // loaded by fn_1_1CBE4
+    u8 pad0C[0x34 - 0xC];
     Vec pos;
     Vec rot;
     f32 scale;
@@ -180,6 +184,8 @@ void fn_1_1A3B4(void);
 void fn_1_1A850(MtxPtr bone, MtxPtr camera, u8 r, u8 g, u8 b, u8 a);
 
 void fn_1_1D110(void);
+
+void fn_1_1CBE4(u8* object);
 
 void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 
