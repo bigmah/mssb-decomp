@@ -68,6 +68,25 @@ typedef struct Unk803716B8 {
 
 extern Unk803716B8 lbl_803716B8;
 extern u8 lbl_801092F8[0x80]; // TODO type
+extern char lbl_801092C8[0x20];
+extern u16 lbl_803C77B8[0x40]; // TODO type: pad state, [2] = buttons pressed this frame
+extern u8 lbl_803CBBC0;
+
+extern void fn_800A7D4C(s32 layer, DrawNode* node);
+extern void* fn_80009018(void* value);
+extern void* _OSAllocFromHeap(s32 heap, u32 size);
+extern BOOL fn_800ADAFC(void); // returns a u8 flag (lbz)
+extern void fn_800ADC40(void* work, u32 size);
+extern BOOL fn_800ADB04(char* path, void* player, s32 a, s32 b);
+extern u32 fn_800AD6BC(void* player);
+extern void fn_800AD500(void* player, void* buffer);
+extern void fn_800AD95C(void* player, s32 a);
+extern BOOL fn_800AD780(void* player);
+extern void fn_800AD9F4(void* player);
+extern void fn_800ADBFC(void);
+extern void fn_800ACFB0(void* p);
+extern void fn_800AD830(void* player);
+extern void fn_800AD070(void);
 
 // .text:0x80069BDC size:0x5B8
 void fn_80069BDC(void) {
@@ -103,7 +122,69 @@ void fn_8006AF6C(void) {
 
 // .text:0x8006AF9C size:0x294
 void fn_8006AF9C(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+
+    switch (task->state) {
+    case 0:
+        task->_38 = 0;
+        task->_36 = 0;
+        task->player = _OSAllocFromHeap(0x20, 0x1C0);
+        memset(task->player, 0, 0x1C0);
+        task->work = _OSAllocFromHeap(0x20, 0x400000);
+        fn_800ADC40(task->work, 0x400000);
+        task->state++;
+        break;
+    case 1:
+        if (fn_800ADB04(lbl_801092C8, task->player, 0, 0) != 0) {
+            fn_80009018(task->player);
+            task->state++;
+        }
+        break;
+    case 2:
+        if (fn_800ADAFC() != 0) {
+            u32 size = fn_800AD6BC(task->player);
+            task->buffer = _OSAllocFromHeap(0x20, size);
+            fn_800AD500(task->player, task->buffer);
+            fn_800AD95C(task->player, 1);
+            task->state++;
+        }
+        break;
+    case 3:
+        if (lbl_803C77B8[2] & 0x1000) {
+            task->state = 5;
+            break;
+        }
+    case 4:
+        if (fn_800AD780(task->player) != 0) {
+            fn_80009018(NULL);
+            fn_800AD9F4(task->player);
+            fn_800ADBFC();
+            fn_800ACFB0(task->buffer);
+            fn_800ACFB0(task->work);
+            fn_800ACFB0(task->player);
+            task->state = 0;
+            lbl_803CC1B8->_3B = 0;
+            lbl_803CC1B8->func = fn_8006B668;
+            return;
+        }
+        break;
+    case 5:
+        if (++task->_38 == 30) {
+            fn_800AD830(task->player);
+            task->state = 4;
+        }
+        break;
+    }
+    if (task->state >= 3) {
+        fn_800AD070();
+    }
+    if (task->_38 != 0) {
+        task->nodes[lbl_803CBBC0]._08 = 4;
+        task->nodes[lbl_803CBBC0].alpha = task->_38;
+        task->nodes[lbl_803CBBC0].next = NULL;
+        task->nodes[lbl_803CBBC0].draw = fn_8006AC24;
+        fn_800A7D4C(14, &task->nodes[lbl_803CBBC0]);
+    }
 }
 
 // .text:0x8006B230 size:0x438

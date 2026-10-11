@@ -4,13 +4,28 @@
 #include "mssbTypes.h"
 #include "game/UnknownHomes_Game.h"
 
+// Display-list node passed to fn_800A7D4C (two per task, indexed by lbl_803CBBC0).
+typedef struct DrawNode {
+    /*0x00*/ void* next;
+    /*0x04*/ void (*draw)(struct DrawNode* node);
+    /*0x08*/ s32 _08;
+    /*0x0C*/ u8 _0C[0x18 - 0x0C];
+    /*0x18*/ f32 alpha;
+    /*0x1C*/ u8 _1C[4];
+} DrawNode; // size: 0x20
+
 // Scene/task object pointed to by lbl_803CC1B8.
 typedef struct SceneTask {
     /*0x00*/ void (*func)(void);
     /*0x04*/ u8 _04[0x10 - 0x04];
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;
-    /*0x14*/ u8 _14[0x34 - 0x14];
+    /*0x14*/ u8 _14[0x18 - 0x14];
+    /*0x18*/ DrawNode* nodes;
+    /*0x1C*/ void* player;
+    /*0x20*/ void* work;
+    /*0x24*/ void* buffer;
+    /*0x28*/ u8 _28[0x34 - 0x28];
     /*0x34*/ s16 state;
     /*0x36*/ s16 _36;
     /*0x38*/ u8 _38;
@@ -72,6 +87,21 @@ extern ChallengeTeamInfo lbl_800E8558[54];
 // Event callbacks registered by the game module (see fn_3_16892C).
 typedef void (*AnimEventCallback)(void* obj, f32 frame, s32 a, s32 b);
 
+void fn_80069BDC(void);
+void fn_8006A194(void);
+void fn_8006A500(void);
+void fn_8006A824(void);
+void fn_8006AC24(DrawNode* node);
+void fn_8006AF6C(void);
+void fn_8006AF9C(void);
+void fn_8006B230(void);
+void fn_8006B668(void);
+void fn_8006B78C(void);
+void fn_8006BB60(void);
+void fn_8006BE00(void);
+void fn_8006C088(s32 alt);
+void fn_8006C0D0(void);
+u8 fn_8006C100(s16 value);
 s16 fn_8006C13C(StatInput* in);
 void fn_8006C2B4(StatOutput* out, StatInput* in);
 s16 fn_8006C268(StatOutput* stats);
