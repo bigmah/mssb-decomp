@@ -112,5 +112,6 @@ void fn_3_5DF54(void);
 void fn_3_5D5E8(void);
 void fn_3_5A87C(void);
 void fn_3_5B5A0(void);
+void fn_3_5F930(void);
 
 #endif

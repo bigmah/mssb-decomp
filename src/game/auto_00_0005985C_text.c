@@ -59,6 +59,7 @@ extern s32 fn_3_750DC(void);
 extern void fn_3_1CCC8(void);
 extern void fn_3_1658F0(void);
 extern int rand(void);
+extern void fn_8002024C(void);
 extern s16 lbl_3_data_6074[4]; // AI difficulty per challenge difficulty
 // Bowser Jr. match starting situations: [home/away][difficulty][2]
 typedef struct {
@@ -103,7 +104,11 @@ typedef struct {
         s16 id;
         u8 state;
     } preload[3];
-    /*0x2D60*/ u8 _2D60[0x2D7D - 0x2D60];
+    /*0x2D60*/ u8 _2D60[0x2D77 - 0x2D60];
+    /*0x2D77*/ u8 state;
+    /*0x2D78*/ u8 _2D78[3];
+    /*0x2D7B*/ u8 _2D7B;
+    /*0x2D7C*/ u8 _2D7C;
     /*0x2D7D*/ u8 _2D7D;
     /*0x2D7E*/ u8 _2D7E[0x307A - 0x2D7E];
     /*0x307A*/ u8 _307A;
@@ -113,7 +118,8 @@ typedef struct {
     /*0x307E*/ u8 _307E;
     /*0x307F*/ u8 _307F[0x3081 - 0x307F];
     /*0x3081*/ u8 _3081;
-    /*0x3082*/ u8 _3082[0x3087 - 0x3082];
+    /*0x3082*/ u8 _3082;
+    /*0x3083*/ u8 _3083[0x3087 - 0x3083];
     /*0x3087*/ u8 _3087;
     /*0x3088*/ u8 _3088;
     /*0x3089*/ u8 _3089[0x3154 - 0x3089];
@@ -2389,6 +2395,178 @@ void fn_3_5B5A0(void) {
                 starMissionCompletionTracker[i].inGameMissionTracker[j].starMissionStatus = 0;
             }
         }
+    }
+}
+#endif
+
+// fn_3_5F930, size:0x558
+// NONMATCHING 99%: original ends with a dead `li r0,0; cmpwi r0,9` (likely a leftover loop/compare) we can't reproduce
+#if NONMATCHING
+void fn_3_5F930(void) {
+    GameControlsStruct* game;
+    u8 mode = g_d_GameSettings.GameModeSelected;
+    s32 charId; // left unset when no batter has position 1, as in the original
+    s32 i;
+    if (mode == 4) {
+        if (unkSimulationRelatedStruct._08 == 0) {
+            if (lbl_803C77B8._02 & 0x1000) {
+                unkSimulationRelatedStruct._08 = 1;
+            }
+        } else if ((s32)lbl_803C6CF8._715 == 1) {
+            u8 state = g_GameLogic._125;
+            if (state == 1) {
+                lbl_8036E548._3082 = 1;
+            }
+            if (state == 1 || state >= 8 || g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+                changeScene(3, 6);
+                if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+                    g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+                }
+                if (lbl_8037169C._13 != 0) {
+                    g_GameLogic.framesOfExitingToMenu = 1;
+                }
+                return;
+            }
+        }
+    }
+    game = &g_GameLogic;
+    switch (game->_125) {
+    case 0:
+        if (mode == 5) {
+            fn_3_5B5A0();
+        }
+        { // inlined fn_3_5F7A8
+            s32 stage;
+            GameInitVariables* gs = &g_d_GameSettings;
+            s32 inning;
+            u8 finalInning;
+            g_GameLogic._135 = 0;
+            g_GameLogic._136 = 0;
+            g_RunningLogic[0x11] = 0;
+            g_RunningLogic[0x13] = 0;
+            *(s16*)(g_RunningLogic + 2) = 0;
+            inning = g_Scores.inning;
+            finalInning = g_Scores.finalInning;
+            if (inning > finalInning) {
+                stage = 5;
+            } else if (finalInning <= 3U) {
+                if (finalInning == inning && g_Scores.bottomHalf != 0) {
+                    stage = 4;
+                } else {
+                    stage = 0;
+                }
+            } else if (inning == finalInning) {
+                stage = 4;
+            } else if ((finalInning == 9 && inning >= 7) || (finalInning == 7 && inning >= 6)) {
+                stage = 3;
+            } else if (inning >= 4) {
+                stage = 2;
+            } else {
+                stage = 1;
+            }
+            g_Scores.inningStage = stage;
+            g_Scores._C1 = 0;
+            g_Scores._C6 = 0;
+            lbl_3_common_bss_37400[0x48] = 0;
+            fn_3_6C13C(lbl_3_common_bss_37400, &g_Scores);
+            if (gs->exhibitionMatchInd == 0) {
+                fn_3_16598C();
+            }
+            fn_3_5A684();
+            fn_3_75434();
+            fn_3_59338();
+            fn_3_8A350();
+            fn_3_1E178();
+            fn_3_AFDA4();
+            ((void (*)(void))fn_3_6C13C)();
+            fn_3_7B130();
+            setBatterContactConstants();
+            ((void (*)(void))fn_3_8A1D8)();
+            fn_3_7AFE4();
+            fn_3_1E154();
+            fn_3_6C108();
+            g_Strikes.strikes = 0;
+            g_Strikes.balls = 0;
+            g_Strikes._1E = -1;
+            g_Strikes.stateRelated = 0;
+            g_GameLogic.frameCountdownAtBeginningOfAtBatLockout = 0x5A;
+            g_GameLogic._13D = 0;
+        }
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        game->_125 = 1;
+        changeScene(0xD, 6);
+        lbl_3_common_bss_32724[0x9A] = 0;
+        lbl_3_common_bss_32724[0x9C] = 0;
+        lbl_803CBC3C[2] = 0;
+        lbl_803CBC3C[3] = 0;
+        lbl_8036E548.state = 0;
+        lbl_8036E548._2D7B = 0;
+        lbl_8036E548._2D7C = 0;
+        break;
+    case 1:
+        if (fn_3_59BCC(game->FrameCountOfCurrentAtBat_Copy) != 0) {
+            game->_125 = 2;
+            game->FrameCountOfCurrentAtBat_Copy = 0;
+            lbl_8036E548.state = 0;
+            if (lbl_3_common_bss_32724[0xA4] != 0) {
+                fn_8002024C();
+            }
+        }
+        break;
+    case 2:
+        if (fn_3_750DC() != 0) {
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            game->_125 = 5;
+        }
+        break;
+    case 5:
+        for (i = 1; i < 10; i++) {
+            if (g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][i][1] == 1) {
+                charId = inMemRoster[g_GameLogic.teamFielding][g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][i][0]]
+                             .stats.CharID;
+            }
+        }
+        if (fn_8001C588(charId) != 0) {
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            lbl_8036E548._3081 = 0;
+            game->_125 = 6;
+        }
+        break;
+    case 6:
+        if (fn_3_6BA64() != 0) {
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            game->_125 = 7;
+        }
+        break;
+    case 7:
+        if (someAnimationIndFunction() != 0) {
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            game->_125 = 8;
+        }
+        break;
+    case 8:
+        if (game->FrameCountOfCurrentPitch >= 240) {
+            if (mode == 4 || g_d_GameSettings._10 == 2) {
+                game->_125 = 9;
+            } else if (fn_3_6C938(1, 0x1300) != 0) {
+                game->_125 = 9;
+            }
+        }
+        if (fn_3_FD9FC() != 0) {
+            game->_125 = 9;
+        }
+        break;
+    case 9:
+        changeScene(3, 6);
+        if (lbl_8037169C._13 != 0) {
+            game->_125 = 10;
+        }
+        break;
+    case 10:
+        lbl_3_common_bss_1323C[0x25C] = 1;
+        fn_3_FBD70();
+        fn_3_5A6D4(0x16);
+        break;
     }
 }
 #endif
