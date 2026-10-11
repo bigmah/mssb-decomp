@@ -115,7 +115,7 @@ void fn_3_A4A10(void);
 void fn_3_A4F50(s32 i);
 void fn_3_A53DC(s32 i);
 void fn_3_A5704(s32 i);
-void fn_3_A5B4C(void);
+void fn_3_A5B4C(s32 i);
 s32 fn_3_A63E4(s32 i, s32 useNext, s32* throwBase, s32* coverBase);
 void fn_3_A67E8(s32 i);
 s32 fn_3_A6810(f32, f32, f32, f32);

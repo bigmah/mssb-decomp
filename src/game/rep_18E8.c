@@ -1180,9 +1180,70 @@ normal:
 #endif
 
 // .text:0x000A4A10 size:0x540 mapped:0x806E3AA4
+// NONMATCHING 41%: the original inlines fn_3_A53DC (with fn_3_A6ABC); here it is called. Loop structure matches
+#if NONMATCHING
 void fn_3_A4A10(void) {
-    return;
+    s32 i;
+    InMemRunnerType* r;
+    s32 margin;
+
+    for (i = 0; i < 4; i++) {
+        r = &g_Runners[i];
+        lbl_3_bss_1848[i] = 0;
+        lbl_3_bss_1838[i] = -1;
+        lbl_3_bss_1828[i] = -1;
+        lbl_3_bss_17FC[i] = 0;
+        if (r->runnerOnFieldOrOutOrScored == 1) {
+            if (r->tagUpInd == 2) {
+                fn_3_A4F50(i);
+            } else if (r->baseStandingOn != -1 && r->forceOutCd <= 0) {
+                fn_3_A53DC(i);
+            } else if (r->overrunBaseStage == 0) {
+                if (r->forceOutCd == 1) {
+                    fn_3_A5704(i);
+                } else {
+                    fn_3_A5B4C(i);
+                }
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        r = &g_Runners[i];
+        lbl_3_bss_1858[i] = 9;
+        if (r->runnerOnFieldOrOutOrScored == 1 &&
+            (r->baseStandingOn == -1 || r->tagUpInd == 2 || r->forceOutCd > 0 || lbl_3_bss_1828[i] == 0)) {
+            margin = lbl_3_bss_1848[i];
+            if (margin >= 0x5A) {
+                lbl_3_bss_1858[i] = 8;
+            } else if (margin >= 0x1E) {
+                lbl_3_bss_1858[i] = 7;
+            } else if (margin >= 0xF) {
+                lbl_3_bss_1858[i] = 6;
+            } else if (margin >= 8) {
+                lbl_3_bss_1858[i] = 5;
+            } else if (margin >= -8) {
+                lbl_3_bss_1858[i] = 4;
+            } else if (margin >= -0xF) {
+                lbl_3_bss_1858[i] = 3;
+            } else if (margin >= -0x1E) {
+                lbl_3_bss_1858[i] = 2;
+            } else if (margin >= -0x2D) {
+                lbl_3_bss_1858[i] = 1;
+            } else {
+                lbl_3_bss_1858[i] = 0;
+            }
+            if (g_FieldingLogic._107 == 2) {
+                lbl_3_bss_1858[i] -= 2;
+                if (lbl_3_bss_1858[i] < 2) {
+                    lbl_3_bss_1858[i] = 0;
+                } else {
+                    lbl_3_bss_1858[i] -= 2;
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x000A4F50 size:0x48C mapped:0x806E3FE4
 // NONMATCHING 90.6%: register allocation and scheduling differ; fn_3_A6ABC is inlined
@@ -1400,7 +1461,7 @@ void fn_3_A5704(s32 i) {
 #endif
 
 // .text:0x000A5B4C size:0x898 mapped:0x806E4BE0
-void fn_3_A5B4C(void) {
+void fn_3_A5B4C(s32 i) {
     return;
 }
 
