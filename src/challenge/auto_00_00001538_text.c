@@ -50,3 +50,12 @@ void fn_1_15CC(void) {
     }
 }
 
+// .text:0x00001634 size:0x6C
+void fn_1_1634(void) {
+    if ((s32)lbl_803C6CF8._715 == 1) {
+        // TODO port: ARAMTransfer returns the destination pointer (declared s32 in UnknownHomes_Static.h)
+        ((ChTexViewTask*)lbl_803CC1B8)->file = (s32*)ARAMTransfer(&lbl_1_data_0.files[3], 0, 0, 0);
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_15CC;
+    }
+}
+
