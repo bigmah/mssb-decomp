@@ -1,21 +1,63 @@
 #include "game/rep_AC8.h"
 #include "game/rep_D0.h"
+#include "game/rep_540.h"
+#include "game/rep_18E8.h"
+#include "game/rep_1CB8.h"
+#include "game/rep_3520.h"
+#include "game/rep_3E58.h"
+#include "game/m_sound.h"
+#include "game/auto_00_0006C854_text.h"
+#include "game/auto_00_00106DFC_text.h"
 #include "header_rep_data.h"
-#include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
-extern s16 radToShortAngle(f32 v);
+#include "stl/math.h"
+#include "stl/mem.h"
+#include "musyx/musyx.h"
+
+typedef struct { f32 a, b, c, d, e; } Ent14;
+/* lbl_3_bss_C8: per-pad stick-angle history (20 frames each) */
+typedef struct {
+    s16 unk0[2];
+    s16 hist[4][20];
+    s16 cur;
+    s16 unkA6;
+    s16 tmp[20];
+} StickHistory;
+typedef struct { f32 a, b, c, d; } Ent16;
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 pad0C[0x30 - 0xC];
+    f32 vx;
+    f32 vz;
+    u8 pad38[0xD4 - 0x38];
+    f32 px;
+    f32 pz;
+    u8 padDC[0x128 - 0xDC];
+    f32 tx;
+    u8 pad12C[4];
+    f32 tz;
+    u8 pad134[0x148 - 0x134];
+    f32 h;
+    u8 pad14C[0x154 - 0x14C];
+    f32 hv;
+    u8 pad158[0x1B2 - 0x158];
+    s16 n;
+    u8 pad1B4[0x205 - 0x1B4];
+    u8 st;
+    u8 flag;
+    u8 pad207[0x268 - 0x207];
+} Fld300B8;
+typedef struct _VecXZ {
+    f32 x, z;
+} VecXZ; // same as include/game/UnknownHomes_Game.h
+typedef struct { u8 b[0x268]; } FldT;
+typedef struct { u8 pad[0x190]; s16 x; u8 pad2[0x268 - 0x192]; } FS;
 
 extern u8 g_Runners[];
 extern f32 lbl_3_rodata_C50;
 extern f32 lbl_3_rodata_B78;
 extern f32 lbl_3_rodata_B68;
-void fn_3_A0F0(void);
-int fn_3_B7E10(f32 a, f32 b);
-u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z);
-void fn_3_16696C(void);
-extern void fn_3_161588(int, s16);
-void fn_3_59918(s32 x);
-u32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
-unsigned long sndFXCtrl(u32 vid, u8 ctrl, u8 value);
 extern u8 g_hitShorts[];
 extern u8 g_UnkSound_32718[];
 extern u8 lbl_3_common_bss_37400[];
@@ -23,12 +65,8 @@ extern u8 lbl_800E8558[];
 extern u16 lbl_3_data_81DC[];
 extern u8 lbl_3_data_8404[];
 extern u8 lbl_3_data_84B8[];
-void fn_3_522E0(int i, int k, f32* outX, f32* outZ, f32* reach, f32 dx, f32 dz);
-int fn_3_B7C2C(Vec* a, Vec* b);
-s32 fn_3_BBBC(f32* out, s32 n, s32 step, f32 x, f32 z);
 extern u8 lbl_3_data_4924[];
 extern u8 lbl_3_data_490C[];
-typedef struct { f32 a, b, c, d, e; } Ent14;
 extern Ent14 lbl_3_data_47D0[];
 extern f32 lbl_3_rodata_C54;
 extern f32 lbl_3_rodata_C48;
@@ -40,43 +78,21 @@ extern f32 lbl_3_data_450C[][2];
 extern u8 lbl_3_data_4290[];
 extern f32 lbl_3_rodata_B74;
 extern f32 lbl_3_rodata_BA4;
-int RandomInt_Game(int max);
 extern u8 lbl_3_data_4900[][3];
 extern u8 g_Pitcher[];
 extern f32 lbl_3_rodata_BC4;
 extern f32 lbl_3_rodata_BC8;
-void fn_3_31C50(void);
-BOOL checkFieldingStat(int, int, int);
-f32 shortAngleToRad_Capped(s16);
 extern f32 lbl_3_rodata_B90;
-void fn_3_53F48(void);
 extern f32 lbl_3_rodata_BB4;
 extern f32 lbl_3_rodata_B64;
-void getComponentsFromRad(f32 v, f32* x, f32* y);
 extern u8 lbl_3_data_4714[][4][6];
 extern f32 lbl_3_data_5FC4[];
-void playSoundEffect(int);
 extern f32 lbl_3_rodata_BCC;
-/* lbl_3_data_3C40: per-state fielder action table (animation id, state handler) */
-typedef struct {
-    int anim;
-    void (*fn)(int i);
-} FielderActEntry;
-/* lbl_3_bss_C8: per-pad stick-angle history (20 frames each) */
-typedef struct {
-    s16 unk0[2];
-    s16 hist[4][20];
-    s16 cur;
-    s16 unkA6;
-    s16 tmp[20];
-} StickHistory;
 extern StickHistory lbl_3_bss_C8;
 extern f32 lbl_3_data_4794[];
-extern int fn_3_B7CDC(f32, f32);
 extern f32 lbl_3_data_5CDC[];
 extern f32 lbl_3_data_5D08[];
 extern s16 lbl_3_data_79B4[];
-u8 fn_3_107D70(s8 i);
 extern f32 lbl_3_rodata_BBC;
 extern f32 lbl_3_rodata_B84;
 extern f32 lbl_3_rodata_B88;
@@ -87,49 +103,34 @@ extern f32 lbl_3_rodata_BB0;
 extern f32 lbl_3_rodata_BD0;
 extern f32 lbl_3_data_1C44[];
 extern s16 lbl_3_data_1C54[];
-int RandomInt_Game_Range(int min, int max);
-struct _VecXYZ;
-f32 game_atan2(f32 x, f32 y);
-extern f32 lbl_3_rodata_B68;
-f32 fn_3_9EFD0(struct _VecXYZ* a, struct _VecXYZ* b, struct _VecXYZ* c, struct _VecXYZ* d);
 extern u8 g_Batter[];
-BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern u8 lbl_3_common_bss_34C90[];
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
-void fn_3_1AE44(u8, u16, f32, f32, f32);
 extern u8 lbl_3_data_4884[];
-typedef struct { f32 a, b, c, d; } Ent16;
 extern u8 lbl_8036E548[];
 extern f32 lbl_3_rodata_B24;
-extern void fn_3_1682AC(int, int);
 extern f32 lbl_3_rodata_B20;
 extern f32 lbl_3_rodata_B9C;
 extern f32 lbl_3_rodata_B48;
 extern u8 g_GameLogic[];
 extern u8 g_Practice[];
 extern u8 g_d_GameSettings[];
-extern int fn_3_9FB8C(f32 x, f32 y);
-extern int fn_3_9FCA4(s16 a, s16 b);
 extern u8 g_FieldingLogic[];
 extern u8 lbl_3_data_3C40[];
 extern u8 lbl_3_data_4444[];
 extern u8 g_RunningLogic[];
-extern f64 atan2(f64, f64);
 extern u8 lbl_3_data_4930[];
 extern s16 lbl_3_data_49DC[];
 extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_1498;
 extern f32 lbl_3_rodata_BE4;
 extern f32 lbl_3_rodata_B8C;
-extern f32 lbl_3_rodata_B64;
 extern f32 lbl_3_rodata_BB8;
 extern f32 lbl_3_rodata_CBC;
 extern f32 lbl_3_rodata_BDC;
 extern f32 lbl_3_rodata_BA0;
-extern s16 fn_3_9FCF8(s16, s16);
-extern f32 fn_3_9CE0(f32, f32);
 extern f32 lbl_3_rodata_BFC;
 extern f32 lbl_3_rodata_B7C;
 extern f32 lbl_3_rodata_BD8;
@@ -141,13 +142,6 @@ extern s16 lbl_3_data_484C[];
 extern f32 lbl_3_rodata_B70;
 extern f32 lbl_3_rodata_C24;
 extern int __float_nan[];
-#define NAN (*(f32*)__float_nan)
-int __abs(int);
-#ifndef ABS
-#define ABS(x) ((x) < 0 ? -(x) : (x))
-#endif
-f64 __frsqrte(f64);
-extern f64 atan2(f64, f64);
 extern f64 lbl_3_rodata_B30;
 extern f64 lbl_3_rodata_B38;
 extern f64 lbl_3_rodata_B40;
@@ -155,7 +149,121 @@ extern f32 lbl_3_rodata_C38;
 extern f32 lbl_3_rodata_B80;
 extern f32 lbl_3_data_18984[];
 extern f32 g_AiLogic[];
-extern void fn_3_58F58(int, f32*, f32*);
+extern f32 lbl_3_rodata_B18;
+extern f32 lbl_3_rodata_B1C;
+extern f32 lbl_3_rodata_B28[];
+extern f32 lbl_3_rodata_BC0;
+extern f32 lbl_3_rodata_BD4;
+extern f32 lbl_3_rodata_BE0;
+extern f32 lbl_3_rodata_BE8;
+extern f32 lbl_3_rodata_BEC;
+extern f32 lbl_3_rodata_BF0;
+extern f32 lbl_3_rodata_BF4;
+extern f32 lbl_3_rodata_C04;
+extern f32 lbl_3_rodata_C08;
+extern f32 lbl_3_data_4848;
+extern f32 lbl_3_rodata_C0C;
+extern f32 lbl_3_data_46F0;
+extern f32 lbl_3_data_46F4;
+extern u8 lbl_3_data_21A14[];
+extern f32 lbl_3_rodata_C10;
+extern f32 lbl_3_rodata_C14;
+extern f32 lbl_3_rodata_C18;
+extern u8 lbl_3_data_4300[];
+extern u8 lbl_3_data_4348[];
+extern u8 lbl_3_data_4484[];
+extern u8 lbl_3_data_44B4[];
+extern f32 lbl_3_rodata_C1C;
+extern f32 lbl_3_rodata_C20;
+extern f32 lbl_3_rodata_C28;
+extern f32 lbl_3_rodata_C2C;
+extern f32 lbl_3_rodata_C30;
+extern f32 lbl_3_rodata_C34;
+extern f32 lbl_3_data_4780[];
+extern f32 lbl_3_rodata_C58;
+extern f32 lbl_3_rodata_C5C;
+extern f32 lbl_3_rodata_C60;
+extern f32 lbl_3_rodata_C3C;
+extern f32 lbl_3_rodata_C40;
+extern f32 lbl_3_rodata_C44;
+extern f32 lbl_3_rodata_C4C;
+extern u8 g_Scores[];
+extern f32 lbl_3_rodata_C64;
+extern f32 lbl_3_rodata_C68;
+extern f32 lbl_3_data_4618[];
+extern s16 lbl_3_data_4638[];
+extern f32 lbl_3_data_48C4;
+extern s16 lbl_3_data_48C8[][12];
+extern f32 lbl_3_rodata_C6C;
+extern f32 lbl_3_rodata_C70;
+extern f32 lbl_3_rodata_C74;
+extern f32 lbl_3_rodata_C78;
+extern f32 lbl_3_rodata_C7C;
+extern f32 lbl_3_rodata_C80;
+extern s16 lbl_3_data_48A4[];
+extern u8 lbl_3_data_48F8[];
+extern FieldingBoostParams lbl_3_data_4B9C;
+extern f32 lbl_3_data_4B98;
+extern f32 lbl_3_rodata_C84;
+extern f32 lbl_3_rodata_C88;
+extern s16 lbl_3_data_7F10[];
+extern f32 lbl_3_data_476C[];
+extern f32 lbl_3_rodata_C8C;
+extern f32 lbl_3_rodata_C90;
+extern f32 lbl_3_rodata_C94;
+extern f32 lbl_3_rodata_C98;
+extern f32 lbl_3_rodata_C9C;
+extern f32 lbl_3_rodata_CA0;
+extern f32 lbl_3_rodata_CA4;
+extern f32 lbl_3_rodata_CA8;
+extern f64 lbl_3_rodata_CB0;
+extern f32 lbl_3_rodata_CB8;
+extern f32 lbl_3_rodata_CC0;
+extern u8 lbl_3_data_46F8[];
+extern f32 lbl_3_data_4554[][3][2];
+extern f32 lbl_3_data_45B4[][2];
+extern f32 lbl_3_data_45D4[][2];
+extern u8 lbl_3_data_470C[];
+extern f32 lbl_3_rodata_CC4;
+
+// Prototypes of functions in other units. These mirror include/game/rep_1838.h,
+// UnknownHomes_Game.h and include/main/file_800639BC.h, which can't be included here:
+// they pull in UnknownHomes_Game.h, whose typed globals (g_Ball, g_Fielders, ...)
+// clash with this file's u8[] views of the same objects.
+s16 radToShortAngle(f32 v);
+f32 shortAngleToRad_Capped(s16);
+void getComponentsFromRad(f32 v, f32* x, f32* y);
+void getComponentsFromSAng(s16 ang, f32* x, f32* y);
+int RandomInt_Game(int max);
+int RandomInt_Game_Range(int min, int max);
+f32 game_atan2(f32 x, f32 y);
+f32 fn_3_9EFD0(Vec* a, Vec* b, Vec* c, Vec* d);
+void fn_3_9F79C(f32 a, f32 b, f32 c, f32* x, f32* y);
+int fn_3_9FB8C(f32 x, f32 y); // TODO type: returns s16, but the original callers here sign-extend its result like an int
+s16 fn_3_9FCA4(s16 a, s16 b);
+s16 fn_3_9FCF8(s16 a, s16 b);
+s16 fn_3_9FD28(s16 ang);
+s16 fn_3_9FE6C_normalizeAngle(s16);
+f32 fn_3_9FEA8(f32 v);
+int calculateLineIntersection(VecXZ* out, VecXZ* a, VecXZ* b);
+BOOL checkFieldingStat(int, int, int);
+void fn_80063958(s8 index);
+s32 fn_800639BC(s8 idx, Vec* a, Vec* b);
+BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
+s32 fn_3_6D658(s32, s16, s16);
+void fn_3_1AE44(u8, u16, f32, f32, f32); // rep_720.h pulls in GameSettings.h
+void fn_3_161588(int, s16);
+// TODO type: these disagree with their own units' headers
+void fn_3_59918(s32 x);           // defined as (s32 x, s32 unused)
+void fn_3_1682AC(int, int);       // header: (CharActor* actor, s8 kind); callers pass the actor as an int
+void fn_3_6E24C(int, int);        // rep_1188.h still has the (void) stub
+void fn_3_16D5E4(u8);             // rep_4090.h still has the (void) stub
+int __abs(int);
+
+#define NAN (*(f32*)__float_nan)
+#ifndef ABS
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#endif
 #define SQRT_L(x)                                                                                  \
     do {                                                                                           \
         if ((x) > 0.0f) {                                                                          \
@@ -173,8 +281,7 @@ extern void fn_3_58F58(int, f32*, f32*);
     } while (0)
 /* squared xz distance, written out so CW does not fuse it into fmadds */
 #define DIST2_XZ(ax, az, bx, bz) (((ax) - (bx)) * ((ax) - (bx)) + ((az) - (bz)) * ((az) - (bz)))
-#pragma dont_inline on
-#pragma dont_inline off
+
 static inline void SetFielderAct(int i, int state, int off) {
     u8* f = g_Fielders + i * 0x268;
     int d;
@@ -191,6 +298,7 @@ static inline void SetFielderAct(int i, int state, int off) {
         f[0x1FF] = 0;
     }
 }
+
 static inline void SetFielderAct2(int i, int val, int state) {
     u8* f = g_Fielders + i * 0x268;
     f[0x1D3] = state;
@@ -203,15 +311,550 @@ static inline void SetFielderAct2(int i, int val, int state) {
     *(s16*)(f + 0x1AC) = 0;
     f[0x1FF] = 0;
 }
+
+/* same body as fn_3_33458, which the original inlines into fn_3_34450 */
+static inline void PairPlayInline(void) {
+    u8* f;
+    s16 i;
+    fn_3_334EC(1);
+    fn_3_33088();
+    i = *(s16*)(g_FieldingLogic + 0xB2);
+    f = g_Fielders + i * 0x268;
+    if (i != -1) {
+        f[0x1D3] = 0x16;
+        if (*(int*)(lbl_3_data_3C40 + 0xB0) >= 0) {
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0xB0);
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
+    fn_3_4C9C8();
+    fn_3_47778();
+    fn_3_4A124();
+}
+
+/* point fielder f at (x, z): sets target, heading and remaining distance */
+static inline void SetRunTargetInline(u8* f, f32 x, f32 z) {
+    f32 dx;
+    f32 dz;
+    f32 d;
+    *(f32*)(f + 0x14) = x;
+    *(f32*)(f + 0x1C) = z;
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    if (lbl_3_rodata_B20 == dx && lbl_3_rodata_B20 == dz) {
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+    } else {
+        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
+}
+
+/* frames for fielder f to reach (x, z) */
+static inline s32 EtaToInline(u8* f, f32 x, f32 z) {
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 sp;
+    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
+        return 1;
+    }
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    sp = *(f32*)(f + 0x58);
+    if (sp == lbl_3_rodata_B20) {
+        sp = lbl_3_rodata_B60;
+    }
+    return (s32)((u32)f[0x1D1] >> 1) + (s32)(d / sp);
+}
+
+/* same body as fn_3_365D0, inlined into fn_3_361D8 */
+static inline int Pick3Inline(int a, int b, int c, f32 x, f32 y) {
+    int r = fn_3_36678(b, c, x, y, 1);
+    if (r == -1) {
+        return a;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xB0) < 0) {
+        return fn_3_36678(a, r, x, y, 1);
+    }
+    return fn_3_36678(a, r, x, y, 0);
+}
+
+static inline void SetFielderActP(u8* f, int i, int state, int off) {
+    int d;
+    if (i != -1) {
+        d = *(int*)(lbl_3_data_3C40 + off);
+        f[0x1D3] = state;
+        if (d >= 0) {
+            g_FieldingLogic[i + 0xF8] = d;
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
+}
+
+/* SetFielderAct that also records the fielder in FieldingLogic+0xBC */
+static inline void SetFielderActTag(int i, int state, int off) {
+    u8* f = g_Fielders + i * 0x268;
+    int d;
+    if (i != -1) {
+        d = *(int*)(lbl_3_data_3C40 + off);
+        f[0x1D3] = state;
+        if (d >= 0) {
+            g_FieldingLogic[i + 0xF8] = d;
+        }
+        *(s16*)(g_FieldingLogic + 0xBC) = i;
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
+}
+
+/* same body as fn_3_258D8, which the original inlines into fn_3_3A584 */
+static inline int StartJumpInline(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int type;
+    Ent16* t;
+    int n;
+    int k;
+    f32 sc;
+    if ((*(u8**)(g_FieldingLogic + 0x8C))[2] == 0) {
+        return 0;
+    }
+    if (f[0x25A] != 0) {
+        return 0;
+    }
+    type = f[0x1CC];
+    f[0x203] = 1;
+    *(f32*)(f + 0x15C) = lbl_3_rodata_B20;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            i = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            i = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    *(f32*)(f + 0x164) = ((Ent16*)lbl_3_data_4884)[type].a;
+    t = &((Ent16*)lbl_3_data_4884)[type];
+    sc = t->c;
+    *(f32*)(f + 0x160) = *(f32*)(f + 0x38) * lbl_3_rodata_B24 * sc;
+    *(f32*)(f + 0x168) = *(f32*)(f + 0x3C) * lbl_3_rodata_B24 * sc;
+    k = (int)t->d;
+    n = (int)(*(f32*)(f + 0x164) / t->b);
+    *(s16*)(f + 0x1B0) = n + 1;
+    *(s16*)(f + 0x1AE) = (n + n) + k + 2;
+    f[0x204] = 0;
+    if (type != 0) {
+        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
+    }
+    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+    return 1;
+}
+
+/* drop fielder i's base assignment (FieldingLogic+0xD0 slots / +0xD8) */
+static inline void ReleaseBaseInline(u8* f, int i) {
+    s16 k = *(s16*)(f + 0x18C);
+    if (k >= 0) {
+        if (k <= 3) {
+            if (((s16*)(g_FieldingLogic + 0xD0))[k] == i) {
+                ((s16*)(g_FieldingLogic + 0xD0))[k] = -1;
+                g_FieldingLogic[k + 0x101] = 0;
+            }
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            if (f[0x1D3] == 1) {
+                SetFielderActP(f, i, 12, 0x60);
+            }
+        } else if (k == 5) {
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            *(s16*)(g_FieldingLogic + 0xD8) = -1;
+            g_FieldingLogic[0x105] = 0;
+            if (f[0x1D3] == 14) {
+                SetFielderActP(f, i, 12, 0x60);
+            }
+        }
+    }
+}
+
+/* same bodies as fn_3_3C484 / fn_3_3C270, which the original inlines into fn_3_3CCB0 */
+static inline int TakeNearBaseInline(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (*(f32*)(f + 0xA8) < 5.0f) {
+        *(s16*)(f + 0x18C) = 9;
+    } else if (*(f32*)(f + 0xAC) < 5.0f) {
+        *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
+    } else if (*(f32*)(f + 0xB0) < 5.0f) {
+        *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
+    } else if (*(f32*)(f + 0xB4) < 5.0f) {
+        *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
+    } else {
+        return 0;
+    }
+    f[0x1D7] = 2;
+    if (i != -1) {
+        int v;
+        f[0x1D3] = 0xE;
+        v = *(int*)(lbl_3_data_3C40 + 0x70);
+        if (v >= 0) {
+            g_FieldingLogic[i + 0xF8] = v;
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
+    f[0x1D6] = 0xB;
+    return 1;
+}
+
+static inline int GoHomeInline(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 tx;
+    f32 tz;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    f32 a2;
+    f32 b2;
+    *(s16*)(f + 0x18C) = 0xE;
+    f[0x1D7] = 2;
+    if (i != -1) {
+        f[0x1D3] = 0xE;
+        if (*(int*)(lbl_3_data_3C40 + 0x70) >= 0) {
+            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x70);
+        }
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x1A4) = 0;
+        *(s16*)(f + 0x1AC) = 0;
+        f[0x1FF] = 0;
+    }
+    f[0x1D6] = 0xB;
+    tx = *(f32*)(lbl_3_data_4444 + 0x20);
+    tz = *(f32*)(lbl_3_data_4444 + 0x24);
+    *(f32*)(f + 0x14) = tx;
+    *(f32*)(f + 0x1C) = tz;
+    dx = tx - *(f32*)f;
+    dz = tz - *(f32*)(f + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x50) = 0.0f;
+        *(f32*)(f + 0x68) = 0.0f;
+    } else {
+        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
+        a2 = dz * dz;
+        d = dx * dx + a2;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
+    return 1;
+}
+
+// Inlined copy of fn_3_52560 (frames for fielder i to reach x/z); defined later in this file.
+static inline int FramesToReachAC8(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 d;
+    f32 spd;
+    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
+        return 1;
+    }
+    d = (x - *(f32*)f) * (x - *(f32*)f) + (z - *(f32*)(f + 8)) * (z - *(f32*)(f + 8));
+    SQRT_L(d);
+    spd = *(f32*)(f + 0x58);
+    return ((u32)f[0x1D1] >> 1) + (int)(d / (lbl_3_rodata_B20 == spd ? lbl_3_rodata_B60 : spd));
+}
+
+// Fielder i goes to cover its assigned base (0x18C), or relays/backs up.
+static inline void FielderGoCoverAC8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    if (f[0x1D7] == 1) {
+        SetFielderAct(i, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD0 + *(s16*)(f + 0x18C) * 2) = i;
+    } else if (*(s16*)(f + 0x18C) == 6) {
+        SetFielderAct(i, 0xB, 0x58);
+    } else {
+        SetFielderAct(i, 0xC, 0x60);
+        f[0x1D5] = 4;
+    }
+}
+
+// Fielder i stops covering its base (0x18C), clearing the base's cover slot if it held it.
+static inline void FielderReleaseCoverAC8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 t = *(s16*)(f + 0x18C);
+    if (t < 0) {
+        return;
+    }
+    if (t <= 3) {
+        if (*(s16*)(g_FieldingLogic + 0xD0 + t * 2) == i) {
+            *(s16*)(g_FieldingLogic + 0xD0 + t * 2) = -1;
+            g_FieldingLogic[t + 0x101] = 0;
+        }
+        *(s16*)(f + 0x18C) = -1;
+        f[0x1D7] = 0;
+        if (f[0x1D3] == 1) {
+            SetFielderAct(i, 0xC, 0x60);
+        }
+    } else if (t == 5) {
+        *(s16*)(f + 0x18C) = -1;
+        f[0x1D7] = 0;
+        *(s16*)(g_FieldingLogic + 0xD8) = -1;
+        g_FieldingLogic[0x105] = 0;
+        if (f[0x1D3] == 0xE) {
+            SetFielderAct(i, 0xC, 0x60);
+        }
+    }
+}
+
+// After becoming the ball chaser, fielder i runs fn_3_48480 and gives up any base it was covering.
+static inline void FielderTakeOverAC8(int i) {
+    fn_3_48480(i);
+    if (*(s16*)(g_FieldingLogic + 0xD8) != i && *(s16*)(g_Fielders + i * 0x268 + 0x18C) < 0) {
+        return;
+    }
+    FielderReleaseCoverAC8(i);
+}
+
+static inline void SetTargetAC8(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    *(f32*)(f + 0x14) = x;
+    *(f32*)(f + 0x1C) = z;
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x50) = 0.0f;
+        *(f32*)(f + 0x68) = 0.0f;
+    } else {
+        *(f32*)(f + 0x64) = atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
+}
+
+// same body as fn_3_4CFB0: aim the pitcher (fielder 0) at the base he covers
+static inline void PitcherCoverInl(void) {
+    int st = *(s16*)(g_Fielders + 0x18C);
+    f32 x;
+    f32 z;
+    f32 d;
+    if (st == 1) {
+        d = *(f32*)(lbl_3_data_4444 + 0x8) - *(f32*)g_Fielders;
+        if (d > 15.0f) {
+            d = 15.0f;
+        }
+        x = *(f32*)(lbl_3_data_4444 + 0x8);
+        d = d / lbl_3_rodata_B78;
+        z = *(f32*)(lbl_3_data_4444 + 0xC) - d;
+    } else if (st == 3) {
+        d = *(f32*)g_Fielders - *(f32*)(lbl_3_data_4444 + 0x18);
+        if (d > 15.0f) {
+            d = 15.0f;
+        }
+        x = *(f32*)(lbl_3_data_4444 + 0x18);
+        d = d / lbl_3_rodata_B78;
+        z = *(f32*)(lbl_3_data_4444 + 0x1C) - d;
+    } else {
+        x = *(f32*)(lbl_3_data_4444 + st * 8);
+        z = ((f32*)(lbl_3_data_4444 + 4))[st * 2];
+    }
+    SetTargetAC8(0, x, z);
+}
+
+// same body as fn_3_530EC: stop fielder i where it stands
+static inline void StopFielderInl(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    *(f32*)(f + 0x14) = *(f32*)(f + 0x0);
+    *(f32*)(f + 0x18) = *(f32*)(f + 0x4);
+    *(f32*)(f + 0x1C) = *(f32*)(f + 0x8);
+    *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+}
+
+// same body as fn_3_51DF0: infield zone of point (x, z)
+static inline int FieldZoneInl(f32 x, f32 z) {
+    f32 d;
+    f32 xx;
+    if (40.0f + (x - z) > 0.0f && 40.0f + (-x - z) > 0.0f) {
+        return 0;
+    }
+    xx = x * x;
+    d = xx + z * z;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_C70) {
+        return 1;
+    }
+    z -= lbl_3_rodata_C74;
+    d = xx + z * z;
+    SQRT_L(d);
+    if (d < lbl_3_rodata_C78) {
+        return 1;
+    }
+    if (d < lbl_3_rodata_C7C) {
+        return 2;
+    }
+    if (d < lbl_3_rodata_C80) {
+        return 3;
+    }
+    return 4;
+}
+
+// same body as fn_3_4B8D0: fielder i gives up the base it covers
+static inline void ReleaseBaseInl(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 k = *(s16*)(f + 0x18C);
+    if (k >= 0) {
+        if (k <= 3) {
+            if (*(s16*)(g_FieldingLogic + k * 2 + 0xD0) == i) {
+                *(s16*)(g_FieldingLogic + k * 2 + 0xD0) = -1;
+                g_FieldingLogic[0x101 + k] = 0;
+            }
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            if (f[0x1D3] == 1 && i != -1) {
+                f[0x1D3] = 0xC;
+                if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
+                    g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
+                }
+                f[0x1D5] = 0;
+                f[0x1D6] = 0;
+                *(s16*)(f + 0x1A4) = 0;
+                *(s16*)(f + 0x1AC) = 0;
+                f[0x1FF] = 0;
+            }
+        } else if (k == 5) {
+            *(s16*)(f + 0x18C) = -1;
+            f[0x1D7] = 0;
+            *(s16*)(g_FieldingLogic + 0xD8) = -1;
+            g_FieldingLogic[0x105] = 0;
+            if (f[0x1D3] == 0xE && i != -1) {
+                f[0x1D3] = 0xC;
+                if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
+                    g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
+                }
+                f[0x1D5] = 0;
+                f[0x1D6] = 0;
+                *(s16*)(f + 0x1A4) = 0;
+                *(s16*)(f + 0x1AC) = 0;
+                f[0x1FF] = 0;
+            }
+        }
+    }
+}
+
+// same body as fn_3_555AC: which baseline corner (1-4) fielder i stands in, 0 if none
+static inline void CornerZoneInl(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 lo;
+    f32 hi;
+    f[0x1DE] = 0;
+    if ((*(f32*)(f + 8)) > lbl_3_rodata_C18) {
+        return;
+    }
+    if ((*(f32*)(f + 8)) < lbl_3_rodata_C88) {
+        return;
+    }
+    if ((*(f32*)f) > lbl_3_rodata_B90) {
+        return;
+    }
+    if ((*(f32*)f) < lbl_3_rodata_CB8) {
+        return;
+    }
+    if ((*(f32*)(f + 8)) > *(f32*)(lbl_3_data_4444 + 0xC)) {
+        lo = *(f32*)(lbl_3_data_4444 + 0x14) - lbl_3_rodata_B68;
+        hi = lbl_3_rodata_B8C + *(f32*)(lbl_3_data_4444 + 0x14);
+        if ((*(f32*)f) > lbl_3_rodata_B20) {
+            if ((*(f32*)(f + 8)) > -(*(f32*)f) + lo && (*(f32*)(f + 8)) < -(*(f32*)f) + hi) {
+                f[0x1DE] = 2;
+            }
+        } else {
+            if ((*(f32*)(f + 8)) > (*(f32*)f) + lo && (*(f32*)(f + 8)) < (*(f32*)f) + hi) {
+                f[0x1DE] = 3;
+            }
+        }
+    } else {
+        lo = *(f32*)(lbl_3_data_4444 + 4) - lbl_3_rodata_B8C;
+        hi = lbl_3_rodata_B68 + *(f32*)(lbl_3_data_4444 + 4);
+        if ((*(f32*)f) > lbl_3_rodata_B20) {
+            if ((*(f32*)(f + 8)) > (*(f32*)f) + lo && (*(f32*)(f + 8)) < (*(f32*)f) + hi) {
+                f[0x1DE] = 1;
+            }
+        } else {
+            if ((*(f32*)(f + 8)) > -(*(f32*)f) + lo && (*(f32*)(f + 8)) < -(*(f32*)f) + hi) {
+                f[0x1DE] = 4;
+            }
+        }
+    }
+}
+
+static inline int StartDiveInl(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int type;
+    Ent16* t;
+    int n;
+    int k;
+    f32 sc;
+    if (f[0x203] != 0) {
+        return 0;
+    }
+    if ((*(u8**)(g_FieldingLogic + 0x8C))[2] == 0) {
+        return 0;
+    }
+    if (f[0x25A] != 0) {
+        return 0;
+    }
+    type = f[0x1CC];
+    f[0x203] = 1;
+    *(f32*)(f + 0x15C) = lbl_3_rodata_B20;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            i = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            i = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    }
+    *(f32*)(f + 0x164) = ((Ent16*)lbl_3_data_4884)[type].a;
+    t = &((Ent16*)lbl_3_data_4884)[type];
+    sc = t->c;
+    *(f32*)(f + 0x160) = *(f32*)(f + 0x38) * lbl_3_rodata_B24 * sc;
+    *(f32*)(f + 0x168) = *(f32*)(f + 0x3C) * lbl_3_rodata_B24 * sc;
+    k = (int)t->d;
+    n = (int)(*(f32*)(f + 0x164) / t->b);
+    *(s16*)(f + 0x1AE) = (n + n) + k + 2;
+    *(s16*)(f + 0x1B0) = n + 1;
+    f[0x204] = 0;
+    if (type != 0) {
+        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
+    }
+    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+    return 1;
+}
+
 #pragma dont_inline on
 
 // .text:0x000251E4 size:0x1C0 mapped:0x80664278
-extern void getComponentsFromSAng(s16 ang, f32* x, f32* y);
-extern s16 fn_3_9FE6C_normalizeAngle(s16);
-extern void fn_3_6C854(int, int);
-extern f32 lbl_3_rodata_B18;
-extern f32 lbl_3_rodata_B1C;
-int fn_3_51798(int i, f32* out);
 void fn_3_251E4(int i) {
     u8* f = g_Fielders + i * 0x268;
     f32 pos[3];
@@ -260,8 +903,6 @@ void fn_3_251E4(int i) {
 }
 
 // .text:0x000253A4 size:0x2A4 mapped:0x80664438
-extern u32 fn_3_90220(s32 idx, s32 off);
-extern void fn_3_A9354(int, int);
 int fn_3_253A4(int i, s16 ang) {
     u8* f = g_Fielders + i * 0x268;
     if (f[0x207] != 0 || f[0x205] != 0 || f[0x25E] != 0) {
@@ -435,7 +1076,6 @@ int fn_3_258D8(int i) {
 }
 
 // .text:0x00025A68 size:0x1D8 mapped:0x80664AFC
-extern f32 lbl_3_rodata_B28[];
 void fn_3_25A68(int i) {
     u8* f = g_Fielders + i * 0x268;
     f32 d;
@@ -967,14 +1607,6 @@ void fn_3_27648(void) {
 }
 
 // .text:0x00027738 size:0x2C mapped:0x806667CC
-extern u8 g_Fielders[];
-extern s16 lbl_3_data_1C3C[];
-extern f32 lbl_3_rodata_B94;
-extern f32 lbl_3_rodata_B98;
-extern f32 lbl_3_rodata_B60;
-void fn_3_1AE44(u8, u16, f32, f32, f32);
-extern int fn_3_9FB8C(f32 x, f32 y);
-extern int fn_3_9FCA4(s16 a, s16 b);
 
 void fn_3_27738(s32 i) {
     u8* f = g_Fielders + i * 0x268;
@@ -1349,10 +1981,8 @@ int fn_3_28224(int i) {
 }
 #endif
 #undef K4930
-#undef BALLPT
 
 // .text:0x00028CA8 size:0x14BC mapped:0x80667D3C
-#define BALLPT(n, off) (*(f32*)(g_Ball + (n) * 16 + (off)))
 /* Sets the fielder's catch state (252) and resets the per-catch flags. */
 #define SET_CATCH(f, k, st, jump)                                                                                      \
     do {                                                                                                               \
@@ -1700,7 +2330,6 @@ dive:
 #undef BALLPT
 
 // .text:0x0002A164 size:0x124 mapped:0x806691F8
-extern int fn_3_B7CDC(f32, f32);
 int fn_3_2A164(int i) {
     u8* f = g_Fielders + i * 0x268;
     if (*(f32*)(f + 0x74) > lbl_3_data_47D0[f[0x1CA]].c) {
@@ -2067,7 +2696,7 @@ hit:
     c.x = *(f32*)(pt + 0x354);
     c.z = *(f32*)(pt + 0x35C);
     c.y = 0.0f;
-    if (fn_3_9EFD0((struct _VecXYZ*)&a, (struct _VecXYZ*)&b, (struct _VecXYZ*)&c, (struct _VecXYZ*)&out) >
+    if (fn_3_9EFD0(&a, &b, &c, &out) >
         *(f32*)(f + 0xF0)) {
         dx = *(f32*)(pt + 0x354) - *(f32*)f;
         dz = *(f32*)(pt + 0x35C) - *(f32*)(f + 8);
@@ -2304,7 +2933,7 @@ hit:
         c.x = *(f32*)(g_Ball + k * 16 + 0x354);
         c.z = *(f32*)(g_Ball + k * 16 + 0x35C);
         c.y = 0.0f;
-        if (fn_3_9EFD0((struct _VecXYZ*)&a, (struct _VecXYZ*)&b, (struct _VecXYZ*)&c, (struct _VecXYZ*)&out) >
+        if (fn_3_9EFD0(&a, &b, &c, &out) >
             *(f32*)(f + 0xF0)) {
             if (diff > 0) {
                 f[0x254] = 2;
@@ -3119,7 +3748,7 @@ void fn_3_2EA88(int a) {
     }
     fn_3_57BB4();
     fn_3_55EEC(n);
-    ((FielderActEntry*)lbl_3_data_3C40)[g_Fielders[n * 0x268 + 0x1D3]].fn(n);
+    ((FielderStateEntry*)lbl_3_data_3C40)[g_Fielders[n * 0x268 + 0x1D3]].update(n);
     fn_3_55CC4(n);
     if (*(s16*)(g_Minigame + 0x18AA) != 0) {
         SetFielderAct(n, 0x1C, 0xE0);
@@ -3224,7 +3853,7 @@ void fn_3_2EEC4(int a) {
     }
     fn_3_51220();
     fn_3_55EEC(n);
-    ((FielderActEntry*)lbl_3_data_3C40)[f[0x1D3]].fn(n);
+    ((FielderStateEntry*)lbl_3_data_3C40)[f[0x1D3]].update(n);
     fn_3_55CC4(n);
 tail:
     for (i = 0; i < 9; i++) {
@@ -3553,31 +4182,6 @@ void fn_3_2FF2C(int i) {
 }
 
 // .text:0x000300B8 size:0x15C mapped:0x8066F14C
-typedef struct {
-    f32 x;
-    f32 y;
-    f32 z;
-    u8 pad0C[0x30 - 0xC];
-    f32 vx;
-    f32 vz;
-    u8 pad38[0xD4 - 0x38];
-    f32 px;
-    f32 pz;
-    u8 padDC[0x128 - 0xDC];
-    f32 tx;
-    u8 pad12C[4];
-    f32 tz;
-    u8 pad134[0x148 - 0x134];
-    f32 h;
-    u8 pad14C[0x154 - 0x14C];
-    f32 hv;
-    u8 pad158[0x1B2 - 0x158];
-    s16 n;
-    u8 pad1B4[0x205 - 0x1B4];
-    u8 st;
-    u8 flag;
-    u8 pad207[0x268 - 0x207];
-} Fld300B8;
 void fn_3_300B8(int i) {
     Fld300B8* f = (Fld300B8*)g_Fielders + i;
     f->flag = 0;
@@ -3880,11 +4484,6 @@ void fn_3_30D74(void) {
 #endif
 
 // .text:0x000313B0 size:0x1E4 mapped:0x80670444
-extern u8 lbl_3_common_bss_34C90[];
-extern u8 g_Pitcher[];
-extern f32 lbl_3_rodata_BC0;
-extern void fn_3_53F48(void);
-extern void fn_3_544B8(void);
 void fn_3_313B0(void) {
     int i;
     u8* f;
@@ -3995,8 +4594,6 @@ void fn_3_31678(void) {
 #endif
 
 // .text:0x00031A3C size:0x214 mapped:0x80670AD0
-extern f32 lbl_3_rodata_BC4;
-extern f32 lbl_3_rodata_BC8;
 void fn_3_31A3C(void) {
     int i;
     u8* f;
@@ -4495,8 +5092,6 @@ void fn_3_33D9C(void) {
     fn_3_49F40(8, 6);
 }
 
-extern f32 lbl_3_rodata_BD0;
-extern f32 lbl_3_rodata_BD4;
 // .text:0x00033DD0 size:0x418 mapped:0x80672E64
 // NONMATCHING 97%: 10.0f const load scheduled after the operands in the s7==0 branch; *first=7 store order in the 0x1BBF branch
 #if NONMATCHING
@@ -4674,31 +5269,6 @@ void fn_3_341E8(void) {
 #endif
 
 // .text:0x00034450 size:0x5F0 mapped:0x806734E4
-#pragma dont_inline off
-/* same body as fn_3_33458, which the original inlines into fn_3_34450 */
-static inline void PairPlayInline(void) {
-    u8* f;
-    s16 i;
-    fn_3_334EC(1);
-    fn_3_33088();
-    i = *(s16*)(g_FieldingLogic + 0xB2);
-    f = g_Fielders + i * 0x268;
-    if (i != -1) {
-        f[0x1D3] = 0x16;
-        if (*(int*)(lbl_3_data_3C40 + 0xB0) >= 0) {
-            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0xB0);
-        }
-        f[0x1D5] = 0;
-        f[0x1D6] = 0;
-        *(s16*)(f + 0x1A4) = 0;
-        *(s16*)(f + 0x1AC) = 0;
-        f[0x1FF] = 0;
-    }
-    fn_3_4C9C8();
-    fn_3_47778();
-    fn_3_4A124();
-}
-#pragma dont_inline on
 // NONMATCHING 98%: loop-variable register order; one distance sum unfused in the original; calls fn_3_4F504/fn_3_4FB34 through casts until their prototypes gain the index arg
 #if NONMATCHING
 void fn_3_34450(void) {
@@ -4730,11 +5300,10 @@ void fn_3_34450(void) {
         d = dx * dx + dz * dz;
         SQRT_L(d);
         *(f32*)(f + 0x80) = d;
-        /* TODO: fn_3_4F504 / fn_3_4FB34 take the fielder index; prototypes (other range) are still (void) */
         if (i == 1) {
-            ((void (*)(int))fn_3_4F504)(1);
+            fn_3_4F504(1);
         } else {
-            ((void (*)(int))fn_3_4FB34)(i);
+            fn_3_4FB34(i);
         }
         if (f[0x1DD] == 1) {
             mask |= 4 << sh;
@@ -4771,54 +5340,6 @@ void fn_3_34450(void) {
 #endif
 
 // .text:0x00034A40 size:0x12E8 mapped:0x80673AD4
-extern f32 lbl_3_rodata_B60;
-extern f32 lbl_3_rodata_B48;
-extern f32 lbl_3_rodata_BB0;
-extern f32 lbl_3_rodata_BDC;
-#pragma dont_inline off
-/* point fielder f at (x, z): sets target, heading and remaining distance */
-static inline void SetRunTargetInline(u8* f, f32 x, f32 z) {
-    f32 dx;
-    f32 dz;
-    f32 d;
-    *(f32*)(f + 0x14) = x;
-    *(f32*)(f + 0x1C) = z;
-    dx = x - *(f32*)f;
-    dz = z - *(f32*)(f + 8);
-    if (lbl_3_rodata_B20 == dx && lbl_3_rodata_B20 == dz) {
-        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
-        *(f32*)(f + 0x68) = lbl_3_rodata_B20;
-    } else {
-        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
-        d = dx * dx + dz * dz;
-        SQRT_L(d);
-        *(f32*)(f + 0x68) = d;
-    }
-    f[0x1D9] = 1;
-}
-#pragma dont_inline on
-#pragma dont_inline off
-/* frames for fielder f to reach (x, z) */
-static inline s32 EtaToInline(u8* f, f32 x, f32 z) {
-    f32 dx;
-    f32 dz;
-    f32 d;
-    f32 sp;
-    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
-        return 1;
-    }
-    dx = x - *(f32*)f;
-    dz = z - *(f32*)(f + 8);
-    d = dx * dx + dz * dz;
-    SQRT_L(d);
-    sp = *(f32*)(f + 0x58);
-    if (sp == lbl_3_rodata_B20) {
-        sp = lbl_3_rodata_B60;
-    }
-    return (s32)((u32)f[0x1D1] >> 1) + (s32)(d / sp);
-}
-#pragma dont_inline on
-extern f32 lbl_3_rodata_BE0;
 // NONMATCHING 96%: f-reg numbering throughout; three distance sums unfused in the original; calls fn_3_526DC through a cast until its prototype gains the index arg
 #if NONMATCHING
 void fn_3_34A40(int i) {
@@ -4940,8 +5461,7 @@ void fn_3_34A40(int i) {
         *(s16*)(f + 0x1A0) = 0;
         f[0x1D6] = 0;
     }
-    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     if (*(f32*)(f + 0x50) != lbl_3_rodata_B20) {
         *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x50);
     }
@@ -5043,20 +5563,6 @@ void fn_3_35E1C(void) {
 }
 #endif
 
-#pragma dont_inline off
-/* same body as fn_3_365D0, inlined into fn_3_361D8 */
-static inline int Pick3Inline(int a, int b, int c, f32 x, f32 y) {
-    int r = fn_3_36678(b, c, x, y, 1);
-    if (r == -1) {
-        return a;
-    }
-    if (*(s16*)(g_FieldingLogic + 0xB0) < 0) {
-        return fn_3_36678(a, r, x, y, 1);
-    }
-    return fn_3_36678(a, r, x, y, 0);
-}
-#pragma dont_inline on
-extern f32 lbl_3_rodata_BA4;
 // .text:0x000361D8 size:0x3F8 mapped:0x8067526C
 // NONMATCHING 96%: zero-init of i0/i1/i2 is li x3 (orig li+mr+mr); inlined fn_3_365D0 tail keeps an extra mr
 #if NONMATCHING
@@ -5142,11 +5648,6 @@ int fn_3_365D0(int a, int b, int c, f32 x, f32 y) {
 }
 
 // .text:0x00036678 size:0xA9C mapped:0x8067570C
-extern f32 lbl_3_rodata_BE8;
-extern f32 lbl_3_rodata_BEC;
-extern f32 lbl_3_rodata_BF0;
-extern f32 lbl_3_rodata_BF4;
-extern f32 lbl_3_rodata_BBC;
 // NONMATCHING 91%: fielder x/z read via lfsx in the original; dist sums are unfused fmuls+fadds there; f-reg numbering
 #if NONMATCHING
 int fn_3_36678(int a, int b, f32 x, f32 z, int mode) {
@@ -5795,8 +6296,6 @@ void fn_3_38234(void) {
 }
 
 // .text:0x00038304 size:0x48C mapped:0x80677398
-extern f32 lbl_3_rodata_BB0;
-extern f32 lbl_3_rodata_C04;
 // NONMATCHING 92%: fielder 0x80 reads via lfsx in the original; empty-then branch shape; f-reg numbering
 #if NONMATCHING
 void fn_3_38304(void) {
@@ -5884,23 +6383,6 @@ void fn_3_38304(void) {
 }
 #endif
 
-#pragma dont_inline off
-static inline void SetFielderActP(u8* f, int i, int state, int off) {
-    int d;
-    if (i != -1) {
-        d = *(int*)(lbl_3_data_3C40 + off);
-        f[0x1D3] = state;
-        if (d >= 0) {
-            g_FieldingLogic[i + 0xF8] = d;
-        }
-        f[0x1D5] = 0;
-        f[0x1D6] = 0;
-        *(s16*)(f + 0x1A4) = 0;
-        *(s16*)(f + 0x1AC) = 0;
-        f[0x1FF] = 0;
-    }
-}
-#pragma dont_inline on
 
 // .text:0x00038790 size:0x580 mapped:0x80677824
 // NONMATCHING 98%: register allocation throughout; bss_170==0 early return emitted as beqlr; one mulli placement
@@ -6038,7 +6520,6 @@ void fn_3_38D10(void) {
 #endif
 
 // .text:0x00038FF8 size:0x3B8 mapped:0x8067808C
-extern f32 lbl_3_rodata_C08;
 // NONMATCHING 97%: goto-target layout leaves the original's dead b instructions out; one mulli scheduled early
 #if NONMATCHING
 void fn_3_38FF8(void) {
@@ -6115,8 +6596,6 @@ void fn_3_38FF8(void) {
 #endif
 
 // .text:0x000393B0 size:0x4A8 mapped:0x80678444
-extern f32 lbl_3_rodata_B60;
-extern f32 lbl_3_rodata_B74;
 // NONMATCHING 95%: the original places the B2==r tail block at the function end; one mulli scheduled differently
 #if NONMATCHING
 void fn_3_393B0(void) {
@@ -6189,27 +6668,6 @@ void fn_3_393B0(void) {
 #endif
 
 // .text:0x00039858 size:0x56C mapped:0x806788EC
-#pragma dont_inline off
-/* SetFielderAct that also records the fielder in FieldingLogic+0xBC */
-static inline void SetFielderActTag(int i, int state, int off) {
-    u8* f = g_Fielders + i * 0x268;
-    int d;
-    if (i != -1) {
-        d = *(int*)(lbl_3_data_3C40 + off);
-        f[0x1D3] = state;
-        if (d >= 0) {
-            g_FieldingLogic[i + 0xF8] = d;
-        }
-        *(s16*)(g_FieldingLogic + 0xBC) = i;
-        f[0x1D5] = 0;
-        f[0x1D6] = 0;
-        *(s16*)(f + 0x1A4) = 0;
-        *(s16*)(f + 0x1AC) = 0;
-        f[0x1FF] = 0;
-    }
-}
-#pragma dont_inline on
-extern f32 lbl_3_data_4848;
 // NONMATCHING 94%: early-return/goto block layout (the original moves the 38790 tail to the end); bss_170 read via addi+lha
 #if NONMATCHING
 void fn_3_39858(void) {
@@ -6342,7 +6800,6 @@ void fn_3_39DC4(void) {
 }
 
 // .text:0x00039EB0 size:0x34C mapped:0x80678F44
-extern f32 lbl_3_rodata_C0C;
 // NONMATCHING 86%: early returns vs the original's nested condition chain; fielder reset loop strength-reduced differently
 #if NONMATCHING
 void fn_3_39EB0(void) {
@@ -6444,10 +6901,6 @@ void fn_3_3A1FC(int i) {
 }
 
 // .text:0x0003A234 size:0x350 mapped:0x806792C8
-extern f32 lbl_3_data_46F0;
-extern f32 lbl_3_data_46F4;
-extern u8 lbl_3_data_21A14[];
-extern int checkFieldingStat(int, int, int);
 // NONMATCHING 98%: extsh on the radToShortAngle results; 0x2C50 slot pointer reached via lwzu in the original
 #if NONMATCHING
 void fn_3_3A234(int i) {
@@ -6521,53 +6974,6 @@ void fn_3_3A234(int i) {
 #endif
 
 // .text:0x0003A584 size:0x574 mapped:0x80679618
-#pragma dont_inline off
-/* same body as fn_3_258D8, which the original inlines into fn_3_3A584 */
-static inline int StartJumpInline(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    int type;
-    Ent16* t;
-    int n;
-    int k;
-    f32 sc;
-    if ((*(u8**)(g_FieldingLogic + 0x8C))[2] == 0) {
-        return 0;
-    }
-    if (f[0x25A] != 0) {
-        return 0;
-    }
-    type = f[0x1CC];
-    f[0x203] = 1;
-    *(f32*)(f + 0x15C) = lbl_3_rodata_B20;
-    if (g_d_GameSettings[0x11] != 0) {
-        if (i == 0) {
-            i = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
-        } else {
-            i = *(s8*)(g_Minigame + i + 0x18F2);
-        }
-    }
-    *(f32*)(f + 0x164) = ((Ent16*)lbl_3_data_4884)[type].a;
-    t = &((Ent16*)lbl_3_data_4884)[type];
-    sc = t->c;
-    *(f32*)(f + 0x160) = *(f32*)(f + 0x38) * lbl_3_rodata_B24 * sc;
-    *(f32*)(f + 0x168) = *(f32*)(f + 0x3C) * lbl_3_rodata_B24 * sc;
-    k = (int)t->d;
-    n = (int)(*(f32*)(f + 0x164) / t->b);
-    *(s16*)(f + 0x1B0) = n + 1;
-    *(s16*)(f + 0x1AE) = (n + n) + k + 2;
-    f[0x204] = 0;
-    if (type != 0) {
-        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
-    }
-    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-    return 1;
-}
-#pragma dont_inline on
-extern f32 shortAngleToRad_Capped(s16);
-extern f64 cos(f64);
-extern f64 sin(f64);
-extern f32 lbl_3_rodata_B18;
-extern f32 lbl_3_rodata_B1C;
 // NONMATCHING 95%: inlined fn_3_258D8 body schedules its table reads differently (lfsx); 0x2C50 slot via lwzu; calls fn_3_261E8 through a cast until its prototype gains the index arg
 #if NONMATCHING
 void fn_3_3A584(int i) {
@@ -6587,8 +6993,7 @@ void fn_3_3A584(int i) {
         }
     }
     if (f[0x252] != 0) {
-        /* TODO: fn_3_261E8 takes the fielder index; its prototype (other range) is still (void) */
-        ((void (*)(int))fn_3_261E8)(i);
+        fn_3_261E8(i);
         *(s16*)(f + 0x1A2) = 0;
         goto done;
     }
@@ -6812,12 +7217,11 @@ void fn_3_3AE34(int i) {
                 fn_3_447C4(i);
             }
             if (f[0x252] != 0) {
-                /* TODO: fn_3_261E8 / fn_3_433E0 take the fielder index; prototypes (other range) are still (void) */
-                ((void (*)(int))fn_3_261E8)(i);
+                fn_3_261E8(i);
                 *(s16*)(f + 0x1A2) = 0;
                 f[0x1FF] = 2;
             } else {
-                ((void (*)(int))fn_3_433E0)(i);
+                fn_3_433E0(i);
             }
             fn_3_3ACC0(i);
         } else {
@@ -7026,7 +7430,6 @@ void fn_3_3B764(void) {
 }
 
 // .text:0x0003B99C size:0x48 mapped:0x8067AA30
-extern s16 lbl_3_bss_170;
 
 void fn_3_3B99C(void) {
     if (g_Minigame[0x1A2A] == 5) {
@@ -7040,7 +7443,6 @@ void fn_3_3B99C(void) {
 }
 
 // .text:0x0003B9E4 size:0x46C mapped:0x8067AA78
-extern void fn_3_A7EF8(void);
 // NONMATCHING 93%: register allocation of the history/controls pointers; ball distance sum unfused in the original (fmuls+fadds); bss_170 re-addressed after fn_3_A7EF8
 #if NONMATCHING
 void fn_3_3B9E4(void) {
@@ -7170,8 +7572,7 @@ void fn_3_3BE50(int i) {
             f[0x1D9] = 1;
         }
     }
-    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     if (f[0x1E9] != 0 && *(f32*)(f + 0x50) == lbl_3_rodata_B20) {
         f[0x1E9] = 0;
     }
@@ -7279,35 +7680,6 @@ int fn_3_3C484(int i) {
 }
 
 // .text:0x0003C594 size:0x5F8 mapped:0x8067B628
-#pragma dont_inline off
-/* drop fielder i's base assignment (FieldingLogic+0xD0 slots / +0xD8) */
-static inline void ReleaseBaseInline(u8* f, int i) {
-    s16 k = *(s16*)(f + 0x18C);
-    if (k >= 0) {
-        if (k <= 3) {
-            if (((s16*)(g_FieldingLogic + 0xD0))[k] == i) {
-                ((s16*)(g_FieldingLogic + 0xD0))[k] = -1;
-                g_FieldingLogic[k + 0x101] = 0;
-            }
-            *(s16*)(f + 0x18C) = -1;
-            f[0x1D7] = 0;
-            if (f[0x1D3] == 1) {
-                SetFielderActP(f, i, 12, 0x60);
-            }
-        } else if (k == 5) {
-            *(s16*)(f + 0x18C) = -1;
-            f[0x1D7] = 0;
-            *(s16*)(g_FieldingLogic + 0xD8) = -1;
-            g_FieldingLogic[0x105] = 0;
-            if (f[0x1D3] == 14) {
-                SetFielderActP(f, i, 12, 0x60);
-            }
-        }
-    }
-}
-#pragma dont_inline on
-extern f32 lbl_3_rodata_C10;
-extern f32 lbl_3_rodata_C14;
 // NONMATCHING 77%: our loop hoists the float constants and indexes the base arrays (lhax/sthx) where the original strength-reduces FieldingLogic/fielder pointers
 #if NONMATCHING
 int fn_3_3C594(int i) {
@@ -7431,82 +7803,6 @@ int fn_3_3CB8C(int i) {
 }
 
 // .text:0x0003CCB0 size:0x654 mapped:0x8067BD44
-#pragma dont_inline off
-/* same bodies as fn_3_3C484 / fn_3_3C270, which the original inlines into fn_3_3CCB0 */
-static inline int TakeNearBaseInline(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    if (*(f32*)(f + 0xA8) < 5.0f) {
-        *(s16*)(f + 0x18C) = 9;
-    } else if (*(f32*)(f + 0xAC) < 5.0f) {
-        *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
-    } else if (*(f32*)(f + 0xB0) < 5.0f) {
-        *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
-    } else if (*(f32*)(f + 0xB4) < 5.0f) {
-        *(s16*)(f + 0x18C) = fn_3_3D7D4(i);
-    } else {
-        return 0;
-    }
-    f[0x1D7] = 2;
-    if (i != -1) {
-        int v;
-        f[0x1D3] = 0xE;
-        v = *(int*)(lbl_3_data_3C40 + 0x70);
-        if (v >= 0) {
-            g_FieldingLogic[i + 0xF8] = v;
-        }
-        f[0x1D5] = 0;
-        f[0x1D6] = 0;
-        *(s16*)(f + 0x1A4) = 0;
-        *(s16*)(f + 0x1AC) = 0;
-        f[0x1FF] = 0;
-    }
-    f[0x1D6] = 0xB;
-    return 1;
-}
-static inline int GoHomeInline(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    f32 tx;
-    f32 tz;
-    f32 dz;
-    f32 dx;
-    f32 d;
-    f32 a2;
-    f32 b2;
-    *(s16*)(f + 0x18C) = 0xE;
-    f[0x1D7] = 2;
-    if (i != -1) {
-        f[0x1D3] = 0xE;
-        if (*(int*)(lbl_3_data_3C40 + 0x70) >= 0) {
-            g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x70);
-        }
-        f[0x1D5] = 0;
-        f[0x1D6] = 0;
-        *(s16*)(f + 0x1A4) = 0;
-        *(s16*)(f + 0x1AC) = 0;
-        f[0x1FF] = 0;
-    }
-    f[0x1D6] = 0xB;
-    tx = *(f32*)(lbl_3_data_4444 + 0x20);
-    tz = *(f32*)(lbl_3_data_4444 + 0x24);
-    *(f32*)(f + 0x14) = tx;
-    *(f32*)(f + 0x1C) = tz;
-    dx = tx - *(f32*)f;
-    dz = tz - *(f32*)(f + 8);
-    if (0.0f == dx && 0.0f == dz) {
-        *(f32*)(f + 0x50) = 0.0f;
-        *(f32*)(f + 0x68) = 0.0f;
-    } else {
-        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
-        a2 = dz * dz;
-        d = dx * dx + a2;
-        SQRT_L(d);
-        *(f32*)(f + 0x68) = d;
-    }
-    f[0x1D9] = 1;
-    return 1;
-}
-#pragma dont_inline on
-extern f32 lbl_3_rodata_C18;
 // NONMATCHING 92%: cover-decision branch layout (the original keeps a 0/1 result flag); f-reg numbering in the inlined fn_3_3C270 body
 #if NONMATCHING
 void fn_3_3CCB0(int i) {
@@ -7583,12 +7879,6 @@ go_home:
 #endif
 
 // .text:0x0003D304 size:0x3A8 mapped:0x8067C398
-extern void fn_3_9F79C(f32 a, f32 b, f32 c, f32* x, f32* y);
-extern void fn_3_A96FC(int);
-extern void fn_3_A9984(int);
-extern u8 lbl_3_data_4290[];
-extern u8 lbl_3_data_4300[];
-extern u8 lbl_3_data_4348[];
 // NONMATCHING 96%: table x reads via lfsx in the original; f30/f31 swapped; calls fn_3_2F574/fn_3_526DC through casts until their prototypes gain the index arg
 #if NONMATCHING
 void fn_3_3D304(int i) {
@@ -7626,8 +7916,7 @@ void fn_3_3D304(int i) {
         return;
     }
     if (f[0x203] != 0) {
-        /* TODO: fn_3_2F574 takes the fielder index; its prototype (other range) is still (void) */
-        ((void (*)(int))fn_3_2F574)(i);
+        fn_3_2F574(i);
         return;
     }
     if (*(s16*)(g_Ball + 0x1B78) == i && f[0x1EC] == 0) {
@@ -7658,8 +7947,7 @@ void fn_3_3D304(int i) {
         *(f32*)(f + 0x68) = d;
     }
     f[0x1D9] = 1;
-    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     if (*(f32*)(f + 0x68) <= lbl_3_rodata_B80) {
         SetFielderAct(i, 0, 0);
         f[0x1FA] = 1;
@@ -7757,11 +8045,6 @@ int fn_3_3D7D4(int i) {
 }
 
 // .text:0x0003DB78 size:0x7D4 mapped:0x8067CC0C
-extern void fn_3_A7C88(void);
-extern u8 lbl_3_data_4484[];
-extern u8 lbl_3_data_44B4[];
-extern f32 lbl_3_rodata_C1C;
-extern f32 lbl_3_rodata_C20;
 // NONMATCHING 92%: register/f-reg numbering in the inlined run-target blocks; calls fn_3_526DC through a cast until its prototype gains the index arg
 #if NONMATCHING
 void fn_3_3DB78(int i) {
@@ -7775,7 +8058,6 @@ void fn_3_3DB78(int i) {
         return;
     }
     k = *(s16*)(f + 0x18C);
-    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
     if (k == 5) {
         f32 xo;
         f32 zo;
@@ -7807,7 +8089,7 @@ void fn_3_3DB78(int i) {
             return;
         }
         SetRunTargetInline(f, *(f32*)(lbl_3_data_4444 + 0x20) + xo, *(f32*)(lbl_3_data_4444 + 0x24) + zo);
-        ((void (*)(int))fn_3_526DC)(i);
+        fn_3_526DC(i);
         if (*(f32*)(f + 0x68) < lbl_3_rodata_B78) {
             g_FieldingLogic[0x105] = 1;
             *(f32*)(f + 0x68) = lbl_3_rodata_B20;
@@ -7818,13 +8100,13 @@ void fn_3_3DB78(int i) {
         }
     } else if (k == 7) {
         SetRunTargetInline(f, *(f32*)(lbl_3_data_44B4 + i * 8 + 0x10), *(f32*)(lbl_3_data_44B4 + i * 8 + 0x14));
-        ((void (*)(int))fn_3_526DC)(i);
+        fn_3_526DC(i);
         if (lbl_3_rodata_B20 == *(f32*)(f + 0x68)) {
             SetFielderAct(i, 0, 0);
         }
     } else if (k >= 8 && k <= 13) {
         SetRunTargetInline(f, *(f32*)(lbl_3_data_4484 + k * 8 - 0x40), *(f32*)(lbl_3_data_4484 + k * 8 - 0x3C));
-        ((void (*)(int))fn_3_526DC)(i);
+        fn_3_526DC(i);
         if (lbl_3_rodata_B20 == *(f32*)(f + 0x68)) {
             SetFielderAct(i, 0, 0);
         }
@@ -7834,9 +8116,9 @@ void fn_3_3DB78(int i) {
             *(s16*)(f + 0x18C) = -1;
             return;
         }
-        ((void (*)(int))fn_3_526DC)(i);
+        fn_3_526DC(i);
     } else if (k == 15) {
-        ((void (*)(int))fn_3_526DC)(i);
+        fn_3_526DC(i);
         if (lbl_3_rodata_B20 == *(f32*)(f + 0x68)) {
             SetFielderAct(i, 0, 0);
         }
@@ -7979,8 +8261,7 @@ void fn_3_3E690(void) {
         }
     }
     SetFielderAct(sel, 3, 0x18);
-    /* TODO: fn_3_4EFC8 takes (fielder, int); its prototype (other range) is still (void) */
-    ((void (*)(int, int))fn_3_4EFC8)(sel, 0);
+    fn_3_4EFC8(sel, 0);
     g_Fielders[sel * 0x268 + 0x1DC] = 4;
     for (i = 0; i < 9; i++) {
         *(s16*)(g_Fielders + i * 0x268 + 0x18C) = -1;
@@ -8062,8 +8343,7 @@ void fn_3_3EB6C(void) {
         }
     }
     SetFielderAct(sel, 3, 0x18);
-    /* TODO: fn_3_4EFC8 takes (fielder, int); its prototype (other range) is still (void) */
-    ((void (*)(int, int))fn_3_4EFC8)(sel, 0);
+    fn_3_4EFC8(sel, 0);
     g_Fielders[sel * 0x268 + 0x1DC] = 0;
     for (i = 0; i < 9; i++) {
         *(s16*)(g_Fielders + i * 0x268 + 0x18C) = -1;
@@ -8190,126 +8470,8 @@ void fn_3_3F24C(void) {
 }
 #endif
 
-extern f32 lbl_3_rodata_B60;
-extern f32 lbl_3_rodata_C08;
-extern f32 lbl_3_rodata_BA4;
-extern f32 lbl_3_rodata_BCC;
-extern f32 lbl_3_rodata_B90;
-extern f32 lbl_3_rodata_BE4;
-extern f32 lbl_3_rodata_C28;
-extern f32 lbl_3_rodata_C2C;
-extern f32 lbl_3_rodata_C30;
-extern f32 lbl_3_rodata_C34;
-extern f32 lbl_3_rodata_BD0;
-extern f32 lbl_3_data_4780[];
-extern f32 lbl_3_rodata_BF4;
-extern f32 lbl_3_rodata_C58;
-extern f32 lbl_3_rodata_C5C;
-extern f32 lbl_3_rodata_C60;
-extern f32 lbl_3_rodata_C3C;
-extern f32 lbl_3_rodata_C40;
-extern f32 lbl_3_rodata_B74;
-extern f32 lbl_3_rodata_C44;
-extern f32 lbl_3_rodata_C4C;
-extern f32 lbl_3_rodata_BC4;
-extern f32 lbl_3_rodata_BC8;
-extern f32 lbl_3_rodata_B8C;
-extern u8 g_Scores[];
-extern int fn_3_B7D6C(f32 a, f32 b);
-extern int fn_3_B7E10(f32 a, f32 b);
 #define FLD(n) (g_Fielders + (n) * 0x268) // fielder n's 0x268-byte block
 #define RUN(n) (g_Runners + (n) * 0x154)  // runner n's 0x154-byte block
-extern u8 lbl_3_data_44B4[];
-extern f32 lbl_3_rodata_BD4;
-extern f32 lbl_3_rodata_BE8;
-extern f32 lbl_3_rodata_C64;
-extern f32 lbl_3_rodata_C68;
-extern int fn_3_B7E44(s16 a, f32 y);
-#pragma dont_inline off
-// Inlined copy of fn_3_52560 (frames for fielder i to reach x/z); defined later in this file.
-static inline int FramesToReachAC8(int i, f32 x, f32 z) {
-    u8* f = g_Fielders + i * 0x268;
-    f32 d;
-    f32 spd;
-    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
-        return 1;
-    }
-    d = (x - *(f32*)f) * (x - *(f32*)f) + (z - *(f32*)(f + 8)) * (z - *(f32*)(f + 8));
-    SQRT_L(d);
-    spd = *(f32*)(f + 0x58);
-    return ((u32)f[0x1D1] >> 1) + (int)(d / (lbl_3_rodata_B20 == spd ? lbl_3_rodata_B60 : spd));
-}
-// Fielder i goes to cover its assigned base (0x18C), or relays/backs up.
-static inline void FielderGoCoverAC8(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    if (f[0x1D7] == 1) {
-        SetFielderAct(i, 1, 8);
-        *(s16*)(g_FieldingLogic + 0xD0 + *(s16*)(f + 0x18C) * 2) = i;
-    } else if (*(s16*)(f + 0x18C) == 6) {
-        SetFielderAct(i, 0xB, 0x58);
-    } else {
-        SetFielderAct(i, 0xC, 0x60);
-        f[0x1D5] = 4;
-    }
-}
-// Fielder i stops covering its base (0x18C), clearing the base's cover slot if it held it.
-static inline void FielderReleaseCoverAC8(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    s16 t = *(s16*)(f + 0x18C);
-    if (t < 0) {
-        return;
-    }
-    if (t <= 3) {
-        if (*(s16*)(g_FieldingLogic + 0xD0 + t * 2) == i) {
-            *(s16*)(g_FieldingLogic + 0xD0 + t * 2) = -1;
-            g_FieldingLogic[t + 0x101] = 0;
-        }
-        *(s16*)(f + 0x18C) = -1;
-        f[0x1D7] = 0;
-        if (f[0x1D3] == 1) {
-            SetFielderAct(i, 0xC, 0x60);
-        }
-    } else if (t == 5) {
-        *(s16*)(f + 0x18C) = -1;
-        f[0x1D7] = 0;
-        *(s16*)(g_FieldingLogic + 0xD8) = -1;
-        g_FieldingLogic[0x105] = 0;
-        if (f[0x1D3] == 0xE) {
-            SetFielderAct(i, 0xC, 0x60);
-        }
-    }
-}
-void fn_3_48480(int);
-// After becoming the ball chaser, fielder i runs fn_3_48480 and gives up any base it was covering.
-static inline void FielderTakeOverAC8(int i) {
-    fn_3_48480(i);
-    if (*(s16*)(g_FieldingLogic + 0xD8) != i && *(s16*)(g_Fielders + i * 0x268 + 0x18C) < 0) {
-        return;
-    }
-    FielderReleaseCoverAC8(i);
-}
-// Same as SetTargetAC8 (defined later in this file).
-static inline void SetTargetAC8b(int i, f32 x, f32 z) {
-    u8* f = g_Fielders + i * 0x268;
-    f32 dx;
-    f32 dz;
-    f32 d;
-    *(f32*)(f + 0x14) = x;
-    *(f32*)(f + 0x1C) = z;
-    dx = x - *(f32*)f;
-    dz = z - *(f32*)(f + 8);
-    if (0.0f == dx && 0.0f == dz) {
-        *(f32*)(f + 0x50) = 0.0f;
-        *(f32*)(f + 0x68) = 0.0f;
-    } else {
-        *(f32*)(f + 0x64) = atan2(dz, dx);
-        d = dx * dx + dz * dz;
-        SQRT_L(d);
-        *(f32*)(f + 0x68) = d;
-    }
-    f[0x1D9] = 1;
-}
-#pragma dont_inline on
 
 // .text:0x0003F760 size:0x590 mapped:0x8067E7F4
 // NONMATCHING 99.2%: registers only; the known SetFielderAct state/table-value r0/r3 swap (see docs/patterns rep_AC8 dead ends)
@@ -8622,9 +8784,9 @@ void fn_3_411AC(void) {
         SQRT_L(d);
         *(f32*)(f + 0x80) = d;
         if (j == 1) {
-            ((void (*)(int))fn_3_4F504)(1);
+            fn_3_4F504(1);
         } else {
-            ((void (*)(int))fn_3_4FB34)(j);
+            fn_3_4FB34(j);
         }
         if (f[0x1DD] == 1) {
             mask |= 4 << sh;
@@ -8986,7 +9148,7 @@ void fn_3_42CDC(int i) {
     *(f32*)(f + 0x2C) = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E8) + *(f32*)(g_Ball + 0x19DC);
     if (*(s16*)(f + 0x18A) != 0) {
         f32 dz, dx, d;
-        ((int (*)(int, f32*, f32*, int))fn_3_50DD8)(i, &x, &z, 1);
+        fn_3_50DD8(i, &x, &z, 1);
         *(f32*)(f + 0x14) = x;
         *(f32*)(f + 0x1C) = z;
         dx = x - *(f32*)f;
@@ -9052,7 +9214,7 @@ void fn_3_43038(int i) {
     *(s16*)(f + 0x184) = 0x78;
 found:
     b = g_Ball + *(s16*)(f + 0x184) * 0x10;
-    SetTargetAC8b(i, *(f32*)(b + 0x354), *(f32*)(b + 0x35C));
+    SetTargetAC8(i, *(f32*)(b + 0x354), *(f32*)(b + 0x35C));
     if (*(s16*)(f + 0x184) >= 0x78) {
         *(s16*)(f + 0x17E) = 0x78;
     } else {
@@ -9118,7 +9280,7 @@ void fn_3_433E0(int i) {
             r = r - lbl_3_rodata_B60;
             x = r * (x / d) + *(f32*)f;
             z = r * (z / d) + *(f32*)(f + 8);
-            SetTargetAC8b(i, x, z);
+            SetTargetAC8(i, x, z);
         }
     } else if (g_FieldingLogic[0x123] != 0) {
         // Ball heading over the fence: go to the wall below its path.
@@ -9138,14 +9300,14 @@ void fn_3_433E0(int i) {
                 x = x - lbl_3_rodata_BA0;
             }
             z = z + lbl_3_rodata_BD8;
-            SetTargetAC8b(i, x, z);
+            SetTargetAC8(i, x, z);
         }
     } else {
         switch (f[0x1DC]) {
         case 0:
             if (*(s16*)(f + 0x184) > 1) {
                 if (*(s16*)(f + 0x18A) != 0) {
-                    ((int (*)(int, f32*, f32*, int))fn_3_50DD8)(i, &x, &z, 1);
+                    fn_3_50DD8(i, &x, &z, 1);
                     *(f32*)(f + 0x20) = x;
                     *(f32*)(f + 0x24) = z;
                 } else {
@@ -9171,7 +9333,7 @@ void fn_3_433E0(int i) {
                         z = *(f32*)(g_Ball + 0x1B20);
                     }
                 }
-                SetTargetAC8b(i, x, z);
+                SetTargetAC8(i, x, z);
             } else {
                 f[0x1DC] = 5;
             }
@@ -9183,8 +9345,8 @@ void fn_3_433E0(int i) {
             *(f32*)(f + 0x28) = *(f32*)(g_Ball + 0x19D8);
             *(f32*)(f + 0x2C) = *(f32*)(g_Ball + 0x19DC);
             if (*(s16*)(f + 0x18A) != 0) {
-                ((int (*)(int, f32*, f32*, int))fn_3_50DD8)(i, &x, &z, 1);
-                SetTargetAC8b(i, x, z);
+                fn_3_50DD8(i, &x, &z, 1);
+                SetTargetAC8(i, x, z);
                 *(f32*)(f + 0x20) = x;
                 *(f32*)(f + 0x24) = z;
             } else {
@@ -9215,18 +9377,18 @@ void fn_3_433E0(int i) {
             break;
         case 4:
             t = *(s16*)(f + 0x184);
-            SetTargetAC8b(i, *(f32*)(g_Ball + t * 0x10 + 0x354), *(f32*)(g_Ball + t * 0x10 + 0x35C));
+            SetTargetAC8(i, *(f32*)(g_Ball + t * 0x10 + 0x354), *(f32*)(g_Ball + t * 0x10 + 0x35C));
             if (*(s16*)(f + 0x184) <= 1) {
                 f[0x1DC] = 5;
             }
             break;
         case 5:
-            SetTargetAC8b(i, *(f32*)g_Ball, *(f32*)(g_Ball + 8));
+            SetTargetAC8(i, *(f32*)g_Ball, *(f32*)(g_Ball + 8));
             break;
         }
     }
     *(s16*)(f + 0x184) = *(s16*)(f + 0x184) - 1;
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     if (0.0f != *(f32*)(f + 0x50)) {
         *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x50);
     }
@@ -9301,7 +9463,7 @@ void fn_3_447C4(int i) {
                 z = z * k + *(f32*)(g_Ball + 0x19DC);
                 *(f32*)(f + 0x28) = x;
                 *(f32*)(f + 0x2C) = z;
-                ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                fn_3_50C20(i, &x, &z);
                 f[0x1DC] = 2;
                 goto tail;
             }
@@ -9311,14 +9473,14 @@ void fn_3_447C4(int i) {
                     z = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E8) + *(f32*)(g_Ball + 0x19DC);
                     *(f32*)(f + 0x28) = x;
                     *(f32*)(f + 0x2C) = z;
-                    ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                    fn_3_50C20(i, &x, &z);
                     f[0x1DC] = 2;
                 } else {
                     x = *(f32*)(g_Ball + 0x19D8);
                     z = *(f32*)(g_Ball + 0x19DC);
                     *(f32*)(f + 0x28) = x;
                     *(f32*)(f + 0x2C) = z;
-                    ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                    fn_3_50C20(i, &x, &z);
                     f[0x1DC] = 1;
                 }
                 {
@@ -9347,17 +9509,17 @@ void fn_3_447C4(int i) {
                 z = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E8) + *(f32*)(g_Ball + 0x19DC);
                 *(f32*)(f + 0x28) = x;
                 *(f32*)(f + 0x2C) = z;
-                ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                fn_3_50C20(i, &x, &z);
                 f[0x1DC] = 2;
             } else {
                 x = *(f32*)(g_Ball + t * 0x10 + 0x534);
                 z = *(f32*)(g_Ball + t * 0x10 + 0x53C);
                 *(f32*)(f + 0x28) = x;
                 *(f32*)(f + 0x2C) = z;
-                ((void (*)(int, f32*, f32*))fn_3_50C20)(i, &x, &z);
+                fn_3_50C20(i, &x, &z);
                 f[0x1DC] = 3;
             }
-            SetTargetAC8b(i, x, z);
+            SetTargetAC8(i, x, z);
             goto tail;
         }
     }
@@ -9371,14 +9533,14 @@ void fn_3_447C4(int i) {
         z = lbl_3_rodata_B80 * (pz / d) + pz;
     }
     if (g_Ball[0x1BEB] == 0 && g_Ball[0x1BE7] != 9 && g_Ball[0x1BE7] != 10 && g_Ball[0x1BF1] == 0 && g_Ball[0x1BD8] == 0) {
-        ((int (*)(int, f32*, f32*, int))fn_3_50DD8)(i, &x, &z, 0);
+        fn_3_50DD8(i, &x, &z, 0);
     }
-    SetTargetAC8b(i, x, z);
+    SetTargetAC8(i, x, z);
     f[0x1DC] = 0;
 tail:
     *(f32*)(f + 0x20) = *(f32*)(f + 0x14);
     *(f32*)(f + 0x24) = *(f32*)(f + 0x1C);
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     *(s16*)(f + 0x184) = t;
 }
 #endif
@@ -9414,11 +9576,11 @@ void fn_3_45394(int i) {
         return;
     default:
         if (f[0x1ED] == 0) {
-            ((void (*)(int))fn_3_433E0)(i);
+            fn_3_433E0(i);
         }
         gs = g_d_GameSettings;
         if (gs[0x11] == 0) {
-            ((void (*)(int))fn_3_4207C)(i);
+            fn_3_4207C(i);
         }
         if (gs[0x11] != 0) {
             if (g_Ball[0x1BD1] != 0 && i != -1) {
@@ -9448,7 +9610,7 @@ void fn_3_45394(int i) {
                 f[0x1FF] = 0;
             }
         } else {
-            ((void (*)(int))fn_3_5372C)(i);
+            fn_3_5372C(i);
         }
         break;
     }
@@ -9553,13 +9715,6 @@ void fn_3_45860(int i) {
 }
 
 // .text:0x0004597C size:0x20C mapped:0x80684A10
-#ifndef REP_AC8_VECXZ
-#define REP_AC8_VECXZ
-typedef struct _VecXZ {
-    f32 x, z;
-} VecXZ; // same as include/game/UnknownHomes_Game.h (not includable here: g_Ball is u8[] in this file)
-#endif
-extern int calculateLineIntersection(VecXZ* out, VecXZ* a, VecXZ* b);
 // Move fielder i to the point on the ball's travel line closest to it.
 void fn_3_4597C(int i) {
     u8* f = g_Fielders + i * 0x268;
@@ -9642,7 +9797,7 @@ void fn_3_45B88(int i) {
         return;
     default:
         if (f[0x202] != 0) {
-            ((void (*)(int))fn_3_526DC)(i);
+            fn_3_526DC(i);
             if (*(u16*)(g_FieldingLogic + 0x14A) & 0x100) {
                 g_FieldingLogic[0x13C] = 1;
             }
@@ -9928,7 +10083,7 @@ void fn_3_46ABC(int i) {
             f[0x1D9] = 1;
         }
     }
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     if (f[0x1E9] != 0 && *(f32*)(f + 0x50) == 0.0f) {
         f[0x1E9] = 0;
     }
@@ -10216,13 +10371,13 @@ void fn_3_47778(void) {
     *(s16*)(FLD(0) + 0x18C) = 15;
     a = *(s16*)(g_Ball + 0x1B9C);
     if (a < 0x320) {
-        SetTargetAC8b(0, lbl_3_rodata_BF4, lbl_3_rodata_C28);
+        SetTargetAC8(0, lbl_3_rodata_BF4, lbl_3_rodata_C28);
     } else if (a < 0x400) {
-        SetTargetAC8b(0, lbl_3_rodata_B78, lbl_3_rodata_C58);
+        SetTargetAC8(0, lbl_3_rodata_B78, lbl_3_rodata_C58);
     } else if (a < 0x4E0) {
-        SetTargetAC8b(0, lbl_3_rodata_C5C, lbl_3_rodata_C58);
+        SetTargetAC8(0, lbl_3_rodata_C5C, lbl_3_rodata_C58);
     } else {
-        SetTargetAC8b(0, lbl_3_rodata_C60, lbl_3_rodata_C28);
+        SetTargetAC8(0, lbl_3_rodata_C60, lbl_3_rodata_C28);
     }
     SetFielderAct(0, 0xE, 0x70);
 }
@@ -10243,7 +10398,7 @@ void fn_3_480B8(int i) {
     base = fn_3_47628();
     if (base != -1) {
         *(s16*)(f + 0x18E) = base;
-        if (((int (*)(int, f32*, f32*))fn_3_46E08)(i, &x, &z) != 0) {
+        if (fn_3_46E08(i, &x, &z) != 0) {
             *(f32*)(f + 0x14) = x;
             *(f32*)(f + 0x1C) = z;
             dx = x - *(f32*)f;
@@ -10284,7 +10439,6 @@ void fn_3_483CC(int i) {
 }
 
 // .text:0x00048480 size:0x5D4 mapped:0x80687514
-extern void fn_3_A7C88(void);
 // NONMATCHING 50%: the original inlines fn_3_480B8 (lead-runner cover + set target); we call it (expected nmverify flag). The rest matches apart from registers
 #if NONMATCHING
 // Infielder i during a hit: cover the lead runner's base (fn_3_480B8), then react to the ball state.
@@ -10300,7 +10454,7 @@ void fn_3_48480(int i) {
             fn_3_A7C88();
         } else if (*(int*)(g_Strikes + 8) < 3) {
             fn_3_480B8(i);
-            ((void (*)(int))fn_3_526DC)(i);
+            fn_3_526DC(i);
         }
         if (0.0f != *(f32*)(f + 0x50)) {
             *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x50);
@@ -10352,7 +10506,7 @@ void fn_3_48A54(int i) {
     }
     *(s16*)(f + 0x18E) = fn_3_47628();
     if (*(s16*)(g_FieldingLogic + 0xBE) < 0) {
-        if (((int (*)(int, f32*, f32*))fn_3_46E08)(i, &x, &z) == 0) {
+        if (fn_3_46E08(i, &x, &z) == 0) {
             return;
         }
         {
@@ -10382,7 +10536,7 @@ void fn_3_48A54(int i) {
         (g_Fielders + i * 0x268)[0x1D5] = 4;
         return;
     }
-    if (((int (*)(int, f32*, f32*))fn_3_46E08)(i, &x, &z) == 0) {
+    if (fn_3_46E08(i, &x, &z) == 0) {
         return;
     }
     {
@@ -10449,7 +10603,7 @@ void fn_3_494F4(int i) {
         r = *(f32*)(lbl_3_data_4930 + 0x90) - lbl_3_rodata_B60;
         tx = r * dx + *(f32*)f;
         tz = r * dz + *(f32*)(f + 8);
-        SetTargetAC8b(i, tx, tz);
+        SetTargetAC8(i, tx, tz);
     }
     if (g_Ball[0x1BCC] != 0) {
         if (*(f32*)(f + 0x74) < *(f32*)(lbl_3_data_4930 + 4)) {
@@ -10578,7 +10732,7 @@ void fn_3_49C18(int i) {
             f[0x1FF] = 1;
         }
         if (f[0x1FF] == 1) {
-            ((void (*)(int))fn_3_526DC)(i);
+            fn_3_526DC(i);
             fn_3_494F4(i);
         }
     case 1:
@@ -10594,7 +10748,6 @@ void fn_3_49C18(int i) {
     }
 }
 
-typedef struct { u8 b[0x268]; } FldT;
 
 // .text:0x00049EA8 size:0x94 mapped:0x80688F3C
 void fn_3_49EA8(int i) {
@@ -10628,7 +10781,6 @@ void fn_3_49F3C(void) {
 }
 
 // .text:0x00049F40 size:0x1E4 mapped:0x80688FD4
-typedef struct { u8 pad[0x190]; s16 x; u8 pad2[0x268 - 0x192]; } FS;
 void fn_3_49F40(int i, int mode) {
     u8* f;
     if (g_FieldingLogic[i + 0xF8] != 0) {
@@ -10832,7 +10984,6 @@ void fn_3_4A408(int i, f32* outX, f32* outZ) {
 #endif
 
 // .text:0x0004A9AC size:0x77C mapped:0x80689A40
-extern int fn_3_B7E44(s16 a, f32 y);
 // NONMATCHING 98.2%: stack slot of the sqrt classify temp, fn_3_B7E44 arg load order, and the unrolled 9-fielder loop's pointer/regs
 #if NONMATCHING
 // Fielder i chases the ball (or covers the fielder at ball+0x1B7E), choosing a catch action by distance.
@@ -10909,7 +11060,7 @@ void fn_3_4A9AC(int i) {
                 break;
             }
         }
-        ((void (*)(int))fn_3_526DC)(i);
+        fn_3_526DC(i);
     case 1:
         if (g_Ball[0x1BC9] != 0 && g_Ball[0x1BC9] != 3) {
             SetFielderAct(i, 0xC, 0x60);
@@ -10967,10 +11118,10 @@ void fn_3_4B128(int i) {
                     }
                     pz = lbl_3_rodata_BE8;
                 }
-                SetTargetAC8b(i, px, pz);
+                SetTargetAC8(i, px, pz);
             }
         }
-        ((void (*)(int))fn_3_526DC)(i);
+        fn_3_526DC(i);
         if (*(f32*)(g_Fielders + i * 0x268 + 0x68) < lbl_3_rodata_B64) {
             SetFielderAct(i, 0xC, 0x60);
         } else if (g_Ball[0x1BD7] >= 2) {
@@ -11367,28 +11518,6 @@ void fn_3_4C9C8(void) {
 #endif
 
 // .text:0x0004CFB0 size:0x25C mapped:0x8068C044
-#pragma dont_inline off
-static inline void SetTargetAC8(int i, f32 x, f32 z) {
-    u8* f = g_Fielders + i * 0x268;
-    f32 dx;
-    f32 dz;
-    f32 d;
-    *(f32*)(f + 0x14) = x;
-    *(f32*)(f + 0x1C) = z;
-    dx = x - *(f32*)f;
-    dz = z - *(f32*)(f + 8);
-    if (0.0f == dx && 0.0f == dz) {
-        *(f32*)(f + 0x50) = 0.0f;
-        *(f32*)(f + 0x68) = 0.0f;
-    } else {
-        *(f32*)(f + 0x64) = atan2(dz, dx);
-        d = dx * dx + dz * dz;
-        SQRT_L(d);
-        *(f32*)(f + 0x68) = d;
-    }
-    f[0x1D9] = 1;
-}
-#pragma dont_inline on
 void fn_3_4CFB0(void) {
     u8* f;
     int st = *(s16*)(g_Fielders + 0x18C);
@@ -11435,52 +11564,6 @@ void fn_3_4CFB0(void) {
 }
 
 // .text:0x0004D20C size:0x978 mapped:0x8068C2A0
-extern void fn_3_A7C88(void);
-extern f32 lbl_3_data_4780[];
-extern f32 lbl_3_rodata_C20;
-#pragma dont_inline off
-// same body as fn_3_4CFB0: aim the pitcher (fielder 0) at the base he covers
-static inline void PitcherCoverInl(void) {
-    int st = *(s16*)(g_Fielders + 0x18C);
-    f32 x;
-    f32 z;
-    f32 d;
-    if (st == 1) {
-        d = *(f32*)(lbl_3_data_4444 + 0x8) - *(f32*)g_Fielders;
-        if (d > 15.0f) {
-            d = 15.0f;
-        }
-        x = *(f32*)(lbl_3_data_4444 + 0x8);
-        d = d / lbl_3_rodata_B78;
-        z = *(f32*)(lbl_3_data_4444 + 0xC) - d;
-    } else if (st == 3) {
-        d = *(f32*)g_Fielders - *(f32*)(lbl_3_data_4444 + 0x18);
-        if (d > 15.0f) {
-            d = 15.0f;
-        }
-        x = *(f32*)(lbl_3_data_4444 + 0x18);
-        d = d / lbl_3_rodata_B78;
-        z = *(f32*)(lbl_3_data_4444 + 0x1C) - d;
-    } else {
-        x = *(f32*)(lbl_3_data_4444 + st * 8);
-        z = ((f32*)(lbl_3_data_4444 + 4))[st * 2];
-    }
-    SetTargetAC8(0, x, z);
-}
-#pragma dont_inline on
-#pragma dont_inline off
-// same body as fn_3_530EC: stop fielder i where it stands
-static inline void StopFielderInl(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    *(f32*)(f + 0x14) = *(f32*)(f + 0x0);
-    *(f32*)(f + 0x18) = *(f32*)(f + 0x4);
-    *(f32*)(f + 0x1C) = *(f32*)(f + 0x8);
-    *(f32*)(f + 0x30) = lbl_3_rodata_B20;
-    *(f32*)(f + 0x34) = lbl_3_rodata_B20;
-    *(f32*)(f + 0x50) = lbl_3_rodata_B20;
-    *(f32*)(f + 0x68) = lbl_3_rodata_B20;
-}
-#pragma dont_inline on
 // NONMATCHING 91%: branch layout of the early-out checks and float regs in the bag-settle math differ; base table loads are add+lfs not lfsx
 #if NONMATCHING
 // per-frame update for a fielder heading to / standing on a base
@@ -11526,8 +11609,7 @@ void fn_3_4D20C(int i) {
             *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
             *(f32*)(f + 0x68) = d - spd;
         } else if (f[0x252] != 0) {
-            // TODO type: fn_3_261E8 takes the fielder index; its stub is still (void)
-            ((void (*)(int))fn_3_261E8)(i);
+            fn_3_261E8(i);
             *(s16*)(f + 0x1A2) = 0;
         } else {
             b = *(s16*)(f + 0x18C);
@@ -11601,19 +11683,6 @@ int fn_3_4DB84(int i) {
 // .text:0x0004DC14 size:0x5A8 mapped:0x8068CCA8
 // NONMATCHING 97.6%: saved-register assignment of the angle/index locals differs; the partner fielder x load isn't an lfsx
 #if NONMATCHING
-extern f32 lbl_3_rodata_BA4;
-extern f32 lbl_3_data_4618[];
-extern s16 lbl_3_data_4638[];
-extern f32 lbl_3_data_48C4;
-extern s16 lbl_3_data_48C8[][12];
-extern f32 lbl_3_data_5CDC[];
-extern s32 fn_3_6D658(s32, s16, s16);
-extern s16 fn_3_9FD28(s16);
-extern int RandomInt_Game(int max);
-extern int RandomInt_Game_Range(int min, int max);
-extern int fn_3_B7E10(f32, f32);
-extern void fn_3_A0F0(void);
-extern void playSoundEffect(int);
 void fn_3_4DC14(int i) {
     u8* f = g_Fielders + i * 0x268;
     int other = -1;
@@ -11838,7 +11907,6 @@ void fn_3_4E1BC(void) {
 #endif
 
 // .text:0x0004E638 size:0x58C mapped:0x8068D6CC
-extern f32 lbl_3_rodata_C6C;
 void fn_3_4E638(void) {
     u8* f = g_Fielders + *(s16*)(g_Ball + 0x1B8A) * 0x268;
     f32 d;
@@ -12010,25 +12078,6 @@ void fn_3_4EBC4(void) {
 #endif
 
 // .text:0x0004EFC8 size:0x53C mapped:0x8068E05C
-extern f32 lbl_3_rodata_B94;
-extern f32 lbl_3_rodata_B98;
-extern f32 lbl_3_rodata_B60;
-extern int fn_3_A6810(f32, f32, f32, f32);
-#pragma dont_inline off
-// same body as fn_3_52560: frames for fielder i to reach (x, z)
-static inline int FramesToReachInl(int i, f32 x, f32 z) {
-    u8* f = g_Fielders + i * 0x268;
-    f32 d;
-    f32 spd;
-    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
-        return 1;
-    }
-    d = (x - *(f32*)f) * (x - *(f32*)f) + (z - *(f32*)(f + 8)) * (z - *(f32*)(f + 8));
-    SQRT_L(d);
-    spd = *(f32*)(f + 0x58);
-    return ((u32)f[0x1D1] >> 1) + (int)(d / (lbl_3_rodata_B20 == spd ? lbl_3_rodata_B60 : spd));
-}
-#pragma dont_inline on
 // NONMATCHING 93%: inlined frames-to-reach (fn_3_52560 body) and loop locals get different registers; rodata loads go through an addi base
 #if NONMATCHING
 void fn_3_4EFC8(int i, int mode) {
@@ -12057,7 +12106,7 @@ void fn_3_4EFC8(int i, int mode) {
             k += 3;
             continue;
         }
-        t = start + (FramesToReachInl(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) - 5);
+        t = start + (FramesToReachAC8(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) - 5);
         if (t < k) {
             h = *(f32*)(p + 0x358);
             if (h < lbl_3_rodata_B68) {
@@ -12159,7 +12208,7 @@ void fn_3_4F504(int i) {
             k += 3;
             continue;
         }
-        t = start + (FramesToReachInl(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) - 5);
+        t = start + (FramesToReachAC8(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) - 5);
         if (t < k) {
             h = *(f32*)(p + 0x358);
             if (h < lbl_3_rodata_B68) {
@@ -12235,42 +12284,6 @@ void fn_3_4F504(int i) {
 #endif
 
 // .text:0x0004FB34 size:0xD64 mapped:0x8068EBC8
-extern f32 lbl_3_rodata_B9C;
-extern f32 lbl_3_rodata_B8C;
-extern f32 lbl_3_rodata_C70;
-extern f32 lbl_3_rodata_C74;
-extern f32 lbl_3_rodata_C78;
-extern f32 lbl_3_rodata_C7C;
-extern f32 lbl_3_rodata_C80;
-#pragma dont_inline off
-// same body as fn_3_51DF0: infield zone of point (x, z)
-static inline int FieldZoneInl(f32 x, f32 z) {
-    f32 d;
-    f32 xx;
-    if (40.0f + (x - z) > 0.0f && 40.0f + (-x - z) > 0.0f) {
-        return 0;
-    }
-    xx = x * x;
-    d = xx + z * z;
-    SQRT_L(d);
-    if (d < lbl_3_rodata_C70) {
-        return 1;
-    }
-    z -= lbl_3_rodata_C74;
-    d = xx + z * z;
-    SQRT_L(d);
-    if (d < lbl_3_rodata_C78) {
-        return 1;
-    }
-    if (d < lbl_3_rodata_C7C) {
-        return 2;
-    }
-    if (d < lbl_3_rodata_C80) {
-        return 3;
-    }
-    return 4;
-}
-#pragma dont_inline on
 // NONMATCHING 95%: same flight search as fn_3_4F504 (with the inlined fn_3_51DF0 zone test); loop locals use different registers, smaller stack frame
 #if NONMATCHING
 // find where fielder i (an outfielder or infielder) can meet the fly ball; fills f+0x186 / 0x1DD / 0x1DA / 0x1DB
@@ -12337,7 +12350,7 @@ void fn_3_4FB34(int i) {
             }
             continue;
         }
-        t = start + FramesToReachInl(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C));
+        t = start + FramesToReachAC8(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C));
         if (t < k - margin) {
             h = *(f32*)(p + 0x358);
             if (h < *(f32*)(f + 0xF4)) {
@@ -12375,7 +12388,7 @@ void fn_3_4FB34(int i) {
                 best = 0;
                 for (m = 5; m < 75; m += 5) {
                     p = g_Ball + (k + m) * 16;
-                    if (start + FramesToReachInl(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) < k + m) {
+                    if (start + FramesToReachAC8(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) < k + m) {
                         best = m;
                         break;
                     }
@@ -12383,7 +12396,7 @@ void fn_3_4FB34(int i) {
                 best += 10;
                 for (m = 5; m < 30; m += 5) {
                     p = g_Ball + (k + m) * 16;
-                    t = start + FramesToReachInl(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) - (k + m);
+                    t = start + FramesToReachAC8(i, *(f32*)(p + 0x354), *(f32*)(p + 0x35C)) - (k + m);
                     if (diff <= t) {
                         break;
                     }
@@ -12463,7 +12476,6 @@ void fn_3_4FB34(int i) {
 // .text:0x00050898 size:0x388 mapped:0x8068F92C
 // NONMATCHING 99%: r28/r31 (trajectory x base / frame index) swapped
 #if NONMATCHING
-extern s16 lbl_3_data_48A4[];
 int fn_3_50898(int i, f32* outX, f32* outZ) {
     f32* tz;
     u8* f;
@@ -12524,7 +12536,6 @@ int fn_3_50898(int i, f32* outX, f32* outZ) {
 #endif
 
 // .text:0x00050C20 size:0x1B8 mapped:0x8068FCB4
-extern u8 lbl_3_data_48F8[];
 void fn_3_50C20(int i, f32* outX, f32* outZ) {
     u8* f = g_Fielders + i * 0x268;
     s16 ang = fn_3_9FB8C(*(f32*)(f + 0x28) - *(f32*)f, *(f32*)(f + 0x2C) - *(f32*)(f + 8));
@@ -12565,7 +12576,6 @@ void fn_3_50C20(int i, f32* outX, f32* outZ) {
 }
 
 // .text:0x00050DD8 size:0x448 mapped:0x8068FE6C
-extern s16 lbl_3_data_48A4[];
 int fn_3_50DD8(int i, f32* x, f32* z, int mode) {
     u8* f = g_Fielders + i * 0x268;
     f32 d;
@@ -12632,8 +12642,6 @@ int fn_3_50DD8(int i, f32* x, f32* z, int mode) {
 // .text:0x00051220 size:0x42C mapped:0x806902B4
 // NONMATCHING 97%: saturating-counter scratch regs (r4/r5/r6) differ and the int->float pool base for the final scale isn't hoisted
 #if NONMATCHING
-extern FieldingBoostParams lbl_3_data_4B9C;
-extern f32 lbl_3_data_4B98;
 void fn_3_51220(void) {
     u8* f;
     if (FIELDING_BOOST->state != 0) {
@@ -12781,19 +12789,6 @@ int fn_3_5164C(int i, f32* out) {
 #pragma fp_contract reset
 
 // .text:0x00051798 size:0x658 mapped:0x8069082C
-#include "game/rep_D0.h"
-#include "musyx/musyx.h"
-extern f32 lbl_3_rodata_C84;
-extern f32 lbl_3_rodata_C88;
-extern f32 lbl_3_rodata_BB4;
-extern s16 lbl_3_data_7F10[];
-extern void* memcpy(void*, const void*, unsigned long);
-extern u8 fn_3_1379A0(s32 idx);
-extern f32 game_atan2(f32 x, f32 y);
-extern f32 fn_3_9FEA8(f32 v);
-extern f64 cos(f64);
-extern f32 lbl_3_data_476C[];
-extern int fn_3_B7E10(f32, f32);
 // NONMATCHING 97.6%: wall-type test gets range-merged (subi/cmplwi) instead of five compares; float regs for the wall normal differ
 #if NONMATCHING
 // wall check for fielder i's next step; 0 = free, 1 = blocked, 2 = slide (out = corrected x/z)
@@ -12894,11 +12889,6 @@ int fn_3_51798(int i, f32* out) {
 #endif
 
 // .text:0x00051DF0 size:0x294 mapped:0x80690E84
-extern f32 lbl_3_rodata_C70;
-extern f32 lbl_3_rodata_C74;
-extern f32 lbl_3_rodata_C78;
-extern f32 lbl_3_rodata_C7C;
-extern f32 lbl_3_rodata_C80;
 int fn_3_51DF0(f32 x, f32 z) {
     f32 d;
     f32 xx;
@@ -12981,7 +12971,7 @@ void fn_3_522E0(int i, int frames, f32* outX, f32* outZ, f32* outDist, f32 dx, f
     SQRT_L(d);
     nx = dx / d;
     nz = dz / d;
-    // TODO type: fn_3_9FB8C really returns s16; this file declares it int
+    // TODO type: fn_3_9FB8C returns s16; only this caller uses the result without re-extending it
     ang = ((s16 (*)(f32, f32))fn_3_9FB8C)(nx, nz);
     if (!(*(f32*)(f + 0x50) < 0.0f) && *(s16*)(f + 0x19A) >= 0) {
         if (fn_3_9FCF8(ang, *(s16*)(f + 0x19A)) > 0x2A8) {
@@ -13005,8 +12995,6 @@ void fn_3_522E0(int i, int frames, f32* outX, f32* outZ, f32* outDist, f32 dx, f
 }
 
 // .text:0x00052560 size:0x17C mapped:0x806915F4
-extern f32 lbl_3_rodata_B60;
-void fn_3_1AE44(u8, u16, f32, f32, f32);
 int fn_3_52560(int i, f32 x, f32 z) {
     u8* f = g_Fielders + i * 0x268;
     f32 d;
@@ -13021,17 +13009,6 @@ int fn_3_52560(int i, f32 x, f32 z) {
 }
 
 // .text:0x000526DC size:0x870 mapped:0x80691770
-extern f64 sin(f64);
-extern f64 cos(f64);
-extern f32 lbl_3_rodata_B84;
-extern f32 lbl_3_rodata_B6C;
-extern f32 lbl_3_rodata_B74;
-extern f32 lbl_3_rodata_C20;
-extern f32 lbl_3_rodata_C8C;
-extern f32 lbl_3_rodata_C90;
-extern f32 lbl_3_rodata_C94;
-extern f32 lbl_3_rodata_C98;
-extern f32 lbl_3_rodata_C9C;
 // NONMATCHING 96.5%: the inlined fn_3_530EC copies recompute the fielder pointer differently; angle temps land in other regs
 #if NONMATCHING
 // move fielder i one frame toward its target (speed ramp, collision, facing)
@@ -13052,8 +13029,7 @@ void fn_3_526DC(int i) {
         return;
     }
     if (f[0x252] != 0) {
-        // TODO type: fn_3_261E8 takes the fielder index; its stub is still (void)
-        ((void (*)(int))fn_3_261E8)(i);
+        fn_3_261E8(i);
         *(s16*)(f + 0x1A2) = 0;
         return;
     }
@@ -13126,8 +13102,7 @@ void fn_3_526DC(int i) {
 speed_table:
     switch (f[0x1D6]) {
     case 0:
-        // TODO type: fn_3_3A234 takes the fielder index; its stub is still (void)
-        ((void (*)(int))fn_3_3A234)(i);
+        fn_3_3A234(i);
         break;
     case 1:
     case 5:
@@ -13245,7 +13220,6 @@ void fn_3_530EC(int i) {
 }
 
 // .text:0x00053130 size:0x5FC mapped:0x806921C4
-extern void fn_3_A96FC(int);
 // NONMATCHING 96%: minigame index initialised (orig leaves it unset), stack slots of the int->float temps and the 0x205 lerp schedule differ
 #if NONMATCHING
 // per-frame special-motion update for fielder i; returns 2 = busy, 1 = moved, 0/bool = free
@@ -13357,13 +13331,11 @@ int fn_3_53130(int i) {
         return 1;
     }
     if (f[0x207] != 0) {
-        // TODO type: fn_3_2F924 takes the fielder index; its stub is still (void)
-        ((void (*)(int))fn_3_2F924)(i);
+        fn_3_2F924(i);
         return 1;
     }
     if (f[0x203] != 0) {
-        // TODO type: fn_3_2F574 takes the fielder index; its stub is still (void)
-        ((void (*)(int))fn_3_2F574)(i);
+        fn_3_2F574(i);
         return 1;
     }
     if (f[0x1EE] != 0) {
@@ -13389,53 +13361,6 @@ int fn_3_53130(int i) {
 #endif
 
 // .text:0x0005372C size:0x7BC mapped:0x806927C0
-extern f32 lbl_3_data_4780[];
-extern f32 lbl_3_rodata_CA0;
-extern f32 lbl_3_rodata_CA4;
-#pragma dont_inline off
-// same body as fn_3_4B8D0: fielder i gives up the base it covers
-static inline void ReleaseBaseInl(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    s16 k = *(s16*)(f + 0x18C);
-    if (k >= 0) {
-        if (k <= 3) {
-            if (*(s16*)(g_FieldingLogic + k * 2 + 0xD0) == i) {
-                *(s16*)(g_FieldingLogic + k * 2 + 0xD0) = -1;
-                g_FieldingLogic[0x101 + k] = 0;
-            }
-            *(s16*)(f + 0x18C) = -1;
-            f[0x1D7] = 0;
-            if (f[0x1D3] == 1 && i != -1) {
-                f[0x1D3] = 0xC;
-                if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
-                    g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
-                }
-                f[0x1D5] = 0;
-                f[0x1D6] = 0;
-                *(s16*)(f + 0x1A4) = 0;
-                *(s16*)(f + 0x1AC) = 0;
-                f[0x1FF] = 0;
-            }
-        } else if (k == 5) {
-            *(s16*)(f + 0x18C) = -1;
-            f[0x1D7] = 0;
-            *(s16*)(g_FieldingLogic + 0xD8) = -1;
-            g_FieldingLogic[0x105] = 0;
-            if (f[0x1D3] == 0xE && i != -1) {
-                f[0x1D3] = 0xC;
-                if (*(int*)(lbl_3_data_3C40 + 0x60) >= 0) {
-                    g_FieldingLogic[i + 0xF8] = *(int*)(lbl_3_data_3C40 + 0x60);
-                }
-                f[0x1D5] = 0;
-                f[0x1D6] = 0;
-                *(s16*)(f + 0x1A4) = 0;
-                *(s16*)(f + 0x1AC) = 0;
-                f[0x1FF] = 0;
-            }
-        }
-    }
-}
-#pragma dont_inline on
 // NONMATCHING 94%: base table / cover-slot accesses use add+lfs/lha instead of lfsx/lhax; regs differ
 #if NONMATCHING
 // base-cover bookkeeping for fielder i (who stands on which base)
@@ -13525,8 +13450,6 @@ void fn_3_53EE8(int i) {
 // .text:0x00053F48 size:0x570 mapped:0x80692FDC
 // NONMATCHING 98%: float register allocation in the overlap/midpoint math differs (f3/f4/f5 shifted)
 #if NONMATCHING
-extern f32 lbl_3_data_476C[];
-extern void fn_3_13A048(int i, int j);
 // push overlapping fielders apart (radius per fielder type)
 void fn_3_53F48(void) {
     int i;
@@ -13616,14 +13539,6 @@ void fn_3_53F48(void) {
 #endif
 
 // .text:0x000544B8 size:0x448 mapped:0x8069354C
-extern f32 lbl_3_rodata_CA8;
-extern f32 lbl_3_rodata_C9C;
-extern u16 lbl_3_data_81DC[];
-extern u8 lbl_3_data_8404[];
-extern u8 lbl_3_data_84B8[];
-extern void fn_80063958(s8 index);
-extern s32 fn_800639BC(s8 idx, Vec* a, Vec* b);
-extern void fn_3_16D5E4(u8);
 void fn_3_544B8(void) {
     u32 kind;
     int col;
@@ -13787,10 +13702,6 @@ void fn_3_54900(int i) {
 }
 
 // .text:0x00054B58 size:0x818 mapped:0x80693BEC
-extern f32 shortAngleToRad_Capped(s16);
-extern f64 lbl_3_rodata_CB0;
-extern f32 lbl_3_rodata_B48;
-extern f32 fn_3_9FEA8(f32 v);
 // NONMATCHING 97%: base-table / stadium-point loads come out as add+lfs instead of lfsx
 #if NONMATCHING
 // choose fielder i's facing angle (f + 0x48)
@@ -14009,10 +13920,6 @@ void fn_3_55370(void) {
 }
 
 // .text:0x000555AC size:0x164 mapped:0x80694640
-extern f32 lbl_3_rodata_C18;
-extern f32 lbl_3_rodata_C88;
-extern f32 lbl_3_rodata_B90;
-extern f32 lbl_3_rodata_CB8;
 void fn_3_555AC(int i) {
     u8* f = g_Fielders + i * 0x268;
     f32 lo;
@@ -14240,54 +14147,6 @@ void fn_3_55CC4(int i) {
 }
 
 // .text:0x00055EEC size:0x1258 mapped:0x80694F80
-extern f32 lbl_3_rodata_CC0;
-extern f32 lbl_3_rodata_BB8;
-#pragma dont_inline off
-// same body as fn_3_555AC: which baseline corner (1-4) fielder i stands in, 0 if none
-static inline void CornerZoneInl(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    f32 lo;
-    f32 hi;
-    f[0x1DE] = 0;
-    if ((*(f32*)(f + 8)) > lbl_3_rodata_C18) {
-        return;
-    }
-    if ((*(f32*)(f + 8)) < lbl_3_rodata_C88) {
-        return;
-    }
-    if ((*(f32*)f) > lbl_3_rodata_B90) {
-        return;
-    }
-    if ((*(f32*)f) < lbl_3_rodata_CB8) {
-        return;
-    }
-    if ((*(f32*)(f + 8)) > *(f32*)(lbl_3_data_4444 + 0xC)) {
-        lo = *(f32*)(lbl_3_data_4444 + 0x14) - lbl_3_rodata_B68;
-        hi = lbl_3_rodata_B8C + *(f32*)(lbl_3_data_4444 + 0x14);
-        if ((*(f32*)f) > lbl_3_rodata_B20) {
-            if ((*(f32*)(f + 8)) > -(*(f32*)f) + lo && (*(f32*)(f + 8)) < -(*(f32*)f) + hi) {
-                f[0x1DE] = 2;
-            }
-        } else {
-            if ((*(f32*)(f + 8)) > (*(f32*)f) + lo && (*(f32*)(f + 8)) < (*(f32*)f) + hi) {
-                f[0x1DE] = 3;
-            }
-        }
-    } else {
-        lo = *(f32*)(lbl_3_data_4444 + 4) - lbl_3_rodata_B8C;
-        hi = lbl_3_rodata_B68 + *(f32*)(lbl_3_data_4444 + 4);
-        if ((*(f32*)f) > lbl_3_rodata_B20) {
-            if ((*(f32*)(f + 8)) > (*(f32*)f) + lo && (*(f32*)(f + 8)) < (*(f32*)f) + hi) {
-                f[0x1DE] = 1;
-            }
-        } else {
-            if ((*(f32*)(f + 8)) > -(*(f32*)f) + lo && (*(f32*)(f + 8)) < -(*(f32*)f) + hi) {
-                f[0x1DE] = 4;
-            }
-        }
-    }
-}
-#pragma dont_inline on
 // NONMATCHING 98.6%: s16 countdown tests use extsh. instead of cmpwi; float regs in the distance blocks differ
 #if NONMATCHING
 // per-frame bookkeeping for fielder i: timers, distances, facing history, hand-off to the state code
@@ -14423,11 +14282,9 @@ void fn_3_55EEC(int i) {
         CornerZoneInl(i);
     }
     if (f[0x252] != 0) {
-        // TODO type: fn_3_27860 takes the fielder index; its stub is still (void)
-        ((void (*)(int))fn_3_27860)(i);
+        fn_3_27860(i);
     } else {
-        // TODO type: fn_3_2C698 takes the fielder index; its stub is still (void)
-        ((void (*)(int))fn_3_2C698)(i);
+        fn_3_2C698(i);
     }
     d = (*(f32*)(f + 0x14) - *(f32*)f) * (*(f32*)(f + 0x14) - *(f32*)f) + (*(f32*)(f + 0x1C) - *(f32*)(f + 8)) * (*(f32*)(f + 0x1C) - *(f32*)(f + 8));
     SQRT_L(d);
@@ -14478,8 +14335,7 @@ void fn_3_57144(void) {
     f32 d;
     s16 idx;
     if (g_GameLogic[*(int*)(g_GameLogic + 0x10) + 0x142] != 0 && *(s16*)(g_Ball + 0x1BA0) == 0x14) {
-        // TODO type: fn_3_4197C takes an int; its stub is still declared (void)
-        ((void (*)(int))fn_3_4197C)(1);
+        fn_3_4197C(1);
     }
     if (g_FieldingLogic[0x123] != 0 && *(s16*)(g_Ball + 0x1B7A) != 0) {
         g_FieldingLogic[0x123] = 0;
@@ -14579,50 +14435,6 @@ set:
 // .text:0x000576B4 size:0x360 mapped:0x80696748
 // NONMATCHING 97%: the inlined dive-start helper (same body as fn_3_258D8) schedules its table loads differently (lfsx vs lfs) and swaps some regs
 #if NONMATCHING
-#pragma dont_inline off
-static inline int StartDiveInl(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    int type;
-    Ent16* t;
-    int n;
-    int k;
-    f32 sc;
-    if (f[0x203] != 0) {
-        return 0;
-    }
-    if ((*(u8**)(g_FieldingLogic + 0x8C))[2] == 0) {
-        return 0;
-    }
-    if (f[0x25A] != 0) {
-        return 0;
-    }
-    type = f[0x1CC];
-    f[0x203] = 1;
-    *(f32*)(f + 0x15C) = lbl_3_rodata_B20;
-    if (g_d_GameSettings[0x11] != 0) {
-        if (i == 0) {
-            i = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
-        } else {
-            i = *(s8*)(g_Minigame + i + 0x18F2);
-        }
-    }
-    *(f32*)(f + 0x164) = ((Ent16*)lbl_3_data_4884)[type].a;
-    t = &((Ent16*)lbl_3_data_4884)[type];
-    sc = t->c;
-    *(f32*)(f + 0x160) = *(f32*)(f + 0x38) * lbl_3_rodata_B24 * sc;
-    *(f32*)(f + 0x168) = *(f32*)(f + 0x3C) * lbl_3_rodata_B24 * sc;
-    k = (int)t->d;
-    n = (int)(*(f32*)(f + 0x164) / t->b);
-    *(s16*)(f + 0x1AE) = (n + n) + k + 2;
-    *(s16*)(f + 0x1B0) = n + 1;
-    f[0x204] = 0;
-    if (type != 0) {
-        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
-    }
-    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-    return 1;
-}
-#pragma dont_inline on
 void fn_3_576B4(int i) {
     u8* f = g_Fielders + i * 0x268;
     u8* st = *(u8**)(g_FieldingLogic + 0x8C);
@@ -14679,7 +14491,6 @@ void fn_3_576B4(int i) {
 #endif
 
 // .text:0x00057A14 size:0x1A0 mapped:0x80696AA8
-extern f32 lbl_3_rodata_BA4;
 void fn_3_57A14(void) {
     int first;
     int second;
@@ -15114,8 +14925,6 @@ void fn_3_58870(void) {
 #endif
 
 // .text:0x00058E50 size:0x108 mapped:0x80697EE4
-extern u8 lbl_3_data_46F8[];
-extern void fn_3_6E24C(int, int);
 void fn_3_58E50(void) {
     u8* m;
     int i;
@@ -15141,13 +14950,6 @@ void fn_3_58E50(void) {
 }
 
 // .text:0x00058F58 size:0x254 mapped:0x80697FEC
-extern u8 g_Pitcher[];
-extern u8 g_Runners[];
-extern u8 g_Batter[];
-extern f32 lbl_3_data_450C[][2];
-extern f32 lbl_3_data_4554[][3][2];
-extern f32 lbl_3_data_45B4[][2];
-extern f32 lbl_3_data_45D4[][2];
 // 99%: only reg swap (mulli/slwi dest r6/r7) in final table lookup
 void fn_3_58F58(int n, f32* x, f32* z) {
     int flag = 0;
@@ -15206,7 +15008,6 @@ void fn_3_58F58(int n, f32* x, f32* z) {
 }
 
 // .text:0x000591AC size:0x18C mapped:0x80698240
-extern u8 g_Runners[];
 void fn_3_591AC(void) {
     f32 spC;
     f32 sp8;
@@ -15252,8 +15053,6 @@ void fn_3_591AC(void) {
 }
 
 // .text:0x00059338 size:0x28C mapped:0x806983CC
-extern u8 lbl_3_data_470C[];
-extern f32 g_AiLogic[];
 // partial: logic complete, reg allocation differs (loop 1 temp/counter regs, loop 3/4 pointer regs)
 void fn_3_59338(void) {
     int i;
@@ -15308,10 +15107,6 @@ void fn_3_59338(void) {
 }
 
 // .text:0x000595C4 size:0x134 mapped:0x80698658
-extern f32 lbl_3_rodata_CC4;
-extern f32 lbl_3_rodata_B24;
-extern f32 lbl_3_rodata_B60;
-void fn_3_1AE44(u8, u16, f32, f32, f32);
 void fn_3_595C4(void) {
     u8* fl;
     u8* f;
