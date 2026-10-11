@@ -26,12 +26,32 @@ typedef struct SaveTask {
     /*0x21*/ u8 _21;
 } SaveTask;
 
+// Texture description passed to fn_8003A6B0.
+typedef struct TrailTexDesc {
+    /*0x00*/ void* image;
+    /*0x04*/ void* tlut; // NULL for direct-color textures
+    /*0x08*/ u16 height;
+    /*0x0A*/ u16 width;
+    /*0x0C*/ u8 wrapS;
+    /*0x0D*/ u8 wrapT;
+    /*0x0E*/ u8 minFilter;
+    /*0x0F*/ u8 magFilter;
+    /*0x10*/ f32 lodBias;
+    /*0x14*/ u8 _14;
+    /*0x15*/ u8 minLod;
+    /*0x16*/ u8 maxLod;
+    /*0x17*/ u8 format;
+    /*0x18*/ u16 tlutCount;
+    /*0x1A*/ u8 tlutFormat;
+} TrailTexDesc;
+
 extern OSTime lbl_802D4AE0[4];
 extern s32 lbl_803CBC48;
 extern s32 lbl_803CBC4C;
 extern s32 lbl_803CBC50;
 
 void fn_8003A688(s32 type, f32 speed, f32 spread);
+void fn_8003A6B0(s32 type, TrailTexDesc* desc, f32 speed, f32 spread);
 void fn_8003A85C(u8 enabled);
 void fn_8003F23C(void);
 void fn_8003F2B8(void);

@@ -2,6 +2,7 @@
 #include "main/file_80039AC0.h"
 #include "main/file_800A7C08.h"
 #include "main/file_800B0724.h"
+#include "Dolphin/GX.h"
 #include "stl/string.h"
 
 extern TrailSystem lbl_802D3D80;
@@ -15,8 +16,20 @@ void fn_8003A688(s32 type, f32 speed, f32 spread) {
 }
 
 // .text:0x8003A6B0 size:0x198
-void fn_8003A6B0(void) {
-    return;
+void fn_8003A6B0(s32 type, TrailTexDesc* desc, f32 speed, f32 spread) {
+    if (desc->tlut != NULL) {
+        lbl_802D3D80.texMode[type] = 2;
+        GXInitTexObjCI(&lbl_802D3D80.texObj[type], desc->image, desc->width, desc->height, desc->format, desc->wrapS, desc->wrapT,
+                       GX_FALSE, type);
+        GXInitTlutObj(&lbl_802D3D80.tlutObj[type], desc->tlut, desc->tlutFormat, desc->tlutCount);
+    } else {
+        lbl_802D3D80.texMode[type] = 1;
+        GXInitTexObj(&lbl_802D3D80.texObj[type], desc->image, desc->width, desc->height, desc->format, desc->wrapS, desc->wrapT,
+                     GX_FALSE);
+    }
+    GXInitTexObjLOD(&lbl_802D3D80.texObj[type], desc->minFilter, desc->magFilter, desc->minLod, desc->maxLod, desc->lodBias,
+                    GX_FALSE, GX_FALSE, GX_ANISO_1);
+    fn_8003A688(type, speed, spread);
 }
 
 extern u8 lbl_803CB828[3];
