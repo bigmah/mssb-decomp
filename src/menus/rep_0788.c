@@ -6006,3 +6006,144 @@ void fn_2_207FC(void) {
     lbl_2_bss_1A8248[0x4504] = 0;
     lbl_2_bss_1A8248[0x4505] = 0;
 }
+
+struct SpaniOwner;
+void fn_80036270(struct SpaniOwner* owner, s32 idx, u32 track, u32 frame, s16* outX, s16* outY);
+
+// fn_2_338D4, size:0x59C
+// NONMATCHING 99%: 'kind == 3' digit branches compile to beq instead of bne; b
+#if NONMATCHING
+void fn_2_338D4(MenuTableContext* menu, MenuItemState* item) {
+    s16 track;
+    s16 value;
+    s16 magnitude;
+    s16 kind;
+    s16 state;
+    kind = item->unk10 >> 4;
+    track = item->unk10 & 0xF;
+    state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        return;
+    }
+    case 2: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        switch (kind) {
+        case 0:
+            value = *(s16*)(lbl_2_bss_1A824C[0] + 0x197766);
+            magnitude = __abs(*(s16*)(lbl_2_bss_1A824C[0] + 0x197766));
+            break;
+        case 1:
+            value = *(s16*)(lbl_2_bss_1A824C[0] + 0x197768);
+            magnitude = __abs(*(s16*)(lbl_2_bss_1A824C[0] + 0x197768));
+            break;
+        case 2:
+            value = *(s16*)(lbl_2_bss_1A824C[0] + 0x19776A);
+            magnitude = __abs(*(s16*)(lbl_2_bss_1A824C[0] + 0x19776A));
+            break;
+        case 3:
+            value = *(s16*)(lbl_2_bss_1A824C[0] + 0x19776C);
+            magnitude = __abs(*(s16*)(lbl_2_bss_1A824C[0] + 0x19776C));
+            break;
+        }
+        if (magnitude == 10000) {
+            fn_800363D8(menu, item->offset, 1, 0x2C, 0x17);
+        } else {
+            switch (item->index) {
+            case 0: {
+                s16 digit = magnitude % 10;
+                fn_800363D8(menu, item->offset, 1, 0x2C, kind == 3 ? digit : (s16)(digit + 0xC));
+                break;
+            }
+            case 1: {
+                s16 digit = magnitude / 10 % 10;
+                if (magnitude < 10) {
+                    digit = 0x17;
+                } else if (kind != 3) {
+                    digit = digit + 0xC;
+                }
+                fn_800363D8(menu, item->offset, 1, 0x2C, digit);
+                break;
+            }
+            case 2: {
+                s16 digit = magnitude / 100 % 10;
+                if (magnitude < 100) {
+                    digit = 0x17;
+                } else if (kind != 3) {
+                    digit = digit + 0xC;
+                }
+                fn_800363D8(menu, item->offset, 1, 0x2C, digit);
+                break;
+            }
+            case 3: {
+                s16 sign;
+                s16 x0, y0, x1, y1;
+                s16 width;
+                if (value < 0) {
+                    if (kind == 3) {
+                        sign = 0xB;
+                    } else {
+                        sign = 0x16;
+                    }
+                } else if (value > 0) {
+                    if (kind == 3) {
+                        sign = 0xA;
+                    } else {
+                        sign = 0x17;
+                    }
+                } else {
+                    sign = 0x17;
+                }
+                fn_800363D8(menu, item->offset, 1, 0x2C, sign);
+                fn_80036270((struct SpaniOwner*)menu, 0x280, 0, 0, &x0, &y0);
+                fn_80036270((struct SpaniOwner*)menu, 0x280, 2, 0, &x0, &y0);
+                fn_80036270((struct SpaniOwner*)menu, 0x280, 1, 0, &x1, &y1);
+                width = __abs(x1 - x0);
+                fn_80036270((struct SpaniOwner*)menu, 0x280, track, 0, &x0, &y0);
+                if (magnitude == 0) {
+                    x0 = 0;
+                } else if (magnitude < 10) {
+                    x0 = width * 2;
+                } else if (magnitude < 100) {
+                    x0 = width;
+                } else {
+                    x0 = 0;
+                }
+                *(f32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x48) = x0;
+                break;
+            }
+            }
+        }
+        item->state = 37;
+        return;
+    }
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        item->state = 6;
+        return;
+    case 6: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
+            object[0x68] = 0;
+            item->state = 7;
+        }
+        return;
+    }
+    case 7: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+    }
+    case 37:
+    case 1:
+        return;
+    }
+}
+#endif
