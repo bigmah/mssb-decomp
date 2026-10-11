@@ -64,7 +64,39 @@ void fn_3_310C(Vec* out, Vec* points, int count, int steps) {
 
 // .text:0x00002D6C size:0x3A0 mapped:0x80641E00
 void fn_3_2D6C(Vec* out, VecQueue* queue, int steps) {
-    return;
+    f32 timings[2][17];
+    f32 curveX[2][17];
+    f32 curveYZ[2][17];
+    f32 valuesX[17];
+    f32 valuesY[17];
+    f32 valuesZ[17];
+    Vec point;
+    VecXZ xy;
+    VecXZ xz;
+    int i;
+    int count;
+    if (queue == NULL) {
+        return;
+    }
+    count = queue->count;
+    fn_80023DFC(queue, &point);
+    i = 0;
+    do {
+        valuesX[i] = point.x;
+        valuesY[i] = point.y;
+        valuesZ[i] = point.z;
+        i++;
+    } while (fn_80023D98(queue, &point) != 0);
+    fn_3_1B24(valuesX, valuesY, timings[0], curveX[0], curveYZ[0], count);
+    fn_3_1B24(valuesX, valuesZ, timings[1], curveX[1], curveYZ[1], count);
+    for (i = 0; i < steps; i++) {
+        f32 frame = (f32)i / (f32)(steps - 1);
+        fn_3_19B0_inline(frame, &xy, valuesX, valuesY, timings[0], curveX[0], curveYZ[0], count);
+        out[i].x = xy.x;
+        out[i].y = xy.z;
+        fn_3_19B0_inline(frame, &xz, valuesX, valuesZ, timings[1], curveX[1], curveYZ[1], count);
+        out[i].z = xz.z;
+    }
 }
 
 // .text:0x000028E4 size:0x488 mapped:0x80641978
