@@ -109,7 +109,11 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
 
 // .text:0x800BC7E8 size:0x3C
 void DOVARenderSkin(struct DODisplayObj* dispObj, MtxPtr camera, MtxPtr mtxArray, MtxPtr invTransposeMtxArray, u8 numLights, va_list* list) {
-    return;
+    lbl_803CC204 = mtxArray;
+    lbl_803CC208 = invTransposeMtxArray;
+    DOVARender(dispObj, camera, numLights, list);
+    lbl_803CC204 = NULL;
+    lbl_803CC208 = NULL;
 }
 
 // fn_800BC824, size:0x10
