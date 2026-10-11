@@ -2,6 +2,7 @@
 #define __GAME_AUTO_00_000DEB90_TEXT_H_
 
 #include "mssbTypes.h"
+#include "game/UnknownHomes_Game.h"
 
 // One coin sprite in lbl_8036E548.trail2 (CharTrail in main/file_80011640.h).
 typedef struct MinigameCoinSprite {
@@ -17,8 +18,26 @@ typedef struct MinigameCoinSprite {
 } MinigameCoinSprite; // size: 0x28
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h), only the fields used here.
+// A character actor placed on the result screen (CharActor in main/file_80011640.h).
+typedef struct MinigameActorView {
+    /*0x000*/ u8 _000[0x34];
+    /*0x034*/ VecXYZ pos;
+    /*0x040*/ f32 _40;
+    /*0x044*/ f32 rotY;
+    /*0x048*/ u8 _048[0x25D - 0x48];
+    /*0x25D*/ u8 visible;
+} MinigameActorView;
+
 typedef struct MinigameCharMgrView {
-    /*0x0000*/ u8 _0000[0x2D8E];
+    /*0x0000*/ u8 _0000[0x2294];
+    /*0x2294*/ VecXYZ camera;
+    /*0x22A0*/ f32 _22A0;
+    /*0x22A4*/ f32 cameraAngle;
+    /*0x22A8*/ u8 _22A8[0x24BD - 0x22A8];
+    /*0x24BD*/ u8 _24BD;
+    /*0x24BE*/ u8 _24BE[0x2C50 - 0x24BE];
+    /*0x2C50*/ MinigameActorView* actors[4];
+    /*0x2C60*/ u8 _2C60[0x2D8E - 0x2C60];
     /*0x2D8E*/ u8 _2D8E;
     /*0x2D8F*/ u8 _2D8F[0x2D94 - 0x2D8F];
     /*0x2D94*/ MinigameCoinSprite* trail2; // [30]
@@ -114,6 +133,26 @@ void fn_3_10B8D0(void);
 void fn_3_10A0A0(void);
 void fn_3_ACAF8(void);
 void fn_3_109254(void);
+void fn_3_149BA8(void);
+void fn_3_14A070(s32* src, s32 n);
+void fn_3_15F9AC(void);
+void fn_3_15FA58(s32 n, s32* list);
+
+// View of lbl_80353A90 (per-game line score), only the fields used here.
+typedef struct MinigameLineScoreView {
+    /*0x000*/ u8 _000[0x104];
+    /*0x104*/ u8 _104;
+} MinigameLineScoreView;
+
+extern MinigameLineScoreView lbl_80353A90;
+
+// Result-screen camera/actor placement rows (lbl_3_data_2130C), one per stadium / minigame.
+typedef struct MinigameStageCamera {
+    /*0x0*/ f32 _0;
+    /*0x4*/ f32 y;
+    /*0x8*/ f32 _8;
+    /*0xC*/ f32 angle;
+} MinigameStageCamera;
 
 // View of lbl_3_common_bss_37400, only the fields used here.
 typedef struct MinigameBss37400View {

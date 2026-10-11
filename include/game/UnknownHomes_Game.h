@@ -1501,6 +1501,11 @@ typedef enum _WALL_BALL_GAME_STATE {
     WALL_BALL_GAME_STATE_PITCH_OR_WAITING_FOR_PITCH = 2
 } WALL_BALL_GAME_STATE;
 
+typedef struct _MiniGameResultSlot {
+    /*0x0*/ u8 player;
+    /*0x1*/ u8 taken;
+} MiniGameResultSlot; // size: 0x2
+
 typedef struct _MiniGamePointsPair {
     /*0x0*/ s16 current;
     /*0x2*/ s16 latest;
@@ -2400,7 +2405,12 @@ typedef struct _MiniGameStruct {
     /*0x1D7A*/ u8 _1D7A;
     /*0x1D7B*/ u8 _1D7B;
     /*0x1D7C*/ InputStruct _1D7C[4];
-} MiniGameStruct; // size: 0x1D7C
+    /*0x1DBC*/ u8 _1DBC[0x1E08 - 0x1DBC];
+    /*0x1E08*/ MiniGameResultSlot resultSlot[4];
+    /*0x1E10*/ u8 _1E10[0x1E22 - 0x1E10];
+    /*0x1E22*/ u8 _1E22[4]; // per player
+    /*0x1E26*/ u8 _1E26[0x1E2C - 0x1E26];
+} MiniGameStruct; // size: 0x1E2C
 
 extern MiniGameStruct g_Minigame;
 
