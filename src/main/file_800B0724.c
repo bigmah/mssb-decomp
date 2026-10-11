@@ -321,8 +321,9 @@ void Set_FUN_800b2b6c(GameActor* actor, s32 value) {
 }
 
 // .text:0x800B2B74 size:0x34
-void fn_800B2B74(void) {
-    return;
+// Moves a bone to the end of the actor's draw-priority list.
+void fn_800B2B74(GameActor* actor, u16 bone) {
+    DSInsertListObject(&actor->drawPriorityList, actor->drawPriorityList.Tail, (Ptr)actor->boneArray[bone]);
 }
 
 // .text:0x800B2BA8 size:0x3C
