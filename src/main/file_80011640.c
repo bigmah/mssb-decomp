@@ -1579,9 +1579,56 @@ void fn_8001D148(s32 index, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x8001D180 size:0x154
-void fn_8001D180(void) {
-    return;
+// NONMATCHING 98%: register allocation only
+#if NONMATCHING
+void fn_8001D180(s32 index, s32 which, s32 enable) {
+    CharActor* actor = lbl_8036E548.active[index];
+    s32 joint = actor != NULL ? actor->jointIdx[lbl_803CB7B4[which]] : 0xFFFF;
+    CharModel** models;
+    CharModel* model;
+    CharJoint* dst;
+    CharModel* src;
+    CharJoint** jp;
+    s32 i;
+    s32 n;
+
+    if (joint == 0xFFFF) {
+        return;
+    }
+    models = &actor->model;
+    i = 0;
+    do {
+        model = *models;
+        if (enable == 0) {
+            if (model != NULL && model->joints[joint] != NULL) {
+                model->joints[joint]->display = NULL;
+            }
+        } else if (lbl_800EEAAC[actor->kind] >= 0 && actor->parts != NULL) {
+            dst = model->joints[joint];
+            if (which & 1) {
+                src = lbl_8036E548.partSlots->slots[actor->parts->part[1].slot].model;
+            } else {
+                src = lbl_8036E548.partSlots->slots[actor->parts->part[0].slot].model;
+            }
+            if (src == NULL) {
+                return;
+            }
+            n = src->jointCount;
+            jp = &src->joints[n];
+            do {
+                jp--;
+                n--;
+                if ((*jp)->display != NULL) {
+                    dst->display = (*jp)->display;
+                    return;
+                }
+            } while (n != 0);
+            return;
+        }
+        models--;
+    } while (i-- != 0);
 }
+#endif
 
 // .text:0x8001D2D4 size:0x8A0
 void fn_8001D2D4(void) {
