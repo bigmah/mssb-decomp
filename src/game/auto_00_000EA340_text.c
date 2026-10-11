@@ -107,8 +107,8 @@ typedef struct EaTask {
     /*0x18*/ u16 param; // set by the creator
     /*0x1A*/ u16 _1A;
     /*0x1C*/ u16 state;
-    /*0x1E*/ u16 _1E;
-    /*0x20*/ u16 _20;
+    /*0x1E*/ u16 _1E; // fn_3_EB6E0: first player in turn order
+    /*0x20*/ u16 _20; // fn_3_EB6E0: title sub-state
     /*0x22*/ u16 _22;
     /*0x24*/ u8 pending[4];
 } EaTask;
@@ -897,6 +897,199 @@ void fn_3_EC014(void) {
         fn_800363D8(task, i + 8, 2, 0x22, lbl_3_data_19B88[sym]);
         i++;
     } while (i < 3);
+}
+#endif
+
+extern u8 lbl_3_data_19B98[];
+extern s32 g_Scores[];        // TODO type: game scores struct (size 0xC8)
+extern u8 lbl_8037169C[];     // SceneFade in main/file_8001FE00.h
+extern u32 fn_3_12536C(void);
+
+// .text:0x000EB6E0 size:0x8F4 mapped:0x8072A774
+// NONMATCHING 92%: register allocation and branch layout in the score loops
+#if NONMATCHING
+void fn_3_EB6E0(void) {
+    EaTask* task = EA_TASK;
+    u32 sound = 0;
+    u32 i;
+    s8 who;
+    s8 chara;
+    s32 d;
+    s32 step;
+    s16 target;
+    u32 v;
+    u8 leader;
+    s32 tied;
+
+    if (EA_MG.game != 0) {
+        if (fn_3_12536C() != 0) {
+            fn_800B0A14_removeQueue(fn_80034CEC(task));
+            return;
+        }
+    } else if (fn_3_EBFD4()) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, lbl_3_data_19B98);
+        if (EA_MG.game != 0) {
+            i = 0;
+            do {
+                EA_SPRITE(task, i + 1)->frame = 0;
+                i++;
+            } while (i < 4);
+        } else {
+            i = 0;
+            do {
+                EA_SPRITE(task, i + 1)->frame = 1 << 16;
+                i++;
+            } while (i < 4);
+        }
+        i = 0;
+        do {
+            EA_SPRITE(task, i + 0x29)->flags &= ~2;
+            i++;
+        } while (i < 4);
+        task->_1E = EA_MG.turn;
+        EA_SPRITE(task, 0)->anim = lbl_3_data_1A158[EA_MG.numPlayers - 1][g_Batter[0x7B]];
+        task->_20 = 0;
+        if (EA_MG.game != 0 && (g_Scores[0] != 1 || EA_MG.turn != 0)) {
+            task->_1E--;
+            EA_SPRITE(task, 0)->frame = 10 << 16;
+            task->_20 = 1;
+        }
+        task->state = 1;
+        break;
+    case 1:
+        EA_MG._19A0 = 0;
+        i = 0;
+        do {
+            who = EA_MG.order[(task->_1E + i) % EA_MG.numPlayers];
+            d = EA_MG.points[who] - EA_MG._18BC[who].shown;
+            if (d < 0) {
+                step = d / 8;
+                EA_MG._19A0 = 1;
+                if (step != 0) {
+                    EA_MG._18BC[who].shown += step;
+                } else {
+                    EA_MG._18BC[who].shown += d / (d < 0 ? -d : d);
+                }
+                sound = 1;
+            }
+            i++;
+        } while (i < EA_MG.numPlayers);
+        if (EA_MG._19A0 == 0) {
+            i = 0;
+            do {
+                if (EA_MG.points[i] != EA_MG._18BC[i].shown) {
+                    EA_MG._19A0 = 1;
+                    task->state = 2;
+                }
+                i++;
+            } while (i < EA_MG.numPlayers);
+        }
+        break;
+    case 2:
+        EA_MG._19A0 = 0;
+        i = 0;
+        do {
+            who = EA_MG.order[(task->_1E + i) % EA_MG.numPlayers];
+            target = EA_MG.points[who];
+            d = target - EA_MG._18BC[who].shown;
+            if (d > 0) {
+                EA_MG._19A0 = 1;
+                step = d / 8;
+                task->pending[who] = 1;
+                if (step != 0) {
+                    EA_MG._18BC[who].shown += step;
+                } else {
+                    EA_MG._18BC[who].shown += d / (d < 0 ? -d : d);
+                }
+                sound = 1;
+            } else if (d == 0) {
+                EA_MG._18BC[who].shown = target;
+                if (task->pending[who] != 0) {
+                    task->pending[who] = 0;
+                    EA_SPRITE(task, i + 0x15)->frame = 0;
+                    EA_SPRITE(task, i + 0x15)->visible = 1;
+                    EA_SPRITE(task, i * 4 + 0x19)->frame = 0;
+                    EA_SPRITE(task, i * 4 + 0x1A)->frame = 0;
+                    EA_SPRITE(task, i * 4 + 0x1B)->frame = 0;
+                    EA_SPRITE(task, i * 4 + 0x1C)->frame = 0;
+                }
+            }
+            i++;
+        } while (i < EA_MG.numPlayers);
+        if (EA_MG._19A0 == 0) {
+            i = 0;
+            do {
+                if (EA_MG.points[i] != EA_MG._18BC[i].shown) {
+                    EA_MG._19A0 = 1;
+                }
+                i++;
+            } while (i < EA_MG.numPlayers);
+            task->state = 1;
+        }
+        break;
+    }
+    switch (task->_20) {
+    case 0:
+        if (fn_3_125424(task, 0, 10) != 0) {
+            task->_20 = 2;
+        }
+        break;
+    case 1:
+        if (lbl_8037169C[0x10] == 0) {
+            EA_SPRITE(task, 0)->visible = 1;
+            if (EA_SPRITE(task, 0)->animState == 2) {
+                EA_SPRITE(task, 0)->visible = 0;
+                EA_SPRITE(task, 0)->frame = 10 << 16;
+                task->_1E++;
+                task->_20 = 2;
+            }
+        }
+        break;
+    case 2:
+        if (EA_MG.game == 1) {
+            if (g_GameLogic[0x11E] == 0 || g_GameLogic[0x11E] == 1) {
+                fn_3_125424(task, 0, 10);
+            } else {
+                fn_3_125424(task, 0, 0);
+            }
+        }
+        break;
+    }
+    leader = fn_3_107CD0();
+    tied = fn_3_107C88();
+    i = 0;
+    do {
+        who = EA_MG.order[(task->_1E + i) % EA_MG.numPlayers];
+        chara = EA_MG.characterIndex[who];
+        fn_800363D8(task, i + 5, 1, 0x65, chara);
+        EA_SPRITE(task, i + 0xD)->frame = EA_CHAR_ID(chara) << 16;
+        v = EA_MG._18BC[who].shown;
+        if ((EA_SPRITE(task, i + 1)->frame >> 16) == 0) {
+            if (v > 9999) {
+                v = 9999;
+            }
+        } else if (v > 999) {
+            v = 999;
+        }
+        fn_800363D8(task, i * 4 + 0x19, 1, 0x66, (v % 10000) / 1000);
+        fn_800363D8(task, i * 4 + 0x1A, 1, 0x66, (v % 1000) / 100);
+        fn_800363D8(task, i * 4 + 0x1B, 1, 0x66, (v % 100) / 10);
+        fn_800363D8(task, i * 4 + 0x1C, 1, 0x66, v % 10);
+        if (tied == 0 && EA_MG._18BC[who].shown == EA_MG._18BC[leader].shown) {
+            EA_SPRITE(task, i + 0x29)->flags |= 2;
+        } else {
+            EA_SPRITE(task, i + 0x29)->flags &= ~2;
+        }
+        i++;
+    } while (i < EA_MG.numPlayers);
+    if (sound != 0 && EA_MG.game == 0) {
+        sndFXStartEx(0x1C0, lbl_800EFBA4[9], 0x3F, 0);
+    }
 }
 #endif
 
