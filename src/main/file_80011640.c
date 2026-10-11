@@ -645,9 +645,51 @@ void fn_80013680(void) {
 }
 
 // .text:0x80014204 size:0x3F4
+// NONMATCHING 88%: unrolled size/slot loops scheduled differently
+#if NONMATCHING
 void fn_80014204(s32 count) {
-    return;
+    u32 max = 0;
+    u32 size;
+    u32 s;
+    s32 n = 0;
+    s32 k;
+    s32 j;
+    s32 i;
+    s32 total;
+    u8* buf;
+
+    for (k = 0; k < 54; k++) {
+        if (lbl_800EEAAC[k] >= 0) {
+            for (j = 0; j < 6; j++) {
+                size = lbl_803CB7A8[n + j].size & 0x0FFFFFFF;
+                if (max < size) {
+                    max = size;
+                }
+            }
+            n += 6;
+        }
+    }
+    s = (max + 0x1F) & ~0x1F;
+    buf = _OSAllocFromHeap(0x20, count * (s * 6));
+    total = count * 3;
+    lbl_803CBC24 = buf;
+    for (i = 0; i < total; i++) {
+        lbl_8036E548.partsPool[i].part[0].files = (void**)(buf + s * (i * 2));
+        lbl_8036E548.partsPool[i].part[1].files = (void**)(buf + s * (i * 2 + 1));
+    }
+    for (i = 0; i < total; i++) {
+        lbl_8036E548.partsPool[i]._D0 = -1;
+        lbl_8036E548.partsPool[i]._D1 = -1;
+        lbl_8036E548.partsPool[i]._CF = -1;
+        lbl_8036E548.partsPool[i]._CE = 0xFF;
+        lbl_8036E548.partsPool[i]._CD = 0xFF;
+        lbl_8036E548.partsPool[i].tex = NULL;
+        lbl_8036E548.partsPool[i]._CC = 0;
+        lbl_8036E548.partsPool[i].part[0].slot = i * 2;
+        lbl_8036E548.partsPool[i].part[1].slot = i * 2 + 1;
+    }
 }
+#endif
 
 // .text:0x800145F8 size:0x398
 static inline u32 maxPartSize(u32 max, s32 idx) {
