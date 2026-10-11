@@ -72,6 +72,17 @@ typedef struct RepSoundParams {
 
 
 
+// Score-tally task (fn_3_93544 / fn_3_933CC / fn_3_92CD8): counts each team's shown score up to its target.
+typedef struct RepScoreTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
+    /*0x16*/ u16 _16;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ u16 score[2][2]; // [0][team]: score shown, [1][team]: target score
+} RepScoreTask;
+
 #define REP_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
 
 void fn_3_91520(void);
@@ -84,7 +95,7 @@ void fn_3_91CCC(void);
 void fn_3_91D1C(void);
 void fn_3_91E4C(void);
 void fn_3_91FC4(void);
-void fn_3_92CD8(void);
+void fn_3_92CD8(RepScoreTask* task);
 void fn_3_933CC(void);
 void fn_3_93544(void);
 void fn_3_93688(RepTask* task);

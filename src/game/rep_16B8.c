@@ -277,8 +277,94 @@ void fn_3_91FC4(void) {
 }
 
 // .text:0x00092CD8 size:0x6F4 mapped:0x806D1D6C
-void fn_3_92CD8(void) {
-    return;
+void fn_3_92CD8(RepScoreTask* task) {
+    s32 team;
+    s32 a;
+    s32 b;
+    s32 done;
+    s32 k;
+    for (k = 0; k < 2; k++) {
+        for (team = 0; team < 2; team++) {
+            if (task->score[k][team] >= 100) {
+                task->score[k][team] = 99;
+            }
+        }
+    }
+    if (task->_1A == 0 && ((REP_OBJ(task, 11)->_5C >> 16) >= 20 || (REP_OBJ(task, 12)->_5C >> 16) >= 20)) {
+        for (k = 11; k < 17; k++) {
+            lbl_80371C30[task->baseIdx + k].obj->_68 = 0;
+            lbl_80371C30[task->baseIdx + k].obj->_5C = 20 << 16;
+        }
+    }
+    for (team = 0; team < 2; team++) {
+        if (team == 0) {
+            a = 11;
+            b = 5;
+        } else {
+            a = 14;
+            b = 8;
+        }
+        if (task->score[1][team] == task->score[0][team]) {
+            if (task->score[0][team] < 10) {
+                lbl_80371C30[task->baseIdx + a + 1].obj->flags &= ~2;
+                lbl_80371C30[task->baseIdx + a + 2].obj->flags &= ~2;
+                lbl_80371C30[task->baseIdx + a].obj->flags |= 2;
+                fn_800363D8(task, a, 1, 0xF6, task->score[0][team]);
+            } else {
+                lbl_80371C30[task->baseIdx + a].obj->flags &= ~2;
+                lbl_80371C30[task->baseIdx + a + 1].obj->flags |= 2;
+                lbl_80371C30[task->baseIdx + a + 2].obj->flags |= 2;
+                fn_800363D8(task, a + 1, 1, 0xF6, task->score[0][team] / 10);
+                fn_800363D8(task, a + 2, 1, 0xF6, task->score[0][team] % 10);
+            }
+            for (k = 0; k < 3; k++) {
+                lbl_80371C30[task->baseIdx + a + k].obj->_5C = 20 << 16;
+                lbl_80371C30[task->baseIdx + b + k].obj->_5C = 45 << 16;
+                lbl_80371C30[task->baseIdx + b + k].obj->flags &= ~2;
+            }
+        } else {
+            done = 0;
+            if (task->score[0][team] < 10) {
+                lbl_80371C30[task->baseIdx + a].obj->_68 = 1;
+                if ((s32)(lbl_80371C30[task->baseIdx + a].obj->_5C >> 16) >= 45) {
+                    done = 1;
+                    lbl_80371C30[task->baseIdx + a].obj->_68 = 0;
+                }
+            } else {
+                lbl_80371C30[task->baseIdx + a + 1].obj->_68 = 1;
+                lbl_80371C30[task->baseIdx + a + 2].obj->_68 = 1;
+                if ((lbl_80371C30[task->baseIdx + a + 1].obj->_5C >> 16) >= 45) {
+                    done = 1;
+                    lbl_80371C30[task->baseIdx + a + 1].obj->_68 = 0;
+                    lbl_80371C30[task->baseIdx + a + 2].obj->_68 = 0;
+                }
+            }
+            if (task->score[1][team] < 10) {
+                lbl_80371C30[task->baseIdx + b].obj->flags |= 2;
+                lbl_80371C30[task->baseIdx + b].obj->_68 = 1;
+                fn_800363D8(task, b, 1, 0xF6, task->score[1][team]);
+                if ((lbl_80371C30[task->baseIdx + b].obj->_5C >> 16) >= 70) {
+                    done++;
+                    lbl_80371C30[task->baseIdx + b].obj->_68 = 0;
+                }
+            } else {
+                lbl_80371C30[task->baseIdx + b + 1].obj->flags |= 2;
+                lbl_80371C30[task->baseIdx + b + 2].obj->flags |= 2;
+                lbl_80371C30[task->baseIdx + b + 1].obj->_68 = 1;
+                lbl_80371C30[task->baseIdx + b + 2].obj->_68 = 1;
+                fn_800363D8(task, b + 1, 1, 0xF6, task->score[1][team] / 10);
+                fn_800363D8(task, b + 2, 1, 0xF6, task->score[1][team] % 10);
+                if ((lbl_80371C30[task->baseIdx + b + 1].obj->_5C >> 16) >= 70) {
+                    done++;
+                    lbl_80371C30[task->baseIdx + b + 1].obj->_68 = 0;
+                    lbl_80371C30[task->baseIdx + b + 2].obj->_68 = 0;
+                }
+            }
+            if (done >= 2) {
+                task->score[0][team] = task->score[1][team];
+            }
+        }
+    }
 }
 
 #pragma dont_inline on
