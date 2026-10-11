@@ -483,9 +483,78 @@ void fn_3_E698C(StaC6Obj* o) {
 }
 
 // .text:0x000E6A48 size:0x348 mapped:0x80725ADC
+// NONMATCHING 88.8%: the original reaches lbl_3_data_19644/19698/1963F/196B4 through one pooled
+// lbl_3_data_19018 base (this unit's .data was static there); fn_3_E5A84 and fn_3_E6578 are inlined
+// by hand, frame is 0x10 smaller.
+#if NONMATCHING
+// Draw a panel: place it, pick its overlay texture and colours, and record a wall panel hit.
 void fn_3_E6A48(StaC6Obj* o) {
-    return;
+    Control c;
+    Mtx m;
+    GameBone* bone;
+    s32 i;
+    ActorObject* sub;
+    struct DODisplayObj* disp;
+    TextureData* tex;
+
+    // fn_3_E5A84
+    PSMTXIdentity(m);
+    c.type = 0;
+    if (o->kind < 8) {
+        CTRLSetTranslation(&c, lbl_3_bss_AEB4[0][o->index].pos.x, lbl_3_bss_AEB4[0][o->index].pos.y, lbl_3_bss_AEB4[0][o->index].pos.z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_bss_AEB4[0][o->index].rotY, 0.0f);
+    } else {
+        CTRLSetTranslation(&c, lbl_3_data_19644[o->slot].x, lbl_3_data_19644[o->slot].y, lbl_3_data_19644[o->slot].z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[o->slot], 0.0f);
+    }
+    CTRLBuildMatrix(&c, m);
+    for (i = 0; i < o->actorObj->actor->totalBones; i++) {
+        bone = o->actorObj->actor->boneArray[i];
+        CTRLBuildMatrix(&bone->orientCtrl.base, bone->forwardMtx);
+        PSMTXConcat(m, bone->forwardMtx, bone->forwardMtx);
+        PSMTXCopy(bone->forwardMtx, bone->dispObj->worldMatrix);
+    }
+    if (o->subObj != NULL) {
+        for (i = 0; i < o->subObj->actor->totalBones; i++) {
+            bone = o->subObj->actor->boneArray[i];
+            CTRLBuildMatrix(&bone->orientCtrl.base, bone->forwardMtx);
+            PSMTXConcat(m, bone->forwardMtx, bone->forwardMtx);
+            if (bone->dispObj != NULL) {
+                PSMTXCopy(bone->forwardMtx, bone->dispObj->worldMatrix);
+            }
+        }
+        o->subObj->actor->flags = fn_800B3C04(0, o->subObj->actor, CUR_VIEW());
+    }
+    o->actorObj->actor->flags = fn_800B3C04(0, o->actorObj->actor, CUR_VIEW());
+
+    // fn_3_E6578
+    sub = o->subObj;
+    if (sub != NULL) {
+        disp = BONE(sub, 1)->dispObj;
+        tex = disp->textureData;
+        if (disp->displayData->displayStateList[2].id != 3) {
+            OSPanic(lbl_3_rodata_2BB0, 0x713, lbl_3_rodata_2BBC);
+        }
+        if (o->kind == 2) {
+            tex->texturePalette->tex[4].texIndex = 1;
+        } else if (o->kind == 10) {
+            tex->texturePalette->tex[4].texIndex = 0;
+        } else {
+            tex->texturePalette->tex[4].texIndex = 4;
+        }
+    }
+
+    if (o->subObj != NULL) {
+        fn_3_E5FEC(o);
+        fn_800BDA94(o->subObj, CUR_CAMERA_VIEW());
+    }
+    if (g_GameLogic.gameStatus == 2 && g_Minigame.toyFieldBallStateResult != 0) {
+        if (g_Minigame.toyFieldBallStateResult == lbl_3_data_196B4.kindResult[o->kind] && lbl_3_data_1963F == o->index && o->kind >= 8) {
+            lbl_3_data_196B4.hit[o->flagIdx] = 1;
+        }
+    }
 }
+#endif
 
 // .text:0x000E6D90 size:0x5C0 mapped:0x80725E24
 void fn_3_E6D90(StaC6Obj* o) {

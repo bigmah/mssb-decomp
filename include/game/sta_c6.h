@@ -81,7 +81,7 @@ typedef struct StaC6Obj {
     /*0xC1*/ u8 kind;
     /*0xC2*/ u8 lit;
     /*0xC3*/ u8 slot;               // wall panels: index into StaC6Data2 / lbl_3_data_19644
-    /*0xC4*/ s8 flagIdx;            // wall panels: index into StaC6Data2.hit
+    /*0xC4*/ u8 flagIdx;            // wall panels: index into StaC6Data2.hit
     /*0xC5*/ u8 _C5[0xE8 - 0xC5];
 } StaC6Obj; // size: 0xE8
 
