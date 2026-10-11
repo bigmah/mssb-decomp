@@ -21,6 +21,7 @@ extern void fn_3_12DB80(void);
 extern void atBat_batter(void);
 extern void fn_3_8A958(void);
 extern void fn_3_59A90(void);
+extern void fn_3_14CA00(void);
 extern u8 lbl_3_data_2127C[][5]; // [minigame][difficulty]: CPU strength
 extern s16 lbl_3_data_21790[];   // [difficulty]: points needed to win
 extern void fn_3_751B4(void);
@@ -730,9 +731,69 @@ void fn_3_1312D4(void) {
 }
 
 // .text:0x00131540 size:0x748 mapped:0x807705D4
+// Barrel Batter: end of a turn (barrels keep settling while the scene fades).
+// NONMATCHING 99%: registers only (fn_3_12FD6C, fn_3_1312D4 and the barrel loop are inlined in both).
+#if NONMATCHING
 void fn_3_131540(void) {
-    return;
+    BB_barrelStruct* b;
+    s32 i;
+
+    switch (g_GameLogic._125) {
+    case 0:
+        fn_3_12FD6C();
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        g_Minigame.turnNumberWithinRound += 1;
+        g_GameLogic._125 += 1;
+        break;
+    case 1:
+        if (g_Minigame._1A37 == 1) {
+            if (g_GameLogic.FrameCountOfCurrentAtBat_Copy >= lbl_3_data_217A4[3]) {
+                g_GameLogic._125 += 1;
+            }
+        } else if (g_GameLogic.FrameCountOfCurrentAtBat_Copy >= lbl_3_data_217A4[2]) {
+            g_GameLogic._125 += 1;
+        }
+        break;
+    case 2:
+        changeScene(3, 6);
+        g_GameLogic._125 += 1;
+        break;
+    case 3:
+        if (lbl_8037169C._13 != 0) {
+            if (g_Minigame.multiPlayerInd != 0) {
+                if (g_Minigame.turnNumberWithinRound < g_Minigame.miniGameNumberOfParticipants) {
+                    fn_3_5A6D4(7);
+                } else {
+                    fn_3_5A6D4(0x19);
+                }
+            } else {
+                fn_3_1312D4();
+            }
+            fn_3_14CA00();
+            lbl_3_common_bss_32724[0xB7] = 1; // TODO type: GameHudFlags._B7
+        }
+        break;
+    }
+    fn_3_12F624();
+    for (i = 0; i < 15; i++) {
+        b = &g_Minigame.barrels[i];
+        if (b->animationCounter < 0x7FFE) {
+            b->animationCounter += 1;
+        } else {
+            b->animationCounter = 0x7FFF;
+        }
+        if (b->barrelState == 1) {
+            fn_3_12F9D4(i);
+        }
+        if (b->barrelState == 3) {
+            fn_3_12F28C(i);
+        }
+        if (b->replacingBarrelInd != 0) {
+            fn_3_12EFA4(i);
+        }
+    }
 }
+#endif
 
 // .text:0x00131C88 size:0x23C mapped:0x80770D1C
 void fn_3_131C88(void) {
