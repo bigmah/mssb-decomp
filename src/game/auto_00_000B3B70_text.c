@@ -70,7 +70,8 @@ extern void fn_3_6EBB4(s32);
 extern void fn_3_6E24C(s32, s32);
 extern void fn_3_B3A4C(void);
 extern void fn_3_B27A4(void);
-extern void fn_3_B4124(s32, s32, s32, u8);
+extern void fn_3_B4124(s32 team, s32 slot, s32 charId, s32 handedness);
+extern void fn_80011BE4(s32 index);
 extern u8 lbl_3_data_FAC4[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_800EFBA4[];
@@ -924,5 +925,34 @@ void fn_3_B7620(void) {
         fn_3_5A6D4(7);
         fn_3_B3C78(1);
         break;
+    }
+}
+
+// .text:0x000B4124 size:0x184
+// Puts character charId in roster slot `slot` of `team`; handedness: <0 keep, 0 R/R, 1 R/L, 2 L/R, other L/L.
+void fn_3_B4124(s32 team, s32 slot, s32 charId, s32 handedness) {
+    if (team == 0 && slot == 0) {
+        g_GameLogic.battingOrderAndPositionMapping[team][0][0] = slot;
+    }
+    g_GameLogic.battingOrderAndPositionMapping[team][slot + 1][0] = slot;
+    g_GameLogic.battingOrderAndPositionMapping[team][slot + 1][1] = slot;
+    lbl_80354720[team][slot]._0 = slot;
+    lbl_80354720[team][slot]._1 = slot;
+    lbl_80354720[team][slot].slot = slot;
+    if (slot >= 0 && slot <= 8) {
+        fn_80011BE4(slot);
+    }
+    memcpy(&inMemRoster[team][slot], &lbl_8034E9A0[charId], sizeof(CharacterStats));
+    if (handedness >= 0) {
+        if (handedness == 0 || handedness == 1) {
+            inMemRoster[team][slot].stats.FieldingArm = 0;
+        } else {
+            inMemRoster[team][slot].stats.FieldingArm = 1;
+        }
+        if (handedness == 0 || handedness == 2) {
+            inMemRoster[team][slot].stats.BattingStance = 0;
+        } else {
+            inMemRoster[team][slot].stats.BattingStance = 1;
+        }
     }
 }
