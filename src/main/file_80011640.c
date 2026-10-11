@@ -2516,9 +2516,58 @@ void fn_8001BA44(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
 #endif
 
 // .text:0x8001BE50 size:0x3E4
-void fn_8001BE50(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
-    return;
+// NONMATCHING 96%: register allocation and joint-lookup scheduling
+#if NONMATCHING
+void fn_8001BE50(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
+    CharActor* actor = lbl_8036E548.active[index];
+    CharSlot* slot;
+    CharAnimBank* bankData;
+    s32 bank;
+    s32 idx;
+    f32 speed = 0.0f;
+
+    if (actor == NULL) {
+        return;
+    }
+    slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+    if (e != 0) {
+        speed = 1.0f / e;
+    }
+    resetRootJoint(actor, slot, index);
+    // NOTE: bank/idx stay unset for a negative anim id, as in the original.
+    splitAnimId(anim, &bank, &idx);
+    bankData = actor->banks.b[bank];
+    if (bankData != NULL) {
+        if (!(idx < bankData->count && idx >= 0)) {
+            return;
+        }
+        slot->act = bankData;
+        slot->animId = idx;
+        slot->_5C = 0.0f;
+        slot->_58 = 1;
+        slot->_59 = bankData != NULL;
+        slot->_5A = bankData != NULL;
+        slot->_60 = speed;
+    }
+    if (actor->part != NULL) {
+        fn_80025EEC(&actor->part->player, bank, idx);
+    }
+    if (actor->parts != NULL && actor->parts->_CC != 0) {
+        fn_80025EEC(&actor->parts->part[1].player, bank, idx);
+        fn_80025EEC(&actor->parts->part[0].player, bank, idx);
+    }
+    if (a != 0) {
+        slot->_5B = 3;
+    } else {
+        slot->_5B = 2;
+    }
+    slot->_5C = c * actor->_04C;
+    slot->_59 = 1;
+    fn_8001B5EC(index, b);
+    fn_8001B308(index, d);
+    actor->_268 = b;
 }
+#endif
 
 // .text:0x8001C234 size:0x2F4
 void fn_8001C234(void) {
