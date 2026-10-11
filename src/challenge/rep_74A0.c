@@ -493,9 +493,8 @@ void fn_1_18EE4(ChallengeConfetti* piece) {
 
 // fn_1_191DC, size:0x3A0
 // Initialise every confetti piece; start delays are staggered in five waves.
-// NONMATCHING 99%: register-only, r26/r27 swapped (config base vs. inlined colour base)
-#if NONMATCHING
-void fn_1_191DC(ChallengeConfettiTask* task) {
+// Shared by fn_1_191DC and its inlined copies in fn_1_1957C/fn_1_1994C.
+static inline void initConfetti(ChallengeConfettiTask* task) {
     ChallengeConfetti* piece = task->pieces;
     u32 i = 0;
 
@@ -509,5 +508,38 @@ void fn_1_191DC(ChallengeConfettiTask* task) {
         piece->delay = ((i++ % 5) * wave + rand() % wave) * 2;
         piece = piece->next;
     } while (piece != NULL);
+}
+
+// NONMATCHING 99%: register-only, r26/r27 swapped (config base vs. inlined colour base)
+#if NONMATCHING
+void fn_1_191DC(ChallengeConfettiTask* task) {
+    initConfetti(task);
+}
+#endif
+
+// main.dol: create a task with a linked list of `count` work blocks of `size` bytes.
+extern void* fn_80033A24(void* func, int priority, int flags, int count, int arg4, int size);
+
+// fn_1_1957C, size:0x3D0
+// Start the confetti.
+// NONMATCHING 99%: register-only (saved GPRs r24-r27 permuted in the inlined init loop)
+#if NONMATCHING
+void fn_1_1957C(void) {
+    ChallengeConfettiTask* task = fn_80033A24(fn_1_1857C, 0, 0, lbl_1_data_FB24.count, 1, 0x80);
+    if (task != NULL) {
+        initConfetti(task);
+    }
+}
+#endif
+
+// fn_1_1994C, size:0x3D0
+// Start the confetti (identical copy).
+// NONMATCHING 99%: register-only (saved GPRs r24-r27 permuted in the inlined init loop)
+#if NONMATCHING
+void fn_1_1994C(void) {
+    ChallengeConfettiTask* task = fn_80033A24(fn_1_1857C, 0, 0, lbl_1_data_FB24.count, 1, 0x80);
+    if (task != NULL) {
+        initConfetti(task);
+    }
 }
 #endif

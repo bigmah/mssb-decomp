@@ -151,6 +151,12 @@ void fn_1_18EE4(ChallengeConfetti* piece);
 
 void fn_1_191DC(ChallengeConfettiTask* task);
 
+s32 fn_1_1857C(ChallengeConfettiTask* task);
+
+void fn_1_1957C(void);
+
+void fn_1_1994C(void);
+
 void fn_1_1ADA4(void);
 
 void fn_1_1B424(void);
