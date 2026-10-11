@@ -42,6 +42,15 @@ extern s32 fn_3_910AC(void);
 extern s32 fn_3_90F48(void);
 extern s32 fn_800698F8(s32 charId);
 extern s32 fn_80069B68(void);
+extern void fn_3_F578(void);
+extern void fn_3_753E8(int a);
+extern void fn_3_58E50(void);
+extern s32 someAnimationIndFunction(void);
+extern void fn_3_90AB0(s32 a);
+extern s32 fn_3_90C14(s32 a);
+extern s32 random_fn_3_9EE24(s32 max);
+extern void fn_3_1DC30(void);
+extern u8 lbl_3_data_60F0; // star chance percentage
 
 // View of lbl_800EF808 (SoundManager in main/file_80021308.h).
 typedef struct {
@@ -266,8 +275,8 @@ void fn_3_5D51C(void) {
     g_GameLogic.awayTeamBattingInd_battingTeam ^= 1;
     g_GameLogic.teamBatting ^= 1;
     g_GameLogic.teamFielding ^= 1;
-    ((u8*)&g_GameLogic)[0x131] = 0;
-    ((u8*)&g_GameLogic)[0x132] = 0;
+    g_GameLogic._131 = 0;
+    g_GameLogic._132 = 0;
     g_Scores._A0 = g_Scores.runs[scores->bottomHalf][0];
     fn_3_5A684();
     fn_3_8A350();
@@ -628,8 +637,8 @@ void fn_3_5D3FC(void) {
     GameInitVariables* gs = &g_d_GameSettings;
     s32 inning;
     u8 finalInning;
-    ((u8*)&g_GameLogic)[0x135] = 0;
-    ((u8*)&g_GameLogic)[0x136] = 0;
+    g_GameLogic._135 = 0;
+    g_GameLogic._136 = 0;
     g_RunningLogic[0x11] = 0;
     g_RunningLogic[0x13] = 0;
     *(s16*)(g_RunningLogic + 2) = 0;
@@ -912,8 +921,8 @@ void fn_3_5F7A8(void) {
     GameInitVariables* gs = &g_d_GameSettings;
     s32 inning;
     u8 finalInning;
-    ((u8*)&g_GameLogic)[0x135] = 0;
-    ((u8*)&g_GameLogic)[0x136] = 0;
+    g_GameLogic._135 = 0;
+    g_GameLogic._136 = 0;
     g_RunningLogic[0x11] = 0;
     g_RunningLogic[0x13] = 0;
     *(s16*)(g_RunningLogic + 2) = 0;
@@ -962,7 +971,7 @@ void fn_3_5F7A8(void) {
     g_Strikes._1E = -1;
     g_Strikes.stateRelated = 0;
     g_GameLogic.frameCountdownAtBeginningOfAtBatLockout = 0x5A;
-    ((u8*)&g_GameLogic)[0x13D] = 0;
+    g_GameLogic._13D = 0;
 }
 
 // fn_3_5B380, size:0x88
@@ -1788,6 +1797,91 @@ void fn_3_5A28C(void) {
     case 16:
     default:
         task->func = fn_3_5AE0C;
+        break;
+    }
+}
+#endif
+
+// fn_3_5F3FC, size:0x324
+// NONMATCHING 99%: register allocation only in the practice CharID lookup (case 3)
+#if NONMATCHING
+void fn_3_5F3FC(void) {
+    GameControlsStruct* game = &g_GameLogic;
+    switch (game->_125) {
+    case 0:
+        lbl_3_common_bss_32724[0x9A] = 0;
+        game->scoutFlag_VsScreenInd = 0;
+        game->playBatterWalkupAnimation = 1;
+        fn_3_F578();
+        fn_3_753E8(0);
+        setBatterContactConstants();
+        ((void (*)(void))fn_3_8A1D8)(); // called without its argument in the original
+        fn_3_8913C();
+        fn_3_58E50();
+        fn_3_1E154();
+        fn_3_7AFE4();
+        fn_3_59A90();
+        fn_3_6C108();
+        g_Strikes.strikes = 0;
+        g_Strikes.balls = 0;
+        g_Strikes._1E = -1;
+        g_Strikes.stateRelated = 0;
+        g_GameLogic.pre_PostMiniGameInd = 1;
+        g_GameLogic.minigameLastTurnSuccessInd = 1;
+        g_GameLogic.frameCountdownAtBeginningOfAtBatLockout = 90;
+        g_GameLogic._133 = 0;
+        g_GameLogic._134 = 0;
+        if (g_Scores._C6 < 0xFE) {
+            g_Scores._C6++;
+        } else {
+            g_Scores._C6 = 0xFF;
+        }
+        game->_125++;
+    case 1:
+        if (fn_3_6BA64() == 0) {
+            break;
+        }
+        lbl_803CBC3C[2] = 0;
+        game->_125++;
+    case 2:
+        if (someAnimationIndFunction() == 0) {
+            break;
+        }
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        game->_125++;
+    case 3:
+        if (g_d_GameSettings.GameModeSelected == 2 && g_Practice.practiceLevel == 7) {
+            if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
+                fn_3_90AB0(g_Practice.someCharID2);
+                lbl_3_common_bss_34C58._2C = 0;
+                g_Practice.someCharID2 =
+                    inMemRoster[g_GameLogic.teamBatting]
+                               [g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] - 1]
+                                   .stats.CharID;
+            }
+            if (fn_3_90C14(g_Practice.someCharID2) == 0) {
+                break;
+            }
+        }
+        game->_125++;
+    default:
+        if (g_d_GameSettings.GameModeSelected == 4 && unkSimulationRelatedStruct._08 != 0) {
+            break;
+        }
+        if (g_GameLogic.freeFieldingPracticeInd != 0) {
+            fn_3_5F154();
+            break;
+        }
+        fn_3_5A6D4(0x16);
+        fn_3_1DC30();
+        g_GameLogic.IsStarChance = 0;
+        lbl_3_common_bss_32724[0xAC] = 0;
+        if (lbl_800E8754._04 != 0 && (g_d_GameSettings.exhibitionMatchInd != 0 || lbl_3_common_bss_37400[0x46] == 0) &&
+            (g_GameLogic.TeamStars[0] < 5 || g_GameLogic.TeamStars[1] < 5) && !(*(s16*)(g_RunningLogic + 2) & 0xFFF0) &&
+            random_fn_3_9EE24(100) < lbl_3_data_60F0) {
+            g_GameLogic.IsStarChance = 1;
+            lbl_3_common_bss_32724[0xAC] = 1;
+        }
         break;
     }
 }

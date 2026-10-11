@@ -1157,7 +1157,10 @@ typedef struct _GameControlsStruct {
     /*0x12E*/ u8 hudLoadingRelated; // unsure
     /*0x12F*/ u8 _12F;
     /*0x130*/ E(u8, WIN_TYPE) winType;
-    artificial_padding(0x130, 0x135, u8);
+    /*0x131*/ u8 _131;
+    /*0x132*/ u8 _132;
+    /*0x133*/ u8 _133;
+    /*0x134*/ u8 _134;
     /*0x135*/ u8 _135;
     /*0x136*/ u8 _136;
     /*0x137*/ u8 playOverFadeOutStarted;
@@ -1166,7 +1169,8 @@ typedef struct _GameControlsStruct {
     /*0x13A*/ u8 walkOffWinInd; // unsure
     /*0x13B*/ u8 gameOverInd;
     /*0x13C*/ u8 scoutFlag_VsScreenInd;
-    artificial_padding(0x13C, 0x142, u8);
+    /*0x13D*/ u8 _13D;
+    /*0x13E*/ u8 _13E[4];
     /*0x142*/ u8 teamAIInd[2];
     /*0x144*/ u8 autoFielding[2];
     /*0x146*/ u8 batterHandedness[2];
