@@ -315,18 +315,21 @@ void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, 
     GXSetTevIndWarp(stage, indStage, d[0x7C5], st->replace, mtx);
 }
 
-// 0%: right switch structure, but instruction scheduling differs; fn_1_5924, size:0x19C
+// fn_1_5924, size:0x19C
+// Byte/texel offset of (x, y) in a GX 4x4/8x4/8x8-tiled texture with the given bits per pixel.
+// NONMATCHING 62%: same instructions, the x terms are scheduled before the y terms
+#if NONMATCHING
 s32 fn_1_5924(s32 width, s32 x, s32 y, s32 bpp, s32 alt) {
     s32 offset;
     switch (bpp) {
     case 4:
-        return (y / 8) * 8 * width + (x / 8) * 8 * 4 + (y % 8) * 8 + x % 8;
+        return (y / 8) * width * 8 + ((y % 8) * 8 + x % 8) + (x / 8) * 32;
     case 8:
-        return (y / 4) * 4 * width + (x / 8) * 8 * 4 + (y % 4) * 8 + x % 8;
+        return (y / 4) * width * 4 + ((y % 4) * 8 + x % 8) + (x / 8) * 32;
     case 16:
-        return (y / 4) * 4 * width + (x / 4) * 4 * 4 + (y % 4) * 4 + x % 4;
+        return (y / 4) * width * 4 + ((y % 4) * 4 + x % 4) + (x / 4) * 16;
     case 32:
-        offset = (y / 4) * 4 * width + (x / 4) * 4 * 4 + (y % 4) * 8 + x % 4;
+        offset = (y / 4) * width * 4 + ((y % 4) * 8 + x % 4) + (x / 8) * 16;
         if (alt != 0) {
             offset += 16;
         }
@@ -334,6 +337,7 @@ s32 fn_1_5924(s32 width, s32 x, s32 y, s32 bpp, s32 alt) {
     }
     return width;
 }
+#endif
 
 extern f32 lbl_1_data_200[];
 extern const f32 lbl_1_rodata_210;
