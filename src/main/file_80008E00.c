@@ -23,7 +23,7 @@ extern PadState lbl_803C77B8[4];
 #include "main/file_8000BA3C.h"
 #include "main/file_80021308.h"
 
-extern void (*lbl_803CBBB8)(void);
+extern void (*lbl_803CBBB8)(s32 alt); // run once after the frame with fn_80023D3C()'s result
 extern u32 lbl_803CBBB0;
 extern u8 lbl_803CBBB4;
 extern u8 lbl_803CBBC1;
@@ -144,7 +144,7 @@ extern char lbl_800E6588[]; // "Load dll. (%d) at %x\n"
 extern char lbl_800E65A0[]; // "Call first function of the current dll.\n"
 
 // fn_80008E00, size:0x8
-void fn_80008E00(void (*value)(void)) {
+void fn_80008E00(void (*value)(s32 alt)) {
     lbl_803CBBB8 = value;
 }
 
@@ -360,8 +360,7 @@ void main(void) {
             VISetBlack(TRUE);
             VIFlush();
             VIWaitForRetrace();
-            fn_80023D3C();
-            lbl_803CBBB8();
+            lbl_803CBBB8(fn_80023D3C());
             VISetBlack(FALSE);
             VIFlush();
             VIWaitForRetrace();

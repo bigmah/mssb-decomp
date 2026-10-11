@@ -28,7 +28,7 @@ extern SoundManager lbl_800EF808;
 extern SoundGroupRequest lbl_80108B84;
 extern u8 lbl_80108B18[0x24];
 extern u8 lbl_80108B3C[0x48];
-extern s32 lbl_80108B90[0x14];
+extern void* lbl_80108B90[0x14]; // ParticleParamsB template ([0] = tex)
 extern u16 lbl_80108BE0[8];
 extern s8 lbl_80108BF0[][0x36];
 extern u16 lbl_80108DF4[0x22];
@@ -39,7 +39,7 @@ extern u8 lbl_803CB888;
 extern u8 lbl_803CB889;
 extern char lbl_800E6970[]; // "...(%d) Step No %d \n"
 extern char lbl_800E69A8[]; // "sound end \n"
-extern s32 lbl_803CBD0C;
+extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 
 extern s32 fn_800698F8(s32 kind);
 extern void fn_80032284(Vec* pos);

@@ -25,7 +25,7 @@ extern f32 fn_800335BC(s32 angle);
 extern f32 fn_800335EC(s32 angle);
 extern SwingFx lbl_800FC890;
 extern BatFxTables lbl_800FC0FC;
-extern s32 lbl_803CBD0C;
+extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 extern u8 lbl_803CBBC0;
 #include "main/file_800B4A44.h"
 extern s16 lbl_800FEB08[5][4];

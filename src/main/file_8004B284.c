@@ -17,7 +17,7 @@ typedef struct UnkState_80366158 {
 extern UnkState_80366158 lbl_80366158;
 extern BatFxParams lbl_800FBF10;
 extern BatFxTables lbl_800FC0FC;
-extern s32 lbl_803CBD0C;
+extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 extern f32 lbl_803CC818; // 0.0f
 
 // Per-character [start, end] frame windows (indexed by charID).

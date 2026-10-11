@@ -17,7 +17,7 @@ extern s16 lbl_800FBCA8[]; // per-character start frame
 extern s16 lbl_800FBD14[]; // per-character end frame
 extern s32 lbl_800FC494[][3]; // per-character effect offset, fixed point (x100000)
 extern EffectParams* lbl_800FC488[3];
-extern s32 lbl_803CBD0C;
+extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 extern f32 lbl_803CC82C; // 0.0f
 extern f32 lbl_803CC830; // 1.0f
 
@@ -27,7 +27,7 @@ void fn_8004BEB0(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     Vec dir;
     Mtx m;
     GameControl ctrl;
-    s32 stamp;
+    void* stamp;
 
     if (lbl_80366158.unk28 == 1) {
         return;
@@ -60,7 +60,7 @@ void fn_8004BEB0(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
 
 extern EffectParams* lbl_803CB860;
 DECL_SECT(".sdata") extern RGB8 lbl_803CB864[4];
-extern s32 lbl_803CBD0C;
+extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 
 // .text:0x8004C094 size:0x74
 void fn_8004C094(Vec* pos) {

@@ -248,7 +248,7 @@ u32 fn_8004ACDC(s32 clear);
 
 void fn_8004ACF4(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
-void fn_8004B1B8(u32 value);
+void fn_8004B1B8(void* value); // effect texture archive (TexArchive*)
 
 void fn_8004B1C0(s32 kind, struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 void fn_8004B208(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);

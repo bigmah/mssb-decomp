@@ -8,7 +8,7 @@
 extern RepeatFxData lbl_800FC720;
 extern BatFxTables lbl_800FC0FC;
 extern EffectParams* lbl_803CB860;
-extern s32 lbl_803CBD0C;
+extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 extern s16 lbl_800FBD80[]; // per-character effect frame
 
 // Fires the effect at firstFrame, firstFrame + interval, ... while frame < endFrame.

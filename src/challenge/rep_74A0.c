@@ -1043,7 +1043,6 @@ void fn_1_1D110(void) {
         node->setSpeed = 1;
     }
     if (lbl_1_bss_69F5 == 0) {
-        // TODO type: UnknownHomes_Static.h declares the camera argument as u32
         fn_800BD670(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), (MtxPtr)camera);
     } else {
         fn_1_1A290(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), camera);

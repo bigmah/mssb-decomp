@@ -3862,7 +3862,7 @@ struct ANIMBank;
 struct DODisplayData;
 struct ActorLayout;
 extern void ANIMGet(struct ANIMBank* animBank);
-extern void fn_8004B1B8(u32 value);
+extern void fn_8004B1B8(void* tex);
 extern void convertGeometryAndSknHeader(struct DODisplayData* pal, void* sknHeader);
 extern void LoadActorLayout(struct ActorLayout* layout);
 extern ActorObjectTable* ActorObjectInitTable(u16 count);
@@ -3898,7 +3898,7 @@ void fn_1_16978(void) {
         break;
     case 1:
         if (lbl_1_bss_3098[0] != NULL) {
-            fn_8004B1B8((u32)lbl_1_bss_3098[0]); // TODO type: fn_8004B1B8 stores a pointer
+            fn_8004B1B8(lbl_1_bss_3098[0]);
             *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
         }
         break;

@@ -1713,7 +1713,7 @@ void fn_3_BF238(void) {
 
 // .text:0x000BF6C0 size:0x1B8 mapped:0x806FE754
 extern void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx);
-extern void fn_8004B1B8(u32 value);
+extern void fn_8004B1B8(void* tex);
 extern void fn_80035750(void* a, void* b, s16 c);
 extern void fn_3_6750C(s32);
 void fn_3_BF6C0(void) {
@@ -1725,8 +1725,8 @@ void fn_3_BF6C0(void) {
     if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
         fn_3_B9D68(s_BF070e, 6, *(void**)(lbl_3_common_bss_35154 + 8), buf);
         c = lbl_3_common_bss_35154;
-        *(s32*)(lbl_3_common_bss_35154 + 4) = **(s32**)(c + 8);
-        fn_8004B1B8(**(s32**)(c + 8));
+        *(void**)(lbl_3_common_bss_35154 + 4) = **(void***)(c + 8);
+        fn_8004B1B8(**(void***)(c + 8));
         fn_80035750(*(void**)(*(u8**)(c + 8) + 4), *(void**)(*(u8**)(c + 8) + 8), 4);
         t = ActorObjectInitTable(1);
         *(void**)(lbl_8036E548 + 0x70) = t;

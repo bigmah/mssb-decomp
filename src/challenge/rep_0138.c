@@ -1270,8 +1270,7 @@ void fn_1_6E14(void) {
         sDebugItemFuncs[lbl_1_common_bss_472B4.menuItem]();
     }
     if (lbl_1_bss_C0.indWarp != 0) {
-        // TODO type: main.dol keeps the callback in a u32
-        fn_800B996C((DOTevPass)fn_1_5544);
+        fn_800B996C((DOTevPass)fn_1_5544); // GX enums vs s32: same ABI
     } else {
         fn_800B996C(0);
     }
@@ -1314,7 +1313,7 @@ void fn_1_6848(void) {
         fn_800B9AA8(NULL);
         size = lbl_1_data_848.normalMapSize;
         fn_1_6578(&lbl_1_bss_C0.obj, lbl_1_bss_C0.image, size, size);
-        fn_800B996C((DOTevPass)fn_1_5544); // TODO type: check fn_1_5544 against DOTevPass
+        fn_800B996C((DOTevPass)fn_1_5544); // GX enums vs s32: same ABI
         LITAlloc(&lbl_1_data_848.lights[0]);
         LITAlloc(&lbl_1_data_848.lights[1]);
         LITAlloc(&lbl_1_data_848.lights[2]);

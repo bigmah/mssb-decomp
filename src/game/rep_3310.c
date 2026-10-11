@@ -865,7 +865,7 @@ void fn_3_1194AC(s32 i) {
 // .text:0x001194FC size:0x358 mapped:0x80758590
 // NONMATCHING 89%: register allocation, the state 0/3/4 test is folded to a range compare, and the bounce counter update order differs; the original reaches lbl_3_data_2265C through the lbl_3_data_225F0 pooled base
 #if NONMATCHING
-extern void fn_3_15521C(s16 idx, f32* pos, f32* rot); // TODO: rep_3880.h declares it with u32 args
+extern void fn_3_15521C(s16 idx, f32* pos, f32* rot); // rep_3880.h
 // Places the 50 balls (sprites 0x85.., or 0xB7.. while state 5) and their shadows (0x28..).
 void fn_3_1194FC(void) {
     Vec dir;
@@ -1317,9 +1317,9 @@ extern Rep3310BallView g_Ball;
 extern u8 lbl_3_data_22634[];
 extern s16 lbl_3_data_21654[];
 extern f32 lbl_3_data_21520[];
-extern void fn_3_151710(ActorObject* obj, Vec* pos); // TODO: rep_3880.h declares it with u32 args
-extern void fn_3_14C348(Rep3310Item* item, u8 caught); // TODO: rep_3880.h declares it with u32 args
-extern void fn_3_1666B0(Rep3310Item* item); // TODO: rep_3E58.h declares it (void)
+extern void fn_3_151710(ActorObject* obj, Vec* pos); // rep_3880.h: (void*, Vec*)
+extern void fn_3_14C348(Rep3310Item* item, u8 caught); // rep_3880.h: (f32* pos, u8)
+extern void fn_3_1666B0(Rep3310Item* item); // rep_3E58.h: (Vec* pos)
 // Places the 7 bonus items (g_Minigame + 0x72C) and their shadows; state 4 plays the
 // pickup animation once, state 5 waits for it to end.
 void fn_3_11A408(void) {

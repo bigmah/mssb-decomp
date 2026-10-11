@@ -40,7 +40,7 @@ typedef struct {
     /*0x0C*/ f32 _0C;
 } BezierPoint; // size: 0x10
 
-void fn_80008E00(void (*value)(void));
+void fn_80008E00(void (*value)(s32 alt));
 BOOL fn_80008E08(void);
 void PostRetraceCallback(u32 retraceCount);
 void fn_8000900C(void);

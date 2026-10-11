@@ -9,7 +9,7 @@ struct ActorObject;
 
 // Effect spawn parameters (templates in .data, copied and tweaked before use).
 typedef struct EffectParams {
-    /*0x00*/ s32 stamp;
+    /*0x00*/ void* stamp; // TexArchive*
     /*0x04*/ u8 pad04[0x8];
     /*0x0C*/ s32 unk0C;
     /*0x10*/ s32 unk10;
@@ -19,7 +19,7 @@ typedef struct EffectParams {
 } EffectParams; // size 0x50
 
 typedef struct EffectParamsB {
-    /*0x00*/ s32 stamp;
+    /*0x00*/ void* stamp; // TexArchive*
     /*0x04*/ u8 pad04[0x50];
 } EffectParamsB; // size 0x54
 

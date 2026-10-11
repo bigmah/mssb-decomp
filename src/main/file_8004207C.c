@@ -70,8 +70,8 @@ extern u8 lbl_802E4B00[2][9];
 extern BatFxTables lbl_800FC0FC;
 extern EffectParams lbl_800FBEA4;
 extern EffectParams* lbl_803CB84C; // &lbl_800FBEA4
-extern s32 lbl_800FBE90[5];
-extern u32 lbl_803CBD0C;
+extern void* lbl_800FBE90[5]; // ParticleParams template ([0] = tex)
+extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 extern char lbl_800E6920[]; // "orderchange.c"
 extern char lbl_800E6930[]; // "//OZ" + SJIS "no return value"
 extern f32 starMissionMenu(s16 charID);
@@ -3011,7 +3011,7 @@ void fn_8004AFA8(s32 idx) {
 #endif
 
 // fn_8004B1B8, size:0x8
-void fn_8004B1B8(u32 value) {
+void fn_8004B1B8(void* value) {
     lbl_803CBD0C = value;
 }
 
@@ -3038,7 +3038,7 @@ extern u32 lbl_803CBD04;
 
 extern u32 lbl_803CBD08;
 
-extern u32 lbl_803CBD0C;
+extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 
 // fn_8004B270, size:0x14
 void fn_8004B270(void) {

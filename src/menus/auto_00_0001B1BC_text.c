@@ -104,13 +104,13 @@ typedef struct MenuRosterEntry {
 } MenuRosterEntry; // size: 0x34
 #define ROSTER ((MenuRosterEntry*)lbl_2_bss_1A8248)
 #define ROSTER_LIMIT(e) ((e)->limits[lbl_2_bss_1A8248[0x4415] * 6 + lbl_2_bss_1A8248[0x441C] + 4])
-extern void fn_8004B1B8(u32 value);
+extern void fn_8004B1B8(void* tex);
 extern u8 lbl_803C6CF8[];
 
 // Archive loaded from ARAM by fn_2_1B1BC (lbl_2_bss_1034C).
 typedef struct MenuArchive {
     /*0x0*/ u8 _0[4];
-    /*0x4*/ u32 firstOffset;
+    /*0x4*/ void* first; // entry 0 (texture archive) after relocation
     /*0x8*/ u32* data; // offset table; entries are relocated in place
 } MenuArchive;
 extern MenuArchive* lbl_2_data_4BA0;
@@ -149,9 +149,9 @@ void fn_2_1B1BC(void) {
         }
         break;
     case 2:
-        convertTextureHeader(relocateArchive(lbl_2_data_4BA0->data, 0, 1));
-        lbl_2_data_4BA0->firstOffset = lbl_2_data_4BA0->data[0];
-        fn_8004B1B8(lbl_2_data_4BA0->firstOffset);
+        lbl_2_data_4BA0->first = relocateArchive(lbl_2_data_4BA0->data, 0, 1);
+        convertTextureHeader(lbl_2_data_4BA0->first);
+        fn_8004B1B8(lbl_2_data_4BA0->first);
         o[0x28] = 3;
         break;
     case 3:
