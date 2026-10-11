@@ -70,9 +70,54 @@ MtxPtr fn_800118AC(Mtx m, Mtx out) {
 }
 
 // .text:0x8001196C size:0xF4
-void fn_8001196C(void) {
-    return;
+static inline void clearSlotRefs(s32 index) {
+    s32 j;
+    for (j = 0; j < 13; j++) {
+        if (lbl_8036E548._2D6A[j] == index) {
+            lbl_8036E548._2D6A[j] = -1;
+        }
+    }
 }
+
+static inline void detachOwnedPart(s32 index) {
+    CharActor* actor;
+    CharPart* part;
+
+    actor = lbl_8036E548.active[index];
+    if (actor != NULL && (part = actor->part) != NULL && actor->index == index) {
+        part->_61 = -1;
+        part->_5C = -2;
+        lbl_8036E548.active[index]->part = NULL;
+    }
+}
+
+static inline void detachOwnedParts(s32 index) {
+    CharActor* actor;
+    CharParts* parts;
+
+    actor = lbl_8036E548.active[index];
+    if (actor != NULL && (parts = actor->parts) != NULL && actor->index == index) {
+        parts->_D1 = parts->_D0;
+        parts->_D0 = -1;
+        parts->part[0]._5C = -2;
+        parts->part[1]._5C = -2;
+        lbl_8036E548.active[index]->parts = NULL;
+    }
+}
+
+// NONMATCHING 97%: r7/r8 swapped (active[i] pointer vs parts)
+#if NONMATCHING
+void fn_8001196C(void) {
+    s32 i;
+
+    for (i = 0; i < 9; i++) {
+        detachOwned(i);
+        lbl_8036E548.active[i]->_25C = 0;
+        lbl_8036E548.active[i] = NULL;
+        clearSlotRefs(i);
+    }
+}
+#endif
 
 // .text:0x80011A60 size:0x104
 void fn_80011A60(void) {
