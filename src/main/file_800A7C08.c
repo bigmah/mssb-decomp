@@ -1739,9 +1739,105 @@ void fn_800ABB60(void) {
 #endif
 
 // .text:0x800ABBD0 size:0x374
+// NONMATCHING 99%: r7/r8 swapped in the inlined fn_800ABB14 CRC loop
+#if NONMATCHING
 void fn_800ABBD0(void) {
-    return;
+    CARDStat* stat = &lbl_802EF330;
+    CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
+    CardFileTask* file = (CardFileTask*)task->parent;
+    s32 res;
+    s32 length;
+    s32 xferred;
+    CardSaveHeader* header;
+
+    switch (task->step) {
+    case 0:
+        res = CARDOpen(file->chan, file->fileName, &file->fileInfo);
+        if (res == CARD_RESULT_READY) {
+            file->fileNo = file->fileInfo.fileNo;
+        } else {
+            fn_800ACD64(res);
+            CardTaskFinish(2);
+            break;
+        }
+        res = CARDGetStatus(file->chan, file->fileNo, stat);
+        if (res == CARD_RESULT_READY) {
+            if (stat->iconAddr == 0xFFFFFFFF || stat->commentAddr == 0xFFFFFFFF) {
+                fn_800ACD64(CARD_RESULT_CANCELED);
+                lbl_803C7838.status = 0xB;
+                CardTaskFinish(2);
+                break;
+            }
+        } else {
+            fn_800ACD64(res);
+            CardTaskFinish(2);
+            break;
+        }
+        task->step++;
+        break;
+    case 1:
+        lbl_803CC168 = CARDGetXferredBytes(file->chan);
+        if (file->mode == 1) {
+            res = CARDReadAsync(&file->fileInfo, file->buffer, file->length, stat->offsetData, NULL);
+            if (res < 0) {
+                fn_800ACD64(res);
+                CARDClose(&file->fileInfo);
+                CardTaskFinish(2);
+                break;
+            }
+            task->step++;
+        } else {
+            res = CARDRead(&file->fileInfo, file->buffer, file->length, stat->offsetData);
+            CARDClose(&file->fileInfo);
+            if (res < 0) {
+                fn_800ACD64(res);
+                CardTaskFinish(2);
+                break;
+            }
+            task->step += 2;
+        }
+        break;
+    case 2:
+        length = file->length;
+        xferred = CARDGetXferredBytes(file->chan) - lbl_803CC168;
+        lbl_803C7838.xferred = xferred;
+        lbl_803C7838.progress = (xferred * 100) / length;
+        if ((u8)lbl_803C7838.progress > 100) {
+            lbl_803C7838.progress = 100;
+        }
+        fn_800ACD64(CARDGetResultCode(file->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            CARDClose(&file->fileInfo);
+            task->step++;
+            break;
+        default:
+            CARDClose(&file->fileInfo);
+            CardTaskFinish(2);
+            break;
+        }
+        break;
+    case 3:
+        if (!(lbl_803CC160 & 1)) {
+            header = file->buffer;
+            if (header->crc != fn_800ABB14((u8*)(header + 1), file->length - sizeof(CardSaveHeader))) {
+                Task* parent;
+                lbl_803C7838.status = 0xB;
+                parent = task->parent;
+                parent->result = 2;
+                fn_800B0A14_removeQueue(parent);
+                break;
+            }
+        }
+        task->step++;
+    case 4:
+        CardTaskFinish(1);
+        break;
+    }
 }
+#endif
 
 // .text:0x800ABF44 size:0x5C4
 void fn_800ABF44(void) {
