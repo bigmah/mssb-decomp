@@ -1688,9 +1688,35 @@ void fn_8001CBD4(void) {
 }
 
 // .text:0x8001CCC8 size:0x1AC
+// NONMATCHING 98%: scheduling of the stadium light setup
+#if NONMATCHING
 void fn_8001CCC8(void) {
-    return;
+    LightPos* lights = lbl_80367318;
+    s32 i;
+    StadiumLights* st;
+    LightPos* lp;
+    u32 c;
+    GXColor color;
+
+    lbl_8036E548._3085 = 4;
+    fn_8001CBD4();
+    fn_800BD2DC();
+    st = &lbl_800F7478[g_d_GameSettings._54];
+    if (st->ambient.a != 0) {
+        color = st->ambient;
+        fn_800BD2CC(1, color);
+    }
+    lp = lights;
+    for (i = 0; i < 4; i++) {
+        LITAlloc(&lbl_8036E548.lights[i]);
+        LITInitAttn(lbl_8036E548.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+        LITInitPos(lbl_8036E548.lights[i], lp->x, lp->y, lp->z);
+        c = lp->color;
+        LITInitColor(lbl_8036E548.lights[i], &c);
+        lp++;
+    }
 }
+#endif
 
 // .text:0x8001CE74 size:0x200
 void fn_8001CE74(void) {
