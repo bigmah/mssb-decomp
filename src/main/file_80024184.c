@@ -259,9 +259,13 @@ static inline s32 scaleByte(u32 b, u32 a) {
 }
 
 // .text:0x80024974 size:0x64
-void multBottomBits_asFloat(void) {
-    return;
+// Scale the low byte of color by scale/255.
+// NONMATCHING 99%: int-to-float temps use swapped stack slots
+#if NONMATCHING
+u32 multBottomBits_asFloat(u32 color, u32 scale) {
+    return (color & ~0xFF) | scaleByte(color, scale);
 }
+#endif
 
 // .text:0x800249D8 size:0x128
 void byteWiseMultiply(void) {
