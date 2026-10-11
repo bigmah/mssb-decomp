@@ -39,8 +39,40 @@ void fn_3_76558(void) {
 }
 
 // .text:0x00076A9C size:0x1DC mapped:0x806B5B30
+// Credits runners who advanced and runners who scored.
 void fn_3_76A9C(void) {
-    return;
+    InMemRunnerType* runner;
+    BattingRecord* rec;
+    s32 i;
+    s32 runs;
+
+    for (i = 1, runner = &g_Runners[1]; i < 4; i++, runner++) {
+        if ((runner->runnerOnFieldOrOutOrScored == 1 || runner->runnerOnFieldOrOutOrScored == 3) && i != runner->currentBase &&
+            (g_FieldingLogic._107 != 3 || runner->furthestBaseForcedToGoToOnWalk != 0) && runner->forceOutCd <= 0) {
+            rec = &lbl_803537E4[g_GameLogic.teamBatting][runner->rosterID];
+            STAT_INC_U8(rec->_12);
+            if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400._40 == g_GameLogic.teamBatting) {
+                fn_3_161588(10, runner->rosterID);
+            }
+        }
+    }
+    runs = g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0] - g_Scores._A0;
+    i = 3;
+    runner = &g_Runners[3];
+    do {
+        if (runs <= 0) {
+            break;
+        }
+        if (runner->runnerOnFieldOrOutOrScored == 3) {
+            rec = &lbl_803537E4[g_GameLogic.teamBatting][runner->rosterID];
+            STAT_INC_U8(rec->runs);
+            runs--;
+            if (g_d_GameSettings.exhibitionMatchInd == 0 && g_GameLogic.teamBatting == lbl_3_common_bss_37400._40) {
+                fn_3_161588(11, runner->rosterID);
+            }
+        }
+        runner--;
+    } while (--i >= 0);
 }
 
 // .text:0x00076C78 size:0x90 mapped:0x806B5D0C
