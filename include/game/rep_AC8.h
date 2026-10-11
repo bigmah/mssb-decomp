@@ -74,7 +74,7 @@ void fn_3_33088(void);
 void fn_3_33458(void);
 void fn_3_334EC(int);
 void fn_3_33D9C(void);
-void fn_3_33DD0(void);
+void fn_3_33DD0(s32* first, s32* second);
 void fn_3_341E8(void);
 void fn_3_34450(void);
 void fn_3_34A40(int);
