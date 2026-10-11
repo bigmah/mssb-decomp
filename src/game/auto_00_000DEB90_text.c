@@ -994,7 +994,7 @@ void fn_3_E07DC(void) {
                 }
             }
         } else if (allDone != 0) {
-            if (g_Minigame.minigameControlStruct[0]._04[i] == 0x26) {
+            if (g_Minigame.minigameControlStruct[0].charID[i] == 0x26) {
                 actor->pos.z += lbl_3_data_18EC4[1];
             } else {
                 actor->pos.z += lbl_3_data_18EC4[0];
