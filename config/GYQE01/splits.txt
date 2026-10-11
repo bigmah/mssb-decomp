@@ -921,13 +921,11 @@ Unknown/File_0x800a6304.c:
 	extab       start:0x800065D8 end:0x800065E0
 	extabindex  start:0x80008424 end:0x80008430
 	.text       start:0x800A6304 end:0x800A64E0
-	.bss        start:0x803C6780 end:0x803C6990
 
 Unknown/File_0x800a64e0.c:
 	extab       start:0x800065E0 end:0x80006608
 	extabindex  start:0x80008430 end:0x8000846C
 	.text       start:0x800A64E0 end:0x800A6870
-	.bss        start:0x803C6990 end:0x803C6CF8
 
 main/file_800A6870.c:
 	extab       start:0x80006608 end:0x80006698
@@ -989,7 +987,6 @@ C3/control/control.c:
 	extabindex  start:0x80008B38 end:0x80008BB0
 	.text       start:0x800B7D3C end:0x800B993C
 	.data       start:0x801116A0 end:0x80111700
-	.bss        start:0x803CB1FC end:0x803CB49C
 	.sdata2     start:0x803CCFD8 end:0x803CCFF8
 
 main/file_800B993C.c:
@@ -1044,6 +1041,7 @@ Musyx/snd_synthapi.c:
 
 Musyx/stream.c:
 	.text       start:0x800C87AC end:0x800C9324
+	.bss        start:0x8030F970 end:0x80311370
 	.sbss       start:0x803CC290 end:0x803CC2A0
 	.sdata2     start:0x803CD140 end:0x803CD158
 
@@ -1053,7 +1051,10 @@ Musyx/synthdata.c:
 
 Musyx/synthmacros.c:
 	.text       start:0x800CB030 end:0x800CFF18
+	.data       start:0x801123F8 end:0x80112840
+	.bss        start:0x8031BBA8 end:0x8031BBC8
 	.sbss       start:0x803CC2F0 end:0x803CC310
+	.sdata2     start:0x803CD158 end:0x803CD180
 
 Musyx/synthvoice.c:
 	.text       start:0x800CFF18 end:0x800D1BDC
@@ -1077,6 +1078,9 @@ Musyx/s_data.c:
 
 Musyx/hw_dspctrl.c:
 	.text       start:0x800D3A34 end:0x800D70A4
+	.rodata     start:0x800E8060 end:0x800E8098
+	.data       start:0x801133E0 end:0x80114E38
+	.bss        start:0x8031DCF0 end:0x8031E3D0
 	.sbss       start:0x803CC338 end:0x803CC378
 
 Musyx/hw_volconv.c:
@@ -1086,6 +1090,7 @@ Musyx/hw_volconv.c:
 
 Musyx/snd3d.c:
 	.text       start:0x800D7794 end:0x800D9C10
+	.bss        start:0x8031E3D0 end:0x8031F620
 	.sbss       start:0x803CC378 end:0x803CC398
 	.sdata2     start:0x803CD1F8 end:0x803CD248
 

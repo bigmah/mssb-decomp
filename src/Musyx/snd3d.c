@@ -11,8 +11,10 @@ static u8 snd_base_studio;
 static u8 snd_max_studios;
 static u8 s3dUseMaxVoices;
 static u8 s3dFlag4;
-static void (*s3dCallback)(SND_EMITTER *em, SND_FVECTOR *lpos, SND_FVECTOR *lhead, SND_FVECTOR *lup,
-                           SND_FVECTOR *epos, SND_FVECTOR *edir, f32 *out1, f32 *out2);
+typedef void (*S3D_CALLBACK)(SND_EMITTER *em, SND_FVECTOR *lpos, SND_FVECTOR *lhead, SND_FVECTOR *lup,
+                             SND_FVECTOR *epos, SND_FVECTOR *edir, f32 *out1, f32 *out2);
+// Defined after runListNum below: .sbss is laid out in reverse definition order.
+extern S3D_CALLBACK s3dCallback;
 
 static void CalcEmitter(SND_EMITTER *em, f32 *vol, f32 *doppler, f32 *xPan, f32 *yPan, f32 *zPan,
                         f32 *filter)
@@ -633,12 +635,13 @@ typedef struct START_GROUP
     unsigned short numRunning; // offset 0xC, size 0x2
 } START_GROUP;
 
-static START_GROUP startGroup[64];  // size: 0x400
+static START_GROUP startGroup[64] ATTRIBUTE_ALIGN(16); // size: 0x400 (orig follows tmp_em at +0x50)
 static u8 startGroupNum;            // size: 0x1
 static START_LIST startListNum[64]; // size: 0x800
 static u8 startListNumnum;          // size: 0x1
-static RUN_LIST runList[64];        // size: 0x300
+static RUN_LIST runList[128];       // size: 0x600
 static u8 runListNum;               // size: 0x1
+S3D_CALLBACK s3dCallback;
 
 void ClearStartList()
 {
