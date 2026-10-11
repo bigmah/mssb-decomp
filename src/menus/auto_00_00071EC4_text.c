@@ -2675,8 +2675,6 @@ void fn_2_7E974(u8* o, s32 index) {
 extern u8 lbl_803CB8D0[];
 
 // fn_2_7207C, size:0x518
-// NONMATCHING 95%: the lbl_803CB8D0-indexed slot loads use add/lwz instead of lwzx
-#if NONMATCHING
 void fn_2_7207C(void) {
     u8* o = lbl_803CC1B8;
     s32 i;
@@ -2687,10 +2685,9 @@ void fn_2_7207C(void) {
             MN_SLOT(BASE(o))->frame = 0;
             MN_SLOT(BASE(o))->state = 1;
             MN_SLOT(2 + BASE(o))->state = 1;
-            MN_SLOT(3 + BASE(o))->color &= ~0xFF;
-            MN_SLOT(4 + BASE(o))->color &= ~0xFF;
-            MN_SLOT(5 + BASE(o))->color &= ~0xFF;
-            MN_SLOT(6 + BASE(o))->color &= ~0xFF;
+            for (i = 0; i < 4; i++) {
+                MN_SLOT(3 + BASE(o) + i)->color &= ~0xFF;
+            }
             MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
             MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color = (MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color & ~0xFF) | 0xFF;
             MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->frame = 0;
@@ -2700,8 +2697,7 @@ void fn_2_7207C(void) {
         }
         if (lbl_803C66B0[0x1F] == 1) {
             n = fn_80042DA8((s32)o, 0, 0x16) != 0;
-            n += fn_80042DA8((s32)o, lbl_803CB8D0[F410_S32(0x4C)] + 7, 5) != 0;
-            if (n == 2) {
+            if (n + (fn_80042DA8((s32)o, lbl_803CB8D0[F410_S32(0x4C)] + 7, 5) != 0) == 2) {
                 lbl_803C66B0[0x5E] = 0;
                 fn_80062674(0);
                 lbl_803C66B0[0x1F] = 2;
@@ -2757,7 +2753,6 @@ void fn_2_7207C(void) {
         fn_800B0A14_removeQueue(fn_80034CEC(o));
     }
 }
-#endif
 
 extern u8 lbl_2_data_2B59C[];
 
