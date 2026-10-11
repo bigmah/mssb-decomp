@@ -2217,7 +2217,7 @@ void fn_2_7805C(u8* o, s32 index) {
 #endif
 
 // fn_2_7630C, size:0x340
-// NONMATCHING 92%: instruction scheduling of the two stat lookups
+// NONMATCHING 97%: registers only (team byte in r7 vs r6, a/b swapped r0/r3)
 #if NONMATCHING
 void fn_2_7630C(u8* o, u8 index) {
     u8 team;
@@ -2230,8 +2230,9 @@ void fn_2_7630C(u8* o, u8 index) {
     } else {
         team = lbl_803C66B0[0x59 + index];
     }
-    a = lbl_800FE5D4[F410_S32(0x10 + team * 4)];
-    b = lbl_800FE5D4[lbl_803C6724[team]];
+    a = lbl_800FE5D4[((s32*)((u8*)&lbl_2_bss_F410 + 0x10))[team]];
+    b = lbl_803C6724[team];
+    b = lbl_800FE5D4[b];
     x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
     y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
     MN_SLOT(0x82 + BASE(o) + team)->frame = lbl_2_data_2B3A4[x] << 16;
