@@ -15,7 +15,27 @@ typedef struct {
     s16 state;
 } MenuFadeState;
 
+// View of one lbl_803C77B8 controller entry (PadState in main/file_800A7C08.h).
+typedef struct MenuStickPad {
+    /*0x00*/ u8 _00[0x10];
+    /*0x10*/ s8 stickX;
+    /*0x11*/ s8 stickY;
+    /*0x12*/ u8 _12[0x20 - 0x12];
+} MenuStickPad;
+
 void fn_2_6A708(void);
+void fn_2_6A87C(void);
+f32 fn_2_69070(s32 index, f32 x, f32 z);
+void fn_2_6B238(MenuEntry* owner);
+void fn_2_6B744(MenuEntry* owner);
+void fn_2_6DB30(MenuEntry* owner);
+void fn_2_705C0(MenuEntry* owner);
+void fn_2_699D4(s32 index);
+void fn_2_69E1C(s32 index);
+void fn_2_6F104(MenuEntry* owner);
+void fn_2_6E1D0(MenuEntry* owner);
+void fn_2_709A0(MenuEntry* owner);
+void fn_2_71098(MenuEntry* owner);
 void fn_2_6B4FC(MenuEntry* owner);
 void fn_2_71A38(u8* object);
 void fn_2_6ACF4(void);
@@ -158,7 +178,7 @@ s32 fn_2_68A88(s32 index, s32 location);
 
 void fn_2_6ABFC(s32 index, s32 location);
 
-s32 fn_2_687A4(s32 index, s32 targetIndex, s32 location);
+u8 fn_2_687A4(s32 index, s32 targetIndex, s32 location);
 
 void fn_2_6B024(MenuEntry* owner);
 

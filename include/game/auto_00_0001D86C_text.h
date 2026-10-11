@@ -23,7 +23,6 @@ typedef struct FieldingChangeWork {
     /*0x21E*/ u8 _21E[0x264 - 0x21E];
 } FieldingChangeWork; // size: 0x264
 
-extern FieldingChangeWork lbl_3_common_bss_34C90;
 
 typedef struct ScoreTeam {
     /*0x00*/ s16 runs;
@@ -42,7 +41,6 @@ typedef struct ScoreStruct {
     /*0xAE*/ u8 _AE[0xC8 - 0xAE];
 } ScoreStruct; // size: 0xC8
 
-extern ScoreStruct g_Scores;
 
 // Base-running state (g_RunningLogic, only the fields used here).
 typedef struct RunningLogicStruct {
@@ -55,7 +53,6 @@ typedef struct RunningLogicStruct {
     /*0x13*/ u8 _13[0x20 - 0x13];
 } RunningLogicStruct; // size: 0x20
 
-extern RunningLogicStruct g_RunningLogic;
 
 s32 fn_3_1D86C(void);
 void fn_3_1DB5C(void);

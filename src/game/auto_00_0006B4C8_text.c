@@ -5,7 +5,13 @@
 #include "game/auto_00_000249E8_text.h"
 #include "main/file_800639BC.h"
 #include "main/file_8000F150.h"
+#include "main/file_80063028.h"
 #include "main/file_800BD8C4.h"
+
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern RunningLogicStruct g_RunningLogic;
+extern ActorMgrView lbl_8036E548;
+extern Unk32724 lbl_3_common_bss_32724;
 
 // main.dol (main/file_80011640.h, which declares a conflicting view of lbl_8036E548)
 void fn_8001196C(void);
@@ -72,7 +78,7 @@ void fn_3_6B674(void) {
     s32 i;
     s32 visible;
     u8 status;
-    ActorModel* model;
+    GameActor* model;
 
     if (!g_d_GameSettings.minigamesEnabled || g_Minigame.GameMode_MiniGame == 0) {
         if (g_GameLogic.sceneID == 1) {
@@ -97,7 +103,7 @@ void fn_3_6B674(void) {
 
     for (i = 0; i < 13; i++) {
         actor = lbl_8036E548.actors[i];
-        if (actor != NULL && *fn_800111D8((ActorMgrActor*)actor) != NULL) {
+        if (actor != NULL && *fn_800111D8((struct CharActor*)actor) != NULL) {
             visible = 1;
             if (g_d_GameSettings.minigamesEnabled) {
                 status = g_GameLogic.gameStatus;
@@ -117,11 +123,11 @@ void fn_3_6B674(void) {
             if (actor->_25D == 2) {
                 visible = 0;
             }
-            model = *fn_800111D8((ActorMgrActor*)actor);
+            model = *fn_800111D8((struct CharActor*)actor);
             if (visible) {
-                model->_98 |= 4;
+                model->flags |= 4;
             } else {
-                model->_98 &= 0xFB;
+                model->flags &= 0xFB;
             }
         }
     }

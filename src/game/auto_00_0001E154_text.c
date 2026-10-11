@@ -6,6 +6,11 @@
 #include "game/rep_940.h"
 #include "game/rep_1838.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern FieldingChangeWork lbl_3_common_bss_34C90;
+extern ScoreStruct g_Scores;
+extern RunningLogicStruct g_RunningLogic;
+
 // Batting order per team (see OrderEntry in main/file_8004207C.h).
 typedef struct BattingOrderEntry {
     /*0x0*/ u8 _0;
@@ -51,10 +56,10 @@ void fn_3_1E328(void) {
     lbl_3_common_bss_34C90.changed[1] = 0;
     lbl_3_common_bss_34C90._21C[0] = 0;
     lbl_3_common_bss_34C90._21C[1] = 0;
-    if (g_GameLogic._13E[g_GameLogic.homeTeamInd] != 0) {
+    if (g_GameLogic._13E[g_GameLogic._000] != 0) {
         g_GameLogic.runnerAIInd[0] = 1;
     }
-    if (g_GameLogic._13E[g_GameLogic.homeTeamInd ^ 1] != 0) {
+    if (g_GameLogic._13E[g_GameLogic._000 ^ 1] != 0) {
         g_GameLogic.runnerAIInd[1] = 1;
     }
     g_AiLogic.aIPitchDesiredEndingLocIndex = 0xFF;

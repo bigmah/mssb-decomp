@@ -5,6 +5,11 @@
 #include "game/rep_1838.h"
 #include "Dolphin/stl.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern ActorMgrView lbl_8036E548;
+extern FielderView g_Fielders[];
+extern SceneWork* lbl_3_common_bss_1323C;
+
 // main.dol (main/file_80011640.h)
 void QueueCharacterAnimation(s32 index, s32 anim, s32 a, s32 b, s32 c, s32 d, s32 e);
 void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, s32 e);

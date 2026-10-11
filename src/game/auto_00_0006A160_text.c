@@ -4,6 +4,10 @@
 #include "game/auto_00_000249E8_text.h"
 #include "game/rep_1E08.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern ActorMgrView lbl_8036E548;
+extern Unk32724 lbl_3_common_bss_32724;
+
 typedef struct Unk35154 {
     /*0x000*/ u8 _000[0x3AC];
     /*0x3AC*/ u32 _3AC;

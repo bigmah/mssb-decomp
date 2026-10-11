@@ -4,6 +4,11 @@
 #include "game/rep_720.h"
 #include "game/auto_00_000249E8_text.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern ActorMgrView lbl_8036E548;
+extern FielderView g_Fielders[];
+extern SceneWork* lbl_3_common_bss_1323C;
+
 typedef struct QueueParentView {
     /*0x00*/ u8 _00[0x10];
     /*0x10*/ s16 done;

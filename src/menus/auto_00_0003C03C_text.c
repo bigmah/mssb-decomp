@@ -3038,7 +3038,7 @@ void fn_2_3FDE0(void) {
 extern s16 lbl_2_data_3764[][4];
 extern void fn_2_50B0C(s32 id, s32 arg);
 extern void fn_2_50CC0(s16 value);
-extern void fn_2_46D94(s16* cursor, s16* page, s16 count, s16 cols, s16 rows);
+extern void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
 extern void fn_2_46D34(s32 delta);
 extern void fn_2_38538(void);
 

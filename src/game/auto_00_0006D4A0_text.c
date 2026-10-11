@@ -2,6 +2,9 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern PlayerGameRecord lbl_803535C8[2][9];
+
 // Character roster of the select screen (CharSelectState.roster in main/file_800639BC.h),
 // viewed here as a flat array indexed by character id.
 extern CharacterStats lbl_8034E9A0[];

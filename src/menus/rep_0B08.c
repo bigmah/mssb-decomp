@@ -28,19 +28,33 @@ struct MenuEntry {
     u8 _3C[0x10];
     f32 heading;
     f32 _50;
-    u8 _54[0x18];
+    f32 _54;
+    u8 _58[0x14];
     f32 storedX;
     f32 storedZ;
-    u8 _74[0x0C];
+    Vec target;
     s32 objectId;
     u8 _84[0x0C];
     f32 bouncePhase;
     s16 state;
-    u8 _96[0x1C];
+    s16 _96;
+    s16 _98;
+    s16 _9A;
+    s16 _9C;
+    s16 _9E;
+    s16 _A0;
+    s16 timer;
+    u8 _A4[8];
+    s16 _AC;
+    s16 _AE;
+    s16 targetLocation;
     s16 locationIndex;
-    u8 _B4[7];
+    u8 _B4[6];
+    u8 mode;
     u8 flagBB;
-    u8 _BC[4];
+    u8 flagBC;
+    u8 flagBD;
+    u8 _BE[2];
     s8 flagC0;
     u8 _C1[2];
     u8 typeC3;
@@ -61,10 +75,21 @@ typedef struct {
     u8 padding[0xB0];
 } MenuLocationRecord;
 
+// 10-byte per-location records at menu + 0x40F0.
+typedef struct {
+    u8 _00[2];
+    u8 kind;
+    u8 _03;
+    u8 occupied;
+    u8 _05[5];
+} MenuSlot;
+
 typedef struct {
     u8 _00[0x1610];
     MenuEntry entries[14];
     MenuLocationRecord locations[4];
+    u8 _24D0[0x40F0 - 0x24D0];
+    MenuSlot slots[57];
 } MenuEntries;
 
 extern MenuEntries* lbl_2_bss_1A8248[];
@@ -109,7 +134,7 @@ extern f32 lbl_2_bss_A170;
 extern Vec lbl_2_data_2A340;
 extern const f32 lbl_2_rodata_BB0;
 extern const f32 lbl_2_rodata_C10;
-extern f32 fn_2_4A1E8(f32);
+extern f32 fn_2_4A1E8(f32 x, f32 y);
 
 // fn_2_6B024, size:0xFC
 void fn_2_6B024(MenuEntry* owner) {
@@ -138,7 +163,7 @@ void fn_2_6B024(MenuEntry* owner) {
 }
 
 // fn_2_687A4, size:0x100
-s32 fn_2_687A4(s32 index, s32 targetIndex, s32 location) {
+u8 fn_2_687A4(s32 index, s32 targetIndex, s32 location) {
     Vec position;
     MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
     MenuEntry* target = &lbl_2_bss_1A8248[0]->entries[targetIndex];
@@ -1149,7 +1174,7 @@ s32 fn_2_68B54(s32 first, s32 second) {
     return 0;
 }
 
-extern s16 lbl_2_data_3D30[];
+extern s16 lbl_2_data_3D30[][4];
 
 // fn_2_6CCB8
 void fn_2_6CCB8(MenuEntry* owner) {
@@ -1617,10 +1642,10 @@ void fn_2_6CDD4(MenuEntry* owner) {
 
     id = owner->objectId;
     ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
-    memcpy(owner->_74, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
+    memcpy(&owner->target, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
     entry = &lbl_2_bss_1A8248[0]->entries[id];
-    pz = *(f32*)&owner->_74[8];
-    px = *(f32*)&owner->_74[0];
+    pz = owner->target.z;
+    px = owner->target.x;
     entry->previousPosition.x = px;
     entry->previousPosition.z = pz;
     dx = px - entry->position.x;
@@ -1742,10 +1767,10 @@ void fn_2_71C6C(MenuEntry* owner) {
 
     id = owner->objectId;
     ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
-    memcpy(owner->_74, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
+    memcpy(&owner->target, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
     entry = &lbl_2_bss_1A8248[0]->entries[id];
-    pz = *(f32*)&owner->_74[8];
-    px = *(f32*)&owner->_74[0];
+    pz = owner->target.z;
+    px = owner->target.x;
     entry->previousPosition.x = px;
     entry->previousPosition.z = pz;
     dx = px - entry->position.x;
@@ -1783,9 +1808,9 @@ void fn_2_6C348(MenuEntry* owner) {
             owner->state = 3;
             return;
         }
-        memcpy(owner->_74, &lbl_2_data_2EA4[42], sizeof(Vec));
-        pz = lbl_2_rodata_B68[0] + *(f32*)&owner->_74[8];
-        px = lbl_2_rodata_C44[0] + *(f32*)&owner->_74[0];
+        memcpy(&owner->target, &lbl_2_data_2EA4[42], sizeof(Vec));
+        pz = lbl_2_rodata_B68[0] + owner->target.z;
+        px = lbl_2_rodata_C44[0] + owner->target.x;
         entry = &lbl_2_bss_1A8248[0]->entries[id];
         entry->previousPosition.x = px;
         entry->previousPosition.z = pz;
@@ -2107,17 +2132,17 @@ void fn_2_6C5E0(MenuEntry* owner) {
     ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
     *(u8*)((u8*)owner + 0xBA) = 11;
     if (*(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x4439) == 1) {
-        memcpy(owner->_74, &lbl_2_data_2EA4[40], sizeof(Vec));
+        memcpy(&owner->target, &lbl_2_data_2EA4[40], sizeof(Vec));
         flag = 1;
     } else if (owner->position.x > lbl_2_data_2EA4[40].x && owner->position.z > lbl_2_data_2EA4[40].z) {
-        memcpy(owner->_74, &lbl_2_data_2EA4[42], sizeof(Vec));
+        memcpy(&owner->target, &lbl_2_data_2EA4[42], sizeof(Vec));
         flag = 0;
     } else {
-        memcpy(owner->_74, &lbl_2_data_2EA4[40], sizeof(Vec));
+        memcpy(&owner->target, &lbl_2_data_2EA4[40], sizeof(Vec));
         flag = 1;
     }
-    pz = *(f32*)&owner->_74[8];
-    px = *(f32*)&owner->_74[0];
+    pz = owner->target.z;
+    px = owner->target.x;
     entry = &lbl_2_bss_1A8248[0]->entries[id];
     entry->previousPosition.x = px;
     entry->previousPosition.z = pz;
@@ -2146,3 +2171,971 @@ void fn_2_6C5E0(MenuEntry* owner) {
         owner->state = 2;
     }
 }
+
+extern f32 lbl_2_bss_A170;
+extern Vec lbl_2_data_2A340;
+
+// .text:0x6A708 size:0x174
+// NONMATCHING 86%: scheduling only; lbl_803C77B8 address and the int->float magic load move earlier than in the original
+#if NONMATCHING
+void fn_2_6A708(void) {
+    Vec position;
+    Vec delta;
+    MenuEntry* player = &lbl_2_bss_1A8248[0]->entries[0];
+    MenuStickPad* pad;
+
+    memcpy(&position, &player->position, sizeof(Vec));
+    PSVECSubtract(&position, &lbl_2_data_2A340, &delta);
+    delta.x *= lbl_2_rodata_BB0;
+    delta.z *= lbl_2_rodata_BB0;
+    pad = (MenuStickPad*)&lbl_803C77B8;
+    pad = &pad[(s8)lbl_2_bss_1A824C[0][0x197863]];
+    position.x += pad->stickX / lbl_2_rodata_C10;
+    position.z += pad->stickY / lbl_2_rodata_C10;
+    if (lbl_2_rodata_B58 != delta.x || lbl_2_rodata_B58 != delta.z) {
+        lbl_2_bss_A170 = fn_2_4A1E8(delta.z, delta.x);
+    }
+    memcpy(&lbl_2_data_2A340, &player->position, sizeof(Vec));
+    player->position.x = position.x;
+    player->position.y = position.y;
+    player->position.z = position.z;
+    player->heading = lbl_2_bss_A170;
+}
+#endif
+
+// .text:0x6A87C size:0x23C
+// NONMATCHING 88%: original inlines fn_2_6A708 and fn_2_6A628; same scheduling issue as fn_2_6A708
+#if NONMATCHING
+void fn_2_6A87C(void) {
+    lbl_2_bss_1A8248[0]->entries[0].flagBB = 0;
+    fn_2_6A708();
+    fn_2_6A628();
+}
+#endif
+
+extern const f32 lbl_2_rodata_B70;
+
+// Same as menuSqrtf, written with early returns (gives a different block order).
+static inline f32 menuSqrtfR(f32 x) {
+    if (x > 0.0f) {
+        f64 xd = (f64)x;
+        f64 guess = __frsqrte(xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+        return (f32)(xd * guess);
+    } else if (x < lbl_2_rodata_B88) {
+        return NAN;
+    } else if (isnan(x)) {
+        return NAN;
+    }
+    return x;
+}
+
+// .text:0x69070 size:0x260
+// Distance from (x, z) to the entry: straight-line when it is (almost) still,
+// otherwise the perpendicular distance to its line of motion.
+f32 fn_2_69070(s32 index, f32 x, f32 z) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    f32 dz;
+    f32 dx;
+    f32 along;
+    f32 distance;
+
+    if (entry->_38 < lbl_2_rodata_B70) {
+        dx = entry->position.x - x;
+        dz = entry->position.z - z;
+        {
+            f32 xx = dx * dx;
+            f32 zz = dz * dz;
+            return menuSqrtf(xx + zz);
+        }
+    }
+    dz = z - entry->position.z;
+    dx = x - entry->position.x;
+    along = entry->acceleration.x * dx + entry->acceleration.z * dz;
+    distance = (dx * dx + dz * dz) - along * along;
+    if (distance < 0.0f) {
+        return 0.0f;
+    }
+    return menuSqrtfR(distance);
+}
+
+// .text:0x6B238 size:0x28C
+void fn_2_6B238(MenuEntry* owner) {
+    s32 id;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    id = owner->objectId;
+    fn_2_68F08(id, 1);
+    owner->mode = 14;
+    owner->flagD0 = 1;
+    owner->bouncePhase = 0.0f;
+    owner->position.y = 0.0f;
+    if (lbl_2_bss_1A8248[0]->entries[id].targetLocation == 48) {
+        memcpy(&owner->target, &lbl_2_data_2EA4[50], sizeof(Vec));
+    } else {
+        memcpy(&owner->target, &lbl_2_data_2EA4[18], sizeof(Vec));
+    }
+    pz = owner->target.z;
+    px = owner->target.x;
+    entry = &lbl_2_bss_1A8248[0]->entries[id];
+    entry->previousPosition.x = px;
+    entry->previousPosition.z = pz;
+    dx = px - entry->position.x;
+    dz = pz - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+    fn_2_68FBC(id, 8);
+    owner->state = 1;
+}
+
+// 0x14-byte records in lbl_2_data_3198 (see also rep_1028.c).
+typedef struct MenuSpot {
+    Vec position;
+    f32 _0C;
+    f32 _10;
+} MenuSpot;
+extern MenuSpot lbl_2_data_3198[];
+
+// .text:0x6B744 size:0x2D4
+void fn_2_6B744(MenuEntry* owner) {
+    s32 id;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+    Vec spot;
+
+    id = owner->objectId;
+    fn_2_68F08(id, 1);
+    owner->mode = 12;
+    owner->flagD0 = 1;
+    owner->bouncePhase = 0.0f;
+    owner->position.y = 0.0f;
+    if (lbl_2_bss_1A8248[0]->entries[id].targetLocation == 48) {
+        memcpy(&spot, &lbl_2_data_3198[25].position, sizeof(Vec));
+        PSVECScale(&spot, lbl_2_rodata_B68[0], &spot);
+        memcpy(&owner->target, &spot, sizeof(Vec));
+    } else {
+        memcpy(&spot, &lbl_2_data_3198[26].position, sizeof(Vec));
+        PSVECScale(&spot, lbl_2_rodata_B68[0], &spot);
+        memcpy(&owner->target, &spot, sizeof(Vec));
+    }
+    pz = owner->target.z;
+    px = owner->target.x;
+    entry = &lbl_2_bss_1A8248[0]->entries[id];
+    entry->previousPosition.x = px;
+    entry->previousPosition.z = pz;
+    dx = px - entry->position.x;
+    dz = pz - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+    fn_2_68FBC(id, 8);
+    owner->state = 1;
+}
+
+// Per-fielder (ids 2..6) pointers to their home location.
+extern s16* lbl_2_data_3C2C[];
+
+// .text:0x6DB30 size:0x324
+void fn_2_6DB30(MenuEntry* owner) {
+    s32 id = owner->objectId;
+    s32 other = *(s32*)((u8*)lbl_2_bss_1A8248[0] + 0x1690);
+    s32 mode;
+    s32 who;
+    s16 timer;
+
+    fn_2_69E1C(id);
+    if (id >= 2 && id <= 6) {
+        if (id == 2) { // no-op, but present in the original
+            id = 2;
+        }
+        if ((mode = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DD), who = *(s8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DC), mode == 1) && who == id) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 4;
+            return;
+        }
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 4;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            if (lbl_2_bss_1A8248[0]->entries[id].locationIndex == *lbl_2_data_3C2C[id - 2]) {
+                owner->flagCB = 0;
+                owner->timer = 0x78;
+                owner->flagCF = 0;
+            } else {
+                owner->flagCB = 0;
+                owner->flagCF = -1;
+                owner->state = 0;
+            }
+        }
+    } else {
+        owner->flagCB = -1;
+    }
+    timer = owner->timer;
+    owner->timer = timer - 1;
+    if (timer == 0) {
+        owner->state = 0;
+    }
+}
+
+// .text:0x705C0 size:0x3E0
+// NONMATCHING 99%: r4/r5 swapped for the menu base and the self entry before atan2
+#if NONMATCHING
+void fn_2_705C0(MenuEntry* owner) {
+    s16* t;
+    u8 type;
+    s32 hi;
+    s32 base;
+    u8* p;
+    s32 lo;
+    s32 index;
+    s32 b, c;
+    s32 i;
+    s32 hit;
+    MenuEntry* e;
+
+    index = owner->objectId;
+    fn_2_69E1C(index);
+    type = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x441C);
+    t = lbl_2_data_2E80;
+    base = t[type * 3] * 2;
+    c = t[type * 3 + 2] * 2;
+    b = t[type * 3 + 1] * 2;
+    hi = base - c;
+    lo = base - b;
+    if (owner->objectId == 0) {
+        p = lbl_8036E548 + 0xC04;
+        if (p != NULL) {
+            c = *(s16*)(p + 0x68);
+            if (c == hi || c == lo) {
+                if (type == 5) {
+                    fn_80062890(1);
+                } else {
+                    fn_80062890(0);
+                }
+            }
+        }
+    }
+    if (owner->_38 <= lbl_2_rodata_B58) {
+        owner->angle34 = owner->heading;
+        e = &lbl_2_bss_1A8248[0]->entries[index];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+    for (i = 1; i < 7; i++) {
+        hit = (u8)fn_2_68C80(index, i);
+        if (hit != 0 && i == 1 && ((u8*)lbl_2_bss_1A8248[0])[0x44F3] == 0) {
+            owner->flagC4 = 2;
+            owner->flagCB = i;
+            e = &lbl_2_bss_1A8248[0]->entries[index];
+            e->typeC3 = 3;
+            e->state = 0;
+            return;
+        }
+        owner->flagCB = -1;
+    }
+    if (owner->flagCD == 1) {
+        MenuEntry* other;
+        MenuEntry* self;
+        f32 angle;
+        f32 diff;
+
+        self = &lbl_2_bss_1A8248[0]->entries[index];
+        other = &lbl_2_bss_1A8248[0]->entries[owner->flagCE];
+        angle = (f32)atan2(-(self->position.x - other->position.x), -(self->position.z - other->position.z));
+        diff = fn_2_4A18C(other->heading) - angle;
+
+        if (other->typeC3 == 7 && (owner->state == 0 || owner->state == 1)) {
+            if ((f32)__fabs(diff) < lbl_2_rodata_BB8) {
+                lbl_2_bss_1A824C[0][0x1978F1] = 0;
+            } else {
+                lbl_2_bss_1A824C[0][0x1978F1] = 2;
+            }
+        } else {
+            lbl_2_bss_1A824C[0][0x1978F1] = 1;
+        }
+        owner->mode = 4;
+        owner->flagC4 = 1;
+        owner->locationIndex = fn_2_689CC(0);
+        e = &lbl_2_bss_1A8248[0]->entries[index];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+}
+#endif
+
+// .text:0x699D4 size:0x448
+void fn_2_699D4(s32 index) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    Mtx rotation;
+    Vec movement;
+    f32 dx;
+    f32 dz;
+    f32 distance;
+    f32 difference;
+    f32 magnitude;
+    f32 step;
+
+    if (entry->_38 <= 0.0f) {
+        entry->_38 = 0.0f;
+    }
+    entry->_50 -= entry->_38;
+    dx = entry->position.x - entry->previousPosition.x;
+    dz = entry->position.z - entry->previousPosition.z;
+    {
+        f32 xx = dx * dx;
+        f32 zz = dz * dz;
+        distance = xx + zz;
+        if (distance > 0.0f) {
+            f64 xd = (f64)distance;
+            f64 guess = __frsqrte(xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            distance = (f32)(xd * guess);
+        } else if (distance < lbl_2_rodata_B88) {
+            distance = NAN;
+        } else if (isnan(distance)) {
+            distance = NAN;
+        }
+    }
+    if (distance < entry->_38) {
+        entry->_50 = lbl_2_rodata_BB0;
+    }
+    if (entry->mode != 4 && entry->mode != 24 && entry->_50 > lbl_2_rodata_B58) {
+        entry->heading = (f32)atan2(-(entry->previousPosition.x - entry->position.x),
+            -(entry->previousPosition.z - entry->position.z));
+    }
+    PSMTXRotRad(rotation, 'Y', entry->angle34);
+    movement.x = lbl_2_rodata_B58;
+    movement.y = lbl_2_rodata_B58;
+    movement.z = lbl_2_rodata_B58;
+    PSMTXMultVec(rotation, &movement, &movement);
+    entry->velocity.x = movement.x;
+    entry->velocity.z = movement.z;
+    entry->position.x += entry->velocity.x;
+    entry->position.z += entry->velocity.z;
+    if (entry->mode != 4 && entry->mode != 24 && entry->_50 > lbl_2_rodata_B58) {
+        entry->heading = (f32)atan2(-(entry->previousPosition.x - entry->position.x),
+            -(entry->previousPosition.z - entry->position.z));
+        difference = fn_2_4A18C(entry->angle34 - entry->heading);
+        magnitude = (f32)__fabs(difference);
+        if (magnitude > lbl_2_rodata_BB4) {
+            step = lbl_2_rodata_BB8;
+        } else if (magnitude > lbl_2_rodata_BB8) {
+            step = lbl_2_rodata_BBC;
+        } else if (magnitude > lbl_2_rodata_BBC) {
+            step = lbl_2_rodata_BC0;
+        } else if (magnitude > lbl_2_rodata_BC0) {
+            step = lbl_2_rodata_BC4;
+        } else if (magnitude > lbl_2_rodata_BC4) {
+            step = lbl_2_rodata_BC8;
+        } else if (magnitude > lbl_2_rodata_BC8) {
+            step = lbl_2_rodata_BCC;
+        } else if (magnitude > lbl_2_rodata_BCC) {
+            step = lbl_2_rodata_BD0;
+        } else if (magnitude > lbl_2_rodata_BD0) {
+            step = lbl_2_rodata_BD4;
+        } else if (magnitude < lbl_2_rodata_BD0) {
+            step = lbl_2_rodata_BD8;
+        }
+        if (!((difference < lbl_2_rodata_BE0 && difference > lbl_2_rodata_B58) ||
+              (difference > lbl_2_rodata_BE8 && difference < lbl_2_rodata_B58))) {
+            if (difference < lbl_2_rodata_B58) {
+                entry->angle34 += step;
+            } else {
+                entry->angle34 -= step;
+            }
+        }
+        entry->heading = entry->angle34;
+    }
+    if (lbl_2_rodata_B58 == entry->_38 && entry->flagBD == 0) {
+        entry->flagBC = 1;
+    }
+}
+
+extern const f32 lbl_2_rodata_BF0;
+extern const f32 lbl_2_rodata_BF4;
+extern const f32 lbl_2_rodata_BF8;
+extern const f32 lbl_2_rodata_BFC;
+extern const f32 lbl_2_rodata_C00;
+extern const f32 lbl_2_rodata_C04;
+extern const f32 lbl_2_rodata_C08;
+extern const f32 lbl_2_rodata_C0C;
+extern f32 lbl_2_data_3F44[];
+
+// .text:0x69E1C size:0x634
+void fn_2_69E1C(s32 index) {
+    MenuEntry* entry = &lbl_2_bss_1A8248[0]->entries[index];
+    Mtx rotation;
+    Vec movement;
+    f32 dx;
+    f32 dz;
+    f32 distance;
+    f32 difference;
+    f32 magnitude;
+    f32 step;
+
+    if (entry->_50 > lbl_2_rodata_B58) {
+        s16 heading = fn_2_4A2C4(entry->heading);
+        fn_2_4A310(heading, fn_2_4A2C4(entry->_54));
+        entry->flagBC = 0;
+        entry->flagBD = 0;
+        if (entry->_9E < 0x7FFE) {
+            entry->_9E++;
+        } else {
+            entry->_9E = 0x7FFF;
+        }
+    } else {
+        entry->flagBC = 1;
+        if (entry->_9E > 45) {
+            entry->_9E = 45;
+        }
+        if (entry->_9E != 0) {
+            entry->_9E--;
+        }
+    }
+    switch (entry->mode) {
+    case 0:
+        fn_2_69710(index);
+        break;
+    case 1:
+    case 5:
+        entry->_38 -= lbl_2_rodata_BF0;
+        break;
+    case 2:
+    case 6:
+        entry->_38 -= lbl_2_rodata_BF4;
+        break;
+    case 3:
+    case 7:
+        entry->_38 -= lbl_2_rodata_BF8;
+        break;
+    case 4:
+    case 8:
+        entry->mode += 20;
+        break;
+    case 24:
+    case 28:
+        entry->_38 -= lbl_2_rodata_BFC;
+        break;
+    case 9:
+        entry->_38 = lbl_2_rodata_B58;
+        break;
+    case 10:
+        entry->_38 = lbl_2_rodata_C00;
+        break;
+    case 11:
+        entry->_38 = lbl_2_rodata_BA4;
+        break;
+    case 12:
+        if (index == 0) {
+            entry->_38 = lbl_2_data_3F44[((u8*)lbl_2_bss_1A8248[0])[0x441C]];
+        } else {
+            entry->_38 = lbl_2_rodata_C04;
+        }
+        break;
+    case 13:
+        entry->_38 = lbl_2_rodata_C08;
+        break;
+    case 14:
+        entry->_38 = lbl_2_rodata_C0C;
+        break;
+    }
+    if (entry->_38 <= 0.0f) {
+        entry->_38 = 0.0f;
+    }
+    entry->_50 -= entry->_38;
+    dx = entry->position.x - entry->previousPosition.x;
+    dz = entry->position.z - entry->previousPosition.z;
+    {
+        f32 xx = dx * dx;
+        f32 zz = dz * dz;
+        distance = xx + zz;
+        if (distance > 0.0f) {
+            f64 xd = (f64)distance;
+            f64 guess = __frsqrte(xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            guess = lbl_2_rodata_B78 * guess * (lbl_2_rodata_B80 - guess * guess * xd);
+            distance = (f32)(xd * guess);
+        } else if (distance < lbl_2_rodata_B88) {
+            distance = NAN;
+        } else if (isnan(distance)) {
+            distance = NAN;
+        }
+    }
+    if (distance < entry->_38) {
+        entry->_50 = lbl_2_rodata_BB0;
+    }
+    if (!(entry->_38 <= lbl_2_rodata_B58)) {
+        if (entry->mode != 4 && entry->mode != 24 && entry->_50 > lbl_2_rodata_B58) {
+            entry->heading = (f32)atan2(-(entry->previousPosition.x - entry->position.x),
+                -(entry->previousPosition.z - entry->position.z));
+        }
+        PSMTXRotRad(rotation, 'Y', entry->angle34);
+        movement.x = lbl_2_rodata_B58;
+        movement.y = lbl_2_rodata_B58;
+        movement.z = -entry->_38;
+        PSMTXMultVec(rotation, &movement, &movement);
+        entry->velocity.x = movement.x;
+        entry->velocity.z = movement.z;
+        entry->position.x += entry->velocity.x;
+        entry->position.z += entry->velocity.z;
+        if (entry->mode != 4 && entry->mode != 24 && entry->_50 > lbl_2_rodata_B58) {
+            entry->heading = (f32)atan2(-(entry->previousPosition.x - entry->position.x),
+                -(entry->previousPosition.z - entry->position.z));
+            difference = fn_2_4A18C(entry->angle34 - entry->heading);
+            magnitude = (f32)__fabs(difference);
+            if (magnitude > lbl_2_rodata_BB4) {
+                step = lbl_2_rodata_BB8;
+            } else if (magnitude > lbl_2_rodata_BB8) {
+                step = lbl_2_rodata_BBC;
+            } else if (magnitude > lbl_2_rodata_BBC) {
+                step = lbl_2_rodata_BC0;
+            } else if (magnitude > lbl_2_rodata_BC0) {
+                step = lbl_2_rodata_BC4;
+            } else if (magnitude > lbl_2_rodata_BC4) {
+                step = lbl_2_rodata_BC8;
+            } else if (magnitude > lbl_2_rodata_BC8) {
+                step = lbl_2_rodata_BCC;
+            } else if (magnitude > lbl_2_rodata_BCC) {
+                step = lbl_2_rodata_BD0;
+            } else if (magnitude > lbl_2_rodata_BD0) {
+                step = lbl_2_rodata_BD4;
+            } else if (magnitude < lbl_2_rodata_BD0) {
+                step = lbl_2_rodata_BD8;
+            }
+            if (!((difference < lbl_2_rodata_BE0 && difference > lbl_2_rodata_B58) ||
+                  (difference > lbl_2_rodata_BE8 && difference < lbl_2_rodata_B58))) {
+                if (difference < lbl_2_rodata_B58) {
+                    entry->angle34 += step;
+                } else {
+                    entry->angle34 -= step;
+                }
+            }
+            entry->heading = entry->angle34;
+        }
+    }
+    if (lbl_2_rodata_B58 == entry->_38 && entry->flagBD == 0) {
+        entry->flagBC = 1;
+    }
+}
+
+// .text:0x6F104 size:0x5F0
+// NONMATCHING 99%: r5/r8 swapped for the candidate pointer and the locationIndex offset in the loop
+#if NONMATCHING
+void fn_2_6F104(MenuEntry* owner) {
+    s16 candidates[4];
+    s16* out;
+    s32 i;
+    s32 count;
+    s32 id;
+    s32 other;
+    s32 mode;
+    s32 who;
+    s16 location;
+    MenuEntries* menu;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    count = 0;
+    candidates[3] = 0;
+    candidates[2] = 0;
+    candidates[1] = 0;
+    candidates[0] = 0;
+    id = owner->objectId;
+    other = *(s32*)((u8*)lbl_2_bss_1A8248[0] + 0x1690);
+    fn_2_68F08(owner->objectId, 1);
+    out = candidates;
+    menu = lbl_2_bss_1A8248[0];
+    for (i = 0; i < 4; i++) {
+        location = lbl_2_data_3D30[menu->entries[id].locationIndex][i];
+        if (location != -1 && menu->slots[location].occupied == 0 &&
+            menu->slots[location].kind != 7 && menu->slots[location].kind != 8) {
+            *out++ = location;
+            count++;
+        }
+    }
+    lbl_2_bss_1A8248[0]->entries[id].targetLocation = candidates[(s16)(rand() % count)];
+    memcpy(&owner->target, &lbl_2_data_2EA4[lbl_2_bss_1A8248[0]->entries[id].targetLocation], sizeof(Vec));
+    pz = owner->target.z;
+    px = owner->target.x;
+    fn_2_6A450(id, px, pz);
+    owner->mode = 13;
+    fn_2_69E1C(id);
+    fn_2_68FBC(id, 0);
+    if (id >= 2 && id <= 6 && (mode = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DD), who = *(s8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DC), mode == 1) && who == id) {
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 2;
+        owner->flagCB = 0;
+        owner->state = 3;
+        return;
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1 && *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x44F3) == 0) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 3;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            owner->flagCB = 0;
+        } else {
+            owner->flagCB = -1;
+            owner->state = 1;
+        }
+    } else {
+        owner->flagCB = -1;
+        owner->state = 1;
+    }
+}
+#endif
+
+// Per-fielder (ids 2..6) location-choice counts and fallback home locations.
+extern s16 lbl_2_data_3C20[];
+extern s16 lbl_2_data_3ED4[];
+
+// .text:0x6E1D0 size:0x678
+void fn_2_6E1D0(MenuEntry* owner) {
+    s32 id;
+    s32 other;
+    s16 location;
+    s32 count;
+    s16* choices;
+    s16 choice;
+    s32 mode;
+    s32 who;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    id = owner->objectId;
+    other = *(s32*)((u8*)lbl_2_bss_1A8248[0] + 0x1690);
+    fn_2_68F08(owner->objectId, 1);
+    count = lbl_2_data_3C20[id - 2];
+    choices = lbl_2_data_3C2C[id - 2];
+    choice = rand() % count;
+    if (owner->flagCF == -1) {
+        choice = 0;
+        owner->flagCF = 0;
+    } else {
+        location = choices[choice];
+        if (location == owner->locationIndex) {
+            choice ^= 1;
+        }
+    }
+    location = choices[choice];
+    lbl_2_bss_1A8248[0]->entries[id].targetLocation = location;
+    memcpy(&owner->target, &lbl_2_data_2EA4[lbl_2_bss_1A8248[0]->entries[id].targetLocation], sizeof(Vec));
+    pz = owner->target.z;
+    px = owner->target.x;
+    entry = &lbl_2_bss_1A8248[0]->entries[id];
+    entry->previousPosition.x = px;
+    entry->previousPosition.z = pz;
+    dx = px - entry->position.x;
+    dz = pz - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+    owner->mode = 13;
+    fn_2_69E1C(id);
+    fn_2_68FBC(id, 0);
+    if (id >= 2 && id <= 6 && (mode = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DD), who = *(s8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DC), mode == 1) && who == id) {
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 2;
+        owner->flagCB = 0;
+        owner->state = 4;
+        return;
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 3;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            if ((lbl_2_bss_1A8248[0]->entries[id].locationIndex == location &&
+                 lbl_2_bss_1A8248[0]->entries[id].targetLocation == location) ||
+                (lbl_2_bss_1A8248[0]->entries[id].locationIndex == lbl_2_data_3ED4[id - 2] &&
+                 lbl_2_bss_1A8248[0]->entries[id].targetLocation == lbl_2_data_3ED4[id - 2])) {
+                if (owner->_50 <= lbl_2_rodata_B70) {
+                    owner->timer = 0x78;
+                    fn_2_68FBC(id, 1);
+                    owner->mode = 9;
+                    owner->_50 = lbl_2_rodata_B58;
+                    owner->_38 = lbl_2_rodata_B58;
+                    owner->flagCF = 0;
+                    owner->state = 2;
+                    return;
+                }
+            }
+            owner->flagCB = 0;
+            owner->flagCF = -1;
+            owner->state = 0;
+        }
+    } else {
+        owner->flagCB = -1;
+        owner->state = 1;
+    }
+}
+
+// .text:0x709A0 size:0x6F8
+// NONMATCHING 99%: r4/r5 swapped for the menu base and the self entry before atan2 (as in fn_2_705C0)
+#if NONMATCHING
+void fn_2_709A0(MenuEntry* owner) {
+    s32 id = owner->objectId;
+    s32 i;
+    s32 hit;
+    s32 inFront = 0;
+    MenuEntry* e;
+    s16* t;
+    u8 type;
+    s32 hi;
+    s32 base;
+    u8* p;
+    s32 lo;
+    s32 b, c;
+
+    for (i = 1; i < 7; i++) {
+        if ((u8)fn_2_68C80(id, i)) {
+            owner->flagCB = i;
+            break;
+        }
+        owner->flagCB = -1;
+    }
+    if (owner->flagCB >= 2 && owner->flagCB <= 6) {
+        fn_2_68940(id, owner->flagCB);
+        inFront = fn_2_687A4(id, owner->flagCB, lbl_2_bss_1A8248[0]->entries[0].targetLocation);
+    }
+    for (i = 1; i < 7; i++) {
+        hit = (u8)fn_2_68C80(id, i);
+        if (hit != 0 && i == 1 && ((u8*)lbl_2_bss_1A8248[0])[0x44F3] == 0) {
+            owner->flagC4 = 2;
+            owner->flagCB = i;
+            e = &lbl_2_bss_1A8248[0]->entries[id];
+            e->typeC3 = 3;
+            e->state = 0;
+            return;
+        }
+        if (hit != 0 && i >= 2 && i <= 6) {
+            owner->mode = 4;
+            owner->flagC4 = 1;
+            owner->locationIndex = fn_2_689CC(0);
+            e = &lbl_2_bss_1A8248[0]->entries[id];
+            e->typeC3 = 4;
+            e->state = 0;
+            return;
+        }
+        owner->flagCB = -1;
+    }
+    if (inFront == 0) {
+        fn_2_69E1C(id);
+    } else {
+        fn_2_699D4(id);
+    }
+    type = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x441C);
+    t = lbl_2_data_2E80;
+    base = t[type * 3] * 2;
+    c = t[type * 3 + 2] * 2;
+    b = t[type * 3 + 1] * 2;
+    hi = base - c;
+    lo = base - b;
+    if (owner->objectId == 0) {
+        p = lbl_8036E548 + 0xC04;
+        if (p != NULL) {
+            c = *(s16*)(p + 0x68);
+            if (c == hi || c == lo) {
+                if (type == 5) {
+                    fn_80062890(1);
+                } else {
+                    fn_80062890(0);
+                }
+            }
+        }
+    }
+    if (owner->_50 <= lbl_2_rodata_B58) {
+        owner->mode = 4;
+        owner->flagC4 = 1;
+        if (lbl_2_bss_1A824C[0][0x19783D] == 0) {
+            lbl_2_bss_1A8248[0]->entries[0].locationIndex = lbl_2_bss_1A8248[0]->entries[0].targetLocation;
+        } else {
+            lbl_2_bss_1A8248[0]->entries[0].locationIndex = lbl_2_bss_1A8248[0]->entries[0]._AE;
+        }
+        owner->state = 2;
+        return;
+    }
+    if (owner->flagCD == 1) {
+        MenuEntry* other;
+        MenuEntry* self;
+        f32 angle;
+        f32 diff;
+
+        self = &lbl_2_bss_1A8248[0]->entries[id];
+        other = &lbl_2_bss_1A8248[0]->entries[owner->flagCE];
+        angle = (f32)atan2(-(self->position.x - other->position.x), -(self->position.z - other->position.z));
+        diff = fn_2_4A18C(other->heading) - angle;
+        if (other->typeC3 == 7 && (owner->state == 0 || owner->state == 1)) {
+            if ((f32)__fabs(diff) < lbl_2_rodata_BB8) {
+                lbl_2_bss_1A824C[0][0x1978F1] = 0;
+            } else {
+                lbl_2_bss_1A824C[0][0x1978F1] = 2;
+            }
+        } else {
+            lbl_2_bss_1A824C[0][0x1978F1] = 1;
+        }
+        owner->mode = 4;
+        owner->flagC4 = 1;
+        owner->locationIndex = fn_2_689CC(0);
+        e = &lbl_2_bss_1A8248[0]->entries[id];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+}
+#endif
+
+// .text:0x71098 size:0x9A0
+// NONMATCHING 99%: r4/r5 swapped for the menu base and the self entry before atan2 (as in fn_2_705C0)
+#if NONMATCHING
+void fn_2_71098(MenuEntry* owner) {
+    s32 id;
+    s32 inFront;
+    s32 i;
+    s32 hit;
+    MenuEntry* e;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    id = owner->objectId;
+    fn_2_68F08(owner->objectId, 1);
+    inFront = 0;
+    memcpy(&owner->target, &lbl_2_data_2EA4[lbl_2_bss_1A8248[0]->entries[0].targetLocation], sizeof(Vec));
+    pz = owner->target.z;
+    px = owner->target.x;
+    fn_2_6A450(id, px, pz);
+    owner->mode = 12;
+    for (i = 1; i < 7; i++) {
+        if ((u8)fn_2_68C80(id, i)) {
+            owner->flagCB = i;
+            break;
+        }
+        owner->flagCB = -1;
+    }
+    if (owner->flagCB >= 2 && owner->flagCB <= 6) {
+        fn_2_68940(id, owner->flagCB);
+        inFront = fn_2_687A4(id, owner->flagCB, lbl_2_bss_1A8248[0]->entries[0].targetLocation);
+    }
+    if (inFront == 0) {
+        fn_2_69E1C(id);
+    } else {
+        fn_2_699D4(id);
+    }
+    fn_2_68FBC(id, 0);
+    for (i = 1; i < 7; i++) {
+        hit = (u8)fn_2_68C80(id, i);
+        if (hit != 0 && i == 1 && ((u8*)lbl_2_bss_1A8248[0])[0x44F3] == 0) {
+            owner->flagC4 = 2;
+            owner->flagCB = i;
+            e = &lbl_2_bss_1A8248[0]->entries[id];
+            e->typeC3 = 3;
+            e->state = 0;
+            return;
+        }
+        if (hit != 0 && i >= 2 && i <= 6) {
+            owner->mode = 4;
+            owner->flagC4 = 1;
+            owner->locationIndex = fn_2_689CC(0);
+            e = &lbl_2_bss_1A8248[0]->entries[id];
+            e->typeC3 = 4;
+            e->state = 0;
+            return;
+        }
+        owner->flagCB = -1;
+        owner->state = 1;
+    }
+    if (owner->flagCD == 1) {
+        MenuEntry* other;
+        MenuEntry* self;
+        f32 angle;
+        f32 diff;
+
+        self = &lbl_2_bss_1A8248[0]->entries[id];
+        other = &lbl_2_bss_1A8248[0]->entries[owner->flagCE];
+        angle = (f32)atan2(-(self->position.x - other->position.x), -(self->position.z - other->position.z));
+        diff = fn_2_4A18C(other->heading) - angle;
+        if (other->typeC3 == 7 && (owner->state == 0 || owner->state == 1)) {
+            if ((f32)__fabs(diff) < lbl_2_rodata_BB8) {
+                lbl_2_bss_1A824C[0][0x1978F1] = 0;
+            } else {
+                lbl_2_bss_1A824C[0][0x1978F1] = 2;
+            }
+        } else {
+            lbl_2_bss_1A824C[0][0x1978F1] = 1;
+        }
+        owner->mode = 4;
+        owner->flagC4 = 1;
+        owner->locationIndex = fn_2_689CC(0);
+        e = &lbl_2_bss_1A8248[0]->entries[id];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+    if (owner->_50 <= lbl_2_rodata_B58) {
+        owner->mode = 9;
+        owner->flagC4 = 1;
+        if (lbl_2_bss_1A824C[0][0x19783D] == 0) {
+            lbl_2_bss_1A8248[0]->entries[0].locationIndex = lbl_2_bss_1A8248[0]->entries[0].targetLocation;
+        } else {
+            lbl_2_bss_1A8248[0]->entries[0].locationIndex = lbl_2_bss_1A8248[0]->entries[0]._AE;
+        }
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 1;
+        owner->locationIndex = fn_2_689CC(0);
+        e = &lbl_2_bss_1A8248[0]->entries[id];
+        e->typeC3 = 4;
+        e->state = 0;
+    }
+}
+#endif

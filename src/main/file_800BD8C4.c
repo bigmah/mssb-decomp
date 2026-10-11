@@ -1,5 +1,9 @@
 #include "main/file_800BD8C4.h"
 #include "main/file_800BDEA0.h"
+#include "main/file_800A7C08.h"
+#include "main/file_800B0724.h"
+#include "main/file_800B2C44.h"
+#include "main/file_800B4A44.h"
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 
@@ -7,25 +11,11 @@ extern const f32 lbl_803CD060; // 0.0f
 extern const f32 lbl_803CD064; // 1.0f
 extern char lbl_800E7FC8[];
 
-void* _OSAllocFromHeap(s32 align, s32 size);
-void ACTSetAnimation(ActorInst* actor, void* animBank, int seqName, u16 seqNum, f32 time, f32 speed);
-void Set_FUN_800b2b6c(ActorInst* actor, s32 value);
-void fn_800B2BFC(ActorInst* actor, u16 a, u16 b);
-void fn_800B313C(ActorInst* actor);
-s32 fn_800B3A78(ActorInst* actor, MtxPtr camera, u8 numLights, ...);
-u8 fn_800B3C04(s32 arg0, ActorInst* actor, s32 arg2);
-void fn_800B3F20(ActorInst* actor);
-s32 fn_800B4048(ActorObject* obj, void* layout, u32 id);
-void fn_800B4724(ActorInst* actor, s32 arg1);
-void fn_800B4AFC(ActorInst* actor, u8 value);
-void AnimateActorBones(ActorInst* actor);
-void fn_800B4C04(ActorInst* actor, f32 value);
-void fn_800B4CA0(ActorInst* actor, f32 time);
 
 // .text:0x800BD8C4 size:0x160
-void fn_800BD8C4(ActorObjectTable* table, s32 arg1) {
+void fn_800BD8C4(ActorObjectTable* table, MtxPtr camera) {
     ActorObjectTable* t;
-    ActorInst* actor;
+    GameActor* actor;
     u16 i;
 
     for (i = 0; i < table->count; i++) {
@@ -46,17 +36,17 @@ void fn_800BD8C4(ActorObjectTable* table, s32 arg1) {
         if (t->objects[0].visFlags & 2) {
             fn_800B4AFC(t->objects[0].actor, t->objects[0].visFlags & 1);
         }
-        Set_FUN_800b2b6c(t->objects[0].actor, t->objects[0].unk68);
+        Set_FUN_800b2b6c(t->objects[0].actor, t->objects[0].boneRemap);
         if (t->objects[0].animateBones) {
             actor = t->objects[0].actor;
-            memcpy(actor->worldControl, t->objects[0].worldControl, sizeof(t->objects[0].worldControl));
+            memcpy(&actor->worldControl, &t->objects[0].worldControl, sizeof(t->objects[0].worldControl));
             fn_800B2BFC(t->objects[0].actor, t->objects[0].unk64, t->objects[0].unk66);
             AnimateActorBones(actor);
             fn_800B3F20(actor);
             fn_800B313C(actor);
         }
         actor = t->objects[0].actor;
-        actor->flags98 = (actor->flags98 & 0xFC) | fn_800B3C04(0, actor, arg1);
+        actor->flags = (actor->flags & 0xFC) | fn_800B3C04(0, actor, camera);
         t->objects[0].setAnimation = 0;
         t->objects[0].setTime = 0;
         t->objects[0].setSpeed = 0;
@@ -66,9 +56,9 @@ void fn_800BD8C4(ActorObjectTable* table, s32 arg1) {
 
 // .text:0x800BDA24 size:0x70
 void fn_800BDA24(ActorObject* obj) {
-    ActorInst* actor = obj->actor;
+    GameActor* actor = obj->actor;
 
-    memcpy(obj->actor->worldControl, obj->worldControl, sizeof(obj->worldControl));
+    memcpy(&obj->actor->worldControl, &obj->worldControl, sizeof(obj->worldControl));
     fn_800B2BFC(obj->actor, obj->unk64, obj->unk66);
     AnimateActorBones(actor);
     fn_800B3F20(actor);
@@ -77,10 +67,10 @@ void fn_800BDA24(ActorObject* obj) {
 
 // .text:0x800BDA94 size:0x1F4
 void fn_800BDA94(ActorObject* obj, MtxPtr camera) {
-    ActorInst* actor = obj->actor;
+    GameActor* actor = obj->actor;
 
     if (obj->callback != NULL) {
-        obj->callback();
+        obj->callback(obj);
     }
     switch (obj->numLights) {
     case 0:
@@ -118,15 +108,15 @@ void fn_800BDA94(ActorObject* obj, MtxPtr camera) {
 }
 
 // .text:0x800BDC88 size:0xEC
-void fn_800BDC88(ActorObjectTable* table, u16 index, u16 id, void* layout, void* animBank, s32 arg5) {
+void fn_800BDC88(ActorObjectTable* table, u16 index, u16 id, ActorLayout* layout, void* animBank, sHdr* skHeader) {
 
-    fn_800B4048(&table->objects[index], layout, index);
-    fn_800B4724(table->objects[index].actor, arg5);
+    fn_800B4048(&table->objects[index].actor, layout, index);
+    fn_800B4724(table->objects[index].actor, skHeader);
     table->objects[index].seqNum = 0;
     table->objects[index].unk54 = lbl_803CD064;
     table->objects[index].unk64 = 0;
     table->objects[index].unk66 = 0;
-    table->objects[index].unk68 = 0;
+    table->objects[index].boneRemap = NULL;
     table->objects[index].numLights = 0;
     table->objects[index].lights[0] = NULL;
     table->objects[index].lights[1] = NULL;
@@ -145,7 +135,7 @@ void fn_800BDC88(ActorObjectTable* table, u16 index, u16 id, void* layout, void*
         table->objects[index].setTime = 1;
         table->objects[index].speed = lbl_803CD060;
         if (table->objects[index].actor != NULL) {
-            table->objects[index].actor->unk99 = 0;
+            table->objects[index].actor->tickFlag = 0;
         }
     }
     table->objects[index].callback = NULL;
@@ -173,7 +163,7 @@ ActorObjectTable* ActorObjectInitTable(u16 count) {
         table->objects[i].speed = lbl_803CD060;
         table->objects[i].unk64 = 0;
         table->objects[i].unk66 = 0;
-        table->objects[i].unk68 = 0;
+        table->objects[i].boneRemap = NULL;
         table->objects[i].numLights = 0;
         table->objects[i].lights[0] = NULL;
         table->objects[i].lights[1] = NULL;
@@ -189,7 +179,7 @@ ActorObjectTable* ActorObjectInitTable(u16 count) {
         table->objects[i].setSpeed = 0;
         table->objects[i].setTime = 0;
         table->objects[i].visFlags = 1;
-        table->objects[i].worldControl[0] = 0;
+        table->objects[i].worldControl.base.type = 0;
         table->objects[i].id = i;
     }
     return table;

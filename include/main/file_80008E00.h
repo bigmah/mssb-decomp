@@ -2,6 +2,7 @@
 #define __MAIN_FILE_80008E00_H__
 
 #include "mssbTypes.h"
+#include "main/file_8000BA3C.h" // QuadCallback
 
 // System/reset state block at 0x80366158.
 typedef struct {
@@ -30,22 +31,6 @@ typedef struct {
 
 extern lbl_80366158_s lbl_80366158;
 
-typedef struct {
-    /*0x000*/ u8 _000[0x700];
-    /*0x700*/ u8* streamEnd;   // DVD stream ring buffer end
-    /*0x704*/ u8* _704;
-    /*0x708*/ u8* streamRead;  // next byte to consume
-    /*0x70C*/ u32 streamSize;
-    /*0x710*/ u32 streamAvail; // bytes ready to consume
-    /*0x714*/ u8 _714;
-    /*0x715*/ u8 _715; // 1 when the pending disc/ARAM transfer finished
-    /*0x716*/ u8 _716[2];
-    /*0x718*/ s32 entryNum; // DVD entry number of the file currently being read
-    /*0x71C*/ u8 _71C[6];
-    /*0x722*/ s8 _722; // scene/mode id
-} lbl_803C6CF8_s;
-
-extern lbl_803C6CF8_s lbl_803C6CF8;
 
 // Spline control point; only x/y are used by the interpolation code.
 typedef struct {
@@ -68,6 +53,6 @@ void PrepFilesToBeLoaded(void);
 void fn_800097A0(void);
 void interpolatePointsUnknown(s32 index, BezierPoint* points, u32 first, u32 last);
 void BezierInterpolate(f32 t, BezierPoint* out, BezierPoint* p0, BezierPoint* p1, BezierPoint* p2, BezierPoint* p3);
-u32 fn_8000A094(u32 value);
+QuadCallback fn_8000A094(QuadCallback callback);
 
 #endif

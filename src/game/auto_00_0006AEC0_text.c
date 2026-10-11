@@ -3,6 +3,10 @@
 #include "static/UnknownHomes_Static.h"
 #include "game/auto_00_000249E8_text.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern ActorMgrView lbl_8036E548;
+extern Unk32724 lbl_3_common_bss_32724;
+
 // .text:0x0006AEC0 size:0x20 mapped:0x806A9F54
 void fn_3_6AEC0(void) {
     lbl_3_common_bss_32724._C8 = 0;

@@ -5,6 +5,11 @@
 #include "game/rep_1838.h"
 #include "game/rep_8C8.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern FieldingChangeWork lbl_3_common_bss_34C90;
+extern ScoreStruct g_Scores;
+extern RunningLogicStruct g_RunningLogic;
+
 extern s16 lbl_3_data_5EDC[]; // [3]: stamina threshold below which the pitcher is replaced
 
 typedef struct PitcherCandidate {

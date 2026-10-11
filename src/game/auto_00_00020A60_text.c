@@ -4,6 +4,9 @@
 #include "game/auto_00_0001D86C_text.h"
 #include "game/rep_1838.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern RunningLogicStruct g_RunningLogic;
+
 extern const f32 lbl_3_rodata_930; // 0.0f
 extern const f32 lbl_3_rodata_938; // 30.0f
 extern const f32 lbl_3_rodata_93C; // 40.0f

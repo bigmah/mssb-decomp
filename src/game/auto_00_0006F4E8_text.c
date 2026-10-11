@@ -4,6 +4,9 @@
 #include "game/auto_00_0001D86C_text.h"
 #include "game/auto_00_0005985C_text.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern RunningLogicStruct g_RunningLogic;
+
 // .text:0x0006F4E8 size:0x1E4 mapped:0x806AE57C
 s32 fn_3_6F4E8(void) {
     s32 found = 0;

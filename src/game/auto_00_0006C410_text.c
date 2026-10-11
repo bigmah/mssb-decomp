@@ -4,6 +4,10 @@
 #include "game/auto_00_000249E8_text.h"
 #include "game/auto_00_0006A160_text.h"
 
+// Views declared in the unit headers (kept out of them: other units have their own views).
+extern ActorMgrView lbl_8036E548;
+extern Unk32724 lbl_3_common_bss_32724;
+
 // .text:0x0006C410 size:0x18 mapped:0x806AB4A4
 void fn_3_6C410(void) {
     lbl_8036E548.stadium->_0C6 = 0;

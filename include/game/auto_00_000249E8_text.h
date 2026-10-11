@@ -48,7 +48,6 @@ typedef struct ActorMgrView {
     /*0x2D7D*/ u8 _2D7D[0x2D90 - 0x2D7D];
     /*0x2D90*/ StadiumObjView* stadium;
 } ActorMgrView;
-extern ActorMgrView lbl_8036E548;
 
 // Fielder (g_Fielders, stride 0x268; only the fields used here).
 typedef struct FielderView {
@@ -61,7 +60,6 @@ typedef struct FielderView {
     /*0x218*/ u8 opponentIdx; // 0 for the human team's own players, else 1..n
     /*0x219*/ u8 _219[0x268 - 0x219];
 } FielderView; // size: 0x268
-extern FielderView g_Fielders[];
 
 // One entry of a cutscene actor-placement table (lbl_3_data_1E434, lbl_3_data_1F090, lbl_3_data_1D28).
 typedef struct SceneActorSetup {
@@ -105,7 +103,6 @@ typedef struct SceneWork {
     /*0x27F*/ u8 _27F;
     /*0x280*/ u8 _280;
 } SceneWork;
-extern SceneWork* lbl_3_common_bss_1323C;
 
 // Effect/state block lbl_3_common_bss_32724 (size 0x124, only the fields used here).
 typedef struct Unk32724 {
@@ -126,7 +123,6 @@ typedef struct Unk32724 {
     /*0xD4*/ u8 _D4;
     /*0xD5*/ u8 _D5[0x124 - 0xD5];
 } Unk32724; // size: 0x124
-extern Unk32724 lbl_3_common_bss_32724;
 
 void fn_3_249E8(s32 idx);
 void fn_3_24ADC(s32 idx, s32 queued);

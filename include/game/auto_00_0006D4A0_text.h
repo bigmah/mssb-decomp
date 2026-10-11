@@ -10,7 +10,6 @@ typedef struct PlayerGameRecord {
     /*0x12*/ u8 _12[0x1E - 0x12];
 } PlayerGameRecord; // size: 0x1E
 
-extern PlayerGameRecord lbl_803535C8[2][9];
 
 void fn_3_6D4A0(void);
 s32 fn_3_6D564(s32 team, s32 idx, s32 delta);
