@@ -49,6 +49,7 @@ extern MenuWork lbl_803297E0;
 extern u8 lbl_80361B20[0xF8];
 extern struct SpaniDesc lbl_80108048;
 extern struct SpaniDesc lbl_800FEB30;
+extern struct SpaniDesc lbl_80107688;
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
@@ -444,9 +445,50 @@ void fn_80057CAC(void) {
 }
 
 // .text:0x80058050 size:0x344
+// NONMATCHING 92%: scout-flag loop registers and compare shapes differ
+#if NONMATCHING
 void fn_80058050(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    CharacterStats* player;
+    s32 i;
+    s32 j;
+    s32 base;
+    ChallengeTrackingStruct* tracker;
+
+    fn_80034E20(task, &lbl_80107688);
+    for (i = 0, base = 0, player = inMemRoster[1]; i < 9; i++, player++, base += 5) {
+        tracker = &gChallengeState.trackers[player->stats.CharID];
+        lbl_803297E0.scoutTotal[i] = ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C];
+        lbl_803297E0.scoutGot[i] = gChallengeState.trackers[player->stats.CharID].scoutFlagsAchieved;
+        for (j = 0; j < 5; j++) {
+            if (j < lbl_803297E0.scoutTotal[i] && lbl_803297E0.scoutTotal[i] - lbl_803297E0.scoutGot[i] > j) {
+                TASK_OBJ(task, j + base + 0x20)->_5C = 0;
+            } else if (j >= lbl_803297E0.scoutTotal[i]) {
+                TASK_OBJ(task, j + base + 0x20)->flags &= ~2;
+            }
+        }
+        TASK_OBJ(task, i + 5)->_5C = i << 16;
+        fn_800363D8(task, i + 0xE, 1, 0x83, player->stats.CharID);
+    }
+    TASK_OBJ(task, 4)->_5C = 5 << 16;
+    if (gChallengeState._441F == 0x13) {
+        if ((g_d_GameSettings.home_AwaySetting ^ 1) != 0) {
+            TASK_OBJ(task, 2)->flags |= 2;
+            TASK_OBJ(task, 2)->_5C = (lbl_8034E9A0._470D[1] % 4) << 16;
+        } else {
+            TASK_OBJ(task, 3)->flags |= 2;
+            TASK_OBJ(task, 3)->_5C = (lbl_8034E9A0._470D[1] % 4) << 16;
+        }
+    } else if (g_d_GameSettings.home_AwaySetting != 0) {
+        TASK_OBJ(task, 2)->flags |= 2;
+        TASK_OBJ(task, 2)->_5C = (lbl_8034E9A0._470D[1] % 4) << 16;
+    } else {
+        TASK_OBJ(task, 3)->flags |= 2;
+        TASK_OBJ(task, 3)->_5C = (lbl_8034E9A0._470D[1] % 4) << 16;
+    }
+    lbl_803CC1B8->func = fn_80057CAC;
 }
+#endif
 
 // .text:0x80058394 size:0x2B0
 // NONMATCHING 97%: star-1 kept untruncated in r26 in the challenge branch; ours truncates early
@@ -662,9 +704,49 @@ void fn_8005A350(void) {
 }
 
 // .text:0x8005AF68 size:0x330
-void fn_8005AF68(void) {
-    return;
+// NONMATCHING 93%: loop registers rotated; pos+0x3E index folded differently
+#if NONMATCHING
+void fn_8005AF68(SceneTask* task) {
+    s32 i;
+    s8 team = lbl_803297E0.team;
+    RosterSlot* slot = lbl_80354720[team];
+    CharacterStats* player = inMemRoster[team];
+    u8 flag;
+
+    for (i = 0; i < 9; i++, player++, slot++) {
+        if (lbl_803297E0.teamKind[team] != 2) {
+            s8 pos = slot->pos;
+            fn_800363D8(task, pos + 0x23, 1, 0x83, player->stats.CharID);
+            TASK_OBJ(task, i + 0x11)->flags &= ~2;
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+            } else {
+                flag = lbl_8034E9A0._489B[team][i];
+            }
+            if (flag != 0 && (team != 1 || g_d_GameSettings.GameModeSelected != 5)) {
+                TASK_OBJ(task, pos + 0x3E)->_68 = 1;
+                TASK_OBJ(task, pos + 0x47)->flags |= 2;
+                TASK_OBJ(task, pos + 0x47)->_5C = 0;
+                TASK_OBJ(task, pos + 0x47)->_68 = 1;
+            } else if (lbl_80361B20[player->stats.CharID] != 0 && g_d_GameSettings.GameModeSelected != 5) {
+                TASK_OBJ(task, pos + 0x3E)->_68 = 1;
+                TASK_OBJ(task, pos + 0x47)->flags |= 2;
+                TASK_OBJ(task, pos + 0x47)->_5C = 0;
+                TASK_OBJ(task, pos + 0x47)->_68 = 0;
+            } else {
+                TASK_OBJ(task, pos + 0x3E)->flags &= ~2;
+                TASK_OBJ(task, pos + 0x47)->flags &= ~2;
+            }
+            TASK_OBJ(task, i + 0x35)->flags &= ~2;
+            if (((u8*)&g_d_GameSettings)[0x10] == 0 && team != 0) { // TODO type
+                TASK_OBJ(task, i + 0x1A)->_64 = (u8)(lbl_8034E9A0._46F8[0] == 0) + 30;
+            } else {
+                TASK_OBJ(task, i + 0x1A)->_64 = lbl_8034E9A0._46F8[team] + 30;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8005B298 size:0x4C8
 void fn_8005B298(void) {
