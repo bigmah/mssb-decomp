@@ -316,9 +316,88 @@ void fn_800E10B4(HVQState* state) {
 #endif
 
 // .text:0x800E11C8 size:0x3A4
+// NONMATCHING 51%: copy loops unrolled/allocated differently
+#if NONMATCHING
 void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
-    return;
+    u16 stride = state->planes[0].blocksPerRow;
+    u16 width = state->planes[0].widthInBlocks;
+    u16 nestWidth = state->nestWidth;
+    u16 height = state->planes[0].heightInBlocks;
+    HVQBlock* src = state->planes[0].payload + nestX + nestY * stride;
+    u16 copyW;
+    s32 mirrorW;
+    s32 zeroW;
+    u16 copyH;
+    s32 mirrorH;
+    s32 zeroH;
+    u8* dst;
+    u8* srcRow;
+    u16 y;
+    s32 n;
+
+    if (width < nestWidth) {
+        mirrorW = nestWidth - width;
+        copyW = width;
+        if (mirrorW > width) {
+            mirrorW = width;
+        }
+        zeroW = nestWidth - (width + mirrorW);
+    } else {
+        copyW = nestWidth;
+        zeroW = 0;
+        mirrorW = 0;
+    }
+    if (height < state->nestHeight) {
+        mirrorH = state->nestHeight - height;
+        copyH = height;
+        if (mirrorH > height) {
+            mirrorH = height;
+        }
+        zeroH = state->nestHeight - (height + mirrorH);
+    } else {
+        copyH = state->nestHeight;
+        zeroH = 0;
+        mirrorH = 0;
+    }
+
+    dst = state->nest;
+    for (y = copyH; y > 0; y--) {
+        HVQBlock* blk = src;
+        u16 x;
+
+        for (x = copyW; x > 0; x--) {
+            *dst++ = (blk->value >> 4) & 0xF;
+            blk++;
+        }
+        for (n = mirrorW; n > 0; n--) {
+            blk--;
+            *dst++ = (blk->value >> 4) & 0xF;
+        }
+        for (n = zeroW; n > 0; n--) {
+            *dst++ = 0;
+        }
+        src += stride;
+    }
+
+    srcRow = dst - state->nestWidth;
+    for (n = mirrorH; n > 0; n--) {
+        u8* p = srcRow;
+        u16 x;
+
+        for (x = state->nestWidth; x > 0; x--) {
+            *dst++ = *p++;
+        }
+        srcRow -= state->nestWidth;
+    }
+    for (n = zeroH; n > 0; n--) {
+        u16 x;
+
+        for (x = state->nestWidth; x > 0; x--) {
+            *dst++ = 0;
+        }
+    }
 }
+#endif
 
 // .text:0x800E156C size:0x19C
 // NONMATCHING 31%: clip lookups compile to add+lbz instead of lbzx; register allocation
