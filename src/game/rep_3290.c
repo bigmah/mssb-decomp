@@ -21,8 +21,12 @@ typedef struct {
     Vec3_3290 vel;          // 0x18
     u8 pad24[0xE0 - 0x24];
     f32 pitchChargeUp;      // 0xE0
-    u8 padE4[0x15F - 0xE4];
+    u8 padE4[0x126 - 0xE4];
+    s16 windupCountdownUntilBallReleased; // 0x126
+    s16 pitchWindUpCountDown;             // 0x128
+    u8 pad12A[0x15F - 0x12A];
     u8 ChargePitchType;     // 0x15F
+    u8 framesAHeldForChargePitches; // 0x160
 } PitcherVel_3290;
 extern PitcherVel_3290 g_Pitcher;
 typedef struct { u8 pad0[0x28]; u8 s28; u8 pad29; u8 s2a; u8 pad2b; } MgEnt_3290;
@@ -35,9 +39,101 @@ extern void fn_3_90064(s32);
 #pragma dont_inline on
 
 // .text:0x001133C4 size:0x338 mapped:0x80752458
+extern s16 lbl_3_data_5F3C[4];
+extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
+
+// NONMATCHING 98%: the main loop walker is not shared with the clear loop's base; one extsb is CSE'd
+#if NONMATCHING
 void fn_3_1133C4(void) {
-    return;
+    u8* e;
+    u8 ci;
+    s8 i;
+    i = 0;
+    do {
+        g_Minigame[0x1DC4 + i] = 0;
+        i++;
+    } while (i < 4);
+    i = 0;
+    do {
+        ci = g_Minigame[0x18CC + i];
+        if ((s8)ci >= 0 && (s8)ci < 4 && i == *(s8*)(g_Minigame + 0x1904) && g_Minigame[0x18D8 + i] != 0) {
+            e = g_Minigame + (s8)ci * 0x10;
+            g_Minigame[0x1DC4 + (s8)ci] = 1;
+            memset(e + 0x1D7C, 0, 0x10);
+            switch (*(s8*)(g_Minigame + 0x1DCF)) {
+            case 0:
+                fn_3_1136FC();
+                g_Minigame[0x1DD0] = 60;
+                g_Minigame[0x1DCF] = 1;
+                break;
+            case 1:
+                if (--*(s8*)(g_Minigame + 0x1DD0) <= 0) {
+                    switch (g_Minigame[0x1DCE]) {
+                    case 0:
+                        g_Minigame[0x1DCF] = 2;
+                        break;
+                    case 1:
+                        g_Minigame[0x1DCF] = 4;
+                        break;
+                    case 2:
+                        g_Minigame[0x1DCF] = 6;
+                        break;
+                    case 3:
+                    default:
+                        g_Minigame[0x1DCF] = 8;
+                        break;
+                    }
+                }
+                break;
+            case 2:
+                *(u16*)(e + 0x1D82) |= 0x100;
+                *(u16*)(e + 0x1D80) |= 0x100;
+                g_Minigame[0x1DCF] = 3;
+                break;
+            case 3:
+                if (g_Pitcher.windupCountdownUntilBallReleased < lbl_3_data_5F3C[2]) {
+                    g_Minigame[0x1DCF] = 9;
+                } else {
+                    *(u16*)(e + 0x1D80) |= 0x100;
+                }
+                break;
+            case 4:
+                *(u16*)(e + 0x1D82) |= 0x100;
+                *(u16*)(e + 0x1D80) |= 0x100;
+                g_Minigame[0x1DCF] = 5;
+                break;
+            case 5:
+                *(u16*)(e + 0x1D80) |= 0x100;
+                break;
+            case 6:
+                *(u16*)(e + 0x1D82) |= 0x100;
+                *(u16*)(e + 0x1D80) |= 0x100;
+                g_Minigame[0x1DCF] = 7;
+                break;
+            case 7:
+                if (g_Pitcher.framesAHeldForChargePitches == 0 &&
+                    (s16)LinearInterpolateToNewRange(1.0f - (f32)g_Pitcher.windupCountdownUntilBallReleased /
+                                                                (f32)g_Pitcher.pitchWindUpCountDown,
+                                                     0.0f, 1.0f, lbl_3_data_21654[0], lbl_3_data_21654[1]) >=
+                        *(s16*)(g_Minigame + 0x1DCC)) {
+                    g_Minigame[0x1DCF] = 9;
+                } else {
+                    *(u16*)(e + 0x1D80) |= 0x100;
+                }
+                break;
+            case 8:
+                *(u16*)(e + 0x1D82) |= 0x100;
+                *(u16*)(e + 0x1D80) |= 0x100;
+                g_Minigame[0x1DCF] = 9;
+                break;
+            case 9:
+                break;
+            }
+        }
+        i++;
+    } while (i < 4);
 }
+#endif
 
 // .text:0x001136FC size:0x220 mapped:0x80752790
 void fn_3_1136FC(void) {
