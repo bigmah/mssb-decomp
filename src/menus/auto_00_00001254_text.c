@@ -1481,3 +1481,20 @@ void fn_2_6AF4(void) {
     }
 }
 #endif
+
+// NONMATCHING 80%: inlines fn_2_A1A0 (itself NONMATCHING) and fn_2_C698; slot index scheduling differs
+#if NONMATCHING
+// fn_2_CA60, size:0x25C
+void fn_2_CA60(u8 slot, s32 team) {
+    s32 v = (s8)(lbl_803C6724 + (u8)team * 9)[slot + 2];
+    if (v != -1 && v != 0x36) {
+        u8* order = lbl_80354720 + (u8)team * 0x24;
+        order[slot * 4 + 1] = slot;
+        order[slot * 4 + 0] = slot;
+        g_Roster[(u8)team * 9 + slot].h24 = v;
+    } else {
+        fn_2_A1A0(slot, team);
+    }
+    fn_2_C698(slot, team);
+}
+#endif
