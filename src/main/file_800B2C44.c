@@ -18,8 +18,27 @@ void fn_800B2C88(GameActor* actor, u16 bone, Mtx m) {
 }
 
 // .text:0x800B2CBC size:0xA0
-void ACTSort(void) {
-    return;
+void ACTSort(GameActor* actor) {
+    u16 i;
+    GameBone* bone;
+    GameBone* cursor;
+
+    actor->drawPriorityList.Head = NULL;
+    actor->drawPriorityList.Tail = NULL;
+    for (i = 0; i < actor->totalBones; i++) {
+        bone = actor->boneArray[i];
+        if (bone->dispObj == NULL) {
+            continue;
+        }
+        cursor = (GameBone*)actor->drawPriorityList.Head;
+        while (cursor != NULL) {
+            if (cursor->drawingPriority > actor->boneArray[i]->drawingPriority) {
+                break;
+            }
+            cursor = (GameBone*)cursor->drawPriorityLink.Next;
+        }
+        DSInsertListObject(&actor->drawPriorityList, (Ptr)cursor, (Ptr)bone);
+    }
 }
 
 // .text:0x800B2D5C size:0x74
