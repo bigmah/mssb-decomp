@@ -1320,9 +1320,72 @@ void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
 #endif
 
 // .text:0x8002B7F8 size:0x48C
-void fn_8002B7F8(void) {
-    return;
+// NONMATCHING 96%: register allocation in the inlined allocations
+#if NONMATCHING
+void fn_8002B7F8(Vec* pos, ParticleParamsE* prm, u8 withSub) {
+    Emitter tmp;
+    Emitter tmp2;
+    Emitter* e;
+    Emitter* t;
+    Emitter* t2;
+    Particle* last;
+
+    if (g_d_GameSettings.unk55 != 0) {
+        return;
+    }
+    e = FindEmitter(NULL, 14);
+    if (e != NULL) {
+        t = AllocParticles(&tmp, prm->count, 1);
+        if (t == NULL) {
+            return;
+        }
+        if (withSub && prm->subCount != 0) {
+            t2 = AllocParticles(&tmp2, prm->subCount, 1);
+            if (t2 == NULL) {
+                t->u.tE.sub = NULL;
+                t->u.tE.subCount = 0;
+            } else {
+                t->u.tE.sub = t2->particles;
+                t->u.tE.subCount = t2->count;
+            }
+        } else {
+            t->u.tE.sub = NULL;
+            t->u.tE.subCount = 0;
+        }
+        fn_8002B400(t, prm, pos);
+        for (last = e->particles; last->next != NULL; last = last->next) {
+        }
+        last->next = t->particles;
+        e->count += prm->count;
+        if (e->u.tE.sub != NULL) {
+            for (last = e->u.tE.sub; last->next != NULL; last = last->next) {
+            }
+            last->next = t->u.tE.sub;
+        } else {
+            e->u.tE.sub = t->u.tE.sub;
+        }
+        e->u.tE.subCount += t->u.tE.subCount;
+    } else {
+        e = NewEmitter(fn_8002B014, 0x80, 0, prm->count, 1, 14);
+        if (e == NULL) {
+            return;
+        }
+        e->tex = prm->tex;
+        if (withSub) {
+            t = AllocParticles(&tmp, prm->subCount, 1);
+            if (t == NULL) {
+                return; // the original leaves the new emitter uninitialized here
+            }
+            e->u.tE.sub = t->particles;
+            e->u.tE.subCount = prm->subCount;
+        } else {
+            e->u.tE.sub = NULL;
+            e->u.tE.subCount = 0;
+        }
+        fn_8002B400(e, prm, pos);
+    }
 }
+#endif
 
 // .text:0x8002BC84 size:0x64C
 // NONMATCHING 78%: float register allocation/scheduling
