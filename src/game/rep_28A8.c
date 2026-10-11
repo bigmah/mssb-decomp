@@ -1033,6 +1033,93 @@ void fn_3_DE610(void) {
 }
 
 // .text:0x000DE744 size:0x44C mapped:0x8071D7D8
+typedef struct { u8 pad[0x1914]; u8 active[4]; u8 active2[4]; s8 slot[4]; } SMQ;
+extern u8 g_Runners[];
+extern u8 g_Batter[];
+extern u8 g_Scores[];
+extern u8 g_RunningLogic[];
+extern void fn_3_6C0E0(void);
+extern void fn_3_E67F4(void);
+
 void fn_3_DE744(void) {
-    return;
+    s32 i;
+
+    fn_3_DDF1C();
+    fn_3_6C0E0();
+    *(f32*)(g_Runners + 0xC) = *(f32*)(g_Runners + 0x0);
+    *(f32*)(g_Runners + 0x10) = *(f32*)(g_Runners + 0x4);
+    *(f32*)(g_Runners + 0x14) = *(f32*)(g_Runners + 0x8);
+    g_Runners[0x12A] = 1;
+    g_Runners[0x11C] = g_Batter[0x7B];
+    g_Runners[0x129] = 1;
+    *(f32*)(g_Runners + 0x0) = *(f32*)(g_Batter + 0x0);
+    *(f32*)(g_Runners + 0x4) = 0.0f;
+    *(f32*)(g_Runners + 0x8) = *(f32*)(g_Batter + 0x4);
+    *(f32*)(g_Runners + 0x30) = 3.1415927f;
+    *(s16*)(g_GameLogic + 0x100) = 10000;
+    g_Strikes[3] = g_Strikes[2];
+    g_Strikes[2] = 0;
+    g_Strikes[3] = 0;
+    *(s16*)(g_Ball + 0x1B64) = 0;
+    lbl_3_common_bss_34C90.b1D5 = 0;
+    g_Scores[0xC5] = 0;
+    g_Minigame[0x190B] = 0;
+    g_Minigame[0x1912] = 0;
+    g_Minigame[0x1920] = 0;
+    *(s16*)(g_Minigame + 0x18AA) = 0;
+    g_Minigame[0x1921] = 0;
+    g_Minigame[0x1914] = 1;
+    g_Minigame[0x1926] = 0;
+    g_Minigame[0x1939] = 0;
+    g_Minigame[0x199F] = 0;
+    g_Minigame[0x19A0] = 0;
+    g_Minigame[0x1934] = 0;
+    *(s16*)(g_Minigame + 0x18BA) = 0;
+    g_Minigame[0x19A3] = 0;
+    *(s16*)(g_Minigame + 0x19B8) = 0;
+    g_Minigame[0x19A4] = 0;
+    g_Minigame[0x190E] = 0;
+    g_Minigame[0x19C8] = 0;
+    g_Minigame[0x19C9] = 0;
+    *(s16*)(g_Minigame + 0x19BC) = 0;
+    g_Minigame[0x19D0] = 0;
+    g_Minigame[0x19CD] = 0;
+    g_Minigame[0x19CF] = 0;
+    if (g_Minigame[0x19CE] == 3) {
+        fn_3_E67F4();
+    }
+    g_Minigame[0x19CE] = 0;
+    for (i = 0; i < 4; i++) {
+        MG->out[i][0] = MG->a[i];
+        MG->out[i][1] = 0;
+        ((s8*)g_Minigame)[0x1935 + i] = -1;
+    }
+    for (i = 0; i < 100; i++) {
+        g_Minigame[0x193A + i] = 0;
+    }
+    for (i = 0; i < 4; i++) {
+        if (((SMQ*)g_Minigame)->active[i] != 0) {
+            ((SMQ*)g_Minigame)->slot[i] = i;
+        } else {
+            ((SMQ*)g_Minigame)->slot[i] = -1;
+        }
+        ((SMQ*)g_Minigame)->active2[i] = ((SMQ*)g_Minigame)->active[i];
+    }
+    g_FieldingLogic[0x10E] = 0;
+    *(s16*)(g_FieldingLogic + 0xEE) = 0;
+    g_FieldingLogic[0x10F] = 0;
+    g_FieldingLogic[0x110] = 0;
+    g_FieldingLogic[0x128] = 0;
+    g_FieldingLogic[0x129] = 0;
+    *(s16*)(g_FieldingLogic + 0xE4) = 0;
+    g_RunningLogic[0x13] = 0;
+    if (g_GameLogic[0x12B] != 0) {
+        g_GameLogic[0x12C] = 1;
+        g_GameLogic[0x12D] = 1;
+    } else {
+        g_GameLogic[0x12C] = 0;
+    }
+    g_GameLogic[0x12B] = 0;
+    changeScene(1, 6);
+    fn_3_5A6D4(1);
 }
