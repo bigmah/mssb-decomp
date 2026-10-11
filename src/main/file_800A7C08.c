@@ -846,9 +846,147 @@ void fn_800A9864(u8 chan, u8 mode, u64 serial) {
 }
 
 // .text:0x800A98FC size:0x3FC
+// NONMATCHING 89%: switch jump table lives in unsplit .data (reloc names differ); status classification compiled into a different branch layout
+#if NONMATCHING
 void fn_800A98FC(void) {
-    return;
+    CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
+    u8 chan;
+    s32 res;
+    s32 cls;
+    BOOL busy;
+    u64 serial;
+
+    switch (task->step) {
+    case 0:
+        chan = task->chan;
+        fn_800ACD64(CARDUnmount(chan));
+        fn_800ACD64(lbl_803C7838.slots[chan].probeResult);
+        cls = CardStatusClass();
+        if (cls == 1) {
+            fn_800ACD64(lbl_803C7838.slots[chan].sectorSize == 0x2000 ? CARD_RESULT_READY
+                                                                     : CARD_RESULT_BAD_SECTOR_SIZE);
+            cls = CardStatusClass();
+        }
+        switch (cls) {
+        case 1:
+            task->step = 1;
+            break;
+        case 2:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 1:
+        if (task->mode == 1) {
+            res = CARDMountAsync(task->chan, &lbl_802EF3A0, NULL, NULL);
+            if (res == CARD_RESULT_BUSY) {
+                busy = TRUE;
+            } else {
+                fn_800ACD64(res);
+                busy = FALSE;
+            }
+        } else {
+            fn_800ACD64(CARDMount(task->chan, &lbl_802EF3A0, NULL));
+            busy = FALSE;
+        }
+        if (!busy) {
+            task->step = 2;
+        }
+        break;
+    case 2:
+        fn_800ACD64(CARDGetResultCode(task->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case 1:
+        case 2:
+        case CARD_STATUS_READY:
+            task->step = 3;
+            break;
+        default:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 3:
+        if (task->mode == 1) {
+            res = CARDCheckAsync(task->chan, NULL);
+            if (res == CARD_RESULT_BUSY) {
+                busy = TRUE;
+            } else {
+                fn_800ACD64(res);
+                busy = FALSE;
+            }
+        } else {
+            fn_800ACD64(CARDCheck(task->chan));
+            busy = FALSE;
+        }
+        if (!busy) {
+            task->step = 4;
+        }
+        break;
+    case 4:
+        fn_800ACD64(CARDGetResultCode(task->chan));
+        if (lbl_803C7838.status != CARD_STATUS_BUSY) {
+            task->step = 5;
+        }
+        break;
+    case 5:
+        if (lbl_803C7838.status == CARD_STATUS_READY) {
+            chan = task->chan;
+            serial = 0;
+            res = CARDGetSerialNo(chan, &serial);
+            lbl_803C7838.slots[chan].serial = serial;
+            if (res != CARD_RESULT_BUSY) {
+                if (lbl_803C7838.slots[task->chan].serial == lbl_802EF2C0[task->chan]) {
+                    task->step = 6;
+                } else {
+                    lbl_803C7838.status = CARD_STATUS_SERIAL_MISMATCH;
+                    task->step = 9;
+                }
+            }
+        } else {
+            task->step = 6;
+        }
+        break;
+    case 6:
+        memset(((Task*)fn_800B0A5C_insertQueue(fn_800A9CF8, 0xFF))->data, 0, sizeof(((Task*)0)->data));
+        lbl_803CC1B8->result = 0;
+        task->step = 7;
+        break;
+    case 7:
+        switch (task->result) {
+        case 1:
+            task->step = 8;
+            break;
+        case 2:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 8:
+        fn_800ACD64(CARDUnmount(task->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            task->step = 10;
+            break;
+        default:
+            task->step = 9;
+            break;
+        }
+        break;
+    case 9:
+        task->step = 10;
+        break;
+    case 10:
+        task->parent->result = 1;
+        fn_800B0A14_removeQueue(task->parent);
+        break;
+    }
 }
+#endif
 
 // .text:0x800A9CF8 size:0x13C
 void fn_800A9CF8(void) {
