@@ -97,6 +97,47 @@ static inline s32 getJoint(CharActor* actor, s32 k) {
     return actor != NULL ? actor->jointIdx[k] : 0xFFFF;
 }
 
+static inline void copyPartJointData(CharActor* actor, s32 which) {
+    s32 joint = actor != NULL ? actor->jointIdx[lbl_803CB7B4[which]] : 0xFFFF;
+    CharModel** models;
+    CharModel* model;
+    CharJoint* dst;
+    CharModel* src;
+    CharJoint** jp;
+    s32 i;
+    s32 n;
+
+    if (joint != 0xFFFF) {
+        models = &actor->model;
+        i = 0;
+        do {
+            model = *models;
+            if (lbl_800EEAAC[actor->kind] >= 0 && actor->parts != NULL) {
+                dst = model->joints[joint];
+                if (which & 1) {
+                    src = lbl_8036E548.partSlots->slots[actor->parts->part[1].slot].model;
+                } else {
+                    src = lbl_8036E548.partSlots->slots[actor->parts->part[0].slot].model;
+                }
+                if (src != NULL) {
+                    n = src->jointCount;
+                    jp = &src->joints[n];
+                    do {
+                        jp--;
+                        n--;
+                        if ((*jp)->_14 != NULL) {
+                            dst->_14 = (*jp)->_14;
+                            break;
+                        }
+                    } while (n != 0);
+                }
+                break;
+            }
+            models--;
+        } while (i-- != 0);
+    }
+}
+
 // .text:0x80011640 size:0x9C
 void fn_80011640(Mtx a, Mtx out) {
     Mtx scale = {
@@ -294,9 +335,85 @@ void fn_80011BE4(s32 index) {
 }
 
 // .text:0x80011CA8 size:0xA44
-void fn_80011CA8(void) {
-    return;
+static inline void copyPart(CharPart* dst, CharPart* src) {
+    dst->files = src->files;
+    dst->slot = src->slot;
+    dst->player.set = src->player.set;
+    dst->player.seqs = src->player.seqs;
+    dst->player.tableList = src->player.tableList;
+    dst->player.model = src->player.model;
+    dst->player.curIdx = src->player.curIdx;
+    memcpy(&dst->player.state, &src->player.state, sizeof(dst->player.state));
+    memcpy(dst->player.tables, src->player.tables, sizeof(dst->player.tables));
 }
+
+static inline void stashPart(CharPart* tmp, CharPart* src) {
+    copyPart(&tmp[src->slot % 6], src);
+}
+
+// NONMATCHING 99.7%: copy-field temps register allocation; used[] initialiser is an anonymous .sbss2 object
+#if NONMATCHING
+s32 fn_80011CA8(CharActor* actor, s32 a, s32 b) {
+    u8 used[6] = { 0, 0, 0, 0, 0, 0 };
+    CharPart tmp[6];
+    s32 idx = actor->index;
+    s32 first;
+    s32 second;
+    s32 k;
+    s32 n;
+
+    stashPart(tmp, &lbl_8036E548.partsPool[idx * 3 + 0].part[0]);
+    stashPart(tmp, &lbl_8036E548.partsPool[idx * 3 + 0].part[1]);
+    stashPart(tmp, &lbl_8036E548.partsPool[idx * 3 + 1].part[0]);
+    stashPart(tmp, &lbl_8036E548.partsPool[idx * 3 + 1].part[1]);
+    stashPart(tmp, &lbl_8036E548.partsPool[idx * 3 + 2].part[0]);
+    stashPart(tmp, &lbl_8036E548.partsPool[idx * 3 + 2].part[1]);
+    if ((u32)(a - 2) > 2) {
+        if (actor->_25B != 0) {
+            first = 2;
+            second = 3;
+        } else {
+            first = 4;
+            second = 5;
+        }
+    } else if (actor->_25A != 0) {
+        first = 4;
+        second = 1;
+    } else {
+        first = 0;
+        second = 3;
+    }
+    copyPart(&actor->parts->part[0], &tmp[first]);
+    copyPart(&actor->parts->part[1], &tmp[second]);
+    used[first] = 1;
+    used[second] = 1;
+    n = 0;
+    for (k = 0; k < 6; k++) {
+        if (used[k] == 0) {
+            switch (n) {
+            case 0:
+                copyPart(&lbl_8036E548.partsPool[idx * 3 + 1].part[0], &tmp[k]);
+                break;
+            case 1:
+                copyPart(&lbl_8036E548.partsPool[idx * 3 + 1].part[1], &tmp[k]);
+                break;
+            case 2:
+                copyPart(&lbl_8036E548.partsPool[idx * 3 + 2].part[0], &tmp[k]);
+                break;
+            case 3:
+                copyPart(&lbl_8036E548.partsPool[idx * 3 + 2].part[1], &tmp[k]);
+                break;
+            }
+            n++;
+        }
+    }
+    copyPartJointData(lbl_8036E548.active[actor->index], 0);
+    copyPartJointData(lbl_8036E548.active[actor->index], 1);
+    fn_80025EEC(&actor->parts->part[0].player, a, b);
+    fn_80025EEC(&actor->parts->part[1].player, a, b);
+    return 1;
+}
+#endif
 
 // .text:0x800126EC size:0x10C
 void fn_800126EC(CharPart* part, void* tex, u8* fileIdx) {

@@ -286,6 +286,7 @@ void challengeMapMaybe(void);
 
 void fn_8001FC4C(CharActor* actor);
 
+s32 fn_80011CA8(CharActor* actor, s32 a, s32 b);
 void fn_800126EC(CharPart* part, void* tex, u8* fileIdx);
 u8 LoadModel(CharActor* actor);
 
