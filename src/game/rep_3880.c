@@ -2673,8 +2673,9 @@ f32 fn_3_15791C(s32 i) {
     return lbl_3_rodata_3A44 * r;
 }
 
-// 95%: wave code is fn_3_15791C inlined by hand (call keeps f3/f4 swapped); only the 38D0 Vec copy loads are scheduled above the prologue stores
+// NONMATCHING 95%: wave code is fn_3_15791C inlined by hand (call keeps f3/f4 swapped); only the 38D0 Vec copy loads are scheduled above the prologue stores
 // .text:0x00157AC4 size:0x2F4 mapped:0x80796B58
+#if NONMATCHING
 u32 fn_3_157AC4(u8* o) {
     Mtx m;
     s32 q;
@@ -2729,5 +2730,6 @@ u32 fn_3_157AC4(u8* o) {
     }
     return res;
 }
+#endif
 
 #pragma dont_inline off
