@@ -13,6 +13,7 @@
 #include "dolphin/os.h"
 #include "Dolphin/mtxext.h"
 #include "stl/math.h"
+#include "stl/string.h"
 
 extern SoundManager lbl_800EF808;
 extern SoundGroupRequest lbl_80108B84;
@@ -42,7 +43,7 @@ extern void fn_8004B1C0(s32 sound, CharSoundObj* obj, s32 kind, s32 c);
 
 extern camera_803c639c_s lbl_803C639C[4];
 extern Unk803C60BC lbl_803C60BC;
-extern u32 lbl_803CB880;
+extern s32 lbl_803CB880; // number of active cameras
 extern MenuState lbl_8034E978;
 extern MenuDef lbl_800FEF70[0x5D];
 extern MenuWork lbl_803297E0;
@@ -51,6 +52,9 @@ extern struct SpaniDesc lbl_80108048;
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
+extern void makeLookAtMatrix(Mtx m, Vec* eye, Vec* up, Vec* target);
+extern void fn_80011640(Mtx src, Mtx dst);
+extern void fn_800369DC(f32 zoom);
 extern BOOL fn_80042D68(SceneTask* owner, s32 idx, s32 frame);
 extern BOOL fn_80042DA8(SceneTask* owner, s32 idx, s32 frame);
 extern TutorialInput lbl_803C5F04;
@@ -102,9 +106,60 @@ void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x80052968 size:0x408
+// NONMATCHING 99%: r29/r30 swapped for the view matrix pointer in the two-camera branch
+#if NONMATCHING
 void fn_80052968(void) {
-    return;
+    MtxPtr view;
+    camera_803c639c_s* cam;
+    MtxPtr view2;
+    f32 scale;
+
+    if (lbl_803CB880 == 1) {
+        if (lbl_803CBD10 != NULL) {
+            lbl_803CBD10(&lbl_803C639C[0]);
+        }
+        view = lbl_803C639C[0].view;
+        makeLookAtMatrix(view, &lbl_803C639C[0].eye, &lbl_803C639C[0].Up, &lbl_803C639C[0].target);
+        scale = 1.0f / lbl_803C639C[0].zoom;
+        C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.25f * scale, -0.25f * scale, 1.0f, 512.0f);
+        fn_800B806C(0, -240.0f * scale, 240.0f * scale, -320.0f * scale, 320.0f * scale, -512.0f, -1.0f, 1280.0f);
+        fn_80011640(view, view);
+        scale = 1.0f / lbl_803C639C[0].zoom;
+        C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.25f * scale, -0.25f * scale, 1.0f, 512.0f);
+        fn_800B806C(0, -240.0f * scale, 240.0f * scale, -320.0f * scale, 320.0f * scale, -512.0f, -1.0f, 1280.0f);
+    } else if (lbl_803CB880 == 2) {
+        if (lbl_803CBD10 != NULL) {
+            lbl_803CBD10(&lbl_803C639C[1]);
+        }
+        cam = &lbl_803C639C[1];
+        view2 = cam->view;
+        makeLookAtMatrix(view2, &cam->eye, &cam->Up, &cam->target);
+        scale = 1.0f / lbl_803C639C[1].zoom;
+        C_MTXFrustum(cam->proj, -0.175f * scale, 0.175f * scale, 0.25f * scale, -0.25f * scale, 1.0f, 512.0f);
+        fn_800B806C(0, -240.0f * scale, 240.0f * scale, -320.0f * scale, 320.0f * scale, -512.0f, -1.0f, 1280.0f);
+        fn_80011640(view2, view2);
+        scale = 1.0f / lbl_803C639C[1].zoom;
+        C_MTXFrustum(cam->proj, -0.175f * scale, 0.175f * scale, 0.375f * scale, -0.125f * scale, 1.0f, 512.0f);
+        fn_800B806C(1, -240.0f * scale, 240.0f * scale, -160.0f * scale, 160.0f * scale, -512.0f, -1.0f, 1280.0f);
+
+        if (lbl_803CBD10 != NULL) {
+            lbl_803CBD10(&lbl_803C639C[0]);
+        }
+        cam = &lbl_803C639C[0];
+        view = cam->view;
+        makeLookAtMatrix(view, &cam->eye, &cam->Up, &cam->target);
+        scale = 1.0f / lbl_803C639C[0].zoom;
+        C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.25f * scale, -0.25f * scale, 1.0f, 512.0f);
+        fn_800B806C(0, -240.0f * scale, 240.0f * scale, -320.0f * scale, 320.0f * scale, -512.0f, -1.0f, 1280.0f);
+        fn_80011640(view, view);
+        scale = 1.0f / lbl_803C639C[0].zoom;
+        C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.125f * scale, -0.375f * scale, 1.0f, 512.0f);
+        fn_800B806C(0, -240.0f * scale, 240.0f * scale, -160.0f * scale, 160.0f * scale, -512.0f, -1.0f, 1280.0f);
+    }
+    memcpy(&lbl_803C639C[2], &lbl_803C639C[0], sizeof(camera_803c639c_s) * 2);
+    fn_800369DC(lbl_803C639C[0].zoom);
 }
+#endif
 
 static inline void InitCameras(void) {
     s32 i;
