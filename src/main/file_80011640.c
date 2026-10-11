@@ -470,7 +470,8 @@ void fn_8001196C(void) {
     s32 i;
 
     for (i = 0; i < 9; i++) {
-        detachOwned(i);
+        detachOwnedPart(i);
+        detachOwnedParts(i);
         lbl_8036E548.active[i]->_25C = 0;
         lbl_8036E548.active[i] = NULL;
         clearSlotRefs(i);
