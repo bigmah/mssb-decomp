@@ -3407,3 +3407,91 @@ void fn_2_7308C(void) {
     }
 }
 #endif
+
+// fn_2_7DAB8, size:0x6DC
+// NONMATCHING 85%: second position search stays a ctr loop (orig fully unrolled); register allocation
+#if NONMATCHING
+void fn_2_7DAB8(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        s32 cur = F468_S32(8 + index * 4);
+        s32 sel = F468_S32(index * 4);
+        s32 fs;
+        s32 fc;
+        s32 fp;
+        s32 j;
+        u8* p;
+        for (j = 0; j < 9; j++) {
+            s8 t = TEAM_TBL->pos[index][j];
+            if (t == sel) {
+                fs = j;
+            }
+            if (t == cur) {
+                fc = j;
+            }
+        }
+        if (cur != 9 && cur != 10 && cur < 9) {
+            if (cur != (s8)lbl_2_bss_F468[0x61 + index]) {
+                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->frame = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->state = 4;
+                if (TEAM_TBL->roster[index][fc] != -1 && TEAM_TBL->roster[index][fc] != 0x36) {
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->frame = 0xA0000;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->state = 1;
+                }
+            }
+            MN_SLOT(0x22 + BASE(o) + cur + index * 9)->flags &= ~2;
+        }
+        if (sel != 9 && sel != 10 && sel < 9 && sel != (s8)lbl_2_bss_F468[0x61 + index]) {
+            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->frame = 0;
+            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->state = 1;
+            if (TEAM_TBL->roster[index][fs] != -1 && TEAM_TBL->roster[index][fs] != 0x36) {
+                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->frame = 0x140000;
+                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->state = 4;
+            }
+            if (lbl_2_bss_F468[0x41 + index] == 0) {
+                MN_SLOT(0x22 + BASE(o) + sel + index * 9)->flags |= 2;
+                MN_SLOT(0x22 + BASE(o) + sel + index * 9)->state = 1;
+            }
+        }
+        fn_2_74F40(o, index);
+        if (sel == 9) {
+            MN_SLOT(0x95 + BASE(o) + index)->state = 1;
+        } else if (sel == 10) {
+            MN_SLOT(0x91 + BASE(o) + index)->state = 1;
+        } else {
+            if ((MN_SLOT(0x95 + BASE(o) + index)->frame >> 16) > 10) {
+                MN_SLOT(0x95 + BASE(o) + index)->frame = 0xA0000;
+                MN_SLOT(0x95 + BASE(o) + index)->state = 4;
+            }
+            if ((MN_SLOT(0x91 + BASE(o) + index)->frame >> 16) > 10 || cur == 10) {
+                MN_SLOT(0x91 + BASE(o) + index)->frame = 0xA0000;
+                MN_SLOT(0x91 + BASE(o) + index)->state = 4;
+            }
+        }
+        p = lbl_2_bss_F468 + index;
+        if (p[0x5F] != 0) {
+            u8 prev = *(p += 0x61);
+            if (cur == (s8)prev || sel == (s8)prev) {
+                for (j = 0; j < 9; j++) {
+                    if (TEAM_TBL->pos[index][j] == (s8)lbl_2_bss_F468[0x61 + index]) {
+                        fp = j;
+                    }
+                }
+                if (TEAM_TBL->roster[index][fp] != -1 && TEAM_TBL->roster[index][fp] != 0x36) {
+                    MN_SLOT(0x34 + BASE(o) + (s8)*p + index * 9)->frame = 0xA0000;
+                    MN_SLOT(0x34 + BASE(o) + (s8)*p + index * 9)->state = 0;
+                }
+                MN_SLOT(0x46 + BASE(o) + (s8)*p + index * 9)->frame = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + (s8)*p + index * 9)->state = 0;
+                if (sel == (s8)*p) {
+                    MN_SLOT(0x22 + BASE(o) + (s8)*p + index * 9)->flags |= 2;
+                }
+            } else {
+                MN_SLOT(0x22 + BASE(o) + (s8)prev + index * 9)->flags &= ~2;
+            }
+        }
+        fn_800626EC(index);
+        *e = 1;
+    }
+}
+#endif
