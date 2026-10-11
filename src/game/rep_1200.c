@@ -58,8 +58,76 @@ int fn_3_6F6CC(void) {
 }
 
 // .text:0x0006F748 size:0x2E0 mapped:0x806AE7DC
-void fn_3_6F748(void) {
-    return;
+// g_RunningLogic (0x20 bytes), only the fields used here.
+typedef struct Rep1200RunningLogicView {
+    /*0x00*/ u8 _00[0x10];
+    /*0x10*/ u8 _10;
+    /*0x11*/ u8 _11[0x20 - 0x11];
+} Rep1200RunningLogicView;
+extern Rep1200RunningLogicView g_RunningLogic;
+extern s32 fn_3_20B30(void);
+// the callee returns u8, but this caller tests the full register (int-returning prototype in the original)
+extern u32 fn_3_107DB4(s8 i);
+static inline void countPickoffAttempt(void) {
+    if (g_Pitcher.nPickoffAttempts < 0xFE) {
+        g_Pitcher.nPickoffAttempts += 1;
+    } else {
+        g_Pitcher.nPickoffAttempts = 0xFF;
+    }
+}
+// Pitcher pickoff input; returns 1 when a pickoff was started.
+int fn_3_6F748(void) {
+    s32 team = g_GameLogic.teamFielding;
+    InputStruct* c = &g_Controls[g_GameLogic.teams[team]];
+    u16 buttons;
+    if (g_Pitcher.AIInd != 0) {
+        if (fn_3_20B30() == 0) {
+            return 0;
+        }
+        goto pickoff;
+    }
+    if (g_d_GameSettings.GameModeSelected == 2 && g_Practice.instructionNumber >= 0) {
+        c = &g_Practice.inputs[team];
+    } else {
+        MiniGameControlStruct* m = g_Minigame.minigameControlStruct;
+        if (fn_3_107DB4(m->characterIndex[g_Minigame.minigamePlayerSelectedOrder]) != 0) {
+            c = &g_Minigame._1D7C[m->characterIndex[g_Minigame.minigamePlayerSelectedOrder]];
+        } else if (g_d_GameSettings.minigamesEnabled != 0 && g_Minigame.minigamePlayerSelectedOrder >= 0) {
+            c = &g_Controls[m->characterIndex[g_Minigame.minigamePlayerSelectedOrder]];
+        }
+    }
+    if (g_GameLogic.FrameCountOfCurrentPitch < 0x5A) {
+        return 0;
+    }
+    if (g_RunningLogic._10 <= 1) {
+        return 0;
+    }
+    if (fn_3_6F6CC()) {
+        countPickoffAttempt();
+        return 1;
+    }
+    if (c->newButtonInput & 0x200) {
+        g_Pitcher.pickOffLoc = 4;
+        buttons = c->buttonInput;
+        if (buttons & 1) {
+            if (g_Runners[3].runnerOnFieldOrOutOrScored != 0) {
+                g_Pitcher.pickOffLoc = 3;
+            }
+        } else if (buttons & 8) {
+            if (g_Runners[2].runnerOnFieldOrOutOrScored != 0) {
+                g_Pitcher.pickOffLoc = 2;
+            }
+        } else if (buttons & 2) {
+            if (g_Runners[1].runnerOnFieldOrOutOrScored != 0) {
+                g_Pitcher.pickOffLoc = 1;
+            }
+        }
+    pickoff:
+        fn_3_5C69C(0);
+        countPickoffAttempt();
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x0006FA28 size:0x170 mapped:0x806AEABC
@@ -694,8 +762,6 @@ void fn_3_74128(void) {
 }
 
 // .text:0x00074AC4 size:0x248 mapped:0x806B3B58
-// the callee returns u8, but this caller tests the full register (int-returning prototype in the original)
-extern u32 fn_3_107DB4(s8 i);
 void fn_3_74AC4(void) {
     s32 i = g_GameLogic.teamFielding;
     InputStruct* c = &g_Controls[g_GameLogic.teams[i]];
