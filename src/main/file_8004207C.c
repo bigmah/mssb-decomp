@@ -138,7 +138,10 @@ void sndFXRelated(u16 button) {
 
 // .text:0x80042D38 size:0x30
 void fn_80042D38(u16 scene) {
-    return;
+    lbl_803CBBCC->prevScene = lbl_803CBBCC->scene;
+    lbl_803CBBCC->prevStep = lbl_803CBBCC->step;
+    lbl_803CBBCC->scene = scene;
+    lbl_803CBBCC->step = 0;
 }
 
 // .text:0x80042D68 size:0x40
