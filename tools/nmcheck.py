@@ -12,7 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def obj_for(src):
     text = open(os.path.join(ROOT, "build.ninja")).read()
-    m = re.search(r"^build (\S+\.o): mwcc\S* " + re.escape(src) + r"\b", text, re.M)
+    m = re.search(r"^build (\S+\.o): mwcc\S*(?: \$\n)?\s+" + re.escape(src) + r"\b", text, re.M)
     return m.group(1) if m else None
 
 
