@@ -44,7 +44,8 @@ void GDSetBlendMode(GXBlendMode type, GXBlendFactor src_factor, GXBlendFactor ds
 
 // .text:0x800A1E3C size:0x104
 void GDSetAlphaCompare(GXCompare comp0, u8 ref0, GXAlphaOp op, GXCompare comp1, u8 ref1) {
-    return;
+    GDWriteBPCmd((u32)ref0 << 0 | (u32)ref1 << 8 | (u32)comp0 << 16 | (u32)comp1 << 19 | (u32)op << 22 |
+                 (u32)0xF3 << 24);
 }
 
 // .text:0x800A1F40 size:0x254
