@@ -518,7 +518,69 @@ s32 fn_8004A328(MsgBox* box) {
 
 // .text:0x8004A34C size:0x26C
 s32 fn_8004A34C(MsgBox* box, s8 a, u8 msgId, s8 b, u8 arg) {
-    return 0;
+    MsgTask* task = NULL;
+
+    box->msgId = msgId;
+    box->_40 = a;
+    box->_41 = b;
+    box->state = 1;
+    if (lbl_800FB5C0[msgId].kind == 10) {
+        if (lbl_803C50E8.looping != 0) {
+            if (lbl_803C50E8.loopStop != 0) {
+                fn_8004CC18();
+                lbl_803C50E8.loopStop = 0;
+                lbl_803C50E8.looping = 0;
+            } else if (lbl_803C50E8.loopMsg != lbl_800FB5C0[msgId].msg) {
+                lbl_803C50E8.loopMsg = lbl_800FB5C0[msgId].msg;
+                fn_8004CA14(0, lbl_800FB5C0[msgId].msg);
+            }
+        } else {
+            fn_8004CC4C(lbl_800FB5C0[msgId].kind, 1, lbl_800FB5C0[msgId]._4, arg, lbl_800FB5C0[msgId].msg);
+            if (lbl_800FB5C0[msgId]._5 != 0) {
+                lbl_803C5F74._1E = 1;
+            }
+            fn_800B0A5C_insertQueue(fn_8004D0F0, 0x3000);
+            lbl_803C50E8.loopStop = 0;
+            lbl_803C50E8.looping = 1;
+            lbl_803C50E8.loopMsg = lbl_800FB5C0[msgId].msg;
+        }
+    } else {
+        if (lbl_803C50E8.looping != 0) {
+            fn_8004CC18();
+            lbl_803C50E8.looping = 0;
+            lbl_803C50E8.loopStop = 0;
+        }
+        lbl_803C50E8.kind = lbl_800FB5C0[msgId].kind;
+        lbl_803C50E8.msg = lbl_800FB5C0[msgId].msg;
+        lbl_803C50E8._4E = lbl_800FB5C0[msgId]._4;
+        lbl_803C50E8._4F = lbl_800FB5C0[msgId]._5;
+        lbl_803C50E8.arg = arg;
+        lbl_803C50E8.result = 0;
+        switch (lbl_800FB5C0[msgId].type) {
+        case 0:
+            task = fn_800B0A5C_insertQueue(fn_8004A9E0, 0x8000);
+            task->_1B = 1;
+            break;
+        case 1:
+            task = fn_800B0A5C_insertQueue(fn_8004A7D0, 0x8000);
+            task->_1B = 1;
+            break;
+        case 2:
+            task = fn_800B0A5C_insertQueue(fn_8004A5B8, 0x8000);
+            task->_1B = 1;
+            break;
+        case 3:
+            task = fn_800B0A5C_insertQueue(fn_8004A7D0, 1);
+            task->_1B = 0;
+            break;
+        }
+    }
+    if (task != NULL) {
+        task->box = box;
+        task->state = 0;
+        task->box->_04 = 0;
+    }
+    return 1;
 }
 
 // .text:0x8004A5B8 size:0x218
