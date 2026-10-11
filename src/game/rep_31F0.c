@@ -58,9 +58,72 @@ extern void fn_3_FBD58(void);
 extern void changeScene(s32, s32);
 
 // .text:0x00110634 size:0x3D0 mapped:0x8074F6C8
-void fn_3_110634(void) {
-    return;
+extern s32 fn_3_9E368(s32* weights, s32 n);
+extern int RandomInt_Game_Range(int min, int max);
+extern u8 g_Batter[];
+extern s16 g_hitShorts[];
+extern u8 swingSoundFrame[2][4];
+extern u8 lbl_3_data_21488[][3];
+extern s8 lbl_3_data_214A0[][3][2];
+extern s8 lbl_3_data_214B8[][3];
+extern s8 lbl_3_data_214C4[][3];
+extern s8 lbl_3_data_214D0[][3];
+extern s8 lbl_3_data_214DC[][3];
+extern s8 lbl_3_data_214E8[][3];
+extern s8 lbl_3_data_214F4[][3];
+
+// NONMATCHING 92%: the first weight loop hoists g_Minigame+0x1ACC (lbzx) and allocates the table walkers differently
+#if NONMATCHING
+static inline void calcWeights_31F0(s32* w, u8* base, s8* streak, s8* special, s8* bonus) {
+    s8 i = 0;
+    u8 streakCnt = (g_Minigame + 0x1ACC)[*(s8*)(g_Minigame + 0x1905) * 2];
+    do {
+        w[i] = base[i];
+        w[i] += streakCnt * streak[i];
+        if (g_Minigame[0x1DF6] != 0) {
+            w[i] += special[i];
+        } else if (g_Minigame[0x1AD5] != 0) {
+            w[i] += bonus[i];
+        }
+        if (w[i] < 0) {
+            w[i] = 0;
+        }
+        i++;
+    } while (i < 3);
 }
+
+void fn_3_110634(void) {
+    s32 zone[3];
+    s32 timing[3];
+    s32 k;
+    s16 frame;
+    u8* mg = g_Minigame;
+    u8 type = mg[0x18DC + *(s8*)(mg + 0x1905)];
+    calcWeights_31F0(zone, lbl_3_data_21488[type], lbl_3_data_214B8[type], lbl_3_data_214E8[type], lbl_3_data_214D0[type]);
+    calcWeights_31F0(timing, lbl_3_data_21488[type], lbl_3_data_214C4[type], lbl_3_data_214F4[type], lbl_3_data_214DC[type]);
+    frame = g_hitShorts[1];
+    switch (fn_3_9E368(zone, 3)) {
+    case 0:
+    default:
+        frame = frame + RandomInt_Game_Range(3, *(s16*)(g_Batter + 0x70) - 3);
+        break;
+    case 1:
+        frame = *(s16*)(g_Batter + 0x70) +
+                (RandomInt_Game_Range(3, *(s16*)(g_Batter + 0x72) - *(s16*)(g_Batter + 0x70) - 3) + frame);
+        break;
+    case 2:
+        frame = *(s16*)(g_Batter + 0x72) + (RandomInt_Game_Range(3, g_hitShorts[0]) + frame);
+        break;
+    }
+    k = fn_3_9E368(timing, 3);
+    *(s16*)(mg + 0x1DCE) =
+        swingSoundFrame[1][k] + RandomInt_Game_Range(lbl_3_data_214A0[type][k][0], lbl_3_data_214A0[type][k][1]);
+    *(s16*)(mg + 0x1DCC) = frame - (fn_3_110A38() - *(s16*)(mg + 0x1DCE));
+    if (*(s16*)(mg + 0x1DCC) < g_hitShorts[1] + 1) {
+        *(s16*)(mg + 0x1DCC) = g_hitShorts[1] + 1;
+    }
+}
+#endif
 
 // .text:0x00110A04 size:0x34 mapped:0x8074FA98
 void fn_3_110A04(void) {
