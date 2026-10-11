@@ -26,6 +26,24 @@ extern void fn_8001F228(void);
 extern void fn_80021410(void);
 extern void fn_2_54474(void);
 extern void fn_2_46D94(s16* a, s16* b, s16 count, s32 c, s32 d);
+extern s32 fn_8006CDC0(s32 team);
+extern s32 fn_2_44E2C(s32 ch);
+
+// lbl_800E8558 entries (see StarMissionIndex in main/file_80024184.h).
+typedef struct MissionIndex {
+    /*0x0*/ u8 _0[2];
+    /*0x2*/ u8 missionRow; // row in lbl_80109AE8
+    /*0x3*/ u8 hasMissions;
+    /*0x4*/ u8 _4[2];
+} MissionIndex;
+extern MissionIndex lbl_800E8558[54];
+
+// lbl_80109AE8[row][10] (see StarMission in main/file_80024184.h).
+typedef struct MissionDef {
+    /*0x0*/ s16 type; // -1: unused slot
+    /*0x2*/ u8 _2[8];
+} MissionDef;
+extern MissionDef lbl_80109AE8[][10];
 
 // One controller's latched buttons in lbl_803C77B8 (see PadState in main/file_800A7C08.h).
 typedef struct MenuPad {
@@ -43,7 +61,12 @@ typedef struct MenuRosterEntry {
     /*0x00*/ s8* limits; // indexed by [_4415 * 6 + _441C + 4]
     /*0x04*/ u8 _04[2];
     /*0x06*/ s8 value;
-    /*0x07*/ u8 _07[0x31 - 0x07];
+    /*0x07*/ u8 _07;
+    /*0x08*/ struct {
+        u8 _0;
+        s8 state; // star mission state (-2 / 0 / ...)
+    } missions[10];
+    /*0x1C*/ u8 _1C[0x31 - 0x1C];
     /*0x31*/ u8 _31;
     /*0x32*/ u8 _32[2];
 } MenuRosterEntry; // size: 0x34
@@ -349,6 +372,125 @@ void fn_2_1C0D4(void) {
     lbl_2_bss_1A824C[0][0x197863] = sel[0x46F8];
     lbl_2_bss_1A824C[0][0x197848] = 0;
 }
+
+// NONMATCHING 95%: first lbl_2_bss_1A824C load per case should be a direct lwz sym@l (unsolved, see
+// docs/patterns/unsolved.md), mission-slot check re-tests hasMissions as int, dead loop counter
+#if NONMATCHING
+// fn_2_1C860, size:0x734
+void fn_2_1C860(void) {
+    u8* o = lbl_803CC1B8;
+    u8* w;
+    MenuRosterEntry* e;
+    MissionIndex* idx;
+    u16 buttons;
+    s32 i;
+    s32 k;
+    s32 a;
+    s32 b;
+    s16 m;
+    switch ((s8)o[0x28]) {
+    case 0:
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19771A) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19771C) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197720) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197722) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19771E) = 0x36;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197724) = 10;
+        o[0x28] = 1;
+        break;
+    case 1:
+        w = lbl_2_bss_1A824C[0];
+        buttons = MENU_PADS[*(s8*)(w + 0x197863)].repeat;
+        if (buttons == 8 || buttons == 4) {
+            fn_2_46D94((s16*)(w + 0x19771A), (s16*)(w + 0x19771C), *(s16*)(w + 0x19771E), 10, 9);
+        }
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197716) =
+            *(s16*)(lbl_2_bss_1A824C[0] + 0x19771A) + *(s16*)(lbl_2_bss_1A824C[0] + 0x19771C);
+        buttons = MENU_PAD_DOWN(*(s8*)(lbl_2_bss_1A824C[0] + 0x197863));
+        if (buttons & 0x100) {
+            o[0x28] = 2;
+        } else if (buttons & 0x200) {
+            o[0x28] = 3;
+        }
+        buttons = MENU_PAD_DOWN(*(s8*)(lbl_2_bss_1A824C[0] + 0x197863));
+        if (buttons & 0x40) {
+            for (i = 0; i < 0x36; i++) {
+                e = &ROSTER[i];
+                if (lbl_800E8558[i].hasMissions == 1) {
+                    for (k = 0; k < 10; k++) {
+                        if (lbl_80109AE8[lbl_800E8558[i].missionRow][k].type != -1) {
+                            e->missions[k].state = 0;
+                        }
+                    }
+                }
+            }
+        } else if (buttons & 0x20) {
+            for (i = 0; i < 0x36; i++) {
+                e = &ROSTER[i];
+                if (lbl_800E8558[i].hasMissions == 1) {
+                    for (k = 0; k < 10; k++) {
+                        if (lbl_80109AE8[lbl_800E8558[i].missionRow][k].type != -1) {
+                            e->missions[k].state = -2;
+                        }
+                    }
+                }
+            }
+        }
+        break;
+    case 2:
+        w = lbl_2_bss_1A824C[0];
+        buttons = MENU_PADS[*(s8*)(w + 0x197863)].repeat;
+        if (buttons == 8 || buttons == 4) {
+            fn_2_46D94((s16*)(w + 0x197720), (s16*)(w + 0x197722), *(s16*)(w + 0x197724), 10, 9);
+        }
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197718) =
+            *(s16*)(lbl_2_bss_1A824C[0] + 0x197720) + *(s16*)(lbl_2_bss_1A824C[0] + 0x197722);
+        a = fn_8006CDC0(*(s16*)(lbl_2_bss_1A824C[0] + 0x197716));
+        b = fn_2_44E2C(*(s16*)(lbl_2_bss_1A824C[0] + 0x197716));
+        buttons = MENU_PAD_DOWN(*(s8*)(lbl_2_bss_1A824C[0] + 0x197863));
+        e = &ROSTER[*(s16*)(lbl_2_bss_1A824C[0] + 0x197716)];
+        if ((buttons & 0x103) && a != b &&
+            lbl_800E8558[*(s16*)(lbl_2_bss_1A824C[0] + 0x197716)].hasMissions == 1) {
+            idx = &lbl_800E8558[*(s16*)(lbl_2_bss_1A824C[0] + 0x197716)];
+            m = *(s16*)(lbl_2_bss_1A824C[0] + 0x197718);
+            if (idx->hasMissions == 1 && lbl_80109AE8[idx->missionRow][m].type != -1) {
+                if (e->missions[m].state < 0) {
+                    e->missions[m].state = 0;
+                } else {
+                    e->missions[m].state = -2;
+                }
+                fn_8006CDC0(*(s16*)(lbl_2_bss_1A824C[0] + 0x197716));
+            }
+        } else if (buttons & 0x200) {
+            o[0x28] = 1;
+        }
+        buttons = MENU_PAD_DOWN(*(s8*)(lbl_2_bss_1A824C[0] + 0x197863));
+        if (buttons & 0x40) {
+            for (k = 0; k < 10; k++) {
+                idx = &lbl_800E8558[*(s16*)(lbl_2_bss_1A824C[0] + 0x197716)];
+                if (idx->hasMissions == 1 && lbl_80109AE8[idx->missionRow][k].type != -1) {
+                    e->missions[k].state = 0;
+                }
+            }
+        } else if (buttons & 0x20) {
+            for (k = 0; k < 10; k++) {
+                idx = &lbl_800E8558[*(s16*)(lbl_2_bss_1A824C[0] + 0x197716)];
+                if (idx->hasMissions == 1 && lbl_80109AE8[idx->missionRow][k].type != -1) {
+                    e->missions[k].state = -2;
+                }
+            }
+        }
+        break;
+    case 3: {
+        u8* q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+    }
+}
+#endif
 
 // NONMATCHING 97%: register allocation (o/pad base swapped r30/r31); the original also keeps a dead
 // induction register (+4 per unrolled group) in the 10x inner loops
