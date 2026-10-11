@@ -9,9 +9,43 @@ extern OSThread* GXSetCurrentGXThread(void);
 extern s32 OSSignalSemaphore(OSSemaphore* sem);
 
 // .text:0x800A7C08 size:0x144
-void fn_800A7C08(void) {
-    return;
+// NONMATCHING 99%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); r3/r4 swapped in the callback loop
+#if NONMATCHING
+void* fn_800A7C08(void* arg) {
+    GXRenderModeObj* rmode;
+    DrawCallbackNode* node;
+    u32 next;
+
+    lbl_803C7420.field = 0;
+    while (TRUE) {
+        OSSleepThread(&lbl_803C7420.drawQueue);
+        GXSetCurrentGXThread();
+        rmode = lbl_803C7420.renderMode;
+        lbl_803C7420.drawing = TRUE;
+        if (rmode->field_rendering) {
+            GXSetViewportJitter(0.0f, 0.0f, rmode->fbWidth, rmode->efbHeight, 0.0f, 1.0f, VIGetNextField());
+        } else {
+            GXSetViewport(0.0f, 0.0f, rmode->fbWidth, rmode->efbHeight, 0.0f, 1.0f);
+        }
+        GXInvalidateVtxCache();
+        node = (DrawCallbackNode*)lbl_803C7420.drawList;
+        while (TRUE) {
+            next = node->next.raw;
+            if (next == 0) {
+                break;
+            }
+            if (!(next & 1) && (next & 2) == lbl_803C7420.field) {
+                if (node->func != NULL) {
+                    node->func();
+                }
+            }
+            node = (DrawCallbackNode*)(next & ~3);
+        }
+        lbl_803C7420.drawing = FALSE;
+        OSSignalSemaphore(&lbl_803C7420.drawDone);
+    }
 }
+#endif
 
 // .text:0x800A7D4C size:0x30
 void fn_800A7D4C(s32 index, DrawCallbackNode* node) {
