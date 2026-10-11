@@ -70,7 +70,45 @@ typedef struct Unk803716B8 {
 
 extern Unk803716B8 lbl_803716B8;
 extern u8 lbl_801092F8[0x80]; // TODO type
-extern char lbl_801092C8[0x20];
+// ARAM file table entry.
+typedef struct AramFile {
+    /*0x0*/ u32 id;
+    /*0x4*/ u32 sizeFlags; // low 28 bits: size
+    /*0x8*/ u32 aramAddr;
+    /*0xC*/ u32 _C;
+} AramFile;
+
+extern AramFile lbl_801092C8[2]; // [0]: intro movie, [1]: logo textures
+extern AramFile lbl_801092E8;    // logo sound data
+
+typedef struct Unk801093B8 {
+    /*0x0*/ u32 _0;
+    /*0x4*/ u32 _4;
+    /*0x8*/ SceneTask* task;
+} Unk801093B8;
+
+typedef struct Unk80109378 {
+    /*0x00*/ u8 _00[0x40];
+    /*0x40*/ Unk801093B8 _40;
+} Unk80109378;
+
+extern Unk80109378 lbl_80109378;
+extern GXColor lbl_803CB8DC;
+
+// Loaded file whose first two words are file-relative offsets.
+typedef struct RelocPair {
+    /*0x0*/ void* a;
+    /*0x4*/ void* b;
+} RelocPair;
+
+// TODO port: file data stores 32-bit offsets that are turned into pointers in place.
+#define RELOCATE(base, field) ((field) = (void*)((u8*)(base) + (u32)(field)))
+
+extern s32 ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
+extern void* fn_800ACF34(s32 heap, u32 size);
+extern void fn_80035750(void* a, void* b, s32 c);
+extern void fn_800215F8(Unk801093B8* p);
+extern void convertTextureHeader(void* textures);
 typedef struct PadState {
     /*0x00*/ u16 _00;
     /*0x02*/ u16 trig;
@@ -99,7 +137,8 @@ extern AnimSlot lbl_80371C30[0x2A7B0 / 8];
 typedef struct Unk8037169C {
     /*0x00*/ u8 _00[0x12];
     /*0x12*/ u8 _12;
-    /*0x13*/ u8 _13[0x1C - 0x13];
+    /*0x13*/ u8 _13;
+    /*0x14*/ u8 _14[0x1C - 0x14];
 } Unk8037169C;
 
 extern Unk8037169C lbl_8037169C;
@@ -127,7 +166,7 @@ extern void* fn_80009018(void* value);
 extern void* _OSAllocFromHeap(s32 heap, u32 size);
 extern BOOL fn_800ADAFC(void); // returns a u8 flag (lbz)
 extern void fn_800ADC40(void* work, u32 size);
-extern BOOL fn_800ADB04(char* path, void* player, s32 a, s32 b);
+extern BOOL fn_800ADB04(AramFile* file, void* player, s32 a, s32 b);
 extern u32 fn_800AD6BC(void* player);
 extern void fn_800AD500(void* player, void* buffer);
 extern void fn_800AD95C(void* player, s32 a);
@@ -464,7 +503,7 @@ void fn_8006AF9C(void) {
         task->state++;
         break;
     case 1:
-        if (fn_800ADB04(lbl_801092C8, task->player, 0, 0) != 0) {
+        if (fn_800ADB04(&lbl_801092C8[0], task->player, 0, 0) != 0) {
             fn_80009018(task->player);
             task->state++;
         }
@@ -479,7 +518,7 @@ void fn_8006AF9C(void) {
         }
         break;
     case 3:
-        if (lbl_803C77B8[2] & 0x1000) {
+        if (lbl_803C77B8[0].trig2 & 0x1000) {
             task->state = 5;
             break;
         }
@@ -792,9 +831,66 @@ void fn_8006BB60(void) {
 }
 
 // .text:0x8006BE00 size:0x288
+// NONMATCHING 85%: the original addresses lbl_801092C8/lbl_801092E8/lbl_80109378 relative to
+// lbl_80109250 (this file's .data, not split yet); code is otherwise the same
+#if NONMATCHING
 void fn_8006BE00(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+
+    switch (task->state) {
+    case 0:
+        if ((task->_3A = lbl_8037169C._13) != 0) {
+            changeScene(1, 6);
+        }
+        GXSetCopyClear(lbl_803CB8DC, 0xFFFFFF);
+        task->_36 = 0;
+        task->nodes = fn_800ACF34(0x20, 0x40);
+        task->res28 = fn_800ACF34(0x20, lbl_801092E8.sizeFlags & 0x0FFFFFFF);
+        ARAMTransfer(&lbl_801092E8, task->res28, 0, 0);
+        task->state++;
+    case 1:
+        if (lbl_803C6CF8._715 == 1) {
+            RelocPair* snd = task->res28;
+            RELOCATE(snd, snd->a);
+            RELOCATE(snd, snd->b);
+            fn_80035750(snd->b, snd->a, 0x16);
+            task->u14.res = fn_800ACF34(0x20, lbl_801092C8[1].sizeFlags & 0x0FFFFFFF);
+            ARAMTransfer(&lbl_801092C8[1], task->u14.res, 0, 0);
+            task->state++;
+        }
+        break;
+    case 2:
+        if (task->_36 != 0) {
+            task->_36--;
+            break;
+        }
+        if ((task->_3A == 0 || lbl_8037169C._12 != 0) && lbl_803C6CF8._715 == 1) {
+            if (lbl_80366158[0x29] == 0 || lbl_80366158[0x29] == 1) {
+                fn_80008E00(fn_8006C088);
+            }
+            lbl_80109378._40.task = lbl_803CC1B8;
+            fn_800215F8(&lbl_80109378._40);
+            RELOCATE(task->u14.res, task->u14.res->data);
+            convertTextureHeader(task->u14.res->data);
+            task->state = 0;
+            task->_38 = 0;
+            task->_39 = 0;
+            switch (lbl_80366158[0x29]) {
+            case 0:
+                lbl_803CC1B8->func = fn_8006BB60;
+                break;
+            case 1:
+                lbl_803CC1B8->func = fn_8006B78C;
+                break;
+            case 2:
+                lbl_803CC1B8->func = fn_8006B668;
+                break;
+            }
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x8006C088 size:0x48
 void fn_8006C088(s32 alt) {
