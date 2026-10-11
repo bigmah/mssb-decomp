@@ -342,9 +342,25 @@ void transferStatsToInMemRoster(u8 team) {
 #endif
 
 // .text:0x80042BF0 size:0x54
+// NONMATCHING ~90%: mullw scheduled after the range subtraction
+#if NONMATCHING
 s32 randRange_FUN_80042bf0(s32 a, s32 b) {
-    return 0;
+    s32 lo;
+    s32 hi;
+
+    if (a == b) {
+        return a;
+    }
+    if (a <= b) {
+        lo = a;
+    } else {
+        lo = b;
+        b = a;
+    }
+    lbl_803CB750 = lbl_803CB750 * 0x5D588B65 + 1;
+    return (s32)(lbl_803CB750 >> 16) % (b - lo + 1) + lo;
 }
+#endif
 
 // .text:0x80042C44 size:0xF4
 void sndFXRelated(u16 button) {
