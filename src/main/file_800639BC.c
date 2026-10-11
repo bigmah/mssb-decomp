@@ -330,8 +330,30 @@ BOOL fn_80068514(u32 frames, u8 target) {
 }
 
 // .text:0x8006862C size:0xF4
-void fn_8006862C(void) {
-    return;
+BOOL fn_8006862C(u32 frames, u8 target) {
+    u8 vol = fn_800A8864() >> 8;
+
+    if (lbl_803CBD18 == 0) {
+        lbl_803CBD20 = vol / (frames / 60);
+        if (lbl_803CBD20 > 60) {
+            lbl_803CBD20 = 60;
+        }
+        lbl_803CBD18 = 1;
+    }
+    if (lbl_803CBD19 % (60 / lbl_803CBD20) == 0) {
+        vol--;
+        lbl_803CBD19 = 0;
+    }
+    if (vol <= target || frames == 1) {
+        lbl_803CBD19 = 0;
+        lbl_803CBD1A = 0;
+        lbl_803CBD20 = 0;
+        lbl_803CBD18 = 0;
+        return FALSE;
+    }
+    fn_800A8878(vol, vol);
+    lbl_803CBD19++;
+    return TRUE;
 }
 
 // .text:0x80068720 size:0x5C

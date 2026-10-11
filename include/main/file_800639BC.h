@@ -53,5 +53,6 @@ void fn_8006877C(u8 track);
 void fn_80064344(void* obj, Vec* v);
 void fn_80064430(void* obj, s32 count, f32 scale2, f32 scale);
 BOOL fn_80068514(u32 frames, u8 target);
+BOOL fn_8006862C(u32 frames, u8 target);
 
 #endif
