@@ -125,6 +125,18 @@ typedef struct Emitter {
             /* 0x18 */ u8 unk18;
         } t5;
         struct {
+            /* 0x18 */ f32 unk18[12];
+            /* 0x48 */ s32 unk48;
+            /* 0x4C */ u8 unk4C;
+            /* 0x4D */ u8 unk4D;
+            /* 0x4E */ u8 unk4E;
+            /* 0x4F */ u8 unk4F;
+            /* 0x50 */ s32 unk50;
+            /* 0x54 */ u8 unk54;
+            /* 0x55 */ u8 unk55;
+            /* 0x56 */ u8 unk56;
+        } t4;
+        struct {
             /* 0x18 */ Vec pos;
             /* 0x24 */ Vec prevPos;
             /* 0x30 */ s32 fadeLife; // particles start fading out at this life
@@ -241,6 +253,78 @@ typedef struct ParticleParams8 {
     /* 0x24 */ s32 texIndex2[1]; // count entries
 } ParticleParams8;
 
+// Spawn parameters of the type-4 trails (fn_80028628). Fixed point x100000.
+typedef struct ParticleParams4 {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s32 unk28;
+    /* 0x2C */ s32 unk2C;
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ s32 unk34;
+    /* 0x38 */ s32 unk38;
+    /* 0x3C */ s32 unk3C;
+    /* 0x40 */ s32 unk40;
+    /* 0x44 */ s32 unk44;
+} ParticleParams4;
+
+// Type-4 trail: each logical particle is a head node followed by
+// extraNodes extension nodes, all taken from the particle pool (the same
+// memory as Particle, viewed differently).
+typedef struct TrailHead {
+    /* 0x00 */ Particle* next;
+    /* 0x04 */ struct TrailHead* last; // last node of this particle's chain
+    /* 0x08 */ Vec hist[4];            // recent positions (ring, histIdx)
+    /* 0x38 */ f32 unk38;
+    /* 0x3C */ union {
+        u32 rgba;
+        u8 v[4];
+    } color;
+    /* 0x40 */ Vec vel;
+    /* 0x4C */ f32 unk4C;
+    /* 0x50 */ s16 unk50;
+    /* 0x52 */ s16 unk52;
+    /* 0x54 */ s16 unk54;
+    /* 0x56 */ u8 unk56;
+    /* 0x57 */ u8 extraNodes;
+    /* 0x58 */ u8 histIdx;
+    /* 0x59 */ u8 extIdx;
+    /* 0x5A */ u8 histMax;
+    /* 0x5B */ u8 histCount;
+    /* 0x5C */ u8 pad5C[4];
+} TrailHead;
+
+typedef struct TrailExt {
+    /* 0x00 */ Particle* next;
+    /* 0x04 */ struct TrailExt* prev; // previous node of the chain
+    /* 0x08 */ Vec ext[7];            // older positions (ring, extIdx)
+    /* 0x5C */ u8 pad5C[4];
+} TrailExt;
+
+// Shape used by fn_80028628: a header followed by count entries.
+typedef struct TrailShapeEntry {
+    /* 0x0 */ u16 color; // RGBA4444, or index into the palette
+    /* 0x2 */ u16 x;
+    /* 0x4 */ u16 y;
+    /* 0x6 */ u16 z;
+} TrailShapeEntry;
+
+typedef struct TrailShape {
+    /* 0x0 */ u16 hasZ : 1;
+    /* 0x0 */ u16 count : 15;
+    /* 0x2 */ u16 sizeX; // coordinates are centered on size / 2
+    /* 0x4 */ u16 sizeY;
+    /* 0x6 */ u16 sizeZ;
+    /* 0x8 */ TrailShapeEntry entries[1]; // count entries
+} TrailShape;
+
 // Queue task that flashes the stadium lights (fn_8002852C).
 typedef struct LightFlashTask {
     /* 0x00 */ u8 unk0[0x14];
@@ -252,6 +336,7 @@ typedef struct LightFlashTask {
     /* 0x22 */ u8 repeat;
     /* 0x23 */ u8 timer;
     /* 0x24 */ u8 duration;
+    /* 0x25 */ u8 pad25;
 } LightFlashTask;
 
 // Head of the active emitter list; aliases the prev/next of an Emitter.
@@ -279,6 +364,7 @@ typedef struct ParticleSortEntry {
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002852C(void);
+void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u32* palette, s32 arg5, s32 flash);
 void fn_8002CDD0(Vec* end);
 s32 fn_8002D82C(Emitter* e);
 void fn_8002DC68(Vec* pos);

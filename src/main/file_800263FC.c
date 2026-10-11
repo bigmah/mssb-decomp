@@ -26,7 +26,9 @@ typedef struct StadiumLightRow {
 extern StadiumLightRow lbl_800F7478[]; // per stadium
 extern StadiumLightPos lbl_80367318;
 extern ScreenFx lbl_803C5090;
-extern s32 lbl_803CBC70;
+extern LightFlashTask* lbl_803CBC70; // running light flash task
+void* fn_800B0A5C_insertQueue(void* draw, u16 priority);
+extern const Vec lbl_800E6820;
 void SetFogNone(void);
 u32 fn_8005268C(void);       // file_8004C5F8
 void* fn_80052734(s32 index); // file_8004C5F8: projection matrix
@@ -267,12 +269,19 @@ static inline void QuadCorners(f32 width, f32 height) {
 s32 fn_8002E3DC(Emitter* e);
 s32 fn_8002E828(Emitter* e);
 s32 fn_8002ECA0(Emitter* e);
+s32 fn_80027968(Emitter* e);
 s32 fn_8002F9FC(Emitter* e);
 s32 fn_80031034(Emitter* e);
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm);
 s32 fn_80029CC8(Emitter* e);
+
+static inline u32 Expand4444(u16 c) {
+    // 0xRGBA nibbles -> 0xRRGGBBAA
+    return ((c & 0xF) << 4) | (c & 0xF) | ((c << 4) & 0xF00) | ((c << 8) & 0xF000) | ((c << 8) & 0xF0000) |
+           ((c << 12) & 0xF00000) | ((c << 12) & 0x0F000000) | ((c << 16) & 0xF0000000);
+}
 
 // .text:0x800263FC size:0x59C
 void fn_800263FC(void) {
@@ -312,8 +321,8 @@ void fn_80027918(u8 type, f32 v) {
 #endif
 
 // .text:0x80027968 size:0xBC4
-void fn_80027968(void) {
-    return;
+s32 fn_80027968(Emitter* e) {
+    return 0;
 }
 
 // .text:0x8002852C size:0xFC
@@ -321,7 +330,7 @@ void fn_8002852C(void) {
     LightFlashTask* q = (LightFlashTask*)lbl_803CC1B8;
 
     if (--q->timer == 0) {
-        lbl_803CBC70 = 0;
+        lbl_803CBC70 = NULL;
         fn_80023B90(&lbl_800F7478[g_d_GameSettings.stadiumId].light, &lbl_80367318);
         ((void (*)(void))fn_800B0A14_removeQueue)(); // argument unused
     } else {
@@ -342,9 +351,184 @@ void fn_8002852C(void) {
 }
 
 // .text:0x80028628 size:0x920
-void fn_80028628(void) {
-    return;
+// NONMATCHING 75%: register allocation and float scheduling
+#if NONMATCHING
+void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u32* palette, s32 arg5, s32 flash) {
+    Mtx m;
+    Quaternion q;
+    Vec ref;
+    Vec d;
+    Vec h;
+    Vec axis;
+    Vec v;
+    Vec start;
+    f32 speed;
+    f32 back;
+    f32 unk4C;
+    f32 scale;
+    s32 nodes;
+    s32 n;
+    Emitter* e;
+    TrailHead* head;
+    TrailExt* node;
+    TrailShapeEntry* ent;
+    LightFlashTask* task;
+    s32 c;
+
+    ref = lbl_800E6820;
+    nodes = (prm->unk24 + 2) / 7 + 1;
+    if (nodes < 1) {
+        nodes = 1;
+    }
+    e = NewEmitter(fn_80027968, 0x12, 0, shape->count * nodes, 1, 4);
+    if (e == NULL) {
+        return;
+    }
+    PSVECSubtract(to, from, &d);
+    speed = (f32)prm->unk8 / 100000.0f;
+    back = (f32)prm->unk14 / 100000.0f;
+    unk4C = (f32)prm->unk18 / 100000.0f;
+    PSVECNormalize(&d, &d);
+    memcpy(&h, &d, sizeof(Vec));
+    h.y = 0.0f;
+    if (PSVECMag(&h) != 0.0f) {
+        PSVECNormalize(&h, &h);
+        PSVECCrossProduct(&ref, &h, &axis);
+        if (PSVECMag(&axis) == 0.0f || axis.y > 0.0f) {
+            axis.x = 0.0f;
+            axis.y = 1.0f;
+            axis.z = 0.0f;
+        } else {
+            axis.x = 0.0f;
+            axis.y = -1.0f;
+            axis.z = 0.0f;
+        }
+        C_QUATRotAxisRad(&q, &axis, acos(PSVECDotProduct(&ref, &h)));
+        PSMTXQuat(m, &q);
+    } else {
+        PSMTXRotRad(m, 'x', 1.5707964f);
+    }
+    head = (TrailHead*)e->particles;
+    ent = shape->entries;
+    scale = ((f32)prm->unkC / 100000.0f) / ((f32)prm->unk10 / 100000.0f);
+    if (flash != 0) {
+        if (lbl_803CBC70 != NULL) {
+            task = lbl_803CBC70;
+        } else {
+            task = fn_800B0A5C_insertQueue(fn_8002852C, 5);
+            lbl_803CBC70 = task;
+            task->light.height = 200;
+            task->light.yaw = 0x868;
+            task->light.pitch = 0x592;
+            task->pad25 = 1;
+        }
+        // TODO type: an RGBA word stored at the unaligned 0x1E (r, g, b, alpha)
+        if (palette != NULL) {
+            *(u32*)&task->r = palette[ent->color];
+        } else {
+            *(u32*)&task->r = Expand4444(ent->color);
+        }
+        c = task->r + prm->unk44;
+        if (c > 0xFF) {
+            c = 0xFF;
+        }
+        task->r = c;
+        c = task->g + prm->unk44;
+        if (c > 0xFF) {
+            c = 0xFF;
+        }
+        task->g = c;
+        c = task->b + prm->unk44;
+        if (c > 0xFF) {
+            c = 0xFF;
+        }
+        task->b = c;
+        task->alpha = prm->unk3C;
+        task->duration = task->timer = prm->unk40;
+        task->repeat = 1;
+        fn_8003A540(1);
+    }
+    e->u.t4.unk54 = prm->unk28;
+    e->tex = prm->tex;
+    e->u.t4.unk48 = arg5;
+    e->u.t4.unk4C = e->u.t4.unk4D = prm->unk30;
+    e->u.t4.unk4E = prm->unk2C;
+    e->u.t4.unk4F = 0;
+    e->u.t4.unk55 = prm->unk34;
+    e->u.t4.unk56 = prm->unk38;
+    while (head != NULL) {
+        v.x = ((f32)ent->x - (f32)((shape->sizeX >> 1) & 0x7FFF)) / (f32)shape->sizeX;
+        v.y = ((f32)ent->y - (f32)((shape->sizeY >> 1) & 0x7FFF)) / (f32)shape->sizeY;
+        if (shape->hasZ) {
+            v.z = ((f32)ent->z - (f32)((shape->sizeZ >> 1) & 0x7FFF)) / (f32)shape->sizeZ;
+        } else {
+            v.z = 0.0f;
+        }
+        PSMTXMultVec(m, &v, &v);
+        head->vel.x = -v.x * scale;
+        head->vel.y = -v.y * scale;
+        head->vel.z = -v.z * scale;
+        start.x = from->x;
+        start.y = from->y;
+        start.z = from->z;
+        head->unk38 = -back;
+        head->unk4C = unk4C;
+        head->unk52 = (s32)(100.0f * speed);
+        if (palette != NULL) {
+            head->color.rgba = palette[ent->color];
+        } else {
+            head->color.rgba = Expand4444(ent->color);
+        }
+        head->color.v[3] = prm->unk1C;
+        head->unk56 = prm->unk20;
+        head->unk50 = (prm->unk1C + (prm->unk20 - 1)) / prm->unk20;
+        memset(head->hist, 0, sizeof(head->hist));
+        head->histMax = prm->unk24;
+        head->histIdx = 0;
+        node = (TrailExt*)head;
+        head->histCount = 0;
+        head->extraNodes = (prm->unk24 + 2) / 7;
+        head->extIdx = 0;
+        // link the extension nodes back to front
+        for (n = head->extraNodes; n-- != 0;) {
+            ((TrailExt*)node->next)->prev = node;
+            node = (TrailExt*)node->next;
+            memset(node->ext, 0, sizeof(node->ext));
+        }
+        head->last = (TrailHead*)node;
+        head->histIdx = (head->histIdx + 1) % 4;
+        if (head->extraNodes != 0) {
+            node = (TrailExt*)head->last;
+            head->extIdx = (head->extIdx + 1) % 7;
+            while (node->prev != (TrailExt*)head) {
+                memcpy(&node->ext[head->extIdx], &node->prev->ext[head->extIdx], sizeof(Vec));
+                node = node->prev;
+            }
+            memcpy(&node->ext[head->extIdx], &head->hist[head->histIdx], sizeof(Vec));
+        }
+        memcpy(&head->hist[head->histIdx], &start, sizeof(Vec));
+        if (head->histCount < head->histMax) {
+            head->histCount++;
+        }
+        ent++;
+        head->unk54 = prm->texIndex;
+        head = (TrailHead*)head->last->next;
+    }
+    e->u.t4.unk50 = 2;
+    e->u.t4.unk18[0] = -92.5f;
+    e->u.t4.unk18[1] = -36.0f;
+    e->u.t4.unk18[2] = 53.0f;
+    e->u.t4.unk18[3] = -47.5f;
+    e->u.t4.unk18[4] = 0.0f;
+    e->u.t4.unk18[5] = 118.0f;
+    e->u.t4.unk18[6] = 29.0f;
+    e->u.t4.unk18[7] = -36.0f;
+    e->u.t4.unk18[8] = 66.0f;
+    e->u.t4.unk18[9] = 83.0f;
+    e->u.t4.unk18[10] = 0.0f;
+    e->u.t4.unk18[11] = 122.0f;
 }
+#endif
 
 // .text:0x80028F48 size:0x614
 void fn_80028F48(void) {
