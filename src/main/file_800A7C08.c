@@ -2511,9 +2511,32 @@ void fn_800AD070(void) {
 }
 
 // .text:0x800AD490 size:0x70
+// NONMATCHING 87%: the 'state & 2' branch is folded into beqlr with a speculative clrlwi; the original keeps two returns
+#if NONMATCHING
 u32 fn_800AD490(ThpPlayer* p) {
-    return 0;
+    u8 state;
+
+    if (p == NULL) {
+        return 0xC0000000;
+    }
+    state = p->state;
+    if (state & 4) {
+        return 4;
+    }
+    switch (lbl_803C6CF8._722) {
+    case -1:
+        return 0xA0000000;
+    default:
+        return lbl_803C6CF8._722 | 0x80000000;
+    case 0:
+        if (state & 2) {
+            return state & 0x12;
+        } else {
+            return state & 1;
+        }
+    }
 }
+#endif
 
 // .text:0x800AD500 size:0x1BC
 void fn_800AD500(ThpPlayer* p, u8* work) {
