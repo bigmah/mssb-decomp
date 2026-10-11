@@ -1347,3 +1347,109 @@ void fn_1_23804(s32 arg0, s32 arg1, s32 rows, s32 cols, f32 arg4, f32 arg5) {
     GXWGFifo.u32 = 0x0000FFFF;
 }
 #endif
+
+#define CHALLENGE_PAD_TRIGGER (*(u16*)((u8*)&lbl_803C77B8 + 4)) // TODO type: lbl_803C77B8_s lacks the 0x04 field
+
+// .text:0x1FD78 size:0x2D4
+void fn_1_1FD78(ChallengeDebugMenu* menu) {
+    u32 step;
+    s32 i;
+    s32 v;
+    u8 cur;
+
+    step = 1;
+    if (lbl_803C77B8._00 & 0x20) {
+        step = 100;
+    }
+    for (i = 0; i < 6; i++) {
+        cur = menu->cursor;
+        switch (i) {
+        case 0:
+            if (i == cur) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (menu->toggle == 0) {
+                        menu->toggle = 2;
+                    }
+                    menu->toggle--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    menu->toggle++;
+                    if (menu->toggle == 2) {
+                        menu->toggle = 0;
+                    }
+                }
+            }
+            break;
+        case 1:
+            v = fn_80048EA8(0);
+            if (i == menu->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    v--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    v++;
+                }
+                fn_80048E00(0, v);
+            }
+            break;
+        case 2:
+            v = fn_80048EA8(1);
+            if (i == menu->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    v--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    v++;
+                }
+                fn_80048E00(1, v);
+            }
+            break;
+        case 3:
+            if (i == cur) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (menu->value <= step) {
+                        menu->value = 0;
+                    } else {
+                        menu->value -= step;
+                    }
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    menu->value += step;
+                    if (menu->value > 0x1000) {
+                        menu->value = 0x1000;
+                    }
+                }
+            }
+            break;
+        case 4:
+            if (i == cur) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    menu->unk23--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    menu->unk23++;
+                }
+            }
+            break;
+        case 5:
+            if (i == cur) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (menu->level > 1) {
+                        menu->level--;
+                    }
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    if (menu->level < 4) {
+                        menu->level++;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    if (CHALLENGE_PAD_TRIGGER & 8) {
+        if (menu->cursor == 0) {
+            menu->cursor = 6;
+        }
+        menu->cursor--;
+    } else if (CHALLENGE_PAD_TRIGGER & 4) {
+        menu->cursor++;
+        if (menu->cursor == 6) {
+            menu->cursor = 0;
+        }
+    }
+}
