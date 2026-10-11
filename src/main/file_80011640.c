@@ -747,8 +747,33 @@ int fn_8001C67C_animation(int a, int b) {
 }
 
 // .text:0x8001C920 size:0x120
-void fn_8001C920(void) {
-    return;
+s32 fn_8001C920(s32 id) {
+    s32 file;
+
+    if (lbl_803CBC3C[1] == 0) {
+        if ((s32)lbl_803C6CF8.transferDone != 1) {
+            goto fail;
+        }
+        lbl_803CBC3C[1] = 1;
+    }
+    if (lbl_803CBC3C[1] == 1) {
+        if (g_d_GameSettings.minigamesEnabled != 0 || g_d_GameSettings.GameModeSelected == 2) {
+            file = id * 0x13 + 0x12;
+        } else {
+            file = id * 0x13 + 5;
+        }
+        ARAMTransfer(&lbl_803CB790[file], lbl_8036E548._2CE4, 0, 0);
+        lbl_803CBC3C[1] = 2;
+    } else if (lbl_803CBC3C[1] == 2 && (s32)lbl_803C6CF8.transferDone == 1) {
+        ANIMGet(lbl_8036E548._2CE4);
+        if (lbl_8036E548.active[0]->banks.b[3] == NULL) {
+            lbl_8036E548.active[0]->banks.b[3] = lbl_8036E548._2CE4;
+        }
+        return 1;
+    }
+fail:
+    lbl_803CBC3C[0] = 0;
+    return 0;
 }
 
 // .text:0x8001CA40 size:0xD0
