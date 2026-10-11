@@ -41,6 +41,20 @@ void fn_1_85A8(void) {
     }
 }
 
+// .text:0x00008624 size:0x98
+void fn_1_8624(void) {
+    ChAnimTask* task = lbl_803CC1B8;
+
+    if (lbl_803C77B8._02 & 0x100) {
+        lbl_80371C30[task->objIdx].obj->frame = 0;
+        task->timer = 0;
+    }
+    if (lbl_1_common_bss_47674.cur != 0 || lbl_1_common_bss_47674.loadStep == 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
+    task->timer++;
+}
+
 // .text:0x000088CC size:0x4
 void fn_1_88CC(void) {
     return;
