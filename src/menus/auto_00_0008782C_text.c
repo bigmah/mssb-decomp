@@ -290,7 +290,88 @@ void fn_2_883C8(SceneTask* task) {
 
 // .text:0x000887F8 size:0x598
 void fn_2_887F8(SceneTask* task) {
-    return;
+    s32 i;
+    s32 j;
+    s32 done;
+    s32 total;
+    ChallengeState* save;
+    s32 digits[3];
+    s32 rem;
+
+    if ((lbl_2_bss_33FBCC.animStarted == 0) ? TRUE : FALSE) {
+        fn_2_8A008(task);
+        for (i = 0; i < 3; i++) {
+            if (lbl_80354768._CF5E[i] != 0) {
+                save = CHALLENGE_SAVE(i);
+                if (lbl_2_bss_F410.slot == i) {
+                    digits[0] = save->_43BC / 100;
+                    digits[1] = (save->_43BC - digits[0] * 100) / 10;
+                    digits[2] = (save->_43BC - digits[0] * 100) - digits[1] * 10;
+                    for (j = 0; j < 3; j++) {
+                        SLOT_OBJ(task, i * 3 + j, 0xE)->flags |= 2;
+                        SLOT_OBJ(task, i * 3 + j, 0xE)->_5C = 0;
+                        fn_800363D8(task, i * 3 + 0xE + j, 1, 0xD, digits[j]);
+                        SLOT_OBJ(task, i * 3 + j, 0xE)->_68 = 1;
+                    }
+                    SLOT_OBJ(task, i, 4)->_68 = 1;
+                    SLOT_OBJ(task, i, 7)->_64 = 0x13;
+                    SLOT_OBJ(task, i, 7)->_5C = 0;
+                    SLOT_OBJ(task, i, 7)->_68 = 1;
+                } else {
+                    SLOT_OBJ(task, i, 4)->_68 = 1;
+                    SLOT_OBJ(task, i, 7)->_64 = 0x12;
+                    SLOT_OBJ(task, i, 7)->_68 = 1;
+                    SLOT_OBJ(task, i, 0xB)->_5C = 0x1A0000;
+                    SLOT_OBJ(task, i, 0xB)->_68 = 0;
+                }
+                if (save->_444B != -1) {
+                    SLOT_OBJ(task, i, 0x32)->flags |= 2;
+                    SLOT_OBJ(task, i, 0x32)->_5C = 0;
+                    fn_800363D8(task, i + 0x32, 4, 0x64, save->_444B);
+                    SLOT_OBJ(task, i, 0x32)->_68 = 1;
+                } else {
+                    SLOT_OBJ(task, i, 0x35)->flags &= ~2;
+                    SLOT_OBJ(task, i, 0x35)->_68 = 0;
+                    SLOT_OBJ(task, i, 0x35)->flags |= 2;
+                    SLOT_OBJ(task, i, 0x35)->_68 = 1;
+                    SLOT_OBJ(task, i, 0x32)->flags &= ~2;
+                }
+            }
+        }
+        SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->flags |= 2;
+        SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->_5C = 0;
+        SLOT_OBJ(task, lbl_2_bss_F410.slot, 7)->_68 = 1;
+        SLOT_OBJ(task, lbl_2_bss_F410.slot, 4)->flags |= 2;
+        lbl_2_bss_33FBCC.animStarted = 1;
+        lbl_2_bss_33FBCC.animRunning = 1;
+    }
+    if ((lbl_2_bss_33FBCC.animRunning == 1) ? TRUE : FALSE) {
+        done = 0;
+        total = 0;
+        for (i = 0; i < 3; i++) {
+            if (lbl_80354768._CF5E[i] != 0) {
+                if (lbl_2_bss_F410.slot == i) {
+                    for (j = 0; j < 3; j++) {
+                        total++;
+                        done += fn_80042DA8(task, i * 3 + 0xE + j, 0x15) != 0;
+                    }
+                }
+                save = CHALLENGE_SAVE(i);
+                if (save->_444B != -1) {
+                    total++;
+                    done += fn_80042DA8(task, i + 0x32, 0xA) != 0;
+                } else {
+                    total++;
+                    done += fn_80042DA8(task, i + 0x35, 0xE) != 0;
+                }
+            }
+        }
+        if (done == total) {
+            lbl_2_bss_33FBCC.animStarted = 0;
+            lbl_2_bss_33FBCC.anim = 0;
+            lbl_2_bss_33FBCC.animRunning = 0;
+        }
+    }
 }
 
 // .text:0x00088D90 size:0x2A8
