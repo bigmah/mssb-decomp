@@ -404,8 +404,9 @@ void _OSAllocFromHeap(void) {
 }
 
 // .text:0x800AD01C size:0x1C
-void fn_800AD01C(void) {
-    return;
+void fn_800AD01C(void* hi) {
+    lbl_803C7898.hi = hi;
+    lbl_803C7898.freeSize = (u8*)hi - lbl_803C7898.lo;
 }
 
 // .text:0x800AD038 size:0x1C
