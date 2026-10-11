@@ -3899,6 +3899,8 @@ void fn_3_872CC(void) {
 
 // .text:0x00087424 size:0x3F8 mapped:0x806C64B8
 // 97%: only prologue load order differs (orig loads 4C54 table first: lha 0x14,0x16,0x12 then lfs 4C44; ours starts with 4C44 base)
+// NONMATCHING 97%: instruction scheduling
+#if NONMATCHING
 void fn_3_87424(void) {
     u8* q;
     s16 t;
@@ -4004,6 +4006,7 @@ void fn_3_87424(void) {
         }
     }
 }
+#endif
 
 // .text:0x0008781C size:0x2CC mapped:0x806C68B0
 void fn_3_8781C(void) {
