@@ -221,5 +221,6 @@ void fn_1_25C68(void);
 s16 fn_1_1E290(s16 sel, u16 held, u16 pressed, u16 repeat);
 s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat);
 s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat);
+void fn_1_1F900(ChallengeTextureStages* stages);
 
 #endif

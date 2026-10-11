@@ -1626,6 +1626,30 @@ void fn_1_25C68(void) {
 
 extern const f32 lbl_1_rodata_7800;
 
+static inline void fn_1_1DE60_adjust(f32* value, u16 held, s32 decrease, f32 min, f32 max) {
+    f32 v;
+    f32 step;
+
+    step = lbl_1_rodata_77F8;
+    v = *value;
+    if (held & 0x40) {
+        step = lbl_1_rodata_77FC;
+    } else if (held & 0x20) {
+        step = lbl_1_rodata_7800;
+    }
+    if (decrease) {
+        step = -step;
+    }
+    v += step;
+    if (v < min) {
+        v = min;
+    }
+    if (v > max) {
+        v = max;
+    }
+    *value = v;
+}
+
 static inline void fn_1_1E290_adjust(f32* value, u16 held, s32 decrease) {
     f32 v;
     f32 step;
@@ -1800,29 +1824,6 @@ s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat) {
 }
 #endif
 
-static inline void fn_1_1DE60_adjust(f32* value, u16 held, s32 decrease, f32 min, f32 max) {
-    f32 v;
-    f32 step;
-
-    step = lbl_1_rodata_77F8;
-    v = *value;
-    if (held & 0x40) {
-        step = lbl_1_rodata_77FC;
-    } else if (held & 0x20) {
-        step = lbl_1_rodata_7800;
-    }
-    if (decrease) {
-        step = -step;
-    }
-    v += step;
-    if (v < min) {
-        v = min;
-    }
-    if (v > max) {
-        v = max;
-    }
-    *value = v;
-}
 
 // .text:0x1DE60 size:0x42C
 s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat) {
@@ -1866,3 +1867,51 @@ s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat) {
     }
     return sel;
 }
+
+// NONMATCHING 73%: orig unrolls the index fill loop x8 (with a load/store-back of lbl_1_bss_6E24[k]) and uses two fewer saved regs; ours keeps it rolled
+// .text:0x1F900 size:0x478
+#if NONMATCHING
+void fn_1_1F900(ChallengeTextureStages* stages) {
+    s32 i;
+    s32 j;
+    s32 cell;
+    s32 x;
+    s32 y;
+    u32 index[4];
+
+    for (i = 0; i < stages->value; i++) {
+        cell = i % 480 % 48;
+        x = cell % 8;
+        y = cell / 8;
+        for (j = 0; j < stages->stageCount; j++) {
+            index[j] = lbl_1_bss_6E24[(x + y) % 8];
+        }
+        fn_1_20640(stages, index);
+        GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+        GXWGFifo.f32 = x * stages->unk23;
+        GXWGFifo.f32 = y * stages->unk23;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.u32 = 0xFFFFFF80;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.f32 = x * stages->unk23;
+        GXWGFifo.f32 = stages->unk23 + y * stages->unk23;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.u32 = 0xFFFFFF80;
+        GXWGFifo.u16 = 0;
+        GXWGFifo.u16 = 0x100;
+        GXWGFifo.f32 = stages->unk23 + x * stages->unk23;
+        GXWGFifo.f32 = stages->unk23 + y * stages->unk23;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.u32 = 0xFFFFFF80;
+        GXWGFifo.u16 = 0x100;
+        GXWGFifo.u16 = 0x100;
+        GXWGFifo.f32 = stages->unk23 + x * stages->unk23;
+        GXWGFifo.f32 = y * stages->unk23;
+        GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+        GXWGFifo.u32 = 0xFFFFFF80;
+        GXWGFifo.u16 = 0x100;
+        GXWGFifo.u16 = 0;
+    }
+}
+#endif
