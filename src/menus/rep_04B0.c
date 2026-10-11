@@ -665,9 +665,112 @@ void fn_2_15AFC(s32 port, s32 held, s32 pressed, u16 repeat) {
 }
 
 // .text:0x00015E80 size:0x59C
+// NONMATCHING 97%: two extra saved registers (r22/r23) and sel[port] indexed from the
+// extended copy of port; ~97% when sel[team] is written ((s32*)&lbl_2_bss_F410)[team + 4]
+#if NONMATCHING
+// Captain select screen update for one port.
 void fn_2_15E80(u8 port) {
-    return;
+    PortInput in;
+    s32 i;
+    s32 start;
+    s32 before;
+    s32 cur;
+    u8 player = lbl_803C66B0.portOf[port];
+    s32 team = lbl_8034E9A0.teamPort[port];
+
+    if (lbl_2_bss_100B8.active == 0 || lbl_2_bss_100B8.busy != 0 || lbl_803C66B0.active[port] != 0 ||
+        lbl_803297E0.random[player] != 0) {
+        in.held = in.pressed = in.repeat = 0;
+    } else if (g_d_GameSettings.GameModeSelected == 5 && lbl_803CBBC4[3] == 1) {
+        in.held = in.pressed = in.repeat = 0;
+    } else if (lbl_2_bss_100B8.picked[player] != 0) {
+        in.held = lbl_8034E9A0.input[port].held & 0x200;
+        in.pressed = lbl_8034E9A0.input[port].pressed & 0x200;
+        in.repeat = lbl_8034E9A0.input[port].repeat & 0x200;
+        goto buttons;
+    } else if (lbl_2_bss_F468._45[player] != 0) {
+        u16 pressed = lbl_8034E9A0.input[port].pressed;
+        if (pressed & 2) {
+            if (lbl_2_bss_F468._47[player] == 0) {
+                lbl_2_bss_F468._47[player] = 1;
+                lbl_2_bss_F468._49[player] = 0;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+            in.repeat = in.pressed = in.held = 0;
+        } else if (pressed & 1) {
+            if (lbl_2_bss_F468._47[player] == 1) {
+                lbl_2_bss_F468._47[player] = 0;
+                lbl_2_bss_F468._49[player] = 0;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+            in.repeat = in.pressed = in.held = 0;
+        } else {
+            if (pressed != 0 && !(pressed & 8) && !(pressed & 4)) {
+                lbl_2_bss_F468._45[player] = 0;
+                sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            }
+            in.repeat = in.pressed = in.held = 0;
+        }
+    } else {
+        in.held = lbl_8034E9A0.input[port].held;
+        in.pressed = lbl_8034E9A0.input[port].pressed;
+        in.repeat = lbl_8034E9A0.input[port].repeat;
+    }
+
+    lbl_2_bss_100B8.debugCam = 0;
+    lbl_2_bss_100B8.debugMenu = 0;
+    if (lbl_2_bss_100B8.debugCam != 0) {
+        if (lbl_2_bss_100B8.debugMenu != 0) {
+            lbl_2_bss_100B8.debugCam = 0;
+        } else {
+            fn_2_14574(&in);
+        }
+        return;
+    }
+    if (lbl_2_bss_100B8.debugMenu != 0) {
+        fn_2_14220(&in);
+        return;
+    }
+
+    if (lbl_803CBBCC->prevScene == 10 && lbl_8034E9A0.captain[port] != -1 && g_d_GameSettings._10 == 0) {
+        fn_8004E5B4(0, lbl_800FE5D4[lbl_2_bss_F410.sel[0]], 1);
+        for (i = 0; i < 2; i++) {
+            SHOW_CAPTAIN_CURSOR(lbl_8034E9A0.teamPort[i], lbl_2_bss_F410.sel[i])
+        }
+    }
+
+    // (the second pressed test is redundant in the original too)
+    if (lbl_2_bss_100B8.picked[player] == 0 || in.held != 0 || in.pressed != 0 || in.pressed != 0) {
+        lbl_803C6724.sel[port] = lbl_2_bss_F410.sel[player];
+        start = lbl_2_bss_F410.sel[team];
+        do {
+            before = lbl_2_bss_F410.sel[team];
+            fn_2_14CA0(player, &in);
+            cur = lbl_2_bss_F410.sel[team];
+        } while (lbl_8034E9A0.charFlag[lbl_800FE5D4[cur]] != 0 && start != cur && before != cur);
+
+        if (lbl_2_bss_F410.sel[port] == lbl_2_bss_F410.sel[port ^ 1] && lbl_803C5EA4._05 != 0) {
+            lbl_2_bss_F410.sel[team]++;
+            if (lbl_2_bss_F410.sel[team] >= 12) {
+                lbl_2_bss_F410.sel[team] = 0;
+            }
+        } else if ((in.repeat & 0xF) == 0 || (in.repeat & 0x20)) {
+        buttons:
+            fn_2_15AFC(port, in.held, in.pressed, in.repeat);
+        } else if (g_d_GameSettings.GameModeSelected == 5) {
+            if (in.repeat & 3) {
+                fn_2_12238();
+                fn_800625A4(0, 3);
+                lbl_803CBBC4[0] = 3;
+            }
+        } else if (!(in.pressed & 0x1000) && (in.repeat & 0xF) != 0) {
+            fn_800625A4(player, 3);
+        }
+    } else {
+        goto buttons;
+    }
 }
+#endif
 
 // .text:0x0001641C size:0x44
 void fn_2_1641C(void) {
