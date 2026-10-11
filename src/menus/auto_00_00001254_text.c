@@ -1971,3 +1971,27 @@ void fn_2_11340(u8 team) {
     }
 }
 #endif
+
+// NONMATCHING 75%: the original inlines fn_2_CA60 (NONMATCHING) into the slot loop
+#if NONMATCHING
+// fn_2_BF90, size:0x394
+void fn_2_BF90(void) {
+    s32 idx = -1;
+    s32 i;
+    memset(lbl_8034E9A0 + 0x4757, 0, 0x36);
+    for (i = 0; i < 12; i++) {
+        if (lbl_80108EC4[i] == (s8)starMissionCompletionTracker[0x441F]) {
+            lbl_8034E9A0[0x470C] = i;
+            idx = (u8)i;
+        }
+    }
+    ((s32*)lbl_2_bss_F468)[5] = 0;
+    ((s32*)lbl_2_bss_F468)[4] = 0;
+    for (i = 0; i < 9; i++) {
+        lbl_803C6724[0xB + i] = lbl_8034E9A0[0x4380 + idx * 0x48 + i];
+    }
+    for (i = 0; i < 9; i++) {
+        fn_2_CA60(i, 1);
+    }
+}
+#endif
