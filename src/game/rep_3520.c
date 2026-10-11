@@ -547,7 +547,8 @@ extern void fn_800246D4(void*, void*, void*, int, int);
         }                                                                \
         *out = r;                                                        \
     }
-// 93%: g_Minigame base lands in r0 then mr (orig addi r7,r7 directly); float regs f1/f3 swapped
+// NONMATCHING 93%: g_Minigame base lands in r0 then mr (orig addi r7,r7 directly); float regs f1/f3 swapped
+#if NONMATCHING
 void fn_3_134658(int a, f32* ox, f32* oz, s32* out) {
     F134658Ent e[4];
     F134658Ent* q = e;
@@ -597,6 +598,8 @@ void fn_3_134658(int a, f32* ox, f32* oz, s32* out) {
         }
     }
 }
+#endif
+
 
 // .text:0x00134908 size:0x10 mapped:0x8077399C
 s32 fn_3_134908(s16* a, s16* b) {
@@ -917,8 +920,9 @@ int fn_3_135698(u8* a, u8* b) {
     }
 }
 
-// 99%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_13BB30
+// NONMATCHING 99%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_13BB30
 // .text:0x001356F8 size:0xAC mapped:0x8077478C
+#if NONMATCHING
 void fn_3_1356F8(void) {
     u8* q = G8 + 0x1DCC;
     u8* g;
@@ -939,6 +943,8 @@ void fn_3_1356F8(void) {
         *(f32*)q = v;
     }
 }
+#endif
+
 
 // .text:0x001357A4 size:0x98 mapped:0x80774838
 void fn_3_1357A4(f32* out, Vec* dir) {
@@ -1005,7 +1011,8 @@ extern f32 lbl_3_rodata_3640;
 extern f32 lbl_3_data_219AC[];
 extern f32 lbl_3_data_21A54[];
 extern f32 lbl_3_data_47BC[];
-// 98%: g_Minigame base lands in r5 then mr r27 (orig addi r27 directly); a/b loop incr order differs
+// NONMATCHING 98%: g_Minigame base lands in r5 then mr r27 (orig addi r27 directly); a/b loop incr order differs
+#if NONMATCHING
 void fn_3_135A64(void) {
     u8* b;
     u8* a;
@@ -1050,11 +1057,14 @@ void fn_3_135A64(void) {
         }
     }
 }
+#endif
+
 
 // .text:0x00135C18 size:0x220 mapped:0x80774CAC
 extern void fn_3_156548(u32, f32, f32, f32);
 extern void fn_3_15730C(u32, f32, f32, f32);
-// 97%: structure and float regs match; int saved regs (gp/ge/ep/i/k/n) and prologue lis order differ
+// NONMATCHING 97%: structure and float regs match; int saved regs (gp/ge/ep/i/k/n) and prologue lis order differ
+#if NONMATCHING
 void fn_3_135C18(void) {
     u8* e;
     f32 spC;
@@ -1111,6 +1121,8 @@ void fn_3_135C18(void) {
         gp += 2;
     } while (i < 4);
 }
+#endif
+
 
 // .text:0x00135E38 size:0x60 mapped:0x80774ECC
 void fn_3_135E38(void) {
@@ -1719,7 +1731,8 @@ u8 fn_3_1373E0(VecSrcDst* seg, Vec* vel, CollisionStruct* col, f32 r) {
 #endif
 
 // .text:0x001379A0 size:0x170 mapped:0x80776A34
-// 96%: only the first (unrolled) fielder-index loop differs: orig keeps g_Minigame in r7 plus a separate induction ptr in r4
+// NONMATCHING 96%: only the first (unrolled) fielder-index loop differs: orig keeps g_Minigame in r7 plus a separate induction ptr in r4
+#if NONMATCHING
 u8 fn_3_1379A0(s32 idx) {
     u8* f = (u8*)&g_Fielders[idx];
     u8* m = G8;
@@ -1764,9 +1777,12 @@ u8 fn_3_1379A0(s32 idx) {
     }
     return 0;
 }
+#endif
+
 
 // .text:0x00137B10 size:0x1E8 mapped:0x80776BA4
-// 98%: only the Vec v x/y/z load registers and store order differ (orig f1=x,f0=0.0,f2=z)
+// NONMATCHING 98%: only the Vec v x/y/z load registers and store order differ (orig f1=x,f0=0.0,f2=z)
+#if NONMATCHING
 u8 fn_3_137B10(u8* o) {
     u8* g = G8;
     u8* p = g;
@@ -1834,6 +1850,8 @@ u8 fn_3_137B10(u8* o) {
     }
     return ret;
 }
+#endif
+
 
 // .text:0x00137CF8 size:0xEC mapped:0x80776D8C
 static inline void h137CF8(u8* o) {
@@ -3109,8 +3127,36 @@ void fn_3_13B9C4(void) {
     G8[0xCCE] = 0;
 }
 
-// 99%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_1356F8
 // .text:0x0013BB30 size:0xC4 mapped:0x8077ABC4
+// Inline copy for fn_3_13C468, which inlines this function and matches with it.
+static inline void h13BB30(void) {
+    u8* g;
+    u8* q;
+    u8 st;
+    u32 i;
+    f32 v;
+    fn_3_F1DC();
+    q = G8 + 0x1DCC;
+    memset(g_Minigame._1D7C, 0, 0x78);
+    g = G8;
+    for (i = 0; i < 4; i++) {
+        st = g[0x18DC];
+        *(s16*)(q + 4) = -1;
+        if (RandomInt_Game(100) < (s8)lbl_3_data_21B88[st]) {
+            v = lbl_3_rodata_35FC;
+        } else {
+            v = lbl_3_rodata_3600;
+        }
+        *(f32*)q = v;
+        q += 8;
+        g++;
+    }
+    changeScene(1, 6);
+    fn_3_5A6D4(2);
+}
+
+// NONMATCHING 94%: only g_Minigame base reg materialization (addi r0 + mr) differs; same as fn_3_1356F8
+#if NONMATCHING
 void fn_3_13BB30(void) {
     u8* g;
     u8* q;
@@ -3136,6 +3182,8 @@ void fn_3_13BB30(void) {
     changeScene(1, 6);
     fn_3_5A6D4(2);
 }
+#endif
+
 
 // .text:0x0013BBF4 size:0xC4 mapped:0x8077AC88
 void fn_3_13BBF4(void) {
@@ -3348,7 +3396,7 @@ void fn_3_13C468(void) {
         fn_3_13BBF4();
         break;
     case 0:
-        fn_3_13BB30();
+        h13BB30();
         break;
     case 2:
         fn_3_13B284();
