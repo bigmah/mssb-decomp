@@ -442,9 +442,71 @@ s32 fn_3_8C4F0(u32 div, u8 lim) {
 }
 
 // .text:0x0008C5C8 size:0x7AC mapped:0x806CB65C
+// Ball-collision sound: pick an FX by stadium and collision code and play it
+// panned to the ball position (fn_3_8FF5C is inlined in the original).
+extern u8 g_Ball[];
+#define BALL_POS ((f32*)(g_Ball + 0x0))            // TODO type: InMemBallType.AtBat_Contact_BallPos
+#define BALL_VELOCITY (*(f32*)(g_Ball + 0x1A14))   // TODO type: InMemBallType.ballVelocity
+#define BALL_COLLISION (*(s32*)(g_Ball + 0x1B44))  // TODO type: InMemBallType.collisionCode
+// NONMATCHING 75%: orig reaches the FX tables through the pooled base lbl_3_data_8148 (ours: lbl_3_data_8338 via inlined fn_3_8FF5C) and allocates registers differently
+#if NONMATCHING
 void fn_3_8C5C8(void) {
-    return;
+    u8* d = lbl_3_data_8148;
+    s32 code = BALL_COLLISION & 0x7F;
+    u8 stadium;
+    u32 vid;
+    if (BALL_VELOCITY < 0.2f) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        /* +0x94 = lbl_3_data_81DC (per-stadium FX base id), +0x2BC = lbl_3_data_8404 (per-stadium vol/ctrl rows), +0x370 = lbl_3_data_84B8 */
+        stadium = g_d_GameSettings.StadiumID;
+        vid = sndFXStartEx((u16)(((u16*)(d + 0x94))[stadium] + 0x18),
+                           (g_d_GameSettings.GameModeSelected == 6 ? d + 0x370 : d + 0x2BC + stadium * 0x1E)[0x30], 0x3F, 0);
+        sndFXCtrl(vid, 0x5B, (g_d_GameSettings.GameModeSelected == 6 ? d + 0x370 : d + 0x2BC + stadium * 0x1E)[0x31]);
+        return;
+    }
+    switch (g_d_GameSettings.StadiumID) {
+    case 1:
+        if (code == 8) {
+            fn_3_8FF5C(0x1A2, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+        } else {
+            fn_3_8FF5C(0x1A1, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+        }
+        return;
+    case 3:
+        if (code == 1) {
+            fn_3_8FF5C(0x1A4, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        break;
+    case 4:
+        if (code == 6) {
+            fn_3_8FF5C(0x1A1, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        if (code == 10) {
+            fn_3_8FF5C(0x1A2, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        if (code == 9) {
+            fn_3_8FF5C(0x1A0, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        break;
+    case 5:
+        if (code == 10) {
+            fn_3_8FF5C(0x1A2, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
+            return;
+        }
+        break;
+    }
+    fn_3_8FF5C(0x17E, BALL_POS[0], BALL_POS[1], BALL_POS[2]);
 }
+#endif
 
 // .text:0x0008CD74 size:0xC4C mapped:0x806CBE08
 void fn_3_8CD74(void) {
@@ -507,7 +569,6 @@ void fn_3_8FC0C(void) {
 }
 
 // .text:0x0008FC80 size:0x298 mapped:0x806CED14
-extern u8 g_Ball[];
 extern u8 g_Practice[];
 extern s16 lbl_3_data_88B8[];
 extern f32 lbl_3_rodata_1604;
