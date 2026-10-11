@@ -30,5 +30,6 @@ u8 translateStarSwing(u8 star);
 u8 fn_80064918(s16 charId);
 void fn_8006496C(void);
 void fn_800649BC(void);
+void fn_800671FC(void);
 
 #endif
