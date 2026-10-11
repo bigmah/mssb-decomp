@@ -98,9 +98,289 @@ s32 fn_80024DB0(ShapeAnimState* st) {
 }
 
 // .text:0x80024FA4 size:0xCB4
-void fn_80024FA4(void) {
-    return;
+// Writes the current blend of the two active morph targets into the model's vertex arrays.
+// NONMATCHING 89%: blend loops pick different registers; original re-reads s0/s1 with lhzx and keeps hold/mode on the stack
+#if NONMATCHING
+void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 forceTarget) {
+    ShapeSeq* seq = &st->seqs[st->seqIdx];
+    u8 hold = 0;
+    ShapeModel* m;
+    ModelGeo* geo;
+    ModelVtxDesc* vd;
+    void* posData;
+    ModelGeoArray* arrays;
+    ShapeKey* keys;
+    u32 k;
+    u32 n;
+    f32 frame0;
+    f32 frame1;
+    f32 w0;
+    f32 w1;
+    f32 blend;
+    f32 inv;
+    s32 mode;
+    s32 mul8;
+    s32 mul8Inv;
+    s32 mul16;
+    s32 mul16Inv;
+    s32 src0;
+    s32 src1;
+    s32 g;
+    void* flushAddr;
+    u32 flushSize;
+
+    if (shape == NULL || shape->targets == NULL) {
+        return;
+    }
+    if (!shapeDirtyA(st) && !shapeDirtyB(st)) {
+        return;
+    }
+    k = st->keyIdx;
+    n = seq->hdr.keyCount;
+    if (k == n || (hold = seq->keys[k + 1].hold) != 0) {
+        if (!shapeDirtyB(st)) {
+            return;
+        }
+    }
+
+    m = *model;
+    geo = m->geo;
+    vd = m->vtxDesc;
+    if (geo == NULL) {
+        posData = NULL;
+        arrays = NULL;
+    } else {
+        if (geo->a != NULL) {
+            posData = geo->a->data;
+        } else if (geo->b != NULL) {
+            posData = geo->b->data;
+        } else {
+            posData = NULL;
+        }
+        arrays = geo->arrays;
+    }
+
+    keys = seq->keys;
+    frame0 = keys[(u16)k].frame;
+    if ((s32)(k + 1) == (s32)n) {
+        frame1 = 0.0f;
+        hold = 1;
+    } else {
+        frame1 = keys[k + 1].frame;
+    }
+    if (hold) {
+        mode = 0;
+    } else {
+        if (keys[(u16)k].ease) {
+            w0 = 1.0f - keys[(u16)k].weight / 100.0f;
+        } else {
+            w0 = 0.0f;
+        }
+        if (keys[k + 1].ease) {
+            w1 = keys[k + 1].weight / 100.0f;
+        } else {
+            w1 = 1.0f;
+        }
+        if (st->frame == frame0) {
+            blend = w0;
+            mode = 0;
+        } else if (st->frame == frame1) {
+            blend = w1;
+            mode = 1;
+        } else {
+            mode = 2;
+            blend = (st->frame - frame0) / (frame1 - frame0) * (w1 - w0) + w0;
+        }
+        if (1.0f != blend && 0.0f != blend) {
+            mode = 2;
+        }
+        inv = 1.0f - blend;
+        mul8Inv = 16777216.0f * inv;
+        mul16Inv = 65536.0f * inv;
+        mul8 = 0x1000000 - mul8Inv;
+        mul16 = 0x10000 - mul16Inv;
+    }
+    if (keys[(u16)k].override && forceTarget != -1) {
+        src0 = forceTarget;
+    } else {
+        src0 = keys[(u16)k].target;
+    }
+    if (hold) {
+        src1 = src0;
+    } else if (keys[k + 1].override && forceTarget != -1) {
+        src1 = forceTarget;
+    } else {
+        src1 = keys[k + 1].target;
+    }
+    inv = 1.0f - blend;
+
+    for (g = 0; g < shape->groupCount; g++) {
+        ShapeGroup* grp = &shape->groups[g];
+        ShapeEntry* e = grp->entries;
+        s32 ti = 0;
+        s32 ei;
+
+        for (ei = 0; ei < grp->entryCount; ei++) {
+            ShapeTarget* tgt;
+            u32 copyOnly;
+            u8* dst;
+            u8* s0;
+            u8* s1;
+            s32 off;
+            s32 compCount;
+            s32 compSize;
+            s32 ri;
+            s32 v;
+            s32 count;
+
+            if (!shapeDirtyA(st)) {
+                e = (ShapeEntry*)((u8*)e + grp->entryStride);
+                continue;
+            }
+            copyOnly = e->copyOnly;
+            if (copyOnly && !shapeDirtyB(st)) {
+                e = (ShapeEntry*)((u8*)e + grp->entryStride);
+                continue;
+            }
+
+            tgt = NULL;
+            do {
+                if (e->id == shape->targets[ti].idx && e->type == shape->targets[ti].type) {
+                    tgt = &shape->targets[ti];
+                    break;
+                }
+                ti++;
+            } while (ti < shape->targetCount);
+            if (tgt == NULL) {
+                break;
+            }
+
+            compCount = e->compCount;
+            compSize = e->compSize;
+            dst = tgt->buf[tgt->useBuf1];
+            off = 0;
+            s0 = e->src[src0];
+            s1 = e->src[src1];
+            if (copyOnly || hold || mode == 0) {
+                s32 stride = compSize * compCount;
+                for (ri = 0; e->ranges[ri].count != 0; ri++) {
+                    count = e->ranges[ri].count * stride;
+                    memcpy(dst + e->ranges[ri].start * stride, s0 + off, count);
+                    off += count;
+                }
+            } else {
+                switch (mode) {
+                case 1: {
+                s32 stride = compSize * compCount;
+                for (ri = 0; e->ranges[ri].count != 0; ri++) {
+                    count = e->ranges[ri].count * stride;
+                    memcpy(dst + e->ranges[ri].start * stride, s1 + off, count);
+                    off += count;
+                }
+                break;
+                }
+                case 2:
+                if (e->type == 3) {
+                    // packed 4:4:4:4 values
+                    u32 stride = compSize * compCount;
+                    for (ri = 0; e->ranges[ri].count != 0; ri++) {
+                        u16 start = e->ranges[ri].start;
+                        for (v = 0; v < e->ranges[ri].count; v++) {
+                            u16* d = (u16*)dst + compCount * (start + v);
+                            *d = (s32)((s32)(*(u16*)(s0 + off) & 0xF) * inv + (s32)(*(u16*)(s1 + off) & 0xF) * blend) & 0xF;
+                            *d |= (s32)((s32)(*(u16*)(s0 + off) & 0xF0) * inv + (s32)(*(u16*)(s1 + off) & 0xF0) * blend) & 0xF0;
+                            *d |= (s32)((s32)(*(u16*)(s0 + off) & 0xF00) * inv + (s32)(*(u16*)(s1 + off) & 0xF00) * blend) & 0xF00;
+                            {
+                                u16 a = *(u16*)(s0 + off);
+                                u16 b = *(u16*)(s1 + off);
+                                off += stride;
+                                *d |= (s32)((s32)(a & 0xF000) * inv + (s32)(b & 0xF000) * blend) & 0xF000;
+                            }
+                        }
+                    }
+                } else if (compSize == 1) {
+                    u32 stride = compCount * compSize;
+                    for (ri = 0; e->ranges[ri].count != 0; ri++) {
+                        u16 start = e->ranges[ri].start;
+                        for (v = 0; v < e->ranges[ri].count; v++) {
+                            s8* d = (s8*)(dst + (start + v) * stride);
+                            s32 c;
+                            for (c = compCount; c > 0; c--) {
+                                u8 b = s1[off];
+                                u8 a = s0[off];
+                                off += compSize;
+                                *d++ = (mul8Inv * a + (mul8 * b + (lbl_803CBC68 << 24))) / 0x1000000;
+                            }
+                        }
+                    }
+                } else if (compSize == 2) {
+                    for (ri = 0; e->ranges[ri].count != 0; ri++) {
+                        u16 start = e->ranges[ri].start;
+                        for (v = 0; v < e->ranges[ri].count; v++) {
+                            s32 di = compCount * (start + v);
+                            s16* a = (s16*)(s1 + off);
+                            s16* b = (s16*)(s0 + off);
+                            s32 c;
+                            for (c = compCount; c > 0; c--) {
+                                s16 av = *a++;
+                                s16 bv;
+                                off += compSize;
+                                bv = *b++;
+                                ((s16*)dst)[di++] = (mul16Inv * bv + (mul16 * av + (lbl_803CBC68 << 16))) / 0x10000;
+                            }
+                        }
+                    }
+                }
+                break;
+                }
+            }
+
+            {
+                u32 elemSize = tgt->fmtHi * tgt->fmtLo;
+                e = (ShapeEntry*)((u8*)e + grp->entryStride);
+                switch (tgt->type) {
+                case 0:
+                    flushAddr = arrays[tgt->idx].data;
+                    flushSize = elemSize * arrays[tgt->idx].count;
+                    break;
+                case 1:
+                    if (tgt->fmtHi == 6) {
+                        flushAddr = posData;
+                    } else {
+                        flushAddr = vd->sets[tgt->idx].set->pos->data;
+                    }
+                    flushSize = elemSize * vd->sets[tgt->idx].set->pos->count;
+                    break;
+                case 2:
+                    flushAddr = vd->sets[tgt->idx].set->clr->data;
+                    flushSize = elemSize * vd->sets[tgt->idx].set->clr->count;
+                    break;
+                case 3:
+                    flushAddr = vd->sets[tgt->idx].set->nrm->data;
+                    flushSize = elemSize * vd->sets[tgt->idx].set->nrm->count;
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                case 7: {
+                    VtxArray* arr = &vd->sets[tgt->idx].set->tex[tgt->type - 4];
+                    flushAddr = arr->data;
+                    flushSize = elemSize * arr->count;
+                    break;
+                }
+                }
+                DCFlushRangeNoSync(flushAddr, flushSize);
+            }
+        }
+    }
+    if (st != NULL) {
+        st->dirtyA = st->dirtyA & (1 << (lbl_803CBBC0 == 0));
+    }
+    if (st != NULL) {
+        st->dirtyB = st->dirtyB & (1 << (lbl_803CBBC0 == 0));
+    }
 }
+#endif
 
 // .text:0x80025C58 size:0x184
 // Binds the shape data to a model: caches each target's vertex array slot and data pointer.
