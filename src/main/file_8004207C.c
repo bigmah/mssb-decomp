@@ -623,7 +623,30 @@ s32 fn_8004AD54(u32 stadium, u8 flags) {
 
 // .text:0x8004AE18 size:0x190
 void fn_8004AE18(s32 idx) {
-    return;
+    CharModel* model = lbl_8036E548.active[idx];
+    Vec dir;
+    Mtx m;
+
+    lbl_800FBEA4.rgb = (lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->unk275)].r << 24) |
+                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->unk275)].g << 16) & 0xFF0000) |
+                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->unk275)].b << 8) & 0xFF00);
+    dir.x = 0.0f;
+    dir.y = 0.0f;
+    dir.z = 1.0f;
+    PSMTXRotRad(m, 'Y', model->rot.y);
+    PSMTXMultVec(m, &dir, &dir);
+    fn_80030D88(&model->pos, &dir, lbl_803CB84C, 5);
+    if (model->charID == 0xE || model->charID == 0x25) {
+        return;
+    }
+    if (model->unk276 & 2) {
+        getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&dir);
+        fn_8002F1AC(&dir, idx * 2);
+    }
+    if (model->unk276 & 4) {
+        getAnimRelatedCoordinates(idx, 0x22, (VecXYZ*)&dir);
+        fn_8002F1AC(&dir, idx * 2 + 1);
+    }
 }
 
 // .text:0x8004AFA8 size:0x210
