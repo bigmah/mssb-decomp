@@ -51,9 +51,9 @@ void __MTGQR6(u32 value);
 
 void __MTGQR7(u32 value);
 
-u8 fn_800BD2B0(u32* value);
+u8 fn_800BD2B0(GXColor* color);
 
-void fn_800BD2CC(u8 flag, u32* value);
+void fn_800BD2CC(s32 flag, GXColor color);
 
 void fn_800BD2DC(void);
 
@@ -66,6 +66,10 @@ void LITInitDir(Light* light, f32 x, f32 y, f32 z);
 void LITInitPos(Light* light, f32 x, f32 y, f32 z);
 
 void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
+
+void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_list* list);
+
+void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr camera);
 
 void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a);
 
