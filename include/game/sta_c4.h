@@ -4,6 +4,20 @@
 #include "mssbTypes.h"
 #include "main/file_800263FC.h"
 
+// Queue task (lbl_803CC1B8) that moves a knocked object along with the ball (fn_3_F934C).
+typedef struct StaBounceTask {
+    /* 0x00 */ void (*func)(void);
+    /* 0x04 */ void* prev;
+    /* 0x08 */ void* next;
+    /* 0x0C */ void* parent;
+    /* 0x10 */ s16 result;
+    /* 0x12 */ u16 priority;
+    /* 0x14 */ Vec normal;
+    /* 0x20 */ Vec vel;
+    /* 0x2C */ s32 idx;
+    /* 0x30 */ u8 bounced;
+} StaBounceTask;
+
 void fn_3_F8524(Particle* p);
 s32 fn_3_F85B0(Emitter* e);
 void fn_3_F8878(Emitter* e);

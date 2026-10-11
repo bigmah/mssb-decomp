@@ -55,8 +55,8 @@ typedef struct {
     u16* a40;
     u32* a44;
     u8* a48;
-    f32 f4C[3];
-    f32 f58[3];
+    Vec pos; // 0x4C
+    Vec vel; // 0x58
     s16 cnt;
     u8 pad66[5];
     u8 b6B;
@@ -84,6 +84,17 @@ extern u8 lbl_8036E548[];
 extern u32 lbl_3_data_1BA88[];
 extern void fn_3_F92FC(void);
 extern const f32 lbl_3_rodata_3060;
+extern const f32 lbl_3_rodata_3050;
+extern const f64 lbl_3_rodata_3058;
+extern u16 lbl_3_bss_B62C;
+extern f64 __fabs(f64);
+typedef struct {
+    Vec pos;
+    u8 pad0C[6];
+    u8 group; // 0x12
+    u8 pad13;
+} StaObjDef; // size 0x14
+extern StaObjDef lbl_3_data_1BA98[];
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void* memcpy(void*, const void*, u32);
 extern void* memset(void*, int, u32);
@@ -405,9 +416,52 @@ void fn_3_F92FC(void) {
 }
 
 // .text:0x000F934C size:0x2F0 mapped:0x807383E0
+// NONMATCHING 98%: lbl_3_bss_B62C is read as addi+lhz 0 and added before task->idx in the original (pooled bss statics, see docs/patterns/regalloc.md); ours reassociates the index sum
+#if NONMATCHING
 void fn_3_F934C(void) {
-    return;
+    StaBounceTask* task = (StaBounceTask*)lbl_803CC1B8;
+    Vec* vel = &lbl_3_common_bss_350E4.vel;
+    Vec* pos = &lbl_3_common_bss_350E4.pos;
+    Vec tmp;
+    Vec nv;
+    f32 mag;
+    f32 speed;
+    s32 k;
+    memcpy(&tmp, vel, 0xC);
+    PSVECScale(&task->normal, PSVECDotProduct(&task->normal, &tmp), &tmp);
+    PSVECAdd(&task->vel, &tmp, &nv);
+    mag = PSVECMag(&nv);
+    PSVECAdd(pos, vel, &tmp);
+    if (task->bounced) {
+        speed = PSVECMag(vel) + lbl_3_rodata_3050 * mag;
+    } else {
+        speed = PSVECMag(vel) - lbl_3_rodata_3050 * mag;
+    }
+    memcpy(&task->vel, &nv, 0xC);
+    memcpy(pos, &tmp, 0xC);
+    if (task->bounced &&
+        (__fabs(PSVECMag(&nv)) <= lbl_3_rodata_3058 ||
+         (!(task->normal.x * nv.x < lbl_3_rodata_302C) && !(task->normal.y * nv.y < lbl_3_rodata_302C) &&
+          !(task->normal.z * nv.z < lbl_3_rodata_302C)))) {
+        memset(&task->vel, 0, 0xC);
+        lbl_3_common_bss_350E4.b6B = 0;
+        fn_800B0A14_removeQueue(&lbl_3_common_bss_350E4);
+    } else if (speed <= lbl_3_rodata_302C) {
+        task->bounced = 1;
+        PSVECScale(&task->normal, lbl_3_rodata_3060, &task->normal);
+        PSVECScale(&task->normal, lbl_3_rodata_3050 * mag, vel);
+    } else {
+        PSVECNormalize(vel, &tmp);
+        PSVECScale(&tmp, speed, vel);
+    }
+    CTRLSetTranslation((Control*)(lbl_3_common_bss_350E4.p0 + task->idx * 0xE8), task->vel.x + lbl_3_data_1BA98[task->idx].pos.x,
+                       task->vel.y + lbl_3_data_1BA98[task->idx].pos.y, task->vel.z + lbl_3_data_1BA98[task->idx].pos.z);
+    k = task->idx + (lbl_3_bss_B62C + 9);
+    CTRLGetTranslation((Control*)(lbl_3_common_bss_350E4.p0 + k * 0xE8), &tmp.x, &tmp.y, &tmp.z);
+    CTRLSetTranslation((Control*)(lbl_3_common_bss_350E4.p0 + k * 0xE8), task->vel.x + lbl_3_data_1BA98[task->idx].pos.x, tmp.y,
+                       task->vel.z + lbl_3_data_1BA98[task->idx].pos.z);
 }
+#endif
 
 #pragma dont_inline off
 static inline void F9164_inl(u8* o) {
@@ -458,10 +512,10 @@ void fn_3_F963C(s32 idx, u8* v) {
     u8* p;
     lbl_3_common_bss_350E4.b6B = 1;
     p = fn_800B0A5C_insertQueue(fn_3_F934C, (u16)(*(u16*)((u8*)lbl_803CC1B8 + 0x12) + 1));
-    memcpy(lbl_3_common_bss_350E4.f4C, g_Ball, 0xC);
-    memcpy(lbl_3_common_bss_350E4.f58, g_Ball + 0x318, 0xC);
-    lbl_3_common_bss_350E4.f4C[1] = -lbl_3_common_bss_350E4.f4C[1];
-    lbl_3_common_bss_350E4.f58[1] = -lbl_3_common_bss_350E4.f58[1];
+    memcpy(&lbl_3_common_bss_350E4.pos, g_Ball, 0xC);
+    memcpy(&lbl_3_common_bss_350E4.vel, g_Ball + 0x318, 0xC);
+    lbl_3_common_bss_350E4.pos.y = -lbl_3_common_bss_350E4.pos.y;
+    lbl_3_common_bss_350E4.vel.y = -lbl_3_common_bss_350E4.vel.y;
     if (v != NULL) {
         PSVECScale((Vec*)(v + 0xC), lbl_3_rodata_3060, (Vec*)(p + 0x14));
     }
@@ -582,7 +636,6 @@ void fn_3_F9E78(void) {
 
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
 // 97.6%: idx assigned directly (no j temp). Remaining: saved-reg ranking (orig: offC<cnt<j<i<off18<off2<off4; ours: i<cnt<j<off18<offC) and the orig IV zero-inits are `mr` copies of i (ours li). Explicit offset vars + decl order fix regs but give li inits.
-extern u8 lbl_3_data_1BA98[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
 extern void fn_3_B8414(void*, void*);
@@ -609,7 +662,7 @@ void fn_3_FA3C0(void) {
         lbl_3_common_bss_350E4.a40[cnt] = idx;
         fn_3_B8574();
         for (j = 0; j < lbl_3_common_bss_350E4.n; j++) {
-            if (i == lbl_3_data_1BA98[j * 0x14 + 0x12] && (lbl_3_common_bss_350E4.p0[j * 0xE8 + 0x90] >> 6 & 1)) {
+            if (i == lbl_3_data_1BA98[j].group && (lbl_3_common_bss_350E4.p0[j * 0xE8 + 0x90] >> 6 & 1)) {
                 lbl_3_common_bss_350E4.a44[idx] = j;
                 idx++;
                 lbl_3_common_bss_350E4.a3C[cnt]++;
