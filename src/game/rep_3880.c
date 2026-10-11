@@ -1416,8 +1416,9 @@ void fn_3_14E810(void) {
     pitchingMachinePitching(0x1E);
 }
 
-// 94%: orig has `li r30,0; mr r31,r30` for the zero store reg (ours li r31)
+// NONMATCHING 94%: orig has `li r30,0; mr r31,r30` for the zero store reg (ours li r31)
 // .text:0x0014E894 size:0x8C mapped:0x8078D928
+#if NONMATCHING
 void fn_3_14E894(void) {
     u32 i = 0;
     s16 z = 0;
@@ -1438,6 +1439,7 @@ void fn_3_14E894(void) {
     } while (i < 4);
     pitchingMachinePitching(0x1E);
 }
+#endif
 
 // .text:0x0014E920 size:0x68 mapped:0x8078D9B4
 void fn_3_14E920(s8 a) {
