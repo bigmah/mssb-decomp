@@ -505,6 +505,43 @@ void fn_3_115C24(void) {
 void fn_3_1160B8(void) {
 }
 
+// fn_3_1160BC, size:0x5E0
+// Wall Ball state dispatcher.
+// NONMATCHING 97%: inlines the same-file state handlers; differences are those of fn_3_115540 (inlined)
+#if NONMATCHING
+void fn_3_1160BC(void) {
+    switch (g_GameLogic[0x11E]) {
+    case 4:
+        fn_3_115C24();
+        break;
+    case 26:
+        fn_3_115BDC();
+        break;
+    case 6:
+        fn_3_115B5C();
+        break;
+    case 7:
+        fn_3_115AB4();
+        break;
+    case 0:
+        fn_3_115978();
+        break;
+    case 1:
+        fn_3_115540();
+        break;
+    case 25:
+        fn_3_1158B0();
+        break;
+    case 3:
+        fn_3_115738();
+        break;
+    case 15:
+        fn_3_115828();
+        break;
+    }
+}
+#endif
+
 // fn_3_11669C, size:0x30
 void fn_3_11669C(void) {
     u8* p = lbl_8036E548;
