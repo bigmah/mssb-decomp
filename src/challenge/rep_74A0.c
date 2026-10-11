@@ -478,9 +478,9 @@ void fn_1_18EE4(ChallengeConfetti* piece) {
     piece->rot.y = lbl_1_rodata_7520;
     piece->rot.x = lbl_1_rodata_7520;
     spin = (f32)lbl_1_data_FB24.spin / lbl_1_rodata_757C;
-    piece->rotVel.x = spin * ((f32)rand() / lbl_1_rodata_7568);
-    piece->rotVel.y = spin * ((f32)rand() / lbl_1_rodata_7568);
-    piece->rotVel.z = spin * ((f32)rand() / lbl_1_rodata_7568);
+    piece->rotVel.x = spin * ((f32)rand() / 32767.0f);
+    piece->rotVel.y = spin * ((f32)rand() / 32767.0f);
+    piece->rotVel.z = spin * ((f32)rand() / 32767.0f);
     piece->back.c.a = 0xFF;
     piece->front.c.a = 0xFF;
     range = 0xFF - colorMin;
@@ -490,3 +490,24 @@ void fn_1_18EE4(ChallengeConfetti* piece) {
     piece->back.c.g = base + rand() % range;
     piece->back.c.b = base + rand() % range;
 }
+
+// fn_1_191DC, size:0x3A0
+// Initialise every confetti piece; start delays are staggered in five waves.
+// NONMATCHING 99%: register-only, r26/r27 swapped (config base vs. inlined colour base)
+#if NONMATCHING
+void fn_1_191DC(ChallengeConfettiTask* task) {
+    ChallengeConfetti* piece = task->pieces;
+    u32 i = 0;
+
+    do {
+        s32 wave;
+        piece->index = i;
+        piece->width = (f32)lbl_1_data_FB24.width / lbl_1_rodata_757C;
+        piece->height = (f32)lbl_1_data_FB24.height / lbl_1_rodata_757C;
+        fn_1_18EE4(piece);
+        wave = lbl_1_data_FB24.count / 5;
+        piece->delay = ((i++ % 5) * wave + rand() % wave) * 2;
+        piece = piece->next;
+    } while (piece != NULL);
+}
+#endif

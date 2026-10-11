@@ -73,6 +73,14 @@ typedef struct ChallengeConfetti {
     /*0x4A*/ s16 index;
 } ChallengeConfetti;
 
+// Task that owns the confetti list.
+typedef struct ChallengeConfettiTask {
+    /*0x00*/ u8 pad00[0xC];
+    /*0x0C*/ ChallengeConfetti* pieces;
+    /*0x10*/ u8 pad10[4];
+    /*0x14*/ u16 count; // low 12 bits
+} ChallengeConfettiTask;
+
 // Confetti settings (lbl_1_data_FB24).
 typedef struct ChallengeConfettiConfig {
     s32 count;
@@ -140,6 +148,8 @@ void fn_1_1B038(void);
 void fn_1_182C0(ChallengeConfetti* piece);
 
 void fn_1_18EE4(ChallengeConfetti* piece);
+
+void fn_1_191DC(ChallengeConfettiTask* task);
 
 void fn_1_1ADA4(void);
 
