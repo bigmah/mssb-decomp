@@ -1,6 +1,6 @@
 #include "main/file_80011640.h"
 #include "Dolphin/mtx.h"
-#include "PowerPC_EABI_Support/Runtime/__mem.h"
+#include "Dolphin/stl.h"
 
 // Globals owned by other units (only the fields used here).
 typedef struct GameSettingsView {
@@ -26,7 +26,9 @@ typedef struct Unk803716B8 {
 
 // ARAM file table entry.
 typedef struct AramFile {
-    /*0x00*/ u8 _00[0x10];
+    /*0x00*/ u32 _00;
+    /*0x04*/ u32 size; // top 4 bits are flags
+    /*0x08*/ u8 _08[0x8];
 } AramFile;
 
 extern GameSettingsView g_d_GameSettings;
@@ -84,6 +86,11 @@ extern s16 lbl_800EEAAC[];
 extern CharPart* lbl_803CBC10;
 extern u8 lbl_803CBC14;
 extern u8 lbl_803CBC15;
+extern void* _OSAllocFromHeap(s32 heap, u32 size);
+extern void GXInvalidateVtxCache(void);
+extern void DOVARender(void* display, s32 a, s32 b, va_list args);
+extern void DOVARenderSkin(void* display, s32 a, void* p, void* q, s32 b);
+extern void DOSetWorldMatrix(void* display, MtxPtr mtx);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -125,8 +132,8 @@ static inline void copyPartJointData(CharActor* actor, s32 which) {
                     do {
                         jp--;
                         n--;
-                        if ((*jp)->_14 != NULL) {
-                            dst->_14 = (*jp)->_14;
+                        if ((*jp)->display != NULL) {
+                            dst->display = (*jp)->display;
                             break;
                         }
                     } while (n != 0);
@@ -1087,7 +1094,26 @@ void fn_800189B8(void) {
 
 // .text:0x800189E4 size:0x154
 void fn_800189E4(void) {
-    return;
+    u32 max = 0;
+    u32 size;
+    s32 i;
+    u8* buf;
+
+    for (i = 0; i < 54; i++) {
+        size = lbl_803CB790[i * 0x13 + 0xF].size & 0x0FFFFFFF;
+        if (max < size) {
+            max = size;
+        }
+    }
+    size = (max + 0x1F) & ~0x1F;
+    lbl_8036E548._2CA4 = size;
+    buf = _OSAllocFromHeap(0x20, size * 4);
+    lbl_8036E548._2C88 = buf;
+    for (i = 0; i < 4; i++) {
+        lbl_8036E548.bankSets[i][4] = buf;
+        lbl_8036E548.actors[i].banks.b[5] = NULL;
+        buf += size;
+    }
 }
 
 // .text:0x80018B38 size:0x3C

@@ -11,19 +11,28 @@
 typedef struct CharJoint {
     /*0x000*/ u16 id;
     /*0x002*/ u8 _02[0x12];
-    /*0x014*/ void* _14;
+    /*0x014*/ void* display;
     /*0x018*/ u8 _18[0xEC - 0x18];
     /*0x0EC*/ MtxPtr worldMtx;
-    /*0x0F0*/ u8 _F0[0x136 - 0xF0];
+    /*0x0F0*/ u8 _F0[0x100 - 0xF0];
+    /*0x100*/ struct CharJoint* next;
+    /*0x104*/ u8 _104[0x136 - 0x104];
     /*0x136*/ u8 _136;
 } CharJoint;
 
 typedef struct CharModel {
     /*0x00*/ u8 _00[0x6];
     /*0x06*/ u16 jointCount;
-    /*0x08*/ u8 _08[0x10];
+    /*0x08*/ u8 _08[0xC];
+    /*0x14*/ void* display;
     /*0x18*/ CharJoint** joints;
-    /*0x1C*/ u8 _1C[0x80 - 0x1C];
+    /*0x1C*/ u8 _1C[0x64 - 0x1C];
+    /*0x64*/ void* _64;
+    /*0x68*/ void* _68;
+    /*0x6C*/ u8 _6C[0x74 - 0x6C];
+    /*0x74*/ CharJoint* firstJoint;
+    /*0x78*/ u8 _78[0x4];
+    /*0x7C*/ void* _7C;
     /*0x80*/ u16 _80;
     /*0x82*/ u8 _82[0x98 - 0x82];
     /*0x98*/ u8 flags;
@@ -181,7 +190,9 @@ typedef struct CharMgr {
     /*0x2C50*/ CharActor* active[13];
     /*0x2C84*/ void* _2C84;
     /*0x2C88*/ void* _2C88;
-    /*0x2C8C*/ u8 _2C8C[0x2CE4 - 0x2C8C];
+    /*0x2C8C*/ u8 _2C8C[0x2CA4 - 0x2C8C];
+    /*0x2CA4*/ u32 _2CA4;
+    /*0x2CA8*/ u8 _2CA8[0x2CE4 - 0x2CA8];
     /*0x2CE4*/ void* _2CE4;
     /*0x2CE8*/ void* _2CE8;
     /*0x2CEC*/ void* bankSets[4][5];
@@ -289,6 +300,11 @@ void fn_8001FC4C(CharActor* actor);
 s32 fn_80011CA8(CharActor* actor, s32 a, s32 b);
 void fn_800126EC(CharPart* part, void* tex, u8* fileIdx);
 u8 LoadModel(CharActor* actor);
+
+void fn_8001B5EC(s32 index, s32 enable);
+void fn_8001D180(s32 index, s32 which, s32 enable);
+void fn_800189E4(void);
+void fn_8001DD58(CharModel* model, s32 pass, s32 a, s32 b, ...);
 
 void fn_8001B200(void);
 
