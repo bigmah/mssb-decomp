@@ -2118,9 +2118,120 @@ void fn_80049220(u8 team) {
 #endif
 
 // .text:0x800494CC size:0x3AC
+// NONMATCHING ~88%: teamPort/input address computation and register allocation
+#if NONMATCHING
 void fn_800494CC(u8 team) {
-    return;
+    u8 found = 0;
+    s8 port;
+    u16 pressed;
+    u16 repeat;
+    s32 count;
+    s8 cursor;
+
+    if (lbl_803C66B0._5D != 0 || lbl_803C66B0._5E != 0) {
+        return;
+    }
+    port = lbl_8034E9A0.teamPort[team];
+    if (g_d_GameSettings.PlayerPorts[0] == port) {
+        found = 1;
+    }
+    if (g_d_GameSettings.PlayerPorts[1] == port) {
+        found = 1;
+    }
+    lbl_8034E9A0.teamPort[team] = port;
+    if (!found) {
+        return;
+    }
+    repeat = lbl_8034E9A0.input[team].repeat;
+    pressed = lbl_8034E9A0.input[team].pressed;
+    if ((repeat & 8) || (repeat & 4)) {
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            return;
+        }
+        lbl_803C5F04.prevCursor[0] = lbl_803C5F04.cursor[0];
+        cursor = lbl_803C5F04.cursor[0];
+        if (lbl_803C5F04._36 == 0) {
+            count = 5;
+        } else if (g_d_GameSettings.GameModeSelected != 6) {
+            count = 4;
+        } else {
+            count = 2;
+        }
+        if (repeat & 8) {
+            if (--cursor < 0) {
+                if (lbl_803C5F04._36 == 0) {
+                    cursor = 4;
+                } else {
+                    cursor = 3;
+                }
+            }
+            fn_800625A4(0, 0x30);
+            sndFXRelated(8);
+        } else if (repeat & 4) {
+            if (++cursor == count) {
+                cursor = 0;
+            }
+            fn_800625A4(0, 0x30);
+            sndFXRelated(4);
+        }
+        lbl_803C5F04.cursor[0] = cursor;
+    } else if (repeat & 1) {
+        fn_80049D8C(0, 0);
+    } else if (repeat & 2) {
+        fn_80049D8C(1, 0);
+    } else if (pressed & 0x20) {
+        if (g_d_GameSettings._06 == 2) {
+            return;
+        }
+        lbl_803C5F04._36 = 1;
+        lbl_803C5F04.state = 3;
+        lbl_803C5F04.prevCursor[0] = lbl_803C5F04.cursor[0];
+        lbl_803C5F04.cursor[0] = 0;
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            lbl_8034E978._00 = 0x15;
+            lbl_8034E978._09 = lbl_8034E978._08;
+            lbl_8034E978._08 = lbl_800FEF70[0x158];
+        } else {
+            lbl_8034E978._00 = 7;
+            lbl_8034E978._09 = lbl_8034E978._08;
+            lbl_8034E978._08 = lbl_800FEF70[0x78];
+        }
+        fn_800625A4(0, 0x2B);
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else if (pressed & 0x100) {
+        if (lbl_803C5F04.cursor[0] != 0) {
+            return;
+        }
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            fn_800625A4(0, 0x31);
+            lbl_803C5F04._35 = 0;
+        } else {
+            lbl_8034E9A0._48B0 = 1;
+            lbl_803C5EE0._15 = 1;
+            fn_80062A74();
+            fn_80021410();
+            lbl_803C5F04._35 = 1;
+        }
+        changeScene(0xF, 6);
+        lbl_803C5F04.state = 5;
+        lbl_803C5F04._34 = 1;
+        sndFXRelated(0x100);
+    } else if (pressed & 0x200) {
+        if (lbl_803C5F04.cursor[0] != 0) {
+            lbl_803C5F04.prevCursor[0] = lbl_803C5F04.cursor[0];
+            lbl_803C5F04.cursor[0] = 0;
+            fn_800625A4(0, 0x30);
+        } else {
+            lbl_803CBCF0 = 0;
+            fn_800625A4(0, 0x2A);
+            lbl_803C5F04.state = 5;
+            lbl_803C5F04._34 = 0;
+            lbl_803C5F04._35 = 1;
+        }
+        sndFXRelated(0x200);
+    }
 }
+#endif
 
 // .text:0x80049878 size:0x408
 #define RESET_MATCH_OPTIONS(i) \
