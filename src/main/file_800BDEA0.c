@@ -971,8 +971,18 @@ L_800BFF20:
 #endif
 
 // .text:0x800BFF9C size:0x10C
-void fn_800BFF9C(void) {
-    return;
+#if NONMATCHING
+void fn_800BFF9C(Mtx43 m, s16* src, s16* dst, u32 count) {
+    f32 in[6];
+    f32 v[6];
+
+    do {
+        SKNLoadS16(src, in);
+        SKNXformVtx(m, in, v);
+        SKNStoreS16(dst, v);
+        src += 6;
+        dst += 6;
+    } while (--count);
 }
 #else
 asm void fn_800BFF9C(register Mtx43 m, register s16* src, register s16* dst, register u32 count) {
