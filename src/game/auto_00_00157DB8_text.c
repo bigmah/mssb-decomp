@@ -30,6 +30,10 @@ extern u8 lbl_3_common_bss_34C90[];
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
+extern u8 lbl_3_data_B1BC[];
+extern u16 lbl_3_data_B3DC[6];
+extern u16 lbl_3_data_B3E8[6];
+extern u8 lbl_3_data_FAC4[8];
 
 // fn_3_157DB8, size:0x70
 void fn_3_157DB8(s32 arg0) {
@@ -394,3 +398,26 @@ void fn_3_15B494(void) {
     }
 }
 #endif
+
+// .text:0x0015A244 size:0x204
+void fn_3_15A244(void) {
+    PracticeTask* o = lbl_803CC1B8[0];
+    s32 i;
+
+    fn_80034E20(o, lbl_3_data_B1BC);
+    for (i = 0; i < 5; i++) {
+        lbl_80371C30[o->baseIdx + i + 6].obj->_5C = lbl_3_data_B3DC[lbl_3_data_FAC4[i]] << 16;
+    }
+    o->_1C = 1;
+    if (g_Practice.practiceType_1 == 1 || (u8)(g_Practice.practiceType_1 - 2) <= 2 ||
+        g_Practice.practiceType_1 == 5) {
+        lbl_80371C30[o->baseIdx].obj->_64 = lbl_3_data_B3E8[g_Practice.practiceType];
+        lbl_80371C30[o->baseIdx].obj->_5C = 0x320000;
+        lbl_80371C30[o->baseIdx].obj->_68 = 4;
+        lbl_80371C30[o->baseIdx + 1 + g_Practice.practiceType].obj->_5C = 0x690000;
+        lbl_80371C30[o->baseIdx + 11 + g_Practice.practiceType].obj->_5C = 0x690000;
+        o->_1C = 5;
+    }
+    lbl_3_common_bss_32724[0xC0] = 1;
+    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_159D50;
+}
