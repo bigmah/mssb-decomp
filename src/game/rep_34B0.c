@@ -15,6 +15,11 @@ extern u8 lbl_3_common_bss_32724[]; // GameHudFlags (game/auto_00_00097144_text.
 extern void setInMemBatterConstants(s32);
 extern void fn_3_F1DC(void);
 extern void ballPhysica(void);
+extern s32 fn_3_108854(void);
+extern void fn_3_75560(void);
+extern void fn_3_12DB80(void);
+extern void atBat_batter(void);
+extern void fn_3_8A958(void);
 extern void fn_3_751B4(void);
 extern void setDefaultInMemBatter(void);
 extern void fn_3_8913C(void);
@@ -611,9 +616,52 @@ void fn_3_130ACC(void) {
 }
 
 // .text:0x00130C6C size:0x4A8 mapped:0x8076FD00
+// Barrel Batter: per-frame update while a pitch is in play.
+// NONMATCHING 99%: registers only in the barrel loop (as fn_3_1307D0); the original also
+// inlines fn_3_130ACC (pasting its body gets 99%, so we keep the call).
+#if NONMATCHING
 void fn_3_130C6C(void) {
-    return;
+    BB_barrelStruct* b;
+    s32 i;
+    s8 p;
+
+    if (g_Minigame.turnOverStatus == 0) {
+        if (fn_3_108854() != 0) {
+            return;
+        }
+        if (g_Minigame.miniGameTurnCounter != 0 || g_GameLogic.FrameCountOfCurrentPitch >= lbl_3_data_217A4[8]) {
+            fn_3_75560();
+        }
+        fn_3_12DB80();
+        atBat_batter();
+        p = 0;
+        do {
+            g_Minigame._1DBC[p] = 0;
+            p++;
+        } while (p < 4);
+        fn_3_8A958();
+        fn_3_12F624();
+        for (i = 0; i < 15; i++) {
+            b = &g_Minigame.barrels[i];
+            if (b->animationCounter < 0x7FFE) {
+                b->animationCounter += 1;
+            } else {
+                b->animationCounter = 0x7FFF;
+            }
+            if (b->barrelState == 1) {
+                fn_3_12F9D4(i);
+            }
+            if (b->barrelState == 3) {
+                fn_3_12F28C(i);
+            }
+            if (b->replacingBarrelInd != 0) {
+                fn_3_12EFA4(i);
+            }
+        }
+    }
+    fn_3_130ACC();
 }
+#endif
 
 // .text:0x00131114 size:0x88 mapped:0x807701A8
 void fn_3_131114(void) {
