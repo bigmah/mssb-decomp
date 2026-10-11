@@ -748,8 +748,72 @@ void fn_2_579B4(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // .text:0x00057BF8 size:0x358
-void fn_2_57BF8(void) {
-    return;
+void fn_2_57BF8(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags |= 2;
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_5C = 0;
+        fn_80036134((struct SpaniOwner*)menu, 0x1E, item->index, item->index + 5);
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 1;
+        item->state = 3;
+        break;
+    case 3:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA) == item->index) {
+            LayoutObj* obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+            if ((obj->_5C >> 16) >= 0x14) {
+                obj->_5C = 0x14 << 16;
+                lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 0;
+                item->state = 0x25;
+            }
+        } else {
+            LayoutObj* obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+            if ((obj->_5C >> 16) >= 0xA) {
+                obj->_5C = 0xA << 16;
+                lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 0;
+                item->state = 0x25;
+            }
+        }
+        break;
+    case 0x25:
+        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA) == item->index) {
+            LayoutObj* obj;
+            lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 1;
+            obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+            if ((obj->_5C >> 16) >= 0x14) {
+                obj->_5C = 0x14 << 16;
+            }
+        } else {
+            LayoutObj* obj;
+            lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 4;
+            obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+            if ((obj->_5C >> 16) <= 0xA) {
+                obj->_5C = 0xA << 16;
+            }
+        }
+        break;
+    case 5:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 4;
+        item->state = 6;
+        break;
+    case 6: {
+        LayoutObj* obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+        if ((obj->_5C >> 16) == 0) {
+            obj->_5C = 0;
+        }
+        break;
+    }
+    case 1:
+    case 4:
+        break;
+    }
 }
 
 // .text:0x00057F50 size:0x148
