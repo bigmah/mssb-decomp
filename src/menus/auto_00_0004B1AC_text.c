@@ -10,6 +10,7 @@ extern void fn_2_52690(void);
 extern u8 lbl_8034E9A0[];
 
 #include "static/UnknownHomes_Static.h"
+#include "main/file_8000F150.h"
 
 extern u32 lbl_803C7898[];
 extern void fn_80034E20(void* object, void* data);
@@ -306,21 +307,16 @@ void fn_2_515DC(u8 mode) {
     fn_2_4906C();
 }
 
-extern u8* lbl_80366B18[];
 
 // fn_2_5156C, size:0x70
-s32 fn_2_5156C(s32 index, u16 flag) {
-    if (flag == 0) {
+u16* fn_2_5156C(s32 index, u16 font) {
+    if (font == 0) {
         u8* menu = *(u8**)&lbl_2_bss_1A824C;
-        u8* p = lbl_80366B18[menu[0x1972B8] + 0x1E6];
-        p += index * 4;
-        return *(s32*)(p + 4);
+        return lbl_80366B18.tables[menu[0x1972B8]]->msgs[index]; // TODO type
     }
     {
         u8* menu = *(u8**)&lbl_2_bss_1A824C;
-        u8* p = lbl_80366B18[menu[0x1972B8] + 0x1E6];
-        p += index * 4;
-        return *(s32*)(p + 4);
+        return lbl_80366B18.tables[menu[0x1972B8]]->msgs[index]; // TODO type
     }
 }
 
@@ -599,11 +595,6 @@ void fn_2_54354(InitEntry* entries, s32 count) {
     }
 }
 
-typedef struct {
-    u8* object;
-    s32 _04;
-} MenuTblEntry;
-extern MenuTblEntry lbl_80371C30[];
 
 // fn_2_53CEC, size:0x10C
 void fn_2_53CEC(u8* menu) {
@@ -614,8 +605,8 @@ void fn_2_53CEC(u8* menu) {
         for (column = 0; column < 864; column++) {
             entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8230[0])[row][column];
             if (entry->draw != NULL) {
-                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].object[0x68] = 0;
-                *(u32*)(lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].object + 0x54) &= ~2;
+                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].obj->_68 = 0;
+                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].obj->flags &= ~2;
             }
         }
     }
@@ -630,8 +621,8 @@ void fn_2_53DF8(u8* menu) {
         for (column = 0; column < 864; column++) {
             entry = &((MenuDrawEntry(*)[864])lbl_2_bss_1A8234[0])[row][column];
             if (entry->draw != NULL) {
-                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].object[0x68] = 0;
-                *(u32*)(lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].object + 0x54) &= ~2;
+                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].obj->_68 = 0;
+                lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)((u8*)entry + 0xE)].obj->flags &= ~2;
             }
         }
     }
@@ -836,9 +827,9 @@ void fn_2_50D40(s32 ch) {
 // fn_2_50DB4, size:0xA8
 void fn_2_50DB4(s32 ch, s32 idx, u16* src) {
     u8* menu = *(u8**)&lbl_2_bss_1A824C;
-    u8* p = lbl_80366B18[menu[0x1972B8] + 0x1E6];
+    MsgTable* table = lbl_80366B18.tables[menu[0x1972B8]];
     u16 v;
-    u16** q = (u16**)(p + 4);
+    u16** q = table->msgs;
     if (lbl_2_bss_9600[ch] != 0) {
         lbl_2_bss_9600[ch]--;
     }
@@ -857,9 +848,9 @@ void fn_2_50DB4(s32 ch, s32 idx, u16* src) {
 // fn_2_50F20, size:0xA8
 void fn_2_50F20(s32 ch, s32 idx, u16* src) {
     u8* menu = *(u8**)&lbl_2_bss_1A824C;
-    u8* p = lbl_80366B18[menu[0x1972B8] + 0x1E6];
+    MsgTable* table = lbl_80366B18.tables[menu[0x1972B8]];
     u16 v;
-    u16** q = (u16**)(p + 4);
+    u16** q = table->msgs;
     if (lbl_2_bss_9604[ch] != 0) {
         lbl_2_bss_9604[ch]--;
     }
@@ -1120,7 +1111,6 @@ extern u8* lbl_803CC1B8[];
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_1FF84[];
 extern u8 lbl_2_data_1FF94[];
-extern void fn_800111B4(s32);
 extern void fn_800216F8(s32, void*);
 extern void fn_800627C4(void);
 extern void fn_2_8E8A4(void);
@@ -1131,12 +1121,12 @@ void fn_2_549B4(void) {
     u8* q;
     switch ((s8)o[0x28]) {
     case 0:
-        *(s32*)((u8*)lbl_80366B18 + 0x7A0) = ARAMTransfer(lbl_2_data_1FF94, 0, 1, 0);
+        lbl_80366B18.tables[2] = (MsgTable*)ARAMTransfer(lbl_2_data_1FF94, 0, 1, 0);
         o[0x28] = 1;
         break;
     case 1:
         if ((s32)lbl_803C6CF8[0x715] == 1) {
-            fn_800111B4(*(s32*)((u8*)lbl_80366B18 + 0x7A0));
+            fn_800111B4(lbl_80366B18.tables[2]);
             o[0x28] = 2;
         }
         break;
@@ -1271,7 +1261,6 @@ void fn_2_53408(void) {
 }
 
 extern u8 lbl_2_data_1FFB4[];
-extern void fn_8000F8F4(void*);
 extern void fn_8000FE54(void);
 
 // fn_2_5389C, size:0x208
@@ -1304,7 +1293,7 @@ void fn_2_5389C(void) {
         lbl_2_bss_1A8234[0][0x16294C + i] = 0;
     }
     if (lbl_2_bss_1A8234[0][0x162992] != 0) {
-        fn_8000F8F4(o);
+        fn_8000F8F4((LayoutGroup*)o);
         fn_8000FE54();
         fn_800B0A14_removeQueue(fn_2_4E858(o));
         *(u16*)(o + 0x1C) = 0;
@@ -1508,3 +1497,38 @@ void fn_2_4C3EC(void) {
         }
     }
 }
+
+extern u16 lbl_2_data_1F3A0[];
+
+// Menu text control codes: a u16 with bit 0x4000 set is a control code
+// (low 14 bits); otherwise bit 0x8000 marks a full-width glyph.
+#define MENU_TEXT_CTRL 0x4000
+#define MENU_TEXT_WIDE 0x8000
+
+
+// fn_2_513E8, size:0x84
+// NONMATCHING 97%: only an extra dead trailing `blr` after the infinite loop (see docs/patterns/inlining.md "No trailing epilogue")
+#if NONMATCHING
+s32 fn_2_513E8(u16* str, u16 font) {
+    u16 c;
+    u16 width = 0;
+    while (1) {
+        c = *str++;
+        if (c & MENU_TEXT_CTRL) {
+            switch (c & 0x3FFF) {
+            case 2:
+                width += (u32)lbl_2_data_1F3A0[font] >> 1;
+                break;
+            case 3:
+                width += lbl_2_data_1F3A0[font];
+                break;
+            default:
+                return width;
+            }
+        } else {
+            width += (c & MENU_TEXT_WIDE) ? lbl_2_data_1F3A0[font] : (u16)((u32)lbl_2_data_1F3A0[font] >> 1);
+        }
+    }
+}
+#endif
+

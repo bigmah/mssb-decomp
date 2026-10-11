@@ -97,7 +97,7 @@ void fn_2_4E7A4(void);
 
 void fn_2_515DC(u8 mode);
 
-s32 fn_2_5156C(s32 index, u16 flag);
+u16* fn_2_5156C(s32 index, u16 font);
 
 void fn_2_50E5C(s32 channel);
 
@@ -135,5 +135,7 @@ void fn_2_520A4(void);
 
 void fn_2_51890(void);
 
+s32 fn_2_513E8(u16* str, u16 font);
+
 #endif
-s32 fn_2_5156C(s32 index, u16 flag);
+
