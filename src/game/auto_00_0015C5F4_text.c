@@ -750,7 +750,24 @@ remove:
 
 // .text:0x0015F220 size:0x160 mapped:0x8079E2B4
 void fn_3_15F220(void) {
-    return;
+    ScoreBookTask* task = SB_TASK;
+
+    fn_80034E20(task, lbl_3_data_27420);
+    if (g_d_GameSettings.exhibitionMatchInd == 0) {
+        SB_OBJ(task, 1)->_64 = 0xE;
+    }
+    if (lbl_80353A90._104 == 3) {
+        SB_OBJ(task, 3)->_64 = 0xCC;
+        SB_OBJ(task, 4)->_64 = 0xD0;
+    } else if (lbl_80353A90._104 == 2) {
+        SB_OBJ(task, 3)->_64 = 0xCD;
+        SB_OBJ(task, 4)->_64 = 0xD1;
+    }
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && g_GameLogic.playOverFadeOutStarted >= 0) {
+        SB_OBJ(task, 1)->_64 = 0x10;
+    }
+    task->state = 0;
+    SB_TASK->func = fn_3_15F088;
 }
 
 // .text:0x0015F380 size:0x44 mapped:0x8079E414
