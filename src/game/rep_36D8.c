@@ -644,35 +644,40 @@ void fn_3_1410F0(void) {
     fn_3_5A6D4(0xE);
 }
 
-// .text:0x001412BC size:0x128 mapped:0x80780350
-// 97.8%: only register allocation differs (loop counter i gets r29 instead of r26; table bases shift down one)
-void fn_3_1412BC(void) {
+// Same body as fn_3_13DEA4; the original inlines it into fn_3_1412BC, which
+// needs dont_inline off from here to the end of the file.
+#pragma dont_inline off
+static inline void initSlots(void) {
+    u8* p;
+    u32 k;
     u8* e;
-    u8* m;
+    s16* t;
     s8 i;
-    int idx;
     e = g_Minigame + 0x1DCC;
     memset(g_Minigame + 0x1D7C, 0, 0x78);
-    m = g_Minigame;
     i = 0;
     do {
-        idx = m[0x18DC];
-        *(s16*)e = RandomInt_Game_Range(((s16*)lbl_3_data_2194C)[idx * 2], ((s16*)lbl_3_data_2194C)[idx * 2 + 1]);
-        if (RandomInt_Game(100) < *(s8*)(lbl_3_data_2197C + idx)) {
-            if (*(s8*)(lbl_3_data_21980 + idx) < 8) {
-                e[6] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21980 + idx), 8);
+        p = e + i * 8;
+        k = g_Minigame[0x18DC + i];
+        t = (s16*)(lbl_3_data_2194C + k * 4);
+        *(s16*)p = RandomInt_Game_Range(t[0], t[1]);
+        if (RandomInt_Game(100) < *(s8*)(lbl_3_data_2197C + k)) {
+            if (*(s8*)(lbl_3_data_21980 + k) < 8) {
+                p[6] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21980 + k), 8);
             } else {
-                e[6] = 8;
+                p[6] = 8;
             }
         } else {
-            e[6] = 0x7F;
+            p[6] = 0x7F;
         }
-        e[5] = 2;
-        e[7] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21944 + idx * 2), *(s8*)(lbl_3_data_21944 + idx * 2 + 1));
+        p[5] = 2;
+        p[7] = RandomInt_Game_Range(*(s8*)(lbl_3_data_21944 + k * 2), *(s8*)(lbl_3_data_21944 + k * 2 + 1));
         i++;
-        e += 8;
-        m++;
     } while (i < 4);
+}
+// .text:0x001412BC size:0x128 mapped:0x80780350
+void fn_3_1412BC(void) {
+    initSlots();
     changeScene(1, 6);
     fn_3_5A6D4(2);
 }
