@@ -47,10 +47,10 @@ typedef struct ANIMBank {
 } ANIMBank;
 
 // animBank.c
-void ANIMGet(ANIMBank **animBank, char *name);
+void ANIMGet(ANIMBank *animBank); // MSSB: relocates an already-loaded bank in place
 void ANIMRelease(ANIMBank **animBank);
 ANIMSequences *ANIMGetSequence(ANIMBank *animBank, char *sequenceName, u16 seqNum);
-struct ANIMAnimTrack *ANIMGetTrackFromSeq(ANIMSequences *animSeq, u16 animTrackID);
+struct ANIMAnimTrack *ANIMGetTrackFromSequence(ANIMSequences *animSeq, u16 animTrackID);
 void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack * animTrack, f32 time, KeyFrame **currentFrame, KeyFrame **nextFrame, u16 *cache);
 u32 ANIMGetUserDataSize(ANIMBank *animBank);
 char *ANIMGetUserData(ANIMBank *animBank);
