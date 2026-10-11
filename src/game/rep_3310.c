@@ -12,6 +12,10 @@ extern Rep3310CharMgr lbl_8036E548;
 extern f32 lbl_3_data_2262C;
 extern f32 lbl_3_data_22650[];
 extern u8 lbl_3_data_22670[];
+extern u8 g_Minigame[];
+extern const f32 lbl_3_rodata_33AC;
+extern const f32 lbl_3_rodata_33B0;
+extern f32 lbl_3_data_225F0[];
 extern f32 lbl_3_data_21A64[];
 struct TexArchive;
 extern void fn_80033B58(struct TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT);
@@ -52,52 +56,36 @@ extern void* _OSAllocFromHeap(int, int);
 extern void fn_80025C58(void*, void*);
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
-// 97%: only the fn_8001D0D0 arg-1 table lookup differs: original is addi r4,r29,0x88; lfsx f1,r4,r0 (base+0x88 in a register), ours folds to add r4,r29,r0; lfs 0x88(r4)
-extern f32 lbl_3_data_225F0[];
-extern const f32 lbl_3_rodata_33B0;
-extern const f32 lbl_3_rodata_33AC;
-extern u8 g_Minigame[];
+// NONMATCHING 84%: the original reaches lbl_3_data_22678/22688/22694/226AC through the lbl_3_data_225F0 pooled base (a u8* d = lbl_3_data_225F0 + offsets version reached 97%, but indexes past that object's end); the 0x88 table lookup is addi+lfsx there
+#if NONMATCHING
+extern f32 lbl_3_data_22678[];
+extern f32 lbl_3_data_22688[];
+// Places the 3 runners (sprites 0x82..0x84); a runner that just started (state 0x1C == 1)
+// gets its idle animation.
 void fn_3_116840(void) {
-    u8* d = (u8*)lbl_3_data_225F0;
+    Rep3310Sprite* e;
     u8* g;
-    u8* e;
-    u8* o;
     s32 i;
-    s32 x;
     for (i = 0; i < 3; i++) {
         g = g_Minigame + i * 0x38;
-        e = (u8*)lbl_8036E548.sprites + (i + 0x82) * 0x28;
-        e[0x26] = 0;
+        e = &lbl_8036E548.sprites[i + 0x82];
+        e->visible = 0;
         if (g[0x2A] != 0) {
-            e[0x26] = 1;
-            *(f32*)(e + 4) = *(f32*)g;
-            *(f32*)(e + 8) = -*(f32*)(g + 4);
-            *(f32*)(e + 0xC) = *(f32*)(g + 8);
-            fn_8001D0D0(i + 0x82, ((f32*)(d + 0x88))[g[0x2B]]);
-            *(f32*)(e + 0x14) = ((f32*)(d + 0x98))[i];
-            *(void**)e = fn_3_11897C;
+            e->visible = 1;
+            e->pos[0] = *(f32*)g;
+            e->pos[1] = -*(f32*)(g + 4);
+            e->pos[2] = *(f32*)(g + 8);
+            fn_8001D0D0(i + 0x82, lbl_3_data_22678[g[0x2B]]);
+            e->rot[1] = lbl_3_data_22688[i];
+            e->draw = fn_3_11897C;
             if (*(s16*)(g + 0x1C) == 1) {
-                o = (u8*)lbl_8036E548.objs + (i + 0x82) * 0x90 + 0x34;
-                x = *(s32*)(lbl_3_common_bss_32724 + 0x78);
-                *(s32*)(o + 4) = x;
-                *(s16*)(o + 0xE) = 0;
-                *(f32*)(o + 0x5C) = lbl_3_rodata_33AC;
-                o[0x58] = 1;
-                o[0x59] = (x != 0);
-                o[0x5A] = (x != 0);
-                *(f32*)(o + 0x60) = lbl_3_rodata_33B0;
-                *(f32*)(o + 0x54) = *(f32*)(d + 0xA4);
-                o[0x5A] = 1;
-                *(f32*)(o + 0x5C) = (f32)*(s16*)(d + 0xBC);
-                o[0x59] = 1;
-                o[0x5B] = 3;
-                g[0x33] = 0;
-                *(s16*)(g + 0x28) = 0;
-                *(s16*)(g + 0x1C) = *(s16*)(g + 0x1C) + 1;
+                fn_3_1189C8(i, 0, 0, 6, 1);
+                *(s16*)(g + 0x1C) += 1;
             }
         }
     }
 }
+#endif
 
 // .text:0x001169D0 size:0x168 mapped:0x80755A64
 void fn_3_1169D0(void) {
