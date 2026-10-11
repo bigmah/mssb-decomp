@@ -1339,8 +1339,109 @@ void fn_2_62A38(MenuTask* task, MenuItem* item) {
 #endif
 
 // .text:0x00062D18 size:0x858
-void fn_2_62D18(void) {
-    return;
+void fn_2_62D18(MenuTask* task, MenuItem* item) {
+    LayoutObj* obj;
+    s32 digit;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        if (item->key == 6) {
+            switch (item->_10) {
+            case 0:
+                digit = (lbl_2_bss_1A824C->records[0][item->_0A].value / 1000) % 10;
+                break;
+            case 1:
+                digit = (lbl_2_bss_1A824C->records[0][item->_0A].value / 100) % 10;
+                break;
+            case 2:
+                digit = (lbl_2_bss_1A824C->records[0][item->_0A].value / 10) % 10;
+                break;
+            case 3:
+                digit = lbl_2_bss_1A824C->records[0][item->_0A].value % 10;
+                break;
+            }
+        } else {
+            switch (item->_10) {
+            case 0:
+                digit = (lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A].value / 1000) % 10;
+                break;
+            case 1:
+                digit = (lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A].value / 100) % 10;
+                break;
+            case 2:
+                digit = (lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A].value / 10) % 10;
+                break;
+            case 3:
+                digit = lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A].value % 10;
+                break;
+            }
+        }
+        fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x16, digit);
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 0x11:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        if (item->key == 6) {
+            switch (item->_10) {
+            case 0:
+                digit = (lbl_2_bss_1A824C->records[0][item->_0A].value / 1000) % 10;
+                break;
+            case 1:
+                digit = (lbl_2_bss_1A824C->records[0][item->_0A].value / 100) % 10;
+                break;
+            case 2:
+                digit = (lbl_2_bss_1A824C->records[0][item->_0A].value / 10) % 10;
+                break;
+            case 3:
+                digit = lbl_2_bss_1A824C->records[0][item->_0A].value % 10;
+                break;
+            }
+        } else {
+            switch (item->_10) {
+            case 0:
+                digit = (lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A].value / 1000) % 10;
+                break;
+            case 1:
+                digit = (lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A].value / 100) % 10;
+                break;
+            case 2:
+                digit = (lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A].value / 10) % 10;
+                break;
+            case 3:
+                digit = lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A].value % 10;
+                break;
+            }
+        }
+        fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x16, digit);
+        item->state = 0x25;
+        break;
+    case 5:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
+        item->state = 6;
+        break;
+    case 6:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) == 0) {
+            obj->_68 = 0;
+            item->state = 7;
+        }
+        break;
+    case 7:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        break;
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00063570 size:0x134
