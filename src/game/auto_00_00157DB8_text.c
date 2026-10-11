@@ -35,6 +35,8 @@ extern PracticeTutorBss lbl_3_common_bss_34C90;
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
+extern u8 lbl_3_data_B5D4[];
+extern s16 lbl_3_data_B834[][4];
 extern u8 lbl_3_data_BA70[];
 extern MenuDef lbl_800FEF70[];
 extern PracticeMsgEntry lbl_3_data_103B8[][4][4];
@@ -741,4 +743,40 @@ void fn_3_1586B0(void) {
     }
     o->timer = 0;
     ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_1583AC;
+}
+
+// .text:0x001599B8 size:0x398
+void fn_3_1599B8(void) {
+    PracticeTask* o = lbl_803CC1B8[0];
+    s32 i;
+
+    fn_80034E20(o, lbl_3_data_B5D4);
+    o->text[0] = 0xFFFF;
+    o->text[1] = 0xFFFF;
+    o->text[2] = 0xFFFF;
+    o->text[3] = 0xFFFF;
+    for (i = 0; i < 4; i++) {
+        fn_800363D8(o, i + 2, 1, 0x77, i);
+        fn_800363D8(o, i + 2, 2, 0x77, i + 4);
+        if (g_Practice.practiceType_1 == 5 || g_Practice.practiceType_1 == 6) {
+            lbl_80371C30[o->baseIdx + 0xA + i].obj->flags &= ~2;
+        } else if (g_Practice.levelCleared[g_Practice.practiceType_2][i] == 0) {
+            lbl_80371C30[o->baseIdx + 0xA + i].obj->flags &= ~2;
+        }
+        o->text[i] = fn_8000F988((LayoutGroup*)o, i + 0xE, i, 5, lbl_3_data_B834[g_Practice.practiceType_2][i], 0);
+    }
+    for (; i < 4; i++) {
+        lbl_80371C30[o->baseIdx + 2 + i].obj->flags &= ~2;
+        lbl_80371C30[o->baseIdx + 6 + i].obj->flags &= ~2;
+        lbl_80371C30[o->baseIdx + 0xE + i].obj->flags &= ~2;
+        lbl_80371C30[o->baseIdx + 0xA + i].obj->flags &= ~2;
+    }
+    o->timer = 0;
+    if (lbl_3_common_bss_32724._C2 != 0) {
+        o->timer = 2;
+        lbl_80371C30[o->baseIdx].obj->_5C = 0xF0000;
+    }
+    lbl_3_common_bss_32724._C1 = 1;
+    o->_1A = 0;
+    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_1595F4;
 }
