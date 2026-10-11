@@ -16,6 +16,7 @@ typedef struct SoundManagerView {
 extern SoundManagerView lbl_800EF808;
 extern u8 lbl_80361B20[0xF8];
 extern u8 lbl_803616CC[0x454];
+extern void (*lbl_803CBCA8)(void); // model callback (set by fn_8003A540)
 
 // main/file_800A7C08 (memory card / CRC)
 s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
@@ -28,18 +29,18 @@ void fn_8003A688(s32 type, f32 speed, f32 spread) {
 }
 
 // .text:0x8003A6B0 size:0x198
-void fn_8003A6B0(s32 type, TexDesc* desc, f32 speed, f32 spread) {
-    if (desc->palette != NULL) {
+void fn_8003A6B0(s32 type, TexImage* tex, f32 speed, f32 spread) {
+    if (tex->tlut != NULL) {
         lbl_802D3D80.texMode[type] = 2;
-        GXInitTexObjCI(&lbl_802D3D80.texObj[type], desc->image, desc->width, desc->height, desc->format, desc->wrapS, desc->wrapT,
+        GXInitTexObjCI(&lbl_802D3D80.texObj[type], tex->data, tex->width, tex->height, tex->format, tex->wrapS, tex->wrapT,
                        GX_FALSE, type);
-        GXInitTlutObj(&lbl_802D3D80.tlutObj[type], desc->palette, desc->tlutFormat, desc->tlutCount);
+        GXInitTlutObj(&lbl_802D3D80.tlutObj[type], tex->tlut, tex->tlutFormat, tex->tlutEntries);
     } else {
         lbl_802D3D80.texMode[type] = 1;
-        GXInitTexObj(&lbl_802D3D80.texObj[type], desc->image, desc->width, desc->height, desc->format, desc->wrapS, desc->wrapT,
+        GXInitTexObj(&lbl_802D3D80.texObj[type], tex->data, tex->width, tex->height, tex->format, tex->wrapS, tex->wrapT,
                      GX_FALSE);
     }
-    GXInitTexObjLOD(&lbl_802D3D80.texObj[type], desc->minFilter, desc->magFilter, desc->minLod, desc->maxLod, desc->lodBias,
+    GXInitTexObjLOD(&lbl_802D3D80.texObj[type], tex->minFilter, tex->magFilter, tex->minLOD, tex->maxLOD, tex->lodBias,
                     GX_FALSE, GX_FALSE, GX_ANISO_1);
     fn_8003A688(type, speed, spread);
 }
@@ -62,8 +63,119 @@ void fn_8003A85C(u8 enabled) {
 }
 
 // .text:0x8003A8A0 size:0x3F0
-void fn_8003A8A0(void) {
-    return;
+void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused) {
+    Mtx mtx;
+    GXVtxDescList desc[27]; // GX_MAX_VTXDESCLIST_SZ
+    ModelArray* arr;
+    ModelCmd* cmd;
+    s32 compSize;
+    s32 i;
+    s32 j;
+    s32 n;
+    s32 attr;
+    s32 shift;
+    u32 type;
+
+    PSMTXConcat(viewMtx, model->mtx, mtx);
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+
+    arr = model->pos;
+    switch ((u8)(arr->fmt >> 4)) {
+    case GX_U8:
+    case GX_S8:
+        compSize = 1;
+        break;
+    case GX_U16:
+    case GX_S16:
+        compSize = 2;
+        break;
+    case GX_F32:
+        compSize = 4;
+        break;
+    default:
+        compSize = 0;
+        break;
+    }
+    GXSetArray(GX_VA_POS, arr->data, (u8)(arr->count * compSize));
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, model->pos->fmt >> 4, model->pos->fmt & 0xF);
+
+    if (model->texCoords != NULL) {
+        for (i = 0; i < model->numTexCoords; i++) {
+            arr = &model->texCoords[i];
+            switch ((u8)(arr->fmt >> 4)) {
+            case GX_U8:
+            case GX_S8:
+                compSize = 1;
+                break;
+            case GX_U16:
+            case GX_S16:
+                compSize = 2;
+                break;
+            case GX_F32:
+                compSize = 4;
+                break;
+            default:
+                compSize = 0;
+                break;
+            }
+            GXSetArray(GX_VA_TEX0 + i, arr->data, (u8)(arr->count * compSize));
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0 + i, GX_TEX_ST, model->texCoords[i].fmt >> 4, model->texCoords[i].fmt & 0xF);
+            GXSetTexCoordGen2(i, GX_MTX2x4, GX_TG_TEX0 + i, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+        }
+        GXSetNumTexGens(model->numTexCoords);
+    } else {
+        GXSetNumTexGens(0);
+    }
+
+    cmd = model->cmdList->cmds;
+    for (j = 0; j < model->cmdList->count; j++) {
+        switch (cmd->type) {
+        case MODEL_CMD_TEXTURE: {
+            u32 map = (cmd->param >> 13) & 7;
+            TexArchive* textures = model->texCoords[map].textures;
+            SetDisplayStateTexture((TexImage*)TEX_ARCHIVE_OBJ(textures, cmd->param & 0x1FFF), map, map);
+            break;
+        }
+        case MODEL_CMD_VTXDESC:
+            GXClearVtxDesc();
+            n = 0;
+            type = cmd->param & 3;
+            if (type != 0) {
+                desc[0].mType = type;
+                n = 1;
+                desc[0].mAttr = GX_VA_PNMTXIDX;
+            }
+            for (attr = GX_VA_POS, shift = 2; attr < GX_VA_TEX7 + 1; attr++, shift += 2) {
+                type = (cmd->param >> shift) & 3;
+                if (type != 0) {
+                    desc[n].mAttr = attr;
+                    n++;
+                    desc[n - 1].mType = type;
+                }
+            }
+            type = (cmd->param >> 26) & 3;
+            if (type != 0) {
+                desc[n].mAttr = attr;
+                desc[n].mType = type;
+                n++;
+            }
+            desc[n].mAttr = GX_VA_NULL;
+            GXSetVtxDescv(desc);
+            break;
+        case MODEL_CMD_CALLBACK:
+            if (lbl_803CBCA8 != NULL) {
+                lbl_803CBCA8();
+            }
+            break;
+        case 4: // unused command type
+            break;
+        }
+        if (cmd->displayList != NULL) {
+            GXCallDisplayList(cmd->displayList, cmd->displayListSize);
+        }
+        cmd++;
+    }
 }
 
 extern u32 lbl_803CBCB8;
@@ -94,12 +206,13 @@ extern u16 lbl_800F7AC0[16];
 extern u8 lbl_803CBCAC;
 
 // .text:0x8003AD84 size:0xD0
-void fn_8003AD84(TexSet* set) {
-    GXInitTexObjCI(&lbl_803C50B0, set->tex[0].image, set->tex[0].width, set->tex[0].height, GX_TF_C4, set->tex[0].wrapS,
-                   set->tex[0].wrapT, GX_FALSE, GX_TLUT0);
+void fn_8003AD84(TexArchive* arc) {
+    TexImage* tex = (TexImage*)arc->recs; // TODO type: archive records are TexImage headers
+
+    GXInitTexObjCI(&lbl_803C50B0, tex->data, tex->width, tex->height, GX_TF_C4, tex->wrapS, tex->wrapT, GX_FALSE, GX_TLUT0);
     GXInitTlutObj(&lbl_803C50DC, lbl_800F7AC0, GX_TL_IA8, 16);
-    GXInitTexObjLOD(&lbl_803C50B0, set->tex[0].minFilter, set->tex[0].magFilter, set->tex[0].minLod, set->tex[0].maxLod,
-                    set->tex[0].lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXInitTexObjLOD(&lbl_803C50B0, tex->minFilter, tex->magFilter, tex->minLOD, tex->maxLOD, tex->lodBias, GX_FALSE, GX_FALSE,
+                    GX_ANISO_1);
     lbl_803CBCAC = 1;
 }
 

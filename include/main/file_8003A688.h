@@ -4,6 +4,48 @@
 #include "mssbTypes.h"
 #include "Dolphin/OS/OSUtil.h"
 #include "main/file_80069BDC.h"
+#include "main/file_8000F150.h"
+#include "main/file_80024184.h"
+
+// Vertex attribute array of a display-list model.
+typedef struct ModelArray {
+    /*0x00*/ void* data;
+    /*0x04*/ u8 _04[2];
+    /*0x06*/ u8 fmt;   // high nibble: GXCompType, low nibble: fraction bits
+    /*0x07*/ u8 count; // components per vertex
+    /*0x08*/ u8 _08[4];
+    /*0x0C*/ TexArchive* textures; // texture coordinate arrays only
+} ModelArray; // size: 0x10
+
+enum {
+    MODEL_CMD_TEXTURE = 1, // param: bits 0-12 texture index, bits 13-15 texcoord array / texmap
+    MODEL_CMD_VTXDESC = 2, // param: 2-bit GXAttrType per attribute, PNMTXIDX then POS..TEX7, 21
+    MODEL_CMD_CALLBACK = 3
+};
+
+typedef struct ModelCmd {
+    /*0x00*/ u8 type;
+    /*0x04*/ u32 param;
+    /*0x08*/ void* displayList;
+    /*0x0C*/ u32 displayListSize;
+} ModelCmd; // size: 0x10
+
+typedef struct ModelCmdList {
+    /*0x00*/ u8 _00[4];
+    /*0x04*/ ModelCmd* cmds;
+    /*0x08*/ u16 count;
+} ModelCmdList;
+
+typedef struct Model {
+    /*0x00*/ ModelArray* pos;
+    /*0x04*/ u8 _04[4];
+    /*0x08*/ ModelArray* texCoords;
+    /*0x0C*/ u8 _0C[4];
+    /*0x10*/ ModelCmdList* cmdList;
+    /*0x14*/ u8 numTexCoords;
+    /*0x15*/ u8 _15[3];
+    /*0x18*/ Mtx mtx;
+} Model;
 
 // Process-queue task used by the memory-card save/load state machines.
 typedef struct SaveTask {
@@ -106,10 +148,11 @@ extern s32 lbl_803CBC4C;
 extern s32 lbl_803CBC50;
 
 void fn_8003A688(s32 type, f32 speed, f32 spread);
-void fn_8003A6B0(s32 type, TexDesc* desc, f32 speed, f32 spread);
+void fn_8003A6B0(s32 type, TexImage* tex, f32 speed, f32 spread);
 void fn_8003A85C(u8 enabled);
+void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused);
 void fn_8003AC90(void);
-void fn_8003AD84(TexSet* set);
+void fn_8003AD84(TexArchive* arc);
 void fn_8003F23C(void);
 void fn_8003F2B8(void);
 void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);

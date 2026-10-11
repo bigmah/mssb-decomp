@@ -10,18 +10,7 @@ typedef struct TexDesc {
     /*0x04*/ void* palette;
     /*0x08*/ u16 height;
     /*0x0A*/ u16 width;
-    /*0x0C*/ u8 wrapS;
-    /*0x0D*/ u8 wrapT;
-    /*0x0E*/ u8 minFilter;
-    /*0x0F*/ u8 magFilter;
-    /*0x10*/ f32 lodBias;
-    /*0x14*/ u8 _14;
-    /*0x15*/ u8 minLod;
-    /*0x16*/ u8 maxLod;
-    /*0x17*/ u8 format;
-    /*0x18*/ u16 tlutCount;
-    /*0x1A*/ u8 tlutFormat;
-    /*0x1B*/ u8 _1B[0x20 - 0x1B];
+    /*0x0C*/ u8 _0C[0x20 - 0x0C];
 } TexDesc; // size: 0x20
 
 // Texture set used by the logo/warning screens: a count word followed by descriptors.
