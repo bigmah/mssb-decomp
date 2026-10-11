@@ -540,8 +540,36 @@ void fn_80033CC8(Particle* p, TexArchive* arc) {
 }
 
 // .text:0x80033F64 size:0xD8
-void fn_80033F64(void) {
-    return;
+void fn_80033F64(f32 width, f32 height, f32 angleDeg) {
+    Mtx m;
+    Mtx rot;
+    s32 i;
+    f32 x1;
+    f32 y0;
+    f32 x0;
+    f32 y1;
+
+    x1 = 0.5f * width;
+    x0 = 0.5f * -width;
+    y0 = 0.5f * -height;
+    y1 = 0.5f * height;
+    lbl_80180010[0].z = 0.0f;
+    lbl_80180010[0].x = x0;
+    lbl_80180010[0].y = y0;
+    lbl_80180010[1].x = x1;
+    lbl_80180010[1].y = y0;
+    lbl_80180010[1].z = 0.0f;
+    lbl_80180010[2].x = x1;
+    lbl_80180010[2].y = y1;
+    lbl_80180010[2].z = 0.0f;
+    lbl_80180010[3].x = x0;
+    lbl_80180010[3].y = y1;
+    lbl_80180010[3].z = 0.0f;
+    PSMTXRotRad(rot, 'z', 0.017453292f * angleDeg);
+    PSMTXConcat(lbl_8017FF78[0], rot, m);
+    for (i = 0; i < 4; i++) {
+        PSMTXMultVec(m, &lbl_80180010[i], &lbl_80180010[i]);
+    }
 }
 
 // .text:0x8003403C size:0xB8
