@@ -53,7 +53,7 @@ typedef struct CharSlot {
     /*0x00*/ CharModel* model;
     /*0x04*/ void* act;
     /*0x08*/ void (*callback)(struct CharSlot* slot);
-    /*0x0C*/ u8 _0C[0x2];
+    /*0x0C*/ u16 index;
     /*0x0E*/ u16 animId;
     /*0x10*/ Control ctrl;
     /*0x4C*/ u8 _4C[0x54 - 0x10 - sizeof(Control)];
@@ -386,7 +386,7 @@ void fn_80018024(void);
 void fn_80018B74(void);
 
 void fn_8001AF98(void);
-void fn_8001AB10(CharSlot* slot, s32 a, s32 b);
+void fn_8001AB10(CharSlot* slot, Mtx view);
 
 void fn_80017DBC(CharActor* actor, s32 modelIndex);
 

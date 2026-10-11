@@ -138,7 +138,7 @@ extern void fn_800BD1E8(u32 value);
 extern u8 GetDrawShadows(void);
 extern void DrawShadows(u8 enable);
 extern void fn_800BEC00(s32 reverse);
-extern void fn_800BF058(void (*draw)(CharSlot*, s32, s32));
+extern void fn_800BF058(void (*draw)(CharSlot*, Mtx));
 extern void fn_800BE09C(CharSlotList* list, ShadowView* view);
 extern void fn_800BDFE0(CharSlotList* list);
 extern void fn_800BDEA0(void);
@@ -200,6 +200,11 @@ extern s32 lbl_803CBC28;
 extern u8 lbl_803CBC2C;
 extern void fn_80021ADC(s16 id, void** files);
 extern void fn_80021BBC(s8 kind, void* buffer);
+extern u8 fn_8003AE54(void);
+extern void fn_8003A8A0(void* display, Mtx m, s32 a);
+extern f32 lbl_803CB7BC;
+extern u8 lbl_803CB7C0;
+extern u8 lbl_803CB7C1;
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -289,6 +294,43 @@ static inline void initModelJoints(CharActor* actor, CharSlot* slot) {
         slot->model->joints[(u16)j]->_136 = 1;
     }
     fn_800B2C08(slot->model, actor->jointIdx[4]);
+}
+
+static inline void drawSlot(CharSlot* slot, s32 pass, MtxPtr view) {
+    CharModel* model = slot->model;
+
+    if (slot->callback != NULL) {
+        slot->callback(slot);
+    }
+    switch (slot->lightCount) {
+    case 0:
+        fn_8001DD58(model, pass, view, 0);
+        break;
+    case 1:
+        fn_8001DD58(model, pass, view, 1, slot->lights[0]);
+        break;
+    case 2:
+        fn_8001DD58(model, pass, view, 2, slot->lights[0], slot->lights[1]);
+        break;
+    case 3:
+        fn_8001DD58(model, pass, view, 3, slot->lights[0], slot->lights[1], slot->lights[2]);
+        break;
+    case 4:
+        fn_8001DD58(model, pass, view, 4, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3]);
+        break;
+    case 5:
+        fn_8001DD58(model, pass, view, 5, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4]);
+        break;
+    case 6:
+        fn_8001DD58(model, pass, view, 6, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5]);
+        break;
+    case 7:
+        fn_8001DD58(model, pass, view, 7, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6]);
+        break;
+    case 8:
+        fn_8001DD58(model, pass, view, 8, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6], slot->lights[7]);
+        break;
+    }
 }
 
 // .text:0x80011640 size:0x9C
@@ -3144,9 +3186,88 @@ void fn_8001AAF0(void) {
 }
 
 // .text:0x8001AB10 size:0x488
-void fn_8001AB10(CharSlot* slot, s32 a, s32 b) {
-    return;
+// NONMATCHING 98%: early-return branch layout and register allocation
+#if NONMATCHING
+void fn_8001AB10(CharSlot* slot, Mtx view) {
+    CharActor* actor = &lbl_8036E548.actors[slot->index];
+    BOOL homeRun = g_d_GameSettings.GameModeSelected == 6;
+    f32 t;
+    f32 y;
+    u8 v;
+    CharJoint* joint;
+    CharModel* model;
+    GXColor c;
+    Mtx mv;
+    Mtx m;
+
+    if (actor->mode[0] == 3) {
+        y = actor->pos.y;
+        if (y < 0.0f) {
+            y = -y;
+        }
+        t = (lbl_803CB7BC - y) / lbl_803CB7BC;
+        if (t > 1.0f) {
+            t = 1.0f;
+        } else if (t < 0.0f) {
+            t = 0.0f;
+        }
+        v = fn_8003AE54();
+        c.a = 0xFF;
+        v = t * v;
+        c.b = v;
+        c.g = v;
+        c.r = v;
+    } else if (actor->mode[0] == 1) {
+        if (actor->_277 == 0) {
+            return;
+        }
+        v = fn_8003AE54();
+        c.b = v;
+        c.g = v;
+        c.r = v;
+        c.a = actor->_277;
+    } else {
+        return;
+    }
+    GXSetChanMatColor(GX_COLOR0A0, c);
+    if (homeRun) {
+        PSMTXTrans(m, actor->pos.x, actor->pos.y, actor->pos.z);
+    } else {
+        PSMTXTrans(m, actor->pos.x, actor->pos.y, actor->pos.z);
+    }
+    if (!homeRun) {
+        PSMTXConcat(view, m, mv);
+        for (joint = slot->model->firstJoint; joint != NULL; joint = joint->next) {
+            if (joint->display != NULL) {
+                DOSetWorldMatrix(joint->display, joint->worldMtx);
+                fn_8003A8A0(joint->display, mv, 1);
+            }
+        }
+        model = slot->model;
+        if (model->display != NULL) {
+            if (model->_7C != NULL) {
+                fn_8003A8A0(model->display, mv, 0);
+            } else {
+                DOVARenderSkin(model->display, view, model->_64, model->_68, 0);
+            }
+        }
+        v = fn_8003AE54();
+        c.b = v;
+        c.g = v;
+        c.r = v;
+        c.a = 0xFF;
+        GXSetChanMatColor(GX_COLOR0A0, c);
+    } else {
+        c.b = lbl_803CB7C1;
+        c.g = lbl_803CB7C1;
+        c.r = lbl_803CB7C1;
+        c.a = lbl_803CB7C0;
+        fn_800BD2CC(1, c);
+        PSMTXConcat(view, m, mv);
+        drawSlot(slot, 0, mv);
+    }
 }
+#endif
 
 // .text:0x8001AF98 size:0x268
 void fn_8001AF98(void) {
@@ -4145,40 +4266,7 @@ void fn_8001DD58(CharModel* model, s32 pass, MtxPtr view, s32 n, ...) {
 
 // .text:0x8001DEA4 size:0x234
 void fn_8001DEA4(CharSlot* slot, s32 pass, MtxPtr view) {
-    CharModel* model = slot->model;
-
-    if (slot->callback != NULL) {
-        slot->callback(slot);
-    }
-    switch (slot->lightCount) {
-    case 0:
-        fn_8001DD58(model, pass, view, 0);
-        break;
-    case 1:
-        fn_8001DD58(model, pass, view, 1, slot->lights[0]);
-        break;
-    case 2:
-        fn_8001DD58(model, pass, view, 2, slot->lights[0], slot->lights[1]);
-        break;
-    case 3:
-        fn_8001DD58(model, pass, view, 3, slot->lights[0], slot->lights[1], slot->lights[2]);
-        break;
-    case 4:
-        fn_8001DD58(model, pass, view, 4, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3]);
-        break;
-    case 5:
-        fn_8001DD58(model, pass, view, 5, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4]);
-        break;
-    case 6:
-        fn_8001DD58(model, pass, view, 6, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5]);
-        break;
-    case 7:
-        fn_8001DD58(model, pass, view, 7, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6]);
-        break;
-    case 8:
-        fn_8001DD58(model, pass, view, 8, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6], slot->lights[7]);
-        break;
-    }
+    drawSlot(slot, pass, view);
 }
 
 // .text:0x8001E0D8 size:0x388
