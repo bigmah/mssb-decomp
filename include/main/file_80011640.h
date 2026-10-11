@@ -424,6 +424,8 @@ s32 fn_80016344(u8 kind, s32 index, u8 arg2, s32 roster);
 s32 fn_80016710(u8 kind, s32 index);
 u8 fn_80012B90(CharActor* actor);
 
+s32 fn_8001500C(s32 team, s32 roster, s32 index);
+
 void fn_8001B200(void);
 
 void fn_8001B214(void (*callback)(void));

@@ -966,9 +966,135 @@ s32 fn_80014F40(s32 id) {
 }
 
 // .text:0x8001500C size:0x45C
-void fn_8001500C(void) {
-    return;
+// NONMATCHING 88%: register allocation in the inlined part-attach step
+#if NONMATCHING
+s32 fn_8001500C(s32 team, s32 roster, s32 index) {
+    CharActor** slot;
+    CharActor* actor;
+    CharPart* part;
+    u8 kind;
+    s32 k;
+    s32 n;
+    BOOL ok;
+    BOOL done;
+
+    if (lbl_8036E548.state == 1) {
+        return 0;
+    }
+    if (lbl_8036E548.state == 2) {
+        lbl_8036E548.active[index] = &lbl_8036E548.actors[lbl_8036E548._2D79];
+        lbl_8036E548.loadStep = 0;
+        lbl_8036E548.state = 3;
+    }
+    if (lbl_8036E548.state == 3) {
+        if (fn_80017340(lbl_8036E548._2D79) == 0) {
+            return 0;
+        }
+        if (lbl_8036E548._2D78 != 0 && lbl_8036E548.active[index]->part != NULL) {
+            if (lbl_8036E548.active[index]->parts == NULL) {
+                lbl_8036E548.state = 5;
+                return 0;
+            }
+            lbl_8036E548.state = 0;
+            return 1;
+        }
+        if (lbl_803CBC34[3] != 0) {
+            lbl_8036E548.state = 4;
+        } else if (lbl_803CBC34[4] != 0 && index == 9) {
+            lbl_8036E548.state = 4;
+        } else {
+            lbl_8036E548.state = 5;
+        }
+    }
+    if (lbl_8036E548.state == 4) {
+        slot = &lbl_8036E548.active[index];
+        actor = *slot;
+        kind = actor->kind;
+        if (lbl_803CBBF9 == 0) {
+            for (k = 0; lbl_80118220[k]._61 != -2; k++) {
+                if (kind == (s8)lbl_80118220[k].slot && lbl_80118220[k]._61 == -1) {
+                    part = &lbl_80118220[k];
+                    actor->part = part;
+                    part->slot = kind;
+                    part->_61 = index;
+                    part->player.model = actor->files[4];
+                    done = TRUE;
+                    goto next;
+                }
+            }
+            lbl_803CBBF9 = 1;
+            for (n = 0; lbl_80118220[n]._61 != -2; n++) {
+                if (lbl_80118220[n]._61 == -1) {
+                    break;
+                }
+            }
+            lbl_803CBC28 = n;
+        }
+        n = lbl_803CBC28;
+        lbl_80118220[n].player.unk59 = 0;
+        if (lbl_800EEB18[kind] == -1 || actor->files[4] == NULL) {
+            ok = TRUE;
+            actor->part = NULL;
+        } else {
+            if (lbl_803CBBFA == 0) {
+                fn_80021ADC(lbl_800EEB18[kind], lbl_80118220[n].files);
+                lbl_803CBBFA = 1;
+            }
+            if ((s32)lbl_803C6CF8.transferDone == 1) {
+                part = &lbl_80118220[n];
+                part->slot = kind;
+                part->_61 = index;
+                part->player.set = (ShapeAnimSet*)part->files;
+                fn_80025FFC(actor->files[4], &part->player);
+                actor->part = part;
+                ok = TRUE;
+                lbl_803CBBFA = 0;
+            } else {
+                ok = FALSE;
+            }
+        }
+        if (ok) {
+            done = TRUE;
+            lbl_803CBBF9 = 0;
+        } else {
+            done = FALSE;
+        }
+    next:
+        if (!done) {
+            return 0;
+        }
+        if (lbl_8036E548._2D78 != 0 && (*slot)->parts != NULL) {
+            lbl_8036E548.state = 0;
+            return 1;
+        }
+        lbl_8036E548.state = 5;
+    }
+    if (lbl_8036E548.state == 5) {
+        if (fn_80013680(lbl_8036E548.active[index])) {
+            lbl_8036E548.state = 0;
+            return 1;
+        }
+        return 0;
+    }
+    if (index == 9) {
+        lbl_8036E548._2D78 = fn_80017098(team, roster, 1, index, 1, -1);
+    } else {
+        lbl_8036E548._2D78 = fn_80017098(team, roster, 1, index, 0, -1);
+    }
+    if (lbl_8036E548._2D78 == 0) {
+        return 0;
+    }
+    if (index == 9) {
+        lbl_8036E548.state = 2;
+        return 0;
+    }
+    if (lbl_8036E548.active[index]->parts != NULL) {
+        return lbl_8036E548._2D78;
+    }
+    lbl_8036E548.state = 5;
+    return 0;
 }
+#endif
 
 // .text:0x80015468 size:0x4E4
 // NONMATCHING 93%: free-slot search ladder addressing and register allocation
