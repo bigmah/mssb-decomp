@@ -208,8 +208,7 @@ typedef struct CharMgr {
     /*0x2C84*/ void* _2C84;
     /*0x2C88*/ void* _2C88;
     /*0x2C8C*/ u8* fileBuf;
-    /*0x2C90*/ u32 bankSize[4];
-    /*0x2CA0*/ u8 _2CA0[0x4];
+    /*0x2C90*/ u32 bankSize[5];
     /*0x2CA4*/ u32 _2CA4;
     /*0x2CA8*/ u8 _2CA8[0x4];
     /*0x2CAC*/ void* animBufs[16]; // [1..4]: shared bank buffers, [14]/[15]: extra banks

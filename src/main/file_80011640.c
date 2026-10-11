@@ -1720,9 +1720,178 @@ void fn_80018B74(void) {
 #endif
 
 // .text:0x80018DEC size:0x8EC
-void fn_80018DEC(s32 arg) {
-    return;
+// NONMATCHING 91%: size-table loops unrolled/scheduled differently
+#if NONMATCHING
+void fn_80018DEC(s32 mode) {
+    u32 m0 = 0;
+    u32 m1 = 0;
+    u32 m5 = 0;
+    u32 m6 = 0;
+    u32 m7 = 0;
+    u32 m8 = 0;
+    u32 s0;
+    u32 s1;
+    u32 s5;
+    u32 s6;
+    u32 s7;
+    u32 s8;
+    u32 total;
+    u32 size;
+    AramFile* f;
+    s32 k;
+    s32 t;
+    s32 i;
+    u8* p;
+
+    if (mode == 2) {
+        for (k = 0; k < 54; k++) {
+            f = &lbl_803CB790[k * 0x13];
+            size = f[0xA].size & 0x0FFFFFFF;
+            if (m0 < size) {
+                m0 = size;
+            }
+            size = f[0xB].size & 0x0FFFFFFF;
+            if (m1 < size) {
+                m1 = size;
+            }
+            size = f[0x12].size & 0x0FFFFFFF;
+            if (m6 < size) {
+                m6 = size;
+            }
+            size = f[4].size & 0x0FFFFFFF;
+            if (m8 < size) {
+                m8 = size;
+            }
+        }
+        for (i = 1; i < 9; i++) {
+            f = &lbl_803CB790[inMemRoster[0][i].charId * 0x13];
+            size = f[4].size & 0x0FFFFFFF;
+            if (m5 < size) {
+                m5 = size;
+            }
+            size = f[6].size & 0x0FFFFFFF;
+            if (m7 < size) {
+                m7 = size;
+            }
+        }
+    } else if (mode == 0) {
+        for (t = 0; t < 2; t++) {
+            for (i = 0; i < 9; i++) {
+                f = &lbl_803CB790[inMemRoster[t][i].charId * 0x13];
+                size = f[2].size & 0x0FFFFFFF;
+            if (m0 < size) {
+                m0 = size;
+            }
+                size = f[3].size & 0x0FFFFFFF;
+            if (m1 < size) {
+                m1 = size;
+            }
+                size = f[4].size & 0x0FFFFFFF;
+            if (m5 < size) {
+                m5 = size;
+            }
+                size = f[5].size & 0x0FFFFFFF;
+            if (m6 < size) {
+                m6 = size;
+            }
+                size = f[6].size & 0x0FFFFFFF;
+            if (m7 < size) {
+                m7 = size;
+            }
+            }
+        }
+    } else {
+        for (k = 0; k < 54; k++) {
+            f = &lbl_803CB790[k * 0x13];
+            size = f[2].size & 0x0FFFFFFF;
+            if (m0 < size) {
+                m0 = size;
+            }
+            size = f[3].size & 0x0FFFFFFF;
+            if (m1 < size) {
+                m1 = size;
+            }
+            size = f[4].size & 0x0FFFFFFF;
+            if (m5 < size) {
+                m5 = size;
+            }
+            size = f[5].size & 0x0FFFFFFF;
+            if (m6 < size) {
+                m6 = size;
+            }
+            size = f[6].size & 0x0FFFFFFF;
+            if (m7 < size) {
+                m7 = size;
+            }
+        }
+    }
+    s0 = (m0 + 0x1F) & ~0x1F;
+    s1 = (m1 + 0x1F) & ~0x1F;
+    s6 = (m6 + 0x1F) & ~0x1F;
+    s7 = (m7 + 0x1F) & ~0x1F;
+    s5 = (m5 + 0x1F) & ~0x1F;
+    lbl_8036E548.bankSize[0] = s0;
+    s8 = (m8 + 0x1F) & ~0x1F;
+    lbl_8036E548.bankSize[1] = s1;
+    lbl_8036E548.bankSize[3] = s6;
+    lbl_8036E548.bankSize[4] = s7;
+    lbl_8036E548.bankSize[2] = s5;
+    if (mode == 2) {
+        total = s0 + (s1 * 4 + s5 * 8 + s8 + s6 + s7) + s0;
+        lbl_8036E548._2C88 = _OSAllocFromHeap(0x20, total);
+    } else {
+        total = s0 + (s1 * 4 + s5 * 9 + s6 + s7) + s0;
+        lbl_8036E548._2C88 = _OSAllocFromHeap(0x20, total);
+    }
+    lbl_8036E548._2D60 = total;
+    i = 15;
+    lbl_8036E548.animBufs[15] = lbl_8036E548._2C88;
+    p = (u8*)lbl_8036E548._2C88 + s7;
+    while (i > 14) {
+        i--;
+        lbl_8036E548.animBufs[i] = p;
+        p += s6;
+    }
+    if (mode == 2) {
+        while (i > 6) {
+            i--;
+            lbl_8036E548.animBufs[i] = p;
+            p += s5;
+        }
+        i--;
+        lbl_8036E548.animBufs[i] = p;
+        p += s8;
+    } else {
+        while (i > 5) {
+            i--;
+            lbl_8036E548.animBufs[i] = p;
+            p += s5;
+        }
+    }
+    while (i > 1) {
+        i--;
+        lbl_8036E548.animBufs[i] = p;
+        p += s1;
+    }
+    while (i > 0) {
+        i--;
+        lbl_8036E548.animBufs[i] = p;
+        p += s0;
+    }
+    lbl_8036E548.preload[1].buffer = p;
+    lbl_8036E548.preload[1].size = s0;
+    lbl_8036E548.preload[1].id = -1;
+    lbl_8036E548.preload[1].state = 0;
+    for (i = 0; i < 13; i++) {
+        lbl_8036E548.actors[i].banks.b[0] = NULL;
+        lbl_8036E548.actors[i].banks.b[3] = NULL;
+        lbl_8036E548.actors[i].banks.b[4] = NULL;
+        lbl_8036E548.actors[i].banks.b[1] = NULL;
+        lbl_8036E548.actors[i].banks.b[2] = NULL;
+        lbl_8036E548.actors[i].banks.b[5] = NULL;
+    }
 }
+#endif
 
 // .text:0x800196D8 size:0x388
 void fn_800196D8(void) {
