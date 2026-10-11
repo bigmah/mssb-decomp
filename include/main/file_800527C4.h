@@ -82,6 +82,7 @@ void fn_8005F9D0(SceneTask* task, s32 port);
 void fn_80053810(void);
 void fn_800531D0(SceneTask* task);
 void fn_800559EC(void);
+void fn_80060184(void);
 void fn_80054B00(SceneTask* task, s32 port);
 void fn_800542C4(u8 cur, u8 target, SceneTask* task);
 void fn_80058E0C(SceneTask* task, u8 port);
@@ -134,7 +135,8 @@ typedef struct MenuWork {
     /*0xCF3B*/ u8 team;
     /*0xCF3C*/ u8 _CF3C[2];
     /*0xCF3E*/ u8 _CF3E[2]; // roster slot per port
-    /*0xCF40*/ u8 _CF40[6];
+    /*0xCF40*/ u8 _CF40[5];
+    /*0xCF45*/ u8 _CF45;
     /*0xCF46*/ s8 selected[2]; // 1-based roster index per team
     /*0xCF48*/ s8 selected2[2];
     /*0xCF4A*/ u8 _CF4A[8];

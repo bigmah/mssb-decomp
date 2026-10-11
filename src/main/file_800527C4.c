@@ -50,6 +50,8 @@ extern u8 lbl_80361B20[0xF8];
 extern struct SpaniDesc lbl_80108048;
 extern struct SpaniDesc lbl_800FEB30;
 extern struct SpaniDesc lbl_80107688;
+extern struct SpaniDesc lbl_801000A8;
+extern struct SpaniDesc lbl_801041C8;
 extern ChallengeMission lbl_8010A768[20][10];
 extern s16 lbl_8010B3E8[];
 extern s32 determineIfMissionDescriptionIsShown(s16 charID);
@@ -2489,9 +2491,115 @@ void fn_80060184(void) {
 }
 
 // .text:0x80061B9C size:0x7D0
+// NONMATCHING 84%: the original keeps dead duplicate condition branches (inlined helpers) and different register use
+#if NONMATCHING
 void fn_80061B9C(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    s8 team;
+    s32 i;
+    s8 v;
+    BOOL show;
+    u8 flag;
+
+    lbl_803297E0._CF45 = 0;
+    team = lbl_803297E0.team;
+    if (g_d_GameSettings._06 != 2) {
+        fn_80034E20(task, &lbl_801000A8);
+        TASK_OBJ(task, 16)->_5C = lbl_8034E9A0._46F8[0] << 16;
+        if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+            TASK_OBJ(task, 17)->_5C = ((s8)(lbl_8034E9A0._46F8[0] == 0) + 4) << 16;
+        } else {
+            TASK_OBJ(task, 17)->_5C = lbl_8034E9A0._46F8[1] << 16;
+        }
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            for (i = 0; i < 9; i++) {
+                TASK_OBJ(task, i + 0x164)->flags &= ~2;
+            }
+            TASK_OBJ(task, 466)->flags &= ~2;
+            fn_8005C2B0(task);
+            fn_8005BF40(task);
+        } else {
+            CharacterStats* player = inMemRoster[0];
+            RosterSlot* slot = lbl_80354720[0];
+
+            TASK_OBJ(task, 466)->flags &= ~2;
+            fn_8005BB5C(task);
+            for (i = 0; i < 9; i++, player++, slot++) {
+                s8 pos = slot->pos;
+                fn_800363D8(task, pos + 0x10A, 1, 0x83, player->stats.CharID);
+                TASK_OBJ(task, i + 0xE6)->flags &= ~2;
+                if (g_d_GameSettings.GameModeSelected == 5) {
+                    flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                } else {
+                    flag = lbl_8034E9A0._489B[0][i];
+                }
+                if (flag != 0) {
+                    TASK_OBJ(task, pos + 0x140)->_68 = 1;
+                    TASK_OBJ(task, pos + 0x152)->flags |= 2;
+                    TASK_OBJ(task, pos + 0x152)->_5C = 0;
+                    TASK_OBJ(task, pos + 0x152)->_68 = 1;
+                } else {
+                    TASK_OBJ(task, pos + 0x152)->flags &= ~2;
+                }
+                TASK_OBJ(task, i + 0x12E)->flags &= ~2;
+                TASK_OBJ(task, i + 0xF8)->_64 = lbl_8034E9A0._46F8[0] + 30;
+            }
+        }
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            TASK_OBJ(task, 23)->flags &= ~2;
+        }
+    } else {
+        fn_80034E20(task, &lbl_801041C8);
+        if (g_d_GameSettings.home_AwaySetting != 0) {
+            if (g_d_GameSettings.GameModeSelected == 5 && gChallengeState._441F == 0x13) {
+                show = team != 0;
+            } else {
+                show = team == 0;
+            }
+        } else {
+            show = team != 0;
+        }
+        if (show) {
+            TASK_OBJ(task, 6)->flags &= ~2;
+            TASK_OBJ(task, 9)->flags &= ~2;
+            TASK_OBJ(task, 7)->_5C = (lbl_8034E9A0._470D[team] % 4) << 16;
+            TASK_OBJ(task, 10)->_5C = (lbl_8034E9A0._470D[team] % 4) << 16;
+        } else {
+            TASK_OBJ(task, 7)->flags &= ~2;
+            TASK_OBJ(task, 10)->flags &= ~2;
+            TASK_OBJ(task, 6)->_5C = (lbl_8034E9A0._470D[team] % 4) << 16;
+            TASK_OBJ(task, 9)->_5C = (lbl_8034E9A0._470D[team] % 4) << 16;
+        }
+        if (((u8*)&g_d_GameSettings)[0x10] == 0 && team != 0) { // TODO type
+            if (lbl_8034E9A0._46F8[team] == -1) {
+                v = (team != 0) + 4;
+            } else {
+                v = lbl_8034E9A0._46F8[team] + 4;
+            }
+        } else {
+            v = lbl_8034E9A0._46F8[team];
+        }
+        TASK_OBJ(task, 12)->_5C = v << 16;
+        TASK_OBJ(task, 2)->_5C = 20 << 16;
+        TASK_OBJ(task, 2)->_68 = 0;
+        TASK_OBJ(task, 4)->_5C = 20 << 16;
+        TASK_OBJ(task, 5)->_5C = 24 << 16;
+        TASK_OBJ(task, 4)->_68 = 0;
+        TASK_OBJ(task, 5)->_68 = 0;
+        TASK_OBJ(task, 8)->_5C = 10 << 16;
+        TASK_OBJ(task, 8)->_68 = 0;
+        if (lbl_803297E0.teamKind[team] == 1) {
+            TASK_OBJ(task, 80)->_64 = 0x28;
+            TASK_OBJ(task, 1)->_64 = 0x47;
+            TASK_OBJ(task, 1)->_5C = 20 << 16;
+            TASK_OBJ(task, 1)->_68 = 0;
+        }
+        fn_8005B298(task);
+        fn_8005AF68(task);
+    }
+    lbl_803CC1B8->func = fn_80060184;
 }
+#endif
 
 // .text:0x8006236C size:0x20C
 void SetMenuNumber(void) {
