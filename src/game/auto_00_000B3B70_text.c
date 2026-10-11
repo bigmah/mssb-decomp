@@ -39,6 +39,8 @@ extern u8 lbl_803CBC3C[];
 extern s32 fn_3_6BA64(void);
 extern void fn_3_B3C94(u8 state);
 extern void fn_3_B3C78(u8 state);
+void fn_3_B7184(void);
+void fn_3_B7620(void);
 
 #define SAVE_LEVEL_CLEARED(type) (lbl_80354768 + 0xCF4E + (type) * 4)
 
@@ -808,7 +810,7 @@ void fn_3_B482C(void) {
         fn_3_B1C14();
         break;
     case 14:
-        fn_3_B77DC();
+        ((void (*)(void))fn_3_B77DC)(); // cast: keeps the call out of deferred inlining (see dont_inline off below)
         break;
     case 15:
     case 16:
@@ -890,6 +892,36 @@ void fn_3_B42A8(void) {
     }
 }
 
+// .text:0x000B4124 size:0x184
+// Puts character charId in roster slot `slot` of `team`; handedness: <0 keep, 0 R/R, 1 R/L, 2 L/R, other L/L.
+void fn_3_B4124(s32 team, s32 slot, s32 charId, s32 handedness) {
+    if (team == 0 && slot == 0) {
+        g_GameLogic.battingOrderAndPositionMapping[team][0][0] = slot;
+    }
+    g_GameLogic.battingOrderAndPositionMapping[team][slot + 1][0] = slot;
+    g_GameLogic.battingOrderAndPositionMapping[team][slot + 1][1] = slot;
+    lbl_80354720[team][slot]._0 = slot;
+    lbl_80354720[team][slot]._1 = slot;
+    lbl_80354720[team][slot].slot = slot;
+    if (slot >= 0 && slot <= 8) {
+        fn_80011BE4(slot);
+    }
+    memcpy(&inMemRoster[team][slot], &lbl_8034E9A0[charId], sizeof(CharacterStats));
+    if (handedness >= 0) {
+        if (handedness == 0 || handedness == 1) {
+            inMemRoster[team][slot].stats.FieldingArm = 0;
+        } else {
+            inMemRoster[team][slot].stats.FieldingArm = 1;
+        }
+        if (handedness == 0 || handedness == 2) {
+            inMemRoster[team][slot].stats.BattingStance = 0;
+        } else {
+            inMemRoster[team][slot].stats.BattingStance = 1;
+        }
+    }
+}
+
+#pragma dont_inline off
 // .text:0x000B7620 size:0x15C
 void fn_3_B7620(void) {
     switch (g_Practice.practiceState) {
@@ -928,31 +960,25 @@ void fn_3_B7620(void) {
     }
 }
 
-// .text:0x000B4124 size:0x184
-// Puts character charId in roster slot `slot` of `team`; handedness: <0 keep, 0 R/R, 1 R/L, 2 L/R, other L/L.
-void fn_3_B4124(s32 team, s32 slot, s32 charId, s32 handedness) {
-    if (team == 0 && slot == 0) {
-        g_GameLogic.battingOrderAndPositionMapping[team][0][0] = slot;
-    }
-    g_GameLogic.battingOrderAndPositionMapping[team][slot + 1][0] = slot;
-    g_GameLogic.battingOrderAndPositionMapping[team][slot + 1][1] = slot;
-    lbl_80354720[team][slot]._0 = slot;
-    lbl_80354720[team][slot]._1 = slot;
-    lbl_80354720[team][slot].slot = slot;
-    if (slot >= 0 && slot <= 8) {
-        fn_80011BE4(slot);
-    }
-    memcpy(&inMemRoster[team][slot], &lbl_8034E9A0[charId], sizeof(CharacterStats));
-    if (handedness >= 0) {
-        if (handedness == 0 || handedness == 1) {
-            inMemRoster[team][slot].stats.FieldingArm = 0;
+// .text:0x000B77DC size:0x1D0
+void fn_3_B77DC(void) {
+    switch (g_Practice.tutorialState) {
+    case 0:
+        fn_3_B7620();
+        break;
+    case 1:
+        fn_3_B7184();
+        break;
+    case 2:
+        if (fn_3_B254C() == 0) {
+            fn_3_B7184();
         } else {
-            inMemRoster[team][slot].stats.FieldingArm = 1;
+            fn_3_B1DA4(g_Practice.practiceLevel + 0xC, 0);
+            fn_3_5A6D4(7);
         }
-        if (handedness == 0 || handedness == 2) {
-            inMemRoster[team][slot].stats.BattingStance = 0;
-        } else {
-            inMemRoster[team][slot].stats.BattingStance = 1;
-        }
+        break;
+    case 3:
+        fn_3_B7184();
+        break;
     }
 }
