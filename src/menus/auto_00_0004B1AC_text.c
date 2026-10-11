@@ -493,7 +493,7 @@ void fn_2_54890(void) {
         u8* p;
         e = &lbl_2_data_205D4[i];
         p = (u8*)lbl_2_bss_1A8234[0] + e->f8 * 0x5100 + e->f4 * 0x18;
-        *(s32*)p = e->w0;
+        *(void**)p = e->w0;
         *(s16*)(p + 8) = e->f4;
         *(s16*)(p + 0xA) = e->f6;
         *(s16*)(p + 0xC) = e->f8;
@@ -581,7 +581,7 @@ void fn_2_54234(InitEntry* entries, s32 count) {
     s32 i;
     for (i = 0; i < count; i++) {
         u8* p = lbl_2_bss_1A8230[0] + entries[i].f8 * 0x5100 + entries[i].f4 * 0x18;
-        *(s32*)p = entries[i].w0;
+        *(void**)p = entries[i].w0;
         *(s16*)(p + 8) = entries[i].f4;
         *(s16*)(p + 0xA) = entries[i].f6;
         *(s16*)(p + 0xC) = entries[i].f8;
@@ -595,7 +595,7 @@ void fn_2_54354(InitEntry* entries, s32 count) {
     s32 i;
     for (i = 0; i < count; i++) {
         u8* p = lbl_2_bss_1A8234[0] + entries[i].f8 * 0x5100 + entries[i].f4 * 0x18;
-        *(s32*)p = entries[i].w0;
+        *(void**)p = entries[i].w0;
         *(s16*)(p + 8) = entries[i].f4;
         *(s16*)(p + 0xA) = entries[i].f6;
         *(s16*)(p + 0xC) = entries[i].f8;
