@@ -427,5 +427,8 @@ void fn_800AD95C(ThpPlayer* p, u8 flags);
 void fn_800AD9F4(ThpPlayer* p);
 BOOL fn_800ADB04(ThpMovie* movie, ThpPlayer* p, u8 format, u8 freeBuffer);
 void fn_800ADBFC(void);
+void* fn_800A7C08(void* arg);
+void fn_800A84C4(u32 retraceCount);
+void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan);
 
 #endif
