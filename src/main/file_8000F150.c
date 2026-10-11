@@ -56,7 +56,11 @@ void fn_8000FD54(s32 index, s16 a, s16 b, s16 c, s16 d) {
 
 // .text:0x8000FD78 size:0x24
 void fn_8000FD78(s32 index, s16 a, s16 b, s16 c, s16 d) {
-    return;
+    TextEntry* e = &lbl_80366B18.entries[index];
+    e->numbers[0] = a;
+    e->numbers[1] = b;
+    e->numbers[2] = c;
+    e->numbers[3] = d;
 }
 
 // .text:0x8000FD9C size:0x6C
