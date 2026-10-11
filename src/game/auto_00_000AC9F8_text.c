@@ -6,6 +6,7 @@
 #include "game/rep_13B8.h"
 #include "game/rep_AC8.h"
 #include "game/rep_720.h"
+#include "game/rep_F80.h"
 #include "game/auto_00_0005985C_text.h"
 #include "main/file_8004207C.h"
 #include "main/file_80069BDC.h"
@@ -2316,5 +2317,150 @@ void fn_3_ADEDC(void) {
             lbl_3_common_bss_34C90.cursor = 0;
         }
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
+}
+
+// fn_3_B2E20, size:0x464
+void fn_3_B2E20(void) {
+    s32 i;
+    lbl_80366158[0x28] = 1;
+    if (g_Practice.frames_onPauseScreen < 0x7FFE) {
+        g_Practice.frames_onPauseScreen += 1;
+    } else {
+        g_Practice.frames_onPauseScreen = 0x7FFF;
+    }
+    if (g_Practice.frames_onPauseScreen2 < 0x7FFE) {
+        g_Practice.frames_onPauseScreen2 += 1;
+    } else {
+        g_Practice.frames_onPauseScreen2 = 0x7FFF;
+    }
+    if (lbl_3_common_bss_34C90._0A < 0x7FFE) {
+        lbl_3_common_bss_34C90._0A += 1;
+    } else {
+        lbl_3_common_bss_34C90._0A = 0x7FFF;
+    }
+    if (lbl_3_common_bss_34C90.frames < 0x7FFE) {
+        lbl_3_common_bss_34C90.frames += 1;
+    } else {
+        lbl_3_common_bss_34C90.frames = 0x7FFF;
+    }
+    if (lbl_3_common_bss_34C90.subFrames < 0x7FFE) {
+        lbl_3_common_bss_34C90.subFrames += 1;
+    } else {
+        lbl_3_common_bss_34C90.subFrames = 0x7FFF;
+    }
+    switch (lbl_3_common_bss_34C90.subState) {
+    case 0:
+        if (g_Practice.practiceType_2 == 4) {
+            lbl_3_common_bss_34C90.menuType = 6;
+        } else if (g_Practice.practiceLevel == lbl_3_data_FACC[g_Practice.practiceType_2 * 5] - 1) {
+            lbl_3_common_bss_34C90.menuType = 5;
+        } else {
+            lbl_3_common_bss_34C90.menuType = 4;
+        }
+        g_Practice.frames_onPauseScreen2 = 0;
+        lbl_3_common_bss_34C90.subState = 1;
+        break;
+    case 1:
+        if (g_Practice.frames_onPauseScreen2 > 30) {
+            lbl_3_common_bss_34C90.subState = 2;
+        }
+        break;
+    case 2:
+        fn_3_B2AA0();
+        break;
+    case 3:
+        fn_3_B28A8();
+        break;
+    case 4:
+        lbl_3_common_bss_34C90._1D9 = 1;
+        g_Practice.frames_onPauseScreen2 = 0;
+        lbl_3_common_bss_34C90.subState = 5;
+        break;
+    case 5:
+        if (g_Practice.frames_onPauseScreen2 > 30) {
+            g_Practice._19F = 0;
+        }
+        break;
+    case 6:
+        changeScene(3, 6);
+        if (lbl_8037169C._13 != 0) {
+            lbl_3_common_bss_34C90.subState = 7;
+        }
+        break;
+    case 7:
+    case 9:
+        if (g_GameLogic.secondaryGameMode == 15 || g_GameLogic.secondaryGameMode == 16) {
+            for (i = 0; i < 4; i++) {
+                fn_80011BE4(i + 9);
+            }
+        }
+        lbl_3_common_bss_34C90._1D9 = 2;
+        g_Practice._19F = 0;
+        lbl_8036E548[0x307D] = 0;
+        lbl_8036E548[0x307E] = 0;
+        if (lbl_3_common_bss_34C90.subState == 9) {
+            fn_3_B5D4C(6);
+        } else {
+            fn_3_B5D4C(0);
+        }
+        g_Practice.returnToPracticeMenuState = 1;
+        g_GameLogic.secondaryGameMode = 10;
+        g_Practice.totalFrames = 0;
+        g_Practice.framesInCurrTransitionState = 0;
+        g_Practice.practiceState = 0;
+        fn_80011A60();
+        fn_3_6AB30();
+        fn_3_8C07C();
+        break;
+    case 8:
+        changeScene(3, 6);
+        if (lbl_8037169C._13 != 0) {
+            lbl_3_common_bss_34C90.subState = 9;
+        }
+        break;
+    case 10:
+        changeScene(3, 6);
+        if (lbl_8037169C._13 != 0) {
+            lbl_3_common_bss_34C90.subState = 11;
+        }
+        break;
+    case 11:
+        lbl_3_common_bss_34C90._1D9 = 2;
+        g_Practice._19F = 0;
+        lbl_8036E548[0x307D] = 0;
+        g_Practice.practiceLevel++;
+        g_Practice.practiceState = 0;
+        g_Practice.tutorialState = 0;
+        g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        break;
+    case 12:
+        switch (fn_3_5B380(g_Controls[lbl_3_common_bss_34C90.team].newButtonInput)) {
+        case 1:
+            lbl_3_common_bss_34C90.subState = 13;
+            if (g_Practice._1B1 != 0) {
+                fn_8004CC18();
+                fn_3_5B368();
+            } else {
+                changeScene(4, 6);
+            }
+            break;
+        case 2:
+            lbl_3_common_bss_34C90.subState = 2;
+            break;
+        }
+        break;
+    case 13:
+        if (g_Practice._1B1 != 0) {
+            if (fn_3_5B220(3) != 0) {
+                changeScene(3, 6);
+                g_Practice._1B1 = 0;
+            }
+        } else if (lbl_8037169C._13 != 0) {
+            g_GameLogic.framesOfExitingToMenu = 1;
+            lbl_3_common_bss_34C90._1D9 = 2;
+            fn_8004CC18();
+        }
+        break;
     }
 }
