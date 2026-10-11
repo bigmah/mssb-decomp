@@ -1376,8 +1376,23 @@ L_800C03F4:
 #endif
 
 // .text:0x800C04E8 size:0x148
-void SKNAccVecs16Norms16Iu161(void) {
-    return;
+#if NONMATCHING
+void SKNAccVecs16Norms16Iu161(Mtx43 m, u16 count, f32* src, f32* dst, u16* indices, u8* weights) {
+    f32 v[6];
+    f32* out;
+    f32 w;
+    s32 k;
+
+    do {
+        out = dst + *indices++ * 6;
+        w = *weights++ / 256.0f;
+        SKNXformVtx(m, src, v);
+        for (k = 0; k < 6; k++) {
+            out[k] = v[k] * w + out[k];
+        }
+        DCStoreRange(out, 6 * sizeof(f32));
+        src += 6;
+    } while (--count);
 }
 #else
 asm void SKNAccVecs16Norms16Iu161(register Mtx43 m, register u16 count, register f32* src, register f32* dst, register u16* indices, register u8* weights) {
