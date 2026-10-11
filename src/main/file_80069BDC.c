@@ -255,9 +255,57 @@ void fn_8006C488(void) {
 }
 
 // .text:0x8006C48C size:0x140
+// NONMATCHING 85%: register allocation differs (original keeps &info->_2/&info->hasMissions in r29/r28 and compares type with cmpwi)
+#if NONMATCHING
 void challengeDrawStarsOnMissionMenu(void) {
-    return;
+    ChallengeTrackingStruct* t = starMissionCompletionTracker;
+    ChallengeTeamInfo* info = lbl_800E8558;
+    s32 team;
+    s32 m;
+    s32 j;
+    s32 count;
+    u8 level = gChallengeState._4415;
+
+    for (team = 0; team < 54; team++, t++, info++) {
+        s32 status;
+        if (info->hasMissions != 1) {
+            continue;
+        }
+        status = t->_31;
+        if (status != 1) {
+            continue;
+        }
+        for (m = 0; m < 10; m++) {
+            MissionDef* d = &lbl_8010A768[info->_2][m];
+            s16 type = d->type;
+            s16 need = d->starsNeeded;
+            s16 needLevel = d->_6;
+
+            if (type == 0) {
+                t->inGameMissionTracker[m].shownOnPauseMenu = 1;
+            }
+            if (challengeStarRelatedInd(team, m)) {
+                t->inGameMissionTracker[m].shownOnPauseMenu = 1;
+            }
+            if (type == 1) {
+                if (info->hasMissions == 0) {
+                    count = 0;
+                } else {
+                    count = 0;
+                    for (j = 0; j < 10; j++) {
+                        if (challengeStarRelatedInd(team, j)) {
+                            count++;
+                        }
+                    }
+                }
+                if (count >= need && level >= needLevel) {
+                    t->inGameMissionTracker[m].shownOnPauseMenu = 1;
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8006C5CC size:0xF8
 BOOL fn_8006C5CC(void) {
