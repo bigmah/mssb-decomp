@@ -3,6 +3,6 @@
 
 #include "mssbTypes.h"
 
-void fn_3_C1930(void);
+s32 fn_3_C1930(s32 id);
 
 #endif
