@@ -222,7 +222,7 @@ void fn_2_66188(MenuTask* task, MenuItem* item);
 void fn_2_6633C(void);
 void fn_2_665C0(MenuTask* task, MenuItem* item);
 void fn_2_6675C(MenuTask* task, MenuItem* item);
-void fn_2_66884(void);
+void fn_2_66884(MenuTask* task, MenuItem* item);
 void fn_2_66AEC(MenuTask* task, MenuItem* item);
 void fn_2_66CC4(MenuTask* task, MenuItem* item);
 void fn_2_66E14(MenuTask* task, MenuItem* item);
