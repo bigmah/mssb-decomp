@@ -21,6 +21,15 @@ typedef struct Rep3310ObjData {
     /*0x8*/ void* textures;
 } Rep3310ObjData; // size: 0xC
 
+// lbl_3_data_2265C: per-state ball texture records, then the ball scales.
+typedef struct Rep3310BallCfg {
+    /*0x00*/ u8 tex[4];
+    /*0x04*/ f32 scale;
+    /*0x08*/ f32 shadowScale;
+    /*0x0C*/ f32 minScale; // squash target while bouncing (state 2)
+    /*0x10*/ s32 squashFrames;
+} Rep3310BallCfg;
+
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h), only the fields used here.
 typedef struct Rep3310CharMgr {
     /*0x0000*/ u8 _0000[0x68];

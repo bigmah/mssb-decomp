@@ -9,7 +9,9 @@ extern Rep3310CharMgr lbl_8036E548;
 extern f32 lbl_3_data_2262C;
 extern f32 lbl_3_data_22650[];
 extern u8 lbl_3_data_22670[];
-extern u8 lbl_3_data_2265C[];
+extern Rep3310BallCfg lbl_3_data_2265C;
+extern f64 acos(f64);
+extern void* memcpy(void* dst, const void* src, u32 n);
 extern u8 lbl_3_common_bss_32724[];
 extern u8 g_GameLogic[];
 extern u8 g_Pitcher[];
@@ -589,17 +591,102 @@ void fn_3_119468(s32 i) {
 // .text:0x001194AC size:0x50 mapped:0x80758540
 // NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
 #if NONMATCHING
-extern u8 lbl_3_data_2265C[];
 void fn_3_1194AC(s32 i) {
     lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette->tex[0].texIndex =
-        lbl_3_data_2265C[g_Minigame[i + 0x1AFF]];
+        lbl_3_data_2265C.tex[g_Minigame[i + 0x1AFF]];
 }
 #endif
 
 // .text:0x001194FC size:0x358 mapped:0x80758590
+// NONMATCHING 89%: register allocation, the state 0/3/4 test is folded to a range compare, and the bounce counter update order differs; the original reaches lbl_3_data_2265C through the lbl_3_data_225F0 pooled base
+#if NONMATCHING
+extern void fn_3_15521C(s16 idx, f32* pos, f32* rot); // TODO: rep_3880.h declares it with u32 args
+// Places the 50 balls (sprites 0x85.., or 0xB7.. while state 5) and their shadows (0x28..).
 void fn_3_1194FC(void) {
-    return;
+    Vec dir;
+    Vec fwd = {0.0f, 0.0f, 1.0f};
+    Rep3310Sprite* e;
+    Rep3310Sprite* alt;
+    Rep3310Sprite* shadow;
+    s32 base;
+    s32 i;
+    f32 ang;
+    f32 s;
+
+    for (i = 0; i < 50; i++) {
+        e = &lbl_8036E548.sprites[i + 0x85];
+        e->visible = 0;
+        e->draw = NULL;
+        alt = &lbl_8036E548.sprites[i + 0xB7];
+        alt->visible = 0;
+        alt->draw = NULL;
+        shadow = &lbl_8036E548.sprites[i + 0x28];
+        shadow->visible = 0;
+        shadow->draw = NULL;
+        if (g_Minigame[0x193A + i] == 0 || g_Minigame[0x193A + i] == 3 || g_Minigame[0x193A + i] == 4) {
+            continue;
+        }
+        if (g_Minigame[0x1B84 + i] == 5) {
+            alt->draw = NULL;
+            e = alt;
+            base = 0xB7;
+        } else {
+            base = 0x85;
+            e->draw = fn_3_1194AC;
+        }
+        e->visible = 1;
+        e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+        e->pos[1] = -*(f32*)(g_Minigame + i * 0xC + 0xCD4);
+        e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+        if (g_Minigame[0x193A + i] == 2) {
+            s = lbl_3_data_2265C.scale -
+                ((f32)g_Minigame[0x1C4C + i] * (lbl_3_data_2265C.scale - lbl_3_data_2265C.minScale)) /
+                    (f32)lbl_3_data_2265C.squashFrames;
+            if (lbl_80366158[0x28] == 0) {
+                fn_8001D110(base + i, lbl_3_data_2265C.scale, s, lbl_3_data_2265C.scale);
+                g_Minigame[0x1C4C + i] = g_Minigame[0x1C4C + i] - g_Minigame[0x1C1A + i] * 2 + 1;
+                if (g_Minigame[0x1C4C + i] >= 60) {
+                    g_Minigame[0x1C1A + i] = g_Minigame[0x1C1A + i] == 0;
+                }
+                g_Minigame[0x1C4C + i] = g_Minigame[0x1C4C + i] - g_Minigame[0x1C1A + i] * 2 + 1;
+            }
+            e->rot[0] = 0.0f;
+            e->rot[1] = 0.0f;
+            e->rot[2] = 0.0f;
+            if (g_Minigame[0x1B84 + i] == 5) {
+                e->pos[1] -= 0.5f;
+            }
+            continue;
+        }
+        fn_8001D0D0(base + i, lbl_3_data_2265C.scale);
+        if (g_Minigame[0x193A + i] != 6) {
+            dir.x = *(f32*)(g_Minigame + 0x1180 + i * 0xC);
+            dir.y = 0.0f;
+            dir.z = *(f32*)(g_Minigame + 0x1188 + i * 0xC);
+            PSVECNormalize(&dir, &dir);
+            ang = acos(PSVECDotProduct(&fwd, &dir));
+            if (dir.x < 0.0f) {
+                ang = 6.2831855f - ang;
+            }
+            if (lbl_80366158[0x28] == 0) {
+                e->rot[1] = ang;
+                e->rot[0] += -0.17453292f;
+            }
+        }
+        if (g_Minigame[0x1B84 + i] == 5 && *(s16*)(g_Minigame + 0x17C8 + i * 2) == 1) {
+            fn_3_15521C(i, e->pos, e->rot);
+        }
+        if (g_Minigame[0x1B84 + i] == 5) {
+            e->draw = fn_3_119468;
+        }
+        shadow->visible = 1;
+        shadow->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+        shadow->pos[1] = -0.05f;
+        shadow->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+        fn_8001D0D0(i + 0x28, lbl_3_data_2265C.shadowScale);
+    }
 }
+#endif
 
 // .text:0x00119854 size:0x24 mapped:0x807588E8
 f32 fn_3_119854(u8 i) {
@@ -632,8 +719,6 @@ void fn_3_119878(void) {
 // .text:0x00119934 size:0x300 mapped:0x807589C8
 // NONMATCHING 98%: (measured with the rodata externs) frsp of the acos result is scheduled after the v.z load, f1/f2 swapped
 #if NONMATCHING
-extern f64 acos(f64);
-extern void* memcpy(void* dst, const void* src, u32 n);
 extern f32 lbl_3_data_2188C[];
 // Places the base markers (sprites 0x82..0x90, or the shared 0xA5 one) and the
 // running fielders' shadows (sprites 0x91..0xA4), spinning each a little per frame.
