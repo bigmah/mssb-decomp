@@ -13,10 +13,11 @@ typedef struct ScoresView {
     /*0xA0*/ s16 _A0;
     /*0xA2*/ s16 _A2;
     /*0xA4*/ s16 result; // 0/1: that team won, 2: tie
-    /*0xA6*/ u8 _A6[2];
+    /*0xA6*/ s16 _A6;
     /*0xA8*/ u8 _A8[2]; // errors per team
-    /*0xAA*/ u8 _AA;
-    /*0xAB*/ u8 _AB[2];
+    /*0xAA*/ u8 _AA; // innings in the game
+    /*0xAB*/ u8 _AB;
+    /*0xAC*/ u8 _AC;
     /*0xAD*/ u8 _AD; // team at bat
     /*0xAE*/ s8 _AE;
     /*0xAF*/ s8 _AF[2]; // pitcher slots
