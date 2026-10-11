@@ -105,78 +105,57 @@ void *ReadDataFromDisk(void *)
 
 /*================================================================================*/
 
-// 91.6%: unsolved. Asm-free forms: `for (i = 0; i < n; i++)` is 8x unrolled; with
-// `#pragma ppc_unroll_factor_limit 1` it is a plain ctr loop but keeps a `cmplwi n,0; ble` guard
-// the original lacks; do-while forms give subic./bne. Original also takes `lis r31; addi r31,r31`
-// directly and uses r5/r6/r5 where we use r4/r5/r3 (looks like extra live ranges, not found).
-#pragma opt_unroll_factor_limit
+// NONMATCHING 81%: the original copy loop is a bare mtctr/bdnz with no zero-length guard and
+// it saves r27-r31 (stmw) while using only r27/r31. `for` unrolls 8x; with
+// `#pragma ppc_unroll_factor_limit 1` a `cmplwi n,0; ble` guard remains; do-while gives subic./bne.
+#if NONMATCHING
 void DecompressDiskData(void)
 {
-    u32 dataFlag;
-    u32 register repetition;
-    u32 lookBack;
-    u32 i;
-    u8 *tP;
     DataVars *v = &gDataDecompressorValues;
-    u32 UNUSED_VALUE = 0;
+    u32 lookBack;
+    u32 repetition;
+    u8 *tP;
 
     while (TRUE)
     {
-        // returns 0 or 1
-        dataFlag = ReadBits(LZSS_FLAG_SIZE);
-        // if 1, it's original data
-        if (dataFlag)
+        // a 1 flag bit means a literal byte follows
+        if (ReadBits(LZSS_FLAG_SIZE))
         {
-            // read new byte
             *v->DataWriteTop++ = ReadBits(LZSS_BYTE_SIZE);
             v->BytesToRead--;
         }
-        // else it's repeated data
+        // otherwise copy `repetition` bytes from `lookBack` bytes back in the output
         else
         {
-
-            // how far back the repeated data starts
-            // `+ 1` because a lookback of 0 means we want to read the data at the top of the DataWrite, which is DataWriteTop[-1]
+            // a lookback of 0 means the last byte written, DataWriteTop[-1]
             lookBack = ReadBits(v->LookBackSize) + 1;
-            // how long the string of repeated data is
-            repetition = ReadBits(v->RepetitionSize);
-            repetition += LZSS_MINIMUM_REPETITION_SIZE;
+            repetition = ReadBits(v->RepetitionSize) + LZSS_MINIMUM_REPETITION_SIZE;
 
             v->BytesToRead -= repetition;
 
-            // someone forgot a |?
-            // If the repetition algorithm requests data that is before the beginning of the array or requests more bytes than the original size, flag it
-            if (v->BytesToRead < 0 | &v->DataWriteTop[-lookBack] < v->DataWriteBottom)
+            // reading before the start of the output, or past the expected size, is an error
+            if ((v->BytesToRead < 0) | (v->DataWriteTop - lookBack < v->DataWriteBottom))
                 break;
 
-            // assume repetition is always > 0
-            // while repetition != 0, copy the byte that was `lookback` bytes ago
-            // ERROR: should load pointer instead or mr-ing previous load
+            // repetition is at least 2
             tP = v->DataWriteTop;
-            // ERROR: should be mtctr, but not unroll
-            asm {
-                mtctr repetition
-                loop:
-            };
-            *tP++ = tP[-lookBack];
-            asm {
-                bdnz loop
-                li r30, 0
-                li r29, 0
-                li r28, 0
-            };
+            do
+            {
+                *tP = *(tP - lookBack);
+                tP++;
+            } while (--repetition != 0);
 
-            // update array pointer
             v->DataWriteTop = tP;
         }
 
-        // if we read all the bytes we wanted, return
+        // done once every expected byte has been written
         if (!v->BytesToRead)
             return;
     }
 
     v->error = 1;
 }
+#endif
 
 /*================================================================================*/
 
