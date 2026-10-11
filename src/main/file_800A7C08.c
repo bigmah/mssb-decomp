@@ -410,8 +410,9 @@ void fn_800AD01C(void* hi) {
 }
 
 // .text:0x800AD038 size:0x1C
-void fn_800AD038(void) {
-    return;
+void fn_800AD038(void* lo) {
+    lbl_803C7898.lo = lo;
+    lbl_803C7898.freeSize = lbl_803C7898.hi - (u8*)lo;
 }
 
 // .text:0x800AD054 size:0x1C
