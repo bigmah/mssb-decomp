@@ -102,8 +102,40 @@ s32 fn_3_16C548(Emitter* e) {
 // NONMATCHING 89%: float literal pooling (...rodata.0) and lbl_803CBD0C addressing differ
 #if NONMATCHING
 // .text:0x0016C878 size:0x3B4 mapped:0x807AB90C
+// Sets up n dust particles of e at pos (y negated), spread evenly around a circle.
 void fn_3_16C878(Vec* pos, Emitter* e, s32 n) {
-    return;
+    Particle* p = e->particles;
+    u32 i;
+    f32 angle;
+    f32 speed;
+    s32 c;
+
+    e->tex = lbl_803CBD0C;
+    for (i = 0; p != NULL; i++) {
+        p->delay = 0;
+        p->u.t5.vel.y = FIXED(lbl_3_data_2A408[7]) + (rand() % 100 - 50) / 1000.0;
+        angle = 0.017453292384743690 * ((360.0 / n) * i);
+        speed = FIXED(lbl_3_data_2A408[6]) + (rand() % 100 - 50) / 1000.0;
+        p->u.t5.vel.x = speed * (f32)cos(angle);
+        p->u.t5.vel.z = speed * (f32)sin(angle);
+        p->sizeX = p->sizeY = FIXED(lbl_3_data_2A408[5]);
+        p->pos.x = pos->x;
+        p->pos.y = -pos->y;
+        p->pos.z = pos->z;
+        p->u.t5.unk1C = lbl_3_data_2A408[10] - (rand() % 5 + 1);
+        p->u.t5.unk20 = 0.0f;
+        p->u.t5.unk24 = lbl_3_data_2A408[11] - (rand() % 30 + 1);
+        p->delay = -((rand() % 2) * 2) + 1;
+        c = (rand() % lbl_3_data_2A408[13] + 1) + lbl_3_data_2A408[12];
+        p->color.c.b = c;
+        p->color.c.g = c;
+        p->color.c.r = c;
+        p->color.c.a = 0xFF;
+        p->life = lbl_3_data_2A408[1];
+        p->texIndex = lbl_3_data_2A408[0];
+        p->uvFrame = 0;
+        p = p->next;
+    }
 }
 #endif
 
