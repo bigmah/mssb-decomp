@@ -12,6 +12,7 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern s8 lbl_80108DB8[];
 extern u8 lbl_803CBBC4[];
 extern u8 lbl_803C50E8[];
 extern u8 lbl_800FEF70[];
@@ -3155,3 +3156,109 @@ void fn_2_11698(void) {
         break;
     }
 }
+
+// NONMATCHING 60%: written as plain C; the original unrolls the per-class candidate scan four
+// times (one copy per class) and keeps every counter in its own register.
+#if NONMATCHING
+#define CHAR_CLASS(id) (lbl_8034E9A0[((id) / 9) * 0x5A0 + ((id) % 9) * 0xA0 + 0x31])
+
+// Collects up to 32 unused character ids of one class from lbl_80108DB8; returns count - 1.
+static s32 fn_2_F200_collect(s8* cand, u8 cls) {
+    s32 i;
+    s32 last = -1;
+    for (i = 0; i < 32; i++) {
+        s8 id = lbl_80108DB8[i];
+        if (CHAR_CLASS(id) == cls && lbl_8034E9A0[id + 0x4757] == 0) {
+            cand[++last] = id;
+        }
+    }
+    return last;
+}
+
+// fn_2_F200, size:0x8A0
+void fn_2_F200(u8 team) {
+    u8 count[4];
+    u8 full[4];
+    s8 classes[9];
+    s8 cand[32];
+    s32 cap = *(s32*)(lbl_8034E9A0 + team * 4 + 0x46E0);
+    u8* row = lbl_803C6724 + team * 9;
+    s32 i;
+    s32 c;
+    s32 g;
+    s32 k;
+    s32 last;
+    s8 id;
+    for (c = 0; c < 4; c++) {
+        count[c] = 0;
+        full[c] = 0;
+    }
+    memset(classes, -1, 9);
+    for (i = 0; i < 9; i++) {
+        s32 v = (s8)row[i + 2];
+        if (v != -1 && v != 0x36) {
+            classes[i] = CHAR_CLASS((s8)row[i + 2]);
+            c = classes[i];
+            if (c >= 0 && c < 4) {
+                if (++count[c] >= 2) {
+                    full[c] = 1;
+                }
+            }
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        s32 v = (s8)row[i + 2];
+        if (v != -1 && v != 0x36) {
+            continue;
+        }
+        memset(cand, -1, 8);
+        id = -1;
+        for (c = 0; c < 4; c++) {
+            if (full[c] == 0) {
+                break;
+            }
+        }
+        if (c < 4) {
+            last = fn_2_F200_collect(cand, c);
+            if (cand[0] != -1) {
+                if (++count[c] >= 2) {
+                    full[c] = 1;
+                }
+                id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            }
+        }
+        if (id == -1) {
+            do {
+                id = randRange_FUN_80042bf0(0, 0x35);
+            } while (lbl_8034E9A0[id + 0x4757] != 0);
+        }
+        fn_80067B40(team, id, 1);
+        for (g = 0; g < 9; g++) {
+            for (k = 0; k < 5; k++) {
+                if (id == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
+                    s16* grp = (s16*)(lbl_80108EDC + g * 10);
+                    lbl_8034E9A0[grp[1] + 0x4757] = 1;
+                    lbl_8034E9A0[grp[2] + 0x4757] = 1;
+                    id = grp[0];
+                    lbl_8034E9A0[grp[3] + 0x4757] = 1;
+                    lbl_8034E9A0[grp[4] + 0x4757] = 1;
+                    goto found;
+                }
+            }
+        }
+    found:
+        if (g_d_GameSettings._10 == 0 && team != 0) {
+            if (*(s8*)(lbl_8034E9A0 + 0x46F8) == 0) {
+                fn_800506E8(1, id, 1);
+            } else {
+                fn_800506E8(1, id, 1);
+            }
+        } else {
+            fn_800506E8(*(s8*)(lbl_8034E9A0 + team + 0x46F8), id, 1);
+        }
+        row[i + 2] = id;
+        lbl_8034E9A0[id + 0x4757] = 1;
+        row[i + 0x26] = (lbl_8034E9A0 + cap)[(id / 9) * 0x5A0 + (id % 9) * 0xA0 + 0x3B];
+    }
+}
+#endif
