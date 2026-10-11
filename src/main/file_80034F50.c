@@ -557,9 +557,40 @@ void fn_8003656C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
 
 
 // .text:0x8003664C size:0x1D8
-void fn_8003664C(void) {
-    return;
+// NONMATCHING 88%: lwzx word-array indexing; loop register allocation
+#if NONMATCHING
+void fn_8003664C(s32 texId, s32 objIdx, s16 texIdx, u32 track) {
+    s32 slot;
+    SpaniSeq* seq;
+    u32 t;
+    SpaniTrack** pp;
+    SpaniTrack* tr;
+    SpaniKey* key;
+    s32 n;
+
+    slot = spaniFindSlot(texId);
+    if (slot == -1) {
+        OSPanic(lbl_800E68C4, 0x15E, lbl_800E68E8);
+    }
+    seq = lbl_803C4BE0[slot].anim->seqList->seqs[lbl_8039C3E0[objIdx].animId];
+    t = seq->trackCount - 1;
+    pp = &seq->tracks[t];
+    do {
+        tr = *pp--;
+        n = tr->keyCount;
+        key = &tr->keys[n];
+        do {
+            n--;
+            key--;
+            if (key->enabled != 0 && t == track) {
+                key->texIdx = texIdx;
+            }
+        } while (n != 0);
+        t--;
+    } while (t != 0);
 }
+#endif
+
 
 // .text:0x80036824 size:0x1B8
 // NONMATCHING 94%: original indexes seqs/tracks as word arrays ([i + 2], lwzx) and computes the track pointer from t
