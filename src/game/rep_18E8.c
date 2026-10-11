@@ -101,6 +101,10 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_1A1C;
+extern const f32 lbl_3_rodata_1A20;
+extern const f32 lbl_3_rodata_1A24;
+extern const f32 lbl_3_rodata_1A28;
 extern const f32 lbl_3_rodata_1A3C;
 extern const f32 lbl_3_rodata_19A8;
 extern const f32 lbl_3_rodata_1A58;
@@ -1464,8 +1468,184 @@ void fn_3_A5704(s32 i) {
 #endif
 
 // .text:0x000A5B4C size:0x898 mapped:0x806E4BE0
+// Sets runner i's plan: base to throw to, base to cover, frame margin.
+#define SET_PLAN(i, thr, cov, margin)                                                              \
+    do {                                                                                           \
+        lbl_3_bss_1838[i] = (cov);                                                                 \
+        lbl_3_bss_1828[i] = (thr);                                                                 \
+        lbl_3_bss_1848[i] = (margin);                                                              \
+    } while (0)
+#define SET_PLAN_V(i, thr, cov, margin)                                                            \
+    do {                                                                                           \
+        lbl_3_bss_1848[i] = (margin);                                                              \
+        lbl_3_bss_1828[i] = (thr);                                                                 \
+        lbl_3_bss_1838[i] = (cov);                                                                 \
+    } while (0)
+
 void fn_3_A5B4C(s32 i) {
-    return;
+    InMemRunnerType* r;
+    s32 cur;
+    s32 next;
+    f32 distNext;
+    u8 dir;
+    f32 pct;
+    s32 ballDist;
+    f32 distCur;
+    f32 nextBallDist;
+    f32 curBallDist;
+    s32 v;
+    s32 toward;
+    s32 thr;
+    s32 cov;
+
+    r = &g_Runners[i];
+    cur = r->currentBase;
+    next = r->nextBase;
+    nextBallDist = g_Ball.ballDistanceFromBase[next];
+    curBallDist = g_Ball.ballDistanceFromBase[cur];
+    toward = 0;
+    distNext = r->distToNextBase;
+    distCur = r->distToCurrentBase;
+    ballDist = r->distanceFromBall;
+    if (nextBallDist + curBallDist < lbl_3_rodata_1A1C && r->actionCode == 0) {
+        lbl_3_bss_17FC[i] = 1;
+        if (nextBallDist < distNext) {
+            toward = 1;
+        } else if (curBallDist < distCur) {
+            toward = -1;
+        }
+        dir = r->runningDirectionCode;
+        if (dir == 1) {
+            if (r->restrictedMovementCodes & 1) {
+                SET_PLAN(i, -1, 9, 0);
+                return;
+            }
+            if (toward == 1) {
+                if (g_Ball.baseBallAndFielderAreOn == next &&
+                    ((distNext < lbl_3_rodata_1A20 && dir == 1 && r->nextDirectionBeingProcessed == 0) ||
+                     r->actionCode != 0)) {
+                    lbl_3_bss_1848[i] = -0x32;
+                    lbl_3_bss_1838[i] = next;
+                    lbl_3_bss_1828[i] = -1;
+                    return;
+                }
+                SET_PLAN(i, -1, 9, -0xF);
+                return;
+            }
+            v = fn_3_A63E4(i, 1, &thr, &cov) - 10;
+            if (g_Ball.numberOfThrowsDuringPlay <= 3 && g_FieldingLogic._0CC == -1 && v >= -0x2D) {
+                SET_PLAN_V(i, thr, cov, v);
+                return;
+            }
+            if (r->percentTowardsNextBase > lbl_3_rodata_1A24 || v >= -0xF) {
+                SET_PLAN_V(i, thr, cov, v);
+                return;
+            }
+            SET_PLAN(i, -1, 9, 0);
+            return;
+        }
+        if (dir == 3) {
+            if (r->restrictedMovementCodes & 2) {
+                SET_PLAN(i, -1, 9, 0);
+                return;
+            }
+            if (toward == -1) {
+                if (g_Ball.baseBallAndFielderAreOn == cur && distCur < lbl_3_rodata_1A20 && dir == 3 &&
+                    r->nextDirectionBeingProcessed == 0) {
+                    lbl_3_bss_1848[i] = -0x32;
+                    lbl_3_bss_1838[i] = cur;
+                    lbl_3_bss_1828[i] = -1;
+                    return;
+                }
+                SET_PLAN(i, -1, 9, -0xF);
+                return;
+            }
+            v = fn_3_A63E4(i, 0, &thr, &cov) - 10;
+            pct = r->percentTowardsNextBase;
+            if (pct < lbl_3_rodata_19A0 || v >= -8) {
+                SET_PLAN_V(i, thr, cov, v);
+                return;
+            }
+            if (pct < lbl_3_rodata_19B4 && v >= -8 &&
+                (r->nextDirectionBeingProcessed == 0 || r->runningDirectionCode != 2)) {
+                SET_PLAN_V(i, thr, cov, v);
+                return;
+            }
+            SET_PLAN(i, -1, 9, 0);
+            return;
+        }
+        SET_PLAN(i, -1, 9, 0);
+        return;
+    }
+    dir = r->runningDirectionCode;
+    if (dir == 1) {
+        if (r->percentTowardsNextBase < lbl_3_rodata_19AC) {
+            if (nextBallDist < lbl_3_rodata_19F0) {
+                SET_PLAN(i, -1, 9, -0xF);
+                return;
+            }
+            if (curBallDist < lbl_3_rodata_19F0) {
+                if ((f32)ballDist > lbl_3_rodata_1994) {
+                    v = fn_3_A63E4(i, 0, &thr, &cov);
+                    SET_PLAN_V(i, thr, cov, v);
+                }
+                return;
+            }
+        }
+        v = fn_3_A63E4(i, 1, &thr, &cov);
+        v += lbl_3_data_1C40;
+        if (v < -0x2D) {
+            if ((f32)ballDist < lbl_3_rodata_1A0C) {
+                SET_PLAN(i, -1, 9, -0xF);
+                return;
+            }
+            if (nextBallDist > lbl_3_rodata_19F0) {
+                SET_PLAN_V(i, thr, cov, v);
+                return;
+            }
+            if (nextBallDist < distNext) {
+                SET_PLAN(i, -1, 9, -0x1E);
+                return;
+            }
+            SET_PLAN_V(i, thr, cov, v);
+            return;
+        }
+        SET_PLAN_V(i, thr, cov, v);
+        return;
+    } else if (dir == 3) {
+        v = fn_3_A63E4(i, 0, &thr, &cov);
+        v += lbl_3_data_1C40;
+        if (v < -0x1E) {
+            if (curBallDist > lbl_3_rodata_19F0) {
+                SET_PLAN_V(i, thr, cov, v);
+                return;
+            }
+            if (curBallDist < distCur) {
+                SET_PLAN(i, -1, 9, -0x1E);
+                return;
+            }
+            SET_PLAN_V(i, thr, cov, v);
+            return;
+        }
+        if (r->percentTowardsNextBase >= lbl_3_rodata_1A28) {
+            SET_PLAN_V(i, thr, cov, v);
+            return;
+        }
+        SET_PLAN_V(i, thr, cov, v);
+        return;
+    } else if (dir == 2) {
+        if (r->baseStandingOn < 0) {
+            if (nextBallDist < lbl_3_rodata_19F0) {
+                SET_PLAN(i, -1, 9, -0xF);
+                return;
+            }
+            v = fn_3_A63E4(i, 1, &thr, &cov);
+            v += lbl_3_data_1C40;
+            lbl_3_bss_1828[i] = thr;
+            lbl_3_bss_1848[i] = v;
+            lbl_3_bss_1838[i] = cov;
+        }
+    }
 }
 
 // .text:0x000A63E4 size:0x404 mapped:0x806E5478
