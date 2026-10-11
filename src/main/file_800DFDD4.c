@@ -193,9 +193,57 @@ void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
 }
 
 // .text:0x800E156C size:0x19C
+// NONMATCHING 31%: clip lookups compile to add+lbz instead of lbzx; register allocation
+#if NONMATCHING
 void fn_800E156C(u8* dst, s32 stride, u8 dc, u8 top, u8 bottom, u8 left, u8 right) {
-    return;
+    s32 dc2 = dc * 2;
+    s32 tb = top - bottom;
+    s32 lr = left - right;
+    s32 base = ((dc + 0x80) << 3) + 4;
+    s32 tl = top + left - dc2;
+    s32 tr = top + right - dc2;
+    s32 sum = tb + lr;
+    s32 diff = tb - lr;
+    s32 baseSum = base + sum;
+    s32 br = bottom + right - dc2;
+    s32 tmL = top - left;
+    s32 tmR = top - right;
+    s32 baseDiff;
+    s32 bl;
+    s32 baseNDiff;
+    s32 bmL;
+    s32 bmR;
+    s32 baseNSum;
+    u8* clip;
+
+    clip = lbl_80328DA0;
+    dst[0] = clip[(tl + baseSum) >> 3];
+    baseDiff = base + diff;
+    dst[1] = clip[(tmL + baseSum) >> 3];
+    bl = left + bottom - dc2;
+    dst[2] = clip[(tmR + baseDiff) >> 3];
+    baseNDiff = base - diff;
+    bmL = bottom - left;
+    dst[3] = clip[(tr + baseDiff) >> 3];
+    dst += stride;
+    dst[0] = clip[(baseSum - tmL) >> 3];
+    dst[1] = clip[(base - br) >> 3];
+    bmR = bottom - right;
+    dst[2] = clip[(base - bl) >> 3];
+    baseNSum = base - sum;
+    dst[3] = clip[(baseDiff - tmR) >> 3];
+    dst += stride;
+    dst[0] = clip[(baseNDiff - bmL) >> 3];
+    dst[1] = clip[(base - tr) >> 3];
+    dst[2] = clip[(base - tl) >> 3];
+    dst[3] = clip[(baseNSum - bmR) >> 3];
+    dst += stride;
+    dst[0] = clip[(bl + baseNDiff) >> 3];
+    dst[1] = clip[(bmL + baseNDiff) >> 3];
+    dst[2] = clip[(bmR + baseNSum) >> 3];
+    dst[3] = clip[(br + baseNSum) >> 3];
 }
+#endif
 
 // .text:0x800E1708 size:0x4AC
 s32 fn_800E1708(HVQState* state, u8* basis, s32* sum, u8* src, s32 srcStride, s32 planeIdx) {
