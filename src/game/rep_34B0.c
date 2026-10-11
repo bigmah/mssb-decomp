@@ -371,6 +371,35 @@ void fn_3_12F624(void) {
 }
 #endif
 
+// Barrel falling into place: same as fn_3_12F9D4 but with the float loads in x/y/z order
+// (what the inlined copies in fn_3_1323CC, fn_3_1307D0 and friends use).
+static inline void mgStep_1323CC(s32 idx) {
+    f32 v[3];
+    BB_barrelStruct* a = &g_Minigame.barrels[idx];
+    a->currentPos.y += lbl_3_data_21770[1];
+    if (a->currentPos.y < a->desiredPos.y) {
+        a->currentPos.y = a->desiredPos.y;
+        if (a->posAtStartOfTurn.y != a->desiredPos.y) {
+            f32 x = a->currentPos.x;
+            f32 y = a->currentPos.y;
+            f32 z = a->currentPos.z;
+            v[1] = y;
+            v[0] = x;
+            v[2] = z;
+            v[1] = -v[1];
+            v[2] = v[2] - lbl_3_rodata_351C[0];
+            if (y <= lbl_3_rodata_3518) {
+                fn_8004C108(v, 1);
+                fn_3_90064(0x2E4);
+            } else {
+                fn_8004C108(v, 0);
+                fn_3_90064(0x2E5);
+            }
+        }
+        a->barrelState = 2;
+    }
+}
+
 // .text:0x0012F9D4 size:0xF0 mapped:0x8076EA68
 void fn_3_12F9D4(s32 idx) {
     f32 v[3];
@@ -543,7 +572,7 @@ void fn_3_130288(void) {
 
 // .text:0x001307D0 size:0x2B0 mapped:0x8076F864
 // NONMATCHING 99%: registers only; the original gives i/b/base/table r29/r28/r27/r26,
-// ours r26/r27/r29/r28 (fn_3_12F9D4 and fn_3_12F28C are inlined in both).
+// ours r26/r27/r29/r28 (the barrel step and fn_3_12F28C are inlined in both).
 #if NONMATCHING
 void fn_3_1307D0(void) {
     BB_barrelStruct* b;
@@ -559,7 +588,7 @@ void fn_3_1307D0(void) {
             b->animationCounter = 0x7FFF;
         }
         if (b->barrelState == 1) {
-            fn_3_12F9D4(i);
+            mgStep_1323CC(i);
         }
         if (b->barrelState == 3) {
             fn_3_12F28C(i);
@@ -653,7 +682,7 @@ void fn_3_130C6C(void) {
                 b->animationCounter = 0x7FFF;
             }
             if (b->barrelState == 1) {
-                fn_3_12F9D4(i);
+                mgStep_1323CC(i);
             }
             if (b->barrelState == 3) {
                 fn_3_12F28C(i);
@@ -783,7 +812,7 @@ void fn_3_131540(void) {
             b->animationCounter = 0x7FFF;
         }
         if (b->barrelState == 1) {
-            fn_3_12F9D4(i);
+            mgStep_1323CC(i);
         }
         if (b->barrelState == 3) {
             fn_3_12F28C(i);
@@ -934,32 +963,6 @@ void fn_3_1320BC(void) {
     }
 }
 
-static inline void mgStep_1323CC(s32 idx) {
-    f32 v[3];
-    BB_barrelStruct* a = &g_Minigame.barrels[idx];
-    a->currentPos.y += lbl_3_data_21770[1];
-    if (a->currentPos.y < a->desiredPos.y) {
-        a->currentPos.y = a->desiredPos.y;
-        if (a->posAtStartOfTurn.y != a->desiredPos.y) {
-            f32 x = a->currentPos.x;
-            f32 y = a->currentPos.y;
-            f32 z = a->currentPos.z;
-            v[1] = y;
-            v[0] = x;
-            v[2] = z;
-            v[1] = -v[1];
-            v[2] = v[2] - lbl_3_rodata_351C[0];
-            if (y <= lbl_3_rodata_3518) {
-                fn_8004C108(v, 1);
-                fn_3_90064(0x2E4);
-            } else {
-                fn_8004C108(v, 0);
-                fn_3_90064(0x2E5);
-            }
-        }
-        a->barrelState = 2;
-    }
-}
 
 // .text:0x001323CC size:0x11C mapped:0x80771460
 void fn_3_1323CC(void) {
