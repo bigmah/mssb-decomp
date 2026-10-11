@@ -2095,9 +2095,94 @@ void fn_3_38234(void) {
 }
 
 // .text:0x00038304 size:0x48C mapped:0x80677398
+extern f32 lbl_3_rodata_BB0;
+extern f32 lbl_3_rodata_C04;
+// NONMATCHING 92%: fielder 0x80 reads via lfsx in the original; empty-then branch shape; f-reg numbering
+#if NONMATCHING
 void fn_3_38304(void) {
-    return;
+    s32 r;
+    s32 deep;
+    if (*(s16*)(g_FieldingLogic + 0xB0) >= 0 &&
+        *(f32*)(g_Fielders + *(s16*)(g_FieldingLogic + 0xB0) * 0x268 + 0x80) < lbl_3_rodata_B64) {
+        return;
+    }
+    deep = 0;
+    if (*(f32*)(g_Ball + 0x350) > lbl_3_rodata_BB0) {
+        if (*(s16*)(g_FieldingLogic + 0xB0) >= 6) {
+            deep = 1;
+        } else {
+            f32 reach = *(f32*)(g_Ball + 0x1A00) - lbl_3_rodata_B64;
+            if (reach > *(f32*)(g_Fielders + 2 * 0x268 + 0x70) && reach > *(f32*)(g_Fielders + 3 * 0x268 + 0x70) &&
+                reach > *(f32*)(g_Fielders + 4 * 0x268 + 0x70) && reach > *(f32*)(g_Fielders + 5 * 0x268 + 0x70)) {
+                deep = 1;
+            }
+        }
+    }
+    if (*(f32*)(g_Ball + 0x350) > lbl_3_rodata_C04 || deep != 0) {
+        s32 other;
+        if (*(f32*)(g_Fielders + 6 * 0x268 + 0x80) < *(f32*)(g_Fielders + 8 * 0x268 + 0x80)) {
+            if (*(f32*)(g_Fielders + 6 * 0x268 + 0x80) < *(f32*)(g_Fielders + 7 * 0x268 + 0x80)) {
+                r = 6;
+                other = 7;
+            } else {
+                r = 7;
+                other = 6;
+            }
+        } else if (*(f32*)(g_Fielders + 8 * 0x268 + 0x80) < *(f32*)(g_Fielders + 7 * 0x268 + 0x80)) {
+            r = 8;
+            other = 7;
+        } else {
+            r = 7;
+            other = 8;
+        }
+        if (!(lbl_3_rodata_B9C + *(f32*)(g_Fielders + r * 0x268 + 0x80) < *(f32*)(g_Fielders + other * 0x268 + 0x80))) {
+            r = fn_3_36678(r, other, *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C), 0);
+        }
+    } else {
+        s32 i0 = -1;
+        s32 i1 = -1;
+        s32 i2 = -1;
+        f32 d0 = lbl_3_rodata_BA4;
+        f32 d1 = d0;
+        f32 d2 = d0;
+        u8* f = g_Fielders;
+        s32 i;
+        for (i = 0; i < 9; i++, f += 0x268) {
+            f32 d = *(f32*)(f + 0x80);
+            if (d0 > d) {
+                d2 = d1;
+                i2 = i1;
+                d1 = d0;
+                i1 = i0;
+                d0 = d;
+                i0 = i;
+            } else if (d1 > d) {
+                d2 = d1;
+                i2 = i1;
+                d1 = d;
+                i1 = i;
+            } else if (d2 > d) {
+                d2 = d;
+                i2 = i;
+            }
+        }
+        if (*(f32*)(g_Ball + 0x350) > lbl_3_rodata_BD0) {
+            if (d0 <= lbl_3_rodata_BD8 && i0 == *(s16*)(g_FieldingLogic + 0xB0)) {
+                r = i0;
+            } else if (d1 - d0 > lbl_3_rodata_B9C) {
+                r = i0;
+            } else if (d2 - d1 > lbl_3_rodata_B9C) {
+                r = fn_3_36678(i0, i1, *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C), 0);
+            } else {
+                r = Pick3Inline(i0, i1, i2, *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C));
+            }
+        } else {
+            r = Pick3Inline(i0, i1, i2, *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C));
+        }
+    }
+    fn_3_38790(r, 0);
 }
+#endif
 
 #pragma dont_inline off
 static inline void SetFielderActP(u8* f, int i, int state, int off) {
