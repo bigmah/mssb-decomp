@@ -2,6 +2,7 @@
 #include "game/rep_1D58.h"
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
+#include "C3/geoPalette.h"
 
 extern Rep3310CharMgr lbl_8036E548;
 
@@ -437,9 +438,19 @@ void fn_3_11874C(void) {
 }
 
 // .text:0x0011881C size:0x60 mapped:0x807578B0
-void fn_3_11881C(void) {
-    return;
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+extern u8 lbl_3_data_226BC[];
+void fn_3_11881C(s32 i) {
+    s32 tex;
+    if (i - 0xE9 < 4) {
+        tex = lbl_3_data_226BC[i - 0xE9];
+    } else {
+        tex = lbl_3_data_226BC[4];
+    }
+    lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette->tex[0].texIndex = tex;
 }
+#endif
 
 // .text:0x0011887C size:0x100 mapped:0x80757910
 extern f32 lbl_3_data_21B94[];
