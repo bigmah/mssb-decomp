@@ -205,9 +205,85 @@ void fn_3_11D780(void) {
 }
 
 // .text:0x0011DACC size:0x2F8 mapped:0x8075CB60
-void fn_3_11DACC(void) {
-    return;
+// Builds the 16-digit password: packs the record into raw[8], CRCs it and scatters
+// the bits over the digits, then substitutes each digit through a table chosen by key.
+// NONMATCHING 88%: the original keeps an empty 5-iteration loop (dead code) that CW drops here; one extra saved register
+#if NONMATCHING
+void fn_3_11DACC(u8* code, u8* raw, u8 bits, u8 key) {
+    PasswordRecord rec;
+    u32 score;
+    u32 value;
+    u32 i;
+    u32 crc;
+    u32 flags;
+    s16 charID;
+    u32 random;
+
+    fn_3_109DE0(&rec);
+    if (g_Minigame._1A3C != 0) {
+        score = rec.score;
+        random = 1;
+        value = random_fn_3_9EE24(1000);
+    } else {
+        score = rec.score;
+        random = 0;
+        value = rec.value;
+    }
+    if (score > 9999) {
+        score = 9999;
+    }
+    if (value > 999) {
+        value = 999;
+    }
+    charID = charID;
+    flags = bits;
+    raw[0] = random;
+    raw[1] = score;
+    raw[2] = score >> 8;
+    raw[3] = value;
+    raw[4] = value >> 8;
+    raw[5] = charID = rec.charID;
+    raw[6] = 0;
+    raw[7] = bits;
+
+    crc = fn_3_11DDC4(raw, 8);
+
+    code[0] = key;
+    code[1] = crc & 3;
+    i = 2;
+    do {
+        code[i] = (crc >> i) & 1;
+        i++;
+    } while (i < 16);
+    code[1] |= (flags & 1) << 2;
+    i = 1;
+    do {
+        code[i * 2 + 1] |= ((flags >> i) & 1) << 1;
+        i++;
+    } while (i < 8);
+    i = 0;
+    do {
+        code[i * 2 + 2] |= ((score >> (i * 2)) & 3) << 1;
+        i++;
+    } while (i < 7);
+    code[1] |= random << 3;
+    // The original has an empty 5-iteration loop here (dead code).
+    i = 0;
+    do {
+        code[i * 2 + 3] |= ((value >> (i * 2)) & 3) << 2;
+        i++;
+    } while (i < 5);
+    code[12] |= (charID & 1) << 3;
+    code[13] |= (charID << 1) & 0xC;
+    code[14] |= charID & 8;
+    code[15] |= (charID >> 2) & 0xC;
+    i = 1;
+    do {
+        code[i] = lbl_3_data_261C4[code[0] % 9][code[i]];
+        i++;
+    } while (i < 16);
 }
+#endif
 
 // .text:0x0011DDC4 size:0xBC mapped:0x8075CE58
 // CRC-16 (reflected CCITT polynomial 0x8408, initial value 0).
