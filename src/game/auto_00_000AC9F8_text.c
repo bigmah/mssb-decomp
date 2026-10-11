@@ -6,7 +6,7 @@
 #include "game/rep_13B8.h"
 #include "game/rep_AC8.h"
 #include "game/auto_00_0005985C_text.h"
-#include "main/menu_globals.h"
+#include "main/file_8004207C.h"
 
 extern s32 fn_3_B32B8(void);
 extern void fn_3_1DD48(void);
@@ -40,7 +40,6 @@ extern s16 lbl_3_data_FBBC[][3];
 extern s16 lbl_3_data_FBF8;
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
-extern u8 lbl_800E8754[];
 extern void fn_3_59918(s32, s32);
 extern u8 lbl_8036E548[];
 extern s32 fn_8001C588(s16);
@@ -67,8 +66,6 @@ extern void fn_3_B3A4C(void);
 extern void fn_3_B1DD0(void);
 extern void fn_3_6EBB4(s32);
 extern u8 lbl_80366158[];
-extern u8 lbl_8037169C[];
-extern u8 lbl_80354720[];
 extern u8 lbl_80354768[];
 extern u8 lbl_800EFBA4[];
 extern u8 sndFXStartEx(s32, u8, u8, u8);
@@ -360,7 +357,7 @@ s32 fn_3_B254C(void) {
             }
             break;
         case 2:
-            if (lbl_8037169C[0x13] != 0) {
+            if (lbl_8037169C._13 != 0) {
                 g_Practice.practiceState++;
             }
             break;
@@ -498,10 +495,10 @@ void fn_3_AEFF8(void) {
     lbl_3_common_bss_34C90._256 = -1;
     lbl_3_common_bss_34C90._25A = -1;
     for (i = 0; i < 9; i++) {
-        if (*(s8*)(lbl_80354720 + lbl_3_common_bss_34C90.team * 0x24 + i * 4 + 2) == 0) {
+        if (lbl_80354720[lbl_3_common_bss_34C90.team][i].slot == 0) {
             lbl_3_common_bss_34C90._25C = i;
         }
-        if (*(s8*)(lbl_80354720 + lbl_3_common_bss_34C90.team * 0x24 + i * 4 + 2) == 1) {
+        if (lbl_80354720[lbl_3_common_bss_34C90.team][i].slot == 1) {
             lbl_3_common_bss_34C90._25E = i;
         }
     }
@@ -701,7 +698,7 @@ void fn_3_AF428(void) {
             lbl_3_common_bss_34C90._258 = lbl_3_common_bss_34C90._254;
             lbl_3_common_bss_32724[0x9C] = 0;
             *(s32*)((u8*)&g_GameLogic + g_GameLogic.awayTeamBattingInd_battingTeam * 0x50 + 0x3C) =
-                *(s8*)(lbl_80354720 + lbl_3_common_bss_34C90.team * 0x24 + lbl_3_common_bss_34C90._254 * 4);
+                (s8)lbl_80354720[lbl_3_common_bss_34C90.team][lbl_3_common_bss_34C90._254]._0;
             fn_3_750DC();
             return;
         }
@@ -722,7 +719,7 @@ void fn_3_AF428(void) {
             ((u8*)&lbl_803CBC3C)[3] = 0;
             return;
         }
-        if (fn_8001C588(inMemRoster[lbl_3_common_bss_34C90.team][*(s8*)(lbl_80354720 + lbl_3_common_bss_34C90.team * 0x24 + lbl_3_common_bss_34C90._256 * 4)].stats.CharID) != 0) {
+        if (fn_8001C588(inMemRoster[lbl_3_common_bss_34C90.team][(s8)lbl_80354720[lbl_3_common_bss_34C90.team][lbl_3_common_bss_34C90._256]._0].stats.CharID) != 0) {
             s16 v = lbl_3_common_bss_34C90._25A;
             lbl_3_common_bss_34C90._256 = -1;
             lbl_3_common_bss_34C90._25E = v;
@@ -743,7 +740,7 @@ s32 fn_3_B32B8(void) {
     if (g_Practice._186 != 0 || g_Practice.guidedPracticeCompletionRelated != 0) {
         return 0;
     }
-    if (g_GameLogic.FrameCountOfCurrentPitch < 0x1E || lbl_8037169C[0x10] != 0) {
+    if (g_GameLogic.FrameCountOfCurrentPitch < 0x1E || lbl_8037169C.state != 0) {
         return 0;
     }
     if (g_Practice.pauseMenuLoading != 0) {
@@ -782,12 +779,12 @@ void fn_3_AE770(void) {
     setBatterContactConstants();
     for (i = 0; i < 2; i++) {
         if (((u8*)&g_GameLogic)[0x13E + i] == 0) {
-            if (lbl_800E8754[g_GameLogic.teams[i] * 7 + 9] != 0) {
+            if (lbl_800E8754.port[g_GameLogic.teams[i]]._2 != 0) {
                 ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x148] = 1;
             } else {
                 ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x148] = 0;
             }
-            if (lbl_800E8754[g_GameLogic.teams[i] * 7 + 0xA] != 0) {
+            if (lbl_800E8754.port[g_GameLogic.teams[i]]._3 != 0) {
                 ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x142] = 1;
                 ((u8*)&g_GameLogic)[(*(s32*)&g_GameLogic ^ i) + 0x144] = 1;
             } else {
