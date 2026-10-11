@@ -2,6 +2,7 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 #include "main/file_80008E00.h"
+#include "main/file_8004207C.h"
 
 extern s32 fn_80022B68(void);
 extern void fn_80022CB4(void*, s32, s32, s32, void (*)(s32, s32, void*), void*);
@@ -53,7 +54,6 @@ extern void fn_3_6C13C(void*, void*);
 extern void fn_3_16598C(void);
 extern u8 g_RunningLogic[];
 extern void fn_800A7568(void);
-extern u8 lbl_8037169C[];
 extern void starMissionRelated2(void);
 extern u8 lbl_3_common_bss_37400[];
 
@@ -110,6 +110,20 @@ extern void fn_3_59338(void);
 extern void fn_3_7B130(void);
 extern void fn_3_22850(void);
 extern int __abs(int);
+extern void fn_3_6EF1C(void);
+extern void fn_3_754B8(void);
+extern void initializeInMemBatter(void);
+extern void fn_3_FBA8(void);
+extern void fn_3_595C4(void);
+extern void fn_3_8A5A4(void);
+extern void fn_3_1E328(void);
+extern void fn_3_7B308(void);
+extern void fn_3_9DBE4(void);
+extern void fn_3_7D780(void);
+extern void fn_3_8FF18(void);
+extern void fn_3_250FC(void);
+extern void fn_3_8BE8C(void);
+extern void initializeUnknown(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern s32 fn_3_10007C(void);
 extern void fn_3_E19E8(void);
@@ -157,7 +171,7 @@ void fn_3_5D51C(void) {
     g_GameLogic.teamFielding ^= 1;
     ((u8*)&g_GameLogic)[0x131] = 0;
     ((u8*)&g_GameLogic)[0x132] = 0;
-    g_Scores._A0 = g_Scores.team[scores->bottomHalf].runs;
+    g_Scores._A0 = g_Scores.runs[scores->bottomHalf][0];
     fn_3_5A684();
     fn_3_8A350();
     fn_3_F7B8();
@@ -498,7 +512,7 @@ void fn_3_5C418(void) {
         if (inScene != 0) {
             changeScene(3, 6);
         }
-        if (lbl_8037169C[0x13] != 0 && inScene != 0) {
+        if (lbl_8037169C._13 != 0 && inScene != 0) {
             if ((s32)lbl_803C6CF8._715 == 1) {
                 lbl_3_common_bss_32724[0x96] = 1;
                 g_GameLogic.framesOfExitingToMenu = 1;
@@ -929,7 +943,7 @@ void fn_3_5B41C(void) {
     }
     if (g_d_GameSettings.bJMatchInd == 0) {
         g_d_GameSettings.challengeMinigame_baseCoinsEarned += lbl_3_data_607C.resultCoins[result];
-        margin = __abs(g_Scores.team[g_GameLogic._000].runs - g_Scores.team[g_GameLogic._000 ^ 1].runs);
+        margin = __abs(g_Scores.runs[g_GameLogic._000][0] - g_Scores.runs[g_GameLogic._000 ^ 1][0]);
         if (result == 0) {
             g_d_GameSettings.challengeMinigame_baseCoinsEarned += margin * lbl_3_data_607C.winMarginPercent / 100;
         } else if (result == 2) {
@@ -940,4 +954,58 @@ void fn_3_5B41C(void) {
         g_d_GameSettings.challengeMinigame_baseCoinsEarned += lbl_3_data_607C.bjCoins[result];
         g_d_GameSettings.bJMatchRelated += lbl_3_data_607C.bjPoints[result];
     }
+}
+
+// fn_3_5FF10, size:0x20C
+void fn_3_5FF10(void) {
+    s32 i;
+    fn_3_6EF1C();
+    g_GameLogic.currentBatterPerTeam[0] = 1;
+    g_GameLogic.currentBatterPerTeam[1] = 1;
+    g_GameLogic.TeamStars[0] = lbl_8034E9A0._470F[0];
+    g_GameLogic.TeamStars[1] = lbl_8034E9A0._470F[1];
+    if (lbl_800E8754._04 == 0) {
+        g_GameLogic.TeamStars[0] = 0;
+        g_GameLogic.TeamStars[1] = 0;
+    }
+    g_GameLogic.IsStarChance = 0;
+    g_GameLogic.freeFieldingPracticeInd = 0;
+    g_GameLogic.gameOverInd = 0;
+    g_GameLogic.scoutFlag_VsScreenInd = 0;
+    g_GameLogic.playBatterWalkupAnimation = 0;
+    g_Scores.winningTeam = -1;
+    g_Scores._AE = 0;
+    g_Scores.inning = 1;
+    g_Scores.bottomHalf = 0;
+    g_Scores._C6 = 0;
+    for (i = 0; i < 19; i++) {
+        g_Scores.runs[0][i] = 0;
+        g_Scores.runs[1][i] = 0;
+        g_Scores._50[0][i] = 0;
+        g_Scores._50[1][i] = 0;
+    }
+    for (i = 0; i < 2; i++) {
+        g_Scores._A8[i] = 0;
+        g_Scores._B3[i] = -1;
+        g_Scores._B5[i] = -1;
+        g_Scores._B7[i] = -1;
+        g_Scores._B9[i] = 0;
+        g_Scores._AF[i] = g_GameLogic.battingOrderAndPositionMapping[i][0][0];
+        g_Scores._BB[i] = 1;
+        g_Scores._BD[i] = 1;
+    }
+    fn_3_5A6D4(4);
+    fn_3_754B8();
+    initializeInMemBatter();
+    fn_3_FBA8();
+    fn_3_595C4();
+    fn_3_8A5A4();
+    fn_3_1E328();
+    fn_3_7B308();
+    fn_3_9DBE4();
+    fn_3_7D780();
+    fn_3_8FF18();
+    fn_3_250FC();
+    fn_3_8BE8C();
+    initializeUnknown();
 }
