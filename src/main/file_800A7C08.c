@@ -2731,5 +2731,8 @@ BOOL fn_800ADB04(ThpMovie* movie, ThpPlayer* p, u8 format, u8 freeBuffer) {
 
 // .text:0x800ADBFC size:0x44
 void fn_800ADBFC(void) {
-    return;
+    if (lbl_803CC17F) {
+        lbl_803CC17C = TRUE;
+        OSSendMessage(&lbl_802FB870, (OSMessage)4, OS_MESSAGE_NOBLOCK);
+    }
 }
