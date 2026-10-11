@@ -12,7 +12,9 @@ typedef struct Fielder540 {
     /*0x000*/ VecXYZ pos;
     /*0x00C*/ u8 _00C[0x74 - 0xC];
     /*0x074*/ f32 _74;
-    /*0x078*/ u8 _078[0x17A - 0x78];
+    /*0x078*/ u8 _078[0xF4 - 0x78];
+    /*0x0F4*/ f32 _F4; // height (used for the pitcher, index 0)
+    /*0x0F8*/ u8 _0F8[0x17A - 0xF8];
     /*0x17A*/ s16 animID; // index into lbl_800E8558 (6 bytes per entry)
     /*0x17C*/ u8 _17C[0x1C7 - 0x17C];
     /*0x1C7*/ u8 _1C7;
@@ -30,6 +32,7 @@ extern Fielder540 g_Fielders[9];
 extern u8 lbl_3_data_450C[];
 extern f32 lbl_3_data_4428[];
 extern f32 lbl_3_data_4930[];
+extern int fn_3_51DF0(f32 x, f32 z); // infield zone of point (x, z)
 extern f32 lbl_3_data_47BC[]; // garlic-hit catch radius, by fielder _1C9
 extern int fn_3_253A4(int fielder, s16 angle);
 extern f32 lbl_3_data_45FC; // default ball gravity
@@ -54,7 +57,14 @@ extern f64 lbl_3_rodata_600;
 extern void fn_3_88D88(s32);
 extern void fn_3_27648(void);
 
-extern s16 g_RunningLogic;
+// g_RunningLogic (0x20 bytes); only the fields used here.
+typedef struct RunningLogic540 {
+    /*0x00*/ s16 _00; // play-event flags
+    /*0x02*/ u8 _02[0x13 - 0x2];
+    /*0x13*/ u8 _13; // home run hit
+    /*0x14*/ u8 _14[0x20 - 0x14];
+} RunningLogic540;
+extern RunningLogic540 g_RunningLogic;
 extern void fn_3_59918(s32, s32);
 
 extern const f64 lbl_3_rodata_5B8;
@@ -278,7 +288,7 @@ void fn_3_6694(void) {
                         g_Ball.deadballLastLoc.y = g_Ball.AtBat_Contact_BallPos.y;
                         g_Ball.deadballLastLoc.z = g_Ball.AtBat_Contact_BallPos.z;
                         g_Ball.deadBallReason = 4;
-                        if (g_RunningLogic != 0) {
+                        if (g_RunningLogic._00 != 0) {
                             fn_3_59918(0x14, 0);
                         }
                     }
@@ -288,7 +298,7 @@ void fn_3_6694(void) {
                         g_Ball.deadballLastLoc.y = g_Ball.AtBat_Contact_BallPos.y;
                         g_Ball.deadballLastLoc.z = g_Ball.AtBat_Contact_BallPos.z;
                         g_Ball.deadBallReason = 4;
-                        if (g_RunningLogic != 0) {
+                        if (g_RunningLogic._00 != 0) {
                             fn_3_59918(0x14, 0);
                         }
                     }
@@ -307,7 +317,7 @@ void fn_3_6694(void) {
                 g_Ball.deadballLastLoc.y = g_Ball.AtBat_Contact_BallPos.y;
                 g_Ball.deadballLastLoc.z = g_Ball.AtBat_Contact_BallPos.z;
                 g_Ball.deadBallReason = 4;
-                if (g_RunningLogic != 0) {
+                if (g_RunningLogic._00 != 0) {
                     fn_3_59918(0x14, 0);
                 }
             }
@@ -711,7 +721,7 @@ void fn_3_9E18(void) {
         g_Ball.deadballLastLoc.y = g_Ball.AtBat_Contact_BallPos.y;
         g_Ball.deadballLastLoc.z = g_Ball.AtBat_Contact_BallPos.z;
         g_Ball.deadBallReason = 4;
-        if (g_RunningLogic != 0) {
+        if (g_RunningLogic._00 != 0) {
             fn_3_59918(0x14, 0);
         }
     }
@@ -727,7 +737,7 @@ void fn_3_9E84(void) {
                 g_Ball.deadballLastLoc.y = g_Ball.AtBat_Contact_BallPos.y;
                 g_Ball.deadballLastLoc.z = g_Ball.AtBat_Contact_BallPos.z;
                 g_Ball.deadBallReason = 4;
-                if (g_RunningLogic != 0) {
+                if (g_RunningLogic._00 != 0) {
                     fn_3_59918(0x14, 0);
                 }
             }
@@ -737,7 +747,7 @@ void fn_3_9E84(void) {
                 g_Ball.deadballLastLoc.y = g_Ball.AtBat_Contact_BallPos.y;
                 g_Ball.deadballLastLoc.z = g_Ball.AtBat_Contact_BallPos.z;
                 g_Ball.deadBallReason = 4;
-                if (g_RunningLogic != 0) {
+                if (g_RunningLogic._00 != 0) {
                     fn_3_59918(0x14, 0);
                 }
             }
@@ -1209,9 +1219,153 @@ void fn_3_BD78(void) {
 }
 
 // .text:0x0000C034 size:0x9C0 mapped:0x8064B0C8
+// Classify a fresh hit (ground ball / fly / line drive / home run) for AI and commentary.
+// NONMATCHING 97%: zone (fn_3_51DF0 result) is narrowed at the call, original narrows at each use; star-swing 9/10 range test
+#if NONMATCHING
 void fn_3_C034(void) {
-    return;
+    u8 foulSide = 0;
+    u8 zone;
+    s16 ang;
+    f32 d;
+    f32 wallAdj;
+    s32 i;
+    g_Ball.hitClassification1 = 1;
+    if (g_Ball.Hit_HorizontalAngle < 0x1B0 || g_Ball.Hit_HorizontalAngle > 0x650 ||
+        (g_Ball.Hit_VerticalAngle > 0x400 && g_Ball.Hit_VerticalAngle < 0xC00)) {
+        if (g_Ball.Hit_VerticalAngle > 0x800 || g_Ball.Hit_VerticalAngle < 0) {
+            g_Ball.hitClassification1 = 3;
+        } else if (g_Ball.Hit_VerticalAngle > 0x154) {
+            g_Ball.hitClassification1 = 5;
+        } else {
+            g_Ball.hitClassification1 = 4;
+        }
+    } else if (g_Ball.Hit_VerticalAngle > 0x800 || g_Ball.Hit_VerticalAngle < 0) {
+        g_Ball.hitClassification1 = 0;
+    } else if (g_Ball.physicsSubstruct.hitLandingSpotDistFromHome < 18.0f && g_Ball.Hit_VerticalAngle < 100) {
+        g_Ball.hitClassification1 = 0;
+    } else if (g_Ball.Hit_VerticalAngle > 0x154) {
+        g_Ball.hitClassification1 = 2;
+    }
+    zone = fn_3_51DF0(g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x, g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z);
+    ang = fn_3_9FB8C(g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x, g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z);
+    if (ang < 0x1A0 || ang > 0x660) {
+        foulSide = 1;
+    }
+    if ((g_Ball.Hit_HorizontalAngle < 0x1A0 || g_Ball.Hit_HorizontalAngle > 0x660) && foulSide) {
+        if (g_Ball.physicsSubstruct.hitLandingSpotDistFromHome > 60.0f) {
+            g_Ball.hitClassification2 = 8;
+        } else {
+            g_Ball.hitClassification2 = 7;
+        }
+    } else if (g_Ball.Hit_VerticalAngle > 0x400 && g_Ball.Hit_VerticalAngle < 0xC00) {
+        g_Ball.hitClassification2 = 7;
+    } else if (g_Ball.hitClassification1 == 0) {
+        d = sqrt540(g_Ball.physicsSubstruct.futureCoordsAndDist[60].pos.x * g_Ball.physicsSubstruct.futureCoordsAndDist[60].pos.x +
+                    g_Ball.physicsSubstruct.futureCoordsAndDist[60].pos.z * g_Ball.physicsSubstruct.futureCoordsAndDist[60].pos.z);
+        if (g_Ball.Hit_HorizontalPower < 70 && d < 14.0f) {
+            g_Ball.hitClassification2 = 1;
+        } else {
+            g_Ball.hitClassification2 = 2;
+        }
+    } else {
+        if (zone <= 1) {
+            d = sqrt540(g_Ball.physicsSubstruct.futureCoordsAndDist[60].pos.x * g_Ball.physicsSubstruct.futureCoordsAndDist[60].pos.x +
+                        g_Ball.physicsSubstruct.futureCoordsAndDist[60].pos.z * g_Ball.physicsSubstruct.futureCoordsAndDist[60].pos.z);
+            if (g_Ball.Hit_HorizontalPower < 70 && d < 10.0f && g_Ball.physicsSubstruct.hitLandingSpotDistFromHome < 18.0f) {
+                g_Ball.hitClassification2 = 1;
+                goto classified;
+            }
+        }
+        if (g_Ball.physicsSubstruct.hitLandingSpotDistFromHome < 30.0f && g_Ball.maxYOfHit < 2.0f) {
+            g_Ball.hitClassification2 = 2;
+        } else if (g_Ball.physicsSubstruct.hitLandingSpotDistFromHome < 20.0f && g_Ball.maxYOfHit < 4.0f) {
+            g_Ball.hitClassification2 = 2;
+        } else if (zone <= 1 && g_Ball.hangtimeOfHit > 180) {
+            g_Ball.hitClassification2 = 4;
+        } else if (zone <= 1) {
+            g_Ball.hitClassification2 = 3;
+        } else if (zone == 2 && g_Ball.maxYOfHit < 4.5f) {
+            g_Ball.hitClassification2 = 3;
+        } else if (zone <= 2) {
+            g_Ball.hitClassification2 = 5;
+        } else if (g_Ball.physicsSubstruct.hitLandingSpotDistFromHome < 70.0f ||
+                   (g_Ball.physicsSubstruct.hitLandingSpotDistFromHome < 80.0f && g_Ball.hangtimeOfHit < 180)) {
+            g_Ball.hitClassification2 = 5;
+        } else {
+            g_Ball.hitClassification2 = 6;
+        }
+    }
+classified:
+    fn_3_BD78();
+    g_Batter.hitTrajectory = 2;
+    if (g_Ball.maybeBuntInd != 0) {
+        g_Batter.hitTrajectory = 5;
+    }
+    wallAdj = 0.04f * (f32)__abs(0x400 - g_Ball.Hit_HorizontalAngle);
+    g_RunningLogic._13 = 0;
+    if (g_Ball.Hit_HorizontalAngle >= 0x260 && g_Ball.Hit_HorizontalAngle < 0x5A0 && g_d_GameSettings.GameModeSelected != 2) {
+        if (135.0f - wallAdj < g_Ball.physicsSubstruct.hitLandingSpotDistFromHome) {
+            if (g_Ball.Hit_VerticalAngle >= 0x118) {
+                g_Ball.homeRunClassification = 2;
+                if (145.0f - wallAdj < g_Ball.physicsSubstruct.hitLandingSpotDistFromHome) {
+                    g_Ball.homeRunClassification = 1;
+                }
+                g_Batter.hitTrajectory = 4;
+                g_RunningLogic._13 = 1;
+                if (g_Batter.batterHand == 0) {
+                    if (g_Ball.Hit_HorizontalAngle < 0x480) {
+                        g_Batter.hitTrajectory = 4;
+                    }
+                } else if (g_Ball.Hit_HorizontalAngle >= 0x380) {
+                    g_Batter.hitTrajectory = 4;
+                }
+            }
+        } else if (125.0f - wallAdj < g_Ball.physicsSubstruct.hitLandingSpotDistFromHome && g_Ball.Hit_VerticalAngle >= 0x154) {
+            g_Ball.homeRunClassification = 3;
+        }
+    }
+    ang = fn_3_9FB8C(g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x, g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z);
+    if ((g_Ball.Hit_HorizontalAngle < 0x1E0 || g_Ball.Hit_HorizontalAngle >= 0x620 ||
+         (ang < 0x100 && g_Ball.physicsSubstruct.hitLandingSpotDistFromHome > 10.0f) ||
+         (ang > 0x700 && g_Ball.physicsSubstruct.hitLandingSpotDistFromHome > 10.0f)) &&
+        (g_d_GameSettings.StadiumID != 2 || g_Ball.Hit_HorizontalAngle <= 0x13C || g_Ball.Hit_HorizontalAngle > 0x6C4) &&
+        g_Ball.currentStarSwing != 5 && g_Ball.currentStarSwing != 6 && g_Ball.currentStarSwing != 9 && g_Ball.currentStarSwing != 10 &&
+        (g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z < g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x - 5.0f ||
+         g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z < -g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x - 5.0f)) {
+        if (g_Ball.maybeBuntInd != 0) {
+            if (g_Ball.Hit_HorizontalAngle < 0x1A0 || g_Ball.Hit_HorizontalAngle >= 0x660) {
+                g_Batter.hitTrajectory = 6;
+            }
+        } else if (ang < 0x1A0 || ang > 0xD80) {
+            if (g_Ball.maxYOfHit > 15.0f && ang > 0xD80 && ang < 0xF80) {
+                g_Batter.hitTrajectory = 3;
+            } else {
+                g_Batter.hitTrajectory = 3;
+            }
+        } else if (ang > 0x660 && ang < 0xA80) {
+            if (g_Ball.maxYOfHit > 15.0f && ang > 0x880) {
+                g_Batter.hitTrajectory = 3;
+            } else {
+                g_Batter.hitTrajectory = 3;
+            }
+        } else if (ang >= 0xA80 && ang <= 0xD80) {
+            g_Batter.hitTrajectory = 3;
+        }
+    }
+    // low liner over the mound: did it pass under the pitcher's reach?
+    if (g_Ball.physicsSubstruct.futureCoordsAndDist[50].dist > 16.5f && g_Ball.Hit_HorizontalAngle <= 0x430 &&
+        g_Ball.Hit_HorizontalAngle >= 0x3D0 && g_Ball.maxYOfHit < 10.0f) {
+        for (i = 10; i < 100; i += 5) {
+            if (g_Ball.physicsSubstruct.futureCoordsAndDist[i].dist > 16.0f) {
+                if (g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.y < 0.2f + g_Fielders[0]._F4) {
+                    g_Ball.lineDriveThroughPitcherInd = 1;
+                }
+                break;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x0000C9F4 size:0x434 mapped:0x8064BA88
 void fn_3_C9F4(void) {
