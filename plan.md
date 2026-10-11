@@ -1,5 +1,41 @@
 # Plan: matching the rest of Mario Superstar Baseball
 
+## End goal: a PC and browser port, like `../strikers`
+
+The goal is not the matching build itself. It's a native macOS build and a browser build (WebAssembly + WebGPU) on [aurora](https://github.com/encounter/aurora), set up the way `~/dev/strikers` is for Super Mario Strikers. Read `strikers/PORTING.md` and `strikers/docs/STATUS.md` for the details. The matching build stays as the proof that the C is right.
+
+**How strikers did it.** It vendored the finished smstrikers-decomp sources into `decomp/` (revision pinned in `.decomp_rev`). It added aurora as a submodule and a small `port/` layer, about 1,800 lines: OS/VI stubs, a game heap, input, crash handler, and MusyX audio through an AX DSP HLE. Then it fixed the game sources under `#ifdef TARGET_PC`, about 330 sites in 150 files. From vendoring to a full match running on macOS took **one day** (2026-10-02). The browser build, trimmed game and online play took three more. It was that fast only because the decomp already had **every function as C with real types**.
+
+### What MSSB needs before a port can start
+
+1. **Every function as C, not necessarily matching.** Today about 2,400 functions are stubs or asm. A function that is functionally equivalent but non-matching is enough for the port. Keep it under `#ifdef NONMATCHING` (or similar) so the matching build stays green. When a register-allocation fight runs past its budget, commit the equivalent C rather than nothing.
+2. **The `main.dol` game code split into source files** (Phase 4). Those ~900 functions in `auto_*` units have no `.c` file at all.
+3. **Real types instead of raw offsets.** Matching code here often reads `*(u16*)(p + 0x14)` and stores pointers in `u32`. On 64-bit that's wrong whenever `p` is a runtime struct that contains pointers, so the offsets would be off. Use named structs and fields (Phase 2). Code written this way needs no rework for the port, and it matches just as well.
+4. **Data in source.** Data is at 0.35%. Tables that are pure numbers can be generated from the binaries by a script (u8/u16/u32/f32 arrays emitted as numeric C literals, so endianness takes care of itself). Tables that hold pointers (function tables, string pointers, struct-of-pointer arrays) need hand-written C.
+
+### Port work (can start before the decomp is done)
+
+Mirror strikers' structure: a separate repo (or `port/` directory) that vendors `src/` and `include/` at a pinned revision, with `extern/aurora`, CMake and `TARGET_PC`.
+
+| Step | Strikers equivalent | MSSB specifics |
+|---|---|---|
+| CMake + aurora + `port/include/port/prelude.h` | first commits | Copy strikers' `CMakeLists.txt`, `port/src/*` and the aurora patches as a starting point. |
+| Compile everything for 64-bit macOS | "Get all sources compiling" | `long` → `int`, pointers-in-ints → `uintptr_t`, replace asm/paired-single/hardware access under `#ifdef TARGET_PC`. |
+| Link the RELs statically | — (strikers had none) | `game.rel`, `menus.rel` and `challenge.rel` become normal objects linked into the app. Replace `OSLink`/REL loading with a table of their prolog/epilog entry points. |
+| Game heap + `PTR32` | "Game heap arena, Ptr32" | Reuse strikers' dlmalloc 4 GB arena and `Ptr32<T>` for disc structs loaded in place. |
+| Disc formats: byte-swap at load | "Disc formats …" | Find MSSB's file loaders. Swap scalars once at load; texture data and display lists stay big-endian. |
+| Audio | "MusyX on its GC target with AX DSP HLE" | MSSB's headers say MusyX 2.0.3, the same version strikers uses. Confirm it, then reuse strikers' MusyX runtime and `port/src/audio`, which saves a lot of work. |
+| Boot → menus → a game | STATUS.md | Use strikers' `tools/run.sh`, crash handler and hang watchdog to iterate. |
+| Browser build | `tools/build_web.sh` | Same Emscripten + JSPI/Asyncify setup. wasm signature checks will catch mismatched function prototypes. |
+
+**Start the port early, with what exists.** Getting the existing sources to *compile* for 64-bit (not run) can begin now. It shows which decomp conventions break portability while they're still cheap to change, and those rules then go into `AGENTS.md` so new code is written portable from the start. The port can't boot until items 1–4 above are done for at least the boot path (main.dol + `menus.rel`).
+
+### What this changes in the matching plan
+
+- **Priority order:** split `main.dol` game code (Phase 4) → shared types (Phase 2) → every function at least equivalent → data → full matching. Finishing the libraries (Phase 6) matters less, because aurora replaces the SDK. MusyX can come from strikers.
+- **"Done" for a function becomes two levels:** *equivalent*, which is enough for the port, and *matching*, which proves it. Agents should never leave a function as a stub or asm just because it won't match.
+- **Linking units (`Matching` in `configure.py`) still matters** because it proves data and code are complete. But it's no longer the headline metric. The headline is "functions with C (any level)", and `next_targets.py` should report it.
+
 ## Where we are (2026-10-10)
 
 | Module | Code | Matched (functions) | Unmatched functions by size (≤64B / ≤256B / ≤1KB / >1KB) | At ≥95% |
