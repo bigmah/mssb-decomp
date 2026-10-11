@@ -9,11 +9,17 @@
 
 // model.c: character models, their parts data and animation state.
 
+typedef struct CharBoneTrack {
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ void* _0C;
+} CharBoneTrack;
+
 typedef struct CharJoint {
     /*0x000*/ u16 id;
     /*0x002*/ u8 _02[0x12];
     /*0x014*/ void* display;
-    /*0x018*/ u8 _18[0xEC - 0x18];
+    /*0x018*/ u8 _18[0xE8 - 0x18];
+    /*0x0E8*/ CharBoneTrack* track;
     /*0x0EC*/ MtxPtr worldMtx;
     /*0x0F0*/ u8 _F0[0x100 - 0xF0];
     /*0x100*/ struct CharJoint* next;
@@ -35,7 +41,9 @@ typedef struct CharModel {
     /*0x78*/ u8 _78[0x4];
     /*0x7C*/ void* _7C;
     /*0x80*/ u16 _80;
-    /*0x82*/ u8 _82[0x98 - 0x82];
+    /*0x82*/ u8 _82[0x8C - 0x82];
+    /*0x8C*/ f32 _8C;
+    /*0x90*/ u8 _90[0x98 - 0x90];
     /*0x98*/ u8 flags;
     /*0x99*/ u8 _99;
 } CharModel;
@@ -346,6 +354,8 @@ void fn_8001AB10(CharSlot* slot, s32 a, s32 b);
 void fn_80017DBC(CharActor* actor, s32 modelIndex);
 
 void fn_8001F228(void);
+
+int fn_8001C67C_animation(int id, int index);
 
 void fn_8001B200(void);
 

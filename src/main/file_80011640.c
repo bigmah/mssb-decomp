@@ -138,6 +138,7 @@ extern void fn_800BE09C(CharSlotList* list, ShadowView* view);
 extern void fn_800BDFE0(CharSlotList* list);
 extern void fn_800BDEA0(void);
 extern void (*lbl_803CBBF4)(void);
+extern void ACTSetBoneTrack(CharJoint* bone, void* track, s32 flag, f32 time);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -1991,9 +1992,75 @@ fail:
 }
 
 // .text:0x8001C67C size:0x2A4
-int fn_8001C67C_animation(int a, int b) {
+// NONMATCHING 99%: joint offset/list registers swapped, mfcr scheduling
+#if NONMATCHING
+int fn_8001C67C_animation(int id, int index) {
+    CharSlotList* list;
+    CharModel* model;
+    CharActor* actor;
+    s32 i;
+    s32 file;
+
+    if (lbl_803CBC3C[2] == 0) {
+        if ((s32)lbl_803C6CF8.transferDone != 1) {
+            return 0;
+        }
+        list = lbl_8036E548.slots64;
+        model = list->slots[4].model;
+        if (model->joints[0]->track != NULL && model->joints[0]->track->_0C != NULL) {
+            for (i = 0; i < model->jointCount; i++) {
+                ACTSetBoneTrack(model->joints[i], NULL, model->_8C < 1.0f, 0.0f);
+            }
+            list->slots[4]._58 = 0;
+            list->slots[4]._59 = 0;
+            list->slots[4]._5A = 0;
+            list->slots[4]._60 = 0.0f;
+        }
+        lbl_803CBC3C[2] = 1;
+    }
+    if (lbl_803CBC3C[2] == 1) {
+        if (g_d_GameSettings.minigamesEnabled != 0) {
+            if (g_d_GameSettings.GameModeSelected == 7) {
+                file = id * 0x13 + 9;
+            } else {
+                file = id * 0x13 + 2;
+            }
+            ARAMTransfer(&lbl_803CB790[file], lbl_8036E548.bankSets[0][3], 0, 0);
+        } else {
+            if (id == lbl_8036E548.preload[1].id) {
+                memcpy(lbl_8036E548.animBufs[0], lbl_8036E548.preload[1].buffer, lbl_8036E548.preload[1].size);
+                goto loaded;
+            }
+            if (g_d_GameSettings.GameModeSelected == 2) {
+                file = id * 0x13 + 0xA;
+            } else {
+                file = id * 0x13 + 2;
+            }
+            ARAMTransfer(&lbl_803CB790[file], lbl_8036E548.animBufs[0], 0, 0);
+        }
+        lbl_803CBC3C[2] = 2;
+    } else if (lbl_803CBC3C[2] == 2 && (s32)lbl_803C6CF8.transferDone == 1) {
+        if (g_d_GameSettings.minigamesEnabled != 0) {
+            ANIMGet(lbl_8036E548.bankSets[0][3]);
+            actor = lbl_8036E548.active[index];
+            if (actor->banks.b[0] == NULL) {
+                actor->banks.b[0] = lbl_8036E548.bankSets[0][3];
+            }
+        } else {
+        loaded:
+            ANIMGet(lbl_8036E548.animBufs[0]);
+            actor = lbl_8036E548.active[index];
+            if (actor->banks.b[0] == NULL) {
+                actor->banks.b[0] = lbl_8036E548.animBufs[0];
+            }
+        }
+        lbl_8036E548._2D68 = id;
+        return 1;
+    }
+    lbl_803CBC3C[0] = 0;
     return 0;
 }
+#endif
 
 // .text:0x8001C920 size:0x120
 s32 fn_8001C920(s32 id) {
