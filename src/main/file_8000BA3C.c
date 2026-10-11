@@ -73,37 +73,30 @@ void fn_8000EC0C(void) {
 }
 
 // .text:0x8000EF1C size:0x234
+// NONMATCHING ~85%: saved-register/scheduling differences; float constants
+// are unnamed until this unit's .sdata2 is split.
+#if NONMATCHING
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params) {
     Mtx m;
     QuadPoint pts[4];
+    s32 i;
 
-    pts[0].pos.x = quad->xy[0][0] + params->ofs[0][0];
-    pts[0].pos.y = quad->xy[0][1] + params->ofs[0][1];
-    pts[0].pos.z = 0.0f;
-    pts[1].pos.x = quad->xy[1][0] + params->ofs[1][0];
-    pts[1].pos.y = quad->xy[1][1] + params->ofs[1][1];
-    pts[1].pos.z = 0.0f;
-    pts[2].pos.x = quad->xy[2][0] + params->ofs[2][0];
-    pts[2].pos.y = quad->xy[2][1] + params->ofs[2][1];
-    pts[2].pos.z = 0.0f;
-    pts[3].pos.x = quad->xy[3][0] + params->ofs[3][0];
-    pts[3].pos.y = quad->xy[3][1] + params->ofs[3][1];
-    pts[3].pos.z = 0.0f;
+    for (i = 0; i < 4; i++) {
+        pts[i].pos.x = quad->xy[i][0] + params->ofs[i][0];
+        pts[i].pos.y = quad->xy[i][1] + params->ofs[i][1];
+        pts[i].pos.z = 0.0f;
+    }
     PSMTXCopy(mtx, m);
     PSMTXMultVec(m, &pts[0].pos, &pts[0].pos);
     PSMTXMultVec(m, &pts[1].pos, &pts[1].pos);
     PSMTXMultVec(m, &pts[2].pos, &pts[2].pos);
     PSMTXMultVec(m, &pts[3].pos, &pts[3].pos);
-    quad->pt[0].pos.x = pts[0].pos.x;
-    quad->pt[0].pos.y = pts[0].pos.y;
-    quad->pt[1].pos.x = pts[1].pos.x;
-    quad->pt[1].pos.y = pts[1].pos.y;
-    quad->pt[2].pos.x = pts[2].pos.x;
-    quad->pt[2].pos.y = pts[2].pos.y;
-    quad->pt[3].pos.x = pts[3].pos.x;
-    quad->pt[3].pos.y = pts[3].pos.y;
-    quad->pt[0].pos.z = pts[0].pos.z;
-    quad->pt[1].pos.z = pts[1].pos.z;
-    quad->pt[2].pos.z = pts[2].pos.z;
-    quad->pt[3].pos.z = pts[3].pos.z;
+    for (i = 0; i < 4; i++) {
+        quad->pt[i].pos.x = pts[i].pos.x;
+        quad->pt[i].pos.y = pts[i].pos.y;
+    }
+    for (i = 0; i < 4; i++) {
+        quad->pt[i].pos.z = pts[i].pos.z;
+    }
 }
+#endif
