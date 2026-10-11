@@ -843,9 +843,42 @@ void haveActLayoutPointToGeoHeader(ActorLayout* layout, DODisplayData* geoPalett
 }
 
 // .text:0x800B4910 size:0xD4
-void LoadActorLayout(void) {
-    return;
+// Converts an actor layout's file offsets into pointers in place.
+// NONMATCHING 98%: bones pointer comes out as `addi r4` instead of `addi r0; mr r4,r0`
+#if NONMATCHING
+void LoadActorLayout(ActorLayout* layout) {
+    ActorBone* bone;
+    u32 i;
+
+    if (layout->userDataSize != 0 && layout->userData != NULL) {
+        layout->userData = layout->userData + (u32)layout;
+    }
+    if (layout->hierarchy.Root != NULL) {
+        layout->hierarchy.Root = layout->hierarchy.Root + (u32)layout;
+    }
+    if (layout->geoPaletteName != NULL) {
+        layout->geoPaletteName = layout->geoPaletteName + (u32)layout;
+    }
+    bone = ((ActorLayoutFile*)layout)->bones;
+    for (i = 0; i < layout->totalBones; bone++, i++) {
+        if (bone->orientationCtrl != NULL) {
+            bone->orientationCtrl = (Control*)((u8*)layout + (u32)bone->orientationCtrl);
+        }
+        if (bone->branch.Prev != NULL) {
+            bone->branch.Prev = (Ptr)layout + (u32)bone->branch.Prev;
+        }
+        if (bone->branch.Next != NULL) {
+            bone->branch.Next = (Ptr)layout + (u32)bone->branch.Next;
+        }
+        if (bone->branch.Parent != NULL) {
+            bone->branch.Parent = (Ptr)layout + (u32)bone->branch.Parent;
+        }
+        if (bone->branch.Children != NULL) {
+            bone->branch.Children = (Ptr)layout + (u32)bone->branch.Children;
+        }
+    }
 }
+#endif
 
 // .text:0x800B49E4 size:0x60
 // Same as LoadActorLayout for static layouts (no null checks, no branches).
