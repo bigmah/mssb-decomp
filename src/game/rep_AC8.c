@@ -2263,6 +2263,39 @@ static inline void FielderGoCoverAC8(int i) {
         f[0x1D5] = 4;
     }
 }
+void fn_3_48480(int);
+// After becoming the ball chaser, fielder i runs fn_3_48480 and gives up any base it was covering.
+static inline void FielderTakeOverAC8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 t;
+    fn_3_48480(i);
+    if (*(s16*)(g_FieldingLogic + 0xD8) != i && *(s16*)(f + 0x18C) < 0) {
+        return;
+    }
+    t = *(s16*)(f + 0x18C);
+    if (t < 0) {
+        return;
+    }
+    if (t <= 3) {
+        if (*(s16*)(g_FieldingLogic + 0xD0 + t * 2) == i) {
+            *(s16*)(g_FieldingLogic + 0xD0 + t * 2) = -1;
+            g_FieldingLogic[t + 0x101] = 0;
+        }
+        *(s16*)(f + 0x18C) = -1;
+        f[0x1D7] = 0;
+        if (f[0x1D3] == 1) {
+            SetFielderAct(i, 0xC, 0x60);
+        }
+    } else if (t == 5) {
+        *(s16*)(f + 0x18C) = -1;
+        f[0x1D7] = 0;
+        *(s16*)(g_FieldingLogic + 0xD8) = -1;
+        g_FieldingLogic[0x105] = 0;
+        if (f[0x1D3] == 0xE) {
+            SetFielderAct(i, 0xC, 0x60);
+        }
+    }
+}
 // Same as SetTargetAC8 (defined later in this file).
 static inline void SetTargetAC8b(int i, f32 x, f32 z) {
     u8* f = g_Fielders + i * 0x268;
@@ -3618,9 +3651,97 @@ void fn_3_48480(int i) {
 #endif
 
 // .text:0x00048A54 size:0xAA0 mapped:0x80687AE8
-void fn_3_48A54(void) {
-    return;
+// NONMATCHING 98.6%: entry if-shape, lhau vs lha for the base-cover table, and float/int register swaps
+#if NONMATCHING
+// Fielder i takes over as the ball chaser (FieldingLogic+0xBE) when it can reach the ball sooner.
+void fn_3_48A54(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 x;
+    f32 z;
+    f32 d;
+    int k;
+    u8* g;
+    if (fn_3_53130(i) != 0 || f[0x252] != 0) {
+        return;
+    }
+    *(s16*)(f + 0x18E) = fn_3_47628();
+    if (*(s16*)(g_FieldingLogic + 0xBE) < 0) {
+        if (((int (*)(int, f32*, f32*))fn_3_46E08)(i, &x, &z) == 0) {
+            return;
+        }
+        {
+            f32 dz, dx, dd;
+            *(f32*)(f + 0x14) = x;
+            *(f32*)(f + 0x1C) = z;
+            dx = x - *(f32*)f;
+            dz = z - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                dd = dx * dx + dz * dz;
+                SQRT_L(dd);
+                *(f32*)(f + 0x68) = dd;
+            }
+            f[0x1D9] = 1;
+        }
+        *(s16*)(g_FieldingLogic + 0xBE) = i;
+        SetFielderAct(i, 5, 0x28);
+        FielderTakeOverAC8(i);
+        return;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xC4) == 6) {
+        SetFielderAct(i, 0xC, 0x60);
+        (g_Fielders + i * 0x268)[0x1D5] = 4;
+        return;
+    }
+    if (((int (*)(int, f32*, f32*))fn_3_46E08)(i, &x, &z) == 0) {
+        return;
+    }
+    {
+        f32 dx = x - *(f32*)f;
+        f32 dz = z - *(f32*)(f + 8);
+        dx = dx * dx;
+        dz = dz * dz;
+        d = dx + dz;
+        SQRT_L(d);
+    }
+    k = *(s16*)(g_FieldingLogic + 0xBE);
+    if (d < *(f32*)(g_Fielders + k * 0x268 + 0x68)) {
+        if (*(s16*)(g_Ball + 0x1B78) != k) {
+            SetFielderAct(k, 0xC, 0x60);
+            (g_Fielders + *(s16*)(g_FieldingLogic + 0xBE) * 0x268)[0x1D5] = 4;
+        }
+        g = g_Fielders + *(s16*)(g_FieldingLogic + 0xBE) * 0x268;
+        *(s16*)(g + 0x18C) = -1;
+        g[0x1D7] = 0;
+        {
+            f32 dx, dz, dd;
+            *(f32*)(f + 0x14) = x;
+            *(f32*)(f + 0x1C) = z;
+            dx = x - *(f32*)f;
+            dz = z - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                dd = dx * dx + dz * dz;
+                SQRT_L(dd);
+                *(f32*)(f + 0x68) = dd;
+            }
+            f[0x1D9] = 1;
+        }
+        *(s16*)(g_FieldingLogic + 0xBE) = i;
+        SetFielderAct(i, 5, 0x28);
+        FielderTakeOverAC8(i);
+    } else {
+        SetFielderAct(i, 0xC, 0x60);
+        (g_Fielders + i * 0x268)[0x1D5] = 4;
+    }
 }
+#endif
 
 // .text:0x000494F4 size:0x4D0 mapped:0x80688588
 // NONMATCHING 96.7%: orig recomputes the fielder pointer (g_Fielders + saved i*0x268) for the stop block; float regs differ
