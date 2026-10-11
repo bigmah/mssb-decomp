@@ -4084,9 +4084,117 @@ int fn_3_5164C(int i, f32* out) {
 #pragma fp_contract reset
 
 // .text:0x00051798 size:0x658 mapped:0x8069082C
+#include "game/rep_D0.h"
+#include "musyx/musyx.h"
+extern f32 lbl_3_rodata_C84;
+extern f32 lbl_3_rodata_C88;
+extern f32 lbl_3_rodata_BB4;
+extern s16 lbl_3_data_7F10[];
+extern void* memcpy(void*, const void*, unsigned long);
+extern u8 fn_3_1379A0(s32 idx);
+extern f32 game_atan2(f32 x, f32 y);
+extern f32 fn_3_9FEA8(f32 v);
+extern f64 cos(f64);
+extern f32 lbl_3_data_476C[];
+extern int fn_3_B7E10(f32, f32);
+// NONMATCHING 97.6%: wall-type test gets range-merged (subi/cmplwi) instead of five compares; float regs for the wall normal differ
+#if NONMATCHING
+// wall check for fielder i's next step; 0 = free, 1 = blocked, 2 = slide (out = corrected x/z)
 int fn_3_51798(int i, f32* out) {
+    u8* f = g_Fielders + i * 0x268;
+    VecSrcDst ray;
+    CollisionStruct hit;
+    u32 col;
+    u32 r;
+    f32 vx;
+    f32 vz;
+    f32 d;
+    f32 nx;
+    f32 nz;
+    f32 px;
+    f32 pz;
+    f32 wallAng;
+    f32 lim;
+    f32 x;
+    f32 z;
+    if (lbl_3_rodata_B20 == *(f32*)(f + 0x50)) {
+        return 0;
+    }
+    if (g_d_GameSettings[7] == 6 && g_GameLogic[0x11E] == 1) {
+        r = fn_3_5164C(i, out);
+        if (r != 0) {
+            return r;
+        }
+    }
+    if (g_d_GameSettings[0x11] == 0 && *(f32*)(f + 0xA8) < lbl_3_rodata_C84 && fn_3_B7E10(*(f32*)f, *(f32*)(f + 8)) == 0) {
+        return 0;
+    }
+    if (f[0x1FB] != 0) {
+        return 0;
+    }
+    if (fn_3_B7E10(*(f32*)f, *(f32*)(f + 8)) != 0 || g_Minigame[0x1A2A] == 6 || g_d_GameSettings[7] == 6) {
+        x = *(f32*)f + *(f32*)(f + 0x30);
+        z = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+        ray.dst.x = x;
+        ray.src.x = x;
+        ray.dst.z = z;
+        ray.src.z = z;
+        ray.src.y = lbl_3_rodata_C88;
+        ray.dst.y = lbl_3_rodata_BA0;
+        col = checkCollision(&ray, &hit, 0, 0) & 0x7F;
+        if (col == BALL_COLLISION_TYPE_WALL || col == BALL_COLLISION_TYPE_STRUCTURE || col == BALL_COLLISION_TYPE_PIT_WALL ||
+            col == BALL_COLLISION_TYPE_PIT || col == BALL_COLLISION_TYPE_UNCLIMBABLE_WALL) {
+            return 1;
+        }
+        if (g_Minigame[0x1A2A] == 6 && fn_3_1379A0(i) != 0) {
+            memcpy(out, f, 0xC);
+            return 1;
+        }
+    }
+    vx = *(f32*)(f + 0x30) / *(f32*)(f + 0x50);
+    vz = *(f32*)(f + 0x34) / *(f32*)(f + 0x50);
+    ray.src.x = *(f32*)f;
+    ray.src.y = lbl_3_rodata_BB4;
+    ray.src.z = *(f32*)(f + 8);
+    ray.dst.y = lbl_3_rodata_BB4;
+    ray.dst.x = *(f32*)f + vx;
+    ray.dst.z = *(f32*)(f + 8) + vz;
+    col = checkCollision(&ray, &hit, 0, 0) & 0x7F;
+    if (col != 2 && col != 5) {
+        return 0;
+    }
+    d = hit.normal.x * hit.normal.x + hit.normal.z * hit.normal.z;
+    SQRT_L(d);
+    nx = hit.normal.x / d;
+    nz = hit.normal.z / d;
+    px = nx * lbl_3_data_476C[f[0x1C9]];
+    pz = nz * lbl_3_data_476C[f[0x1C9]];
+    wallAng = game_atan2(-px, -pz);
+    lim = lbl_3_data_476C[f[0x1C9]] / (f32)cos(fn_3_9FEA8(wallAng - game_atan2(vx, vz)));
+    if (f[0x25A] == 2) {
+        lim = lbl_3_data_7F10[*(s16*)(f + 0x17A)];
+    }
+    d = (*(f32*)f - hit.position.x) * (*(f32*)f - hit.position.x) + (*(f32*)(f + 8) - hit.position.z) * (*(f32*)(f + 8) - hit.position.z);
+    SQRT_L(d);
+    if (d < lim) {
+    x = *(f32*)f + *(f32*)(f + 0x30);
+    z = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+    ray.dst.x = x;
+    ray.dst.z = z;
+    ray.src.x = x + lbl_3_rodata_B78 * nx;
+    ray.src.z = z + lbl_3_rodata_B78 * nz;
+    ray.dst.x = x - lbl_3_rodata_B78 * nx;
+    ray.dst.z = z - lbl_3_rodata_B78 * nz;
+    if (checkCollision(&ray, &hit, 1, 0) != 0) {
+        out[0] = px * lbl_3_data_476C[f[0x1C9]] + hit.position.x;
+        out[2] = pz * lbl_3_data_476C[f[0x1C9]] + hit.position.z;
+        return 2;
+    }
+    return 1;
+    }
     return 0;
 }
+#endif
 
 // .text:0x00051DF0 size:0x294 mapped:0x80690E84
 extern f32 lbl_3_rodata_C70;
@@ -4373,8 +4481,6 @@ void fn_3_53F48(void) {
 #endif
 
 // .text:0x000544B8 size:0x448 mapped:0x8069354C
-#include "game/rep_D0.h"
-#include "musyx/musyx.h"
 extern f32 lbl_3_rodata_CA8;
 extern f32 lbl_3_rodata_C9C;
 extern u16 lbl_3_data_81DC[];
