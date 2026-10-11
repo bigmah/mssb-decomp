@@ -4,6 +4,7 @@
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
 #include "static/Camera.h"
+#include "main/file_8000F150.h"
 #pragma dont_inline on
 
 typedef struct { u8 b[14]; } Tbl14;
@@ -122,10 +123,88 @@ void fn_3_38E8(StadiumDrawFn a) {
     lbl_3_data_A10[lbl_803CBBC0] = a;
 }
 
-// .text:0x00003904 size:0x2E4 mapped:0x80642998
-void fn_3_3904(void) {
-    return;
+#pragma dont_inline off
+// Glyph codes: wide glyphs (bit 0x8000) are 22x22 cells on a 46-column grid
+// spread over font pages; narrow ones are 11x22 cells on page 0.
+static inline void DecodeWideGlyph(u16 v, s16* x, s16* y, s16* w, s16* h, s16* page) {
+    u16 i = v & 0x7FFF;
+    *page = i / 2116;
+    i = i % 2116;
+    *x = i % 46;
+    *y = (i / 46) * 22;
+    *x = *x * 22;
+    *w = 22;
+    *h = 22;
 }
+
+static inline void DecodeNarrowGlyph(u16 v, s16* x, s16* y, s16* w, s16* h, s16* page) {
+    *x = v % 92;
+    *y = (v / 92) * 22;
+    *x = (*x % 2 + (*x / 2) * 2) * 11;
+    *w = 11;
+    *h = 22;
+    *page = 0;
+}
+
+extern const f32 lbl_3_rodata_4F8; // 16.0f
+extern const f32 lbl_3_rodata_4FC; // 18.0f
+extern const f32 lbl_3_rodata_500; // 8.0f
+
+// Draws message `msg` of the first message table with the font glyphs at
+// (x, y). Control codes: 0 ends, 1 is a newline, 2/3 are half/full spaces.
+// .text:0x00003904 size:0x2E4 mapped:0x80642998
+// NONMATCHING 86%: scheduling of the inlined wide-glyph decode (i kept in r0 in the original)
+#if NONMATCHING
+void fn_3_3904(s16 x, s16 y, s32 msg, GXColor* color0, GXColor* color1, u8 flags) {
+    GXTexObj tex;
+    s16 sx;
+    s16 sy;
+    s16 sw;
+    s16 sh;
+    u16* text;
+    s16 startX;
+    u16 c;
+    s16 page;
+    f32 advance;
+    f32 height;
+
+    startX = x;
+    text = lbl_80366B18.tables[0]->msgs[msg];
+
+    for (;;) {
+        c = *text++;
+        if (c & 0x4000) {
+            switch (c & 0x3FFF) {
+            case 0:
+                return;
+            case 2:
+                x += 11;
+                break;
+            case 3:
+                x += 22;
+                break;
+            case 1:
+                x = startX;
+                y += 22;
+                break;
+            }
+            continue;
+        }
+        if (c & 0x8000) {
+            DecodeWideGlyph(c, &sx, &sy, &sw, &sh, &page);
+            advance = lbl_3_rodata_4F8;
+            height = lbl_3_rodata_4FC;
+        } else {
+            DecodeNarrowGlyph(c, &sx, &sy, &sw, &sh, &page);
+            advance = lbl_3_rodata_500;
+            height = lbl_3_rodata_4FC;
+        }
+        GXInitTexObjLOD(&tex, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        fn_3_42CC(&tex, x, y, x + advance, y + height, sx, sy, sw, sh, *color0, *color1, flags & 1);
+        x += advance;
+    }
+}
+#endif
 
 // .text:0x00003BE8 size:0x300 mapped:0x80642C7C
 void fn_3_3BE8(void) {
@@ -282,26 +361,15 @@ void fn_3_4F90(void) {
     return;
 }
 
+
 // .text:0x000053E0 size:0x138 mapped:0x80644474
-void fn_3_53E0(u16* in, s16* a, s16* b, s16* c, s16* d, s16* e) {
+void fn_3_53E0(u16* in, s16* x, s16* y, s16* w, s16* h, s16* page) {
     u16 v = *in;
     if (!(v & 0x4000)) {
         if (v & 0x8000) {
-            u16 w = v & 0x7FFF;
-            *e = w / 2116;
-            w = w % 2116;
-            *a = w % 46;
-            *b = (w / 46) * 22;
-            *a = *a * 22;
-            *c = 22;
-            *d = 22;
+            DecodeWideGlyph(v, x, y, w, h, page);
         } else {
-            *a = v % 92;
-            *b = (v / 92) * 22;
-            *a = (*a % 2 + (*a / 2) * 2) * 11;
-            *c = 11;
-            *d = 22;
-            *e = 0;
+            DecodeNarrowGlyph(v, x, y, w, h, page);
         }
     }
 }
