@@ -161,7 +161,9 @@ void fn_80041348(void) {
 
 // .text:0x8004153C size:0x40
 void fn_8004153C(void) {
-    return;
+    lbl_803CBC50 = 0x2380;
+    lbl_803CBC4C = 0xE60;
+    lbl_803CBC48 = fn_800ACC6C(1, 0x2380, 0x10000);
 }
 
 extern u16 lbl_803CBCC0;
