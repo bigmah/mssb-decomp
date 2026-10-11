@@ -3729,6 +3729,8 @@ void fn_3_86DFC(void) {
 
 // .text:0x00086EF8 size:0x1B4 mapped:0x806C5F8C
 // 99%: body matches; only d1/base/lo register numbering differs (r7/r8 swapped) around the data[1]/data[0] range check
+// NONMATCHING 99.5%: load scheduling around the steal-timing compare
+#if NONMATCHING
 void fn_3_86EF8(void) {
     int i;
     int j;
@@ -3787,6 +3789,7 @@ void fn_3_86EF8(void) {
         }
     }
 }
+#endif
 
 // .text:0x000870AC size:0x110 mapped:0x806C6140
 void fn_3_870AC(void) {
