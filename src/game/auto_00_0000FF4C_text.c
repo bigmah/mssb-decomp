@@ -29,9 +29,16 @@ void fn_3_FF98(void) {
 }
 
 // .text:0x00010030 size:0x11C mapped:0x8064F0C4
+// NONMATCHING 94%: t and rand()*16 swap registers in the final adds (r29/r6)
+#if NONMATCHING
 void fn_3_10030(void) {
-    return;
+    s32 t;
+    t = ((lbl_3_data_228.counter % 10) + 1) * (g_Ball.StaticRandomInt1 * rand());
+    g_Ball.StaticRandomInt1 = (rand() * 16 + t + (lbl_3_data_228.counter >> 1) + g_d_GameSettings.FrameCountWhileNotAtMainMenu) & 0x7FFF;
+    t = ((lbl_3_data_228.counter % 10) + 1) * ((g_Ball.StaticRandomInt2 + 1) * rand());
+    g_Ball.StaticRandomInt2 = (rand() * 8 + t + (lbl_3_data_228.counter >> 1) + (g_d_GameSettings.FrameCountWhileNotAtMainMenu >> 1)) & 0x7FFF;
 }
+#endif
 
 // .text:0x0001014C size:0x17C mapped:0x8064F1E0
 void ballPhysica(void) {
