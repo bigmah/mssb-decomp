@@ -4148,3 +4148,316 @@ void fn_2_74F40(u8* o, s32 index) {
     MN_SLOT(0x97 + BASE(o) + index)->flags &= ~2;
 }
 #endif
+
+// fn_2_81628, size:0x1174
+// Per-frame driver of the team/field-position menu: runs each player's state handler.
+// NONMATCHING 40%: logic matches; CW auto-inlines the matched per-state handlers defined above it (original calls them), so sizes differ
+#if NONMATCHING
+void fn_2_81628(void) {
+    u8* o = *(u8**)(lbl_8034E9A0 + 0x474C); // TODO type
+    u8* st;
+    s32 i;
+    s32 j;
+    s32 n;
+    s32 k;
+    s8 pos;
+    s8 f20;
+    s8 f21;
+    if (lbl_8034E9A0[0x48B2] != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(o));
+    }
+    st = lbl_803C66B0;
+    if (lbl_803C66B0[0] == 1) {
+        for (i = 0; i < 2; i++, st++) {
+            switch (st[0x5D]) {
+            case 1:
+                fn_2_80F5C(o, i);
+                if (st[0xD] == 1) {
+                    n = fn_80042DA8((s32)o, i, 0x14) != 0;
+                    k = 2;
+                    n += fn_80042DA8((s32)o, i + 2, 0x14) != 0;
+                    if (i == 0 || lbl_2_bss_100B8[0x10] != 0 || g_d_GameSettings._10 != 0) {
+                        n += fn_80042DA8((s32)o, i + 0x85, 0xA) != 0;
+                        n += fn_80042DA8((s32)o, i + 0x87, 0xA) != 0;
+                        n += fn_80042DA8((s32)o, i + 0x89, 5) != 0;
+                        k = 6;
+                        n += fn_80042DA8((s32)o, i + 0x8B, 0xA) != 0;
+                    }
+                    if (n == k) {
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 2:
+                fn_2_80C2C(o, i);
+                if (st[0xD] == 1) {
+                    n = fn_80042DA8((s32)o, i, 0) != 0;
+                    n += fn_80042DA8((s32)o, i + 2, 0) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x89, 0xA) != 0;
+                    if (n == 3) {
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 3:
+                fn_2_808D8(o, i);
+                if (st[0xD] == 1) {
+                    n = fn_80042DA8((s32)o, i + 0x89, 5) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x8B, 0xA) != 0;
+                    if (n == 2) {
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 4:
+                fn_2_805DC(o, i);
+                break;
+            case 5:
+                if (st[0xD] == 0) {
+                    MN_SLOT(0x7B + BASE(o))->frame = ((s8)lbl_8034E9A0[0x46F8] == 0) << 16;
+                    MN_SLOT(0x19 + BASE(o))->frame = (((s8)lbl_8034E9A0[0x46F8] == 0) + 4) << 16;
+                    fn_800626EC(i);
+                    st[0xD] = 1;
+                }
+                if (st[0xD] == 1) {
+                    fn_80062674(i);
+                    st[0xD] = 2;
+                    g_d_GameSettings._10 = 0;
+                }
+                break;
+            case 6:
+                fn_2_802EC(o);
+                break;
+            case 7:
+                fn_2_800B0(o, i);
+                break;
+            case 8:
+                fn_2_7FAFC(o, i);
+                break;
+            }
+            fn_2_776A0(o, i);
+            if (i != 0 && (MN_SLOT(6 + BASE(o))->frame >> 16) == 0x3C) {
+                MN_SLOT(7 + BASE(o))->state = 1;
+                MN_SLOT(9 + BASE(o))->state = 1;
+            }
+        }
+    } else if (lbl_803C66B0[0] == 2) {
+        for (i = 0; i < 2; i++, st++) {
+            switch (st[0x5D]) {
+            case 9:
+                fn_2_7BFF8(o, i);
+                break;
+            case 10:
+                fn_2_7AE3C(o, i);
+                fn_2_7AC64((s32)o, i);
+                break;
+            case 11:
+                fn_2_7A9D8(o, i);
+                fn_2_7A748(o, i);
+                break;
+            case 14:
+                fn_2_7DAB8(o, i);
+                fn_2_7D85C((s32)o, i);
+                break;
+            case 15:
+                fn_2_7F8BC(o, i);
+                if (st[0xD] == 1) {
+                    s32 sel = F468_S32(i * 4);
+                    s32 hit;
+                    // (the original also runs an unused position search here)
+                    hit = fn_80042DA8((s32)o, (s8)sel + i * 9 + 0x34, 0xA) != 0;
+                    if (fn_2_75B58((s32)o, i) && hit == 1) {
+                        fn_80062674(i);
+                        fn_2_CCE0(i);
+                    }
+                }
+                break;
+            case 16:
+                fn_2_7F2BC(o, i);
+                fn_2_7F030(o, i);
+                break;
+            case 12:
+                for (j = 0; j < 9; j++) {
+                    if (j == F468_S32(i * 4)) {
+                        MN_SLOT(0x22 + BASE(o) + j + i * 9)->flags |= 2;
+                    }
+                }
+                break;
+            case 13: {
+                s32 sel = F468_S32(i * 4);
+                if (lbl_2_bss_F468[0x41 + i] != 0) {
+                    MN_SLOT(0x22 + BASE(o) + sel + i * 9)->flags &= ~2;
+                } else {
+                    MN_SLOT(0x22 + BASE(o) + sel + i * 9)->flags |= 2;
+                }
+                fn_2_74F40(o, i);
+                st[0x5D] = 0;
+                if (lbl_2_bss_F468[0x59 + i] != 0) {
+                    fn_800625A4(i, 0x1A);
+                }
+                break;
+            }
+            case 17:
+                fn_2_7E974(o, i);
+                if (st[0xD] == 1) {
+                    n = fn_80042DA8((s32)o, i + 0xC, 0xA) != 0;
+                    n += fn_80042DA8((s32)o, i + 0xE, 0xE) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x12, 0xA) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x1C, 0x14) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x6A, 0x1E) != 0;
+                    if (n == 5) {
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 18:
+                fn_2_7E380(o, i);
+                if (st[0xD] == 1) {
+                    n = fn_80042DA8((s32)o, i + 0x1C, 0xA) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x6A, 0xA) != 0;
+                    k = 3;
+                    n += fn_80042DA8((s32)o, i + 0x89, 5) != 0;
+                    if (g_d_GameSettings._10 == 0 && i == 0) {
+                        s32 player = *(s32*)(lbl_8034E9A0 + 0x46E4);
+                        for (j = 0; j < 9; j++) {
+                            if (TEAM_TBL->roster[1][j] == player) {
+                                pos = TEAM_TBL->pos[1][j];
+                            }
+                        }
+                        k = 4;
+                        n += fn_80042DA8((s32)o, pos + 0x3D, 0x14) != 0;
+                    }
+                    if (n == k) {
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 19:
+                fn_2_7A5B8(o, i);
+                if (st[0xD] == 1) {
+                    n = fn_80042DA8((s32)o, i, 0x28) != 0;
+                    n += fn_80042DA8((s32)o, i + 2, 0x28) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x85, 0x1E) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x1C, 0x1E) != 0;
+                    n += fn_80042DA8((s32)o, i + 0x6A, 0x32) != 0;
+                    if (n == 5) {
+                        MN_SLOT(0xC + BASE(o) + i)->flags &= ~2;
+                        MN_SLOT(0x12 + BASE(o) + i)->flags &= ~2;
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 20:
+                fn_2_7A194(o, i);
+                if (st[0xD] == 1) {
+                    s32 cur = F468_S32(8 + i * 4);
+                    n = 0;
+                    k = 0;
+                    for (j = 0; j < 9; j++) {
+                        if (TEAM_TBL->pos[i][j] == cur) {
+                            f20 = j;
+                            break;
+                        }
+                    }
+                    if (TEAM_TBL->roster[i][f20] != -1 && TEAM_TBL->roster[i][f20] != 0x36 && cur < 9) {
+                        k = 1;
+                        n = fn_80042DA8((s32)o, cur + i * 9 + 0x34, 0x14) != 0;
+                    }
+                    if (n == k) {
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 21:
+                fn_2_79CF8(o, i);
+                if (st[0xD] == 1) {
+                    s32 sel = F468_S32(i * 4);
+                    n = 0;
+                    k = 0;
+                    for (j = 0; j < 9; j++) {
+                        if ((s8)sel == TEAM_TBL->pos[i][j]) {
+                            f21 = j;
+                            break;
+                        }
+                    }
+                    if (TEAM_TBL->roster[i][f21] != -1) {
+                        k = 1;
+                        n = fn_80042DA8((s32)o, (s8)sel + i * 9 + 0x34, 0xA) != 0;
+                    }
+                    if (n == k) {
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 22:
+                fn_2_79930(o, i);
+                if (st[0xD] == 1) {
+                    s32 hits = 0;
+                    s32 total = 0;
+                    for (j = 0; j < 9; j++) {
+                        total++;
+                        hits += fn_80042DA8((s32)o, j + i * 9 + 0x34, 0x14) != 0;
+                    }
+                    if (fn_2_75B58((s32)o, i) && hits == total) {
+                        for (j = 0; j < 9; j++) {
+                            if ((s8)lbl_803C6724[0x4A + i * 9 + j] == 0) {
+                                lbl_803C6724[0x4A + i * 9 + j] = 1;
+                            }
+                        }
+                        fn_80062674(i);
+                        st[0xD] = 2;
+                    }
+                }
+                break;
+            case 23:
+                if (st[0xD] == 0) {
+                    for (j = 0; j < 9; j++) {
+                        MN_SLOT(0x46 + BASE(o) + j + i * 9)->state = 4;
+                    }
+                    MN_SLOT(0x95 + BASE(o) + i)->frame = 0xA0000;
+                    MN_SLOT(0x95 + BASE(o) + i)->state = 1;
+                }
+                if (st[0xD] == 1) {
+                    fn_80062674(i);
+                    st[0xD] = 2;
+                }
+                break;
+            case 24:
+                fn_2_79394(o, i);
+                break;
+            case 25:
+                fn_2_7912C((s32)o, i);
+                break;
+            case 26:
+                fn_2_78F78(o, i);
+                break;
+            case 27:
+                fn_2_78AC0(o, i);
+                break;
+            case 28:
+                fn_2_7836C(o, i);
+                break;
+            case 29:
+                fn_2_7805C(o, i);
+                break;
+            }
+            fn_2_776A0(o, i);
+        }
+        if (i != 0 && (MN_SLOT(6 + BASE(o))->frame >> 16) == 0x3C) {
+            MN_SLOT(7 + BASE(o))->state = 1;
+            MN_SLOT(9 + BASE(o))->state = 1;
+        }
+    }
+    if (lbl_8034E9A0[0x48B1] != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(o));
+    }
+}
+#endif
