@@ -4,6 +4,10 @@
 #include "Dolphin/ai.h"
 #include "Dolphin/ar.h"
 #include "musyx/musyx.h"
+#include "main/file_8000BA3C.h"
+#include "stl/mem.h"
+#include "main/file_800B9974.h"
+#include "main/file_800BDEA0.h"
 
 extern const f32 lbl_803CCF08; // -1.0f
 extern const f32 lbl_803CCF0C; // 0.0f
@@ -272,36 +276,216 @@ void RunDrawScripts_with_stack_variables(void) {
     } while (task != NULL);
 }
 
-extern void* lbl_803CC1D8[2];
+// Sprite system globals (see SpriteWork / SpriteState).
+extern SpriteWork lbl_802FE8B8;
+// The same memory as lbl_802FE8B8.wanted/.committed and .proj; fn_800B24D4 addresses them by these names.
+extern SpriteState lbl_802FEBF8[SPRITE_MAX_LAYERS * 2]; // TODO port: alias of lbl_802FE8B8.wanted
+extern SpriteProj lbl_802FE918[SPRITE_MAX_LAYERS];      // TODO port: alias of lbl_802FE8B8.proj
+extern SpriteDrawCmd lbl_80111340[2][SPRITE_MAX_LAYERS]; // per buffer, per layer
+extern GDCurrentDL* lbl_803CC0F0;  // __GDCurrentDL
+extern GDCurrentDL* lbl_803CC1C0;  // current layer's display list
+extern s32 lbl_803CC1C4;           // display-list buffer being filled (0/1)
+extern s32 lbl_803CC1C8;           // texcoord fraction bits
+extern s32 lbl_803CC1CC;           // scissor x
+extern s32 lbl_803CC1D0;           // scissor y
+extern s32 lbl_803CC1D4;           // current layer
+extern s32* lbl_803CC1D8[2];       // per buffer: optional per-layer display-list sizes
+extern s32 lbl_803CC1E0;           // size of one display-list buffer
+extern GDCurrentDL* lbl_803CC1E4;  // display lists of the buffer being filled
+extern s32 lbl_803CBB28;           // scissor width
+extern s32 lbl_803CBB2C;           // scissor height
+extern s32 lbl_803CBB30;           // layer count
+extern SpriteState* lbl_803CBB34;  // wanted state of the current layer
+extern SpriteState* lbl_803CBB38;  // committed state of the current layer
+extern s32 lbl_803CBB3C;           // display-list growth granularity
+extern SpriteProj* lbl_803CBB40;   // default projection of the current layer
+extern u8 lbl_803CBB18[8];         // BP commands: untextured TEV order
+extern u8 lbl_803CBB20[8];         // BP commands: textured TEV order
+extern s16 lbl_801115A0[4][2];     // quad texcoords (scaled by fn_800B27A4)
+extern Mtx44 lbl_801115B0;         // screen projection for fn_800B1188
+extern QuadVtx lbl_801115F0[4];    // full-screen quad
+extern QuadVtx lbl_803C8A24[510];  // fn_800B13C0 vertex scratch
 
-extern s32 lbl_803CBB30;
-extern u8 lbl_80111340[];
+extern u8 lbl_80111580[]; // 4x4 white RGB5A3 texture
+void fn_800A7D4C(s32 layer, DrawNode* node); // queue a draw node on a layer
+
+// GD (display-list) functions; they write to lbl_803CC0F0.
+void fn_800A1A70(GDCurrentDL* dl, u8* start, s32 length); // GDInitGDLObj
+void fn_800A1BB0(GXBlendMode type, GXBlendFactor src, GXBlendFactor dst, GXLogicOp op); // GDSetBlendMode
+void fn_800A1E3C(GXCompare comp0, u8 ref0, GXAlphaOp op, GXCompare comp1, u8 ref1); // GDSetAlphaCompare
+void fn_800A1F40(GXTexMapID id, GXTexWrapMode wrapS, GXTexWrapMode wrapT, GXTexFilter minFilt, GXTexFilter magFilt,
+                 f32 minLod, f32 maxLod, f32 lodBias, GXBool biasClamp, GXBool edgeLod, GXAnisotropy maxAniso); // GDSetTexLookupMode
+void fn_800A2194(GXTexMapID id, u16 width, u16 height, GXTexFmt format); // GDSetTexImgAttr
+void fn_800A2294(GXTexMapID id, void* image); // GDSetTexImgPtr
+void fn_800A237C(GXTexMapID id, u32 tmemAddr, GXTlutFmt format); // GDSetTexTlut
+void fn_800A246C(GXTexCoordID coord, u16 sScale, GXBool sBias, GXBool sWrap, u16 tScale, GXBool tBias, GXBool tWrap); // GDSetTexCoordScaleAndTOEs
+void fn_800A26FC(void* tlut, u32 tmemAddr, GXTlutSize size); // GDLoadTlut
+
+// Fills a projection from a 4x4 matrix, like GXSetProjection.
+static inline void SpriteProjFromMtx(SpriteProj* proj, Mtx44 m, s32 type) {
+    s32 col = (type == GX_ORTHOGRAPHIC) + 2;
+    proj->type = type;
+    proj->p[0] = m[0][0];
+    proj->p[1] = m[0][col];
+    proj->p[2] = m[1][1];
+    proj->p[3] = m[1][col];
+    proj->p[4] = m[2][2];
+    proj->p[5] = m[2][3];
+}
+
+// Sets the wanted projection of the current layer.
+static inline void SpriteSetProjection(Mtx44 m, s32 type) {
+    SpriteProjFromMtx(&lbl_803CBB34->proj, m, type);
+}
+
+// Makes sure the current layer's display list has room for size more bytes.
+static inline void SpriteReserve(s32 size) {
+    s32 needed = size;
+    needed -= lbl_803CC1C0->end - lbl_803CC1C0->pDisplayListData;
+    if (needed > 0 && AllocateSprite(lbl_803CC1D4, needed) > 0) {
+        OSPanic("sprt.c", 0x19F, "SPRITE BUFFER OVERFLOW\n");
+    }
+}
+
+// Writes the BP Z-mode command; returns whether the committed Z mode changed.
+static inline BOOL SpriteSyncZMode(void) {
+    if (lbl_803CBB38->zMode != lbl_803CBB34->zMode) {
+        lbl_803CBB38->zMode = lbl_803CBB34->zMode;
+        SpriteReserve(5);
+        *lbl_803CC1C0->pDisplayListData = 0x61;
+        *(u32*)(lbl_803CC1C0->pDisplayListData + 1) = lbl_803CBB38->zMode;
+        lbl_803CC1C0->pDisplayListData += 5;
+        return TRUE;
+    }
+    return FALSE;
+}
 
 // fn_800B0D38, size:0x30
 void fn_800B0D38(s32 index, s32 value) {
     if (index >= 0 && index < lbl_803CBB30) {
-        u8* entry = lbl_80111340 + index * 0xC;
-        *(s32*)(entry + 0x120) = value;
-        ((s32*)lbl_80111340)[index * 3] = value;
+        lbl_80111340[1][index].link = value;
+        lbl_80111340[0][index].link = value;
     }
 }
 
 // fn_800B0D28, size:0x10
-void fn_800B0D28(void* value) {
-    lbl_803CC1D8[0] = value;
-    lbl_803CC1D8[1] = value;
+void fn_800B0D28(s32* layerSizes) {
+    lbl_803CC1D8[0] = layerSizes;
+    lbl_803CC1D8[1] = layerSizes;
 }
 
 // .text:0x800B0D68 size:0x414
-void AllocateSprite(void) {
-    return;
-}
+// NONMATCHING 90%: same instructions; register allocation and some scheduling differ
+#if NONMATCHING
+// Grows layer's display list by at least needed bytes, taking unused space from the
+// neighbouring layers (moving the lists in between). Returns how many bytes are still missing.
+s32 AllocateSprite(s32 layer, s32 needed) {
+    s32 below;
+    s32 above;
+    s32 last;
+    u8* flushStart;
+    u8* flushEnd;
+    s32 remaining;
+    s32 take;
+    s32 avail;
+    s32 moved;
+    s32 i;
+    u8* src;
 
-extern u8* lbl_803CBB34;
+    if (needed <= 0) {
+        return 0;
+    }
+    // Round up to the growth granularity (small requests) or to 32 bytes.
+    remaining = (needed < lbl_803CBB3C) ? lbl_803CBB3C * ((lbl_803CBB3C + needed - 1) / lbl_803CBB3C)
+                                        : (needed + 0x1F) / 32 * 32;
+    below = layer;
+    last = lbl_803CBB30 - 1;
+    above = layer;
+    flushEnd = lbl_803CC1E4[0].begin;
+    flushStart = lbl_803CC1E4[last].end;
+    do {
+        // Take free space from the end of a lower layer: shift the layers in between down.
+        below -= (below > 0);
+        avail = lbl_803CC1E4[below].length -
+                ((lbl_803CC1E4[below].pDisplayListData - lbl_803CC1E4[below].begin + 0x1F) & ~0x1F);
+        if (remaining <= avail) {
+            avail = remaining;
+        }
+        take = (below != layer) * avail;
+        if (take != 0) {
+            lbl_803CC1E4[below].length -= take;
+            lbl_803CC1E4[below].end -= take;
+            src = lbl_803CC1E4[below + 1].begin;
+            moved = 0;
+            i = below;
+            do {
+                i++;
+                moved += lbl_803CC1E4[i].length;
+                lbl_803CC1E4[i].begin -= take;
+                lbl_803CC1E4[i].end -= take;
+                lbl_803CC1E4[i].pDisplayListData -= take;
+            } while (i < layer);
+            if (moved != 0) {
+                memmove(src - take, src, moved);
+                if (flushStart > src - take) {
+                    flushStart = src - take;
+                }
+                if (flushEnd < src) {
+                    flushEnd = src;
+                }
+            }
+            remaining -= take;
+            lbl_803CC1E4[layer].length += take;
+            lbl_803CC1E4[layer].end += take;
+        }
+
+        // Take free space from the end of a higher layer: shift the layers in between up.
+        above += (above < last);
+        avail = lbl_803CC1E4[above].length -
+                ((lbl_803CC1E4[above].pDisplayListData - lbl_803CC1E4[above].begin + 0x1F) & ~0x1F);
+        if (remaining <= avail) {
+            avail = remaining;
+        }
+        take = (above != layer) * avail;
+        if (take != 0) {
+            lbl_803CC1E4[above].length -= take;
+            lbl_803CC1E4[above].end -= take;
+            src = lbl_803CC1E4[layer + 1].begin;
+            moved = 0;
+            for (i = layer + 1; i <= above; i++) {
+                moved += lbl_803CC1E4[i].length;
+                lbl_803CC1E4[i].begin += take;
+                lbl_803CC1E4[i].end += take;
+                lbl_803CC1E4[i].pDisplayListData += take;
+            }
+            if (moved != 0) {
+                memmove(src + take, src, moved);
+                if (flushEnd < src + take) {
+                    flushEnd = src + take;
+                }
+                if (flushStart > src) {
+                    flushStart = src;
+                }
+            }
+            remaining -= take;
+            lbl_803CC1E4[layer].length += take;
+            lbl_803CC1E4[layer].end += take;
+        }
+    } while (remaining > 0 && (below != 0 || last - above != 0));
+
+    if (flushStart < flushEnd) {
+        DCStoreRange(flushStart, flushEnd - flushStart);
+    }
+    if (remaining > 0) {
+        return remaining;
+    }
+    return 0;
+}
+#endif
 
 // fn_800B117C, size:0xC
 void fn_800B117C(u8 value) {
-    lbl_803CBB34[0x8C] = value;
+    lbl_803CBB34->noAlphaTest = value;
 }
 
 // .text:0x800B1188 size:0x11C
@@ -354,20 +538,19 @@ void fn_800B1EBC(void) {
     return;
 }
 
-extern u8* lbl_803CBB34;
-
 // fn_800B2160, size:0xC
 void fn_800B2160(u8 value) {
-    lbl_803CBB34[0x8A] = value;
+    lbl_803CBB34->blendMode = value;
 }
 
 // fn_800B216C, size:0x3C
+// Sets the wanted Z mode (enable, compare func, update enable); returns whether it changed.
 s32 fn_800B216C(u8 flag, u32 mode, u8 index) {
     u32 value = ((u32)index << 4) | (flag | (mode << 1)) | 0x40000000;
-    if (*(u32*)(lbl_803CBB34 + 0x78) == value) {
+    if (lbl_803CBB34->zMode == value) {
         return 0;
     }
-    *(u32*)(lbl_803CBB34 + 0x78) = value;
+    lbl_803CBB34->zMode = value;
     return 1;
 }
 
@@ -375,23 +558,23 @@ s32 fn_800B216C(u8 flag, u32 mode, u8 index) {
 void fn_800B21A8(s32 mode) {
     if (mode == 2) {
         s32 changed;
-        u32 old = *(u32*)(lbl_803CBB34 + 0x78);
+        u32 old = lbl_803CBB34->zMode;
         if (old == 0x40000013) {
             changed = 0;
         } else {
-            *(u32*)(lbl_803CBB34 + 0x78) = 0x40000013;
+            lbl_803CBB34->zMode = 0x40000013;
             changed = 1;
         }
         if (changed != 0) {
-            *(u32*)(lbl_803CBB34 + 0x7C) = old;
+            lbl_803CBB34->savedZMode = old;
         }
     } else if (mode != 0) {
-        if (*(u32*)(lbl_803CBB34 + 0x78) != 0x40000017) {
-            *(u32*)(lbl_803CBB34 + 0x78) = 0x40000017;
+        if (lbl_803CBB34->zMode != 0x40000017) {
+            lbl_803CBB34->zMode = 0x40000017;
         }
     } else {
-        if (*(u32*)(lbl_803CBB34 + 0x78) != 0x4000001F) {
-            *(u32*)(lbl_803CBB34 + 0x78) = 0x4000001F;
+        if (lbl_803CBB34->zMode != 0x4000001F) {
+            lbl_803CBB34->zMode = 0x4000001F;
         }
     }
 }

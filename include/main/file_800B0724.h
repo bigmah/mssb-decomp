@@ -4,6 +4,94 @@
 #include "mssbTypes.h"
 #include "main/file_80063028.h"
 #include "Dolphin/mtx.h"
+#include "Dolphin/gd.h"
+
+struct QuadVtx;
+struct QuadState;
+struct SpriteTexInfo;
+struct DrawNode;
+
+// GXSetProjectionv-style projection: type, then the six used terms of the 4x4 matrix.
+typedef struct SpriteProj {
+    /*0x00*/ f32 type;
+    /*0x04*/ f32 p[6];
+} SpriteProj; // size 0x1C
+
+// GX state of a sprite layer. lbl_803CBB34 is the wanted state, lbl_803CBB38 the state
+// already written into the layer's display list; DrawSprite emits only the differences.
+typedef struct SpriteState {
+    /*0x00*/ Mtx mtx;
+    /*0x30*/ SpriteProj proj;
+    /*0x4C*/ struct SpriteTexInfo* tex[7]; // texture loaded into each map
+    /*0x68*/ u16 texSerial[8];
+    /*0x78*/ u32 zMode;      // BP register 0x40 (GX_BP_REG_ZMODE) value
+    /*0x7C*/ u32 savedZMode;
+    /*0x80*/ s32 primOffset; // display-list offset of the last primitive header, -1 if none
+    /*0x84*/ u16 serial;
+    /*0x86*/ u16 texWidth;
+    /*0x88*/ u16 texHeight;
+    /*0x8A*/ u8 blendMode;
+    /*0x8B*/ u8 textured;
+    /*0x8C*/ u8 noAlphaTest;
+    /*0x8D*/ u8 alphaTest;
+    /*0x8E*/ u8 pad8E[2];
+} SpriteState; // size 0x90
+
+#define SPRITE_MAX_LAYERS 24
+
+// A geometry palette entry (8 bytes) as seen by fn_800B2AC8.
+typedef struct LoadedGeoEntry {
+    /*0x0*/ u8* obj; // display object
+    /*0x4*/ u8 pad4[4];
+} LoadedGeoEntry;
+
+typedef struct LoadedGeoPalette {
+    /*0x00*/ u8 pad00[0x10];
+    /*0x10*/ LoadedGeoEntry* entries;
+} LoadedGeoPalette;
+
+// C3 ActorBone (0x1C) as stored after the actor layout header.
+typedef struct LoadedActorBone {
+    /*0x00*/ u8 pad00[0x14];
+    /*0x14*/ u16 geoFileID; // 0xFFFF: no geometry
+    /*0x16*/ u16 boneID;
+    /*0x18*/ u8 inheritanceFlag;
+    /*0x19*/ u8 drawingPriority;
+    /*0x1A*/ u16 flags;
+} LoadedActorBone;
+
+// C3 ActorLayout header (0x20) followed by its bones, with the palette resolved.
+typedef struct LoadedActorLayout {
+    /*0x00*/ u8 pad00[6];
+    /*0x06*/ u16 totalBones;
+    /*0x08*/ u8 pad08[8];
+    /*0x10*/ LoadedGeoPalette* pal;
+    /*0x14*/ u8 pad14[0xC];
+    /*0x20*/ LoadedActorBone bones[1]; // totalBones entries
+} LoadedActorLayout;
+
+// Object returned by fn_800BF068 (lbl_803009F8).
+typedef struct SkinState {
+    /*0x0*/ u8 pad0[8];
+    /*0x8*/ void* unk8;
+} SkinState;
+
+// Per-layer display-list draw command handed to fn_800A7D4C.
+typedef struct SpriteDrawCmd {
+    /*0x0*/ u32 link; // low two bits: flags (fn_800B0D38); the rest is set by fn_800A7D4C
+    /*0x4*/ void (*draw)(struct SpriteDrawCmd* cmd);
+    /*0x8*/ GDCurrentDL* dl;
+} SpriteDrawCmd; // size 0xC
+
+// Sprite system work area (lbl_802FE8B8).
+typedef struct SpriteWork {
+    /*0x0000*/ s32 layerIds[SPRITE_MAX_LAYERS];
+    /*0x0060*/ SpriteProj proj[SPRITE_MAX_LAYERS];
+    /*0x0300*/ u8 pad300[0x40];
+    /*0x0340*/ SpriteState wanted[SPRITE_MAX_LAYERS];
+    /*0x10C0*/ SpriteState committed[SPRITE_MAX_LAYERS];
+    /*0x1E40*/ GDCurrentDL dl[2][SPRITE_MAX_LAYERS]; // double-buffered
+} SpriteWork;
 
 // Arguments to sndInit (default: lbl_801112F0).
 typedef struct SoundConfig {
@@ -34,6 +122,8 @@ void initSound(SoundConfig* config, u8* aiStack, u8* heapStart, u32 heapSize);
 void SndFree(void* ptr);
 void* SndAlloc(u32 size);
 
+s32 AllocateSprite(s32 layer, s32 needed);
+
 void fn_800B0934(void);
 
 typedef struct DrawingQueueNode {
@@ -52,7 +142,7 @@ void resetAllDrawingStructs(void);
 
 struct SceneTask* fn_800B0A5C_insertQueue(void* draw, u16 priority);
 
-void fn_800B0D28(void* value);
+void fn_800B0D28(s32* layerSizes);
 
 void fn_800B0D38(s32 index, s32 value);
 
