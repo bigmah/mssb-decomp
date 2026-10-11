@@ -9,7 +9,7 @@ void fn_2_55A40(void);
 void fn_2_55AD4(MenuTableContext* menu, MenuItemState* item);
 void fn_2_55C5C(MenuTableContext* menu, MenuItemState* item);
 void fn_2_55DD8(void);
-void fn_2_55FD8(void);
+void fn_2_55FD8(MenuTableContext* menu, MenuItemState* item);
 void fn_2_56160(void);
 void fn_2_563C0(void);
 void fn_2_56688(void);
