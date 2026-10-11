@@ -38,7 +38,8 @@ typedef struct StarMission {
     /* 0x0 */ s16 type;
     /* 0x2 */ s16 target;
     /* 0x4 */ s16 flags;
-    /* 0x6 */ u8 pad6[4];
+    /* 0x6 */ s16 minLevel;
+    /* 0x8 */ u8 pad8[2];
 } StarMission;
 
 typedef struct FielderSortInfo {

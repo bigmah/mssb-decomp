@@ -5675,3 +5675,116 @@ void fn_2_28EA0(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 #endif
+
+// lbl_8010A768[row][10] entries, parallel to lbl_80109AE8.
+typedef struct MissionText {
+    /* 0x0 */ s16 textId;
+    /* 0x2 */ s16 unk2;
+    /* 0x4 */ u8 pad4[6];
+} MissionText;
+
+extern MissionText lbl_8010A768[][10];
+
+// fn_2_2A338, size:0x444
+// NONMATCHING 96%: case 2 prologue scheduling/registers differ (lbl_2_bss_1A824C loaded via addi;lwz 0)
+#if NONMATCHING
+void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->unk12 = 0;
+        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 0, lbl_8010A768[0][0].textId, 0);
+        item->state = 38;
+        break;
+    }
+    case 2:
+    case 8: {
+        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        s32 row = *(s16*)(ctx + 0x7706);
+        s32 sel = *(s16*)(ctx + 0x7710);
+        s16 textId = lbl_8010A768[row][sel].textId;
+        s16 check = lbl_8010A768[row][sel].unk2;
+        s16 flags = lbl_80109AE8[row][sel].flags;
+        s16 minLevel = lbl_80109AE8[row][sel].minLevel;
+        u8* record = lbl_2_bss_1A8248 + lbl_800E869C[row] * 0x34;
+        u8* object;
+        if (check != -1 && (s8)record[sel * 2 + 0xA] == 0) {
+            u8 level = lbl_2_bss_1A8248[0x4415];
+            if (level < minLevel) {
+                fn_8000FE08(item->unk14, 0, 0x1C6);
+            } else if ((flags & 2) && level < 1) {
+                fn_8000FE08(item->unk14, 0, 0x1C6);
+            } else if ((flags & 4) && level < 2) {
+                fn_8000FE08(item->unk14, 0, 0x1C6);
+            } else if ((flags & 8) && level < 3) {
+                fn_8000FE08(item->unk14, 0, 0x1C6);
+            } else {
+                fn_8000FE08(item->unk14, 0, 0x1C5);
+            }
+        } else if (check != -1 && (s32)record[sel * 2 + 0xA] == 1 && (s8)record[sel * 2 + 9] == 0) {
+            u8 level = lbl_2_bss_1A8248[0x4415];
+            if (level < minLevel) {
+                fn_8000FE08(item->unk14, 0, 0x1C6);
+            } else if ((flags & 2) && level < 1) {
+                fn_8000FE08(item->unk14, 0, 0x1C6);
+            } else if ((flags & 4) && level < 2) {
+                fn_8000FE08(item->unk14, 0, 0x1C6);
+            } else if ((flags & 8) && level < 3) {
+                fn_8000FE08(item->unk14, 0, 0x1C6);
+            } else {
+                fn_8000FE08(item->unk14, 0, textId);
+            }
+        } else {
+            fn_8000FE08(item->unk14, 0, textId);
+        }
+        object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) |= 2;
+        item->state = 3;
+        break;
+    }
+    case 3: {
+        s32 v = item->unk12;
+        item->unk12 = v + (0xFF - v) / 4;
+        item->unk12 = item->unk12 + 1;
+        if (item->unk12 > 0xFF) {
+            item->unk12 = 0xFF;
+        }
+        if (item->unk12 >= 0xFF) {
+            item->state = 37;
+        }
+        break;
+    }
+    case 37:
+        item->state = 37;
+        break;
+    case 5:
+        item->timer = 9;
+        item->state = 6;
+        break;
+    case 6: {
+        s32 v = item->unk12;
+        item->unk12 = v + (-v) / 4;
+        item->unk12 = item->unk12 - 1;
+        if (item->unk12 < 0) {
+            item->unk12 = 0;
+        }
+        if (item->unk12 <= 0 || item->timer-- <= 0) {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            item->state = 7;
+        }
+        break;
+    }
+    }
+    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+    }
+}
+#endif
