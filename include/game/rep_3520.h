@@ -4,7 +4,9 @@
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
 
-void fn_3_132EDC(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2);
+struct DODisplayObj;
+
+void fn_3_132EDC(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map, u8* c1, u8* c2, MtxPtr camera);
 void fn_3_1330E4(void);
 void fn_3_133200(void);
 void fn_3_133320(void);
@@ -17,9 +19,18 @@ s32 fn_3_134918(f32* a, f32* b);
 int fn_3_13493C(u32 idx, f32* ox, f32* oz, u32 depth);
 int fn_3_134C80(u32 a, u32 b, u32 c, f32 x, f32 y);
 u32 fn_3_134D4C(f32 ax, f32 az, f32 r, f32 bx, f32 bz, f32 x, f32 y);
-void fn_3_1350BC(void);
+typedef struct CoinCand {
+    /*0x00*/ f32 score; // lower is better (squared distance plus penalties)
+    /*0x04*/ s32 coin;  // index into the coin pool
+    /*0x08*/ f32 x;     // coin position rotated into the field frame
+    /*0x0C*/ f32 z;
+    /*0x10*/ u8 quad;   // quadrant of (x, z)
+    /*0x11*/ u8 valid;
+    /*0x12*/ u8 pad[2];
+} CoinCand; // size: 0x14
+CoinCand* fn_3_1350BC(u32 player, u32 quad, u32 n, CoinCand* cands);
 int fn_3_1354BC(int idx, f32 x, f32 y);
-int fn_3_135520(f32 x, f32 y, f32 r);
+u32 fn_3_135520(f32 x, f32 y, f32 r);
 void fn_3_135600(f32* outX, f32* outY, f32 x, f32 y);
 int fn_3_13564C(f32 x, f32 y);
 int fn_3_135698(u8* a, u8* b);
@@ -54,7 +65,7 @@ void fn_3_137F14(u8* o);
 void fn_3_13802C(u8* o);
 void fn_3_1382E0(u8* o);
 void fn_3_138448(u8* a);
-void fn_3_1384B4(void);
+void fn_3_1384B4(u8* o);
 void fn_3_138AA4(void);
 void fn_3_1391C0(void);
 void fn_3_139700(void);
@@ -67,7 +78,7 @@ void fn_3_13A0AC(void);
 void fn_3_13A724(void);
 void fn_3_13A89C(void);
 void fn_3_13AA78(void);
-void fn_3_13ACB4(f32* p);
+void fn_3_13ACB4(struct _CollisionStruct* c);
 void fn_3_13ADC0(f32* out, f32* a, f32* b);
 void fn_3_13AE1C(void);
 void fn_3_13AFE4(void);
