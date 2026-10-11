@@ -78,7 +78,8 @@ void fn_1_25BC(ChalColBlock* block) {
 
 // .text:0x00003E38 size:0x23C
 void fn_1_3E38(Vec* pos, u32 id) {
-    return;
+    GDPosition3f32(pos->x, pos->y, pos->z);
+    GDColor1x8(CHAL_COLOR(id));
 }
 
 // .text:0x00004074 size:0x21C
