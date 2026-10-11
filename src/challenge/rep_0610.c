@@ -39,12 +39,13 @@ static u8 ch_3258[0x500];
 static u8 ch_3218[0x40];
 static u8 ch_fill30C0[0x158];
 static s32 ch_30BC;
-static u8 ch_fill308C[0x30];
+static u8 ch_fill3090[0x2C];
+static s32 ch_308C;
 static s32 ch_3088;
 static u8 ch_fill3084[0x4];
 static u8 ch_fill3083;
 static u8 ch_fill3082;
-static u8 ch_fill3081;
+static u8 ch_3081;
 static u8 ch_3080;
 static s32 ch_307C;
 static u8 ch_fill307B;
@@ -2270,5 +2271,71 @@ void fn_1_1770C(u8* object) {
     *(u16*)(lbl_803C5090 + 0x14) = 0x1C0;  // lines
     fn_8003A2C0();
     ((void (*)(s32, void*))fn_800A7D4C)(0, lbl_1_data_AC7C + lbl_803CBBC0[0] * 8);
+}
+#endif
+
+#include "Dolphin/OS/OSError.h"
+void ACTSetAnimation(ActorInst* actor, void* animBank, int seqName, u16 seqNum, f32 time, f32 speed);
+void Set_FUN_800b2b6c(ActorInst* actor, s32 value);
+u8 fn_800B3C04(s32 arg0, ActorInst* actor, MtxPtr matrix);
+void fn_800B4AFC(ActorInst* actor, u8 value);
+void fn_800B4C04(ActorInst* actor, f32 value);
+void fn_800B4CA0(ActorInst* actor, f32 time);
+
+// .text:0x12F8C size:0x258
+// NONMATCHING ~85%: register allocation, pooled .bss base and the inlined fn_1_1073C differ
+#if NONMATCHING
+void fn_1_12F8C(void* tableArg, void* matrixArg) {
+    ActorObjectTable* table = tableArg;
+    Mtx transform;
+    ActorObject* object;
+    ActorInst* actor;
+    u8* row;
+    u8* bone;
+    u16 i;
+
+    for (i = 0; i < table->count; i++) {
+        object = (ActorObject*)((u8*)table + i * 0x90 + 0x34);
+        if (object->actor == NULL) {
+            continue;
+        }
+        if (object->setAnimation) {
+            ACTSetAnimation(object->actor, object->animBank, 0, object->seqNum, 0.0f, object->speed);
+        }
+        if (object->setTime) {
+            fn_800B4CA0(object->actor, object->time);
+        }
+        if (object->setSpeed) {
+            fn_800B4C04(object->actor, object->unk54);
+        }
+        if (object->visFlags & 2) {
+            fn_800B4AFC(object->actor, object->visFlags & 1);
+        }
+        Set_FUN_800b2b6c(object->actor, object->unk68);
+        if (object->animateBones) {
+            fn_800BDA24(object);
+            if (ch_3081 != 0) {
+                fn_1_1073C(lbl_8036E548 + i * 0x27C + 0xC04);
+            }
+            if (ch_308C != 0) {
+                ch_308C = 0;
+                // Debug bone dump. The original reuses the outer loop counter here.
+                for (i = 0; i < *(u16*)((u8*)object->actor + 0x6); i++) { // TODO type: ActorInst bone count / table
+                    bone = (*(u8***)((u8*)object->actor + 0x18))[i];
+                    OSReport("#%3d %f %f %f\n", *(u16*)bone, *(f32*)(bone + 0x64), *(f32*)(bone + 0x68), *(f32*)(bone + 0x6C));
+                }
+            }
+        }
+        row = lbl_8036E548 + i * 0x27C;
+        PSMTXTrans(transform, *(f32*)(row + 0xC38), *(f32*)(row + 0xC3C), *(f32*)(row + 0xC40));
+        PSMTXConcat((f32(*)[4])matrixArg, transform, transform);
+        actor = object->actor;
+        actor->flags98 = (actor->flags98 & 0xFC) | fn_800B3C04(0, actor, transform);
+        object = (ActorObject*)((u8*)table + i * 0x90 + 0x34);
+        object->setAnimation = 0;
+        object->setTime = 0;
+        object->setSpeed = 0;
+        object->visFlags &= 1;
+    }
 }
 #endif

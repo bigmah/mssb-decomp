@@ -132,4 +132,6 @@ void fn_1_17B5C(void);
 
 void fn_1_1770C(u8* object);
 
+void fn_1_12F8C(void* table, void* matrix);
+
 #endif
