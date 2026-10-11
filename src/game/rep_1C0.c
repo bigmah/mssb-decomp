@@ -6,6 +6,7 @@
 #include "static/Camera.h"
 #include "main/file_8000F150.h"
 #include "game/UnknownHomes_Game.h"
+#include "main/file_80039AC0.h"
 #pragma dont_inline on
 
 typedef struct { u8 b[14]; } Tbl14;
@@ -661,10 +662,199 @@ void fn_3_5518(void) {
     GXPixModeSync();
 }
 
+// Sky/backdrop object drawn per camera (two copies, indexed by lbl_803CBBC0).
+typedef struct StadiumSkyObj {
+    /*0x00*/ u32 link; // draw-list link (fn_800A7D4C)
+    /*0x04*/ void (*func)(struct StadiumSkyObj* obj);
+    /*0x08*/ Mtx model;
+    /*0x38*/ Mtx view;
+    /*0x68*/ u8 _68[4];
+    /*0x6C*/ s32 camera;
+} StadiumSkyObj; // size: 0x70
+
+// Per-scene screen effect settings copied into lbl_803C5090.
+typedef struct StadiumScreenFx {
+    /*0x0*/ f32 scale;
+    /*0x4*/ f32 jitterX;
+    /*0x8*/ f32 jitterY;
+    /*0xC*/ u8 flags;
+    /*0xD*/ u8 alpha;
+    /*0xE*/ u16 lines;
+} StadiumScreenFx; // size: 0x10
+
+// View of g_UNK_StadiumDetails, only the fields used by this unit's sky code.
+typedef struct StadiumGfx {
+    /*0x000*/ u8 _000[8];
+    /*0x008*/ StadiumSkyObj sky[7][2];
+    /*0x628*/ u8 _628[0x710 - 0x628];
+    /*0x710*/ f32 skyAngle;
+    /*0x714*/ u8 _714[0x738 - 0x714];
+    /*0x738*/ StadiumScreenFx screenFx[3]; // scenes 1, 2, other
+    /*0x768*/ f32 skySpeed;
+} StadiumGfx;
+#define sStadiumGfx (*(StadiumGfx*)g_UNK_StadiumDetails) // TODO type: g_UNK_StadiumDetails is u8[] here
+
+typedef struct StadiumAnimNode {
+    /*0x0*/ u32 link;
+    /*0x4*/ void (*func)(struct StadiumAnimNode* node); // fn_3_5C68
+    /*0x8*/ void* anim[2];
+} StadiumAnimNode;
+
+typedef struct StadiumFogNode {
+    /*0x0*/ u32 link;
+    /*0x4*/ void (*func)(void); // fn_3_5BF0
+} StadiumFogNode;
+
+typedef struct StadiumCameraNode {
+    /*0x0*/ u32 link;
+    /*0x4*/ void (*func)(struct StadiumCameraNode* node); // fn_3_5BCC
+    /*0x8*/ s32 camera;
+} StadiumCameraNode;
+
+// lbl_3_data_7EC: per-stadium ARAM loads, then the stadium draw-list nodes.
+typedef struct StadiumDrawData {
+    /*0x000*/ u8 aram[21][0x10];
+    /*0x150*/ StadiumAnimNode animNodes[2];
+    /*0x170*/ s32 _170;
+    /*0x174*/ StadiumFogNode fogNodes[5][2];
+    /*0x1C4*/ StadiumCameraNode cameraNodes[4][2];
+} StadiumDrawData; // size: 0x224
+
+// lbl_3_data_23C ends with the two fn_3_3818 nodes.
+typedef struct StadiumData23C {
+    /*0x000*/ u8 _000[0x5A0];
+    /*0x5A0*/ StadiumFogNode drawCallbackNodes[2];
+} StadiumData23C;
+
+typedef struct StadiumObjAnims {
+    /*0x0*/ u8 _0[8];
+    /*0x8*/ void* anim[2];
+} StadiumObjAnims; // view of lbl_3_common_bss_350E4 (StadiumObjMgr, game/rep_1D58.c)
+
+extern StadiumDrawData lbl_3_data_7EC;
+extern StadiumData23C lbl_3_data_23C;
+extern StadiumObjAnims lbl_3_common_bss_350E4;
+extern u8 lbl_3_common_bss_35154[];
+extern u8 lbl_8036E548[];
+extern ScreenFx lbl_803C5090;
+extern void fn_800A7D4C(s32 list, void* node);
+extern void fn_8003A2C0(void);
+extern void fn_3_BD1D8(Mtx m);
+extern void fn_3_BCA20(void);
+extern void fn_3_B8C08(Mtx view);
+
+#define STADIUM_EXTRA_CAMERAS 0
+
+// Per-frame stadium update: queues the sky objects and draw nodes of every
+// camera and sets up the screen effect for the current scene.
 // .text:0x0000567C size:0x530 mapped:0x80644710
+// NONMATCHING 81%: the original reaches lbl_3_data_23C/7EC through one pooled .data base
+// (lbl_3_data_228 + offset), ours addresses each symbol; register allocation
+#if NONMATCHING
 void fn_3_567C(void) {
-    return;
+    StadiumScreenFx* fx;
+    StadiumSkyObj* obj;
+    s32 i;
+
+    switch (g_GameLogic.sceneID) {
+    case 1:
+    case 2:
+        fx = &sStadiumGfx.screenFx[g_GameLogic.sceneID - 1];
+        break;
+    default:
+        fx = &sStadiumGfx.screenFx[2];
+        break;
+    }
+    if (lbl_8036E548[0x307E] == 0) { // TODO type: CharMgr._307E
+        return;
+    }
+    lbl_3_common_bss_35154[0x3E0] = g_GameLogic.sceneID != 1; // TODO type: FadeState field 0x3E0
+    if (lbl_3_common_bss_35154[0x3E0]) {
+        fn_3_BD1D8(fn_80052768_getCamera(0)->view);
+    }
+    fn_3_B8C08(fn_80052768_getCamera(0)->view);
+    sStadiumGfx.skyAngle += sStadiumGfx.skySpeed;
+    if (sStadiumGfx.skyAngle >= 6.2831855f) {
+        sStadiumGfx.skyAngle -= 6.2831855f;
+    }
+
+    if (fn_800527BC() >= 2) {
+        obj = &sStadiumGfx.sky[3][lbl_803CBBC0];
+        obj->camera = 1;
+        PSMTXCopy(fn_80052734(1)->view, obj->view);
+        fn_800A7D4C(0, obj);
+        fn_800A7D4C(0, &lbl_3_data_7EC.fogNodes[1][lbl_803CBBC0]);
+        obj = &sStadiumGfx.sky[2][lbl_803CBBC0];
+        obj->camera = 1;
+        PSMTXRotRad(obj->model, 'Y', sStadiumGfx.skyAngle);
+        PSMTXCopy(fn_80052734(1)->view, obj->view);
+        if (g_GameLogic.secondaryGameMode != 3) {
+            fn_800A7D4C(0, obj);
+        }
+        fn_800A7D4C(0, &lbl_3_data_7EC.cameraNodes[1][lbl_803CBBC0]);
+    }
+    if (fn_800527BC() > 2) {
+        for (i = 0; i < STADIUM_EXTRA_CAMERAS; i++) {
+            obj = &sStadiumGfx.sky[6 + i][lbl_803CBBC0];
+            obj->camera = i + 2;
+            PSMTXCopy(fn_80052734(i + 2)->view, obj->view);
+            fn_800A7D4C(0, obj);
+            fn_800A7D4C(0, &lbl_3_data_7EC.fogNodes[i + 2][lbl_803CBBC0]);
+            obj = &sStadiumGfx.sky[4 + i][lbl_803CBBC0];
+            obj->camera = i + 2;
+            PSMTXRotRad(obj->model, 'Y', sStadiumGfx.skyAngle);
+            PSMTXCopy(fn_80052734(i + 2)->view, obj->view);
+            if (g_GameLogic.secondaryGameMode != 3) {
+                fn_800A7D4C(0, obj);
+            }
+            fn_800A7D4C(0, &lbl_3_data_7EC.cameraNodes[i + 2][lbl_803CBBC0]);
+        }
+    }
+
+    obj = &sStadiumGfx.sky[1][lbl_803CBBC0];
+    obj->camera = 0;
+    PSMTXCopy(fn_80052734(0)->view, obj->view);
+    fn_800A7D4C(0, obj);
+    fn_800A7D4C(0, &lbl_3_data_7EC.fogNodes[0][lbl_803CBBC0]);
+    fn_800A7D4C(0, &lbl_3_data_23C.drawCallbackNodes[lbl_803CBBC0]);
+    obj = &sStadiumGfx.sky[0][lbl_803CBBC0];
+    obj->camera = 0;
+    PSMTXRotRad(obj->model, 'Y', sStadiumGfx.skyAngle);
+    PSMTXCopy(fn_80052734(0)->view, obj->view);
+    fn_800A7D4C(0, obj);
+    fn_800A7D4C(0, &lbl_3_data_7EC.cameraNodes[0][lbl_803CBBC0]);
+
+    switch (g_d_GameSettings.StadiumID) {
+    case 0:
+    case 4:
+        if (g_d_GameSettings.GameModeSelected != 2) {
+            lbl_3_data_7EC.animNodes[lbl_803CBBC0].anim[0] = lbl_3_common_bss_350E4.anim[0];
+            lbl_3_data_7EC.animNodes[lbl_803CBBC0].anim[1] = lbl_3_common_bss_350E4.anim[1];
+            break;
+        }
+    default:
+        lbl_3_data_7EC.animNodes[lbl_803CBBC0].anim[0] = NULL;
+        lbl_3_data_7EC.animNodes[lbl_803CBBC0].anim[1] = NULL;
+        break;
+    }
+    fn_800A7D4C(0, &lbl_3_data_7EC.animNodes[lbl_803CBBC0]);
+    if (lbl_3_common_bss_35154[0x3E0]) {
+        fn_3_BCA20();
+    }
+    lbl_803C5090.flags = fx->flags;
+    lbl_803C5090.scale = fx->scale;
+    lbl_803C5090.unk4 = 1.0f / fn_80052768_getCamera(0)->zoom;
+    lbl_803C5090.alpha = fx->alpha;
+    lbl_803C5090.jitterX = fx->jitterX;
+    lbl_803C5090.jitterY = fx->jitterY;
+    lbl_803C5090.lines = fx->lines;
+    lbl_803C5090.unk18 = 0;
+    lbl_803C5090.r = 0xFF;
+    lbl_803C5090.g = 0xFF;
+    lbl_803C5090.b = 0xFF;
+    fn_8003A2C0();
 }
+#endif
 
 // .text:0x00005BAC size:0x20 mapped:0x80644C40
 void fn_3_5BAC(void) {
@@ -759,10 +949,9 @@ void fn_3_5E60(void) {
     fn_800ACFB0(*(void**)(b + 4));
 }
 
-extern u8 lbl_3_data_7EC[];
 // .text:0x000064DC size:0x54
 void fn_3_64DC(void) {
-    ARAMTransfer(lbl_3_data_7EC + (g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3) * 16, 0, 0, 0);
+    ARAMTransfer(lbl_3_data_7EC.aram[g_d_GameSettings.miniGameStadiumIndicator + g_d_GameSettings.StadiumID * 3], 0, 0, 0);
 }
 
 // .text:0x00006424 size:0xB8
