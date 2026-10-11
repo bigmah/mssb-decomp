@@ -51,6 +51,8 @@ void fn_2_17C88(void);
 void fn_2_17ED8(void);
 void fn_2_17648(void);
 void fn_2_18398(void);
+
+void fn_2_188EC(void);
 void fn_2_16F78(u8 index);
 
 #endif

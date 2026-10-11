@@ -29,7 +29,6 @@ typedef struct {
     u8 pad2[2];
 } Ent64;
 extern Ent64 lbl_2_bss_101AC[];
-extern void fn_2_188EC(void);
 extern const f32 lbl_2_rodata_5BC;
 extern const f32 lbl_2_rodata_5D4;
 extern const f32 lbl_2_rodata_5D8;
@@ -103,6 +102,16 @@ extern void fn_800638B4(CharActor* actor, CharSlot* slot);
 extern void fn_8004B7B4(CharActor* actor, CharSlot* slot);
 extern Vec lbl_2_data_20F8[]; // menu actor positions
 extern u8 lbl_2_data_278C[];  // part file indices (fn_800126EC), 4 per part
+extern Mtx lbl_2_bss_1010C;   // menu camera view matrix
+extern void fn_2_166CC(void);
+extern void fn_2_16724(void);
+extern void fn_2_16460(void);
+// Camera returned by fn_80052768_getCamera (camera_803c639c_s), only the fields used here.
+typedef struct MenuCamera0568 {
+    /*0x00*/ Mtx44 proj;
+    /*0x40*/ Mtx view;
+} MenuCamera0568;
+extern MenuCamera0568* fn_80052768_getCamera(int index);
 
 
 // fn_2_190B8, size:0x24
@@ -805,6 +814,72 @@ void fn_2_18398(void) {
             lbl_2_bss_100B8[0x18] = 0;
             lbl_2_bss_100B8[0x1A] = 0;
             task->state = 0;
+        }
+        break;
+    }
+}
+#endif
+
+// fn_2_188EC, size:0x6D0
+// Scene task that loads the menu characters: allocates their buffers, queues the
+// character loader (fn_2_18748), then streams in the actors that were requested.
+// NONMATCHING 98%: bufSize in the inlined fn_2_17C88 lives in r30 instead of r27
+#if NONMATCHING
+// Queues the actors that were requested for loading (cf. fn_2_16870, which is the
+// same code as a separate function).
+static inline void menuQueueRequested(void) {
+    s32 i;
+    for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+        if (lbl_2_bss_100B8[i + 0x14] != 0 && fn_2_18650(i)) {
+            lbl_2_bss_100B8[i + 0x14] = 0;
+        }
+    }
+    lbl_8036E548._307A = 5;
+    lbl_8036E548._307C = 1;
+    fn_2_16460();
+    PSMTXCopy(lbl_2_bss_1010C, fn_80052768_getCamera(0)->view);
+    fn_2_16CE0();
+}
+
+void fn_2_188EC(void) {
+    MenuCharLoadTask* task = lbl_803CC1B8;
+    MenuCharLoadTask* loader;
+    s32 i;
+
+    lbl_8036E548._307A = 0;
+    lbl_8036E548._307C = 0;
+    switch (task->_1C) {
+    case 0:
+        fn_2_166CC();
+        fn_2_16724();
+        fn_2_17ED8();
+        fn_2_16DA8();
+        task->_1C++;
+        break;
+    case 1:
+        loader = fn_800B0A5C_insertQueue(fn_2_18748, 0);
+        loader->state = 0;
+        loader->_1F = 0;
+        loader->index = 0;
+        task->_1C++;
+        break;
+    case 2:
+        if (lbl_2_bss_100B4[0] != 0) {
+            // Wait until every actor is loaded, then drop them and finish.
+            for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+                if (lbl_2_bss_100B8[i + 0x40] == 0) {
+                    goto loading;
+                }
+            }
+            for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+                lbl_8036E548.active[i] = NULL;
+            }
+            ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+            return;
+        }
+    loading:
+        if (lbl_2_bss_100B8[0x19] != 0) {
+            menuQueueRequested();
         }
         break;
     }
