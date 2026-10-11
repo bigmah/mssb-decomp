@@ -5026,3 +5026,37 @@ void fn_2_29884(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
 }
+
+extern s16 lbl_2_data_2E44[][4];
+int rand(void);
+
+// fn_2_200E4, size:0x100
+// NONMATCHING 97%: global loaded via addi;lwz 0 instead of direct lwz @l (see docs/patterns/unsolved.md)
+#if NONMATCHING
+s32 fn_2_200E4(void) {
+    u8* record = lbl_2_bss_1A8248[0] + *(s16*)(lbl_2_bss_1A8248[0] + 0x16C0) * 10;
+    s32 level;
+
+    if (record[0x40F6] == 1) {
+        return 0;
+    }
+    if (record[0x40F0] == 5) {
+        return 0;
+    }
+    level = lbl_2_bss_1A8248[0][0x442B];
+    if (level > 3) {
+        level = 3;
+    }
+    if (lbl_2_data_2E44[lbl_2_bss_1A8248[0][0x4415]][level] >= rand() % 100 &&
+        lbl_2_bss_1A8248[0][0x441C] != 5) {
+        if (lbl_2_bss_1A8248[0][0x4422] == 0) {
+            return 0;
+        }
+        if (lbl_2_bss_1A8248[0][0x442B] < 3) {
+            lbl_2_bss_1A8248[0][0x442B]++;
+        }
+        return 1;
+    }
+    return 0;
+}
+#endif
