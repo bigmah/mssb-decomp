@@ -75,4 +75,6 @@ void fn_2_478F4(void);
 
 u16* fn_2_49F7C(u16* string, s32 capacity, u16 character, s32 position);
 
+void fn_2_4AB1C(void);
+
 #endif

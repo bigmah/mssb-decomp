@@ -826,3 +826,62 @@ u16* fn_2_49F7C(u16* string, s32 capacity, u16 character, s32 position) {
     return string;
 }
 #endif
+
+typedef struct {
+    u8 _00[0x8];
+    u16 _08; // clamped to 0..99 (unused) by fn_2_4AB1C
+    u8 _0A[0x2E - 0xA];
+    u16 _2E; // clamped to <= 99 (unused) by fn_2_4AB1C
+    u8 _30[0x108 - 0x30];
+} Struct80353A90;
+extern Struct80353A90 lbl_80353A90;
+extern void starMissionRelated2(void);
+
+// .text:0x4AB1C size:0x1DC
+// NONMATCHING 89%: the original keeps the dead clamp of lbl_80353A90._08/_2E to 0..99 (13 insns); every form we tried lets CW drop it
+#if NONMATCHING
+void fn_2_4AB1C(void) {
+    s32 mode;
+    s32 hits;
+    s32 runs;
+    u8* menu;
+
+    fn_2_4B2D0();
+    hits = lbl_80353A90._08;
+    runs = lbl_80353A90._2E;
+    if (hits < 0) hits = 0;
+    if (hits > 99) hits = 99;
+    if (runs > 99) runs = 99;
+    mode = *(u8*)(lbl_2_bss_1A824C[0] + 0x197843);
+    if ((s8)mode == 0) {
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x19776E) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197772) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197776) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = *(s16*)(lbl_2_bss_1A824C[0] + 0x19776E) + *(s16*)(lbl_2_bss_1A824C[0] + 0x197772) + *(s16*)(lbl_2_bss_1A824C[0] + 0x197776);
+    } else if ((s8)mode == 1) {
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197770) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197774) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = *(s16*)(lbl_2_bss_1A824C[0] + 0x197770) +
+            *(s16*)(lbl_2_bss_1A824C[0] + 0x197774);
+    } else if ((s8)mode == 2) {
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197796) = 0;
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197798) = 0;
+    }
+    menu = lbl_2_bss_1A8248[0];
+    if (menu[0x441C] != 5 || (s8)menu[0x44EF] != 1) {
+        if (!(menu[0x4427] & (1 << menu[0x441E]))) {
+            menu[0x4427] |= (1 << menu[0x441E]);
+        }
+    }
+    if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 0) {
+        menu = lbl_2_bss_1A8248[0];
+        if (menu[0x441C] == 5 && (s8)menu[0x44EF] == 1) {
+            menu[0x4422]++;
+        } else if (!(menu[0x4426] & (1 << menu[0x441E]))) {
+            menu[0x4422]++;
+            lbl_2_bss_1A8248[0][0x4426] |= (1 << lbl_2_bss_1A8248[0][0x441E]);
+        }
+    }
+    starMissionRelated2();
+}
+#endif
