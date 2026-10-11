@@ -2591,8 +2591,76 @@ void fn_2_67588(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x00067780 size:0x414
-void fn_2_67780(void) {
-    return;
+void fn_2_67780(MenuTask* task, MenuItem* item) {
+    LayoutObj* obj;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 5 << 16;
+        fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x41, lbl_2_bss_1A824C->_197730);
+        item->state = 0x25;
+        break;
+    case 0x1E:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 5 << 16;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
+        item->state = 0x1F;
+        break;
+    case 0x1F:
+        if ((lbl_80371C30[task->baseIdx + item->sprite].obj->_5C >> 16) == 0) {
+            fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x41, lbl_2_bss_1A824C->_197730);
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 10 << 16;
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
+            item->state = 0x20;
+        }
+        break;
+    case 0x20:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) <= 5) {
+            obj->_5C = 5 << 16;
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 0;
+            item->state = 0x26;
+        }
+        break;
+    case 0x21:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 5 << 16;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x22;
+        break;
+    case 0x22:
+        if ((lbl_80371C30[task->baseIdx + item->sprite].obj->_5C >> 16) >= 10) {
+            fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x41, lbl_2_bss_1A824C->_197730);
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+            item->state = 0x23;
+        }
+        break;
+    case 0x23:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) >= 5) {
+            obj->_5C = 5 << 16;
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 0;
+            item->state = 0x26;
+        }
+        break;
+    case 8:
+        fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x41, lbl_2_bss_1A824C->_197730);
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 5 << 16;
+        item->state = 0x26;
+        break;
+    case 5:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 5 << 16;
+        break;
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00067B94 size:0x1B4
