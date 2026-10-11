@@ -120,5 +120,6 @@ void fn_2_397AC(void);
 void fn_2_37630(void);
 void fn_2_35A14(u8* a, u8* b);
 void fn_2_379D0(void);
+void fn_2_39408(void);
 
 #endif
