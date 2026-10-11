@@ -74,7 +74,32 @@ void fn_3_11DECC(void) {
 
 // .text:0x0011E308 size:0x5C mapped:0x8075D39C
 void fn_3_11E308(void) {
-    return;
+    if (g_GameLogic._125 == 1 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
+        ((ResultsTask*)fn_800B0A5C_insertQueue(fn_3_E911C, 2))->mode = 1;
+    }
+}
+
+// The score boards close when the minigame quits, ends or a pause menu leaves it.
+static inline s32 ScoreBoard_ShouldClose(void) {
+    if (lbl_3_common_bss_32724.quit != 0 || lbl_3_common_bss_32724._B7 != 0) {
+        return 1;
+    }
+    if (g_GameLogic.gameStatus == 0xF) {
+        return 1;
+    }
+    if (g_Minigame.pauseInd != 0) {
+        switch (lbl_3_common_bss_34C90[0x1D2]) { // TODO type: MinigameBss34C90View._1D2
+        case 7:
+        case 9:
+            return 1;
+        case 13:
+            return 1;
+        }
+    }
+    if (g_GameLogic.gameStatus == 0xE && g_GameLogic.FrameCountOfCurrentPitch == 0) {
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x0011E364 size:0x460 mapped:0x8075D3F8
