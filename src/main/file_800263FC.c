@@ -1,5 +1,6 @@
 #include "main/file_800263FC.h"
 #include "main/file_80008E00.h"
+#include "Dolphin/os.h"
 #include "stl/math.h"
 #include "stl/mem.h"
 
@@ -7,12 +8,18 @@
 
 int __abs(int);
 int rand(void);
+// TODO: these belong in their own units' headers.
+void* _OSAllocFromHeap(s32 heap, s32 size);
+void fn_800ACFB0(void* p); // free
+void fn_800C07BC(void* base, void* tmp, s32 n, s32 size, s32 (*cmp)(const void*, const void*)); // merge sort
 void fn_800118AC(Mtx in, Mtx out); // TODO: belongs in file_80011640.h
 
 extern f32 lbl_8017ED68[]; // cosine table, 0x800 steps per turn
 extern Mtx lbl_8017FF78[2]; // [0]: billboard rotation (inverse view, no translation), [1]: inverse view
 extern Mtx lbl_8017FFE0;
 extern Vec lbl_80180010[4];     // billboard quad corners
+extern Particle lbl_80180040[0x1400]; // particle pool
+extern Emitter lbl_801F8040[0x10];    // emitter pool
 extern UVCoord lbl_800F7860[];
 extern TexCoordF lbl_800F78C0[4]; // quad corner texcoords
 extern const Vec lbl_800E6778;    // (1, 0, 0)
@@ -637,8 +644,44 @@ f32 fn_800335EC(s32 angle) {
 }
 
 // .text:0x80033620 size:0x174
-void fn_80033620(void) {
-    return;
+void fn_80033620(Emitter* e) {
+    Vec v;
+    Vec w;
+    Particle tmp;
+    Particle* p;
+    Particle* q;
+    Particle* best;
+    Particle* pNext;
+    Particle* bestNext;
+    f32 bestZ;
+    u32 i = 0;
+
+    for (p = e->particles; p != NULL && e->count > i; p = p->next, i++) {
+        q = p->next;
+        if (p->delay <= 0 && p->life != 0) {
+            PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
+            bestZ = v.z;
+            best = NULL;
+            for (; q != NULL; q = q->next) {
+                if (q->delay <= 0 && q->life != 0) {
+                    PSMTXMultVec(lbl_8017FFE0, &q->pos, &w);
+                    if (bestZ > w.z) {
+                        best = q;
+                        bestZ = w.z;
+                    }
+                }
+            }
+            if (best != NULL) {
+                pNext = p->next;
+                bestNext = best->next;
+                tmp = *p;
+                *p = *best;
+                *best = tmp;
+                p->next = pNext;
+                best->next = bestNext;
+            }
+        }
+    }
 }
 
 // .text:0x80033794 size:0x38

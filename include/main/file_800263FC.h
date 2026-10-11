@@ -166,9 +166,11 @@ s32 fn_8002D82C(Emitter* e);
 void fn_8002DC68(Vec* pos);
 void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm);
 s32 fn_8002F1AC(Vec* pos, s32 id);
+Particle* fn_80031F34(Particle* list, s32 n);
 s32 fn_80032038(const void* a, const void* b);
 f32 fn_800335BC(s32 angle);
 f32 fn_800335EC(s32 angle);
+void fn_80033620(Emitter* e);
 void fn_80033794(Particle* list);
 Emitter* fn_800337CC(Emitter* e, s32 n, s32 strict);
 void pitchingMachinePitching(u8 type);
@@ -184,6 +186,8 @@ void fn_80033F64(f32 width, f32 height, f32 angleDeg);
 void fn_8003403C(f32 width, f32 height);
 void fn_800340F4(Mtx m);
 void fn_80034120(Mtx m);
+void minigamesSetSomePointers(void);
+void minigamesSetSomePointers2(void);
 void fn_8003414C(Mtx view);
 
 #endif
