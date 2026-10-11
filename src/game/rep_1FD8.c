@@ -325,7 +325,7 @@ void fn_3_C298C(void) {
                 ((void (*)(void))fn_800B0A14_removeQueue)();
             }
         }
-    } else if (g_GameLogic[0x128] != 0 || g_d_GameSettings.__0x20padding[1] != 0) {
+    } else if (g_GameLogic[0x128] != 0 || g_d_GameSettings._13 != 0) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
     }
     i = 0;
