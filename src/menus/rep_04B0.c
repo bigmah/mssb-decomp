@@ -609,8 +609,59 @@ void fn_2_15A90(s32* value, u8 port, s32 max) {
 }
 
 // .text:0x00015AFC size:0x384
+// Buttons for one port on the captain select screen.
 void fn_2_15AFC(s32 port, s32 held, s32 pressed, u16 repeat) {
-    return;
+    s8 cursor[4];
+    u8 player;
+    s32 id;
+
+    if (lbl_8034E9A0.teamPort[port] == -1) {
+        return;
+    }
+    if (lbl_803297E0.random[lbl_803C66B0.portOf[port]] != 0) {
+        if (g_d_GameSettings._10 == 0 && lbl_803C66B0.portOf[0] == 1) {
+            cursor[lbl_803C66B0.portOf[port]] = lbl_803C66B0.portOf[0];
+        } else {
+            cursor[lbl_803C66B0.portOf[port]] = lbl_8034E9A0.teamPort[lbl_803C66B0.portOf[port]];
+        }
+        if ((u32)lbl_803C6028._7F[cursor[lbl_803C66B0.portOf[port]]] >> 31) { // cursor free (< 0)
+            if (g_d_GameSettings.GameModeSelected != 5) {
+                lbl_2_bss_F410.sel[lbl_803C66B0.portOf[port]] = captainIndex(fn_8004E62C(cursor[lbl_803C66B0.portOf[port]], held, pressed, repeat));
+                fn_800625A4(lbl_803C66B0.portOf[port], 3);
+            } else {
+                id = fn_8004D57C(held, pressed, repeat);
+                lbl_2_bss_F410.sel[0] = challengeCaptainIndex(id);
+                fn_2_12238();
+                lbl_803CBBC4[0] = 3;
+            }
+            lbl_803297E0.random[lbl_803C66B0.portOf[port]] = 0;
+        }
+    } else if (lbl_803297E0.random[lbl_803C66B0.portOf[port]] == 0) {
+        u16 trig = pressed;
+        if (trig & 0x100) {
+            if ((u8)fn_2_35D0(lbl_803C66B0.portOf[port]) == 0) {
+                fn_2_1560C(lbl_803C66B0.portOf[port]);
+            }
+        } else if (trig & 0x200) {
+            if ((u8)fn_2_35D0(lbl_803C66B0.portOf[port]) == 0) {
+                fn_2_151BC(lbl_803C66B0.portOf[port]);
+            }
+        } else if (trig & 0x20) {
+            if ((u8)fn_2_35D0(lbl_803C66B0.portOf[port]) == 0 && g_d_GameSettings.GameModeSelected != 5) {
+                lbl_803297E0.random[lbl_803C66B0.portOf[port]] = 1;
+            }
+        } else if (trig & 0x10) {
+            if ((u8)fn_2_35D0(lbl_803C66B0.portOf[port]) == 0) {
+                player = lbl_803C66B0.portOf[port];
+                if (lbl_2_bss_100B8.picked[player] == 0) {
+                    lbl_2_bss_F468._45[player] = 1;
+                    lbl_2_bss_F468._4B[player] = 1;
+                    lbl_2_bss_F468._47[player] = 0;
+                    sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
+                }
+            }
+        }
+    }
 }
 
 // .text:0x00015E80 size:0x59C
