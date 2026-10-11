@@ -45,7 +45,6 @@ extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
 extern const Vec lbl_3_rodata_24A0[];
-extern const f32 lbl_3_rodata_2708;
 extern s32 lbl_3_bss_ADD0[];
 extern const f32 lbl_3_rodata_2730;
 extern const f64 lbl_3_rodata_2788;
@@ -706,7 +705,7 @@ void fn_3_CE56C(u8* h, u8 idx) {
         a = lbl_3_rodata_2658[0] * (f32)(rand() % 360);
         e->f10 = lbl_3_rodata_26D0 * (f32)cos(a);
         e->f18 = lbl_3_rodata_26D0 * (f32)sin(a);
-        e->f14 = lbl_3_rodata_2708;
+        e->f14 = lbl_3_rodata_26D8;
         e->s48 = delay;
         e->f1C = lbl_3_rodata_26A0;
         e->f1C = e->f1C + (f64)((u32)rand() % 2500) / lbl_3_rodata_26E0;
