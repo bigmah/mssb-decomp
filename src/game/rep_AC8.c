@@ -1292,9 +1292,116 @@ void fn_3_33458(void) {
 }
 
 // .text:0x000334EC size:0x8B0 mapped:0x80672580
+#define FLD_HANG(n) (*(s16*)(g_Fielders + (n) * 0x268 + 0x182))
+// NONMATCHING 98%: distance sums unfused (fmuls+fadds) in the original; second-pick local typed s16 there; register numbering
+#if NONMATCHING
 void fn_3_334EC(int a) {
-    return;
+    s32 sel;
+    s32 j;
+    s32 w;
+    s32 second;
+    f32 best;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    u8* f;
+    if (g_Ball[0x1BC4] == 1) {
+        fn_3_323A4();
+    } else if (*(f32*)(g_Ball + 0x19D4) >= lbl_3_rodata_B64 && a == 0) {
+        dx = *(f32*)g_Fielders - *(f32*)(g_Ball + 0x348);
+        dz = *(f32*)(g_Fielders + 8) - *(f32*)(g_Ball + 0x34C);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        best = d + lbl_3_rodata_B78;
+        sel = 0;
+        f = g_Fielders + 0x268;
+        for (j = 1; j < 6; j++, f += 0x268) {
+            dx = *(f32*)f - *(f32*)(g_Ball + 0x348);
+            dz = *(f32*)(f + 8) - *(f32*)(g_Ball + 0x34C);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            if (j == 3 || j == 5) {
+                d -= lbl_3_rodata_B78;
+            }
+            if (d < best) {
+                best = d;
+                sel = j;
+            }
+        }
+        *(s16*)(g_FieldingLogic + 0xB0) = sel;
+        SetFielderAct(sel, 0x15, 0xA8);
+        if ((*(s16*)(g_FieldingLogic + 0xB0) == 3 || *(s16*)(g_FieldingLogic + 0xB0) == 5) &&
+            *(s16*)(g_Ball + 0x1B84) >= 0x3B8 && *(s16*)(g_Ball + 0x1B84) <= 0x448) {
+            if (*(s16*)(g_FieldingLogic + 0xB0) == 3) {
+                *(s16*)(g_FieldingLogic + 0xB2) = 5;
+            } else {
+                *(s16*)(g_FieldingLogic + 0xB2) = 3;
+            }
+            g_FieldingLogic[0x13A] = 1;
+        }
+    } else {
+        w = 0x8C - *(s16*)(g_Ball + 0x1B9E);
+        if (w < 0) {
+            w = 0;
+        }
+        if (w > 0x40) {
+            w = 0x40;
+        }
+        if (*(s16*)(g_Ball + 0x1B9C) >= 0x3A8 - w && *(s16*)(g_Ball + 0x1B9C) < w + 0x458 && a == 0) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 0;
+            if (*(s16*)(g_Ball + 0x1B9C) < FLD_HANG(3) + (FLD_HANG(5) - FLD_HANG(3)) / 2) {
+                *(s16*)(g_FieldingLogic + 0xB2) = 3;
+            } else {
+                *(s16*)(g_FieldingLogic + 0xB2) = 5;
+            }
+            if (*(s16*)(g_Ball + 0x1B84) >= 0x3B8 && *(s16*)(g_Ball + 0x1B84) <= 0x448) {
+                g_FieldingLogic[0x13A] = 1;
+                if (*(s16*)(g_FieldingLogic + 0xB2) == 3) {
+                    SetFielderAct(5, 0x16, 0xB0);
+                } else {
+                    SetFielderAct(3, 0x16, 0xB0);
+                }
+            }
+        } else if (*(s16*)(g_Ball + 0x1B9C) < FLD_HANG(2) + (FLD_HANG(3) - FLD_HANG(2)) / 7) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 2;
+        } else if (*(s16*)(g_Ball + 0x1B9C) < FLD_HANG(2) + (FLD_HANG(3) - FLD_HANG(2)) * 2 / 5) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 2;
+            *(s16*)(g_FieldingLogic + 0xB2) = 3;
+            SetFielderAct(3, 0x16, 0xB0);
+        } else if (*(s16*)(g_Ball + 0x1B9C) < FLD_HANG(3) + (FLD_HANG(5) - FLD_HANG(3)) / 2) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 3;
+        } else if (*(s16*)(g_Ball + 0x1B9C) < FLD_HANG(5) + (FLD_HANG(4) - FLD_HANG(5)) * 3 / 5) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 5;
+        } else if (*(s16*)(g_Ball + 0x1B9C) < FLD_HANG(4) - (FLD_HANG(4) - FLD_HANG(5)) / 5) {
+            *(s16*)(g_FieldingLogic + 0xB0) = 4;
+            *(s16*)(g_FieldingLogic + 0xB2) = 5;
+            SetFielderAct(5, 0x16, 0xB0);
+        } else {
+            *(s16*)(g_FieldingLogic + 0xB0) = 4;
+        }
+    }
+    SetFielderAct(*(s16*)(g_FieldingLogic + 0xB0), 0x15, 0xA8);
+    if (a != 0) {
+        return;
+    }
+    second = *(s16*)(g_FieldingLogic + 0xB2);
+    if (second < 0) {
+        fn_3_33088();
+        SetFielderAct(*(s16*)(g_FieldingLogic + 0xB2), 0x16, 0xB0);
+    } else {
+        fn_3_33088();
+        *(s16*)(g_FieldingLogic + 0xB4) = *(s16*)(g_FieldingLogic + 0xB2);
+        *(s16*)(g_FieldingLogic + 0xB2) = second;
+        SetFielderAct(second, 0x16, 0xB0);
+        SetFielderAct(*(s16*)(g_FieldingLogic + 0xB4), 0x17, 0xB8);
+        g_FieldingLogic[0x139] = 1;
+    }
+    fn_3_4C9C8();
+    fn_3_47778();
+    fn_3_4A124();
 }
+#endif
+#undef FLD_HANG
 
 // .text:0x00033D9C size:0x34 mapped:0x80672E30
 void fn_3_33D9C(void) {
