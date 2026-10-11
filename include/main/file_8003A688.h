@@ -202,6 +202,7 @@ void fn_8003BB90(void);
 void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
 void fn_8003C00C(void);
 u8 fn_80040FE0(void* buffer, s32 length, u32 mask);
+void fn_8004053C(void);
 void fn_80040C14(void);
 u8 fn_80041074(void* buffer, s32 length, u32 mask);
 void fn_80041150(u8 mask, u8 slot);

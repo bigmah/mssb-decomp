@@ -25,6 +25,7 @@ void fn_8000FE54(void);
 s32 fn_8004A34C(SaveDialog* dialog, u8 port, u8 msg, u8 mode, u8 arg4);
 // main/file_800A7C08 (memory card / CRC)
 void fn_800A9E34(u8 chan, u8 mode, u64 serial);
+void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial);
 void fn_800AA930(SaveCardRequest* req, u64 serial);
 void fn_800AAEE4(SaveCardRequest* req, u64 serial);
 void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial);
@@ -683,8 +684,251 @@ void fn_8003F2B8(void) {
 }
 
 // .text:0x8004053C size:0x6D8
+// Looks for the save file on the card, asking the player what to do when it is missing or broken.
 void fn_8004053C(void) {
-    return;
+    u8 msg = 0;
+    SaveTask* task = (SaveTask*)lbl_803CC1B8;
+    SaveTask* child;
+    u8 port;
+    u8 b16;
+    u8 slot;
+    u8 mode;
+    u8 b1A;
+
+    SaveTask_CheckCard(task);
+    switch (task->state) {
+    case 0:
+        task->noCard = 0;
+        fn_8004A34C(&lbl_803C50E8, task->port, 0, 0, 0);
+        fn_800415A0(100);
+        task->state++;
+        break;
+    case 1:
+        if (fn_8004157C() == 0) {
+            task->state++;
+        }
+        break;
+    case 2:
+        if (task->noCard) {
+            task->state = 3;
+        } else {
+            task->state = 5;
+        }
+        break;
+    case 3:
+        task->noCard = 0;
+        task->cardReady = 0;
+        task->state++;
+        break;
+    case 4:
+        if (task->cardReady) {
+            task->state = 14;
+            task->outcome = 7;
+        } else {
+            task->state = 14;
+            task->outcome = 9;
+        }
+        break;
+    case 5:
+        task->noCard = 0;
+        fn_800AA34C(task->slot, task->mode, "MarioBaseball", lbl_802D4AE0[task->slot], task->_1A == 0 ? 1 : 0);
+        task->state++;
+        break;
+    case 6:
+        if (lbl_803CC1B8->_10 != 0) {
+            if (task->noCard) {
+                task->state = 3;
+                break;
+            }
+            switch (lbl_803C7838.status) {
+            case 0:
+                task->state = 3;
+                break;
+            case 16:
+                task->state = 7;
+                break;
+            case 1:
+                if (task->_1A) {
+                    task->state = 7;
+                } else {
+                    task->state = 10;
+                }
+                break;
+            case 2:
+                if (task->_1A) {
+                    task->state = 7;
+                } else {
+                    task->state = 9;
+                }
+                break;
+            case 3:
+            case 4:
+            case 7:
+                task->state = 7;
+                break;
+            case 8:
+                task->state = 14;
+                task->outcome = 6;
+                break;
+            case 17:
+                task->state = 14;
+                task->outcome = 1;
+                break;
+            }
+        }
+        break;
+    case 7:
+        switch (lbl_803C7838.status) {
+        case 1:
+            msg = task->_1A == 0 ? 6 : 0x15;
+            break;
+        case 2:
+            msg = task->_1A == 0 ? 5 : 0x14;
+            break;
+        case 3:
+            msg = 0x42;
+            break;
+        case 4:
+            msg = 0x41;
+            break;
+        case 7:
+            msg = 0x43;
+            break;
+        case 16:
+            if (task->_21 == 3) {
+                msg = 0x31;
+            } else if (task->_21 == 2) {
+                msg = 0x2A;
+            } else if (task->_1A == 2) {
+                msg = 0x20;
+            } else {
+                msg = 0x13;
+            }
+            break;
+        }
+        fn_8004A34C(&lbl_803C50E8, task->port, msg, 0, 0);
+        fn_800415A0(100);
+        task->state++;
+        break;
+    case 8:
+        if (fn_8004157C() == 0) {
+            if (task->noCard) {
+                lbl_803C50E8._46 = 1;
+                task->state = 3;
+            } else if (lbl_803C50E8.msg == 5 || lbl_803C50E8.msg == 6) {
+                switch (lbl_803C50E8.choice) {
+                case 1:
+                case 2:
+                    task->state = 12;
+                    break;
+                case 3:
+                case 4:
+                    task->state = 14;
+                    task->outcome = 10;
+                    break;
+                }
+            } else {
+                switch (lbl_803C50E8.choice) {
+                case 1:
+                case 2:
+                    task->state = 0;
+                    break;
+                case 3:
+                case 4:
+                    task->state = 14;
+                    if (task->_1A == 0) {
+                        task->outcome = 10;
+                    } else {
+                        task->outcome = 11;
+                    }
+                    break;
+                }
+            }
+        }
+        break;
+    case 9:
+        if (task->noCard) {
+            task->state = 3;
+            break;
+        }
+        fn_8004A34C(&lbl_803C50E8, task->port, 5, 1, 0);
+        task->state = 11;
+        break;
+    case 10:
+        if (task->noCard) {
+            task->state = 3;
+            break;
+        }
+        fn_8004A34C(&lbl_803C50E8, task->port, 6, 1, 0);
+        task->state = 11;
+        break;
+    case 11:
+        if (task->noCard) {
+            lbl_803C50E8._46 = 1;
+            task->state = 3;
+            break;
+        }
+        switch (lbl_803C50E8.choice) {
+        case 1:
+        case 2:
+            task->state = 12;
+            break;
+        case 3:
+        case 4:
+            task->state = 14;
+            task->outcome = 10;
+            break;
+        }
+        break;
+    case 12:
+        b1A = task->_1A;
+        mode = task->mode;
+        slot = task->slot;
+        b16 = task->_16;
+        port = task->port;
+        child = fn_800B0A5C_insertQueue(fn_8003BB90, 0x8000);
+        child->state = 0;
+        child->port = port;
+        child->_16 = b16;
+        child->slot = slot;
+        child->mode = mode;
+        child->_1A = b1A;
+        child->noCard = 0;
+        lbl_803CC1B8->_10 = 0;
+        task->state++;
+        break;
+    case 13:
+        switch (lbl_803CC1B8->_10) {
+        case 1:
+            task->state = 14;
+            task->outcome = 13;
+            break;
+        case 2:
+            task->state = 14;
+            task->outcome = 10;
+            break;
+        case 8:
+            task->state = 14;
+            task->outcome = 7;
+            break;
+        case 5:
+            task->state = 14;
+            task->outcome = 10;
+            break;
+        case 9:
+            task->state = 14;
+            task->outcome = 10;
+            break;
+        case 7:
+            task->state = 0;
+            task->outcome = 7;
+            break;
+        }
+        break;
+    case 14:
+        SaveTask_Finish(task->outcome);
+        break;
+    }
 }
 
 // .text:0x80040C14 size:0x3CC
