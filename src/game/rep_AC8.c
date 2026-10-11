@@ -2357,6 +2357,9 @@ void fn_3_417D4(int i) {
 extern f32 lbl_3_rodata_BA4;
 extern u8 lbl_3_data_44B4[];
 extern f32 lbl_3_rodata_BD4;
+extern f32 lbl_3_rodata_BE8;
+extern f32 lbl_3_rodata_C64;
+extern f32 lbl_3_rodata_C68;
 // NONMATCHING 94.0%: register allocation and constant-load scheduling in the distance loop
 #if NONMATCHING
 // Pick the fielder closest to the ball's landing spot and send it after the ball.
@@ -3492,9 +3495,49 @@ void fn_3_4A9AC(void) {
 }
 
 // .text:0x0004B128 size:0x3EC mapped:0x8068A1BC
-void fn_3_4B128(void) {
-    return;
+// NONMATCHING 99.5%: sqrt temp gets f2 instead of f4 in the inlined set-target block
+#if NONMATCHING
+// Outfielder i lines up as cutoff man between the ball and the base it is thrown to.
+void fn_3_4B128(int i) {
+    f32 cx;
+    f32 cz;
+    f32 px;
+    f32 pz;
+    s16 ang;
+    switch (fn_3_53130(i)) {
+    case 2:
+        return;
+    default:
+        if (*(s16*)(g_FieldingLogic + 0xC4) >= 1 && *(s16*)(g_FieldingLogic + 0xC4) <= 3 && *(s16*)(g_FieldingLogic + 0xE6) == 1 &&
+            (*(s16*)(g_FieldingLogic + 0xC4) == 2 || i != 7)) {
+            getComponentsFromSAng(fn_3_9FB8C(*(f32*)(g_Ball + 0x19EC) - *(f32*)g_Ball, *(f32*)(g_Ball + 0x19F4) - *(f32*)(g_Ball + 8)), &cx, &cz);
+            px = lbl_3_rodata_B9C * cx + *(f32*)(lbl_3_data_4444 + *(s16*)(g_FieldingLogic + 0xC4) * 8);
+            pz = lbl_3_rodata_B9C * cz + ((f32*)(lbl_3_data_4444 + 4))[*(s16*)(g_FieldingLogic + 0xC4) * 2];
+            ang = fn_3_9FB8C(px, pz);
+            if (ang <= 0x800 && ((ang < 0x300 && i == 8) || (ang > 0x500 && i == 6) || (ang < 0x400 && (i == 7 || i == 8)) ||
+                                 (ang >= 0x400 && (i == 7 || i == 6)))) {
+                if (pz < *(f32*)(lbl_3_data_4444 + 0xC)) {
+                    if (px < 0.0f) {
+                        px = lbl_3_rodata_C64;
+                    } else {
+                        px = lbl_3_rodata_C68;
+                    }
+                    pz = lbl_3_rodata_BE8;
+                }
+                SetTargetAC8b(i, px, pz);
+            }
+        }
+        ((void (*)(int))fn_3_526DC)(i);
+        if (*(f32*)(g_Fielders + i * 0x268 + 0x68) < lbl_3_rodata_B64) {
+            SetFielderAct(i, 0xC, 0x60);
+        } else if (g_Ball[0x1BD7] >= 2) {
+            SetFielderAct(i, 0xC, 0x60);
+        }
+    case 1:
+        break;
+    }
 }
+#endif
 
 // .text:0x0004B514 size:0x3BC mapped:0x8068A5A8
 // NONMATCHING 96.5%: table load is lfs+add instead of lfsx; f30/f31 swapped for the offset/dx
