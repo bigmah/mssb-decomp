@@ -161,3 +161,15 @@ void fn_1_8B8C(void) {
     return;
 }
 
+// .text:0x00008B90 size:0x10C
+void fn_1_8B90(void) {
+    switch (lbl_1_common_bss_47674.step) {
+    case 0:
+        lbl_1_common_bss_47674.step++;
+        break;
+    case 1:
+        fn_1_8A90();
+        break;
+    }
+}
+
