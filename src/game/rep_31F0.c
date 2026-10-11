@@ -485,7 +485,7 @@ extern u8 lbl_3_data_213E4[];
 typedef struct { s16 count; s16 time; } MgModeParam_31F0;
 extern MgModeParam_31F0 lbl_3_data_21400[];
 
-// NONMATCHING 76%: regalloc/scheduling of the g_Minigame bases around the reset loop
+// NONMATCHING 96%: scheduling of the mode-table loads and zero/base register picks in the reset loop
 #if NONMATCHING
 void fn_3_112610(void) {
     u8* gl = g_GameLogic;
@@ -494,23 +494,23 @@ void fn_3_112610(void) {
     u8 c;
     if (gl[0x125] == 0) {
         fn_3_59A90();
-        mg = g_Minigame;
         g_GameLogic[0x121] = 3;
         *(s32*)(g_Minigame + 0x17C0) = 0;
         for (i = 0; i < 4; i++) {
-            *(s16*)(mg + 0x1890 + i * 2) = 0;
-            *(s16*)(mg + 0x1898 + i * 2) = 0;
-            *(s16*)(mg + 0x18BC + i * 4) = 0;
-            *(s16*)(mg + 0x18BE + i * 4) = 0;
-            ((s8*)mg)[0x18F4 + i] = -1;
-            ((s8*)mg)[0x18FC + i] = -1;
-            ((s8*)mg)[0x1900 + i] = -1;
-            ((s8*)mg)[0x18F0 + i] = 1;
-            ((s8*)mg)[0x18F8 + i] = -1;
-            *(s16*)(mg + 0x1A8E + i * 2) = 0;
-            mg[0x1ACC + i * 2] = 0;
-            mg[0x1ACD + i * 2] = 0;
+            *(s16*)(g_Minigame + 0x1890 + i * 2) = 0;
+            *(s16*)(g_Minigame + 0x1898 + i * 2) = 0;
+            *(s16*)(g_Minigame + 0x18BC + i * 4) = 0;
+            *(s16*)(g_Minigame + 0x18BE + i * 4) = 0;
+            ((s8*)g_Minigame)[0x18F4 + i] = -1;
+            ((s8*)g_Minigame)[0x18FC + i] = -1;
+            ((s8*)g_Minigame)[0x1900 + i] = -1;
+            ((s8*)g_Minigame)[0x18F0 + i] = 1;
+            ((s8*)g_Minigame)[0x18F8 + i] = -1;
+            *(s16*)(g_Minigame + 0x1A8E + i * 2) = 0;
+            g_Minigame[0x1ACC + i * 2] = 0;
+            g_Minigame[0x1ACD + i * 2] = 0;
         }
+        mg = g_Minigame;
         *(s32*)g_Scores = 0;
         mg[0x190C] = 0;
         *(s16*)(mg + 0x1A26) = 0;
