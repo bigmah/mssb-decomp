@@ -161,9 +161,111 @@ void fn_800B2DD0(GameActor* actor, GameBone* bone) {
 #endif
 
 // .text:0x800B313C size:0x378
-void fn_800B313C(void) {
-    return;
+// Builds every bone's forward (and skinning) matrix.
+// NONMATCHING 99%: blend switch is missing a dead `b` after case 0 (see docs/patterns/control-flow.md)
+#if NONMATCHING
+void fn_800B313C(GameActor* actor) {
+    Mtx world;
+    Mtx m;
+    Mtx ctrlMtx;
+    Mtx rot;
+    GameControl blended;
+    f32 blend;
+    GameBone* bone;
+    GameBone* parent;
+    GameBone* target;
+    u16 i;
+
+    lbl_803CC1E8 = actor->tickFlag;
+    CTRLBuildMatrix(&actor->worldControl.base, world);
+    if (actor->boneRemap != NULL) {
+        PSMTXConcat(world, lbl_80111640, world);
+    }
+    for (i = 0; i < actor->totalBones; i++) {
+        bone = actor->boneArray[i];
+        blend = actor->blend;
+        switch (bone->flags & 3) {
+        case 0:
+            blend = 1.0f;
+            break;
+        case 1:
+            break;
+        case 2:
+            blend = blend * blend;
+            break;
+        default:
+            blend = 1.0f;
+            break;
+        }
+
+        if (bone->flags & 0x20) {
+            if (bone->flags & 4) {
+                bone->blendCtrl.controlParams.srt.t.x = bone->animCtrl.controlParams.srt.t.x;
+            }
+            if (bone->flags & 8) {
+                bone->blendCtrl.controlParams.srt.t.y = bone->animCtrl.controlParams.srt.t.y;
+            }
+            if (bone->flags & 0x10) {
+                bone->blendCtrl.controlParams.srt.t.z = bone->animCtrl.controlParams.srt.t.z;
+            }
+        }
+
+        if (bone->animCtrl.type != 0) {
+            if (actor->boneRemap == NULL) {
+                fn_800B84AC(&bone->animCtrl, &bone->blendCtrl, &bone->animCtrl, blend);
+                CTRLBuildMatrix(&bone->animCtrl, m);
+            } else if (actor->boneCallback == NULL ||
+                       actor->boneCallback(bone, actor->boneArray[actor->boneRemap[i]], m, blend) == 0) {
+                target = actor->boneArray[actor->boneRemap[i]];
+                fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, blend);
+                if (bone->branch.Parent != NULL) {
+                    CTRLBuildMatrix_FlipY(&target->animCtrl, m);
+                } else {
+                    CTRLBuildMatrix_FlipX(&target->animCtrl, m);
+                }
+                switch (bone->rotAxis) {
+                case 1:
+                    PSMTXRotRad(rot, 'X', 3.1415927f);
+                    PSMTXConcat(m, rot, m);
+                    break;
+                case 2:
+                    PSMTXRotRad(rot, 'Y', 3.1415927f);
+                    PSMTXConcat(m, rot, m);
+                    break;
+                case 3:
+                    PSMTXRotRad(rot, 'Z', 3.1415927f);
+                    PSMTXConcat(m, rot, m);
+                    break;
+                }
+            }
+            if (bone->animPipe->replaceHierarchyCtrl == 0) {
+                CTRLBuildMatrix(&bone->orientationCtrl.base, ctrlMtx);
+                PSMTXConcat(ctrlMtx, m, m);
+            }
+        } else {
+            fn_800B84AC(&blended.base, &bone->blendCtrl, &bone->orientationCtrl.base, blend);
+            CTRLBuildMatrix(&blended.base, m);
+        }
+
+        parent = (GameBone*)bone->branch.Parent;
+        if (bone->inheritanceFlag == 1 && parent != NULL) {
+            PSMTXConcat(parent->forwardMtx, m, bone->forwardMtx);
+        } else {
+            PSMTXConcat(world, m, bone->forwardMtx);
+        }
+        if (bone->dispObj != NULL) {
+            DOSetWorldMatrix(bone->dispObj, bone->forwardMtx);
+        }
+        if (actor->skinObject != NULL) {
+            PSMTXConcat(bone->forwardMtx, bone->orientationInvMtx, bone->skinMtx);
+            if (actor->skinObject->lightingData != NULL) {
+                PSMTXInverse(bone->skinMtx, m);
+                PSMTXTranspose(m, bone->skinInvTransposeMtx);
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x800B34B4 size:0x2F0
 // Builds the forward matrix of one bone after (recursively) building its parents.
