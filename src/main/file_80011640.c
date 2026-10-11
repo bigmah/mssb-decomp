@@ -37,6 +37,15 @@ extern s32 lbl_803CBBF0;
 extern CharLoadTask* lbl_803CC1B8;
 extern CharPart lbl_80118220[13];
 
+typedef struct RosterEntry {
+    /*0x00*/ u8 _00[0x26];
+    /*0x26*/ u8 _26;
+    /*0x27*/ u8 _27;
+    /*0x28*/ u8 _28[0xA0 - 0x28];
+} RosterEntry; // size: 0xA0
+
+extern RosterEntry inMemRoster[2][9];
+
 extern LightPos lbl_80367318[4];
 extern StadiumLights lbl_800F7478[];
 extern u8 lbl_803CBC3C[4];
@@ -546,9 +555,55 @@ void fn_80017340(void) {
 }
 
 // .text:0x8001758C size:0x228
-s32 fn_8001758C(u8* state, s32 actor, u8 kind, u8 team, u8 roster, s8 arg5, u8 index, u8 arg7) {
+// NONMATCHING 99%: actor->kind reload scheduled later, r9/r11 swap
+#if NONMATCHING
+s32 fn_8001758C(u8* state, s32 actorIdx, u8 kind, u8 team, u8 roster, s8 arg5, u8 index, u8 arg7) {
+    CharActor* actor = &lbl_8036E548.actors[actorIdx];
+    s32 file;
+
+    switch (*state) {
+    case 0:
+        if ((s32)lbl_803C6CF8.transferDone != 1) {
+            break;
+        }
+        actor->_25C = 1;
+        actor->team = team;
+        actor->roster = roster;
+        actor->index = index;
+        actor->kind = kind;
+        actor->_258 = arg5;
+        actor->_259 = arg7;
+        actor->_25A = inMemRoster[team][roster]._26;
+        file = actor->kind * 0x13;
+        actor->_25B = inMemRoster[team][roster]._27;
+        actor->_278 = (index == 9);
+        if (arg7 == 0) {
+            file += 1;
+        }
+        if (actor->_278 != 0 && arg7 == 1 && lbl_8036E548.preload[2].id == kind) {
+            memcpy(actor->files, lbl_8036E548.preload[2].buffer, lbl_8036E548.preload[2].size);
+            goto load;
+        }
+        if (index >= 10 && index <= 12 && arg7 == 0 && lbl_8036E548.preload[0].id == kind) {
+            memcpy(actor->files, lbl_8036E548.preload[0].buffer, lbl_8036E548.preload[0].size);
+            goto load;
+        }
+        if (arg7 == 0 || fn_8002204C(actor->kind, actor->files) == 0) {
+            ARAMTransfer(&lbl_803CB790[file], actor->files, 0, 0);
+        }
+        *state = 1;
+        break;
+    case 1:
+        if (lbl_803716B8._1E8 == 0 && (s32)lbl_803C6CF8.transferDone == 1) {
+        load:
+            fn_80017814(actor, actor->modelIndex, index, fn_8001FDD4);
+            return 1;
+        }
+        break;
+    }
     return 0;
 }
+#endif
 
 // .text:0x800177B4 size:0x60
 void fn_800177B4(void) {
