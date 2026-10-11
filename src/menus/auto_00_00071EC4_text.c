@@ -1893,3 +1893,20 @@ void fn_2_73CBC(s32 o) {
         }
     }
 }
+
+// fn_2_7302C, size:0x60
+// NONMATCHING 70%: CW turns the search loop into a ctr loop; original keeps cmpw/blt
+#if NONMATCHING
+s32 fn_2_7302C(void) {
+    u8 n = lbl_80361B20[0xF4];
+    u8* p = lbl_800FE930 + n * 6;
+    s32 i;
+    for (i = 0; i < (n != 0) + 5; i++) {
+        if (*(s32*)(lbl_8034E9A0 + 0x46E0) == *p) {
+            break;
+        }
+        p++;
+    }
+    return i;
+}
+#endif
