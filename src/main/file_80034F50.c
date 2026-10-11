@@ -155,8 +155,11 @@ void fn_80035ED0(s32 idx) {
 }
 
 // .text:0x80035EEC size:0x34
-void fn_80035EEC(void) {
-    return;
+void fn_80035EEC(u16 frame, s32 idx) {
+    if (lbl_8039C3E0[idx].frame > (u32)(frame << 16)) {
+        lbl_8039C3E0[idx].frame = frame << 16;
+        lbl_8039C3E0[idx].playMode = 0;
+    }
 }
 
 // .text:0x80035F20 size:0x214

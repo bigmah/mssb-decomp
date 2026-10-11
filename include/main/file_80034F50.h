@@ -124,5 +124,6 @@ typedef struct SpaniOwner {
 } SpaniOwner;
 
 void fn_80035ED0(s32 idx);
+void fn_80035EEC(u16 frame, s32 idx);
 
 #endif
