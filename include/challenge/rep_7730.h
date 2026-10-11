@@ -61,11 +61,14 @@ typedef struct {
     u8 unk25;
 } ChallengeCurveDrawing;
 
+// Rope node (same layout as RopeNode in main/file_80037054.h).
 typedef struct {
-    u8 padding[0x0C];
-    Vec position;
-    u8 padding18[0x24];
-    s32 mode;
+    /* 0x00 */ f32 mass;
+    /* 0x04 */ u8 padding4[0x08];
+    /* 0x0C */ Vec position;
+    /* 0x18 */ Vec prevPos;
+    /* 0x24 */ u8 padding24[0x18];
+    /* 0x3C */ s32 mode;
 } ChallengeCurvePoint;
 
 // Queue object of the wave-surface test mode (fn_1_24410 / fn_1_23B54).
@@ -255,5 +258,6 @@ void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f3
 s32 fn_1_22874(void);
 s32 fn_1_23098(Mtx44 proj, Mtx camera, s32 lines, s32 cols, f32 nearZ, f32 farZ);
 void fn_1_23B54(void);
+void fn_1_21CE8(void);
 
 #endif

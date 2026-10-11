@@ -2548,3 +2548,65 @@ void fn_1_23B54(void) {
     q->frame++;
 }
 #endif
+
+extern const f32 lbl_1_rodata_7850;
+
+// NONMATCHING 63% (98% when fn_1_20950 is force-inlined, which then drops fn_1_20950's own copy): the original inlines fn_1_20950 here; ours calls it
+// .text:0x21CE8 size:0x8D0
+#if NONMATCHING
+void fn_1_21CE8(void) {
+    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
+    ChallengeCurvePoint* tip;
+    Vec force;
+    f32 speed;
+    f32 mass;
+
+    if (fn_1_22874() != 0 || (lbl_803C77B8._02 & 0x100)) {
+        fn_1_21180(q);
+    } else if (lbl_803C77B8._02 & 0x200) {
+        *(void (**)(void))lbl_803CC1B8[0] = fn_1_21408;
+    }
+    if (q->colorMode != 0) {
+        // move the free end of the rope with the stick
+        if (((u8*)&lbl_803C77B8)[0x75] >= 0x50) {
+            speed = lbl_1_rodata_77FC * q->unk1C;
+        } else {
+            speed = lbl_1_rodata_7850 * q->unk1C;
+        }
+        lbl_1_bss_6FE0[q->pointCount - 1].position.x += (s8)((u8*)&lbl_803C77B8)[0x70] * speed;
+        lbl_1_bss_6FE0[q->pointCount - 1].position.y += (s8)((u8*)&lbl_803C77B8)[0x73] * speed;
+        lbl_1_bss_6FE0[q->pointCount - 1].position.z += (s8)((u8*)&lbl_803C77B8)[0x71] * speed;
+        tip = &lbl_1_bss_6FE0[q->pointCount - 1];
+        memcpy(&tip->prevPos, &tip->position, sizeof(Vec));
+        force.x = lbl_1_rodata_77D8;
+        force.y = lbl_1_rodata_77D8;
+        force.z = lbl_1_rodata_77D8;
+    } else {
+        // or pull it with a force
+        mass = lbl_1_bss_6FE0[q->pointCount - 1].mass;
+        speed = q->unk1C;
+        force.x = speed * ((s8)((u8*)&lbl_803C77B8)[0x70] * mass);
+        force.y = speed * ((s8)((u8*)&lbl_803C77B8)[0x73] * mass);
+        force.z = speed * ((s8)((u8*)&lbl_803C77B8)[0x71] * mass);
+    }
+    fn_80038B48(&lbl_1_bss_6FB8, lbl_1_bss_6FE0, q->pointCount, &force);
+
+    GXSetProjection(lbl_1_bss_47010, GX_PERSPECTIVE);
+    GXClearVtxDesc();
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXLoadPosMtxImm(lbl_1_bss_43EE0.view, 0);
+    GXSetCurrentMtx(0);
+    fn_1_21040();
+    fn_1_21298(q);
+    fn_1_20950(lbl_1_bss_6FE0, q->pointCount - 1, lbl_1_bss_43EE0.view);
+}
+#endif
