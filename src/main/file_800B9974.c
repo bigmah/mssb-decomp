@@ -286,8 +286,18 @@ void fn_800BCDBC(DODisplayDataPtr pal) {
 }
 
 // .text:0x800BCE38 size:0xC0
-void fn_800BCE38(void) {
-    return;
+void fn_800BCE38(DODisplayDataPtr pal) {
+    struct DODisplayObj* dispObjs;
+    u32 i;
+
+    pal->userData = GEO_RELOC(pal, pal->userData);
+    pal->descriptorArray = GEO_RELOC(pal, pal->descriptorArray);
+    dispObjs = _OSAllocFromHeap(0x20, pal->numDescriptors * sizeof(struct DODisplayObj));
+    for (i = 0; i < pal->numDescriptors; i++) {
+        fn_800BCEF8(GEO_RELOC(pal, pal->descriptorArray[i].layout), &dispObjs[i]);
+        pal->descriptorArray[i].dispObj = &dispObjs[i];
+        pal->descriptorArray[i].name = GEO_RELOC(pal, pal->descriptorArray[i].name);
+    }
 }
 
 // .text:0x800BCEF8 size:0x298
