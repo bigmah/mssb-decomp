@@ -5,9 +5,9 @@
 
 void fn_3_90754(u8* p, s8 a, s8 b);
 
-s32 fn_3_90764(void);
+s32 fn_3_90764(u8* state);
 
-s32 fn_3_90798(void);
+s32 fn_3_90798(u8* state);
 
 void fn_3_9081C(void);
 
@@ -23,9 +23,9 @@ s32 fn_3_90A18(void);
 
 void fn_3_90AB0(s32 a);
 
-s32 fn_3_91064(void);
+s32 fn_3_91064(u8* state);
 
-s32 fn_3_910AC(void);
+s32 fn_3_910AC(u8* state);
 
 void fn_3_910F4(u8* p);
 
@@ -37,7 +37,7 @@ s32 fn_3_90B14(s32 a, s32 b);
 
 void fn_3_90CB0(void);
 
-s32 fn_3_90F48(void);
+s32 fn_3_90F48(u8* state);
 
 s32 fn_3_90DD8(void);
 

@@ -27,7 +27,7 @@ extern u8 lbl_3_data_7D24[];
 extern f32 shortAngleToRad_Capped(s16 a);
 extern u32 fn_3_90220(s32 idx, s32 off);
 extern int getAnimRelatedCoordinates(int, int, f32*);
-extern void fn_8001B4D8(void);
+extern void fn_8001B4D8(s32 index, s32 enable);
 extern void fn_8001C528(void);
 extern void fn_8001B5EC(s32 index, s32 enable);
 extern int fn_3_B7CDC(f32 a, f32 b);
@@ -150,7 +150,7 @@ void fn_3_60804(s32 a, s32 b) {
             }
         } else {
             if (e[0x42] == 0) {
-                fn_8001B4D8();
+                fn_8001B4D8(k, b);
                 if (e[0x48] == 1) {
                     *(f32*)(e + 0x10) = *(f32*)(e + 0x2C);
                     *(f32*)(e + 0x18) = *(f32*)(e + 0x34);

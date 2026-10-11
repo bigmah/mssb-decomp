@@ -30,7 +30,7 @@ extern void fn_2_836A4(void);
 extern void fn_2_85108(void);
 extern u8 lbl_2_data_720[];
 extern void fn_800216F8(s32 group, void* callback);
-extern s32 fn_8006285C(void);
+extern s32 fn_8006285C(u8* state);
 extern void fn_8006496C(void);
 extern void fn_2_82E58(void);
 extern u8 lbl_2_bss_E8CC[];

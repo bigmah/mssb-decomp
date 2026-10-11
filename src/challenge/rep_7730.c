@@ -42,7 +42,7 @@ extern u8* lbl_803CC1B8[];
 
 extern void (*lbl_1_data_1066C[])(s16);
 
-extern void fn_80037B18(void*, Vec*, f32);
+extern void fn_80037B18(void* rb, Vec* force, f32 unused);
 
 extern u8 lbl_1_data_10674[];
 extern void fn_1_1DA54(void);
@@ -75,7 +75,7 @@ extern u32 lbl_1_data_104DC[];
 extern const f32 lbl_1_rodata_7810;
 extern const f64 lbl_1_rodata_7818[];
 extern const f32 lbl_1_rodata_784C[];
-extern void fn_80038CD0(u8, void*, void*, f32, f32);
+extern void* fn_80038CD0(s32 count, void* pos, void* nodes, f32 a, f32 b); // RopeNode*
 
 // fn_1_20640, size:0x194
 void fn_1_20640(ChallengeTextureStages* stages, u32* indices) {
@@ -803,9 +803,17 @@ extern void LITAlloc(void**);
 extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
 extern void LITInitPos(void*, f32, f32, f32);
 extern void LITInitDir(void*, f32, f32, f32);
-extern void LITInitColor(void*, ChallengeLightColor);
+// LITInitColor takes a GXColor*. These callers pass the color by value (the PPC ABI hands
+// over a pointer to a fresh copy), so only the matching build declares it that way.
+#if NONMATCHING
+extern void LITInitColor(void* light, ChallengeLightColor* color);
+#define LIT_COLOR(c) (&(c))
+#else
+extern void LITInitColor(void* light, ChallengeLightColor color);
+#define LIT_COLOR(c) (c)
+#endif
 extern void LoadActorLayout(void*);
-extern void convertGeometryAndSknHeader(void*, s32);
+extern void convertGeometryAndSknHeader(void* geo, void* skn);
 extern void fn_800B2C08(void*, s32);
 extern void fn_800BD548(ActorObject*, s32, ...);
 
@@ -824,13 +832,13 @@ void fn_1_20E00(u8* obj) {
     LITInitAttn(lbl_1_bss_6FA4[0], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
     LITInitPos(lbl_1_bss_6FA4[0], lbl_1_rodata_7840, lbl_1_rodata_7840, lbl_1_rodata_7840);
     LITInitDir(lbl_1_bss_6FA4[0], 0.0f, 0.0f, 0.0f);
-    LITInitColor(lbl_1_bss_6FA4[0], color);
+    LITInitColor(lbl_1_bss_6FA4[0], LIT_COLOR(color));
     data = *(u8**)(obj + 0x14);
     layout = data + ((s32*)data)[0];
     geo = data + ((s32*)data)[1];
     lbl_1_bss_6BE0[0] = ActorObjectInitTable(20);
     LoadActorLayout(layout);
-    convertGeometryAndSknHeader(geo, 0);
+    convertGeometryAndSknHeader(geo, NULL);
     haveActLayoutPointToGeoHeader(layout, geo);
     for (i = 0; i < 20; i++) {
         fn_800BDC88(lbl_1_bss_6BE0[0], i, i, (struct ActorLayout *)layout, 0, 0); // TODO type
@@ -1270,7 +1278,7 @@ void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera) {
         PSMTXConcat(camera, mtx, mtx);
         obj->actor->flags |= 3;
     }
-    fn_800BD670(lbl_1_bss_6BE0[0], (u32)camera);
+    fn_800BD670(lbl_1_bss_6BE0[0], (MtxPtr)camera);
 }
 
 extern const f32 lbl_1_rodata_7894;

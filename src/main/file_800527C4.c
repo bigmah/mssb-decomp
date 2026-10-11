@@ -3952,13 +3952,13 @@ BOOL fn_80062794(s32 voice) {
 }
 
 // .text:0x800627C4 size:0x34
-s32 fn_800627C4(void) {
+s32 fn_800627C4(u8* state) {
     fn_80021518(0, lbl_800EF808.groups[4]);
     return 0;
 }
 
 // .text:0x800627F8 size:0x34
-s32 fn_800627F8(void) {
+s32 fn_800627F8(u8* state) {
     fn_80021518(0x31, lbl_800EF808.groups[38]);
     return 0;
 }
@@ -3969,7 +3969,7 @@ void fn_8006282C(void) {
 }
 
 // .text:0x8006285C size:0x34
-s32 fn_8006285C(void) {
+s32 fn_8006285C(u8* state) {
     fn_80021518(0x20, lbl_800EF808.groups[37]);
     return 0;
 }
@@ -4124,7 +4124,7 @@ void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
 // .text:0x80062D94 size:0xD8
 // NONMATCHING 95%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
-void fn_80062D94(CharActor* model) {
+void fn_80062D94(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     PlayCharJointSound(model);
 }
 #endif

@@ -31,7 +31,7 @@ extern u8 g_GameLogic[];
 extern u8 g_Pitcher[];
 extern u8 lbl_80366158[];
 extern s16 lbl_3_data_217A4[];
-extern void fn_3_90064(s32);
+extern u32 fn_3_90064(s32 id);
 extern f32 lbl_3_data_21A48[];
 extern void fn_8001D0D0(int, f32);
 extern f32 shortAngleToRad(s16 ang);
@@ -62,7 +62,7 @@ extern void fn_800B0A14_removeQueue(void*);
 #define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
 #endif
 #endif
-extern void fn_80024FA4(void*, u32, void*, int);
+extern void fn_80024FA4(void* model, void* data, void* state, s32 frame);
 extern void* _OSAllocFromHeap(int, int);
 extern void fn_80025C58(void*, void*);
 
@@ -1437,7 +1437,7 @@ extern const f32 lbl_3_rodata_3440;
 extern const f64 lbl_3_rodata_3438;
 extern void fn_80062C24(f32*);
 extern void fn_3_14A90C(f32*);
-extern void fn_3_14B9A0(s32, void*, s16, void*);
+extern void fn_3_14B9A0(u32 a, Vec* b);
 static f32 lbl_3_bss_B6BC;
 void fn_3_11A92C(u8* q, s32 n) {
     f32 v[3];
@@ -1470,7 +1470,7 @@ void fn_3_11A92C(u8* q, s32 n) {
             if (*(s16*)(g_Pitcher + 0x120) == 1) {
                 k = g_Pitcher[0x13E];
                 if (k == 1) {
-                    fn_3_14B9A0(lbl_3_data_217A4[6] + lbl_3_data_217A4[7], lbl_3_data_22620, lbl_3_data_217A4[6], lbl_3_data_217A4);
+                    fn_3_14B9A0(lbl_3_data_217A4[6] + lbl_3_data_217A4[7], (Vec*)lbl_3_data_22620);
                     fn_3_90064(0x30E);
                     return;
                 } else if (k == 3) {
@@ -1504,7 +1504,7 @@ void fn_3_11AB2C(void) {
                 ((BF1*)(lbl_3_common_bss_32724 + 0x21))->b = 1;
             }
             fn_80024DB0(t);
-            fn_80024FA4((u8*)lbl_8036E548.objs + n * 0x90 + 0x34, *(u32*)(lbl_3_common_bss_32724 + 0x30), t, -1);
+            fn_80024FA4((u8*)lbl_8036E548.objs + n * 0x90 + 0x34, *(void**)(lbl_3_common_bss_32724 + 0x30), t, -1);
         } else if (g_Pitcher[0x13E] < 2 && *(s16*)(lbl_3_common_bss_32724 + 0x1E) == 0) {
             *(u16*)(lbl_3_common_bss_32724 + 0x1C) = 0;
             *(f32*)(lbl_3_common_bss_32724 + 0x10) = *(u16*)(lbl_3_common_bss_32724 + 0x1C);

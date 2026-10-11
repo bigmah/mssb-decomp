@@ -4,11 +4,14 @@
 #include "mssbTypes.h"
 #include "Dolphin/GX/GXTypes.h"
 
+struct TexImage;
+struct StadiumArchive;
+
 // Per-frame stadium draw callback: (view matrix, translucent pass, layer).
 typedef void (*StadiumDrawFn)(float (*view)[4], s32 translucent, u32 layer);
 
-u32 setFanObjPtr(void);
-void fn_3_35E4(u32 val);
+void (*setFanObjPtr(void))(void);
+void fn_3_35E4(void (*val)(void));
 void fn_3_35F0(void);
 void fn_3_3638(u8* obj);
 void fn_3_3818(void);

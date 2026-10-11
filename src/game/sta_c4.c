@@ -33,7 +33,16 @@ extern void fn_800B0A14_removeQueue(void*);
 
 // TODO type: defined as (s16* sx, s16* sy, f32 x, f32 y, f32 z) in main/file_800527C4.h (same ABI);
 // the original callers evaluate the floats first, as do sta_c2 and rep_1FD8.
-extern void fn_800528C0(f32 x, f32 y, f32 z, s16* sx, s16* sy);
+extern void fn_800528C0(s16* sx, s16* sy, f32 x, f32 y, f32 z);
+// A few matched callers evaluate the floats before the out pointers. On PPC the
+// argument order makes no difference to the call, so the matching build calls
+// through a float-first cast there; the port uses the real prototype.
+#if NONMATCHING
+#define fn_800528C0_xyz(x, y, z, sx, sy) fn_800528C0(sx, sy, x, y, z)
+#else
+#define fn_800528C0_xyz(x, y, z, sx, sy) ((void (*)(f32, f32, f32, s16*, s16*))fn_800528C0)(x, y, z, sx, sy)
+#endif
+
 #include "Dolphin/GX/GXBump.h"
 #include "Dolphin/GX/GXTexture.h"
 extern void fn_3_B9510(s32);
@@ -42,8 +51,8 @@ extern void fn_3_B9510(s32);
 extern u8 lbl_3_data_81DC[];
 extern const f32 lbl_3_rodata_3064;
 extern void fn_3_8B890(s32);
-extern void fn_3_8BA60(s32, s32, s32);
-extern s32 fn_3_8BBC4(s32, s32, s32, s32);
+extern void fn_3_8BA60(s32 handle, f32* pos, f32* vel);
+extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* vel, s32 kind);
 extern const f32 lbl_3_rodata_2FB8[3];
 extern const f32 lbl_3_rodata_2FC4;
 extern const f64 lbl_3_rodata_2FC8;
@@ -162,10 +171,10 @@ void fn_3_F8454(void) {
             lbl_3_bss_B664[0] = 1;
         }
     } else if (lbl_3_bss_B664[0] != 0) {
-        lbl_3_bss_B574[0] = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings.StadiumID] + 3, 0, 0, 2);
+        lbl_3_bss_B574[0] = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings.StadiumID] + 3, NULL, NULL, 2);
         lbl_3_bss_B664[0] = 0;
     } else {
-        fn_3_8BA60(lbl_3_bss_B574[0], 0, 0);
+        fn_3_8BA60(lbl_3_bss_B574[0], NULL, NULL);
     }
 }
 
@@ -401,7 +410,7 @@ void fn_3_F8E20(void) {
 void fn_3_F9088(Vec* pos, s32 idx) {
     s16 x;
     s16 y;
-    fn_800528C0(pos->x, pos->y, pos->z, &x, &y);
+    fn_800528C0_xyz(pos->x, pos->y, pos->z, &x, &y);
     lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->x = x;
     lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->y = y;
     lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->z = 0.0f;
@@ -1067,7 +1076,7 @@ void fn_3_FA58C(void** files) {
             }
         }
 
-        fn_3_35E4((u32)fn_3_C9878); // TODO type: fn_3_35E4 stores a callback (u32 in rep_1C0)
+        fn_3_35E4(fn_3_C9878);
         {
             StaExt10* e = lbl_3_common_bss_350E4.ext10;
             e->file = g_UNK_StadiumDetails._00;

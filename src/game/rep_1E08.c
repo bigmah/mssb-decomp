@@ -562,7 +562,7 @@ void fn_3_BC2DC(void) {
 extern s32 lbl_3_bss_9968;
 extern s32 g_UNK_StadiumDetails[];
 extern int rand(void);
-extern void fn_3_90064(int);
+extern u32 fn_3_90064(s32 id);
 extern void fn_80028628(Vec* from, Vec* to, void* prm, void* shape, u32* palette, void* spark, s32 flash);
 static u8 s_BF070a[8] = {0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0};
 static u8 s_BF070b[8][3] = {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x5C, 0x40, 0x16}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}};
@@ -1069,7 +1069,7 @@ void fn_3_BD7D8(void) {
 }
 
 // .text:0x000BD7DC size:0x30 mapped:0x806FC870
-void fn_3_BD7DC(u32 a) {
+void fn_3_BD7DC(MtxPtr a) {
     fn_800BD670(*(void**)(lbl_8036E548 + 0x70), a);
 }
 

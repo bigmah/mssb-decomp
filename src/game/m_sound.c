@@ -1592,7 +1592,7 @@ u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x00090064 size:0xEC mapped:0x806CF0F8
-void fn_3_90064(s32 id) {
+u32 fn_3_90064(s32 id) {
     s32 i;
     if (g_d_GameSettings.GameModeSelected != 7) {
         OSPanic(lbl_3_rodata_1590, 0x402, lbl_3_rodata_15DC);
@@ -1605,7 +1605,7 @@ void fn_3_90064(s32 id) {
     if (i == 0x39) {
         OSPanic(lbl_3_rodata_1590, 0x40D, lbl_3_rodata_15EC);
     }
-    sndFXStartEx((u16)id, lbl_3_data_84F4[i], 0x3F, 0);
+    return sndFXStartEx((u16)id, lbl_3_data_84F4[i], 0x3F, 0);
 }
 
 // .text:0x00090150 size:0xD0 mapped:0x806CF1E4

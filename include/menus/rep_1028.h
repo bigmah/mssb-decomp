@@ -107,7 +107,7 @@ void fn_2_91218(u8* object);
 
 void fn_2_90A2C(u8* object);
 
-void fn_2_9033C(s32 index, const void* position, f32 value);
+void fn_2_9033C(s32 index, const void* position, const f32* unused, f32 value, f32 unused2, f32 unused3); // rep_0B08 passes the extras
 
 void fn_2_8F7B0(s32 index, s16 type);
 

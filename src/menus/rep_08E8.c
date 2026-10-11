@@ -167,7 +167,7 @@ s32 fn_2_46D00(void) {
 
 void fn_2_481B8(void) {
     u8* camera = (u8*)fn_80052768_getCamera(0);
-    fn_800BD670(*(void**)(lbl_8036E548 + 0x60), (u32)(camera + 0x40));
+    fn_800BD670(*(void**)(lbl_8036E548 + 0x60), (MtxPtr)(camera + 0x40));
 }
 
 // fn_2_474FC, size:0x44
@@ -256,7 +256,7 @@ s32 fn_2_49EFC(const u16* string, u16 style) {
 }
 
 // fn_2_46C88, size:0x78
-void fn_2_46C88(s32 index) {
+void fn_2_46C88(s32 index, s32 unused) {
     Vec position;
     fn_2_68690(0);
     fn_2_68DAC(index, &position);

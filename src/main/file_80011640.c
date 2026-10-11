@@ -99,7 +99,7 @@ extern void fn_800BD548(ActorObject* slot, s32 count, ...);
 extern s32 fn_80063010(CharActor* actor, ActorObject* slot);
 extern s32 fn_8004B7B4(CharActor* actor, ActorObject* slot);
 extern s32 fn_8004BD6C(CharActor* actor, ActorObject* slot);
-extern void fn_80052634(CharActor* actor, ActorObject* slot);
+extern void* fn_80052634(CharActor* actor, ActorObject* slot);
 extern s32 fn_80062ED4(CharActor* actor, ActorObject* slot);
 extern void fn_800238E0(ActorObjectTable* list, u8 first, u8 last, void* layout);
 extern void OSPanic(const char* file, int line, const char* msg, ...);

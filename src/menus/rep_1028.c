@@ -394,7 +394,7 @@ void fn_2_90A2C(u8* object) {
 }
 
 // fn_2_9033C, size:0x6C
-void fn_2_9033C(s32 index, const void* position, f32 value) {
+void fn_2_9033C(s32 index, const void* position, const f32* unused, f32 value, f32 unused2, f32 unused3) {
     MenuSlot* slot = &lbl_2_bss_1A8248[0]->slots[index];
     memcpy(slot, position, 0xC);
     *(f32*)((u8*)slot + 0x28) = value;

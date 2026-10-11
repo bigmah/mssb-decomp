@@ -19,7 +19,7 @@ extern struct {
     u8 _00[0x28];
     u8 _28;
 } lbl_80366158;
-void fn_8002C2D0(Vec *, Vec *);
+void fn_8002C2D0(Vec* pos, Vec* dir, void* prm); // prm: ParticleParams5*
 
 // 95%: only the store addressing differs (orig: add r5,r3,r5; stw 0(r5); ours: stwx) and lwz/lbz order
 // .text:0x0015F574 size:0xD4 mapped:0x8079E608
@@ -39,7 +39,7 @@ void fn_3_15F574(void) {
     if (mag) {
         lbl_3_data_27C98[idx]._00 = lbl_3_common_bss_35154._04;
         if (lbl_80366158._28 == 0) {
-            fn_8002C2D0(&lbl_3_common_bss_35154._440, &diff);
+            fn_8002C2D0(&lbl_3_common_bss_35154._440, &diff, &lbl_3_data_27C98[idx]);
         }
     }
 }

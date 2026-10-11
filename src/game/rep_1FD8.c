@@ -105,7 +105,7 @@ struct DspObj2 {
     DspObj2* next;
 };
 extern void DOSetWorldMatrix(void*, void*);
-extern void DOVARenderSkin(void*, void*, void*, void*, int, int);
+extern void DOVARenderSkin(void* obj, MtxPtr m, void* m2, void* m3, u8 flag, void* args); // args: va_list*
 extern void fn_8003A8A0(void* model, Mtx viewMtx, s32 unused);
 extern u32 lbl_3_bss_9D88;
 extern u16 lbl_3_data_177F0;
@@ -120,7 +120,16 @@ extern Vec lbl_3_bss_9DE8[];
 extern u8 lbl_3_bss_9E48[];
 extern u8* lbl_3_bss_9E50[];
 extern u8 lbl_80371C30[];
-extern void fn_800528C0(f32, f32, f32, s16*, s16*);
+extern void fn_800528C0(s16* sx, s16* sy, f32 x, f32 y, f32 z);
+// A few matched callers evaluate the floats before the out pointers. On PPC the
+// argument order makes no difference to the call, so the matching build calls
+// through a float-first cast there; the port uses the real prototype.
+#if NONMATCHING
+#define fn_800528C0_xyz(x, y, z, sx, sy) fn_800528C0(sx, sy, x, y, z)
+#else
+#define fn_800528C0_xyz(x, y, z, sx, sy) ((void (*)(f32, f32, f32, s16*, s16*))fn_800528C0)(x, y, z, sx, sy)
+#endif
+
 // fn_3_C2244's task (queue node; data starts at 0x14)
 typedef struct C2244Task {
     /*0x00*/ u8 hdr[0x14];
@@ -143,7 +152,7 @@ extern u8 lbl_3_data_177F8[];
 extern s32 lbl_3_data_177F4;
 extern u8 lbl_803C5090[];
 extern u8 lbl_8036E548[];
-extern void fn_800BEBCC(int, Vec*);
+extern void fn_800BEBCC(u8 index, Vec dir);
 extern const f32 lbl_3_rodata_20F0;
 extern void fn_3_CB7E8(f32, f32, f32);
 extern f32 lbl_3_rodata_2150;
@@ -329,7 +338,7 @@ void fn_3_C2310(void* pp, void* cam) {
         if (o->w7C != 0) {
             fn_8003A8A0(o->w14, m2, 1);
         } else {
-            DOVARenderSkin(o->w14, m2, o->w64, o->w68, 0, 0);
+            DOVARenderSkin(o->w14, m2, o->w64, o->w68, 0, NULL);
         }
     }
     while (n != 0) {
@@ -365,7 +374,6 @@ void fn_3_C23E0(void) {
 // .text:0x000C24A0 size:0x1A4 mapped:0x80701534
 void fn_3_C24A0(void) {
     Vec n;
-    Vec d;
     u8 a;
     u8* q;
     *(s16*)(lbl_803CC1B8 + 0x10) -= 1;
@@ -399,8 +407,7 @@ void fn_3_C24A0(void) {
     n.y = -lbl_80367318.y;
     n.z = -lbl_80367318.z;
     PSVECNormalize(&n, &n);
-    d = n;
-    fn_800BEBCC(0, &d);
+    fn_800BEBCC(0, n);
 }
 
 // .text:0x000C2644 size:0x330 mapped:0x807016D8
@@ -743,7 +750,7 @@ void fn_3_C3C2C(void) {
         switch (*st) {
         case 1: {
             s16 y1, x1;
-            fn_800528C0(pv->x, pv->y, pv->z, &x1, &y1);
+            fn_800528C0(&x1, &y1, pv->x, pv->y, pv->z);
             *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x48) = x1;
             *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x4C) = y1;
             *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x50) = 0.0f;
@@ -754,7 +761,7 @@ void fn_3_C3C2C(void) {
         }
         case 2: {
             s16 y2, x2;
-            fn_800528C0(pv->x, pv->y, pv->z, &x2, &y2);
+            fn_800528C0(&x2, &y2, pv->x, pv->y, pv->z);
             *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x48) = x2;
             *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x4C) = y2;
             *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x50) = 0.0f;
@@ -777,7 +784,7 @@ void fn_3_C3C2C(void) {
 void fn_3_C3E94(f32* pos, s32 idx) {
     s16 x;
     s16 y;
-    fn_800528C0(pos[0], pos[1], pos[2], &x, &y);
+    fn_800528C0_xyz(pos[0], pos[1], pos[2], &x, &y);
     *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x48) = x;
     *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x4C) = y;
     *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x50) = 0.0f;

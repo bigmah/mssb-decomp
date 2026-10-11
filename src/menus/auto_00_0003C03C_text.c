@@ -18,7 +18,7 @@ extern u8* lbl_803CC1B8;
 extern u8 lbl_80366B18[];
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_12298[];
-extern void fn_800111B4(s32);
+extern void fn_800111B4(void* table); // MsgTable*
 extern void fn_2_94854(u8);
 extern void fn_2_9461C(s32);
 extern void fn_2_94604(u8);
@@ -264,7 +264,7 @@ void fn_2_409CC(void) {
         break;
     case 1:
         if ((s32)lbl_803C6CF8[0x715] == 1) {
-            fn_800111B4(*(s32*)(lbl_80366B18 + 0x7A8));
+            fn_800111B4(*(void**)(lbl_80366B18 + 0x7A8));
             o[0x28] = 2;
         }
         break;

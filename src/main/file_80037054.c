@@ -301,7 +301,7 @@ void fn_80037AA0(RigidBody* body, s32 charIdx, void (*callback)(void), u16 joint
 }
 
 // .text:0x80037B18 size:0x94
-void fn_80037B18(RigidBody* rb, Vec* force) {
+void fn_80037B18(RigidBody* rb, Vec* force, f32 unused) {
     Vec f;
     Vec arm;
     Vec t;

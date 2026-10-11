@@ -127,7 +127,7 @@ void fn_80037768(RigidBody* rb, s32 axis, s32 steps, f32 len, f32 frac, f32 radi
 void fn_80037964(JointAttachTask* task);
 void fn_80037984(void);
 void fn_80037AA0(RigidBody* body, s32 charIdx, void (*callback)(void), u16 joint, void* anim);
-void fn_80037B18(RigidBody* rb, Vec* force);
+void fn_80037B18(RigidBody* rb, Vec* force, f32 unused); // challenge passes a float it ignores
 s32 fn_80037BAC(RigidBody* rb);
 void fn_8003819C(RigidBody* rb);
 MtxPtr fn_800383BC(RigidBody* rb);

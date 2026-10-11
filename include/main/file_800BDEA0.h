@@ -147,7 +147,7 @@ void fn_800BF058(ShadowDrawCallback callback);
 
 ShadowState* fn_800BF068(void);
 
-void SKNLoadFile(SKNHeader* hdr);
+void SKNLoadFile(SKNHeader* hdr, void* skinPositions); // skinPositions unused
 void SKNFlushByIndex1(u16* indices, u32 count, void* base);
 void SKNFlushByIndex2(u16* indices, u32 count, void* base);
 void SKNBzero32B(void* base, u32 size);

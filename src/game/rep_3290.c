@@ -46,7 +46,7 @@ extern void fn_3_1500C8(void);
 extern f32 lbl_3_data_215C8[];
 extern f32 lbl_3_data_21688[];
 extern void fn_8004C108(f32*, s32);
-extern void fn_3_90064(s32);
+extern u32 fn_3_90064(s32 id);
 #pragma dont_inline on
 
 // .text:0x001133C4 size:0x338 mapped:0x80752458

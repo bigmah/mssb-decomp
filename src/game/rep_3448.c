@@ -22,7 +22,7 @@ extern u8 lbl_800EF808[];
 extern u8 lbl_800EFBA4[];
 extern void fn_800363D8(void*, int, int, int, s32);
 extern void fn_800362F0(void*, int);
-extern void fn_3_90064(int);
+extern u32 fn_3_90064(s32 id);
 extern u32 sndFXStartEx(int, u8, u8, u8);
 extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_23894[];
@@ -1135,8 +1135,7 @@ void fn_3_121908(void) {
         REP_OBJC(q, 1)->mode = mode;
         REP_OBJC(q, 6)->mode = mode;
         if (REP_OBJC(q, 6)->status == 2 && REP_OBJC(q, 1)->status == 2) {
-            // TODO type: fn_3_90064 returns the voice id (declared void in game/m_sound.h)
-            q->u24.voice = ((u32 (*)(s32))fn_3_90064)(lbl_3_data_81FC[0x1C]);
+            q->u24.voice = fn_3_90064(lbl_3_data_81FC[0x1C]);
             q->state = 4;
         }
         break;

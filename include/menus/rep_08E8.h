@@ -151,7 +151,7 @@ void fn_2_489DC(void);
 
 s32 fn_2_49EFC(const u16* string, u16 style);
 
-void fn_2_46C88(s32 index);
+void fn_2_46C88(s32 index, s32 unused); // rep_0B08 passes 0
 
 void fn_2_48D54(void);
 

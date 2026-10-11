@@ -72,7 +72,7 @@ extern void fn_80011140(void);
 extern void DrawTextOnCondition(u8 layer);
 extern void fn_800B27A4(s32 arg0);
 extern void fn_800B27DC(Mtx44 mtx, s32 arg1);
-extern void fn_800B2854(void* buf, u32 size, Mtx44 mtx, s32 arg3, s32 count, s32* modes, s32 arg6);
+extern void fn_800B2854(u8* buf, s32 bufSize, Mtx44 proj, s32 projType, s32 numLayers, s32* layerIds, s32* layerSizes);
 
 static inline s32 spaniFindSlot(s32 id) {
     s32 i;
@@ -712,7 +712,7 @@ void fn_80036A3C(void) {
             break;
         }
     }
-    fn_800B2854(lbl_801F86C0, 0x45000, lbl_801F8680, 0, 23, modes, 0);
+    fn_800B2854(lbl_801F86C0, 0x45000, lbl_801F8680, 0, 23, modes, NULL);
     fn_800B27A4(10);
     for (i = 0xD; i < 23; i++) {
         fn_800B0D38(i, 2);

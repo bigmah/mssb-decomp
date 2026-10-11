@@ -23,9 +23,9 @@ void fn_2_4C36C(void);
 
 void fn_2_54B38(void);
 
-void fn_2_53F88(s32 context);
+void fn_2_53F88(void* context); // the running task, passed to each draw entry
 
-void fn_2_53F04(s32 context);
+void fn_2_53F04(void* context);
 
 s16 fn_2_4C3C4(s32 index);
 

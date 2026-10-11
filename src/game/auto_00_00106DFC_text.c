@@ -57,7 +57,7 @@ extern u8 lbl_8034E9A0[];
 extern u8 lbl_800E86F0[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
-extern void fn_3_90064(s32);
+extern u32 fn_3_90064(s32 id);
 extern void fn_3_5A6D4(s32);
 extern void fn_3_5E60(void);
 extern void fn_3_B95EC(void);

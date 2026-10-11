@@ -510,7 +510,7 @@ ShadowState* fn_800BF068(void) {
 }
 
 // .text:0x800BF074 size:0x130
-void SKNLoadFile(SKNHeader* hdr) {
+void SKNLoadFile(SKNHeader* hdr, void* skinPositions) {
     SKN1List* l1;
     u32 i;
     SKN2List* l2;

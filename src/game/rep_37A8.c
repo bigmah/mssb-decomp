@@ -55,7 +55,7 @@ extern u8 g_Controls[];
 extern void fn_3_157570(void);
 extern void fn_3_DE4FC(void);
 extern void fn_3_154214(void);
-extern void fn_3_90064(s32 id);
+extern u32 fn_3_90064(s32 id);
 
 // Thrown-ball slots at g_Minigame + 0xA8 (40 of them).
 typedef struct {

@@ -20,8 +20,8 @@ extern f32 lbl_3_rodata_364C;
 extern f32 lbl_3_rodata_3690;
 // The original passes the raw (unextended) byte to these s8-taking functions,
 // as an unprototyped call does.
-extern void fn_3_14E988();
-extern void fn_800115C8();
+extern void fn_3_14E988(s32 arg); // defined (s8); the calls here pass an int (no extsb)
+extern void fn_800115C8(s32 arg); // defined (s8); the calls here pass an int (no extsb)
 extern f32 lbl_3_rodata_35D0;
 extern f32 lbl_3_data_219AC[];
 extern s16 lbl_3_data_21A30[];
@@ -51,7 +51,7 @@ extern f64 lbl_3_rodata_35E0;
 extern f32 lbl_3_rodata_365C;
 extern void fn_800528B4(void);
 extern int rand();
-extern void fn_3_90064(s32);
+extern u32 fn_3_90064(s32 id);
 extern void fn_3_150010(s8 a);
 extern void fn_3_106EB0(void);
 extern f32 lbl_3_data_21A64;

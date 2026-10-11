@@ -20,7 +20,7 @@
 
 extern void* _OSAllocFromHeap(s32 align, s32 size);
 
-// rep_1D58 (stadium objects). Not from rep_1D58.h: there fn_3_B97DC is still (u8*, u32),
+// rep_1D58 (stadium objects). Not from rep_1D58.h: there fn_3_B97DC takes u8*,
 // fn_3_B7FC8 (void*, void*) and fn_3_B9D68 a (void) stub.
 void fn_3_B939C(void);
 // m_sound.h (can't be included next to UnknownHomes_Game.h: playSoundEffect differs)

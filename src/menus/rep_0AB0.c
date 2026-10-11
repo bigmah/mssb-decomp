@@ -544,7 +544,7 @@ void fn_2_5AE54(void) {
         task->timer = 0;
         break;
     }
-    fn_2_53F88((s32)task); // TODO type: fn_2_53F88 takes the task
+    fn_2_53F88(task);
     fn_2_54120();
     if (lbl_2_bss_1A8234->done != 0) {
         fn_2_53DF8((u8*)task);

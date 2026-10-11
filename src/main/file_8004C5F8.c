@@ -2128,11 +2128,12 @@ void fn_8005240C(CharActor* actor, ActorObject* anim) {
 }
 
 // .text:0x80052634 size:0x58
-void fn_80052634(CharActor* actor, ActorObject* anim) {
+MeterTask* fn_80052634(CharActor* actor, ActorObject* anim) {
     MeterTask* task = fn_800B0A5C_insertQueue(fn_800521B0, 4);
     task->actor = actor;
     task->anim = anim;
     task->kind = actor->kind;
+    return task;
 }
 
 // fn_8005268C, size:0x8

@@ -1541,7 +1541,7 @@ extern u8 lbl_2_data_12180[];
 extern u8 lbl_2_data_12170[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
-extern void fn_80009018(void*);
+extern void* fn_80009018(void* heap);
 extern void fn_800AD070(void);
 extern void fn_800AD500(void*, void*);
 extern s32 fn_800AD6BC(void*);
@@ -1597,7 +1597,7 @@ void fn_2_37460(void) {
         break;
     case 4:
         if (fn_800AD780(d->heap) != 0) {
-            fn_80009018(0);
+            fn_80009018(NULL);
             fn_800AD9F4(d->heap);
             fn_800ADBFC();
             o[0x28]++;
@@ -2353,7 +2353,7 @@ void fn_2_37630(void) {
     }
     case 4:
         if (fn_800AD780(d->heap) != 0) {
-            fn_80009018(0);
+            fn_80009018(NULL);
             fn_800AD9F4(d->heap);
             fn_800ADBFC();
             o[0x28]++;

@@ -39,7 +39,7 @@ extern int random_fn_3_9EE24(int max);
 extern f32 lbl_3_rodata_351C[];
 extern f32 lbl_3_rodata_3518;
 extern void fn_8004C108(f32*, s32);
-extern void fn_3_90064(s32);
+extern u32 fn_3_90064(s32 id);
 extern u8 lbl_3_data_18C48[];
 extern s32 fn_3_6C938(s32, s32);
 extern void fn_3_FBD70(void);

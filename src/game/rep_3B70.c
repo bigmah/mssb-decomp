@@ -23,8 +23,8 @@ extern Dat3B70 lbl_3_data_271A8;
 extern u8 lbl_3_common_bss_35154[];
 extern u8 g_Ball[];
 extern u8 g_GameLogic[];
-extern u8* fn_80052734(s32);
-extern void fn_80024390(void*, s32);
+extern void* fn_80052734(s32 index);
+extern void fn_80024390(f32* a, f32* b, s32 c);
 extern void fn_800340F4(void*);
 extern void fn_800A7D4C(s32, void*);
 extern const f32 lbl_3_rodata_3BC0;
@@ -49,10 +49,9 @@ void fn_3_15C3F8(void) {
     e = (Ent3B70*)((u8*)e + (*c * 0x110 + lbl_803CBBC0 * 0x88));
     *c += 1;
     e->cp = c;
-    fn_80052734(0);
-    fn_80024390((u8*)e + 0x38, 0);
+    fn_80024390(fn_80052734(0), (f32*)((u8*)e + 0x38), 0);
     PSMTXTrans(e->m, *(f32*)(lbl_3_common_bss_35154 + 0x440), *(f32*)(lbl_3_common_bss_35154 + 0x444), *(f32*)(lbl_3_common_bss_35154 + 0x448));
-    PSMTXConcat((f32(*)[4])(fn_80052734(0) + 0x40), e->m, e->m);
+    PSMTXConcat((f32(*)[4])((u8*)fn_80052734(0) + 0x40), e->m, e->m);
     if (*(s16*)(g_GameLogic + 0x10A) >= 0) {
         sel = 2;
     } else {

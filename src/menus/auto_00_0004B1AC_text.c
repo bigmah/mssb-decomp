@@ -44,7 +44,7 @@ extern void fn_2_47CFC(void);
 
 typedef struct MenuDrawEntry MenuDrawEntry;
 struct MenuDrawEntry {
-    /*0x00*/ void (*draw)(s32 context, MenuDrawEntry* entry);
+    /*0x00*/ void (*draw)(void* context, MenuDrawEntry* entry);
     /*0x04*/ s16 _04;
     /*0x06*/ s16 _06;
     /*0x08*/ s16 _08;
@@ -60,7 +60,7 @@ extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A8230[];
 
 // fn_2_53F04, size:0x84
-void fn_2_53F04(s32 context) {
+void fn_2_53F04(void* context) {
     s32 row;
     s32 column;
     for (row = 0; row < 10; row++) {
@@ -74,7 +74,7 @@ void fn_2_53F04(s32 context) {
 }
 
 // fn_2_53F88, size:0x84
-void fn_2_53F88(s32 context) {
+void fn_2_53F88(void* context) {
     s32 row;
     s32 column;
     for (row = 0; row < 70; row++) {
@@ -1124,8 +1124,8 @@ extern u8* lbl_803CC1B8[];
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_1FF84[];
 extern u8 lbl_2_data_1FF94[];
-extern void fn_800216F8(s32, void*);
-extern s32 fn_800627C4(void);
+extern void fn_800216F8(u8 group, s32 (*callback)(u8* state));
+extern s32 fn_800627C4(u8* state);
 extern void fn_2_8E8A4(void);
 
 // fn_2_549B4, size:0x184
@@ -1289,7 +1289,7 @@ void fn_2_5389C(void) {
     case 1:
         break;
     }
-    fn_2_53F88((s32)o);
+    fn_2_53F88(o);
     for (i = 0; i < 0x46; i++) {
         lbl_2_bss_1A8234[0][0x162604 + i] = 0;
         lbl_2_bss_1A8234[0][0x16264A + i] = 0;

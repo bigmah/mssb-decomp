@@ -8,7 +8,7 @@
 #include "static/GameSettings.h"
 #pragma dont_inline on
 extern s32 fn_3_B0CF4(void);
-extern s32 fn_3_B0D2C(void);
+extern void fn_3_B0D2C(void);
 extern u8 lbl_3_data_19C4[];
 
 extern u8 lbl_3_data_1ABC[];
@@ -306,7 +306,7 @@ s32 fn_3_1EFE4(void) {
         return 0;
     }
     if (g_GameLogic.secondaryGameMode == 0xD) {
-        fn_3_B0D2C(); // result unused: the original falls through to the batterAISwingInd test
+        fn_3_B0D2C();
     } else {
         if (g_AiLogic.aISwingDecisionRelated_noSwingOverride != 0) {
             return 0;

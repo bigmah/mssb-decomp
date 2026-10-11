@@ -7,7 +7,7 @@ extern u8 g_Minigame[];
 extern u8 lbl_3_data_21804[];
 extern void fn_3_157DB8(s16);
 extern void fn_3_14C904(void);
-extern void fn_3_90064(s32);
+extern u32 fn_3_90064(s32 id);
 extern f32 lbl_3_data_2188C[];
 extern s16 lbl_3_data_218A8;
 extern f64 lbl_3_rodata_3760;
@@ -47,7 +47,7 @@ extern void fn_3_7D9DC(int i);
 extern u8 lbl_3_data_2187C[3][2]; // kind weights per time stage
 extern int RandomIndexFromWeights(u8* weights, int count);
 extern int random_fn_3_9EE24(int max);
-extern void fn_3_1541C4(u8 slot, u8 kind, Vec* pos);
+extern void fn_3_1541C4(u32 slot, u32 kind, Vec* pos);
 extern void fn_3_106EB0(void);
 extern u8 lbl_3_data_2192C[];
 extern u8 lbl_3_data_2195C[];
@@ -147,7 +147,7 @@ extern void fn_3_7D9DC(int i);
 extern u8 lbl_3_data_2187C[3][2]; // kind weights per time stage
 extern int RandomIndexFromWeights(u8* weights, int count);
 extern int random_fn_3_9EE24(int max);
-extern void fn_3_1541C4(u8 slot, u8 kind, Vec* pos);
+extern void fn_3_1541C4(u32 slot, u32 kind, Vec* pos);
 extern void fn_3_106EB0(void);
 extern u8 lbl_3_data_2192C[];
 extern u8 lbl_3_data_2195C[];
@@ -176,7 +176,7 @@ extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst,
             (x) = *(f32*)__float_nan;                                                   \
         }                                                                               \
     } while (0)
-extern void fn_3_152AB4(u8 item, u8 runner, u8 type);
+extern void fn_3_152AB4(u8 item, u8 runner);
 extern u32 fn_3_90220(s32 idx, s32 off);
 extern void fn_3_1608F0(s32 kind, s32 value, s32 extra);
 extern const f32 lbl_3_rodata_3758; // 2.0f
@@ -885,7 +885,7 @@ void fn_3_13EA30(void) {
                 REP_MG->points[REP_MG->_18FC[pick]] += lbl_3_data_21884[kind][1];
                 type = REP_MG->itemState[i];
                 REP_MG->itemState[i] = type + 100;
-                fn_3_152AB4(i, pick, type);
+                fn_3_152AB4(i, pick);
                 if (kind == 2) {
                     fn_3_90064(0x2EA);
                     fn_3_90220(g_Runners[pick]._0E2, 0);

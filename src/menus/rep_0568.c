@@ -86,7 +86,7 @@ extern void fn_800B0A14_removeQueue(void* unused);
 #endif
 #endif
 
-extern void ACTSetAnimation(void* act, void* bank, s32 a, u16 anim, f32 frame, f32 speed);
+extern void ACTSetAnimation(void* act, void* bank, char* name, u16 anim, f32 frame, f32 speed);
 extern void fn_800B4CA0(GameActor* model, f32 v);
 extern void fn_800B4C04(GameActor* model, f32 v);
 extern void fn_800B4AFC(GameActor* model, u8 loop);
@@ -367,7 +367,7 @@ void fn_2_190DC(ActorObjectTable* list, MtxPtr view) {
             continue;
         }
         if (slot->setAnimation != 0) {
-            ACTSetAnimation(slot->actor, slot->animBank, 0, slot->seqNum, 0.0f, slot->speed);
+            ACTSetAnimation(slot->actor, slot->animBank, NULL, slot->seqNum, 0.0f, slot->speed);
         }
         if (slot->setTime != 0) {
             fn_800B4CA0(slot->actor, slot->time);
@@ -407,7 +407,7 @@ void fn_2_19224(ActorObjectTable* list, MtxPtr view) {
             continue;
         }
         if (slot->setAnimation != 0) {
-            ACTSetAnimation(slot->actor, slot->animBank, 0, slot->seqNum, 0.0f, slot->speed);
+            ACTSetAnimation(slot->actor, slot->animBank, NULL, slot->seqNum, 0.0f, slot->speed);
         }
         if (slot->setTime != 0) {
             fn_800B4CA0(slot->actor, slot->time);

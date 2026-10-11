@@ -53,7 +53,7 @@ void fn_2_7207C(void);
 
 s32 fn_2_74DB8(s32 a);
 
-u8 fn_2_75B58(s32 a, s32 index);
+u8 fn_2_75B58(u8* a, s32 index);
 
 void fn_2_747FC(void);
 void fn_2_834F0(void);
@@ -70,7 +70,7 @@ void fn_2_738C8(void);
 s32 fn_2_7302C(void);
 void fn_2_7265C(void);
 void fn_2_72E54(u8* o);
-void fn_2_7E194(s32 o, s32 index);
+void fn_2_7E194(u8* o, s32 index);
 void fn_2_72A88(u8* o);
 void fn_2_7F8BC(u8* o, s32 index);
 void fn_2_808D8(u8* o, s32 index);

@@ -119,7 +119,7 @@ void fn_3_258(void) {
     }
 }
 
-extern void fn_800BF038(int);
+extern void fn_800BF038(void (*callback)(Mtx view, s32 arg));
 extern void fn_3_C0824(void);
 extern void fn_3_5AE9C(void);
 extern s32 fn_80036C88(void*, void*);
@@ -130,7 +130,7 @@ extern u8 lbl_3_data_118[];
 // .text:0x00000464 size:0x38
 void _epilog(void) {
     g_d_GameSettings._55 = 0;
-    fn_800BF038(0);
+    fn_800BF038(NULL);
     fn_3_BF20C();
 }
 

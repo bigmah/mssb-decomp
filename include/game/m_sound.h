@@ -27,7 +27,7 @@ void fn_3_8FC0C(void);
 void fn_3_8FC80(void);
 void fn_3_8FF18(void);
 u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z);
-void fn_3_90064(s32 id);
+u32 fn_3_90064(s32 id); // returns the voice id
 u32 fn_3_90150(s32 a, s32 b);
 
 void fn_3_902FC(void);

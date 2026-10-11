@@ -255,8 +255,8 @@ s32 fn_3_6D658(s32, s16, s16);
 void fn_3_1AE44(u8, u16, f32, f32, f32); // rep_720.h pulls in GameSettings.h
 void fn_3_161588(int, s16);
 // TODO type: these disagree with their own units' headers
-void fn_3_59918(s32 x);           // defined as (s32 x, s32 unused)
-void fn_3_1682AC(int, int);       // header: (CharActor* actor, s8 kind); callers pass the actor as an int
+void fn_3_59918(s32 x, s32 unused);
+void fn_3_1682AC(void* actor, s8 kind); // actor: CharActor* (auto_00_00167CC4_text.h)
 void fn_3_16D5E4(u8);             // rep_4090.h still has the (void) stub
 int __abs(int);
 
@@ -459,7 +459,7 @@ static inline int StartJumpInline(int i) {
     *(s16*)(f + 0x1AE) = (n + n) + k + 2;
     f[0x204] = 0;
     if (type != 0) {
-        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
+        fn_3_1682AC(((void**)lbl_8036E548)[i + 0xB14], 6);
     }
     (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
     return 1;
@@ -846,7 +846,7 @@ static inline int StartDiveInl(int i) {
     *(s16*)(f + 0x1B0) = n + 1;
     f[0x204] = 0;
     if (type != 0) {
-        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
+        fn_3_1682AC(((void**)lbl_8036E548)[i + 0xB14], 6);
     }
     (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
     return 1;
@@ -1069,7 +1069,7 @@ int fn_3_258D8(int i) {
     *(s16*)(f + 0x1B0) = n + 1;
     f[0x204] = 0;
     if (type != 0) {
-        fn_3_1682AC(((int*)lbl_8036E548)[i + 0xB14], 6);
+        fn_3_1682AC(((void**)lbl_8036E548)[i + 0xB14], 6);
     }
     (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
     return 1;
@@ -1302,7 +1302,7 @@ void fn_3_26664(int i) {
     return;
 go:
     if (checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 10) != 0) {
-        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 10);
+        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 10);
         playSoundEffect(0x1A8);
         return;
     }
@@ -1358,7 +1358,7 @@ go:
 }
 
 // .text:0x00026A74 size:0xBD4 mapped:0x80665B08
-// NONMATCHING 88%: the original inlines fn_3_27764 for the already-caught case; we call it (same behaviour); fn_3_59918 is called with its one declared argument (original also zeroes r4)
+// NONMATCHING 88%: the original inlines fn_3_27764 for the already-caught case; we call it (same behaviour)
 // nmverify: fn_3_27764 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_3_26A74(int i) {
@@ -1407,7 +1407,7 @@ void fn_3_26A74(int i) {
         if (g_Ball[0x1BC9] == 0 && *(s16*)(g_Ball + 0x1B7A) != -1 && g_FieldingLogic[0x108] == 0 &&
             *(s16*)(g_Ball + 0x1B5E) + 15 > *(s16*)(g_Ball + 0x1B66) && g_FieldingLogic[0x108] == 0 &&
             g_d_GameSettings[7] != 6) {
-            fn_3_59918(4);
+            fn_3_59918(4, 0);
         }
     }
     if (f[0x252] == 2) {
@@ -1424,10 +1424,10 @@ void fn_3_26A74(int i) {
                 if (r[0x123] == 1) {
                     if (*(s16*)(f + 0x18C) == *(s16*)(r + 0xE6) && *(s16*)(r + 0xFA) < 120 &&
                         (r[0x128] != 2 || r[0x124] == *(s16*)(r + 0xE6))) {
-                        fn_3_59918(2);
+                        fn_3_59918(2, 0);
                     }
                 } else if (r[0x123] == 3 && *(s16*)(f + 0x18C) == 0 && *(s16*)(r + 0xFA) < 60) {
-                    fn_3_59918(2);
+                    fn_3_59918(2, 0);
                 }
             }
         }
@@ -2188,14 +2188,14 @@ run:
     *(f32*)(f + 0x224) = dz * t + *(f32*)(f + 8);
     *(f32*)(f + 0x140) = game_atan2(dx, dz);
     if (stat3 != 0) {
-        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 3);
+        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 3);
         playSoundEffect(0x1A8);
     } else if (stat8 != 0) {
-        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 8);
+        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 8);
         playSoundEffect(0x1A8);
     } else if (stat9 != 0) {
         f[0x265] = 1;
-        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 8);
+        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 8);
         playSoundEffect(0x1A8);
     }
     dbl = 0;
@@ -2394,7 +2394,7 @@ int fn_3_2A288(int i) {
         if (f[0x1CB] == 2) {
             if (fn_3_28224(i) != 0) {
                 (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-                fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 1);
+                fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 1);
                 return 1;
             }
         } else if (f[0x1CB] == 1) {
@@ -2405,7 +2405,7 @@ int fn_3_2A288(int i) {
         } else if (f[0x1CB] == 3) {
             if (fn_3_30214(i) != 0) {
                 (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-                fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 2);
+                fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 2);
                 return 1;
             }
         }
@@ -3114,7 +3114,7 @@ void fn_3_2C698(int i) {
             f[0x1EE] = 0;
         }
         if (f[0x258] <= 1 && checkFieldingStat(*(int*)(g_GameLogic + 8), *(s16*)(f + 0x178), 7) != 0) {
-            fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 7);
+            fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 7);
             playSoundEffect(0x1A8);
         }
     }
@@ -3981,7 +3981,7 @@ void fn_3_2F7D4(int i) {
     *(s16*)(f + 0x1AE) = n * 2 + k + 2;
     f[0x204] = 0;
     if (type != 0) {
-        fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[i], 6);
+        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[i], 6);
     }
 }
 #endif
@@ -6959,7 +6959,7 @@ void fn_3_3A234(int i) {
         *(f32*)(f + 0x50) = *(f32*)(f + 0x50) * lbl_3_data_46F0;
         (*slot)[0x27A] = 1;
         if (*(s16*)(f + 0x1A0) == 1) {
-            fn_3_1682AC(((int*)lbl_8036E548)[who + 0xB14], 0xB);
+            fn_3_1682AC(((void**)lbl_8036E548)[who + 0xB14], 0xB);
         }
     }
     if (g_Minigame[0x1A2A] == 6) {
@@ -7060,7 +7060,7 @@ run:
         spd *= lbl_3_data_46F0;
         (*slot)[0x27A] = 1;
         if (*(s16*)(f + 0x1A0) == 1) {
-            fn_3_1682AC(((int*)lbl_8036E548)[who + 0xB14], 0xB);
+            fn_3_1682AC(((void**)lbl_8036E548)[who + 0xB14], 0xB);
         }
     }
     *(f32*)(f + 0x30) = spd * (f32)cos(*(f32*)(f + 0x64));

@@ -103,8 +103,8 @@ void fn_2_10AC(u8* data) {
 }
 
 // fn_2_10FC, size:0x34
-s32 fn_2_10FC(void) {
-    fn_80021518(0x1F, *(s32*)(lbl_800EF808 + 0xC));
+s32 fn_2_10FC(u8* state) {
+    fn_80021518(0x1F, *(struct SoundGroupData**)(lbl_800EF808 + 0xC)); // TODO type: SoundManager.groups[2]
     return 0;
 }
 

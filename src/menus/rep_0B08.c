@@ -972,7 +972,7 @@ void fn_2_6D754(u8* object) {
 
 // fn_2_6C190
 void fn_2_6C190(u8* object) {
-    extern void fn_2_46C88(s32, s32);
+    extern void fn_2_46C88(s32 index, s32 unused);
     ((u8*)lbl_2_bss_1A8248[0])[*(s32*)(object + 0x80) * 0xD8 + 0x16D0] = 1;
     fn_2_68FBC(*(s32*)(object + 0x80), 1);
     *(f32*)(object + 0x34) = *(f32*)(object + 0x4C);
@@ -1603,7 +1603,7 @@ void fn_2_6E88C(MenuEntry* entry) {
 }
 
 extern const f32 lbl_2_rodata_C4C;
-extern void fn_2_46C88(s32, s32);
+extern void fn_2_46C88(s32 index, s32 unused);
 
 // fn_2_6C988, size:0x1F0
 void fn_2_6C988(MenuEntry* entry) {
@@ -2113,7 +2113,7 @@ void fn_2_6FB0C(MenuEntry* owner) {
 }
 
 extern const f32 lbl_2_rodata_C48;
-extern void fn_2_9033C(s32, f32*, const f32*, f32, f32, f32);
+extern void fn_2_9033C(s32 index, const void* position, const f32* unused, f32 value, f32 unused2, f32 unused3);
 extern void fn_2_92654(s32, u8);
 extern void fn_2_8F73C(s32, u8);
 

@@ -9,7 +9,7 @@ void fn_2_E84(u16 ch, s16 id);
 void fn_2_F64(void);
 void fn_2_1018(u16 ch);
 void fn_2_10AC(u8* data);
-s32 fn_2_10FC(void);
+s32 fn_2_10FC(u8* state);
 void fn_2_1130(s16 value);
 void fn_2_1164(void);
 void fn_2_119C(void);

@@ -106,7 +106,7 @@ extern u8 lbl_3_data_26C0C[];
 extern const f32 lbl_3_rodata_3938;
 extern u8 g_Ball[];
 extern void fn_80030D88(Vec*, Vec*, void*, int);
-extern void fn_8002F5F4(Vec*, Vec*, void*, s16);
+extern void fn_8002F5F4(Vec* pos, Vec* dir, void* prm); // prm: ParticleParams8*
 extern void fn_80030470(Vec*, Vec*, Vec*, void*, int);
 extern u8 lbl_3_common_bss_35154[];
 extern TexImage* lbl_3_bss_B854;
@@ -2860,7 +2860,7 @@ void fn_3_153E8C(u8* obj, f32* pos, u8 b, u8 c, u8 d) {
 }
 
 // .text:0x00153F8C size:0x158 mapped:0x80793020
-void fn_3_153F8C(void* h, u32 a, u32 b, u32 c) {
+void fn_3_153F8C(void* h, u32 a, u32 b, Vec* c) {
     f32* pos;
     f32 r;
     u8 flag;
@@ -2899,7 +2899,7 @@ void fn_3_153F8C(void* h, u32 a, u32 b, u32 c) {
 }
 
 // .text:0x001540E4 size:0xE0 mapped:0x80793178
-void fn_3_1540E4(u32 a, u32 b, u32 c) {
+void fn_3_1540E4(u32 a, u32 b, Vec* c) {
     u8* p;
     u8* h = fn_800339F0(0, 0x1C);
     if (h != NULL) {
@@ -2921,8 +2921,8 @@ void fn_3_1540E4(u32 a, u32 b, u32 c) {
 }
 
 // .text:0x001541C4 size:0x50 mapped:0x80793258
-void fn_3_1541C4(u32 a, u32 b, u32 c) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 4 && c != 0) {
+void fn_3_1541C4(u32 a, u32 b, Vec* c) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 4 && c != NULL) {
         fn_3_1540E4(a, b, c);
     }
 }
@@ -3808,7 +3808,7 @@ void fn_3_15767C(void) {
                         for (j = 0; j < 2; j++) {
                             ((Ln50*)(d + 8))[j].v = q[j];
                         }
-                        fn_8002F5F4(&pos, &dir, d + 0xF8, q[0]);
+                        fn_8002F5F4(&pos, &dir, d + 0xF8);
                         if (lbl_80366158[0x28] == 0) {
                             fn_80030D88(&pos, &dir, &((Ln50*)(d + 8))[1], 0x29);
                             fn_80030D88(&pos, &dir, &((Ln50*)(d + 8))[2], 0x29);

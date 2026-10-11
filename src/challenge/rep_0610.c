@@ -299,7 +299,7 @@ void fn_1_1073C(u8* object) {
 void fn_1_12F18(u8* object) {
     fn_1_12820(*(void**)(lbl_8036E548 + 0x60), object + 8);
     if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
-        fn_800BD670(lbl_1_bss_5F7C[0], (u32)(object + 8));
+        fn_800BD670(lbl_1_bss_5F7C[0], (MtxPtr)(object + 8));
     }
 }
 
@@ -683,7 +683,7 @@ void fn_1_F1D8(void* unused) {
     }
 }
 
-extern void fn_8004B208(void* row, s32 id, s32 variant);
+extern void fn_8004B208(void* row, s32 id, u32 variant, f32 frame);
 
 // .text:0xD590 size:0xA8
 void fn_1_D590(void* a, s32 b, f32 value) {
@@ -697,7 +697,7 @@ void fn_1_D590(void* a, s32 b, f32 value) {
         if (state[0x1A4] == 2) goto call;
     } else {
 call:
-        fn_8004B208(a, b, (s8)state[0x2EF2] & ~((s8)state[0x2EF2] >> 31));
+        fn_8004B208(a, b, (s8)state[0x2EF2] & ~((s8)state[0x2EF2] >> 31), value);
     }
 }
 
@@ -1450,7 +1450,15 @@ extern void LITAlloc(void**);
 extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
 extern void LITInitPos(void*, f32, f32, f32);
 extern void LITInitDir(void*, f32, f32, f32);
-extern void LITInitColor(void*, ChallengeLightColor);
+// LITInitColor takes a GXColor*. These callers pass the color by value (the PPC ABI hands
+// over a pointer to a fresh copy), so only the matching build declares it that way.
+#if NONMATCHING
+extern void LITInitColor(void* light, ChallengeLightColor* color);
+#define LIT_COLOR(c) (&(c))
+#else
+extern void LITInitColor(void* light, ChallengeLightColor color);
+#define LIT_COLOR(c) (c)
+#endif
 extern ChallengeLightColor lbl_1_rodata_72F0;
 extern const f32 lbl_1_rodata_7474;
 extern const f32 lbl_1_rodata_7478;
@@ -1476,23 +1484,23 @@ void fn_1_131E4(void) {
     LITInitAttn(*light0, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
     LITInitPos(*light0, lbl_1_rodata_7474, lbl_1_rodata_7478, lbl_1_rodata_7474);
     LITInitDir(*light0, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
-    LITInitColor(*light0, color);
+    LITInitColor(*light0, LIT_COLOR(color));
     LITInitDir(*light0, lbl_1_rodata_747C, lbl_1_rodata_7394, lbl_1_rodata_747C);
 
     LITInitAttn(*light1, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
     LITInitPos(*light1, lbl_1_rodata_747C, lbl_1_rodata_7478, lbl_1_rodata_7394);
     LITInitDir(*light1, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
-    LITInitColor(*light1, color);
+    LITInitColor(*light1, LIT_COLOR(color));
 
     LITInitAttn(*light2, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
     LITInitPos(*light2, lbl_1_rodata_7394, lbl_1_rodata_7478, lbl_1_rodata_7474);
     LITInitDir(*light2, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
-    LITInitColor(*light2, color);
+    LITInitColor(*light2, LIT_COLOR(color));
 
     LITInitAttn(*light3, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
     LITInitPos(*light3, lbl_1_rodata_7394, lbl_1_rodata_7478, lbl_1_rodata_747C);
     LITInitDir(*light3, lbl_1_rodata_7394, lbl_1_rodata_7394, lbl_1_rodata_7394);
-    LITInitColor(*light3, color);
+    LITInitColor(*light3, LIT_COLOR(color));
 }
 
 extern Vec lbl_1_rodata_7300;
@@ -2649,7 +2657,7 @@ typedef struct {
     /* 0x24 */ Vec dir;
 } ChallengeEmitterParams;
 
-extern void fn_800330CC(s32 count, s32 type, Vec* pos, Vec* dir, s32 arg4, s32 arg5, f32 speed, f32 arg7);
+extern void fn_800330CC(s32 count, u32 type, Vec* pos, Vec* dir, s32 arg4, void* tex, f32 speed, f32 arg7);
 
 // .text:0x10044 size:0x414
 // NONMATCHING ~85%: the original reaches the emitter settings through the pooled .data base
@@ -2743,7 +2751,7 @@ void fn_1_10044(void) {
             PSMTXRotRad(rotY, 'y', (f32)(0.01745329238474369 * ((360.0 * params->yaw) / 4096.0)));
             PSMTXConcat(rotY, rotX, rotX);
             PSMTXMultVec(rotX, &params->dir, &params->dir);
-            fn_800330CC(params->count, params->type, &params->pos, &params->dir, params->unkC, 0, params->speed, params->unk10);
+            fn_800330CC(params->count, params->type, &params->pos, &params->dir, params->unkC, NULL, params->speed, params->unk10);
         }
     } else if (buttons & 0x200) {
         ch_307C = 0;
@@ -4083,8 +4091,8 @@ extern void fn_8001FC4C(void* player);
 struct CharActor;
 extern s32 fn_80063010(struct CharActor* player, struct ActorObject* obj); // main/file_800527C4.h
 extern s32 fn_8004B7B4(struct CharActor* model, struct ActorObject* obj); // main/file_8004B284.h
-extern void* fn_80052634(void* player, GameActor** actor);
-extern void* fn_80062ED4(void* player, GameActor** actor);
+extern void* fn_80052634(void* player, void* obj); // (CharActor*, ActorObject*); returns its MeterTask
+extern s32 fn_80062ED4(void* player, void* obj); // (CharActor*, ActorObject*); returns 0
 
 static inline void fn_1_135C0_bone(GameActor* actor, u16 bone) {
     if (bone != 0xFFFF) {
@@ -4325,7 +4333,8 @@ void fn_1_135C0(void) {
     case 45:
     case 46:
     case 47:
-        ch_60E8 = fn_80062ED4(row, &main->objects[(s8)row[0x255]].actor);
+        fn_80062ED4(row, &main->objects[(s8)row[0x255]].actor);
+        ch_60E8 = NULL; // fn_80062ED4 returns 0
         break;
     default:
         ch_60E8 = NULL;

@@ -4,7 +4,7 @@
 
 extern void fn_1_16A0(void);
 extern void fn_1_1E0(void);
-extern void ANIMGet(void* bank, char* name);
+extern void ANIMGet(void* bank);
 extern void LoadActorLayout(void* actor);
 extern void convertGeometryAndSknHeader(void* geometry, void* skin);
 extern void fn_80025DDC(void* object);
@@ -12,13 +12,13 @@ extern u8 lbl_1_data_AC[];
 extern u8 lbl_1_bss_4[];
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_800F1D78[];
-extern void LoadFile(void*, void*, s32, s32, s32);
+extern s32 LoadFile(void* entry, void* track, u32 offset, void (*callback)(u32), u32 mode);
 extern s32 fn_800A8518(s32);
 extern u32 fn_800A88C8(void);
 extern s32 fn_800A8B78(void*);
 
 void fn_1_0(void* bank, char* name) {
-    ANIMGet(bank, name);
+    ANIMGet(bank);
 }
 
 void fn_1_1B0(u32* table, s32 count) {
@@ -79,7 +79,7 @@ void fn_1_1E0(void) {
     u8* queue = lbl_803CC1B8;
     switch (*(s16*)(queue + 0x10)) {
     case 0:
-        LoadFile(lbl_1_data_AC, lbl_1_bss_4, 0, 0, 1);
+        LoadFile(lbl_1_data_AC, lbl_1_bss_4, 0, NULL, 1);
         *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
     case 1:
         if (fn_800A8518(1) != 0) {
@@ -119,7 +119,7 @@ void fn_1_1E0(void) {
             case 16:
             case 17:
             case 18:
-                ((void (*)(void*))ANIMGet)(*(void**)(queue + 0x14));
+                ANIMGet(*(void**)(queue + 0x14));
                 break;
             }
             fn_800ACFB0(*(void**)(queue + 0x14));

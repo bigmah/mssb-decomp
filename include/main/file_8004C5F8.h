@@ -146,7 +146,7 @@ s16 fn_80050760(s32 p, s32 unused, s32 pressed, u16 dirs, s32 mode);
 
 void fn_8005240C(struct CharActor* actor, struct ActorObject* anim);
 
-void fn_80052634(struct CharActor* actor, struct ActorObject* anim);
+struct MeterTask* fn_80052634(struct CharActor* actor, struct ActorObject* anim); // returns the queued task
 
 void fn_80052694(s32 index);
 

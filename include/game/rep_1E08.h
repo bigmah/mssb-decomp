@@ -41,7 +41,7 @@ void fn_3_BD6AC(int, f32, f32, f32);
 void fn_3_BD758(void);
 s32 fn_3_BD7D0(void);
 void fn_3_BD7D8(void);
-void fn_3_BD7DC(u32 a);
+void fn_3_BD7DC(MtxPtr view);
 void fn_3_BD80C(MtxPtr a);
 void fn_3_BD8D8(void);
 void fn_3_BD8FC(BDCA4E* e);

@@ -6,7 +6,9 @@
 #include "musyx/musyx.h"
 #include "Dolphin/os.h"
 
-extern s32 lbl_800EF808[];
+// View of the sound manager (SoundManager, main/file_80021308.h): [0] unk0, [1 + g] groups[g].
+// TODO type: use SoundManager; the byte offsets (0x390, 0x396) are 32-bit layout.
+extern struct SoundGroupData* lbl_800EF808[];
 
 extern u8 lbl_1_bss_2FDB[];
 extern u8 lbl_1_data_1884[];
@@ -84,7 +86,7 @@ void fn_1_A464(void) {
         lbl_1_data_1CA8 = fn_1_BF34(lbl_1_data_1CA4);
     } else if (pressed & 0x1200) {
         fn_1_A718();
-        fn_800ACFB0((void*)lbl_800EF808[4]);
+        fn_800ACFB0(lbl_800EF808[4]);
         *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
     } else if (held & 1) {
         if (held & 0x800) {
@@ -273,7 +275,7 @@ s32 fn_1_A718(void) {
     return 1;
 }
 
-static inline s32 SoundOptionValue(s32 index) {
+static inline struct SoundGroupData* SoundOptionValue(s32 index) {
     return lbl_800EF808[index + 1];
 }
 
@@ -519,9 +521,8 @@ void fn_1_B5B8(void) {
             }
         } else if (down & 0x1200) {
             fn_1_A718();
-            // TODO type: lbl_800EF808 is the sound manager (groups[41], groups[1])
-            fn_800ACFB0((void*)lbl_800EF808[0x2A]);
-            fn_800ACFB0((void*)lbl_800EF808[2]);
+            fn_800ACFB0(lbl_800EF808[0x2A]);
+            fn_800ACFB0(lbl_800EF808[2]);
             ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
         } else if (repeat & 1) {
             if (lbl_1_bss_2FE1 == 0) {

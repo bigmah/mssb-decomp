@@ -530,7 +530,7 @@ void fn_1_191DC(ChallengeConfettiTask* task) {
 #include <string.h>
 void* _OSAllocFromHeap(s32 align, s32 size);
 void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
-void fn_1_17EFC(void); // sort compare (ChallengeConfettiSort by depth)
+s32 fn_1_17EFC(void* a, void* b); // sort compare (ChallengeConfettiSort by depth)
 extern const Vec lbl_1_rodata_7510;
 extern const f32 lbl_1_rodata_7554;
 extern const f64 lbl_1_rodata_7548;
@@ -580,7 +580,7 @@ s32 fn_1_1857C(ChallengeConfettiTask* task) {
         entry++;
         piece = piece->next;
     }
-    fn_800246D4((s32 (*)(void*, void*))fn_1_17EFC, (u8*)sorted, (u8*)sorted, sizeof(ChallengeConfettiSort), count);
+    fn_800246D4(fn_1_17EFC, (u8*)sorted, (u8*)sorted, sizeof(ChallengeConfettiSort), count);
     head = sorted->piece;
     entry = sorted;
     while (--count != 0) {
@@ -1044,7 +1044,7 @@ void fn_1_1D110(void) {
     }
     if (lbl_1_bss_69F5 == 0) {
         // TODO type: UnknownHomes_Static.h declares the camera argument as u32
-        fn_800BD670(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), (u32)camera);
+        fn_800BD670(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), (MtxPtr)camera);
     } else {
         fn_1_1A290(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), camera);
     }

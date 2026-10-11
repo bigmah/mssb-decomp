@@ -827,16 +827,16 @@ void fn_3_B97C8(void* p) {
 }
 
 // .text:0x000B97DC size:0x10C mapped:0x806F8870
-void fn_3_B97DC(u8* p, u32 f) {
-    if (p == NULL || f == 0) {
+void fn_3_B97DC(u8* p, void* f) {
+    if (p == NULL || f == NULL) {
         return;
     }
-    *(u32*)(p + 4) = f;
+    *(void**)(p + 4) = f;
     *(u16*)(p + 0xE) = 0;
     *(f32*)(p + 0x5C) = 0.0f;
     p[0x58] = 1;
-    p[0x59] = (f != 0);
-    p[0x5A] = (f != 0);
+    p[0x59] = (f != NULL);
+    p[0x5A] = (f != NULL);
     *(f32*)(p + 0x60) = 0.0f;
     p[0x5B] = 3;
     *(f32*)(p + 0x5C) = 0.0f;
@@ -889,7 +889,7 @@ void fn_3_B98E8(void* p) {
 
 // .text:0x000B99E4 size:0x1D0 mapped:0x806F8A78
 extern void (*lbl_3_data_10AB0[])(void*);
-extern void fn_3_35E4(u32 val);
+extern void fn_3_35E4(void (*val)(void));
 extern void fn_80023B90(void*, LitPos*);
 extern void fn_8001B214(void (*)(void));
 extern void fn_800B0A14_removeQueue(void* unused);
@@ -1032,7 +1032,7 @@ void fn_3_B9FB8(u32 type, void* p) {
     s32 i;
     fn_8001E474();
     memset(lbl_3_common_bss_350E4, 0, 0x70);
-    fn_3_35E4(0);
+    fn_3_35E4(NULL);
     if (p != NULL) {
         for (i = 0; i < 4; i++) {
             fn_80023B90(lbl_800F7478[g_d_GameSettings._54].light[i], &pos);

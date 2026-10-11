@@ -112,12 +112,12 @@ extern void fn_3_B8C08(Mtx view);
 
 extern u8 lbl_3_rodata_214[];
 extern void CTRLBuildMatrix(void*, void*);
-extern void DOVARender(void*, void*, int, int);
-extern s32 fn_800B7D3C(void*, f32*, void*);
+extern void DOVARender(void* obj, MtxPtr m, u8 flag, void* args); // args: va_list*
+extern s32 fn_800B7D3C(s32 index, Vec* box, Mtx m);
 extern u8 lbl_803CBBC0;
 extern StadiumDrawFn lbl_3_data_A10[];
 
-extern u32 lbl_3_bss_18[];
+extern void (*lbl_3_bss_18[])(void); // extra stadium draw hook (fn_3_35E4)
 extern f32 lbl_3_rodata_504;
 extern f32 lbl_3_rodata_524;
 extern f32 lbl_3_rodata_528;
@@ -128,19 +128,19 @@ extern f32 lbl_3_rodata_538[];
 extern u8 g_UNK_StadiumDetails[];
 extern u32 fn_80009028(void);
 extern s32 fn_800527BC(void);
-extern void fn_80052694(void*);
+extern void fn_80052694(s32 index);
 extern camera_803c639c_s* fn_80052734(s32);
 extern s32 lbl_3_rodata_210;
 extern void DCStoreRange(void*, u32);
 extern s32 fn_80023F0C(void*, void*, int, int, int, int, int, int);
 
 // .text:0x000035D4 size:0x10
-u32 setFanObjPtr(void) {
+void (*setFanObjPtr(void))(void) {
     return lbl_3_bss_18[0];
 }
 
 // .text:0x000035E4 size:0xC
-void fn_3_35E4(u32 val) {
+void fn_3_35E4(void (*val)(void)) {
     lbl_3_bss_18[0] = val;
 }
 
@@ -184,7 +184,7 @@ void fn_3_3638(u8* obj) {
             pts[15] = F(0x54); pts[16] = F(0x5C); pts[17] = F(0x64);
             pts[18] = F(0x54); pts[19] = F(0x5C); pts[20] = F(0x68);
             pts[21] = F(0x58); pts[22] = F(0x5C); pts[23] = F(0x68);
-            if (fn_800B7D3C(*(void**)(obj + 0x6C), pts, m)) {
+            if (fn_800B7D3C(*(s32*)(obj + 0x6C), (Vec*)pts, m)) {
                 if (*(u16*)(e + 0x3A) & 1) {
                     GXSetZMode(1, 7, 1);
                 } else {
@@ -201,7 +201,7 @@ void fn_3_3638(u8* obj) {
                     GXSetBlendMode(1, 4, 5, 0);
                     break;
                 }
-                DOVARender(m26, (void*)pB, 0, 0);
+                DOVARender(m26, (MtxPtr)pB, 0, NULL);
             }
         }
     }
@@ -213,7 +213,7 @@ void fn_3_3818(void) {
     if (lbl_3_data_A10[lbl_803CBBC0 == 0] != NULL) {
         i = fn_800527BC() - 1;
         do {
-            fn_80052694((void*)i); // TODO type: takes the camera index (s32)
+            fn_80052694(i);
             lbl_3_data_A10[lbl_803CBBC0 == 0](fn_80052734(i)->view, 0, 0);
         } while (i-- != 0);
         lbl_3_data_A10[lbl_803CBBC0 == 0] = NULL;
@@ -883,15 +883,15 @@ void fn_3_5BAC(void) {
 // .text:0x00005BCC size:0x24 mapped:0x80644C60
 
 void fn_3_5BCC(u8* p) {
-    fn_80052694(*(void**)(p + 8));
+    fn_80052694(*(s32*)(p + 8));
 }
 
 // .text:0x00005BF0 size:0x78 mapped:0x80644C84
 void fn_3_5BF0(void) {
     s32 col;
     u8* d = g_UNK_StadiumDetails;
-    if (lbl_3_bss_18[0] != 0) {
-        ((void (*)(void))lbl_3_bss_18[0])();
+    if (lbl_3_bss_18[0] != NULL) {
+        lbl_3_bss_18[0]();
     }
     col = *(s32*)(d + 0x714);
     SetFog(d[0x717], (GXColor *)&col, *(f32*)(d + 0x718), *(f32*)(d + 0x71C), lbl_3_rodata_520[0], lbl_3_rodata_538[0]); // TODO type
@@ -946,8 +946,8 @@ void fn_3_5C68(u8* obj) {
             }
         }
     }
-    if (lbl_3_bss_18[0] != 0) {
-        ((void (*)(void))lbl_3_bss_18[0])();
+    if (lbl_3_bss_18[0] != NULL) {
+        lbl_3_bss_18[0]();
     }
     GXSetZCompLoc(0);
 }

@@ -290,7 +290,7 @@ void fn_3_D9A30(void) {
     g_Minigame._192D = RandomIndexFromWeights(
         lbl_3_data_189C4.weights[g_Minigame.miniGameNumberOfParticipants - 2][progress][standing], 8);
     if (g_d_GameSettings.exhibitionMatchInd == FALSE && g_Minigame.rosterID == lbl_3_common_bss_37400.humanPlayer) {
-        fn_3_1608F0(7, 0);
+        fn_3_1608F0(7, 0, 0);
     }
     if (g_Minigame._192D == 7) {
         if (g_Minigame._1915 == 0 && g_Minigame._1916 == 0 && g_Minigame._1917 == 0) {

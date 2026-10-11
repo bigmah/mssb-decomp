@@ -36,7 +36,7 @@ extern void fn_800A97D0(s32, s32);
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_803C66B0[];
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
-extern void fn_800216F8(s32, void*);
+extern void fn_800216F8(u8 group, s32 (*callback)(u8* state));
 extern u32 lbl_2_bss_B644;
 extern u8 lbl_2_data_C8[];
 extern u8 g_d_GameSettings[];

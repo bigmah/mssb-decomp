@@ -49,7 +49,7 @@ extern struct {
 } lbl_3_common_bss_37400;
 extern f32 lbl_3_data_610C[6]; // speed factor for collision codes 0x10-0x15
 extern f32 lbl_3_data_6124[2]; // speed factor for collision codes 0x20-0x21
-extern void fn_3_15F648(u8 surface, u8 soundSet, VecXYZ* vel);
+extern void fn_3_15F648(s32 surface, s32 soundSet, VecXYZ* pos, VecXYZ* vel);
 extern void fn_3_161588(int arg, s16 rosterID);
 extern void fn_3_16D5E4(int arg);
 extern void fn_3_E7350(void);
@@ -69,7 +69,7 @@ extern f32 lbl_3_data_45FC; // default ball gravity
 extern f32 lbl_3_data_45F4[2]; // ground y for bounces [normal, game mode 6]
 extern u8 lbl_3_data_4600; // default air resistance // fielding tuning floats
 extern int fn_3_B7D6C(f32, f32);
-extern void fn_3_8FF5C(s32, void*, f32, f32, f32);
+extern u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z);
 extern u8 lbl_800E8558[];
 extern int getAnimRelatedCoordinates(int, int, void*);
 typedef struct {
@@ -563,7 +563,7 @@ void fn_3_6C38(void) {
     if (c == 1 || c == 6 || c == 9 || c == 10 || c == 0x22 || c == 0x32) {
         // ground bounce
         if (g_Ball.ballIsRollingIndicator == 0) {
-            fn_3_15F648(c, lbl_3_common_bss_32724._CA, &g_Ball.physicsSubstruct.velocity);
+            fn_3_15F648(c, lbl_3_common_bss_32724._CA, &g_Ball.AtBat_Contact_BallPos, &g_Ball.physicsSubstruct.velocity);
         } else if (c == 10) {
             fn_80064344(&g_Ball.AtBat_Contact_BallPos, &g_Ball.physicsSubstruct.velocity);
         }
@@ -905,25 +905,25 @@ void fn_3_9260(s32 flags) {
     }
     switch (g_d_GameSettings.StadiumID) {
     case 0:
-        fn_3_8FF5C(0x172, &g_Ball, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+        fn_3_8FF5C(0x172, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
         break;
     case 1:
-        fn_3_8FF5C(0x1A1, &g_Ball, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+        fn_3_8FF5C(0x1A1, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
         break;
     case 2:
-        fn_3_8FF5C(0x1A1, &g_Ball, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+        fn_3_8FF5C(0x1A1, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
         break;
     case 3:
-        fn_3_8FF5C(0x1A3, &g_Ball, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+        fn_3_8FF5C(0x1A3, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
         break;
     case 4:
-        fn_3_8FF5C(0x1A1, &g_Ball, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+        fn_3_8FF5C(0x1A1, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
         break;
     case 5:
-        fn_3_8FF5C(0x172, &g_Ball, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+        fn_3_8FF5C(0x172, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
         break;
     case 6:
-        fn_3_8FF5C(0x172, &g_Ball, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+        fn_3_8FF5C(0x172, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
         break;
     }
 }

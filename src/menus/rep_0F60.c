@@ -120,15 +120,15 @@ void fn_2_8DB14(void) {
     }
 }
 
-extern void fn_800BDC88(u8*, u16, u16, s32, s32, s32);
+extern void fn_800BDC88(void* table, u16 first, u16 last, void* layout, void* anim, void* skin);
 extern void fn_800BD548(u8*, s32, ...);
 extern void CTRLSetTranslation(u8*, f32, f32, f32);
 extern void CTRLSetRotation(u8*, f32, f32, f32);
 
-typedef struct { u8 pad[0x2DA0]; struct { s32 v; s32 x; s32 y; } arr[1]; } S2DA0;
+typedef struct { u8 pad[0x2DA0]; struct { void* v; s32 x; s32 y; } arr[1]; } S2DA0; // v: model layout
 
 // fn_2_8C80C, size:0x104
-void fn_2_8C80C(s32 a, s32 b, s32 c, s32 d, s32 e) {
+void fn_2_8C80C(s32 a, s32 b, s32 c, void* d, void* e) {
     s32 i;
     for (i = b; i < b + c; i++) {
         fn_800BDC88(*(u8**)(lbl_2_bss_340140 + 0x68), i, i, ((S2DA0*)lbl_2_bss_340140)->arr[a].v, d, e);
@@ -215,14 +215,14 @@ void fn_2_8B158(void) {
     *(void**)(lbl_2_bss_340140 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_2_bss_340140 + 0x3078) * 0x28);
     *(void**)(lbl_2_bss_340140 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_2_bss_340140 + 0x3078));
     for (i = 0; i < *(u16*)(lbl_2_bss_340140 + 0x3078); i++) {
-        fn_2_8C80C(i, i, 1, 0, 0);
+        fn_2_8C80C(i, i, 1, NULL, NULL);
     }
 }
 
 extern u8 lbl_80366158[];
 extern u8 lbl_803CBC3C;
-extern s32* fn_800111D8(u8* o);
-extern f32 fn_800B4A44(s32 a, u16 b);
+extern void** fn_800111D8(u8* o);
+extern f32 fn_800B4A44(void* actor, u16 bone);
 
 // fn_2_8D024, size:0x228
 void fn_2_8D024(void) {
@@ -628,7 +628,7 @@ extern s32 fn_8004B7B4(void* player, void* slot);
 extern s32 fn_800637BC(void* player, void* slot);
 extern s32 fn_8004BD6C(void* player, void* slot);
 extern s32 fn_800637D4(void* player, void* slot);
-extern void fn_80052634(void* player, void* slot);
+extern void* fn_80052634(void* player, void* slot);
 extern s32 fn_80062ED4(void* player, void* slot);
 extern void* memset(void* str, int c, u32 n);
 extern u8 lbl_2_data_2FE7C[];
@@ -857,33 +857,33 @@ void fn_2_8B418(void) {
     *(u16*)(lbl_2_bss_340140 + 0x3078) = 29;
     *(void**)(lbl_2_bss_340140 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_2_bss_340140 + 0x3078) * 0x28);
     *(void**)(lbl_2_bss_340140 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_2_bss_340140 + 0x3078));
-    fn_2_8C80C(0, 0, 1, 0, 0);
-    fn_2_8C80C(1, 1, 1, 0, 0);
-    fn_2_8C80C(2, 2, 1, 0, 0);
-    fn_2_8C80C(3, 3, 1, 0, 0);
-    fn_2_8C80C(4, 4, 1, 0, 0);
-    fn_2_8C80C(5, 5, 1, 0, 0);
-    fn_2_8C80C(6, 6, 1, 0, 0);
-    fn_2_8C80C(7, 7, 1, 0, 0);
-    fn_2_8C80C(8, 8, 1, 0, 0);
-    fn_2_8C80C(9, 9, 1, 0, 0);
-    fn_2_8C80C(10, 10, 1, 0, 0);
-    fn_2_8C80C(10, 11, 1, 0, 0);
-    fn_2_8C80C(10, 12, 1, 0, 0);
-    fn_2_8C80C(10, 13, 1, 0, 0);
-    fn_2_8C80C(10, 14, 1, 0, 0);
-    fn_2_8C80C(10, 15, 1, 0, 0);
-    fn_2_8C80C(11, 16, 1, 0, 0);
-    fn_2_8C80C(11, 17, 1, 0, 0);
-    fn_2_8C80C(11, 18, 1, 0, 0);
-    fn_2_8C80C(11, 19, 1, 0, 0);
-    fn_2_8C80C(11, 20, 1, 0, 0);
-    fn_2_8C80C(11, 21, 1, 0, 0);
-    fn_2_8C80C(12, 22, 1, 0, 0);
-    fn_2_8C80C(13, 23, 1, 0, 0);
-    fn_2_8C80C(14, 24, 1, 0, 0);
-    fn_2_8C80C(15, 25, 1, 0, 0);
-    fn_2_8C80C(16, 26, 1, 0, 0);
-    fn_2_8C80C(17, 27, 1, 0, 0);
-    fn_2_8C80C(18, 28, 1, 0, 0);
+    fn_2_8C80C(0, 0, 1, NULL, NULL);
+    fn_2_8C80C(1, 1, 1, NULL, NULL);
+    fn_2_8C80C(2, 2, 1, NULL, NULL);
+    fn_2_8C80C(3, 3, 1, NULL, NULL);
+    fn_2_8C80C(4, 4, 1, NULL, NULL);
+    fn_2_8C80C(5, 5, 1, NULL, NULL);
+    fn_2_8C80C(6, 6, 1, NULL, NULL);
+    fn_2_8C80C(7, 7, 1, NULL, NULL);
+    fn_2_8C80C(8, 8, 1, NULL, NULL);
+    fn_2_8C80C(9, 9, 1, NULL, NULL);
+    fn_2_8C80C(10, 10, 1, NULL, NULL);
+    fn_2_8C80C(10, 11, 1, NULL, NULL);
+    fn_2_8C80C(10, 12, 1, NULL, NULL);
+    fn_2_8C80C(10, 13, 1, NULL, NULL);
+    fn_2_8C80C(10, 14, 1, NULL, NULL);
+    fn_2_8C80C(10, 15, 1, NULL, NULL);
+    fn_2_8C80C(11, 16, 1, NULL, NULL);
+    fn_2_8C80C(11, 17, 1, NULL, NULL);
+    fn_2_8C80C(11, 18, 1, NULL, NULL);
+    fn_2_8C80C(11, 19, 1, NULL, NULL);
+    fn_2_8C80C(11, 20, 1, NULL, NULL);
+    fn_2_8C80C(11, 21, 1, NULL, NULL);
+    fn_2_8C80C(12, 22, 1, NULL, NULL);
+    fn_2_8C80C(13, 23, 1, NULL, NULL);
+    fn_2_8C80C(14, 24, 1, NULL, NULL);
+    fn_2_8C80C(15, 25, 1, NULL, NULL);
+    fn_2_8C80C(16, 26, 1, NULL, NULL);
+    fn_2_8C80C(17, 27, 1, NULL, NULL);
+    fn_2_8C80C(18, 28, 1, NULL, NULL);
 }

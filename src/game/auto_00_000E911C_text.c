@@ -38,7 +38,7 @@ extern u8 lbl_3_data_1A730[];
 
 extern void fn_80034E20(void*, void*);
 extern void fn_3_1079C8(u8* out, s32 mode);
-extern void fn_3_90064(s32 id);
+extern u32 fn_3_90064(s32 id);
 extern s32 fn_3_125424(u8* a, s32 i, u32 v);
 extern void sndFXCtrl(int, int, u8);
 extern s32 sndFXStartEx(u16, u8, u8, u8);

@@ -18,7 +18,7 @@ typedef struct MinigameSlotData {
 } MinigameSlotData; // size: 0x104
 
 void fn_3_1079C8(u8* out, s32 mode);
-void fn_3_1608F0(s32 a, s32 b);
+void fn_3_1608F0(s32 kind, s32 value, s32 extra);
 
 void fn_3_D8A10(void);
 void fn_3_D8CD0(void);

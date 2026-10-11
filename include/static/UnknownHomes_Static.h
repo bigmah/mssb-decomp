@@ -51,7 +51,7 @@ extern void fn_800B0A14_removeQueue(void*);
 #endif
 #endif
 extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority); // TODO type: u16 priority in main/file_800B0724.h; REL callers match with s32
-extern void fn_800BD670(void*, u32); // TODO type: menus/rep_08E8 passes the camera as u32; (ActorObjectTable*, MtxPtr)
+extern void fn_800BD670(void* table, MtxPtr camera); // table: ActorObjectTable*
 extern void LITXForm(void* light, void* matrix); // TODO type: menus/rep_08E8; (Light*, MtxPtr)
 extern void fn_80048D4C(void);
 extern void fn_80062A94(void);
@@ -85,9 +85,8 @@ typedef struct {
 } lbl_803C77B8_s;
 extern lbl_803C77B8_s lbl_803C77B8;
 
-// TODO type: really s32 (u16, SoundGroupData*) (main/file_80021308.h); game/auto_00_00090754_text
-// (claimed) passes pointers held in u32 tables.
-extern void fn_80021518(s32 id, s32 value);
+struct SoundGroupData;
+extern s32 fn_80021518(u16 gid, struct SoundGroupData* data);
 extern s32 fn_800214D0(void);
 extern u8 fn_800211F0(void);
 extern u32 fn_80062890(s32 index);

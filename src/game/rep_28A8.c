@@ -18,7 +18,7 @@ extern void fn_3_2EA24(void);
 extern void fn_3_2E87C(void);
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
-extern void fn_3_1DD48(void*);
+extern void fn_3_1DD48(void);
 extern void fn_3_75560(void);
 extern void atBat_batter(void);
 extern u8 g_Pitcher[];
@@ -1017,7 +1017,7 @@ void fn_3_DD37C(void) {
     g_GameLogic[0x12B] = 1;
     g_GameLogic[0x12C] = 1;
     g_GameLogic[0x12E] = 1;
-    fn_3_1DD48(g_GameLogic);
+    fn_3_1DD48();
     if (g_Minigame[0x1912] == 0) {
         fn_3_2E87C();
         fn_3_5A6D4(0);
@@ -1107,7 +1107,7 @@ void fn_3_DD3FC(void) {
         g_GameLogic[0x12B] = 1;
         g_GameLogic[0x12C] = 1;
         g_GameLogic[0x12E] = 1;
-        fn_3_1DD48(g_GameLogic);
+        fn_3_1DD48();
         if (g_Minigame[0x1912] == 0) {
             fn_3_2E87C();
             fn_3_5A6D4(0);
@@ -1179,7 +1179,7 @@ void fn_3_DDD60(void) {
         g_GameLogic[0x12B] = 1;
         g_GameLogic[0x12C] = 1;
         g_GameLogic[0x12E] = 1;
-        fn_3_1DD48(g_GameLogic);
+        fn_3_1DD48();
         if (g_Minigame[0x1912] == 0) {
             fn_3_2E87C();
             fn_3_5A6D4(0);
@@ -1261,7 +1261,7 @@ void fn_3_DDFA0(void) {
             g_GameLogic[0x12B] = 1;
             g_GameLogic[0x12C] = 1;
             g_GameLogic[0x12E] = 1;
-            fn_3_1DD48(g_GameLogic);
+            fn_3_1DD48();
             if (g_Minigame[0x1912] == 0) {
                 fn_3_2E87C();
                 fn_3_5A6D4(0);

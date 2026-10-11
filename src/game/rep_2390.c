@@ -70,7 +70,7 @@ typedef struct {
     u8 pad4[0x40];
 } E18180;
 extern E18180 lbl_3_data_18180[];
-extern void fn_8002F5F4(Vec*, Vec*);
+extern void fn_8002F5F4(Vec* pos, Vec* dir, void* prm); // prm: ParticleParams8*
 
 // .text:0x000CB538 size:0x17C mapped:0x8070A5CC
 // WIP: orig has mode in r28 and k/loop counter in r29 (we swap them); stwx vs add+stw for the 0x44-stride store; decl-order permutations of k/j/e/r28 tried.
@@ -108,7 +108,7 @@ void fn_3_CB538(s32 mode) {
             *(u32*)(e + 4) = 0x15;
             *(u32*)(e + 0x54) = 7;
         }
-        fn_8002F5F4(p31, &d);
+        fn_8002F5F4(p31, &d, f);
         if (lbl_80366158[0x28] == 0) {
             r28 = e + 0x50;
             j = 1;
