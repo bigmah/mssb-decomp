@@ -72,10 +72,79 @@ extern void fn_800ACF14(void* p);
 extern void fn_80034E20(void* group, void* data);
 extern void fn_8003649C(void* group, s32 a, s32 b, s32 c, s32 d);
 
+// NONMATCHING 99%: original adds 0.0f + 640.0f / 256.0f at runtime (fadds); ours folds the constants
 // .text:0x8001FE00 size:0x248
+#if NONMATCHING
 void fn_8001FE00(LayoutGroup* group) {
-    return;
+    SpriteVtx quad[4];
+    PaddedVec p[4];
+    Mtx trans;
+    Mtx m;
+    f32 scale;
+    f32 right;
+    f32 bottom;
+    s32 a;
+    LayoutObj* obj;
+
+    if (lbl_8037169C.loadState < 2) {
+        return;
+    }
+    if (lbl_8037169C.state == 13) {
+        lbl_8037169C.fadeAlpha = lbl_8037169C.alpha;
+    } else {
+        a = lbl_8037169C.fadeAlpha + 16;
+        if (a > 255) {
+            a = 255;
+        }
+        lbl_8037169C.fadeAlpha = a;
+    }
+    obj = lbl_80371C30[group->start + 4].obj;
+    obj->color = lbl_8037169C.fadeAlpha | (obj->color & 0xFFFFFF00);
+    fn_8000FE08(group->textIndex, 0, lbl_8037169C.loadIndex + 0x92);
+    fn_800B2160(1);
+    PSMTXTrans(trans, -320.0f, -224.0f, 0.0f);
+    scale = lbl_803CBBE0 / lbl_803CBBDC;
+    right = 640.0f;
+    bottom = 256.0f;
+    p[0].v.x = 0.0f;
+    p[0].v.y = 0.0f;
+    p[1].v.x = right;
+    p[1].v.y = 0.0f;
+    p[2].v.x = 0.0f;
+    p[2].v.y = bottom;
+    p[3].v.x = right;
+    p[3].v.y = bottom;
+    p[3].v.z = 0.0f;
+    p[2].v.z = 0.0f;
+    p[1].v.z = 0.0f;
+    p[0].v.z = 0.0f;
+    PSMTXScale(m, scale, scale, 1.0f);
+    PSMTXConcat(m, trans, m);
+    PSMTXMultVec(m, &p[0].v, &p[0].v);
+    PSMTXMultVec(m, &p[1].v, &p[1].v);
+    PSMTXMultVec(m, &p[2].v, &p[2].v);
+    PSMTXMultVec(m, &p[3].v, &p[3].v);
+    quad[0].x = p[0].v.x;
+    quad[0].y = p[0].v.y;
+    quad[1].x = p[2].v.x;
+    quad[1].y = p[2].v.y;
+    quad[2].x = p[3].v.x;
+    quad[2].y = p[3].v.y;
+    quad[3].x = p[1].v.x;
+    quad[3].y = p[1].v.y;
+    quad[0].z = quad[1].z = quad[2].z = quad[3].z = -lbl_803CBBE0;
+    quad[0].color = quad[1].color = quad[2].color = quad[3].color = lbl_8037169C.fadeAlpha - 0x100;
+    quad[1].s = 0;
+    quad[0].s = 0;
+    quad[3].s = 0x400;
+    quad[2].s = 0x400;
+    quad[3].t = 0;
+    quad[0].t = 0;
+    quad[2].t = 0x400;
+    quad[1].t = 0x400;
+    DrawSprite_TexObj(quad, lbl_8037169C.texObj);
 }
+#endif
 
 // .text:0x80020048 size:0x1D0
 s32 calledWhenStartingMatch(void) {
