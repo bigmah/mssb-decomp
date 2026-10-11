@@ -101,6 +101,8 @@ void fn_1_1D514(void);
 
 void fn_1_1B038(void);
 
+void fn_1_1B0FC(void);
+
 void fn_1_1B2C8(void);
 
 #endif

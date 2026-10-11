@@ -245,3 +245,47 @@ void fn_1_1B2C8(void) {
     actor->rot.z = lbl_1_data_FB18.z;
 }
 #endif
+
+void LITAlloc(Light** light);
+void LITInitDir(Light* light, f32 x, f32 y, f32 z);
+extern const GXColor lbl_1_rodata_7500;
+extern const GXColor lbl_1_rodata_7504;
+extern const f32 lbl_1_rodata_75B8;
+extern const f32 lbl_1_rodata_75BC;
+extern const f32 lbl_1_rodata_75C0;
+extern const f32 lbl_1_rodata_75C4;
+extern const f32 lbl_1_rodata_75C8;
+
+// fn_1_1B0FC, size:0x1CC
+// Debug viewer: set up three point lights.
+// NONMATCHING 99%: only the prologue scheduling of the two GXColor rodata loads differs (as fn_2_48DB4)
+#if NONMATCHING
+void fn_1_1B0FC(void) {
+    GXColor white = lbl_1_rodata_7500;
+    GXColor cyan = lbl_1_rodata_7504;
+    GXColor color0;
+    GXColor color1;
+    GXColor color2;
+
+    LITAlloc(&((ChallengeLightMgr*)lbl_8036E548)->lights[0]);
+    LITAlloc(&((ChallengeLightMgr*)lbl_8036E548)->lights[1]);
+    LITAlloc(&((ChallengeLightMgr*)lbl_8036E548)->lights[2]);
+
+    LITInitAttn(((ChallengeLightMgr*)lbl_8036E548)->lights[0], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(((ChallengeLightMgr*)lbl_8036E548)->lights[0], lbl_1_rodata_75B8, lbl_1_rodata_75B8, lbl_1_rodata_75BC);
+    color0 = white;
+    LITInitColor(((ChallengeLightMgr*)lbl_8036E548)->lights[0], &color0);
+
+    LITInitAttn(((ChallengeLightMgr*)lbl_8036E548)->lights[1], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(((ChallengeLightMgr*)lbl_8036E548)->lights[1], lbl_1_rodata_75C0, lbl_1_rodata_75C4, lbl_1_rodata_75C8);
+    color1 = cyan;
+    LITInitColor(((ChallengeLightMgr*)lbl_8036E548)->lights[1], &color1);
+
+    LITInitAttn(((ChallengeLightMgr*)lbl_8036E548)->lights[2], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(((ChallengeLightMgr*)lbl_8036E548)->lights[2], lbl_1_rodata_7520, lbl_1_rodata_75C4, lbl_1_rodata_75C8);
+    color2 = cyan;
+    LITInitColor(((ChallengeLightMgr*)lbl_8036E548)->lights[2], &color2);
+
+    LITInitDir(((ChallengeLightMgr*)lbl_8036E548)->lights[0], lbl_1_rodata_75BC, lbl_1_rodata_75BC, lbl_1_rodata_75B8);
+}
+#endif
