@@ -775,9 +775,35 @@ s32 fn_80032038(const void* a, const void* b) {
 }
 
 // .text:0x80032064 size:0x220
-void fn_80032064(void) {
-    return;
+// NONMATCHING 40%: register allocation of the inlined emitter allocation; the original keeps &lbl_800F787C in a register (stwu)
+#if NONMATCHING
+void fn_80032064(Vec* pos, ParticleParamsB* prm) {
+    Emitter* e;
+    Particle* p;
+    f32 size;
+
+    lbl_800F787C.tex = lbl_803CBD0C;
+    e = NewEmitter(fn_8002E828, 0x80, 0, 1, 1, 6);
+    if (e != NULL) {
+        e->tex = lbl_800F787C.tex;
+        p = e->particles;
+        p->pos.x = pos->x;
+        p->pos.y = pos->y;
+        p->pos.z = pos->z;
+        p->color.rgba = 0xFFFFFF00;
+        p->u.t6.unk18 = lbl_800F787C.unk10;
+        p->u.t6.unk1C = p->life = lbl_800F787C.life;
+        p->u.t6.unk20 = lbl_800F787C.life / 2;
+        size = (f32)lbl_800F787C.size / 100000.0f;
+        p->u.t6.unk10 = size;
+        p->sizeY = size;
+        p->sizeX = size;
+        p->u.t6.unk14 = (f32)lbl_800F787C.unkC / 100000.0f;
+        p->texIndex = lbl_800F787C.texIndex;
+    }
+    fn_8002A1CC(pos, prm);
 }
+#endif
 
 // .text:0x80032284 size:0x268
 void fn_80032284(void) {
