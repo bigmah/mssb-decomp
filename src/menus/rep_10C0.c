@@ -146,6 +146,46 @@ void fn_2_92A34(MenuCamera* cam, Vec* goal) {
     }
 }
 
+// fn_2_92CB0, size:0x27C
+void fn_2_92CB0(MenuCamera* cam) {
+    if (WORK->springOn) {
+        Vec res;
+        Vec cur;
+        Vec next;
+        Vec prev;
+        f32 stiffness;
+        f32 damping;
+        f32 rest;
+        f32 x, y, z;
+
+        x = WORK->pos.x;
+        y = WORK->pos.y;
+        z = WORK->pos.z;
+        cur.x = WORK->posSpring.x;
+        cur.y = WORK->posSpring.y;
+        cur.z = WORK->posSpring.z;
+        next.x = x;
+        next.y = y;
+        next.z = z;
+        prev.x = WORK->posPrev.x;
+        prev.y = WORK->posPrev.y;
+        prev.z = WORK->posPrev.z;
+        rest = WORK->posParams.rest;
+        damping = WORK->posParams.damping;
+        stiffness = WORK->posParams.stiffness;
+        res = CameraSpringStep(cur, next, prev, stiffness, damping, rest);
+        WORK->pos.x = res.x;
+        WORK->pos.y = res.y;
+        WORK->pos.z = res.z;
+        WORK->posSpring.x = res.x;
+        WORK->posSpring.y = res.y;
+        WORK->posSpring.z = res.z;
+        WORK->posPrev.x = x;
+        WORK->posPrev.y = y;
+        WORK->posPrev.z = z;
+    }
+}
+
 // fn_2_93BF8, size:0x6C
 void fn_2_93BF8(MenuCamera* cam) {
     switch (WORK->cameraMode) {
