@@ -548,3 +548,69 @@ void fn_2_8C910(void) {
     }
 }
 #endif
+
+extern void fn_2_4E824(void);
+extern void fn_2_48DB4(void);
+extern void fn_2_93C64(void);
+extern u8 lbl_2_data_2FE58[];
+
+// NONMATCHING 98%: the inlined fn_2_8B2C0 has the same i/off copy and r3/r4 swap as fn_2_8B2C0
+#if NONMATCHING
+// .text:0x8DFB0 size:0x4C8
+void fn_2_8DFB0(void) {
+    u8* task = lbl_803CC1B8;
+    switch (*(s8*)(task + 0x28)) {
+    case 0:
+        lbl_2_bss_340140 = lbl_8036E548;
+        *(s16*)(task + 0x14) = 0;
+        fn_2_4E824();
+        fn_80052D70();
+        fn_2_48DB4();
+        fn_2_93C64();
+        task[0x28] = 1;
+        break;
+    case 1:
+        *(s16*)(lbl_2_bss_1A824C + 0x197746) = 0;
+        *(s32*)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(lbl_2_data_2FE58, 0, 0, 0); // TODO type: ARAMTransfer returns a pointer
+        *(s16*)(task + 0x14) = *(s16*)(task + 0x14) + 1;
+        task[0x28] = 2;
+        break;
+    case 2: {
+        s32 st = lbl_803C6CF8[0x715];
+        if (st == 1) {
+            task[0x28] = 5;
+        }
+        break;
+    }
+    case 5:
+        fn_2_8B2C0();
+        task[0x28] = 6;
+        break;
+    case 6:
+        fn_2_8B158();
+        fn_2_8C724();
+        fn_80052D70();
+        task[0x28] = 7;
+        break;
+    case 7:
+        task[0x28] = 8;
+        break;
+    case 8:
+        lbl_2_bss_340140[0x307A] = 3;
+        task[0x28] = 9;
+        break;
+    case 9:
+        task[0x28] = 10;
+        break;
+    case 10: {
+        u8* q;
+        lbl_2_bss_340140[0x307A] = 3;
+        q = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        task[0x28] = 0;
+        break;
+    }
+    }
+}
+#endif

@@ -93,4 +93,8 @@ void fn_2_8CD58(s32 index, s32 anim, u8 loop, u8 face, s16 time, u8 eyes, u8 fra
 
 void fn_2_8C910(void);
 
+void fn_2_8DFB0(void);
+
+void fn_2_8B158(void);
+
 #endif
