@@ -326,5 +326,48 @@ void fn_8004BAEC(CharModel* model) {
 
 // .text:0x8004BD6C size:0x144
 s32 fn_8004BD6C(CharModel* model, GameActor** actor) {
+    u16 boneA;
+    u16 boneB;
+    u32 partA;
+    u32 partB;
+
+    switch (model->charID) {
+    case 38:
+        boneA = model->bone18A;
+        partA = 2;
+        boneB = model->bone196;
+        partB = 3;
+        break;
+    case 18:
+        boneA = model->bone1F6;
+        partA = 4;
+        boneB = model->bone1F8;
+        partB = 5;
+        break;
+    case 40:
+        boneA = model->bone1DA;
+        partA = 6;
+        boneB = model->bone1DC;
+        partB = 7;
+        break;
+    case 41:
+        boneA = model->bone1DA;
+        partA = 6;
+        boneB = model->bone1DC;
+        partB = 7;
+        break;
+    default:
+        return 0;
+    }
+    fn_8001D180(model->playerIdx, 0, 0);
+    fn_8001D180(model->playerIdx, 1, 0);
+    fn_8001D180(model->playerIdx, partA, 0);
+    fn_8001D180(model->playerIdx, partB, 0);
+    if (boneA != 0xFFFF) {
+        fn_800B2B74(*actor, boneA);
+    }
+    if (boneB != 0xFFFF) {
+        fn_800B2B74(*actor, boneB);
+    }
     return 0;
 }
