@@ -38,8 +38,14 @@ u16 fn_3_6D564(s32 team, s32 idx, s32 delta) {
 }
 
 // .text:0x0006D604 size:0x54 mapped:0x806AC698
-BOOL checkFieldingStat(int p0, int p1, E(int, FIELDING_ABILITY) p2) {
-    return 0;
+BOOL checkFieldingStat(int team, int idx, E(int, FIELDING_ABILITY) ability) {
+    if (g_d_GameSettings.minigamesEnabled) {
+        team = 0;
+    }
+    if (inMemRoster[team][idx].stats.FieldingStats & (1 << ability)) {
+        return TRUE;
+    }
+    return FALSE;
 }
 
 // .text:0x0006D658 size:0x7C mapped:0x806AC6EC
