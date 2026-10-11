@@ -1048,9 +1048,56 @@ void fn_2_627F4(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x00062A38 size:0x2E0
-void fn_2_62A38(void) {
-    return;
+// NONMATCHING 81%: the third digit (value / 100 % 10) is computed before the first fn_800363D8 call in the original; ours after
+#if NONMATCHING
+void fn_2_62A38(MenuTask* task, MenuItem* item) {
+    LayoutObj* obj;
+    s32 value;
+    s32 hundreds;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+    case 0x11:
+        if (lbl_2_bss_1A824C->_1976FA == 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+            lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+            value = lbl_2_bss_1A824C->records[lbl_2_bss_1A824C->_1976FA + 1][item->_0A]._4;
+            hundreds = (value / 100) % 10;
+            fn_800363D8((SpaniOwner*)task, item->sprite, 3, 6, value % 10);
+            fn_800363D8((SpaniOwner*)task, item->sprite, 4, 6, (value / 10) % 10);
+            fn_800363D8((SpaniOwner*)task, item->sprite, 5, 6, hundreds);
+        } else {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        item->state = 0x25;
+        break;
+    case 5:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
+        item->state = 6;
+        break;
+    case 6:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) == 0) {
+            obj->_68 = 0;
+            item->state = 7;
+        }
+        break;
+    case 7:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        break;
+    case 0x25:
+        break;
+    }
 }
+#endif
 
 // .text:0x00062D18 size:0x858
 void fn_2_62D18(void) {
