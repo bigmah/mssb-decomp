@@ -295,9 +295,34 @@ void starMissionRelated2(void) {
 }
 
 // .text:0x8006C9D8 size:0xC4
+// NONMATCHING 90%: the original indexes _444D with i (addi/stbx) instead of a strength-reduced pointer; register numbering differs
+#if NONMATCHING
 void fn_8006C9D8(void) {
-    return;
+    ChallengeTrackingStruct* t = starMissionCompletionTracker;
+    s32 row = gChallengeState._4415;
+    s32 col = gChallengeState._441C;
+    s32 i;
+
+    for (i = 0; i < 54; i++, t++) {
+        s8 status = t->_31;
+        if (status != 1) {
+            s8 flag = ((ScoutFlagTable*)t->scoutFlagPointer)->flags[row][col];
+            if ((s8)t->scoutFlagsAchieved == flag && flag != 0) {
+                s32 mode = gChallengeState._441F;
+                if (mode == 19) {
+                    if (status == 2) {
+                        t->_31 = 1;
+                        gChallengeState._444D[i] = 1;
+                    }
+                } else if (status != 2 && (s8)t->challengeCaptain == gChallengeState._441E) {
+                    t->_31 = 1;
+                    gChallengeState._444D[i] = 1;
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8006CA9C size:0x2C
 f32 fn_8006CA9C(void) {
