@@ -36,6 +36,12 @@ typedef struct {
     /* 0x307A */ u8 unk307A;
 } MenuDrawWorld;
 
+// Draw-list node for fn_800A7D4C (DrawCallbackNode in main/file_800A7C08.h).
+typedef struct {
+    /* 0x0 */ u32 next; // TODO type: tagged link, set by fn_800A7D4C
+    /* 0x4 */ void (*func)(void);
+} MenuDrawNode;
+
 // Stadium background objects (lbl_2_data_2E608), indexed by stadium.
 typedef struct {
     /* 0x0 */ s16 model;
