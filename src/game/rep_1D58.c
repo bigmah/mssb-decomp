@@ -10,6 +10,7 @@
 #include "main/file_800BDEA0.h"
 #include "main/file_800B2C44.h"
 #include "main/file_80008E00.h"
+#include "game/rep_1C0.h"
 
 extern u8 lbl_3_data_11168[];
 extern void* memcpy(void*, const void*, u32);
@@ -498,9 +499,101 @@ void fn_3_B8828(MtxPtr view, s32 translucent, u32 layer) {
     fn_800B9AA8(sStadiumMgr.lights[0]);
 }
 
+struct CharActor;
+extern u8 g_GameLogic[];
+extern void fn_8001E460(void (*draw)(MtxPtr view, s32 a, s32 b)); // CharDrawCallback, main/file_80011640.h
+extern void fn_800116DC(struct CharActor* actor, Mtx m, u16 joint);
+extern void fn_800117CC(Mtx src, Mtx m, Mtx dst);
+extern void fn_800B2BFC(GameActor* actor, u16 boneA, u16 boneB);
+extern void fn_3_D55EC(MtxPtr view, SortEnt* sort);
+extern void fn_3_F6084(MtxPtr view, SortEnt* sort);
+extern void fn_3_E7388(MtxPtr view, SortEnt* sort);
+f32 lbl_3_bss_1908; // depth fade floor
+extern const f32 lbl_3_rodata_1DE8; // 0.25f
+extern const f32 lbl_3_rodata_1DEC; // 2.0f
+extern const f32 lbl_3_rodata_1DF0; // 22.0f
+extern const f64 lbl_3_rodata_1DF8; // 1.0
+extern const f32 lbl_3_rodata_1E00; // 20.0f
+
+// Per-frame update of the stadium objects: matrices, attachments, shadows and
+// shape animations, then the per-stadium sort/fade pass.
 // .text:0x000B8C08 size:0x424 mapped:0x806F7C9C
-void fn_3_B8C08(void) {
-    return;
+void fn_3_B8C08(MtxPtr view) {
+    Vec shadowPos;
+    Mtx world;
+    Mtx modelView;
+    StadiumObj* obj;
+    GameActor* actor;
+    SortEnt* e;
+    s32 i;
+
+    if (sStadiumMgr.data == NULL) {
+        return;
+    }
+    fn_3_38E8(fn_3_B8828);
+    fn_8001E460((void (*)(MtxPtr, s32, s32))fn_3_B8828);
+    for (i = 0; i < sStadiumMgr.count; i++) {
+        obj = &sStadiumMgr.objs[i];
+        if (obj->visible && obj->actor != NULL) {
+            actor = obj->actor->actor;
+            fn_800B2BFC(obj->actor->actor, obj->actor->unk64, obj->actor->unk66);
+            fn_800B3F20(actor);
+            fn_800B313C(actor);
+            CTRLBuildMatrix(&obj->ctrl, world);
+            PSMTXCopy(world, obj->mtx);
+            PSMTXConcat(view, obj->mtx, modelView);
+            if (obj->attached != 0) {
+                if (obj->attachJoint == -1) {
+                    fn_800117CC(obj->mtx, view, obj->mtx);
+                } else {
+                    fn_800116DC((struct CharActor*)obj->actor, modelView, obj->attachJoint); // TODO type
+                }
+            }
+            obj->viewFlags = (obj->viewFlags & 0xFC) | fn_800B3C04(0, obj->actor->actor, modelView);
+            if (obj->castShadow) {
+                Vec pos = {0.0f, 0.0f, 0.0f};
+                PSMTXMultVec(world, &pos, &pos);
+                shadowPos = pos;
+                fn_800BEA04(shadowPos);
+            }
+            if (obj->shapeAnim != NULL && lbl_80366158._28 == 0 && obj->viewFlags != 0) {
+                fn_80024DB0(&obj->shapeAnim->anim);
+                fn_80024FA4((ShapeModel**)obj->actor, obj->shapeAnim->shape, &obj->shapeAnim->anim, -1); // TODO type
+            }
+        }
+    }
+    if (g_d_GameSettings.StadiumID == 2 && g_d_GameSettings.GameModeSelected != 7) {
+        fn_3_D55EC(view, sStadiumMgr.sort);
+    } else if (g_d_GameSettings.StadiumID == 5 && g_d_GameSettings.GameModeSelected != 7) {
+        fn_3_F6084(view, sStadiumMgr.sort);
+    } else if (g_d_GameSettings.StadiumID == 6) {
+        fn_3_E7388(view, sStadiumMgr.sort);
+    } else {
+        fn_3_B867C(view, sStadiumMgr.sort);
+        if (sStadiumMgr.sortByDepth) {
+            Vec ballPos;
+            lbl_3_bss_1908 = g_GameLogic[0x11E] == 2 ? lbl_3_rodata_1DE8 : lbl_3_rodata_1DCC; // TODO type: g_GameLogic field 0x11E
+            memcpy(&ballPos, g_Ball, sizeof(Vec)); // the ball position
+            PSMTXMultVec(view, &ballPos, &ballPos);
+            for (i = 0; i < sStadiumMgr.count; i++) {
+                e = &sStadiumMgr.sort[i];
+                if (sStadiumMgr.objs[e->idx].visible) {
+                    if (e->z < lbl_3_rodata_1DEC + ballPos.z) {
+                        e->z = lbl_3_rodata_1DDC;
+                    } else if (e->z > lbl_3_rodata_1DF0 + ballPos.z) {
+                        e->z = lbl_3_rodata_1DF8 - (lbl_3_rodata_1DDC - lbl_3_bss_1908);
+                    } else {
+                        e->z = lbl_3_rodata_1DF8 - (lbl_3_rodata_1DDC - lbl_3_bss_1908) *
+                                                       ((e->z - (lbl_3_rodata_1DEC + ballPos.z)) / lbl_3_rodata_1E00);
+                    }
+                }
+            }
+        } else {
+            for (i = 0; i < sStadiumMgr.count; i++) {
+                sStadiumMgr.sort[i].z = 1.0f;
+            }
+        }
+    }
 }
 
 // .text:0x000B902C size:0x60 mapped:0x806F80C0
@@ -582,7 +675,6 @@ s32 fn_3_B91C8(s32 type, s32 idx0, s32 arg) {
 
 // .text:0x000B939C size:0x28 mapped:0x806F8430
 extern u8 lbl_3_common_bss_350E4[];
-extern u8 g_GameLogic[];
 
 void fn_3_B939C(void) {
     lbl_3_common_bss_350E4[0x6C] = (g_GameLogic[0x11E] == 2);

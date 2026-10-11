@@ -3,6 +3,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
+#include "static/Camera.h"
 #pragma dont_inline on
 
 typedef struct { u8 b[14]; } Tbl14;
@@ -11,7 +12,7 @@ extern void CTRLBuildMatrix(void*, void*);
 extern void DOVARender(void*, void*, int, int);
 extern s32 fn_800B7D3C(void*, f32*, void*);
 extern u8 lbl_803CBBC0;
-extern u32 lbl_3_data_A10[];
+extern StadiumDrawFn lbl_3_data_A10[];
 
 extern u32 lbl_3_bss_18[];
 extern f32 lbl_3_rodata_504;
@@ -25,7 +26,7 @@ extern u8 g_UNK_StadiumDetails[];
 extern u32 fn_80009028(void);
 extern s32 fn_800527BC(void);
 extern void fn_80052694(void*);
-extern s32 fn_80052734(s32);
+extern camera_803c639c_s* fn_80052734(s32);
 extern s32 lbl_3_rodata_210;
 extern void DCStoreRange(void*, u32);
 extern void fn_80023F0C(void*, void*, int, int, int, int, int, int);
@@ -106,18 +107,18 @@ void fn_3_3638(u8* obj) {
 // .text:0x00003818 size:0xD0
 void fn_3_3818(void) {
     s32 i;
-    if (lbl_3_data_A10[lbl_803CBBC0 == 0] != 0) {
+    if (lbl_3_data_A10[lbl_803CBBC0 == 0] != NULL) {
         i = fn_800527BC() - 1;
         do {
-            fn_80052694((void*)i);
-            ((void (*)(s32, s32, s32))lbl_3_data_A10[lbl_803CBBC0 == 0])(fn_80052734(i) + 0x40, 0, 0);
+            fn_80052694((void*)i); // TODO type: takes the camera index (s32)
+            lbl_3_data_A10[lbl_803CBBC0 == 0](fn_80052734(i)->view, 0, 0);
         } while (i-- != 0);
-        lbl_3_data_A10[lbl_803CBBC0 == 0] = 0;
+        lbl_3_data_A10[lbl_803CBBC0 == 0] = NULL;
     }
 }
 
 // .text:0x000038E8 size:0x1C
-void fn_3_38E8(u32 a) {
+void fn_3_38E8(StadiumDrawFn a) {
     lbl_3_data_A10[lbl_803CBBC0] = a;
 }
 

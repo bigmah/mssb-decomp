@@ -3,12 +3,15 @@
 
 #include "mssbTypes.h"
 
+// Per-frame stadium draw callback: (view matrix, translucent pass, layer).
+typedef void (*StadiumDrawFn)(float (*view)[4], s32 translucent, u32 layer);
+
 u32 setFanObjPtr(void);
 void fn_3_35E4(u32 val);
 void fn_3_35F0(void);
 void fn_3_3638(u8* obj);
 void fn_3_3818(void);
-void fn_3_38E8(u32 a);
+void fn_3_38E8(StadiumDrawFn a);
 void fn_3_3904(void);
 void fn_3_3BE8(void);
 void fn_3_3EE8(void);
