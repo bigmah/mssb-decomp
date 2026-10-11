@@ -23,6 +23,7 @@ typedef struct {
 #include <math.h>
 
 #include "static/UnknownHomes_Static.h"
+#include "main/file_800A7C08.h"
 extern void* lbl_2_bss_340140[];
 extern u8* lbl_803CC1B8;
 extern u8* lbl_2_bss_1A824C[];
@@ -1315,3 +1316,45 @@ void fn_2_91788(u8* object) {
     }
     *(s16*)(object + 0x90) = 1;
 }
+
+extern f32 fn_2_4A1E8(f32 x, f32 y);
+extern f32 lbl_2_bss_B640;
+extern Vec lbl_2_data_308F4;
+extern const f32 lbl_2_rodata_1090;
+extern const f32 lbl_2_rodata_1094;
+extern const f32 lbl_2_rodata_1098;
+
+// NONMATCHING 89%: scheduling only (lbl_803C77B8 address hoisted to the top, f-reg numbering)
+#if NONMATCHING
+// .text:0x8FE9C size:0x1E0
+void fn_2_8FE9C(s32 index) {
+    f32 x;
+    f32 z;
+    Vec position;
+    Vec direction;
+    PadState* pad;
+    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    memcpy(&position, slot, sizeof(Vec));
+    PSVECSubtract(&position, &lbl_2_data_308F4, &direction);
+    x = direction.x * lbl_2_rodata_1090;
+    z = direction.z * lbl_2_rodata_1090;
+    direction.x = x;
+    direction.z = z;
+    pad = &((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)];
+    position.x += pad->sticks.stickX / lbl_2_rodata_1094;
+    position.z += pad->sticks.stickY / lbl_2_rodata_1094;
+    if (lbl_2_rodata_1080 != x || lbl_2_rodata_1080 != z) {
+        lbl_2_bss_B640 = fn_2_4A1E8(direction.z, x);
+    }
+    if (((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].repeat & 0x40) {
+        position.y -= lbl_2_rodata_1098;
+    } else if (((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].repeat & 0x20) {
+        position.y += lbl_2_rodata_1098;
+    }
+    memcpy(&lbl_2_data_308F4, slot, sizeof(Vec));
+    *(f32*)(slot + 0x0) = position.x;
+    *(f32*)(slot + 0x4) = position.y;
+    *(f32*)(slot + 0x8) = position.z;
+    *(f32*)(slot + 0x44) = lbl_2_bss_B640;
+}
+#endif
