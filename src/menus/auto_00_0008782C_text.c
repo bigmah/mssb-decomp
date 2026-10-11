@@ -592,7 +592,129 @@ s32 fn_2_895F8(u8 alt) {
 
 // .text:0x0008975C size:0x814
 void fn_2_8975C(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    s32 count;
+    s32 i;
+    s32 done;
+    s32 total;
+    s32 pos;
+    s32 altPos;
+
+    switch (lbl_2_bss_33FBCC.mode) {
+    case 0:
+        count = 2;
+        break;
+    case 1:
+    case 2:
+        count = 4;
+        break;
+    case 3:
+        count = 5;
+        break;
+    }
+
+    switch (lbl_2_bss_33FBCC.btnAnim) {
+    case 0x51:
+        if (lbl_2_bss_33FBCC.btnStarted == 0) {
+            SLOT_OBJ(task, 0, 1)->_68 = 1;
+            switch (lbl_2_bss_33FBCC.mode) {
+            case 0:
+                fn_800363D8(task, 3, 1, 0xCF, 0x13);
+                fn_800363D8(task, 4, 1, 0xCF, 0x18);
+                break;
+            case 1:
+                fn_800363D8(task, 3, 1, 0xCF, 0x14);
+                fn_800363D8(task, 4, 1, 0xCF, 0x16);
+                fn_800363D8(task, 5, 1, 0xCF, 0x17);
+                fn_800363D8(task, 6, 1, 0xCF, 0x18);
+                break;
+            case 2:
+                fn_800363D8(task, 3, 1, 0xCF, 0x15);
+                fn_800363D8(task, 4, 1, 0xCF, 0x16);
+                fn_800363D8(task, 5, 1, 0xCF, 0x17);
+                fn_800363D8(task, 6, 1, 0xCF, 0x18);
+                break;
+            case 3:
+                fn_800363D8(task, 3, 1, 0xCF, 0x14);
+                fn_800363D8(task, 4, 1, 0xCF, 0x15);
+                fn_800363D8(task, 5, 1, 0xCF, 0x16);
+                fn_800363D8(task, 6, 1, 0xCF, 0x17);
+                fn_800363D8(task, 7, 1, 0xCF, 0x18);
+                break;
+            }
+            for (i = 0; i < count; i++) {
+                SLOT_OBJ(task, i, 3)->_68 = 1;
+            }
+            lbl_2_bss_33FBCC.btnStarted = 1;
+            lbl_2_bss_33FBCC.btnRunning = 1;
+        }
+        if (lbl_2_bss_33FBCC.btnRunning != 0) {
+            done = 0;
+            total = 0;
+            for (i = 0; i < count; i++) {
+                if (i == 0) {
+                    total++;
+                    done += fn_80042DA8(task, i + 3, 8) != 0;
+                } else {
+                    total++;
+                    done += fn_80042DA8(task, i + 3, 3) != 0;
+                }
+            }
+            if (done == total) {
+                lbl_2_bss_33FBCC.btnStarted = 0;
+                lbl_2_bss_33FBCC.btnRunning = 0;
+                lbl_2_bss_33FBCC.btnAnim = 0;
+            }
+        }
+        break;
+    case 0x52:
+        if (lbl_2_bss_33FBCC.btnStarted == 0) {
+            SLOT_OBJ(task, 0, 0)->_68 = 4;
+            SLOT_OBJ(task, 0, 1)->_68 = 4;
+            for (i = 0; i < count; i++) {
+                SLOT_OBJ(task, i, 3)->_5C = 0x30000;
+                SLOT_OBJ(task, i, 3)->_68 = 4;
+            }
+            lbl_2_bss_33FBCC.btnStarted = 1;
+            lbl_2_bss_33FBCC.btnRunning = 1;
+        }
+        if (lbl_2_bss_33FBCC.btnRunning != 0) {
+            done = 0;
+            total = 0;
+            total++;
+            done += fn_80042DA8(task, 1, 0) != 0;
+            if (done == total) {
+                lbl_2_bss_33FBCC.btnStarted = 0;
+                lbl_2_bss_33FBCC.btnRunning = 0;
+                lbl_2_bss_33FBCC.btnAnim = 0;
+            }
+        }
+        break;
+    case 0x53:
+        if (lbl_2_bss_33FBCC.btnStarted == 0) {
+            pos = fn_2_895F8(0);
+            altPos = fn_2_895F8(1);
+            SLOT_OBJ(task, pos, 3)->_5C = 0x80000;
+            SLOT_OBJ(task, pos, 3)->_68 = 0;
+            SLOT_OBJ(task, altPos, 3)->_5C = 0x30000;
+            SLOT_OBJ(task, altPos, 3)->_68 = 0;
+            lbl_2_bss_33FBCC.btnStarted = 1;
+            lbl_2_bss_33FBCC.btnRunning = 1;
+        }
+        if (lbl_2_bss_33FBCC.btnRunning != 0) {
+            fn_2_895F8(0);
+            fn_2_895F8(1);
+            lbl_2_bss_33FBCC.btnStarted = 0;
+            lbl_2_bss_33FBCC.btnRunning = 0;
+            lbl_2_bss_33FBCC.btnAnim = 0;
+        }
+        break;
+    }
+
+    if (lbl_2_bss_33FBCC.closing != 0 && lbl_2_bss_33FBCC.btnRunning == 0) {
+        lbl_2_bss_33FBCC.closing = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
 }
 
 // .text:0x00089F70 size:0x98
