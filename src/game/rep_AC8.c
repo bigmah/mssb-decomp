@@ -40,6 +40,16 @@ typedef struct {
     int anim;
     void (*fn)(int i);
 } FielderActEntry;
+/* lbl_3_bss_C8: per-pad stick-angle history (20 frames each) */
+typedef struct {
+    s16 unk0[2];
+    s16 hist[4][20];
+    s16 cur;
+    s16 unkA6;
+    s16 tmp[20];
+} StickHistory;
+extern StickHistory lbl_3_bss_C8;
+extern u8 lbl_3_common_bss_34C90[];
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
@@ -1251,9 +1261,97 @@ void fn_3_2DDB4(void) {
 }
 
 // .text:0x0002E41C size:0x460 mapped:0x8066D4B0
+// NONMATCHING 85%: bss base hoisting, history-fill loop guard and stfsx addressing of the pitcher copy differ; logic and calls match
+#if NONMATCHING
 void fn_3_2E41C(void) {
-    return;
+    int k;
+    int i;
+    int n;
+    int pad;
+    s16* hist;
+    u8* in;
+    u8* f;
+    s16 v;
+    u8 t;
+    if (lbl_3_common_bss_34C90[0x1D5] != 0) {
+        return;
+    }
+    if (g_Minigame[0x1A2A] == 2) {
+        if (g_Minigame[0x1A7E] == 0) {
+            n = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18F8);
+            *(f32*)(g_Fielders + n * 0x268) = *(f32*)(g_Pitcher + 0x8C);
+            *(f32*)(g_Fielders + n * 0x268 + 8) = *(f32*)(g_Pitcher + 0x90);
+        }
+        return;
+    }
+    for (k = 0; k < 4; k++) {
+        if (*(s8*)(g_Minigame + 0x18F8 + k) > 0) {
+            g_Minigame[0x1923] = g_Minigame[0x18F8 + k];
+            g_Minigame[0x1922] = k;
+            if (g_d_GameSettings[7] == 6 && g_Minigame[0x18D8 + k] != 0) {
+                fn_3_2DDB4();
+            }
+            pad = *(s8*)(g_Minigame + 0x18CC + k);
+            hist = lbl_3_bss_C8.hist[pad];
+            in = g_Controls + pad * 0x10;
+            for (i = 19; i > 0; i--) {
+                lbl_3_bss_C8.tmp[i] = hist[i - 1];
+            }
+            lbl_3_bss_C8.tmp[0] = *(s16*)in;
+            if (lbl_3_bss_C8.tmp[0] == -1) {
+                for (i = 1; i < 20; i++) {
+                    lbl_3_bss_C8.tmp[i] = -1;
+                }
+            }
+            if (lbl_3_bss_C8.tmp[1] >= 0 && lbl_3_bss_C8.tmp[2] != 0) {
+                lbl_3_bss_C8.cur = lbl_3_bss_C8.tmp[0];
+            } else {
+                lbl_3_bss_C8.cur = -1;
+            }
+            for (i = 0; i < 20; i++) {
+                hist[i] = lbl_3_bss_C8.tmp[i];
+            }
+            *(u16*)(g_FieldingLogic + 0x148) = *(u16*)(in + 4);
+            *(u16*)(g_FieldingLogic + 0x14A) = *(u16*)(in + 6);
+            *(u16*)(g_FieldingLogic + 0x14C) = *(u16*)(in + 8);
+            *(u8**)(g_FieldingLogic + 0x70) = g_FieldingLogic + k * 0x1C;
+            *(u8**)(g_FieldingLogic + 0x8C) = g_FieldingLogic + k * 6 + 0x74;
+            g_FieldingLogic[k * 6 + 0x76] = 0;
+            v = lbl_3_bss_C8.tmp[0];
+            f = g_Fielders + *(s8*)(g_Minigame + 0x18F8 + k) * 0x268;
+            if (g_FieldingLogic[0x10E] != 0) {
+                v = -1;
+            }
+            *(s16*)(f + 0x19E) = v;
+            if (g_GameLogic[*(int*)(g_GameLogic + 0x10) + 0x144] == 0 && v >= 0 && *(s16*)(f + 0x1A0) > 10) {
+                *(s16*)(g_FieldingLogic + 0xCC) = -1;
+            }
+            if (v >= 0) {
+                t = (*(u8**)(g_FieldingLogic + 0x70))[0x1A];
+                if (t != 3 && t != 4) {
+                    if (*(u16*)(g_FieldingLogic + 0x14A) & 0x200) {
+                        *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0xC) = 0;
+                    }
+                    if (g_d_GameSettings[7] == 2 && *(s8*)(g_Practice + 0x1C2) >= 0 && g_Practice[0x1C5] != 0) {
+                        *(s16*)(*(u8**)(g_FieldingLogic + 0x70) + 0xC) = 0;
+                    }
+                }
+            }
+            fn_3_3A584(*(s8*)(g_Minigame + 0x18F8 + k));
+        }
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        if (*(s8*)(g_Minigame + 0x1904) >= 0) {
+            n = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18F8);
+            *(f32*)(g_Fielders + n * 0x268) = *(f32*)(g_Pitcher + 0x8C);
+            *(f32*)(g_Fielders + n * 0x268 + 8) = *(f32*)(g_Pitcher + 0x90);
+        }
+    } else {
+        *(f32*)g_Fielders = *(f32*)(g_Pitcher + 0x8C);
+        *(f32*)(g_Fielders + 8) = *(f32*)(g_Pitcher + 0x90);
+    }
 }
+#endif
 
 // .text:0x0002E87C size:0x1A8 mapped:0x8066D910
 void fn_3_2E87C(void) {
