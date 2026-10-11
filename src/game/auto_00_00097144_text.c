@@ -502,7 +502,7 @@ remove:
 }
 
 // .text:0x0009894C size:0x2D4 mapped:0x806D79E0
-// NONMATCHING 96%: geom pointer copied to a second reg (mr r27) and add operand order in the item loop
+// NONMATCHING 97%: CW copies the geom pointer into a second reg (mr r27) for the itemY walk
 #if NONMATCHING
 void fn_3_9894C(void) {
     HudTask* task = HUD_TASK;
@@ -523,9 +523,9 @@ void fn_3_9894C(void) {
     HUD_OBJ(task, 2)->_64 = geom->frameB;
     HUD_OBJ(task, 2)->_5C = lbl_3_data_D860[lbl_3_common_bss_34C90.layout].frame << 16;
     for (i = 0; i < count; i++) {
-        HUD_OBJ(task, i + 3)->_72 = geom->itemY[i];
-        HUD_OBJ(task, i + 3)->flags |= 2;
-        HUD_OBJ(task, i + 3)->_68 = 1;
+        lbl_80371C30[task->baseIdx + 3 + i].obj->_72 = geom->itemY[i];
+        lbl_80371C30[task->baseIdx + 3 + i].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + 3 + i].obj->_68 = 1;
         anim = lbl_3_data_D860[lbl_3_common_bss_34C90.layout].items[i];
         if (g_d_GameSettings.exhibitionMatchInd == 0 && anim == 3) {
             anim = 0x12;
