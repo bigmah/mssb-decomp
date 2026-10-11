@@ -685,10 +685,10 @@ void fn_1_F1D8(void* unused) {
     }
 }
 
-extern void fn_8004B208(s32, s32, s32);
+extern void fn_8004B208(void* row, s32 id, s32 variant);
 
 // .text:0xD590 size:0xA8
-void fn_1_D590(s32 a, s32 b, f32 value) {
+void fn_1_D590(void* a, s32 b, f32 value) {
     u8* state = lbl_1_bss_3070;
     if (state[0x1A5] == 0 || state[0x1A6] == 0) return;
     if (state[0x1A6] == 2) {
@@ -3231,5 +3231,119 @@ void fn_1_FB98(void) {
         *(s32*)(state + 0xC) = 0;
         state[0x2F01] = 10;
     }
+}
+#endif
+
+// main/file_80024D2C.h and main/file_80037054.h clash with this file's externs, so declare what is needed.
+struct ShapeModel;
+struct ShapeData;
+struct CharModelObj;
+struct Model;
+extern s32 fn_80024DB0(struct ShapeAnimState* st);
+extern void fn_80024FA4(struct ShapeModel** model, struct ShapeData* shape, struct ShapeAnimState* st, s32 forceTarget);
+extern void fn_80038EC4(struct CharModelObj* obj, struct Model** model, s32 joint);
+extern void fn_8003414C(void* camera);
+extern f32 lbl_1_data_ABA4;
+extern u8 lbl_1_data_AC9C[];
+extern const f32 lbl_1_rodata_7460;
+
+// .text:0x129D0 size:0x548
+// NONMATCHING ~85%: the original inlines fn_1_D4BC, fn_1_11C98 and fn_1_D590 and uses the pooled .bss/.data bases
+#if NONMATCHING
+void fn_1_129D0(void) {
+    u8* state = lbl_1_bss_3070;
+    u8* row;
+    u8* table;
+    ActorObjectTable* challengeTable;
+    f32 speed;
+    s32 k;
+
+    fn_1_D4BC();
+    fn_1_11C98();
+    row = lbl_8036E548 + 0xC04;
+    table = *(u8**)(lbl_8036E548 + 0x60);
+    CTRLSetTranslation((Control*)(table + 0x44), 0.0f, 0.0f, 0.0f);
+    CTRLSetRotation((Control*)(table + 0x44), lbl_1_rodata_7460 * *(f32*)(row + 0x40),
+                    lbl_1_rodata_7460 * *(f32*)(row + 0x44), lbl_1_rodata_7460 * *(f32*)(row + 0x48));
+    if (ch_5F68 == 0) {
+        speed = lbl_1_data_ABA4;
+    } else {
+        speed = ch_5F64;
+    }
+    ((ActorObjectTable*)table)->objects[0].unk54 = speed;
+    ((ActorObjectTable*)table)->objects[0].setSpeed = 1;
+    if (ch_67B8[0] != NULL) {
+        *(f32*)((u8*)ch_67B8[0] + 0x4) = speed; // ShapeAnimState.speed
+    }
+    if (speed != 0.0f && state[0x1A5] != 0) {
+        u8* actor = (u8*)((ActorObjectTable*)table)->objects[0].actor;
+        u16 count = *(u16*)(actor + 6); // TODO type: ActorInst bone count / table
+        s32 i;
+        f32 frame;
+        u8* entry;
+
+        for (i = 0; i < count; i++) {
+            u8* anim = *(u8**)((*(u8***)(actor + 0x18))[i] + 0xE8);
+            if (anim != NULL && *(void**)(anim + 0xC) != NULL) {
+                break;
+            }
+        }
+        if (i < count) {
+            frame = **(f32**)((*(u8***)(actor + 0x18))[i] + 0xE8);
+        } else {
+            frame = 0.0f;
+        }
+        entry = ch_6940 + ch_5F73 * 0x48;
+        fn_1_D590(row, lbl_1_data_A938[entry[0x44]] + entry[0x45], frame);
+    }
+    ch_5F64 = 0.0f;
+    if (ch_5F5C == 0) {
+        challengeTable = lbl_1_bss_5F7C[0];
+        for (k = 0; k < 4; k++) {
+            struct ShapeModel** model;
+            void* shape;
+            if (ch_67B8[5 + k] == NULL || ch_67B8[k] == NULL) {
+                continue;
+            }
+            *(f32*)((u8*)ch_67B8[k] + 0x4) = speed; // ShapeAnimState.speed
+            if (fn_80024DB0(ch_67B8[k]) != 0 && ch_67B8[k] != NULL) {
+                ((ChallengeFlagBits*)((u8*)ch_67B8[k] + 0x11))->mode = 3; // ShapeAnimState.dirtyB
+            }
+            if (k == 0) {
+                model = (struct ShapeModel**)&((ActorObjectTable*)*(u8**)(lbl_8036E548 + 0x60))->objects[0].actor;
+            } else if (k == 3) {
+                model = (struct ShapeModel**)&challengeTable->objects[3].actor;
+            } else {
+                model = (struct ShapeModel**)&challengeTable->objects[k - 1].actor;
+            }
+            if (k == 0 || ch_5F69 == 0) {
+                shape = ch_67B8[5 + k];
+            } else if (k == 2) {
+                shape = ch_67B8[5 + k - 1];
+            } else {
+                shape = ch_67B8[5 + k + 1];
+            }
+            fn_80024FA4(model, shape, ch_67B8[k], -1);
+        }
+        if (ch_67B8[0] != NULL) {
+            memcpy(*(u8**)(lbl_8036E548 + ch_5F73 * 0x27C + 0xC30) + 0x10, ch_67B8[0], 0x20);
+        }
+    }
+    PSMTXCopy((f32(*)[4])(ch_68FC + 0x10), (f32(*)[4])(lbl_1_data_AC9C + lbl_803CBBC0[0] * 0x38 + 8));
+    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AC9C + lbl_803CBBC0[0] * 0x38);
+    if (lbl_1_data_A978[ch_68FC[0x40]] >= 0) {
+        // TODO type: fn_800BD8C4's second parameter is the view matrix
+        fn_800BD8C4(lbl_1_bss_5F7C[0], (s32)(ch_68FC + 0x10));
+    }
+    table = *(u8**)(lbl_8036E548 + 0x60);
+    ((ActorObjectTable*)table)->objects[0].animateBones = 1;
+    fn_1_12F8C(*(u8**)(lbl_8036E548 + 0x60), ch_68FC + 0x10);
+    ((ActorObjectTable*)*(u8**)(lbl_8036E548 + 0x60))->objects[0].animateBones = (ch_3080 == 0) & (ch_5F73 == 0);
+    if (lbl_8036E548[0x3083] != 0) {
+        u8 player = lbl_8036E548[0x3084];
+        fn_80038EC4((struct CharModelObj*)(lbl_8036E548 + player * 0x27C + 0xC04),
+                    (struct Model**)&((ActorObjectTable*)*(u8**)(lbl_8036E548 + 0x60))->objects[player].actor, 0);
+    }
+    fn_8003414C(ch_67E0);
 }
 #endif
