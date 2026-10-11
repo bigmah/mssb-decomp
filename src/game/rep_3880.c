@@ -1681,10 +1681,51 @@ void fn_3_1500C8(void) {
     pitchingMachinePitching(0x1D);
 }
 
-// .text:0x00150120 size:0x3CC mapped:0x8078F1B4
-void fn_3_150120(void) {
-    return;
+static inline s32 rnd_range(s32* r) {
+    s32 lo = r[0];
+    return lo + rand() % (r[1] - lo);
 }
+
+// NONMATCHING 99%: only the last rnd_range block schedules the 57.29578f/100000 constant loads in the other order
+// .text:0x00150120 size:0x3CC mapped:0x8078F1B4
+#if NONMATCHING
+void fn_3_150120(u8* o, u8* p) {
+    f32 speed;
+    f32 ang;
+    if (*(s16*)(p + 0x48) != 0) {
+        *(s16*)(p + 0x48) -= 1;
+        return;
+    }
+    fn_80033F64(*(f32*)(p + 0x38), *(f32*)(p + 0x3C), *(f32*)(p + 0x1C));
+    fn_80033CC8(p, *(void**)(o + 0x10));
+    *(f32*)(p + 4) += *(f32*)(p + 0x10);
+    *(f32*)(p + 8) -= *(f32*)(p + 0x14);
+    *(f32*)(p + 0xC) += *(f32*)(p + 0x18);
+    if (*(f32*)(p + 8) > 0.0f) {
+        *(f32*)(p + 8) = 0.0f;
+        *(f32*)(p + 0x14) = -*(f32*)(p + 0x14) * ((f32)*(s32*)(lbl_3_data_26C3C + 0x3C) / lbl_3_rodata_3930);
+    }
+    if (--*(s16*)(p + 0x4A) == 0) {
+        *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C3C + 0x50);
+        *(f32*)(p + 4) = *(f32*)(o + 0x1C);
+        *(f32*)(p + 8) = -*(f32*)(o + 0x20);
+        *(f32*)(p + 0xC) = *(f32*)(o + 0x24);
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) =
+            (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x28)) / lbl_3_rodata_3930;
+                *(f32*)(p + 0x14) = (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x30)) / lbl_3_rodata_3930;
+        ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 36000) / lbl_3_rodata_39E8);
+        speed = (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x40)) / lbl_3_rodata_3930;
+        *(f32*)(p + 0x10) = speed * (f32)cos(ang);
+        *(f32*)(p + 0x18) = speed * (f32)sin(ang);
+                *(f32*)(p + 0x1C) = lbl_3_rodata_39AC * ((f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x48)) / lbl_3_rodata_3930);
+        *(f32*)(p + 0x1C) *= (f32)(-((rand() % 2) * 2) + 1);
+        p[0x43] = 0xFF;
+        p[0x42] = 0xFF;
+        p[0x41] = 0xFF;
+        p[0x40] = 0xFF;
+    }
+}
+#endif
 
 // .text:0x001504EC size:0x454 mapped:0x8078F580
 void fn_3_1504EC(void) {
