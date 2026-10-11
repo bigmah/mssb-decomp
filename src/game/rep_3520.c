@@ -2430,9 +2430,12 @@ void fn_3_13AA78(void) {
 #pragma dont_inline on
 
 // .text:0x0013ACB4 size:0x10C mapped:0x80779D48
+// NONMATCHING 87%: same instructions, the two reflections are scheduled differently
+#if NONMATCHING
 void fn_3_13ACB4(CollisionStruct* c) {
     bounceArc(c);
 }
+#endif
 
 // .text:0x0013ADC0 size:0x5C mapped:0x80779E54
 void fn_3_13ADC0(f32* out, f32* a, f32* b) {
