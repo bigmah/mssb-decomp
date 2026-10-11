@@ -118,6 +118,8 @@ extern u8 lbl_3_data_10578[];
 extern void fn_800111B4(void* table);
 extern void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
 extern s32 fn_3_90C14(s32 a);
+// Practice-mode roster ids for the fielding team (lbl_3_data_FC18).
+extern u8 lbl_3_data_FC18[4];
 extern s32 fn_3_5B380(u16 buttons);
 extern void fn_3_5B368(void);
 extern void fn_8004CC18(void);
@@ -594,47 +596,6 @@ s32 fn_3_B6320(void) {
     return 0;
 }
 
-// fn_3_B5090, size:0x154
-void fn_3_B5090(void) {
-    InputStruct* c;
-    u8 n;
-    u16 b;
-    u16 d;
-    s32 v;
-    c = &g_Controls[g_Practice.homeAway];
-    n = lbl_3_data_FACC[g_Practice.practiceType_2 * 5];
-    b = c->newButtonInput;
-    if (b & 0x100) {
-        g_Practice.practiceLevel = (lbl_3_data_FACC + g_Practice.practiceType_2 * 5 + g_Practice.subMenuCursor)[1];
-        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-        fn_3_B3C94(3);
-        return;
-    }
-    if (b & 0x200) {
-        fn_3_B3C94(5);
-        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
-        return;
-    }
-    d = c->_08;
-    if (d & 8) {
-        if (g_Practice.subMenuCursor != 0) {
-            g_Practice.subMenuCursor -= 1;
-        } else {
-            g_Practice.subMenuCursor = n - 1;
-        }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-        return;
-    }
-    if (d & 4) {
-        v = g_Practice.subMenuCursor + 1;
-        g_Practice.subMenuCursor = v;
-        if ((u8)v >= (s32)n) {
-            g_Practice.subMenuCursor = 0;
-        }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-    }
-}
-
 // fn_3_B6994, size:0x1DC
 void fn_3_B6994(void) {
     switch (g_Practice.practiceState) {
@@ -858,6 +819,47 @@ void fn_3_B7184(void) {
 }
 
 #pragma dont_inline off
+// fn_3_B5090, size:0x154
+void fn_3_B5090(void) {
+    InputStruct* c;
+    u8 n;
+    u16 b;
+    u16 d;
+    s32 v;
+    c = &g_Controls[g_Practice.homeAway];
+    n = lbl_3_data_FACC[g_Practice.practiceType_2 * 5];
+    b = c->newButtonInput;
+    if (b & 0x100) {
+        g_Practice.practiceLevel = (lbl_3_data_FACC + g_Practice.practiceType_2 * 5 + g_Practice.subMenuCursor)[1];
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        fn_3_B3C94(3);
+        return;
+    }
+    if (b & 0x200) {
+        fn_3_B3C94(5);
+        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        return;
+    }
+    d = c->_08;
+    if (d & 8) {
+        if (g_Practice.subMenuCursor != 0) {
+            g_Practice.subMenuCursor -= 1;
+        } else {
+            g_Practice.subMenuCursor = n - 1;
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        return;
+    }
+    if (d & 4) {
+        v = g_Practice.subMenuCursor + 1;
+        g_Practice.subMenuCursor = v;
+        if ((u8)v >= (s32)n) {
+            g_Practice.subMenuCursor = 0;
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
+}
+
 // fn_3_B5694, size:0x184
 void fn_3_B5694(void) {
     InputStruct* c = &g_Controls[g_Practice.homeAway];
@@ -1515,3 +1517,99 @@ void fn_3_B5818(void) {
     }
 }
 #endif
+
+// .text:0x000B51E4 size:0x4B0
+void fn_3_B51E4(void) {
+    switch (g_Practice.practiceState) {
+    case 0:
+        g_Practice._19D = 0;
+        lbl_8036E548[0x2D77] = 0;
+        lbl_8036E548[0x2D7B] = 0;
+        lbl_8036E548[0x2D7C] = 0;
+        fn_3_B42A8();
+        if (g_Practice.practiceType_2 == 0) {
+            fn_3_B4124(0, 0, 0, -1);
+        } else if (g_Practice.practiceType_2 == 1) {
+            fn_3_B4124(0, 0, 1, -1);
+            fn_3_B4124(1, 0, 0, -1);
+        } else if (g_Practice.practiceType_2 == 2) {
+            fn_3_B4124(0, 0, 0, -1);
+            fn_3_B4124(1, 0, 1, -1);
+        } else if (g_Practice.practiceType_2 == 3) {
+            fn_3_B4124(1, 0, lbl_3_data_FC18[1], -1);
+            fn_3_B4124(1, 1, lbl_3_data_FC18[2], -1);
+            fn_3_B4124(1, 2, lbl_3_data_FC18[3], -1);
+        }
+        g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        fn_3_B3C94(1);
+        break;
+    case 1:
+        if (g_Practice._19C != 0 && g_Practice.framesSincePracticeMenuDefaultTransition > 0x1E) {
+            fn_3_B3C94(2);
+        }
+        break;
+    case 2:
+        fn_3_B5090();
+        break;
+    case 3:
+        g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        fn_3_B3C94(4);
+        break;
+    case 4:
+        if (g_Practice._19D == 0) {
+            g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        } else if (g_Practice.framesSincePracticeMenuDefaultTransition >= 0x1E) {
+            if (g_Practice.framesSincePracticeMenuDefaultTransition == 0x1E) {
+                if (g_Practice.practiceType_2 != 4) {
+                    changeScene(3, 6);
+                }
+            } else if (lbl_8037169C._13 != 0 || g_Practice.practiceType_2 == 4) {
+                switch (g_Practice.practiceType_2) {
+                case 0:
+                    fn_3_B3CAC(0xB);
+                    break;
+                case 1:
+                    fn_3_B3CAC(0xC);
+                    break;
+                case 2:
+                    fn_3_B3CAC(0xD);
+                    break;
+                case 3:
+                    fn_3_B3CAC(0xE);
+                    break;
+                case 4:
+                    fn_3_B5D4C(6);
+                    break;
+                }
+                if (g_Practice.practiceType_2 != 4) {
+                    fn_80062A74();
+                }
+                fn_3_B3C78(0);
+            }
+        }
+        break;
+    case 5:
+        if (g_Practice._19D != 0) {
+            fn_3_B3C94(6);
+        }
+        break;
+    case 6:
+        g_Practice.framesSincePracticeMenuDefaultTransition = 0;
+        fn_3_B3C94(7);
+        break;
+    case 7:
+        if (g_Practice.framesSincePracticeMenuDefaultTransition >= 0xF) {
+            fn_3_B5D4C(0);
+        }
+        break;
+    }
+    if (g_Practice._19C == 0) {
+        if (fn_8001594C(g_GameLogic.teamFielding) != 0) {
+            g_Practice._19C = 1;
+        }
+    } else if (g_Practice._19D == 0) {
+        if (fn_8001594C(g_GameLogic.teamFielding) != 0) {
+            g_Practice._19D = 1;
+        }
+    }
+}
