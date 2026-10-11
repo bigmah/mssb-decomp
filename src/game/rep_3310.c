@@ -710,9 +710,21 @@ void fn_3_119D34(void) {
 }
 
 // .text:0x00119E30 size:0xB0 mapped:0x80758EC4
-void fn_3_119E30(void) {
-    return;
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+extern u8 lbl_3_data_2263C[];
+extern u8 lbl_3_data_2263E;
+// Blinks the highlighted runner's texture (swaps texture records 0-2 through lbl_3_data_2263C).
+void fn_3_119E30(s32 i) {
+    TextureData* td;
+    if (*(s16*)(g_Minigame + *(s16*)(g_Minigame + 0x18A4) * 0x34 + 0x88C) % lbl_3_data_2263E == 0) {
+        td = lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData;
+        td->texturePalette->tex[0].texIndex = lbl_3_data_2263C[td->texturePalette->tex[0].texIndex] == 0;
+        td->texturePalette->tex[1].texIndex = lbl_3_data_2263C[td->texturePalette->tex[1].texIndex] == 0;
+        td->texturePalette->tex[2].texIndex = lbl_3_data_2263C[td->texturePalette->tex[2].texIndex] == 0;
+    }
 }
+#endif
 
 // .text:0x00119EE0 size:0x8C mapped:0x80758F74
 void fn_3_119EE0(void) {
