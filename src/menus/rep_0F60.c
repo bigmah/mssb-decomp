@@ -325,7 +325,7 @@ void fn_2_8E478(void) {
 }
 
 extern void* memcpy(void* d, const void* s, u32 n);
-extern f32 fn_2_4A1E8(f32 x);
+extern f32 fn_2_4A1E8(f32 x, f32 y);
 extern Vec lbl_2_data_2FEE0;
 extern f32 lbl_2_data_2FED4[];
 extern f32 lbl_2_bss_B2B8;
@@ -341,6 +341,8 @@ extern const f32 lbl_2_rodata_FBC;
 
 // fn_2_8ACE0, size:0x200
 void fn_2_8ACE0(void) {
+    f32 x;
+    f32 z;
     Vec a;
     Vec b;
     u8* ent;
@@ -350,10 +352,12 @@ void fn_2_8ACE0(void) {
         ent = *(u8**)(lbl_2_bss_340140 + 0x2D94) + i * 0x28;
         memcpy(&a, ent + 4, 0xC);
         PSVECSubtract(&a, &lbl_2_data_2FEE0, &b);
-        b.x = b.x * lbl_2_rodata_FB0;
-        b.z = b.z * lbl_2_rodata_FB0;
-        if (0.0f != b.x || 0.0f != b.z) {
-            lbl_2_bss_B2B8 = fn_2_4A1E8(b.z);
+        x = b.x * lbl_2_rodata_FB0;
+        z = b.z * lbl_2_rodata_FB0;
+        b.x = x;
+        b.z = z;
+        if (0.0f != x || 0.0f != z) {
+            lbl_2_bss_B2B8 = fn_2_4A1E8(b.z, x);
         }
         memcpy(&lbl_2_data_2FEE0, ent + 4, 0xC);
         if (0.0f != a.x) *(f32*)(ent + 4) = a.x * lbl_2_rodata_FB8;
