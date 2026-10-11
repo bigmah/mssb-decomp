@@ -1436,10 +1436,7 @@ typedef struct _UnkStructMinigame {
 
 typedef struct _MiniGameControlStruct {
     /*0x000*/ s8 characterIndex[4];
-    /*0x004*/ u8 _4;
-    /*0x005*/ u8 _5;
-    /*0x006*/ u8 _6;
-    /*0x007*/ u8 _7;
+    /*0x004*/ u8 charID[4];
     /*0x008*/ u8 _8;
     /*0x009*/ u8 _9;
     /*0x00A*/ u8 _A;
