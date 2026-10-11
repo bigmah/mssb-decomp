@@ -27,9 +27,15 @@ extern Emitter lbl_801F8040[0x10];    // emitter pool
 extern UVCoord lbl_800F7860[];
 extern TexCoordF lbl_800F78C0[4]; // quad corner texcoords
 extern const Vec lbl_800E6778;    // (1, 0, 0)
+typedef struct MtxBox {
+    Mtx m;
+} MtxBox;
+extern const MtxBox lbl_800E67C0; // identity
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB7F8;          // respawn delay mask
 extern f32 lbl_803CB7FC;          // respawn angle spread (0..1)
+extern ParticleParams lbl_800F787C; // default spawn parameters
+extern TexArchive* lbl_803CBD0C;
 extern SpaniSlot lbl_80371C30[0x360];
 extern SpaniObj* lbl_803CBC9C;
 extern Particle* lbl_803CBC74; // free particle list
@@ -200,6 +206,10 @@ static inline void DrawParticleQuad(Particle* p, TexArchive* arc) {
     }
 }
 
+s32 fn_8002E3DC(Emitter* e);
+s32 fn_8002E828(Emitter* e);
+s32 fn_80029CC8(Emitter* e);
+
 // .text:0x800263FC size:0x59C
 void fn_800263FC(void) {
     return;
@@ -268,9 +278,79 @@ void fn_800297F0(void) {
 }
 
 // .text:0x80029CC8 size:0x504
-void fn_80029CC8(void) {
-    return;
+// NONMATCHING 62%: register allocation; the original copies the identity matrix word by word
+#if NONMATCHING
+s32 fn_80029CC8(Emitter* e) {
+    MtxBox ident;
+    Vec c;
+    Vec q;
+    Vec t;
+    Vec perp;
+    Vec v0;
+    Vec v1;
+    Vec v2;
+    Vec v3;
+    f32 sx;
+    f32 sy;
+    s32 count;
+    Particle* p;
+
+    ident = lbl_800E67C0;
+    count = e->count;
+    GXLoadPosMtxImm(ident.m, GX_PNMTX0);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+    PSMTXMultVec(lbl_8017FFE0, &e->u.t9.pos, &c);
+    p = e->particles;
+    LoadParticleTex(e->tex, p->texIndex, GX_CLAMP, GX_CLAMP);
+    for (; p != NULL; p = p->next) {
+        if (p->delay != 0) {
+            p->delay--;
+        } else if (p->life != 0) {
+            PSVECAdd(&p->u.tB.dir, &p->u.tB.vel, &p->u.tB.dir);
+            PSVECAdd(&p->pos, &p->u.tB.dir, &p->pos);
+            p->color.c.a = (p->colorStep.tB.alpha0 * p->life) / p->colorStep.tB.maxLife;
+            if (c.z <= -1.0f) {
+                PSMTXMultVec(lbl_8017FFE0, &p->pos, &q);
+                t.x = (c.x * q.z) / c.z;
+                t.y = (c.y * q.z) / c.z;
+                t.z = q.z;
+                PSVECSubtract(&q, &t, &t);
+                t.z = 0.0f;
+                perp.x = -t.y;
+                perp.y = t.x;
+                perp.z = 0.0f;
+                sx = p->u.tB.sizeX + (p->u.tB.sizeXDelta * (f32)(p->colorStep.tB.maxLife - p->life)) / (f32)p->colorStep.tB.maxLife;
+                sy = p->u.tB.sizeY + (p->u.tB.sizeYDelta * (f32)(p->colorStep.tB.maxLife - p->life)) / (f32)p->colorStep.tB.maxLife;
+                PSVECScale(&t, sy, &t);
+                PSVECScale(&perp, sx * 0.5f, &perp);
+                PSVECAdd(&q, &perp, &v0);
+                PSVECSubtract(&q, &perp, &v1);
+                PSVECSubtract(&v1, &t, &v2);
+                PSVECSubtract(&v0, &t, &v3);
+                GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+                GXPosition3f32(v0.x, v0.y, v0.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(0.0f, 1.0f);
+                GXPosition3f32(v1.x, v1.y, v1.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(0.0f, 0.0f);
+                GXPosition3f32(v2.x, v2.y, v2.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(1.0f, 0.0f);
+                GXPosition3f32(v3.x, v3.y, v3.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(1.0f, 1.0f);
+            }
+            p->life--;
+        } else {
+            count--;
+        }
+    }
+    GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
+    return count == 0;
 }
+#endif
 
 // .text:0x8002A1CC size:0x690
 void fn_8002A1CC(void) {

@@ -40,9 +40,17 @@ typedef struct Particle {
             /* 0x14 */ f32 unk14;
             /* 0x18 */ s32 unk18;
             /* 0x1C */ s32 unk1C;
-            /* 0x20 */ s32 id;
+            /* 0x20 */ s32 unk20; // id in fn_8002F1AC
             /* 0x24 */ u8 pad24[0x38 - 0x24];
         } t6;
+        struct {
+            /* 0x10 */ Vec dir;
+            /* 0x1C */ Vec vel;
+            /* 0x28 */ f32 sizeX;
+            /* 0x2C */ f32 sizeY;
+            /* 0x30 */ f32 sizeXDelta; // over the whole life
+            /* 0x34 */ f32 sizeYDelta;
+        } tB;
     } u;
     /* 0x38 */ f32 sizeX;
     /* 0x3C */ f32 sizeY;
@@ -54,6 +62,11 @@ typedef struct Particle {
     /* 0x44 */ union {
         u32 all;
         u8 v[4]; // signed steps added to color every frame
+        struct {
+            u8 alpha0;
+            u8 pad;
+            s16 maxLife;
+        } tB;
     } colorStep;
     /* 0x48 */ s16 delay;       // frames before the particle appears
     /* 0x4A */ s16 life;        // frames left (0: dead)
@@ -140,6 +153,31 @@ typedef struct TexCoordF {
     /* 0x4 */ f32 t;
 } TexCoordF;
 
+// Spawn parameters of the burst emitter (type 11). Float values are fixed
+// point (x100000).
+typedef struct ParticleParamsB {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 instant;  // particles that start without delay
+    /* 0x10 */ s32 delayMax;
+    /* 0x14 */ s32 lifeMin;
+    /* 0x18 */ s32 lifeMax;
+    /* 0x1C */ s32 speedMin;
+    /* 0x20 */ s32 speedMax;
+    /* 0x24 */ s32 velMin;
+    /* 0x28 */ s32 velMax;
+    /* 0x2C */ s32 sizeXMin;
+    /* 0x30 */ s32 sizeXMax;
+    /* 0x34 */ s32 sizeYMin;
+    /* 0x38 */ s32 sizeYMax;
+    /* 0x3C */ s32 endXMin;
+    /* 0x40 */ s32 endXMax;
+    /* 0x44 */ s32 endYMin;
+    /* 0x48 */ s32 endYMax;
+    /* 0x4C */ u32 color;
+} ParticleParamsB;
+
 // Head of the active emitter list; aliases the prev/next of an Emitter.
 typedef struct EmitterHead {
     /* 0x0 */ struct Emitter* prev;
@@ -149,12 +187,12 @@ typedef struct EmitterHead {
 // Spawn template copied from lbl_800F787C.
 typedef struct ParticleParams {
     /* 0x00 */ TexArchive* tex;
-    /* 0x04 */ s32 unk4;
-    /* 0x08 */ s32 unk8;
-    /* 0x0C */ s32 unkC;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 size;   // x100000
+    /* 0x0C */ s32 unkC;   // x100000
     /* 0x10 */ s32 unk10;
-    /* 0x14 */ s32 unk14;
-    /* 0x18 */ u8 unk18[0x44 - 0x18];
+    /* 0x14 */ s32 life;
+    /* 0x18 */ s32 unk18[(0x44 - 0x18) / 4];
 } ParticleParams; // size 0x44
 
 typedef struct ParticleSortEntry {
@@ -173,6 +211,9 @@ f32 fn_800335BC(s32 angle);
 f32 fn_800335EC(s32 angle);
 s32 fn_800328E0(Emitter* e);
 void fn_800330CC(s32 n, u32 color, Vec* pos, Vec* dir, s32 spawnFrames, TexArchive* tex, f32 speed, f32 size);
+void fn_8002A1CC(Vec* pos, ParticleParamsB* prm);
+void fn_80032064(Vec* pos, ParticleParamsB* prm);
+void fn_80032284(Vec* pos);
 void fn_80033620(Emitter* e);
 void fn_80033794(Particle* list);
 Emitter* fn_800337CC(Emitter* e, s32 n, s32 strict);
