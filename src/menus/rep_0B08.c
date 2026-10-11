@@ -109,7 +109,7 @@ extern f32 lbl_2_bss_A170;
 extern Vec lbl_2_data_2A340;
 extern const f32 lbl_2_rodata_BB0;
 extern const f32 lbl_2_rodata_C10;
-extern f32 fn_2_4A1E8(f32);
+extern f32 fn_2_4A1E8(f32 x, f32 y);
 
 // fn_2_6B024, size:0xFC
 void fn_2_6B024(MenuEntry* owner) {
@@ -2146,3 +2146,34 @@ void fn_2_6C5E0(MenuEntry* owner) {
         owner->state = 2;
     }
 }
+
+extern f32 lbl_2_bss_A170;
+extern Vec lbl_2_data_2A340;
+
+// .text:0x6A708 size:0x174
+// NONMATCHING 86%: scheduling only; lbl_803C77B8 address and the int->float magic load move earlier than in the original
+#if NONMATCHING
+void fn_2_6A708(void) {
+    Vec position;
+    Vec delta;
+    MenuEntry* player = &lbl_2_bss_1A8248[0]->entries[0];
+    MenuStickPad* pad;
+
+    memcpy(&position, &player->position, sizeof(Vec));
+    PSVECSubtract(&position, &lbl_2_data_2A340, &delta);
+    delta.x *= lbl_2_rodata_BB0;
+    delta.z *= lbl_2_rodata_BB0;
+    pad = (MenuStickPad*)&lbl_803C77B8;
+    pad = &pad[(s8)lbl_2_bss_1A824C[0][0x197863]];
+    position.x += pad->stickX / lbl_2_rodata_C10;
+    position.z += pad->stickY / lbl_2_rodata_C10;
+    if (lbl_2_rodata_B58 != delta.x || lbl_2_rodata_B58 != delta.z) {
+        lbl_2_bss_A170 = fn_2_4A1E8(delta.z, delta.x);
+    }
+    memcpy(&lbl_2_data_2A340, &player->position, sizeof(Vec));
+    player->position.x = position.x;
+    player->position.y = position.y;
+    player->position.z = position.z;
+    player->heading = lbl_2_bss_A170;
+}
+#endif
