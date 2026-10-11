@@ -213,6 +213,21 @@ s32 fn_80042598(u8 team, s32 slot) {
     return 0;
 }
 
+// Inlined copy of fn_80042598 (the original inlines it into the order-change menus).
+#pragma dont_inline off
+static inline s8 findOrderSlot(u8 team, s32 slot) {
+    OrderEntry* e = lbl_80354720[team];
+    s32 i;
+    for (i = 0; i < 9; e++, i++) {
+        if (slot == e->slot) {
+            return i + 1;
+        }
+    }
+    OSPanic(lbl_800E6920, 0xD69, lbl_800E6930);
+    return 0;
+}
+#pragma dont_inline on
+
 // .text:0x800426DC size:0x514
 // NONMATCHING ~80%: source stats indexed as [id/9][id%9] with u8 casts in the original; field copies use lhz/lha differently
 #if NONMATCHING
@@ -609,11 +624,9 @@ void starMenuCursor(void) {
     }
 }
 
+#pragma dont_inline off
 // .text:0x80043880 size:0x1418
 // Order-change menu: left (dir 0) / right (dir 1) on the field view.
-// NONMATCHING ~25%: the original inlines fn_80042598 (orderchange.c) at every case
-// nmverify: fn_80042598 inlined on one side (calls match once expanded)
-#if NONMATCHING
 void fn_80043880(u8 dir, u8 team) {
     if (lbl_803297E0.slot[team] == 0) {
         return;
@@ -632,83 +645,84 @@ void fn_80043880(u8 dir, u8 team) {
         lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
         switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
         case 0:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 1:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 2:
-            lbl_803297E0.slot[team] = fn_80042598(team, 3);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 3);
             break;
         case 3:
-            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 5);
             break;
         case 7:
-            lbl_803297E0.slot[team] = fn_80042598(team, 6);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 6);
             break;
         case 8:
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             break;
         case 4:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         case 5:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 6:
-            lbl_803297E0.slot[team] = fn_80042598(team, 8);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 8);
             break;
         }
         if (lbl_803297E0._CF48[team] != lbl_803297E0.slot[team]) {
             fn_800625A4(team, 0x3B);
         }
     } else if (lbl_803297E0.slot[team] == 0) {
-        if (g_d_GameSettings._06 == 2) {
+        if (g_d_GameSettings._06 != 2) {
+            lbl_803297E0._CF4A[team]++;
+            if (lbl_803297E0._CF52[team] > 1) {
+                lbl_803297E0._CF52[team] = 1;
+            }
+            switch (lbl_803297E0._CF52[team]) {
+            case 0:
+                lbl_803297E0._CF52[team] = 0;
+                break;
+            case 1:
+                lbl_803297E0._CF52[team] = 1;
+                break;
+            }
+            fn_800625A4(team, 0x3C);
+        } else {
             sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
             return;
         }
-        lbl_803297E0._CF4A[team]++;
-        if (lbl_803297E0._CF52[team] > 1) {
-            lbl_803297E0._CF52[team] = 1;
-        }
-        switch (lbl_803297E0._CF52[team]) {
-        case 0:
-            lbl_803297E0._CF52[team] = 0;
-            break;
-        case 1:
-            lbl_803297E0._CF52[team] = 1;
-            break;
-        }
-        fn_800625A4(team, 0x3C);
     } else if (lbl_803297E0.slot[team] != 0 && lbl_803297E0._CF52[team] == 1) {
         lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
         switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
         case 0:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         case 1:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         case 4:
-            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 5);
             break;
         case 5:
-            lbl_803297E0.slot[team] = fn_80042598(team, 3);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 3);
             break;
         case 6:
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             break;
         case 7:
-            lbl_803297E0.slot[team] = fn_80042598(team, 8);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 8);
             break;
         case 8:
-            lbl_803297E0.slot[team] = fn_80042598(team, 6);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 6);
             break;
         case 2:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 3:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         }
         if (lbl_803297E0._CF48[team] != lbl_803297E0.slot[team]) {
@@ -722,14 +736,10 @@ end:
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
 }
-#endif
 
 // .text:0x80044C98 size:0x14E4
 // Order-change menu: up (dir 0) / down (dir 1). On the field view (_CF52 set) the cursor
 // jumps between fielding positions; fn_80042598 finds the batting slot of a position.
-// NONMATCHING ~25%: the original inlines fn_80042598 (orderchange.c) at every case
-// nmverify: fn_80042598 inlined on one side (calls match once expanded)
-#if NONMATCHING
 void fn_80044C98(u8 dir, u8 team) {
     lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
     if (dir == 0) {
@@ -749,32 +759,32 @@ void fn_80044C98(u8 dir, u8 team) {
             return;
         }
         if (lbl_803297E0._CF48[team] == 0) {
-            lbl_803297E0.slot[team] = fn_80042598(team, 1);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 1);
             fn_800625A4(team, 0x3D);
             return;
         }
         switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
         case 0:
-            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 5);
             break;
         case 1:
-            lbl_803297E0.slot[team] = fn_80042598(team, 0);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 0);
             break;
         case 2:
-            lbl_803297E0.slot[team] = fn_80042598(team, 8);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 8);
             break;
         case 3:
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             break;
         case 4:
-            lbl_803297E0.slot[team] = fn_80042598(team, 6);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 6);
             break;
         case 5:
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             break;
         case 6:
             if (lbl_803297E0._CF3C[team] != 0) {
-                lbl_803297E0.slot[team] = fn_80042598(team, 4);
+                lbl_803297E0.slot[team] = findOrderSlot(team, 4);
                 fn_800625A4(team, 0x3B);
             } else {
                 lbl_803297E0.slot[team] = 0;
@@ -783,7 +793,7 @@ void fn_80044C98(u8 dir, u8 team) {
             break;
         case 8:
             if (lbl_803297E0._CF3C[team] != 0) {
-                lbl_803297E0.slot[team] = fn_80042598(team, 2);
+                lbl_803297E0.slot[team] = findOrderSlot(team, 2);
                 fn_800625A4(team, 0x3B);
             } else {
                 lbl_803297E0.slot[team] = 0;
@@ -792,7 +802,7 @@ void fn_80044C98(u8 dir, u8 team) {
             break;
         case 7:
             if (lbl_803297E0._CF3C[team] != 0) {
-                lbl_803297E0.slot[team] = fn_80042598(team, 1);
+                lbl_803297E0.slot[team] = findOrderSlot(team, 1);
                 fn_800625A4(team, 0x3B);
             } else {
                 lbl_803297E0.slot[team] = 0;
@@ -820,38 +830,38 @@ void fn_80044C98(u8 dir, u8 team) {
             return;
         }
         if (lbl_803297E0._CF48[team] == 0) {
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             fn_800625A4(team, 0x3D);
             return;
         }
         switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
         case 0:
-            lbl_803297E0.slot[team] = fn_80042598(team, 1);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 1);
             break;
         case 2:
-            lbl_803297E0.slot[team] = fn_80042598(team, 1);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 1);
             break;
         case 4:
-            lbl_803297E0.slot[team] = fn_80042598(team, 1);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 1);
             break;
         case 3:
-            lbl_803297E0.slot[team] = fn_80042598(team, 0);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 0);
             break;
         case 5:
-            lbl_803297E0.slot[team] = fn_80042598(team, 0);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 0);
             break;
         case 7:
-            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 5);
             break;
         case 6:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 8:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         case 1:
             if (lbl_803297E0._CF3C[team] != 0) {
-                lbl_803297E0.slot[team] = fn_80042598(team, 7);
+                lbl_803297E0.slot[team] = findOrderSlot(team, 7);
                 fn_800625A4(team, 0x3B);
             } else {
                 lbl_803297E0.slot[team] = 0;
@@ -864,7 +874,7 @@ void fn_80044C98(u8 dir, u8 team) {
         }
     }
 }
-#endif
+#pragma dont_inline on
 
 // .text:0x8004617C size:0x1078
 // NONMATCHING ~98%: team select when g_d_GameSettings._10 > 1 (original leaves t unset), input mask scheduling
