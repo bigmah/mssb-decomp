@@ -32,6 +32,7 @@ extern void* lbl_803CC1B8[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_EC1C[];
 extern u8 lbl_3_data_F430[];
+extern u8 lbl_3_data_EABC[];
 extern u8 lbl_3_data_F224[];
 extern u8 lbl_3_data_F200[];
 extern u8 lbl_3_data_E378[];
@@ -333,9 +334,59 @@ void fn_3_93960(void) {
 }
 
 // .text:0x00093D5C size:0x3E0 mapped:0x806D2DF0
+// NONMATCHING 98%: same instructions; the 3<<16 constant and the slot-7..9 bases get r28/r29-r31 instead of r31/r28-r30
+#if NONMATCHING
 void fn_3_93D5C(void) {
-    return;
+    RepTask* task = lbl_803CC1B8[0];
+    s32 n;
+    fn_80034E20(task, lbl_3_data_EABC);
+    REP_OBJ(task, 2)->_64 = lbl_3_data_F430[g_GameLogic.logo[0].captain * 2 + 1];
+    REP_OBJ(task, 3)->_64 = lbl_3_data_F430[g_GameLogic.logo[1].captain * 2 + 1];
+    REP_OBJ(task, 2)->_5C = g_GameLogic.logo[0].variationID << 16;
+    REP_OBJ(task, 3)->_5C = g_GameLogic.logo[1].variationID << 16;
+    REP_OBJ(task, 4)->_5C = 0 << 16;
+    REP_OBJ(task, 5)->_5C = 1 << 16;
+    REP_OBJ(task, 6)->_5C = 2 << 16;
+    REP_OBJ(task, 7)->_5C = 3 << 16;
+    REP_OBJ(task, 8)->_5C = 4 << 16;
+    REP_OBJ(task, 9)->_5C = 5 << 16;
+    n = g_Scores.team[0].runs[0];
+    if (n >= 10) {
+        if (n >= 99) {
+            n = 99;
+        }
+        REP_OBJ(task, 4)->flags &= ~2;
+        REP_OBJ(task, 5)->flags |= 2;
+        REP_OBJ(task, 6)->flags |= 2;
+        fn_8003649C(task, 5, 2, 0xF6, n / 10);
+        fn_8003649C(task, 6, 3, 0xF6, n % 10);
+    } else {
+        REP_OBJ(task, 4)->flags |= 2;
+        REP_OBJ(task, 5)->flags &= ~2;
+        REP_OBJ(task, 6)->flags &= ~2;
+        fn_8003649C(task, 4, 1, 0xF6, g_Scores.team[0].runs[0]);
+    }
+    n = g_Scores.team[1].runs[0];
+    if (n >= 10) {
+        if (n >= 99) {
+            n = 99;
+        }
+        REP_OBJ(task, 7)->flags &= ~2;
+        REP_OBJ(task, 8)->flags |= 2;
+        REP_OBJ(task, 9)->flags |= 2;
+        fn_8003649C(task, 8, 5, 0xF6, n / 10);
+        fn_8003649C(task, 9, 6, 0xF6, n % 10);
+    } else {
+        REP_OBJ(task, 7)->flags |= 2;
+        REP_OBJ(task, 8)->flags &= ~2;
+        REP_OBJ(task, 9)->flags &= ~2;
+        fn_8003649C(task, 7, 4, 0xF6, g_Scores.team[1].runs[0]);
+    }
+    lbl_3_common_bss_32724[0x98] = 1;
+    task->timer = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_93960;
 }
+#endif
 
 // .text:0x0009413C size:0x58 mapped:0x806D31D0
 void fn_3_9413C(void) {
