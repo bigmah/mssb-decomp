@@ -137,10 +137,126 @@ void fn_3_3EE8(void) {
     return;
 }
 
+// Draws one font glyph: a quad in color0/color1 one pixel larger than the
+// glyph (the outline), then the glyph texel rect (sx, sy, sw, sh) on top.
+// Bit 0 of flags inverts the glyph.
 // .text:0x000042CC size:0x6B8 mapped:0x80643360
-void fn_3_42CC(void) {
-    return;
+// NONMATCHING 99.8%: r0/r5/r11 allocation of the sx/sw/sy/sh int->float temps, f25/f27 swap
+#if NONMATCHING
+void fn_3_42CC(GXTexObj* tex, s16 x0, s16 y0, s16 x1, s16 y1, s16 sx, s16 sy, s16 sw, s16 sh,
+               GXColor color0, GXColor color1, u8 flags) {
+    f32 left = x0;
+    f32 top = y0;
+    f32 right = x1;
+    f32 bottom = y1;
+    u32 texW = GXGetTexObjWidth(tex);
+    u16 texH = GXGetTexObjHeight(tex);
+    f32 u0;
+    f32 v0;
+    f32 u1;
+    f32 v1;
+    s32 invert;
+
+    u1 = (f32)(sx + sw) / (f32)(u16)texW;
+    v0 = (f32)sy / (f32)texH;
+    u0 = (f32)sx / (f32)(u16)texW;
+    v1 = (f32)(sy + sh) / (f32)texH;
+
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetTevColor(GX_TEVREG0, color0);
+    GXSetTevColor(GX_TEVREG1, color1);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    invert = flags & 1;
+    if (!invert) {
+        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0, GX_CC_C1);
+    } else {
+        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ONE, GX_CC_C0, GX_CC_C1);
+    }
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    {
+        f32 ot = top - 1.0f;
+        f32 ol = left - 1.0f;
+        f32 or = 1.0f + right;
+        f32 ob = 1.0f + bottom;
+        GXWGFifo.f32 = ol;
+        GXWGFifo.f32 = ot;
+        GXWGFifo.f32 = -0.5f;
+        GXWGFifo.f32 = or;
+        GXWGFifo.f32 = ot;
+        GXWGFifo.f32 = -0.5f;
+        GXWGFifo.f32 = or;
+        GXWGFifo.f32 = ob;
+        GXWGFifo.f32 = -0.5f;
+        GXWGFifo.f32 = ol;
+        GXWGFifo.f32 = ob;
+        GXWGFifo.f32 = -0.5f;
+    }
+
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetNumChans(0);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(2);
+    if (invert == 0) {
+        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_TEXA, GX_CC_ZERO);
+        GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+        GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_CPREV, GX_CC_C0, GX_CC_C1);
+        GXSetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+        GXSetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    } else {
+        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_TEXA, GX_CC_ONE);
+        GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+        GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_CPREV, GX_CC_C0, GX_CC_C1);
+        GXSetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+        GXSetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    }
+    GXLoadTexObj(tex, GX_TEXMAP0);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXWGFifo.f32 = left;
+    GXWGFifo.f32 = top;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.f32 = u0;
+    GXWGFifo.f32 = v0;
+    GXWGFifo.f32 = right;
+    GXWGFifo.f32 = top;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.f32 = u1;
+    GXWGFifo.f32 = v0;
+    GXWGFifo.f32 = right;
+    GXWGFifo.f32 = bottom;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.f32 = u1;
+    GXWGFifo.f32 = v1;
+    GXWGFifo.f32 = left;
+    GXWGFifo.f32 = bottom;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.f32 = u0;
+    GXWGFifo.f32 = v1;
 }
+#endif
 
 // .text:0x00004984 size:0xB4 mapped:0x80643A18
 void fn_3_4984(void) {

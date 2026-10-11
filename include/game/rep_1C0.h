@@ -2,6 +2,7 @@
 #define __GAME_rep_1C0_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/GX/GXTypes.h"
 
 // Per-frame stadium draw callback: (view matrix, translucent pass, layer).
 typedef void (*StadiumDrawFn)(float (*view)[4], s32 translucent, u32 layer);
@@ -15,7 +16,8 @@ void fn_3_38E8(StadiumDrawFn a);
 void fn_3_3904(void);
 void fn_3_3BE8(void);
 void fn_3_3EE8(void);
-void fn_3_42CC(void);
+void fn_3_42CC(struct _GXTexObj* tex, s16 x0, s16 y0, s16 x1, s16 y1, s16 sx, s16 sy, s16 sw, s16 sh,
+               GXColor color0, GXColor color1, u8 flags);
 void fn_3_4984(void);
 void fn_3_4A38(u8 a);
 void fn_3_4F90(void);
