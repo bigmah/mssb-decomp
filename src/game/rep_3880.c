@@ -3105,10 +3105,94 @@ void fn_3_155288(void) {
     pitchingMachinePitching(0x1B);
 }
 
+// NONMATCHING 99%: respawn (155C28's spawn block) inlined twice; register numbering of the data/g_Ball bases differs
 // .text:0x001552AC size:0x738 mapped:0x80794340
-void fn_3_1552AC(void) {
-    return;
+#if NONMATCHING
+static inline void respawn_1552AC(u8* o) {
+    struct { Control c; u32 pad[2]; } cc;
+    Mtx m;
+    Vec dir;
+    Vec v;
+    f32 rx;
+    f32 ry;
+    f32 rz;
+    f64 t;
+    rx = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA6));
+    ry = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA8));
+    rz = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BAA));
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+    cc.c.type = 0;
+    CTRLSetRotation(&cc.c, rx, ry, rz);
+    CTRLBuildMatrix(&cc.c, m);
+    if (g_Minigame[0x1A2A] == 1) {
+        dir = lbl_3_data_26BB4;
+    } else {
+        PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
+    }
+    v.x = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.x);
+    v.y = dir.y;
+    v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
+    PSMTXMultVec(m, &v, &v);
+    v.x = v.x + *(f32*)g_Ball;
+    t = __fabs(*(f32*)(g_Ball + 4));
+    v.y = v.y - t;
+    v.z = v.z + *(f32*)(g_Ball + 8);
+    *(f32*)(o + 4) = v.x;
+    *(f32*)(o + 8) = v.y;
+    *(f32*)(o + 0xC) = v.z;
+    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
+    o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
 }
+
+u32 fn_3_1552AC(u8* e) {
+    u8* p;
+    s32* d;
+    s32 a;
+    if (lbl_80366158[0x28] != 0) {
+        return 0;
+    }
+    fn_80033620();
+    p = *(u8**)(e + 0xC);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
+    d = (s32*)lbl_3_data_26BC0;
+    do {
+        if (*(s16*)(p + 0x48) != 0) {
+            *(s16*)(p + 0x48) -= 1;
+            if (*(s16*)(p + 0x48) == 0) {
+                respawn_1552AC(p);
+            }
+        } else if (*(s16*)(p + 0x4A) != 0) {
+            fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
+            fn_80033CC8(p, *(void**)(e + 0x10));
+            if (d[6] / *(s16*)(p + 0x4A) < 2) {
+                a = p[0x43] + d[5] / (d[6] / 2);
+                if (a > d[5]) {
+                    a = d[5];
+                }
+                p[0x43] = a;
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + (f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2);
+                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+            } else {
+                a = p[0x43] - d[5] / (d[6] / 2);
+                if (a < d[4]) {
+                    a = d[4];
+                }
+                p[0x43] = a;
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x38) - (f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2);
+                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+            }
+            p[0x40] = p[0x41] = p[0x42] = (s32)(lbl_3_rodata_3A1C * ((f32)p[0x43] / lbl_3_rodata_3A1C));
+            *(s16*)(p + 0x4A) -= 1;
+        }
+        if (*(s16*)(p + 0x4A) == 0 && *(s16*)(p + 0x48) <= 0) {
+            respawn_1552AC(p);
+        }
+        p = *(u8**)p;
+    } while (p != NULL);
+    return 0;
+}
+#endif
 
 // .text:0x001559E4 size:0x244 mapped:0x80794A78
 void fn_3_1559E4(u8* o, f32* pos, f32* rot) {

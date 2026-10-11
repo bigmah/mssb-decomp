@@ -110,7 +110,7 @@ void fn_3_154C7C(s16 id, f32* pos, f32* rot);
 void fn_3_15521C(s16 a, f32* b, f32* c);
 void fn_3_155264(void);
 void fn_3_155288(void);
-void fn_3_1552AC(void);
+u32 fn_3_1552AC(u8* e);
 void fn_3_1559E4(u8* o, f32* pos, f32* rot);
 void fn_3_155C28(u8* a);
 void fn_3_155F08(void);
