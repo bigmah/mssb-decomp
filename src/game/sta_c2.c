@@ -2007,6 +2007,41 @@ void fn_3_D60C0(s32* a) {
 extern u8 lbl_3_bss_A02C;
 extern u8 lbl_3_bss_A02D;
 extern const f32 lbl_3_rodata_28A4;
+#pragma dont_inline off
+// Adds one draw group (with its shadow at +-14.25) per object lbl_3_bss_A02C..+A02D.
+static inline void D62F0_addGroups(s32* a) {
+    Mtx m2;
+    D5B6CCpy cpy;
+    D5C8CBss* g;
+    D5C8CCtl* c;
+    u32 v;
+    s32 j;
+    s32 idx;
+    g = (D5C8CBss*)lbl_3_common_bss_350E4;
+    for (j = 0; j < lbl_3_bss_A02D; j++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        idx = lbl_3_bss_A02C + j;
+        g->p44[v] = idx;
+        g->p3C[*a] += 1;
+        c = &g->arr[idx];
+        cpy = *(D5B6CCpy*)c;
+        CTRLBuildMatrix((Control*)&cpy, m2);
+        fn_3_B8464(m2, (void*)c->f78);
+        CTRLSetTranslation((Control*)&cpy, lbl_3_rodata_2800 + lbl_3_data_182C8[((u8*)c)[0x9C]].x, -(lbl_3_rodata_28A4 + lbl_3_data_182C8[((u8*)c)[0x9C]].y), lbl_3_rodata_2800 + lbl_3_data_182C8[((u8*)c)[0x9C]].z);
+        CTRLBuildMatrix((Control*)&cpy, m2);
+        fn_3_B8464(m2, (void*)c->f78);
+        CTRLSetTranslation((Control*)&cpy, lbl_3_data_182C8[((u8*)c)[0x9C]].x - lbl_3_rodata_2800, -(lbl_3_rodata_28A4 + lbl_3_data_182C8[((u8*)c)[0x9C]].y), lbl_3_data_182C8[((u8*)c)[0x9C]].z - lbl_3_rodata_2800);
+        CTRLBuildMatrix((Control*)&cpy, m2);
+        fn_3_B8464(m2, (void*)c->f78);
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
+}
+#pragma dont_inline on
+
 void fn_3_D62F0(s32* a) {
     Mtx m2;
     D5B6CCpy cpy;
@@ -2039,12 +2074,29 @@ void fn_3_D62F0(s32* a) {
     }
 }
 
+
 // .text:0x000D6514 size:0x2B8 mapped:0x807155A8
 typedef struct { D5C8CCtl* arr; u8 pad0[0x30 - 4]; u32 count; u8 pad1[0x3C - 0x34]; u32* p3C; u16* p40; u32* p44; u8* p48; u8 pad2[0x64 - 0x4C]; s16 f64; } D6514Bss;
 extern void* _OSAllocFromHeap(s32, u32);
+// NONMATCHING 95%: buffer size sum order and saved-register numbering (r25 vs r26) differ
+#if NONMATCHING
 void fn_3_D6514(void) {
-    return;
+    D6514Bss* g = (D6514Bss*)lbl_3_common_bss_350E4;
+    s32 grp;
+    u32 size = g->count * 0x18 + g->count * 4 + (g->count * 4 + g->count * 2);
+    if (g->p48 == NULL) {
+        g->p48 = _OSAllocFromHeap(4, size);
+        ((D6514Bss*)lbl_3_common_bss_350E4)->p3C = (u32*)(g->p48 + g->count * 0x18);
+        ((D6514Bss*)lbl_3_common_bss_350E4)->p44 = ((D6514Bss*)lbl_3_common_bss_350E4)->p3C + g->count;
+        ((D6514Bss*)lbl_3_common_bss_350E4)->p40 = (u16*)(((D6514Bss*)lbl_3_common_bss_350E4)->p44 + g->count);
+    }
+    memset(g->p48, 0, size);
+    grp = 0;
+    D62F0_addGroups(&grp);
+    fn_3_D5C8C(&grp);
+    ((D6514Bss*)lbl_3_common_bss_350E4)->f64 = grp;
 }
+#endif
 
 // .text:0x000D67CC size:0x2244 mapped:0x80715860
 void fn_3_D67CC(void) {
