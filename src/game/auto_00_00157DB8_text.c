@@ -38,6 +38,15 @@ extern PracticeTutorBss lbl_3_common_bss_34C90;
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
+
+// Sprite idx of lbl_80371C30. As a helper (rather than indexing directly) the index
+// is summed before scaling, as some of the original functions do.
+static inline LayoutObj* practiceSprite(s32 idx) {
+    return lbl_80371C30[idx].obj;
+}
+extern CharTableEntry lbl_800E8558[];
+extern u8 lbl_3_data_9D50[][5];
+extern u8 lbl_3_data_A594[4];
 extern u8 lbl_3_data_B5D4[];
 extern s16 lbl_3_data_B834[][4];
 extern u8 lbl_3_data_BA70[];
@@ -898,3 +907,83 @@ void fn_3_1595F4(void) {
     fn_8000F8F4((LayoutGroup*)o);
     fn_800B0A14_removeQueue(fn_80034CEC(o));
 }
+
+// .text:0x00159114 size:0x47C
+// NONMATCHING 99.8%: r0/r4/r6 coloring around the 0xD sprite frame compare in the common block
+#if NONMATCHING
+void fn_3_159114(void) {
+    PracticeStepTask* o = lbl_803CC1B8[0];
+    s32 done;
+
+    if (o->frames < 0xFFFE) {
+        o->frames++;
+    } else {
+        o->frames = 0xFFFF;
+    }
+    if (lbl_3_common_bss_32724._96 != 0 || g_Practice.practiceType_1 != 6) {
+        goto end;
+    }
+    if (o->step == 0) {
+        o->step = 1;
+        o->frames = 0;
+    } else if (o->step == 1) {
+        done = 0;
+        if ((s32)(lbl_80371C30[o->baseIdx].obj->_5C >> 16) >= 0xE) {
+            done |= 0x10;
+            lbl_80371C30[o->baseIdx].obj->_68 = 0;
+            lbl_80371C30[o->baseIdx + 2].obj->_68 = 0;
+        }
+        if (done == 0x10) {
+            o->step = 2;
+        }
+    } else if (o->step == 2) {
+        s32 id = g_Minigame._19E8[g_Practice.homeAway]._0;
+        lbl_80371C30[o->baseIdx + 5].obj->_5C = lbl_3_data_A594[g_Minigame.battingHandedness[g_Practice.homeAway]] << 16;
+        if (lbl_800E8558[id]._0 != 0 &&
+            (s8)g_Minigame._19E8[g_Practice.homeAway]._1 == 0 && (s8)g_Minigame._19E8[g_Practice.homeAway]._4[2] == 0) {
+            lbl_80371C30[o->baseIdx + 7].obj->flags |= 2;
+        } else {
+            lbl_80371C30[o->baseIdx + 7].obj->flags &= ~2;
+        }
+        if (g_Practice.practiceState == 4) {
+            goto end;
+        }
+        if (g_Practice.practiceState == 5) {
+            o->step = 3;
+            o->frames = 0;
+        }
+    } else if (o->step == 3) {
+        if (o->frames == 1) {
+            lbl_80371C30[o->baseIdx].obj->_68 = 1;
+            lbl_80371C30[o->baseIdx + 2].obj->_68 = 1;
+        }
+    }
+    if (g_Minigame._19DA[0] >= 0) {
+        CharTableEntry* c;
+        if (g_Minigame._19E8[0]._0 != (practiceSprite(o->baseIdx + 0xD)->_5C >> 16)) {
+            practiceSprite(o->baseIdx + 8)->_5C = 0;
+            practiceSprite(o->baseIdx + 9)->_5C = 0;
+        }
+        practiceSprite(o->baseIdx + 8)->flags |= 2;
+        practiceSprite(o->baseIdx + 8)->_68 = 1;
+        practiceSprite(o->baseIdx + 9)->flags |= 2;
+        practiceSprite(o->baseIdx + 9)->_68 = 1;
+        practiceSprite(o->baseIdx + 0xD)->_5C = g_Minigame._19E8[0]._0 << 16;
+        practiceSprite(o->baseIdx + 0xB)->flags |= 2;
+        practiceSprite(o->baseIdx + 0xB)->_68 = 1;
+        c = &lbl_800E8558[g_Minigame._19E8[0]._0];
+        practiceSprite(o->baseIdx + 0xC)->_5C = lbl_3_data_9D50[c->_0][c->_5] << 16;
+    } else {
+        practiceSprite(o->baseIdx + 8)->_5C = 0;
+        practiceSprite(o->baseIdx + 8)->flags &= ~2;
+        practiceSprite(o->baseIdx + 9)->_5C = 0;
+        practiceSprite(o->baseIdx + 9)->flags &= ~2;
+        practiceSprite(o->baseIdx + 0xD)->_5C = 0x360000;
+        practiceSprite(o->baseIdx + 0xB)->_5C = 0;
+        practiceSprite(o->baseIdx + 0xB)->flags &= ~2;
+    }
+    return;
+end:
+    fn_800B0A14_removeQueue(fn_80034CEC(o));
+}
+#endif
