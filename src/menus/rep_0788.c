@@ -5,8 +5,6 @@
 #include "musyx/musyx.h"
 #include "menus/auto_00_00033E70_text.h"
 #include "menus/auto_00_00000D08_text.h"
-#include "menus/auto_00_0005E84C_text.h"
-#include "menus/rep_08E8.h"
 #include "menus/auto_00_0001B1BC_text.h"
 #include "menus/auto_00_00094854_text.h"
 #include "menus/rep_10C0.h"
@@ -14,6 +12,12 @@
 #include "menus/rep_1028.h"
 #include "menus/auto_00_00071EC4_text.h"
 #include "menus/rep_0B08.h"
+
+void fn_2_46D34(s32 delta);
+void fn_2_4AEE4(void);
+void fn_2_68308(void);
+void fn_2_6832C(void);
+void fn_2_683EC(void);
 
 #include "static/UnknownHomes_Static.h"
 #include "static/UnknownHomes_Static.h"
