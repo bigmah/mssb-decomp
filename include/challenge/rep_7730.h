@@ -68,6 +68,24 @@ typedef struct {
     s32 mode;
 } ChallengeCurvePoint;
 
+// Queue object of the wave-surface test mode (fn_1_24410 / fn_1_23B54).
+typedef struct {
+    /* 0x00 */ void (*func)(void);
+    /* 0x04 */ u8 pad4[0x10];
+    /* 0x14 */ f32 farZ;
+    /* 0x18 */ f32 nearZ;
+    /* 0x1C */ f32 impulse;
+    /* 0x20 */ f32 unk20;
+    /* 0x24 */ u16 frame;
+    /* 0x26 */ u8 cursor;
+    /* 0x27 */ u8 lines;
+    /* 0x28 */ u8 cols;
+    /* 0x29 */ u8 rows;
+    /* 0x2A */ u8 freeze;
+    /* 0x2B */ u8 waveOn;
+    /* 0x2C */ u8 buffer;
+} ChallengeWaveState;
+
 // Rope mass point used by fn_1_24C4C (0x3C bytes, cf. RopeNode in main/file_80037054.h).
 typedef struct {
     /* 0x00 */ f32 mass;
@@ -236,5 +254,6 @@ void fn_1_1F900(ChallengeTextureStages* stages);
 void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f32 damping, f32 restLen, f32 dtScale);
 s32 fn_1_22874(void);
 s32 fn_1_23098(Mtx44 proj, Mtx camera, s32 lines, s32 cols, f32 nearZ, f32 farZ);
+void fn_1_23B54(void);
 
 #endif

@@ -14,7 +14,7 @@ static ChallengePathNode lbl_1_bss_43F68[100];
 static Mtx lbl_1_bss_43F38;
 static ChallengeCameraState lbl_1_bss_43EE0;
 static Vec lbl_1_bss_F6E0[160][112];
-static u8 lbl_1_bss_76E0[0x8000];
+static f32 lbl_1_bss_76E0[2][32 * 128];
 static f32 lbl_1_bss_74E0[0x200 / 4];
 static ChallengeCurvePoint lbl_1_bss_6FE0[20];
 static ChallengeCurveTiming lbl_1_bss_6FB8;
@@ -1058,7 +1058,6 @@ extern const f32 lbl_1_rodata_78C0;
 extern double cos(double);
 extern int rand(void);
 extern void* memset(void*, int, u32);
-extern void fn_1_23B54(void);
 
 // .text:0x24410 size:0x29C
 void fn_1_24410(void) {
@@ -1084,11 +1083,11 @@ void fn_1_24410(void) {
         lbl_1_bss_74E0[i] = cos(lbl_1_rodata_78BC * (lbl_1_rodata_780C * ((f32)i * lbl_1_rodata_78C0)));
     }
     q[0x2C] = 0;
-    memset(lbl_1_bss_76E0, 0, 0x8000);
+    memset(lbl_1_bss_76E0, 0, sizeof(lbl_1_bss_76E0));
     for (j = 0; j < 0x20; j++) {
         i = rand() % 32 * 128;
         i += rand() % 128;
-        ((f32*)lbl_1_bss_76E0)[i] = lbl_1_rodata_77E4;
+        lbl_1_bss_76E0[0][i] = lbl_1_rodata_77E4;
     }
     *(void (**)(void))lbl_803CC1B8[0] = fn_1_23B54;
 }
@@ -2355,5 +2354,197 @@ s32 fn_1_23098(Mtx44 proj, Mtx camera, s32 lines, s32 cols, f32 nearZ, f32 farZ)
         }
     }
     return rows;
+}
+#endif
+
+extern const f32 lbl_1_rodata_789C;
+extern const f32 lbl_1_rodata_78A0;
+extern const f32 lbl_1_rodata_78A8;
+extern void fn_1_121D4(u8* camera);
+
+// NONMATCHING 90%: inherits fn_1_22F4C's indexing mismatch (inlined), and the height lookup uses lfs/add instead of lfsx
+// .text:0x23B54 size:0x8BC
+#if NONMATCHING
+void fn_1_23B54(void) {
+    ChallengeWaveState* q = (ChallengeWaveState*)lbl_803CC1B8[0];
+    s32 i;
+    s32 c;
+    s32 r;
+    s32 row;
+    s32 ix;
+    s32 even;
+    u8 cur;
+    f32 fx;
+    f32 fz;
+    f32 h;
+    f32 maxH;
+    f32 minH;
+    Vec* p;
+
+    for (i = 0; i < 8; i++) {
+        switch (i) {
+        case 0:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (q->lines == 2) {
+                        q->lines = 112;
+                    }
+                    q->lines--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    if (q->lines == 112) {
+                        q->lines = 2;
+                    }
+                    q->lines++;
+                }
+            }
+            break;
+        case 1:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (q->cols == 2) {
+                        q->cols = 160;
+                    }
+                    q->cols--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    if (q->cols == 160) {
+                        q->cols = 2;
+                    }
+                    q->cols++;
+                }
+            }
+            break;
+        case 2:
+            if (i == q->cursor && (CHALLENGE_PAD_TRIGGER & 3)) {
+                q->freeze = !q->freeze;
+            }
+            break;
+        case 3:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (q->farZ > lbl_1_rodata_77E4) {
+                        q->farZ -= lbl_1_rodata_77E4;
+                    }
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    if (q->farZ < lbl_1_rodata_7868) {
+                        q->farZ += lbl_1_rodata_77E4;
+                    }
+                }
+            }
+            break;
+        case 4:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (q->nearZ > lbl_1_rodata_77E4) {
+                        q->nearZ -= lbl_1_rodata_77E4;
+                    }
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    if (q->nearZ < lbl_1_rodata_7868) {
+                        q->nearZ += lbl_1_rodata_77E4;
+                    }
+                }
+            }
+            break;
+        case 5:
+            if (i == q->cursor && (CHALLENGE_PAD_TRIGGER & 3)) {
+                q->waveOn = !q->waveOn;
+            }
+            break;
+        case 6:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (q->impulse > lbl_1_rodata_77D8) {
+                        q->impulse -= lbl_1_rodata_786C;
+                    }
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    if (q->impulse < lbl_1_rodata_77E4) {
+                        q->impulse += lbl_1_rodata_786C;
+                    }
+                }
+            }
+            break;
+        case 7:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    if (q->unk20 > lbl_1_rodata_77D8) {
+                        q->unk20 -= lbl_1_rodata_786C;
+                    }
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    if (q->unk20 < lbl_1_rodata_77E4) {
+                        q->unk20 += lbl_1_rodata_786C;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    if (CHALLENGE_PAD_TRIGGER & 8) {
+        if (q->cursor == 0) {
+            q->cursor = 8;
+        }
+        q->cursor--;
+    } else if (CHALLENGE_PAD_TRIGGER & 4) {
+        q->cursor++;
+        if (q->cursor == 8) {
+            q->cursor = 0;
+        }
+    } else if (lbl_803C77B8._02 & 0x200) {
+        ((ChallengeWaveState*)lbl_803CC1B8[0])->func = fn_1_24778;
+    } else if (CHALLENGE_PAD_TRIGGER & 0x100) {
+        for (i = 0; i < 16; i++) {
+            row = rand() % 32;
+            lbl_1_bss_76E0[0][row * 128 + rand() % 128] += q->impulse;
+        }
+    }
+
+    fn_1_121D4((u8*)&lbl_1_bss_43EE0);
+    if (q->freeze == 0) {
+        q->rows = fn_1_23098(lbl_1_bss_47010, lbl_1_bss_43EE0.view, q->lines, q->cols, q->nearZ, q->farZ);
+        if (q->waveOn != 0) {
+            cur = q->buffer++;
+            fn_1_22F4C(32, 128, lbl_1_bss_76E0[1 - (cur & 1)], lbl_1_bss_76E0[cur & 1], lbl_1_bss_76E0[1 - (cur & 1)]);
+            minH = lbl_1_rodata_78A0;
+            maxH = lbl_1_rodata_789C;
+            for (c = 0; c < q->cols; c++) {
+                for (r = 0; r < q->rows; r++) {
+                    p = &lbl_1_bss_F6E0[c][r];
+                    // wrap the ground position into [0, 2)
+                    fx = p->x;
+                    fz = p->y;
+                    ix = fx < lbl_1_rodata_77D8 ? (s32)-fx : (s32)fx;
+                    even = ix / 2 * 2;
+                    if (fx < lbl_1_rodata_77D8) {
+                        fx = fx + (f32)(even + 2);
+                    } else {
+                        fx = fx - (f32)even;
+                    }
+                    ix = fz < lbl_1_rodata_77D8 ? (s32)-fz : (s32)fz;
+                    even = ix / 2 * 2;
+                    if (fz < lbl_1_rodata_77D8) {
+                        fz = fz + (f32)(even + 2);
+                    } else {
+                        fz = fz - (f32)even;
+                    }
+                    p->z = lbl_1_bss_76E0[q->buffer & 1][(s32)(lbl_1_rodata_78A4 * fx) + ((s32)(lbl_1_rodata_78A8 * fz) << 7)];
+                    h = p->z;
+                    if (h < minH) {
+                        minH = h;
+                    } else if (h > maxH) {
+                        maxH = h;
+                    }
+                }
+            }
+        } else {
+            minH = lbl_1_rodata_77D8;
+            maxH = minH;
+            for (c = 0; c < q->cols; c++) {
+                for (r = 0; r < q->rows; r++) {
+                    lbl_1_bss_F6E0[c][r].z = minH;
+                }
+            }
+        }
+    }
+    // minH/maxH are unused by fn_1_23804 (left unset when frozen, as in the original)
+    fn_1_23804(10, 10, q->rows, q->cols, maxH, minH);
+    q->frame++;
 }
 #endif
