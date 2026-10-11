@@ -58,6 +58,8 @@ void fn_8005C5C4(SceneTask* task, s32 port);
 void fn_80059458(SceneTask* task, u8 port, u32 mask);
 void fn_8005F734(SceneTask* task, s32 port);
 void fn_80058394(SceneTask* task);
+void fn_80058B20(SceneTask* task, u8 port);
+void fn_8005C2B0(SceneTask* task);
 void fn_8005CCE4(SceneTask* task, s32 port);
 void fn_8005DE14(SceneTask* task, s32 port);
 void fn_8005E9D8(SceneTask* task, s32 port);
@@ -125,7 +127,11 @@ typedef struct MenuWork {
 // lbl_8034E9A0 (size 0x4C28): base character stats by CharID, plus other state.
 typedef struct RosterData {
     /*0x0000*/ CharacterStats chars[6][9];
-    /*0x21C0*/ u8 _21C0[0x48AE - 0x21C0];
+    /*0x21C0*/ u8 _21C0[0x470D - 0x21C0];
+    /*0x470D*/ u8 _470D[2];
+    /*0x470F*/ u8 _470F[0x489B - 0x470F];
+    /*0x489B*/ u8 _489B[2][9];
+    /*0x48AD*/ u8 _48AD;
     /*0x48AE*/ u8 _48AE;
     /*0x48AF*/ u8 _48AF[4];
     /*0x48B3*/ u8 _48B3;

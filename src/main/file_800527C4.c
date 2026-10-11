@@ -510,9 +510,60 @@ void fn_80058644(void) {
 }
 
 // .text:0x80058B20 size:0x2EC
-void fn_80058B20(void) {
-    return;
+// NONMATCHING 95%: same star-select register differences as fn_80058394
+#if NONMATCHING
+void fn_80058B20(SceneTask* task, u8 port) {
+    CharacterStats* player;
+    s8 row;
+    s8 col;
+    u8 star;
+    u8 swing;
+    u8 pitch;
+    s16 swingAnim;
+    s16 pitchAnim;
+
+    if (lbl_803297E0.starShown[port] == 0) {
+        TASK_OBJ(task, port + 0x1C6)->flags &= ~2;
+        TASK_OBJ(task, port + 0x1C6)->_68 = 0;
+        TASK_OBJ(task, port + 0x19C)->_68 = 4;
+        TASK_OBJ(task, port + 0x1AC)->_68 = 4;
+        player = &inMemRoster[port][lbl_803297E0.selected[port] - 1];
+        row = player->stats.CharID / 9;
+        col = player->stats.CharID % 9;
+        star = lbl_8034E9A0.chars[row][col].stats.CaptainStarHitPitch;
+        if (star == 0) {
+            swing = lbl_8034E9A0.chars[row][col].stats.NonCaptainStarSwing + 11;
+            pitch = lbl_8034E9A0.chars[row][col].stats.NonCaptainStarPitch + 11;
+        } else if (g_d_GameSettings.GameModeSelected != 5) {
+            swing = star - 1;
+            pitch = swing;
+        } else {
+            s8 idx;
+            pitch = star - 1;
+            idx = translateStarPitchHitIndex(pitch);
+            if (idx != -1 && ((s8*)&gChallengeState)[0x43C2 + idx] == 0) { // TODO type
+                swing = lbl_8034E9A0.chars[row][col].stats.NonCaptainStarSwing + 11;
+                pitch = lbl_8034E9A0.chars[row][col].stats.NonCaptainStarPitch + 11;
+            } else {
+                swing = pitch;
+                pitch = (u8)(star - 1);
+            }
+        }
+        swingAnim = translateStarSwing(swing);
+        pitchAnim = translateStarPitch(pitch);
+        TASK_OBJ(task, port + 0x1CC)->_64 = swingAnim;
+        TASK_OBJ(task, port + 0x1CC)->_5C = 0;
+        TASK_OBJ(task, port + 0x1CC)->_68 = 1;
+        TASK_OBJ(task, port + 0x1CE)->_64 = pitchAnim;
+        TASK_OBJ(task, port + 0x1CE)->_5C = 0;
+        TASK_OBJ(task, port + 0x1CE)->_68 = 1;
+        TASK_OBJ(task, port + 0x1D0)->flags |= 2;
+        TASK_OBJ(task, port + 0x1D0)->_68 = 1;
+        TASK_OBJ(task, port + 0x1C8)->_68 = 1;
+        lbl_803297E0.starShown[port] = 1;
+    }
 }
+#endif
 
 // .text:0x80058E0C size:0x64C
 void fn_80058E0C(void) {
@@ -636,9 +687,47 @@ void fn_8005BF40(void) {
 }
 
 // .text:0x8005C2B0 size:0x314
-void fn_8005C2B0(void) {
-    return;
+// NONMATCHING 90%: index sums associate differently (objIdx+i+base+K) and loop registers differ
+#if NONMATCHING
+void fn_8005C2B0(SceneTask* task) {
+    s32 team;
+    s32 base;
+    s32 i;
+    CharacterStats* player;
+    u8 flag;
+
+    for (team = 0, base = 0; team < 2; team++, base += 9) {
+        for (i = 0; i < 9; i++) {
+            player = &inMemRoster[team][i];
+            fn_800363D8(task, i + base + 0x40, 1, 0x83, player->stats.CharID);
+            TASK_OBJ(task, i + base + 0x2E)->_5C = i << 16;
+            TASK_OBJ(task, i + base + 0xD0)->_5C = player->stats.CharacterClass << 16;
+            TASK_OBJ(task, i + base + 0xAC)->_5C = (player->stats.BattingStance + player->stats.FieldingArm * 2) << 16;
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+            } else {
+                flag = lbl_8034E9A0._489B[team][i];
+            }
+            if (flag != 0) {
+                TASK_OBJ(task, i + base + 0x76)->_68 = 1;
+                TASK_OBJ(task, i + base + 0x88)->flags |= 2;
+                TASK_OBJ(task, i + base + 0x88)->_5C = 0;
+                TASK_OBJ(task, i + base + 0x88)->_68 = 1;
+            } else if (lbl_80361B20[player->stats.CharID] != 0) {
+                TASK_OBJ(task, i + base + 0x76)->_68 = 1;
+                TASK_OBJ(task, i + base + 0x88)->flags |= 2;
+                TASK_OBJ(task, i + base + 0x88)->_5C = 0;
+                TASK_OBJ(task, i + base + 0x88)->_68 = 0;
+            } else {
+                TASK_OBJ(task, i + base + 0x88)->flags &= ~2;
+            }
+            TASK_OBJ(task, i + base + 0x64)->flags &= ~2;
+        }
+        TASK_OBJ(task, team + 8)->_5C = lbl_8034E9A0._470D[team] << 16;
+        TASK_OBJ(task, team + 0xC)->_5C = lbl_8034E9A0._470D[team] << 16;
+    }
 }
+#endif
 
 // .text:0x8005C5C4 size:0x26C
 // NONMATCHING 97%: r5/r7 and r0/r4 swapped in the frame-30 branch
