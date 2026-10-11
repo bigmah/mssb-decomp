@@ -79,6 +79,21 @@ void fn_3_BA268(void) {
 
 // .text:0x000BA3EC size:0x14C mapped:0x806F9480
 void fn_3_BA3EC(void) {
-    return;
+    GXSetZMode(1, 7, 1);
+    GXSetBlendMode(1, 4, 5, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevColorIn(0, 0xF, 0xF, 0xF, 0xA);
+    GXSetTevAlphaIn(0, 7, 7, 7, 5);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetTevOp(0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
 }
-
