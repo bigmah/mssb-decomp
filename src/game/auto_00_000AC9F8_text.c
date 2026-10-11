@@ -2209,3 +2209,112 @@ void fn_3_AE334(void) {
         break;
     }
 }
+
+// fn_3_ADEDC, size:0x458
+void fn_3_ADEDC(void) {
+    s32 i;
+    s32 row = 0;
+    if (g_d_GameSettings.exhibitionMatchInd == 0) {
+        row = 1;
+    }
+    if (lbl_3_common_bss_34C90._201 != 0) {
+        if (lbl_3_common_bss_34C90._204[g_GameLogic.teamFielding] != 0) {
+            if (lbl_3_data_F918[row][0].items[lbl_3_common_bss_34C90.cursor] == 0) {
+                if (lbl_3_common_bss_34C90.inputCooldown <= 0) {
+                    lbl_3_common_bss_34C90.heldButtons = 256;
+                lbl_3_common_bss_34C90.newButtons = 256;
+                lbl_3_common_bss_34C90.repeatButtons = 256;
+                lbl_3_common_bss_34C90.inputCooldown = 13;
+                }
+            } else if (lbl_3_common_bss_34C90.inputCooldown <= 0) {
+                lbl_3_common_bss_34C90.heldButtons = 8;
+                lbl_3_common_bss_34C90.newButtons = 8;
+                lbl_3_common_bss_34C90.repeatButtons = 8;
+                lbl_3_common_bss_34C90.inputCooldown = 13;
+            }
+        } else if (lbl_3_data_F918[row][0].items[lbl_3_common_bss_34C90.cursor] == 3) {
+            if (lbl_3_common_bss_34C90.inputCooldown <= 0) {
+                lbl_3_common_bss_34C90.heldButtons = 256;
+                lbl_3_common_bss_34C90.newButtons = 256;
+                lbl_3_common_bss_34C90.repeatButtons = 256;
+                lbl_3_common_bss_34C90.inputCooldown = 13;
+            }
+        } else if (lbl_3_common_bss_34C90.inputCooldown <= 0) {
+            lbl_3_common_bss_34C90.heldButtons = 4;
+                lbl_3_common_bss_34C90.newButtons = 4;
+                lbl_3_common_bss_34C90.repeatButtons = 4;
+                lbl_3_common_bss_34C90.inputCooldown = 13;
+        }
+    }
+    if (lbl_3_common_bss_34C90.newButtons & 0x1000) {
+        for (i = 1; i < 7; i++) {
+            if (lbl_3_data_F918[row][0].items[i - 1] == 0) {
+                lbl_3_common_bss_34C90.cursor = i - 1;
+                break;
+            }
+        }
+        lbl_3_common_bss_34C90.subState = 3;
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+    } else if (lbl_3_common_bss_34C90.newButtons & 0x100) {
+        switch (lbl_3_data_F918[row][0].items[lbl_3_common_bss_34C90.cursor]) {
+        case 6:
+            fn_3_5B408();
+            lbl_3_common_bss_34C90.subState = 7;
+            break;
+        case 1:
+            lbl_3_common_bss_34C90._1D9 = 1;
+            lbl_3_common_bss_34C90.subFrames = 0;
+            lbl_3_common_bss_34C90.subState = 5;
+            break;
+        case 2:
+            lbl_3_common_bss_34C90._1D9 = 1;
+            lbl_3_common_bss_34C90.subFrames = 0;
+            lbl_3_common_bss_34C90.subState = 5;
+            break;
+        case 4:
+            lbl_3_common_bss_34C90._1D9 = 1;
+            lbl_3_common_bss_34C90.subFrames = 0;
+            lbl_3_common_bss_34C90.subState = 5;
+            break;
+        case 3:
+            lbl_3_common_bss_34C90._1D9 = 1;
+            lbl_3_common_bss_34C90.subFrames = 0;
+            lbl_3_common_bss_34C90.subState = 5;
+            break;
+        case 5:
+            lbl_3_common_bss_34C90._1D9 = 1;
+            lbl_3_common_bss_34C90.subFrames = 0;
+            lbl_3_common_bss_34C90.subState = 5;
+            break;
+        default:
+            lbl_3_common_bss_34C90.subState = 3;
+            break;
+        }
+        sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+    } else if (lbl_3_common_bss_34C90.newButtons & 0x200) {
+        if (lbl_3_data_F918[row][0].items[lbl_3_common_bss_34C90.cursor] != 0) {
+            for (i = 1; i < 7; i++) {
+                if (lbl_3_data_F918[row][0].items[i - 1] == 0) {
+                    lbl_3_common_bss_34C90.cursor = i - 1;
+                    break;
+                }
+            }
+        } else {
+            lbl_3_common_bss_34C90.subState = 3;
+        }
+        sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+    } else if (lbl_3_common_bss_34C90.repeatButtons & 8) {
+        if (lbl_3_common_bss_34C90.cursor == 0) {
+            lbl_3_common_bss_34C90.cursor = lbl_3_data_F918[row][0].count - 1;
+        } else {
+            lbl_3_common_bss_34C90.cursor--;
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else if (lbl_3_common_bss_34C90.repeatButtons & 4) {
+        lbl_3_common_bss_34C90.cursor++;
+        if (lbl_3_common_bss_34C90.cursor >= lbl_3_data_F918[row][0].count) {
+            lbl_3_common_bss_34C90.cursor = 0;
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
+}
