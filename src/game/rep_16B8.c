@@ -241,8 +241,40 @@ void fn_3_93544(void) {
 
 #pragma dont_inline reset
 // .text:0x00093688 size:0x2D8 mapped:0x806D271C
-void fn_3_93688(void) {
-    return;
+void fn_3_93688(RepTask* task) {
+    s32 n;
+    if (g_Scores.team[0].runs[0] >= 10) {
+        n = g_Scores.team[0].runs[0];
+        if (n >= 99) {
+            n = 99;
+        }
+        REP_OBJ(task, 4)->flags &= ~2;
+        REP_OBJ(task, 5)->flags |= 2;
+        REP_OBJ(task, 6)->flags |= 2;
+        fn_8003649C(task, 5, 2, 0xF6, n / 10);
+        fn_8003649C(task, 6, 3, 0xF6, n % 10);
+    } else {
+        REP_OBJ(task, 4)->flags |= 2;
+        REP_OBJ(task, 5)->flags &= ~2;
+        REP_OBJ(task, 6)->flags &= ~2;
+        fn_8003649C(task, 4, 1, 0xF6, g_Scores.team[0].runs[0]);
+    }
+    n = g_Scores.team[1].runs[0];
+    if (n >= 10) {
+        if (n >= 99) {
+            n = 99;
+        }
+        REP_OBJ(task, 7)->flags &= ~2;
+        REP_OBJ(task, 8)->flags |= 2;
+        REP_OBJ(task, 9)->flags |= 2;
+        fn_8003649C(task, 8, 5, 0xF6, n / 10);
+        fn_8003649C(task, 9, 6, 0xF6, n % 10);
+    } else {
+        REP_OBJ(task, 7)->flags |= 2;
+        REP_OBJ(task, 8)->flags &= ~2;
+        REP_OBJ(task, 9)->flags &= ~2;
+        fn_8003649C(task, 7, 4, 0xF6, g_Scores.team[1].runs[0]);
+    }
 }
 
 // .text:0x00093960 size:0x3FC mapped:0x806D29F4

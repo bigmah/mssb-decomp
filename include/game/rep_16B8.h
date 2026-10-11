@@ -21,6 +21,8 @@ typedef struct RepTask {
     /*0x22*/ u16 _22;
 } RepTask;
 
+extern void fn_8003649C(void* owner, s32 idx, s32 track, u16 animId, u32 frame);
+
 #define REP_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
 
 void fn_3_91520(void);
@@ -36,7 +38,7 @@ void fn_3_91FC4(void);
 void fn_3_92CD8(void);
 void fn_3_933CC(void);
 void fn_3_93544(void);
-void fn_3_93688(void);
+void fn_3_93688(RepTask* task);
 void fn_3_93960(void);
 void fn_3_93D5C(void);
 void fn_3_9413C(void);
