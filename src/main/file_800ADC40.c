@@ -565,13 +565,14 @@ s32 fn_800AED24(void) {
 
 // Frame the playback clock is at: wall time since the last audio DMA,
 // plus the audio already played when syncing to audio.
-static inline u32 MovClockFrame(MovPlayer* mov) {
+static inline void MovUpdateFrame(MovPlayer* mov) {
     if (mov->flags & 1) {
-        return (OSTicksToMicroseconds(OSGetTime() - mov->startTime) +
-                mov->samplesPlayed * 1000000 / (mov->sampleRate * 4)) /
-               mov->usecPerFrame;
+        mov->curFrame = (OSTicksToMicroseconds(OSGetTime() - mov->startTime) +
+                         mov->samplesPlayed * 1000000 / (mov->sampleRate * 4)) /
+                        mov->usecPerFrame;
+    } else {
+        mov->curFrame = OSTicksToMicroseconds(OSGetTime() - mov->startTime) / mov->usecPerFrame;
     }
-    return OSTicksToMicroseconds(OSGetTime() - mov->startTime) / mov->usecPerFrame;
 }
 
 // .text:0x800AED34 size:0x474
@@ -582,14 +583,18 @@ s32 MovDecodeThread(void* arg) {
 
     OSSuspendThread(&lbl_802FB220.decodeThread);
     lbl_803CC17E = 1;
-    while (!lbl_803CC17C) {
-        mov = lbl_803CC170;
-        if (mov == NULL || !(mov->state & 1)) {
+    for (;;) {
+        if (lbl_803CC17C) {
+            break;
+        }
+        if ((mov = lbl_803CC170) == NULL || !(mov->state & 1)) {
             continue;
         }
         mov->decoding = 1;
         lbl_803CC19C = fn_800AF1A8(mov);
         switch (lbl_803CC19C) {
+        case 1: // waiting for data
+            break;
         case 2:
             OSPanic(lbl_803CCF00, 0x27D, MOV_STR_DECODE_BROKEN);
             mov->state = MOV_STATE_STOP;
@@ -598,7 +603,7 @@ s32 MovDecodeThread(void* arg) {
         case 3:
             if (mov->flags & 2) {
                 do {
-                    mov->curFrame = MovClockFrame(mov);
+                    MovUpdateFrame(mov);
                     if (lbl_803CC17C) {
                         goto exit;
                     }
@@ -622,7 +627,7 @@ s32 MovDecodeThread(void* arg) {
                 }
             } else {
                 do {
-                    mov->curFrame = MovClockFrame(mov);
+                    MovUpdateFrame(mov);
                     if (lbl_803CC17C) {
                         goto exit;
                     }
