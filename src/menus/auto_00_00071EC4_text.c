@@ -2092,3 +2092,31 @@ void fn_2_72A88(u8* o) {
     }
 }
 #endif
+
+// fn_2_7F8BC, size:0x240
+// NONMATCHING 75%: CW folds the +0x34/+0x58 slot offsets into the load displacement; register allocation differs
+#if NONMATCHING
+void fn_2_7F8BC(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        s8 v;
+        s8 found;
+        s32 j;
+        v = ((s32*)lbl_2_bss_F468)[index];
+        for (j = 0; j < 9; j++) {
+            if ((s8)lbl_803C6724[index * 9 + j + 0x14] == v) {
+                found = j;
+                break;
+            }
+        }
+        MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x34].obj->flags |= 2;
+        MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x34].obj->frame = 0;
+        MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x34].obj->state = 1;
+        MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x58].obj->frame = (s8)(lbl_803C6724 + index * 9)[found + 2] << 16;
+        fn_2_75BE4(o, index);
+        fn_2_74F40(o, index);
+        fn_800626EC(index);
+        *e = 1;
+    }
+}
+#endif
