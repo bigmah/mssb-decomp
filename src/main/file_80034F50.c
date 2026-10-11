@@ -155,9 +155,157 @@ SpaniObj* fn_80034F50(SpaniDesc* desc) {
 }
 
 // .text:0x80035168 size:0x550
+// NONMATCHING 97.5%: original keeps separate k*4 and texOverride walkers (r29/r30); regalloc
+#if NONMATCHING
 void fn_80035168(void) {
-    return;
+    u8 sp8[4];
+    Mtx inv;
+    Mtx mtx;
+    Mtx* views = lbl_800F78E0;
+    MtxPtr view;
+    SpaniObj* obj;
+    s32 i;
+    s32 unk74;
+    s32 k;
+    s32 layer;
+
+    if (lbl_803C77B8[0].held & 0x1000) {
+        if (lbl_803C77B8[3].trig & 1) {
+            if (lbl_803CB814 > lbl_803CBC98) {
+                lbl_803CB814--;
+            }
+        } else if ((lbl_803C77B8[3].trig & 2) && lbl_803CB814 < SPANI_OBJ_COUNT) {
+            lbl_803CB814++;
+        }
+        if (lbl_803C77B8[3].trig & 4) {
+            if (lbl_803CBC98 > 0) {
+                lbl_803CBC98--;
+            }
+        } else if ((lbl_803C77B8[3].trig & 8) && lbl_803CBC98 < lbl_803CB814) {
+            lbl_803CBC98++;
+        }
+    }
+    fn_8000A094(fn_80034BCC);
+    for (i = lbl_803CBC98, obj = &lbl_8039C3E0[i]; i < lbl_803CB814; i++, obj++) {
+        u32 flags = obj->flags;
+        if (flags == 0) {
+            continue;
+        }
+        if (!(flags & 2)) {
+            if (flags & 4) {
+                fn_8000F534(obj, 0);
+            }
+            continue;
+        }
+        if (obj->parent != NULL && obj->unkA8 == 0) {
+            if (flags & 4) {
+                fn_8000F534(obj, 0);
+            }
+            continue;
+        }
+        fn_800B24D4(obj->layer);
+        if (obj->is3D) {
+            fn_800B27DC(lbl_801F8640, 0);
+            view = views[0];
+            fn_800B21A8(obj->unk71);
+        } else {
+            fn_800B27DC(lbl_801F8680, 0);
+            if (obj->layer == 0x15) {
+                view = views[3];
+                lbl_803CBBE0 = 256.5f;
+                fn_800B216C(1, 3, 0);
+            } else {
+                if (obj->layer >= 0xF && obj->layer <= 0x16) {
+                    view = views[1];
+                    lbl_803CBBE0 = 511.0f;
+                } else {
+                    view = views[2];
+                    lbl_803CBBE0 = 2.0f;
+                }
+                fn_800B21A8(obj->unk71);
+            }
+        }
+        obj->posX = obj->baseX;
+        obj->posY = obj->baseY;
+        obj->posZ = obj->baseZ;
+        if (obj->is3D) {
+            PSMTXScale(obj->mtx, -obj->scale, obj->scale, 1.0f);
+            PSMTXInverse((MtxPtr)((u8*)fn_80052734(0) + 0x40), inv); // TODO type: camera view matrix
+            inv[0][3] = inv[1][3] = inv[2][3] = 0.0f;
+            PSMTXConcat(inv, obj->mtx, obj->mtx);
+            PSMTXTrans(inv, obj->posX, obj->posY, obj->posZ);
+            PSMTXConcat(inv, obj->mtx, obj->mtx);
+            PSMTXConcat((MtxPtr)((u8*)fn_80052734(0) + 0x40), obj->mtx, obj->mtx); // TODO type
+            obj->unk74 = obj->unk58;
+        } else {
+            if (obj->parent == NULL) {
+                obj->posX -= (s32)((u32)lbl_803C4BE0[obj->texSlot].anim->width >> 1);
+                obj->posY -= (s32)((u32)lbl_803C4BE0[obj->texSlot].anim->height >> 1);
+                obj->unk74 = obj->unk58;
+                PSMTXIdentity(obj->mtx2);
+            }
+            obj->posZ = 0.0f;
+            PSMTXTrans(obj->mtx, obj->posX, obj->posY, 0.0f);
+            PSMTXConcat(obj->mtx2, obj->mtx, obj->mtx);
+        }
+        unk74 = obj->unk74;
+        k = 0;
+        lbl_803CBBE4 = obj->is3D;
+        do {
+            if (obj->texOverride[k] != 0xFFFF) {
+                SpaniAnim* anim = lbl_803C4BE0[obj->texSlot].anim;
+                SpaniTrack* track = anim->seqList->seqs[obj->animId]->tracks[k];
+                SpaniKey* keys = track->keys;
+                fn_8000CC4C(anim, track, &obj->texOverride[k], (u8*)&keys->texIdx - (u8*)keys, sizeof(u16));
+            }
+            k++;
+        } while (k < SPANI_TEX_OVERRIDE_COUNT);
+        if (obj->parent == NULL) {
+            PSMTXConcat(view, obj->mtx, mtx);
+        } else {
+            PSMTXCopy(obj->mtx, mtx);
+        }
+        lbl_803CBC9C = obj;
+        if (!(obj->flags & 4)) {
+            SpaniTexSlot* s = &lbl_803C4BE0[obj->texSlot];
+            obj->animResult = fn_8000D838(&obj->frame, s->anim, obj->animId, mtx, 0, unk74, sp8, s->tex);
+        }
+        obj->unkA8 = 0;
+        if (obj->playMode == 1) {
+            switch (obj->animResult) {
+            case 0:
+                obj->frame += obj->frameStep;
+                break;
+            case 1:
+                obj->frame = 0;
+                break;
+            case 2:
+            case 3:
+                break;
+            default:
+                obj->frame += obj->frameStep;
+                break;
+            }
+        } else if (obj->playMode == 4) {
+            if (obj->frame > obj->frameStep) {
+                obj->frame -= obj->frameStep;
+            } else {
+                obj->frame = 0;
+            }
+        }
+        if (obj->flags & 4) {
+            fn_8000F534(obj, 1);
+        }
+    }
+    for (layer = 1; layer < 9; layer++) {
+        fn_800B24D4(layer);
+        fn_800B21A8(0);
+        DrawTextOnCondition(layer);
+    }
+    fn_800B24D4(2);
 }
+#endif
+
 
 // .text:0x800356B8 size:0x98
 void fn_800356B8(void) {
