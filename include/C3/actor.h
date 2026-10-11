@@ -74,6 +74,7 @@ void ACTTick(Actor *actor);
 void ACTSetBoneTime(sBone *bone, f32 time);
 void ACTSetBoneSpeed(sBone *bone, f32 speed);
 void ACTTickBone(sBone *bone);
-void ACTSetBoneTrack(sBone *bone, struct ANIMAnimTrack *track, f32 time);
+// MSSB signature: bone is a GameBone (main/file_80063028.h); blend keeps the previous pose in blendCtrl.
+void ACTSetBoneTrack(struct GameBone *bone, struct ANIMAnimTrack *track, s32 blend, f32 time);
 
 #endif // _DOLPHIN_CP_ACTOR_H_
