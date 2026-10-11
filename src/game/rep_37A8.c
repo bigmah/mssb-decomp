@@ -1706,9 +1706,31 @@ extern s32 fn_3_108854(void);
 extern u16 lbl_3_data_81FC[];
 
 // Per-frame update of the minigame.
+// NONMATCHING 98.2%: inlined fn_3_142CA8 reloads g_Minigame instead of reusing r26 from the inlined fn_3_145EB8 loop
+#if NONMATCHING
 void fn_3_146408(void) {
-    return;
+    if (fn_3_108854() != 0) {
+        return;
+    }
+    if (g_Minigame[0x190B] == 0) {
+        (*(u32*)(g_Minigame + 0x17C0))++;
+    }
+    if (*(u32*)(g_Minigame + 0x17C4) != 0) {
+        (*(u32*)(g_Minigame + 0x17C4))--;
+        if (*(u32*)(g_Minigame + 0x17C4) < 600 && *(u32*)(g_Minigame + 0x17C4) != 0 &&
+            *(u32*)(g_Minigame + 0x17C4) % 60 == 0) {
+            fn_3_90064(lbl_3_data_81FC[0x28]);
+        }
+    }
+    fn_3_145EB8();
+    fn_3_14443C();
+    fn_3_143714();
+    fn_3_142284();
+    fn_3_144CB8();
+    fn_3_142CA8();
+    fn_3_1461A4();
 }
+#endif
 
 // .text:0x00146928 size:0xA4 mapped:0x807859BC
 void fn_3_146928(void) {
