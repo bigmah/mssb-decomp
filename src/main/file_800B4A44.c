@@ -42,7 +42,7 @@ f32 fn_800B4A94(GameActor* actor) {
 // .text:0x800B4AFC size:0x3C
 void fn_800B4AFC(GameActor* actor, u8 loop) {
     u32 i;
-    GameAnimPipe* pipe;
+    struct ANIMPipe* pipe;
 
     for (i = 0; i < actor->totalBones; i++) {
         pipe = actor->boneArray[i]->animPipe;
@@ -68,7 +68,7 @@ void AnimateActorBones(GameActor* actor) {
 // .text:0x800B4BC8 size:0x3C
 void fn_800B4BC8(GameActor* actor, u8 forward) {
     u32 i;
-    GameAnimPipe* pipe;
+    struct ANIMPipe* pipe;
 
     for (i = 0; i < actor->totalBones; i++) {
         pipe = actor->boneArray[i]->animPipe;
@@ -81,7 +81,7 @@ void fn_800B4BC8(GameActor* actor, u8 forward) {
 // .text:0x800B4C04 size:0x3C
 void fn_800B4C04(GameActor* actor, f32 speed) {
     u32 i;
-    GameAnimPipe* pipe;
+    struct ANIMPipe* pipe;
 
     for (i = 0; i < actor->totalBones; i++) {
         pipe = actor->boneArray[i]->animPipe;
@@ -94,7 +94,7 @@ void fn_800B4C04(GameActor* actor, f32 speed) {
 // .text:0x800B4C40 size:0x60
 f32 fn_800B4C40(GameActor* actor) {
     u32 i;
-    GameAnimPipe* pipe;
+    struct ANIMPipe* pipe;
 
     for (i = 0; i < actor->totalBones; i++) {
         pipe = actor->boneArray[i]->animPipe;
@@ -108,7 +108,7 @@ f32 fn_800B4C40(GameActor* actor) {
 // .text:0x800B4CA0 size:0x3C
 void fn_800B4CA0(GameActor* actor, f32 time) {
     u32 i;
-    GameAnimPipe* pipe;
+    struct ANIMPipe* pipe;
 
     for (i = 0; i < actor->totalBones; i++) {
         pipe = actor->boneArray[i]->animPipe;
@@ -136,7 +136,7 @@ void ACTSetAnimation(GameActor* actor, ANIMBank* animBank, char* sequenceName, u
     ANIMSequences* seq = ANIMGetSequence(animBank, sequenceName, seqNum);
     struct ANIMAnimTrack* track = NULL;
     GameBone* bone;
-    u8 blendFlag;
+    s32 blendFlag;
 
     for (i = 0; i < actor->totalBones; i++) {
         if (seq != NULL) {
@@ -161,7 +161,7 @@ void ACTSetAnimation(GameActor* actor, ANIMBank* animBank, char* sequenceName, u
 // .text:0x800B4E9C size:0x100
 // NONMATCHING 98%: r8/r9 swapped between (u16)i and total - 1 (see docs/patterns/regalloc.md)
 #if NONMATCHING
-void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack* animTrack, KeyFrame** currentFrame, KeyFrame** nextFrame, u16* frameIndex, f32 time) {
+void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack* animTrack, f32 time, KeyFrame** currentFrame, KeyFrame** nextFrame, u16* frameIndex) {
     KeyFrame* keyFrames;
     u32 start;
     u16 total;

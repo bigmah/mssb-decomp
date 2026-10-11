@@ -26,7 +26,6 @@ typedef struct StaticModel {
 // Out-of-unit helpers.
 void* _OSAllocFromHeap(s32 align, s32 size);
 void fn_800ACFB0(void* object); // free
-s32 fn_800B7D3C(void* frustum, Vec* box, Mtx m); // nonzero if the 8-corner box is visible
 void fn_800BEA04(Vec pos);
 void fn_800BF2A8(GameBone** bones, sHdr* hdr, void* positionArray);
 void CTRLBuildMatrix_FlipX(Control* control, Mtx m);
@@ -41,7 +40,7 @@ void fn_800B313C(GameActor* actor);
 void fn_800B34B4(GameActor* actor, GameBone* bone, Mtx world);
 void f_BuildBoneSkinOrientationMatrix(GameBone* bone, Mtx parent);
 void fn_800B3A78(GameActor* actor, Mtx camera, u8 numLights, ...);
-u8 fn_800B3C04(void* frustum, GameActor* actor, Mtx camera);
+u8 fn_800B3C04(s32 viewIndex, GameActor* actor, Mtx camera);
 void fn_800B3F20(GameActor* actor);
 s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u16 actorID);
 void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16* boneIndex, GameBone* boneMem);

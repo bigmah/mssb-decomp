@@ -130,11 +130,11 @@ void fn_800B2DD0(GameActor* actor, GameBone* bone) {
             }
         }
         if (bone->animPipe->replaceHierarchyCtrl == 0) {
-            CTRLBuildMatrix(&bone->orientationCtrl.base, ctrlMtx);
+            CTRLBuildMatrix(&bone->orientCtrl.base, ctrlMtx);
             PSMTXConcat(ctrlMtx, m, m);
         }
     } else {
-        fn_800B84AC(&blended.base, &bone->blendCtrl, &bone->orientationCtrl.base, blend);
+        fn_800B84AC(&blended.base, &bone->blendCtrl, &bone->orientCtrl.base, blend);
         CTRLBuildMatrix(&blended.base, m);
     }
 
@@ -239,11 +239,11 @@ void fn_800B313C(GameActor* actor) {
                 }
             }
             if (bone->animPipe->replaceHierarchyCtrl == 0) {
-                CTRLBuildMatrix(&bone->orientationCtrl.base, ctrlMtx);
+                CTRLBuildMatrix(&bone->orientCtrl.base, ctrlMtx);
                 PSMTXConcat(ctrlMtx, m, m);
             }
         } else {
-            fn_800B84AC(&blended.base, &bone->blendCtrl, &bone->orientationCtrl.base, blend);
+            fn_800B84AC(&blended.base, &bone->blendCtrl, &bone->orientCtrl.base, blend);
             CTRLBuildMatrix(&blended.base, m);
         }
 
@@ -344,11 +344,11 @@ void fn_800B34B4(GameActor* actor, GameBone* bone, Mtx world) {
             }
         }
         if (bone->animPipe->replaceHierarchyCtrl == 0) {
-            CTRLBuildMatrix(&bone->orientationCtrl.base, ctrlMtx);
+            CTRLBuildMatrix(&bone->orientCtrl.base, ctrlMtx);
             PSMTXConcat(ctrlMtx, m, m);
         }
     } else {
-        CTRLBuildMatrix(&bone->orientationCtrl.base, m);
+        CTRLBuildMatrix(&bone->orientCtrl.base, m);
     }
 
     if (bone->inheritanceFlag == 1 && parent != NULL) {
@@ -366,11 +366,11 @@ void f_BuildBoneSkinOrientationMatrix(GameBone* bone, Mtx parent) {
 
     for (; bone != NULL; bone = (GameBone*)bone->branch.Next) {
         if (bone->inheritanceFlag == 1) {
-            CTRLBuildMatrix(&bone->orientationCtrl.base, local);
+            CTRLBuildMatrix(&bone->orientCtrl.base, local);
             PSMTXConcat(parent, local, accum);
             PSMTXInverse(accum, bone->orientationInvMtx);
         } else {
-            CTRLBuildInverseMatrix(&bone->orientationCtrl.base, bone->orientationInvMtx);
+            CTRLBuildInverseMatrix(&bone->orientCtrl.base, bone->orientationInvMtx);
         }
         if (bone->branch.Children != NULL) {
             f_BuildBoneSkinOrientationMatrix((GameBone*)bone->branch.Children, accum);
@@ -410,7 +410,7 @@ void fn_800B3A78(GameActor* actor, Mtx camera, u8 numLights, ...) {
 // .text:0x800B3C04 size:0x31C
 // Visibility test: 3 if a display object is in view, 2 if only the actor's
 // fallback box is, 0 otherwise.
-u8 fn_800B3C04(void* frustum, GameActor* actor, Mtx camera) {
+u8 fn_800B3C04(s32 viewIndex, GameActor* actor, Mtx camera) {
     Vec pos;
     Mtx m;
     Vec box[8];
@@ -450,7 +450,7 @@ u8 fn_800B3C04(void* frustum, GameActor* actor, Mtx camera) {
         box[7].x = 1.2f * obj->bounds[1];
         box[7].y = obj->bounds[2] - pos.y;
         box[7].z = 1.2f * obj->bounds[5];
-        if (fn_800B7D3C(frustum, box, m)) {
+        if (fn_800B7D3C(viewIndex, box, m)) {
             if (actor->flags & 0x24) {
                 fn_800BEA04(pos);
             }
@@ -472,7 +472,7 @@ u8 fn_800B3C04(void* frustum, GameActor* actor, Mtx camera) {
         box[6].z = -2.0f;
         box[7].x = -2.0f;
         box[7].z = -2.0f;
-        if (fn_800B7D3C(frustum, box, m)) {
+        if (fn_800B7D3C(viewIndex, box, m)) {
             result = 2;
         }
     }
@@ -506,7 +506,7 @@ u8 fn_800B3C04(void* frustum, GameActor* actor, Mtx camera) {
         box[7].y = obj->bounds[2];
         box[7].z = obj->bounds[5];
         PSMTXConcat(camera, obj->worldMatrix, m);
-        if (fn_800B7D3C(frustum, box, m)) {
+        if (fn_800B7D3C(viewIndex, box, m)) {
             if (actor->flags & 0x24) {
                 PSMTXMultVec(obj->worldMatrix, &pos, &pos);
                 fn_800BEA04(pos);
@@ -563,9 +563,9 @@ void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16*
         bone->boneID = layoutBone->boneID;
         bone->inheritanceFlag = layoutBone->inheritanceFlag;
         bone->drawingPriority = layoutBone->drawingPriority;
-        bone->orientationCtrl.base.type = 0;
+        bone->orientCtrl.base.type = 0;
         if (layoutBone->orientationCtrl != NULL) {
-            bone->orientationCtrl = *(GameControl*)layoutBone->orientationCtrl;
+            bone->orientCtrl = *(GameControl*)layoutBone->orientationCtrl;
         }
         bone->dispObj = NULL;
         if (layoutBone->geoFileID != 0xFFFF) {
@@ -576,7 +576,7 @@ void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16*
         bone->animCtrl.type = 0;
         bone->blendCtrl.type = 0;
         bone->flags = 1;
-        bone->unk136 = 0;
+        bone->stepTranslation = 0;
         bone->rotAxis = 0;
         bone->forwardMtx = actor->forwardMtxArray[*boneIndex];
         PSMTXIdentity(bone->forwardMtx);
@@ -815,7 +815,7 @@ void fn_800B472C(StaticModel* model) {
         box[7].x = obj->bounds[1];
         box[7].y = obj->bounds[2];
         box[7].z = obj->bounds[5];
-        if (fn_800B7D3C(NULL, box, m)) {
+        if (fn_800B7D3C(0, box, m)) {
             if (layoutBone->flags & 1) {
                 GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
             } else {

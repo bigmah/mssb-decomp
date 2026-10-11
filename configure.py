@@ -471,6 +471,7 @@ config.libs = [
             Object(Matching, "Dolphin/os/OSSync.c"),
             Object(Matching, "Dolphin/os/OSThread.c"),
             Object(Matching, "Dolphin/os/OSTime.c"),
+            Object(Matching, "Dolphin/os/__start.c"),
             Object(Matching, "Dolphin/os/__ppc_eabi_init.cpp"),
         ],
         extra_cflags=["-str noreadonly", "-sym on"]
@@ -610,9 +611,9 @@ config.libs = [
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/notify.c"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/flush_cache.c"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/mem_TRK.c"),
+            Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/__exception.s"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/targimpl.c"),
-            Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/targsupp.c",
-                   extra_cflags=["-inline deferred", "-func_align 16"]),
+            Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/targsupp.s"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/mpc_7xx_603e.c"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/dolphin_trk.c"),
             Object(Matching, "Dolphin/TRK_MINNOW_DOLPHIN/main_TRK.c"),
@@ -697,7 +698,7 @@ config.libs = [
             Object(NonMatching, "main/file_800639BC.c"),
             Object(NonMatching, "main/file_80069BDC.c"),
             Object(NonMatching, "main/file_80091450.c"),
-            Object(NonMatching, "main/file_800A1A70.c"),
+            Object(NonMatching, "main/file_800A1A70.c", mw_version="GC/1.2.5n", cflags=cflags_base),  # Dolphin SDK GD library
             Object(NonMatching, "main/file_800A6870.c"),
             Object(NonMatching, "main/file_800A7C08.c"),
             Object(NonMatching, "main/file_800ADC40.c"),

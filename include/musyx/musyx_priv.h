@@ -171,6 +171,16 @@ typedef struct _PBADPCMLOOP {
   u16 loop_yn2;        // offset 0x4, size 0x2
 } _PBADPCMLOOP;
 
+#if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 1)
+typedef struct _PBLPF {
+  // total size: 0x8
+  u16 flag; // offset 0x0, size 0x2
+  u16 yn1;  // offset 0x2, size 0x2
+  u16 a0;   // offset 0x4, size 0x2
+  u16 b0;   // offset 0x6, size 0x2
+} _PBLPF;
+#endif
+
 typedef struct _PB {
   // total size: 0xBC
   u16 nextHi;             // offset 0x0, size 0x2
@@ -192,8 +202,13 @@ typedef struct _PB {
   _PBADPCM adpcm;         // offset 0x7E, size 0x28
   _PBSRC src;             // offset 0xA6, size 0xE
   _PBADPCMLOOP adpcmLoop; // offset 0xB4, size 0x6
+#if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 1)
+  _PBLPF lpf;             // offset 0xBA, size 0x8
+  u16 streamLoopCnt;      // offset 0xC2, size 0x2
+#else
   u16 streamLoopCnt;      // offset 0xBA, size 0x2
   u16 pad[4];
+#endif
 } _PB;
 
 typedef struct SAMPLE_INFO {
@@ -1081,7 +1096,11 @@ typedef struct STREAM_INFO {
   u8 hwStreamHandle;
   u32 nextStreamHandle;
 #endif
-#if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 0)
+#if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 2)
+  u8 lpfEnable; // offset 0x61, size 0x1
+  u16 lpfA0;    // offset 0x62, size 0x2
+  u16 lpfB0;    // offset 0x64, size 0x2
+#elif MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 0)
   u32 padEnd;
 #endif
 } STREAM_INFO;
@@ -1178,6 +1197,9 @@ u32 vidMakeRoot(SYNTH_VOICE* svoice);
 
 u32 adsrHandleLowPrecision(ADSR_VARS* adsr, u16* adsr_start, u16* adsr_delta);
 bool32 adsrRelease(ADSR_VARS* adsr);
+u32 adsrSetup(ADSR_VARS* adsr);
+u32 adsrStartRelease(ADSR_VARS* adsr, u32 rtime);
+u32 adsrHandle(ADSR_VARS* adsr, u16* adsr_start, u16* adsr_delta);
 
 #ifdef __cplusplus
 }

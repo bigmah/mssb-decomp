@@ -92,6 +92,10 @@ typedef struct {
     /* 0x02 */ u16 _02;
     artificial_padding(2, 0x22, u16);
     /* 0x22 */ u16 _22;
+    artificial_padding(0x22, 0x42, u16);
+    /* 0x42 */ u16 _42;
+    artificial_padding(0x42, 0x62, u16);
+    /* 0x62 */ u16 _62;
 } lbl_803C77B8_s;
 extern lbl_803C77B8_s lbl_803C77B8;
 
@@ -105,7 +109,7 @@ extern void fn_80048C1C(void);
 
 extern void fn_800B9AA8(void* object);
 
-extern void SetDisplayStateTexture(void* object, s32 a, s32 b);
+extern void SetDisplayStateTexture(struct TexImage* tex, s32 map, u32 tlutName);
 
 extern void fn_800AD038(void* object);
 extern void fn_800A97D0(s32, s32);

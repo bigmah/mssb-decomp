@@ -9,7 +9,7 @@
 struct DODisplayObj;
 struct DODisplayData;
 struct sHdr;
-struct GameAnimPipe;
+struct ANIMPipe;
 struct ActorLayout;
 
 // MSSB's Control is 0x44 bytes (C3/control.h's Control is 0x3C).
@@ -26,12 +26,16 @@ typedef struct GameBone {
     /*0x004*/ DSBranch branch;
     /*0x014*/ struct DODisplayObj* dispObj;
     /*0x018*/ struct DODisplayObj* baseDispObj;
-    /*0x01C*/ GameControl orientationCtrl;
-    /*0x060*/ Control animCtrl;
-    /*0x09C*/ u8 pad9C[0x8];
-    /*0x0A4*/ Control blendCtrl;
-    /*0x0E0*/ u8 padE0[0x8];
-    /*0x0E8*/ struct GameAnimPipe* animPipe;
+    /*0x01C*/ GameControl orientCtrl;
+    /*0x060*/ union {
+        Control animCtrl;
+        GameControl animCtrlFull;
+    };
+    /*0x0A4*/ union {
+        Control blendCtrl;
+        GameControl blendCtrlFull;
+    };
+    /*0x0E8*/ struct ANIMPipe* animPipe;
     /*0x0EC*/ MtxPtr forwardMtx;
     /*0x0F0*/ MtxPtr skinMtx;
     /*0x0F4*/ MtxPtr skinInvTransposeMtx;
@@ -39,7 +43,7 @@ typedef struct GameBone {
     /*0x0FC*/ DSLink drawPriorityLink;
     /*0x104*/ u8 pad104[0x30];
     /*0x134*/ u16 flags; // bits 0-1 blend curve, 2-4 copy anim translation x/y/z, 5 copy enabled
-    /*0x136*/ u8 unk136;
+    /*0x136*/ u8 stepTranslation; // nonzero: ACTSetBoneTrack forces step interpolation for translation
     /*0x137*/ u8 rotAxis; // 1/2/3: extra 180 degree turn about X/Y/Z
     /*0x138*/ u8 pad138[0x8];
 } GameBone; // size: 0x140

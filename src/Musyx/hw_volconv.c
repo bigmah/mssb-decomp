@@ -185,6 +185,9 @@ void CalcBusDPL2(float *vol_tab, float *fvl, float *fvr, float *rvl, float *rvr,
          ((1.f - pi->rpan_fm) * pan_tab_dpl2[pi->rpan_im] + pi->rpan_fm * pan_tab[pi->rpan_im + 1]);
 }
 
+// NONMATCHING 97.8%: FPR allocation; the original keeps 2-p in a fresh register but reuses sp's for
+// 2-sp (one more saved FPR), not reproduced by statement order or temporaries
+#if NONMATCHING
 void salCalcVolume(u8 voltab_index, SAL_VOLINFO *vi, float vol, u32 pan, u32 span, float auxa,
                    float auxb, u32 itd, u32 dpl2)
 {
@@ -252,3 +255,4 @@ void salCalcVolume(u8 voltab_index, SAL_VOLINFO *vi, float vol, u32 pan, u32 spa
     vi->volAuxBS = 0.f;
   }
 }
+#endif

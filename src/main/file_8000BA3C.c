@@ -1247,8 +1247,6 @@ void fn_8000E764(f32 angle, Vec2f* out) {
 }
 
 // .text:0x8000E7BC size:0x144
-// NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
-#if NONMATCHING
 void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
 
@@ -1287,11 +1285,8 @@ void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCor
         lbl_80366188.u.v[3].color = params->color[0];
     }
 }
-#endif
 
 // .text:0x8000E900 size:0x30C
-// NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
-#if NONMATCHING
 void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
     SpriteTexInfo* tex;
@@ -1334,11 +1329,8 @@ void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawPa
     lbl_80366188.bank = bank;
     lbl_80366188.perCornerColor = perCorner | elem->perCorner;
 }
-#endif
 
 // .text:0x8000EC0C size:0x310
-// NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
-#if NONMATCHING
 void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
     SpriteTexInfo* tex;
@@ -1382,7 +1374,6 @@ void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* 
     lbl_80366188.bank = bank;
     lbl_80366188.perCornerColor = perCorner | elem->perCorner;
 }
-#endif
 
 // .text:0x8000EF1C size:0x234
 // NONMATCHING ~85%: saved-register/scheduling differences; float constants
