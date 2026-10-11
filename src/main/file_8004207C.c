@@ -299,7 +299,22 @@ void fn_80048D4C(void) {
 
 // .text:0x80048E00 size:0xA8
 s32 fn_80048E00(s32 index, s32 value) {
-    return 0;
+    s32 count = 35;
+    if (index != 0) {
+        count = 23;
+    }
+    if (value >= count) {
+        value = 0;
+    } else if (value < 0) {
+        value = count - 1;
+    }
+    if (value != lbl_803CB83C[index]) {
+        lbl_803CB83C[index] = value;
+        memset(lbl_802E4B28.max, 0, sizeof(lbl_802E4B28.max));
+        memset(lbl_802E4B28.min, 0xFF, sizeof(lbl_802E4B28.min));
+        lbl_803CB838 = 300;
+    }
+    return value;
 }
 
 // fn_80048EA8, size:0x10
