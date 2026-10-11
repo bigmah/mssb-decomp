@@ -132,4 +132,6 @@ void fn_2_102C8(u8 team);
 
 void fn_2_5184(u8 team);
 
+void fn_2_EAE0(void);
+
 #endif

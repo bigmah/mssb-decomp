@@ -1044,3 +1044,35 @@ void fn_2_5184(u8 team) {
     fn_800625A4(team, 0x19);
 }
 #endif
+
+// NONMATCHING 85%: register allocation/scheduling of the selection pointer; the trailing loop really never exits in the original
+#if NONMATCHING
+// fn_2_EAE0, size:0x154
+void fn_2_EAE0(void) {
+    s32 i;
+    s32* sel;
+    s32 port;
+    for (i = 0; i < (g_d_GameSettings._10 == 1) + 1; i++) {
+        if (lbl_803C5EA4[i + 8] != 0) {
+            sel = (s32*)lbl_2_bss_F410 + 8 + i;
+            if (lbl_8034E9A0[lbl_800FDE84[*sel] + 0x4757] != 0) {
+                do {
+                    do {
+                        (*sel)++;
+                        if (*sel == 0x36) {
+                            *sel = 0;
+                        }
+                    } while (lbl_8034E9A0[lbl_800FDE84[*sel] + 0x4757] != 0);
+                } while (((s32*)lbl_2_bss_F410)[8] == ((s32*)lbl_2_bss_F410)[9]);
+            }
+            for (;;) {
+                port = *(s8*)(lbl_8034E9A0 + i + 0x46F8);
+                if (*(s8*)(lbl_8034E9A0 + port + 0x46FC) != 0) {
+                    port = *(s8*)(lbl_8034E9A0 + 0x46F8) == 0;
+                }
+                ((void (*)(s32*, u8, s32))fn_2_1D54)((s32*)lbl_2_bss_F410 + 8 + i, port, 0x36);
+            }
+        }
+    }
+}
+#endif
