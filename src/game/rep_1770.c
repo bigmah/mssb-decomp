@@ -163,7 +163,24 @@ void fn_3_9BEE0(HudTask* task) {
 
 // .text:0x0009C014 size:0x278 mapped:0x806DB0A8
 void fn_3_9C014(void) {
-    return;
+    HudTask* task = HUD_TASK;
+    s32 i;
+    if (lbl_3_common_bss_32724.hudOff != 0 || lbl_3_common_bss_32724._A7 == 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    task->timer++;
+    fn_3_9BEE0(task);
+    if (lbl_3_common_bss_32724._A7 < 0xFF) {
+        HUD_OBJ(task, 0)->color = (HUD_OBJ(task, 0)->color & ~0xFF) | lbl_3_common_bss_32724._A7;
+        for (i = 1; i < 8; i++) {
+            HUD_OBJ(task, i)->color = (HUD_OBJ(task, i)->color & ~0xFF) | lbl_3_common_bss_32724._A7;
+        }
+    } else {
+        for (i = 1; i < 8; i++) {
+            HUD_OBJ(task, i)->color = (HUD_OBJ(task, i)->color & ~0xFF) | lbl_3_common_bss_32724._A6;
+        }
+    }
 }
 
 // .text:0x0009C28C size:0x2EC mapped:0x806DB320
