@@ -4,14 +4,31 @@
 #include "mssbTypes.h"
 #include "game/UnknownHomes_Game.h"
 
+// Game texture descriptor (consumed by SetDisplayStateTexture).
+typedef struct TexDesc {
+    /*0x00*/ void* image;
+    /*0x04*/ void* palette;
+    /*0x08*/ u16 height;
+    /*0x0A*/ u16 width;
+    /*0x0C*/ u8 _0C[0x20 - 0x0C];
+} TexDesc; // size: 0x20
+
+// Texture set used by the logo/warning screens: a count word followed by descriptors.
+typedef struct TexSet {
+    /*0x00*/ u32 count;
+    /*0x04*/ TexDesc tex[1];
+} TexSet;
+
 // Display-list node passed to fn_800A7D4C (two per task, indexed by lbl_803CBBC0).
 typedef struct DrawNode {
     /*0x00*/ void* next;
     /*0x04*/ void (*draw)(struct DrawNode* node);
-    /*0x08*/ s32 _08;
-    /*0x0C*/ u8 _0C[0x18 - 0x0C];
+    /*0x08*/ s32 kind;
+    /*0x0C*/ TexSet* texSet;
+    /*0x10*/ s32 texIdx;
+    /*0x14*/ s32 texIdx2;
     /*0x18*/ f32 alpha;
-    /*0x1C*/ u8 _1C[4];
+    /*0x1C*/ f32 alpha2;
 } DrawNode; // size: 0x20
 
 // Scene/task object pointed to by lbl_803CC1B8.
@@ -87,10 +104,10 @@ extern ChallengeTeamInfo lbl_800E8558[54];
 // Event callbacks registered by the game module (see fn_3_16892C).
 typedef void (*AnimEventCallback)(void* obj, f32 frame, s32 a, s32 b);
 
-void fn_80069BDC(void);
-void fn_8006A194(void);
-void fn_8006A500(void);
-void fn_8006A824(void);
+void fn_80069BDC(TexSet* set, s32 idx, f32 alpha, s32 idx2, f32 alpha2);
+void fn_8006A194(TexSet* set, s32 idx, f32 alpha);
+void fn_8006A500(TexSet* set, s32 idx, f32 alpha);
+void fn_8006A824(TexSet* set, s32 idx, f32 alpha);
 void fn_8006AC24(DrawNode* node);
 void fn_8006AF6C(void);
 void fn_8006AF9C(void);
