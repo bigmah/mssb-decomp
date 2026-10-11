@@ -109,6 +109,7 @@ extern void fn_3_B97DC(void*, u32);
 extern const f32 lbl_3_rodata_2E14;
 extern f64 pow(f64, f64);
 extern f64 sqrt(f64);
+extern s16 fn_3_B7F70(s16 range);
 struct StadCtlA {
     Control c;
     u8 pad34[0x74 - 0x3C];
@@ -724,7 +725,6 @@ void fn_3_EF21C(u8* p) {
     }
 }
 
-#pragma dont_inline on
 // .text:0x000EF3D4 size:0x34 mapped:0x8072E468
 void fn_3_EF3D4(u8* p, u8 idx) {
     fn_3_B97DC(*(void**)(p + 0x74), lbl_3_bss_B154[idx]);
@@ -761,6 +761,7 @@ void fn_3_EF408(u8* p) {
 }
 
 // 60%: two box-edge loops; lfsx/addi index pattern and per-loop register numbering differ
+#pragma dont_inline on
 // .text:0x000EF55C size:0x258 mapped:0x8072E5F0
 u32 fn_3_EF55C(Vec p, u8 idx) {
     u8 a[4] = {1, 3, 0, 2};
@@ -1015,9 +1016,76 @@ void fn_3_F0224(StadCtlA* p) {
 #endif
 
 // .text:0x000F082C size:0x778 mapped:0x8072F8C0
+extern const f64 lbl_3_rodata_2E28;
+/* Wanders inside its box; latches onto a fielder that walks in. */
+// NONMATCHING 92%: inlines fn_3_EF21C x2 and fn_3_EF408 (the box tests are the inlined fn_3_EF7B4 in the original: clrlwi); original reaches lbl_3_data_1B9A4 via the lbl_3_data_1B820 pooled base (nmverify flag expected); regalloc differs
+#if NONMATCHING
 void fn_3_F082C(StadCtlA* p) {
-    return;
+    Vec np;
+    u8* f;
+    u32 i;
+    f32 a;
+    f32 c;
+    f32 s;
+    for (i = 0, f = g_Fielders; i < 9; i++, f += 0x268) {
+        if (f == NULL) {
+            break;
+        }
+        if (fn_3_EF55C(*(Vec*)f, p->fc5) == 0 && *(f32*)(f + 0x15C) <= lbl_3_rodata_2D5C) {
+            p->fc1 = i;
+            p->fc6 = 2;
+            fn_3_B97DC(p->obj, lbl_3_bss_B154[1]);
+            return;
+        }
+    }
+    switch (p->fc6) {
+    case 0:
+        fn_3_EF21C((u8*)p);
+        if (p->rb4 > lbl_3_rodata_2D5C) {
+            if (p->rb4 < lbl_3_rodata_2D88) {
+                p->xac = (s8)p->fc4 * p->rb4 + p->xac;
+                p->rb4 = lbl_3_rodata_2D5C;
+            } else {
+                p->xac = lbl_3_rodata_2D88 * (s8)p->fc4 + p->xac;
+                p->rb4 = p->rb4 - lbl_3_rodata_2D88;
+            }
+            p->fc7++;
+        } else {
+            p->fc7 = 0;
+            p->fc6 = 1;
+        }
+        break;
+    case 1:
+        if (p->fc7 < 20) {
+            p->fc7++;
+            a = lbl_3_rodata_2DDC * -p->xac;
+            c = cos(a);
+            s = sin(a);
+            np.x = p->xa0 + (f32)(lbl_3_rodata_2E28 * c);
+            np.y = p->ya4 + lbl_3_rodata_2D5C;
+            np.z = p->za8 + (f32)(lbl_3_rodata_2E28 * s);
+            if (fn_3_EF55C(np, p->fc5) != 0) {
+                fn_3_EF408((u8*)p);
+            } else {
+                p->xa0 = np.x;
+                p->ya4 = np.y;
+                p->za8 = np.z;
+            }
+        } else {
+            if (fn_3_B7F70(10) < 8) {
+                p->fc6 = 0;
+                p->rb4 = fn_3_B7F70(60) + 1;
+                p->fc4 = fn_3_B7F70(2) * -1 + 1;
+            }
+            p->fc7 = 0;
+        }
+        fn_3_EF21C((u8*)p);
+        break;
+    }
+    CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+    CTRLSetRotation(&p->c, lbl_3_rodata_2D5C, p->xac, lbl_3_rodata_2D5C);
 }
+#endif
 
 // .text:0x000F0FA4 size:0x454 mapped:0x80730038
 // NONMATCHING 98.5%: inlines fn_3_F1518/fn_3_EF890/fn_3_EF800; only the p->obj load is scheduled later (orig loads it into r3 right after mr r31,r3, g_GameLogic base in r4)
@@ -1970,7 +2038,6 @@ extern const f32 lbl_3_rodata_2EF0;
 extern const f64 lbl_3_rodata_2EF8;
 extern const f32 lbl_3_rodata_2F00;
 extern const f32 lbl_3_rodata_2F04;
-extern u8 fn_3_B7F70(s32);
 extern u8 lbl_3_bss_B21F;
 extern u8 lbl_3_bss_B220[];
 void fn_3_F4DAC(void) {
