@@ -120,7 +120,7 @@ void fn_3_3CCB0(int i);
 void fn_3_3D304(int i);
 void fn_3_3D6AC(int);
 int fn_3_3D7D4(int);
-void fn_3_3DB78(void);
+void fn_3_3DB78(int i);
 void fn_3_3E34C(int);
 void fn_3_3E468(void);
 void fn_3_3E690(void);

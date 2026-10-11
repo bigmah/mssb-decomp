@@ -4299,9 +4299,114 @@ int fn_3_3D7D4(int i) {
 }
 
 // .text:0x0003DB78 size:0x7D4 mapped:0x8067CC0C
-void fn_3_3DB78(void) {
-    return;
+#pragma dont_inline off
+/* point fielder f at (x, z): sets target, heading and remaining distance */
+static inline void SetRunTargetInline(u8* f, f32 x, f32 z) {
+    f32 dx;
+    f32 dz;
+    f32 d;
+    *(f32*)(f + 0x14) = x;
+    *(f32*)(f + 0x1C) = z;
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    if (lbl_3_rodata_B20 == dx && lbl_3_rodata_B20 == dz) {
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+    } else {
+        *(f32*)(f + 0x64) = (f32)atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
 }
+#pragma dont_inline on
+extern void fn_3_A7C88(void);
+extern u8 lbl_3_data_4484[];
+extern u8 lbl_3_data_44B4[];
+extern f32 lbl_3_rodata_C1C;
+extern f32 lbl_3_rodata_C20;
+// NONMATCHING 92%: register/f-reg numbering in the inlined run-target blocks; calls fn_3_526DC through a cast until its prototype gains the index arg
+#if NONMATCHING
+void fn_3_3DB78(int i) {
+    s32 off = i * 0x268;
+    u8* f = g_Fielders + off;
+    s16 k;
+    if (fn_3_53130(i) != 0) {
+        return;
+    }
+    if (g_Ball[0x1BCD] != 0 && i <= 1) {
+        return;
+    }
+    k = *(s16*)(f + 0x18C);
+    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
+    if (k == 5) {
+        f32 xo;
+        f32 zo;
+        if (*(s16*)(g_FieldingLogic + 0xC4) == 5) {
+            fn_3_3BE50(i);
+            fn_3_A7C88();
+            if (*(s16*)(g_Ball + 0x1B8A) == i) {
+                fn_3_4E638();
+            }
+            return;
+        }
+        zo = lbl_3_rodata_B68;
+        xo = zo;
+        if (*(f32*)f < lbl_3_rodata_B20) {
+            xo = lbl_3_rodata_C1C;
+        }
+        if (*(f32*)(f + 8) < *(f32*)(lbl_3_data_4444 + 0x24)) {
+            zo = lbl_3_rodata_C1C;
+        }
+        if (g_FieldingLogic[0x105] != 0 && *(f32*)(f + 0x50) <= lbl_3_rodata_C20) {
+            u8* g = g_Fielders + off;
+            *(f32*)(g + 0x14) = *(f32*)f;
+            *(f32*)(g + 0x18) = *(f32*)(f + 4);
+            *(f32*)(g + 0x1C) = *(f32*)(f + 8);
+            *(f32*)(g + 0x30) = lbl_3_rodata_B20;
+            *(f32*)(g + 0x34) = lbl_3_rodata_B20;
+            *(f32*)(g + 0x50) = lbl_3_rodata_B20;
+            *(f32*)(g + 0x68) = lbl_3_rodata_B20;
+            return;
+        }
+        SetRunTargetInline(f, *(f32*)(lbl_3_data_4444 + 0x20) + xo, *(f32*)(lbl_3_data_4444 + 0x24) + zo);
+        ((void (*)(int))fn_3_526DC)(i);
+        if (*(f32*)(f + 0x68) < lbl_3_rodata_B78) {
+            g_FieldingLogic[0x105] = 1;
+            *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+            f[0x1D6] = 8;
+        } else {
+            g_FieldingLogic[0x105] = 0;
+            f[0x1D6] = 0xB;
+        }
+    } else if (k == 7) {
+        SetRunTargetInline(f, *(f32*)(lbl_3_data_44B4 + i * 8 + 0x10), *(f32*)(lbl_3_data_44B4 + i * 8 + 0x14));
+        ((void (*)(int))fn_3_526DC)(i);
+        if (lbl_3_rodata_B20 == *(f32*)(f + 0x68)) {
+            SetFielderAct(i, 0, 0);
+        }
+    } else if (k >= 8 && k <= 13) {
+        SetRunTargetInline(f, *(f32*)(lbl_3_data_4484 + k * 8 - 0x40), *(f32*)(lbl_3_data_4484 + k * 8 - 0x3C));
+        ((void (*)(int))fn_3_526DC)(i);
+        if (lbl_3_rodata_B20 == *(f32*)(f + 0x68)) {
+            SetFielderAct(i, 0, 0);
+        }
+    } else if (k == 14) {
+        if (f[0x1DE] == 0) {
+            SetFielderAct(i, 0, 0);
+            *(s16*)(f + 0x18C) = -1;
+            return;
+        }
+        ((void (*)(int))fn_3_526DC)(i);
+    } else if (k == 15) {
+        ((void (*)(int))fn_3_526DC)(i);
+        if (lbl_3_rodata_B20 == *(f32*)(f + 0x68)) {
+            SetFielderAct(i, 0, 0);
+        }
+    }
+}
+#endif
 
 // .text:0x0003E34C size:0x11C mapped:0x8067D3E0
 void fn_3_3E34C(int i) {
