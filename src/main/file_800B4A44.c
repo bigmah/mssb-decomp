@@ -53,8 +53,16 @@ void fn_800B4AFC(GameActor* actor, u8 loop) {
 }
 
 // .text:0x800B4B38 size:0x90
-void AnimateActorBones(void) {
-    return;
+void AnimateActorBones(GameActor* actor) {
+    u32 i;
+
+    actor->blend += actor->blendSpeed;
+    if (actor->blend > 1.0f) {
+        actor->blend = 1.0f;
+    }
+    for (i = 0; i < actor->totalBones; i++) {
+        ANIMTick(actor->boneArray[i]->animPipe, actor->tickFlag);
+    }
 }
 
 // .text:0x800B4BC8 size:0x3C
