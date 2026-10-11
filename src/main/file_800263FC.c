@@ -436,8 +436,8 @@ s32 fn_80033928(u8 type) {
 }
 
 // .text:0x80033964 size:0x8C
-void fn_80033964(void) {
-    return;
+void fn_80033964(Emitter* e) {
+    FreeEmitter(e);
 }
 
 // .text:0x800339F0 size:0x34
