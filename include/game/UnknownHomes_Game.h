@@ -433,7 +433,7 @@ typedef struct _InMemBallType {
     /*0x1BDA*/ u8 bobbleLocation_1fair_2foul;
     /*0x1BDB*/ u8 _1BDB;
     /*0x1BDC*/ u8 homeRunInd;
-    /*0x1BDD*/ u8 ballZoneWhenCaught;
+    /*0x1BDD*/ s8 ballZoneWhenCaught; // -1: none
     /*0x1BDE*/ u8 ballStoppingCode1ReallySlow2Stopped;
     /*0x1BDF*/ u8 _1BDF;
     /*0x1BE0*/ u8 throwTimeEstimatesCompleteInd;
@@ -1453,10 +1453,7 @@ typedef struct _BB_barrelStruct {
 typedef struct _UnkStructMinigame {
     /*0x000*/ VecXYZ _0;
     /*0x00C*/ VecXYZ _C;
-    /*0x018*/ s32 _18;
-    /*0x01C*/ s32 _1C;
-    /*0x020*/ u8 pad4[28];
-    /*0x03C*/ s32 _3C;
+    /*0x018*/ s32 coins[10]; // coin pool indices carried by this object (rep_3520)
     /*0x040*/ u8 _40[4];
     /*0x044*/ VecXYZ _44;
     /*0x050*/ VecXYZ _50;
@@ -2402,7 +2399,7 @@ typedef struct _MiniGameStruct {
     /*0x1D40*/ f32 _1D40;
     /*0x1D44*/ f32 _1D44;
     /*0x1D48*/ f32 _1D48;
-    /*0x1D4C*/ f32 starDashRelated_0_5Or1_5;
+    /*0x1D4C*/ f32* starDashRelated_0_5Or1_5; // points at the speed multiplier (0.5 or 1.5)
     /*0x1D50*/ s16 _1D50;
     /*0x1D52*/ s16 _1D52;
     /*0x1D54*/ s16 _1D54;
@@ -2416,7 +2413,7 @@ typedef struct _MiniGameStruct {
     /*0x1D68*/ s16 _1D68;
     /*0x1D6A*/ s16 _1D6A;
     /*0x1D6C*/ u8 _1D6C;
-    /*0x1D6D*/ u8 _1D6D;
+    /*0x1D6D*/ s8 _1D6D;
     /*0x1D6E*/ u8 starDashStunType[4];
     /*0x1D72*/ u8 _1D72;
     /*0x1D73*/ u8 _1D73;
@@ -2682,7 +2679,11 @@ typedef struct {
     /* 0xAA2 */ s16 _AA2;
     /* 0xAA4 */ s16 _AA4;
     /* 0xAA6 */ s16 _AA6;
-    artificial_padding(0xaa6, 0xab4, u16);
+    /* 0xAA8 */ u16 _AA8; // fade-out active (fn_3_21C90)
+    /* 0xAAA */ u16 _AAA; // fade-in active (fn_3_21DE4)
+    /* 0xAAC */ u16 _AAC; // fade-out length in frames
+    /* 0xAAE */ u16 _AAE; // fade-in length in frames
+    artificial_padding(0xaae, 0xab4, u16);
     /* 0xAB5 */ u8 _AB4;
     /* 0xAB5 */ u8 _AB5;
     /* 0xAB6 */ u8 _AB6;
@@ -2736,6 +2737,7 @@ typedef struct {
     /* 0x28A6 */ u8 _28A6;
     /* 0x28A7 */ u8 _28A7;
     /* 0x28A8 */ u8 _28A8;
+    /* 0x28A9 */ u8 _28A9; // 1: restart the view loop (fn_3_1CE90)
 } inMemCamera;
 
 extern inMemCamera *g_pCamera;
@@ -2828,24 +2830,47 @@ typedef struct {
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0xAE];
+    u8 pad[0x77];
+    /* 0x077 */ struct {
+        u8 _0;
+        u8 _1; // set when RandomInt_Game(100) rolls under the fielder's chance (fn_3_1DEB8)
+        u8 _2[4];
+    } _077[4]; // per minigame fielder
+    u8 _08F[0x90 - 0x8F];
+    /* 0x090 */ VecXYZ _090; // target position
+    u8 _09C[0xAE - 0x9C];
     /* 0x0AE */ s16 _0AE;
     /* 0x0B0 */ s16 _0B0; // fielder index (g_Fielders), < 0 if none
     u8 _0B2[0xBC - 0xB2];
     /* 0x0BC */ s16 _0BC;
-    u8 _0BE[0xC4 - 0xBE];
-    /* 0x0C4 */ s16 _0C4; // base the play is at (runner index)
-    u8 _0C6[0xCC - 0xC6];
-    /* 0x0CC */ s16 _0CC;
-    u8 _0CE[0xE4 - 0xCE];
+    /* 0x0BE */ s16 _0BE; // fielder index
+    /* 0x0C0 */ s16 _0C0;
+    /* 0x0C2 */ s16 _0C2;
+    /* 0x0C4 */ s16 _0C4; // base to throw to
+    /* 0x0C6 */ s16 _0C6;
+    /* 0x0C8 */ s16 _0C8;
+    /* 0x0CA */ s16 _0CA;
+    /* 0x0CC */ s16 _0CC; // base
+    /* 0x0CE */ s16 _0CE;
+    /* 0x0D0 */ s16 _0D0[4]; // per base: fielder covering it
+    /* 0x0D8 */ s16 _0D8;
+    /* 0x0DA */ s16 _0DA;
+    /* 0x0DC */ s16 _0DC;
+    /* 0x0DE */ s16 _0DE; // runner index
+    /* 0x0E0 */ s16 _0E0; // runner index
+    /* 0x0E2 */ s16 _0E2;
     /* 0x0E4 */ s16 _0E4;
-    u8 _0E6[0xE8 - 0xE6];
-    /* 0x0E8 */ s16 _0E8;
+    /* 0x0E6 */ s16 _0E6;
+    /* 0x0E8 */ s16 _0E8; // runner index
     /* 0x0EA */ s16 _0EA; // fielder index (g_Fielders)
-    u8 _0EC[0xEE - 0xEC];
+    /* 0x0EC */ s16 _0EC;
     /* 0x0EE */ s16 _0EE;
-    u8 _0F0[0xF8 - 0xF0];
-    /* 0x0F8 */ u8 _0F8[0x105 - 0xF8]; // per fielder
+    /* 0x0F0 */ s16 _0F0;
+    /* 0x0F2 */ s16 _0F2;
+    /* 0x0F4 */ s16 _0F4;
+    /* 0x0F6 */ s16 _0F6;
+    /* 0x0F8 */ u8 _0F8[9]; // per fielder
+    /* 0x101 */ u8 _101[4]; // per base
     /* 0x105 */ u8 playerAtMoundCutoffLocation;
     /* 0x106 */ u8 throwSpeedType;
     /* 0x107 */ u8 _107;
@@ -2878,7 +2903,7 @@ typedef struct {
     /* 0x122 */ u8 _122;
     /* 0x123 */ u8 _123;
     /* 0x124 */ u8 _124;
-    /* 0x125 */ u8 _125;
+    /* 0x125 */ s8 _125; // base
     /* 0x126 */ s8 _126; // -1: none
     /* 0x127 */ s8 _127;
     /* 0x128 */ u8 _128;

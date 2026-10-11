@@ -19,10 +19,6 @@ extern SceneActorSetup lbl_3_data_1E434[];
 extern SceneActorSetup lbl_3_data_1F090[];
 extern u8* lbl_3_data_1F40[13]; // per mode: actor-setup script
 
-typedef struct Unk2398Entry {
-    /*0x00*/ u8 _00[0x34];
-    /*0x34*/ s32 _34[3];
-} Unk2398Entry; // size: 0x40
 extern Unk2398Entry lbl_3_data_2398[];
 
 // .text:0x000249E8 size:0xF4 mapped:0x80663A7C

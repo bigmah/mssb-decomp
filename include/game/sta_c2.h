@@ -4,23 +4,52 @@
 #include "mssbTypes.h"
 #include "Dolphin/vec.h"
 
+// One node of the verlet chain simulated by fn_3_D1F2C (4 or 8 nodes per object, 0x40 bytes each).
+typedef struct RopeNode {
+    /*0x00*/ f32 mass;
+    /*0x04*/ f32 invMass;
+    /*0x08*/ f32 radius;
+    /*0x0C*/ Vec pos;
+    /*0x18*/ Vec prev;
+    /*0x24*/ Vec vel;
+    /*0x30*/ Vec force;
+    /*0x3C*/ u32 pinned;
+} RopeNode;
+
+// Chain simulation parameters (lbl_3_bss_A8A8, lbl_3_bss_A018+0x890).
+typedef struct CC438Cfg {
+    /*0x00*/ f32 a;
+    /*0x04*/ f32 b;     // ground/sphere restitution factor
+    /*0x08*/ f32 c, d, e, f;
+    /*0x18*/ f32 h;     // substep time
+    /*0x1C*/ f32 hh;    // h * h
+    /*0x20*/ s32 n;     // substeps per frame
+    /*0x24*/ f32 inv;   // 1 / (2 * h)
+} CC438Cfg;
+
+// One entry of the stadium draw order built by fn_3_D55EC.
+typedef struct C2SortEnt {
+    f32 z;   // view-space depth while sorting, then the draw alpha
+    s32 idx; // object index
+} C2SortEnt;
+
 void fn_3_CB8A8(u8*);
 void fn_3_CBA9C(u8* p);
 void fn_3_CBAFC(u8* p);
-void fn_3_CBC18(void);
-void fn_3_CBF80(void);
+void fn_3_CBC18(u8* p);
+void fn_3_CBF80(u8* p);
 void fn_3_CC1D4(void);
 void fn_3_CC354(f32* p);
 void fn_3_CC438(void);
 void fn_3_CC5C4(u8* p);
 void fn_3_CC81C(void);
-void fn_3_CCC24(void);
+void fn_3_CCC24(void** files, u32* idx);
 void fn_3_CD958(void);
-void fn_3_CD968(void);
+u8 fn_3_CD968(Vec* v, f32 w, f32 h);
 void fn_3_CDB48(void* pv, u8* h);
 void fn_3_CDD90(u8* p);
-void fn_3_CDFA4(void);
-void fn_3_CE56C(u32 a, u8 b);
+s32 fn_3_CDFA4(u8* h);
+void fn_3_CE56C(u8* h, u8 idx);
 void fn_3_CE8E4(void);
 void fn_3_CE954(void);
 void fn_3_CEBBC(f32* v, s32 k);
@@ -29,10 +58,10 @@ void fn_3_CED30(void);
 void fn_3_CED34(void);
 void fn_3_CED38(void);
 void fn_3_CED3C(void);
-void fn_3_CED40(u8* p, s32 a);
-void fn_3_CEE5C(u8* p, s32 a);
+void fn_3_CED40(u8* p, void* a);
+void fn_3_CEE5C(u8* p, void* a);
 s32 fn_3_CEFA8(u8* h);
-void fn_3_CF278(void);
+void fn_3_CF278(u8* p, Vec* pos);
 void fn_3_CF72C(s32 idx);
 void fn_3_CF92C(void);
 void fn_3_CF930(u8* p);
@@ -40,7 +69,7 @@ void fn_3_CFA88(void);
 void fn_3_CFA8C(void* p);
 void fn_3_CFAB4(u8* p, u8* q);
 s32 fn_3_CFB44(u8* a);
-void fn_3_CFD58(void);
+void fn_3_CFD58(u8* p);
 void fn_3_D00CC(void);
 void fn_3_D00D0(u8* p);
 void fn_3_D0280(void);
@@ -48,20 +77,20 @@ void fn_3_D0284(u8* p);
 void fn_3_D0490(void);
 void fn_3_D0528(void);
 s32 fn_3_D052C(void);
-void fn_3_D0534(void);
+void fn_3_D0534(u8* p);
 f32 fn_3_D0854(u8* p);
-void fn_3_D0918(void);
+void fn_3_D0918(u8* p);
 void fn_3_D1004(u8* p, f32 x, f32 y, f32 z, f32 r, f32 sc);
 void fn_3_D1110(u8* p);
 void fn_3_D127C(void);
 void fn_3_D1280(u8* p);
-void fn_3_D141C(void);
+void fn_3_D141C(u8* p);
 void fn_3_D173C(u8* p);
 void fn_3_D1848(u8* arg);
 void fn_3_D196C(s32 idx);
 void fn_3_D1AC4(u8* p);
-void fn_3_D1B24(void);
-void fn_3_D1F2C(u8* a, u8* b, s32 n, Vec* d, u8* p);
+void fn_3_D1B24(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* grav);
+void fn_3_D1F2C(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* dir, u8* p);
 void fn_3_D2220(u8* p);
 u8* fn_3_D233C(u8* p);
 s32 fn_3_D249C(u8* p);
@@ -69,13 +98,13 @@ void fn_3_D24E8(u8* p, s32 idx0);
 s32 fn_3_D255C(u8* p);
 u8* fn_3_D2684(u8* p);
 void fn_3_D278C(u8* p);
-void fn_3_D2A0C(void);
-void fn_3_D30D0(void);
+void fn_3_D2A0C(u8* p);
+void fn_3_D30D0(u8* p);
 void fn_3_D36B0(u8* p);
-void fn_3_D3880(void);
+void fn_3_D3880(u8* p);
 void fn_3_D3CDC(u8* p);
-void fn_3_D3F54(void);
-void fn_3_D4780(void);
+void fn_3_D3F54(u8* p);
+void fn_3_D4780(u8* p);
 void fn_3_D4CA4(u8* p);
 void fn_3_D4E00(u8* p);
 void fn_3_D501C(f32* p);
@@ -84,13 +113,13 @@ s32 fn_3_D53C0(u8 id);
 s32 fn_3_D5444(u32* a, u32* b);
 s32 fn_3_D5470(f32* a, f32* b);
 void fn_3_D5494(f32 (*m)[4]);
-void fn_3_D55EC(void);
+void fn_3_D55EC(f32 (*view)[4], C2SortEnt* out);
 void fn_3_D5B6C(s32* a);
 void fn_3_D5C8C(s32* a);
 void fn_3_D5E80(s32* a);
 void fn_3_D60C0(s32* a);
 void fn_3_D62F0(s32* a);
 void fn_3_D6514(void);
-void fn_3_D67CC(void);
+void fn_3_D67CC(void** files);
 
 #endif // !__GAME_sta_c2_H_
