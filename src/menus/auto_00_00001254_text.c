@@ -1716,3 +1716,37 @@ void fn_2_2D1C(void) {
     }
 }
 #endif
+
+// NONMATCHING 85%: the original inlines fn_2_CA60 (NONMATCHING) into the slot loop; fn_2_14F8 must stay a call
+#if NONMATCHING
+// fn_2_B66C, size:0x2B4
+void fn_2_B66C(void) {
+    s8 pick;
+    s32 k;
+    s32 i;
+    fn_2_A6E0();
+    if ((s8)lbl_2_bss_3E0[0] == -1) {
+        pick = -1;
+    } else {
+        do {
+            k = fn_2_14F8(1, 2);
+        } while ((s8)lbl_2_bss_3E0[k] == 0);
+        pick = k;
+    }
+    switch (pick) {
+    case 0:
+        ((s32*)lbl_2_bss_F468)[5] = 1;
+        break;
+    case 1:
+        ((s32*)lbl_2_bss_F468)[5] = 2;
+        break;
+    case -1:
+        ((s32*)lbl_2_bss_F468)[5] = 3;
+        break;
+    }
+    fn_2_ABC0(1);
+    for (i = 0; i < 9; i++) {
+        fn_2_CA60(i, 1);
+    }
+}
+#endif

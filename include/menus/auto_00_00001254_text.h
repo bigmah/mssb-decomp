@@ -258,4 +258,8 @@ void fn_2_1578(void);
 
 void fn_2_2D1C(void);
 
+void fn_2_A6E0(void);
+
+void fn_2_B66C(void);
+
 #endif
