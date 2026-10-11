@@ -34,6 +34,7 @@ void getComponentsFromRad(f32 v, f32* x, f32* y);
 extern u8 lbl_3_data_4714[][4][6];
 extern f32 lbl_3_data_5FC4[];
 void playSoundEffect(int);
+extern f32 lbl_3_rodata_BCC;
 /* lbl_3_data_3C40: per-state fielder action table (animation id, state handler) */
 typedef struct {
     int anim;
@@ -2184,7 +2185,76 @@ void fn_3_32090(void) {
 
 // .text:0x000323A4 size:0x450 mapped:0x80671438
 void fn_3_323A4(void) {
-    return;
+    s16 n;
+    s16 t3;
+    s16 t2;
+    f32 d;
+    if (g_Fielders[0x268 + 0x1DA] == 0) {
+        if (g_Runners[0x51F] == 1 && g_Runners[0x533] == 1 && *(f32*)(g_Runners + 0x460) >= lbl_3_rodata_BCC &&
+            (n = *(s16*)(g_Fielders + 0x268 + 0x186)) > 0) {
+            d = *(f32*)(g_Ball + n * 16 + 0x354) * *(f32*)(g_Ball + n * 16 + 0x354) +
+                *(f32*)(g_Ball + n * 16 + 0x35C) * *(f32*)(g_Ball + n * 16 + 0x35C);
+            SQRT_L(d);
+            if (d < lbl_3_rodata_B64) {
+                *(s16*)(g_FieldingLogic + 0xB0) = 1;
+                *(s16*)(g_FieldingLogic + 0xB2) = 0;
+            } else {
+                *(s16*)(g_FieldingLogic + 0xB0) = 0;
+            }
+        } else {
+            *(s16*)(g_FieldingLogic + 0xB0) = 1;
+            *(s16*)(g_FieldingLogic + 0xB2) = 0;
+        }
+    } else {
+        *(s16*)(g_FieldingLogic + 0xB0) = 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B9C) < 0x400) {
+        t3 = *(s16*)(g_Fielders + 3 * 0x268 + 0x186);
+        t2 = *(s16*)(g_Fielders + 2 * 0x268 + 0x186);
+        if (t3 - 15 < t2) {
+            if (*(s16*)(g_Fielders + 0x186) - t3 < 120) {
+                *(s16*)(g_FieldingLogic + 0xB2) = 3;
+            } else {
+                goto def2;
+            }
+        } else if (*(f32*)(g_Ball + t2 * 16 + 0x35C) < ((f32*)lbl_3_data_4444)[3]) {
+            if (*(s16*)(g_Fielders + 0x186) - t2 < 80) {
+                *(s16*)(g_FieldingLogic + 0xB2) = 2;
+            } else {
+                goto def2;
+            }
+        } else if (*(s16*)(g_Fielders + 0x186) - t3 < 120) {
+            *(s16*)(g_FieldingLogic + 0xB2) = 3;
+        } else {
+        def2:
+            *(s16*)(g_FieldingLogic + 0xB2) = 2;
+        }
+    } else {
+        t3 = *(s16*)(g_Fielders + 5 * 0x268 + 0x186);
+        t2 = *(s16*)(g_Fielders + 4 * 0x268 + 0x186);
+        if (t3 - 15 < t2) {
+            if (*(s16*)(g_Fielders + 0x186) - t3 < 120) {
+                *(s16*)(g_FieldingLogic + 0xB2) = 5;
+            } else {
+                goto def4;
+            }
+        } else if (*(f32*)(g_Ball + t2 * 16 + 0x35C) < ((f32*)lbl_3_data_4444)[3]) {
+            if ((g_Runners[0x3CB] != 1 || t2 <= 0) && *(s16*)(g_Fielders + 0x186) - t2 < 80) {
+                *(s16*)(g_FieldingLogic + 0xB2) = 4;
+            } else {
+                goto def4;
+            }
+        } else if (*(s16*)(g_Fielders + 0x186) - t3 < 120) {
+            *(s16*)(g_FieldingLogic + 0xB2) = 5;
+        } else {
+        def4:
+            *(s16*)(g_FieldingLogic + 0xB2) = 4;
+        }
+    }
+    SetFielderAct(*(s16*)(g_FieldingLogic + 0xB0), 0x15, 0xA8);
+    if (*(s16*)(g_FieldingLogic + 0xB2) >= 0) {
+        SetFielderAct(*(s16*)(g_FieldingLogic + 0xB2), 0x16, 0xB0);
+    }
 }
 
 // .text:0x000327F4 size:0x1C mapped:0x80671888
