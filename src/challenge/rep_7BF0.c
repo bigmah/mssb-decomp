@@ -349,7 +349,11 @@ void fn_1_2905C(void) {
 
 // .text:0x000295E8 size:0x460
 void fn_1_295E8(void) {
-    return;
+    ChallengeQueueEntry* task = lbl_803CC1B8;
+
+    fn_1_2948C(task);
+    fn_1_2905C();
+    fn_1_29414(task);
 }
 
 // .text:0x00029A9C size:0x1C0
