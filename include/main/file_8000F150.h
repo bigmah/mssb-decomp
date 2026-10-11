@@ -155,7 +155,9 @@ typedef struct ActorModelSlot {
 } ActorModelSlot; // size: 0x90
 
 typedef struct ActorMgrActor {
-    /*0x000*/ u8 _000[0x5C];
+    /*0x000*/ u8 _000[0x34];
+    /*0x034*/ Vec pos;
+    /*0x040*/ u8 _040[0x1C];
     /*0x05C*/ u32 _05C;
     /*0x060*/ u8 _060[0x2];
     /*0x062*/ s16 _062;
@@ -189,7 +191,9 @@ typedef struct ActorMgrActor {
     /*0x26C*/ u8 _26C;
     /*0x26D*/ u8 _26D;
     /*0x26E*/ u8 _26E;
-    /*0x26F*/ u8 _26F[0xD];
+    /*0x26F*/ u8 _26F[0x7];
+    /*0x276*/ u8 _276; // flags (bit 1, bit 2: feet on the ground?)
+    /*0x277*/ u8 _277[0x5];
 } ActorMgrActor; // size: 0x27C
 
 typedef struct ActorMgr {

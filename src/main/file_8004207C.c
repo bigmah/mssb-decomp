@@ -906,7 +906,7 @@ void fn_80044C98(u8 dir, u8 team) {
 #endif
 
 // .text:0x8004617C size:0x1078
-// NONMATCHING ~98%: team select when __0x11padding[1] > 1 (original leaves t unset), input mask scheduling
+// NONMATCHING ~98%: team select when g_d_GameSettings._10 > 1 (original leaves t unset), input mask scheduling
 #if NONMATCHING
 void fn_8004617C(s32 port) {
     s32 t;
@@ -914,16 +914,16 @@ void fn_8004617C(s32 port) {
     u8 ready;
     s8 slot;
 
-    if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+    if (lbl_803C66B0.active[0] != 0 || lbl_803C66B0.active[1] != 0) {
         return;
     }
     if (g_d_GameSettings._06 != 2) {
-        if (g_d_GameSettings.__0x11padding[1] == 1) {
+        if (g_d_GameSettings._10 == 1) {
             if (port > 1) {
                 return;
             }
             t = port;
-        } else if (g_d_GameSettings.__0x11padding[1] == 0) {
+        } else if (g_d_GameSettings._10 == 0) {
             if (port != 0) {
                 return;
             }
@@ -1140,7 +1140,7 @@ void fn_8004617C(s32 port) {
         if (ready != 0) {
             return;
         }
-        if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+        if (lbl_803C66B0.active[0] != 0 || lbl_803C66B0.active[1] != 0) {
             return;
         }
         if (g_d_GameSettings._06 == 2 && lbl_803297E0.slot[t] != 0 && lbl_803297E0._CFA2[t] == 1) {
@@ -1169,7 +1169,7 @@ void fn_8004617C(s32 port) {
             } else if (g_d_GameSettings.GameModeSelected == 5) {
                 fn_800625A4(0, 0x43);
                 lbl_803297E0._CF38 = 14;
-            } else if (g_d_GameSettings.__0x11padding[1] == 0 && lbl_803297E0._CF4E[0] == 0) {
+            } else if (g_d_GameSettings._10 == 0 && lbl_803297E0._CF4E[0] == 0) {
                 if (g_d_GameSettings._06 == 2) {
                     lbl_803297E0._CF38 = 10;
                     fn_800625A4(t, 0x33);
@@ -1181,14 +1181,14 @@ void fn_8004617C(s32 port) {
                     fn_800625A4(t, 0x3F);
                 }
                 lbl_803297E0._CF4E[0] = 1;
-            } else if (g_d_GameSettings.__0x11padding[1] == 0 && lbl_803297E0._CF4E[1] == 0) {
+            } else if (g_d_GameSettings._10 == 0 && lbl_803297E0._CF4E[1] == 0) {
                 lbl_803297E0._CF4E[1] = 1;
                 if (lbl_803297E0._CF4E[0] != 0 && lbl_803297E0._CF4E[1] != 0) {
                     fn_800625A4(0, 0x43);
                     fn_800625A4(1, 0x43);
                     lbl_803297E0._CF38 = 14;
                 }
-            } else if (g_d_GameSettings.__0x11padding[1] == 1) {
+            } else if (g_d_GameSettings._10 == 1) {
                 lbl_803297E0._CF4E[t] = 1;
                 if (lbl_803297E0._CF4E[0] != 0 && lbl_803297E0._CF4E[1] != 0) {
                     if (lbl_803297E0._CF50[t ^ 1] != 0) {
@@ -1246,7 +1246,7 @@ void fn_8004617C(s32 port) {
                 lbl_803297E0._CF4C[t] = lbl_803297E0._CF4A[t];
                 lbl_803297E0.slot[t] = 0;
                 fn_800625A4(t, 0x3C);
-            } else if (g_d_GameSettings.__0x11padding[1] == 0 && lbl_803297E0._CF43 != 0) {
+            } else if (g_d_GameSettings._10 == 0 && lbl_803297E0._CF43 != 0) {
                 lbl_803297E0._CF4E[0] = 0;
                 lbl_803297E0._CF4A[lbl_803297E0._CF43] = 0;
                 lbl_803297E0.slot[lbl_803297E0._CF43] = 0;
@@ -1417,8 +1417,8 @@ void fn_80047CE0(void) {
     lbl_803297E0._CF58[1] = 0;
     lbl_803297E0._CF58[0] = 0;
     lbl_8034E9A0._4705 = 1;
-    lbl_803C66B0._59 = 0;
-    lbl_803C66B0._5A = 1;
+    lbl_803C66B0.portOf[0] = 0;
+    lbl_803C66B0.portOf[1] = 1;
     if (g_d_GameSettings._06 != 2) {
         if (g_d_GameSettings.GameModeSelected != 5 && lbl_803CBBCC->prevScene == 0xA) {
             characterSelectScreen(0);
@@ -1442,7 +1442,7 @@ void fn_80047CE0(void) {
     }
     SetMenuNumber();
     if (g_d_GameSettings._06 != 2 && lbl_803CBBCC->prevScene != 0xA &&
-        g_d_GameSettings.__0x11padding[1] == 0 && g_d_GameSettings.GameModeSelected != 5) {
+        g_d_GameSettings._10 == 0 && g_d_GameSettings.GameModeSelected != 5) {
         lbl_803297E0._CF43 = 1;
         lbl_803297E0._CF4E[0] = 1;
         fn_800625A4(0, 0x39);
@@ -1501,7 +1501,7 @@ void pauseMenuSelection(void) {
         break;
     case 4:
         memset(&in, 0, sizeof(in));
-        if (lbl_803C66B0._5D != 0) {
+        if (lbl_803C66B0.step[0] != 0) {
             break;
         }
         in.held = lbl_803297E0.input[lbl_8034E9A0.teamPort[0]].held;
@@ -1555,8 +1555,8 @@ void pauseMenuSelection(void) {
     case 10:
         if (lbl_803297E0._CF5F != 0) {
             lbl_8034E9A0._48AD = 1;
-            lbl_803C66B0._00 = 0;
-            memset(lbl_803C66B0._01, 0, sizeof(lbl_803C66B0._01));
+            lbl_803C66B0.steps[0][0] = 0;
+            memset(&lbl_803C66B0.steps[0][1], 0, 6);
             lbl_803297E0._CF50[1] = 0;
             lbl_803297E0._CF50[0] = 0;
             lbl_803297E0._CF4E[1] = 0;
@@ -1605,7 +1605,7 @@ void pauseMenuSelection(void) {
             } else if (g_d_GameSettings._06 == 2) {
                 mode = lbl_803297E0._CFA2[lbl_803297E0._CF3B];
                 if (mode != 2 && mode != 3) {
-                    if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+                    if (lbl_803C66B0.active[0] != 0 || lbl_803C66B0.active[1] != 0) {
                         break;
                     }
                 }
@@ -1623,7 +1623,7 @@ void pauseMenuSelection(void) {
         fn_800B0A14_removeQueue(NULL);
         break;
     case 12:
-        if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+        if (lbl_803C66B0.active[0] != 0 || lbl_803C66B0.active[1] != 0) {
             break;
         }
         memset(lbl_8034E9A0.boosted, 0, sizeof(lbl_8034E9A0.boosted));
@@ -1647,7 +1647,7 @@ void pauseMenuSelection(void) {
         fn_800B0A14_removeQueue(NULL);
         break;
     case 14:
-        if (lbl_803C66B0.busy0 == 0 && lbl_803C66B0.busy1 == 0) {
+        if (lbl_803C66B0.active[0] == 0 && lbl_803C66B0.active[1] == 0) {
             lbl_803297E0._CF38 = 10;
         }
         break;
@@ -1672,7 +1672,7 @@ void fn_800486E0(s32 priority, s8 a, s8 b) {
 void fn_80048764(void) {
     switch (lbl_803CBBCC->step) {
     case 0:
-        if (lbl_803C66B0.busy0 == 0 && lbl_803C66B0.busy1 == 0) {
+        if (lbl_803C66B0.active[0] == 0 && lbl_803C66B0.active[1] == 0) {
             fn_800B0A5C_insertQueue(pauseMenuSelection, 0x1000);
             lbl_803297E0._CF38 = 0;
             lbl_803297E0._CF3A = -1;
@@ -1961,8 +1961,8 @@ void startGameRelated(void) {
         lbl_803C5F04._35++;
         break;
     case 1:
-        if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
-            if (lbl_803C66B0._5D == 0x31 && lbl_803C66B0._5E != 0) {
+        if (lbl_803C66B0.active[0] != 0 || lbl_803C66B0.active[1] != 0) {
+            if (lbl_803C66B0.step[0] == 0x31 && lbl_803C66B0.step[1] != 0) {
                 fn_80062674(1);
             }
             break;
@@ -2017,9 +2017,9 @@ void startGameRelated(void) {
             lbl_803C5EA4._36 = 1;
             lbl_803C5EA4.prevMode = lbl_803C5EA4.mode;
             lbl_803C5EA4.mode = 2;
-            lbl_8034E978._00 = 5;
-            lbl_8034E978._09 = lbl_8034E978._08;
-            lbl_8034E978._08 = *(u16*)&lbl_800FEF70[0x58]; // TODO type
+            lbl_8034E978.menu = 5;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = *(u16*)&lbl_800FEF70[0x58]; // TODO type
             fn_80042D38(0xC);
         } else {
             lbl_803C5F04._32 = 0;
@@ -2050,7 +2050,7 @@ void fn_80049220(u8 team) {
     if (!found) {
         return;
     }
-    if (lbl_803C66B0._5D != 0 || lbl_803C66B0._5E != 0) {
+    if (lbl_803C66B0.step[0] != 0 || lbl_803C66B0.step[1] != 0) {
         return;
     }
     in.held = 0;
@@ -2099,13 +2099,13 @@ void fn_80049220(u8 team) {
         lbl_803C5F04._36 = 0;
         lbl_803C5F04.state = 2;
         if (g_d_GameSettings.GameModeSelected == 5) {
-            lbl_8034E978._00 = 0x14;
-            lbl_8034E978._09 = lbl_8034E978._08;
-            lbl_8034E978._08 = lbl_800FEF70[0x148];
+            lbl_8034E978.menu = 0x14;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0x148];
         } else {
-            lbl_8034E978._00 = 6;
-            lbl_8034E978._09 = lbl_8034E978._08;
-            lbl_8034E978._08 = lbl_800FEF70[0x68];
+            lbl_8034E978.menu = 6;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0x68];
         }
         fn_800625A4(0, 0x2C);
         if (in.pressed & 0x200) {
@@ -2128,7 +2128,7 @@ void fn_800494CC(u8 team) {
     s32 count;
     s8 cursor;
 
-    if (lbl_803C66B0._5D != 0 || lbl_803C66B0._5E != 0) {
+    if (lbl_803C66B0.step[0] != 0 || lbl_803C66B0.step[1] != 0) {
         return;
     }
     port = lbl_8034E9A0.teamPort[team];
@@ -2188,13 +2188,13 @@ void fn_800494CC(u8 team) {
         lbl_803C5F04.prevCursor[0] = lbl_803C5F04.cursor[0];
         lbl_803C5F04.cursor[0] = 0;
         if (g_d_GameSettings.GameModeSelected == 5) {
-            lbl_8034E978._00 = 0x15;
-            lbl_8034E978._09 = lbl_8034E978._08;
-            lbl_8034E978._08 = lbl_800FEF70[0x158];
+            lbl_8034E978.menu = 0x15;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0x158];
         } else {
-            lbl_8034E978._00 = 7;
-            lbl_8034E978._09 = lbl_8034E978._08;
-            lbl_8034E978._08 = lbl_800FEF70[0x78];
+            lbl_8034E978.menu = 7;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0x78];
         }
         fn_800625A4(0, 0x2B);
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
@@ -2348,7 +2348,7 @@ void possiblyTransferDataBetweenDifferentRels(void) {
 
 // .text:0x80049C80 size:0xBC
 void fn_80049C80(void) {
-    if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+    if (lbl_803C66B0.active[0] != 0 || lbl_803C66B0.active[1] != 0) {
         return;
     }
     if (g_d_GameSettings.GameModeSelected == 5 && lbl_8037169C.done == 0) {
@@ -2519,7 +2519,7 @@ void fn_8004A1BC(void) {
         fn_80049C80();
         break;
     case 1:
-        if (lbl_803C66B0._5D == 0) {
+        if (lbl_803C66B0.step[0] == 0) {
             lbl_803C5F04.state++;
         }
         break;

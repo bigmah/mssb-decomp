@@ -33,3 +33,4 @@ if/else vs switch, early returns, bool/int returns, compare and branch shapes. O
 - **Switch with two adjacent empty cases to the same target (fn_2_3735C):** CW merges them into a bare `cmpwi N; bge default` pivot; `case 0x24: case 0x25:` vs `case 0x24:` alone changes `beq` emission. Brute-force the set of empty cases with `fnvariants`.
 - **`neg; or; srwi 31` return:** `return !!result;` (fn_2_194xx family); `result != 0` schedules the `srwi` too early.
 - **Known blocker:** `(v = p[0x34]) == d1 || v == d2` emits `cmpw d1,v` on the first compare where the original has `cmpw v,d1` (fn_2_71B80, fn_2_71A70, fn_2_6CBB0 all differ by only that line).
+- **`bne L; b end; L:` for a NULL check (fn_80014990):** `if (x != NULL) goto found;` inside the guarded block, `return;` after it and the body under a `found:` label. The same shape with `return 0` at the very end of a `do { if (!f()) goto fail; ... } while (...); return 1; fail: return 0;` loop (fn_80016F7C).

@@ -64,8 +64,8 @@ typedef struct SpaniTexSlot {
 // One sprite instance (0xC0 bytes).
 typedef struct SpaniObj {
     /*0x00*/ void* parent;
-    /*0x04*/ s32 unk4;
-    /*0x08*/ s32 unk8;
+    /*0x04*/ struct SpaniObj* unk4; // next sibling
+    /*0x08*/ struct SpaniObj* unk8; // first child
     /*0x0C*/ Mtx mtx;
     /*0x3C*/ f32 posX;
     /*0x40*/ f32 posY;
