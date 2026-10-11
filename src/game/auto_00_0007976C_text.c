@@ -1,6 +1,10 @@
 #include "game/auto_00_0007976C_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "game/auto_00_000759BC_text.h"
+
+extern ScoresView g_Scores;
+extern PitcherGameStat lbl_3_common_bss_32A38[2][9];
 
 extern u8 lbl_803535C8[];
 extern u8 lbl_803537E4[];
@@ -35,6 +39,40 @@ void fn_3_79A00(void) {
         }
         b[0x25] = -1;
     }
+}
+
+// fn_3_79DD4, size:0x120
+// Marks the fielding team's current pitcher as in a save situation.
+void fn_3_79DD4(void) {
+    s32 onBase;
+    s32 pitcher;
+    s32 i;
+    s32 team;
+    s32 lead;
+    s8* save;
+
+    s16 (*runs)[19] = g_Scores.runs;
+    lead = runs[team = g_GameLogic.awayTeamBattingInd_battingTeam][0] - runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0];
+    save = &g_Scores._B7[team];
+    *save = -1;
+    if (lead <= 0) {
+        return;
+    }
+    if (g_Scores.inning + 2 >= g_Scores._AA && (g_Scores.inning + 2 != g_Scores._AA || g_Strikes.outs != 0) &&
+        (lead > 3 || (g_Scores.inning >= g_Scores._AA && (g_Scores.inning < g_Scores._AA || g_Strikes.outs != 0)))) {
+        onBase = 0;
+        for (i = 1; i < 4; i++) {
+            if (g_Runners[i].runnerOnFieldOrOutOrScored == 1) {
+                onBase++;
+            }
+        }
+        if (lead > onBase + 2) {
+            return;
+        }
+    }
+    pitcher = g_GameLogic.battingOrderAndPositionMapping[team][0][0];
+    *save = pitcher;
+    lbl_3_common_bss_32A38[g_GameLogic.teamFielding][pitcher]._1 = 1;
 }
 
 // fn_3_7AB34, size:0x44
