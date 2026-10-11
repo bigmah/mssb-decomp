@@ -1107,7 +1107,7 @@ typedef struct _LogoInfoStruct {
 } LogoInfoStruct; // size: 0xC
 
 typedef struct _GameControlsStruct {
-    /*0x000*/ s16 homeTeamInd[2];
+    /*0x000*/ s32 _000; // a team index (0/1), compared with g_Scores.winningTeam
     /*0x004*/ int teamBatting;
     /*0x008*/ int teamFielding;
     /*0x00C*/ int homeTeamBattingInd_fieldingTeam;
