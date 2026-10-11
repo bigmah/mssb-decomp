@@ -1122,7 +1122,7 @@ void fn_2_84194(u8* o) {
     }
 }
 
-extern void fn_2_7630C(u8* o, u8 index);
+
 
 // fn_2_802EC, size:0x214
 void fn_2_802EC(u8* o) {
@@ -1976,6 +1976,8 @@ typedef struct MnOwner {
 
 #define MN_SLOTS ((MnSlot*)lbl_80371C30)
 #define MN_OBJ(o, i) (MN_SLOTS[((MnOwner*)(o))->baseIdx + (i)].obj)
+// baseIdx + t + k, added left to right
+#define MN_OBJ2(o, t, k) (MN_SLOTS[((MnOwner*)(o))->baseIdx + (t) + (k)].obj)
 #define F410_S32(off) (*(s32*)((u8*)&lbl_2_bss_F410 + (off)))
 
 extern u8 lbl_80108EC4[];
@@ -2205,5 +2207,46 @@ void fn_2_7805C(u8* o, s32 index) {
             *e = 2;
         }
     }
+}
+#endif
+
+// fn_2_7630C, size:0x340
+// NONMATCHING 75%: CW folds the per-slot constant into the load displacement (orig: addi/slwi/lwzx per slot); scheduling of the two stat lookups differs
+#if NONMATCHING
+void fn_2_7630C(u8* o, u8 index) {
+    u8 team;
+    s32 a;
+    s32 b;
+    u8 x;
+    u8 y;
+    if (g_d_GameSettings._10 == 0) {
+        team = lbl_803C66B0[0x59];
+    } else {
+        team = lbl_803C66B0[0x59 + index];
+    }
+    a = lbl_800FE5D4[F410_S32(0x10 + team * 4)];
+    b = lbl_800FE5D4[lbl_803C6724[team]];
+    x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
+    y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
+    MN_OBJ2(o, team, 0x82)->frame = lbl_2_data_2B3A4[x] << 16;
+    MN_OBJ2(o, team, 0x85)->frame = 0xA0000;
+    MN_OBJ2(o, team, 0x87)->frame = 0xA0000;
+    MN_OBJ2(o, team, 0x85)->state = 0;
+    MN_OBJ2(o, team, 0x87)->state = 0;
+    fn_800363D8(o, team + 0x89, 1, 3, lbl_2_data_2B3A4[x]);
+    fn_800363D8(o, team + 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
+    MN_OBJ2(o, team, 0x7E)->frame = lbl_2_data_2B3A4[x] << 16;
+    MN_OBJ2(o, team, 0x1A)->flags |= 2;
+    MN_OBJ2(o, team, 0x1A)->state = 1;
+    MN_OBJ2(o, team, 0x80)->frame = 0;
+    MN_OBJ2(o, team, 0x89)->frame = 0;
+    MN_OBJ2(o, team, 0x8B)->frame = 0xA0000;
+    MN_OBJ2(o, team, 0x78)->frame = 0;
+    MN_OBJ2(o, team, 0x7C)->frame = 0;
+    MN_OBJ2(o, team, 0x80)->state = 1;
+    MN_OBJ2(o, team, 0x89)->state = 1;
+    MN_OBJ2(o, team, 0x8B)->state = 4;
+    MN_OBJ2(o, team, 0x78)->state = 1;
+    MN_OBJ2(o, team, 0x7C)->state = 1;
 }
 #endif
