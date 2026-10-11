@@ -48,6 +48,7 @@ extern MenuDef lbl_800FEF70[0x5D];
 extern MenuWork lbl_803297E0;
 extern u8 lbl_80361B20[0xF8];
 extern struct SpaniDesc lbl_80108048;
+extern struct SpaniDesc lbl_800FEB30;
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
@@ -226,9 +227,46 @@ void fn_80053810(void) {
 }
 
 // .text:0x80053FE8 size:0x2DC
+// NONMATCHING 97%: r28/r29 swapped and the loop's zero init scheduled differently
+#if NONMATCHING
 void fn_80053FE8(void) {
-    return;
+    s32 i;
+    SceneTask* task = lbl_803CC1B8;
+    u16 first;
+
+    lbl_8034E978._25 = 0;
+    lbl_8034E978._24 = 0;
+    lbl_8034E978._05 = 0;
+    lbl_8034E978._04 = 0;
+    for (i = 0; i < 10; i++) {
+        lbl_8034E978.text[i] = -1;
+    }
+    fn_80034E20(task, &lbl_800FEB30);
+    TASK_OBJ(task, 6)->_5C = (lbl_8034E978._03 + lbl_800FEF70[lbl_8034E978.menu]._00) << 16;
+    TASK_OBJ(task, 5)->_5C = lbl_800FEF70[lbl_8034E978.menu]._06 << 16;
+    fn_800363D8(task, 5, 1, 0xEF, lbl_800FEF70[lbl_8034E978.menu]._02);
+    TASK_OBJ(task, 4)->_5C = lbl_800FEF70[lbl_8034E978.menu]._04 << 16;
+    TASK_OBJ(task, 3)->_5C = lbl_800FEF70[lbl_8034E978.menu]._06 << 16;
+    lbl_8034E978._27 = 1;
+    TASK_OBJ(task, 7)->_5C = lbl_8034E978.track << 16;
+    TASK_OBJ(task, 8)->_5C = lbl_8034E978.prevTrack << 16;
+    first = lbl_800FEF70[lbl_8034E978.menu].textStart;
+    if (first != 0xFFFF) {
+        lbl_8034E978.textCount = lbl_800FEF70[lbl_8034E978.menu].textEnd - first;
+        for (i = 0; i < 10; i++) {
+            if (i < lbl_8034E978.textCount) {
+                lbl_8034E978.text[i] = fn_8000F988((LayoutGroup*)task, i + 0x16, 0, 0, i + lbl_800FEF70[lbl_8034E978.menu].textStart, 0);
+            } else {
+                lbl_8034E978.text[i] = fn_8000F988((LayoutGroup*)task, i + 0x16, 0, 0, lbl_800FEF70[lbl_8034E978.menu].textStart, 0);
+            }
+        }
+    } else {
+        TASK_OBJ(task, 9)->flags &= ~2;
+    }
+    lbl_8034E978._26 = 0;
+    lbl_803CC1B8->func = fn_80053810;
 }
+#endif
 
 // .text:0x800542C4 size:0x64C
 void fn_800542C4(void) {
@@ -749,9 +787,57 @@ void fn_8005F734(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005F9D0 size:0x2D0
-void fn_8005F9D0(void) {
-    return;
+// NONMATCHING 96%: the original keeps the constant 5 in r27 (set in each branch) and tests ready[] with bne/b
+#if NONMATCHING
+void fn_8005F9D0(SceneTask* task, s32 port) {
+    u8* states = &lbl_803C66B0.steps[9][1];
+    s32 done;
+
+    if ((states[port] == 1) ? TRUE : FALSE) {
+        done = fn_80042DA8(task, port + 4, 20) != 0;
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            if (((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
+                done += fn_80042DA8(task, port, 30) != 0;
+                done += fn_80042DA8(task, port + 10, 10) != 0;
+                done += fn_80042DA8(task, port + 18, 20) != 0;
+                done += fn_80042DA8(task, port + 20, 10) != 0;
+            } else {
+                done += fn_80042DA8(task, port, 20) != 0;
+                done += fn_80042DA8(task, port + 10, 10) != 0;
+                done += fn_80042DA8(task, port + 18, 10) != 0;
+                done += fn_80042DA8(task, port + 20, 10) != 0;
+            }
+        } else {
+            done += fn_80042DA8(task, port, 20) != 0;
+            done += fn_80042DA8(task, port + 10, 10) != 0;
+            done += fn_80042DA8(task, 18, 10) != 0;
+            done += fn_80042DA8(task, 20, 10) != 0;
+        }
+        if (done == 5) {
+            if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+                lbl_803297E0.ready[port] = 1;
+                if (lbl_803297E0.ready[0] != 0) {
+                    if (lbl_803297E0.ready[1] == 0) {
+                        return;
+                    }
+                    lbl_803297E0.ready[1] = 0;
+                    lbl_803297E0.ready[0] = 0;
+                    fn_80062674(0);
+                    fn_80062674(1);
+                    lbl_803C66B0.steps[9][1] = 2;
+                    lbl_803C66B0.steps[9][2] = 2;
+                    if (g_d_GameSettings.GameModeSelected == 5) {
+                        fn_800625A4(0, 0x45);
+                    }
+                }
+            } else {
+                fn_80062674(port);
+                states[port] = 2;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x8005FCA0 size:0x4E4
 void fn_8005FCA0(void) {

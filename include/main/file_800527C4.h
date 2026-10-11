@@ -61,6 +61,8 @@ void fn_80058394(SceneTask* task);
 void fn_8005CCE4(SceneTask* task, s32 port);
 void fn_8005DE14(SceneTask* task, s32 port);
 void fn_8005E9D8(SceneTask* task, s32 port);
+void fn_8005F9D0(SceneTask* task, s32 port);
+void fn_80053810(void);
 void fn_80056120(void);
 void fn_800569C8(void);
 void challengeCheckStarsMenuLoading(void);
@@ -71,17 +73,32 @@ void SetMenuNumber(void);
 // lbl_8034E978: current menu screen.
 typedef struct MenuState {
     /*0x00*/ u8 menu;
-    /*0x01*/ u8 _01[7];
+    /*0x01*/ u8 _01[2];
+    /*0x03*/ u8 _03;
+    /*0x04*/ u8 _04;
+    /*0x05*/ u8 _05;
+    /*0x06*/ u8 _06[2];
     /*0x08*/ u8 track; // from MenuDef.track of the current menu
     /*0x09*/ u8 prevTrack;
-    /*0x0A*/ u8 _0A[0x1E];
+    /*0x0A*/ s8 text[10]; // text entries for the menu description
+    /*0x14*/ u8 textCount;
+    /*0x15*/ u8 _15[0xF];
+    /*0x24*/ u8 _24;
+    /*0x25*/ u8 _25;
+    /*0x26*/ u8 _26;
+    /*0x27*/ u8 _27;
 } MenuState; // size: 0x28
 
 // lbl_800FEF70: per-menu definitions.
 typedef struct MenuDef {
-    /*0x00*/ u8 _00[8];
+    /*0x00*/ u16 _00;
+    /*0x02*/ u16 _02;
+    /*0x04*/ u16 _04;
+    /*0x06*/ u16 _06;
     /*0x08*/ u16 track;
-    /*0x0A*/ u8 _0A[6];
+    /*0x0A*/ u16 textStart; // 0xFFFF: no description text
+    /*0x0C*/ u16 textEnd;
+    /*0x0E*/ u8 _0E[2];
 } MenuDef; // size: 0x10
 
 // lbl_803297E0: menu work area (size 0x24C98), only the fields used here.
@@ -95,7 +112,9 @@ typedef struct MenuWork {
     /*0xCF48*/ s8 selected2[2];
     /*0xCF4A*/ u8 _CF4A[8];
     /*0xCF52*/ u8 _CF52[2];
-    /*0xCF54*/ u8 _CF54[0xF];
+    /*0xCF54*/ u8 _CF54[7];
+    /*0xCF5B*/ u8 ready[2]; // per port, two-player tutorial sync
+    /*0xCF5D*/ u8 _CF5D[6];
     /*0xCF63*/ u8 starShown[2];
     /*0xCF65*/ u8 _CF65[0xB];
     /*0xCF70*/ u8 _CF70;
