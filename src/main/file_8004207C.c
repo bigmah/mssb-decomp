@@ -652,9 +652,117 @@ void starMenuCursor(void) {
 
 // .text:0x80043880 size:0x1418
 // Order-change menu: left (dir 0) / right (dir 1) on the field view.
+// NONMATCHING ~25%: the original inlines fn_80042598 (orderchange.c) at every case
+#if NONMATCHING
 void fn_80043880(u8 dir, u8 team) {
-    return;
+    if (lbl_803297E0.slot[team] == 0) {
+        return;
+    }
+    if (g_d_GameSettings._06 == 2 && lbl_803297E0._CF52[team] != 1) {
+        return;
+    }
+    if (lbl_803297E0._CF52[team] != 1 && g_d_GameSettings._06 != 2) {
+        return;
+    }
+    lbl_803297E0._CF4C[team] = lbl_803297E0._CF4A[team];
+    if (dir == 0) {
+        if (lbl_803297E0.slot[team] == 0 || lbl_803297E0._CF52[team] != 1) {
+            goto end;
+        }
+        lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
+        switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
+        case 0:
+            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            break;
+        case 1:
+            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            break;
+        case 2:
+            lbl_803297E0.slot[team] = fn_80042598(team, 3);
+            break;
+        case 3:
+            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            break;
+        case 7:
+            lbl_803297E0.slot[team] = fn_80042598(team, 6);
+            break;
+        case 8:
+            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            break;
+        case 4:
+            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            break;
+        case 5:
+            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            break;
+        case 6:
+            lbl_803297E0.slot[team] = fn_80042598(team, 8);
+            break;
+        }
+        if (lbl_803297E0._CF48[team] != lbl_803297E0.slot[team]) {
+            fn_800625A4(team, 0x3B);
+        }
+    } else if (lbl_803297E0.slot[team] == 0) {
+        if (g_d_GameSettings._06 == 2) {
+            sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+            return;
+        }
+        lbl_803297E0._CF4A[team]++;
+        if (lbl_803297E0._CF52[team] > 1) {
+            lbl_803297E0._CF52[team] = 1;
+        }
+        switch (lbl_803297E0._CF52[team]) {
+        case 0:
+            lbl_803297E0._CF52[team] = 0;
+            break;
+        case 1:
+            lbl_803297E0._CF52[team] = 1;
+            break;
+        }
+        fn_800625A4(team, 0x3C);
+    } else if (lbl_803297E0.slot[team] != 0 && lbl_803297E0._CF52[team] == 1) {
+        lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
+        switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
+        case 0:
+            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            break;
+        case 1:
+            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            break;
+        case 4:
+            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            break;
+        case 5:
+            lbl_803297E0.slot[team] = fn_80042598(team, 3);
+            break;
+        case 6:
+            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            break;
+        case 7:
+            lbl_803297E0.slot[team] = fn_80042598(team, 8);
+            break;
+        case 8:
+            lbl_803297E0.slot[team] = fn_80042598(team, 6);
+            break;
+        case 2:
+            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            break;
+        case 3:
+            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            break;
+        }
+        if (lbl_803297E0._CF48[team] != lbl_803297E0.slot[team]) {
+            fn_800625A4(team, 0x3B);
+        }
+    }
+end:
+    if (dir == 0) {
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else {
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
 }
+#endif
 
 // .text:0x80044C98 size:0x14E4
 // Order-change menu: up (dir 0) / down (dir 1). On the field view (_CF52 set) the cursor
