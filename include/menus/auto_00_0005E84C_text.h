@@ -60,6 +60,8 @@ typedef struct MenuData {
     /*0x197416*/ u8 _197416;
     /*0x197417*/ u8 _197417;
     /*0x197418*/ u8 _197418;
+    /*0x197419*/ u8 _197419[0x197862 - 0x197419];
+    /*0x197862*/ u8 _197862;
 } MenuData;
 
 extern MenuData* lbl_2_bss_1A824C;
@@ -93,6 +95,28 @@ typedef struct MenuFlags {
 } MenuFlags;
 
 extern MenuFlags* lbl_2_bss_1A823C;
+
+// Saved record tables (lbl_2_bss_1A8240 points at them): 8 lists of 5.
+typedef struct MenuRecords {
+    /*0x000*/ MenuRecord lists[8][5];
+} MenuRecords;
+
+extern MenuRecords* lbl_2_bss_1A8240;
+
+// lbl_2_bss_1A8244 points at this; only the fields used here.
+typedef struct MenuProgress {
+    /*0x00*/ u8 _00[0xC6];
+    /*0xC6*/ u8 _C6[5][4];
+} MenuProgress;
+
+extern MenuProgress* lbl_2_bss_1A8244;
+
+typedef struct MenuFlags4 {
+    u8 b[4];
+} MenuFlags4;
+
+extern MenuFlags4 lbl_2_bss_33FBF0;
+extern u8 lbl_2_bss_33FBF5;
 
 void fn_800ACFB0(void* block);
 

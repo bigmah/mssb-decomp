@@ -6,9 +6,58 @@ void fn_2_5E84C(void) {
 }
 
 // .text:0x0005EB78 size:0x1C4
+// NONMATCHING 97%: lbl_2_bss_1A8244 is loaded one slot early and lands in r8 instead of r4
+#if NONMATCHING
 void fn_2_5EB78(void) {
-    return;
+    MenuFlags4 flags;
+    u8* flag;
+    s32 i;
+    MenuProgress* progress;
+    s32 j;
+
+    lbl_2_bss_33FBF5 = 0;
+    flags.b[0] = 0;
+    flags.b[1] = 0;
+    flags.b[2] = 0;
+    flags.b[3] = 0;
+    flag = flags.b;
+    progress = lbl_2_bss_1A8244;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 5; j++) {
+            if (progress->_C6[j][i] != 0) {
+                *flag = 1;
+            }
+        }
+        flag++;
+    }
+    lbl_2_bss_33FBF0.b[0] = flags.b[0];
+    lbl_2_bss_33FBF0.b[1] = flags.b[1];
+    lbl_2_bss_33FBF0.b[2] = flags.b[2];
+    lbl_2_bss_33FBF0.b[3] = flags.b[3];
+    if ((s32)lbl_2_bss_1A824C->_197862 == 1) {
+        lbl_2_bss_1A8240->lists[0][0].value = 9999;
+        lbl_2_bss_1A8240->lists[0][1].value = 123;
+        lbl_2_bss_1A8240->lists[0][2].value = 45;
+        lbl_2_bss_1A8240->lists[0][3].value = 6;
+        lbl_2_bss_1A8240->lists[0][4].value = 0;
+        lbl_2_bss_1A8240->lists[0][0]._6 = 0;
+        lbl_2_bss_1A8240->lists[0][1]._6 = 1;
+        lbl_2_bss_1A8240->lists[0][2]._6 = 2;
+        lbl_2_bss_1A8240->lists[0][3]._6 = 3;
+        lbl_2_bss_1A8240->lists[0][4]._6 = 4;
+        lbl_2_bss_1A8240->lists[1][0].value = 9876;
+        lbl_2_bss_1A8240->lists[1][1].value = 543;
+        lbl_2_bss_1A8240->lists[1][2].value = 21;
+        lbl_2_bss_1A8240->lists[1][3].value = 1;
+        lbl_2_bss_1A8240->lists[1][4].value = 0;
+        lbl_2_bss_1A8240->lists[1][0]._6 = 0;
+        lbl_2_bss_1A8240->lists[1][1]._6 = 1;
+        lbl_2_bss_1A8240->lists[1][2]._6 = 2;
+        lbl_2_bss_1A8240->lists[1][3]._6 = 3;
+        lbl_2_bss_1A8240->lists[1][4]._6 = 4;
+    }
 }
+#endif
 
 // .text:0x0005ED3C size:0xF8
 // NONMATCHING 98%: the original called fn_80035838 without its u8 return prototype (cmpwi, no clrlwi.)
