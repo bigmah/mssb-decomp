@@ -1703,3 +1703,47 @@ void fn_2_4DEE8(void) {
     }
 }
 #endif
+
+// fn_2_4E1C0, size:0x5E4
+// NONMATCHING 95%: same first-loop `li` vs `mr` offset init as fn_2_4D378 in both branches, shifting registers
+#if NONMATCHING
+void fn_2_4E1C0(void) {
+    s32 i;
+    s32 j;
+    if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44EF) == 0) {
+        *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = -1;
+        lbl_2_bss_1A8248[0][0x441E] = lbl_2_bss_1A8248[0][*(s16*)(lbl_2_bss_1A8248[0] + 0x16C2) * 10 + 0x40F3]; // TODO type
+        lbl_2_bss_1A8248[0][0x441F] = lbl_803CB8F0[lbl_2_bss_1A8248[0][0x441E]];
+        fn_2_4C3EC();
+        lbl_2_bss_1A8248[0][0x444A] = 0;
+        for (i = 0; i < 0x36; i++) {
+            MenuRosterSlot* e = (MenuRosterSlot*)lbl_2_bss_1A8248[0] + i;
+            e->_07 = e->_06;
+        }
+        for (i = 0; i < 0x36; i++) {
+            MenuRosterSlot* slot = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];
+            for (j = 0; j < 10; j++) {
+                slot->_1D[j * 2] = slot->_09[j * 2];
+                slot->_1D[j * 2 + 1] = slot->_09[j * 2 + 1];
+            }
+        }
+    } else {
+        *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = -1;
+        lbl_2_bss_1A8248[0][0x441E] = 0;
+        lbl_2_bss_1A8248[0][0x441F] = 0;
+        fn_2_4C3EC();
+        lbl_2_bss_1A8248[0][0x444A] = 0;
+        for (i = 0; i < 0x36; i++) {
+            MenuRosterSlot* e = (MenuRosterSlot*)lbl_2_bss_1A8248[0] + i;
+            e->_07 = e->_06;
+        }
+        for (i = 0; i < 0x36; i++) {
+            MenuRosterSlot* slot = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];
+            for (j = 0; j < 10; j++) {
+                slot->_1D[j * 2] = slot->_09[j * 2];
+                slot->_1D[j * 2 + 1] = slot->_09[j * 2 + 1];
+            }
+        }
+    }
+}
+#endif
