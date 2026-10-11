@@ -150,9 +150,17 @@ extern CharSlotList* fn_80023AA4(void);
 extern void fn_80023B04(s32 count);
 extern AramFile* lbl_803CB7A8;
 extern u8* lbl_803CBC24;
-// Joint mirror pairs (0xFFFF-terminated u16 pairs).
-// TODO type: these live inside lbl_800EE930's data block.
-extern u16 lbl_800EE930[];
+// lbl_800EE930: trail model file descriptor followed by joint mirror pair
+// lists (0xFFFF-terminated u16 pairs).
+typedef struct ModelData {
+    /*0x00*/ AramFile trailFile;
+    /*0x10*/ u8 _10[0x20];
+    /*0x30*/ u16 mirrorPairs[0x1C];
+    /*0x68*/ u16 mirrorPairs41[0xC];
+    /*0x80*/ u16 mirrorPairs16[0x54];
+} ModelData; // size: 0x128
+
+extern ModelData lbl_800EE930;
 extern u16 lbl_803CB798[4];
 extern u16 lbl_803CB7A0[4];
 typedef struct Unk80366158 {
@@ -637,7 +645,7 @@ void fn_80013680(void) {
 }
 
 // .text:0x80014204 size:0x3F4
-void fn_80014204(void) {
+void fn_80014204(s32 count) {
     return;
 }
 
@@ -2115,9 +2123,138 @@ void fn_80019A60(void) {
 #endif
 
 // .text:0x80019C00 size:0x65C
+// NONMATCHING 94%: register allocation of the setup loops
+#if NONMATCHING
 void fn_80019C00(void) {
-    return;
+    CharLoadTask* task = lbl_803CC1B8;
+    CharLoadTask* child;
+    Vec dir2;
+    Vec dir;
+    f32 mag;
+    u8* base;
+    void** raw;
+    u32 max;
+    u32 size;
+    u32 s;
+    s32 i;
+    s32 k;
+    s32 idx;
+    u8* buf;
+
+    switch (task->state) {
+    case 0:
+        fn_80018024();
+        fn_80023B04(((g_d_GameSettings.GameModeSelected == 6) + 1) * 4);
+        max = 0;
+        for (i = 4; i < 13; i++) {
+            lbl_80118220[i]._61 = -1;
+        }
+        for (k = 0; k < 54; k++) {
+            idx = lbl_800EEB18[k];
+            if (idx >= 0) {
+                size = lbl_803CB794[idx].size & 0x0FFFFFFF;
+                if (max < size) {
+                    max = size;
+                }
+            }
+        }
+        s = (max + 0x1F) & ~0x1F;
+        buf = _OSAllocFromHeap(0x20, s * 4);
+        lbl_803CBC30 = buf;
+        for (i = 0; i < 4; i++) {
+            lbl_80118220[i].files = (void**)(buf + s * i);
+            lbl_80118220[i]._61 = -1;
+            lbl_80118220[i].slot = 0xFF;
+        }
+        fn_80014204(4);
+        lbl_8036E548.partSlots = fn_80023AA4();
+        for (i = 0; i < 4; i++) {
+            lbl_8036E548.actors[i].modelIndex = i;
+            lbl_8036E548.active[i] = NULL;
+            lbl_8036E548._2D6A[i] = -1;
+            lbl_8036E548.actors[i].roster = -1;
+        }
+        for (i = 0; i < 9; i++) {
+            lbl_8036E548._2D7F[i] = -1;
+        }
+        lbl_8036E548.bankOwner[0] = -1;
+        lbl_8036E548.bankOwner[1] = -1;
+        lbl_8036E548.bankOwner[2] = -1;
+        lbl_8036E548.bankOwner[3] = -1;
+        lbl_8036E548.state = 0;
+        lbl_8036E548._2D7A[1] = 0;
+        lbl_8036E548._2D7C = 0;
+        task->state++;
+        break;
+    case 1:
+        child = fn_800B0A5C_insertQueue(fn_800188C0, 0);
+        child->state = 0;
+        child->kind = 0;
+        child->_17[0] = 0xFF;
+        lbl_8036E548._307B = 1;
+        task->state++;
+        break;
+    case 2:
+        if (lbl_8036E548._307B == 0) {
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                task->state++;
+            } else {
+                task->state = 5;
+            }
+        }
+        break;
+    case 3:
+        lbl_8036E548.trailFile = ARAMTransfer(&lbl_800EE930.trailFile, NULL, 0, 0);
+        task->state++;
+        break;
+    case 4:
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            task->state++;
+        }
+        break;
+    case 5:
+        dir.x = -lbl_80367318[0].x;
+        dir.y = -lbl_80367318[0].y;
+        dir.z = -lbl_80367318[0].z;
+        mag = dolsqrtf2(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+        dir.x /= mag;
+        lbl_8036E548._3087 = 1;
+        dir.y /= mag;
+        dir.z /= mag;
+        fn_8003A540(0);
+        lbl_8036E548._3086 = 1;
+        DrawShadows(1);
+        dir2 = dir;
+        fn_800BEBCC(0, &dir2);
+        fn_800BF048(fn_8001AAF0);
+        fn_800BF058(fn_8001AB10);
+        // TODO type: the stadium file header holds offsets, relocated in place.
+        base = (u8*)lbl_8036E548.stadiumFiles;
+        raw = (void**)base;
+        for (i = 0; i < 80; i++) {
+            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (u32)raw[i];
+        }
+        lbl_8036E548._307C = 0;
+        lbl_8036E548._307D = 0;
+        lbl_8036E548._3082 = 0;
+        fn_8001F8A4();
+        task->state++;
+        break;
+    case 6:
+        challengeMapMaybe();
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            fn_8001F5E8();
+        }
+        task->state++;
+        break;
+    default:
+        lbl_8036E548._2D7D[0] = 1;
+        lbl_8036E548._307C = 1;
+        fn_800B0A14_removeQueue(&lbl_8036E548);
+        break;
+    }
 }
+#endif
 
 // .text:0x8001A25C size:0x1A0
 // NONMATCHING 99%: light-table base register and colour temp stack slots
@@ -3639,7 +3776,7 @@ void fn_8001FC4C(CharActor* actor) {
     for (i = 0; i < 0x78; i++) {
         actor->mirror[i] = i;
     }
-    pairs = &lbl_800EE930[0x18];
+    pairs = lbl_800EE930.mirrorPairs;
     i = 0;
     do {
         u16 a = actor->jointIdx[pairs[0]];
@@ -3650,14 +3787,14 @@ void fn_8001FC4C(CharActor* actor) {
         }
         i += 2;
         pairs += 2;
-    } while (lbl_800EE930[0x18 + i] != 0xFFFF);
+    } while (lbl_800EE930.mirrorPairs[i] != 0xFFFF);
     switch (actor->kind) {
     case 20:
     case 43:
         pairs = lbl_803CB798;
         break;
     case 41:
-        pairs = &lbl_800EE930[0x34];
+        pairs = lbl_800EE930.mirrorPairs41;
         break;
     case 17:
         pairs = lbl_803CB7A0;
@@ -3667,7 +3804,7 @@ void fn_8001FC4C(CharActor* actor) {
     case 45:
     case 46:
     case 47:
-        pairs = &lbl_800EE930[0x40];
+        pairs = lbl_800EE930.mirrorPairs16;
         break;
     default:
         pairs = NULL;

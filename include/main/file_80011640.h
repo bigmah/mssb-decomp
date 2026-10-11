@@ -408,6 +408,8 @@ void fn_8001F8A4(void);
 
 s32 fn_80014A18(void);
 
+void fn_80014204(s32 count);
+
 void fn_8001B200(void);
 
 void fn_8001B214(void (*callback)(void));
