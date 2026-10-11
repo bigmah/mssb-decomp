@@ -1843,3 +1843,35 @@ void fn_2_61A0(void) {
     lbl_8034E9A0[0x48AD] = 1;
 }
 #endif
+
+// NONMATCHING 85%: captain-stats pointer setup and the sort's cached chem[i] register differ
+#if NONMATCHING
+// fn_2_ABC0, size:0x328
+void fn_2_ABC0(u8 team) {
+    u8 chem[0x36];
+    u8 ids[0x36];
+    s32 i;
+    s32 j;
+    s32 cap = *(s32*)(lbl_8034E9A0 + team * 4 + 0x46E0);
+    MenuCharStats* c = (MenuCharStats*)(lbl_8034E9A0 + cap / 9 * 0x5A0 + cap % 9 * 0xA0);
+    for (i = 0; i < 0x36; i++) {
+        ids[i] = i;
+        chem[i] = c->chem[i];
+    }
+    for (i = 0; i < 0x36; i++) {
+        for (j = i + 1; j < 0x36; j++) {
+            if (chem[i] < chem[j]) {
+                u8 tc = chem[i];
+                u8 ti = ids[i];
+                chem[i] = chem[j];
+                ids[i] = ids[j];
+                chem[j] = tc;
+                ids[j] = ti;
+            }
+        }
+    }
+    for (i = 0; i < 0x36; i++) {
+        lbl_8034E9A0[0x478D + team * 0x36 + i] = ids[i];
+    }
+}
+#endif
