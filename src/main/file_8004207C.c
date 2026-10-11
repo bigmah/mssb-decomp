@@ -1473,9 +1473,187 @@ void fn_80047CE0(void) {
     lbl_803CBBCC->scene = (id);                               \
     lbl_803CBBCC->step = 0
 
+// NONMATCHING ~96%: roster copy loop and fn_8004CA6C switch dispatch order
+#if NONMATCHING
 void pauseMenuSelection(void) {
-    return;
+    s32 i;
+    PortInput in;
+    u8 mode;
+
+    switch (lbl_803297E0._CF38) {
+    case 0:
+        fn_80047CE0();
+        break;
+    case 1:
+        lbl_803297E0.slot[1] = 0;
+        lbl_803297E0.slot[0] = 0;
+        lbl_803297E0._CF4A[1] = 0;
+        lbl_803297E0._CF4A[0] = 0;
+        lbl_803297E0._CF38++;
+        break;
+    case 2:
+        for (i = 0; i < 2; i++) {
+            fn_8004617C(i);
+        }
+        break;
+    case 3:
+        starMenuCursor();
+        break;
+    case 4:
+        memset(&in, 0, sizeof(in));
+        if (lbl_803C66B0._5D != 0) {
+            break;
+        }
+        in.held = lbl_803297E0.input[lbl_8034E9A0.teamPort[0]].held;
+        in.pressed = lbl_803297E0.input[lbl_8034E9A0.teamPort[0]].pressed;
+        in.repeat = lbl_803297E0.input[lbl_8034E9A0.teamPort[0]].repeat;
+        if (in.pressed & 0x200) {
+            lbl_803297E0._CF7D = 3;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            lbl_803297E0._CF38 = 10;
+        }
+        break;
+    case 5:
+        challengeStarMenu();
+        break;
+    case 6:
+        switch (lbl_803CBCC9) {
+        case 0:
+            fn_800B0A5C_insertQueue(fn_8004D0F0, 0x3000);
+            lbl_803CBCC9++;
+            break;
+        case 1:
+            switch (fn_8004CA6C(lbl_8034E9A0.input[lbl_8034E9A0.teamPort[lbl_803CBD24.team]].pressed)) {
+            case 0:
+                break;
+            case 1:
+                fn_8004CC2C();
+                break;
+            case 3:
+                characterSelectScreen(0);
+                characterSelectScreen(1);
+                fn_800671FC();
+                lbl_8034E978._26 = 1;
+                changeScene(0xF, 6);
+                lbl_803CBD24.team = 0;
+                lbl_803CBCC9 = 0;
+                lbl_803297E0._CF38 = 10;
+                break;
+            case 2:
+                fn_8004CC2C();
+                break;
+            case 4:
+                lbl_803CBD24.team = 0;
+                lbl_803CBCC9 = 0;
+                lbl_803297E0._CF5F = 0;
+                lbl_803297E0._CF38 = 2;
+                break;
+            }
+            break;
+        }
+        break;
+    case 10:
+        if (lbl_803297E0._CF5F != 0) {
+            lbl_8034E9A0._48AD = 1;
+            lbl_803C66B0._00 = 0;
+            memset(lbl_803C66B0._01, 0, sizeof(lbl_803C66B0._01));
+            lbl_803297E0._CF50[1] = 0;
+            lbl_803297E0._CF50[0] = 0;
+            lbl_803297E0._CF4E[1] = 0;
+            lbl_803297E0._CF4E[0] = 0;
+            fn_80062A74();
+            fn_80021410();
+            fn_80035CA4(0xF);
+            fn_80035CA4(0x12);
+            fn_80035CA4(9);
+            fn_80035CA4(6);
+            lbl_8034E9A0._48AF = 1;
+            lbl_8034E9A0._48B1 = 1;
+            lbl_803297E0._CF5F = 0;
+            SET_SCENE(4);
+        } else {
+            if (lbl_8034E978._24 == 0) {
+                break;
+            }
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                mode = lbl_803297E0._CFA2[lbl_803297E0._CF3B];
+                if (mode != 2 && mode != 3) {
+                    for (i = 0; i < 9; i++) {
+                        gChallengeSave.roster[i].charID = inMemRoster[0][i].stats.CharID;
+                        gChallengeSave.roster[i]._2 = lbl_80354720[0][i]._1;
+                        gChallengeSave.roster[i]._3 = lbl_80354720[0][i].slot;
+                        gChallengeSave.roster[i]._4 =
+                            inMemRoster[0][i].stats.BattingStance + inMemRoster[0][i].stats.FieldingArm * 2;
+                    }
+                    lbl_803297E0._CFA1 = 0;
+                }
+            }
+            if (g_d_GameSettings.GameModeSelected == 5 && g_d_GameSettings._06 == 2 &&
+                lbl_803297E0._CFA2[lbl_803297E0._CF3B] == 2 && lbl_803297E0._CF7D != 0) {
+                break;
+            }
+            lbl_803297E0._CF40 = 0;
+            lbl_803297E0._CF3C[1] = 0;
+            lbl_803297E0._CF3C[0] = 0;
+            lbl_803297E0._CF50[1] = 0;
+            lbl_803297E0._CF50[0] = 0;
+            lbl_803297E0._CF4E[1] = 0;
+            lbl_803297E0._CF4E[0] = 0;
+            fn_80069854(&lbl_803297E0);
+            if (g_d_GameSettings._06 != 2 && g_d_GameSettings.GameModeSelected == 5) {
+                SET_SCENE(0xD);
+            } else if (g_d_GameSettings._06 == 2) {
+                mode = lbl_803297E0._CFA2[lbl_803297E0._CF3B];
+                if (mode != 2 && mode != 3) {
+                    if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+                        break;
+                    }
+                }
+                lbl_803297E0._CF42 = 1;
+                lbl_803297E0._CF40 = 0;
+            } else {
+                SET_SCENE(0xC);
+            }
+        }
+        mode = lbl_803297E0._CFA2[lbl_803297E0._CF3B];
+        if (mode != 2 && mode != 3) {
+            lbl_803297E0._CF45 = 1;
+        }
+        lbl_803297E0._CF38 = 0;
+        fn_800B0A14_removeQueue(NULL);
+        break;
+    case 12:
+        if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+            break;
+        }
+        memset(lbl_8034E9A0.boosted, 0, sizeof(lbl_8034E9A0.boosted));
+        lbl_803297E0._CF4E[1] = 0;
+        lbl_803297E0._CF4E[0] = 0;
+        lbl_803297E0._CF45 = 1;
+        lbl_803297E0._CF38 = 13;
+        break;
+    case 13:
+        lbl_803297E0._CF38 = 0;
+        lbl_803297E0._CF61[1] = 0;
+        lbl_803297E0._CF61[0] = 0;
+        lbl_803297E0._CF50[1] = 0;
+        lbl_803297E0._CF50[0] = 0;
+        lbl_803297E0._CF4E[1] = 0;
+        lbl_803297E0._CF4E[0] = 0;
+        lbl_803C5EA4._36 = 1;
+        lbl_803C5EA4.prevMode = lbl_803C5EA4.mode;
+        lbl_803C5EA4.mode = 0;
+        SET_SCENE(0xA);
+        fn_800B0A14_removeQueue(NULL);
+        break;
+    case 14:
+        if (lbl_803C66B0.busy0 == 0 && lbl_803C66B0.busy1 == 0) {
+            lbl_803297E0._CF38 = 10;
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x800486E0 size:0x84
 void fn_800486E0(s32 priority, s8 a, s8 b) {
