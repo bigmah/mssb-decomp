@@ -406,6 +406,15 @@ void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial);
 void fn_800AB534(void);
 void fn_800ABBD0(void);
 void fn_800ABF44(void);
+// Simple two-ended arena: blocks are allocated upward from lo or downward from hi.
+typedef struct HeapArena {
+    /*0x0*/ s32 freeSize;
+    /*0x4*/ u8* lo;
+    /*0x8*/ u8* hi;
+} HeapArena;
+
+extern HeapArena lbl_803C7898;
+
 void fn_800ACF14(void* block);
 void* fn_800ACF34(s32 align, s32 size);
 void fn_800ACF78(void* block, s32 size);
