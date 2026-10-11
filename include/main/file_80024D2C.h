@@ -170,6 +170,7 @@ typedef struct ShapeData {
 
 u32 fn_80024D2C(ShapeAnimState* st);
 s32 fn_80024DB0(ShapeAnimState* st);
+void fn_80025C58(ShapeData* shape, ShapeModel** model);
 
 void fn_80026130(void);
 

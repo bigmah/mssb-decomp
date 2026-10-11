@@ -103,9 +103,83 @@ void fn_80024FA4(void) {
 }
 
 // .text:0x80025C58 size:0x184
-void fn_80025C58(void) {
-    return;
+// Binds the shape data to a model: caches each target's vertex array slot and data pointer.
+// NONMATCHING 96%: r5/r6 swapped for geo/arrays vs posSlot; original copies the zero with mr
+#if NONMATCHING
+void fn_80025C58(ShapeData* shape, ShapeModel** model) {
+    ShapeModel* m;
+    ModelGeo* geo;
+    ModelVtxDesc* vd;
+    void** posSlot;
+    void* posData;
+    ModelGeoArray* arrays;
+    ShapeTarget* t;
+    s32 i;
+    void** slot;
+    void* data;
+
+    if (shape->targets == NULL) {
+        return;
+    }
+    shape->owner = model;
+    m = *model;
+    geo = m->geo;
+    vd = m->vtxDesc;
+    if (geo == NULL) {
+        posData = NULL;
+        arrays = NULL;
+    } else {
+        if (geo->a != NULL) {
+            posSlot = &geo->a->data;
+            posData = *posSlot;
+        } else if (geo->b != NULL) {
+            posSlot = &geo->b->data;
+            posData = *posSlot;
+        } else {
+            posSlot = NULL;
+            posData = NULL;
+        }
+        arrays = geo->arrays;
+    }
+    t = shape->targets;
+    for (i = 0; i < shape->targetCount; i++, t++) {
+        u32 type = t->type;
+        u32 fmt = t->fmtHi;
+        switch (type) {
+        case 0:
+            slot = &arrays[t->idx].data;
+            data = *slot;
+            break;
+        case 1:
+            if (fmt == 6) {
+                slot = posSlot;
+                data = posData;
+            } else {
+                slot = &vd->sets[t->idx].set->pos->data;
+                data = *slot;
+            }
+            break;
+        case 2:
+            slot = &vd->sets[t->idx].set->clr->data;
+            data = *slot;
+            break;
+        case 3:
+            slot = &vd->sets[t->idx].set->nrm->data;
+            data = *slot;
+            break;
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            slot = &vd->sets[t->idx].set->tex[type - 4].data;
+            data = *slot;
+            break;
+        }
+        t->dataSlot = slot;
+        t->buf[0] = data;
+    }
 }
+#endif
 
 // fn_80026130, size:0x4
 void fn_80026130(void) {
