@@ -523,7 +523,71 @@ s32 fn_8004A34C(MsgBox* box, s8 a, u8 msgId, s8 b, u8 arg) {
 
 // .text:0x8004A5B8 size:0x218
 void fn_8004A5B8(void) {
-    return;
+    MsgTask* task = lbl_803CC1B8;
+    PadStatus* pads = gPads;
+    u8 port = task->box->port;
+    u16 buttons = pads[port].pressed & 0x100;
+
+    lbl_803CBBCC->_10 |= 1 << port;
+    switch (task->state) {
+    case 0:
+        lbl_803C50E8.done = 0;
+        lbl_803C50E8.result = 0;
+        lbl_803C50E8.cancel = 0;
+        task->state++;
+        break;
+    case 1:
+        fn_8004CC4C(lbl_803C50E8.kind, 1, lbl_803C50E8._4E, lbl_803C50E8.arg, lbl_803C50E8.msg);
+        if (lbl_803C50E8._4F != 0) {
+            lbl_803C5F74._1E = 1;
+        }
+        fn_800B0A5C_insertQueue(fn_8004D0F0, 0x3000);
+        task->state = 3;
+        break;
+    case 2:
+        task->state = 3;
+        task->result = 0;
+        break;
+    case 3:
+        if (lbl_803C50E8.cancel != 0) {
+            fn_8004CC18();
+            lbl_803C50E8.cancel = 0;
+            task->result = 0;
+            task->state = 5;
+            break;
+        }
+        switch (fn_8004CA6C(buttons)) {
+        case 0:
+            task->result = 0;
+            break;
+        case 1:
+            fn_8004CC2C();
+            break;
+        case 3:
+            task->result = 2;
+            task->state = 5;
+            break;
+        case 2:
+            fn_8004CC2C();
+            break;
+        case 4:
+            task->result = 2;
+            task->state = 5;
+            break;
+        }
+        break;
+    case 4:
+        task->timer = 15;
+        task->state++;
+        break;
+    case 5:
+        lbl_803C50E8.done = 1;
+        lbl_803C50E8.result = task->result;
+        fn_800B0A14_removeQueue(&lbl_803C50E8);
+        task->_1B = 0;
+        task->state = 0;
+        break;
+    }
 }
 
 // .text:0x8004A7D0 size:0x210
