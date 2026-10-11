@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
     parser.add_argument("--module", choices=["main", "game", "menus", "challenge"])
-    parser.add_argument("--unit", help="only this unit")
+    parser.add_argument("--unit", help="only this unit, or units under this prefix if it ends in /")
     parser.add_argument("--max-size", type=int, help="max function size in bytes")
     parser.add_argument("--has-source", action="store_true", help="only units with a source file")
     parser.add_argument("--files", action="store_true", help="rank units instead of functions")
@@ -46,7 +46,7 @@ def main() -> None:
         name = unit["name"]
         if args.module and name.split("/")[0] != args.module:
             continue
-        if args.unit and name != args.unit:
+        if args.unit and not (name.startswith(args.unit) if args.unit.endswith("/") else name == args.unit):
             continue
         if name in claims:
             continue

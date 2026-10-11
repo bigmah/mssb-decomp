@@ -4,13 +4,13 @@ Everything needed to start on one function, in one command.
 
 Usage:
     python3 tools/fnstart.py fn_3_147C00
-    python3 tools/fnstart.py fn_3_147C00 --no-asm     # skip the raw assembly
+    python3 tools/fnstart.py fn_3_147C00 --asm        # also print the original assembly
 
 Prints:
   1. where the function lives (unit, source file + line, size, current match %)
-  2. the original assembly
+  2. a summary of the original assembly (calls, globals); --asm prints all of it
   3. an m2c draft decompilation, using the unit's headers as context
-  4. the current diff against our build (if the unit has a source file)
+  4. the current diff summary against our build (if the unit has a source file)
 
 The m2c draft is a starting point, not an answer: rename its temps, replace
 `?` types and `unkXX` fields with real struct members, then iterate with
@@ -71,6 +71,29 @@ def build_context(unit: dict) -> Path:
     return ctx
 
 
+def raw_extract(asm: Path, fn_name: str) -> list:
+    """The function's lines with symbol names intact (extract() normalizes them)."""
+    text = asm.read_text()
+    start = text.find(f".fn {fn_name},")
+    end = text.find(f".endfn {fn_name}", start)
+    return [re.sub(r"/\*[^*]*\*/", "", l) for l in text[start:end].splitlines()]
+
+
+def asm_summary(lines: list) -> str:
+    """Calls and globals the function uses, so the full listing isn't needed up front."""
+    insns = [l for l in lines if l.startswith("\t")]
+    calls = sorted({l.split()[1] for l in insns if l.split()[0] == "bl"})
+    syms = sorted({m for l in insns for m in re.findall(r"([A-Za-z_][\w$]*)@(?:ha|l|sda21)", l)})
+    floats = sum(l.split()[0].startswith(("lf", "stf", "fm", "fa", "fs", "fd", "fc", "fr", "ps_")) for l in insns)
+    out = [f"insns    : {len(insns)} ({floats} float), {len(calls)} distinct calls, "
+           f"{sum(l.split()[0] == 'blr' for l in insns)} blr"]
+    if calls:
+        out.append("calls    : " + ", ".join(calls))
+    if syms:
+        out.append("globals  : " + ", ".join(syms))
+    return "\n".join(out)
+
+
 def source_location(src: Path, fn_name: str):
     if not src.exists():
         return None
@@ -83,7 +106,8 @@ def source_location(src: Path, fn_name: str):
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
     parser.add_argument("function")
-    parser.add_argument("--no-asm", action="store_true", help="don't print the original assembly")
+    parser.add_argument("--asm", action="store_true", help="print the full original assembly")
+    parser.add_argument("--no-asm", action="store_true", help=argparse.SUPPRESS)  # old default
     args = parser.parse_args()
     fn_name = args.function
 
@@ -107,9 +131,12 @@ def main() -> None:
         print("           before it can be compiled (see docs/splits.md and plan.md Phase 3/4).")
     print(f"asm      : {asm.relative_to(ROOT)}")
 
-    if not args.no_asm:
+    lines = extract(asm, fn_name) if asm.exists() else []
+    if args.asm:
         print("\n" + "=" * 72 + "\nORIGINAL ASSEMBLY\n" + "=" * 72)
-        print("\n".join(extract(asm, fn_name)) if asm.exists() else "(asm file missing; run ninja)")
+        print("\n".join(lines) if lines else "(asm file missing; run ninja)")
+    elif lines:
+        print(asm_summary(raw_extract(asm, fn_name)))
 
     print("\n" + "=" * 72 + "\nM2C DRAFT\n" + "=" * 72)
     if not M2C.exists():
@@ -125,7 +152,7 @@ def main() -> None:
 
     if src_path and unit.get("base_path"):
         print("\n" + "=" * 72 + "\nCURRENT DIFF (< original, > ours)\n" + "=" * 72)
-        diff_fn(fn_name, unit_name)
+        diff_fn(fn_name, unit_name, max_hunks=3)
 
 
 if __name__ == "__main__":

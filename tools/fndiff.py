@@ -6,7 +6,10 @@ Usage:
     python3 tools/fndiff.py getComponentsFromSAng
     python3 tools/fndiff.py fn_3_9F79C --unit game/game/rep_1838
 
-Prints MATCH (exit 0) or a unified-style diff of the disassembly (exit 1).
+Prints MATCH (exit 0), or (exit 1) a one-line summary, a diagnosis (stub /
+register allocation only / scheduling / which instructions differ), a
+target->ours register map, and the first few hunks that differ in more than
+register numbers. --full prints every hunk.
 "<" lines are the original (target), ">" lines are our build (base).
 
 Local branch labels and anonymous data labels (lbl_N_rodata_X / "@123") are
@@ -15,6 +18,8 @@ normalized, so a symbol-name mismatch shows up as a real diff.
 """
 
 import argparse
+import collections
+import difflib
 import json
 import re
 import subprocess
@@ -74,7 +79,7 @@ def extract(asm: Path, fn_name: str) -> list:
     return lines
 
 
-def diff_fn(fn_name: str, unit_name: str, quiet: bool = False) -> int:
+def diff_fn(fn_name: str, unit_name: str, quiet: bool = False, full: bool = False, max_hunks: int = 5) -> int:
     """Returns the number of differing lines (0 == match)."""
     unit = load_unit(unit_name)
     target = ROOT / unit["target_path"]
@@ -111,37 +116,89 @@ def diff_fn(fn_name: str, unit_name: str, quiet: bool = False) -> int:
             print("MATCH")
         return 0
 
-    import difflib
-
-    diff = [
-        l
-        for l in difflib.unified_diff(t, b, "target", "base", n=1, lineterm="")
-    ]
+    ops = difflib.SequenceMatcher(None, t, b, autojunk=False).get_opcodes()
     if not quiet:
-        for l in diff:
-            if l.startswith("-") and not l.startswith("---"):
-                print("<" + l[1:])
-            elif l.startswith("+") and not l.startswith("+++"):
-                print(">" + l[1:])
-            elif l.startswith("@@"):
-                print("@@")
-            elif not l.startswith(("---", "+++")):
-                print(" " + l[1:])
-    return sum(
-        1
-        for l in diff
-        if l[:1] in "+-" and not l.startswith(("---", "+++"))
-    )
+        print("\n".join(render(t, b, ops, full, max_hunks)))
+    return sum(max(i2 - i1, j2 - j1) for tag, i1, i2, j1, j2 in ops if tag != "equal")
+
+
+REG_RE = re.compile(r"\b([rf])([0-9]|[12][0-9]|3[01])\b")
+
+
+def norm_regs(lines: list) -> list:
+    return [REG_RE.sub(r"\1N", l) for l in lines]
+
+
+def is_insn(line: str) -> bool:
+    return line.startswith("\t")
+
+
+def render(t: list, b: list, ops: list, full: bool, max_hunks: int) -> list:
+    """Summary line, diagnosis, then hunks. Register-only hunks are folded
+    into a register map unless `full`."""
+    changed = [o for o in ops if o[0] != "equal"]
+    regonly = [
+        o for o in changed
+        if o[0] == "replace" and o[2] - o[1] == o[4] - o[3]
+        and norm_regs(t[o[1]:o[2]]) == norm_regs(b[o[3]:o[4]])
+    ]
+    structural = [o for o in changed if o not in regonly]
+    nt = sum(map(is_insn, t))
+    nb = sum(map(is_insn, b))
+    out = [f"DIFF: target {nt} insns, ours {nb}; {len(changed)} hunks "
+           f"({len(structural)} structural, {len(regonly)} register-only)"]
+
+    if nb <= 3 and nt > 3:
+        out.append("diagnosis: ours is a stub")
+        return out
+    if not structural:
+        out.append("diagnosis: registers only (allocation or operand order)")
+    elif norm_regs(sorted(t)) == norm_regs(sorted(b)) or sorted(norm_regs(t)) == sorted(norm_regs(b)):
+        out.append("diagnosis: same instructions, different order (scheduling)")
+    else:
+        opc = lambda ls: collections.Counter(l.split()[0] for l in ls if is_insn(l))
+        missing = opc(t) - opc(b)
+        extra = opc(b) - opc(t)
+        fmt = lambda c: ", ".join(f"{k} x{v}" for k, v in c.most_common(6)) or "-"
+        out.append(f"diagnosis: instructions differ; ours lacks [{fmt(missing)}], has extra [{fmt(extra)}]")
+
+    if regonly:
+        pairs = collections.Counter()
+        for _, i1, i2, j1, j2 in regonly:
+            for lt, lb in zip(t[i1:i2], b[j1:j2]):
+                for rt, rb in zip(REG_RE.findall(lt), REG_RE.findall(lb)):
+                    if rt != rb:
+                        pairs["".join(rt) + "->" + "".join(rb)] += 1
+        out.append("register map (target->ours): " + ", ".join(f"{k} x{v}" for k, v in pairs.most_common(8)))
+
+    # Small diffs: show everything (an operand swap looks "register-only").
+    shown = changed if full or len(changed) <= max_hunks or not structural else structural
+    limit = len(shown) if full else max_hunks
+    for tag, i1, i2, j1, j2 in shown[:limit]:
+        out.append("@@")
+        if i1 > 0:
+            out.append(" " + t[i1 - 1])
+        out.extend("<" + l for l in t[i1:i2])
+        out.extend(">" + l for l in b[j1:j2])
+        if i2 < len(t):
+            out.append(" " + t[i2])
+    if len(shown) > limit:
+        out.append(f"... {len(shown) - limit} more structural hunks (--full shows everything)")
+    elif regonly and shown is structural:
+        out.append(f"({len(regonly)} register-only hunks hidden; --full shows them)")
+    return out
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
     parser.add_argument("function", help="function symbol name")
     parser.add_argument("--unit", help="objdiff unit name (default: look up in report.json)")
+    parser.add_argument("--full", action="store_true", help="print every hunk, including register-only ones")
+    parser.add_argument("--hunks", type=int, default=5, help="structural hunks to print (default 5)")
     args = parser.parse_args()
 
     unit = args.unit or find_unit(args.function)
-    n = diff_fn(args.function, unit)
+    n = diff_fn(args.function, unit, full=args.full, max_hunks=args.hunks)
     sys.exit(0 if n == 0 else 1)
 
 
