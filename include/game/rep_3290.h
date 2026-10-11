@@ -13,8 +13,8 @@ void fn_3_113EC0(void);
 void fn_3_113F14(void);
 void fn_3_114204(void);
 void fn_3_114384(void);
-int fn_3_1149B8(u8* a, u8* b);
+s32 fn_3_1149B8(void* a, void* b);
 void fn_3_114A2C(void);
-void fn_3_114A88(void);
+void fn_3_114A88(s32 init);
 
 #endif // !__GAME_rep_3290_H_
