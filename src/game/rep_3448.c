@@ -3,6 +3,7 @@
 #include "game/auto_00_00106DFC_text.h"
 #include "game/auto_00_000D8A10_text.h"
 #include "Dolphin/vec.h"
+#include "main/menu_globals.h"
 
 typedef struct {
     u8* p;
@@ -86,7 +87,14 @@ extern int random_fn_3_9EE24(int max);
 extern int RandomIndexFromWeights(u8* weights, int count);
 extern s16 lbl_3_data_7F10[];
 extern f32 charSizeMultipliers[][2];
-extern u8 lbl_8034E978[]; // TODO type: MenuState (main/menu_globals.h)
+extern RepMenuDef lbl_800FEF70[];
+extern s8 lbl_3_data_B060[]; // [minigame][3][5]
+
+static inline void setMenu(u8 menu) {
+    lbl_8034E978.menu = menu;
+    lbl_8034E978.prevTrack = lbl_8034E978.track;
+    lbl_8034E978.track = lbl_800FEF70[menu].track;
+}
 extern BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern BOOL fn_3_1650C(int* outX, int* outY, BOOL r5, f32 pX, f32 pY, f32 pZ);
 
@@ -2311,9 +2319,227 @@ void fn_3_125850(void) {
 }
 
 // .text:0x001258C0 size:0xD44 mapped:0x80764954
+// Here q->state holds the panel shown (g_Minigame 0x1A1E) and q->_1E the step.
+// NONMATCHING 73%: orig addresses constant slots through per-k table bases (lbl_80371C30 + k*8, lwzx) where ours folds k into the load offset; register allocation
+#if NONMATCHING
 void fn_3_1258C0(void) {
+    RepTask* q;
+    RepObj* o;
+    u32 i;
+    lbl_3_common_bss_32724[0xC4] = 0;
+    q = REP_TASK;
+    if (lbl_3_common_bss_32724[0x96] != 0 || g_GameLogic[0x11E] == 0x29 || g_GameLogic[0x125] == 9) {
+        goto remove;
+    }
+    if (g_GameLogic[0x11E] == 0x28) {
+        if (g_GameLogic[0x125] == 6) {
+            goto remove;
+        }
+    } else if (g_GameLogic[0x125] == 0xB) {
+        goto remove;
+    }
+    if (q->_1E == 0) {
+        q->state = g_Minigame[0x1A1E];
+        REP_OBJC(q, 28)->flags &= ~2;
+        if (q->state == 0) {
+            REP_OBJC(q, 7)->mode = 1;
+            REP_OBJC(q, 9)->mode = 1;
+            REP_OBJC(q, 8)->mode = 1;
+            REP_OBJC(q, 26)->mode = 1;
+            REP_OBJC(q, 37)->mode = 1;
+            REP_OBJC(q, 3)->flags &= ~2;
+            REP_OBJC(q, 7)->flags |= 2;
+            REP_OBJC(q, 9)->flags |= 2;
+            REP_OBJC(q, 8)->flags |= 2;
+            REP_OBJC(q, 26)->flags |= 2;
+            REP_OBJC(q, 6)->flags |= 2;
+            if (g_d_GameSettings[7] == 6) {
+                REP_OBJC(q, 28)->flags |= 2;
+                REP_OBJC(q, 28)->mode = 1;
+            }
+            if (g_Minigame[0x190A] != 0) {
+                if (g_d_GameSettings[7] == 6) {
+                    setMenu(0x21);
+                } else {
+                    setMenu(0x25);
+                }
+            } else if (g_d_GameSettings[7] == 6) {
+                setMenu(0x30);
+            } else if (g_Minigame[0x1A3C] != 0) {
+                if (g_GameLogic[0x11E] == 0x28) {
+                    setMenu(0x39);
+                } else {
+                    setMenu(0x3B);
+                }
+            } else {
+                setMenu(0x37);
+            }
+        } else {
+            if (g_Minigame[0x1909] != 0 || g_d_GameSettings[7] == 6 || g_GameLogic[0x11E] == 0x28) {
+                REP_OBJC(q, 5)->flags &= ~2;
+            } else if (g_Minigame[0x1A1E] == 2) {
+                REP_OBJC(q, 5)->flags &= ~2;
+            } else {
+                REP_OBJC(q, 5)->flags |= 2;
+            }
+            REP_OBJC(q, 4)->frame =
+                lbl_3_data_B060[g_Minigame[0x1A2A] * 15 + g_Minigame[0x1A20] * 5 + g_Minigame[0x1A1E] - 1] << 16;
+            if (q->_20 == 0) {
+                REP_OBJC(q, 3)->mode = 1;
+                REP_OBJC(q, 3)->frame = 0;
+            } else {
+                REP_OBJC(q, 3)->mode = 4;
+                REP_OBJC(q, 3)->frame = 0x140000;
+            }
+            REP_OBJC(q, 3)->flags |= 2;
+            REP_OBJC(q, 7)->flags &= ~2;
+            REP_OBJC(q, 9)->flags &= ~2;
+            REP_OBJC(q, 8)->flags &= ~2;
+            REP_OBJC(q, 26)->flags &= ~2;
+            REP_OBJC(q, 6)->flags &= ~2;
+            REP_OBJC(q, 0)->mode = 1;
+            if (g_Minigame[0x190A] != 0) {
+                if (g_d_GameSettings[7] == 6) {
+                    setMenu(0x22);
+                } else {
+                    setMenu(0x26);
+                }
+            } else if (g_d_GameSettings[7] == 6) {
+                setMenu(0x32);
+            } else if (g_GameLogic[0x11E] == 0x28) {
+                setMenu(0x3A);
+            } else {
+                setMenu(0x38);
+            }
+        }
+        lbl_3_common_bss_32724[0xC4] = 1;
+        q->_1E = 1;
+    } else if (q->_1E == 1) {
+        if (q->state == 0) {
+            if (REP_OBJC(q, 7)->status == 2) {
+                q->_1E = 2;
+            }
+        } else if (q->_20 == 0) {
+            o = REP_OBJC(q, 3);
+            if ((o->frame >> 16) >= 10) {
+                o->mode = 0;
+                q->_1E = 2;
+            }
+        } else {
+            o = REP_OBJC(q, 3);
+            if ((o->frame >> 16) <= 10) {
+                o->mode = 0;
+                q->_1E = 2;
+            }
+        }
+        lbl_3_common_bss_32724[0xC4] = 1;
+    } else if (q->_1E == 2) {
+        if (q->state == 0) {
+            if (q->state != g_Minigame[0x1A1E]) {
+                REP_OBJC(q, 7)->mode = 4;
+                REP_OBJC(q, 9)->mode = 4;
+                REP_OBJC(q, 8)->mode = 4;
+                REP_OBJC(q, 26)->mode = 4;
+                REP_OBJC(q, 37)->mode = 4;
+                if (g_d_GameSettings[7] == 6) {
+                    REP_OBJC(q, 28)->mode = 4;
+                }
+                q->_20 = 0;
+                q->_1E = 3;
+            }
+        } else if (q->state != g_Minigame[0x1A1E]) {
+            if (g_Minigame[0x1A22] == 0) {
+                REP_OBJC(q, 3)->mode = 1;
+                q->_20 = 0;
+            } else {
+                REP_OBJC(q, 3)->mode = 4;
+                q->_20 = 1;
+            }
+            q->_1E = 3;
+        } else if ((g_Minigame[0x1A3B] != 0 || (g_d_GameSettings[7] == 6 && g_GameLogic[0x11E] == 0xB)) &&
+                   lbl_3_common_bss_34C90[0x1D4] == 5) {
+            REP_OBJC(q, 3)->mode = 1;
+            q->_20 = 0;
+            q->_1E = 3;
+        }
+    } else if (q->_1E == 3) {
+        if (q->state == 0) {
+            o = REP_OBJC(q, 7);
+            if ((o->frame >> 16) == 0) {
+                o->mode = 0;
+                REP_OBJC(q, 9)->mode = 0;
+                REP_OBJC(q, 8)->mode = 0;
+                REP_OBJC(q, 26)->mode = 0;
+                q->_1E = 0;
+            }
+        } else {
+            if (q->_20 == 0) {
+                o = REP_OBJC(q, 3);
+                if ((o->frame >> 16) >= 20) {
+                    o->mode = 0;
+                    q->_1E = 0;
+                }
+            } else {
+                o = REP_OBJC(q, 3);
+                if ((o->frame >> 16) == 0) {
+                    o->mode = 0;
+                    q->_1E = 0;
+                }
+            }
+            REP_OBJC(q, 0)->mode = 4;
+        }
+        if ((g_Minigame[0x1A3B] != 0 || (g_d_GameSettings[7] == 6 && g_GameLogic[0x11E] == 0xB)) &&
+            lbl_3_common_bss_34C90[0x1D4] == 5 && q->_1E == 0) {
+            goto remove;
+        }
+        lbl_3_common_bss_32724[0xC4] = 1;
+    }
+    if (q->state == 0) {
+        if (g_Minigame[0x1A23] == 0) {
+            REP_OBJC(q, 27)->mode = 1;
+            for (i = 0; i < 5; i++) {
+                if (g_Minigame[0x1A24] != i) {
+                    REP_OBJ(q, i + 32)->anim = 0xF1;
+                    REP_OBJ(q, i + 32)->frame = 0;
+                    REP_OBJ(q, i + 32)->mode = 0;
+                } else {
+                    o = REP_OBJ(q, i + 32);
+                    if ((o->frame >> 16) > 10) {
+                        o->frame = 0xA0000;
+                    }
+                    REP_OBJ(q, i + 32)->anim = 0xF2;
+                    REP_OBJ(q, i + 32)->mode = 4;
+                }
+            }
+            REP_OBJC(q, 30)->mode = 0;
+            REP_OBJC(q, 30)->frame = 0;
+        } else {
+            REP_OBJC(q, 27)->frame = 0;
+            REP_OBJC(q, 27)->mode = 0;
+            for (i = 0; i < 5; i++) {
+                o = REP_OBJ(q, i + 32);
+                if ((o->frame >> 16) >= 10) {
+                    o->anim = 0xF1;
+                }
+                if (g_Minigame[0x1A24] != i) {
+                    REP_OBJ(q, i + 32)->frame = 0;
+                    REP_OBJ(q, i + 32)->mode = 0;
+                } else {
+                    REP_OBJ(q, i + 32)->mode = 1;
+                }
+            }
+            REP_OBJC(q, 30)->mode = 1;
+        }
+    }
     return;
+remove:
+    fn_80034CEC(q);
+    ((void (*)(void))fn_800B0A14_removeQueue)();
+    if (g_GameLogic[0x11E] == 0x29) {
+        lbl_8034E978._26 = 1;
+    }
 }
+#endif
 
 // .text:0x00126604 size:0xEB0 mapped:0x80765698
 void fn_3_126604(void) {
@@ -2609,7 +2835,7 @@ remove:
     fn_80034CEC(q);
     ((void (*)(void))fn_800B0A14_removeQueue)();
     if (g_Minigame[0x190A] != 0) {
-        lbl_8034E978[0x26] = 1;
+        lbl_8034E978._26 = 1;
     }
 }
 #endif

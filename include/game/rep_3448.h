@@ -79,6 +79,13 @@ typedef struct RepInput {
     /*0x8*/ u8 _8[0x8];
 } RepInput;
 
+// Menu definition (main/file_800527C4.h MenuDef, lbl_800FEF70).
+typedef struct RepMenuDef {
+    /*0x0*/ u8 _0[0x8];
+    /*0x8*/ u16 track;
+    /*0xA*/ u8 _A[0x6];
+} RepMenuDef; // size: 0x10
+
 // One minigame high-score entry (fn_3_109D88 returns 5 of them).
 typedef struct RepRankEnt {
     /*0x0*/ s32 score;
