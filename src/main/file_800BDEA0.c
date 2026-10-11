@@ -607,7 +607,21 @@ L_800BF1F4:
 
 // .text:0x800BF204 size:0xA4
 void SKNInit(void) {
-    return;
+    if (!(PPCMfhid2() & 0x10000000)) {
+        DCInvalidateRange((void*)0xE0000000, 0x4000);
+        LCEnable();
+    }
+    lbl_803CB724[0] = (void*)0xE0000000;
+    lbl_803CB724[1] = (void*)0xE0001000;
+    lbl_803CB724[2] = (void*)0xE0002000;
+    lbl_803CB724[3] = (void*)0xE0003000;
+    lbl_803CB6FC[0].src = (void*)0xE0000000;
+    lbl_803CB6FC[0].indices = (void*)0xE0001000;
+    lbl_803CB6FC[0].weights = (void*)0xE0001800;
+    lbl_803CB6FC[1].src = (void*)0xE0002000;
+    lbl_803CB6FC[1].indices = (void*)0xE0003000;
+    lbl_803CB6FC[1].weights = (void*)0xE0003800;
+    GQRSetup5(8, 4, 8, 4);
 }
 
 // Locked-cache helpers (charPipeline skinning.h); vertex size is 0x18 (f32) or 0xC (s16).
