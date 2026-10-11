@@ -680,9 +680,62 @@ void fn_3_1189C8(s32 i, s32 a, s32 b, s32 d, u8 flag) {
 }
 
 // .text:0x00118B18 size:0x7A0 mapped:0x80757BAC
-void fn_3_118B18(void) {
-    return;
+// NONMATCHING 74%: same instructions apart from addressing; the original reaches lbl_3_data_22678/22688/22694/226AC through the lbl_3_data_225F0 pooled base (one saved reg), we use one lis per access; inlined fn_3_1189C8 copies
+#if NONMATCHING
+extern s16 lbl_3_data_21E68[];
+extern f32 lbl_3_data_22678[];
+extern f32 lbl_3_data_22688[];
+extern s32 fn_3_143770(u8* p);
+extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
+// Animation state machine of runner i (g_Minigame + i * 0x38), actor 0x82 + i.
+void fn_3_118B18(s32 i) {
+    u8* g = g_Minigame + i * 0x38;
+    s32 frame;
+
+    *(s16*)(g + 0x28) += 1;
+    if (g[0x2A] == 1) {
+        if (*(s16*)(g + 0x1A) <= 1) {
+            fn_3_1189C8(i, 2, 0, 0, 0);
+            fn_8001D0D0(i + 0x82, 0.01f);
+        } else {
+            fn_8001D0D0(i + 0x82, LinearInterpolateToNewRange((f32)*(s16*)(g + 0x1A), 0.0f, (f32)lbl_3_data_21E68[5],
+                                                               lbl_3_data_22678[g[0x2B] + 2], lbl_3_data_22678[g[0x2B]]));
+        }
+        if (*(s16*)(g + 0x1C) == 1) {
+            fn_3_1189C8(i, 0, 0, 6, 1);
+        }
+    } else if (g[0x2A] == 4) {
+        if (*(s16*)(g + 0x1A) <= 1) {
+            fn_3_1189C8(i, 4, 0, 0, 0);
+        }
+    } else if (*(s16*)(g + 0x1E) == 2) {
+        if (g[0x2B] == 0) {
+            fn_3_1189C8(i, 1, 0, 0, 0);
+        } else {
+            fn_3_1189C8(i, 5, 0, 0, 0);
+        }
+    } else if (*(s16*)(g + 0x1E) == lbl_3_data_21E68[7]) {
+        if (g[0x33] != 0) {
+            fn_3_1189C8(i, 0, 0, 6, 1);
+        }
+    } else {
+        if (g[0x2E] != 0 && (*(s16*)(g + 0x26) == 1 || g[0x2B] != 0)) {
+            // lbl_3_data_226AC is followed by two u8 frame counts at +0xC/+0xD
+            frame = ((u8*)lbl_3_data_226AC)[0xC] - lbl_3_data_21E68[13] - 1;
+            if (g[0x2B] == 0) {
+                fn_3_143770(g);
+            }
+            fn_3_1189C8(i, 3, frame, 2, 0);
+        }
+        if (g[0x33] == 3 && *(s16*)(g + 0x28) == ((u8*)lbl_3_data_226AC)[0xD] - lbl_3_data_226AC[3]) {
+            fn_3_1189C8(i, 0, 0, 6, 1);
+            *(f32*)(g + 0x14) = 0.0f;
+            *(f32*)(g + 0xC) = 0.0f;
+            *(f32*)(g + 0x10) = lbl_3_data_22688[i];
+        }
+    }
 }
+#endif
 
 // .text:0x001192B8 size:0x1B0 mapped:0x8075834C
 extern s16 lbl_3_data_21E68[];
