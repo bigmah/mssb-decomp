@@ -55,7 +55,37 @@ void fn_2_13CA0(PortInput* in) {
 // .text:0x00013D70 size:0x2FC
 // Page 2: toggle unlock flags; 0x800 sets all, 0x400 clears all.
 void fn_2_13D70(PortInput* in) {
-    return;
+    u16 repeat = in->repeat;
+    u16 pressed;
+    s32 i;
+    if (repeat & 8) {
+        lbl_2_bss_100B8.unlockSel--;
+        if ((s8)lbl_2_bss_100B8.unlockSel < 0) {
+            lbl_2_bss_100B8.unlockSel = 0x35;
+        }
+    } else if (repeat & 4) {
+        lbl_2_bss_100B8.unlockSel++;
+        if ((s8)lbl_2_bss_100B8.unlockSel == 0x36) {
+            lbl_2_bss_100B8.unlockSel = 0;
+        }
+    } else if (repeat & 1) {
+        lbl_80361B20.unlocked[(s8)lbl_2_bss_100B8.unlockSel] ^= 1;
+    } else if (repeat & 2) {
+        lbl_80361B20.unlocked[(s8)lbl_2_bss_100B8.unlockSel] ^= 1;
+    } else {
+        pressed = in->pressed;
+        if (pressed & 0x800) {
+            for (i = 0; i < 0x36; i++) {
+                lbl_80361B20.unlocked[i] = 1;
+            }
+        } else if (pressed & 0x400) {
+            for (i = 0; i < 0x36; i++) {
+                lbl_80361B20.unlocked[i] = 0;
+            }
+        } else if (pressed & 0x200) {
+            lbl_2_bss_100B8.page = 0;
+        }
+    }
 }
 
 // .text:0x0001406C size:0xF8
