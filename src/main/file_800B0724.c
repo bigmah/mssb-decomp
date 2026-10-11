@@ -900,9 +900,78 @@ void fn_800B24D4(s32 layer) {
 }
 
 // .text:0x800B251C size:0x288
+// NONMATCHING 91%: the original addresses the SpriteWork arrays from a pooled base (base+0x340, then +n*0x90);
+// ours folds the offsets, plus small scheduling differences
+#if NONMATCHING
+// Ends the frame: pads and flushes every layer's display list and queues it for drawing
+// (fn_800B2240), then switches to the other buffer and resets all layer states.
 void fn_800B251C(void) {
-    return;
+    SpriteWork* work = &lbl_802FE8B8;
+    s32* layerId;
+    s32 i;
+    s32 len;
+    SpriteState* state;
+    GDCurrentDL* dls;
+
+    if (lbl_803CC1C0 == NULL) {
+        return;
+    }
+    layerId = &work->layerIds[0];
+    i = 0;
+    lbl_803CC1C0 = lbl_803CC1E4;
+    while (i < lbl_803CBB30) {
+        len = lbl_803CC1C0->pDisplayListData - lbl_803CC1C0->begin;
+        if (len != 0) {
+            while (len & 0x1F) {
+                len++;
+                *lbl_803CC1C0->pDisplayListData = 0;
+                lbl_803CC1C0->pDisplayListData++;
+            }
+            DCStoreRangeNoSync(lbl_803CC1C0->begin, len);
+            lbl_80111340[lbl_803CC1C4][i].dl = lbl_803CC1C0;
+            lbl_80111340[lbl_803CC1C4][i].draw = fn_800B2240;
+            fn_800A7D4C(*layerId, (DrawNode*)&lbl_80111340[lbl_803CC1C4][i]);
+        }
+        layerId++;
+        i++;
+        lbl_803CC1C0++;
+    }
+
+    lbl_803CC1D4 = lbl_803CBB30;
+    lbl_803CC1C4 ^= 1;
+    state = work->wanted + lbl_803CBB30;
+    dls = *(work->dl + lbl_803CC1C4);
+    lbl_803CC1E4 = dls;
+    lbl_803CBB34 = state;
+    lbl_803CBB38 = state + SPRITE_MAX_LAYERS;
+    lbl_803CBB40 = work->proj + lbl_803CBB30;
+    lbl_803CC1C0 = dls + lbl_803CBB30;
+    lbl_803CC1C0->end = dls[0].begin + lbl_803CC1E0;
+    while (lbl_803CC1D4 != 0) {
+        lbl_803CC1D4--;
+        lbl_803CC1C0--;
+        lbl_803CBB34--;
+        lbl_803CBB38--;
+        lbl_803CBB40--;
+        memset(lbl_803CBB34, 0, sizeof(SpriteState));
+        PSMTXIdentity(lbl_803CBB34->mtx);
+        memcpy(&lbl_803CBB34->proj, lbl_803CBB40, sizeof(SpriteProj));
+        lbl_803CBB34->blendMode = 1;
+        lbl_803CBB34->primOffset = -1;
+        memcpy(lbl_803CBB38, lbl_803CBB34, sizeof(SpriteState));
+        // Optional new layer sizes: lay the lists out downwards from the buffer end.
+        if (lbl_803CC1D8[lbl_803CC1C4] != NULL) {
+            lbl_803CC1C0->length = lbl_803CC1D8[lbl_803CC1C4][lbl_803CC1D4];
+            lbl_803CC1C0->begin = lbl_803CC1C0->end - lbl_803CC1C0->length;
+            if (lbl_803CC1D4 != 0) {
+                lbl_803CC1C0[-1].end = lbl_803CC1C0->begin;
+            }
+        }
+        lbl_803CC1C0->pDisplayListData = lbl_803CC1C0->begin;
+    }
+    lbl_803CC1D8[lbl_803CC1C4] = NULL;
 }
+#endif
 
 // .text:0x800B27A4 size:0x38
 // Sets the texcoord fraction bits; the quad texcoords become 1.0 in that format.
