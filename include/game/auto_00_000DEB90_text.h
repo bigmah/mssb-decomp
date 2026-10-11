@@ -18,8 +18,14 @@ typedef struct MinigameCoinSprite {
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h), only the fields used here.
 typedef struct MinigameCharMgrView {
-    /*0x0000*/ u8 _0000[0x2D94];
+    /*0x0000*/ u8 _0000[0x2D8E];
+    /*0x2D8E*/ u8 _2D8E;
+    /*0x2D8F*/ u8 _2D8F[0x2D94 - 0x2D8F];
     /*0x2D94*/ MinigameCoinSprite* trail2; // [30]
+    /*0x2D98*/ u8 _2D98[0x307A - 0x2D98];
+    /*0x307A*/ u8 _307A;
+    /*0x307B*/ u8 _307B[3];
+    /*0x307E*/ u8 _307E;
 } MinigameCharMgrView;
 
 extern MinigameCharMgrView lbl_8036E548;
@@ -85,6 +91,19 @@ typedef struct MinigameBss37400View {
 extern MinigameBss37400View lbl_3_common_bss_37400;
 
 void fn_8001D0D0(s32 index, f32 scale);
+void fn_800203E0(u8 scene, s8 variant);
+s32 fn_80016F7C(void);
+s32 fn_3_6C938(s32 a, s32 b);
+void fn_3_59B20(void);
+
+// View of lbl_8037169C (SceneFade in main/file_8001FE00.h), only the fields used here.
+typedef struct MinigameSceneFadeView {
+    /*0x00*/ u8 _00[0x12];
+    /*0x12*/ u8 done;
+    /*0x13*/ u8 _13;
+} MinigameSceneFadeView;
+
+extern MinigameSceneFadeView lbl_8037169C;
 
 void fn_3_10C81C(void);
 

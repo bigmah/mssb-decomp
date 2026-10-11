@@ -10,6 +10,10 @@
 #include "game/auto_00_0001E154_text.h"
 #include "game/rep_1C0.h"
 #include "game/rep_1188.h"
+#include "game/rep_3090.h"
+#include "game/auto_00_000FBCD0_text.h"
+#include "game/auto_00_00090754_text.h"
+#include "game/auto_00_000E1964_text.h"
 #include "game/rep_2940.h"
 #include "game/rep_28A8.h"
 #include "game/sta_c6.h"
@@ -270,7 +274,74 @@ void fn_3_DF25C(void) {
 
 // .text:0x000DF3D8 size:0x230 mapped:0x8071E46C
 void fn_3_DF3D8(void) {
-    return;
+    switch (g_GameLogic._125) {
+    case 0:
+        fn_3_E8AC8();
+        fn_800203E0(7, 0);
+        g_Minigame.toyField_selectedTurns = lbl_3_data_189A4[g_Minigame._1A24[0]];
+        if (g_d_GameSettings.exhibitionMatchInd == FALSE) {
+            g_Minigame.toyField_selectedTurns = lbl_3_data_189A4[5];
+        }
+        lbl_8036E548._307E = 1;
+        lbl_8036E548._2D8E = 0;
+        lbl_8036E548._307A = 3;
+        if (g_Minigame._190A != 0) {
+            g_GameLogic._125 = 1;
+        } else {
+            fn_3_59B20();
+            g_GameLogic._125 = 2;
+        }
+        break;
+    case 1:
+        fn_3_10C81C();
+        if (g_Minigame._1A0F[0] < 0) {
+            fn_3_59B20();
+            g_GameLogic._125 = 2;
+        }
+        break;
+    case 2:
+        if (fn_3_59AE4() == 0) {
+            break;
+        }
+        g_GameLogic._125 = 3;
+    case 3:
+        if (fn_80016F7C() != 0) {
+            if (g_Minigame._1A38 != 0) {
+                g_GameLogic._125 = 6;
+            } else {
+                g_GameLogic._125 = 4;
+            }
+            lbl_3_common_bss_34C58._2C = 0;
+        }
+        break;
+    case 4:
+        if (fn_3_90DD8() != 0) {
+            g_GameLogic._125 = 6;
+        }
+        break;
+    case 6:
+        if (lbl_8037169C.done != 0 &&
+            (g_GameLogic.FrameCountOfCurrentPitch >= 240 || fn_3_FD9FC() != 0) &&
+            fn_3_6C938(1, 0x1300) != 0) {
+            g_GameLogic._125 = 7;
+        }
+        break;
+    case 7:
+        changeScene(3, 6);
+        if (lbl_8037169C._13 != 0) {
+            fn_3_FBD70();
+            fn_3_FBD58();
+            g_GameLogic._125 = 8;
+        }
+        break;
+    case 8:
+        fn_3_E1964();
+        g_Minigame._1A38 = 0;
+        g_Minigame._19A2 = 0;
+        lbl_8036E548._307A = 1;
+        fn_3_5A6D4(6);
+        break;
+    }
 }
 
 // NONMATCHING 96%: only scheduling, the lbz of g_d_GameSettings._35 is hoisted above `li r0,0` / the DATA lis
