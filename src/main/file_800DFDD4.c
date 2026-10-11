@@ -90,7 +90,32 @@ void fn_800E0488(void) {
 
 // .text:0x800E07E8 size:0x11C
 void fn_800E07E8(HVQM4SeqObj* seq, s32 planeIdx, u8 hSamp, u8 vSamp) {
-    return;
+    HVQPlaneDesc* plane = &seq->state->planes[planeIdx];
+    u16 stride;
+    s32 rowBytes;
+
+    plane->widthShift = hSamp == 2 ? 1 : 0;
+    plane->widthInSamples = seq->frameWidth >> plane->widthShift;
+    plane->heightShift = vSamp == 2 ? 1 : 0;
+    plane->heightInSamples = seq->frameHeight >> plane->heightShift;
+    plane->sizeInSamples = plane->widthInSamples * plane->heightInSamples;
+    plane->widthInMB = 2 >> plane->widthShift;
+    plane->heightInMB = 2 >> plane->heightShift;
+    plane->blocksPerMB = plane->widthInMB * plane->heightInMB;
+    plane->widthInBlocks = seq->frameWidth / (hSamp * 4);
+    plane->heightInBlocks = seq->frameHeight / (vSamp * 4);
+    plane->blocksPerRow = plane->widthInBlocks + 2;
+    plane->rowsWithBorder = plane->heightInBlocks + 2;
+    plane->blockOffs[0] = 0;
+    plane->blockOffs[3] = 1;
+    stride = plane->blocksPerRow;
+    plane->blockOffs[1] = stride;
+    plane->blockOffs[2] = stride + 1;
+    plane->pixelOffs[0] = 0;
+    plane->pixelOffs[3] = 4;
+    rowBytes = plane->widthInSamples * 4;
+    plane->pixelOffs[1] = rowBytes;
+    plane->pixelOffs[2] = rowBytes + 4;
 }
 
 // .text:0x800E0904 size:0x3C4
