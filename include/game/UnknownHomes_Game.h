@@ -870,7 +870,7 @@ typedef enum _TUTORIAL_STATE {
 
 typedef struct _PracticeStruct {
     /*0x000*/ InputStruct inputs[2];
-    /*0x020*/ void* commandList; // unsure
+    /*0x020*/ s16* commandList; // tutorial command script
     /*0x024*/ int homeAway;
     artificial_padding(0x24, 0x140, int);
     /*0x140*/ frame_t totalFrames;
@@ -901,10 +901,8 @@ typedef struct _PracticeStruct {
     /*0x172*/ frame_t diagramTitleTextIndex_stored;
     /*0x174*/ frame_t cpuCommandDuration;
     /*0x176*/ frame_t maybeInputResetCountdown;
-    /*0x178*/ frame_t maybePreviousInput;
-    /*0x17A*/ frame_t _17A;
-    /*0x17C*/ frame_t cpu_inputDuration;
-    /*0x17E*/ frame_t _17E;
+    /*0x178*/ u16 maybePreviousInput[2]; // per input: held buttons of the scripted CPU input
+    /*0x17C*/ frame_t cpu_inputDuration[2];  // per input: frames left to hold maybePreviousInput
     /*0x180*/ frame_t practice_hitHorizontalPower;
     /*0x182*/ frame_t practice_hitVerticalAngle;
     /*0x184*/ frame_t practice_hitHorizontalAngle;

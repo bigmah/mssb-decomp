@@ -115,6 +115,8 @@ void fn_3_AD164(s32 arg);
 
 void fn_3_AD3BC(void);
 
+void fn_3_B1DD0(void);
+
 void fn_3_AD8CC(void);
 
 void fn_3_AC9F8(void);
@@ -140,6 +142,8 @@ void fn_3_AE770(void);
 void fn_3_AF5A4(void);
 
 void fn_3_AD3BC(void);
+
+void fn_3_B1DD0(void);
 
 void fn_3_B056C(void);
 
@@ -172,5 +176,7 @@ void fn_3_AE770(void);
 void fn_3_AF5A4(void);
 
 void fn_3_AD3BC(void);
+
+void fn_3_B1DD0(void);
 
 #endif
