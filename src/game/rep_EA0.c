@@ -461,9 +461,113 @@ s32 fn_3_67EF0(VecQueue* queue, s32 maxPoints, Vec* positions, u32* colors, u32 
 
 // Picks the trail type for the current pitch / hit.
 // .text:0x000685F0 size:0x5C4 mapped:0x806A7684
+// NONMATCHING 82%: the inlined fn_3_675B8 stores alpha through lbl_3_bss_16A8 itself in the original
+// (separate static); ours goes through lbl_3_bss_200
+#if NONMATCHING
 void fn_3_685F0(void) {
-    return;
+    if (g_Minigame.GameMode_MiniGame == 4 || g_Minigame.GameMode_MiniGame == 5 ||
+        g_Minigame.GameMode_MiniGame == 6) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == GAME_TYPE_PRACTICE) {
+        if (g_GameLogic.secondaryGameMode == SECONDARY_GAME_MODE_PRACTICE_MENU) {
+            fn_3_675B8(0);
+            return;
+        }
+        if (g_Practice.tutorialState == 2) {
+            fn_3_675B8(0);
+            return;
+        }
+        if (g_Practice._19F != 0) {
+            if (lbl_3_common_bss_34C90.state == 7 || lbl_3_common_bss_34C90.state == 9 ||
+                lbl_3_common_bss_34C90.state == 11) {
+                fn_3_675B8(0);
+                return;
+            }
+        }
+    }
+
+    if (g_Ball.pitchHangtimeCounter == 1) {
+        if (g_Pitcher.starPitchType != 0) {
+            if (g_Pitcher.starPitchType == 5 || g_Pitcher.starPitchType == 6) {
+                fn_3_67620(5, 45);
+            } else if (g_Pitcher.starPitchType == 9 || g_Pitcher.starPitchType == 10) {
+                fn_3_67620(6, 120);
+            } else {
+                fn_3_675B8(0);
+            }
+        } else if (g_Pitcher.starPitchType == 0 && g_Pitcher.ballHaloTrainInd_unused) {
+            fn_3_67620(10, 45);
+        } else if (g_Pitcher.ChargePitchType == 3) {
+            fn_3_67620(2, 45);
+        } else if (g_Pitcher.ChargePitchType != 0) {
+            fn_3_67620(1, 45);
+        } else {
+            fn_3_67620(1, 45);
+        }
+    } else if (g_Ball.pitchHangtimeCounter >= 1 && g_Ball.framesSinceHit <= 0) {
+        if (lbl_3_common_bss_32724.trailActive && g_Pitcher.pitcherActionState == 4) {
+            fn_3_675B8(0);
+        }
+    } else if (g_Ball.framesSinceHit == 1) {
+        fn_3_675B8(0);
+    } else if (g_Ball.framesSinceHit == 2) {
+        if (g_Minigame.GameMode_MiniGame == 1) {
+            if (g_Ball.bODQualifyingHitInd) {
+                fn_3_67620(3, 180);
+            } else {
+                fn_3_675B8(0);
+            }
+        } else if (g_Ball.currentStarSwing != 0) {
+            if (g_Ball.currentStarSwing == 5 || g_Ball.currentStarSwing == 6) {
+                fn_3_67620(5, 90);
+            } else if (g_Ball.currentStarSwing == 9 || g_Ball.currentStarSwing == 10) {
+                fn_3_67620(7, 180);
+            } else {
+                fn_3_675B8(0);
+            }
+        } else if (!g_Batter.captainStarSwingActivated && g_Batter.didNonCaptainStarSwingConnect) {
+            fn_3_67620(11, 90);
+        } else if (g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy) {
+            fn_3_67620(4, 90);
+        } else {
+            fn_3_67620(3, 90);
+        }
+    } else if (g_Ball.framesSinceHit > 0) {
+        if (lbl_3_common_bss_32724.trailActive) {
+            if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+                fn_3_675B8(0);
+            }
+            if (g_Minigame.GameMode_MiniGame == 3) {
+                if (g_Minigame.barrelBatter_scoreCalculatedInd) {
+                    fn_3_675B8(0);
+                }
+            } else if (g_Ball.timeSinceBallPickedUp == 0) {
+                fn_3_675B8(0);
+            } else if (g_Ball.numFieldersWhoHandledBallDuringPlay == 1 && g_Ball.numberOfThrowsDuringPlay == 0) {
+                fn_3_675B8(0);
+            } else if (0.0f == g_Ball.ballVelocity) {
+                fn_3_675B8(0);
+            }
+        }
+        if (g_Ball.framesSinceThrowStarted == 1) {
+            if (g_FieldingLogic._13E) {
+                fn_3_168FA0(g_Ball.fielderBeingThrownTo, 0);
+                fn_3_168FA0(g_Ball.throwingFielder, 0);
+                fn_3_67620(8, 90);
+            } else if (g_Ball.IsAntichemistryThrow) {
+                fn_3_168FA0(g_Ball.fielderBeingThrownTo, 1);
+                fn_3_168FA0(g_Ball.throwingFielder, 1);
+                fn_3_67620(9, 90);
+            } else if (g_FieldingLogic._140) {
+                fn_3_67620(2, 90);
+            } else if (g_FieldingLogic._13D || g_FieldingLogic.throwSpeedType == 1) {
+                fn_3_67620(1, 90);
+            }
+        }
+    }
 }
+#endif
 
 // Spins the ball model.
 // .text:0x00068BB4 size:0x548 mapped:0x806A7C48
