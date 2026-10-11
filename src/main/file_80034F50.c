@@ -325,9 +325,29 @@ void fn_800356B8(void) {
 }
 
 // .text:0x80035750 size:0xE8
-void fn_80035750(void) {
-    return;
+// NONMATCHING 92%: original keeps only &slot->anim (r28) across the call
+#if NONMATCHING
+void fn_80035750(void* data, void* tex, s16 id) {
+    s32 slot;
+    SpaniTexSlot* s;
+    SpaniAnim** pa;
+
+    slot = spaniFindFreeSlot();
+    if (slot == -1) {
+        OSReport(" SabNo = %d not to add  \n", slot);
+        OSPanic("spani_default.c", 0x49C, "gasSpani No Empty \n");
+    }
+    s = &lbl_803C4BE0[slot];
+    pa = &s->anim;
+    s->data = data;
+    s->tex = tex;
+    *pa = data;
+    lbl_8023D6C0[slot] = id;
+    convertTextureHeader(s->tex);
+    fn_8000B9C8(*pa);
 }
+#endif
+
 
 // .text:0x80035838 size:0x1C8
 // NONMATCHING 99.7%: r0/r4 pick for the slot index in case 1
