@@ -79,6 +79,9 @@ extern u8 LoadModel(void*);
 extern void fn_800B0A14_removeQueue(void*);
 #pragma dont_inline on
 
+/* TODO type: g_pCamera / lbl_3_common_bss_DE94 field accessors until the structs are typed. */
+#define CAMF(off) (*(f32*)(g_pCamera + (off)))
+#define DEF(off) (*(f32*)(lbl_3_common_bss_DE94 + (off)))
 static inline void CamsResetUp(void);
 static inline void CamApplyScriptFrame(void);
 static inline void ZeroTbl(void);
@@ -561,9 +564,241 @@ s32 fn_3_10007C(void) {
 }
 
 // .text:0x001000D8 size:0x1BEC mapped:0x8073F16C
-void fn_3_1000D8(void) {
-    return;
+// NONMATCHING 90%: scored with fn_3_103C30/fn_3_103E7C/fn_3_1040D8 and the local helpers inlined (the original inlines
+// them; nmverify flags those calls); remaining diff is register allocation/scheduling.
+// Per-frame replay camera update: places the eye (g_pCamera+0x2840) and look-at (+0x284C) for the current mode
+// (+0x9A8 ball-follow modes in +0x9A9, else script modes in +0x9A7), with optional smoothing (+0x9B4).
+#if NONMATCHING
+extern f32 game_atan2(f32 x, f32 y);
+/* Rotates the camera eye about `pivot` by `rot`. */
+static void CamOrbit(Mtx rot, const Vec* pivot) {
+    Vec v;
+    memcpy(&v, g_pCamera + 0x2840, 12);
+    v.x = CAMF(0x2840) - pivot->x;
+    v.y = CAMF(0x2844) - pivot->y;
+    v.z = CAMF(0x2848) - pivot->z;
+    PSMTXMultVec(rot, &v, &v);
+    v.x = v.x + pivot->x;
+    v.y = v.y + pivot->y;
+    v.z = v.z + pivot->z;
+    memcpy(g_pCamera + 0x2840, &v, 12);
 }
+static void CamEyeFromScript(void) {
+    CAMF(0x2840) = CAMF(0x2858);
+    CAMF(0x2844) = CAMF(0x285C);
+    CAMF(0x2848) = CAMF(0x2860);
+    if (CAMF(0x2844) < 0.1f) {
+        CAMF(0x2844) = 0.1f;
+    }
+}
+/* Look-at = `tgt` (smoothed by fn_3_103C30), then smooth the eye (fn_3_1040D8). */
+static void CamSetTarget(Vec* tgt) {
+    CAMF(0x284C) = tgt->x;
+    CAMF(0x2850) = tgt->y;
+    CAMF(0x2854) = tgt->z;
+    fn_3_103C30(tgt);
+    CAMF(0x284C) = tgt->x;
+    CAMF(0x2850) = tgt->y;
+    CAMF(0x2854) = tgt->z;
+    fn_3_1040D8();
+}
+void fn_3_1000D8(void) {
+    s16 idx = *(s16*)(lbl_3_common_bss_DE94 + 0x946);
+    Mtx rot;
+    Vec tgt;
+    u8* ball = g_Ball; /* InMemBallType: 0x00 pos, 0x3C prev pos, 0x48, 0x54 */
+#define BALLF(off) (*(f32*)(ball + (off)))
+
+    if (lbl_3_common_bss_DE94[0x9A8] == 0) {
+        switch (lbl_3_common_bss_DE94[0x9A7]) {
+        case 0:
+        case 1: {
+            f32 ang[2]; /* yaw, pitch */
+            f32 cp;
+            f32 cy;
+            f32 sp;
+            f32 cp2;
+            f32 sy;
+            CamEyeFromScript();
+            ang[0] = fn_3_9FEA8(CAMF(0x2870));
+            ang[1] = fn_3_9FEA8(CAMF(0x2874));
+            fn_3_103E7C(ang);
+            cp = cos(ang[1]);
+            cy = cos(ang[0]);
+            sp = sin(ang[1]);
+            cp2 = cos(ang[1]);
+            sy = sin(ang[0]);
+            CAMF(0x284C) = CAMF(0x2858) + 100.0f * cy * cp;
+            CAMF(0x2850) = CAMF(0x285C) + 100.0f * sp;
+            CAMF(0x2854) = CAMF(0x2860) + 100.0f * sy * cp2;
+            fn_3_1040D8();
+            break;
+        }
+        case 2:
+            if (idx < 13 && idx >= 0 && *(s16*)(lbl_3_common_bss_DE94 + 0x950) <= 2) {
+                fn_3_101CC4();
+            }
+            if (lbl_3_common_bss_DE94[0x9AA] == 0) {
+                CamEyeFromScript();
+                memcpy(&tgt, lbl_3_common_bss_DE94 + 0x88, 12);
+                fn_3_106270(&tgt);
+                CamSetTarget(&tgt);
+            } else if (lbl_3_common_bss_DE94[0x9AA] == 1) {
+                CamEyeFromScript();
+                if (idx < 9 && idx >= 0) {
+                    u8* fl = g_Fielders + idx * 0x268;
+                    PSMTXRotRad(rot, 'Y', -fn_3_9FEA8(1.5707964f + *(f32*)(fl + 0x48)));
+                    CamOrbit(rot, (Vec*)fl);
+                } else if (idx < 13 && idx >= 0) {
+                    u8* rn = g_Runners + (idx - 9) * 0x154;
+                    PSMTXRotRad(rot, 'Y', fn_3_9FEA8(*(f32*)(rn + 0x30)));
+                    CamOrbit(rot, (Vec*)rn);
+                } else if (idx == 13) {
+                    PSMTXRotRad(rot, 'Y', atan2(-(BALLF(0x3C) - BALLF(0x0)), -(BALLF(0x44) - BALLF(0x8))));
+                    CamOrbit(rot, (Vec*)ball);
+                }
+                memcpy(&tgt, lbl_3_common_bss_DE94 + 0x88, 12);
+                fn_3_106270(&tgt);
+                CamSetTarget(&tgt);
+            }
+            if (CAMF(0x2850) < 0.1f) {
+                CAMF(0x2850) = 0.1f;
+            }
+            break;
+        }
+    } else {
+        f32 dz;
+        f32 vx;
+        f32 vy;
+        f32 vz;
+        f32 t;
+        switch (lbl_3_common_bss_DE94[0x9A9]) {
+        case 0:
+        case 1:
+            DEF(0xA0) = 0.87266463f;
+            CAMF(0x2840) = BALLF(0x0);
+            CAMF(0x2844) = BALLF(0x4);
+            CAMF(0x2848) = BALLF(0x8);
+            break;
+        case 2:
+        case 3:
+            DEF(0xA0) = 0.87266463f;
+            CAMF(0x2840) = BALLF(0x48);
+            CAMF(0x2844) = BALLF(0x4C);
+            CAMF(0x2848) = BALLF(0x50);
+            break;
+        case 4:
+            dz = BALLF(0x8) - CAMF(0x2860);
+            if (dz < 0.0f) {
+                dz = -BALLF(0x8) - CAMF(0x2860);
+            }
+            vz = BALLF(0x8) - BALLF(0x44);
+            vx = BALLF(0x0) - BALLF(0x3C);
+            vy = BALLF(0x4) - BALLF(0x40);
+            if (0.0f == vz) {
+                vz = 0.0001f;
+            }
+            t = dz / vz;
+            CAMF(0x2840) = (BALLF(0x0) + vx) - vx * t;
+            CAMF(0x2844) = (BALLF(0x4) + vy) - vy * t;
+            CAMF(0x2848) = (BALLF(0x8) + vz) - vz * t;
+            break;
+        case 6:
+            dz = BALLF(0x8) - CAMF(0x2860);
+            if (dz < 0.0f) {
+                dz = -BALLF(0x8) - CAMF(0x2860);
+            }
+            vz = BALLF(0x8) - BALLF(0x44);
+            vx = BALLF(0x0) - BALLF(0x3C);
+            vy = BALLF(0x4) - BALLF(0x40);
+            if (0.0f == vz) {
+                vz = 0.0001f;
+            }
+            t = dz / vz;
+            CAMF(0x2840) = vx * t + (BALLF(0x0) - vx);
+            CAMF(0x2844) = vy * t + (BALLF(0x4) - vy);
+            CAMF(0x2848) = vz * t + (BALLF(0x8) - vz);
+            break;
+        case 5:
+            dz = BALLF(0x8) - CAMF(0x2860);
+            if (dz < 0.0f) {
+                dz = -BALLF(0x8) - CAMF(0x2860);
+            }
+            vz = BALLF(0x8) - BALLF(0x44);
+            vx = BALLF(0x0) - BALLF(0x3C);
+            if (0.0f == vz) {
+                vz = 0.0001f;
+            }
+            t = dz / vz;
+            CAMF(0x2840) = (BALLF(0x0) + vx) - vx * t;
+            CAMF(0x2844) = BALLF(0x4);
+            CAMF(0x2848) = (BALLF(0x8) + vz) - vz * t;
+            break;
+        case 7:
+            dz = BALLF(0x8) - CAMF(0x2860);
+            if (dz < 0.0f) {
+                dz = -BALLF(0x8) - CAMF(0x2860);
+            }
+            vz = BALLF(0x8) - BALLF(0x44);
+            vx = BALLF(0x0) - BALLF(0x3C);
+            if (0.0f == vz) {
+                vz = 0.0001f;
+            }
+            t = dz / vz;
+            CAMF(0x2840) = vx * t + (BALLF(0x0) - vx);
+            CAMF(0x2844) = BALLF(0x4);
+            CAMF(0x2848) = vz * t + (BALLF(0x8) - vz);
+            break;
+        case 8:
+            CAMF(0x2840) = CAMF(0x2858);
+            CAMF(0x2844) = CAMF(0x285C);
+            CAMF(0x2848) = CAMF(0x2860);
+            PSMTXRotRad(rot, 'Y', -fn_3_9FEA8(1.5707964f + game_atan2(BALLF(0x0) - BALLF(0x3C), BALLF(0x8) - BALLF(0x44))));
+            CamOrbit(rot, (Vec*)ball);
+            break;
+        }
+        if (CAMF(0x2844) < 1.0f) {
+            CAMF(0x2844) = 1.0f;
+        }
+        switch (lbl_3_common_bss_DE94[0x9A9]) {
+        case 0:
+            tgt.x = BALLF(0x0) + (BALLF(0x0) - BALLF(0x3C));
+            tgt.y = BALLF(0x4) + (BALLF(0x4) - BALLF(0x40));
+            tgt.z = BALLF(0x8) + (BALLF(0x8) - BALLF(0x44));
+            break;
+        case 1:
+            tgt.y = BALLF(0x4);
+            tgt.x = BALLF(0x0) + (BALLF(0x0) - BALLF(0x3C));
+            tgt.z = BALLF(0x8) + (BALLF(0x8) - BALLF(0x44));
+            break;
+        case 2:
+            tgt.x = BALLF(0x54);
+            tgt.y = BALLF(0x58);
+            tgt.z = BALLF(0x5C);
+            break;
+        case 3:
+            tgt.x = BALLF(0x54);
+            tgt.y = BALLF(0x4C);
+            tgt.z = BALLF(0x5C);
+            break;
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            memcpy(&tgt, lbl_3_common_bss_DE94 + 0x88, 12);
+            fn_3_106270(&tgt);
+            break;
+        }
+        /* mode > 8 leaves tgt unset, as in the original. */
+        CamSetTarget(&tgt);
+        if (CAMF(0x2850) < 0.1f) {
+            CAMF(0x2850) = 0.1f;
+        }
+    }
+#undef BALLF
+}
+#endif
 
 // .text:0x00101CC4 size:0x1F6C mapped:0x80740D58
 void fn_3_101CC4(void) {
@@ -667,7 +902,6 @@ void fn_3_104338(void) {
 }
 
 // .text:0x001045A8 size:0x198 mapped:0x8074363C
-#define CAMF(off) (*(f32*)(g_pCamera + (off)))
 void fn_3_1045A8(void) {
     f32 sinPitch;
     f32 cosYaw;
@@ -701,7 +935,6 @@ void fn_3_1045A8(void) {
 }
 
 // .text:0x00104740 size:0x1A0 mapped:0x807437D4
-#define DEF(off) (*(f32*)(lbl_3_common_bss_DE94 + (off)))
 void fn_3_104740(void) {
     if (lbl_3_common_bss_DE94[0x9A7] == 2) {
         DEF(0xC4) = lbl_3_rodata_3158 + CAMF(0x284C);
