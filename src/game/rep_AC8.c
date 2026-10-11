@@ -3939,9 +3939,73 @@ void fn_3_57BB4(void) {
 }
 
 // .text:0x000583B8 size:0x2D0 mapped:0x8069744C
+// NONMATCHING 99%: r28/r29 (fielder ptr / index) swapped in the fielder loop; the loop is fn_3_55370's body, duplicated
+#if NONMATCHING
 void fn_3_583B8(void) {
-    return;
+    s16* p;
+    int k;
+    int i;
+    u8* f;
+    s16 v;
+    f32 d;
+    p = &lbl_3_bss_170 + 0x13;
+    for (k = 0x13; k != 0; k--) {
+        *p = -1;
+        p--;
+    }
+    lbl_3_bss_170 = -1;
+    lbl_3_bss_16C = -1;
+    *(u16*)(g_FieldingLogic + 0x148) = 0;
+    *(u16*)(g_FieldingLogic + 0x14A) = 0;
+    *(u16*)(g_FieldingLogic + 0x14C) = 0;
+    if (*(s16*)(g_Ball + 0x1B66) <= 0) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B66) == 1) {
+        fn_3_411AC();
+    } else {
+        if (g_FieldingLogic[0x13B] != 0) {
+            fn_3_3F034();
+            g_FieldingLogic[0x13B] = 0;
+        }
+        fn_3_57A14();
+        fn_3_57144();
+    }
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        if (g_d_GameSettings[0x11] != 0 && g_Minigame[0x1923] != i) {
+            continue;
+        }
+        fn_3_54B58(i);
+        *(f32*)(f + 0x7C) = fn_3_9CE0(*(f32*)f, *(f32*)(f + 8));
+        if (0.0f == *(f32*)(f + 0x50)) {
+            *(f32*)(f + 0x38) = 0.0f;
+            *(f32*)(f + 0x3C) = 0.0f;
+        } else {
+            *(f32*)(f + 0x38) = *(f32*)(f + 0x30) / *(f32*)(f + 0x50);
+            *(f32*)(f + 0x3C) = *(f32*)(f + 0x34) / *(f32*)(f + 0x50);
+        }
+        f[0x1EA] = 0;
+        f[0x217] = 0;
+    }
+    fn_3_544B8();
+    if (g_d_GameSettings[0x11] != 0) {
+        fn_3_53F48();
+        return;
+    }
+    v = *(s16*)(g_Ball + 0x1B78);
+    if (v >= 0) {
+        *(f32*)(g_Ball + 0) = *(f32*)(g_Fielders + v * 0x268);
+        *(f32*)(g_Ball + 4) = ((f32*)(g_Fielders + 4))[v * 0x9A];
+        *(f32*)(g_Ball + 8) = ((f32*)(g_Fielders + 8))[v * 0x9A];
+        *(f32*)(g_Ball + 0x348) = *(f32*)(g_Ball + 0);
+        *(f32*)(g_Ball + 0x34C) = *(f32*)(g_Ball + 8);
+        d = *(f32*)(g_Ball + 0) * *(f32*)(g_Ball + 0) + *(f32*)(g_Ball + 8) * *(f32*)(g_Ball + 8);
+        SQRT_L(d);
+        *(f32*)(g_Ball + 0x1A00) = d;
+    }
 }
+#endif
 
 // .text:0x00058688 size:0x1E8 mapped:0x8069771C
 void fn_3_58688(void) {
