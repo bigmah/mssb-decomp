@@ -1108,9 +1108,32 @@ void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5*
 #endif
 
 // .text:0x80030470 size:0x2B0
-void fn_80030470(void) {
-    return;
+// NONMATCHING 95%: register allocation in the inlined allocations
+#if NONMATCHING
+void fn_80030470(Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm, u8 type) {
+    Emitter tmp;
+    Emitter* e = FindEmitter(NULL, type);
+    Emitter* t;
+    Particle* last;
+
+    if (e != NULL) {
+        t = AllocParticles(&tmp, prm->count, 1);
+        if (t != NULL) {
+            fn_8002FDB8(t, pos, dir, velScale, prm);
+            for (last = e->particles; last->next != NULL; last = last->next) {
+            }
+            last->next = t->particles;
+            e->count += t->count;
+        }
+    } else {
+        e = NewEmitter(fn_80031034, 0x11, 0, prm->count, 1, type);
+        if (e != NULL) {
+            e->u.t5.unk18 = 0;
+            fn_8002FDB8(e, pos, dir, velScale, prm);
+        }
+    }
 }
+#endif
 
 // .text:0x80030720 size:0x668
 // NONMATCHING 60%: float register allocation and scheduling
