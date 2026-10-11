@@ -270,8 +270,14 @@ void fn_8002C56C(void) {
 }
 
 // .text:0x8002CDD0 size:0x7C
-void fn_8002CDD0(void) {
-    return;
+void fn_8002CDD0(Vec* end) {
+    Emitter* e = FindEmitter(NULL, 10);
+    if (e != NULL && e->u.t10.unk40 != 0) {
+        e->u.t10.end.x = end->x;
+        e->u.t10.end.y = end->y;
+        e->u.t10.end.z = end->z;
+        PSVECSubtract(&e->u.t10.end, &e->u.t10.start, &e->u.t10.dir);
+    }
 }
 
 // .text:0x8002CE4C size:0x9E0
