@@ -372,8 +372,12 @@ f32 fn_800335BC(s32 angle) {
 }
 
 // .text:0x800335EC size:0x34
-void fn_800335EC(void) {
-    return;
+f32 fn_800335EC(s32 angle) {
+    s32 i = __abs(angle + 0x600) & 0x7FF;
+    if (i >= 0x401) {
+        i = 0x800 - i;
+    }
+    return lbl_8017ED68[i];
 }
 
 // .text:0x80033620 size:0x174
