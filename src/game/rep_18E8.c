@@ -101,6 +101,8 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_1A18;
+extern f32 lbl_3_data_4780[]; // per fielder class: covering distance
 extern const f32 lbl_3_rodata_19A4;
 extern const f32 lbl_3_rodata_1A40;
 
@@ -885,7 +887,97 @@ void fn_3_A3C00(void) {
 
 // .text:0x000A3CC0 size:0x498 mapped:0x806E2D54
 void fn_3_A3CC0(void) {
-    return;
+    s16 me;
+    RepFielder* f;
+    s16 other;
+    s32 prev;
+    s16 base;
+    s32 i;
+    InMemRunnerType* r;
+
+    me = g_Ball.fielderWBallIndex;
+    f = &g_Fielders[me];
+    if (f->_1D7 == 1) {
+        base = f->coveringBase;
+        if (g_FieldingLogic._0CC != base) {
+            f->coveringBase = -1;
+            g_FieldingLogic._0D0[base] = -1;
+            g_FieldingLogic._101[base] = 0;
+            f->_1D7 = 0;
+        }
+    }
+    g_FieldingLogic._11D = 0;
+    if (g_FieldingLogic._0CC >= 0 && g_FieldingLogic._0CC <= 3) {
+        other = g_FieldingLogic._0D0[g_FieldingLogic._0CC];
+        if (other != me && f->distToBase[g_FieldingLogic._0CC] < lbl_3_rodata_199C) {
+            prev = other;
+            if (prev >= 0) {
+                fn_3_5985C(prev, 9);
+                g_Fielders[prev].coveringBase = -1;
+            }
+            f->coveringBase = g_FieldingLogic._0CC;
+            f->_1D7 = 1;
+            g_FieldingLogic._0D0[f->coveringBase] = me;
+        }
+        base = f->coveringBase;
+        if (base >= 0) {
+            if (f->distToDest < lbl_3_data_4780[f->_1C9]) {
+                g_FieldingLogic._101[base] = 1;
+            } else {
+                g_FieldingLogic._101[base] = 0;
+            }
+        }
+        g_FieldingLogic._11D = 1;
+        for (i = 0; i < 4; i++) {
+            if (g_Runners[i].runnerOnFieldOrOutOrScored == 1) {
+                if (g_Runners[i].forceOutCd == 1 && g_FieldingLogic._0CC == g_Runners[i].nextBase) {
+                    g_FieldingLogic._11D = 2;
+                    break;
+                } else if (g_Runners[i].tagUpInd == 2 && g_FieldingLogic._0CC == i) {
+                    g_FieldingLogic._11D = 2;
+                    break;
+                }
+            }
+        }
+    }
+    if (g_FieldingLogic._0CC == 9) {
+        // inlined fn_3_A4158
+        r = &g_Runners[g_FieldingLogic._0DE];
+        if (r->runningDirectionCode == 2) {
+            fn_3_52F4C(g_Ball.fielderWBallIndex, r->position.x, r->position.z);
+        } else {
+            f32 d = r->distanceFromBall;
+            fn_3_52F4C(g_Ball.fielderWBallIndex, 2.0f * (r->velocity.x * d) + r->position.x,
+                       2.0f * (r->velocity.y * d) + r->position.z);
+        }
+        base = g_Runners[g_FieldingLogic._0DE].baseStandingOn;
+        if (base >= 0) {
+            if (f->distToBase[g_FieldingLogic._0CC] < lbl_3_rodata_199C) {
+                prev = g_FieldingLogic._0D0[base];
+                if (prev >= 0) {
+                    fn_3_5985C(prev, 9);
+                    g_Fielders[prev].coveringBase = -1;
+                }
+                f->coveringBase = base;
+                f->_1D7 = 1;
+                g_FieldingLogic._0D0[f->coveringBase] = me;
+            }
+            base = f->coveringBase;
+            if (base >= 0) {
+                if (f->distToDest < lbl_3_data_4780[f->_1C9]) {
+                    g_FieldingLogic._101[base] = 1;
+                    g_FieldingLogic._0CC = -1;
+                } else {
+                    g_FieldingLogic._101[base] = 0;
+                }
+            }
+            g_FieldingLogic._11D = 1;
+        }
+    }
+    if (f->speed > lbl_3_rodata_1A18) {
+        f->framesToDest = f->distToDest / f->speed;
+    }
+    fn_3_526DC(g_Ball.fielderWBallIndex);
 }
 
 // .text:0x000A4158 size:0x90 mapped:0x806E31EC

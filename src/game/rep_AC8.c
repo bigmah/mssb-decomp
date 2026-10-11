@@ -1777,7 +1777,7 @@ static inline s32 EtaToInline(u8* f, f32 x, f32 z) {
 }
 #pragma dont_inline on
 extern f32 lbl_3_rodata_BE0;
-// NONMATCHING 96%: f-reg numbering throughout; three distance sums unfused in the original; calls fn_3_526DC through a cast until its prototype gains the index arg
+// NONMATCHING 96%: f-reg numbering throughout; three distance sums unfused in the original
 #if NONMATCHING
 void fn_3_34A40(int i) {
     u8* f = g_Fielders + i * 0x268;
@@ -1898,8 +1898,7 @@ void fn_3_34A40(int i) {
         *(s16*)(f + 0x1A0) = 0;
         f[0x1D6] = 0;
     }
-    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     if (*(f32*)(f + 0x50) != lbl_3_rodata_B20) {
         *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x50);
     }
@@ -4089,7 +4088,7 @@ void fn_3_3B9E4(void) {
 #endif
 
 // .text:0x0003BE50 size:0x358 mapped:0x8067AEE4
-// NONMATCHING 96%: f-reg numbering / 0.0 constant reuse; the second distance sum is unfused in the original; calls fn_3_526DC through a cast until its prototype gains the index arg
+// NONMATCHING 96%: f-reg numbering / 0.0 constant reuse; the second distance sum is unfused in the original
 #if NONMATCHING
 void fn_3_3BE50(int i) {
     u8* f = g_Fielders + i * 0x268;
@@ -4128,8 +4127,7 @@ void fn_3_3BE50(int i) {
             f[0x1D9] = 1;
         }
     }
-    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     if (f[0x1E9] != 0 && *(f32*)(f + 0x50) == lbl_3_rodata_B20) {
         f[0x1E9] = 0;
     }
@@ -4616,8 +4614,7 @@ void fn_3_3D304(int i) {
         *(f32*)(f + 0x68) = d;
     }
     f[0x1D9] = 1;
-    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
-    ((void (*)(int))fn_3_526DC)(i);
+    fn_3_526DC(i);
     if (*(f32*)(f + 0x68) <= lbl_3_rodata_B80) {
         SetFielderAct(i, 0, 0);
         f[0x1FA] = 1;
@@ -4720,7 +4717,7 @@ extern u8 lbl_3_data_4484[];
 extern u8 lbl_3_data_44B4[];
 extern f32 lbl_3_rodata_C1C;
 extern f32 lbl_3_rodata_C20;
-// NONMATCHING 92%: register/f-reg numbering in the inlined run-target blocks; calls fn_3_526DC through a cast until its prototype gains the index arg
+// NONMATCHING 92%: register/f-reg numbering in the inlined run-target blocks
 #if NONMATCHING
 void fn_3_3DB78(int i) {
     s32 off = i * 0x268;
@@ -8511,7 +8508,7 @@ int fn_3_52560(int i, f32 x, f32 z) {
 }
 
 // .text:0x000526DC size:0x870 mapped:0x80691770
-void fn_3_526DC(void) {
+void fn_3_526DC(int fi) {
     return;
 }
 
