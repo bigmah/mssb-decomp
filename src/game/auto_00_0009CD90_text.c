@@ -283,6 +283,89 @@ void fn_3_9D600(void) {
     }
 }
 
+// .text:0x0009D6A4 size:0x4B8
+void fn_3_9D6A4(void) {
+    BOOL tracked = FALSE;
+    s32 i;
+
+    if (g_Stats.replayInd != 0) {
+        return;
+    }
+    if (lbl_3_common_bss_32A94._0 == 0) {
+        if (g_FieldingLogic._107 == 4) {
+            lbl_3_common_bss_32A94._0 = 0x28;
+        } else if (g_GameLogic.gameStatus == 1) {
+            fn_3_9D600();
+        } else if (g_Ball.deadBallReason == 1) {
+            fn_3_9D594();
+        } else if (g_Ball.AtBat_ContactResult == -1) {
+            fn_3_9D550();
+        } else {
+            if (g_GameLogic.gameStatus == 2) {
+                if (g_Ball.fielderWBallIndex >= 0) {
+                    if (lbl_3_common_bss_32A94.lastFielder == -1) {
+                        for (i = 0; i < 5; i++) {
+                            if (lbl_3_common_bss_32A94.plays[i].fielder == -1) {
+                                s16 base;
+                                lbl_3_common_bss_32A94.plays[i].fielder = g_Ball.fielderWBallIndex;
+                                lbl_3_common_bss_32A94.plays[i].outs = g_Strikes.outs - g_Strikes.storedOuts;
+                                base = g_Fielders[g_Ball.fielderWBallIndex]._18C;
+                                if (base >= 0 && base <= 3) {
+                                    switch (base) {
+                                    case 0:
+                                        if ((g_RunningLogic.occupiedBases & 0x1111) == 0x1111) {
+                                            lbl_3_common_bss_32A94.plays[i].base = 0;
+                                        }
+                                        break;
+                                    case 1:
+                                        lbl_3_common_bss_32A94.plays[i].base = 1;
+                                        break;
+                                    case 2:
+                                        if ((g_RunningLogic.occupiedBases & 0x11) == 0x11) {
+                                            lbl_3_common_bss_32A94.plays[i].base = 2;
+                                        }
+                                        break;
+                                    default:
+                                        if ((g_RunningLogic.occupiedBases & 0x111) == 0x111) {
+                                            lbl_3_common_bss_32A94.plays[i].base = 3;
+                                        }
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        tracked = TRUE;
+                    } else if (lbl_3_common_bss_32A94.lastFielder == g_Ball.fielderWBallIndex) {
+                        for (i = 4; i >= 0; i--) {
+                            if (lbl_3_common_bss_32A94.plays[i].fielder == g_Ball.fielderWBallIndex) {
+                                if (g_Ball.timeSinceBallPickedUp <= 0x3C) {
+                                    lbl_3_common_bss_32A94.plays[i].outs = g_Strikes.outs - g_Strikes.storedOuts;
+                                }
+                                break;
+                            }
+                        }
+                        tracked = TRUE;
+                    }
+                }
+                lbl_3_common_bss_32A94.lastFielder = g_Ball.fielderWBallIndex;
+            }
+            if (g_Ball.maybeBuntInd != 0) {
+                fn_3_9CE78();
+            } else if (fn_3_9D374() == 0) {
+                if (tracked) {
+                    fn_3_9D140();
+                }
+                fn_3_9CD90();
+            }
+        }
+    }
+    fn_3_9CAF0();
+    if (lbl_3_common_bss_32A94._0 != 0) {
+        lbl_3_common_bss_32A94._2 = lbl_3_common_bss_32A94._0;
+    }
+}
+
 // .text:0x0009DB5C size:0x88
 void fn_3_9DB5C(void) {
     s32 i;
