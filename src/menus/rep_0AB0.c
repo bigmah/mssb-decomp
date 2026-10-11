@@ -20,6 +20,7 @@
 #include "menus/auto_00_00092394_text.h"
 #include "menus/rep_1028.h"
 #include "Dolphin/GX/GXPixel.h"
+#include "static/GameSettings.h"
 
 extern u32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
 
@@ -42,6 +43,19 @@ extern void fn_2_8DFB0(void);
 extern void fn_8001F228(void);
 extern MenuCharMgr* lbl_2_bss_340140;
 extern MenuCharLayout* lbl_2_bss_1A8240;
+extern MenuWorkBuf lbl_2_bss_1A8250;
+extern MenuDrawArea* lbl_2_bss_1A8230;
+extern void* lbl_2_bss_3401BC;
+extern u8 lbl_2_bss_3401C0[];
+extern UnlockFlags lbl_80361B20;
+extern MenuCharLayout lbl_803616CC;
+extern MenuSceneState lbl_800E877C;
+extern s16 lbl_2_data_20C48[]; // group order for MenuWorkBuf.groups
+extern void fn_2_71F60(void);
+extern void fn_2_9257C(void);
+extern void fn_80035B50(int id);
+extern void fn_800ACFB0(void* block);
+extern void fn_2_11A0(u16 value);
 extern u8 lbl_2_bss_33FBF0[]; // per actor
 // lbl_803CC1B8 (SceneTask*, main/file_80069BDC.h) is the running menu task.
 #define CUR_TASK ((MenuTask*)lbl_803CC1B8)
@@ -1586,6 +1600,141 @@ void fn_2_5DC5C(void) {
 }
 
 // .text:0x0005E104 size:0x748
+// NONMATCHING 93%: same code; register allocation differs and the original reloads lbl_2_bss_1A8230/1A824C in steps 7/8 instead of reusing the values stored at the top
+#if NONMATCHING
 void fn_2_5E104(void) {
-    return;
+    MenuTask* task;
+    s32 i;
+    s32 j;
+    CharSelWork* sel = &lbl_8034E9A0;
+
+    lbl_2_bss_1A824C = &lbl_2_bss_1A8250;
+    lbl_2_bss_1A8248 = (MenuSaveView*)starMissionCompletionTracker;
+    task = CUR_TASK;
+    lbl_2_bss_1A8244 = &lbl_80361B20;
+    lbl_2_bss_1A8240 = &lbl_803616CC;
+    lbl_2_bss_1A823C = &lbl_800E877C;
+    lbl_2_bss_1A8234 = &lbl_2_bss_1A8250;
+    lbl_2_bss_1A8230 = &lbl_2_bss_1A8250.drawArea;
+    lbl_2_bss_340140 = &lbl_8036E548;
+    lbl_2_bss_3401BC = lbl_2_bss_3401C0;
+    switch (lbl_803CBBCC->step) {
+    case 0:
+        fn_8001F228();
+        memset(&lbl_2_bss_1A8250, 0, sizeof(MenuWorkBuf));
+        fn_2_54474();
+        lbl_803CBBCC->step = 1;
+        fn_2_5EB78();
+        for (i = 0; i < 7; i++) {
+            if (i == 6) {
+                lbl_2_bss_1A824C->groups[i][0].id = lbl_2_bss_1A8240->tail[0].id;
+                lbl_2_bss_1A824C->groups[i][0].x = lbl_2_bss_1A8240->tail[0].x;
+                lbl_2_bss_1A824C->groups[i][0].y = lbl_2_bss_1A8240->tail[0].y;
+                lbl_2_bss_1A824C->groups[i][1].id = lbl_2_bss_1A8240->tail[1].id;
+                lbl_2_bss_1A824C->groups[i][1].x = lbl_2_bss_1A8240->tail[1].x;
+                lbl_2_bss_1A824C->groups[i][1].y = lbl_2_bss_1A8240->tail[1].y;
+                lbl_2_bss_1A824C->groups[i][2].id = lbl_2_bss_1A8240->tail[2].id;
+                lbl_2_bss_1A824C->groups[i][2].x = lbl_2_bss_1A8240->tail[2].x;
+                lbl_2_bss_1A824C->groups[i][2].y = lbl_2_bss_1A8240->tail[2].y;
+                lbl_2_bss_1A824C->groups[i][3].id = lbl_2_bss_1A8240->tail[3].id;
+                lbl_2_bss_1A824C->groups[i][3].x = lbl_2_bss_1A8240->tail[3].x;
+                lbl_2_bss_1A824C->groups[i][3].y = lbl_2_bss_1A8240->tail[3].y;
+                lbl_2_bss_1A824C->groups[i][4].id = lbl_2_bss_1A8240->tail[4].id;
+                lbl_2_bss_1A824C->groups[i][4].x = lbl_2_bss_1A8240->tail[4].x;
+                lbl_2_bss_1A824C->groups[i][4].y = lbl_2_bss_1A8240->tail[4].y;
+            } else {
+                for (j = 0; j < 5; j++) {
+                    lbl_2_bss_1A824C->groups[i][j].id = lbl_2_bss_1A8240->groups[lbl_2_data_20C48[i]][j].id;
+                    lbl_2_bss_1A824C->groups[i][j].x = lbl_2_bss_1A8240->groups[lbl_2_data_20C48[i]][j].x;
+                    lbl_2_bss_1A824C->groups[i][j].y = lbl_2_bss_1A8240->groups[lbl_2_data_20C48[i]][j].y;
+                }
+            }
+        }
+        lbl_2_bss_1A824C->head[0].id = lbl_2_bss_1A8240->head[0].id;
+        lbl_2_bss_1A824C->head[0].y = lbl_2_bss_1A8240->head[0].y;
+        lbl_2_bss_1A824C->head[1].id = lbl_2_bss_1A8240->head[1].id;
+        lbl_2_bss_1A824C->head[1].y = lbl_2_bss_1A8240->head[1].y;
+        lbl_2_bss_1A824C->head[2].id = lbl_2_bss_1A8240->head[2].id;
+        lbl_2_bss_1A824C->head[2].y = lbl_2_bss_1A8240->head[2].y;
+        lbl_2_bss_1A824C->head[3].id = lbl_2_bss_1A8240->head[3].id;
+        lbl_2_bss_1A824C->head[3].y = lbl_2_bss_1A8240->head[3].y;
+        lbl_2_bss_1A824C->head[4].id = lbl_2_bss_1A8240->head[4].id;
+        lbl_2_bss_1A824C->head[4].y = lbl_2_bss_1A8240->head[4].y;
+        g_d_GameSettings.StadiumID = 0;
+        lbl_2_bss_1A824C->port = sel->teamPort[0];
+        fn_8000F4B8(0, -1, -1, -1);
+        lbl_2_bss_1A823C->state = 0;
+        break;
+    case 1: {
+        MenuTask* child = fn_800B0A5C_insertQueue(fn_2_5ED3C, 2);
+        child->step = 0;
+        task->signal = 0;
+        lbl_803CBBCC->step = 2;
+        break;
+    }
+    case 2:
+        if (task->signal == 1) {
+            lbl_803CBBCC->step = 3;
+        }
+        break;
+    case 3: {
+        Vec pos;
+        lbl_2_bss_1A8250.done = 0;
+        fn_2_5AF24();
+        fn_2_6ACF4();
+        fn_800B0A5C_insertQueue(fn_2_71F60, 2);
+        pos.z = 0.0f;
+        pos.y = 0.0f;
+        pos.x = 0.0f;
+        fn_2_6AB3C(0, &pos, 0.0f);
+        fn_2_72054(0, 0);
+        fn_2_904A8();
+        fn_800B0A5C_insertQueue(fn_2_9257C, 2);
+        for (i = 0; i < lbl_2_bss_340140->_3078; i++) {
+            fn_2_903A8(i);
+            fn_2_92654(i, 0);
+        }
+        fn_800B0A5C_insertQueue(fn_2_5DC5C, 2);
+        task->signal = 0;
+        lbl_2_bss_1A824C->mode = 0;
+        lbl_2_bss_1A824C->_197732 = 0;
+        lbl_803CBBCC->step = 4;
+        break;
+    }
+    case 4:
+        lbl_803CBBCC->step = 5;
+        break;
+    case 5:
+        changeScene(1, 6);
+        lbl_803CBBCC->step = 6;
+        break;
+    case 6:
+        if (lbl_8037169C.done != 0) {
+            lbl_803CBBCC->step = 7;
+        }
+        break;
+    case 7:
+        if (task->signal == 1) {
+            lbl_8034E978._05 = 1;
+            lbl_2_bss_1A8250.done = 1;
+            lbl_2_bss_1A8230->_32A86 = 1;
+            lbl_803CBBCC->step = 8;
+        }
+        break;
+    case 8:
+        lbl_2_bss_1A8250._1972BC = 1;
+        lbl_2_bss_1A824C->_1972C0 = 1;
+        fn_8001F228();
+        fn_80035B50(10);
+        if (lbl_80366B18.tables[2] != NULL) {
+            fn_800ACFB0(lbl_80366B18.tables[2]);
+            lbl_80366B18.tables[2] = NULL;
+        }
+        lbl_2_bss_1A823C->_34 = 0;
+        lbl_803CBBCC->step = 0;
+        fn_2_11A0(5);
+        lbl_2_bss_1A823C->state = 0;
+        break;
+    }
 }
+#endif

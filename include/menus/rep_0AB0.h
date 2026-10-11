@@ -47,6 +47,14 @@ typedef struct MenuSceneState {
     /*0x34*/ u8 _34;
 } MenuSceneState;
 
+// Draw area after the per-layer flags (lbl_2_bss_1A8230 points at it); starts with the
+// MenuDrawEntry[10][864] table used by fn_2_53F04.
+typedef struct MenuDrawArea {
+    /*0x00000*/ u8 _00000[0x32A86];
+    /*0x32A86*/ u8 _32A86;
+    /*0x32A87*/ u8 _32A87;
+} MenuDrawArea;
+
 // Menu work buffer (lbl_2_bss_1A8250; lbl_2_bss_1A8234 and lbl_2_bss_1A824C point at it).
 typedef struct MenuWorkBuf {
     /*0x000000*/ u8 _000000[0x162600];
@@ -54,7 +62,9 @@ typedef struct MenuWorkBuf {
     /*0x162602*/ u8 _162602[2];
     /*0x162604*/ u8 layerFlags[13][0x46]; // per layout group: start an animation
     /*0x162992*/ u8 done;
-    /*0x162993*/ u8 _162993[0x1972BC - 0x162993];
+    /*0x162993*/ u8 _162993[0x162998 - 0x162993];
+    /*0x162998*/ MenuDrawArea drawArea;
+    /*0x195420*/ u8 _195420[0x1972BC - 0x195420];
     /*0x1972BC*/ u8 _1972BC;
     /*0x1972BD*/ u8 _1972BD;
     /*0x1972BE*/ s16 modelIndex; // debug: 0..28
