@@ -42,8 +42,16 @@ void ACTSort(GameActor* actor) {
 }
 
 // .text:0x800B2D5C size:0x74
-void fn_800B2D5C(void) {
-    return;
+void fn_800B2D5C(GameActor* actor) {
+    PositionData* pos;
+
+    GQRSetup5(8, 4, 8, 4);
+    pos = actor->skinObject->positionData;
+    if (pos->quantizeInfo == 0x40) {
+        SKNIt(actor->boneArray, actor->skHeader, pos->positionArray);
+    } else {
+        fn_800BF2A8(actor->boneArray, actor->skHeader, pos->positionArray);
+    }
 }
 
 // .text:0x800B2DD0 size:0x36C
