@@ -557,9 +557,134 @@ void fn_3_E6A48(StaC6Obj* o) {
 #endif
 
 // .text:0x000E6D90 size:0x5C0 mapped:0x80725E24
+// Play crowd sound n (see playCrowdSound in rep_2998.c).
+#define PLAY_CROWD_SOUND(n)                                                       \
+    do {                                                                          \
+        s32 stadium_ = g_d_GameSettings.StadiumID;                                \
+        u8 vol_;                                                                  \
+        SND_VOICEID voice_;                                                       \
+        if (g_d_GameSettings.GameModeSelected == 6) {                             \
+            vol_ = lbl_3_data_84B8[n].vol;                                        \
+        } else {                                                                  \
+            vol_ = lbl_3_data_8404[stadium_ * 15 + n].vol;                        \
+        }                                                                         \
+        voice_ = sndFXStartEx(lbl_3_data_81DC[stadium_] + n, vol_, 0x3F, 0);      \
+        if (g_d_GameSettings.GameModeSelected == 6) {                             \
+            vol_ = lbl_3_data_84B8[n].ctrl;                                       \
+        } else {                                                                  \
+            vol_ = lbl_3_data_8404[stadium_ * 15 + n].ctrl;                       \
+        }                                                                         \
+        sndFXCtrl(voice_, 0x5B, vol_);                                            \
+    } while (0)
+
+// NONMATCHING 90.5%: the original reaches this unit's .data (lbl_3_data_19024/1963F/19644/19698/196B4)
+// through one pooled lbl_3_data_19018 base; fn_3_E5A84, fn_3_E6528 and fn_3_E6578 are inlined by hand,
+// frame is 0x10 smaller, register allocation differs.
+#if NONMATCHING
+// Panel pre-draw: place it, light it when the ball touches it, and colour it.
 void fn_3_E6D90(StaC6Obj* o) {
-    return;
+    Control c;
+    Mtx m;
+    GameBone* bone;
+    s32 i;
+    ActorObject* sub;
+    struct DODisplayObj* disp;
+    TextureData* tex;
+
+    // fn_3_E5A84
+    PSMTXIdentity(m);
+    c.type = 0;
+    if (o->kind < 8) {
+        CTRLSetTranslation(&c, lbl_3_bss_AEB4[0][o->index].pos.x, lbl_3_bss_AEB4[0][o->index].pos.y, lbl_3_bss_AEB4[0][o->index].pos.z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_bss_AEB4[0][o->index].rotY, 0.0f);
+    } else {
+        CTRLSetTranslation(&c, lbl_3_data_19644[o->slot].x, lbl_3_data_19644[o->slot].y, lbl_3_data_19644[o->slot].z);
+        CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[o->slot], 0.0f);
+    }
+    CTRLBuildMatrix(&c, m);
+    for (i = 0; i < o->actorObj->actor->totalBones; i++) {
+        bone = o->actorObj->actor->boneArray[i];
+        CTRLBuildMatrix(&bone->orientCtrl.base, bone->forwardMtx);
+        PSMTXConcat(m, bone->forwardMtx, bone->forwardMtx);
+        PSMTXCopy(bone->forwardMtx, bone->dispObj->worldMatrix);
+    }
+    if (o->subObj != NULL) {
+        for (i = 0; i < o->subObj->actor->totalBones; i++) {
+            bone = o->subObj->actor->boneArray[i];
+            CTRLBuildMatrix(&bone->orientCtrl.base, bone->forwardMtx);
+            PSMTXConcat(m, bone->forwardMtx, bone->forwardMtx);
+            if (bone->dispObj != NULL) {
+                PSMTXCopy(bone->forwardMtx, bone->dispObj->worldMatrix);
+            }
+        }
+        o->subObj->actor->flags = fn_800B3C04(0, o->subObj->actor, CUR_VIEW());
+    }
+    o->actorObj->actor->flags = fn_800B3C04(0, o->actorObj->actor, CUR_VIEW());
+
+    if (g_GameLogic.gameStatus == 0 || g_GameLogic.gameStatus == 1) {
+        // fn_3_E6528
+        memcpy(o->color, o->colorIdle, 4);
+        o->bodyColor = lbl_3_data_19024.bodyColors[1];
+        o->lit = 0;
+        if (lbl_3_bss_AE52 != 0) {
+            lbl_3_bss_AE52 = 0;
+        }
+    }
+    if (g_GameLogic.gameStatus == 2) {
+        if (g_Ball.AtBat_ContactResult != 0) {
+            if (lbl_3_data_1963F == o->index && g_Minigame.maybeTFCollisionResultState == lbl_3_data_196B4.kindResult[o->kind]) {
+                memcpy(o->color, o->colorHit, 4);
+                o->bodyColor = lbl_3_data_19024.bodyColors[2];
+                if (o->lit == 0) {
+                    PLAY_CROWD_SOUND(0x14);
+                }
+                o->lit = 1;
+                if (g_Minigame.toyFieldBallStateResult != 0 && g_Minigame.toyFieldBallStateResult == lbl_3_data_196B4.kindResult[o->kind] &&
+                    o->kind >= 8) {
+                    if (lbl_3_data_196B4.hit[o->flagIdx] == 0) {
+                        PLAY_CROWD_SOUND(0x17);
+                    }
+                    lbl_3_data_196B4.hit[o->flagIdx] = 1;
+                }
+            } else {
+                memcpy(o->color, o->colorMiss, 4);
+                o->bodyColor = lbl_3_data_19024.bodyColors[0];
+                o->lit = 0;
+            }
+        }
+    } else {
+        o->_A0 = 0;
+    }
+    if (lbl_3_bss_AE52 != 0) {
+        memcpy(o->color, o->colorHit, 4);
+        o->bodyColor = lbl_3_data_19024.bodyColors[2];
+        o->lit = 1;
+    }
+    fn_3_E5FEC(o);
+
+    // fn_3_E6578
+    sub = o->subObj;
+    if (sub != NULL) {
+        disp = BONE(sub, 1)->dispObj;
+        tex = disp->textureData;
+        if (disp->displayData->displayStateList[2].id != 3) {
+            OSPanic(lbl_3_rodata_2BB0, 0x713, lbl_3_rodata_2BBC);
+        }
+        if (o->kind == 2) {
+            tex->texturePalette->tex[4].texIndex = 1;
+        } else if (o->kind == 10) {
+            tex->texturePalette->tex[4].texIndex = 0;
+        } else {
+            tex->texturePalette->tex[4].texIndex = 4;
+        }
+    }
+
+    if (o->subObj != NULL) {
+        fn_800BDA94(o->subObj, CUR_CAMERA_VIEW());
+        BONE(o->subObj, 2)->dispObj = BONE(o->subObj, 2)->baseDispObj;
+    }
 }
+#endif
 
 // .text:0x000E7350 size:0x14 mapped:0x807263E4
 void fn_3_E7350(void) {
