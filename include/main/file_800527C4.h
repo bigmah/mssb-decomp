@@ -2,6 +2,7 @@
 #define __MAIN_FILE_800527C4_H__
 
 #include "mssbTypes.h"
+#include "main/file_80069BDC.h"
 #include "Dolphin/mtx.h"
 #include "main/file_80063028.h"
 
@@ -48,6 +49,7 @@ typedef struct LoopSfxState {
 
 BOOL fn_800527C4(Vec* pos);
 void fn_80053FE8(void);
+void fn_80054910(SceneTask* task, s32 port);
 void fn_80056120(void);
 void fn_800569C8(void);
 void challengeCheckStarsMenuLoading(void);
@@ -80,6 +82,20 @@ typedef struct MenuWork {
     /*0xCF71*/ u8 _CF71[0x31];
     /*0xCFA2*/ u8 teamKind[0x36];
 } MenuWork;
+
+// lbl_803C5F04: input state for the tutorial step checks (size 0x70).
+typedef struct TutorialInput {
+    /*0x00*/ u8 _00[0x36];
+    /*0x36*/ u8 mode;
+    /*0x37*/ u8 _37[4];
+    /*0x3B*/ s8 tblA[5];
+    /*0x40*/ s8 tblB[5];
+    /*0x45*/ s8 tblC[4][4];
+    /*0x55*/ s8 tblD[4][4];
+    /*0x65*/ s8 cur[4];
+    /*0x69*/ s8 target[4];
+    /*0x6D*/ u8 _6D[3];
+} TutorialInput; // size: 0x70
 
 void fn_800528B4(void);
 void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);

@@ -49,6 +49,9 @@ extern struct SpaniDesc lbl_80108048;
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
+extern BOOL fn_80042D68(SceneTask* owner, s32 idx, s32 frame);
+extern BOOL fn_80042DA8(SceneTask* owner, s32 idx, s32 frame);
+extern TutorialInput lbl_803C5F04;
 
 static inline void SetMenu(s16 menu) {
     lbl_8034E978.menu = menu;
@@ -132,9 +135,61 @@ void fn_800542C4(void) {
 }
 
 // .text:0x80054910 size:0x1F0
-void fn_80054910(void) {
-    return;
+// NONMATCHING 96%: expected=TRUE scheduled before the call args and a missing mr for done
+#if NONMATCHING
+void fn_80054910(SceneTask* task, s32 port) {
+    u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[8][port + 1]
+    s8 cur;
+    s8 target;
+    s8 a;
+    s8 b;
+    u8 done;
+    BOOL expected;
+
+    if ((*(state += 0x31) == 1) ? TRUE : FALSE) {
+        cur = lbl_803C5F04.cur[port];
+        target = lbl_803C5F04.target[port];
+        if (cur != 0) {
+            if (lbl_803C5F04.mode == 0) {
+                a = lbl_803C5F04.tblA[cur];
+                b = lbl_803C5F04.tblB[target];
+            } else {
+                a = lbl_803C5F04.tblC[port][cur];
+                b = lbl_803C5F04.tblD[port][target];
+            }
+        }
+        done = FALSE;
+        expected = FALSE;
+        if (target == cur && a != b) {
+            if (lbl_803C5F04.mode == 0 && cur != 0) {
+                switch (cur) {
+                case 1:
+                    if (a != 0) {
+                        done = fn_80042DA8(task, 0x1A, 5) != 0;
+                        expected = TRUE;
+                    } else {
+                        done = fn_80042DA8(task, 0x1A, 0x19) != 0;
+                        expected = TRUE;
+                    }
+                    break;
+                }
+            } else if (lbl_803C5F04.mode == 1) {
+                if (lbl_803C5F04._37[port] == 0) {
+                    done = fn_80042DA8(task, cur + port * 4 + 0x33, 0) != 0;
+                    expected = TRUE;
+                } else {
+                    done = fn_80042DA8(task, cur + port * 4 + 0x33, 10) != 0;
+                    expected = TRUE;
+                }
+            }
+        }
+        if (done == expected) {
+            fn_80062674(port);
+            *state = 2;
+        }
+    }
 }
+#endif
 
 // .text:0x80054B00 size:0x874
 void fn_80054B00(void) {
