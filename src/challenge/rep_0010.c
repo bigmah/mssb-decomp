@@ -206,3 +206,9 @@ void _unresolved(void) {
     return;
 }
 
+// .text:0x0000110C size:0x3C
+void _prolog(void) {
+    fn_800B0C80(fn_1_1148);
+    fn_800AD054(lbl_80366158.arenaAfterDll, lbl_80366158.arenaEnd);
+}
+
