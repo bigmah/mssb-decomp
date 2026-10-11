@@ -3,17 +3,12 @@
 
 #include "mssbTypes.h"
 
-typedef struct {
-    s32 a;
-    s16 b;
-    s16 pad;
-} RankEnt;
-
+// Minigame result / high-score table entry.
 typedef struct {
     /*0x0*/ s32 score;
-    /*0x4*/ s16 _4;
-    /*0x6*/ s16 _6;
-} MinigameScore; // size: 0x8
+    /*0x4*/ s16 sub;    // secondary score (tie-breaker)
+    /*0x6*/ s16 charId; // roster value at +0x24 of the player's character
+} RankEnt; // size: 0x8
 
 void fn_3_106EB0(void);
 void fn_3_107078(void);
@@ -64,7 +59,7 @@ void fn_3_1104D4(void);
 void fn_3_10F3D8(void);
 void fn_3_106ED4(void);
 void fn_3_10FBE4(void);
-void fn_3_109DE0(MinigameScore* out);
+void fn_3_109DE0(RankEnt* out);
 void fn_3_10F91C(void);
 void fn_3_10F684(void);
 void fn_3_10722C(void);
@@ -75,5 +70,6 @@ void fn_3_10BE7C(void);
 void fn_3_108C54(void);
 void fn_3_10B27C(void);
 void fn_3_10FDC8(void);
+void fn_3_10952C(void);
 
 #endif

@@ -854,10 +854,10 @@ u32 fn_3_109CE8(RankEnt* p) {
     u32 i;
     if (g_Minigame[0x1907] == 1) {
         e = (RankEnt*)fn_3_109D88_inl();
-        v = p->a;
+        v = p->score;
         i = 0;
         do {
-            if (v > e[i].a || (v == e[i].a && p->b > e[i].b)) {
+            if (v > e[i].score || (v == e[i].score && p->sub > e[i].sub)) {
                 break;
             }
             i++;
@@ -1473,19 +1473,19 @@ extern s16 lbl_80109410[8];
 // NONMATCHING 90%: original hoists g_Minigame+0x18CC / inMemRoster+0x24 into saved regs shared with the inlined fn_3_10754C
 #if NONMATCHING
 // fn_3_109DE0, size:0x23C
-void fn_3_109DE0(MinigameScore* out) {
+void fn_3_109DE0(RankEnt* out) {
     StatInput stat;
     s32 lim;
-    memset(out, 0, sizeof(MinigameScore));
+    memset(out, 0, sizeof(RankEnt));
     if (g_Minigame[0x1907] == 1) {
         {
         RosT* r = (RosT*)inMemRoster;
-        out->_6 = r[*(s8*)(g_Minigame + 0x18CC + *(s8*)(g_Minigame + 0x1908))].v;
+        out->charId = r[*(s8*)(g_Minigame + 0x18CC + *(s8*)(g_Minigame + 0x1908))].v;
         }
         if (g_Minigame[0x1A3C] != 0) {
             fn_3_10754C(&stat);
             out->score = fn_8006C13C(&stat);
-            out->_4 = 0;
+            out->sub = 0;
             return;
         }
         out->score = *(s16*)(g_Minigame + 0x1890 + *(s8*)(g_Minigame + 0x1908) * 2);
@@ -1493,12 +1493,12 @@ void fn_3_109DE0(MinigameScore* out) {
             out->score = lbl_80109410[g_Minigame[0x1A2A]];
         }
         if (g_Minigame[0x1A2A] == 1) {
-            out->_4 = *(s16*)(g_Minigame + 0x1A8E + *(s8*)(g_Minigame + 0x1908) * 2);
-            if (out->_4 > 999) {
-                out->_4 = 999;
+            out->sub = *(s16*)(g_Minigame + 0x1A8E + *(s8*)(g_Minigame + 0x1908) * 2);
+            if (out->sub > 999) {
+                out->sub = 999;
             }
         } else {
-            out->_4 = 0;
+            out->sub = 0;
         }
     }
 }
@@ -2597,3 +2597,60 @@ void fn_3_10FDC8(void) {
         break;
     }
 }
+
+extern u8 lbl_800E8558[];
+
+// NONMATCHING 90%: inlines fn_3_109DE0 (itself NONMATCHING; differences are inside that inline: base hoisting and switch shape)
+#if NONMATCHING
+// fn_3_10952C, size:0x7BC
+void fn_3_10952C(void) {
+    RankEnt score;
+    StatInput cur;
+    StatInput* best;
+    RankEnt* tbl;
+    u32 rank;
+    u32 i;
+    u8 chara;
+    s16 bestTotal;
+
+    g_Minigame[0x1E03] = 5;
+    if (g_Minigame[0x1907] != 1) {
+        return;
+    }
+    if (!(g_Minigame[0x1A3C] != 0 || (g_Minigame[0x1A2A] != 4 && g_Minigame[0x1A2A] != 5 && g_Minigame[0x1A2A] != 6) ||
+          g_Minigame[0x18E8 + *(s8*)(g_Minigame + 0x1908)] == 1)) {
+        return;
+    }
+    fn_3_109DE0(&score);
+    rank = fn_3_109CE8(&score);
+    g_Minigame[0x1E03] = rank;
+    if (rank < 5) {
+        tbl = (RankEnt*)fn_3_109D88_inl();
+        for (i = 4; i > rank; i--) {
+            memcpy(&tbl[i], &tbl[i - 1], sizeof(RankEnt));
+        }
+        memcpy(&tbl[rank], &score, sizeof(RankEnt));
+        g_Minigame[0x1A43] = rank + 1;
+    }
+    if (g_Minigame[0x1A3C] != 0) {
+        fn_3_10754C(&cur);
+        chara = lbl_800E8558[cur._14[0] * 6 + 2];
+        best = (StatInput*)(lbl_803616CC + chara * 0x16 + 0x140);
+        bestTotal = fn_8006C13C(best);
+        if (fn_8006C13C(&cur) > bestTotal) {
+            fn_3_10754C(best);
+            g_Minigame[0x1A46] = 1;
+        } else {
+            bestTotal = fn_8006C13C(best);
+            if (fn_8006C13C(&cur) == bestTotal && cur._12 < best->_12) {
+                fn_3_10754C(best);
+                g_Minigame[0x1A46] = 1;
+            }
+        }
+        if (3 - *(s8*)(lbl_803616CC + chara + 0x400) > cur._12) {
+            lbl_803616CC[chara + 0x400] = 3 - cur._12;
+            g_Minigame[0x1A46] = 1;
+        }
+    }
+}
+#endif
