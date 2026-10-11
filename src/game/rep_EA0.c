@@ -463,6 +463,7 @@ s32 fn_3_67EF0(VecQueue* queue, s32 maxPoints, Vec* positions, u32* colors, u32 
 // .text:0x000685F0 size:0x5C4 mapped:0x806A7684
 // NONMATCHING 82%: the inlined fn_3_675B8 stores alpha through lbl_3_bss_16A8 itself in the original
 // (separate static); ours goes through lbl_3_bss_200
+// nmverify: lbl_3_bss_200 is the pooled-base model of the separate static lbl_3_bss_16A8 (alpha)
 #if NONMATCHING
 void fn_3_685F0(void) {
     if (g_Minigame.GameMode_MiniGame == 4 || g_Minigame.GameMode_MiniGame == 5 ||
@@ -869,6 +870,7 @@ void fn_3_695F8(s32 flag) {
 // .text:0x000697CC size:0x994 mapped:0x806A8860
 // NONMATCHING 97%: register allocation; the original reads the scale table through a
 // charSizeMultipliers+0x1B0 symbol (lfsx), and the inlined fn_3_675B8 stores lbl_3_bss_16A8 directly
+// nmverify: lbl_3_bss_200 is the pooled-base model of the separate static lbl_3_bss_16A8 (alpha)
 #if NONMATCHING
 void fn_3_697CC(void) {
     CharTrail* trail;
