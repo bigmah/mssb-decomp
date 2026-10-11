@@ -260,7 +260,57 @@ void fn_1_2858C(ChallengeDebugCamera* camera, u16 held, u16 pressed, u16 repeate
 // .text:0x00028CE8 size:0x374
 // Draws the rigid body as a box plus a set of axes; the vectors computed at the end are unused.
 void fn_1_28CE8(ChallengeQueueEntry* task) {
-    return;
+    Mtx m;
+    Vec v;
+    f32 width;
+
+    width = (f32)lbl_1_data_11300.scaledCamera[2] / 100000.0f;
+    PSMTXScale(m, width, width, (f32)lbl_1_data_11300.scaledCamera[0] / 100000.0f);
+    PSMTXConcat(lbl_1_bss_47068.world, m, m);
+    PSMTXConcat(lbl_1_bss_471D8.view, m, m);
+    GXLoadPosMtxImm(m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    gOz_GXSetTexture(GX_PASSCLR, 0, 0);
+
+    GXBegin(GX_LINES, GX_VTXFMT0, 6);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXColor1u32(0xFF0000FF);
+    GXPosition3f32(1.0f, 0.0f, 0.0f);
+    GXColor1u32(0xFF0000FF);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXColor1u32(0x00FF00FF);
+    GXPosition3f32(0.0f, 1.0f, 0.0f);
+    GXColor1u32(0x00FF00FF);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXColor1u32(0x0000FFFF);
+    GXPosition3f32(0.0f, 0.0f, 1.0f);
+    GXColor1u32(0x0000FFFF);
+
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
+    GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetArray(GX_VA_POS, sBoxVerts, sizeof(sBoxVerts[0]));
+    GXSetArray(GX_VA_CLR0, sBoxColors, sizeof(sBoxColors[0]));
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXSetCullMode(GX_CULL_BACK);
+    GXCallDisplayList(sBoxDisplayList, sizeof(sBoxDisplayList));
+
+    PSMTXMultVec(lbl_1_bss_47068.world, &lbl_1_bss_47068.p0, &v);
+    PSMTXMultVec(lbl_1_bss_47068.world, &lbl_1_bss_47068.p1, &v);
+    PSVECCrossProduct(&lbl_1_bss_47068.p0, &lbl_1_bss_47068.angVel, &v);
+    PSMTXMultVec(lbl_1_bss_47068.rot, &v, &v);
+    PSVECCrossProduct(&lbl_1_bss_47068.p1, &lbl_1_bss_47068.angVel, &v);
+    PSMTXMultVec(lbl_1_bss_47068.rot, &v, &v);
+    PSVECScale(&lbl_1_bss_47068.force, lbl_1_bss_47068.invMass, &v);
 }
 
 // .text:0x0002905C size:0x300
