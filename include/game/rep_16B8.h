@@ -2,6 +2,26 @@
 #define __GAME_rep_16B8_H_
 
 #include "mssbTypes.h"
+#include "game/UnknownHomes_Game.h"
+#include "main/file_8000F150.h" // LayoutSlot lbl_80371C30
+
+extern GameScores g_Scores;
+
+// Sprite-layout task (lbl_803CC1B8[0] while one of this unit's tasks runs); only the fields used here.
+typedef struct RepTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
+    /*0x16*/ u16 _16;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ u16 _1C;
+    /*0x1E*/ u16 _1E;
+    /*0x20*/ u16 _20;
+    /*0x22*/ u16 _22;
+} RepTask;
+
+#define REP_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
 
 void fn_3_91520(void);
 void fn_3_91A60(void);
