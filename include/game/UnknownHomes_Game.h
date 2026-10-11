@@ -2014,10 +2014,7 @@ typedef struct _MiniGameStruct {
     /*0x18CC*/ MiniGameControlStruct minigameControlStruct[1];
     /*0x18F8*/ s8 minigameFielderIndex[4];
     /*0x18FC*/ s8 _18FC[4];
-    /*0x1900*/ u8 _1900;
-    /*0x1901*/ u8 _1901;
-    /*0x1902*/ u8 _1902;
-    /*0x1903*/ u8 _1903;
+    /*0x1900*/ s8 _1900[4];
     /*0x1904*/ s8 minigamePlayerSelectedOrder; // the pitcher
     /*0x1905*/ s8 rosterID;
     /*0x1906*/ u8 miniGameNumberOfParticipants;
@@ -2255,7 +2252,7 @@ typedef struct _MiniGameStruct {
     /*0x1AD9*/ u8 _1AD9;
     /*0x1ADA*/ u8 barrelBatterChargeMeter;
     /*0x1ADB*/ u8 barrelBatter_scoreCalculatedInd;
-    /*0x1ADC*/ u8 barrelBatter_hitBarrelID;
+    /*0x1ADC*/ s8 barrelBatter_hitBarrelID;
     /*0x1ADD*/ u8 barrelBatter_barrelsHit;
     /*0x1ADE*/ u8 _1ADE[2];
     /*0x1AE0*/ f32 _1AE0;
@@ -2831,24 +2828,41 @@ typedef struct {
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0xAE];
+    u8 pad[0x90];
+    /* 0x090 */ VecXYZ _090; // target position
+    u8 _09C[0xAE - 0x9C];
     /* 0x0AE */ s16 _0AE;
     /* 0x0B0 */ s16 _0B0; // fielder index (g_Fielders), < 0 if none
     u8 _0B2[0xBC - 0xB2];
     /* 0x0BC */ s16 _0BC;
-    u8 _0BE[0xC4 - 0xBE];
-    /* 0x0C4 */ s16 _0C4; // base the play is at (runner index)
-    u8 _0C6[0xCC - 0xC6];
-    /* 0x0CC */ s16 _0CC;
-    u8 _0CE[0xE4 - 0xCE];
+    /* 0x0BE */ s16 _0BE; // fielder index
+    /* 0x0C0 */ s16 _0C0;
+    /* 0x0C2 */ s16 _0C2;
+    /* 0x0C4 */ s16 _0C4; // base to throw to
+    /* 0x0C6 */ s16 _0C6;
+    /* 0x0C8 */ s16 _0C8;
+    /* 0x0CA */ s16 _0CA;
+    /* 0x0CC */ s16 _0CC; // base
+    /* 0x0CE */ s16 _0CE;
+    /* 0x0D0 */ s16 _0D0[4]; // per base: fielder covering it
+    /* 0x0D8 */ s16 _0D8;
+    /* 0x0DA */ s16 _0DA;
+    /* 0x0DC */ s16 _0DC;
+    /* 0x0DE */ s16 _0DE; // runner index
+    /* 0x0E0 */ s16 _0E0; // runner index
+    /* 0x0E2 */ s16 _0E2;
     /* 0x0E4 */ s16 _0E4;
-    u8 _0E6[0xE8 - 0xE6];
-    /* 0x0E8 */ s16 _0E8;
+    /* 0x0E6 */ s16 _0E6;
+    /* 0x0E8 */ s16 _0E8; // runner index
     /* 0x0EA */ s16 _0EA; // fielder index (g_Fielders)
-    u8 _0EC[0xEE - 0xEC];
+    /* 0x0EC */ s16 _0EC;
     /* 0x0EE */ s16 _0EE;
-    u8 _0F0[0xF8 - 0xF0];
-    /* 0x0F8 */ u8 _0F8[0x105 - 0xF8]; // per fielder
+    /* 0x0F0 */ s16 _0F0;
+    /* 0x0F2 */ s16 _0F2;
+    /* 0x0F4 */ s16 _0F4;
+    /* 0x0F6 */ s16 _0F6;
+    /* 0x0F8 */ u8 _0F8[9]; // per fielder
+    /* 0x101 */ u8 _101[4]; // per base
     /* 0x105 */ u8 playerAtMoundCutoffLocation;
     /* 0x106 */ u8 throwSpeedType;
     /* 0x107 */ u8 _107;
@@ -2881,7 +2895,7 @@ typedef struct {
     /* 0x122 */ u8 _122;
     /* 0x123 */ u8 _123;
     /* 0x124 */ u8 _124;
-    /* 0x125 */ u8 _125;
+    /* 0x125 */ s8 _125; // base
     /* 0x126 */ s8 _126; // -1: none
     /* 0x127 */ s8 _127;
     /* 0x128 */ u8 _128;
