@@ -972,6 +972,45 @@ void fn_3_1323CC(void) {
 }
 
 // .text:0x001324E8 size:0x9F4 mapped:0x8077157C
+// Barrel Batter: per-frame dispatch on the game status.
+// NONMATCHING 10%: the original inlines fn_3_1307D0 (case 2), which is NONMATCHING, so ours
+// keeps a call and the rest of the function shifts (the other cases inline their siblings too).
+#if NONMATCHING
 void fn_3_1324E8(void) {
-    return;
+    switch (g_GameLogic.gameStatus) {
+    case 0:
+        fn_3_131C88();
+        break;
+    case 1:
+        fn_3_130C6C();
+        break;
+    case 2:
+        fn_3_1307D0();
+        break;
+    case 3:
+        fn_3_13119C();
+        break;
+    case 4:
+        fn_3_1320BC();
+        break;
+    case 6:
+        fn_3_131FFC();
+        break;
+    case 7:
+        fn_3_131EC4();
+        break;
+    case 8:
+        fn_3_131540();
+        break;
+    case 15:
+        fn_3_1312D4();
+        break;
+    case 25:
+        fn_3_13128C();
+        break;
+    case 26:
+        fn_3_13207C();
+        break;
+    }
 }
+#endif
