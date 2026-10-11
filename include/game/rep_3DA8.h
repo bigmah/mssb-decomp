@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 
+void fn_3_161588(s32 event, s16 rosterIdx);
 void fn_3_162080(void);
 void fn_3_16230C(s32 result, u8 rbi);
 void fn_3_1637EC(void);

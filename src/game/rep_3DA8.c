@@ -85,6 +85,119 @@ static inline void gatherIds(s16* ids) {
     }
 }
 
+// Advances the counter of mission `type` by one; completes it at the target.
+static inline void countMission(ChallengeTrackingStruct* trk, s32 i, MissionRec* rec) {
+    MISSION_STATUS(trk, i)++;
+    if (MISSION_STATUS(trk, i) >= rec->target) {
+        MISSION_STATUS(trk, i) = -1;
+    }
+}
+
+static inline void countMissionType(ChallengeTrackingStruct* trk, MissionRec* rec, s32 type) {
+    s32 i;
+    for (i = 0; i < 10; i++, rec++) {
+        if (MISSION_STATUS(trk, i) >= 0 && rec->type == type) {
+            countMission(trk, i, rec);
+        }
+    }
+}
+
+static inline void countMissionTypeOnHit(ChallengeTrackingStruct* trk, MissionRec* rec, s32 type) {
+    s32 i;
+    for (i = 0; i < 10; i++, rec++) {
+        if (MISSION_STATUS(trk, i) >= 0 && rec->type == type && g_Ball.AtBat_ContactResult == 3) {
+            countMission(trk, i, rec);
+        }
+    }
+}
+
+// Fielding / batting event for star missions of roster slot `rosterIdx` of the tracked team.
+// NONMATCHING 71%: same instruction count; the original tests "type != X" with an inverted
+// branch layout and reuses the status byte it loaded for the increment (extsh on rosterIdx differs too)
+// .text:0x00161588 size:0xAF8
+#if NONMATCHING
+void fn_3_161588(s32 event, s16 rosterIdx) {
+    MissionIdx* mi = &lbl_800E8558[inMemRoster[*(s16*)(lbl_3_common_bss_37400 + 0x40)][rosterIdx].stats.CharID]; // TODO type
+    ChallengeTrackingStruct* trk;
+    MissionRec* rec;
+    MissionFielderView* fielder;
+    s32 i;
+
+    switch (event) {
+    case 0:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x1F);
+        break;
+    case 1:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x20);
+        break;
+    case 2:
+        trk = &starMissionCompletionTracker[mi->trk];
+        rec = lbl_80109AE8[mi->row];
+        for (i = 0; i < 10; i++, rec++) {
+            if (MISSION_STATUS(trk, i) >= 0) {
+                switch (rec->type) {
+                case 0x21:
+                    countMission(trk, i, rec);
+                    break;
+                case 0x22:
+                    if (g_Ball.AtBat_ContactResult == 3) {
+                        countMission(trk, i, rec);
+                    }
+                    break;
+                case 0x23:
+                    break;
+                case 0x24:
+                    if (g_Ball.currentStarSwing == 5 || g_Ball.currentStarSwing == 6) {
+                        countMission(trk, i, rec);
+                    }
+                    break;
+                }
+            }
+        }
+        break;
+    case 3:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x25);
+        break;
+    case 4:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x23);
+        break;
+    case 5:
+        countMissionTypeOnHit(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x26);
+        break;
+    case 6:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x27);
+        break;
+    case 7:
+        // Throw to a given teammate.
+        trk = &starMissionCompletionTracker[mi->trk];
+        fielder = &g_Fielders[g_Ball.fielderBeingThrownTo];
+        rec = lbl_80109AE8[mi->row];
+        for (i = 0; i < 10; i++, rec++) {
+            if (MISSION_STATUS(trk, i) >= 0 && rec->type == 0x28 &&
+                rec->target == lbl_800E8558[fielder->charID].row) {
+                MISSION_STATUS(trk, i) = -1;
+            }
+        }
+        break;
+    case 8:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x29);
+        break;
+    case 9:
+        countMissionTypeOnHit(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x2A);
+        break;
+    case 10:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x2C);
+        break;
+    case 11:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x2D);
+        break;
+    case 12:
+        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x2E);
+        break;
+    }
+}
+#endif
+
 // .text:0x00162080 size:0x28C
 // 97%: structure matches; only register allocation differs (locals/temps in r0, r3-r9 and the r31 'done' flag)
 void fn_3_162080(void) {
