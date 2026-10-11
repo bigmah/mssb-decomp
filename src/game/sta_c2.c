@@ -44,6 +44,13 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern const Vec lbl_3_rodata_2604;
+extern const f64 lbl_3_rodata_27C0;
+extern const f64 lbl_3_rodata_27D0;
+extern const f64 lbl_3_rodata_27D8;
+extern const f32 lbl_3_rodata_27E4;
+extern f32 lbl_3_rodata_27E0;
+extern void fn_3_6620(void);
 extern const Vec lbl_3_rodata_2520;
 extern const f32 lbl_3_rodata_27C8;
 extern const Vec lbl_3_rodata_252C;
@@ -115,9 +122,9 @@ extern void GXSetBlendMode(s32, s32, s32, s32);
 extern void GXSetZMode(s32, s32, s32);
 extern u8 lbl_800E8754[];
 extern u8 lbl_3_bss_A034[];
-typedef struct { u8 a, b; u8 pad[0x1C]; } S1E;
+typedef struct { u8 a, b, b2, b3; u8 pad[0x1A]; } S1E;
 extern S1E lbl_3_data_8404[];
-typedef struct { u8 a, b; } S2;
+typedef struct { u8 a, b, b2, b3; } S2;
 extern S2 lbl_3_data_84B8;
 typedef struct { u8 pad[0x1A]; s16 a; u8 pad2[0x3C]; s8 b; } S5C;
 typedef struct { u8 pad[0x8C]; S5C* obj; } P_cf;
@@ -170,7 +177,7 @@ extern f64 sin(f64);
 extern const f32 lbl_3_rodata_27F0;
 extern Vec lbl_3_rodata_25F8;
 extern const f32 lbl_3_rodata_2658[];
-typedef struct { f32 x, y, z, w, r; u8 pad[0xC]; f32 a, b, c, d; u8 pad2[4]; } T34;
+typedef struct { f32 x, y, z, w, r; u8 pad[0xC]; f32 a, b, c, d; f32 spin; } T34;
 extern T34 lbl_3_data_18364[];
 typedef struct { f32 x, y, z, w, b, c, d, e, f, g; u8 pad[0xC]; } T52;
 extern T52 lbl_3_data_182C8[];
@@ -1517,9 +1524,147 @@ f32 fn_3_D0854(u8* p) {
 }
 
 // .text:0x000D0918 size:0x6EC mapped:0x8070F9AC
-void fn_3_D0918(void) {
-    return;
+// NONMATCHING 93%: saved-register numbering (p in r28 vs r30); random direction computed via extsh; fn_3_D0854 is an inlined copy
+#if NONMATCHING
+#pragma dont_inline off
+static inline f32 D0854_inl(u8* p) {
+    f32 a;
+    f32 b;
+    if ((s8)p[0xD0] > 0) {
+        T34* t = lbl_3_data_18364;
+        t += p[0x9C];
+        a = t->a;
+        b = t->b;
+    } else {
+        T34* t = lbl_3_data_18364;
+        t += p[0x9C];
+        a = t->c;
+        b = t->d;
+    }
+    return a + b * (fn_3_B7F70(0x3E8) / 1000.0);
 }
+#pragma dont_inline on
+
+// Spinning-platform update: bobs p up and down, and runs its ball state (p[0xD1]):
+// 0 idle, waits for a low ball close by; 1 spinning up (random direction p[0xD0]),
+// grabs the ball when it touches; 2 carrying it round (fn_3_D0534); 3 spinning down.
+void fn_3_D0918(u8* p) {
+    Vec axis;
+    Vec ball;
+    Vec d;
+    Quaternion q;
+    u8* model = *(u8**)(*(u8**)(**(u8***)(p + 0x74) + 0x18) + 0xC);
+    f32 dist;
+    f32 a;
+    f32 b;
+    u8 stad;
+    s32 h;
+    u8 v;
+    axis = lbl_3_rodata_2604;
+    *(f32*)(p + 0xC4) = *(f32*)(p + 0xC4) + lbl_3_rodata_27C0;
+    if (*(f32*)(p + 0xC4) >= lbl_3_rodata_27C8) {
+        *(f32*)(p + 0xC4) = lbl_3_rodata_2664;
+    }
+    *(f32*)(p + 0xA4) = lbl_3_rodata_27D0 * (f32)sin(*(f32*)(p + 0xC4)) + *(f32*)(p + 0xC8);
+    if (g_GameLogic[0x11E] != 2) {
+        if (p[0xD1] != 0) {
+            if (p[0xD1] == 2) {
+                fn_3_65F4();
+                ((StadiumObjList*)lbl_3_common_bss_350E4)->_66[5] = 0;
+                lbl_3_bss_A030 = lbl_3_rodata_2664;
+                sndFXKeyOff(lbl_3_data_182C0);
+                sndFXCtrl(lbl_3_data_182C0, 7, 0);
+            }
+            p[0xD1] = 0;
+        }
+        if ((u32)lbl_3_data_182C0 != 0xFFFFFFFF) {
+            sndFXKeyOff(lbl_3_data_182C0);
+            sndFXCtrl(lbl_3_data_182C0, 7, 0);
+        }
+    }
+    switch (p[0xD1]) {
+    case 0:
+        ball.x = ((Vec*)g_Ball)->x;
+        ball.y = ((Vec*)g_Ball)->y;
+        ball.z = ((Vec*)g_Ball)->z;
+        PSVECSubtract(&ball, (Vec*)(p + 0xA0), &d);
+        d.y = lbl_3_rodata_2664;
+        if (!((g_Ball[0x1BE8] == 3 | g_Ball[0x1BE8] == 4) | g_Ball[0x1BE8] == 0xB | g_Ball[0x1BE8] == 0xC) &&
+            PSVECMag(&d) < lbl_3_rodata_2778 && ball.y > lbl_3_rodata_27D8 && ball.y < lbl_3_rodata_27E0 &&
+            *(s16*)(g_Ball + 0x1B7A) < 2) {
+            p[0xD1] = 1;
+            {
+                s8 dir = -(fn_3_B7F70(2) * 2) + 1;
+                p[0xD0] = dir;
+                p[0xD0] = dir;
+            }
+            *(f32*)(p + 0xBC) = lbl_3_data_18364[p[0x9C]].spin;
+        }
+        break;
+    case 1:
+        *(f32*)(p + 0xC0) = (s8)p[0xD0] * *(f32*)(p + 0xBC) + *(f32*)(p + 0xC0);
+        ball.x = ((Vec*)g_Ball)->x;
+        ball.y = lbl_3_rodata_2664;
+        ball.z = ((Vec*)g_Ball)->z;
+        PSVECSubtract(&ball, (Vec*)(p + 0xA0), &d);
+        d.y = lbl_3_rodata_2664;
+        dist = PSVECMag(&d);
+        if (dist < lbl_3_rodata_2778) {
+            PSVECNormalize(&d, &d);
+            PSVECScale(&d, lbl_3_rodata_2778, &d);
+            ((Vec*)g_Ball)->x = *(f32*)(p + 0xA0) + d.x;
+            ((Vec*)g_Ball)->z = *(f32*)(p + 0xA8) + d.z;
+            p[0xD1] = 2;
+            fn_3_6620();
+            ((StadiumObjList*)lbl_3_common_bss_350E4)->_66[5] = 1;
+            *(f32*)(p + 0xCC) = D0854_inl(p);
+            if (*(f32*)(p + 0xCC) < lbl_3_rodata_2664) {
+                *(f32*)(p + 0xCC) = lbl_3_rodata_2788 + *(f32*)(p + 0xCC);
+            }
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8.b2;
+            } else {
+                v = lbl_3_data_8404[stad].b2;
+            }
+            h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 1), v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8.b3;
+            } else {
+                v = lbl_3_data_8404[stad].b3;
+            }
+            sndFXCtrl(h, 0x5B, v);
+            lbl_3_data_182C0 = h;
+        } else {
+            ball.x = *(f32*)(g_Ball + 0x3C);
+            ball.y = lbl_3_rodata_2664;
+            ball.z = *(f32*)(g_Ball + 0x44);
+            PSVECSubtract(&ball, (Vec*)(p + 0xA0), &d);
+            d.y = lbl_3_rodata_2664;
+            if (dist > PSVECMag(&d)) {
+                p[0xD1] = 3;
+            }
+        }
+        break;
+    case 2:
+        *(f32*)(p + 0xC0) = (s8)p[0xD0] * *(f32*)(p + 0xBC) + *(f32*)(p + 0xC0);
+        fn_3_D0534(p);
+        break;
+    case 3:
+        *(f32*)(p + 0xBC) = *(f32*)(p + 0xBC) - lbl_3_data_18364[p[0x9C]].spin / lbl_3_rodata_27E4;
+        *(f32*)(p + 0xC0) = (s8)p[0xD0] * *(f32*)(p + 0xBC) + *(f32*)(p + 0xC0);
+        if (*(f32*)(p + 0xBC) <= lbl_3_rodata_2664) {
+            p[0xD1] = 0;
+        }
+        break;
+    }
+    C_QUATRotAxisRad(&q, &axis, lbl_3_rodata_2658[0] * *(f32*)(p + 0xC0));
+    PSQUATMultiply((Quaternion*)(p + 0xAC), &q, &q);
+    PSQUATNormalize(&q, &q);
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CTRLSetQuat((Control*)(model + 0x1C), q.x, q.y, q.z, q.w);
+}
+#endif
 
 // .text:0x000D1004 size:0x10C mapped:0x80710098
 void fn_3_D1004(u8* p, f32 x, f32 y, f32 z, f32 r, f32 sc) {
