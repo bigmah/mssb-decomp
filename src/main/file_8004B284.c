@@ -266,7 +266,62 @@ void fn_8004B7F4(CharModel* model) {
 
 // .text:0x8004BAEC size:0x280
 void fn_8004BAEC(CharModel* model) {
-    return;
+    s32 idx; // table index, then loop counter; only set for charID 18/38 (the original leaves it unset otherwise)
+    s32 side;
+    u32 flags;
+    u16 parts[2];
+    AnimSlot* slots[2];
+
+    if (model == NULL) {
+        return;
+    }
+    fn_8001D180(model->playerIdx, 0, 0);
+    fn_8001D180(model->playerIdx, 1, 0);
+    switch (model->charID) {
+    case 38:
+        idx = 0;
+        break;
+    case 18:
+        idx = 3;
+        break;
+    }
+
+    if ((model->animID >= 0x69 && model->animID < 0x75) || model->animID == -1) {
+        fn_8001D180(model->playerIdx, lbl_800FC388[idx].a, 0);
+        fn_8001D180(model->playerIdx, lbl_800FC388[idx].b, 0);
+        return;
+    }
+
+    if (model->anim2 == NULL) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == 6 || g_d_GameSettings.GameModeSelected == 7) {
+        if (model->unk278) {
+            side = !model->unk25B;
+        } else {
+            side = !model->unk25A;
+        }
+    } else if (model->playerIdx >= 9) {
+        side = !model->unk25B;
+    } else {
+        side = !model->unk25A;
+    }
+    slots[side] = model->anim2->slots[0].active ? &model->anim2->slots[0] : NULL;
+    slots[!side] = model->anim2->slots[1].active ? &model->anim2->slots[1] : NULL;
+    parts[side] = lbl_800FC388[idx].a;
+    parts[!side] = lbl_800FC388[idx].b;
+    for (idx = 0; idx < 2; idx++) {
+        if (slots[idx] != NULL) {
+            flags = fn_80024D2C(slots[idx]);
+        } else {
+            flags = 0;
+        }
+        if ((flags & 0x20000000) && (model->unk274 || model->unk278)) {
+            fn_8001D180(model->playerIdx, parts[idx], 1);
+        } else {
+            fn_8001D180(model->playerIdx, parts[idx], 0);
+        }
+    }
 }
 
 // .text:0x8004BD6C size:0x144
