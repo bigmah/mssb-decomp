@@ -200,7 +200,13 @@ void fn_80069AD4(void) {
 
 // .text:0x80069B08 size:0x60
 void fn_80069B08(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+
+    if (lbl_80366158._2A != 0) {
+        lbl_80371C30[task->u14.objIdx].obj->_5C = 0;
+        lbl_80371C30[task->u14.objIdx].obj->flags |= 2;
+        lbl_803CC1B8->func = fn_80069AD4;
+    }
 }
 
 // .text:0x80069B68 size:0x74
