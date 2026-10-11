@@ -8,6 +8,9 @@
 #include "Dolphin/rand.h"
 #include "game/rep_D0.h"
 #include "main/file_8004C5F8.h"
+#include "game/auto_00_000249E8_text.h"
+
+extern SceneWork* lbl_3_common_bss_1323C;
 
 typedef struct {
     /* 0x00 */ VecXYZ _00;
@@ -1257,9 +1260,47 @@ void fn_3_18FF8(void) {
 }
 
 // .text:0x0001850C size:0xAEC mapped:0x806575A0
-void fn_3_1850C(void) {
-    return;
+// Leave the at-bat/live-ball scenes.
+static inline void fn_3_1850C_reset(void) {
+    g_GameLogic.sceneID = SCENE_ID_0;
+    g_GameLogic._106 = -1;
+    g_GameLogic.bOD_framesInLiveBallScene = -1;
+    g_pCamera->_28A0 = 0;
 }
+
+// NONMATCHING 99.94%: only f28-f30 allocation in the inlined view setup (fn_3_16900 / fn_3_1785C bodies) differs
+#if NONMATCHING
+void fn_3_1850C(void) {
+    if (g_GameLogic.gameStatus == 0xE || g_GameLogic.gameStatus == 0x22 || g_GameLogic.gameStatus == 0x26 ||
+        g_GameLogic.gameStatus == 0x24 || g_GameLogic.gameStatus == 0x27) {
+        fn_3_16900();
+    } else if (g_GameLogic.gameStatus == 4) {
+        fn_3_1850C_reset();
+    } else if (g_GameLogic.gameStatus == 5) {
+        fn_3_16328();
+        fn_3_1850C_reset();
+    } else if (g_GameLogic.gameStatus == 3) {
+        fn_3_161C0();
+        fn_3_1850C_reset();
+    } else if (g_GameLogic.gameStatus == 9) {
+        fn_3_16058();
+        fn_3_1850C_reset();
+    } else if (g_GameLogic.gameStatus == 7 || g_GameLogic.gameStatus == 11 || g_GameLogic.gameStatus == 12) {
+        fn_3_1850C_reset();
+    } else if (lbl_3_common_bss_1323C->_25C != 0) {
+        fn_3_15F18();
+        fn_3_1850C_reset();
+    } else if (g_Stats.replayInd != 0 && g_Stats._3C != 0xC && g_Stats._3C != 1) {
+        fn_3_15F38();
+        fn_3_1850C_reset();
+    } else if (g_GameLogic.secondaryGameMode == 4 || (u8)(g_GameLogic.secondaryGameMode - 6) <= 3 ||
+               g_GameLogic.secondaryGameMode == 5) {
+        fn_3_1785C();
+    } else {
+        fn_3_17DA0();
+    }
+}
+#endif
 
 // .text:0x00017DA0 size:0x76C mapped:0x80656E34
 #define IS_HR_REPLAY() (g_Stats.replayInd != 0 && (g_Stats._3C == 0xC || g_Stats._3C == 1) && g_Stats._3E != 0)
