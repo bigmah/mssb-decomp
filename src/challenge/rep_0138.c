@@ -1399,3 +1399,120 @@ void fn_1_6848(void) {
     }
 }
 #endif
+
+extern const f32 lbl_1_rodata_1D0;
+extern const f32 lbl_1_rodata_1D4;
+
+// fn_1_5AC0, size:0x590
+// Same as fn_1_6050 (bent towards lbl_1_data_A48), but only texels inside the middle 0.2-0.8 square are bent.
+// NONMATCHING 84%: hoisted float constants land in rotated registers (see fn_1_6050)
+#if NONMATCHING
+void fn_1_5AC0(u16* image, s32 width, s32 height, f32 scale) {
+    Mtx rot;
+    Vec normal;
+    Vec flat;
+    Vec axis;
+    Quaternion quat;
+    u32 size;
+    s32 y;
+    s32 x;
+    f32 u;
+    f32 v;
+    f32 fy2;
+    f32 fx;
+    f32 fy;
+    f32 baseU;
+    f32 baseV;
+    f32 d;
+    f32 angle;
+    f32 s;
+    f32 mag;
+    u8 inside;
+
+    size = height * (width * 2);
+    memset(image, 0, size);
+    for (y = 0; y < height; y++) {
+        fy = lbl_1_rodata_1C8 * ((f32)y / (f32)height - lbl_1_rodata_1CC);
+        baseV = fy * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
+        fy2 = fy * fy;
+        for (x = 0; x < width; x++) {
+            fx = lbl_1_rodata_1C8 * ((f32)x / (f32)width - lbl_1_rodata_1CC);
+            baseU = fx * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
+            inside = fy > lbl_1_rodata_1D0 & fy < lbl_1_rodata_1D4 & fx > lbl_1_rodata_1D0 & fx < lbl_1_rodata_1D4;
+            if (y == height / 2) {
+                d = lbl_1_rodata_1D8 - fx * fx;
+            } else {
+                d = lbl_1_rodata_1D8 - fx * fx - fy2;
+            }
+            if (d < lbl_1_rodata_1A8) {
+                normal.x = fx;
+                normal.y = fy;
+                normal.z = lbl_1_rodata_1A8;
+                PSVECNormalize(&normal, &normal);
+            } else {
+                f64 z = -sqrt(d);
+                normal.x = fx;
+                normal.y = fy;
+                normal.z = z;
+            }
+            if (inside && lbl_1_rodata_1D8 != scale) {
+                PSVECCrossProduct(&lbl_1_data_A48, &normal, &axis);
+                mag = PSVECMag(&axis);
+                if (mag != lbl_1_rodata_1A8) {
+                    PSVECNormalize(&axis, &axis);
+                    angle = acos(PSVECDotProduct(&lbl_1_data_A48, &normal));
+                    angle = angle * scale * lbl_1_rodata_1CC;
+                    s = sin(angle);
+                    quat.w = cos(angle);
+                    quat.x = axis.x * s;
+                    quat.y = axis.y * s;
+                    quat.z = axis.z * s;
+                    PSMTXQuat(rot, &quat);
+                    PSMTXMultVec(rot, &lbl_1_data_A48, &normal);
+                }
+            }
+            flat.x = normal.x;
+            flat.y = lbl_1_rodata_1A8;
+            flat.z = normal.z;
+            mag = PSVECMag(&flat);
+            if (mag == lbl_1_rodata_1A8) {
+                u = lbl_1_rodata_1A8;
+                v = lbl_1_rodata_1A8;
+            } else {
+                PSVECNormalize(&flat, &flat);
+                if (lbl_1_rodata_1A8 == fy) {
+                    v = lbl_1_rodata_1CC;
+                } else {
+                    v = acos(PSVECDotProduct(&flat, &normal));
+                    PSVECCrossProduct(&flat, &normal, &axis);
+                    mag = PSVECMag(&axis);
+                    if (mag == lbl_1_rodata_1A8) {
+                        v = lbl_1_rodata_1A8;
+                    } else if (axis.x < lbl_1_rodata_1A8) {
+                        v = -v;
+                    }
+                    v = v / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
+                }
+                if (lbl_1_rodata_1A8 == fx) {
+                    u = lbl_1_rodata_1CC;
+                } else {
+                    u = acos(PSVECDotProduct(&lbl_1_data_A48, &flat));
+                    PSVECCrossProduct(&lbl_1_data_A48, &flat, &axis);
+                    mag = PSVECMag(&axis);
+                    if (mag == lbl_1_rodata_1A8) {
+                        u = lbl_1_rodata_1A8;
+                    } else if (axis.y > lbl_1_rodata_1A8) {
+                        u = -u;
+                    }
+                    u = u / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
+                }
+                u -= baseU;
+                v -= baseV;
+            }
+            image[(y / 4) * width * 4 + (x / 4) * 16 + (y % 4) * 4 + x % 4] =
+                (((s32)(lbl_1_rodata_1E0 * u + lbl_1_rodata_1E0) << 8) & 0xFF00) | (u8)(s32)(lbl_1_rodata_1E0 * v + lbl_1_rodata_1E0);
+        }
+    }
+    DCFlushRange(image, size);
+}
+#endif
