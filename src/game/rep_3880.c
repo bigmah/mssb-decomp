@@ -485,15 +485,36 @@ void fn_3_149340(u8* o) {
 #endif
 #pragma dont_inline on
 
+// NONMATCHING 7%: the original inlines fn_3_149340 (itself with 148FD0 inlined); CW here won't inline two levels deep, so this calls it (nmverify call diff expected)
 // .text:0x0014975C size:0x44C mapped:0x807887F0
-void fn_3_14975C(void) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_14975C(s8 a) {
+    u8* e = fn_80033A24(fn_3_14841C, 0x80, 0, *(s32*)lbl_3_data_26E7C, 1, 0x25);
+    if (e != NULL) {
+        e[0x18] = a;
+        fn_3_149340(e);
+    }
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x00149BA8 size:0x4C8 mapped:0x80788C3C
+#pragma dont_inline off
 void fn_3_149BA8(void) {
-    return;
+    u32 i;
+    if (g_d_GameSettings.GameModeSelected != 7 && g_d_GameSettings.GameModeSelected != 6) {
+        *(s32*)(lbl_3_data_26E7C + 0x14) = 930000;
+    } else {
+        *(s32*)(lbl_3_data_26E7C + 0x14) = 750000;
+    }
+    for (i = 0; i < 4; i++) {
+        if (lbl_3_bss_B85C[i] > -1) {
+            fn_3_14975C(lbl_3_bss_B85C[i]);
+        }
+    }
 }
+#pragma dont_inline on
 
 // .text:0x0014A070 size:0xF4 mapped:0x80789104
 void fn_3_14A070(s32* src, s32 n) {
