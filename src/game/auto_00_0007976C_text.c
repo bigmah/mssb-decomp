@@ -7,6 +7,7 @@ extern ScoresView g_Scores;
 extern PitcherGameStat lbl_3_common_bss_32A38[2][9];
 extern Bss8034E9A0View lbl_8034E9A0;
 extern Lbl80354720Entry lbl_80354720[2][9];
+extern LineScore lbl_80353A90;
 
 extern u8 lbl_803535C8[];
 extern u8 lbl_803537E4[];
@@ -82,6 +83,64 @@ void fn_3_7AB34(void) {
     u8* r = lbl_803535C8 + *(s32*)((u8*)&g_GameLogic + 0x8) * 0x10E + ((s32*)((u8*)&g_GameLogic + *(s32*)((u8*)&g_GameLogic + 0x10) * 0x50))[0xF] * 0x1E;
     *(u16*)(r + 0xE) = *(u16*)(r + 0xE) + 1;
 }
+
+// fn_3_7AB78, size:0x1F0
+// Logs the fielding team's current pitcher in the line score.
+// NONMATCHING 98%: registers only (batting team index kept in r4 vs r0)
+#if NONMATCHING
+void fn_3_7AB78(s32 newPitcher) {
+    s32 i;
+    s32 f;
+    s32 pitcher;
+    s32 slot; // NOTE: left unset if no batting-order entry plays position 1 (as in the original)
+
+    if (newPitcher != 0) {
+        if (g_Scores._BB[g_GameLogic.awayTeamBattingInd_battingTeam] < 0xFE) {
+            g_Scores._BB[g_GameLogic.awayTeamBattingInd_battingTeam]++;
+        } else {
+            g_Scores._BB[g_GameLogic.awayTeamBattingInd_battingTeam] = 0xFF;
+        }
+    }
+    pitcher = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0];
+    for (i = 1; i < 10; i++) {
+        if (g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][i][1] == 1) {
+            slot = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][i][0];
+            break;
+        }
+    }
+    f = g_GameLogic.teamFielding;
+    if (lbl_80353A90.pitcherLog[f][0].pitcher == -1) {
+        lbl_80353A90.pitcherLog[f][0].pitcher = pitcher;
+        lbl_80353A90.pitcherLog[f][0].inning = 1;
+        lbl_80353A90._0E6[f][0] = slot;
+        return;
+    }
+    for (i = 1; i < 10; i++) {
+        if (lbl_80353A90.pitcherLog[f][i].pitcher == -1) {
+            if (lbl_80353A90.pitcherLog[f][i - 1].pitcher != pitcher) {
+                lbl_80353A90.pitcherLog[f][i].pitcher = pitcher;
+                lbl_80353A90.pitcherLog[f][i].inning = g_Scores.inning;
+                if (lbl_3_common_bss_32A94._4C[g_GameLogic.awayTeamBattingInd_battingTeam] < 0x7FFE) {
+                    lbl_3_common_bss_32A94._4C[g_GameLogic.awayTeamBattingInd_battingTeam]++;
+                } else {
+                    lbl_3_common_bss_32A94._4C[g_GameLogic.awayTeamBattingInd_battingTeam] = 0x7FFF;
+                }
+            }
+            break;
+        }
+    }
+    if (newPitcher == 0) {
+        for (i = 1; i < 5; i++) {
+            if (lbl_80353A90._0E6[f][i] == -1) {
+                if (lbl_80353A90._0E6[f][i - 1] != slot) {
+                    lbl_80353A90._0E6[f][i] = slot;
+                }
+                return;
+            }
+        }
+    }
+}
+#endif
 
 // fn_3_7AD68, size:0x140
 // NONMATCHING 89%: original walks the batting-order rows with a pointer and uses lbzu for the stat bytes

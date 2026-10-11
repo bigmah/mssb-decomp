@@ -85,9 +85,13 @@ typedef struct LineScore {
     /*0x000*/ u8 _000[8];
     /*0x008*/ u16 runs[2][19]; // [team][0] total, [team][n] inning n
     /*0x054*/ u16 hits[2][19];
-    /*0x0A0*/ s8 _0A0[0x46]; // [0..49] home-run log (roster index, +9 for team 1);
-                             // [0x1E + team * 0x14 (+2)] also read per team
-    /*0x0E6*/ u8 _0E6[0xA];
+    /*0x0A0*/ s8 homeRunLog[30]; // roster index (+9 for team 1); fn_3_76C78 scans 50 entries,
+                                  // running on into pitcherLog
+    /*0x0BE*/ struct {
+        s8 pitcher;
+        s8 inning;
+    } pitcherLog[2][10];
+    /*0x0E6*/ s8 _0E6[2][5]; // batting-order slot of each pitcher used
     /*0x0F0*/ u8 errors[2];
     /*0x0F2*/ u8 winner; // team index, 2: tie
     /*0x0F3*/ s8 winningPitcher;
