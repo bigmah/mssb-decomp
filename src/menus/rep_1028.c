@@ -1270,14 +1270,14 @@ void fn_2_91C4C(u8* object) {
     }
 }
 
-static inline void setupEffect(s32 index) {
+static inline void setupEffect(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
         s32 resource;
         MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
         u8 valid;
         resource = ((s32*)((u8*)lbl_2_bss_3401BC + 0xC))[index];
         effect->resource = resource;
-        effect->type = 0;
+        effect->type = type;
         valid = resource != 0;
         effect->f5C = lbl_2_rodata_1080;
         effect->enabled = 1;
@@ -1294,7 +1294,24 @@ static inline void setupEffect(s32 index) {
 // .text:0x90CD0 size:0xDC
 void fn_2_90CD0(u8* object) {
     fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    setupEffect(*(s32*)(object + 0x78));
+    setupEffect(*(s32*)(object + 0x78), 0);
     *(s16*)(object + 0x9C) = 0x1C;
+    *(s16*)(object + 0x90) = 1;
+}
+
+// .text:0x91788 size:0x11C
+void fn_2_91788(u8* object) {
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    setupEffect(*(s32*)(object + 0x78), 1);
+    {
+        // inlined fn_2_8F6D0(index, 0)
+        s32 index = *(s32*)(object + 0x78);
+        u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+        u8* anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+        if (anim != NULL) {
+            *(s16*)(slot + 0xA6) = 0;
+            *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        }
+    }
     *(s16*)(object + 0x90) = 1;
 }
