@@ -141,7 +141,13 @@ void fn_3_24DBC(s32 mode) {
 
 // .text:0x00024EA0 size:0x80 mapped:0x80663F34
 void fn_3_24EA0(void) {
-    return;
+    s32 i;
+
+    for (i = 0; i < 13; i++) {
+        lbl_3_common_bss_1323C->actorSetup[i] = -1;
+        memset(&lbl_3_common_bss_1323C->actors[i], 0, sizeof(SceneActorState));
+        lbl_3_common_bss_1323C->animSet[i] = 0;
+    }
 }
 
 // .text:0x00024F20 size:0x4 mapped:0x80663FB4
