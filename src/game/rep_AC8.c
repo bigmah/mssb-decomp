@@ -2211,6 +2211,45 @@ void fn_3_3F24C(void) {
     return;
 }
 
+extern f32 lbl_3_rodata_B60;
+extern f32 lbl_3_rodata_C08;
+#pragma dont_inline off
+// Inlined copy of fn_3_52560 (frames for fielder i to reach x/z); defined later in this file.
+static inline int FramesToReachAC8(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 d;
+    f32 spd;
+    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
+        return 1;
+    }
+    d = (x - *(f32*)f) * (x - *(f32*)f) + (z - *(f32*)(f + 8)) * (z - *(f32*)(f + 8));
+    SQRT_L(d);
+    spd = *(f32*)(f + 0x58);
+    return ((u32)f[0x1D1] >> 1) + (int)(d / (lbl_3_rodata_B20 == spd ? lbl_3_rodata_B60 : spd));
+}
+// Same as SetTargetAC8 (defined later in this file).
+static inline void SetTargetAC8b(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    *(f32*)(f + 0x14) = x;
+    *(f32*)(f + 0x1C) = z;
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x50) = 0.0f;
+        *(f32*)(f + 0x68) = 0.0f;
+    } else {
+        *(f32*)(f + 0x64) = atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
+}
+#pragma dont_inline on
+
 // .text:0x0003F760 size:0x590 mapped:0x8067E7F4
 void fn_3_3F760(void) {
     return;
@@ -2517,49 +2556,54 @@ void fn_3_42BD0(int i) {
 }
 
 // .text:0x00042CDC size:0x35C mapped:0x80681D70
-void fn_3_42CDC(void) {
-    return;
+// Fielder i heads for where the ball will be in 5 frames, or a spot picked by fn_3_50DD8.
+void fn_3_42CDC(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 x;
+    f32 z;
+    *(f32*)(f + 0x28) = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E4) + *(f32*)(g_Ball + 0x19D8);
+    *(f32*)(f + 0x2C) = lbl_3_rodata_B64 * *(f32*)(g_Ball + 0x19E8) + *(f32*)(g_Ball + 0x19DC);
+    if (*(s16*)(f + 0x18A) != 0) {
+        f32 dz, dx, d;
+        ((int (*)(int, f32*, f32*, int))fn_3_50DD8)(i, &x, &z, 1);
+        *(f32*)(f + 0x14) = x;
+        *(f32*)(f + 0x1C) = z;
+        dx = x - *(f32*)f;
+        dz = z - *(f32*)(f + 8);
+        if (0.0f == dx && 0.0f == dz) {
+            *(f32*)(f + 0x50) = 0.0f;
+            *(f32*)(f + 0x68) = 0.0f;
+        } else {
+            *(f32*)(f + 0x64) = atan2(dz, dx);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            *(f32*)(f + 0x68) = d;
+        }
+        f[0x1D9] = 1;
+        *(f32*)(f + 0x20) = x;
+        *(f32*)(f + 0x24) = z;
+    } else {
+        f32 dz, dx, d, ox, oz;
+        oz = *(f32*)(f + 0x2C);
+        ox = *(f32*)(f + 0x28);
+        *(f32*)(f + 0x14) = ox;
+        *(f32*)(f + 0x1C) = oz;
+        dx = ox - *(f32*)f;
+        dz = oz - *(f32*)(f + 8);
+        if (0.0f == dx && 0.0f == dz) {
+            *(f32*)(f + 0x50) = 0.0f;
+            *(f32*)(f + 0x68) = 0.0f;
+        } else {
+            *(f32*)(f + 0x64) = atan2(dz, dx);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            *(f32*)(f + 0x68) = d;
+        }
+        f[0x1D9] = 1;
+    }
 }
 
 // .text:0x00043038 size:0x3A8 mapped:0x806820CC
-extern f32 lbl_3_rodata_B60;
-extern f32 lbl_3_rodata_C08;
-#pragma dont_inline off
-// Inlined copy of fn_3_52560 (frames for fielder i to reach x/z); defined later in this file.
-static inline int FramesToReachAC8(int i, f32 x, f32 z) {
-    u8* f = g_Fielders + i * 0x268;
-    f32 d;
-    f32 spd;
-    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
-        return 1;
-    }
-    d = (x - *(f32*)f) * (x - *(f32*)f) + (z - *(f32*)(f + 8)) * (z - *(f32*)(f + 8));
-    SQRT_L(d);
-    spd = *(f32*)(f + 0x58);
-    return ((u32)f[0x1D1] >> 1) + (int)(d / (lbl_3_rodata_B20 == spd ? lbl_3_rodata_B60 : spd));
-}
-// Same as SetTargetAC8 (defined later in this file).
-static inline void SetTargetAC8b(int i, f32 x, f32 z) {
-    u8* f = g_Fielders + i * 0x268;
-    f32 dx;
-    f32 dz;
-    f32 d;
-    *(f32*)(f + 0x14) = x;
-    *(f32*)(f + 0x1C) = z;
-    dx = x - *(f32*)f;
-    dz = z - *(f32*)(f + 8);
-    if (0.0f == dx && 0.0f == dz) {
-        *(f32*)(f + 0x50) = 0.0f;
-        *(f32*)(f + 0x68) = 0.0f;
-    } else {
-        *(f32*)(f + 0x64) = atan2(dz, dx);
-        d = dx * dx + dz * dz;
-        SQRT_L(d);
-        *(f32*)(f + 0x68) = d;
-    }
-    f[0x1D9] = 1;
-}
-#pragma dont_inline on
 // NONMATCHING 97.0%: float register allocation in the inlined fn_3_52560 distance code
 #if NONMATCHING
 // Send fielder i to the first point of the ball's flight (below catch height) it can reach in time.

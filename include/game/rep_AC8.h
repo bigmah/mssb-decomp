@@ -142,7 +142,7 @@ void fn_3_4207C(int);
 void fn_3_42850(int);
 void fn_3_42A00(int);
 void fn_3_42BD0(int);
-void fn_3_42CDC(void);
+void fn_3_42CDC(int);
 void fn_3_43038(int i);
 void fn_3_433E0(void);
 void fn_3_447C4(int);
