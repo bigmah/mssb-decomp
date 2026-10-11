@@ -210,6 +210,15 @@ void fn_80069B08(void) {
 }
 
 // .text:0x80069B68 size:0x74
-void fn_80069B68(void) {
-    return;
+// NONMATCHING 97%: the original called fn_80035838 without its u8 return prototype (cmpwi, no clrlwi.)
+#if NONMATCHING
+BOOL fn_80069B68(void) {
+    if (fn_80035838(&lbl_801092E8, 0x16) != 0) {
+        lbl_803CBD30 = fn_800B0A5C_insertQueue(fn_80069B08, lbl_803CC1B8->priority);
+        fn_80034E20(lbl_803CBD30, lbl_80109378);
+        lbl_80366158._2A = 0;
+        return TRUE;
+    }
+    return FALSE;
 }
+#endif
