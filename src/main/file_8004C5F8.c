@@ -14,15 +14,17 @@ extern s32 lbl_803CBD14;
 extern s32 lbl_803CB880;
 
 void fn_800521B0(void);
+extern f32 fn_800B4C40(s32 id);
+extern s16 lbl_800FEB08[5][4];
 
 // .text:0x8004C5F8 size:0x404
 void fn_8004C5F8(void) {
     return;
 }
 
-extern u32 lbl_803CB878;
+extern s32 lbl_803CB878;
 
-extern u32 lbl_803CB874;
+extern s32 lbl_803CB874;
 
 // fn_8004C9FC, size:0xC
 void fn_8004C9FC(void) {
@@ -50,8 +52,46 @@ void fn_8004CA48(s16 a, s16 b, s16 c, s16 d) {
 }
 
 // .text:0x8004CA6C size:0x1AC
-void fn_8004CA6C(void) {
-    return;
+s32 fn_8004CA6C(u16 buttons) {
+    s32 timedOut;
+    if (lbl_803C5F74.state == 4) {
+        return lbl_803C5F74.cursor == 0 ? 3 : 4;
+    } else if (lbl_803C5F74.state == 2) {
+        if (buttons != 0) {
+            lbl_803CB874 = lbl_803CB878;
+        }
+        if (lbl_803CB874 > 0) {
+            lbl_803CB874--;
+        }
+        timedOut = lbl_803CB874 == 0;
+        if (timedOut) {
+            buttons |= 0x100;
+        }
+        if (buttons & 0x100) {
+            if (!timedOut) {
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+            }
+            if (lbl_803C5F74.cursor == 0) {
+                return 1;
+            }
+            return 2;
+        }
+        if (buttons & 0x200) {
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            if (lbl_803C5F74.cursor == 0) {
+                lbl_803C5F74.cursor = 1;
+            } else {
+                return 2;
+            }
+        } else if ((buttons & 1) && lbl_803C5F74.cursor == 1) {
+            lbl_803C5F74.cursor = 0;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if ((buttons & 2) && lbl_803C5F74.cursor == 0) {
+            lbl_803C5F74.cursor = 1;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+    }
+    return 0;
 }
 
 // fn_8004CC18, size:0x14
@@ -171,9 +211,40 @@ s32 fn_8004D93C(s32 arg) {
 }
 
 // .text:0x8004D990 size:0x200
-void fn_8004D990(void) {
-    return;
+// NONMATCHING 97%: the -1/-2 constants are loaded before the arg1 branch in the original
+#if NONMATCHING
+void fn_8004D990(s8 arg0, s32 arg1, u8 table) {
+    RosterSelect* rs = &lbl_803C6028;
+    s32 i;
+    if (arg1 != 0) {
+        for (i = 0; i < 4; i++) {
+            rs->_78[i] = 0;
+            rs->cursor[i] = -1;
+            rs->_7F[i] = -1;
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            rs->_78[i] = 0;
+            rs->cursor[i] = -1;
+            rs->_7F[i] = -2;
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        rs->_83[i] = 0;
+    }
+    lbl_803C6028.cursor[0] = 0;
+    lbl_803C6028._8D = arg0;
+    lbl_803C6028._8C = table;
+    for (i = 0; i < 4; i++) {
+        if (rs->cursor[i] >= 0) {
+            rs->charId[i] = lbl_800FE930[lbl_803C6028._8C][rs->cursor[i]];
+        }
+    }
+    for (i = 0; i < 0x24; i++) {
+        rs->slotOwner[i] = -1;
+    }
 }
+#endif
 
 // .text:0x8004DB90 size:0x75C
 void fn_8004DB90(void) {
@@ -257,9 +328,49 @@ s32 fn_8004EE84(s32 arg) {
 }
 
 // .text:0x8004EEF4 size:0x218
-void fn_8004EEF4(void) {
-    return;
+// NONMATCHING 93%: constants hoisted before the branch and one shared base register in the original
+#if NONMATCHING
+void fn_8004EEF4(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4) {
+    RosterSelect* rs = &lbl_803C6028;
+    s32 i;
+    if (arg4 != 0) {
+        for (i = 0; i < 4; i++) {
+            rs->_78[i] = 0;
+            rs->cursor[i] = -1;
+            rs->_7F[i] = -1;
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            rs->_78[i] = 0;
+            rs->cursor[i] = -1;
+            rs->_7F[i] = -2;
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        lbl_803C6028._83[i] = 0;
+    }
+    if (p0 != 0) {
+        lbl_803C6028.cursor[0] = 0;
+    }
+    if (p1 != 0) {
+        lbl_803C6028.cursor[1] = 1;
+    }
+    if (p2 != 0) {
+        lbl_803C6028.cursor[2] = 1;
+    }
+    if (p3 != 0) {
+        lbl_803C6028.cursor[3] = 1;
+    }
+    for (i = 0; i < 4; i++) {
+        if (lbl_803C6028.cursor[i] >= 0) {
+            lbl_803C6028.charId[i] = lbl_800FE5D4[lbl_803C6028.cursor[i]];
+        }
+    }
+    for (i = 0; i < 0x24; i++) {
+        lbl_803C6028.slotOwner[i] = -1;
+    }
 }
+#endif
 
 // .text:0x8004F10C size:0x858
 void fn_8004F10C(void) {
@@ -366,14 +477,99 @@ void fn_80052188(void) {
     lbl_803C6028.state7E = 0;
 }
 
+static inline u8 calcMeterAlpha(s32 row, f32 frame) {
+    s16* tbl = lbl_800FEB08[row];
+    s32 k;
+    if (tbl != NULL) {
+        for (k = 0; k < 4; k++) {
+            if (frame < tbl[k]) {
+                switch (k) {
+                case 2:
+                    return 0;
+                case 3:
+                    return 255.0f * (frame - lbl_800FEB08[row][k - 1]) / (tbl[k] - lbl_800FEB08[row][k - 1]);
+                case 0:
+                    return 0xFF;
+                case 1:
+                    return 255.0f * (tbl[k] - frame) / (tbl[k] - lbl_800FEB08[row][k - 1]);
+                }
+            }
+        }
+    }
+    return 0xFF;
+}
+
 // .text:0x800521B0 size:0x25C
 void fn_800521B0(void) {
-    return;
+    MeterTask* task = (MeterTask*)lbl_803CC1B8;
+    CharActor* actor = task->actor;
+    AnimCtl* anim = task->anim;
+    f32 frame;
+    s32 row;
+    if (actor->_25C == 0 || (s8)actor->kind != (s8)task->kind) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (anim->hasFrame != 0) {
+        frame = anim->frame;
+    } else {
+        frame = fn_800B4C40(anim->id);
+    }
+    switch (actor->anim) {
+    case 0x67:
+        if ((s32)actor->kind == 0xE) {
+            row = 0;
+        } else {
+            row = 1;
+        }
+        break;
+    case 0x47:
+        row = 2;
+        break;
+    case 0x48:
+        row = 3;
+        break;
+    case 0x60:
+        row = 4;
+        break;
+    default:
+        actor->meterAlpha = 0xFF;
+        return;
+    }
+    actor->meterAlpha = calcMeterAlpha(row, frame);
 }
 
 // .text:0x8005240C size:0x228
-void fn_8005240C(void) {
-    return;
+void fn_8005240C(CharActor* actor, AnimCtl* anim) {
+    f32 frame;
+    u16 row;
+    if (anim->hasFrame != 0) {
+        frame = anim->frame;
+    } else {
+        frame = fn_800B4C40(anim->id);
+    }
+    switch (actor->anim) {
+    case 0x67:
+        if ((s32)actor->kind == 0xE) {
+            row = 0;
+        } else {
+            row = 1;
+        }
+        break;
+    case 0x47:
+        row = 2;
+        break;
+    case 0x48:
+        row = 3;
+        break;
+    case 0x60:
+        row = 4;
+        break;
+    default:
+        actor->meterAlpha = 0xFF;
+        return;
+    }
+    actor->meterAlpha = calcMeterAlpha(row, frame);
 }
 
 // .text:0x80052634 size:0x58

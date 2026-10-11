@@ -67,14 +67,14 @@ typedef struct CharActor {
     /*0x048*/ u8 _048[0x62 - 0x48];
     /*0x062*/ s16 anim;
     /*0x064*/ u8 _064[0x252 - 0x64];
-    /*0x252*/ s8 kind;
+    /*0x252*/ u8 kind;
     /*0x253*/ u8 _253;
     /*0x254*/ s8 _254;
     /*0x255*/ u8 _255[0x25C - 0x255];
     /*0x25C*/ u8 _25C;
     /*0x25D*/ u8 _25D[0x276 - 0x25D];
     /*0x276*/ u8 flags;
-    /*0x277*/ s8 meterAlpha;
+    /*0x277*/ u8 meterAlpha;
     /*0x278*/ u8 _278[2];
     /*0x27A*/ u8 _27A;
 } CharActor;
@@ -93,7 +93,7 @@ typedef struct MeterTask {
     /*0x00*/ u8 _00[0x14];
     /*0x14*/ AnimCtl* anim;
     /*0x18*/ CharActor* actor;
-    /*0x1C*/ s8 kind;
+    /*0x1C*/ u8 kind;
 } MeterTask;
 
 void fn_8004C9FC(void);
@@ -103,6 +103,8 @@ void fn_8004CA08(u32 value);
 void fn_8004CA14(s32 table, s32 msg);
 
 void fn_8004CA48(s16 a, s16 b, s16 c, s16 d);
+
+s32 fn_8004CA6C(u16 buttons);
 
 void fn_8004CC18(void);
 
@@ -120,11 +122,17 @@ void fn_8004E5B4(s8 owner, s32 entry, s32 set);
 
 void fn_800506E8(s8 owner, s32 entry, s32 set);
 
+void fn_8005240C(CharActor* actor, AnimCtl* anim);
+
 void fn_80052634(CharActor* actor, AnimCtl* anim);
 
 void fn_80052694(s32 index);
 
 s32 fn_8004D93C(s32 arg);
+
+void fn_8004D990(s8 arg0, s32 arg1, u8 table);
+
+void fn_8004EEF4(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4);
 
 s32 fn_8004EE84(s32 arg);
 
