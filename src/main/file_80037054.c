@@ -583,6 +583,8 @@ void fn_800385F0(RigidBody* rb, f32 len, f32 frac, f32 radius, f32 mass) {
 }
 
 // .text:0x800387B0 size:0x398
+// NONMATCHING 99.8%: f1/f2 swapped for force.y and the 0.0f constant in the ground-friction test
+#if NONMATCHING
 void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
     Vec dv;
     Vec d;
@@ -661,7 +663,7 @@ void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
                 dv.y = lbl_803CC728;
                 vmag = PSVECMag(&dv);
                 if (vmag != lbl_803CC728 || fmag > len) {
-                    if (vmag != lbl_803CC728) {
+                    if (vmag != 0.0f) {
                         PSVECNormalize(&dv, &d);
                     } else {
                         PSVECNormalize(&d, &d);
@@ -677,6 +679,7 @@ void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
         }
     }
 }
+#endif
 
 // .text:0x80038B48 size:0x188
 void fn_80038B48(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
