@@ -12,6 +12,8 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_2_bss_E8CC[];
+extern u8 lbl_2_bss_DCE8[];
 extern u8 lbl_803C6028[];
 extern s32 fn_80050760(s32 p, s32 held, s32 pressed, s32 dirs, s32 mode);
 extern u8 lbl_2_bss_20[];
@@ -2344,5 +2346,43 @@ s32 fn_2_ED94(u8 team, u16 held, u16 pressed, s32 dirs) {
         return 1;
     }
     return 0;
+}
+#endif
+
+#define FN_2_9ACC_RESTORE(t, i)                                                   \
+    do {                                                                          \
+        MenuCharStats* dst = &g_Roster[(t) * 9 + (i)];                            \
+        MenuCharStats* src = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
+        u8* order = lbl_80354720 + (t) * 0x24 + (i) * 4;                          \
+        u8* saved = lbl_2_bss_DCE8 + (t) * 0x24 + (i) * 4;                        \
+        MENU_COPY_CHAR_STATS(dst, src);                                           \
+        order[0] = saved[0];                                                      \
+        order[1] = saved[1];                                                      \
+        order[2] = saved[2];                                                      \
+        dst->h24 = *(s32*)(lbl_8034E9A0 + (t) * 4 + 0x46E0);                      \
+        order[3] = saved[3];                                                      \
+    } while (0)
+
+// NONMATCHING 90%: same instructions modulo induction registers (r18-r22 vs r26-r31)
+#if NONMATCHING
+// fn_2_9ACC, size:0x4A4
+void fn_2_9ACC(u16 team) {
+    s32 t;
+    s32 i;
+    if (g_d_GameSettings._10 == 1) {
+        for (i = 0; i < 9; i++) {
+            if (lbl_2_bss_100B8[team + 0x30] != 0) {
+                FN_2_9ACC_RESTORE(team, i);
+            }
+        }
+        return;
+    }
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 9; i++) {
+            if (lbl_2_bss_100B8[t + 0x30] != 0) {
+                FN_2_9ACC_RESTORE(t, i);
+            }
+        }
+    }
 }
 #endif

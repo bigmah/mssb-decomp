@@ -282,4 +282,6 @@ void fn_2_CE44(u8 team);
 
 s32 fn_2_ED94(u8 team, u16 held, u16 pressed, s32 dirs);
 
+void fn_2_9ACC(u16 team);
+
 #endif
