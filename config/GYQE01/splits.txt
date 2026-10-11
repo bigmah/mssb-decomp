@@ -19,6 +19,7 @@ main/file_80008E00.c:
 	extabindex  start:0x80006C60 end:0x80006CC0
 	.text       start:0x80008E00 end:0x8000A0AC
 	.rodata     start:0x800E6550 end:0x800E65D0
+	.data       start:0x800E8F08 end:0x800E8F44
 	.sdata2     start:0x803CC400 end:0x803CC420
 
 main/file_8000A0AC.c:
@@ -51,6 +52,7 @@ main/file_8001FE00.c:
 	extab       start:0x800059D0 end:0x80005A48
 	extabindex  start:0x80007218 end:0x800072CC
 	.text       start:0x8001FE00 end:0x80021308
+	.data       start:0x800EF4C8 end:0x800EF508
 	.sdata2     start:0x803CC530 end:0x803CC548
 
 main/file_80021308.c:
@@ -71,6 +73,7 @@ main/file_80024184.c:
 	extabindex  start:0x80007470 end:0x800074D0
 	.text       start:0x80024184 end:0x80024D2C
 	.rodata     start:0x800E6720 end:0x800E6768
+	.data       start:0x800F7720 end:0x800F7830
 	.sdata2     start:0x803CC580 end:0x803CC5A8
 
 main/file_80024D2C.c:
@@ -117,6 +120,7 @@ main/file_8003A688.c:
 	extabindex  start:0x80007A34 end:0x80007B24
 	.text       start:0x8003A688 end:0x8004207C
 	.rodata     start:0x800E6910 end:0x800E6920
+	.data       start:0x800FADA0 end:0x800FB3F8
 	.sdata2     start:0x803CC7D8 end:0x803CC7E8
 
 main/file_8004207C.c:
@@ -124,6 +128,7 @@ main/file_8004207C.c:
 	extabindex  start:0x80007B24 end:0x80007CC8
 	.text       start:0x8004207C end:0x8004B284
 	.rodata     start:0x800E6920 end:0x800E6970
+	.data       start:0x800FB3F8 end:0x800FBF10
 	.sdata2     start:0x803CC7E8 end:0x803CC818
 
 main/file_8004B284.c:
@@ -148,6 +153,7 @@ main/file_8004C5F8.c:
 	extab       start:0x80006148 end:0x80006200
 	extabindex  start:0x80007D4C end:0x80007E60
 	.text       start:0x8004C5F8 end:0x800527C4
+	.data       start:0x800FCA28 end:0x800FCA5C
 	.sdata2     start:0x803CC850 end:0x803CC870
 
 main/file_800527C4.c:
@@ -155,6 +161,7 @@ main/file_800527C4.c:
 	extabindex  start:0x80007E60 end:0x80008184
 	.text       start:0x800527C4 end:0x80063028
 	.rodata     start:0x800E6970 end:0x800E69B8
+	.data       start:0x80100080 end:0x80108D2C
 	.sdata2     start:0x803CC870 end:0x803CC8D8
 
 main/file_80063028.c:
@@ -927,6 +934,7 @@ main/file_800A7C08.c:
 	extabindex  start:0x80008544 end:0x800087D8
 	.text       start:0x800A7C08 end:0x800ADC40
 	.rodata     start:0x800E77C8 end:0x800E7B50
+	.data       start:0x80110090 end:0x801101B0
 	.sdata2     start:0x803CCED0 end:0x803CCEE8
 
 main/file_800ADC40.c:
@@ -985,12 +993,14 @@ main/file_800B9974.c:
 	extabindex  start:0x80008BB0 end:0x80008CB8
 	.text       start:0x800B9974 end:0x800BD3EC
 	.rodata     start:0x800E7E78 end:0x800E7FC8
+	.data       start:0x80111718 end:0x8011174C
 	.sdata2     start:0x803CCFF8 end:0x803CD058
 
 main/file_800BD3EC.c:
 	extab       start:0x80006B90 end:0x80006BB0
 	extabindex  start:0x80008CB8 end:0x80008CE8
 	.text       start:0x800BD3EC end:0x800BD8C4
+	.data       start:0x80112338 end:0x80112380
 	.sdata2     start:0x803CD058 end:0x803CD060
 
 main/file_800BD8C4.c:
@@ -998,6 +1008,7 @@ main/file_800BD8C4.c:
 	extabindex  start:0x80008CE8 end:0x80008D24
 	.text       start:0x800BD8C4 end:0x800BDEA0
 	.rodata     start:0x800E7FC8 end:0x800E8030
+	.data       start:0x80112380 end:0x801123A4
 	.sdata2     start:0x803CD060 end:0x803CD068
 
 main/file_800BDEA0.c:
