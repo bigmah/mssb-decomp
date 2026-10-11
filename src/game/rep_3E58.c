@@ -247,8 +247,48 @@ void fn_3_166FCC(void) {
 }
 
 // .text:0x00167178 size:0x358 mapped:0x807A620C
+// Bursts a ring of 20 sparkles around joint 4 of the task's actor, then ends.
 void fn_3_167178(void) {
-    return;
+    SparkleTask* task = lbl_803CC1B8;
+    Vec pos = {0.0f, 0.0f, 0.0f};
+    Vec dir;
+    Mtx inv;
+    ParticleParamsF prm;
+    u32 i;
+    f32 angle;
+
+    // removeQueue ignores its argument; the original passes whatever is in r3.
+    if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
+        return;
+    }
+    fn_8001B728(task->actor->index, 4, &pos);
+    PSMTXInverse(fn_80052768_getCamera(0)->view, inv);
+    memcpy(&prm, &lbl_3_data_28508, sizeof(ParticleParamsF));
+    memcpy(&prm.pos, &pos, sizeof(Vec));
+    prm.tex = lbl_803CBD0C;
+    prm.size1 = prm.size0;
+    for (i = 0; i < 20; i++) {
+        angle = 18.0 * i;
+        angle += 9.0 * (2.0 * (RANDF() - 0.5));
+        angle = 0.017453292f * angle;
+        dir.x = cosf_kludge(angle);
+        dir.y = sinf_kludge(angle);
+        dir.z = 0.0f;
+        PSMTXMultVecSR(inv, &dir, &dir);
+        angle = 0.03f * (2.0 * (RANDF() - 0.5)) + 0.1f;
+        memcpy(&prm.vel, &dir, sizeof(Vec));
+        prm.velScale = angle;
+        prm.r = rand() % 256;
+        prm.g = rand() % 256;
+        prm.b = rand() % 256;
+        fn_80026998(&prm);
+    }
+    ((void (*)(void))fn_800B0A14_removeQueue)();
 }
 
 // .text:0x001674D0 size:0x3D8 mapped:0x807A6564
