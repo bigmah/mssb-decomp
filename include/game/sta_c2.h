@@ -71,7 +71,7 @@ void fn_3_D0284(u8* p);
 void fn_3_D0490(void);
 void fn_3_D0528(void);
 s32 fn_3_D052C(void);
-void fn_3_D0534(void);
+void fn_3_D0534(u8* p);
 f32 fn_3_D0854(u8* p);
 void fn_3_D0918(void);
 void fn_3_D1004(u8* p, f32 x, f32 y, f32 z, f32 r, f32 sc);

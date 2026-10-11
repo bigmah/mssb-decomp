@@ -44,6 +44,11 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern f32 lbl_3_bss_A030;
+extern s32 lbl_3_data_182C0;
+extern const f32 lbl_3_rodata_27B8;
+extern void fn_3_65F4(void);
+extern s32 sndFXKeyOff(u32);
 extern f64 pow(f64, f64);
 extern f64 sqrt(f64);
 extern const Vec lbl_3_rodata_25C8;
@@ -1076,8 +1081,74 @@ s32 fn_3_D052C(void) {
 }
 
 // .text:0x000D0534 size:0x320 mapped:0x8070F5C8
-void fn_3_D0534(void) {
-    return;
+// Carries the ball around p (p+0xA0 centre, p+0xBC deg/frame, (s8)p[0xD0] direction).
+// After a full turn it releases the ball along the p+0xCC heading once that is reached.
+void fn_3_D0534(u8* p) {
+    Vec ball;
+    Vec rel;
+    Mtx m;
+    Vec perpA;
+    Vec perpB;
+    Vec rel0;
+    Vec out;
+    f32 ang;
+    f32 mag;
+    Vec* bp = (Vec*)g_Ball;
+    lbl_3_bss_A030 += *(f32*)(p + 0xBC);
+    ball.x = bp->x;
+    ball.y = bp->y;
+    ball.z = bp->z;
+    PSVECSubtract(&ball, (Vec*)(p + 0xA0), &rel);
+    rel.y = lbl_3_rodata_2664;
+    rel0 = rel;
+    PSMTXRotRad(m, 'Y', lbl_3_rodata_2658[0] * ((s8)p[0xD0] * *(f32*)(p + 0xBC)));
+    PSMTXMultVec(m, &rel, &rel);
+    if (lbl_3_bss_A030 / lbl_3_rodata_27B8 >= lbl_3_rodata_2698) {
+        perpB.y = lbl_3_rodata_2664;
+        perpA.y = lbl_3_rodata_2664;
+        if ((s8)p[0xD0] > 0) {
+            perpA.x = rel0.z;
+            perpA.z = -rel0.x;
+        } else {
+            perpA.x = -rel0.z;
+            perpA.z = rel0.x;
+        }
+        if ((s8)p[0xD0] > 0) {
+            perpB.x = rel.z;
+            perpB.z = -rel.x;
+        } else {
+            perpB.x = -rel.z;
+            perpB.z = rel.x;
+        }
+        PSVECNormalize(&perpA, &perpA);
+        PSVECNormalize(&perpB, &perpB);
+        ang = acos(PSVECDotProduct(&perpA, &perpB));
+        out.x = sin(lbl_3_rodata_2658[0] * *(f32*)(p + 0xCC));
+        out.y = lbl_3_rodata_2664;
+        out.z = cos(lbl_3_rodata_2658[0] * *(f32*)(p + 0xCC));
+        if ((f32)acos(PSVECDotProduct(&perpA, &out)) <= ang) {
+            PSVECSubtract(&rel, &rel0, &rel);
+            mag = PSVECMag(&rel);
+            *(f32*)(g_Ball + 0x318) = out.x * mag;
+            *(f32*)(g_Ball + 0x31C) = lbl_3_rodata_2664;
+            *(f32*)(g_Ball + 0x320) = out.z * mag;
+            p[0xD1] = 3;
+            fn_3_65F4();
+            ((StadiumObjList*)lbl_3_common_bss_350E4)->_66[5] = 0;
+            lbl_3_bss_A030 = lbl_3_rodata_2664;
+            sndFXKeyOff(lbl_3_data_182C0);
+            sndFXCtrl(lbl_3_data_182C0, 7, 0);
+            lbl_3_data_182C0 = -1;
+            return;
+        }
+    }
+    {
+        f32 z = rel.z + *(f32*)(p + 0xA8);
+        f32 x = rel.x + *(f32*)(p + 0xA0);
+        bp->y = ball.y;
+        ((Vec*)g_Ball)->x = x;
+        bp->z = z;
+    }
 }
 
 // .text:0x000D0854 size:0xC4 mapped:0x8070F8E8
