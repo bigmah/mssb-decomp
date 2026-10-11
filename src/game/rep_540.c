@@ -1855,10 +1855,10 @@ void fn_3_EE4C(void) {
     f32 z;
     f32 radius;
     s32 i;
-    g_Ball.framesSinceHit = 0;
     g_Ball.offsetWhilePickedUpHistory[0].x = 0.0f;
     g_Ball.offsetWhilePickedUpHistory[0].y = 0.0f;
     g_Ball.offsetWhilePickedUpHistory[0].z = 0.0f;
+    g_Ball.framesSinceHit = 0;
     g_Ball.framesSinceThrowStarted = -1;
     g_Ball.framesSinceBallHitGroundOrWasCaught = -1;
     g_Ball.framesSinceLastBounce = -1;
@@ -1886,7 +1886,7 @@ void fn_3_EE4C(void) {
     g_Ball.groundRuleDoubleInd = 0;
     g_Ball.matchFramesAndBallAngle.framesAfterReceivingThrow = 0;
     g_Ball.numberOfThrowsDuringPlay = 0;
-    g_Ball.ballZoneWhenCaught = (s8)-1;
+    g_Ball.ballZoneWhenCaught = -1;
     if (g_Ball.currentStarSwing == 3 || g_Ball.currentStarSwing == 4) {
         g_Ball.warioStarHitCoords[0].x = g_Ball.AtBat_Contact_BallPos.x;
         g_Ball.warioStarHitCoords[0].y = g_Ball.AtBat_Contact_BallPos.y;
@@ -2012,7 +2012,7 @@ void fn_3_F1DC(void) {
     g_Ball.matchFramesAndBallAngle.ballAndFielderOnBaseFrames = 0;
     g_Ball.homeRunInd = 0;
     g_Ball.matchFramesAndBallAngle.ballOverWallFrames = 0;
-    g_Ball.ballZoneWhenCaught = (s8)-1;
+    g_Ball.ballZoneWhenCaught = -1;
     g_Ball._1BDF = 0;
     g_Ball.matchFramesAndBallAngle.framesSinceFoulCalled = 0;
     g_Ball.collisionRelated = 0;
