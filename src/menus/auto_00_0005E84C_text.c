@@ -323,6 +323,8 @@ void fn_2_6051C(void) {
 }
 
 // .text:0x000607DC size:0x18C
+// NONMATCHING 99%: the original saw fn_8006C268 as returning int (extra extsh before fn_8006C100)
+#if NONMATCHING
 void fn_2_607DC(MenuTask* task, MenuItem* item) {
     s16 ev = fn_2_53BC8(item);
     if (ev != -1) {
@@ -353,6 +355,7 @@ void fn_2_607DC(MenuTask* task, MenuItem* item) {
         break;
     }
 }
+#endif
 
 // .text:0x00060968 size:0x188
 void fn_2_60968(MenuTask* task, MenuItem* item) {
