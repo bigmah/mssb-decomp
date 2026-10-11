@@ -3,6 +3,12 @@
 
 #include "mssbTypes.h"
 
+// lbl_3_data_3C40: per fielder-state table, indexed by fielder byte 0x1D3
+typedef struct FielderStateEntry {
+    s32 anim;
+    void (*update)(int i);
+} FielderStateEntry;
+
 void fn_3_251E4(int);
 int fn_3_253A4(int, s16);
 void fn_3_25648(int);
