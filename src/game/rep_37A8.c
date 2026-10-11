@@ -1774,7 +1774,142 @@ extern u8 lbl_3_data_21E08[];
 extern const f32 lbl_3_rodata_387C;
 
 // Minigame init (first call), then the texture for the TEV hook.
+// NONMATCHING 93.1%: store scheduling / register choice in the reset loops
+#if NONMATCHING
 void fn_3_146A90(void) {
-    return;
+    s32 i;
+    s32 n;
+    s32 j;
+    u8 v;
+    u8* f;
+    MgRunner* r;
+
+    if (g_GameLogic[0x125] == 0) {
+        fn_3_59A90();
+        *(u32*)(g_Minigame + 0x17C0) = 0;
+        g_Minigame[0x190B] = 0;
+        g_GameLogic[0x121] = 7;
+        g_Minigame[0x1A37] = 0;
+        for (i = 0; i < 4; i++) {
+            ((s16*)(g_Minigame + 0x1890))[i] = 0;
+            ((s16*)(g_Minigame + 0x1898))[i] = 0;
+            ((s16*)(g_Minigame + 0x18BC))[i * 2] = 0;
+            ((s16*)(g_Minigame + 0x18BE))[i * 2] = 0;
+            g_Minigame[0x18F4 + i] = -1;
+            g_Minigame[0x18F8 + i] = -1;
+            g_Minigame[0x18FC + i] = -1;
+            g_Minigame[0x1900 + i] = -1;
+            g_Minigame[0x18F0 + i] = 0;
+        }
+        g_Scores = 0;
+        *(s16*)(g_Minigame + 0x1A26) = 0;
+        g_Minigame[0x190C] = 0;
+        g_Minigame[0x1904] = -1;
+        g_Minigame[0x1905] = -1;
+        *(u32*)(g_Minigame + 0x17C0) = 0;
+        if (g_Minigame[0x1909] == 0) {
+            v = lbl_3_data_2127C[g_Minigame[0x1A2A]][g_Minigame[0x1A2B]];
+            *(u32*)(g_Minigame + 0x17C4) = lbl_3_data_21E08[g_Minigame[0x1A2B]] * 60;
+            g_Minigame[0x18DC] = v;
+            g_Minigame[0x18DD] = v;
+            g_Minigame[0x18DE] = v;
+            g_Minigame[0x18DF] = v;
+        } else {
+            if (g_Minigame[0x1A3C] != 0) {
+                g_Minigame[0x18DC] = lbl_3_data_2127C[7][0];
+                g_Minigame[0x18DD] = lbl_3_data_2127C[7][0];
+                g_Minigame[0x18DE] = lbl_3_data_2127C[7][0];
+                g_Minigame[0x18DF] = lbl_3_data_2127C[7][0];
+            }
+            *(u32*)(g_Minigame + 0x17C4) = lbl_3_data_21E08[4] * 60;
+        }
+        fn_3_591AC();
+        fn_3_58870();
+        n = 0;
+        for (i = 0; i < 4; i++) {
+            if ((s8)g_Minigame[0x18CC + i] < 0) {
+                continue;
+            }
+            g_Minigame[0x18F4 + n] = i;
+            g_Minigame[0x18F8 + (s8)g_Minigame[0x18F4 + n]] = n + 2;
+            fn_3_6E24C(i, (s8)g_Minigame[0x18F8 + (s8)g_Minigame[0x18F4 + n]]);
+            f = g_Fielders + (s8)g_Minigame[0x18F8 + (s8)g_Minigame[0x18F4 + n]] * 0x268;
+            g_Minigame[0x1C7E + i * 3] = -1;
+            g_Minigame[0x1C7F + i * 3] = -1;
+            g_Minigame[0x1C80 + i * 3] = -1;
+            g_Minigame[0x1C8A + i] = 0;
+            f[0x20D] = i;
+            *(f32*)(f + 0x0) = lbl_3_data_21B94[n].x;
+            ((s16*)(g_Minigame + 0x1B34))[i] = -1;
+            g_Minigame[0x1C92 + i] = -1;
+            *(f32*)(f + 0x4) = lbl_3_data_21B94[n].y;
+            g_Minigame[0x1C9A + i] = 0;
+            *(f32*)(f + 0x8) = lbl_3_data_21B94[n].z;
+            ((s16*)(g_Minigame + 0x1B50))[i] = 0;
+            *(f32*)(f + 0xC) = ((f32*)lbl_3_data_21D2C)[1];
+            g_Minigame[0x1B80 + i] = 0;
+            f[0x1D2] = 0;
+            g_Minigame[0x1CA5 + i] = 0;
+            *(f32*)(f + 0x50) = lbl_3_rodata_3834;
+            g_Minigame[0x1CAD + i] = i;
+            *(f32*)(f + 0x48) = lbl_3_rodata_387C;
+            g_Minigame[0x1CB1 + i] = 0;
+            for (j = 0; j < 10; j++) {
+                g_Minigame[0x1B58 + i * 10 + j] = 0;
+            }
+            g_Minigame[0x1C9E + i] = 0;
+            n++;
+        }
+        for (j = 0; j < 100; j++) {
+            g_Minigame[0x193A + j] = 0;
+            g_Minigame[0x1BB6 + j] = -1;
+        }
+        *(s16*)(g_Minigame + 0x1B4C) = 0x3C;
+        fn_3_145B98();
+        r = (MgRunner*)g_Minigame;
+        for (i = 0; i < 3; i++, r++) {
+            r->st = 0;
+            r->sel = 0;
+            r->_2E = 0;
+            r->_1A = 0;
+            r->_1C = -1;
+            r->_1E = 0;
+            r->throwTimer = 0;
+            r->_22 = 0;
+            r->_33 = 0xFF;
+            r->pos.x = lbl_3_data_21BC4[i][0];
+            r->pos.y = lbl_3_data_21BC4[i][1];
+            r->pos.z = lbl_3_data_21BC4[i][2];
+            r->queue[0] = -1;
+            r->queue[1] = -1;
+            r->queue[2] = -1;
+            r->queue[3] = -1;
+        }
+        g_Minigame[0x1CA9] = 0;
+        g_Minigame[0x1CAA] = 0;
+        g_Minigame[0x1CAB] = 0;
+        g_Minigame[0x1CAC] = 0;
+        g_Minigame[0x1CA2] = 0;
+        g_Minigame[0x1CA3] = 0;
+        g_Minigame[0x1CA4] = 0;
+        if (g_Minigame[0x1909] == 0) {
+            *(s16*)(g_Minigame + 0x1B4E) =
+                RandomInt_Game_Range(lbl_3_data_21DC8[g_Minigame[0x1A2B]][0].lo, lbl_3_data_21DC8[g_Minigame[0x1A2B]][0].hi) * 60;
+        } else {
+            *(s16*)(g_Minigame + 0x1B4E) = RandomInt_Game_Range(lbl_3_data_21DC8[4][0].lo, lbl_3_data_21DC8[4][0].hi) * 60;
+        }
+        minigamesSetSomePointers();
+        minigamesGXStuff();
+        minigamesSetSomePointers2();
+        for (j = 0; j < 40; j++) {
+            ((MgBallView*)g_Minigame)->ball[j].used = 0;
+        }
+        fn_3_157588(0x28);
+        g_GameLogic[0x125]++;
+    } else {
+        fn_3_5A6D4(5);
+    }
+    fn_3_142088();
 }
+#endif
 
