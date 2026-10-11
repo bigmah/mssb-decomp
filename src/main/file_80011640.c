@@ -792,9 +792,79 @@ void fn_80017098(void) {
 }
 
 // .text:0x80017340 size:0x24C
-void fn_80017340(void) {
-    return;
+// NONMATCHING 78%: loop induction variables (original indexes active[i + 9] per pass)
+#if NONMATCHING
+s32 fn_80017340(s32 actorIdx) {
+    CharActor* actor = &lbl_8036E548.actors[actorIdx];
+    s32 used[4];
+    CharActor* other;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 file;
+
+    if (lbl_8036E548.loadStep == 0) {
+        used[0] = 0;
+        used[1] = 0;
+        used[2] = 0;
+        used[3] = 0;
+        for (i = 0; i < 4; i++) {
+            j = i + 9;
+            for (k = 0; k < 4; k++) {
+                other = lbl_8036E548.active[j];
+                if (other != NULL) {
+                    if (actor->kind == lbl_8036E548.bankOwner[k]) {
+                        actor->banks.b[1] = lbl_8036E548.bankBuf[k];
+                        return 1;
+                    }
+                    if (other->kind == lbl_8036E548.bankOwner[k]) {
+                        used[k] = 1;
+                        break;
+                    }
+                }
+            }
+        }
+        if (used[0] == 0) {
+            lbl_8036E548.bankOwner[0] = -1;
+        }
+        if (used[1] == 0) {
+            lbl_8036E548.bankOwner[1] = -1;
+        }
+        if (used[2] == 0) {
+            lbl_8036E548.bankOwner[2] = -1;
+        }
+        if (used[3] == 0) {
+            lbl_8036E548.bankOwner[3] = -1;
+        }
+        k = 0;
+        if (lbl_8036E548.bankOwner[0] >= 0) {
+            k = 1;
+            if (lbl_8036E548.bankOwner[1] >= 0) {
+                k = 2;
+                if (lbl_8036E548.bankOwner[2] >= 0) {
+                    k = 3;
+                    if (lbl_8036E548.bankOwner[3] >= 0) {
+                        k = 4;
+                    }
+                }
+            }
+        }
+        lbl_8036E548.bankOwner[k] = actor->kind;
+        actor->banks.b[1] = lbl_8036E548.bankBuf[k];
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            file = actor->kind * 0x13 + 0xB;
+        } else {
+            file = actor->kind * 0x13 + 3;
+        }
+        ARAMTransfer(&lbl_803CB790[file], actor->banks.b[1], 0, 0);
+        lbl_8036E548.loadStep = 1;
+    } else if ((s32)lbl_803C6CF8.transferDone == 1) {
+        ANIMGet(actor->banks.b[1]);
+        return 1;
+    }
+    return 0;
 }
+#endif
 
 // .text:0x8001758C size:0x228
 // NONMATCHING 99%: actor->kind reload scheduled later, r9/r11 swap
