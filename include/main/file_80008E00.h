@@ -55,6 +55,7 @@ void* fn_80009018(void* value);
 u8 fn_80009028(void);
 void fn_80009094(void);
 void fn_800090B4(void);
+void fn_80009144(void);
 void fn_800097A0(void);
 
 #endif

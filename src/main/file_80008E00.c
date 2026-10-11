@@ -298,7 +298,8 @@ void fn_800090B4(void) {
 
 // .text:0x80009144 size:0x3C
 void fn_80009144(void) {
-    return;
+    fn_800B0A5C_insertQueue(fn_800090B4, 0x6000);
+    fn_800B0A5C_insertQueue(fn_80009094, 0x7000);
 }
 
 static inline void updateStream(s32 inGame) {
