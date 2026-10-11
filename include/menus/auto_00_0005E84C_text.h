@@ -114,10 +114,16 @@ typedef struct MenuFlags {
 
 extern MenuFlags* lbl_2_bss_1A823C;
 
+typedef struct MenuCharRecord {
+    /*0x00*/ u8 _00[0x13];
+    /*0x13*/ u8 _13;
+    /*0x14*/ u8 _14[2];
+} MenuCharRecord; // size: 0x16
+
 // Saved record tables (lbl_2_bss_1A8240 points at them): 8 lists of 5.
 typedef struct MenuRecords {
     /*0x000*/ MenuRecord lists[8][5];
-    /*0x140*/ u8 _140[0x400 - 0x140];
+    /*0x140*/ MenuCharRecord chars[32];
     /*0x400*/ u8 _400[1]; // indexed by character
 } MenuRecords;
 
@@ -210,14 +216,14 @@ void fn_2_65648(void);
 void fn_2_65850(MenuTask* task, MenuItem* item);
 void fn_2_65A00(void);
 void fn_2_65C84(MenuTask* task, MenuItem* item);
-void fn_2_65E50(void);
+void fn_2_65E50(MenuTask* task, MenuItem* item);
 void fn_2_66038(MenuTask* task, MenuItem* item);
 void fn_2_66188(MenuTask* task, MenuItem* item);
 void fn_2_6633C(void);
 void fn_2_665C0(MenuTask* task, MenuItem* item);
 void fn_2_6675C(MenuTask* task, MenuItem* item);
 void fn_2_66884(void);
-void fn_2_66AEC(void);
+void fn_2_66AEC(MenuTask* task, MenuItem* item);
 void fn_2_66CC4(MenuTask* task, MenuItem* item);
 void fn_2_66E14(MenuTask* task, MenuItem* item);
 void fn_2_66FC8(void);
