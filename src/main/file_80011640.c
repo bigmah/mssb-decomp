@@ -631,9 +631,35 @@ void fn_8001B35C(void) {
 }
 
 // .text:0x8001B4D8 size:0x114
-void fn_8001B4D8(void) {
-    return;
+// NONMATCHING 93%: saved-register numbering of actor/list/joints/offset
+#if NONMATCHING
+void fn_8001B4D8(s32 index, s32 enable) {
+    CharActor* actor = lbl_8036E548.active[index];
+    u16 j0;
+    u16 j1;
+    u16 idx;
+    CharSlotList* list;
+    Vec d;
+    Vec v;
+
+    if (actor != NULL) {
+        idx = actor->modelIndex;
+        if (enable != 0 && actor->_268 == 0) {
+            j0 = getJoint(actor, 0);
+            j1 = getJoint(actor, 0);
+            list = lbl_8036E548.slots;
+            fn_800B2C44(list->slots[idx].model, list->slots[idx].model->_80, &v);
+            list->slots[idx]._64 = j1;
+            list->slots[idx]._66 = j0;
+            d = v;
+            actor->pos.x += d.x;
+            actor->pos.y += d.y;
+            actor->pos.z += d.z;
+            actor->_268 = 1;
+        }
+    }
 }
+#endif
 
 // .text:0x8001B5EC size:0x13C
 void fn_8001B5EC(void) {
