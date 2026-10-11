@@ -1059,8 +1059,20 @@ L_800C002C:
 #endif
 
 // .text:0x800C00A8 size:0x220
-void SKN2Vecs16Norms16NoTouch(void) {
-    return;
+#if NONMATCHING
+void SKN2Vecs16Norms16NoTouch(Mtx43 m0, Mtx43 m1, u8* weights, f32* src, f32* dst, u32 count) {
+    f32 v[6];
+    s32 k;
+
+    do {
+        SKNBlend2(m0, m1, weights, src, v);
+        for (k = 0; k < 6; k++) {
+            dst[k] = v[k];
+        }
+        weights += 2;
+        src += 6;
+        dst += 6;
+    } while (--count);
 }
 #else
 asm void SKN2Vecs16Norms16NoTouch(register Mtx43 m0, register Mtx43 m1, register u8* weights, register f32* src, register f32* dst, register u32 count) {
