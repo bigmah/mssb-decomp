@@ -1,4 +1,5 @@
 #include "menus/rep_0AB0.h"
+#include <string.h>
 #include "game/UnknownHomes_Game.h"
 #include "main/file_8000F150.h"
 #include "main/file_8004207C.h"
@@ -40,6 +41,7 @@ extern void fn_2_8AEE0(void);
 extern void fn_2_8DFB0(void);
 extern void fn_8001F228(void);
 extern MenuCharMgr* lbl_2_bss_340140;
+extern MenuCharLayout* lbl_2_bss_1A8240;
 extern u8 lbl_2_bss_33FBF0[]; // per actor
 // lbl_803CC1B8 (SceneTask*, main/file_80069BDC.h) is the running menu task.
 #define CUR_TASK ((MenuTask*)lbl_803CC1B8)
@@ -727,7 +729,249 @@ void fn_2_5AFB0(void) {
 
 // .text:0x0005B7DC size:0xDDC
 void fn_2_5B7DC(void) {
-    return;
+    s32 id;
+    switch (lbl_2_bss_1A823C->state) {
+    case 0:
+        lbl_2_bss_1A824C->charId = 0;
+        lbl_2_bss_1A824C->gridX = 1;
+        lbl_2_bss_1A824C->gridY = 0;
+        lbl_2_bss_1A8234->layerFlags[1][5] = 1;
+        lbl_8034E978.menu = 0x58;
+        lbl_8034E978.prevTrack = lbl_8034E978.track;
+        lbl_8034E978.track = lbl_800FEF70[0x58].track;
+        lbl_2_bss_1A823C->state = 1;
+        break;
+    case 1:
+        lbl_2_bss_1A823C->state = 2;
+        break;
+    case 2: {
+        u16 down;
+        if (MENU_PAD.repeat & 1) {
+            lbl_2_bss_1A824C->gridX--;
+            if (lbl_2_bss_1A824C->gridX == 0 && (lbl_2_bss_1A824C->gridY == 0 || lbl_2_bss_1A824C->gridY == 5)) {
+                lbl_2_bss_1A824C->gridX = 4;
+            } else if (lbl_2_bss_1A824C->gridX < 0) {
+                lbl_2_bss_1A824C->gridX = 5;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (MENU_PAD.repeat & 2) {
+            lbl_2_bss_1A824C->gridX++;
+            if (lbl_2_bss_1A824C->gridX == 5 && (lbl_2_bss_1A824C->gridY == 0 || lbl_2_bss_1A824C->gridY == 5)) {
+                lbl_2_bss_1A824C->gridX = 1;
+            } else if (lbl_2_bss_1A824C->gridX > 5) {
+                lbl_2_bss_1A824C->gridX = 0;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+        if (MENU_PAD.repeat & 8) {
+            lbl_2_bss_1A824C->gridY--;
+            if (lbl_2_bss_1A824C->gridY == 0 && (lbl_2_bss_1A824C->gridX == 0 || lbl_2_bss_1A824C->gridX == 5)) {
+                lbl_2_bss_1A824C->gridY = 4;
+            } else if (lbl_2_bss_1A824C->gridY < 0) {
+                lbl_2_bss_1A824C->gridY = 5;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (MENU_PAD.repeat & 4) {
+            lbl_2_bss_1A824C->gridY++;
+            if (lbl_2_bss_1A824C->gridY == 5 && (lbl_2_bss_1A824C->gridX == 0 || lbl_2_bss_1A824C->gridX == 5)) {
+                lbl_2_bss_1A824C->gridY = 1;
+            } else if (lbl_2_bss_1A824C->gridY > 5) {
+                lbl_2_bss_1A824C->gridY = 0;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+        lbl_2_bss_1A824C->charId = lbl_2_data_296B8[lbl_2_bss_1A824C->gridX + lbl_2_bss_1A824C->gridY * 6];
+        down = MENU_PAD.down;
+        if (down & 0x40) {
+            lbl_2_bss_1A824C->mode = 3;
+            lbl_2_bss_1A823C->state = 3;
+            lbl_2_bss_1A8234->layerFlags[11][2] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][5] = 1;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x20) {
+            lbl_2_bss_1A824C->mode = 3;
+            lbl_2_bss_1A823C->state = 3;
+            lbl_2_bss_1A8234->layerFlags[12][2] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][5] = 1;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x100) {
+            if ((s32)lbl_2_bss_1A8240->stats[lbl_2_bss_1A824C->charId]._13 > 0) {
+                lbl_2_bss_1A8234->timer = 10;
+                lbl_2_bss_1A8234->layerFlags[1][12] = 1;
+                id = lbl_2_bss_1A824C->charId;
+                lbl_2_bss_1A824C->statIn.vals[0] = lbl_2_bss_1A8240->stats[id].vals[0];
+                lbl_2_bss_1A824C->statIn.order[0] = lbl_2_bss_1A8240->stats[id].order[0];
+                lbl_2_bss_1A824C->statIn.vals[1] = lbl_2_bss_1A8240->stats[id].vals[1];
+                lbl_2_bss_1A824C->statIn.order[1] = lbl_2_bss_1A8240->stats[id].order[1];
+                lbl_2_bss_1A824C->statIn.vals[2] = lbl_2_bss_1A8240->stats[id].vals[2];
+                lbl_2_bss_1A824C->statIn.order[2] = lbl_2_bss_1A8240->stats[id].order[2];
+                lbl_2_bss_1A824C->statIn.vals[3] = lbl_2_bss_1A8240->stats[id].vals[3];
+                lbl_2_bss_1A824C->statIn.order[3] = lbl_2_bss_1A8240->stats[id].order[3];
+                lbl_2_bss_1A824C->statIn.vals[4] = lbl_2_bss_1A8240->stats[id].vals[4];
+                lbl_2_bss_1A824C->statIn.order[4] = lbl_2_bss_1A8240->stats[id].order[4];
+                lbl_2_bss_1A824C->statIn.vals[5] = lbl_2_bss_1A8240->stats[id].vals[5];
+                lbl_2_bss_1A824C->statIn.order[5] = lbl_2_bss_1A8240->stats[id].order[5];
+                lbl_2_bss_1A824C->statIn._13 = lbl_2_bss_1A8240->stats[id]._13;
+                lbl_2_bss_1A824C->statIn._14[0] = lbl_2_bss_1A8240->stats[id]._14[0];
+                lbl_2_bss_1A824C->statIn._12 = lbl_2_bss_1A8240->stats[id]._12;
+                fn_8006C2B4(&lbl_2_bss_1A824C->statOut, &lbl_2_bss_1A824C->statIn);
+                memcpy(&lbl_2_bss_1A824C->statInCopy, &lbl_2_bss_1A824C->statIn, sizeof(StatInput));
+                memcpy(&lbl_2_bss_1A824C->statOutCopy, &lbl_2_bss_1A824C->statOut, sizeof(StatOutput));
+                lbl_2_bss_1A824C->statIn.vals[0] = lbl_2_bss_1A824C->statInCopy.vals[0];
+                lbl_2_bss_1A824C->statIn.vals[1] = lbl_2_bss_1A824C->statInCopy.vals[1];
+                lbl_2_bss_1A824C->statIn.vals[2] = lbl_2_bss_1A824C->statInCopy.vals[3];
+                lbl_2_bss_1A824C->statIn.vals[3] = lbl_2_bss_1A824C->statInCopy.vals[4];
+                lbl_2_bss_1A824C->statIn.vals[4] = lbl_2_bss_1A824C->statInCopy.vals[2];
+                lbl_2_bss_1A824C->statIn.vals[5] = lbl_2_bss_1A824C->statInCopy.vals[5];
+                lbl_2_bss_1A824C->statOut.vals[0] = lbl_2_bss_1A824C->statOutCopy.vals[0];
+                lbl_2_bss_1A824C->statOut.vals[1] = lbl_2_bss_1A824C->statOutCopy.vals[1];
+                lbl_2_bss_1A824C->statOut.vals[2] = lbl_2_bss_1A824C->statOutCopy.vals[3];
+                lbl_2_bss_1A824C->statOut.vals[3] = lbl_2_bss_1A824C->statOutCopy.vals[4];
+                lbl_2_bss_1A824C->statOut.vals[4] = lbl_2_bss_1A824C->statOutCopy.vals[2];
+                lbl_2_bss_1A824C->statOut.vals[5] = lbl_2_bss_1A824C->statOutCopy.vals[5];
+                lbl_2_bss_1A823C->state = 13;
+                sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
+            } else {
+                sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+            }
+        } else if (down & 0x200) {
+            lbl_2_bss_1A824C->tab = 0;
+            lbl_2_bss_1A823C->state = 5;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        break;
+    }
+    case 3:
+        lbl_2_bss_1A823C->state = 4;
+        lbl_2_bss_1A8234->timer = 0x24;
+        break;
+    case 4:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            CUR_TASK->func = fn_2_5AFB0;
+            lbl_2_bss_1A823C->state = 0;
+        }
+        break;
+    case 5:
+        lbl_2_bss_1A8234->layerFlags[1][4] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 6;
+        break;
+    case 6:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 7;
+        }
+        break;
+    case 7: {
+        u16 repeat = MENU_PAD.repeat;
+        u16 down;
+        if (repeat & 8) {
+            lbl_2_bss_1A824C->tab = (lbl_2_bss_1A824C->tab + 3) % 4;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (repeat & 4) {
+            lbl_2_bss_1A824C->tab = (lbl_2_bss_1A824C->tab + 1) % 4;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+        down = MENU_PAD.down;
+        if (down & 0x100) {
+            if (lbl_2_bss_1A824C->tab == 3) {
+                lbl_2_bss_1A823C->state = 11;
+            } else {
+                lbl_2_bss_1A823C->state = 8;
+            }
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x200) {
+            lbl_2_bss_1A823C->state = 17;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        break;
+    }
+    case 8:
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][5] = 1;
+        lbl_2_bss_1A8234->timer = 0x24;
+        lbl_2_bss_1A823C->state = 9;
+        break;
+    case 9:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 10;
+        }
+        break;
+    case 10:
+        lbl_2_bss_1A8234->layerFlags[3][2] = 1;
+        switch (lbl_2_bss_1A824C->tab) {
+        case 0:
+            lbl_2_bss_1A824C->mode = 5;
+            CUR_TASK->func = fn_2_5A224;
+            break;
+        case 1:
+            lbl_2_bss_1A824C->mode = 0;
+            CUR_TASK->func = fn_2_5D26C;
+            break;
+        case 2:
+            lbl_2_bss_1A824C->mode = 2;
+            CUR_TASK->func = fn_2_5C5B8;
+            break;
+        case 3:
+            lbl_2_bss_1A824C->mode = 4;
+            lbl_2_bss_1A823C->state = 11;
+            break;
+        }
+        lbl_2_bss_1A823C->state = 0;
+        break;
+    case 11:
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 12;
+        break;
+    case 12:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 2;
+        }
+        break;
+    case 13:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 14;
+        }
+        break;
+    case 14: {
+        u16 down = MENU_PAD.down;
+        if (down & 0x100) {
+            lbl_2_bss_1A8234->timer = 4;
+            lbl_2_bss_1A8234->layerFlags[8][12] = 1;
+            lbl_2_bss_1A823C->state = 15;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x200) {
+            lbl_2_bss_1A8234->timer = 4;
+            lbl_2_bss_1A8234->layerFlags[8][12] = 1;
+            lbl_2_bss_1A823C->state = 15;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        break;
+    }
+    case 15:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 2;
+        }
+        break;
+    case 17:
+        changeScene(3, 6);
+        lbl_2_bss_1A8234->layerFlags[8][5] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][2] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][0] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][1] = 1;
+        lbl_2_bss_1A8234->timer = 0x24;
+        lbl_2_bss_1A823C->state = 18;
+        break;
+    case 18:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            MenuTask* parent = CUR_TASK->parent;
+            parent->signal = 1;
+            fn_800B0A14_removeQueue(parent);
+            lbl_2_bss_1A823C->state = 0;
+        }
+        break;
+    }
 }
 
 // .text:0x0005C5B8 size:0x5A4
