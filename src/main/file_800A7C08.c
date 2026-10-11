@@ -842,7 +842,15 @@ static inline s32 CardStatusClass(void) {
 
 // .text:0x800A9864 size:0x98
 void fn_800A9864(u8 chan, u8 mode, u64 serial) {
-    return;
+    CardMountTask* task;
+
+    lbl_803C7838.op = 6;
+    task = fn_800B0A5C_insertQueue(fn_800A98FC, 0xFF);
+    memset(&task->step, 0, sizeof(Task) - OFFSET_OF(Task, data));
+    task->chan = chan;
+    task->mode = mode;
+    lbl_802EF2C0[chan] = serial;
+    lbl_803CC1B8->result = 0;
 }
 
 // .text:0x800A98FC size:0x3FC
