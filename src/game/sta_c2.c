@@ -915,7 +915,8 @@ void fn_3_D00CC(void) {
 }
 
 // .text:0x000D00D0 size:0x1B0 mapped:0x8070F164
-// partial: p/c saved regs swapped (r30/r31); int->float const regs differ
+// NONMATCHING 93%: p/c saved regs swapped (r30/r31); int->float const regs differ
+#if NONMATCHING
 void fn_3_D00D0(u8* p) {
     u8* o = *(u8**)(p + 0xA0);
     Control* c;
@@ -955,6 +956,7 @@ void fn_3_D00D0(u8* p) {
     CTRLGetTranslation(c, &x, &y, &z);
     CTRLSetTranslation((Control*)p, x, y, z);
 }
+#endif
 
 // .text:0x000D0280 size:0x4 mapped:0x8070F314
 void fn_3_D0280(void) {
@@ -962,7 +964,8 @@ void fn_3_D0280(void) {
 }
 
 // .text:0x000D0284 size:0x20C mapped:0x8070F318
-// partial: all code shape matches; p/st saved regs swapped (p r30, st r31 vs r31/r30)
+// NONMATCHING 92%: p/st saved regs swapped (r30/r31)
+#if NONMATCHING
 void fn_3_D0284(u8* p) {
     u8 st = (*(u8**)(p + 0xA0))[0xD1];
     f32 ang;
@@ -1002,6 +1005,7 @@ void fn_3_D0284(u8* p) {
         }
     }
 }
+#endif
 
 // .text:0x000D0490 size:0x98 mapped:0x8070F524
 void fn_3_D0490(void) {
