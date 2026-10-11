@@ -1,8 +1,14 @@
 #include "main/file_80011640.h"
+#include "Dolphin/mtx.h"
 
 // .text:0x80011640 size:0x9C
-void fn_80011640(void) {
-    return;
+void fn_80011640(Mtx a, Mtx out) {
+    Mtx scale = {
+        { 1.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.93333334f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 1.0f, 0.0f },
+    };
+    PSMTXConcat(scale, a, out);
 }
 
 // .text:0x800116DC size:0xF0
