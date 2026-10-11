@@ -471,6 +471,7 @@ config.libs = [
             Object(Matching, "Dolphin/os/OSSync.c"),
             Object(Matching, "Dolphin/os/OSThread.c"),
             Object(Matching, "Dolphin/os/OSTime.c"),
+            Object(Matching, "Dolphin/os/__start.c"),
             Object(Matching, "Dolphin/os/__ppc_eabi_init.cpp"),
         ],
         extra_cflags=["-str noreadonly", "-sym on"]
