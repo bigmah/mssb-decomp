@@ -377,28 +377,7 @@ u8 fn_800471F4(u8 mode, u8 team);
 void fn_800486E0(s32 priority, s8 a, s8 b);
 void fn_80048764(void);
 
-// Debug menu (see fn_80048820).
-typedef struct DebugMenuItem {
-    /*0x00*/ s32 type; // 2: s8, 3-5: u8, 6-8: button action, else s32
-    /*0x04*/ s32 _04;
-    /*0x08*/ s32 min;
-    /*0x0C*/ s32 max;
-    /*0x10*/ s32 step[3]; // by how long the direction has been held
-    /*0x1C*/ void* value;
-    /*0x20*/ u32 mask;
-    /*0x24*/ s32 _24;
-    /*0x28*/ s32 (*func)(struct DebugMenu* menu, u16 buttons);
-} DebugMenuItem; // size: 0x2C
-
-typedef struct DebugMenu {
-    /*0x00*/ s32 _00;
-    /*0x04*/ s32 count;
-    /*0x08*/ s32 visible;
-    /*0x0C*/ s32 top;
-    /*0x10*/ s32 cursor;
-    /*0x14*/ s32 wrap;
-    /*0x18*/ DebugMenuItem* items;
-} DebugMenu;
+#include "main/debug_menu.h"
 
 s32 fn_80048820(void* menu, u16 held, u16 trig, u16 repeat, u8 holdTime);
 
