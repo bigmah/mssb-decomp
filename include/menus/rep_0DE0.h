@@ -33,6 +33,7 @@ typedef struct {
     /* 0x2DA0 */ MenuModel models[6];
     /* 0x2DE8 */ u8 padding2DE8[0x290];
     /* 0x3078 */ u16 count;
+    /* 0x307A */ u8 unk307A;
 } MenuDrawWorld;
 
 // Stadium background objects (lbl_2_data_2E608), indexed by stadium.

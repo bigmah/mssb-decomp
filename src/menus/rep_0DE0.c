@@ -6,7 +6,6 @@
 #include "C3/charPipeline.h"
 
 
-extern u8* lbl_2_bss_1A8248[];
 extern MenuDrawWorld* lbl_2_bss_340140[];
 extern const f32 lbl_2_rodata_E88;
 extern MenuDrawWorld lbl_8036E548;
@@ -117,9 +116,9 @@ void fn_2_87114(void) {
 // fn_2_870D4, size:0x40
 void fn_2_870D4(f32 value) {
     if (value) {
-        lbl_2_bss_1A8248[0][0x307A] = 3;
+        lbl_2_bss_340140[0]->unk307A = 3;
     } else {
-        lbl_2_bss_1A8248[0][0x307A] = 0;
+        lbl_2_bss_340140[0]->unk307A = 0;
     }
 }
 
