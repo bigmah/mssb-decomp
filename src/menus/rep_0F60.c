@@ -282,7 +282,6 @@ void fn_2_8D024(void) {
 extern u8* lbl_803CC1B8;
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_2FE48[];
-extern void fn_2_8B418(void);
 extern void fn_80052D70(void);
 
 // NONMATCHING 97%: li r6,1 scheduled before the lbl_2_bss_1A824C load in state 6
@@ -850,3 +849,41 @@ void fn_2_8D270(u8 index) {
     fn_2_8CD58(index, 0, 1, 1, 0, 0, 0);
 }
 #endif
+
+// Sets up the 29 actor objects of the menu scene from the 19 resource sets
+// (objects 10..15 share set 10, objects 16..21 share set 11).
+// .text:0x8B418 size:0x130C
+void fn_2_8B418(void) {
+    *(u16*)(lbl_2_bss_340140 + 0x3078) = 29;
+    *(void**)(lbl_2_bss_340140 + 0x2D94) = _OSAllocFromHeap(0x20, *(u16*)(lbl_2_bss_340140 + 0x3078) * 0x28);
+    *(void**)(lbl_2_bss_340140 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_2_bss_340140 + 0x3078));
+    fn_2_8C80C(0, 0, 1, 0, 0);
+    fn_2_8C80C(1, 1, 1, 0, 0);
+    fn_2_8C80C(2, 2, 1, 0, 0);
+    fn_2_8C80C(3, 3, 1, 0, 0);
+    fn_2_8C80C(4, 4, 1, 0, 0);
+    fn_2_8C80C(5, 5, 1, 0, 0);
+    fn_2_8C80C(6, 6, 1, 0, 0);
+    fn_2_8C80C(7, 7, 1, 0, 0);
+    fn_2_8C80C(8, 8, 1, 0, 0);
+    fn_2_8C80C(9, 9, 1, 0, 0);
+    fn_2_8C80C(10, 10, 1, 0, 0);
+    fn_2_8C80C(10, 11, 1, 0, 0);
+    fn_2_8C80C(10, 12, 1, 0, 0);
+    fn_2_8C80C(10, 13, 1, 0, 0);
+    fn_2_8C80C(10, 14, 1, 0, 0);
+    fn_2_8C80C(10, 15, 1, 0, 0);
+    fn_2_8C80C(11, 16, 1, 0, 0);
+    fn_2_8C80C(11, 17, 1, 0, 0);
+    fn_2_8C80C(11, 18, 1, 0, 0);
+    fn_2_8C80C(11, 19, 1, 0, 0);
+    fn_2_8C80C(11, 20, 1, 0, 0);
+    fn_2_8C80C(11, 21, 1, 0, 0);
+    fn_2_8C80C(12, 22, 1, 0, 0);
+    fn_2_8C80C(13, 23, 1, 0, 0);
+    fn_2_8C80C(14, 24, 1, 0, 0);
+    fn_2_8C80C(15, 25, 1, 0, 0);
+    fn_2_8C80C(16, 26, 1, 0, 0);
+    fn_2_8C80C(17, 27, 1, 0, 0);
+    fn_2_8C80C(18, 28, 1, 0, 0);
+}

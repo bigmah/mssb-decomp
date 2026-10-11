@@ -137,4 +137,6 @@ void fn_2_8B158(void);
 
 void fn_2_8D270(u8 index);
 
+void fn_2_8B418(void);
+
 #endif
