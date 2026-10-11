@@ -1383,8 +1383,9 @@ u32 fn_3_C75B8(void* hv) {
     return !h->f24;
 }
 
-// 99%: only 'fmuls f0,f25,f0' operand order (we emit f0,f25); const-left source order changes the hoisted-const layout instead
 // .text:0x000C77AC size:0x260 mapped:0x80706840
+// NONMATCHING 99%: one 'fmuls f0,f25,f0' operand order (we emit f0,f25); const-left source order changes the hoisted-const layout instead
+#if NONMATCHING
 void fn_3_C77AC(void* hv, u8* b) {
     u32 ang;
     C4724P* p;
@@ -1421,6 +1422,7 @@ void fn_3_C77AC(void* hv, u8* b) {
         p = p->next;
     }
 }
+#endif
 
 // .text:0x000C7A0C size:0x650 mapped:0x80706AA0
 void fn_3_C7A0C(void) {
