@@ -8,7 +8,7 @@ extern void fn_80023CF4(s32 a);
 extern void fn_8004C9FC(void);
 extern void fn_2_11A0(u16 v);
 extern void fn_8004CA08(u32 v);
-extern void fn_2_75BE4(u8* o, s32 i);
+void fn_2_75BE4(u8* o, s32 index);
 extern u8 lbl_803C6724[];
 extern u8 lbl_803CBBC4[];
 extern u8 lbl_803CBCD8[];
@@ -2024,6 +2024,7 @@ typedef struct TeamTbl {
     /*0x00*/ u8 _00[2];
     /*0x02*/ s8 roster[2][9];
     /*0x14*/ s8 pos[2][9];
+    /*0x26*/ u8 stat[2][9];
 } TeamTbl;
 
 #define TEAM_TBL ((TeamTbl*)lbl_803C6724)
@@ -2312,6 +2313,51 @@ void fn_2_7F2BC(u8* o, s32 index) {
         }
         fn_800626EC(index);
         *e = 1;
+    }
+}
+#endif
+
+// fn_2_75BE4, size:0x4B4
+// Average a stat over the team's non-captain players and show it as 0-5 stars.
+// NONMATCHING 70%: slot offsets folded into displacements, stars kept in a different register; logic matches
+#if NONMATCHING
+void fn_2_75BE4(u8* o, s32 index) {
+    s32 sum = 0;
+    s32 avg = 0;
+    s32 count = 0;
+    s8 stars = 0;
+    s32 j;
+    for (j = 0; j < 9; j++) {
+        u8 v = TEAM_TBL->stat[index][j];
+        if (v != 0 && TEAM_TBL->roster[index][j] != *(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4)) {
+            sum += v;
+            count++;
+        }
+    }
+    if (count != 0) {
+        avg = sum / count;
+    }
+    if (avg >= 70) {
+        stars = 5;
+    } else if (avg <= 69 && avg >= 55) {
+        stars = 4;
+    } else if (avg <= 54 && avg >= 35) {
+        stars = 3;
+    } else if (avg <= 34 && avg >= 15) {
+        stars = 2;
+    } else if (avg <= 14 && avg > 0) {
+        stars = 1;
+    }
+    lbl_8034E9A0[0x470F + index] = stars;
+    for (j = 0; j < 5; j++) {
+        MnObj* star = MN_OBJ2(o, j + index * 5, 0x6E);
+        if ((star->frame >> 16) == 30) {
+            star->state = 1;
+        }
+    }
+    for (j = 0; j < stars; j++) {
+        MN_OBJ2(o, j + index * 5, 0x6E)->frame = 0;
+        MN_OBJ2(o, j + index * 5, 0x6E)->state = 1;
     }
 }
 #endif
