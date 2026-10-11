@@ -621,8 +621,24 @@ void fn_8001B5EC(void) {
 }
 
 // .text:0x8001B728 size:0xE4
-void fn_8001B728(void) {
-    return;
+s32 fn_8001B728(s32 index, s32 joint, Vec* out) {
+    CharActor* actor = lbl_8036E548.active[index];
+    s32 j;
+    CharSlot* slot;
+
+    if (actor == NULL) {
+        return 0;
+    }
+    j = getJoint(actor, joint);
+    if (j == 0xFFFF) {
+        return 0;
+    }
+    slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+    fn_800B2C10(slot->model, j, out);
+    out->x += actor->pos.x;
+    out->y += actor->pos.y;
+    out->z += actor->pos.z;
+    return 1;
 }
 
 // .text:0x8001B80C size:0x10C
