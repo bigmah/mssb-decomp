@@ -1930,31 +1930,31 @@ void fn_8002CDD0(Vec* end) {
 }
 
 // .text:0x8002CE4C size:0x9E0
-// NONMATCHING 86%: scheduling of the up-front parameter conversions; same calls and stores
+// NONMATCHING 95%: scheduling/registers of the up-front parameter conversions (declaration and conversion order tuned by search); same calls and stores
 #if NONMATCHING
 void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
     Vec n;
     s32 sign = 1;
     s32 total;
-    s32 totalMin;
-    s32 totalRange;
-    s32 p3Min;
     s32 p3Range;
-    s32 fadeMin;
+    s32 totalRange;
     s32 fadeRange;
+    s32 totalMin;
+    s32 fadeMin;
+    s32 p3Min;
     s32 ang;
     f32 r;
     f32 split;
     f32 splitRange;
-    f32 rMin;
-    f32 rRange;
     f32 yawMin;
     f32 yawMax;
-    f32 pitchMin;
-    f32 pitchMax;
+    f32 rMin;
+    f32 rRange;
     f32 dirLen;
     f32 dirLenRange;
+    f32 pitchMax;
     f32 angMin;
+    f32 pitchMin;
     f32 angRange;
     f32 spinMin;
     f32 spinRange;
@@ -1978,20 +1978,20 @@ void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
     split = (f32)prm->unk1C / 100000.0f;
     splitRange = (f32)(prm->unk20 - prm->unk1C) / 100000.0f;
     p3Min = prm->unk24;
-    p3Range = prm->unk28 - prm->unk24;
+    rMin = (f32)prm->unk34 / 100000.0f;
     fadeMin = prm->unk2C;
     fadeRange = prm->unk30 - prm->unk2C;
-    rMin = (f32)prm->unk34 / 100000.0f;
-    rRange = (f32)(prm->unk38 - prm->unk34) / 100000.0f;
-    yawMin = (f32)prm->unk3C / 100000.0f;
+    p3Range = prm->unk28 - prm->unk24;
     yawMax = (f32)prm->unk40 / 100000.0f;
-    pitchMin = (f32)prm->unk44 / 100000.0f;
+    yawMin = (f32)prm->unk3C / 100000.0f;
+    rRange = (f32)(prm->unk38 - prm->unk34) / 100000.0f;
     pitchMax = (f32)prm->unk48 / 100000.0f;
+    angMin = (f32)prm->unk54 / 100000.0f;
     dirLen = (f32)prm->unk4C / 100000.0f;
     dirLenRange = (f32)(prm->unk50 - prm->unk4C) / 100000.0f;
-    angMin = (f32)prm->unk54 / 100000.0f;
     angRange = (f32)(prm->unk58 - prm->unk54) / 100000.0f;
     spinMin = (f32)prm->unk5C / 100000.0f;
+    pitchMin = (f32)prm->unk44 / 100000.0f;
     spinRange = (f32)(prm->unk60 - prm->unk5C) / 100000.0f;
     lenAMin = (f32)prm->unk64 / 100000.0f;
     lenARange = (f32)(prm->unk68 - prm->unk64) / 100000.0f;
