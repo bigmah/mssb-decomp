@@ -30,7 +30,7 @@ extern u8 lbl_3_data_C1EC[];
 
 extern void* lbl_803CC1B8[];
 extern u8 lbl_3_common_bss_32724[];
-extern u8 lbl_3_data_EC1C[];
+extern RepLineScoreData lbl_3_data_EC1C;
 extern u8 lbl_3_data_F430[];
 extern u8 lbl_3_data_EABC[];
 extern u8 lbl_3_data_E85C[];
@@ -38,7 +38,7 @@ extern f32 lbl_3_data_C1CC[4]; // field-map transform: offset x, offset y, scale
 extern u8 lbl_3_common_bss_34C90[]; // TODO type: GamePauseState (auto_00_00097144_text.h)
 extern void fn_3_ED0F4(void);
 extern u8 lbl_3_data_F224[];
-extern u8 lbl_3_data_F200[];
+extern u8 lbl_3_data_F200[3][12]; // [0]: fn_3_91E4C thresholds, [1]/[2]: line-score column _72 values
 extern u8 lbl_3_data_E378[];
 extern u8 lbl_3_data_8D88[];
 extern u8 lbl_3_data_BFEC[];
@@ -253,7 +253,7 @@ void fn_3_91E4C(void) {
         t[*(u16*)(o + 0x14) * 2][0x68] = 4;
         v = *(u32*)(t[*(u16*)(o + 0x14) * 2] + 0x5C) >> 16;
         for (i = 0; i < 11; i++) {
-            if (v <= lbl_3_data_F200[i]) {
+            if (v <= lbl_3_data_F200[0][i]) {
                 if (i == 0) {
                     ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2 + 4][0x68] = 4;
                     ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2 + 6][0x68] = 4;
@@ -274,9 +274,129 @@ void fn_3_91E4C(void) {
 }
 
 // .text:0x00091FC4 size:0xD14 mapped:0x806D1058
-void fn_3_91FC4(void) {
-    return;
+// NONMATCHING 87% (with the two helpers inlined): the original reaches lbl_3_data_EC1C/F200/F430 through the
+// pooled lbl_3_data_8D88 base; the helpers stay calls here because the file ends in `dont_inline on`
+#if NONMATCHING
+static void fn_3_91FC4_digits(RepTask* task, s32 slot, s32 n) {
+    if (n >= 99) {
+        n = 99;
+    }
+    if (n < 10) {
+        REP_OBJ(task, slot)->_64 = lbl_3_data_EC1C.blankDigitAnim;
+        fn_800363D8(task, slot, 1, 0xC4, n);
+    } else {
+        fn_800363D8(task, slot, 2, 0xC4, n % 10);
+        fn_800363D8(task, slot, 1, 0xC4, n / 10);
+    }
 }
+
+// One line-score column: col 1..9 on screen, showing inning `inning`.
+static void fn_3_91FC4_column(RepTask* task, s32 col, s32 inning) {
+    s32 n;
+    REP_OBJ(task, col + 5)->flags |= 2;
+    fn_3_91FC4_digits(task, col + 5, g_Scores.team[0].runs[inning]);
+    if (inning < lbl_3_common_bss_32724[0xCF] || (inning == lbl_3_common_bss_32724[0xCF] && lbl_3_common_bss_32724[0xD0] != 0)) {
+        REP_OBJ(task, col + 16)->flags |= 2;
+        n = g_Scores.team[1].runs[inning];
+        if (n >= 99) {
+            n = 99;
+        }
+        if (n < 10) {
+            if (inning >= g_Scores.inning && (g_GameLogic.winType == 3 || g_GameLogic.winType == 6)) {
+                fn_800363D8(task, col + 16, 2, 0xC4, 11);
+                fn_800363D8(task, col + 16, 1, 0xC4, n);
+            } else {
+                REP_OBJ(task, col + 16)->_64 = lbl_3_data_EC1C.blankDigitAnim;
+                fn_800363D8(task, col + 16, 1, 0xC4, n);
+            }
+        } else {
+            fn_800363D8(task, col + 16, 2, 0xC4, n % 10);
+            fn_800363D8(task, col + 16, 1, 0xC4, n / 10);
+        }
+    } else if (g_GameLogic.gameStatus == 0xE) {
+        REP_OBJ(task, col + 16)->flags |= 2;
+        REP_OBJ(task, col + 16)->_64 = lbl_3_data_EC1C.blankDigitAnim;
+        fn_800363D8(task, col + 16, 1, 0xC4, 10);
+    }
+}
+
+void fn_3_91FC4(void) {
+    RepTask* task = lbl_803CC1B8[0];
+    s32 extra = 0;
+    s32 i;
+    s32 col;
+    s32 inning;
+    s32 shown;
+    u8 innings = lbl_3_common_bss_32724[0xCF];
+    if (innings == 12) {
+        lbl_3_data_EC1C.lineDescs[0].animId = 0xC9;
+        extra = 1;
+        lbl_3_data_EC1C.lineDescs[1].animId = 0xC1;
+    } else if (innings == 11) {
+        lbl_3_data_EC1C.lineDescs[0].animId = 0xC8;
+        extra = 1;
+        lbl_3_data_EC1C.lineDescs[1].animId = 0xC1;
+    } else if (innings == 10) {
+        lbl_3_data_EC1C.lineDescs[0].animId = 0xC7;
+        extra = 1;
+        lbl_3_data_EC1C.lineDescs[1].animId = 0xC1;
+    } else if (innings > 5 || g_Scores.maxInnings > 5) {
+        lbl_3_data_EC1C.lineDescs[0].animId = 0xC6;
+        extra = 1;
+        lbl_3_data_EC1C.lineDescs[1].animId = 0xC1;
+    } else {
+        lbl_3_data_EC1C.lineDescs[0].animId = 0xCA;
+        lbl_3_data_EC1C.lineDescs[1].animId = 0xC5;
+    }
+    fn_80034E20(task, lbl_3_data_EC1C.lineDescs);
+    if (extra) {
+        REP_OBJ(task, 2)->_72 = lbl_3_data_F200[1][0];
+        REP_OBJ(task, 3)->_72 = lbl_3_data_F200[2][0];
+        for (i = 0; i < 11; i++) {
+            REP_OBJ(task, i + 6)->_72 = lbl_3_data_F200[1][i + 1];
+            REP_OBJ(task, i + 17)->_72 = lbl_3_data_F200[2][i + 1];
+        }
+    }
+    REP_OBJ(task, 4)->_64 = lbl_3_data_F430[g_GameLogic.logo[0].captain * 2];
+    REP_OBJ(task, 5)->_64 = lbl_3_data_F430[g_GameLogic.logo[1].captain * 2];
+    REP_OBJ(task, 4)->_5C = g_GameLogic.logo[0].variationID << 16;
+    REP_OBJ(task, 5)->_5C = g_GameLogic.logo[1].variationID << 16;
+    // totals: runs (slots 15/26) and hits (slots 16/27)
+    if (lbl_3_common_bss_32724[0xCF] >= 1) {
+        REP_OBJ(task, 15)->flags |= 2;
+        REP_OBJ(task, 16)->flags |= 2;
+        fn_3_91FC4_digits(task, 15, g_Scores.team[0].runs[0]);
+        fn_3_91FC4_digits(task, 16, g_Scores.hits[0].runs[0]);
+    }
+    if (lbl_3_common_bss_32724[0xCF] >= 2 || lbl_3_common_bss_32724[0xD0] != 0) {
+        REP_OBJ(task, 26)->flags |= 2;
+        REP_OBJ(task, 27)->flags |= 2;
+        fn_3_91FC4_digits(task, 26, g_Scores.team[1].runs[0]);
+        fn_3_91FC4_digits(task, 27, g_Scores.hits[1].runs[0]);
+    }
+    if (lbl_3_common_bss_32724[0xCF] >= 10) {
+        // extra innings: innings 10.. first, then a gap, then the remaining early innings
+        for (col = 1, inning = 10; col <= 9; col++, inning++) {
+            if (inning <= lbl_3_common_bss_32724[0xCF]) {
+                shown = inning;
+            } else if (inning == lbl_3_common_bss_32724[0xCF] + 1) {
+                continue;
+            } else {
+                shown = col;
+            }
+            fn_3_91FC4_column(task, col, shown);
+        }
+    } else {
+        for (col = 1; col <= lbl_3_common_bss_32724[0xCF]; col++) {
+            fn_3_91FC4_column(task, col, col);
+        }
+    }
+    lbl_3_common_bss_32724[0xCD] = 0;
+    lbl_3_common_bss_32724[0xCE] = 0;
+    task->_1A = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_91E4C;
+}
+#endif
 
 // .text:0x00092CD8 size:0x6F4 mapped:0x806D1D6C
 void fn_3_92CD8(RepScoreTask* task) {
@@ -413,7 +533,7 @@ void fn_3_933CC(void) {
 // .text:0x00093544 size:0x144 mapped:0x806D25D8
 void fn_3_93544(void) {
     u8* o;
-    fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_EC1C);
+    fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_EC1C.scoreDescs);
     *(s16*)(((u8**)(((u8*)lbl_80371C30) + 8))[*(u16*)(o + 0x14) * 2] + 0x64) = (lbl_3_data_F430 + 1)[*(s32*)(((u8*)&g_GameLogic) + 0x2C) * 2];
     *(s16*)(((u8**)(((u8*)lbl_80371C30) + 0x10))[*(u16*)(o + 0x14) * 2] + 0x64) = (lbl_3_data_F430 + 1)[*(s32*)(((u8*)&g_GameLogic) + 0x38) * 2];
     *(s32*)(((u8**)(((u8*)lbl_80371C30) + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = *(s32*)(((u8*)&g_GameLogic) + 0x28) << 16;

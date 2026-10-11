@@ -2979,7 +2979,7 @@ typedef struct GameScoresTeam {
 typedef struct GameScores {
     /* 0x00 */ s32 inning;
     /* 0x04 */ GameScoresTeam team[2];
-    /* 0x50 */ u8 _50[0x9C - 0x50];
+    /* 0x50 */ GameScoresTeam hits[2]; // same layout as team[]: [0] total, [1..] per inning
     /* 0x9C */ s16 _9C;
     /* 0x9E */ s16 _9E;
     /* 0xA0 */ s16 _A0;

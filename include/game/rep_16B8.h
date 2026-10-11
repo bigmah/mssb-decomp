@@ -48,6 +48,14 @@ typedef struct RepSpriteDesc {
     /*0x1E*/ s16 unk1E;
 } RepSpriteDesc; // size: 0x20
 
+// Line-score sprite data (lbl_3_data_EC1C, 0x5E4 bytes).
+typedef struct RepLineScoreData {
+    /*0x000*/ RepSpriteDesc scoreDescs[18]; // fn_3_93544
+    /*0x240*/ RepSpriteDesc lineDescs[29];  // fn_3_91FC4; [0]/[1] animIds depend on the inning count
+    /*0x5E0*/ u16 blankDigitAnim;
+    /*0x5E2*/ u16 _5E2;
+} RepLineScoreData; // size: 0x5E4
+
 // Event-banner data (lbl_3_data_BE50, 0x11C bytes).
 typedef struct RepBannerData {
     /*0x00*/ s16 kinds[25][4];    // per banner kind: animId, frame that ends the intro, hold frames, minigame y
