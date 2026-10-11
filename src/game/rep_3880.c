@@ -32,6 +32,7 @@ extern const f32 lbl_3_rodata_3A44;
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
 #include "C3/control.h"
+#include "main/file_80024184.h"
 
 
 extern u8 g_Minigame[];
@@ -108,7 +109,8 @@ extern void fn_80030D88(Vec*, Vec*, void*, int);
 extern void fn_8002F5F4(Vec*, Vec*, void*, s16);
 extern void fn_80030470(Vec*, Vec*, Vec*, void*, int);
 extern u8 lbl_3_common_bss_35154[];
-extern s32 lbl_3_bss_B854;
+extern TexImage* lbl_3_bss_B854;
+extern u8 lbl_3_data_26B9C[];
 extern u8 lbl_80366158[];
 typedef struct { s32 color; s32 v; u8 pad[0x48]; } Ln50;
 #pragma dont_inline on
@@ -2671,8 +2673,61 @@ void fn_3_156548(void) {
 }
 
 // .text:0x00156970 size:0x394 mapped:0x80795A04
-void fn_3_156970(void) {
-    return;
+typedef struct {
+    Vec pos;
+    u32 color;
+    u16 uv[2];
+} QuadVtx; // size 0x14
+
+void fn_3_156970(Vec* pos, u32 color, TexImage* tex) {
+    GXTexObj texObj;
+    GXTlutObj tlutObj;
+    Mtx m;
+    QuadVtx v[4];
+    s32 i;
+    PSMTXIdentity(m);
+    for (i = 0; i < 4; i++) {
+        memcpy(&v[i].pos, &pos[i], sizeof(Vec));
+        v[i].color = color;
+        memcpy(v[i].uv, &((u32*)lbl_3_data_26B9C)[i], 4);
+    }
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_RASA, GX_CA_TEXA, GX_CA_ZERO);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXLoadPosMtxImm(m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    if (lbl_3_bss_B854 != tex) {
+        if (tex->tlut != NULL) {
+            GXInitTexObjCI(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
+            GXInitTlutObj(&tlutObj, tex->tlut, tex->tlutFormat, tex->tlutEntries);
+            GXLoadTlut(&tlutObj, 0);
+        } else {
+            GXInitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+        }
+        GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, tex->minLOD, tex->maxLOD, tex->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        GXLoadTexObj(&texObj, GX_TEXMAP0);
+        lbl_3_bss_B854 = tex;
+    }
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(v[i].pos.x, v[i].pos.y, v[i].pos.z);
+        GXColor1u32(v[i].color);
+        GXTexCoord2f32(v[i].uv[0], v[i].uv[1]);
+    }
 }
 
 // .text:0x00156D04 size:0x608 mapped:0x80795D98
@@ -2823,7 +2878,7 @@ void fn_3_15767C(void) {
                 }
             }
         }
-        lbl_3_bss_B854 = 0;
+        lbl_3_bss_B854 = NULL;
         }
     }
     if (((u8**)&lbl_3_bss_B850)[0][0x18] != 0) {
