@@ -438,46 +438,6 @@ void fn_800126EC(CharPart* part, void* tex, u8* fileIdx) {
 }
 
 // .text:0x800127F8 size:0x398
-static inline void copyPartJointData(CharActor* actor, s32 which) {
-    s32 joint = actor != NULL ? actor->jointIdx[lbl_803CB7B4[which]] : 0xFFFF;
-    CharModel** models;
-    CharModel* model;
-    CharJoint* dst;
-    CharModel* src;
-    CharJoint** jp;
-    s32 i;
-    s32 n;
-
-    if (joint != 0xFFFF) {
-        models = &actor->model;
-        i = 0;
-        do {
-            model = *models;
-            if (lbl_800EEAAC[actor->kind] >= 0 && actor->parts != NULL) {
-                dst = model->joints[joint];
-                if (which & 1) {
-                    src = lbl_8036E548.partSlots->slots[actor->parts->part[1].slot].model;
-                } else {
-                    src = lbl_8036E548.partSlots->slots[actor->parts->part[0].slot].model;
-                }
-                if (src != NULL) {
-                    n = src->jointCount;
-                    jp = &src->joints[n];
-                    do {
-                        jp--;
-                        n--;
-                        if ((*jp)->_14 != NULL) {
-                            dst->_14 = (*jp)->_14;
-                            break;
-                        }
-                    } while (n != 0);
-                }
-                break;
-            }
-            models--;
-        } while (i-- != 0);
-    }
-}
 
 // NONMATCHING 99%: register allocation only (actor/tex, joint-copy temps)
 #if NONMATCHING
