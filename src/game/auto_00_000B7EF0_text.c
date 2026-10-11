@@ -24,6 +24,9 @@ void vecCrossProduct(VecXYZ* out, VecXYZ* a, VecXYZ* b) {
 
 // .text:0x000B7F70 size:0x58 mapped:0x806F7004
 s16 fn_3_B7F70(s16 range) {
-    return 0;
+    if (range < 0) {
+        range *= -1;
+    }
+    lbl_3_common_bss_350E4.seed = (lbl_3_common_bss_350E4.seed * 5 + 1) % 0x8000;
+    return lbl_3_common_bss_350E4.seed % range;
 }
-
