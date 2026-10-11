@@ -102,8 +102,8 @@ s16 fn_80067AC8(s16 id, s8 col);
 void fn_800684A4(void);
 void fn_80068720(u8 track);
 void fn_8006877C(u8 track);
-void fn_80064344(void* obj, Vec* v);
-void fn_80064430(void* obj, s32 count, f32 scale2, f32 scale);
+void fn_80064344(Vec* pos, Vec* v);
+void fn_80064430(Vec* pos, s32 count, f32 scale2, f32 scale);
 BOOL fn_80068514(u32 frames, u8 target);
 BOOL fn_8006862C(u32 frames, u8 target);
 BOOL fn_800697B0(void);
@@ -118,5 +118,6 @@ void fn_800678CC(s32 team);
 void fn_80064534(void);
 void fn_80067C48(u8 team);
 void fn_80067F70(u8 team);
+s32 fn_800639BC(s8 idx, Vec* a, Vec* b);
 
 #endif

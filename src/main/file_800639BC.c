@@ -33,6 +33,21 @@ extern MenuSlotSrc lbl_800E88C4[6][5];
 extern MenuSlotSrc lbl_800E8A2C[5];
 extern MenuSlotSrc lbl_800E8A68[5];
 extern u8 lbl_800E869C[32];
+extern ActorMgr lbl_8036E548;
+extern s8 lbl_803CB8C8[3]; // characters without foot dust
+extern s8 lbl_803CB8BC[5]; // characters with medium dust
+extern s8 lbl_80108D30[0x18]; // [0..11]: big characters, [12..21]: heavy steps
+extern s8 lbl_803CB8C4;
+extern f32 lbl_803CB898;
+extern f32 lbl_803CB89C;
+extern f32 lbl_803CB8A0;
+extern f32 lbl_803CB8A4;
+extern f32 lbl_803CB8A8;
+extern f32 lbl_803CB8AC;
+extern f32 lbl_803CB8B0;
+extern f32 lbl_803CB8B4;
+extern f32 lbl_803CB8B8;
+extern u8 fn_800527C4(Vec* pos);
 extern u8 lbl_80354720[2][9][4]; // per pick: three copies of the slot index
 extern u8 lbl_80108ED0[12];     // captain character ids
 extern u8 lbl_8010902C[12];     // class per captain (lbl_80108ED0 order)
@@ -51,18 +66,128 @@ extern EffectDesc lbl_80108D48;
 extern s32 lbl_803CBD0C;
 
 extern s32 randRange_FUN_80042bf0(s32 lo, s32 hi);
-extern void fn_8002B7F8(void* obj, EffectDesc* desc, s32 count);
+extern void fn_8002B7F8(Vec* pos, EffectDesc* desc, s32 count);
 extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_80034E20(void* task, void* desc);
 extern void* fn_80034CEC(void* task);
 
 // .text:0x800639BC size:0x988
-void fn_800639BC(void) {
-    return;
+// Foot dust: spawns dust effects at a character's feet (0x23: left, 0x1F: right).
+// NONMATCHING 56%: the original has the four fn_80064430 calls inlined (fn_80064430 is
+// defined later in the file); control flow and register use otherwise line up
+#if NONMATCHING
+s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
+    ActorMgrActor* actor = lbl_8036E548.active[idx];
+    PlayerVecSlot* fx = &lbl_802E4BC0[idx]; // a/b: last foot positions, unk18: timer, unk1C: flags
+    s32 result = 0;
+    Vec pos;
+    Vec diff;
+    f32 scale2;
+    f32 scale;
+    f32 height;
+    s32 i;
+    s8 kind;
+
+    for (i = 0; i < 3; i++) {
+        if (actor->kind == lbl_803CB8C8[i]) {
+            return 0;
+        }
+    }
+    if (fn_800527C4(&actor->pos) == 0) {
+        return 0;
+    }
+    scale2 = lbl_803CB898;
+    scale = lbl_803CB8A4;
+    for (i = 0; i < 5; i++) {
+        if (actor->kind == lbl_803CB8BC[i]) {
+            scale2 = lbl_803CB89C;
+            scale = lbl_803CB8A8;
+        }
+    }
+    for (i = 0; i < 12; i++) {
+        if (actor->kind == lbl_80108D30[i]) {
+            scale2 = lbl_803CB8A0;
+            scale = lbl_803CB8AC;
+        }
+    }
+    PSVECSubtract(a, b, &diff);
+    if (PSVECMag(&diff) == 0.0f) {
+        // Standing still: a small puff every 16 frames.
+        if (fx->unk18 == 0) {
+            pos.x = pos.y = pos.z = 0.0f;
+            if (fn_8001B728(idx, 0x23, &pos) != 0) {
+                pos.y = 0.0f;
+                fn_80064430(&pos, 0, scale2, 0.0f);
+            }
+            pos.x = pos.y = pos.z = 0.0f;
+            if (fn_8001B728(idx, 0x1F, &pos) != 0) {
+                pos.y = 0.0f;
+                fn_80064430(&pos, 0, scale2, 0.0f);
+            }
+            result = 1;
+            fx->unk18++;
+        } else if ((u32)fx->unk18 >= 15) {
+            fx->unk18 = 0;
+        } else {
+            fx->unk18++;
+        }
+    } else {
+        kind = actor->kind;
+        if (kind == 0xD || (kind >= 0x1D && kind <= 0x20)) {
+            // Detect each foot crossing the height threshold.
+            height = lbl_803CB8B0;
+            if (kind == lbl_803CB8C4) {
+                height = lbl_803CB8B4;
+            }
+            for (i = 0; i < 10; i++) {
+                if (kind == lbl_80108D30[12 + i]) {
+                    height = lbl_803CB8B8;
+                }
+            }
+            fx->unk18 = 0;
+            pos.x = pos.y = pos.z = 0.0f;
+            if (fn_8001B728(idx, 0x23, &pos) != 0) {
+                if (pos.y >= -height && fx->a.y < -height) {
+                    pos.y = 0.0f;
+                    fn_80064430(&pos, 1, scale2, scale);
+                    result = 3;
+                }
+                fx->a = pos;
+            }
+            pos.x = pos.y = pos.z = 0.0f;
+            if (fn_8001B728(idx, 0x1F, &pos) != 0) {
+                if (pos.y >= -height && fx->b.y < -height) {
+                    pos.y = 0.0f;
+                    fn_80064430(&pos, 1, scale2, scale);
+                    result = 3;
+                }
+                fx->b = pos;
+            }
+        } else {
+            // Use the actor's ground-contact flags.
+            pos.x = pos.y = pos.z = 0.0f;
+            if ((fx->unk1C & 4) && !(actor->_276 & 4)) {
+                fn_8001B728(idx, 0x23, &pos);
+                pos.y = 0.0f;
+                fn_80064430(&pos, 1, scale2, scale);
+                result = 3;
+            }
+            pos.x = pos.y = pos.z = 0.0f;
+            if ((fx->unk1C & 2) && !(actor->_276 & 2)) {
+                fn_8001B728(idx, 0x1F, &pos);
+                pos.y = 0.0f;
+                fn_80064430(&pos, 1, scale2, scale);
+                result = 3;
+            }
+            fx->unk1C = actor->_276;
+        }
+    }
+    return result;
 }
+#endif
 
 // .text:0x80064344 size:0xEC
-void fn_80064344(void* obj, Vec* v) {
+void fn_80064344(Vec* pos, Vec* v) {
     EffectDesc desc;
     f32 scale = 3.0f * PSVECMag(v);
 
@@ -78,11 +203,11 @@ void fn_80064344(void* obj, Vec* v) {
     desc._54[0] *= scale;
     desc._54[1] *= scale;
     desc._54[2] *= scale;
-    fn_8002B7F8(obj, &desc, 1);
+    fn_8002B7F8(pos, &desc, 1);
 }
 
 // .text:0x80064430 size:0x104
-void fn_80064430(void* obj, s32 count, f32 scale2, f32 scale) {
+void fn_80064430(Vec* pos, s32 count, f32 scale2, f32 scale) {
     EffectDesc desc;
 
     memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
@@ -97,7 +222,7 @@ void fn_80064430(void* obj, s32 count, f32 scale2, f32 scale) {
     desc._54[0] *= scale2;
     desc._54[1] *= scale2;
     desc._54[2] *= scale2;
-    fn_8002B7F8(obj, &desc, count);
+    fn_8002B7F8(pos, &desc, count);
 }
 
 // .text:0x80064534 size:0x220
