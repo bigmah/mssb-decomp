@@ -13,7 +13,8 @@ typedef struct SceneTask {
     /*0x14*/ u8 _14[0x34 - 0x14];
     /*0x34*/ s16 state;
     /*0x36*/ s16 _36;
-    /*0x38*/ s16 _38;
+    /*0x38*/ u8 _38;
+    /*0x39*/ u8 _39;
     /*0x3A*/ u8 _3A;
     /*0x3B*/ u8 _3B;
 } SceneTask;

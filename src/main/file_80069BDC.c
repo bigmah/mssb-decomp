@@ -57,6 +57,17 @@ extern void* fn_80034CEC(void* task);
 extern u8 fn_8000F988(void* task, s32 idx, s32 a, s32 b, s32 c, s32 d);
 extern void fn_8000FEE8(u8 idx);
 extern void fn_8000F8F4(void* task);
+extern void fn_80022B68(void);
+extern void changeScene(s32 scene, s32 state);
+
+typedef struct Unk803716B8 {
+    /*0x000*/ u8 _000[0x1E9];
+    /*0x1E9*/ u8 _1E9;
+    /*0x1EA*/ u8 _1EA[0x578 - 0x1EA];
+} Unk803716B8;
+
+extern Unk803716B8 lbl_803716B8;
+extern u8 lbl_801092F8[0x80]; // TODO type
 
 // .text:0x80069BDC size:0x5B8
 void fn_80069BDC(void) {
@@ -102,7 +113,35 @@ void fn_8006B230(void) {
 
 // .text:0x8006B668 size:0x124
 void fn_8006B668(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+
+    if (lbl_803716B8._1E9 == 0 && task->state != 6) {
+        fn_80022B68();
+    }
+    switch (task->state) {
+    case 0:
+        if (task->_10 != 0) {
+            fn_80034E20(fn_800B0A5C_insertQueue(fn_8006B230, lbl_803CC1B8->priority), lbl_801092F8);
+            changeScene(3, 0);
+            task->_38 = 0;
+            task->_36 = 1;
+            task->state++;
+        }
+        break;
+    case 5:
+        if (lbl_803CC1B8->_3B != 0) {
+            task->state = 0;
+            lbl_803CC1B8->func = fn_8006AF9C;
+        }
+        break;
+    case 4:
+    case 6:
+        if (lbl_803CC1B8->_3B != 0) {
+            task->state = 0;
+            lbl_803CC1B8->func = fn_8006AF6C;
+        }
+        break;
+    }
 }
 
 // .text:0x8006B78C size:0x3D4
