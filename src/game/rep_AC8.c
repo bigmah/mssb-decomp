@@ -67,6 +67,8 @@ extern f32 lbl_3_data_1C44[];
 extern s16 lbl_3_data_1C54[];
 int RandomInt_Game_Range(int min, int max);
 struct _VecXYZ;
+f32 game_atan2(f32 x, f32 y);
+extern f32 lbl_3_rodata_B68;
 f32 fn_3_9EFD0(struct _VecXYZ* a, struct _VecXYZ* b, struct _VecXYZ* c, struct _VecXYZ* d);
 extern u8 g_Batter[];
 BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
@@ -916,9 +918,185 @@ int fn_3_27FF4(int i) {
 #endif
 
 // .text:0x00028224 size:0xA84 mapped:0x806672B8
+#define K4930(off) (*(f32*)(lbl_3_data_4930 + (off)))
+#define BALLPT(n, off) (*(f32*)(g_Ball + (n) * 16 + (off)))
+// NONMATCHING 80%: the original fully unrolls the two short search loops (11 and 5 steps) and keeps more in saved regs; logic and calls match
+#if NONMATCHING
 int fn_3_28224(int i) {
-    return 0;
+    u8* f = g_Fielders + i * 0x268;
+    f32 height = *(f32*)(f + 0xF4);
+    int k;
+    int m;
+    int j;
+    f32 t0;
+    f32 h;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    f32 nx;
+    f32 nz;
+    VecSrcDst seg;
+    CollisionStruct hit;
+    if ((0.0f == *(f32*)(f + 0x38) && 0.0f == *(f32*)(f + 0x3C)) || *(s16*)(f + 0x19A) < 0) {
+        return 0;
+    }
+    for (k = lbl_3_data_49DC[2] - 1; k < lbl_3_data_49DC[1]; k++) {
+        if (BALLPT(k, 0x360) > *(f32*)(g_Ball + 0x19E0) - K4930(0x28)) {
+            break;
+        }
+    }
+    if (k < lbl_3_data_49DC[2]) {
+        return 0;
+    }
+    if (BALLPT(k, 0x358) < K4930(0x20) + height) {
+        return 0;
+    }
+    if (k < lbl_3_data_49DC[1] &&
+        fn_3_9FCF8(fn_3_9FB8C(BALLPT(k, 0x354) - *(f32*)f, BALLPT(k, 0x35C) - *(f32*)(f + 8)), *(s16*)(f + 0x19A)) <= 0x300) {
+        *(f32*)(f + 0x128) = BALLPT(k, 0x354);
+        *(f32*)(f + 0x130) = BALLPT(k, 0x35C);
+        *(f32*)(f + 0x12C) = K4930(0x14);
+        d = DIST2_XZ(*(f32*)f, *(f32*)(f + 8), *(f32*)(f + 0x128), *(f32*)(f + 0x130));
+        SQRT_L(d);
+        if (!(d > K4930(0x10))) {
+            dz = *(f32*)(f + 0x130) - *(f32*)(f + 8);
+            dx = *(f32*)(f + 0x128) - *(f32*)f;
+            seg.src.x = *(f32*)f;
+            seg.src.z = *(f32*)(f + 8);
+            seg.dst.y = -K4930(0x14);
+            seg.src.y = -K4930(0x14);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            seg.dst.x = (dx / d) * K4930(0x10) + *(f32*)f;
+            seg.dst.z = (dz / d) * K4930(0x10) + *(f32*)(f + 8);
+            if ((checkCollision(&seg, &hit, 0, 0) & 0x7F) != 2) {
+                return 0;
+            }
+            /* step back to the first frame the ball is still within reach time-wise */
+            t0 = BALLPT(k, 0x360) - K4930(0x30);
+            for (m = k, j = 0; j < 11; j++, m--) {
+                if (t0 < BALLPT(m, 0x360)) {
+                    break;
+                }
+            }
+            h = height + K4930(0x24);
+            k = m;
+            for (j = 0; j < 5; j++) {
+                if (k < lbl_3_data_49DC[2]) {
+                    break;
+                }
+                if (BALLPT(k, 0x358) > h && j != 0) {
+                    k++;
+                    break;
+                }
+                k--;
+            }
+            *(s16*)(f + 0x24C) = k;
+            *(f32*)(f + 0x134) = BALLPT(k, 0x354);
+            *(f32*)(f + 0x138) = BALLPT(k, 0x358) - lbl_3_rodata_B68;
+            *(f32*)(f + 0x13C) = BALLPT(k, 0x35C);
+            *(f32*)(f + 0x134) = (BALLPT(k, 0x354) / BALLPT(k, 0x360)) * K4930(0x30) + *(f32*)(f + 0x134);
+            *(f32*)(f + 0x13C) = (BALLPT(k, 0x35C) / BALLPT(k, 0x360)) * K4930(0x30) + *(f32*)(f + 0x13C);
+            *(f32*)(f + 0x140) = game_atan2(*(f32*)(f + 0x128) - *(f32*)f, *(f32*)(f + 0x130) - *(f32*)(f + 8));
+            *(f32*)(f + 0x144) = game_atan2(-*(f32*)(f + 0x128), -*(f32*)(f + 0x130));
+            *(f32*)(f + 0x148) = 0.0f;
+            if (BALLPT(k, 0x358) > K4930(0x24) + *(f32*)(f + 0xF4)) {
+                *(f32*)(f + 0x138) = K4930(0x24);
+                *(s16*)(f + 0x24C) = k;
+                *(s16*)(f + 0x24E) = 0;
+                f[0x252] = 4;
+                f[0x253] = 0;
+                f[0x254] = 0;
+                f[0x255] = 0;
+                f[0x25B] = 1;
+                f[0x259] = 0;
+                f[0x25C] = 0;
+                f[0x25D] = 0;
+                f[0x25E] = 0;
+                f[0x25F] = 0;
+                f[0x264] = 0;
+                f[0x260] = 0;
+                if (k < *(s16*)(g_Ball + 0x1B60)) {
+                    f[0x264] = 1;
+                }
+                f[0x259] = 3;
+                g_Ball[0x1BF0] = 0;
+            } else {
+                *(f32*)(f + 0x138) = BALLPT(k, 0x358) - *(f32*)(f + 0xF4);
+                *(s16*)(f + 0x24C) = k;
+                *(s16*)(f + 0x24E) = 0;
+                f[0x252] = 4;
+                f[0x253] = 0;
+                f[0x254] = 0;
+                f[0x255] = 0;
+                f[0x25B] = 0;
+                f[0x259] = 0;
+                f[0x25C] = 0;
+                f[0x25D] = 0;
+                f[0x25E] = 0;
+                f[0x25F] = 0;
+                f[0x264] = 0;
+                f[0x260] = 0;
+                if (k < *(s16*)(g_Ball + 0x1B60)) {
+                    f[0x264] = 1;
+                }
+                f[0x259] = 3;
+                g_Ball[0x1BF0] = 0;
+            }
+            f[0x25C] = lbl_3_data_49DC[3];
+            fn_3_1AE44(2, 0, BALLPT(k, 0x354), BALLPT(k, 0x358), BALLPT(k, 0x35C));
+            return 1;
+        }
+    }
+    seg.src.x = *(f32*)f;
+    seg.src.y = -K4930(0x14);
+    seg.src.z = *(f32*)(f + 8);
+    seg.dst.x = *(f32*)(f + 0x38) * K4930(0x10) + *(f32*)f;
+    seg.dst.y = -K4930(0x14);
+    seg.dst.z = *(f32*)(f + 0x3C) * K4930(0x10) + *(f32*)(f + 8);
+    if ((checkCollision(&seg, &hit, 0, 0) & 0x7F) != 2) {
+        return 0;
+    }
+    *(f32*)(f + 0x128) = hit.position.x;
+    *(f32*)(f + 0x130) = hit.position.z;
+    *(f32*)(f + 0x12C) = K4930(0x14);
+    d = hit.normal.x * hit.normal.x + hit.normal.z * hit.normal.z;
+    SQRT_L(d);
+    nx = hit.normal.x / d;
+    nz = hit.normal.z / d;
+    nx *= K4930(0x18);
+    nz *= K4930(0x18);
+    *(f32*)(f + 0x134) = *(f32*)(f + 0x128) + nx;
+    *(f32*)(f + 0x138) = *(f32*)(f + 0x12C) + K4930(0x20);
+    *(f32*)(f + 0x13C) = *(f32*)(f + 0x130) + nz;
+    *(f32*)(f + 0x140) = game_atan2(*(f32*)(f + 0x128) - *(f32*)f, *(f32*)(f + 0x130) - *(f32*)(f + 8));
+    *(f32*)(f + 0x144) = game_atan2(nx, nz);
+    *(f32*)(f + 0x148) = 0.0f;
+    *(s16*)(f + 0x24C) = k;
+    *(s16*)(f + 0x24E) = 0;
+    f[0x252] = 4;
+    f[0x253] = 0;
+    f[0x254] = 0;
+    f[0x255] = 0;
+    f[0x25B] = 1;
+    f[0x259] = 0;
+    f[0x25C] = 0;
+    f[0x25D] = 0;
+    f[0x25E] = 0;
+    f[0x25F] = 0;
+    f[0x264] = 0;
+    f[0x260] = 0;
+    if (k < *(s16*)(g_Ball + 0x1B60)) {
+        f[0x264] = 1;
+    }
+    f[0x259] = 3;
+    g_Ball[0x1BF0] = 0;
+    f[0x25C] = lbl_3_data_49DC[3];
+    return 1;
 }
+#endif
+#undef K4930
+#undef BALLPT
 
 // .text:0x00028CA8 size:0x14BC mapped:0x80667D3C
 int fn_3_28CA8(int i) {
