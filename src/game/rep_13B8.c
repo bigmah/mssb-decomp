@@ -5024,6 +5024,8 @@ void fn_3_8A5A4(void) {
 
 // .text:0x0008A618 size:0x19C mapped:0x806C96AC
 // ~98%: shape matches; only regs of hoisted constants/temps differ (orig: temp r3, m r4, 1->r0, 0->r6; ours: temp r4, m r6, 1->r3, 0->r0). ~100 variants tried.
+// NONMATCHING 98%: register allocation of hoisted constants/temps (see note above)
+#if NONMATCHING
 void fn_3_8A618(void) {
     int i;
     u8* r;
@@ -5048,6 +5050,7 @@ void fn_3_8A618(void) {
         }
     }
 }
+#endif
 
 // .text:0x0008A7B4 size:0x1A4 mapped:0x806C9848
 void fn_3_8A7B4(void) {
