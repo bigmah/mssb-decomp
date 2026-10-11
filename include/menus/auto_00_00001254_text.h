@@ -262,4 +262,6 @@ void fn_2_A6E0(void);
 
 void fn_2_B66C(void);
 
+void fn_2_AEE8(void);
+
 #endif
