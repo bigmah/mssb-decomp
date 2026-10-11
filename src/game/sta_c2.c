@@ -505,9 +505,54 @@ void fn_3_CC5C4(u8* p) {
 }
 
 // .text:0x000CC81C size:0x408 mapped:0x8070B8B0
-void fn_3_CC81C(void) {
-    return;
+// NONMATCHING 95%: register assignment of the found object (target copies it to the inlined fn_3_CC5C4 param); fn_3_CC5C4/fn_3_CE8E4 are inlined copies
+#if NONMATCHING
+#pragma dont_inline off
+static inline void CC5C4_inl(u8* p) {
+    p[0xCA] = g_Minigame[0x1B19];
+    fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+    p[0xCB] = p[0xCA];
+    ((BF90_c2*)p)->f = 1;
+    p[0] = 0;
+    CTRLSetScale((Control*)p, lbl_3_rodata_26C8, lbl_3_rodata_26C8, lbl_3_rodata_26C8);
+    *(f32*)(p + 0xA0) = *(f32*)(g_Minigame + 0x1AE0);
+    *(f32*)(p + 0xA4) = *(f32*)(g_Minigame + 0x1AE4);
+    *(f32*)(p + 0xA8) = *(f32*)(g_Minigame + 0x1AE8);
+    *(f32*)(p + 0xC0) = shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8));
+    CTRLSetRotation((Control*)p, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
+    CC438_inl();
+    fn_3_CBF80(p);
 }
+
+static inline void CE8E4_inl(void) {
+    u8 i = 0;
+    do {
+        u8* r = fn_80033A24(fn_3_CDFA4, 0x80, 0, 0x15, 1, 0);
+        if (r != NULL) {
+            fn_3_CE56C(r, i);
+        }
+        i++;
+    } while (i < 4);
+}
+#pragma dont_inline on
+
+// Stadium setup: initialises the first real (non-dummy) object, places the three
+// companion objects and starts the four smoke emitters.
+void fn_3_CC81C(void) {
+    StadiumObjList* g = (StadiumObjList*)lbl_3_common_bss_350E4;
+    u32 i = 0;
+    PiranhaPlant* o = g->objs;
+    for (; i < g->count; i++, o++) {
+        if (o->isDummy == 0) {
+            CC5C4_inl((u8*)o);
+            break;
+        }
+    }
+    CC1D4_inl();
+    CE8E4_inl();
+}
+#endif
 
 // .text:0x000CCC24 size:0xD34 mapped:0x8070BCB8
 void fn_3_CCC24(void) {
