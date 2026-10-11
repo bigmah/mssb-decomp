@@ -115,7 +115,7 @@ void fn_3_1559E4(u8* o, f32* pos, f32* rot);
 void fn_3_155C28(u8* a);
 void fn_3_155F08(void);
 void fn_3_156218(void);
-void fn_3_156548(void);
+void fn_3_156548(u32 n, f32 x, f32 y, f32 z);
 void fn_3_156970(Vec* pos, u32 color, TexImage* tex);
 void fn_3_156D04(void);
 void fn_3_15730C(u32 n, f32 x, f32 y, f32 z);

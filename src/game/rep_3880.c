@@ -89,8 +89,8 @@ extern f32 lbl_3_rodata_3A00;
 extern const Vec lbl_3_rodata_38DC;
 extern const f32 lbl_3_rodata_3A04;
 extern f32 lbl_3_rodata_3948;
-extern void fn_8005268C(void);
-extern u8* fn_80052734(void);
+extern s32 fn_8005268C(void);
+extern u8* fn_80052734(s32 index);
 extern f64 acos(f64);
 extern const Vec lbl_3_rodata_3914;
 extern u8 lbl_3_data_26BFC[];
@@ -111,6 +111,16 @@ extern void fn_80030470(Vec*, Vec*, Vec*, void*, int);
 extern u8 lbl_3_common_bss_35154[];
 extern TexImage* lbl_3_bss_B854;
 extern u8 lbl_3_data_26B9C[];
+extern f32 lbl_3_data_26BAC;
+extern f32 lbl_3_data_26BB0;
+extern const f32 lbl_3_rodata_3A20;
+extern const f32 lbl_3_rodata_3A24;
+extern const f32 lbl_3_rodata_3A28;
+extern const f32 lbl_3_rodata_3A2C;
+extern const f32 lbl_3_rodata_3A30;
+extern void fn_800B1468(Vec* pos, u32 color, TexImage* tex);
+extern void fn_800B27DC(Mtx44 m, s32 type);
+extern void fn_800B2160(u8 value);
 extern u8 lbl_80366158[];
 typedef struct { s32 color; s32 v; u8 pad[0x48]; } Ln50;
 #pragma dont_inline on
@@ -2173,8 +2183,7 @@ void fn_3_1524E8(u8* o, u8 flag) {
     f32 ang;
     f32 r;
     u8* cam;
-    fn_8005268C();
-    cam = fn_80052734();
+    cam = fn_80052734(fn_8005268C());
     if (o[0x4D] != 0) {
         r = fn_3_119854(2);
     } else {
@@ -2215,8 +2224,7 @@ void fn_3_152794(u8* o) {
     f32 ang;
     f32 r;
     u8* cam;
-    fn_8005268C();
-    cam = fn_80052734();
+    cam = fn_80052734(fn_8005268C());
     if (o[0x4D] != 0) {
         r = fn_3_119854(2);
     } else {
@@ -2265,8 +2273,7 @@ void fn_3_1531A4(u8* o) {
     f32 ang;
     f32 r;
     u8* cam;
-    fn_8005268C();
-    cam = fn_80052734();
+    cam = fn_80052734(fn_8005268C());
     if (o[0x4D] != 0) {
         r = fn_3_119854(2);
     } else {
@@ -2310,8 +2317,7 @@ void fn_3_1534C0(u8* o) {
     f32 ang;
     f32 r;
     u8* cam;
-    fn_8005268C();
-    cam = fn_80052734();
+    cam = fn_80052734(fn_8005268C());
     if (o[0x4D] != 0) {
         r = fn_3_119854(2);
     } else {
@@ -2747,23 +2753,103 @@ void fn_3_156218(void) {
     }
 }
 
+// NONMATCHING 92%: 1575F0 inlined; the trail-size float constants load in a different order (pooled addi+lfd), and the (u8) on the tex index adds a clrlslwi (without it CW strength-reduces (i+1)<<5 into an extra saved reg)
 // .text:0x00156548 size:0x428 mapped:0x807955DC
-void fn_3_156548(void) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_156548(u32 n, f32 x, f32 y, f32 z) {
+    Vec quad[4];
+    Mtx44 proj;
+    Vec oldPos;
+    Vec trail;
+    Vec newPos;
+    Vec* v;
+    TexArchive* arc;
+    f32 k;
+    f32 size;
+    f32 h;
+    s32 i;
+    k = lbl_3_rodata_392C / fn_80052768_getCamera(0)->zoom;
+    fn_800B24D4(0xD);
+    v = fn_3_1575F0(n);
+    if (v == NULL) {
+        return;
+    }
+    C_MTXFrustum(proj, lbl_3_rodata_3A20 * k, lbl_3_rodata_3A24 * k, lbl_3_rodata_39F0 * k, lbl_3_rodata_3A28 * k,
+                 lbl_3_rodata_392C, lbl_3_rodata_3A2C);
+    fn_800B27DC(proj, 0);
+    PSMTXMultVec((MtxPtr)((u8*)fn_80052734(0) + 0x40), v, &oldPos);
+    v->x = x;
+    v->y = y;
+    v->z = z;
+    PSMTXMultVec((MtxPtr)((u8*)fn_80052734(0) + 0x40), v, &newPos);
+    PSVECSubtract(&oldPos, &newPos, &oldPos);
+    fn_800B2160(2);
+    i = 7;
+    do {
+        switch (i) {
+        case 0:
+        case 4:
+        case 7:
+            PSVECScale(&oldPos, lbl_3_data_26BAC + ((f32)i * (lbl_3_data_26BB0 - lbl_3_data_26BAC)) / lbl_3_rodata_3A30, &trail);
+            PSVECAdd(&newPos, &trail, &trail);
+            if (i >= 4) {
+                size = lbl_3_rodata_39A8 * (f32)(7 - i) * lbl_3_rodata_39F0 + lbl_3_rodata_39A8;
+            } else {
+                size = lbl_3_rodata_392C;
+            }
+            h = size * lbl_3_rodata_39A8;
+            quad[0].x = trail.x - h;
+            quad[0].y = trail.y - h;
+            quad[0].z = trail.z;
+            quad[1].x = trail.x - h;
+            quad[1].y = trail.y + h;
+            quad[1].z = trail.z;
+            quad[2].x = trail.x + h;
+            quad[2].y = trail.y + h;
+            quad[2].z = trail.z;
+            quad[3].x = trail.x + h;
+            quad[3].y = trail.y - h;
+            quad[3].z = trail.z;
+            fn_800B2160(3);
+            arc = *(TexArchive**)(lbl_3_common_bss_32724 + 0x68);
+            fn_800B1468(quad, 0xFFFFFFFF, TEX_ARCHIVE_IMG(arc, 0));
+            if (i >= 4) {
+                size = lbl_3_rodata_39A8 * (f32)(7 - i) * lbl_3_rodata_39F0 + lbl_3_rodata_39A8;
+            } else {
+                size = lbl_3_rodata_392C;
+            }
+            h = size * lbl_3_rodata_39A8;
+            quad[0].x = trail.x - h;
+            quad[0].y = trail.y - h;
+            quad[1].x = trail.x - h;
+            quad[1].y = trail.y + h;
+            quad[2].x = trail.x + h;
+            quad[2].y = trail.y + h;
+            quad[3].x = trail.x + h;
+            quad[3].y = trail.y - h;
+            fn_800B2160(2);
+            arc = *(TexArchive**)(lbl_3_common_bss_32724 + 0x68);
+            fn_800B1468(quad, 0xFFFFFFFF, &arc->entries[arc->entries[(u8)(i + 1)].index]);
+            break;
+        }
+    } while (i-- != 0);
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x00156970 size:0x394 mapped:0x80795A04
 typedef struct {
     Vec pos;
     u32 color;
     u16 uv[2];
-} QuadVtx; // size 0x14
+} RepQuadVtx; // size 0x14
 
 void fn_3_156970(Vec* pos, u32 color, TexImage* tex) {
     GXTexObj texObj;
     GXTlutObj tlutObj;
     Mtx m;
-    QuadVtx v[4];
+    RepQuadVtx v[4];
     s32 i;
     PSMTXIdentity(m);
     for (i = 0; i < 4; i++) {
@@ -2886,6 +2972,7 @@ void fn_3_157588(int n) {
 }
 
 // .text:0x001575F0 size:0x8C mapped:0x80796684
+#pragma dont_inline off
 void* fn_3_1575F0(u32 n) {
     u8* p = ((u8**)&lbl_3_bss_B850)[0];
     if (p != NULL) {
@@ -2898,6 +2985,7 @@ void* fn_3_1575F0(u32 n) {
     }
     return NULL;
 }
+#pragma dont_inline on
 
 // NONMATCHING 91%: orig hoists copies of d+8 (addi r25; mr r24/r23/r22) -> needs the .data defined in this TU
 // .text:0x0015767C size:0x27C mapped:0x80796710
