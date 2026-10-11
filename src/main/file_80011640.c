@@ -2173,9 +2173,9 @@ void fn_8001B308(s32 index, s32 enable) {
     if (actor != NULL) {
         slot = &lbl_8036E548.slots->slots[actor->modelIndex];
         if (enable == 0) {
-            slot->_68 = NULL;
+            slot->mirror = NULL;
         } else {
-            slot->_68 = actor->_072;
+            slot->mirror = actor->mirror;
         }
     }
 }
@@ -2802,7 +2802,7 @@ void fn_8001DB74(CharSlotList* list) {
         if (slot->_5B & 2) {
             fn_800B4AFC(slot->model, slot->_5B & 1);
         }
-        Set_FUN_800b2b6c(slot->model, slot->_68);
+        Set_FUN_800b2b6c(slot->model, slot->mirror);
         if (slot->_6C != 0) {
             fn_800BDA24(slot);
         }
