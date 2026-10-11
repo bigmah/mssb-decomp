@@ -862,14 +862,108 @@ void fn_8005B298(void) {
 }
 
 // .text:0x8005B760 size:0x3FC
-void fn_8005B760(void) {
-    return;
+// NONMATCHING 93%: state test shape and register numbering differ
+#if NONMATCHING
+void fn_8005B760(SceneTask* task, s32 port) {
+    u8* state = &lbl_803C66B0.steps[9][port + 1];
+    s32 i;
+    s32 slot;
+    s8 pos;
+
+    if (*state == 0) {
+        if (lbl_803297E0.selected[port] != 0) {
+            slot = lbl_803297E0.selected[port] - 1;
+            pos = lbl_80354720[port][slot].pos;
+            for (i = 0; i < 9; i++) {
+                TASK_OBJ(task, i + 0x75)->flags &= ~2;
+                TASK_OBJ(task, i + 0x35)->flags &= ~2;
+            }
+            if (lbl_803297E0.teamKind[port] == 0) {
+                TASK_OBJ(task, pos + 0x23)->_68 = 1;
+                TASK_OBJ(task, pos + 0x1A)->_68 = 1;
+            } else {
+                TASK_OBJ(task, slot + 0x63)->_68 = 1;
+                TASK_OBJ(task, slot + 0x51)->flags |= 2;
+                TASK_OBJ(task, slot + 0x51)->_5C = 0;
+                TASK_OBJ(task, slot + 0x51)->_68 = 1;
+                TASK_OBJ(task, slot + 0x6C)->flags |= 2;
+                TASK_OBJ(task, slot + 0x6C)->_5C = 0;
+                TASK_OBJ(task, slot + 0x6C)->_68 = 1;
+            }
+            TASK_OBJ(task, slot + 0x6C)->flags |= 2;
+            TASK_OBJ(task, slot + 0x6C)->_5C = 0;
+            TASK_OBJ(task, slot + 0x6C)->_68 = 1;
+            TASK_OBJ(task, slot + 0x75)->flags |= 2;
+            TASK_OBJ(task, slot + 0x75)->_64 = 0x2A;
+            TASK_OBJ(task, slot + 0x75)->_68 = 1;
+            TASK_OBJ(task, pos + 0x35)->flags |= 2;
+            TASK_OBJ(task, pos + 0x35)->_64 = 0x2A;
+            TASK_OBJ(task, pos + 0x35)->_68 = 1;
+            fn_8005C830(task, port, slot);
+            TASK_OBJ(task, 14)->_5C = 0;
+            TASK_OBJ(task, 14)->_68 = 0;
+        }
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
+#endif
 
 // .text:0x8005BB5C size:0x3E4
-void fn_8005BB5C(void) {
-    return;
+// NONMATCHING 90%: loop registers and index sums differ
+#if NONMATCHING
+void fn_8005BB5C(SceneTask* task) {
+    s32 team;
+    s32 base;
+    s32 i;
+    s32 j;
+    CharacterStats* player;
+    u8 flag;
+
+    for (team = 0, base = 0; team < 2; team++, base += 9) {
+        for (i = 0; i < 9; i++) {
+            player = &inMemRoster[team][i];
+            fn_800363D8(task, i + base + 0x40, 1, 0x83, player->stats.CharID);
+            TASK_OBJ(task, i + base + 0x2E)->_5C = i << 16;
+            if (team == 0) {
+                TASK_OBJ(task, i + 0xD0)->_5C = inMemRoster[0][i].stats.CharacterClass << 16;
+                TASK_OBJ(task, i + 0xAC)->_5C = (inMemRoster[0][i].stats.BattingStance + inMemRoster[0][i].stats.FieldingArm * 2) << 16;
+                TASK_OBJ(task, i + 0x64)->flags &= ~2;
+                if (g_d_GameSettings.GameModeSelected == 5) {
+                    flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                } else {
+                    flag = lbl_8034E9A0._489B[team][i];
+                }
+                if (flag != 0 && team == 0) {
+                    TASK_OBJ(task, i + 0x76)->_68 = 1;
+                    TASK_OBJ(task, i + 0x88)->flags |= 2;
+                    TASK_OBJ(task, i + 0x88)->_5C = 0;
+                    TASK_OBJ(task, i + 0x88)->_68 = 1;
+                } else {
+                    TASK_OBJ(task, i + 0x88)->flags &= ~2;
+                }
+            } else {
+                ChallengeTrackingStruct* tracker;
+                TASK_OBJ(task, i + base + 0xD0)->flags &= ~2;
+                TASK_OBJ(task, i + base + 0xAC)->flags &= ~2;
+                TASK_OBJ(task, i + base + 0x88)->flags &= ~2;
+                TASK_OBJ(task, i + base + 0x64)->flags &= ~2;
+                for (j = 0; j < 5; j++) {
+                    tracker = &gChallengeState.trackers[inMemRoster[1][i].stats.CharID];
+                    if (j < ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C]) {
+                        TASK_OBJ(task, j + i * 5 + 0x16D)->_5C = 0;
+                        TASK_OBJ(task, j + i * 5 + 0x16D)->_68 = 0;
+                    } else {
+                        TASK_OBJ(task, j + i * 5 + 0x16D)->flags &= ~2;
+                    }
+                }
+            }
+        }
+        TASK_OBJ(task, team + 8)->_5C = lbl_8034E9A0._470D[team] << 16;
+        TASK_OBJ(task, team + 0xC)->_5C = lbl_8034E9A0._470D[team] << 16;
+    }
 }
+#endif
 
 // .text:0x8005BF40 size:0x370
 // NONMATCHING 90%: loop registers and index sums differ

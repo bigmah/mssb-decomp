@@ -62,6 +62,8 @@ void fn_80058B20(SceneTask* task, u8 port);
 void fn_8005C2B0(SceneTask* task);
 void fn_8005AF68(SceneTask* task);
 void fn_8005BF40(SceneTask* task);
+void fn_8005BB5C(SceneTask* task);
+void fn_8005B760(SceneTask* task, s32 port);
 void someChallengeStarFunction(SceneTask* task);
 void fn_80057CAC(void);
 void fn_8005CCE4(SceneTask* task, s32 port);
