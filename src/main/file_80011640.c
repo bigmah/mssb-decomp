@@ -2570,9 +2570,79 @@ void fn_8001BE50(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
 #endif
 
 // .text:0x8001C234 size:0x2F4
-void fn_8001C234(void) {
-    return;
+// NONMATCHING 98%: register allocation
+#if NONMATCHING
+void fn_8001C234(u32* doneMask) {
+    s32 i;
+    CharActor* actor;
+    s32 j;
+    s32 n;
+    f32 frames;
+    f32 t;
+
+    *doneMask = 0;
+    for (i = 0; i < 13; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor == NULL || actor->mode[0] == 0) {
+            continue;
+        }
+        n = actor->_06A[0];
+        if (n < 600 && lbl_80366158._28 == 0 && lbl_803CBC3C[0] == 0 && actor->_26F == 0) {
+            actor->_06A[0] = n + 1;
+        }
+        frames = 1.0f;
+        j = getJoint(lbl_8036E548.active[i], 4);
+        if (j != 0xFFFF) {
+            frames = fn_800B4A44(lbl_8036E548.slots->slots[actor->modelIndex].model, j);
+        }
+        actor->_068 = frames / actor->_04C;
+        if (actor->_070 >= 0) {
+            actor->_068 = actor->_070;
+        }
+        actor->_070 = -1;
+        if (actor->mode[1] == 1 || (actor->mode[1] == 2 && actor->_068 == 0 && actor->_06A[0] > 1) || actor->anim[0] == -1) {
+            *doneMask |= 1 << i;
+            if (actor->anim[1] >= 0) {
+                t = actor->_06A[1];
+                if (g_d_GameSettings.minigamesEnabled != 0 && g_d_GameSettings._06 == 2) {
+                    fn_8001BA44(i, actor->anim[1], actor->_25F[1], actor->_262[1], actor->_06A[1], actor->_265[1], actor->_269[1]);
+                } else {
+                    fn_8001BE50(i, actor->anim[1], actor->_25F[1], actor->_262[1], actor->_06A[1], actor->_265[1], actor->_269[1]);
+                }
+                actor->_060 = actor->anim[0];
+                actor->anim[0] = actor->anim[1];
+                actor->anim[1] = -1;
+                actor->_25F[0] = actor->_25F[1];
+                actor->_262[0] = actor->_262[1];
+                actor->_265[0] = actor->_265[1];
+                actor->_269[0] = actor->_269[1];
+                actor->_26C[0] = actor->_26C[1];
+                actor->_06A[0] = 0;
+                if (actor->anim[2] >= 0) {
+                    actor->anim[1] = actor->anim[2];
+                    actor->_06A[1] = actor->_06A[2];
+                    actor->_25F[1] = actor->_25F[2];
+                    actor->_262[1] = actor->_262[2];
+                    actor->mode[1] = 2;
+                    actor->_265[1] = actor->_265[2];
+                    actor->_269[1] = actor->_269[2];
+                    actor->_26C[1] = actor->_26C[2];
+                    actor->anim[2] = -1;
+                    continue;
+                }
+            } else {
+                t = 0.0f;
+            }
+            actor->mode[1] = 0;
+        } else {
+            t = fn_800B4C40(lbl_8036E548.slots->slots[actor->modelIndex].model);
+        }
+        if (lbl_803CBC3C[0] == 0) {
+            fn_8004B208(actor, actor->anim[0], fn_8004AD54(g_d_GameSettings.StadiumID, actor->_275), t);
+        }
+    }
 }
+#endif
 
 // .text:0x8001C528 size:0x60
 void fn_8001C528(void) {
