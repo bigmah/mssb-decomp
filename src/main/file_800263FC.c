@@ -353,9 +353,73 @@ s32 fn_80029CC8(Emitter* e) {
 #endif
 
 // .text:0x8002A1CC size:0x690
-void fn_8002A1CC(void) {
-    return;
+// NONMATCHING 44%: float register allocation/scheduling of the 14 parameter conversions
+#if NONMATCHING
+void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
+    Emitter* e;
+    Particle* p;
+    f32 speedMin = (f32)prm->speedMin / 100000.0f;
+    f32 speedRange = (f32)prm->speedMax / 100000.0f - speedMin;
+    f32 velMin = (f32)prm->velMin / 100000.0f;
+    f32 velRange = (f32)prm->velMax / 100000.0f - velMin;
+    f32 sizeXMin = (f32)prm->sizeXMin / 100000.0f;
+    f32 sizeXRange = (f32)prm->sizeXMax / 100000.0f - sizeXMin;
+    f32 sizeYMin = (f32)prm->sizeYMin / 100000.0f;
+    f32 sizeYRange = (f32)prm->sizeYMax / 100000.0f - sizeYMin;
+    f32 endXMin = (f32)prm->endXMin / 100000.0f;
+    f32 endXRange = (f32)prm->endXMax / 100000.0f - endXMin;
+    f32 endYMin;
+    f32 endYRange;
+    s32 lifeRange;
+    s32 instant;
+    f32 step;
+    f32 yaw;
+    f32 pitch;
+
+    e = NewEmitter(fn_80029CC8, 0x80, 0, prm->count, 1, 11);
+    if (e == NULL) {
+        return;
+    }
+    e->tex = prm->tex;
+    memcpy(&e->u.t9.pos, pos, sizeof(Vec));
+    instant = prm->instant;
+    lifeRange = prm->lifeMax - prm->lifeMin;
+    endYMin = (f32)prm->endYMin / 100000.0f;
+    endYRange = (f32)prm->endYMax / 100000.0f - endYMin;
+    step = 360.0f / (f32)(s32)(f32)sqrt(prm->instant);
+    pitch = -180.0f;
+    yaw = -180.0f;
+    p = e->particles;
+    do {
+        p->texIndex = prm->texIndex;
+        if (instant-- != 0) {
+            p->delay = 0;
+        } else {
+            p->delay = (prm->delayMax * rand()) / 32767;
+        }
+        p->life = p->colorStep.tB.maxLife = prm->lifeMin + (lifeRange * rand()) / 32767;
+        memcpy(&p->pos, pos, sizeof(Vec));
+        fn_800332B8(NULL, &p->u.tB.dir, yaw, yaw + step, pitch, pitch + step);
+        yaw += step;
+        if (yaw >= 180.0f) {
+            pitch += step;
+            yaw -= 360.0f;
+            if (pitch >= 180.0f) {
+                pitch -= 360.0f;
+            }
+        }
+        PSVECScale(&p->u.tB.dir, velMin + (velRange * (f32)rand()) / 32767.0f, &p->u.tB.vel);
+        PSVECScale(&p->u.tB.dir, speedMin + (speedRange * (f32)rand()) / 32767.0f, &p->u.tB.dir);
+        p->u.tB.sizeX = sizeXMin + (sizeXRange * (f32)rand()) / 32767.0f;
+        p->u.tB.sizeY = sizeYMin + (sizeYRange * (f32)rand()) / 32767.0f;
+        p->u.tB.sizeXDelta = (endXMin + (endXRange * (f32)rand()) / 32767.0f) - p->u.tB.sizeX;
+        p->u.tB.sizeYDelta = (endYMin + (endYRange * (f32)rand()) / 32767.0f) - p->u.tB.sizeY;
+        p->color.rgba = prm->color;
+        p->colorStep.tB.alpha0 = p->color.c.a;
+        p = p->next;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x8002A85C size:0x40C
 void fn_8002A85C(void) {
