@@ -30,6 +30,7 @@ extern void fn_3_11D780(void);
 extern void fn_3_EA454(void);
 extern void* memset(void*, s32, u32);
 extern int __abs(int);
+extern void* memcpy(void*, const void*, unsigned long);
 
 // fn_3_12DB54, size:0x2C
 void fn_3_12DB54(void) {
@@ -422,3 +423,79 @@ u8 fn_3_12E384(BbCell* grid, s8 idx, u8 colour) {
     }
     return 0;
 }
+
+// fn_3_12E17C, size:0x208
+// Barrel Batter CPU: for every barrel, how many barrels hitting it knocks
+// down (chain) and the points that scores; with lookahead, also add the best
+// follow-up shot once the remaining barrels have slid left.
+// NONMATCHING 98.6%: register allocation only (loop/pointer regs rotated)
+#if NONMATCHING
+void fn_3_12E17C(s8* chain, s16* score, u8 lookahead) {
+    BbCell grid[15];
+    BbCell trial[15];
+    s16 best;
+    s8 row;
+    s8 pass;
+    s8 n;
+    s8 j;
+    s8 i;
+    s8 col;
+    s16 points;
+
+    i = 0;
+    do {
+        j = 0;
+        do {
+            grid[j].state = g_Minigame.barrels[j].barrelState;
+            grid[j].colour = g_Minigame.barrels[j].barrelColour;
+            j++;
+        } while (j < 15);
+        chain[i] = fn_3_12E384(grid, i, grid[i].colour);
+        if (chain[i] >= 2) {
+            *score = (chain[i] - 1) * chain[i];
+        } else {
+            *score = chain[i];
+        }
+        if (lookahead != 0) {
+            pass = 0;
+            do {
+                col = 0;
+                do {
+                    row = 0;
+                    do {
+                        if (grid[col + row * 3].state != 2) {
+                            memcpy(&grid[col + row * 3], &grid[(col + 1) + row * 3], 2);
+                            grid[(col + 1) + row * 3].state = 0;
+                        }
+                        row++;
+                    } while (row < 5);
+                    col++;
+                } while (col < 2);
+                pass++;
+            } while (pass < 2);
+            best = 0;
+            j = 0;
+            do {
+                n = 0;
+                do {
+                    memcpy(&trial[n], &grid[n], 2);
+                    n++;
+                } while (n < 15);
+                n = fn_3_12E384(trial, j, trial[j].colour);
+                if (n >= 2) {
+                    points = (n - 1) * n;
+                } else {
+                    points = n;
+                }
+                if (points > best) {
+                    best = points;
+                }
+                j++;
+            } while (j < 15);
+            *score += best;
+        }
+        i++;
+        score++;
+    } while (i < 15);
+}
+#endif

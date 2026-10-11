@@ -53,5 +53,6 @@ void fn_3_12BB64(void);
 s32 fn_3_12E084(void* a, void* b);
 void fn_3_12A2B8(void);
 u8 fn_3_12E384(BbCell* grid, s8 idx, u8 colour);
+void fn_3_12E17C(s8* chain, s16* score, u8 lookahead);
 
 #endif
