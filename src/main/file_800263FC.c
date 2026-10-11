@@ -928,9 +928,137 @@ void fn_80030D88(void) {
 }
 
 // .text:0x80031034 size:0x790
-void fn_80031034(void) {
-    return;
+// NONMATCHING 43%: the original inlines fn_80031F34 and the corner/draw helpers with the file-static bss base
+#if NONMATCHING
+s32 fn_80031034(Emitter* e) {
+    Vec a;
+    Vec b;
+    s32 alive = 0;
+    s32 blend = -1;
+    s32 alpha;
+    f32 r;
+    f32 o;
+    f32 hx;
+    f32 hy;
+    s32 i;
+    Particle* p;
+    Particle** link;
+    Particle* lastDead = NULL;
+    Particle* deadHead = NULL;
+
+    GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, e->u.t5.unk18);
+    e->particles = fn_80031F34(e->particles, e->count);
+    p = e->particles;
+    link = &e->particles;
+    while (p != NULL) {
+        // uvOrder holds the blend mode for these particles (nonzero: additive)
+        if (blend != p->uvOrder) {
+            blend = p->uvOrder;
+            if (blend != 0) {
+                GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+            } else {
+                GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+            }
+        }
+        if (p->colorStep.v[0] == 0) {
+            if (p->sizeX * p->sizeX > p->sizeY * p->sizeY) {
+                r = p->u.t5.unk1C * p->sizeX * 0.5f;
+            } else {
+                r = p->u.t5.unk1C * p->sizeY * 0.5f;
+            }
+            o = r;
+            if (r > 0.0f) {
+                o = -r;
+            }
+            o = o * p->u.t5.unk34;
+            lbl_80180010[0].x = (-p->u.t5.unk1C * p->sizeX) * 0.5f;
+            lbl_80180010[0].y = o - (p->u.t5.unk1C * p->sizeY) * 0.5f;
+            lbl_80180010[0].z = 0.0f;
+            lbl_80180010[1].x = (-p->u.t5.unk1C * p->sizeY) * 0.5f;
+            lbl_80180010[1].y = (p->u.t5.unk1C * p->sizeX) * 0.5f + o;
+            lbl_80180010[1].z = 0.0f;
+            lbl_80180010[2].x = (p->u.t5.unk1C * p->sizeX) * 0.5f;
+            lbl_80180010[2].y = (p->u.t5.unk1C * p->sizeY) * 0.5f + o;
+            lbl_80180010[2].z = 0.0f;
+            lbl_80180010[3].x = (p->u.t5.unk1C * p->sizeY) * 0.5f;
+            lbl_80180010[3].y = o - (p->u.t5.unk1C * p->sizeX) * 0.5f;
+            lbl_80180010[3].z = 0.0f;
+        } else {
+            a.x = p->sizeX * 0.5f;
+            a.y = p->sizeY * 0.5f;
+            a.z = 0.0f;
+            b.x = p->sizeY * 0.5f;
+            b.y = -p->sizeX * 0.5f;
+            b.z = 0.0f;
+            PSVECAdd(&a, &b, &b);
+            PSVECNormalize(&b, &b);
+            PSVECScale(&b, p->u.t5.unk34, &b);
+            hx = p->u.t5.unk1C * p->sizeX;
+            hy = p->u.t5.unk1C * p->sizeY;
+            lbl_80180010[0].x = b.x - hx * 0.5f;
+            lbl_80180010[0].y = b.y - hy * 0.5f;
+            lbl_80180010[0].z = 0.0f;
+            lbl_80180010[1].x = b.x - hy * 0.5f;
+            lbl_80180010[1].y = hx * 0.5f + b.y;
+            lbl_80180010[1].z = 0.0f;
+            lbl_80180010[2].x = hx * 0.5f + b.x;
+            lbl_80180010[2].y = hy * 0.5f + b.y;
+            lbl_80180010[2].z = 0.0f;
+            lbl_80180010[3].x = hy * 0.5f + b.x;
+            lbl_80180010[3].y = b.y - hx * 0.5f;
+            lbl_80180010[3].z = 0.0f;
+        }
+        if (p->u.t5.unk2C > p->life) {
+            if (lbl_80366158._28 == 0) {
+                p->u.t5.unk1C = p->u.t5.unk1C * p->u.t5.unk24;
+            }
+            alpha = (p->u.t5.unk30 * p->life) / p->u.t5.unk2C;
+        } else {
+            if (lbl_80366158._28 == 0) {
+                p->u.t5.unk1C = p->u.t5.unk1C * p->u.t5.unk20;
+            }
+            // delay holds the initial life here
+            alpha = (p->u.t5.unk30 * (p->delay - p->life)) / (p->delay - p->u.t5.unk2C);
+        }
+        for (i = 0; i < 4; i++) {
+            PSMTXMultVec(lbl_8017FF78[0], &lbl_80180010[i], &lbl_80180010[i]);
+        }
+        DrawParticleQuad(p, e->tex);
+        if (alpha < 0) {
+            p->life = 0;
+        } else if (lbl_80366158._28 == 0) {
+            p->pos.x += p->u.t5.vel.x;
+            p->pos.y += p->u.t5.vel.y;
+            p->pos.z += p->u.t5.vel.z;
+            p->u.t5.vel.x = p->u.t5.vel.x * p->u.t5.unk28;
+            p->u.t5.vel.y = p->u.t5.vel.y * p->u.t5.unk28;
+            p->u.t5.vel.z = p->u.t5.vel.z * p->u.t5.unk28;
+            p->color.c.a = alpha;
+            p->life--;
+        }
+        if (p->life == 0) {
+            *link = p->next;
+            if (lastDead != NULL) {
+                lastDead->next = p;
+            } else {
+                deadHead = p;
+            }
+            p->next = NULL;
+            lastDead = p;
+            e->count--;
+        } else {
+            link = &p->next;
+            alive++;
+        }
+        p = *link;
+    }
+    if (deadHead != NULL) {
+        FreeParticles(deadHead);
+    }
+    return alive == 0;
 }
+#endif
 
 // .text:0x800317C4 size:0x4E0
 // NONMATCHING 85%: float register allocation in the per-particle setup
