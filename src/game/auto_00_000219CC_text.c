@@ -61,7 +61,26 @@ void fn_3_21AA8(void) {
 
 // .text:0x00021BDC size:0xA0 mapped:0x80660C70
 void fn_3_21BDC(void) {
-    return;
+    WaitTaskView* task = lbl_803CC1B8;
+
+    switch (task->state) {
+    case 0:
+        task->state = 1;
+        task->timer = 90;
+        break;
+    case 1:
+        if (task->timer-- == 0) {
+            task->state = 2;
+        }
+        break;
+    case 2: {
+        QueueParentView* parent = task->parent;
+        parent->done = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->state = 0;
+        break;
+    }
+    }
 }
 
 // .text:0x00021C7C size:0x14 mapped:0x80660D10
