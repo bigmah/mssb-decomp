@@ -258,7 +258,24 @@ void fn_800486E0(s32 priority, s8 a, s8 b) {
 
 // .text:0x80048764 size:0xBC
 void fn_80048764(void) {
-    return;
+    switch (lbl_803CBBCC->step) {
+    case 0:
+        if (lbl_803C66B0.busy0 == 0 && lbl_803C66B0.busy1 == 0) {
+            fn_800B0A5C_insertQueue(pauseMenuSelection, 0x1000);
+            lbl_803297E0._CF38 = 0;
+            lbl_803297E0._CF3A = -1;
+            lbl_803297E0._CF42 = 0;
+            if (g_d_GameSettings._06 != 2) {
+                lbl_803297E0._CF3B = 0;
+            } else {
+                lbl_803297E0._CF3B = 0;
+            }
+            lbl_803CBBCC->step++;
+        }
+        break;
+    case 1:
+        break;
+    }
 }
 
 // .text:0x80048820 size:0x3CC
