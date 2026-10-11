@@ -113,6 +113,7 @@ s32 fn_80021410(void);
 void fn_8002149C(s32 group);
 s32 fn_800214D0(void);
 s32 fn_80021518(u16 gid, SoundGroupData* data);
+s32 fn_8002158C(void);
 void fn_80021AC0(void);
 void fn_80021AC4(void);
 void fn_80021AC8(void);

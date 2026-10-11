@@ -181,8 +181,9 @@ s32 fn_80021518(u16 gid, SoundGroupData* data) {
 }
 
 // .text:0x8002158C size:0x6C
-void fn_8002158C(void) {
-    return;
+s32 fn_8002158C(void) {
+    fn_80021518(0x1E, lbl_800EF808.groups[0]);
+    return 0;
 }
 
 // .text:0x800215F8 size:0x58
