@@ -34,6 +34,21 @@ typedef struct TextEntry {
     /*0x37*/ u8 _37;
 } TextEntry; // size: 0x38
 
+// Texture archive as used by convertTextureHeader: 0x20-byte records after a
+// 4-byte header; record i's _1C picks the texture object for image i.
+typedef struct TexRecord {
+    /*0x00*/ u8 _00[0x1C];
+    /*0x1C*/ u16 obj;
+    /*0x1E*/ u16 _1E;
+} TexRecord; // size: 0x20
+
+typedef struct TexArchive {
+    /*0x0*/ u32 _00;
+    /*0x4*/ TexRecord recs[1];
+} TexArchive;
+
+#define TEX_ARCHIVE_OBJ(arc, i) (&(arc)->recs[(arc)->recs[i].obj])
+
 // Message table as loaded from disc; msgs[] hold file offsets until
 // fn_800111B4 relocates them.
 typedef struct MsgTable {
@@ -78,13 +93,13 @@ typedef struct TextOwner {
 typedef struct TextSystem {
     /*0x000*/ TextEntry entries[30];
     /*0x690*/ TextOwner owners[30];
-    /*0x780*/ s32* fontArchive;    // offset table, relocated in fn_80011000
-    /*0x784*/ void* fontTex[4];
-    /*0x794*/ void* iconArchive;
+    /*0x780*/ u32* fontArchive; // 4 file offsets to TexArchives
+    /*0x784*/ TexArchive* fontTex[4];
+    /*0x794*/ TexArchive* iconArchive;
     /*0x798*/ MsgTable* tables[7];
     /*0x7B4*/ u16** msgs;
-    /*0x7B8*/ void* fontTexObj[4];
-    /*0x7C8*/ void* iconTexObj[9];
+    /*0x7B8*/ TexRecord* fontTexObj[4];
+    /*0x7C8*/ TexRecord* iconTexObj[9];
     /*0x7EC*/ u16* _7EC;
     /*0x7F0*/ u16* _7F0;
     /*0x7F4*/ u16* _7F4;

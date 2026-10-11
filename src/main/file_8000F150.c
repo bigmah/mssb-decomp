@@ -5,6 +5,15 @@ extern u16 lbl_80366218[];
 extern void* lbl_803CBBE8;
 extern u8 lbl_800E9920[];
 
+typedef struct FogSetting {
+    /*0x0*/ u8 _00[0x8];
+    /*0x8*/ s32 value;
+} FogSetting;
+extern FogSetting lbl_800E9908[];
+extern u8 lbl_803CBBC0;
+extern u8 lbl_803CB760[5];
+extern void fn_800A7D4C(s32, void*);
+
 // .text:0x8000F150 size:0x298
 void fn_8000F150(void* arg) {
     return;
@@ -12,7 +21,25 @@ void fn_8000F150(void* arg) {
 
 // .text:0x8000F3E8 size:0xA4
 void fn_8000F3E8(s32 arg) {
-    return;
+    FogSetting* f = &lbl_800E9908[lbl_803CBBC0];
+    switch (arg) {
+    case -1:
+        f->value = lbl_803CB760[4];
+        break;
+    case 4:
+        f->value = lbl_803CB760[1];
+        break;
+    case 5:
+        f->value = lbl_803CB760[0];
+        break;
+    case 6:
+        f->value = lbl_803CB760[2];
+        break;
+    case 11:
+        f->value = lbl_803CB760[3];
+        break;
+    }
+    fn_800A7D4C(0, f);
 }
 
 // .text:0x8000F48C size:0x2C
