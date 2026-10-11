@@ -1452,10 +1452,7 @@ typedef struct _BB_barrelStruct {
 typedef struct _UnkStructMinigame {
     /*0x000*/ VecXYZ _0;
     /*0x00C*/ VecXYZ _C;
-    /*0x018*/ s32 _18;
-    /*0x01C*/ s32 _1C;
-    /*0x020*/ u8 pad4[28];
-    /*0x03C*/ s32 _3C;
+    /*0x018*/ s32 coins[10]; // coin pool indices carried by this object (rep_3520)
     /*0x040*/ u8 _40[4];
     /*0x044*/ VecXYZ _44;
     /*0x050*/ VecXYZ _50;
