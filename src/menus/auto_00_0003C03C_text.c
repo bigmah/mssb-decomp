@@ -60,7 +60,7 @@ extern void fn_2_42490(void);
 extern int sndFXStartEx(int, int, int, int);
 extern u8 lbl_800EFBA4[];
 extern void fn_8006877C(s32);
-extern u8 lbl_2_data_1056C[];
+extern s16 lbl_2_data_1056C[4][6]; // rep_0788.c
 extern u8 lbl_2_data_3CE8[];
 extern u8 lbl_2_data_3C40[];
 extern s32 fn_2_8CC88(s32);
@@ -1073,7 +1073,7 @@ void fn_2_3D878(void) {
         if ((*(s16*)(o + 0x14))-- == 0) {
             lbl_2_bss_1A8234[0][0x1627AE] = 1;
             lbl_2_bss_1A8230[0][0x32A0F] = 1;
-            *(s16*)(o + 0x14) = *(s16*)(lbl_2_data_1056C + lbl_2_bss_1A8248[0][0x4415] * 0xC + lbl_2_bss_1A8248[0][0x441C] * 2);
+            *(s16*)(o + 0x14) = lbl_2_data_1056C[lbl_2_bss_1A8248[0][0x4415]][lbl_2_bss_1A8248[0][0x441C]];
             o[0x28] = 3;
         }
         break;

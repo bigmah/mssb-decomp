@@ -24,9 +24,9 @@ extern u8 lbl_8037169C[];
 extern void fn_80036134(void*, s32, s32, s32);
 extern s16 fn_8000F988(void*, s16, u16, s32, s32, s32);
 extern u8 lbl_80366B18[];
-extern u8 lbl_2_data_C924[];
-extern u8 lbl_2_data_C8F8[];
-extern u8 lbl_2_data_C904[];
+extern s16 lbl_2_data_C924[3][12]; // rep_0788.c
+extern s16 lbl_2_data_C8F8[6];
+extern s16 lbl_2_data_C904[16];
 extern void fn_8000FE08(s16, s32, s32);
 
 // fn_2_37430, size:0x2C
@@ -1397,7 +1397,7 @@ void fn_2_33E70(u8* a, u8* b) {
         p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
         *(u32*)(p + 0x54) |= 2;
         lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        fn_800363D8(a, *(s16*)(b + 0xE), 1, 0x2E, ((s16*)(lbl_2_data_C924 + *(s16*)(b + 0xA) * 0x18))[lbl_2_bss_1A824C[0][0x19785B]]);
+        fn_800363D8(a, *(s16*)(b + 0xE), 1, 0x2E, lbl_2_data_C924[*(s16*)(b + 0xA)][lbl_2_bss_1A824C[0][0x19785B]]);
         break;
     case 5:
         lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
@@ -1442,19 +1442,19 @@ void fn_2_36D04(u8* a, u8* b) {
         break;
     case 3:
         p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) >= ((s16*)lbl_2_data_C8F8)[*(s16*)(b + 0x10)]) {
+        if ((*(u32*)(p + 0x5C) >> 16) >= lbl_2_data_C8F8[*(s16*)(b + 0x10)]) {
             p[0x68] = 0;
             *(s16*)(b + 4) = 0x25;
         }
         break;
     case 5:
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x5C) = ((s16*)lbl_2_data_C8F8)[*(s16*)(b + 0x10)] << 16;
+        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x5C) = lbl_2_data_C8F8[*(s16*)(b + 0x10)] << 16;
         lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
         *(s16*)(b + 4) = 6;
         break;
     case 6:
         p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) >= ((s16*)lbl_2_data_C904)[*(s16*)(b + 0x10)]) {
+        if ((*(u32*)(p + 0x5C) >> 16) >= lbl_2_data_C904[*(s16*)(b + 0x10)]) {
             p[0x68] = 0;
             *(s16*)(b + 4) = 7;
         }
