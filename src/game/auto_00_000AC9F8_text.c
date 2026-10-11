@@ -1305,17 +1305,9 @@ void fn_3_AD164(s32 arg) {
         break;
     case 6:
         if (arg == 0) {
-            lbl_3_common_bss_34C90.state = 2;
-            lbl_3_common_bss_34C90.subState = 0;
-            lbl_3_common_bss_34C90.frames = 0;
-            lbl_3_common_bss_34C90._0E = 0;
-            lbl_3_common_bss_34C90._10 = 0;
+            fn_3_AFD80(2);
         } else {
-            lbl_3_common_bss_34C90.state = 9;
-            lbl_3_common_bss_34C90.subState = 0;
-            lbl_3_common_bss_34C90.frames = 0;
-            lbl_3_common_bss_34C90._0E = 0;
-            lbl_3_common_bss_34C90._10 = 0;
+            fn_3_AFD80(9);
         }
         break;
     }
@@ -1358,17 +1350,9 @@ void fn_3_AD8CC(void) {
         if (lbl_3_common_bss_34C90.subFrames > 20) {
             if (lbl_3_common_bss_34C90.state == 11 || lbl_3_common_bss_34C90.state == 14 ||
                 lbl_3_common_bss_34C90.state == 15) {
-                lbl_3_common_bss_34C90.state = 9;
-                lbl_3_common_bss_34C90.subState = 0;
-                lbl_3_common_bss_34C90.frames = 0;
-                lbl_3_common_bss_34C90._0E = 0;
-                lbl_3_common_bss_34C90._10 = 0;
+                fn_3_AFD80(9);
             } else {
-                lbl_3_common_bss_34C90.state = 2;
-                lbl_3_common_bss_34C90.subState = 0;
-                lbl_3_common_bss_34C90.frames = 0;
-                lbl_3_common_bss_34C90._0E = 0;
-                lbl_3_common_bss_34C90._10 = 0;
+                fn_3_AFD80(2);
             }
         }
         break;
@@ -1397,21 +1381,7 @@ void fn_3_ACAF8(void) {
         }
         break;
     case 4:
-        if (lbl_3_common_bss_32724[0xC3] == 0) {
-            if (lbl_3_common_bss_34C90.newButtons & 0x200) {
-                lbl_3_common_bss_34C90.subState = 5;
-                sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
-            } else if (g_d_GameSettings.GameModeSelected != 6) {
-                if ((lbl_3_common_bss_34C90.repeatButtons & 1) && lbl_3_common_bss_34C90.optionCursor != 0) {
-                    lbl_3_common_bss_34C90.optionCursor -= 1;
-                    sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-                } else if ((lbl_3_common_bss_34C90.repeatButtons & 2) &&
-                           lbl_3_common_bss_34C90.optionCursor < lbl_3_common_bss_34C90.optionCount - 1) {
-                    lbl_3_common_bss_34C90.optionCursor += 1;
-                    sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-                }
-            }
-        }
+        fn_3_AC9F8();
         lbl_3_common_bss_34C90.subFrames = 0;
         break;
     case 5:
@@ -1424,17 +1394,9 @@ void fn_3_ACAF8(void) {
             lbl_3_common_bss_34C90.subState = 0;
             fn_3_5A6D4(0xB);
         } else if (lbl_3_common_bss_34C90.openedByBattingTeam == 0) {
-            lbl_3_common_bss_34C90.state = 2;
-            lbl_3_common_bss_34C90.subState = 0;
-            lbl_3_common_bss_34C90.frames = 0;
-            lbl_3_common_bss_34C90._0E = 0;
-            lbl_3_common_bss_34C90._10 = 0;
+            fn_3_AFD80(2);
         } else {
-            lbl_3_common_bss_34C90.state = 9;
-            lbl_3_common_bss_34C90.subState = 0;
-            lbl_3_common_bss_34C90.frames = 0;
-            lbl_3_common_bss_34C90._0E = 0;
-            lbl_3_common_bss_34C90._10 = 0;
+            fn_3_AFD80(9);
         }
         break;
     }
