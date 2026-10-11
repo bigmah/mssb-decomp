@@ -45,6 +45,11 @@ extern void fn_3_CC81C(void);
 extern void fn_3_F1DC(void);
 extern void fn_3_169600(void);
 extern void fn_3_7D9DC(int i);
+extern u8 lbl_3_data_2187C[3][2]; // kind weights per time stage
+extern int RandomIndexFromWeights(u8* weights, int count);
+extern int random_fn_3_9EE24(int max);
+extern void fn_3_1541C4(u8 slot, u8 kind, Vec* pos);
+extern void fn_3_106EB0(void);
 extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
 extern u8 lbl_3_bss_B791;
@@ -134,6 +139,11 @@ extern void fn_3_CC81C(void);
 extern void fn_3_F1DC(void);
 extern void fn_3_169600(void);
 extern void fn_3_7D9DC(int i);
+extern u8 lbl_3_data_2187C[3][2]; // kind weights per time stage
+extern int RandomIndexFromWeights(u8* weights, int count);
+extern int random_fn_3_9EE24(int max);
+extern void fn_3_1541C4(u8 slot, u8 kind, Vec* pos);
+extern void fn_3_106EB0(void);
 extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
 extern u8 lbl_3_bss_B791;
@@ -712,9 +722,167 @@ void fn_3_13EA30(void) {
 #endif
 
 // .text:0x0013EC44 size:0x840 mapped:0x8077DCD8
+// Spawn a new group of items of the given type: pick its kind and a free spot on
+// the base path, then place the kind's item count there, 0.05 bases apart.
+// NONMATCHING 91%: loop shapes and register allocation differ (spawn-slot search, unrolled step pick)
+#if NONMATCHING
 void fn_3_13EC44(s32 type) {
-    return;
+    s32 occ[4];   // per base: runners (and the target) near it / pair use
+    s32 occ2[4];  // per base: the target
+    s32 cand[4];
+    s32 nSpecial;
+    s32 n;
+    s32 i;
+    s32 b;
+    s32 skip;
+    s32 r;
+    s32 pos;
+    s32 count;
+    s32 slot;
+    s32 k;
+    u8* kind;
+    for (nSpecial = 0; nSpecial < 6; nSpecial++) {
+        if (REP_MG->_1B1A[nSpecial] == 3) {
+            break;
+        }
+    }
+    if (REP_MG->_1B20.it._E < 2 && REP_MG->_17C0 > (u32)REP_MG->_18A2_4[REP_MG->_1B20.it._E]) {
+        REP_MG->_1B1A[type] = 4;
+        count = lbl_3_data_21884[2][0];
+        REP_MG->_1B20.it._E++;
+    } else if (nSpecial < 6) {
+        count = lbl_3_data_21884[0][0];
+        REP_MG->_1B1A[type] = 2;
+    } else {
+        if (REP_MG->_17C0 < 1800) {
+            k = 0;
+        } else if (REP_MG->_17C0 < 3600) {
+            k = 1;
+        } else {
+            k = 2;
+        }
+        k = RandomIndexFromWeights(lbl_3_data_2187C[k], 2);
+        REP_MG->_1B1A[type] = k + 2;
+        count = lbl_3_data_21884[k][0];
+    }
+    kind = &REP_MG->_1B1A[type];
+    for (;;) {
+        n = 0;
+        if (*kind == 4) {
+            for (b = 0; b < 4; b++) {
+                occ[b] = 0;
+                occ2[b] = 0;
+            }
+            for (i = 0; i < 4; i++) {
+                if (REP_MG->_18FC[i] >= 0) {
+                    if (g_Runners[i].runningDirectionCode == 1) {
+                        occ[g_Runners[i]._126 & 3]++;
+                    } else if (g_Runners[i].runningDirectionCode == 3) {
+                        occ[g_Runners[i]._125]++;
+                    } else if (g_Runners[i]._068 < lbl_3_rodata_375C) {
+                        occ[g_Runners[i]._125]++;
+                    } else {
+                        occ[g_Runners[i]._125]++;
+                    }
+                }
+            }
+            if (REP_MG->target.active != 0) {
+                b = (s8)(s32)REP_MG->target.bases;
+                occ[b]++;
+                occ2[b]++;
+            }
+            for (b = 0; b < 4; b++) {
+                if (occ[b] == 0) {
+                    cand[n++] = b;
+                }
+            }
+            if (n != 0) {
+                pos = cand[random_fn_3_9EE24(n)] * 10;
+            } else {
+                for (b = 0; b < 4; b++) {
+                    if (occ2[b] == 0) {
+                        cand[n++] = b;
+                    }
+                }
+                pos = cand[random_fn_3_9EE24(n)] * 10;
+            }
+            break;
+        }
+        for (b = 0; b < 4; b++) {
+            occ[b] = 0;
+            cand[b] = -1;
+            if (REP_MG->_1B20.it.pair[b][1] >= 0) {
+                occ[b] = 2;
+            } else if (REP_MG->_1B20.it.pair[b][0] >= 0) {
+                if (REP_MG->_1B1A[REP_MG->_1B20.it.pair[b][0]] == 3) {
+                    occ[b] = 5;
+                } else {
+                    occ[b] = 1;
+                    if (*kind != 3) {
+                        cand[n++] = b;
+                    }
+                }
+            } else {
+                cand[n++] = b;
+            }
+        }
+        if (*kind == 3) {
+            if (n == 0) {
+                count = lbl_3_data_21884[0][0];
+                *kind = 2;
+                continue;
+            }
+            b = cand[random_fn_3_9EE24(n)];
+            pos = random_fn_3_9EE24(6) + b * 10 + 2;
+        } else {
+            b = cand[random_fn_3_9EE24(n)];
+            if (occ[b] == 0) {
+                pos = random_fn_3_9EE24(8) + b * 10 + 1;
+            } else {
+                // Pick a step 1..8 other than the one already used on this base.
+                pos = b * 10;
+                skip = REP_MG->_1B20.it.pos[REP_MG->_1B20.it.pair[b][0]] % 10;
+                r = random_fn_3_9EE24(8) + 1;
+                for (k = 0; k < 10; k++) {
+                    if (k == skip) {
+                        continue;
+                    }
+                    if (r == 0) {
+                        pos += k;
+                        break;
+                    }
+                    r--;
+                }
+            }
+        }
+        break;
+    }
+    if (REP_MG->_1B20.it.pair[pos / 10][0] < 0) {
+        REP_MG->_1B20.it.pair[pos / 10][0] = type;
+    } else {
+        REP_MG->_1B20.it.pair[pos / 10][1] = type;
+    }
+    REP_MG->_1B20.it.pos[type] = pos;
+    pos *= 10;
+    slot = 0;
+    for (i = 0; i < count; i++) {
+        for (; slot < 15; slot++) {
+            if (REP_MG->itemState[slot] == 0) {
+                REP_MG->itemState[slot] = type + 1;
+                REP_MG->itemBases[slot] = pos / lbl_3_rodata_3728;
+                REP_MG->coinFrames[slot] = 0;
+                fn_3_7FED4(&REP_MG->coinPos[slot].x, REP_MG->itemBases[slot], (pos % 100) / lbl_3_rodata_3728);
+                fn_3_1541C4(slot, *kind, &REP_MG->coinPos[slot]);
+                break;
+            }
+        }
+        pos += 5;
+    }
+    if (REP_MG->_1B1A[type] == 4) {
+        fn_3_106EB0();
+    }
 }
+#endif
 
 // .text:0x0013F484 size:0x244 mapped:0x8077E518
 // Per item type: count down the respawn delay, spawn new items (fn_3_13EC44), or
@@ -1519,8 +1687,8 @@ void fn_3_1414AC(void) {
             REP_MG->_1B20.it.pair[i][1] = -1;
         }
         REP_MG->_1B20.it._E = 0;
-        REP_MG->_18A2 = RandomInt_Game_Range(lbl_3_data_21904[5], lbl_3_data_21904[6]) * 60;
-        REP_MG->_18A4 = RandomInt_Game_Range(lbl_3_data_21904[7], lbl_3_data_21904[8]) * 60;
+        REP_MG->_18A2_4[0] = RandomInt_Game_Range(lbl_3_data_21904[5], lbl_3_data_21904[6]) * 60;
+        REP_MG->_18A2_4[1] = RandomInt_Game_Range(lbl_3_data_21904[7], lbl_3_data_21904[8]) * 60;
         fn_3_F1DC();
         REP_MG->target.active = 0;
         REP_MG->target.timer = lbl_3_data_21924[0];

@@ -13,13 +13,17 @@ typedef struct RepRunnerView {
     /*0x018*/ Vec _018; // movement direction
     /*0x024*/ u8 _024[0x64 - 0x24];
     /*0x064*/ f32 fractionalBasesRan;
-    /*0x068*/ u8 _068[0xE2 - 0x68];
+    /*0x068*/ f32 _068;
+    /*0x06C*/ u8 _06C[0xE2 - 0x6C];
     /*0x0E2*/ s16 _0E2;
     /*0x0E4*/ u8 _0E4[0x11A - 0xE4];
     /*0x11A*/ u8 _11A;
     /*0x11B*/ u8 _11B[0x123 - 0x11B];
     /*0x123*/ u8 _123;
-    /*0x124*/ u8 _124[0x133 - 0x124];
+    /*0x124*/ u8 _124;
+    /*0x125*/ u8 _125; // base index (behind)
+    /*0x126*/ u8 _126; // base index (ahead)
+    /*0x127*/ u8 _127[0x133 - 0x127];
     /*0x133*/ u8 _133;
     /*0x134*/ u8 _134[0x137 - 0x134];
     /*0x137*/ u8 runningDirectionCode;
@@ -52,8 +56,7 @@ typedef struct RepMinigameView {
     /*0x1890*/ s16 points[4];
     /*0x1898*/ s16 latestPoints[4];
     /*0x18A0*/ u8 _18A0[2];
-    /*0x18A2*/ s16 _18A2; // frames
-    /*0x18A4*/ s16 _18A4; // frames
+    /*0x18A2*/ s16 _18A2_4[2]; // frame times of the two special (kind 4) spawns
     /*0x18A6*/ u8 _18A6[0x18BC - 0x18A6];
     /*0x18BC*/ s16 pointsPair[4][2];
     /*0x18CC*/ s8 characterIndex[4];
@@ -102,9 +105,9 @@ typedef struct RepMinigameView {
     /*0x1B20*/ union {
         u8 pos[15]; // searched by fn_3_13E3A4
         struct {
-            u8 _0[6];
-            s8 pair[4][2]; // 0x1B26: item type index, -1: none
-            u8 _E;
+            u8 pos[6];     // per item type: spawn position in tenths of a base (base * 10 + step)
+            s8 pair[4][2]; // 0x1B26: per base, item types spawned there, -1: none
+            u8 _E;         // 0x1B2E: number of special (kind 4) spawns so far
         } it;
     } _1B20;
     /*0x1B2F*/ u8 _1B2F[4]; // per runner slot; 0xFF: none
