@@ -30,6 +30,7 @@ typedef struct TextStatics {
     /*0x56B0*/ TextDisplayList dlInfo[12];
 } TextStatics;
 extern TextStatics lbl_800E8F60;
+extern u8 lbl_800E90F4[][4]; // glyph widths for codes past lbl_800E8F60's table
 extern u32 lbl_803CBC18;
 extern ActorMgr lbl_8036E548;
 extern void fn_8001BA44(s32 slot, s16 charId, u8 a, u8 b, s32 c, u8 d, u8 e);
@@ -183,10 +184,141 @@ s32 fn_8000F988(LayoutGroup* group, s32 index, u16 arg2, s32 table, s32 msg, s32
     return -1;
 }
 
+// NONMATCHING 97%: register allocation differs, and an extra branch after the end-of-substring continue
 // .text:0x8000FA9C size:0x2B8
+#if NONMATCHING
 s32 fn_8000FA9C(s32 index) {
-    return 0;
+    u16** msgs;
+    u16* base;
+    u16* sub;
+    TextEntry* e;
+    s32 narrowAdv;
+    s32 code;
+    s32 n;
+    s32 wideAdv;
+    s32 maxWidth;
+    s32 alt;
+    s32 width;
+    s32 inSub;
+    u16* text;
+    u16 c;
+    e = &lbl_80366B18.entries[index];
+    wideAdv = 22;
+    narrowAdv = 11;
+    maxWidth = 0;
+    width = 0;
+    inSub = 0;
+    alt = 0;
+    text = e->text;
+
+    if (e->fontSize == 2) {
+        wideAdv = 18;
+        narrowAdv = 9;
+    } else if (e->fontSize == 1) {
+        wideAdv = 18;
+        narrowAdv = 9;
+    }
+    msgs = lbl_80366B18.tables[0]->msgs;
+    base = lbl_80366B18._7F4;
+    for (;;) {
+        if (inSub) {
+            c = *sub++;
+        } else {
+            c = *text++;
+        }
+        if (c & 0x4000) {
+            code = c & 0x3FFF;
+            switch (code) {
+            case 0:
+                if (inSub) {
+                    inSub = 0;
+                    continue;
+                }
+                return maxWidth;
+            case 2:
+                width += narrowAdv;
+                break;
+            case 3:
+                width += wideAdv;
+                break;
+            case 1:
+                width = 0;
+                break;
+            case 15:
+            case 16:
+            case 17:
+            case 18:
+                n = e->numbers[code - 15];
+                if (n < 0) {
+                    n = -n;
+                    width += wideAdv;
+                }
+                while (1) {
+                    if (n < 10) {
+                        break;
+                    }
+                    width += wideAdv;
+                    n /= 10;
+                }
+                break;
+            case 25:
+            case 26:
+            case 27:
+            case 28:
+            case 35:
+            case 36:
+            case 37:
+            case 38:
+                n = code - 15;
+                if (n >= 10) {
+                    n = e->strings[n - 10] + 0x3E;
+                } else {
+                    n = e->strings[n] + 8;
+                }
+                sub = msgs[n];
+                inSub = 1;
+                break;
+            case 45:
+            case 46:
+            case 47:
+            case 48:
+            case 49:
+            case 50:
+            case 51:
+            case 52:
+            case 53:
+                width += 28;
+                width += e->charSpacing;
+                break;
+            case 57:
+                alt = 1;
+                break;
+            case 58:
+                alt = 0;
+                break;
+            }
+        } else {
+            if (!alt) {
+                if (c & 0x8000) {
+                    c &= 0x7FFF;
+                } else {
+                    c = lbl_80366218[c] & 0x7FFF;
+                }
+                c = c % 0x844;
+                n = c - (*base & 0x7FFF) - 1;
+                c = lbl_800E90F4[n][e->fontSize];
+            } else {
+                c = lbl_800E8F60.glyphWidths[c][e->fontSize];
+            }
+            width += c;
+            width += e->charSpacing;
+        }
+        if (width > maxWidth) {
+            maxWidth = width;
+        }
+    }
 }
+#endif
 
 // .text:0x8000FD54 size:0x24
 void fn_8000FD54(s32 index, s16 a, s16 b, s16 c, s16 d) {
