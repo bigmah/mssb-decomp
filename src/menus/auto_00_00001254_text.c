@@ -1247,3 +1247,22 @@ void fn_2_FAA0(u8 team) {
     }
 }
 #endif
+
+// fn_2_C484, size:0x214
+void fn_2_C484(s32 owner, s16 id) {
+    s32 i;
+    for (i = 0; i < 0x36; i++) {
+        if (i == id) {
+            lbl_8034E9A0[i + 0x4757] = 0;
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                if (fn_2_C324(i) == -1) {
+                    fn_800506E8(owner & 0xFF, i, 0);
+                }
+            } else {
+                fn_800506E8(owner & 0xFF, i, 0);
+                fn_80067B40(owner, i, 0);
+            }
+            return;
+        }
+    }
+}

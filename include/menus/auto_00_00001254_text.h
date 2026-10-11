@@ -142,4 +142,6 @@ void fn_2_B324(void);
 
 void fn_2_FAA0(u8 team);
 
+void fn_2_C484(s32 owner, s16 id);
+
 #endif
