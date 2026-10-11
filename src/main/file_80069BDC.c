@@ -405,5 +405,14 @@ void fn_8006CEBC(void) {
 
 // .text:0x8006CF6C size:0xB8
 void fn_8006CF6C(void) {
-    return;
+    void* task = lbl_803CC1B8;
+    s32 i;
+
+    lbl_803297E0._CF6B = 0;
+    fn_80034E20(task, lbl_801075A8);
+    for (i = 0; i < 4; i++) {
+        lbl_803297E0._CF6C[i] = fn_8000F988(task, i + 2, 0, 0, i + 0x1C1, 0);
+        lbl_80366B18[lbl_803297E0._CF6C[i]]._2F = 1;
+    }
+    lbl_803CC1B8->func = fn_8006CEBC;
 }
