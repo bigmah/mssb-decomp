@@ -397,7 +397,19 @@ void possiblyTransferDataBetweenDifferentRels(void) {
 
 // .text:0x80049C80 size:0xBC
 void fn_80049C80(void) {
-    return;
+    if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == 5 && lbl_8037169C.done == 0) {
+        changeScene(1, 6);
+    }
+    lbl_803C5EA4._36 = 1;
+    lbl_803C5EA4.prevMode = lbl_803C5EA4.mode;
+    lbl_803C5EA4.mode = 3;
+    possiblyTransferDataBetweenDifferentRels();
+    memset(&lbl_803C5EE0, 0, 0x16);
+    fn_800569C8();
+    fn_800625A4(0, 0x29);
 }
 
 // .text:0x80049D3C size:0x50
