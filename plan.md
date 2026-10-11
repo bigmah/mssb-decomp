@@ -382,9 +382,16 @@ Every function gets easier once the big structs are right. Before mass decompili
 - Rough size: about 2,250 functions. ~830 are 256 bytes or less, and these should go quickly once the types are good.
 
 ### Phase 4: Game code in `main.dol`
-- 549 KB / ~1,040 functions currently sit in ~880 `auto_*` units. Many already have meaningful names (`FillRosterPos`, `characterSelectScreen`, `Custom_SetState`).
-- First split them into source files by address range, following natural boundaries (where alignment padding, string tables and `.ctors` show a new file starts). Then match them the same way as `game.rel`.
-- This code is probably the core engine (memory, file loading, controller/state helpers) that the RELs call. Matching it early gives names and types to all three RELs.
+- **Split done (2026-10-10).** The 1,035 unsplit `.text` functions now live in 41 files, `src/main/file_<ADDR>.c` with headers in `include/main/`. Each file is a `.text`-only entry in `config/GYQE01/splits.txt`. The 57 old `src/Unknown/auto_*_text.c` sources were merged into them, and all 129 already-matched functions still match.
+- **How the boundaries were found.** The linker keeps file order in every section, and MWCC pools each float/double/string constant once per file. So:
+  1. A cut is only allowed where every `.sdata2`/`.rodata` address referenced before it is below every one referenced after it.
+  2. A cut is required between two functions that load the same constant value from different addresses.
+
+  167 required intervals were all satisfiable, giving 36 boundaries, plus 5 breaks where library code sits in between.
+- **The files are a lower bound.** A file can still hold several real source files where nothing forced a cut (for example `file_80011640.c`, 97 functions, 59 KB). That's harmless for matching, because merged files share no constant values. Split them further when matched code shows a boundary, such as a `static` helper used on only one side, `.data`/`.bss` order, or a change in coding style. Where a cut falls inside its allowed window is a guess (the latest allowed function).
+- Several files are SDK sample/library code, not game code: the character pipeline (`ACT*`, `ANIM*`, `SKN*`, `LIT*`, `DS*`, `TEX*`) and the THP player (`MovDecodeThread`, `YUV2RGB`). They may need other compiler flags, so check against known decomps of those libraries before matching by hand.
+- Data (`.data`, `.bss`, `.sdata`, `.sbss`, `.rodata`, `.sdata2`) is still in `auto_*` units. Assign it to the files when they get close to linking.
+- Unmatched functions are `void f(void) { return; }` stubs. One function declared in a shared header (`fn_80062890`) is a comment placeholder instead.
 
 ### Phase 5: `challenge.rel`, then `menus.rel`
 - `challenge.rel` is the smallest module (349 functions). It's a realistic target for **the first fully matched module**, and it reuses game types.

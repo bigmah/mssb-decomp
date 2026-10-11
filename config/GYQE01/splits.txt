@@ -14,6 +14,131 @@ Sections:
 	.sdata2     type:rodata align:4
 	.sbss2      type:bss align:32
 
+main/file_80008E00.c:
+	extab       start:0x80005600 end:0x80005640
+	extabindex  start:0x80006C60 end:0x80006CC0
+	.text       start:0x80008E00 end:0x8000A0AC
+
+main/file_8000A0AC.c:
+	extab       start:0x80005640 end:0x80005660
+	extabindex  start:0x80006CC0 end:0x80006CF0
+	.text       start:0x8000A0AC end:0x8000BA3C
+
+main/file_8000BA3C.c:
+	extab       start:0x80005660 end:0x800056D8
+	extabindex  start:0x80006CF0 end:0x80006DA4
+	.text       start:0x8000BA3C end:0x8000F150
+
+main/file_8000F150.c:
+	extab       start:0x800056D8 end:0x80005748
+	extabindex  start:0x80006DA4 end:0x80006E4C
+	.text       start:0x8000F150 end:0x80011640
+
+main/file_80011640.c:
+	extab       start:0x80005748 end:0x800059D0
+	extabindex  start:0x80006E4C end:0x80007218
+	.text       start:0x80011640 end:0x8001FE00
+
+main/file_8001FE00.c:
+	extab       start:0x800059D0 end:0x80005A48
+	extabindex  start:0x80007218 end:0x800072CC
+	.text       start:0x8001FE00 end:0x80021308
+
+main/file_80021308.c:
+	extab       start:0x80005A48 end:0x80005B08
+	extabindex  start:0x800072CC end:0x800073EC
+	.text       start:0x80021308 end:0x80022DAC
+
+main/file_80022DAC.c:
+	extab       start:0x80005B08 end:0x80005B60
+	extabindex  start:0x800073EC end:0x80007470
+	.text       start:0x80022DAC end:0x80024184
+
+main/file_80024184.c:
+	extab       start:0x80005B60 end:0x80005BA0
+	extabindex  start:0x80007470 end:0x800074D0
+	.text       start:0x80024184 end:0x80024D2C
+
+main/file_80024D2C.c:
+	extab       start:0x80005BA0 end:0x80005BC0
+	extabindex  start:0x800074D0 end:0x80007500
+	.text       start:0x80024D2C end:0x80026134
+
+main/file_80026134.c:
+	extab       start:0x80005BC0 end:0x80005BC8
+	extabindex  start:0x80007500 end:0x8000750C
+	.text       start:0x80026134 end:0x800263FC
+
+main/file_800263FC.c:
+	extab       start:0x80005BC8 end:0x80005DA8
+	extabindex  start:0x8000750C end:0x800077DC
+	.text       start:0x800263FC end:0x80034F50
+
+main/file_80034F50.c:
+	extab       start:0x80005DA8 end:0x80005E48
+	extabindex  start:0x800077DC end:0x800078CC
+	.text       start:0x80034F50 end:0x80037054
+
+main/file_80037054.c:
+	extab       start:0x80005E48 end:0x80005EE8
+	extabindex  start:0x800078CC end:0x800079BC
+	.text       start:0x80037054 end:0x80039AC0
+
+main/file_80039AC0.c:
+	extab       start:0x80005EE8 end:0x80005F38
+	extabindex  start:0x800079BC end:0x80007A34
+	.text       start:0x80039AC0 end:0x8003A688
+
+main/file_8003A688.c:
+	extab       start:0x80005F38 end:0x80005FD8
+	extabindex  start:0x80007A34 end:0x80007B24
+	.text       start:0x8003A688 end:0x8004207C
+
+main/file_8004207C.c:
+	extab       start:0x80005FD8 end:0x800060F0
+	extabindex  start:0x80007B24 end:0x80007CC8
+	.text       start:0x8004207C end:0x8004B284
+
+main/file_8004B284.c:
+	extab       start:0x800060F0 end:0x80006120
+	extabindex  start:0x80007CC8 end:0x80007D10
+	.text       start:0x8004B284 end:0x8004BEB0
+
+main/file_8004BEB0.c:
+	extab       start:0x80006120 end:0x80006138
+	extabindex  start:0x80007D10 end:0x80007D34
+	.text       start:0x8004BEB0 end:0x8004C19C
+
+main/file_8004C19C.c:
+	extab       start:0x80006138 end:0x80006148
+	extabindex  start:0x80007D34 end:0x80007D4C
+	.text       start:0x8004C19C end:0x8004C5F8
+
+main/file_8004C5F8.c:
+	extab       start:0x80006148 end:0x80006200
+	extabindex  start:0x80007D4C end:0x80007E60
+	.text       start:0x8004C5F8 end:0x800527C4
+
+main/file_800527C4.c:
+	extab       start:0x80006200 end:0x80006418
+	extabindex  start:0x80007E60 end:0x80008184
+	.text       start:0x800527C4 end:0x80063028
+
+main/file_80063028.c:
+	extab       start:0x80006418 end:0x80006448
+	extabindex  start:0x80008184 end:0x800081CC
+	.text       start:0x80063028 end:0x800639BC
+
+main/file_800639BC.c:
+	extab       start:0x80006448 end:0x80006518
+	extabindex  start:0x800081CC end:0x80008304
+	.text       start:0x800639BC end:0x80069BDC
+
+main/file_80069BDC.c:
+	extab       start:0x80006518 end:0x800065D8
+	extabindex  start:0x80008304 end:0x80008424
+	.text       start:0x80069BDC end:0x8006D024
+
 Dolphin/base/PPCArch.c:
 	.text       start:0x8006D024 end:0x8006D138
 
@@ -374,6 +499,9 @@ Dolphin/gx/GXPerf.c:
 	.text       start:0x8009079C end:0x80091450
 	.data       start:0x8010E838 end:0x8010E980
 
+main/file_80091450.c:
+	.text       start:0x80091450 end:0x80091608
+
 Dolphin/TRK_MINNOW_DOLPHIN/mainloop.c:
 	.text       start:0x80091608 end:0x80091700
 
@@ -711,6 +839,9 @@ Dolphin/OdemuExi2/DebuggerDriver.c:
 	.sdata      start:0x803CBA90 end:0x803CBA98
 	.sbss       start:0x803CC0D8 end:0x803CC0F0
 
+main/file_800A1A70.c:
+	.text       start:0x800A1A70 end:0x800A2B5C
+
 Dolphin/exi/EXIBios.c:
 	.text       start:0x800A2B5C end:0x800A4538
 	.data       start:0x8010F160 end:0x8010F270
@@ -746,6 +877,46 @@ Unknown/File_0x800a64e0.c:
 	.text       start:0x800A64E0 end:0x800A6870
 	.bss        start:0x803C6990 end:0x803C6CF8
 
+main/file_800A6870.c:
+	extab       start:0x80006608 end:0x80006698
+	extabindex  start:0x8000846C end:0x80008544
+	.text       start:0x800A6870 end:0x800A7C08
+
+main/file_800A7C08.c:
+	extab       start:0x80006698 end:0x80006850
+	extabindex  start:0x80008544 end:0x800087D8
+	.text       start:0x800A7C08 end:0x800ADC40
+
+main/file_800ADC40.c:
+	extab       start:0x80006850 end:0x800068E8
+	extabindex  start:0x800087D8 end:0x800088BC
+	.text       start:0x800ADC40 end:0x800B0724
+
+main/file_800B0724.c:
+	extab       start:0x800068E8 end:0x800069A8
+	extabindex  start:0x800088BC end:0x800089DC
+	.text       start:0x800B0724 end:0x800B2C44
+
+main/file_800B2C44.c:
+	extab       start:0x800069A8 end:0x80006A28
+	extabindex  start:0x800089DC end:0x80008A9C
+	.text       start:0x800B2C44 end:0x800B4A44
+
+main/file_800B4A44.c:
+	extab       start:0x80006A28 end:0x80006A50
+	extabindex  start:0x80008A9C end:0x80008AD8
+	.text       start:0x800B4A44 end:0x800B516C
+
+main/file_800B516C.c:
+	extab       start:0x80006A50 end:0x80006A88
+	extabindex  start:0x80008AD8 end:0x80008B2C
+	.text       start:0x800B516C end:0x800B79D0
+
+main/file_800B79D0.c:
+	extab       start:0x80006A88 end:0x80006A90
+	extabindex  start:0x80008B2C end:0x80008B38
+	.text       start:0x800B79D0 end:0x800B7D3C
+
 C3/control/control.c:
 	extab       start:0x80006A90 end:0x80006AE0
 	extabindex  start:0x80008B38 end:0x80008BB0
@@ -753,6 +924,29 @@ C3/control/control.c:
 	.data       start:0x801116A0 end:0x80111700
 	.bss        start:0x803CB1FC end:0x803CB49C
 	.sdata2     start:0x803CCFD8 end:0x803CCFF8
+
+main/file_800B993C.c:
+	.text       start:0x800B993C end:0x800B9974
+
+main/file_800B9974.c:
+	extab       start:0x80006AE0 end:0x80006B90
+	extabindex  start:0x80008BB0 end:0x80008CB8
+	.text       start:0x800B9974 end:0x800BD3EC
+
+main/file_800BD3EC.c:
+	extab       start:0x80006B90 end:0x80006BB0
+	extabindex  start:0x80008CB8 end:0x80008CE8
+	.text       start:0x800BD3EC end:0x800BD8C4
+
+main/file_800BD8C4.c:
+	extab       start:0x80006BB0 end:0x80006BD8
+	extabindex  start:0x80008CE8 end:0x80008D24
+	.text       start:0x800BD8C4 end:0x800BDEA0
+
+main/file_800BDEA0.c:
+	extab       start:0x80006BD8 end:0x80006C48
+	extabindex  start:0x80008D24 end:0x80008DCC
+	.text       start:0x800BDEA0 end:0x800C0A8C
 
 Musyx/seq.c:
 	.text       start:0x800C0A8C end:0x800C4AB4
@@ -863,6 +1057,9 @@ Musyx/chorus_fx.c:
 	.text       start:0x800DF594 end:0x800DFDD4
 	.data       start:0x801177E0 end:0x80117FE0
 	.sdata2     start:0x803CD2E0 end:0x803CD2E8
+
+main/file_800DFDD4.c:
+	.text       start:0x800DFDD4 end:0x800E6330
 
 Dolphin/Runtime/__mem.c:
 	.init       start:0x8000540C end:0x80005544

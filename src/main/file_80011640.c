@@ -1,0 +1,493 @@
+#include "main/file_80011640.h"
+
+// .text:0x80011640 size:0x9C
+void fn_80011640(void) {
+    return;
+}
+
+// .text:0x800116DC size:0xF0
+void fn_800116DC(void) {
+    return;
+}
+
+// .text:0x800117CC size:0xE0
+void fn_800117CC(void) {
+    return;
+}
+
+// .text:0x800118AC size:0xC0
+void fn_800118AC(void) {
+    return;
+}
+
+// .text:0x8001196C size:0xF4
+void fn_8001196C(void) {
+    return;
+}
+
+// .text:0x80011A60 size:0x104
+void fn_80011A60(void) {
+    return;
+}
+
+// .text:0x80011B64 size:0x80
+void fn_80011B64(void) {
+    return;
+}
+
+// .text:0x80011BE4 size:0xC4
+void fn_80011BE4(void) {
+    return;
+}
+
+// .text:0x80011CA8 size:0xA44
+void fn_80011CA8(void) {
+    return;
+}
+
+// .text:0x800126EC size:0x10C
+void fn_800126EC(void) {
+    return;
+}
+
+// .text:0x800127F8 size:0x398
+void LoadModel(void) {
+    return;
+}
+
+// .text:0x80012B90 size:0xAF0
+void fn_80012B90(void) {
+    return;
+}
+
+// .text:0x80013680 size:0xB84
+void fn_80013680(void) {
+    return;
+}
+
+// .text:0x80014204 size:0x3F4
+void fn_80014204(void) {
+    return;
+}
+
+// .text:0x800145F8 size:0x398
+void fn_800145F8(void) {
+    return;
+}
+
+// .text:0x80014990 size:0x88
+void fn_80014990(void) {
+    return;
+}
+
+// .text:0x80014A18 size:0x334
+void fn_80014A18(void) {
+    return;
+}
+
+// .text:0x80014D4C size:0x104
+void fn_80014D4C(void) {
+    return;
+}
+
+// .text:0x80014E50 size:0xF0
+void fn_80014E50(void) {
+    return;
+}
+
+// .text:0x80014F40 size:0xCC
+void fn_80014F40(void) {
+    return;
+}
+
+// .text:0x8001500C size:0x45C
+void fn_8001500C(void) {
+    return;
+}
+
+// .text:0x80015468 size:0x4E4
+void fn_80015468(void) {
+    return;
+}
+
+// .text:0x8001594C size:0x9F8
+void fn_8001594C(void) {
+    return;
+}
+
+// .text:0x80016344 size:0x3CC
+void fn_80016344(void) {
+    return;
+}
+
+// .text:0x80016710 size:0x450
+void fn_80016710(void) {
+    return;
+}
+
+// .text:0x80016B60 size:0x41C
+void fn_80016B60(void) {
+    return;
+}
+
+// .text:0x80016F7C size:0x11C
+void fn_80016F7C(void) {
+    return;
+}
+
+// .text:0x80017098 size:0x2A8
+void fn_80017098(void) {
+    return;
+}
+
+// .text:0x80017340 size:0x24C
+void fn_80017340(void) {
+    return;
+}
+
+// .text:0x8001758C size:0x228
+void fn_8001758C(void) {
+    return;
+}
+
+// .text:0x800177B4 size:0x60
+void fn_800177B4(void) {
+    return;
+}
+
+// .text:0x80017814 size:0x514
+void fn_80017814(void) {
+    return;
+}
+
+// .text:0x80017D28 size:0x94
+void fn_80017D28(void) {
+    return;
+}
+
+// .text:0x80017DBC size:0x268
+void fn_80017DBC(void) {
+    return;
+}
+
+// .text:0x80018024 size:0x24C
+void fn_80018024(void) {
+    return;
+}
+
+// .text:0x80018270 size:0x650
+void fn_80018270(void) {
+    return;
+}
+
+// .text:0x800188C0 size:0xF8
+void fn_800188C0(void) {
+    return;
+}
+
+// .text:0x800189B8 size:0x2C
+void fn_800189B8(void) {
+    return;
+}
+
+// .text:0x800189E4 size:0x154
+void fn_800189E4(void) {
+    return;
+}
+
+// .text:0x80018B38 size:0x3C
+void fn_80018B38(void) {
+    return;
+}
+
+// .text:0x80018B74 size:0x278
+void fn_80018B74(void) {
+    return;
+}
+
+// .text:0x80018DEC size:0x8EC
+void fn_80018DEC(void) {
+    return;
+}
+
+// .text:0x800196D8 size:0x388
+void fn_800196D8(void) {
+    return;
+}
+
+// .text:0x80019A60 size:0x1A0
+void fn_80019A60(void) {
+    return;
+}
+
+// .text:0x80019C00 size:0x65C
+void fn_80019C00(void) {
+    return;
+}
+
+// .text:0x8001A25C size:0x1A0
+void fn_8001A25C(void) {
+    return;
+}
+
+// .text:0x8001A3FC size:0x2B4
+void fn_8001A3FC(void) {
+    return;
+}
+
+// .text:0x8001A6B0 size:0x3F4
+void challengeMapRelated(void) {
+    return;
+}
+
+// .text:0x8001AAA4 size:0x4C
+void fn_8001AAA4(void) {
+    return;
+}
+
+// .text:0x8001AAF0 size:0x20
+void fn_8001AAF0(void) {
+    return;
+}
+
+// .text:0x8001AB10 size:0x488
+void fn_8001AB10(void) {
+    return;
+}
+
+// .text:0x8001AF98 size:0x268
+void fn_8001AF98(void) {
+    return;
+}
+
+extern u8 lbl_8036E548[];
+
+// fn_8001B200, size:0x14
+void fn_8001B200(void) {
+    *(u32*)(lbl_8036E548 + 0x308c) = 0x0;
+}
+
+// fn_8001B214, size:0x10
+void fn_8001B214(u32 value) {
+    *(u32*)(lbl_8036E548 + 0x308c) = value;
+}
+
+// .text:0x8001B224 size:0xAC
+void fn_8001B224(void) {
+    return;
+}
+
+// .text:0x8001B2D0 size:0x38
+void fn_8001B2D0(void) {
+    return;
+}
+
+// .text:0x8001B308 size:0x54
+void fn_8001B308(void) {
+    return;
+}
+
+// .text:0x8001B35C size:0x17C
+void fn_8001B35C(void) {
+    return;
+}
+
+// .text:0x8001B4D8 size:0x114
+void fn_8001B4D8(void) {
+    return;
+}
+
+// .text:0x8001B5EC size:0x13C
+void fn_8001B5EC(void) {
+    return;
+}
+
+// .text:0x8001B728 size:0xE4
+void fn_8001B728(void) {
+    return;
+}
+
+// .text:0x8001B80C size:0x10C
+void getAnimRelatedCoordinates(void) {
+    return;
+}
+
+// .text:0x8001B918 size:0x78
+void QueueCharacterAnimation(void) {
+    return;
+}
+
+// .text:0x8001B990 size:0xB4
+void AnimateCharacter(void) {
+    return;
+}
+
+// .text:0x8001BA44 size:0x40C
+void fn_8001BA44(void) {
+    return;
+}
+
+// .text:0x8001BE50 size:0x3E4
+void fn_8001BE50(void) {
+    return;
+}
+
+// .text:0x8001C234 size:0x2F4
+void fn_8001C234(void) {
+    return;
+}
+
+// .text:0x8001C528 size:0x60
+void fn_8001C528(void) {
+    return;
+}
+
+// .text:0x8001C588 size:0xF4
+void fn_8001C588(void) {
+    return;
+}
+
+// .text:0x8001C67C size:0x2A4
+void fn_8001C67C_animation(void) {
+    return;
+}
+
+// .text:0x8001C920 size:0x120
+void fn_8001C920(void) {
+    return;
+}
+
+// .text:0x8001CA40 size:0xD0
+void fn_8001CA40(void) {
+    return;
+}
+
+// .text:0x8001CB10 size:0xC4
+void fn_8001CB10(void) {
+    return;
+}
+
+// .text:0x8001CBD4 size:0xF4
+void fn_8001CBD4(void) {
+    return;
+}
+
+// .text:0x8001CCC8 size:0x1AC
+void fn_8001CCC8(void) {
+    return;
+}
+
+// .text:0x8001CE74 size:0x200
+void fn_8001CE74(void) {
+    return;
+}
+
+// .text:0x8001D074 size:0x5C
+void fn_8001D074(void) {
+    return;
+}
+
+// .text:0x8001D0D0 size:0x40
+void fn_8001D0D0(void) {
+    return;
+}
+
+// .text:0x8001D110 size:0x38
+void fn_8001D110(void) {
+    return;
+}
+
+// .text:0x8001D148 size:0x38
+void fn_8001D148(void) {
+    return;
+}
+
+// .text:0x8001D180 size:0x154
+void fn_8001D180(void) {
+    return;
+}
+
+// .text:0x8001D2D4 size:0x8A0
+void fn_8001D2D4(void) {
+    return;
+}
+
+// .text:0x8001DB74 size:0x1E4
+void fn_8001DB74(void) {
+    return;
+}
+
+// .text:0x8001DD58 size:0x14C
+void fn_8001DD58(void) {
+    return;
+}
+
+// .text:0x8001DEA4 size:0x234
+void fn_8001DEA4(void) {
+    return;
+}
+
+// .text:0x8001E0D8 size:0x388
+void fn_8001E0D8(void) {
+    return;
+}
+
+extern void* lbl_803CB7AC[2];
+
+extern u8 lbl_803CBBC0;
+
+// fn_8001E460, size:0x14
+void fn_8001E460(void* value) {
+    lbl_803CB7AC[lbl_803CBBC0] = value;
+}
+
+// fn_8001E474, size:0x14
+void fn_8001E474(void) {
+    lbl_803CB7AC[0] = 0;
+    lbl_803CB7AC[1] = 0;
+}
+
+// .text:0x8001E488 size:0x2FC
+void fn_8001E488(void) {
+    return;
+}
+
+// .text:0x8001E784 size:0x9E8
+void fn_8001E784(void) {
+    return;
+}
+
+// .text:0x8001F16C size:0xBC
+void fn_8001F16C(void) {
+    return;
+}
+
+// .text:0x8001F228 size:0x298
+void fn_8001F228(void) {
+    return;
+}
+
+// .text:0x8001F4C0 size:0x128
+void challengeMapMaybe(void) {
+    return;
+}
+
+// .text:0x8001F5E8 size:0x2BC
+void fn_8001F5E8(void) {
+    return;
+}
+
+// .text:0x8001F8A4 size:0x3A8
+void fn_8001F8A4(void) {
+    return;
+}
+
+// .text:0x8001FC4C size:0x188
+void fn_8001FC4C(void) {
+    return;
+}
+
+// .text:0x8001FDD4 size:0x2C
+void fn_8001FDD4(void) {
+    return;
+}
