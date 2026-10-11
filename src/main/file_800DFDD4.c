@@ -1442,9 +1442,110 @@ void fn_800E423C(HVQM4SeqObj* seq, HVQMCPlane* mc) {
 #endif
 
 // .text:0x800E46D4 size:0x3F4
+// NONMATCHING 94%: register allocation
+#if NONMATCHING
 void fn_800E46D4(HVQM4SeqObj* seq, u8* dst, u8* ref0, u8* ref1) {
-    return;
+    HVQState* state = seq->state;
+    HVQMCPlane mc[3];
+    s32 x;
+    s32 y;
+    s32 xPix;
+    s32 yPix;
+    s32 refIdx;
+    s32 mvX = 0;
+    s32 mvY = 0;
+    s32 i;
+
+    fn_800E2B8C(state, mc, dst, ref0, ref1);
+    fn_800E423C(seq, mc);
+
+    // rewind to the top of the frame
+    mc[0].dstRow = dst;
+    mc[0].blk = mc[0].blkRow = state->planes[0].payload;
+    mc[1].dstRow = dst + state->planes[0].sizeInSamples;
+    mc[1].blk = mc[1].blkRow = state->planes[1].payload;
+    mc[2].dstRow = mc[1].dstRow + state->planes[1].sizeInSamples;
+    mc[2].blk = mc[2].blkRow = state->planes[2].payload;
+
+    refIdx = -1;
+    for (y = 0, yPix = 0; y < seq->frameHeight; y += 8, yPix += 16) {
+        mc[0].dst = mc[0].dstRow;
+        mc[1].dst = mc[1].dstRow;
+        mc[2].dst = mc[2].dstRow;
+        for (x = 0, xPix = 0; x < seq->frameWidth; x += 8, xPix += 16) {
+            u8 type = mc[0].blk->type;
+            s32 mode = (type >> 5) & 3;
+
+            if (mode == 0) {
+                fn_800E40E4(state, mc);
+            } else {
+                s32 bits;
+                s32 limit;
+                s32 delta;
+                s32 n;
+                u8 bit;
+
+                if (mode - 1 != refIdx) {
+                    refIdx = mode - 1;
+                    if (refIdx == 0) {
+                        mc[0].ref = mc[0].ref0;
+                        mc[1].ref = mc[1].ref0;
+                        mc[2].ref = mc[2].ref0;
+                    } else {
+                        mc[0].ref = mc[0].ref1;
+                        mc[1].ref = mc[1].ref1;
+                        mc[2].ref = mc[2].ref1;
+                    }
+                    mvY = 0;
+                    mvX = 0;
+                }
+
+                bits = state->mvXBits[refIdx];
+                limit = 1 << (bits + 5);
+                delta = fn_800E0CC8(&state->mvX) << bits;
+                for (n = bits - 1; n >= 0; n--) {
+                    HVQ_READBIT(&state->mvX.buf, bit);
+                    delta += (bit ? 1 : 0) << n;
+                }
+                mvX += delta;
+                if (mvX >= limit) {
+                    mvX -= limit * 2;
+                } else if (mvX < -limit) {
+                    mvX += limit * 2;
+                }
+
+                bits = state->mvYBits[refIdx];
+                limit = 1 << (bits + 5);
+                delta = fn_800E0CC8(&state->mvY) << bits;
+                for (n = bits - 1; n >= 0; n--) {
+                    HVQ_READBIT(&state->mvY.buf, bit);
+                    delta += (bit ? 1 : 0) << n;
+                }
+                mvY += delta;
+                if (mvY >= limit) {
+                    mvY -= limit * 2;
+                } else if (mvY < -limit) {
+                    mvY += limit * 2;
+                }
+
+                if (!((type >> 4) & 1)) {
+                    fn_800E3E3C(state, mc, xPix + mvX, yPix + mvY);
+                } else {
+                    fn_800E32E8(state, mc, xPix + mvX, yPix + mvY);
+                }
+            }
+            for (i = 0; i < 3; i++) {
+                mc[i].dst += mc[i].mbStepX;
+                mc[i].blk += mc[i].blkStepX;
+            }
+        }
+        for (i = 0; i < 3; i++) {
+            mc[i].dstRow += mc[i].mbStepY;
+            mc[i].blk = mc[i].blkRow += mc[i].blkStepY;
+        }
+    }
 }
+#endif
 
 // .text:0x800E4AC8 size:0x20
 void fn_800E4AC8(void) {
