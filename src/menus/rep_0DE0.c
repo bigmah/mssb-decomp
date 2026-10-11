@@ -305,7 +305,7 @@ static void menuStageApplyTexSet(s32 i, s32 model, s32 texSet) {
     }
 }
 
-void fn_2_87654(s32 unused, s32 start, s32 count, void* animBank, s32 arg5) {
+void fn_2_87654(s32 unused, s32 start, s32 count, void* animBank, struct sHdr* skHeader) {
     s32 i;
     s32 model;
     s32 texSet;
@@ -317,11 +317,11 @@ void fn_2_87654(s32 unused, s32 start, s32 count, void* animBank, s32 arg5) {
         model = object->model;
         texSet = object->texSet;
         hasTexSet = object->hasTexSet;
-        fn_800BDC88(lbl_2_bss_340140[0]->table, i, i, lbl_2_bss_340140[0]->models[model].layout, animBank, arg5);
+        fn_800BDC88(lbl_2_bss_340140[0]->table, i, i, lbl_2_bss_340140[0]->models[model].layout, animBank, skHeader);
         fn_800BD548(&lbl_2_bss_340140[0]->table->objects[i], 4, lbl_2_bss_340140[0]->lights[0],
             lbl_2_bss_340140[0]->lights[1], lbl_2_bss_340140[0]->lights[2], lbl_2_bss_340140[0]->lights[3]);
-        CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl, 0.0f, 0.0f, 0.0f);
-        CTRLSetRotation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl, -90.0f, 0.0f, 0.0f);
+        CTRLSetTranslation(&lbl_2_bss_340140[0]->table->objects[i].worldControl.base, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(&lbl_2_bss_340140[0]->table->objects[i].worldControl.base, -90.0f, 0.0f, 0.0f);
         if (hasTexSet != 0) {
             menuStageApplyTexSet(i, model, texSet);
         }
@@ -407,19 +407,19 @@ void fn_2_86470(void) {
         state->rotation.y = lbl_2_data_2E9DC.y;
         state->rotation.z = lbl_2_data_2E9DC.z;
         if (lbl_2_bss_33FBF5 == 0) {
-            CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+            CTRLSetTranslation(&lbl_2_bss_340140[0]->table->objects[i].worldControl.base,
                 position.x + (i % 5) * lbl_2_rodata_EB0, position.y, position.z - (i / 5) * lbl_2_rodata_EB4);
         } else if (lbl_2_bss_33FBF5 == 1) {
-            CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+            CTRLSetTranslation(&lbl_2_bss_340140[0]->table->objects[i].worldControl.base,
                 position.x + (i % 6) * lbl_2_rodata_EB8, position.y, position.z - (i / 6) * lbl_2_rodata_EBC);
         } else if (lbl_2_bss_33FBF5 == 2) {
-            CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+            CTRLSetTranslation(&lbl_2_bss_340140[0]->table->objects[i].worldControl.base,
                 position.x + (i % 5) * lbl_2_rodata_EC0, position.y, position.z - (i / 5) * lbl_2_rodata_EC4);
         } else {
-            CTRLSetTranslation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+            CTRLSetTranslation(&lbl_2_bss_340140[0]->table->objects[i].worldControl.base,
                 position.x + (i % 6) * lbl_2_rodata_EC8, position.y, position.z - (i / 6) * lbl_2_rodata_ECC);
         }
-        CTRLSetRotation((Control*)lbl_2_bss_340140[0]->table->objects[i].worldControl,
+        CTRLSetRotation(&lbl_2_bss_340140[0]->table->objects[i].worldControl.base,
             57.29578f * lbl_2_data_2E9DC.x, 57.29578f * lbl_2_data_2E9DC.y,
             57.29578f * lbl_2_data_2E9DC.z);
         lbl_2_bss_340140[0]->table->objects[i].animateBones = lbl_2_bss_33FBF0[i];

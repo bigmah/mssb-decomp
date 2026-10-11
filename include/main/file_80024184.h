@@ -5,7 +5,8 @@
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
 
-// MSSB texture image header (used for GXInitTexObj and texture blits).
+// MSSB texture image header: one 0x20 entry of a texture archive (TexArchive),
+// used for GXInitTexObj and texture blits.
 typedef struct TexImage {
     /* 0x00 */ u8* data;
     /* 0x04 */ void* tlut;       // non-NULL: color-indexed texture
@@ -23,7 +24,20 @@ typedef struct TexImage {
     /* 0x18 */ u16 tlutEntries;
     /* 0x1A */ u8 tlutFormat;
     /* 0x1B */ u8 pad1B;
-} TexImage; // size: 0x1C (lbl_800F7700 is 0x20)
+    /* 0x1C */ u16 index;        // archive: entry whose image texture i uses
+    /* 0x1E */ u8 pad1E[2];
+} TexImage; // size: 0x20
+
+// Texture archive file: a count followed by its images (relocated in place by
+// convertTextureHeader).
+typedef struct TexArchive {
+    /* 0x00 */ u16 count;
+    /* 0x02 */ u8 pad2[2];
+    /* 0x04 */ TexImage entries[1]; // count entries
+} TexArchive;
+
+// Image used for texture i of an archive.
+#define TEX_ARCHIVE_IMG(arc, i) (&(arc)->entries[(arc)->entries[i].index])
 
 // lbl_800E8558 entries.
 typedef struct StarMissionIndex {
@@ -38,7 +52,8 @@ typedef struct StarMission {
     /* 0x0 */ s16 type;
     /* 0x2 */ s16 target;
     /* 0x4 */ s16 flags;
-    /* 0x6 */ u8 pad6[4];
+    /* 0x6 */ s16 minLevel;
+    /* 0x8 */ u8 pad8[2];
 } StarMission;
 
 typedef struct FielderSortInfo {

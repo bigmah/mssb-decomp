@@ -1,4 +1,5 @@
 #include "main/file_80063028.h"
+#include "main/file_80011640.h" // CharActor, ActorObject
 #include "stl/mem.h"
 #include "stl/math.h"
 
@@ -246,13 +247,13 @@ s32 fn_80063718(GameBone* bone, GameBone* target, Mtx m, f32 t) {
 }
 
 // fn_800637BC, size:0x18
-s32 fn_800637BC(void* player, GameActor** actor) {
-    (*actor)->boneCallback = fn_80063718;
+s32 fn_800637BC(CharActor* player, ActorObject* obj) {
+    obj->actor->boneCallback = fn_80063718;
     return 0;
 }
 
 // fn_800637D4, size:0x8
-s32 fn_800637D4(void) {
+s32 fn_800637D4(CharActor* player, ActorObject* obj) {
     return 0;
 }
 
@@ -276,8 +277,8 @@ s32 fn_800637DC(GameBone* bone, GameBone* target, Mtx m, f32 t) {
 }
 
 // .text:0x800638B4 size:0x18
-s32 fn_800638B4(void* player, GameActor** actor) {
-    (*actor)->boneCallback = fn_800637DC;
+s32 fn_800638B4(CharActor* player, ActorObject* obj) {
+    obj->actor->boneCallback = fn_800637DC;
     return 0;
 }
 

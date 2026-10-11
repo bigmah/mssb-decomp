@@ -7,6 +7,7 @@
 #define SQRT2_LINKAGE extern
 #include "math.h"
 #include "Dolphin/mtx.h"
+#include "Dolphin/vec.h"
 
 #define SINF(x) ((f32)sin(x))
 #define COSF(x) ((f32)cos(x))
@@ -69,9 +70,7 @@ typedef struct _VecXZ {
     f32 x, z;
 } VecXZ;
 
-typedef struct _VecXYZ {
-    f32 x, y, z;
-} VecXYZ;
+typedef Vec VecXYZ; // same object as Dolphin Vec
 
 typedef struct _Orientationf {
     s16 yaw, pitch, roll;
@@ -930,7 +929,8 @@ typedef struct _PracticeStruct {
     /*0x1AA*/ u8 transitioningIndicator; // unsure
     artificial_padding(0x1aa, 0x1af, u8);
     /*0x1AF*/ u8 returnToPracticeMenuState;
-    artificial_padding(0x1af, 0x1c2, u8);
+    /*0x1B0*/ u8 _1B0;
+    artificial_padding(0x1b0, 0x1c2, u8);
     /*0x1C2*/ s8 instructionNumber;
     /*0x1C3*/ u8 readyToMoveToNextInstruction; // unsure
     /*0x1C4*/ u8 practice_runner_countInputForMashing;
@@ -1107,13 +1107,13 @@ typedef struct _LogoInfoStruct {
 } LogoInfoStruct; // size: 0xC
 
 typedef struct _GameControlsStruct {
-    /*0x000*/ s16 homeTeamInd[2];
+    /*0x000*/ s32 _000; // a team index (0/1), compared with g_Scores.winningTeam
     /*0x004*/ int teamBatting;
     /*0x008*/ int teamFielding;
     /*0x00C*/ int homeTeamBattingInd_fieldingTeam;
     /*0x010*/ int awayTeamBattingInd_battingTeam;
     /*0x014*/ u32 AIDifficulty0Special3Weak[2];
-    artificial_padding(0x14, 0x24, u32[2]);
+    /*0x01C*/ s32 _01C[2]; // per team, from g_d_GameSettings.maybeHomeAway[]
     /*0x024*/ LogoInfoStruct logo[2];
     /*0x03C*/ int battingOrderAndPositionMapping[2][10][2]; // first Pair Is Pitcher
     /*0x0DC*/ int currentBatterPerTeam[2];
@@ -1129,9 +1129,9 @@ typedef struct _GameControlsStruct {
     /*0x108*/ s16 _108;
     /*0x10A*/ s16 bOD_framesInLiveBallScene;
     /*0x10C*/ s16 frameCountdownAtBeginningOfAtBatLockout;
-    /*0x10E*/ s16 scoreBook_teamDisplayed;
-    /*0x110*/ s16 scoreBook_batter_pitcherStatsDisplayed;
-    /*0x112*/ s16 scoreBook_scrollIndex;
+    /*0x10E*/ u16 scoreBook_teamDisplayed;
+    /*0x110*/ u16 scoreBook_batter_pitcherStatsDisplayed;
+    /*0x112*/ u16 scoreBook_scrollIndex;
     /*0x114*/ s16 _114;
     /*0x116*/ s16 scoreBook_logoFadeDirectionLeft_Right;
     /*0x118*/ s16 _118;
@@ -1156,16 +1156,21 @@ typedef struct _GameControlsStruct {
     /*0x12E*/ u8 hudLoadingRelated; // unsure
     /*0x12F*/ u8 _12F;
     /*0x130*/ E(u8, WIN_TYPE) winType;
-    artificial_padding(0x130, 0x135, u8);
+    /*0x131*/ u8 _131;
+    /*0x132*/ u8 _132;
+    /*0x133*/ u8 _133;
+    /*0x134*/ u8 _134;
     /*0x135*/ u8 _135;
     /*0x136*/ u8 _136;
-    /*0x137*/ u8 playOverFadeOutStarted;
+    /*0x137*/ s8 playOverFadeOutStarted; // also: scorebook team selection (-1: none)
     /*0x138*/ u8 playOver;
     /*0x139*/ u8 playOverInd;
     /*0x13A*/ u8 walkOffWinInd; // unsure
     /*0x13B*/ u8 gameOverInd;
     /*0x13C*/ u8 scoutFlag_VsScreenInd;
-    artificial_padding(0x13C, 0x142, u8);
+    /*0x13D*/ u8 _13D;
+    /*0x13E*/ u8 _13E[2]; // per team: AI controlled
+    /*0x140*/ u8 _140[2];
     /*0x142*/ u8 teamAIInd[2];
     /*0x144*/ u8 autoFielding[2];
     /*0x146*/ u8 batterHandedness[2];
@@ -2404,6 +2409,11 @@ typedef struct _MiniGameStruct {
     /*0x1E10*/ u8 _1E10[0x1E22 - 0x1E10];
     /*0x1E22*/ u8 _1E22[4]; // per player
     /*0x1E26*/ u8 _1E26[0x1E2C - 0x1E26];
+    /*0x1DBC*/ u8 _1DBC[0x1E22 - 0x1DBC];
+    /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
+    /*0x1E26*/ u8 _1E26[4];
+    /*0x1E2A*/ u8 _1E2A;    // round counter
+    /*0x1E2B*/ u8 _1E2B;
 } MiniGameStruct; // size: 0x1E2C
 
 extern MiniGameStruct g_Minigame;
@@ -2718,13 +2728,26 @@ typedef struct {
     /* 0x0024 */ u32 playFrameCounter;
     artificial_padding(0x24, 0x36, u32);
     /* 0x0036 */ u8 replayInd;
+    /* 0x0037 */ u8 _37[2];
+    /* 0x0039 */ u8 _39; // 1: replay offered, 2: replay done
+    /* 0x003A */ u8 _3A;
+    /* 0x003B */ u8 _3B;
 } g_Stats_s; // size: 0x4634
 
 // 0x8088a7e4
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0x105];
+    u8 pad[0xAE];
+    /* 0x0AE */ s16 _0AE;
+    u8 _0B0[0xBC - 0xB0];
+    /* 0x0BC */ s16 _0BC;
+    u8 _0BE[0xE4 - 0xBE];
+    /* 0x0E4 */ s16 _0E4;
+    u8 _0E6[0xEE - 0xE6];
+    /* 0x0EE */ s16 _0EE;
+    u8 _0F0[0xF8 - 0xF0];
+    /* 0x0F8 */ u8 _0F8[0x105 - 0xF8]; // per fielder
     /* 0x105 */ u8 playerAtMoundCutoffLocation;
     /* 0x106 */ u8 throwSpeedType;
     /* 0x107 */ u8 _107;
@@ -2808,6 +2831,10 @@ typedef struct {
     /* 0x0 */ s16 _0;
     /* 0x2 */ s16 _2;
     /* 0x4 */ s16 _4;
+    /* 0x6 */ u8 _06[0x26 - 0x6];
+    /* 0x26 */ s8 _26; // runs scored on the last dead ball
+    /* 0x27 */ u8 _27[0x44 - 0x27];
+    /* 0x44 */ s16 _44[2]; // per team: times through the batting order
 } lbl_3_common_bss_32A94_s;
 
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
@@ -2830,7 +2857,6 @@ extern s16 toyFieldHitVertTraj[2][5][5][2];
 extern s16 bODHitVertTraj[5][5][2];
 extern s16 HitVertTrajRanges[2][5][5][2];
 
-extern BOOL getAnimRelatedCoordinates(int, int, VecXYZ*);
 extern void fn_3_6C854(int, int);
 extern void playSoundEffect(int);
 extern void fn_3_5ED98(void);

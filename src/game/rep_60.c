@@ -8,7 +8,6 @@ extern u8 lbl_803C6CF8[];
 extern u8 lbl_800EFBE8[];
 extern u8 lbl_3_common_bss_350E4[];
 extern u8 lbl_3_data_228[];
-extern s32 ARAMTransfer(void*, int, int, int);
 extern u8 lbl_803716B8[];
 extern u8 lbl_3_common_bss_35154[];
 extern void OSReport(const char*, ...);

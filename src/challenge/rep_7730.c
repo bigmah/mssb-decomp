@@ -290,7 +290,7 @@ void fn_1_207D4(void) {
 
 // fn_1_1F23C, size:0x9C
 void fn_1_1F23C(ChallengeProjectionState* state) {
-    fn_800385F0(&lbl_1_bss_6BF4,
+    fn_800385F0((struct RigidBody *)&lbl_1_bss_6BF4, // TODO type
         *(f32*)(lbl_803CC1B8[0] + 0x14), *(f32*)(lbl_803CC1B8[0] + 0x18),
         *(f32*)(lbl_803CC1B8[0] + 0x1C), *(f32*)(lbl_803CC1B8[0] + 0x20));
     state->depth = -*(f32*)(lbl_803CC1B8[0] + 0x24);
@@ -833,7 +833,7 @@ void fn_1_20E00(u8* obj) {
     convertGeometryAndSknHeader(geo, 0);
     haveActLayoutPointToGeoHeader(layout, geo);
     for (i = 0; i < 20; i++) {
-        fn_800BDC88(lbl_1_bss_6BE0[0], i, i, layout, 0, 0);
+        fn_800BDC88(lbl_1_bss_6BE0[0], i, i, (struct ActorLayout *)layout, 0, 0); // TODO type
         fn_800B2C08(lbl_1_bss_6BE0[0]->objects[i].actor, 0);
         fn_800BD548(&lbl_1_bss_6BE0[0]->objects[i], 1, lbl_1_bss_6FA4[0]);
     }
@@ -1103,7 +1103,6 @@ void fn_1_24410(void) {
 
 extern const f32 lbl_1_rodata_77E8;
 extern void fn_80023F0C(void*, ChallengeTextureHeader*, s32, s32, s32, s32, s32, s32);
-extern void gOz_GXSetTexture(s32, s32, s32);
 extern void DCStoreRange(void*, u32);
 
 // NONMATCHING 91%: orig divides height/64, width/32 with srawi/addze (signed); ours srwi (CW knows u16 >= 0); loop regs rotate
@@ -1246,7 +1245,7 @@ void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera) {
             PSVECSubtract(&points[i + 1].position, &points[i].position, &delta);
             PSVECScale(&delta, lbl_1_rodata_7814[0], &mid);
             PSVECAdd(&points[i].position, &mid, &mid);
-            CTRLSetTranslation((Control*)obj->worldControl, mid.x, -mid.y, mid.z);
+            CTRLSetTranslation(&obj->worldControl.base, mid.x, -mid.y, mid.z);
             if (PSVECMag(&delta)) {
                 PSVECNormalize(&delta, &delta);
                 delta.y = -delta.y;
@@ -1261,15 +1260,15 @@ void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera) {
                     C_QUATRotAxisRad(&align, &mid, angle);
                     PSQUATMultiply(&align, &rot, &rot);
                 }
-                CTRLSetQuat((Control*)obj->worldControl, rot.x, rot.y, rot.z, rot.w);
+                CTRLSetQuat(&obj->worldControl.base, rot.x, rot.y, rot.z, rot.w);
             }
-            CTRLSetScale((Control*)obj->worldControl, lbl_1_data_104D0.x, lbl_1_data_104D0.y, lbl_1_data_104D0.z);
+            CTRLSetScale(&obj->worldControl.base, lbl_1_data_104D0.x, lbl_1_data_104D0.y, lbl_1_data_104D0.z);
             fn_800BDA24(obj);
         }
         zero = *(volatile f32*)&lbl_1_rodata_77D8;
         PSMTXTrans(mtx, zero, zero, zero);
         PSMTXConcat(camera, mtx, mtx);
-        obj->actor->flags98 |= 3;
+        obj->actor->flags |= 3;
     }
     fn_800BD670(lbl_1_bss_6BE0[0], (u32)camera);
 }
@@ -2615,6 +2614,7 @@ static inline void fn_1_21CE8_setupDraw(void) {
 
 // NONMATCHING 63% (98% when fn_1_20950 is force-inlined, which then drops fn_1_20950's own copy): the original inlines fn_1_20950 here; ours calls it
 // .text:0x21CE8 size:0x8D0
+// nmverify: fn_1_20950 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_21CE8(void) {
     ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
@@ -2634,6 +2634,7 @@ void fn_1_21CE8(void) {
 
 // NONMATCHING 63%: same shape as fn_1_21CE8 (the original inlines fn_1_20950 here; ours calls it)
 // .text:0x21408 size:0x8E0
+// nmverify: fn_1_20950 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_21408(void) {
     ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
@@ -2844,6 +2845,7 @@ void fn_1_25F98(void) {
 
 // NONMATCHING 86%: the original inlines fn_1_248BC (and fn_1_24A8C/fn_1_247A0) here; ours calls fn_1_248BC
 // .text:0x25064 size:0xC04
+// nmverify: fn_1_248BC inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_25064(void) {
     ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8[0];

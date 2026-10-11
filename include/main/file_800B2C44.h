@@ -9,12 +9,6 @@
 #include "C3/geoPalette.h"
 #include "C3/skinning.h"
 
-// An actor layout file: the header followed by totalBones bones.
-typedef struct ActorLayoutFile {
-    /*0x00*/ ActorLayout header;
-    /*0x20*/ ActorBone bones[1]; // really header.totalBones entries
-} ActorLayoutFile;
-
 // Static (non-animated) model drawn by fn_800B472C.
 typedef struct StaticModel {
     /*0x00*/ u8 pad00[0x8];
@@ -22,14 +16,6 @@ typedef struct StaticModel {
     /*0x38*/ Mtx camera;
     /*0x68*/ ActorLayout* layout;
 } StaticModel;
-
-// Out-of-unit helpers.
-void* _OSAllocFromHeap(s32 align, s32 size);
-void fn_800ACFB0(void* object); // free
-void fn_800BEA04(Vec pos);
-void fn_800BF2A8(GameBone** bones, sHdr* hdr, void* positionArray);
-void CTRLBuildMatrix_FlipX(Control* control, Mtx m);
-void CTRLBuildMatrix_FlipY(Control* control, Mtx m);
 
 void fn_800B2C44(GameActor* actor, u16 bone, Vec* pos);
 void fn_800B2C88(GameActor* actor, u16 bone, Mtx m);
@@ -42,7 +28,7 @@ void f_BuildBoneSkinOrientationMatrix(GameBone* bone, Mtx parent);
 void fn_800B3A78(GameActor* actor, Mtx camera, u8 numLights, ...);
 u8 fn_800B3C04(s32 viewIndex, GameActor* actor, Mtx camera);
 void fn_800B3F20(GameActor* actor);
-s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u16 actorID);
+s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u32 actorID);
 void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16* boneIndex, GameBone* boneMem);
 void fn_800B4278(GameActor* actor);
 GameActor* fn_800B43A0(ActorLayout* layout);
