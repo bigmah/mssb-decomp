@@ -26,6 +26,7 @@ python3 tools/next_targets.py --files --has-source --unclaimed   # pick a unit
 python3 tools/next_targets.py --unit main/main/ --max-size 256 --unclaimed   # default pool: main.dol game code (src/main/)
 python3 tools/claim.py claim game/game/rep_3880 --who agent-3
 python3 tools/claim.py list
+python3 tools/c_coverage.py --units                              # units by functions still without C (matched or equivalent)
 python3 tools/claim.py release game/game/rep_3880                # when done or giving up
 ```
 
@@ -64,7 +65,7 @@ There are two levels. Never leave a function as a stub just because it won't mat
   s32 fn_8001234(u8* p) { ... }
   #endif
   ```
-  Use `#if`, not `#ifdef`: some libraries already compile with `-DNONMATCHING=0`. Commit it as `equivalent <function_name>` once the full build still passes steps 2–3. Use this when a function has hit its time budget (see "When stuck"), or right away for very large functions where matching would take hours.
+  Use `#if`, not `#ifdef`: some libraries already compile with `-DNONMATCHING=0`. Check it compiles with `python3 tools/nmcheck.py src/<unit>.c` (the matching build never compiles it), then commit it as `equivalent <function_name>` once the full build still passes steps 2–3. Use this when a function has hit its time budget (see "When stuck"), or right away for very large functions where matching would take hours.
 
 Steps for a matching commit:
 
