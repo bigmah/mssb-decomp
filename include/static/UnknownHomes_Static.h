@@ -140,7 +140,7 @@ extern void minigamesSetSomePointers(void);
 
 extern void fn_800363D8(void*, s32, s32, s32, s32);
 
-extern void fn_8002955C(void*, s32, void*);
+extern void fn_8002955C(void* pos, void* dir, void* params);
 extern void fn_80031CA4(Vec*, u32*);
 
 extern void* fn_80037AA0(void*, s32, void*, u16, void*);
