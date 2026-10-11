@@ -297,5 +297,10 @@ void fn_800638CC(void) {
 
 // .text:0x80063958 size:0x64
 void fn_80063958(s8 index) {
-    return;
+    PlayerVecSlot* slot = &lbl_802E4BC0[index];
+
+    memset(&slot->a, 0, sizeof(Vec));
+    memset(&slot->b, 0, sizeof(Vec));
+    slot->unk18 = 0;
+    slot->unk1C = 0;
 }
