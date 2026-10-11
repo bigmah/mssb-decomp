@@ -1202,9 +1202,146 @@ void fn_3_137224(u8* o) {
 #pragma dont_inline on
 
 // .text:0x001373E0 size:0x5C0 mapped:0x80776474
+extern f64 lbl_3_rodata_3698;
+extern f32 lbl_3_rodata_364C;
+extern f32 lbl_3_rodata_3690;
+// NONMATCHING 91%: prologue constant loads get addi+lfs 0(rX), push-out sign branch laid out differently, regalloc
+#if NONMATCHING
+// Clip a sphere (radius r) moving along seg against the box obstacles (0x40-byte
+// records at g_Minigame+0xBB0, state at +0x3D). On a hit, fills col (contact
+// position and the reflected velocity) and returns 1.
 u8 fn_3_1373E0(VecSrcDst* seg, Vec* vel, CollisionStruct* col, f32 r) {
+    Vec d1;
+    Vec d2;
+    Vec n1;
+    Vec hit;
+    Vec dir;
+    f32 r2;
+    f32 hw;
+    f32 hd;
+    u8* m;
+    u32 i;
+    // side planes (nx, nz, d): -x, +x, +z, -z
+    f32 planes[4][3] = { { -1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, -1.0f, 0.0f } };
+    r2 = lbl_3_rodata_3638 * r;
+    hw = lbl_3_rodata_363C + r;
+    hd = lbl_3_rodata_3688 + r;
+    for (i = 0; i < lbl_3_bss_B780; i++) {
+        Vec* op;
+        u8 inside;
+        u8 st;
+        f32 th, t;
+        f32* p;
+        m = G8 + i * 0x40;
+        op = (Vec*)(m + 0xBB0);
+        inside = 1;
+        st = m[0xBED];
+        if (!(st > 1 || st == 4)) {
+            continue;
+        }
+        if (op->y > -seg->dst.y) {
+            th = r2;
+        } else {
+            th = lbl_3_rodata_368C;
+        }
+        if (th < fabs(op->y + seg->dst.y)) {
+            continue;
+        }
+        PSVECSubtract(&seg->dst, op, &d1);
+        if (fabs(d1.x) > hw || fabs(d1.z) > hd) {
+            continue;
+        }
+        if (PSVECMag(&d1) != 0.0f) {
+            PSVECNormalize(&d1, &n1);
+        } else {
+            memset(&n1, 0, sizeof(Vec));
+        }
+        PSVECSubtract(&seg->dst, &seg->src, &dir);
+        if (PSVECMag(&dir) != 0.0f) {
+            PSVECNormalize(&dir, &dir);
+        } else {
+            memset(&dir, 0, sizeof(Vec));
+        }
+        dir.y = lbl_3_rodata_35D0;
+        n1.y = lbl_3_rodata_35D0;
+        if (PSVECDotProduct(&n1, &dir) > lbl_3_rodata_35D0) {
+            continue;
+        }
+        PSVECSubtract(&seg->src, op, &d2);
+        if (fabs(d2.x) <= hw && fabs(d2.z) <= hd) {
+            // started inside the box
+            PSVECSubtract(&seg->src, &seg->dst, &dir);
+            dir.y = lbl_3_rodata_35D0;
+            if (PSVECMag(&dir) != 0.0f) {
+                PSVECNormalize(&dir, &dir);
+                inside = 0;
+                seg->dst.x = seg->src.x;
+                seg->dst.z = seg->src.z;
+                seg->src.x = lbl_3_rodata_364C * dir.x + seg->src.x;
+                seg->src.z = lbl_3_rodata_3690 * dir.z + seg->src.z;
+            } else {
+                // not moving: push out to the nearest face
+                f32 nz = n1.z;
+                f32 nx = n1.x;
+                f64 ratio = fabs(nz / nx);
+                if (lbl_3_rodata_3698 < ratio) {
+                    nz = fabs(nz) / nz;
+                } else if (lbl_3_rodata_3698 > ratio) {
+                    nx = fabs(nx) / nx;
+                } else {
+                    nz = fabs(nz) / nz;
+                    nx = fabs(nx) / nx;
+                }
+                col->position.x = nx * hw + op->x;
+                col->position.y = -seg->src.y;
+                col->position.z = nz * hd + op->z;
+                col->normal.x = lbl_3_rodata_3648 * vel->x;
+                col->normal.y = vel->y;
+                col->normal.z = lbl_3_rodata_3648 * vel->z;
+                return 1;
+            }
+        }
+        // intersect with the x face the segment is heading into
+        PSVECSubtract(&seg->dst, &seg->src, &dir);
+        if (dir.x > lbl_3_rodata_35D0) {
+            p = planes[0];
+        } else {
+            p = planes[1];
+        }
+        p[2] = p[0] * (hw * (fabs(p[0]) / p[0]) + op->x);
+        t = -((seg->src.x * p[0] + seg->src.z * p[1]) - p[2]) / (dir.x * p[0] + dir.z * p[1]);
+        hit.x = dir.x * t + seg->src.x;
+        hit.z = dir.z * t + seg->src.z;
+        hit.y = -seg->src.y;
+        if (fabs(hit.z - op->z) <= hd && t >= lbl_3_rodata_35D0) {
+            memcpy(&col->normal, vel, sizeof(Vec));
+            col->normal.x *= lbl_3_rodata_3648;
+        } else {
+            // otherwise the z face
+            if (dir.z > lbl_3_rodata_35D0) {
+                p = planes[3];
+            } else {
+                p = planes[2];
+            }
+            p[2] = p[1] * (op->z + (hd * fabs(p[1])) / p[1]);
+            t = -((seg->src.x * p[0] + seg->src.z * p[1]) - p[2]) / (dir.x * p[0] + dir.z * p[1]);
+            hit.x = dir.x * t + seg->src.x;
+            hit.z = dir.z * t + seg->src.z;
+            hit.y = -seg->src.y;
+            memcpy(&col->normal, vel, sizeof(Vec));
+            col->normal.z *= lbl_3_rodata_3648;
+        }
+        if (inside) {
+            memcpy(col, &hit, sizeof(Vec));
+        } else {
+            seg->dst.y *= lbl_3_rodata_3648;
+            memcpy(col, &seg->dst, sizeof(Vec));
+        }
+        return 1;
+    }
     return 0;
 }
+#endif
 
 // .text:0x001379A0 size:0x170 mapped:0x80776A34
 // 96%: only the first (unrolled) fielder-index loop differs: orig keeps g_Minigame in r7 plus a separate induction ptr in r4
