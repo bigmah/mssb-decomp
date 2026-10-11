@@ -1899,8 +1899,41 @@ void fn_8001DD58(CharModel* model, s32 pass, s32 a, s32 b, ...) {
 #endif
 
 // .text:0x8001DEA4 size:0x234
-void fn_8001DEA4(void) {
-    return;
+void fn_8001DEA4(CharSlot* slot, s32 pass, s32 a) {
+    CharModel* model = slot->model;
+
+    if (slot->callback != NULL) {
+        slot->callback(slot);
+    }
+    switch (slot->lightCount) {
+    case 0:
+        fn_8001DD58(model, pass, a, 0);
+        break;
+    case 1:
+        fn_8001DD58(model, pass, a, 1, slot->lights[0]);
+        break;
+    case 2:
+        fn_8001DD58(model, pass, a, 2, slot->lights[0], slot->lights[1]);
+        break;
+    case 3:
+        fn_8001DD58(model, pass, a, 3, slot->lights[0], slot->lights[1], slot->lights[2]);
+        break;
+    case 4:
+        fn_8001DD58(model, pass, a, 4, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3]);
+        break;
+    case 5:
+        fn_8001DD58(model, pass, a, 5, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4]);
+        break;
+    case 6:
+        fn_8001DD58(model, pass, a, 6, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5]);
+        break;
+    case 7:
+        fn_8001DD58(model, pass, a, 7, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6]);
+        break;
+    case 8:
+        fn_8001DD58(model, pass, a, 8, slot->lights[0], slot->lights[1], slot->lights[2], slot->lights[3], slot->lights[4], slot->lights[5], slot->lights[6], slot->lights[7]);
+        break;
+    }
 }
 
 // .text:0x8001E0D8 size:0x388
@@ -2025,7 +2058,7 @@ void fn_8001FC4C(CharActor* actor) {
 
 // .text:0x8001FDD4 size:0x2C
 void fn_8001FDD4(CharSlot* slot) {
-    if (slot->_70 != NULL) {
-        fn_800B9AA8(slot->_70);
+    if (slot->lights[0] != NULL) {
+        fn_800B9AA8(slot->lights[0]);
     }
 }

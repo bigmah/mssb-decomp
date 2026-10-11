@@ -60,9 +60,9 @@ typedef struct CharSlot {
     /*0x66*/ u16 _66;
     /*0x68*/ void* _68;
     /*0x6C*/ u8 _6C;
-    /*0x6D*/ u8 _6D[0x3];
-    /*0x70*/ void* _70;
-    /*0x74*/ u8 _74[0x90 - 0x74];
+    /*0x6D*/ u8 lightCount;
+    /*0x6E*/ u8 _6E[0x2];
+    /*0x70*/ void* lights[8];
 } CharSlot; // size: 0x90
 
 typedef struct CharSlotList {
@@ -322,6 +322,9 @@ void fn_8001A25C(void);
 void fn_80019C00(void);
 void fn_8001CCC8(void);
 void fn_8001DB74(CharSlotList* list);
+
+void fn_8001CE74(void);
+void fn_8001DEA4(CharSlot* slot, s32 pass, s32 a);
 
 void fn_8001B200(void);
 
