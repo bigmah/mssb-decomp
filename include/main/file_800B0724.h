@@ -127,6 +127,7 @@ void DrawNullSprite(struct QuadVtx* verts, s32 count); // triangle strip
 void fn_800B12DC(struct QuadVtx* verts, s32 count); // triangle fan
 void fn_800B1314(struct QuadVtx* verts, struct SpriteTexInfo* tex, u16 width, u16 height); // textured quad
 void DrawSprite_TexObj(struct QuadState* quad, struct SpriteTexInfo* tex); // textured quad
+void fn_800B1388(struct QuadState* quad); // untextured quad
 s32 AllocateSprite(s32 layer, s32 needed);
 s32 fn_800B1EBC(struct SpriteTexInfo* tex, s32 map, u32 width, u32 height);
 
