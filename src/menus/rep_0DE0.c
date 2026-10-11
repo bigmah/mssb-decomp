@@ -344,3 +344,25 @@ void fn_2_87118(void) {
     fn_2_87654(0, 0, lbl_2_bss_340140[0]->count, NULL, 0);
 }
 #endif
+
+// fn_2_87118, then resets every draw state and clears each object's animateBones flag.
+// .text:0x87350 size:0x304
+// NONMATCHING 79%: inlines fn_2_87118; same data-pool anchor difference
+#if NONMATCHING
+void fn_2_87350(void) {
+    s32 i;
+
+    fn_2_87118();
+    for (i = 0; i < lbl_2_bss_340140[0]->count; i++) {
+        lbl_2_bss_340140[0]->states[i].position.x = lbl_2_rodata_E88;
+        lbl_2_bss_340140[0]->states[i].position.y = lbl_2_rodata_E88;
+        lbl_2_bss_340140[0]->states[i].position.z = lbl_2_rodata_E88;
+        lbl_2_bss_340140[0]->states[i].rotation.x = lbl_2_rodata_E88;
+        lbl_2_bss_340140[0]->states[i].rotation.y = lbl_2_rodata_E88;
+        lbl_2_bss_340140[0]->states[i].rotation.z = lbl_2_rodata_E88;
+        lbl_2_bss_340140[0]->states[i].unk26 = 0;
+        lbl_2_bss_340140[0]->states[i].draw = NULL;
+        lbl_2_bss_340140[0]->table->objects[i].animateBones = 0;
+    }
+}
+#endif
