@@ -158,9 +158,43 @@ void fn_3_67620(s32 type, u16 frames) {
 #endif
 
 // .text:0x000678B8 size:0x190 mapped:0x806A694C
+// NONMATCHING 23%: the original reaches lbl_3_data_6848/6880/6940/69A0 through one pooled lbl_3_data_6820
+// base (file statics there); ours uses each symbol (expected nmverify flag)
+#if NONMATCHING
 void fn_3_678B8(void) {
-    return;
+    RepTrailWork* w = &lbl_3_bss_200;
+    u8 buf = lbl_803CBBC0;
+    s32 side;
+    TrailMesh* mesh;
+    TrailNode* node;
+
+    side = fn_3_67EF0(&w->queue, 60, w->positions[buf], w->colors[buf], (u32)w->alpha | 0xFFFFFF00,
+                      w->capPositions[buf], w->capColors[buf], TRAIL_TASK->dir, lbl_3_data_6880[w->type].width);
+    buf = lbl_803CBBC0;
+    mesh = &w->meshes[buf];
+    mesh->body.positions = w->positions[buf];
+    mesh->body.texCoords = lbl_3_data_6848.texCoords;
+    mesh->body.colors = w->colors[buf];
+    mesh->cap.positions = w->capPositions[buf];
+    mesh->cap.texCoords = lbl_3_data_6848.texCoords;
+    mesh->cap.colors = w->capColors[buf];
+    mesh->cap.displayListSize = sizeof(lbl_3_data_6940.capDisplayList);
+    mesh->cap.displayList = lbl_3_data_6940.capDisplayList;
+    node = &lbl_3_data_69A0[buf];
+    if ((side + 1) >> 1) {
+        mesh->body.displayListSize = sizeof(w->displayListReversed);
+        node->strips[0] = &mesh->cap;
+        mesh->body.displayList = w->displayListReversed;
+        node->strips[1] = &mesh->body;
+    } else {
+        mesh->body.displayListSize = sizeof(w->displayList);
+        node->strips[0] = &mesh->body;
+        mesh->body.displayList = w->displayList;
+        node->strips[1] = &mesh->cap;
+    }
+    fn_800B0A14_removeQueue(node);
 }
+#endif
 
 // .text:0x00067A48 size:0x1EC mapped:0x806A6ADC
 void fn_3_67A48(void) {
