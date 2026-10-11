@@ -458,7 +458,7 @@ void fn_3_FD670(void) {
     switch (*(s16*)(d + 0x944)) {
     case 0:
         if (d[0x9AE] != 0) {
-            if (((s32(*)(void))fn_3_FDB30)() != 0) {
+            if (fn_3_FDB30() != 0) {
                 lbl_3_common_bss_DE94[0x9AE] = 0;
                 lbl_3_common_bss_DE94[0x9AF] = 0;
                 lbl_3_common_bss_DE94[0x9B0] = 0;
@@ -526,9 +526,794 @@ void fn_3_FDA1C(void) {
 }
 
 // .text:0x000FDB30 size:0x24E8 mapped:0x8073CBC4
-void fn_3_FDB30(void) {
-    return;
+// NONMATCHING 76% (scored with fn_3_100038/SetCamAnim/FindTeamActor inlined as in the original; call sequence identical):
+// addressing modes, unrolled actor loops and register allocation differ. The original reaches the script tables through
+// the pooled .data base lbl_3_data_1C0A8 (+0x18D8, +0x238C, +0x30E4, +0x3148, +0x3220, +0x32F8, +0x4D64).
+// Replay camera script interpreter. The script (s32 words at *(s32**)(d + 0)) is run until a command waits for a
+// frame; returns 1 when the script ends (command 2), else 0. "Tick" (fn_3_100038, inlined in the original) advances
+// the camera animation frame. d + 0x4/0xC/0x10 hold a loop (0x43/0x44), d + 0x8/0x14 wait counters.
+#if NONMATCHING
+extern u8* lbl_803CC1B8;               /* current scene task */
+extern u8 starMissionCompletionTracker[];
+extern u8 g_Batter[];
+extern u8 g_GameLogic[];
+extern u8 g_d_GameSettings[];
+extern u8 lbl_8037169C[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_3_common_bss_32A94[];
+extern u8* lbl_3_common_bss_1323C;     /* SceneWork: 0x2C-byte actor states, 0x23C/0x23E frame, 0x25A, 0x25D, 0x27F, 0x280 */
+extern s32* lbl_3_data_20E0C[];        /* script table (pooled at lbl_3_data_1C0A8 + 0x4D64) */
+extern s32* lbl_3_data_1D980[];        /* camera animation lists (lbl_3_data_1C0A8 + 0x18D8) */
+extern u8 lbl_3_data_1F18C[];          /* 0x14-byte actor placements: Vec pos, f32 0xC, u8 actor 0x10 (+0x30E4) */
+extern f32 lbl_3_data_1F1F0[];         /* per character kind (+0x3148) */
+extern f32 lbl_3_data_1F2C8[];         /* per character kind (+0x3220) */
+extern u8 lbl_3_data_1E434[];          /* SceneActorSetup[] (0x1C bytes, actor at 0x14) (+0x238C) */
+extern f32 lbl_3_data_1F3A0[];         /* per star mission (+0x32F8) */
+extern s32 lbl_3_data_37AC[];
+extern s32 lbl_3_data_3888[];
+extern s32 lbl_3_data_3964[];
+extern s32 lbl_3_data_3A40[];
+extern s32 lbl_3_data_3B1C[];
+extern s32 lbl_3_data_3B34[];
+extern int random_fn_3_9EE24(int max);
+extern void fn_80052798(s32 count);
+extern void fn_3_24ADC(s32 idx, s32 queued);
+extern void fn_3_249E8(s32 idx);
+extern void fn_3_7BC0C(void);
+extern void fn_3_7BBF8(void);
+extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
+extern void fn_3_21C90(void);
+extern void fn_3_21DE4(void);
+extern void fn_3_21C7C(s32 idx, s32 value);
+extern s32 fn_3_2281C(s32 i);
+extern s32 fn_3_2273C(void);
+extern void fn_3_BBBC4(void);
+extern void fn_3_BA150(void);
+extern void fn_80011358(s32 index, s32 kind);
+extern void fn_3_219CC(void);
+extern void changeScene(s32 scene, s32 state);
+extern void fn_8001CA40(u8 stadium);
+
+#define SCR (*(s32**)(d + 0x0))
+#define SCENE lbl_3_common_bss_1323C
+#define ACTOR(i) (((u8**)(lbl_8036E548 + 0x2C50))[i])
+#define FRAME (*(s32*)(g_Stats + 0x24)) /* g_Stats.playFrameCounter */
+#define CAM_SEL (g_pCamera + g_pCamera[0x28A8] * 0x9BC)
+
+/* Tick, then continue once the play frame equals the s16 event frame at d + off plus the argument. */
+#define WAIT_EVENT(off) \
+    fn_3_100038(); \
+    p = SCR; \
+    if (FRAME == *(s16*)(lbl_3_common_bss_DE94 + (off)) + p[1]) { \
+        SCR = p + 2; \
+        continue; \
+    } \
+    return 0
+
+/* Index (0-8) of the last actor on the team in g_GameLogic[0xF4 + 4 * settings[0x34]]. */
+static s16 FindTeamActor(void) {
+    s16 found = 0;
+    s16 i;
+    for (i = 0; i < 9; i++) {
+        if (*(s32*)(g_GameLogic + 0xF4 + g_d_GameSettings[0x34] * 4) == (s8)ACTOR(i)[0x257]) {
+            found = i;
+        }
+    }
+    return found;
 }
+
+static void SetCamAnim(s16 anim) {
+    *(s16*)(lbl_3_common_bss_DE94 + 0x940) = anim;
+    *(u32*)(lbl_3_common_bss_DE94 + 0x118) = 0;
+    fn_3_FC938();
+}
+
+s32 fn_3_FDB30(void) {
+    u8* task = lbl_803CC1B8;
+    u8* d = lbl_3_common_bss_DE94;
+    u8 starIdx = starMissionCompletionTracker[0x441C];
+    u8 starKind = starMissionCompletionTracker[0x4415];
+    s32* p;
+
+    *(s16*)(g_pCamera + 0xA72) += 1;
+    if (*(s16*)(g_pCamera + 0xA72) == 10000) {
+        *(s16*)(g_pCamera + 0xA72) = 0;
+    }
+    if (*(s32*)(d + 0x8) != 0) {
+        *(s32*)(d + 0x8) -= 1;
+        fn_3_100038();
+        return 0;
+    }
+    if (*(s32*)(d + 0x14) != 0) {
+        *(s32*)(d + 0x14) -= 1;
+        fn_3_100038();
+        return 0;
+    }
+
+    for (;;) {
+        p = SCR;
+        switch (p[0]) {
+        case 0x01: {
+            u8* c = CAM_SEL;
+            *(s32*)(c + 0x238) = 0;
+            *(s32*)(c + 0x23C) = 0;
+            *(s16*)(c + 0xA66) = 0xE;
+            *(f32*)(c + 0x220) = 9.0f;
+            *(f32*)(c + 0x224) = 2.0f;
+            *(f32*)(c + 0x228) = 0.001f;
+            *(f32*)(c + 0x22C) = 9.0f;
+            *(f32*)(c + 0x230) = 2.0f;
+            *(f32*)(c + 0x234) = 0.001f;
+            *(s32*)(c + 0xA54) = random_fn_3_9EE24(0x10000);
+            *(s16*)(c + 0xAA8) = 0;
+            c[0xAD2] = 0;
+            c[0xAD4] = 0;
+            c[0xAD3] = 0;
+            c[0xAD5] = 0;
+            c[0xACA] = 0;
+            c[0xAC8] = 0;
+            *(s32*)(c + 0xA58) = -1;
+            *(s32*)(c + 0xA5C) = *(s32*)(c + 0xA58);
+            *(s16*)(c + 0xA6C) = 0;
+            c[0xAD9] = 0;
+            c[0xAD7] = 0;
+            *(s32*)(c + 0x138) = 0;
+            *(s16*)(g_pCamera + 0xA72) = 0;
+            SCR += 1;
+            continue;
+        }
+        case 0x02:
+            if (g_Stats[0x36] != 0) {
+                g_Stats[0x39] = 5;
+            } else if (SCENE[0x25D] == 2) {
+                s16 v = *(s16*)(SCENE + 0x23E) - 0x5C;
+                if (*(s16*)(SCENE + 0x23C) < v) {
+                    *(s16*)(SCENE + 0x23C) = v;
+                }
+            } else {
+                s16 v = *(s16*)(SCENE + 0x23E) - 8;
+                if (*(s16*)(SCENE + 0x23C) < v) {
+                    *(s16*)(SCENE + 0x23C) = v;
+                }
+            }
+            CAM_SEL[0xAD9] = 0;
+            fn_80052798(1);
+            lbl_3_common_bss_32724[0xAD] = 0;
+            *(s32*)(d + 0x18) = 1;
+            return 1;
+        case 0x03:
+            fn_3_100038();
+            *(s32*)(d + 0x8) = SCR[1];
+            SCR += 2;
+            return 0;
+        case 0x62:
+            fn_3_100038();
+            *(s32*)(d + 0x8) = SCR[1];
+            SCR += 2;
+            return 0;
+        case 0x04:
+            if (*(u32*)(lbl_3_common_bss_DE94 + 0x118) > *(u32*)(lbl_3_common_bss_DE94 + 0x11C)) {
+                SCR = p + 1;
+                continue;
+            }
+            *(u32*)(lbl_3_common_bss_DE94 + 0x118) += 0x10000;
+            return 0;
+        case 0x05:
+            SetCamAnim(p[1]);
+            SCR += 2;
+            continue;
+        case 0x26:
+            SetCamAnim(g_Batter[0x7B] == 1 ? p[1] : p[2]);
+            SCR += 3;
+            continue;
+        case 0x25:
+            SetCamAnim(*(s16*)(lbl_3_common_bss_DE94 + 0x986) > 1000 ? p[1] : p[2]);
+            SCR += 3;
+            continue;
+        case 0x06:
+            lbl_3_common_bss_DE94[0x9AA] = 0;
+            lbl_3_common_bss_DE94[0x9B5] = 0;
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = SCR[1];
+            SCR += 2;
+            continue;
+        case 0x1E:
+            lbl_3_common_bss_DE94[0x9AA] = 0;
+            lbl_3_common_bss_DE94[0x9B5] = 1;
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = SCR[1];
+            SCR += 2;
+            continue;
+        case 0x1F:
+            lbl_3_common_bss_DE94[0x9AA] = 1;
+            lbl_3_common_bss_DE94[0x9B5] = 1;
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = SCR[1];
+            SCR += 2;
+            continue;
+        case 0x18:
+            lbl_3_common_bss_DE94[0x9AA] = 0;
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = 9;
+            SCR += 1;
+            continue;
+        case 0x21:
+            lbl_3_common_bss_DE94[0x9AA] = 0;
+            lbl_3_common_bss_DE94[0x9B5] = 1;
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = (s8)lbl_3_common_bss_32A94[0x10];
+            SCR += 1;
+            continue;
+        case 0x07:
+            lbl_3_common_bss_DE94[0x9B1] = p[1];
+            SCR += 2;
+            continue;
+        case 0x08:
+            lbl_3_common_bss_DE94[0x9B2] = p[1];
+            SCR += 2;
+            continue;
+        case 0x09:
+            lbl_3_common_bss_DE94[0x9B4] = p[1];
+            SCR += 2;
+            continue;
+        case 0x0A:
+            lbl_3_common_bss_DE94[0x9B3] = p[1];
+            SCR += 2;
+            continue;
+        case 0x0B:
+            lbl_3_common_bss_DE94[0x9B5] = p[1];
+            SCR += 2;
+            continue;
+        case 0x0C:
+            DEF(0x100) = (f32)p[1] / 1000.0f;
+            DEF(0x104) = (f32)SCR[2] / 1000.0f;
+            DEF(0x108) = (f32)SCR[3] / 1000.0f;
+            SCR += 4;
+            continue;
+        case 0x0D:
+            DEF(0x10C) = (f32)p[1] / 1000.0f;
+            DEF(0x110) = (f32)SCR[2] / 1000.0f;
+            DEF(0x114) = (f32)SCR[3] / 1000.0f;
+            SCR += 4;
+            continue;
+        case 0x0E: {
+            s32* list = lbl_3_data_1D980[p[1]];
+            SetCamAnim(list[random_fn_3_9EE24(p[2])]);
+            SCR += 3;
+            continue;
+        }
+        case 0x23: {
+            s32* list = *(s16*)(lbl_3_common_bss_DE94 + 0x986) > 1000 ? lbl_3_data_1D980[p[1]] : lbl_3_data_1D980[p[2]];
+            SetCamAnim(list[random_fn_3_9EE24(p[3])]);
+            SCR += 4;
+            continue;
+        }
+        case 0x24: {
+            s32* list = g_Batter[0x7B] == 1 ? lbl_3_data_1D980[p[1]] : lbl_3_data_1D980[p[2]];
+            SetCamAnim(list[random_fn_3_9EE24(p[3])]);
+            SCR += 4;
+            continue;
+        }
+        /* Wait until the play frame reaches a recorded event frame (+0x954..) plus an offset. */
+        case 0x0F:
+            WAIT_EVENT(0x954);
+        case 0x10:
+            WAIT_EVENT(0x956);
+        case 0x11:
+            WAIT_EVENT(0x958);
+        case 0x12:
+            WAIT_EVENT(0x95A);
+        case 0x13:
+            WAIT_EVENT(0x95E);
+        case 0x14:
+            WAIT_EVENT(0x960);
+        case 0x15:
+            WAIT_EVENT(0x962);
+        case 0x1A:
+            WAIT_EVENT(0x974);
+        case 0x1B:
+            WAIT_EVENT(0x976);
+        case 0x22:
+            WAIT_EVENT(0x97C);
+        case 0x3C:
+            WAIT_EVENT(0x984);
+        case 0x16:
+            fn_3_100038();
+            p = SCR;
+            if (FRAME == lbl_3_common_bss_DE94[0x99B + p[1]] + p[2]) {
+                SCR = p + 3;
+                continue;
+            }
+            return 0;
+        case 0x17:
+            fn_3_100038();
+            *(s32*)(d + 0x14) = SCR[1];
+            SCR += 2;
+            return 0;
+        case 0x19: {
+            u8 k;
+            fn_3_100038();
+            p = SCR;
+            k = lbl_3_common_bss_DE94[0x99F];
+            if (FRAME == ((s16*)(lbl_3_common_bss_DE94 + 0x96C))[k] + p[1]) {
+                SCR = p + 2;
+                continue;
+            }
+            if (k == 3) {
+                SCR = p + 2;
+                continue;
+            }
+            return 0;
+        }
+        case 0x4C:
+            lbl_3_common_bss_DE94[0x9AA] = 0;
+            lbl_3_common_bss_DE94[0x9B5] = 0;
+            if (lbl_3_common_bss_DE94[0x99F] == 1) {
+                *(s16*)(lbl_3_common_bss_DE94 + 0x946) = 10;
+            } else {
+                *(s16*)(lbl_3_common_bss_DE94 + 0x946) = 11;
+            }
+            SCR += 1;
+            continue;
+        case 0x1C:
+            SCR = p + 4;
+            return 0;
+        case 0x1D:
+            if (lbl_3_common_bss_DE94[0x99F] == 3) {
+                SCR = lbl_3_data_20E0C[p[1]];
+            } else {
+                SCR = p + 2;
+            }
+            continue;
+        case 0x20:
+            if (*(s16*)(lbl_3_common_bss_DE94 + 0x962) != 0) {
+                SCR = lbl_3_data_20E0C[p[1]];
+            } else {
+                SCR = p + 2;
+            }
+            continue;
+        case 0x27:
+            *(s16*)(g_pCamera + 0xA72) = 0;
+            *(s16*)(SCENE + 0x23E) = SCR[1];
+            SCR += 2;
+            continue;
+        case 0x28:
+            fn_3_24ADC(p[1], 0);
+            SCR += 2;
+            continue;
+        case 0x64:
+            fn_3_24ADC(p[1], 1);
+            SCR += 2;
+            continue;
+        case 0x3E:
+            if (g_Batter[0x7B] == 1) {
+                fn_3_24ADC(p[1], 0);
+                SCR += 3;
+            } else {
+                fn_3_24ADC(p[2], 0);
+                SCR += 3;
+            }
+            continue;
+        case 0x29:
+            fn_3_100038();
+            if (*(s16*)(SCENE + 0x23E) - 1 == *(s16*)(SCENE + 0x23C)) {
+                if (*(u16*)(g_pCamera + 0xAAA) == 0) {
+                    *(u16*)(g_pCamera + 0xAAA) = 1;
+                    *(s16*)(g_pCamera + 0xAAE) = 2;
+                    fn_800B0A5C_insertQueue((void*)fn_3_21DE4, 6);
+                }
+                SCR += 1;
+                continue;
+            }
+            return 0;
+        case 0x2A:
+            fn_3_7BC0C();
+            SCR += 1;
+            continue;
+        case 0x2B:
+            fn_3_7BBF8();
+            SCR += 1;
+            continue;
+        case 0x2C:
+            SCR = p + 2;
+            continue;
+        case 0x46: {
+            u8* rec = lbl_3_data_1F18C + SCR[1] * 0x14;
+            u8* st;
+            SCENE[0x27F] = 1;
+            st = SCENE + rec[0x10] * 0x2C;
+            st[0x28] = 0;
+            st[0x29] = 1;
+            *(f32*)(st + 0x14) = *(f32*)(rec + 0xC);
+            memcpy(st, rec, 12);
+            SCR += 2;
+            continue;
+        }
+        case 0x63: {
+            u8* rec;
+            u8* st;
+            u8* actor;
+            SCENE[0x27F] = 2;
+            rec = lbl_3_data_1F18C + SCR[1] * 0x14;
+            actor = ACTOR(rec[0x10]);
+            st = SCENE + rec[0x10] * 0x2C;
+            st[0x28] = 0;
+            st[0x29] = 1;
+            *(f32*)(st + 0x14) = lbl_3_data_1F1F0[(s8)actor[0x252]];
+            memcpy(st, rec, 12);
+            SCR += 2;
+            continue;
+        }
+        case 0x66: {
+            u8* rec;
+            u8* actor;
+            SCENE[0x27F] = 3;
+            rec = lbl_3_data_1F18C + SCR[1] * 0x14;
+            actor = ACTOR(rec[0x10]);
+            if (actor != NULL) {
+                s32 off = rec[0x10] * 0x2C;
+                f32 n;
+                SCENE[off + 0x28] = 0;
+                SCENE[off + 0x29] = 1;
+                memcpy(SCENE + off, rec, 12);
+                *(f32*)(SCENE + off + 0x18) = 0.3f + FABSF(PSVECDistance((Vec*)(SCENE + off), (Vec*)(actor + 0x34)));
+                n = *(s16*)(actor + 0x68) / 2;
+                if (0.0f == n) {
+                    n = 1.0f;
+                }
+                *(f32*)(SCENE + off + 0x14) = *(f32*)(SCENE + off + 0x18) / n;
+                *(f32*)(SCENE + off + 0x20) = n;
+                *(f32*)(SCENE + off + 0x1C) = lbl_3_data_1F2C8[(s8)actor[0x252]];
+            }
+            SCR += 2;
+            continue;
+        }
+        case 0x2D:
+            SCR = lbl_3_data_20E0C[p[1]];
+            continue;
+        case 0x2E:
+            *(s32*)(lbl_3_common_bss_DE94 + 0x934) = random_fn_3_9EE24(0x10000);
+            SCR += 1;
+            continue;
+        case 0x2F:
+            SetCamAnim(lbl_3_data_1D980[p[1] + *(s32*)(lbl_3_common_bss_DE94 + 0x934) % p[2]][p[3]]);
+            SCR += 4;
+            continue;
+        case 0x30:
+            if (*(u16*)(g_pCamera + 0xAA8) == 0) {
+                *(u16*)(g_pCamera + 0xAA8) = 1;
+                *(s16*)(g_pCamera + 0xAAC) = SCR[1];
+                fn_800B0A5C_insertQueue((void*)fn_3_21C90, 6);
+            }
+            SCR += 2;
+            continue;
+        case 0x68:
+            if (*(u16*)(g_pCamera + 0xAAA) == 0) {
+                *(u16*)(g_pCamera + 0xAAA) = 1;
+                *(s16*)(g_pCamera + 0xAAE) = SCR[1];
+                fn_800B0A5C_insertQueue((void*)fn_3_21DE4, 6);
+            }
+            SCR += 2;
+            continue;
+        case 0x31: {
+            s32 base = g_Batter[0x7B] == 1 ? p[1] : p[2];
+            SetCamAnim(lbl_3_data_1D980[base + *(s32*)(lbl_3_common_bss_DE94 + 0x934) % p[3]][p[4]]);
+            SCR += 5;
+            continue;
+        }
+        case 0x32:
+            fn_3_100038();
+            if (*(u32*)(lbl_3_common_bss_DE94 + 0x118) > 0x30000 && fn_3_2281C(SCR[1]) != 0) {
+                SCR += 2;
+                continue;
+            }
+            return 0;
+        case 0x4D:
+            fn_3_100038();
+            if (*(u32*)(lbl_3_common_bss_DE94 + 0x118) > 0x30000 && fn_3_2273C() != 0) { /* the original passes SCR[1] (unused) */
+                SCR += 2;
+                continue;
+            }
+            return 0;
+        case 0x33:
+            fn_3_21C7C(p[1], p[2]);
+            SCR += 3;
+            continue;
+        case 0x34:
+        case 0x35:
+        case 0x36:
+        case 0x37:
+            lbl_3_common_bss_DE94[0x9A8] = p[1];
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = 13;
+            lbl_3_common_bss_DE94[0x9B4] = 0;
+            switch (SCR[0]) {
+            case 0x34: lbl_3_common_bss_DE94[0x9A9] = 0; break;
+            case 0x35: lbl_3_common_bss_DE94[0x9A9] = 1; break;
+            case 0x36: lbl_3_common_bss_DE94[0x9A9] = 2; break;
+            case 0x37: lbl_3_common_bss_DE94[0x9A9] = 3; break;
+            }
+            SCR += 2;
+            continue;
+        case 0x38:
+        case 0x39:
+        case 0x3A:
+        case 0x3B:
+        case 0x3D:
+            lbl_3_common_bss_DE94[0x9AA] = 0;
+            lbl_3_common_bss_DE94[0x9B5] = 1;
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = 13;
+            lbl_3_common_bss_DE94[0x9A8] = SCR[1];
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = 13;
+            switch (SCR[0]) {
+            case 0x38: lbl_3_common_bss_DE94[0x9A9] = 4; break;
+            case 0x39: lbl_3_common_bss_DE94[0x9A9] = 5; break;
+            case 0x3A: lbl_3_common_bss_DE94[0x9A9] = 6; break;
+            case 0x3B: lbl_3_common_bss_DE94[0x9A9] = 7; break;
+            case 0x3D: lbl_3_common_bss_DE94[0x9A9] = 8; break;
+            }
+            SCR += 2;
+            continue;
+        case 0x3F: {
+            s16 idx = *(s16*)(lbl_3_common_bss_DE94 + 0x946);
+            if (idx < 9 && idx >= 0) {
+                *(s32*)(lbl_3_common_bss_DE94 + 0x938) = lbl_3_data_3B4C[*(s16*)(g_Fielders + idx * 0x268 + 0x17A)];
+            } else if (idx < 13 && idx >= 0) {
+                *(s32*)(lbl_3_common_bss_DE94 + 0x938) = lbl_3_data_3B4C[*(s16*)(g_Runners + (idx - 9) * 0x154 + 0xE2)];
+            }
+            SCR += 2;
+            continue;
+        }
+        case 0x57:
+            *(s32*)(lbl_3_common_bss_DE94 + 0x938) = lbl_3_data_3B4C[*(s16*)(g_Fielders + p[1] * 0x268 + 0x17A)];
+            SCR += 2;
+            continue;
+        case 0x40:
+            lbl_3_common_bss_DE94[0x9B9] = p[1];
+            if (lbl_3_common_bss_DE94[0x9B9] == 1) {
+                fn_80052798(2);
+                lbl_3_common_bss_32724[0xAD] = 1;
+            } else {
+                fn_80052798(1);
+                lbl_3_common_bss_32724[0xAD] = 0;
+            }
+            SCR += 2;
+            continue;
+        case 0x41:
+        case 0x42: {
+            s32 a;
+            s32 b;
+            lbl_3_common_bss_DE94[0x9B9] = 1;
+            if (SCR[2] >= 0) {
+                fn_80052798(2);
+                lbl_3_common_bss_32724[0xAD] = 1;
+            } else {
+                fn_80052798(1);
+                lbl_3_common_bss_32724[0xAD] = 0;
+            }
+            p = SCR;
+            if (p[0] == 0x41) {
+                a = p[1];
+                b = p[2];
+            } else if (g_Batter[0x7B] == 1) {
+                a = p[1];
+                b = p[2];
+            } else {
+                a = p[3];
+                b = p[4];
+            }
+            /* Start the two-camera script pair: camera 1 (g_Camera[1] script state at +0xADC) runs script b,
+               camera 0 (+0x120) runs script a. */
+            g_pCamera[0x1487] = 1;
+            g_pCamera[0x1488] = 1;
+            g_pCamera[0x148B] = 1;
+            g_pCamera[0x148C] = 1;
+            *(s32*)(g_pCamera + 0xAF4) = 0;
+            *(s32*)(g_pCamera + 0xAE4) = 0;
+            *(s32*)(g_pCamera + 0xAF0) = 0;
+            *(s32*)(g_pCamera + 0x1408) = b;
+            g_pCamera[0x148A] = 1;
+            *(s32*)(g_pCamera + 0xBF4) = 0;
+            *(s16*)(g_pCamera + 0x1420) = 0;
+            *(s32**)(g_pCamera + 0xADC) = lbl_3_data_20E0C[b];
+            *(s32**)(g_pCamera + 0x120) = lbl_3_data_20E0C[a];
+            g_pCamera[0x28A9] = 1;
+            return 0;
+        }
+        case 0x43:
+            *(s32*)(d + 0xC) = p[1];
+            *(s32*)(d + 0x10) = 0;
+            *(s32**)(d + 0x4) = SCR + 2;
+            SCR += 2;
+            continue;
+        case 0x44:
+            if (*(s32*)(d + 0xC) == -1) {
+                SCR = *(s32**)(d + 0x4);
+            } else if (*(s32*)(d + 0x10) == *(s32*)(d + 0xC)) {
+                SCR = p + 1;
+            } else {
+                *(s32*)(d + 0x10) += 1;
+                SCR = *(s32**)(d + 0x4);
+            }
+            continue;
+        case 0x45: {
+            s32 n;
+            fn_3_100038();
+            p = SCR;
+            n = p[1];
+            if (ACTOR(n) == NULL) {
+                SCR = p + 2;
+                continue;
+            }
+            if (SCENE[n * 0x2C + 0x28] == 1) {
+                SCENE[0x27F] = 0;
+                SCR += 2;
+                continue;
+            }
+            return 0;
+        }
+        case 0x47:
+            if (g_Ball[0x1BBF] <= 1) {
+                SCR = lbl_3_data_20E0C[p[1]];
+            } else {
+                SCR = p + 2;
+            }
+            continue;
+        case 0x48:
+            if (*(s32*)(g_GameLogic + 0xF4 + g_d_GameSettings[0x34] * 4) == (s8)ACTOR(lbl_3_data_1E434[p[1] * 0x1C + 0x14])[0x257]) {
+                fn_3_24ADC(p[1], 0);
+                SCR += 3;
+            } else {
+                fn_3_24ADC(p[2], 0);
+                SCR += 3;
+            }
+            continue;
+        case 0x49:
+            lbl_3_common_bss_DE94[0x9AA] = 0;
+            lbl_3_common_bss_DE94[0x9B5] = 0;
+            *(s16*)(lbl_3_common_bss_DE94 + 0x946) = FindTeamActor();
+            SCR += 1;
+            continue;
+        case 0x4A:
+            SCR = p + 1;
+            continue;
+        case 0x4B:
+            fn_3_249E8(p[1]);
+            SCR += 2;
+            continue;
+        case 0x4E:
+            lbl_3_common_bss_DE94[0x9B7] = p[1];
+            SCR += 2;
+            continue;
+        case 0x4F:
+            fn_3_BBBC4();
+            SCR += 1;
+            continue;
+        case 0x50:
+            fn_3_BA150();
+            SCR += 1;
+            continue;
+        case 0x51:
+        case 0x52:
+        case 0x53:
+        case 0x54: {
+            s16 charId = *(s16*)(g_Runners + 0xE2); /* batter-runner (g_Runners[0].charID) */
+            s16 anim;
+            switch (p[0]) {
+            case 0x51: anim = lbl_3_data_37AC[charId]; break;
+            case 0x52: anim = lbl_3_data_3888[charId]; break;
+            case 0x53: anim = lbl_3_data_3964[charId]; break;
+            case 0x54: anim = lbl_3_data_3A40[charId]; break;
+            default: anim = 0; break;
+            }
+            SetCamAnim(anim);
+            SCR += 1;
+            continue;
+        }
+        case 0x55:
+        case 0x56: {
+            s8 kind = 0;
+            s32 i;
+            s32 sel;
+            for (i = 0; i < 9; i++) {
+                u8* a = ACTOR(i);
+                if (*(s32*)(g_GameLogic + 0xF4 + g_d_GameSettings[0x34] * 4) == (s8)a[0x257]) {
+                    kind = a[0x252];
+                }
+            }
+            switch (kind) {
+            case 0: sel = 0; break;
+            case 4: sel = 1; break;
+            case 10: sel = 2; break;
+            case 2: sel = 3; break;
+            case 6: sel = 4; break;
+            case 9: sel = 5; break;
+            default: sel = 0; break;
+            }
+            SetCamAnim(p[0] == 0x55 ? lbl_3_data_3B1C[sel] : lbl_3_data_3B34[sel]);
+            SCR += 1;
+            continue;
+        }
+        case 0x58:
+            fn_80011358(FindTeamActor(), starKind);
+            SCR += 1;
+            continue;
+        case 0x59:
+            fn_80011358(FindTeamActor(), 4);
+            SCR += 1;
+            continue;
+        case 0x5A:
+            fn_3_219CC();
+            SCR += 1;
+            continue;
+        case 0x5B: {
+            u8* t = fn_800B0A5C_insertQueue((void*)fn_3_FDA1C, 4);
+            *(s16*)(task + 0x10) = 0;
+            *(s16*)(t + 0x22) = 0;
+            *(s16*)(t + 0x1E) = 0;
+            SCR += 1;
+            continue;
+        }
+        case 0x5C:
+            if (*(s16*)(task + 0x10) == 1) {
+                SCR = p + 1;
+            }
+            return 0;
+        case 0x5D:
+            changeScene(1, 6);
+            SCR += 1;
+            continue;
+        case 0x5E:
+            SCR = p + 1;
+            continue;
+        case 0x5F:
+            fn_3_100038();
+            changeScene(3, 6);
+            SCR += 1;
+            continue;
+        case 0x60:
+            if (lbl_8037169C[0x13] != 0) {
+                SCR = p + 1;
+            }
+            return 0;
+        case 0x61: {
+            s32 i;
+            for (i = 0; i < 9; i++) {
+                fn_3_21C7C(i, SCR[1]);
+            }
+            SCR += 2;
+            return 0;
+        }
+        case 0x65:
+            fn_3_100038();
+            p = SCR;
+            if (p[1] <= *(s16*)(g_pCamera + 0xA72)) {
+                SCR = p + 2;
+                continue;
+            }
+            return 0;
+        case 0x67:
+            fn_3_100038();
+            *(s16*)(SCENE + 0x25A) += 1;
+            if ((f32)*(s16*)(SCENE + 0x25A) >= 2.0f * lbl_3_data_1F3A0[starIdx]) {
+                SCR += 1;
+                continue;
+            }
+            return 0;
+        case 0x69:
+            SCENE[0x280] = p[1];
+            SCR += 2;
+            continue;
+        case 0x6A:
+            fn_8001CA40(p[1]);
+            SCR += 2;
+            continue;
+        default:
+            return 0;
+        }
+    }
+}
+#undef WAIT_EVENT
+#undef SCR
+#undef SCENE
+#undef ACTOR
+#undef FRAME
+#undef CAM_SEL
+#endif
 
 // .text:0x00100018 size:0x20 mapped:0x8073F0AC
 
