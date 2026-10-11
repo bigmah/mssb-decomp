@@ -453,8 +453,31 @@ Emitter* fn_800339F0(Emitter* after, u8 type) {
 }
 
 // .text:0x80033A24 size:0x134
-void fn_80033A24(void) {
-    return;
+Emitter* fn_80033A24(EmitterUpdateFn update, u8 priority, s32 unk14, s32 n, s32 strict, u8 type) {
+    Emitter* e = fn_800337CC(lbl_803CBC80, n, strict);
+    Emitter* at;
+    if (e == NULL) {
+        return NULL;
+    }
+    lbl_803CBC80 = lbl_803CBC80->next;
+    e->update = update;
+    e->priority = priority;
+    e->type = type;
+    e->active = 1;
+    e->unk14 = unk14;
+    e->next = NULL;
+    e->prev = NULL;
+    at = EMITTER_HEAD;
+    while (at->next != NULL && at->next->priority < e->priority) {
+        at = at->next;
+    }
+    e->next = at->next;
+    if (e->next != NULL) {
+        e->next->prev = e;
+    }
+    e->prev = at;
+    at->next = e;
+    return e;
 }
 
 // .text:0x80033B58 size:0x170
