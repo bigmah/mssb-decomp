@@ -256,8 +256,9 @@ void fn_80021758(void) {
 }
 
 // .text:0x80021954 size:0x2C
-void fn_80021954(void) {
-    return;
+void fn_80021954(SoundGroupData** slot) {
+    SoundGroupData* data = *slot;
+    fn_800ACF78(data, (u8*)data->samp - (u8*)data);
 }
 
 // .text:0x80021980 size:0x34

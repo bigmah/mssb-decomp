@@ -118,6 +118,7 @@ void fn_800215F8(SoundGroupRequest* req);
 void fn_80021650(DiskFileEntry* entry, void* dst, void* user);
 void fn_800216F8(u8 group, s32 (*callback)(u8* state));
 void fn_80021758(void);
+void fn_80021954(SoundGroupData** data);
 void fn_80021AC0(void);
 void fn_80021AC4(void);
 void fn_80021AC8(void);
