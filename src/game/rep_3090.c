@@ -43,14 +43,42 @@ extern void fn_800B0A14_removeQueue(void*);
 typedef struct { Vec pos; f32 u; f32 v; u8 pad[0x28]; f32 t; } PathPt; /* size 0x40 */
 #pragma dont_inline on
 
-// .text:0x000FC448 size:0x4F0 mapped:0x8073B4DC
-void fn_3_FC448(void) {
-    return;
-}
-
-// .text:0x000FC938 size:0x500 mapped:0x8073B9CC
 static inline void CamsResetUp(void);
 static inline void CamApplyScriptFrame(void);
+static inline void ZeroTbl(void);
+
+// .text:0x000FC448 size:0x4F0 mapped:0x8073B4DC
+// NONMATCHING 98%: fn_3_FC938's body run once per camera; saved-register numbering of `i` and the hoisted stack
+// addresses stay rotated (see docs/patterns/unsolved.md).
+#if NONMATCHING
+void fn_3_FC448(void) {
+    s32 i;
+    u32* l;
+    s32 n;
+    for (i = 0; i < 2; i++) {
+        lbl_3_common_bss_DE94 = g_Camera + i * 0x9BC + 0x120;
+        n = 0;
+        l = *(u32**)(g_pCamera + 0x1B4);
+        while (*l != 0) {
+            l++;
+            n++;
+        }
+        *(s32*)(lbl_3_common_bss_DE94 + 0x120) = n;
+        memcpy(*(void**)(lbl_3_common_bss_DE94 + 0x990), *(u8**)(g_pCamera + 0x1B4) + (*(u32**)(g_pCamera + 0x1B4))[*(s16*)(lbl_3_common_bss_DE94 + 0x940)], 0x8000);
+        *(u32*)(lbl_3_common_bss_DE94 + 0x124) = 1;
+        *(u32*)(lbl_3_common_bss_DE94 + 0x118) = 0;
+        *(u32*)(lbl_3_common_bss_DE94 + 0x11C) = 0;
+        *(u32*)(lbl_3_common_bss_DE94 + 0x928) = 0;
+        ZeroTbl();
+        CamsResetUp();
+        fn_3_105C84(*(u8**)(lbl_3_common_bss_DE94 + 0x990));
+        CamApplyScriptFrame();
+        fn_3_101CC4();
+    }
+}
+#endif
+
+// .text:0x000FC938 size:0x500 mapped:0x8073B9CC
 #pragma dont_inline off
 static inline void ZeroTbl(void) {
     s32 j;
