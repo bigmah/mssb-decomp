@@ -499,8 +499,10 @@ void fn_3_14975C(s8 a) {
 #endif
 #pragma dont_inline on
 
+// NONMATCHING 11%: the original inlines fn_3_14975C and through it fn_3_149340/148FD0; CW here won't inline that deep, so this calls it (nmverify call diff expected)
 // .text:0x00149BA8 size:0x4C8 mapped:0x80788C3C
 #pragma dont_inline off
+#if NONMATCHING
 void fn_3_149BA8(void) {
     u32 i;
     if (g_d_GameSettings.GameModeSelected != 7 && g_d_GameSettings.GameModeSelected != 6) {
@@ -514,6 +516,7 @@ void fn_3_149BA8(void) {
         }
     }
 }
+#endif
 #pragma dont_inline on
 
 // .text:0x0014A070 size:0xF4 mapped:0x80789104
