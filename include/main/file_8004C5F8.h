@@ -76,7 +76,9 @@ extern RosterSelect lbl_803C6028;
 typedef struct CharTableEntry {
     /*0x0*/ u8 _0;
     /*0x1*/ u8 id;
-    /*0x2*/ u8 _2[4];
+    /*0x2*/ u8 _2[2];
+    /*0x4*/ u8 _4; // selectable
+    /*0x5*/ u8 _5;
 } CharTableEntry; // size: 0x6
 
 // Character actor (only the fields used here).

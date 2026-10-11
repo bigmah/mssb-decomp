@@ -1194,8 +1194,121 @@ s32 fn_8004FDE8(s32 p, s32 q) {
 }
 
 // .text:0x80050138 size:0x5B0
-void fn_80050138(void) {
-    return;
+void fn_80050138(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3, s32 any) {
+    s32 entries[4];
+    s32 occ[0x24];
+    s32 p;
+    s32 entry;
+    s32 k;
+    s32 q;
+    s32 free;
+    s32 r;
+    entries[0] = entry0;
+    entries[1] = entry1;
+    entries[2] = entry2;
+    entries[3] = entry3;
+    for (p = 0; p < 4; p++) {
+        if (lbl_803C6028.cursor[p] >= 0) {
+            entry = entries[p];
+            if (entry >= 0) {
+                if (byId == 0) {
+                    lbl_803C6028.cursor[p] = entry;
+                } else {
+                    s32 id = lbl_800E8558[entry].id;
+                    u8* ids = lbl_800FDE84;
+                    s32 j;
+                    for (j = 0; j < 0x24; ids++, j++) {
+                        if (id == *ids) {
+                            lbl_803C6028.cursor[p] = j;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // -3: pick a random selectable character and lock the cursor
+    if (entry0 == -3 || entry1 == -3 || entry2 == -3 || entry3 == -3) {
+        for (k = 0, free = 0x24; k < 0x24; k++) {
+            occ[k] = 1;
+            if (lbl_803C6028.slotOwner[k] >= 0) {
+                free--;
+                occ[k] = 0;
+            } else if (lbl_800FDE84[k] == 0xFF) {
+                free--;
+                occ[k] = 0;
+            } else if (lbl_800E8558[lbl_800FDE84[k]]._4 == 0) {
+                free--;
+                occ[k] = 0;
+            } else {
+                for (q = 0; q < 4; q++) {
+                    if (lbl_803C6028.cursor[q] == k && (lbl_803C6028._78[q] != 0 || any != 0)) {
+                        free--;
+                        occ[k] = 0;
+                        break;
+                    }
+                }
+            }
+        }
+        for (p = 0; p < 4; p++) {
+            if (entries[p] == -3) {
+                r = rand() % free;
+                for (k = 0; k < 0x24; k++) {
+                    if (occ[k] != 0) {
+                        if (r == 0) {
+                            lbl_803C6028.cursor[p] = k;
+                            lbl_803C6028._78[p] = 3;
+                            free--;
+                            occ[k] = 0;
+                            break;
+                        }
+                        r--;
+                    }
+                }
+            }
+        }
+    }
+
+    // -2: move the cursor to a random free slot
+    if (entry0 <= -2 || entry1 <= -2 || entry2 <= -2 || entry3 <= -2) {
+        for (k = 0, free = 0x24; k < 0x24; k++) {
+            occ[k] = -1;
+            if (lbl_803C6028.slotLocked[k] != 0) {
+                free--;
+                occ[k] = 0;
+            } else if (lbl_803C6028.slotOwner[k] >= 0) {
+                free--;
+                occ[k] = 0;
+            } else if (lbl_800FDE84[k] == 0xFF) {
+                free--;
+                occ[k] = 5;
+            } else {
+                for (q = 0; q < 4; q++) {
+                    if (lbl_803C6028.cursor[q] == k && lbl_803C6028._78[q] != 0) {
+                        free--;
+                        occ[k] = q + 1;
+                        break;
+                    }
+                }
+            }
+        }
+        for (p = 0; p < 4; p++) {
+            if (entries[p] == -2) {
+                r = rand() % free;
+                for (k = 0; k < 0x24; k++) {
+                    if (occ[k] < 0) {
+                        if (r == 0) {
+                            lbl_803C6028.cursor[p] = k;
+                            free--;
+                            break;
+                        }
+                        r--;
+                    }
+                }
+            }
+        }
+    }
 }
 
 // .text:0x800506E8 size:0x78
