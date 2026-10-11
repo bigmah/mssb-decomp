@@ -104,8 +104,8 @@ extern u8 lbl_3_data_1BA5C[];
 extern void fn_800B0A14_removeQueue();
 extern void fn_800A7D4C();
 typedef struct { f32 a, b, c; } V3w;
-extern u32 lbl_3_bss_B154[];
-extern void fn_3_B97DC(void*, u32);
+extern void* lbl_3_bss_B154[]; /* actor anim banks */
+extern void fn_3_B97DC(void* obj, void* animBank);
 extern const f32 lbl_3_rodata_2E14;
 extern f64 pow(f64, f64);
 extern f64 sqrt(f64);
@@ -144,14 +144,32 @@ struct SortEnt {
 /* Common header of a 0xE8-byte stadium object (lbl_3_common_bss_350E4 objs). */
 typedef struct StadObjHdr {
     Control c;                 /* 0x00 */
-    u8 pad3C[0x78 - 0x3C];
-    void* shadow;              /* 0x78 */
-    u8 pad7C[0x90 - 0x7C];
+    u8 pad3C[0x74 - 0x3C];
+    ActorObject* actorObj;     /* 0x74 */
+    void* shadow;              /* 0x78: passed to fn_3_B8464 */
+    void (*update)(void* p);   /* 0x7C */
+    void (*onHit)(s32 idx);    /* 0x80 */
+    void (*preDraw)(void* p);  /* 0x84 */
+    void* f88;                 /* 0x88 */
+    void* drawArg;             /* 0x8C */
     u8 visible : 1;            /* 0x90 */
     u8 hasShadow : 1;
     u8 depthSort : 1;
-    u8 bits90 : 5;
-    u8 pad91[0x9D - 0x91];
+    u8 customZ : 1;
+    u8 zCompare : 1;
+    u8 zAlways : 1;
+    u8 zUpdate : 1;
+    u8 flag01 : 1;
+    u8 pad91;
+    u8 alpha;                  /* 0x92 */
+    u8 pad93;
+    s16 attached;              /* 0x94 */
+    s16 attachJoint;           /* 0x96 */
+    u8 layer;                  /* 0x98 */
+    u8 f99;                    /* 0x99 */
+    u8 castShadow;             /* 0x9A */
+    u8 pad9B;
+    u8 idx;                    /* 0x9C */
     u8 kind;                   /* 0x9D */
     u8 pad9E[2];
     struct StadObjHdr* link;   /* 0xA0: paired object (kind-specific) */
@@ -533,6 +551,7 @@ void fn_3_EEB94(void) {
     }
 }
 
+#pragma dont_inline off
 // 97%: only the GXSetIndTexMtx matrix stores differ (orig: first store via r30+0x23c, rest via pointer r4+4..0x14)
 // .text:0x000EECF4 size:0x148 mapped:0x8072DD88
 void fn_3_EECF4(void) {
@@ -561,6 +580,7 @@ void fn_3_EECF4(void) {
     memset(s->a38, 1, 0x200);
 }
 
+#pragma dont_inline on
 // .text:0x000EEE3C size:0xE8 mapped:0x8072DED0
 void fn_3_EEE3C(void) {
     u8* b = *(u8**)lbl_3_bss_B55C;
@@ -1280,7 +1300,6 @@ void fn_3_F1448(u8* p) {
 
 #pragma dont_inline off
 // .text:0x000F1518 size:0x15C mapped:0x807305AC
-extern u32 lbl_3_bss_B154[];
 void fn_3_F1518(StadCtlA* p) {
     p->fc5 = ((u8*)&lbl_3_data_1B9A4[0].f)[p->idx * 0x18];
     p->fc6 = 1;
@@ -1877,6 +1896,7 @@ u32 fn_3_F37BC(u32 n, u32 k) {
     return r;
 }
 
+#pragma dont_inline off
 // .text:0x000F38D4 size:0x130 mapped:0x80732968
 void fn_3_F38D4(void) {
     u32 i;
@@ -1885,7 +1905,6 @@ void fn_3_F38D4(void) {
     }
 }
 
-#pragma dont_inline off
 // .text:0x000F3A04 size:0x58 mapped:0x80732A98
 void fn_3_F3A04(u8* p) {
     u32 i;
@@ -2775,9 +2794,346 @@ void fn_3_F6FCC(void) {
 }
 
 // .text:0x000F6FDC size:0x1468 mapped:0x80736070
-void fn_3_F6FDC(void) {
-    return;
+/* Placement tables (lbl_3_data_1B884 / lbl_3_data_1B9A4); type 6 ends a list. */
+typedef struct StaPlace14 {
+    Vec pos;
+    f32 rotY;
+    u8 type;
+    u8 pad11[3];
+} StaPlace14;
+typedef struct StaPlace18 {
+    Vec pos;
+    f32 rotY;
+    u8 type;
+    u8 pad11;
+    u8 f12;
+    u8 pad13;
+    u8 box;
+    u8 pad15[3];
+} StaPlace18;
+#define STA_ACTORS (*(ActorObjectTable**)(lbl_8036E548 + 0x6C)) // TODO type: lbl_8036E548
+extern void fn_3_B939C(void);
+extern void fn_3_B9D68(u8* ids, s32 n, void** files, s32* out);
+extern void fn_3_B97C8(void* fn);
+extern void fn_3_B98E8(void* p);
+extern void fn_800B4AFC(GameActor* actor, u8 loop);
+extern void fn_800BD548(ActorObject* obj, u8 numLights, ...);
+extern void fn_80025C58(void* shape, void* model);
+extern void fn_80025DDC(void* shape);
+extern void fn_80025FFC(void* model, void* player);
+extern void fn_80025EEC(void* player, s32 table, s32 entry);
+extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority); // TODO type: u16 priority in main/file_800B0724.h
+extern const f32 lbl_3_rodata_2F58;
+extern const f32 lbl_3_rodata_2F5C;
+extern const f32 lbl_3_rodata_2F60;
+extern const f32 lbl_3_rodata_2F64;
+// Stadium setup: loads the actors/animations from `files`, lays out the object
+// slots (group A, B and C from the placement tables, then 3 fixed ones) and
+// starts the stadium tasks.
+// NONMATCHING 81%: inlines fn_3_F3BB0, fn_3_F38D4, fn_3_F5C30, fn_3_F1518 and fn_3_EECF4; the original reaches the placement tables, lbl_3_bss_B154/B219/B244 via the lbl_3_data_1B820 / lbl_3_bss_AEE0 pooled bases (nmverify flag expected); regalloc and scheduling differ
+#if NONMATCHING
+void fn_3_F6FDC(void** files) {
+    StadiumObjList* list = (StadiumObjList*)lbl_3_common_bss_350E4;
+    StaC5Data* d = (StaC5Data*)lbl_3_data_1B820;
+    u8* w = lbl_3_bss_AEE0;
+    StaPlace14* pa = (StaPlace14*)(lbl_3_data_1B820 + 0x64);
+    StaPlace14* pc = (StaPlace14*)(lbl_3_data_1B820 + 0xDC);
+    StaPlace18* pb = (StaPlace18*)(lbl_3_data_1B820 + 0x184);
+    StadObjHdr* o;
+    s32* idx;
+    s32 nA;
+    s32 nB;
+    u8 nActors;
+    s32 i;
+    s32 j;
+    s32 k;
+    u8 kA;   /* first group-A actor after the per-group ones */
+    u8 kBall;
+    u8 kB;
+    u8 kEnd;
+    u8 stop;
+    u8 n;
+    list->draw = fn_3_B939C;
+    list->update = fn_3_EDFAC;
+    n = 0;
+    stop = 0;
+    w[0x27C] = 1;
+    if (g_d_GameSettings[7] != 7) {
+        fn_3_B97C8(fn_3_F6FCC);
+    }
+    w[8] = 0;
+    idx = _OSAllocFromHeap(4, 0x48);
+    list->fileIdx = (u32*)idx;
+    fn_3_B9D68(lbl_3_data_1B820 + 0x214, 0x12, files, idx);
+    *(void**)(w + 0x680) = files[0];
+
+    for (nA = 0; nA < 5; nA++) {
+        if (pc[nA].type == 6) {
+            break;
+        }
+    }
+    for (nB = 0; nB < 5; nB++) {
+        if (pb[nB].type == 6) {
+            break;
+        }
+    }
+    nActors = (u8)(nA + 2 + nB) + 4;
+    STA_ACTORS = ActorObjectInitTable(nActors);
+    list->numActorObjs = nActors;
+    w[0x339] = 0;
+    k = 0;
+    for (i = 0; i < (u8)nA; i++, k++) {
+        fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[1]], NULL, NULL);
+        fn_3_B97DC(&STA_ACTORS->objects[(u8)k], files[idx[1] + 2]);
+    }
+    w[0x338] = k;
+    kA = k;
+    fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[2]], NULL, NULL);
+    fn_3_B97DC(&STA_ACTORS->objects[(u8)k], files[idx[2] + 2]);
+    STA_ACTORS->objects[(u8)k].visFlags = 2;
+    fn_800B4AFC(STA_ACTORS->objects[(u8)k].actor, STA_ACTORS->objects[(u8)k].visFlags & 1);
+    kBall = k + 1;
+    fn_800BDC88(STA_ACTORS, kBall, kBall, files[idx[3]], NULL, NULL);
+    k += 2;
+    kB = k;
+    for (i = 0; i < (u8)nB; i++, k++) {
+        fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[4]], NULL, files[idx[4] + 2]);
+        fn_3_B98E8(&STA_ACTORS->objects[(u8)k]);
+    }
+    kEnd = k;
+    fn_800BDC88(STA_ACTORS, kEnd, kEnd, files[idx[5]], NULL, NULL);
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 1), (u8)(kEnd + 1), files[idx[6]], NULL, NULL);
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 2), (u8)(kEnd + 2), files[idx[7]], NULL, NULL);
+    *(ActorObject**)(w + 0x67C) = &STA_ACTORS->objects[(u8)(kEnd + 2)];
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 3), (u8)(kEnd + 3), files[idx[8]], NULL, NULL);
+    lbl_3_bss_B154[0] = files[idx[0x10]];
+    lbl_3_bss_B154[1] = files[idx[0x11]];
+    for (i = 0; i < nActors; i++) {
+        fn_800BD548(&STA_ACTORS->objects[i], 4, list->lights[0], list->lights[1], list->lights[2], list->lights[3]);
+    }
+    fn_80025DDC(files[idx[14]]);
+    fn_80025C58(files[idx[14]], &STA_ACTORS->objects[(u8)(kEnd + 1)]);
+    *(void**)(w + 0x2DC) = files[idx[15]];
+    fn_80025FFC(files[idx[14]], w + 0x2DC);
+    fn_80025EEC(w + 0x2DC, 0, 0);
+    *(f32*)(w + 0x2EC) = lbl_3_rodata_2F58;
+    fn_80025DDC(files[idx[12]]);
+    fn_80025C58(files[idx[12]], &STA_ACTORS->objects[kEnd]);
+    *(void**)(w + 0x280) = files[idx[13]];
+    fn_80025FFC(files[idx[12]], w + 0x280);
+    fn_80025EEC(w + 0x280, 0, 0);
+
+    list->count = 0x19;
+    list->objs = _OSAllocFromHeap(0x20, 0x16A8);
+    memset(list->objs, 0, 0x16A8);
+    list->objsBackup = _OSAllocFromHeap(0x20, 0x16A8);
+    memset(list->objsBackup, 0, 0x16A8);
+    o = (StadObjHdr*)list->objs;
+
+    /* group A: StadCtlA objects waiting at their spot */
+    if (g_d_GameSettings[7] != 7) {
+        w[0x33D] = 0;
+        for (j = 0; j < 5; j++) {
+            StadCtlA* p = (StadCtlA*)o;
+            if (pa[j].type == 6 || pc[j].type != 0) {
+                break;
+            }
+            o->kind = 0;
+            o->actorObj = &STA_ACTORS->objects[j];
+            p->fc2 = j;
+            p->fc3 = kA;
+            o->shadow = files[idx[9]];
+            o->update = NULL;
+            o->onHit = (void (*)(s32))fn_3_F1674;
+            o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
+            p->idx = j;
+            p->fc5 = n;
+            fn_3_F3BB0((u8*)p);
+            n++;
+            o->depthSort = 1;
+            o->alpha = 0xFF;
+            o->drawArg = NULL;
+            o->preDraw = NULL;
+            o->attached = 0;
+            o->attachJoint = -1;
+            o->layer = 1;
+            o->castShadow = 1;
+            o++;
+            w[0x33E]++;
+        }
+        fn_3_F38D4();
+    }
+
+    /* group B: StadObjB objects, each carrying the matching group-A object */
+    w[0x33F] = n;
+    for (j = 0; j < 5; j++) {
+        StadObjB* b = (StadObjB*)o;
+        if (pa[j].type == 6) {
+            stop = 1;
+        }
+        if (stop) {
+            for (; j < 5; j++) {
+                pa[j].type = 6;
+            }
+            break;
+        }
+        o->kind = 1;
+        b->idx = j;
+        o->id = n;
+        if (g_d_GameSettings[7] == 7) {
+            b->link = NULL;
+        } else {
+            b->link = (StadCtlA*)((StadObjHdr*)list->objs + (w[0x33D] + j));
+            b->link->yawSrc = &b->yaw;
+        }
+        b->state = 0;
+        o->actorObj = &STA_ACTORS->objects[kBall];
+        o->shadow = files[idx[10]];
+        o->update = (void (*)(void*))fn_3_F56CC;
+        o->onHit = (void (*)(s32))fn_3_F466C;
+        o->visible = 1;
+        o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
+        fn_3_F5C30((u8*)b);
+        n++;
+        o->depthSort = 1;
+        o->alpha = 0xFF;
+        o->drawArg = NULL;
+        o->preDraw = (void (*)(void*))fn_3_F469C;
+        o->attached = 0;
+        o->attachJoint = -1;
+        o->layer = 1;
+        o++;
+        w[0x340]++;
+    }
+
+    /* group C: StadCtlA objects roaming their box */
+    stop = 0;
+    if (g_d_GameSettings[7] != 7) {
+        w[0x33B] = n;
+        for (j = 0; j < 5; j++) {
+            StadCtlA* p = (StadCtlA*)o;
+            if (pb[j].type == 6) {
+                stop = 1;
+            }
+            if (stop) {
+                for (; j < 6; j++) {
+                    pb[j].type = 6;
+                    pb[j].f12 = 0xFF;
+                }
+                break;
+            }
+            o->kind = 2;
+            o->actorObj = &STA_ACTORS->objects[kB + j];
+            o->shadow = files[idx[11]];
+            o->update = (void (*)(void*))fn_3_F0FA4;
+            o->onHit = fn_3_EEFD4;
+            o->visible = 1;
+            o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
+            p->idx = j;
+            fn_3_F1518(p);
+            n++;
+            o->depthSort = 1;
+            o->alpha = 0xFF;
+            o->drawArg = NULL;
+            o->preDraw = NULL;
+            o->attached = 0;
+            o->attachJoint = -1;
+            o->layer = 1;
+            o++;
+            w[0x33C]++;
+        }
+        fn_800B0A5C_insertQueue(fn_3_F0184, 0x6001);
+    }
+
+    /* fixed objects */
+    o[0].kind = 3;
+    o[0].actorObj = &STA_ACTORS->objects[kEnd];
+    o[0].shadow = NULL;
+    o[0].update = NULL;
+    o[0].onHit = NULL;
+    o[0].visible = 1;
+    o[0].hasShadow = (o[0].visible && o[0].shadow != NULL) ? 1 : 0;
+    o[0].c.type = 0;
+    CTRLSetTranslation(&o[0].c, lbl_3_rodata_2D5C, lbl_3_rodata_2F5C, lbl_3_rodata_2D5C);
+    CTRLSetRotation(&o[0].c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+    o[0].depthSort = 1;
+    o[0].alpha = 0xFF;
+    o[0].drawArg = w + 0x280;
+    o[0].preDraw = NULL;
+    o[0].attached = 0;
+    o[0].attachJoint = -1;
+    o[0].layer = 1;
+    w[0x33A] = n + 1;
+
+    o[1].kind = 4;
+    o[1].actorObj = &STA_ACTORS->objects[(u8)(kEnd + 1)];
+    o[1].shadow = NULL;
+    o[1].update = NULL;
+    o[1].onHit = NULL;
+    o[1].visible = 1;
+    o[1].hasShadow = (o[1].visible && o[1].shadow != NULL) ? 1 : 0;
+    o[1].c.type = 0;
+    CTRLSetTranslation(&o[1].c, lbl_3_rodata_2D5C, lbl_3_rodata_2F60, lbl_3_rodata_2D5C);
+    CTRLSetRotation(&o[1].c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+    o[1].depthSort = 1;
+    o[1].alpha = 0xFF;
+    o[1].drawArg = w + 0x2DC;
+    o[1].preDraw = (void (*)(void*))fn_3_EEFA4;
+    o[1].f88 = NULL;
+    o[1].attached = 0;
+    o[1].attachJoint = -1;
+    o[1].layer = 1;
+    fn_800B0A5C_insertQueue(fn_3_EEF24, 5);
+
+    o[2].kind = 5;
+    o[2].actorObj = &STA_ACTORS->objects[(u8)(kEnd + 3)];
+    o[2].shadow = NULL;
+    o[2].update = NULL;
+    o[2].onHit = NULL;
+    o[2].visible = 1;
+    o[2].hasShadow = (o[2].visible && o[2].shadow != NULL) ? 1 : 0;
+    o[2].c.type = 0;
+    CTRLSetTranslation(&o[2].c, lbl_3_rodata_2D5C, lbl_3_rodata_2F64, lbl_3_rodata_2D5C);
+    CTRLSetRotation(&o[2].c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+    o[2].depthSort = 1;
+    o[2].alpha = 0xFF;
+    o[2].drawArg = NULL;
+    o[2].preDraw = NULL;
+    o[2].attached = 0;
+    o[2].attachJoint = -1;
+    o[2].layer = 1;
+    o[2].customZ = 1;
+    o[2].zCompare = 1;
+    o[2].zAlways = 0;
+    o[2].zUpdate = 0;
+
+    /* unused slots */
+    o += 3;
+    for (k = n + 3; k < list->count; k++, o++) {
+        o->kind = 0;
+        o->actorObj = NULL;
+        o->shadow = NULL;
+        o->update = NULL;
+        o->onHit = NULL;
+        o->visible = 0;
+        o->hasShadow = 0;
+        o->depthSort = 0;
+        o->c.type = 0;
+        CTRLSetTranslation(&o->c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+        CTRLSetRotation(&o->c, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C, lbl_3_rodata_2D5C);
+        o->alpha = 0;
+        o->drawArg = NULL;
+        o->attached = 0;
+        o->attachJoint = -1;
+    }
+
+    list->groupBounds = NULL;
+    if (g_d_GameSettings[7] != 7) {
+        fn_3_F6C60();
+    }
+    fn_3_EECF4();
 }
+#endif
 
 
 #pragma dont_inline off

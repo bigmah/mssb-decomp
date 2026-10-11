@@ -81,7 +81,7 @@ void fn_3_F6938(s32* n);
 void fn_3_F6A94(s32* n);
 void fn_3_F6C60(void);
 void fn_3_F6FCC(void);
-void fn_3_F6FDC(void);
+void fn_3_F6FDC(void** files);
 
 s32 fn_3_EE0BC(u32 v);
 
