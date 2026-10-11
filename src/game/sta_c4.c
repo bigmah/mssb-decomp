@@ -68,7 +68,7 @@ typedef struct {
     u32* a3C;
     u16* a40;
     u32* a44;
-    u8* a48;
+    Vec* a48; // per draw group: min and max corner
     Vec pos; // 0x4C
     Vec vel; // 0x58
     s16 cnt;
@@ -219,7 +219,8 @@ s32 fn_3_F85B0(Emitter* e) {
 #pragma dont_inline on
 
 // .text:0x000F8878 size:0x244 mapped:0x8073790C
-// 99%: only the stfs of 0.123f (n+0x14) is emitted after the fmuls instead of at loop top (orig keeps it at top yet gives it the lowest f-reg f23; moving it to the top flips f-reg order)
+// NONMATCHING 99%: only the stfs of 0.123f (n+0x14) is emitted after the fmuls instead of at loop top (orig keeps it at top yet gives it the lowest f-reg f23; moving it to the top flips f-reg order)
+#if NONMATCHING
 void fn_3_F8878(Emitter* e) {
     s16 delay;
     Particle* p;
@@ -263,6 +264,7 @@ void fn_3_F8878(Emitter* e) {
         p->uvFrame = 0;
     }
 }
+#endif
 
 // .text:0x000F8ABC size:0x48 mapped:0x80737B50
 void fn_3_F8ABC(void) {
@@ -731,12 +733,13 @@ void fn_3_F9E78(s32 idx, s32 b, u8* c) {
 #pragma dont_inline on
 
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
-// 97.6%: idx assigned directly (no j temp). Remaining: saved-reg ranking (orig: offC<cnt<j<i<off18<off2<off4; ours: i<cnt<j<off18<offC) and the orig IV zero-inits are `mr` copies of i (ours li). Explicit offset vars + decl order fix regs but give li inits.
+// NONMATCHING 97%: idx assigned directly (no j temp). Remaining: saved-reg ranking (orig: offC<cnt<j<i<off18<off2<off4; ours: i<cnt<j<off18<offC) and the orig IV zero-inits are `mr` copies of i (ours li). Explicit offset vars + decl order fix regs but give li inits.
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
 extern void fn_3_B8414(void*, void*);
 extern void fn_3_B8464(void*, void*);
 extern void fn_3_B8574(void);
+#if NONMATCHING
 void fn_3_FA3C0(void) {
     Mtx m;
     s32 j;
@@ -748,7 +751,7 @@ void fn_3_FA3C0(void) {
     size = (lbl_3_common_bss_350E4.n << 2) + (lbl_3_common_bss_350E4.n << 1) + (lbl_3_common_bss_350E4.n << 2) + lbl_3_common_bss_350E4.n * 0x18;
     if (lbl_3_common_bss_350E4.a48 == NULL) {
         lbl_3_common_bss_350E4.a48 = _OSAllocFromHeap(4, size);
-        lbl_3_common_bss_350E4.a3C = (u32*)(lbl_3_common_bss_350E4.a48 + lbl_3_common_bss_350E4.n * 0x18);
+        lbl_3_common_bss_350E4.a3C = (u32*)(lbl_3_common_bss_350E4.a48 + lbl_3_common_bss_350E4.n * 2);
         lbl_3_common_bss_350E4.a44 = lbl_3_common_bss_350E4.a3C + lbl_3_common_bss_350E4.n;
         lbl_3_common_bss_350E4.a40 = (u16*)(lbl_3_common_bss_350E4.a44 + lbl_3_common_bss_350E4.n);
     }
@@ -769,12 +772,13 @@ void fn_3_FA3C0(void) {
             }
         }
         if (lbl_3_common_bss_350E4.a3C[cnt] != 0) {
-            fn_3_B8414(lbl_3_common_bss_350E4.a48 + cnt * 0x18, lbl_3_common_bss_350E4.a48 + (cnt * 0x18 + 0xC));
+            fn_3_B8414(&lbl_3_common_bss_350E4.a48[cnt * 2], &lbl_3_common_bss_350E4.a48[cnt * 2 + 1]);
             cnt++;
         }
     }
     lbl_3_common_bss_350E4.cnt = cnt;
 }
+#endif
 
 // .text:0x000FA58C size:0xE4C mapped:0x80739620
 static inline void sta_initObjTail(StaObj* p) {
