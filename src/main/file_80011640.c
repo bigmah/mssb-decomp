@@ -305,8 +305,33 @@ void fn_80014A18(void) {
 }
 
 // .text:0x80014D4C size:0x104
-void fn_80014D4C(void) {
-    return;
+s32 fn_80014D4C(s32 id) {
+    s32 file;
+
+    if (id < 0) {
+        return 1;
+    }
+    if (lbl_8036E548.preload[1].id == id) {
+        return 1;
+    }
+    if (lbl_8036E548.preload[1].state <= 1) {
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            file = id * 0x13 + 0xA;
+        } else {
+            file = id * 0x13 + 2;
+        }
+        if ((s32)lbl_803C6CF8.transferDone != 1) {
+            lbl_8036E548.preload[1].state = 1;
+            return 0;
+        }
+        ARAMTransfer(&lbl_803CB790[file], lbl_8036E548.preload[1].buffer, 0, 0);
+        lbl_8036E548.preload[1].state = 2;
+    } else if ((s32)lbl_803C6CF8.transferDone == 1) {
+        lbl_8036E548.preload[1].id = id;
+        lbl_8036E548.preload[1].state = 0;
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x80014E50 size:0xF0
