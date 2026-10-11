@@ -4,6 +4,9 @@
 #include "game/UnknownHomes_Game.h"
 #include "musyx/musyx.h"
 #include "main/file_8001FE00.h"         // SceneFade lbl_8037169C
+#include "static/GameSettings.h"
+#include "game/auto_00_001608F0_text.h"
+#include "game/auto_00_001658F0_text.h" // StarChanceState
 
 extern u8 lbl_800EFBA4[];
 extern GameScores g_Scores;
@@ -44,6 +47,7 @@ extern void fn_3_10AD48(void);
 extern s16 lbl_3_data_217A4[];
 extern void fn_3_DE4FC(void);
 extern s16 lbl_3_data_21788[];
+extern StarChanceState lbl_3_common_bss_37400;
 
 // .text:0x0012E8FC size:0x214 mapped:0x8076D990
 void fn_3_12E8FC(void) {
@@ -229,7 +233,7 @@ void fn_3_12F28C(s32 i) {
 // .text:0x0012F424 size:0x200 mapped:0x8076E4B8
 // Barrel i was blown up: neighbouring standing barrels of the same colour
 // (or all of them when force is set) start blowing up after `delay` frames.
-void fn_3_12F424(s32 i, s16 delay, s32 force) {
+void fn_3_12F424(s32 i, s32 delay, s32 force) {
     s32 colour = g_Minigame.barrels[i].barrelColour;
     s32 n;
 
@@ -272,9 +276,90 @@ void fn_3_12F424(s32 i, s16 delay, s32 force) {
 }
 
 // .text:0x0012F624 size:0x3B0 mapped:0x8076E6B8
+// Barrel Batter: after the hit, find the barrel the ball struck, chain-blow up
+// matching neighbours and award points.
+// NONMATCHING 99.7%: hit-barrel id / lbl_3_data_21788[0] get r8/r7 instead of r9/r8.
+#if NONMATCHING
 void fn_3_12F624(void) {
-    return;
+    s32 done[15];
+    s32 row;
+    s32 col;
+    s32 i;
+    s32 any;
+    s32 delay;
+    s32 pts;
+    s32 id;
+
+    if (g_Ball.framesSinceHit > 0 && g_Minigame.barrelBatter_scoreCalculatedInd == 0) {
+        if (g_Ball.AtBat_Contact_BallPos.z < lbl_3_data_216BC[0].z - lbl_3_data_21770[2]) {
+            return;
+        }
+        if (g_Batter.contactType < 1 || g_Batter.contactType > 3) {
+            return;
+        }
+        for (row = 0; row < 3; row++) {
+            if (g_Ball.AtBat_Contact_BallPos.y < lbl_3_data_21770[3] + lbl_3_data_216BC[row].y) {
+                break;
+            }
+        }
+        if (row < 3 && !(g_Ball.AtBat_Contact_BallPos.x < lbl_3_data_216BC[0].x - lbl_3_data_21770[2])) {
+            for (col = 0; col < 15; col += 3) {
+                if (g_Ball.AtBat_Contact_BallPos.x < lbl_3_data_21770[2] + lbl_3_data_216BC[col].x) {
+                    break;
+                }
+            }
+            if (col < 15) {
+                g_Minigame.barrelBatter_hitBarrelID = col + row;
+                for (row = 0; row < 15; row++) {
+                    done[row] = 0;
+                }
+                id = g_Minigame.barrelBatter_hitBarrelID;
+                g_Minigame.barrels[id].barrelState = 3;
+                g_Minigame.barrels[id].animationCounter = 0;
+                g_Minigame.barrels[id].delayUntilBlownUp = lbl_3_data_21788[0];
+                delay = lbl_3_data_21788[0] + lbl_3_data_21788[1];
+                if (g_Minigame.bB_bombBarrelID == id && g_Minigame.barrels[id].barrelColour == 3) {
+                    g_Minigame.bB_bombBarrelHitInd = 1;
+                }
+                for (;;) {
+                    any = 0;
+                    for (i = 0; i < 15; i++) {
+                        if (g_Minigame.barrels[i].barrelState == 3 && g_Minigame.barrels[i].delayUntilBlownUp != delay &&
+                            done[i] == 0) {
+                            if (g_Minigame.bB_bombBarrelHitInd != 0) {
+                                fn_3_12F424(i, delay, 1);
+                            } else {
+                                fn_3_12F424(i, delay, 0);
+                            }
+                            done[i] = 1;
+                            any = 1;
+                            g_Minigame.barrelBatter_barrelsHit++;
+                        }
+                    }
+                    if (any == 0) {
+                        break;
+                    }
+                    delay += lbl_3_data_21788[1];
+                }
+                if (g_Minigame.bB_bombBarrelHitInd == 0 && g_Minigame.barrelBatter_barrelsHit >= 2) {
+                    g_Minigame.barrelBatterChargeMeter += g_Minigame.barrelBatter_barrelsHit - 1;
+                }
+                if (g_Minigame.barrelBatter_barrelsHit <= 1) {
+                    pts = lbl_3_data_217A4[5] * g_Minigame.barrelBatter_barrelsHit;
+                } else {
+                    pts = g_Minigame.barrelBatter_barrelsHit * ((g_Minigame.barrelBatter_barrelsHit - 1) * lbl_3_data_217A4[5]);
+                }
+                g_Minigame.miniGameCurrentPoints[g_Minigame.rosterID] += pts;
+                g_Minigame._1DF4[0] = pts;
+                if (g_d_GameSettings.exhibitionMatchInd == 0 && g_Minigame.rosterID == lbl_3_common_bss_37400.humanPlayer) {
+                    fn_3_1608F0(2, pts, g_Minigame.barrelBatter_barrelsHit);
+                }
+            }
+        }
+        g_Minigame.barrelBatter_scoreCalculatedInd = 1;
+    }
 }
+#endif
 
 // .text:0x0012F9D4 size:0xF0 mapped:0x8076EA68
 void fn_3_12F9D4(s32 idx) {
@@ -311,7 +396,7 @@ void fn_3_12FAC4(void) {
     s32 i;
     f32 v[3];
 
-    ((void (*)(void))fn_3_12F624)();
+    fn_3_12F624();
     for (i = 0; i < 15; i++) {
         p = &g_Minigame.barrels[i];
         if (p->animationCounter < 0x7FFE) {
