@@ -2547,3 +2547,65 @@ void fn_2_747FC(void) {
     }
 }
 #endif
+
+// fn_2_7E380, size:0x4E0
+// NONMATCHING 80%: slot offsets folded into load displacements (orig addi/slwi/lwzx per slot)
+#if NONMATCHING
+void fn_2_7E380(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        s8 pos;
+        s32 player;
+        s32 j;
+        MN_OBJ2(o, index, 0xC)->flags |= 2;
+        MN_OBJ2(o, index, 0x12)->flags |= 2;
+        MN_OBJ2(o, index, 0xC)->state = 4;
+        MN_OBJ2(o, index, 0xE)->state = 4;
+        MN_OBJ2(o, index, 0x12)->frame = 0xA0000;
+        MN_OBJ2(o, index, 0x12)->state = 4;
+        MN_OBJ2(o, index, 0xB6)->flags |= 2;
+        MN_OBJ2(o, index, 0x1C)->frame = 0x140000;
+        MN_OBJ2(o, index, 0x1C)->state = 4;
+        MN_OBJ2(o, index, 0x6A)->frame = 0x1E0000;
+        MN_OBJ2(o, index, 0x6A)->state = 4;
+        MN_OBJ2(o, index, 0x93)->frame = 0;
+        MN_OBJ2(o, index, 0x93)->state = 1;
+        MN_OBJ2(o, index, 0x95)->state = 1;
+        MN_OBJ2(o, index, 0x8F)->frame = 0;
+        MN_OBJ2(o, index, 0x8F)->state = 1;
+        MN_OBJ2(o, index, 0x89)->frame = 0xA0000;
+        MN_OBJ2(o, index, 0x89)->state = 4;
+        MN_OBJ2(o, index, 0x97)->state = 1;
+        MN_OBJ2(o, index, 0xAC)->state = 1;
+        if (g_d_GameSettings._10 == 0 && index == 0) {
+            // single player: also set up team 1's (CPU) objects
+            player = *(s32*)(lbl_8034E9A0 + 0x46E4);
+            for (j = 0; j < 9; j++) {
+                if (TEAM_TBL->roster[1][j] == player) {
+                    pos = TEAM_TBL->pos[1][j];
+                }
+            }
+            for (j = 0; j < 9; j++) {
+                if (index == 0) {
+                    if (j != pos) {
+                        MN_OBJ2(o, j, 9 + 0x46)->flags &= ~2;
+                    } else {
+                        MN_OBJ2(o, pos, 9 + 0x34)->state = 1;
+                        MN_OBJ2(o, pos, 9 + 0x46)->state = 4;
+                        MN_OBJ2(o, pos, 9 + 0x46)->flags |= 2;
+                    }
+                }
+                MN_OBJ2(o, j, 9 + 0x22)->flags &= ~2;
+            }
+            MN_OBJ(o, 1 + 0x93)->state = 4;
+            MN_OBJ(o, 1 + 0x95)->state = 4;
+            MN_OBJ(o, 1 + 0x8F)->state = 4;
+            MN_OBJ(o, 1 + 0x91)->state = 4;
+            MN_OBJ(o, 1 + 0x97)->flags &= ~2;
+            MN_OBJ(o, 1 + 0xAC)->flags &= ~2;
+        }
+        fn_800626EC(index);
+        *e = 1;
+    }
+}
+#endif
