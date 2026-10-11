@@ -2532,7 +2532,7 @@ BOOL fn_800AD780(ThpPlayer* p) {
 
 // .text:0x800AD830 size:0xE4
 void fn_800AD830(ThpPlayer* p) {
-    return;
+    ThpStop(p);
 }
 
 // .text:0x800AD914 size:0x48
