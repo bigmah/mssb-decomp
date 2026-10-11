@@ -4564,12 +4564,10 @@ void fn_8001E0D8(CharSlotList* list, s32 pass, Mtx view) {
 }
 #endif
 
-extern void* lbl_803CB7AC[2];
 
-extern u8 lbl_803CBBC0;
 
 // fn_8001E460, size:0x14
-void fn_8001E460(void* value) {
+void fn_8001E460(CharDrawCallback value) {
     lbl_803CB7AC[lbl_803CBBC0] = value;
 }
 
@@ -4887,7 +4885,7 @@ void fn_8001F5E8(void) {
         lbl_8036E548.trail2[i]._04[4] = 0.0f;
         lbl_8036E548.trail2[i]._04[5] = 0.0f;
         lbl_8036E548.trail2[i]._26 = 0;
-        lbl_8036E548.trail2[i]._00 = 0;
+        lbl_8036E548.trail2[i].draw = NULL;
     }
 }
 #endif
@@ -4967,7 +4965,7 @@ void fn_8001F8A4(void) {
         lbl_8036E548.trail[i]._04[4] = 0.0f;
         lbl_8036E548.trail[i]._04[5] = 0.0f;
         lbl_8036E548.trail[i]._26 = 0;
-        lbl_8036E548.trail[i]._00 = 0;
+        lbl_8036E548.trail[i].draw = NULL;
     }
 }
 #endif
