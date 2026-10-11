@@ -33,6 +33,7 @@ extern MenuSlotSrc lbl_800E88C4[6][5];
 extern MenuSlotSrc lbl_800E8A2C[5];
 extern MenuSlotSrc lbl_800E8A68[5];
 extern u8 lbl_800E869C[32];
+extern u8 lbl_80354720[2][9][4]; // per pick: three copies of the slot index
 extern u8 lbl_80108ED0[12];     // captain character ids
 extern u8 lbl_8010902C[12];     // class per captain (lbl_80108ED0 order)
 
@@ -565,8 +566,77 @@ void fn_80067C48(u8 team) {
 #endif
 
 // .text:0x80067F70 size:0x534
-void fn_80067F70(void) {
-    return;
+// Fills the rest of a CPU team: picks random characters among the 20 with the
+// best chemistry with the captain that are still free.
+void fn_80067F70(u8 team) {
+    s8 buf[0x36];
+    s32 i;
+    s32 j;
+    s32 slot;
+    s32 row;
+    s32 m;
+    s8 r;
+    s8 c;
+    s8 t;
+    s16 g;
+    s32 captain;
+
+    captain = lbl_8034E9A0.captain[team];
+    lbl_803C6724.picks[team][0] = captain;
+    fn_80067C48(team);
+    memset(buf, -1, sizeof(buf));
+    for (i = 0; i < 0x36; i++) {
+        if (lbl_8034E9A0.charFlag[lbl_8034E9A0.chemOrder[team][i]] == 0) {
+            buf[i] = lbl_8034E9A0.chemOrder[team][i];
+        }
+    }
+    for (slot = 1; slot < 9; slot++) {
+        // Move the remaining candidates to the front.
+        for (i = 0; i < 0x36; i++) {
+            for (j = i; j < 0x36; j++) {
+                if (buf[i] == -1 && buf[j] != -1) {
+                    t = buf[i];
+                    buf[i] = buf[j];
+                    buf[j] = t;
+                    break;
+                }
+            }
+        }
+        do {
+            r = randRange_FUN_80042bf0(0, 19);
+            c = buf[r];
+        } while (c == -1);
+        buf[r] = -1;
+        lbl_8034E9A0.charFlag[c] = 1;
+        fn_80067B40(team, c, 1);
+        // Take the whole group out of the candidates; the pick becomes the group's base character.
+        for (row = 0; row < 9; row++) {
+            for (m = 0; m < 5; m++) {
+                if (c == lbl_80108EDC.groups[row][m]) {
+                    c = lbl_80108EDC.groups[row][0];
+                    for (m = 0; m < 5; m++) {
+                        g = lbl_80108EDC.groups[row][m];
+                        if (g != -1) {
+                            for (i = 0; i < 0x36; i++) {
+                                if (buf[i] == g) {
+                                    buf[i] = -1;
+                                }
+                            }
+                        }
+                    }
+                    goto done;
+                }
+            }
+        }
+    done:
+        lbl_803C6724.picks[team][slot] = c;
+        // roster[c / 9][c % 9].chemistry[captain] (0x3B: offset of chemistry)
+        lbl_803C6724.rating[team][slot] = (((u8*)lbl_8034E9A0.roster) + captain)[(c / 9) * sizeof(lbl_8034E9A0.roster[0]) + (c % 9) * sizeof(CharacterStats) + 0x3B];
+    }
+    for (i = 0; i < 9; i++) {
+        lbl_80354720[team][i][0] = lbl_80354720[team][i][1] = lbl_80354720[team][i][2] = i;
+    }
+    fn_800670A0(team);
 }
 
 // .text:0x800684A4 size:0x70

@@ -117,5 +117,6 @@ u8 fn_800675C4(s32 team, s32 captain);
 void fn_800678CC(s32 team);
 void fn_80064534(void);
 void fn_80067C48(u8 team);
+void fn_80067F70(u8 team);
 
 #endif
