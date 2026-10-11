@@ -125,7 +125,6 @@ extern u8 g_RunningLogic[];
 extern u8 lbl_3_data_4930[];
 extern s16 lbl_3_data_49DC[];
 extern u8 g_Minigame[];
-extern f32 lbl_3_rodata_1498;
 extern f32 lbl_3_rodata_BE4;
 extern f32 lbl_3_rodata_B8C;
 extern f32 lbl_3_rodata_BB8;
@@ -4270,7 +4269,7 @@ int fn_3_30564(int i) {
         *(f32*)(f + 0x1C) = *(f32*)(f + 0x8);
         f[0x1F0] = 1;
     } else if (f[0x25E] == 4) {
-        *(f32*)(f + 0x50) = lbl_3_rodata_1498;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
         f[0x25F] = f[0x25F] - 1;
         if (f[0x25F] == 0) {
             f[0x25E] = 0;
@@ -6896,7 +6895,7 @@ void fn_3_3A1FC(int i) {
     if (*(s16*)(f + 0x1B6) != 0) {
         *(f32*)(f + 0x50) = *(f32*)(f + 0x54);
     } else {
-        *(f32*)(f + 0x50) = lbl_3_rodata_1498;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
     }
 }
 
@@ -7586,7 +7585,7 @@ void fn_3_3BE50(int i) {
 void fn_3_3C1A8(int i) {
     u8* f = g_Fielders + i * 0x268;
     if (f[0x1EC] == 0 && fn_3_53130(i) == 0) {
-        *(f32*)(f + 0x50) = lbl_3_rodata_1498;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
         f[0x1E3] = 1;
         f[0x1D5] = 0;
         *(f32*)(f + 0x14) = *(f32*)(f + 0x0);
@@ -7598,8 +7597,8 @@ void fn_3_3C1A8(int i) {
 void fn_3_3C220(int i) {
     u8* f = g_Fielders + i * 0x268;
     if (fn_3_53130(i) == 0) {
-        *(f32*)(f + 0x50) = lbl_3_rodata_1498;
-        *(f32*)(f + 0x68) = lbl_3_rodata_1498;
+        *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+        *(f32*)(f + 0x68) = lbl_3_rodata_B20;
     }
 }
 
@@ -13213,10 +13212,10 @@ void fn_3_530EC(int i) {
     *(f32*)(f + 0x14) = *(f32*)(f + 0x0);
     *(f32*)(f + 0x18) = *(f32*)(f + 0x4);
     *(f32*)(f + 0x1C) = *(f32*)(f + 0x8);
-    *(f32*)(f + 0x30) = lbl_3_rodata_1498;
-    *(f32*)(f + 0x34) = lbl_3_rodata_1498;
-    *(f32*)(f + 0x50) = lbl_3_rodata_1498;
-    *(f32*)(f + 0x68) = lbl_3_rodata_1498;
+    *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x68) = lbl_3_rodata_B20;
 }
 
 // .text:0x00053130 size:0x5FC mapped:0x806921C4
