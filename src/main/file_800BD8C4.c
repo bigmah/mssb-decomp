@@ -1,4 +1,5 @@
 #include "main/file_800BD8C4.h"
+#include "main/file_800BDEA0.h"
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 
@@ -194,9 +195,7 @@ ActorObjectTable* ActorObjectInitTable(u16 count) {
     return table;
 }
 
-extern u8 lbl_803009F8[];
-
 // fn_800BDE8C, size:0x14
 void fn_800BDE8C(u32 value) {
-    lbl_803009F8[0x4C] = (value & 7) << 5;
+    lbl_803009F8.flags = (value & 7) << 5;
 }
