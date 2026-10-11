@@ -54,7 +54,27 @@ SortListNode* fn_3_BA1A0(SortListNode* list, s32 count) {
 
 // .text:0x000BA268 size:0x184 mapped:0x806F92FC
 void fn_3_BA268(void) {
-    return;
+    GXSetZMode(1, 3, 1);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxDesc(0xD, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetVtxAttrFmt(0, 0xD, 1, 4, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(0);
+    GXSetTevColorIn(0, 0xF, 0xA, 8, 0xF);
+    GXSetTevAlphaIn(0, 7, 5, 4, 7);
+    GXSetTevOrder(0, 0, 0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(0)->view, 0);
+    GXSetCurrentMtx(0);
+    GXSetProjection(fn_80052768_getCamera(0)->proj, 0);
 }
 
 // .text:0x000BA3EC size:0x14C mapped:0x806F9480
