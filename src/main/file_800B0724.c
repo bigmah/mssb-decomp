@@ -531,8 +531,15 @@ void fn_800B13C0(Vec* pos, u32* colors, s32 count) {
 }
 
 // .text:0x800B1468 size:0x98
-void fn_800B1468(void) {
-    return;
+void fn_800B1468(Vec* pos, u32 color, SpriteTexInfo* tex) {
+    QuadVtx verts[4];
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        memcpy(&verts[i].pos, &pos[i], sizeof(Vec));
+        verts[i].color = color;
+        memcpy(&verts[i].s, lbl_801115A0[i], 4);
+    }
+    DrawSprite(GX_QUADS, verts, 4, tex, tex->width, tex->height);
 }
 
 // .text:0x800B1500 size:0x9BC
