@@ -31,6 +31,7 @@ extern void fn_3_F8ABC(void);
 #include "static/UnknownHomes_Static.h"
 #include "main/file_800BD8C4.h"
 #include "main/file_80024D2C.h"
+#include "main/file_80024184.h"
 #include "C3/actor.h"
 extern void LoadActorLayout(ActorLayout* layout); // main/file_800B2C44.h
 #include "C3/geoPalette.h"
@@ -154,9 +155,8 @@ extern f64 acos(f64);
 extern int rand(void);
 extern void* memcpy(void*, const void*, u32);
 extern void* _OSAllocFromHeap(int, int);
-extern void fn_800246D4(void*, void*, void*, int, int);
 extern void fn_800ACFB0(void*);
-extern void fn_3_BA174(void);
+extern s32 fn_3_BA174(void* key, void* elem); // game/auto_00_000BA150_text.h
 typedef struct {
     u8* node;
     f32 key;
@@ -207,7 +207,7 @@ void fn_3_BA7F4(u8* a) {
         q++;
         n = *(u8**)n;
     }
-    fn_800246D4(fn_3_BA174, arr, arr, 8, cnt);
+    fn_800246D4(fn_3_BA174, (u8*)arr, (u8*)arr, 8, cnt);
     head = arr[0].node;
     q = arr;
     while (--cnt != 0) {
@@ -641,9 +641,231 @@ void fn_3_BC888(void) {
 }
 
 // .text:0x000BCA20 size:0x7B4 mapped:0x806FBAB4
+// Lens-flare element (16 bytes); a list ends with size == 0.
+typedef struct {
+    /* 0x0 */ f32 x;     // distance along the flare axis
+    /* 0x4 */ f32 y;     // alpha slope (types 2/3)
+    /* 0x8 */ f32 z;     // size
+    /* 0xC */ s16 tex;   // index into the texture table
+    /* 0xE */ u8 type;   // 0/1 spinning quad, 2 square, 3 rotated starburst, 4+ sun
+    /* 0xF */ u8 occl;   // drawn even when occluded; also the fn_800B21A8 mode
+} BD434E;
+// Lens-flare state in lbl_3_common_bss_35154.
+typedef struct {
+    u8 pad[0x3B4];
+    /* 0x3B4 */ TexImage* tex;
+    /* 0x3B8 */ BD434E* p;
+    /* 0x3BC */ f32 x, y, z;
+    /* 0x3C8 */ u32 c8;  // frame counter (mod cc)
+    /* 0x3CC */ u32 cc;
+    /* 0x3D0 */ f32 d0, d4, d8, dc;
+    /* 0x3E0 */ u8 e0;
+    /* 0x3E1 */ u8 visible;
+    /* 0x3E2 */ u8 occluded;
+} BD434S;
+#define G (*(BD434S*)lbl_3_common_bss_35154) // TODO type: lbl_3_common_bss_35154
+// One sprite vertex as read by DrawSprite_TexObj (struct QuadVtx in main/file_800B0724.h).
+typedef struct {
+    /* 0x00 */ Vec pos;
+    /* 0x0C */ u32 color;
+    /* 0x10 */ s16 s, t;
+} BCA20Vtx;
+extern Vec lbl_3_bss_9978[];
+extern Vec lbl_3_bss_996C;
+extern const f32 lbl_3_rodata_1EDC;
+extern f32 lbl_3_rodata_1EE0;
+extern f32 lbl_3_rodata_1EE4;
+extern const f32 lbl_3_rodata_1EE8;
+extern const f32 lbl_3_rodata_1EEC;
+extern const f32 lbl_3_rodata_1EF0;
+extern const f32 lbl_3_rodata_1EF4;
+extern f32 lbl_3_rodata_1EF8;
+extern f32 lbl_3_rodata_1EFC;
+extern const f64 lbl_3_rodata_1F00;
+extern void fn_800B24D4(s32 layer);
+extern void fn_800B27DC(Mtx44 m, s32 type);
+extern void fn_800B2160(u8 value);
+extern void fn_800B21A8(s32 mode);
+extern void DrawSprite_TexObj(struct QuadVtx* verts, TexImage* tex);
+// NONMATCHING 93%: float regalloc/scheduling, stack frame 0x10 smaller (alpha init added for the port)
+#if NONMATCHING
 void fn_3_BCA20(void) {
-    return;
+    Mtx rot;
+    BCA20Vtx vtx[4];
+    Vec q[4];
+    Vec pos;
+    Vec axis;
+    Quaternion qr;
+    Quaternion qz;
+    camera_803c639c_s* cam;
+    BD434E* elems;
+    BD434E* e;
+    s32 off;
+    s32 k;
+    s32 alpha;
+    f32 depth;
+    f32 zoom;
+    f32 dist;
+    f32 axisLen;
+    f32 slope;
+    f32 spin;
+    f32 sz;
+    f32 c;
+    f32 sn;
+    f32 a;
+    f32 ang;
+    cam = fn_80052768_getCamera(0);
+    depth = -lbl_3_bss_9978[0].z / lbl_3_rodata_1EDC;
+    zoom = lbl_3_rodata_1E84 / cam->zoom;
+    if (G.visible == 0) {
+        return;
+    }
+    elems = G.p;
+    fn_800B24D4(10);
+    fn_800B27DC(fn_80052768_getCamera(0)->proj, 0);
+    fn_800B2160(2);
+    pos.x = lbl_3_bss_9978[0].x;
+    pos.y = lbl_3_bss_9978[0].y;
+    pos.z = lbl_3_rodata_1E68;
+    dist = PSVECMag(&pos);
+    pos.x = lbl_3_rodata_1EE0 * lbl_3_bss_9978[0].z * zoom * lbl_3_rodata_1E64 / lbl_3_rodata_1EE4;
+    pos.y = lbl_3_rodata_1EE8 * lbl_3_bss_9978[0].z * zoom * lbl_3_rodata_1E64 / lbl_3_rodata_1EE4;
+    pos.z = lbl_3_rodata_1E68;
+    axisLen = PSVECMag(&pos);
+    slope = lbl_3_rodata_1EEC * dist / axisLen;
+    spin = lbl_3_rodata_1EF0 * (f32)(G.c8 * 2) / (f32)G.cc;
+    axis.x = lbl_3_bss_996C.y;
+    axis.y = -lbl_3_bss_996C.x;
+    axis.z = lbl_3_rodata_1E68;
+    PSVECNormalize(&axis, &axis);
+    alpha = 0; // original leaves this unset; types >= 4 reuse the previous element's alpha
+    for (off = 0; (e = (BD434E*)((u8*)elems + off))->z != lbl_3_rodata_1E68; off += sizeof(BD434E)) {
+        if (e->occl == 0 && G.occluded != 0) {
+            continue;
+        }
+        fn_800B21A8(e->occl);
+        PSVECScale(&lbl_3_bss_996C, e->x, &pos);
+        PSVECAdd(&lbl_3_bss_9978[0], &pos, &pos);
+        sz = G.dc * e->z / lbl_3_rodata_1EF4;
+        switch (e->type) {
+        case 0:
+        case 1:
+            alpha = 0xFF;
+            break;
+        case 2:
+        case 3:
+            alpha = (s32)(slope * e->y + lbl_3_rodata_1EF8);
+            break;
+        }
+        if (alpha <= 0) {
+            continue;
+        }
+        alpha |= 0xFFFFFF00;
+        switch (e->type) {
+        case 0:
+            c = sz * cos(spin);
+            sn = sz * sin(spin);
+            q[0].x = depth * (pos.x - c);
+            q[0].y = depth * (pos.y - sn);
+            q[0].z = pos.z * depth;
+            q[1].x = depth * (pos.x - sn);
+            q[1].y = depth * (pos.y + c);
+            q[1].z = pos.z * depth;
+            q[2].x = depth * (pos.x + c);
+            q[2].y = depth * (pos.y + sn);
+            q[2].z = pos.z * depth;
+            q[3].x = depth * (pos.x + sn);
+            q[3].y = depth * (pos.y - c);
+            q[3].z = pos.z * depth;
+            break;
+        case 1:
+            c = -sz * cos(spin);
+            sn = sz * sin(spin);
+            q[0].x = depth * (pos.x - c);
+            q[0].y = depth * (pos.y - sn);
+            q[0].z = pos.z * depth;
+            q[1].x = depth * (pos.x - sn);
+            q[1].y = depth * (pos.y + c);
+            q[1].z = pos.z * depth;
+            q[2].x = depth * (pos.x + c);
+            q[2].y = depth * (pos.y + sn);
+            q[2].z = pos.z * depth;
+            q[3].x = depth * (pos.x + sn);
+            q[3].y = depth * (pos.y - c);
+            q[3].z = pos.z * depth;
+            break;
+        case 2:
+            q[0].x = depth * (pos.x - sz);
+            q[0].y = depth * (pos.y - sz);
+            q[0].z = pos.z * depth;
+            q[1].x = q[0].x;
+            q[1].y = depth * (pos.y + sz);
+            q[1].z = q[0].z;
+            q[2].x = depth * (pos.x + sz);
+            q[2].y = q[1].y;
+            q[2].z = q[0].z;
+            q[3].x = q[2].x;
+            q[3].y = q[0].y;
+            q[3].z = q[0].z;
+            break;
+        case 3:
+            ang = lbl_3_rodata_1EF0 * (lbl_3_rodata_1EFC * (lbl_3_bss_9978[0].x + lbl_3_bss_9978[0].y)) * G.d4;
+            qz.z = sin(ang);
+            qz.w = cos(ang);
+            qz.x = lbl_3_rodata_1E68;
+            qz.y = lbl_3_rodata_1E68;
+            ang = lbl_3_rodata_1F00 * (lbl_3_rodata_1EB8 * (G.d0 * dist)) / axisLen * lbl_3_rodata_1EB8;
+            sn = sin(ang);
+            qr.w = cos(ang);
+            qr.x = axis.x * sn;
+            qr.y = axis.y * sn;
+            qr.z = axis.z * sn;
+            PSQUATMultiply(&qr, &qz, &qr);
+            PSMTXQuat(rot, &qr);
+            a = lbl_3_rodata_1E84 + G.d8 * dist / axisLen;
+            sz *= zoom * (a * a);
+            a = -lbl_3_bss_9978[0].z / lbl_3_rodata_1EDC;
+            q[0].z = lbl_3_rodata_1E68;
+            q[1].z = lbl_3_rodata_1E68;
+            q[2].z = lbl_3_rodata_1E68;
+            q[3].z = lbl_3_rodata_1E68;
+            q[1].y = sz * a;
+            q[2].x = q[1].y;
+            q[0].x = -sz * a;
+            q[0].y = q[0].x;
+            q[1].x = q[0].x;
+            q[2].y = q[1].y;
+            q[3].x = q[1].y;
+            q[3].y = q[0].x;
+            for (k = 0; k < 4; k++) {
+                PSMTXMultVec(rot, &q[k], &q[k]);
+                q[k].x = depth * (pos.x + q[k].x) + q[k].x;
+                q[k].y = depth * (pos.y + q[k].y) + q[k].y;
+                q[k].z = depth * (pos.z + q[k].z) + q[k].z;
+            }
+            break;
+        }
+        for (k = 0; k < 4; k++) {
+            vtx[k].pos.x = q[k].x;
+            vtx[k].pos.y = q[k].y;
+            vtx[k].pos.z = q[k].z;
+        }
+        vtx[0].s = 0;
+        vtx[0].t = 0;
+        vtx[1].s = 0;
+        vtx[1].t = 0x400;
+        vtx[2].s = 0x400;
+        vtx[2].t = 0x400;
+        vtx[3].s = 0x400;
+        vtx[3].t = 0;
+        vtx[0].color = alpha;
+        vtx[1].color = alpha;
+        vtx[2].color = alpha;
+        vtx[3].color = alpha;
+        DrawSprite_TexObj((struct QuadVtx*)vtx, &G.tex[e->tex]);
+    }
 }
+#endif
 
 // .text:0x000BD1D4 size:0x4 mapped:0x806FC268
 void fn_3_BD1D4(void) {
@@ -713,9 +935,6 @@ void fn_3_BD1D8(f32 (*m)[4]) {
 }
 
 // .text:0x000BD434 size:0xBC mapped:0x806FC4C8
-typedef struct { f32 x, y, z; u8 pad; u8 pad1; u8 e; u8 pad2; } BD434E;
-typedef struct { u8 pad[0x3B8]; BD434E* p; f32 x, y, z; s32 c8; s32 cc; f32 d0, d4, d8, dc; u8 e0; } BD434S;
-#define G (*(BD434S*)lbl_3_common_bss_35154)
 void fn_3_BD434(int a, int b) {
     int n;
     G.p = (BD434E*)(lbl_3_data_12354 + (a + b * 7) * 0xA0);
@@ -724,7 +943,7 @@ void fn_3_BD434(int a, int b) {
     G.d0 = lbl_3_rodata_1F18;
     G.d4 = lbl_3_rodata_1F1C;
     G.d8 = lbl_3_rodata_1E64;
-    for (n = 0; G.p[n].e < 4; n++) {
+    for (n = 0; G.p[n].type < 4; n++) {
     }
     G.e0 = 1;
     G.x = G.p[n].x;
