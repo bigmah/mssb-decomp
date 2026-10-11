@@ -5,9 +5,9 @@
 
 void fn_3_FC448(void);
 void fn_3_FC938(void);
-void fn_3_FCE38(void);
+s32 fn_3_FCE38(s32 i, f32 t);
 void fn_3_FCEAC(void);
-void fn_3_FCEB0(void);
+s32 fn_3_FCEB0(f32 t);
 void fn_3_FCF20(void);
 void fn_3_FCF24(void);
 void fn_3_FD408(u32 i, void* out, f32* uv);
@@ -33,12 +33,12 @@ void fn_3_1048E0(s32 a, s32 b, s32 c, s32 d, u8* out);
 void fn_3_104A3C(void* dst, void* mtx);
 void fn_3_104A88(void* dst, void* mtx);
 void fn_3_104AD4(void* dst, void* mtx);
-void fn_3_104B20(void);
+void fn_3_104B20(struct Vec* dst, f32 (*src)[4]);
 void fn_3_104B3C(s32 a, s32 b, s32 c, s32 d, void* m);
 void fn_3_1054CC(void);
 void fn_3_1054D0(void);
 void fn_3_105A10(f32* out, f32* a, f32* b, f32 t);
-void fn_3_105ACC(void);
+void fn_3_105ACC(f32* q, f32 (*out)[4]);
 void fn_3_105BD8(u8* p);
 u32 fn_3_105C28(u8* p, u32 key);
 void fn_3_105C84(u8* p);

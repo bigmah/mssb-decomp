@@ -40,6 +40,7 @@ extern u8* lbl_803CC1B8;
 extern u8 g_Fielders[];
 extern u8 LoadModel(void*);
 extern void fn_800B0A14_removeQueue(void*);
+typedef struct { Vec pos; f32 u; f32 v; u8 pad[0x28]; f32 t; } PathPt; /* size 0x40 */
 #pragma dont_inline on
 
 // .text:0x000FC448 size:0x4F0 mapped:0x8073B4DC
@@ -81,13 +82,21 @@ void fn_3_FC938(void) {
 #pragma dont_inline on
 
 // .text:0x000FCE38 size:0x74 mapped:0x8073BECC
-// ~95% (6 diff lines) with: void fn_3_FCE38(s32 i, f32 t) { u8* d = lbl_3_common_bss_DE94; s32 off = i << 6; s32 n = *(s32*)(d+0x3C);
-//   while (i < n && t > *(f32*)(*(u8**)(d+0x34) + off + 0x3C)) { off += 0x40; i++; } off = i << 6;
-//   while (i > 0 && t <= *(f32*)(*(u8**)(d+0x34) + off - 4)) { off -= 0x40; i--; } }
-// only the out-of-line loop-2 preheader (slwi r6,r3,6 after the final blr, dead `b` left behind) differs.
-void fn_3_FCE38(void) {
-    return;
+// NONMATCHING 95%: only the out-of-line loop-2 preheader (slwi r6,r3,6 after the final blr, dead `b` left behind) differs
+// (see docs/patterns/unsolved.md). Moves path index i so that path[i-1].t < t <= path[i].t.
+#if NONMATCHING
+s32 fn_3_FCE38(s32 i, f32 t) {
+    u8* d = lbl_3_common_bss_DE94;
+    s32 n = *(s32*)(d + 0x3C);
+    while (i < n && t > (*(PathPt**)(d + 0x34))[i].t) {
+        i++;
+    }
+    while (i > 0 && t <= (*(PathPt**)(d + 0x34))[i - 1].t) {
+        i--;
+    }
+    return i;
 }
+#endif
 
 // .text:0x000FCEAC size:0x4 mapped:0x8073BF40
 void fn_3_FCEAC(void) {
@@ -95,11 +104,23 @@ void fn_3_FCEAC(void) {
 }
 
 // .text:0x000FCEB0 size:0x70 mapped:0x8073BF44
-// s32 fn_3_FCEB0(f32 t): `if (t < 0.0) return -1;` + same search loop as fn_3_FCE38, `return i < n ? i : -1`. 16 diff lines:
-// loop preheader (lwz n; li off,0) is placed inline instead of after the final blr, and the dead `b`/`blr` are missing.
-void fn_3_FCEB0(void) {
-    return;
+// NONMATCHING: loop preheader (lwz n; li off,0) is placed inline instead of after the final blr, and the dead `b`/`blr`
+// are missing (see docs/patterns/unsolved.md). Returns the first path index with t <= path[i].t, or -1.
+#if NONMATCHING
+s32 fn_3_FCEB0(f32 t) {
+    u8* d = lbl_3_common_bss_DE94;
+    s32 i = 0;
+    s32 n;
+    if (t < 0.0) {
+        return -1;
+    }
+    n = *(s32*)(d + 0x3C);
+    while (i < n && t > (*(PathPt**)(d + 0x34))[i].t) {
+        i++;
+    }
+    return i < n ? i : -1;
 }
+#endif
 
 // .text:0x000FCF20 size:0x4 mapped:0x8073BFB4
 void fn_3_FCF20(void) {
@@ -112,7 +133,6 @@ void fn_3_FCF24(void) {
 }
 
 // .text:0x000FD408 size:0xD4 mapped:0x8073C49C
-typedef struct { Vec pos; f32 u; f32 v; u8 pad[0x2C]; } PathPt;
 void fn_3_FD408(u32 i, void* out, f32* uv) {
     u8* d = lbl_3_common_bss_DE94;
     if (*(u32*)(d + 0x3C) > i) {
@@ -643,11 +663,15 @@ void fn_3_104AD4(void* dst, void* mtx) {
 }
 
 // .text:0x00104B20 size:0x1C mapped:0x80743BB4
-// void fn_3_104B20(Vec* dst, u8* src): copy of 3 floats from src+0x30. Original = 3 grouped lfs (f2,f1,f0) then 3 stfs; our best is
-// 8 diff lines (per-field copy interleaves lfs/stfs through f0; struct copy `*dst = *s` gives lwz/stw). Tried other GC compilers too.
-void fn_3_104B20(void) {
-    return;
+// NONMATCHING: original = 3 grouped lfs (f2,f1,f0) then 3 stfs; ours interleaves lfs/stfs through f0 (see docs/patterns/unsolved.md).
+// Copies the translation row (offset 0x30) of a 4x4 matrix into dst.
+#if NONMATCHING
+void fn_3_104B20(Vec* dst, Mtx44 src) {
+    dst->x = src[3][0];
+    dst->y = src[3][1];
+    dst->z = src[3][2];
 }
+#endif
 
 // .text:0x00104B3C size:0x990 mapped:0x80743BD0
 void fn_3_104B3C(s32 a, s32 b, s32 c, s32 d, void* m) {
@@ -678,11 +702,45 @@ void fn_3_105A10(f32* out, f32* a, f32* b, f32 t) {
 }
 
 // .text:0x00105ACC size:0x10C mapped:0x80744B60
-// void fn_3_105ACC(f32* q, void* out): quaternion (x,y,z,w) -> 4x4 on stack, memcpy(out, m, 0x30). Plain formula draft is ~90 diff lines:
-// original keeps 2x/2z in f31/f30 (more FPR pressure, different schedule); order xx,yy,zz,xy,xz,wz,wy,yz,wx. Zero = lbl_3_rodata_30F8, one = lbl_3_rodata_30FC.
-void fn_3_105ACC(void) {
-    return;
+// NONMATCHING: quaternion (x,y,z,w) -> rotation matrix; original keeps 2x/2z in f31/f30 (different FPR schedule).
+#if NONMATCHING
+void fn_3_105ACC(f32* q, Mtx out) {
+    Mtx44 m;
+    f32 x = q[0];
+    f32 y = q[1];
+    f32 z = q[2];
+    f32 w = q[3];
+    f32 x2 = x + x;
+    f32 y2 = y + y;
+    f32 z2 = z + z;
+    f32 xx = x * x2;
+    f32 yy = y * y2;
+    f32 zz = z * z2;
+    f32 xy = x * y2;
+    f32 xz = x * z2;
+    f32 wz = w * z2;
+    f32 wy = w * y2;
+    f32 yz = y * z2;
+    f32 wx = w * x2;
+    m[0][0] = lbl_3_rodata_30FC - (yy + zz);
+    m[0][1] = xy + wz;
+    m[0][2] = xz - wy;
+    m[0][3] = lbl_3_rodata_30F8;
+    m[1][0] = xy - wz;
+    m[1][1] = lbl_3_rodata_30FC - (xx + zz);
+    m[1][2] = yz + wx;
+    m[1][3] = lbl_3_rodata_30F8;
+    m[2][0] = xz + wy;
+    m[2][1] = yz - wx;
+    m[2][2] = lbl_3_rodata_30FC - (xx + yy);
+    m[2][3] = lbl_3_rodata_30F8;
+    m[3][0] = lbl_3_rodata_30F8;
+    m[3][1] = lbl_3_rodata_30F8;
+    m[3][2] = lbl_3_rodata_30F8;
+    m[3][3] = lbl_3_rodata_30FC;
+    memcpy(out, m, sizeof(Mtx));
 }
+#endif
 
 // .text:0x00105BD8 size:0x50 mapped:0x80744C6C
 void fn_3_105BD8(u8* p) {
