@@ -6,9 +6,14 @@ TEXDescriptorPtr TEXGet(TEXPalettePtr pal, u32 id) {
 }
 
 // .text:0x80091460 size:0x18
-void DSInitList(void) {
-    return;
+// NONMATCHING 67%: same instructions, subf scheduled before the first stw
+#if NONMATCHING
+void DSInitList(DSListPtr list, Ptr obj, DSLinkPtr link) {
+    list->Head = NULL;
+    list->Tail = NULL;
+    list->Offset = (u8*)link - (u8*)obj;
 }
+#endif
 
 // .text:0x80091478 size:0x94
 void DSInsertListObject(void) {
