@@ -745,7 +745,8 @@ found:
 }
 
 // .text:0x000A295C size:0x210 mapped:0x806E19F0
-// 98.4%: only scheduling differs (lfs of rodata_19A0 comes after lwz sel[2], original before stw r29)
+// NONMATCHING 98.5%: the load of rodata_19A0 is scheduled later than in the original
+#if NONMATCHING
 int fn_3_A295C(void) {
     f32 c = lbl_3_rodata_19A0;
     InMemRunnerType* r = &g_Runners[lbl_3_bss_1808[2]];
@@ -770,6 +771,7 @@ int fn_3_A295C(void) {
     }
     return 0;
 }
+#endif
 
 // .text:0x000A2B6C size:0x130 mapped:0x806E1C00
 int fn_3_A2B6C(void) {
@@ -867,7 +869,8 @@ int fn_3_A2DDC(void) {
 }
 
 // .text:0x000A2FD8 size:0x210 mapped:0x806E206C
-// 97%: only scheduling differs (original loads rodata_1998 before lfsu g_Ball and z after the fadds)
+// NONMATCHING 97%: scheduling only (the original loads rodata_1998 before the ball position)
+#if NONMATCHING
 int fn_3_A2FD8(void) {
     s32 t;
     f32 x = ((f32*)&g_Ball.AtBat_Contact_BallPos)[0];
@@ -911,6 +914,7 @@ int fn_3_A2FD8(void) {
     }
     return 0;
 }
+#endif
 
 // .text:0x000A31E8 size:0xD0 mapped:0x806E227C
 int fn_3_A31E8(void) {
@@ -2673,7 +2677,8 @@ void fn_3_A8338(s32 idx) {
 }
 
 // .text:0x000A8478 size:0x150 mapped:0x806E750C
-// ~95%: logic and block layout match; only regs differ (idx r8/prev r7/tmp r6 vs orig r7/r6/r7) and ec/ea load order in the final add
+// NONMATCHING 98.9%: idx/prev/runner registers differ (r8/r7/r6 vs r7/r6/r7)
+#if NONMATCHING
 s32 fn_3_A8478(s32* out0, s32* out1) {
     u8 dir;
     s32 prev;
@@ -2716,6 +2721,7 @@ tail:
     *out1 = r->framesToNextBase;
     return 1;
 }
+#endif
 
 // .text:0x000A85C8 size:0x40C mapped:0x806E765C
 // NONMATCHING 92.5%: float register allocation in the inlined fn_3_A6ABC body differs
