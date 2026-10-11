@@ -935,7 +935,15 @@ void fn_2_8AC84(s32 index, s32 value) {
 
 // .text:0x0008ACB0 size:0x2C
 void fn_2_8ACB0(s32 index, s32 value) {
-    return;
+    MenuSceneEntry* entries = lbl_2_bss_340140->entries;
+    MenuSceneEntry* entry;
+
+    if (entries == NULL) {
+        entry = &entries[index];
+        if (entry != NULL) {
+            entry->_26 = value;
+        }
+    }
 }
 
 // .text:0x0008ACDC size:0x4
