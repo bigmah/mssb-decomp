@@ -626,6 +626,7 @@ void fn_3_1583AC(void) {
             }
             o->timer++;
         }
+        // fn_3_158264(o) written out: calling it colors its locals differently
         {
             u8* row = lbl_3_data_FAF4 + g_Practice.practiceType_2 * 4;
             v = row[g_Practice.practiceLevel];
