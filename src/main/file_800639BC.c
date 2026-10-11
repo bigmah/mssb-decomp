@@ -28,7 +28,9 @@ extern StreamTrack lbl_802E4CE8[16];
 extern StreamTrack lbl_8034E478[16];
 extern u8 lbl_800E87B4[15][16];   // TODO type: stream file descriptors
 extern u8 lbl_800E88A4[16][2];    // stream volumes
-extern s16 lbl_80108EDC[9][5];
+extern CharGroupTable lbl_80108EDC;
+extern u8 lbl_80108ED0[12];     // captain character ids
+extern u8 lbl_8010902C[12];     // class per captain (lbl_80108ED0 order)
 
 extern u8 lbl_803CBD18; // fade-out: step computed
 extern u8 lbl_803CBD19; // fade-out: frame counter
@@ -259,7 +261,7 @@ void fn_800670A0(u8 team) {
     s8 rating = 0;
 
     for (i = 0; i < 9; i++) {
-        if (lbl_803C6724.rating[team][i] != 0 && lbl_803C6724.charIds[team][i] != lbl_8034E9A0.captain[team]) {
+        if (lbl_803C6724.rating[team][i] != 0 && lbl_803C6724.picks[team][i] != lbl_8034E9A0.captain[team]) {
             sum += lbl_803C6724.rating[team][i];
             count++;
         }
@@ -296,9 +298,44 @@ void fn_800671FC(void) {
 }
 
 // .text:0x80067264 size:0x360
-void fn_80067264(void) {
-    return;
+// NONMATCHING 66%: loop unrolling/scheduling of the class-count loops differs
+#if NONMATCHING
+u8 fn_80067264(s32 team, s32 captain) {
+    s32 counts[4];
+    s32 classes[2][9];
+    s32 i;
+    u8 cls; // uninitialised if the captain is not in lbl_80108ED0 (as in the original)
+
+    counts[0] = 0;
+    counts[1] = 0;
+    counts[2] = 0;
+    counts[3] = 0;
+    for (i = 0; i < 9; i++) {
+        classes[team][i] = 0;
+        classes[team][i] = lbl_8034E9A0.roster[lbl_803C6724.picks[team][i] / 9][lbl_803C6724.picks[team][i] % 9].stats.CharacterClass;
+    }
+    for (i = 0; i < 12; i++) {
+        if (captain == lbl_80108ED0[i]) {
+            cls = lbl_8010902C[i];
+            break;
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        counts[classes[team][i]]++;
+    }
+    for (i = 0; i < 4; i++) {
+        if (counts[cls] <= counts[i] && i != cls) {
+            return 0;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        if (counts[i] >= 3 && i == cls) {
+            return 3;
+        }
+    }
+    return 0;
 }
+#endif
 
 // .text:0x800675C4 size:0x308
 void fn_800675C4(void) {
@@ -317,13 +354,13 @@ s16 fn_80067AC8(s16 id, s8 col) {
 
     for (row = 0; row < 9; row++) {
         for (i = 0; i < 5; i++) {
-            if (id == lbl_80108EDC[row][i]) {
+            if (id == lbl_80108EDC.groups[row][i]) {
                 if (col == -1) {
                     return id;
                 }
-                return lbl_80108EDC[row][col];
+                return lbl_80108EDC.groups[row][col];
             }
-            if (lbl_80108EDC[row][i] == -1) {
+            if (lbl_80108EDC.groups[row][i] == -1) {
                 break;
             }
         }
@@ -342,8 +379,8 @@ BOOL fn_80067B40(s32 unused, u8 charId, u8 flag) {
     }
     for (row = 0; row < 9; row++) {
         for (i = 0; i < 5; i++) {
-            if (charId == lbl_80108EDC[row][i]) {
-                group = lbl_80108EDC[row];
+            if (charId == lbl_80108EDC.groups[row][i]) {
+                group = lbl_80108EDC.groups[row];
                 for (i = 0; i < 5; i++) {
                     if (group[i] != -1 && flag != 2) {
                         lbl_8034E9A0.charFlag[group[i]] = flag;
