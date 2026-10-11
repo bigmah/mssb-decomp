@@ -885,3 +885,164 @@ void fn_1_6050(u16* image, s32 width, s32 height, f32 scale) {
     DCFlushRange(image, size);
 }
 #endif
+
+extern u8 lbl_1_data_8C8;      // 1: show every bone, 2: hide every bone (one-shot)
+extern u8 lbl_1_bss_C1;        // draw vertex normals (fn_1_4E98)
+extern u8 lbl_1_bss_2E0[0x200]; // per-bone hide flags
+
+// A layout file: the header followed by header.totalBones bones.
+typedef struct ChalLayoutFile {
+    /*0x00*/ ActorLayout header;
+    /*0x20*/ ActorBone bones[1];
+} ChalLayoutFile;
+
+// fn_1_73B8, size:0x434
+// Draw callback of the stage model: like fn_800B472C, but bones can be hidden or
+// isolated (selBone), each drawn bone is counted, and lights are passed through.
+// NONMATCHING 99%: callee-saved registers permuted (model/obj r21, numLights r29 in the original)
+#if NONMATCHING
+void fn_1_73B8(ChallengeModel* model, u8 numLights, ...) {
+    va_list list;
+    Mtx m;
+    Vec box[8];
+    ChalLayoutFile* file;
+    DODisplayData* pal;
+    MtxPtr world;
+    MtxPtr camera;
+    ActorBone* bone;
+    u8* hidden;
+    struct DODisplayObj* obj;
+    s32 i;
+    s32 count;
+    u16 geoID;
+
+    file = (ChalLayoutFile*)model->layout;
+    pal = file->header.geoPalette;
+    if (lbl_1_data_8C8 == 1) {
+        memset(lbl_1_bss_2E0, 0, sizeof(lbl_1_bss_2E0));
+        lbl_1_data_8C8 = 0;
+    } else if (lbl_1_data_8C8 == 2) {
+        memset(lbl_1_bss_2E0, 1, sizeof(lbl_1_bss_2E0));
+        lbl_1_data_8C8 = 0;
+    }
+    count = file->header.totalBones;
+    lbl_1_common_bss_472B4.drawnBones = 0;
+    if (lbl_1_common_bss_472B4.selBone < 0) {
+        i = 0;
+    } else {
+        i = lbl_1_common_bss_472B4.selBone;
+        count = i + 1;
+    }
+    world = model->world;
+    camera = model->camera;
+    for (; i < count; i++) {
+        if (lbl_1_bss_2E0[i] != 0) {
+            continue;
+        }
+        bone = &file->bones[i];
+        geoID = bone->geoFileID;
+        if (geoID == 0xFFFF) {
+            continue;
+        }
+        if (bone->flags & 1) {
+            GXSetZMode(GX_FALSE, GX_ALWAYS, GX_TRUE);
+        } else {
+            GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+        }
+        switch (bone->flags & 6) {
+        case 2:
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
+            break;
+        case 4:
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_DSTCOL, GX_BL_ZERO, GX_LO_CLEAR);
+            break;
+        default:
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+            break;
+        }
+        obj = pal->descriptorArray[geoID].dispObj;
+        CTRLBuildMatrix(bone->orientationCtrl, obj->worldMatrix);
+        PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
+        PSMTXConcat(camera, obj->worldMatrix, m);
+        box[0].x = obj->bounds[1];
+        box[0].y = obj->bounds[3];
+        box[0].z = obj->bounds[4];
+        box[1].x = obj->bounds[0];
+        box[1].y = obj->bounds[3];
+        box[1].z = obj->bounds[4];
+        box[2].x = obj->bounds[0];
+        box[2].y = obj->bounds[3];
+        box[2].z = obj->bounds[5];
+        box[3].x = obj->bounds[1];
+        box[3].y = obj->bounds[3];
+        box[3].z = obj->bounds[5];
+        box[4].x = obj->bounds[1];
+        box[4].y = obj->bounds[2];
+        box[4].z = obj->bounds[4];
+        box[5].x = obj->bounds[0];
+        box[5].y = obj->bounds[2];
+        box[5].z = obj->bounds[4];
+        box[6].x = obj->bounds[0];
+        box[6].y = obj->bounds[2];
+        box[6].z = obj->bounds[5];
+        box[7].x = obj->bounds[1];
+        box[7].y = obj->bounds[2];
+        box[7].z = obj->bounds[5];
+        if (fn_800B7D3C(0, box, m)) {
+            lbl_1_common_bss_472B4.drawnBones++;
+            va_start(list, numLights);
+            DOVARender(obj, camera, numLights, &list);
+        }
+    }
+    if (lbl_1_bss_C1 != 0) {
+        count = file->header.totalBones;
+        if (lbl_1_common_bss_472B4.selBone < 0) {
+            i = 0;
+        } else {
+            i = lbl_1_common_bss_472B4.selBone;
+            count = i + 1;
+        }
+        for (; i < count; i++) {
+            if (lbl_1_bss_2E0[i] != 0) {
+                continue;
+            }
+            bone = &file->bones[i];
+            geoID = bone->geoFileID;
+            if (geoID == 0xFFFF) {
+                continue;
+            }
+            obj = pal->descriptorArray[geoID].dispObj;
+            CTRLBuildMatrix(bone->orientationCtrl, obj->worldMatrix);
+            PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
+            PSMTXConcat(camera, obj->worldMatrix, m);
+            box[0].x = obj->bounds[1];
+            box[0].y = obj->bounds[3];
+            box[0].z = obj->bounds[4];
+            box[1].x = obj->bounds[0];
+            box[1].y = obj->bounds[3];
+            box[1].z = obj->bounds[4];
+            box[2].x = obj->bounds[0];
+            box[2].y = obj->bounds[3];
+            box[2].z = obj->bounds[5];
+            box[3].x = obj->bounds[1];
+            box[3].y = obj->bounds[3];
+            box[3].z = obj->bounds[5];
+            box[4].x = obj->bounds[1];
+            box[4].y = obj->bounds[2];
+            box[4].z = obj->bounds[4];
+            box[5].x = obj->bounds[0];
+            box[5].y = obj->bounds[2];
+            box[5].z = obj->bounds[4];
+            box[6].x = obj->bounds[0];
+            box[6].y = obj->bounds[2];
+            box[6].z = obj->bounds[5];
+            box[7].x = obj->bounds[1];
+            box[7].y = obj->bounds[2];
+            box[7].z = obj->bounds[5];
+            if (fn_800B7D3C(0, box, m)) {
+                fn_1_4E98(obj, camera);
+            }
+        }
+    }
+}
+#endif
