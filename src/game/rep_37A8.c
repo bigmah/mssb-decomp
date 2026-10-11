@@ -454,7 +454,38 @@ s32 fn_3_143770(u8* p) {
 
 // .text:0x001439EC size:0x5C0 mapped:0x80782A80
 void fn_3_1439EC(s32 idx) {
-    return;
+    MgRunner* r = (MgRunner*)g_Minigame + idx;
+    s32 k;
+
+    if (r->sel != 0) {
+        r->throwTimer++;
+        if (r->throwTimer == 1) {
+            r->_2E = 0;
+        }
+        if (r->throwTimer >= *(s16*)(lbl_3_data_21E68 + 0x18)) {
+            r->throwTimer = 0;
+            for (k = 0; k < 4; k++) {
+                fn_3_1430D0(idx, k);
+                fn_3_90064(0x2DA);
+            }
+            r->_2E = 1;
+        }
+    } else if (r->_2E != 0) {
+        r->queueTimer++;
+        if (r->queueTimer == *(s16*)(lbl_3_data_21E68 + 0x1A)) {
+            fn_3_1430D0(idx, r->queue[0]);
+            r->fielder = -1;
+            r->queue[0] = r->queue[1];
+            r->queue[1] = r->queue[2];
+            r->queue[2] = r->queue[3];
+            r->queue[3] = -1;
+            if (r->queue[0] < 0) {
+                r->_2E = 0;
+            }
+            r->queueTimer = 0;
+            fn_3_90064(0x2DA);
+        }
+    }
 }
 
 // .text:0x00143FAC size:0x80 mapped:0x80783040
