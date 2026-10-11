@@ -51,6 +51,14 @@ typedef struct MtxBox {
     Mtx m;
 } MtxBox;
 extern const MtxBox lbl_800E67C0; // identity
+extern const MtxBox lbl_800E682C; // identity
+// Scratch for drawing type-4 trails.
+typedef struct TrailScratch {
+    /* 0x00 */ f32 width[18];
+    /* 0x48 */ u32 color[18];
+    /* 0x90 */ Vec pos[18];
+} TrailScratch;
+extern TrailScratch lbl_8017EC00;
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB800;
 extern f32 lbl_803CB80C;
@@ -277,6 +285,27 @@ void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm);
 s32 fn_80029CC8(Emitter* e);
 
+// Push a new position into a type-4 trail's history (ring of 4 in the head,
+// then rings of 7 in each extension node).
+static inline void TrailPush(TrailHead* head, Vec* pos) {
+    TrailExt* node;
+
+    head->histIdx = (head->histIdx + 1) % 4;
+    if (head->extraNodes != 0) {
+        node = (TrailExt*)head->last;
+        head->extIdx = (head->extIdx + 1) % 7;
+        while (node->prev != (TrailExt*)head) {
+            memcpy(&node->ext[head->extIdx], &node->prev->ext[head->extIdx], sizeof(Vec));
+            node = node->prev;
+        }
+        memcpy(&node->ext[head->extIdx], &head->hist[head->histIdx], sizeof(Vec));
+    }
+    memcpy(&head->hist[head->histIdx], pos, sizeof(Vec));
+    if (head->histCount < head->histMax) {
+        head->histCount++;
+    }
+}
+
 static inline u32 Expand4444(u16 c) {
     // 0xRGBA nibbles -> 0xRRGGBBAA
     return ((c & 0xF) << 4) | (c & 0xF) | ((c << 4) & 0xF00) | ((c << 8) & 0xF000) | ((c << 8) & 0xF0000) |
@@ -321,9 +350,175 @@ void fn_80027918(u8 type, f32 v) {
 #endif
 
 // .text:0x80027968 size:0xBC4
+// NONMATCHING 64%: register allocation; the scratch arrays are addressed off the file-static bss base in the original
+#if NONMATCHING
 s32 fn_80027968(Emitter* e) {
-    return 0;
+    MtxBox ident;
+    Vec c;
+    Vec t;
+    union {
+        u32 rgba;
+        u8 v[4];
+    } col;
+    s32 alive = 0;
+    s32 idx = 0;
+    s32 spawn = 0;
+    s32 vertical;
+    s32 k;
+    s32 j;
+    s32 n;
+    s32 i;
+    f32 w;
+    TrailHead* h;
+    TrailExt* node;
+    ParticleParams5* sprm;
+    Emitter* e5;
+
+    ident = lbl_800E682C;
+    h = (TrailHead*)e->particles;
+    if (e->u.t4.unk48 != 0) {
+        if (e->u.t4.unk4D-- == 0) {
+            spawn = 1;
+            e->u.t4.unk4D = e->u.t4.unk4C;
+            e->u.t4.unk4F = (e->u.t4.unk4F + 1) % e->u.t4.unk4E;
+        }
+    }
+    GXSetCullMode(GX_CULL_NONE);
+    GXLoadPosMtxImm(ident.m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+    if (e->tex != NULL) {
+        LoadParticleTex(e->tex, h->unk54, GX_CLAMP, GX_CLAMP);
+    }
+    do {
+        if (h->unk50 > 0) {
+            if (lbl_80366158._28 == 0) {
+                PSVECScale(&h->vel, h->unk38, &t);
+                PSVECAdd(&h->vel, &t, &h->vel);
+                h->vel.y = h->vel.y + h->unk4C;
+            }
+            // orientation of the offset on screen picks the strip direction
+            PSMTXMultVec(lbl_8017FFE0, &h->vel, &c);
+            c.x = c.x - lbl_8017FFE0[0][3];
+            c.y = c.y - lbl_8017FFE0[1][3];
+            c.z = c.z - lbl_8017FFE0[2][3];
+            vertical = __fabs(c.x) < __fabs(c.y);
+            w = ((((f32)h->unk52 / 100.0f) * 0.5f) * (f32)e->u.t4.unk54) / 100.0f;
+            col.rgba = h->color.rgba;
+            i = 0;
+            for (k = h->histCount; k-- != 0;) {
+                if (k < h->histCount && k >= 0 && k < 4) {
+                    memcpy(&t, &h->hist[(h->histIdx - k + 4) % 4], sizeof(Vec));
+                } else {
+                    j = k - 4;
+                    node = (TrailExt*)h->next;
+                    for (n = j / 7; n != 0; n--) {
+                        node = (TrailExt*)node->next;
+                    }
+                    j = j % 7;
+                    memcpy(&t, &node->ext[(h->extIdx - j + 7) % 7], sizeof(Vec));
+                }
+                PSMTXMultVec(lbl_8017FFE0, &t, &lbl_8017EC00.pos[i]);
+                col.v[3] = (h->color.v[3] * (h->histCount - 1 - k)) / h->histCount;
+                lbl_8017EC00.color[i] = col.rgba;
+                lbl_8017EC00.width[i] = (w * (f32)(h->histCount - 1 - k)) / (f32)h->histCount;
+                i++;
+            }
+            PSVECAdd(&t, &h->vel, &t);
+            PSMTXMultVec(lbl_8017FFE0, &t, &c);
+            GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT0, (u16)(h->histCount + 1) * 2);
+            if (vertical) {
+                for (i = 0; i < h->histCount; i++) {
+                    GXPosition3f32(lbl_8017EC00.pos[i].x - lbl_8017EC00.width[i], lbl_8017EC00.pos[i].y, lbl_8017EC00.pos[i].z);
+                    GXColor1u32(lbl_8017EC00.color[i]);
+                    GXTexCoord2f32(0.0f, 0.5f);
+                    GXPosition3f32(lbl_8017EC00.pos[i].x + lbl_8017EC00.width[i], lbl_8017EC00.pos[i].y, lbl_8017EC00.pos[i].z);
+                    GXColor1u32(lbl_8017EC00.color[i]);
+                    GXTexCoord2f32(1.0f, 0.5f);
+                }
+                GXPosition3f32(c.x - w, c.y, c.z);
+                GXColor1u32(h->color.rgba);
+                GXTexCoord2f32(0.0f, 0.5f);
+                GXPosition3f32(c.x + w, c.y, c.z);
+                GXColor1u32(h->color.rgba);
+                GXTexCoord2f32(1.0f, 0.5f);
+            } else {
+                for (i = 0; i < h->histCount; i++) {
+                    GXPosition3f32(lbl_8017EC00.pos[i].x, lbl_8017EC00.pos[i].y - lbl_8017EC00.width[i], lbl_8017EC00.pos[i].z);
+                    GXColor1u32(lbl_8017EC00.color[i]);
+                    GXTexCoord2f32(0.0f, 0.5f);
+                    GXPosition3f32(lbl_8017EC00.pos[i].x, lbl_8017EC00.pos[i].y + lbl_8017EC00.width[i], lbl_8017EC00.pos[i].z);
+                    GXColor1u32(lbl_8017EC00.color[i]);
+                    GXTexCoord2f32(1.0f, 0.5f);
+                }
+                GXPosition3f32(c.x, c.y - w, c.z);
+                GXColor1u32(h->color.rgba);
+                GXTexCoord2f32(0.0f, 0.5f);
+                GXPosition3f32(c.x, c.y + w, c.z);
+                GXColor1u32(h->color.rgba);
+                GXTexCoord2f32(1.0f, 0.5f);
+            }
+            // head sprite
+            w = ((f32)h->unk52 / 100.0f) * 0.5f;
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            GXPosition3f32(c.x - w, c.y - w, c.z);
+            GXColor1u32(h->color.rgba);
+            GXTexCoord2f32(0.0f, 0.0f);
+            GXPosition3f32(c.x - w, c.y + w, c.z);
+            GXColor1u32(h->color.rgba);
+            GXTexCoord2f32(0.0f, 1.0f);
+            GXPosition3f32(c.x + w, c.y + w, c.z);
+            GXColor1u32(h->color.rgba);
+            GXTexCoord2f32(1.0f, 1.0f);
+            GXPosition3f32(c.x + w, c.y - w, c.z);
+            GXColor1u32(h->color.rgba);
+            GXTexCoord2f32(1.0f, 0.0f);
+            if (spawn && e->u.t4.unk4F == idx % e->u.t4.unk4E && lbl_80366158._28 == 0) {
+                // emit sparks backwards from the tip
+                PSVECScale(&h->vel, -1.0f, &c);
+                col.v[3] = 0;
+                col.v[0] = e->u.t4.unk55 + (e->u.t4.unk56 * h->color.v[0]) / 255;
+                col.v[1] = e->u.t4.unk55 + (e->u.t4.unk56 * h->color.v[1]) / 255;
+                col.v[2] = e->u.t4.unk55 + (e->u.t4.unk56 * h->color.v[2]) / 255;
+                sprm = (ParticleParams5*)e->u.t4.unk48;
+                sprm->unk40 = col.rgba;
+                fn_80030D88(&t, &c, sprm, 5);
+                e5 = FindEmitter(NULL, 5);
+                if (e5 != NULL) {
+                    e5->u.t5.unk18 = 0;
+                }
+            }
+            if (lbl_80366158._28 == 0) {
+                for (j = 0; j < e->u.t4.unk50; j++) {
+                    if (t.x >= e->u.t4.boxes[j].min.x && t.y >= e->u.t4.boxes[j].min.y && t.z >= e->u.t4.boxes[j].min.z &&
+                        t.x <= e->u.t4.boxes[j].max.x && t.y <= e->u.t4.boxes[j].max.y && t.z <= e->u.t4.boxes[j].max.z) {
+                        break;
+                    }
+                }
+                if (j < e->u.t4.unk50) {
+                    h->unk50 = 0;
+                } else {
+                    TrailPush(h, &t);
+                    n = h->color.v[3] - h->unk56;
+                    if (n < 0) {
+                        n = 0;
+                    }
+                    h->color.v[3] = n;
+                    h->unk50--;
+                }
+            }
+            alive++;
+        }
+        idx++;
+        h = (TrailHead*)h->last->next;
+    } while (h != NULL);
+    GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    return alive == 0;
 }
+#endif
 
 // .text:0x8002852C size:0xFC
 void fn_8002852C(void) {
@@ -496,37 +691,24 @@ void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u3
             memset(node->ext, 0, sizeof(node->ext));
         }
         head->last = (TrailHead*)node;
-        head->histIdx = (head->histIdx + 1) % 4;
-        if (head->extraNodes != 0) {
-            node = (TrailExt*)head->last;
-            head->extIdx = (head->extIdx + 1) % 7;
-            while (node->prev != (TrailExt*)head) {
-                memcpy(&node->ext[head->extIdx], &node->prev->ext[head->extIdx], sizeof(Vec));
-                node = node->prev;
-            }
-            memcpy(&node->ext[head->extIdx], &head->hist[head->histIdx], sizeof(Vec));
-        }
-        memcpy(&head->hist[head->histIdx], &start, sizeof(Vec));
-        if (head->histCount < head->histMax) {
-            head->histCount++;
-        }
+        TrailPush(head, &start);
         ent++;
         head->unk54 = prm->texIndex;
         head = (TrailHead*)head->last->next;
     }
     e->u.t4.unk50 = 2;
-    e->u.t4.unk18[0] = -92.5f;
-    e->u.t4.unk18[1] = -36.0f;
-    e->u.t4.unk18[2] = 53.0f;
-    e->u.t4.unk18[3] = -47.5f;
-    e->u.t4.unk18[4] = 0.0f;
-    e->u.t4.unk18[5] = 118.0f;
-    e->u.t4.unk18[6] = 29.0f;
-    e->u.t4.unk18[7] = -36.0f;
-    e->u.t4.unk18[8] = 66.0f;
-    e->u.t4.unk18[9] = 83.0f;
-    e->u.t4.unk18[10] = 0.0f;
-    e->u.t4.unk18[11] = 122.0f;
+    e->u.t4.boxes[0].min.x = -92.5f;
+    e->u.t4.boxes[0].min.y = -36.0f;
+    e->u.t4.boxes[0].min.z = 53.0f;
+    e->u.t4.boxes[0].max.x = -47.5f;
+    e->u.t4.boxes[0].max.y = 0.0f;
+    e->u.t4.boxes[0].max.z = 118.0f;
+    e->u.t4.boxes[1].min.x = 29.0f;
+    e->u.t4.boxes[1].min.y = -36.0f;
+    e->u.t4.boxes[1].min.z = 66.0f;
+    e->u.t4.boxes[1].max.x = 83.0f;
+    e->u.t4.boxes[1].max.y = 0.0f;
+    e->u.t4.boxes[1].max.z = 122.0f;
 }
 #endif
 

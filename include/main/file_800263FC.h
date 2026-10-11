@@ -125,7 +125,11 @@ typedef struct Emitter {
             /* 0x18 */ u8 unk18;
         } t5;
         struct {
-            /* 0x18 */ f32 unk18[12];
+            /* 0x18 */ struct {
+                Vec min;
+                Vec max;
+            } boxes[2]; // particles entering a box stop
+
             /* 0x48 */ s32 unk48;
             /* 0x4C */ u8 unk4C;
             /* 0x4D */ u8 unk4D;
