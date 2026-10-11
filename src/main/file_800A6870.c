@@ -372,8 +372,9 @@ void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAd
 #endif
 
 // .text:0x800A750C size:0x38
+// The original passes its own second argument straight through as DVDFastOpen's fileInfo.
 BOOL fn_800A750C(void* unused, DVDFileInfo* fileInfo) {
-    return 0;
+    return DVDFastOpen(lbl_803C6CF8.entryNum, fileInfo) != 0;
 }
 
 // .text:0x800A7544 size:0x24
