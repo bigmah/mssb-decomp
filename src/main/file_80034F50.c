@@ -157,8 +157,14 @@ void fn_80035CA4(void) {
 }
 
 // .text:0x80035DD4 size:0xFC
-void fn_80035DD4(void) {
-    return;
+s32 fn_80035DD4(s32 id) {
+    s32 i;
+    for (i = 0; i < SPANI_OBJ_COUNT; i++) {
+        if (id == lbl_8023D6C0[i]) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 // .text:0x80035ED0 size:0x1C
