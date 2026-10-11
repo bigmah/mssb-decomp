@@ -112,6 +112,8 @@ extern u8 lbl_3_common_bss_35154[];
 extern TexImage* lbl_3_bss_B854;
 extern u8 lbl_3_data_26B9C[];
 extern u8 lbl_3_bss_B858;
+extern const Vec lbl_3_rodata_3920;
+extern const f64 lbl_3_rodata_39B0;
 extern const f32 lbl_3_rodata_3A1C;
 extern const f64 lbl_3_rodata_3A10;
 extern void PSMTX44MultVec(const Mtx44 mtx, const Vec* src, Vec* dst);
@@ -350,6 +352,7 @@ void fn_3_147DFC(void) {
     pitchingMachinePitching(0x25);
 }
 
+#pragma dont_inline off
 // .text:0x00147E20 size:0x174 mapped:0x80786EB4
 void fn_3_147E20(void) {
     GXSetZMode(1, 3, 1);
@@ -488,10 +491,54 @@ u8 fn_3_1483D4(void) {
     return rand() % 5 == 0;
 }
 
+// NONMATCHING 72%: the original inlines 147F94/148254/1480E0/1483D4/148EF0/148FD0/147E20; CW won't auto-inline 148254/1480E0 (Control/fifo bodies), so those stay calls. With explicit static-inline copies of those two it reaches 93% (register numbering), which checks the structure
 // .text:0x0014841C size:0xAD4 mapped:0x807874B0
-void fn_3_14841C(void) {
-    return;
+#if NONMATCHING
+u32 fn_3_14841C(u8* o) {
+    Vec up;
+    Vec dir;
+    u8* p;
+    u8* t;
+    f32 ang;
+    f32 r;
+    p = *(u8**)(o + 0xC);
+    t = ((u8**)(lbl_8036E548 + 0x2C50))[(s8)o[0x18]];
+    fn_3_147F94();
+    do {
+        if (*(s16*)(p + 0x48) <= 0) {
+            fn_3_148254(o, p);
+            fn_3_1480E0(p);
+            PSVECAdd((Vec*)(p + 0x10), (Vec*)(p + 4), (Vec*)(p + 4));
+            PSVECAdd((Vec*)(p + 0x28), (Vec*)(p + 0x1C), (Vec*)(p + 0x1C));
+            if (fn_3_1483D4()) {
+                up = lbl_3_rodata_3920;
+                memcpy(&dir, p + 0x10, sizeof(Vec));
+                PSVECNormalize(&dir, &dir);
+                ang = lbl_3_rodata_39AC * (f32)acos(PSVECDotProduct(&up, &dir));
+                if (dir.x < lbl_3_rodata_3934[0]) {
+                    ang *= lbl_3_rodata_3948;
+                }
+                r = lbl_3_rodata_39B0 * (lbl_3_rodata_3990 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3968));
+                if (__fabs(ang + r) > lbl_3_rodata_39B0) {
+                    ang = lbl_3_rodata_39B0 * (__fabs(ang) / ang);
+                } else {
+                    ang = ang + r;
+                }
+                fn_3_148EF0(p, ang);
+                p[0x4C]++;
+            }
+            if (-*(f32*)(p + 8) - *(f32*)(p + 0x3C) < *(f32*)(t + 0x38)) {
+                fn_3_148FD0(o, p);
+            }
+        } else {
+            *(s16*)(p + 0x48) -= 1;
+        }
+        p = *(u8**)p;
+    } while (p != NULL);
+    fn_3_147E20();
+    return 0;
 }
+#endif
 
 #pragma dont_inline off
 // .text:0x00148EF0 size:0xE0 mapped:0x80787F84

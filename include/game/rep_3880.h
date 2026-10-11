@@ -14,7 +14,7 @@ void fn_3_147F94(void);
 void fn_3_1480E0(u8* o);
 void fn_3_148254(u8* a, u8* b);
 u8 fn_3_1483D4(void);
-void fn_3_14841C(void);
+u32 fn_3_14841C(u8* o);
 void fn_3_148EF0(u8* o, f32 ang);
 void fn_3_148FD0(u8* a, u8* p);
 void fn_3_149340(u8* o);
