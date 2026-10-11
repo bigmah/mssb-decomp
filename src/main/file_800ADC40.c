@@ -81,6 +81,7 @@ extern u8 lbl_803CC180;         // decode step
 extern u8 lbl_803CC181;         // movie is cached in ARAM
 extern u8 lbl_803CC182;
 extern f32 lbl_803CC184;        // quad depth
+extern const GXColor lbl_803CCEE8; // white
 extern u32 lbl_803CC188;        // AI DMA buffer index
 extern AIDCallback lbl_803CC18C; // previous AI DMA callback
 extern u32 lbl_803CC190;
@@ -145,7 +146,7 @@ void fn_800ADD70(void) {
     MovPlayer* mov = lbl_803CC170;
     f32 proj[7];
     Mtx mtx;
-    GXColor color = { 0xFF, 0xFF, 0xFF, 0xFF };
+    GXColor color;
     s16* v;
     s16 z;
 
@@ -162,18 +163,19 @@ void fn_800ADD70(void) {
         GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U8, 0);
         lbl_803CC194 ^= 1;
         v = lbl_803CBB00[lbl_803CC194];
-        v[9] = v[0] = mov->posX;
-        v[4] = v[1] = mov->posY;
-        v[6] = v[3] = mov->posX + (mov->width - 1);
-        v[10] = v[7] = mov->posY + (mov->height - 1);
+        v[0] = v[9] = mov->posX;
+        v[1] = v[4] = mov->posY;
+        v[3] = v[6] = mov->posX + mov->width - 1;
+        v[7] = v[10] = mov->posY + mov->height - 1;
         z = lbl_803CC184;
-        v[11] = v[8] = v[5] = v[2] = z;
+        v[2] = v[5] = v[8] = v[11] = z;
         DCFlushRange(v, 0x18);
         GXSetArray(GX_VA_POS, v, 6);
         GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
         GXSetNumChans(1);
         GXSetNumTexGens(1);
         GXSetNumTevStages(1);
+        color = lbl_803CCEE8;
         GXSetChanMatColor(GX_COLOR0A0, color);
         GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
@@ -347,14 +349,15 @@ void YUV2RGB_(u8* src, u32* dst, s32 width, s32 height) {
 }
 
 // Mixes the movie's decoded audio into an AI DMA buffer.
-static inline void MovMixAudio(s16* dst) {
+static inline void MovMixAudio(s16* buf) {
     MovPlayer* mov = lbl_803CC170;
     u8 volume = lbl_803CBAE0;
-    u16 len = lbl_803CBAE4;
-    u8* read;
-    u32 off;
-    u32 n;
+    u32 len = lbl_803CBAE4;
     s16 sample;
+    u8* read;
+    s16* dst;
+    u32 off;
+    u32 i;
 
     if (mov == NULL || !(mov->state & 1) || (mov->state & 8) || !(mov->flags & 1)) {
         return;
@@ -364,7 +367,8 @@ static inline void MovMixAudio(s16* dst) {
         return;
     }
     off = 0;
-    for (n = len >> 1; n != 0; n--) {
+    dst = buf;
+    for (i = 0; i < len / 2; i++) {
         if (read + off > mov->audioEnd) {
             read = mov->audioStart - off;
         }
