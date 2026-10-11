@@ -156,7 +156,7 @@ void fn_2_60DF4(MenuTask* task, MenuItem* item);
 void fn_2_60F7C(MenuTask* task, MenuItem* item);
 void fn_2_61104(MenuTask* task, MenuItem* item);
 void fn_2_612A8(MenuTask* task, MenuItem* item);
-void fn_2_61468(void);
+void fn_2_61468(MenuTask* task, MenuItem* item);
 void fn_2_61644(MenuTask* task, MenuItem* item);
 void fn_2_61794(MenuTask* task, MenuItem* item);
 void fn_2_61948(void);
