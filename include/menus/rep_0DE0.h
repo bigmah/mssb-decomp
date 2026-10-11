@@ -111,4 +111,6 @@ void fn_2_87350(void);
 
 void fn_2_86470(void);
 
+void fn_2_86A80(void);
+
 #endif
