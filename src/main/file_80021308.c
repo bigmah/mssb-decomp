@@ -474,7 +474,13 @@ void fn_80022A24(void) {
 
 // .text:0x80022B14 size:0x54
 void fn_80022B14(void) {
-    return;
+    if (DVD_STATE_IDLE == 1) {
+        if (lbl_803716B8.stadiumAramPending != 0) {
+            lbl_803716B8.stadiumAram = lbl_803716B8.stadiumAramPending;
+            lbl_803716B8.stadiumAramPending = 0;
+        }
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 
 // .text:0x80022B68 size:0x14C

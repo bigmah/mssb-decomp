@@ -134,6 +134,7 @@ void fn_80022634(void);
 void fn_800227A0(DiskFileEntry* entry, void* dst, void* user);
 void fn_800227E4(void);
 void fn_800229CC(void);
+void fn_80022B14(void);
 s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
 
 #endif
