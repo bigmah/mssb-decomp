@@ -419,8 +419,38 @@ u8 fn_800675C4(s32 team, s32 captain) {
 #endif
 
 // .text:0x800678CC size:0x1FC
-void fn_800678CC(void) {
-    return;
+void fn_800678CC(s32 team) {
+    s8 idx = -1;
+    s32 captain;
+    s32 i;
+    u8 variant;
+
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        if (team == 0) {
+            captain = lbl_8034E9A0.captain[team] = gChallengeState._441D;
+        } else {
+            captain = lbl_8034E9A0.captain[team] = (s8)gChallengeState._441F;
+        }
+    } else {
+        captain = lbl_8034E9A0.captain[team];
+    }
+    for (i = 0; i < 12; i++) {
+        if (captain == lbl_80108ED0[i]) {
+            idx = i;
+            break;
+        }
+    }
+    variant = fn_800675C4(team, captain);
+    if (variant == 0) {
+        variant = fn_80067264(team, captain);
+        if (variant != 0) {
+            lbl_8034E9A0.captainVariant[team] = idx * 4 + (variant - 1);
+        } else {
+            lbl_8034E9A0.captainVariant[team] = (idx + 1) * 4 - 1;
+        }
+    } else {
+        lbl_8034E9A0.captainVariant[team] = idx * 4 + (variant - 1);
+    }
 }
 
 // .text:0x80067AC8 size:0x78
