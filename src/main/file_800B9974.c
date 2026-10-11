@@ -222,8 +222,10 @@ void LITInitColor(Light* light, GXColor* color) {
 }
 
 // .text:0x800BD3AC size:0x10
-void LITInitDir(void) {
-    return;
+void LITInitDir(Light* light, f32 x, f32 y, f32 z) {
+    light->direction.x = x;
+    light->direction.y = y;
+    light->direction.z = z;
 }
 
 // .text:0x800BD3BC size:0x10
