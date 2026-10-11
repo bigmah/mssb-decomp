@@ -3,6 +3,13 @@
 
 #include "mssbTypes.h"
 
+// Screen-fade task (lbl_803CC1B8 while fn_3_21C90 / fn_3_21DE4 run); only the fields used here.
+typedef struct FadeTask {
+    /*0x00*/ u8 _00[0x1E];
+    /*0x1E*/ u16 frame;
+    /*0x20*/ u16 alpha;
+} FadeTask;
+
 void fn_3_21C90(void);
 void fn_3_21DE4(void);
 void fn_3_21F14(void);

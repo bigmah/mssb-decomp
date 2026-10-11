@@ -10,7 +10,9 @@ typedef struct GameActorView {
     /*0x034*/ VecXYZ pos;
     /*0x040*/ f32 _040;
     /*0x044*/ f32 rotY;
-    /*0x048*/ u8 _048[0x252 - 0x48];
+    /*0x048*/ u8 _048[0x68 - 0x48];
+    /*0x068*/ s16 _068; // animation frames left? (0 = done)
+    /*0x06A*/ u8 _06A[0x252 - 0x6A];
     /*0x252*/ s8 kind; // character id
     /*0x253*/ u8 _253[0x257 - 0x253];
     /*0x257*/ s8 team;
@@ -79,7 +81,14 @@ typedef struct SceneActorSetup {
 typedef struct SceneActorState {
     /*0x00*/ VecXYZ pos;
     /*0x0C*/ f32 rotY;
-    /*0x10*/ u8 _10[0x2C - 0x10];
+    /*0x10*/ f32 targetRotY; // facing toward the destination
+    /*0x14*/ f32 speed;      // forward step per frame
+    /*0x18*/ u8 _18[0x1C - 0x18];
+    /*0x1C*/ f32 _1C; // compared with the actor's _068
+    /*0x20*/ u8 _20[0x28 - 0x20];
+    /*0x28*/ u8 arrived;
+    /*0x29*/ u8 moving;
+    /*0x2A*/ u8 _2A[0x2C - 0x2A];
 } SceneActorState; // size: 0x2C
 
 // Cutscene work area pointed to by lbl_3_common_bss_1323C (only the fields used here).
@@ -103,6 +112,12 @@ typedef struct SceneWork {
     /*0x27F*/ u8 _27F;
     /*0x280*/ u8 _280;
 } SceneWork;
+
+// lbl_3_data_2398 entry.
+typedef struct Unk2398Entry {
+    /*0x00*/ u8 _00[0x34];
+    /*0x34*/ s32 _34[3];
+} Unk2398Entry; // size: 0x40
 
 // Effect/state block lbl_3_common_bss_32724 (size 0x124, only the fields used here).
 typedef struct Unk32724 {

@@ -2685,7 +2685,11 @@ typedef struct {
     /* 0xAA2 */ s16 _AA2;
     /* 0xAA4 */ s16 _AA4;
     /* 0xAA6 */ s16 _AA6;
-    artificial_padding(0xaa6, 0xab4, u16);
+    /* 0xAA8 */ u16 _AA8; // fade-out active (fn_3_21C90)
+    /* 0xAAA */ u16 _AAA; // fade-in active (fn_3_21DE4)
+    /* 0xAAC */ u16 _AAC; // fade-out length in frames
+    /* 0xAAE */ u16 _AAE; // fade-in length in frames
+    artificial_padding(0xaae, 0xab4, u16);
     /* 0xAB5 */ u8 _AB4;
     /* 0xAB5 */ u8 _AB5;
     /* 0xAB6 */ u8 _AB6;
