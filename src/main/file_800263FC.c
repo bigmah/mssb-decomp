@@ -320,8 +320,19 @@ void fn_8002ECA0(void) {
 }
 
 // .text:0x8002F1AC size:0xAC
-void fn_8002F1AC(void) {
-    return;
+s32 fn_8002F1AC(Vec* pos, s32 id) {
+    Emitter* e = FindEmitter(NULL, 6);
+    Particle* p;
+    if (e != NULL && lbl_80366158._28 == 0) {
+        for (p = e->particles; p != NULL; p = p->next) {
+            if (p->u.t6.id == id) {
+                memcpy(&p->pos, pos, sizeof(Vec));
+                p->life++;
+                return 1;
+            }
+        }
+    }
+    return 0;
 }
 
 // .text:0x8002F258 size:0x39C
