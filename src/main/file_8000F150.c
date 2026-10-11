@@ -136,7 +136,12 @@ void DrawText(s32 index) {
 
 // .text:0x80010F2C size:0x74
 void DrawTextOnCondition(s32 layer) {
-    return;
+    s32 i;
+    for (i = 0; i < 30; i++) {
+        if (lbl_80366B18.entries[i].state == 2 && layer == lbl_80366B18.entries[i].layer) {
+            DrawText(i);
+        }
+    }
 }
 
 // .text:0x80010FA0 size:0x60
