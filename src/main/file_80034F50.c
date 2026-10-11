@@ -333,7 +333,45 @@ void fn_800369DC(f32 zoom) {
 
 // .text:0x80036A3C size:0x24C
 void fn_80036A3C(void) {
-    return;
+    s32 modes[23];
+    s32 i;
+
+    C_MTXFrustum(lbl_801F8680, -0.175f, 0.175f, -0.25f, 0.25f, 1.0f, 512.0f);
+    for (i = 0; i < 23; i++) {
+        switch (i) {
+        case 12:
+            modes[i] = 9;
+            break;
+        case 11:
+            modes[i] = 0xA;
+            break;
+        case 10:
+        case 13:
+        case 14:
+            modes[i] = 0xB;
+            break;
+        case 0:
+            modes[i] = 0xD;
+            break;
+        default:
+            modes[i] = 0xC;
+            break;
+        }
+    }
+    fn_800B2854(lbl_801F86C0, 0x45000, lbl_801F8680, 0, 23, modes, 0);
+    fn_800B27A4(10);
+    for (i = 0xD; i < 23; i++) {
+        fn_800B0D38(i, 2);
+    }
+    for (i = 0; i < SPANI_OBJ_COUNT; i++) {
+        lbl_8023D6C0[i] = -1;
+    }
+    lbl_803CBBE4 = 0;
+    lbl_803CBBE0 = 2.0f;
+    lbl_803CBBDC = 1280.0f;
+    memset(lbl_8039C3E0, 0, sizeof(lbl_8039C3E0));
+    lbl_80366188.unk84 = 0;
+    lbl_80366188.drawCallback = NULL;
 }
 
 // .text:0x80036C88 size:0x3CC
