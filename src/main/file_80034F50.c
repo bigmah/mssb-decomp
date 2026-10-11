@@ -152,8 +152,8 @@ void fn_80035B50(void) {
 }
 
 // .text:0x80035CA4 size:0x130
-void fn_80035CA4(void) {
-    return;
+void fn_80035CA4(s32 id) {
+    spaniClearSlot(id);
 }
 
 // .text:0x80035DD4 size:0xFC
