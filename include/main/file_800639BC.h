@@ -16,16 +16,26 @@ typedef struct CharSelectState {
     /*0x46E8*/ u8* heapMarkA[2]; // saved lbl_803C7898 lo/hi (fn_2_129AC)
     /*0x46F0*/ u8* heapMarkB[2]; // saved lbl_803C7898 lo/hi (fn_2_12988)
     /*0x46F8*/ u8 ports[2];
-    /*0x46FA*/ u8 _46FA[0x4709 - 0x46FA];
+    /*0x46FA*/ u8 _46FA[0x46FC - 0x46FA];
+    /*0x46FC*/ s8 _46FC[4];
+    /*0x4700*/ u8 _4700;
+    /*0x4701*/ u8 _4701;
+    /*0x4702*/ u8 _4702[0x4709 - 0x4702];
     /*0x4709*/ s8 captainSlot[2]; // roster slot of the captain per team
     /*0x470B*/ u8 _470B[0x470D - 0x470B];
     /*0x470D*/ s8 captainVariant[2]; // captain costume/colour index (fn_800678CC)
     /*0x470F*/ s8 teamRating[2]; // 0-5, from the average of fn_800670A0
-    /*0x4711*/ u8 _4711[0x4757 - 0x4711];
+    /*0x4711*/ u8 _4711[0x4729 - 0x4711];
+    /*0x4729*/ u8 _4729;
+    /*0x472A*/ u8 _472A;
+    /*0x472B*/ u8 _472B[0x4755 - 0x472B];
+    /*0x4755*/ u8 _4755;
+    /*0x4756*/ u8 _4756;
     /*0x4757*/ u8 charFlag[0x36]; // per character id
     /*0x478D*/ u8 chemOrder[2][0x36]; // character ids sorted by chemistry with the captain
     /*0x47F9*/ s8 chemPartners[2][9][9]; // per player: ids of teammates with good chemistry, sorted
-    /*0x489B*/ u8 _489B[0x48AE - 0x489B];
+    /*0x489B*/ u8 _489B[0x48AD - 0x489B];
+    /*0x48AD*/ u8 _48AD;
     /*0x48AE*/ u8 _48AE;
     /*0x48AF*/ u8 _48AF[0x4C28 - 0x48AF];
 } CharSelectState; // size: 0x4C28

@@ -3,9 +3,11 @@
 #include "main/file_800639BC.h"
 #include "main/file_800A7C08.h"
 #include "main/file_800527C4.h"
+#include "main/file_8004C5F8.h"
 #include "main/menu_globals.h"
 #include "static/GameSettings.h"
 #include "menus/rep_04B0.h"
+#include "menus/rep_0568.h"
 #include "Dolphin/os.h"
 #include <string.h>
 
@@ -137,9 +139,34 @@ void fn_2_12C34(void) {
 }
 
 // .text:0x00012CD8 size:0x2B0
+// NONMATCHING 93.6%: inlines fn_2_12238 (equivalent); heap-mark store scheduling
+#if NONMATCHING
 void fn_2_12CD8(void) {
-    return;
+    if (lbl_803CBBCC->prevScene == 5) {
+        lbl_2_bss_F410._10[0] = 0;
+        lbl_2_bss_F410._10[1] = 1;
+    }
+    lbl_8034E9A0._48AD = 0;
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        g_d_GameSettings._10 = 0;
+        lbl_2_bss_100B8._2D = 1;
+    } else {
+        lbl_2_bss_100B8._2D = 2;
+    }
+    lbl_8034E9A0._4755 = 0;
+    lbl_803C66B0.steps[0][0] = 1;
+    fn_2_129AC();
+    fn_2_18FBC();
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        fn_2_12238();
+    }
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        fn_8004D990(lbl_8034E9A0.ports[0], 0, lbl_80361B20._F4);
+        fn_8004D460(0, lbl_2_bss_F410._10[0]);
+    }
+    lbl_8034E9A0._4701 = 1;
 }
+#endif
 
 // .text:0x00012F88 size:0xC1C
 void fn_2_12F88(void) {
