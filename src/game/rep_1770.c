@@ -4,6 +4,9 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_3_data_D258[];
+extern u8 lbl_3_data_C34C[];
+extern u8 lbl_3_data_F430[12][2];
+extern u8 lbl_3_data_F4D0[16];
 extern s16 lbl_3_data_5F3C[4];
 extern u8 lbl_3_data_C22C[];
 extern u8 lbl_3_data_D378[];
@@ -274,7 +277,57 @@ void fn_3_9B320(void) {
 
 // .text:0x0009B7F4 size:0x6EC mapped:0x806DA888
 void fn_3_9B7F4(void) {
-    return;
+    HudTask* task = HUD_TASK;
+    fn_80034E20(task, lbl_3_data_C34C);
+    HUD_OBJ(task, 5)->_64 = lbl_3_data_F430[g_GameLogic.logo[0].captain][1];
+    HUD_OBJ(task, 6)->_64 = lbl_3_data_F430[g_GameLogic.logo[1].captain][1];
+    HUD_OBJ(task, 5)->_5C = g_GameLogic.logo[0].variationID << 16;
+    HUD_OBJ(task, 6)->_5C = g_GameLogic.logo[1].variationID << 16;
+    if (g_Scores._AD != 0) {
+        HUD_OBJ(task, 1)->_64 = 0x11B;
+        HUD_OBJ(task, 2)->_64 = 0x119;
+        HUD_OBJ(task, 3)->_64 = 0x116;
+    }
+    fn_8003649C(task, 3, 1, 0x110, lbl_3_data_F4D0[g_Scores.inning - 1]);
+    fn_8003649C(task, 3, 3, 0x110, lbl_3_data_F4D0[g_Scores.inning - 1]);
+    if (g_Scores.inning >= 10) {
+        HUD_OBJ(task, 7)->flags &= ~2;
+        HUD_OBJ(task, 8)->flags |= 2;
+        HUD_OBJ(task, 9)->flags |= 2;
+        HUD_OBJ(task, 9)->_5C = 0;
+        HUD_OBJ(task, 8)->_5C = 0x10000;
+        fn_8003649C(task, 9, 1, 0x112, g_Scores.inning / 10);
+        fn_8003649C(task, 8, 2, 0x112, g_Scores.inning % 10);
+        fn_8003649C(task, 9, 4, 0x112, g_Scores.inning / 10);
+        fn_8003649C(task, 8, 5, 0x112, g_Scores.inning % 10);
+    } else {
+        HUD_OBJ(task, 7)->_5C = 0x20000;
+        fn_8003649C(task, 7, 3, 0x112, g_Scores.inning);
+        fn_8003649C(task, 7, 6, 0x112, g_Scores.inning);
+    }
+    if (g_Scores.team[0].runs[0] >= 10) {
+        HUD_OBJ(task, 10)->flags &= ~2;
+        HUD_OBJ(task, 11)->flags |= 2;
+        HUD_OBJ(task, 12)->flags |= 2;
+        HUD_OBJ(task, 12)->_5C = 0x20000;
+        HUD_OBJ(task, 11)->_5C = 0x30000;
+    } else {
+        HUD_OBJ(task, 10)->_5C = 0;
+    }
+    if (g_Scores.team[1].runs[0] >= 10) {
+        HUD_OBJ(task, 13)->flags &= ~2;
+        HUD_OBJ(task, 14)->flags |= 2;
+        HUD_OBJ(task, 15)->flags |= 2;
+        HUD_OBJ(task, 15)->_5C = 0x40000;
+        HUD_OBJ(task, 14)->_5C = 0x50000;
+    } else {
+        HUD_OBJ(task, 13)->_5C = 0x10000;
+    }
+    fn_3_9B108(task);
+    task->state = g_Scores.team[0].runs[0];
+    task->_1E = g_Scores.team[1].runs[0];
+    task->timer = 0;
+    HUD_TASK->func = fn_3_9B320;
 }
 
 // .text:0x0009BEE0 size:0x134 mapped:0x806DAF74
