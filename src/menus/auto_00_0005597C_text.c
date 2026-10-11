@@ -210,8 +210,49 @@ void fn_2_55FD8(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // .text:0x00056160 size:0x260
-void fn_2_56160(void) {
-    return;
+void fn_2_56160(MenuTableContext* menu, MenuItemState* item) {
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+    case 8:
+        if (lbl_2_data_1FD84[*(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA) + *(s16*)(lbl_2_bss_1A824C[0] + 0x1976FE)] > 1) {
+            lbl_80371C30[menu->firstIndex + item->offset].obj->_5C = 0;
+            lbl_80371C30[menu->firstIndex + item->offset].obj->flags |= 2;
+            lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 1;
+        } else {
+            lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 4;
+        }
+        item->state = 0x25;
+        break;
+    case 5:
+        if (lbl_2_data_1FD84[*(s16*)(lbl_2_bss_1A824C[0] + 0x1976FA) + *(s16*)(lbl_2_bss_1A824C[0] + 0x1976FE)] > 1) {
+            lbl_80371C30[menu->firstIndex + item->offset].obj->_68 = 4;
+            item->state = 6;
+        } else {
+            lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        }
+        break;
+    case 6: {
+        LayoutObj* obj = lbl_80371C30[menu->firstIndex + item->offset].obj;
+        if ((obj->_5C >> 16) == 0) {
+            obj->_68 = 0;
+            item->state = 7;
+        }
+        break;
+    }
+    case 7:
+        lbl_80371C30[menu->firstIndex + item->offset].obj->flags &= ~2;
+        break;
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x000563C0 size:0x2C8
