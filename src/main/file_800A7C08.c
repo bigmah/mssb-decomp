@@ -2090,10 +2090,122 @@ void fn_800ABF44(void) {
 #endif
 
 // .text:0x800AC508 size:0x764
+// NONMATCHING 91%: register allocation differs throughout (the inlined TPL unpacking keeps different values in saved registers)
+#if NONMATCHING
 void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl, s32 iconSize, u32 iconSpeed,
                  u32 bannerFlags, char* comment, char* subComment, s32 blocks) {
-    return;
+    CARDStat* stat;
+    u8* defaultBanner = NULL;
+    u8* cursor;
+    TEXPalette* pal;
+    TEXDescriptor* desc;
+    s16 hasClut;
+    s32 i;
+    s32 shift;
+
+    memset(&lbl_802EF330, 0, sizeof(CARDStat) - 4);
+    stat = &lbl_802EF330;
+    stat->length = blocks << 13;
+    lbl_803CC16C = _OSAllocFromHeap(0x20, stat->length);
+    memset(lbl_803CC16C, 0, stat->length);
+    strncpy(lbl_802EF330.fileName, fileName, CARD_FILENAME_MAX);
+
+    if ((bannerTpl == NULL && bannerSize == 0) || comment == NULL) {
+        defaultBanner = _OSAllocFromHeap(0x20, 0x1960);
+        if (!LoadDefaultBanner(defaultBanner)) {
+            OSPanic(lbl_803CCEE0, 0x2F4, lbl_800E7A38 + 0x74);
+        }
+    }
+
+    memset(lbl_802EF2F0.comment[0], 0, 4);
+    if (comment == NULL) {
+        strncpy(lbl_802EF2F0.comment[0], (char*)defaultBanner + 0x1820, 0x1F);
+    } else {
+        strncpy(lbl_802EF2F0.comment[0], comment, 0x1F);
+    }
+    memset(lbl_802EF2F0.comment[1], 0, 4);
+    strncpy(lbl_802EF2F0.comment[1], subComment, 0x1F);
+
+    lbl_802EF330.iconAddr = 0;
+    cursor = lbl_803CC16C;
+    if (bannerTpl == NULL) {
+        if (bannerSize == 0) {
+            lbl_802EF330.bannerFormat = CARD_STAT_BANNER_RGB5A3;
+            memcpy(cursor, defaultBanner + 0x20, 0x1800);
+            cursor += 0x1800;
+            lbl_803C7838.hasBanner = 1;
+        }
+    } else {
+        pal = _OSAllocFromHeap(0x20, bannerSize);
+        memcpy(pal, bannerTpl, bannerSize);
+        UnpackTexPalette(pal);
+        desc = TEXGet(pal, 0);
+        switch (desc->textureHeader->format) {
+        case GX_TF_RGB5A3:
+            lbl_802EF330.bannerFormat = CARD_STAT_BANNER_RGB5A3;
+            memcpy(cursor, desc->textureHeader->data, 0x1800);
+            cursor += 0x1800;
+            break;
+        case GX_TF_C8:
+            lbl_802EF330.bannerFormat = CARD_STAT_BANNER_C8;
+            memcpy(cursor, desc->textureHeader->data, 0xC00);
+            memcpy(cursor + 0xC00, desc->CLUTHeader->data, 0x200);
+            cursor += 0xE00;
+            break;
+        default:
+            OSPanic(lbl_803CCEE0, 0x32E, lbl_800E7A38 + 0xA8);
+            break;
+        }
+        fn_800ACFB0(pal);
+        lbl_803C7838.hasBanner = 1;
+    }
+
+    if (iconTpl != NULL) {
+        hasClut = 0;
+        pal = _OSAllocFromHeap(0x20, iconSize);
+        memcpy(pal, iconTpl, iconSize);
+        UnpackTexPalette(pal);
+        for (i = 0, shift = 0; (u32)i < pal->numDescriptors && i < CARD_ICON_MAX; i++, shift += 2) {
+            desc = TEXGet(pal, i);
+            switch (desc->textureHeader->format) {
+            case GX_TF_RGB5A3:
+                stat->iconFormat = (stat->iconFormat & ~(CARD_STAT_ICON_MASK << shift)) |
+                                   (CARD_STAT_ICON_RGB5A3 << shift);
+                memcpy(cursor, desc->textureHeader->data, 0x800);
+                cursor += 0x800;
+                break;
+            case GX_TF_C8:
+                stat->iconFormat = (stat->iconFormat & ~(CARD_STAT_ICON_MASK << shift)) |
+                                   (CARD_STAT_ICON_C8 << shift);
+                memcpy(cursor, desc->textureHeader->data, 0x400);
+                hasClut = 1;
+                cursor += 0x400;
+                break;
+            default:
+                OSPanic(lbl_803CCEE0, 0x351, lbl_800E7A38 + 0xCC);
+                break;
+            }
+            stat->iconSpeed = (stat->iconSpeed & ~(CARD_STAT_SPEED_MASK << shift)) | ((iconSpeed & 3) << shift);
+        }
+        for (; i < CARD_ICON_MAX; i++) {
+            stat->iconFormat &= ~(CARD_STAT_ICON_MASK << (i * 2));
+            stat->iconSpeed &= ~(CARD_STAT_SPEED_MASK << (i * 2));
+        }
+        lbl_803C7838.iconCount = i;
+        if (hasClut == 1) {
+            memcpy(cursor, desc->CLUTHeader->data, 0x200);
+            cursor += 0x200;
+        }
+        lbl_802EF330.bannerFormat |= bannerFlags & CARD_STAT_ANIM_BOUNCE;
+        fn_800ACFB0(pal);
+    }
+    if (defaultBanner != NULL) {
+        fn_800ACFB0(defaultBanner);
+    }
+    lbl_803CC164 = cursor;
+    lbl_802EF330.commentAddr = cursor - lbl_803CC16C;
 }
+#endif
 
 // fn_800ACCD4, size:0x14
 void fn_800ACCD4(void) {
