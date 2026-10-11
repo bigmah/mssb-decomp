@@ -251,7 +251,25 @@ void fn_3_9B108(HudTask* task) {
 
 // .text:0x0009B320 size:0x4D4 mapped:0x806DA3B4
 void fn_3_9B320(void) {
-    return;
+    HudTask* task = HUD_TASK;
+    s32 i;
+    task->timer++;
+    if (lbl_3_common_bss_32724.hudOff != 0 || lbl_3_common_bss_32724._A7 == 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (task->state != g_Scores.team[0].runs[0] || task->_1E != g_Scores.team[1].runs[0]) {
+        fn_3_9B108(task);
+    }
+    if (lbl_3_common_bss_32724._A7 < 0xFF) {
+        for (i = 0; i < 16; i++) {
+            HUD_OBJ(task, i)->color = (HUD_OBJ(task, i)->color & ~0xFF) | lbl_3_common_bss_32724._A7;
+        }
+    } else {
+        for (i = 4; i <= 15; i++) {
+            HUD_OBJ(task, i)->color = (HUD_OBJ(task, i)->color & ~0xFF) | lbl_3_common_bss_32724._A6;
+        }
+    }
 }
 
 // .text:0x0009B7F4 size:0x6EC mapped:0x806DA888
