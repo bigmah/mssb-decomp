@@ -976,3 +976,21 @@ retry:
     (lbl_803C6724 + (u8)team * 9 + (u8)count)[2] = 0;
 }
 #endif
+
+#define g_Pads ((MenuPad*)&lbl_803C77B8)
+
+// fn_2_1A88, size:0x124
+void fn_2_1A88(void) {
+    s32 n;
+    s32 i;
+    lbl_8034E9A0[0x46F8] = 0;
+    n = 1;
+    for (i = 1; i < 4; i++) {
+        if (g_Pads[i].err != -1) {
+            lbl_8034E9A0[0x46F8 + n++] = i;
+        }
+    }
+    while (n < 4) {
+        ((s8*)lbl_8034E9A0)[0x46F8 + n++] = -1;
+    }
+}

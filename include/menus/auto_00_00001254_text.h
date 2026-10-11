@@ -3,6 +3,17 @@
 
 #include "mssbTypes.h"
 
+// Per-port controller state (lbl_803C77B8); same layout as PadState in main/file_800A7C08.h,
+// which can't be included next to UnknownHomes_Static.h.
+typedef struct MenuPad {
+    /*0x00*/ u16 held;
+    /*0x02*/ u16 down;
+    /*0x04*/ u16 repeat;
+    /*0x06*/ u16 prev;
+    /*0x08*/ s8 err;
+    /*0x09*/ u8 _09[0x20 - 0x09];
+} MenuPad;
+
 u32 fn_2_1258(const void* base, u32 offset, s32 size);
 
 s32 fn_2_35D0(u8 index);
@@ -101,5 +112,7 @@ void fn_2_87A8(void);
 s32 fn_2_14F8(s32 a, s32 b);
 
 void fn_2_A1A0(s32 count, s32 team);
+
+void fn_2_1A88(void);
 
 #endif
