@@ -923,3 +923,23 @@ void fn_2_87A8(void) {
     }
     fn_2_87A8_work(prev);
 }
+
+// NONMATCHING 80%: lo/hi register allocation and scheduling around the inlined fn_2_1554
+#if NONMATCHING
+// fn_2_14F8, size:0x5C
+s32 fn_2_14F8(s32 a, s32 b) {
+    s32 lo;
+    s32 hi;
+    if (a == b) {
+        return a;
+    }
+    if (a <= b) {
+        lo = a;
+        hi = b;
+    } else {
+        lo = b;
+        hi = a;
+    }
+    return (s32)(fn_2_1554() >> 16) % (hi - lo + 1) + lo;
+}
+#endif

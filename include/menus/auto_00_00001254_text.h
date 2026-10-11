@@ -98,4 +98,6 @@ void fn_2_6784(void);
 
 void fn_2_87A8(void);
 
+s32 fn_2_14F8(s32 a, s32 b);
+
 #endif
