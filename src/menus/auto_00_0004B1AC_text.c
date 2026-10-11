@@ -1657,3 +1657,25 @@ void fn_2_4D960(void) {
     }
 }
 #endif
+
+// fn_2_4DC24, size:0x2C4
+// NONMATCHING 95%: identical to fn_2_4D960; first-loop `li` vs `mr r6,r3` offset init shifts registers
+#if NONMATCHING
+void fn_2_4DC24(void) {
+    s32 i;
+    s32 j;
+    *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = -1;
+    lbl_2_bss_1A8248[0][0x441E] = 1;
+    for (i = 0; i < 0x36; i++) {
+        MenuRosterSlot* e = (MenuRosterSlot*)lbl_2_bss_1A8248[0] + i;
+        e->_07 = e->_06;
+    }
+    for (i = 0; i < 0x36; i++) {
+        MenuRosterSlot* slot = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];
+        for (j = 0; j < 10; j++) {
+            slot->_1D[j * 2] = slot->_09[j * 2];
+            slot->_1D[j * 2 + 1] = slot->_09[j * 2 + 1];
+        }
+    }
+}
+#endif
