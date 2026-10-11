@@ -115,9 +115,22 @@ void fn_8006C13C(void) {
 }
 
 // .text:0x8006C268 size:0x4C
-void fn_8006C268(void) {
-    return;
+// NONMATCHING 70%: the original keeps the 6-iteration sum loop rolled; CW fully unrolls it here
+#if NONMATCHING
+s16 fn_8006C268(StatOutput* stats) {
+    s16 total = 0;
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        total += stats->vals[i];
+    }
+    total += stats->_C + stats->_E;
+    if (total > 9999) {
+        total = 9999;
+    }
+    return total;
 }
+#endif
 
 // .text:0x8006C2B4 size:0xE4
 void fn_8006C2B4(void) {
