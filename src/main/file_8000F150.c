@@ -13,6 +13,30 @@ typedef struct PaddedVec {
     f32 _pad;
 } PaddedVec;
 
+// Output of fn_8000CEF0 (layout animation sample).
+typedef struct LayoutInfo {
+    /*0x00*/ u8 _00[0x6];
+    /*0x06*/ u16 _06;
+    /*0x08*/ u8 _08[0x4];
+    /*0x0C*/ s16 size;
+    /*0x0E*/ u8 _0E[0x6];
+    /*0x14*/ s16 x;
+    /*0x16*/ s16 y;
+    /*0x18*/ u8 _18[0x4];
+    /*0x1C*/ u32 color;
+    /*0x20*/ u8 _20[0x30];
+} LayoutInfo; // size: 0x50
+
+typedef struct LayoutAnimSlot {
+    /*0x00*/ u8 _00[0x38];
+    /*0x38*/ void* anim;
+} LayoutAnimSlot; // size: 0x3C
+
+extern LayoutAnimSlot lbl_803C4BE0[];
+extern u32 fn_8000CEF0(void* anim, u16 id, s32 shadow, u16 frame, LayoutInfo* out);
+extern u32 byteWiseMultiply(u32 a, u32 b);
+extern u32 multBottomBits_asFloat(u32 a, u32 b);
+
 extern f32 lbl_803CBBDC;
 extern f32 lbl_803CBBE0;
 extern void fn_800B2160(s32);
@@ -147,10 +171,86 @@ void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d) {
     }
 }
 
+// NONMATCHING 99%: original loads the anim pointer with lwzu (keeps &slot->anim in r31); ours uses addi+lwz
 // .text:0x8000F534 size:0x3C0
-void fn_8000F534(void* object, s32 visible) {
-    return;
+#if NONMATCHING
+void fn_8000F534(LayoutObj* obj, s32 visible) {
+    LayoutInfo info;
+    LayoutInfo info2;
+    s32 small;
+    u16 animId;
+    TextOwner* owner;
+    void** anim;
+    u32 color;
+    s32 size;
+    s16 x;
+    s16 y;
+    s32 i;
+
+    small = 0;
+    for (i = 0; i < 30; i++) {
+        if (obj == lbl_80366B18.owners[i].object) {
+            break;
+        }
+    }
+    if (i >= 30) {
+        return;
+    }
+    owner = &lbl_80366B18.owners[i];
+    if (visible == 0) {
+        lbl_80366B18.entries[owner->entry].state = 1;
+        return;
+    }
+    lbl_80366B18.entries[owner->entry].state = 2;
+    animId = obj->_64;
+    anim = &lbl_803C4BE0[obj->_66].anim;
+    fn_8000CEF0(*anim, animId, 0, owner->_06, &info);
+    x = info.x;
+    y = info.y;
+    if (obj->flags & 8) {
+        color = byteWiseMultiply(info.color, obj->color);
+    } else {
+        color = multBottomBits_asFloat(info.color, obj->color);
+    }
+    lbl_80366B18.entries[owner->entry].color = color;
+    size = (info.size << 8) / 1024;
+    if (size == 16) {
+        lbl_80366B18.entries[owner->entry].fontSize = 2;
+        small = 1;
+    } else if (size == 18) {
+        lbl_80366B18.entries[owner->entry].fontSize = 1;
+    } else if (size == 22) {
+        lbl_80366B18.entries[owner->entry].fontSize = 0;
+    } else {
+        fn_8000CEF0(*anim, info._06, 0, 0, &info2);
+        size = (info2.size << 8) / 1024;
+        if (size < 17) {
+            lbl_80366B18.entries[owner->entry].fontSize = 2;
+            small = 1;
+        } else if (size < 20) {
+            lbl_80366B18.entries[owner->entry].fontSize = 1;
+        } else {
+            lbl_80366B18.entries[owner->entry].fontSize = 0;
+        }
+    }
+    if (small) {
+        TextEntry* e = &lbl_80366B18.entries[owner->entry];
+        e->x = x;
+        e->y = y;
+    } else {
+        TextEntry* e = &lbl_80366B18.entries[owner->entry];
+        e->x = x;
+        e->y = y;
+    }
+    if (fn_8000CEF0(*anim, animId, 1, owner->_06, &info) != 0) {
+        lbl_80366B18.entries[owner->entry].shadowColor = multBottomBits_asFloat(info.color, obj->color);
+        lbl_80366B18.entries[owner->entry].shadowX = info.x - lbl_80366B18.entries[owner->entry].x;
+        lbl_80366B18.entries[owner->entry].shadowY = info.y - lbl_80366B18.entries[owner->entry].y;
+    } else {
+        lbl_80366B18.entries[owner->entry].shadowColor = 0;
+    }
 }
+#endif
 
 // .text:0x8000F8F4 size:0x94
 void fn_8000F8F4(LayoutGroup* group) {

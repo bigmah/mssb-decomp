@@ -11,8 +11,8 @@ typedef struct TextEntry {
     /*0x04*/ u16* text;
     /*0x08*/ u32 color;
     /*0x0C*/ u32 shadowColor; // 0 means no shadow
-    /*0x10*/ s16 x;
-    /*0x12*/ s16 y;
+    /*0x10*/ u16 x;
+    /*0x12*/ u16 y;
     /*0x14*/ s16 shadowX;
     /*0x16*/ s16 shadowY;
     /*0x18*/ s16 numbers[4];  // printed by control codes 0xF-0x12
@@ -200,7 +200,7 @@ void fn_8000F150(TextWindow* window);
 void fn_8000F3E8(s32 arg);
 void somethingSetTexturePointer(void);
 void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
-void fn_8000F534(void* object, s32 visible);
+void fn_8000F534(LayoutObj* obj, s32 visible);
 void fn_8000F8F4(LayoutGroup* group);
 s32 fn_8000F988(LayoutGroup* group, s32 index, u16 arg2, s32 table, s32 msg, s32 shadow);
 s32 fn_8000FA9C(s32 index);
