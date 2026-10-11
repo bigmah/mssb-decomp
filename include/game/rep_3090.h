@@ -57,7 +57,7 @@ void fn_3_105E00(s32 x, s32 y, s32 a, s32 b);
 void fn_3_106014(f32 x, f32 y, f32 z);
 void fn_3_1060D8(void);
 s32 fn_3_10617C(s32 idx, s32 j, struct Vec* out);
-void fn_3_106270(void);
+void fn_3_106270(struct Vec* out);
 s32 fn_3_10698C(u32* p);
 void* fn_3_1069B0(s32* base, s32 idx);
 void fn_3_1069C0(void);

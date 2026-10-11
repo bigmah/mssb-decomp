@@ -42,6 +42,12 @@ extern void** fn_800111D8(void*);
 extern void fn_800B2C44(void*, u16, Vec*);
 extern u8* lbl_803CC1B8;
 extern u8 g_Fielders[];
+extern u8 g_Runners[];       /* InMemRunnerType[4], stride 0x154 */
+extern u8 g_Ball[];          /* InMemBallType; starts with the ball position */
+extern u8 g_Stats[];         /* g_Stats_s: 0x36 replayInd, 0x3C */
+extern s32 lbl_3_data_3B4C[]; /* per-character joint index */
+extern Vec lbl_3_data_1DB00[];
+extern BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern u8 LoadModel(void*);
 extern void fn_800B0A14_removeQueue(void*);
 #pragma dont_inline on
@@ -1087,9 +1093,116 @@ s32 fn_3_10617C(s32 idx, s32 j, Vec* out) {
 }
 
 // .text:0x00106270 size:0x71C mapped:0x80745304
-void fn_3_106270(void) {
-    return;
+// NONMATCHING 91%: original recomputes g_Fielders + idx*0x268 per use (offset in r30) and hoists g_Stats; ours keeps the pointer.
+// Camera look-at target for the tracked actor (+0x946): 0-8 fielder, 9-12 runner, 13 ball, 14 keep, 15 last.
+// The joint position (+0x938) is smoothed by holding it in +0xE8 for a few frames after the target changes.
+#if NONMATCHING
+void fn_3_106270(Vec* out) {
+    s16 idx = *(s16*)(lbl_3_common_bss_DE94 + 0x946);
+    Vec j;
+
+    if (idx < 9 && idx >= 0) {
+        u8* fl = g_Fielders + idx * 0x268;
+        memcpy(out, fl, 12);
+        if (*(s16*)(fl + 0x178) != -1) {
+            if (((u8**)(lbl_8036E548 + 0x2C50))[idx] != NULL) {
+                if (g_Stats[0x36] != 0 && g_Stats[0x3C] == 7) {
+                    memset(out, 0, 12);
+                    getAnimRelatedCoordinates(idx, 4, out);
+                }
+                if (*(s32*)(lbl_3_common_bss_DE94 + 0x938) == -1) {
+                    *(s32*)(lbl_3_common_bss_DE94 + 0x938) = lbl_3_data_3B4C[*(s16*)(fl + 0x17A)];
+                    *(s16*)(lbl_3_common_bss_DE94 + 0x950) = 0;
+                }
+                memset(&j, 0, 12);
+                if (getAnimRelatedCoordinates(idx, *(s32*)(lbl_3_common_bss_DE94 + 0x938), &j) == 0) {
+                    memset(&j, 0, 12);
+                    getAnimRelatedCoordinates(idx, 4, &j);
+                }
+                if (lbl_3_common_bss_DE94[0x9B7] == 0) {
+                    u8* d = lbl_3_common_bss_DE94;
+                    if (*(s32*)(d + 0x938) != *(s32*)(d + 0x93C) || *(s16*)(d + 0x948) != *(s16*)(d + 0x946) ||
+                        *(s16*)(d + 0x942) != *(s16*)(d + 0x940) || *(s16*)(d + 0x94E) != *(s16*)(fl + 0x17A)) {
+                        *(s16*)(d + 0x950) = 0;
+                    }
+                    if (*(s16*)(lbl_3_common_bss_DE94 + 0x950) < 1) {
+                        memcpy(lbl_3_common_bss_DE94 + 0xE8, &j, 12);
+                        *(s16*)(lbl_3_common_bss_DE94 + 0x950) += 1;
+                    } else {
+                        memcpy(&j, lbl_3_common_bss_DE94 + 0xE8, 12);
+                        if (*(s16*)(lbl_3_common_bss_DE94 + 0x950) < 3) {
+                            *(s16*)(lbl_3_common_bss_DE94 + 0x950) += 1;
+                        }
+                    }
+                } else {
+                    memcpy(lbl_3_common_bss_DE94 + 0xE8, &j, 12);
+                }
+                if (g_Stats[0x36] != 0 && g_Stats[0x3C] == 7) {
+                    out->y = lbl_3_rodata_3110 * out->y + *(f32*)(fl + 0xC) + lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].y;
+                    out->x += lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].x;
+                    out->z += lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].z;
+                } else {
+                    out->y = lbl_3_rodata_3110 * j.y + *(f32*)(fl + 0xC) + lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].y;
+                    out->x = j.x + lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].x;
+                    out->z = j.z + lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].z;
+                }
+            }
+        } else {
+            /* BUG (original): copies the bytes of the `out` pointer itself, not *out. */
+            memcpy(lbl_3_common_bss_DE94 + 0xDC, &out, 12);
+        }
+        *(s16*)(lbl_3_common_bss_DE94 + 0x94E) = *(s16*)(fl + 0x17A);
+    } else if (idx < 13 && idx >= 0) {
+        u8* rn = g_Runners + (idx - 9) * 0x154;
+        memcpy(out, rn, 12);
+        if (*(s16*)(rn + 0xE0) != -1) {
+            if (((u8**)(lbl_8036E548 + 0x2C50))[idx] != NULL) {
+                u8* d;
+                if (*(s32*)(lbl_3_common_bss_DE94 + 0x938) == -1) {
+                    *(s32*)(lbl_3_common_bss_DE94 + 0x938) = lbl_3_data_3B4C[*(s16*)(rn + 0xE2)];
+                    *(s16*)(lbl_3_common_bss_DE94 + 0x950) = 0;
+                }
+                memset(&j, 0, 12);
+                if (getAnimRelatedCoordinates(idx, *(s32*)(lbl_3_common_bss_DE94 + 0x938), &j) == 0) {
+                    memset(&j, 0, 12);
+                    getAnimRelatedCoordinates(idx, 4, &j);
+                }
+                j.x -= ((Vec*)rn)->x;
+                j.y -= ((Vec*)rn)->y;
+                j.z -= ((Vec*)rn)->z;
+                d = lbl_3_common_bss_DE94;
+                if (*(s32*)(d + 0x938) != *(s32*)(d + 0x93C) || *(s16*)(d + 0x948) != *(s16*)(d + 0x946) ||
+                    *(s16*)(d + 0x942) != *(s16*)(d + 0x940) || *(s16*)(d + 0x94E) != *(s16*)(rn + 0xE2)) {
+                    *(s16*)(d + 0x950) = 0;
+                }
+                if (*(s16*)(lbl_3_common_bss_DE94 + 0x950) < 1) {
+                    memcpy(lbl_3_common_bss_DE94 + 0xE8, &j, 12);
+                    *(s16*)(lbl_3_common_bss_DE94 + 0x950) += 1;
+                } else {
+                    memcpy(&j, lbl_3_common_bss_DE94 + 0xE8, 12);
+                    if (*(s16*)(lbl_3_common_bss_DE94 + 0x950) < 3) {
+                        *(s16*)(lbl_3_common_bss_DE94 + 0x950) += 1;
+                    }
+                }
+                out->y = lbl_3_rodata_3110 * j.y + out->y + lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].y;
+                out->x = out->x + j.x + lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].x;
+                out->z = out->z + j.z + lbl_3_data_1DB00[*(s16*)(lbl_3_common_bss_DE94 + 0x94C)].z;
+            }
+            *(s16*)(lbl_3_common_bss_DE94 + 0x94E) = *(s16*)(rn + 0xE2);
+        }
+        /* BUG (original): copies the bytes of the `out` pointer itself, not *out. */
+        memcpy(lbl_3_common_bss_DE94 + 0xDC, &out, 12);
+    } else if (idx == 13) {
+        memcpy(out, &g_Ball, 12);
+        memcpy(lbl_3_common_bss_DE94 + 0xDC, &g_Ball, 12);
+    } else if (idx == 14) {
+        memcpy(out, out, 12);
+        memcpy(lbl_3_common_bss_DE94 + 0xDC, out, 12);
+    } else if (idx == 15) {
+        memcpy(out, lbl_3_common_bss_DE94 + 0xDC, 12);
+    }
 }
+#endif
 
 // .text:0x0010698C size:0x24 mapped:0x80745A20
 s32 fn_3_10698C(u32* p) {
