@@ -189,9 +189,15 @@ void fn_3_133200(void) {
 #define G8 ((u8*)&g_Minigame)
 // Coin pool (100 entries) overlaid on g_Minigame: positions at 0xCD0, velocities at 0x1180,
 // per-coin timers at 0x17C8 and states at 0x193A. MiniGameStruct only declares the first 30.
-#define COIN_POS(i) (((Vec*)(G8 + 0xCD0))[i])
-#define COIN_VEL(i) (((Vec*)(G8 + 0x1180))[i])
-#define COIN_TIMER(i) (((s16*)(G8 + 0x17C8))[i])
+typedef struct CoinPool {
+    /*0x000*/ u8 pad[0xCD0];
+    /*0xCD0*/ Vec pos[100];
+    /*0x1180*/ Vec vel[100];
+} CoinPool;
+#define COINS ((CoinPool*)&g_Minigame)
+#define COIN_POS(i) (COINS->pos[i])
+#define COIN_VEL(i) (COINS->vel[i])
+#define COIN_TIMER(i) (*(s16*)(G8 + (i) * 2 + 0x17C8))
 #define COIN_STATE(i) (G8[0x193A + (i)])
 
 #pragma opt_unroll_loops off
@@ -1508,8 +1514,114 @@ void fn_3_13974C(void) {
 }
 
 // .text:0x00139808 size:0x498 mapped:0x8077889C
+extern u8 lbl_3_data_88DC[];
 void fn_3_139808(void) {
-    return;
+    VecSrcDst seg;
+    CollisionStruct col;
+    f32 rad, best, d, rr, dx, dz;
+    s32 sel, i, k;
+    u8* f;
+    for (i = 0; i < 100; i++) {
+        if (COIN_STATE(i) != 1) {
+            continue;
+        }
+        COIN_TIMER(i)++;
+        if (COIN_TIMER(i) > lbl_3_data_21A04[3]) {
+            COIN_STATE(i) = 0;
+            g_Minigame._1D6C--;
+            continue;
+        }
+        seg.src.x = COIN_POS(i).x;
+        seg.src.y = -COIN_POS(i).y;
+        seg.src.z = COIN_POS(i).z;
+        COIN_VEL(i).y += *(f32*)(lbl_3_data_219B8 + 0x2C);
+        COIN_POS(i).x += COIN_VEL(i).x;
+        COIN_POS(i).y += COIN_VEL(i).y;
+        COIN_POS(i).z += COIN_VEL(i).z;
+        if (COIN_POS(i).y < *(f32*)(lbl_3_data_219B8 + 0x38)) {
+            COIN_POS(i).y = *(f32*)(lbl_3_data_219B8 + 0x38);
+            COIN_VEL(i).y *= -*(f32*)(lbl_3_data_219B8 + 0x30);
+            COIN_VEL(i).x *= *(f32*)(lbl_3_data_219B8 + 0x34);
+            COIN_VEL(i).z *= *(f32*)(lbl_3_data_219B8 + 0x34);
+        }
+        seg.dst.x = COIN_POS(i).x;
+        seg.dst.y = -COIN_POS(i).y;
+        seg.dst.z = COIN_POS(i).z;
+        if ((u32)checkCollision(&seg, &col, 0, 0) == 5) {
+            col.normal.y *= lbl_3_rodata_3648;
+            refl_w(&COIN_VEL(i).x, &col.normal.x);
+            COIN_POS(i).x = col.position.x;
+            COIN_POS(i).y = -col.position.y;
+            COIN_POS(i).z = col.position.z;
+        }
+        seg.dst.x = COIN_POS(i).x;
+        seg.dst.y = -COIN_POS(i).y;
+        seg.dst.z = COIN_POS(i).z;
+        if (fn_3_1373E0(&seg, &COIN_VEL(i), &col, *(f32*)(lbl_3_data_219B8 + 0x3C))) {
+            COIN_POS(i).x = col.position.x;
+            COIN_POS(i).y = col.position.y;
+            COIN_POS(i).z = col.position.z;
+            memcpy(&COIN_VEL(i), &col.normal, sizeof(Vec));
+            seg.dst.x = COIN_POS(i).x;
+            seg.dst.y = -COIN_POS(i).y;
+            seg.dst.z = COIN_POS(i).z;
+            if ((u32)checkCollision(&seg, &col, 0, 0) == 5) {
+                col.normal.y *= lbl_3_rodata_3648;
+                refl_w(&COIN_VEL(i).x, &col.normal.x);
+                COIN_POS(i).x = col.position.x;
+                COIN_POS(i).y = -col.position.y;
+                COIN_POS(i).z = col.position.z;
+            }
+        }
+        if (g_Minigame.turnOverStatus != 0) {
+            continue;
+        }
+        best = 99999.9f;
+        rad = *(f32*)(lbl_3_data_219B8 + 0x3C);
+        k = 0;
+        sel = -1;
+        for (; k < 4; k++) {
+            s32 fi = G8[0x18F8 + k];
+            if ((s8)fi < 0) {
+                continue;
+            }
+            if (G8[0x1D6E + k] != 0 && G8[0x1D6E + k] != 3) {
+                continue;
+            }
+            f = (u8*)&g_Fielders[(s8)fi];
+            if (f[0x203] != 0 && f[0x204] > 3) {
+                continue;
+            }
+            if (*(f32*)(f + 0x16C) + *(f32*)(f + 0xC) < COIN_POS(i).y) {
+                continue;
+            }
+            dz = *(f32*)(f + 8) - COIN_POS(i).z;
+            rr = rad + lbl_3_data_47BC[f[0x1C9]];
+            rr = rad + lbl_3_data_47BC[f[0x1C9]];
+            dz = *(f32*)(f + 8) - COIN_POS(i).z;
+            rr = rad + lbl_3_data_47BC[f[0x1C9]];
+            dx = *(f32*)f - COIN_POS(i).x;
+            dz = *(f32*)(f + 8) - COIN_POS(i).z;
+            d = dx * dx + dz * dz;
+            rr = rr * rr;
+            if (d < rr && d < best) {
+                best = d;
+                sel = k;
+            }
+        }
+        if (sel >= 0) {
+            g_Minigame.miniGameCurrentPoints[sel] += lbl_3_data_21A04[5];
+            COIN_STATE(i) = 3;
+            COIN_VEL(i).z = 0.0f;
+            COIN_VEL(i).x = 0.0f;
+            COIN_VEL(i).y = RandomF32_Game_Range(*(f32*)(lbl_3_data_219B8 + 0), *(f32*)(lbl_3_data_219B8 + 4));
+            COIN_TIMER(i) = 0;
+            if (lbl_3_common_bss_34C58._30 == 0) {
+                fn_3_90064(0x2E9);
+                lbl_3_common_bss_34C58._30 = lbl_3_data_88DC[1];
+            }
+        }
+    }
 }
 
 // .text:0x00139CA0 size:0x2E4 mapped:0x80778D34
