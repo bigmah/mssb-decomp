@@ -26,6 +26,18 @@ typedef struct ChallengeModel {
     /*0x68*/ struct ActorLayout* layout;
 } ChallengeModel; // size 0x6C
 
+// The running task (lbl_803CC1B8); same layout as main.dol's SceneTask.
+typedef struct ChalTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct ChalTask* prev;
+    /*0x08*/ struct ChalTask* next;
+    /*0x0C*/ struct ChalTask* parent;
+    /*0x10*/ s16 state;
+    /*0x12*/ u16 priority;
+    /*0x14*/ ChallengeModelOffsets* model; // loaded with ARAMTransfer
+    /*0x18*/ s16 modelIdx;
+} ChalTask;
+
 // Viewer state (lbl_1_common_bss_472B4); fn_1_66C4 clears the first 0x240 bytes.
 typedef struct ChallengeWork {
     /*0x000*/ Mtx view;

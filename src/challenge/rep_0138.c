@@ -27,9 +27,6 @@ typedef struct ChalPadState {
 } ChalPadState;
 #define PAD0 (*(ChalPadState*)&lbl_803C77B8)
 
-extern GXCullMode lbl_1_data_8C4[];
-extern void* lbl_1_data_848[3];
-
 typedef union ChallengeColor {
     GXColor color;
     s32 word;
@@ -41,8 +38,109 @@ typedef struct ChallengeFog {
     f32 end;
 } ChallengeFog;
 
-extern ChallengeColor lbl_1_data_858[];
 extern ChallengeFog* lbl_1_bss_4E0[];
+
+// Per-stage viewer settings; lbl_1_bss_4E0 points at fog[variant] of the current stage.
+typedef struct ChalStageParams {
+    /*0x00*/ ChallengeFog fog[3];
+    /*0x24*/ struct {
+        f32 _00;
+        f32 _04;
+        f32 _08;
+        u32 _0C;
+    } _24[3];
+    /*0x54*/ u32 _54;
+    /*0x58*/ u32 _58;
+    /*0x5C*/ u32 _5C;
+} ChalStageParams; // size 0x60
+
+// Display-list node handed to fn_800A7D4C (one per frame buffer).
+typedef struct ChalDrawCmd {
+    /*0x0*/ void* link;
+    /*0x4*/ void (*draw)(void);
+} ChalDrawCmd;
+
+// DVD/ARAM load instructions of a stage model (see ARAMTransfer).
+typedef struct ChalAsset {
+    /*0x0*/ u32 compression;
+    /*0x4*/ u32 sizeInfo; // top 4 bits: flags, rest: size
+    /*0x8*/ u32 diskLocation;
+    /*0xC*/ u32 compressedSize;
+} ChalAsset;
+
+extern void fn_1_85A8(void);
+
+// .data of this file (0x2A8-0xA8C); the order matters, functions address it from one base.
+static ChalStageParams lbl_1_data_2A8[15] = {
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{42.0f, 1.5f, 1.5f, 0x0FA001C0}, {80.0f, 1.0f, 1.0f, 0x0F8001C0}, {80.0f, 1.0f, 1.0f, 0x0F5001C0}}, 0x37F403C5, 0x00000000, 0x08400000},
+    {{{{{0xFF, 0xDC, 0x96, 0x00}}, 0.0f, 512.0f}, {{{0xFF, 0xDC, 0x96, 0x00}}, 0.0f, 512.0f}, {{{0xFF, 0xDC, 0x96, 0x00}}, 0.0f, 512.0f}}, {{42.0f, 1.5f, 1.5f, 0x0FA001C0}, {80.0f, 1.0f, 1.0f, 0x0F8001C0}, {80.0f, 1.0f, 1.0f, 0x0F5001C0}}, 0x37F403C5, 0x00000000, 0x08750000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0B7001C0}, {80.0f, 1.0f, 1.0f, 0x0B4001C0}, {80.0f, 1.0f, 1.0f, 0x0B4001C0}}, 0x37F403C5, 0x00000000, 0x08600000},
+    {{{{{0x96, 0xAA, 0xDC, 0x02}}, 80.0f, 300.0f}, {{{0x96, 0xAA, 0xDC, 0x02}}, 80.0f, 300.0f}, {{{0x96, 0xAA, 0xDC, 0x02}}, 80.0f, 300.0f}}, {{40.0f, 1.0f, 1.0f, 0x0B7001C0}, {80.0f, 1.0f, 1.0f, 0x0B4001C0}, {80.0f, 1.0f, 1.0f, 0x0B4001C0}}, 0x00000000, 0x00FFFF00, 0x08600000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x07}}, 0.0f, 380.0f}, {{{0xAA, 0xBE, 0xD2, 0x07}}, 0.0f, 380.0f}, {{{0xAA, 0xBE, 0xD2, 0x07}}, 0.0f, 380.0f}}, {{50.0f, 1.0f, 1.0f, 0x0B8001C0}, {50.0f, 1.0f, 1.0f, 0x008001C0}, {50.0f, 1.0f, 1.0f, 0x0B8001C0}}, 0x392B92A6, 0x00000000, 0x08480000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{42.0f, 1.5f, 1.5f, 0x0FA001C0}, {80.0f, 1.0f, 1.0f, 0x0F8001C0}, {80.0f, 1.0f, 1.0f, 0x0F5001C0}}, 0x37F403C5, 0x00000000, 0x08400000},
+    {{{{{0xFF, 0xDC, 0x96, 0x00}}, 0.0f, 512.0f}, {{{0xFF, 0xDC, 0x96, 0x00}}, 0.0f, 512.0f}, {{{0xFF, 0xDC, 0x96, 0x00}}, 0.0f, 512.0f}}, {{42.0f, 1.5f, 1.5f, 0x0FA001C0}, {80.0f, 1.0f, 1.0f, 0x0F8001C0}, {80.0f, 1.0f, 1.0f, 0x0F5001C0}}, 0x37F403C5, 0x00000000, 0x08750000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0B7001C0}, {80.0f, 1.0f, 1.0f, 0x0B4001C0}, {80.0f, 1.0f, 1.0f, 0x0B4001C0}}, 0x37F403C5, 0x00000000, 0x08600000},
+    {{{{{0x96, 0xAA, 0xDC, 0x02}}, 80.0f, 300.0f}, {{{0x96, 0xAA, 0xDC, 0x02}}, 80.0f, 300.0f}, {{{0x96, 0xAA, 0xDC, 0x02}}, 80.0f, 300.0f}}, {{40.0f, 1.0f, 1.0f, 0x0B7001C0}, {80.0f, 1.0f, 1.0f, 0x0B4001C0}, {80.0f, 1.0f, 1.0f, 0x0B4001C0}}, 0x00000000, 0x00FFFF00, 0x08600000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x07}}, 0.0f, 380.0f}, {{{0xAA, 0xBE, 0xD2, 0x07}}, 0.0f, 380.0f}, {{{0xAA, 0xBE, 0xD2, 0x07}}, 0.0f, 380.0f}}, {{50.0f, 1.0f, 1.0f, 0x0B8001C0}, {50.0f, 1.0f, 1.0f, 0x008001C0}, {50.0f, 1.0f, 1.0f, 0x0B8001C0}}, 0x392B92A6, 0x00000000, 0x08480000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
+    {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
+};
+static struct {
+    void* lights[3];
+    s32 normalMapSize;
+} lbl_1_data_848 = {{NULL, NULL, NULL}, 64};
+static ChallengeColor lbl_1_data_858[1] = {{{0xFF, 0x80, 0x80, 0x00}}};
+static u8 lbl_1_data_85C = 1; // fog on
+// Pad handler of each debug-menu item, run by fn_1_6E14 while the item is active.
+static void (*sDebugItemFuncs[7])(void) = {fn_1_85A8, fn_1_8368, fn_1_7FF8, fn_1_85A8, NULL, fn_1_7EF8, NULL};
+static struct {
+    Vec up; // camera up vector
+    u32 _0C;
+} lbl_1_data_87C = {{0.0f, 1.0f, 0.0f}, 0};
+static ChalDrawCmd sTabA[2] = {{NULL, fn_1_78E4}, {NULL, fn_1_78E4}};
+static u32 lbl_1_data_89C[2] = {0, 0xFFFFFF0A};
+static ChalDrawCmd sTabB[2] = {{NULL, fn_1_786C}, {NULL, fn_1_786C}};
+static ChalDrawCmd sTabC[2] = {{NULL, fn_1_7848}, {NULL, fn_1_7848}};
+static GXCullMode lbl_1_data_8C4[1] = {GX_CULL_BACK};
+static u8 lbl_1_data_8C8 = 1; // 1: show every bone, 2: hide every bone (one-shot)
+static s32 lbl_1_data_8CC = 7; // number of stages
+static ChalAsset lbl_1_data_8D0[21] = { // [stage * 3 + variant]
+    {0x0000040B, 0x40168A6C, 0x06CFD000, 0x000C69A8},
+    {0x0000040B, 0x401331E0, 0x06DC4000, 0x000B67C4},
+    {0x0000040B, 0x4011924C, 0x06E7A800, 0x000A5764},
+    {0x0000040B, 0x400FBAE0, 0x06F20000, 0x000BE038},
+    {0x0000040B, 0x400E5AC0, 0x06FDE800, 0x000B4FB8},
+    {0x0000040B, 0x40131200, 0x07093800, 0x000A317C},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x40141C60, 0x07207800, 0x000CE904},
+    {0x0000040B, 0x4013CA40, 0x072D6800, 0x000CA560},
+    {0x0000040B, 0x40141C60, 0x07207800, 0x000CE904},
+    {0x0000040B, 0x4016C138, 0x073A1000, 0x000ED41C},
+    {0x0000040B, 0x401157B8, 0x0748E800, 0x000CA83C},
+    {0x0000040B, 0x4016C138, 0x073A1000, 0x000ED41C},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+};
+static u8 sMipCount = 3;
+static f32 sMipScale[4] = {0.0625f, 0.25f, 0.5f, 1.0f};
+static f32 sLodBias = 2.0f;
+static GXTexFilter sMinFilter = GX_LIN_MIP_LIN;
+static Vec lbl_1_data_A3C = {0.0f, 0.0f, -1.0f};
+static Vec lbl_1_data_A48 = {0.0f, 0.0f, -1.0f}; // normal-map bend axis of fn_1_5AC0
+static u8 lbl_1_data_A54[0x18] = {0};
+static u8 lbl_1_data_A6C = 1;
+static u8 sIndSignedOffsets = 1; // indirect warp settings used by fn_1_5544
+static f32 sIndScaleExp = 1.0f;
+static f32 sIndMtx[2][3] = {{0.5f, 0.0f, 0.0f}, {0.0f, 0.5f, 0.0f}};
 extern const f32 lbl_1_rodata_1D8;
 extern const f32 lbl_1_rodata_208;
 
@@ -74,10 +172,9 @@ void fn_1_7E04(f32 scale) {
 extern s32 lbl_1_bss_C4;
 
 extern u8 lbl_1_bss_C2[];
-extern u8 lbl_1_data_85C[];
 
 extern ChallengeWork lbl_1_common_bss_472B4;
-extern u8* lbl_803CC1B8[];
+extern ChalTask* lbl_803CC1B8;
 extern void* lbl_80366158[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void fn_800B472C(void*);
@@ -88,18 +185,7 @@ extern void fn_1_4DD8(u16* effects);
 extern u8 lbl_803CBBC0;
 extern void fn_800A7D4C(int, void*);
 extern const f32 lbl_1_rodata_204;
-typedef struct { u8 b[8]; } Chal8;
-static u8 sPad[0x5E4] = {1};
-static Chal8 sTabA[3] = {{{1}}};
-static Chal8 sTabB[2] = {{{1}}};
-static Chal8 sTabC[2] = {{{1}}};
-static u8 sPad2[0x15C] = {1};
-static u8 sMipCount = 1;
-static f32 sMipScale[4] = {1.0f};
-static f32 sLodBias = 1.0f;
-static GXTexFilter sMinFilter = GX_LINEAR;
 extern const f32 lbl_1_rodata_1A8;
-extern Vec lbl_1_data_A3C;
 extern const f32 lbl_1_rodata_1C8;
 extern const f32 lbl_1_rodata_1CC;
 extern const f32 lbl_1_rodata_1DC;
@@ -152,8 +238,8 @@ void fn_1_7EF8(void) {
         break;
     }
     case 0x100: {
-        u8 enabled = !lbl_1_data_85C[0];
-        lbl_1_data_85C[0] = enabled;
+        u8 enabled = !lbl_1_data_85C;
+        lbl_1_data_85C = enabled;
         if (enabled != 0) {
             fn_80048C14(0x3F);
         } else {
@@ -195,14 +281,14 @@ void fn_1_786C(void) {
 void fn_1_54E0(MtxPtr view) {
     s32 i;
     for (i = 0; i < 3; i++) {
-        LITXForm(lbl_1_data_848[i], view);
+        LITXForm(lbl_1_data_848.lights[i], view);
     }
 }
 
 // fn_1_77EC, size:0x5C
 void fn_1_77EC(ChallengeModel* model) {
     GXSetCullMode(lbl_1_data_8C4[0]);
-    fn_1_73B8(model, 3, lbl_1_data_848[0], lbl_1_data_848[1], lbl_1_data_848[2]);
+    fn_1_73B8(model, 3, lbl_1_data_848.lights[0], lbl_1_data_848.lights[1], lbl_1_data_848.lights[2]);
 }
 
 // .text:0x5540 size:0x4
@@ -264,11 +350,11 @@ void fn_1_6578(GXTexObj* obj, void* image, s32 w, s32 h) {
 
 // fn_1_66C4, size:0x184
 void fn_1_66C4(void) {
-    u8* object = lbl_803CC1B8[0];
+    ChalTask* task = lbl_803CC1B8;
     s32 a;
     s32 b;
     fn_800AD038(lbl_80366158[2]);
-    *(s16*)(object + 0x10) = 0;
+    task->state = 0;
     a = lbl_1_common_bss_472B4.stageSel;
     b = lbl_1_common_bss_472B4.variantSel;
     memset(&lbl_1_common_bss_472B4, 0, sizeof(ChallengeWork));
@@ -286,7 +372,7 @@ void fn_1_66C4(void) {
     lbl_1_common_bss_472B4.stage[1] = lbl_1_common_bss_472B4.stage[0];
     lbl_1_common_bss_472B4.object[0].draw = (void (*)(ChallengeModel*))fn_800B472C;
     lbl_1_common_bss_472B4.object[1] = lbl_1_common_bss_472B4.object[0];
-    *(void**)lbl_803CC1B8[0] = fn_1_6848;
+    lbl_803CC1B8->func = fn_1_6848;
 }
 
 typedef struct ChalTexState {
@@ -301,11 +387,9 @@ typedef struct ChalTexState {
     GXTexObj obj;
 } ChalTexState;
 static ChalTexState lbl_1_bss_C0;
-extern u8 lbl_1_data_2A8[];
 
 
 void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, GXTexCoordID coord, GXTexMapID map) {
-    u8* d = lbl_1_data_2A8;
     ChalTexState* st = (ChalTexState*)((u8*)&lbl_1_bss_C0 + 0);
     u8 flags;
     GXLoadTexObj(&st->obj, map);
@@ -325,10 +409,10 @@ void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, 
         return;
     }
     GXSetNumIndStages(1);
-    GXSetIndTexMtx(mtx, (const f32(*)[3])(d + 0x7CC), (s8) * (f32*)(d + 0x7C8));
+    GXSetIndTexMtx(mtx, sIndMtx, (s8)sIndScaleExp);
     GXSetIndTexOrder(indStage, coord, map);
     GXSetIndTexCoordScale(indStage, st->sScale, st->tScale);
-    GXSetTevIndWarp(stage, indStage, d[0x7C5], st->replace, mtx);
+    GXSetTevIndWarp(stage, indStage, sIndSignedOffsets, st->replace, mtx);
 }
 
 // fn_1_5924, size:0x19C
@@ -887,7 +971,6 @@ void fn_1_6050(u16* image, s32 width, s32 height, f32 scale) {
 }
 #endif
 
-extern u8 lbl_1_data_8C8;      // 1: show every bone, 2: hide every bone (one-shot)
 extern u8 lbl_1_bss_C1;        // draw vertex normals (fn_1_4E98)
 extern u8 lbl_1_bss_2E0[0x200]; // per-bone hide flags
 
@@ -1050,7 +1133,6 @@ void fn_1_73B8(ChallengeModel* model, u8 numLights, ...) {
 
 extern const Vec lbl_1_rodata_188; // {0, 0, 100}
 extern const f32 lbl_1_rodata_20C;
-extern Vec lbl_1_data_87C; // up vector
 extern void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
 extern void fn_80011640(MtxPtr src, MtxPtr dst);
 extern void fn_800B9950(u32 mask, f32 first, f32 second);
@@ -1094,7 +1176,7 @@ void fn_1_7960(void) {
     lbl_1_common_bss_472B4.at.x += lbl_1_common_bss_472B4.pos.x;
     lbl_1_common_bss_472B4.at.y += lbl_1_common_bss_472B4.pos.y;
     lbl_1_common_bss_472B4.at.z += lbl_1_common_bss_472B4.pos.z;
-    makeLookAtMatrix(lbl_1_common_bss_472B4.view, &lbl_1_common_bss_472B4.pos, &lbl_1_data_87C,
+    makeLookAtMatrix(lbl_1_common_bss_472B4.view, &lbl_1_common_bss_472B4.pos, &lbl_1_data_87C.up,
                      &lbl_1_common_bss_472B4.at);
     fn_1_7E04(lbl_1_common_bss_472B4.zoom);
     fn_1_54E0(lbl_1_common_bss_472B4.view);
@@ -1107,3 +1189,83 @@ void fn_1_7960(void) {
     }
 }
 #endif
+
+extern void fn_1_196C(void);
+extern void fn_800B996C(u32 value);
+
+// fn_1_6E14, size:0x368
+// Viewer main loop: camera, model queueing, START to restart, B for the debug menu.
+void fn_1_6E14(void) {
+    fn_1_7960();
+    if (lbl_1_common_bss_472B4._238 == 0) {
+        fn_1_7280();
+    } else {
+        fn_1_196C();
+    }
+    if (PAD0.down & PAD_BUTTON_START) {
+        SetFogNoneAgain();
+        lbl_803CC1B8->func = fn_1_66C4;
+    } else if (PAD0.down & PAD_BUTTON_B) {
+        lbl_1_common_bss_472B4.menuActive = 0;
+        lbl_1_common_bss_472B4._238 = 0;
+        lbl_1_common_bss_472B4.menuOpen ^= 1;
+        lbl_1_common_bss_472B4.selBone = -1;
+    }
+    if (lbl_1_common_bss_472B4.menuOpen) {
+        switch (PAD0.repeat) {
+        case PAD_BUTTON_UP:
+            if (--lbl_1_common_bss_472B4.menuItem < 0) {
+                lbl_1_common_bss_472B4.menuItem = 7;
+            }
+            break;
+        case PAD_BUTTON_DOWN:
+            if (++lbl_1_common_bss_472B4.menuItem >= 8) {
+                lbl_1_common_bss_472B4.menuItem = 0;
+            }
+            break;
+        case PAD_BUTTON_A:
+            switch (lbl_1_common_bss_472B4.menuItem) {
+            case 0:
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 1:
+                lbl_1_common_bss_472B4.selBone = -1;
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 2:
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 3:
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 4:
+                lbl_1_common_bss_472B4._234 ^= 1;
+                break;
+            case 5:
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 6:
+                lbl_1_bss_C0.indWarp ^= 1;
+                break;
+            case 7:
+                lbl_1_bss_C1 ^= 1;
+                break;
+            }
+            break;
+        }
+    }
+    if (lbl_1_common_bss_472B4.menuActive) {
+        sDebugItemFuncs[lbl_1_common_bss_472B4.menuItem]();
+    }
+    if (lbl_1_bss_C0.indWarp != 0) {
+        // TODO type: main.dol keeps the callback in a u32
+        fn_800B996C((u32)fn_1_5544);
+    } else {
+        fn_800B996C(0);
+    }
+}
