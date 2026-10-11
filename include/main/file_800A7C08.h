@@ -271,6 +271,74 @@ typedef struct CardSystem {
 #define CARD_STATUS_READY 0x11
 #define CARD_RESULT_BAD_SECTOR_SIZE -129
 
+// Movie (THP) playback.
+typedef struct ThpVideoInfo {
+    /*0x0*/ void* work;
+    /*0x4*/ u16 width;
+    /*0x6*/ u16 height;
+    /*0x8*/ u8 mcuX;
+    /*0x9*/ u8 mcuY;
+    /*0xA*/ u8 _A[2];
+} ThpVideoInfo;
+
+typedef struct ThpFrame {
+    /*0x0*/ u8* data;
+    /*0x4*/ u32 frameNo;
+    /*0x8*/ u8 state; // 1 = decoded, 2 = shown
+    /*0x9*/ u8 _9[3];
+} ThpFrame;
+
+typedef struct ThpMovie {
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ u32 _0C;
+} ThpMovie;
+
+typedef struct ThpBufferInfo {
+    /*0x0*/ u8 _0[8];
+    /*0x8*/ void* buffer;
+    /*0xC*/ u8 _C[4];
+} ThpBufferInfo;
+
+typedef struct ThpPlayer {
+    /*0x000*/ u8 _000[0x24];
+    /*0x024*/ u32 frameTime; // microseconds per frame
+    /*0x028*/ u32 readBufSize;
+    /*0x02C*/ u8 _02C[4];
+    /*0x030*/ u32 audioBufSize;
+    /*0x034*/ u8 _034[0xC];
+    /*0x040*/ u32 audioRate;
+    /*0x044*/ u8 _044[0x5C];
+    /*0x0A0*/ ThpVideoInfo video;
+    /*0x0AC*/ u8 _0AC[0x24];
+    /*0x0D0*/ u8* _D0;
+    /*0x0D4*/ u8* _D4;
+    /*0x0D8*/ u8 _0D8[0x10];
+    /*0x0E8*/ u8* _E8;
+    /*0x0EC*/ u8* _EC;
+    /*0x0F0*/ ThpMovie* movie;
+    /*0x0F4*/ ThpFrame frames[6];
+    /*0x13C*/ ThpFrame* framePtrs[6];
+    /*0x154*/ u8* _154;
+    /*0x158*/ u8* _158;
+    /*0x15C*/ u8* _15C;
+    /*0x160*/ u8* _160;
+    /*0x164*/ u8* readBuf;
+    /*0x168*/ u8* audioBuf;
+    /*0x16C*/ u8* texBuf[2];
+    /*0x174*/ u32 texIndex;
+    /*0x178*/ u8 _178[8];
+    /*0x180*/ u32 currentFrame;
+    /*0x184*/ u8 _184[0x14];
+    /*0x198*/ OSTime startTime;
+    /*0x1A0*/ OSTime pauseStart;
+    /*0x1A8*/ u64 startFrameTime;
+    /*0x1B0*/ u8 _1B0[8];
+    /*0x1B8*/ u8 format;
+    /*0x1B9*/ u8 flags;
+    /*0x1BA*/ u8 state;
+    /*0x1BB*/ u8 _1BB;
+} ThpPlayer;
+
 #define STREAM_NOTIFY(track, ev)                                                       \
     if ((track) != NULL && (track)->callback != NULL && ((track)->flags & (ev)) != 0) { \
         (track)->callback((track)->flags & (ev));                                      \
@@ -346,5 +414,18 @@ void* _OSAllocFromHeap(s32 align, s32 size);
 void fn_800AD01C(void* hi);
 void fn_800AD038(void* lo);
 void fn_800AD054(void* lo, void* hi);
+void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl, s32 iconSize, u32 iconSpeed,
+                 u32 bannerFlags, char* comment, char* subComment, s32 blocks);
+void fn_800AD070(void);
+u32 fn_800AD490(ThpPlayer* p);
+void fn_800AD500(ThpPlayer* p, u8* work);
+u32 fn_800AD6BC(ThpPlayer* p);
+BOOL fn_800AD780(ThpPlayer* p);
+void fn_800AD830(ThpPlayer* p);
+void fn_800AD914(ThpPlayer* p);
+void fn_800AD95C(ThpPlayer* p, u8 flags);
+void fn_800AD9F4(ThpPlayer* p);
+BOOL fn_800ADB04(ThpMovie* movie, ThpPlayer* p, u8 format, u8 freeBuffer);
+void fn_800ADBFC(void);
 
 #endif

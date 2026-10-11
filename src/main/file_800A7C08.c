@@ -8,6 +8,7 @@
 #include "Dolphin/pad.h"
 #include "stl/mem.h"
 #include "stl/string.h"
+#include "charPipeline/texPalette.h"
 #include "main/file_800B0724.h"
 
 extern OSThread* GXSetCurrentGXThread(void);
@@ -1001,6 +1002,56 @@ static inline void CardTaskFinish(s16 result) {
     fn_800B0A14_removeQueue(parent);
 }
 
+// Turns the file offsets inside a TPL loaded into memory into pointers.
+// TODO type: offsets are stored in pointer fields (32-bit only).
+static inline void UnpackTexPalette(TEXPalette* pal) {
+    u16 i;
+
+    if (pal->versionNumber != 2142000) {
+        OSPanic(lbl_803CCEE0, 0x52F, lbl_800E7A38 + 0x2C);
+    }
+    pal->descriptorArray = (TEXDescriptor*)((u32)pal->descriptorArray + (u32)pal);
+    for (i = 0; i < pal->numDescriptors; i++) {
+        if (pal->descriptorArray[i].textureHeader != NULL) {
+            pal->descriptorArray[i].textureHeader =
+                (TEXHeader*)((u32)pal + (u32)pal->descriptorArray[i].textureHeader);
+            if (!pal->descriptorArray[i].textureHeader->unpacked) {
+                pal->descriptorArray[i].textureHeader->data =
+                    (Ptr)((u32)pal + (u32)pal->descriptorArray[i].textureHeader->data);
+                pal->descriptorArray[i].textureHeader->unpacked = TRUE;
+            }
+        }
+        if (pal->descriptorArray[i].CLUTHeader != NULL) {
+            pal->descriptorArray[i].CLUTHeader =
+                (CLUTHeader*)((u32)pal + (u32)pal->descriptorArray[i].CLUTHeader);
+            if (!pal->descriptorArray[i].CLUTHeader->unpacked) {
+                pal->descriptorArray[i].CLUTHeader->data =
+                    (Ptr)((u32)pal + (u32)pal->descriptorArray[i].CLUTHeader->data);
+                pal->descriptorArray[i].CLUTHeader->unpacked = TRUE;
+            }
+        }
+    }
+}
+
+// Loads the default banner file ("/opening.bnr") into `buf`.
+static inline BOOL LoadDefaultBanner(void* buf) {
+    DVDFileInfo fileInfo;
+
+    if (!DVDOpen((char*)lbl_800E7A38 + 0x1C, &fileInfo)) {
+        return FALSE;
+    }
+    if (OSRoundUp32B(fileInfo.length) < 0x1960) {
+        return FALSE;
+    }
+    if (DVDReadPrio(&fileInfo, buf, 0x1960, 0, 2) == 0) {
+        return FALSE;
+    }
+    if (*(u32*)buf != 'BNR1') {
+        return FALSE;
+    }
+    return TRUE;
+}
+
 // .text:0x800A9864 size:0x98
 void fn_800A9864(u8 chan, u8 mode, u64 serial) {
     CardMountTask* task;
@@ -1840,12 +1891,207 @@ void fn_800ABBD0(void) {
 #endif
 
 // .text:0x800ABF44 size:0x5C4
+// NONMATCHING 92%: switch jump table lives in unsplit .data (reloc names differ); register allocation differs
+#if NONMATCHING
 void fn_800ABF44(void) {
-    return;
+    CARDStat* stat = &lbl_802EF330;
+    CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
+    CardWriteTask* file = (CardWriteTask*)task->parent;
+    CardSaveHeader* header;
+    char name[CARD_FILENAME_MAX + 1];
+    s32 res;
+    s32 length;
+    s32 xferred;
+    BOOL busy;
+
+    if (lbl_803C7838.slots[file->chan].probeResult == CARD_RESULT_NOCARD) {
+        task->step = 10;
+    }
+    switch (task->step) {
+    case 0:
+        header = file->buffer;
+        memcpy(header, &lbl_802EF2F0, 0x40);
+        if (!(lbl_803CC160 & 1)) {
+            header->crc = fn_800ABB14((u8*)(header + 1), file->length - sizeof(CardSaveHeader));
+        }
+        memcpy(lbl_803CC164, file->buffer, file->length);
+        if (stat->commentAddr + file->length > stat->length) {
+            OSPanic(lbl_803CCEE0, 0x3A4, lbl_800E7A38 + 0x58);
+        }
+        strncpy(name, stat->fileName, CARD_FILENAME_MAX);
+        name[CARD_FILENAME_MAX] = '\0';
+        if (strlen(name) >= CARD_FILENAME_MAX) {
+            OSPanic(lbl_803CCEE0, 0x3AA, lbl_800E7A00);
+        }
+        res = CARDOpen(file->chan, stat->fileName, &file->fileInfo);
+        switch (res) {
+        case CARD_RESULT_NOFILE:
+            task->step++;
+            break;
+        case CARD_RESULT_READY:
+            task->step += 3;
+            break;
+        default:
+            fn_800ACD64(res);
+            task->step = 10;
+            break;
+        }
+        break;
+    case 1:
+        if (file->mode == 1) {
+            res = CARDCreateAsync(file->chan, stat->fileName, stat->length, &file->fileInfo, NULL);
+            if (res < 0) {
+                fn_800ACD64(res);
+                CARDClose(&file->fileInfo);
+                task->step = 10;
+            } else {
+                task->step++;
+            }
+        } else {
+            res = CARDCreate(file->chan, stat->fileName, stat->length, &file->fileInfo);
+            if (res < 0) {
+                fn_800ACD64(res);
+                CARDClose(&file->fileInfo);
+                task->step = 10;
+            } else {
+                task->step += 2;
+            }
+        }
+        break;
+    case 2:
+        fn_800ACD64(CARDGetResultCode(file->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            task->step++;
+            break;
+        default:
+            CARDClose(&file->fileInfo);
+            task->step = 10;
+            break;
+        }
+        break;
+    case 3:
+        lbl_803CC168 = CARDGetXferredBytes(file->chan);
+        file->fileNo = file->fileInfo.fileNo;
+        if (file->mode == 1) {
+            res = CARDWriteAsync(&file->fileInfo, lbl_803CC16C, stat->length, 0, NULL);
+            if (res < 0) {
+                fn_800ACD64(res);
+                CARDClose(&file->fileInfo);
+                task->step = 10;
+            } else {
+                task->step++;
+            }
+        } else {
+            res = CARDWrite(&file->fileInfo, lbl_803CC16C, stat->length, 0);
+            CARDClose(&file->fileInfo);
+            if (res < 0) {
+                fn_800ACD64(res);
+                task->step = 10;
+            } else {
+                task->step += 2;
+            }
+        }
+        break;
+    case 4:
+        length = stat->length;
+        xferred = CARDGetXferredBytes(file->chan) - lbl_803CC168;
+        lbl_803C7838.xferred = xferred;
+        lbl_803C7838.progress = (xferred * 100) / length;
+        if ((u8)lbl_803C7838.progress > 100) {
+            lbl_803C7838.progress = 100;
+        }
+        fn_800ACD64(CARDGetResultCode(file->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            CARDClose(&file->fileInfo);
+            task->step++;
+            break;
+        default:
+            CARDClose(&file->fileInfo);
+            task->step = 10;
+            break;
+        }
+        break;
+    case 5:
+        if (file->mode == 1) {
+            res = CARDSetStatusAsync(file->chan, file->fileNo, stat, NULL);
+            if (res < 0) {
+                fn_800ACD64(res);
+                task->step = 10;
+            } else {
+                task->step++;
+            }
+        } else {
+            res = CARDSetStatus(file->chan, file->fileNo, stat);
+            if (res < 0) {
+                fn_800ACD64(res);
+                task->step = 10;
+            } else {
+                task->step += 2;
+            }
+        }
+        break;
+    case 6:
+        fn_800ACD64(CARDGetResultCode(file->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            task->step++;
+            break;
+        default:
+            task->step = 10;
+            break;
+        }
+        break;
+    case 7:
+        if (file->mode == 1) {
+            res = CARDSetAttributesAsync(file->chan, file->fileNo, file->permissions, NULL);
+            if (res == CARD_RESULT_BUSY) {
+                busy = TRUE;
+            } else {
+                fn_800ACD64(res);
+                busy = FALSE;
+            }
+        } else {
+            fn_800ACD64(CARDSetAttributes(file->chan, file->fileNo, file->permissions));
+            busy = FALSE;
+        }
+        if (!busy) {
+            task->step++;
+        }
+        break;
+    case 8:
+        fn_800ACD64(CARDGetResultCode(file->chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case CARD_STATUS_READY:
+            task->step = 9;
+            break;
+        default:
+            task->step = 10;
+            break;
+        }
+        break;
+    case 9:
+        CardTaskFinish(1);
+        break;
+    case 10:
+        CardTaskFinish(2);
+        break;
+    }
 }
+#endif
 
 // .text:0x800AC508 size:0x764
-void fn_800AC508(void) {
+void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl, s32 iconSize, u32 iconSpeed,
+                 u32 bannerFlags, char* comment, char* subComment, s32 blocks) {
     return;
 }
 
@@ -2057,52 +2303,140 @@ void fn_800AD054(void* lo, void* hi) {
     lbl_803C7898.freeSize = (u8*)hi - (u8*)lo;
 }
 
+extern u8 lbl_803CC17C;               // stop requested
+extern u8 lbl_803CC17D;               // movie busy
+extern u8 lbl_803CC17E;               // movie thread running
+extern u8 lbl_803CC17F;               // movie system initialised
+extern u8 lbl_803CC181;
+extern u8 lbl_803CC182;               // a new frame was decoded this tick
+extern ThpPlayer* lbl_803CC170;       // active movie
+extern void (*lbl_803CC190)(u32 frame); // per-frame callback; when NULL the frame is queued for drawing
+extern u32 lbl_803CC198;              // which of lbl_801112E0 is queued next
+extern u32 lbl_803CC1A4;
+extern u32 lbl_803CC1AC;
+extern OSMessageQueue lbl_802FB870;   // movie thread commands
+extern OSThread lbl_802FB220;         // movie thread
+extern DrawCallbackNode lbl_801112E0[2];
+extern GXTexObj lbl_803C78A4;         // texture of the current frame
+extern GXTexFmt lbl_803CBAD8[2];      // texture format per ThpPlayer.format
+extern void (*lbl_803CBB08[2])(void* src, void* dst, u16 width, u16 height); // frame converters
+extern u16 lbl_803CBAE4;              // audio block size
+extern ThpBufferInfo lbl_803C7A00;
+
+extern void fn_800E4B90(ThpVideoInfo* video, void* work);
+extern u32 fn_800E4B1C(ThpVideoInfo* video);
+
+// Playback state of a movie: 0 stopped, 1 playing, 2/0x12 paused, 4 finished, 0xA0000000 no disc
+// status, 0x80000000 | n DVD drive status n, 0xC0000000 no movie.
+static inline u32 ThpGetState(ThpPlayer* p) {
+    u8 state;
+
+    if (p == NULL) {
+        return 0xC0000000;
+    }
+    state = p->state;
+    if (state & 4) {
+        return 4;
+    }
+    switch (lbl_803C6CF8._722) {
+    case -1:
+        return 0xA0000000;
+    default:
+        return lbl_803C6CF8._722 | 0x80000000;
+    case 0:
+        if (state & 2) {
+            return state & 0x12;
+        }
+        if (state & 1) {
+            return 1;
+        }
+        return 0;
+    }
+}
+
+static inline BOOL ThpIsIdle(ThpPlayer* p) {
+    u32 state = ThpGetState(p);
+    if (state == 0) {
+        return TRUE;
+    }
+    if (state == 4 && lbl_803CC170 == NULL) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static inline void ThpStop(ThpPlayer* p) {
+    if (!ThpIsIdle(p)) {
+        OSSendMessage(&lbl_802FB870, (OSMessage)2, OS_MESSAGE_NOBLOCK);
+    }
+}
+
+static inline void ThpPause(ThpPlayer* p) {
+    if (p->state & 1) {
+        p->state = 2;
+        p->pauseStart = OSGetTime();
+    }
+}
+
+static inline void ThpResume(ThpPlayer* p, u8 flags) {
+    u8 state;
+
+    if (p != NULL) {
+        state = p->state;
+        if (state == 0 || state == 4) {
+            p->flags = flags;
+            OSSendMessage(&lbl_802FB870, (OSMessage)1, OS_MESSAGE_NOBLOCK);
+        } else if (state & 2) {
+            p->state = 1;
+            p->startTime += OSGetTime() - p->pauseStart;
+        }
+    }
+}
+
 // .text:0x800AD070 size:0x420
 void fn_800AD070(void) {
     return;
 }
 
 // .text:0x800AD490 size:0x70
-void fn_800AD490(void) {
-    return;
+u32 fn_800AD490(ThpPlayer* p) {
+    return 0;
 }
 
 // .text:0x800AD500 size:0x1BC
-void fn_800AD500(void) {
+void fn_800AD500(ThpPlayer* p, u8* work) {
     return;
 }
 
 // .text:0x800AD6BC size:0xC4
-void fn_800AD6BC(void) {
-    return;
+u32 fn_800AD6BC(ThpPlayer* p) {
+    return 0;
 }
 
 // .text:0x800AD780 size:0xB0
-void fn_800AD780(void) {
-    return;
+BOOL fn_800AD780(ThpPlayer* p) {
+    return 0;
 }
 
 // .text:0x800AD830 size:0xE4
-void fn_800AD830(void) {
+void fn_800AD830(ThpPlayer* p) {
     return;
 }
 
 // .text:0x800AD914 size:0x48
-void fn_800AD914(void) {
+void fn_800AD914(ThpPlayer* p) {
     return;
 }
 
 // .text:0x800AD95C size:0x98
-void fn_800AD95C(void) {
+void fn_800AD95C(ThpPlayer* p, u8 flags) {
     return;
 }
 
 // .text:0x800AD9F4 size:0x108
-void fn_800AD9F4(void) {
+void fn_800AD9F4(ThpPlayer* p) {
     return;
 }
-
-extern u8 lbl_803CC17D;
 
 // fn_800ADAFC, size:0x8
 u8 fn_800ADAFC(void) {
@@ -2110,9 +2444,12 @@ u8 fn_800ADAFC(void) {
 }
 
 // .text:0x800ADB04 size:0xF8
-void fn_800ADB04(void) {
-    return;
+#pragma push
+#pragma dont_inline on // the heap functions live in another file in the original
+BOOL fn_800ADB04(ThpMovie* movie, ThpPlayer* p, u8 format, u8 freeBuffer) {
+    return 0;
 }
+#pragma pop
 
 // .text:0x800ADBFC size:0x44
 void fn_800ADBFC(void) {
