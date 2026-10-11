@@ -517,6 +517,132 @@ void fn_1_191DC(ChallengeConfettiTask* task) {
 }
 #endif
 
+#include <string.h>
+void* _OSAllocFromHeap(s32 align, s32 size);
+void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
+void fn_1_17EFC(void); // sort compare (ChallengeConfettiSort by depth)
+extern const Vec lbl_1_rodata_7510;
+extern const f32 lbl_1_rodata_7554;
+extern const f64 lbl_1_rodata_7548;
+extern const f64 lbl_1_rodata_7558;
+extern const f64 lbl_1_rodata_7560;
+extern const f64 lbl_1_rodata_7570;
+
+// fn_1_1857C, size:0x888
+// Confetti task: depth-sort the pieces, then draw and move each one.
+// NONMATCHING 99%: r29/r30 and f30/f31 swapped, int->float temp stack slots allocated differently in the inlined fn_1_18E04/fn_1_18EE4
+#if NONMATCHING
+s32 fn_1_1857C(ChallengeConfettiTask* task) {
+    Vec down = lbl_1_rodata_7510;
+    Vec dir;
+    ChallengeConfettiSort* sorted;
+    ChallengeConfettiSort* entry;
+    ChallengeConfetti* piece;
+    ChallengeConfetti* head;
+    s32 count;
+
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_RASA);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+
+    // sort back to front
+    count = task->count & 0xFFF;
+    piece = task->pieces;
+    sorted = _OSAllocFromHeap(0x20, count * sizeof(ChallengeConfettiSort));
+    entry = sorted;
+    while (piece != NULL) {
+        entry->piece = piece;
+        entry->depth = piece->pos.z;
+        entry++;
+        piece = piece->next;
+    }
+    fn_800246D4((s32 (*)(void*, void*))fn_1_17EFC, (u8*)sorted, (u8*)sorted, sizeof(ChallengeConfettiSort), count);
+    head = sorted->piece;
+    entry = sorted;
+    while (--count != 0) {
+        entry->piece->next = entry[1].piece;
+        entry++;
+    }
+    entry->piece->next = NULL;
+    fn_800ACFB0(sorted);
+    task->pieces = head;
+
+    piece = head;
+    do {
+        if (piece->delay <= 0) {
+            fn_1_182C0(piece);
+            PSVECAdd(&piece->vel, &piece->pos, &piece->pos);
+            PSVECAdd(&piece->rotVel, &piece->rot, &piece->rot);
+            if (fabs(piece->pos.x) > lbl_1_rodata_7548) {
+                // bounce off the screen edge
+                piece->pos.x = fabs(piece->pos.x) / piece->pos.x;
+                piece->vel.x *= lbl_1_rodata_7550;
+            } else if (rand() % 5 == 0) {
+                // drift: turn by up to +-20 degrees, staying within 20 degrees of straight down
+                f32 angle;
+                f32 delta;
+                memcpy(&dir, &piece->vel, sizeof(Vec));
+                PSVECNormalize(&dir, &dir);
+                angle = lbl_1_rodata_7554 * (f32)acos(PSVECDotProduct(&down, &dir));
+                if (dir.x < lbl_1_rodata_7520) {
+                    angle *= lbl_1_rodata_7550;
+                }
+                delta = lbl_1_rodata_7558 * (lbl_1_rodata_7560 * ((f32)rand() / 32767.0f - lbl_1_rodata_7570));
+                if (fabs(angle + delta) > lbl_1_rodata_7558) {
+                    angle = lbl_1_rodata_7558 * (fabs(angle) / angle);
+                } else {
+                    angle += delta;
+                }
+                fn_1_18E04(piece, angle);
+            }
+            if (piece->pos.y > lbl_1_rodata_753C) {
+                fn_1_18EE4(piece);
+            }
+        } else {
+            piece->delay--;
+        }
+        piece = piece->next;
+    } while (piece != NULL);
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_RASA, GX_CA_TEXA, GX_CA_ZERO);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXLoadPosMtxImm(fn_80052768_getCamera(0)->view, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetProjection(fn_80052768_getCamera(0)->proj, GX_PERSPECTIVE);
+    return 0;
+}
+#endif
+
 // main.dol: create a task with a linked list of `count` work blocks of `size` bytes.
 extern void* fn_80033A24(void* func, int priority, int flags, int count, int arg4, int size);
 

@@ -73,6 +73,12 @@ typedef struct ChallengeConfetti {
     /*0x4A*/ s16 index;
 } ChallengeConfetti;
 
+// Depth-sort entry used by fn_1_1857C.
+typedef struct ChallengeConfettiSort {
+    ChallengeConfetti* piece;
+    f32 depth;
+} ChallengeConfettiSort;
+
 // Task that owns the confetti list.
 typedef struct ChallengeConfettiTask {
     /*0x00*/ u8 pad00[0xC];
