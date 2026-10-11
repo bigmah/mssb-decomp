@@ -859,8 +859,69 @@ void fn_3_A970(s32 arg) {
 }
 
 // .text:0x0000B440 size:0x500 mapped:0x8064A4D4
+// Find the first future frame the throw passes its target (coarse then fine search).
 void fn_3_B440(void) {
-    return;
+    s32 i;
+    f32 dx;
+    f32 dz;
+    g_Ball.throwTimeEstimatesCompleteInd = 1;
+    if (g_Ball.framesUntilThrowReachesDest < 15) {
+        return;
+    }
+    dx = ABS(g_Ball.throwTarget.x - g_Ball.AtBat_Contact_BallPos.x);
+    dz = ABS(g_Ball.throwTarget.z - g_Ball.AtBat_Contact_BallPos.z);
+    if (dx > dz) {
+        if (g_Ball.throwTarget.x < g_Ball.AtBat_Contact_BallPos.x) {
+            for (i = 10; i < 360; i += 10) {
+                if (g_Ball.throwTarget.x >= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.x) {
+                    i -= 10;
+                    break;
+                }
+            }
+            for (; i < 360; i++) {
+                if (g_Ball.throwTarget.x >= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.x) {
+                    break;
+                }
+            }
+        } else {
+            for (i = 10; i < 360; i += 10) {
+                if (g_Ball.throwTarget.x <= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.x) {
+                    i -= 10;
+                    break;
+                }
+            }
+            for (; i < 360; i++) {
+                if (g_Ball.throwTarget.x <= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.x) {
+                    break;
+                }
+            }
+        }
+    } else if (g_Ball.throwTarget.z < g_Ball.AtBat_Contact_BallPos.z) {
+        for (i = 10; i < 360; i += 10) {
+            if (g_Ball.throwTarget.z >= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.z) {
+                i -= 10;
+                break;
+            }
+        }
+        for (; i < 360; i++) {
+            if (g_Ball.throwTarget.z >= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.z) {
+                break;
+            }
+        }
+    } else {
+        for (i = 10; i < 360; i += 10) {
+            if (g_Ball.throwTarget.z <= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.z) {
+                i -= 10;
+                break;
+            }
+        }
+        for (; i < 360; i++) {
+            if (g_Ball.throwTarget.z <= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.z) {
+                break;
+            }
+        }
+    }
+    g_Ball.framesUntilThrowReachesDest = i;
 }
 
 // .text:0x0000B940 size:0x27C mapped:0x8064A9D4
