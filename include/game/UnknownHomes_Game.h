@@ -924,7 +924,6 @@ typedef struct _PracticeStruct {
     /*0x19D*/ u8 _19D;
     /*0x19E*/ u8 pauseMenuLoading; // unsure
     /*0x19F*/ u8 _19F;
-    artificial_padding(0x19f, 0x1a1, u8);
     /*0x1A0*/ u8 _1A0;
     /*0x1A1*/ u8 aIEnabled;
     /*0x1A2*/ u8 practiceBatterHandedness; // unsure
@@ -1197,9 +1196,7 @@ typedef struct _GameControlsStruct {
     /*0x13B*/ u8 gameOverInd;
     /*0x13C*/ u8 scoutFlag_VsScreenInd;
     /*0x13D*/ u8 _13D;
-    /*0x13E*/ u8 _13E[2]; // per team: use alternate logo frame (+4)
-    artificial_padding(0x13E, 0x142, u8[2]);
-    /*0x13E*/ u8 _13E[2]; // per team: AI controlled
+    /*0x13E*/ u8 _13E[2]; // per team: AI controlled (also selects the alternate logo frame)
     /*0x140*/ u8 _140[2];
     /*0x142*/ u8 teamAIInd[2];
     /*0x144*/ u8 autoFielding[2];
@@ -2755,9 +2752,6 @@ typedef struct {
     /* 0x0024 */ u32 playFrameCounter;
     artificial_padding(0x24, 0x36, u32);
     /* 0x0036 */ u8 replayInd;
-    /* 0x0037 */ u8 _37;
-    /* 0x0038 */ u8 _38;
-    /* 0x0039 */ u8 _39;
     /* 0x0037 */ u8 _37[2];
     /* 0x0039 */ u8 _39; // 1: replay offered, 2: replay done
     /* 0x003A */ u8 _3A;
@@ -2872,7 +2866,11 @@ typedef struct {
     /* 0x22 */ s8 _22;
     /* 0x23 */ u8 _23;
     /* 0x24 */ u8 _24;
-    /* 0x25 */ u8 _25[0x7D - 0x25];
+    /* 0x25 */ u8 _25;
+    /* 0x26 */ s8 _26; // runs scored on the last dead ball
+    /* 0x27 */ u8 _27[0x44 - 0x27];
+    /* 0x44 */ s16 _44[2]; // per team: times through the batting order
+    /* 0x48 */ u8 _48[0x7D - 0x48];
     /* 0x7D */ u8 _7D;
     /* 0x7E */ u8 _7E;
     /* 0x7F */ u8 _7F;
@@ -2889,14 +2887,6 @@ typedef struct {
     /* 0x8A */ u8 _8A;
     /* 0x8B */ u8 _8B;
 } lbl_3_common_bss_32A94_s; // size: 0x8C
-    /* 0x0 */ s16 _0;
-    /* 0x2 */ s16 _2;
-    /* 0x4 */ s16 _4;
-    /* 0x6 */ u8 _06[0x26 - 0x6];
-    /* 0x26 */ s8 _26; // runs scored on the last dead ball
-    /* 0x27 */ u8 _27[0x44 - 0x27];
-    /* 0x44 */ s16 _44[2]; // per team: times through the batting order
-} lbl_3_common_bss_32A94_s;
 
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
 
