@@ -495,7 +495,10 @@ void fn_800A90E4(s32 result, DVDCommandBlock* block) {
 
 // .text:0x800A9168 size:0x48
 void fn_800A9168(u32 count) {
-    return;
+    AISetStreamTrigger(count + lbl_803CC138);
+    if (lbl_803CC154 != NULL) {
+        DVDGetStreamPlayAddrAsync(&lbl_802EF200, fn_800A91B0);
+    }
 }
 
 // .text:0x800A91B0 size:0x1FC
