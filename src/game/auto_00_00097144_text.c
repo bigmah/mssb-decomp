@@ -382,7 +382,123 @@ void fn_3_983B8(void) {
 
 // .text:0x00098434 size:0x518 mapped:0x806D74C8
 void fn_3_98434(void) {
+    HudTask* task;
+    u32 frame;
+    s32 i;
+    s32 closing;
+
+    closing = 0;
+    task = HUD_TASK;
+
+    if (task->timer < 0xFFFE) {
+        task->timer++;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    if (lbl_3_common_bss_32724.hudOff != 0) {
+        goto remove;
+    }
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        if (lbl_3_common_bss_34C90.state == 8) {
+            closing = 1;
+        } else if (lbl_3_common_bss_34C90.state == 9) {
+            closing = 2;
+        }
+    } else if (g_d_GameSettings.GameModeSelected == 6) {
+        if (lbl_3_common_bss_34C90.state == 9) {
+            closing = 1;
+        } else if (lbl_3_common_bss_34C90.state == 0xA) {
+            closing = 2;
+        }
+    } else if (g_d_GameSettings.GameModeSelected == 2) {
+        if (lbl_3_common_bss_34C90.state == 0xC) {
+            closing = 1;
+        } else if (lbl_3_common_bss_34C90.state == 0xD) {
+            closing = 2;
+        }
+    } else {
+        if (lbl_3_common_bss_34C90.state == 7) {
+            closing = 1;
+        } else if (lbl_3_common_bss_34C90.state == 8) {
+            closing = 2;
+        }
+    }
+    if (closing != 0) {
+        task->_20 -= 0x10;
+        if (task->_20 <= 0x80) {
+            task->_20 = 0x80;
+        }
+        HUD_OBJ(task, 1)->color = (HUD_OBJ(task, 1)->color & ~0xFF) | task->_20;
+    } else {
+        task->_20 += 0x10;
+        if (task->_20 >= 0xFF) {
+            task->_20 = 0xFF;
+        }
+        HUD_OBJ(task, 1)->color = (HUD_OBJ(task, 1)->color & ~0xFF) | task->_20;
+    }
+    if (task->state == 0) {
+        task->state++;
+    } else if (task->state == 1) {
+        for (i = 0; i < task->_1E; i++) {
+            if ((s32)(lbl_80371C30[task->baseIdx + 3 + i].obj->_5C >> 16) >= 3) {
+                lbl_80371C30[task->baseIdx + 3 + i].obj->_68 = 0;
+            }
+        }
+        if ((s32)(HUD_OBJ(task, 1)->_5C >> 16) >= lbl_3_data_D7E8[task->_1E - 2].openFrame) {
+            task->state = 2;
+        }
+    } else if (task->state == 2) {
+        for (i = 0; i < task->_1E; i++) {
+            if (i == lbl_3_common_bss_34C90.cursor) {
+                if ((s32)(lbl_80371C30[task->baseIdx + 3 + i].obj->_5C >> 16) >= 8) {
+                    lbl_80371C30[task->baseIdx + 3 + i].obj->_68 = 0;
+                } else {
+                    lbl_80371C30[task->baseIdx + 3 + i].obj->_68 = 1;
+                }
+            } else {
+                if ((s32)(lbl_80371C30[task->baseIdx + 3 + i].obj->_5C >> 16) <= 3) {
+                    lbl_80371C30[task->baseIdx + 3 + i].obj->_68 = 0;
+                } else {
+                    lbl_80371C30[task->baseIdx + 3 + i].obj->_68 = 4;
+                }
+            }
+        }
+        if (lbl_3_common_bss_34C90.itemsState == 2) {
+            goto remove;
+        }
+        if (lbl_3_common_bss_34C90.itemsState != 0) {
+            task->state = 3;
+        }
+    } else if (task->state == 3) {
+        frame = HUD_OBJ(task, 1)->_5C >> 16;
+        for (i = 0; i < task->_1E; i++) {
+            if ((s32)frame <= lbl_3_data_D9B8[task->_1E - 2][i]) {
+                if (i == lbl_3_common_bss_34C90.cursor) {
+                    lbl_80371C30[task->baseIdx + 3 + i].obj->_68 = 1;
+                } else {
+                    lbl_80371C30[task->baseIdx + 3 + i].obj->_68 = 4;
+                }
+            }
+        }
+        HUD_OBJ(task, 1)->_68 = 4;
+        HUD_OBJ(task, 0)->_68 = 4;
+        if ((s32)(HUD_OBJ(task, 1)->_5C >> 16) <= 0) {
+            goto remove;
+        }
+    }
+    if (closing == 1 && lbl_3_common_bss_34C90._012 == 1) {
+        if (g_d_GameSettings.exhibitionMatchInd == 0) {
+            fn_8004CC4C(1, 0, 1, 0, 0x8A);
+        } else {
+            fn_8004CC4C(1, 0, 1, 0, 0x89);
+        }
+        fn_800B0A5C_insertQueue(fn_8004D0F0, 2);
+    }
     return;
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
+    lbl_3_common_bss_34C90.itemsState = 3;
+    lbl_3_common_bss_32724.pauseMenuShown = 0;
 }
 
 // .text:0x0009894C size:0x2D4 mapped:0x806D79E0
