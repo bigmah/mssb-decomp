@@ -91,7 +91,21 @@ extern u32 lbl_803CC1A4;        // stream length
 extern u8 lbl_803CC1A8;         // ARAM write counter
 extern u32 lbl_803CC1AC;        // movie file size
 
+// movie.c strings (rodata not split into this unit)
+extern char lbl_800E7B50[]; // "YUV->RGB Conv SrcAddr is NULL!!\n", followed by the strings below
+extern char lbl_800E7B74[]; // "YUV->RGB Conv DstAddr is NULL!!\n"
+extern char lbl_800E7B98[];
+extern char lbl_803CCF00[8]; // lbl_803CCF00
+#define MOV_STR_DECODE_BROKEN (lbl_800E7B98)
+#define MOVSTR(base, off) ((base) + (off)) // string at offset off from lbl_800E7B50       // MOV_STR_DECODE_BROKEN
+#define MOV_STR_STREAM_BROKEN 0x74 // MOV_STR_STREAM_BROKEN
+#define MOV_STR_HVQM4 0xA0         // "HVQM4 1.3"
+#define MOV_STR_BAD_VERSION 0xAC   // MOV_STR_BAD_VERSION
+#define MOV_STR_BAD_RATE 0xDC      // "...Invalid audio samples per second \n"
+#define MOV_STR_NO_BUFFER 0x11C    // "...failed to allocate the working buffer\n"
+
 #define MOV_STATE_STOP 4
+#define MOV_DVD_DONE() ((s32)*(volatile u8*)&lbl_803C6CF8._715)
 
 // .text:0x800ADC40 size:0x130
 // NONMATCHING: the bss lives in another split; the original addresses it relative to lbl_802F93A0
@@ -189,11 +203,11 @@ void YUV2RGB(u8* src, u32* dst, s32 width, s32 height) {
     s32 vR, g, uB, ya, yb;
 
     if (src == NULL) {
-        OSReport("YUV->RGB Conv SrcAddr is NULL!!\n");
+        OSReport(lbl_800E7B50);
         for (;;) {}
     }
     if (dst == NULL) {
-        OSReport("YUV->RGB Conv DstAddr is NULL!!\n");
+        OSReport(lbl_800E7B74);
         for (;;) {}
     }
     x = width;
@@ -270,11 +284,11 @@ void YUV2RGB_(u8* src, u32* dst, s32 width, s32 height) {
     s32 vR, g, uB, ya, yb;
 
     if (src == NULL) {
-        OSReport("YUV->RGB Conv SrcAddr is NULL!!\n");
+        OSReport(lbl_800E7B50);
         for (;;) {}
     }
     if (dst == NULL) {
-        OSReport("YUV->RGB Conv DstAddr is NULL!!\n");
+        OSReport(lbl_800E7B74);
         for (;;) {}
     }
     x = width;
@@ -399,7 +413,7 @@ static inline BOOL MovStartBlock(MovPlayer* mov) {
     BOOL intr;
 
     if (!fn_800AF9B4(&mov->_060, 0x14)) {
-        OSPanic("movie.c", 0x355, "sNp_MovDecodeThread()::ERR!! broken file.\n");
+        OSPanic(lbl_803CCF00, 0x355, MOV_STR_DECODE_BROKEN);
         return FALSE;
     }
     if ((mov->flags & 1) && mov->rateMode == 0xFF) {
@@ -457,7 +471,7 @@ s32 fn_800AE8B8(void* arg) {
             }
             if (!lbl_803CC181) {
                 fn_800A6C80();
-                while (lbl_803C6CF8._715 != 1) {}
+                while (MOV_DVD_DONE() != 1) {}
             }
             MovResetFrames(mov);
             mov->samplesPlayed = 0;
@@ -494,7 +508,8 @@ s32 fn_800AE8B8(void* arg) {
 // .text:0x800AEB18 size:0x20C
 // Opens the movie stream and parses the HVQM4 header.
 BOOL MovStreamThread(MovPlayer* mov) {
-    s32 i;
+    char* str = lbl_800E7B50;
+    u32 i;
 
     lbl_803CC1A0 = 0;
     fn_800A6E24(mov->file, lbl_803CC174, lbl_803CC178);
@@ -504,36 +519,36 @@ BOOL MovStreamThread(MovPlayer* mov) {
         lbl_803CC178 = lbl_803C7A00.size;
     }
     if (!fn_800AF9B4(mov, 0x44)) {
-        OSPanic("movie.c", 0x2ED, "sNp_MovStreamThread()::ERR!! broken file.\n");
+        OSPanic(lbl_803CCF00, 0x2ED, MOVSTR(str, MOV_STR_STREAM_BROKEN));
         return FALSE;
     }
-    if (strncmp("HVQM4 1.3", mov->magic, strlen("HVQM4 1.3")) != 0) {
-        for (i = 0; i < 0x44; i++) {}
-        OSPanic("movie.c", 0x300, "sNp_MovStreamThread()::ERR!! Invalid version.\n");
+    if (strncmp(MOVSTR(str, MOV_STR_HVQM4), mov->magic, strlen(MOVSTR(str, MOV_STR_HVQM4))) != 0) {
+        for (i = 0x44; i != 0; i--) {}
+        OSPanic(lbl_803CCF00, 0x300, MOVSTR(str, MOV_STR_BAD_VERSION));
         return FALSE;
     }
     mov->rateMode = 0xFF;
     if (mov->sampleRate != 0) {
         if (mov->sampleRate == 0xBBAA) {
             if (AIGetDSPSampleRate() != 1) {
-                OSPanic("movie.c", 0x30B, "sNp_MovStreamThread()::ERR!! Invalid audio samples per second \n");
+                OSPanic(lbl_803CCF00, 0x30B, MOVSTR(str, MOV_STR_BAD_RATE));
                 return FALSE;
             }
             mov->rateMode = 1;
         } else if (mov->sampleRate == 0x7D1C) {
             if (AIGetDSPSampleRate() != 0) {
-                OSPanic("movie.c", 0x313, "sNp_MovStreamThread()::ERR!! Invalid audio samples per second \n");
+                OSPanic(lbl_803CCF00, 0x313, MOVSTR(str, MOV_STR_BAD_RATE));
                 return FALSE;
             }
             mov->rateMode = 0;
         } else {
-            OSPanic("movie.c", 0x31A, "sNp_MovStreamThread()::ERR!! Invalid audio samples per second \n");
+            OSPanic(lbl_803CCF00, 0x31A, MOVSTR(str, MOV_STR_BAD_RATE));
             return FALSE;
         }
     }
     fn_800E4AE8(&mov->video, mov->videoInfo);
     if (fn_800E4B1C(&mov->video) == 0) {
-        OSPanic("movie.c", 0x324, "sNp_MovStreamThread()::ERR!! failed to allocate the working buffer\n");
+        OSPanic(lbl_803CCF00, 0x324, MOVSTR(str, MOV_STR_NO_BUFFER));
         return FALSE;
     }
     mov->width = mov->video.width;
@@ -576,7 +591,7 @@ s32 MovDecodeThread(void* arg) {
         lbl_803CC19C = fn_800AF1A8(mov);
         switch (lbl_803CC19C) {
         case 2:
-            OSPanic("movie.c", 0x27D, "sNp_MovDecodeThread()::ERR!! broken file.\n");
+            OSPanic(lbl_803CCF00, 0x27D, MOV_STR_DECODE_BROKEN);
             mov->state = MOV_STATE_STOP;
             mov->decoding = 0;
             break;
@@ -1036,7 +1051,7 @@ BOOL fn_800AFD4C(void) {
     if (lbl_803C79D4.totalIn >= aram->size) {
         MovFillFromAram(lbl_803C7A00.size);
         fn_800A6C80();
-        while (lbl_803C6CF8._715 != 1) {}
+        while (MOV_DVD_DONE() != 1) {}
         aram->full = TRUE;
         return TRUE;
     }
