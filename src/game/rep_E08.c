@@ -38,6 +38,9 @@ extern BOOL checkFieldingStat(int, int, int);
 extern void fn_8004AE18(s32 idx);
 extern u8 lbl_3_data_7F0C;
 extern s32 g_Strikes[];
+extern u8 lbl_80353A90[];
+extern u8 lbl_3_common_bss_32234[];
+extern u32 fn_3_90150(s32 a, s32 b);
 extern u8 lbl_800E8558[];
 extern u8 lbl_3_data_7760[];
 extern void playSoundEffect(int);
@@ -1362,9 +1365,165 @@ void fn_3_64BDC(void) {
 }
 
 // .text:0x000657E4 size:0x7FC mapped:0x806A4878
+// NONMATCHING 86%: loop shapes/unrolling and bss addressing differ
+#if NONMATCHING
 void fn_3_657E4(void) {
-    return;
+    s32 doit = 0;
+    s32 j;
+    s32 k;
+    s32 found;
+    u8 flag;
+    s32 snd;
+    u8* res = lbl_3_common_bss_32234 + 2;
+    if (g_GameLogic[0x11E] == 0xE) {
+        if (g_d_GameSettings[0x11] != 0 && g_GameLogic[0x125] == 1) {
+            doit = 1;
+        }
+        if (g_d_GameSettings[0x11] == 0 && g_GameLogic[0x125] == 3) {
+            doit = 1;
+        }
+    }
+    if (g_GameLogic[0x11E] == 0x27 && g_GameLogic[0x125] == 0) {
+        doit = 1;
+    }
+    if (doit != 0) {
+        if (g_d_GameSettings[0x11] == 0) {
+            if (lbl_80353A90[0x104] == 2) {
+                res[0] = 1;
+            } else if (lbl_80353A90[0x104] == 3) {
+                res[0] = 2;
+            } else {
+                res[0] = 0;
+            }
+        } else if (g_GameLogic[0x11E] == 0x27 && g_Minigame[0x1A3D] == 1) {
+            s8 me = g_Minigame[0x1908];
+            found = 0;
+            for (j = 0; j < 4; j++) {
+                if (g_Minigame[0x1E08 + j * 2] == me && g_Minigame[0x1E09 + j * 2] == 0) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (g_Minigame[0x1E09] == 0 && g_Minigame[0x1E0B] == 0 && g_Minigame[0x1E0D] == 0 && g_Minigame[0x1E0F] == 0) {
+                res[me] = 2;
+            } else if (found != 0) {
+                res[me] = 0;
+            } else {
+                res[me] = 1;
+            }
+        } else if (g_Minigame[0x1906] == 1) {
+            for (j = 0; j < 4; j++) {
+                if (*(s8*)(g_Minigame + 0x18CC + j) >= 0) {
+                    if (g_Minigame[0x1A2B] == 3) {
+                        if (g_Minigame[0x19AA] != 0) {
+                            res[j] = 0;
+                        } else {
+                            res[j] = 1;
+                        }
+                    } else if (g_Minigame[0x1A37] == 1) {
+                        res[j] = 0;
+                    } else {
+                        res[j] = 1;
+                    }
+                }
+            }
+        } else {
+            for (j = 0; j < 4; j++) {
+                if (*(s8*)(g_Minigame + 0x18CC + j) >= 0) {
+                    if (g_Minigame[0x19A8] != 0) {
+                        res[j] = 2;
+                    } else if (g_Minigame[0x18E8 + j] == 1) {
+                        res[j] = 0;
+                    } else {
+                        res[j] = 1;
+                    }
+                }
+            }
+        }
+    }
+    if ((g_d_GameSettings[0x11] == 0 && g_GameLogic[0x125] < 4) || (g_d_GameSettings[0x11] != 0 && g_Minigame[0x19A9] <= 1)) {
+        for (j = 0; j < 4; j++) {
+            if (g_d_GameSettings[0x11] == 0) {
+                k = 9;
+            } else {
+                k = *(s8*)(g_Minigame + 0x18CC + j);
+                if (k < 0) {
+                    continue;
+                }
+            }
+            if (g_d_GameSettings[0x11] == 0) {
+                flag = 1;
+            } else {
+                s8 c = *(s8*)(g_Minigame + 0x19EC + j * 9);
+                if (c == 0 || c == 2) {
+                    flag = 1;
+                } else {
+                    flag = 0;
+                }
+            }
+            if (res[j] == 0) {
+                AnimateCharacter(k, 0x69, 1, 1, 1, 0, flag, 0);
+            } else if (res[j] == 1) {
+                AnimateCharacter(k, 0x6F, 1, 1, 1, 0, flag, 0);
+            } else {
+                AnimateCharacter(k, 0x72, 1, 1, 1, 0, flag, 0);
+            }
+            if (g_d_GameSettings[0x11] == 0) {
+                break;
+            }
+        }
+    } else if ((g_d_GameSettings[0x11] == 0 && g_GameLogic[0x125] == 4 && *(u16*)(g_GameLogic + 0xFE) == 1) ||
+               (g_d_GameSettings[0x11] != 0 && g_Minigame[0x19A9] == 2) ||
+               (g_GameLogic[0x11E] == 0x27 && g_GameLogic[0x125] == 0)) {
+        g_Minigame[0x19A9] = 3;
+        for (j = 0; j < 4; j++) {
+            if (g_d_GameSettings[0x11] == 0) {
+                k = 9;
+            } else {
+                k = *(s8*)(g_Minigame + 0x18CC + j);
+                if (k < 0) {
+                    continue;
+                }
+            }
+            if (g_GameLogic[0x11E] == 0x27 && *(s8*)(g_Minigame + 0x1908) >= 0 && *(s8*)(g_Minigame + 0x1908) != j) {
+                continue;
+            }
+            if (g_d_GameSettings[0x11] == 0) {
+                flag = 1;
+                snd = *(s8*)(lbl_80353A90 + 0x103);
+            } else {
+                s8 c = *(s8*)(g_Minigame + 0x19EC + j * 9);
+                if (c == 0 || c == 2) {
+                    snd = g_Minigame[0x18D0 + j];
+                    flag = 1;
+                } else {
+                    flag = 0;
+                    snd = g_Minigame[0x18D0 + j];
+                }
+            }
+            if (res[j] == 0) {
+                AnimateCharacter(k, 0x6D, 0, 1, 1, 0, flag, -1);
+                QueueCharacterAnimation(k, 0x6B, 1, 1, 0, flag, -1);
+                fn_3_90220(snd, 7);
+            } else if (res[j] == 1) {
+                AnimateCharacter(k, 0x70, 0, 1, 1, 0, flag, -1);
+                QueueCharacterAnimation(k, 0x71, 1, 1, 0, flag, -1);
+                if (g_Minigame[0x1906] > 1) {
+                    fn_3_90150(snd, 9);
+                } else {
+                    fn_3_90220(snd, 9);
+                }
+            } else {
+                AnimateCharacter(k, 0x73, 0, 1, 1, 0, flag, -1);
+                QueueCharacterAnimation(k, 0x74, 1, 1, 0, flag, -1);
+            }
+            if (g_d_GameSettings[0x11] == 0) {
+                break;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x00065FE0 size:0x160 mapped:0x806A5074
 void fn_3_65FE0(void) {
