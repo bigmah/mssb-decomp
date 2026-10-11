@@ -1150,115 +1150,85 @@ void fn_3_119EE0(s32 i) {
 #endif
 
 // .text:0x00119F6C size:0x2A0 mapped:0x80759000
-// 95%: saved-reg assignment off (lbl_8036E548/g_Minigame bases come out r30/r29 instead of r29/r30), original copies k=off and g=gm with mr, loop increment order differs
-extern const f32 lbl_3_rodata_3428;
+// NONMATCHING 85%: typed rewrite of a 95% raw-offset version; saved-reg assignment and loop induction pointers differ (the original strength-reduces the 0x28/0x90/0x34 strides into separate counters)
+#if NONMATCHING
 extern u8 lbl_3_data_2263F;
 extern void fn_3_14DC80(s8 a);
 extern void fn_3_14CB28(s8 a);
-extern f32 fn_800B4A94(void* p);
+// Places the 15 runners: sprite i normally, sprite 0x10 + i (an animated actor) while
+// scoring (state 4), and the shared highlight sprite 0xF for the selected runner.
 void fn_3_119F6C(void) {
-    u8* gm;
-    u8* g;
-    s32 off;
-    s32 k;
-    u8* e1;
-    u8* e2;
-    u8* e3;
+    Rep3310Sprite* hilite = &lbl_8036E548.sprites[0xF];
+    Rep3310Sprite* e;
+    Rep3310Sprite* runner;
+    GameActor* actor;
     u8* p;
+    u32 frame;
+    u32 k;
     s32 i;
-    u8 flag;
-    u8* tmp;
-    u8* o;
-    u8* m;
-    u32 t;
-    s32 x;
-    s32 q;
-    u8* r;
-    u32 j;
-    off = 0;
-    gm = g_Minigame;
-    flag = 0;
-    k = off;
-    g = gm;
-    i = 0;
-    tmp = (u8*)lbl_8036E548.sprites;
-    tmp[0x27E] = off;
-    e3 = tmp + 0x258;
-    for (; i < 0xF; i++, off += 0x28, k += 0x90, g += 0x34) {
-        e1 = (u8*)lbl_8036E548.sprites + off;
-        p = g + 0x860;
-        e2 = (u8*)lbl_8036E548.sprites + (i + 0x10) * 0x28;
-        e2[0x26] = 0;
-        e1[0x26] = 0;
-        if (g[0x890] != 0) {
-            if (g[0x890] == 4) {
-                e1 = e2;
-                if (*(s16*)(p + 0x2C) == 0) {
-                    o = (u8*)lbl_8036E548.objs + (i + 0x10) * 0x90 + 0x34;
-                    x = *(s32*)(lbl_3_common_bss_32724 + 0x74);
-                    *(s32*)(o + 4) = x;
-                    *(s16*)(o + 0xE) = 0;
-                    *(f32*)(o + 0x5C) = lbl_3_rodata_33AC;
-                    o[0x58] = 1;
-                    o[0x59] = (x != 0);
-                    o[0x5A] = (x != 0);
-                    *(f32*)(o + 0x60) = lbl_3_rodata_33AC;
-                    *(f32*)(o + 0x54) = lbl_3_rodata_33E0;
-                    o[0x5A] = 1;
-                    *(f32*)(o + 0x5C) = lbl_3_rodata_33AC;
-                    o[0x59] = 1;
-                    o[0x5B] = 2;
-                    fn_3_14DC80(i);
-                    fn_3_90064(0x2E3);
-                }
-                t = (u32)fn_800B4A94(*(void**)((u8*)lbl_8036E548.objs + (i + 0x10) * 0x90 + 0x34));
-                if (t <= lbl_3_data_2263F) {
-                    if ((t & 1) == 0) {
-                        r = *(u8**)((u8*)lbl_8036E548.objs + k + 0x934);
-                        for (q = 0, j = 0; j < *(u16*)(r + 6); q += 4, j++) {
-                            m = *(u8**)(*(u8**)(r + 0x18) + q);
-                            m = *(u8**)(m + 0xE8);
-                            if (m != NULL) {
-                                *(f32*)m = *(f32*)m + *(f32*)(m + 8);
-                            }
-                        }
-                        e2[0x26] = 0;
-                        goto next;
-                    }
-                    if (t == 0) {
-                        fn_3_14CB28(i);
-                    }
-                }
-            } else {
-                if (p[0x31] == 3 && i == *(s16*)(gm + 0x18A4)) {
-                    flag = 1;
-                    e1 = e3;
-                }
-            }
-            e1[0x26] = 1;
-            *(f32*)(e1 + 4) = *(f32*)p;
-            *(f32*)(e1 + 8) = -*(f32*)(p + 4);
-            *(f32*)(e1 + 0xC) = *(f32*)(p + 8);
-            *(f32*)(e1 + 0x10) = lbl_3_rodata_33AC;
-            *(f32*)(e1 + 0x14) = lbl_3_rodata_33AC;
-            *(f32*)(e1 + 0x18) = lbl_3_rodata_33AC;
-            if (flag != 0) {
-                fn_8001D0D0(0xF, lbl_3_rodata_3428);
-            } else {
-                fn_8001D0D0(i, lbl_3_rodata_3428);
-            }
-            if (flag != 0) {
-                flag = 0;
-                *(void**)e1 = fn_3_119E30;
-            } else if (p[0x30] != 4) {
-                *(void**)e1 = fn_3_119EE0;
-            } else {
-                *(void**)e1 = 0;
-            }
+    u8 flag = 0;
+
+    hilite->visible = 0;
+    for (i = 0; i < 15; i++) {
+        e = &lbl_8036E548.sprites[i];
+        p = g_Minigame + i * 0x34 + 0x860;
+        runner = &lbl_8036E548.sprites[i + 0x10];
+        runner->visible = 0;
+        e->visible = 0;
+        if (p[0x30] == 0) {
+            continue;
         }
-next:;
+        if (p[0x30] == 4) {
+            e = runner;
+            if (*(s16*)(p + 0x2C) == 0) {
+                fn_3_119CA8(i + 0x10);
+                fn_3_14DC80(i);
+                fn_3_90064(0x2E3);
+            }
+            frame = fn_800B4A94(lbl_8036E548.objs->objects[i + 0x10].actor);
+            if (frame <= lbl_3_data_2263F) {
+                if ((frame & 1) == 0) {
+                    actor = lbl_8036E548.objs->objects[i + 0x10].actor;
+                    for (k = 0; k < actor->totalBones; k++) {
+                        struct ANIMPipe* anim = actor->boneArray[k]->animPipe;
+                        if (anim != NULL) {
+                            anim->time += anim->speed;
+                        }
+                    }
+                    runner->visible = 0;
+                    continue;
+                }
+                if (frame == 0) {
+                    fn_3_14CB28(i);
+                }
+            }
+        } else if (p[0x31] == 3 && i == *(s16*)(g_Minigame + 0x18A4)) {
+            flag = 1;
+            e = hilite;
+        }
+        e->visible = 1;
+        e->pos[0] = *(f32*)p;
+        e->pos[1] = -*(f32*)(p + 4);
+        e->pos[2] = *(f32*)(p + 8);
+        e->rot[0] = 0.0f;
+        e->rot[1] = 0.0f;
+        e->rot[2] = 0.0f;
+        if (flag != 0) {
+            fn_8001D0D0(0xF, 0.75f);
+        } else {
+            fn_8001D0D0(i, 0.75f);
+        }
+        if (flag != 0) {
+            flag = 0;
+            e->draw = fn_3_119E30;
+        } else if (p[0x30] != 4) {
+            e->draw = fn_3_119EE0;
+        } else {
+            e->draw = NULL;
+        }
     }
 }
+#endif
 
 // .text:0x0011A20C size:0x4 mapped:0x807592A0
 void fn_3_11A20C(void) {
