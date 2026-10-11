@@ -6,7 +6,8 @@
 
 // Game-side actor instance (partial; compare C3 Actor).
 typedef struct ActorInst {
-    /* 0x00 */ u8 pad0[0x1C];
+    /* 0x00 */ u8 pad0[0x18];
+    /* 0x18 */ struct sBone** boneArray;
     /* 0x1C */ u8 worldControl[0x44];
     /* 0x60 */ u8 pad60[0x38];
     /* 0x98 */ u8 flags98;  // low 2 bits = fn_800B3C04 result

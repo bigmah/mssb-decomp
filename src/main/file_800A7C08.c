@@ -2403,20 +2403,11 @@ void fn_800ACD64(s32 result) {
     }
 }
 
-// Simple two-ended arena: blocks are allocated upward from lo or downward from hi.
-typedef struct HeapArena {
-    /*0x0*/ s32 freeSize;
-    /*0x4*/ u8* lo;
-    /*0x8*/ u8* hi;
-} HeapArena;
-
 // Header placed just before every block handed out by the arena.
 typedef struct HeapBlockHeader {
     /*0x0*/ u8* prev; // arena end (lo or hi) before this allocation
     /*0x4*/ s32 size;
 } HeapBlockHeader;
-
-extern HeapArena lbl_803C7898;
 
 // .text:0x800ACF14 size:0x20
 void fn_800ACF14(void* block) {
