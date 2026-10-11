@@ -93,6 +93,7 @@ extern f32 lbl_3_rodata_2700;
 extern f32 lbl_3_rodata_2778;
 extern const f32 lbl_3_rodata_26A0;
 extern f32 lbl_3_rodata_27E8;
+extern const f32 lbl_3_rodata_27F4;
 extern const f32 lbl_3_rodata_2698;
 extern const f32 lbl_3_rodata_26C8;
 extern const f32 lbl_3_rodata_2678;
@@ -1307,9 +1308,94 @@ void fn_3_D1AC4(u8* p) {
 }
 
 // .text:0x000D1B24 size:0x408 mapped:0x80710BB8
+// Accumulates the forces on each chain node: gravity (the last node gets grav instead),
+// damped springs between neighbours, air drag and ground friction.
+// NONMATCHING 95%: saved-register assignment differs; target reloads 0.0f in the drag/friction loop
+#if NONMATCHING
 void fn_3_D1B24(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* grav) {
-    return;
+    Vec dv;
+    Vec d;
+    Vec extra;
+    RopeNode* r;
+    RopeNode* prev;
+    s32 i;
+    f32 zero, len, spring, fs, mag, fric, side;
+    for (r = nodes, i = 0; i < n; r++, i++) {
+        memset(&r->force, 0, sizeof(Vec));
+        if (r->pinned == 0 && i != n - 1) {
+            r->force.y = lbl_3_rodata_27F4 * r->mass;
+        }
+        if (i == n - 1) {
+            PSVECAdd(&r->force, grav, &r->force);
+        }
+    }
+    zero = lbl_3_rodata_2664;
+    for (i = n, r = &nodes[n]; --r, --i != 0;) {
+        prev = &nodes[i - 1];
+        PSVECSubtract(&r->pos, &prev->pos, &d);
+        PSVECSubtract(&r->vel, &prev->vel, &dv);
+        len = PSVECMag(&d);
+        spring = cfg->c * (len - cfg->a);
+        fs = cfg->d * (PSVECDotProduct(&dv, &d) / len);
+        fs = -(spring + fs);
+        if (PSVECMag(&d) == zero) {
+            d.z = zero;
+            d.x = zero;
+            d.y = lbl_3_rodata_2678;
+        }
+        PSVECNormalize(&d, &d);
+        PSVECScale(&d, fs, &d);
+        if (r->pinned == 0) {
+            PSVECAdd(&r->force, &d, &r->force);
+        }
+        PSVECScale(&d, lbl_3_rodata_2678, &d);
+        if (prev->pinned == 0) {
+            PSVECAdd(&prev->force, &d, &prev->force);
+        }
+    }
+    for (r = nodes, i = 0; i < n; r++, i++) {
+        if (r->pinned == 0) {
+            memcpy(&dv, &r->vel, sizeof(Vec));
+            memcpy(&d, &r->force, sizeof(Vec));
+            PSVECScale(&d, r->invMass, &d);
+            PSVECScale(&d, cfg->h, &d);
+            PSVECAdd(&dv, &d, &dv);
+            memset(&extra, 0, sizeof(Vec));
+            mag = PSVECMag(&dv);
+            if (mag != lbl_3_rodata_2664) {
+                PSVECScale(&dv, lbl_3_rodata_2678, &d);
+                PSVECNormalize(&d, &d);
+                PSVECScale(&d, cfg->f * (mag * mag), &d);
+                PSVECAdd(&extra, &d, &extra);
+            }
+            if (r->pos.y <= r->radius && r->force.y < lbl_3_rodata_2664) {
+                fric = r->force.y * cfg->e;
+                if (fric < lbl_3_rodata_2664) {
+                    fric = -fric;
+                }
+                memcpy(&d, &r->force, sizeof(Vec));
+                d.y = lbl_3_rodata_2664;
+                side = PSVECMag(&d);
+                dv.y = lbl_3_rodata_2664;
+                mag = PSVECMag(&dv);
+                if (mag != lbl_3_rodata_2664 || side > fric) {
+                    if (mag != lbl_3_rodata_2664) {
+                        PSVECNormalize(&dv, &d);
+                    } else {
+                        PSVECNormalize(&d, &d);
+                    }
+                    PSVECScale(&d, -fric, &d);
+                    PSVECAdd(&extra, &d, &extra);
+                } else {
+                    PSVECScale(&r->force, lbl_3_rodata_2678, &d);
+                    PSVECAdd(&extra, &d, &extra);
+                }
+            }
+            PSVECAdd(&r->force, &extra, &r->force);
+        }
+    }
 }
+#endif
 
 // .text:0x000D1F2C size:0x2F4 mapped:0x80710FC0
 // Verlet-integrates the chain cfg->n substeps: gravity dir*cfg->h, ground bounce,
