@@ -570,8 +570,11 @@ L_800BF1AC:
 #endif
 
 // .text:0x800BF1C0 size:0x28
-void SKNFlushByIndex2(void) {
-    return;
+#if NONMATCHING
+void SKNFlushByIndex2(u16* indices, u32 count, void* base) {
+    do {
+        DCFlushRange((u8*)base + *indices++ * 0xC, 1);
+    } while (--count);
 }
 #else
 asm void SKNFlushByIndex2(register u16* indices, register u32 count, register void* base) {
