@@ -1280,7 +1280,6 @@ void fn_3_B27A4(void) {
     }
 }
 
-#pragma dont_inline off
 // fn_3_AD164, size:0x13C
 void fn_3_AD164(s32 arg) {
     switch (lbl_3_common_bss_34C90.subState) {
@@ -1323,7 +1322,6 @@ void fn_3_AD164(s32 arg) {
         break;
     }
 }
-#pragma dont_inline on
 
 // fn_3_AD8CC, size:0x170
 void fn_3_AD8CC(void) {
@@ -2468,6 +2466,75 @@ void fn_3_B2E20(void) {
     }
 }
 
+// fn_3_AF5A4, size:0x4C0
+void fn_3_AF5A4(void) {
+    if (lbl_3_common_bss_34C90.frames < 0x7FFE) {
+        lbl_3_common_bss_34C90.frames += 1;
+    } else {
+        lbl_3_common_bss_34C90.frames = 0x7FFF;
+    }
+    if (lbl_3_common_bss_34C90.subFrames < 0x7FFE) {
+        lbl_3_common_bss_34C90.subFrames += 1;
+    } else {
+        lbl_3_common_bss_34C90.subFrames = 0x7FFF;
+    }
+    lbl_803CBC3C = 1;
+    if (lbl_3_common_bss_34C90._201 != 0) {
+        lbl_3_common_bss_34C90.heldButtons = 0;
+        lbl_3_common_bss_34C90.newButtons = 0;
+        lbl_3_common_bss_34C90.repeatButtons = 0;
+        lbl_3_common_bss_34C90.inputCooldown--;
+        if (lbl_3_common_bss_34C90.inputCooldown < 0) {
+            lbl_3_common_bss_34C90.inputCooldown = 12;
+        }
+    } else {
+        lbl_3_common_bss_34C90.heldButtons = g_Controls[g_GameLogic.teams[lbl_3_common_bss_34C90.team]].buttonInput;
+        lbl_3_common_bss_34C90.newButtons = g_Controls[g_GameLogic.teams[lbl_3_common_bss_34C90.team]].newButtonInput;
+        lbl_3_common_bss_34C90.repeatButtons = g_Controls[g_GameLogic.teams[lbl_3_common_bss_34C90.team]]._08;
+    }
+    switch (lbl_3_common_bss_34C90.state) {
+    case 0:
+        break;
+    case 1:
+        fn_3_AF10C();
+        break;
+    case 2:
+        fn_3_AE334();
+        break;
+    case 3:
+        fn_3_ADA3C();
+        break;
+    case 4:
+    case 7:
+    case 8:
+        fn_3_AD8CC();
+        break;
+    case 5:
+        fn_3_AD164(0);
+        break;
+    case 6:
+        fn_3_ACAF8();
+        break;
+    case 9:
+        fn_3_AEC50();
+        break;
+    case 10:
+        fn_3_AE770();
+        break;
+    case 11:
+    case 14:
+    case 15:
+        fn_3_AD8CC();
+        break;
+    case 12:
+        fn_3_AD164(1);
+        break;
+    case 13:
+        fn_3_ACAF8();
+        break;
+    }
+}
+
 // NONMATCHING 99.6%: the original inlines fn_3_AF428 here (it won't auto-inline for us);
 // pasting its body gives 99.6%, only the final "all swaps done" check's branch shape differs.
 // nmverify: the fn_3_AF428 call vs its inlined fn_3_750DC/fn_8001C588 calls is expected.
@@ -2578,79 +2645,3 @@ void fn_3_B1578(void) {
     g_Strikes.balls = 0;
     g_Strikes.outs = 0;
 }
-
-// NONMATCHING 98.4%: the original inlines fn_3_AD164(0/1) and fn_3_AE770 here (they won't
-// auto-inline for us); with their bodies pasted in, only the g_Controls[g_GameLogic.teams[team]]
-// address computation (lwzx vs add+lwz) and the resulting register numbers differ.
-// nmverify: calls to fn_3_AD164/fn_3_AE770 instead of their inlined bodies are expected.
-// fn_3_AF5A4, size:0x4C0
-#if NONMATCHING
-void fn_3_AF5A4(void) {
-    if (lbl_3_common_bss_34C90.frames < 0x7FFE) {
-        lbl_3_common_bss_34C90.frames += 1;
-    } else {
-        lbl_3_common_bss_34C90.frames = 0x7FFF;
-    }
-    if (lbl_3_common_bss_34C90.subFrames < 0x7FFE) {
-        lbl_3_common_bss_34C90.subFrames += 1;
-    } else {
-        lbl_3_common_bss_34C90.subFrames = 0x7FFF;
-    }
-    lbl_803CBC3C = 1;
-    if (lbl_3_common_bss_34C90._201 != 0) {
-        lbl_3_common_bss_34C90.heldButtons = 0;
-        lbl_3_common_bss_34C90.newButtons = 0;
-        lbl_3_common_bss_34C90.repeatButtons = 0;
-        lbl_3_common_bss_34C90.inputCooldown--;
-        if (lbl_3_common_bss_34C90.inputCooldown < 0) {
-            lbl_3_common_bss_34C90.inputCooldown = 12;
-        }
-    } else {
-        InputStruct* c = &g_Controls[g_GameLogic.teams[lbl_3_common_bss_34C90.team]];
-        lbl_3_common_bss_34C90.heldButtons = c->buttonInput;
-        lbl_3_common_bss_34C90.newButtons = c->newButtonInput;
-        lbl_3_common_bss_34C90.repeatButtons = c->_08;
-    }
-    switch (lbl_3_common_bss_34C90.state) {
-    case 0:
-        break;
-    case 1:
-        fn_3_AF10C();
-        break;
-    case 2:
-        fn_3_AE334();
-        break;
-    case 3:
-        fn_3_ADA3C();
-        break;
-    case 4:
-    case 7:
-    case 8:
-        fn_3_AD8CC();
-        break;
-    case 5:
-        fn_3_AD164(0);
-        break;
-    case 6:
-        fn_3_ACAF8();
-        break;
-    case 9:
-        fn_3_AEC50();
-        break;
-    case 10:
-        fn_3_AE770();
-        break;
-    case 11:
-    case 14:
-    case 15:
-        fn_3_AD8CC();
-        break;
-    case 12:
-        fn_3_AD164(1);
-        break;
-    case 13:
-        fn_3_ACAF8();
-        break;
-    }
-}
-#endif
