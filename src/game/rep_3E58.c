@@ -354,6 +354,66 @@ void fn_3_1674D0(void) {
 }
 
 // .text:0x001678A8 size:0x41C mapped:0x807A693C
+// While the actor runs a swing animation (0x08-0x0E, 0x11-0x1B), emits one rising
+// sparkle per frame from a random joint, aimed roughly along the actor's facing.
 void fn_3_1678A8(void) {
-    return;
+    SparkleTask* task = lbl_803CC1B8;
+    void* q;
+    s16 anim;
+
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
+        return;
+    }
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
+        return;
+    }
+    q = task->actor;
+    anim = task->actor->anim[0];
+    if ((anim >= 8 && anim <= 0xE) || (anim >= 0x11 && anim <= 0x1B)) {
+        Vec pos = {0.0f, 0.0f, 0.0f};
+        Vec vel;
+        ParticleParamsF prm;
+        f32 angle;
+        f32 speed;
+        s32 i;
+
+        memcpy(&prm, &lbl_3_data_28508, sizeof(ParticleParamsF));
+        prm.tex = lbl_803CBD0C;
+        prm.size1 = prm.size0;
+        // One-iteration loop (a sparkle count of 1); it makes the original hoist the constants.
+        for (i = 0; i < 1; i++) {
+            angle = 0.0f;
+            angle += 45.0 * (2.0 * (RANDF() - 0.5));
+            angle -= 57.29578f * task->actor->rot.y;
+            angle = 0.017453292f * angle;
+            vel.x = -sinf_kludge(angle);
+            vel.y = 1.0f;
+            vel.z = cosf_kludge(angle);
+            speed = 0.03f * (2.0 * (RANDF() - 0.5)) + 0.1f;
+            vel.x *= speed;
+            vel.z *= speed;
+            speed = 0.03f * (2.0 * (RANDF() - 0.5)) + 0.1f;
+            vel.y *= speed;
+            memcpy(&prm.vel, &vel, sizeof(Vec));
+            prm.velScale = 1.0f;
+            prm.accel.z = 0.0f;
+            prm.accel.x = 0.0f;
+            prm.accel.y = 1.0f;
+            prm.accelScale = -0.0044f;
+            fn_8001B728(task->actor->index, (s8)lbl_3_data_28558[(u32)rand() % 23], &pos);
+            memcpy(&prm.pos, &pos, sizeof(Vec));
+            memset(&pos, 0, sizeof(Vec));
+            prm.r = rand() % 256;
+            prm.g = rand() % 256;
+            prm.b = rand() % 256;
+            fn_80026998(&prm);
+        }
+        task->done = TRUE;
+        return;
+    }
+    if (task->done) {
+        fn_800B0A14_removeQueue(q);
+    }
 }
