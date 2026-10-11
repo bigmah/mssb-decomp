@@ -227,8 +227,9 @@ void fn_3_161588(s32 event, s16 rosterIdx) {
 }
 #endif
 
+// NONMATCHING 97%: structure matches; only register allocation differs (locals/temps in r0, r3-r9 and the r31 'done' flag)
 // .text:0x00162080 size:0x28C
-// 97%: structure matches; only register allocation differs (locals/temps in r0, r3-r9 and the r31 'done' flag)
+#if NONMATCHING
 void fn_3_162080(void) {
     MissionIdx* mi;
     u8* q = lbl_3_common_bss_37400;
@@ -318,6 +319,7 @@ void fn_3_162080(void) {
         }
     }
 }
+#endif
 
 // Star mission progress after an at-bat (result: play result code, rbi: runs batted in).
 // NONMATCHING 65%: control flow and stores line up; register allocation differs throughout, the original
