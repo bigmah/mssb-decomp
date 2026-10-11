@@ -3,6 +3,14 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
+#include "C3/control.h"
+#include "C3/light.h"
+
+// main.dol lighting (see include/main/file_800B9974.h, which can't be included
+// next to UnknownHomes_Static.h)
+void LITInitColor(Light* light, GXColor* color);
+void LITInitPos(Light* light, f32 x, f32 y, f32 z);
+void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 #include <math.h>
 
 extern void fn_1_1CBE4(u8* object);
@@ -180,3 +188,33 @@ void fn_1_1B6BC(void) {
     GXSetProjection(proj, GX_PERSPECTIVE);
     fn_800B806C(0, lbl_1_rodata_75F8, lbl_1_rodata_75FC, lbl_1_rodata_7600, lbl_1_rodata_7604, lbl_1_rodata_7608, lbl_1_rodata_7550, lbl_1_rodata_760C);
 }
+
+typedef struct {
+    Vec pos;
+    u8 pad0C[4];
+} ChallengeLightPos;
+extern ChallengeLightPos lbl_80367318[3];
+// view of lbl_8036E548 (global actor manager) used here
+typedef struct {
+    u8 pad00[0xAC];
+    Light* lights[3];
+} ChallengeLightMgr;
+extern const GXColor lbl_1_rodata_7508;
+
+// NONMATCHING 95%: prologue scheduling of the GXColor stack copy (same as fn_2_48DB4, docs/patterns/unsolved.md)
+#if NONMATCHING
+// fn_1_1B038, size:0xC4
+void fn_1_1B038(void) {
+    s32 i;
+    GXColor white = lbl_1_rodata_7508;
+
+    for (i = 0; i < 3; i++) {
+        GXColor color;
+        LITInitAttn(((ChallengeLightMgr*)lbl_8036E548)->lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+        LITInitPos(((ChallengeLightMgr*)lbl_8036E548)->lights[i], lbl_80367318[i].pos.x, lbl_80367318[i].pos.y, lbl_80367318[i].pos.z);
+        color = white;
+        LITInitColor(((ChallengeLightMgr*)lbl_8036E548)->lights[i], &color);
+        LITXForm(((ChallengeLightMgr*)lbl_8036E548)->lights[i], lbl_1_bss_69FC + 0x10);
+    }
+}
+#endif

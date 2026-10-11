@@ -78,4 +78,6 @@ void fn_1_1A774(void);
 
 void fn_1_1D514(void);
 
+void fn_1_1B038(void);
+
 #endif
