@@ -1261,9 +1261,63 @@ s32 fn_8002B014(Emitter* e) {
 #endif
 
 // .text:0x8002B400 size:0x3F8
-void fn_8002B400(void) {
-    return;
+// NONMATCHING 64%: float register allocation and scheduling
+#if NONMATCHING
+void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
+    Particle* p = e->particles;
+    s32 i = 0;
+    s32 delay;
+    f32 ang;
+
+    do {
+        delay = 0;
+        p->uvFrame = 0;
+        p->life = prm->life;
+        p->texIndex = prm->texIndex;
+        p->sizeY = p->sizeX = prm->size[0];
+        p->color.c.b = p->color.c.g = p->color.c.r = 0xFF;
+        p->color.c.a = prm->alpha[0];
+        p->unk4C = 2;
+        p->pos.x = pos->x;
+        p->pos.y = -0.1 + -pos->y;
+        p->pos.z = pos->z;
+        p->u.tE.phase1 = prm->phase1;
+        p->u.tE.life0 = prm->life;
+        p->u.tE.dSize1 = (prm->size[1] - prm->size[0]) / (f32)p->u.tE.phase1;
+        p->u.tE.dAlpha1 = (prm->alpha[1] - prm->alpha[0]) / p->u.tE.phase1;
+        p->u.tE.dSize2 = (prm->size[2] - prm->size[1]) / (f32)(p->u.tE.life0 - p->u.tE.phase1);
+        p->u.tE.dAlpha2 = (prm->alpha[2] - prm->alpha[1]) / (p->u.tE.life0 - p->u.tE.phase1);
+        p->delay = delay;
+        p = p->next;
+    } while (p != NULL);
+    for (p = e->u.tE.sub; p != NULL; p = p->next) {
+        p->uvFrame = 0;
+        p->life = prm->subLife;
+        p->texIndex = prm->subTexIndex;
+        p->sizeX = prm->subSizeX[0];
+        p->sizeY = prm->subSizeY[0];
+        p->color.c.b = p->color.c.g = p->color.c.r = 0xFF;
+        p->color.c.a = prm->subAlpha[0];
+        p->unk4C = 1;
+        ang = 0.017453292f * prm->angle0 + (f32)i * (0.017453292f * (prm->angleSpan / (f32)prm->subCount));
+        p->pos.x = prm->radius * (f32)cos(ang) + pos->x;
+        p->pos.y = -0.1 + (-pos->y - p->sizeY * 0.5f);
+        ang = 0.017453292f * prm->angle0 + (f32)i * (0.017453292f * (prm->angleSpan / (f32)prm->subCount));
+        i++;
+        p->pos.z = prm->radius * (f32)sin(ang) + pos->z;
+        p->u.tEsub.phase1 = prm->subPhase1;
+        p->u.tEsub.life0 = prm->subLife;
+        p->u.tEsub.dSizeY1 = (prm->subSizeY[1] - prm->subSizeY[0]) / (f32)p->u.tEsub.phase1;
+        p->u.tEsub.dSizeX1 = (prm->subSizeX[1] - prm->subSizeX[0]) / (f32)p->u.tEsub.phase1;
+        p->u.tEsub.dAlpha1 = (prm->subAlpha[1] - prm->subAlpha[0]) / p->u.tEsub.phase1;
+        p->u.tEsub.dSizeY2 = (prm->subSizeY[2] - prm->subSizeY[1]) / (f32)(p->u.tEsub.life0 - p->u.tEsub.phase1);
+        p->u.tEsub.dSizeX2 = (prm->subSizeX[2] - prm->subSizeX[1]) / (f32)(p->u.tEsub.life0 - p->u.tEsub.phase1);
+        p->u.tEsub.dAlpha2 = (prm->subAlpha[2] - prm->subAlpha[1]) / (p->u.tEsub.life0 - p->u.tEsub.phase1);
+        p->delay = delay;
+        delay += 2;
+    }
 }
+#endif
 
 // .text:0x8002B7F8 size:0x48C
 void fn_8002B7F8(void) {
