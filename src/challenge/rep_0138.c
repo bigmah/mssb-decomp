@@ -8,10 +8,27 @@
 #include "stl/math.h"
 #include "Dolphin/os.h"
 #include "C3/geoPalette.h"
+#include "C3/actor.h"
+#include "Dolphin/pad.h"
+
+// Controller state at lbl_803C77B8 (port 0); same layout as main.dol's PadState.
+typedef struct ChalPadState {
+    /*0x00*/ u16 held;
+    /*0x02*/ u16 down;
+    /*0x04*/ u16 repeat;
+    /*0x06*/ u16 prev;
+    /*0x08*/ u8 _08[8];
+    /*0x10*/ s8 stickX;
+    /*0x11*/ s8 stickY;
+    /*0x12*/ s8 substickX;
+    /*0x13*/ s8 substickY;
+    /*0x14*/ u8 triggerLeft;
+    /*0x15*/ u8 triggerRight;
+} ChalPadState;
+#define PAD0 (*(ChalPadState*)&lbl_803C77B8)
 
 extern GXCullMode lbl_1_data_8C4[];
 extern void* lbl_1_data_848[3];
-extern void fn_1_73B8(void* context, s32 count, ...);
 
 typedef union ChallengeColor {
     GXColor color;
@@ -59,16 +76,14 @@ extern s32 lbl_1_bss_C4;
 extern u8 lbl_1_bss_C2[];
 extern u8 lbl_1_data_85C[];
 
-extern u8 lbl_1_common_bss_472B4[];
+extern ChallengeWork lbl_1_common_bss_472B4;
 extern u8* lbl_803CC1B8[];
 extern void* lbl_80366158[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void fn_800B472C(void*);
-extern void fn_1_6848(u8*);
 extern const f32 lbl_1_rodata_1F0;
 extern const f32 lbl_1_rodata_1F4;
 extern const f32 lbl_1_rodata_1F8;
-typedef struct { u8 b[0x6C]; } Chal6C;
 extern void fn_1_4DD8(u16* effects);
 extern u8 lbl_803CBBC0;
 extern void fn_800A7D4C(int, void*);
@@ -103,20 +118,20 @@ void fn_1_717C(ChallengeModelOffsets* model) {
     fn_800B49E4(actor);
     fn_800BCE38(geometry);
     convertTextureHeader(textures);
-    *(u8**)(lbl_1_common_bss_472B4 + 0x58) = textures + 4;
+    lbl_1_common_bss_472B4.texBank = textures + 4;
     fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
     haveActLayoutPointToGeoHeader(actor, geometry);
-    *(u16*)(lbl_1_common_bss_472B4 + 0x22A) = *(u16*)(actor + 6);
-    *(u8**)(lbl_1_common_bss_472B4 + 0x130) = actor;
-    *(u8**)(lbl_1_common_bss_472B4 + 0xC4) = actor;
+    lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
+    lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
+    lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
     actor = (u8*)model + model->secondaryActor;
     geometry = (u8*)model + model->secondaryGeometry;
     fn_800B49E4(actor);
     fn_800BCE38(geometry);
     fn_800BD190((struct GQRValueGroups*)geometry, (s32)textures);
     haveActLayoutPointToGeoHeader(actor, geometry);
-    *(u8**)(lbl_1_common_bss_472B4 + 0x208) = actor;
-    *(u8**)(lbl_1_common_bss_472B4 + 0x19C) = actor;
+    lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
+    lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
 }
 
 // fn_1_7EF8, size:0x100
@@ -177,17 +192,17 @@ void fn_1_786C(void) {
 }
 
 // fn_1_54E0, size:0x60
-void fn_1_54E0(void* matrix) {
+void fn_1_54E0(MtxPtr view) {
     s32 i;
     for (i = 0; i < 3; i++) {
-        LITXForm(lbl_1_data_848[i], matrix);
+        LITXForm(lbl_1_data_848[i], view);
     }
 }
 
 // fn_1_77EC, size:0x5C
-void fn_1_77EC(void* context) {
+void fn_1_77EC(ChallengeModel* model) {
     GXSetCullMode(lbl_1_data_8C4[0]);
-    fn_1_73B8(context, 3, lbl_1_data_848[0], lbl_1_data_848[1], lbl_1_data_848[2]);
+    fn_1_73B8(model, 3, lbl_1_data_848[0], lbl_1_data_848[1], lbl_1_data_848[2]);
 }
 
 // .text:0x5540 size:0x4
@@ -202,22 +217,22 @@ void fn_1_7848(void) {
 
 // fn_1_7280, size:0x138
 void fn_1_7280(void) {
-    u8* p;
-    u8* q;
-    p = lbl_1_common_bss_472B4 + lbl_803CBBC0 * 0x6C + 0x5C;
-    PSMTXCopy((f32(*)[4])lbl_1_common_bss_472B4, (f32(*)[4])(p + 0x38));
+    ChallengeModel* p;
+    ChallengeModel* q;
+    p = &lbl_1_common_bss_472B4.stage[lbl_803CBBC0];
+    PSMTXCopy(lbl_1_common_bss_472B4.view, p->camera);
     fn_800A7D4C(0, &sTabC[lbl_803CBBC0]);
     fn_800A7D4C(0, p);
     fn_800A7D4C(0, &sTabB[lbl_803CBBC0]);
-    q = lbl_1_common_bss_472B4 + lbl_803CBBC0 * 0x6C + 0x134;
-    PSMTXRotRad((f32(*)[4])(q + 8), 0x59, lbl_1_rodata_204 * (f32)*(u16*)(lbl_1_common_bss_472B4 + 0x23A));
-    PSMTXCopy((f32(*)[4])lbl_1_common_bss_472B4, (f32(*)[4])(q + 0x38));
+    q = &lbl_1_common_bss_472B4.object[lbl_803CBBC0];
+    PSMTXRotRad(q->world, 'Y', lbl_1_rodata_204 * (f32)lbl_1_common_bss_472B4.spin);
+    PSMTXCopy(lbl_1_common_bss_472B4.view, q->camera);
     fn_800A7D4C(0, q);
     fn_800A7D4C(0, &sTabA[lbl_803CBBC0]);
 }
 
 // fn_1_6578, size:0x14C
-void fn_1_6578(void* obj, void* image, s32 w, s32 h) {
+void fn_1_6578(GXTexObj* obj, void* image, s32 w, s32 h) {
     GXTexFilter filter;
     f32* scale;
     s32 w0;
@@ -254,23 +269,23 @@ void fn_1_66C4(void) {
     s32 b;
     fn_800AD038(lbl_80366158[2]);
     *(s16*)(object + 0x10) = 0;
-    a = *(s8*)(lbl_1_common_bss_472B4 + 0x230);
-    b = *(s8*)(lbl_1_common_bss_472B4 + 0x231);
-    memset(lbl_1_common_bss_472B4, 0, 0x240);
-    *(u8*)(lbl_1_common_bss_472B4 + 0x230) = a;
-    *(u8*)(lbl_1_common_bss_472B4 + 0x231) = b;
-    *(void**)(lbl_1_common_bss_472B4 + 0x21C) = _OSAllocFromHeap(0x20, 0x80000);
-    *(f32*)(lbl_1_common_bss_472B4 + 0x4C) = lbl_1_rodata_1F0;
-    *(f32*)(lbl_1_common_bss_472B4 + 0x50) = lbl_1_rodata_1F4;
-    *(u16*)(lbl_1_common_bss_472B4 + 0x30) = 0xF36C;
-    *(f32*)(lbl_1_common_bss_472B4 + 0x54) = lbl_1_rodata_1F8;
-    *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = -1;
-    lbl_1_common_bss_472B4[0x234] = 0;
-    PSMTXIdentity((f32(*)[4])(lbl_1_common_bss_472B4 + 0x64));
-    *(void**)(lbl_1_common_bss_472B4 + 0x60) = fn_1_77EC;
-    *(Chal6C*)(lbl_1_common_bss_472B4 + 0xC8) = *(Chal6C*)(lbl_1_common_bss_472B4 + 0x5C);
-    *(void**)(lbl_1_common_bss_472B4 + 0x138) = fn_800B472C;
-    *(Chal6C*)(lbl_1_common_bss_472B4 + 0x1A0) = *(Chal6C*)(lbl_1_common_bss_472B4 + 0x134);
+    a = lbl_1_common_bss_472B4.stageSel;
+    b = lbl_1_common_bss_472B4.variantSel;
+    memset(&lbl_1_common_bss_472B4, 0, sizeof(ChallengeWork));
+    lbl_1_common_bss_472B4.stageSel = a;
+    lbl_1_common_bss_472B4.variantSel = b;
+    lbl_1_common_bss_472B4.heapBuf = _OSAllocFromHeap(0x20, 0x80000);
+    lbl_1_common_bss_472B4.target.y = lbl_1_rodata_1F0;
+    lbl_1_common_bss_472B4.target.z = lbl_1_rodata_1F4;
+    lbl_1_common_bss_472B4.pitch = 0xF36C;
+    lbl_1_common_bss_472B4.zoom = lbl_1_rodata_1F8;
+    lbl_1_common_bss_472B4.selBone = -1;
+    lbl_1_common_bss_472B4._234 = 0;
+    PSMTXIdentity(lbl_1_common_bss_472B4.stage[0].world);
+    lbl_1_common_bss_472B4.stage[0].draw = fn_1_77EC;
+    lbl_1_common_bss_472B4.stage[1] = lbl_1_common_bss_472B4.stage[0];
+    lbl_1_common_bss_472B4.object[0].draw = (void (*)(ChallengeModel*))fn_800B472C;
+    lbl_1_common_bss_472B4.object[1] = lbl_1_common_bss_472B4.object[0];
     *(void**)lbl_803CC1B8[0] = fn_1_6848;
 }
 
@@ -344,39 +359,39 @@ extern const f32 lbl_1_rodata_210;
 extern const f32 lbl_1_rodata_218;
 
 // fn_1_8368, size:0x240
-// Debug pad control: steps the selected bone (0x22E) and moves the two vectors in lbl_1_data_200.
+// Debug pad control: steps the selected bone and moves the two points in lbl_1_data_200.
 // NONMATCHING 99%: int->float magic constant and the scale constant swap f6/f7
 #if NONMATCHING
 void fn_1_8368(void) {
     s32 v1;
-    if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
-        v1 = *(s16*)(lbl_1_common_bss_472B4 + 0x22E) - 1;
-        *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = v1;
+    if (PAD0.repeat & PAD_BUTTON_LEFT) {
+        v1 = lbl_1_common_bss_472B4.selBone - 1;
+        lbl_1_common_bss_472B4.selBone = v1;
         if ((s16)v1 < -1) {
-            *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = *(s16*)(lbl_1_common_bss_472B4 + 0x228) - 1;
+            lbl_1_common_bss_472B4.selBone = lbl_1_common_bss_472B4.boneCount - 1;
         }
-    } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
-        s16 v2 = *(s16*)(lbl_1_common_bss_472B4 + 0x22E);
+    } else if (PAD0.repeat & PAD_BUTTON_RIGHT) {
+        s16 v2 = lbl_1_common_bss_472B4.selBone;
         v2++;
-        *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = v2;
-        if (v2 >= *(s16*)(lbl_1_common_bss_472B4 + 0x228)) {
-            *(s16*)(lbl_1_common_bss_472B4 + 0x22E) = -1;
+        lbl_1_common_bss_472B4.selBone = v2;
+        if (v2 >= lbl_1_common_bss_472B4.boneCount) {
+            lbl_1_common_bss_472B4.selBone = -1;
         }
-    } else if (*(u16*)((u8*)&lbl_803C77B8 + 2) & 0x400) {
-        lbl_1_common_bss_472B4[0x239] ^= 1;
-    } else if (*(u16*)((u8*)&lbl_803C77B8 + 2) & 0x100) {
-        lbl_1_common_bss_472B4[0x238] ^= 1;
+    } else if (PAD0.down & PAD_BUTTON_X) {
+        lbl_1_common_bss_472B4._239 ^= 1;
+    } else if (PAD0.down & PAD_BUTTON_A) {
+        lbl_1_common_bss_472B4._238 ^= 1;
     }
-    lbl_1_data_200[0] = (f32)(s8)((u8*)&lbl_803C77B8)[0x10] * lbl_1_rodata_210 + lbl_1_data_200[0];
-    lbl_1_data_200[2] = (f32)(s8)((u8*)&lbl_803C77B8)[0x11] * lbl_1_rodata_210 + lbl_1_data_200[2];
-    lbl_1_data_200[3] = (f32)(s8)((u8*)&lbl_803C77B8)[0x12] * lbl_1_rodata_210 + lbl_1_data_200[3];
-    lbl_1_data_200[5] = (f32)(s8)((u8*)&lbl_803C77B8)[0x13] * lbl_1_rodata_210 + lbl_1_data_200[5];
-    if (!(*(u16*)&lbl_803C77B8 & 0x100)) {
-        lbl_1_data_200[1] = -((f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_218 - lbl_1_data_200[1]);
-        lbl_1_data_200[1] = (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_218 + lbl_1_data_200[1];
+    lbl_1_data_200[0] = (f32)PAD0.stickX * lbl_1_rodata_210 + lbl_1_data_200[0];
+    lbl_1_data_200[2] = (f32)PAD0.stickY * lbl_1_rodata_210 + lbl_1_data_200[2];
+    lbl_1_data_200[3] = (f32)PAD0.substickX * lbl_1_rodata_210 + lbl_1_data_200[3];
+    lbl_1_data_200[5] = (f32)PAD0.substickY * lbl_1_rodata_210 + lbl_1_data_200[5];
+    if (!(PAD0.held & PAD_BUTTON_A)) {
+        lbl_1_data_200[1] = -((f32)PAD0.triggerRight * lbl_1_rodata_218 - lbl_1_data_200[1]);
+        lbl_1_data_200[1] = (f32)PAD0.triggerLeft * lbl_1_rodata_218 + lbl_1_data_200[1];
     } else {
-        lbl_1_data_200[4] = -((f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_218 - lbl_1_data_200[4]);
-        lbl_1_data_200[4] = (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_218 + lbl_1_data_200[4];
+        lbl_1_data_200[4] = -((f32)PAD0.triggerRight * lbl_1_rodata_218 - lbl_1_data_200[4]);
+        lbl_1_data_200[4] = (f32)PAD0.triggerLeft * lbl_1_rodata_218 + lbl_1_data_200[4];
     }
 }
 #endif
@@ -443,31 +458,31 @@ void fn_1_5698(void) {
 }
 
 // fn_1_7FF8, size:0x370
-// Debug pad editor for the fog settings (mode, colour, start, end).
+// Debug pad editor for the current fog (mode, colour, start, end).
 // NONMATCHING 99%: in the two `+1` clamps the 512 limit and the field load swap f0/f2
 #if NONMATCHING
 void fn_1_7FF8(void) {
     s32 t;
     s32 u;
     f32 f;
-    switch ((s32) * (u16*)((u8*)&lbl_803C77B8 + 4)) {
-    case 8:
-        t = lbl_1_common_bss_472B4[0x23C] - 1;
-        lbl_1_common_bss_472B4[0x23C] = t;
+    switch (PAD0.repeat) {
+    case PAD_BUTTON_UP:
+        t = (u8)lbl_1_common_bss_472B4.fogItem - 1;
+        lbl_1_common_bss_472B4.fogItem = t;
         if ((s8)t < 0) {
-            lbl_1_common_bss_472B4[0x23C] = 5;
+            lbl_1_common_bss_472B4.fogItem = 5;
         }
         return;
-    case 4:
-        t = lbl_1_common_bss_472B4[0x23C] + 1;
-        lbl_1_common_bss_472B4[0x23C] = t;
+    case PAD_BUTTON_DOWN:
+        t = (u8)lbl_1_common_bss_472B4.fogItem + 1;
+        lbl_1_common_bss_472B4.fogItem = t;
         if ((s8)t >= 6) {
-            lbl_1_common_bss_472B4[0x23C] = 0;
+            lbl_1_common_bss_472B4.fogItem = 0;
             return;
         }
         break;
-    case 1:
-        switch ((s8)lbl_1_common_bss_472B4[0x23C]) {
+    case PAD_BUTTON_LEFT:
+        switch (lbl_1_common_bss_472B4.fogItem) {
         case 0:
             u = lbl_1_bss_4E0[0]->color.color.a - 1;
             lbl_1_bss_4E0[0]->color.color.a = u;
@@ -493,27 +508,23 @@ void fn_1_7FF8(void) {
             lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b - 1;
             return;
         case 4:
-            f = lbl_1_bss_4E0[0]->start;
-            f = f - lbl_1_rodata_1D8;
-            lbl_1_bss_4E0[0]->start = f;
-            if (f < lbl_1_rodata_1A8) {
-                lbl_1_bss_4E0[0]->start = lbl_1_rodata_1A8;
+            lbl_1_bss_4E0[0]->start = f = lbl_1_bss_4E0[0]->start - 1.0f;
+            if (f < 0.0f) {
+                lbl_1_bss_4E0[0]->start = 0.0f;
                 return;
             }
             break;
         case 5:
-            f = lbl_1_bss_4E0[0]->end;
-            f = f - lbl_1_rodata_1D8;
-            lbl_1_bss_4E0[0]->end = f;
-            if (f < lbl_1_rodata_1A8) {
-                lbl_1_bss_4E0[0]->end = lbl_1_rodata_1A8;
+            lbl_1_bss_4E0[0]->end = f = lbl_1_bss_4E0[0]->end - 1.0f;
+            if (f < 0.0f) {
+                lbl_1_bss_4E0[0]->end = 0.0f;
                 return;
             }
             break;
         }
         break;
-    case 2:
-        switch ((s8)lbl_1_common_bss_472B4[0x23C]) {
+    case PAD_BUTTON_RIGHT:
+        switch (lbl_1_common_bss_472B4.fogItem) {
         case 0:
             u = lbl_1_bss_4E0[0]->color.color.a + 1;
             lbl_1_bss_4E0[0]->color.color.a = u;
@@ -539,18 +550,14 @@ void fn_1_7FF8(void) {
             lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b + 1;
             return;
         case 4:
-            f = lbl_1_bss_4E0[0]->start;
-            f = f + lbl_1_rodata_1D8;
-            lbl_1_bss_4E0[0]->start = f;
+            lbl_1_bss_4E0[0]->start = f = lbl_1_bss_4E0[0]->start + 1.0f;
             if (f > lbl_1_rodata_208) {
                 lbl_1_bss_4E0[0]->start = lbl_1_rodata_208;
                 return;
             }
             break;
         case 5:
-            f = lbl_1_bss_4E0[0]->end;
-            f = f + lbl_1_rodata_1D8;
-            lbl_1_bss_4E0[0]->end = f;
+            lbl_1_bss_4E0[0]->end = f = lbl_1_bss_4E0[0]->end + 1.0f;
             if (f > lbl_1_rodata_208) {
                 lbl_1_bss_4E0[0]->end = lbl_1_rodata_208;
                 return;
