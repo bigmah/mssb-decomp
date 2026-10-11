@@ -2285,3 +2285,55 @@ void fn_2_6B238(MenuEntry* owner) {
     fn_2_68FBC(id, 8);
     owner->state = 1;
 }
+
+// 0x14-byte records in lbl_2_data_3198 (see also rep_1028.c).
+typedef struct MenuSpot {
+    Vec position;
+    f32 _0C;
+    f32 _10;
+} MenuSpot;
+extern MenuSpot lbl_2_data_3198[];
+
+// .text:0x6B744 size:0x2D4
+void fn_2_6B744(MenuEntry* owner) {
+    s32 id;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+    Vec spot;
+
+    id = owner->objectId;
+    fn_2_68F08(id, 1);
+    owner->mode = 12;
+    owner->flagD0 = 1;
+    owner->bouncePhase = 0.0f;
+    owner->position.y = 0.0f;
+    if (lbl_2_bss_1A8248[0]->entries[id].targetLocation == 48) {
+        memcpy(&spot, &lbl_2_data_3198[25].position, sizeof(Vec));
+        PSVECScale(&spot, lbl_2_rodata_B68[0], &spot);
+        memcpy(&owner->target, &spot, sizeof(Vec));
+    } else {
+        memcpy(&spot, &lbl_2_data_3198[26].position, sizeof(Vec));
+        PSVECScale(&spot, lbl_2_rodata_B68[0], &spot);
+        memcpy(&owner->target, &spot, sizeof(Vec));
+    }
+    pz = owner->target.z;
+    px = owner->target.x;
+    entry = &lbl_2_bss_1A8248[0]->entries[id];
+    entry->previousPosition.x = px;
+    entry->previousPosition.z = pz;
+    dx = px - entry->position.x;
+    dz = pz - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+    fn_2_68FBC(id, 8);
+    owner->state = 1;
+}
