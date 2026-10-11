@@ -2635,3 +2635,76 @@ void fn_2_FCB4(u8 team) {
     }
 }
 #endif
+
+// NONMATCHING 70%: the original inlines fn_2_CA60 (NONMATCHING) and fully unrolls the team-1 reset loop
+#if NONMATCHING
+// fn_2_B920, size:0x670
+void fn_2_B920(void) {
+    u8 idx0 = 0;
+    u8 idx1 = 0;
+    s32 i;
+    s8 pick;
+    s32 k;
+    s32 type;
+    memset(lbl_8034E9A0 + 0x4757, 0, 0x36);
+    if (g_d_GameSettings.GameModeSelected != 5) {
+        for (i = 0; i < 12; i++) {
+            if (lbl_80108EC4[i] == *(s32*)(lbl_8034E9A0 + 0x46E0)) {
+                lbl_8034E9A0[0x470B] = i;
+                idx0 = i;
+            } else if (lbl_80108EC4[i] == *(s32*)(lbl_8034E9A0 + 0x46E4)) {
+                lbl_8034E9A0[0x470C] = i;
+                idx1 = i;
+            }
+        }
+    } else {
+        for (i = 0; i < 12; i++) {
+            if (lbl_80108EC4[i] == starMissionCompletionTracker[0x441D]) {
+                lbl_8034E9A0[0x470B] = i;
+            } else if (lbl_80108EC4[i] == (s8)starMissionCompletionTracker[0x441F]) {
+                lbl_8034E9A0[0x470C] = i;
+            }
+        }
+    }
+    fn_2_A288();
+    if ((s8)lbl_2_bss_3E0[0] != -1) {
+        do {
+            k = fn_2_14F8(1, 2);
+        } while ((s8)lbl_2_bss_3E0[k] == 0);
+        pick = k;
+    } else {
+        pick = -1;
+    }
+    switch (pick) {
+    case 0:
+        ((s32*)lbl_2_bss_F468)[4] = 1;
+        break;
+    case 1:
+        ((s32*)lbl_2_bss_F468)[4] = 2;
+        break;
+    case -1:
+        ((s32*)lbl_2_bss_F468)[4] = 3;
+        break;
+    }
+    ((s32*)lbl_2_bss_F468)[5] = 3;
+    for (i = 0; i < 9; i++) {
+        lbl_803C6724[i + 2] = lbl_8034E9A0[0x4380 + idx0 * 0x48 + ((s32*)lbl_2_bss_F468)[4] * 0x12 + i];
+    }
+    type = ((s32*)lbl_2_bss_F468)[5];
+    for (i = 0; i < 9; i++) {
+        lbl_803C6724[i + 0xB] = lbl_8034E9A0[0x4380 + idx1 * 0x48 + type * 0x12 + i];
+    }
+    ((s32*)lbl_2_bss_F468)[5] = type;
+    fn_2_ABC0(0);
+    lbl_8034E9A0[*(s32*)(lbl_8034E9A0 + 0x46E4) + 0x4757] = 1;
+    for (i = 0; i < 9; i++) {
+        fn_2_CA60(i, 0);
+    }
+    for (i = 0; i < 9; i++) {
+        lbl_80354720[0x26 + i * 4] = i;
+        lbl_80353B98[0x26 + i * 4] = i;
+        lbl_803C6724[0xB + i] = (i == 0) ? (s8)*(s32*)(lbl_8034E9A0 + 0x46E4) : 0x36;
+        lbl_803C6724[0x53 + i] = (i == 0) ? 1 : 0;
+    }
+}
+#endif

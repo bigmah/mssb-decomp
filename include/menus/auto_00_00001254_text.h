@@ -286,4 +286,6 @@ void fn_2_9ACC(u16 team);
 
 void fn_2_95D8(void);
 
+void fn_2_B920(void);
+
 #endif
