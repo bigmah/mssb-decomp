@@ -12,7 +12,8 @@ typedef struct {
     /*0x10*/ u8 _10[0xC];
     /*0x1C*/ u8 _1C;
     /*0x1D*/ u8 _1D;
-    /*0x1E*/ u8 _1E[2];
+    /*0x1E*/ u8 _1E;
+    /*0x1F*/ u8 _1F;
     /*0x20*/ u8 _20;
     /*0x21*/ u8 resetRequested; // hard reset (OSResetSystem restart)
     /*0x22*/ u8 _22;
@@ -23,13 +24,20 @@ typedef struct {
     /*0x27*/ u8 _27;
     /*0x28*/ u8 _28;
     /*0x29*/ u8 _29;
-    /*0x2A*/ u8 _2A[6];
+    /*0x2A*/ u8 _2A; // logo screen state (0: loading, 2: done)
+    /*0x2B*/ u8 _2B[5];
 } lbl_80366158_s; // size: 0x30
 
 extern lbl_80366158_s lbl_80366158;
 
 typedef struct {
-    /*0x000*/ u8 _000[0x715];
+    /*0x000*/ u8 _000[0x700];
+    /*0x700*/ u8* streamEnd;   // DVD stream ring buffer end
+    /*0x704*/ u8* _704;
+    /*0x708*/ u8* streamRead;  // next byte to consume
+    /*0x70C*/ u32 streamSize;
+    /*0x710*/ u32 streamAvail; // bytes ready to consume
+    /*0x714*/ u8 _714;
     /*0x715*/ u8 _715; // 1 when the pending disc/ARAM transfer finished
     /*0x716*/ u8 _716[2];
     /*0x718*/ s32 entryNum; // DVD entry number of the file currently being read

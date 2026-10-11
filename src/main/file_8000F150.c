@@ -113,12 +113,12 @@ void fn_8000F150(TextWindow* window) {
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
-    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX3X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
     GXSetNumChans(1);
     GXSetNumTexGens(1);
     GXSetNumTevStages(1);
     GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-    SetDisplayStateTexture(TEX_ARCHIVE_OBJ(lbl_803CBBE8, 0), 0, 0);
+    SetDisplayStateTexture((struct TexImage*)TEX_ARCHIVE_OBJ(lbl_803CBBE8, 0), 0, 0); // TODO type: TexRecord vs TexImage
     GXSetArray(GX_VA_POS, lbl_800E8F60.positions, 6);
     GXSetArray(GX_VA_CLR0, &lbl_803CB780, 4);
     GXSetArray(GX_VA_TEX0, lbl_800E8F60.texCoords, 4);
