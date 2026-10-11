@@ -36,24 +36,32 @@ Mirror strikers' structure: a separate repo (or `port/` directory) that vendors 
 - **"Done" for a function becomes two levels:** *equivalent*, which is enough for the port, and *matching*, which proves it. Agents should never leave a function as a stub or asm just because it won't match.
 - **Linking units (`Matching` in `configure.py`) still matters** because it proves data and code are complete. But it's no longer the headline metric. The headline is "functions with C (any level)", and `next_targets.py` should report it.
 
-## Where we are (2026-10-10)
+## Where we are (2026-10-11)
 
-| Module | Code | Matched (functions) | Unmatched functions by size (≤64B / ≤256B / ≤1KB / >1KB) | At ≥95% |
+**Every function has C.** `python3 tools/c_coverage.py`:
+
+| Module | Functions | Matched | Equivalent (`#if NONMATCHING` or unwrapped near-match) | No C |
 |---|---|---|---|---|
-| `main.dol` SDK, MSL, Runtime, TRK | 230 KB | ~99.5% | 4 / 2 / 4 / 0 | 1 |
-| `main.dol` MusyX | 128 KB | — | 0 / 0 / 2 / 5 | 3 |
-| `main.dol` game code (unsplit `auto_*`) | 549 KB | — | 133 / 296 / 331 / 153 | 0 |
-| `game.rel` | 1.5 MB | 28.4% (1455 / 2406) | 37 / 83 / 429 / 402 | 75 |
-| `menus.rel` | 618 KB | 33.7% (831 / 1233) | 9 / 45 / 226 / 122 | 3 |
-| `challenge.rel` | 171 KB | 26.0% (198 / 349) | 14 / 22 / 68 / 47 | 6 |
+| `main.dol` (SDK, MusyX, game code) | 2491 | 2136 | 355 | 0 |
+| `game.rel` | 2406 | 1822 | 584 | 0 |
+| `menus.rel` | 1233 | 1064 | 169 | 0 |
+| `challenge.rel` | 349 | 274 | 75 | 0 |
+| **all** | **6479** | **5296 (81.7%)** | **1183** | **0** |
 
-Overall: **32.0% of code matched (4045 / 6479 functions), 7.9% linked (178 / 1334 files, all in `main.dol`), data 0.35%.** No REL file is linked yet.
+How it got here: 71 REL units that had no source got stub files; `main.dol` game code got `.sdata2`/`.rodata` (and some `.data`) splits; then parallel agents (one worktree and one unit each, see `AGENTS.md`) wrote C for every stub.
 
-The easy tail is gone: about 730 functions over 1 KB hold **two-thirds of the remaining code (1.46 MB of 2.18 MB)**. The small ones that remain are mostly the `main.dol` `auto_*` units, which still need splitting into source files (Phase 4).
+Checks that pass on `main` (run them all before declaring a unit done):
+- `ninja` + `dtk shasum -c config/GYQE01/build.sha1`: the matching build is still byte-identical.
+- `tools/nmcheck.py --all`: every `#if NONMATCHING` body compiles with MWCC.
+- `tools/nmverify.py --all`: every equivalent function makes the same calls and touches the same `lbl_*` globals as the original (expected differences carry `// nmverify:` notes). 0 flagged.
+- `tools/litcheck.py --all`: every function (matched or equivalent) loads the same float/string constant values as the original (`report.json` does **not** check these; 17 wrong constants were found this way, 15 in "100%" functions). 0 flagged.
+- `tools/protocheck.py`: clang over every unit (as the port builds it, `-DNONMATCHING=1`) compares each declaration with its definition. Game code has 0 ABI mismatches; what remains is SDK/MSL/MusyX (replaced by aurora) and same-ABI integer-width differences.
 
-Most of `src/game/*.c` already exists, but almost all of it is **stubs** (`void fn_3_XXXX(void) { return; }`) with the address and size in a comment. So the file layout is done; the bodies are not. About 640 `game.rel` functions are not in any source file yet (`game/auto_*` units).
-
-The libraries are almost finished, so **nearly all remaining work is MSSB's own game code (~2.8 MB)**, written by Namco in C and built with `GC/2.6 -O4,p -inline deferred`.
+Known gaps for the port:
+- **Equivalent C quality varies.** Most equivalents are 85–99% similar to the original, but some are far lower (down to ~10–30%) where the original inlined helpers or reached data through a pooled base; their behaviour was checked by hand and by `nmverify`/`litcheck`, not by byte match. `grep -rn "NONMATCHING [0-9]%\|NONMATCHING [1-5][0-9]%" src` lists the weakest.
+- **Data is still mostly unsplit** (no REL unit is linked; fully matched units such as `menus/rep_01A0` fail to link because their `.data`/`.bss` sit in `auto_*` units). Pointer-holding tables still need hand-written C.
+- **Aliased globals:** several units model one data object as both a struct and separate `lbl_*` externs, or as file statics next to externs (e.g. `rep_0138`, `rep_0250`, `rep_EA0`, `auto_00_0004B1AC`). On 64-bit these become separate storage; unify them when the data is split.
+- Raw byte-offset access remains in some older units (`m_sound`, `rep_E08`, `rep_3880`, parts of `auto_00_00106DFC`), marked `TODO type` where known.
 
 ## What "progress" means here
 
