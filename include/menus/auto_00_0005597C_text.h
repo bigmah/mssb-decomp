@@ -6,7 +6,7 @@
 
 s32 fn_2_5597C(void);
 void fn_2_55A40(void);
-void fn_2_55AD4(void);
+void fn_2_55AD4(MenuTableContext* menu, MenuItemState* item);
 void fn_2_55C5C(void);
 void fn_2_55DD8(void);
 void fn_2_55FD8(void);
