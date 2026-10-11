@@ -33,6 +33,7 @@ extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_EC1C[];
 extern u8 lbl_3_data_F430[];
 extern u8 lbl_3_data_EABC[];
+extern u8 lbl_3_data_E85C[];
 extern void fn_3_ED0F4(void);
 extern u8 lbl_3_data_F224[];
 extern u8 lbl_3_data_F200[];
@@ -502,7 +503,72 @@ void fn_3_9413C(void) {
 
 // .text:0x00094194 size:0x574 mapped:0x806D3228
 void fn_3_94194(void) {
-    return;
+    RepTask* task = lbl_803CC1B8[0];
+    s32 i;
+    s32 n;
+    fn_80034E20(task, lbl_3_data_E85C);
+    if (g_Scores.team[0].runs[0] == g_Scores.team[1].runs[0]) {
+        REP_OBJ(task, 9)->_64 = 0xE6;
+    }
+    if (g_GameLogic.winType != 5 && g_GameLogic.winType != 6) {
+        REP_OBJ(task, 17)->flags &= ~2;
+    }
+    for (i = 0; i < 3; i++) {
+        lbl_80371C30[3 + task->baseIdx + i].obj->_64 = lbl_3_data_F430[g_GameLogic.logo[0].captain * 2 + 1];
+        lbl_80371C30[6 + task->baseIdx + i].obj->_64 = lbl_3_data_F430[g_GameLogic.logo[1].captain * 2 + 1];
+        lbl_80371C30[3 + task->baseIdx + i].obj->_5C = g_GameLogic.logo[0].variationID << 16;
+        lbl_80371C30[6 + task->baseIdx + i].obj->_5C = g_GameLogic.logo[1].variationID << 16;
+    }
+    if (g_Scores.team[0].runs[0] < 10) {
+        REP_OBJ(task, 10)->flags &= ~2;
+        fn_800363D8(task, 11, 1, 0xF6, g_Scores.team[0].runs[0]);
+    } else {
+        n = g_Scores.team[0].runs[0];
+        if (n > 99) {
+            n = 99;
+        }
+        fn_800363D8(task, 10, 1, 0xF6, n / 10);
+        fn_800363D8(task, 11, 1, 0xF6, n % 10);
+    }
+    if (g_Scores.team[1].runs[0] < 10) {
+        if (g_GameLogic.winType == 3 || g_GameLogic.winType == 6) {
+            fn_800363D8(task, 12, 1, 0xF6, g_Scores.team[1].runs[0]);
+            fn_800363D8(task, 13, 1, 0xF6, 10);
+        } else {
+            fn_800363D8(task, 12, 1, 0xF6, g_Scores.team[1].runs[0]);
+            REP_OBJ(task, 13)->flags &= ~2;
+        }
+    } else {
+        n = g_Scores.team[1].runs[0];
+        if (n > 99) {
+            n = 99;
+        }
+        fn_800363D8(task, 12, 1, 0xF6, n / 10);
+        fn_800363D8(task, 13, 1, 0xF6, n % 10);
+    }
+    if (g_Scores._A4 == 0) {
+        REP_OBJ(task, 1)->_64 = 0xEC;
+        REP_OBJ(task, 2)->_64 = 0xE9;
+        REP_OBJ(task, 15)->flags &= ~2;
+        REP_OBJ(task, 4)->flags |= 2;
+        REP_OBJ(task, 5)->flags |= 2;
+    } else if (g_Scores._A4 == 1) {
+        REP_OBJ(task, 1)->_64 = 0xE8;
+        REP_OBJ(task, 2)->_64 = 0xED;
+        REP_OBJ(task, 16)->flags &= ~2;
+        REP_OBJ(task, 7)->flags |= 2;
+        REP_OBJ(task, 8)->flags |= 2;
+    } else {
+        for (i = 10; i < 14; i++) {
+            lbl_80371C30[task->baseIdx + i].obj->_64 = 0xEA;
+        }
+        REP_OBJ(task, 1)->_64 = 0xE3;
+        REP_OBJ(task, 2)->_64 = 0xE4;
+        REP_OBJ(task, 14)->flags &= ~2;
+        REP_OBJ(task, 15)->flags &= ~2;
+        REP_OBJ(task, 16)->flags &= ~2;
+    }
+    *(void**)lbl_803CC1B8[0] = fn_3_9413C;
 }
 
 // .text:0x00094708 size:0x58 mapped:0x806D379C

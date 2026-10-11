@@ -2986,7 +2986,9 @@ typedef struct GameScores {
     /* 0x9C */ s16 _9C;
     /* 0x9E */ s16 _9E;
     /* 0xA0 */ s16 _A0;
-    /* 0xA2 */ u8 _A2[0xAA - 0xA2];
+    /* 0xA2 */ s16 _A2;
+    /* 0xA4 */ s16 _A4; // 0: away won, 1: home won, else tie
+    /* 0xA6 */ u8 _A6[0xAA - 0xA6];
     /* 0xAA */ u8 maxInnings;
     /* 0xAB */ u8 _AB;
     /* 0xAC */ u8 _AC;
