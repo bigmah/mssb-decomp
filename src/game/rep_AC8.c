@@ -2222,6 +2222,10 @@ extern f32 lbl_3_rodata_C2C;
 extern f32 lbl_3_rodata_C30;
 extern f32 lbl_3_rodata_C34;
 extern f32 lbl_3_rodata_BD0;
+extern f32 lbl_3_rodata_BF4;
+extern f32 lbl_3_rodata_C58;
+extern f32 lbl_3_rodata_C5C;
+extern f32 lbl_3_rodata_C60;
 extern f32 lbl_3_rodata_C3C;
 extern f32 lbl_3_rodata_C40;
 extern f32 lbl_3_rodata_B74;
@@ -3851,9 +3855,85 @@ int fn_3_47628(void) {
 #pragma opt_unroll_loops reset
 
 // .text:0x00047778 size:0x940 mapped:0x8068680C
+#define FL_STATE(n) g_FieldingLogic[0xF8 + (n)]
+#define IS_CHASING(s) ((s) == 1 || (s) == 10 || (s) == 11)
+// NONMATCHING 93.8%: registers (extra saved reg for s5) and the inlined set-target sqrt temp (f2 vs f4)
+#if NONMATCHING
+// On a steal/pickoff situation, assign who covers second (0x18C = 6) and where the pitcher backs up.
 void fn_3_47778(void) {
-    return;
+    u8 v = g_Ball[0x1BC4];
+    u8 s3;
+    u8 s5;
+    u8 s;
+    int a;
+    if (v != 5 && v != 6 && v != 8) {
+        return;
+    }
+    s3 = FL_STATE(3);
+    if (IS_CHASING(s3)) {
+        if (*(s16*)(FLD(5) + 0x18C) != -1) {
+            *(s16*)(FLD(3) + 0x18C) = 6;
+            FLD(3)[0x1D7] = 2;
+        } else {
+            *(s16*)(FLD(5) + 0x18C) = 6;
+            FLD(5)[0x1D7] = 2;
+            if (FL_STATE(5) == 0) {
+                SetFielderAct(5, 0xB, 0x58);
+            }
+        }
+    } else if (s5 = FL_STATE(5), IS_CHASING(s5)) {
+        if (*(s16*)(FLD(3) + 0x18C) != -1) {
+            *(s16*)(FLD(5) + 0x18C) = 6;
+            FLD(5)[0x1D7] = 2;
+        } else {
+            *(s16*)(FLD(3) + 0x18C) = 6;
+            FLD(3)[0x1D7] = 2;
+            if (s3 == 0) {
+                SetFielderAct(3, 0xB, 0x58);
+            }
+        }
+    } else if (*(s16*)(g_Ball + 0x1B9C) < 0x400) {
+        if (*(s16*)(FLD(3) + 0x18C) == 1 && (s = FL_STATE(2), IS_CHASING(s))) {
+            *(s16*)(FLD(2) + 0x18C) = 6;
+            FLD(2)[0x1D7] = 2;
+        } else {
+            *(s16*)(FLD(3) + 0x18C) = 6;
+            FLD(3)[0x1D7] = 2;
+            if (s3 == 0) {
+                SetFielderAct(3, 0xB, 0x58);
+            }
+        }
+    } else {
+        if (*(s16*)(FLD(5) + 0x18C) == 3 && (s = FL_STATE(4), IS_CHASING(s))) {
+            *(s16*)(FLD(4) + 0x18C) = 6;
+            FLD(4)[0x1D7] = 2;
+        } else {
+            *(s16*)(FLD(5) + 0x18C) = 6;
+            FLD(5)[0x1D7] = 2;
+            if (s5 == 0) {
+                SetFielderAct(5, 0xB, 0x58);
+            }
+        }
+    }
+    if (FL_STATE(0) != 0) {
+        return;
+    }
+    *(s16*)(FLD(0) + 0x18C) = 15;
+    a = *(s16*)(g_Ball + 0x1B9C);
+    if (a < 0x320) {
+        SetTargetAC8b(0, lbl_3_rodata_BF4, lbl_3_rodata_C28);
+    } else if (a < 0x400) {
+        SetTargetAC8b(0, lbl_3_rodata_B78, lbl_3_rodata_C58);
+    } else if (a < 0x4E0) {
+        SetTargetAC8b(0, lbl_3_rodata_C5C, lbl_3_rodata_C58);
+    } else {
+        SetTargetAC8b(0, lbl_3_rodata_C60, lbl_3_rodata_C28);
+    }
+    SetFielderAct(0, 0xE, 0x70);
 }
+#endif
+#undef FL_STATE
+#undef IS_CHASING
 
 // .text:0x000480B8 size:0x314 mapped:0x8068714C
 // NONMATCHING 99.9%: f0/f1 swapped for the 3.7f constant vs runner+0x64 in the inlined fn_3_47628 loop (same issue as fn_3_47628)
