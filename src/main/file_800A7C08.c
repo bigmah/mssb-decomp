@@ -362,7 +362,12 @@ void fn_800A9034(s32 result, DVDCommandBlock* block) {
 
 // .text:0x800A908C size:0x58
 void fn_800A908C(s32 result, DVDCommandBlock* block) {
-    return;
+    StreamTrack* track;
+
+    AISetStreamPlayState(0);
+    track = lbl_803CC154;
+    STREAM_NOTIFY(track, STREAM_EVENT_STOP);
+    lbl_803CC148 = STREAM_STATE_STOP;
 }
 
 // .text:0x800A90E4 size:0x84
