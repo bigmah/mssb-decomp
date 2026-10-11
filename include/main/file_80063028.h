@@ -4,6 +4,12 @@
 #include "mssbTypes.h"
 #include "C3/control.h"
 
+// MSSB's Control is 0x44 bytes (C3/control.h's Control is 0x3C).
+typedef struct GameControl {
+    /*0x00*/ Control base;
+    /*0x3C*/ u8 pad3C[0x8];
+} GameControl;
+
 // MSSB's actor bone (layout differs from the SDK sBone in C3/skinning.h).
 typedef struct GameBone {
     /*0x00*/ u16 boneID;

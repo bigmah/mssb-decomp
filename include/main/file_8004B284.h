@@ -21,9 +21,8 @@ typedef struct CharModel {
     /*0x02C*/ AnimSlotPair* anim;
     /*0x030*/ AnimSlotPair* anim2;
     /*0x034*/ Vec pos;
-    /*0x040*/ u8 pad040[0x4];
-    /*0x044*/ f32 rotY;
-    /*0x048*/ u8 pad048[0x1A];
+    /*0x040*/ Vec rot;
+    /*0x04C*/ u8 pad04C[0x16];
     /*0x062*/ s16 animID;
     /*0x064*/ u8 pad064[0x126];
     /*0x18A*/ u16 bone18A;
@@ -81,6 +80,7 @@ typedef struct BatFxTables { // lbl_800FC0FC
 } BatFxTables;
 
 u32 fn_80024D2C(AnimSlot* slot);
+s32 fn_8001B728(s32 playerIdx, s32 kind, Vec* out);
 void fn_80030D88(Vec* pos, Vec* dir, void* params, int kind);
 void fn_8001D180(s32 playerIdx, u32 part, s32 alt);
 void fn_800B2B74(GameActor* actor, u16 bone);

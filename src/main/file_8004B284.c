@@ -91,9 +91,9 @@ void fn_8004B284(CharModel* model, s32 animID, u32 colorIdx, f32 frame) {
         return;
     }
 
-    dir.x = -sin(model->rotY);
+    dir.x = -sin(model->rot.y);
     dir.y = lbl_803CC818;
-    dir.z = -cos(model->rotY);
+    dir.z = -cos(model->rot.y);
     if (!getAnimRelatedCoordinates(model->playerIdx,
                                    lbl_800FC0FC.animIDs[fn_800698F8(model->charID)][slot],
                                    (VecXYZ*)&pos)) {
