@@ -2,6 +2,8 @@
 #include "header_rep_data.h"
 
 #include "musyx/musyx.h"
+#include "Dolphin/mtx.h"
+#include "game/rep_1E08.h"
 extern u8 lbl_800EFBA4[];
 
 extern void setInMemBatterConstants(s32);
@@ -569,8 +571,65 @@ void fn_3_1128E8(void) {
 }
 
 // .text:0x001128EC size:0x2EC mapped:0x80751980
+// View returned by fn_80052734: only the fields used here.
+typedef struct {
+    u8 pad0[0x40];
+    Mtx view;   // 0x40
+    Vec pos;    // 0x70
+    Vec target; // 0x7C
+} CamView_31F0;
+
+void* fn_80052734(s32 index);
+void fn_8003414C(Mtx view);
+
+static u8 lbl_3_bss_B699;
+extern const f32 lbl_3_rodata_326C; // 200.0f
+extern const f32 lbl_3_rodata_3274; // 250.0f
+extern const f32 lbl_3_rodata_3278; // 100.0f
+extern const f32 lbl_3_rodata_327C; // 0.0f
+extern const f32 lbl_3_rodata_3280; // -55.0f
+extern const f32 lbl_3_rodata_3284; // -10.0f
+extern const f32 lbl_3_rodata_3288; // 32767.0f
+
 void fn_3_1128EC(void) {
-    return;
+    CamView_31F0* cam = fn_80052734(0);
+    Vec pos;
+    Vec dir;
+    Vec ofs;
+    Mtx inv;
+    u8 idx;
+    if (*(s16*)(g_Minigame + 0x18A6) <= 0) {
+        pos = cam->pos;
+        dir = cam->target;
+        PSVECSubtract(&dir, &pos, &dir);
+        PSVECNormalize(&dir, &dir);
+        PSVECScale(&dir, lbl_3_rodata_326C, &dir);
+        PSVECAdd(&pos, &dir, &dir);
+        if (dir.y > 55.0f) {
+            dir.y = 55.0f;
+        }
+        PSMTXInverse(cam->view, inv);
+        ofs.x = (rand() % 10000 - 5000) / lbl_3_rodata_3274;
+        ofs.y = (rand() % 1000 - 500) / lbl_3_rodata_3278;
+        ofs.z = lbl_3_rodata_327C;
+        PSMTXMultVecSR(inv, &ofs, &ofs);
+        PSVECAdd(&dir, &ofs, &dir);
+        if (dir.y > lbl_3_rodata_3280) {
+            dir.y = lbl_3_rodata_3284 * ((f32)rand() / lbl_3_rodata_3288) + lbl_3_rodata_3280;
+        }
+        if (lbl_3_bss_B699 != 0) {
+            idx = rand() % 5 + 8;
+        } else {
+            idx = rand() % 4 + 4;
+        }
+        // TODO type: fn_3_BC6D8 takes Vec* from/to (rep_1E08 declares them int)
+        fn_3_BC6D8((int)&dir, (int)&cam->pos, idx, 0);
+        lbl_3_bss_B699 = !lbl_3_bss_B699;
+        *(s16*)(g_Minigame + 0x18A6) = rand() % 60 + 60;
+    } else {
+        *(s16*)(g_Minigame + 0x18A6) -= 1;
+    }
+    fn_8003414C(cam->view);
 }
 
 // .text:0x00112BD8 size:0x7C0 mapped:0x80751C6C
