@@ -331,8 +331,8 @@ void fn_3_5D51C(void) {
     g_GameLogic.awayTeamBattingInd_battingTeam ^= 1;
     g_GameLogic.teamBatting ^= 1;
     g_GameLogic.teamFielding ^= 1;
-    g_GameLogic._131 = 0;
-    g_GameLogic._132 = 0;
+    g_GameLogic._131[0] = 0;
+    g_GameLogic._131[1] = 0;
     g_Scores._A0 = g_Scores.runs[scores->bottomHalf][0];
     fn_3_5A684();
     fn_3_8A350();
@@ -1031,8 +1031,7 @@ void fn_3_5F7A8(void) {
 }
 
 // fn_3_5B380, size:0x88
-s32 fn_3_5B380(void) {
-    u16 buttons; // never set in the original: the call reads whatever is in r3
+s32 fn_3_5B380(u16 buttons) {
     if (g_GameLogic.frame_exitMenuShowing < 0x7FFE) {
         g_GameLogic.frame_exitMenuShowing += 1;
     } else {
@@ -1885,8 +1884,8 @@ void fn_3_5F3FC(void) {
         g_GameLogic.pre_PostMiniGameInd = 1;
         g_GameLogic.minigameLastTurnSuccessInd = 1;
         g_GameLogic.frameCountdownAtBeginningOfAtBatLockout = 90;
-        g_GameLogic._133 = 0;
-        g_GameLogic._134 = 0;
+        g_GameLogic._133[0] = 0;
+        g_GameLogic._133[1] = 0;
         if (g_Scores._C6 < 0xFE) {
             g_Scores._C6++;
         } else {
@@ -2121,8 +2120,8 @@ void fn_3_5D5E8(void) {
             g_GameLogic.awayTeamBattingInd_battingTeam ^= 1;
             g_GameLogic.teamBatting ^= 1;
             g_GameLogic.teamFielding ^= 1;
-            g_GameLogic._131 = 0;
-            g_GameLogic._132 = 0;
+            g_GameLogic._131[0] = 0;
+            g_GameLogic._131[1] = 0;
             g_Scores._A0 = g_Scores.runs[scores->bottomHalf][0];
             fn_3_5A684();
             fn_3_8A350();
@@ -2242,10 +2241,10 @@ void fn_3_5A87C(void) {
     g_GameLogic.pre_PostMiniGameInd = 1;
     g_GameLogic.minigameLastTurnSuccessInd = 1;
     g_GameLogic.winType = 0;
-    g_GameLogic._131 = 0;
-    g_GameLogic._132 = 0;
-    g_GameLogic._133 = 0;
-    g_GameLogic._134 = 0;
+    g_GameLogic._131[0] = 0;
+    g_GameLogic._131[1] = 0;
+    g_GameLogic._133[0] = 0;
+    g_GameLogic._133[1] = 0;
     g_GameLogic._106 = -1;
     g_GameLogic.bOD_framesInLiveBallScene = -1;
     g_GameLogic.playOverFadeOutStarted = -1;

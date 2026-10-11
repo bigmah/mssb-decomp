@@ -24,7 +24,7 @@ void fn_3_A020(void);
 void fn_3_A0F0(void);
 void fn_3_A198(void);
 void fn_3_A83C(void);
-void fn_3_A970(void);
+void fn_3_A970(s32 arg);
 void fn_3_B440(void);
 void fn_3_B940(void);
 s32 fn_3_BBBC(f32* out, s32 n, s32 step, f32 x, f32 z);
