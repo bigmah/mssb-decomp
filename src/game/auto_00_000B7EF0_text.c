@@ -17,7 +17,9 @@ f32 vecDotProduct(VecXYZ* a, VecXYZ* b) {
 
 // .text:0x000B7F18 size:0x58 mapped:0x806F6FAC
 void vecCrossProduct(VecXYZ* out, VecXYZ* a, VecXYZ* b) {
-    return;
+    out->x = (a->y * b->z) - (a->z * b->y);
+    out->y = (a->z * b->x) - (a->x * b->z);
+    out->z = (a->x * b->y) - (a->y * b->x);
 }
 
 // .text:0x000B7F70 size:0x58 mapped:0x806F7004
