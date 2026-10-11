@@ -14,6 +14,13 @@
 #include "static/UnknownHomes_Static.h"
 extern u8 lbl_3_data_21AF0[];
 extern u8 lbl_3_data_88DC[];
+extern f64 lbl_3_rodata_3698;
+extern f32 lbl_3_rodata_364C;
+extern f32 lbl_3_rodata_3690;
+// The original passes the raw (unextended) byte to these s8-taking functions,
+// as an unprototyped call does.
+extern void fn_3_14E988();
+extern void fn_800115C8();
 extern f32 lbl_3_rodata_35D0;
 extern f32 lbl_3_data_219AC[];
 extern s16 lbl_3_data_21A30[];
@@ -931,16 +938,117 @@ void fn_3_1360BC(int p) {
 }
 
 // .text:0x00136220 size:0x66C mapped:0x807752B4
+extern f32 lbl_3_data_21B18[];
+extern f32 lbl_3_data_2198C[];
+extern f32 lbl_3_data_4444[];
+extern f32 lbl_3_rodata_3650;
+extern f32 lbl_3_rodata_3644;
+extern u32 fn_3_90220(s32 idx, s32 off);
+#define KNOCK_VX(i) (*(f32*)(G8 + (i) * 12 + 0x1CB8))
+#define KNOCK_VY(i) (*(f32*)(G8 + (i) * 12 + 0x1CBC))
+#define KNOCK_VZ(i) (*(f32*)(G8 + (i) * 12 + 0x1CC0))
+#define STUN_TIMER(i) (*(s16*)(G8 + (i) * 2 + 0x1D5A))
+// Per-fielder stun state machine (1: hit, 2: knocked back, 3: recovering) and
+// push-out from walls.
 void fn_3_136220(void) {
-    return;
+    VecSrcDst seg;
+    CollisionStruct col;
+    u8* f;
+    u32 t;
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        s32 fi = G8[0x18F8 + i];
+        if ((s8)fi < 0) {
+            continue;
+        }
+        f = (u8*)&g_Fielders[(s8)fi];
+        if (f[0x20F] == 0) {
+            u8 st = G8[0x1D6E + i];
+            if (st == 1) {
+                f32 len = dolsqrtf2(KNOCK_VX(i) * KNOCK_VX(i) + KNOCK_VZ(i) * KNOCK_VZ(i));
+                KNOCK_VX(i) *= lbl_3_data_21B18[0] / len;
+                KNOCK_VZ(i) *= lbl_3_data_21B18[0] / len;
+                KNOCK_VY(i) = lbl_3_rodata_35D0;
+                STUN_TIMER(i) = 0;
+                G8[0x1D6E + i] = 2;
+                if ((s8)G8[0x1D74] == i) {
+                    fn_800115C8(G8[0x1D74]);
+                    ((s8*)G8)[0x1D74] = -1;
+                }
+                fn_3_1360BC(i);
+                fn_3_90064(0x2E7);
+                fn_3_90220(*(s16*)(f + 0x17A), 10);
+                fn_3_6C854(((s8*)G8)[0x18CC + i], 2);
+            } else if (st == 2) {
+                f32 len;
+                STUN_TIMER(i)++;
+                len = dolsqrtf2(KNOCK_VX(i) * KNOCK_VX(i) + KNOCK_VZ(i) * KNOCK_VZ(i));
+                if (len > lbl_3_rodata_35D0) {
+                    seg.src.x = *(f32*)(f + 0);
+                    seg.src.y = lbl_3_rodata_3648;
+                    seg.src.z = *(f32*)(f + 8);
+                    seg.dst.x = lbl_3_rodata_3638 * KNOCK_VX(i) + *(f32*)(f + 0);
+                    seg.dst.y = lbl_3_rodata_3648;
+                    seg.dst.z = lbl_3_rodata_3638 * KNOCK_VZ(i) + *(f32*)(f + 8);
+                    if ((u32)checkCollision(&seg, &col, 0, 0) != 0) {
+                        KNOCK_VX(i) = lbl_3_rodata_35D0;
+                        KNOCK_VZ(i) = lbl_3_rodata_35D0;
+                    }
+                    *(f32*)(f + 0) = *(f32*)(f + 0) + KNOCK_VX(i);
+                    *(f32*)(f + 4) = *(f32*)(f + 4) + KNOCK_VY(i);
+                    *(f32*)(f + 8) = *(f32*)(f + 8) + KNOCK_VZ(i);
+                    KNOCK_VX(i) *= lbl_3_data_21B18[1];
+                    KNOCK_VZ(i) *= lbl_3_data_21B18[1];
+                }
+                if (STUN_TIMER(i) > ((s16*)lbl_3_data_21B20)[1]) {
+                    G8[0x1D6E + i] = 3;
+                    *(f32*)(f + 0x30) = lbl_3_rodata_35D0;
+                    *(f32*)(f + 0x34) = lbl_3_rodata_35D0;
+                    STUN_TIMER(i) = 0;
+                    *(f32*)(f + 0x50) = lbl_3_rodata_35D0;
+                }
+            } else if (st == 3) {
+                STUN_TIMER(i)++;
+                if (STUN_TIMER(i) > ((s16*)lbl_3_data_21B20)[2]) {
+                    G8[0x1D6E + i] = 0;
+                }
+            }
+        }
+        seg.src.x = *(f32*)(f + 0);
+        seg.src.y = lbl_3_rodata_3648;
+        seg.src.z = *(f32*)(f + 8);
+        seg.dst.x = *(f32*)(f + 0);
+        seg.dst.y = lbl_3_rodata_3644;
+        seg.dst.z = *(f32*)(f + 8);
+        t = checkCollision(&seg, &col, 0, 0);
+        t &= 0x7F;
+        if (t == 2 || t == 3 || t == 7 || t == 8 || t == 5) {
+            // inside a wall: push toward (or away from) the field center
+            f32 dz = lbl_3_data_4444[8] - *(f32*)(f + 8);
+            f32 dx = lbl_3_data_4444[8] - *(f32*)(f + 0);
+            f32 d = dolsqrtf2(dx * dx + dz * dz);
+            if (lbl_3_rodata_35D0 == d) {
+                *(f32*)(f + 0) = lbl_3_data_2198C[i * 2 + 0];
+                *(f32*)(f + 8) = lbl_3_data_2198C[i * 2 + 1];
+            } else {
+                dx /= d;
+                dz /= d;
+                if (d < lbl_3_rodata_364C) {
+                    *(f32*)(f + 0) = *(f32*)(f + 0) - lbl_3_rodata_3650 * dx;
+                    *(f32*)(f + 8) = *(f32*)(f + 8) - lbl_3_rodata_3650 * dz;
+                } else {
+                    *(f32*)(f + 0) = lbl_3_rodata_3650 * dx + *(f32*)(f + 0);
+                    *(f32*)(f + 8) = lbl_3_rodata_3650 * dz + *(f32*)(f + 8);
+                }
+            }
+        }
+    }
 }
 
 // .text:0x0013688C size:0x468 mapped:0x80775920
 extern f32 lbl_3_data_21AF8[];
 extern s16 lbl_3_data_21B10[];
 extern f32 lbl_3_data_47BC[];
-extern void fn_3_14E988();
-extern void fn_800115C8();
 extern void fn_3_1695A4(s32 a, u8 flag);
 extern void fn_3_16C394(s8 a);
 static inline void refl_w(f32* a, f32* b) {
@@ -1202,9 +1310,6 @@ void fn_3_137224(u8* o) {
 #pragma dont_inline on
 
 // .text:0x001373E0 size:0x5C0 mapped:0x80776474
-extern f64 lbl_3_rodata_3698;
-extern f32 lbl_3_rodata_364C;
-extern f32 lbl_3_rodata_3690;
 // NONMATCHING 91%: prologue constant loads get addi+lfs 0(rX), push-out sign branch laid out differently, regalloc
 #if NONMATCHING
 // Clip a sphere (radius r) moving along seg against the box obstacles (0x40-byte
