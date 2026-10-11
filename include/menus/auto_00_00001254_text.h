@@ -239,4 +239,6 @@ void fn_2_6AF4(void);
 
 void fn_2_CA60(u8 slot, s32 team);
 
+void fn_2_6884(void);
+
 #endif

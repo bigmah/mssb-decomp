@@ -1498,3 +1498,31 @@ void fn_2_CA60(u8 slot, s32 team) {
     fn_2_C698(slot, team);
 }
 #endif
+
+// NONMATCHING 97%: register-only diff inside the inlined fn_2_C324 (r12/r30/r31 rotated)
+#if NONMATCHING
+// fn_2_6884, size:0x270
+void fn_2_6884(void) {
+    s32 i;
+    s32 k;
+    s8 g;
+    for (i = 0; i < 9; i++) {
+        s16 id = *(s16*)(starMissionCompletionTracker + i * 6 + 0x40B8);
+        lbl_803C6724[i + 2] = id;
+        lbl_80354720[i * 4 + 1] = starMissionCompletionTracker[i * 6 + 0x40BA];
+        lbl_80354720[i * 4 + 0] = i;
+        lbl_803C6724[i + 0x4A] = 1;
+        lbl_80354720[i * 4 + 2] = i;
+        lbl_8034E9A0[(u8)id + 0x4757] = 1;
+        g = fn_2_C324((u8)id);
+        if (g != -1) {
+            for (k = 0; k < 5; k++) {
+                s16 v = *(s16*)(lbl_80108EDC + g * 10 + k * 2);
+                if (v != -1) {
+                    lbl_8034E9A0[v + 0x4757] = 1;
+                }
+            }
+        }
+    }
+}
+#endif
