@@ -114,14 +114,26 @@ typedef struct EaTask {
 
 // g_Minigame (MiniGameStruct in game/UnknownHomes_Game.h), only the fields used here.
 typedef struct EaMinigame {
-    /*0x0000*/ u8 _0000[0x18CC];
+    /*0x0000*/ u8 _0000[0x1890];
+    /*0x1890*/ s16 points[4]; // miniGameCurrentPoints
+    /*0x1898*/ u8 _1898[0x18CC - 0x1898];
     /*0x18CC*/ s8 characterIndex[4]; // minigameControlStruct[0]
     /*0x18D0*/ u8 _18D0[0x18F4 - 0x18D0];
     /*0x18F4*/ s8 player[3];
-    /*0x18F7*/ u8 _18F7[0x1921 - 0x18F7];
+    /*0x18F7*/ u8 _18F7[0x1906 - 0x18F7];
+    /*0x1906*/ u8 numPlayers;
+    /*0x1907*/ u8 _1907[2];
+    /*0x1909*/ u8 _1909;
+    /*0x190A*/ u8 _190A;
+    /*0x190B*/ u8 _190B[0x1921 - 0x190B];
     /*0x1921*/ u8 _1921;
     /*0x1922*/ u8 _1922[0x19CD - 0x1922];
     /*0x19CD*/ u8 _19CD;
+    /*0x19CE*/ u8 _19CE[0x1A2A - 0x19CE];
+    /*0x1A2A*/ u8 game;  // indexes the per-game tables
+    /*0x1A2B*/ u8 _1A2B;
+    /*0x1A2C*/ u8 _1A2C[0x1A3C - 0x1A2C];
+    /*0x1A3C*/ u8 _1A3C;
 } EaMinigame;
 
 #define EA_MG (*(EaMinigame*)g_Minigame)
@@ -187,11 +199,19 @@ void fn_3_ED0F4(void) {
 // The game data around lbl_3_data_19770 is addressed from that symbol as a pool
 // base; these are the tables at lbl_3_data_19830 + 0xE0/0x140/0x148/0x150.
 typedef struct EaPool {
-    /*0x000*/ u8 _000[0x1A0];
-    /*0x1A0*/ u8 desc1A0[0x60];  // sprite layout for fn_3_EC804
-    /*0x200*/ u16 anim200[4];
-    /*0x208*/ u16 stop208[4];
-    /*0x210*/ u16 end210[4];
+    /*0x0000*/ u8 _0000[0x1A0];
+    /*0x01A0*/ u8 desc1A0[0x60];  // sprite layout for fn_3_EC804
+    /*0x0200*/ u16 anim200[4];
+    /*0x0208*/ u16 stop208[4];
+    /*0x0210*/ u16 end210[4];
+    /*0x0218*/ u8 _0218[0x1280 - 0x218];
+    /*0x1280*/ u8 desc1280[0x580]; // sprite layout for fn_3_EA454
+    /*0x1800*/ u16 title1800[8];   // [game]
+    /*0x1810*/ u16 sub1810[4];
+    /*0x1818*/ u16 sub1818[4];
+    /*0x1820*/ u16 count1820[4];   // [numPlayers - 1]
+    /*0x1828*/ u16 frame1828[8];   // [game]
+    /*0x1838*/ u16 rank1838[4];
 } EaPool;
 #define EA_POOL ((EaPool*)lbl_3_data_19770)
 typedef struct EaMgFlags {
@@ -282,6 +302,98 @@ void fn_3_EC804(void) {
         }
         break;
     case 2:
+        break;
+    }
+}
+#endif
+
+extern s16 lbl_80109410[]; // per-game score cap
+extern void fn_3_1079C8(u8* out, s32 mode);
+extern s32 fn_3_107C40(void);
+
+// Entry filled by fn_3_1079C8: a player and its placing.
+typedef struct EaOrder {
+    /*0x0*/ u8 player;
+    /*0x1*/ u8 rank;
+} EaOrder;
+
+// .text:0x000EA454 size:0x4A8 mapped:0x807294E8
+// NONMATCHING 83%: pooled lbl_3_data_19770 tables (addi+lhzx form), score-cap regalloc and the /10000 constant spill
+#if NONMATCHING
+void fn_3_EA454(void) {
+    EaTask* task = EA_TASK;
+    EaPool* pool = EA_POOL;
+    EaOrder order[4];
+    u32 i;
+    u32 j;
+    s16 score;
+    s16 cap;
+    s8 chara;
+
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == 6 && lbl_3_common_bss_34C90[0x1D2] == 5) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (g_GameLogic[0x11E] == 0x22 && (lbl_3_common_bss_34C90[0x1D2] == 7 || g_GameLogic[0x122] != 0)) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (g_GameLogic[0x11E] == 0x26) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (g_GameLogic[0x11E] == 0x24) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, pool->desc1280);
+        EA_SPRITE(task, 0)->anim = pool->title1800[EA_MG.game];
+        if (EA_MG.game != 0 && EA_MG._1909 == 0 && EA_MG._1A3C == 0) {
+            if (EA_MG._190A != 0) {
+                EA_SPRITE(task, 1)->anim = pool->sub1818[EA_MG._1A2B];
+            } else {
+                EA_SPRITE(task, 1)->anim = pool->sub1810[EA_MG._1A2B];
+            }
+        } else {
+            EA_SPRITE(task, 1)->anim = 0x175;
+        }
+        fn_3_1079C8((u8*)order, 0);
+        EA_SPRITE(task, 2)->anim = pool->count1820[EA_MG.numPlayers - 1];
+        for (i = 0; i < EA_MG.numPlayers; i++) {
+            chara = EA_MG.characterIndex[i];
+            EA_SPRITE(task, i + 3)->frame = pool->frame1828[EA_MG.game] << 16;
+            EA_SPRITE(task, i + 7)->frame = chara << 16;
+            if (fn_3_107C40() != 0) {
+                EA_SPRITE(task, i + 0x13)->anim = 0x175;
+            } else {
+                j = 0;
+                do {
+                    if (i == order[j].player) {
+                        EA_SPRITE(task, i + 0x13)->anim = pool->rank1838[order[j].rank];
+                        break;
+                    }
+                    j++;
+                } while (j < EA_MG.numPlayers);
+            }
+            score = EA_MG.points[i];
+            cap = lbl_80109410[EA_MG.game];
+            if (score > cap) {
+                score = cap;
+            }
+            fn_800363D8(task, i * 4 + 0x1B, 1, 0x66, (score % 10000) / 1000);
+            fn_800363D8(task, i * 4 + 0x1C, 1, 0x66, (score % 1000) / 100);
+            fn_800363D8(task, i * 4 + 0x1D, 1, 0x66, (score % 100) / 10);
+            fn_800363D8(task, i * 4 + 0x1E, 1, 0x66, score % 10);
+        }
+        task->state = 1;
+        // fallthrough
+    case 1:
         break;
     }
 }
