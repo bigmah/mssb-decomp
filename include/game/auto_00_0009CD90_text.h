@@ -21,7 +21,9 @@ extern GameRunningLogic g_RunningLogic;
 typedef struct GameFielder {
     /*0x000*/ u8 _000[0x18C];
     /*0x18C*/ s16 _18C; // base the fielder is covering
-    /*0x18E*/ u8 _18E[0x268 - 0x18E];
+    /*0x18E*/ u8 _18E[0x1E0 - 0x18E];
+    /*0x1E0*/ u8 _1E0;
+    /*0x1E1*/ u8 _1E1[0x268 - 0x1E1];
 } GameFielder; // size: 0x268
 
 extern GameFielder g_Fielders[9];
