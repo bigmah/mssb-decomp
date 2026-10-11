@@ -29,7 +29,13 @@ typedef struct {
 extern lbl_80366158_s lbl_80366158;
 
 typedef struct {
-    /*0x000*/ u8 _000[0x715];
+    /*0x000*/ u8 _000[0x700];
+    /*0x700*/ u8* streamEnd;   // DVD stream ring buffer end
+    /*0x704*/ u8* _704;
+    /*0x708*/ u8* streamRead;  // next byte to consume
+    /*0x70C*/ u32 streamSize;
+    /*0x710*/ u32 streamAvail; // bytes ready to consume
+    /*0x714*/ u8 _714;
     /*0x715*/ u8 _715; // 1 when the pending disc/ARAM transfer finished
     /*0x716*/ u8 _716[2];
     /*0x718*/ s32 entryNum; // DVD entry number of the file currently being read

@@ -9,14 +9,6 @@ s32 fn_8000A3EC(Mtx out, SpriteDrawParams* params, AnimFrame* a, AnimFrame* b, f
 void interpolatePointsBezier_Vec2s(f32* curve, AnimKeyV0* p0, AnimKeyV0* p1, AnimKeyV0* p2, AnimKeyV0* p3, s32 mode, f32 t);
 s32 fn_8000AF1C(Mtx out, SpriteDrawParams* params, AnimKeyV0* a, AnimKeyV0* b, void* animC, f32* curve, f32 t);
 
-// main/file_800B0724
-void DrawNullSprite(QuadVtx* verts, s32 count); // draw triangle strip
-void DrawSprite_TexObj(QuadState* quad, SpriteTexInfo* tex); // draw textured quad
-void fn_800B1388(QuadState* quad); // draw quad
-void fn_800B1188(void);
-void fn_800B12DC(QuadVtx* verts, s32 count); // draw triangle fan
-void fn_800B13C0(Vec* pos, u32* colors, s32 count); // draw triangle fan
-
 // Copy four transformed quad corners (in the given order) into the vertex positions.
 #define SET_QUAD_POS(a, b, c, d)                          \
     do {                                                  \
@@ -1247,8 +1239,6 @@ void fn_8000E764(f32 angle, Vec2f* out) {
 }
 
 // .text:0x8000E7BC size:0x144
-// NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
-#if NONMATCHING
 void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
 
@@ -1287,11 +1277,8 @@ void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCor
         lbl_80366188.u.v[3].color = params->color[0];
     }
 }
-#endif
 
 // .text:0x8000E900 size:0x30C
-// NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
-#if NONMATCHING
 void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
     SpriteTexInfo* tex;
@@ -1334,11 +1321,8 @@ void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawPa
     lbl_80366188.bank = bank;
     lbl_80366188.perCornerColor = perCorner | elem->perCorner;
 }
-#endif
 
 // .text:0x8000EC0C size:0x310
-// NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
-#if NONMATCHING
 void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
     SpriteQuad q;
     SpriteTexInfo* tex;
@@ -1382,7 +1366,6 @@ void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* 
     lbl_80366188.bank = bank;
     lbl_80366188.perCornerColor = perCorner | elem->perCorner;
 }
-#endif
 
 // .text:0x8000EF1C size:0x234
 // NONMATCHING ~85%: saved-register/scheduling differences; float constants

@@ -8,10 +8,8 @@
 #include "stl/stdlib.h"
 
 extern OSThread* GXGetCurrentGXThread(void);
-extern void DrawSprite_TexObj(SpriteVertex* verts, TexDesc* tex);
 extern void SetDisplayStateTexture(void* object, s32 map, s32 b);
 extern void fn_800A7D4C(s32 list, void* node);
-extern void fn_800B24D4(u32);
 extern void fn_800BD1E8(void (*func)(Mtx, s32*, s32*, s32*, u8*, u8*));
 
 extern TexDesc lbl_800F7A40;
@@ -121,7 +119,7 @@ void fn_80039AC0(void) {
                 v[3].s = s + 0x80;
                 v[3].t = t0;
                 do {
-                    DrawSprite_TexObj(v, &lbl_800F7A40);
+                    DrawSprite_TexObj((struct QuadState*)v, (struct SpriteTexInfo*)&lbl_800F7A40);
                     lbl_803C5090.repeat -= (lbl_803C5090.repeat != 0);
                 } while (lbl_803C5090.repeat != 0);
                 s += 0x80;
@@ -159,7 +157,7 @@ void fn_80039AC0(void) {
         v[3].s = 0x400;
         v[3].t = 0;
         do {
-            DrawSprite_TexObj(v, &lbl_800F7A40);
+            DrawSprite_TexObj((struct QuadState*)v, (struct SpriteTexInfo*)&lbl_800F7A40);
             lbl_803C5090.repeat -= (lbl_803C5090.repeat != 0);
         } while (lbl_803C5090.repeat != 0);
     }
