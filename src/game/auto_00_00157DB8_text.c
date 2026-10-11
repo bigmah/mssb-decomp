@@ -5,6 +5,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "main/file_80011640.h"
 #include "game/auto_00_000B3B70_text.h"
+#include "main/file_8000F150.h"
 
 extern s16 lbl_3_data_FC1C;
 extern u8 lbl_3_data_BD90[];
@@ -16,10 +17,6 @@ extern void* fn_80033A24(void*, int, int, int, int, int);
 extern void fn_3_6B870(void);
 extern void* lbl_803CC1B8[];
 extern u32 fn_3_157AC4(u8* o);
-typedef struct {
-    u8* p;
-    s32 pad;
-} QEnt;
 extern void fn_3_5F154(void);
 extern void fn_3_5EFEC(void);
 extern void fn_3_5EDD8(void);
@@ -30,7 +27,6 @@ extern u8 lbl_3_data_FAF4[];
 extern u8 lbl_3_data_B85C[];
 extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_common_bss_34C90[];
-extern u8 lbl_80371C30[];
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
@@ -48,16 +44,16 @@ void fn_3_157DB8(s32 arg0) {
 
 // fn_3_1580AC, size:0x60
 void fn_3_1580AC(void) {
-    u8* o = lbl_803CC1B8[0];
+    PracticeTask* o = lbl_803CC1B8[0];
     fn_80034E20(o, lbl_3_data_BD90);
-    *(s16*)(o + 0x1C) = 0;
-    *(s16*)(o + 0x1E) = 0;
-    *(void**)lbl_803CC1B8[0] = fn_3_157E28;
+    o->_1C = 0;
+    o->_1E = 0;
+    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_157E28;
 }
 
 // fn_3_15810C, size:0xF0
 void fn_3_15810C(void) {
-    u8* o = lbl_803CC1B8[0];
+    PracticeTask* o = lbl_803CC1B8[0];
     s32 lim;
     if (lbl_3_common_bss_32724[0x96] == 0) {
         lim = 0x96;
@@ -65,12 +61,12 @@ void fn_3_15810C(void) {
             lim = 0x5A;
         }
         if (g_Practice._186 < lim - 0x14) {
-            u8* t = ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2];
-            if ((*(u32*)(t + 0x5C) >> 16) >= 0x21) {
-                t[0x68] = 0;
+            LayoutObj* t = lbl_80371C30[o->baseIdx].obj;
+            if ((t->_5C >> 16) >= 0x21) {
+                t->_68 = 0;
             }
         } else {
-            (((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2])[0x68] = 1;
+            lbl_80371C30[o->baseIdx].obj->_68 = 1;
         }
         if (g_Practice._1C7 == 0 || lbl_3_common_bss_34C90[0x1D2] != 0) {
             return;
@@ -85,11 +81,11 @@ void fn_3_1581FC(void) {
     if (lbl_800EF808[0x398] == 1) {
         playSoundEffect(0x1AD);
     }
-    *(void**)lbl_803CC1B8[0] = fn_3_15810C;
+    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_15810C;
 }
 
 // fn_3_158264, size:0x148
-void fn_3_158264(u8* o) {
+void fn_3_158264(PracticeTask* o) {
     s32 v;
     s32 c;
     u8* row = lbl_3_data_FAF4 + g_Practice.practiceType_2 * 4;
@@ -99,18 +95,18 @@ void fn_3_158264(u8* o) {
     c = g_Practice.guidedPracticeCounter;
     fn_800363D8(o, 1, 1, 0x32, c);
     fn_800363D8(o, 1, 2, 0x32, c);
-    if (c != *(u16*)(o + 0x1A)) {
-        QEnt* t = (QEnt*)(lbl_80371C30 + 8);
-        u8* q = t[*(u16*)(o + 0x14)].p;
-        if ((*(u32*)(q + 0x5C) >> 16) <= 9) {
-            *(u32*)(q + 0x5C) = 0xA0000;
-            t[*(u16*)(o + 0x14)].p[0x68] = 1;
+    if (c != o->_1A) {
+        LayoutSlot* t = &lbl_80371C30[1];
+        LayoutObj* q = t[o->baseIdx].obj;
+        if ((q->_5C >> 16) <= 9) {
+            q->_5C = 0xA0000;
+            t[o->baseIdx].obj->_68 = 1;
         }
-        q = t[*(u16*)(o + 0x14)].p;
-        if ((*(u32*)(q + 0x5C) >> 16) >= 0x13) {
-            *(u32*)(q + 0x5C) = 0x90000;
-            t[*(u16*)(o + 0x14)].p[0x68] = 0;
-            *(u16*)(o + 0x1A) = c;
+        q = t[o->baseIdx].obj;
+        if ((q->_5C >> 16) >= 0x13) {
+            q->_5C = 0x90000;
+            t[o->baseIdx].obj->_68 = 0;
+            o->_1A = c;
         }
     }
 }
@@ -156,12 +152,12 @@ void fn_3_1590C8(void) {
 
 // fn_3_159590, size:0x64
 void fn_3_159590(void) {
-    u8* o = lbl_803CC1B8[0];
+    PracticeTask* o = lbl_803CC1B8[0];
     fn_80034E20(o, lbl_3_data_B3F4);
-    *(s16*)(o + 0x18) = 0;
-    *(s16*)(o + 0x1A) = 0;
-    *(s16*)(o + 0x1C) = 0;
-    *(void**)lbl_803CC1B8[0] = fn_3_159114;
+    o->_18 = 0;
+    o->_1A = 0;
+    o->_1C = 0;
+    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_159114;
 }
 
 // fn_3_15AD94, size:0x40
@@ -239,24 +235,24 @@ void fn_3_15B610(void) {
 
 // fn_3_158FE4, size:0xE4
 void fn_3_158FE4(void) {
-    u8* o;
-    u8* w;
-    u8* e;
+    PracticeTask* o;
+    LayoutObj* w;
+    LayoutSlot* e;
     fn_80034E20(o = lbl_803CC1B8[0], lbl_3_data_B85C);
     e = lbl_80371C30;
-    e += *(u16*)(o + 0x14) * 8;
-    w = *(u8**)(e + 0x40);
-    *(u32*)(w + 0x54) &= ~2;
+    e += o->baseIdx;
+    w = e[8].obj;
+    w->flags &= ~2;
     fn_800363D8(o, 0xD, 1, 0xE, g_Practice.practiceLevel);
     fn_800363D8(o, 0xD, 2, 0xE, g_Practice.practiceLevel);
     g_Practice.laukituTextChannelIndex = -1;
     g_Practice.diagramTextChannelIndex = -1;
-    *(s16*)(o + 0x18) = 0;
-    *(s16*)(o + 0x1A) = 0;
-    *(s16*)(o + 0x1C) = 0;
-    *(s16*)(o + 0x1E) = 0;
-    *(s16*)(o + 0x20) = 0;
-    *(void**)lbl_803CC1B8[0] = fn_3_158B64;
+    o->_18 = 0;
+    o->_1A = 0;
+    o->_1C = 0;
+    o->_1E = 0;
+    o->_20 = 0;
+    ((PracticeTask*)lbl_803CC1B8[0])->callback = fn_3_158B64;
 }
 
 // .text:0x0015B0D8 size:0x12C

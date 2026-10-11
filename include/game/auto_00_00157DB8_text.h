@@ -3,10 +3,24 @@
 
 #include "mssbTypes.h"
 
+// Practice/tutorial HUD task: the queue item lbl_803CC1B8 points at while one of
+// this unit's HUD callbacks runs. Owns a run of sprites in lbl_80371C30.
+typedef struct PracticeTask {
+    /*0x00*/ void (*callback)(void);
+    /*0x04*/ u8 _04[0x10];
+    /*0x14*/ u16 baseIdx; // first sprite in lbl_80371C30
+    /*0x16*/ u16 count;
+    /*0x18*/ s16 _18;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ s16 _1C;
+    /*0x1E*/ s16 _1E;
+    /*0x20*/ s16 _20;
+} PracticeTask;
+
 void fn_3_157DB8(s32 arg0);
 void fn_3_1580AC(void);
 void fn_3_1581FC(void);
-void fn_3_158264(u8* o);
+void fn_3_158264(PracticeTask* o);
 void fn_3_1589C4(void);
 void fn_3_1590C8(void);
 void fn_3_159590(void);
