@@ -1120,9 +1120,56 @@ u8 fn_8002A85C(Emitter* e, Particle* p) {
 #endif
 
 // .text:0x8002AC68 size:0x3AC
-void fn_8002AC68(void) {
-    return;
+// NONMATCHING 83%: register allocation
+#if NONMATCHING
+u8 fn_8002AC68(Emitter* e, Particle* p) {
+    Vec c[4];
+    s32 a;
+    s32 i;
+
+    // flat quad on the ground (XZ plane)
+    c[3].y = 0.0f;
+    c[0].x = -p->sizeX * 0.5f;
+    c[0].z = p->sizeY * 0.5f;
+    c[1].x = p->sizeX * 0.5f;
+    c[1].z = p->sizeY * 0.5f;
+    c[2].x = p->sizeX * 0.5f;
+    c[2].z = -p->sizeY * 0.5f;
+    c[3].x = -p->sizeX * 0.5f;
+    c[3].z = -p->sizeY * 0.5f;
+    c[2].y = 0.0f;
+    c[1].y = 0.0f;
+    c[0].y = 0.0f;
+    LoadParticleTex(e->tex, p->texIndex, GX_CLAMP, GX_CLAMP);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(p->pos.x + c[i].x, p->pos.y + c[i].y, p->pos.z + c[i].z);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(lbl_800F7860[p->uvFrame + i].u, lbl_800F7860[p->uvFrame + i].v);
+    }
+    a = p->color.c.a;
+    if (p->u.tE.life0 - p->life < p->u.tE.phase1) {
+        p->sizeX = p->sizeX + p->u.tE.dSize1;
+        p->sizeY = p->sizeX;
+        a += p->u.tE.dAlpha1;
+    } else {
+        p->sizeX = p->sizeX + p->u.tE.dSize2;
+        p->sizeY = p->sizeX;
+        a += p->u.tE.dAlpha2;
+    }
+    if (a < 0) {
+        a = 0;
+    }
+    if (a > 0xFF) {
+        a = 0xFF;
+    }
+    p->color.c.a = a;
+    p->life--;
+    return p->life == 0;
 }
+#endif
 
 // .text:0x8002B014 size:0x3EC
 void fn_8002B014(void) {
