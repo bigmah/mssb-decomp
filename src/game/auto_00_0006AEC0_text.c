@@ -13,5 +13,11 @@ void fn_3_6AEC0(void) {
 
 // .text:0x0006AEE0 size:0xBC mapped:0x806A9F74
 void fn_3_6AEE0(void) {
-    return;
+    s32 i;
+
+    for (i = 0; i < 9; i++) {
+        if (lbl_8036E548.actors[i] != NULL) {
+            lbl_8036E548.actors[i]->_25D = 0;
+        }
+    }
 }
