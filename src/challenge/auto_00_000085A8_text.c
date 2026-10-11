@@ -61,6 +61,31 @@ void fn_1_86BC(void) {
     ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_8624;
 }
 
+// .text:0x000086E4 size:0x8C
+void fn_1_86E4(void) {
+    if (lbl_1_common_bss_47674.request == 0) {
+        return;
+    }
+    switch (lbl_1_common_bss_47674.sel) {
+    case 0:
+        if (lbl_1_common_bss_47674.cur == lbl_1_common_bss_47674.prev) {
+            return;
+        }
+        lbl_1_common_bss_47674.prev = lbl_1_common_bss_47674.cur;
+        lbl_1_common_bss_47674.cur = 0;
+        break;
+    case 1:
+        lbl_1_common_bss_47674.prev = lbl_1_common_bss_47674.cur;
+        lbl_1_common_bss_47674.cur = 1;
+        break;
+    case 2:
+        lbl_1_common_bss_47674.prev = lbl_1_common_bss_47674.cur;
+        lbl_1_common_bss_47674.cur = 2;
+        break;
+    }
+    lbl_1_common_bss_47674.request = 0;
+}
+
 // .text:0x000088CC size:0x4
 void fn_1_88CC(void) {
     return;
