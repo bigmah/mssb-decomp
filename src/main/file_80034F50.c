@@ -375,6 +375,53 @@ void fn_80036A3C(void) {
 }
 
 // .text:0x80036C88 size:0x3CC
-void fn_80036C88(void) {
-    return;
+// NONMATCHING 99.9%: r3/r4 swapped in the final dst[0] update
+#if NONMATCHING
+s32 fn_80036C88(s32* src, s32* dst) {
+    s32 i;
+    s32 sum;
+    s32 diff;
+    s32 idx;
+
+    memcpy(dst, src, 23 * sizeof(s32));
+    sum = 0;
+    for (i = 0; i < 23; i++) {
+        sum += src[i];
+    }
+    diff = 0x22800 - sum;
+    if (diff < 0) {
+        s32 excess = -diff;
+        s32 take;
+        do {
+            s32 min = 0x7FFFFFFF;
+            for (i = 0; i < 23; i++) {
+                if (dst[i] != 0 && min >= dst[i]) {
+                    idx = i;
+                    min = dst[i];
+                }
+            }
+            take = dst[idx];
+            if (excess <= take) {
+                take = excess;
+            }
+            excess -= take;
+            dst[idx] -= take;
+        } while (excess > 0 && take != 0);
+        if (excess != 0) {
+            for (i = 0; i < 23; i++) {
+                dst[i] = 0x1800;
+            }
+        }
+        return 1;
+    }
+    if (diff != 0) {
+        s32 add = (diff / 23 / 32) * 32;
+        s32 j;
+        for (j = 0; j < 23; j++) {
+            dst[j] += add;
+        }
+        dst[0] += diff - add * 23;
+    }
+    return 0;
 }
+#endif
