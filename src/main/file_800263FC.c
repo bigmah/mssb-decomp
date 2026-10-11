@@ -1,6 +1,8 @@
 #include "main/file_800263FC.h"
 #include "main/file_80008E00.h"
 #include "Dolphin/os.h"
+#include "main/file_80022DAC.h"
+#include "main/file_80039AC0.h"
 #include "stl/math.h"
 #include "stl/mem.h"
 
@@ -9,6 +11,22 @@
 int __abs(int);
 int rand(void);
 // TODO: these belong in their own units' headers.
+typedef struct GameSettingsView {
+    /* 0x00 */ u8 pad0[0x54];
+    /* 0x54 */ u8 stadiumId;
+    /* 0x55 */ u8 pad55[3];
+} GameSettingsView;
+extern GameSettingsView g_d_GameSettings; // GameInitVariables (UnknownHomes_Static.h clashes with this unit's prototypes)
+void fn_800B0A14_removeQueue(void* unused);
+extern void* lbl_803CC1B8; // current queue task
+typedef struct StadiumLightRow {
+    StadiumLight light;
+    u8 pad[0x2C - sizeof(StadiumLight)];
+} StadiumLightRow;
+extern StadiumLightRow lbl_800F7478[]; // per stadium
+extern StadiumLightPos lbl_80367318;
+extern ScreenFx lbl_803C5090;
+extern s32 lbl_803CBC70;
 void SetFogNone(void);
 u32 fn_8005268C(void);       // file_8004C5F8
 void* fn_80052734(s32 index); // file_8004C5F8: projection matrix
@@ -300,7 +318,27 @@ void fn_80027968(void) {
 
 // .text:0x8002852C size:0xFC
 void fn_8002852C(void) {
-    return;
+    LightFlashTask* q = (LightFlashTask*)lbl_803CC1B8;
+
+    if (--q->timer == 0) {
+        lbl_803CBC70 = 0;
+        fn_80023B90(&lbl_800F7478[g_d_GameSettings.stadiumId].light, &lbl_80367318);
+        ((void (*)(void))fn_800B0A14_removeQueue)(); // argument unused
+    } else {
+        q->light.r = q->r;
+        q->light.g = q->g;
+        q->light.b = q->b;
+        fn_80023B90(&q->light, &lbl_80367318);
+        lbl_803C5090.flags = 9;
+        lbl_803C5090.scale = 1.0f;
+        lbl_803C5090.lines = 0x1C0;
+        lbl_803C5090.repeat = q->repeat;
+        lbl_803C5090.unk18 = 1;
+        lbl_803C5090.r = q->r;
+        lbl_803C5090.g = q->g;
+        lbl_803C5090.b = q->b;
+        lbl_803C5090.alpha = (q->alpha * q->timer) / q->duration;
+    }
 }
 
 // .text:0x80028628 size:0x920

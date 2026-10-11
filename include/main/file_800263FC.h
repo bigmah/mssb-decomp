@@ -6,6 +6,7 @@
 #include "Dolphin/gx.h"
 #include "main/file_80024184.h"
 #include "main/file_80034F50.h"
+#include "main/file_80022DAC.h"
 
 // Particle effect system: a pool of 0x1400 particles (lbl_80180040) and
 // 16 emitters (lbl_801F8040), each emitter owning a singly linked list of
@@ -240,6 +241,19 @@ typedef struct ParticleParams8 {
     /* 0x24 */ s32 texIndex2[1]; // count entries
 } ParticleParams8;
 
+// Queue task that flashes the stadium lights (fn_8002852C).
+typedef struct LightFlashTask {
+    /* 0x00 */ u8 unk0[0x14];
+    /* 0x14 */ StadiumLight light;
+    /* 0x1E */ u8 r;
+    /* 0x1F */ u8 g;
+    /* 0x20 */ u8 b;
+    /* 0x21 */ u8 alpha;
+    /* 0x22 */ u8 repeat;
+    /* 0x23 */ u8 timer;
+    /* 0x24 */ u8 duration;
+} LightFlashTask;
+
 // Head of the active emitter list; aliases the prev/next of an Emitter.
 typedef struct EmitterHead {
     /* 0x0 */ struct Emitter* prev;
@@ -264,6 +278,7 @@ typedef struct ParticleSortEntry {
 
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm);
+void fn_8002852C(void);
 void fn_8002CDD0(Vec* end);
 s32 fn_8002D82C(Emitter* e);
 void fn_8002DC68(Vec* pos);
