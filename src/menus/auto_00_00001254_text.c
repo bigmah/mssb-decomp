@@ -12,6 +12,17 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_2_bss_20[];
+extern u8 lbl_2_data_180[];
+extern u8* lbl_803CC1B8;
+extern u8 lbl_803CBCE0[];
+extern u8 lbl_803C6714[];
+extern void initializeUnknown(void);
+extern void fn_80062764(void* task);
+extern s32 fn_80022B68(void);
+extern void fn_2_12988(void);
+extern s32 fn_800697B0(void);
+extern void fn_8003F23C(void);
 extern u8 lbl_2_bss_3A8[];
 extern void fn_80066EAC(u8 team);
 extern u8 lbl_803CBCD8[];
@@ -2073,5 +2084,135 @@ void fn_2_8940(void) {
     }
     fn_80066EAC(0);
     fn_80066EAC(1);
+}
+#endif
+
+// NONMATCHING 85%: lbl_2_data_180 and the state pointer are hoisted once in the original; case bodies laid out differently
+#if NONMATCHING
+static inline void fn_2_27E0_init(void) {
+    initializeUnknown();
+    lbl_8034E9A0[0x4700] = 0;
+    lbl_8034E9A0[0x472A] = 0xFF;
+    lbl_8034E9A0[0x4756] = 0;
+    lbl_8034E9A0[0x4754] = 0;
+    lbl_8034E9A0[0x4755] = 3;
+    lbl_8034E9A0[0x48B3] = 0;
+    lbl_8034E9A0[0x4701] = 0;
+    lbl_8034E9A0[0x4702] = 0;
+    lbl_8034E9A0[0x4703] = 0;
+    lbl_8034E9A0[0x4704] = 0;
+    lbl_8034E9A0[0x4705] = 0;
+    lbl_8034E9A0[0x4706] = 0;
+    lbl_8034E9A0[0x4707] = 0;
+    lbl_8034E9A0[0x4700] = 1;
+    if (*(u16*)(lbl_803CBBCC[0] + 6) != 1) {
+        fn_80062764(lbl_803CC1B8);
+    }
+    lbl_2_bss_20[0]++;
+}
+
+// fn_2_27E0, size:0x3D8
+void fn_2_27E0(void) {
+    s16 v;
+    switch (lbl_2_bss_20[0]) {
+    case 0:
+        fn_2_19F2C();
+        switch (*(u16*)(lbl_803CBBCC[0] + 6)) {
+        case 8:
+            lbl_2_bss_20[0] = 3;
+            break;
+        case 6:
+        case 9:
+        case 12:
+            lbl_2_bss_20[0] = 0xC;
+            break;
+        case 15:
+            if (lbl_8034E9A0[0x4756] == 0) {
+                lbl_2_bss_20[0] = 0xC;
+                break;
+            }
+        default:
+            fn_2_27E0_init();
+            break;
+        }
+        break;
+    case 1:
+        lbl_2_bss_20[0]++;
+    case 2:
+        if (fn_80022B68() != 0) {
+            lbl_2_bss_20[0]++;
+        }
+        break;
+    case 3:
+        fn_2_12988();
+        lbl_2_bss_20[0]++;
+        break;
+    case 4:
+        if (fn_800697B0() == 0) {
+            lbl_2_bss_20[0]++;
+        }
+        break;
+    case 5:
+        if (fn_80035838(lbl_2_data_180 + 0x2C4, 6) != 0) {
+            lbl_2_bss_20[0]++;
+        }
+        break;
+    case 6:
+        if (fn_80035838(lbl_2_data_180 + 0x2D4, 9) != 0) {
+            lbl_2_bss_20[0]++;
+        }
+        break;
+    case 7:
+        if (fn_80035838(lbl_2_data_180 + 0x2E4, 0x12) != 0) {
+            lbl_2_bss_20[0]++;
+        }
+        break;
+    case 8:
+        if (fn_80035838(lbl_2_data_180 + 0x2F4, 0xF) != 0) {
+            if (*(u16*)(lbl_803CBBCC[0] + 6) == 1) {
+                lbl_2_bss_20[0] = 0xB;
+            } else {
+                lbl_2_bss_20[0]++;
+            }
+        }
+        break;
+    case 9:
+        if (lbl_8034E9A0[0x48B4] != 0) {
+            if (lbl_803CBCE0[0] == 0) {
+                fn_8003F23C();
+            }
+            lbl_2_bss_20[0]++;
+        } else {
+            lbl_2_bss_20[0] = 0xB;
+        }
+        break;
+    case 10:
+        if (lbl_803CBCE0[0] == 0) {
+            v = *(s16*)(lbl_803CC1B8 + 0x10);
+            if (v == 1 || v == 0xB) {
+                lbl_803CBCE0[0] = 1;
+                lbl_80361B20[0xDE] = 1;
+                lbl_80361B20[0xDF] = 1;
+                lbl_80361B20[0xE0] = 1;
+                lbl_80361B20[0xE1] = 1;
+                lbl_80361B20[0xE2] = 1;
+                lbl_80361B20[0xE3] = 1;
+                lbl_2_bss_20[0]++;
+            }
+        } else {
+            lbl_2_bss_20[0]++;
+        }
+        break;
+    case 11:
+        if (*(u16*)(lbl_803CBBCC[0] + 6) != 6 && lbl_803C6714[4] == 0) {
+            fn_800B0A5C_insertQueue(fn_80062A94, 0x1000);
+        }
+        *(u16*)(lbl_803CBBCC[0] + 4) = 0;
+        lbl_2_bss_20[0]++;
+        break;
+    case 12:
+        fn_2_1F30();
+        break;
+    }
 }
 #endif

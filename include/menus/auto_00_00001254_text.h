@@ -270,4 +270,8 @@ void fn_2_BF90(void);
 
 void fn_2_5444(u8 team);
 
+void fn_2_1F30(void);
+
+void fn_2_27E0(void);
+
 #endif
