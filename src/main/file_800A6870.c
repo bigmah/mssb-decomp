@@ -547,5 +547,11 @@ void fn_800A7AD8(void) {
 
 // .text:0x800A7BAC size:0x5C
 void fn_800A7BAC(u8 flag) {
-    return;
+    if (flag) {
+        lbl_803C7420._397 = 2;
+    } else {
+        lbl_803C7420._397 = 0;
+    }
+    PPCSync();
+    OSWakeupThread(&lbl_803C7420.queue380);
 }
