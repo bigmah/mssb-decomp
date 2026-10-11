@@ -1975,9 +1975,9 @@ typedef struct MnOwner {
 } MnOwner;
 
 #define MN_SLOTS ((MnSlot*)lbl_80371C30)
-#define MN_OBJ(o, i) (MN_SLOTS[((MnOwner*)(o))->baseIdx + (i)].obj)
-// baseIdx + t + k, added left to right
-#define MN_OBJ2(o, t, k) (MN_SLOTS[((MnOwner*)(o))->baseIdx + (t) + (k)].obj)
+#define BASE(o) (((MnOwner*)(o))->baseIdx)
+// Write the index constant first (K + BASE(o) + i): CW keeps that order.
+#define MN_SLOT(i) (MN_SLOTS[i].obj)
 #define F410_S32(off) (*(s32*)((u8*)&lbl_2_bss_F410 + (off)))
 
 extern u8 lbl_80108EC4[];
@@ -2006,7 +2006,7 @@ void fn_2_72E54(u8* o) {
                 break;
             }
         }
-        MN_OBJ(o, 2)->frame = lbl_2_data_2AF08[found] << 18;
+        MN_SLOT(2 + BASE(o))->frame = lbl_2_data_2AF08[found] << 18;
         v = lbl_800FE5D4[F410_S32(0x10)];
         for (j = 0; j < 6; j++) {
             if (tbl[j] == v) {
@@ -2085,10 +2085,10 @@ void fn_2_72A88(u8* o) {
                 break;
             }
         }
-        MN_OBJ(o, 2)->frame = lbl_2_data_2AF08[found] << 18;
-        MN_OBJ(o, 3)->frame = lbl_2_data_2AF08[found] << 18;
+        MN_SLOT(2 + BASE(o))->frame = lbl_2_data_2AF08[found] << 18;
+        MN_SLOT(3 + BASE(o))->frame = lbl_2_data_2AF08[found] << 18;
         for (j = 0; j < 8; j++) {
-            MN_OBJ(o, j + 4)->frame = TEAM_TBL->roster[0][j + 1] << 16;
+            MN_SLOT(4 + BASE(o) + j)->frame = TEAM_TBL->roster[0][j + 1] << 16;
         }
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
@@ -2097,7 +2097,7 @@ void fn_2_72A88(u8* o) {
 #endif
 
 // fn_2_7F8BC, size:0x240
-// NONMATCHING 75%: CW folds the +0x34/+0x58 slot offsets into the load displacement; register allocation differs
+// NONMATCHING 92%: instruction scheduling only
 #if NONMATCHING
 void fn_2_7F8BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
@@ -2112,10 +2112,10 @@ void fn_2_7F8BC(u8* o, s32 index) {
                 break;
             }
         }
-        MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x34].obj->flags |= 2;
-        MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x34].obj->frame = 0;
-        MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x34].obj->state = 1;
-        MN_SLOTS[((MnOwner*)o)->baseIdx + v + index * 9 + 0x58].obj->frame = (s8)(lbl_803C6724 + index * 9)[found + 2] << 16;
+        MN_SLOT(0x34 + BASE(o) + v + index * 9)->flags |= 2;
+        MN_SLOT(0x34 + BASE(o) + v + index * 9)->frame = 0;
+        MN_SLOT(0x34 + BASE(o) + v + index * 9)->state = 1;
+        MN_SLOT(0x58 + BASE(o) + v + index * 9)->frame = (s8)(lbl_803C6724 + index * 9)[found + 2] << 16;
         fn_2_75BE4(o, index);
         fn_2_74F40(o, index);
         fn_800626EC(index);
@@ -2138,20 +2138,20 @@ void fn_2_808D8(u8* o, s32 index) {
             s32 b = chars[lbl_803C6724[0]];
             u8 x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
             u8 y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
-            MN_OBJ(o, 0x82)->frame = lbl_2_data_2B3A4[x] << 16;
+            MN_SLOT(0x82 + BASE(o))->frame = lbl_2_data_2B3A4[x] << 16;
             fn_800363D8(o, 0x89, 1, 3, lbl_2_data_2B3A4[x]);
             fn_800363D8(o, 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
-            MN_OBJ(o, 0x7E)->frame = lbl_2_data_2B3A4[x] << 16;
-            MN_OBJ(o, 0x80)->frame = 0;
-            MN_OBJ(o, 0x89)->frame = 0;
-            MN_OBJ(o, 0x8B)->frame = 0xA0000;
-            MN_OBJ(o, 0x78)->frame = 0;
-            MN_OBJ(o, 0x7C)->frame = 0;
-            MN_OBJ(o, 0x80)->state = 1;
-            MN_OBJ(o, 0x89)->state = 1;
-            MN_OBJ(o, 0x8B)->state = 4;
-            MN_OBJ(o, 0x78)->state = 1;
-            MN_OBJ(o, 0x7C)->state = 1;
+            MN_SLOT(0x7E + BASE(o))->frame = lbl_2_data_2B3A4[x] << 16;
+            MN_SLOT(0x80 + BASE(o))->frame = 0;
+            MN_SLOT(0x89 + BASE(o))->frame = 0;
+            MN_SLOT(0x8B + BASE(o))->frame = 0xA0000;
+            MN_SLOT(0x78 + BASE(o))->frame = 0;
+            MN_SLOT(0x7C + BASE(o))->frame = 0;
+            MN_SLOT(0x80 + BASE(o))->state = 1;
+            MN_SLOT(0x89 + BASE(o))->state = 1;
+            MN_SLOT(0x8B + BASE(o))->state = 4;
+            MN_SLOT(0x78 + BASE(o))->state = 1;
+            MN_SLOT(0x7C + BASE(o))->state = 1;
         }
         fn_2_74F40(o, index);
         fn_800626EC(index);
@@ -2161,7 +2161,7 @@ void fn_2_808D8(u8* o, s32 index) {
 #endif
 
 // fn_2_7805C, size:0x310
-// NONMATCHING 85%: slot index adds scheduled differently, s8 extensions hoisted
+// NONMATCHING 88%: original re-extsb's the prev byte at each use; CW CSEs our (s8) cast
 #if NONMATCHING
 void fn_2_7805C(u8* o, s32 index) {
     u8* sel = lbl_2_bss_F468 + index;
@@ -2179,15 +2179,15 @@ void fn_2_7805C(u8* o, s32 index) {
     e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         if ((s8)prev != ((s32*)lbl_2_bss_F468)[index]) {
-            MN_OBJ(o, (s8)prev + index * 9 + 0x46)->state = 4;
+            MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->state = 4;
             if ((s8)(lbl_803C6724 + index * 9)[found + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[found + 2] != 0x36) {
-                MN_OBJ(o, (s8)prev + index * 9 + 0x34)->state = 1;
+                MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->state = 1;
             }
         }
         if (lbl_2_bss_F468[index + 0x37] != 0) {
-            MN_OBJ(o, index + 0x93)->anim = 9;
-            MN_OBJ(o, index + 0x93)->frame = 0xA0000;
-            MN_OBJ(o, index + 0x93)->state = 0;
+            MN_SLOT(0x93 + BASE(o) + index)->anim = 9;
+            MN_SLOT(0x93 + BASE(o) + index)->frame = 0xA0000;
+            MN_SLOT(0x93 + BASE(o) + index)->state = 0;
         }
         fn_800626EC(index);
         *e = 1;
@@ -2212,7 +2212,7 @@ void fn_2_7805C(u8* o, s32 index) {
 #endif
 
 // fn_2_7630C, size:0x340
-// NONMATCHING 75%: CW folds the per-slot constant into the load displacement (orig: addi/slwi/lwzx per slot); scheduling of the two stat lookups differs
+// NONMATCHING 92%: instruction scheduling of the two stat lookups
 #if NONMATCHING
 void fn_2_7630C(u8* o, u8 index) {
     u8 team;
@@ -2229,26 +2229,26 @@ void fn_2_7630C(u8* o, u8 index) {
     b = lbl_800FE5D4[lbl_803C6724[team]];
     x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
     y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
-    MN_OBJ2(o, team, 0x82)->frame = lbl_2_data_2B3A4[x] << 16;
-    MN_OBJ2(o, team, 0x85)->frame = 0xA0000;
-    MN_OBJ2(o, team, 0x87)->frame = 0xA0000;
-    MN_OBJ2(o, team, 0x85)->state = 0;
-    MN_OBJ2(o, team, 0x87)->state = 0;
+    MN_SLOT(0x82 + BASE(o) + team)->frame = lbl_2_data_2B3A4[x] << 16;
+    MN_SLOT(0x85 + BASE(o) + team)->frame = 0xA0000;
+    MN_SLOT(0x87 + BASE(o) + team)->frame = 0xA0000;
+    MN_SLOT(0x85 + BASE(o) + team)->state = 0;
+    MN_SLOT(0x87 + BASE(o) + team)->state = 0;
     fn_800363D8(o, team + 0x89, 1, 3, lbl_2_data_2B3A4[x]);
     fn_800363D8(o, team + 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
-    MN_OBJ2(o, team, 0x7E)->frame = lbl_2_data_2B3A4[x] << 16;
-    MN_OBJ2(o, team, 0x1A)->flags |= 2;
-    MN_OBJ2(o, team, 0x1A)->state = 1;
-    MN_OBJ2(o, team, 0x80)->frame = 0;
-    MN_OBJ2(o, team, 0x89)->frame = 0;
-    MN_OBJ2(o, team, 0x8B)->frame = 0xA0000;
-    MN_OBJ2(o, team, 0x78)->frame = 0;
-    MN_OBJ2(o, team, 0x7C)->frame = 0;
-    MN_OBJ2(o, team, 0x80)->state = 1;
-    MN_OBJ2(o, team, 0x89)->state = 1;
-    MN_OBJ2(o, team, 0x8B)->state = 4;
-    MN_OBJ2(o, team, 0x78)->state = 1;
-    MN_OBJ2(o, team, 0x7C)->state = 1;
+    MN_SLOT(0x7E + BASE(o) + team)->frame = lbl_2_data_2B3A4[x] << 16;
+    MN_SLOT(0x1A + BASE(o) + team)->flags |= 2;
+    MN_SLOT(0x1A + BASE(o) + team)->state = 1;
+    MN_SLOT(0x80 + BASE(o) + team)->frame = 0;
+    MN_SLOT(0x89 + BASE(o) + team)->frame = 0;
+    MN_SLOT(0x8B + BASE(o) + team)->frame = 0xA0000;
+    MN_SLOT(0x78 + BASE(o) + team)->frame = 0;
+    MN_SLOT(0x7C + BASE(o) + team)->frame = 0;
+    MN_SLOT(0x80 + BASE(o) + team)->state = 1;
+    MN_SLOT(0x89 + BASE(o) + team)->state = 1;
+    MN_SLOT(0x8B + BASE(o) + team)->state = 4;
+    MN_SLOT(0x78 + BASE(o) + team)->state = 1;
+    MN_SLOT(0x7C + BASE(o) + team)->state = 1;
 }
 #endif
 
@@ -2256,7 +2256,7 @@ void fn_2_7630C(u8* o, u8 index) {
 #define F468_S32(off) (*(s32*)(lbl_2_bss_F468 + (off)))
 
 // fn_2_7F2BC, size:0x458
-// NONMATCHING 80%: slot offsets folded into load displacements, register allocation differs
+// NONMATCHING 95%: register allocation only
 #if NONMATCHING
 void fn_2_7F2BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
@@ -2277,39 +2277,39 @@ void fn_2_7F2BC(u8* o, s32 index) {
         }
         if (sel != 9 && sel != 10) {
             if ((s8)(lbl_803C6724 + index * 9)[fs + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[fs + 2] != 0x36) {
-                MN_OBJ2(o, sel + index * 9, 0x34)->frame = 0;
-                MN_OBJ2(o, sel + index * 9, 0x34)->state = 1;
+                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->frame = 0;
+                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->state = 1;
             }
-            MN_OBJ2(o, sel + index * 9, 0x46)->frame = 0;
-            MN_OBJ2(o, sel + index * 9, 0x46)->state = 1;
-            MN_OBJ2(o, sel + index * 9, 0x22)->flags |= 2;
+            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->frame = 0;
+            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->state = 1;
+            MN_SLOT(0x22 + BASE(o) + sel + index * 9)->flags |= 2;
         }
         if (cur != 9 && cur != 10) {
             if (F468_S32(8 + index * 4) != F468_S32(index * 4)) {
-                MN_OBJ2(o, cur + index * 9, 0x46)->frame = 0xF0000;
-                MN_OBJ2(o, cur + index * 9, 0x46)->state = 4;
+                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->frame = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->state = 4;
                 if (*(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) == (s8)(lbl_803C6724 + index * 9)[fc + 2]) {
-                    MN_OBJ2(o, cur + index * 9, 0x34)->state = 1;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->state = 1;
                 } else {
-                    MN_OBJ2(o, cur + index * 9, 0x34)->state = 4;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->state = 4;
                 }
             }
-            MN_OBJ2(o, cur + index * 9, 0x22)->flags &= ~2;
+            MN_SLOT(0x22 + BASE(o) + cur + index * 9)->flags &= ~2;
         }
         fn_2_75BE4(o, index);
         fn_2_74F40(o, index);
-        if ((MN_OBJ2(o, index, 0x93)->frame >> 16) == 10 &&
+        if ((MN_SLOT(0x93 + BASE(o) + index)->frame >> 16) == 10 &&
             *(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) != (s8)(lbl_803C6724 + index * 9)[fc + 2]) {
-            MN_OBJ2(o, index, 0x93)->frame = 0xA0000;
-            MN_OBJ2(o, index, 0x93)->state = 4;
-            MN_OBJ2(o, index, 0x95)->frame = 0xA0000;
-            MN_OBJ2(o, index, 0x95)->state = 4;
-        } else if ((MN_OBJ2(o, index, 0x8F)->frame >> 16) == 10 && sel == 10) {
-            MN_OBJ2(o, index, 0x91)->frame = 0xA0000;
-            MN_OBJ2(o, index, 0x91)->state = 4;
+            MN_SLOT(0x93 + BASE(o) + index)->frame = 0xA0000;
+            MN_SLOT(0x93 + BASE(o) + index)->state = 4;
+            MN_SLOT(0x95 + BASE(o) + index)->frame = 0xA0000;
+            MN_SLOT(0x95 + BASE(o) + index)->state = 4;
+        } else if ((MN_SLOT(0x8F + BASE(o) + index)->frame >> 16) == 10 && sel == 10) {
+            MN_SLOT(0x91 + BASE(o) + index)->frame = 0xA0000;
+            MN_SLOT(0x91 + BASE(o) + index)->state = 4;
         }
         if (sel == cur) {
-            MN_OBJ2(o, sel + index * 9, 0x34)->state = 4;
+            MN_SLOT(0x34 + BASE(o) + sel + index * 9)->state = 4;
         }
         fn_800626EC(index);
         *e = 1;
@@ -2319,7 +2319,7 @@ void fn_2_7F2BC(u8* o, s32 index) {
 
 // fn_2_75BE4, size:0x4B4
 // Average a stat over the team's non-captain players and show it as 0-5 stars.
-// NONMATCHING 70%: slot offsets folded into displacements, stars kept in a different register; logic matches
+// NONMATCHING 85%: stars kept in a different register (extsb. vs cmpwi), register allocation
 #if NONMATCHING
 void fn_2_75BE4(u8* o, s32 index) {
     s32 sum = 0;
@@ -2350,20 +2350,20 @@ void fn_2_75BE4(u8* o, s32 index) {
     }
     lbl_8034E9A0[0x470F + index] = stars;
     for (j = 0; j < 5; j++) {
-        MnObj* star = MN_OBJ2(o, j + index * 5, 0x6E);
+        MnObj* star = MN_SLOT(0x6E + BASE(o) + j + index * 5);
         if ((star->frame >> 16) == 30) {
             star->state = 1;
         }
     }
     for (j = 0; j < stars; j++) {
-        MN_OBJ2(o, j + index * 5, 0x6E)->frame = 0;
-        MN_OBJ2(o, j + index * 5, 0x6E)->state = 1;
+        MN_SLOT(0x6E + BASE(o) + j + index * 5)->frame = 0;
+        MN_SLOT(0x6E + BASE(o) + j + index * 5)->state = 1;
     }
 }
 #endif
 
 // fn_2_78AC0, size:0x4B8
-// NONMATCHING 80%: slot offsets folded into load displacements, register allocation differs
+// NONMATCHING 85%: prev byte kept raw and re-extended in the original; register allocation
 #if NONMATCHING
 void fn_2_78AC0(u8* o, s32 index) {
     u8* sel = lbl_2_bss_F468 + index;
@@ -2384,23 +2384,23 @@ void fn_2_78AC0(u8* o, s32 index) {
     }
     e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
-        MN_OBJ2(o, index, 0xA)->frame = 0xF0000;
-        MN_OBJ2(o, index, 0xA)->state = 4;
-        MN_OBJ2(o, index, 0x1E)->state = 4;
-        MN_OBJ2(o, index, 0x93)->anim = 9;
-        MN_OBJ2(o, index, 0x89)->frame = 0;
-        MN_OBJ2(o, index, 0x89)->state = 1;
-        MN_OBJ2(o, index, 0x8D)->frame = 0x140000;
-        MN_OBJ2(o, index, 0x8D)->state = 4;
-        MN_OBJ2(o, index, 0x6A)->state = 1;
+        MN_SLOT(0xA + BASE(o) + index)->frame = 0xF0000;
+        MN_SLOT(0xA + BASE(o) + index)->state = 4;
+        MN_SLOT(0x1E + BASE(o) + index)->state = 4;
+        MN_SLOT(0x93 + BASE(o) + index)->anim = 9;
+        MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x89 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x8D + BASE(o) + index)->frame = 0x140000;
+        MN_SLOT(0x8D + BASE(o) + index)->state = 4;
+        MN_SLOT(0x6A + BASE(o) + index)->state = 1;
         if (g_d_GameSettings.GameModeSelected != 5) {
-            MN_OBJ2(o, index, 0x8F)->anim = 7;
+            MN_SLOT(0x8F + BASE(o) + index)->anim = 7;
         }
         if (prev != -1 && prev != (s8)cur) {
-            MN_OBJ2(o, prev + index * 9, 0x46)->state = 4;
+            MN_SLOT(0x46 + BASE(o) + prev + index * 9)->state = 4;
             if (TEAM_TBL->roster[index][found] != -1 && TEAM_TBL->roster[index][found] != 0x36) {
-                MN_OBJ2(o, prev + index * 9, 0x34)->frame = 0xA0000;
-                MN_OBJ2(o, prev + index * 9, 0x34)->state = 1;
+                MN_SLOT(0x34 + BASE(o) + prev + index * 9)->frame = 0xA0000;
+                MN_SLOT(0x34 + BASE(o) + prev + index * 9)->state = 1;
             }
         }
         fn_800626EC(index);
@@ -2442,7 +2442,7 @@ void fn_2_78AC0(u8* o, s32 index) {
 #endif
 
 // fn_2_747FC, size:0x4DC
-// NONMATCHING 80%: slot offsets folded into displacements; frame size and register allocation differ
+// NONMATCHING 80%: slot base+0x20 not hoisted as in the original; frame size and register allocation differ
 #if NONMATCHING
 void fn_2_747FC(void) {
     u8* o = lbl_803CC1B8;
@@ -2460,22 +2460,22 @@ void fn_2_747FC(void) {
         if ((lbl_803C66B0[7] == 0) ? 1 : 0) {
             for (i = 0; i < 7; i++) {
                 if (mode == i) {
-                    MN_OBJ2(o, i, 3)->flags |= 2;
-                    MN_OBJ2(o, i, 3)->frame = 0;
-                    MN_OBJ2(o, i, 3)->state = 1;
-                    MN_OBJ2(o, i, 0x18)->frame = 0;
-                    MN_OBJ2(o, i, 0x18)->state = 1;
+                    MN_SLOT(3 + BASE(o) + i)->flags |= 2;
+                    MN_SLOT(3 + BASE(o) + i)->frame = 0;
+                    MN_SLOT(3 + BASE(o) + i)->state = 1;
+                    MN_SLOT(0x18 + BASE(o) + i)->frame = 0;
+                    MN_SLOT(0x18 + BASE(o) + i)->state = 1;
                 } else {
-                    MN_OBJ2(o, i, 0x18)->frame = 0;
-                    MN_OBJ2(o, i, 0x18)->state = 0;
-                    MN_OBJ2(o, i, 3)->flags &= ~2;
+                    MN_SLOT(0x18 + BASE(o) + i)->frame = 0;
+                    MN_SLOT(0x18 + BASE(o) + i)->state = 0;
+                    MN_SLOT(3 + BASE(o) + i)->flags &= ~2;
                 }
             }
             if (lbl_8037169C[0x10] != 0) {
                 changeScene(1, 6);
             }
-            MN_OBJ(o, 0x20)->frame = 0;
-            MN_OBJ(o, 0x20)->state = 1;
+            MN_SLOT(0x20 + BASE(o))->frame = 0;
+            MN_SLOT(0x20 + BASE(o))->state = 1;
             fn_800626EC(0);
             lbl_803C66B0[7] = 1;
         }
@@ -2514,8 +2514,8 @@ void fn_2_747FC(void) {
         break;
     case 0x57:
         if ((lbl_803C66B0[7] == 0) ? 1 : 0) {
-            MN_OBJ(o, mode + 0x11)->frame = 0xE0000;
-            MN_OBJ(o, mode + 0x11)->state = 1;
+            MN_SLOT(0x11 + BASE(o) + mode)->frame = 0xE0000;
+            MN_SLOT(0x11 + BASE(o) + mode)->state = 1;
             lbl_803C66B0[7] = 1;
         }
         if (lbl_803C66B0[7] == 1) {
@@ -2527,15 +2527,15 @@ void fn_2_747FC(void) {
                 lbl_8034E9A0[0x4751] = 0;
                 lbl_2_bss_A840 = lbl_2_bss_A844;
             } else if ((fn_80042DA8((s32)o, mode + 0x11, 0x37) != 0) == 1) {
-                MN_OBJ(o, mode + 0x11)->frame = 0xE0000;
-                MN_OBJ(o, mode + 0x11)->state = 1;
+                MN_SLOT(0x11 + BASE(o) + mode)->frame = 0xE0000;
+                MN_SLOT(0x11 + BASE(o) + mode)->state = 1;
             }
         }
         break;
     case 0x58:
         if ((lbl_803C66B0[7] == 0) ? 1 : 0) {
-            MN_OBJ(o, mode + 0x11)->frame = 0x370000;
-            MN_OBJ(o, mode + 0x11)->state = 1;
+            MN_SLOT(0x11 + BASE(o) + mode)->frame = 0x370000;
+            MN_SLOT(0x11 + BASE(o) + mode)->state = 1;
             fn_800626EC(0);
             lbl_803C66B0[7] = 1;
         }
@@ -2549,7 +2549,7 @@ void fn_2_747FC(void) {
 #endif
 
 // fn_2_7E380, size:0x4E0
-// NONMATCHING 80%: slot offsets folded into load displacements (orig addi/slwi/lwzx per slot)
+// NONMATCHING 97%: unrolled roster search addresses each entry from the base instead of a walking pointer (see fn_2_7E194)
 #if NONMATCHING
 void fn_2_7E380(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
@@ -2557,26 +2557,26 @@ void fn_2_7E380(u8* o, s32 index) {
         s8 pos;
         s32 player;
         s32 j;
-        MN_OBJ2(o, index, 0xC)->flags |= 2;
-        MN_OBJ2(o, index, 0x12)->flags |= 2;
-        MN_OBJ2(o, index, 0xC)->state = 4;
-        MN_OBJ2(o, index, 0xE)->state = 4;
-        MN_OBJ2(o, index, 0x12)->frame = 0xA0000;
-        MN_OBJ2(o, index, 0x12)->state = 4;
-        MN_OBJ2(o, index, 0xB6)->flags |= 2;
-        MN_OBJ2(o, index, 0x1C)->frame = 0x140000;
-        MN_OBJ2(o, index, 0x1C)->state = 4;
-        MN_OBJ2(o, index, 0x6A)->frame = 0x1E0000;
-        MN_OBJ2(o, index, 0x6A)->state = 4;
-        MN_OBJ2(o, index, 0x93)->frame = 0;
-        MN_OBJ2(o, index, 0x93)->state = 1;
-        MN_OBJ2(o, index, 0x95)->state = 1;
-        MN_OBJ2(o, index, 0x8F)->frame = 0;
-        MN_OBJ2(o, index, 0x8F)->state = 1;
-        MN_OBJ2(o, index, 0x89)->frame = 0xA0000;
-        MN_OBJ2(o, index, 0x89)->state = 4;
-        MN_OBJ2(o, index, 0x97)->state = 1;
-        MN_OBJ2(o, index, 0xAC)->state = 1;
+        MN_SLOT(0xC + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0x12 + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0xC + BASE(o) + index)->state = 4;
+        MN_SLOT(0xE + BASE(o) + index)->state = 4;
+        MN_SLOT(0x12 + BASE(o) + index)->frame = 0xA0000;
+        MN_SLOT(0x12 + BASE(o) + index)->state = 4;
+        MN_SLOT(0xB6 + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0x1C + BASE(o) + index)->frame = 0x140000;
+        MN_SLOT(0x1C + BASE(o) + index)->state = 4;
+        MN_SLOT(0x6A + BASE(o) + index)->frame = 0x1E0000;
+        MN_SLOT(0x6A + BASE(o) + index)->state = 4;
+        MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x93 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x95 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x8F + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x8F + BASE(o) + index)->state = 1;
+        MN_SLOT(0x89 + BASE(o) + index)->frame = 0xA0000;
+        MN_SLOT(0x89 + BASE(o) + index)->state = 4;
+        MN_SLOT(0x97 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xAC + BASE(o) + index)->state = 1;
         if (g_d_GameSettings._10 == 0 && index == 0) {
             // single player: also set up team 1's (CPU) objects
             player = *(s32*)(lbl_8034E9A0 + 0x46E4);
@@ -2588,21 +2588,21 @@ void fn_2_7E380(u8* o, s32 index) {
             for (j = 0; j < 9; j++) {
                 if (index == 0) {
                     if (j != pos) {
-                        MN_OBJ2(o, j, 9 + 0x46)->flags &= ~2;
+                        MN_SLOT(9 + 0x46 + BASE(o) + j)->flags &= ~2;
                     } else {
-                        MN_OBJ2(o, pos, 9 + 0x34)->state = 1;
-                        MN_OBJ2(o, pos, 9 + 0x46)->state = 4;
-                        MN_OBJ2(o, pos, 9 + 0x46)->flags |= 2;
+                        MN_SLOT(9 + 0x34 + BASE(o) + pos)->state = 1;
+                        MN_SLOT(9 + 0x46 + BASE(o) + pos)->state = 4;
+                        MN_SLOT(9 + 0x46 + BASE(o) + pos)->flags |= 2;
                     }
                 }
-                MN_OBJ2(o, j, 9 + 0x22)->flags &= ~2;
+                MN_SLOT(0x22 + BASE(o) + j + 9)->flags &= ~2;
             }
-            MN_OBJ(o, 1 + 0x93)->state = 4;
-            MN_OBJ(o, 1 + 0x95)->state = 4;
-            MN_OBJ(o, 1 + 0x8F)->state = 4;
-            MN_OBJ(o, 1 + 0x91)->state = 4;
-            MN_OBJ(o, 1 + 0x97)->flags &= ~2;
-            MN_OBJ(o, 1 + 0xAC)->flags &= ~2;
+            MN_SLOT(0x93 + BASE(o) + 1)->state = 4;
+            MN_SLOT(0x95 + BASE(o) + 1)->state = 4;
+            MN_SLOT(0x8F + BASE(o) + 1)->state = 4;
+            MN_SLOT(0x91 + BASE(o) + 1)->state = 4;
+            MN_SLOT(0x97 + BASE(o) + 1)->flags &= ~2;
+            MN_SLOT(0xAC + BASE(o) + 1)->flags &= ~2;
         }
         fn_800626EC(index);
         *e = 1;
@@ -2611,52 +2611,52 @@ void fn_2_7E380(u8* o, s32 index) {
 #endif
 
 // fn_2_7E974, size:0x508
-// NONMATCHING 70%: orig unrolls the 9-slot loop by 3; slot offsets folded into load displacements
+// NONMATCHING 80%: orig unrolls the 9-slot loop by 3, ours stays rolled
 #if NONMATCHING
 void fn_2_7E974(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s8 other;
         s32 j;
-        MN_OBJ2(o, index, 0xC)->flags |= 2;
-        MN_OBJ2(o, index, 0x12)->flags |= 2;
-        MN_OBJ2(o, index, 0xC)->frame = 0;
-        MN_OBJ2(o, index, 0xC)->state = 1;
-        MN_OBJ2(o, index, 0xE)->frame = 0;
-        MN_OBJ2(o, index, 0xE)->state = 1;
-        MN_OBJ2(o, index, 0x10)->frame = lbl_8034E9A0[0x470D + index] << 16;
-        MN_OBJ2(o, index, 0x12)->frame = 0;
-        MN_OBJ2(o, index, 0x12)->state = 1;
-        MN_OBJ2(o, index, 0x14)->frame = lbl_8034E9A0[0x470D + index] << 16;
-        MN_OBJ2(o, index, 0xB6)->flags &= ~2;
-        MN_OBJ2(o, index, 0x1C)->frame = 0xA0000;
-        MN_OBJ2(o, index, 0x1C)->state = 1;
-        MN_OBJ2(o, index, 0x6A)->frame = 0xA0000;
-        MN_OBJ2(o, index, 0x6A)->state = 1;
-        MN_OBJ2(o, index, 0x93)->frame = 0xA0000;
-        MN_OBJ2(o, index, 0x93)->state = 4;
-        MN_OBJ2(o, index, 0x8F)->frame = 0xA0000;
-        MN_OBJ2(o, index, 0x8F)->state = 4;
-        MN_OBJ2(o, index, 0x89)->frame = 0x50000;
-        MN_OBJ2(o, index, 0x89)->state = 1;
-        MN_OBJ2(o, index, 0x97)->state = 4;
-        MN_OBJ2(o, index, 0xAC)->state = 4;
+        MN_SLOT(0xC + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0x12 + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0xC + BASE(o) + index)->frame = 0;
+        MN_SLOT(0xC + BASE(o) + index)->state = 1;
+        MN_SLOT(0xE + BASE(o) + index)->frame = 0;
+        MN_SLOT(0xE + BASE(o) + index)->state = 1;
+        MN_SLOT(0x10 + BASE(o) + index)->frame = lbl_8034E9A0[0x470D + index] << 16;
+        MN_SLOT(0x12 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x12 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x14 + BASE(o) + index)->frame = lbl_8034E9A0[0x470D + index] << 16;
+        MN_SLOT(0xB6 + BASE(o) + index)->flags &= ~2;
+        MN_SLOT(0x1C + BASE(o) + index)->frame = 0xA0000;
+        MN_SLOT(0x1C + BASE(o) + index)->state = 1;
+        MN_SLOT(0x6A + BASE(o) + index)->frame = 0xA0000;
+        MN_SLOT(0x6A + BASE(o) + index)->state = 1;
+        MN_SLOT(0x93 + BASE(o) + index)->frame = 0xA0000;
+        MN_SLOT(0x93 + BASE(o) + index)->state = 4;
+        MN_SLOT(0x8F + BASE(o) + index)->frame = 0xA0000;
+        MN_SLOT(0x8F + BASE(o) + index)->state = 4;
+        MN_SLOT(0x89 + BASE(o) + index)->frame = 0x50000;
+        MN_SLOT(0x89 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x97 + BASE(o) + index)->state = 4;
+        MN_SLOT(0xAC + BASE(o) + index)->state = 4;
         if (g_d_GameSettings._10 == 0) {
             other = (s8)lbl_8034E9A0[0x46F8] == 0;
             if (lbl_2_bss_F468[0x38] != 0) {
-                MN_OBJ(o, 0x98)->state = 4;
+                MN_SLOT(0x98 + BASE(o))->state = 4;
             }
         }
         if (g_d_GameSettings._10 == 0 && lbl_2_bss_F468[0x37] != 0 && index == 0) {
             for (j = 0; j < 9; j++) {
-                MN_OBJ2(o, j, 9 + 0x46)->flags |= 2;
-                MN_OBJ2(o, j, 9 + 0x46)->anim = other + 0x11;
-                MN_OBJ2(o, j, 9 + 0x46)->frame = 0;
-                MN_OBJ2(o, j, 9 + 0x46)->state = 0;
+                MN_SLOT(9 + 0x46 + BASE(o) + j)->flags |= 2;
+                MN_SLOT(9 + 0x46 + BASE(o) + j)->anim = other + 0x11;
+                MN_SLOT(9 + 0x46 + BASE(o) + j)->frame = 0;
+                MN_SLOT(9 + 0x46 + BASE(o) + j)->state = 0;
             }
-            MN_OBJ2(o, other, 0x8F)->state = 1;
-            MN_OBJ2(o, other, 0x91)->frame = 0;
-            MN_OBJ2(o, other, 0x91)->state = 1;
+            MN_SLOT(0x8F + BASE(o) + other)->state = 1;
+            MN_SLOT(0x91 + BASE(o) + other)->frame = 0;
+            MN_SLOT(0x91 + BASE(o) + other)->state = 1;
         }
         fn_800626EC(index);
         *e = 1;
@@ -2667,7 +2667,7 @@ void fn_2_7E974(u8* o, s32 index) {
 extern u8 lbl_803CB8D0[];
 
 // fn_2_7207C, size:0x518
-// NONMATCHING 85%: slot offsets folded into load displacements
+// NONMATCHING 95%: the lbl_803CB8D0-indexed slot loads use add/lwz instead of lwzx
 #if NONMATCHING
 void fn_2_7207C(void) {
     u8* o = lbl_803CC1B8;
@@ -2676,17 +2676,17 @@ void fn_2_7207C(void) {
     switch (lbl_803C66B0[0x5D]) {
     case 30:
         if ((lbl_803C66B0[0x1F] == 0) ? 1 : 0) {
-            MN_OBJ(o, 0)->frame = 0;
-            MN_OBJ(o, 0)->state = 1;
-            MN_OBJ(o, 2)->state = 1;
-            MN_OBJ(o, 3)->color &= ~0xFF;
-            MN_OBJ(o, 4)->color &= ~0xFF;
-            MN_OBJ(o, 5)->color &= ~0xFF;
-            MN_OBJ(o, 6)->color &= ~0xFF;
-            MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 3)->state = 1;
-            MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 3)->color = (MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 3)->color & ~0xFF) | 0xFF;
-            MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 7)->frame = 0;
-            MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 7)->state = 1;
+            MN_SLOT(BASE(o))->frame = 0;
+            MN_SLOT(BASE(o))->state = 1;
+            MN_SLOT(2 + BASE(o))->state = 1;
+            MN_SLOT(3 + BASE(o))->color &= ~0xFF;
+            MN_SLOT(4 + BASE(o))->color &= ~0xFF;
+            MN_SLOT(5 + BASE(o))->color &= ~0xFF;
+            MN_SLOT(6 + BASE(o))->color &= ~0xFF;
+            MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
+            MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color = (MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color & ~0xFF) | 0xFF;
+            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->frame = 0;
+            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x1F] = 1;
         }
@@ -2702,7 +2702,7 @@ void fn_2_7207C(void) {
         break;
     case 31:
         if ((lbl_803C66B0[0x1F] == 0) ? 1 : 0) {
-            MN_OBJ(o, 0)->state = 1;
+            MN_SLOT(BASE(o))->state = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x1F] = 1;
         }
@@ -2714,16 +2714,16 @@ void fn_2_7207C(void) {
     case 32:
         if ((lbl_803C66B0[0x1F] == 0) ? 1 : 0) {
             for (i = 0; i < 4; i++) {
-                MN_OBJ2(o, i, 3)->state = 0;
-                MN_OBJ2(o, i, 7)->state = 0;
-                MN_OBJ2(o, i, 3)->frame = 0;
-                MN_OBJ2(o, i, 7)->frame = 0;
-                MN_OBJ2(o, i, 3)->color &= ~0xFF;
+                MN_SLOT(3 + BASE(o) + i)->state = 0;
+                MN_SLOT(7 + BASE(o) + i)->state = 0;
+                MN_SLOT(3 + BASE(o) + i)->frame = 0;
+                MN_SLOT(7 + BASE(o) + i)->frame = 0;
+                MN_SLOT(3 + BASE(o) + i)->color &= ~0xFF;
             }
-            MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 3)->state = 1;
-            MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 3)->color = (MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 3)->color & ~0xFF) | 0xFF;
-            MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 7)->frame = 0;
-            MN_OBJ2(o, lbl_803CB8D0[F410_S32(0x4C)], 7)->state = 1;
+            MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
+            MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color = (MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color & ~0xFF) | 0xFF;
+            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->frame = 0;
+            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x1F] = 1;
         }
@@ -2734,7 +2734,7 @@ void fn_2_7207C(void) {
         break;
     case 33:
         if ((lbl_803C66B0[0x1F] == 0) ? 1 : 0) {
-            MN_OBJ(o, 0)->state = 1;
+            MN_SLOT(BASE(o))->state = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x1F] = 1;
         }
