@@ -92,7 +92,7 @@ s32 fn_80020218(void) {
 
 // .text:0x8002024C size:0x2C
 void fn_8002024C(void) {
-    return;
+    fn_800ACF14(lbl_8037169C.tex);
 }
 
 // .text:0x80020278 size:0x110
