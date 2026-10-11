@@ -144,3 +144,20 @@ void fn_1_A1F4(ChListCursor* list, ChListItem* items, s32 count, s32 visible) {
     list->cursor = 0;
 }
 
+// .text:0x0000A210 size:0x40
+// Returns the part of `path` after the last '/'.
+char* fn_1_A210(char* path) {
+    char c;
+    char* name = path;
+
+    if (path == NULL) {
+        return NULL;
+    }
+    while ((c = *path++) != '\0') {
+        if (c == '/') {
+            name = path;
+        }
+    }
+    return name;
+}
+
