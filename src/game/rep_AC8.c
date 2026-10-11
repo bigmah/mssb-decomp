@@ -2519,9 +2519,81 @@ void fn_3_38D10(void) {
 #endif
 
 // .text:0x00038FF8 size:0x3B8 mapped:0x8067808C
+extern f32 lbl_3_rodata_C08;
+// NONMATCHING 97%: goto-target layout leaves the original's dead b instructions out; one mulli scheduled early
+#if NONMATCHING
 void fn_3_38FF8(void) {
-    return;
+    u8* f = g_Fielders + *(s16*)(g_FieldingLogic + 0xB0) * 0x268;
+    f32 lim = *(f32*)(f + 0x70);
+    s32 i;
+    s32 r;
+    for (i = 1; i < 60; i += 3) {
+        if (*(f32*)(g_Ball + i * 16 + 0x360) > lim) {
+            break;
+        }
+    }
+    if (*(s16*)(g_FieldingLogic + 0xB0) != 1) {
+        if (i <= 1) {
+            goto keep_second;
+        }
+        if (*(f32*)(f + 0x7C) < lbl_3_rodata_C08) {
+            if (lbl_3_bss_16C >= 0 &&
+                fn_3_9FCF8(lbl_3_bss_16C, fn_3_9FB8C(*(f32*)g_Ball - *(f32*)f, *(f32*)(g_Ball + 8) - *(f32*)(f + 8))) < 0x100) {
+                goto keep_first;
+            }
+            if (*(s16*)(g_FieldingLogic + 0xB0) >= 2 && *(s16*)(g_FieldingLogic + 0xB0) <= 5 &&
+                (g_Ball[0x1BC4] == 2 || g_Ball[0x1BC4] == 3)) {
+                goto keep_first;
+            }
+        }
+    }
+    if (g_Fielders[*(s16*)(g_FieldingLogic + 0xB0) * 0x268 + 0x1DB] == 0 ||
+        g_Fielders[*(s16*)(g_FieldingLogic + 0xB2) * 0x268 + 0x1DB] == 0) {
+        r = fn_3_36678(*(s16*)(g_FieldingLogic + 0xB0), *(s16*)(g_FieldingLogic + 0xB2), *(f32*)(g_Ball + 0x348),
+                       *(f32*)(g_Ball + 0x34C), 3);
+    } else {
+        r = fn_3_36678(*(s16*)(g_FieldingLogic + 0xB0), *(s16*)(g_FieldingLogic + 0xB2), *(f32*)(g_Ball + i * 16 + 0x354),
+                       *(f32*)(g_Ball + i * 16 + 0x35C), 3);
+    }
+    if (r >= 0) {
+        if (r == *(s16*)(g_FieldingLogic + 0xB2)) {
+            goto keep_second;
+        }
+        if (r == *(s16*)(g_FieldingLogic + 0xB0)) {
+            goto keep_first;
+        }
+    }
+    if (*(s16*)(g_Ball + 0x1B66) > 0x5A) {
+        if (*(s16*)(g_Ball + 0x1B72) >= 0 ||
+            ((f32*)(g_Fielders + 0x80))[*(s16*)(g_FieldingLogic + 0xB0) * 0x9A] <=
+                ((f32*)(g_Fielders + 0x80))[*(s16*)(g_FieldingLogic + 0xB2) * 0x9A]) {
+        keep_first:
+            g_FieldingLogic[0x139] = 0;
+            if (*(s16*)(g_FieldingLogic + 0xB0) == 0) {
+                return;
+            }
+        } else {
+        keep_second:
+            if (g_FieldingLogic[0x13A] != 0 &&
+                (*(s16*)(g_FieldingLogic + 0xB2) == 3 || *(s16*)(g_FieldingLogic + 0xB2) == 5)) {
+                fn_3_38D10();
+                if (g_FieldingLogic[0x13A] != 0) {
+                    if (!(*(f32*)(g_Ball + 0x1A00) - lbl_3_rodata_B78 >
+                          *(f32*)(g_Fielders + *(s16*)(g_FieldingLogic + 0xB0) * 0x268 + 0x70))) {
+                        return;
+                    }
+                    fn_3_38790(*(s16*)(g_FieldingLogic + 0xB2), 1);
+                }
+            } else {
+                fn_3_38790(*(s16*)(g_FieldingLogic + 0xB2), 1);
+            }
+        }
+        g_FieldingLogic[0x139] = 0;
+        *(s16*)(g_FieldingLogic + 0xB2) = *(s16*)(g_FieldingLogic + 0xB4);
+        *(s16*)(g_FieldingLogic + 0xB4) = -1;
+    }
 }
+#endif
 
 // .text:0x000393B0 size:0x4A8 mapped:0x80678444
 void fn_3_393B0(void) {
