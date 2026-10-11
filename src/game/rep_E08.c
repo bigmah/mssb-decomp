@@ -28,6 +28,7 @@ extern f32 shortAngleToRad_Capped(s16 a);
 extern u32 fn_3_90220(s32 idx, s32 off);
 extern int getAnimRelatedCoordinates(int, int, f32*);
 extern void fn_8001B4D8(void);
+extern void fn_8001C528(void);
 extern void fn_8001B5EC(s32 index, s32 enable);
 extern int fn_3_B7CDC(f32 a, f32 b);
 extern int fn_3_B7E10(f32 a, f32 b);
@@ -2128,9 +2129,97 @@ void fn_3_67130(void) {
 }
 
 // .text:0x0006714C size:0x394 mapped:0x806A61E0
+// NONMATCHING 96%: register allocation only (fn_3_67130 and fn_3_63A38 are written out inline, as in the original)
+#if NONMATCHING
 void fn_3_6714C(s32 player) {
-    return;
+    s32 i;
+    s32 k;
+    u8* e;
+    u8* o;
+    fn_8001C528();
+    e = g_UnkAnimation_31EAC;
+    *(s16*)(lbl_3_common_bss_32230 + 0) = 0;
+    *(s16*)(lbl_3_common_bss_32220 + 6) = 0;
+    lbl_3_common_bss_32220[9] = 0;
+    *(s16*)(lbl_3_common_bss_32220 + 0) = 0;
+    lbl_3_common_bss_32220[0xA] = 0;
+    lbl_3_common_bss_32220[0xD] = 0;
+    g_UnkThrowing_31ACC[0xE] = 0;
+    g_UnkThrowing_31ACC[0x22] = 0;
+    g_UnkThrowing_31ACC[0x36] = 0;
+    g_UnkThrowing_31ACC[0x4A] = 0;
+    for (i = 0; i < 9; i++, e += 0x54) {
+        k = i;
+        if (g_d_GameSettings[0x11] != 0) {
+            for (k = 0; k < 4; k++) {
+                if (*(s8*)(g_Minigame + 0x18F8 + k) == i) {
+                    break;
+                }
+            }
+            if (k >= 4) {
+                continue;
+            }
+        }
+        *(s16*)(e + 0x38) = 0;
+        *(s16*)(e + 0x3A) = 0;
+        e[0x42] = 0;
+        o = *(u8**)(lbl_8036E548 + k * 4 + 0x2C50);
+        e[0x43] = 0;
+        e[0x44] = 0;
+        e[0x46] = 0;
+        e[0x47] = 0;
+        e[0x4C] = 0;
+        e[0x4F] = 0;
+        e[0x50] = 0;
+        e[0x51] = 0;
+        *(f32*)(e + 0) = lbl_3_rodata_E58;
+        if (o != NULL && (o == NULL || *(void**)(o + 0x30) == NULL)) { // TODO type: actor field 0x30
+            fn_3_60804(i, 0);
+        }
+    }
+    if (lbl_8036E548[0x307D] == 0) {
+        for (i = 0; i < 4; i++) {
+            if (g_d_GameSettings[0x11] == 0 || (i == 0 && *(s8*)(g_Minigame + 0x1905) >= 0) ||
+                *(s8*)(g_Minigame + 0x18FC + i) >= 0) {
+                u8* c = lbl_3_common_bss_321A0 + i * 0x20;
+                *(s16*)(c + 0x10) = -1;
+                c[0x18] = 0;
+                c[0x19] = 0;
+                *(s16*)(c + 0x16) = 0;
+            }
+        }
+    }
+    lbl_3_common_bss_32220[8] = 0;
+    lbl_3_common_bss_32220[0xB] = 0;
+    *(s16*)(lbl_3_common_bss_32220 + 4) = 0;
+    if (player == 0) {
+        lbl_3_common_bss_32234[0] = 1;
+        fn_3_64BDC();
+        fn_3_63AF8();
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        fn_3_62E70();
+        return;
+    }
+    fn_3_62E70();
+    for (i = 0; i < 4; i++) {
+        u8* r = ((E08Run*)g_Runners)[i].d;
+        u8* c = ((E08C*)lbl_3_common_bss_321A0)[i].d;
+        c[0x1C] = c[0x1B];
+        if (g_d_GameSettings[0x11] == 0 || (s8)g_Minigame[0x18FC + i] >= 0) {
+            if (r[0x123] == 0) {
+                c[0x1B] = 0;
+            } else {
+                c[0x1B] = 3;
+                *(f32*)c = *(f32*)(r + 0x84);
+                c[0x1D] = r[0x137];
+                fn_3_63874(i);
+                fn_3_631AC(i);
+            }
+        }
+    }
 }
+#endif
 
 
 #pragma dont_inline off
