@@ -1,4 +1,12 @@
 #include "main/file_800A7C08.h"
+#include "Dolphin/os.h"
+#include "Dolphin/gx.h"
+#include "Dolphin/vi.h"
+#include "Dolphin/card.h"
+#include "Dolphin/dvd.h"
+
+extern OSThread* GXSetCurrentGXThread(void);
+extern s32 OSSignalSemaphore(OSSemaphore* sem);
 
 // .text:0x800A7C08 size:0x144
 void fn_800A7C08(void) {
@@ -351,9 +359,26 @@ void fn_800ACD64(void) {
     return;
 }
 
+// Simple two-ended arena: blocks are allocated upward from lo or downward from hi.
+typedef struct HeapArena {
+    /*0x0*/ s32 freeSize;
+    /*0x4*/ u8* lo;
+    /*0x8*/ u8* hi;
+} HeapArena;
+
+// Header placed just before every block handed out by the arena.
+typedef struct HeapBlockHeader {
+    /*0x0*/ u8* prev; // arena end (lo or hi) before this allocation
+    /*0x4*/ s32 size;
+} HeapBlockHeader;
+
+extern HeapArena lbl_803C7898;
+
 // .text:0x800ACF14 size:0x20
-void fn_800ACF14(void) {
-    return;
+void fn_800ACF14(void* block) {
+    u8* hi = ((HeapBlockHeader*)block)[-1].prev;
+    lbl_803C7898.hi = hi;
+    lbl_803C7898.freeSize = hi - lbl_803C7898.lo;
 }
 
 // .text:0x800ACF34 size:0x44
