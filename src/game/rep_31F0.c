@@ -476,9 +476,92 @@ void fn_3_1125D0(void) {
 }
 
 // .text:0x00112610 size:0x2D8 mapped:0x807516A4
+extern void fn_3_59A90(void);
+extern int RandomInt_Game_Range(int min, int max);
+extern u8 lbl_3_data_2127C[];
+extern u8 lbl_3_data_213E4[];
+typedef struct { s16 count; s16 time; } MgModeParam_31F0;
+extern MgModeParam_31F0 lbl_3_data_21400[];
+
+// NONMATCHING 76%: regalloc/scheduling of the g_Minigame bases around the reset loop
+#if NONMATCHING
 void fn_3_112610(void) {
-    return;
+    u8* gl = g_GameLogic;
+    u8* mg;
+    s32 i;
+    u8 c;
+    if (gl[0x125] == 0) {
+        fn_3_59A90();
+        mg = g_Minigame;
+        g_GameLogic[0x121] = 3;
+        *(s32*)(g_Minigame + 0x17C0) = 0;
+        for (i = 0; i < 4; i++) {
+            *(s16*)(mg + 0x1890 + i * 2) = 0;
+            *(s16*)(mg + 0x1898 + i * 2) = 0;
+            *(s16*)(mg + 0x18BC + i * 4) = 0;
+            *(s16*)(mg + 0x18BE + i * 4) = 0;
+            ((s8*)mg)[0x18F4 + i] = -1;
+            ((s8*)mg)[0x18FC + i] = -1;
+            ((s8*)mg)[0x1900 + i] = -1;
+            ((s8*)mg)[0x18F0 + i] = 1;
+            ((s8*)mg)[0x18F8 + i] = -1;
+            *(s16*)(mg + 0x1A8E + i * 2) = 0;
+            mg[0x1ACC + i * 2] = 0;
+            mg[0x1ACD + i * 2] = 0;
+        }
+        *(s32*)g_Scores = 0;
+        mg[0x190C] = 0;
+        *(s16*)(mg + 0x1A26) = 0;
+        mg[0x1A37] = 0;
+        ((s8*)mg)[0x1904] = -1;
+        ((s8*)mg)[0x1905] = -1;
+        *(s32*)(g_Minigame + 0x17C0) = 0;
+        mg[0x1AD5] = 0;
+        mg[0x1AD6] = 0;
+        *(s16*)(mg + 0x18A0) = 0;
+        *(s16*)(mg + 0x18A2) = 0;
+        *(s16*)(mg + 0x18A4) = 0;
+        *(s16*)(mg + 0x18A6) = 30;
+        *(s16*)(mg + 0x18A8) = 0;
+        if (mg[0x1909] == 0) {
+            g_Scores[0xAA] = 1;
+            mg[0x1A2F] = lbl_3_data_21400[mg[0x1A2B]].count;
+            c = (lbl_3_data_2127C + mg[0x1A2A] * 5)[mg[0x1A2B]];
+            *(s16*)(mg + 0x1A26) = lbl_3_data_21400[mg[0x1A2B]].time;
+            mg[0x18DC] = c;
+            mg[0x18DD] = c;
+            mg[0x18DE] = c;
+            mg[0x18DF] = c;
+        } else {
+            if (mg[0x1A3C] != 0) {
+                mg[0x18DC] = lbl_3_data_2127C[0x23];
+                mg[0x18DD] = lbl_3_data_2127C[0x23];
+                mg[0x18DE] = lbl_3_data_2127C[0x23];
+                mg[0x18DF] = lbl_3_data_2127C[0x23];
+            }
+            g_Scores[0xAA] = lbl_3_data_213E4[(g_Minigame[0x1906] - 2) * 2];
+            g_Minigame[0x1A2F] = lbl_3_data_213E4[(g_Minigame[0x1906] - 2) * 2 + 1];
+        }
+        if (mg[0x1909] == 0 && g_Minigame[0x1A3C] == 0) {
+            if (g_Minigame[0x1909] == 0 && g_Minigame[0x1A3C] == 0 && g_Minigame[0x1A2B] == 3) {
+                g_Minigame[0x1AD8] = 9;
+            } else {
+                g_Minigame[0x1AD8] = RandomInt_Game_Range(4, 9);
+            }
+            g_Minigame[0x1AD9] = 1;
+        } else if (g_Minigame[0x1A3C] != 0) {
+            g_Minigame[0x1AD8] = RandomInt_Game_Range(0, 2);
+            g_Minigame[0x1AD9] = RandomInt_Game_Range(2, 3);
+        } else {
+            g_Minigame[0x1AD8] = 9;
+            g_Minigame[0x1AD9] = 1;
+        }
+        gl[0x125]++;
+    } else {
+        fn_3_5A6D4(5);
+    }
 }
+#endif
 
 // .text:0x001128E8 size:0x4 mapped:0x8075197C
 void fn_3_1128E8(void) {
