@@ -2,7 +2,44 @@
 
 // .text:0x0005E84C size:0x32C
 void fn_2_5E84C(void) {
-    return;
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 7; i++) {
+        if (i == 6) {
+            lbl_2_bss_1A824C->records[i + 1][0].value = lbl_2_bss_1A8240->lists[7][0].value;
+            lbl_2_bss_1A824C->records[i + 1][0]._4 = lbl_2_bss_1A8240->lists[7][0]._4;
+            lbl_2_bss_1A824C->records[i + 1][0]._6 = lbl_2_bss_1A8240->lists[7][0]._6;
+            lbl_2_bss_1A824C->records[i + 1][1].value = lbl_2_bss_1A8240->lists[7][1].value;
+            lbl_2_bss_1A824C->records[i + 1][1]._4 = lbl_2_bss_1A8240->lists[7][1]._4;
+            lbl_2_bss_1A824C->records[i + 1][1]._6 = lbl_2_bss_1A8240->lists[7][1]._6;
+            lbl_2_bss_1A824C->records[i + 1][2].value = lbl_2_bss_1A8240->lists[7][2].value;
+            lbl_2_bss_1A824C->records[i + 1][2]._4 = lbl_2_bss_1A8240->lists[7][2]._4;
+            lbl_2_bss_1A824C->records[i + 1][2]._6 = lbl_2_bss_1A8240->lists[7][2]._6;
+            lbl_2_bss_1A824C->records[i + 1][3].value = lbl_2_bss_1A8240->lists[7][3].value;
+            lbl_2_bss_1A824C->records[i + 1][3]._4 = lbl_2_bss_1A8240->lists[7][3]._4;
+            lbl_2_bss_1A824C->records[i + 1][3]._6 = lbl_2_bss_1A8240->lists[7][3]._6;
+            lbl_2_bss_1A824C->records[i + 1][4].value = lbl_2_bss_1A8240->lists[7][4].value;
+            lbl_2_bss_1A824C->records[i + 1][4]._4 = lbl_2_bss_1A8240->lists[7][4]._4;
+            lbl_2_bss_1A824C->records[i + 1][4]._6 = lbl_2_bss_1A8240->lists[7][4]._6;
+        } else {
+            for (j = 0; j < 5; j++) {
+                lbl_2_bss_1A824C->records[i + 1][j].value = lbl_2_bss_1A8240->lists[lbl_2_data_20C48[i] + 1][j].value;
+                lbl_2_bss_1A824C->records[i + 1][j]._4 = lbl_2_bss_1A8240->lists[lbl_2_data_20C48[i] + 1][j]._4;
+                lbl_2_bss_1A824C->records[i + 1][j]._6 = lbl_2_bss_1A8240->lists[lbl_2_data_20C48[i] + 1][j]._6;
+            }
+        }
+    }
+    lbl_2_bss_1A824C->records[0][0].value = lbl_2_bss_1A8240->lists[0][0].value;
+    lbl_2_bss_1A824C->records[0][0]._6 = lbl_2_bss_1A8240->lists[0][0]._6;
+    lbl_2_bss_1A824C->records[0][1].value = lbl_2_bss_1A8240->lists[0][1].value;
+    lbl_2_bss_1A824C->records[0][1]._6 = lbl_2_bss_1A8240->lists[0][1]._6;
+    lbl_2_bss_1A824C->records[0][2].value = lbl_2_bss_1A8240->lists[0][2].value;
+    lbl_2_bss_1A824C->records[0][2]._6 = lbl_2_bss_1A8240->lists[0][2]._6;
+    lbl_2_bss_1A824C->records[0][3].value = lbl_2_bss_1A8240->lists[0][3].value;
+    lbl_2_bss_1A824C->records[0][3]._6 = lbl_2_bss_1A8240->lists[0][3]._6;
+    lbl_2_bss_1A824C->records[0][4].value = lbl_2_bss_1A8240->lists[0][4].value;
+    lbl_2_bss_1A824C->records[0][4]._6 = lbl_2_bss_1A8240->lists[0][4]._6;
 }
 
 // .text:0x0005EB78 size:0x1C4
