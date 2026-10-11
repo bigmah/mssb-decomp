@@ -1639,8 +1639,44 @@ void fn_2_653D4(void) {
 }
 
 // .text:0x00065648 size:0x208
-void fn_2_65648(void) {
-    return;
+void fn_2_65648(MenuTask* task, MenuItem* item) {
+    LayoutObj* obj;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 5:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 12 << 16;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
+        item->state = 6;
+        break;
+    case 6:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) == 0) {
+            obj->_68 = 0;
+            item->state = 7;
+        }
+        break;
+    case 7:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        break;
+    case 0x25:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) >= 120) {
+            obj->_5C = 13 << 16;
+        }
+        break;
+    }
 }
 
 // .text:0x00065850 size:0x1B0
@@ -1721,6 +1757,7 @@ void fn_2_65C84(MenuTask* task, MenuItem* item) {
 
 // .text:0x00065E50 size:0x1E8
 void fn_2_65E50(MenuTask* task, MenuItem* item) {
+    MenuSaveProgress* save = &lbl_80354768;
     s16 ev = fn_2_53BC8(item);
     if (ev != -1) {
         item->state = ev;
@@ -1732,7 +1769,7 @@ void fn_2_65E50(MenuTask* task, MenuItem* item) {
         break;
     case 2:
         fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x43, item->_10);
-        if ((s32)lbl_80354768._CF18[lbl_800E869C[item->_10]] == 1) {
+        if ((s32)save->_CF18[lbl_800E869C[item->_10]] == 1) {
             lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
         } else {
             lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0x10000;
