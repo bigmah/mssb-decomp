@@ -2315,14 +2315,59 @@ void fn_3_417D4(int i) {
 }
 
 // .text:0x0004197C size:0x3FC mapped:0x80680A10
-void fn_3_4197C(void) {
+void fn_3_4197C(int i) {
     return;
 }
 
 // .text:0x00041D78 size:0x304 mapped:0x80680E0C
+// NONMATCHING 98.7%: second loop's counter/state registers swapped (orig inits counter with mr from busy)
+#if NONMATCHING
+// When no fielder is chasing the ball any more, pick one to go after it.
 void fn_3_41D78(void) {
-    return;
+    int found = 0;
+    int j;
+    int busy;
+    u8 st;
+    f32 dx, dz, d, dx2, dz2;
+    if (g_Ball[0x1BD1] == 0 && *(s16*)(g_Ball + 0x1B7A) != -1 && g_Ball[0x1BC9] != 1 && g_FieldingLogic[0x13F] == 0) {
+        if (g_Ball[0x1BC9] == 2) {
+            if (*(s16*)(g_Ball + 0x1B62) > 0 && *(s16*)(g_Ball + 0x1B8A) >= 0) {
+                return;
+            }
+            dx = *(f32*)(g_Ball + 0x1A34) - *(f32*)g_Ball;
+            dz = *(f32*)(g_Ball + 0x1A38) - *(f32*)(g_Ball + 8);
+            dx2 = dx * dx;
+            dz2 = dz * dz;
+            d = dx2 + dz2;
+            SQRT_L(d);
+            if (!(d > lbl_3_rodata_B64 + *(f32*)(g_Ball + 0x1A4C))) {
+                return;
+            }
+        }
+        for (j = 0; j < 9; j++) {
+            if (g_FieldingLogic[j + 0xF8] == 1 || g_FieldingLogic[j + 0xF8] == 7) {
+                found = 1;
+                break;
+            }
+        }
+        if (found == 0) {
+            fn_3_4197C(0);
+            return;
+        }
+        busy = 0;
+        for (j = 0; j < 9; j++) {
+            st = g_Fielders[j * 0x268 + 0x1D3];
+            if (st == 2 || (u8)(st - 3) <= 1 || st == 0x12) {
+                busy = 1;
+                break;
+            }
+        }
+        if (busy == 0) {
+            fn_3_4197C(0);
+        }
+    }
 }
+#endif
 
 // .text:0x0004207C size:0x7D4 mapped:0x80681110
 void fn_3_4207C(int i) {
