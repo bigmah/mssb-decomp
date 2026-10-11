@@ -112,6 +112,8 @@ extern u8 lbl_3_common_bss_35154[];
 extern TexImage* lbl_3_bss_B854;
 extern u8 lbl_3_data_26B9C[];
 extern u8 lbl_3_bss_B858;
+extern const f64 lbl_3_rodata_3A10;
+extern void PSMTX44MultVec(const Mtx44 mtx, const Vec* src, Vec* dst);
 extern const f64 lbl_3_rodata_39D0;
 extern const f32 lbl_3_rodata_394C;
 extern const f64 lbl_3_rodata_3958;
@@ -2515,6 +2517,7 @@ u32 fn_3_151F2C(u8* e) {
 #endif
 #pragma dont_inline on
 
+#pragma dont_inline off
 // .text:0x001524E8 size:0x2AC mapped:0x8079157C
 void fn_3_1524E8(u8* o, u8 flag) {
     Mtx m;
@@ -2601,10 +2604,85 @@ void fn_3_152794(u8* o) {
     *(f32*)(o + 0x14) = -((f32)*(s32*)(lbl_3_data_26C0C + 8) / lbl_3_rodata_3930);
 }
 
+// NONMATCHING 94%: 1524E8 inlined; the original keeps tgt+4 in its own saved reg (one more stmw reg) and FPR numbering differs
 // .text:0x00152AB4 size:0x6F0 mapped:0x80791B48
-void fn_3_152AB4(void) {
-    return;
+#if NONMATCHING
+void fn_3_152AB4(u8 flag, u8 idx) {
+    Vec w;
+    Vec view;
+    Vec diff;
+    Vec v;
+    u8* p;
+    u8* e;
+    u8* cam;
+    f32* tgt;
+    f32 ang;
+    f32 k;
+    s32 count;
+    count = 0;
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 4) {
+        e = fn_800339F0(NULL, 0x1C);
+        if (e != NULL) {
+            p = *(u8**)(e + 0xC);
+            tgt = (f32*)(lbl_3_data_26C1C + idx * 8);
+            do {
+                if (p[0x4F] == flag && *(s16*)(p + 0x4A) != 0) {
+                    *(s16*)(p + 0x48) = 0;
+                    p[0x4F] = 0xFF;
+                    fn_3_1524E8(p, 1);
+                    cam = fn_80052734(fn_8005268C());
+                    w.x = *(f32*)(p + 4);
+                    w.y = *(f32*)(p + 8);
+                    w.z = *(f32*)(p + 0xC);
+                    PSMTXMultVec((MtxPtr)(cam + 0x40), &w, &view);
+                    v.z = v.y = v.x = lbl_3_rodata_3934[0];
+                    PSVECSubtract(&v, (Vec*)(cam + 0x70), &v);
+                    *(f32*)(p + 0x34) = PSVECMag(&v);
+                    PSMTX44MultVec((f32(*)[4])cam, &view, &view);
+                    view.z = lbl_3_rodata_3948;
+                    *(f32*)(p + 4) = view.x;
+                    *(f32*)(p + 8) = view.y;
+                    *(f32*)(p + 0xC) = view.z;
+                    *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)lbl_3_data_26C0C / lbl_3_rodata_3930;
+                    w.x = w.y = *(f32*)(p + 0x38);
+                    w.z = *(f32*)(p + 0x34);
+                    PSMTX44MultVec((f32(*)[4])cam, &w, &view);
+                    *(f32*)(p + 0x38) = view.x * (p[0x4D] != 0 ? lbl_3_rodata_3A08 : lbl_3_rodata_3978);
+                    *(f32*)(p + 0x3C) = view.y * (p[0x4D] != 0 ? lbl_3_rodata_3A08 : lbl_3_rodata_3978);
+                    p[0x4C] = 3;
+                    *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C0C + 0xC);
+                    ang = lbl_3_rodata_39B8 * (f32)(lbl_3_rodata_3A10 * (lbl_3_rodata_3990 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3968)));
+                    diff.x = tgt[0] - *(f32*)(p + 4);
+                    diff.y = tgt[1] - *(f32*)(p + 8);
+                    diff.z = lbl_3_rodata_3934[0];
+                    if (PSVECMag(&diff) >= lbl_3_rodata_3978) {
+                        k = lbl_3_rodata_392C;
+                    } else {
+                        k = lbl_3_rodata_392C / (PSVECMag(&diff) * lbl_3_rodata_39A8);
+                    }
+                    PSVECNormalize(&diff, &diff);
+                    diff.x *= lbl_3_rodata_3948;
+                    diff.y *= lbl_3_rodata_3948;
+                    v.x = diff.x * (f32)cos(ang) + -diff.y * (f32)sin(ang);
+                    v.y = diff.x * (f32)sin(ang) + diff.y * (f32)cos(ang);
+                    v.z = lbl_3_rodata_3934[0];
+                    PSVECScale(&v, (f32)*(s32*)(lbl_3_data_26C0C + 8) / lbl_3_rodata_3930 * k, &v);
+                    v.z = *(f32*)(p + 0x34);
+                    PSMTX44MultVec((f32(*)[4])cam, &v, &v);
+                    v.z = lbl_3_rodata_3934[0];
+                    *(f32*)(p + 0x10) = v.x;
+                    *(f32*)(p + 0x14) = v.y;
+                    *(f32*)(p + 0x18) = v.z;
+                    p[0x43] = 0xFF;
+                    p[0x44] = idx;
+                    p[0x45] = count++ == 0;
+                }
+                p = *(u8**)p;
+            } while (p != NULL);
+        }
+    }
 }
+#endif
 
 // .text:0x001531A4 size:0x31C mapped:0x80792238
 void fn_3_1531A4(u8* o) {

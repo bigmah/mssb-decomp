@@ -94,7 +94,7 @@ void fn_3_151D6C(u8* a, u8* o);
 u32 fn_3_151F2C(u8* e);
 void fn_3_1524E8(u8* o, u8 flag);
 void fn_3_152794(u8* o);
-void fn_3_152AB4(void);
+void fn_3_152AB4(u8 flag, u8 idx);
 void fn_3_1531A4(u8* o);
 void fn_3_1534C0(u8* o);
 void fn_3_1536A8(u8* obj, u8 mode);
