@@ -818,7 +818,7 @@ s32 fn_8002F1AC(Vec* pos, s32 id) {
     Particle* p;
     if (e != NULL && lbl_80366158._28 == 0) {
         for (p = e->particles; p != NULL; p = p->next) {
-            if (p->u.t6.unk20 == id) {
+            if (p->u.trail.id == id) {
                 memcpy(&p->pos, pos, sizeof(Vec));
                 p->life++;
                 return 1;
@@ -829,9 +829,65 @@ s32 fn_8002F1AC(Vec* pos, s32 id) {
 }
 
 // .text:0x8002F258 size:0x39C
-void fn_8002F258(void) {
-    return;
+// NONMATCHING 98%: one lbl_803CBC74 load is hoisted in the original inlined particle allocation
+#if NONMATCHING
+void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm) {
+    Emitter tmp;
+    Emitter* e = FindEmitter(NULL, 6);
+    Emitter* t;
+    Particle* p;
+    Particle* last;
+
+    if (e != NULL) {
+        // append one more trail segment to the existing emitter
+        t = AllocParticles(&tmp, 1, 1);
+        if (t == NULL) {
+            return;
+        }
+        t->tex = prm->tex;
+        p = t->particles;
+        p->pos.x = pos->x;
+        p->pos.y = pos->y;
+        p->pos.z = pos->z;
+        p->u.trail.prev.x = pos->x;
+        p->u.trail.prev.y = pos->y;
+        p->u.trail.prev.z = pos->z;
+        p->u.trail.width = (f32)prm->size / 100000.0f;
+        p->u.trail.alphaMax = prm->unkC;
+        p->u.trail.id = id;
+        p->color.c.r = p->color.c.g = p->color.c.b = p->color.c.a = 0xFF;
+        p->delay = 1;
+        p->u.trail.maxLife = p->life = prm->unk10;
+        p->unk4C = 1;
+        p->texIndex = prm->texIndex;
+        for (last = e->particles; last->next != NULL; last = last->next) {
+        }
+        last->next = t->particles;
+        e->count++;
+    } else {
+        e = NewEmitter(fn_8002ECA0, 0x10, 0, 1, 1, 6);
+        if (e == NULL) {
+            return;
+        }
+        e->tex = prm->tex;
+        p = e->particles;
+        p->pos.x = pos->x;
+        p->pos.y = pos->y;
+        p->pos.z = pos->z;
+        p->u.trail.prev.x = pos->x;
+        p->u.trail.prev.y = pos->y;
+        p->u.trail.prev.z = pos->z;
+        p->u.trail.width = (f32)prm->size / 100000.0f;
+        p->u.trail.alphaMax = prm->unkC;
+        p->u.trail.id = id;
+        p->color.c.r = p->color.c.g = p->color.c.b = p->color.c.a = 0xFF;
+        p->delay = 1;
+        p->u.trail.maxLife = p->life = prm->unk10;
+        p->unk4C = 1;
+        p->texIndex = prm->texIndex;
+    }
 }
+#endif
 
 // .text:0x8002F5F4 size:0x408
 void fn_8002F5F4(void) {
