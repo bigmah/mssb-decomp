@@ -840,8 +840,9 @@ void fn_1_20E00(u8* obj) {
 }
 #endif
 
-// 99.8%: same LITInitPos r3/r4 swap as fn_1_20E00 (inlined here)
+// NONMATCHING 99.8%: same LITInitPos r3/r4 swap as fn_1_20E00 (inlined here)
 // .text:0x20BD8 size:0x1F0
+#if NONMATCHING
 void fn_1_20BD8(void) {
     u8* q = lbl_803CC1B8[0];
     u8* object;
@@ -862,6 +863,7 @@ void fn_1_20BD8(void) {
         break;
     }
 }
+#endif
 
 
 // .text:0x1F418 size:0x200
