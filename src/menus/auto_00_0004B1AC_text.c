@@ -2417,3 +2417,149 @@ void fn_2_52690(void) {
     }
 }
 #endif
+
+extern u8* lbl_2_bss_1A823C[];
+extern u8 lbl_80353A90[];
+
+// Restores the roster slots saved by the fn_2_4D378 family.
+#define MENU_RESTORE_ROSTER(i, j)                                                    \
+    for (i = 0; i < 0x36; i++) {                                                     \
+        MenuRosterSlot* e = (MenuRosterSlot*)lbl_2_bss_1A8248[0] + i;               \
+        e->_06 = e->_07;                                                             \
+    }                                                                                \
+    for (i = 0; i < 0x36; i++) {                                                     \
+        MenuRosterSlot* slot = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];          \
+        for (j = 0; j < 10; j++) {                                                   \
+            slot->_09[j * 2] = slot->_1D[j * 2];                                     \
+            slot->_09[j * 2 + 1] = slot->_1D[j * 2 + 1];                             \
+        }                                                                            \
+    }
+
+// fn_2_4B2D0, size:0x1044
+// NONMATCHING 97%: roster-restore loops: first one starts its offset with `li` instead of `mr`, and the inner copy loops swap the j/offset registers (r4/r6)
+#if NONMATCHING
+void fn_2_4B2D0(void) {
+    s32 i;
+    s32 j;
+    u8 side;
+    u8 homeAway;
+    u8 f2;
+    s16 kind;
+    GameInitVariables* gs = &g_d_GameSettings;
+    *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+    homeAway = gs->home_AwaySetting;
+    f2 = lbl_80353A90[0xF2];
+    lbl_2_bss_1A8248[0][0x4418] = gs->bJMatchRelated;
+    if (homeAway == 0 && f2 == 0) {
+        side = 0;
+    } else if (homeAway == 1 && f2 == 0) {
+        side = 0;
+    } else if (homeAway == 0 && f2 == 1) {
+        side = 1;
+    } else if (homeAway == 1 && f2 == 1) {
+        side = 1;
+    } else {
+        side = 2;
+    }
+    kind = *(s16*)(lbl_2_bss_1A823C[0] + 0x30); // TODO type
+    if (kind == 3) {
+        if (gs->_13 != 0) {
+            *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+            lbl_2_bss_1A824C[0][0x19785B] = 1;
+            lbl_2_bss_1A824C[0][0x1978F7] = 2;
+            MENU_RESTORE_ROSTER(i, j)
+        } else {
+            if (side == 0) {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 0;
+                lbl_2_bss_1A824C[0][0x19785B] = 0;
+                lbl_2_bss_1A824C[0][0x1978F7] = 0;
+            } else if (side == 1) {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+                lbl_2_bss_1A824C[0][0x19785B] = 1;
+                lbl_2_bss_1A824C[0][0x1978F7] = 0;
+            } else {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 2;
+                lbl_2_bss_1A824C[0][0x19785B] = 2;
+                lbl_2_bss_1A824C[0][0x1978F7] = 0;
+            }
+            (*(s32*)(lbl_2_bss_1A8248[0] + 0x42EC))++;
+        }
+    } else if (kind == 5) {
+        if (gs->_13 != 0) {
+            *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+            lbl_2_bss_1A824C[0][0x19785B] = 4;
+            MENU_RESTORE_ROSTER(i, j)
+            lbl_2_bss_1A824C[0][0x1978F7] = 2;
+        } else {
+            u8 mode = lbl_2_bss_1A8248[0][0x4420];
+            if (mode == 0 || mode == 3) {
+                if (gs->_38 == 1) {
+                    *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 0;
+                    lbl_2_bss_1A824C[0][0x19785B] = 3;
+                    lbl_2_bss_1A824C[0][0x1978F7] = 1;
+                } else {
+                    *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+                    lbl_2_bss_1A824C[0][0x19785B] = 4;
+                    lbl_2_bss_1A824C[0][0x1978F7] = 1;
+                }
+            } else if (gs->_38 == 1) {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 0;
+                lbl_2_bss_1A824C[0][0x19785B] = 3;
+                lbl_2_bss_1A824C[0][0x1978F7] = 1;
+            } else if (gs->_38 == 0) {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 2;
+                lbl_2_bss_1A824C[0][0x19785B] = 5;
+                lbl_2_bss_1A824C[0][0x1978F7] = 1;
+            } else {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+                lbl_2_bss_1A824C[0][0x19785B] = 4;
+                lbl_2_bss_1A824C[0][0x1978F7] = 1;
+            }
+        }
+    } else if (kind == 4) {
+        if (gs->_13 != 0) {
+            *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+            lbl_2_bss_1A824C[0][0x19785B] = 7;
+            MENU_RESTORE_ROSTER(i, j)
+            lbl_2_bss_1A824C[0][0x1978F7] = 2;
+        } else {
+            if (side == 0) {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 0;
+                lbl_2_bss_1A824C[0][0x19785B] = 6;
+                lbl_2_bss_1A824C[0][0x1978F7] = 0;
+            } else if (side == 1) {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+                lbl_2_bss_1A824C[0][0x19785B] = 7;
+                lbl_2_bss_1A824C[0][0x1978F7] = 1;
+            } else if (side == 2) {
+                *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 2;
+                lbl_2_bss_1A824C[0][0x19785B] = 8;
+                lbl_2_bss_1A824C[0][0x1978F7] = 1;
+            }
+            (*(s32*)(lbl_2_bss_1A8248[0] + 0x42EC))++;
+        }
+    } else {
+        if (gs->_13 != 0) {
+            *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+            lbl_2_bss_1A824C[0][0x19785B] = 0xA;
+            MENU_RESTORE_ROSTER(i, j)
+            lbl_2_bss_1A824C[0][0x1978F7] = 2;
+        } else if (gs->_38 == 1) {
+            *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 0;
+            lbl_2_bss_1A824C[0][0x1978F7] = 1;
+            lbl_2_bss_1A824C[0][0x19785B] = 9;
+        } else if (gs->_38 == 0) {
+            *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 2;
+            lbl_2_bss_1A824C[0][0x1978F7] = 1;
+            lbl_2_bss_1A824C[0][0x19785B] = 0xB;
+        } else {
+            *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = 1;
+            lbl_2_bss_1A824C[0][0x1978F7] = 1;
+            lbl_2_bss_1A824C[0][0x19785B] = 0xA;
+        }
+    }
+    if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 1 || *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 2) {
+        lbl_2_bss_1A8248[0][0x44F6] = 1;
+    }
+}
+#endif
