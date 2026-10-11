@@ -1,6 +1,9 @@
 #include "main/file_8000BA3C.h"
 #include "stl/math.h"
 
+// main/file_800B0724
+void fn_800B12DC(QuadVtx* verts, s32 count); // draw triangle fan
+
 // Copy four transformed quad corners (in the given order) into the vertex positions.
 #define SET_QUAD_POS(a, b, c, d)                          \
     do {                                                  \
@@ -59,9 +62,64 @@ void fn_8000DC9C(void) {
 }
 
 // .text:0x8000E030 size:0x2A4
-void fn_8000E030(void) {
-    return;
+// NONMATCHING: ~90%, saved-register allocation differs (count/n/angle); .sdata2 constant names need a split
+#if NONMATCHING
+void fn_8000E030(CircleElem* elem, Mtx mtx, SpriteDrawParams* params) {
+    Vec center;
+    Vec pt;
+    QuadVtx verts[259];
+    QuadVtx* v;
+    s32 count;
+    s32 n;
+    s32 step;
+    s16 angle;
+    f32 s;
+    f32 a;
+    f32 c;
+
+    if (!elem->hidden || params->arcSegments != 0) {
+        center.x = 128.0f;
+        center.y = 128.0f;
+        center.z = elem->z;
+        PSMTXMultVec(mtx, &center, &verts[0].pos);
+        verts[0].color = params->color[0];
+        pt.x = 128.0f + center.x;
+        pt.y = center.y;
+        pt.z = elem->unk18 + elem->z;
+        PSMTXMultVec(mtx, &pt, &verts[1].pos);
+        verts[1].color = params->color[1];
+        if (params->arcSegments != 0) {
+            n = params->arcSegments;
+            count = params->arcSegments + 2;
+        } else {
+            count = params->segments + 2;
+            n = params->segments - 1;
+        }
+        step = 0x10000 / params->segments;
+        v = &verts[2];
+        angle = 0;
+        do {
+            angle -= step;
+            a = 0.0000958738f * angle;
+            s = sin(a);
+            c = cos(a);
+            pt.x = 128.0f * c + center.x;
+            pt.y = 128.0f * s + center.y;
+            pt.z = elem->z;
+            PSMTXMultVec(mtx, &pt, &v->pos);
+            v->color = params->color[1];
+            v++;
+        } while (--n);
+        if (params->arcSegments == 0) {
+            verts[params->segments + 1].pos.x = verts[1].pos.x;
+            verts[params->segments + 1].pos.y = verts[1].pos.y;
+            verts[params->segments + 1].pos.z = verts[1].pos.z;
+            verts[params->segments + 1].color = params->color[1];
+        }
+        fn_800B12DC(verts, count);
+    }
 }
+#endif
 
 // .text:0x8000E2D4 size:0x490
 void fn_8000E2D4(void) {

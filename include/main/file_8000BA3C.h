@@ -25,6 +25,9 @@ typedef union SpriteQuad {
 typedef struct SpriteDrawParams {
     /* 0x00 */ s32 ofs[4][2];
     /* 0x20 */ u32 color[4];
+    /* 0x30 */ u8 pad30[4];
+    /* 0x34 */ u16 segments; // circle segment count
+    /* 0x36 */ u8 arcSegments; // when non-zero, only draw this many segments
 } SpriteDrawParams;
 
 // One vertex of the quad being built in lbl_80366188.
@@ -72,6 +75,16 @@ typedef struct SpriteRectElem {
     /* 0x08 */ u8 unk8_b4 : 5;
 } SpriteRectElem;
 
+// Filled circle element.
+typedef struct CircleElem {
+    /* 0x00 */ u8 pad0[0x18];
+    /* 0x18 */ s16 unk18;
+    /* 0x1A */ s16 z;
+    /* 0x1C */ u8 pad1C[0xD];
+    /* 0x29 */ u8 hidden : 1;
+    /* 0x29 */ u8 unk29_b1 : 7;
+} CircleElem;
+
 // Quad being assembled for drawing.
 typedef struct QuadState {
     /* 0x00 */ QuadVtx v[4];
@@ -96,6 +109,7 @@ extern SpriteTexInfo* lbl_803CBBD8;
 void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
+void fn_8000E030(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
