@@ -130,4 +130,6 @@ void fn_1_D300(u8* row);
 
 void fn_1_17B5C(void);
 
+void fn_1_1770C(u8* object);
+
 #endif

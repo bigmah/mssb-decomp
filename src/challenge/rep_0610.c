@@ -28,8 +28,8 @@ static u32 ch_5F6C;
 static u8 ch_fill5F6B;
 static u8 ch_fill5F6A;
 static u8 ch_5F69;
-static u8 ch_fill5F68;
-static u8 ch_fill5F64[0x4];
+static u8 ch_5F68;
+static f32 ch_5F64;
 static u8 ch_fill5F63;
 static s8 ch_5F62;
 static u16 ch_5F60;
@@ -2221,5 +2221,54 @@ void fn_1_17B5C(void) {
     ch_5F5C = 0;
     *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_176EC;
     fn_80052D70();
+}
+#endif
+
+// ScreenFx (main/file_80039AC0.h); that header pulls in game/UnknownHomes_Game.h, which clashes with this file's externs
+extern u8 lbl_803C5090[]; // TODO type: ScreenFx
+extern void fn_8003A2C0(void);
+extern void (*lbl_1_data_ABB4[])(void);
+extern u8 lbl_1_data_A9E4[];
+extern u8 lbl_1_data_AC7C[];
+
+// .text:0x1770C size:0x248
+// NONMATCHING ~90%: the original reaches lbl_1_data_A9E4..AC7C and 1F1A through one pooled .data base (needs the data split)
+#if NONMATCHING
+void fn_1_1770C(u8* object) {
+    u8 active;
+
+    lbl_1_data_ABB4[ch_5F71]();
+    active = 0;
+    if (ch_5F71 != 0 && (ch_5F68 == 0 || ch_5F64 != 0.0f)) {
+        active = 1;
+    }
+    lbl_1_bss_3215[0] = active;
+    if (ch_5F5C == 1) {
+        fn_800B0A5C_insertQueue((void*)fn_1_107B8, 0xFF);
+        ch_5F5C = 2;
+    }
+    fn_1_179CC();
+    PSMTXCopy((f32(*)[4])ch_67E0, (f32(*)[4])(ch_68FC + 0x10));
+    fn_1_129D0();
+    PSMTXCopy((f32(*)[4])(ch_68FC + 0x10), (f32(*)[4])(lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38 + 8));
+    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AAC4 + lbl_803CBBC0[0] * 0x38);
+    if (ch_3078 != 0) {
+        ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AB34 + lbl_803CBBC0[0] * 0x38);
+    }
+    PSMTXCopy((f32(*)[4])(ch_68FC + 0x10), (f32(*)[4])(lbl_1_data_AA54 + lbl_803CBBC0[0] * 0x38 + 8));
+    ((void (*)(s32, void*))fn_800A7D4C)(7, lbl_1_data_AA54 + lbl_803CBBC0[0] * 0x38);
+    if (lbl_1_data_1F1A != 0) {
+        PSMTXCopy((f32(*)[4])(ch_68FC + 0x10), (f32(*)[4])(lbl_1_data_A9E4 + lbl_803CBBC0[0] * 0x38 + 8));
+        ((void (*)(s32, void*))fn_800A7D4C)(9, lbl_1_data_A9E4 + lbl_803CBBC0[0] * 0x38);
+    }
+    lbl_803C5090[0x1D] = 1;                // flags
+    *(f32*)(lbl_803C5090 + 0x0) = 1.0f;    // scale
+    *(f32*)(lbl_803C5090 + 0x4) = 1.0f;
+    lbl_803C5090[0x17] = 0xFF;             // alpha
+    *(f32*)(lbl_803C5090 + 0x8) = 0.0f;    // jitterX
+    *(f32*)(lbl_803C5090 + 0xC) = 0.0f;    // jitterY
+    *(u16*)(lbl_803C5090 + 0x14) = 0x1C0;  // lines
+    fn_8003A2C0();
+    ((void (*)(s32, void*))fn_800A7D4C)(0, lbl_1_data_AC7C + lbl_803CBBC0[0] * 8);
 }
 #endif
