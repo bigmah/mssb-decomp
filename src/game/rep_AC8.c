@@ -5004,9 +5004,185 @@ void fn_3_54900(int i) {
 }
 
 // .text:0x00054B58 size:0x818 mapped:0x80693BEC
+extern f32 shortAngleToRad_Capped(s16);
+extern f32 lbl_3_data_4290[][2][2]; // [stadium][team] -> x, z
+extern f64 lbl_3_rodata_CB0;
+extern f32 lbl_3_rodata_B48;
+extern f32 fn_3_9FEA8(f32 v);
+// NONMATCHING 97%: base-table / stadium-point loads come out as add+lfs instead of lfsx
+#if NONMATCHING
+// choose fielder i's facing angle (f + 0x48)
 void fn_3_54B58(int i) {
-    return;
+    u8* f = g_Fielders + i * 0x268;
+    f32 toBall;
+    f32 toCenter;
+    f32 moveDir;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    u8 b;
+    u8 st;
+    u8 mg;
+    f32* p;
+    if (!(*(s16*)(g_Ball + 0x1B66) >= f[0x1D2] || i == *(s16*)(g_Ball + 0x1B78) || g_Minigame[0x1A2A] == 5 || g_Minigame[0x1A2A] == 6)) {
+        return;
+    }
+    st = f[0x1E3];
+    if (st == 2 || (u8)(st - 3) <= 1 || st == 7 || st == 8) {
+        return;
+    }
+    if (f[0x1FE] != 0) {
+        return;
+    }
+    if (f[0x1FD] != 0 && f[0x1F9] == 0) {
+        if (f[0x211] != 0) {
+            b = f[0x214];
+            *(f32*)(f + 0x48) = atan2(((f32*)lbl_3_data_4444)[((b + 3) & 3) * 2 + 1] - ((f32*)lbl_3_data_4444)[b * 2 + 1],
+                                      ((f32*)lbl_3_data_4444)[((b + 3) & 3) * 2] - ((f32*)lbl_3_data_4444)[b * 2]);
+        } else if (*(s16*)(g_FieldingLogic + 0xE8) >= 0 && *(s16*)(f + 0x1AA) <= 1) {
+            p = (f32*)(g_Runners + *(s16*)(g_FieldingLogic + 0xE8) * 0x154);
+            *(f32*)(f + 0x48) = atan2(p[2] - *(f32*)(f + 8), p[0] - *(f32*)f);
+        }
+        return;
+    }
+    toBall = atan2(*(f32*)(g_Ball + 8) - *(f32*)(f + 8), *(f32*)g_Ball - *(f32*)f);
+    if (g_Ball[0x1BEB] != 0) {
+        dz = *(f32*)(g_Ball + 0x1A88) - *(f32*)(f + 8);
+        dx = *(f32*)(g_Ball + 0x1A80) - *(f32*)f;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        if (d < *(f32*)(f + 0x80)) {
+            toBall = atan2(dz, dx);
+        }
+    }
+    toCenter = atan2(*(f32*)(lbl_3_data_4444 + 0x24) - *(f32*)(f + 8), *(f32*)(lbl_3_data_4444 + 0x20) - *(f32*)f);
+    if (*(f32*)(f + 0x50) >= lbl_3_rodata_B48) {
+        if (lbl_3_rodata_B20 == *(f32*)(f + 0x30) && lbl_3_rodata_B20 == *(f32*)(f + 0x34)) {
+            moveDir = *(f32*)(f + 0x48);
+        } else {
+            moveDir = atan2(*(f32*)(f + 0x34), *(f32*)(f + 0x30));
+        }
+    } else {
+        moveDir = *(f32*)(f + 0x48);
+    }
+    if (f[0x1FA] != 0) {
+        if (*(s16*)(f + 0x178) == ((int*)(g_GameLogic + 0xF4))[*(int*)(g_GameLogic + 8)]) {
+            *(f32*)(f + 0x48) = toCenter;
+        } else {
+            p = lbl_3_data_4290[g_d_GameSettings[9]][*(int*)(g_GameLogic + 0x10)];
+            *(f32*)(f + 0x48) = atan2(p[1] - *(f32*)(f + 8), p[0] - *(f32*)f);
+        }
+        return;
+    }
+    if (f[0x210] != 0) {
+        *(f32*)(f + 0x48) = shortAngleToRad_Capped(*(s16*)(f + 0x1C2) + 0x800);
+        return;
+    }
+    if (f[0x252] == 3 || f[0x25A] == 2) {
+        *(f32*)(f + 0x48) = *(f32*)(f + 0x140);
+        return;
+    }
+    if (f[0x252] == 4 && f[0x25C] != 0) {
+        *(f32*)(f + 0x48) = *(f32*)(f + 0x140);
+        return;
+    }
+    if (f[0x25E] != 0) {
+        *(f32*)(f + 0x48) = *(f32*)(f + 0x144);
+        f[0x1FC] = 1;
+        return;
+    }
+    st = f[0x205];
+    if (st == 1 || st == 3 || st == 4) {
+        *(f32*)(f + 0x48) = atan2(*(f32*)(f + 0x34), *(f32*)(f + 0x30));
+        f[0x1FC] = 1;
+        return;
+    }
+    if (st == 2 || st == 5 || st == 6) {
+        *(f32*)(f + 0x48) = fn_3_9FEA8(lbl_3_rodata_CB0 + atan2(-*(f32*)(f + 0x144), -*(f32*)(f + 0x140)));
+        f[0x1FC] = 1;
+        return;
+    }
+    if (f[0x207] != 0) {
+        *(f32*)(f + 0x48) = fn_3_9FEA8(atan2(-*(f32*)(f + 0x144), -*(f32*)(f + 0x140)));
+        f[0x1FC] = 1;
+        return;
+    }
+    if (f[0x203] != 0) {
+        *(f32*)(f + 0x48) = moveDir;
+        f[0x1FC] = 1;
+        return;
+    }
+    if (f[0x1ED] != 0) {
+        if (f[0x1F9] == 0) {
+            if (f[0x255] == 1) {
+                *(f32*)(f + 0x48) = atan2(-*(f32*)(f + 0x244), -*(f32*)(f + 0x240));
+                f[0x1FC] = 1;
+            } else if (f[0x1EE] == 0) {
+                *(f32*)(f + 0x48) = moveDir;
+            }
+            return;
+        }
+        goto tag_pose;
+    }
+    {
+        mg = g_Minigame[0x1A2A];
+        if (mg == 5 && *(s16*)(g_Minigame + *(s8*)(g_Minigame + i + 0x18F2) * 2 + 0x1B34) >= 0) {
+            *(f32*)(f + 0x48) = atan2(*(f32*)(f + 0x114) - *(f32*)(f + 8), *(f32*)(f + 0x10C) - *(f32*)f);
+            f[0x1F2] = 0;
+            return;
+        }
+        if (f[0x1F9] != 0) {
+        tag_pose: // fielder is tagging a runner
+        if (g_Ball[0x1BC9] == 1) {
+            if (f[0x1F9] == 2) {
+                *(f32*)(f + 0x48) = atan2(*(f32*)(f + 0x114) - *(f32*)(f + 8), *(f32*)(f + 0x10C) - *(f32*)f);
+            } else if (*(s16*)(g_Pitcher + 0x12E) < 1 || *(s16*)(g_Pitcher + 0x12E) > 3) {
+                *(f32*)(f + 0x48) = atan2(*(f32*)(f + 0x114) - *(f32*)(f + 8), *(f32*)(f + 0x10C) - *(f32*)f);
+            }
+        }
+        f[0x1F2] = 0;
+        return;
+        }
+        {
+            if (*(s32*)(g_Strikes + 8) >= 3 && *(f32*)(f + 0x50) != lbl_3_rodata_B20 && g_d_GameSettings[7] != 2) {
+                p = lbl_3_data_4290[g_d_GameSettings[9]][*(int*)(g_GameLogic + 0x10)];
+                *(f32*)(f + 0x48) = atan2(p[1] - *(f32*)(f + 8), p[0] - *(f32*)f);
+                return;
+            }
+            if (f[0x256] == 1) {
+                *(f32*)(f + 0x48) = toBall;
+                return;
+            }
+            if (*(s16*)(f + 0x1A0) != 0 && (*(f32*)(f + 0x50) >= lbl_3_rodata_B48 || *(s16*)(f + 0x1A0) >= 3)) {
+                *(f32*)(f + 0x48) = moveDir;
+                return;
+            }
+            if (*(s16*)(g_Ball + 0x1B78) == i) {
+                if (f[0x1F8] >= 2) {
+                    *(f32*)(f + 0x48) = toCenter;
+                } else {
+                    fn_3_54900(i);
+                }
+                return;
+            }
+            if (mg == 5 || mg == 6) {
+                *(f32*)(f + 0x48) = toCenter;
+                return;
+            }
+            if (g_Ball[0x1BC9] == 1 || g_Ball[0x1BC9] == 2) {
+                if (i >= 6) {
+                    *(f32*)(f + 0x48) = toCenter;
+                } else {
+                    *(f32*)(f + 0x48) = toBall;
+                }
+                return;
+            }
+            *(f32*)(f + 0x48) = toBall;
+            return;
+        }
+    }
 }
+#endif
 
 // .text:0x00055370 size:0x23C mapped:0x80694404
 void fn_3_55370(void) {
