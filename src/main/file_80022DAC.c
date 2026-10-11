@@ -299,8 +299,27 @@ void BuildBoneSkinOrientationMatrix(MBone* bone, MtxPtr parent) {
 }
 
 // .text:0x800238E0 size:0xBC
-void fn_800238E0(void) {
-    return;
+void fn_800238E0(ActorSlotTable* table, u16 index, s16 id, MActorLayout* layout) {
+    memset(lbl_8017EB40[index], 0, lbl_803CBC58);
+    layout->actorID = id;
+    table->slots[index].actor = f_InitActorWithLayout(layout, lbl_8017EB40[index]);
+    table->slots[index].unkE = 0;
+    table->slots[index].speed = lbl_803CC564;
+    table->slots[index].unk64 = 0;
+    table->slots[index].unk66 = 0;
+    table->slots[index].unk68 = 0;
+    table->slots[index].unk6D = 0;
+    table->slots[index].unk70[0] = 0;
+    table->slots[index].unk70[1] = 0;
+    table->slots[index].unk70[2] = 0;
+    table->slots[index].unk70[3] = 0;
+    table->slots[index].unk70[4] = 0;
+    table->slots[index].unk70[5] = 0;
+    table->slots[index].unk70[6] = 0;
+    table->slots[index].unk70[7] = 0;
+    table->slots[index].id = id;
+    table->slots[index].unk6C = 1;
+    table->slots[index].unk8 = 0;
 }
 
 // .text:0x8002399C size:0x108
