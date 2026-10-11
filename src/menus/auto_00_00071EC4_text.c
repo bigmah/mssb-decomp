@@ -2066,3 +2066,29 @@ void fn_2_7E194(s32 o, s32 index) {
     }
 }
 #endif
+
+// fn_2_72A88, size:0x22C
+// NONMATCHING 88%: character search loop uses lbz instead of the original lbzu walker; register order differs
+#if NONMATCHING
+void fn_2_72A88(u8* o) {
+    s32 j;
+    s32 found = -1;
+    u8 v;
+    if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
+        v = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[F410_S32(0x10)];
+        for (j = 0; j < 6; j++) {
+            if (lbl_80108EC4[j] == v) {
+                found = j;
+                break;
+            }
+        }
+        MN_OBJ(o, 2)->frame = lbl_2_data_2AF08[found] << 18;
+        MN_OBJ(o, 3)->frame = lbl_2_data_2AF08[found] << 18;
+        for (j = 0; j < 8; j++) {
+            MN_OBJ(o, j + 4)->frame = TEAM_TBL->roster[0][j + 1] << 16;
+        }
+        lbl_803CBBC4[2] = 1;
+        lbl_803CBBC4[3] = 1;
+    }
+}
+#endif
