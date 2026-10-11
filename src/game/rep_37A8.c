@@ -1355,9 +1355,171 @@ extern u8 lbl_3_common_bss_37400[];
 extern const f32 lbl_3_rodata_3878;
 
 // Flight of a thrown object (idx): bombs (kind 5) blow up at their target player, others can hit a runner.
+// NONMATCHING 87.5%: register allocation; structure and calls match
+#if NONMATCHING
 void fn_3_1453BC(s32 idx) {
-    return;
+    s16* timer;
+    u8* thrower;
+    s8 by;
+    u8* st;
+    u8* g;
+    s8 vic;
+    u8* f;
+    Vec dir;
+    s8 tgt;
+    f32* t;
+    f32 d;
+    MgRunner* r;
+    u8* kind;
+    s8 dmg;
+    s16 hp;
+    s32 k;
+    Vec c;
+
+    timer = &((s16*)(g_Minigame + 0x17C8))[idx];
+    thrower = &g_Minigame[idx + 0x1BB6];
+    by = *thrower;
+    if (*timer < 0x7FFE) {
+        (*timer)++;
+    } else {
+        *timer = 0x7FFF;
+    }
+    st = &g_Minigame[idx + 0x193A];
+    if (*st == 6) {
+        g = g_Minigame + idx * 0xC;
+        *(f32*)(g + 0x1184) = *(f32*)(g + 0x1184) + lbl_3_data_21E24[11];
+        if (g_Minigame[idx + 0x1B84] != 5) {
+            *(f32*)(g + 0x1180) = *(f32*)(g + 0x1180) * lbl_3_data_21E24[12];
+            *(f32*)(g + 0x1188) = *(f32*)(g + 0x1188) * lbl_3_data_21E24[12];
+        } else if (*timer >= *(s16*)(lbl_3_data_21E68 + 0x2E)) {
+            vic = -1 - g_Minigame[idx + 0x1BE8];
+            fn_3_147CFC(g + 0xCD0);
+            fn_3_90064(0x309);
+            fn_3_154238(idx);
+            if (g_Minigame[vic + 0x1CA5] == 0 && g_Minigame[vic + 0x1C9A] == 0) {
+                g_Minigame[vic + 0x1C9A] = 1;
+                ((s16*)(g_Minigame + 0x1B3C))[vic] = *(s16*)(lbl_3_data_21E68 + 0x1C);
+                ((s16*)(g_Minigame + 0x1B50))[vic] = 0;
+                f = g_Fielders + (s8)g_Minigame[vic + 0x18F8] * 0x268;
+                dir.x = lbl_3_rodata_3834;
+                dir.y = lbl_3_rodata_3834;
+                dir.z = lbl_3_rodata_3878;
+                PSVECNormalize(&dir, &dir);
+                *(f32*)(f + 0x38) = dir.x;
+                g_Minigame[vic + 0x1DF4] = 1;
+                *(f32*)(f + 0x3C) = dir.z;
+                *(f32*)(f + 0x50) = lbl_3_data_21E24[15];
+                fn_3_6C854((s8)g_Minigame[vic + 0x18CC], 2);
+                if (g_Minigame[vic + 0x1CB1] < 0xFFFE) {
+                    g_Minigame[vic + 0x1CB1]++;
+                } else {
+                    g_Minigame[vic + 0x1CB1] = 0xFF;
+                }
+            }
+            *st = 0;
+            *timer = 0;
+            return;
+        }
+    }
+    g = g_Minigame + idx * 0xC;
+    *(f32*)(g + 0xCD0) = *(f32*)(g + 0xCD0) + *(f32*)(g + 0x1180);
+    *(f32*)(g + 0xCD4) = *(f32*)(g + 0xCD4) + *(f32*)(g + 0x1184);
+    *(f32*)(g + 0xCD8) = *(f32*)(g + 0xCD8) + *(f32*)(g + 0x1188);
+    if (*(f32*)(g + 0xCD4) < lbl_3_rodata_3834) {
+        *st = 0;
+        *timer = 0;
+        if (g_Minigame[idx + 0x1B84] == 5) {
+            fn_3_154238(idx);
+        }
+        return;
+    }
+    tgt = g_Minigame[idx + 0x1BE8];
+    if (tgt >= 0) {
+        t = lbl_3_data_21BC4[tgt];
+        d = sqrt37A8((*(f32*)(g + 0xCD0) - t[3]) * (*(f32*)(g + 0xCD0) - t[3]) +
+                     (*(f32*)(g + 0xCD8) - t[5]) * (*(f32*)(g + 0xCD8) - t[5]));
+        r = (MgRunner*)g_Minigame + tgt;
+        if (r->st == 2 && d < lbl_3_data_21E24[1]) {
+            kind = &g_Minigame[idx + 0x1B84];
+            if (*kind == r->who || r->who == 4 || *kind == 5) {
+                if (*kind == 5) {
+                    dmg = *(s16*)(lbl_3_data_21E68 + 0x30);
+                } else {
+                    dmg = 1;
+                }
+                memcpy(&c, g + 0xCD0, sizeof(Vec));
+                c.y *= lbl_3_rodata_3878;
+                if (*kind == 5) {
+                    fn_3_147CFC(&c);
+                    fn_3_154238(idx);
+                } else {
+                    fn_80062BE4(&c);
+                }
+                if (*kind == 5) {
+                    fn_3_90064(0x309);
+                } else {
+                    fn_3_90064(0x2DC);
+                }
+                hp = r->_2D - dmg;
+                if (hp <= 0) {
+                    r->_2D = 0;
+                } else {
+                    r->_2D = hp;
+                }
+                ((s16*)(g_Minigame + 0x1B50))[by]++;
+                g_Minigame[by * 10 + 0x1B58 + g_Minigame[by + 0x1B80]] = dmg * lbl_3_data_21E18[r->sel][1];
+                g_Minigame[by + 0x1B80]++;
+                r->queue[0] = -1;
+                r->queue[1] = -1;
+                r->queue[2] = -1;
+                r->queue[3] = -1;
+                r->_2E = 0;
+                if (r->_2D == 0) {
+                    g_Minigame[by * 10 + 0x1B58 + g_Minigame[by + 0x1B80]] = lbl_3_data_21E18[r->sel][0];
+                    g_Minigame[by + 0x1B80]++;
+                    if (r->who == 4) {
+                        g_Minigame[0x1CA3] = 0;
+                        r->_2E = 0;
+                    } else if (g_Minigame[0x1CA2] != 0) {
+                        g_Minigame[0x1CA2] = 2;
+                    }
+                    r->_1C = *(s16*)(lbl_3_data_21E68 + 0x10) - *(s16*)(lbl_3_data_21E68 + 0x12);
+                    r->_1A = 0;
+                    r->st = 4;
+                    g_Minigame[r->who + 0x1CA9] = 0;
+                    if (g_d_GameSettings.exhibitionMatchInd == 0 && by == *(s16*)(lbl_3_common_bss_37400 + 0x40)) {
+                        fn_3_1608F0(5, r->who, 0);
+                    }
+                }
+                r->_1E = 1;
+            } else if ((r->_33 == 3 && r->_2E == 0) || r->_33 == 0) {
+                if (r->_2E == 0) {
+                    r->queueTimer = 0;
+                }
+                for (k = 0; k < 4; k++) {
+                    if (r->queue[k] < 0) {
+                        r->queue[k] = *thrower;
+                        r->_2E = 1;
+                        r->throwTimer = 0;
+                        break;
+                    }
+                }
+                ((s16*)(g_Minigame + 0x1B50))[by] = 0;
+            }
+            *st = 0;
+            *timer = 0;
+            return;
+        }
+    }
+    if (*timer > *(s16*)lbl_3_data_21E68) {
+        *st = 0;
+        *timer = 0;
+        if (g_Minigame[idx + 0x1B84] == 5) {
+            fn_3_154238(idx);
+        }
+    }
 }
+#endif
 
 // .text:0x00145AD0 size:0xC8 mapped:0x80784B64
 typedef struct { f32 x; f32 y; f32 z; } MgV3;
