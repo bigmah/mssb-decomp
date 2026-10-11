@@ -14,7 +14,8 @@ typedef struct RepObj {
     /*0x5C*/ u32 frame; // animation frame << 16
     /*0x60*/ u8 _60[0x4];
     /*0x64*/ u16 anim;
-    /*0x66*/ u8 _66[0x2];
+    /*0x66*/ u8 _66;
+    /*0x67*/ u8 layer;
     /*0x68*/ u8 mode;   // 0 hidden, 1 play, 4 rewind
     /*0x69*/ u8 status; // 2 when the animation finished
     /*0x6A*/ u8 _6A[0x72 - 0x6A];

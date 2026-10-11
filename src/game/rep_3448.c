@@ -89,6 +89,11 @@ extern s16 lbl_3_data_7F10[];
 extern f32 charSizeMultipliers[][2];
 extern RepMenuDef lbl_800FEF70[];
 extern s8 lbl_3_data_B060[]; // [minigame][3][5]
+extern u8 lbl_3_data_AAB0[];
+extern u16 lbl_3_data_B0D8[];
+extern u16 lbl_3_data_B010[]; // [minigame][5]
+extern s16 lbl_3_data_21400[]; // [level][2]
+extern s16 lbl_3_data_21790[];
 
 static inline void setMenu(u8 menu) {
     lbl_8034E978.menu = menu;
@@ -2541,10 +2546,211 @@ remove:
 }
 #endif
 
-// .text:0x00126604 size:0xEB0 mapped:0x80765698
-void fn_3_126604(void) {
-    return;
+static inline void putLevel(RepTask* q, s32 x) {
+    if (g_d_GameSettings[8] == 0) {
+        fn_800363D8(q, 0x26, x, 0x12, g_Minigame[0x1A2B] + 4);
+    } else {
+        fn_800363D8(q, 0x26, x, 0x12, g_Minigame[0x1A2B]);
+    }
 }
+
+// .text:0x00126604 size:0xEB0 mapped:0x80765698
+// Minigame result screen setup (task callback, then runs fn_3_1258C0).
+// NONMATCHING 79%: register allocation and slot addressing (orig keeps lbl_80371C30 + k*8 bases); putLevel is an inlined copy
+#if NONMATCHING
+void fn_3_126604(void) {
+    RepTask* q = REP_TASK;
+    u8* m;
+    u8* m2;
+    u16* row;
+    s32 game;
+    s32 i;
+    s32 k;
+    s32 c;
+    s32 v;
+    game = g_Minigame[0x1A2A];
+    if (g_GameLogic[0x11E] == 0x28) {
+        game = 7;
+    }
+    fn_80034E20(q, lbl_3_data_AAB0);
+    if (g_d_GameSettings[7] == 6 && g_GameLogic[0x11E] == 0xB) {
+        REP_OBJ(q, 0)->layer = 2;
+        REP_OBJ(q, 1)->layer = 2;
+        REP_OBJ(q, 2)->layer = 2;
+        REP_OBJ(q, 3)->layer = 2;
+        REP_OBJ(q, 4)->layer = 2;
+        REP_OBJ(q, 5)->layer = 2;
+    }
+    row = lbl_3_data_B010 + game * 5;
+    REP_OBJC(q, 9)->anim = lbl_3_data_B0D8[g_Minigame[0x1906] - 1];
+    REP_OBJC(q, 8)->anim = row[4];
+    m = g_Minigame;
+    m2 = g_Minigame;
+    k = 0;
+    for (i = 0; i < 4; i++, m++) {
+        if ((s8)m[0x18CC] < 0) {
+            continue;
+        }
+        c = (s8)m[0x18CC];
+        REP_OBJ(q, k + 0xE)->frame = c << 16;
+        if (m[0x18D8] != 0) {
+            c += 4;
+        }
+        REP_OBJ(q, k + 0x16)->frame = c << 16;
+        REP_OBJ(q, k + 0x12)->frame = m2[0x18D0] << 16;
+        m2++;
+        k++;
+        if (k >= g_Minigame[0x1906]) {
+            break;
+        }
+    }
+    if (g_Minigame[0x1A3C] != 0 || g_Minigame[0x1909] != 0 || g_d_GameSettings[7] == 6) {
+        REP_OBJ(q, 0x25)->flags &= ~2;
+        REP_OBJ(q, 0x26)->flags &= ~2;
+        REP_OBJ(q, 0x27)->flags &= ~2;
+        REP_OBJ(q, 0x28)->flags &= ~2;
+        REP_OBJ(q, 0x29)->flags &= ~2;
+    } else if (g_Minigame[0x1A2B] == 3) {
+        // personal best of this minigame (lbl_803616CC, 0x28 per minigame)
+        REP_OBJC(q, 41)->flags |= 2;
+        v = *(s32*)(lbl_803616CC + g_Minigame[0x1A2A] * 0x28);
+        REP_OBJC(q, 40)->frame = *(s16*)(lbl_803616CC + g_Minigame[0x1A2A] * 0x28 + 6) << 16;
+        if (g_Minigame[0x1A2A] == 6) {
+            REP_OBJC(q, 38)->anim = 0xD;
+            putLevel(q, 6);
+            if (v > 999) {
+                v = 999;
+            }
+            if (v < 100) {
+                fn_800363D8(q, 0x26, 1, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 1, 0x13, (v / 100) % 10);
+            }
+            if (v < 10) {
+                fn_800363D8(q, 0x26, 2, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 2, 0x13, (v / 10) % 10);
+            }
+            fn_800363D8(q, 0x26, 3, 0x13, v % 10);
+        } else if (g_Minigame[0x1A2A] == 4) {
+            REP_OBJC(q, 38)->anim = 0xC;
+            putLevel(q, 5);
+            if (v > 99) {
+                v = 99;
+            }
+            if (v < 10) {
+                fn_800363D8(q, 0x26, 1, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 1, 0x13, v / 10);
+            }
+            fn_800363D8(q, 0x26, 2, 0x13, v % 10);
+        } else if (g_Minigame[0x1A2A] == 5) {
+            REP_OBJC(q, 38)->anim = 0xB;
+            putLevel(q, 7);
+            fn_800363D8(q, 0x26, 1, 0x13, 10);
+            if (v > 999) {
+                v = 999;
+            }
+            if (v < 100) {
+                fn_800363D8(q, 0x26, 2, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 2, 0x13, (v / 100) % 10);
+            }
+            if (v < 10) {
+                fn_800363D8(q, 0x26, 3, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 3, 0x13, (v / 10) % 10);
+            }
+            fn_800363D8(q, 0x26, 4, 0x13, v % 10);
+        } else {
+            REP_OBJC(q, 38)->anim = 0xB;
+            putLevel(q, 7);
+            if (v > 9999) {
+                v = 9999;
+            }
+            if (v < 1000) {
+                fn_800363D8(q, 0x26, 1, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 1, 0x13, v / 1000);
+            }
+            if (v < 100) {
+                fn_800363D8(q, 0x26, 2, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 2, 0x13, (v / 100) % 10);
+            }
+            if (v < 10) {
+                fn_800363D8(q, 0x26, 3, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 3, 0x13, (v / 10) % 10);
+            }
+            fn_800363D8(q, 0x26, 4, 0x13, v % 10);
+        }
+    } else {
+        if (g_Minigame[0x1A2A] == 1 || g_Minigame[0x1A2A] == 3) {
+            REP_OBJC(q, 38)->anim = 0x11;
+            putLevel(q, 7);
+            // target score of this level
+            if (g_Minigame[0x1A2A] == 1) {
+                v = lbl_3_data_21400[g_Minigame[0x1A2B] * 2 + 1];
+            } else {
+                v = lbl_3_data_21790[g_Minigame[0x1A2B]];
+            }
+            if (v < 1000) {
+                fn_800363D8(q, 0x26, 1, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 1, 0x13, v / 1000);
+            }
+            if (v < 100) {
+                fn_800363D8(q, 0x26, 2, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 2, 0x13, (v / 100) % 10);
+            }
+            if (v < 10) {
+                fn_800363D8(q, 0x26, 3, 0x13, 10);
+            } else {
+                fn_800363D8(q, 0x26, 3, 0x13, (v / 10) % 10);
+            }
+            fn_800363D8(q, 0x26, 4, 0x13, v % 10);
+        } else {
+            REP_OBJC(q, 38)->anim = 0x10;
+            putLevel(q, 3);
+        }
+        REP_OBJC(q, 39)->flags &= ~2;
+    }
+    if (g_Minigame[0x1909] != 0 || g_d_GameSettings[7] == 6 || g_GameLogic[0x11E] == 0x28) {
+        REP_OBJC(q, 5)->flags &= ~2;
+    } else if (g_d_GameSettings[8] == 0) {
+        fn_800363D8(q, 5, 1, row[3], g_Minigame[0x1A2B] + 4);
+    } else {
+        fn_800363D8(q, 5, 1, row[3], g_Minigame[0x1A2B]);
+    }
+    REP_OBJC(q, 3)->anim = row[0];
+    REP_OBJC(q, 4)->anim = row[1];
+    REP_OBJC(q, 5)->anim = row[2];
+    if (g_d_GameSettings[7] == 6 && g_GameLogic[0x11E] != 0xB) {
+        fn_800363D8(q, 0x20, 1, 0x116, 0xF);
+        fn_800363D8(q, 0x21, 1, 0x116, 0x10);
+        fn_800363D8(q, 0x22, 1, 0x116, 0x11);
+        fn_800363D8(q, 0x23, 1, 0x116, 0x12);
+        fn_800363D8(q, 0x24, 1, 0x116, 0x13);
+        REP_OBJ(q, g_Minigame[0x1A24] + 0x20)->anim = 0xF2;
+    } else {
+        REP_OBJC(q, 6)->flags &= ~2;
+    }
+    if (g_Minigame[0x1A3B] != 0) {
+        REP_OBJ(q, 0)->layer = 2;
+        REP_OBJ(q, 1)->layer = 2;
+        REP_OBJ(q, 2)->layer = 2;
+        REP_OBJ(q, 3)->layer = 2;
+        REP_OBJ(q, 4)->layer = 2;
+        REP_OBJ(q, 5)->layer = 2;
+    }
+    q->state = g_Minigame[0x1A1E];
+    q->_1E = 0;
+    q->_20 = 0;
+    REP_TASK->func = fn_3_1258C0;
+}
+#endif
 
 // .text:0x001274B4 size:0x6B4 mapped:0x80766548
 // NONMATCHING 74%: loop induction registers (orig keeps 4*i+k counters) and g_Minigame base CSE; playCrowdSound is the inlined crowd helper from auto_00_000D8A10_text
