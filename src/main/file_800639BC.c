@@ -246,7 +246,12 @@ void fn_80067F70(void) {
 
 // .text:0x800684A4 size:0x70
 void fn_800684A4(void) {
-    return;
+    s32* cap = lbl_8034E9A0.captain;
+
+    cap[0] = lbl_80108EC4[randRange_FUN_80042bf0(0, 12)];
+    do {
+        cap[1] = lbl_80108EC4[randRange_FUN_80042bf0(0, 12)];
+    } while (cap[0] == cap[1]);
 }
 
 // .text:0x80068514 size:0x118
