@@ -166,6 +166,7 @@ extern s32 fn_8004AD54(u8 stadium, u8 kind);
 extern void fn_8004B208(CharActor* actor, s16 anim, s32 a, f32 t);
 extern CharSlotList* ActorObjectInitTable(s32 count);
 extern void fn_800BDC88(CharSlotList* list, u16 first, u16 last, void* layout, s32 a, s32 b);
+extern void fn_800B2B4C(CharModel* model, f32 v);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -2416,9 +2417,103 @@ void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, 
 }
 
 // .text:0x8001BA44 size:0x40C
-void fn_8001BA44(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
-    return;
+// Splits a global animation id into an actor anim bank and an index in it.
+static inline BOOL splitAnimId(s32 anim, s32* bank, s32* idx) {
+    if (anim < 0) {
+        return FALSE;
+    }
+    if (anim < 0x2D) {
+        *idx = anim;
+        *bank = 2;
+    } else if (anim < 0x3D) {
+        *idx = anim - 0x2D;
+        *bank = 1;
+    } else if (anim < 0x3F) {
+        *idx = anim - 0x3D;
+        *bank = 4;
+    } else if (anim < 0x4B) {
+        *idx = anim - 0x3F;
+        *bank = 3;
+    } else if (anim < 0x69) {
+        *idx = anim - 0x4B;
+        *bank = 0;
+    } else {
+        *bank = 5;
+        *idx = anim - 0x69;
+    }
+    return TRUE;
 }
+
+static inline void resetRootJoint(CharActor* actor, CharSlot* slot, s32 index) {
+    if (actor->_26C[0] == 0) {
+        fn_800B2B54(actor->model, getJoint(actor, 4), 0xD);
+    } else {
+        fn_800B2B54(actor->model, getJoint(actor, 4), 1);
+        fn_800B2B54(slot->model, getJoint(lbl_8036E548.active[index], 4), 1);
+        fn_800B2B4C(slot->model, 0.125f);
+        slot->model->_8C = 0.0f;
+    }
+}
+
+// NONMATCHING 85%: register allocation and joint-lookup scheduling
+#if NONMATCHING
+void fn_8001BA44(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
+    CharActor* actor = lbl_8036E548.active[index];
+    CharSlot* slot;
+    CharAnimBank* bankData;
+    s32 bank;
+    s32 idx;
+    f32 speed = 0.0f;
+
+    if (actor == NULL) {
+        return;
+    }
+    slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+    if (e != 0) {
+        speed = 1.0f / e;
+    }
+    resetRootJoint(actor, slot, index);
+    if (splitAnimId(anim, &bank, &idx)) {
+        bankData = actor->banks.b[bank];
+        if (bankData != NULL) {
+            if (!(idx < bankData->count && idx >= 0)) {
+                return;
+            }
+            slot->act = bankData;
+            slot->animId = idx;
+            slot->_5C = 0.0f;
+            slot->_58 = 1;
+            slot->_59 = bankData != NULL;
+            slot->_5A = bankData != NULL;
+            slot->_60 = speed;
+        }
+        if (actor->part != NULL) {
+            fn_80025EEC(&actor->part->player, bank, idx);
+        }
+        if (actor->parts != NULL) {
+            fn_80011CA8(actor, bank, idx);
+        }
+        if (a != 0) {
+            slot->_5B = 3;
+        } else {
+            slot->_5B = 2;
+        }
+        slot->_5C = c * actor->_04C;
+        slot->_59 = 1;
+        fn_8001B5EC(index, b);
+        fn_8001B308(index, d);
+        actor->_268 = b;
+    } else {
+        slot->act = NULL;
+        slot->animId = 0;
+        slot->_5C = 0.0f;
+        slot->_58 = 1;
+        slot->_59 = 0;
+        slot->_5A = 0;
+        slot->_60 = 0.0f;
+    }
+}
+#endif
 
 // .text:0x8001BE50 size:0x3E4
 void fn_8001BE50(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {

@@ -100,6 +100,12 @@ typedef struct CharParts {
     /*0xD2*/ u8 _D2[0x2];
 } CharParts; // size: 0xD4
 
+// Animation bank (ANIMGet'd file).
+typedef struct CharAnimBank {
+    /*0x00*/ u8 _00[0xA];
+    /*0x0A*/ u16 count;
+} CharAnimBank;
+
 // Animation banks of an actor (streamed from ARAM, then ANIMGet).
 typedef struct CharAnimBanks {
     /*0x00*/ void* b[7];
@@ -313,7 +319,7 @@ s32 fn_80014F40(s32 id);
 s32 fn_80014E50(s32 id);
 s32 fn_80014D4C(s32 id);
 void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharSlot*));
-void fn_8001BE50(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
+void fn_8001BE50(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
 
 void fn_8001CA40(u8 stadium);
 void fn_8001CB10(LightSrc* src, s32 count);
@@ -374,7 +380,7 @@ void fn_80018270(s32 mode);
 
 void fn_8001C234(u32* doneMask);
 void fn_8001F5E8(void);
-void fn_8001BA44(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
+void fn_8001BA44(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
 
 void fn_8001B200(void);
 
