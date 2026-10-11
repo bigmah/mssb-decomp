@@ -184,9 +184,120 @@ void fn_3_78730(void) {
 }
 
 // .text:0x00078AC4 size:0x57C mapped:0x806B7B58
+extern s32 fn_3_A6810(f32 fromX, f32 fromZ, f32 toX, f32 toZ); // throw time in frames
+extern f32 lbl_3_data_4444[10]; // base positions (x, z) for home, 1st, 2nd, 3rd, ...
+
+// NONMATCHING 97%: one dead `b` after the forced-out runner loop, and register picks in the
+// tens/units runner-pair branch
+#if NONMATCHING
 void fn_3_78AC4(void) {
-    return;
+    s32 play;
+    s32 batterSafe = 0;
+    s32 n;
+    s32 i;
+
+    play = lbl_3_common_bss_32A94._20;
+    if (lbl_3_common_bss_32A94.baseOccupied[0] == 0 && g_Ball.ballState == 1) {
+        lbl_3_common_bss_32A94.baseOccupied[0] = 2;
+        if ((g_Runners[0].forceOutCd != 0 || g_Runners[0].runnerOnFieldOrOutOrScored != 1) &&
+            g_Ball.AtBat_ContactResult != 3 && g_Ball.ballZoneAwayFromHome < 2 &&
+            fn_3_A6810(g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.z, lbl_3_data_4444[2],
+                       lbl_3_data_4444[3]) + 75 <
+                g_Runners[0].framesToNextBase) {
+            lbl_3_common_bss_32A94.baseOccupied[0] = 1;
+        }
+    } else if (lbl_3_common_bss_32A94.baseOccupied[0] == 0 && g_Ball.AtBat_ContactResult != 0 &&
+               g_Ball.ballState != 1 && g_Runners[0].runnerOnFieldOrOutOrScored == 1 &&
+               g_Runners[0].currentBase >= 1) {
+        lbl_3_common_bss_32A94.baseOccupied[0] = 2;
+    }
+
+    if (lbl_3_common_bss_32A94.baseOccupied[0] == 1) {
+        for (i = 1; i < 4; i++) {
+            if (g_Runners[i].baseStandingOn >= 0 || g_Runners[i].runnerOnFieldOrOutOrScored == 3) {
+                lbl_3_common_bss_32A94.baseOccupied[i] = 2;
+            }
+        }
+        for (n = 0; n < 3; n++) {
+            if (lbl_3_common_bss_32A94.baseOccupied[n + 1] == 1) {
+                break;
+            }
+        }
+        if (n >= 3) {
+            lbl_3_common_bss_32A94.baseOccupied[0] = 2;
+        }
+    }
+
+    if (g_Runners[0].forceOutCd == 0 && g_Runners[0].runnerOnFieldOrOutOrScored == 1) {
+        batterSafe = 1;
+    }
+
+    if (play == 5) {
+        if (batterSafe) {
+            g_FieldingLogic._113 = 9;
+            lbl_3_common_bss_32A94._20 = 0;
+            g_Runners[0].runnerDidntReachOnError = 0;
+            g_FieldingLogic._132 = 3;
+        }
+        for (i = 0; i < 4; i++) {
+            if (g_Runners[i].runnerOnFieldOrOutOrScored == 2 && g_Runners[i].forceOutCd == 2) {
+                lbl_3_common_bss_32A94._20 = 0;
+                return;
+            }
+        }
+        return;
+    }
+    if (g_Runners[0].runnerOnFieldOrOutOrScored == 2 && g_Runners[0].currentBase == 0) {
+        lbl_3_common_bss_32A94._20 = 0;
+        return;
+    }
+    if (play == -1 || play == 0 || play == 4) {
+        if (play == -1 && g_Runners[0].currentBase >= 1 &&
+            (g_Ball.AtBat_ContactResult == 1 || g_Ball.AtBat_ContactResult == 2)) {
+            lbl_3_common_bss_32A94._20 = 0;
+        }
+        if (lbl_3_common_bss_32A94._20 == 4 && g_Strikes.allForcedRunnersReachedTheirBaseInd == 0 &&
+            g_Runners[0].forceOutCd == 0) {
+            g_Strikes.allForcedRunnersReachedTheirBaseInd = 3;
+        }
+    } else if (play >= 100) {
+        u8 s1 = g_Runners[1].runnerOnFieldOrOutOrScored;
+        u8 s2;
+        u8 s3;
+        if (s1 == 2 || (s2 = g_Runners[2].runnerOnFieldOrOutOrScored) == 2 ||
+            (s3 = g_Runners[3].runnerOnFieldOrOutOrScored) == 2) {
+            lbl_3_common_bss_32A94._20 = 0;
+        } else if (g_Runners[1].baseStandingOn >= 0 && s1 != 2) {
+            lbl_3_common_bss_32A94._20 = 0x17;
+        } else if (g_Runners[2].baseStandingOn >= 0 && s2 != 2) {
+            lbl_3_common_bss_32A94._20 = 0xD;
+        } else if (g_Runners[3].baseStandingOn >= 0 && s3 != 2) {
+            lbl_3_common_bss_32A94._20 = 0xC;
+        }
+    } else if (play >= 10) {
+        // two runners encoded as tens/units digits
+        s32 a = play / 10;
+        u8 sa = g_Runners[a].runnerOnFieldOrOutOrScored;
+        s32 b = play % 10;
+        u8 sb;
+        if (sa == 2 || (sb = g_Runners[b].runnerOnFieldOrOutOrScored) == 2) {
+            lbl_3_common_bss_32A94._20 = 0;
+        } else if (g_Runners[a].baseStandingOn >= 0 && sa != 2) {
+            lbl_3_common_bss_32A94._20 = b;
+        } else if (g_Runners[b].baseStandingOn >= 0 && sb != 2) {
+            lbl_3_common_bss_32A94._20 = a;
+        }
+    } else {
+        u8 st = g_Runners[play].runnerOnFieldOrOutOrScored;
+        if (st == 2) {
+            lbl_3_common_bss_32A94._20 = 0;
+        }
+        if (((g_Runners[play].baseStandingOn >= 0 && st == 1) || st == 3) && batterSafe) {
+            lbl_3_common_bss_32A94._20 = 4;
+        }
+    }
 }
+#endif
 
 // .text:0x00079040 size:0x2F8 mapped:0x806B80D4
 extern s32 fn_3_A63E4(s32 runnerIdx, s32 flag, s32* outA, s32* outB);
