@@ -131,6 +131,29 @@ struct StadCtlA {
 };
 typedef struct StadCtlA StadCtlA;
 extern Vec lbl_3_bss_B260[]; /* bezier control points */
+/* Draw-order entry of the stadium object list (same layout as rep_1D58's). */
+struct SortEnt {
+    f32 z;
+    s32 idx;
+};
+/* Common header of a 0xE8-byte stadium object (lbl_3_common_bss_350E4 objs). */
+typedef struct StadObjHdr {
+    Control c;                 /* 0x00 */
+    u8 pad3C[0x78 - 0x3C];
+    void* shadow;              /* 0x78 */
+    u8 pad7C[0x90 - 0x7C];
+    u8 visible : 1;            /* 0x90 */
+    u8 hasShadow : 1;
+    u8 depthSort : 1;
+    u8 bits90 : 5;
+    u8 pad91[0x9D - 0x91];
+    u8 kind;                   /* 0x9D */
+    u8 pad9E[2];
+    struct StadObjHdr* link;   /* 0xA0: paired object (kind-specific) */
+    u8 padA4[0xC5 - 0xA4];
+    u8 id;                     /* 0xC5 */
+    u8 padC6[0xE8 - 0xC6];
+} StadObjHdr;
 /* View of this file's pooled .bss starting at lbl_3_bss_AEE0. */
 typedef struct StaC5Work {
     u8 pad0[0x20];
@@ -1604,6 +1627,7 @@ void fn_3_F5C30(u8* p) {
     }
 }
 
+#pragma dont_inline off
 // .text:0x000F5E78 size:0x84 mapped:0x80734F0C
 s32 fn_3_F5E78(u8 id) {
     u32 n = *(u32*)(lbl_3_common_bss_350E4 + 0x30);
@@ -1667,10 +1691,99 @@ void fn_3_F5F4C(Mtx m) {
 }
 
 // .text:0x000F6084 size:0x480 mapped:0x80735118
-void fn_3_F6084(void) {
-    return;
+extern const f32 lbl_3_rodata_2F38;
+extern void* fn_800ACF34(s32 align, s32 size);
+extern void fn_800ACF14(void* block);
+extern void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*)); // main/file_800BDEA0.h
+// NONMATCHING 91%: inlines fn_3_F5E78 x2 and fn_3_F5F4C; register allocation differs. The original checks kind==4 through a stale register (the Mtx argument on the first iteration); this reads it from the current object
+#if NONMATCHING
+void fn_3_F6084(MtxPtr view, struct SortEnt* out) {
+    StadiumObjList* list = (StadiumObjList*)lbl_3_common_bss_350E4;
+    StadObjHdr* objs;
+    StadObjHdr* e;
+    struct SortEnt* front;
+    struct SortEnt* back;
+    struct SortEnt* o;
+    struct SortEnt t;
+    Vec v;
+    s32 i;
+    s32 n;
+    s32 start;
+    u32 a;
+    u32 b;
+    void* tmp;
+    if (list->depthSort != 0) {
+        /* hidden objects first */
+        o = out;
+        n = 0;
+        i = list->count - 1;
+        e = (StadObjHdr*)list->objs + i;
+        do {
+            if (!e->visible) {
+                o->z = lbl_3_rodata_2F38;
+                n++;
+                o->idx = i;
+                o++;
+            }
+            e--;
+        } while (i-- != 0);
+        /* then unsorted visible ones, depth-sorted ones fill from the back */
+        i = list->count - 1;
+        front = out + n;
+        start = i;
+        back = out + i;
+        e = (StadObjHdr*)list->objs + i;
+        do {
+            if (e->visible) {
+                /* the original reads kind through a stale pointer on the first iteration */
+                if (e->kind == 4) {
+                    out[list->count - 1].z = lbl_3_rodata_2D70;
+                    out[list->count - 1].idx = i;
+                } else if (e->depthSort) {
+                    CTRLGetTranslation(&e->c, &v.x, &v.y, &v.z);
+                    PSMTXMultVec(view, &v, &v);
+                    start--;
+                    back[-1].z = v.z;
+                    back[-1].idx = i;
+                    back--;
+                } else {
+                    front->z = lbl_3_rodata_2F38;
+                    front->idx = i;
+                    front++;
+                }
+            }
+            e--;
+        } while (i-- != 0);
+        tmp = fn_800ACF34(0x20, (list->count - start) * 8);
+        fn_800C07BC(out + start, tmp, list->count - start, 8, (s32 (*)(const void*, const void*))fn_3_F5F28);
+        fn_800ACF14(tmp);
+        /* keep each paired object drawn before its partner */
+        for (i = 0; i < lbl_3_bss_B220[0]; i++) {
+            e = (StadObjHdr*)list->objs + (lbl_3_bss_B21F + i);
+            a = fn_3_F5E78(e->id);
+            b = fn_3_F5E78(e->link->id);
+            if (a > b) {
+                t = out[a];
+                out[a] = out[b];
+                out[b] = t;
+            }
+        }
+        fn_3_F5F4C(view);
+    } else {
+        objs = (StadObjHdr*)list->objs;
+        o = out;
+        for (i = 0; i < list->count; i++) {
+            /* the original never advances objs here */
+            CTRLGetTranslation(&objs->c, &v.x, &v.y, &v.z);
+            o->z = lbl_3_rodata_2D50;
+            o->idx = i;
+            o++;
+        }
+    }
 }
+#endif
 
+#pragma dont_inline on
 // .text:0x000F6504 size:0xC4 mapped:0x80735598
 s32 fn_3_F6504(s32 idx, s32 arg) {
     u8* c = *(u8**)lbl_3_common_bss_350E4 + idx * 0xE8;
