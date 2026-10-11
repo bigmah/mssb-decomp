@@ -296,6 +296,42 @@ void fn_800A8AB8(void (*onShutdown)(void)) {
 
 // .text:0x800A8B78 size:0x144
 s32 fn_800A8B78(StreamTrack* track) {
+    BOOL enabled;
+
+    if (track == lbl_803CC154) {
+        return 2;
+    }
+    enabled = OSDisableInterrupts();
+    DVDClose(&track->fileInfo);
+    if (track == lbl_803CC150 && track == lbl_803CC14C) {
+        lbl_803CC150 = NULL;
+        lbl_803CC14C = NULL;
+        OSRestoreInterrupts(enabled);
+        return 0;
+    }
+    if (track == lbl_803CC150) {
+        lbl_803CC150 = track->next;
+        lbl_803CC150->prev = NULL;
+        if (lbl_803CC140 == STREAM_MODE_LOOP) {
+            lbl_803CC14C->next = lbl_803CC150;
+        }
+        OSRestoreInterrupts(enabled);
+        return 0;
+    }
+    if (track == lbl_803CC14C) {
+        lbl_803CC14C = track->prev;
+        lbl_803CC14C->next = NULL;
+        if (lbl_803CC140 == STREAM_MODE_LOOP) {
+            lbl_803CC14C->next = lbl_803CC150;
+        }
+        OSRestoreInterrupts(enabled);
+        return 0;
+    }
+    if (track->prev != NULL && track->next != NULL) {
+        track->prev->next = track->next;
+        track->next->prev = track->prev;
+    }
+    OSRestoreInterrupts(enabled);
     return 0;
 }
 
