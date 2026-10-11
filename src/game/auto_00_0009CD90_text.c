@@ -83,6 +83,62 @@ void fn_3_9CD90(void) {
     }
 }
 
+// .text:0x0009CE78 size:0x2C8
+void fn_3_9CE78(void) {
+    s32 i;
+    BOOL moving;
+
+    if (g_RunningLogic._12 == 1 || g_Strikes.storedOuts == 2) {
+        if ((g_Runners[0].runnerOnFieldOrOutOrScored == 2 && g_Strikes.allForcedRunnersReachedTheirBaseInd == 0) ||
+            g_Ball.AtBat_ContactResult == 3) {
+            lbl_3_common_bss_32A94._0 = 0x1D;
+            return;
+        }
+        if (g_Runners[0].forceOutCd == 0) {
+            lbl_3_common_bss_32A94._0 = 0x1C;
+        }
+    } else if (g_Runners[3].runnerOnFieldOrOutOrScored != 0 && g_Runners[3].furthestBaseForcedToGoToOnWalk != 0) {
+        if (g_Runners[3].runnerOnFieldOrOutOrScored == 3) {
+            if (g_Ball.AtBat_ContactResult == 3) {
+                lbl_3_common_bss_32A94._2 = 0x20;
+                return;
+            }
+            lbl_3_common_bss_32A94._0 = 0x1E;
+        } else if (g_Runners[3].runnerOnFieldOrOutOrScored == 2) {
+            lbl_3_common_bss_32A94._0 = 0x1F;
+        }
+    } else {
+        if (g_Scores._9E > g_Scores.team[g_Scores._AD].runs[g_Scores.inning]) {
+            lbl_3_common_bss_32A94._2 = 0x20;
+            return;
+        }
+        if (lbl_3_common_bss_32A94._2 != 0x22) {
+            if (g_Ball.AtBat_ContactResult == 3) {
+                lbl_3_common_bss_32A94._2 = 0x22;
+                return;
+            }
+            for (i = 1; i < 4; i++) {
+                if (g_Runners[i].runnerOnFieldOrOutOrScored != 0 && g_Runners[i].currentBase == g_Runners[i].startingBase_baseAchieved &&
+                    g_Runners[i].runnerOnFieldOrOutOrScored == 2) {
+                    lbl_3_common_bss_32A94._2 = 0x22;
+                    return;
+                }
+            }
+            moving = FALSE;
+            for (i = 1; i < 4; i++) {
+                if ((g_Runners[i].runnerOnFieldOrOutOrScored == 1 || g_Runners[i].runnerOnFieldOrOutOrScored == 3) &&
+                    g_Runners[i].currentBase != g_Runners[i].startingBase_baseAchieved) {
+                    moving = TRUE;
+                    break;
+                }
+            }
+            if (moving) {
+                lbl_3_common_bss_32A94._2 = 0x21;
+            }
+        }
+    }
+}
+
 // .text:0x0009D374 size:0x1DC
 s32 fn_3_9D374(void) {
     s16 earned;
