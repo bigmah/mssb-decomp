@@ -348,8 +348,81 @@ int fn_3_A2404(void) {
 }
 
 // .text:0x000A25C4 size:0x398 mapped:0x806E1658
-void fn_3_A25C4(void) {
-    return;
+int fn_3_A25C4(void) {
+    s32 idx;
+    s32 base;
+    s32 cut;
+
+    idx = lbl_3_bss_1808[3];
+    if (idx >= 0 && lbl_3_bss_1858[idx] <= 5) {
+        if ((g_Runners[idx].percentTowardsNextBase > 0.2f ||
+             (g_Runners[idx].baseStandingOn == -1 && g_Ball.baseBallAndFielderAreOn == 3)) &&
+            fn_3_A46A0(idx)) {
+            base = 3;
+            goto found;
+        }
+        if (lbl_3_bss_1800 & 0x1000) {
+            idx = lbl_3_bss_1808[3];
+            if (g_Runners[idx].percentTowardsNextBase > 0.15f && fn_3_A46A0(idx)) {
+                base = 3;
+                goto found;
+            }
+        }
+    }
+    idx = lbl_3_bss_1808[2];
+    if (idx >= 0 && lbl_3_bss_1858[idx] <= 5) {
+        if ((g_Runners[idx].percentTowardsNextBase > 0.2f ||
+             (g_Runners[idx].baseStandingOn == -1 && g_Ball.baseBallAndFielderAreOn == 2)) &&
+            fn_3_A46A0(idx)) {
+            base = 2;
+            goto found;
+        }
+        if (lbl_3_bss_1800 & 0x100) {
+            idx = lbl_3_bss_1808[2];
+            if (g_Runners[idx].percentTowardsNextBase >= 0.15f && fn_3_A46A0(idx)) {
+                base = 2;
+                goto found;
+            }
+        }
+    }
+    idx = lbl_3_bss_1808[1];
+    if (idx >= 0 && lbl_3_bss_1858[idx] <= 5) {
+        if ((g_Runners[idx].percentTowardsNextBase > 0.2f ||
+             (g_Runners[idx].baseStandingOn == -1 && g_Ball.baseBallAndFielderAreOn == 1)) &&
+            fn_3_A46A0(idx)) {
+            base = 1;
+            goto found;
+        }
+        if (lbl_3_bss_1800 & 0x10) {
+            idx = lbl_3_bss_1808[1];
+            if (g_Runners[idx].percentTowardsNextBase > 0.15f && fn_3_A46A0(idx)) {
+                base = 1;
+                goto found;
+            }
+        }
+    }
+    return 0;
+found:
+    if (g_Ball.ballDistanceFromBase[0] < 3.0f && g_FieldingLogic._0C4 == 2 && lbl_3_bss_1808[3] >= 0 && base == 1 &&
+        g_Runners[lbl_3_bss_1808[base]].fractionalBasesRan <= 1.2f) {
+        // inlined fn_3_AABF8
+        if (g_FieldingLogic._0D8 == -1) {
+            cut = 0;
+        } else if (g_FieldingLogic.playerAtMoundCutoffLocation != 1) {
+            cut = 0;
+        } else if (g_Fielders[g_FieldingLogic._0D8].coveringBase != 5) {
+            cut = 0;
+        } else if (g_Fielders[g_Ball.fielderWBallIndex]._0B8 < lbl_3_rodata_19F0) {
+            cut = 0;
+        } else {
+            cut = 1;
+        }
+        if (cut) {
+            g_FieldingLogic._0CC = -1;
+            g_FieldingLogic._0C4 = 5;
+        }
+    }
+    return 1;
 }
 
 // .text:0x000A295C size:0x210 mapped:0x806E19F0
