@@ -657,5 +657,78 @@ u8 sBoxFaces[6][4] = {
     {0, 3, 7, 4}, {2, 1, 5, 6}, {0, 1, 2, 3}, {7, 6, 5, 4}, {3, 2, 6, 7}, {0, 4, 5, 1},
 };
 
+// NONMATCHING 99%: register allocation of the corner loop pointers, fcmpu operand order
+#if NONMATCHING
+// Tests the convex quad against the box's 8 corners. Returns 0 when no corner is behind the
+// quad's plane, 1 when a box edge crosses the plane inside the quad, -1 otherwise.
+s32 fn_800B81C0(Vec *quad, Vec *box)
+{
+    u8 code[8];
+    Vec hit;
+    f32 dist[8];
+    Vec v[4];
+    Vec cross[4];
+    f32 d;
+    s32 behind;
+    s32 i;
+    s32 k;
+    u8 *edge;
+
+    PSVECSubtract(&quad[1], &quad[0], &v[0]);
+    PSVECSubtract(&quad[2], &quad[1], &v[1]);
+    PSVECCrossProduct(&v[0], &v[1], &v[2]);
+    d = PSVECDotProduct(&v[2], &quad[0]);
+
+    behind = 0;
+    for (i = 0; i < 8; i++) {
+        f32 dd = PSVECDotProduct(&v[2], &box[i]) - d;
+        dist[i] = dd;
+        code[i] = ((dd < 0.0f) << 3) | ((dd > 0.0f) << 2);
+        behind |= dd < 0.0f;
+    }
+    if (behind == 0) {
+        return 0;
+    }
+
+    edge = sBoxEdges[0];
+    for (i = 0; i < 12; i++) {
+        u8 a = edge[0];
+        u8 b = edge[1];
+        f32 denom;
+        f32 f;
+
+        edge += 2;
+
+        if ((code[a] | code[b]) != 12) {
+            continue;
+        }
+        denom = dist[a] - dist[b];
+        if (0.0f == denom) {
+            continue;
+        }
+        f = dist[a] / denom;
+        hit.x = f * (box[b].x - box[a].x) + box[a].x;
+        hit.y = f * (box[b].y - box[a].y) + box[a].y;
+        hit.z = f * (box[b].z - box[a].z) + box[a].z;
+        PSVECSubtract(&quad[0], &hit, &v[0]);
+        PSVECSubtract(&quad[1], &hit, &v[1]);
+        PSVECSubtract(&quad[2], &hit, &v[2]);
+        PSVECSubtract(&quad[3], &hit, &v[3]);
+        PSVECCrossProduct(&v[0], &v[1], &cross[0]);
+        PSVECCrossProduct(&v[1], &v[2], &cross[1]);
+        PSVECCrossProduct(&v[2], &v[3], &cross[2]);
+        PSVECCrossProduct(&v[3], &v[0], &cross[3]);
+        for (k = 0;;) {
+            if (PSVECDotProduct(&cross[k], &cross[(k + 1) & 3]) < 0.0f) {
+                break;
+            }
+            if (++k >= 4) {
+                return 1;
+            }
+        }
+    }
+    return -1;
+}
+#endif
 
 
