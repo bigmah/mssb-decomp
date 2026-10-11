@@ -154,6 +154,8 @@ void fn_8004D460(s32 byId, s32 entry);
 
 void fn_8004D4F0(s8 owner, s32 entry, s32 set);
 
+s16 fn_8004D57C(s32 unused, s32 pressed, u16 dirs);
+
 void fn_8004E504(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3);
 
 void fn_8004E5B4(s8 owner, s32 entry, s32 set);
