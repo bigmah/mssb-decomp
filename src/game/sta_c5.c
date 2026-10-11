@@ -556,8 +556,9 @@ void fn_3_EEB94(void) {
 }
 
 #pragma dont_inline off
-// 97%: only the GXSetIndTexMtx matrix stores differ (orig: first store via r30+0x23c, rest via pointer r4+4..0x14)
 // .text:0x000EECF4 size:0x148 mapped:0x8072DD88
+// NONMATCHING 99.6%: only the GXSetIndTexMtx matrix stores differ (orig: first store via r30+0x23c, rest via pointer r4+4..0x14: separate static in the pooled .bss)
+#if NONMATCHING
 void fn_3_EECF4(void) {
     typedef struct { u8 pad0[0x38]; u8 a38[0x200]; u8* tex; f32 m[2][3]; u8 a254[1]; } S;
     S* s = (S*)lbl_3_bss_AEE0;
@@ -583,6 +584,7 @@ void fn_3_EECF4(void) {
     }
     memset(s->a38, 1, 0x200);
 }
+#endif
 
 #pragma dont_inline on
 // .text:0x000EEE3C size:0xE8 mapped:0x8072DED0
