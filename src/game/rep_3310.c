@@ -587,9 +587,14 @@ void fn_3_119468(s32 i) {
 }
 
 // .text:0x001194AC size:0x50 mapped:0x80758540
-void fn_3_1194AC(void) {
-    return;
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+extern u8 lbl_3_data_2265C[];
+void fn_3_1194AC(s32 i) {
+    lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette->tex[0].texIndex =
+        lbl_3_data_2265C[g_Minigame[i + 0x1AFF]];
 }
+#endif
 
 // .text:0x001194FC size:0x358 mapped:0x80758590
 void fn_3_1194FC(void) {
