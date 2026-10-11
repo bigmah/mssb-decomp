@@ -5,6 +5,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/os.h"
+#include "Dolphin/ar.h"
 #include "stl/string.h"
 
 extern TrailSystem lbl_802D3D80;
@@ -37,6 +38,8 @@ void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial);
 void fn_800AA930(SaveCardRequest* req, u64 serial);
 void fn_800AAEE4(SaveCardRequest* req, u64 serial);
 void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial);
+void* fn_800A6418(u32 size); // TODO type: returns an ARAM address
+void fn_800A63C8(void);
 void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl, s32 iconSize, u32 iconSpeed,
                  u32 bannerFlags, char* comment, char* subComment, s32 blocks);
 s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
@@ -198,7 +201,10 @@ void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused) {
     }
 }
 
-extern u32 lbl_803CBCB8;
+extern u32 lbl_803CBCB8; // ARAM transfer state: 1 = saving the image, 2 = restoring it, 0 = idle
+extern u32 lbl_803CBCBC; // ARAM backup of lbl_802D4B00
+extern ARQRequest lbl_802D4AC0;
+extern u16 lbl_803CB830[4]; // TODO type: message ids indexed by SaveTask._1F + 3
 
 // Maps the slot's CARDProbeEx result to a card status and records it in the task.
 static inline void SaveTask_CheckCard(SaveTask* task) {
@@ -846,10 +852,912 @@ void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h) {
     lbl_803CC1B8->_10 = 0;
 }
 
-// .text:0x8003C00C size:0x28CC
-void fn_8003C00C(void) {
-    return;
+// Copies the settings and progress into the card image; the challenge save `slot`
+// is refreshed from starMissionCompletionTracker when flags has bit 1.
+static inline void SaveImage_Build(u8 flags, u8 slot) {
+    u8* present = lbl_802D4B00._8E;
+    s32 i;
+
+    lbl_802D4B00.soundMode = lbl_800EF808.outputMode;
+    lbl_802D4B00._95 = lbl_800EF808.unk398;
+    lbl_802D4B00._96 = lbl_80366158._1F;
+    memcpy(lbl_802D4B00._97, lbl_80361B20, sizeof(lbl_802D4B00._97));
+    memcpy(lbl_802D4B00._190, lbl_803616CC, sizeof(lbl_802D4B00._190));
+    lbl_802D4B00._5E4 = g_d_GameSettings._12;
+    memcpy(lbl_802D4B00._5E5, g_d_GameSettings._14, sizeof(lbl_802D4B00._5E5));
+    memcpy(lbl_802D4B00._5EB, g_d_GameSettings._1A, sizeof(lbl_802D4B00._5EB));
+    lbl_802D4B00._5F4 = g_d_GameSettings._00;
+    memcpy(lbl_802D4B00._48, lbl_80354768._CF18, sizeof(lbl_802D4B00._48));
+    memcpy(lbl_802D4B00._7E, lbl_80354768._CF4E, sizeof(lbl_802D4B00._7E));
+    lbl_802D4B00.size = 0x5B4;
+    for (i = 0; i < 3; i++) {
+        if ((flags & 2) && i == slot) {
+            memcpy(lbl_80354768.challenge[i], &starMissionCompletionTracker, 0x4508);
+            lbl_80354768._CF5E[slot] = 1;
+            present[slot] = 1;
+        }
+        memcpy(lbl_802D4B00.challenge[i].data, lbl_80354768.challenge[i], 0x4508);
+        lbl_802D4B00.challenge[i].size = 0x450C;
+    }
+    memcpy(present, lbl_80354768._CF5E, 3);
 }
+
+// Erases challenge save `slot` in both the progress and the card image.
+static inline void SaveImage_ClearChallenge(u8 slot) {
+    u8* progress = lbl_80354768.challenge[slot];
+
+    memset(progress, 0, 0x4508);
+    memcpy(lbl_802D4B00.challenge[slot].data, progress, 0x4508);
+    lbl_80354768._CF5E[slot] = 0;
+    lbl_802D4B00._8E[slot] = 0;
+    lbl_802D4B00.challenge[slot].size = 0x450C;
+    lbl_802D4B00.size = 0x5B4;
+}
+
+// Starts an ARAM backup of the card image (completion clears lbl_803CBCB8).
+static inline void SaveImage_BackupToAram(void) {
+    lbl_803CBCB8 = 1;
+    lbl_803CBCBC = (u32)fn_800A6418(0x10000);
+    DCFlushRange(&lbl_802D4B00, 0x10000);
+    ARQPostRequest(&lbl_802D4AC0, 0x4000, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_LOW, (u32)&lbl_802D4B00, lbl_803CBCBC,
+                   0x10000, (ARQCallback)fn_8003AE64);
+}
+
+static inline void SaveImage_RestoreFromAram(void) {
+    lbl_803CBCB8 = 2;
+    DCInvalidateRange(&lbl_802D4B00, 0x10000);
+    ARQPostRequest(&lbl_802D4AC0, 0x4000, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_LOW, lbl_803CBCBC, (u32)&lbl_802D4B00,
+                   0x10000, (ARQCallback)fn_8003AE64);
+}
+
+static inline void SaveTask_QueueWrite(SaveTask* task) {
+    SaveTask* child;
+    u8 port = task->port;
+    u8 b16 = task->_16;
+    u8 slot = task->slot;
+    u8 b1A = task->_1A;
+    u8 saveFlags = task->saveFlags;
+
+    child = fn_800B0A5C_insertQueue(fn_8003B5B0, 0x8000);
+    child->state = 0;
+    child->port = port;
+    child->_16 = b16;
+    child->slot = slot;
+    child->mode = 1;
+    child->_1A = b1A;
+    child->saveFlags = saveFlags;
+    child->noCard = 0;
+    lbl_803CC1B8->_10 = 0;
+}
+
+// .text:0x8003C00C size:0x28CC
+// Save task (queued by fn_8003BF54): checks the card, builds lbl_802D4B00 and writes it,
+// keeping an ARAM copy so a failed write can be rolled back.
+// NONMATCHING 92%: same control flow; the save-image builder inlines and the block-size loop are scheduled/allocated differently
+#if NONMATCHING
+void fn_8003C00C(void) {
+    SaveTask* task = (SaveTask*)lbl_803CC1B8;
+    SaveTask* child;
+    OSCalendarTime date;
+    SaveCardRequest req;
+    SaveBannerData* banner = &lbl_800F7B00;
+    u8 msg;
+    u8 port;
+    u8 b16;
+    u8 slot;
+    u8 b1A;
+    u8 saveFlags;
+    u8 b21;
+    s32 i;
+
+    SaveTask_CheckCard(task);
+    switch (task->state) {
+    case 0:
+        if (lbl_803C50E8._47 != 0) {
+            task->state = 45;
+            task->outcome = 11;
+            break;
+        }
+        fn_800ACCE8();
+        lbl_80366158._20 = 1;
+        task->state = 1;
+        break;
+    case 1:
+        if (task->_1A == 1) {
+            if (lbl_803C50E8._52 == 1 || lbl_803C50E8._52 == 3) {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x1B, 0, 0);
+            }
+            task->state++;
+        } else {
+            task->state = 8;
+            lbl_802D4AE0[task->slot] = 0;
+        }
+        break;
+    case 2:
+        if (task->_1A == 1) {
+            if (lbl_803C50E8._52 == 1 || lbl_803C50E8._52 == 3) {
+                switch (lbl_803C50E8.choice) {
+                case 2:
+                    task->state = 8;
+                    lbl_802D4AE0[task->slot] = 0;
+                    break;
+                case 3:
+                case 4:
+                    task->state = 45;
+                    task->outcome = 11;
+                    break;
+                }
+            } else {
+                task->state = 8;
+                lbl_802D4AE0[task->slot] = 0;
+            }
+        }
+        break;
+    case 3:
+        fn_8004A34C(&lbl_803C50E8, task->port, lbl_803CB830[task->_1F + 3], 1, 0);
+        task->state++;
+        break;
+    case 4:
+        switch (lbl_803CC1B8->_10) {
+        case 2:
+            task->state = 45;
+            task->outcome = 11;
+            break;
+        case 3:
+        case 4:
+            task->state = 1;
+            break;
+        }
+        break;
+    case 5:
+        msg = 0;
+        lbl_80366158._20 = 1;
+        if (task->_1A == 4 && task->_21 != 4) {
+            msg = 0x12;
+        } else if (lbl_803C50E8._52 != 1) {
+            switch (task->_21) {
+            case 0:
+                msg = 0x1D;
+                break;
+            case 1:
+                msg = 0x21;
+                break;
+            case 2:
+                msg = 0x2B;
+                break;
+            case 3:
+                msg = 0x30;
+                break;
+            case 4:
+                msg = 0x12;
+                break;
+            }
+        }
+        fn_8004A34C(&lbl_803C50E8, task->port, msg, 1, 0);
+        if (task->_21 == 2 || task->_21 == 3) {
+            task->state = 7;
+        } else {
+            task->state++;
+        }
+        break;
+    case 6:
+        if (lbl_803C50E8._52 == 1) {
+            task->state = 45;
+            task->outcome = 1;
+            break;
+        }
+        switch (lbl_803C50E8.choice) {
+        case 2:
+            task->state = 45;
+            if (lbl_803C50E8._52 == 3) {
+                task->outcome = 1;
+            } else {
+                task->outcome = 11;
+            }
+            break;
+        case 3:
+        case 4:
+            if (lbl_803C50E8._52 == 2) {
+                task->state = 45;
+            } else {
+                task->state = 1;
+            }
+            task->outcome = 7;
+            break;
+        }
+        break;
+    case 7:
+        switch (lbl_803C50E8.choice) {
+        case 2:
+            task->state = 8;
+            break;
+        case 3:
+        case 4:
+            if (lbl_803C50E8._52 == 2) {
+                task->state = 45;
+            } else {
+                task->state = 1;
+            }
+            task->outcome = 7;
+            break;
+        }
+        break;
+    case 8:
+        b21 = task->_21;
+        saveFlags = task->saveFlags;
+        b1A = task->_1A;
+        slot = task->slot;
+        b16 = task->_16;
+        port = task->port;
+        child = fn_800B0A5C_insertQueue(fn_8004053C, 0x8000);
+        child->state = 0;
+        child->port = port;
+        child->_16 = b16;
+        child->slot = slot;
+        child->mode = 1;
+        child->_1A = b1A;
+        child->saveFlags = saveFlags;
+        child->noCard = 0;
+        child->_21 = b21;
+        lbl_803CC1B8->_10 = 0;
+        task->state++;
+        break;
+    case 9:
+        if (lbl_803CC1B8->_10 != 0) {
+            task->noCard = 0;
+            switch (lbl_803CC1B8->_10) {
+            case 1:
+                lbl_802D4AE0[task->slot] = lbl_803C7838.slots[task->slot].serial;
+                task->state = 10;
+                break;
+            case 6:
+                lbl_802D4AE0[task->slot] = lbl_803C7838.slots[task->slot].serial;
+                if (task->_21 == 2) {
+                    task->state = 41;
+                } else {
+                    task->state = 27;
+                }
+                break;
+            case 10:
+                task->state = 5;
+                break;
+            case 8:
+                task->state = 5;
+                break;
+            case 7:
+                switch (lbl_803C50E8._52) {
+                case 2:
+                    task->state = 45;
+                    task->outcome = 7;
+                    break;
+                case 4:
+                case 5:
+                    task->state = 45;
+                    task->outcome = 11;
+                    break;
+                default:
+                    task->state = 1;
+                    break;
+                }
+                break;
+            case 13:
+                lbl_802D4AE0[task->slot] = lbl_803C7838.slots[task->slot].serial;
+                task->state = 16;
+                break;
+            case 9:
+                lbl_802D4AE0[task->slot] = 0;
+                task->state = 12;
+                break;
+            case 11:
+                task->state = 45;
+                if (task->_1A == 4 || lbl_803C50E8._52 == 2) {
+                    task->outcome = 11;
+                } else {
+                    task->outcome = 12;
+                }
+                break;
+            }
+        }
+        break;
+    case 10:
+        fn_800AB474(task->slot, task->mode, lbl_803CBC48, "MarioBaseball", lbl_802D4AE0[task->slot]);
+        task->state++;
+        break;
+    case 11:
+        if (lbl_803CC1B8->_10 != 0) {
+            switch (lbl_803C7838.status) {
+            case 0:
+                lbl_802D4AE0[task->slot] = 0;
+                task->state = 12;
+                break;
+            case 5:
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x40, 0, 0);
+                task->state = 37;
+                break;
+            case 6:
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x3F, 0, 0);
+                task->state = 39;
+                break;
+            case 16:
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x13, 0, 0);
+                lbl_802D4AE0[task->slot] = lbl_803C7838.slots[task->slot].serial;
+                task->state = 37;
+                break;
+            case 14:
+            case 17:
+                task->state = 18;
+                break;
+            case 1:
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x15, 0, 0);
+                task->state = 37;
+                break;
+            case 8:
+                task->state = 27;
+                break;
+            default:
+                switch (task->_21) {
+                case 2:
+                    msg = 0x2B;
+                    break;
+                case 3:
+                    msg = 0x30;
+                    break;
+                default:
+                    msg = 0x17;
+                    break;
+                }
+                fn_8004A34C(&lbl_803C50E8, task->port, msg, 0, 0);
+                task->state = 37;
+                break;
+            }
+            task->cardReady = 0;
+        }
+        break;
+    case 12:
+        lbl_80366158._20 = 1;
+        fn_8004A34C(&lbl_803C50E8, task->port, 1, 0, 0);
+        task->noCard = 0;
+        task->cardReady = 0;
+        lbl_802D4AE0[task->slot] = 0;
+        task->state++;
+        break;
+    case 13:
+        switch (lbl_803C50E8.choice) {
+        case 1:
+        case 2:
+            task->state = 8;
+            break;
+        case 3:
+        case 4:
+            if (task->_1A == 4 || lbl_803C50E8._52 == 2) {
+                task->outcome = 11;
+            } else {
+                task->outcome = 12;
+            }
+            task->state = 45;
+            break;
+        }
+        break;
+    case 14:
+        if (task->noCard) {
+            lbl_803C50E8._46 = 1;
+            task->state = 12;
+            break;
+        }
+        task->state = 16;
+        break;
+    case 15:
+        if (task->noCard) {
+            lbl_803C50E8._46 = 1;
+            task->state = 12;
+            break;
+        }
+        switch (lbl_803C50E8.choice) {
+        case 1:
+        case 2:
+            task->state = 16;
+            break;
+        case 3:
+        case 4:
+            task->state = 5;
+            break;
+        }
+        break;
+    case 16:
+        memset(&lbl_802D4B00, 0, 0xD51C);
+        memset(lbl_802D4B00._D51C, 0xEE, sizeof(lbl_802D4B00._D51C));
+        lbl_802D4B00.soundMode = lbl_800EF808.outputMode;
+        lbl_802D4B00._95 = lbl_800EF808.unk398;
+        lbl_802D4B00._96 = lbl_80366158._1F;
+        memcpy(lbl_802D4B00._97, lbl_80361B20, sizeof(lbl_802D4B00._97));
+        memcpy(lbl_802D4B00._190, lbl_803616CC, sizeof(lbl_802D4B00._190));
+        lbl_802D4B00._5E4 = g_d_GameSettings._12;
+        memcpy(lbl_802D4B00._5E5, g_d_GameSettings._14, sizeof(lbl_802D4B00._5E5));
+        memcpy(lbl_802D4B00._5EB, g_d_GameSettings._1A, sizeof(lbl_802D4B00._5EB));
+        lbl_802D4B00.size = 0x5B4;
+        lbl_802D4B00._5F4 = g_d_GameSettings._00;
+        for (i = 2; i >= 0; i--) {
+            lbl_802D4B00.challenge[i].size = 0x450C;
+        }
+        lbl_80366158._20 = 0;
+        SaveImage_Build(task->saveFlags, task->challengeSlot);
+        SaveTask_QueueWrite(task);
+        fn_8004A34C(&lbl_803C50E8, task->port, 0x16, 0, 0);
+        task->state++;
+        break;
+    case 17:
+        if (lbl_803CC1B8->_10 != 0) {
+            lbl_803C50E8._46 = 1;
+            task->noCard = 0;
+            switch (lbl_803CC1B8->_10) {
+            case 1:
+                task->state = 45;
+                task->outcome = 1;
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x18, 0, 0);
+                break;
+            case 8:
+                task->outcome = 8;
+                task->state = 45;
+                break;
+            case 2:
+            case 3:
+                lbl_802D4AE0[task->slot] = 0;
+                fn_8004A34C(&lbl_803C50E8, task->_16, 0x44, 0, 0);
+                task->state = 7;
+                break;
+            case 9:
+                lbl_802D4AE0[task->slot] = 0;
+                task->state = 12;
+                break;
+            }
+        }
+        break;
+    case 18:
+        if (task->noCard) {
+            lbl_803C50E8._46 = 1;
+            task->state = 12;
+            break;
+        }
+        fn_8004A34C(&lbl_803C50E8, task->port, 0x3E, 0, 0);
+        task->state++;
+        break;
+    case 19:
+        if (task->noCard) {
+            lbl_803C50E8._46 = 1;
+            task->state = 12;
+            break;
+        }
+        switch (lbl_803C50E8.choice) {
+        case 1:
+        case 2:
+            task->state = 20;
+            break;
+        }
+        break;
+    case 20:
+        SaveImage_BackupToAram();
+        task->state++;
+    case 21:
+        if (lbl_803CBCB8 == 0) {
+            if (task->noCard) {
+                lbl_803C50E8._46 = 1;
+                task->state = 12;
+                break;
+            }
+            if (task->_21 == 3) {
+                SaveImage_ClearChallenge(task->challengeSlot);
+            } else {
+                SaveImage_Build(task->saveFlags, task->challengeSlot);
+            }
+            lbl_80366158._20 = 0;
+            SaveTask_QueueWrite(task);
+            fn_8004A34C(&lbl_803C50E8, task->port, 0xC, 0, 0);
+            task->state++;
+        }
+        break;
+    case 22:
+        if (lbl_803CC1B8->_10 == 0) {
+            break;
+        }
+        if (lbl_803C7838.status == 0x11) {
+            task->state = 24;
+        } else {
+            task->state = 23;
+        }
+    case 23:
+        if (task->state == 23) {
+            SaveImage_RestoreFromAram();
+            task->state = 24;
+        }
+    case 24:
+        if (lbl_803CBCB8 != 0) {
+            break;
+        }
+        if (lbl_803C7838.status != 0x11) {
+            fn_80041150(7, 3);
+        }
+        if (lbl_803CBCBC != 0) {
+            fn_800A63C8();
+            lbl_803CBCBC = 0;
+        }
+        task->state = 25;
+    case 25:
+        task->noCard = 0;
+        switch (lbl_803CC1B8->_10) {
+        case 1:
+            lbl_803C50E8._46 = 1;
+            task->state = 43;
+            task->outcome = 1;
+            break;
+        case 5:
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x45, 0, 0);
+            task->state = 26;
+            break;
+        case 9:
+        default:
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x44, 0, 0);
+            lbl_802D4AE0[task->slot] = 0;
+            task->state = 26;
+            break;
+        }
+        break;
+    case 26:
+        switch (lbl_803C50E8.choice) {
+        case 1:
+        case 2:
+            task->state = 8;
+            break;
+        case 3:
+        case 4:
+            if (task->_1A == 0) {
+                task->state = 5;
+                break;
+            }
+            if (lbl_803C50E8._52 == 3) {
+                task->outcome = 1;
+                task->state = 45;
+                break;
+            }
+            if (task->_1A == 4 || lbl_803C50E8._52 == 2) {
+                task->outcome = 11;
+            } else {
+                task->outcome = 12;
+            }
+            task->state = 45;
+            break;
+        }
+        break;
+    case 27:
+        child = fn_800B0A5C_insertQueue(fn_80040C14, 0x8000);
+        child->state = 0;
+        child->port = task->port;
+        child->_16 = task->_16;
+        child->slot = task->slot;
+        child->mode = task->mode;
+        child->_1A = task->_1A;
+        child->noCard = 0;
+        child->challengeSlot = task->challengeSlot;
+        child->saveFlags = task->saveFlags;
+        lbl_803CC1B8->_10 = 0;
+        task->state++;
+    case 28:
+        switch (lbl_803CC1B8->_10) {
+        case 1:
+            if (task->saveFlags & 2) {
+                if (lbl_802D4B00._8E[task->challengeSlot] != 0) {
+                    task->state = 29;
+                } else {
+                    task->state = 31;
+                }
+            } else {
+                task->state = 31;
+            }
+            break;
+        case 9:
+            if (task->_1A != 5) {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x17, 0, 0);
+            } else {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x30, 0, 0);
+            }
+            fn_800415A0(50);
+            task->state = 37;
+            lbl_802D4AE0[task->slot] = 0;
+            break;
+        case 8:
+            lbl_802D4AE0[task->slot] = lbl_803C7838.slots[task->slot].serial;
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x13, 0, 0);
+            task->state = 37;
+            break;
+        case 2:
+            if (task->_21 == 2) {
+                lbl_803C50E8.choice = 2;
+            } else if (task->_1A != 5) {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x17, 0, 0);
+            } else {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x30, 0, 0);
+            }
+            fn_800415A0(50);
+            task->state = 37;
+            break;
+        case 4:
+            task->state = 29;
+            break;
+        }
+        break;
+    case 29:
+        if (task->_1A != 4) {
+            if (task->noCard) {
+                lbl_803C50E8._46 = 1;
+                task->state = 12;
+                break;
+            }
+            task->state = 31;
+        } else {
+            task->state = 31;
+        }
+        break;
+    case 30:
+        if (task->noCard) {
+            if (lbl_803C50E8.choice != 0) {
+                lbl_803C50E8._46 = 1;
+                task->state = 12;
+            }
+        } else {
+            switch (lbl_803C50E8.choice) {
+            case 2:
+                task->state = 31;
+                break;
+            case 3:
+            case 4:
+                task->state = 45;
+                task->outcome = 7;
+                break;
+            }
+        }
+        break;
+    case 31:
+        lbl_80366158._20 = 0;
+        if (task->noCard) {
+            if (task->_1A != 5) {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x17, 0, 0);
+            } else {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x30, 0, 0);
+            }
+            fn_800415A0(50);
+            lbl_802D4AE0[task->slot] = 0;
+            task->state = 37;
+            break;
+        }
+        switch (task->_21) {
+        case 3:
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x32, 0, 0);
+            break;
+        case 2:
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x2C, 0, 0);
+            break;
+        default:
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x16, 0, 0);
+            break;
+        }
+        if (task->_1A == 4) {
+            SaveImage_Build(task->saveFlags, task->challengeSlot);
+        } else {
+            SaveImage_Build(2, 3);
+        }
+        fn_800415A0(50);
+        task->state++;
+        break;
+    case 32:
+        SaveImage_BackupToAram();
+        task->state++;
+    case 33:
+        if (lbl_803CBCB8 == 0 && fn_8004157C() == 0) {
+            if (task->noCard) {
+                lbl_803C50E8._46 = 1;
+                task->state = 12;
+                break;
+            }
+            if (task->_1A != 5) {
+                SaveImage_Build(task->saveFlags, task->challengeSlot);
+            } else {
+                SaveImage_ClearChallenge(task->challengeSlot);
+            }
+            OSTicksToCalendarTime(OSGetTime(), &date);
+            fn_800AC508("MarioBaseball", banner->bannerTpl, lbl_803CBC4C, banner->iconTpl, lbl_803CBC50, 3, 0,
+                        SaveBanner_Text(banner, 1), SaveBanner_Text(banner, 0), lbl_803CBC48);
+            req.fileName = NULL;
+            req.buffer = &lbl_802D4B00;
+            req.length = 0x10000;
+            req.chan = task->slot;
+            req.mode = task->mode;
+            req.permissions = 4;
+            req.verify = fn_80040FE0;
+            req.verifyArg = SaveTask_BlockMask(task->saveFlags, task->challengeSlot);
+            req.flags = 1;
+            fn_800AAEE4(&req, lbl_802D4AE0[task->slot]);
+            task->state++;
+        }
+        break;
+    case 34:
+        if (lbl_803CC1B8->_10 == 0) {
+            break;
+        }
+        if (lbl_803C7838.status == 0x11) {
+            task->state = 36;
+        } else {
+            task->state = 35;
+        }
+    case 35:
+        if (task->state == 35) {
+            SaveImage_RestoreFromAram();
+            task->state = 36;
+        }
+    case 36:
+        if (lbl_803CBCB8 != 0) {
+            break;
+        }
+        if (lbl_803C7838.status != 0x11) {
+            fn_80041150(7, 3);
+        }
+        if (lbl_803CBCBC != 0) {
+            fn_800A63C8();
+            lbl_803CBCBC = 0;
+        }
+        SaveImage_Build(2, 3);
+        switch (lbl_803C7838.status) {
+        case 17:
+            task->outcome = 1;
+            task->state = 43;
+            break;
+        case 0:
+            lbl_802D4AE0[task->slot] = 0;
+            task->state = 12;
+            break;
+        case 12:
+        case 16:
+            lbl_802D4AE0[task->slot] = lbl_803C7838.slots[task->slot].serial;
+            task->state = 37;
+            break;
+        case 3:
+        case 13:
+            if (task->_21 == 2) {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x47, 0, 0);
+            } else if (task->_1A != 5) {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x46, 0, 0);
+            } else {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x48, 0, 0);
+            }
+            fn_800415A0(50);
+            task->state = 37;
+            break;
+        default:
+            if (task->_21 == 2) {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x2B, 0, 0);
+            } else if (task->_1A != 5) {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x17, 0, 0);
+            } else {
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x30, 0, 0);
+            }
+            task->state = 37;
+            fn_800415A0(50);
+            break;
+        }
+        break;
+    case 37:
+        task->cardReady = 0;
+        task->state++;
+    case 38:
+        lbl_80366158._20 = 1;
+        if (fn_8004157C() == 0) {
+            if (task->noCard && task->cardReady) {
+                lbl_803C50E8._46 = 1;
+                task->state = 1;
+                break;
+            }
+            switch (lbl_803C50E8.choice) {
+            case 1:
+            case 2:
+                task->state = 8;
+                break;
+            case 3:
+            case 4:
+                task->state = 45;
+                if (lbl_803C50E8._52 == 3) {
+                    task->outcome = 1;
+                } else if (task->_1A == 4 || lbl_803C50E8._52 == 2) {
+                    task->outcome = 11;
+                } else {
+                    task->outcome = 12;
+                }
+                break;
+            }
+        }
+        break;
+    case 39:
+        task->cardReady = 0;
+        task->state++;
+    case 40:
+        if (task->noCard && task->cardReady) {
+            lbl_803C50E8._46 = 1;
+            task->state = 1;
+            break;
+        }
+        switch (lbl_803C50E8.choice) {
+        case 1:
+        case 2:
+            task->state = 8;
+            break;
+        case 3:
+        case 4:
+            task->state = 45;
+            if (lbl_803C50E8._52 == 3) {
+                task->outcome = 1;
+            } else if (task->_1A == 4 || lbl_803C50E8._52 == 2) {
+                task->outcome = 11;
+            } else {
+                task->outcome = 12;
+            }
+            break;
+        }
+        break;
+    case 41:
+        if (fn_80041348() != 0) {
+            task->state = 27;
+            break;
+        }
+        fn_8004A34C(&lbl_803C50E8, task->port, 0x36, 0, 0);
+        task->state = 42;
+        break;
+    case 42:
+        switch (lbl_803C50E8.choice) {
+        case 1:
+        case 2:
+            task->state = 5;
+            break;
+        }
+        break;
+    case 43:
+        switch (task->_21) {
+        case 3:
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x33, 0, 0);
+            break;
+        case 2:
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x2D, 0, 0);
+            break;
+        case 5:
+            lbl_803C50E8.choice = 2;
+            break;
+        case 4:
+        default:
+            fn_8004A34C(&lbl_803C50E8, task->port, 0x18, 0, 0);
+            break;
+        }
+        fn_800415A0(50);
+        lbl_80366158._20 = 1;
+        task->state++;
+        break;
+    case 44:
+        if (fn_8004157C() == 0 && lbl_803C50E8.choice != 0) {
+            task->state++;
+        }
+        break;
+    case 45:
+        fn_800ACCD4();
+        task->state++;
+        break;
+    case 46:
+        lbl_80366158._20 = 1;
+        if (lbl_803C50E8._44 != 0) {
+            if (lbl_803C50E8._49 != 0) {
+                lbl_803C50E8._48 = 1;
+                fn_8004A34C(&lbl_803C50E8, task->port, 0x4D, 0, 0);
+            }
+            SaveTask_Finish(task->outcome);
+        }
+        break;
+    }
+}
+#endif
 
 // .text:0x8003E8D8 size:0x964
 // Load task variant used from menus: like fn_8003AECC, with retry prompts.
