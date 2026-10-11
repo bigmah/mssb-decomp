@@ -29,6 +29,21 @@ extern int __float_nan[];
 extern f64 __frsqrte(f64);
 extern s16 fn_3_9FB8C(f32 x, f32 y);
 extern s32 fn_3_108854(void);
+extern u8 lbl_3_data_2127C[][5];  // AI strength per game mode and difficulty
+extern u8 lbl_3_data_21874[5];    // time limit in seconds per difficulty (4: multiplayer)
+extern u8 lbl_3_data_21860[5][4]; // per difficulty (4: multiplayer) and slot
+extern s32 lbl_3_data_265F0;
+extern RepBallView g_Ball;
+extern void fn_3_59A90(void);
+extern void fn_3_8913C(void);
+extern void fn_3_6D964(s32 a, s32 b);
+extern void fn_3_9E078(s32* arr, s32 n, BOOL useBallRng);
+extern void fn_3_810C4(int idx, int base);
+extern void minigamesSetSomePointers2(void);
+extern void minigamesGXStuff(void);
+extern void fn_3_CC81C(void);
+extern void fn_3_F1DC(void);
+extern void fn_3_169600(void);
 extern u16 lbl_3_data_81FC[]; // sound ids
 extern u8 lbl_3_bss_B791;
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
@@ -101,6 +116,21 @@ extern int __float_nan[];
 extern f64 __frsqrte(f64);
 extern s16 fn_3_9FB8C(f32 x, f32 y);
 extern s32 fn_3_108854(void);
+extern u8 lbl_3_data_2127C[][5];  // AI strength per game mode and difficulty
+extern u8 lbl_3_data_21874[5];    // time limit in seconds per difficulty (4: multiplayer)
+extern u8 lbl_3_data_21860[5][4]; // per difficulty (4: multiplayer) and slot
+extern s32 lbl_3_data_265F0;
+extern RepBallView g_Ball;
+extern void fn_3_59A90(void);
+extern void fn_3_8913C(void);
+extern void fn_3_6D964(s32 a, s32 b);
+extern void fn_3_9E078(s32* arr, s32 n, BOOL useBallRng);
+extern void fn_3_810C4(int idx, int base);
+extern void minigamesSetSomePointers2(void);
+extern void minigamesGXStuff(void);
+extern void fn_3_CC81C(void);
+extern void fn_3_F1DC(void);
+extern void fn_3_169600(void);
 extern u16 lbl_3_data_81FC[]; // sound ids
 extern u8 lbl_3_bss_B791;
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
@@ -130,6 +160,7 @@ extern void fn_3_7FED4(f32* out, f32 dist, f32 frame);
 extern void fn_800115C8(s8 index);
 
 #define REP_MG ((RepMinigameView*)g_Minigame)
+#define REP_GL ((RepGameLogicView*)g_GameLogic)
 
 
 // .text:0x0013C7BC size:0xDBC mapped:0x8077B850
@@ -1282,7 +1313,125 @@ void fn_3_1413E4(void) {
     }
 }
 // .text:0x001414AC size:0x580 mapped:0x80780540
+// Minigame setup (step 0), then hand over to fn_3_5A6D4(5).
+// NONMATCHING 91%: register allocation, stack layout and some store order differ
+#if NONMATCHING
 void fn_3_1414AC(void) {
-    return;
+    s32 order[4];
+    s32 i;
+    s8 n;
+    s8 p;
+    if (REP_GL->_125 == 0) {
+        fn_3_59A90();
+        REP_GL->_121 = 6;
+        REP_MG->_17C0 = 0;
+        REP_MG->_1A3A = 0;
+        REP_MG->turnOverStatus = 0;
+        REP_MG->_1A37 = 0;
+        for (i = 0; i < 4; i++) {
+            REP_MG->points[i] = 0;
+            REP_MG->latestPoints[i] = 0;
+            REP_MG->pointsPair[i][0] = 0;
+            REP_MG->pointsPair[i][1] = 0;
+            REP_MG->slotPlayer[i] = -1;
+            REP_MG->playerSlot[i] = -1;
+            REP_MG->_18FC[i] = -1;
+            REP_MG->_1900[i] = -1;
+            REP_MG->_18F0[i] = 1;
+        }
+        REP_MG->pointsReqToWin = 0;
+        REP_MG->currentPlayer = -1;
+        REP_MG->rosterID = -1;
+        if (REP_MG->multiPlayerInd == 0) {
+            REP_MG->_17C4 = lbl_3_data_21874[REP_MG->difficulty] * 60;
+            REP_MG->aiStrength[0] = REP_MG->aiStrength[1] = REP_MG->aiStrength[2] = REP_MG->aiStrength[3] =
+                lbl_3_data_2127C[REP_MG->gameMode][REP_MG->difficulty];
+        } else {
+            if (REP_MG->_1A3C != 0) {
+                REP_MG->aiStrength[0] = REP_MG->aiStrength[1] = REP_MG->aiStrength[2] = REP_MG->aiStrength[3] =
+                    lbl_3_data_2127C[7][0];
+            }
+            REP_MG->_17C4 = lbl_3_data_21874[4] * 60;
+        }
+        fn_3_8913C();
+        n = 0;
+        for (p = 0; p < 4; p++) {
+            if (REP_MG->characterIndex[p] >= 0) {
+                REP_MG->_18FC[n] = p;
+                REP_MG->_1900[p] = n;
+                REP_MG->_1AFE[n] = 0;
+                REP_MG->points[n] = 0;
+                REP_MG->_1B15[p] = 0;
+                g_Runners[n]._152 = p;
+                order[p] = n;
+                fn_3_6D964(p, n);
+                g_Runners[n]._123 = 1;
+                if (REP_MG->_18D8[p] == 0) {
+                    g_Runners[n]._11A = 0;
+                } else {
+                    g_Runners[n]._11A = 1;
+                }
+                g_Runners[n]._133 = 0;
+                n++;
+            }
+        }
+        if (REP_MG->multiPlayerInd != 0) {
+            fn_3_9E078(order, REP_MG->numParticipants, 0);
+            for (i = 0; i < 4; i++) {
+                if (REP_MG->_18FC[i] >= 0) {
+                    fn_3_810C4(i, lbl_3_data_21860[4][order[i]]);
+                }
+            }
+        } else {
+            for (i = 0; i < 4; i++) {
+                if (REP_MG->_18FC[i] >= 0) {
+                    fn_3_810C4(i, lbl_3_data_21860[REP_MG->difficulty][i]);
+                }
+            }
+        }
+        minigamesSetSomePointers();
+        minigamesGXStuff();
+        minigamesSetSomePointers2();
+        REP_MG->_1AF8 = 0;
+        REP_MG->phase = 0;
+        REP_MG->ballPos.x = lbl_3_data_217F8[0];
+        REP_MG->ballPos.y = lbl_3_data_217F8[1];
+        REP_MG->ballPos.z = lbl_3_data_217F8[2];
+        REP_MG->ballVel.x = lbl_3_rodata_3734;
+        REP_MG->ballVel.y = lbl_3_rodata_3734;
+        REP_MG->ballVel.z = lbl_3_rodata_3734;
+        REP_MG->frames = 0;
+        REP_MG->_1AF8 = 0xE00;
+        fn_3_CC81C();
+        g_Ball.pos.z = lbl_3_rodata_3734;
+        g_Ball.pos.y = lbl_3_rodata_3734;
+        g_Ball.pos.x = lbl_3_rodata_3734;
+        lbl_3_bss_B791 = 0;
+        lbl_3_data_265F0 = -1;
+        for (i = 0; i < 100; i++) {
+            REP_MG->itemState[i] = 0;
+            REP_MG->coinFrames[i] = 0;
+        }
+        for (i = 0; i < 6; i++) {
+            REP_MG->_1B1A[i] = 0;
+            REP_MG->_1B08[i] = 0;
+        }
+        for (i = 0; i < 4; i++) {
+            REP_MG->_1B20.it.pair[i][0] = -1;
+            REP_MG->_1B20.it.pair[i][1] = -1;
+        }
+        REP_MG->_1B20.it._E = 0;
+        REP_MG->_18A2 = RandomInt_Game_Range(lbl_3_data_21904[5], lbl_3_data_21904[6]) * 60;
+        REP_MG->_18A4 = RandomInt_Game_Range(lbl_3_data_21904[7], lbl_3_data_21904[8]) * 60;
+        fn_3_F1DC();
+        REP_MG->target.active = 0;
+        REP_MG->target.timer = lbl_3_data_21924[0];
+        REP_MG->_1D74 = -1;
+        fn_3_169600();
+        REP_GL->_125++;
+    } else {
+        fn_3_5A6D4(5);
+    }
 }
+#endif
 

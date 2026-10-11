@@ -15,9 +15,17 @@ typedef struct RepRunnerView {
     /*0x064*/ f32 fractionalBasesRan;
     /*0x068*/ u8 _068[0xE2 - 0x68];
     /*0x0E2*/ s16 _0E2;
-    /*0x0E4*/ u8 _0E4[0x137 - 0xE4];
+    /*0x0E4*/ u8 _0E4[0x11A - 0xE4];
+    /*0x11A*/ u8 _11A;
+    /*0x11B*/ u8 _11B[0x123 - 0x11B];
+    /*0x123*/ u8 _123;
+    /*0x124*/ u8 _124[0x133 - 0x124];
+    /*0x133*/ u8 _133;
+    /*0x134*/ u8 _134[0x137 - 0x134];
     /*0x137*/ u8 runningDirectionCode;
-    /*0x138*/ u8 _138[0x154 - 0x138];
+    /*0x138*/ u8 _138[0x152 - 0x138];
+    /*0x152*/ s8 _152; // player slot
+    /*0x153*/ u8 _153;
 } RepRunnerView;
 
 // Target that moves along the base path (g_Minigame + 0xCB0).
@@ -43,24 +51,42 @@ typedef struct RepMinigameView {
     /*0x17C8*/ s16 coinFrames[100];
     /*0x1890*/ s16 points[4];
     /*0x1898*/ s16 latestPoints[4];
-    /*0x18A0*/ u8 _18A0[0x18CC - 0x18A0];
+    /*0x18A0*/ u8 _18A0[2];
+    /*0x18A2*/ s16 _18A2; // frames
+    /*0x18A4*/ s16 _18A4; // frames
+    /*0x18A6*/ u8 _18A6[0x18BC - 0x18A6];
+    /*0x18BC*/ s16 pointsPair[4][2];
     /*0x18CC*/ s8 characterIndex[4];
-    /*0x18D0*/ u8 _18D0[0x18DC - 0x18D0];
+    /*0x18D0*/ u8 _18D0[0x18D8 - 0x18D0];
+    /*0x18D8*/ u8 _18D8[4]; // per player
     /*0x18DC*/ u8 aiStrength[4];
-    /*0x18E0*/ u8 _18E0[0x18FC - 0x18E0];
+    /*0x18E0*/ u8 _18E0[0x18F0 - 0x18E0];
+    /*0x18F0*/ u8 _18F0[4];
+    /*0x18F4*/ s8 slotPlayer[4];
+    /*0x18F8*/ s8 playerSlot[4];
     /*0x18FC*/ s8 _18FC[4]; // per runner slot; < 0: none
     /*0x1900*/ s8 _1900[4]; // per runner slot; < 0: none
-    /*0x1904*/ u8 _1904[0x1909 - 0x1904];
+    /*0x1904*/ s8 currentPlayer;
+    /*0x1905*/ s8 rosterID;
+    /*0x1906*/ u8 numParticipants;
+    /*0x1907*/ u8 _1907[2];
     /*0x1909*/ u8 multiPlayerInd;
     /*0x190A*/ u8 _190A;
     /*0x190B*/ u8 turnOverStatus;
     /*0x190C*/ u8 _190C[0x193A - 0x190C];
     /*0x193A*/ u8 itemState[100]; // items: 1..6 = type on the field, +100 once collected
-    /*0x199E*/ u8 _199E[0x1A2B - 0x199E];
+    /*0x199E*/ u8 _199E[0x1A26 - 0x199E];
+    /*0x1A26*/ s16 pointsReqToWin;
+    /*0x1A28*/ u8 _1A28[2];
+    /*0x1A2A*/ u8 gameMode;
     /*0x1A2B*/ u8 difficulty;
-    /*0x1A2C*/ u8 _1A2C[0x1A3A - 0x1A2C];
-    /*0x1A3A*/ u8 _1A3A;
-    /*0x1A3B*/ u8 _1A3B[0x1AE0 - 0x1A3B];
+    /*0x1A2C*/ u8 _1A2C[0x1A37 - 0x1A2C];
+    /*0x1A37*/ u8 _1A37;
+    /*0x1A38*/ u8 _1A38[2];
+    /*0x1A3A*/ u8 _1A3A; // 0..2, raised as time passes
+    /*0x1A3B*/ u8 _1A3B;
+    /*0x1A3C*/ u8 _1A3C;
+    /*0x1A3D*/ u8 _1A3D[0x1AE0 - 0x1A3D];
     /*0x1AE0*/ Vec ballPos;
     /*0x1AEC*/ Vec ballVel;
     /*0x1AF8*/ s16 _1AF8;
@@ -98,6 +124,22 @@ typedef struct RepBss37400View {
     /*0x00*/ u8 _00[0x40];
     /*0x40*/ s16 humanPlayer;
 } RepBss37400View;
+
+// View of g_Ball, only the fields used here.
+typedef struct RepBallView {
+    /*0x00*/ Vec pos;
+} RepBallView;
+
+// View of g_GameLogic, only the fields used here.
+typedef struct RepGameLogicView {
+    /*0x000*/ u8 _000[0xFE];
+    /*0x0FE*/ u16 _0FE;
+    /*0x100*/ s16 _100;
+    /*0x102*/ u8 _102[0x121 - 0x102];
+    /*0x121*/ u8 _121;
+    /*0x122*/ u8 _122[3];
+    /*0x125*/ u8 _125; // init step
+} RepGameLogicView;
 
 void fn_3_13C7BC(void);
 u32 fn_3_13D578(s8 a);
