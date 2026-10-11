@@ -29,6 +29,10 @@ extern StreamTrack lbl_8034E478[16];
 extern u8 lbl_800E87B4[15][16];   // TODO type: stream file descriptors
 extern u8 lbl_800E88A4[16][2];    // stream volumes
 extern CharGroupTable lbl_80108EDC;
+extern MenuSlotSrc lbl_800E88C4[6][5];
+extern MenuSlotSrc lbl_800E8A2C[5];
+extern MenuSlotSrc lbl_800E8A68[5];
+extern u8 lbl_800E869C[32];
 extern u8 lbl_80108ED0[12];     // captain character ids
 extern u8 lbl_8010902C[12];     // class per captain (lbl_80108ED0 order)
 
@@ -97,7 +101,30 @@ void fn_80064430(void* obj, s32 count, f32 scale2, f32 scale) {
 
 // .text:0x80064534 size:0x220
 void fn_80064534(void) {
-    return;
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 6; i++) {
+        for (j = 0; j < 5; j++) {
+            lbl_803616CC.groups[i][j].id = lbl_800E88C4[i][j].id;
+            lbl_803616CC.groups[i][j].x = lbl_800E88C4[i][j].x;
+            lbl_803616CC.groups[i][j].y = lbl_800E88C4[i][j].y;
+        }
+    }
+    for (j = 0; j < 5; j++) {
+        lbl_803616CC.head[j].id = lbl_800E8A2C[j].id;
+        lbl_803616CC.head[j].x = lbl_800E8A2C[j].x;
+        lbl_803616CC.head[j].y = lbl_800E8A2C[j].y;
+    }
+    for (j = 0; j < 5; j++) {
+        lbl_803616CC.tail[j].id = lbl_800E8A68[j].id;
+        lbl_803616CC.tail[j].x = lbl_800E8A68[j].x;
+        lbl_803616CC.tail[j].y = lbl_800E8A68[j].y;
+    }
+    for (i = 0; i < 32; i++) {
+        fn_8006C398(&lbl_803616CC.stats[i]);
+        lbl_803616CC.stats[i]._14[0] = lbl_800E869C[i];
+    }
 }
 
 // .text:0x80064754 size:0x8C

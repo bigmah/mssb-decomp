@@ -4,6 +4,7 @@
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
 #include "game/UnknownHomes_Game.h"
+#include "main/file_80069BDC.h"
 
 // Character-select / team-setup state at 0x8034E9A0 (size 0x4C28).
 // Only the fields used so far are named.
@@ -39,6 +40,30 @@ typedef struct TeamSelect {
 } TeamSelect; // size: 0x5C
 
 extern TeamSelect lbl_803C6724;
+
+// Menu cursor/slot positions as stored in .data (all words).
+typedef struct MenuSlotSrc {
+    /*0x0*/ s32 id;
+    /*0x4*/ s32 x;
+    /*0x8*/ s32 y;
+} MenuSlotSrc; // size: 0xC
+
+typedef struct MenuSlot {
+    /*0x0*/ s32 id;
+    /*0x4*/ s16 x;
+    /*0x6*/ s16 y;
+} MenuSlot; // size: 0x8
+
+// Character-select layout/work data at 0x803616CC (size 0x454).
+typedef struct CharSelectLayout {
+    /*0x000*/ MenuSlot head[5];
+    /*0x028*/ MenuSlot groups[6][5];
+    /*0x118*/ MenuSlot tail[5];
+    /*0x140*/ StatInput stats[32];
+    /*0x400*/ u8 _400[0x454 - 0x400];
+} CharSelectLayout; // size: 0x454
+
+extern CharSelectLayout lbl_803616CC;
 
 // Character group table at 0x80108EDC (size 0x11C).
 typedef struct CharGroupTable {
@@ -90,5 +115,6 @@ void fn_80066EAC(u8 team);
 u8 fn_80067264(s32 team, s32 captain);
 u8 fn_800675C4(s32 team, s32 captain);
 void fn_800678CC(s32 team);
+void fn_80064534(void);
 
 #endif
