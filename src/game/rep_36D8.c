@@ -44,6 +44,7 @@ extern f32 lbl_3_bss_B794;
 #include "static/UnknownHomes_Static.h"
 
 extern s16 lbl_3_data_21924[];
+extern u8 lbl_3_data_218AC[5][3]; // per difficulty (4: multiplayer)
 extern const f32 lbl_3_rodata_3758; // 2.0f
 extern void fn_3_16C394(s8 a);
 extern void fn_3_7FED4(f32* out, f32 dist, f32 frame);
@@ -490,7 +491,50 @@ void fn_3_13FC24(void) {
 
 // .text:0x00140284 size:0x200 mapped:0x8077F318
 void fn_3_140284(void) {
-    return;
+    RepMinigameView* mg = REP_MG;
+    u8* flags = mg->_1B2F;
+    s32 best;
+    s32 who;
+    s32 limit;
+    s32 i;
+    mg->_1E00 = 1;
+    best = 0;
+    flags[0] = 0xFF;
+    who = -1;
+    flags[1] = 0xFF;
+    flags[2] = 0xFF;
+    flags[3] = 0xFF;
+    mg->_1B33 = 0;
+    if (mg->multiPlayerInd != 0) {
+        limit = lbl_3_data_218AC[4][mg->_1A3A];
+    } else {
+        limit = lbl_3_data_218AC[mg->difficulty][mg->_1A3A];
+    }
+    for (i = 0; i < 4; i++) {
+        if (REP_MG->_1900[i] >= 0 && REP_MG->_1AFE[i] > best) {
+            best = REP_MG->_1AFE[i];
+            who = i;
+        }
+    }
+    if (who >= 0 && best * 100 / 60 <= limit) {
+        who = -1;
+    }
+    if (who < 0) {
+        REP_MG->phase = 0;
+        REP_MG->frames = 0;
+        return;
+    }
+    flags[who] = 1;
+    mg->_1B33 = 1;
+    for (i = who + 1; i < 4; i++) {
+        if (REP_MG->_1900[i] >= 0 && REP_MG->_1AFE[who] == REP_MG->_1AFE[i]) {
+            REP_MG->_1B2F[i] = 1;
+            mg->_1B33++;
+        }
+    }
+    REP_MG->_1AFC = 0;
+    REP_MG->phase = 3;
+    REP_MG->frames = 0;
 }
 
 // .text:0x00140484 size:0x154 mapped:0x8077F518

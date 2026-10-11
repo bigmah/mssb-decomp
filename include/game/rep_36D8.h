@@ -29,18 +29,52 @@ typedef struct RepTarget {
 typedef struct RepMinigameView {
     /*0x0000*/ u8 _0000[0xCB0];
     /*0x0CB0*/ RepTarget target;
-    /*0x0CD0*/ u8 _0CD0[0x1890 - 0xCD0];
+    /*0x0CD0*/ Vec coinPos[100];
+    /*0x1180*/ Vec coinVel[100];
+    /*0x1630*/ u8 _1630[0x17C0 - 0x1630];
+    /*0x17C0*/ s32 _17C0;
+    /*0x17C4*/ s32 _17C4;
+    /*0x17C8*/ s16 coinFrames[100];
     /*0x1890*/ s16 points[4];
-    /*0x1898*/ u8 _1898[0x18FC - 0x1898];
+    /*0x1898*/ s16 latestPoints[4];
+    /*0x18A0*/ u8 _18A0[0x18CC - 0x18A0];
+    /*0x18CC*/ s8 characterIndex[4];
+    /*0x18D0*/ u8 _18D0[0x18DC - 0x18D0];
+    /*0x18DC*/ u8 aiStrength[4];
+    /*0x18E0*/ u8 _18E0[0x18FC - 0x18E0];
     /*0x18FC*/ s8 _18FC[4]; // per runner slot; < 0: none
-    /*0x1900*/ u8 _1900[0x1B19 - 0x1900];
+    /*0x1900*/ s8 _1900[4]; // per runner slot; < 0: none
+    /*0x1904*/ u8 _1904[0x1909 - 0x1904];
+    /*0x1909*/ u8 multiPlayerInd;
+    /*0x190A*/ u8 _190A;
+    /*0x190B*/ u8 turnOverStatus;
+    /*0x190C*/ u8 _190C[0x193A - 0x190C];
+    /*0x193A*/ u8 coinVisible[100];
+    /*0x199E*/ u8 _199E[0x1A2B - 0x199E];
+    /*0x1A2B*/ u8 difficulty;
+    /*0x1A2C*/ u8 _1A2C[0x1A3A - 0x1A2C];
+    /*0x1A3A*/ u8 _1A3A;
+    /*0x1A3B*/ u8 _1A3B[0x1AE0 - 0x1A3B];
+    /*0x1AE0*/ Vec ballPos;
+    /*0x1AEC*/ Vec ballVel;
+    /*0x1AF8*/ s16 _1AF8;
+    /*0x1AFA*/ s16 frames; // frames in the current phase, saturates at 0x7FFF
+    /*0x1AFC*/ s16 _1AFC;
+    /*0x1AFE*/ s16 _1AFE[4]; // per runner slot: frames spent running
+    /*0x1B06*/ s16 _1B06;
+    /*0x1B08*/ s16 _1B08[6];
+    /*0x1B14*/ u8 _1B14[0x1B19 - 0x1B14];
     /*0x1B19*/ u8 phase;
-    /*0x1B1A*/ u8 _1B1A[0x1B20 - 0x1B1A];
+    /*0x1B1A*/ u8 _1B1A[6];
     /*0x1B20*/ u8 _1B20[15];
-    /*0x1B2F*/ u8 _1B2F[0x1D58 - 0x1B2F];
+    /*0x1B2F*/ u8 _1B2F[4]; // per runner slot; 0xFF: none
+    /*0x1B33*/ u8 _1B33;
+    /*0x1B34*/ u8 _1B34[0x1D58 - 0x1B34];
     /*0x1D58*/ s16 _1D58;
     /*0x1D5A*/ u8 _1D5A[0x1D74 - 0x1D5A];
     /*0x1D74*/ s8 _1D74; // -1: none
+    /*0x1D75*/ u8 _1D75[0x1E00 - 0x1D75];
+    /*0x1E00*/ u8 _1E00;
 } RepMinigameView;
 
 void fn_3_13C7BC(void);
