@@ -1132,7 +1132,6 @@ typedef struct _LogoInfoStruct {
 } LogoInfoStruct; // size: 0xC
 
 typedef struct _GameControlsStruct {
-    /*0x000*/ s32 homeTeamInd; // team index of the home team
     /*0x000*/ s32 _000; // a team index (0/1), compared with g_Scores.winningTeam
     /*0x004*/ int teamBatting;
     /*0x008*/ int teamFielding;
@@ -1193,8 +1192,6 @@ typedef struct _GameControlsStruct {
     /*0x13B*/ u8 gameOverInd;
     /*0x13C*/ u8 scoutFlag_VsScreenInd;
     /*0x13D*/ u8 _13D; // set when the MVP counts for the record (fn_3_759BC)
-    /*0x13E*/ u8 _13E[2]; // per team
-    /*0x13D*/ u8 _13D;
     /*0x13E*/ u8 _13E[2]; // per team: AI controlled (also selects the alternate logo frame)
     /*0x140*/ u8 _140[2];
     /*0x142*/ u8 teamAIInd[2];
@@ -1467,19 +1464,8 @@ typedef struct _UnkStructMinigame {
 
 // Per-player arrays (index = player slot 0..3).
 typedef struct _MiniGameControlStruct {
-    /*0x000*/ s8 characterIndex[4];
-    /*0x004*/ u8 charID[4];
-    /*0x008*/ u8 _8;
-    /*0x009*/ u8 _9;
-    /*0x00A*/ u8 _A;
-    /*0x00B*/ u8 _B;
-    /*0x00C*/ u8 battingHandedness[4];
-    /*0x010*/ u8 aIStrength[4];
-    /*0x014*/ u8 _14;
-    /*0x015*/ u8 _15;
-} MiniGameControlStruct; // size: 0x16
     /*0x00*/ s8 characterIndex[4];
-    /*0x04*/ u8 _04[4];
+    /*0x04*/ u8 charID[4]; // index into lbl_800E8558 (fn_3_90CB0)
     /*0x08*/ u8 _08[4];
     /*0x0C*/ u8 battingHandedness[4];
     /*0x10*/ u8 aIStrength[4];
@@ -2823,30 +2809,21 @@ typedef struct {
     /* 0x40EC */ u8 bss_321A0[0x80];
     /* 0x416C */ u8 lbl_803537E4[0x2AC];
     /* 0x4418 */ u8 lbl_803535C8[0x21C];
-    u8 pad[0x24];
-    /* 0x0024 */ u32 playFrameCounter;
-    artificial_padding(0x24, 0x36, u32);
-    /* 0x0036 */ u8 replayInd;
-    /* 0x0037 */ u8 _37[2];
-    /* 0x0039 */ u8 _39; // 1: replay offered, 2: replay done
-    /* 0x003A */ u8 _3A;
-    /* 0x003B */ u8 _3B;
 } g_Stats_s; // size: 0x4634
 
 // 0x8088a7e4
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0xEA];
-    /* 0x0EA */ s16 _EA; // fielder index (g_Fielders)
-    u8 _EC[0x105 - 0xEC];
     u8 pad[0xAE];
     /* 0x0AE */ s16 _0AE;
     u8 _0B0[0xBC - 0xB0];
     /* 0x0BC */ s16 _0BC;
     u8 _0BE[0xE4 - 0xBE];
     /* 0x0E4 */ s16 _0E4;
-    u8 _0E6[0xEE - 0xE6];
+    u8 _0E6[0xEA - 0xE6];
+    /* 0x0EA */ s16 _0EA; // fielder index (g_Fielders)
+    u8 _0EC[0xEE - 0xEC];
     /* 0x0EE */ s16 _0EE;
     u8 _0F0[0xF8 - 0xF0];
     /* 0x0F8 */ u8 _0F8[0x105 - 0xF8]; // per fielder
@@ -2938,13 +2915,19 @@ typedef struct {
     /* 0x00 */ s16 _0;
     /* 0x02 */ s16 _2;
     /* 0x04 */ s16 _4;
-    /* 0x06 */ u8 _06[0x20 - 0x6];
+    /* 0x06 */ s16 _6[5]; // history of _0 (fn_3_9DB5C)
+    /* 0x10 */ struct {
+        s8 fielder; // fielder holding the ball (-1: none)
+        s8 outs;    // outs recorded on the play so far
+        s8 base;    // base the fielder was covering
+    } plays[5];
+    /* 0x1F */ s8 lastFielder;
     /* 0x20 */ s16 _20;
     /* 0x22 */ s8 _22; // -1: undecided (fn_3_7976C)
     /* 0x23 */ u8 _23;
     /* 0x24 */ u8 _24;
     /* 0x25 */ s8 _25; // double-play tracking (fn_3_79A00)
-    /* 0x26 */ u8 _26;
+    /* 0x26 */ s8 _26; // runs scored on the last dead ball
     /* 0x27 */ u8 baseOccupied[4]; // [0] batter, [1..3] runner on that base
     /* 0x2B */ u8 pitchCountLog[7]; // balls + strikes * 16 per pitch of the at-bat
     /* 0x32 */ s16 _32;
@@ -2970,29 +2953,7 @@ typedef struct {
     /* 0x65 */ u8 _65[2]; // per team
     /* 0x67 */ u8 _67[2]; // per team
     /* 0x69 */ u8 _69;
-    /* 0x6A */ u8 _6A[2][10]; // per team
-    /* 0x7E */ u8 _7E[0x8A - 0x7E];
-    /* 0x8A */ u8 _8A;
-} lbl_3_common_bss_32A94_s;
-    /* 0x00 */ s16 _0;
-    /* 0x02 */ s16 _2;
-    /* 0x04 */ s16 _4;
-    /* 0x06 */ s16 _6[5]; // history of _0 (fn_3_9DB5C)
-    /* 0x10 */ struct {
-        s8 fielder; // fielder holding the ball (-1: none)
-        s8 outs;    // outs recorded on the play so far
-        s8 base;    // base the fielder was covering
-    } plays[5];
-    /* 0x1F */ s8 lastFielder;
-    /* 0x20 */ u8 _20[2];
-    /* 0x22 */ s8 _22;
-    /* 0x23 */ u8 _23;
-    /* 0x24 */ u8 _24;
-    /* 0x25 */ u8 _25;
-    /* 0x26 */ s8 _26; // runs scored on the last dead ball
-    /* 0x27 */ u8 _27[0x44 - 0x27];
-    /* 0x44 */ s16 _44[2]; // per team: times through the batting order
-    /* 0x48 */ u8 _48[0x7D - 0x48];
+    /* 0x6A */ u8 _6A[0x13]; // per team: [team * 10 + i], i < 9
     /* 0x7D */ u8 _7D;
     /* 0x7E */ u8 _7E;
     /* 0x7F */ u8 _7F;

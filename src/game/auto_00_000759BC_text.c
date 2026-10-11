@@ -44,7 +44,7 @@ void fn_3_759BC(void) {
     lbl_80353A90.mvpCharID = -1;
     if (g_Scores.result == 0 || g_Scores.result == 1) {
         winner = g_Scores.result;
-        winTeam = g_Scores.result ^ g_GameLogic.homeTeamInd;
+        winTeam = g_Scores.result ^ g_GameLogic._000;
     }
     lbl_80353A90.mvpKind = 0;
     // NOTE: on a tie winTeam is -1 here (the original reads inMemRoster[-1]); overwritten below.
@@ -76,7 +76,7 @@ void fn_3_759BC(void) {
             decided = 1;
         } else {
             for (t = 0; t < 2; t++) {
-                recTeam = t ^ g_GameLogic.homeTeamInd;
+                recTeam = t ^ g_GameLogic._000;
                 best = 0;
                 bestIdx = -1;
                 for (i = 0; i < 9; i++) {
@@ -156,7 +156,7 @@ void fn_3_759BC(void) {
 #if NONMATCHING
 void fn_3_76174(void) {
     s32 r = g_Scores.result;
-    s32 recTeam = r ^ g_GameLogic.homeTeamInd;
+    s32 recTeam = r ^ g_GameLogic._000;
     PitchingRecord* p = lbl_803535C8[recTeam];
     PitcherGameStat* g;
     s8 cur;
@@ -290,10 +290,10 @@ void fn_3_76558(void) {
     u8 flag;
 
     if (g_Scores.result == 0) {
-        lbl_80353A90.winner = g_GameLogic.homeTeamInd;
+        lbl_80353A90.winner = g_GameLogic._000;
     }
     if (g_Scores.result == 1) {
-        lbl_80353A90.winner = g_GameLogic.homeTeamInd ^ 1;
+        lbl_80353A90.winner = g_GameLogic._000 ^ 1;
     }
     if (g_Scores.result == 2) {
         lbl_80353A90.winner = 2;
@@ -626,7 +626,7 @@ void fn_3_76D08(s32 batterSlot, s32 result, u8 detail, s32 rbi) {
 
     if (g_FieldingLogic._113 == 9) {
         STAT_INC_U8_FIELD(g_Scores._A8[g_GameLogic.awayTeamBattingInd_battingTeam]);
-        STAT_INC_U8_FIELD(lbl_803537E4[g_GameLogic.teamFielding][g_Fielders[g_FieldingLogic._EA].rosterID]._15);
+        STAT_INC_U8_FIELD(lbl_803537E4[g_GameLogic.teamFielding][g_Fielders[g_FieldingLogic._0EA].rosterID]._15);
     }
     if (g_Ball.fielderWithBallIndexStored >= 0 && g_Ball.fielderWithBallIndexStored <= 8) {
         STAT_INC_U8_FIELD(lbl_803537E4[g_GameLogic.teamFielding][g_Fielders[g_Ball.fielderWithBallIndexStored].rosterID]._16);

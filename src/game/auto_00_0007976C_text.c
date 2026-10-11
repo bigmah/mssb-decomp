@@ -764,7 +764,7 @@ void fn_3_7B308(void) {
         lbl_3_common_bss_32A94._67[t] = 0;
         lbl_3_common_bss_32A94.mvp[t].rosterIdx = -1;
         for (i = 1; i <= 9; i++) {
-            lbl_3_common_bss_32A94._6A[t][i - 1] = 0;
+            lbl_3_common_bss_32A94._6A[t * 10 + i - 1] = 0;
         }
     }
     for (t = 0; t < 2; t++) {
@@ -836,7 +836,7 @@ void fn_3_7B308(void) {
         dh = 0;
         for (i = 0; i < 9; i++) {
             pos = g_GameLogic.battingOrderAndPositionMapping[t][i + 1][1];
-            e = &lbl_80353260[t ^ g_GameLogic.homeTeamInd]
+            e = &lbl_80353260[t ^ g_GameLogic._000]
                                        [g_GameLogic.battingOrderAndPositionMapping[t][i + 1][0]];
             e->_2 = 1;
             e->inning = 1;
@@ -849,7 +849,7 @@ void fn_3_7B308(void) {
             }
         }
         if (dh != 0) {
-            e = &lbl_80353260[t ^ g_GameLogic.homeTeamInd][g_GameLogic.battingOrderAndPositionMapping[t][0][0]];
+            e = &lbl_80353260[t ^ g_GameLogic._000][g_GameLogic.battingOrderAndPositionMapping[t][0][0]];
             e->_2 = 1;
             e->inning = 1;
             e->position = 0;
