@@ -1,5 +1,6 @@
 #include "game/auto_00_00114FC0_text.h"
 #include "game/auto_00_0005985C_text.h"
+#include "game/auto_00_00113398_text.h"
 
 extern u8 g_GameLogic[];
 extern u8 g_Minigame[];
@@ -23,7 +24,7 @@ extern void fn_3_11881C(void);
 extern void fn_8001D110(s32 i, f32 a, f32 b, f32 c);
 extern u8 g_Ball[];
 extern f32 maybeInitialBatPos[];
-extern s16 lbl_3_data_2167C;
+extern s16 lbl_3_data_2167C[]; // [0] turn-over delay, [2] frame limit, [4] coin lifetime
 extern void fn_3_6EBB4(s32);
 extern void fn_3_F1DC(void);
 extern void fn_3_751B4(void);
@@ -34,8 +35,38 @@ extern void Set_803cb848(s32);
 extern void* memset(void*, s32, u32);
 extern u8 g_FieldingLogic[];
 extern u8 unkSimulationRelatedStruct[];
+extern WallBallPitcherView g_Pitcher;
+extern WallBallFielderView g_Fielders[];
+extern u8 g_d_GameSettings[];
+extern u8 lbl_3_common_bss_32234[];
+extern u8 lbl_3_common_bss_37400[];
+extern WallBallCoinPhysics lbl_3_data_21634;
+extern f32 lbl_3_data_219B8[];      // [14]: coin floor height
+extern s16 lbl_3_data_21654[];      // [10]: bonus points per hit
+extern u8 lbl_3_data_21671;         // max rounds
+extern s16 lbl_3_data_21672;        // last-round point multiplier
+extern u8 lbl_3_data_2127C[][5];    // AI strength per [game mode][difficulty]
+extern u8 lbl_3_data_2166C[];       // rounds per difficulty
+extern s32 fn_3_108854(void);
+extern void fn_3_1133C4(void);
+extern void fn_3_113A48(void);
+extern void fn_3_113D20(void);
+extern void fn_3_113F14(void);
+extern void fn_3_114204(void);
+extern void fn_3_114384(void);
+extern void fn_3_1500C8(void);
+extern void fn_3_2EA24(void);
+extern void fn_3_75560(void);
+extern void fn_3_1608F0(s32 type, s32 value, s32 flag);
+extern void fn_3_59A90(void);
+extern void minigamesSetSomePointers(void);
+extern void minigamesGXStuff(void);
+extern void minigamesSetSomePointers2(void);
+extern void fn_3_F8ABC(void);
 
-#pragma dont_inline on
+#define WB ((WallBallView*)g_Minigame)
+#define SCORES ((WallBallScoresView*)g_Scores)
+
 
 // fn_3_114FC0, size:0x6C
 void fn_3_114FC0(void) {
@@ -54,7 +85,7 @@ void fn_3_114FC0(void) {
 void fn_3_11502C(void) {
     if (g_Minigame[0x190B] == 1) {
         g_Minigame[0x190B] = 2;
-        *(s16*)(g_GameLogic + 0x100) = lbl_3_data_2167C;
+        *(s16*)(g_GameLogic + 0x100) = lbl_3_data_2167C[0];
     }
     *(s16*)(g_GameLogic + 0x100) -= 1;
     if (*(s16*)(g_GameLogic + 0x100) == 7) {
@@ -72,6 +103,151 @@ void fn_3_11502C(void) {
         fn_3_5A6D4(7);
     }
 }
+
+// Same as fn_3_113398 (inlined here).
+static inline void WallBall_ClearFlags(void) {
+    s8 i;
+
+    i = 0;
+    do {
+        ((MG1133View*)g_Minigame)->flag[i] = 0;
+        i++;
+    } while (i < 4);
+}
+
+static inline void WallBall_UpdateCoins(void) {
+    s32 c;
+    s16 lifetime;
+    f32 friction;
+    f32 bounce;
+    f32 floorY;
+    f32 gravity;
+
+    gravity = lbl_3_data_21634.gravity;
+    floorY = lbl_3_data_219B8[14];
+    bounce = lbl_3_data_21634.bounce;
+    friction = lbl_3_data_21634.friction;
+    lifetime = lbl_3_data_2167C[4];
+
+    for (c = 0; c < 100; c++) {
+        if (WB->coinVisible[c] != 0) {
+            WB->coinFrames[c]++;
+            WB->coinPos[c].x += WB->coinVel[c].x;
+            WB->coinPos[c].y += WB->coinVel[c].y;
+            WB->coinPos[c].z += WB->coinVel[c].z;
+            WB->coinVel[c].y -= gravity;
+            if (WB->coinPos[c].y < floorY) {
+                WB->coinPos[c].y = floorY;
+                WB->coinVel[c].y = -WB->coinVel[c].y * bounce;
+                WB->coinVel[c].x *= friction;
+                WB->coinVel[c].z *= friction;
+            }
+            if (WB->coinFrames[c] > lifetime) {
+                WB->coinVisible[c] = 0;
+            }
+        }
+    }
+}
+
+// fn_3_115108, size:0x438
+// End of a Wall Ball turn: award points, advance the turn and the round.
+// NONMATCHING 98%: &currentPoints[player] is kept as a pointer (extra addi) and two scratch regs swap at the turn update
+#if NONMATCHING
+void fn_3_115108(void) {
+    s32 points;
+    s16 mult;
+    s16 half;
+    s32 share;
+    s16 i;
+    s32 over;
+    u8 turn;
+
+    over = 0;
+    if (g_Pitcher.pitcherActionState == 4) {
+        if (g_Pitcher.currentStateFrameCounter > 0x4A) {
+            over = 1;
+        } else if (WB->difficulty == 3 && g_Pitcher.currentStateFrameCounter == 0x4A) {
+            WB->_1A8C = 1;
+        }
+    } else if (WB->frames > lbl_3_data_2167C[2]) {
+        over = 1;
+    } else if (WB->difficulty == 3 && WB->frames == lbl_3_data_2167C[2]) {
+        WB->_1A8C = 1;
+    }
+    if (over == 0) {
+        return;
+    }
+
+    if (WB->_1A8A == 0) {
+        mult = 1;
+        if ((WB->multiPlayerInd != 0 || WB->_1A3C != 0 || WB->difficulty != 3) && SCORES->round == SCORES->lastRound) {
+            mult = lbl_3_data_21672;
+        }
+        if (WB->_1A89 == 1) {
+            points = WB->bonus + lbl_3_data_21654[10] * mult;
+            WB->currentPoints[WB->currentPlayer] += points;
+            WB->bonus = 0;
+        } else {
+            points = WB->latestPoints[WB->currentPlayer] * mult;
+            WB->currentPoints[WB->currentPlayer] += points;
+        }
+    } else {
+        points = 0;
+        if (WB->multiPlayerInd != 0 || WB->_1A3C != 0 || WB->difficulty != 3) {
+            half = WB->currentPoints[WB->currentPlayer] / 2;
+            WB->currentPoints[WB->currentPlayer] -= half;
+            share = half / 3;
+            for (i = 0; i < 4; i++) {
+                if (i != WB->currentPlayer) {
+                    WB->currentPoints[i] += share;
+                }
+            }
+            points = -half;
+        }
+    }
+    if (g_d_GameSettings[8] == 0 && WB->currentPlayer == *(s16*)(lbl_3_common_bss_37400 + 0x40)) { // TODO type
+        fn_3_1608F0(1, points, WB->_1A89);
+    }
+
+    turn = WB->turnNumberWithinRound + 1;
+    WB->pitcherX = g_Pitcher.x;
+    WB->pitcherZ = g_Pitcher.z;
+    WB->turnNumberWithinRound = turn;
+    if (turn >= WB->numParticipants) {
+        WB->turnNumberWithinRound = turn - WB->numParticipants;
+        SCORES->round++;
+        if (WB->multiPlayerInd == 0 && WB->_1A3C == 0 && WB->difficulty == 3) {
+            SCORES->round--;
+            if (WB->_1A89 == 1) {
+                if (SCORES->lastRound < lbl_3_data_21671) {
+                    SCORES->lastRound++;
+                }
+            } else {
+                SCORES->lastRound--;
+                if (WB->_1A8A != 0) {
+                    for (i = 0; i < 1; i++) {
+                        if (SCORES->lastRound == 0) {
+                            break;
+                        }
+                        SCORES->lastRound--;
+                    }
+                }
+            }
+        }
+    }
+    fn_3_1500C8();
+    if (SCORES->round > SCORES->lastRound) {
+        sndFXStartEx(0x1BE, lbl_800EFBA4[7], 0x3F, 0);
+        fn_3_5A6D4(0xF);
+        return;
+    }
+    WB->phase = 0;
+    fn_3_5A6D4(7);
+    if ((WB->multiPlayerInd != 0 || WB->_1A3C != 0 || WB->difficulty != 3) && WB->turnNumberWithinRound == 0) {
+        fn_3_10F550(4, 0);
+    }
+}
+#endif
 
 // fn_3_115738, size:0xF0
 void fn_3_115738(void) {
@@ -137,15 +313,7 @@ void fn_3_1158F8(void) {
 
 // fn_3_115978, size:0x13C
 void fn_3_115978(void) {
-    fn_3_6EBB4(*(s8*)(g_Minigame + 0x1904));
-    fn_3_F1DC();
-    fn_3_751B4();
-    fn_3_58870();
-    memset(g_Minigame + 0x1D7C, 0, 0x78);
-    Set_803cb848(1);
-    *(s16*)(g_FieldingLogic + 0xAE) = 0;
-    unkSimulationRelatedStruct[5] = 0;
-    unkSimulationRelatedStruct[6] = 4;
+    fn_3_1158F8();
     g_Minigame[0x190B] = 0;
     g_Minigame[0x1A81] = 0;
     *(s16*)(g_Minigame + 0x1A72) = 0;
