@@ -194,9 +194,69 @@ s16 fn_800E0CC8(HVQBitBufTree* buf) {
 }
 
 // .text:0x800E0D60 size:0x354
+// NONMATCHING 87%: register allocation; original frame has extra locals
+#if NONMATCHING
 void fn_800E0D60(HVQState* state) {
-    return;
+    HVQBlock* blk;
+    HVQBlock* blkV;
+    u16 width;
+    u16 y;
+    s32 x;
+    s32 run;
+    s16 value;
+
+    // luma basis counts
+    run = 0;
+    blk = state->planes[0].payload;
+    width = state->planes[0].widthInBlocks;
+    for (y = state->planes[0].heightInBlocks; y > 0; y--) {
+        for (x = width; x > 0; x--) {
+            if (run == 0) {
+                HVQ_DECODE(&state->basisNum[0], value);
+                if (value == 0) {
+                    HVQ_DECODE(&state->basisNumRun[0], run);
+                }
+                blk->type = value;
+                blk++;
+            } else {
+                blk->type = 0;
+                blk++;
+                run--;
+            }
+        }
+        blk += 2;
+    }
+
+    // chroma basis counts: U in the low nibble, V in the high nibble
+    blk = state->planes[1].payload;
+    blkV = state->planes[2].payload;
+    width = state->planes[1].widthInBlocks;
+    y = state->planes[1].heightInBlocks;
+    run = 0;
+    for (; y > 0; y--) {
+        for (x = width; x > 0; x--) {
+            if (run == 0) {
+                HVQ_DECODE(&state->basisNum[1], value);
+                if (value == 0) {
+                    HVQ_DECODE(&state->basisNumRun[1], run);
+                }
+                blk->type = value & 0xF;
+                blk++;
+                blkV->type = (value >> 4) & 0xF;
+                blkV++;
+            } else {
+                blk->type = 0;
+                run--;
+                blk++;
+                blkV->type = 0;
+                blkV++;
+            }
+        }
+        blk += 2;
+        blkV += 2;
+    }
 }
+#endif
 
 // .text:0x800E10B4 size:0x114
 // NONMATCHING 79%: register allocation
