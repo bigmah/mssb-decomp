@@ -1,10 +1,12 @@
 #include "game/auto_00_0006C410_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "game/auto_00_000249E8_text.h"
+#include "game/auto_00_0006A160_text.h"
 
 // .text:0x0006C410 size:0x18 mapped:0x806AB4A4
 void fn_3_6C410(void) {
-    return;
+    lbl_8036E548.stadium->_0C6 = 0;
 }
 
 // .text:0x0006C428 size:0x4 mapped:0x806AB4BC
