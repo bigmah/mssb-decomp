@@ -184,6 +184,9 @@ void fn_8004B6EC(CharModel* model, GameActor** actor) {
 
 // .text:0x8004B7B4 size:0x40
 s32 fn_8004B7B4(CharModel* model, GameActor** actor) {
+    if (model->bone1FA != 0xFFFF) {
+        fn_800B2BA8(*actor, model->bone1FA, NULL, 0);
+    }
     return 0;
 }
 
