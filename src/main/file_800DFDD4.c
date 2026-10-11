@@ -1636,9 +1636,50 @@ void fn_800E4B90(HVQM4SeqObj* seq, HVQState* state) {
 }
 
 // .text:0x800E4FF4 size:0x928
+// NONMATCHING 97%: data base pointer folded into each offset; the original keeps it in a register
+#if NONMATCHING
 void fn_800E4FF4(void* ctx, u8* src, u8* dst) {
-    return;
+    HVQM4SeqObj* seq = ctx;
+    HVQState* state = seq->state;
+    u8* data = src + 0x48;
+    HVQTree* tree;
+    s32 i;
+    HVQPlaneDesc* plane;
+
+    state->basisShift = src[1];
+    HVQ_INIT_BITBUF(&state->basisNum[0].buf, data, src + 0x08);
+    HVQ_INIT_BITBUF(&state->basisNumRun[0].buf, data, src + 0x0C);
+    HVQ_INIT_BITBUF(&state->basisNum[1].buf, data, src + 0x10);
+    HVQ_INIT_BITBUF(&state->basisNumRun[1].buf, data, src + 0x14);
+    HVQ_INIT_BITBUF(&state->dcValues[0].buf, data, src + 0x18);
+    HVQ_INIT_BITBUF(&state->bufTree0[0].buf, data, src + 0x1C);
+    HVQ_INIT_BITBUF(&state->fixvl[0], data, src + 0x20);
+    HVQ_INIT_BITBUF(&state->dcValues[1].buf, data, src + 0x24);
+    HVQ_INIT_BITBUF(&state->bufTree0[1].buf, data, src + 0x28);
+    HVQ_INIT_BITBUF(&state->fixvl[1], data, src + 0x2C);
+    HVQ_INIT_BITBUF(&state->dcValues[2].buf, data, src + 0x30);
+    HVQ_INIT_BITBUF(&state->bufTree0[2].buf, data, src + 0x34);
+    HVQ_INIT_BITBUF(&state->fixvl[2], data, src + 0x38);
+    HVQ_INIT_BITBUF(&state->dcRle[0].buf, data, src + 0x3C);
+    HVQ_INIT_BITBUF(&state->dcRle[1].buf, data, src + 0x40);
+    HVQ_INIT_BITBUF(&state->dcRle[2].buf, data, src + 0x44);
+
+    HVQ_READ_TREE(state->basisNum[0], 0, 0);
+    HVQ_READ_TREE(state->basisNumRun[0], 0, 0);
+    HVQ_READ_TREE(state->dcValues[0], 1, src[0]);
+    HVQ_READ_TREE(state->bufTree0[0], 0, 2);
+
+    state->dcMax = 0x7F << src[0];
+    state->dcMin = -(0x80 << src[0]);
+    fn_800E0D60(state);
+    fn_800E10B4(state);
+    fn_800E11C8(state, (src[4] << 8) | src[5], (src[6] << 8) | src[7]);
+    for (i = 0, plane = state->planes; i < 3; i++, plane++) {
+        fn_800E2AB0(state, i, dst);
+        dst += plane->sizeInSamples;
+    }
 }
+#endif
 
 // .text:0x800E591C size:0x24
 void fn_800E591C(void* ctx, u8* src, u8* dst, u8* ref) {
