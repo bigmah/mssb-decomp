@@ -150,9 +150,63 @@ void fn_3_7D39C(void) {
 #endif
 
 // .text:0x0007D458 size:0x328 mapped:0x806BC4EC
+// NONMATCHING 84%: inlined recordReplayFrame differs (see fn_3_7D2E0) and g_Stats base register reloads differ
+#if NONMATCHING
 void fn_3_7D458(void) {
-    return;
+    if (g_Stats.replayInd != 0) {
+        if (g_Stats.playFrameCounter == 9) {
+            changeScene(1, 6);
+        }
+        if (g_Stats.playFrameCounter + 1 >= g_Stats.endFrame && g_Stats._3A != 0) {
+            g_Stats._3A = 2;
+            g_Stats._39 = 0xFF;
+            fn_3_7C9D8(0);
+            g_Stats._39 = 3;
+            changeScene(1, 6);
+            return;
+        }
+        if (g_Stats._39 == 4) {
+            if (lbl_8037169C.done != 0) {
+                g_Stats._39 = 0;
+                fn_3_7C1FC(1);
+            }
+        } else if (g_Stats._39 == 5) {
+            g_Stats.playFrameCounter = g_Stats.endFrame - 7;
+            g_Stats._39 = 0;
+            changeScene(3, 6);
+        } else if (replayCanSkip() && g_d_GameSettings.GameModeSelected != 4) {
+            g_Stats._39 = 4;
+            changeScene(3, 6);
+        }
+        fn_3_7C4E4();
+        if (g_Stats.replayInd == 0) {
+            if (g_Stats._3C == 2 || g_Stats._3C == 13) {
+                fn_3_5A6D4(0x13);
+            } else if (g_Stats._3C == 4 || (g_Stats._3C == 1 && g_Stats._3D == 4)) {
+                fn_3_5A6D4(0x15);
+            }
+        }
+    } else if (g_Stats.recording != 0) {
+        recordReplayFrame();
+        fn_3_7C190();
+    } else if (g_Stats._39 == 2) {
+        fn_3_7C9D8(0);
+        changeScene(1, 6);
+        g_Stats._39 = 3;
+        fn_3_15D64();
+    } else if (g_Stats._38 == 1) {
+        fn_3_7CF88();
+        g_Stats._38 = 2;
+    }
+    if (g_pCamera->_AC5 != 0) {
+        fn_3_15D7C(0);
+        fn_3_15D64();
+        if (g_Stats._3C != 12 && g_Stats._3C != 1) {
+            fn_3_15D28();
+        }
+    }
 }
+#endif
 
 // .text:0x0007D780 size:0x1C mapped:0x806BC814
 void fn_3_7D780(void) {
