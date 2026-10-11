@@ -411,8 +411,8 @@ void fn_80033964(void) {
 }
 
 // .text:0x800339F0 size:0x34
-void fn_800339F0(void) {
-    return;
+Emitter* fn_800339F0(Emitter* after, u8 type) {
+    return FindEmitter(after, type);
 }
 
 // .text:0x80033A24 size:0x134
