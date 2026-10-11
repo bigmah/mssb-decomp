@@ -32,7 +32,24 @@ void fn_2_13BA4(PortInput* in) {
 // .text:0x00013CA0 size:0xD0
 // Page 3: toggle lbl_80361B20._F5.
 void fn_2_13CA0(PortInput* in) {
-    return;
+    u16 repeat = in->repeat;
+    if (repeat & 8) {
+        lbl_2_bss_100B8._4E--;
+        if ((s8)lbl_2_bss_100B8._4E < 0) {
+            lbl_2_bss_100B8._4E = 5;
+        }
+    } else if (repeat & 4) {
+        lbl_2_bss_100B8._4E++;
+        if ((s8)lbl_2_bss_100B8._4E == 6) {
+            lbl_2_bss_100B8._4E = 0;
+        }
+    } else if (repeat & 1) {
+        lbl_80361B20._F5 ^= 1;
+    } else if (repeat & 2) {
+        lbl_80361B20._F5 ^= 1;
+    } else if (in->pressed & 0x200) {
+        lbl_2_bss_100B8.page = 0;
+    }
 }
 
 // .text:0x00013D70 size:0x2FC
