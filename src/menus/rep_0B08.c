@@ -2059,7 +2059,7 @@ void fn_2_6B4FC(MenuEntry* owner) {
         height = (f32)sin(entry->bouncePhase);
         height = lbl_2_rodata_BA8 * -height;
         entry->bouncePhase += lbl_2_rodata_BAC[0];
-        if (entry->position.y > 0.0f) {
+        if (entry->position.y > lbl_2_rodata_C28) {
             entry->bouncePhase = lbl_2_rodata_B58;
             height = lbl_2_rodata_B58;
             entry->flagD0 = 0;
