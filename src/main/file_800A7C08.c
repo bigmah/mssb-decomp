@@ -420,6 +420,52 @@ s32 fn_800A8B78(StreamTrack* track) {
 
 // .text:0x800A8CBC size:0x174
 s32 LoadFile(void* file, StreamTrack* track, u32 flags, void (*callback)(u32 event), u32 options) {
+    StreamTrack* it;
+    s32 savedEntry;
+    BOOL startPlaying;
+    BOOL enabled;
+
+    if ((options & 1) && lbl_803CC150 != NULL) {
+        for (it = lbl_803CC150; it != NULL; it = it->next) {
+            if (it == track) {
+                return 0x100;
+            }
+        }
+    }
+    startPlaying = FALSE;
+    savedEntry = lbl_803C6CF8.entryNum;
+    lbl_803C6CF8.entryNum = ConvertPathToEntryNum(file);
+    if (fn_800A750C(file, &track->fileInfo) == FALSE) {
+        return 1;
+    }
+    lbl_803C6CF8.entryNum = savedEntry;
+    enabled = OSDisableInterrupts();
+    track->file = file;
+    track->flags = flags;
+    track->callback = callback;
+    if (lbl_803CC150 == NULL) {
+        lbl_803CC150 = track;
+        lbl_803CC14C = track;
+        track->prev = NULL;
+        track->next = NULL;
+        if (lbl_803CC148 == STREAM_STATE_PLAY) {
+            startPlaying = TRUE;
+        }
+    } else {
+        lbl_803CC14C->next = track;
+        track->prev = lbl_803CC14C;
+        lbl_803CC154 = track;
+        track->next = NULL;
+    }
+    if (lbl_803CC154 == NULL) {
+        lbl_803CC154 = track;
+    }
+    OSRestoreInterrupts(enabled);
+    STREAM_NOTIFY(track, STREAM_EVENT_LOADED);
+    if (startPlaying) {
+        lbl_803CC148 = STREAM_STATE_BUSY;
+        DVDPrepareStreamAsync(&lbl_803CC154->fileInfo, 0, 0, fn_800A9424);
+    }
     return 0;
 }
 
