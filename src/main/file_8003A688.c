@@ -229,8 +229,36 @@ s32 fn_80040FE0(SaveImage* img) {
 }
 
 // .text:0x80041074 size:0xDC
-void fn_80041074(void) {
-    return;
+u8 fn_80041074(SaveImage* img, s32 length, u32 mask) {
+    u8* shared = img->_48;
+    u32 bit;
+    SaveChallengeBlock* blk;
+    s32 i;
+    u16 sum;
+
+    lbl_803C50E8.badMask = 0;
+    for (i = 0; i < 4; i++) {
+        bit = 1 << i;
+        if (mask & bit) {
+            if (i == 0) {
+                sum = fn_800ABB14(shared, 0x5B0);
+                if (sum != img->crc) {
+                    lbl_803C50E8.badMask = bit;
+                    break;
+                }
+            } else {
+                blk = &img->challenge[i - 1];
+                sum = fn_800ABB14(blk->data, sizeof(blk->data));
+                if (sum != blk->crc) {
+                    lbl_803C50E8.badMask |= bit;
+                }
+            }
+        }
+    }
+    if (lbl_803C50E8.badMask != 0) {
+        return 0xB;
+    }
+    return 0x11;
 }
 
 // .text:0x80041150 size:0x1F8
