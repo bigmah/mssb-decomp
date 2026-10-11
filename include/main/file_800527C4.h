@@ -97,11 +97,13 @@ void SetMenuNumber(void);
 // lbl_8034E978: current menu screen.
 typedef struct MenuState {
     /*0x00*/ u8 menu;
-    /*0x01*/ u8 _01[2];
+    /*0x01*/ u8 prevMenu;
+    /*0x02*/ u8 prev03;
     /*0x03*/ u8 _03;
     /*0x04*/ u8 _04;
     /*0x05*/ u8 _05;
-    /*0x06*/ u8 _06[2];
+    /*0x06*/ u8 _06;
+    /*0x07*/ u8 _07;
     /*0x08*/ u8 track; // from MenuDef.track of the current menu
     /*0x09*/ u8 prevTrack;
     /*0x0A*/ s8 text[10]; // text entries for the menu description

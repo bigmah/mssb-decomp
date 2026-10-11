@@ -315,9 +315,123 @@ void fn_800531D0(SceneTask* task) {
 #endif
 
 // .text:0x80053810 size:0x7D8
+// The original inlines fn_80042D68/fn_80042DA8 (frame checks) here.
+// NONMATCHING 85%: the original inlines the fn_80042D68/fn_80042DA8 frame checks; ours calls them
+#if NONMATCHING
 void fn_80053810(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    s32 i;
+
+    if (lbl_8034E978._26 != 0) {
+        lbl_8034E978._26 = 0;
+    } else {
+        switch (lbl_8034E978._06) {
+        case 0:
+            if (lbl_8034E978._04 == 0) {
+                lbl_8034E978._04 = 1;
+                TASK_OBJ(task, 0)->_5C = 0;
+            }
+            if (lbl_8034E978._05 != 0) {
+                TASK_OBJ(task, 0)->_68 = 1;
+                TASK_OBJ(task, 9)->_68 = 4;
+                lbl_8034E978._05 = 0;
+                lbl_8034E978._24 = 1;
+            }
+            if (lbl_8034E978._24 == 0) {
+                fn_80042D68(task, 0, 20);
+            } else if ((fn_80042D68(task, 0, 40) != 0) + (fn_80042DA8(task, 9, 0) != 0) == 2) {
+                lbl_8034E978._24 = 0;
+                lbl_8034E978._04 = 0;
+                lbl_8034E978._25 = 1;
+            }
+            if (lbl_8034E978.prevMenu != lbl_8034E978.menu || lbl_8034E978.prev03 != lbl_8034E978._03) {
+                TASK_OBJ(task, 6)->_5C = (lbl_8034E978._03 + lbl_800FEF70[lbl_8034E978.menu]._00) << 16;
+                fn_800363D8(task, 5, 1, 0xEF, lbl_800FEF70[lbl_8034E978.menu]._02);
+                TASK_OBJ(task, 5)->_5C = lbl_800FEF70[lbl_8034E978.menu]._06 << 16;
+                TASK_OBJ(task, 6)->_5C = lbl_800FEF70[lbl_8034E978.menu]._04 << 16;
+                TASK_OBJ(task, 1)->_5C = 0;
+                TASK_OBJ(task, 2)->_5C = 10 << 16;
+                TASK_OBJ(task, 1)->_68 = 1;
+                TASK_OBJ(task, 2)->_68 = 4;
+                TASK_OBJ(task, 7)->_5C = lbl_8034E978.track << 16;
+                if (lbl_8034E978._27 != 0) {
+                    TASK_OBJ(task, 8)->_5C = lbl_8034E978.track << 16;
+                    lbl_8034E978._27 = 0;
+                } else {
+                    TASK_OBJ(task, 8)->_5C = lbl_8034E978.prevTrack << 16;
+                }
+                lbl_8034E978.textCount = lbl_800FEF70[lbl_8034E978.menu].textEnd - lbl_800FEF70[lbl_8034E978.menu].textStart;
+                if (lbl_8034E978.textCount == 0) {
+                    TASK_OBJ(task, 9)->flags &= ~2;
+                }
+                for (i = 0; i < 10; i++) {
+                    if (i < lbl_8034E978.textCount) {
+                        TASK_OBJ(task, i + 0x16)->flags |= 2;
+                        if (lbl_8034E978.text[i] != -1) {
+                            fn_8000FE08(lbl_8034E978.text[i], 0, i + lbl_800FEF70[lbl_8034E978.menu].textStart);
+                        } else {
+                            lbl_8034E978.text[i] = fn_8000F988((LayoutGroup*)task, i + 0x16, 0, 0, i + lbl_800FEF70[lbl_8034E978.menu].textStart, 0);
+                        }
+                    } else {
+                        TASK_OBJ(task, i + 0x16)->flags &= ~2;
+                    }
+                    if (i == 0) {
+                        TASK_OBJ(task, i + 10)->flags |= 2;
+                    }
+                    TASK_OBJ(task, i + 10)->_5C = 0;
+                    TASK_OBJ(task, i + 10)->_68 = 0;
+                    if (i != 0) {
+                        TASK_OBJ(task, i + 10)->_5C = 0;
+                        TASK_OBJ(task, i + 10)->flags &= ~2;
+                        TASK_OBJ(task, i + 0x16)->_5C = 0;
+                        TASK_OBJ(task, i + 0x16)->flags &= ~2;
+                    }
+                }
+                lbl_8034E978.descState = 0;
+                lbl_8034E978._23 = 0;
+            }
+            fn_800531D0(task);
+            break;
+        case 1:
+            if (lbl_8034E978._07 == 0) {
+                TASK_OBJ(task, 0)->_68 = 4;
+                TASK_OBJ(task, 3)->flags &= ~2;
+                lbl_8034E978._07 = 1;
+            } else if ((fn_80042DA8(task, 0, 0) != 0) == 1) {
+                lbl_8034E978._07 = 0;
+                lbl_8034E978._06 = 0;
+            }
+            break;
+        case 2:
+            if (lbl_8034E978._07 == 0) {
+                TASK_OBJ(task, 0)->_68 = 1;
+                TASK_OBJ(task, 3)->flags |= 2;
+                lbl_8034E978._07 = 1;
+            } else if ((fn_80042D68(task, 0, 20) != 0) == 1) {
+                lbl_8034E978._07 = 0;
+                lbl_8034E978._06 = 0;
+            }
+            break;
+        }
+        lbl_8034E978.prevMenu = lbl_8034E978.menu;
+        lbl_8034E978.prev03 = lbl_8034E978._03;
+        if (lbl_8034E978._25 == 0) {
+            return;
+        }
+    }
+    lbl_8034E978.prevMenu = 0;
+    lbl_8034E978.menu = 0;
+    lbl_8034E978.descState = 0;
+    lbl_8034E978._21[0] = 0;
+    lbl_8034E978._21[1] = 0;
+    lbl_8034E978._03 = 0;
+    for (i = 0; i < 10; i++) {
+        fn_8000FEE8(lbl_8034E978.text[i]);
+    }
+    fn_8000F8F4((LayoutGroup*)task);
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
+#endif
 
 // .text:0x80053FE8 size:0x2DC
 // NONMATCHING 97%: r28/r29 swapped and the loop's zero init scheduled differently
