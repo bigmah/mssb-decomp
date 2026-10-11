@@ -12,7 +12,7 @@ extern void fn_3_90064(s32);
 extern u8 lbl_3_data_2188C[];
 extern s16 lbl_3_data_218A8;
 extern f64 lbl_3_rodata_3760;
-extern f32 lbl_3_rodata_3734;
+extern const f32 lbl_3_rodata_3734; // 0.0f
 extern void fn_8004C094(void*);
 extern void fn_3_6C854(int, int);
 extern void fn_3_DE4FC(void);
@@ -32,7 +32,7 @@ extern void fn_3_11F480(void);
 extern void fn_80011578(void);
 extern void fn_3_1578F8(void);
 extern u32 sndFXStartEx(s32, u8, u8, u8);
-extern u8 g_Runners[];
+extern RepRunnerView g_Runners[];
 extern u8 g_GameLogic[];
 extern u8 lbl_3_data_21278[];
 extern void changeScene(s32, s32);
@@ -43,6 +43,7 @@ extern u8 lbl_3_data_218BC[];
 extern s32 lbl_3_bss_B798[];
 extern f32 lbl_3_bss_B794;
 #include "static/UnknownHomes_Static.h"
+
 
 // .text:0x0013C7BC size:0xDBC mapped:0x8077B850
 void fn_3_13C7BC(void) {
@@ -86,49 +87,50 @@ void fn_3_13DA50(void) {
     return;
 }
 
+extern const f32 lbl_3_rodata_3738; // 4.0f
+extern const f32 lbl_3_rodata_373C; // 0.15f
+
+// Inlined copy of fn_3_13DDE0 (the original inlines it into fn_3_13DC48 with these
+// constants loaded from rodata). Distance in bases from a to b around the diamond,
+// forwards (mode 1) or backwards (mode 0).
+#pragma dont_inline off
+static inline f32 baseDistance(f32 a, f32 b, u8 mode) {
+    if (a < 0.0f) {
+        a += lbl_3_rodata_3738;
+    } else if (a >= lbl_3_rodata_3738) {
+        a -= lbl_3_rodata_3738;
+    }
+    if (b < 0.0f) {
+        b += lbl_3_rodata_3738;
+    } else if (b >= lbl_3_rodata_3738) {
+        b -= lbl_3_rodata_3738;
+    }
+    if (mode == 1) {
+        if (a > b) {
+            return (lbl_3_rodata_3738 + b) - a;
+        }
+        return b - a;
+    }
+    if (a < b) {
+        return (lbl_3_rodata_3738 + a) - b;
+    }
+    return a - b;
+}
+
 // .text:0x0013DC48 size:0x198 mapped:0x8077CCDC
 void fn_3_13DC48(s8 idx, f32 ang, f32* out1, f32* out2) {
-    u8* r = g_Runners + idx * 0x154;
-    f32 a = *(f32*)(r + 0x64);
-    f32 b = ang;
-    if (a < 0.0f) {
-        a += 4.0f;
-    } else if (a >= 4.0f) {
-        a -= 4.0f;
+    *out1 = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 1);
+    if (g_Runners[idx].runningDirectionCode == 3) {
+        *out1 += lbl_3_rodata_373C;
     }
-    if (ang < 0.0f) {
-        b += 4.0f;
-    } else if (ang >= 4.0f) {
-        b -= 4.0f;
+    *out2 = baseDistance(g_Runners[idx].fractionalBasesRan, ang, 0);
+    if (g_Runners[idx].runningDirectionCode == 1) {
+        *out2 += lbl_3_rodata_373C;
     }
-    if (a > b) {
-        *out1 = (4.0f + b) - a;
-    } else {
-        *out1 = b - a;
-    }
-    if (r[0x137] == 3) {
-        *out1 = *out1 + 0.15f;
-    }
-    a = *(f32*)(r + 0x64);
-    if (a < 0.0f) {
-        a += 4.0f;
-    } else if (a >= 4.0f) {
-        a -= 4.0f;
-    }
-    if (ang < 0.0f) {
-        ang += 4.0f;
-    } else if (ang >= 4.0f) {
-        ang -= 4.0f;
-    }
-    if (a < ang) {
-        *out2 = (4.0f + a) - ang;
-    } else {
-        *out2 = a - ang;
-    }
-    if (r[0x137] == 1) {
-        *out2 = *out2 + 0.15f;
-    }
-}// .text:0x0013DDE0 size:0xC4 mapped:0x8077CE74
+}
+
+#pragma dont_inline on
+// .text:0x0013DDE0 size:0xC4 mapped:0x8077CE74
 f32 fn_3_13DDE0(f32 a, f32 b, u8 mode) {
     if (a < 0.0f) {
         a += 4.0f;
@@ -152,6 +154,7 @@ f32 fn_3_13DDE0(f32 a, f32 b, u8 mode) {
     return a - b;
 }
 
+#pragma dont_inline on
 // .text:0x0013DEA4 size:0x118 mapped:0x8077CF38
 void fn_3_13DEA4(void) {
     u8* p;
@@ -317,7 +320,7 @@ void fn_3_13F7E4(void) {
     for (p = g_Minigame, q = (s16*)g_Minigame, i = 0; i < 4; p++, q++, i++) {
         s8 r = *(s8*)(p + 0x1900);
         if (r >= 0) {
-            u8 st = g_Runners[r * 0x154 + 0x137];
+            u8 st = g_Runners[r].runningDirectionCode;
             if (st == 1 || st == 3) {
                 *(s16*)((u8*)q + 0x1AFE) += 1;
             }

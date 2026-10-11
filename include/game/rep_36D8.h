@@ -3,6 +3,16 @@
 
 #include "mssbTypes.h"
 
+// One g_Runners entry (InMemRunnerType, size 0x154), only the fields used here.
+// This unit declares g_Runners as bytes, so it reaches the fields through this view.
+typedef struct RepRunnerView {
+    /*0x000*/ u8 _000[0x64];
+    /*0x064*/ f32 fractionalBasesRan;
+    /*0x068*/ u8 _068[0x137 - 0x68];
+    /*0x137*/ u8 runningDirectionCode;
+    /*0x138*/ u8 _138[0x154 - 0x138];
+} RepRunnerView;
+
 void fn_3_13C7BC(void);
 u32 fn_3_13D578(s8 a);
 s32 fn_3_13D5E8(f32* a, f32* b);
