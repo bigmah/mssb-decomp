@@ -3,38 +3,70 @@
 
 #include "mssbTypes.h"
 
+// lbl_3_data_3C40: per fielder-state table, indexed by fielder byte 0x1D3
+typedef struct FielderStateEntry {
+    s32 anim;
+    void (*update)(int i);
+} FielderStateEntry;
+
+// *(FieldingBoost**)(g_FieldingLogic + 0x70): fielder speed-boost / charge state (fn_3_51220)
+typedef struct FieldingBoost {
+    f32 dirX;      // 0x00
+    f32 dirZ;      // 0x04
+    f32 scale;     // 0x08
+    s16 timer;     // 0x0C
+    s16 timer2;    // 0x0E
+    s16 power;     // 0x10
+    s16 frames;    // 0x12
+    s16 fielder;   // 0x14
+    s16 taps;      // 0x16
+    s16 decay;     // 0x18
+    u8 state;      // 0x1A
+} FieldingBoost;
+#define FIELDING_BOOST (*(FieldingBoost**)(g_FieldingLogic + 0x70))
+
+// lbl_3_data_4B9C
+typedef struct FieldingBoostParams {
+    s16 powerStep; // 0x0
+    s16 powerMax;  // 0x2
+    s16 window;    // 0x4
+    s16 tapsNeeded; // 0x6
+    s16 decayStop; // 0x8
+    s16 decayRun;  // 0xA
+} FieldingBoostParams;
+
 void fn_3_251E4(int);
 int fn_3_253A4(int, s16);
 void fn_3_25648(int);
 void fn_3_25844(int, int);
 int fn_3_258D8(int);
 void fn_3_25A68(int);
-void fn_3_25C40(void);
-void fn_3_261E8(void);
-void fn_3_26664(void);
-void fn_3_26A74(void);
+void fn_3_25C40(int);
+void fn_3_261E8(int);
+void fn_3_26664(int);
+void fn_3_26A74(int);
 void fn_3_27648(void);
 void fn_3_27738(s32 i);
 void fn_3_27764(int);
-void fn_3_27860(void);
-void fn_3_27D68(void);
-void fn_3_27FF4(void);
-void fn_3_28224(void);
-void fn_3_28CA8(void);
+void fn_3_27860(int);
+int fn_3_27D68(int);
+int fn_3_27FF4(int);
+int fn_3_28224(int);
+int fn_3_28CA8(int);
 int fn_3_2A164(int);
-void fn_3_2A288(void);
-void fn_3_2A69C(void);
+int fn_3_2A288(int);
+int fn_3_2A69C(int);
 int fn_3_2ACD8(int, int);
-void fn_3_2AD68(void);
+int fn_3_2AD68(int);
 void fn_3_2B5C0(int);
-void fn_3_2B694(void);
+int fn_3_2B694(int);
 int fn_3_2BB04(int);
 void fn_3_2C238(int, int, int, int, int);
-void fn_3_2C2F0(void);
-void fn_3_2C698(void);
+void fn_3_2C2F0(int);
+void fn_3_2C698(int);
 int fn_3_2CBE0(int);
 void fn_3_2CEF4(int);
-void fn_3_2D080(void);
+int fn_3_2D080(int);
 void fn_3_2D308(int);
 void fn_3_2D47C(int);
 void fn_3_2D768(int);
@@ -48,13 +80,13 @@ void fn_3_2EA24(void);
 void fn_3_2EA88(int);
 void fn_3_2EEC4(int);
 void fn_3_2F484(void);
-void fn_3_2F574(void);
+void fn_3_2F574(int);
 void fn_3_2F7D4(int);
-void fn_3_2F924(void);
+void fn_3_2F924(int);
 void fn_3_2FB9C(int);
 void fn_3_2FF2C(int);
 void fn_3_300B8(int);
-void fn_3_30214(void);
+int fn_3_30214(int);
 int fn_3_30564(int);
 void fn_3_3061C(void);
 void fn_3_308B8(int, f32, f32);
@@ -177,30 +209,30 @@ void fn_3_4B8D0(int);
 void fn_3_4BA0C(void);
 void fn_3_4C9C8(void);
 void fn_3_4CFB0(void);
-void fn_3_4D20C(void);
+void fn_3_4D20C(int);
 int fn_3_4DB84(int i);
-void fn_3_4DC14(void);
+void fn_3_4DC14(int);
 void fn_3_4E1BC(void);
 void fn_3_4E638(void);
 void fn_3_4EBC4(void);
-void fn_3_4EFC8(void);
-void fn_3_4F504(void);
-void fn_3_4FB34(void);
-void fn_3_50898(void);
-void fn_3_50C20(void);
-void fn_3_50DD8(void);
+void fn_3_4EFC8(int, int);
+void fn_3_4F504(int);
+void fn_3_4FB34(int);
+int fn_3_50898(int, f32*, f32*);
+void fn_3_50C20(int, f32*, f32*);
+int fn_3_50DD8(int, f32*, f32*, int);
 void fn_3_51220(void);
 int fn_3_5164C(int, f32*);
 int fn_3_51798(int, f32*);
-void fn_3_51DF0(void);
+int fn_3_51DF0(f32, f32);
 f32 fn_3_52084(int i, f32 x, f32 z);
-void fn_3_522E0(void);
+void fn_3_522E0(int i, int k, f32* outX, f32* outZ, f32* reach, f32 dx, f32 dz);
 int fn_3_52560(int, f32, f32);
-void fn_3_526DC(void);
+void fn_3_526DC(int);
 void fn_3_52F4C(int, f32, f32);
 void fn_3_530EC(int);
 int fn_3_53130(int);
-void fn_3_5372C(void);
+void fn_3_5372C(int);
 void fn_3_53EE8(int);
 void fn_3_53F48(void);
 void fn_3_544B8(void);

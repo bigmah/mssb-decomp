@@ -3,6 +3,12 @@
 
 #include "mssbTypes.h"
 
+// View of lbl_3_common_bss_35154, only the fields used here.
+typedef struct Bss35154View {
+    /*0x000*/ u8 _000[0x479];
+    /*0x479*/ u8 _479;
+} Bss35154View;
+
 void fn_3_1690C0(void);
 void fn_3_169150(void);
 
