@@ -305,8 +305,40 @@ void fn_2_61644(void) {
 }
 
 // .text:0x00061794 size:0x1B4
-void fn_2_61794(void) {
-    return;
+void fn_2_61794(MenuTask* task, MenuItem* item) {
+    LayoutObj* obj;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 5:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
+        item->state = 6;
+        break;
+    case 6:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) == 0) {
+            obj->_68 = 0;
+            item->state = 7;
+        }
+        break;
+    case 7:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        break;
+    case 1:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00061948 size:0x224
