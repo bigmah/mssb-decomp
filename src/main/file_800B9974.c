@@ -196,10 +196,133 @@ s32 fn_800B9AB0(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state,
 }
 #endif
 
+// NONMATCHING 99%: type/camera registers are reused for konstArg/rasAlpha in a different order
+#if NONMATCHING
 // .text:0x800B9EA8 size:0x5A4
-void fn_800B9EA8(void) {
-    return;
+s32 fn_800B9EA8(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state, s32* stage, s32* coord, s32* map,
+                s32* chan, MtxPtr camera) {
+    Mtx mv;
+    Mtx tmp;
+    Mtx trans;
+    Mtx texMtx;
+    Mtx texMtx2;
+    Vec lightDir;
+    Vec axis;
+    Vec up;
+    GXColor konst;
+    GXTevColorArg konstArg;
+    GXTevColorArg rasColor;
+    GXTevAlphaArg rasAlpha;
+    GXTexGenSrc src;
+    f32 dot;
+    f32 size;
+    f32 scale;
+    s32 nextMap;
+
+    up = lbl_800E7E78;
+    src = GX_TG_NRM;
+    if (lbl_803CBB58 == NULL) {
+        return -1;
+    }
+    if (dispObj == NULL || dispObj->lightingData == NULL || lbl_803CC1F0 == NULL || state == NULL) {
+        return -1;
+    }
+    PSMTXIdentity(texMtx);
+    PSMTXIdentity(texMtx2);
+    PSMTXConcat(camera, dispObj->worldMatrix, mv);
+    PSMTXInverse(mv, tmp);
+    PSMTXTranspose(tmp, mv);
+    PSMTXMultVecSR(camera, &lbl_803CC1F0->direction, &lightDir);
+    dot = PSVECDotProduct(&lightDir, &up);
+    if (dot == -1.0f) {
+        PSMTXScale(texMtx, 0.0f, 0.0f, 0.0f);
+        PSMTXScale(texMtx2, 0.0f, 0.0f, 0.0f);
+    } else {
+        lightDir.x = -lightDir.x;
+        lightDir.y = -lightDir.y;
+        lightDir.z = -lightDir.z;
+        if (PSVECMag(&lightDir) == 0.0f) {
+            return -1;
+        }
+        PSVECNormalize(&lightDir, &lightDir);
+        if (dot == 1.0f) {
+            PSMTXIdentity(tmp);
+        } else {
+            PSVECCrossProduct(&lightDir, &up, &axis);
+            if (PSVECMag(&axis) == 0.0f) {
+                PSMTXIdentity(tmp);
+            } else {
+                PSMTXRotAxisRad(tmp, &axis, acos(PSVECDotProduct(&up, &lightDir)));
+            }
+        }
+        PSMTXConcat(tmp, mv, texMtx);
+        if (lbl_803CC21C != 0) {
+            size = lbl_803CC218;
+        } else {
+            size = (s32)(state->pad8 & 0x7F) / 100.0f;
+        }
+        scale = 0.5f * (0.5f - size) + 0.75f;
+        PSMTXScale(tmp, scale, -scale, 0.0f);
+        PSMTXTrans(trans, 0.5f, 0.5f, 1.0f);
+        PSMTXConcat(trans, tmp, texMtx2);
+    }
+    if (type == 5) {
+        *chan = GX_COLOR0A0;
+        rasColor = GX_CC_RASC;
+        rasAlpha = GX_CA_RASA;
+    } else {
+        *chan = GX_COLOR_NULL;
+        rasColor = GX_CC_CPREV;
+        rasAlpha = GX_CA_APREV;
+    }
+    if (dispObj->unk15 != 0) {
+        konst.r = konst.g = konst.b = konst.a = dispObj->unk15;
+        konstArg = GX_CC_KONST;
+        GXSetTevKColor(GX_KCOLOR0, konst);
+        GXSetTevKColorSel(*stage, GX_TEV_KCSEL_K0);
+    } else {
+        konstArg = GX_CC_APREV;
+    }
+    if (dispObj->lightingData->compCount == 2) {
+        src = GX_TG_BINRM;
+    }
+    GXLoadTexMtxImm(texMtx, GX_TEXMTX0 + *map * 3, GX_MTX3x4);
+    GXLoadTexMtxImm(texMtx2, GX_PTTEXMTX0 + *map * 3, GX_MTX3x4);
+    if (state->pad16 == 0) {
+        GXSetTexCoordGen2(*coord, GX_TG_MTX3X4, src, GX_TEXMTX0 + *map * 3, GX_TRUE, GX_PTTEXMTX0 + *map * 3);
+        GXSetTevOrder(*stage, *coord, *map, *chan);
+        GXSetTevColorIn(*stage, GX_CC_ZERO, GX_CC_TEXC, konstArg, rasColor);
+        GXSetTevColorOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GXSetTevAlphaIn(*stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, rasAlpha);
+        GXSetTevAlphaOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        (*stage)++;
+        (*coord)++;
+        (*map)++;
+    } else {
+        // Stage 1: the highlight mask texture (next map) into TEVREG0.
+        nextMap = *map + 1;
+        GXSetTexCoordGen2(*coord, GX_TG_MTX2X4, GX_TG_TEX0 + nextMap, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+        GXSetTevOrder(*stage, *coord, nextMap, GX_COLOR0A0);
+        GXSetTevColorIn(*stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+        GXSetTevColorOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+        GXSetTevAlphaIn(*stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+        GXSetTevAlphaOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+        (*stage)++;
+        (*coord)++;
+        // Stage 2: the highlight, masked by TEVREG0.
+        GXSetTexCoordGen2(*coord, GX_TG_MTX3X4, src, GX_TEXMTX0 + *map * 3, GX_TRUE, GX_PTTEXMTX0 + *map * 3);
+        GXSetTevOrder(*stage, *coord, *map, GX_COLOR_NULL);
+        GXSetTevColorIn(*stage, rasColor, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
+        GXSetTevColorOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GXSetTevAlphaIn(*stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, rasAlpha);
+        GXSetTevAlphaOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        (*stage)++;
+        (*coord)++;
+        *map += 2;
+    }
+    return 0;
 }
+#endif
 
 #pragma dont_inline off
 // .text:0x800BA44C size:0x3FC
