@@ -8,6 +8,7 @@
 #include "main/file_80024184.h"
 #include "main/file_800BD8C4.h"
 #include "C3/control.h"
+#include "game/rep_D0.h"
 typedef struct C4724P {
     struct C4724P* next;
     f32 x, y, z;
@@ -1461,7 +1462,7 @@ void fn_3_C5DDC(void) {
 #endif
 
 // .text:0x000C625C size:0x174 mapped:0x807052F0
-u32 fn_3_C625C(u8* a) {
+u8 fn_3_C625C(u8* a) {
     Vec pos = *(Vec*)(a + 0x9C);
     Vec d;
     u32 stad;
@@ -1494,15 +1495,225 @@ u32 fn_3_C625C(u8* a) {
     return 0;
 }
 
+typedef struct { f32 x, y, z; u8 pad[4]; u8 f10; u8 pad11; u8 f12; u8 pad13[5]; } C71CCEnt;
+extern C71CCEnt lbl_3_data_175FC[];
+// One stadium object slot of lbl_3_common_bss_350E4 (0xE8 bytes), as set up by fn_3_C8650.
+typedef struct StadObj1FD8 {
+    union {
+        Control ctrl;
+        u8 raw[0x74];
+    } u;
+    ActorObject* model; // 0x74
+    void* anim;         // 0x78
+    void* update;       // 0x7C
+    void* hit;          // 0x80
+    void* draw;         // 0x84
+    void* draw2;        // 0x88
+    void* animPlayer;   // 0x8C
+    u8 visible : 1;     // 0x90
+    u8 animated : 1;
+    u8 b5 : 1;
+    u8 bits : 5;
+    u8 pad91;
+    u8 alpha; // 0x92
+    u8 pad93;
+    s16 f94;
+    s16 f96;
+    u8 f98;
+    u8 placed; // 0x99
+    u8 f9A;
+    u8 pad9B;
+    Vec pos;  // 0x9C
+    u8 idx;   // 0xA8
+    u8 type;  // 0xA9
+    u8 padAA[2];
+    union {
+        struct {
+            f32 speed;
+            u8 state, timer, armed;
+        } a; // group A (fn_3_C7A0C)
+        struct {
+            f32 v[3];
+            u16 b8, ba;
+            u8 bc, bd;
+        } b; // group B (fn_3_C63D0)
+    } x;
+    u8 padBE[0xE8 - 0xBE];
+} StadObj1FD8;
+typedef struct {
+    f32 x, y, z;
+    f32 rotY;
+    u8 type; // 7 = end of list
+    u8 visible;
+    u8 f12;
+    u8 pad13;
+} StadPlace14; // lbl_3_data_17514 / lbl_3_data_17704
+typedef struct {
+    f32 x, y, z;
+    f32 rotY;
+    u8 type;
+    u8 visible;
+    u8 f12;
+    u8 pad13;
+    u16 f14;
+    u16 f16;
+} StadPlace18; // lbl_3_data_175FC
 // .text:0x000C63D0 size:0xDFC mapped:0x80705464
-void fn_3_C63D0(void) {
-    return;
+extern const Vec lbl_3_rodata_2074; // (0, 1, 0)
+extern const f64 lbl_3_rodata_2180; // 5.0
+extern const f32 lbl_3_rodata_2188; // 0.37f
+extern const f32 lbl_3_rodata_218C; // 0.0044f
+extern f32 lbl_3_data_175F0[];
+extern f64 acos(f64);
+extern f64 sqrt(f64);
+extern s16 fn_3_B7F70(s16 range);
+extern s32 fn_80033928(u8 type);
+#define GAME_ACTOR(i) (((u8**)(lbl_8036E548 + 0x2C50))[i]) // TODO type: lbl_8036E548 actor list
+// Group B object (set up by fn_3_C8650): waits at its spot until no fielder
+// (actors 6..8) is within 5 units, then hops off in a random direction; on
+// landing (collision) or when it reaches the ball it bursts (fn_3_C48D0 /
+// fn_3_C444C spray) and respawns.
+// NONMATCHING ~90%: 890 vs 895 insns, register allocation and switch-tree compare order; inlines fn_3_C5304, fn_3_C48D0, fn_3_C444C and fn_3_C625C like the original
+#if NONMATCHING
+void fn_3_C63D0(StadObj1FD8* o) {
+    Vec up = lbl_3_rodata_2074;
+    Vec dir;
+    Vec axis;
+    Quaternion q;
+    VecSrcDst seg;
+    CollisionStruct col;
+    Vec pos;
+    StadPlace18* pb = (StadPlace18*)lbl_3_data_175FC;
+    C4724Hdr* h;
+    u8 hit = 0;
+    u32 i;
+    f64 d;
+    f32 ang;
+    f32 spd;
+    u32 stad;
+    u8 v;
+    u32 snd;
+
+    if (g_GameLogic[0x11E] != 2) {
+        if (o->placed == 0) {
+            o->pos.x = pb[o->idx].x;
+            o->pos.y = pb[o->idx].y;
+            o->pos.z = pb[o->idx].z;
+            o->x.b.bd = 0;
+            CTRLSetTranslation(&o->u.ctrl, o->pos.x, o->pos.y, o->pos.z);
+            o->visible = 0;
+            pitchingMachinePitching((u8)(o->idx + 0x2A));
+            pitchingMachinePitching((u8)(o->idx + 0x34));
+            o->placed = 1;
+        }
+        return;
+    }
+    o->placed = 0;
+    switch (o->x.b.bd) {
+    case 0:
+        if (o->x.b.bc != 0) {
+            o->x.b.bc--;
+            break;
+        }
+        for (i = 6; i < 9; i++) {
+            d = pow(*(f32*)(GAME_ACTOR(i) + 0x3C) - o->pos.z, lbl_3_rodata_2118);
+            if ((f32)sqrt(pow(*(f32*)(GAME_ACTOR(i) + 0x34) - o->pos.x, lbl_3_rodata_2118) + d) < lbl_3_rodata_2180) {
+                o->pos.x = pb[o->idx].x;
+                o->pos.y = pb[o->idx].y;
+                o->pos.z = pb[o->idx].z;
+                CTRLSetTranslation(&o->u.ctrl, o->pos.x, o->pos.y, o->pos.z);
+                return;
+            }
+        }
+        o->x.b.bd = 1;
+        o->visible = 1;
+        ang = lbl_3_rodata_2158 * (f32)(o->x.b.b8 + fn_3_B7F70((s16)o->x.b.ba)) / lbl_3_rodata_215C;
+        spd = lbl_3_data_175F0[fn_3_B7F70(3)];
+        o->x.b.v[0] = spd * cos(ang);
+        o->x.b.v[1] = lbl_3_rodata_2188;
+        o->x.b.v[2] = spd * sin(ang);
+        h = fn_80033A24(fn_3_C4F00, 0x80, 0, 7, 1, (u8)(o->idx + 0x2A));
+        if (h != NULL) {
+            fn_3_C5304(h, (u8*)o);
+            h->tex = lbl_3_bss_9F0C;
+        }
+        o->x.b.bc = fn_3_B7F70(0xF0) + 1;
+        stad = g_d_GameSettings.StadiumID;
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            v = lbl_3_data_84B8[6];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 6];
+        }
+        snd = sndFXStartEx((u16)(lbl_3_data_81DC[stad] + 3), v, 0x3F, 0);
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            v = lbl_3_data_84B8[7];
+        } else {
+            v = lbl_3_data_8404[stad * 0x1E + 7];
+        }
+        sndFXCtrl(snd, 0x5B, v);
+        break;
+    case 1:
+        seg.src = o->pos;
+        o->pos.x += o->x.b.v[0];
+        o->pos.y -= o->x.b.v[1];
+        o->pos.z += o->x.b.v[2];
+        seg.dst = o->pos;
+        o->x.b.v[1] = o->x.b.v[1] - lbl_3_rodata_218C;
+        PSVECNormalize((Vec*)o->x.b.v, &dir);
+        PSVECCrossProduct(&dir, &up, &axis);
+        C_QUATRotAxisRad(&q, &axis, acos(PSVECDotProduct(&dir, &up)));
+        CTRLSetQuat(&o->u.ctrl, q.x, q.y, q.z, q.w);
+        if (o->x.b.v[1] < lbl_3_rodata_213C && checkCollision(&seg, &col, 0, 0) != 0) {
+            hit = 1;
+        }
+        if (fn_3_C625C((u8*)o)) {
+            hit = 2;
+        }
+        if (hit) {
+            pitchingMachinePitching((u8)(o->idx + 0x2A));
+            if (hit == 1) {
+                h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(o->idx + 0x34));
+                if (h != NULL) {
+                    pos = o->pos;
+                    fn_3_C48D0(h, &pos);
+                    h->tex = lbl_3_bss_9F0C;
+                    h->f24 = 30;
+                }
+            } else if (hit == 2) {
+                h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(o->idx + 0x34));
+                if (h != NULL) {
+                    fn_3_C444C(h, (u8*)o);
+                    h->tex = lbl_3_bss_9F0C;
+                    h->f24 = 30;
+                }
+            }
+            o->x.b.bd = 3;
+            o->visible = 0;
+            o->pos.y = lbl_3_rodata_2160[0];
+        }
+        break;
+    case 2:
+        if (fn_80033928((u8)(o->idx + 0x34)) == 0) {
+            o->x.b.bd = 3;
+        }
+        break;
+    case 3:
+        o->x.b.bd = 0;
+        o->pos.x = pb[o->idx].x;
+        o->pos.y = pb[o->idx].y;
+        o->pos.z = pb[o->idx].z;
+        o->x.b.v[1] = lbl_3_rodata_2188;
+        o->visible = 0;
+        o->x.b.bc = fn_3_B7F70(0xF0) + 1;
+        CTRLSetRotation(&o->u.ctrl, lbl_3_rodata_213C, pb[o->idx].rotY, lbl_3_rodata_213C);
+        break;
+    }
+    CTRLSetTranslation(&o->u.ctrl, o->pos.x, o->pos.y, o->pos.z);
 }
+#endif
 
 // .text:0x000C71CC size:0x278 mapped:0x80706260
 typedef struct { u8 d[0x44]; } C71CCCopy;
-typedef struct { f32 x, y, z; u8 pad[4]; u8 f10; u8 pad11; u8 f12; u8 pad13[5]; } C71CCEnt;
-extern C71CCEnt lbl_3_data_175FC[];
 extern f32 lbl_3_data_175F0[];
 extern const f64 lbl_3_rodata_2190;
 extern const f32 lbl_3_rodata_2198;
@@ -1911,67 +2122,6 @@ void fn_3_C82B4(void) {
 #endif
 
 // .text:0x000C8650 size:0xD2C mapped:0x807076E4
-// One stadium object slot of lbl_3_common_bss_350E4 (0xE8 bytes), as set up by fn_3_C8650.
-typedef struct StadObj1FD8 {
-    union {
-        Control ctrl;
-        u8 raw[0x74];
-    } u;
-    ActorObject* model; // 0x74
-    void* anim;         // 0x78
-    void* update;       // 0x7C
-    void* hit;          // 0x80
-    void* draw;         // 0x84
-    void* draw2;        // 0x88
-    void* animPlayer;   // 0x8C
-    u8 visible : 1;     // 0x90
-    u8 animated : 1;
-    u8 b5 : 1;
-    u8 bits : 5;
-    u8 pad91;
-    u8 alpha; // 0x92
-    u8 pad93;
-    s16 f94;
-    s16 f96;
-    u8 f98;
-    u8 pad99;
-    u8 f9A;
-    u8 pad9B;
-    Vec pos;  // 0x9C
-    u8 idx;   // 0xA8
-    u8 type;  // 0xA9
-    u8 padAA[2];
-    union {
-        struct {
-            f32 speed;
-            u8 state, timer, armed;
-        } a; // group A (fn_3_C7A0C)
-        struct {
-            f32 v[3];
-            u16 b8, ba;
-            u8 bc, bd;
-        } b; // group B (fn_3_C63D0)
-    } x;
-    u8 padBE[0xE8 - 0xBE];
-} StadObj1FD8;
-typedef struct {
-    f32 x, y, z;
-    f32 rotY;
-    u8 type; // 7 = end of list
-    u8 visible;
-    u8 f12;
-    u8 pad13;
-} StadPlace14; // lbl_3_data_17514 / lbl_3_data_17704
-typedef struct {
-    f32 x, y, z;
-    f32 rotY;
-    u8 type;
-    u8 visible;
-    u8 f12;
-    u8 pad13;
-    u16 f14;
-    u16 f16;
-} StadPlace18; // lbl_3_data_175FC
 #define ACTOR_TABLE (*(ActorObjectTable**)(lbl_8036E548 + 0x6C)) // TODO type: lbl_8036E548
 extern void fn_3_B939C(void);
 extern void fn_3_B9D68(u8* ids, s32 n, void** files, s32* out);
