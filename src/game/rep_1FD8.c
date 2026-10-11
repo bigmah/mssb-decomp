@@ -439,8 +439,9 @@ void fn_3_C2C80(void* pv, u8* h) {
     p->s48 = 0;
 }
 
-// 60-line diff: orig hoists the 2118/2138/213C const loads up into the first fmadd; ours loads them later (f-reg numbering shifts)
 // .text:0x000C2EDC size:0x214 mapped:0x80701F70
+// NONMATCHING 96%: orig hoists the 2118/2138/213C const loads up into the first fmadd; ours loads them later (f-reg numbering shifts)
+#if NONMATCHING
 void fn_3_C2EDC(void* pv) {
     C4724P* p = pv;
     p->f38 = p->f20 * (lbl_3_rodata_2130 * p->f1C / p->f4F) + p->f38;
@@ -458,6 +459,7 @@ void fn_3_C2EDC(void* pv) {
     p->z += p->vz;
     p->s4A -= 1;
 }
+#endif
 
 // .text:0x000C30F0 size:0x57C mapped:0x80702184
 void fn_3_C30F0(void) {
