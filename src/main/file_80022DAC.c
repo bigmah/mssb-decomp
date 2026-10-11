@@ -493,6 +493,66 @@ s32 fn_80023D98(VecQueue* queue, Vec* result) {
 }
 
 // .text:0x80023F0C size:0x278
-void fn_80023F0C(void) {
-    return;
+// Copy a srcX/srcY/width/height block of texels from src to dstX/dstY in dst
+// (whole GX tiles only). Returns 1 if the formats can't be copied.
+s32 fn_80023F0C(TexImage* src, TexImage* dst, s32 srcX, s32 srcY, s32 width, s32 height, s32 dstX, s32 dstY) {
+    s32 format;
+    s32 srcStride;
+    s32 dstStride;
+    u8* srcRow;
+    u8* dstRow;
+
+    if (src->format != dst->format) {
+        return 1;
+    }
+    format = src->format;
+    if (src->tlut != NULL) {
+        switch (format) {
+        case GX_TF_C4:
+            srcStride = (src->width + 7) / 8;
+            dstStride = (dst->width + 7) / 8;
+            width = (width + 7) / 8 + ((srcX & 7) != 0);
+            srcX /= 8;
+            height = (height + 7) / 8 + ((srcY & 7) != 0);
+            srcY /= 8;
+            dstX /= 8;
+            dstY /= 8;
+            break;
+        case GX_TF_C8:
+            srcStride = (src->width + 7) / 8;
+            dstStride = (dst->width + 7) / 8;
+            width = (width + 7) / 8 + ((srcX & 7) != 0);
+            srcX /= 8;
+            height = (height + 3) / 4 + ((srcY & 3) != 0);
+            srcY /= 4;
+            dstX /= 8;
+            dstY /= 4;
+            break;
+        case GX_TF_C14X2:
+            return 1;
+        }
+    } else {
+        switch (format) {
+        case GX_TF_CMPR:
+            srcStride = (src->width + 7) / 8;
+            dstStride = (dst->width + 7) / 8;
+            width = (width + 7) / 8 + ((srcX & 7) != 0);
+            srcX /= 8;
+            height = (height + 7) / 8 + ((srcY & 7) != 0);
+            srcY /= 8;
+            dstX /= 8;
+            dstY /= 8;
+            break;
+        default:
+            return 1;
+        }
+    }
+    srcRow = src->data + (srcX + srcStride * srcY) * 32;
+    dstRow = dst->data + (dstX + dstStride * dstY) * 32;
+    for (; height != 0; height--) {
+        memcpy(dstRow, srcRow, width * 32);
+        srcRow += srcStride * 32;
+        dstRow += dstStride * 32;
+    }
+    return 0;
 }

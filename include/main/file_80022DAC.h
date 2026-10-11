@@ -215,6 +215,7 @@ ActorSlotTable* fn_80023AA4(void);
 void fn_80023B04(s32 count);
 void fn_80023B90(StadiumLight* light, StadiumLightPos* out);
 void fn_80023CF4(u32 progressive);
+s32 fn_80023F0C(TexImage* src, TexImage* dst, s32 srcX, s32 srcY, s32 width, s32 height, s32 dstX, s32 dstY);
 
 void fn_80023EEC(VecQueue* queue, Vec* entries, s32 capacity);
 
