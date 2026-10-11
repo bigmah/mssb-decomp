@@ -449,9 +449,84 @@ static inline s32 ScoreBoard_ShouldClose(void) {
 }
 
 // .text:0x0011E364 size:0x460 mapped:0x8075D3F8
+// Score board (four players): counts the shown points toward the real ones.
+// NONMATCHING 94%: the original strength-reduces i*3+0x15/16/17 into separate registers (one more saved reg) and does not mask fn_3_107CD0's u8 result
+#if NONMATCHING
 void fn_3_11E364(void) {
-    return;
+    ScoreBoardTask* task = lbl_803CC1B8;
+    u32 changed = 0;
+    u32 i;
+    u32 shown;
+    u32 leader;
+    s32 noTie;
+    s32 diff;
+
+    if (ScoreBoard_ShouldClose()) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, lbl_3_data_25A24);
+        i = 0;
+        do {
+            fn_800363D8(task, i + 9, 1, 0x65, i);
+            SPRITE_I(task, 0x11, i)->frame = inMemRoster[0][i].stats.CharID << 16;
+            i++;
+        } while (i < 4);
+        i = 0;
+        do {
+            SPRITE_I(task, 0x21, i)->flags &= ~2;
+            i++;
+        } while (i < 4);
+        task->state = 1;
+        break;
+    case 1:
+        leader = fn_3_107CD0();
+        noTie = fn_3_107C88();
+        i = 0;
+        do {
+            if (MG11D3->hit[i] != 0) {
+                MG11D3->hit[i] = 0;
+                SPRITE_I(task, 1, i)->frame = 0;
+                SPRITE_I(task, 1, i)->visible = 1;
+            }
+            diff = g_Minigame.miniGameCurrentPoints[i] - g_Minigame.minigamePoints_current_Latest[i].current;
+            if (diff > 0) {
+                g_Minigame.minigamePoints_current_Latest[i].current++;
+                changed = 1;
+                task->counting[i] = 1;
+            } else if (diff < 0) {
+                changed = 1;
+                g_Minigame.minigamePoints_current_Latest[i].current--;
+            } else if (task->counting[i] != 0) {
+                task->counting[i] = 0;
+                SPRITE(task, i * 3 + 0x15)->frame = 0;
+                SPRITE(task, i * 3 + 0x16)->frame = 0;
+                SPRITE(task, i * 3 + 0x17)->frame = 0;
+            }
+            shown = g_Minigame.minigamePoints_current_Latest[i].current;
+            if (shown > 999) {
+                shown = 999;
+            }
+            fn_800363D8(task, i * 3 + 0x15, 1, 0x66, (shown % 1000) / 100);
+            fn_800363D8(task, i * 3 + 0x16, 1, 0x66, (shown % 100) / 10);
+            fn_800363D8(task, i * 3 + 0x17, 1, 0x66, shown % 10);
+            if (noTie == 0 && g_Minigame.minigamePoints_current_Latest[i].current ==
+                                  g_Minigame.minigamePoints_current_Latest[leader].current) {
+                SPRITE_I(task, 0x21, i)->flags |= 2;
+            } else {
+                SPRITE_I(task, 0x21, i)->flags &= ~2;
+            }
+            i++;
+        } while (i < 4);
+        break;
+    }
+    if (changed != 0) {
+        sndFXStartEx(0x1C0, lbl_800EFBA4[9], 0x3F, 0);
+    }
 }
+#endif
 
 // .text:0x0011E7C4 size:0x464 mapped:0x8075D858
 void fn_3_11E7C4(void) {
