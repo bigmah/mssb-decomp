@@ -2469,7 +2469,18 @@ typedef struct _MiniGameStruct {
     /*0x1D7A*/ u8 _1D7A;
     /*0x1D7B*/ u8 _1D7B;
     /*0x1D7C*/ InputStruct _1D7C[4];
-    /*0x1DBC*/ u8 _1DBC[0x1E22 - 0x1DBC];
+    /*0x1DBC*/ u8 _1DBC[4]; // per player: input driven by the CPU this frame (fn_3_12DB80)
+    /*0x1DC0*/ u8 _1DC0[4];
+    /*0x1DC4*/ u8 _1DC4[4];
+    /*0x1DC8*/ u8 _1DC8[4];
+    /*0x1DCC*/ s16 bB_cpuSwingFrame;  // pitcher frame at which the CPU swings (fn_3_12DDCC)
+    /*0x1DCE*/ u16 bB_cpuStickInput;  // stick direction held with the swing
+    /*0x1DD0*/ s8 bB_cpuSwingStep;
+    /*0x1DD1*/ u8 bB_cpuSwingPlanned;
+    /*0x1DD2*/ s8 bB_cpuPreferLow;    // sort order for the CPU's target choice (fn_3_12E084)
+    /*0x1DD3*/ u8 _1DD3[0x1DF4 - 0x1DD3];
+    /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
+    /*0x1E02*/ u8 _1E02[0x1E22 - 0x1E02];
     /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
     /*0x1E26*/ u8 _1E26[4];
     /*0x1E2A*/ u8 _1E2A;    // round counter
