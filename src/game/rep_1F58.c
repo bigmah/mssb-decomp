@@ -21,13 +21,40 @@ extern f32 lbl_3_rodata_1FA8;
 extern void fn_80027918(u8, f32);
 extern f32 lbl_3_rodata_1FAC;
 extern f32 lbl_3_rodata_1FC0;
-extern f32 lbl_3_rodata_1FC8;
+extern f64 lbl_3_rodata_1FC8;
 extern f32 lbl_3_rodata_1FD4;
-extern f64 lbl_3_rodata_1FD0;
+extern f32 lbl_3_rodata_1FD0;
 extern f64 sin(f64);
 typedef struct { s16 id; s16 s2; f32 v[3]; f32 p[3]; f32 x; } E32_1F58;
 typedef struct { s32 v; s32 w; } T8_1F58;
-typedef struct { u8 a[4]; f32 b[5]; E32_1F58 c[2]; u8 pad58[0xC]; s32 f64; u8 pad68[0x3C]; T8_1F58 tbl[8]; } D1F58;
+// Mirrors main/file_800263FC.h (that header clashes with this file's GX externs).
+typedef struct ParticleParamsAttract {
+    /* 0x00 */ void* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ s32 unk20[8];
+} ParticleParamsAttract;
+extern BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out); // main/file_80011640.h
+extern void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, f32 radius);
+typedef struct {
+    /* 0x000 */ u8 a[4];
+    /* 0x004 */ f32 b[3];
+    /* 0x010 */ u8 col[2][3];
+    /* 0x016 */ u8 pad16[2];
+    /* 0x018 */ E32_1F58 c[2];
+    /* 0x058 */ s32 _58;
+    /* 0x05C */ u8 pad5C[8];
+    /* 0x064 */ ParticleParamsAttract prm;
+    /* 0x0A4 */ T8_1F58 tbl[8];
+    /* 0x0E4 */ u8 padE4[0x254 - 0xE4];
+    /* 0x254 */ f32 _254;
+    /* 0x258 */ u8* tasks[2];
+} D1F58;
 extern D1F58 lbl_3_data_17248;
 extern u8 lbl_3_data_17258[];
 extern s32 fn_8005268C(void);
@@ -298,8 +325,8 @@ void fn_3_C11CC(s32 who, s32 a) {
             o = fn_800B0A5C_insertQueue(fn_3_C1004, *(u16*)(*(u8**)&lbl_803CC1B8 + 0x12));
             o[0x14] = who;
             {
-                f64 s = sin(d->b[j] * d->c[j].x / lbl_3_rodata_1FC8);
-                o[0x15] = (lbl_3_rodata_1FD0 * s + lbl_3_rodata_1FD0) * d->a[j];
+                f64 s = sin(d->b[j] * d->c[j].x / lbl_3_rodata_1FD0);
+                o[0x15] = (lbl_3_rodata_1FC8 * s + lbl_3_rodata_1FC8) * d->a[j];
             }
             o[0x16] = 10;
         }
@@ -307,9 +334,76 @@ void fn_3_C11CC(s32 who, s32 a) {
 }
 
 // .text:0x000C1344 size:0x42C mapped:0x807003D8
-void fn_3_C1344(void) {
-    return;
+extern f64 lbl_3_rodata_1FB0;
+extern f64 lbl_3_rodata_1FB8;
+// NONMATCHING 70%: same data_17248+K hoisting issue as fn_3_C11CC (original indexes off addi'd bases: lfsx/lbzx/stwx); regalloc
+#if NONMATCHING
+void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
+    D1F58* d = &lbl_3_data_17248;
+    u8* actor;
+    E32_1F58* e;
+    s16* q;
+    s32 j;
+    s32 i;
+    s32 k;
+    u8* o;
+    if (lbl_80366158[0x28] != 0) {
+        return;
+    }
+    actor = ((u8**)lbl_8036E548)[who + 0x2C50 / 4];
+    if (actor == NULL) {
+        return;
+    }
+    j = 1;
+    q = &d->c[1].id;
+    do {
+        if (who == *q) {
+            break;
+        }
+        q -= 0x10;
+    } while (j-- != 0);
+    if (j < 0) {
+        return;
+    }
+    e = &d->c[j];
+    getAnimRelatedCoordinates(who, 4, (Vec*)e->v);
+    if (t > lbl_3_rodata_1FA8 && t < d->_254) {
+        if (d->c[j].s2-- == 0) {
+            d->c[j].s2 = d->prm.unk1C;
+            k = 0x18;
+            if (j != 0) {
+                k = 0x17;
+            }
+            fn_80027674((Vec*)e->p, (Vec*)e->v, &d->prm, k, (f32)d->_58 / lbl_3_rodata_1FD4);
+            *(void**)(actor + 0x5C) = fn_3_C0DD8; // TODO type: CharActor draw hook
+        }
+    }
+    sin(t * d->b[j] / lbl_3_rodata_1FD0);
+    if (t < lbl_3_rodata_1FD0) {
+        fn_3_C0D10(j, d->col[j][0], d->col[j][1], d->col[j][2],
+                   (lbl_3_rodata_1FC8 * sin(t * d->b[j] / lbl_3_rodata_1FD0) + lbl_3_rodata_1FC8) * d->a[j]);
+        d->c[j].x = t;
+    } else {
+        fn_3_C0D10(j, d->col[j][0], d->col[j][1], d->col[j][2],
+                   (lbl_3_rodata_1FC8 * sin(t2 * d->b[j] / lbl_3_rodata_1FD0) + lbl_3_rodata_1FC8) * d->a[j]);
+        d->c[j].x = t2;
+    }
+    if (track != 0 && lbl_3_common_bss_35154[0x477 + j] == 0) {
+        lbl_3_common_bss_35154[0x477 + j] = 1;
+        o = fn_800B0A5C_insertQueue(fn_3_C0AD8, 1);
+        *(s32*)(o + 0x14) = 0;
+        *(s32*)(o + 0x1C) = e->id;
+        o[0x20] = 0;
+        for (i = 0; i < 2; i++) {
+            if (d->tasks[i] == NULL) {
+                d->tasks[i] = o;
+                *(s32*)(o + 0x18) = i;
+                break;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x000C1770 size:0x1C0 mapped:0x80700804
 // ~50%: CSE of data_17248+0x18+j*32 and regalloc differ

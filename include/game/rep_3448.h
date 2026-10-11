@@ -3,6 +3,118 @@
 
 #include "mssbTypes.h"
 
+// This unit's view of a layout sprite (main/file_8000F150.h LayoutObj); only the fields used here.
+typedef struct RepObj {
+    /*0x00*/ u8 _00[0x48];
+    /*0x48*/ f32 x;
+    /*0x4C*/ f32 y;
+    /*0x50*/ u8 _50[0x4];
+    /*0x54*/ u32 flags;
+    /*0x58*/ u32 color;
+    /*0x5C*/ u32 frame; // animation frame << 16
+    /*0x60*/ u8 _60[0x4];
+    /*0x64*/ u16 anim;
+    /*0x66*/ u8 _66;
+    /*0x67*/ u8 layer;
+    /*0x68*/ u8 mode;   // 0 hidden, 1 play, 4 rewind
+    /*0x69*/ u8 status; // 2 when the animation finished
+    /*0x6A*/ u8 _6A[0x72 - 0x6A];
+    /*0x72*/ s16 _72;
+} RepObj;
+
+// One entry of lbl_80371C30 (main/file_8000F150.h LayoutSlot).
+typedef struct RepSlot {
+    /*0x0*/ RepObj* obj;
+    /*0x4*/ u32 _04;
+} RepSlot;
+
+// HUD task (lbl_803CC1B8 while one of this unit's tasks runs); only the fields used here.
+typedef struct RepTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ u8 _04[0x8];
+    /*0x0C*/ struct RepTask* parent;
+    /*0x10*/ u8 _10[0x2];
+    /*0x12*/ u16 priority;
+    /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
+    /*0x16*/ u16 count;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ u16 state;
+    /*0x1E*/ u16 _1E;
+    /*0x20*/ u16 _20;
+    /*0x22*/ u16 _22;
+    /*0x24*/ union {
+        u8 flag[4]; // per-player "counting" flags (fn_3_11F02C, fn_3_121304)
+        s16 delta[4]; // per-player score change shown (fn_3_12026C)
+        u32 voice; // looping sound voice, 0xFFFFFFFF when none (fn_3_121908)
+        s16 disp[8]; // counted-up stat values shown (fn_3_127B68)
+    } u24;
+} RepTask;
+
+// Runner position (game/UnknownHomes_Game.h InMemRunnerType, size 0x154).
+typedef struct RepRunner {
+    /*0x000*/ f32 x;
+    /*0x004*/ f32 y;
+    /*0x008*/ f32 z;
+    /*0x00C*/ u8 _00C[0x154 - 0xC];
+} RepRunner;
+
+// Fielder position (game/UnknownHomes_Game.h InMemFielderType, size 0x268).
+typedef struct RepFielder {
+    /*0x000*/ f32 x;
+    /*0x004*/ f32 y;
+    /*0x008*/ f32 z;
+    /*0x00C*/ u8 _00C[0x268 - 0xC];
+} RepFielder;
+
+// Roster entry (game/UnknownHomes_Game.h CharacterStats, size 0xA0).
+typedef struct RepRosterEnt {
+    /*0x00*/ u8 _00[0x24];
+    /*0x24*/ s16 charId;
+    /*0x26*/ u8 _26[0xA0 - 0x26];
+} RepRosterEnt;
+
+// Controller state (game/UnknownHomes_Game.h InputStruct, size 0x10).
+typedef struct RepInput {
+    /*0x0*/ u8 _0[0x6];
+    /*0x6*/ u16 newButtonInput; // pressed this frame
+    /*0x8*/ u8 _8[0x8];
+} RepInput;
+
+// Menu definition (main/file_800527C4.h MenuDef, lbl_800FEF70).
+typedef struct RepMenuDef {
+    /*0x0*/ u8 _0[0x8];
+    /*0x8*/ u16 track;
+    /*0xA*/ u8 _A[0x6];
+} RepMenuDef; // size: 0x10
+
+// Stat-total input/output (main/file_80069BDC.h StatInput / StatOutput).
+typedef struct RepStatInput {
+    /*0x00*/ s16 vals[6];
+    /*0x0C*/ u8 order[6]; // 1-based indices into vals
+    /*0x12*/ u8 _12;
+    /*0x13*/ u8 _13;
+    /*0x14*/ u8 _14[2];
+} RepStatInput; // size: 0x16
+
+typedef struct RepStatOutput {
+    /*0x00*/ s16 vals[6];
+    /*0x0C*/ s16 _C;
+    /*0x0E*/ s16 _E;
+} RepStatOutput; // size: 0x10
+
+// One minigame high-score entry (fn_3_109D88 returns 5 of them).
+typedef struct RepRankEnt {
+    /*0x0*/ s32 score;
+    /*0x4*/ s16 _4;
+    /*0x6*/ s16 chara;
+} RepRankEnt;
+
+#define REP_TASK ((RepTask*)lbl_803CC1B8)
+#define REP_OBJ(t, i) (*(RepObj**)((u8*)lbl_80371C30 + ((t)->baseIdx + (i)) * sizeof(RepSlot)))
+// Same slot, for a constant k (the original folds k into the load offset).
+#define REP_OBJC(t, k) ((((RepSlot*)lbl_80371C30) + (t)->baseIdx)[k].obj)
+
 void fn_3_11EC28(void);
 void fn_3_11F02C(void);
 void fn_3_11F480(void);
