@@ -321,9 +321,106 @@ void fn_800126EC(CharPart* part, void* tex, u8* fileIdx) {
 }
 
 // .text:0x800127F8 size:0x398
-void LoadModel(void) {
-    return;
+static inline void copyPartJointData(CharActor* actor, s32 which) {
+    s32 joint = actor != NULL ? actor->jointIdx[lbl_803CB7B4[which]] : 0xFFFF;
+    CharModel** models;
+    CharModel* model;
+    CharJoint* dst;
+    CharModel* src;
+    CharJoint** jp;
+    s32 i;
+    s32 n;
+
+    if (joint != 0xFFFF) {
+        models = &actor->model;
+        i = 0;
+        do {
+            model = *models;
+            if (lbl_800EEAAC[actor->kind] >= 0 && actor->parts != NULL) {
+                dst = model->joints[joint];
+                if (which & 1) {
+                    src = lbl_8036E548.partSlots->slots[actor->parts->part[1].slot].model;
+                } else {
+                    src = lbl_8036E548.partSlots->slots[actor->parts->part[0].slot].model;
+                }
+                if (src != NULL) {
+                    n = src->jointCount;
+                    jp = &src->joints[n];
+                    do {
+                        jp--;
+                        n--;
+                        if ((*jp)->_14 != NULL) {
+                            dst->_14 = (*jp)->_14;
+                            break;
+                        }
+                    } while (n != 0);
+                }
+                break;
+            }
+            models--;
+        } while (i-- != 0);
+    }
 }
+
+// NONMATCHING 99%: register allocation only (actor/tex, joint-copy temps)
+#if NONMATCHING
+u8 LoadModel(CharActor* actor) {
+    CharParts* parts;
+    CharPart* part;
+    void** files;
+    void* tex;
+
+    if (actor == NULL) {
+        OSPanic("model.c", 0x22E6, " Character Data None \n");
+        return 0;
+    }
+    parts = actor->parts;
+    if (parts == NULL) {
+        OSPanic("model.c", 0x22EA, " Character Parts Data None \n");
+        return 0;
+    }
+    if (lbl_803CBC14 == 0 && (s32)lbl_803C6CF8.transferDone == 1) {
+        if (parts->_CD != 0) {
+            part = &parts->part[1];
+            lbl_803CBC10 = part;
+            fn_80021CA4(actor->parts->_CF, 5, part->files);
+            lbl_803CBC15 = 1;
+        } else {
+            lbl_803CBC10 = &parts->part[0];
+            fn_80021CA4(actor->parts->_CF, 0, parts->part[0].files);
+            lbl_803CBC15 = 0;
+        }
+        lbl_803CBC14 = 1;
+    }
+    if (lbl_803716B8._1E8 == 0) {
+        part = lbl_803CBC10;
+        tex = actor->parts->tex;
+        // TODO type: the file header holds offsets that are relocated in place.
+        files = part->files;
+        if (files[0] != NULL) {
+            files[0] = (u8*)files + (u32)files[0];
+        }
+        files = part->files;
+        if (files[1] != NULL) {
+            files[1] = (u8*)files + (u32)files[1];
+        }
+        files = part->files;
+        if (files[2] != NULL) {
+            files[2] = (u8*)files + (u32)files[2];
+        }
+        files = part->files;
+        if (files[3] != NULL) {
+            files[3] = (u8*)files + (u32)files[3];
+        }
+        fn_800126EC(part, tex, lbl_803CB7C4);
+        copyPartJointData(lbl_8036E548.active[actor->index], lbl_803CBC15);
+        lbl_803CBC14 = 0;
+        lbl_803CBC10 = NULL;
+        return 1;
+    }
+    return 0;
+}
+#endif
 
 // .text:0x80012B90 size:0xAF0
 void fn_80012B90(void) {
