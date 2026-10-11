@@ -58,7 +58,98 @@ extern GameScores g_Scores;
 
 // .text:0x00091520 size:0x540 mapped:0x806D05B4
 void fn_3_91520(void) {
-    return;
+    RepTask* task = lbl_803CC1B8[0];
+    int sx;
+    int sy;
+    if (lbl_3_common_bss_32724[0x96] == 0) {
+    if (task->timer < 0xFFFE) {
+        task->timer++;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    if (g_UnkSound_32718._08 != 0) {
+        if (g_Stats.replayInd != 0) {
+            g_UnkSound_32718._08 = 0;
+            return;
+        }
+        if (g_GameLogic.framesOfExitingToMenu != 0) {
+            g_UnkSound_32718._08 = 0;
+            return;
+        }
+        fn_3_1650C(&sx, &sy, FALSE, g_Ball.AtBat_Contact_BallPos.x, -g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+        switch (g_UnkSound_32718._08) {
+        case 1:
+            if (task->_1C == 0) {
+                REP_OBJ(task, 0)->_5C = 0;
+                REP_OBJ(task, 0)->flags |= 2;
+                REP_OBJ(task, 0)->_68 = 1;
+                REP_OBJ(task, 0)->x = sx;
+                REP_OBJ(task, 0)->y = sy;
+                task->_1C = 1;
+            }
+            break;
+        case 2:
+            if (task->_1E == 0) {
+                REP_OBJ(task, 1)->_5C = 0;
+                REP_OBJ(task, 1)->flags |= 2;
+                REP_OBJ(task, 1)->_68 = 1;
+                REP_OBJ(task, 1)->_64 = 1;
+                REP_OBJ(task, 1)->x = sx;
+                REP_OBJ(task, 1)->y = sy;
+                task->_1E = 1;
+            }
+            break;
+        case 3:
+            if (task->_1E == 0) {
+                REP_OBJ(task, 1)->_5C = 0;
+                REP_OBJ(task, 1)->flags |= 2;
+                REP_OBJ(task, 1)->_68 = 1;
+                REP_OBJ(task, 1)->_64 = 2;
+                REP_OBJ(task, 1)->x = sx;
+                REP_OBJ(task, 1)->y = sy;
+                task->_1E = 1;
+            }
+            break;
+        case 4:
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                g_UnkSound_32718._08 = 0;
+                return;
+            }
+            if (task->_20 == 0) {
+                REP_OBJ(task, 2)->_5C = 0;
+                REP_OBJ(task, 2)->flags |= 2;
+                REP_OBJ(task, 2)->_68 = 0;
+                REP_OBJ(task, 2)->x = 0.0f;
+                REP_OBJ(task, 2)->y = 0.0f;
+                task->_20 = 1;
+            }
+            break;
+        }
+        task->timer = 0;
+        g_UnkSound_32718._08 = 0;
+    } else {
+        if (task->_1C != 0 && ((REP_OBJ(task, 0)->_69 == 2) ? 1 : 0)) {
+            REP_OBJ(task, 0)->flags &= ~2;
+            task->_1C = 0;
+        }
+        if (task->_1E != 0 && ((REP_OBJ(task, 1)->_69 == 2) ? 1 : 0)) {
+            REP_OBJ(task, 1)->flags &= ~2;
+            task->_1E = 0;
+        }
+        if (task->_20 != 0) {
+            if (task->timer == 0x1E) {
+                playSoundEffect(0x1AC);
+                REP_OBJ(task, 2)->_68 = 1;
+            }
+            if (((REP_OBJ(task, 2)->_69 == 2) ? 1 : 0)) {
+                REP_OBJ(task, 2)->flags &= ~2;
+                task->_20 = 0;
+            }
+        }
+    }
+    } else {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
 }
 
 // .text:0x00091A60 size:0x68 mapped:0x806D0AF4
