@@ -46,7 +46,7 @@ f32 fn_3_B79AC(f32 x, f32 z) {
     len = x * x + z * z;
     SQRT_L(len);
     if (lbl_3_rodata_1D08 == len) {
-        return 0.0f;
+        return 100.0f;
     }
     s = lbl_3_rodata_1D2C / len;
     m = -0.5f;
