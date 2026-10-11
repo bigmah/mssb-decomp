@@ -1,46 +1,74 @@
 #include "game/rep_3E58.h"
-#include "header_rep_data.h"
+#include "game/UnknownHomes_Game.h"
+#include "game/auto_00_001690C0_text.h" // Bss35154View
+#include "game/auto_00_00167CC4_text.h" // SparkleTask
+#include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "main/file_800B0724.h" // scene task queue
+#include "main/file_800263FC.h" // ParticleParamsF, fn_80026998
+#include "main/file_80011640.h" // CharMgr, CharActor
+#include "Dolphin/mtx.h"
+#include "Dolphin/stl.h"
+#include "Dolphin/rand.h"
+#include "stl/math.h"
 
-#include "static/UnknownHomes_Static.h"
-extern void fn_3_16689C(void);
-extern void fn_3_16699C(void);
-#pragma dont_inline on
-extern u8 g_Ball[];
-extern u8 g_GameLogic[];
-extern u8 g_Minigame[];
-extern u8 lbl_3_common_bss_35154[];
-extern u8* lbl_803CC1B8;
-extern u8 lbl_3_data_28508[];
-extern u8 lbl_3_data_28558[];
-extern s32 lbl_803CBD0C;
-extern s32 fn_8001B728(s32, s32, void*);
-extern void fn_80026998(void*);
-extern int rand(void);
-extern void* memset(void*, int, u32);
-extern void* memcpy(void*, const void*, u32);
+
+
+extern SparkleTask* lbl_803CC1B8; // running scene task
+extern Bss35154View lbl_3_common_bss_35154;
+extern ParticleParamsF lbl_3_data_28508; // sparkle emitter template
+extern u8 lbl_3_data_28558[23];          // joints a sparkle can spawn at
+extern TexArchive* lbl_803CBD0C;
+extern camera_803c639c_s* fn_80052768_getCamera(int);
+
+#define RANDF() ((f32)rand() / 32767.0f)
+
+static s8 lbl_3_bss_B9E0; // fn_3_1666B0 call counter
 
 // .text:0x001666B0 size:0x1EC mapped:0x807A5744
-void fn_3_1666B0(void) {
-    return;
+// Every fifth call, puffs a randomly coloured sparkle near pos.
+void fn_3_1666B0(Vec* pos) {
+    Vec p;
+    ParticleParamsF prm;
+
+    if (++lbl_3_bss_B9E0 >= 5) {
+        memset(&prm, 0, sizeof(ParticleParamsF));
+        memcpy(&prm, &lbl_3_data_28508, sizeof(ParticleParamsF));
+        memcpy(&p, pos, sizeof(Vec));
+        prm.size1 = 0.2f * prm.size0;
+        if (p.y > 0.0f) {
+            p.y *= -1.0f;
+        }
+        lbl_3_bss_B9E0 = 0;
+        prm.tex = lbl_803CBD0C;
+        p.x += 5.0f * (RANDF() - 0.5f);
+        p.y -= 3.0f * RANDF();
+        p.z -= 0.45f;
+        memcpy(&prm.pos, &p, sizeof(Vec));
+        prm.r = rand() % 256;
+        prm.g = rand() % 256;
+        prm.b = rand() % 256;
+        fn_80026998(&prm);
+    }
 }
 
 // .text:0x0016689C size:0xD0 mapped:0x807A5930
 void fn_3_16689C(void) {
-    u8* s = (u8*)&g_d_GameSettings;
-    if (s[0x55] != 0 || lbl_3_common_bss_35154[0x479] != 0) {
+    // removeQueue ignores its argument; the original passes whatever is in r3.
+    if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
         return;
     }
-    if (g_GameLogic[0x11E] != 2 || g_GameLogic[0x122] != 0 || *(s16*)(g_Ball + 0x1B78) < 0) {
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL || g_GameLogic.framesOfExitingToMenu != 0 || g_Ball.fielderWBallIndex < 0) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
         return;
     }
-    if (s[7] == 6 && g_Minigame[0x19A4] != 0) {
-        fn_800B0A14_removeQueue(g_Minigame);
+    if (g_d_GameSettings.GameModeSelected == 6 && g_Minigame.TF_ballDespawnedInd) {
+        fn_800B0A14_removeQueue(&g_Minigame);
         return;
     }
-    if (g_Ball[0x1BC9] != 1) {
-        fn_800B0A14_removeQueue(g_Ball);
+    if (g_Ball.ballState != 1) {
+        fn_800B0A14_removeQueue(&g_Ball);
         return;
     }
     fn_3_16699C();
@@ -57,123 +85,119 @@ void fn_3_16699C(void) {
 }
 
 // .text:0x00166C30 size:0x110 mapped:0x807A5CC4
-void fn_3_166C30(u8* obj, s8 id) {
-    u8 v[0xC];
-    u8 buf[0x50];
-    memset(v, 0, 0xC);
-    memcpy(buf, lbl_3_data_28508, 0x50);
-    *(s32*)buf = lbl_803CBD0C;
-    if (fn_8001B728(*(s8*)(obj + 0x254), id, v) == 0) {
-        memset(v, 0, 0xC);
-        fn_8001B728(*(s8*)(obj + 0x254), 4, v);
+// Spawns a randomly coloured sparkle at the given joint of actor (joint 4 if it has none).
+void fn_3_166C30(CharActor* actor, s8 joint) {
+    Vec pos;
+    ParticleParamsF prm;
+
+    memset(&pos, 0, sizeof(Vec));
+    memcpy(&prm, &lbl_3_data_28508, sizeof(ParticleParamsF));
+    prm.tex = lbl_803CBD0C;
+    if (fn_8001B728(actor->index, joint, &pos) == 0) {
+        memset(&pos, 0, sizeof(Vec));
+        fn_8001B728(actor->index, 4, &pos);
     }
-    memcpy(buf + 0x40, v, 0xC);
-    buf[0x4C] = rand() % 256;
-    buf[0x4D] = rand() % 256;
-    buf[0x4E] = rand() % 256;
-    fn_80026998(buf);
+    memcpy(&prm.pos, &pos, sizeof(Vec));
+    prm.r = rand() % 256;
+    prm.g = rand() % 256;
+    prm.b = rand() % 256;
+    fn_80026998(&prm);
+}
+
+// Inline copy of fn_3_166C30.
+static inline void spawnSparkleAt(CharActor* actor, s8 joint) {
+    Vec pos;
+    ParticleParamsF prm;
+
+    memset(&pos, 0, sizeof(Vec));
+    memcpy(&prm, &lbl_3_data_28508, sizeof(ParticleParamsF));
+    prm.tex = lbl_803CBD0C;
+    if (fn_8001B728(actor->index, joint, &pos) == 0) {
+        memset(&pos, 0, sizeof(Vec));
+        fn_8001B728(actor->index, 4, &pos);
+    }
+    memcpy(&prm.pos, &pos, sizeof(Vec));
+    prm.r = rand() % 256;
+    prm.g = rand() % 256;
+    prm.b = rand() % 256;
+    fn_80026998(&prm);
 }
 
 // .text:0x00166D40 size:0xC4 mapped:0x807A5DD4
 void fn_3_166D40(void) {
-    u8* st = lbl_803CC1B8;
-    void* v = &g_d_GameSettings;
-    u8* o;
-    s16 c;
-    if (*((u8*)&g_d_GameSettings + 0x55) != 0 || (v = lbl_3_common_bss_35154, lbl_3_common_bss_35154[0x479] != 0)) {
-        fn_800B0A14_removeQueue(v);
+    SparkleTask* task = lbl_803CC1B8;
+    void* q;
+    s16 anim;
+
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
         return;
     }
-    if (g_GameLogic[0x11E] != 2) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
         return;
     }
-    o = *(u8**)(st + 0x14);
-    c = *(s16*)(o + 0x62);
-    if (c == 0x1B || c == 0x1A) {
-        o = g_Ball;
-        if (g_Ball[0x1BC9] == 0) {
+    q = task->actor;
+    anim = task->actor->anim[0];
+    if (anim == 0x1B || anim == 0x1A) {
+        q = &g_Ball;
+        if (g_Ball.ballState == 0) {
             fn_3_16699C();
-            st[0x1B] = 1;
+            task->done = TRUE;
             return;
         }
     }
-    if (st[0x1B] != 0) {
-        fn_800B0A14_removeQueue(o);
+    if (task->done) {
+        fn_800B0A14_removeQueue(q);
     }
 }
 
 // .text:0x00166E04 size:0x1C8 mapped:0x807A5E98
 void fn_3_166E04(void) {
-    u8* st = lbl_803CC1B8;
-    u8* o;
-    s16 c;
-    u8 v[0xC];
-    u8 buf[0x50];
-    s8 id;
-    if (*((u8*)&g_d_GameSettings + 0x55) != 0 || lbl_3_common_bss_35154[0x479] != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+    SparkleTask* task = lbl_803CC1B8;
+    void* q;
+    s16 anim;
+    s8 joint;
+
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
         return;
     }
-    if (g_GameLogic[0x11E] != 2) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
         return;
     }
-    c = *(s16*)(*(u8**)(st + 0x14) + 0x62);
-    if (c == 0x22 || (g_Ball[0x1BC9] == 1 && (c == 5 || c == 7))) {
-        id = (s8)lbl_3_data_28558[(u32)rand() % 0x17];
-        o = *(u8**)(st + 0x14);
-        memset(v, 0, 0xC);
-        memcpy(buf, lbl_3_data_28508, 0x50);
-        *(s32*)buf = lbl_803CBD0C;
-        if (fn_8001B728(*(s8*)(o + 0x254), id, v) == 0) {
-            memset(v, 0, 0xC);
-            fn_8001B728(*(s8*)(o + 0x254), 4, v);
-        }
-        memcpy(buf + 0x40, v, 0xC);
-        buf[0x4C] = rand() % 256;
-        buf[0x4D] = rand() % 256;
-        buf[0x4E] = rand() % 256;
-        fn_80026998(buf);
+    anim = task->actor->anim[0];
+    if (anim == 0x22 || (g_Ball.ballState == 1 && (anim == 5 || anim == 7))) {
+        joint = (s8)lbl_3_data_28558[(u32)rand() % 23];
+        spawnSparkleAt(task->actor, joint);
     } else {
+        // removeQueue ignores its argument; the original passes whatever is in r3.
         ((void (*)(void))fn_800B0A14_removeQueue)();
     }
 }
 
 // .text:0x00166FCC size:0x1AC mapped:0x807A6060
 void fn_3_166FCC(void) {
-    u8* st = lbl_803CC1B8;
-    u8* o;
-    s16 c;
-    u8 v[0xC];
-    u8 buf[0x50];
-    s8 id;
-    if (*((u8*)&g_d_GameSettings + 0x55) != 0 || lbl_3_common_bss_35154[0x479] != 0) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+    SparkleTask* task = lbl_803CC1B8;
+    void* q;
+    s16 anim;
+    s8 joint;
+
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
         return;
     }
-    if (g_GameLogic[0x11E] != 2) {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
         return;
     }
-    c = *(s16*)(*(u8**)(st + 0x14) + 0x62);
-    if (c == 0x26 || c == 0x27) {
-        id = (s8)lbl_3_data_28558[(u32)rand() % 0x17];
-        o = *(u8**)(st + 0x14);
-        memset(v, 0, 0xC);
-        memcpy(buf, lbl_3_data_28508, 0x50);
-        *(s32*)buf = lbl_803CBD0C;
-        if (fn_8001B728(*(s8*)(o + 0x254), id, v) == 0) {
-            memset(v, 0, 0xC);
-            fn_8001B728(*(s8*)(o + 0x254), 4, v);
-        }
-        memcpy(buf + 0x40, v, 0xC);
-        buf[0x4C] = rand() % 256;
-        buf[0x4D] = rand() % 256;
-        buf[0x4E] = rand() % 256;
-        fn_80026998(buf);
+    anim = task->actor->anim[0];
+    if (anim == 0x26 || anim == 0x27) {
+        joint = (s8)lbl_3_data_28558[(u32)rand() % 23];
+        spawnSparkleAt(task->actor, joint);
     } else {
-        ((void (*)(void))fn_800B0A14_removeQueue)();
+        fn_800B0A14_removeQueue(task->actor);
     }
 }
 
@@ -191,4 +215,3 @@ void fn_3_1674D0(void) {
 void fn_3_1678A8(void) {
     return;
 }
-
