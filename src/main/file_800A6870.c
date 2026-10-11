@@ -117,7 +117,7 @@ void fn_800A6890(u32 request) {
 
 // .text:0x800A68D4 size:0x2C
 void fn_800A68D4(u32 request) {
-    return;
+    OSResumeThread(&lbl_803C6CF8.readThread);
 }
 
 // .text:0x800A6900 size:0x380
