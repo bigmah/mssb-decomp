@@ -4,6 +4,9 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_3_data_D258[];
+extern u8 lbl_3_data_C56C[2][0x660];
+extern u16 lbl_3_data_D22C[4];
+extern u16 lbl_3_data_D234[14];
 extern u8 lbl_3_data_C34C[];
 extern u8 lbl_3_data_F430[12][2];
 extern u8 lbl_3_data_F4D0[16];
@@ -227,7 +230,91 @@ void fn_3_99E10(void) {
 
 // .text:0x0009A8A4 size:0x864 mapped:0x806D9938
 void fn_3_9A8A4(void) {
-    return;
+    HudTask* task = HUD_TASK;
+    s32 next;
+    s32 i;
+    fn_80034E20(task, lbl_3_data_C56C[g_Batter.batterHand]);
+    HUD_OBJ(task, 9)->_5C = inMemRoster[g_GameLogic.teamFielding][g_Pitcher.rosterID].stats.CharID << 16;
+    HUD_OBJ(task, 10)->_5C = inMemRoster[g_GameLogic.teamBatting][g_Batter.rosterID].stats.CharID << 16;
+    next = g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] + 1;
+    if (next > 9) {
+        next = 1;
+    }
+    next = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][next][0];
+    HUD_OBJ(task, 6)->_5C = inMemRoster[g_GameLogic.teamBatting][next].stats.CharID << 16;
+    fn_800363D8(task, 13, 1, 0x2A, lbl_3_data_D22C[inMemRoster[g_GameLogic.teamFielding][g_Pitcher.rosterID].stats.CharacterClass]);
+    fn_800363D8(task, 14, 1, 0x2A, lbl_3_data_D22C[inMemRoster[g_GameLogic.teamBatting][g_Batter.rosterID].stats.CharacterClass]);
+    if (g_GameLogic._13E[g_GameLogic.teamFielding] != 0) {
+        HUD_OBJ(task, 15)->_5C = (g_GameLogic.teams[g_GameLogic.teamFielding] + 4) << 16;
+    } else {
+        HUD_OBJ(task, 15)->_5C = g_GameLogic.teams[g_GameLogic.teamFielding] << 16;
+    }
+    if (g_GameLogic._13E[g_GameLogic.teamBatting] != 0) {
+        HUD_OBJ(task, 16)->_5C = (g_GameLogic.teams[g_GameLogic.teamBatting] + 4) << 16;
+    } else {
+        HUD_OBJ(task, 16)->_5C = g_GameLogic.teams[g_GameLogic.teamBatting] << 16;
+    }
+    for (i = 0; i < 5; i++) {
+        if (g_GameLogic.TeamStars[g_GameLogic.teamFielding] > i) {
+            lbl_80371C30[task->baseIdx + 0x22 + i].obj->_5C = 0x30000;
+        }
+        if (g_GameLogic.TeamStars[g_GameLogic.teamBatting] > i) {
+            lbl_80371C30[task->baseIdx + 0x27 + i].obj->_5C = 0x30000;
+        }
+    }
+    if (lbl_800E8754._04 == 0 && g_d_GameSettings.GameModeSelected != 2) {
+        fn_800363D8(task, 3, 1, 0x22, lbl_3_data_D234[0]);
+        fn_800363D8(task, 4, 1, 0x22, lbl_3_data_D234[0]);
+        HUD_OBJ(task, 3)->color = (HUD_OBJ(task, 3)->color & 0xFF) | 0xBEBEBE00;
+        HUD_OBJ(task, 4)->color = (HUD_OBJ(task, 4)->color & 0xFF) | 0xBEBEBE00;
+        for (i = 0x18; i <= 0x2B; i++) {
+            HUD_OBJ(task, i)->flags &= ~2;
+        }
+    } else {
+        fn_800363D8(task, 3, 1, 0x22, lbl_3_data_D234[inMemRoster[g_GameLogic.teamFielding][g_Pitcher.rosterID].stats.CaptainStarHitPitch]);
+        fn_800363D8(task, 4, 1, 0x22, lbl_3_data_D234[inMemRoster[g_GameLogic.teamBatting][g_Batter.rosterID].stats.CaptainStarHitPitch]);
+    }
+    if (g_GameLogic.IsStarChance != 0) {
+        HUD_OBJ(task, 21)->flags &= ~2;
+        HUD_OBJ(task, 17)->flags &= ~2;
+    } else {
+        HUD_OBJ(task, 22)->flags &= ~2;
+        if (g_Batter.chemLinksOnBase == 0) {
+            HUD_OBJ(task, 17)->flags &= ~2;
+        }
+        if (lbl_3_common_bss_32724._AE == 0 || lbl_3_common_bss_32724._AF != g_Pitcher.rosterID) {
+            HUD_OBJ(task, 21)->flags &= ~2;
+        }
+    }
+    HUD_OBJ(task, 46)->_5C = 0x1E0000;
+    HUD_OBJ(task, 47)->_5C = 0x1E0000;
+    if (g_d_GameSettings.exhibitionMatchInd == 0) {
+        // TODO type: per-character "starred" flags live 0x43D6 bytes into this save block
+        u8* starred = (u8*)starMissionCompletionTracker + 0x43D6;
+        if (starred[g_Pitcher.charID] != 0 && g_GameLogic._13E[g_GameLogic.teamFielding] == 0) {
+            HUD_OBJ(task, 48)->flags |= 2;
+        }
+        if (starred[g_Batter.charID] != 0 && g_GameLogic._13E[g_GameLogic.teamBatting] == 0) {
+            HUD_OBJ(task, 49)->flags |= 2;
+        }
+    } else {
+        if ((lbl_8034E9A0._489B + g_GameLogic.teamFielding * 9)[g_Pitcher.rosterID] != 0) {
+            HUD_OBJ(task, 48)->flags |= 2;
+        }
+        if ((lbl_8034E9A0._489B + g_GameLogic.teamBatting * 9)[g_Batter.rosterID] != 0) {
+            HUD_OBJ(task, 49)->flags |= 2;
+        }
+    }
+    if (g_d_GameSettings.GameModeSelected == 2 && g_Practice.practiceLevel != 7) {
+        HUD_OBJ(task, 20)->flags &= ~2;
+        HUD_OBJ(task, 5)->flags &= ~2;
+    }
+    task->timer = 0;
+    task->state = g_GameLogic.TeamStars[0];
+    task->_1E = g_GameLogic.TeamStars[1];
+    task->_20 = 0;
+    lbl_3_common_bss_32724._A8 = 1;
+    HUD_TASK->func = fn_3_99E10;
 }
 
 // .text:0x0009B108 size:0x218 mapped:0x806DA19C
