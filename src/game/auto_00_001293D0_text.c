@@ -14,6 +14,7 @@ extern u8 lbl_3_common_bss_37400[];
 extern u8 lbl_3_data_9FB4[];
 extern u8 lbl_3_data_9ECC[];
 extern u8 lbl_3_data_9D94[];
+extern u16 lbl_3_data_9EB4[2][2]; // [mode]: anim frame to wait for (intro, outro)
 extern u8 lbl_3_data_9EBC[2][8]; // [mode][slot]: digit/anim frames
 extern u8 lbl_3_data_9208[];
 extern u16 lbl_3_data_92C8[];
@@ -794,4 +795,62 @@ void fn_3_12A6C4(void) {
     task->_1A = 0;
     task->state = 0;
     lbl_803CC1B8->func = fn_3_12A3F0;
+}
+
+// fn_3_12A3F0, size:0x2D4
+void fn_3_12A3F0(void) {
+    HudTask* task = lbl_803CC1B8;
+    s32 i;
+
+    if (task->timer < 0xFFFE) {
+        task->timer = task->timer + 1;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    if (task->_1A < 0xFFFE) {
+        task->_1A = task->_1A + 1;
+    } else {
+        task->_1A = 0xFFFF;
+    }
+    if (task->state == 0) {
+        task->state++;
+        return;
+    }
+    if (task->state == 1) {
+        if ((s32)(lbl_80371C30[task->baseIdx + 1].obj->_5C >> 16) >= lbl_3_data_9EB4[task->_1E][0]) {
+            lbl_80371C30[task->baseIdx + 1].obj->_68 = 0;
+            task->state = 2;
+        }
+        return;
+    }
+    if (task->state == 2) {
+        lbl_80371C30[task->baseIdx + 3].obj->_72 = lbl_3_data_9EBC[task->_1E][4 + (s8)g_Minigame._19E3];
+        for (i = 0; i < 4; i++) {
+            if (i > g_Minigame._1A0E || i < g_Minigame._1A0D) {
+                lbl_80371C30[task->baseIdx + 4 + i].obj->_68 = 0;
+                lbl_80371C30[task->baseIdx + 4 + i].obj->_5C = 6 << 16;
+            } else if (i == (s8)g_Minigame._19E3) {
+                lbl_80371C30[task->baseIdx + 4 + i].obj->_68 = 1;
+                if ((s32)(lbl_80371C30[task->baseIdx + 4 + i].obj->_5C >> 16) >= 5) {
+                    lbl_80371C30[task->baseIdx + 4 + i].obj->_68 = 0;
+                }
+            } else {
+                lbl_80371C30[task->baseIdx + 4 + i].obj->_68 = 0;
+                lbl_80371C30[task->baseIdx + 4 + i].obj->_5C = 0;
+            }
+        }
+        if (g_Minigame._19DE != 1) {
+            lbl_80371C30[task->baseIdx + 1].obj->_68 = 1;
+            task->state = 3;
+        }
+        return;
+    }
+    if (task->state == 3) {
+        if ((s32)(lbl_80371C30[task->baseIdx + 1].obj->_5C >> 16) >= lbl_3_data_9EB4[task->_1E][1]) {
+            goto remove;
+        }
+    }
+    return;
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
