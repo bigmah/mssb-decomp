@@ -3083,9 +3083,183 @@ found:
 #endif
 
 // .text:0x000433E0 size:0x13E4 mapped:0x80682474
-void fn_3_433E0(void) {
-    return;
+// NONMATCHING 94.4%: switch lowered as compare chain in a different order, lfsx trajectory loads, and set-target float registers
+#if NONMATCHING
+// Per-frame update of a fielder chasing the ball: pick the target by chase mode (0x1DC) and run there.
+void fn_3_433E0(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 x;
+    f32 z;
+    f32 d, r, px, pz;
+    int t;
+    int n;
+    if (*(s16*)(g_Ball + 0x1B8C) == 3) {
+        fn_3_43038(i);
+    }
+    if (*(f32*)(g_Ball + 0x1A14) < lbl_3_rodata_B7C && g_Ball[0x1BC9] != 0 && g_Ball[0x1BC9] != 1) {
+        if (*(s16*)(g_Ball + 0x1B7A) != 0) {
+            f[0x1DC] = 5;
+        }
+    } else if (*(f32*)(g_Ball + 0x1A14) < lbl_3_rodata_B24 && g_Ball[0x1BBE] >= 3 && *(s16*)(g_Ball + 0x1B7A) >= 1 &&
+               *(s16*)(g_Ball + 0x1B7A) <= 3 && f[0x1DC] != 4 && f[0x1DC] != 5) {
+        fn_3_43038(i);
+    } else if (g_FieldingLogic[0x107] == 3 && *(s16*)(g_Ball + 0x1B66) <= 0xB4 && i == 1 && f[0x1DC] != 4) {
+        fn_3_43038(i);
+    }
+    if (g_Ball[0x1BF3] != 0) {
+        // Ball already close to the ground near the fielder: step towards it.
+        x = *(f32*)g_Ball - *(f32*)f;
+        z = *(f32*)(g_Ball + 8) - *(f32*)(f + 8);
+        {
+            f32 a = x * x;
+            f32 b = z * z;
+            d = a + b;
+            SQRT_L(d);
+        }
+        r = *(f32*)(lbl_3_data_4930 + 0x90);
+        if (d < r) {
+            f32 dz, dx, dd, ox, oz;
+            oz = *(f32*)(f + 8);
+            ox = *(f32*)f;
+            *(f32*)(f + 0x14) = ox;
+            *(f32*)(f + 0x1C) = oz;
+            dx = ox - *(f32*)f;
+            dz = oz - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                dd = dx * dx + dz * dz;
+                SQRT_L(dd);
+                *(f32*)(f + 0x68) = dd;
+            }
+            f[0x1D9] = 1;
+        } else {
+            r = r - lbl_3_rodata_B60;
+            x = r * (x / d) + *(f32*)f;
+            z = r * (z / d) + *(f32*)(f + 8);
+            SetTargetAC8b(i, x, z);
+        }
+    } else if (g_FieldingLogic[0x123] != 0) {
+        // Ball heading over the fence: go to the wall below its path.
+        t = *(s16*)(f + 0x184);
+        if (t > 1) {
+            px = *(f32*)(g_Ball + t * 0x10 + 0x354);
+            pz = *(f32*)(g_Ball + t * 0x10 + 0x35C);
+            d = px * px + pz * pz;
+            SQRT_L(d);
+            px = *(f32*)(g_Ball + *(s16*)(f + 0x184) * 0x10 + 0x354);
+            pz = *(f32*)(g_Ball + *(s16*)(f + 0x184) * 0x10 + 0x35C);
+            x = lbl_3_rodata_B80 * (px / d) + px;
+            z = lbl_3_rodata_B80 * (pz / d) + pz;
+            if (x < 0.0f) {
+                x = x + lbl_3_rodata_BA0;
+            } else {
+                x = x - lbl_3_rodata_BA0;
+            }
+            z = z + lbl_3_rodata_BD8;
+            SetTargetAC8b(i, x, z);
+        }
+    } else {
+        switch (f[0x1DC]) {
+        case 0:
+            if (*(s16*)(f + 0x184) > 1) {
+                if (*(s16*)(f + 0x18A) != 0) {
+                    ((int (*)(int, f32*, f32*, int))fn_3_50DD8)(i, &x, &z, 1);
+                    *(f32*)(f + 0x20) = x;
+                    *(f32*)(f + 0x24) = z;
+                } else {
+                    t = *(s16*)(f + 0x184);
+                    px = *(f32*)(g_Ball + t * 0x10 + 0x354);
+                    pz = *(f32*)(g_Ball + t * 0x10 + 0x35C);
+                    d = px * px + pz * pz;
+                    SQRT_L(d);
+                    px = *(f32*)(g_Ball + *(s16*)(f + 0x184) * 0x10 + 0x354);
+                    pz = *(f32*)(g_Ball + *(s16*)(f + 0x184) * 0x10 + 0x35C);
+                    x = lbl_3_rodata_B80 * (px / d) + px;
+                    z = lbl_3_rodata_B80 * (pz / d) + pz;
+                    if (g_Ball[0x1BEB] != 0) {
+                        if (((u8*)g_AiLogic)[0x79] != 0) {
+                            x = *(f32*)(g_Ball + 0x1B1C);
+                            z = *(f32*)(g_Ball + 0x1B20);
+                        } else {
+                            x = *(f32*)(g_Ball + 0x348);
+                            z = *(f32*)(g_Ball + 0x34C);
+                        }
+                    } else if (g_Ball[0x1BED] != 0) {
+                        x = *(f32*)(g_Ball + 0x1B1C);
+                        z = *(f32*)(g_Ball + 0x1B20);
+                    }
+                }
+                SetTargetAC8b(i, x, z);
+            } else {
+                f[0x1DC] = 5;
+            }
+            if (i >= 6 && g_Ball[0x1BC9] == 0 && *(s16*)(f + 0x184) < -5) {
+                fn_3_43038(i);
+            }
+            break;
+        case 1:
+            *(f32*)(f + 0x28) = *(f32*)(g_Ball + 0x19D8);
+            *(f32*)(f + 0x2C) = *(f32*)(g_Ball + 0x19DC);
+            if (*(s16*)(f + 0x18A) != 0) {
+                ((int (*)(int, f32*, f32*, int))fn_3_50DD8)(i, &x, &z, 1);
+                SetTargetAC8b(i, x, z);
+                *(f32*)(f + 0x20) = x;
+                *(f32*)(f + 0x24) = z;
+            } else {
+                f32 dz, dx, dd, ox, oz;
+                oz = *(f32*)(f + 0x2C);
+                ox = *(f32*)(f + 0x28);
+                *(f32*)(f + 0x14) = ox;
+                *(f32*)(f + 0x1C) = oz;
+                dx = ox - *(f32*)f;
+                dz = oz - *(f32*)(f + 8);
+                if (0.0f == dx && 0.0f == dz) {
+                    *(f32*)(f + 0x50) = 0.0f;
+                    *(f32*)(f + 0x68) = 0.0f;
+                } else {
+                    *(f32*)(f + 0x64) = atan2(dz, dx);
+                    dd = dx * dx + dz * dz;
+                    SQRT_L(dd);
+                    *(f32*)(f + 0x68) = dd;
+                }
+                f[0x1D9] = 1;
+            }
+            break;
+        case 2:
+            fn_3_42CDC(i);
+            break;
+        case 3:
+            fn_3_42BD0(i);
+            break;
+        case 4:
+            t = *(s16*)(f + 0x184);
+            SetTargetAC8b(i, *(f32*)(g_Ball + t * 0x10 + 0x354), *(f32*)(g_Ball + t * 0x10 + 0x35C));
+            if (*(s16*)(f + 0x184) <= 1) {
+                f[0x1DC] = 5;
+            }
+            break;
+        case 5:
+            SetTargetAC8b(i, *(f32*)g_Ball, *(f32*)(g_Ball + 8));
+            break;
+        }
+    }
+    *(s16*)(f + 0x184) = *(s16*)(f + 0x184) - 1;
+    ((void (*)(int))fn_3_526DC)(i);
+    if (0.0f != *(f32*)(f + 0x50)) {
+        *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x50);
+    }
+    if ((f[0x1DC] == 1 || f[0x1DC] == 2 || f[0x1DC] == 3) && *(s16*)(g_Ball + 0x1B7A) == 0) {
+        n = FramesToReachAC8(i, *(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C));
+        if (*(s16*)(g_Ball + 0x1B60) > n) {
+            f[0x1DC] = 0;
+            *(s16*)(f + 0x184) = *(s16*)(g_Ball + 0x1B60) - 2;
+        }
+    }
 }
+#endif
 
 // .text:0x000447C4 size:0xBD0 mapped:0x80683858
 // NONMATCHING 98.3%: float register choice in the set-target blocks and t*16 kept in r31 by orig for the traj[t+30] read
