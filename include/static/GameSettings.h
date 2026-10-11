@@ -17,7 +17,8 @@ typedef struct _GameInitVariables {
     /*0x0C*/ u8 maybeHomeAway;
     /*0x0D*/ u8 maybeHomeAway2;
     /*0x0E*/ u8 home_AwaySetting;
-    artificial_padding(0x0e, 0x11, u8);
+    /*0x0F*/ u8 _0F;
+    /*0x10*/ u8 _10;
     /*0x11*/ bool minigamesEnabled;
     artificial_padding(0x11, 0x20, bool);
     /*0x20*/ s16 _20[4][2];

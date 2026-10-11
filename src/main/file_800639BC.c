@@ -20,6 +20,17 @@ extern u8 lbl_80109378[]; // TODO type (spani creation desc)
 extern void* lbl_803CBD30; // queue node of the logo screen task
 extern u16 lbl_803CBD24;
 
+extern u8 lbl_80361B20[0xF8]; // TODO type
+extern u8 lbl_800E8754[0x28]; // TODO type
+extern u8 lbl_803CB8D0[8];
+extern u8 lbl_80108EC4[12];       // character ids to pick from
+extern StreamTrack lbl_802E4CE8[16];
+extern StreamTrack lbl_8034E478[16];
+extern u8 lbl_800E87B4[15][16];   // TODO type: stream file descriptors
+extern u8 lbl_800E88A4[16][2];    // stream volumes
+extern s16 lbl_80108EDC[9][5];
+
+extern s32 randRange_FUN_80042bf0(s32 lo, s32 hi);
 extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_80034E20(void* task, void* desc);
 extern void* fn_80034CEC(void* task);
@@ -66,7 +77,18 @@ void fn_80064918(void) {
 
 // .text:0x8006496C size:0x50
 void fn_8006496C(void) {
-    return;
+    CharSelectState* cs = &lbl_8034E9A0;
+
+    g_d_GameSettings.PlayerPorts[0] = cs->ports[0];
+    if (g_d_GameSettings._10 == 0) {
+        if (cs->ports[0] == 0) {
+            g_d_GameSettings.PlayerPorts[1] = 5;
+        } else {
+            g_d_GameSettings.PlayerPorts[1] = 4;
+        }
+    } else {
+        g_d_GameSettings.PlayerPorts[1] = cs->ports[1];
+    }
 }
 
 // .text:0x800649BC size:0x48
