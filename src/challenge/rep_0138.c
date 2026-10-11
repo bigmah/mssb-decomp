@@ -5,6 +5,7 @@
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
 #include <string.h>
+#include "C3/geoPalette.h"
 
 extern GXCullMode lbl_1_data_8C4[];
 extern void* lbl_1_data_848[3];
@@ -80,7 +81,6 @@ static u8 sMipCount = 1;
 static f32 sMipScale[4] = {1.0f};
 static f32 sLodBias = 1.0f;
 static GXTexFilter sMinFilter = GX_LINEAR;
-extern void fn_1_6050(void*, s32, s32, f32);
 extern const f32 lbl_1_rodata_1A8;
 extern const f64 lbl_1_rodata_1E8;
 
@@ -223,12 +223,12 @@ void fn_1_6578(void* obj, void* image, s32 w, s32 h) {
     if (sMipCount == 0) {
         w = w / 4;
         h = h / 4;
-        fn_1_6050(image, w, h, lbl_1_rodata_1D8);
+        fn_1_6050((u16*)image, w, h, lbl_1_rodata_1D8);
         filter = GX_LINEAR;
     } else {
         scale = sMipScale;
         for (level = 0; level <= sMipCount; level++) {
-            fn_1_6050((u8*)image + offset * 2, w0, h0, *scale);
+            fn_1_6050((u16*)image + offset, w0, h0, *scale);
             offset += w0 * h0;
             w0 /= 2;
             h0 /= 2;
@@ -540,5 +540,210 @@ void fn_1_7FF8(void) {
             break;
         }
         break;
+    }
+}
+
+// Display-list opcodes not in GXEnum.h.
+#define DL_NOP 0x00
+#define DL_LOAD_CP_REG 0x08
+#define DL_LOAD_XF_REG 0x10
+#define DL_LOAD_INDX_A 0x20
+#define DL_LOAD_INDX_B 0x28
+#define DL_LOAD_INDX_C 0x30
+#define DL_LOAD_INDX_D 0x38
+#define DL_LOAD_BP_REG 0x61
+
+void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
+    Mtx m;
+    s32 attrType[GX_VA_TEX7 + 1];
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 scale;
+    s16* v;
+    s32 nrmIdx;
+    s32 posIdx;
+    s32 count;
+    s32 i;
+    u32 offset;
+    u8* dl;
+    s32 attr;
+    s32 shift;
+    s32 handled;
+    s32 type;
+    u32 setting;
+    s32 skip;
+    u8 quant;
+    u8 comp;
+
+    if (obj->lightingData == NULL || obj->positionData == NULL || obj->displayData == NULL) {
+        return;
+    }
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXSetCullMode(GX_CULL_NONE);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetNumChans(1);
+    GXSetNumTevStages(1);
+    GXSetNumTexGens(0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    PSMTXConcat(camera, obj->worldMatrix, m);
+    GXLoadPosMtxImm(m, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    for (i = 0; i < obj->displayData->numStateEntries; i++) {
+        switch (obj->displayData->displayStateList[i].id) {
+        case 1:
+        case 3:
+            break;
+        case 2:
+            memset(attrType, 0, sizeof(attrType));
+            setting = obj->displayData->displayStateList[i].setting;
+            for (attr = GX_VA_POS, shift = 2; attr <= GX_VA_TEX7; attr++, shift += 2) {
+                type = (setting >> shift) & 3;
+                if (type != 0) {
+                    attrType[attr] = type;
+                }
+            }
+            break;
+        }
+        dl = (u8*)obj->displayData->displayStateList[i].primitiveList;
+        if (dl == NULL) {
+            continue;
+        }
+        for (offset = 0; offset < obj->displayData->displayStateList[i].listSize;) {
+            handled = 0;
+            switch (*dl) {
+            case DL_NOP:
+                handled = 1;
+                dl += 1;
+                offset += 1;
+                break;
+            case DL_LOAD_BP_REG:
+                handled = 1;
+                dl += 5;
+                offset += 5;
+                break;
+            case DL_LOAD_CP_REG:
+                handled = 1;
+                dl += 6;
+                offset += 6;
+                break;
+            case DL_LOAD_XF_REG:
+                handled = 1;
+                // TODO type: reads the opcode byte as the high byte of the length
+                skip = *(u16*)dl * 4 + 5;
+                dl += skip;
+                offset += skip;
+                break;
+            case DL_LOAD_INDX_A:
+            case DL_LOAD_INDX_B:
+            case DL_LOAD_INDX_C:
+            case DL_LOAD_INDX_D:
+                handled = 1;
+                dl += 5;
+                break;
+            case GX_CMD_CALL_DL:
+            case GX_CMD_INVL_VC:
+                handled = 1;
+                dl += 1;
+                offset += 1;
+                break;
+            case GX_QUADS:
+            case GX_TRIANGLES:
+            case GX_TRIANGLESTRIP:
+            case GX_TRIANGLEFAN:
+            case GX_LINES:
+            case GX_LINESTRIP:
+            case GX_POINTS:
+                break;
+            }
+            if (handled != 0) {
+                continue;
+            }
+            count = *(u16*)(dl + 1);
+            dl += 3;
+            offset += 3;
+            GXBegin(GX_LINES, GX_VTXFMT0, count * 2);
+            while (count-- != 0) {
+                for (attr = GX_VA_POS; attr <= GX_VA_TEX7; attr++) {
+                    type = attrType[attr];
+                    if (type == 0) {
+                        continue;
+                    }
+                    switch (attr) {
+                    case GX_VA_POS:
+                        switch (type) {
+                        case GX_DIRECT:
+                            break;
+                        case GX_INDEX8:
+                            posIdx = *dl;
+                            break;
+                        case GX_INDEX16:
+                            posIdx = *(u16*)dl;
+                            break;
+                        }
+                        break;
+                    case GX_VA_NRM:
+                        switch (type) {
+                        case GX_DIRECT:
+                            break;
+                        case GX_INDEX8:
+                            nrmIdx = *dl;
+                            break;
+                        case GX_INDEX16:
+                            nrmIdx = *(u16*)dl;
+                            break;
+                        }
+                        break;
+                    }
+                    switch (type) {
+                    case GX_INDEX8:
+                        dl += 1;
+                        offset += 1;
+                        break;
+                    case GX_INDEX16:
+                        dl += 2;
+                        offset += 2;
+                        break;
+                    }
+                }
+                quant = obj->positionData->quantizeInfo;
+                comp = obj->positionData->compCount;
+                scale = 1 << (quant & 0xF);
+                switch ((quant >> 4) & 0xF) {
+                case GX_S16:
+                    v = (s16*)obj->positionData->positionArray;
+                    v += comp * posIdx;
+                    x = v[0] / scale;
+                    y = v[1] / scale;
+                    z = v[2] / scale;
+                    break;
+                }
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+                GXWGFifo.u32 = 0xFF0000FF;
+                quant = obj->lightingData->quantizeInfo;
+                comp = obj->lightingData->compCount;
+                scale = 1 << (quant & 0xF);
+                switch ((quant >> 4) & 0xF) {
+                case GX_S16:
+                    v = (s16*)obj->lightingData->normalArray;
+                    v += comp * nrmIdx;
+                    x += v[0] / scale;
+                    y += v[1] / scale;
+                    z += v[2] / scale;
+                    break;
+                }
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+                GXWGFifo.u32 = 0x0000FFFF;
+            }
+        }
     }
 }

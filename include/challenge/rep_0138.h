@@ -3,6 +3,9 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/GX.h"
+#include "Dolphin/mtx.h"
+
+struct DODisplayObj;
 
 typedef struct ChallengeModelOffsets {
     u32 mainActor;
@@ -42,5 +45,7 @@ s32 fn_1_5924(s32 width, s32 x, s32 y, s32 bpp, s32 alt);
 void fn_1_8368(void);
 void fn_1_5698(void);
 void fn_1_7FF8(void);
+void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera);
+void fn_1_6050(u16* image, s32 width, s32 height, f32 scale);
 
 #endif
