@@ -660,9 +660,129 @@ fail:
 }
 
 // .text:0x0007F494 size:0x530 mapped:0x806BE528
-void fn_3_7F494(int i) {
-    return;
+extern u8 bodyCheckProbabiliities[][5];
+extern u8 lbl_8036E548[];
+extern BOOL checkFieldingStat(int, int, int);
+extern void fn_3_6C854(int team, int kind);
+extern void fn_3_1682AC(void* actor, int);
+extern u32 fn_3_90220(s32 idx, s32 off);
+extern u32 playSoundEffect(s32 id);
+extern void fn_3_1AE44(u8 arg4, u16 arg5, f32 arg1, f32 arg2, f32 arg3);
+// NONMATCHING 99.6%: register allocation in the body-check fielder/probability lookup
+#if NONMATCHING
+int fn_3_7F494(int i) {
+    u8* r = g_Runners + i * 0x154;
+    int bodyCheckWindow = 0;
+    u8 dir;
+    int frames;
+    f32 t;
+    int d;
+    int k;
+    u8* f;
+    u8 prob;
+
+    if (g_GameLogic[0x121] == 6) {
+        return 0;
+    }
+    if (r[0x123] != 1 && r[0x123] != 2) {
+        return 0;
+    }
+    if (*(s16*)(r + 0xE6) >= 0) {
+        return 0;
+    }
+    dir = r[0x137];
+    if (!(dir == 1 && *(f32*)(r + 0xA4) > lbl_3_rodata_1414) && !(dir == 3 && *(f32*)(r + 0xA4) < lbl_3_rodata_1414)) {
+        return 0;
+    }
+    if (r[0x13A] != 0) {
+        return 1;
+    }
+    if (r[0x13E] == 2) {
+        return 0;
+    }
+    if (r[0x126] == 1) {
+        return 0;
+    }
+    if (dir == 3) {
+        if (r[0x128] == 2 && r[0x125] != r[0x124]) {
+            return 0;
+        }
+        if (*(s16*)(r + 0xEE) == 1 && g_Ball.s.acr != 0) {
+            return 0;
+        }
+    }
+    if (dir == 1) {
+        t = *(f32*)(r + 0x60) / *(f32*)(r + 0xA4);
+    } else {
+        t = *(f32*)(r + 0x5C) / -*(f32*)(r + 0xA4);
+    }
+    frames = (int)t + 1;
+    if (g_Ball.b[0x1BC9] == 2) {
+        if (*(s16*)(g_FieldingLogic + 0xC4) == r[0x127]) {
+            d = *(s16*)(g_Ball.b + 0x1B62) + 6 - frames;
+            if (d >= lbl_3_data_4C54[1] && d <= lbl_3_data_4C54[2]) {
+                bodyCheckWindow = 1;
+            }
+        }
+    } else if (g_Ball.b[0x1BC9] == 1) {
+        d = 6 - *(s16*)(g_Ball.b + 0x1B6E) - frames;
+        if (d >= lbl_3_data_4C54[1] && d <= lbl_3_data_4C54[2]) {
+            bodyCheckWindow = 1;
+        }
+    }
+    d = *(s16*)(r + 0xE2) * 5;
+    if (frames < lbl_3_data_7760[d] || frames > lbl_3_data_7760[d + 1]) {
+        return 0;
+    }
+    r[0x13A] = 1;
+    *(s16*)(r + 0x100) = 0;
+    *(s16*)(r + 0x102) = frames;
+    r[0x13C] = 1;
+    if (r[0x137] == 1) {
+        r[0x13B] = 1;
+        if (bodyCheckWindow != 0 && *(s16*)(r + 0xEE) == 0 && *(f32*)(r + 0xC8) >= lbl_3_data_4C44[0] &&
+            checkFieldingStat(*(s32*)(g_GameLogic + 4), *(s16*)(r + 0xE0), 0xC) != 0) {
+            k = r[0x127];
+            if (g_FieldingLogic[0x101 + k] != 0 &&
+                ((*(s16*)(g_Ball.b + 0x1B78) >= 0 && *(s16*)(g_Ball.b + 0x1B78) == ((s16*)(g_FieldingLogic + 0xD0))[k] &&
+                  *(s16*)(g_Ball.b + 0x1B6E) <= 9) ||
+                 (*(s16*)(g_FieldingLogic + 0xC4) == k && *(s16*)(g_Ball.b + 0x1B62) < 15))) {
+                f = g_Fielders + ((s16*)(g_FieldingLogic + 0xD0))[k] * 0x268;
+                prob = bodyCheckProbabiliities[r[0x11D]][f[0x1C9]];
+                f[0x211] = 1;
+                f[0x214] = r[0x127];
+                if (RandomInt_Game(100) < prob) {
+                    r[0x13A] = 2;
+                    if (g_d_GameSettings[8] == 0 && *(s16*)(lbl_3_common_bss_37400 + 0x40) == *(s32*)(g_GameLogic + 4)) {
+                        fn_3_161588(0xC, *(s16*)(r + 0xE0));
+                    }
+                } else {
+                    r[0x13A] = 3;
+                    if (g_GameLogic[*(s32*)(g_GameLogic + 4) + 0x13E] == 0) {
+                        fn_3_6C854(*(s32*)(g_GameLogic + 4), 2);
+                    }
+                }
+                fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[i + 9], 0xC);
+                fn_3_90220(*(s16*)(r + 0xE2), 0xA);
+                playSoundEffect(0x19C);
+                fn_3_1AE44(4, 0, lbl_3_data_4444[r[0x127] * 2], lbl_3_rodata_1414, lbl_3_data_4444[r[0x127] * 2 + 1]);
+            }
+        }
+    } else {
+        r[0x13B] = 0;
+    }
+    if (*(s16*)(r + 0xEE) == 1 && r[0x127] != r[0x124]) {
+        r[0x13D] = 1;
+    }
+    if (r[0x128] == 2 && r[0x127] == r[0x124]) {
+        r[0x13D] = 2;
+    }
+    if (g_Pitcher[0x14E] == 2 && (r[0x14D] > r[0x125] || (r[0x12D] != 0 && r[0x125] == r[0x124]))) {
+        r[0x13D] = 3;
+    }
+    return 1;
 }
+#endif
 
 // .text:0x0007F9C4 size:0xB4 mapped:0x806BEA58
 void fn_3_7F9C4(int i) {

@@ -14,7 +14,7 @@ void fn_3_7EA68(void);
 void fn_3_7EBD4(int i);
 int fn_3_7ECFC(int i);
 int fn_3_7F2D8(void);
-void fn_3_7F494(int i);
+int fn_3_7F494(int i);
 void fn_3_7F9C4(int i);
 int fn_3_7FA78(int i);
 void fn_3_7FD90(int i);
