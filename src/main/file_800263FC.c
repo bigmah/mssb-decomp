@@ -3106,8 +3106,7 @@ void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
 }
 
 // .text:0x800328E0 size:0x7EC
-// NONMATCHING 59%: the original inlines fn_8003403C with the file-static bss base (lbl_8017EC00 + offset); calls fn_8003403C here
-// nmverify: fn_8003403C inlined on one side (calls match once expanded)
+// NONMATCHING 87%: the original addresses the corners/billboard matrix off the file-static bss base (lbl_8017EC00 + offset); register allocation
 #if NONMATCHING
 s32 fn_800328E0(Emitter* e) {
     Mtx rotM;
@@ -3131,7 +3130,7 @@ s32 fn_800328E0(Emitter* e) {
     Particle* p = e->particles;
 
     ref = lbl_800E6784;
-    fn_8003403C(p->sizeX, p->sizeY);
+    QuadCorners(p->sizeX, p->sizeY);
     memcpy(&dir, &e->u.t1.dir, sizeof(Vec));
     angle = acos(PSVECDotProduct(&ref, &dir));
     PSVECCrossProduct(&ref, &dir, &axis);
@@ -3186,7 +3185,7 @@ s32 fn_800328E0(Emitter* e) {
         } else if (e->u.t1.spawnLeft != 0) {
             spread = lbl_803CB7FC;
             ang = (s32)(512.0f * (1.0f - spread) + (512.0f * spread * (f32)rand()) / 32767.0f);
-            cosA = CosIdx(ang);
+            cosA = CosIdxB(ang);
             sinA = SinIdx(ang);
             r = rand();
             k = (rand() & 0xF) + 0x5A;
@@ -3197,7 +3196,7 @@ s32 fn_800328E0(Emitter* e) {
             spd = (((e->u.t1.speed / 60.0f) * (f32)k) / 100.0f) / 0.001f;
             h = spd * cosA;
             v.y = -spd * sinA;
-            v.x = h * CosIdx(r);
+            v.x = h * CosIdxB(r);
             v.z = h * SinIdx(r);
             v.y = v.y + 0.16344418f;
             PSMTXMultVec(rotM, &v, &v);
