@@ -860,7 +860,7 @@ config.libs = [
             Object(NonMatching, "game/rep_E08.c"),
             Object(NonMatching, "game/rep_EA0.c"),
             Object(NonMatching, "game/rep_F80.c"),
-            Object(NonMatching, "game/rep_FE0.c"),
+            Object(Matching, "game/rep_FE0.c"),
             Object(Matching, "game/rep_1038.c"),
             Object(Matching, "game/rep_1090.c"),
             Object(NonMatching, "game/rep_10E8.c"),
