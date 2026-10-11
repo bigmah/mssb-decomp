@@ -76,9 +76,19 @@ typedef struct StadObjListE8 {
 extern StadObjListE8 lbl_3_common_bss_350E4;
 
 // .text:0x000E1964 size:0x84 mapped:0x807209F8
+// NONMATCHING 89%: trail offset induction is li'd instead of copied from i (mr r27,r29); regalloc
+#if NONMATCHING
 void fn_3_E1964(void) {
-    return;
+    GameCharTrail* trail;
+    s32 i;
+
+    for (i = 0; i < 30; i++) {
+        trail = &lbl_8036E548.trail2[i];
+        fn_8001D0D0(i, lbl_3_data_18D98[0]);
+        trail->angle = shortAngleToRad_Capped(rand() % 4096);
+    }
 }
+#endif
 
 // .text:0x000E19E8 size:0x278 mapped:0x80720A7C
 void fn_3_E19E8(void) {
