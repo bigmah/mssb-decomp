@@ -3,12 +3,19 @@
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
 #include "C3/geoPalette.h"
+#include "Dolphin/GX.h"
+#include "static/Camera.h"
 
 extern Rep3310CharMgr lbl_8036E548;
 
 extern f32 lbl_3_data_2262C;
 extern f32 lbl_3_data_22650[];
 extern u8 lbl_3_data_22670[];
+extern f32 lbl_3_data_21A64[];
+struct TexArchive;
+extern void fn_80033B58(struct TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT);
+extern s32 fn_8005268C(void);
+extern camera_803c639c_s* fn_80052768_getCamera(int index);
 extern Rep3310BallCfg lbl_3_data_2265C;
 extern f64 acos(f64);
 extern void* memcpy(void* dst, const void* src, u32 n);
@@ -196,9 +203,83 @@ void fn_3_117494(void) {
 }
 
 // .text:0x00117588 size:0x464 mapped:0x8075661C
-void fn_3_117588(void) {
-    return;
+// NONMATCHING 93%: (measured with the rodata externs) scheduling/register order of the quad corner math
+#if NONMATCHING
+// Draws the ground shadow quad under sprite idx (0xE9..0xEC), shrinking it with height,
+// then picks the actor's texture from its state byte.
+void fn_3_117588(s32 idx) {
+    f32 uv[4][2] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+    Vec quad[4];
+    GXColor color;
+    Rep3310Sprite* e = &lbl_8036E548.sprites[idx];
+    u8* state = g_Minigame + (idx - 0xE9) * 0x40 + 0xBB0;
+    GameActor* actor;
+    f32 size = 2.5f * (1.0f - (-e->pos[1] * 0.5f) / lbl_3_data_21A64[0]);
+    f32 hw;
+    f32 hd;
+    s32 k;
+    u16 tex;
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_TEXC, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+
+    hw = 2.8f * size * 0.5f;
+    hd = 2.5f * size * 0.5f;
+    color.r = 0;
+    color.g = 0;
+    color.b = 0;
+    color.a = 0x9B;
+    quad[0].x = -hw + e->pos[0];
+    quad[0].y = -0.06f;
+    quad[0].z = hd + e->pos[2];
+    quad[1].x = hw + e->pos[0];
+    quad[1].y = -0.06f;
+    quad[1].z = hd + e->pos[2];
+    quad[2].x = hw + e->pos[0];
+    quad[2].y = -0.06f;
+    quad[2].z = -hd + e->pos[2];
+    quad[3].x = -hw + e->pos[0];
+    quad[3].y = -0.06f;
+    quad[3].z = -hd + e->pos[2];
+
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, GX_PERSPECTIVE);
+    fn_80033B58(*(struct TexArchive**)(lbl_3_common_bss_32724 + 0x6C), 0x13, GX_CLAMP, GX_CLAMP); // TODO type
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    for (k = 0; k < 4; k++) {
+        GXPosition3f32(quad[k].x, quad[k].y, quad[k].z);
+        GXColor1u32(*(u32*)&color);
+        GXTexCoord2f32(uv[k][0], uv[k][1]);
+    }
+
+    actor = lbl_8036E548.objs->objects[idx].actor;
+    if (state[0x3D] == 1 || state[0x3D] == 5) {
+        tex = 0;
+    } else {
+        tex = 1;
+    }
+    for (k = 0; k < actor->totalBones; k++) {
+        actor->boneArray[k]->dispObj->textureData->texturePalette->tex[0].texIndex = tex;
+    }
 }
+#endif
 
 // .text:0x001179EC size:0xF8 mapped:0x80756A80
 extern const f32 lbl_3_rodata_33DC;

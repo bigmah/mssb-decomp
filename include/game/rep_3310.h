@@ -52,7 +52,7 @@ void fn_3_116B38(void);
 void fn_3_116B74(void);
 void fn_3_11741C(s32 i);
 void fn_3_117494(void);
-void fn_3_117588(void);
+void fn_3_117588(s32 idx);
 void fn_3_1179EC(void);
 void fn_3_117AE4(void);
 void fn_3_117B78(void);
