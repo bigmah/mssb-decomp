@@ -1218,8 +1218,19 @@ L_800C01D4:
 #endif
 
 // .text:0x800C02C8 size:0x220
-void fn_800C02C8(void) {
-    return;
+#if NONMATCHING
+void fn_800C02C8(Mtx43 m0, Mtx43 m1, u8* weights, s16* src, s16* dst, u32 count) {
+    f32 in[6];
+    f32 v[6];
+
+    do {
+        SKNLoadS16(src, in);
+        SKNBlend2(m0, m1, weights, in, v);
+        SKNStoreS16(dst, v);
+        weights += 2;
+        src += 6;
+        dst += 6;
+    } while (--count);
 }
 #else
 asm void fn_800C02C8(register Mtx43 m0, register Mtx43 m1, register u8* weights, register s16* src, register s16* dst, register u32 count) {
