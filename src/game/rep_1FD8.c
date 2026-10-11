@@ -1661,9 +1661,133 @@ void fn_3_C77AC(void* hv, u8* b) {
 #endif
 
 // .text:0x000C7A0C size:0x650 mapped:0x80706AA0
-void fn_3_C7A0C(void) {
-    return;
+// Rising/falling obstacle (state machine in e->state): rests at its table
+// height, rises when a ball is about to hit it, drops with a splash + sound,
+// waits, then rises back.
+typedef struct C7A0CEnt {
+    u8 pad0[0x99];
+    u8 placed; // 0x99
+    u8 pad9A[0x9C - 0x9A];
+    Vec pos; // 0x9C
+    u8 idx;  // 0xA8: entry in lbl_3_data_17514
+    u8 padA9[0xAC - 0xA9];
+    f32 speed; // 0xAC
+    u8 state;  // 0xB0
+    u8 timer;  // 0xB1
+    u8 armed;  // 0xB2
+} C7A0CEnt;
+typedef struct {
+    f32 x, y, z;
+    f32 ang;
+    u8 pad10[4];
+} C7A0CTbl; // lbl_3_data_17514
+#define C7A0C_TBL ((C7A0CTbl*)lbl_3_data_17514)
+extern f32 lbl_3_data_17508[];
+extern s16 fn_3_B7F70(s16 range);
+extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type);
+extern void* memcpy(void*, const void*, u32);
+extern f64 sqrt(f64);
+extern void pitchingMachinePitching(u8);
+extern const f32 lbl_3_rodata_21B8; // 25.0f
+extern const f32 lbl_3_rodata_21BC; // 23.0f
+extern const f32 lbl_3_rodata_21C0; // 3.0f
+extern const f64 lbl_3_rodata_21C8; // 2.5
+extern const f64 lbl_3_rodata_21D0; // 0.25
+extern const f64 lbl_3_rodata_21D8; // -5.0
+extern const f64 lbl_3_rodata_21E8; // 0.2
+extern f32 lbl_3_rodata_21E0;        // -5.0f
+// NONMATCHING ~65%: the original inlines fn_3_C77AC in case 2 (CW won't auto-inline it here: 271 of 404 insns, the rest is register numbering)
+#if NONMATCHING
+void fn_3_C7A0C(C7A0CEnt* e) {
+    Vec pos;
+    f64 d;
+    f32 x;
+    C4724Hdr* h;
+    if (g_GameLogic[0x11E] != 2) {
+        if (e->placed == 0) {
+            e->pos.y = C7A0C_TBL[e->idx].y;
+            e->state = 0;
+            e->armed = 1;
+            CTRLSetTranslation(e, e->pos.x, e->pos.y, e->pos.z);
+            pitchingMachinePitching((u8)(e->idx + 0x3E));
+            e->placed = 1;
+        }
+        if (g_GameLogic[0x11E] == 0) {
+            e->speed = lbl_3_data_17508[fn_3_B7F70(3)];
+        }
+        return;
+    }
+    e->placed = 0;
+    switch (e->state) {
+    case 0:
+        if (e->armed != 0) {
+            // TODO type: g_Ball fields (InMemBallType)
+            if (g_Ball[0x1BC9] != 0) {
+                e->armed = 0;
+            } else if (*(f32*)(g_Ball + 0x320) < lbl_3_rodata_213C) {
+                e->armed = 0;
+            } else if (g_Ball[0x1BD1] != 0) {
+                e->armed = 0;
+            } else {
+                x = *(f32*)(g_Ball + 0x318) / *(f32*)(g_Ball + 0x320) * (e->pos.z - ((Vec*)g_Ball)->z) + ((Vec*)g_Ball)->x;
+                if (x < e->pos.x - lbl_3_rodata_21B8 || x > lbl_3_rodata_21B8 + e->pos.x) {
+                    e->armed = 0;
+                } else {
+                    d = pow(e->pos.y + ((Vec*)g_Ball)->y, lbl_3_rodata_2118);
+                    d = pow(e->pos.x - ((Vec*)g_Ball)->x, lbl_3_rodata_2118) + d;
+                    if ((f32)sqrt(pow(e->pos.z - ((Vec*)g_Ball)->z, lbl_3_rodata_2118) + d) < lbl_3_rodata_21BC &&
+                        ((Vec*)g_Ball)->y < lbl_3_rodata_21C0 - e->pos.y) {
+                        e->state = 1;
+                    }
+                }
+            }
+        }
+        break;
+    case 1:
+        d = C7A0C_TBL[e->idx].y - lbl_3_rodata_21C8;
+        if (e->pos.y <= d) {
+            e->pos.y = d;
+            e->state = 2;
+        } else {
+            e->pos.y = e->pos.y - lbl_3_rodata_21D0;
+        }
+        break;
+    case 2:
+        e->pos.y += e->speed;
+        if (e->pos.y >= lbl_3_rodata_21D8) {
+            e->pos.y = lbl_3_rodata_21E0;
+            memcpy(&pos, &e->pos, sizeof(Vec));
+            e->state = 3;
+            e->timer = 0;
+            lbl_3_bss_9D81 = 1;
+            fn_800528AC((fn_800528AC_parameter)fn_3_C3A38);
+            fn_3_8BBC4(lbl_3_data_81DC[g_d_GameSettings.StadiumID] + 5, (f32*)&pos, NULL, 9);
+        }
+        if (lbl_3_rodata_2148 * e->speed + e->pos.y >= lbl_3_rodata_21D8) {
+            h = fn_80033A24(fn_3_C75B8, 0x80, 0, 0xC, 1, (u8)(e->idx + 0x3E));
+            if (h != NULL) {
+                fn_3_C77AC(h, (u8*)e);
+            }
+        }
+        break;
+    case 3:
+        if (e->timer++ > 40) {
+            e->state = 4;
+            e->timer = 0;
+        }
+        break;
+    case 4:
+        if (e->pos.y <= C7A0C_TBL[e->idx].y) {
+            e->pos.y = C7A0C_TBL[e->idx].y;
+            e->state = 0;
+        } else {
+            e->pos.y = e->pos.y - lbl_3_rodata_21E8;
+        }
+        break;
+    }
+    CTRLSetTranslation(e, e->pos.x, e->pos.y, e->pos.z);
 }
+#endif
 
 typedef struct { u32 w[17]; } C42A4Cpy;
 extern u8 lbl_3_bss_9DE4[];
