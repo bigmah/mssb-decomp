@@ -1,10 +1,10 @@
 #include "menus/rep_0AB0.h"
 #include "game/UnknownHomes_Game.h"
-#include "static/UnknownHomes_Static.h"
 #include "main/file_8000F150.h"
 #include "main/file_8004207C.h"
 #include "main/file_800527C4.h"
 #include "main/file_800A7C08.h"
+#include "main/file_800B0724.h"
 #include "menus/auto_00_0004B1AC_text.h"
 #include "menus/rep_0788.h"
 #include "menus/auto_00_0005597C_text.h"
@@ -21,8 +21,10 @@ extern InitEntry lbl_2_data_268A8[];
 extern MenuDef lbl_800FEF70[];
 extern u8 lbl_800EFBA4[]; // sound effect volumes
 
-// lbl_803C77B8 is the PadState[4] array (main/file_800A7C08.h).
-#define MENU_PADS ((PadState*)&lbl_803C77B8)
+// Declared as an array (not static/UnknownHomes_Static.h's lbl_803C77B8_s) so pad
+// lookups schedule like the original.
+extern PadState lbl_803C77B8[4];
+#define MENU_PADS lbl_803C77B8
 #define MENU_PAD (MENU_PADS[lbl_2_bss_1A824C->port])
 
 // .text:0x0005979C size:0x55C
@@ -104,8 +106,6 @@ void fn_2_5D26C(void) {
 }
 
 // .text:0x0005DC5C size:0x4A8
-// NONMATCHING 99%: a pad lookup loads lbl_2_bss_1A824C with a direct lwz sym@l where ours uses addi+lwz 0 (see docs/patterns/unsolved.md, menus 33E70)
-#if NONMATCHING
 void fn_2_5DC5C(void) {
     MenuTask* task = CUR_TASK;
     switch (lbl_2_bss_1A823C->state) {
@@ -127,14 +127,13 @@ void fn_2_5DC5C(void) {
         }
         break;
     case 3: {
-        MenuWorkBuf* w = lbl_2_bss_1A824C;
-        u16 repeat = MENU_PADS[w->port].repeat;
+        u16 repeat = MENU_PAD.repeat;
         u16 down;
         if (repeat & 8) {
-            w->tab = (w->tab + 3) % 4;
+            lbl_2_bss_1A824C->tab = (lbl_2_bss_1A824C->tab + 3) % 4;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else if (repeat & 4) {
-            w->tab = (w->tab + 1) % 4;
+            lbl_2_bss_1A824C->tab = (lbl_2_bss_1A824C->tab + 1) % 4;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
         down = MENU_PAD.down;
@@ -215,7 +214,6 @@ void fn_2_5DC5C(void) {
         break;
     }
 }
-#endif
 
 // .text:0x0005E104 size:0x748
 void fn_2_5E104(void) {
