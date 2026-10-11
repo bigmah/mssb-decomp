@@ -45,6 +45,12 @@ extern f32 lbl_3_bss_B794;
 
 extern s16 lbl_3_data_21924[];
 extern u8 lbl_3_data_218AC[5][3]; // per difficulty (4: multiplayer)
+extern u8 lbl_3_data_21884[][2];     // per item kind: [1] = points
+extern RepBss37400View lbl_3_common_bss_37400;
+extern const f32 lbl_3_rodata_3734; // 0.0f
+extern void fn_3_152AB4(u8 item, u8 runner, u8 type);
+extern u32 fn_3_90220(s32 idx, s32 off);
+extern void fn_3_1608F0(s32 kind, s32 value, s32 extra);
 extern const f32 lbl_3_rodata_3758; // 2.0f
 extern void fn_3_16C394(s8 a);
 extern void fn_3_7FED4(f32* out, f32 dist, f32 frame);
@@ -404,9 +410,62 @@ void fn_3_13E6D4(void) {
 }
 
 // .text:0x0013EA30 size:0x214 mapped:0x8077DAC4
+// Award items lying near a runner: each item on the field goes to a random runner
+// within the pickup range of its kind, adding the kind's points.
+// NONMATCHING 91%: register allocation and scheduling in the runner loop differ
+#if NONMATCHING
 void fn_3_13EA30(void) {
-    return;
+    s32 i;
+    s32 kind;
+    s32 hits[4];
+    s32 n;
+    u8 type;
+    s32* out;
+    f32 d;
+    s32 j;
+    s32 pick;
+    for (i = 0; i < 15; i++) {
+        type = REP_MG->itemState[i];
+        if (type >= 1 && type <= 6) {
+            kind = REP_MG->_1B1A[type - 1] - 2;
+            out = hits;
+            n = 0;
+            for (j = 0; j < 4; j++) {
+                hits[j] = 0;
+                if (REP_MG->_18FC[j] >= 0) {
+                    d = REP_MG->itemBases[i] - g_Runners[j].fractionalBasesRan;
+                    if (d < lbl_3_rodata_3734) {
+                        d += lbl_3_rodata_3738;
+                    }
+                    if (d > lbl_3_rodata_3758) {
+                        d = lbl_3_rodata_3738 - d;
+                    }
+                    if (d <= lbl_3_data_218BC[8 + kind]) {
+                        *out++ = j;
+                        n++;
+                    }
+                }
+            }
+            if (n != 0) {
+                pick = hits[RandomInt_Game(n)];
+                REP_MG->points[REP_MG->_18FC[pick]] += lbl_3_data_21884[kind][1];
+                type = REP_MG->itemState[i];
+                REP_MG->itemState[i] = type + 100;
+                fn_3_152AB4(i, pick, type);
+                if (kind == 2) {
+                    fn_3_90064(0x2EA);
+                    fn_3_90220(g_Runners[pick]._0E2, 0);
+                } else {
+                    fn_3_90064(0x2DD);
+                }
+                if (!g_d_GameSettings.exhibitionMatchInd && pick == lbl_3_common_bss_37400.humanPlayer) {
+                    fn_3_1608F0(3, kind, 0);
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x0013EC44 size:0x840 mapped:0x8077DCD8
 void fn_3_13EC44(void) {

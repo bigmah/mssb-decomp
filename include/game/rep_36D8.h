@@ -10,7 +10,9 @@
 typedef struct RepRunnerView {
     /*0x000*/ u8 _000[0x64];
     /*0x064*/ f32 fractionalBasesRan;
-    /*0x068*/ u8 _068[0x137 - 0x68];
+    /*0x068*/ u8 _068[0xE2 - 0x68];
+    /*0x0E2*/ s16 _0E2;
+    /*0x0E4*/ u8 _0E4[0x137 - 0xE4];
     /*0x137*/ u8 runningDirectionCode;
     /*0x138*/ u8 _138[0x154 - 0x138];
 } RepRunnerView;
@@ -31,7 +33,8 @@ typedef struct RepMinigameView {
     /*0x0CB0*/ RepTarget target;
     /*0x0CD0*/ Vec coinPos[100];
     /*0x1180*/ Vec coinVel[100];
-    /*0x1630*/ u8 _1630[0x17C0 - 0x1630];
+    /*0x1630*/ f32 itemBases[15]; // item position along the base path
+    /*0x166C*/ u8 _166C[0x17C0 - 0x166C];
     /*0x17C0*/ s32 _17C0;
     /*0x17C4*/ s32 _17C4;
     /*0x17C8*/ s16 coinFrames[100];
@@ -49,7 +52,7 @@ typedef struct RepMinigameView {
     /*0x190A*/ u8 _190A;
     /*0x190B*/ u8 turnOverStatus;
     /*0x190C*/ u8 _190C[0x193A - 0x190C];
-    /*0x193A*/ u8 coinVisible[100];
+    /*0x193A*/ u8 itemState[100]; // items: 1..6 = type on the field, +100 once collected
     /*0x199E*/ u8 _199E[0x1A2B - 0x199E];
     /*0x1A2B*/ u8 difficulty;
     /*0x1A2C*/ u8 _1A2C[0x1A3A - 0x1A2C];
@@ -65,7 +68,7 @@ typedef struct RepMinigameView {
     /*0x1B08*/ s16 _1B08[6];
     /*0x1B14*/ u8 _1B14[0x1B19 - 0x1B14];
     /*0x1B19*/ u8 phase;
-    /*0x1B1A*/ u8 _1B1A[6];
+    /*0x1B1A*/ u8 _1B1A[6]; // per item type (1..6, stored at [type - 1]): scoring kind + 2
     /*0x1B20*/ u8 _1B20[15];
     /*0x1B2F*/ u8 _1B2F[4]; // per runner slot; 0xFF: none
     /*0x1B33*/ u8 _1B33;
@@ -76,6 +79,12 @@ typedef struct RepMinigameView {
     /*0x1D75*/ u8 _1D75[0x1E00 - 0x1D75];
     /*0x1E00*/ u8 _1E00;
 } RepMinigameView;
+
+// View of lbl_3_common_bss_37400, only the fields used here.
+typedef struct RepBss37400View {
+    /*0x00*/ u8 _00[0x40];
+    /*0x40*/ s16 humanPlayer;
+} RepBss37400View;
 
 void fn_3_13C7BC(void);
 u32 fn_3_13D578(s8 a);
