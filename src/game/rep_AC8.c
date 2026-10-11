@@ -34,6 +34,11 @@ void getComponentsFromRad(f32 v, f32* x, f32* y);
 extern u8 lbl_3_data_4714[][4][6];
 extern f32 lbl_3_data_5FC4[];
 void playSoundEffect(int);
+/* lbl_3_data_3C40: per-state fielder action table (animation id, state handler) */
+typedef struct {
+    int anim;
+    void (*fn)(int i);
+} FielderActEntry;
 extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
@@ -1316,9 +1321,87 @@ void fn_3_2EA24(void) {
 }
 
 // .text:0x0002EA88 size:0x43C mapped:0x8066DB1C
+// NONMATCHING 90%: register allocation (fielder pointer/loop regs, ball-position floats) and prologue scheduling
+#if NONMATCHING
 void fn_3_2EA88(int a) {
-    return;
+    s16* p = &lbl_3_bss_170 + 0x13;
+    int n = *(s8*)(g_Minigame + a + 0x18F8);
+    u8* f = g_Fielders + n * 0x268;
+    int k;
+    int i;
+    s16 hb;
+    f32 x;
+    f32 z;
+    f32 d;
+    f32 sx;
+    f32 sz;
+    for (k = 0x13; k != 0; k--) {
+        *p = -1;
+        p--;
+    }
+    *(u16*)(g_FieldingLogic + 0x148) = 0;
+    *(u16*)(g_FieldingLogic + 0x14A) = 0;
+    *(u16*)(g_FieldingLogic + 0x14C) = 0;
+    if (g_Minigame[0x1A2A] == 5) {
+        if (f[0x1D3] == 0 || f[0x1D3] == 9) {
+            SetFielderAct(n, 0xF, 0x78);
+        }
+    } else {
+        if (*(s16*)(g_Ball + 0x1B66) <= 0) {
+            return;
+        }
+        g_Minigame[0x1923] = n;
+        g_Minigame[0x1922] = a;
+        if (*(s16*)(g_Ball + 0x1B66) == 1) {
+            fn_3_4FB34();
+            fn_3_447C4(n);
+            SetFielderAct(n, 0x1A, 0xD0);
+            goto tail;
+        }
+    }
+    fn_3_57BB4();
+    fn_3_55EEC(n);
+    ((FielderActEntry*)lbl_3_data_3C40)[g_Fielders[n * 0x268 + 0x1D3]].fn(n);
+    fn_3_55CC4(n);
+    if (*(s16*)(g_Minigame + 0x18AA) != 0) {
+        SetFielderAct(n, 0x1C, 0xE0);
+    }
+tail:
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        if (g_d_GameSettings[0x11] == 0 || g_Minigame[0x1923] == i) {
+            fn_3_54B58(i);
+            *(f32*)(f + 0x7C) = fn_3_9CE0(*(f32*)f, *(f32*)(f + 8));
+            if (0.0f == *(f32*)(f + 0x50)) {
+                *(f32*)(f + 0x38) = 0.0f;
+                *(f32*)(f + 0x3C) = 0.0f;
+            } else {
+                *(f32*)(f + 0x38) = *(f32*)(f + 0x30) / *(f32*)(f + 0x50);
+                *(f32*)(f + 0x3C) = *(f32*)(f + 0x34) / *(f32*)(f + 0x50);
+            }
+            f[0x1EA] = 0;
+            f[0x217] = 0;
+        }
+    }
+    fn_3_544B8();
+    if (g_d_GameSettings[0x11] != 0) {
+        fn_3_53F48();
+    } else if ((hb = *(s16*)(g_Ball + 0x1B78)) >= 0) {
+        x = *(f32*)(g_Fielders + hb * 0x268);
+        z = ((f32*)(g_Fielders + 8))[hb * 0x9A];
+        *(f32*)(g_Ball + 0) = x;
+        *(f32*)(g_Ball + 4) = ((f32*)(g_Fielders + 4))[hb * 0x9A];
+        *(f32*)(g_Ball + 8) = z;
+        *(f32*)(g_Ball + 0x348) = x;
+        *(f32*)(g_Ball + 0x34C) = z;
+        sx = x * x;
+        sz = z * z;
+        d = sx + sz;
+        SQRT_L(d);
+        *(f32*)(g_Ball + 0x1A00) = d;
+    }
 }
+#endif
 
 // .text:0x0002EEC4 size:0x5C0 mapped:0x8066DF58
 void fn_3_2EEC4(int a) {
