@@ -1972,6 +1972,8 @@ typedef struct MnSlot {
 typedef struct MnOwner {
     /*0x00*/ u8 _00[0x14];
     /*0x14*/ u16 baseIdx;
+    /*0x16*/ u16 count;
+    /*0x18*/ s16 _18;
 } MnOwner;
 
 #define MN_SLOTS ((MnSlot*)lbl_80371C30)
@@ -3202,3 +3204,99 @@ void fn_2_82EC0(void) {
         fn_800B0A14_removeQueue(fn_80034CEC(o));
     }
 }
+
+extern u8 lbl_2_data_2D998[];
+
+// NONMATCHING 75%: SelIcon inline expands with extra loads/extensions; register allocation
+#if NONMATCHING
+// lbl_2_data_2D998 + 0x2EC: icon per selection; icon 1 is swapped for `alt` when lbl_80361B20[0xF5] == 0.
+static inline s16 SelIcon(s8 v, u8 alt) {
+    s32 swap = 0;
+    if (lbl_2_data_2D998[0x2EC + F410_S32(0x44)] == 1 && lbl_80361B20[0xF5] == 0) {
+        swap = 1;
+    }
+    return swap ? alt : lbl_2_data_2D998[0x2EC + v];
+}
+
+// fn_2_83B34, size:0x660
+void fn_2_83B34(u8* o, s8 sel) {
+    s32 i;
+    s32 n;
+    s32 k;
+    if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
+        for (i = 0; i < 6; i++) {
+            MN_SLOT(6 + BASE(o) + i)->state = 0;
+            MN_SLOT(6 + BASE(o) + i)->frame = 0;
+        }
+        if (lbl_803CBCD8[0] != 0) {
+            if ((s8)lbl_803CBCD8[1] == 0) {
+                MN_SLOT(BASE(o))->color = (MN_SLOT(BASE(o))->color & ~0xFF) | 0xFF;
+                MN_SLOT(1 + BASE(o))->color = (MN_SLOT(1 + BASE(o))->color & ~0xFF) | 0xFF;
+                MN_SLOT(BASE(o))->frame = 0;
+                MN_SLOT(1 + BASE(o))->frame = 0xA0000;
+                fn_800363D8(o, 0, 1, 0x20, lbl_2_data_2D998[0x2EC + sel]);
+                if ((s8)lbl_2_data_2D998[0x954] == -1) {
+                    fn_800363D8(o, 1, 1, 0x20, lbl_2_data_2D998[0x2EC + sel]);
+                } else {
+                    fn_800363D8(o, 1, 1, 0x20, lbl_2_data_2D998[0x2EC + (s8)lbl_2_data_2D998[0x954]]);
+                }
+                MN_SLOT(BASE(o))->state = 1;
+                MN_SLOT(1 + BASE(o))->state = 1;
+                sel = lbl_2_data_2D998[0x954];
+            }
+        } else {
+            MN_SLOT(BASE(o))->color = (MN_SLOT(BASE(o))->color & ~0xFF) | 0xFF;
+            MN_SLOT(1 + BASE(o))->color = (MN_SLOT(1 + BASE(o))->color & ~0xFF) | 0xFF;
+            MN_SLOT(BASE(o))->frame = 0;
+            MN_SLOT(1 + BASE(o))->frame = 0xA0000;
+            fn_800363D8(o, 0, 1, 0x20, SelIcon(sel, 0x12));
+            if ((s8)lbl_2_data_2D998[0x954] == -1) {
+                fn_800363D8(o, 1, 1, 0x20, SelIcon(sel, 0x12));
+            } else {
+                u8 t = lbl_2_data_2D998[0x2EC + (s8)lbl_2_data_2D998[0x954]];
+                fn_800363D8(o, 1, 1, 0x20, (s16)((t == 1 && lbl_80361B20[0xF5] == 0) ? 0x12 : t));
+            }
+            MN_SLOT(BASE(o))->state = 1;
+            MN_SLOT(1 + BASE(o))->state = 4;
+        }
+        MN_SLOT(6 + BASE(o) + sel)->frame = 0x10000;
+        MN_SLOT(6 + BASE(o) + sel)->state = 1;
+        {
+            s16 icon = SelIcon(sel, 6);
+            MN_SLOT(2 + BASE(o))->frame = 0;
+            fn_800363D8(o, 2, 1, 0x22, icon);
+        }
+        {
+            s16 icon = SelIcon(sel, 6);
+            MN_SLOT(3 + BASE(o))->frame = 0;
+            fn_800363D8(o, 3, 1, 0x25, icon);
+            fn_800363D8(o, 3, 3, 0x24, icon);
+            MN_SLOT(3 + BASE(o))->state = 1;
+        }
+        lbl_803C66B0[0x2B] = 1;
+    }
+    if (lbl_803C66B0[0x2B] == 1) {
+        n = 0;
+        k = 0;
+        if ((s8)lbl_803CBCD8[1] == 0) {
+            k++;
+            n += fn_80042DA8((s32)o, 0, 0xA) != 0;
+            k++;
+            n += fn_80042DA8((s32)o, 1, 0) != 0;
+            k++;
+            n += fn_80042DA8((s32)o, sel + 6, 4) != 0;
+        }
+        if (n == k) {
+            lbl_2_data_2D998[0x955] = lbl_2_data_2D998[0x954];
+            lbl_2_data_2D998[0x954] = sel;
+            ((MnOwner*)o)->_18 = 0;
+            if ((s8)lbl_803CBCD8[1] < 0) {
+                lbl_803CBCD8[1] = 0;
+                lbl_803CBCD8[0] = 0;
+            }
+            lbl_803C66B0[0x2B] = 2;
+            lbl_803C66B0[0x5D] = 0;
+        }
+    }
+}
+#endif
