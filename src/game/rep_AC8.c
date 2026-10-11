@@ -3204,9 +3204,154 @@ void fn_3_4CFB0(void) {
 }
 
 // .text:0x0004D20C size:0x978 mapped:0x8068C2A0
-void fn_3_4D20C(void) {
-    return;
+extern void fn_3_A7C88(void);
+extern f32 lbl_3_data_4780[];
+extern f32 lbl_3_rodata_C20;
+#pragma dont_inline off
+// same body as fn_3_4CFB0: aim the pitcher (fielder 0) at the base he covers
+static inline void PitcherCoverInl(void) {
+    int st = *(s16*)(g_Fielders + 0x18C);
+    f32 x;
+    f32 z;
+    f32 d;
+    if (st == 1) {
+        d = *(f32*)(lbl_3_data_4444 + 0x8) - *(f32*)g_Fielders;
+        if (d > 15.0f) {
+            d = 15.0f;
+        }
+        x = *(f32*)(lbl_3_data_4444 + 0x8);
+        d = d / lbl_3_rodata_B78;
+        z = *(f32*)(lbl_3_data_4444 + 0xC) - d;
+    } else if (st == 3) {
+        d = *(f32*)g_Fielders - *(f32*)(lbl_3_data_4444 + 0x18);
+        if (d > 15.0f) {
+            d = 15.0f;
+        }
+        x = *(f32*)(lbl_3_data_4444 + 0x18);
+        d = d / lbl_3_rodata_B78;
+        z = *(f32*)(lbl_3_data_4444 + 0x1C) - d;
+    } else {
+        x = *(f32*)(lbl_3_data_4444 + st * 8);
+        z = ((f32*)(lbl_3_data_4444 + 4))[st * 2];
+    }
+    SetTargetAC8(0, x, z);
 }
+#pragma dont_inline on
+#pragma dont_inline off
+// same body as fn_3_530EC: stop fielder i where it stands
+static inline void StopFielderInl(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    *(f32*)(f + 0x14) = *(f32*)(f + 0x0);
+    *(f32*)(f + 0x18) = *(f32*)(f + 0x4);
+    *(f32*)(f + 0x1C) = *(f32*)(f + 0x8);
+    *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+    *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+}
+#pragma dont_inline on
+// NONMATCHING 91%: branch layout of the early-out checks and float regs in the bag-settle math differ; base table loads are add+lfs not lfsx
+#if NONMATCHING
+// per-frame update for a fielder heading to / standing on a base
+void fn_3_4D20C(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    f32 spd;
+    s16 b;
+    if (g_Ball[0x1BCD] != 0 && i <= 1) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B66) < 0xF) {
+        return;
+    }
+    if (i == 1 && g_FieldingLogic[0x118] != 0) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B66) < f[0x1D2] - 0xF && i != 0) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B66) < f[0x1D2] && i == 0) {
+        return;
+    }
+    if (fn_3_53130(i) != 0) {
+        return;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xC4) == *(s16*)(f + 0x18C)) {
+        fn_3_A7C88();
+    }
+    if (f[0x1D7] == 1) {
+        if (f[0x216] != 0) {
+            dz = *(f32*)(f + 0x1C) - *(f32*)(f + 8);
+            dx = *(f32*)(f + 0x14) - *(f32*)f;
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            spd = d < *(f32*)(f + 0x58) ? d : *(f32*)(f + 0x58);
+            *(f32*)(f + 0x30) = dx * spd;
+            *(f32*)(f + 0x34) = dz * spd;
+            *(f32*)(f + 0x50) = spd;
+            *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+            *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+            *(f32*)(f + 0x68) = d - spd;
+        } else if (f[0x252] != 0) {
+            // TODO type: fn_3_261E8 takes the fielder index; its stub is still (void)
+            ((void (*)(int))fn_3_261E8)(i);
+            *(s16*)(f + 0x1A2) = 0;
+        } else {
+            b = *(s16*)(f + 0x18C);
+            if (g_FieldingLogic[b + 0x101] == 0) {
+                // not on the base yet: run to it
+                if (f[0x1D8] == 1) {
+                    PitcherCoverInl();
+                } else {
+                    SetTargetAC8(i, *(f32*)(lbl_3_data_4444 + b * 8), *(f32*)(lbl_3_data_4444 + b * 8 + 4));
+                }
+                fn_3_526DC(i);
+            } else if (g_FieldingLogic[b + 0x101] == 1) {
+                // on the base: settle onto the bag
+                if (*(f32*)(f + b * 4 + 0xA8) > lbl_3_data_4780[f[0x1C9]]) {
+                    *(f32*)(f + 0x14) = *(f32*)(lbl_3_data_4444 + b * 8);
+                    dx = lbl_3_rodata_C20 * (*(f32*)(lbl_3_data_4444 + b * 8) - *(f32*)f);
+                    dz = lbl_3_rodata_C20 * (*(f32*)(lbl_3_data_4444 + b * 8 + 4) - *(f32*)(f + 8));
+                    *(f32*)(f + 0x1C) = *(f32*)(lbl_3_data_4444 + *(s16*)(f + 0x18C) * 8 + 4);
+                    *(f32*)(f + 0x30) = dx / *(f32*)(f + *(s16*)(f + 0x18C) * 4 + 0xA8);
+                    *(f32*)(f + 0x34) = dz / *(f32*)(f + *(s16*)(f + 0x18C) * 4 + 0xA8);
+                    *(f32*)(f + 0x50) = lbl_3_rodata_C20;
+                    *(f32*)(f + 0x68) = *(f32*)(f + *(s16*)(f + 0x18C) * 4 + 0xA8);
+                    *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+                    *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+                } else {
+                    dz = *(f32*)(lbl_3_data_4444 + b * 8 + 4) - *(f32*)(f + 8);
+                    dx = *(f32*)(lbl_3_data_4444 + b * 8) - *(f32*)f;
+                    d = dx * dx + dz * dz;
+                    SQRT_L(d);
+                    if (d < lbl_3_rodata_B24) {
+                        *(f32*)f = *(f32*)(lbl_3_data_4444 + *(s16*)(f + 0x18C) * 8);
+                        *(f32*)(f + 8) = *(f32*)(lbl_3_data_4444 + *(s16*)(f + 0x18C) * 8 + 4);
+                        StopFielderInl(i);
+                    } else {
+                        *(f32*)(f + 0x30) = dx / lbl_3_rodata_B64;
+                        *(f32*)(f + 0x34) = dz / lbl_3_rodata_B64;
+                        *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+                        *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+                    }
+                }
+                *(f32*)(f + 0x30) = lbl_3_rodata_B20;
+                *(f32*)(f + 0x34) = lbl_3_rodata_B20;
+                *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+            }
+        }
+    }
+    if (f[0x1D7] == 1 && lbl_3_rodata_B20 != *(f32*)(f + 0x50)) {
+        *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x58);
+    }
+    fn_3_5372C(i);
+    if (*(s16*)(g_Ball + 0x1B8A) == i) {
+        fn_3_4E638();
+    }
+}
+#endif
 
 // .text:0x0004DB84 size:0x90 mapped:0x8068CC18
 int fn_3_4DB84(int i) {
@@ -4434,19 +4579,6 @@ extern f32 lbl_3_rodata_C90;
 extern f32 lbl_3_rodata_C94;
 extern f32 lbl_3_rodata_C98;
 extern f32 lbl_3_rodata_C9C;
-#pragma dont_inline off
-// same body as fn_3_530EC: stop fielder i where it stands
-static inline void StopFielderInl(int i) {
-    u8* f = g_Fielders + i * 0x268;
-    *(f32*)(f + 0x14) = *(f32*)(f + 0x0);
-    *(f32*)(f + 0x18) = *(f32*)(f + 0x4);
-    *(f32*)(f + 0x1C) = *(f32*)(f + 0x8);
-    *(f32*)(f + 0x30) = lbl_3_rodata_B20;
-    *(f32*)(f + 0x34) = lbl_3_rodata_B20;
-    *(f32*)(f + 0x50) = lbl_3_rodata_B20;
-    *(f32*)(f + 0x68) = lbl_3_rodata_B20;
-}
-#pragma dont_inline on
 // NONMATCHING 96.5%: the inlined fn_3_530EC copies recompute the fielder pointer differently; angle temps land in other regs
 #if NONMATCHING
 // move fielder i one frame toward its target (speed ramp, collision, facing)
