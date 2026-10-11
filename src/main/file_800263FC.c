@@ -529,9 +529,63 @@ s32 fn_80026E58(Emitter* e) {
 #endif
 
 // .text:0x80027300 size:0x374
-void fn_80027300(void) {
-    return;
+// NONMATCHING 91%: float register allocation
+#if NONMATCHING
+void fn_80027300(Emitter* e, Vec* center, Vec* target, ParticleParamsAttract* prm, f32 radius) {
+    AttractParticle* p;
+    s32 lifeRange;
+    s32 delayRange;
+    f32 step;
+    f32 yaw;
+    f32 pitch;
+    f32 tMin;
+    f32 tRange;
+    f32 dtMin;
+    f32 dtRange;
+    f32 size;
+
+    e->tex = prm->tex;
+    e->u.attract.intensity = 1.0f;
+    e->u.attract.texIndex = prm->texIndex;
+    e->u.attract.target = target;
+    p = (AttractParticle*)e->particles;
+    step = 360.0f / (f32)(s32)(f32)sqrt(prm->count);
+    tMin = (f32)prm->unk20 / 100000.0f;
+    tRange = (f32)prm->unk24 / 100000.0f - tMin;
+    dtMin = (f32)prm->unk28 / 100000.0f;
+    dtRange = (f32)prm->unk2C / 100000.0f - dtMin;
+    size = (f32)prm->unkC / 100000.0f;
+    lifeRange = prm->unk14 - prm->unk10;
+    delayRange = prm->unk1C - prm->unk18;
+    pitch = -180.0f;
+    yaw = -180.0f;
+    do {
+        // spread the particles over a sphere around center
+        fn_800332B8(NULL, &p->pos, yaw, yaw + step, pitch, pitch + step);
+        yaw += step;
+        if (yaw >= 180.0f) {
+            pitch += step;
+            yaw -= 360.0f;
+            if (pitch >= 180.0f) {
+                pitch -= 360.0f;
+            }
+        }
+        PSVECScale(&p->pos, radius, &p->pos);
+        PSVECAdd(center, &p->pos, &p->pos);
+        p->t = tMin + (tRange * (f32)rand()) / 32767.0f;
+        p->dt = dtMin + (dtRange * (f32)rand()) / 32767.0f;
+        p->size = size;
+        p->color.rgba = prm->unk3C;
+        p->life0 = p->life = prm->unk10 + (lifeRange * rand()) / 32767;
+        p->delay = prm->unk18 + (delayRange * rand()) / 32767;
+        p->alphaMax = prm->unk30;
+        p->fadeIn = prm->unk34;
+        p->fadeOut = prm->unk38;
+        p->color.rgba = prm->unk3C;
+        p = (AttractParticle*)p->next;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x80027674 size:0x2A4
 void fn_80027674(void) {
