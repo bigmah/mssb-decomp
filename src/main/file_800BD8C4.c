@@ -75,8 +75,45 @@ void fn_800BDA24(ActorObject* obj) {
 }
 
 // .text:0x800BDA94 size:0x1F4
-void fn_800BDA94(void) {
-    return;
+void fn_800BDA94(ActorObject* obj, MtxPtr camera) {
+    ActorInst* actor = obj->actor;
+
+    if (obj->callback != NULL) {
+        obj->callback();
+    }
+    switch (obj->numLights) {
+    case 0:
+        fn_800B3A78(actor, camera, 0);
+        break;
+    case 1:
+        fn_800B3A78(actor, camera, 1, obj->lights[0]);
+        break;
+    case 2:
+        fn_800B3A78(actor, camera, 2, obj->lights[0], obj->lights[1]);
+        break;
+    case 3:
+        fn_800B3A78(actor, camera, 3, obj->lights[0], obj->lights[1], obj->lights[2]);
+        break;
+    case 4:
+        fn_800B3A78(actor, camera, 4, obj->lights[0], obj->lights[1], obj->lights[2], obj->lights[3]);
+        break;
+    case 5:
+        fn_800B3A78(actor, camera, 5, obj->lights[0], obj->lights[1], obj->lights[2], obj->lights[3],
+                    obj->lights[4]);
+        break;
+    case 6:
+        fn_800B3A78(actor, camera, 6, obj->lights[0], obj->lights[1], obj->lights[2], obj->lights[3],
+                    obj->lights[4], obj->lights[5]);
+        break;
+    case 7:
+        fn_800B3A78(actor, camera, 7, obj->lights[0], obj->lights[1], obj->lights[2], obj->lights[3],
+                    obj->lights[4], obj->lights[5], obj->lights[6]);
+        break;
+    case 8:
+        fn_800B3A78(actor, camera, 8, obj->lights[0], obj->lights[1], obj->lights[2], obj->lights[3],
+                    obj->lights[4], obj->lights[5], obj->lights[6], obj->lights[7]);
+        break;
+    }
 }
 
 // .text:0x800BDC88 size:0xEC
