@@ -2236,6 +2236,7 @@ void fn_3_1517D0(u8* a, u8* o) {
 }
 #endif
 
+#pragma dont_inline off
 // .text:0x001519F8 size:0x1B4 mapped:0x80790A8C
 void fn_3_1519F8(u8* a, u8* o) {
     Vec v;
@@ -2344,10 +2345,54 @@ void fn_3_151D6C(u8* a, u8* o) {
     *(s16*)(o + 0x4A) -= 1;
 }
 
+// NONMATCHING 95%: 151D6C/151BAC/1519F8 inlined; the original reaches 26BDC/26BEC/26BFC/26C1C through one pooled lbl_3_data_266A8 base (this TU's .data), we use the separate symbols
 // .text:0x00151F2C size:0x5BC mapped:0x80790FC0
-void fn_3_151F2C(void) {
-    return;
+#if NONMATCHING
+u32 fn_3_151F2C(u8* e) {
+    u8* p;
+    s16 delay;
+    if (lbl_80366158[0x28] != 0) {
+        return 0;
+    }
+    fn_80033620();
+    p = *(u8**)(e + 0xC);
+    if (p[0x4C] != 3) {
+        GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    } else {
+        GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+    }
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
+    do {
+        delay = *(s16*)(p + 0x48);
+        if (delay <= 0 && *(s16*)(p + 0x4A) != 0) {
+            if (p[0x4D] != 0) {
+                fn_3_119854(2);
+            } else {
+                fn_3_119854(0);
+            }
+            switch (p[0x4C]) {
+            case 1:
+                fn_3_151D6C(e, p);
+                break;
+            case 2:
+                fn_3_151BAC(e, p);
+                break;
+            case 3:
+                fn_3_1519F8(e, p);
+                break;
+            }
+        } else if (delay != 0) {
+            *(s16*)(p + 0x48) -= 1;
+        }
+        if (*(s16*)(p + 0x4A) == 0 && (p[0x4C] == 1 || p[0x4C] == 2)) {
+            fn_3_1536A8(p, 2);
+        }
+        p = *(u8**)p;
+    } while (p != NULL);
+    return 0;
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x001524E8 size:0x2AC mapped:0x8079157C
 void fn_3_1524E8(u8* o, u8 flag) {
