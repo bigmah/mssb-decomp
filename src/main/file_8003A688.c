@@ -38,8 +38,6 @@ void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial);
 void fn_800AA930(SaveCardRequest* req, u64 serial);
 void fn_800AAEE4(SaveCardRequest* req, u64 serial);
 void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial);
-void* fn_800A6418(u32 size); // TODO type: returns an ARAM address
-void fn_800A63C8(void);
 void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl, s32 iconSize, u32 iconSpeed,
                  u32 bannerFlags, char* comment, char* subComment, s32 blocks);
 s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
@@ -897,7 +895,7 @@ static inline void SaveImage_ClearChallenge(u8 slot) {
 // Starts an ARAM backup of the card image (completion clears lbl_803CBCB8).
 static inline void SaveImage_BackupToAram(void) {
     lbl_803CBCB8 = 1;
-    lbl_803CBCBC = (u32)fn_800A6418(0x10000);
+    lbl_803CBCBC = fn_800A6418(0x10000);
     DCFlushRange(&lbl_802D4B00, 0x10000);
     ARQPostRequest(&lbl_802D4AC0, 0x4000, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_LOW, (u32)&lbl_802D4B00, lbl_803CBCBC,
                    0x10000, (ARQCallback)fn_8003AE64);

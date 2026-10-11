@@ -110,8 +110,8 @@ typedef struct SaveTask {
 // Serial number of the memory card each save slot was last read from / written to.
 extern u64 lbl_802D4AE0[4];
 
-// TODO merge: same layout as CardSlot/CardSystem in main/file_800A7C08.h (main branch);
-// switch to that header once it is merged here.
+// Same layout as CardSlot/CardSystem in main/file_800A7C08.h, which can't be included
+// next to UnknownHomes_Static.h (conflicting prototypes). TODO: unify.
 typedef struct SaveCardSlot {
     /*0x00*/ u64 serial;
     /*0x08*/ s32 probeResult;
@@ -128,7 +128,7 @@ typedef struct SaveCardSystem {
 
 extern SaveCardSystem lbl_803C7838;
 
-// TODO merge: same layout as CardRequest in main/file_800A7C08.h.
+// Same layout as CardRequest in main/file_800A7C08.h (see SaveCardSystem).
 typedef struct SaveCardRequest {
     /*0x00*/ char* fileName;
     /*0x04*/ void* buffer;
