@@ -352,7 +352,17 @@ void fn_2_14790(void) {
 
 // .text:0x00014BB8 size:0xE8
 void fn_2_14BB8(u8 index, s32 mode) {
-    return;
+    switch (mode) {
+    case 0:
+        AnimateCharacter(index, 0x6A, 0, 1, 1, 0, 0, -1);
+        QueueCharacterAnimation(index, 0x6B, 1, 1, 0, 0, -1);
+        lbl_2_bss_100B8.animState[index] = 0;
+        break;
+    case 1:
+        AnimateCharacter(index, 0x69, 1, 1, 1, 0, 0, -1);
+        lbl_2_bss_100B8.animState[index] = 1;
+        break;
+    }
 }
 
 // .text:0x00014CA0 size:0x318
