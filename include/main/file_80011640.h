@@ -341,6 +341,8 @@ void fn_80018B74(void);
 void fn_8001AF98(void);
 void fn_8001AB10(CharSlot* slot, s32 a, s32 b);
 
+void fn_80017DBC(CharActor* actor, s32 modelIndex);
+
 void fn_8001B200(void);
 
 void fn_8001B214(void (*callback)(void));

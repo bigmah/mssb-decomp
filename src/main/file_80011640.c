@@ -192,6 +192,43 @@ static inline void copyPartJointData(CharActor* actor, s32 which) {
     }
 }
 
+static inline void initModelJoints(CharActor* actor, CharSlot* slot) {
+    s32 j;
+
+    fn_800B2B74(slot->model, actor->jointIdx[19]);
+    fn_800B2B74(slot->model, actor->jointIdx[25]);
+    fn_800B2B74(slot->model, actor->jointIdx[36]);
+    j = actor->jointIdx[3];
+    if (j != 0xFFFF) {
+        fn_800B2B54(actor->model, j, 0xD);
+    }
+    j = actor->jointIdx[3];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[2];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[1];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    j = actor->jointIdx[36];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+    }
+    j = actor->jointIdx[46];
+    if (j != 0xFFFF) {
+        fn_800B2BA8(slot->model, j, 0, 0);
+        slot->model->joints[(u16)j]->_136 = 1;
+    }
+    fn_800B2C08(slot->model, actor->jointIdx[4]);
+}
+
 // .text:0x80011640 size:0x9C
 void fn_80011640(Mtx a, Mtx out) {
     Mtx scale = {
@@ -1165,9 +1202,53 @@ void fn_80017D28(CharActor* src) {
 }
 
 // .text:0x80017DBC size:0x268
-void fn_80017DBC(void) {
-    return;
+// NONMATCHING 97%: argument load order around fn_800B2B74
+#if NONMATCHING
+void fn_80017DBC(CharActor* actor, s32 modelIndex) {
+    CharSlot* slot = &lbl_8036E548.slots->slots[modelIndex];
+
+    initModelJoints(actor, slot);
+    switch (actor->kind) {
+    case 2:
+        fn_800638B4(actor, slot);
+        break;
+    case 33:
+    case 34:
+    case 35:
+    case 36:
+        fn_80063010(actor, slot);
+        break;
+    case 19:
+        fn_8004B7B4(actor, slot);
+        break;
+    case 20:
+    case 43:
+        fn_800637BC(actor, slot);
+        break;
+    case 38:
+        slot->model->_99 = 1;
+        fn_8004BD6C(actor, slot);
+        break;
+    case 41:
+        fn_800637D4(actor, slot);
+    case 18:
+    case 40:
+        fn_8004BD6C(actor, slot);
+        break;
+    case 14:
+    case 37:
+        fn_80052634(actor, slot);
+        break;
+    case 16:
+    case 44:
+    case 45:
+    case 46:
+    case 47:
+        fn_80062ED4(actor, slot);
+        break;
+    }
 }
+#endif
 
 // .text:0x80018024 size:0x24C
 // NONMATCHING 76%: original indexes the ARAM table with lwzx instead of strength-reduced pointers
