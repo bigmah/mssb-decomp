@@ -70,7 +70,8 @@ void fn_3_5B368(void);
 
 void fn_3_5A684(void);
 
-void fn_3_59AC0(s32 unused1, s32 unused2, void* allocation);
+struct DiskFileEntry;
+void fn_3_59AC0(struct DiskFileEntry* entry, void* dst, void* allocation);
 
 void fn_3_59A90(void);
 
@@ -98,5 +99,6 @@ void fn_3_5B41C(void);
 void fn_3_5FF10(void);
 void fn_3_5CDB4(void);
 void fn_3_5DD30(void);
+void fn_3_5AE9C(void);
 
 #endif

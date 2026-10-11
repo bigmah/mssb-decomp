@@ -6,8 +6,53 @@
 #include "main/file_80069BDC.h"
 
 extern s32 fn_80022B68(void);
-extern void fn_80022CB4(void*, s32, s32, s32, void (*)(s32, s32, void*), void*);
-extern u8 lbl_800F1D78[];
+// From main/file_80021308.h (not includable here: its sound prototypes clash
+// with include/static/UnknownHomes_Static.h).
+typedef struct DiskFileEntry {
+    /* 0x0 */ u32 offset;
+    /* 0x4 */ u32 sizeFlags;
+    /* 0x8 */ u32 aramOffset;
+    /* 0xC */ u32 unkC;
+} DiskFileEntry; // size: 0x10
+typedef void (*AramQueueCallback)(DiskFileEntry* entry, void* dst, void* user);
+extern s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
+extern DiskFileEntry lbl_800F1D78[];
+
+// View of lbl_8036E548 (CharMgr in main/file_80011640.h, which can't be
+// included here next to main/file_8004207C.h: their fn_80024D2C prototypes clash).
+typedef struct {
+    /*0x000*/ u8 _000[0xC];
+    /*0x00C*/ void** _0C;
+    /*0x010*/ u8 _010[0x252 - 0x10];
+    /*0x252*/ s8 kind;
+    /*0x253*/ u8 _253[0x27C - 0x253];
+} CharActorView; // size: 0x27C
+
+typedef struct {
+    /*0x0000*/ u8 _0000[0x6C];
+    /*0x006C*/ void* slots6C;
+    /*0x0070*/ u8 _0070[0xC04 - 0x70];
+    /*0x0C04*/ CharActorView actors[13];
+    /*0x2C50*/ u8 _2C50[0x2D3C - 0x2C50];
+    /*0x2D3C*/ struct {
+        void* buffer;
+        u32 size;
+        s16 id;
+        u8 state;
+    } preload[3];
+    /*0x2D60*/ u8 _2D60[0x2D7D - 0x2D60];
+    /*0x2D7D*/ u8 _2D7D;
+    /*0x2D7E*/ u8 _2D7E[0x307A - 0x2D7E];
+    /*0x307A*/ u8 _307A;
+    /*0x307B*/ u8 _307B;
+    /*0x307C*/ u8 _307C;
+    /*0x307D*/ u8 _307D;
+    /*0x307E*/ u8 _307E;
+    /*0x307F*/ u8 _307F[0x3088 - 0x307F];
+    /*0x3088*/ u8 _3088;
+    /*0x3089*/ u8 _3089[0x3154 - 0x3089];
+} CharMgrView; // size: 0x3154
+extern CharMgrView lbl_8036E548;
 extern void fn_3_1E178(void);
 extern void fn_3_7AFE4(void);
 extern void setBatterContactConstants(void);
@@ -49,7 +94,6 @@ extern void fn_3_664FC(void);
 extern void fn_3_BBF94(void);
 extern void fn_3_B93CC(void);
 extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
-extern u8 lbl_8036E548[];
 extern u8 lbl_3_common_bss_34C90[];
 extern void fn_3_6C13C(void*, void*);
 extern void fn_3_16598C(void);
@@ -110,6 +154,11 @@ extern void fn_3_59338(void);
 extern void fn_3_7B130(void);
 extern void fn_3_22850(void);
 extern int __abs(int);
+extern void* memset(void*, int, unsigned long);
+extern void sndVolume(u8 volume, u16 time, u8 volGroup);
+extern void fn_3_59F40(void);
+extern void fn_3_59C2C(void);
+extern void fn_3_5A28C(void);
 extern s32 fn_3_6C938(s32, s32);
 extern s32 fn_3_FD9FC(void);
 extern void fn_3_90328(s32 vol);
@@ -411,7 +460,7 @@ void fn_3_5A684(void) {
 }
 
 // fn_3_59AC0, size:0x24
-void fn_3_59AC0(s32 unused1, s32 unused2, void* allocation) {
+void fn_3_59AC0(DiskFileEntry* entry, void* dst, void* allocation) {
     fn_80017D28(allocation);
 }
 
@@ -420,9 +469,8 @@ void fn_3_59B20(void) {
     s32 i;
     if (g_d_GameSettings.GameModeSelected == 6) {
         for (i = 0; i < 4; i++) {
-            u8* p = lbl_8036E548 + i * 0x27C;
-            u8* e = p + 0xC04;
-            fn_80022CB4(lbl_800F1D78 + ((s8)p[0xE56] * 0x13 + 1) * 16, *(s32*)(e + 0xC), 0, 0, fn_3_59AC0, e);
+            CharActorView* actor = &lbl_8036E548.actors[i];
+            fn_80022CB4(&lbl_800F1D78[actor->kind * 0x13 + 1], actor->_0C, 0, 0, fn_3_59AC0, actor);
         }
     }
 }
@@ -640,7 +688,7 @@ void fn_3_5ACA0(void) {
         fn_3_664FC();
     }
     fn_3_BBF94();
-    if (lbl_8036E548[0x3088] != 0) {
+    if (lbl_8036E548._3088 != 0) {
         fn_3_B93CC();
     }
     if (gs->GameModeSelected == 4 && lbl_80366158._2A == 0) {
@@ -1133,3 +1181,50 @@ void fn_3_5DD30(void) {
     }
 }
 #endif
+
+// fn_3_5AE9C, size:0x228
+void fn_3_5AE9C(void) {
+    changeScene(4, 0);
+    g_GameLogic.framesOfExitingToMenu = 0;
+    unkSimulationRelatedStruct._04 = 0;
+    unkSimulationRelatedStruct._09 = 0;
+    lbl_8036E548._307E = 0;
+    g_d_GameSettings.minigamesEnabled = 0;
+    g_d_GameSettings._13 = 0;
+    g_d_GameSettings.someChallengeModeFlag = 0;
+    lbl_8036E548._307A = 0;
+    lbl_8036E548.slots6C = NULL;
+    lbl_8036E548._307C = 0;
+    lbl_8036E548._307D = 0;
+    lbl_3_common_bss_32724[0xA4] = 0;
+    g_d_GameSettings._55 = 0;
+    g_d_GameSettings.challengeMinigame_baseCoinsEarned = 0;
+    g_d_GameSettings.bJMatchRelated = 0;
+    lbl_8036E548.preload[0].id = -1;
+    lbl_8036E548.preload[1].id = -1;
+    lbl_8036E548.preload[2].id = -1;
+    g_GameLogic.teams[0] = g_d_GameSettings.PlayerPorts[0];
+    g_GameLogic.teams[1] = g_d_GameSettings.PlayerPorts[1] % 4;
+    g_GameLogic.logo[0].ID = lbl_8034E9A0._470D[g_d_GameSettings.home_AwaySetting];
+    g_GameLogic.logo[1].ID = lbl_8034E9A0._470D[g_d_GameSettings.home_AwaySetting ^ 1];
+    g_GameLogic.logo[0].variationID = g_GameLogic.logo[0].ID % 4;
+    g_GameLogic.logo[1].variationID = g_GameLogic.logo[1].ID % 4;
+    g_GameLogic.logo[0].captain = g_GameLogic.logo[0].ID / 4;
+    g_GameLogic.logo[1].captain = g_GameLogic.logo[1].ID / 4;
+    g_Scores._C7 = lbl_800E8754._05;
+    if (g_d_GameSettings.GameModeSelected == 6 || g_d_GameSettings.GameModeSelected == 7) {
+        g_d_GameSettings.minigamesEnabled = 1;
+    }
+    memset(&g_Minigame, 0, 0x1E2C);
+    g_Minigame.GameMode_MiniGame = 0;
+    sndVolume(0x7F, 0xA, 0xFF);
+    if (g_d_GameSettings.GameModeSelected == 6 || g_d_GameSettings.GameModeSelected == 7) {
+        lbl_8036E548._2D7D = 0;
+        lbl_3_common_bss_32724[0xD7] = 0;
+        lbl_803CC1B8->func = fn_3_59F40;
+    } else if (g_d_GameSettings.GameModeSelected == 2) {
+        lbl_803CC1B8->func = fn_3_59C2C;
+    } else {
+        lbl_803CC1B8->func = fn_3_5A28C;
+    }
+}
