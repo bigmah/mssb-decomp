@@ -53,6 +53,7 @@ typedef struct FielderSortInfo {
 } FielderSortInfo;
 
 void gOz_GXSetTexture(GXTevMode tevMode, s32 texFrac, s32 hasNormal);
+void fn_80024390(f32* src, f32* out, s32 which);
 void SetDisplayStateTexture(TexImage* tex, s32 map, u32 tlutName);
 f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 

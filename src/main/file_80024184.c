@@ -66,9 +66,21 @@ void gOz_GXSetTexture(GXTevMode tevMode, s32 texFrac, s32 hasNormal) {
 }
 
 // .text:0x80024390 size:0x74
-void fn_80024390(void) {
-    return;
+// NONMATCHING 77%: index `which ? 3 : 2` built with subfic instead of the original cntlzw/extrwi/neg sequence
+#if NONMATCHING
+void fn_80024390(f32* src, f32* out, s32 which) {
+    s32 i = which ? 3 : 2;
+
+
+    out[0] = which;
+    out[1] = src[0];
+    out[2] = src[i];
+    out[3] = src[5];
+    out[4] = src[i + 4];
+    out[5] = src[10];
+    out[6] = src[11];
 }
+#endif
 
 // .text:0x80024404 size:0x1E8
 void SetDisplayStateTexture(TexImage* tex, s32 map, u32 tlutName) {
