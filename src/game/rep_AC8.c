@@ -1524,10 +1524,91 @@ void fn_3_35E1C(void) {
     return;
 }
 
-// .text:0x000361D8 size:0x3F8 mapped:0x8067526C
-int fn_3_361D8(f32 x, f32 z) {
-    return 0;
+#pragma dont_inline off
+/* same body as fn_3_365D0, inlined into fn_3_361D8 */
+static inline int Pick3Inline(int a, int b, int c, f32 x, f32 y) {
+    int r = fn_3_36678(b, c, x, y, 1);
+    if (r == -1) {
+        return a;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xB0) < 0) {
+        return fn_3_36678(a, r, x, y, 1);
+    }
+    return fn_3_36678(a, r, x, y, 0);
 }
+#pragma dont_inline on
+extern f32 lbl_3_rodata_BA4;
+// .text:0x000361D8 size:0x3F8 mapped:0x8067526C
+// NONMATCHING 96%: zero-init of i0/i1/i2 is li x3 (orig li+mr+mr); inlined fn_3_365D0 tail keeps an extra mr
+#if NONMATCHING
+int fn_3_361D8(f32 x, f32 z) {
+    f32 d3, d2, d1, d0;
+    f32 d;
+    s32 i3, i2, i1, i0;
+    s32 a1, a2, a0, a3;
+    s32 ang;
+    u8* f;
+    s32 i;
+    s32 r;
+    i2 = 0;
+    d0 = d1 = d2 = d3 = lbl_3_rodata_BA4;
+    f = g_Fielders;
+    i0 = i1 = i2;
+    i3 = 0;
+    for (i = 0; i < 9; i++, f += 0x268) {
+        f32 dx = *(f32*)f - x;
+        f32 dz = *(f32*)(f + 8) - z;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        ang = (s16)fn_3_9FB8C(dx, dz);
+        if (d0 > d) {
+            d2 = d1;
+            i2 = i1;
+            d1 = d0;
+            a2 = a1;
+            i1 = i0;
+            a1 = a0;
+            d0 = d;
+            i0 = i;
+            a0 = ang;
+        } else if (d1 > d) {
+            d2 = d1;
+            i2 = i1;
+            d1 = d;
+            a2 = a1;
+            i1 = i;
+            a1 = ang;
+        } else if (d2 > d) {
+            d3 = d2;
+            i3 = i2;
+            d2 = d;
+            a3 = a2;
+            i2 = i;
+            a2 = ang;
+        } else if (d3 > d) {
+            d3 = d;
+            i3 = i;
+            a3 = ang;
+        }
+    }
+    if (d3 - lbl_3_rodata_B70 < d2) {
+        if (fn_3_9FCF8(a1, a2) < 0x180) {
+            if (fn_3_9FCF8(a0, a3) > 0x200 && fn_3_9FCF8(a1, a3) > 0x200) {
+                i2 = i3;
+            }
+        } else if (fn_3_9FCF8(a0, a2) < 0x180) {
+            if (fn_3_9FCF8(a0, a3) > 0x200 && fn_3_9FCF8(a1, a3) > 0x200) {
+                i2 = i3;
+            }
+        } else if (fn_3_9FCF8(a0, a1) < 0x180 && fn_3_9FCF8(a0, a3) > 0x200 && fn_3_9FCF8(a2, a3) > 0x200) {
+            i1 = i2;
+            i2 = i3;
+        }
+    }
+    i0 = Pick3Inline(i0, i1, i2, x, z);
+    return i0;
+}
+#endif
 
 // .text:0x000365D0 size:0xA8 mapped:0x80675664
 int fn_3_365D0(int a, int b, int c, f32 x, f32 y) {
