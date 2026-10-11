@@ -4,7 +4,6 @@
 #include "main/file_80024D2C.h"
 
 
-extern u8* lbl_2_bss_1A8248[];
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_340140;
 extern u8* lbl_2_bss_1A824C;
@@ -24,9 +23,9 @@ void fn_2_8D24C(u8* object) {
 // fn_2_8B118, size:0x40
 void fn_2_8B118(f32 value) {
     if (value) {
-        lbl_2_bss_1A8248[0][0x307A] = 3;
+        lbl_2_bss_340140[0x307A] = 3;
     } else {
-        lbl_2_bss_1A8248[0][0x307A] = 0;
+        lbl_2_bss_340140[0x307A] = 0;
     }
 }
 
