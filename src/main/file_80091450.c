@@ -33,9 +33,12 @@ s8 Strcmp(char* str1, char* str2) {
 }
 
 // .text:0x8009155C size:0x14
-void DSInitTree(void) {
-    return;
+#pragma scheduling off
+void DSInitTree(DSTreePtr tree, Ptr obj, DSBranchPtr branch) {
+    tree->Root = NULL;
+    tree->Offset = (u8*)branch - (u8*)obj;
 }
+#pragma scheduling reset
 
 // .text:0x80091570 size:0x98
 void DSInsertBranchBelow(void) {
