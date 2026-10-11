@@ -87,6 +87,8 @@ void fn_2_858A4(MenuCamera* camera);
 
 void fn_2_85AC0(MenuCamera* camera);
 
+void fn_2_85D6C(MenuCamera* camera);
+
 void fn_2_87114(void);
 
 void fn_2_870D4(f32 value);

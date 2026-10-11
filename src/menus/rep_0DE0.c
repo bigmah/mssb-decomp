@@ -20,7 +20,6 @@ extern u8 lbl_803CBBC0[];
 extern u8 lbl_2_data_2E9B4[][8];
 extern void fn_2_48D54(void);
 
-extern void fn_2_85D6C(Mtx);
 extern void fn_2_190DC(ActorObjectTable*, Mtx);
 extern void fn_800A7D4C(s32, void*);
 extern f32 fn_2_4A1E8(f32, f32);
@@ -63,7 +62,7 @@ void fn_2_86FEC(void) {
     GXSetProjection(projection, GX_PERSPECTIVE);
     fn_2_48D54();
     fn_2_86470();
-    fn_2_85D6C(lbl_2_bss_1A81D4.view);
+    fn_2_85D6C(&lbl_2_bss_1A81D4);
     PSMTXCopy(lbl_2_bss_1A81D4.view, fn_80052768_getCamera(0)->view);
     fn_800A7D4C(0, lbl_2_data_2E9B4[lbl_803CBBC0[0]]);
     fn_2_190DC(lbl_2_bss_340140[0]->table, fn_80052768_getCamera(0)->view);
@@ -175,7 +174,7 @@ extern const f32 lbl_2_rodata_F00[];
 extern const f32 lbl_2_rodata_F04[];
 extern const f32 lbl_2_rodata_F08[];
 extern s8 lbl_2_bss_B2A4;
-extern s8 lbl_2_bss_B2A5;
+extern u8 lbl_2_bss_B2A5;
 
 // .text:0x86DCC size:0x174
 // NONMATCHING 90%: only register allocation differs (preset base r11 vs r31)
@@ -486,3 +485,22 @@ void fn_2_86A80(void) {
     LITInitColor(lbl_2_bss_340140[0]->lights[3], &c3);
 }
 #endif
+
+extern void fn_80011640(Mtx a, Mtx out);
+
+// Updates the menu camera for the current mode: 0 fixed preset, 1 debug walk, 2 debug orbit.
+// .text:0x85D6C size:0x704
+void fn_2_85D6C(MenuCamera* camera) {
+    switch (lbl_2_bss_B2A5) {
+    case 0:
+        fn_2_8563C(camera);
+        break;
+    case 1:
+        fn_2_85AC0(camera);
+        break;
+    case 2:
+        fn_2_858A4(camera);
+        break;
+    }
+    fn_80011640(camera->view, camera->view);
+}
