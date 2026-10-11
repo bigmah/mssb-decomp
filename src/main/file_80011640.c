@@ -360,7 +360,8 @@ void fn_800189E4(void) {
 
 // .text:0x80018B38 size:0x3C
 void fn_80018B38(void) {
-    return;
+    fn_800ACFB0(lbl_8036E548._2C88);
+    lbl_8036E548._2D68 = -1;
 }
 
 // .text:0x80018B74 size:0x278
