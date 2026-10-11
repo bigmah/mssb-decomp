@@ -1,5 +1,6 @@
 #include "game/kinoko.h"
 #include "header_rep_data.h"
+#include "Dolphin/GX/GXFifo.h"
 #pragma dont_inline on
 
 typedef struct {
@@ -146,6 +147,10 @@ extern void PSVECSubtract(void*, void*, void*);
 extern void PSVECCrossProduct(void*, void*, void*);
 extern void* memcpy(void*, void*, u32);
 extern void fn_3_16A07C(void);
+extern void PSMTXCopy(void* src, void* dst);
+extern void PSMTXMultVec(void* m, void* src, void* dst);
+extern void GXBegin(s32 type, s32 fmt, u16 n);
+extern f32 lbl_3_rodata_402C; // -1.0f
 extern void* memset(void*, s32, u32);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 
@@ -273,9 +278,133 @@ void fn_3_169804(void) {
 }
 
 // .text:0x00169984 size:0x37C mapped:0x807A8A18
+// One entry of the back-to-front sort of the mushroom ribbon quads.
+typedef struct RibSortEnt {
+    f32 depth;
+    u32 idx;
+} RibSortEnt;
+
+// Draws the ribbon quads sorted by view-space depth.
+// NONMATCHING 97%: loop counters/pointers get different saved registers (r27/r28/r30 rotated)
+#if NONMATCHING
 void fn_3_169984(void) {
-    return;
+    RibSortEnt swap;
+    f32 viewPos[3];
+    f32 view[3][4];
+    RibSortEnt list[149];
+    RibSortEnt* sorted;
+    RibSortEnt* front;
+    RibSortEnt* back;
+    RibSortEnt* a;
+    RibSortEnt* b;
+    RibEnt* e;
+    u32 i;
+    u32 j;
+    f32 noDepth;
+
+    PSMTXCopy(fn_80052768_getCamera(fn_8005268C()) + 0x40, view);
+    sorted = list;
+    noDepth = lbl_3_rodata_402C;
+    e = lbl_3_bss_BAE0;
+    back = &list[148];
+    front = sorted;
+    for (i = 0; i < 149; i++) {
+        if (e->flag == 0) {
+            back->idx = i;
+            back->depth = noDepth;
+            back--;
+        } else {
+            PSMTXMultVec(view, e->v, viewPos);
+            front->depth = viewPos[2];
+            front->idx = i;
+            front++;
+        }
+        e++;
+    }
+    a = sorted;
+    for (i = 0; i < 148; i++) {
+        for (j = i + 1, b = &list[j]; j < 149; j++) {
+            if (a->depth > b->depth) {
+                memcpy(&swap, a, sizeof(RibSortEnt));
+                memcpy(a, b, sizeof(RibSortEnt));
+                memcpy(b, &swap, sizeof(RibSortEnt));
+            }
+            b++;
+        }
+        a++;
+    }
+
+    GXSetZMode(1, 3, 0);
+    GXSetBlendMode(1, 4, 1, 0);
+    GXSetCullMode(2);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetTevColorIn(0, 0xF, 0xF, 0xF, 0xA);
+    GXSetTevAlphaIn(0, 7, 7, 7, 5);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetTevOp(0, 4);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C()) + 0x40, 0);
+    GXSetCurrentMtx(0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C()), 0);
+
+    for (i = 0; i < 149; i++) {
+        e = &lbl_3_bss_BAE0[sorted->idx];
+        if (e->flag != 0) {
+            GXBegin(0x80, 0, 4);
+            {
+                f32* q = e->p[0];
+                f32 z = q[2];
+                f32 y = q[1];
+                f32 x = q[0];
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+            }
+            GXWGFifo.u32 = *(u32*)e->p[1];
+            {
+                f32* q = e->p[2];
+                f32 z = q[2];
+                f32 y = q[1];
+                f32 x = q[0];
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+            }
+            GXWGFifo.u32 = *(u32*)e->p[3];
+            {
+                f32* q = e->p[4];
+                f32 z = q[2];
+                f32 y = q[1];
+                f32 x = q[0];
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+            }
+            GXWGFifo.u32 = *(u32*)e->p[5];
+            {
+                f32* q = e->p[6];
+                f32 z = q[2];
+                f32 y = q[1];
+                f32 x = q[0];
+                GXWGFifo.f32 = x;
+                GXWGFifo.f32 = y;
+                GXWGFifo.f32 = z;
+            }
+            GXWGFifo.u32 = *(u32*)e->p[7];
+        }
+        sorted++;
+    }
 }
+#endif
 
 // .text:0x00169D00 size:0x170
 void fn_3_169D00(u8* base, u32* cnt) {
