@@ -114,5 +114,15 @@ void fn_2_33E70(u8* a, u8* b);
 void fn_2_36D04(u8* a, u8* b);
 
 void fn_2_36750(u8* a, u8* b);
+void fn_2_38F48(void);
+void fn_2_391B4(void);
+void fn_2_397AC(void);
+void fn_2_37630(void);
+void fn_2_35A14(u8* a, u8* b);
+void fn_2_379D0(void);
+void fn_2_39408(void);
+void fn_2_3A8FC(void);
+void fn_2_3AF08(void);
+void fn_2_399C0(void);
 
 #endif
