@@ -15,7 +15,7 @@ typedef struct ConfirmDialog {
     /*0x06*/ s16 textRect[4];
     /*0x0E*/ s16 textRect2[4];
     /*0x16*/ u16 textIdx;
-    /*0x18*/ s16 msg;
+    /*0x18*/ u16 msg;
     /*0x1A*/ s8 table;     // < 0: no message
     /*0x1B*/ u8 hasTextRect;
     /*0x1C*/ u8 hasTextRect2;
@@ -25,6 +25,13 @@ typedef struct ConfirmDialog {
 } ConfirmDialog; // size: 0xB4
 
 extern ConfirmDialog lbl_803C5F74;
+
+// Per-dialog-kind layout (lbl_800FEAAC).
+typedef struct DialogLayout {
+    /*0x0*/ u16 anim0;
+    /*0x2*/ u16 anim1;
+    /*0x4*/ u16 msgId;
+} DialogLayout; // size: 0x6
 
 // Character select state for up to 4 cursors (lbl_803C6028).
 typedef struct RosterSelect {
@@ -105,6 +112,8 @@ void fn_8004CA14(s32 table, s32 msg);
 void fn_8004CA48(s16 a, s16 b, s16 c, s16 d);
 
 s32 fn_8004CA6C(u16 buttons);
+
+void fn_8004CCC0(void);
 
 void fn_8004CC18(void);
 

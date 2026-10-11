@@ -81,6 +81,8 @@ typedef struct LayoutObj {
     /*0x67*/ u8 layer;
     /*0x68*/ u8 _68;
     /*0x69*/ u8 _69;
+    /*0x6A*/ u8 _6A[0x72 - 0x6A];
+    /*0x72*/ s16 _72;
 } LayoutObj;
 
 typedef struct LayoutSlot {
