@@ -22,8 +22,45 @@ void fn_800B4C04(ActorInst* actor, f32 value);
 void fn_800B4CA0(ActorInst* actor, f32 time);
 
 // .text:0x800BD8C4 size:0x160
-void fn_800BD8C4(void) {
-    return;
+void fn_800BD8C4(ActorObjectTable* table, s32 arg1) {
+    ActorObjectTable* t;
+    ActorInst* actor;
+    u16 i;
+
+    for (i = 0; i < table->count; i++) {
+        // t->objects[0] is table->objects[i] (this form keeps the original codegen)
+        t = (ActorObjectTable*)((u8*)table + i * sizeof(ActorObject));
+        if (t->objects[0].actor == NULL) {
+            continue;
+        }
+        if (t->objects[0].setAnimation) {
+            ACTSetAnimation(t->objects[0].actor, t->objects[0].animBank, 0, t->objects[0].seqNum, lbl_803CD060, t->objects[0].speed);
+        }
+        if (t->objects[0].setTime) {
+            fn_800B4CA0(t->objects[0].actor, t->objects[0].time);
+        }
+        if (t->objects[0].setSpeed) {
+            fn_800B4C04(t->objects[0].actor, t->objects[0].unk54);
+        }
+        if (t->objects[0].visFlags & 2) {
+            fn_800B4AFC(t->objects[0].actor, t->objects[0].visFlags & 1);
+        }
+        Set_FUN_800b2b6c(t->objects[0].actor, t->objects[0].unk68);
+        if (t->objects[0].animateBones) {
+            actor = t->objects[0].actor;
+            memcpy(actor->worldControl, t->objects[0].worldControl, sizeof(t->objects[0].worldControl));
+            fn_800B2BFC(t->objects[0].actor, t->objects[0].unk64, t->objects[0].unk66);
+            AnimateActorBones(actor);
+            fn_800B3F20(actor);
+            fn_800B313C(actor);
+        }
+        actor = t->objects[0].actor;
+        actor->flags98 = (actor->flags98 & 0xFC) | fn_800B3C04(0, actor, arg1);
+        t->objects[0].setAnimation = 0;
+        t->objects[0].setTime = 0;
+        t->objects[0].setSpeed = 0;
+        t->objects[0].visFlags &= 1;
+    }
 }
 
 // .text:0x800BDA24 size:0x70
