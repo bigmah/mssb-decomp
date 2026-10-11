@@ -1325,9 +1325,59 @@ void fn_8004617C(s32 port) {
         }                                                                             \
     } while (0)
 
+// NONMATCHING ~85%: CharacterStats copies use field pointers precomputed on the stack in the original
+#if NONMATCHING
 u8 fn_800471F4(u8 mode, u8 team) {
-    return 0;
+    s8 i;
+    u8 pick;
+    u8 t;
+
+    if (mode == 0) {
+        for (i = 0; i < 9; i++) {
+            if (i == lbl_803297E0.slot[team] - 1) {
+                lbl_803CBCCC[team] = i;
+                COPY_CHAR_STATS(&lbl_803C5144[team], &inMemRoster[team][lbl_803CBCCC[team]]);
+                lbl_803CBCD0[team].slot = lbl_80354720[team][lbl_803CBCCC[team]].slot;
+                memcpy(lbl_802E4B14[team], lbl_8034E9A0._47F9[team][lbl_803CBCCC[team]], 9);
+                memcpy(lbl_802E4B00[team], lbl_8034E9A0.boosted[team], 9);
+            }
+        }
+    } else {
+        for (i = 0; i < 9; i++) {
+            if (i != lbl_803297E0.slot[team] - 1) {
+                continue;
+            }
+            if (lbl_803297E0._CF52[team] == 0) {
+                pick = lbl_803CBCCC[team];
+                COPY_CHAR_STATS(&inMemRoster[team][pick], &inMemRoster[team][i]);
+                lbl_80354720[team][pick].slot = lbl_80354720[team][i].slot;
+                memcpy(lbl_8034E9A0._47F9[team][pick], lbl_8034E9A0._47F9[team][i], 9);
+                COPY_CHAR_STATS(&inMemRoster[team][i], &lbl_803C5144[team]);
+                pick = lbl_803CBCCC[team];
+                t = lbl_802E4B14[team][i];
+                lbl_802E4B14[team][i] = lbl_802E4B14[team][pick];
+                lbl_80354720[team][i].slot = lbl_803CBCD0[team].slot;
+                lbl_802E4B14[team][pick] = t;
+                memcpy(lbl_8034E9A0._47F9[team][i], lbl_802E4B14[team], 9);
+                pick = lbl_803CBCCC[team];
+                t = lbl_802E4B00[team][i];
+                lbl_802E4B00[team][i] = lbl_802E4B00[team][pick];
+                lbl_802E4B00[team][pick] = t;
+                memcpy(lbl_8034E9A0.boosted[team], lbl_802E4B00[team], 9);
+                lbl_803297E0.swap[team][0] = lbl_803CBCCC[team];
+                lbl_803297E0.swap[team][1] = i;
+            } else {
+                pick = lbl_803CBCCC[team];
+                lbl_803297E0.swap[team][0] = pick;
+                lbl_80354720[team][pick].slot = lbl_80354720[team][i].slot;
+                lbl_803297E0.swap[team][1] = i;
+                lbl_80354720[team][i].slot = lbl_803CBCD0[team].slot;
+            }
+        }
+    }
+    return lbl_803CBCCC[team];
 }
+#endif
 
 // .text:0x80047CE0 size:0x304
 void fn_80047CE0(void) {
