@@ -2456,9 +2456,79 @@ void fn_3_42CDC(void) {
 }
 
 // .text:0x00043038 size:0x3A8 mapped:0x806820CC
-void fn_3_43038(int i) {
-    return;
+extern f32 lbl_3_rodata_B60;
+extern f32 lbl_3_rodata_C08;
+#pragma dont_inline off
+// Inlined copy of fn_3_52560 (frames for fielder i to reach x/z); defined later in this file.
+static inline int FramesToReachAC8(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 d;
+    f32 spd;
+    if (x == *(f32*)f && z == *(f32*)(f + 8)) {
+        return 1;
+    }
+    d = (x - *(f32*)f) * (x - *(f32*)f) + (z - *(f32*)(f + 8)) * (z - *(f32*)(f + 8));
+    SQRT_L(d);
+    spd = *(f32*)(f + 0x58);
+    return ((u32)f[0x1D1] >> 1) + (int)(d / (lbl_3_rodata_B20 == spd ? lbl_3_rodata_B60 : spd));
 }
+// Same as SetTargetAC8 (defined later in this file).
+static inline void SetTargetAC8b(int i, f32 x, f32 z) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    *(f32*)(f + 0x14) = x;
+    *(f32*)(f + 0x1C) = z;
+    dx = x - *(f32*)f;
+    dz = z - *(f32*)(f + 8);
+    if (0.0f == dx && 0.0f == dz) {
+        *(f32*)(f + 0x50) = 0.0f;
+        *(f32*)(f + 0x68) = 0.0f;
+    } else {
+        *(f32*)(f + 0x64) = atan2(dz, dx);
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        *(f32*)(f + 0x68) = d;
+    }
+    f[0x1D9] = 1;
+}
+#pragma dont_inline on
+// NONMATCHING 97.0%: float register allocation in the inlined fn_3_52560 distance code
+#if NONMATCHING
+// Send fielder i to the first point of the ball's flight (below catch height) it can reach in time.
+void fn_3_43038(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int frames;
+    int t;
+    u8* b;
+    f[0x1DC] = 4;
+    frames = 0;
+    t = 5;
+    while (t <= 0x78) {
+        b = g_Ball + t * 0x10;
+        if (*(f32*)(b + 0x358) > lbl_3_rodata_C08) {
+            t++;
+            continue;
+        }
+        frames = FramesToReachAC8(i, *(f32*)(b + 0x354), *(f32*)(b + 0x35C));
+        if (frames < t) {
+            *(s16*)(f + 0x184) = t;
+            goto found;
+        }
+        t += 5;
+    }
+    *(s16*)(f + 0x184) = 0x78;
+found:
+    b = g_Ball + *(s16*)(f + 0x184) * 0x10;
+    SetTargetAC8b(i, *(f32*)(b + 0x354), *(f32*)(b + 0x35C));
+    if (*(s16*)(f + 0x184) >= 0x78) {
+        *(s16*)(f + 0x17E) = 0x78;
+    } else {
+        *(s16*)(f + 0x17E) = frames;
+    }
+}
+#endif
 
 // .text:0x000433E0 size:0x13E4 mapped:0x80682474
 void fn_3_433E0(void) {
