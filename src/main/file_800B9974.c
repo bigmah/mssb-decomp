@@ -229,8 +229,10 @@ void LITInitDir(Light* light, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x800BD3BC size:0x10
-void LITInitPos(void) {
-    return;
+void LITInitPos(Light* light, f32 x, f32 y, f32 z) {
+    light->position.x = x;
+    light->position.y = y;
+    light->position.z = z;
 }
 
 // .text:0x800BD3CC size:0x20
