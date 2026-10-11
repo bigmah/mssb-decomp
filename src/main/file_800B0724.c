@@ -44,7 +44,9 @@ void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target) {
 
 // .text:0x800B07FC size:0x38
 void soundQuit(void) {
-    return;
+    SND_HOOKS hooks = {SndAlloc, SndFree};
+    sndSetHooks(&hooks);
+    sndQuit();
 }
 
 // .text:0x800B0834 size:0x100
