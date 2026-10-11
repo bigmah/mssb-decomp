@@ -63,7 +63,26 @@ void fn_8000F8F4(LayoutGroup* group) {
 
 // .text:0x8000F988 size:0x114
 s32 fn_8000F988(LayoutGroup* group, s32 index, u16 arg2, s32 table, s32 msg, s32 shadow) {
-    return 0;
+    s32 i;
+    LayoutObj* obj = lbl_80371C30[group->start + index].obj;
+    obj->flags |= 4;
+    if (shadow != 0) {
+        obj->flags |= 8;
+    }
+    for (i = 0; i < 30; i++) {
+        if (lbl_80366B18.owners[i].object == NULL) {
+            lbl_80366B18.owners[i].object = obj;
+            lbl_80366B18.owners[i]._06 = arg2;
+            lbl_80366B18.owners[i].entry = fn_8000FF04(table, msg, 0, 0, obj->layer, -1, 0);
+            if (obj->_00 != NULL) {
+                lbl_80366B18.entries[lbl_80366B18.owners[i].entry].mtx = obj->mtx;
+            } else {
+                lbl_80366B18.entries[lbl_80366B18.owners[i].entry].mtx = NULL;
+            }
+            return lbl_80366B18.owners[i].entry;
+        }
+    }
+    return -1;
 }
 
 // .text:0x8000FA9C size:0x2B8
