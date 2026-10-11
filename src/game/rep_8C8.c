@@ -104,21 +104,21 @@ void fn_3_1E4B8(void) {
 
 // .text:0x0001E724 size:0xD0 mapped:0x8065D7B8
 s32 fn_3_1E724(void) {
-    if (*((u8*)&g_GameLogic + 0x121) == 0xD) {
+    if (g_GameLogic.secondaryGameMode == 0xD) {
         return fn_3_B0CF4() != 0;
     }
-    if (*((u8*)&g_AiLogic + 0x58) != 1) {
+    if (g_AiLogic.batterAIBuntInd != 1) {
         return 0;
     }
-    if (*((u8*)&g_AiLogic + 0x65) != 0) {
+    if (g_AiLogic.aISwingDecisionRelated_noSwingOverride != 0) {
         return 0;
     }
-    if (*(s16*)((u8*)&g_Ball + 0x1B68) <= 0) {
+    if (g_Ball.pitchHangtimeCounter <= 0) {
         return 1;
     }
-    if (*(s16*)((u8*)&g_Pitcher + 0x132) == *((u8*)&g_AiLogic + 0x5D)) {
+    if (g_Pitcher.framesUntilBallReachesBatterZ == g_AiLogic.batterAIZPosition) {
         if (fn_3_1E7F4() == 0) {
-            *((u8*)&g_AiLogic + 0x65) = 1;
+            g_AiLogic.aISwingDecisionRelated_noSwingOverride = 1;
             return 0;
         }
     }
@@ -689,11 +689,11 @@ void fn_3_20064(void) {
 
 // .text:0x00020188 size:0x9C mapped:0x8065F21C
 void fn_3_20188(void) {
-    if (*(u8*)((u8*)&g_AiLogic + 0x6D) != 0xFF && RandomInt_Game(0x64) < (s32)lbl_3_data_1AAC[*(u8*)((u8*)&g_AiLogic + 0x55)]) {
-        *(u8*)((u8*)&g_AiLogic + 0x5E) = *(u8*)((u8*)&g_AiLogic + 0x6D);
+    if (g_AiLogic.lastPitchType != 0xFF && RandomInt_Game(0x64) < (s32)lbl_3_data_1AAC[g_AiLogic.aIBatterDifficulty]) {
+        g_AiLogic.batterAIPitchGuessed = g_AiLogic.lastPitchType;
         return;
     }
-    *(u8*)((u8*)&g_AiLogic + 0x5E) = RandomIndexFromWeights(lbl_3_data_1AB0 + *(u8*)((u8*)&g_Pitcher + 0x149) * 3, 3);
+    g_AiLogic.batterAIPitchGuessed = RandomIndexFromWeights(lbl_3_data_1AB0 + g_Pitcher.charClass * 3, 3);
 }
 
 // .text:0x00020224 size:0x83C mapped:0x8065F2B8
