@@ -9,6 +9,32 @@ typedef struct FielderStateEntry {
     void (*update)(int i);
 } FielderStateEntry;
 
+// *(FieldingBoost**)(g_FieldingLogic + 0x70): fielder speed-boost / charge state (fn_3_51220)
+typedef struct FieldingBoost {
+    f32 dirX;      // 0x00
+    f32 dirZ;      // 0x04
+    f32 scale;     // 0x08
+    s16 timer;     // 0x0C
+    s16 timer2;    // 0x0E
+    s16 power;     // 0x10
+    s16 frames;    // 0x12
+    s16 fielder;   // 0x14
+    s16 taps;      // 0x16
+    s16 decay;     // 0x18
+    u8 state;      // 0x1A
+} FieldingBoost;
+#define FIELDING_BOOST (*(FieldingBoost**)(g_FieldingLogic + 0x70))
+
+// lbl_3_data_4B9C
+typedef struct FieldingBoostParams {
+    s16 powerStep; // 0x0
+    s16 powerMax;  // 0x2
+    s16 window;    // 0x4
+    s16 tapsNeeded; // 0x6
+    s16 decayStop; // 0x8
+    s16 decayRun;  // 0xA
+} FieldingBoostParams;
+
 void fn_3_251E4(int);
 int fn_3_253A4(int, s16);
 void fn_3_25648(int);

@@ -3295,9 +3295,103 @@ void fn_3_50DD8(void) {
 }
 
 // .text:0x00051220 size:0x42C mapped:0x806902B4
+// NONMATCHING 97%: saturating-counter scratch regs (r4/r5/r6) differ and the int->float pool base for the final scale isn't hoisted
+#if NONMATCHING
+extern FieldingBoostParams lbl_3_data_4B9C;
+extern f32 lbl_3_data_4B98;
 void fn_3_51220(void) {
-    return;
+    u8* f;
+    if (FIELDING_BOOST->state != 0) {
+        if (FIELDING_BOOST->timer < 0x7FFE) {
+            FIELDING_BOOST->timer = FIELDING_BOOST->timer + 1;
+        } else {
+            FIELDING_BOOST->timer = 0x7FFF;
+        }
+        if (FIELDING_BOOST->timer2 < 0x7FFE) {
+            FIELDING_BOOST->timer2 = FIELDING_BOOST->timer2 + 1;
+        } else {
+            FIELDING_BOOST->timer2 = 0x7FFF;
+        }
+        FIELDING_BOOST->frames++;
+        if (FIELDING_BOOST->state == 4 || FIELDING_BOOST->state == 3) {
+            FIELDING_BOOST->decay--;
+            if (FIELDING_BOOST->decay == 0) {
+                FIELDING_BOOST->state = 0;
+                FIELDING_BOOST->timer = -1;
+                FIELDING_BOOST->timer2 = -1;
+                FIELDING_BOOST->fielder = -1;
+                FIELDING_BOOST->scale = 1.0f;
+            } else {
+                FIELDING_BOOST->scale = (FIELDING_BOOST->scale - 1.0f) * (1.0f - 1.0f / (f32)FIELDING_BOOST->decay);
+                FIELDING_BOOST->scale += 1.0f;
+            }
+            return;
+        }
+        if (FIELDING_BOOST->timer == 1) {
+            FIELDING_BOOST->taps++;
+            FIELDING_BOOST->power += lbl_3_data_4B9C.powerStep;
+            if (FIELDING_BOOST->power >= lbl_3_data_4B9C.powerMax) {
+                FIELDING_BOOST->power = lbl_3_data_4B9C.powerMax;
+                FIELDING_BOOST->state = 2;
+                if (g_d_GameSettings[7] == 2 || g_Practice[0x193] == 2 || g_Practice[0x194] == 2) {
+                    g_Practice[0x1CB] = 1;
+                }
+            }
+        } else if (FIELDING_BOOST->timer >= lbl_3_data_4B9C.window) {
+            f = g_Fielders + FIELDING_BOOST->fielder * 0x268;
+            if (*(s16*)(f + 0x19E) == -1) {
+                FIELDING_BOOST->state = 4;
+                FIELDING_BOOST->decay = lbl_3_data_4B9C.decayStop;
+                FIELDING_BOOST->dirX = *(f32*)(f + 0x38);
+                FIELDING_BOOST->dirZ = *(f32*)(f + 0x3C);
+            } else {
+                FIELDING_BOOST->state = 3;
+                FIELDING_BOOST->decay = lbl_3_data_4B9C.decayRun;
+            }
+            return;
+        }
+        FIELDING_BOOST->scale = ((f32)FIELDING_BOOST->power / (f32)lbl_3_data_4B9C.powerMax) * lbl_3_data_4B98 + 1.0f;
+    } else if (FIELDING_BOOST->timer >= 0) {
+        if (FIELDING_BOOST->timer2 < 0) {
+            FIELDING_BOOST->timer2 = 0;
+            FIELDING_BOOST->power = 0;
+            FIELDING_BOOST->fielder = -1;
+            FIELDING_BOOST->taps = 0;
+        }
+        if (FIELDING_BOOST->timer < 0x7FFE) {
+            FIELDING_BOOST->timer = FIELDING_BOOST->timer + 1;
+        } else {
+            FIELDING_BOOST->timer = 0x7FFF;
+        }
+        if (FIELDING_BOOST->timer2 < 0x7FFE) {
+            FIELDING_BOOST->timer2 = FIELDING_BOOST->timer2 + 1;
+        } else {
+            FIELDING_BOOST->timer2 = 0x7FFF;
+        }
+        if (FIELDING_BOOST->timer >= lbl_3_data_4B9C.window) {
+            FIELDING_BOOST->timer = -1;
+            FIELDING_BOOST->timer2 = -1;
+            FIELDING_BOOST->fielder = -1;
+            return;
+        }
+        if (FIELDING_BOOST->timer == 1) {
+            FIELDING_BOOST->taps++;
+        }
+        if (FIELDING_BOOST->taps >= lbl_3_data_4B9C.tapsNeeded) {
+            if (g_d_GameSettings[0x11] != 0) {
+                FIELDING_BOOST->fielder = g_Minigame[0x1923];
+            } else {
+                FIELDING_BOOST->fielder = *(s16*)(g_FieldingLogic + 0xB0);
+            }
+            FIELDING_BOOST->frames = 0;
+            FIELDING_BOOST->state = 1;
+            FIELDING_BOOST->scale = 1.0f;
+            FIELDING_BOOST->timer = -1;
+            FIELDING_BOOST->power = lbl_3_data_4B9C.powerStep;
+        }
+    }
 }
+#endif
 
 // .text:0x0005164C size:0x14C mapped:0x806906E0
 #pragma fp_contract off
