@@ -14,7 +14,7 @@ void fn_3_3638(u8* obj);
 void fn_3_3818(void);
 void fn_3_38E8(StadiumDrawFn a);
 void fn_3_3904(s16 x, s16 y, s32 msg, GXColor color0, GXColor color1, u8 flags);
-void fn_3_3BE8(void);
+void fn_3_3BE8(struct TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 uw, s16 vh);
 void fn_3_3EE8(void);
 void fn_3_42CC(struct _GXTexObj* tex, s16 x0, s16 y0, s16 x1, s16 y1, s16 sx, s16 sy, s16 sw, s16 sh,
                GXColor color0, GXColor color1, u8 flags);

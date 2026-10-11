@@ -219,10 +219,60 @@ void fn_3_3904(s16 x, s16 y, s32 msg, GXColor color0, GXColor color1, u8 flags) 
 }
 #endif
 
+// Draws the texel rect (u, v, uw, vh) of `img` as a screen quad (x0, y0)-(x1, y1).
+// Tex coords are s16 with 9 fractional bits.
 // .text:0x00003BE8 size:0x300 mapped:0x80642C7C
-void fn_3_3BE8(void) {
-    return;
+// NONMATCHING 94%: float constant pooling (-0.5f reloaded per vertex in the original) and r28/r31 swap
+#if NONMATCHING
+void fn_3_3BE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 uw, s16 vh) {
+    GXTexObj tex;
+    f32 left = x0;
+    f32 top = y0;
+    f32 right = x1;
+    f32 bottom = y1;
+    GXColor white = {0xFF, 0xFF, 0xFF, 0xFF};
+
+    GXInitTexObj(&tex, img->data, img->width, img->height, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GXInitTexObjLOD(&tex, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 9);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(0);
+    GXSetNumTexGens(1);
+    GXSetTevColor(GX_TEVREG0, white);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+    GXLoadTexObj(&tex, GX_TEXMAP0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXWGFifo.f32 = left;
+    GXWGFifo.f32 = top;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.s16 = u;
+    GXWGFifo.s16 = v;
+    GXWGFifo.f32 = right;
+    GXWGFifo.f32 = top;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.s16 = u + uw;
+    GXWGFifo.s16 = v;
+    GXWGFifo.f32 = right;
+    GXWGFifo.f32 = bottom;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.s16 = u + uw;
+    GXWGFifo.s16 = v + vh;
+    GXWGFifo.f32 = left;
+    GXWGFifo.f32 = bottom;
+    GXWGFifo.f32 = -0.5f;
+    GXWGFifo.s16 = u;
+    GXWGFifo.s16 = v + vh;
 }
+#endif
 
 // .text:0x00003EE8 size:0x3E4 mapped:0x80642F7C
 void fn_3_3EE8(void) {
