@@ -587,9 +587,233 @@ void fn_3_CC81C(void) {
 #endif
 
 // .text:0x000CCC24 size:0xD34 mapped:0x8070BCB8
-void fn_3_CCC24(void) {
-    return;
+// NONMATCHING ~90% (with fn_3_CC5C4/fn_3_D511C pasted inline): written with calls; register numbering, loop shapes
+// nmverify: fn_3_CC5C4 fn_3_D511C are inlined in the original
+#if NONMATCHING
+// One static prop of this stadium (lbl_3_data_185D0, type 0xD ends the list).
+typedef struct C2Prop {
+    /*0x00*/ Vec pos;
+    /*0x0C*/ u8 type;
+    /*0x0D*/ u8 _0D[3];
+    /*0x10*/ Vec scale;
+    /*0x1C*/ f32 rotY; // degrees
+} C2Prop; // size 0x20
+
+extern C2Prop lbl_3_data_185D0[];
+extern u8 lbl_3_data_10D3C[];
+extern void fn_80025DDC(void* shape);
+extern void fn_80025C58(void* shape, ActorObject* model);
+extern void fn_80025FFC(void* shape, void* player);
+extern void fn_80035750(void* a, void* b, s32 n);
+extern void fn_80034E20(void* group, void* descs);
+extern void fn_3_B97C8(void* fn);
+extern void fn_3_B97DC(ActorObject* obj, void* f);
+extern void fn_800BD548(ActorObject* obj, u8 numLights, ...);
+extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
+extern void* _OSAllocFromHeap(s32 align, u32 size);
+
+#define C2_SLOTS (*(ActorObjectTable**)(lbl_8036E548 + 0x6C))
+#define C2_OBJ(i) (&C2_SLOTS->objects[i])
+
+// Stadium setup: builds the actor table (main object, three companions, the chain
+// model and one model per prop), the shared animation player (lbl_3_bss_A018+0x74C),
+// both 8-node chains, and the object list: the main object (0), three companions
+// (type 1), three chain links (type 2) and the props.
+void fn_3_CCC24(void** files, u32* idx) {
+    StadiumObjList* g = (StadiumObjList*)lbl_3_common_bss_350E4;
+    C2Prop* prop = lbl_3_data_185D0;
+    u8* p;
+    u8* q;
+    u8 done = 0;
+    u32 nProps = 0;
+    u32 nObjs;
+    s32 j;
+    s32 propBase;
+    s32 chainIdx;
+    u32 i;
+    u32 used;
+    s32 phase;
+    u8 sh;
+    void* task;
+    f32 one;
+    for (nProps = 0; nProps < 10; nProps++) {
+        if (lbl_3_data_185D0[nProps].type == 0xD) {
+            break;
+        }
+    }
+    nObjs = nProps + 5;
+    g->numActorObjs = nObjs;
+    C2_SLOTS = ActorObjectInitTable(nObjs);
+    fn_800BDC88(C2_SLOTS, 0, 0, files[idx[1]], NULL, NULL);
+    for (j = 1, i = 0; i < 3; i++, j++) {
+        fn_800BDC88(C2_SLOTS, j, j, files[idx[3]], NULL, NULL);
+        fn_3_B97DC(C2_OBJ(j), files[idx[3] + 2]);
+    }
+    fn_800BDC88(C2_SLOTS, j, j, files[idx[4]], NULL, NULL);
+    chainIdx = j;
+    propBase = j + 1;
+    for (i = 0, j = propBase; i < nProps; i++, j++) {
+        fn_800BDC88(C2_SLOTS, j, j, files[idx[8]], NULL, NULL);
+        fn_3_B97DC(C2_OBJ(j), files[idx[8] + 2]);
+    }
+    for (i = 0; i < nObjs; i++) {
+        fn_800BD548(C2_OBJ(i), 4, g->lights[0], g->lights[1], g->lights[2], g->lights[3]);
+    }
+    if (files[idx[15]] != NULL && files[idx[17]] != NULL) {
+        fn_80025DDC(files[idx[15]]);
+        fn_80025C58(files[idx[15]], C2_OBJ(0));
+        *(void**)(lbl_3_bss_A018 + 0x74C) = files[idx[17]];
+        fn_80025FFC(files[idx[15]], lbl_3_bss_A018 + 0x74C);
+        fn_80025EEC(lbl_3_bss_A018 + 0x74C, 0, 1);
+    }
+    fn_80035750(files[idx[25]], files[idx[24]], 5);
+    task = fn_800B0A5C_insertQueue(fn_3_CE954, 2);
+    *(void**)(lbl_3_bss_A018 + 0x88C) = task;
+    fn_80034E20(task, lbl_3_data_10D3C);
+    fn_3_D511C();
+
+    g->count = 0x43;
+    g->objs = _OSAllocFromHeap(0x20, 0x43 * 0xE8);
+    p = (u8*)g->objs;
+    g->objsBackup = _OSAllocFromHeap(0x20, 0x43 * 0xE8);
+    memset(p, 0, 0x2D * 0xE8);
+    lbl_3_bss_A018[0x14] = 0;
+
+    // object 0: the main object with the 4-node chain
+    *(RopeNode**)(p + 0xC4) = (RopeNode*)(lbl_3_bss_A018 + 0x8B8);
+    *(ActorObject**)(p + 0x74) = C2_OBJ(0);
+    *(void**)(p + 0x78) = files[idx[13]];
+    *(void**)(p + 0x7C) = fn_3_CBC18;
+    *(void**)(p + 0x80) = NULL;
+    ((PiranhaPlant*)p)->hasShadow = 0;
+    ((PiranhaPlant*)p)->bit5 = 1;
+    p[0x9C] = 0;
+    p[0x92] = 0xFF;
+    *(void**)(p + 0x84) = fn_3_CBA9C;
+    *(void**)(p + 0x8C) = lbl_3_bss_A018 + 0x74C;
+    *(s16*)(p + 0x94) = 0;
+    *(s16*)(p + 0x96) = -1;
+    p[0x98] = 1;
+    fn_3_CC5C4(p);
+    p[0] = 0;
+    p[0xCA] = 0xFF;
+    lbl_3_bss_A018[0x15]++;
+    used = 1;
+
+    // objects 1-3: the companions (fn_3_D1848)
+    q = p + 0xE8;
+    for (i = 0; i < 3; i++, q += 0xE8) {
+        q[0x9D] = 1;
+        *(ActorObject**)(q + 0x74) = C2_OBJ(i + 1);
+        *(void**)(q + 0x78) = NULL;
+        *(void**)(q + 0x7C) = fn_3_D1848;
+        *(void**)(q + 0x80) = NULL;
+        ((PiranhaPlant*)q)->visible = 0;
+        ((PiranhaPlant*)q)->hasShadow = 0;
+        *(f32*)(q + 0xA4) = C2_OBJ(i + 1)->unk54;
+        ((PiranhaPlant*)q)->bit5 = 0;
+        q[0] = 0;
+        CTRLSetScale((Control*)q, lbl_3_rodata_26C8, lbl_3_rodata_26C8, lbl_3_rodata_26C8);
+        q[0x92] = 0xFF;
+        *(void**)(q + 0x84) = fn_3_D173C;
+        *(void**)(q + 0x8C) = NULL;
+        *(s16*)(q + 0x94) = 0;
+        used++;
+        *(s16*)(q + 0x96) = -1;
+        q[0x98] = 1;
+        *(u8**)(q + 0xA8) = p + 0xCA;
+        q[0x9C] = i;
+        q[0xAC] = (i % 3) * 30;
+        q[0xAD] = 0;
+    }
+
+    // objects 4-6: the chain links, each between two nodes of the main object's chain
+    for (i = 0; i < 3; i++, q += 0xE8) {
+        *(RopeNode**)(q + 0xAC) = (RopeNode*)(lbl_3_bss_A018 + 0x8B8) + i;
+        *(RopeNode**)(q + 0xB0) = (RopeNode*)(lbl_3_bss_A018 + 0x8B8) + (i + 1);
+        q[0x9D] = 2;
+        *(ActorObject**)(q + 0x74) = C2_OBJ(chainIdx);
+        *(void**)(q + 0x78) = NULL;
+        *(void**)(q + 0x7C) = fn_3_D1280;
+        *(void**)(q + 0x80) = NULL;
+        ((PiranhaPlant*)q)->visible = 1;
+        ((PiranhaPlant*)q)->hasShadow = 0;
+        ((PiranhaPlant*)q)->bit5 = 1;
+        q[0] = 0;
+        memset(q + 0xA0, 0, sizeof(Vec));
+        q[0x92] = 0xFF;
+        used++;
+        *(void**)(q + 0x84) = fn_3_D127C;
+        *(void**)(q + 0x8C) = NULL;
+        *(s16*)(q + 0x94) = 0;
+        *(s16*)(q + 0x96) = -1;
+        q[0x98] = 1;
+        q[0x9C] = i;
+    }
+
+    // the props
+    phase = 0;
+    for (i = 0; i < 10; i++, prop++) {
+        if (prop->type == 0xD) {
+            done = 1;
+        }
+        if (done) {
+            for (; i < 11; i++) {
+                lbl_3_data_185D0[i].type = 0xD;
+            }
+            break;
+        }
+        q[0x9D] = prop->type;
+        *(s32*)(q + 0xA0) = phase;
+        *(ActorObject**)(q + 0x74) = C2_OBJ(propBase + i);
+        *(void**)(q + 0x78) = NULL;
+        *(void**)(q + 0x7C) = fn_3_CFA8C;
+        *(void**)(q + 0x80) = NULL;
+        ((PiranhaPlant*)q)->visible = 1;
+        sh = 0;
+        if (((PiranhaPlant*)q)->visible && *(void**)(q + 0x78) != NULL) {
+            sh = 1;
+        }
+        ((PiranhaPlant*)q)->hasShadow = sh;
+        q[0] = 0;
+        CTRLSetScale((Control*)q, prop->scale.x, prop->scale.y, prop->scale.z);
+        CTRLSetTranslation((Control*)q, prop->pos.x, prop->pos.y, prop->pos.z);
+        CTRLSetRotation((Control*)q, lbl_3_rodata_2664, -prop->rotY, lbl_3_rodata_2664);
+        ((PiranhaPlant*)q)->bit5 = 0;
+        q[0x92] = 0xFF;
+        done = 0;
+        *(void**)(q + 0x8C) = NULL;
+        phase += 30;
+        used++;
+        *(void**)(q + 0x84) = fn_3_CFA88;
+        *(s16*)(q + 0x94) = 0;
+        *(s16*)(q + 0x96) = -1;
+        q[0x98] = 1;
+        q += 0xE8;
+    }
+
+    // the rest are unused
+    for (; used < (u32)g->count; used++, q += 0xE8) {
+        q[0x9D] = 0xFF;
+        *(void**)(q + 0x74) = NULL;
+        *(void**)(q + 0x78) = NULL;
+        *(void**)(q + 0x7C) = NULL;
+        *(void**)(q + 0x80) = NULL;
+        ((PiranhaPlant*)q)->visible = 0;
+        ((PiranhaPlant*)q)->hasShadow = 0;
+        ((PiranhaPlant*)q)->bit5 = 0;
+        q[0] = 0;
+        CTRLSetTranslation((Control*)q, lbl_3_rodata_2664, lbl_3_rodata_2664, lbl_3_rodata_2664);
+        CTRLSetRotation((Control*)q, lbl_3_rodata_2664, lbl_3_rodata_2664, lbl_3_rodata_2664);
+        q[0x92] = 0;
+        *(void**)(q + 0x8C) = NULL;
+        *(s16*)(q + 0x94) = 0;
+        *(s16*)(q + 0x96) = -1;
+    }
+    g->groupBounds = NULL;
+    fn_3_B97C8(fn_3_CD958);
 }
+#endif
 
 // .text:0x000CD958 size:0x10 mapped:0x8070C9EC
 extern u8 lbl_3_bss_A81C;

@@ -43,7 +43,7 @@ void fn_3_CC354(f32* p);
 void fn_3_CC438(void);
 void fn_3_CC5C4(u8* p);
 void fn_3_CC81C(void);
-void fn_3_CCC24(void);
+void fn_3_CCC24(void** files, u32* idx);
 void fn_3_CD958(void);
 u8 fn_3_CD968(Vec* v, f32 w, f32 h);
 void fn_3_CDB48(void* pv, u8* h);
