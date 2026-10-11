@@ -646,36 +646,33 @@ exit:
 s32 fn_800AF1A8(MovPlayer* mov) {
     u32 size;
     u16 type;
-    u16 format;
-    u32 count;
-    u8* end;
-    s32 result;
-    OSTime start;
+    u32 format;
 
     switch (lbl_803CC180) {
     case 0:
         if (mov->blockVideoDone == mov->blockVideoFrames && mov->blockAudioDone == mov->blockAudioFrames) {
             mov->frameBase += mov->blockVideoFrames;
             mov->blockIndex++;
-            if (mov->blockIndex >= mov->numBlocks) {
+            if (mov->blockIndex < mov->numBlocks) {
+                if (mov->state == MOV_STATE_STOP) {
+                    return 0;
+                }
+                if (MOV_AVAIL() < 0x14) {
+                    mov->frameBase -= mov->blockVideoFrames;
+                    mov->blockIndex--;
+                    return 2;
+                }
+                if (!fn_800AF9B4(&mov->_060, 0x14)) {
+                    return 2;
+                }
+                if (mov->state == MOV_STATE_STOP) {
+                    return 0;
+                }
+                mov->blockAudioDone = 0;
+                mov->blockVideoDone = 0;
+            } else {
                 return 3;
             }
-            if (mov->state == MOV_STATE_STOP) {
-                return 0;
-            }
-            if (MOV_AVAIL() < 0x14) {
-                mov->frameBase -= mov->blockVideoFrames;
-                mov->blockIndex--;
-                return 2;
-            }
-            if (!fn_800AF9B4(&mov->_060, 0x14)) {
-                return 2;
-            }
-            if (mov->state == MOV_STATE_STOP) {
-                return 0;
-            }
-            mov->blockAudioDone = 0;
-            mov->blockVideoDone = 0;
         }
         lbl_803CC180++;
     case 1:
@@ -697,54 +694,65 @@ s32 fn_800AF1A8(MovPlayer* mov) {
             return 1;
         }
         switch (type) {
-        case 1:
+        case 1: {
+            u32 count;
+
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
             if (!fn_800AF9B4(mov->videoBuf, 4)) {
                 return 2;
             }
+            count = *(u32*)mov->videoBuf;
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
-            count = *(u32*)mov->videoBuf;
             if (!fn_800AF9B4(mov->videoBuf, size - 4)) {
                 return 2;
             }
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
-            do {
-                start = OSGetTime();
+            for (;;) {
+                OSTime start = OSGetTime();
+
                 if (mov->state == MOV_STATE_STOP) {
                     return 0;
                 }
-                result = fn_800AF5FC(mov, format, count);
-            } while (result == 2);
-            switch (result) {
-            case 0:
-                if (mov->state == MOV_STATE_STOP) {
-                    return 0;
+                switch (fn_800AF5FC(mov, format, count)) {
+                case 2:
+                    continue;
+                case 0:
+                    if (mov->state == MOV_STATE_STOP) {
+                        return 0;
+                    }
+                    mov->decodeTime += OSTicksToMicroseconds(OSGetTime() - start);
+                    mov->decodedFrames++;
+                    break;
+                case 1:
+                    return 1;
+                case 3:
+                    break;
                 }
-                mov->decodeTime += OSTicksToMicroseconds(OSGetTime() - start);
-                mov->decodedFrames++;
                 break;
-            case 1:
-                return 1;
             }
             mov->blockVideoDone++;
             break;
-        case 0:
+        }
+        case 0: {
+            u32 count;
+            u8* end;
+
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
             if (!fn_800AF9B4(mov->audioBuf, 4)) {
                 return 2;
             }
+            count = *(u32*)mov->audioBuf;
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
-            count = *(u32*)mov->audioBuf;
             if (!fn_800AF9B4(mov->audioBuf, size - 4)) {
                 return 2;
             }
@@ -768,6 +776,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
             mov->audioWrite = end;
             mov->blockAudioDone++;
             break;
+        }
         default:
             return 2;
         }
