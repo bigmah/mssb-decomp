@@ -30,6 +30,24 @@ typedef struct Rep3310BallCfg {
     /*0x10*/ s32 squashFrames;
 } Rep3310BallCfg;
 
+// One bonus item in g_Minigame + 0x72C (7 entries).
+typedef struct Rep3310Item {
+    /*0x00*/ f32 pos[3];
+    /*0x0C*/ u8 _0C[0x18 - 0xC];
+    /*0x18*/ f32 spin;
+    /*0x1C*/ u8 _1C[0x24 - 0x1C];
+    /*0x24*/ s16 timer;
+    /*0x26*/ u8 _26[2];
+    /*0x28*/ u8 state; // 0: none, 4: picked up, 5: pickup animation playing
+    /*0x29*/ u8 kind;
+    /*0x2A*/ u8 _2A[2];
+} Rep3310Item; // size: 0x2C
+
+// View of g_Ball (InMemBallType in game/UnknownHomes_Game.h), only the fields used here.
+typedef struct Rep3310BallView {
+    /*0x00*/ Vec contactPos;
+} Rep3310BallView;
+
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h), only the fields used here.
 typedef struct Rep3310CharMgr {
     /*0x0000*/ u8 _0000[0x68];

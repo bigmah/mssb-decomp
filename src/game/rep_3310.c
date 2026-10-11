@@ -3,6 +3,7 @@
 #include "game/rep_1C0.h"
 #include "header_rep_data.h"
 #include "C3/geoPalette.h"
+#include "C3/anim.h"
 #include "Dolphin/GX.h"
 #include "static/Camera.h"
 
@@ -1224,9 +1225,122 @@ void fn_3_11A38C(s32 i, s16 h) {
 }
 
 // .text:0x0011A408 size:0x524 mapped:0x8075949C
+// NONMATCHING 94%: (measured with the rodata externs) register allocation and the j + kind*7 + 0xFC sum order
+#if NONMATCHING
+extern Rep3310BallView g_Ball;
+extern u8 lbl_3_data_22634[];
+extern s16 lbl_3_data_21654[];
+extern f32 lbl_3_data_21520[];
+extern void fn_3_151710(ActorObject* obj, Vec* pos); // TODO: rep_3880.h declares it with u32 args
+extern void fn_3_14C348(Rep3310Item* item, u8 caught); // TODO: rep_3880.h declares it with u32 args
+extern void fn_3_1666B0(Rep3310Item* item); // TODO: rep_3E58.h declares it (void)
+// Places the 7 bonus items (g_Minigame + 0x72C) and their shadows; state 4 plays the
+// pickup animation once, state 5 waits for it to end.
 void fn_3_11A408(void) {
-    return;
+    Rep3310Item* item;
+    Rep3310Sprite* e;
+    Rep3310Sprite* shadow;
+    ActorObject* obj;
+    GameActor* actor;
+    Vec pos;
+    s32 j;
+    s32 n;
+    u32 k;
+    u8 caught = 0;
+    u8 t;
+
+    lbl_8036E548.sprites[0xFB].visible = 0;
+    for (j = 0; j < 7; j++) {
+        item = (Rep3310Item*)(g_Minigame + 0x72C + j * 0x2C);
+        lbl_8036E548.sprites[0xE6 + j].visible = 0;
+        lbl_8036E548.sprites[0xED + j].visible = 0;
+        lbl_8036E548.sprites[0xF4 + j].visible = 0;
+        lbl_8036E548.sprites[0xFC + j].visible = 0;
+        lbl_8036E548.sprites[0x103 + j].visible = 0;
+        lbl_8036E548.sprites[0x10A + j].visible = 0;
+        if (item->state == 0) {
+            continue;
+        }
+        if (item->state == 4) {
+            n = j + (item->kind == 2) * 7 + 0xFC;
+            if (item->kind == 2) {
+                if (g_Minigame[0x1A89] == 1) {
+                    pos.x = item->pos[0];
+                    pos.y = g_Ball.contactPos.y;
+                    pos.z = item->pos[2];
+                    fn_3_11A38C(n, 3);
+                    fn_3_151710(&lbl_8036E548.objs->objects[n], &pos);
+                    fn_3_90064(0x2EB);
+                } else {
+                    fn_3_11A38C(n, item->kind);
+                    fn_3_90064(0x2EC);
+                }
+            } else if (item->kind == 0) {
+                fn_3_11A38C(n, item->kind);
+                fn_3_90064(0x2E2);
+            } else {
+                if (item->kind == 1) {
+                    caught = 1;
+                }
+                fn_3_90064(0x2FF);
+            }
+            fn_3_14C348(item, caught);
+            if (caught) {
+                item->state = 0;
+                continue;
+            }
+            item->state = 5;
+        } else if (item->state == 5) {
+            n = j + (item->kind == 2) * 7 + 0xFC;
+            t = (u32)fn_800B4A94(lbl_8036E548.objs->objects[n].actor);
+            if (t < lbl_3_data_22634[item->kind] / 2 && t % 2 == 0) {
+                actor = lbl_8036E548.objs->objects[n].actor;
+                for (k = 0; k < actor->totalBones; k++) {
+                    struct ANIMPipe* anim = actor->boneArray[k]->animPipe;
+                    if (anim != NULL) {
+                        anim->time += anim->speed;
+                    }
+                }
+                continue;
+            }
+        } else if (item->kind == 0) {
+            if (item->timer > lbl_3_data_21654[item->kind + 4] / 2) {
+                n = j + 0xED;
+            } else {
+                n = 0xFB;
+            }
+        } else if (item->kind == 1) {
+            n = j + 0xF4;
+        } else {
+            n = j + 0x10A;
+            fn_3_1666B0(item);
+        }
+
+        e = &lbl_8036E548.sprites[n];
+        e->visible = 1;
+        e->pos[0] = item->pos[0];
+        e->pos[1] = -item->pos[1];
+        e->pos[2] = item->pos[2];
+        e->rot[0] = 0.0f;
+        e->rot[1] = 0.0f;
+        e->rot[2] = 0.0f;
+        e->rot[0] = item->spin;
+        fn_8001D0D0(n, 1.75f);
+        if (-e->pos[1] <= lbl_3_data_21520[22] && item->state < 4) {
+            shadow = &lbl_8036E548.sprites[0xE6 + j];
+            shadow->visible = 1;
+            shadow->pos[0] = e->pos[0];
+            shadow->pos[1] = -e->pos[1];
+            shadow->pos[2] = e->pos[2];
+            shadow->pos[1] = -0.03f;
+            shadow->rot[0] = 0.0f;
+            shadow->rot[1] = 0.0f;
+            shadow->rot[2] = 0.0f;
+            fn_8001D0D0(0xE6 + j, 1.75f * (1.0f - -e->pos[1] / lbl_3_data_21520[22]));
+        }
+    }
 }
+#endif
 
 // .text:0x0011A92C size:0x200 mapped:0x807599C0
 #pragma dont_inline on
