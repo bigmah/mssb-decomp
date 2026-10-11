@@ -249,6 +249,44 @@ void fn_3_115108(void) {
 }
 #endif
 
+// fn_3_115540, size:0x1F8
+// Per-frame update while the ball is in play: phase logic and the coin physics.
+// NONMATCHING 91%: coin loop: g_Minigame base is materialised after the constant tables, walker regs shifted by one
+#if NONMATCHING
+void fn_3_115540(void) {
+    if (fn_3_108854() != 0) {
+        return;
+    }
+    if (WB->_1A7E != 0) {
+        fn_3_114A88(0);
+    } else if (WB->phase == 2) {
+        fn_3_1133C4();
+        fn_3_75560();
+        WallBall_ClearFlags();
+        fn_3_113A48();
+    }
+    if (WB->counting != 0) {
+        if (WB->frames < 0x7FFE) {
+            WB->frames++;
+        } else {
+            WB->frames = 0x7FFF;
+        }
+    }
+    fn_3_2EA24();
+    if (WB->phase == 0) {
+        fn_3_114384();
+        fn_3_1500C8();
+    } else if (WB->phase == 1) {
+        fn_3_114204();
+    } else if (WB->phase == 2) {
+        fn_3_113F14();
+        fn_3_113D20();
+    }
+    WallBall_UpdateCoins();
+    fn_3_115108();
+}
+#endif
+
 // fn_3_115738, size:0xF0
 void fn_3_115738(void) {
     switch (g_GameLogic[0x125]) {
