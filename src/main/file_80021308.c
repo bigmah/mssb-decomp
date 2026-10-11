@@ -420,7 +420,9 @@ void fn_8002254C(s32 unused, s32* hdr, s32 index) {
 
 // .text:0x80022634 size:0x16C
 void fn_80022634(void) {
-    return;
+    if (aramQueueUpdate() && lbl_803716B8.keepTask == 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 
 // .text:0x800227A0 size:0x44

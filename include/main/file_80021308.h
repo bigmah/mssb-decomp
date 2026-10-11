@@ -130,6 +130,7 @@ void* fn_80021BBC(s32 index, void* dst);
 void fn_80022620(DiskFileEntry* entry, void* dst, void* user);
 void fn_8002244C(s32 unused, s32* hdr, s32 arg);
 void fn_8002254C(s32 unused, s32* hdr, s32 index);
+void fn_80022634(void);
 s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
 
 #endif
