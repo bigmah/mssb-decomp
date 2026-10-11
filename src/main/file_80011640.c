@@ -438,7 +438,7 @@ void fn_800177B4(void) {
 }
 
 // .text:0x80017814 size:0x514
-void fn_80017814(void) {
+void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharLoadObj*)) {
     return;
 }
 
@@ -673,7 +673,7 @@ void fn_8001BA44(void) {
 }
 
 // .text:0x8001BE50 size:0x3E4
-void fn_8001BE50(void) {
+void fn_8001BE50(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
     return;
 }
 
