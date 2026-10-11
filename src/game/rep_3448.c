@@ -1,6 +1,7 @@
 #include "game/rep_3448.h"
 #include "header_rep_data.h"
 #include "game/auto_00_00106DFC_text.h"
+#include "game/auto_00_000D8A10_text.h"
 
 typedef struct {
     u8* p;
@@ -66,6 +67,32 @@ extern u8 lbl_3_data_23C84[];
 extern u8 lbl_3_data_240A4[];
 extern u8 lbl_3_data_24844[];
 extern u8 lbl_3_data_23E64[];
+extern u16 lbl_3_data_81DC[];
+extern MinigameSoundParams lbl_3_data_8404[];
+extern MinigameSoundParams lbl_3_data_84B8[];
+extern u16 lbl_3_data_81FC[];
+extern s32 sndFXCtrl(u32 vid, u8 ctrl, u8 value);
+extern u8 fn_8006C100(s16 value);
+
+static inline void playCrowdSound(s32 n) {
+    s32 stadium;
+    u8 vol;
+    u32 voice;
+
+    stadium = g_d_GameSettings[9];
+    if (g_d_GameSettings[7] == 6) {
+        vol = lbl_3_data_84B8[n].vol;
+    } else {
+        vol = lbl_3_data_8404[stadium * 15 + n].vol;
+    }
+    voice = sndFXStartEx(lbl_3_data_81DC[stadium] + n, vol, 0x3F, 0);
+    if (g_d_GameSettings[7] == 6) {
+        vol = lbl_3_data_84B8[n].ctrl;
+    } else {
+        vol = lbl_3_data_8404[stadium * 15 + n].ctrl;
+    }
+    sndFXCtrl(voice, 0x5B, vol);
+}
 extern u16 lbl_3_data_2145C[];
 extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
 extern RepFielder g_Fielders[];
@@ -2109,9 +2136,115 @@ void fn_3_126604(void) {
 }
 
 // .text:0x001274B4 size:0x6B4 mapped:0x80766548
+// NONMATCHING 74%: loop induction registers (orig keeps 4*i+k counters) and g_Minigame base CSE; playCrowdSound is the inlined crowd helper from auto_00_000D8A10_text
+#if NONMATCHING
 void fn_3_1274B4(void) {
-    return;
+    u8* d = lbl_3_data_226E0;
+    RepTask* q = REP_TASK;
+    RepRankEnt* e;
+    RepObj* o;
+    u16* tgt;
+    u32 i;
+    s16 v;
+    s16 w;
+    s16 lim;
+    u32 x;
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (g_GameLogic[0x11E] == 0x22) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, d + 0x448);
+        if (g_Minigame[0x1A3C] != 0) {
+            REP_OBJC(q, 1)->anim = 0xB1;
+        } else {
+            REP_OBJC(q, 1)->anim = *(u16*)(d + 0x1188 + g_Minigame[0x1A2A] * 2);
+        }
+        if (g_Minigame[0x1A3C] == 0 && g_Minigame[0x1A2A] != 0) {
+            REP_OBJC(q, 2)->mode = 1;
+        }
+        e = (RepRankEnt*)fn_3_109D88();
+        for (i = 0; i < 5; i++, e++) {
+            if (g_Minigame[0x1A3C] != 0) {
+                REP_OBJ(q, i + 5)->frame = 0x70000;
+            } else {
+                REP_OBJ(q, i + 5)->frame = *(u16*)(d + 0x1198 + g_Minigame[0x1A2A] * 2) << 16;
+            }
+            REP_OBJ(q, i + 0x14)->frame = e->chara << 16;
+            fn_800363D8(q, i + 0x32, 1, 0x12, i);
+            v = e->score;
+            if (g_Minigame[0x1A3C] != 0) {
+                if (v > 9999) {
+                    v = 9999;
+                }
+            } else {
+                lim = *(s16*)(lbl_80109410 + g_Minigame[0x1A2A] * 2);
+                if (v > lim) {
+                    v = lim;
+                }
+            }
+            fn_800363D8(q, i * 4 + 0x41, 1, 0x16, (v % 10000) / 1000);
+            fn_800363D8(q, i * 4 + 0x42, 1, 0x16, (v % 1000) / 100);
+            fn_800363D8(q, i * 4 + 0x43, 1, 0x16, (v % 100) / 10);
+            fn_800363D8(q, i * 4 + 0x44, 1, 0x16, v % 10);
+            if (g_Minigame[0x1A3C] != 0) {
+                REP_OBJ(q, i + 0x5F)->frame = fn_8006C100((s16)e->score) << 16;
+                REP_OBJ(q, i + 0x5A)->mode = 1;
+                REP_OBJ(q, i + 0x64)->mode = 1;
+            } else if (g_Minigame[0x1A2A] == 1) {
+                w = e->_4;
+                if (w > 999) {
+                    w = 999;
+                }
+                if (w >= 100) {
+                    fn_800363D8(q, i + 0x55, 5, 6, (w % 1000) / 100);
+                } else {
+                    fn_800363D8(q, i + 0x55, 5, 6, 10);
+                }
+                if (w >= 10) {
+                    fn_800363D8(q, i + 0x55, 4, 6, (w % 100) / 10);
+                } else {
+                    fn_800363D8(q, i + 0x55, 4, 6, 10);
+                }
+                fn_800363D8(q, i + 0x55, 3, 6, w % 10);
+                REP_OBJ(q, i + 0x55)->mode = 1;
+            }
+        }
+        q->state = 1;
+        break;
+    case 1:
+        tgt = (u16*)(d + 0x11A8);
+        for (i = 0; i < 5; i++, tgt++) {
+            if (i != g_Minigame[0x1E03]) {
+                o = REP_OBJ(q, i + 0xA);
+                x = o->frame >> 16;
+                if (x < 10) {
+                    o->mode = 1;
+                } else if (x > 10) {
+                    o->mode = 4;
+                } else {
+                    o->mode = 0;
+                }
+            }
+            if ((REP_OBJC(q, 4)->frame >> 16) == *tgt) {
+                if (g_Minigame[0x1A2A] != 0) {
+                    fn_3_90064(lbl_3_data_81FC[0x2F]);
+                } else {
+                    playCrowdSound(0x1D);
+                }
+            }
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x00127B68 size:0xED0 mapped:0x80766BFC
 void fn_3_127B68(void) {

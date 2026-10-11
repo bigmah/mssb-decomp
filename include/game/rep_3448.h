@@ -71,8 +71,17 @@ typedef struct RepRosterEnt {
     /*0x26*/ u8 _26[0xA0 - 0x26];
 } RepRosterEnt;
 
+// One minigame high-score entry (fn_3_109D88 returns 5 of them).
+typedef struct RepRankEnt {
+    /*0x0*/ s32 score;
+    /*0x4*/ s16 _4;
+    /*0x6*/ s16 chara;
+} RepRankEnt;
+
 #define REP_TASK ((RepTask*)lbl_803CC1B8)
 #define REP_OBJ(t, i) (*(RepObj**)((u8*)lbl_80371C30 + ((t)->baseIdx + (i)) * sizeof(RepSlot)))
+// Same slot, for a constant k (the original folds k into the load offset).
+#define REP_OBJC(t, k) ((((RepSlot*)lbl_80371C30) + (t)->baseIdx)[k].obj)
 
 void fn_3_11EC28(void);
 void fn_3_11F02C(void);
