@@ -490,8 +490,23 @@ void getAnimRelatedCoordinates(void) {
 }
 
 // .text:0x8001B918 size:0x78
-void QueueCharacterAnimation(void) {
-    return;
+void QueueCharacterAnimation(s32 index, s32 anim, s32 a, s32 b, s32 c, s32 d, s32 e) {
+    CharActor* actor = lbl_8036E548.active[index];
+
+    actor->anim[2] = anim;
+    actor->_06A[2] = c;
+    actor->_25F[2] = a;
+    actor->_262[2] = b;
+    actor->_265[2] = d;
+    actor->_26C[2] = 0;
+    if (e == -1) {
+        actor->_269[2] = 5;
+    } else {
+        actor->_269[2] = e;
+    }
+    if ((anim >= 0x3F && anim < 0x4B) || (anim >= 0x4B && anim < 0x69)) {
+        lbl_8036E548.active[index]->_26C[2] = 1;
+    }
 }
 
 // .text:0x8001B990 size:0xB4
