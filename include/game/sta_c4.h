@@ -3,6 +3,49 @@
 
 #include "mssbTypes.h"
 #include "main/file_800263FC.h"
+#include "main/file_80063028.h"
+#include "main/file_800BD8C4.h"
+
+// One 0xE8-byte entry of lbl_3_common_bss_350E4.objs (stadium object of this stadium).
+typedef struct StaObj {
+    /*0x00*/ GameControl ctrl;
+    /*0x44*/ u8 _44[0x74 - 0x44];
+    /*0x74*/ ActorObject* actorObj;
+    /*0x78*/ void* shadow; // passed to fn_3_B8464
+    /*0x7C*/ void (*update)(struct StaObj* o);
+    /*0x80*/ void (*onHit)(s32 idx, s32 b, u8* c);
+    /*0x84*/ u8 _84[0x90 - 0x84];
+    /*0x90*/ u8 visible : 1;
+    /*0x90*/ u8 hasShadow : 1;
+    /*0x90*/ u8 bit5 : 1;
+    /*0x90*/ u8 bits : 5;
+    /*0x91*/ u8 _91[0x9C - 0x91];
+    /*0x9C*/ f32 animTime;
+    /*0xA0*/ u8 id;
+    /*0xA1*/ u8 prevState;
+    /*0xA2*/ u8 state;
+    /*0xA3*/ u8 _A3[0xE8 - 0xA3];
+} StaObj; // size: 0xE8
+
+// Queue task (lbl_803CC1B8) that sets obj->bit5 after `timer` frames (fn_3_F92FC).
+typedef struct StaTimerTask {
+    /* 0x00 */ void (*func)(void);
+    /* 0x04 */ void* prev;
+    /* 0x08 */ void* next;
+    /* 0x0C */ void* parent;
+    /* 0x10 */ s16 timer;
+    /* 0x12 */ u16 priority;
+    /* 0x14 */ StaObj* obj;
+} StaTimerTask;
+
+// lbl_3_data_1BA98: where each object stands.
+typedef struct StaObjDef {
+    /*0x00*/ Vec pos;
+    /*0x0C*/ f32 rotY;
+    /*0x10*/ u8 _10[2];
+    /*0x12*/ u8 group;
+    /*0x13*/ u8 _13;
+} StaObjDef; // size: 0x14
 
 // Queue task (lbl_803CC1B8) that moves a knocked object along with the ball (fn_3_F934C).
 typedef struct StaBounceTask {
@@ -28,16 +71,16 @@ void fn_3_F8B34(void);
 void fn_3_F8BA8(u8* o);
 void fn_3_F8D00(void);
 void fn_3_F8E20(void);
-void fn_3_F9088(f32* pos, s32 idx);
-void fn_3_F9164(u8* o);
+void fn_3_F9088(Vec* pos, s32 idx);
+void fn_3_F9164(StaObj* o);
 void fn_3_F92FC(void);
 void fn_3_F934C(void);
 void fn_3_F963C(s32 idx, u8* v);
 void fn_3_F976C(s32 idx, s32 b, u8* c);
 void fn_3_F99F0(s32 idx);
 void fn_3_F9B9C(s32 idx, s32 b, u8* c);
-void fn_3_F9D94(u8* o);
-void fn_3_F9E78(void);
+void fn_3_F9D94(StaObj* o);
+void fn_3_F9E78(s32 idx, s32 b, u8* c);
 void fn_3_FA3C0(void);
 void fn_3_FA58C(void);
 void fn_3_FB3D8(void);

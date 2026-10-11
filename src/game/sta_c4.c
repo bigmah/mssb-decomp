@@ -1,28 +1,26 @@
 #include "game/sta_c4.h"
 #include "header_rep_data.h"
 #include "main/file_800263FC.h"
+#include "main/file_80011640.h"
+#include "C3/anim.h"
+#include "main/file_8004207C.h"
+#include "game/rep_23E8.h"
+#include "main/file_800B4A44.h"
 #pragma dont_inline on
 extern void* lbl_803CC1B8;
 extern void fn_800B0A14_removeQueue(void*);
 
+// TODO type: defined as (s16* sx, s16* sy, f32 x, f32 y, f32 z) in main/file_800527C4.h (same ABI);
+// the original callers evaluate the floats first, as do sta_c2 and rep_1FD8.
+extern void fn_800528C0(f32 x, f32 y, f32 z, s16* sx, s16* sy);
 #include "Dolphin/GX/GXBump.h"
 #include "Dolphin/GX/GXTexture.h"
-extern GXTexObj lbl_3_bss_B640;
 extern void fn_3_B9510(s32);
 #include "Dolphin/GX/GXPixel.h"
 
-extern u8 lbl_3_bss_B5D4;
-extern u8 g_GameLogic[];
 extern u8 g_d_GameSettings[];
 extern u8 lbl_3_data_81DC[];
-extern s32 lbl_3_bss_B574[];
-extern u8 lbl_3_bss_B664;
-extern u8 lbl_3_bss_B630[];
 extern const f32 lbl_3_rodata_3064;
-extern void AnimateActorBones(void*);
-extern u8* lbl_3_bss_B628[];
-extern u8 lbl_80371C30[];
-extern void fn_800528C0(f32, f32, f32, s16*, s16*);
 extern void fn_3_8B890(s32);
 extern void fn_3_8BA60(s32, s32, s32);
 extern s32 fn_3_8BBC4(s32, s32, s32, s32);
@@ -41,13 +39,12 @@ extern const f32 lbl_3_rodata_3028;
 extern const f32 lbl_3_rodata_302C;
 extern const char lbl_3_rodata_3030[];
 extern const char lbl_3_rodata_303C[];
-extern u8* lbl_3_bss_B63C;
 extern void* fn_3_B9534(u32, u32, void*);
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void OSPanic(const char*, int, const char*, ...);
 extern int rand(void);
 typedef struct {
-    u8* p0;
+    StaObj* objs;
     u8 pad4[0x2C];
     s32 n;
     u8 pad34[8];
@@ -62,38 +59,37 @@ typedef struct {
     u8 b6B;
 } StaCommon;
 extern StaCommon lbl_3_common_bss_350E4;
-extern u8 g_Ball[];
 extern f64 cos(f64);
 extern f64 sin(f64);
-extern TexArchive* lbl_3_bss_B660;
 extern const f32 lbl_3_rodata_2FC4;
 extern const f64 lbl_3_rodata_3008;
 extern const f32 lbl_3_rodata_3010;
 extern const f32 lbl_3_rodata_3014;
 extern const f32 lbl_3_rodata_3018;
 extern const f64 lbl_3_rodata_3020;
-extern u8 lbl_3_bss_B570[];
 extern u32 sndFXStartEx(int, u8, u8, u8);
 extern void sndFXCtrl(int, int, u8);
 extern u8 lbl_3_data_8404[];
 extern u8 lbl_3_data_84B8[];
-extern u8 lbl_3_bss_B620[];
-typedef struct { f32 x, y, z; } V3;
-extern V3 lbl_3_bss_B5D8[6];
-extern u8 lbl_8036E548[];
-extern u32 lbl_3_data_1BA88[];
+// This unit's .bss, declared in reverse address order (CW lays statics out last-declared-first).
+static u8 lbl_3_bss_B664[0x14];
+static TexArchive* lbl_3_bss_B660;
+static GXTexObj lbl_3_bss_B640;
+static u8* lbl_3_bss_B63C;
+static u8 lbl_3_bss_B630[0xC];
+static u16 lbl_3_bss_B62C;
+static SpaniGroup* lbl_3_bss_B628[1];
+static u8 lbl_3_bss_B620[8];
+static Vec lbl_3_bss_B5D8[6];
+static u8 lbl_3_bss_B5D4;
+static s32 lbl_3_bss_B574[0x18];
+static u8 lbl_3_bss_B570;
+extern void (*lbl_3_data_1BA88[])(s32, s32, u8*);
 extern void fn_3_F92FC(void);
 extern const f32 lbl_3_rodata_3060;
 extern const f32 lbl_3_rodata_3050;
 extern const f64 lbl_3_rodata_3058;
-extern u16 lbl_3_bss_B62C;
 extern f64 __fabs(f64);
-typedef struct {
-    Vec pos;
-    u8 pad0C[6];
-    u8 group; // 0x12
-    u8 pad13;
-} StaObjDef; // size 0x14
 extern StaObjDef lbl_3_data_1BA98[];
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 extern void* memcpy(void*, const void*, u32);
@@ -107,14 +103,14 @@ void fn_3_F8444(void) {
 
 // .text:0x000F8454 size:0xD0
 void fn_3_F8454(void) {
-    if (g_GameLogic[0x11E] == 0xB) {
-        if (lbl_3_bss_B664 == 0) {
+    if (g_GameLogic.gameStatus == 0xB) {
+        if (lbl_3_bss_B664[0] == 0) {
             fn_3_8B890(lbl_3_bss_B574[0]);
-            lbl_3_bss_B664 = 1;
+            lbl_3_bss_B664[0] = 1;
         }
-    } else if (lbl_3_bss_B664 != 0) {
+    } else if (lbl_3_bss_B664[0] != 0) {
         lbl_3_bss_B574[0] = fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 3, 0, 0, 2);
-        lbl_3_bss_B664 = 0;
+        lbl_3_bss_B664[0] = 0;
     } else {
         fn_3_8BA60(lbl_3_bss_B574[0], 0, 0);
     }
@@ -144,7 +140,7 @@ void fn_3_F8524(Particle* p) {
 #pragma dont_inline off
 s32 fn_3_F85B0(Emitter* e) {
     Particle* p = e->particles;
-    if (g_GameLogic[0x11E] >= 0x1B && g_GameLogic[0x11E] <= 0x21) {
+    if (g_GameLogic.gameStatus >= 0x1B && g_GameLogic.gameStatus <= 0x21) {
         return 0;
     }
     fn_80033620(e);
@@ -309,79 +305,71 @@ void fn_3_F8D00(void) {
 }
 
 // .text:0x000F8E20 size:0x268 mapped:0x80737EB4
+#pragma dont_inline off
 void fn_3_F8E20(void) {
-    s16 spE;
-    s16 spC;
-    s16 spA;
-    s16 sp8;
-    u8* b = lbl_3_bss_B570;
-    u8* sp = b + 0xB0;
-    f32* p = (f32*)(b + 0x68);
-    u8* st = lbl_803CC1B8;
+    u8* state = lbl_3_bss_B620;
+    Vec* pos = lbl_3_bss_B5D8;
+    SpaniGroup* st = lbl_803CC1B8;
     s32 i;
-    for (i = 0; i < 6; i++, sp++, p += 3) {
-        switch (*sp) {
+    for (i = 0; i < 6; i++, state++, pos++) {
+        switch (*state) {
             case 1:
-                fn_800528C0(p[0], p[1], p[2], &spC, &spE);
-                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x48) = spC;
-                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x4C) = spE;
-                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x50) = 0.0f;
-                *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(st + 0x14) + i) * 8) + 0x5C) = 0;
-                *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(st + 0x14) + i) * 8) + 0x54) |= 2;
-                *sp = 2;
+                fn_3_F9088(pos, i);
+                lbl_80371C30[st->baseIdx + i].obj->_5C = 0;
+                lbl_80371C30[st->baseIdx + i].obj->flags |= 2;
+                *state = 2;
                 break;
             case 2: {
-                u8* o;
-                fn_800528C0(p[0], p[1], p[2], &sp8, &spA);
-                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x48) = sp8;
-                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x4C) = spA;
-                *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(*(u8**)(b + 0xB8) + 0x14) + i) * 8) + 0x50) = 0.0f;
-                o = *(u8**)(lbl_80371C30 + (*(u16*)(st + 0x14) + i) * 8);
-                if ((u32)__cntlzw(2 - o[0x69]) >> 5) {
-                    *(u32*)(o + 0x54) &= ~2;
-                    *sp = 0;
+                LayoutObj* o;
+                fn_3_F9088(pos, i);
+                o = lbl_80371C30[st->baseIdx + i].obj;
+                if ((u32)__cntlzw(2 - o->_69) >> 5) {
+                    o->flags &= ~2;
+                    *state = 0;
                 }
                 break;
             }
         }
     }
-    if (b[0x64] != 0) {
+    if (lbl_3_bss_B5D4 != 0) {
         ((void (*)(void))fn_800B0A14_removeQueue)();
-        fn_80034CEC(*(void**)(b + 0xB8));
-        b[0x64] = 0;
+        fn_80034CEC(lbl_3_bss_B628[0]);
+        lbl_3_bss_B5D4 = 0;
     }
 }
 
 // .text:0x000F9088 size:0xDC mapped:0x8073811C
-void fn_3_F9088(f32* pos, s32 idx) {
+#pragma dont_inline off
+void fn_3_F9088(Vec* pos, s32 idx) {
     s16 x;
     s16 y;
-    fn_800528C0(pos[0], pos[1], pos[2], &x, &y);
-    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_B628[0] + 0x14) + idx) * 8) + 0x48) = x;
-    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_B628[0] + 0x14) + idx) * 8) + 0x4C) = y;
-    *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(lbl_3_bss_B628[0] + 0x14) + idx) * 8) + 0x50) = 0.0f;
+    fn_800528C0(pos->x, pos->y, pos->z, &x, &y);
+    lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->x = x;
+    lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->y = y;
+    lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->z = 0.0f;
 }
+#pragma dont_inline on
 
 // .text:0x000F9164 size:0x198 mapped:0x807381F8
-void fn_3_F9164(u8* o) {
+void fn_3_F9164(StaObj* o) {
     s32 stad;
     s32 slot;
     s32 snd;
     u32 h;
     u8 v;
-    V3* d;
-    switch (o[0xA2]) {
+    Vec* d;
+    switch (o->state) {
         case 0:
             snd = 2;
-            slot = g_Ball[0x1BE5];
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy;
             break;
         case 1:
             snd = 1;
-            slot = g_Ball[0x1BE5] + 2;
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 2;
             break;
         case 2:
             snd = 0;
-            slot = g_Ball[0x1BE5] + 4;
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 4;
             break;
     }
     stad = g_d_GameSettings[9];
@@ -398,19 +386,17 @@ void fn_3_F9164(u8* o) {
     }
     sndFXCtrl(h, 0x5B, v);
     lbl_3_bss_B620[slot] = 1;
-    lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
-    lbl_3_bss_B5D8[slot].y = -*(f32*)(g_Ball + 4);
-    lbl_3_bss_B5D8[slot].z = *(f32*)(g_Ball + 8);
+    lbl_3_bss_B5D8[slot].x = g_Ball.AtBat_Contact_BallPos.x;
+    lbl_3_bss_B5D8[slot].y = -g_Ball.AtBat_Contact_BallPos.y;
+    lbl_3_bss_B5D8[slot].z = g_Ball.AtBat_Contact_BallPos.z;
 }
 
 // .text:0x000F92FC size:0x50 mapped:0x80738390
 void fn_3_F92FC(void) {
-    typedef struct { u8 pad[0x90]; u8 a : 2; u8 f : 1; u8 b : 5; } FlagObj;
-    typedef struct { u8 pad[0x10]; s16 cnt; FlagObj* obj; } StateObj;
-    StateObj* st = (StateObj*)lbl_803CC1B8;
-    if (st->cnt-- == 0) {
-        FlagObj* o = st->obj;
-        o->f = 1;
+    StaTimerTask* st = (StaTimerTask*)lbl_803CC1B8;
+    if (st->timer-- == 0) {
+        StaObj* o = st->obj;
+        o->bit5 = 1;
         fn_800B0A14_removeQueue(o);
     }
 }
@@ -454,35 +440,35 @@ void fn_3_F934C(void) {
         PSVECNormalize(vel, &tmp);
         PSVECScale(&tmp, speed, vel);
     }
-    CTRLSetTranslation((Control*)(lbl_3_common_bss_350E4.p0 + task->idx * 0xE8), task->vel.x + lbl_3_data_1BA98[task->idx].pos.x,
+    CTRLSetTranslation(&lbl_3_common_bss_350E4.objs[task->idx].ctrl.base, task->vel.x + lbl_3_data_1BA98[task->idx].pos.x,
                        task->vel.y + lbl_3_data_1BA98[task->idx].pos.y, task->vel.z + lbl_3_data_1BA98[task->idx].pos.z);
     k = task->idx + (lbl_3_bss_B62C + 9);
-    CTRLGetTranslation((Control*)(lbl_3_common_bss_350E4.p0 + k * 0xE8), &tmp.x, &tmp.y, &tmp.z);
-    CTRLSetTranslation((Control*)(lbl_3_common_bss_350E4.p0 + k * 0xE8), task->vel.x + lbl_3_data_1BA98[task->idx].pos.x, tmp.y,
+    CTRLGetTranslation(&lbl_3_common_bss_350E4.objs[k].ctrl.base, &tmp.x, &tmp.y, &tmp.z);
+    CTRLSetTranslation(&lbl_3_common_bss_350E4.objs[k].ctrl.base, task->vel.x + lbl_3_data_1BA98[task->idx].pos.x, tmp.y,
                        task->vel.z + lbl_3_data_1BA98[task->idx].pos.z);
 }
 #endif
 
 #pragma dont_inline off
-static inline void F9164_inl(u8* o) {
+static inline void F9164_inl(StaObj* o) {
     s32 stad;
     s32 slot;
     s32 snd;
     u32 h;
     u8 v;
-    V3* d;
-    switch (o[0xA2]) {
+    Vec* d;
+    switch (o->state) {
         case 0:
             snd = 2;
-            slot = g_Ball[0x1BE5];
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy;
             break;
         case 1:
             snd = 1;
-            slot = g_Ball[0x1BE5] + 2;
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 2;
             break;
         case 2:
             snd = 0;
-            slot = g_Ball[0x1BE5] + 4;
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 4;
             break;
     }
     stad = g_d_GameSettings[9];
@@ -499,36 +485,35 @@ static inline void F9164_inl(u8* o) {
     }
     sndFXCtrl(h, 0x5B, v);
     lbl_3_bss_B620[slot] = 1;
-    lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
-    lbl_3_bss_B5D8[slot].y = -*(f32*)(g_Ball + 4);
-    lbl_3_bss_B5D8[slot].z = *(f32*)(g_Ball + 8);
+    lbl_3_bss_B5D8[slot].x = g_Ball.AtBat_Contact_BallPos.x;
+    lbl_3_bss_B5D8[slot].y = -g_Ball.AtBat_Contact_BallPos.y;
+    lbl_3_bss_B5D8[slot].z = g_Ball.AtBat_Contact_BallPos.z;
 }
 #pragma dont_inline on
 
 // .text:0x000F963C size:0x130 mapped:0x807386D0
 #pragma dont_inline off
 void fn_3_F963C(s32 idx, u8* v) {
-    typedef struct { u8 pad[0x90]; u8 a : 1; u8 f : 1; u8 b : 6; } FlagObj;
-    u8* p;
+    StaBounceTask* p;
     lbl_3_common_bss_350E4.b6B = 1;
-    p = fn_800B0A5C_insertQueue(fn_3_F934C, (u16)(*(u16*)((u8*)lbl_803CC1B8 + 0x12) + 1));
-    memcpy(&lbl_3_common_bss_350E4.pos, g_Ball, 0xC);
-    memcpy(&lbl_3_common_bss_350E4.vel, g_Ball + 0x318, 0xC);
+    p = fn_800B0A5C_insertQueue(fn_3_F934C, (u16)(((StaBounceTask*)lbl_803CC1B8)->priority + 1));
+    memcpy(&lbl_3_common_bss_350E4.pos, &g_Ball.AtBat_Contact_BallPos, 0xC);
+    memcpy(&lbl_3_common_bss_350E4.vel, &g_Ball.physicsSubstruct.velocity, 0xC);
     lbl_3_common_bss_350E4.pos.y = -lbl_3_common_bss_350E4.pos.y;
     lbl_3_common_bss_350E4.vel.y = -lbl_3_common_bss_350E4.vel.y;
     if (v != NULL) {
-        PSVECScale((Vec*)(v + 0xC), lbl_3_rodata_3060, (Vec*)(p + 0x14));
+        PSVECScale((Vec*)(v + 0xC), lbl_3_rodata_3060, &p->normal); // TODO type
     }
-    memset(p + 0x20, 0, 0xC);
-    *(s32*)(p + 0x2C) = idx;
-    p[0x30] = 0;
-    ((FlagObj*)(lbl_3_common_bss_350E4.p0 + *(s32*)(p + 0x2C) * 0xE8))->f = 0;
+    memset(&p->vel, 0, 0xC);
+    p->idx = idx;
+    p->bounced = 0;
+    lbl_3_common_bss_350E4.objs[p->idx].hasShadow = 0;
 }
 #pragma dont_inline on
 
 // .text:0x000F976C size:0x284 mapped:0x80738800
 void fn_3_F976C(s32 idx, s32 b, u8* c) {
-    F9164_inl(lbl_3_common_bss_350E4.p0 + idx * 0xE8);
+    F9164_inl(&lbl_3_common_bss_350E4.objs[idx]);
     fn_3_F963C(idx, c);
 }
 
@@ -540,19 +525,20 @@ void fn_3_F99F0(s32 idx) {
     s32 stad;
     u32 h;
     u8 v;
-    V3* d;
-    switch (*(u8*)((u32)lbl_3_common_bss_350E4.p0 + idx * 0xE8 + 0xA2)) {
+    Vec* d;
+    // objs[idx].state, written as a byte offset for the original addressing (0xA2 == offsetof(StaObj, state))
+    switch (((u8*)lbl_3_common_bss_350E4.objs)[idx * sizeof(StaObj) + 0xA2]) {
         case 0:
             snd = 2;
-            slot = g_Ball[0x1BE5];
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy;
             break;
         case 1:
             snd = 1;
-            slot = g_Ball[0x1BE5] + 2;
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 2;
             break;
         case 2:
             snd = 0;
-            slot = g_Ball[0x1BE5] + 4;
+            slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy + 4;
             break;
     }
     stad = g_d_GameSettings[9];
@@ -569,9 +555,9 @@ void fn_3_F99F0(s32 idx) {
     }
     sndFXCtrl(h, 0x5B, v);
     lbl_3_bss_B620[slot] = 1;
-    lbl_3_bss_B5D8[slot].x = *(f32*)(g_Ball + 0);
-    lbl_3_bss_B5D8[slot].y = -*(f32*)(g_Ball + 4);
-    lbl_3_bss_B5D8[slot].z = *(f32*)(g_Ball + 8);
+    lbl_3_bss_B5D8[slot].x = g_Ball.AtBat_Contact_BallPos.x;
+    lbl_3_bss_B5D8[slot].y = -g_Ball.AtBat_Contact_BallPos.y;
+    lbl_3_bss_B5D8[slot].z = g_Ball.AtBat_Contact_BallPos.z;
 }
 
 #pragma dont_inline on
@@ -579,60 +565,125 @@ void fn_3_F99F0(s32 idx) {
 // .text:0x000F9B9C size:0x1F8 mapped:0x80738C30
 // partial: F963C inlined OK; only prologue reg order (lis r6/addi r7 base vs ours r3/r6) differs
 void fn_3_F9B9C(s32 idx, s32 b, u8* c) {
-    typedef struct { u8 pad[0x90]; u8 a : 1; u8 f : 1; u8 g : 1; u8 h : 5; } FlagObj;
-    u8* o = lbl_3_common_bss_350E4.p0 + idx * 0xE8;
-    u8* q;
+    StaObj* o = &lbl_3_common_bss_350E4.objs[idx];
+    StaTimerTask* q;
     u32 t;
-    o[0xA1] = o[0xA2];
-    if (o[0xA1] == 0) {
-        fn_3_F9E78();
+    o->prevState = o->state;
+    if (o->prevState == 0) {
+        fn_3_F9E78(idx, b, c);
         return;
     }
-    if (o[0xA1] == 2) {
+    if (o->prevState == 2) {
         fn_3_F963C(idx, c);
     }
-    *(u32*)(o + 0x74) = *(u32*)(lbl_8036E548 + 0x6C) + o[0xA2] * 0x90 + 0x34;
-    *(u32*)(o + 0x80) = lbl_3_data_1BA88[o[0xA2]];
+    o->actorObj = &lbl_8036E548.slots6C->objects[o->state];
+    o->onHit = lbl_3_data_1BA88[o->state];
     t = 0;
-    if (((FlagObj*)o)->a && *(u32*)(o + 0x78) != 0) {
+    if (o->visible && o->shadow != NULL) {
         t = 1;
     }
-    ((FlagObj*)o)->f = t;
-    (*(void (**)(s32, s32, u8*))(o + 0x80))(idx, b, c);
-    ((FlagObj*)o)->g = 0;
+    o->hasShadow = t;
+    o->onHit(idx, b, c);
+    o->bit5 = 0;
     q = fn_800B0A5C_insertQueue(fn_3_F92FC, 0);
-    *(s16*)(q + 0x10) = 0x5A;
-    *(u8**)(q + 0x14) = o;
+    q->timer = 0x5A;
+    q->obj = o;
 }
 
 // .text:0x000F9D94 size:0xE4 mapped:0x80738E28
-void fn_3_F9D94(u8* o) {
-    typedef struct { u8 pad[0x90]; u8 a : 1; u8 b : 1; u8 c : 6; } FlagObj90;
-    u8** anim = *(u8***)(o + 0x74);
+void fn_3_F9D94(StaObj* o) {
+    ActorObject* anim = o->actorObj;
     s32 i;
-    if (*(f32*)(o + 0x9C) >= *(f32*)(*(u8**)(*(u8**)(anim[1] + 4) + 4) + *(u16*)((u8*)anim + 0xE) * 0x10)) {
-        ((FlagObj90*)o)->a = 0;
-        *(u32*)(o + 0x74) = 0;
-        *(u32*)(o + 0x78) = 0;
-        *(u32*)(o + 0x7C) = 0;
-        *(u32*)(o + 0x80) = 0;
-        ((FlagObj90*)o)->b = 0;
+    if (o->animTime >= ((ANIMBank*)anim->animBank)->animSequences->trackArray[anim->seqNum].animTime) {
+        o->visible = 0;
+        o->actorObj = NULL;
+        o->shadow = NULL;
+        o->update = NULL;
+        o->onHit = NULL;
+        o->hasShadow = 0;
         for (i = 0; i < 9; i++) {
-            if (lbl_3_bss_B630[i] == o[0xA0]) {
+            if (lbl_3_bss_B630[i] == o->id) {
                 lbl_3_bss_B630[i] = 0xFF;
                 break;
             }
         }
     } else {
-        AnimateActorBones(anim[0]);
-        *(f32*)(o + 0x9C) = *(f32*)(o + 0x9C) + lbl_3_rodata_3064;
+        AnimateActorBones(anim->actor);
+        o->animTime = o->animTime + lbl_3_rodata_3064;
     }
 }
 
 // .text:0x000F9E78 size:0x548 mapped:0x80738F0C
-void fn_3_F9E78(void) {
-    return;
+#pragma dont_inline off
+void fn_3_F9E78(s32 idx, s32 b, u8* c) {
+    StaObj* o = &lbl_3_common_bss_350E4.objs[idx];
+    StaTimerTask* q;
+    u32 t;
+    s32 i;
+    F9164_inl(o);
+    if (o->state == 0) {
+        for (i = 0; i < 9; i++) {
+            if (lbl_3_bss_B630[i] == 0xFF) {
+                StaObj* d = &lbl_3_common_bss_350E4.objs[lbl_3_bss_B62C + i];
+                ActorObject* a;
+                d->actorObj = &lbl_8036E548.slots6C->objects[i + 5];
+                d->shadow = NULL;
+                d->update = fn_3_F9D94;
+                d->onHit = NULL;
+                d->hasShadow = 0;
+                d->visible = 1;
+                d->actorObj->visFlags = 2;
+                a = d->actorObj;
+                a->time = lbl_3_rodata_302C;
+                a->setTime = 1;
+                a = d->actorObj;
+                a->unk54 = lbl_3_rodata_3064;
+                a->setSpeed = 1;
+                d->actorObj->boneRemap = NULL;
+                a = d->actorObj;
+                ACTSetAnimation(a->actor, a->animBank, NULL, a->seqNum, lbl_3_rodata_302C, a->speed);
+                fn_800B4CA0(a->actor, a->time);
+                fn_800B4C04(a->actor, a->unk54);
+                fn_800B4AFC(a->actor, a->visFlags & 1);
+                d->animTime = lbl_3_rodata_302C;
+                d->ctrl.base.type = 0;
+                CTRLSetTranslation(&d->ctrl.base, lbl_3_data_1BA98[idx].pos.x, lbl_3_data_1BA98[idx].pos.y, lbl_3_data_1BA98[idx].pos.z);
+                CTRLSetRotation(&d->ctrl.base, 0.0f, lbl_3_data_1BA98[idx].rotY, 0.0f);
+                lbl_3_bss_B630[i] = d->id;
+                break;
+            }
+        }
+        o = &lbl_3_common_bss_350E4.objs[idx];
+        o->actorObj = NULL;
+        o->shadow = NULL;
+        o->update = NULL;
+        o->onHit = NULL;
+        o->visible = 0;
+        o->hasShadow = 0;
+        if (lbl_800E8754._04 != 0) {
+            Vec v;
+            CTRLGetTranslation(&o->ctrl.base, &v.x, &v.y, &v.z);
+            fn_3_CB7E8(v.x, v.y, v.z);
+        }
+        lbl_3_common_bss_350E4.objs[lbl_3_bss_B62C + 9 + idx].visible = 0;
+        return;
+    }
+    if (o->state == 2) {
+        fn_3_F963C(idx, c);
+    }
+    o->actorObj = &lbl_8036E548.slots6C->objects[o->state];
+    o->onHit = lbl_3_data_1BA88[o->state];
+    t = 0;
+    if (o->visible && o->shadow != NULL) {
+        t = 1;
+    }
+    o->hasShadow = t;
+    o->bit5 = 0;
+    q = fn_800B0A5C_insertQueue(fn_3_F92FC, 0);
+    q->timer = 0x5A;
+    q->obj = o;
 }
+#pragma dont_inline on
 
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
 // 97.6%: idx assigned directly (no j temp). Remaining: saved-reg ranking (orig: offC<cnt<j<i<off18<off2<off4; ours: i<cnt<j<off18<offC) and the orig IV zero-inits are `mr` copies of i (ours li). Explicit offset vars + decl order fix regs but give li inits.
@@ -648,6 +699,7 @@ void fn_3_FA3C0(void) {
     s32 i;
     s32 size;
     s32 idx;
+    StaObj* o;
     size = (lbl_3_common_bss_350E4.n << 2) + (lbl_3_common_bss_350E4.n << 1) + (lbl_3_common_bss_350E4.n << 2) + lbl_3_common_bss_350E4.n * 0x18;
     if (lbl_3_common_bss_350E4.a48 == NULL) {
         lbl_3_common_bss_350E4.a48 = _OSAllocFromHeap(4, size);
@@ -662,13 +714,13 @@ void fn_3_FA3C0(void) {
         lbl_3_common_bss_350E4.a40[cnt] = idx;
         fn_3_B8574();
         for (j = 0; j < lbl_3_common_bss_350E4.n; j++) {
-            if (i == lbl_3_data_1BA98[j].group && (lbl_3_common_bss_350E4.p0[j * 0xE8 + 0x90] >> 6 & 1)) {
+            if (i == lbl_3_data_1BA98[j].group && lbl_3_common_bss_350E4.objs[j].hasShadow) {
                 lbl_3_common_bss_350E4.a44[idx] = j;
                 idx++;
                 lbl_3_common_bss_350E4.a3C[cnt]++;
-                size = (s32)(lbl_3_common_bss_350E4.p0 + j * 0xE8);
-                CTRLBuildMatrix((Control*)size, m);
-                fn_3_B8464(m, *(void**)(size + 0x78));
+                o = &lbl_3_common_bss_350E4.objs[j];
+                CTRLBuildMatrix(&o->ctrl.base, m);
+                fn_3_B8464(m, o->shadow);
             }
         }
         if (lbl_3_common_bss_350E4.a3C[cnt] != 0) {
