@@ -151,7 +151,8 @@ typedef struct MenuWork {
     /*0xCF89*/ s8 scoutGot[9];
     /*0xCF92*/ u8 _CF92;
     /*0xCF93*/ u8 missionShown;
-    /*0xCF94*/ u8 _CF94[2];
+    /*0xCF94*/ u8 menuDone;
+    /*0xCF95*/ s8 prevCharSel;
     /*0xCF96*/ s8 charSel;
     /*0xCF97*/ s8 prevMission;
     /*0xCF98*/ s8 mission;

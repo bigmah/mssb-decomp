@@ -55,6 +55,7 @@ extern s16 lbl_8010B3E8[];
 extern s32 determineIfMissionDescriptionIsShown(s16 charID);
 extern s32 challengeRelated(s16 team);
 extern s32 fn_80064918(s16 charID);
+extern void challengeDrawStarsOnMissionMenu(void);
 
 extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
 extern void fn_8006CF6C(void);
@@ -643,9 +644,101 @@ void someChallengeStarFunction2(SceneTask* task) {
 #endif
 
 // .text:0x800576F0 size:0x518
+// NONMATCHING 97%: register swaps; text release written as three calls (original is a 3-iteration loop)
+#if NONMATCHING
 void challengeCheckStarsMenuLoading(void) {
-    return;
+    SceneTask* task = lbl_803CC1B8;
+    BOOL done;
+
+    switch (lbl_803297E0._CF92) {
+    case 1:
+        if (lbl_803297E0.missionShown == 0) {
+            TASK_OBJ(task, 1)->_68 = 1;
+            TASK_OBJ(task, 30)->_68 = 1;
+            TASK_OBJ(task, 3)->_68 = 1;
+            challengeDrawStarsOnMissionMenu();
+            drawStarProgressionMenu(task);
+            if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.mission) != 0) {
+                TASK_OBJ(task, 35)->flags |= 2;
+                TASK_OBJ(task, 35)->_5C = 0;
+                TASK_OBJ(task, 35)->_68 = 1;
+                TASK_OBJ(task, 69)->_5C = 1 << 16;
+            }
+            lbl_803297E0.missionShown = 1;
+        }
+        if (lbl_803297E0.missionShown != 0 && ObjAtFrame(task, 1, 10) == 1) {
+            lbl_803297E0.missionShown = 0;
+            lbl_803297E0._CF92 = 0;
+        }
+        break;
+    case 2:
+        if (lbl_803297E0.missionShown == 0) {
+            TASK_OBJ(task, 1)->_68 = 4;
+            TASK_OBJ(task, 30)->_68 = 4;
+            lbl_803297E0.missionShown = 1;
+        }
+        if (lbl_803297E0.missionShown != 0) {
+            done = fn_80042DA8(task, 1, 0) != 0;
+            if (done + (fn_80042DA8(task, 30, 0) != 0) == 2) {
+                lbl_803297E0.menuDone = 1;
+                lbl_803297E0.missionShown = 0;
+                lbl_803297E0._CF92 = 0;
+                fn_8000FEE8(lbl_803297E0.nameText);
+                fn_8000FEE8(lbl_803297E0.descText);
+                fn_8000FEE8(lbl_803297E0.missionText);
+                fn_8000F8F4((LayoutGroup*)task);
+            }
+        }
+        break;
+    case 3:
+        if (lbl_803297E0.missionShown == 0) {
+            TASK_OBJ(task, lbl_803297E0.charSel + 3)->_5C = 0;
+            TASK_OBJ(task, lbl_803297E0.charSel + 3)->_68 = 1;
+            TASK_OBJ(task, lbl_803297E0.prevCharSel + 3)->_5C = 10 << 16;
+            TASK_OBJ(task, lbl_803297E0.prevCharSel + 3)->_68 = 4;
+            drawStarProgressionMenu(task);
+            if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.mission) != 0) {
+                TASK_OBJ(task, 35)->flags |= 2;
+                TASK_OBJ(task, 35)->_5C = 0;
+                TASK_OBJ(task, 35)->_68 = 1;
+                TASK_OBJ(task, 69)->_5C = 1 << 16;
+            } else {
+                TASK_OBJ(task, 35)->flags &= ~2;
+                TASK_OBJ(task, 69)->_5C = 0;
+            }
+            lbl_803297E0.missionShown = 1;
+        }
+        if (lbl_803297E0.missionShown != 0) {
+            lbl_803297E0.missionShown = 0;
+            lbl_803297E0._CF92 = 0;
+        }
+        break;
+    case 4:
+        someChallengeStarFunction2(task);
+        break;
+    case 6:
+        someChallengeStarFunction(task);
+        break;
+    case 5:
+        if (lbl_803297E0.missionShown == 0) {
+            TASK_OBJ(task, 1)->_68 = 1;
+            TASK_OBJ(task, 0)->_68 = 1;
+            TASK_OBJ(task, 69)->flags |= 2;
+            TASK_OBJ(task, 69)->_68 = 1;
+            lbl_803297E0.missionShown = 1;
+        }
+        if (lbl_803297E0.missionShown != 0 && ObjAtFrame(task, 1, 20) == 1) {
+            lbl_803297E0.missionShown = 0;
+            lbl_803297E0._CF92 = 0;
+        }
+        break;
+    }
+    if (lbl_803297E0.menuDone != 0) {
+        lbl_803297E0.menuDone = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
 }
+#endif
 
 // .text:0x80057C08 size:0xA4
 void starMenu(void) {
