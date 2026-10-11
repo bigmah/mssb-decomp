@@ -47,6 +47,7 @@ typedef struct SceneTask {
     /*0x14*/ union {
         ResHandle* res;
         u16 objIdx;  // index into lbl_80371C30 (child tasks)
+        f32 rate;    // per-frame step (menus fn_2_A70 volume fade)
     } u14;
     /*0x18*/ DrawNode* nodes;
     /*0x1C*/ void* player;
