@@ -6,6 +6,7 @@
 #include "main/file_80034F50.h"
 #include "main/file_80011640.h"
 #include "main/file_800A6870.h"
+#include "static/GameSettings.h"
 
 // Menu task (queue item) that owns a run of sprites in lbl_80371C30 starting
 // at baseIdx. Only the fields used here.
@@ -62,7 +63,15 @@ typedef struct MenuData {
     /*0x197418*/ u8 _197418;
     /*0x197419*/ u8 _197419[0x197430 - 0x197419];
     /*0x197430*/ s16 stats[8]; // a StatOutput
-    /*0x197440*/ u8 _197440[0x197862 - 0x197440];
+    /*0x197440*/ u8 _197440[0x1976FA - 0x197440];
+    /*0x1976FA*/ s16 _1976FA;
+    /*0x1976FC*/ u8 _1976FC[2];
+    /*0x1976FE*/ s16 _1976FE;
+    /*0x197700*/ u8 _197700[6];
+    /*0x197706*/ s16 _197706; // character (index into lbl_800E869C)
+    /*0x197708*/ u8 _197708[0x197730 - 0x197708];
+    /*0x197730*/ s16 _197730;
+    /*0x197732*/ u8 _197732[0x197862 - 0x197732];
     /*0x197862*/ u8 _197862;
 } MenuData;
 
@@ -163,7 +172,7 @@ void fn_2_61948(MenuTask* task, MenuItem* item);
 void fn_2_61B6C(MenuTask* task, MenuItem* item);
 void fn_2_61D90(MenuTask* task, MenuItem* item);
 void fn_2_61F5C(MenuTask* task, MenuItem* item);
-void fn_2_62110(void);
+void fn_2_62110(MenuTask* task, MenuItem* item);
 void fn_2_623AC(void);
 void fn_2_625B0(void);
 void fn_2_627F4(void);
