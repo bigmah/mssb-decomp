@@ -151,8 +151,48 @@ void fn_3_12F28C(s32 i) {
 }
 
 // .text:0x0012F424 size:0x200 mapped:0x8076E4B8
-void fn_3_12F424(void) {
-    return;
+// Barrel i was blown up: neighbouring standing barrels of the same colour
+// (or all of them when force is set) start blowing up after `delay` frames.
+void fn_3_12F424(s32 i, s16 delay, s32 force) {
+    s32 colour = g_Minigame.barrels[i].barrelColour;
+    s32 n;
+
+    if (i % 3 != 2) {
+        n = i + 1;
+        if (g_Minigame.barrels[n].barrelState == 2 && n != g_Minigame.bB_bombBarrelID &&
+            (g_Minigame.barrels[n].barrelColour == colour || force != 0)) {
+            g_Minigame.barrels[n].barrelState = 3;
+            g_Minigame.barrels[n].animationCounter = 0;
+            g_Minigame.barrels[n].delayUntilBlownUp = delay;
+        }
+    }
+    if (i - (i / 3) * 3 != 0) {
+        n = i - 1;
+        if (g_Minigame.barrels[n].barrelState == 2 && n != g_Minigame.bB_bombBarrelID &&
+            (g_Minigame.barrels[n].barrelColour == colour || force != 0)) {
+            g_Minigame.barrels[n].barrelState = 3;
+            g_Minigame.barrels[n].animationCounter = 0;
+            g_Minigame.barrels[n].delayUntilBlownUp = delay;
+        }
+    }
+    if (i / 3 > 0) {
+        n = i - 3;
+        if (g_Minigame.barrels[n].barrelState == 2 && n != g_Minigame.bB_bombBarrelID &&
+            (g_Minigame.barrels[n].barrelColour == colour || force != 0)) {
+            g_Minigame.barrels[n].barrelState = 3;
+            g_Minigame.barrels[n].animationCounter = 0;
+            g_Minigame.barrels[n].delayUntilBlownUp = delay;
+        }
+    }
+    if (i / 3 < 4) {
+        n = i + 3;
+        if (g_Minigame.barrels[n].barrelState == 2 && n != g_Minigame.bB_bombBarrelID &&
+            (g_Minigame.barrels[n].barrelColour == colour || force != 0)) {
+            g_Minigame.barrels[n].barrelState = 3;
+            g_Minigame.barrels[n].animationCounter = 0;
+            g_Minigame.barrels[n].delayUntilBlownUp = delay;
+        }
+    }
 }
 
 // .text:0x0012F624 size:0x3B0 mapped:0x8076E6B8
