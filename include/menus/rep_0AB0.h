@@ -116,6 +116,14 @@ typedef struct MenuSaveProgress {
     /*0xCF18*/ u8 unlocked[0x36]; // per character id
 } MenuSaveProgress;
 
+// View of CharMgr (lbl_8036E548, main/file_80011640.h; that header clashes with
+// main/file_80069BDC.h over fn_80024D2C).
+typedef struct MenuCharMgr {
+    /*0x0000*/ u8 _0000[0x3078];
+    /*0x3078*/ u16 _3078; // actor count
+    /*0x307A*/ u8 _307A;
+} MenuCharMgr;
+
 void fn_2_5979C(void);
 void fn_2_59CF8(void);
 void fn_2_5A224(void);
