@@ -159,9 +159,241 @@ void fn_3_21DE4(void) {
 }
 
 // .text:0x00021F14 size:0x828 mapped:0x80660FA8
+// NONMATCHING 93%: register allocation; the original reaches lbl_3_data_2398 / lbl_3_data_1F50 through the pooled lbl_3_data_1D28 base
+#if NONMATCHING
+// Picks the scripted scene event for the current situation into SCENE->_260.
+// Returns 1 when one should play.
 s32 fn_3_21F14(void) {
+    SceneEventData* ev = &lbl_3_data_2398;
+    ChallengeState* cs = &gChallengeState;
+    GameInitVariables* gs = &g_d_GameSettings;
+    StarChanceState* sch = &lbl_3_common_bss_37400;
+    s32 star;
+    s32 i;
+    s32 ok;
+    s32 want;
+    s32 duel;
+    Unk2398Entry* e;
+    s8 idx;
+    GameScores* sc;
+    inMemStrikes* sk;
+    InMemRunnerType* rn;
+    GameControlsStruct* gl;
+    InMemBatterType* bt;
+    InMemPitcherType* pt;
+
+    star = 0;
+    if (gs->exhibitionMatchInd == 0) {
+        if (cs->_441E == 5 || cs->_16C2 == 0x2A) {
+            star = 0;
+        } else {
+            star = fn_3_165D24();
+        }
+    }
+    if (gs->exhibitionMatchInd == 0) {
+        if (star != 0 && lbl_80109420[sch->type]._D != 0) {
+            SCENE->_260 = 0x1C;
+            cs->_44F1 = 0;
+            return 1;
+        }
+        return 0;
+    }
+
+    SCENE->_260 = -1;
+    sc = &g_Scores;
+    sk = &g_Strikes;
+    rn = g_Runners;
+    gl = &g_GameLogic;
+    bt = &g_Batter;
+    pt = &g_Pitcher;
+    for (i = 0; i < 0x21; i++) {
+        if (i == 0x2D) {
+            i = 0x2D;
+        }
+        e = &ev->events[i];
+        ok = 1;
+        if (sc->_AC != e->inning) {
+            if (e->inning == 1 && sc->_AC != 1 && sc->_AC != 0) {
+                ok = 0;
+            } else if (e->inning != 1 && (sc->_AC == 1 || sc->_AC == 0)) {
+                ok = 0;
+            } else if (e->inning == 2 && sc->_AC != 2) {
+                ok = 0;
+            } else if (e->inning != 2 && sc->_AC == 2) {
+                ok = 0;
+            } else if (e->inning == 3 && sc->_AC != 3) {
+                ok = 0;
+            } else if (e->inning != 3 && sc->_AC == 3) {
+                ok = 0;
+            } else if (e->inning == 4 && sc->_AC < 4) {
+                ok = 0;
+            } else if (e->inning != 4 && sc->_AC >= 4) {
+                ok = 0;
+            }
+        }
+        if (e->outs != -1 && sk->outs != e->outs) {
+            ok = 0;
+        }
+        want = e->runner[0];
+        if (want != -1) {
+            if (want == 1 && rn[1].rosterID == -1) {
+                ok = 0;
+            } else if (want == 0 && rn[1].rosterID != -1) {
+                ok = 0;
+            }
+        }
+        want = e->runner[1];
+        if (want != -1) {
+            if (want == 1 && rn[2].rosterID == -1) {
+                ok = 0;
+            } else if (want == 0 && rn[2].rosterID != -1) {
+                ok = 0;
+            }
+        }
+        want = e->runner[2];
+        if (want != -1) {
+            if (want == 1 && rn[3].rosterID == -1) {
+                ok = 0;
+            } else if (want == 0 && rn[3].rosterID != -1) {
+                ok = 0;
+            }
+        }
+        if (e->situation != -1) {
+            // inline copy of fn_3_22ABC
+            GameScores* scs = &g_Scores;
+            s32 close = 0;
+            s32 n = 0;
+            s32 sit;
+            if (rn[1].rosterID != -1) {
+                n = 1;
+            }
+            if (rn[2].rosterID != -1) {
+                n += 1;
+            }
+            if (rn[3].rosterID != -1) {
+                n += 1;
+            }
+            if (__abs(scs->_A6) <= 4 && n == 3
+                && scs->team[gl->homeTeamBattingInd_fieldingTeam].runs[0] <= scs->team[gl->awayTeamBattingInd_battingTeam].runs[0]) {
+                close = 1;
+            }
+            n = 0;
+            if (rn[2].rosterID != -1) {
+                n = 1;
+            }
+            if (rn[3].rosterID != -1) {
+                n += 1;
+            }
+            if (__abs(scs->_A6) <= n && n > 0
+                && scs->team[gl->homeTeamBattingInd_fieldingTeam].runs[0] <= scs->team[gl->awayTeamBattingInd_battingTeam].runs[0]) {
+                close = 1;
+            }
+            if (close != 0) {
+                if (bt->aiControlledInd != 0) {
+                    sit = 1;
+                } else {
+                    sit = 2;
+                }
+            } else {
+                sit = -1;
+            }
+            want = e->situation;
+            if (want == 0 && sit != 0) {
+                ok = 0;
+            }
+            if (want == 1 && sit != 1) {
+                ok = 0;
+            }
+            if (want == 2 && sit != 2) {
+                ok = 0;
+            }
+        }
+        want = e->leading;
+        if (want != -1) {
+            s32 lead;
+            if (bt->aiControlledInd != 0) {
+                if (g_Scores.team[gl->homeTeamBattingInd_fieldingTeam].runs[0] < g_Scores.team[gl->awayTeamBattingInd_battingTeam].runs[0]) {
+                    lead = 0;
+                } else {
+                    lead = 1;
+                }
+            } else if (g_Scores.team[gl->homeTeamBattingInd_fieldingTeam].runs[0] < g_Scores.team[gl->awayTeamBattingInd_battingTeam].runs[0]) {
+                lead = 1;
+            } else {
+                lead = 0;
+            }
+            if (want == 0 && lead != 0) {
+                ok = 0;
+            } else if (want == 1 && lead != 1) {
+                ok = 0;
+            }
+        }
+        duel = e->captainDuel;
+        if (duel != -1) {
+            if (duel == 1 && ev->captainPair[bt->charID][pt->charID] == 0) {
+                if (g_GameLogic.Team_CaptainRosterLoc[gl->teamBatting] != bt->charID
+                    || g_GameLogic.Team_CaptainRosterLoc[gl->teamFielding] != pt->charID) {
+                    ok = 0;
+                }
+            } else if (duel == 0 && ev->captainPair[bt->charID][pt->charID] == 1) {
+                ok = 0;
+            }
+        }
+        if (e->once != -1 && e->once != 0 && e->_34[0] != 0) {
+            ok = 0;
+        }
+        if (e->_28 != -1 && e->_28 != 0) {
+            if (e->_34[1] != 0) {
+                if (duel == 1 && ev->captainPair[bt->charID][pt->charID] == 1) {
+                    if (g_GameLogic.Team_CaptainRosterLoc[gl->teamBatting] == bt->charID
+                        && g_GameLogic.Team_CaptainRosterLoc[gl->teamFielding] == pt->charID) {
+                        if (e->_34[2] != 0) {
+                            ok = 0;
+                        }
+                    } else {
+                        ok = 0;
+                    }
+                } else {
+                    ok = 0;
+                }
+            } else if (SCENE->_27B >= e->_30) {
+                ok = 0;
+            }
+        }
+        if (ok != 0) {
+            SCENE->_260 = i;
+        }
+    }
+
+    idx = SCENE->_260;
+    if (idx != -1) {
+        if (gs->exhibitionMatchInd == 0 && ((s8*)&lbl_3_data_1F40[4])[idx] == 1) { // TODO type: lbl_3_data_1F50
+            SCENE->_260 = -1;
+            return 0;
+        }
+        e = &ev->events[idx];
+        if (e->once == 1) {
+            e->_34[0] = 1;
+        }
+        e = &ev->events[SCENE->_260];
+        if (e->_28 == 1) {
+            e->_34[1] = 1;
+            e = &ev->events[SCENE->_260];
+            if (e->captainDuel == 1 && ev->captainPair[bt->charID][pt->charID] == 1) {
+                if (g_GameLogic.Team_CaptainRosterLoc[gl->teamBatting] == bt->charID
+                    && g_GameLogic.Team_CaptainRosterLoc[gl->teamFielding] == pt->charID) {
+                    e->_34[2] = 1;
+                }
+                lbl_3_common_bss_32724._AE = 1;
+                lbl_3_common_bss_32724._AF = g_Pitcher.rosterID;
+            }
+        }
+        SCENE->_27B = ev->events[SCENE->_260]._30;
+        return 1;
+    }
     return 0;
 }
+#endif
 
 // .text:0x0002273C size:0xE0 mapped:0x806617D0
 s32 fn_3_2273C(void) {
