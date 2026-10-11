@@ -56,6 +56,35 @@ typedef struct SaveBannerData {
 
 extern SaveBannerData lbl_800F7B00;
 
+#define ROSTER_EMPTY 0x36 // no character
+
+// Challenge-mode character records (lbl_8034E9A0).
+typedef struct ChallengeRoster {
+    /*0x0000*/ CharacterStats teams[6][9];
+    /*0x21C0*/ u8 _21C0[0x4757 - 0x21C0];
+    /*0x4757*/ u8 recruited[54];
+    /*0x478D*/ u8 _478D[0x4C28 - 0x478D];
+} ChallengeRoster;
+
+extern ChallengeRoster lbl_8034E9A0;
+
+// Challenge-mode team being assembled (lbl_803C6724).
+typedef struct ChallengeTeam {
+    /*0x00*/ u8 _00[0xB];
+    /*0x0B*/ s8 roster[9]; // character ids, ROSTER_EMPTY if free
+    /*0x14*/ u8 _14[0x5C - 0x14];
+} ChallengeTeam;
+
+extern ChallengeTeam lbl_803C6724;
+
+typedef struct ChallengeFreeAgent {
+    /*0x0*/ s8 charId;
+    /*0x1*/ u8 _1[4];
+} ChallengeFreeAgent;
+
+extern ChallengeFreeAgent lbl_80108FF8[10];
+extern s16 lbl_80108EDC[][5]; // character variant groups
+
 // Process-queue task used by the memory-card save/load state machines.
 typedef struct SaveTask {
     /*0x00*/ void (*func)(void);
@@ -210,6 +239,7 @@ u8 fn_80041074(void* buffer, s32 length, u32 mask);
 void fn_80041150(u8 mask, u8 slot);
 s32 fn_80041348(void);
 void fn_8004153C(void);
+void fn_800415A8(void);
 
 void fn_8003A848(u8 red, u8 green, u8 blue);
 

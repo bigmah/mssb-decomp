@@ -22,6 +22,8 @@ extern void (*lbl_803CBCA8)(void); // model callback (set by fn_8003A540)
 // main/file_800A7C08
 void fn_800ACCD4(void);
 void fn_800ACCE8(void);
+// main/file_800639BC
+s16 fn_80067AC8(s16 charId, s8 variant);
 // main/file_8000F150
 void fn_8000FE54(void);
 // main/file_8004207C
@@ -1628,7 +1630,222 @@ void fn_800415A0(u16 value) {
     lbl_803CBCC0 = value;
 }
 
-// .text:0x800415A8 size:0xAD4
-void fn_800415A8(void) {
-    return;
+static inline u8 ChallengeTeam_HasEmptySlot(void) {
+    u8 found = 0;
+    s32 i;
+    for (i = 0; i < 9; i++) {
+        if (lbl_803C6724.roster[i] == ROSTER_EMPTY) {
+            found = 1;
+            break;
+        }
+    }
+    return found;
 }
+
+// .text:0x800415A8 size:0xAD4
+// Fills the empty slots of the challenge team (variants of members, then recruitable
+// characters, then free agents) and copies the team into inMemRoster[1].
+// NONMATCHING 94%: hasEmpty is initialised here (original reads the caller's r5), loop register allocation and the UnusedShorts copy (lha vs lhz) differ
+#if NONMATCHING
+void fn_800415A8(void) {
+    ChallengeTeam* team = &lbl_803C6724;
+    u8 start = 0;
+    u8 count = 0;
+    u8 hasEmpty = 0; // TODO: the original leaves this uninitialised (r5 from the caller)
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 c;
+    s16 alt;
+    s16 id;
+    CharacterStats* src;
+    CharacterStats* dst;
+
+    for (i = 0; i < 9; i++) {
+        if (lbl_803C6724.roster[i] == ROSTER_EMPTY) {
+            hasEmpty = 1;
+        }
+    }
+    if (!hasEmpty) {
+        goto copy;
+    }
+
+    // Variants of the current members (at most one copy of each).
+    for (i = 0; i < 9; i++) {
+        for (alt = 1; alt < 5; alt++) {
+            id = fn_80067AC8(lbl_803C6724.roster[i], alt);
+            if (id == -1) {
+                break;
+            }
+            for (k = 0; k < 9; k++) {
+                if (lbl_803C6724.roster[k] == ROSTER_EMPTY && id != -1) {
+                    for (j = 0; j < 9; j++) {
+                        if (lbl_803C6724.roster[j] == id) {
+                            count++;
+                        }
+                    }
+                    if (count < 2) {
+                        lbl_803C6724.roster[k] = id;
+                        lbl_8034E9A0.recruited[id] = 1;
+                    }
+                    count = 0;
+                    break;
+                }
+            }
+        }
+    }
+    if (!ChallengeTeam_HasEmptySlot()) {
+        goto copy;
+    }
+
+    // Characters already recruited (status 2), picking a variant not on the team yet.
+    for (;;) {
+        alt = 1;
+        for (c = start; c < 54; c++) {
+            if (starMissionCompletionTracker[c]._31 != 2) {
+                continue;
+            }
+            id = fn_80067AC8(c, alt);
+            for (k = 0; k < 9; k++) {
+                if (id == lbl_803C6724.roster[k]) {
+                    alt++;
+                    if (alt > 5) {
+                        alt = 1;
+                        goto next_recruited;
+                    }
+                    id = fn_80067AC8(c, alt);
+                }
+            }
+            if (id != -1) {
+                for (j = 0; j < 9; j++) {
+                    if (id == lbl_80108EDC[j][0]) {
+                        id = -1;
+                    }
+                }
+            }
+            start = c;
+            if (id != -1) {
+                break;
+            }
+        next_recruited:;
+        }
+        if (c == 54) {
+            start = 0;
+            goto free_agents;
+        }
+        for (k = 0; k < 9; k++) {
+            if (lbl_803C6724.roster[k] == ROSTER_EMPTY) {
+                lbl_803C6724.roster[k] = id;
+                lbl_8034E9A0.recruited[id] = 1;
+                goto next_pass;
+            }
+        }
+        if (!ChallengeTeam_HasEmptySlot()) {
+            goto copy;
+        }
+        goto free_agents;
+    next_pass:;
+    }
+
+free_agents:
+    // Recruitable free agents (status 1) that are not on the team yet.
+    for (;;) {
+        for (c = start; c < 54; c++) {
+            if (starMissionCompletionTracker[c]._31 != 1 || lbl_8034E9A0.recruited[c] != 0) {
+                continue;
+            }
+            for (k = 0; k < 10; k++) {
+                if (c == lbl_80108FF8[k].charId) {
+                    if (k < 7) {
+                        if (lbl_8034E9A0.recruited[lbl_80108FF8[k].charId] == 0) {
+                            id = fn_80067AC8(c, 0);
+                        } else {
+                            id = -1;
+                        }
+                    } else {
+                        id = c;
+                    }
+                    break;
+                }
+            }
+            if (k == 10) {
+                id = -1;
+            }
+            if (id != -1) {
+                start = c;
+                break;
+            }
+        }
+        if (c == 54) {
+            break;
+        }
+        for (k = 0; k < 9; k++) {
+            if (lbl_803C6724.roster[k] == ROSTER_EMPTY) {
+                lbl_803C6724.roster[k] = id;
+                lbl_8034E9A0.recruited[id] = 1;
+                goto next_free_agent;
+            }
+        }
+        if (!ChallengeTeam_HasEmptySlot()) {
+            goto copy;
+        }
+        break;
+    next_free_agent:;
+    }
+
+    // Variants of the current members again, allowing up to three copies.
+    count = 0;
+    for (i = 0; i < 9; i++) {
+        for (alt = 1; alt < 5; alt++) {
+            id = fn_80067AC8(lbl_803C6724.roster[i], alt);
+            if (id == -1) {
+                break;
+            }
+            for (k = 0; k < 9; k++) {
+                if (lbl_803C6724.roster[k] == ROSTER_EMPTY && id != -1) {
+                    for (j = 0; j < 9; j++) {
+                        if (lbl_803C6724.roster[j] == id) {
+                            count++;
+                        }
+                    }
+                    if (count < 4) {
+                        lbl_803C6724.roster[k] = id;
+                        lbl_8034E9A0.recruited[id] = 1;
+                    }
+                    count = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+copy:
+    for (i = 0; i < 9; i++) {
+        dst = &inMemRoster[1][i];
+        src = &lbl_8034E9A0.teams[team->roster[i] / 9][team->roster[i] % 9];
+        memcpy(&dst->stats, &src->stats, 0x1E);
+        dst->stats.CharID = src->stats.CharID;
+        dst->stats.FieldingArm = src->stats.FieldingArm;
+        dst->stats.BattingStance = src->stats.BattingStance;
+        memcpy(&dst->stats.SlapContactSize, &src->stats.SlapContactSize, 2);
+        memcpy(&dst->stats.SlapHitPower, &src->stats.SlapHitPower, 2);
+        dst->stats.BuntingContactSize = src->stats.BuntingContactSize;
+        dst->stats.HitTrajectoryPushPull = src->stats.HitTrajectoryPushPull;
+        dst->stats.HitTrajectoryHighLow = src->stats.HitTrajectoryHighLow;
+        dst->stats.Speed = src->stats.Speed;
+        dst->stats.ThrowingArm = src->stats.ThrowingArm;
+        dst->stats.CharacterClass = src->stats.CharacterClass;
+        dst->stats.Weight = src->stats.Weight;
+        dst->stats.Captain = src->stats.Captain;
+        dst->stats.CaptainStarHitPitch = src->stats.CaptainStarHitPitch;
+        memcpy(&dst->stats.NonCaptainStarSwing, &src->stats.NonCaptainStarSwing, 2);
+        dst->stats.FieldingStats = src->stats.FieldingStats;
+        memcpy(&dst->stats.BattingStatBar, &src->stats.BattingStatBar, 4);
+        memcpy(&dst->chemistry, &src->chemistry, sizeof(src->chemistry));
+        dst->BytesAfterChemistry[0] = src->BytesAfterChemistry[0];
+        for (j = 0; j < 21; j++) {
+            dst->UnusedShorts[j] = src->UnusedShorts[j];
+        }
+    }
+}
+#endif
