@@ -55,8 +55,46 @@ u32 fn_80024D2C(ShapeAnimState* st) {
 }
 
 // .text:0x80024DB0 size:0x1F4
-void fn_80024DB0(void) {
-    return;
+// Advances the animation; returns whether the end of the sequence was reached.
+s32 fn_80024DB0(ShapeAnimState* st) {
+    ShapeSeq* seq = &st->seqs[st->seqIdx];
+    u32 atStart;
+    u16 oldKey;
+    s32 ended;
+
+    if (st->loops == 0) {
+        return 0;
+    }
+    if (!st->active) {
+        return 0;
+    }
+    atStart = (0.0f == st->frame);
+    oldKey = st->keyIdx;
+    st->frame += st->speed;
+    shapeSetDirtyA(st);
+    ended = (st->frame >= (f32)seq->hdr.length);
+    if (ended) {
+        if (st->loops > 0) {
+            st->loops--;
+        }
+        if (st->loops != 0) {
+            st->frame -= (f32)seq->hdr.length;
+            st->keyIdx = seq->hdr.keyCount;
+            do {
+                st->keyIdx--;
+            } while ((f32)seq->keys[st->keyIdx].frame > st->frame);
+        } else {
+            st->frame = (f32)seq->hdr.length;
+        }
+    } else if (st->keyIdx < seq->hdr.keyCount - 1) {
+        while (st->frame >= (f32)seq->keys[st->keyIdx + 1].frame) {
+            st->keyIdx++;
+        }
+    }
+    if (atStart || oldKey != st->keyIdx) {
+        shapeSetDirtyB(st);
+    }
+    return ended;
 }
 
 // .text:0x80024FA4 size:0xCB4
