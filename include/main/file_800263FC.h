@@ -256,6 +256,8 @@ void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm);
 s32 fn_8002ECA0(Emitter* e);
 s32 fn_8002F1AC(Vec* pos, s32 id);
 void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm);
+void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm);
+void fn_80030470(Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm, u8 type);
 void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_80030D88(Vec* pos, Vec* dir, ParticleParams5* prm, u8 type);
 void fn_800317C4(Emitter* e, Vec* pos, ParticleParams5* prm);

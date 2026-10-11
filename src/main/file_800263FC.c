@@ -34,6 +34,8 @@ extern const MtxBox lbl_800E67C0; // identity
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB800;
 extern f32 lbl_803CB80C;
+extern f32 lbl_803CB804;
+extern const Vec lbl_800E679C;    // (0, -1, 0)
 extern const Vec lbl_800E6790;    // (0, -1, 0)
 extern const Vec lbl_800E67A8[2]; // (1, 0, 0), (0, 0, 0)
 extern s32 lbl_803CB7F8;          // respawn delay mask
@@ -250,6 +252,7 @@ s32 fn_8002ECA0(Emitter* e);
 s32 fn_80031034(Emitter* e);
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
+void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm);
 s32 fn_80029CC8(Emitter* e);
 
 // .text:0x800263FC size:0x59C
@@ -1001,9 +1004,108 @@ void fn_8002F9FC(void) {
 }
 
 // .text:0x8002FDB8 size:0x6B8
-void fn_8002FDB8(void) {
-    return;
+// NONMATCHING 78%: float register allocation and scheduling
+#if NONMATCHING
+void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm) {
+    Mtx rot;
+    Mtx base;
+    Quaternion q;
+    Vec up;
+    Vec d;
+    Vec axis;
+    Vec sp;
+    f32 mag;
+    f32 yaw;
+    f32 yaw2;
+    f32 lo;
+    f32 half;
+    f32 k;
+    s32 i;
+    Particle* p;
+
+    up = lbl_800E679C;
+    e->tex = prm->tex;
+    PSVECNormalize(dir, &d);
+    PSVECCrossProduct(&up, &d, &axis);
+    mag = PSVECMag(&axis);
+    p = e->particles;
+    for (i = 0; i < e->count; i++) {
+        if (i & 1) {
+            // odd particles use the mirrored spin of the previous particle
+            yaw = -yaw2;
+        } else {
+            if (0.0f == mag) {
+                PSMTXIdentity(base);
+            } else {
+                lo = (6.2831855f * ((f32)prm->unk38 / 100000.0f)) / 360.0f;
+                half = ((6.2831855f * ((f32)prm->unk3C / 100000.0f)) / 360.0f - lo) * 0.5f;
+                C_QUATRotAxisRad(&q, &axis, -((half * (f32)(8 - rand() % 16)) * 0.125f + (lo + half)));
+                PSMTXQuat(base, &q);
+            }
+            yaw = ((6.2831855f * ((f32)prm->unk34 / 100000.0f)) / 360.0f) * (f32)(8 - rand() % 16) * 0.125f;
+        }
+        PSMTXRotRad(rot, 'Y', yaw);
+        PSMTXConcat(rot, base, rot);
+        PSMTXMultVec(rot, dir, &d);
+        p->pos.x = pos->x;
+        p->pos.y = pos->y;
+        p->pos.z = pos->z;
+        p->u.t5.vel.x = velScale->x * (f32)prm->unk10;
+        p->u.t5.vel.y = velScale->y * (f32)prm->unk10;
+        p->u.t5.vel.z = velScale->z * (f32)prm->unk10;
+        // screen-space direction of the spray
+        PSVECAdd(pos, &d, &d);
+        PSMTXMultVec(lbl_8017FFE0, pos, &sp);
+        PSMTXMultVec(lbl_8017FFE0, &d, &d);
+        if (sp.z != d.z) {
+            if (0.0f != d.z) {
+                k = sp.z / d.z;
+                d.z = sp.z;
+                d.x = d.x * k;
+                d.y = d.y * k;
+            } else {
+                k = d.z / sp.z;
+                sp.z = d.z;
+                sp.x = sp.x * k;
+                sp.y = sp.y * k;
+            }
+        }
+        PSVECSubtract(&sp, &d, &d);
+        if (PSVECMag(&d) != 0.0f) {
+            PSVECNormalize(&d, &d);
+        } else {
+            d.x = 0.0f;
+            d.y = 1.0f;
+            d.z = 0.0f;
+        }
+        sp.y = d.x;
+        sp.x = -d.y;
+        sp.z = d.z;
+        PSVECAdd(&d, &sp, &d);
+        yaw2 = ((6.2831855f * ((f32)prm->unk30 / 100000.0f)) / 360.0f) * (f32)(8 - rand() % 16) * 0.125f;
+        PSMTXRotRad(rot, 'Y', yaw2);
+        PSMTXMultVec(rot, &d, &d);
+        p->sizeX = d.x;
+        p->sizeY = d.y;
+        p->u.t5.unk1C = 0.01f * (f32)(8 - rand() % 16) + (f32)prm->unkC / 100000.0f;
+        p->u.t5.unk20 = (f32)prm->unk20 / 100000.0f;
+        p->u.t5.unk24 = (f32)prm->unk24 / 100000.0f;
+        p->u.t5.unk2C = prm->unk18 - prm->unk1C;
+        p->u.t5.unk28 = ((f32)prm->unk14 / 100000.0f) *
+                        (0.02 * lbl_803CB804 * (rand() % 256) * 0.00390625 + (1.0f - 0.01f * lbl_803CB804));
+        p->color.rgba = prm->unk40;
+        p->u.t5.unk30 = prm->unk2C;
+        p->u.t5.unk34 = (f32)prm->unk48 / 100000.0f;
+        p->colorStep.v[0] = prm->unk4C;
+        p->life = p->delay = prm->unk18;
+        p->unk4C = 1;
+        p->uvFrame = 0;
+        p->texIndex = prm->texIndex;
+        p->uvOrder = prm->unk28;
+        p = p->next;
+    }
 }
+#endif
 
 // .text:0x80030470 size:0x2B0
 void fn_80030470(void) {
