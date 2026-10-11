@@ -51,7 +51,8 @@ extern f32 lbl_3_data_4878[];
 extern s16 lbl_3_data_4880;
 extern Tbl4 lbl_3_data_7E34[];
 extern u8 lbl_3_data_4900[];
-extern u8 lbl_3_data_1C38[2]; // AI chance range (min, max)
+extern u8 lbl_3_data_1C38[2];
+extern s16 lbl_3_data_1C40; // AI chance range (min, max)
 extern f32 lbl_3_rodata_196C;
 extern f32 lbl_3_rodata_1980;
 extern f32 lbl_3_rodata_1984;
@@ -75,7 +76,8 @@ extern f32 lbl_3_rodata_19B8;
 extern f32 lbl_3_rodata_1978;
 extern f32 lbl_3_rodata_193C;
 static s32 lbl_3_bss_1858[42];
-static s32 lbl_3_bss_1838[8];
+static s32 lbl_3_bss_1848[4]; // per runner: frame margin
+static s32 lbl_3_bss_1838[4]; // per runner: base to cover
 static s32 lbl_3_bss_1828[4];
 static u32 lbl_3_bss_1824;
 static s32 lbl_3_bss_1820;
@@ -821,9 +823,50 @@ void fn_3_A4F50(void) {
 }
 
 // .text:0x000A53DC size:0x328 mapped:0x806E4470
-void fn_3_A53DC(void) {
-    return;
+// NONMATCHING 87.5%: instruction scheduling and register allocation differ; fn_3_A6ABC is inlined
+#if NONMATCHING
+void fn_3_A53DC(s32 i) {
+    InMemRunnerType* r = &g_Runners[i];
+    RepFielder* f = &g_Fielders[g_Ball.fielderWBallIndex];
+    f32 a;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 dz;
+    f32 b;
+    s32 n;
+
+    if (i == 3 && r->baseStandingOn == 3 && g_RunningLogic._00 == 0x1000 && g_Ball.ballZoneAwayFromHome >= 4 &&
+        g_Ball.AtBat_ContactResult == 3) {
+        // inlined fn_3_A6ABC(home x, home z)
+        dx = lbl_3_data_4444[0] - f->pos.x;
+        step = (f32)f->_1CD / lbl_3_rodata_1938;
+        dz = lbl_3_data_4444[1] - f->pos.z;
+        a = dx * dx;
+        b = dz * dz;
+        d = a + b;
+        SQRT_L(d);
+        if (lbl_3_rodata_193C == step) {
+            step = lbl_3_rodata_1958;
+        }
+        if (d > lbl_3_rodata_195C) {
+            n = (s32)(lbl_3_rodata_1960 * d / step);
+        } else if (d > lbl_3_rodata_1964) {
+            n = (s32)(d / step);
+        } else {
+            n = (s32)(lbl_3_rodata_1968 * d / step);
+        }
+        if (d > lbl_3_rodata_196C) {
+            n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+        } else if (d > lbl_3_rodata_1974) {
+            n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+        }
+        lbl_3_bss_1828[i] = 0;
+        lbl_3_bss_1838[i] = -1;
+        lbl_3_bss_1848[i] = f->_192 + n + lbl_3_data_1C40 - r->framesToNextBase;
+    }
 }
+#endif
 
 // .text:0x000A5704 size:0x448 mapped:0x806E4798
 void fn_3_A5704(void) {

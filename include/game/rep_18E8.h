@@ -29,7 +29,9 @@ typedef struct RepFielder {
     /*0x17A*/ s16 _17A; // action id (lbl_3_data_7E34 index)
     /*0x17C*/ u8 _17C[0x18C - 0x17C];
     /*0x18C*/ s16 coveringBase;
-    /*0x18E*/ u8 _18E[0x1AC - 0x18E];
+    /*0x18E*/ u8 _18E[0x192 - 0x18E];
+    /*0x192*/ s16 _192;
+    /*0x194*/ u8 _194[0x1AC - 0x194];
     /*0x1AC*/ s16 _1AC;
     /*0x1AE*/ u8 _1AE[0x1C2 - 0x1AE];
     /*0x1C2*/ s16 _1C2; // angle
@@ -60,6 +62,14 @@ typedef struct RepFielder {
 } RepFielder; // size: 0x268
 
 extern RepFielder g_Fielders[9];
+
+// g_RunningLogic (0x20 bytes); only the fields used here.
+typedef struct RepRunningLogic {
+    /*0x00*/ s16 _00; // one nibble per base
+    /*0x02*/ u8 _02[0x20 - 0x2];
+} RepRunningLogic;
+
+extern RepRunningLogic g_RunningLogic;
 extern GameScores g_Scores;
 
 void fn_3_A009C(void);
@@ -91,7 +101,7 @@ void fn_3_A41E8(void);
 int fn_3_A46A0(s32 i);
 void fn_3_A4A10(void);
 void fn_3_A4F50(void);
-void fn_3_A53DC(void);
+void fn_3_A53DC(s32 i);
 void fn_3_A5704(void);
 void fn_3_A5B4C(void);
 void fn_3_A63E4(void);
