@@ -55,7 +55,8 @@ typedef struct GameHudFlags {
     /*0xD1*/ u8 _D1;
     /*0xD2*/ u8 _D2[0xD6 - 0xD2];
     /*0xD6*/ u8 _D6;
-    /*0xD7*/ u8 _D7[0xD9 - 0xD7];
+    /*0xD7*/ u8 _D7;
+    /*0xD8*/ u8 loadStep; // fn_3_1665E4 trail-file load state
     /*0xD9*/ u8 _D9;
     /*0xDA*/ u8 _DA;
     /*0xDB*/ u8 _DB[0x124 - 0xDB];
