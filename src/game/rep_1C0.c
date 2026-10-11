@@ -146,6 +146,18 @@ static inline void DecodeNarrowGlyph(u16 v, s16* x, s16* y, s16* w, s16* h, s16*
     *page = 0;
 }
 
+// Decodes the glyph code at `in`; control codes (bit 0x4000) leave the outputs untouched.
+static inline void DecodeGlyph(u16* in, s16* x, s16* y, s16* w, s16* h, s16* page) {
+    u16 v = *in;
+    if (!(v & 0x4000)) {
+        if (v & 0x8000) {
+            DecodeWideGlyph(v, x, y, w, h, page);
+        } else {
+            DecodeNarrowGlyph(v, x, y, w, h, page);
+        }
+    }
+}
+
 extern const f32 lbl_3_rodata_4F8; // 16.0f
 extern const f32 lbl_3_rodata_4FC; // 18.0f
 extern const f32 lbl_3_rodata_500; // 8.0f
@@ -356,22 +368,90 @@ void fn_3_4A38(u8 a) {
     return;
 }
 
+// Draws `value` (clamped to 99) right-aligned in a field of `width` 16-pixel
+// cells, using the digit messages 0-9. `boxed` first draws a box in color0
+// in front of the digits.
 // .text:0x00004F90 size:0x450 mapped:0x80644024
-void fn_3_4F90(void) {
-    return;
-}
+// NONMATCHING 95%: saved-register allocation; right/bottom kept unextended in the original
+#if NONMATCHING
+void fn_3_4F90(GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor* color0, GXColor* color1, u8 boxed) {
+    u16** digitMsgs = lbl_80366B18.tables[0]->msgs;
+    s16 digits;
+    s16 cellW;
+    s16 n;
+    s16 right;
+    s16 bottom;
+    s16 sx;
+    s16 sy;
+    s16 sw;
+    s16 sh;
+    s16 page;
+    s32 count;
+    s32 i;
 
+    if (value > 99) {
+        value = 99;
+    }
+    digits = (value >= 10) + 1;
+    if (boxed) {
+        if (value != 0) {
+            digits++;
+        } else {
+            digits = 1;
+        }
+    }
+    if (digits > width) {
+        cellW = (width * 16) / digits;
+    } else {
+        cellW = 16;
+    }
+    n = value;
+    x = x + width * 16 - cellW;
+    if (boxed) {
+        GXClearVtxDesc();
+        GXSetTevColor(GX_TEVREG0, *color0);
+        GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0, GX_CC_C0);
+        GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+        GXSetNumTexGens(0);
+        GXSetNumChans(1);
+        GXSetNumTevStages(1);
+        GXSetLineWidth(18, GX_TO_ZERO);
+        GXBegin(GX_LINES, GX_VTXFMT0, 4);
+        GXWGFifo.f32 = x;
+        GXWGFifo.f32 = y;
+        GXWGFifo.f32 = -0.5f;
+        GXWGFifo.f32 = x + cellW;
+        GXWGFifo.f32 = y + 18;
+        GXWGFifo.f32 = -0.5f;
+        GXWGFifo.f32 = x + cellW;
+        GXWGFifo.f32 = y;
+        GXWGFifo.f32 = -0.5f;
+        GXWGFifo.f32 = x;
+        GXWGFifo.f32 = y + 18;
+        GXWGFifo.f32 = -0.5f;
+        GXSetLineWidth(6, GX_TO_ZERO);
+        x -= cellW;
+        digits--;
+    }
+    right = x + cellW;
+    bottom = y + 18;
+    count = digits;
+    for (i = 0; i < count; i++) {
+        DecodeGlyph(digitMsgs[(s16)(n % 10)], &sx, &sy, &sw, &sh, &page);
+        fn_3_42CC(tex, x, y, right, bottom, sx, sy, sw, sh, *color0, *color1, 0);
+        right -= cellW;
+        x -= cellW;
+        n = n / 10;
+    }
+}
+#endif
 
 // .text:0x000053E0 size:0x138 mapped:0x80644474
 void fn_3_53E0(u16* in, s16* x, s16* y, s16* w, s16* h, s16* page) {
-    u16 v = *in;
-    if (!(v & 0x4000)) {
-        if (v & 0x8000) {
-            DecodeWideGlyph(v, x, y, w, h, page);
-        } else {
-            DecodeNarrowGlyph(v, x, y, w, h, page);
-        }
-    }
+    DecodeGlyph(in, x, y, w, h, page);
 }
 
 // .text:0x00005518 size:0x164 mapped:0x806445AC

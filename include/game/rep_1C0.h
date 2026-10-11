@@ -20,7 +20,7 @@ void fn_3_42CC(struct _GXTexObj* tex, s16 x0, s16 y0, s16 x1, s16 y1, s16 sx, s1
                GXColor color0, GXColor color1, u8 flags);
 void fn_3_4984(void);
 void fn_3_4A38(u8 a);
-void fn_3_4F90(void);
+void fn_3_4F90(struct _GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor* color0, GXColor* color1, u8 boxed);
 void fn_3_53E0(u16* in, s16* a, s16* b, s16* c, s16* d, s16* e);
 void fn_3_5518(void);
 void fn_3_567C(void);
