@@ -3,11 +3,12 @@
 
 #include "mssbTypes.h"
 
+// Minigame result / high-score table entry.
 typedef struct {
-    s32 a;
-    s16 b;
-    s16 pad;
-} RankEnt;
+    /*0x0*/ s32 score;
+    /*0x4*/ s16 sub;    // secondary score (tie-breaker)
+    /*0x6*/ s16 charId; // roster value at +0x24 of the player's character
+} RankEnt; // size: 0x8
 
 void fn_3_106EB0(void);
 void fn_3_107078(void);
@@ -39,7 +40,8 @@ s32 fn_3_107D34(u8* a, u8* b);
 s32 fn_3_10F564(void);
 void fn_3_10C58C(void);
 void fn_3_107784(void);
-void fn_3_10754C(u8* dst);
+struct StatInput;
+void fn_3_10754C(struct StatInput* dst);
 void fn_3_10C450(s32 a, s32 b);
 void fn_3_10F5BC(void);
 void fn_3_10F1D4(void);
@@ -53,5 +55,24 @@ void fn_3_108230(void);
 void fn_3_109254(void);
 void fn_3_10AEF0(void);
 void fn_3_107E80(void);
+void fn_3_1104D4(void);
+void fn_3_10F3D8(void);
+void fn_3_106ED4(void);
+void fn_3_10FBE4(void);
+void fn_3_109DE0(RankEnt* out);
+void fn_3_10F91C(void);
+void fn_3_10F684(void);
+void fn_3_10722C(void);
+void fn_3_1084B4(void);
+void fn_3_10C81C(void);
+void fn_3_10B8D0(void);
+void fn_3_10BE7C(void);
+void fn_3_108C54(void);
+void fn_3_10B27C(void);
+void fn_3_10FDC8(void);
+void fn_3_10952C(void);
+void fn_3_10E60C(void);
+void fn_3_10A0A0(void);
+void fn_3_10CC20(void);
 
 #endif

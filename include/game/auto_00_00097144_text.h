@@ -15,7 +15,9 @@ typedef struct GameHudFlags {
     /*0x97*/ u8 _97;
     /*0x98*/ u8 _98;
     /*0x99*/ u8 _99;
-    /*0x9A*/ u8 _9A[0xA5 - 0x9A];
+    /*0x9A*/ u8 _9A[0x9C - 0x9A];
+    /*0x9C*/ u8 _9C;
+    /*0x9D*/ u8 _9D[0xA5 - 0x9D];
     /*0xA5*/ u8 _A5;
     /*0xA6*/ u8 _A6;
     /*0xA7*/ u8 _A7;
@@ -34,7 +36,11 @@ typedef struct GameHudFlags {
     /*0xB4*/ u8 _B4;
     /*0xB5*/ u8 _B5;
     /*0xB6*/ u8 _B6;
-    /*0xB7*/ u8 _B7[0xBC - 0xB7];
+    /*0xB7*/ u8 _B7;
+    /*0xB8*/ u8 _B8;
+    /*0xB9*/ u8 _B9;
+    /*0xBA*/ u8 _BA;
+    /*0xBB*/ u8 _BB;
     /*0xBC*/ u8 _BC;
     /*0xBD*/ u8 _BD;
     /*0xBE*/ u8 _BE;
@@ -53,13 +59,16 @@ typedef struct GameHudFlags {
     /*0xCF*/ u8 _CF;
     /*0xD0*/ u8 _D0;
     /*0xD1*/ u8 _D1;
-    /*0xD2*/ u8 _D2[0xD6 - 0xD2];
+    /*0xD2*/ u8 _D2; // scorebook (game/auto_00_0015C5F4_text) busy this frame
+    /*0xD3*/ u8 _D3[0xD6 - 0xD3];
     /*0xD6*/ u8 _D6;
     /*0xD7*/ u8 _D7;
     /*0xD8*/ u8 loadStep; // fn_3_1665E4 trail-file load state
     /*0xD9*/ u8 _D9;
     /*0xDA*/ u8 _DA;
-    /*0xDB*/ u8 _DB[0x124 - 0xDB];
+    /*0xDB*/ u8 _DB;
+    /*0xDC*/ u8 _DC;
+    /*0xDD*/ u8 _DD[0x124 - 0xDD];
 } GameHudFlags; // size: 0x124
 
 extern GameHudFlags lbl_3_common_bss_32724;
@@ -67,7 +76,9 @@ extern GameHudFlags lbl_3_common_bss_32724;
 // Pause / in-game menu state (lbl_3_common_bss_34C90, 0x264 bytes); only the fields used here.
 typedef struct GamePauseState {
     /*0x000*/ s32 team; // team that opened the menu
-    /*0x004*/ u8 _004[0x12 - 0x4];
+    /*0x004*/ u8 _004[0xA - 0x4];
+    /*0x00A*/ s16 _00A;
+    /*0x00C*/ u8 _00C[0x12 - 0xC];
     /*0x012*/ s16 _012;
     /*0x014*/ u8 _014[0x1D0 - 0x14];
     /*0x1D0*/ u8 layout;  // index into the item layout table (lbl_3_data_D860)
@@ -76,7 +87,8 @@ typedef struct GamePauseState {
     /*0x1D3*/ u8 _1D3;
     /*0x1D4*/ u8 _1D4;
     /*0x1D5*/ u8 _1D5;
-    /*0x1D6*/ u8 _1D6[0x1D9 - 0x1D6];
+    /*0x1D6*/ u8 _1D6[0x1D8 - 0x1D6];
+    /*0x1D8*/ u8 _1D8;
     /*0x1D9*/ u8 itemsState; // 0: opening, 2: closed, 3: done
     /*0x1DA*/ s8 cursor;
     /*0x1DB*/ u8 _1DB[0x221 - 0x1DB];
@@ -99,6 +111,7 @@ typedef struct HudTask {
     /*0x1C*/ u16 state;
     /*0x1E*/ u16 _1E;
     /*0x20*/ u16 _20;
+    /*0x22*/ s16 _22;
 } HudTask;
 
 #define HUD_TASK ((HudTask*)lbl_803CC1B8)
@@ -149,7 +162,7 @@ extern GameScores g_Scores;
 extern void fn_80035CA4(s32 id);
 extern void fn_8003649C(void* owner, s32 idx, s32 track, u16 animId, u32 frame);
 extern void fn_80034E20(void* group, void* descs);
-extern void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, s16 value);
+extern void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, u16 value);
 extern void fn_8004D0F0(void);
 extern void fn_800486E0(s32 priority, s8 a, u8 b);
 extern void sndFXKeyOff(u32);

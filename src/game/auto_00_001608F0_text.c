@@ -17,7 +17,7 @@ extern StarMission lbl_80109AE8[][10];    // star missions, per mission row
 // human player's captain as completed (STAR_MISSION_TRACKING_COMPLETED_CONDITIONALLY).
 void fn_3_1608F0(s32 kind, s32 value, s32 extra) {
     BOOL found;
-    StarMissionIndex* idx = &lbl_800E8558[g_Minigame.minigameControlStruct[0]._04[g_d_GameSettings._35]];
+    StarMissionIndex* idx = &lbl_800E8558[g_Minigame.minigameControlStruct[0].charID[g_d_GameSettings._35]];
     u8 row;
     u8 trk;
     ChallengeTrackingStruct* t;
@@ -178,7 +178,7 @@ void fn_3_161078(void) {
     s16* points = &g_Minigame.miniGameCurrentPoints[human];
     u8 mode = g_Minigame.GameMode_MiniGame;
     u8* p1CB1 = &g_Minigame._1CB1[human];
-    StarMissionIndex* idx = &lbl_800E8558[g_Minigame.minigameControlStruct[0]._04[human]];
+    StarMissionIndex* idx = &lbl_800E8558[g_Minigame.minigameControlStruct[0].charID[human]];
     u8 difficulty = gs->challengeDifficulty;
     ChallengeTrackingStruct* t = &starMissionCompletionTracker[idx->trackerIndex];
     StarMission* m = lbl_80109AE8[idx->missionRow];
@@ -274,7 +274,7 @@ void fn_3_161078(void) {
 
             for (j = 0; j < 4; j++) {
                 if (g_Minigame.minigameControlStruct[0].characterIndex[j] >= 0 && j != human &&
-                    m->target == lbl_800E8558[g_Minigame.minigameControlStruct[0]._04[j]].missionRow) {
+                    m->target == lbl_800E8558[g_Minigame.minigameControlStruct[0].charID[j]].missionRow) {
                     rivals++;
                     if (*place < g_Minigame.minigameControlStruct[0]._1C[j]) {
                         beaten++;

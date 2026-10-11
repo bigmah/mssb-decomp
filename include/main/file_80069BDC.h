@@ -92,7 +92,9 @@ typedef struct ChallengeState {
     /*0x43BC*/ s16 _43BC; // 0..1000
     /*0x43BE*/ u8 _43BE[0x43C0 - 0x43BE];
     /*0x43C0*/ s16 _43C0; // scout-flag character of the current star chance
-    /*0x43C2*/ u8 _43C2[0x4415 - 0x43C2];
+    /*0x43C2*/ u8 _43C2[0x43D6 - 0x43C2];
+    /*0x43D6*/ u8 _43D6[0x36]; // per character id (fn_3_12A910: star icon shown)
+    /*0x440C*/ u8 _440C[0x4415 - 0x440C];
     /*0x4415*/ u8 _4415;
     /*0x4416*/ u8 _4416;
     /*0x4417*/ u8 _4417[0x441B - 0x4417];

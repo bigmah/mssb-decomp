@@ -30,7 +30,6 @@ extern MinigameBss32724View lbl_3_common_bss_32724;
 extern MinigameBss32234View lbl_3_common_bss_32234;
 extern MinigameCBC3CView lbl_803CBC3C;
 extern MinigameFielderView g_Fielders[];
-extern MinigameBss34C90View lbl_3_common_bss_34C90;
 extern MinigameLineScoreView lbl_80353A90;
 extern MinigameBss37400View lbl_3_common_bss_37400;
 extern MinigameSceneFadeView lbl_8037169C;
@@ -531,27 +530,27 @@ void fn_3_DFBAC(void) {
         break;
     case 1:
         // Pause: the first human player to press START.
-        if (g_Pitcher.pitchTotalTimeCounter <= 0 && lbl_3_common_bss_34C90.paused == 0) {
+        if (g_Pitcher.pitchTotalTimeCounter <= 0 && lbl_3_common_bss_34C90.active == 0) {
             for (i = 0; i < g_Minigame.miniGameNumberOfParticipants; i++) {
                 if (g_Minigame.minigameControlStruct[0].characterIndex[i] >= 0 &&
                     g_Minigame.minigameControlStruct[0].battingHandedness[i] == 0 &&
                     (g_Controls[g_Minigame.minigameControlStruct[0].characterIndex[i]].newButtonInput & 0x1000)) {
-                    lbl_3_common_bss_34C90.paused = 1;
-                    lbl_3_common_bss_34C90.port = g_Minigame.minigameControlStruct[0].characterIndex[i];
+                    lbl_3_common_bss_34C90.active = 1;
+                    lbl_3_common_bss_34C90.team = g_Minigame.minigameControlStruct[0].characterIndex[i];
                     fn_3_AFD80(0);
                     fn_3_59918(0xE, 0);
                     break;
                 }
             }
         }
-        if (lbl_3_common_bss_34C90.paused != 0) {
-            if (lbl_3_common_bss_34C90.pauseFrames < 0x7FFE) {
-                lbl_3_common_bss_34C90.pauseFrames++;
+        if (lbl_3_common_bss_34C90.active != 0) {
+            if (lbl_3_common_bss_34C90.frames < 0x7FFE) {
+                lbl_3_common_bss_34C90.frames++;
             } else {
-                lbl_3_common_bss_34C90.pauseFrames = 0x7FFF;
+                lbl_3_common_bss_34C90.frames = 0x7FFF;
             }
             lbl_803CBC3C._00 = 1;
-            if (lbl_3_common_bss_34C90.pauseFrames > 60) {
+            if (lbl_3_common_bss_34C90.frames > 60) {
                 fn_3_AFD80(1);
                 fn_3_5A6D4(0xB);
             } else {
@@ -652,7 +651,7 @@ void fn_3_DFBAC(void) {
         if ((g_Minigame.rosterID != g_Minigame._19C6 ||
              g_Minigame.minigameControlStruct[0]._1C[g_Minigame.rosterID] == 1) &&
             g_Minigame.toyField_turnNumber >= g_Minigame.toyField_selectedTurns) {
-            lbl_3_common_bss_34C90._1D2 = 0;
+            lbl_3_common_bss_34C90.subState = 0;
             fn_3_5A6D4(0xE);
         } else if (g_Minigame.toyField_turnNumber < g_Minigame.toyField_selectedTurns &&
                    g_Minigame.toyField_turnNumber % 10 == 0) {
@@ -669,14 +668,14 @@ void fn_3_DFBAC(void) {
         break;
     case 13:
         lbl_803CBC3C._00 = 1;
-        if (lbl_3_common_bss_34C90._12 < 0x7FFE) {
-            lbl_3_common_bss_34C90._12++;
+        if (lbl_3_common_bss_34C90.subFrames < 0x7FFE) {
+            lbl_3_common_bss_34C90.subFrames++;
         } else {
-            lbl_3_common_bss_34C90._12 = 0x7FFF;
+            lbl_3_common_bss_34C90.subFrames = 0x7FFF;
         }
-        lbl_3_common_bss_34C90.buttonInput = g_Controls[lbl_3_common_bss_34C90.port].buttonInput;
-        lbl_3_common_bss_34C90.newButtonInput = g_Controls[lbl_3_common_bss_34C90.port].newButtonInput;
-        lbl_3_common_bss_34C90._08 = g_Controls[lbl_3_common_bss_34C90.port]._08;
+        lbl_3_common_bss_34C90.heldButtons = g_Controls[lbl_3_common_bss_34C90.team].buttonInput;
+        lbl_3_common_bss_34C90.newButtons = g_Controls[lbl_3_common_bss_34C90.team].newButtonInput;
+        lbl_3_common_bss_34C90.repeatButtons = g_Controls[lbl_3_common_bss_34C90.team]._08;
         fn_3_ACAF8();
         break;
     case 14:
@@ -964,7 +963,7 @@ void fn_3_E07DC(void) {
         }
         actor->visible = 0;
         if (g_GameLogic.gameStatus == 0x22 &&
-            (lbl_3_common_bss_34C90._1D2 == 7 || g_GameLogic.framesOfExitingToMenu != 0)) {
+            (lbl_3_common_bss_34C90.subState == 7 || g_GameLogic.framesOfExitingToMenu != 0)) {
             continue;
         }
         if (g_Minigame.minigameControlStruct[0].characterIndex[placed] != i) {
@@ -995,7 +994,7 @@ void fn_3_E07DC(void) {
                 }
             }
         } else if (allDone != 0) {
-            if (g_Minigame.minigameControlStruct[0]._04[i] == 0x26) {
+            if (g_Minigame.minigameControlStruct[0].charID[i] == 0x26) {
                 actor->pos.z += lbl_3_data_18EC4[1];
             } else {
                 actor->pos.z += lbl_3_data_18EC4[0];
