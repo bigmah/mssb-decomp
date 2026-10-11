@@ -961,7 +961,13 @@ s32 fn_800ACC6C(s32 mode, s32 a, s32 b) {
 
 // .text:0x800ACCE8 size:0x5C
 void fn_800ACCE8(void) {
-    return;
+    s32 i;
+    memset(&lbl_803C7838, 0, sizeof(CardSystem));
+    lbl_803C7838.status = CARD_STATUS_BUSY;
+    for (i = 0; i < 2; i++) {
+        lbl_803C7838.slots[i].probeResult = CARD_RESULT_BUSY;
+    }
+    fn_800B0A5C_insertQueue(fn_800ABB60, 0xF0);
 }
 
 // .text:0x800ACD44 size:0x20
