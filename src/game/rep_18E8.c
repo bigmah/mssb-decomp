@@ -563,9 +563,76 @@ int fn_3_A32B8(void) {
 }
 
 // .text:0x000A3374 size:0x348 mapped:0x806E2408
+// NONMATCHING 99.7%: float registers swapped in the distance-limit compare
+#if NONMATCHING
 int fn_3_A3374(void) {
-    return;
+    RepFielder* f = &g_Fielders[g_Ball.fielderWBallIndex];
+    s32 idx;
+
+    if (lbl_3_bss_1824 & 0x1000) {
+        if (!(lbl_3_bss_1824 & 0xFFF) && g_Ball.AtBat_ContactResult == 3 && g_Ball.timeSinceBallPickedUp < 0x1E) {
+            f32 limit = 0.35f * (f32)f->_1CE + 69.0f;
+            if (g_Ball.ballDistanceFromBase[0] >= 62.0f && g_Ball.ballDistanceFromBase[0] <= limit &&
+                g_Runners[3].tagUpInd == 0) {
+                if (g_Runners[3].runningDirectionCode == 1 && fn_3_A46A0(lbl_3_bss_1808[3])) {
+                    return 1;
+                }
+                return 1;
+            }
+        }
+        if (lbl_3_bss_1800 & 0x1000) {
+            if (lbl_3_bss_181C == 3) {
+                if (g_Ball.ballDistanceFromBase[0] < 75.0f) {
+                    idx = lbl_3_bss_1808[3];
+                    if (lbl_3_bss_1858[idx] <= 7 && fn_3_A46A0(idx)) {
+                        return 1;
+                    }
+                }
+                return 0;
+            }
+            if (lbl_3_bss_181C == 2) {
+                if (g_Ball.ballDistanceFromBase[0] < 75.0f) {
+                    idx = lbl_3_bss_1808[3];
+                    if (lbl_3_bss_1858[idx] <= 6 && fn_3_A46A0(idx)) {
+                        return 1;
+                    }
+                }
+                return 0;
+            }
+            if (g_Ball.ballDistanceFromBase[0] < 68.0f) {
+                if (lbl_3_bss_1824 & 0x110) {
+                    return 0;
+                }
+                idx = lbl_3_bss_1808[3];
+                if (lbl_3_bss_1858[idx] <= 4 && fn_3_A46A0(idx)) {
+                    return 1;
+                }
+            }
+        }
+    }
+    if ((lbl_3_bss_1824 & 0x100) && g_Ball.ballDistanceFromBase[3] < 65.0f && (lbl_3_bss_1800 & 0x100)) {
+        if (!(lbl_3_bss_1824 & 0x10)) {
+            idx = lbl_3_bss_1808[2];
+            if (lbl_3_bss_1858[idx] <= 5 && fn_3_A46A0(idx)) {
+                return 1;
+            }
+        } else if (!(lbl_3_bss_1800 & 0x60)) {
+            idx = lbl_3_bss_1808[2];
+            if (lbl_3_bss_1858[idx] <= 4 && fn_3_A46A0(idx)) {
+                return 1;
+            }
+        }
+    }
+    if ((lbl_3_bss_1824 & 0x10) && g_Ball.ballDistanceFromBase[2] < 50.0f && (lbl_3_bss_1800 & 0x10) &&
+        !(lbl_3_bss_1824 & 0x1000)) {
+        idx = lbl_3_bss_1808[1];
+        if (lbl_3_bss_1858[idx] <= 5 && fn_3_A46A0(idx)) {
+            return 1;
+        }
+    }
+    return 0;
 }
+#endif
 
 // .text:0x000A36BC size:0x70 mapped:0x806E2750
 int fn_3_A36BC(void) {
