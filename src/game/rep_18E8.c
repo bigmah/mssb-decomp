@@ -2507,7 +2507,7 @@ void fn_3_A85C8(f32 dist) {
 
 // .text:0x000A89D4 size:0x980 mapped:0x806E7A68
 // Chooses g_FieldingLogic.throwSpeedType for the current throw.
-// NONMATCHING 60%: the original inlines fn_3_A85C8 (with fn_3_A6ABC) as its tail; here it is called. Code before it matches up to register allocation
+// NONMATCHING 55%: the original inlines fn_3_A85C8 (with fn_3_A6ABC) as its tail; here it is called. Code before it matches up to register allocation
 #if NONMATCHING
 void fn_3_A89D4(void) {
     RepFielder* f;
