@@ -953,9 +953,36 @@ void fn_8003414C(Mtx view) {
 #endif
 
 // .text:0x80034220 size:0x30C
+// NONMATCHING 82%: r3/r4 swapped in the pool-link loop, mr before the cos loop
+#if NONMATCHING
 void minigamesSetSomePointers(void) {
-    return;
+    s32 i;
+    f32* t;
+
+    lbl_803CBC78 = 1;
+    memset(lbl_80180040, 0, sizeof(lbl_80180040));
+    for (i = 0; i < 0x13FF; i++) {
+        lbl_80180040[i].next = &lbl_80180040[i + 1];
+    }
+    lbl_803CBC74 = lbl_80180040;
+    lbl_803CBC78 = 0;
+    lbl_803CBC84.prev = NULL;
+    lbl_803CBC84.next = NULL;
+    memset(lbl_801F8040, 0, sizeof(lbl_801F8040));
+    for (i = 0; i < 0xF; i++) {
+        lbl_801F8040[i].next = &lbl_801F8040[i + 1];
+    }
+    lbl_803CBC80 = lbl_801F8040;
+    t = lbl_8017ED68;
+    i = 0;
+    do {
+        *t = cos((3.141592654 * i) / 1025.0);
+        i++;
+        t++;
+    } while (i < 0x401);
+    lbl_803CBC7C = 0;
 }
+#endif
 
 // .text:0x8003452C size:0x39C
 void minigamesGXStuff(void) {
