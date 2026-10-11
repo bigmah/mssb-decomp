@@ -30,6 +30,15 @@ extern u8 lbl_3_data_1A28[];
 extern u8 lbl_3_data_1A3C[];
 extern f32 lbl_3_data_4474[];
 extern u8 lbl_3_data_1A40[];
+extern u8 lbl_3_data_193C[]; // batter difficulty per AI difficulty setting
+extern u8 lbl_3_data_1944[]; // star-swing odds: [situation][difficulty][stars] (6 per difficulty)
+extern u8 lbl_3_data_198C[]; // [difficulty][count][star-swing %, swing %]
+extern u8 lbl_3_data_19B4[];
+extern u8 lbl_3_data_1A14[];
+extern u8 lbl_3_data_1A20[];
+extern u8 lbl_3_data_1C08[]; // batter Z position range [bunt][min, max]
+extern u8 lbl_3_data_1C0C[];
+extern u8 lbl_3_data_1C10[];
 extern u8 lbl_3_data_1B50[]; // swing-timing jitter weights: [difficulty][2][9]
 extern u8 lbl_3_data_1B98[];
 extern s8 lbl_3_data_1BA8[];
@@ -688,6 +697,161 @@ void fn_3_20188(void) {
 }
 
 // .text:0x00020224 size:0x83C mapped:0x8065F2B8
+// NONMATCHING 96.8%: g_GameLogic/g_AiLogic base registers r29/r30 swapped, and the batterAIZPosition block is scheduled differently
+#if NONMATCHING
 void fn_3_20224(void) {
-    return;
+    int situation;
+    int r;
+    int count;
+    u8* odds;
+    u32 d;
+    s32 n;
+    s32 ri;
+    f32 chance;
+    u8 sp;
+    int bunt;
+    u8 lo;
+    s16 fl;
+
+    if (g_Batter.aiControlledInd != 0) {
+        if (g_d_GameSettings.GameModeSelected == 2 && g_Practice.practiceType_2 != 4) {
+            g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch = 0;
+            g_AiLogic.batterAIInd9PrincessStarHit = 1;
+            g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch = 3;
+        } else {
+            g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch = 0;
+            g_AiLogic.aIBatterDifficulty = lbl_3_data_193C[g_GameLogic.AIDifficulty0Special3Weak[g_GameLogic.homeTeamBattingInd_fieldingTeam]];
+            if (g_d_GameSettings.minigamesEnabled == 0 && g_GameLogic.freeFieldingPracticeInd == 0) {
+                if (g_AiLogic.batterAIABStrat < 0) {
+                    g_AiLogic.batterAIABStrat = 0;
+                    if (g_GameLogic.TeamStars[g_GameLogic.teamBatting] != 0) {
+                        situation = -1;
+                        if (g_Scores.inning >= g_Scores.maxInnings && g_Strikes.outs == 2 && g_Scores._A6 != 0) {
+                            situation = 0;
+                        } else if ((g_RunningLogic._00 & 0x1000) || g_RunningLogic._10 >= 3) {
+                            situation = 1;
+                        } else if (g_Scores._AC >= 2 && g_Scores._A6 <= 1 && g_AiLogic.starRelated[g_GameLogic.homeTeamBattingInd_fieldingTeam] == 0) {
+                            situation = 2;
+                        }
+                        if (situation >= 0 && RandomInt_Game(100) < (lbl_3_data_1944 + situation * 0x18 + g_AiLogic.aIBatterDifficulty * 6)[g_GameLogic.TeamStars[g_GameLogic.teamBatting]]) {
+                            g_AiLogic.batterAIABStrat = 1;
+                        }
+                    }
+                }
+                if (g_AiLogic.batterAIABStrat != 0) {
+                    r = RandomInt_Game(100);
+                    if (g_Pitcher.nPitchesThisAB == 0) {
+                        count = 0;
+                    } else if (g_Pitcher.nPitchesThisAB >= 6) {
+                        count = 4;
+                    } else if (g_Strikes.strikes == 0) {
+                        count = 1;
+                    } else if (g_Strikes.strikes == 1) {
+                        count = 2;
+                    } else {
+                        count = 3;
+                    }
+                    odds = lbl_3_data_198C + g_AiLogic.aIBatterDifficulty * 10;
+                    if (r < odds[count * 2]) {
+                        g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch = 2;
+                    } else if (r - odds[count * 2] < odds[count * 2 + 1]) {
+                        g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch = 0;
+                    } else {
+                        g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch = 3;
+                    }
+                }
+            }
+            if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 2) {
+                g_Batter.isStarSwing = 1;
+            } else {
+                g_Batter.isStarSwing = 0;
+            }
+            if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 0) {
+                g_AiLogic._70 = 0;
+                if (RandomInt_Game(100) < (lbl_3_data_19B4 + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty]) {
+                    g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch = 1;
+                    if (g_AiLogic.lastPitchFramesUntilPitchGetsToBatter != 0 && RandomInt_Game(100) < lbl_3_data_19C4[g_AiLogic.aIBatterDifficulty]) {
+                        g_AiLogic._70 = 1;
+                    }
+                }
+            }
+            if (g_AiLogic.batterAIBuntPossibility != 0) {
+                g_AiLogic.batterAIBuntPossibility = 0;
+                g_AiLogic.batterAIBuntInd = 0;
+                if (g_Scores._A6 <= 2 && g_Scores._AC >= 2 && g_Strikes.outs <= 1 &&
+                    (g_RunningLogic.occupiedBases == 0x11 || g_RunningLogic.occupiedBases == 0x111) &&
+                    RandomInt_Game(100) < (lbl_3_data_1C10 + g_Batter.characterClass * 4)[g_AiLogic.aIBatterDifficulty]) {
+                    g_AiLogic.batterAIBuntInd = 1;
+                }
+            }
+
+            // inlined fn_3_1E4B8
+            g_AiLogic.batterAIStealIndicator = 0;
+            r = RandomInt_Game(100);
+            d = g_GameLogic.AIDifficulty0Special3Weak[g_GameLogic.homeTeamBattingInd_fieldingTeam];
+            if (r < lbl_3_data_1C90[d]) {
+                g_AiLogic.batterAIStealingStartFrame = lbl_3_data_4B90[2] - 1;
+            } else {
+                g_AiLogic.batterAIStealingStartFrame = lbl_3_data_4B90[3] - 1;
+            }
+            n = g_Pitcher.nPitchesThisAB;
+            if (n > 2) {
+                n = 2;
+            }
+            fl = g_RunningLogic.occupiedBases;
+            if (fl & 0x100) {
+                if (fl & 0x1000) {
+                    goto steal_done;
+                }
+                ri = 2;
+                chance = (lbl_3_data_1C98 + d * 12 + n * 4 + g_Runners[2].characterClass)[0x3C];
+            } else if (fl & 0x10) {
+                ri = 1;
+                chance = (lbl_3_data_1C98 + d * 12 + n * 4 + g_Runners[1].characterClass)[0x3C];
+            } else {
+                goto steal_done;
+            }
+            chance *= lbl_3_data_1D10[g_Batter.characterClass];
+            if (g_Strikes.balls == 3) {
+                chance *= lbl_3_data_1D10[4];
+            }
+            sp = g_Runners[ri].speed;
+            if (sp >= 0x32) {
+                chance *= lbl_3_data_1D10[5] * (f32)((sp - 0x32) / 10) + 1.0f;
+            }
+            if (RandomInt_Game(100) < (s32)chance) {
+                g_AiLogic.batterAIStealIndicator = 1;
+            }
+        steal_done:
+            bunt = 0;
+            if (g_AiLogic.batterAIBuntInd == 1) {
+                bunt = 1;
+            }
+            lo = lbl_3_data_1C08[bunt * 2];
+            g_AiLogic.batterAIZPosition = (s32)((lbl_3_data_1C08[bunt * 2 + 1] - lo) * g_AiLogic.aIDifficultyMultiplierArray[g_GameLogic.homeTeamBattingInd_fieldingTeam]) + lo;
+            g_AiLogic.batterAIInd8_FrameBtwn10And16 = lbl_3_data_1C0C[0] + (s32)((lbl_3_data_1C0C[1] - lbl_3_data_1C0C[0]) * g_AiLogic.aIDifficultyMultiplierArray[g_GameLogic.homeTeamBattingInd_fieldingTeam]);
+            g_AiLogic.batterAIInd9PrincessStarHit = RandomIndexFromWeights(lbl_3_data_1A14 + g_Batter.characterClass * 3, 3);
+            g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch = 0;
+            if (RandomInt_Game(100) < lbl_3_data_1A20[g_AiLogic.aIBatterDifficulty]) {
+                g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch = 3;
+            }
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                g_AiLogic.batterAIInd10_relatedToBoxPosPrePitch = 3;
+            }
+            // inlined fn_3_20188
+            if (g_AiLogic.lastPitchType != 0xFF && RandomInt_Game(100) < lbl_3_data_1AAC[g_AiLogic.aIBatterDifficulty]) {
+                g_AiLogic.batterAIPitchGuessed = g_AiLogic.lastPitchType;
+            } else {
+                g_AiLogic.batterAIPitchGuessed = RandomIndexFromWeights(lbl_3_data_1AB0 + g_Pitcher.charClass * 3, 3);
+            }
+        }
+    }
+    g_AiLogic.batterAISwingInd = 0;
+    g_AiLogic.batterAIBoxPosXVelo = 0.0f;
+    g_AiLogic.batterAIBoxPosZVelo = 0.0f;
+    g_AiLogic.someNotAISwingInd = 0;
+    g_AiLogic.aISwingDecisionRelated_noSwingOverride = 0;
+    g_AiLogic.aIBatterTrackingCode = 0;
+    g_AiLogic.batterAISwingEarly1OrLate2 = 0;
 }
+#endif
