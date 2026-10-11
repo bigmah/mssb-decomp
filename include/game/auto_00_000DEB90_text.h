@@ -24,6 +24,25 @@ typedef struct MinigameCharMgrView {
 
 extern MinigameCharMgrView lbl_8036E548;
 
+// View of g_Scores, only the fields used here.
+typedef struct MinigameScoresView {
+    /*0x00*/ s32 inning;
+    /*0x04*/ u8 _04[0xAA - 0x4];
+    /*0xAA*/ u8 minigameRelated;
+    /*0xAB*/ u8 _AB;
+    /*0xAC*/ s8 _AC;
+} MinigameScoresView;
+
+extern MinigameScoresView g_Scores;
+
+// View of lbl_3_common_bss_37400, only the fields used here.
+typedef struct MinigameBss37400View {
+    /*0x00*/ u8 _00[0x40];
+    /*0x40*/ s16 humanPlayer;
+} MinigameBss37400View;
+
+extern MinigameBss37400View lbl_3_common_bss_37400;
+
 void fn_8001D0D0(s32 index, f32 scale);
 
 void fn_3_10C81C(void);

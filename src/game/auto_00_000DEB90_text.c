@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 extern f32 lbl_3_data_18D98[];
+extern u8 lbl_3_data_18944[]; // per minigame: number of participants - 1
+extern u8 lbl_3_data_18980[]; // AI strength of each CPU player
 
 // .text:0x000DEB90 size:0x47C mapped:0x8071DC24
 void fn_3_DEB90(void) {
@@ -27,11 +29,27 @@ void fn_3_DF3D8(void) {
     return;
 }
 
+// NONMATCHING 96%: only scheduling, the lbz of g_d_GameSettings._35 is hoisted above `li r0,0` / the DATA lis
 // .text:0x000DF608 size:0xCC mapped:0x8071E69C
+#if NONMATCHING
 void fn_3_DF608(void) {
-    return;
-}
+    u8* aiStrength = lbl_3_data_18980;
+    s32 i;
 
+    g_Minigame._19DA[g_d_GameSettings._35] = 0;
+    for (i = 0; i < 4; i++) {
+        if (g_d_GameSettings._35 != i) {
+            g_Minigame.minigameControlStruct[0].aIStrength[i] = *aiStrength++;
+        }
+    }
+    g_Minigame.miniGameNumberOfParticipants = lbl_3_data_18944[g_Minigame.GameMode_MiniGame] + 1;
+    g_Minigame._1907 = 1;
+    g_Minigame.multiPlayerInd = 1;
+    g_Scores.minigameRelated = 1;
+}
+#endif
+
+// NONMATCHING 95%: inlines fn_3_DF608 (same scheduling issue); the tail g_d_GameSettings._35 load is also hoisted
 // .text:0x000DF6D4 size:0x14C mapped:0x8071E768
 void fn_3_DF6D4(void) {
     return;
