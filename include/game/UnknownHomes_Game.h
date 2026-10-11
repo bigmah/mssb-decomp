@@ -246,7 +246,7 @@ typedef struct _InMemRunnerType {
     /*0x12C*/ u8 outType;
     /*0x12D*/ u8 forcedToAdvanceInd; // maybe
     /*0x12E*/ u8 unused_someBaseNum;
-    /*0x12F*/ u8 baseOfFailedBodyCheck; // maybe
+    /*0x12F*/ s8 baseOfFailedBodyCheck; // maybe
     /*0x130*/ u8 tagType;               // 1=Running 2=Sliding
     /*0x131*/ u8 runnerDidntReachOnError;
     /*0x132*/ u8 isEligibleToScore; // maybe
@@ -2930,7 +2930,7 @@ typedef struct {
     /* 0x1F */ s8 lastFielder;
     /* 0x20 */ s16 _20;
     /* 0x22 */ s8 _22; // -1: undecided (fn_3_7976C)
-    /* 0x23 */ u8 _23;
+    /* 0x23 */ s8 _23;
     /* 0x24 */ u8 _24;
     /* 0x25 */ s8 _25; // double-play tracking (fn_3_79A00)
     /* 0x26 */ s8 _26; // runs scored on the last dead ball
@@ -2987,11 +2987,12 @@ typedef struct GameScoresTeam {
 typedef struct GameScores {
     /* 0x00 */ s32 inning;
     /* 0x04 */ GameScoresTeam team[2];
-    /* 0x50 */ u8 _50[0x9C - 0x50];
+    /* 0x50 */ s16 _50[2][19]; // per team, like runs: [0] total, [n] inning n (hits)
     /* 0x9C */ s16 _9C;
     /* 0x9E */ s16 _9E;
     /* 0xA0 */ s16 _A0;
-    /* 0xA2 */ u8 _A2[0xAA - 0xA2];
+    /* 0xA2 */ u8 _A2[0xA8 - 0xA2];
+    /* 0xA8 */ u8 _A8[2]; // per team (errors)
     /* 0xAA */ u8 maxInnings;
     /* 0xAB */ u8 _AB;
     /* 0xAC */ u8 _AC;
