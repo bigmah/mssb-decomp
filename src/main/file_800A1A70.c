@@ -69,7 +69,7 @@ void GDSetTexImgAttr(GXTexMapID id, u16 width, u16 height, GXTexFmt format) {
 
 // .text:0x800A2294 size:0xE8
 void GDSetTexImgPtr(GXTexMapID id, void* image_ptr) {
-    return;
+    GDWriteBPCmd((u32)(OSCachedToPhysical(image_ptr) >> 5) << 0 | (u32)lbl_803CBAB0[id] << 24);
 }
 
 // .text:0x800A237C size:0xF0
