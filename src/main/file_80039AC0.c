@@ -267,7 +267,7 @@ void fn_8003A37C(Mtx mtx, s32* stage, s32* coord, s32* map, u8* count, u8* texMt
     GXSetTevColorOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     GXSetTevAlphaIn(*stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
     GXSetTevAlphaOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-    GXSetTexCoordGen2(*coord, GX_TG_MTX2X4, GX_TG_POS, *texMtx * 3 + GX_TEXMTX0, GX_FALSE, GX_PTIDENTITY);
+    GXSetTexCoordGen2(*coord, GX_TG_MTX3X4, GX_TG_POS, *texMtx * 3 + GX_TEXMTX0, GX_FALSE, GX_PTIDENTITY);
     GXLoadTexMtxImm(mtx, *texMtx * 3 + GX_TEXMTX0, GX_MTX3x4);
     (*count)++;
     (*texMtx)++;
