@@ -907,7 +907,46 @@ void fn_3_1128EC(void) {
 }
 
 // .text:0x00112BD8 size:0x7C0 mapped:0x80751C6C
+// Bomb-omb Derby state machine: dispatches on the game state (g_GameLogic+0x11E).
+// NONMATCHING 60%: the original inlines every case handler except fn_3_112610/fn_3_112230; ours
+// does too, except fn_3_111C5C (itself nonmatching), which CW refuses to inline here.
+#if NONMATCHING
 void fn_3_112BD8(void) {
-    return;
+    switch (g_GameLogic[0x11E]) {
+    case 4:
+        fn_3_112610();
+        break;
+    case 26:
+        fn_3_1125D0();
+        break;
+    case 6:
+        fn_3_112558();
+        break;
+    case 7:
+        fn_3_112450();
+        break;
+    case 0:
+        fn_3_112230();
+        break;
+    case 1:
+        fn_3_111C5C();
+        break;
+    case 2:
+        fn_3_111738();
+        break;
+    case 8:
+        fn_3_112128();
+        break;
+    case 25:
+        fn_3_1120E0();
+        break;
+    case 3:
+        fn_3_111F80();
+        break;
+    case 15:
+        fn_3_112070();
+        break;
+    }
 }
+#endif
 
