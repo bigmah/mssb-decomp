@@ -181,7 +181,16 @@ void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* lay
 
 // .text:0x800BCAB8 size:0x8C
 void DOGet(struct DODisplayObj** dispObj, DODisplayDataPtr pal, u16 id, char* name) {
-    return;
+    DODisplayLayout* layout;
+
+    if (id >= pal->numDescriptors) {
+        OSReport(lbl_800E7F8C, id, pal->numDescriptors);
+        *dispObj = NULL;
+        return;
+    }
+    layout = pal->descriptorArray[id].layout;
+    *dispObj = _OSAllocFromHeap(0x20, sizeof(struct DODisplayObj));
+    InitDisplayObjWithLayout(*dispObj, layout);
 }
 
 // .text:0x800BCB44 size:0x21C
