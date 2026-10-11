@@ -1655,6 +1655,12 @@ void fn_2_65648(MenuTask* task, MenuItem* item) {
         lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
         item->state = 0x25;
         break;
+    case 0x25:
+        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
+        if ((obj->_5C >> 16) >= 120) {
+            obj->_5C = 13 << 16;
+        }
+        break;
     case 5:
         lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 12 << 16;
         lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 4;
@@ -1669,12 +1675,6 @@ void fn_2_65648(MenuTask* task, MenuItem* item) {
         break;
     case 7:
         lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
-        break;
-    case 0x25:
-        obj = lbl_80371C30[task->baseIdx + item->sprite].obj;
-        if ((obj->_5C >> 16) >= 120) {
-            obj->_5C = 13 << 16;
-        }
         break;
     }
 }
