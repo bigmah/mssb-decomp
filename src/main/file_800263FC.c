@@ -3050,14 +3050,15 @@ void fn_80032284(Vec* pos) {
 #endif
 
 // .text:0x800324EC size:0x3F4
-// NONMATCHING 35%: the original also builds an unused 32-entry color table on the stack; inlined emitter allocation registers
-#if NONMATCHING
 void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
-    Vec q;
     Vec pos;
+    Vec q;
+    u32 colors[32];
     Emitter* e;
     Particle* p;
+    u32 i;
     f32 size;
+    ParticleParams* tmpl;
 
     if (a < 0 || a >= 13 || lbl_8036E548.active[a] == NULL) {
         return;
@@ -3070,32 +3071,38 @@ void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
         PSVECScale(&q, 0.5f, &q);
         PSVECAdd(&pos, &q, &pos);
     }
-    // (the original also fills a never-read stack table of 32 colors built from
-    // lbl_800F787C words 0x38/0x3C/0x40 and copies the camera translation; omitted)
-    lbl_800F787C.tex = lbl_803CBD0C;
+    // never read: the camera translation and a table of 32 colors
+    q.x = lbl_8017FFE0[0][3];
+    q.y = lbl_8017FFE0[1][3];
+    q.z = lbl_8017FFE0[2][3];
+    colors[0] = (lbl_800F787C.unk18[8] << 24) | (lbl_800F787C.unk18[9] << 16) | (lbl_800F787C.unk18[10] << 8) | 0xFF;
+    for (i = 1; i < 32; i++) {
+        colors[i] = colors[0];
+    }
+    tmpl = &lbl_800F787C;
+    tmpl->tex = lbl_803CBD0C;
     e = NewEmitter(fn_8002E828, 0x80, 0, 1, 1, 6);
     if (e != NULL) {
-        e->tex = lbl_800F787C.tex;
+        e->tex = tmpl->tex;
         p = e->particles;
         p->pos.x = pos.x;
         p->pos.y = pos.y;
         p->pos.z = pos.z;
         p->color.rgba = 0xFFFFFF00;
-        p->u.t6.unk18 = lbl_800F787C.unk10;
-        p->u.t6.unk1C = p->life = lbl_800F787C.life;
-        p->u.t6.unk20 = lbl_800F787C.life / 2;
-        size = (f32)lbl_800F787C.size / 100000.0f;
+        p->u.t6.unk18 = tmpl->unk10;
+        p->u.t6.unk1C = p->life = tmpl->life;
+        p->u.t6.unk20 = tmpl->life / 2;
+        size = (f32)tmpl->size / 100000.0f;
         p->u.t6.unk10 = size;
         p->sizeY = size;
         p->sizeX = size;
-        p->u.t6.unk14 = (f32)lbl_800F787C.unkC / 100000.0f;
-        p->texIndex = lbl_800F787C.texIndex;
+        p->u.t6.unk14 = (f32)tmpl->unkC / 100000.0f;
+        p->texIndex = tmpl->texIndex;
     }
     if (prm != NULL) {
         fn_8002A1CC(&pos, prm);
     }
 }
-#endif
 
 // .text:0x800328E0 size:0x7EC
 // NONMATCHING 59%: the original inlines fn_8003403C with the file-static bss base (lbl_8017EC00 + offset); calls fn_8003403C here
