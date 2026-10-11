@@ -245,7 +245,15 @@ void pauseMenuSelection(void) {
 
 // .text:0x800486E0 size:0x84
 void fn_800486E0(s32 priority, s8 a, s8 b) {
-    return;
+    fn_800B0A5C_insertQueue(pauseMenuSelection, priority);
+    lbl_803297E0._CF38 = 0;
+    lbl_803297E0._CF3A = a;
+    lbl_803297E0._CF42 = 0;
+    if (g_d_GameSettings._06 != 2) {
+        lbl_803297E0._CF3B = 0;
+    } else {
+        lbl_803297E0._CF3B = b;
+    }
 }
 
 // .text:0x80048764 size:0xBC
