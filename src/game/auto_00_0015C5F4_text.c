@@ -340,9 +340,336 @@ void fn_3_15D1D8(ScoreBookTask* task) {
 #endif
 
 // .text:0x0015DB44 size:0x12E8 mapped:0x8079CBD8
+// Scorebook task: page / team / scroll transitions.
+// NONMATCHING 99.9%: `add` operand order in the two closing-animation index loops (base + i vs i + base).
+#if NONMATCHING
 void fn_3_15DB44(void) {
+    ScoreBookTask* task = SB_TASK;
+    LayoutObj* o;
+    s32 i;
+    s32 j;
+    s32 done;
+    s32 team;
+    s32 frame;
+    u32 f;
+
+    if (task->timer < 0xFFFE) {
+        task->timer++;
+    } else {
+        task->timer = 0xFFFF;
+    }
+    done = 0;
+    lbl_3_common_bss_32724._D2 = 0;
+    if (g_GameLogic._125 == 10) {
+        goto remove;
+    }
+
+    if (task->state == 0) {
+        lbl_3_common_bss_32724._D2 = 1;
+        task->state++;
+    } else if (task->state == 1) {
+        // opening
+        lbl_3_common_bss_32724._D2 = 1;
+        if (task->page == 0) {
+            o = SB_OBJ(task, 0x31);
+            if ((o->_5C >> 16) >= 10) {
+                o->_68 = 0;
+            }
+            o = SB_OBJ(task, 0x32);
+            if ((o->_5C >> 16) >= 5) {
+                o->_68 = 0;
+            }
+        } else {
+            o = SB_OBJ(task, 0x31);
+            if ((o->_5C >> 16) >= 5) {
+                o->_68 = 0;
+            }
+            o = SB_OBJ(task, 0x32);
+            if ((o->_5C >> 16) >= 10) {
+                o->_68 = 0;
+            }
+        }
+        o = SB_OBJ(task, 0x36);
+        if ((o->_5C >> 16) >= 10) {
+            o->_68 = 0;
+        }
+        if (task->timer >= 30) {
+            SB_OBJ(task, 0)->_68 = 0;
+            task->state++;
+        }
+    } else if (task->state == 2) {
+        // idle: wait for an input change
+        if (task->scroll != g_GameLogic.scoreBook_scrollIndex) {
+            lbl_3_common_bss_32724._D2 = 1;
+            task->timer = 0;
+            task->state = 7;
+        } else if (task->team != g_GameLogic.scoreBook_teamDisplayed) {
+            lbl_3_common_bss_32724._D2 = 1;
+            task->timer = 0;
+            task->state = 3;
+        } else if (task->page != g_GameLogic.scoreBook_batter_pitcherStatsDisplayed) {
+            lbl_3_common_bss_32724._D2 = 1;
+            task->timer = 0;
+            task->state = 5;
+        } else if (g_GameLogic._125 == 8) {
+            lbl_3_common_bss_32724._D2 = 1;
+            task->timer = 0;
+            task->state = 9;
+        }
+    } else if (task->state == 3) {
+        // team change: wipe out
+        lbl_3_common_bss_32724._D2 = 1;
+        done = 0;
+        if (g_GameLogic.scoreBook_logoFadeDirectionLeft_Right == 0) {
+            if (task->timer == 1) {
+                SB_OBJ(task, 0x36)->_5C = 0x15 << 16;
+                SB_OBJ(task, 0x36)->_68 = 1;
+            }
+            o = SB_OBJ(task, 0x36);
+            if ((o->_5C >> 16) >= 0x1F) {
+                done = 1;
+                o->_68 = 0;
+            }
+        } else {
+            if (task->timer == 1) {
+                SB_OBJ(task, 0x36)->_5C = 10 << 16;
+                SB_OBJ(task, 0x36)->_68 = 1;
+            }
+            o = SB_OBJ(task, 0x36);
+            if ((o->_5C >> 16) >= 0x14) {
+                done = 1;
+                o->_68 = 0;
+            }
+        }
+        for (i = 2; i <= 0x2A; i++) {
+            SB_OBJ(task, i)->_68 = 4;
+        }
+        if (done) {
+            task->state = 4;
+            task->timer = 0;
+        }
+    } else if (task->state == 4) {
+        // team change: redraw and wipe in
+        lbl_3_common_bss_32724._D2 = 1;
+        if (task->timer == 1) {
+            task->team = g_GameLogic.scoreBook_teamDisplayed;
+            if (task->team == 0) {
+                SB_OBJ(task, 0x37)->flags |= 2;
+                SB_OBJ(task, 0x38)->flags &= ~2;
+            } else {
+                SB_OBJ(task, 0x37)->flags &= ~2;
+                SB_OBJ(task, 0x38)->flags |= 2;
+            }
+            team = g_GameLogic._000 ^ task->team;
+            if (g_GameLogic._13E[team] != 0) {
+                fn_800363D8(task, 0x39, 1, 3, g_GameLogic.teams[team] + 4);
+            } else {
+                fn_800363D8(task, 0x39, 1, 3, g_GameLogic.teams[team]);
+            }
+            fn_3_15D1D8(task);
+        }
+        if (g_GameLogic.scoreBook_logoFadeDirectionLeft_Right == 1) {
+            if (task->timer == 1) {
+                SB_OBJ(task, 0x36)->_5C = 0x1F << 16;
+                SB_OBJ(task, 0x36)->_68 = 4;
+            }
+            if ((SB_OBJ(task, 0x36)->_5C >> 16) <= 0x15) {
+                SB_OBJ(task, 0x36)->_5C = 10 << 16;
+                done = 1;
+                SB_OBJ(task, 0x36)->_68 = 0;
+            }
+        } else {
+            if (task->timer == 1) {
+                SB_OBJ(task, 0x36)->_5C = 0x14 << 16;
+                SB_OBJ(task, 0x36)->_68 = 4;
+            }
+            if ((SB_OBJ(task, 0x36)->_5C >> 16) <= 10) {
+                SB_OBJ(task, 0x36)->_5C = 10 << 16;
+                done = 1;
+                SB_OBJ(task, 0x36)->_68 = 0;
+            }
+        }
+        for (i = 2; i <= 0x2A; i++) {
+            SB_OBJ(task, i)->_68 = 1;
+        }
+        if (done) {
+            task->state = 2;
+            task->timer = 0;
+        }
+    } else if (task->state == 5) {
+        // page change: hide stats
+        lbl_3_common_bss_32724._D2 = 1;
+        if (task->timer == 1) {
+            for (i = 7; i <= 0x30; i++) {
+                SB_OBJ(task, i)->_68 = 4;
+            }
+        }
+        if (task->page == 0) {
+            o = SB_OBJ(task, 0x31);
+            if ((o->_5C >> 16) <= 5) {
+                o->_68 = 0;
+            } else {
+                o->_68 = 4;
+            }
+            o = SB_OBJ(task, 0x32);
+            if ((o->_5C >> 16) >= 10) {
+                o->_68 = 0;
+            } else {
+                o->_68 = 1;
+            }
+        } else {
+            o = SB_OBJ(task, 0x32);
+            if ((o->_5C >> 16) <= 5) {
+                o->_68 = 0;
+            } else {
+                o->_68 = 4;
+            }
+            o = SB_OBJ(task, 0x31);
+            if ((o->_5C >> 16) >= 10) {
+                o->_68 = 0;
+            } else {
+                o->_68 = 1;
+            }
+        }
+        if (task->timer >= 8) {
+            task->state = 6;
+            task->timer = 0;
+        }
+    } else if (task->state == 6) {
+        // page change: redraw
+        lbl_3_common_bss_32724._D2 = 1;
+        if (task->timer == 1) {
+            task->page = g_GameLogic.scoreBook_batter_pitcherStatsDisplayed;
+            for (i = 7; i <= 0x30; i++) {
+                SB_OBJ(task, i)->_68 = 1;
+            }
+            for (j = 0; j < 6; j++) {
+                fn_800363D8(task, j + 0x2B, 1, 0xF, lbl_3_data_27C40[task->page][j]);
+            }
+            if (task->page == 0) {
+                SB_OBJ(task, 0x35)->_5C = 5 << 16;
+            } else {
+                SB_OBJ(task, 0x35)->_5C = 0x33 << 16;
+            }
+            fn_3_15D1D8(task);
+        }
+        if (task->timer >= 8) {
+            task->state = 2;
+            task->timer = 0;
+        }
+    } else if (task->state == 7) {
+        // scroll: hide the rows (not the totals column)
+        lbl_3_common_bss_32724._D2 = 1;
+        if (task->timer == 1) {
+            for (i = 2; i <= 0x2A; i++) {
+                if (i != 0xC && i != 0x12 && i != 0x18 && i != 0x1E && i != 0x24 && i != 0x2A) {
+                    SB_OBJ(task, i)->_68 = 4;
+                }
+            }
+        }
+        if (task->timer >= 8) {
+            task->state = 8;
+            task->timer = 0;
+        }
+    } else if (task->state == 8) {
+        // scroll: redraw
+        lbl_3_common_bss_32724._D2 = 1;
+        if (task->timer == 1) {
+            task->scroll = g_GameLogic.scoreBook_scrollIndex;
+            for (i = 2; i <= 0x2A; i++) {
+                SB_OBJ(task, i)->_68 = 1;
+            }
+            fn_3_15D1D8(task);
+        }
+        if (task->timer >= 8) {
+            task->state = 2;
+            task->timer = 0;
+        }
+    } else {
+        // closing
+        lbl_3_common_bss_32724._D2 = 1;
+        SB_OBJ(task, 0)->_68 = 4;
+        frame = SB_OBJ(task, 0)->_5C >> 16;
+        if (frame == 10) {
+            SB_OBJ(task, 0x36)->_68 = 4;
+            SB_OBJ(task, 0x33)->_68 = 4;
+            if (task->page == 0) {
+                SB_OBJ(task, 0x35)->_5C = 5 << 16;
+                SB_OBJ(task, 0x35)->_68 = 4;
+            } else {
+                SB_OBJ(task, 0x35)->_5C = 0x33 << 16;
+                SB_OBJ(task, 0x35)->_68 = 1;
+            }
+        }
+        if (frame <= lbl_3_data_27C4C[0] + 5) {
+            if (task->page == 0) {
+                SB_OBJ(task, 0x31)->_68 = 1;
+                SB_OBJ(task, 0x32)->_68 = 4;
+            } else {
+                SB_OBJ(task, 0x31)->_68 = 4;
+                SB_OBJ(task, 0x32)->_68 = 1;
+            }
+        }
+        for (i = 0; i < 5; i++) {
+            if (frame <= lbl_3_data_27C4C[i] + 5) {
+                SB_OBJ(task, i + 2)->_68 = 4;
+            }
+        }
+        for (i = 0; i < 6; i++) {
+            if (frame <= lbl_3_data_27C4C[i] + 5) {
+                lbl_80371C30[(i + 0x2B) + task->baseIdx].obj->_68 = 4;
+            }
+        }
+        for (i = 0; i < 6; i++) {
+            if (frame <= lbl_3_data_27C4C[i] + 5) {
+                for (j = 0; j < 6; j++) {
+                    lbl_80371C30[(i * 6 + j + 7) + task->baseIdx].obj->_68 = 4;
+                }
+            }
+        }
+        if ((SB_OBJ(task, 0)->_5C >> 16) == 0) {
+            goto remove;
+        }
+    }
+
+    // keep the looping animations within their ranges
+    if (task->state >= 2) {
+        if (task->page == 0) {
+            o = SB_OBJ(task, 0x35);
+            if ((o->_5C >> 16) >= 0x2D) {
+                o->_5C = 5 << 16;
+            }
+        } else {
+            o = SB_OBJ(task, 0x35);
+            if ((o->_5C >> 16) >= 0x5D) {
+                o->_5C = 0x33 << 16;
+            }
+        }
+    }
+    if (task->scroll == 0) {
+        o = SB_OBJ(task, 0x34);
+        f = o->_5C >> 16;
+        if (f >= 0x12E || f < 0xCA) {
+            o->_5C = 0xCA << 16;
+        }
+    } else if (task->scroll == 4) {
+        o = SB_OBJ(task, 0x34);
+        f = o->_5C >> 16;
+        if (f >= 0xC9 || f < 0x65) {
+            o->_5C = 0x65 << 16;
+        }
+    } else {
+        o = SB_OBJ(task, 0x34);
+        if ((o->_5C >> 16) >= 0x64) {
+            o->_5C = 0;
+        }
+    }
     return;
+
+remove:
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
+#endif
 
 // .text:0x0015EE2C size:0x25C mapped:0x8079DEC0
 void fn_3_15EE2C(void) {
