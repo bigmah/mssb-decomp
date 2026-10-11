@@ -373,7 +373,88 @@ s32 fn_80048EA8(s32 index) {
 
 // .text:0x80048EB8 size:0x368
 void startGameRelated(void) {
-    return;
+    s32 i;
+
+    switch (lbl_803C5F04._35) {
+    case 0:
+        lbl_803C5EE0._15 = 1;
+        lbl_8034E9A0._48AF = 1;
+        lbl_8034E978._26 = 1;
+        fn_80062A74();
+        fn_80021410();
+        lbl_803C5F04._35++;
+        break;
+    case 1:
+        if (lbl_803C66B0.busy0 != 0 || lbl_803C66B0.busy1 != 0) {
+            if (lbl_803C66B0._5D == 0x31 && lbl_803C66B0._5E != 0) {
+                fn_80062674(1);
+            }
+            break;
+        }
+        for (i = 0; i < 2; i++) {
+            if (g_d_GameSettings.PlayerPorts[i] < 4) {
+                lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._6 = lbl_803C5F04.playerOption[i][0];
+                lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._3 = lbl_803C5F04.playerOption[i][1];
+                lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._2 = lbl_803C5F04.playerOption[i][2];
+                lbl_800E8754.port[g_d_GameSettings.PlayerPorts[i]]._4 = lbl_803C5F04.playerOption[i][3];
+            } else {
+                lbl_800E8754.port[i]._6 = lbl_803C5F04.playerOption[i][0];
+                lbl_800E8754.port[i]._3 = lbl_803C5F04.playerOption[i][1];
+                lbl_800E8754.port[i]._2 = lbl_803C5F04.playerOption[i][2];
+                lbl_800E8754.port[i]._4 = lbl_803C5F04.playerOption[i][3];
+            }
+        }
+        g_d_GameSettings.home_AwaySetting = lbl_803C5F04.option[1];
+        lbl_800E8754._04 = lbl_803C5F04.option[2];
+        lbl_800E8754.innings = lbl_803C5F04.option[3] * 2 + 1;
+        if (lbl_803C5F04.option[4] != 0) {
+            lbl_800E8754._05 = 10;
+        } else {
+            lbl_800E8754._05 = 0;
+        }
+        lbl_800E8754._06 = 0;
+        if (lbl_803C5F04._34 == 1) {
+            if (g_d_GameSettings.GameModeSelected != 5) {
+                fn_80035CA4(0xF);
+                fn_80035CA4(0x12);
+                fn_80035CA4(9);
+                fn_80035CA4(6);
+                lbl_803C5EA4._0F = 0;
+                OSReport("Goto Game ..... option end \n");
+                fn_80042D38(4);
+            } else {
+                transferStatsToInMemRoster(0);
+                capApplicationFunction();
+                fn_80035CA4(0xF);
+                fn_80035CA4(9);
+                fn_80035CA4(6);
+                fn_80021410();
+                lbl_803297E0._CF40 = 0;
+                lbl_803C5EA4._0F = 0;
+                changeScene(0xF, 6);
+                lbl_803C5EA4._11 = 0;
+                lbl_8034E9A0._48AF = 1;
+                lbl_8034E978._26 = 1;
+                fn_80042D38(4);
+            }
+        } else if (g_d_GameSettings.GameModeSelected != 5) {
+            lbl_803C5EA4._36 = 1;
+            lbl_803C5EA4.prevMode = lbl_803C5EA4.mode;
+            lbl_803C5EA4.mode = 2;
+            lbl_8034E978._00 = 5;
+            lbl_8034E978._09 = lbl_8034E978._08;
+            lbl_8034E978._08 = *(u16*)&lbl_800FEF70[0x58]; // TODO type
+            fn_80042D38(0xC);
+        } else {
+            lbl_803C5F04._32 = 0;
+            lbl_803C5EE0._15 = 1;
+            fn_80042D38(0xB);
+        }
+        lbl_803C5F04._35 = 0;
+        lbl_803C5F04.state = 0;
+        fn_800B0A14_removeQueue(&lbl_803C5F04);
+        break;
+    }
 }
 
 // .text:0x80049220 size:0x2AC
