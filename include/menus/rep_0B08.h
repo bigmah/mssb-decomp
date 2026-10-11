@@ -34,6 +34,7 @@ void fn_2_699D4(s32 index);
 void fn_2_69E1C(s32 index);
 void fn_2_6F104(MenuEntry* owner);
 void fn_2_6E1D0(MenuEntry* owner);
+void fn_2_709A0(MenuEntry* owner);
 void fn_2_6B4FC(MenuEntry* owner);
 void fn_2_71A38(u8* object);
 void fn_2_6ACF4(void);
@@ -176,7 +177,7 @@ s32 fn_2_68A88(s32 index, s32 location);
 
 void fn_2_6ABFC(s32 index, s32 location);
 
-s32 fn_2_687A4(s32 index, s32 targetIndex, s32 location);
+u8 fn_2_687A4(s32 index, s32 targetIndex, s32 location);
 
 void fn_2_6B024(MenuEntry* owner);
 
