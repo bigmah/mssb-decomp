@@ -257,7 +257,26 @@ void fn_800A6E24(AssetLoadInstructions* instr, u8* ringBuf, s32 ringSize) {
 
 // .text:0x800A6F94 size:0x148
 void fn_800A6F94(s32 result, DVDFileInfo* fileInfo) {
-    return;
+    if (result > 0) {
+        lbl_803C6CF8.buffered += result;
+        lbl_803C6CF8.bytesRead += result;
+        lbl_803C6CF8.writePos += result;
+        lbl_803C6CF8.remaining -= result;
+        if (lbl_803C6CF8.writePos == lbl_803C6CF8.bufEnd) {
+            lbl_803C6CF8.writePos = lbl_803C6CF8.bufStart;
+        }
+        if (lbl_803C6CF8.buffered == lbl_803C6CF8.ringSize) {
+            lbl_803C6CF8.ringFull = TRUE;
+            lbl_803C6CF8.state = DVDSYS_STATE_NONE;
+        } else if (lbl_803C6CF8.bytesRead == lbl_803C6CF8.totalSize) {
+            SET_STATE_IDLE(DVDSYS_STATE_NONE, 1);
+        } else {
+            ReadRingChunk();
+        }
+    } else if (result == -3) {
+        lbl_803C6CF8.state = DVDSYS_STATE_NONE;
+        DVDClose(fileInfo);
+    }
 }
 
 // .text:0x800A70DC size:0x430
