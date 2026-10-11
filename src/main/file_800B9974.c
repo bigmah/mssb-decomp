@@ -191,8 +191,8 @@ void GQRSetup7(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType) {
 }
 
 // .text:0x800BD240 size:0x38
-void GQRSetup6(void) {
-    return;
+void GQRSetup6(u32 loadScale, u32 loadType, u32 storeScale, u32 storeType) {
+    __MTGQR6((((loadScale << 8) + loadType) << 16) | ((storeScale << 8) + storeType));
 }
 
 // .text:0x800BD278 size:0x38
