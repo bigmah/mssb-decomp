@@ -292,4 +292,6 @@ void fn_2_11698(void);
 
 void fn_2_4970(u8 team, s32 empty);
 
+void fn_2_8CF8(u16 team);
+
 #endif

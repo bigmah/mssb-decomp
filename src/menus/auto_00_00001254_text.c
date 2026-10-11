@@ -12,6 +12,7 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern s16 lbl_2_bss_3E4[];
 extern s16 fn_80067AC8(s16 id, s8 col);
 extern u8 lbl_800EF808[];
 extern void fn_80021AC8(void);
@@ -3579,6 +3580,69 @@ void fn_2_7504(void) {
             return;
         }
         lbl_2_bss_F468[0x3F] = 0;
+    }
+}
+#endif
+
+// NONMATCHING 80%: same copies; loop pointer registers and some load scheduling differ.
+#if NONMATCHING
+#define FN_2_8CF8_SAVE(t, i)                                                      \
+    do {                                                                          \
+        MenuCharStats* src = &g_Roster[(t) * 9 + (i)];                            \
+        MenuCharStats* dst = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
+        u8* order = lbl_80354720 + (t) * 0x24 + (i) * 4;                          \
+        u8* saved = lbl_2_bss_DCE8 + (t) * 0x24 + (i) * 4;                        \
+        MENU_COPY_CHAR_STATS(dst, src);                                           \
+        saved[0] = order[0];                                                      \
+        saved[1] = order[1];                                                      \
+        saved[2] = order[2];                                                      \
+        saved[3] = order[3];                                                      \
+        lbl_2_bss_3E4[(t) * 9 + (i)] = src->h24;                                  \
+    } while (0)
+
+#define FN_2_8CF8_LOAD(t, i)                                                      \
+    do {                                                                          \
+        MenuCharStats* dst = &g_Roster[(t) * 9 + (i)];                            \
+        MenuCharStats* src = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
+        u8* order = lbl_80354720 + (t) * 0x24 + (i) * 4;                          \
+        u8* saved = lbl_2_bss_DCE8 + (t) * 0x24 + (i) * 4;                        \
+        MENU_COPY_CHAR_STATS(dst, src);                                           \
+        order[0] = saved[0];                                                      \
+        order[1] = saved[1];                                                      \
+        order[2] = saved[2];                                                      \
+        order[3] = saved[3];                                                      \
+        dst->h24 = lbl_2_bss_3E4[(t) * 9 + (i)];                                  \
+    } while (0)
+
+// fn_2_8CF8, size:0x8E0
+void fn_2_8CF8(u16 team) {
+    s32 t;
+    s32 i;
+    if (lbl_2_bss_100B8[team + 0x30] != 0) {
+        if (g_d_GameSettings._10 != 1) {
+            for (t = 0; t < 2; t++) {
+                for (i = 0; i < 9; i++) {
+                    FN_2_8CF8_SAVE(t, i);
+                }
+            }
+        } else {
+            for (i = 0; i < 9; i++) {
+                FN_2_8CF8_SAVE(team, i);
+            }
+        }
+        fn_2_9ACC(team);
+        return;
+    }
+    if (g_d_GameSettings._10 != 1) {
+        for (t = 0; t < 2; t++) {
+            for (i = 0; i < 9; i++) {
+                FN_2_8CF8_LOAD(t, i);
+            }
+        }
+        return;
+    }
+    for (i = 0; i < 9; i++) {
+        FN_2_8CF8_LOAD(team, i);
     }
 }
 #endif
