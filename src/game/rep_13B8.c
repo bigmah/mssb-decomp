@@ -431,9 +431,211 @@ void fn_3_7DD6C(void) {
 }
 
 // .text:0x0007E2BC size:0x7AC mapped:0x806BD350
+// Steal / return input for the runners (controller stick + buttons).
+// NONMATCHING 97%: register allocation; original keeps a dead never-incremented counter check in the return loop
+#if NONMATCHING
 void fn_3_7E2BC(void) {
-    return;
+    u8* c;
+    u8* r;
+    int k;
+    int found;
+    int target;
+    int skipped;
+    u16 held;
+    s16 stick;
+
+    c = g_Controls + *(s32*)(g_GameLogic + *(s32*)(g_GameLogic + 4) * 4 + 0xEC) * 16;
+    if (g_d_GameSettings[7] == 2 && g_Practice[0x1D4] != 0) {
+        return;
+    }
+    if (g_d_GameSettings[7] == 2 && (s8)g_Practice[0x1C2] >= 0) {
+        c = g_Practice + *(s32*)(g_GameLogic + 4) * 16;
+    }
+    held = *(u16*)(c + 4);
+    if (*(s16*)(g_Ball.b + 0x1B66) < 30) {
+        held = *(u16*)(c + 6);
+    }
+    stick = *(s16*)(c + 0);
+    if (stick < 0) {
+        found = 0;
+        for (k = 0, r = g_Runners; k < 4; k++, r += 0x154) {
+            if (r[0x123] == 1) {
+                if (r[0x137] == 3) {
+                    if (r[0x136] != 2 && r[0x136] != 1 && (*(u16*)(c + 6) & 0x800)) {
+                        found = 1;
+                        break;
+                    }
+                } else if (r[0x137] == 1 && r[0x125] != 0 && r[0x136] != 2 && r[0x136] != 3 && (*(u16*)(c + 6) & 0x400)) {
+                    found = 1;
+                    break;
+                }
+            }
+        }
+        if (found) {
+            for (k = 0, r = g_Runners; k < 4; k++, r += 0x154) {
+                if (r[0x123] == 1 && *(s16*)(r + 0xE0) >= 0) {
+                    r[0x135] = 2;
+                }
+            }
+        } else {
+            for (k = 0, r = g_Runners; k < 4; k++, r += 0x154) {
+                if (r[0x123] != 1) {
+                    continue;
+                }
+                if (r[0x137] == 3) {
+                    if (r[0x136] == 2 || r[0x136] == 1) {
+                        if (held & 0x400) {
+                            if (*(s16*)(r + 0xE0) >= 0) {
+                                r[0x135] = 3;
+                            }
+                        } else if ((*(u16*)(c + 6) & 0x800) && *(s16*)(r + 0xE0) >= 0) {
+                            r[0x135] = 1;
+                        }
+                    }
+                } else if (r[0x137] == 1) {
+                    if (r[0x136] == 2 || r[0x136] == 3) {
+                        if (*(u16*)(c + 6) & 0x400) {
+                            if (*(s16*)(r + 0xE0) >= 0) {
+                                r[0x135] = 3;
+                            }
+                        } else if ((held & 0x800) && *(s16*)(r + 0xE0) >= 0) {
+                            r[0x135] = 1;
+                        }
+                    }
+                } else if (r[0x137] == 5 && (held & 0x800)) {
+                    if (*(s16*)(r + 0xE0) >= 0) {
+                        r[0x135] = 1;
+                    }
+                } else if (*(u16*)(c + 6) & 0x800) {
+                    if (*(s16*)(r + 0xE0) >= 0) {
+                        r[0x135] = 1;
+                    }
+                } else if ((*(u16*)(c + 6) & 0x400) && *(s16*)(r + 0xE0) >= 0) {
+                    r[0x135] = 3;
+                }
+            }
+        }
+        if (*(u16*)(c + 6) & 0xF00) {
+            for (k = 0; k < 4; k++) {
+                g_Runners[k * 0x154 + 0x149] = 1;
+            }
+        }
+        if (g_d_GameSettings[7] == 2 && (s8)g_Practice[0x1C2] >= 0 && g_Practice[0x1C4] != 0) {
+            for (k = 0; k < 4; k++) {
+                g_Runners[k * 0x154 + 0x149] = 1;
+            }
+        }
+    } else if (held & 0x800) {
+        // Advance: pick the runner heading to the base the stick points at.
+        target = -1;
+        if (stick >= 0xA00 && stick < 0xE00) {
+            target = 0;
+        } else if (stick >= 0x600) {
+            target = 3;
+        } else if (stick >= 0x200) {
+            target = 2;
+        }
+        if (target < 0) {
+            return;
+        }
+        skipped = 0;
+        for (k = 3, r = g_Runners + 3 * 0x154; k >= 0; k--, r -= 0x154) {
+            if (r[0x123] != 1 || r[0x126] != target) {
+                continue;
+            }
+            if (skipped != 0) {
+                if ((s8)r[0x151] <= 0) {
+                    r[0x151] = 1;
+                } else {
+                    r[0x151]++;
+                }
+                r[0x150] = lbl_3_data_4C54[5];
+                if ((s8)r[0x151] <= lbl_3_data_4C54[6]) {
+                    return;
+                }
+            }
+            if (r[0x137] == 1) {
+                if (r[0x136] == 2 || r[0x136] == 3) {
+                    if (*(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                        g_Runners[k * 0x154 + 0x135] = 1;
+                    }
+                    return;
+                }
+                if (skipped != 0) {
+                    return;
+                }
+                skipped++;
+                continue;
+            } else if (r[0x137] == 3) {
+                if (r[0x136] == 2 || r[0x136] == 1) {
+                    if (*(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                        g_Runners[k * 0x154 + 0x135] = 1;
+                    }
+                } else if (*(u16*)(c + 6) & 0x800) {
+                    if (*(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                        g_Runners[k * 0x154 + 0x135] = 2;
+                    }
+                }
+                return;
+            } else if (r[0x137] == 5 && (held & 0x800)) {
+                if (*(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                    g_Runners[k * 0x154 + 0x135] = 1;
+                }
+                return;
+            } else {
+                if ((*(u16*)(c + 6) & 0x800) && *(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                    g_Runners[k * 0x154 + 0x135] = 1;
+                }
+                return;
+            }
+        }
+    } else if (held & 0x400) {
+        // Return: pick the runner standing on the base the stick points at.
+        target = -1;
+        if (stick < 0xA00 || stick >= 0xE00) {
+            if (stick >= 0x600) {
+                target = 3;
+            } else if (stick >= 0x200) {
+                target = 2;
+            } else {
+                target = 1;
+            }
+        }
+        if (target < 0) {
+            return;
+        }
+        for (k = 0, r = g_Runners; k < 4; k++, r += 0x154) {
+            if (r[0x123] != 1 || r[0x125] != target) {
+                continue;
+            }
+            if (r[0x137] == 1) {
+                if (r[0x136] == 2 || r[0x136] == 3) {
+                    if (*(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                        g_Runners[k * 0x154 + 0x135] = 3;
+                    }
+                } else if (*(u16*)(c + 6) & 0x400) {
+                    if (*(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                        g_Runners[k * 0x154 + 0x135] = 2;
+                    }
+                }
+                return;
+            } else if (r[0x137] == 3) {
+                if (r[0x136] == 2 || r[0x136] == 1) {
+                    if (*(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                        g_Runners[k * 0x154 + 0x135] = 3;
+                    }
+                    return;
+                }
+            } else if (*(u16*)(c + 6) & 0x400) {
+                if (*(s16*)(g_Runners + k * 0x154 + 0xE0) >= 0) {
+                    g_Runners[k * 0x154 + 0x135] = 3;
+                }
+                return;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x0007EA68 size:0x16C mapped:0x806BDAFC
 void fn_3_7EA68(void) {
