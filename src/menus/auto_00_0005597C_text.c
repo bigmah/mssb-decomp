@@ -3,9 +3,12 @@
 #include "static/UnknownHomes_Static.h"
 #include "main/file_8000F150.h"
 #include "menus/rep_0788.h"
+#include "main/file_80069BDC.h"
+#include <string.h>
 
 extern u8* lbl_2_bss_1A824C[];
 extern u8* lbl_2_bss_1A823C[];
+extern u8* lbl_2_bss_1A8240[];
 extern u8 lbl_800EF808[];
 extern s16 lbl_2_data_1FD84[];
 extern s16 lbl_2_data_1FBB4[];
@@ -956,8 +959,46 @@ void fn_2_58510(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // .text:0x0005853C size:0x2BC
+// Menu work area stat block: current input/output and saved copies.
+#define MENU_STAT_IN ((StatInput*)(lbl_2_bss_1A824C[0] + 0x197404))
+#define MENU_STAT_IN_COPY ((StatInput*)(lbl_2_bss_1A824C[0] + 0x19741A))
+#define MENU_STAT_OUT ((StatOutput*)(lbl_2_bss_1A824C[0] + 0x197430))
+#define MENU_STAT_OUT_COPY ((StatOutput*)(lbl_2_bss_1A824C[0] + 0x197440))
+
 void fn_2_5853C(void) {
-    return;
+    s32 idx = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
+#define SRC (((StatInput*)(lbl_2_bss_1A8240[0] + 0x140))[idx])
+    MENU_STAT_IN->vals[0] = SRC.vals[0];
+    MENU_STAT_IN->order[0] = SRC.order[0];
+    MENU_STAT_IN->vals[1] = SRC.vals[1];
+    MENU_STAT_IN->order[1] = SRC.order[1];
+    MENU_STAT_IN->vals[2] = SRC.vals[2];
+    MENU_STAT_IN->order[2] = SRC.order[2];
+    MENU_STAT_IN->vals[3] = SRC.vals[3];
+    MENU_STAT_IN->order[3] = SRC.order[3];
+    MENU_STAT_IN->vals[4] = SRC.vals[4];
+    MENU_STAT_IN->order[4] = SRC.order[4];
+    MENU_STAT_IN->vals[5] = SRC.vals[5];
+    MENU_STAT_IN->order[5] = SRC.order[5];
+    MENU_STAT_IN->_13 = SRC._13;
+    MENU_STAT_IN->_14[0] = SRC._14[0];
+    MENU_STAT_IN->_12 = SRC._12;
+#undef SRC
+    fn_8006C2B4(MENU_STAT_OUT, MENU_STAT_IN);
+    memcpy(MENU_STAT_IN_COPY, MENU_STAT_IN, sizeof(StatInput));
+    memcpy(MENU_STAT_OUT_COPY, MENU_STAT_OUT, sizeof(StatOutput));
+    MENU_STAT_IN->vals[0] = MENU_STAT_IN_COPY->vals[0];
+    MENU_STAT_IN->vals[1] = MENU_STAT_IN_COPY->vals[1];
+    MENU_STAT_IN->vals[2] = MENU_STAT_IN_COPY->vals[3];
+    MENU_STAT_IN->vals[3] = MENU_STAT_IN_COPY->vals[4];
+    MENU_STAT_IN->vals[4] = MENU_STAT_IN_COPY->vals[2];
+    MENU_STAT_IN->vals[5] = MENU_STAT_IN_COPY->vals[5];
+    MENU_STAT_OUT->vals[0] = MENU_STAT_OUT_COPY->vals[0];
+    MENU_STAT_OUT->vals[1] = MENU_STAT_OUT_COPY->vals[1];
+    MENU_STAT_OUT->vals[2] = MENU_STAT_OUT_COPY->vals[3];
+    MENU_STAT_OUT->vals[3] = MENU_STAT_OUT_COPY->vals[4];
+    MENU_STAT_OUT->vals[4] = MENU_STAT_OUT_COPY->vals[2];
+    MENU_STAT_OUT->vals[5] = MENU_STAT_OUT_COPY->vals[5];
 }
 
 // .text:0x000587F8 size:0xFA4
