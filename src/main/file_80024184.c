@@ -206,9 +206,13 @@ void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 si
 #endif
 
 // .text:0x800247E4 size:0x5C
-void fn_800247E4(void) {
-    return;
+// Byte offset of texel (x, y) in a texture of 4x4 texel tiles.
+// NONMATCHING 58%: same arithmetic, the original schedules the y terms first
+#if NONMATCHING
+s32 fn_800247E4(s32 x, s32 y, s32 width, s32 bytesPerTexel) {
+    return bytesPerTexel * (width * (y / 4 * 4) + (x / 4 * 16 + y % 4 * 4 + x % 4));
 }
+#endif
 
 // .text:0x80024840 size:0x134
 void challengeStarRelatedInd(void) {
