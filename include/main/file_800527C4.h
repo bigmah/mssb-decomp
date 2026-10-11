@@ -65,6 +65,7 @@ void fn_8005BF40(SceneTask* task);
 void fn_8005BB5C(SceneTask* task);
 void fn_8005B760(SceneTask* task, s32 port);
 void fn_80055374(SceneTask* task, s32 port);
+void someChallengeStarFunction2(SceneTask* task);
 void someChallengeStarFunction(SceneTask* task);
 void fn_80057CAC(void);
 void fn_8005CCE4(SceneTask* task, s32 port);
@@ -138,7 +139,8 @@ typedef struct MenuWork {
     /*0xCF89*/ s8 scoutGot[9];
     /*0xCF92*/ u8 _CF92;
     /*0xCF93*/ u8 missionShown;
-    /*0xCF94*/ u8 _CF94[4];
+    /*0xCF94*/ u8 _CF94[3];
+    /*0xCF97*/ s8 prevMission;
     /*0xCF98*/ s8 mission;
     /*0xCF99*/ u8 _CF99;
     /*0xCF9A*/ u8 missionCount;

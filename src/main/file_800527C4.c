@@ -524,9 +524,55 @@ void someChallengeStarFunction(SceneTask* task) {
 #endif
 
 // .text:0x800572C0 size:0x430
-void someChallengeStarFunction2(void) {
-    return;
+// NONMATCHING 95%: shownOnPauseMenu read as s8 in the original; register numbering differs
+#if NONMATCHING
+void someChallengeStarFunction2(SceneTask* task) {
+    u8 set;
+    s16 msg;
+
+    if (lbl_803297E0.missionShown == 0) {
+        set = lbl_800E8558[lbl_803297E0.challengeTeam]._2;
+        if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.mission) != 0) {
+            TASK_OBJ(task, 35)->flags |= 2;
+            TASK_OBJ(task, 35)->_5C = 0;
+            TASK_OBJ(task, 35)->_68 = 1;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x31)->flags |= 2;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x31)->_5C = 0;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x31)->_68 = 1;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x45)->_5C = 1 << 16;
+        } else {
+            TASK_OBJ(task, 35)->flags &= ~2;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x31)->flags &= ~2;
+            TASK_OBJ(task, lbl_803297E0.mission + 0x45)->_5C = 0;
+        }
+        TASK_OBJ(task, lbl_803297E0.mission + 0x45)->flags |= 2;
+        TASK_OBJ(task, lbl_803297E0.mission + 0x45)->_68 = 1;
+        if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.prevMission) != 0) {
+            TASK_OBJ(task, lbl_803297E0.prevMission + 0x31)->flags &= ~2;
+            TASK_OBJ(task, lbl_803297E0.prevMission + 0x27)->_5C = 0;
+        } else {
+            TASK_OBJ(task, lbl_803297E0.prevMission + 0x27)->_5C = 0;
+        }
+        TASK_OBJ(task, lbl_803297E0.prevMission + 0x45)->flags &= ~2;
+        TASK_OBJ(task, lbl_803297E0.prevMission + 0x45)->_68 = 1;
+        if (gChallengeState.trackers[lbl_803297E0.challengeTeam].inGameMissionTracker[lbl_803297E0.mission].shownOnPauseMenu != 0) {
+            msg = lbl_8010A768[set][lbl_803297E0.mission].msg;
+        } else if (challengeStarRelatedInd(lbl_803297E0.challengeTeam, lbl_803297E0.mission) != 0) {
+            msg = lbl_8010A768[set][lbl_803297E0.mission].msg;
+        } else if (lbl_8010A768[set][lbl_803297E0.mission]._6 <= gChallengeState._4415) {
+            msg = 0x1C5;
+        } else {
+            msg = 0x1C6;
+        }
+        fn_8000FE08(lbl_803297E0.missionText, 0, (u16)msg);
+        lbl_803297E0.missionShown = 1;
+    }
+    if (lbl_803297E0.missionShown != 0) {
+        lbl_803297E0.missionShown = 0;
+        lbl_803297E0._CF92 = 0;
+    }
 }
+#endif
 
 // .text:0x800576F0 size:0x518
 void challengeCheckStarsMenuLoading(void) {
