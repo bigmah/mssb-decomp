@@ -917,6 +917,72 @@ s32 fn_3_E8AC8(void) {
 }
 
 // .text:0x000E8B24 size:0x5F8 mapped:0x80727BB8
+// Stadium setup: load the models, create the objects and place them (fn_3_E7B20).
 void fn_3_E8B24(void** files) {
-    return;
+    StaC6List* list = &lbl_3_common_bss_350E4;
+    u32* idx;
+    u32 i;
+    ActorObject* obj;
+
+    list->draw = fn_3_E7424;
+    list->_6C = 0;
+    idx = list->fileIdx = _OSAllocFromHeap(4, 0xBC);
+    fn_3_B9D68(lbl_3_data_19610, 0x2F, files, idx);
+    lbl_8036E548.slots6C = ActorObjectInitTable(30);
+    fn_800BDC88(lbl_8036E548.slots6C, 0, 0, files[idx[1]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 1, 1, files[idx[2]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 2, 2, files[idx[3]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 3, 3, files[idx[4]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 4, 4, files[idx[5]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 5, 5, files[idx[6]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 6, 6, files[idx[7]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 7, 7, files[idx[8]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 8, 8, files[idx[9]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 9, 9, files[idx[10]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 10, 10, files[idx[11]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 11, 11, files[idx[12]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 12, 12, files[idx[13]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 13, 13, files[idx[14]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 14, 14, files[idx[15]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 15, 15, files[idx[16]], NULL, NULL);
+    for (i = 0; i < 7; i++) {
+        fn_800BDC88(lbl_8036E548.slots6C, i + 16, i + 16, files[idx[i + 17]], NULL, NULL);
+        fn_3_B97DC(&lbl_8036E548.slots6C->objects[i + 16], files[idx[i + 17] + 2]);
+    }
+    fn_800BDC88(lbl_8036E548.slots6C, 23, 23, files[idx[24]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 24, 24, files[idx[25]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 25, 25, files[idx[26]], NULL, NULL);
+    fn_3_B97DC(&lbl_8036E548.slots6C->objects[25], files[idx[26] + 2]);
+    fn_800BDC88(lbl_8036E548.slots6C, 26, 26, files[idx[27]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 27, 27, files[idx[28]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 28, 28, files[idx[29]], NULL, NULL);
+    fn_3_B97DC(&lbl_8036E548.slots6C->objects[28], files[idx[29] + 2]);
+    obj = &lbl_8036E548.slots6C->objects[28];
+    obj->time = lbl_3_rodata_2B98;
+    obj->setTime = 1;
+    fn_800B4CA0(lbl_8036E548.slots6C->objects[28].actor, lbl_8036E548.slots6C->objects[28].time);
+    fn_800BDC88(lbl_8036E548.slots6C, 29, 29, files[idx[30]], NULL, NULL);
+    fn_3_B97DC(&lbl_8036E548.slots6C->objects[29], files[idx[30] + 2]);
+    obj = &lbl_8036E548.slots6C->objects[29];
+    obj->time = lbl_3_rodata_2BA0;
+    obj->setTime = 1;
+    fn_800B4CA0(lbl_8036E548.slots6C->objects[29].actor, lbl_8036E548.slots6C->objects[29].time);
+
+    lbl_3_common_bss_350E4.numActorObjs = 30;
+    for (i = 0; i < lbl_3_common_bss_350E4.numActorObjs; i++) {
+        fn_800BD478(&lbl_8036E548.slots6C->objects[i].actor, files[idx[i + 1]]);
+    }
+    for (i = 0; i < 30; i++) {
+        fn_800BD548(&lbl_8036E548.slots6C->objects[i], 4, lbl_3_common_bss_350E4.lights[0], lbl_3_common_bss_350E4.lights[1],
+                    lbl_3_common_bss_350E4.lights[2], lbl_3_common_bss_350E4.lights[3]);
+    }
+
+    lbl_3_common_bss_350E4.count = 32;
+    lbl_3_common_bss_350E4.objs = _OSAllocFromHeap(0x20, lbl_3_common_bss_350E4.count * sizeof(StaC6Obj));
+    memset(lbl_3_common_bss_350E4.objs, 0, lbl_3_common_bss_350E4.count * sizeof(StaC6Obj));
+    lbl_3_common_bss_350E4.objsBackup = _OSAllocFromHeap(0x20, lbl_3_common_bss_350E4.count * sizeof(StaC6Obj));
+    memset(lbl_3_common_bss_350E4.objsBackup, 0, lbl_3_common_bss_350E4.count * sizeof(StaC6Obj));
+    lbl_3_common_bss_350E4.groupBounds = NULL;
+    fn_3_E7B20(files, idx);
+    lbl_3_bss_AE88[0] = 0;
 }
