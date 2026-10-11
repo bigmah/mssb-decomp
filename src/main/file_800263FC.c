@@ -420,9 +420,42 @@ s32 fn_800263FC(Emitter* e) {
 #endif
 
 // .text:0x80026998 size:0x4C0
-void fn_80026998(void) {
-    return;
+// NONMATCHING 96%: register allocation in the inlined allocations
+#if NONMATCHING
+void fn_80026998(ParticleParamsF* prm) {
+    Emitter tmp;
+    Emitter* e;
+    Emitter* t;
+    Particle* last;
+
+    if (prm == NULL) {
+        return;
+    }
+    e = FindEmitter(NULL, 15);
+    if (e != NULL) {
+        t = AllocParticles(&tmp, prm->count, 1);
+        if (t == NULL) {
+            return;
+        }
+        t->tex = prm->tex;
+        InitSmoke(t->particles, prm);
+        if (e->particles != NULL) {
+            for (last = e->particles; last->next != NULL; last = last->next) {
+            }
+            last->next = t->particles;
+        } else {
+            e->particles = t->particles;
+        }
+        e->count += t->count;
+    } else {
+        e = NewEmitter(fn_800263FC, 0x80, 0, prm->count, 1, 15);
+        if (e != NULL) {
+            e->tex = prm->tex;
+            InitSmoke(e->particles, prm);
+        }
+    }
 }
+#endif
 
 // .text:0x80026E58 size:0x4A8
 void fn_80026E58(void) {
