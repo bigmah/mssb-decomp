@@ -238,7 +238,36 @@ void fn_3_98DE0(void) {
 
 // .text:0x00098EA8 size:0x1BC mapped:0x806D7F3C
 void fn_3_98EA8(void) {
-    return;
+    if (lbl_3_common_bss_34C90.state == 2) {
+        fn_800B0A5C_insertQueue(fn_80053FE8, 2);
+        memset(&lbl_8034E978, 0, sizeof(lbl_8034E978));
+        switch (lbl_803297E0._CFA2[lbl_3_common_bss_34C90.team]) {
+        case 0:
+            lbl_8034E978.menu = g_d_GameSettings.GameModeSelected == 5 ? 0x1C : 8;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[g_d_GameSettings.GameModeSelected == 5 ? 0x1C : 8].track;
+            break;
+        case 1:
+            lbl_8034E978.menu = 0xA;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0xA].track;
+            break;
+        case 2:
+            lbl_8034E978.menu = 0x1E;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0x1E].track;
+            break;
+        case 3:
+            lbl_8034E978.menu = 0x1F;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0x1F].track;
+            break;
+        }
+        fn_800486E0(0, g_GameLogic.teams[lbl_3_common_bss_34C90.team], lbl_3_common_bss_34C90.team);
+    }
+    if (lbl_3_common_bss_34C90.state == 5) {
+        lbl_8034E978._26 = 1;
+    }
 }
 
 // .text:0x00099064 size:0x344 mapped:0x806D80F8

@@ -65,8 +65,8 @@ extern GameHudFlags lbl_3_common_bss_32724;
 
 // Pause / in-game menu state (lbl_3_common_bss_34C90, 0x264 bytes); only the fields used here.
 typedef struct GamePauseState {
-    /*0x000*/ u8 team; // team that opened the menu
-    /*0x001*/ u8 _001[0x12 - 0x1];
+    /*0x000*/ s32 team; // team that opened the menu
+    /*0x004*/ u8 _004[0x12 - 0x4];
     /*0x012*/ s16 _012;
     /*0x014*/ u8 _014[0x1D0 - 0x14];
     /*0x1D0*/ u8 layout;  // index into the item layout table (lbl_3_data_D860)
@@ -141,7 +141,7 @@ extern void fn_8003649C(void* owner, s32 idx, s32 track, u16 animId, u32 frame);
 extern void fn_80034E20(void* group, void* descs);
 extern void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, s16 value);
 extern void fn_8004D0F0(void);
-extern void fn_800486E0(s32 priority, s8 a, s8 b);
+extern void fn_800486E0(s32 priority, s8 a, u8 b);
 extern void sndFXKeyOff(u32);
 
 void fn_3_97144(void);
