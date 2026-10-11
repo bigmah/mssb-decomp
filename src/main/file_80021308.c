@@ -262,8 +262,8 @@ void fn_80021954(SoundGroupData** slot) {
 }
 
 // .text:0x80021980 size:0x34
-void fn_80021980(void) {
-    return;
+void fn_80021980(SoundGroupData* data) {
+    relocateSoundGroup(data);
 }
 
 // .text:0x800219B4 size:0xEC
