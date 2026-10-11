@@ -10,6 +10,8 @@
 #include "C3/control.h"
 #include "musyx/musyx.h"
 #include "dolphin/os.h"
+#include "Dolphin/mtxext.h"
+#include "stl/math.h"
 
 extern SoundManager lbl_800EF808;
 extern SoundGroupRequest lbl_80108B84;
@@ -37,9 +39,19 @@ extern void fn_80032284(Vec* pos);
 extern void fn_800324EC(u16 id, s32 charIndex, s32 c, s32* params);
 extern void fn_8004B1C0(s32 sound, CharSoundObj* obj, s32 kind, s32 c);
 
+extern camera_803c639c_s lbl_803C639C[4];
+
 // .text:0x800527C4 size:0xE8
-void fn_800527C4(void) {
-    return;
+// TRUE when the point (with y folded below the ground plane) lands inside camera 0's view volume.
+BOOL fn_800527C4(Vec* pos) {
+    Vec v;
+
+    v.x = pos->x;
+    v.y = -__fabs(pos->y);
+    v.z = pos->z;
+    PSMTXMultVec(lbl_803C639C[0].view, &v, &v);
+    PSMTX44MultVec(lbl_803C639C[0].proj, &v, &v);
+    return !((v.z < -1.0f) | ((v.z > 0.0f) | ((v.y < -1.0f) | ((v.y > 1.0f) | ((v.x > 1.0f) | (v.x < -1.0f))))));
 }
 
 extern fn_800528AC_parameter lbl_803CBD10;
@@ -55,8 +67,18 @@ void fn_800528B4(void) {
 }
 
 // .text:0x800528C0 size:0xA8
-void fn_800528C0(void) {
-    return;
+void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z) {
+    Vec v;
+    f32 w = 320.0f;
+    f32 h = 224.0f;
+
+    v.x = x;
+    v.y = y;
+    v.z = z;
+    PSMTXMultVec(lbl_803C639C[0].view, &v, &v);
+    PSMTX44MultVec(lbl_803C639C[0].proj, &v, &v);
+    *screenX = v.x * w + w;
+    *screenY = -v.y * h + h;
 }
 
 // .text:0x80052968 size:0x408

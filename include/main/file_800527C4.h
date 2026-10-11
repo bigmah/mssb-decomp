@@ -46,7 +46,9 @@ typedef struct LoopSfxState {
     /*0x0E*/ u8 _0E[2];
 } LoopSfxState; // size: 0x10
 
+BOOL fn_800527C4(Vec* pos);
 void fn_800528B4(void);
+void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);
 
 BOOL fn_80062578(void);
 void fn_800625A4(s32 index, s8 step);
