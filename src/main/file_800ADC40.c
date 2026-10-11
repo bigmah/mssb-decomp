@@ -108,9 +108,9 @@ extern char lbl_803CCF00[8]; // lbl_803CCF00
 #define MOV_STATE_STOP 4
 #define MOV_DVD_DONE() ((s32)*(volatile u8*)&lbl_803C6CF8._715)
 
-// .text:0x800ADC40 size:0x130
-// NONMATCHING: the bss lives in another split; the original addresses it relative to lbl_802F93A0
+// NONMATCHING 73%: the movie.c bss is not split into this unit; the original addresses all of it relative to lbl_802F93A0 (also float rodata names)
 #if NONMATCHING
+// .text:0x800ADC40 size:0x130
 void fn_800ADC40(u8* streamBuf, u32 streamBufSize) {
     if (lbl_803CC17F == 0) {
         lbl_803CC174 = streamBuf;
@@ -187,22 +187,25 @@ void fn_800ADD70(void) {
     }
 }
 
-#define YUV_CLAMP(t, y, c) ((t)->clamp[(y) + (c)])
+#define YUV_CLAMP(t, y, c) (((y) + (c))[0xA00]) // y: table base + luma offset; 0xA00 = clamp
 
+// NONMATCHING 50%: compiler folds the 0xA00 clamp offset into the chroma terms (lbzx) instead of lbz 0xa00(y+c); u8 chroma index masks; NULL checks use cmplw against r0
+#if NONMATCHING
 // .text:0x800ADF60 size:0x338
 // Converts a planar YUV 4:2:0 image to GX RGBA8 tiles.
-void YUV2RGB(u8* src, u32* dst, s32 width, s32 height) {
+void YUV2RGB(u8* src, u8* dst, s32 width, s32 height) {
     YuvTable* t = &lbl_801102C0;
     u8* y0;
     u8* y1;
     u8* u;
     u8* v;
     u8* tileRow;
-    u8* p;
     u32* out;
     u8 row;
     s32 x;
-    s32 vR, g, uB, ya, yb;
+    s32 vR, g, uB;
+    u8* ya;
+    u8* yb;
 
     if (src == NULL) {
         OSReport(lbl_800E7B50);
@@ -212,38 +215,38 @@ void YUV2RGB(u8* src, u32* dst, s32 width, s32 height) {
         OSReport(lbl_800E7B74);
         for (;;) {}
     }
-    x = width;
     y0 = src;
+    x = width;
     y1 = src + width;
     u = src + width * height;
     v = u + (width >> 1) * (height >> 1);
-    tileRow = (u8*)dst;
     do {
+        tileRow = dst;
         for (row = 0; row <= 4; row += 4) {
-            p = tileRow;
-            out = (u32*)(tileRow + row * 4);
+            dst = tileRow;
             do {
+                out = (u32*)(dst + row * 4);
                 vR = t->vR[v[0]];
                 g = t->vG[v[0]] + t->uG[u[0]];
                 uB = t->uB[u[0]];
-                ya = t->y[y0[0]];
-                yb = t->y[y0[1]];
+                ya = (u8*)t + t->y[y0[0]];
+                yb = (u8*)t + t->y[y0[1]];
                 out[0] = (YUV_CLAMP(t, ya, vR) << 16) | 0xFF00FF00 | YUV_CLAMP(t, yb, vR);
                 out[8] = (YUV_CLAMP(t, ya, g) << 24) | (YUV_CLAMP(t, ya, uB) << 16) | (YUV_CLAMP(t, yb, g) << 8) | YUV_CLAMP(t, yb, uB);
-                ya = t->y[y1[0]];
-                yb = t->y[y1[1]];
+                ya = (u8*)t + t->y[y1[0]];
+                yb = (u8*)t + t->y[y1[1]];
                 out[2] = (YUV_CLAMP(t, ya, vR) << 16) | 0xFF00FF00 | YUV_CLAMP(t, yb, vR);
                 out[10] = (YUV_CLAMP(t, ya, g) << 24) | (YUV_CLAMP(t, ya, uB) << 16) | (YUV_CLAMP(t, yb, g) << 8) | YUV_CLAMP(t, yb, uB);
 
                 vR = t->vR[v[1]];
                 g = t->vG[v[1]] + t->uG[u[1]];
                 uB = t->uB[u[1]];
-                ya = t->y[y0[2]];
-                yb = t->y[y0[3]];
+                ya = (u8*)t + t->y[y0[2]];
+                yb = (u8*)t + t->y[y0[3]];
                 out[1] = (YUV_CLAMP(t, ya, vR) << 16) | 0xFF00FF00 | YUV_CLAMP(t, yb, vR);
                 out[9] = (YUV_CLAMP(t, ya, g) << 24) | (YUV_CLAMP(t, ya, uB) << 16) | (YUV_CLAMP(t, yb, g) << 8) | YUV_CLAMP(t, yb, uB);
-                ya = t->y[y1[2]];
-                yb = t->y[y1[3]];
+                ya = (u8*)t + t->y[y1[2]];
+                yb = (u8*)t + t->y[y1[3]];
                 out[3] = (YUV_CLAMP(t, ya, vR) << 16) | 0xFF00FF00 | YUV_CLAMP(t, yb, vR);
                 out[11] = (YUV_CLAMP(t, ya, g) << 24) | (YUV_CLAMP(t, ya, uB) << 16) | (YUV_CLAMP(t, yb, g) << 8) | YUV_CLAMP(t, yb, uB);
 
@@ -252,38 +255,39 @@ void YUV2RGB(u8* src, u32* dst, s32 width, s32 height) {
                 y0 += 4;
                 y1 += 4;
                 if (row == 4) {
-                    __dcbf(p, 0);
-                    __dcbf(p + 0x20, 0);
+                    __dcbf(dst, 0);
+                    __dcbf(dst + 0x20, 0);
                 }
-                x -= 4;
-                p += 0x40;
-                out += 0x10;
-            } while (x > 0);
+                dst += 0x40;
+            } while ((x -= 4) > 0);
             y0 = y1;
             x = width;
             y1 += width;
         }
-        tileRow = p;
     } while ((height -= 4) > 0);
     PPCSync();
 }
+#endif
 
 #define RGB565(r, g, b) ((((r) << 8) & 0xF800) | (((g) << 3) & 0x7E0) | (((b) & 0xF8) >> 3))
 
+// NONMATCHING 48%: same issues as YUV2RGB
+#if NONMATCHING
 // .text:0x800AE298 size:0x320
 // Converts a planar YUV 4:2:0 image to GX RGB565 tiles.
-void YUV2RGB_(u8* src, u32* dst, s32 width, s32 height) {
+void YUV2RGB_(u8* src, u8* dst, s32 width, s32 height) {
     YuvTable* t = &lbl_801102C0;
     u8* y0;
     u8* y1;
     u8* u;
     u8* v;
     u8* tileRow;
-    u8* p;
     u32* out;
     u8 row;
     s32 x;
-    s32 vR, g, uB, ya, yb;
+    s32 vR, g, uB;
+    u8* ya;
+    u8* yb;
 
     if (src == NULL) {
         OSReport(lbl_800E7B50);
@@ -293,38 +297,38 @@ void YUV2RGB_(u8* src, u32* dst, s32 width, s32 height) {
         OSReport(lbl_800E7B74);
         for (;;) {}
     }
-    x = width;
     y0 = src;
+    x = width;
     y1 = src + width;
     u = src + width * height;
     v = u + (width >> 1) * (height >> 1);
-    tileRow = (u8*)dst;
     do {
+        tileRow = dst;
         for (row = 0; row <= 4; row += 4) {
-            p = tileRow;
-            out = (u32*)(tileRow + row * 4);
+            dst = tileRow;
             do {
+                out = (u32*)(dst + row * 4);
                 vR = t->vR[v[0]];
                 g = t->vG[v[0]] + t->uG[u[0]];
                 uB = t->uB[u[0]];
-                ya = t->y[y0[0]];
-                yb = t->y[y0[1]];
+                ya = (u8*)t + t->y[y0[0]];
+                yb = (u8*)t + t->y[y0[1]];
                 out[0] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
                          RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
-                ya = t->y[y1[0]];
-                yb = t->y[y1[1]];
+                ya = (u8*)t + t->y[y1[0]];
+                yb = (u8*)t + t->y[y1[1]];
                 out[2] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
                          RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
 
                 vR = t->vR[v[1]];
                 g = t->vG[v[1]] + t->uG[u[1]];
                 uB = t->uB[u[1]];
-                ya = t->y[y0[2]];
-                yb = t->y[y0[3]];
+                ya = (u8*)t + t->y[y0[2]];
+                yb = (u8*)t + t->y[y0[3]];
                 out[1] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
                          RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
-                ya = t->y[y1[2]];
-                yb = t->y[y1[3]];
+                ya = (u8*)t + t->y[y1[2]];
+                yb = (u8*)t + t->y[y1[3]];
                 out[3] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
                          RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
 
@@ -333,21 +337,21 @@ void YUV2RGB_(u8* src, u32* dst, s32 width, s32 height) {
                 y0 += 4;
                 y1 += 4;
                 if (row == 4) {
-                    __dcbf(p, 0);
+                    __dcbf(dst, 0);
                 }
-                x -= 4;
-                p += 0x20;
-                out += 8;
-            } while (x > 0);
+                dst += 0x20;
+            } while ((x -= 4) > 0);
             y0 = y1;
             x = width;
             y1 += width;
         }
-        tileRow = p;
     } while ((height -= 4) > 0);
     PPCSync();
 }
+#endif
 
+// NONMATCHING 99%: volatile-register numbering only (volume r5 vs mov->state r4) in fn_800AE5B8
+#if NONMATCHING
 // Mixes the movie's decoded audio into an AI DMA buffer.
 static inline void MovMixAudio(s16* buf) {
     MovPlayer* mov = lbl_803CC170;
@@ -411,6 +415,7 @@ void fn_800AE5B8(void) {
         OSRestoreInterrupts(intr);
     }
 }
+#endif
 
 // Reads the next block header and restarts playback timing.
 static inline BOOL MovStartBlock(MovPlayer* mov) {
@@ -450,7 +455,7 @@ static inline void MovResetFrames(MovPlayer* mov) {
 
 // .text:0x800AE8B8 size:0x260
 // Stream thread: handles play / restart / stop / pause / quit messages.
-s32 fn_800AE8B8(void* arg) {
+void* fn_800AE8B8(void* arg) {
     OSMessage msg;
     MovPlayer* mov;
 
@@ -504,7 +509,7 @@ s32 fn_800AE8B8(void* arg) {
                 OSSleepThread(&lbl_803C7420.sleepQueue);
             }
             lbl_803CC17F = 0;
-            return 0;
+            return NULL;
         }
     }
 }
@@ -581,7 +586,7 @@ static inline void MovUpdateFrame(MovPlayer* mov) {
 
 // .text:0x800AED34 size:0x474
 // Decode thread: runs the decoder and handles end of movie / looping.
-s32 MovDecodeThread(void* arg) {
+void* MovDecodeThread(void* arg) {
     MovPlayer* mov;
     BOOL ok;
 
@@ -645,7 +650,7 @@ s32 MovDecodeThread(void* arg) {
     }
 exit:
     lbl_803CC17E = 0;
-    return 0;
+    return NULL;
 }
 
 #define MOV_AVAIL() (*lbl_803CBAF8[lbl_803CC181])
@@ -1168,6 +1173,8 @@ BOOL fn_800B0134(u32 len) {
     return TRUE;
 }
 
+// NONMATCHING 87%: register allocation (original keeps dst+first in its own saved reg, r27..r31 stmw)
+#if NONMATCHING
 // .text:0x800B0230 size:0x160
 // Starts an ARAM -> MRAM transfer of len bytes from the ARAM read position.
 void fn_800B0230(u8* dst, u32 len) {
@@ -1208,6 +1215,7 @@ void fn_800B0230(u8* dst, u32 len) {
         DCInvalidateRange(dst + first, second);
     }
 }
+#endif
 
 // .text:0x800B0390 size:0x64
 void fn_800B0390(u32 request) {
