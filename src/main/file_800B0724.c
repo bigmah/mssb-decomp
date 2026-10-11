@@ -50,8 +50,28 @@ void soundQuit(void) {
 }
 
 // .text:0x800B0834 size:0x100
-void initSound(void) {
-    return;
+void initSound(SoundConfig* config, u8* aiStack, u8* heapStart, u32 heapSize) {
+    SND_HOOKS hooks = {SndAlloc, SndFree};
+    u8* heapEnd;
+    AIInit(aiStack);
+    ARInit(NULL, 0);
+    ARQInit();
+    if (config == NULL) {
+        config = &lbl_801112F0;
+    }
+    heapEnd = heapStart + heapSize;
+    lbl_803CBB10->cur = heapStart;
+    lbl_803CBB10->end = heapEnd;
+    lbl_803CBB10->free = heapEnd - heapStart;
+    sndSetHooks(&hooks);
+    if (sndInit(config->voices, config->music, config->sfx, config->studios, config->flags, config->aramSize) != 0) {
+        OSPanic("sound.c", 0x116, "gYd_MusyXInit()::Failed to sndInit().");
+    }
+    if (OSGetSoundMode() == 0) {
+        sndOutputMode(SND_OUTPUTMODE_MONO);
+    } else {
+        sndOutputMode(SND_OUTPUTMODE_STEREO);
+    }
 }
 
 // fn_800B0934, size:0x4
