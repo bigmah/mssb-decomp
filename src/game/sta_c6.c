@@ -334,10 +334,16 @@ u32* fn_3_E64A8(void) {
 }
 
 // .text:0x000E6528 size:0x50 mapped:0x807255BC
+// Back to the idle colours (also expanded inline in fn_3_E6D90 and fn_3_E7B20).
+#define STA_RESET_COLOR(o)                                \
+    do {                                                  \
+        memcpy((o)->color, (o)->colorIdle, 4);            \
+        (o)->bodyColor = lbl_3_data_19024.bodyColors[1];  \
+        (o)->lit = 0;                                     \
+    } while (0)
+
 void fn_3_E6528(StaC6Obj* o) {
-    memcpy(o->color, o->colorIdle, 4);
-    o->bodyColor = lbl_3_data_19024.bodyColors[1];
-    o->lit = 0;
+    STA_RESET_COLOR(o);
 }
 
 // .text:0x000E6578 size:0xC0 mapped:0x8072560C
@@ -428,22 +434,27 @@ void fn_3_E6798(StaC6Obj* o) {
 
 // .text:0x000E67F4 size:0xB4 mapped:0x80725888
 // Reset the targets.
-void fn_3_E67F4(void) {
-    u32 i;
-    GameActor* actor;
-    ActorObject* obj;
-    ActorObjectTable* t;
+// (also expanded inline in fn_3_E7B20)
+#define STA_RESET_TARGETS()                                                      \
+    do {                                                                         \
+        u32 i_;                                                                  \
+        GameActor* actor_;                                                       \
+        ActorObject* obj_;                                                       \
+        ActorObjectTable* t_;                                                    \
+        for (i_ = 0; i_ < 7; i_++) {                                             \
+            lbl_3_data_196B4.hit[i_] = 0;                                        \
+            t_ = lbl_8036E548.slots6C;                                           \
+            actor_ = t_->objects[i_ + 16].actor;                                 \
+            obj_ = &t_->objects[i_ + 16];                                        \
+            obj_->time = 20.0f;                                                  \
+            obj_->setTime = 1;                                                   \
+            fn_800B4CA0(actor_, lbl_8036E548.slots6C->objects[i_ + 16].time);    \
+            AnimateActorBones(actor_);                                           \
+        }                                                                        \
+    } while (0)
 
-    for (i = 0; i < 7; i++) {
-        lbl_3_data_196B4.hit[i] = 0;
-        t = lbl_8036E548.slots6C;
-        actor = t->objects[i + 16].actor;
-        obj = &t->objects[i + 16];
-        obj->time = 20.0f;
-        obj->setTime = 1;
-        fn_800B4CA0(actor, lbl_8036E548.slots6C->objects[i + 16].time);
-        AnimateActorBones(actor);
-    }
+void fn_3_E67F4(void) {
+    STA_RESET_TARGETS();
 }
 
 // .text:0x000E68A8 size:0xE4 mapped:0x8072593C
@@ -622,10 +633,7 @@ void fn_3_E6D90(StaC6Obj* o) {
     o->actorObj->actor->flags = fn_800B3C04(0, o->actorObj->actor, CUR_VIEW());
 
     if (g_GameLogic.gameStatus == 0 || g_GameLogic.gameStatus == 1) {
-        // fn_3_E6528
-        memcpy(o->color, o->colorIdle, 4);
-        o->bodyColor = lbl_3_data_19024.bodyColors[1];
-        o->lit = 0;
+        STA_RESET_COLOR(o);
         if (lbl_3_bss_AE52 != 0) {
             lbl_3_bss_AE52 = 0;
         }
@@ -849,64 +857,304 @@ void fn_3_E763C(void) {
 #endif
 
 // .text:0x000E7A2C size:0xF4 mapped:0x80726AC0
-// Set the callbacks for the object's kind.
+// Set the callbacks for the object's kind (also expanded inline in fn_3_E7B20).
+#define STA_SET_CALLBACKS(o)              \
+    do {                                  \
+        (o)->update = NULL;               \
+        (o)->onHit = NULL;                \
+        (o)->preDraw = NULL;              \
+        (o)->postDraw = NULL;             \
+        switch ((o)->kind) {              \
+        case 0:                           \
+        case 1:                           \
+        case 2:                           \
+        case 3:                           \
+        case 4:                           \
+        case 5:                           \
+        case 6:                           \
+        case 7:                           \
+        case 8:                           \
+        case 9:                           \
+        case 10:                          \
+        case 11:                          \
+        case 12:                          \
+        case 13:                          \
+        case 14:                          \
+        case 15:                          \
+            (o)->onHit = fn_3_E7364;      \
+            (o)->preDraw = fn_3_E6D90;    \
+            lbl_3_bss_AEAC++;             \
+            break;                        \
+        case 16:                          \
+        case 17:                          \
+        case 18:                          \
+        case 19:                          \
+        case 20:                          \
+        case 21:                          \
+        case 22:                          \
+            (o)->update = fn_3_E698C;     \
+            (o)->preDraw = fn_3_E68A8;    \
+            break;                        \
+        case 23:                          \
+            (o)->preDraw = fn_3_E6798;    \
+            (o)->postDraw = fn_3_E671C;   \
+            break;                        \
+        case 24:                          \
+            (o)->preDraw = fn_3_E6684;    \
+            (o)->postDraw = fn_3_E6638;   \
+            break;                        \
+        case 26:                          \
+            (o)->update = fn_3_E59B4;     \
+            break;                        \
+        case 25:                          \
+            (o)->update = fn_3_E5A1C;     \
+            break;                        \
+        }                                 \
+    } while (0)
+
 void fn_3_E7A2C(StaC6Obj* o) {
-    o->update = NULL;
-    o->onHit = NULL;
-    o->preDraw = NULL;
-    o->postDraw = NULL;
-    switch (o->kind) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13:
-    case 14:
-    case 15:
-        o->onHit = fn_3_E7364;
-        o->preDraw = fn_3_E6D90;
-        lbl_3_bss_AEAC++;
-        break;
-    case 16:
-    case 17:
-    case 18:
-    case 19:
-    case 20:
-    case 21:
-    case 22:
-        o->update = fn_3_E698C;
-        o->preDraw = fn_3_E68A8;
-        break;
-    case 23:
-        o->preDraw = fn_3_E6798;
-        o->postDraw = fn_3_E671C;
-        break;
-    case 24:
-        o->preDraw = fn_3_E6684;
-        o->postDraw = fn_3_E6638;
-        break;
-    case 26:
-        o->update = fn_3_E59B4;
-        break;
-    case 25:
-        o->update = fn_3_E5A1C;
-        break;
-    }
+    STA_SET_CALLBACKS(o);
 }
 
 // .text:0x000E7B20 size:0xFA8 mapped:0x80726BB4
+// NONMATCHING 89.7%: the original reaches lbl_3_data_19024/196B4 through one pooled lbl_3_data_19018
+// base (this unit's .data was static there) and keeps two object pointers; register allocation and
+// frame size differ. fn_3_E7A2C, fn_3_E6528 and fn_3_E67F4 are inlined (macros here).
+#if NONMATCHING
+// Create the stadium objects for the current number of players: field panels, wall panels,
+// the 7 targets and 4 scenery objects; the rest of the list is cleared.
 u8 fn_3_E7B20(void** files, u32* idx) {
-    return 0;
+    StaC6Obj* o;
+    u32 i;
+    u32 kind;
+    u8 n = 0;
+    u8 done = 0;
+
+    if (files == NULL || idx == NULL) {
+        return 0;
+    }
+    lbl_3_bss_AEAC = 0;
+    memset(&lbl_3_bss_AE88[1], 0xFF, 8 * sizeof(s32));
+    memset(lbl_3_common_bss_350E4.objs, 0, lbl_3_common_bss_350E4.count * sizeof(StaC6Obj));
+    o = lbl_3_common_bss_350E4.objs;
+    switch (g_Minigame.miniGameNumberOfParticipants) {
+    case 2:
+        lbl_3_bss_AEB4[0] = lbl_3_data_19024.spots[0];
+        lbl_3_bss_AEB0 = lbl_3_data_19024.pads[0];
+        break;
+    case 3:
+        lbl_3_bss_AEB4[0] = lbl_3_data_19024.spots[1];
+        lbl_3_bss_AEB0 = lbl_3_data_19024.pads[1];
+        break;
+    default:
+        lbl_3_bss_AEB4[0] = lbl_3_data_19024.spots[2];
+        lbl_3_bss_AEB0 = lbl_3_data_19024.pads[2];
+        break;
+    }
+    lbl_3_bss_AEAE = g_Minigame.miniGameNumberOfParticipants - 2;
+    if (g_Minigame._19A6 > 1) {
+        lbl_3_bss_AE52 = 1;
+        lbl_3_bss_AEB4[0] = lbl_3_data_19024.spots[3];
+        lbl_3_bss_AEB0 = lbl_3_data_19024.pads[3];
+        lbl_3_bss_AEAE = 3;
+    }
+
+    // field panels
+    for (i = 0; i < 15; i++) {
+        if (lbl_3_bss_AEB4[0][i].kind == 27) {
+            done = 1;
+        }
+        if (done) {
+            for (; i < 16; i++) {
+                memset(&lbl_3_bss_AEB4[0][i], 0, sizeof(StaC6Spot));
+                lbl_3_bss_AEB4[0][i].kind = 27;
+                lbl_3_bss_AEB4[0][i].group = 10;
+            }
+            break;
+        }
+        o->index = i;
+        o->kind = lbl_3_bss_AEB4[0][i].kind;
+        o->subObj = &lbl_8036E548.slots6C->objects[23];
+        o->actorObj = &lbl_8036E548.slots6C->objects[o->kind];
+        o->shadow = files[idx[o->kind + 31]];
+        o->visible = 1;
+        o->hasShadow = 1;
+        o->ctrl.base.type = 0;
+        CTRLSetTranslation(&o->ctrl.base, 0.0f, 0.0f, 0.0f);
+        o->colorMiss = lbl_3_data_19024.kindColors[o->kind][0];
+        o->colorIdle = lbl_3_data_19024.kindColors[o->kind][1];
+        o->colorHit = lbl_3_data_19024.kindColors[o->kind][2];
+        o->bodyColor = lbl_3_data_19024.bodyColors[1];
+        STA_RESET_COLOR(o);
+        o->bit5 = 0;
+        o->_92 = 0xFF;
+        o->_8C = 0;
+        o->_94 = 0;
+        o->_96 = -1;
+        o->_98 = 1;
+        STA_SET_CALLBACKS(o);
+        o++;
+        n++;
+    }
+    lbl_3_bss_AEAD = n;
+
+    // wall panels
+    done = 0;
+    for (i = 0; i < 7; i++) {
+        if (lbl_3_bss_AEB0[i].kind == 27) {
+            done = 1;
+        }
+        if (done) {
+            for (; i < 8; i++) {
+                memset(&lbl_3_bss_AEB0[i], 0, sizeof(StaC6Pad));
+                lbl_3_bss_AEB0[i].kind = 27;
+                lbl_3_bss_AEB0[i].group = 10;
+            }
+            break;
+        }
+        o->index = n;
+        o->kind = lbl_3_bss_AEB0[i].kind;
+        o->slot = i;
+        o->flagIdx = 6 - i;
+        o->subObj = &lbl_8036E548.slots6C->objects[24];
+        o->actorObj = &lbl_8036E548.slots6C->objects[o->kind];
+        o->shadow = files[idx[o->kind + 31]];
+        o->visible = 1;
+        o->hasShadow = 1;
+        o->ctrl.base.type = 0;
+        CTRLSetTranslation(&o->ctrl.base, 0.0f, 0.0f, 0.0f);
+        o->colorMiss = lbl_3_data_19024.kindColors[o->kind - 8][0];
+        o->colorIdle = lbl_3_data_19024.kindColors[o->kind - 8][1];
+        o->colorHit = lbl_3_data_19024.kindColors[o->kind - 8][2];
+        o->bodyColor = lbl_3_data_19024.bodyColors[1];
+        STA_RESET_COLOR(o);
+        o->bit5 = 0;
+        o->_92 = 0xFF;
+        o->_8C = 0;
+        o->_94 = 0;
+        o->_96 = -1;
+        o->_98 = 1;
+        STA_SET_CALLBACKS(o);
+        o++;
+        n++;
+    }
+
+    // targets
+    for (kind = 16, i = 0; kind < 23; kind++, i++) {
+        o->index = n;
+        o->kind = kind;
+        o->subObj = &lbl_8036E548.slots6C->objects[25];
+        o->actorObj = &lbl_8036E548.slots6C->objects[i + 16];
+        o->shadow = NULL;
+        o->visible = 1;
+        o->hasShadow = 1;
+        o->ctrl.base.type = 0;
+        CTRLSetTranslation(&o->ctrl.base, lbl_3_data_196B4.targetPos[o->kind - 16].x, lbl_3_data_196B4.targetPos[o->kind - 16].y,
+                           lbl_3_data_196B4.targetPos[o->kind - 16].z);
+        CTRLSetRotation(&o->ctrl.base, 0.0f, lbl_3_data_196B4.targetRotY[o->kind - 16], 0.0f);
+        o->bit5 = 1;
+        o->_92 = 0xFF;
+        o->_8C = 0;
+        o->_94 = 0;
+        o->_96 = -1;
+        o->_98 = 1;
+        STA_SET_CALLBACKS(o);
+        o++;
+        n++;
+    }
+
+    // scenery: kinds 23, 24, 26, 25 with models 26-29
+    o[0].index = n;
+    o[0].kind = 23;
+    o[0].actorObj = &lbl_8036E548.slots6C->objects[26];
+    o[0].shadow = NULL;
+    o[0].visible = 1;
+    o[0].hasShadow = 0;
+    o[0].ctrl.base.type = 0;
+    CTRLSetTranslation(&o[0].ctrl.base, 0.0f, 0.0f, 0.0f);
+    o[0].bit5 = 0;
+    o[0]._92 = 0xFF;
+    o[0]._8C = 0;
+    o[0]._94 = 0;
+    o[0]._96 = -1;
+    o[0]._98 = 1;
+    STA_SET_CALLBACKS(&o[0]);
+
+    o[1].index = n + 1;
+    o[1].kind = 24;
+    o[1].actorObj = &lbl_8036E548.slots6C->objects[27];
+    o[1].shadow = NULL;
+    o[1].visible = 1;
+    o[1].hasShadow = 0;
+    o[1].ctrl.base.type = 0;
+    CTRLSetTranslation(&o[1].ctrl.base, 0.0f, 0.0f, 0.0f);
+    o[1].bit5 = 0;
+    o[1]._92 = 0xFF;
+    o[1]._8C = 0;
+    o[1]._94 = 0;
+    o[1]._96 = -1;
+    o[1]._98 = 1;
+    STA_SET_CALLBACKS(&o[1]);
+
+    o[2].index = n + 2;
+    o[2].kind = 26;
+    o[2].actorObj = &lbl_8036E548.slots6C->objects[28];
+    o[2].shadow = NULL;
+    o[2].visible = 1;
+    o[2].hasShadow = 0;
+    o[2].ctrl.base.type = 0;
+    CTRLSetTranslation(&o[2].ctrl.base, 0.0f, 0.0f, 0.0f);
+    o[2].bit5 = 0;
+    o[2]._92 = 0xFF;
+    o[2]._8C = 0;
+    o[2]._94 = 0;
+    o[2]._96 = -1;
+    o[2]._98 = 0;
+    STA_SET_CALLBACKS(&o[2]);
+
+    o[3].index = n + 3;
+    o[3].kind = 25;
+    o[3].actorObj = &lbl_8036E548.slots6C->objects[29];
+    o[3].shadow = NULL;
+    o[3].visible = 1;
+    o[3].hasShadow = 0;
+    o[3].ctrl.base.type = 0;
+    CTRLSetTranslation(&o[3].ctrl.base, 0.0f, 0.0f, 0.0f);
+    o[3].bit5 = 0;
+    o[3]._92 = 0xFF;
+    o[3]._8C = 0;
+    o[3]._94 = 0;
+    o[3]._96 = -1;
+    o[3]._98 = 1;
+    STA_SET_CALLBACKS(&o[3]);
+
+    // unused entries
+    o += 4;
+    for (i = n + 4; i < lbl_3_common_bss_350E4.count; i++) {
+        o->kind = 27;
+        o->actorObj = NULL;
+        o->shadow = NULL;
+        o->update = NULL;
+        o->onHit = NULL;
+        o->visible = 0;
+        o->hasShadow = 0;
+        o->bit5 = 0;
+        o->ctrl.base.type = 0;
+        CTRLSetTranslation(&o->ctrl.base, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(&o->ctrl.base, 0.0f, 0.0f, 0.0f);
+        o->_92 = 0;
+        o->_8C = 0;
+        o->_94 = 0;
+        o->_96 = -1;
+        o++;
+    }
+    fn_3_E763C();
+    if (g_GameLogic.gameStatus == 5) {
+        STA_RESET_TARGETS();
+    }
+    return 1;
 }
+#endif
 
 // .text:0x000E8AC8 size:0x5C mapped:0x80727B5C
 s32 fn_3_E8AC8(void) {
