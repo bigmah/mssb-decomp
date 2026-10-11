@@ -29,9 +29,130 @@ void fn_3_759BC(void) {
 }
 
 // .text:0x00076174 size:0x3E4 mapped:0x806B5208
+// Picks the winning pitcher.
+// NONMATCHING 82%: register allocation and reload order of g_Scores bytes differ
+#if NONMATCHING
 void fn_3_76174(void) {
-    return;
+    s32 r = g_Scores.result;
+    s32 recTeam = r ^ g_GameLogic.homeTeamInd;
+    PitchingRecord* p = lbl_803535C8[recTeam];
+    PitcherGameStat* g;
+    s8 cur;
+    s8 starter;
+    s32 i;
+    s32 bestIdx;
+    s32 best;
+    s32 v;
+    s32 d;
+
+    if (g_Scores._BB[r] == 1) {
+        lbl_80353A90.winningPitcher = g_Scores._AF[r];
+        return;
+    }
+    if (g_Scores.runs[1][g_Scores.inning] > 0 && g_Scores.result == 1) {
+        lbl_80353A90.winningPitcher = g_Scores._B1[r];
+        return;
+    }
+    if (g_Scores.inning < 5) {
+        lbl_80353A90.winningPitcher = g_Scores._B1[r];
+        return;
+    }
+    cur = g_Scores._B3[r];
+    if (g_Scores._B9[r] == 1) {
+        if (g_Scores.inning == 5) {
+            if (p[cur].outsPitched >= 12) {
+                lbl_80353A90.winningPitcher = g_Scores._AF[r];
+                return;
+            }
+        } else if (p[cur].outsPitched >= 15) {
+            lbl_80353A90.winningPitcher = g_Scores._AF[r];
+            return;
+        }
+        best = 0;
+        bestIdx = -1;
+        for (i = 0; i < 9; i++) {
+            if (p[i].battersFaced != 0 && cur != i) {
+                if (bestIdx == -1) {
+                    best = p[i].outsPitched;
+                    bestIdx = i;
+                } else {
+                    v = p[i].outsPitched;
+                    d = v - (u8)best;
+                    if (d >= 3) {
+                        best = v;
+                        bestIdx = i;
+                    } else if (d > -3) {
+                        if (p[i]._04 < p[bestIdx]._04) {
+                            bestIdx = i;
+                        } else if (p[i]._04 == p[bestIdx]._04) {
+                            if (p[i].battersFaced - v < p[bestIdx].battersFaced - p[bestIdx].outsPitched) {
+                                bestIdx = i;
+                            } else if (p[i].battersFaced - v == p[bestIdx].battersFaced - p[bestIdx].outsPitched) {
+                                if (v > (u8)best) {
+                                    bestIdx = i;
+                                } else if ((u8)best == v && p[i]._0E < p[bestIdx]._0E) {
+                                    bestIdx = i;
+                                }
+                            }
+                        }
+                        if (v > (u8)best) {
+                            best = v;
+                        }
+                    }
+                }
+            }
+        }
+        lbl_80353A90.winningPitcher = lbl_803537E4[recTeam][bestIdx].rosterSlot;
+        return;
+    }
+
+    best = 0;
+    bestIdx = -1;
+    if (g_Scores._BB[r] == 2) {
+        lbl_80353A90.winningPitcher = cur;
+        return;
+    }
+    if (cur == -1 || cur == g_Scores._AF[r]) {
+        starter = g_Scores._AF[r];
+        g = lbl_3_common_bss_32A38[g_Scores.result];
+        for (i = 0; i < 9; i++) {
+            if (starter != i && cur != i) {
+                if (bestIdx == -1) {
+                    if (g[i]._0 != 0 && best == 0) {
+                        bestIdx = i;
+                        best = g[i]._0;
+                    }
+                } else {
+                    v = g[i]._0;
+                    if (v > best) {
+                        bestIdx = i;
+                        best = v;
+                    } else if (best == v) {
+                        if (p[i]._04 < p[bestIdx]._04) {
+                            bestIdx = i;
+                        } else if (p[i]._04 == p[bestIdx]._04) {
+                            if (p[i].battersFaced < p[bestIdx].battersFaced) {
+                                bestIdx = i;
+                            } else if (p[i].battersFaced == p[bestIdx].battersFaced && p[i]._0E < p[bestIdx]._0E) {
+                                bestIdx = i;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        g_Scores._AF[g_Scores.result] = starter;
+    }
+    if (bestIdx == -1) {
+        lbl_80353A90.winningPitcher = g_Scores._B3[r];
+    } else {
+        lbl_80353A90.winningPitcher = lbl_803537E4[recTeam][bestIdx].rosterSlot;
+    }
+    if (lbl_80353A90.winningPitcher == -1) {
+        lbl_80353A90.winningPitcher = g_Scores._B1[g_Scores.result];
+    }
 }
+#endif
 
 // .text:0x00076558 size:0x544 mapped:0x806B55EC
 void fn_3_76558(void) {
