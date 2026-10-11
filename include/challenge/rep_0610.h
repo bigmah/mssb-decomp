@@ -156,4 +156,6 @@ void fn_1_FB98(void);
 
 void fn_1_129D0(void);
 
+void fn_1_15760(void);
+
 #endif

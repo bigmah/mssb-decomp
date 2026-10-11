@@ -3347,3 +3347,165 @@ void fn_1_129D0(void) {
     fn_8003414C(ch_67E0);
 }
 #endif
+
+struct ChallengeAnimation;
+extern void fn_1_26B7C(struct ChallengeAnimation* animation); // challenge/rep_7920.h (its typedef clashes with this file's)
+
+// .text:0x15760 size:0x580
+// NONMATCHING ~80%: jump-table cases written as helpers; the original inlines fn_1_CC24
+#if NONMATCHING
+static inline void fn_1_15760_group(s32 direction) {
+    u8* entry = ch_6940; // player 0
+    u8 old = entry[0x44];
+    u8 group = old;
+    do {
+        if (direction < 0) {
+            group = (group == 0) ? 6 : group - 1;
+        } else {
+            group++;
+            if (group == 7) {
+                group = 0;
+            }
+        }
+    } while (lbl_1_data_2390[group] == 0);
+    entry[0x44] = group;
+    if (old != group) {
+        ch_5F5C = 1;
+        entry[0x45] = 0;
+    }
+}
+
+void fn_1_15760(void) {
+    u8* state = lbl_1_bss_3070;
+    u8* entry = ch_6940;
+    u16 buttons;
+    u8 old;
+    u16 count;
+    s32 i;
+
+    ch_5F73 = 0;
+    if (ch_5F5C != 0) {
+        return;
+    }
+    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (buttons & 8) {
+        if (--ch_307C < 0) {
+            ch_307C = 7;
+        }
+    } else if (buttons & 4) {
+        if (++ch_307C >= 8) {
+            ch_307C = 0;
+        }
+    } else if (buttons & 1) {
+        switch ((u32)ch_307C) {
+        case 0:
+            fn_1_15760_group(-1);
+            break;
+        case 1:
+            count = *(u16*)(*(u8**)(lbl_8036E548 + entry[0x44] * 4 + 0xC14) + 0xA);
+            old = entry[0x45];
+            if (old != 0) {
+                entry[0x45] = old - 1;
+            } else {
+                entry[0x45] = count - 1;
+            }
+            if (old != entry[0x45]) {
+                ch_5F5C = 1;
+            }
+            break;
+        case 2:
+            lbl_1_data_ABA4 -= lbl_1_rodata_7430;
+            if (lbl_1_data_ABA4 < lbl_1_rodata_7394) {
+                lbl_1_data_ABA4 = lbl_1_rodata_7394;
+            }
+            break;
+        case 3:
+            fn_1_1644C();
+            break;
+        case 4:
+            ch_3081 ^= 1;
+            break;
+        case 5:
+            if (state[0x1A6] == 0) {
+                state[0x1A6] = 3;
+            }
+            state[0x1A6]--;
+            break;
+        case 6:
+            ch_5F68 ^= 1;
+            if (ch_5F68 != 0) {
+                ActorObjectTable* table = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
+                table->objects[0].time = 0.0f;
+                table->objects[0].setTime = 1;
+            }
+            break;
+        }
+    } else if (buttons & 2) {
+        switch ((u32)ch_307C) {
+        case 0:
+            fn_1_15760_group(1);
+            break;
+        case 1:
+            count = *(u16*)(*(u8**)(lbl_8036E548 + entry[0x44] * 4 + 0xC14) + 0xA);
+            old = entry[0x45];
+            entry[0x45] = old + 1;
+            if (count == (u8)(old + 1)) {
+                entry[0x45] = 0;
+            }
+            if (old != entry[0x45]) {
+                ch_5F5C = 1;
+            }
+            break;
+        case 2:
+            lbl_1_data_ABA4 += lbl_1_rodata_7430;
+            break;
+        case 3:
+            fn_1_1644C();
+            break;
+        case 4:
+            ch_3081 ^= 1;
+            break;
+        case 5:
+            if (++state[0x1A6] == 3) {
+                state[0x1A6] = 0;
+            }
+            break;
+        case 6:
+            ch_5F68 ^= 1;
+            if (ch_5F68 != 0) {
+                ActorObjectTable* table = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
+                table->objects[0].time = 0.0f;
+                table->objects[0].setTime = 1;
+                for (i = 0; i < 5; i++) {
+                    if (ch_67B8[i] != NULL) {
+                        fn_1_26B7C(ch_67B8[i]);
+                    }
+                }
+            }
+            break;
+        }
+    } else if (buttons & 0x1000) {
+        fn_1_CC24();
+    } else if (buttons & 0x400) {
+        if (ch_307C == 6 && ch_5F68 != 0) {
+            ch_5F64 = lbl_1_data_ABA4;
+        }
+    } else if (buttons & 0x800) {
+        if (ch_307C == 6 && ch_5F68 != 0) {
+            ch_5F64 = -lbl_1_data_ABA4;
+        }
+    } else if (buttons & 0x100) {
+        if (ch_307C == 6) {
+            if (ch_5F68 != 0) {
+                ch_5F64 = lbl_1_rodata_73BC;
+            }
+        } else if (ch_307C == 5) {
+            state[0x1A4] = 1;
+        }
+    } else if (buttons & 0x200) {
+        ch_307C = 0;
+        ch_5F71 = 1;
+    }
+    // The original then scans player ch_5F73's bones for an animated one and discards the result.
+}
+#endif
