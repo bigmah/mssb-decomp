@@ -13,7 +13,7 @@ extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_26D5C[];
 extern u8 lbl_3_data_21770[];
 extern u8 lbl_3_data_26E9C[];
-extern void* fn_800337CC(void*, int, int, void*);
+extern void* fn_800337CC(void* e, s32 n, s32 strict);
 extern s8 lbl_3_bss_B85C[];
 extern void fn_80033794(void*);
 extern u8 lbl_3_data_26BDC[];
@@ -229,7 +229,7 @@ void fn_3_147C00(void* arg) {
     u8* p;
     H154238* hh;
     if (h != NULL) {
-        n = fn_800337CC(buf, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1, lbl_3_data_26E9C);
+        n = fn_800337CC(buf, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1);
         if (n != NULL) {
             fn_3_147778(n, arg);
             p = *(u8**)(h + 0xC);
@@ -258,7 +258,7 @@ void fn_3_147CFC(void* arg) {
     }
     h = fn_800339F0(0, 0x26);
     if (h != NULL) {
-        n = fn_800337CC(buf, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1, lbl_3_data_26E9C);
+        n = fn_800337CC(buf, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1);
         if (n != NULL) {
             fn_3_147778(n, arg);
             p = *(u8**)(h + 0xC);
@@ -951,6 +951,7 @@ u32 fn_3_14BA40(u8* o) {
     return n == 0;
 }
 
+#pragma dont_inline off
 // .text:0x0014BCB0 size:0x21C mapped:0x8078AD44
 void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
     u8* p;
@@ -980,7 +981,7 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
             u = (f64)t - lbl_3_rodata_3968;
             u = lbl_3_rodata_3990 * u;
             r = lbl_3_rodata_39C4 * u;
-            ang = lbl_3_rodata_39B8 * (f32)(360.0 / (f64)*(s32*)(d + 4) * (f64)n);
+            ang = lbl_3_rodata_39B8 * (f32)(180.0 / (f64)*(s32*)(d + 4) * (f64)n);
             c = (f32)cos(ang);
             *(f32*)(p + 4) = r * c + v[0];
             s = (f32)sin(ang);
@@ -992,15 +993,40 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
         p = *(u8**)p;
     } while (p != NULL && n < *(u32*)(lbl_3_data_26D88 + 4));
 }
+#pragma dont_inline on
 
+// NONMATCHING 99%: 14BCB0 inlined twice; only f30/f31 (radius/angle) swapped in the first copy
 // .text:0x0014BECC size:0x47C mapped:0x8078AF60
-void fn_3_14BECC(u32 a, u32 b) {
-    return;
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_14BECC(f32* v, u8 flag) {
+    u8 buf[0x5C];
+    u8* h;
+    u8* n;
+    u8* p;
+    h = fn_800339F0(NULL, 0x22);
+    if (h != NULL) {
+        n = fn_800337CC(buf, *(s32*)(lbl_3_data_26D88 + 4), 1);
+        fn_3_14BCB0(n, v, flag);
+        p = *(u8**)(h + 0xC);
+        while (*(u8**)p != NULL) {
+            p = *(u8**)p;
+        }
+        *(u8**)p = *(u8**)(n + 0xC);
+        ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+    } else {
+        n = fn_80033A24(fn_3_14BA40, 0x80, 0, *(s32*)(lbl_3_data_26D88 + 4), 1, 0x22);
+        if (n != NULL) {
+            fn_3_14BCB0(n, v, flag);
+        }
+    }
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x0014C348 size:0x50 mapped:0x8078B3DC
-void fn_3_14C348(u32 a, u32 b) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 2 && a != 0) {
+void fn_3_14C348(f32* a, u8 b) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 2 && a != NULL) {
         fn_3_14BECC(a, b);
     }
 }
