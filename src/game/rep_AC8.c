@@ -1830,9 +1830,53 @@ void fn_3_38790(s32 a, s32 b) {
 }
 
 // .text:0x00038D10 size:0x2E8 mapped:0x80677DA4
+// NONMATCHING 99%: FieldingLogic+0xB0 reg r4/r5 swapped; SetFielderAct state/table regs (see docs/patterns/unsolved.md)
+#if NONMATCHING
 void fn_3_38D10(void) {
-    return;
+    int r;
+    int i;
+    f32 lim;
+    f32 x;
+    f32 z;
+    if (*(s16*)(g_Ball + 0x1B7A) == 0 &&
+        (*(s16*)(g_FieldingLogic + 0xB0) == 3 || *(s16*)(g_FieldingLogic + 0xB0) == 5)) {
+        u8* f = g_Fielders + *(s16*)(g_FieldingLogic + 0xB0) * 0x268;
+        if (*(f32*)(f + 0x80) < *(f32*)(f + 0xE8)) {
+            r = *(s16*)(g_FieldingLogic + 0xB0);
+            goto chosen;
+        }
+    }
+    if ((g_Fielders[3 * 0x268 + 0x1DB] == 0 || g_Fielders[5 * 0x268 + 0x1DB] == 0) && *(s16*)(g_Ball + 0x1B7A) == 0) {
+        x = *(f32*)(g_Ball + 0x348);
+        z = *(f32*)(g_Ball + 0x34C);
+    } else {
+        lim = lbl_3_rodata_B80 * (*(f32*)(g_Fielders + 3 * 0x268 + 0x70) + *(f32*)(g_Fielders + 5 * 0x268 + 0x70));
+        for (i = 1; i < 120; i += 3) {
+            if (*(f32*)(g_Ball + i * 16 + 0x360) > lim) {
+                break;
+            }
+        }
+        x = *(f32*)(g_Ball + i * 16 + 0x354);
+        z = *(f32*)(g_Ball + i * 16 + 0x35C);
+    }
+    r = fn_3_37114(3, 5, 1, x, z);
+    if (r < 0) {
+        if (g_Ball[0x1BBE] >= 2 && lbl_3_bss_16C > 0xA00 && lbl_3_bss_16C < 0xE00) {
+            g_FieldingLogic[0x13A] = 0;
+        }
+    } else {
+    chosen:
+        if (r == 3) {
+            fn_3_38790(3, 1);
+            SetFielderAct(5, 12, 0x60);
+        } else {
+            fn_3_38790(5, 1);
+            SetFielderAct(3, 12, 0x60);
+        }
+        g_FieldingLogic[0x13A] = 0;
+    }
 }
+#endif
 
 // .text:0x00038FF8 size:0x3B8 mapped:0x8067808C
 void fn_3_38FF8(void) {
