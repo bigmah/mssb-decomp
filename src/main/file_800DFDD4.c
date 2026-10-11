@@ -199,9 +199,61 @@ void fn_800E0D60(HVQState* state) {
 }
 
 // .text:0x800E10B4 size:0x114
+// NONMATCHING 79%: register allocation
+#if NONMATCHING
 void fn_800E10B4(HVQState* state) {
-    return;
+    s32 i;
+    HVQPlaneDesc* plane;
+
+    for (i = 0, plane = state->planes; i < 3; i++, plane++) {
+        u16 width = plane->widthInBlocks;
+        HVQBlock* cur = plane->payload;
+        s32 y = plane->heightInBlocks;
+        s32 stride = plane->blocksPerRow;
+        s32 run = 0;
+
+        for (; y > 0; y--) {
+            HVQBlock* above = cur - stride;
+            s32 pred = above->value;
+            s32 x;
+
+            for (x = width; x > 0; x--) {
+                s16 delta;
+                u8 dc;
+                u8 next;
+
+                if (run == 0) {
+                    s16 max = state->dcMax;
+                    s16 sum = 0;
+                    s16 min = state->dcMin;
+                    s16 v;
+
+                    do {
+                        do {
+                            v = fn_800E0CC8(&state->dcValues[i]);
+                            sum += v;
+                        } while (min >= v);
+                    } while (v >= max);
+                    delta = sum;
+                    if (delta == 0) {
+                        run = fn_800E0CC8(&state->dcRle[i]);
+                    }
+                } else {
+                    delta = 0;
+                    run--;
+                }
+                dc = pred + delta;
+                next = above[1].value;
+                above++;
+                cur->value = dc;
+                pred = (next + dc + 1) >> 1;
+                cur++;
+            }
+            cur += 2;
+        }
+    }
 }
+#endif
 
 // .text:0x800E11C8 size:0x3A4
 void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
