@@ -604,7 +604,6 @@ void fn_1_247A0(void) {
 extern void fn_1_273D8(void*);
 extern void fn_1_1F05C(void);
 
-// 99.5%: inlined fn_1_1F23C tail swaps r6/r7 (lbl_803CC1B8 address vs loaded pointer)
 // .text:0x1F2D8 size:0x140
 void fn_1_1F2D8(void) {
     fn_1_273D8(lbl_1_bss_6D48);
@@ -628,8 +627,9 @@ extern const f64 lbl_1_rodata_7878;
 extern const f64 lbl_1_rodata_7880;
 extern const f64 lbl_1_rodata_7888;
 
-// 69%: original keeps i*4 index (lfsx base,r31) plus a dead `i` counter; ours strength-reduces to 3 pointers
+// NONMATCHING 69%: original keeps i*4 index (lfsx base,r31) plus a dead `i` counter; ours strength-reduces to 3 pointers
 // .text:0x22F4C size:0x14C
+#if NONMATCHING
 void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
     f64 c = (lbl_1_rodata_7878 * *(f32*)(lbl_1_data_FB98 + 0x928)) / *(f32*)(lbl_1_data_FB98 + 0x924);
     f32 k;
@@ -653,6 +653,7 @@ void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
         }
     }
 }
+#endif
 
 extern const f32 lbl_1_rodata_77F8;
 extern const f32 lbl_1_rodata_7854;
