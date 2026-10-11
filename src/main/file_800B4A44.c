@@ -141,8 +141,15 @@ void ANIMGetKeyFrameFromTrack(void) {
 }
 
 // .text:0x800B4F9C size:0x50
-void ANIMGetTrackFromSequence(void) {
-    return;
+struct ANIMAnimTrack* ANIMGetTrackFromSequence(ANIMSequences* animSeq, u16 animTrackID) {
+    u32 i;
+
+    for (i = 0; i < animSeq->totalTracks; i++) {
+        if (animTrackID == animSeq->trackArray[i].trackID) {
+            return &animSeq->trackArray[i];
+        }
+    }
+    return NULL;
 }
 
 // .text:0x800B4FEC size:0xA0
