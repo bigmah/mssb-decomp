@@ -10,7 +10,18 @@ typedef struct TexDesc {
     /*0x04*/ void* palette;
     /*0x08*/ u16 height;
     /*0x0A*/ u16 width;
-    /*0x0C*/ u8 _0C[0x20 - 0x0C];
+    /*0x0C*/ u8 wrapS;
+    /*0x0D*/ u8 wrapT;
+    /*0x0E*/ u8 minFilter;
+    /*0x0F*/ u8 magFilter;
+    /*0x10*/ f32 lodBias;
+    /*0x14*/ u8 _14;
+    /*0x15*/ u8 minLod;
+    /*0x16*/ u8 maxLod;
+    /*0x17*/ u8 format;
+    /*0x18*/ u16 tlutCount;
+    /*0x1A*/ u8 tlutFormat;
+    /*0x1B*/ u8 _1B[0x20 - 0x1B];
 } TexDesc; // size: 0x20
 
 // Texture set used by the logo/warning screens: a count word followed by descriptors.
@@ -80,12 +91,24 @@ typedef struct StatOutput {
     /*0x0E*/ s16 _E;
 } StatOutput; // size: 0x10
 
+typedef struct ChallengeTeamEntry {
+    /*0x0*/ s16 id;
+    /*0x2*/ u8 _2[4];
+} ChallengeTeamEntry; // size: 0x6
+
 // Challenge-mode save state; starMissionCompletionTracker (size 0x4508) starts with this.
 typedef struct ChallengeState {
     /*0x0000*/ ChallengeTrackingStruct trackers[54];
-    /*0x0AF8*/ u8 _AF8[0x4415 - 0xAF8];
+    /*0x0AF8*/ u8 _AF8[0x1606 - 0xAF8];
+    /*0x1606*/ s8 _1606;
+    /*0x1607*/ u8 _1607[0x40B8 - 0x1607];
+    /*0x40B8*/ ChallengeTeamEntry teams[9]; // ids must be unique
+    /*0x40EE*/ u8 _40EE[0x43BC - 0x40EE];
+    /*0x43BC*/ s16 _43BC; // 0..1000
+    /*0x43BE*/ u8 _43BE[0x4415 - 0x43BE];
     /*0x4415*/ u8 _4415;
-    /*0x4416*/ u8 _4416[0x441C - 0x4416];
+    /*0x4416*/ u8 _4416[0x441B - 0x4416];
+    /*0x441B*/ u8 _441B;
     /*0x441C*/ u8 _441C;
     /*0x441D*/ u8 _441D;
     /*0x441E*/ u8 _441E;

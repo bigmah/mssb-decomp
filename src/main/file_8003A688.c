@@ -1,13 +1,25 @@
 #include "main/file_8003A688.h"
 #include "main/file_80039AC0.h"
-#include "main/file_800A7C08.h"
-#include "main/file_800B0724.h"
+#include "main/file_80008E00.h"
+#include "main/file_8001FE00.h"
+#include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "stl/string.h"
 
 extern TrailSystem lbl_802D3D80;
-// Current process-queue task (typed per caller, see SceneTask in file_80069BDC.h).
-extern SaveTask* lbl_803CC1B8;
+// SoundManager (main/file_80021308.h, whose prototypes clash with UnknownHomes_Static.h).
+typedef struct SoundManagerView {
+    /*0x000*/ u8 _000[0x397];
+    /*0x397*/ u8 outputMode;
+    /*0x398*/ u8 unk398;
+} SoundManagerView;
+extern SoundManagerView lbl_800EF808;
+extern u8 lbl_80361B20[0xF8];
+extern u8 lbl_803616CC[0x454];
+
+// main/file_800A7C08 (memory card / CRC)
+s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
+u16 fn_800ABB14(u8* data, s32 len);
 
 // .text:0x8003A688 size:0x28
 void fn_8003A688(s32 type, f32 speed, f32 spread) {
@@ -16,12 +28,12 @@ void fn_8003A688(s32 type, f32 speed, f32 spread) {
 }
 
 // .text:0x8003A6B0 size:0x198
-void fn_8003A6B0(s32 type, TrailTexDesc* desc, f32 speed, f32 spread) {
-    if (desc->tlut != NULL) {
+void fn_8003A6B0(s32 type, TexDesc* desc, f32 speed, f32 spread) {
+    if (desc->palette != NULL) {
         lbl_802D3D80.texMode[type] = 2;
         GXInitTexObjCI(&lbl_802D3D80.texObj[type], desc->image, desc->width, desc->height, desc->format, desc->wrapS, desc->wrapT,
                        GX_FALSE, type);
-        GXInitTlutObj(&lbl_802D3D80.tlutObj[type], desc->tlut, desc->tlutFormat, desc->tlutCount);
+        GXInitTlutObj(&lbl_802D3D80.tlutObj[type], desc->palette, desc->tlutFormat, desc->tlutCount);
     } else {
         lbl_802D3D80.texMode[type] = 1;
         GXInitTexObj(&lbl_802D3D80.texObj[type], desc->image, desc->width, desc->height, desc->format, desc->wrapS, desc->wrapT,
@@ -82,7 +94,7 @@ extern u16 lbl_800F7AC0[16];
 extern u8 lbl_803CBCAC;
 
 // .text:0x8003AD84 size:0xD0
-void fn_8003AD84(TrailTexSet* set) {
+void fn_8003AD84(TexSet* set) {
     GXInitTexObjCI(&lbl_803C50B0, set->tex[0].image, set->tex[0].width, set->tex[0].height, GX_TF_C4, set->tex[0].wrapS,
                    set->tex[0].wrapT, GX_FALSE, GX_TLUT0);
     GXInitTlutObj(&lbl_803C50DC, lbl_800F7AC0, GX_TL_IA8, 16);
@@ -91,20 +103,18 @@ void fn_8003AD84(TrailTexSet* set) {
     lbl_803CBCAC = 1;
 }
 
-extern u8 lbl_802D4B00[];
-
 // fn_8003AE70, size:0x5C
 u8 fn_8003AE70(s32 selector) {
     u8 value = 0;
     switch (selector) {
     case 0:
-        value = lbl_802D4B00[0x95];
+        value = lbl_802D4B00._95;
         break;
     case 1:
-        value = lbl_802D4B00[0x94];
+        value = lbl_802D4B00.soundMode;
         break;
     case 2:
-        value = lbl_802D4B00[0x96];
+        value = lbl_802D4B00._96;
         break;
     }
     return value;
@@ -141,8 +151,22 @@ void fn_8003BB90(void) {
 }
 
 // .text:0x8003BF54 size:0xB8
-void fn_8003BF54(void) {
-    return;
+void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h) {
+    SaveTask* task = fn_800B0A5C_insertQueue(fn_8003C00C, 0x8000);
+    task->state = 0;
+    task->_15 = a;
+    task->_16 = b;
+    task->slot = slot;
+    task->_18 = c;
+    task->_19 = d;
+    task->_1A = e;
+    task->_1B = f;
+    task->_1D = 0;
+    task->_20 = g;
+    task->_21 = h;
+    lbl_802D4AE0[slot] = 0;
+    task->_1F = 2;
+    lbl_803CC1B8->_10 = 0;
 }
 
 // .text:0x8003C00C size:0x28CC
@@ -167,7 +191,7 @@ void fn_8003F23C(void) {
     task->_1B = 7;
     task->_1D = 0;
     task->_21 = 0;
-    lbl_803CC1B8->result = 0;
+    lbl_803CC1B8->_10 = 0;
     lbl_802D4AE0[1] = 0;
     lbl_802D4AE0[0] = 0;
 }
@@ -203,6 +227,7 @@ void fn_80041150(void) {
 }
 
 // .text:0x80041348 size:0x1F4
+// Sanity-checks the loaded challenge save; returns 0 if it is corrupt.
 void fn_80041348(void) {
     return;
 }

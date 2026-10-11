@@ -18,7 +18,10 @@ typedef struct _GameInitVariables {
     /*0x0E*/ u8 home_AwaySetting;
     artificial_padding(0x0e, 0x11, u8);
     /*0x11*/ bool minigamesEnabled;
-    artificial_padding(0x11, 0x20, bool);
+    /*0x12*/ u8 _12; // saved
+    /*0x13*/ u8 _13;
+    /*0x14*/ u8 _14[6]; // saved
+    /*0x1A*/ u8 _1A[6]; // saved
     /*0x20*/ s16 _20[4][2];
     /*0x30*/ s16 challengeMinigame_baseCoinsEarned;
     /*0x32*/ u8 bJMatchRelated;
