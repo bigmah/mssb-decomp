@@ -50,7 +50,9 @@ typedef struct RunningLogicStruct {
     /*0x02*/ s16 runnerBits; // one nibble per base; 0x100 = 2nd, 0x1000 = 3rd
     /*0x04*/ s16 _04;
     /*0x06*/ s16 _06[4]; // per base, -1 = empty
-    /*0x0E*/ u8 _0E[0x20 - 0xE];
+    /*0x0E*/ u8 _0E[0x12 - 0xE];
+    /*0x12*/ u8 _12;
+    /*0x13*/ u8 _13[0x20 - 0x13];
 } RunningLogicStruct; // size: 0x20
 
 extern RunningLogicStruct g_RunningLogic;
