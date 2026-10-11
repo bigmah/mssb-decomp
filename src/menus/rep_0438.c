@@ -6,12 +6,34 @@
 #include "main/menu_globals.h"
 #include "static/GameSettings.h"
 #include "menus/rep_04B0.h"
+#include "Dolphin/os.h"
 #include <string.h>
 
 // .text:0x00012238 size:0x194
+// NONMATCHING 91.5%: preset-copy loop scheduling (loads of presets hoisted differently)
+#if NONMATCHING
 void fn_2_12238(void) {
-    return;
+    s32 i;
+    s32 preset;
+    s32 captain = lbl_800FE930[lbl_80361B20._F4][lbl_2_bss_F410._10[0]];
+
+    for (i = 0; i < 6; i++) {
+        if (lbl_80108EC4[i] == captain) {
+            preset = i;
+            break;
+        }
+    }
+    if (i == 6) {
+        OSPanic("teamselect.c", 0x459, " Captain Not Found ");
+    }
+    for (i = 0; i < 9; i++) {
+        lbl_803C6724.picks[0][i] = lbl_8034E9A0.presets[preset][i];
+        gChallengeState.teams[i].pos[1] = i;
+        lbl_803C6724.pos[0][i] = i;
+    }
+    fn_800678CC(0);
 }
+#endif
 
 // .text:0x000123CC size:0x5BC
 void fn_2_123CC(void) {

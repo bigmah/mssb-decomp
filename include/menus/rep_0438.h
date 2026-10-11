@@ -16,7 +16,10 @@ typedef struct MenusBssF410 {
 
 extern MenusBssF410 lbl_2_bss_F410;
 extern u8 lbl_2_bss_100B4;
-extern u16 lbl_2_bss_AE0; // frame counter, wraps at 60000
+extern u16 lbl_2_bss_AE0;
+extern UnlockFlags lbl_80361B20;
+extern u8 lbl_800FE930[2][6]; // captain character id per [lbl_80361B20._F4][F410._10]
+extern u8 lbl_80108EC4[12];   // captain character ids, in preset order // frame counter, wraps at 60000
 
 void fn_2_12238(void);
 void fn_2_123CC(void);
