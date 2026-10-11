@@ -176,10 +176,30 @@ void DrawTextOnCondition(s32 layer) {
     }
 }
 
+// NONMATCHING 96%: extra `mr` when setting up dst before the copy loop
 // .text:0x80010FA0 size:0x60
+#if NONMATCHING
 void fn_80010FA0(void) {
-    return;
+    MsgTable* t = lbl_80366B18.tables[0];
+    u16* dst = lbl_80366218;
+    u16* src;
+    lbl_80366B18.msgs = t->msgs;
+    lbl_80366B18._7EC = t->msgs[1];
+    lbl_80366B18._7F0 = t->msgs[2];
+    lbl_80366B18._7F8 = t->msgs[6];
+    lbl_80366B18._7F4 = t->msgs[5];
+    src = lbl_80366B18.msgs[7];
+    for (;;) {
+        u16 c = *src;
+        if (c == 0x4001) {
+            return;
+        }
+        *dst = c;
+        src++;
+        dst++;
+    }
 }
+#endif
 
 // .text:0x80011000 size:0x140
 void fn_80011000(void) {
