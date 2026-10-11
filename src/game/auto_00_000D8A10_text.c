@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "game/auto_00_000DEB90_text.h"
 
+extern MinigameBss37400View lbl_3_common_bss_37400;
 extern u8 lbl_800EF808[];          // TODO type: options block (0x398: sound/rumble setting)
 extern u16 lbl_3_data_81DC[];      // per stadium: crowd sound id base
 extern MinigameSoundParams lbl_3_data_8404[];

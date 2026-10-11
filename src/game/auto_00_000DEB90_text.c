@@ -23,6 +23,18 @@
 
 extern void possiblyTransitionBlackScreen(void);
 
+// Views declared in game/auto_00_000DEB90_text.h (kept out of the header: other units have their own views).
+extern MinigameCharMgrView lbl_8036E548;
+extern MinigameScoresView g_Scores;
+extern MinigameBss32724View lbl_3_common_bss_32724;
+extern MinigameBss32234View lbl_3_common_bss_32234;
+extern MinigameCBC3CView lbl_803CBC3C;
+extern MinigameFielderView g_Fielders[];
+extern MinigameBss34C90View lbl_3_common_bss_34C90;
+extern MinigameLineScoreView lbl_80353A90;
+extern MinigameBss37400View lbl_3_common_bss_37400;
+extern MinigameSceneFadeView lbl_8037169C;
+
 extern f32 lbl_3_data_18D98[];
 extern MinigameCoinTiming lbl_3_data_18BB0[];
 extern f32 lbl_3_data_18DD0; // coin spin per frame

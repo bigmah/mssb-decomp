@@ -47,8 +47,6 @@ typedef struct MinigameCharMgrView {
     /*0x307E*/ u8 _307E;
 } MinigameCharMgrView;
 
-extern MinigameCharMgrView lbl_8036E548;
-
 // Per-difficulty coin timing table (lbl_3_data_18BB0).
 typedef struct MinigameCoinTiming {
     /*0x0*/ s16 _0;
@@ -64,23 +62,17 @@ typedef struct MinigameScoresView {
     /*0xAC*/ u8 _AC;
 } MinigameScoresView;
 
-extern MinigameScoresView g_Scores;
-
 // View of lbl_3_common_bss_32724, only the fields used here.
 typedef struct MinigameBss32724View {
     /*0x00*/ u8 _00[0xD5];
     /*0xD5*/ u8 _D5;
 } MinigameBss32724View;
 
-extern MinigameBss32724View lbl_3_common_bss_32724;
-
 // View of lbl_3_common_bss_32234, only the fields used here.
 typedef struct MinigameBss32234View {
     /*0x00*/ u8 _00;
     /*0x01*/ u8 _01;
 } MinigameBss32234View;
-
-extern MinigameBss32234View lbl_3_common_bss_32234;
 
 // View of lbl_803CBC3C, only the fields used here.
 typedef struct MinigameCBC3CView {
@@ -89,16 +81,12 @@ typedef struct MinigameCBC3CView {
     /*0x02*/ u8 _02;
 } MinigameCBC3CView;
 
-extern MinigameCBC3CView lbl_803CBC3C;
-
 // View of one g_Fielders entry, only the fields used here.
 typedef struct MinigameFielderView {
     /*0x000*/ u8 _000[0x20D];
     /*0x20D*/ s8 rosterID;
     /*0x20E*/ u8 _20E[0x268 - 0x20E];
 } MinigameFielderView; // size: 0x268
-
-extern MinigameFielderView g_Fielders[];
 
 void fn_3_59918(s32 x, s32 unused);
 
@@ -117,8 +105,6 @@ typedef struct MinigameBss34C90View {
     /*0x1D3*/ u8 _1D3[2];
     /*0x1D5*/ u8 paused;
 } MinigameBss34C90View;
-
-extern MinigameBss34C90View lbl_3_common_bss_34C90;
 
 // Points awarded per turn result (lbl_3_data_18BB8).
 typedef struct MinigamePointsAward {
@@ -144,8 +130,6 @@ typedef struct MinigameLineScoreView {
     /*0x104*/ u8 _104;
 } MinigameLineScoreView;
 
-extern MinigameLineScoreView lbl_80353A90;
-
 // Result-screen camera/actor placement rows (lbl_3_data_2130C), one per stadium / minigame.
 typedef struct MinigameStageCamera {
     /*0x0*/ f32 _0;
@@ -160,8 +144,6 @@ typedef struct MinigameBss37400View {
     /*0x40*/ s16 humanPlayer;
 } MinigameBss37400View;
 
-extern MinigameBss37400View lbl_3_common_bss_37400;
-
 void fn_8001D0D0(s32 index, f32 scale);
 void fn_800203E0(u8 scene, s8 variant);
 s32 fn_80016F7C(void);
@@ -174,8 +156,6 @@ typedef struct MinigameSceneFadeView {
     /*0x12*/ u8 done;
     /*0x13*/ u8 _13;
 } MinigameSceneFadeView;
-
-extern MinigameSceneFadeView lbl_8037169C;
 
 void fn_3_10C81C(void);
 
