@@ -417,16 +417,14 @@ void fn_8001AF98(void) {
     return;
 }
 
-extern u8 lbl_8036E548[];
-
 // fn_8001B200, size:0x14
 void fn_8001B200(void) {
-    *(u32*)(lbl_8036E548 + 0x308c) = 0x0;
+    lbl_8036E548.callback = NULL;
 }
 
 // fn_8001B214, size:0x10
-void fn_8001B214(u32 value) {
-    *(u32*)(lbl_8036E548 + 0x308c) = value;
+void fn_8001B214(void (*callback)(void)) {
+    lbl_8036E548.callback = callback;
 }
 
 // .text:0x8001B224 size:0xAC
