@@ -58,6 +58,7 @@ void SetDisplayStateTexture(TexImage* tex, s32 map, u32 tlutName);
 void fn_800245EC(Mtx44 proj, Mtx view, Vec* points, f32* out, s32 count, s32 ySign);
 void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
 s32 fn_800247E4(s32 x, s32 y, s32 width, s32 bytesPerTexel);
+s32 challengeStarRelatedInd(s32 team, s32 mission);
 f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 
 #endif
