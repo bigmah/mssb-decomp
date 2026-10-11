@@ -178,7 +178,8 @@ typedef struct StadObjB {
 typedef struct StaC5Work {
     u8 pad0;
     u8 cartBusy; /* 0x01 */
-    u8 pad2[0xC - 0x2];
+    u8 flag2;    /* 0x02 */
+    u8 pad3[0xC - 0x3];
     f32 targetX; /* 0x0C */
     u8 pad10[0x20 - 0x10];
     f32 wobVel; /* 0x20 */
@@ -1536,7 +1537,7 @@ void fn_3_F3BB0(u8* p) {
     x = *(f32*)(p + 0xAC);
     rot = -lbl_3_data_1B884[p[0x9C]].pad[0];
     *(f32*)(p + 0xA0) = x;
-    *(f32*)(p + 0xA4) = 10.0f;
+    *(f32*)(p + 0xA4) = lbl_3_rodata_2E30;
     *(f32*)(p + 0xA8) = z;
     *(f32*)(p + 0xB4) = rot;
     p[0] = 0;
@@ -1761,8 +1762,8 @@ void fn_3_F4D00(u8* p) {
     tgt.y = lbl_3_data_1B884[p[0x9C]].v.y;
     tgt.z = lbl_3_data_1B884[p[0x9C]].v.z;
     PSVECSubtract(&tgt, (Vec*)(p + 0xA8), &d);
-    *(f32*)(p + 0xB4) = 0.2f * d.x;
-    *(f32*)(p + 0xBC) = 0.2f * d.z;
+    *(f32*)(p + 0xB4) = lbl_3_rodata_2EE8 * d.x;
+    *(f32*)(p + 0xBC) = lbl_3_rodata_2EE8 * d.z;
 }
 
 #pragma dont_inline on
@@ -1819,14 +1820,51 @@ void fn_3_F4DAC(void) {
 }
 
 // .text:0x000F4FBC size:0x710 mapped:0x80734050
-void fn_3_F4FBC(void) {
+void fn_3_F4FBC(StadObjB* p) {
     return;
 }
 
 // .text:0x000F56CC size:0x564 mapped:0x80734760
+// NONMATCHING 97%: inlines fn_3_F5C30 (+fn_3_F3BB0) twice and fn_3_F4D00; saved-register numbering of the two table-column pointers differs; original reaches lbl_3_bss_B219 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected)
+#if NONMATCHING
 void fn_3_F56CC(StadObjB* p) {
-    return;
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    if (g_d_GameSettings[7] == 7) {
+        return;
+    }
+    if (g_GameLogic[0x11E] == 3) {
+        fn_3_F5C30((u8*)p);
+        p->update = fn_3_F46A0;
+    } else if (g_GameLogic[0x11E] != 2) {
+        if (g_GameLogic[0x11E] == 0) {
+            fn_3_F5C30((u8*)p);
+        }
+        if (w->cartBusy != 0) {
+            w->cartBusy = 0;
+        }
+        if (w->flag2 != 0) {
+            w->flag2 = 0;
+        }
+    } else {
+        if (p->f99 != 0) {
+            p->f99 = 0;
+        }
+        if (p->link != NULL) {
+            fn_3_F193C(p->link);
+        }
+        switch (p->state) {
+        case 0:
+        case 1:
+        case 2:
+            fn_3_F4FBC(p);
+            break;
+        case 3:
+            fn_3_F4D00((u8*)p);
+            break;
+        }
+    }
 }
+#endif
 
 #pragma dont_inline off
 // .text:0x000F5C30 size:0x248 mapped:0x80734CC4
@@ -1839,9 +1877,9 @@ void fn_3_F5C30(u8* p) {
     p[0] = 0;
     CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA8), -*(f32*)(p + 0xAC), *(f32*)(p + 0xB0));
     CTRLSetRotation((Control*)p, 0.0f, *(f32*)(p + 0xC0), 0.0f);
-    *(f32*)(p + 0xBC) = 0.0f;
-    *(f32*)(p + 0xB8) = 0.0f;
-    *(f32*)(p + 0xB4) = 0.0f;
+    *(f32*)(p + 0xBC) = lbl_3_rodata_2D5C;
+    *(f32*)(p + 0xB8) = lbl_3_rodata_2D5C;
+    *(f32*)(p + 0xB4) = lbl_3_rodata_2D5C;
     if (*(u8**)(p + 0xA4) != NULL) {
         if (*(u32*)(*(u8**)(p + 0xA4) + 8) != 0) {
             fn_80033964(*(u8**)(p + 0xA4));

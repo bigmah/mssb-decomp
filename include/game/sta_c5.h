@@ -64,7 +64,7 @@ void fn_3_F4BA0(u8* p);
 void fn_3_F4C4C(u8* p);
 void fn_3_F4D00(u8* p);
 void fn_3_F4DAC(void);
-void fn_3_F4FBC(void);
+void fn_3_F4FBC(struct StadObjB* p);
 void fn_3_F56CC(struct StadObjB* p);
 void fn_3_F5C30(u8* p);
 s32 fn_3_F5E78(u8 id);
