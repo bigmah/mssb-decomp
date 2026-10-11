@@ -231,6 +231,99 @@ void fn_2_92F2C(MenuCamera* cam) {
 }
 #endif
 
+// fn_2_932DC, size:0x91C
+// NONMATCHING 99.6%: f0/f1 swapped in the cam->pos clamps and f28-f31 rotated in the inlined fn_2_927C8 spring
+#if NONMATCHING
+void fn_2_932DC(MenuCamera* cam) {
+    Mtx rotX;
+    Mtx rotY;
+    Mtx rot;
+    Vec up = lbl_2_rodata_1110;
+    Vec offset = lbl_2_rodata_111C;
+    Vec angles;
+    Vec focus;
+    Vec target;
+    s32 preset = WORK->presetIndex;
+    f32 c;
+    f32 s;
+
+    cam->rotX = lbl_2_data_38E0[preset].rotX;
+    cam->rotY = lbl_2_data_38E0[preset].rotY;
+    cam->strafe = lbl_2_rodata_1144;
+    cam->advance = lbl_2_rodata_1144;
+    angles.x = cam->rotX;
+    angles.y = cam->rotY;
+    angles.z = lbl_2_rodata_1144;
+    PSVECScale(&angles, lbl_2_rodata_1154, &angles);
+    PSMTXRotRad(rotX, 'X', angles.x);
+    PSMTXRotRad(rotY, 'Y', angles.y);
+    s = rotY[0][2];
+    c = rotY[0][0];
+    PSMTXConcat(rotY, rotX, rot);
+    PSMTXMultVec(rot, &offset, &cam->target);
+    cam->pos.x += cam->advance * s - cam->strafe * c;
+    cam->pos.z += cam->advance * c + cam->strafe * s;
+    cam->target.x += cam->pos.x;
+    cam->target.y += cam->pos.y;
+    cam->target.z += cam->pos.z;
+
+    if (WORK->focusMode == 1) {
+        memcpy(&angles, &lbl_2_data_38E0[preset].pos, sizeof(Vec));
+        fn_2_68DE8(WORK->focusIndex, &focus);
+        PSVECAdd(&focus, &angles, &angles);
+        memcpy(&cam->pos, &angles, sizeof(Vec));
+    } else {
+        memcpy(&angles, &lbl_2_data_38E0[preset].pos, sizeof(Vec));
+        memcpy(&cam->pos, &angles, sizeof(Vec));
+    }
+    if (WORK->noClamp == 0) {
+        if (cam->pos.x <= lbl_2_rodata_1168) {
+            cam->pos.x = lbl_2_rodata_1168;
+        }
+        if (cam->pos.x >= lbl_2_rodata_116C) {
+            cam->pos.x = lbl_2_rodata_116C;
+        }
+        if (cam->pos.z <= lbl_2_rodata_1170) {
+            cam->pos.z = lbl_2_rodata_1170;
+        }
+        if (cam->pos.z >= lbl_2_rodata_1174) {
+            cam->pos.z = lbl_2_rodata_1174;
+        }
+    }
+    memcpy(&WORK->pos, &cam->pos, sizeof(Vec));
+
+    if (WORK->focusIndex != -1) {
+        fn_2_68DE8(WORK->focusIndex, &target);
+    } else {
+        memcpy(&target, &lbl_2_data_38E0[preset].target, sizeof(Vec));
+    }
+    if (WORK->noClamp == 0) {
+        if (target.x <= lbl_2_rodata_1168) {
+            target.x = lbl_2_rodata_1168;
+        } else if (target.x >= lbl_2_rodata_116C) {
+            target.x = lbl_2_rodata_116C;
+        } else {
+            WORK->targetClamped.x = target.x;
+        }
+        if (target.z <= lbl_2_rodata_1178) {
+            target.z = lbl_2_rodata_1178;
+        } else if (target.z >= lbl_2_rodata_117C) {
+            target.z = lbl_2_rodata_117C;
+        } else {
+            WORK->targetClamped.z = target.z;
+        }
+    }
+    memcpy(&WORK->target, &target, sizeof(Vec));
+    fn_2_927C8(cam, &target);
+    memcpy(&WORK->target, &target, sizeof(Vec));
+    fn_2_92CB0(cam);
+    memcpy(&cam->pos, &WORK->pos, sizeof(Vec));
+    memcpy(&cam->target, &WORK->target, sizeof(Vec));
+    cam->fov = lbl_2_data_38E0[preset].fov;
+    makeLookAtMatrix(cam->view, &cam->pos, &up, &cam->target);
+}
+#endif
+
 // fn_2_93BF8, size:0x6C
 void fn_2_93BF8(MenuCamera* cam) {
     switch (WORK->cameraMode) {
