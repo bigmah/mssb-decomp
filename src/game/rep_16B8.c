@@ -722,9 +722,66 @@ void fn_3_955CC(void) {
 }
 
 // .text:0x00095620 size:0x350 mapped:0x806D46B4
+// NONMATCHING 97%: original loads the -2.0f / int->float constants through `addi rN; lfs 0(rN)` and schedules the two conversions differently
+#if NONMATCHING
 void fn_3_95620(void) {
-    return;
+    RepTask* task = lbl_803CC1B8[0];
+    RepFielderView* f;
+    int sx;
+    int sy;
+    s16 idx;
+    if (lbl_3_common_bss_32724[0x96] != 0) {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == 2) {
+        if (g_GameLogic.secondaryGameMode == 0xD || (u8)(g_GameLogic.secondaryGameMode - 0xE) <= 1 || g_GameLogic.secondaryGameMode == 0x10) {
+            if (g_Practice._186 != 0) {
+                REP_OBJ(task, 0)->flags &= ~2;
+                return;
+            }
+        } else {
+            REP_OBJ(task, 0)->flags &= ~2;
+            return;
+        }
+    }
+    if (g_Stats.replayInd != 0) {
+        REP_OBJ(task, 0)->flags &= ~2;
+        return;
+    }
+    if (g_GameLogic.gameStatus != 2) {
+        REP_OBJ(task, 0)->flags &= ~2;
+        return;
+    }
+    if (g_GameLogic.sceneID == 1) {
+        REP_OBJ(task, 0)->flags &= ~2;
+        return;
+    }
+    if (g_GameLogic._13E[g_GameLogic.teamFielding] != 0) {
+        REP_OBJ(task, 0)->flags &= ~2;
+        return;
+    }
+    if (g_GameLogic.teamAIInd[g_GameLogic.awayTeamBattingInd_battingTeam] != 0 && g_GameLogic.autoFielding[g_GameLogic.awayTeamBattingInd_battingTeam] != 0) {
+        REP_OBJ(task, 0)->flags &= ~2;
+        return;
+    }
+    if (g_FieldingLogic._139 != 0) {
+        REP_OBJ(task, 0)->flags &= ~2;
+        return;
+    }
+    idx = g_FieldingLogic._0B0;
+    if (idx < 0) {
+        REP_OBJ(task, 0)->flags &= ~2;
+        return;
+    }
+    REP_OBJ(task, 0)->flags |= 2;
+    f = &g_Fielders[idx];
+    fn_3_1650C(&sx, &sy, FALSE, f->x, -2.0f - f->_00C, f->z);
+    REP_OBJ(task, 0)->x = sx;
+    REP_OBJ(task, 0)->y = sy;
+    REP_OBJ(task, 0)->color = (REP_OBJ(task, 0)->color & 0xFF) | 0xFFFFFF00;
 }
+#endif
 
 // .text:0x00095970 size:0x4C mapped:0x806D4A04
 void fn_3_95970(void) {

@@ -2817,7 +2817,8 @@ extern g_Stats_s g_Stats;
 typedef struct {
     u8 pad[0xAE];
     /* 0x0AE */ s16 _0AE;
-    u8 _0B0[0xBC - 0xB0];
+    /* 0x0B0 */ s16 _0B0; // fielder index (g_Fielders), < 0 if none
+    u8 _0B2[0xBC - 0xB2];
     /* 0x0BC */ s16 _0BC;
     u8 _0BE[0xE4 - 0xBE];
     /* 0x0E4 */ s16 _0E4;

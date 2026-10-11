@@ -21,6 +21,18 @@ typedef struct RepTask {
     /*0x22*/ u16 _22;
 } RepTask;
 
+// g_Fielders entry (0x268 bytes); only the fields used here.
+typedef struct RepFielderView {
+    /*0x000*/ f32 x;
+    /*0x004*/ f32 _004;
+    /*0x008*/ f32 z;
+    /*0x00C*/ f32 _00C;
+    /*0x010*/ u8 _010[0x268 - 0x10];
+} RepFielderView; // size: 0x268
+
+extern RepFielderView g_Fielders[9];
+
+BOOL fn_3_1650C(int* outX, int* outY, BOOL r5, f32 pX, f32 pY, f32 pZ);
 extern void fn_8003649C(void* owner, s32 idx, s32 track, u16 animId, u32 frame);
 
 #define REP_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
