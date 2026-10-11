@@ -1799,3 +1799,70 @@ s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat) {
     return sel;
 }
 #endif
+
+static inline void fn_1_1DE60_adjust(f32* value, u16 held, s32 decrease, f32 min, f32 max) {
+    f32 v;
+    f32 step;
+
+    step = lbl_1_rodata_77F8;
+    v = *value;
+    if (held & 0x40) {
+        step = lbl_1_rodata_77FC;
+    } else if (held & 0x20) {
+        step = lbl_1_rodata_7800;
+    }
+    if (decrease) {
+        step = -step;
+    }
+    v += step;
+    if (v < min) {
+        v = min;
+    }
+    if (v > max) {
+        v = max;
+    }
+    *value = v;
+}
+
+// .text:0x1DE60 size:0x42C
+s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat) {
+    if (sel < 0 || sel >= 4) {
+        return sel;
+    }
+    if (repeat & 1) {
+        switch (sel) {
+        case 0:
+            fn_1_1DE60_adjust(&lbl_1_bss_6BE4[0], held, 1, lbl_1_rodata_77D8, lbl_1_rodata_77E4);
+            break;
+        case 1:
+            fn_1_1DE60_adjust(&lbl_1_bss_6BE4[1], held, 1, lbl_1_rodata_7804, lbl_1_rodata_7808[0]);
+            break;
+        case 2:
+            fn_1_1DE60_adjust(&lbl_1_bss_6BE4[2], held, 1, lbl_1_rodata_7804, lbl_1_rodata_7808[0]);
+            break;
+        case 3:
+            fn_1_1DE60_adjust(&lbl_1_bss_6BE4[3], held, 1, lbl_1_rodata_7804, lbl_1_rodata_7808[0]);
+            break;
+        }
+    } else if (repeat & 2) {
+        switch (sel) {
+        case 0:
+            fn_1_1DE60_adjust(&lbl_1_bss_6BE4[0], held, 0, lbl_1_rodata_77D8, lbl_1_rodata_77E4);
+            break;
+        case 1:
+            fn_1_1DE60_adjust(&lbl_1_bss_6BE4[1], held, 0, lbl_1_rodata_7804, lbl_1_rodata_7808[0]);
+            break;
+        case 2:
+            fn_1_1DE60_adjust(&lbl_1_bss_6BE4[2], held, 0, lbl_1_rodata_7804, lbl_1_rodata_7808[0]);
+            break;
+        case 3:
+            fn_1_1DE60_adjust(&lbl_1_bss_6BE4[3], held, 0, lbl_1_rodata_7804, lbl_1_rodata_7808[0]);
+            break;
+        }
+    } else if (repeat & 8) {
+        sel--;
+    } else if (repeat & 4) {
+        sel++;
+    }
+    return sel;
+}
