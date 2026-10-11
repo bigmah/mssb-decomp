@@ -17,6 +17,5 @@ void fn_3_C0810(void) {
 
 // .text:0x000C0824 size:0x30 mapped:0x806FF8B8
 void fn_3_C0824(void) {
-    return;
+    fn_800B0A5C_insertQueue((void*)fn_3_C0810, 0xFFFF);
 }
-
