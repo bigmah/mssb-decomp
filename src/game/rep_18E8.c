@@ -100,6 +100,48 @@ extern const f32 lbl_3_rodata_1A04;
 extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
+extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_1A40;
+
+// Frames for the fielder holding the ball to reach (x, z). Same body as fn_3_A6ABC, which the
+// original inlines into several callers in this file.
+#pragma dont_inline off
+static inline s32 ballFielderFramesTo(f32 x, f32 z) {
+    RepFielder* f;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 a;
+    f32 b;
+    s32 n;
+
+    f = &g_Fielders[g_Ball.fielderWBallIndex];
+    dx = x - f->pos.x;
+    step = (f32)f->_1CD / lbl_3_rodata_1938;
+    dz = z - f->pos.z;
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        step = lbl_3_rodata_1958;
+    }
+    if (d > lbl_3_rodata_195C) {
+        n = (s32)(lbl_3_rodata_1960 * d / step);
+    } else if (d > lbl_3_rodata_1964) {
+        n = (s32)(d / step);
+    } else {
+        n = (s32)(lbl_3_rodata_1968 * d / step);
+    }
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+    }
+    return n;
+}
+#pragma dont_inline on
 
 // .text:0x000A009C size:0x1C68 mapped:0x806DF130
 void fn_3_A009C(void) {
@@ -1514,9 +1556,46 @@ tail:
 }
 
 // .text:0x000A85C8 size:0x40C mapped:0x806E765C
-void fn_3_A85C8(void) {
-    return;
+// NONMATCHING 92.5%: float register allocation in the inlined fn_3_A6ABC body differs
+#if NONMATCHING
+#pragma dont_inline off
+void fn_3_A85C8(f32 dist) {
+    s32 target;
+    s32 runnerFrames;
+    s32 i;
+    s32 runners;
+    s32 n;
+
+    runners = 0;
+    for (i = 0; i < 4; i++) {
+        if (g_Runners[i].runnerOnFieldOrOutOrScored == 1) {
+            runners++;
+        }
+    }
+    if (fn_3_A8478(&target, &runnerFrames) == 0) {
+        if (dist < lbl_3_rodata_1A0C) {
+            g_FieldingLogic.throwSpeedType = 7;
+            return;
+        }
+        if (dist < lbl_3_rodata_1A38 && g_FieldingLogic.throwSpeedType < 5) {
+            g_FieldingLogic.throwSpeedType = 5;
+        }
+    } else {
+        n = ballFielderFramesTo(g_Ball.throwDestination.x, g_Ball.throwDestination.z);
+        if ((g_Strikes.outs >= 2 || runners == 1) && n + 0x14 - runnerFrames < -0x1E &&
+            g_Ball.numberOfThrowsDuringPlay <= 1) {
+            g_FieldingLogic.throwSpeedType = 4;
+            if (dist > lbl_3_rodata_1964) {
+                g_FieldingLogic.throwSpeedType = 3;
+            } else if (dist < lbl_3_rodata_1A40) {
+                g_FieldingLogic.throwSpeedType = 6;
+            }
+            g_FieldingLogic._10B = 1;
+        }
+    }
 }
+#pragma dont_inline on
+#endif
 
 // .text:0x000A89D4 size:0x980 mapped:0x806E7A68
 void fn_3_A89D4(void) {
