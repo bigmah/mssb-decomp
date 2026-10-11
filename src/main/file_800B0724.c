@@ -509,8 +509,8 @@ void fn_800B1314(QuadVtx* verts, SpriteTexInfo* tex, u16 width, u16 height) {
 }
 
 // .text:0x800B1350 size:0x38
-void DrawSprite_TexObj(void) {
-    return;
+void DrawSprite_TexObj(QuadState* quad, SpriteTexInfo* tex) {
+    DrawSprite(GX_QUADS, quad->u.v, 4, tex, tex->width, tex->height);
 }
 
 // .text:0x800B1388 size:0x38
