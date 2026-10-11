@@ -1051,9 +1051,27 @@ void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
 #endif
 
 // .text:0x8002F9FC size:0x3BC
-void fn_8002F9FC(void) {
-    return;
+// NONMATCHING 84%: register allocation only
+#if NONMATCHING
+s32 fn_8002F9FC(Emitter* e) {
+    Particle* p = e->particles;
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+    do {
+        QuadCorners(p->sizeX, p->sizeY);
+        // uvOrder selects the blend: nonzero subtracts, zero adds
+        if (p->uvOrder != 0) {
+            GXSetBlendMode(GX_BM_SUBTRACT, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
+        } else {
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+        }
+        DrawParticleQuad(p, e->tex);
+        p = p->next;
+    } while (p != NULL);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    return 1;
 }
+#endif
 
 // .text:0x8002FDB8 size:0x6B8
 // NONMATCHING 78%: float register allocation and scheduling
