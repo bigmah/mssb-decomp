@@ -58,11 +58,97 @@ extern u8 g_Ball[];
 extern u8 lbl_3_data_23F24[];
 extern u8 lbl_80366158[];
 extern u8 lbl_3_data_23AE4[];
+extern u8 lbl_3_data_25344[];
+extern RepRunner g_Runners[4];
+extern void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);
 
 // .text:0x0011EC28 size:0x404 mapped:0x8075DCBC
+// NONMATCHING 90%: register numbering of the runner loop (m/i swapped) and two extra mr copies
+#if NONMATCHING
 void fn_3_11EC28(void) {
-    return;
+    RepObj* o;
+    RepRunner* r;
+    u8* m;
+    u32 i;
+    RepTask* q;
+    s16 sx;
+    s16 sy;
+    q = REP_TASK;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_25344);
+        q->state = 1;
+        break;
+    case 1:
+        i = 0;
+        do {
+            REP_OBJ(q, i)->mode = 0;
+            o = REP_OBJ(q, i++);
+            o->frame = 0;
+        } while (i < 8);
+        m = g_Minigame;
+        if (m[0x1E00] != 0) {
+            i = 0;
+            m[0x1E00] = 0;
+            if (m[0x1B33] != 0) {
+                r = g_Runners;
+                do {
+                    if (m[0x1B2F] == 1) {
+                        o = REP_OBJ(q, i + 4);
+                        o->mode = 1;
+                        fn_800528C0(&sx, &sy, r->x, r->y, r->z);
+                        if (sx < 0x50) {
+                            sx = 0x50;
+                        } else if (sx > 0x230) {
+                            sx = 0x230;
+                        }
+                        REP_OBJ(q, i + 4)->x = sx;
+                        REP_OBJ(q, i + 4)->y = sy;
+                    }
+                    i++;
+                    r++;
+                    m++;
+                } while (i < 4);
+            } else {
+                r = g_Runners;
+                do {
+                    o = REP_OBJ(q, i);
+                    o->mode = 1;
+                    fn_800528C0(&sx, &sy, r->x, r->y, r->z);
+                    if (sx < 0x50) {
+                        sx = 0x50;
+                    } else if (sx > 0x230) {
+                        sx = 0x230;
+                    }
+                    r++;
+                    REP_OBJ(q, i)->x = sx;
+                    REP_OBJ(q, i)->y = sy;
+                    i++;
+                } while (i < 4);
+            }
+            q->state = 2;
+        }
+        break;
+    case 2:
+        i = 0;
+        do {
+            if (REP_OBJ(q, i)->mode != 0 && REP_OBJ(q, i)->status != 2) {
+                break;
+            }
+            i++;
+        } while (i < 8);
+        if (i >= 8) {
+            q->state = 1;
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x0011F02C size:0x454 mapped:0x8075E0C0
 void fn_3_11F02C(void) {

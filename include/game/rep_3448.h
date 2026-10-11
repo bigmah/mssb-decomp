@@ -3,6 +3,59 @@
 
 #include "mssbTypes.h"
 
+// This unit's view of a layout sprite (main/file_8000F150.h LayoutObj); only the fields used here.
+typedef struct RepObj {
+    /*0x00*/ u8 _00[0x48];
+    /*0x48*/ f32 x;
+    /*0x4C*/ f32 y;
+    /*0x50*/ u8 _50[0x4];
+    /*0x54*/ u32 flags;
+    /*0x58*/ u32 color;
+    /*0x5C*/ u32 frame; // animation frame << 16
+    /*0x60*/ u8 _60[0x4];
+    /*0x64*/ u16 anim;
+    /*0x66*/ u8 _66[0x2];
+    /*0x68*/ u8 mode;   // 0 hidden, 1 play, 4 rewind
+    /*0x69*/ u8 status; // 2 when the animation finished
+    /*0x6A*/ u8 _6A[0x72 - 0x6A];
+    /*0x72*/ s16 _72;
+} RepObj;
+
+// One entry of lbl_80371C30 (main/file_8000F150.h LayoutSlot).
+typedef struct RepSlot {
+    /*0x0*/ RepObj* obj;
+    /*0x4*/ u32 _04;
+} RepSlot;
+
+// HUD task (lbl_803CC1B8 while one of this unit's tasks runs); only the fields used here.
+typedef struct RepTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ u8 _04[0x8];
+    /*0x0C*/ struct RepTask* parent;
+    /*0x10*/ u8 _10[0x4];
+    /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
+    /*0x16*/ u16 count;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ u16 state;
+    /*0x1E*/ u16 _1E;
+    /*0x20*/ u16 _20;
+    /*0x22*/ u16 _22;
+    /*0x24*/ s8 _24;
+    /*0x25*/ u8 _25;
+} RepTask;
+
+// Runner position (game/UnknownHomes_Game.h InMemRunnerType, size 0x154).
+typedef struct RepRunner {
+    /*0x000*/ f32 x;
+    /*0x004*/ f32 y;
+    /*0x008*/ f32 z;
+    /*0x00C*/ u8 _00C[0x154 - 0xC];
+} RepRunner;
+
+#define REP_TASK ((RepTask*)lbl_803CC1B8)
+#define REP_OBJ(t, i) (((RepSlot*)lbl_80371C30)[(t)->baseIdx + (i)].obj)
+
 void fn_3_11EC28(void);
 void fn_3_11F02C(void);
 void fn_3_11F480(void);
