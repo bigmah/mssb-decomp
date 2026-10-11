@@ -114,7 +114,29 @@ void fn_2_1406C(PortInput* in) {
 // .text:0x00014164 size:0xBC
 // Top menu: pick a page (1..4).
 void fn_2_14164(PortInput* in) {
-    return;
+    u16 repeat = in->repeat;
+    u16 pressed;
+    if (repeat & 8) {
+        lbl_2_bss_100B8.cursor--;
+        if ((s8)lbl_2_bss_100B8.cursor == 0) {
+            lbl_2_bss_100B8.cursor = 4;
+        }
+    } else if (repeat & 4) {
+        lbl_2_bss_100B8.cursor++;
+        if ((s8)lbl_2_bss_100B8.cursor == 5) {
+            lbl_2_bss_100B8.cursor = 1;
+        }
+    } else {
+        pressed = in->pressed;
+        if (pressed & 0x100) {
+            lbl_2_bss_100B8.page = lbl_2_bss_100B8.cursor;
+        } else if (pressed & 0x200) {
+            lbl_2_bss_100B8.settingSel = 0;
+            lbl_2_bss_100B8.page = 0;
+            lbl_2_bss_100B8.cursor = 1;
+            lbl_2_bss_100B8._4B = 0;
+        }
+    }
 }
 
 // .text:0x00014220 size:0x354
