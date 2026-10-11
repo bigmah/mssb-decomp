@@ -39,9 +39,91 @@ void fn_8000CC4C(void) {
     return;
 }
 
+// Advance to the next entry of an animation block.
+static inline AnimEntry* AnimEntry_Next(AnimEntry* entry, u32 fullWords, u32 rawWords) {
+    AnimEntry* next = entry;
+    switch (entry->type & 0x7FFF) {
+    case ANIM_ENTRY_FULL:
+        next = (AnimEntry*)((u32*)entry + fullWords);
+        break;
+    case ANIM_ENTRY_RAW:
+        next = (AnimEntry*)((u32*)entry + rawWords);
+        break;
+    case ANIM_ENTRY_SPARSE:
+        next = (AnimEntry*)((u32*)entry + entry->size);
+        break;
+    case ANIM_ENTRY_SPANS:
+        next = (AnimEntry*)((u32*)entry + entry->size);
+        break;
+    }
+    return next;
+}
+
 // .text:0x8000CEF0 size:0x274
-void fn_8000CEF0(void) {
-    return;
+BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out) {
+    AnimTrack* track;
+    AnimBlock* block;
+    AnimEntry* entry;
+    s32 n;
+    u32 outSize;
+    u32* dst;
+    u32* values;
+    u16* idx;
+    u16* span;
+    u8* src;
+    s32 count;
+
+    // TODO type: anim->table->tracks[trackIdx] (typed indexing folds the +8)
+    track = *(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8);
+    if (blockIdx >= (track->count & 0x7FFFFFFF) - 1) {
+        return FALSE;
+    }
+    // TODO type: track->blocks[blockIdx]
+    block = *(AnimBlock**)((u8*)track + (blockIdx + 1) * 4 + 8);
+    n = block->count - entryIdx;
+    if (n <= 0) {
+        return FALSE;
+    }
+    entry = block->entries;
+    while (--n) {
+        entry = AnimEntry_Next(entry, (u32)block->size >> 2, anim->paramCount);
+    }
+    outSize = anim->paramCount * 4;
+    switch (entry->type & 0x7FFF) {
+    case ANIM_ENTRY_FULL:
+        memset(out, 0, outSize);
+        memcpy(out, block->entries, block->size);
+        break;
+    case ANIM_ENTRY_RAW:
+        memcpy(out, entry, outSize);
+        break;
+    case ANIM_ENTRY_SPARSE:
+        memset(out, 0, outSize);
+        dst = out + 1;
+        memcpy(dst, &block->entries[0].count, block->size - 4);
+        memcpy(out, entry, 4);
+        n = entry->count;
+        values = (u32*)entry + entry->size;
+        idx = (u16*)entry + n;
+        while (values--, idx--, n-- != 0) {
+            dst[idx[4]] = *values;
+        }
+        break;
+    case ANIM_ENTRY_SPANS:
+        memset(out, 0, outSize);
+        dst = out + 1;
+        memcpy(dst, &block->entries[0].count, block->size - 4);
+        memcpy(out, entry, 4);
+        span = entry->data;
+        src = (u8*)entry + ((count = entry->count) * 4 + 8);
+        while (count-- != 0) {
+            memcpy((u8*)dst + span[0], src, span[1]);
+            src += span[1];
+            span += 2;
+        }
+        break;
+    }
+    return TRUE;
 }
 
 // .text:0x8000D164 size:0x6D4

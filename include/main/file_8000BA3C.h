@@ -95,6 +95,47 @@ typedef struct Circle2DElem {
     /* 0x25 */ u8 unk25_b1 : 7;
 } Circle2DElem;
 
+// Keyframe animation data.
+typedef enum AnimEntryType {
+    ANIM_ENTRY_FULL = 0,   // full parameter block (block->size bytes, starting at the block's first entry)
+    ANIM_ENTRY_RAW = 1,    // anim->paramCount words
+    ANIM_ENTRY_SPARSE = 2, // indexed words patched over the base entry
+    ANIM_ENTRY_SPANS = 3,  // byte spans patched over the base entry
+} AnimEntryType;
+
+typedef struct AnimEntry {
+    /* 0x00 */ u16 type; // bit 15: flag, low 15 bits: AnimEntryType
+    /* 0x02 */ u16 time;
+    /* 0x04 */ u16 count; // SPARSE/SPANS: number of patches
+    /* 0x06 */ u16 size;  // SPARSE/SPANS: entry size in words
+    /* 0x08 */ u16 data[1]; // SPARSE: word indices; SPANS: (byte offset, length) pairs
+} AnimEntry;
+
+typedef struct AnimBlock {
+    /* 0x00 */ u16 count; // number of entries
+    /* 0x02 */ u16 size;  // size of a FULL entry in bytes
+    /* 0x04 */ AnimEntry entries[1];
+} AnimBlock;
+
+typedef struct AnimTrack {
+    /* 0x00 */ u32 count; // bit 31: flag, low 31 bits: number of blocks (including loops)
+    /* 0x04 */ u32 unk4;
+    /* 0x08 */ u16* loops;
+    /* 0x0C */ AnimBlock* blocks[1];
+} AnimTrack;
+
+typedef struct AnimTrackTable {
+    /* 0x00 */ u8 pad0[8];
+    /* 0x08 */ AnimTrack* tracks[1];
+} AnimTrackTable;
+
+typedef struct Anim {
+    /* 0x00 */ u8 pad0[5];
+    /* 0x05 */ u8 paramCount; // words per decoded frame
+    /* 0x06 */ u8 pad6[2];
+    /* 0x08 */ AnimTrackTable* table;
+} Anim;
+
 // Quad being assembled for drawing.
 typedef struct QuadState {
     /* 0x00 */ QuadVtx v[4];
@@ -123,6 +164,7 @@ void fn_8000E030(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000E2D4(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000DC9C(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000D8A4(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
+BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
