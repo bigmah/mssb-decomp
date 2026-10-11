@@ -58,7 +58,34 @@ void fn_3_972A0(void* owner, s32 idx, s32 track, u32 frame) {
 
 // .text:0x000972C8 size:0x124 mapped:0x806D635C
 void fn_3_972C8(void) {
-    return;
+    lbl_3_common_bss_32724.hudOff = 1;
+    if (g_d_GameSettings.GameModeSelected == 4) {
+        fn_80069A98();
+        fn_80035CA4(0x16);
+    }
+    if (g_d_GameSettings.GameModeSelected == 0 || g_d_GameSettings.GameModeSelected == 5 || g_d_GameSettings.GameModeSelected == 4) {
+        fn_80035CA4(0x10);
+        fn_80035CA4(0xF);
+    }
+    fn_80035CA4(2);
+    fn_80035CA4(5);
+    fn_80035CA4(4);
+    if (g_d_GameSettings.minigamesEnabled != 0) {
+        fn_80035CA4(0x14);
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            fn_80035CA4(0xE);
+        }
+        fn_80035CA4(3);
+        fn_80035CA4(9);
+        fn_80035CA4(0xD);
+        fn_80035CA4(0x11);
+    } else if (g_d_GameSettings.GameModeSelected == 2) {
+        fn_80035CA4(0xB);
+        fn_80035CA4(9);
+    }
+    if (lbl_3_common_bss_32724._D1 != 0) {
+        fn_80035CA4(0xC);
+    }
 }
 
 // .text:0x000973EC size:0x414 mapped:0x806D6480
