@@ -108,7 +108,11 @@ u32 fn_800A6870(u8 enable, u32 limit) {
 
 // .text:0x800A6890 size:0x44
 void fn_800A6890(u32 request) {
-    return;
+    if (lbl_803C6CF8.remaining == 0) {
+        lbl_803C6CF8.state = DVDSYS_STATE_DONE;
+    } else {
+        OSSignalSemaphore(&lbl_803C6CF8.aramSem);
+    }
 }
 
 // .text:0x800A68D4 size:0x2C
