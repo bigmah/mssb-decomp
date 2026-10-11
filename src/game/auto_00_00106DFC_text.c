@@ -1504,7 +1504,71 @@ void fn_3_109DE0(MinigameScore* out) {
 }
 #endif
 
-extern void fn_3_10F684(void);
+
+extern int random_fn_3_9EE24(int max);
+extern u8 lbl_3_data_18944[];
+extern u8 lbl_3_data_1894C[][7];
+extern u8 lbl_3_data_18978[];
+
+// NONMATCHING 92%: settings byte 0x36 should be sign-extended once up front, saved-reg numbering differs
+#if NONMATCHING
+// fn_3_10F684, size:0x298
+void fn_3_10F684(void) {
+    s32 picks[6];
+    s32 i;
+    s32 n;
+    s32 slot;
+    s32 r;
+    s32 j;
+
+    n = 0;
+    g_Minigame[0x1A2A] = g_d_GameSettings[0x33];
+    g_Minigame[0x19DA + g_d_GameSettings[0x35]] = 0;
+    for (i = 0; i < 4; i++) {
+        if (g_d_GameSettings[0x35] == i) {
+            g_Minigame[0x19E8 + i * 9] = (s8)g_d_GameSettings[0x36];
+            g_Minigame[0x19E9 + i * 9] = 1;
+        } else {
+            g_Minigame[0x19DA + i] = 1;
+            n++;
+            g_Minigame[0x18DC + i] = lbl_3_data_18978[g_d_GameSettings[0x37]];
+            if (n >= lbl_3_data_18944[g_Minigame[0x1A2A]]) {
+                break;
+            }
+        }
+    }
+
+    g_Minigame[0x1906] = lbl_3_data_18944[g_Minigame[0x1A2A]] + 1;
+    g_Minigame[0x1907] = 1;
+    g_Minigame[0x1909] = 1;
+    g_Minigame[0x1A2B] = 0;
+    for (j = 0; j < 6; j++) {
+        picks[j] = lbl_3_data_1894C[g_Minigame[0x1A2A]][j + 1];
+    }
+    slot = 0;
+    for (i = 0; i < lbl_3_data_18944[g_Minigame[0x1A2A]]; i++) {
+        for (;;) {
+            if ((s32)g_Minigame[0x19DA + slot] == 1) {
+                break;
+            }
+            slot++;
+        }
+        r = random_fn_3_9EE24(lbl_3_data_1894C[g_Minigame[0x1A2A]][0] - i);
+        for (j = 0; j < 6; j++) {
+            if (picks[j] != 0xFF) {
+                if (r == 0) {
+                    g_Minigame[0x19E8 + slot * 9] = picks[j];
+                    g_Minigame[0x19E9 + slot * 9] = 1;
+                    slot++;
+                    picks[j] = 0xFF;
+                    break;
+                }
+                r--;
+            }
+        }
+    }
+}
+#endif
 
 // NONMATCHING 97%: loop induction registers (i/roster/g+9i/g+i) rotated, increments scheduled differently
 #if NONMATCHING

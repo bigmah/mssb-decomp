@@ -66,5 +66,6 @@ void fn_3_106ED4(void);
 void fn_3_10FBE4(void);
 void fn_3_109DE0(MinigameScore* out);
 void fn_3_10F91C(void);
+void fn_3_10F684(void);
 
 #endif
