@@ -2537,7 +2537,7 @@ void fn_800AD830(ThpPlayer* p) {
 
 // .text:0x800AD914 size:0x48
 void fn_800AD914(ThpPlayer* p) {
-    return;
+    ThpPause(p);
 }
 
 // .text:0x800AD95C size:0x98
