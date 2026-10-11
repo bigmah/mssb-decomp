@@ -2828,3 +2828,95 @@ void fn_2_8279C(void) {
     *(void**)lbl_803CC1B8 = fn_2_81628;
 }
 #endif
+
+extern s32 translateStarPitchHitIndex(u8 pitch);
+extern u8 translateStarPitch(u8 star);
+extern u8 translateStarSwing(u8 star);
+
+// fn_2_76874, size:0x57C
+// Show the selected character's star swing / star pitch icons.
+// NONMATCHING 85%: roster search and stats pointer scheduled differently; register allocation
+#if NONMATCHING
+void fn_2_76874(u8* o, u8 index) {
+    u8* shown = lbl_2_bss_F468 + index;
+    if (*(shown += 0x49) == 0) {
+        s32 c;
+        s32 j;
+        s32 row;
+        s32 col;
+        u8* stats;
+        u8 star;
+        u8 swing;
+        u8 pitch;
+        MN_SLOT(0xE0 + BASE(o) + index)->flags &= ~2;
+        MN_SLOT(0xE0 + BASE(o) + index)->state = 0;
+        MN_SLOT(0xB6 + BASE(o) + index)->state = 4;
+        MN_SLOT(0xC6 + BASE(o) + index)->state = 4;
+        if (*(u16*)(lbl_803CBBCC[0] + 2) == 9) {
+            if (g_d_GameSettings.GameModeSelected != 5) {
+                c = lbl_800FE5D4[F410_S32(0x10 + index * 4)];
+            } else {
+                c = lbl_800FE930[lbl_80361B20[0xF4] * 6 + F410_S32(0x10 + index * 4)];
+            }
+        } else if (lbl_2_bss_F468[0x41 + index] == 0) {
+            for (j = 0; j < 9; j++) {
+                if (TEAM_TBL->pos[index][j] == F468_S32(index * 4)) {
+                    break;
+                }
+            }
+            c = TEAM_TBL->roster[index][j];
+        } else {
+            c = F410_S32(0x20 + index * 4);
+            if (c == -1) {
+                *shown = 0;
+                return;
+            }
+        }
+        lbl_2_bss_F468[0x4D + index] = c;
+        row = (s8)(c / 9) * 0x5A0;
+        col = (s8)(c % 9) * 0xA0;
+        stats = lbl_8034E9A0 + row + col;
+        star = stats[0x34];
+        if (star == 0) {
+            swing = stats[0x35] + 0xB;
+            pitch = stats[0x36] + 0xB;
+        } else if (g_d_GameSettings.GameModeSelected != 5) {
+            swing = star - 1;
+            pitch = swing;
+        } else {
+            s8 hit = translateStarPitchHitIndex(star - 1);
+            if (hit != -1 && (s8)starMissionCompletionTracker[0x15F1 + hit] == 0 && *(u16*)(lbl_803CBBCC[0] + 2) == 9) {
+                stats = lbl_8034E9A0 + row + col;
+                swing = stats[0x35] + 0xB;
+                pitch = stats[0x36] + 0xB;
+            } else if (hit != -1 && (s8)starMissionCompletionTracker[0x43C2 + hit] == 0 && *(u16*)(lbl_803CBBCC[0] + 2) == 0xA) {
+                stats = lbl_8034E9A0 + row + col;
+                swing = stats[0x35] + 0xB;
+                pitch = stats[0x36] + 0xB;
+            } else {
+                swing = star - 1;
+                pitch = star - 1;
+            }
+        }
+        swing = translateStarSwing(swing);
+        pitch = translateStarPitch(pitch);
+        MN_SLOT(0xE6 + BASE(o) + index)->anim = swing;
+        MN_SLOT(0xE6 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0xE6 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xE8 + BASE(o) + index)->anim = pitch;
+        MN_SLOT(0xE8 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0xE8 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xEA + BASE(o) + index)->flags |= 2;
+        MN_SLOT(0xEA + BASE(o) + index)->state = 1;
+        MN_SLOT(0xE2 + BASE(o) + index)->state = 1;
+        *shown = 1;
+    }
+    if (*(u16*)(lbl_803CBBCC[0] + 2) == 0xA) {
+        u8* sel = lbl_2_bss_F468 + index;
+        if (sel[0x41] != 0 && sel[0x4D] != F410_S32(0x20 + index * 4)) {
+            fn_2_74F40(o, index);
+            *shown = 0;
+        }
+    }
+}
+#endif
