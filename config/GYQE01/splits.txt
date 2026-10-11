@@ -1096,6 +1096,7 @@ main/file_800BDEA0.c:
 Musyx/seq.c:
 	.text       start:0x800C0A8C end:0x800C4AB4
 	.data       start:0x801123A8 end:0x801123F8
+	.bss        start:0x80300A48 end:0x8030E388
 	.sbss       start:0x803CC228 end:0x803CC248
 	.sdata2     start:0x803CD0E0 end:0x803CD100
 
