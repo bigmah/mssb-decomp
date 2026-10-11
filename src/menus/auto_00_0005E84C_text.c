@@ -217,8 +217,60 @@ void fn_2_5F458(void) {
 }
 
 // .text:0x0005FDC4 size:0x2C0
-void fn_2_5FDC4(void) {
-    return;
+void fn_2_5FDC4(MenuTask* task, MenuItem* item) {
+    s32 value;
+    s16 idx;
+    s32 hundreds;
+    s32 tens;
+    s32 ones;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        idx = item->_0A;
+        if (idx >= 0 && idx <= 5) {
+            value = lbl_2_bss_1A824C->stats[idx];
+        } else if (idx == 6) {
+            value = lbl_2_bss_1A824C->stats[6];
+        } else if (idx == 7) {
+            value = lbl_2_bss_1A824C->stats[7];
+        }
+        hundreds = (value / 100) % 10;
+        tens = (value / 10) % 10;
+        ones = value % 10;
+        if (value < 100) {
+            hundreds = 10;
+        }
+        if (value < 10) {
+            tens = 10;
+        }
+        fn_800363D8((SpaniOwner*)task, item->sprite, 1, 0x74, ones);
+        fn_800363D8((SpaniOwner*)task, item->sprite, 2, 0x74, tens);
+        fn_800363D8((SpaniOwner*)task, item->sprite, 3, 0x74, hundreds);
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 10;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 1:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x00060084 size:0x188
