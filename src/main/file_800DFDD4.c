@@ -84,9 +84,25 @@ void fn_800DFDD4(u8* src, u8* dst, u32 numChannels, u32 format, u32 count, void*
 }
 
 // .text:0x800E0488 size:0x360
+// NONMATCHING 75%: clip and div tables are separate externs here; the original addresses both from one base (static bss in this TU)
+#if NONMATCHING
 void fn_800E0488(void) {
-    return;
+    s32 i;
+
+    for (i = 0; i < 0x200; i++) {
+        s32 v = i - 0x80;
+        lbl_80328DA0[i] = v < 0 ? 0 : (v > 0xFF ? 0xFF : v);
+    }
+    lbl_80328FA0.divTable[0] = 0;
+    for (i = 1; i < 16; i++) {
+        lbl_80328FA0.divTable[i] = (0x1000 / (i * 16)) * 16;
+    }
+    lbl_80328FA0.mcdivTable[0] = 0;
+    for (i = 1; i < 0x200; i++) {
+        lbl_80328FA0.mcdivTable[i] = 0x1000 / i;
+    }
 }
+#endif
 
 // .text:0x800E07E8 size:0x11C
 void fn_800E07E8(HVQM4SeqObj* seq, s32 planeIdx, u8 hSamp, u8 vSamp) {
