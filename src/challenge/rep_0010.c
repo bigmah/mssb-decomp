@@ -226,3 +226,13 @@ void fn_1_1148(void) {
     ((ChMenuTask*)lbl_803CC1B8)->h.func = fn_1_16A0;
 }
 
+// .text:0x000011D0 size:0x70
+// Back from a test: resets the display and returns to the menu.
+void fn_1_11D0(void) {
+    resetAllDrawingStructs();
+    fn_80009144();
+    fn_800AD054(lbl_80366158.arenaAfterDll, lbl_80366158.arenaEnd);
+    GXSetCopyClear(lbl_1_data_A8, 0xFFFFFF);
+    ((ChMenuTask*)lbl_803CC1B8)->h.func = fn_1_16A0;
+}
+
