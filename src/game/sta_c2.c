@@ -116,8 +116,9 @@ extern B9 lbl_3_rodata_2568;
 extern f64 lbl_3_rodata_2668;
 extern B9 lbl_3_rodata_2550;
 extern u8 lbl_8036E548[];
-extern void fn_8005268C(void);
-extern u8* fn_80052734(void);
+extern s32 fn_8005268C(void);
+extern void* fn_80052734(s32 index);
+#include "static/Camera.h"
 extern f64 cos(f64);
 extern f64 sin(f64);
 extern f32 lbl_3_rodata_27F0;
@@ -404,9 +405,66 @@ void fn_3_CD958(void) {
 
 // .text:0x000CD968 size:0x1E0 mapped:0x8070C9FC
 extern const f32 lbl_3_rodata_26CC;
-void fn_3_CD968(void) {
-    return;
+// NONMATCHING 97%: float constant regs (f30/f31) and corner store scheduling differ
+// Returns whether a w*h rect centred on v (world space; v is overwritten with view space) is on screen.
+#if NONMATCHING
+u8 fn_3_CD968(Vec* v, f32 w, f32 h) {
+    Vec out;
+    Vec c[4];
+    Vec* cp;
+    u32 i;
+    camera_803c639c_s* cam;
+    u8 all;
+    u8 fl;
+    f32 z, hw, hh, x0, x1, y0, y1;
+    all = 0;
+    cam = fn_80052734(fn_8005268C());
+    PSMTXMultVec(cam->view, v, v);
+    z = v->z;
+    if (z > lbl_3_rodata_2678 || z < lbl_3_rodata_26CC) {
+        return 0;
+    }
+    x0 = v->x;
+    y0 = v->y;
+    hw = w * lbl_3_rodata_26A0;
+    hh = h * lbl_3_rodata_26A0;
+    cp = c;
+    c[3].z = z;
+    c[2].z = z;
+    c[1].z = z;
+    c[0].z = z;
+    x1 = x0 - hw;
+    y1 = y0 - hh;
+    x0 = x0 + hw;
+    y0 = y0 + hh;
+    c[3].x = x1;
+    c[0].x = x1;
+    c[2].x = x0;
+    c[1].x = x0;
+    c[1].y = y1;
+    c[0].y = y1;
+    c[2].y = y0;
+    c[3].y = y0;
+    for (i = 0; i < 4; i++, cp++) {
+        PSMTX44MultVec(cam->proj, cp, &out);
+        fl = (out.x < lbl_3_rodata_2678);
+        fl |= (out.x > lbl_3_rodata_2698) << 1;
+        fl |= (out.y < lbl_3_rodata_2678) << 2;
+        fl |= (out.y > lbl_3_rodata_2698) << 3;
+        if (fl == 0) {
+            return 1;
+        }
+        all &= fl;
+    }
+    if ((all & 3u) == 1 || (all & 3u) == 2) {
+        return 0;
+    }
+    if ((all & 0xCu) == 4 || (all & 0xCu) == 8) {
+        return 0;
+    }
+    return 1;
 }
+#endif
 
 // .text:0x000CDB48 size:0x248 mapped:0x8070CBDC
 extern const f64 lbl_3_rodata_26D0;
@@ -1086,8 +1144,7 @@ void fn_3_D173C(u8* p) {
     Mtx a;
     s32 off;
     u32 i;
-    fn_8005268C();
-    PSMTXInverse((f32(*)[4])(fn_80052734() + 0x40), b);
+    PSMTXInverse(((camera_803c639c_s*)fn_80052734(fn_8005268C()))->view, b);
     PSMTXIdentity(a);
     a[0][0] = cos(lbl_3_rodata_27F0);
     a[0][2] = -(f32)sin(lbl_3_rodata_27F0);
