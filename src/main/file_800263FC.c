@@ -140,9 +140,16 @@ void fn_80027674(void) {
 }
 
 // .text:0x80027918 size:0x50
-void fn_80027918(void) {
-    return;
+// NONMATCHING 96%: the store goes through r4 instead of the copied r3
+#if NONMATCHING
+void fn_80027918(u8 type, f32 v) {
+    Emitter* e;
+    Emitter* f = NULL;
+    while (e = FindEmitter(f, type), f = e, e != NULL) {
+        f->unk1C = v;
+    }
 }
+#endif
 
 // .text:0x80027968 size:0xBC4
 void fn_80027968(void) {
@@ -603,7 +610,7 @@ void fn_8003403C(f32 width, f32 height) {
 
 // .text:0x800340F4 size:0x2C
 void fn_800340F4(Mtx m) {
-    PSMTXCopy(lbl_8017FF78, m);
+    PSMTXCopy(lbl_8017FF78[0], m);
 }
 
 // .text:0x80034120 size:0x2C
