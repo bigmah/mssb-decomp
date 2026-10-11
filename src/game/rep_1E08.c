@@ -1,7 +1,7 @@
 #include "game/rep_1E08.h"
 #include "header_rep_data.h"
 #include "Dolphin/GX.h"
-typedef struct { f32 x, y; } V2f;
+#include "Dolphin/mtxext.h"
 extern V2f lbl_3_data_111C8[];
 extern void fn_8003A688(f32, f32);
 
@@ -30,6 +30,15 @@ extern void fn_3_C39C8(void);
 extern void fn_3_CE8E4(void);
 extern void fn_3_F8ABC(void);
 #include "static/UnknownHomes_Static.h"
+#include "main/file_800BD8C4.h"
+#include "main/file_80024D2C.h"
+#include "main/file_80024184.h"
+#include "main/file_8000F150.h"
+#include "C3/actor.h"
+extern void LoadActorLayout(ActorLayout* layout); // main/file_800B2C44.h
+#include "C3/geoPalette.h"
+extern void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader); // main/file_800B9974.h
+#include "C3/anim.h"
 
 extern s16 lbl_3_bss_9952;
 
@@ -40,9 +49,6 @@ void fn_3_C0770(void) {
 
 extern u8 lbl_3_common_bss_35154[];
 extern void fn_800BD548(void*, int, ...);
-extern void fn_800BD8C4(void*, u32);
-extern void CTRLSetTranslation(void*, f32, f32, f32);
-extern void CTRLSetRotation(void*, f32, f32, f32);
 extern u8 lbl_80366158[];
 extern u8 lbl_3_data_12354[];
 extern f32 lbl_3_rodata_1F18;
@@ -72,7 +78,6 @@ void fn_3_C07B0(void) {
 }
 
 // .text:0x000BA538 size:0x2BC mapped:0x806F95CC
-extern void CTRLBuildMatrix(void*, Mtx);
 extern const f32 lbl_3_rodata_1E6C;
 extern const f32 lbl_3_rodata_1E70;
 extern const f32 lbl_3_rodata_1E74;
@@ -109,14 +114,14 @@ void fn_3_BA538(u8* p) {
     q[8] = 0.0f;
     q[5] = 0.0f;
     q[2] = 0.0f;
-    CTRLSetRotation(ctrl, *(f32*)(p + 0x1C), *(f32*)(p + 0x20), *(f32*)(p + 0x24));
+    CTRLSetRotation((Control*)ctrl, *(f32*)(p + 0x1C), *(f32*)(p + 0x20), *(f32*)(p + 0x24));
     sc = *(f32*)(p + 0xC);
     tx = lbl_3_rodata_1E64 * *(f32*)(p + 4);
     ty = 0.35f * *(f32*)(p + 8);
     ux = tx * lbl_3_rodata_1E64;
     uy = ty * lbl_3_rodata_1E64;
-    CTRLSetTranslation(ctrl, ux * sc, uy * sc, lbl_3_rodata_1E70);
-    CTRLBuildMatrix(ctrl, m);
+    CTRLSetTranslation((Control*)ctrl, ux * sc, uy * sc, lbl_3_rodata_1E70);
+    CTRLBuildMatrix((Control*)ctrl, m);
     GXLoadPosMtxImm(m, 0);
     GXSetCurrentMtx(0);
     C_MTXOrtho(proj, lbl_3_rodata_1E74 * *(f32*)(p + 0xC), lbl_3_rodata_1E78 * *(f32*)(p + 0xC),
@@ -152,9 +157,8 @@ extern f64 acos(f64);
 extern int rand(void);
 extern void* memcpy(void*, const void*, u32);
 extern void* _OSAllocFromHeap(int, int);
-extern void fn_800246D4(void*, void*, void*, int, int);
 extern void fn_800ACFB0(void*);
-extern void fn_3_BA174(void);
+extern s32 fn_3_BA174(void* key, void* elem); // game/auto_00_000BA150_text.h
 typedef struct {
     u8* node;
     f32 key;
@@ -205,7 +209,7 @@ void fn_3_BA7F4(u8* a) {
         q++;
         n = *(u8**)n;
     }
-    fn_800246D4(fn_3_BA174, arr, arr, 8, cnt);
+    fn_800246D4(fn_3_BA174, (u8*)arr, (u8*)arr, 8, cnt);
     head = arr[0].node;
     q = arr;
     while (--cnt != 0) {
@@ -492,11 +496,65 @@ s32 fn_3_BC274(u8* a, u8* b, u8* c) {
 }
 
 // .text:0x000BC2DC size:0x3FC mapped:0x806FB370
-#pragma dont_inline on
+// Per-fielder slot inside g_FieldingLogic (stride 0x1C); only fields used here.
+typedef struct {
+    u8 _00[0x14];
+    /* 0x14 */ s16 slotIdx;
+    u8 _16[0x1A - 0x16];
+    /* 0x1A */ u8 active;
+    u8 _1B[0x1C - 0x1B];
+} BC2DCFieldSlot;
+// g_Runners entry (InMemRunnerType, size 0x154); only fields used here.
+typedef struct {
+    u8 _00[0xC8];
+    /* 0xC8 */ f32 mashPercent;
+    u8 _CC[0x154 - 0xCC];
+} BC2DCRunner;
+extern BC2DCFieldSlot g_FieldingLogic[];
+extern BC2DCRunner g_Runners[4];
+extern const f32 lbl_3_rodata_1ED8;
 void fn_3_BC2DC(void) {
-    return;
+    Vec pos;
+    u8* o;
+    s32 i;
+    s32 j;
+    BC2DCFieldSlot* fl;
+    BC2DCRunner* rn;
+    for (i = 0; i < 13; i++) {
+        o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+        if (o != NULL) {
+            o[0x276] = (s32)o[0x276] >> 1;
+            o[0x276] = (u8)(o[0x276] << 3);
+            getAnimRelatedCoordinates(i, 0x1E, &pos);
+            o[0x276] |= fn_3_BC274(o, o + 0x34, (u8*)&pos) << 1;
+            getAnimRelatedCoordinates(i, 0x22, &pos);
+            o[0x276] |= fn_3_BC274(o, o + 0x34, (u8*)&pos) << 2;
+        }
+    }
+    if (g_d_GameSettings.minigamesEnabled != 0) {
+        fl = g_FieldingLogic;
+        for (j = 0; j < 4; j++, fl++) {
+            o = ((u8**)lbl_8036E548)[j + 0x2C50 / 4];
+            if (o != NULL && fl->active != 0 && j == fl->slotIdx) {
+                o[0x276] |= 1;
+            }
+        }
+    } else {
+        for (j = 0; j < 9; j++) {
+            o = ((u8**)lbl_8036E548)[j + 0x2C50 / 4];
+            if (o != NULL && g_FieldingLogic[0].active != 0 && j == g_FieldingLogic[0].slotIdx) {
+                o[0x276] |= 1;
+            }
+        }
+    }
+    rn = g_Runners;
+    for (i = 0; i < 4; i++, rn++) {
+        o = ((u8**)lbl_8036E548)[i + 9 + 0x2C50 / 4];
+        if (o != NULL && rn->mashPercent >= lbl_3_rodata_1ED8) {
+            o[0x276] |= 1;
+        }
+    }
 }
-#pragma dont_inline reset
 
 // .text:0x000BC6D8 size:0x178 mapped:0x806FB76C
 extern s32 lbl_3_bss_9968;
@@ -585,9 +643,231 @@ void fn_3_BC888(void) {
 }
 
 // .text:0x000BCA20 size:0x7B4 mapped:0x806FBAB4
+// Lens-flare element (16 bytes); a list ends with size == 0.
+typedef struct {
+    /* 0x0 */ f32 x;     // distance along the flare axis
+    /* 0x4 */ f32 y;     // alpha slope (types 2/3)
+    /* 0x8 */ f32 z;     // size
+    /* 0xC */ s16 tex;   // index into the texture table
+    /* 0xE */ u8 type;   // 0/1 spinning quad, 2 square, 3 rotated starburst, 4+ sun
+    /* 0xF */ u8 occl;   // drawn even when occluded; also the fn_800B21A8 mode
+} BD434E;
+// Lens-flare state in lbl_3_common_bss_35154.
+typedef struct {
+    u8 pad[0x3B4];
+    /* 0x3B4 */ TexImage* tex;
+    /* 0x3B8 */ BD434E* p;
+    /* 0x3BC */ f32 x, y, z;
+    /* 0x3C8 */ u32 c8;  // frame counter (mod cc)
+    /* 0x3CC */ u32 cc;
+    /* 0x3D0 */ f32 d0, d4, d8, dc;
+    /* 0x3E0 */ u8 e0;
+    /* 0x3E1 */ u8 visible;
+    /* 0x3E2 */ u8 occluded;
+} BD434S;
+#define G (*(BD434S*)lbl_3_common_bss_35154) // TODO type: lbl_3_common_bss_35154
+// One sprite vertex as read by DrawSprite_TexObj (struct QuadVtx in main/file_800B0724.h).
+typedef struct {
+    /* 0x00 */ Vec pos;
+    /* 0x0C */ u32 color;
+    /* 0x10 */ s16 s, t;
+} BCA20Vtx;
+extern Vec lbl_3_bss_9978[];
+extern Vec lbl_3_bss_996C;
+extern const f32 lbl_3_rodata_1EDC;
+extern f32 lbl_3_rodata_1EE0;
+extern f32 lbl_3_rodata_1EE4;
+extern const f32 lbl_3_rodata_1EE8;
+extern const f32 lbl_3_rodata_1EEC;
+extern const f32 lbl_3_rodata_1EF0;
+extern const f32 lbl_3_rodata_1EF4;
+extern f32 lbl_3_rodata_1EF8;
+extern f32 lbl_3_rodata_1EFC;
+extern const f64 lbl_3_rodata_1F00;
+extern void fn_800B24D4(s32 layer);
+extern void fn_800B27DC(Mtx44 m, s32 type);
+extern void fn_800B2160(u8 value);
+extern void fn_800B21A8(s32 mode);
+extern void DrawSprite_TexObj(struct QuadVtx* verts, TexImage* tex);
+// NONMATCHING 93%: float regalloc/scheduling, stack frame 0x10 smaller (alpha init added for the port)
+#if NONMATCHING
 void fn_3_BCA20(void) {
-    return;
+    Mtx rot;
+    BCA20Vtx vtx[4];
+    Vec q[4];
+    Vec pos;
+    Vec axis;
+    Quaternion qr;
+    Quaternion qz;
+    camera_803c639c_s* cam;
+    BD434E* elems;
+    BD434E* e;
+    s32 off;
+    s32 k;
+    s32 alpha;
+    f32 depth;
+    f32 zoom;
+    f32 dist;
+    f32 axisLen;
+    f32 slope;
+    f32 spin;
+    f32 sz;
+    f32 c;
+    f32 sn;
+    f32 a;
+    f32 ang;
+    cam = fn_80052768_getCamera(0);
+    depth = -lbl_3_bss_9978[0].z / lbl_3_rodata_1EDC;
+    zoom = lbl_3_rodata_1E84 / cam->zoom;
+    if (G.visible == 0) {
+        return;
+    }
+    elems = G.p;
+    fn_800B24D4(10);
+    fn_800B27DC(fn_80052768_getCamera(0)->proj, 0);
+    fn_800B2160(2);
+    pos.x = lbl_3_bss_9978[0].x;
+    pos.y = lbl_3_bss_9978[0].y;
+    pos.z = lbl_3_rodata_1E68;
+    dist = PSVECMag(&pos);
+    pos.x = lbl_3_rodata_1EE0 * lbl_3_bss_9978[0].z * zoom * lbl_3_rodata_1E64 / lbl_3_rodata_1EE4;
+    pos.y = lbl_3_rodata_1EE8 * lbl_3_bss_9978[0].z * zoom * lbl_3_rodata_1E64 / lbl_3_rodata_1EE4;
+    pos.z = lbl_3_rodata_1E68;
+    axisLen = PSVECMag(&pos);
+    slope = lbl_3_rodata_1EEC * dist / axisLen;
+    spin = lbl_3_rodata_1EF0 * (f32)(G.c8 * 2) / (f32)G.cc;
+    axis.x = lbl_3_bss_996C.y;
+    axis.y = -lbl_3_bss_996C.x;
+    axis.z = lbl_3_rodata_1E68;
+    PSVECNormalize(&axis, &axis);
+    alpha = 0; // original leaves this unset; types >= 4 reuse the previous element's alpha
+    for (off = 0; (e = (BD434E*)((u8*)elems + off))->z != lbl_3_rodata_1E68; off += sizeof(BD434E)) {
+        if (e->occl == 0 && G.occluded != 0) {
+            continue;
+        }
+        fn_800B21A8(e->occl);
+        PSVECScale(&lbl_3_bss_996C, e->x, &pos);
+        PSVECAdd(&lbl_3_bss_9978[0], &pos, &pos);
+        sz = G.dc * e->z / lbl_3_rodata_1EF4;
+        switch (e->type) {
+        case 0:
+        case 1:
+            alpha = 0xFF;
+            break;
+        case 2:
+        case 3:
+            alpha = (s32)(slope * e->y + lbl_3_rodata_1EF8);
+            break;
+        }
+        if (alpha <= 0) {
+            continue;
+        }
+        alpha |= 0xFFFFFF00;
+        switch (e->type) {
+        case 0:
+            c = sz * cos(spin);
+            sn = sz * sin(spin);
+            q[0].x = depth * (pos.x - c);
+            q[0].y = depth * (pos.y - sn);
+            q[0].z = pos.z * depth;
+            q[1].x = depth * (pos.x - sn);
+            q[1].y = depth * (pos.y + c);
+            q[1].z = pos.z * depth;
+            q[2].x = depth * (pos.x + c);
+            q[2].y = depth * (pos.y + sn);
+            q[2].z = pos.z * depth;
+            q[3].x = depth * (pos.x + sn);
+            q[3].y = depth * (pos.y - c);
+            q[3].z = pos.z * depth;
+            break;
+        case 1:
+            c = -sz * cos(spin);
+            sn = sz * sin(spin);
+            q[0].x = depth * (pos.x - c);
+            q[0].y = depth * (pos.y - sn);
+            q[0].z = pos.z * depth;
+            q[1].x = depth * (pos.x - sn);
+            q[1].y = depth * (pos.y + c);
+            q[1].z = pos.z * depth;
+            q[2].x = depth * (pos.x + c);
+            q[2].y = depth * (pos.y + sn);
+            q[2].z = pos.z * depth;
+            q[3].x = depth * (pos.x + sn);
+            q[3].y = depth * (pos.y - c);
+            q[3].z = pos.z * depth;
+            break;
+        case 2:
+            q[0].x = depth * (pos.x - sz);
+            q[0].y = depth * (pos.y - sz);
+            q[0].z = pos.z * depth;
+            q[1].x = q[0].x;
+            q[1].y = depth * (pos.y + sz);
+            q[1].z = q[0].z;
+            q[2].x = depth * (pos.x + sz);
+            q[2].y = q[1].y;
+            q[2].z = q[0].z;
+            q[3].x = q[2].x;
+            q[3].y = q[0].y;
+            q[3].z = q[0].z;
+            break;
+        case 3:
+            ang = lbl_3_rodata_1EF0 * (lbl_3_rodata_1EFC * (lbl_3_bss_9978[0].x + lbl_3_bss_9978[0].y)) * G.d4;
+            qz.z = sin(ang);
+            qz.w = cos(ang);
+            qz.x = lbl_3_rodata_1E68;
+            qz.y = lbl_3_rodata_1E68;
+            ang = lbl_3_rodata_1F00 * (lbl_3_rodata_1EB8 * (G.d0 * dist)) / axisLen * lbl_3_rodata_1EB8;
+            sn = sin(ang);
+            qr.w = cos(ang);
+            qr.x = axis.x * sn;
+            qr.y = axis.y * sn;
+            qr.z = axis.z * sn;
+            PSQUATMultiply(&qr, &qz, &qr);
+            PSMTXQuat(rot, &qr);
+            a = lbl_3_rodata_1E84 + G.d8 * dist / axisLen;
+            sz *= zoom * (a * a);
+            a = -lbl_3_bss_9978[0].z / lbl_3_rodata_1EDC;
+            q[0].z = lbl_3_rodata_1E68;
+            q[1].z = lbl_3_rodata_1E68;
+            q[2].z = lbl_3_rodata_1E68;
+            q[3].z = lbl_3_rodata_1E68;
+            q[1].y = sz * a;
+            q[2].x = q[1].y;
+            q[0].x = -sz * a;
+            q[0].y = q[0].x;
+            q[1].x = q[0].x;
+            q[2].y = q[1].y;
+            q[3].x = q[1].y;
+            q[3].y = q[0].x;
+            for (k = 0; k < 4; k++) {
+                PSMTXMultVec(rot, &q[k], &q[k]);
+                q[k].x = depth * (pos.x + q[k].x) + q[k].x;
+                q[k].y = depth * (pos.y + q[k].y) + q[k].y;
+                q[k].z = depth * (pos.z + q[k].z) + q[k].z;
+            }
+            break;
+        }
+        for (k = 0; k < 4; k++) {
+            vtx[k].pos.x = q[k].x;
+            vtx[k].pos.y = q[k].y;
+            vtx[k].pos.z = q[k].z;
+        }
+        vtx[0].s = 0;
+        vtx[0].t = 0;
+        vtx[1].s = 0;
+        vtx[1].t = 0x400;
+        vtx[2].s = 0x400;
+        vtx[2].t = 0x400;
+        vtx[3].s = 0x400;
+        vtx[3].t = 0;
+        vtx[0].color = alpha;
+        vtx[1].color = alpha;
+        vtx[2].color = alpha;
+        vtx[3].color = alpha;
+        DrawSprite_TexObj((struct QuadVtx*)vtx, &G.tex[e->tex]);
+    }
 }
+#endif
 
 // .text:0x000BD1D4 size:0x4 mapped:0x806FC268
 void fn_3_BD1D4(void) {
@@ -657,9 +937,6 @@ void fn_3_BD1D8(f32 (*m)[4]) {
 }
 
 // .text:0x000BD434 size:0xBC mapped:0x806FC4C8
-typedef struct { f32 x, y, z; u8 pad; u8 pad1; u8 e; u8 pad2; } BD434E;
-typedef struct { u8 pad[0x3B8]; BD434E* p; f32 x, y, z; s32 c8; s32 cc; f32 d0, d4, d8, dc; u8 e0; } BD434S;
-#define G (*(BD434S*)lbl_3_common_bss_35154)
 void fn_3_BD434(int a, int b) {
     int n;
     G.p = (BD434E*)(lbl_3_data_12354 + (a + b * 7) * 0xA0);
@@ -668,7 +945,7 @@ void fn_3_BD434(int a, int b) {
     G.d0 = lbl_3_rodata_1F18;
     G.d4 = lbl_3_rodata_1F1C;
     G.d8 = lbl_3_rodata_1E64;
-    for (n = 0; G.p[n].e < 4; n++) {
+    for (n = 0; G.p[n].type < 4; n++) {
     }
     G.e0 = 1;
     G.x = G.p[n].x;
@@ -796,15 +1073,15 @@ void fn_3_BD7DC(u32 a) {
 
 // .text:0x000BD80C size:0xCC mapped:0x806FC8A0
 // 97%: compiler folds base+0x3E4 into offsets off one reg; original keeps bss base in r5 and c=r5+0x3e4 in r30
-void fn_3_BD80C(u32 a) {
+void fn_3_BD80C(MtxPtr a) {
     f32* c;
     u8* g;
     u8* bs = lbl_3_common_bss_35154;
     c = (f32*)(bs + 0x3E4);
     g = lbl_8036E548;
     if (bs[0x40A] != 0) {
-        CTRLSetTranslation(*(u8**)(g + 0x70) + 0x44, c[1], c[2], c[3]);
-        CTRLSetRotation(*(u8**)(g + 0x70) + 0x44, 57.295776f * c[4], 57.295776f * c[5], 57.295776f * c[6]);
+        CTRLSetTranslation((Control*)(*(u8**)(g + 0x70) + 0x44), c[1], c[2], c[3]);
+        CTRLSetRotation((Control*)(*(u8**)(g + 0x70) + 0x44), 57.295776f * c[4], 57.295776f * c[5], 57.295776f * c[6]);
         fn_800BD548(*(u8**)(g + 0x70) + 0x34, 4, *(s32*)(g + 0xAC), *(s32*)(g + 0xB0), *(s32*)(g + 0xB4), *(s32*)(g + 0xB8));
     }
     fn_800BD8C4(*(void**)(g + 0x70), a);
@@ -817,16 +1094,98 @@ void fn_3_BD8D8(void) {
 }
 
 // .text:0x000BD8FC size:0x3A8 mapped:0x806FC990
-void fn_3_BD8FC(void) {
-    return;
+extern s32 lbl_3_bss_9960;
+extern s32 lbl_3_data_12350;
+extern u8 lbl_3_data_A3C[];
+extern const f32 lbl_3_rodata_1EE8;
+extern const f32 lbl_3_rodata_1F28;
+extern const f32 lbl_3_rodata_1F2C;
+extern const f32 lbl_3_rodata_1F30;
+extern const f32 lbl_3_rodata_1F34;
+extern void fn_800245EC(Mtx44 proj, Mtx view, Vec* points, f32* out, s32 count, s32 ySign);
+// NONMATCHING 99%: cTip=cBase copy is li not mr in the 9960 branch, cTip constant re-materialised in the last alpha branch, fmuls operand order of sx/sy
+#if NONMATCHING
+void fn_3_BD8FC(BDCA4E* e) {
+    Mtx ident;
+    Vec v1;
+    Vec v2;
+    f32 scr[2];
+    u32 cBase;
+    u32 cTip;
+    s32 lim;
+    s32 n;
+    s32 i;
+    f32 sx;
+    f32 sy;
+    f32 px;
+    f32 py;
+    f32 sc;
+    if (lbl_3_bss_9960 != 0) {
+        cBase = 0xFFFFFFFF;
+        cTip = cBase;
+    } else {
+        n = e->n;
+        lim = lbl_3_data_A3C[1] - 0x12;
+        if (n < lim) {
+            cTip = ((n * 0xFF) / lim) | 0xFFFFFF00;
+            cBase = cTip;
+        } else if (n < lbl_3_data_A3C[1] - 0xA) {
+            cBase = 0xFFFFFFFF;
+            cTip = (((n - lim) * 0x7F8) / 8) | 0xFFFFFF00;
+        } else {
+            cTip = 0xFFFFFF00;
+            cBase = ((((lbl_3_data_A3C[1] - 2) - n) * 0xFF) / 8) | 0xFFFFFF00;
+        }
+    }
+    sc = lbl_3_rodata_1F28 * e->s;
+    fn_800245EC(fn_80052768_getCamera(0)->proj, e->m, (Vec*)&e->x, scr, 1, lbl_3_data_12350);
+    sx = -(lbl_3_rodata_1EE0 * scr[0] + lbl_3_rodata_1F2C) * sc;
+    sy = -(lbl_3_rodata_1EE8 * scr[1] + lbl_3_rodata_1F30) * sc;
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    PSMTXIdentity(ident);
+    GXLoadPosMtxImm(ident, 0);
+    GXSetCurrentMtx(0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXSetProjection(fn_80052768_getCamera(0)->proj, GX_PERSPECTIVE);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+    GXSetCullMode(GX_CULL_NONE);
+    GXBegin(GX_TRIANGLES, GX_VTXFMT0, 0x120);
+    for (i = 0; i < 0x60; i++) {
+        px = e->pts[i].x * sc;
+        py = e->pts[i].y * sc;
+        v1.x = sx - px;
+        v1.y = sy - py;
+        v1.z = lbl_3_rodata_1E68;
+        PSVECScale(&v1, lbl_3_rodata_1ED8, &v1);
+        v2.x = v1.y;
+        v2.y = -v1.x;
+        v2.z = lbl_3_rodata_1E68;
+        PSVECNormalize(&v2, &v2);
+        PSVECScale(&v2, lbl_3_rodata_1F34, &v2);
+        GXPosition3f32(px - v2.x, py - v2.y, -1.0f);
+        GXColor1u32(cBase);
+        GXPosition3f32(px + v2.x, py + v2.y, -1.0f);
+        GXColor1u32(cBase);
+        GXPosition3f32(px + v1.x, py + v1.y, -1.0f);
+        GXColor1u32(cTip);
+    }
 }
+#endif
 
 // .text:0x000BDCA4 size:0x170 mapped:0x806FCD38
 extern u8 lbl_803CBBC0;
 extern const f32 lbl_3_rodata_1E84;
 extern u8 lbl_80366158[];
 extern void fn_800A7D4C(int, void*);
-typedef struct { u8 pad[8]; Mtx m; f32 x, y, z; s32 n; f32 s; u8 pad2[0x34C - 0x4C]; } BDCA4E;
 void fn_3_BDCA4(void) {
     u8* o = lbl_803CC1B8;
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154[0x479] != 0) {
@@ -921,8 +1280,252 @@ void fn_3_BE174(s32 a, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x000BE1D4 size:0xE24 mapped:0x806FD268
+// Layout-sprite effect requests in lbl_3_common_bss_35154 (only the fields used by fn_3_BE1D4).
+typedef struct {
+    /* 0x000 */ void* task;
+    u8 _004[0x3AC - 0x4];
+    /* 0x3AC */ u32 flags;
+    u8 _3B0[0x3E8 - 0x3B0];
+    /* 0x3E8 */ Vec catchPos;
+    u8 _3F4[0x40A - 0x3F4];
+    /* 0x40A */ u8 catchShown;
+    u8 _40B[0x419 - 0x40B];
+    /* 0x419 */ u8 kind;
+    /* 0x41A */ u8 slot;
+    u8 _41B;
+    /* 0x41C */ Vec kindPos;
+    /* 0x428 */ Vec hitPos;
+    /* 0x434 */ Vec starPos;
+    u8 _440[0x467 - 0x440];
+    /* 0x467 */ s8 level;
+    u8 _468[0x479 - 0x468];
+    /* 0x479 */ u8 hide;
+} BE1D4Work;
+#define BE1D4_W ((BE1D4Work*)lbl_3_common_bss_35154) // TODO type: lbl_3_common_bss_35154
+#define BE1D4_OBJ(k) (lbl_80371C30[*(u16*)(task + 0x14) + (k)].obj) // TODO type: task base index
+extern u8 g_Stats[];
+extern u8 g_Ball[];
+extern void fn_8003656C(void* owner, s32 idx, s32 track, u16 animId, u32 frame); // main/file_80034F50.h
+extern const f32 lbl_3_rodata_1F48;
+extern const f32 lbl_3_rodata_1F4C;
+extern void* fn_80052734(s32 index);
+static void fn_3_BE1D4_project(Vec* src, Vec* dst) {
+    PSMTXMultVec((f32(*)[4])((u8*)fn_80052734(0) + 0x40), src, dst);
+    PSMTX44MultVec((f32(*)[4])fn_80052734(0), dst, dst);
+}
 void fn_3_BE1D4(void) {
-    return;
+    Vec scr;
+    u8* task = lbl_803CC1B8;
+    LayoutObj* o;
+    u8 alpha;
+    s32 i;
+    s16 pid;
+    BOOL done;
+    struct GameActor** pa;
+    if (BE1D4_W->task == NULL) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    // Hit marker (kind 0..4; kind 4 uses slot 3 and also triggers the star burst).
+    if (BE1D4_W->flags & 3) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(BE1D4_W->slot)->flags &= ~2;
+            BE1D4_OBJ(BE1D4_W->slot)->_5C = 0;
+            BE1D4_W->flags &= ~3;
+        } else {
+            BE1D4_OBJ(BE1D4_W->kind)->x = BE1D4_W->kindPos.x;
+            BE1D4_OBJ(BE1D4_W->kind)->y = BE1D4_W->kindPos.y;
+            BE1D4_OBJ(BE1D4_W->kind)->z = BE1D4_W->kindPos.z;
+            if (BE1D4_W->flags & 1) {
+                if (BE1D4_W->kind == 4) {
+                    BE1D4_W->slot = 3;
+                } else {
+                    BE1D4_W->slot = BE1D4_W->kind;
+                }
+                BE1D4_OBJ(BE1D4_W->slot)->flags |= 2;
+                BE1D4_W->flags &= ~3;
+                BE1D4_W->flags |= 2;
+                if (BE1D4_W->kind == 4) {
+                    BE1D4_W->flags |= 0x40;
+                }
+            } else {
+                done = (o = BE1D4_OBJ(BE1D4_W->slot))->_69 == 2;
+                if (done && *(s16*)(g_Ball + 0x1B66) > 0) { // TODO type: InMemBallType
+                    o->flags &= ~2;
+                    BE1D4_OBJ(BE1D4_W->slot)->_5C = 0;
+                    BE1D4_W->flags &= ~3;
+                }
+            }
+        }
+    }
+    // Hit-point burst (slots 7..9).
+    if (BE1D4_W->flags & 0x30) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(7)->flags &= ~2;
+            BE1D4_OBJ(7)->_5C = 0;
+            BE1D4_OBJ(8)->flags &= ~2;
+            BE1D4_OBJ(9)->flags &= ~2;
+            BE1D4_OBJ(8)->_5C = 0;
+            BE1D4_OBJ(9)->_5C = 0;
+            BE1D4_W->flags &= ~0x30;
+        } else {
+            pa = NULL;
+            pid = *(s16*)(g_Pitcher + 0x11A); // TODO type: InMemPitcherType
+            for (i = 0; i < 9; i++) {
+                u8* a = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+                if (a != NULL && (s8)a[0x252] == pid) { // TODO type: CharActor
+                    pa = fn_800111D8((struct CharActor*)a);
+                    break;
+                }
+            }
+            if (pa != NULL && ((*pa)->flags & 9) == 0) {
+                alpha = 0;
+            } else {
+                alpha = 0xFF;
+            }
+            fn_3_BE1D4_project(&BE1D4_W->hitPos, &scr);
+            if (g_Stats[0x36] != 0) { // TODO type: g_Stats_s
+                scr.y = lbl_3_rodata_1E68;
+            }
+            scr.x *= lbl_3_rodata_1F48;
+            scr.y *= lbl_3_rodata_1F4C;
+            for (i = 4; i < 10; i++) {
+                fn_800363D8(task, 8, i, 0xD, BE1D4_W->level - 1);
+            }
+            for (i = 1; i < 5; i++) {
+                fn_8003656C(task, 6, i, 0x11, BE1D4_W->level - 1);
+            }
+            if (BE1D4_W->flags & 0x10) {
+                BE1D4_W->flags &= ~0x30;
+                BE1D4_W->flags |= 0x20;
+                BE1D4_OBJ(7)->x = lbl_3_rodata_1F48 + scr.x;
+                BE1D4_OBJ(7)->y = lbl_3_rodata_1F4C - scr.y;
+                BE1D4_OBJ(7)->z = lbl_3_rodata_1E68;
+                BE1D4_OBJ(7)->flags |= 2;
+                BE1D4_OBJ(7)->color = (BE1D4_OBJ(7)->color & ~0xFF) | alpha;
+                playSoundEffect(0x1A5);
+            } else if ((BE1D4_OBJ(7)->_5C >> 16) == 0x23) {
+                BE1D4_OBJ(7)->flags &= ~2;
+                BE1D4_OBJ(7)->_5C = 0;
+                if (BE1D4_W->level != 0) {
+                    BE1D4_OBJ(8)->x = lbl_3_rodata_1F48;
+                    BE1D4_OBJ(8)->y = lbl_3_rodata_1F4C - scr.y;
+                    BE1D4_OBJ(8)->z = lbl_3_rodata_1E68;
+                    BE1D4_OBJ(9)->x = lbl_3_rodata_1F48;
+                    BE1D4_OBJ(9)->y = lbl_3_rodata_1F4C;
+                    BE1D4_OBJ(9)->z = lbl_3_rodata_1E68;
+                    BE1D4_OBJ(8)->flags |= 2;
+                    BE1D4_OBJ(9)->flags |= 2;
+                    BE1D4_OBJ(8)->color = (BE1D4_OBJ(8)->color & ~0xFF) | alpha;
+                    BE1D4_OBJ(9)->color = (BE1D4_OBJ(9)->color & ~0xFF) | alpha;
+                    fn_3_BDE14();
+                    playSoundEffect(0x1A6);
+                } else {
+                    BE1D4_W->flags &= ~0x30;
+                }
+            } else if ((BE1D4_OBJ(8)->_5C >> 16) == 0x3C) {
+                BE1D4_OBJ(8)->flags &= ~2;
+                BE1D4_OBJ(9)->flags &= ~2;
+                BE1D4_OBJ(8)->_5C = 0;
+                BE1D4_OBJ(9)->_5C = 0;
+                BE1D4_W->flags &= ~0x30;
+            }
+        }
+    }
+    // Star burst (slots 5, 6).
+    if (BE1D4_W->flags & 0xC0) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(5)->flags &= ~2;
+            BE1D4_OBJ(6)->flags &= ~2;
+            BE1D4_OBJ(5)->_5C = 0;
+            BE1D4_OBJ(6)->_5C = 0;
+            BE1D4_W->flags &= ~0xC0;
+        } else if (BE1D4_W->level != 0) {
+            fn_3_BE1D4_project(&BE1D4_W->starPos, &scr);
+            scr.x *= lbl_3_rodata_1F48;
+            scr.y *= lbl_3_rodata_1F4C;
+            for (i = 4; i < 10; i++) {
+                fn_800363D8(task, 5, i, 0xD, BE1D4_W->level - 1);
+            }
+            for (i = 1; i < 5; i++) {
+                fn_8003656C(task, 6, i, 0x11, BE1D4_W->level - 1);
+            }
+            BE1D4_OBJ(5)->x = lbl_3_rodata_1F48;
+            BE1D4_OBJ(5)->y = lbl_3_rodata_1F4C - scr.y;
+            BE1D4_OBJ(5)->z = lbl_3_rodata_1E68;
+            BE1D4_OBJ(6)->x = lbl_3_rodata_1F48;
+            BE1D4_OBJ(6)->y = lbl_3_rodata_1F4C;
+            BE1D4_OBJ(6)->z = lbl_3_rodata_1E68;
+            if (BE1D4_W->flags & 0x40) {
+                BE1D4_OBJ(5)->flags |= 2;
+                BE1D4_OBJ(6)->flags |= 2;
+                BE1D4_W->flags &= ~0xC0;
+                BE1D4_W->flags |= 0x80;
+            } else if ((BE1D4_OBJ(5)->_5C >> 16) == 0x34) {
+                BE1D4_OBJ(5)->flags &= ~2;
+                BE1D4_OBJ(6)->flags &= ~2;
+                BE1D4_OBJ(5)->_5C = 0;
+                BE1D4_OBJ(6)->_5C = 0;
+                BE1D4_W->flags &= ~0xC0;
+            }
+        } else {
+            BE1D4_W->flags &= ~0xC0;
+        }
+    }
+    // Slot 4 marker.
+    if (BE1D4_W->flags & 0x300) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(4)->flags &= ~2;
+            BE1D4_OBJ(4)->_5C = 0;
+            BE1D4_W->flags &= ~0x300;
+        } else {
+            fn_3_BE1D4_project(&BE1D4_W->starPos, &scr);
+            scr.x *= lbl_3_rodata_1F48;
+            scr.y *= lbl_3_rodata_1F4C;
+            BE1D4_OBJ(4)->x = lbl_3_rodata_1F48 + scr.x;
+            BE1D4_OBJ(4)->y = lbl_3_rodata_1F4C - scr.y;
+            BE1D4_OBJ(4)->z = lbl_3_rodata_1E68;
+            if (BE1D4_W->flags & 0x100) {
+                BE1D4_OBJ(4)->flags |= 2;
+                BE1D4_W->flags &= ~0x300;
+                BE1D4_W->flags |= 0x200;
+                playSoundEffect(0x1A5);
+            } else if ((BE1D4_OBJ(4)->_5C >> 16) == 0x23) {
+                BE1D4_OBJ(4)->flags &= ~2;
+                BE1D4_OBJ(4)->_5C = 0;
+                BE1D4_W->flags &= ~0x300;
+                playSoundEffect(0x1A6);
+            }
+        }
+    }
+    // Catch marker (slot 10).
+    if (BE1D4_W->flags & 0xC) {
+        if (g_d_GameSettings._55 != 0 || BE1D4_W->hide != 0) {
+            BE1D4_OBJ(10)->flags &= ~2;
+            BE1D4_OBJ(10)->_5C = 0;
+            BE1D4_W->flags &= ~0xC;
+            return;
+        }
+        BE1D4_OBJ(10)->x = BE1D4_W->catchPos.x;
+        BE1D4_OBJ(10)->y = BE1D4_W->catchPos.y;
+        BE1D4_OBJ(10)->z = BE1D4_W->catchPos.z;
+        if (BE1D4_W->flags & 4) {
+            BE1D4_OBJ(10)->flags |= 2;
+            BE1D4_W->flags &= ~0xC;
+            BE1D4_W->flags |= 8;
+            return;
+        }
+        if (BE1D4_W->catchShown == 0) {
+            BE1D4_OBJ(10)->flags &= ~2;
+            BE1D4_OBJ(10)->_5C = 0;
+            BE1D4_W->flags &= ~0xC;
+            return;
+        }
+        done = BE1D4_OBJ(10)->_69 == 2;
+        if (done) {
+            BE1D4_OBJ(10)->_5C = 0;
+        }
+    }
 }
 
 // .text:0x000BEFF8 size:0x78 mapped:0x806FE08C
@@ -994,21 +1597,127 @@ void fn_3_BF20C(void) {
 }
 
 // .text:0x000BF238 size:0x488 mapped:0x806FE2CC
-void fn_3_BF238(void) {
-    return;
+// Stadium-effect work area (lbl_3_common_bss_35154); only the fields used by fn_3_BF238.
+typedef struct {
+    /* 0x000 */ void* task;
+    /* 0x004 */ s32 _04;
+    /* 0x008 */ void* _08;
+    /* 0x00C */ void** assets; // 44 file offsets, relocated in place to pointers
+    /* 0x010 */ ActorObjectTable* actors;
+    /* 0x014 */ ShapeAnimPlayer shapes[10];
+    /* 0x3AC */ u32 flags;
+    /* 0x3B0 */ u8 loaded;
+} BF238Work;
+#define BF238_W ((BF238Work*)lbl_3_common_bss_35154) // TODO type: lbl_3_common_bss_35154 as BF238Work
+// NONMATCHING 80%: original recomputes &shapes[i-K] from the bss symbol in every case (no strength reduction) and uses one fewer saved reg
+#if NONMATCHING
+static inline void fn_3_BF238_shape(s32 idx, void* data, ActorObject* obj) {
+    BF238_W->shapes[idx].model = data;
+    fn_80025DDC(data);
+    fn_80025C58(data, (ShapeModel**)obj);
 }
+static inline void fn_3_BF238_anim(s32 idx, void* data) {
+    ShapeAnimPlayer* sp = &BF238_W->shapes[idx];
+    sp->set = data;
+    fn_80025FFC(sp->model, sp);
+    fn_80025EEC(sp, 0, 0);
+}
+void fn_3_BF238(void) {
+    void** tbl;
+    void* tex;
+    ActorLayout* lay;
+    DODisplayData* geo;
+    void* anm;
+    ActorObject* ao;
+    s32 i;
+    u32 k;
+    if (*(s8*)(lbl_803C6CF8 + 0x715) != 1) {
+        return;
+    }
+    k = 0;
+    BF238_W->actors = ActorObjectInitTable(7);
+    for (i = 0; i < 0x2C; i++) {
+        tbl = BF238_W->assets;
+        if (tbl[i] == NULL) {
+            continue;
+        }
+        tbl[i] = (u8*)tbl + (u32)tbl[i]; // TODO type: 32-bit file offset
+        switch (i) {
+        case 0: case 8: case 18: case 24: case 30: case 36:
+            tex = BF238_W->assets[i];
+            convertTextureHeader(tex);
+            break;
+        case 1: case 9: case 19: case 25: case 31: case 37:
+            lay = BF238_W->assets[i];
+            LoadActorLayout(lay);
+            break;
+        case 2: case 10: case 20: case 26: case 32: case 38:
+            geo = BF238_W->assets[i];
+            convertGeometryAndSknHeader(geo, NULL);
+            break;
+        case 3: case 11: case 21: case 27: case 33: case 39:
+            anm = BF238_W->assets[i];
+            ANIMGet(anm);
+            fn_800BD190((struct GQRValueGroups*)geo, (s32)tex); // TODO type: value is the texture archive pointer
+            haveActLayoutPointToGeoHeader(lay, geo);
+            fn_800BDC88(BF238_W->actors, k, k, lay, anm, NULL);
+            ao = &BF238_W->actors->objects[k];
+            ACTSetAnimation(ao->actor, ao->animBank, NULL, ao->seqNum, lbl_3_rodata_1E68, ao->speed);
+            k++;
+            break;
+        case 4: case 5:
+            fn_3_BF238_shape(i - 4, BF238_W->assets[i], &BF238_W->actors->objects[0]);
+            break;
+        case 12: case 13: case 14:
+            fn_3_BF238_shape(i - 10, BF238_W->assets[i], &BF238_W->actors->objects[1]);
+            break;
+        case 22:
+            fn_3_BF238_shape(i - 17, BF238_W->assets[i], &BF238_W->actors->objects[2]);
+            break;
+        case 28:
+            fn_3_BF238_shape(i - 22, BF238_W->assets[i], &BF238_W->actors->objects[3]);
+            break;
+        case 34:
+            fn_3_BF238_shape(i - 27, BF238_W->assets[i], &BF238_W->actors->objects[4]);
+            break;
+        case 40: case 41:
+            fn_3_BF238_shape(i - 32, BF238_W->assets[i], &BF238_W->actors->objects[5]);
+            break;
+        case 6: case 7:
+            fn_3_BF238_anim(i - 6, BF238_W->assets[i]);
+            break;
+        case 15: case 16: case 17:
+            fn_3_BF238_anim(i - 13, BF238_W->assets[i]);
+            break;
+        case 23:
+            fn_3_BF238_anim(i - 18, BF238_W->assets[i]);
+            break;
+        case 29:
+            fn_3_BF238_anim(i - 23, BF238_W->assets[i]);
+            break;
+        case 35:
+            fn_3_BF238_anim(i - 28, BF238_W->assets[i]);
+            break;
+        case 42: case 43:
+            fn_3_BF238_anim(i - 34, BF238_W->assets[i]);
+            break;
+        }
+    }
+    BF238_W->loaded = 0;
+    fn_800B0A5C_insertQueue(fn_3_BEFF8, 6);
+    ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the current task
+}
+#endif
 
 // .text:0x000BF6C0 size:0x1B8 mapped:0x806FE754
-extern void fn_3_B9D68(void*, int, void*, void*);
+extern void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx);
 extern void fn_8004B1B8(s32, void*);
 extern void fn_80035750(s32, s32, int);
-extern void* ActorObjectInitTable(int);
-extern void fn_800BDC88(void*, int, int, s32, int, int);
 extern void fn_3_6750C(s32);
 void fn_3_BF6C0(void) {
     s32 buf[8];
     u8* c;
-    u8* t;
+    ActorObjectTable* t;
     u8* w;
     s32 i;
     if (*(s8*)(lbl_803C6CF8 + 0x715) == 1) {
@@ -1019,7 +1728,7 @@ void fn_3_BF6C0(void) {
         fn_80035750(*(s32*)(*(u8**)(c + 8) + 4), *(s32*)(*(u8**)(c + 8) + 8), 4);
         t = ActorObjectInitTable(1);
         *(void**)(lbl_8036E548 + 0x70) = t;
-        fn_800BDC88(t, 0, 0, ((s32*)*(u8**)(c + 8))[buf[4]], 0, 0);
+        fn_800BDC88(t, 0, 0, ((ActorLayout**)*(u8**)(c + 8))[buf[4]], 0, 0);
         fn_8003A85C(s_BF070a[g_d_GameSettings.StadiumID]);
         fn_8003A848(s_BF070b[g_d_GameSettings.StadiumID][0], s_BF070b[g_d_GameSettings.StadiumID][1], s_BF070b[g_d_GameSettings.StadiumID][2]);
         w = *(u8**)(*(u8**)(c + 8) + 0x18);
@@ -1217,7 +1926,148 @@ f32 fn_3_BFDA4(void* kv, s32 n, f32 t, s32 len, u8 idx, u8* out) {
 #pragma dont_inline reset
 
 // .text:0x000C0134 size:0x63C mapped:0x806FF1C8
-void fn_3_C0134(void) {
-    return;
+// Bat swing trail state (lbl_3_bss_9950).
+typedef struct {
+    u8 _00[2];
+    /* 0x002 */ s16 count;  // points in the trail (lbl_3_bss_9952)
+    /* 0x004 */ s16 frame;  // 0..15
+    /* 0x008 */ s32 alpha;
+    /* 0x00C */ u8 state;   // 0 start, 1 fade in, 2 hold, 3 fade out (lbl_3_bss_995C)
+    u8 _0D[0x1E4 - 0xD];
+    /* 0x1E4 */ Vec ptsA[18];
+    /* 0x2BC */ Vec ptsB[18];
+    /* 0x394 */ Vec prevA;
+    /* 0x3A0 */ Vec prevB;
+    /* 0x3AC */ s16 skip;   // toggles 0/1 every frame
+} SwingTrail;
+extern SwingTrail lbl_3_bss_9950;
+extern s32 lbl_3_data_115FC[7]; // two bat-local points (1/100000 units) and the bone slot
+extern u8 g_Batter[];
+extern struct GameActor** fn_800111D8(struct CharActor* actor); // main/file_8000F150.h
+extern s32 fn_8005268C(void);
+extern void* fn_80052734(s32 index);
+extern void* memmove(void*, const void*, u32);
+extern void fn_3_310C(Vec* out, Vec* in, s32 n, s32 outCount); // game/rep_140.c: spline through n points
+// NONMATCHING 74%: scheduling of the int->float conversions, original keeps &ptsA/&prevA in regs (no folded offsets), regalloc
+#if NONMATCHING
+s32 fn_3_C0134(void) {
+    Vec splB[48];
+    Vec splA[48];
+    Vec local[2];
+    Vec tmp;
+    SwingTrail* w = &lbl_3_bss_9950;
+    u8* o;
+    GameBone* bone;
+    s32 who;
+    s32 i;
+    s32 n;
+    s32 alpha;
+    u16 slot;
+    who = (s8)*(s16*)(g_Batter + 0x62); // TODO type: InMemBatterType
+    for (i = 0; i < 13; i++) {
+        o = ((u8**)lbl_8036E548)[i + 0x2C50 / 4];
+        if (o != NULL && (s8)o[0x252] == who) {
+            break;
+        }
+    }
+    if (i >= 13) {
+        return 1;
+    }
+    bone = (GameBone*)fn_800111D8((struct CharActor*)o);
+    switch (w->state) {
+    case 0:
+        w->alpha = 0;
+        w->frame = 0;
+        w->count = 1;
+        w->skip = 0;
+        w->state++;
+        break;
+    case 1:
+        if (lbl_80366158[0x28] == 0) {
+            w->alpha += (lbl_80366158[0x28] == 0) * 16;
+            w->count += !(w->skip | (lbl_80366158[0x28] != 0));
+            if (w->alpha >= 0xFF) {
+                w->alpha = 0xFF;
+                w->state++;
+            }
+        }
+        break;
+    case 3:
+        if (lbl_80366158[0x28] == 0) {
+            w->alpha -= (lbl_80366158[0x28] == 0) * 16;
+            w->count -= !(w->skip | (lbl_80366158[0x28] != 0));
+            if (w->count < 2) {
+                w->alpha = 0;
+                w->state = 0;
+                return 1;
+            }
+        }
+        break;
+    }
+    if (lbl_80366158[0x28] == 0) {
+        slot = *(u16*)(o + 0x162 + lbl_3_data_115FC[6] * 2); // TODO type: CharActor bone slots
+        if (slot != 0xFFFF) {
+            local[0].x = (f32)lbl_3_data_115FC[0] / lbl_3_rodata_1EC4;
+            local[0].y = (f32)lbl_3_data_115FC[1] / lbl_3_rodata_1EC4;
+            local[0].z = (f32)lbl_3_data_115FC[2] / lbl_3_rodata_1EC4;
+            local[1].x = (f32)lbl_3_data_115FC[3] / lbl_3_rodata_1EC4;
+            local[1].y = (f32)lbl_3_data_115FC[4] / lbl_3_rodata_1EC4;
+            local[1].z = (f32)lbl_3_data_115FC[5] / lbl_3_rodata_1EC4;
+            bone = (*(GameActor**)bone)->boneArray[slot];
+            if (w->count > 1 && w->skip == 0 && lbl_80366158[0x28] == 0) {
+                w->ptsA[0].x = w->prevA.x;
+                w->ptsA[0].y = w->prevA.y;
+                w->ptsA[0].z = w->prevA.z;
+                w->ptsB[0].x = w->prevB.x;
+                w->ptsB[0].y = w->prevB.y;
+                w->ptsB[0].z = w->prevB.z;
+                memmove(&w->ptsA[1], &w->ptsA[0], (w->count - 1) * sizeof(Vec));
+                memmove(&w->ptsB[1], &w->ptsB[0], (w->count - 1) * sizeof(Vec));
+            }
+            PSMTXMultVec(bone->forwardMtx, &local[0], &tmp);
+            w->ptsA[0].x = *(f32*)(o + 0x34) + tmp.x; // TODO type: CharActor position
+            w->ptsA[0].y = *(f32*)(o + 0x38) + tmp.y;
+            w->ptsA[0].z = *(f32*)(o + 0x3C) + tmp.z;
+            PSMTXMultVec(bone->forwardMtx, &local[1], &tmp);
+            w->ptsB[0].x = *(f32*)(o + 0x34) + tmp.x;
+            w->ptsB[0].y = *(f32*)(o + 0x38) + tmp.y;
+            w->ptsB[0].z = *(f32*)(o + 0x3C) + tmp.z;
+            if (w->skip == 0 && lbl_80366158[0x28] == 0) {
+                w->prevA.x = w->ptsA[0].x;
+                w->prevA.y = w->ptsA[0].y;
+                w->prevA.z = w->ptsA[0].z;
+                w->prevB.x = w->ptsB[0].x;
+                w->prevB.y = w->ptsB[0].y;
+                w->prevB.z = w->ptsB[0].z;
+            }
+        }
+        w->frame = (w->frame + (lbl_80366158[0x28] == 0)) % 16;
+    }
+    if (w->count >= 3) {
+        fn_3_310C(splA, w->ptsA, w->count, w->count * 3 + 1);
+        fn_3_310C(splB, w->ptsB, w->count, w->count * 3 + 1);
+        GXLoadPosMtxImm((f32(*)[4])((u8*)fn_80052734(fn_8005268C()) + 0x40), 0);
+        fn_80033B58(*(void**)(lbl_3_common_bss_35154 + 4), 1, 0, 0);
+        GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+        GXSetCullMode(GX_CULL_NONE);
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+        alpha = w->alpha;
+        n = (w->count - 1) * 3;
+        GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT0, (u16)((n + 1) * 2));
+        for (i = 0; i < n + 1; i++) {
+            u32 col = (alpha - (i * alpha) / n) | 0xFFFFFF00;
+            f32 u = (f32)i / (f32)n;
+            GXPosition3f32(splA[i].x, splA[i].y, splA[i].z);
+            GXColor1u32(col);
+            GXTexCoord2f32(u, 0.0f);
+            GXPosition3f32(splB[i].x, splB[i].y, splB[i].z);
+            GXColor1u32(col);
+            GXTexCoord2f32(u, 1.0f);
+        }
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    }
+    w->skip = (w->skip + 2 - (lbl_80366158[0x28] == 0)) % 2;
+    return 0;
 }
+#endif
 

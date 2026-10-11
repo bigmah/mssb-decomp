@@ -14,7 +14,7 @@ extern void fn_80025EEC(void*, int, int);
 extern void* _OSAllocFromHeap(int, int);
 extern void* memset(void*, int, u32);
 extern void* ActorObjectInitTable(u16);
-extern void fn_3_11D2C8(s32 idx, s32 start, s32 count, s32 a, s32 b);
+extern void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skHeader);
 extern void fn_80025C58(void*, void*);
 extern f32 lbl_3_rodata_3E50;
 

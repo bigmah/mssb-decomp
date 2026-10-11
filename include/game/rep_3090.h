@@ -3,11 +3,22 @@
 
 #include "mssbTypes.h"
 
+/* Replay camera path types (rep_3090). Pointers to arrays of these live in the camera script state. */
+typedef struct { struct { f32 x, y, z; } pos; f32 u; f32 v; u8 pad[0x28]; f32 t; } PathPt; /* size 0x40 */
+typedef struct { u8 pad0[4]; f32 v[5]; u8 pad18[4]; u32 frame; } SplineKey; /* size 0x20 */
+typedef struct { f32 v[5]; u8 pad14[0x34 - 0x14]; } SplineCtrl; /* size 0x34 */
+
+/* Replay camera animation file (relocated in place by fn_3_105C84). */
+typedef struct AnimKey { u16 frame; u8 pad2[2]; struct { f32 x, y, z; } pos; f32 a; f32 b; } AnimKey; /* stride varies by track type */
+typedef struct AnimTrack { s16 parent; u8 pad2[2]; u16 count; u8 type; u8 flags; s32 target; u8 keys[1]; } AnimTrack; /* keys at 0xC */
+typedef struct AnimKeyF { u16 frame; u8 pad2[2]; f32 f[15]; } AnimKeyF; /* generic view of a key: groups of Vec3 */
+typedef struct ReplayAnim { u8 pad0[4]; u16 numFrames; s16 numTracks; u16* frameTbl; AnimTrack* tracks[1]; } ReplayAnim;
+
 void fn_3_FC448(void);
 void fn_3_FC938(void);
-void fn_3_FCE38(void);
+s32 fn_3_FCE38(s32 i, f32 t);
 void fn_3_FCEAC(void);
-void fn_3_FCEB0(void);
+s32 fn_3_FCEB0(f32 t);
 void fn_3_FCF20(void);
 void fn_3_FCF24(void);
 void fn_3_FD408(u32 i, void* out, f32* uv);
@@ -17,7 +28,7 @@ void fn_3_FD5A8(void);
 void fn_3_FD670(void);
 s32 fn_3_FD9FC(void);
 void fn_3_FDA1C(void);
-void fn_3_FDB30(void);
+s32 fn_3_FDB30(void);
 s32 fn_3_100018(void);
 void fn_3_100038(void);
 s32 fn_3_10007C(void);
@@ -33,12 +44,12 @@ void fn_3_1048E0(s32 a, s32 b, s32 c, s32 d, u8* out);
 void fn_3_104A3C(void* dst, void* mtx);
 void fn_3_104A88(void* dst, void* mtx);
 void fn_3_104AD4(void* dst, void* mtx);
-void fn_3_104B20(void);
+void fn_3_104B20(struct Vec* dst, f32 (*src)[4]);
 void fn_3_104B3C(s32 a, s32 b, s32 c, s32 d, void* m);
 void fn_3_1054CC(void);
-void fn_3_1054D0(void);
+void fn_3_1054D0(ReplayAnim* anim, u32 key, s16 track);
 void fn_3_105A10(f32* out, f32* a, f32* b, f32 t);
-void fn_3_105ACC(void);
+void fn_3_105ACC(f32* q, f32 (*out)[4]);
 void fn_3_105BD8(u8* p);
 u32 fn_3_105C28(u8* p, u32 key);
 void fn_3_105C84(u8* p);
@@ -47,7 +58,7 @@ void fn_3_105E00(s32 x, s32 y, s32 a, s32 b);
 void fn_3_106014(f32 x, f32 y, f32 z);
 void fn_3_1060D8(void);
 s32 fn_3_10617C(s32 idx, s32 j, struct Vec* out);
-void fn_3_106270(void);
+void fn_3_106270(struct Vec* out);
 s32 fn_3_10698C(u32* p);
 void* fn_3_1069B0(s32* base, s32 idx);
 void fn_3_1069C0(void);
