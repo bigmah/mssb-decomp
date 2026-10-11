@@ -129,7 +129,7 @@ void fn_3_3F034(void);
 void fn_3_3F124(void);
 void fn_3_3F24C(void);
 void fn_3_3F760(void);
-void fn_3_3FCF0(void);
+void fn_3_3FCF0(int);
 void fn_3_402A8(void);
 void fn_3_40C04(void);
 void fn_3_40D54(void);

@@ -2215,6 +2215,7 @@ extern f32 lbl_3_rodata_B60;
 extern f32 lbl_3_rodata_C08;
 extern f32 lbl_3_rodata_BA4;
 extern f32 lbl_3_rodata_BCC;
+extern f32 lbl_3_rodata_B90;
 #define FLD(n) (g_Fielders + (n) * 0x268) // fielder n's 0x268-byte block
 #define RUN(n) (g_Runners + (n) * 0x154)  // runner n's 0x154-byte block
 extern u8 lbl_3_data_44B4[];
@@ -2329,9 +2330,57 @@ void fn_3_3F760(void) {
 #endif
 
 // .text:0x0003FCF0 size:0x5B8 mapped:0x8067ED84
-void fn_3_3FCF0(void) {
-    return;
+// NONMATCHING 91.5%: registers (SetFielderAct swap) and block order around the 2/3-of-gap compares
+#if NONMATCHING
+// Split base-covering duties between infielders by the batted ball's angle
+// (useBall: take the angle from the ball's current position instead of ball+0x1B9C).
+void fn_3_3FCF0(int useBall) {
+    int ang = *(s16*)(g_Ball + 0x1B9C);
+    int a2, a3, a4, a5;
+    int q;
+    if (useBall != 0) {
+        ang = (s16)fn_3_9FB8C(*(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x350));
+    }
+    a2 = *(s16*)(FLD(2) + 0x182);
+    a3 = *(s16*)(FLD(3) + 0x182);
+    a4 = *(s16*)(FLD(4) + 0x182);
+    a5 = *(s16*)(FLD(5) + 0x182);
+    if (FLD(0)[0x1DA] == 0 && *(f32*)(g_Ball + 0x350) < lbl_3_rodata_B90 && *(f32*)(g_Ball + 0x19D4) < lbl_3_rodata_BD8) {
+        fn_3_3F760();
+        return;
+    }
+    if (ang < a2 + (a3 - a2) / 5) {
+        SetFielderAct(2, 3, 0x18);
+        SetFielderAct(3, 3, 0x18);
+    } else if (ang < (a2 + a3) / 2) {
+        SetFielderAct(2, 3, 0x18);
+        SetFielderAct(3, 3, 0x18);
+    } else if (ang < a3 + (q = (a5 - a3) / 3)) {
+        SetFielderAct(3, 3, 0x18);
+        if (ang > *(s16*)(FLD(0) + 0x182) - 0x40) {
+            SetFielderAct(0, 4, 0x20);
+        }
+    } else if (ang < a3 + q * 2) {
+        SetFielderAct(0, 4, 0x20);
+        if (__abs(ang - *(s16*)(FLD(3) + 0x182)) < __abs(ang - *(s16*)(FLD(5) + 0x182))) {
+            SetFielderAct(3, 3, 0x18);
+        } else {
+            SetFielderAct(5, 3, 0x18);
+        }
+    } else if (ang < a5 + (q = (a4 - a5) / 3)) {
+        SetFielderAct(5, 3, 0x18);
+        if (ang < *(s16*)(FLD(0) + 0x182) + 0x40) {
+            SetFielderAct(0, 4, 0x20);
+        }
+    } else if (ang < a5 + q * 2) {
+        SetFielderAct(4, 3, 0x18);
+        SetFielderAct(5, 3, 0x18);
+    } else {
+        SetFielderAct(4, 3, 0x18);
+        SetFielderAct(5, 3, 0x18);
+    }
 }
+#endif
 
 // .text:0x000402A8 size:0x95C mapped:0x8067F33C
 void fn_3_402A8(void) {
