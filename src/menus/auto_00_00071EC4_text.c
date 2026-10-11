@@ -3300,3 +3300,79 @@ void fn_2_83B34(u8* o, s8 sel) {
     }
 }
 #endif
+
+// fn_2_80F5C, size:0x6CC
+void fn_2_80F5C(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + 0xD;
+    if ((e[index] == 0) ? 1 : 0) {
+        MN_SLOT(BASE(o) + index)->anim = 0x47;
+        MN_SLOT(2 + BASE(o) + index)->anim = 0x47;
+        MN_SLOT(4 + BASE(o) + index)->anim = 0x50;
+        MN_SLOT(BASE(o) + index)->frame = 0;
+        MN_SLOT(2 + BASE(o) + index)->frame = 0;
+        MN_SLOT(BASE(o) + index)->state = 1;
+        MN_SLOT(2 + BASE(o) + index)->state = 1;
+        MN_SLOT(4 + BASE(o) + index)->frame = 0;
+        MN_SLOT(4 + BASE(o) + index)->state = 1;
+        MN_SLOT(6 + BASE(o))->state = 1;
+        MN_SLOT(8 + BASE(o))->state = 1;
+        MN_SLOT(0x12 + BASE(o) + index)->flags &= ~2;
+        MN_SLOT(0xC + BASE(o) + index)->flags &= ~2;
+        MN_SLOT(0x99 + BASE(o) + index)->anim = 0x79;
+        if (index != 0 && lbl_2_bss_100B8[0x10] == 0 && g_d_GameSettings._10 == 0) {
+            MnSlot* s84 = MN_SLOTS + 0x84;
+            MN_SLOT(0x80 + BASE(o) + index)->flags &= ~2;
+            MN_SLOT(0x7A + BASE(o) + index)->state = 0;
+            MN_SLOT(0x97 + BASE(o) + index)->flags &= ~2;
+            s84[BASE(o)].obj->flags |= 2;
+            s84[BASE(o)].obj->state = 1;
+        } else {
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                MN_SLOT(0x84 + BASE(o))->flags &= ~2;
+                MN_SLOT(0x98 + BASE(o))->flags &= ~2;
+                MN_SLOT(0xAD + BASE(o))->flags &= ~2;
+            } else if (index != 0 && lbl_803C5EA4[5] != 0) {
+                MN_SLOT(BASE(o) + index)->anim = 0x47;
+                MN_SLOT(2 + BASE(o) + index)->anim = 0x47;
+                MN_SLOT(4 + BASE(o) + index)->anim = 0x50;
+                MN_SLOT(BASE(o) + index)->frame = 0x140000;
+                MN_SLOT(2 + BASE(o) + index)->frame = 0x140000;
+                MN_SLOT(BASE(o) + index)->state = 1;
+                MN_SLOT(2 + BASE(o) + index)->state = 1;
+                MN_SLOT(4 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x84 + BASE(o))->flags &= ~2;
+                MN_SLOT(0x97 + BASE(o) + index)->flags |= 2;
+                MN_SLOT(0x97 + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x97 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x7A + BASE(o) + index)->frame = (s8)lbl_8034E9A0[0x46F9] << 16;
+                MN_SLOT(0x19 + BASE(o))->frame = (s8)lbl_8034E9A0[0x46F9] << 16;
+                MN_SLOT(0x1A + BASE(o) + index)->flags |= 2;
+                MN_SLOT(0x1A + BASE(o) + index)->state = 1;
+                if (lbl_803C66B0[0x5D] == 4 && lbl_803C66B0[0xD] == 1) {
+                    fn_80062674(0);
+                    lbl_803C66B0[0xD] = 2;
+                }
+            }
+            fn_2_7630C(o, index);
+            MN_SLOT(0x80 + BASE(o) + index)->flags |= 2;
+            MN_SLOT(0x80 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x80 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x85 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x87 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x85 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x87 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x8B + BASE(o) + index)->frame = 0x50000;
+            MN_SLOT(0x89 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x8B + BASE(o) + index)->state = 1;
+            MN_SLOT(0x78 + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x78 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x7C + BASE(o) + index)->frame = 0;
+            MN_SLOT(0x7C + BASE(o) + index)->state = 1;
+            fn_2_74F40(o, index);
+        }
+        MN_SLOT(0xAC + BASE(o) + index)->flags &= ~2;
+        fn_800626EC(index);
+        e[index] = 1;
+    }
+}

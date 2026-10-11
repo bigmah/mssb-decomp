@@ -86,5 +86,6 @@ void fn_2_76874(u8* o, u8 index);
 void fn_2_7FAFC(u8* o, s32 index);
 void fn_2_82EC0(void);
 void fn_2_83B34(u8* o, s8 sel);
+void fn_2_80F5C(u8* o, s32 index);
 
 #endif
