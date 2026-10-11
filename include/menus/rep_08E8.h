@@ -29,6 +29,16 @@ typedef struct MenuCharMgr {
     /*0x2CEC*/ u8* bankSets[4][5];
 } MenuCharMgr;
 
+// lbl_2_bss_55C0: small file-static state of this unit.
+typedef struct MenuNumberState {
+    /*0x00*/ u8 viewerState; // fn_2_481F4
+    /*0x01*/ u8 _01;
+    /*0x02*/ u16 halfSpace;  // 0x4002 or 0x4003 (fn_2_4917C)
+    /*0x04*/ u16 minus;      // minus-sign glyph
+    /*0x06*/ u16 space;      // padding/separator glyph
+    /*0x08*/ u16 text[16];   // last number formatted by fn_2_4917C
+} MenuNumberState;
+
 // The running scene task (lbl_803CC1B8; SceneTask in main/file_80069BDC.h),
 // only the fields used here.
 typedef struct MenuSceneTask {
@@ -189,5 +199,7 @@ void fn_2_4A6E8(void);
 void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
 
 void fn_2_481F4(void);
+
+u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style);
 
 #endif

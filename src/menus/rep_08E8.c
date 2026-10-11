@@ -38,7 +38,6 @@ extern u8* lbl_2_bss_1A8248[];
 extern u8* lbl_2_bss_1A824C[];
 
 extern void* _OSAllocFromHeap(s32 alignment, s32 size);
-extern void* fn_2_4917C(void*, s32, s32, s32, s32);
 extern void fn_2_513E0(void*, s32, s32, s32, s32, s32, s32, s32);
 
 extern f32 lbl_2_bss_55B8;
@@ -954,7 +953,7 @@ void fn_2_477C0(void) {
 }
 
 // .text:0x47540 size:0x23C
-// NONMATCHING ~85%: same instructions; volatile register assignment of the four maxima and the saved regs of the aligned sizes differ (decl permutations tried)
+// NONMATCHING 98.7%: same instructions; volatile register assignment of the four maxima and the saved regs of the aligned sizes differ (decl permutations tried)
 #if NONMATCHING
 void fn_2_47540(void) {
     u32 max2 = 0;
@@ -1039,7 +1038,7 @@ void fn_2_478F4(void) {
 }
 
 // .text:0x49F7C size:0xE8
-// NONMATCHING 98%: original places the copy loop's pointer init after the final blr (out-of-line preheader, docs/patterns/unsolved.md); a goto layout gets within one extra blr
+// NONMATCHING 89%: original places the copy loop's pointer init after the final blr (out-of-line preheader, docs/patterns/unsolved.md); a goto layout gets within one extra blr
 #if NONMATCHING
 u16* fn_2_49F7C(u16* string, s32 capacity, u16 character, s32 position) {
     s32 length = fn_2_4A068(string);
@@ -1129,7 +1128,7 @@ extern const f32 lbl_2_rodata_988;
 
 // .text:0x48DB4 size:0x2B8
 // Set up the four menu lights.
-// NONMATCHING ~93%: same instructions; prologue scheduling of the GXColor copies and the LITInitAttn 1.0/0.0 load order (docs/patterns/unsolved.md, rep_74A0 (a))
+// NONMATCHING 93%: same instructions; prologue scheduling of the GXColor copies and the LITInitAttn 1.0/0.0 load order (docs/patterns/unsolved.md, rep_74A0 (a))
 #if NONMATCHING
 void fn_2_48DB4(void) {
     GXColor color2 = lbl_2_rodata_938;
@@ -1175,7 +1174,7 @@ void fn_2_48DB4(void) {
 
 // .text:0x4A340 size:0x3A8
 // Debug/default line score and roster setup.
-// NONMATCHING ~93%: register rotation in the prologue, and the original addresses lbl_8034E9A0+0x4908 directly (we get base + 0x4909 offsets)
+// NONMATCHING 93%: register rotation in the prologue, and the original addresses lbl_8034E9A0+0x4908 directly (we get base + 0x4909 offsets)
 #if NONMATCHING
 void fn_2_4A340(void) {
     s32 home = g_d_GameSettings.home_AwaySetting;
@@ -1375,7 +1374,7 @@ void fn_2_4A6E8(void) {
 
 #undef RESULT_S16
 
-extern u8 lbl_2_bss_55C0;
+extern MenuNumberState lbl_2_bss_55C0;
 extern u32 lbl_803C7898[];
 extern MenuSceneTask* lbl_803CC1B8;
 extern s32 fn_80016710(u8 kind, s32 index);
@@ -1384,13 +1383,13 @@ extern void fn_2_93C64(void);
 // .text:0x481F4 size:0x5AC
 // Menu character viewer: set everything up (state 0), then wait for the
 // requested character to load and reset its transform (state 1).
-// NONMATCHING: the original inlines fn_2_48DB4 and fn_2_478F4 (both equivalent-only)
+// NONMATCHING 92%: the original inlines fn_2_48DB4 and fn_2_478F4 (fn_2_48DB4 is equivalent-only)
 #if NONMATCHING
 void fn_2_481F4(void) {
     MenuSceneTask* task = lbl_803CC1B8;
     MenuCharActor* actor;
 
-    switch (lbl_2_bss_55C0) {
+    switch (lbl_2_bss_55C0.viewerState) {
     case 0:
         *(u32*)(lbl_2_bss_1A824C[0] + 0x195424) = lbl_803C7898[1]; // TODO type
         *(u32*)(lbl_2_bss_1A824C[0] + 0x195428) = lbl_803C7898[2];
@@ -1398,12 +1397,12 @@ void fn_2_481F4(void) {
         fn_2_93C64();
         fn_2_478F4();
         lbl_8036E548[0x2D77] = 0;
-        lbl_2_bss_55C0 = 1;
+        lbl_2_bss_55C0.viewerState = 1;
         break;
     case 1:
         if (fn_80016710(lbl_2_bss_1A8248[0][0x441D], task->_16)) {
             *(s32*)(lbl_2_bss_1A824C[0] + 0x19769C) = task->_16;
-            lbl_2_bss_55C0 = 0;
+            lbl_2_bss_55C0.viewerState = 0;
             actor = &MENU_CHARMGR.actors[*(s32*)(lbl_2_bss_1A824C[0] + 0x19769C)];
             actor->pos.x = lbl_2_rodata_94C;
             actor->pos.y = lbl_2_rodata_94C;
@@ -1419,3 +1418,197 @@ void fn_2_481F4(void) {
     }
 }
 #endif
+
+#include "string.h"
+
+#define NUM_GLYPHS(off) (*(u16**)(lbl_2_bss_1A824C[0] + (off))) // TODO type
+#define LOOP_GLYPHS(off) (*(u16**)(menu + (off)))
+
+// .text:0x4917C size:0xC3C
+// Format a number into the static glyph string lbl_2_bss_55C0.text (copied to
+// buffer if given). flags: 1 large glyphs, 4 pad with glyph spaces, 8 hex,
+// 0x10 alternate font, 0x20/0x40/0x80 group with separators (3/4/2 digits).
+// `style` is unused.
+// NONMATCHING 78%: the original keeps the file-static bss base (lbl_2_bss_55C0 is part of this unit's .bss) in r31; inlined fn_2_49F7C layout (see there)
+#if NONMATCHING
+u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style) {
+    char buf[12];
+    s32 count = 0;
+    s32 i;
+    s32 v;
+    s32 d;
+    char* p;
+    u16* out;
+    s8 c;
+    u8* menu;
+
+    if (flags & 0x20) {
+        flags |= 4;
+        if (number < 0) {
+            digits = 3;
+        } else {
+            digits = 3;
+        }
+    } else if (flags & 0x40) {
+        flags |= 4;
+        digits = 4;
+    } else if (flags & 0x80) {
+        flags |= 4;
+        digits = 2;
+    }
+
+    if (flags & 8) {
+        if (number == 0) {
+            buf[0] = ' ';
+            buf[1] = ' ';
+            buf[2] = ' ';
+            buf[3] = ' ';
+            buf[4] = ' ';
+            buf[5] = ' ';
+            buf[6] = ' ';
+            buf[7] = '0';
+            buf[8] = 0;
+        } else {
+            v = number;
+            buf[8] = 0;
+            i = 7;
+            while (v != 0) {
+                d = v % 16;
+                if (d < 10) {
+                    buf[i] = d + '0';
+                } else {
+                    buf[i] = d + ('a' - 10);
+                }
+                i--;
+                v /= 16;
+            }
+            for (; i >= 0; i--) {
+                buf[i] = ' ';
+            }
+        }
+    } else if (number == 0) {
+        for (i = 0; i < 9; i++) {
+            buf[i] = ' ';
+        }
+        buf[9] = '0';
+        buf[10] = 0;
+    } else {
+        i = (number < -999999999) + 10;
+        buf[i] = 0;
+        i--;
+        v = number;
+        if (number < 0) {
+            v = number * -1;
+        }
+        while (v != 0) {
+            buf[i--] = v % 10 + '0';
+            v /= 10;
+        }
+        if (number < 0) {
+            if ((flags & 0x20) || (flags & 0x40) || (flags & 0x80)) {
+                buf[i] = ' ';
+            } else {
+                buf[i] = '-';
+            }
+            i--;
+        }
+        for (; i >= 0; i--) {
+            buf[i] = ' ';
+        }
+    }
+
+    if (!(flags & 6)) {
+        digits = 0;
+    }
+    p = buf + strlen(buf) - digits;
+    while (p != buf && p[-1] != ' ') {
+        p--;
+    }
+
+    if ((flags & 4) && (flags & 1)) {
+        lbl_2_bss_55C0.space = *NUM_GLYPHS(0x19544C);
+    } else if ((flags & 4) && (flags & 0x10)) {
+        lbl_2_bss_55C0.space = *NUM_GLYPHS(0x195464);
+    } else if (flags & 4) {
+        lbl_2_bss_55C0.space = *NUM_GLYPHS(0x195460);
+    } else if (flags & 1) {
+        lbl_2_bss_55C0.space = 0x4003;
+    } else {
+        lbl_2_bss_55C0.space = 0x4002;
+    }
+    lbl_2_bss_55C0.halfSpace = (flags & 1) + 0x4002;
+
+    menu = lbl_2_bss_1A824C[0];
+    out = lbl_2_bss_55C0.text;
+    while ((c = *p) != 0) {
+        if (c == ' ') {
+            *out = lbl_2_bss_55C0.space;
+        } else if (c == '-') {
+            if (flags & 0x10) {
+                *out = *LOOP_GLYPHS(0x19545C);
+            } else if (flags & 1) {
+                *out = *LOOP_GLYPHS(0x195458);
+            } else {
+                *out = *LOOP_GLYPHS(0x19545C);
+            }
+        } else if (c >= '0' && c <= '9') {
+            if (flags & 0x10) {
+                *out = LOOP_GLYPHS(0x195464)[c - '0'];
+            } else if (flags & 1) {
+                *out = LOOP_GLYPHS(0x19544C)[c - '0'];
+            } else {
+                *out = LOOP_GLYPHS(0x195460)[c - '0'];
+            }
+        } else if (flags & 0x10) {
+            *out = LOOP_GLYPHS(0x195464)[c - 'a' + 12];
+        } else if (flags & 1) {
+            *out = LOOP_GLYPHS(0x195444)[c - 'a'];
+        } else {
+            *out = LOOP_GLYPHS(0x195450)[c - 'a'];
+        }
+        out++;
+        count++;
+        p++;
+    }
+    lbl_2_bss_55C0.text[count] = 0x4000;
+
+    if (flags & 0x10) {
+        lbl_2_bss_55C0.space = NUM_GLYPHS(0x195464)[10];
+    } else if (flags & 1) {
+        lbl_2_bss_55C0.space = NUM_GLYPHS(0x195460)[10];
+    } else {
+        lbl_2_bss_55C0.space = NUM_GLYPHS(0x195460)[10];
+    }
+    if (flags & 0x10) {
+        lbl_2_bss_55C0.minus = *NUM_GLYPHS(0x19545C);
+    } else if (flags & 1) {
+        lbl_2_bss_55C0.minus = *NUM_GLYPHS(0x195458);
+    } else {
+        lbl_2_bss_55C0.minus = *NUM_GLYPHS(0x19545C);
+    }
+
+    if (flags & 0x20) {
+        fn_2_49F7C(lbl_2_bss_55C0.text, 16, lbl_2_bss_55C0.space, count - 2);
+        if (number < 0) {
+            fn_2_49F7C(lbl_2_bss_55C0.text, 16, lbl_2_bss_55C0.minus, count - 4);
+        }
+    } else if (flags & 0x40) {
+        fn_2_49F7C(lbl_2_bss_55C0.text, 16, lbl_2_bss_55C0.space, count - 3);
+        if (number < 0) {
+            fn_2_49F7C(lbl_2_bss_55C0.text, 16, lbl_2_bss_55C0.minus, count - 5);
+        }
+    } else if (flags & 0x80) {
+        fn_2_49F7C(lbl_2_bss_55C0.text, 16, lbl_2_bss_55C0.space, count - 1);
+        if (number < 0) {
+            fn_2_49F7C(lbl_2_bss_55C0.text, 16, lbl_2_bss_55C0.minus, count - 3);
+        }
+    }
+    if (buffer != NULL) {
+        fn_2_4A094(buffer, lbl_2_bss_55C0.text);
+    }
+    return lbl_2_bss_55C0.text;
+}
+#endif
+
+#undef NUM_GLYPHS
+#undef LOOP_GLYPHS

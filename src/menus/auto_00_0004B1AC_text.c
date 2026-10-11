@@ -2568,7 +2568,7 @@ void fn_2_4B2D0(void) {
 
 extern s16 lbl_2_data_38CC[];
 extern void fn_2_39408(void);
-extern void* fn_2_4917C(void* buffer, s32 number, s32 flags, s32 digits, s32 style);
+extern u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style);
 
 // Menu script interpreter state in lbl_2_bss_1A824C[0]. TODO type
 #define MS_S32(off) (*(s32*)(lbl_2_bss_1A824C[0] + (off)))
