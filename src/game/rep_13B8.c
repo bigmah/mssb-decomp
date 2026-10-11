@@ -4922,6 +4922,8 @@ void fn_3_899BC(void) {
 
 // .text:0x0008A1D8 size:0x178 mapped:0x806C926C
 // ~98%: loop regs match now; prologue differs (original loads the 0.0f via addi+lfs 0(r4) and copies i to r3 for the 0x133 stores)
+// NONMATCHING 93%: prologue constant load / register copy (see note above)
+#if NONMATCHING
 void fn_3_8A1D8(void) {
     u8* r;
     int i;
@@ -4954,6 +4956,7 @@ void fn_3_8A1D8(void) {
         fn_3_6D964(*(int*)(g_GameLogic + a * 0x50 + *(int*)(g_GameLogic + a * 4 + 0xDC) * 8 + 0x3C), 0);
     }
 }
+#endif
 
 // .text:0x0008A350 size:0x178 mapped:0x806C93E4
 // ~97%: loop 1 regs now match (u32 a/b); loop 2 differs: extra `mr r8,r4` for the runner pointer, table/i regs (r5/r6 vs r6/r4) and lis order.
