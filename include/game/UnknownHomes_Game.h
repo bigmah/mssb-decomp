@@ -2770,11 +2770,72 @@ typedef struct {
 
 extern inMemStrikes g_Strikes;
 
+// One controller's input as recorded for the replay (copied from InputStruct).
+typedef struct ReplayInput {
+    /*0x0*/ s16 controlStickAngle;
+    /*0x2*/ u16 buttonInput;    // without the 0x1000 (START) bit
+    /*0x4*/ u16 newButtonInput; // without the 0x1000 (START) bit
+    /*0x6*/ s8 right_left;
+    /*0x7*/ s8 up_down;
+} ReplayInput; // size: 0x8
+
+// One recorded frame: both controllers (g_Stats.controller[0/1]).
+typedef struct ReplayFrame {
+    /*0x0*/ ReplayInput input[2];
+} ReplayFrame; // size: 0x10
+
+#define REPLAY_MAX_FRAMES 1200
+
+extern ReplayFrame g_ReplayLogic[REPLAY_MAX_FRAMES];
+
+// Replay state, plus a snapshot of the game state taken when recording starts.
 typedef struct {
-    u8 pad[0x24];
-    /* 0x0024 */ u32 playFrameCounter;
-    artificial_padding(0x24, 0x36, u32);
-    /* 0x0036 */ u8 replayInd;
+    /* 0x0000 */ VecXZ landingSpotLocation;
+    /* 0x0008 */ VecXZ ballPickedUpCaught;
+    /* 0x0010 */ VecXYZ deadballLastLoc;
+    /* 0x001C */ s16 hitVerticalAngle;
+    /* 0x001E */ s16 hitHorizontalAngle;
+    /* 0x0020 */ s16 hitHorizontalPower;
+    /* 0x0022 */ s16 _22;
+    /* 0x0024 */ s32 playFrameCounter;
+    /* 0x0028 */ s16 endFrame; // last recorded frame
+    /* 0x002A */ s16 _2A;      // fielding team's score
+    /* 0x002C */ s16 _2C;
+    /* 0x002E */ s16 _2E;
+    /* 0x0030 */ s16 _30; // batting team's score
+    /* 0x0032 */ s16 _32;
+    /* 0x0034 */ s16 _34;
+    /* 0x0036 */ u8 replayInd; // playing back
+    /* 0x0037 */ u8 recording;
+    /* 0x0038 */ u8 _38;
+    /* 0x0039 */ u8 _39;
+    /* 0x003A */ u8 _3A;
+    /* 0x003B */ u8 _3B;
+    /* 0x003C */ u8 _3C;
+    /* 0x003D */ u8 _3D;
+    /* 0x003E */ u8 _3E;
+    /* 0x003F */ u8 controller[2];
+    /* 0x0041 */ u8 _41[3];
+    // Snapshot of the game state (fn_3_7CF88).
+    /* 0x0044 */ u8 gameLogic[0x158];
+    /* 0x019C */ u8 strikes[0x24];
+    /* 0x01C0 */ u8 scores[0xC8];
+    /* 0x0288 */ u8 ball[0x1BF8];
+    /* 0x1E80 */ u8 pitcher[0x178];
+    /* 0x1FF8 */ u8 batter[0xB0];
+    /* 0x20A8 */ u8 aiLogic[0xBC];
+    /* 0x2164 */ u8 fieldingLogic[0x150];
+    /* 0x22B4 */ u8 runningLogic[0x20];
+    /* 0x22D4 */ u8 fielders[0x15A8];
+    /* 0x387C */ u8 runners[0x550];
+    /* 0x3DCC */ u8 bss_32234[6];
+    /* 0x3DD2 */ u8 bss_32230[4];
+    /* 0x3DD6 */ u8 bss_32220[0xE];
+    /* 0x3DE4 */ u8 throwing[0x14];
+    /* 0x3DF8 */ u8 animation[0x2F4];
+    /* 0x40EC */ u8 bss_321A0[0x80];
+    /* 0x416C */ u8 lbl_803537E4[0x2AC];
+    /* 0x4418 */ u8 lbl_803535C8[0x21C];
 } g_Stats_s; // size: 0x4634
 
 // 0x8088a7e4
