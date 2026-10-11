@@ -1,4 +1,108 @@
 #include "main/file_80034F50.h"
+#include "Dolphin/os.h"
+#include "Dolphin/stl.h"
+
+// spani_default.c
+
+typedef struct SpaniPad {
+    /*0x00*/ u16 held;
+    /*0x02*/ u16 unk2;
+    /*0x04*/ u16 trig;
+    /*0x06*/ u8 unk6[0x20 - 0x06];
+} SpaniPad;
+
+typedef struct SpaniDrawState {
+    /*0x00*/ u8 unk0[0x84];
+    /*0x84*/ s32 unk84;
+    /*0x88*/ void (*drawCallback)(void);
+    /*0x8C*/ u8 unk8C[0x90 - 0x8C];
+} SpaniDrawState;
+
+extern SpaniObj lbl_8039C3E0[SPANI_OBJ_COUNT];     // sprite objects
+extern SpaniRef lbl_80371C30[];                    // owner-indexed sprite references
+extern SpaniTexSlot lbl_803C4BE0[SPANI_TEX_SLOT_COUNT]; // loaded texture/anim banks
+extern s16 lbl_8023D6C0[SPANI_OBJ_COUNT];          // texture slot -> id
+extern SpaniPad lbl_803C77B8[4];
+extern u8 lbl_803C6CF8[];
+extern SpaniDrawState lbl_80366188;
+extern Mtx lbl_800F78E0[4];
+extern Mtx44 lbl_801F8640;
+extern Mtx44 lbl_801F8680;
+extern u8 lbl_801F86C0[];
+extern u8 lbl_803C5F74[];
+
+typedef struct SpaniStrings {
+    char noSlot[0x1C];  // " SabNo = %d not to add  \n"
+    char file[0x10];    // "spani_default.c"
+    char noEmpty[0x14]; // "gasSpani No Empty \n"
+} SpaniStrings;
+extern SpaniStrings lbl_800E68A8;
+extern char lbl_800E68C4[]; // "spani_default.c"
+extern char lbl_800E68E8[]; // "It is a number not registered. \n"
+
+extern s32 lbl_803CB810;
+extern s32 lbl_803CB814;
+extern f32 lbl_803CBBDC;
+extern f32 lbl_803CBBE0;
+extern u8 lbl_803CBBE4;
+extern u8 lbl_803CBC90;
+extern u8 lbl_803CBC91;
+extern void* lbl_803CBC94;
+extern s32 lbl_803CBC98;
+extern SpaniObj* lbl_803CBC9C;
+
+extern s32 ARAMTransfer(void*, int, int, int);
+extern void convertTextureHeader(void* textures);
+extern void fn_800B24D4(u32);
+extern void fn_800ACFB0(void* object);
+extern void fn_80034BCC(void);
+extern void* fn_80052734(s32 index);
+extern void fn_800B0D38(s32 index, s32 value);
+extern s32 fn_800B216C(u8 flag, u32 mode, u8 index);
+extern void fn_800B21A8(s32 mode);
+extern void (*fn_8000A094(void (*cb)(void)))(void);
+extern void fn_8000B9C8(SpaniAnim* anim);
+extern void fn_8000CC4C(SpaniAnim* anim, SpaniTrack* track, void* src, u32 offset, u32 size);
+extern u32 fn_8000CEF0(SpaniAnim* anim, u16 animId, u32 track, u32 frame, SpaniKey* out);
+extern u8 fn_8000D838(u32* frame, SpaniAnim* anim, u16 animId, Mtx mtx, s32 arg4, s32 arg5, void* arg6, void* tex);
+extern void fn_8000F534(SpaniObj* obj, s32 arg1);
+extern void fn_80011140(void);
+extern void DrawTextOnCondition(u8 layer);
+extern void fn_800B27A4(s32 arg0);
+extern void fn_800B27DC(Mtx44 mtx, s32 arg1);
+extern void fn_800B2854(void* buf, u32 size, Mtx44 mtx, s32 arg3, s32 count, s32* modes, s32 arg6);
+
+static inline s32 spaniFindSlot(s32 id) {
+    s32 i;
+    for (i = 0; i < SPANI_OBJ_COUNT; i++) {
+        if (id == lbl_8023D6C0[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static inline s8 spaniFindFreeSlot(void) {
+    u8 i = 0;
+    do {
+        if (lbl_803C4BE0[i].data == NULL) {
+            return i;
+        }
+        i++;
+    } while (i < SPANI_TEX_SLOT_COUNT);
+    return -1;
+}
+
+static inline void spaniClearSlot(s32 id) {
+    s32 slot = spaniFindSlot(id);
+    if (slot != -1) {
+        lbl_8023D6C0[slot] = -1;
+        lbl_803C4BE0[slot].data = NULL;
+        lbl_803C4BE0[slot].tex = NULL;
+        lbl_803C4BE0[slot].anim = NULL;
+        PSMTXIdentity(lbl_803C4BE0[slot].mtx);
+    }
+}
 
 // .text:0x80034F50 size:0x218
 void fn_80034F50(void) {
@@ -46,8 +150,8 @@ void fn_80035DD4(void) {
 }
 
 // .text:0x80035ED0 size:0x1C
-void fn_80035ED0(void) {
-    return;
+void fn_80035ED0(s32 idx) {
+    lbl_8039C3E0[idx].flags = 0;
 }
 
 // .text:0x80035EEC size:0x34
