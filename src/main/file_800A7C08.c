@@ -280,9 +280,66 @@ u32 fn_800A88D0(void) {
 }
 
 // .text:0x800A88D8 size:0x1D8
+// NONMATCHING 99%: the early 'state == BUSY' return compiles to beq instead of the original's bne/b pair
+#if NONMATCHING
 void fn_800A88D8(u32 state) {
-    return;
+    StreamTrack* track;
+
+    if (lbl_803CC148 == state) {
+        return;
+    }
+    if (lbl_803CC148 == STREAM_STATE_BUSY) {
+        return;
+    }
+    switch (state) {
+    case STREAM_STATE_STOP:
+        if (lbl_803CC154 != NULL) {
+            lbl_803CC148 = STREAM_STATE_BUSY;
+            AISetStreamVolLeft(0);
+            AISetStreamVolRight(0);
+            DVDCancelStreamAsync(&lbl_802EF1A0, fn_800A908C);
+        }
+        break;
+    case STREAM_STATE_PLAY:
+        if (lbl_803CC148 == STREAM_STATE_PAUSE) {
+            AISetStreamVolLeft(lbl_803CC135);
+            AISetStreamVolRight(lbl_803CC134);
+            AIResetStreamSampleCount();
+            AISetStreamTrigger(lbl_803CC138);
+            AISetStreamPlayState(1);
+            track = lbl_803CC154;
+            lbl_803CC148 = STREAM_STATE_PLAY;
+            if (track != NULL) {
+                STREAM_NOTIFY(track, STREAM_EVENT_PLAY);
+            }
+        } else if (lbl_803CC154 != NULL) {
+            lbl_803CC148 = STREAM_STATE_BUSY;
+            DVDPrepareStreamAsync(&lbl_803CC154->fileInfo, 0, 0, fn_800A9424);
+        } else {
+            lbl_803CC148 = STREAM_STATE_PLAY;
+        }
+        lbl_803CC12C = 0;
+        break;
+    case 4:
+        if (lbl_803CC148 == STREAM_STATE_STOP) {
+            if (lbl_803CC154 != NULL) {
+                lbl_803CC148 = STREAM_STATE_BUSY;
+                DVDPrepareStreamAsync(&lbl_803CC154->fileInfo, 0, 0, fn_800A93AC);
+            }
+            lbl_803CC12C = 0;
+        }
+        break;
+    case STREAM_STATE_PAUSE:
+        AISetStreamPlayState(0);
+        if (lbl_803CC148 == STREAM_STATE_PLAY) {
+            lbl_803CC148 = STREAM_STATE_PAUSE;
+        }
+        track = lbl_803CC154;
+        STREAM_NOTIFY(track, STREAM_EVENT_PAUSE);
+        break;
+    }
 }
+#endif
 
 // fn_800A8AB0, size:0x8
 void fn_800A8AB0(u32 value) {
