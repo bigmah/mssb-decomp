@@ -89,8 +89,32 @@ void f_BuildBoneSkinOrientationMatrix(GameBone* bone, Mtx parent) {
 }
 
 // .text:0x800B3A78 size:0x18C
-void fn_800B3A78(void) {
-    return;
+// ACTRender: draws the skin, then every bone's display object in priority order.
+void fn_800B3A78(GameActor* actor, Mtx camera, u8 numLights, ...) {
+    va_list list;
+    GameBone* bone;
+
+    if (!(actor->flags & 9)) {
+        return;
+    }
+    if (actor->skinObject != NULL) {
+        fn_800B2D5C(actor);
+        GXInvalidateVtxCache();
+        va_start(list, numLights);
+        if (actor->skHeader != NULL) {
+            DOVARender(actor->skinObject, camera, numLights, &list);
+        } else {
+            DOVARenderSkin(actor->skinObject, camera, (MtxPtr)actor->skinMtxArray,
+                           (MtxPtr)actor->skinInvTransposeMtxArray, numLights, &list);
+        }
+    }
+    for (bone = (GameBone*)actor->drawPriorityList.Head; bone != NULL; bone = (GameBone*)bone->drawPriorityLink.Next) {
+        if (bone->dispObj != NULL) {
+            DOSetWorldMatrix(bone->dispObj, bone->forwardMtx);
+        }
+        va_start(list, numLights);
+        DOVARender(bone->dispObj, camera, numLights, &list);
+    }
 }
 
 // .text:0x800B3C04 size:0x31C
