@@ -22,6 +22,7 @@ extern u8 lbl_800FE93C[];
 extern u8 lbl_800FE924[][6];
 extern u16 lbl_803CB870[];
 extern void fn_80034E20(void* group, void* desc);
+extern s32 fn_80036214(void* owner, s32 idx, u32 track, u32 frame);
 
 // .text:0x8004C5F8 size:0x404
 void fn_8004C5F8(void) {
@@ -410,9 +411,154 @@ void fn_8004D990(s8 arg0, s32 arg1, u8 table) {
 #endif
 
 // .text:0x8004DB90 size:0x75C
+// NONMATCHING 91%: register allocation and frame size differ
+#if NONMATCHING
 void fn_8004DB90(void) {
+    LayoutGroup* task;
+    LayoutObj* title;
+    LayoutObj* obj;
+    u32 frame;
+    s32 i;
+    s32 j;
+    s32 icon;
+    s32 name;
+    s32 bg;
+
+    lbl_803C6028._92 = 0;
+    task = lbl_803CC1B8;
+    title = lbl_80371C30[task->start + 2].obj;
+    frame = title->_5C >> 16;
+    if (task->textIndex == 0) {
+        if (frame == 30) {
+            title->_68 = 0;
+            task->textIndex = 1;
+        }
+    } else if (task->textIndex == 1) {
+        lbl_803C6028._92 = 1;
+        if (lbl_803C6028.state7E == 3) {
+            goto finish;
+        }
+        if (lbl_803C6028.state7E == 1) {
+            title->_68 = 4;
+            lbl_80371C30[task->start + 1].obj->_68 = 4;
+            task->textIndex = 2;
+        }
+    } else if (task->textIndex == 2) {
+        if (frame <= 5) {
+            goto finish;
+        }
+    }
+
+    if (task->textIndex != 3) {
+        for (i = 0; i < 6; i++) {
+            if (lbl_803C6028._8C == 0 && i == 5) {
+                break;
+            }
+            icon = i + 0xB;
+            bg = i + 3;
+            name = i + 0x11;
+            if (task->textIndex == 0) {
+                obj = lbl_80371C30[task->start + icon].obj;
+                if ((obj->_5C >> 16) >= 5) {
+                    obj->_68 = 0;
+                }
+            } else if (lbl_803C6028.slotOwner[i] >= 0) {
+                lbl_80371C30[task->start + icon].obj->_68 = 1;
+                obj = lbl_80371C30[task->start + bg].obj;
+                obj->color = (obj->color & 0xFF) | (fn_80036214(task, 0, 0, lbl_803C6028._8D) & 0xFFFFFF00);
+                lbl_80371C30[task->start + bg].obj->_68 = 1;
+                lbl_80371C30[task->start + name].obj->flags |= 2;
+                obj = lbl_80371C30[task->start + name].obj;
+                if ((obj->_5C >> 16) <= 12) {
+                    obj->_5C = 12 << 16;
+                    lbl_80371C30[task->start + name].obj->_68 = 1;
+                    for (j = 0; j < 4; j++) {
+                        if (lbl_803C6028._78[lbl_803C6028._8D] != 0 && lbl_803C6028.cursor[j] == i) {
+                            lbl_80371C30[task->start + j + 23].obj->_5C = 0;
+                        }
+                    }
+                }
+                fn_800363D8(task, name, 1, 0x1A, lbl_803C6028.slotOwner[i]);
+            } else {
+                obj = lbl_80371C30[task->start + name].obj;
+                if ((obj->_5C >> 16) > 12) {
+                    obj->_68 = 4;
+                } else {
+                    obj->flags &= ~2;
+                }
+                // Note: the original tests the same cursor (_8D) every pass.
+                for (j = 0; j < 4; j++) {
+                    if (lbl_803C6028._78[lbl_803C6028._8D] != 0 && lbl_803C6028.cursor[lbl_803C6028._8D] == i) {
+                        obj = lbl_80371C30[task->start + icon].obj;
+                        frame = obj->_5C >> 16;
+                        if (frame < 15) {
+                            obj->_68 = 1;
+                        } else if (frame > 15) {
+                            obj->_68 = 4;
+                        } else {
+                            obj->_68 = 0;
+                        }
+                        obj = lbl_80371C30[task->start + bg].obj;
+                        if ((obj->_5C >> 16) < 10) {
+                            obj->_68 = 1;
+                        } else {
+                            obj->_68 = 0;
+                        }
+                        obj = lbl_80371C30[task->start + bg].obj;
+                        obj->color = 0xFFFFFF00 | (obj->color & 0xFF);
+                        break;
+                    }
+                }
+                if (j >= 4) {
+                    obj = lbl_80371C30[task->start + icon].obj;
+                    if ((obj->_5C >> 16) > 5) {
+                        obj->_68 = 4;
+                    } else {
+                        obj->_68 = 0;
+                    }
+                    obj = lbl_80371C30[task->start + bg].obj;
+                    if ((obj->_5C >> 16) != 0) {
+                        obj->_68 = 4;
+                    } else {
+                        obj->_68 = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    if (lbl_803C6028._78[lbl_803C6028._8D] != 0 && task->textIndex == 1) {
+        lbl_80371C30[task->start + 10].obj->flags |= 2;
+        lbl_80371C30[task->start + 9].obj->flags |= 2;
+        lbl_80371C30[task->start + 23].obj->flags |= 2;
+        lbl_80371C30[task->start + 10].obj->_72 = lbl_800FE924[lbl_803C6028._8C][lbl_803C6028.cursor[lbl_803C6028._8D]];
+        lbl_80371C30[task->start + 9].obj->_72 = lbl_800FE924[lbl_803C6028._8C][lbl_803C6028.cursor[lbl_803C6028._8D]];
+        lbl_80371C30[task->start + 23].obj->_72 = lbl_800FE924[lbl_803C6028._8C][lbl_803C6028.cursor[lbl_803C6028._8D]];
+        obj = lbl_80371C30[task->start + 23].obj;
+        if ((obj->_5C >> 16) < 12) {
+            obj->_68 = 1;
+        } else {
+            obj->_68 = 0;
+            lbl_80371C30[task->start + 23].obj->_5C = 12 << 16;
+        }
+    } else {
+        lbl_80371C30[task->start + 10].obj->flags &= ~2;
+        lbl_80371C30[task->start + 9].obj->flags &= ~2;
+        lbl_80371C30[task->start + 23].obj->flags &= ~2;
+        lbl_80371C30[task->start + 23].obj->_5C = 0;
+    }
+    for (i = 0; i < 4; i++) {
+        if (lbl_803C6028._78[i] != 0) {
+            lbl_803C6028._78[i]--;
+        }
+    }
     return;
+
+finish:
+    lbl_803C6028.state7E = 2;
+    fn_800B0A14_removeQueue(fn_80034CEC(task));
 }
+#endif
 
 // .text:0x8004E2EC size:0x218
 // NONMATCHING: the original addresses lbl_800FE5D4/lbl_800FE924/lbl_800FE930
