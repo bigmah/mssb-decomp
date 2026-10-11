@@ -145,6 +145,11 @@ typedef struct Emitter {
             /* 0x18 */ u8 unk18;
         } t5;
         struct {
+            /* 0x18 */ Vec* target;   // particles are pulled towards *target
+            /* 0x1C */ f32 intensity; // scales alpha; <= 0 hides the emitter
+            /* 0x20 */ s16 texIndex;
+        } attract;
+        struct {
             /* 0x18 */ Particle* sub; // second particle list (ring around the center)
             /* 0x1C */ u16 subCount;
         } tE;
@@ -503,6 +508,46 @@ typedef struct ParticleParamsF {
     /* 0x4E */ u8 b;
 } ParticleParamsF;
 
+// Particle pulled towards a target point (fn_80026E58). A different view
+// of a Particle pool entry.
+typedef struct AttractParticle {
+    /* 0x00 */ Particle* next;
+    /* 0x04 */ Vec pos;
+    /* 0x10 */ f32 t;     // fraction of the distance kept each frame
+    /* 0x14 */ f32 dt;
+    /* 0x18 */ f32 size;
+    /* 0x1C */ union {
+        u32 rgba;
+        GXColor c;
+    } color;
+    /* 0x20 */ s16 life;
+    /* 0x22 */ s16 life0;
+    /* 0x24 */ s16 delay;
+    /* 0x26 */ s16 fadeIn;
+    /* 0x28 */ s16 fadeOut;
+    /* 0x2A */ u8 alphaMax;
+    /* 0x2B */ u8 pad2B[0x60 - 0x2B];
+} AttractParticle;
+
+typedef struct ParticleParamsAttract {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s32 unk28;
+    /* 0x2C */ s32 unk2C;
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ s32 unk34;
+    /* 0x38 */ s32 unk38;
+    /* 0x3C */ s32 unk3C;
+} ParticleParamsAttract;
+
 // Queue task that flashes the stadium lights (fn_8002852C).
 typedef struct LightFlashTask {
     /* 0x00 */ u8 unk0[0x14];
@@ -543,6 +588,9 @@ void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm);
 s32 fn_800263FC(Emitter* e);
 void fn_80026998(ParticleParamsF* prm);
+s32 fn_80026E58(Emitter* e);
+void fn_80027300(Emitter* e, Vec* center, Vec* target, ParticleParamsAttract* prm, f32 radius);
+void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, f32 radius);
 void fn_8002852C(void);
 u8 fn_8002A85C(Emitter* e, Particle* p);
 u8 fn_8002AC68(Emitter* e, Particle* p);

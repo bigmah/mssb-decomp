@@ -54,6 +54,7 @@ typedef struct MtxBox {
 extern const MtxBox lbl_800E67C0; // identity
 extern const MtxBox lbl_800E682C; // identity
 extern const MtxBox lbl_800E67F0; // identity
+extern const MtxBox lbl_800E685C; // identity
 // Scratch for drawing type-4 trails.
 typedef struct TrailScratch {
     /* 0x00 */ f32 width[18];
@@ -278,6 +279,7 @@ static inline void QuadCorners(f32 width, f32 height) {
 }
 
 s32 fn_8002E3DC(Emitter* e);
+s32 fn_80026E58(Emitter* e);
 s32 fn_800263FC(Emitter* e);
 s32 fn_8002E828(Emitter* e);
 s32 fn_8002ECA0(Emitter* e);
@@ -458,9 +460,73 @@ void fn_80026998(ParticleParamsF* prm) {
 #endif
 
 // .text:0x80026E58 size:0x4A8
-void fn_80026E58(void) {
-    return;
+// NONMATCHING 66%: register allocation
+#if NONMATCHING
+s32 fn_80026E58(Emitter* e) {
+    MtxBox ident;
+    Vec tgt;
+    Vec d;
+    Vec v;
+    s32 done = 0;
+    s32 a;
+    AttractParticle* p;
+
+    ident = lbl_800E685C;
+    p = (AttractParticle*)e->particles;
+    if (e->u.attract.intensity > 0.0f) {
+        GXLoadPosMtxImm(ident.m, GX_PNMTX0);
+        GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+        LoadParticleTex(e->tex, e->u.attract.texIndex, GX_CLAMP, GX_CLAMP);
+        tgt.x = e->u.attract.target->x;
+        tgt.y = e->u.attract.target->y;
+        tgt.z = e->u.attract.target->z;
+        do {
+            if (p->delay > 0) {
+                p->delay -= (lbl_80366158._28 == 0);
+            } else if (p->life > 0) {
+                if (lbl_80366158._28 == 0) {
+                    p->t = p->t + p->dt;
+                    PSVECSubtract(&p->pos, &tgt, &d);
+                    PSVECScale(&d, p->t, &d);
+                    PSVECAdd(&tgt, &d, &p->pos);
+                }
+                PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
+                if (p->life > p->life0 - p->fadeIn) {
+                    a = (p->alphaMax * (p->life0 - p->life)) / p->fadeIn;
+                } else if (p->fadeOut != 0) {
+                    a = (p->alphaMax * p->life) / p->fadeOut;
+                } else {
+                    a = p->alphaMax;
+                }
+                if (a > p->alphaMax) {
+                    a = p->alphaMax;
+                }
+                p->color.c.a = (s32)((f32)a * e->u.attract.intensity);
+                GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+                GXPosition3f32(v.x - p->size, v.y - p->size, v.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(0.0f, 0.0f);
+                GXPosition3f32(v.x - p->size, v.y + p->size, v.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(0.0f, 1.0f);
+                GXPosition3f32(v.x + p->size, v.y + p->size, v.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(1.0f, 1.0f);
+                GXPosition3f32(v.x + p->size, v.y - p->size, v.z);
+                GXColor1u32(p->color.rgba);
+                GXTexCoord2f32(1.0f, 0.0f);
+                p->life -= (lbl_80366158._28 == 0);
+            } else {
+                done++;
+            }
+            p = (AttractParticle*)p->next;
+        } while (p != NULL);
+        GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
+    }
+    return done == e->count || 0.0f == e->u.attract.intensity;
 }
+#endif
 
 // .text:0x80027300 size:0x374
 void fn_80027300(void) {
