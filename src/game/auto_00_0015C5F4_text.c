@@ -672,8 +672,44 @@ remove:
 #endif
 
 // .text:0x0015EE2C size:0x25C mapped:0x8079DEC0
+// Scorebook open: logos, team name, column headers, then hands over to fn_3_15DB44.
 void fn_3_15EE2C(void) {
-    return;
+    ScoreBookTask* task = SB_TASK;
+    s32 team;
+    s32 i;
+
+    fn_80034E20(task, lbl_3_data_274E0);
+    SB_OBJ(task, 0x37)->_64 = lbl_3_data_F430[g_GameLogic.logo[0].captain][0];
+    SB_OBJ(task, 0x38)->_64 = lbl_3_data_F430[g_GameLogic.logo[1].captain][0];
+    SB_OBJ(task, 0x37)->_5C = g_GameLogic.logo[0].variationID << 16;
+    SB_OBJ(task, 0x38)->_5C = g_GameLogic.logo[1].variationID << 16;
+    if (g_GameLogic.scoreBook_teamDisplayed == 0) {
+        SB_OBJ(task, 0x38)->flags &= ~2;
+    } else {
+        SB_OBJ(task, 0x37)->flags &= ~2;
+    }
+    team = g_GameLogic._000 ^ g_GameLogic.scoreBook_teamDisplayed;
+    if (g_GameLogic._13E[team] != 0) {
+        fn_800363D8(task, 0x39, 1, 3, g_GameLogic.teams[team] + 4);
+    } else {
+        fn_800363D8(task, 0x39, 1, 3, g_GameLogic.teams[team]);
+    }
+    for (i = 0; i < 6; i++) {
+        fn_800363D8(task, i + 0x2B, 1, 0xF, lbl_3_data_27C40[g_GameLogic.scoreBook_batter_pitcherStatsDisplayed][i]);
+    }
+    if (g_GameLogic.scoreBook_batter_pitcherStatsDisplayed == 0) {
+        SB_OBJ(task, 0x35)->_5C = 5 << 16;
+    } else {
+        SB_OBJ(task, 0x35)->_5C = 0x33 << 16;
+    }
+    lbl_3_common_bss_32724._D2 = 0;
+    task->timer = 0;
+    task->state = 0;
+    task->team = g_GameLogic.scoreBook_teamDisplayed;
+    task->page = g_GameLogic.scoreBook_batter_pitcherStatsDisplayed;
+    task->scroll = g_GameLogic.scoreBook_scrollIndex;
+    fn_3_15D1D8(task);
+    SB_TASK->func = fn_3_15DB44;
 }
 
 // .text:0x0015F088 size:0x198 mapped:0x8079E11C
