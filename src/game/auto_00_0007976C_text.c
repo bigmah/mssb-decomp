@@ -676,6 +676,192 @@ void fn_3_7B130(void) {
                               ._2 = 0;
 }
 
+// fn_3_7B308, size:0x86C
+// Resets the box score, line score and logs at the start of a game.
+// NONMATCHING 86%: register allocation; the team-0 appearance loop and record zeroing are unrolled differently
+#if NONMATCHING
+void fn_3_7B308(void) {
+    s32 t;
+    s32 i;
+    s32 dh;
+    s32 pos;
+    BattingRecord* b;
+    PitchingRecord* p;
+    u16 stat10 = lbl_3_data_5EDC[0];
+    RosterLogEntry* e;
+
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 9; i++) {
+            b = &lbl_803537E4[t][i];
+            p = &lbl_803535C8[t][i];
+            b->played = 0;
+            b->plateAppearances = 0;
+            b->atBats = 0;
+            b->hits = 0;
+            b->singles = 0;
+            b->doubles = 0;
+            b->triples = 0;
+            b->homeRuns = 0;
+            b->_0A = 0;
+            b->_0B = 0;
+            b->_0C = 0;
+            b->strikeouts = 0;
+            b->walks = 0;
+            b->hitByPitch = 0;
+            b->rbi = 0;
+            p->battersFaced = 0;
+            b->runs = 0;
+            p->_02 = 0;
+            b->_12 = 0;
+            p->_04 = 0;
+            b->_13 = 0;
+            p->walks = 0;
+            b->_14 = 0;
+            p->hitByPitch = 0;
+            b->_15 = 0;
+            p->hitsAllowed = 0;
+            b->_16 = 0;
+            p->homeRunsAllowed = 0;
+            b->_17 = 0;
+            p->_0E = 0;
+            b->_18 = 0;
+            p->_10 = stat10;
+            b->_19[0] = 0;
+            p->played = 0;
+            b->_19[1] = 0;
+            p->wins = 0;
+            b->_19[2] = 0;
+            p->losses = 0;
+            b->_19[3] = 0;
+            p->saves = 0;
+            b->_19[4] = 0;
+            p->_16 = 0;
+            b->_19[5] = 0;
+            p->_17 = 0;
+            b->_19[6] = 0;
+            p->_18 = 0;
+            b->_19[7] = 0;
+            p->_19 = 0;
+            b->_19[8] = 0;
+            p->outsPitched = 0;
+            b->_22 = 0;
+            p->topPitchSpeed = 0;
+            b->_23 = 0;
+            p->strikeouts = 0;
+            lbl_3_common_bss_32A38[t][i]._0 = 0;
+            b->starSwingHits = 0;
+            p->starPitches = 0;
+            lbl_3_common_bss_32A38[t][i]._1 = 0;
+        }
+    }
+    for (t = 0; t < 2; t++) {
+        lbl_3_common_bss_32A94._44[t] = 1;
+        lbl_3_common_bss_32A94._48[t] = 1;
+        lbl_3_common_bss_32A94._4C[t] = 1;
+        lbl_3_common_bss_32A94._63[t] = 1;
+        lbl_3_common_bss_32A94._65[t] = 0;
+        lbl_3_common_bss_32A94._50[t]._2 = 0;
+        lbl_3_common_bss_32A94._67[t] = 0;
+        lbl_3_common_bss_32A94.mvp[t].rosterIdx = -1;
+        for (i = 1; i <= 9; i++) {
+            lbl_3_common_bss_32A94._6A[t][i - 1] = 0;
+        }
+    }
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 19; i++) {
+            lbl_80353A90.runs[t][i] = 0xFFFF;
+            lbl_80353A90.hits[t][i] = 0;
+        }
+        lbl_80353A90.errors[t] = 0;
+        lbl_80353A90.mvp[t] = -1;
+    }
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 10; i++) {
+            lbl_80353A90.pitcherLog[t][i].pitcher = -1;
+            lbl_80353A90.pitcherLog[t][i].inning = 0;
+        }
+        for (i = 0; i < 5; i++) {
+            lbl_80353A90._0E6[t][i] = -1;
+        }
+    }
+    for (i = 0; i < 30; i++) {
+        lbl_80353A90.homeRunLog[i] = -1;
+    }
+    lbl_80353A90.winningPitcher = -1;
+    lbl_80353A90.losingPitcher = -1;
+    lbl_80353A90.savePitcher = -1;
+    lbl_80353A90.innings = 0;
+    lbl_80353A90._0F7 = 0;
+    lbl_80353A90._0F8[0] = -1;
+    lbl_80353A90._0F8[1] = -1;
+    lbl_80353A90._0FA = -1;
+    lbl_80353A90._0FB = -1;
+    lbl_80353A90._0FC = -1;
+    lbl_80353A90._0FD = -1;
+    lbl_80353A90._0FE = -1;
+    lbl_80353A90._0FF = -1;
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 100; i++) {
+            lbl_803532A8[t][i].inning = 0;
+            lbl_803532A8[t][i].batter = 0;
+            lbl_803532A8[t][i].batterSlot = -1;
+            lbl_803532A8[t][i].result = 0;
+            lbl_803532A8[t][i].detail = 0;
+            lbl_803532A8[t][i].rbi = 0;
+        }
+    }
+    for (t = 0; t < 2; t++) {
+        for (i = 0, e = lbl_80353260[t]; i < 9; i++, e++) {
+            e->_2 = 0;
+            e->inning = 0;
+            e->position = 0xA;
+            e->_3 = 0;
+            e->team = 9;
+            e->order = 0;
+        }
+    }
+    // NOTE: the original marks team 0's records for both passes.
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 9; i++) {
+            if ((s32)lbl_80354720[0][i]._3 == 1) {
+                lbl_803537E4[0][i].played = 1;
+            }
+        }
+    }
+    lbl_3_common_bss_32A94._50[0].pitcher = g_GameLogic.battingOrderAndPositionMapping[0][0][0];
+    lbl_3_common_bss_32A94._50[1].pitcher = g_GameLogic.battingOrderAndPositionMapping[1][0][0];
+    lbl_803535C8[g_GameLogic.teamFielding][g_GameLogic.battingOrderAndPositionMapping[g_Scores._AD ^ 1][0][0]].played = 1;
+    lbl_803535C8[g_GameLogic.teamBatting][g_GameLogic.battingOrderAndPositionMapping[g_Scores._AD][0][0]].played = 1;
+    for (t = 0; t < 2; t++) {
+        dh = 0;
+        for (i = 0; i < 9; i++) {
+            pos = g_GameLogic.battingOrderAndPositionMapping[t][i + 1][1];
+            e = &lbl_80353260[t ^ g_GameLogic.homeTeamInd]
+                                       [g_GameLogic.battingOrderAndPositionMapping[t][i + 1][0]];
+            e->_2 = 1;
+            e->inning = 1;
+            e->position = pos;
+            e->_3 = 1;
+            e->team = t;
+            e->order = i + 1;
+            if (pos == 9) {
+                dh = 1;
+            }
+        }
+        if (dh != 0) {
+            e = &lbl_80353260[t ^ g_GameLogic.homeTeamInd][g_GameLogic.battingOrderAndPositionMapping[t][0][0]];
+            e->_2 = 1;
+            e->inning = 1;
+            e->position = 0;
+            e->_3 = 1;
+            e->team = 9;
+            e->order = 10;
+        }
+    }
+    lbl_3_common_bss_32A94._62 = 0;
+    lbl_3_common_bss_32A94._61 = 0;
+}
+#endif
 
 // fn_3_7BB74, size:0x4C
 BattingRecord* fn_3_7BB74(void) {
