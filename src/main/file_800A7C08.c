@@ -1288,7 +1288,28 @@ void fn_800AAA70(void) {
 
 // .text:0x800AAEE4 size:0x108
 void fn_800AAEE4(CardRequest* req, u64 serial) {
-    return;
+    CardWriteTask* task;
+    u8 permissions;
+
+    if (req->length % CARD_READ_SIZE != 0) {
+        OSPanic(lbl_803CCEE0, 0x822, lbl_800E7A38);
+    }
+    lbl_803C7838.op = 1;
+    task = fn_800B0A5C_insertQueue(fn_800AAFEC, 0xFF);
+    task->chan = req->chan;
+    task->mode = req->mode;
+    task->buffer = req->buffer;
+    task->length = req->length;
+    permissions = req->permissions;
+    if (permissions == 0) {
+        permissions = CARD_ATTR_PUBLIC;
+    }
+    task->permissions = permissions;
+    lbl_802EF2C0[task->chan] = serial;
+    lbl_803CC15C = req->verify;
+    lbl_803CC158 = req->verifyArg;
+    lbl_803CC160 = req->flags;
+    lbl_803CC1B8->result = 0;
 }
 
 // .text:0x800AAFEC size:0x488
