@@ -361,7 +361,7 @@ typedef struct _InMemBallType {
     /*0x1B2C*/ VecXYZ diveCatchLocationOffset;
     /*0x1B38*/ VecXYZ fielderActionCatchCoords;
     /*0x1B44*/ s32 collisionCode;
-    /*0x1B48*/ f32 maybeCollisionRelated;
+    /*0x1B48*/ s32 maybeCollisionRelated; // previous frame's collisionCode
     /*0x1B4C*/ s32 StaticRandomInt1;
     /*0x1B50*/ s32 StaticRandomInt2;
     /*0x1B54*/ u32 StaticRandomInt1_prePitch;
