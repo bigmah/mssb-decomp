@@ -4,6 +4,7 @@
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_3_data_D258[];
+extern u8 lbl_3_data_C22C[];
 extern u8 lbl_3_data_D378[];
 extern u8 lbl_3_data_D4F8[];
 extern void playSoundEffect(int);
@@ -185,6 +186,34 @@ void fn_3_9C014(void) {
 
 // .text:0x0009C28C size:0x2EC mapped:0x806DB320
 void fn_3_9C28C(void) {
-    return;
+    HudTask* task = HUD_TASK;
+    s32 i;
+    fn_80034E20(task, lbl_3_data_C22C);
+    task->_22 = 0;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        task->_22 = 1;
+        for (i = 0; i < 8; i++) {
+            HUD_OBJ(task, i)->y = -30.0f;
+        }
+    } else if (g_d_GameSettings.GameModeSelected == 2 && g_Practice.practiceLevel != 7 && g_Practice.practiceLevel != 6) {
+        task->_22 = 1;
+    }
+    if (task->_22 != 0) {
+        for (i = 1; i < 6; i++) {
+            HUD_OBJ(task, i)->_64 = 0x104;
+        }
+        HUD_OBJ(task, 0)->_64 = 0x103;
+        HUD_OBJ(task, 6)->flags &= ~2;
+        HUD_OBJ(task, 7)->flags &= ~2;
+    }
+    task->_20 = 9;
+    task->_1E = 9;
+    task->state = 9;
+    for (i = 1; i < 8; i++) {
+        HUD_OBJ(task, i)->_5C = (i - 1) << 16;
+    }
+    fn_3_9BEE0(task);
+    task->timer = 0;
+    HUD_TASK->func = fn_3_9C014;
 }
 
