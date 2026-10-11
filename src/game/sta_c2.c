@@ -44,6 +44,12 @@ extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
 extern f32 lbl_3_rodata_27F8;
 extern f64 acos(f64);
+extern const f32 lbl_3_rodata_2750;
+extern const f32 lbl_3_rodata_2754;
+extern const f32 lbl_3_rodata_2758;
+extern const f32 lbl_3_rodata_275C;
+extern const f32 lbl_3_rodata_2760;
+extern const f64 lbl_3_rodata_2768;
 extern const Vec lbl_3_rodata_24A0[];
 extern s32 lbl_3_bss_ADD0[];
 extern const f32 lbl_3_rodata_2730;
@@ -930,9 +936,65 @@ s32 fn_3_CEFA8(u8* h) {
 }
 
 // .text:0x000CF278 size:0x4B4 mapped:0x8070E30C
-void fn_3_CF278(void) {
-    return;
+// NONMATCHING 97%: f30/f31 swapped between the angle and cos/sin temp; pos->y load scheduled later
+#if NONMATCHING
+// Seeds p's splash emitter (p+0xA0): 10 drops spraying from pos, then a ring of
+// drops around p's spot in lbl_3_data_18730 that start 15 frames later.
+void fn_3_CF278(u8* p, Vec* pos) {
+    u8* h = *(u8**)(p + 0xA0);
+    PEnt* e = *(PEnt**)(h + 0xC);
+    u32 k;
+    u32 i;
+    f32 c;
+    f32 a;
+    i = 0;
+    k = 0;
+    *(s32*)(h + 0x10) = lbl_3_bss_ADD0[0];
+    *(s32*)(h + 0x18) = 100;
+    *(u8**)(h + 0x20) = p;
+    for (; e != NULL; e = e->next) {
+        if (i < 10) {
+            e->f38 = e->f3C = lbl_3_rodata_2750;
+            a = lbl_3_rodata_2658[0] * (f32)(rand() % 360);
+            e->f10 = lbl_3_rodata_26D0 * (f32)cos(a);
+            e->f18 = lbl_3_rodata_26D0 * (f32)sin(a);
+            e->f14 = lbl_3_rodata_2754;
+            e->f4 = pos->x + (f32)(rand() % 200 - 100) / lbl_3_rodata_2758;
+            e->f8 = -pos->y;
+            e->fC = pos->z + (f32)(rand() % 200 - 100) / lbl_3_rodata_2758;
+            e->s48 = 0;
+            e->c42 = 0xFF;
+            e->c41 = 0xFF;
+            e->c40 = 0xFF;
+            e->c43 = 0;
+            e->c4F = 0;
+            e->s4A = 30;
+        } else {
+            e->f38 = e->f3C = lbl_3_rodata_2750;
+            a = lbl_3_rodata_2658[0] * (lbl_3_rodata_275C * k + (f32)(rand() % 33) - lbl_3_rodata_2760);
+            e->f10 = lbl_3_rodata_2768 * (f32)cos(a);
+            e->f18 = lbl_3_rodata_2768 * (f32)sin(a);
+            e->f14 = lbl_3_rodata_2754;
+            c = cos(a);
+            e->f4 = lbl_3_data_18730[p[0x9C]].x + (f32)(lbl_3_rodata_2770 * c + (f32)(rand() % 100 - 50) / lbl_3_rodata_2758);
+            e->f8 = -lbl_3_data_18730[p[0x9C]].y;
+            c = sin(a);
+            e->fC = lbl_3_data_18730[p[0x9C]].z + (f32)(lbl_3_rodata_2770 * c + (f32)(rand() % 100 - 50) / lbl_3_rodata_2758);
+            e->s48 = 15;
+            e->c42 = 0xFF;
+            e->c41 = 0xFF;
+            e->c40 = 0xFF;
+            e->c43 = 0;
+            e->c4F = 1;
+            e->s4A = 45;
+            k++;
+        }
+        e->c4D = 9;
+        i++;
+        e->c4E = 0;
+    }
 }
+#endif
 
 // .text:0x000CF72C size:0x200 mapped:0x8070E7C0
 void fn_3_CF72C(s32 idx) {
@@ -959,7 +1021,7 @@ void fn_3_CF72C(s32 idx) {
             a.y = *(f32*)(g_Ball + 4);
             a.z = *(f32*)(g_Ball + 8);
             b = a;
-            ((void (*)(void*, Vec*))fn_3_CF278)(p, &b);
+            fn_3_CF278(p, &b);
         }
         *(u8**)(p + 0x8C) = lbl_3_bss_A034 + p[0x9C] * 0x5C;
         fn_80025EEC(*(s32*)(p + 0x8C), 0, 0);
@@ -2315,7 +2377,7 @@ void fn_3_D5B6C(s32* a) {
 typedef struct { u8 pad[0xC]; u8 fC; u8 padD; u8 fE; u8 padF; } D5C8CEnt;
 typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } D5C8CCtl;
 typedef struct { D5C8CCtl* arr; u8 pad0[0x3C - 4]; u32* p3C; u16* p40; u32* p44; u8* p48; } D5C8CBss;
-extern f32 lbl_3_rodata_2758;
+extern const f32 lbl_3_rodata_2758;
 extern u8 lbl_3_bss_A022;
 extern u8 lbl_3_bss_A023;
 extern void fn_3_B8574(void);

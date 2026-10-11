@@ -55,7 +55,7 @@ void fn_3_CED3C(void);
 void fn_3_CED40(u8* p, s32 a);
 void fn_3_CEE5C(u8* p, s32 a);
 s32 fn_3_CEFA8(u8* h);
-void fn_3_CF278(void);
+void fn_3_CF278(u8* p, Vec* pos);
 void fn_3_CF72C(s32 idx);
 void fn_3_CF92C(void);
 void fn_3_CF930(u8* p);
