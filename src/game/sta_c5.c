@@ -130,6 +130,30 @@ struct StadCtlA {
 };
 typedef struct StadCtlA StadCtlA;
 extern Vec lbl_3_bss_B260[]; /* bezier control points */
+/* View of this file's pooled .bss starting at lbl_3_bss_AEE0. */
+typedef struct StaC5Work {
+    u8 pad0[0x20];
+    f32 wobVel; /* 0x20 */
+    f32 wob;    /* 0x24 */
+    f32 wobAmp; /* 0x28 */
+    Vec wind;   /* 0x2C */
+} StaC5Work;
+/* View of this file's pooled .data starting at lbl_3_data_1B820. */
+typedef struct StaC5Data {
+    u8 pad0[0x24D];
+    u8 windReset;  /* 0x24D */
+    u8 wobReset;   /* 0x24E */
+    u8 pad24F;
+    Vec windPos;   /* 0x250 */
+    Vec windVel;   /* 0x25C */
+} StaC5Data;
+extern const f32 lbl_3_rodata_2D60;
+extern const f32 lbl_3_rodata_2D64;
+extern const f32 lbl_3_rodata_2D6C;
+extern const f64 lbl_3_rodata_2D78;
+extern const f64 lbl_3_rodata_2D80;
+extern const f64 lbl_3_rodata_2D88;
+extern const f64 lbl_3_rodata_2D90;
 
 void fn_3_EDFAC(void) {
     u8* st = lbl_3_bss_AEE0;
@@ -227,9 +251,55 @@ void fn_3_EE100(u8* obj, f32 (*mtx)[4]) {
 }
 
 // .text:0x000EE388 size:0x2F4 mapped:0x8072D41C
+// NONMATCHING 86%: original reaches windVel.y/windPos.y/wind.z through a second addi'd pointer reg (separate static Vecs); float reg order differs
+#if NONMATCHING
 void fn_3_EE388(void) {
-    return;
+    StaC5Data* d = (StaC5Data*)lbl_3_data_1B820;
+    StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
+    f32 ang;
+    f32 mag;
+    f32 a;
+    f32 amp;
+    if (d->windReset != 0) {
+        rand();
+        ang = lbl_3_rodata_2D60 * ((f32)rand() / lbl_3_rodata_2D64);
+        w->wind.x = lbl_3_rodata_2D68 * (f32)cos(ang);
+        w->wind.y = lbl_3_rodata_2D68 * (f32)sin(ang);
+        w->wind.z = lbl_3_rodata_2D5C;
+        PSVECSubtract(&w->wind, &d->windPos, &d->windVel);
+        if (PSVECMag(&d->windVel) != lbl_3_rodata_2D5C) {
+            PSVECNormalize(&d->windVel, &d->windVel);
+        }
+        PSVECScale(&d->windVel, lbl_3_rodata_2D6C, &d->windVel);
+        d->windReset = 0;
+    }
+    PSVECAdd(&d->windPos, &d->windVel, &d->windPos);
+    mag = PSVECMag(&w->wind);
+    if (PSVECMag(&d->windPos) > mag) {
+        d->windVel.x *= lbl_3_rodata_2D70;
+        d->windVel.y *= lbl_3_rodata_2D70;
+        PSVECScale(&w->wind, lbl_3_rodata_2D74, &w->wind);
+    } else if (PSVECDotProduct(&d->windPos, &w->wind) <= lbl_3_rodata_2D5C) {
+        d->windPos.y = lbl_3_rodata_2D5C;
+        d->windPos.x = lbl_3_rodata_2D5C;
+        d->windReset = 1;
+    }
+    if (d->wobReset != 0) {
+        a = (f32)rand() / lbl_3_rodata_2D64;
+        d->wobReset = 0;
+        w->wob = lbl_3_rodata_2D5C;
+        amp = lbl_3_rodata_2D78 * (lbl_3_rodata_2D80 * (a - lbl_3_rodata_2D88));
+        w->wobAmp = amp;
+        w->wobVel = lbl_3_rodata_2D90 * (__fabs(amp) / amp);
+    }
+    w->wob += w->wobVel;
+    if (__fabs(w->wob) >= __fabs(w->wobAmp)) {
+        w->wobVel *= lbl_3_rodata_2D70;
+    } else if ((s32)(__fabs(w->wob) / w->wob) != (s32)(__fabs(w->wobAmp) / w->wobAmp)) {
+        d->wobReset = 1;
+    }
 }
+#endif
 
 // .text:0x000EE67C size:0x2F0 mapped:0x8072D710
 void fn_3_EE67C(u8* a, f32 (*m)[4]) {
