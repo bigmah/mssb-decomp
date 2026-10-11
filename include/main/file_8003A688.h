@@ -197,6 +197,7 @@ void fn_8003AC90(void);
 void fn_8003AD84(TexArchive* arc);
 void fn_8003F23C(void);
 void fn_8003F2B8(void);
+void fn_8003AECC(void);
 void fn_8003B5B0(void);
 void fn_8003BB90(void);
 void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
