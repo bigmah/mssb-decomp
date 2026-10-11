@@ -13,12 +13,27 @@ typedef struct CharSelectState {
     /*0x46F8*/ u8 ports[2];
     /*0x46FA*/ u8 _46FA[0x4709 - 0x46FA];
     /*0x4709*/ s8 captainSlot[2]; // roster slot of the captain per team
-    /*0x470B*/ u8 _470B[0x48AE - 0x470B];
+    /*0x470B*/ u8 _470B[0x470F - 0x470B];
+    /*0x470F*/ s8 teamRating[2]; // 0-5, from the average of fn_800670A0
+    /*0x4711*/ u8 _4711[0x4757 - 0x4711];
+    /*0x4757*/ u8 charFlag[0x36]; // per character id
+    /*0x478D*/ u8 _478D[0x48AE - 0x478D];
     /*0x48AE*/ u8 _48AE;
     /*0x48AF*/ u8 _48AF[0x4C28 - 0x48AF];
 } CharSelectState; // size: 0x4C28
 
 extern CharSelectState lbl_8034E9A0;
+
+// Team roster selection at 0x803C6724 (size 0x5C).
+typedef struct TeamSelect {
+    /*0x00*/ u8 _00[2];
+    /*0x02*/ s8 charIds[2][9];
+    /*0x14*/ u8 _14[0x26 - 0x14];
+    /*0x26*/ u8 rating[2][9];
+    /*0x38*/ u8 _38[0x5C - 0x38];
+} TeamSelect; // size: 0x5C
+
+extern TeamSelect lbl_803C6724;
 
 // Particle/effect emitter description passed to fn_8002B7F8 (template at lbl_80108D48).
 typedef struct EffectDesc {
@@ -57,5 +72,6 @@ BOOL fn_8006862C(u32 frames, u8 target);
 BOOL fn_800697B0(void);
 void fn_80069854(void);
 s32 fn_800698F8(s32 charId);
+void fn_800670A0(u8 team);
 
 #endif

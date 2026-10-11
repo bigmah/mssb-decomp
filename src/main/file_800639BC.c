@@ -218,8 +218,34 @@ void fn_80066EAC(void) {
 }
 
 // .text:0x800670A0 size:0x15C
-void fn_800670A0(void) {
-    return;
+void fn_800670A0(u8 team) {
+    s32 i;
+    s32 sum = 0;
+    s32 avg = 0;
+    s32 count = 0;
+    s8 rating = 0;
+
+    for (i = 0; i < 9; i++) {
+        if (lbl_803C6724.rating[team][i] != 0 && lbl_803C6724.charIds[team][i] != lbl_8034E9A0.captain[team]) {
+            sum += lbl_803C6724.rating[team][i];
+            count++;
+        }
+    }
+    if (count != 0) {
+        avg = sum / count;
+    }
+    if (avg >= 70) {
+        rating = 5;
+    } else if (avg <= 69 && avg >= 55) {
+        rating = 4;
+    } else if (avg <= 54 && avg >= 35) {
+        rating = 3;
+    } else if (avg <= 34 && avg >= 15) {
+        rating = 2;
+    } else if (avg <= 14 && avg > 0) {
+        rating = 1;
+    }
+    lbl_8034E9A0.teamRating[team] = rating;
 }
 
 // .text:0x800671FC size:0x68
