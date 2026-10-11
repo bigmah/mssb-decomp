@@ -88,7 +88,7 @@ void fn_2_646FC(void);
 void fn_2_648CC(void);
 void fn_2_64C50(void);
 void fn_2_64E20(void);
-void fn_2_650A4(void);
+void fn_2_650A4(MenuTask* task, MenuItem* item);
 void fn_2_65258(void);
 void fn_2_653D4(void);
 void fn_2_65648(void);
