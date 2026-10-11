@@ -1956,7 +1956,7 @@ typedef struct MnObj {
     /*0x00*/ u8 _00[0x54];
     /*0x54*/ u32 flags;
     /*0x58*/ u32 color;
-    /*0x5C*/ s32 frame; // 16.16 fixed
+    /*0x5C*/ u32 frame; // 16.16 fixed
     /*0x60*/ u8 _60[4];
     /*0x64*/ s16 anim;
     /*0x66*/ u8 _66[2];
@@ -2248,5 +2248,70 @@ void fn_2_7630C(u8* o, u8 index) {
     MN_OBJ2(o, team, 0x8B)->state = 4;
     MN_OBJ2(o, team, 0x78)->state = 1;
     MN_OBJ2(o, team, 0x7C)->state = 1;
+}
+#endif
+
+// lbl_2_bss_F468: field-position selection per team ([0]: new, [8]: current position).
+#define F468_S32(off) (*(s32*)(lbl_2_bss_F468 + (off)))
+
+// fn_2_7F2BC, size:0x458
+// NONMATCHING 80%: slot offsets folded into load displacements, register allocation differs
+#if NONMATCHING
+void fn_2_7F2BC(u8* o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    if ((*(e += 0xD) == 0) ? 1 : 0) {
+        s32 cur = F468_S32(8 + index * 4);
+        s32 sel = F468_S32(index * 4);
+        s32 fs;
+        s32 fc;
+        s32 j;
+        for (j = 0; j < 9; j++) {
+            s8 t = lbl_803C6724[index * 9 + j + 0x14];
+            if (t == sel) {
+                fs = j;
+            }
+            if (t == cur) {
+                fc = j;
+            }
+        }
+        if (sel != 9 && sel != 10) {
+            if ((s8)(lbl_803C6724 + index * 9)[fs + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[fs + 2] != 0x36) {
+                MN_OBJ2(o, sel + index * 9, 0x34)->frame = 0;
+                MN_OBJ2(o, sel + index * 9, 0x34)->state = 1;
+            }
+            MN_OBJ2(o, sel + index * 9, 0x46)->frame = 0;
+            MN_OBJ2(o, sel + index * 9, 0x46)->state = 1;
+            MN_OBJ2(o, sel + index * 9, 0x22)->flags |= 2;
+        }
+        if (cur != 9 && cur != 10) {
+            if (F468_S32(8 + index * 4) != F468_S32(index * 4)) {
+                MN_OBJ2(o, cur + index * 9, 0x46)->frame = 0xF0000;
+                MN_OBJ2(o, cur + index * 9, 0x46)->state = 4;
+                if (*(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) == (s8)(lbl_803C6724 + index * 9)[fc + 2]) {
+                    MN_OBJ2(o, cur + index * 9, 0x34)->state = 1;
+                } else {
+                    MN_OBJ2(o, cur + index * 9, 0x34)->state = 4;
+                }
+            }
+            MN_OBJ2(o, cur + index * 9, 0x22)->flags &= ~2;
+        }
+        fn_2_75BE4(o, index);
+        fn_2_74F40(o, index);
+        if ((MN_OBJ2(o, index, 0x93)->frame >> 16) == 10 &&
+            *(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) != (s8)(lbl_803C6724 + index * 9)[fc + 2]) {
+            MN_OBJ2(o, index, 0x93)->frame = 0xA0000;
+            MN_OBJ2(o, index, 0x93)->state = 4;
+            MN_OBJ2(o, index, 0x95)->frame = 0xA0000;
+            MN_OBJ2(o, index, 0x95)->state = 4;
+        } else if ((MN_OBJ2(o, index, 0x8F)->frame >> 16) == 10 && sel == 10) {
+            MN_OBJ2(o, index, 0x91)->frame = 0xA0000;
+            MN_OBJ2(o, index, 0x91)->state = 4;
+        }
+        if (sel == cur) {
+            MN_OBJ2(o, sel + index * 9, 0x34)->state = 4;
+        }
+        fn_800626EC(index);
+        *e = 1;
+    }
 }
 #endif
