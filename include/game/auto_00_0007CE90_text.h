@@ -26,6 +26,23 @@ typedef struct RunningLogicView {
     /*0x13*/ u8 _13[0x20 - 0x13];
 } RunningLogicView; // size: 0x20
 
+// lbl_8036E548 (character actor manager), only the fields used here.
+typedef struct ReplayActorView {
+    /*0x00*/ u8 _00[0x68];
+    /*0x68*/ s16 _68;
+} ReplayActorView;
+
+typedef struct ReplayActorMgrView {
+    /*0x0000*/ u8 _0000[0x2C50];
+    /*0x2C50*/ ReplayActorView* active[13];
+} ReplayActorMgrView;
+
+// lbl_8037169C (scene fade, SceneFade in main/file_8001FE00.h), only the fields used here.
+typedef struct ReplayFadeView {
+    /*0x00*/ u8 _00[0x13];
+    /*0x13*/ u8 done;
+} ReplayFadeView;
+
 void fn_3_7CE90(void);
 void fn_3_7CF88(void);
 void fn_3_7D2E0(void);
