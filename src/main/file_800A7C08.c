@@ -704,7 +704,18 @@ extern PadState lbl_803C77B8[PAD_MAX_CONTROLLERS];
 
 // .text:0x800A94C4 size:0x5C
 void fn_800A94C4(void) {
-    return;
+    u32 mask = 0;
+    PadState* pad = lbl_803C77B8;
+    s32 i = 0;
+
+    do {
+        if (pad->err == PAD_ERR_NONE) {
+            mask |= PAD_CHAN0_BIT >> i;
+        }
+        i++;
+        pad++;
+    } while (i < PAD_MAX_CONTROLLERS);
+    PADRecalibrate(mask);
 }
 
 // .text:0x800A9520 size:0x2B0
