@@ -70,8 +70,22 @@ void fn_800B34B4(void) {
 }
 
 // .text:0x800B37A4 size:0x2D4
-void f_BuildBoneSkinOrientationMatrix(void) {
-    return;
+void f_BuildBoneSkinOrientationMatrix(GameBone* bone, Mtx parent) {
+    Mtx local;
+    Mtx accum;
+
+    for (; bone != NULL; bone = (GameBone*)bone->branch.Next) {
+        if (bone->inheritanceFlag == 1) {
+            CTRLBuildMatrix(&bone->orientationCtrl.base, local);
+            PSMTXConcat(parent, local, accum);
+            PSMTXInverse(accum, bone->orientationInvMtx);
+        } else {
+            CTRLBuildInverseMatrix(&bone->orientationCtrl.base, bone->orientationInvMtx);
+        }
+        if (bone->branch.Children != NULL) {
+            f_BuildBoneSkinOrientationMatrix((GameBone*)bone->branch.Children, accum);
+        }
+    }
 }
 
 // .text:0x800B3A78 size:0x18C
