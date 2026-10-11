@@ -3540,7 +3540,7 @@ void fn_3_4B128(int i) {
 #endif
 
 // .text:0x0004B514 size:0x3BC mapped:0x8068A5A8
-// NONMATCHING 96.5%: table load is lfs+add instead of lfsx; f30/f31 swapped for the offset/dx
+// NONMATCHING 98.2%: 0.0f load scheduled before the table load; f30/f31 swapped for the offset/dx
 #if NONMATCHING
 // Fielder i backs up: runs to its preset spot (lbl_3_data_44B4) or 20 units behind itself.
 void fn_3_4B514(int i) {
@@ -3551,8 +3551,8 @@ void fn_3_4B514(int i) {
     }
     if (f[0x1D4] >= 2) {
         f32 dz, dx, d, ox, oz;
-        ox = ((VecXZ*)lbl_3_data_44B4)[f[0x1D4]].x;
-        oz = ((VecXZ*)lbl_3_data_44B4)[f[0x1D4]].z;
+        ox = *(f32*)(lbl_3_data_44B4 + f[0x1D4] * 8);
+        oz = ((f32*)(lbl_3_data_44B4 + 4))[f[0x1D4] * 2];
         *(f32*)(f + 0x14) = ox;
         *(f32*)(f + 0x1C) = oz;
         dx = ox - *(f32*)f;
