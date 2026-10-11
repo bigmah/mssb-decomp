@@ -125,7 +125,20 @@ s16 fn_800E0904(HVQTree* tree, HVQBitBuf* buf) {
 
 // .text:0x800E0CC8 size:0x98
 s16 fn_800E0CC8(HVQBitBufTree* buf) {
-    return 0;
+    HVQTree* tree = buf->tree;
+    s16 pos = tree->root;
+
+    u8 bit;
+
+    while (pos >= 0x100) {
+        HVQ_READBIT(&buf->buf, bit);
+        if (bit) {
+            pos = tree->node[1][pos];
+        } else {
+            pos = tree->node[0][pos];
+        }
+    }
+    return tree->node[0][pos];
 }
 
 // .text:0x800E0D60 size:0x354
