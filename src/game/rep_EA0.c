@@ -197,9 +197,62 @@ void fn_3_678B8(void) {
 #endif
 
 // .text:0x00067A48 size:0x1EC mapped:0x806A6ADC
+// NONMATCHING 97%: the original addresses the queue as its own pooled static (addi base+0x1430, then +8);
+// ours folds the field offset
+#if NONMATCHING
 void fn_3_67A48(void) {
-    return;
+    RepTrailWork* w = &lbl_3_bss_200;
+    Vec pos;
+    Vec last;
+    s32 push;
+    TrailTask* task;
+
+    if (w->alpha > 0.0f) {
+        if (lbl_80366158._28 == 0) {
+            push = 1;
+            if (g_Ball.fielderActionOccuring) {
+                pos.x = g_Ball.fielderActionCatchCoords.x;
+                pos.y = -g_Ball.fielderActionCatchCoords.y;
+                pos.z = g_Ball.fielderActionCatchCoords.z;
+            } else {
+                pos.x = g_Ball.AtBat_Contact_BallPos.x;
+                pos.y = -g_Ball.AtBat_Contact_BallPos.y;
+                pos.z = g_Ball.AtBat_Contact_BallPos.z;
+            }
+            if (w->queue.count != 0) {
+                fn_80023D4C(&w->queue, &last);
+                if (memcmp(&pos, &last, sizeof(Vec)) == 0) {
+                    push = 0;
+                }
+            }
+            if (push) {
+                fn_80023E48(&w->queue, &pos);
+            }
+        }
+        if (w->queue.count >= 2) {
+            task = fn_800B0A5C_insertQueue(fn_3_678B8, 1000);
+            if (w->type == 6 || w->type == 7) {
+                task->dir = &task->dirBuf;
+                task->dirBuf.x = 1.0f;
+                task->dirBuf.y = 0.0f;
+                task->dirBuf.z = 0.0f;
+            } else {
+                task->dir = NULL;
+            }
+            fn_800A7D4C(0, &lbl_3_data_69A0[lbl_803CBBC0]);
+            if (lbl_80366158._28 == 0) {
+                if (w->delay != 0) {
+                    w->delay -= (w->delay > 0);
+                } else if (--w->fadeFrames != 0) {
+                    w->alpha -= w->alphaStep;
+                } else {
+                    w->alpha = 0.0f;
+                }
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x00067C34 size:0x2BC mapped:0x806A6CC8
 void fn_3_67C34(TrailNode* node) {
