@@ -144,6 +144,8 @@ extern u8 lbl_2_data_3CD0[];
 extern u8 lbl_800E869C[];
 extern void fn_2_8D270(u8 a);
 
+// NONMATCHING 95%: lis of lbl_800E869C scheduled before the lbl_2_bss_1A824C load in case 2
+#if NONMATCHING
 // fn_2_8D9DC, size:0x138
 void fn_2_8D9DC(s32 mode) {
     s32 i;
@@ -166,11 +168,14 @@ void fn_2_8D9DC(s32 mode) {
         fn_2_8D270(i);
     }
 }
+#endif
 
 extern void LoadActorLayout(void* a);
 extern void convertGeometryAndSknHeader(void* a, s32 b);
 extern void* ActorObjectInitTable(u16 n);
 
+// NONMATCHING 96%: original copies i into off (mr r30,r29) and swaps r3/r4 in the pointer table setup
+#if NONMATCHING
 // fn_2_8B2C0, size:0x158
 void fn_2_8B2C0(void) {
     s32 off;
@@ -203,6 +208,7 @@ void fn_2_8B2C0(void) {
         off += 0xC;
     } while (i < 4);
 }
+#endif
 
 // fn_2_8B158, size:0x168
 void fn_2_8B158(void) {
@@ -283,6 +289,8 @@ extern void fn_2_8C910(void);
 extern void fn_2_8B418(void);
 extern void fn_80052D70(void);
 
+// NONMATCHING 97%: li r6,1 scheduled before the lbl_2_bss_1A824C load in state 6
+#if NONMATCHING
 // fn_2_8E478, size:0x22C
 void fn_2_8E478(void) {
     u8* o = lbl_803CC1B8;
@@ -323,6 +331,7 @@ void fn_2_8E478(void) {
         break;
     }
 }
+#endif
 
 extern void* memcpy(void* d, const void* s, u32 n);
 extern f32 fn_2_4A1E8(f32 x, f32 y);
