@@ -416,8 +416,14 @@ void fn_80023B90(StadiumLight* light, StadiumLightPos* out) {
 }
 
 // .text:0x80023CF4 size:0x48
-void fn_80023CF4(void) {
-    return;
+void fn_80023CF4(u32 progressive) {
+    if (progressive) {
+        OSSetProgressiveMode(1);
+        fn_800A7E00();
+    } else {
+        OSSetProgressiveMode(0);
+    }
+    lbl_803CBC60 = progressive;
 }
 
 // fn_80023EEC, size:0x20

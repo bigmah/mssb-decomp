@@ -214,6 +214,7 @@ void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, u32 a
 ActorSlotTable* fn_80023AA4(void);
 void fn_80023B04(s32 count);
 void fn_80023B90(StadiumLight* light, StadiumLightPos* out);
+void fn_80023CF4(u32 progressive);
 
 void fn_80023EEC(VecQueue* queue, Vec* entries, s32 capacity);
 
