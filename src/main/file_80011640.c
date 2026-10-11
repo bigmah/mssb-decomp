@@ -214,6 +214,15 @@ extern s32 fn_80024C6C(CharActor* actor, s32 which);
 extern void fn_800B2C88(void* bone, Mtx m);
 extern void fn_800BEA04(Vec* pos);
 extern void fn_800BD8C4(CharSlotList* list, MtxPtr view);
+extern CharDrawCallback lbl_803CB7AC[2];
+extern u8 lbl_803CBBC0;
+extern void fn_80052694(s32 cam);
+extern void fn_8003414C(MtxPtr view);
+extern void minigamesGXStuff(void);
+extern void fn_800BDA94(CharSlot* slot, MtxPtr view);
+extern void fn_800BD670(CharSlotList* list, MtxPtr view);
+extern void LITInitDir(void* light, f32 x, f32 y, f32 z);
+extern void LITXForm(void* light, MtxPtr view);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -4601,9 +4610,125 @@ void fn_8001E488(void) {
 #endif
 
 // .text:0x8001E784 size:0x9E8
-void fn_8001E784(void) {
-    return;
+static inline void drawTrailObjects(void) {
+    s32 i;
+    CharSlot* slot;
+
+    if (lbl_8036E548._3078 != 0) {
+        GXSetZMode(GX_ENABLE, GX_LEQUAL, GX_ENABLE);
+        GXSetCullMode(GX_CULL_BACK);
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+        for (i = 0; i < lbl_8036E548.slots68->count; i++) {
+            slot = &lbl_8036E548.slots68->slots[i];
+            if (slot->model != NULL && slot->_6C != 0) {
+                if (lbl_8036E548.trail2[i].draw != NULL) {
+                    lbl_8036E548.trail2[i].draw();
+                }
+                fn_800BDA94(slot, fn_80052734(0)->view);
+            }
+        }
+    }
 }
+
+static inline void drawMinigameLayer(void) {
+    fn_8003414C(fn_80052734(fn_8005268C())->view);
+    minigamesGXStuff();
+}
+
+// NONMATCHING 64%: the original inlines fn_8001E488 (not compiled in the matching build since it is NONMATCHING); otherwise register allocation
+#if NONMATCHING
+void fn_8001E784(void) {
+    LightPos* lp;
+    StadiumLights* st;
+    GXColor c;
+    u32 color;
+    Vec dir;
+    s32 i;
+    s32 cam;
+    u8 sel;
+
+    GXSetCurrentGXThread();
+    if (lbl_8036E548._307A != 0) {
+        lp = lbl_80367318;
+        if (lbl_8036E548._3085 != 0) {
+            st = &lbl_800F7478[g_d_GameSettings._54];
+            c = st->ambient;
+            fn_800BD2CC(st->ambient.a != 0, c);
+            for (i = 0; i < 4; i++) {
+                LITInitAttn(lbl_8036E548.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+                LITInitPos(lbl_8036E548.lights[i], lp->x, lp->y, lp->z);
+                color = lp->color;
+                LITInitColor(lbl_8036E548.lights[i], &color);
+                dir.x = lp->x;
+                dir.y = lp->y;
+                dir.z = lp->z;
+                PSVECNormalize(&dir, &dir);
+                LITInitDir(lbl_8036E548.lights[i], dir.x, dir.y, dir.z);
+                LITXForm(lbl_8036E548.lights[i], fn_80052734(0)->view);
+                lp++;
+            }
+        }
+        cam = fn_800527BC() - 1;
+        do {
+            fn_80052694(cam);
+            if (lbl_8036E548._307A == 3) {
+                if (lbl_803CB7AC[lbl_803CBBC0 == 0] != NULL) {
+                    lbl_803CB7AC[lbl_803CBBC0 == 0](fn_80052734(cam)->view, 0, 1);
+                }
+                if (lbl_803CB7AC[lbl_803CBBC0 == 0] != NULL) {
+                    lbl_803CB7AC[lbl_803CBBC0 == 0](fn_80052734(cam)->view, 1, 1);
+                    lbl_803CB7AC[lbl_803CBBC0 == 0] = NULL;
+                }
+                drawTrailObjects();
+                if (lbl_8036E548._307E != 0) {
+                    drawMinigameLayer();
+                }
+            } else if (lbl_8036E548._307A == 5) {
+                fn_8001E488();
+            } else if (lbl_8036E548._307A == 2) {
+                GXSetZCompLoc(GX_FALSE);
+                fn_8001E0D8(lbl_8036E548.slots, cam, fn_80052734(cam)->view);
+            } else if (lbl_8036E548._307A == 4) {
+                fn_8001E0D8(lbl_8036E548.slots, cam, fn_80052734(cam)->view);
+                drawTrailObjects();
+                drawMinigameLayer();
+            } else {
+                if (lbl_803CB7AC[lbl_803CBBC0 == 0] != NULL) {
+                    lbl_803CB7AC[lbl_803CBBC0 == 0](fn_80052734(cam)->view, 0, 1);
+                }
+                if (lbl_8036E548._307C != 0) {
+                    fn_8001E0D8(lbl_8036E548.slots, cam, fn_80052734(cam)->view);
+                    fn_800BD670(lbl_8036E548.slots64, fn_80052734(cam)->view);
+                    drawTrailObjects();
+                    if (lbl_8036E548._3074 != NULL) {
+                        lbl_8036E548._3074(fn_80052734(cam)->view);
+                        lbl_8036E548._3074 = NULL;
+                    }
+                }
+                if (lbl_803CB7AC[lbl_803CBBC0 == 0] != NULL) {
+                    lbl_803CB7AC[lbl_803CBBC0 == 0](fn_80052734(cam)->view, 1, 1);
+                    lbl_803CB7AC[lbl_803CBBC0 == 0] = NULL;
+                }
+                if (lbl_8036E548._307E != 0) {
+                    drawMinigameLayer();
+                }
+            }
+        } while (cam-- != 0);
+        GXSetScissor(0, 0, 640, 448);
+        return;
+    }
+    if (lbl_8036E548._3088 != 0 && lbl_8036E548._307E != 0) {
+        if (lbl_803CB7AC[lbl_803CBBC0 == 0] != NULL) {
+            lbl_803CB7AC[lbl_803CBBC0 == 0](fn_80052734(0)->view, 0, 1);
+        }
+        if (lbl_803CB7AC[lbl_803CBBC0 == 0] != NULL) {
+            lbl_803CB7AC[lbl_803CBBC0 == 0](fn_80052734(0)->view, 1, 1);
+            lbl_803CB7AC[lbl_803CBBC0 == 0] = NULL;
+        }
+    }
+    drawMinigameLayer();
+}
+#endif
 
 // .text:0x8001F16C size:0xBC
 // NONMATCHING 96%: loop counter and active[] walker swap r28/r30

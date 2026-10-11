@@ -114,7 +114,7 @@ typedef struct CharAnimBanks {
 } CharAnimBanks;
 
 typedef struct CharTrail {
-    /*0x00*/ u32 _00;
+    /*0x00*/ void (*draw)(void);
     /*0x04*/ f32 _04[6];
     /*0x1C*/ u8 _1C[0xA];
     /*0x26*/ u8 _26;
@@ -212,6 +212,8 @@ typedef struct StadiumFiles {
     } anim[2];
 } StadiumFiles;
 
+typedef void (*CharDrawCallback)(MtxPtr view, s32 a, s32 b);
+
 // lbl_8036E548
 typedef struct CharMgr {
     /*0x0000*/ u8 _0000[0x4];
@@ -263,19 +265,21 @@ typedef struct CharMgr {
     /*0x2DA8*/ void* trailTex;
     /*0x2DAC*/ u8 _2DAC[0x3070 - 0x2DAC];
     /*0x3070*/ void (*_3070)(MtxPtr view);
-    /*0x3074*/ u8 _3074[0x4];
+    /*0x3074*/ void (*_3074)(MtxPtr view);
     /*0x3078*/ s16 _3078;
     /*0x307A*/ u8 _307A;
     /*0x307B*/ u8 _307B;
     /*0x307C*/ u8 _307C;
     /*0x307D*/ u8 _307D;
-    /*0x307E*/ u8 _307E[0x3082 - 0x307E];
+    /*0x307E*/ u8 _307E;
+    /*0x307F*/ u8 _307F[0x3082 - 0x307F];
     /*0x3082*/ u8 _3082;
     /*0x3083*/ u8 _3083[0x2];
     /*0x3085*/ u8 _3085;
     /*0x3086*/ u8 _3086;
     /*0x3087*/ u8 _3087;
-    /*0x3088*/ u8 _3088[0x308C - 0x3088];
+    /*0x3088*/ u8 _3088;
+    /*0x3089*/ u8 _3089[0x308C - 0x3089];
     /*0x308C*/ void (*callback)(void);
     /*0x3090*/ u8 _3090[0x309C - 0x3090];
     /*0x309C*/ ShapeAnimPlayer stadiumAnim[2];
@@ -432,11 +436,13 @@ s32 fn_8001500C(s32 team, s32 roster, s32 index);
 
 void fn_8001D2D4(void);
 
+void fn_8001E784(void);
+
 void fn_8001B200(void);
 
 void fn_8001B214(void (*callback)(void));
 
-void fn_8001E460(void* value);
+void fn_8001E460(CharDrawCallback value);
 
 void fn_8001E474(void);
 
