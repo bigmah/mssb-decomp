@@ -1199,16 +1199,16 @@ void fn_2_B324(void) {
 }
 #endif
 
-// NONMATCHING 90%: team passed raw to fn_80067B40 in the original; extra mr/extsh around the random id
+// NONMATCHING 93%: random id kept as mr+extsh instead of extsh in place; loop regs rotated
 #if NONMATCHING
 // fn_2_FAA0, size:0x214
-void fn_2_FAA0(u8 team) {
+void fn_2_FAA0(s32 team) {
     s32 i;
     s32 g;
     s32 k;
     s16 id;
-    s32 w = *(s32*)(lbl_8034E9A0 + team * 4 + 0x46E0);
-    u8* row = lbl_803C6724 + team * 9;
+    s32 w = *(s32*)(lbl_8034E9A0 + (u8)team * 4 + 0x46E0);
+    u8* row = lbl_803C6724 + (u8)team * 9;
     for (i = 0; i < 9; i++) {
         s32 v = (s8)row[2];
         if (v == -1 || v == 0x36) {
@@ -1230,14 +1230,14 @@ void fn_2_FAA0(u8 team) {
                 }
             }
         found:
-            if (g_d_GameSettings._10 == 0 && team != 0) {
+            if (g_d_GameSettings._10 == 0 && (u8)team != 0) {
                 if (*(s8*)(lbl_8034E9A0 + 0x46F8) == 0) {
                     fn_800506E8(1, id, 1);
                 } else {
                     fn_800506E8(1, id, 1);
                 }
             } else {
-                fn_800506E8(*(s8*)(lbl_8034E9A0 + team + 0x46F8), id, 1);
+                fn_800506E8(*(s8*)(lbl_8034E9A0 + (u8)team + 0x46F8), id, 1);
             }
             row[2] = id;
             lbl_8034E9A0[id + 0x4757] = 1;
