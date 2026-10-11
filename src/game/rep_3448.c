@@ -62,6 +62,8 @@ extern u8 lbl_3_data_23AE4[];
 extern u8 lbl_3_data_25344[];
 extern u8 lbl_3_data_24E04[];
 extern u8 lbl_3_data_23E04[];
+extern u8 lbl_3_data_23C84[];
+extern RepFielder g_Fielders[];
 extern RepRosterEnt inMemRoster[];
 extern RepRunner g_Runners[4];
 extern void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);
@@ -1034,9 +1036,109 @@ void fn_3_1235B8(void) {
 }
 
 // .text:0x00123990 size:0x52C mapped:0x80762A24
+// NONMATCHING 80%: loop induction register order and where the s8 digit is sign-extended
+#if NONMATCHING
 void fn_3_123990(void) {
-    return;
+    RepTask* q = REP_TASK;
+    RepRunner* r;
+    RepFielder* f;
+    u8* m;
+    u32 i;
+    s8 v;
+    s16 sx;
+    s16 sy;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_23C84);
+        i = 0;
+        do {
+            switch (g_Minigame[0x1A2A]) {
+            case 2:
+                REP_OBJ(q, i)->anim = 0xB3;
+                break;
+            case 4:
+                REP_OBJ(q, i)->anim = 0xB5;
+                break;
+            case 5:
+                REP_OBJ(q, i)->anim = 0xB4;
+                break;
+            case 6:
+                REP_OBJ(q, i)->anim = 0xB6;
+                break;
+            }
+            i++;
+        } while (i < 4);
+        i = 0;
+        m = g_Minigame;
+        do {
+            v = m[0x18CC];
+            if (v < 0) {
+                REP_OBJ(q, i)->flags &= ~2;
+            } else if (m[0x18D8] != 0) {
+                fn_800363D8(q, i, 1, 6, v + 4);
+            } else {
+                fn_800363D8(q, i, 1, 6, v);
+            }
+            i++;
+            m++;
+        } while (i < 4);
+        q->state = 1;
+        break;
+    case 1:
+        i = 0;
+        r = g_Runners;
+        m = g_Minigame;
+        do {
+            if ((s8)m[0x18CC] >= 0) {
+                switch (g_Minigame[0x1A2A]) {
+                case 2:
+                    fn_800528C0(&sx, &sy, *(f32*)(g_Pitcher + 0x8C), 0.0f, *(f32*)(g_Pitcher + 0x90));
+                    if (i == *(s8*)(g_Minigame + 0x1904) && g_Pitcher[0x13E] == 1) {
+                        REP_OBJ(q, i)->flags |= 2;
+                    } else {
+                        REP_OBJ(q, i)->flags &= ~2;
+                    }
+                    break;
+                case 4:
+                    fn_800528C0(&sx, &sy, r->x, r->y, r->z);
+                    if (g_GameLogic[0x11E] == 0x1A) {
+                        REP_OBJ(q, i)->flags |= 2;
+                    } else {
+                        REP_OBJ(q, i)->flags &= ~2;
+                    }
+                    break;
+                case 5:
+                case 6:
+                    f = &g_Fielders[(s8)m[0x18F8]];
+                    fn_800528C0(&sx, &sy, f->x, f->y, f->z);
+                    if (g_GameLogic[0x11E] == 0x1A) {
+                        REP_OBJ(q, i)->flags |= 2;
+                    } else {
+                        REP_OBJ(q, i)->flags &= ~2;
+                    }
+                    break;
+                default:
+                    sx = 0x28A;
+                    sy = 0x1EA;
+                    REP_OBJ(q, i)->flags &= ~2;
+                    break;
+                }
+                REP_OBJ(q, i)->x = sx;
+                REP_OBJ(q, i)->y = sy;
+            }
+            i++;
+            r++;
+            m++;
+        } while (i < 4);
+        break;
+    }
 }
+#endif
 
 // .text:0x00123EBC size:0x4E8 mapped:0x80762F50
 void fn_3_123EBC(void) {

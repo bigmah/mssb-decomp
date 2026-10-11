@@ -52,6 +52,14 @@ typedef struct RepRunner {
     /*0x00C*/ u8 _00C[0x154 - 0xC];
 } RepRunner;
 
+// Fielder position (game/UnknownHomes_Game.h InMemFielderType, size 0x268).
+typedef struct RepFielder {
+    /*0x000*/ f32 x;
+    /*0x004*/ f32 y;
+    /*0x008*/ f32 z;
+    /*0x00C*/ u8 _00C[0x268 - 0xC];
+} RepFielder;
+
 // Roster entry (game/UnknownHomes_Game.h CharacterStats, size 0xA0).
 typedef struct RepRosterEnt {
     /*0x00*/ u8 _00[0x24];
