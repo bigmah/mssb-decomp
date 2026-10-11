@@ -41,7 +41,10 @@ typedef struct RepTask {
     /*0x1E*/ u16 _1E;
     /*0x20*/ u16 _20;
     /*0x22*/ u16 _22;
-    /*0x24*/ u8 _24[4]; // per-player "counting" flags (fn_3_11F02C)
+    /*0x24*/ union {
+        u8 flag[4]; // per-player "counting" flags (fn_3_11F02C, fn_3_121304)
+        s16 delta[4]; // per-player score change shown (fn_3_12026C)
+    } u24;
 } RepTask;
 
 // Runner position (game/UnknownHomes_Game.h InMemRunnerType, size 0x154).

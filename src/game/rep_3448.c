@@ -64,10 +64,28 @@ extern u8 lbl_3_data_24E04[];
 extern u8 lbl_3_data_23E04[];
 extern u8 lbl_3_data_23C84[];
 extern u8 lbl_3_data_240A4[];
+extern u8 lbl_3_data_24844[];
 extern RepFielder g_Fielders[];
 extern RepRosterEnt inMemRoster[];
 extern RepRunner g_Runners[4];
 extern void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);
+
+static u32 AnyBusy(u8* q) {
+    u8* o;
+    u32 i;
+    u32 n = *(u16*)(q + 0x16);
+    for (i = 0; i < n; i++) {
+        o = ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14) + i].p;
+        if (o[0x68] == 1) {
+            if (o[0x69] != 2) {
+                return 1;
+            }
+        } else if (o[0x68] == 4 && (*(u32*)(o + 0x5C) >> 16) != 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 // .text:0x0011EC28 size:0x404 mapped:0x8075DCBC
 // NONMATCHING 90%: register numbering of the runner loop (m/i swapped) and two extra mr copies
@@ -216,12 +234,12 @@ void fn_3_11F02C(void) {
             if (d > 0) {
                 *(s16*)(m + 0x18BC + i * 4) += 1;
                 snd = 1;
-                q->_24[i] = 1;
+                q->u24.flag[i] = 1;
             } else if (d < 0) {
                 snd = 1;
                 *(s16*)(m + 0x18BC + i * 4) -= 1;
-            } else if (q->_24[i] != 0) {
-                q->_24[i] = 0;
+            } else if (q->u24.flag[i] != 0) {
+                q->u24.flag[i] = 0;
                 REP_OBJ(q, i + 0x19)->frame = 0;
                 REP_OBJ(q, i + 0x19)->mode = 1;
                 REP_OBJ(q, i * 2 + 0x1D)->frame = 0;
@@ -511,27 +529,125 @@ void fn_3_11FDB0(void) {
 #endif
 
 // .text:0x0012026C size:0x630 mapped:0x8075F300
+// NONMATCHING 60%: register allocation and loop induction (orig walks q + 2*i for delta and keeps 4*i counters); inlines fn_3_125480 as AnyBusy
+#if NONMATCHING
 void fn_3_12026C(void) {
-    return;
+    RepTask* q = REP_TASK;
+    u8* m;
+    u32 i;
+    u32 j;
+    s32 n;
+    s16* dp;
+    u8* fl;
+    s16 half;
+    s16 d;
+    u32 v;
+    s32 msg;
+    if (fn_3_12536C()) {
+        fn_80034CEC(q);
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (g_GameLogic[0x11E] == 7) {
+        q->_1E = 1;
+    }
+    switch (q->state) {
+    case 0:
+        fn_80034E20(q, lbl_3_data_24844);
+        q->state = 1;
+        break;
+    case 1:
+        i = 0;
+        j = 0;
+        do {
+            i++;
+            REP_OBJ(q, j + 5)->mode = 0;
+            REP_OBJ(q, j + 5)->frame = 0;
+            REP_OBJ(q, j + 6)->mode = 0;
+            REP_OBJ(q, j + 6)->frame = 0;
+            REP_OBJ(q, j + 7)->mode = 0;
+            REP_OBJ(q, j + 7)->frame = 0;
+            REP_OBJ(q, j + 8)->mode = 0;
+            n = q->baseIdx + j;
+            j += 4;
+            (*(RepObj**)((u8*)lbl_80371C30 + (n + 8) * sizeof(RepSlot)))->frame = 0;
+        } while (i < 4);
+        if (g_GameLogic[0x11E] == 1 && (g_Pitcher[0x13E] == 4 || g_Minigame[0x1A81] != 0) && g_Minigame[0x1A8A] != 0 &&
+            (g_Minigame[0x1909] != 0 || g_Minigame[0x1A3C] != 0 || g_Minigame[0x1A2B] != 3)) {
+            m = g_Minigame;
+            half = *(s16*)(m + 0x1890 + *(s8*)(m + 0x1904) * 2) / 2;
+            dp = q->u24.delta;
+            fl = m;
+            i = 0;
+            do {
+                if ((s8)fl[0x18E0] >= 0) {
+                    if (i == m[0x190C]) {
+                        *dp = -half;
+                    } else {
+                        *dp = half / 3;
+                    }
+                } else {
+                    *dp = 0;
+                }
+                i++;
+                dp++;
+                fl++;
+            } while (i < 4);
+            q->_1E = 0;
+            q->state = 2;
+        }
+        break;
+    case 2:
+        if (q->_1E != 0) {
+            for (i = 0; i < 4; i++) {
+                d = q->u24.delta[i];
+                if (d == 0) {
+                    continue;
+                }
+                if (d < 0) {
+                    v = -d;
+                    if (v > 999) {
+                        v = 999;
+                    }
+                    msg = 0x59;
+                } else {
+                    v = d;
+                    if (v > 999) {
+                        v = 999;
+                    }
+                    msg = 0x5A;
+                }
+                if (v != 0) {
+                    if (v >= 100) {
+                        REP_OBJ(q, i + 1)->frame = 0x20000;
+                    } else if (v >= 10) {
+                        REP_OBJ(q, i + 1)->frame = 0x10000;
+                    } else {
+                        REP_OBJ(q, i + 1)->frame = 0;
+                    }
+                    fn_800363D8(q, i * 4 + 5, 1, msg, 11);
+                    fn_800363D8(q, i * 4 + 6, 1, msg, (v % 1000) / 100);
+                    fn_800363D8(q, i * 4 + 7, 1, msg, (v % 100) / 10);
+                    fn_800363D8(q, i * 4 + 8, 1, msg, v % 10);
+                    REP_OBJ(q, i * 4 + 5)->mode = 1;
+                    REP_OBJ(q, i * 4 + 6)->mode = 1;
+                    REP_OBJ(q, i * 4 + 7)->mode = 1;
+                    REP_OBJ(q, i * 4 + 8)->mode = 1;
+                }
+            }
+            q->state = 3;
+        }
+        break;
+    case 3:
+        if (AnyBusy((u8*)q) == 0) {
+            q->state = 1;
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x0012089C size:0x6C0 mapped:0x8075F930
-static u32 AnyBusy(u8* q) {
-    u8* o;
-    u32 i;
-    u32 n = *(u16*)(q + 0x16);
-    for (i = 0; i < n; i++) {
-        o = ((QEnt*)lbl_80371C30)[*(u16*)(q + 0x14) + i].p;
-        if (o[0x68] == 1) {
-            if (o[0x69] != 2) {
-                return 1;
-            }
-        } else if (o[0x68] == 4 && (*(u32*)(o + 0x5C) >> 16) != 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
 
 void fn_3_12089C(void) {
     QEnt* e2;
@@ -799,7 +915,7 @@ void fn_3_121304(void) {
             d = *(s16*)(g_Minigame + 0x1890 + p * 2) - *sc;
             if (d != 0) {
                 if (d > 0) {
-                    q->_24[p] = 1;
+                    q->u24.flag[p] = 1;
                 }
                 step = d / 8;
                 if (step != 0) {
@@ -810,8 +926,8 @@ void fn_3_121304(void) {
                 snd = 1;
             } else {
                 *sc = *(s16*)(g_Minigame + 0x1890 + p * 2);
-                if (q->_24[p] != 0) {
-                    q->_24[p] = 0;
+                if (q->u24.flag[p] != 0) {
+                    q->u24.flag[p] = 0;
                     REP_OBJ(q, i + 0x19)->frame = 0;
                     REP_OBJ(q, i + 0x19)->mode = 1;
                     REP_OBJ(q, i * 4 + 0x1D)->frame = 0;
