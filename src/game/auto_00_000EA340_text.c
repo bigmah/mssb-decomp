@@ -75,6 +75,85 @@ extern void fn_3_ED0F4(void);
 extern void fn_3_EC014(void);
 extern void fn_3_ED6E0(void);
 
+// Typed views for the functions below. g_Minigame, lbl_80371C30 and
+// lbl_803CC1B8 are declared as raw bytes in this file (the older functions
+// index them by offset), so the newer code reaches them through these.
+typedef struct EaSprite {
+    /*0x00*/ u8 _00[0x48];
+    /*0x48*/ f32 x;
+    /*0x4C*/ f32 y;
+    /*0x50*/ u8 _50[0x4];
+    /*0x54*/ u32 flags;
+    /*0x58*/ u32 color;
+    /*0x5C*/ u32 frame; // 16.16
+    /*0x60*/ u8 _60[0x4];
+    /*0x64*/ u16 anim;
+    /*0x66*/ u8 _66[2];
+    /*0x68*/ u8 visible;
+    /*0x69*/ u8 animState;
+} EaSprite;
+
+typedef struct EaSlot {
+    /*0x0*/ EaSprite* obj;
+    /*0x4*/ u32 _04;
+} EaSlot;
+
+// Minigame HUD task (queue item).
+typedef struct EaTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ u8 _04[0x10];
+    /*0x14*/ u16 baseIdx;
+    /*0x16*/ u16 _16;
+    /*0x18*/ u16 timer;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ u16 state;
+    /*0x1E*/ u16 _1E;
+    /*0x20*/ u16 _20;
+    /*0x22*/ u16 _22;
+} EaTask;
+
+// g_Minigame (MiniGameStruct in game/UnknownHomes_Game.h), only the fields used here.
+typedef struct EaMinigame {
+    /*0x0000*/ u8 _0000[0x18CC];
+    /*0x18CC*/ s8 characterIndex[4]; // minigameControlStruct[0]
+    /*0x18D0*/ u8 _18D0[0x18F4 - 0x18D0];
+    /*0x18F4*/ s8 player[3];
+    /*0x18F7*/ u8 _18F7[0x1921 - 0x18F7];
+    /*0x1921*/ u8 _1921;
+    /*0x1922*/ u8 _1922[0x19CD - 0x1922];
+    /*0x19CD*/ u8 _19CD;
+} EaMinigame;
+
+#define EA_MG (*(EaMinigame*)g_Minigame)
+#define EA_TASK ((EaTask*)lbl_803CC1B8)
+#define EA_SPRITE(task, n) (((EaSlot*)lbl_80371C30)[(task)->baseIdx + (n)].obj)
+// TODO type: inMemRoster is CharacterStats[2][9] (stride 0xA0), declared as bytes here
+#define EA_CHAR_ID(i) (*(s16*)(inMemRoster + (i) * 0xA0 + 0x24))
+
+extern void fn_3_ED058(void);
+
+// .text:0x000EA340 size:0x114 mapped:0x807293D4
+// NONMATCHING 95%: `add r7, r0, r4` operand order of baseIdx + i (3 sites)
+#if NONMATCHING
+void fn_3_EA340(void) {
+    EaTask* task = EA_TASK;
+    s32 i;
+    s32 frame;
+
+    fn_80034E20(task, lbl_3_data_900C);
+    for (i = 0; i < 3; i++) {
+        if (EA_MG.player[i] >= 0) {
+            frame = EA_MG.characterIndex[EA_MG.player[i]] << 16;
+            EA_SPRITE(task, i + 3)->frame = frame;
+            EA_SPRITE(task, i + 6)->frame = frame;
+            EA_SPRITE(task, i + 9)->frame = EA_CHAR_ID(EA_MG.player[i]) << 16;
+        }
+    }
+    task->timer = 0;
+    EA_TASK->func = fn_3_E9D30;
+}
+#endif
+
 
 // fn_3_EBFD4, size:0x40
 s32 fn_3_EBFD4(void) {
