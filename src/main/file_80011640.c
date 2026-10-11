@@ -478,7 +478,27 @@ void fn_80018270(void) {
 
 // .text:0x800188C0 size:0xF8
 void fn_800188C0(void) {
-    return;
+    CharLoadTask* task = lbl_803CC1B8;
+
+    switch (task->state) {
+    case 0:
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            lbl_8036E548._2C84 = ARAMTransfer(&lbl_800EE910[1], NULL, 0, 0);
+        } else {
+            lbl_8036E548._2C84 = ARAMTransfer(&lbl_800EE910[0], NULL, 0, 0);
+        }
+        task->state++;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8.transferDone == 1) {
+            task->state++;
+        }
+        break;
+    case 2:
+        lbl_8036E548._307B = 0;
+        fn_800B0A14_removeQueue(&lbl_8036E548);
+        break;
+    }
 }
 
 // .text:0x800189B8 size:0x2C
