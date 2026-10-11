@@ -1256,7 +1256,29 @@ void fn_800AA44C(void) {
 
 // .text:0x800AA930 size:0x140
 void fn_800AA930(CardRequest* req, u64 serial) {
-    return;
+    char name[CARD_FILENAME_MAX + 1];
+    CardFileTask* task;
+
+    if (req->length % CARD_READ_SIZE != 0) {
+        OSPanic(lbl_803CCEE0, 0x970, lbl_800E7A1C);
+    }
+    strncpy(name, req->fileName, CARD_FILENAME_MAX);
+    name[CARD_FILENAME_MAX] = '\0';
+    if (strlen(name) >= CARD_FILENAME_MAX) {
+        OSPanic(lbl_803CCEE0, 0x979, lbl_800E7A00);
+    }
+    task = fn_800B0A5C_insertQueue(fn_800AAA70, 0xFF);
+    task->chan = req->chan;
+    task->mode = req->mode;
+    task->buffer = req->buffer;
+    task->length = req->length;
+    task->fileName = lbl_802EF2D0;
+    memcpy(task->fileName, req->fileName, CARD_FILENAME_MAX);
+    lbl_802EF2C0[req->chan] = serial;
+    lbl_803CC15C = req->verify;
+    lbl_803CC158 = req->verifyArg;
+    lbl_803CC160 = req->flags;
+    lbl_803CC1B8->result = 0;
 }
 
 // .text:0x800AAA70 size:0x474
