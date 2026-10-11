@@ -5652,9 +5652,230 @@ void fn_3_58688(void) {
 }
 
 // .text:0x00058870 size:0x5E0 mapped:0x80697904
+// NONMATCHING 88%: fielder loop regs differ, minigame flag checks unrolled differently, and the 20-entry history fill lacks the original's leftover loop guard
+#if NONMATCHING
+// reset all fielder and fielding-logic state for a new play
 void fn_3_58870(void) {
-    return;
+    int i;
+    int k;
+    u8* f;
+    u8* e;
+    s8 v;
+    f32 zero;
+    if (g_d_GameSettings[0x11] == 0) {
+        fn_3_591AC();
+    }
+    zero = lbl_3_rodata_B20;
+    for (i = 0; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        *(s16*)(f + 0x18C) = -1;
+        f[0x1D7] = 0;
+        f[0x1D8] = 0;
+        f[0x1D3] = 0;
+        f[0x1DD] = 0;
+        *(s16*)(f + 0x17E) = -1;
+        *(s16*)(f + 0x190) = -1;
+        f[0x1D5] = 0;
+        f[0x1D6] = 0;
+        *(s16*)(f + 0x192) = 0xF;
+        *(s16*)(f + 0x194) = 0;
+        f[0x1DF] = 0;
+        *(s16*)(f + 0x198) = 0;
+        f[0x1E0] = 0;
+        f[0x1DB] = 0;
+        f[0x1DC] = 0;
+        *(s16*)(f + 0x19C) = 0;
+        f[0x1EA] = 0;
+        f[0x1E9] = 0;
+        f[0x1EC] = 0;
+        f[0x1ED] = 0;
+        f[0x1EE] = 0;
+        f[0x1EF] = 0;
+        f[0x1E1] = 0;
+        f[0x1E3] = 1;
+        f[0x1E4] = 0;
+        *(f32*)(f + 0x50) = zero;
+        *(f32*)(f + 0x60) = zero;
+        *(s16*)(f + 0x1A0) = 0;
+        f[0x1F2] = 0;
+        f[0x1E7] = 0;
+        f[0x1F3] = 0;
+        f[0x1F4] = 0;
+        f[0x1F5] = -1;
+        f[0x1F7] = -1;
+        f[0x1F9] = 0;
+        f[0x1FA] = 0;
+        *(s16*)(f + 0x1A8) = 0;
+        f[0x1FC] = 1;
+        f[0x200] = 0;
+        f[0x201] = 0;
+        f[0x202] = 0;
+        f[0x203] = 0;
+        f[0x205] = 0;
+        f[0x207] = 0;
+        *(f32*)(f + 0x148) = zero;
+        f[0x208] = 0;
+        f[0x209] = 0;
+        *(s16*)(f + 0x1B6) = 0;
+        f[0x20B] = 0;
+        f[0x20C] = 0;
+        *(s16*)(f + 0x18A) = 0;
+        f[0x20F] = 0;
+        f[0x1FD] = 0;
+        f[0x1FE] = 0;
+        f[0x215] = 0;
+        f[0x216] = 0;
+        f[0x210] = 0;
+        f[0x211] = 0;
+        f[0x212] = 0;
+        *(s16*)(f + 0x250) = 0;
+        f[0x252] = 0;
+        f[0x25B] = 0;
+        f[0x256] = 0;
+        f[0x258] = 0;
+        f[0x259] = 0;
+        f[0x25A] = 0;
+        f[0x25C] = 0;
+        f[0x25E] = 0;
+        f[0x25F] = 0;
+        f[0x262] = 0;
+        f[0x263] = 0;
+        f[0x260] = 0;
+        f[0x265] = 0;
+        f[0x252] = 0;
+        f[0x1C5] = 0;
+        g_FieldingLogic[i + 0xF8] = 0;
+        f[0x1C6] = 0;
+        if (g_d_GameSettings[0x11] == 0) {
+            fn_3_5372C(i);
+            if (g_GameLogic[*(int*)(g_GameLogic + 0x10) + 0x142] != 0) {
+                f[0x1C5] = 1;
+            }
+            if (g_GameLogic[*(int*)(g_GameLogic + 0x10) + 0x144] != 0) {
+                f[0x1C6] = 1;
+            }
+        }
+    }
+    if (g_d_GameSettings[0x11] != 0) {
+        if (*(s8*)(g_Minigame + 0x1904) >= 0) {
+            if (g_Minigame[*(s8*)(g_Minigame + 0x1904) + 0x18D8] != 0) {
+                g_Fielders[0x1C5] = 1;
+                g_Fielders[0x1C6] = 1;
+            }
+        } else if (*(s8*)(g_Minigame + 0x18F4) >= 0 && g_Minigame[*(s8*)(g_Minigame + 0x18F4) + 0x18D8] != 0) {
+            g_Fielders[2 * 0x268 + 0x1C5] = 1;
+            g_Fielders[2 * 0x268 + 0x1C6] = 1;
+        }
+        for (i = 3; i < 6; i++) {
+            v = g_Minigame[i + 0x18F2];
+            if (v >= 0 && g_Minigame[v + 0x18D8] != 0) {
+                g_Fielders[i * 0x268 + 0x1C5] = 1;
+                g_Fielders[i * 0x268 + 0x1C6] = 1;
+            }
+        }
+    }
+    for (k = 0; k < 5; k++) {
+        *(s16*)(g_FieldingLogic + k * 2 + 0xD0) = -1;
+        g_FieldingLogic[k + 0x101] = 0;
+    }
+    *(s16*)(g_FieldingLogic + 0xB0) = -1;
+    *(s16*)(g_FieldingLogic + 0xB2) = -1;
+    *(s16*)(g_FieldingLogic + 0xB4) = -1;
+    *(s16*)(g_FieldingLogic + 0xBC) = -1;
+    *(s16*)(g_FieldingLogic + 0xBE) = -1;
+    *(s16*)(g_FieldingLogic + 0xC2) = -1;
+    *(s16*)(g_FieldingLogic + 0xC4) = -1;
+    *(s16*)(g_FieldingLogic + 0xC6) = -1;
+    *(s16*)(g_FieldingLogic + 0xCA) = -1;
+    *(s16*)(g_FieldingLogic + 0xCC) = -1;
+    *(s16*)(g_FieldingLogic + 0xDA) = 0;
+    *(s16*)(g_FieldingLogic + 0xDE) = -1;
+    *(s16*)(g_FieldingLogic + 0xDC) = -1;
+    *(s16*)(g_FieldingLogic + 0xE2) = -1;
+    *(s16*)(g_FieldingLogic + 0xE8) = -1;
+    *(s16*)(g_FieldingLogic + 0xEA) = -1;
+    *(s16*)(g_FieldingLogic + 0xEC) = 0;
+    *(s16*)(g_FieldingLogic + 0xF0) = 0;
+    *(s16*)(g_FieldingLogic + 0xF2) = 0;
+    g_FieldingLogic[0x107] = 0;
+    g_FieldingLogic[0x108] = 0;
+    g_FieldingLogic[0x10A] = 0;
+    g_FieldingLogic[0x111] = 0;
+    g_FieldingLogic[0x10D] = 0;
+    g_FieldingLogic[0x113] = 0;
+    g_FieldingLogic[0x114] = 0;
+    g_FieldingLogic[0x116] = 0;
+    g_FieldingLogic[0x117] = 1;
+    g_FieldingLogic[0x118] = 1;
+    g_FieldingLogic[0x11A] = 0;
+    g_FieldingLogic[0x11C] = 0;
+    g_FieldingLogic[0x11F] = 0;
+    g_FieldingLogic[0x120] = 0;
+    g_FieldingLogic[0x115] = -1;
+    g_FieldingLogic[0x106] = 0;
+    g_FieldingLogic[0x11D] = 0;
+    g_FieldingLogic[0x121] = -1;
+    g_FieldingLogic[0x122] = 0;
+    g_FieldingLogic[0x124] = 0;
+    g_FieldingLogic[0x125] = -1;
+    g_FieldingLogic[0x126] = -1;
+    g_FieldingLogic[0x127] = 0;
+    g_FieldingLogic[0x12A] = 0;
+    g_FieldingLogic[0x12B] = 0;
+    g_FieldingLogic[0x12C] = 0;
+    g_FieldingLogic[0x12D] = 1;
+    g_FieldingLogic[0x12E] = 0;
+    g_FieldingLogic[0x12F] = 0;
+    g_FieldingLogic[0x132] = 0;
+    g_FieldingLogic[0x131] = 0;
+    *(s16*)(g_FieldingLogic + 0xF4) = -1;
+    g_FieldingLogic[0x133] = 0;
+    g_FieldingLogic[0x135] = 0;
+    g_FieldingLogic[0x138] = 0;
+    g_FieldingLogic[0x139] = 0;
+    g_FieldingLogic[0x13A] = 0;
+    g_FieldingLogic[0x13B] = 0;
+    g_FieldingLogic[0x13F] = 0;
+    *(s16*)(g_FieldingLogic + 0xF6) = 0;
+    g_FieldingLogic[0x130] = 0;
+    g_FieldingLogic[0x13E] = 0;
+    g_FieldingLogic[0x140] = 0;
+    g_FieldingLogic[0x142] = 0;
+    g_FieldingLogic[0x141] = 0;
+    g_FieldingLogic[0x143] = 0;
+    g_FieldingLogic[0x134] = -1;
+    g_FieldingLogic[0x145] = 0;
+    g_FieldingLogic[0x146] = 0;
+    *(s16*)(g_FieldingLogic + 0xC0) = 0;
+    for (k = 0; k < 4; k++) {
+        e = g_FieldingLogic + k * 0x1C;
+        ((FieldingBoost*)e)->timer = -1;
+        ((FieldingBoost*)e)->timer2 = -1;
+        ((FieldingBoost*)e)->power = 0;
+        ((FieldingBoost*)e)->frames = 0;
+        ((FieldingBoost*)e)->fielder = -1;
+        ((FieldingBoost*)e)->state = 0;
+    }
+    FIELDING_BOOST = (FieldingBoost*)g_FieldingLogic;
+    *(u8**)(g_FieldingLogic + 0x8C) = g_FieldingLogic + 0x74;
+    ((u8*)g_AiLogic)[0x78] = 0;
+    for (k = 0; k < 20; k++) {
+        (&lbl_3_bss_170)[k] = -1;
+    }
+    lbl_3_bss_16C = -1;
+    if (g_d_GameSettings[0x11] == 0) {
+        e = g_GameLogic + *(int*)(g_GameLogic + 0x10) * 0x50;
+        if (*(int*)(e + 0x3C) >= 9) {
+            if (*(int*)(e + 0x40) >= 20) {
+                *(int*)(e + 0x40) -= 20;
+            } else if (*(int*)(e + 0x40) >= 10) {
+                *(int*)(e + 0x40) -= 10;
+            }
+        }
+        g_Pitcher[0x176] = 0;
+    }
 }
+#endif
 
 // .text:0x00058E50 size:0x108 mapped:0x80697EE4
 extern u8 lbl_3_data_46F8[];
