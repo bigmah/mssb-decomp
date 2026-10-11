@@ -157,6 +157,8 @@ void fn_1_1A1EC(ChallengeActorDrawing* drawing, MtxPtr camera);
 
 void fn_1_1A3B4(void);
 
+void fn_1_1A850(MtxPtr bone, MtxPtr camera, u8 r, u8 g, u8 b, u8 a);
+
 void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 
 void fn_1_1A290(ChallengeDrawCollection* collection, MtxPtr camera);
