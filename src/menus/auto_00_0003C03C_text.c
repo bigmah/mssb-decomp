@@ -1971,30 +1971,35 @@ static inline s32 fn_2_countPlayer(u8* m, s32 id) {
     return cnt;
 }
 
+static inline s32 fn_2_hasPlayer(u8* m, s32 id) {
+    s32 k;
+    s32 cnt = 0;
+    for (k = 0; k < 9; k++) {
+        if (*(s16*)(m + 0x40B8 + k * 6) == id) {
+            cnt++;
+        }
+    }
+    return cnt != 0;
+}
+
 // fn_2_430F4, size:0x1F8
+// NONMATCHING 93%: type/a/b/t should live in r28-r31; ours keeps type in a volatile reg
+#if NONMATCHING
 void fn_2_430F4(void) {
     s32 i;
     s32 j;
     u8* e;
-    s32 flag;
-    s32 row;
-    u8* p;
-    s32 type;
-    s32 b;
-    s32 a;
-    s32 t;
     for (i = 0; i < 54; i++) {
         if (lbl_800E8558[i * 6 + 3] == 1) {
             e = lbl_2_bss_1A8248[0] + i * 0x34;
-            flag = e[0x31];
-            if (flag == 1) {
+            if ((s32)e[0x31] == 1) {
                 for (j = 0; j < 10; j++) {
-                    row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    p = lbl_8010A768 + row + j * 10;
-                    type = *(s16*)(p + 2);
-                    t = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    a = *(s16*)(p + 4);
-                    b = *(s16*)(p + 6);
+                    s32 row = lbl_800E8558[i * 6 + 2] * 0x64;
+                    s32 t = *(s16*)(lbl_80109AE8 + row + j * 10);
+                    u8* p = lbl_8010A768 + row + j * 10;
+                    s32 type = *(s16*)(p + 2);
+                    s32 a = *(s16*)(p + 4);
+                    s32 b = *(s16*)(p + 6);
                     if (type != -1 && *(s8*)(e + j * 2 + 10) == 0) {
                         switch (type) {
                         case 2:
@@ -2003,7 +2008,7 @@ void fn_2_430F4(void) {
                             }
                             break;
                         case 21:
-                            if ((fn_2_countPlayer(lbl_2_bss_1A8248[0], a) != 0) == 1 &&
+                            if (fn_2_hasPlayer(lbl_2_bss_1A8248[0], a) == 1 &&
                                 lbl_2_bss_1A8248[0][0x4415] >= b) {
                                 e[j * 2 + 10] = 1;
                             }
@@ -2018,6 +2023,7 @@ void fn_2_430F4(void) {
         }
     }
 }
+#endif
 
 // fn_2_42BE8, size:0x2C8
 void fn_2_42BE8(void) {
@@ -2030,9 +2036,9 @@ void fn_2_42BE8(void) {
             if ((s32)e[0x31] == 1) {
                 for (j = 0; j < 10; j++) {
                     s32 row = lbl_800E8558[i * 6 + 2] * 0x64;
+                    s32 t = *(s16*)(lbl_80109AE8 + row + j * 10);
                     u8* p = lbl_8010A768 + row + j * 10;
                     s32 type = *(s16*)(p + 2);
-                    s32 t = *(s16*)(lbl_80109AE8 + row + j * 10);
                     s32 a = *(s16*)(p + 4);
                     s32 b = *(s16*)(p + 6);
                     s32 c = *(s16*)(p + 8);
@@ -2061,7 +2067,7 @@ void fn_2_42BE8(void) {
                             }
                             break;
                         case 26:
-                            if ((fn_2_countPlayer(lbl_2_bss_1A8248[0], a) != 0) == 1 &&
+                            if (fn_2_hasPlayer(lbl_2_bss_1A8248[0], a) == 1 &&
                                 lbl_2_bss_1A8248[0][0x441E] == b && lbl_2_bss_1A8248[0][0x4415] >= c) {
                                 e[j * 2 + 10] = 1;
                             }
@@ -2096,6 +2102,8 @@ void fn_2_460F8(void) {
 }
 
 // fn_2_454E8, size:0x328
+// NONMATCHING 99%: addi r0,lbl_800E8558@l; mr (see docs/patterns/unsolved.md) and i/base reg swap
+#if NONMATCHING
 void fn_2_454E8(void) {
     s32 i;
     s32 n;
@@ -2104,10 +2112,12 @@ void fn_2_454E8(void) {
     s32 k;
     u8* mi;
     u8 row;
+    u8* base;
     for (i = 0; i < 54; i++) {
-        lbl_2_bss_1A8248[0][i + 0x43D6] = 0;
+        (lbl_2_bss_1A8248[0] + 0x43D6)[i] = 0;
     }
-    mi = lbl_800E8558;
+    base = lbl_800E8558;
+    mi = base;
     for (i = 0; i < 54; i++, mi += 6) {
         n = fn_8006CDC0(i);
         if (mi[3] == 1) {
@@ -2125,13 +2135,14 @@ void fn_2_454E8(void) {
         if (n == cnt && cnt != 0) {
             lbl_2_bss_1A8248[0][i + 0x43D6] = 1;
             for (k = 0; k < 54; k++) {
-                if (lbl_800E8558[k * 6 + 1] == i) {
+                if (i == base[k * 6 + 1]) {
                     lbl_2_bss_1A8248[0][k + 0x43D6] = 1;
                 }
             }
         }
     }
 }
+#endif
 
 // fn_2_3E058, size:0x334
 void fn_2_3E058(void) {
@@ -2387,13 +2398,14 @@ void fn_2_3FA14(void) {
 }
 
 // fn_2_4358C, size:0x444
+// NONMATCHING 98%: case 0x49 reloads lbl_2_bss_1A8248 via addi+lwz; dead 2-step counter in the 0x42 loop
+#if NONMATCHING
 void fn_2_4358C(void) {
+    s32 cnt;
+    s32 k;
+    u8* e;
     s32 i;
     s32 j;
-    s32 k;
-    s32 cnt;
-    u8* e;
-    u8 bit;
     for (i = 0; i < 54; i++) {
         if (lbl_800E8558[i * 6 + 3] == 1) {
             e = lbl_2_bss_1A8248[0] + i * 0x34;
@@ -2431,9 +2443,8 @@ void fn_2_4358C(void) {
                     } else if (*(s16*)(lbl_2_bss_1A823C[0] + 0x30) == 5) {
                         if (t == 0x41 && *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 0 && g_d_GameSettings._36 == i &&
                             lbl_2_bss_1A8248[0][0x4415] >= b) {
-                            bit = 1 << lbl_2_bss_1A8248[0][0x4420];
-                            if (!(e[8] & bit)) {
-                                e[8] |= bit;
+                            if (!(e[8] & (1 << lbl_2_bss_1A8248[0][0x4420]))) {
+                                e[8] |= (1 << lbl_2_bss_1A8248[0][0x4420]);
                             }
                             if (e[8] == 0x1F) {
                                 *(s8*)(e + j * 2 + 9) = -2;
@@ -2455,6 +2466,7 @@ void fn_2_4358C(void) {
         }
     }
 }
+#endif
 
 // fn_2_3E38C, size:0x460
 void fn_2_3E38C(void) {
