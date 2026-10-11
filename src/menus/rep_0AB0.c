@@ -4,13 +4,26 @@
 #include "main/file_8000F150.h"
 #include "main/file_8004207C.h"
 #include "main/file_800527C4.h"
+#include "main/file_800A7C08.h"
 #include "menus/auto_00_0004B1AC_text.h"
 #include "menus/rep_0788.h"
+#include "menus/auto_00_0005597C_text.h"
 
-extern u8* lbl_2_bss_1A8234[]; // menu layout work area (byte offsets, as elsewhere in menus)
-extern void* lbl_803CC1B8;
+extern u32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
+
+extern MenuWorkBuf* lbl_2_bss_1A8234;
+extern MenuSceneState* lbl_2_bss_1A823C;
+extern MenuWorkBuf* lbl_2_bss_1A824C;
+// lbl_803CC1B8 (SceneTask*, main/file_80069BDC.h) is the running menu task.
+#define CUR_TASK ((MenuTask*)lbl_803CC1B8)
 extern InitEntry lbl_2_data_20C68[];
 extern InitEntry lbl_2_data_268A8[];
+extern MenuDef lbl_800FEF70[];
+extern u8 lbl_800EFBA4[]; // sound effect volumes
+
+// lbl_803C77B8 is the PadState[4] array (main/file_800A7C08.h).
+#define MENU_PADS ((PadState*)&lbl_803C77B8)
+#define MENU_PAD (MENU_PADS[lbl_2_bss_1A824C->port])
 
 // .text:0x0005979C size:0x55C
 void fn_2_5979C(void) {
@@ -29,40 +42,40 @@ void fn_2_5A224(void) {
 
 // .text:0x0005AE54 size:0xD0
 void fn_2_5AE54(void) {
-    MenuQueueState* queue = lbl_803CC1B8;
-    switch ((s32)queue->stateA) {
+    MenuTask* task = CUR_TASK;
+    switch ((s32)task->state) {
     case 1:
         break;
     case 0:
-        fn_2_4E878(queue, lbl_2_data_20C68);
-        queue->stateA = 1;
-        queue->timerA = 0;
+        fn_2_4E878(task, lbl_2_data_20C68);
+        task->state = 1;
+        task->timer = 0;
         break;
     }
-    fn_2_53F88((s32)queue);
+    fn_2_53F88((s32)task); // TODO type: fn_2_53F88 takes the task
     fn_2_54120();
-    if (lbl_2_bss_1A8234[0][0x162992] != 0) {
-        fn_2_53DF8((u8*)queue);
-        fn_8000F8F4((LayoutGroup*)queue);
+    if (lbl_2_bss_1A8234->done != 0) {
+        fn_2_53DF8((u8*)task);
+        fn_8000F8F4((LayoutGroup*)task);
         fn_8000FE54();
-        fn_800B0A14_removeQueue(fn_2_4E858(queue));
-        queue->stateA = 0;
-        queue->stateB = 0;
-        lbl_2_bss_1A8234[0][0x162992] = 0;
+        fn_800B0A14_removeQueue(fn_2_4E858(task));
+        task->state = 0;
+        task->subState = 0;
+        lbl_2_bss_1A8234->done = 0;
     }
 }
 
 // .text:0x0005AF24 size:0x8C
 void fn_2_5AF24(void) {
-    MenuQueueState* queue;
+    MenuTask* task;
     lbl_8034E978.menu = 0x53;
     fn_800B0A5C_insertQueue(fn_80053FE8, 0);
-    queue = fn_800B0A5C_insertQueue(fn_2_5AE54, 0);
-    queue->stateA = 0;
-    queue->stateB = 0;
+    task = fn_800B0A5C_insertQueue(fn_2_5AE54, 0);
+    task->state = 0;
+    task->subState = 0;
     fn_2_54354(lbl_2_data_268A8, 0x2E0);
-    lbl_2_bss_1A8234[0][0x162604] = 1;
-    lbl_2_bss_1A8234[0][0x162605] = 1;
+    lbl_2_bss_1A8234->layerFlags[0][0] = 1;
+    lbl_2_bss_1A8234->layerFlags[0][1] = 1;
 }
 
 // .text:0x0005AFB0 size:0x82C
@@ -91,9 +104,118 @@ void fn_2_5D26C(void) {
 }
 
 // .text:0x0005DC5C size:0x4A8
+// NONMATCHING 99%: a pad lookup loads lbl_2_bss_1A824C with a direct lwz sym@l where ours uses addi+lwz 0 (see docs/patterns/unsolved.md, menus 33E70)
+#if NONMATCHING
 void fn_2_5DC5C(void) {
-    return;
+    MenuTask* task = CUR_TASK;
+    switch (lbl_2_bss_1A823C->state) {
+    case 0:
+        lbl_8034E978.menu = 0x53;
+        lbl_8034E978.prevTrack = lbl_8034E978.track;
+        lbl_8034E978.track = lbl_800FEF70[0x53].track;
+        lbl_2_bss_1A823C->state = 1;
+        break;
+    case 1:
+        lbl_2_bss_1A8234->layerFlags[1][0] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][1] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 2;
+        break;
+    case 2:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A823C->state = 3;
+        }
+        break;
+    case 3: {
+        MenuWorkBuf* w = lbl_2_bss_1A824C;
+        u16 repeat = MENU_PADS[w->port].repeat;
+        u16 down;
+        if (repeat & 8) {
+            w->tab = (w->tab + 3) % 4;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (repeat & 4) {
+            w->tab = (w->tab + 1) % 4;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
+        down = MENU_PAD.down;
+        if (down & 0x100) {
+            lbl_2_bss_1A823C->state = 4;
+            sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+        } else if (down & 0x200) {
+            lbl_2_bss_1A823C->state = 6;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+        }
+        break;
+    }
+    case 4:
+        lbl_2_bss_1A8234->layerFlags[8][0] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][1] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 5;
+        break;
+    case 5:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            lbl_2_bss_1A8234->layerFlags[1][2] = 1;
+            switch (lbl_2_bss_1A824C->tab) {
+            case 0:
+                lbl_2_bss_1A824C->mode = 5;
+                CUR_TASK->func = fn_2_5A224;
+                break;
+            case 1:
+                lbl_2_bss_1A824C->mode = 0;
+                CUR_TASK->func = fn_2_5D26C;
+                break;
+            case 2:
+                lbl_2_bss_1A824C->mode = 2;
+                CUR_TASK->func = fn_2_5C5B8;
+                break;
+            case 3:
+                lbl_2_bss_1A824C->mode = 3;
+                CUR_TASK->func = fn_2_5AFB0;
+                break;
+            }
+            lbl_2_bss_1A823C->state = 0;
+        }
+        break;
+    case 6:
+        lbl_2_bss_1A8234->layerFlags[8][0] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][1] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A823C->state = 7;
+        break;
+    case 7:
+        if (lbl_2_bss_1A8234->timer-- == 0) {
+            changeScene(3, 6);
+            lbl_2_bss_1A823C->state = 8;
+        }
+        break;
+    case 8:
+        if (lbl_8037169C._13 != 0) {
+            lbl_2_bss_1A823C->state = 9;
+        }
+        break;
+    case 9: {
+        MenuTask* parent = task->parent;
+        parent->signal = 1;
+        fn_800B0A14_removeQueue(parent);
+        lbl_2_bss_1A823C->state = 0;
+        break;
+    }
+    case 10: {
+        MenuTask* child = fn_800B0A5C_insertQueue(fn_2_587F8, 2);
+        child->step = 0;
+        task->signal = 0;
+        lbl_2_bss_1A823C->state = 11;
+        break;
+    }
+    case 11:
+        if (task->signal == 1) {
+            lbl_2_bss_1A823C->state = 3;
+        }
+        break;
+    }
 }
+#endif
 
 // .text:0x0005E104 size:0x748
 void fn_2_5E104(void) {
