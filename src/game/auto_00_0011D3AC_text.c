@@ -316,9 +316,107 @@ void fn_3_11DE80(void) {
 }
 
 // .text:0x0011DECC size:0x43C mapped:0x8075CF60
+// Round roulette task: spins six panels and stops on this round's pick.
+// NONMATCHING 98%: the original keeps two copies of the task pointer (r30/r28) and tests animState == 2 via cntlzw
+#if NONMATCHING
 void fn_3_11DECC(void) {
-    return;
+    PasswordTask* task = lbl_803CC1B8;
+    PasswordTask* t = task;
+    u32 i;
+    u32 pick;
+
+    if (g_GameLogic._125 == 4) {
+        if (task->state != 0 && task->sfx != 0xFFFFFFFF) {
+            sndFXKeyOff(task->sfx);
+            sndFXCtrl(task->sfx, 7, 0);
+            task->sfx = 0xFFFFFFFF;
+        }
+        MG11D3->rouletteTask = NULL;
+        fn_800B0A14_removeQueue(fn_80034CEC(t));
+        return;
+    }
+
+    switch (task->state) {
+    case 0:
+        fn_80034E20(task, lbl_3_data_25EE4);
+        if (MG11D3->round >= 1) {
+            t->_1E = MG11D3->roundPick[MG11D3->round - 1] - 1;
+        }
+        task->sfx = 0xFFFFFFFF;
+        t->state = 1;
+        break;
+    case 1:
+        if ((SPRITE(task, 3)->frame >> 16) == 0x37) {
+            SPRITE(task, 3)->visible = 0;
+            task->state = 2;
+        }
+        break;
+    case 2:
+        SPRITE(task, 3)->visible = 1;
+        i = 0;
+        do {
+            SPRITE_I(t, 4, i)->visible = 1;
+            i++;
+        } while (i < 6);
+        task->sfx = fn_3_90064(lbl_3_data_81FC[0x23]);
+        t->state = 3;
+        break;
+    case 3:
+        if (SPRITE(task, 3)->animState == 2) {
+            SPRITE(task, 3)->frame = 0x370000;
+            i = 0;
+            do {
+                SPRITE_I(t, 4, i)->frame = 0;
+                i++;
+            } while (i < 6);
+            t->_1E--;
+            if ((s16)t->_1E < 0) {
+                t->_1E = 5;
+            }
+            if (t->_1E == MG11D3->roundPick[MG11D3->round - 1] - 1) {
+                t->spins++;
+                if (t->spins >= 2) {
+                    SPRITE(t, 3)->visible = 0;
+                    i = 0;
+                    do {
+                        SPRITE_I(t, 4, i)->visible = 0;
+                        i++;
+                    } while (i < 6);
+                    t->state = 4;
+                }
+            }
+        }
+        break;
+    case 4:
+        sndFXKeyOff(task->sfx);
+        sndFXCtrl(task->sfx, 7, 0);
+        task->sfx = 0xFFFFFFFF;
+        fn_3_90064(lbl_3_data_81FC[0x24]);
+        SPRITE(t, 10)->visible = 1;
+        t->state = 5;
+        break;
+    case 5:
+        if (SPRITE(task, 10)->animState == 2) {
+            task->state = 6;
+        }
+        break;
+    case 6:
+        task->done = 1;
+        break;
+    }
+
+    i = 0;
+    do {
+        pick = (t->_1E + i) % 6 + 1;
+        SPRITE_I(t, 10, i)->child = SPRITE(t, pick + 15);
+        SPRITE(t, pick + 15)->link = SPRITE_I(t, 10, i);
+        if (SPRITE_I(t, 10, i)->visible == 0) {
+            SPRITE_I(t, 10, i)->frame = (fn_3_107988(pick) == 0) << 16;
+        }
+        i++;
+    } while (i < 6);
 }
+#endif
 
 // .text:0x0011E308 size:0x5C mapped:0x8075D39C
 void fn_3_11E308(void) {
