@@ -45,7 +45,16 @@ void fn_3_15F9AC(void) {
 
 // .text:0x0015F9C0 size:0x98 mapped:0x8079EA54
 void fn_3_15F9C0(void) {
-    return;
+
+    if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154.disabled != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    lbl_803CC1B8->_10--;
+    lbl_3_common_bss_35154.level = lbl_3_data_27F10.scale * (lbl_3_data_27F10.duration - lbl_803CC1B8->_10) / lbl_3_data_27F10.duration;
+    if (lbl_803CC1B8->_10 == 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 
 // .text:0x0015FA58 size:0x12C mapped:0x8079EAEC
