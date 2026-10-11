@@ -268,7 +268,28 @@ void fn_80021980(SoundGroupData* data) {
 
 // .text:0x800219B4 size:0xEC
 void f_initSound(void) {
-    return;
+    u8 mode;
+    u8 outputMode;
+
+    *(u32*)lbl_80158740 = 0xABF16D9C;
+    lbl_80158740[0] = 'S';
+    lbl_80158740[1] = 'N';
+    lbl_80158740[2] = 'D';
+    lbl_80158740[3] = '@';
+    initSound(lbl_800EFBB4, NULL, lbl_8015C740, 0x21BE0);
+    fn_800A8F68();
+    fn_800A648C();
+    mode = OSGetSoundMode();
+    outputMode = 1;
+    if (mode != 0) {
+        outputMode = mode;
+    }
+    lbl_800EF808.outputMode = outputMode;
+    lbl_800EF808.soundMode = mode;
+    sndOutputMode(mode);
+    OSSetSoundMode(lbl_800EF808.soundMode != 0);
+    sndVolume(lbl_800EF808.volumeA, 0, 0xFD);
+    sndVolume(lbl_800EF808.volumeB, 0, 0xFE);
 }
 
 // .text:0x80021AA0 size:0x20
