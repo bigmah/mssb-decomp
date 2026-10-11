@@ -222,9 +222,7 @@ extern const f32 lbl_1_rodata_75D0;
 
 // fn_1_1B2C8, size:0x15C
 // Debug viewer: move the selected actor with the sticks/triggers.
-// NONMATCHING 32%: same operations; the original loads every input before the first store (scheduling/conversion order)
-#if NONMATCHING
-void fn_1_1B2C8(void) {
+static inline void moveSelectedActor(void) {
     ChallengePad* pad = (ChallengePad*)&lbl_803C77B8;
     ChallengeViewerActor* actor = (ChallengeViewerActor*)(lbl_8036E548 + lbl_803CC1B8->actorIndex * 0x27C + 0xC04);
     f32 rx;
@@ -240,6 +238,12 @@ void fn_1_1B2C8(void) {
     lbl_1_data_FB18.y = ry;
     lbl_1_data_FB18.x = rx;
     actor->rot.z = lbl_1_data_FB18.z;
+}
+
+// NONMATCHING 32%: same operations; the original loads every input before the first store (scheduling/conversion order)
+#if NONMATCHING
+void fn_1_1B2C8(void) {
+    moveSelectedActor();
 }
 #endif
 
@@ -352,9 +356,7 @@ extern const f32 lbl_1_rodata_75EC;
 
 // fn_1_1B424, size:0x298
 // Debug viewer: orbit/pan the camera with the pad (Z held = freeze) and build the view matrix.
-// NONMATCHING 83%: everything after the pad block matches; the pad reads/int->float conversions are scheduled differently
-#if NONMATCHING
-void fn_1_1B424(void) {
+static inline void updateViewerCamera(void) {
     Mtx rotX;
     Mtx rotY;
     Mtx rot;
@@ -391,6 +393,12 @@ void fn_1_1B424(void) {
     cam->target.y += cam->pos.y;
     cam->target.z += cam->pos.z;
     makeLookAtMatrix(cam->view, &cam->pos, &lbl_1_data_FB0C, &cam->target);
+}
+
+// NONMATCHING 83%: everything after the pad block matches; the pad reads/int->float conversions are scheduled differently
+#if NONMATCHING
+void fn_1_1B424(void) {
+    updateViewerCamera();
 }
 #endif
 
@@ -1155,7 +1163,6 @@ void ANIMGet(void* animBank);
 void fn_800BDC88(ChallengeDrawCollection* table, u16 index, u16 id, void* layout, void* animBank, void* sknHeader);
 void fn_800BD548(ChallengeDrawNode* entry, u8 numArgs, ...);
 void fn_800B2C08(ChallengeDrawActor* actor, u16 bone);
-void fn_1_1C3CC(u8* object);
 
 // fn_1_1C8C0, size:0x324
 // Debug viewer: relocate the 24 loaded model files and create their actors.
@@ -1236,5 +1243,45 @@ void fn_1_1C8C0(u8* object) {
         banks++;
     }
     lbl_803CC1B8->update = fn_1_1C3CC;
+}
+#endif
+
+extern u8 lbl_803CBBC0; // current frame buffer (0/1)
+// Minimal draw-list links (cf. DrawNode in main/file_80069BDC.h), one per frame buffer.
+typedef struct ChallengeDrawLink {
+    u32 link; // set by fn_800A7D4C
+    void (*draw)(void);
+} ChallengeDrawLink;
+extern ChallengeDrawLink lbl_1_data_FAE8[2]; // fn_1_1ADA4 (grid)
+extern ChallengeDrawLink lbl_1_data_FAF8[2]; // fn_1_1A774 (bones)
+extern void fn_800A7D4C(s32 layer, void* node);
+void fn_1_1B7DC(void);
+
+// fn_1_1C3CC, size:0x4F4
+// Debug viewer main update: menu, actor/camera control, then queue the draws.
+// NONMATCHING 58%: the original addresses lbl_1_data_FB0C/FB18/FAE8/FAF8 from one .data base (lbl_1_data_F888 + off); plus the scheduling of the inlined fn_1_1B2C8/fn_1_1B424
+#if NONMATCHING
+void fn_1_1C3CC(u8* object) {
+    Mtx44 proj;
+    ChallengeRosterQueue* task = lbl_803CC1B8;
+
+    C_MTXFrustum(proj, lbl_1_rodata_752C, lbl_1_rodata_7530, lbl_1_rodata_7534, lbl_1_rodata_7538, lbl_1_rodata_753C, lbl_1_rodata_7540);
+    GXSetProjection(proj, GX_PERSPECTIVE);
+    fn_1_1B7DC();
+    if (task->_17 != 0) {
+        moveSelectedActor();
+    } else {
+        updateViewerCamera();
+    }
+    PSMTXCopy(lbl_1_bss_69F0.matrix, (MtxPtr)(lbl_1_bss_69FC + 0x10)); // TODO type
+    lbl_1_bss_69F0.selectedActor = task->actorIndex;
+    fn_800A7D4C(0, &lbl_1_data_FAE8[lbl_803CBBC0]);
+    if (task->viewMode != 2) {
+        fn_800A7D4C(0, &lbl_1_data_FAF8[lbl_803CBBC0]);
+    }
+    fn_1_1D110();
+    if (task->_18 != 0) {
+        fn_1_1A3B4();
+    }
 }
 #endif

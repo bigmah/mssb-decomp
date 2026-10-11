@@ -203,6 +203,8 @@ void fn_1_1CBE4(u8* object);
 
 void fn_1_1C8C0(u8* object);
 
+void fn_1_1C3CC(u8* object);
+
 void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 
 void fn_1_1A290(ChallengeDrawCollection* collection, MtxPtr camera);
