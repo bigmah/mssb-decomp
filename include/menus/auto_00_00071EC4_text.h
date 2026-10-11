@@ -70,4 +70,5 @@ void fn_2_738C8(void);
 s32 fn_2_7302C(void);
 void fn_2_7265C(void);
 
+void fn_2_72E54(u8* o);
 #endif

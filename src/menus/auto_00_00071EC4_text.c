@@ -1950,3 +1950,69 @@ void fn_2_7265C(void) {
     SetMenu(menu);
     fn_800B0A5C_insertQueue((void*)fn_80051D00, 0x3000);
 }
+
+// Layout objects in lbl_80371C30 (see LayoutObj in main/file_8000F150.h).
+typedef struct MnObj {
+    /*0x00*/ u8 _00[0x54];
+    /*0x54*/ u32 flags;
+    /*0x58*/ u32 color;
+    /*0x5C*/ s32 frame; // 16.16 fixed
+    /*0x60*/ u8 _60[4];
+    /*0x64*/ s16 anim;
+    /*0x66*/ u8 _66[2];
+    /*0x68*/ u8 state;
+} MnObj;
+
+typedef struct MnSlot {
+    /*0x0*/ MnObj* obj;
+    /*0x4*/ void* owner;
+} MnSlot;
+
+// Owner of a run of layout objects starting at baseIdx.
+typedef struct MnOwner {
+    /*0x00*/ u8 _00[0x14];
+    /*0x14*/ u16 baseIdx;
+} MnOwner;
+
+#define MN_SLOTS ((MnSlot*)lbl_80371C30)
+#define MN_OBJ(o, i) (MN_SLOTS[((MnOwner*)(o))->baseIdx + (i)].obj)
+#define F410_S32(off) (*(s32*)((u8*)&lbl_2_bss_F410 + (off)))
+
+extern u8 lbl_80108EC4[];
+extern u8 lbl_2_data_2AF08[];
+
+// fn_2_72E54, size:0x1D4
+// NONMATCHING 80%: zero kept in r30/slot base in r31 swapped vs ours, search loop uses lbz not lbzu
+#if NONMATCHING
+void fn_2_72E54(u8* o) {
+    s32 j;
+    s32 found = -1;
+    u8 v;
+    if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
+        MnSlot* slots = MN_SLOTS;
+        MnSlot* next = slots + 1;
+        s32 zero = 0;
+        u8* tbl = lbl_80108EC4;
+        slots[((MnOwner*)o)->baseIdx].obj->frame = zero;
+        slots[((MnOwner*)o)->baseIdx].obj->state = 1;
+        next[((MnOwner*)o)->baseIdx].obj->frame = zero;
+        next[((MnOwner*)o)->baseIdx].obj->state = 1;
+        v = lbl_800FE930[lbl_80361B20[0xF4] * 6 + F410_S32(0x10)];
+        for (j = 0; j < 6; j++) {
+            if (tbl[j] == v) {
+                found = j;
+                break;
+            }
+        }
+        MN_OBJ(o, 2)->frame = lbl_2_data_2AF08[found] << 18;
+        v = lbl_800FE5D4[F410_S32(0x10)];
+        for (j = 0; j < 6; j++) {
+            if (tbl[j] == v) {
+                break;
+            }
+        }
+        lbl_803CBBC4[2] = 1;
+        lbl_803CBBC4[3] = 1;
+    }
+}
+#endif
