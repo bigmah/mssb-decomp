@@ -5,6 +5,8 @@
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
 #include "main/file_800BD8C4.h"
+#include "main/file_80063028.h" // GameBone
+#include "main/file_80024184.h" // TexArchive
 
 // One shadow-casting light camera (0xE0 bytes).
 typedef struct ShadowCamera {
@@ -62,10 +64,7 @@ typedef struct SKAccBuffer {
 
 // Skinning lists (game variant of the charPipeline skinning header).
 // vertDst / skBzeroBase are byte offsets into the caller's vertex buffer.
-typedef struct SKNBone {
-    /* 0x00 */ u8 pad0[0xF0];
-    /* 0xF0 */ MtxPtr skinMtx;
-} SKNBone;
+typedef GameBone SKNBone; // skinMtx at 0xF0
 
 typedef struct SKN1List {
     /* 0x00 */ Mtx43 m;
@@ -100,7 +99,8 @@ typedef struct SKNAccList {
     /* 0x42 */ u16 count;
 } SKNAccList;
 
-typedef struct SKNHeader {
+// Same object as the SDK sHdr (C3/actor.h, C3/skinning.h).
+typedef struct sHdr {
     /* 0x00 */ u16 numSk1List;
     /* 0x02 */ u16 numSk2List;
     /* 0x04 */ u16 numSkAccList;
@@ -115,19 +115,6 @@ typedef struct SKNHeader {
     /* 0x20 */ u32 flushCount;
 } SKNHeader;
 
-typedef struct TextureHeaderEntry {
-    /* 0x00 */ void* data;     // file offset, relocated by convertTextureHeader
-    /* 0x04 */ void* palette;  // file offset, relocated by convertTextureHeader
-    /* 0x08 */ u8 pad8[0x14];
-    /* 0x1C */ u16 index;
-    /* 0x1E */ u8 pad1E[2];
-} TextureHeaderEntry;
-
-typedef struct TextureHeader {
-    /* 0x00 */ u16 count;
-    /* 0x02 */ u8 pad2[2];
-    /* 0x04 */ TextureHeaderEntry entries[1];  // count entries
-} TextureHeader;
 
 void fn_800BDEA0(void);
 void fn_800BDF70(ActorObject* obj);
@@ -173,7 +160,7 @@ void SKN2Vecs16Norms16NoTouch(Mtx43 m0, Mtx43 m1, u8* weights, f32* src, f32* ds
 void fn_800C02C8(Mtx43 m0, Mtx43 m1, u8* weights, s16* src, s16* dst, u32 count);
 void SKNAccVecs16Norms16Iu161(Mtx43 m, u16 count, f32* src, f32* dst, u16* indices, u8* weights);
 void SKNAccVecs16Norms16Iu162(Mtx43 m, u16 count, s16* src, s16* dst, u16* indices, u8* weights);
-void convertTextureHeader(TextureHeader* hdr);
-void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(void*, void*));
+void convertTextureHeader(TexArchive* hdr);
+void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*)); // merge sort
 
 #endif

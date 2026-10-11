@@ -24,7 +24,7 @@ extern u8 lbl_80366B18[];
 extern void fn_2_68DAC(s32 index, void* result);
 extern void fn_80068720(s32);
 extern void fn_8001F228(void);
-extern void fn_80021410(void);
+extern s32 fn_80021410(void);
 extern void fn_2_54474(void);
 extern u8* lbl_2_bss_1A8230[];
 extern u8* lbl_2_bss_1A8238;
@@ -57,7 +57,7 @@ extern void fn_2_467FC(void);
 extern void fn_2_468DC(void);
 extern void fn_2_4AB1C(void);
 extern s32 fn_2_46D00(void);
-extern void fn_2_46D94(s16* a, s16* b, s16 count, s32 c, s32 d);
+extern void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
 extern s32 fn_8006CDC0(s32 team);
 extern s32 fn_2_44E2C(s32 ch);
 

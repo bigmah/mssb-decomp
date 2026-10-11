@@ -5,10 +5,10 @@
 #include "main/file_80063028.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/gd.h"
+#include "main/file_80024184.h" // TexImage
 
 struct QuadVtx;
 struct QuadState;
-struct SpriteTexInfo;
 struct DrawNode;
 
 // GXSetProjectionv-style projection: type, then the six used terms of the 4x4 matrix.
@@ -22,7 +22,7 @@ typedef struct SpriteProj {
 typedef struct SpriteState {
     /*0x00*/ Mtx mtx;
     /*0x30*/ SpriteProj proj;
-    /*0x4C*/ struct SpriteTexInfo* tex[7]; // texture loaded into each map
+    /*0x4C*/ TexImage* tex[7]; // texture loaded into each map
     /*0x68*/ u16 texSerial[8];
     /*0x78*/ u32 zMode;      // BP register 0x40 (GX_BP_REG_ZMODE) value
     /*0x7C*/ u32 savedZMode;
@@ -122,16 +122,16 @@ void initSound(SoundConfig* config, u8* aiStack, u8* heapStart, u32 heapSize);
 void SndFree(void* ptr);
 void* SndAlloc(u32 size);
 
-void DrawSprite(s32 prim, struct QuadVtx* verts, s32 count, struct SpriteTexInfo* tex, u16 width, u16 height);
+void DrawSprite(s32 prim, struct QuadVtx* verts, s32 count, TexImage* tex, u16 width, u16 height);
 void DrawNullSprite(struct QuadVtx* verts, s32 count); // triangle strip
 void fn_800B12DC(struct QuadVtx* verts, s32 count); // triangle fan
-void fn_800B1314(struct QuadVtx* verts, struct SpriteTexInfo* tex, u16 width, u16 height); // textured quad
-void DrawSprite_TexObj(struct QuadState* quad, struct SpriteTexInfo* tex); // textured quad
+void fn_800B1314(struct QuadVtx* verts, TexImage* tex, u16 width, u16 height); // textured quad
+void DrawSprite_TexObj(struct QuadVtx* verts, TexImage* tex); // textured quad
 void fn_800B1388(struct QuadState* quad); // untextured quad
 void fn_800B1188(void);
 void fn_800B13C0(Vec* pos, u32* colors, s32 count); // triangle fan
 s32 AllocateSprite(s32 layer, s32 needed);
-void fn_800B1468(Vec* pos, u32 color, struct SpriteTexInfo* tex); // textured quad
+void fn_800B1468(Vec* pos, u32 color, TexImage* tex); // textured quad
 void fn_800B24D4(s32 layer);
 void fn_800B2AC8(LoadedActorLayout* layout);
 void fn_800B2240(SpriteDrawCmd* cmd);
@@ -139,7 +139,7 @@ void fn_800B251C(void);
 void fn_800B2854(u8* buf, s32 bufSize, Mtx44 proj, s32 projType, s32 numLayers, s32* layerIds, s32* layerSizes);
 void fn_800B27A4(s32 fracBits);
 void fn_800B27DC(Mtx44 m, s32 type); // set projection (GXSetProjection)
-s32 fn_800B1EBC(struct SpriteTexInfo* tex, s32 map, u32 width, u32 height);
+s32 fn_800B1EBC(TexImage* tex, s32 map, u32 width, u32 height);
 
 void fn_800B0934(void);
 

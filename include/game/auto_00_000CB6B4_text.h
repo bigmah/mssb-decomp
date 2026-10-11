@@ -3,7 +3,7 @@
 
 #include "mssbTypes.h"
 
-void fn_3_CB6B4(void);
-void fn_3_CB6EC(void);
+void fn_3_CB6B4(void** file);
+void fn_3_CB6EC(f32 x, f32 y, f32 z);
 
 #endif
