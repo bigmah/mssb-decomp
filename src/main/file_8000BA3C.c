@@ -6,6 +6,8 @@
 // main/file_8000A0AC
 void fn_8000A0AC(f32* curve, AnimFrame* a, AnimFrame* b, f32 t);
 s32 fn_8000A3EC(Mtx out, SpriteDrawParams* params, AnimFrame* a, AnimFrame* b, f32* curve, f32 t, f32 z);
+void interpolatePointsBezier_Vec2s(f32* curve, AnimKeyV0* p0, AnimKeyV0* p1, AnimKeyV0* p2, AnimKeyV0* p3, s32 mode, f32 t);
+s32 fn_8000AF1C(Mtx out, SpriteDrawParams* params, AnimKeyV0* a, AnimKeyV0* b, void* animC, f32* curve, f32 t);
 
 // main/file_800B0724
 void DrawNullSprite(QuadVtx* verts, s32 count); // draw triangle strip
@@ -653,9 +655,205 @@ BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out)
 }
 
 // .text:0x8000D164 size:0x6D4
-void fn_8000D164(void) {
-    return;
+// NONMATCHING: ~75% (large function written as equivalent C): the original keeps the color channels in stack arrays; register allocation differs
+#if NONMATCHING
+s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, SpriteBank* bank) {
+    SpriteDrawParams params;
+    Mtx m;
+    f32 curve[4];
+    u32 subTime;
+    s32 drawOk;
+    u16* subLoop;
+    void* animC;
+    AnimTrack* track;
+    AnimBlockV0** blockPtr;
+    AnimBlockV0* block;
+    AnimKeyV0* key;
+    AnimKeyV0* next;
+    AnimKeyV0* k;
+    AnimLoop* loop;
+    u16* loops;
+    u32 t;
+    u32 start;
+    s32 numBlocks;
+    s32 result;
+    s32 n;
+    s32 idx;
+    s32 i;
+    u16 keyTime;
+    u16 prevTime;
+    u32 colR;
+    u32 colG;
+    u32 colB;
+    u32 colA;
+    u32 dt;
+    u32 span;
+    f32 f;
+
+    // TODO type: anim->table->tracks[trackIdx]
+    track = *(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8);
+    animC = anim->unkC;
+    t = *time;
+    result = 0;
+    loops = track->loops;
+    numBlocks = track->count;
+    *outLoop = NULL;
+
+    // Apply the loop markers (last one first).
+    loop = (AnimLoop*)(loops + 2) + loops[0];
+    for (n = loops[0]; n != 0; n--) {
+        loop--;
+        if (t >= (u32)loop->end << 16) {
+            *outLoop = &loop->start;
+            result = loop->mode + 1;
+            if (loop->mode == 0) {
+                t = t % ((u32)loop->end << 16);
+            } else if (loop->mode == 2) {
+                start = **outLoop << 16;
+                t = start + (t - start) % (((u32)loop->end << 16) - start);
+            }
+            *time = t;
+            break;
+        }
+    }
+
+    numBlocks--;
+    // TODO type: &track->blocks[numBlocks - 1]
+    blockPtr = (AnimBlockV0**)((u8*)track + numBlocks * 4 + 8);
+    lbl_80366188.unk7F = 0;
+    colR = color >> 24;
+    colG = (color >> 16) & 0xFF;
+    colB = (color >> 8) & 0xFF;
+    colA = color & 0xFF;
+
+    do {
+        block = *blockPtr--;
+        idx = block->count;
+        n = idx;
+        key = &block->keys[idx];
+        next = key - 1;
+        while (n-- != 0) {
+            keyTime = key[-1].time;
+            idx--;
+            key--;
+            prevTime = keyTime;
+            if (t < (u32)keyTime << 16) {
+                next = key;
+                continue;
+            }
+
+            // Find where the current segment started.
+            if (key->linked) {
+                k = key;
+                for (i = n; i != 0; i--) {
+                    if (!(n != 1 && k[-1].linked)) {
+                        prevTime = k[-1].time;
+                    }
+                    k--;
+                    n--;
+                }
+            }
+            if (next->kind == 0) {
+                next = key;
+            }
+            if (key->kind == 0) {
+                break;
+            }
+
+            f = 1.0f;
+            dt = t - ((u32)keyTime << 16);
+            span = (u32)(next->time - keyTime) << 16;
+            if (dt < span) {
+                f = (f32)dt / (f32)span;
+            }
+            if (key->curved) {
+                if (key[-1].curved && idx != 0) {
+                    if (key[1].curved) {
+                        interpolatePointsBezier_Vec2s(curve, key - 1, key, key + 1, key + 2, 1, f);
+                    } else {
+                        interpolatePointsBezier_Vec2s(curve, key - 1, key - 1, key, key + 1, 2, f);
+                    }
+                } else if (idx == 0) {
+                    interpolatePointsBezier_Vec2s(curve, key, key + 1, key + 1, key + 2, 0, f);
+                } else {
+                    interpolatePointsBezier_Vec2s(curve, key, key + 1, key + 2, key + 2, 0, f);
+                }
+            }
+            flags |= fn_8000AF1C(m, &params, key, next, animC, curve, f);
+            PSMTXConcat(mtx, m, m);
+            for (i = 0; i < 4; i++) {
+                params.color[i] = ModulateColor(params.color[i], colR, colG, colB, colA);
+            }
+            switch (key->blend) {
+            case 0:
+                fn_800B2160(1);
+                break;
+            case 1:
+                fn_800B2160(2);
+                break;
+            case 2:
+                fn_800B2160(3);
+                break;
+            }
+            switch (key->kind) {
+            case 1:
+            case 2:
+                fn_8000E7BC((SpriteElem*)key, m, &params, flags);
+                drawOk = TRUE;
+                if (lbl_80366188.drawCallback != NULL && key->useCallback) {
+                    drawOk = lbl_80366188.drawCallback(&lbl_80366188);
+                }
+                if (drawOk) {
+                    fn_800B1388(&lbl_80366188);
+                }
+                break;
+            case 3:
+                drawOk = TRUE;
+                if (lbl_80366188.drawCallback != NULL && key->useCallback) {
+                    lbl_80366188.elem = key;
+                    lbl_80366188.bank = NULL;
+                    lbl_80366188.perCornerColor = 1;
+                    lbl_80366188.unk7E = 1;
+                    memcpy(lbl_80366188.u.circle.mtx, m, sizeof(Mtx));
+                    lbl_80366188.u.circle.color0 = params.color[0];
+                    lbl_80366188.u.circle.color1 = params.color[1];
+                    lbl_80366188.u.circle.x = ((Circle2DElem*)key)->x;
+                    lbl_80366188.u.circle.y = ((Circle2DElem*)key)->y;
+                    lbl_80366188.u.circle.radius = 128.0f;
+                    lbl_80366188.u.circle.radius2 = params.radius2;
+                    lbl_80366188.u.circle.segments = params.segments;
+                    lbl_80366188.u.circle.arcSegments = params.arcSegments;
+                    drawOk = lbl_80366188.drawCallback(&lbl_80366188);
+                }
+                if (drawOk) {
+                    if (params.radius2 == 0.0f) {
+                        fn_8000E2D4((Circle2DElem*)key, m, &params);
+                    } else {
+                        fn_8000DC9C((Circle2DElem*)key, m, &params);
+                    }
+                }
+                break;
+            case 4:
+                fn_8000EC0C((SpriteElem*)key, bank, m, &params, flags);
+                drawOk = TRUE;
+                if (lbl_80366188.drawCallback != NULL && key->useCallback) {
+                    drawOk = lbl_80366188.drawCallback(&lbl_80366188);
+                }
+                if (drawOk) {
+                    DrawSprite_TexObj(&lbl_80366188, lbl_803CBBD8);
+                }
+                break;
+            case 5:
+                subTime = t - ((u32)prevTime << 16);
+                fn_8000D164(&subTime, anim, key->subTrack, m, flags, params.color[0], &subLoop, bank);
+                break;
+            }
+            break;
+        }
+    } while (--numBlocks != 0);
+    return result;
 }
+#endif
 
 // .text:0x8000D838 size:0x6C
 void fn_8000D838(void) {

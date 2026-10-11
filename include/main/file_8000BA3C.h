@@ -159,7 +159,31 @@ typedef struct Anim {
     /* 0x05 */ u8 paramCount; // words per decoded frame
     /* 0x06 */ u16 unk6; // 0: old format (fn_8000D164)
     /* 0x08 */ AnimTrackTable* table;
+    /* 0x0C */ void* unkC; // passed to fn_8000AF1C
 } Anim;
+
+// Old-format (anim->unk6 == 0) keyframe: an uncompressed sprite element.
+typedef struct AnimKeyV0 {
+    /* 0x00 */ u8 blend : 4; // 0..2: blend mode 1..3
+    /* 0x00 */ u8 kind : 4;  // 1, 2: quad, 3: circle, 4: sprite, 5: nested track
+    /* 0x01 */ u8 flipX : 1;
+    /* 0x01 */ u8 flipY : 1;
+    /* 0x01 */ u8 linked : 1; // continues the previous key's segment
+    /* 0x01 */ u8 perCorner : 1;
+    /* 0x01 */ u8 curved : 1;
+    /* 0x01 */ u8 useCallback : 1;
+    /* 0x01 */ u8 unk1_b6 : 2;
+    /* 0x02 */ u16 subTrack; // nested track, or texture index for sprites
+    /* 0x04 */ u8 pad4[8];
+    /* 0x0C */ u16 time;
+    /* 0x0E */ u8 padE[0x1A];
+} AnimKeyV0; // size 0x28
+
+typedef struct AnimBlockV0 {
+    /* 0x00 */ u16 count;
+    /* 0x02 */ u16 pad2;
+    /* 0x04 */ AnimKeyV0 keys[1];
+} AnimBlockV0;
 
 // Quad being assembled for drawing.
 // Circle parameters handed to the draw callback instead of vertices.
@@ -216,6 +240,7 @@ BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out)
 void fn_8000CC4C(Anim* anim, AnimBlock* block, u8* src, u32 ofs, u32 len);
 s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, s16* path);
 s32 fn_8000C194(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, SpriteBank* bank);
+s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 color, u16** outLoop, SpriteBank* bank);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
