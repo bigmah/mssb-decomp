@@ -92,9 +92,36 @@ void SndFree(void* ptr) {
 }
 
 // .text:0x800B099C size:0x78
-void SndAlloc(void) {
-    return;
+// NONMATCHING 95%: block-cur temp lands in r4 instead of r6 (matches only if `size` is reused to hold newCur as an integer)
+#if NONMATCHING
+void* SndAlloc(u32 size) {
+    u8* cur;
+    u8* hdrEnd;
+    u8* block;
+    u8* newCur;
+    u32 taken;
+    s32 remaining;
+    size = (size + 3) & ~3;
+    cur = lbl_803CBB10->cur;
+    // Round cur + header up to 32 bytes (only the low address bits matter).
+    hdrEnd = cur + sizeof(SndBlockHdr);
+    block = hdrEnd + (-(u32)(size_t)hdrEnd & 0x1F);
+    taken = block - cur;
+    taken += size;
+    newCur = block + size;
+    remaining = lbl_803CBB10->end - newCur;
+    if (remaining < 0) {
+        OSReport("sNp_SndAlloc:: no enough space:%d\n", remaining);
+        while (TRUE) {
+        }
+    }
+    ((SndBlockHdr*)block)[-1].prevCur = cur;
+    ((SndBlockHdr*)block)[-1].size = taken;
+    lbl_803CBB10->free = remaining;
+    lbl_803CBB10->cur = newCur;
+    return block;
 }
+#endif
 
 extern u16 lbl_803CC1B0;
 extern u16 lbl_803CC1B2;
