@@ -516,7 +516,24 @@ void fn_8001C234(void) {
 
 // .text:0x8001C528 size:0x60
 void fn_8001C528(void) {
-    return;
+    s32 i;
+
+    for (i = 0; i < 13; i++) {
+        lbl_8036E548.actors[i]._060 = -1;
+        lbl_8036E548.actors[i].anim[0] = -1;
+        lbl_8036E548.actors[i].anim[1] = -1;
+        lbl_8036E548.actors[i].anim[2] = -1;
+        lbl_8036E548.actors[i]._068 = 0;
+        lbl_8036E548.actors[i]._06A[0] = 0;
+        lbl_8036E548.actors[i].mode[1] = 1;
+        lbl_8036E548.actors[i]._25F[0] = 0;
+        lbl_8036E548.actors[i]._262[0] = 0;
+        lbl_8036E548.actors[i]._268 = 0;
+        lbl_8036E548.actors[i]._269[0] = 0;
+        lbl_8036E548.actors[i]._269[1] = 0;
+        lbl_8036E548.actors[i]._269[2] = 0;
+        lbl_8036E548.actors[i]._26F = 0;
+    }
 }
 
 // .text:0x8001C588 size:0xF4
