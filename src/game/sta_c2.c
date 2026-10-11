@@ -13,7 +13,7 @@ extern char lbl_3_rodata_2878[];
 #pragma dont_inline on
 extern void* fn_80033A24(void*, s32, s32, s32, s32, s32);
 extern const f64 lbl_3_rodata_2800;
-extern f32 lbl_3_rodata_2664;
+extern const f32 lbl_3_rodata_2664;
 extern const f32 lbl_3_rodata_280C[];
 extern f64 lbl_3_rodata_2668;
 extern void fn_8004C094(void*);
@@ -1061,7 +1061,7 @@ s32 fn_3_CFB44(u8* a) {
 // .text:0x000CFD58 size:0x374 mapped:0x8070EDEC
 // Seeds the ring particles of p's emitter (p+0xA8): 5 per ring around the owner
 // (p+0xA0), each ring 10 degrees further round and 5 frames later.
-// NONMATCHING ~90%: target hoists all 11 float constants into f21-f31 (we keep 8 addresses in GPRs)
+// NONMATCHING 97%: hoisted float constants land in a different f21-f31 order
 #if NONMATCHING
 void fn_3_CFD58(u8* p) {
     u8* h = *(u8**)(p + 0xA8);
@@ -1073,9 +1073,7 @@ void fn_3_CFD58(u8* p) {
     *(u8**)(h + 0x20) = p;
     *(s32*)(h + 0x10) = lbl_3_bss_ADD0[0];
     for (i = 0; e != NULL; e = e->next) {
-        s32 dir = -(s8)(*(u8**)(p + 0xA0))[0xD0];
-        ring = i / 5;
-        ang = lbl_3_rodata_2658[0] * ((f32)(lbl_3_rodata_2788 * (i % 5) / lbl_3_rodata_2790) + (f32)(dir * ring * 10));
+        ang = lbl_3_rodata_2658[0] * ((f32)(lbl_3_rodata_2788 * (i % 5) / lbl_3_rodata_2790) + (f32)(-(s8)(*(u8**)(p + 0xA0))[0xD0] * (ring = i / 5) * 10));
         e->f1C = e->f4 = lbl_3_rodata_2730 * (f32)cos(ang) + *(f32*)(*(u8**)(p + 0xA0) + 0xA0);
         e->f20 = e->f8 = lbl_3_rodata_2664;
         e->f24 = e->fC = lbl_3_rodata_2730 * (f32)sin(ang) + *(f32*)(*(u8**)(p + 0xA0) + 0xA8);
@@ -2327,7 +2325,7 @@ typedef struct { f32 x, y, z; u8 fC; u8 padD; u8 fE; u8 padF; u8 pad[0xC]; } D5E
 extern D5E80Ent lbl_3_data_1849C[];
 extern u8 lbl_3_bss_A024;
 extern u8 lbl_3_bss_A025;
-extern f32 lbl_3_rodata_2664;
+extern const f32 lbl_3_rodata_2664;
 void fn_3_D5E80(s32* a) {
     Mtx m2;
     D5B6CCpy cpy;
