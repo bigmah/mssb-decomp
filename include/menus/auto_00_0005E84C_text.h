@@ -54,7 +54,7 @@ void fn_2_6020C(MenuTask* task, MenuItem* item);
 void fn_2_60394(MenuTask* task, MenuItem* item);
 void fn_2_6051C(void);
 void fn_2_607DC(void);
-void fn_2_60968(void);
+void fn_2_60968(MenuTask* task, MenuItem* item);
 void fn_2_60AF0(void);
 void fn_2_60C78(void);
 void fn_2_60DF4(void);
