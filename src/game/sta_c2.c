@@ -242,9 +242,51 @@ void fn_3_CBC18(void) {
 }
 
 // .text:0x000CBF80 size:0x254 mapped:0x8070B014
-void fn_3_CBF80(void) {
-    return;
+extern const f32 lbl_3_rodata_2674;
+extern const f32 lbl_3_rodata_267C;
+extern const f64 lbl_3_rodata_2680;
+extern const f64 lbl_3_rodata_2688;
+extern const f32 lbl_3_rodata_2690;
+// Lays the 4-node chain out hanging from the object (p+0xA0 pos, p+0xC0 yaw, p+0xC4 nodes),
+// folding it along +z where it would go below the ground.
+// NONMATCHING 96%: frame 0x10 smaller; 0.15 double reloaded inside the fold branch in target; f30/f31 swapped
+#if NONMATCHING
+void fn_3_CBF80(u8* p) {
+    Control ctrl;
+    Mtx m;
+    Vec v;
+    Vec cur;
+    s32 n;
+    u32 i;
+    v = lbl_3_rodata_24E8[0];
+    v.y = lbl_3_rodata_2674;
+    ctrl.type = 0;
+    CTRLSetRotation(&ctrl, lbl_3_rodata_2664, *(f32*)(p + 0xC0), lbl_3_rodata_2664);
+    CTRLBuildMatrix(&ctrl, m);
+    PSMTXMultVec(m, &v, &v);
+    v.y = v.y * lbl_3_rodata_2678;
+    v.x += *(f32*)(p + 0xA0);
+    v.y += *(f32*)(p + 0xA4);
+    v.z += *(f32*)(p + 0xA8);
+    cur = v;
+    for (n = 4; n != 0; n--) {
+        (*(RopeNode**)(p + 0xC4))[n - 1].pos.x = cur.x;
+        (*(RopeNode**)(p + 0xC4))[n - 1].pos.y = cur.y;
+        (*(RopeNode**)(p + 0xC4))[n - 1].pos.z = cur.z;
+        cur.y -= lbl_3_rodata_267C;
+        if (cur.y - lbl_3_rodata_2680 < lbl_3_rodata_2688) {
+            f32 dz = lbl_3_rodata_267C * (f32)cos((f32)acos((f32)(lbl_3_rodata_2680 - cur.y) / lbl_3_rodata_267C));
+            cur.y = lbl_3_rodata_2690;
+            cur.z += dz;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        (*(RopeNode**)(p + 0xC4))[i].prev = (*(RopeNode**)(p + 0xC4))[i].pos;
+        memset(&(*(RopeNode**)(p + 0xC4))[i].vel, 0, sizeof(Vec));
+        memset(&(*(RopeNode**)(p + 0xC4))[i].force, 0, sizeof(Vec));
+    }
 }
+#endif
 
 // .text:0x000CC1D4 size:0x180 mapped:0x8070B268
 void fn_3_CC1D4(void) {
@@ -383,7 +425,7 @@ void fn_3_CC5C4(u8* p) {
     CTRLSetRotation((Control*)p, 0.0f, *(f32*)(p + 0xC0), 0.0f);
     CTRLSetTranslation((Control*)p, *(f32*)(p + 0xA0), -*(f32*)(p + 0xA4), *(f32*)(p + 0xA8));
     CC438_inl();
-    ((void (*)(u8*))fn_3_CBF80)(p);
+    fn_3_CBF80(p);
 }
 
 // .text:0x000CC81C size:0x408 mapped:0x8070B8B0

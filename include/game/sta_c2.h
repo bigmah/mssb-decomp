@@ -4,11 +4,23 @@
 #include "mssbTypes.h"
 #include "Dolphin/vec.h"
 
+// One node of the verlet chain simulated by fn_3_D1F2C (4 or 8 nodes per object, 0x40 bytes each).
+typedef struct RopeNode {
+    /*0x00*/ f32 mass;
+    /*0x04*/ f32 invMass;
+    /*0x08*/ f32 damp;
+    /*0x0C*/ Vec pos;
+    /*0x18*/ Vec prev;
+    /*0x24*/ Vec vel;
+    /*0x30*/ Vec force;
+    /*0x3C*/ s32 pinned;
+} RopeNode;
+
 void fn_3_CB8A8(u8*);
 void fn_3_CBA9C(u8* p);
 void fn_3_CBAFC(u8* p);
 void fn_3_CBC18(void);
-void fn_3_CBF80(void);
+void fn_3_CBF80(u8* p);
 void fn_3_CC1D4(void);
 void fn_3_CC354(f32* p);
 void fn_3_CC438(void);
