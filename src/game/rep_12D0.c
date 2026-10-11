@@ -301,8 +301,9 @@ positions:
 #endif
 
 // .text:0x00078574 size:0x1BC mapped:0x806B7608
-// 99%: only idx/runner-ptr registers swapped (ours r6/r10, orig r10/r6); `s16 idx` fixed the ball ptr (r7)
+// NONMATCHING 99%: only idx/runner-ptr registers swapped (ours r6/r10, orig r10/r6); `s16 idx` fixed the ball ptr (r7)
 // decl order, locals' types, r/e forms and inline idx all tried; no change
+#if NONMATCHING
 void fn_3_78574(s16 arg) {
     s32 flag = 0;
     s16 idx;
@@ -371,6 +372,7 @@ void fn_3_78574(s16 arg) {
         g_FieldingLogic._113 = idx + 3;
     }
 }
+#endif
 
 // .text:0x00078730 size:0x394 mapped:0x806B77C4
 void fn_3_78730(void) {
