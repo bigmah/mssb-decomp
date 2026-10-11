@@ -509,19 +509,17 @@ void fn_80026998(ParticleParamsF* prm) {
 #endif
 
 // .text:0x80026E58 size:0x4A8
-// NONMATCHING 66%: register allocation
+// NONMATCHING 98%: the original keeps the identity-matrix source pointer in r31 (ours r27) for the struct copy
 #if NONMATCHING
 s32 fn_80026E58(Emitter* e) {
     MtxBox ident;
-    Vec tgt;
-    Vec d;
     Vec v;
+    Vec tgt;
+    AttractParticle* p = (AttractParticle*)e->particles;
     s32 done = 0;
     s32 a;
-    AttractParticle* p;
 
     ident = lbl_800E685C;
-    p = (AttractParticle*)e->particles;
     if (e->u.attract.intensity > 0.0f) {
         GXLoadPosMtxImm(ident.m, GX_PNMTX0);
         GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
@@ -536,9 +534,9 @@ s32 fn_80026E58(Emitter* e) {
             } else if (p->life > 0) {
                 if (lbl_80366158._28 == 0) {
                     p->t = p->t + p->dt;
-                    PSVECSubtract(&p->pos, &tgt, &d);
-                    PSVECScale(&d, p->t, &d);
-                    PSVECAdd(&tgt, &d, &p->pos);
+                    PSVECSubtract(&p->pos, &tgt, &v);
+                    PSVECScale(&v, p->t, &v);
+                    PSVECAdd(&tgt, &v, &p->pos);
                 }
                 PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
                 if (p->life > p->life0 - p->fadeIn) {
