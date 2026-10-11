@@ -1080,3 +1080,56 @@ void fn_3_5CDB4(void) {
         game->scoreBook_teamDisplayed = fn_3_6BD6C();
     }
 }
+
+// fn_3_5DD30, size:0x224
+// NONMATCHING 89%: register allocation only (walk-off loop counters, case 3 tail scheduling)
+#if NONMATCHING
+void fn_3_5DD30(void) {
+    s32 homeRuns;
+    s32 i;
+    s32 scored = 0;
+    if (g_Ball.deadBallRBIsAddedInd != 0) {
+        return;
+    }
+    if (g_Ball.deadBallReason == 3) {
+        if (g_Runners[2].runnerOnFieldOrOutOrScored != 0) {
+            scored = 1;
+            g_Runners[2].scoredOnGRD = 1;
+        }
+        if (g_Runners[3].runnerOnFieldOrOutOrScored != 0) {
+            scored++;
+            g_Runners[3].scoredOnGRD = 1;
+        }
+        if (g_Scores.inning >= g_Scores.finalInning && g_Scores.bottomHalf != 0 &&
+            g_Scores.runs[0][0] == g_Scores._9E && scored == 2) {
+            scored = 1;
+            g_Runners[2].scoredOnGRD = 0;
+        }
+        g_Ball.deadBallRBIsAddedInd = 1;
+        lbl_3_common_bss_32A94._26 = scored;
+        g_Scores.runs[g_Scores.bottomHalf][g_Scores.inning] = g_Scores._9E;
+        g_Scores._9C = scored;
+        if (g_Ball.AtBat_ContactResult == 0) {
+            g_Ball.AtBat_ContactResult = 1;
+        }
+    } else if (g_Ball.deadBallReason == 4) {
+        homeRuns = g_Scores.runs[1][0];
+        for (i = 3; i >= 0; i--) {
+            if (g_Runners[i].runnerOnFieldOrOutOrScored == 1 && (i >= 2 || g_Runners[i].baseReachedAtTimeOfThrow >= 2)) {
+                g_Runners[i].scoredOnGRD = 1;
+                homeRuns++;
+                scored++;
+            }
+            if (g_Scores.inning >= g_Scores.finalInning && g_Scores.bottomHalf != 0 && g_Scores.runs[0][0] < homeRuns) {
+                break;
+            }
+        }
+        g_Scores._9C = scored;
+        g_Ball.deadBallRBIsAddedInd = 1;
+        lbl_3_common_bss_32A94._26 = scored;
+        if (g_Ball.AtBat_ContactResult == 0) {
+            g_Ball.AtBat_ContactResult = 1;
+        }
+    }
+}
+#endif

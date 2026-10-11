@@ -9,7 +9,7 @@ typedef struct {
     /*0x04*/ s16 runs[2][19]; // [team][0]: total, [team][n]: inning n
     /*0x50*/ s16 _50[2][19];
     /*0x9C*/ s16 _9C; // runners that crossed home this play
-    /*0x9E*/ s16 _9E;
+    /*0x9E*/ s16 _9E; // runs the batting team will have after this play
     /*0xA0*/ s16 _A0;
     /*0xA2*/ s16 _A2;
     /*0xA4*/ s16 winningTeam; // 2: tie
@@ -97,5 +97,6 @@ void fn_3_5B0C4(void);
 void fn_3_5B41C(void);
 void fn_3_5FF10(void);
 void fn_3_5CDB4(void);
+void fn_3_5DD30(void);
 
 #endif

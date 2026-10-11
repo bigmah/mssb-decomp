@@ -2868,6 +2868,8 @@ typedef struct {
     /* 0x0 */ s16 _0;
     /* 0x2 */ s16 _2;
     /* 0x4 */ s16 _4;
+    /* 0x6 */ u8 _06[0x26 - 0x6];
+    /* 0x26 */ s8 _26; // runs scored on the last dead ball
 } lbl_3_common_bss_32A94_s;
 
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
