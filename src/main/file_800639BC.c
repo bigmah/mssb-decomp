@@ -97,8 +97,25 @@ u8 translateStarPitch(u8 star) {
 }
 
 // .text:0x8006487C size:0x9C
-void translateStarSwing(void) {
-    return;
+u8 translateStarSwing(u8 star) {
+    switch (star) {
+    case 0: return 0x84;
+    case 1: return 0x86;
+    case 2: return 0x90;
+    case 3: return 0x92;
+    case 4: return 0x98;
+    case 5: return 0x9A;
+    case 6: return 0x8C;
+    case 7: return 0x8E;
+    case 8: return 0x88;
+    case 9: return 0x8A;
+    case 10: return 0x94;
+    case 11: return 0x96;
+    case 12: return 0x9D;
+    case 13: return 0x9E;
+    case 14: return 0x9F;
+    }
+    return star;
 }
 
 // .text:0x80064918 size:0x54
