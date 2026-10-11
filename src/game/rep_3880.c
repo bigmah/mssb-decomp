@@ -311,8 +311,9 @@ void fn_3_147F94(void) {
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
 }
 
-// 96%: orig reads vertices 2-3 of the 2nd quad via lfsu (r4 = base+0xc); we fold to base-relative lfs; also li r3,1 scheduling
+// NONMATCHING 96%: orig reads vertices 2-3 of the 2nd quad via lfsu (r4 = base+0xc); we fold to base-relative lfs; also li r3,1 scheduling
 // .text:0x001480E0 size:0x174 mapped:0x80787174
+#if NONMATCHING
 void fn_3_1480E0(u8* o) {
     f32* v;
     GXSetCullMode(2);
@@ -356,6 +357,7 @@ void fn_3_1480E0(u8* o) {
     GXWGFifo.u32 = *(u32*)(o + 0x44);
     }
 }
+#endif
 
 // .text:0x00148254 size:0x180 mapped:0x807872E8
 void fn_3_148254(u8* a, u8* b) {
