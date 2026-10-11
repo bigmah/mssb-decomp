@@ -38,6 +38,30 @@ typedef struct MenuItem {
 
 #define MENU_SPRITE(task, item) (lbl_80371C30[(task)->baseIdx + (item)->sprite].obj)
 
+// High-score style record: a value and two tags.
+typedef struct MenuRecord {
+    /*0x0*/ s32 value;
+    /*0x4*/ s16 _4;
+    /*0x6*/ s16 _6;
+} MenuRecord; // size: 0x8
+
+// Large menus work area (lbl_2_bss_1A824C points at it); only the fields used here.
+typedef struct MenuData {
+    /*0x000000*/ u8 _000000[0x1972BC];
+    /*0x1972BC*/ u8 _1972BC;
+    /*0x1972BD*/ u8 _1972BD[3];
+    /*0x1972C0*/ u8 _1972C0;
+    /*0x1972C1*/ u8 _1972C1[3];
+    /*0x1972C4*/ MenuRecord records[8][5];
+    /*0x197404*/ s16 _197404;
+    /*0x197406*/ u8 _197406[0x197416 - 0x197406];
+    /*0x197416*/ u8 _197416;
+    /*0x197417*/ u8 _197417;
+    /*0x197418*/ u8 _197418;
+} MenuData;
+
+extern MenuData* lbl_2_bss_1A824C;
+
 s16 fn_2_53BC8(void* item);
 
 void fn_2_5E84C(void);
@@ -45,7 +69,7 @@ void fn_2_5EB78(void);
 void fn_2_5ED3C(void);
 void fn_2_5EE34(void);
 void fn_2_5EEBC(MenuTask* task, MenuItem* item);
-void fn_2_5F08C(void);
+void fn_2_5F08C(MenuTask* task, MenuItem* item);
 void fn_2_5F2A8(void);
 void fn_2_5F458(void);
 void fn_2_5FDC4(void);

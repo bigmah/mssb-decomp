@@ -59,8 +59,39 @@ void fn_2_5EEBC(MenuTask* task, MenuItem* item) {
 }
 
 // .text:0x0005F08C size:0x21C
-void fn_2_5F08C(void) {
-    return;
+void fn_2_5F08C(MenuTask* task, MenuItem* item) {
+    s32 value;
+    s16 ev = fn_2_53BC8(item);
+    if (ev != -1) {
+        item->state = ev;
+    }
+    switch (item->state) {
+    case 0:
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        item->state = 0x26;
+        break;
+    case 2:
+        value = lbl_2_bss_1A824C->_197417;
+        fn_800363D8((SpaniOwner*)task, item->sprite, 1, 6, value % 10);
+        fn_800363D8((SpaniOwner*)task, item->sprite, 2, 6, (value / 10) % 10);
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_5C = 0;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->flags |= 2;
+        lbl_80371C30[task->baseIdx + item->sprite].obj->_68 = 1;
+        item->state = 0x25;
+        break;
+    case 5:
+        item->timer = 10;
+        item->state = 6;
+        break;
+    case 6:
+        if (item->timer-- <= 0) {
+            lbl_80371C30[task->baseIdx + item->sprite].obj->flags &= ~2;
+        }
+        break;
+    case 1:
+    case 0x25:
+        break;
+    }
 }
 
 // .text:0x0005F2A8 size:0x1B0
