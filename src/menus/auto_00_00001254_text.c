@@ -2708,3 +2708,171 @@ void fn_2_B920(void) {
     }
 }
 #endif
+
+// NONMATCHING 75%: the original repeats the sound call per branch and indexes state via stwx; same transitions
+#if NONMATCHING
+// fn_2_57F0, size:0x790
+void fn_2_57F0(u8 team, u16 held, u16 pressed, u16 repeat) {
+    s32* state = (s32*)lbl_2_bss_F468;
+    u8* done = lbl_2_bss_F468 + 0x37;
+    state[team + 2] = state[team];
+    if ((repeat & 8) || (pressed & 8)) {
+        if (state[team] == 9) {
+            state[team] = 2;
+            fn_800625A4(team, 0xE);
+        } else if (state[team] == 10) {
+            if (done[team] != 0) {
+                state[team] = 9;
+                fn_800625A4(team, 0x18);
+            } else {
+                state[team] = 2;
+                fn_800625A4(team, 0xE);
+            }
+        } else {
+            switch (state[team]) {
+            case 0: state[team] = 5; break;
+            case 1: state[team] = 0; break;
+            case 2: state[team] = 8; break;
+            case 3: state[team] = 7; break;
+            case 4: state[team] = 6; break;
+            case 5: state[team] = 7; break;
+            case 6: state[team] = 4; break;
+            case 7: state[team] = 1; break;
+            case 8:
+                if (g_d_GameSettings.GameModeSelected != 5) {
+                    state[team] = 10;
+                } else if (done[team] != 0) {
+                    state[team] = 9;
+                } else {
+                    state[team] = 2;
+                }
+                break;
+            }
+            if (state[team + 2] != state[team]) {
+                fn_800625A4(team, 0xE);
+            }
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else if ((repeat & 4) || (pressed & 4)) {
+        if (state[team] == 9) {
+            if (g_d_GameSettings.GameModeSelected != 5) {
+                state[team] = 10;
+                fn_800625A4(team, 0x18);
+            } else {
+                state[team] = 8;
+                fn_800625A4(team, 0xE);
+            }
+        } else if (state[team] == 10) {
+            state[team] = 8;
+            fn_800625A4(team, 0xE);
+        } else {
+            switch (state[team]) {
+            case 0: state[team] = 1; break;
+            case 1: state[team] = 7; break;
+            case 2:
+                if (g_d_GameSettings.GameModeSelected != 5) {
+                    if (done[team] != 0) {
+                        state[team] = 9;
+                    } else {
+                        state[team] = 10;
+                    }
+                } else if (done[team] != 0) {
+                    state[team] = 9;
+                } else {
+                    state[team] = 8;
+                }
+                break;
+            case 3: state[team] = 0; break;
+            case 4: state[team] = 6; break;
+            case 5: state[team] = 0; break;
+            case 6: state[team] = 4; break;
+            case 7: state[team] = 5; break;
+            case 8: state[team] = 2; break;
+            }
+            if (state[team + 2] != state[team]) {
+                fn_800625A4(team, 0xE);
+            }
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else if ((repeat & 1) || (pressed & 1)) {
+        if (state[team] == 9) {
+            state[team] = 0;
+            fn_800625A4(team, 0xE);
+        } else if (state[team] == 10) {
+            state[team] = 1;
+            fn_800625A4(team, 0xE);
+        } else {
+            switch (state[team]) {
+            case 0: state[team] = 4; break;
+            case 1:
+                if (g_d_GameSettings.GameModeSelected != 5) {
+                    state[team] = 10;
+                } else if (done[team] != 0) {
+                    state[team] = 9;
+                } else {
+                    return;
+                }
+                break;
+            case 2: state[team] = 3; break;
+            case 3: state[team] = 5; break;
+            case 4: state[team] = 2; break;
+            case 5: state[team] = 4; break;
+            case 6: state[team] = 8; break;
+            case 7: state[team] = 6; break;
+            case 8: state[team] = 7; break;
+            case 9: break;
+            case 10: state[team] = 1; break;
+            }
+            if (state[team + 2] != state[team]) {
+                fn_800625A4(team, 0xE);
+            }
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    } else if ((repeat & 2) || (pressed & 2)) {
+        if (state[team] == 9) {
+            state[team] = 0;
+            fn_800625A4(team, 0xE);
+        } else if (state[team] == 10) {
+            if (done[team] != 0) {
+                state[team] = 9;
+                fn_800625A4(team, 0x18);
+            } else {
+                state[team] = 1;
+                fn_800625A4(team, 0xE);
+            }
+        } else {
+            switch (state[team]) {
+            case 0:
+                if (done[team] != 0) {
+                    state[team] = 9;
+                    fn_800625A4(team, 0x18);
+                } else {
+                    state[team] = 2;
+                    fn_800625A4(team, 0xE);
+                }
+                break;
+            case 1:
+                if (g_d_GameSettings.GameModeSelected != 5) {
+                    state[team] = 10;
+                } else if (done[team] != 0) {
+                    state[team] = 9;
+                } else {
+                    return;
+                }
+                break;
+            case 2: state[team] = 4; break;
+            case 3: state[team] = 2; break;
+            case 4: state[team] = 5; break;
+            case 5: state[team] = 3; break;
+            case 6: state[team] = 7; break;
+            case 7: state[team] = 8; break;
+            case 8: state[team] = 6; break;
+            }
+            if (state[team + 2] != state[team]) {
+                fn_800625A4(team, 0xE);
+            }
+        }
+        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+    }
+}
+#endif
