@@ -2386,3 +2386,64 @@ void fn_2_9ACC(u16 team) {
     }
 }
 #endif
+
+// NONMATCHING 85%: both duplicate scans inline as in the original; registers and flag-store forms differ
+#if NONMATCHING
+static inline s32 fn_2_A6E0_shared(void) {
+    s32 i;
+    s32 j;
+    for (i = 0; i < 9; i++) {
+        s8 a = lbl_803C6724[2 + i];
+        for (j = 0; j < 9; j++) {
+            if (a == (s8)lbl_803C6724[0xB + j] && a != -1) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// fn_2_A6E0, size:0x4E0
+void fn_2_A6E0(void) {
+    s32 k;
+    s32 n = 0;
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        return;
+    }
+    if (lbl_2_bss_100B8[0x2E] != 0 && g_d_GameSettings._10 == 0) {
+        lbl_2_bss_3E0[1] = fn_2_A50C() == 0;
+        lbl_2_bss_3E0[2] = fn_2_A50C() == 0;
+        if ((s8)lbl_2_bss_3E0[1] == 0 && (s8)lbl_2_bss_3E0[2] == 0) {
+            lbl_2_bss_3E0[0] = -1;
+        }
+    } else {
+        for (k = 1; k < 3; k++) {
+            if (fn_2_A6E0_shared() == 0) {
+                lbl_2_bss_3E0[k - 1] = 1;
+            } else {
+                lbl_2_bss_3E0[k - 1] = 0;
+            }
+            if (fn_2_A6E0_shared() == 0) {
+                lbl_2_bss_3E0[k + 1] = 1;
+            } else {
+                lbl_2_bss_3E0[k + 1] = 0;
+            }
+        }
+        if ((s8)lbl_2_bss_3E0[0] == 0) {
+            n = 1;
+        }
+        if ((s8)lbl_2_bss_3E0[1] == 0) {
+            n++;
+        }
+        if ((s8)lbl_2_bss_3E0[2] == 0) {
+            n++;
+        }
+        if ((s8)lbl_2_bss_3E0[3] == 0) {
+            n++;
+        }
+        if (n == 4) {
+            lbl_2_bss_3E0[0] = -1;
+        }
+    }
+}
+#endif
