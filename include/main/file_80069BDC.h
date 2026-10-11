@@ -101,7 +101,8 @@ typedef struct ChallengeState {
     /*0x43BC*/ s16 _43BC; // 0..1000
     /*0x43BE*/ u8 _43BE[0x4415 - 0x43BE];
     /*0x4415*/ u8 _4415;
-    /*0x4416*/ u8 _4416[0x441B - 0x4416];
+    /*0x4416*/ u8 _4416;
+    /*0x4417*/ u8 _4417[0x441B - 0x4417];
     /*0x441B*/ u8 _441B;
     /*0x441C*/ u8 _441C;
     /*0x441D*/ u8 _441D;
@@ -111,7 +112,9 @@ typedef struct ChallengeState {
     /*0x4422*/ u8 _4422;
     /*0x4423*/ u8 _4423[0x4445 - 0x4423];
     /*0x4445*/ u8 _4445; // nonzero: the team is already set up
-    /*0x4446*/ u8 _4446[0x444D - 0x4446];
+    /*0x4446*/ u8 _4446[0x444B - 0x4446];
+    /*0x444B*/ s8 _444B; // -1: none
+    /*0x444C*/ u8 _444C;
     /*0x444D*/ u8 _444D[54];
 } ChallengeState;
 
