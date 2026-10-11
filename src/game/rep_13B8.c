@@ -3137,6 +3137,8 @@ void fn_3_85744(int i) {
 
 // .text:0x00085840 size:0x230 mapped:0x806C48D4
 // 97%: logic matches; register roles differ (arr copied to r10 and bc4 lands in r5; original keeps arr in r5, bc4 in r11, temp r10)
+// NONMATCHING 97%: register roles of arr/temps (see note above)
+#if NONMATCHING
 int fn_3_85840(int i, int b, int* arr) {
     u8 bc9;
     u8* r;
@@ -3207,6 +3209,7 @@ int fn_3_85840(int i, int b, int* arr) {
     }
     return 0;
 }
+#endif
 
 // .text:0x00085A70 size:0x1D4 mapped:0x806C4B04
 int fn_3_85A70(int i) {
