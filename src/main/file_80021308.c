@@ -208,8 +208,12 @@ void fn_80021650(DiskFileEntry* entry, void* dst, void* user) {
 }
 
 // .text:0x800216F8 size:0x60
-void fn_800216F8(void) {
-    return;
+void fn_800216F8(u8 group, s32 (*callback)(u8* state)) {
+    SoundLoadTask* task = fn_800B0A5C_insertQueue(fn_80021758, 1);
+    task->state = 0;
+    task->group = group;
+    task->callback = callback;
+    lbl_803CC1B8->done = 0;
 }
 
 // .text:0x80021758 size:0x1FC
