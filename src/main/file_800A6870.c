@@ -520,9 +520,30 @@ void fn_800A7AD4(void) {
 }
 
 // .text:0x800A7AD8 size:0xD4
+// NONMATCHING 96%: original computes the grid pointer as base+0 then +0xEE (extra addi); 0.0f should be lbl_803CCEC8
+#if NONMATCHING
 void fn_800A7AD8(void) {
-    return;
+    Grid_802ECFC0* w = &lbl_802ECFC0;
+    s32 x;
+    s32 y = 0x38;
+    u8* p = w->grid + 0xEE;
+
+    do {
+        x = 0x88;
+        y -= 8;
+        do {
+            x -= 8;
+            p[-2] = x;
+            p[-1] = y;
+            p -= 2;
+        } while (x > 0);
+    } while (y > 0);
+    DCFlushRangeNoSync(p, 0x100);
+    GXInitTlutObj(&w->tlut, lbl_80110060, GX_TL_RGB5A3, 16);
+    GXInitTexObjCI(&w->tex, lbl_8010F460, 128, 128, GX_TF_C4, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
+    GXInitTexObjLOD(&w->tex, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
 }
+#endif
 
 // .text:0x800A7BAC size:0x5C
 void fn_800A7BAC(u8 flag) {
