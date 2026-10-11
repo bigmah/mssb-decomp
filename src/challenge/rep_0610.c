@@ -2878,3 +2878,75 @@ void fn_1_10E2C(void* model, f32 (*view)[4], u32 colorX, u32 colorY, u32 colorZ)
     GXSetZMode(1, 3, 1);
 }
 #endif
+
+// lbl_1_data_F570 viewed as the challenge screen-overlay settings.
+typedef struct {
+    /* 0x00 */ f32 scale;
+    /* 0x04 */ u32 color;
+    /* 0x08 */ f32 far;
+    /* 0x0C */ f32 depth;
+    /* 0x10 */ u32 colorTop;
+    /* 0x14 */ u32 colorBottom;
+} ChallengeOverlay;
+
+typedef struct { Mtx m; } ChallengeMtx;
+extern const ChallengeMtx lbl_1_rodata_7364;
+
+static inline void fn_1_C5AC_quad(f32 z, u32 color) {
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(0.0f, 0.0f, z);
+    GXColor1u32(color);
+    GXPosition3f32(640.0f, 0.0f, z);
+    GXColor1u32(color);
+    GXPosition3f32(640.0f, 448.0f, z);
+    GXColor1u32(color);
+    GXPosition3f32(0.0f, 448.0f, z);
+    GXColor1u32(color);
+}
+
+// .text:0xC5AC size:0x434
+// NONMATCHING ~85%: the overlay settings are reached through the pooled .data base
+#if NONMATCHING
+void fn_1_C5AC(void) {
+    ChallengeOverlay* overlay = (ChallengeOverlay*)lbl_1_data_F570;
+    ChallengeMtx identity = lbl_1_rodata_7364;
+    Mtx44 projection;
+
+    C_MTXOrtho(projection, 0.0f, 448.0f, 0.0f, 640.0f, 0.0f, overlay->far);
+    GXSetProjection(projection, GX_ORTHOGRAPHIC);
+    GXLoadPosMtxImm(identity.m, 0);
+    GXSetCurrentMtx(0);
+    fn_1_F2C(4, 0, 0);
+
+    // depth-only pass
+    GXSetColorUpdate(0);
+    GXSetAlphaUpdate(0);
+    GXSetZMode(1, GX_ALWAYS, 1);
+    fn_1_C5AC_quad(-overlay->depth, overlay->color);
+    GXSetColorUpdate(1);
+    GXSetAlphaUpdate(1);
+    GXSetZMode(1, GX_LEQUAL, 1);
+
+    // additive light shaft
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(330.0f, 0.0f, -1.0f);
+    GXColor1u32(overlay->colorTop);
+    GXPosition3f32(310.0f, 0.0f, -1.0f);
+    GXColor1u32(overlay->colorTop);
+    GXPosition3f32(220.0f, 336.0f, -1.0f);
+    GXColor1u32(overlay->colorBottom);
+    GXPosition3f32(420.0f, 336.0f, -1.0f);
+    GXColor1u32(overlay->colorBottom);
+
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    fn_1_C5AC_quad(-2.0f, overlay->color);
+
+    GXSetColorUpdate(0);
+    GXSetAlphaUpdate(0);
+    GXSetZMode(1, GX_ALWAYS, 1);
+    fn_1_C5AC_quad(-overlay->depth, overlay->color);
+    GXSetColorUpdate(1);
+    GXSetAlphaUpdate(1);
+}
+#endif
