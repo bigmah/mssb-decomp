@@ -4,11 +4,17 @@
 #include "main/file_8000F150.h"
 #include "menus/rep_0788.h"
 #include "main/file_80069BDC.h"
+#include "main/file_8003A688.h"
+#include "static/GameSettings.h"
 #include <string.h>
 
 extern u8* lbl_2_bss_1A824C[];
 extern u8* lbl_2_bss_1A823C[];
-extern u8* lbl_2_bss_1A8240[];
+extern MenuSaveData* lbl_2_bss_1A8240[];
+extern u8* lbl_2_bss_1A8244[];
+extern u8 lbl_800E869C[];
+extern s16 lbl_2_data_20C48[];
+extern void fn_2_5EB78(void);
 extern u8 lbl_800EF808[];
 extern s16 lbl_2_data_1FD84[];
 extern s16 lbl_2_data_1FBB4[];
@@ -967,7 +973,7 @@ void fn_2_58510(MenuTableContext* menu, MenuItemState* item) {
 
 void fn_2_5853C(void) {
     s32 idx = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
-#define SRC (((StatInput*)(lbl_2_bss_1A8240[0] + 0x140))[idx])
+#define SRC (lbl_2_bss_1A8240[0]->stats[idx])
     MENU_STAT_IN->vals[0] = SRC.vals[0];
     MENU_STAT_IN->order[0] = SRC.order[0];
     MENU_STAT_IN->vals[1] = SRC.vals[1];
@@ -1002,6 +1008,160 @@ void fn_2_5853C(void) {
 }
 
 // .text:0x000587F8 size:0xFA4
+// Pad of the port that drives the menus.
+#define MENU_PAD (((MenuPad*)&lbl_803C77B8)[MENU_INPUT->port])
+#define MENU_INPUT ((MenuInputContext*)lbl_2_bss_1A824C[0])
+typedef struct MenuRecWork {
+    /*0x000000*/ u8 _000000[0x1972C4];
+    /*0x1972C4*/ MenuRecSet recs;
+} MenuRecWork;
+#define MENU_RECS (&((MenuRecWork*)lbl_2_bss_1A824C[0])->recs)
+
+// Debug/options page with 8 rows, driven by the menu task.
+// NONMATCHING 99.7%: case 6 copy loop picks r8/r7/r6 for j/table/offset where the original uses r5/r8/r7 (mr r7,r5 init)
+#if NONMATCHING
 void fn_2_587F8(void) {
-    return;
+    MenuTask* task = (MenuTask*)lbl_803CC1B8;
+    GameInitVariables* settings = &g_d_GameSettings;
+    SaveProgress* save = &lbl_80354768;
+    s32 i;
+    s32 j;
+    s32 k;
+
+    switch (task->state) {
+    case 0:
+        MENU_INPUT->secondarySelection = 0;
+        MENU_INPUT->selection = 0;
+        task->state = 1;
+        break;
+    case 1:
+        fn_2_1FFC4(8);
+        for (i = 0; i < 8; i++) {
+            fn_2_1FF10(i);
+            switch (i) {
+            case 0:
+                if (MENU_INPUT->selection == i &&
+                    ((MENU_PAD.down & 0x100) || ((MenuPad*)&lbl_803C77B8)[0].substickY > 0x32)) {
+                    task->state = 4;
+                }
+                break;
+            case 1:
+                if (MENU_INPUT->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A8244[0][0xF4] ^= 1;
+                    fn_2_5EB78();
+                }
+                break;
+            case 2:
+                if (MENU_INPUT->selection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        for (i = 0; i < 0x20; i++) {
+                            lbl_2_bss_1A8240[0]->vals[i] = (lbl_2_bss_1A8240[0]->vals[i] + 3) % 4;
+                        }
+                    } else if (down & 2) {
+                        for (i = 0; i < 0x20; i++) {
+                            lbl_2_bss_1A8240[0]->vals[i] = (lbl_2_bss_1A8240[0]->vals[i] + 1) % 4;
+                        }
+                    }
+                }
+                if (MENU_PAD.down & 0x20) {
+                    for (i = 0; i < 0x20; i++) {
+                        lbl_2_bss_1A8240[0]->stats[i]._13 = 0x46;
+                    }
+                }
+                if (MENU_PAD.down & 0x40) {
+                    for (i = 0; i < 0x20; i++) {
+                        lbl_2_bss_1A8240[0]->stats[i]._13 = 0;
+                    }
+                }
+                break;
+            case 3:
+                if (MENU_INPUT->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A824C[0][0x19785E] = (*(s8*)(lbl_2_bss_1A824C[0] + 0x19785E) + 1) % 5;
+                    fn_2_5EB78();
+                }
+                break;
+            case 4:
+                if (MENU_INPUT->selection == i && (MENU_PAD.down & 0x102)) {
+                    for (i = 0; i < 0x36; i++) {
+                        save->_CF18[i] = (save->_CF18[i] + 1) % 2;
+                    }
+                }
+                break;
+            case 5:
+                if (MENU_INPUT->selection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 1) {
+                        settings->_12 = (settings->_12 + 2) % 3;
+                        fn_2_5EB78();
+                    } else if (down & 2) {
+                        settings->_12 = (settings->_12 + 1) % 3;
+                        fn_2_5EB78();
+                    }
+                }
+                break;
+            case 6:
+                if (MENU_INPUT->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A824C[0][0x197862] ^= 1;
+                    fn_2_5EB78();
+                    for (j = 0; j < 7; j++) {
+                        if (j == 6) {
+                            MENU_RECS->groups[j][0].a = lbl_2_bss_1A8240[0]->recs.groups[6][0].a;
+                            MENU_RECS->groups[j][0].b = lbl_2_bss_1A8240[0]->recs.groups[6][0].b;
+                            MENU_RECS->groups[j][0].c = lbl_2_bss_1A8240[0]->recs.groups[6][0].c;
+                            MENU_RECS->groups[j][1].a = lbl_2_bss_1A8240[0]->recs.groups[6][1].a;
+                            MENU_RECS->groups[j][1].b = lbl_2_bss_1A8240[0]->recs.groups[6][1].b;
+                            MENU_RECS->groups[j][1].c = lbl_2_bss_1A8240[0]->recs.groups[6][1].c;
+                            MENU_RECS->groups[j][2].a = lbl_2_bss_1A8240[0]->recs.groups[6][2].a;
+                            MENU_RECS->groups[j][2].b = lbl_2_bss_1A8240[0]->recs.groups[6][2].b;
+                            MENU_RECS->groups[j][2].c = lbl_2_bss_1A8240[0]->recs.groups[6][2].c;
+                            MENU_RECS->groups[j][3].a = lbl_2_bss_1A8240[0]->recs.groups[6][3].a;
+                            MENU_RECS->groups[j][3].b = lbl_2_bss_1A8240[0]->recs.groups[6][3].b;
+                            MENU_RECS->groups[j][3].c = lbl_2_bss_1A8240[0]->recs.groups[6][3].c;
+                            MENU_RECS->groups[j][4].a = lbl_2_bss_1A8240[0]->recs.groups[6][4].a;
+                            MENU_RECS->groups[j][4].b = lbl_2_bss_1A8240[0]->recs.groups[6][4].b;
+                            MENU_RECS->groups[j][4].c = lbl_2_bss_1A8240[0]->recs.groups[6][4].c;
+                        } else {
+                            for (k = 0; k < 5; k++) {
+                                MENU_RECS->groups[j][k].a = lbl_2_bss_1A8240[0]->recs.groups[lbl_2_data_20C48[j]][k].a;
+                                MENU_RECS->groups[j][k].b = lbl_2_bss_1A8240[0]->recs.groups[lbl_2_data_20C48[j]][k].b;
+                                MENU_RECS->groups[j][k].c = lbl_2_bss_1A8240[0]->recs.groups[lbl_2_data_20C48[j]][k].c;
+                            }
+                        }
+                    }
+                    MENU_RECS->head[0].a = lbl_2_bss_1A8240[0]->recs.head[0].a;
+                    MENU_RECS->head[0].c = lbl_2_bss_1A8240[0]->recs.head[0].c;
+                    MENU_RECS->head[1].a = lbl_2_bss_1A8240[0]->recs.head[1].a;
+                    MENU_RECS->head[1].c = lbl_2_bss_1A8240[0]->recs.head[1].c;
+                    MENU_RECS->head[2].a = lbl_2_bss_1A8240[0]->recs.head[2].a;
+                    MENU_RECS->head[2].c = lbl_2_bss_1A8240[0]->recs.head[2].c;
+                    MENU_RECS->head[3].a = lbl_2_bss_1A8240[0]->recs.head[3].a;
+                    MENU_RECS->head[3].c = lbl_2_bss_1A8240[0]->recs.head[3].c;
+                    MENU_RECS->head[4].a = lbl_2_bss_1A8240[0]->recs.head[4].a;
+                    MENU_RECS->head[4].c = lbl_2_bss_1A8240[0]->recs.head[4].c;
+                }
+                break;
+            case 7:
+                if (MENU_INPUT->selection == i && (MENU_PAD.down & 0x102)) {
+                    for (i = 0; i < 0x36; i++) {
+                        u8 flag = lbl_800E869C[i];
+                        lbl_2_bss_1A8244[0][flag] = (lbl_2_bss_1A8244[0][flag] + 1) % 2;
+                    }
+                }
+                break;
+            }
+        }
+        if ((MENU_PAD.down & 0x200) || ((MenuPad*)&lbl_803C77B8)[0].substickY > 0x32) {
+            task->state = 4;
+        }
+        break;
+    case 4: {
+        SceneTask* parent = task->parent;
+        parent->_10 = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->state = 0;
+        break;
+    }
+    }
 }
+#endif

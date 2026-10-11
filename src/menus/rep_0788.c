@@ -177,7 +177,7 @@ void fn_2_20258(void) {
 }
 
 // .text:0x1FF10 size:0x4
-void fn_2_1FF10(void) {
+void fn_2_1FF10(s32 index) {
 }
 
 // .text:0x1FF0C size:0x4
