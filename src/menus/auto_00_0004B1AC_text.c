@@ -1562,3 +1562,10 @@ s32 fn_2_513E8(u16* str, u16 font) {
 }
 #endif
 
+// fn_2_51470, size:0xF8
+// NONMATCHING 79%: inlined fn_2_5156C/fn_2_513E8 schedule the table lookups differently, plus the dead trailing `blr`
+#if NONMATCHING
+s32 fn_2_51470(s32 index, u16 font) {
+    return fn_2_513E8(fn_2_5156C(index, font), font);
+}
+#endif

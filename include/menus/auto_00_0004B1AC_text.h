@@ -139,5 +139,7 @@ void fn_2_512C0(s32 index);
 
 s32 fn_2_513E8(u16* str, u16 font);
 
+s32 fn_2_51470(s32 index, u16 font);
+
 #endif
 
