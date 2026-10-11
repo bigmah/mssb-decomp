@@ -364,7 +364,48 @@ void fn_80011358(s32 index, s32 kind) {
 
 // .text:0x80011468 size:0x108
 void fn_80011468(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 13; i++) {
+        ActorMgrActor* actor = lbl_8036E548.active[i];
+        if (actor != NULL) {
+            ActorModel** model = &lbl_8036E548.models[actor->modelIndex].model;
+            switch (actor->kind) {
+            case 19:
+                fn_8004B6EC(actor, model);
+                break;
+            case 40:
+            case 41:
+                fn_8004B7F4(actor, model);
+                break;
+            case 38:
+                (*model)->_99 = 1;
+            case 18:
+                fn_8004BAEC(actor, model);
+                break;
+            case 14:
+            case 37:
+                fn_8005240C(actor, model);
+                break;
+            case 6:
+            case 10:
+            case 12:
+            case 24:
+            case 25:
+            case 26:
+            case 42:
+                (*model)->_99 = 1;
+                break;
+            case 20:
+            case 43:
+                if (actor->_062 == 0x40) {
+                    (*model)->_99 = 0;
+                } else {
+                    (*model)->_99 = 1;
+                }
+                break;
+            }
+        }
+    }
 }
 
 // fn_80011578, size:0x50
