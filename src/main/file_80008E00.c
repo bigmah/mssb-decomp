@@ -324,7 +324,133 @@ static inline void stopAllMotors(void) {
 
 // .text:0x80009180 size:0x55C
 void main(void) {
-    return;
+    u8 inGame;
+    BOOL reset;
+    OSSemaphore* sem;
+    u32 wasInGame;
+    s32 result;
+    u16 token;
+
+    wasInGame = 0;
+    initRenderMode(0, 0x40000, 0x10);
+    fn_800BEC30(1);
+    somethingSetTexturePointer();
+    fn_800A7AD8();
+    fn_800A76BC();
+    fn_800A6870(1, 0x438);
+    StartThreadForReadingFromDisk();
+    f_initSound();
+    fn_800A983C();
+    resetAllDrawingStructs_tonop();
+    fn_800A7D7C(lbl_801181A0[lbl_803CBBC0], 0x10);
+    fn_80021AA0();
+    DrawShadows(0);
+    fn_80036A3C();
+    fn_800356B8();
+    lbl_803CBBC2 = 0;
+    lbl_803CBBC1 = 0;
+    VISetPostRetraceCallback(PostRetraceCallback);
+    lbl_80366158._20 = 0;
+    lbl_80366158._23 = 0;
+    lbl_80366158.resetRequested = 0;
+    lbl_80366158.resetCode = OSGetResetCode();
+    minigamesSetSomePointers2();
+    fn_8003A2EC();
+    fn_8004B270();
+    lbl_80366158._28 = 0;
+    fn_80052188();
+    fn_80064534();
+    sem = &lbl_803C7420.semaphore;
+
+    do {
+        if (!wasInGame) {
+            fn_8001F16C();
+            fn_8001AF98();
+        }
+        fn_800A7BAC(1);
+        OSWaitSemaphore(sem);
+        GXSetCurrentGXThread();
+        if (!wasInGame) {
+            fn_8001E784();
+        }
+        fn_800A7BAC(0);
+        lbl_803CBBC0 ^= 1;
+        fn_800A9520();
+        fn_800A7D7C(lbl_801181A0[lbl_803CBBC0], 0x10);
+
+        inGame = updateInGameFlag();
+        if (wasInGame != inGame) {
+            if (inGame == 0) {
+                result = fn_80021188(fn_80008E08);
+                lbl_803CBBA8 = 0;
+            } else {
+                result = fn_800211BC(fn_80008E08);
+                lbl_803CBBA8 = 1;
+            }
+            if (result != 0) {
+                break;
+            }
+        }
+        wasInGame = inGame;
+
+        updateStream(inGame);
+        if (inGame) {
+            fn_8000F3E8(lbl_803CBBA0);
+        } else {
+            RunDrawScripts_with_stack_variables();
+            fn_800B251C();
+        }
+        OSWaitSemaphore(sem);
+        GXSetCurrentGXThread();
+        fn_8003A090();
+        while (lbl_803C7420._396 != 0) {
+        }
+        GXSetCurrentGXThread();
+        GXFlush();
+        if (GetDrawShadows()) {
+            GXSetCopyClear(lbl_803CD300, 0xFFFFFF);
+        }
+        fn_800A7DB0();
+        if (lbl_803CBBB8 != NULL) {
+            VISetBlack(TRUE);
+            VIFlush();
+            VIWaitForRetrace();
+            fn_80023D3C();
+            lbl_803CBBB8();
+            VISetBlack(FALSE);
+            VIFlush();
+            VIWaitForRetrace();
+        }
+        lbl_803CBBB8 = NULL;
+    } while (!checkResetRequested(inGame));
+
+    DVDDumpWaitingQueue();
+    GXSetCurrentGXThread();
+    token = rand();
+    GXSetDrawSync(token);
+    GXFlush();
+    while (token != GXReadDrawSync()) {
+    }
+    AIRegisterStreamCallback(NULL);
+    AIResetStreamSampleCount();
+    AISetStreamPlayState(0);
+    soundQuit();
+    VISetBlack(TRUE);
+    VIFlush();
+    VIWaitForRetrace();
+    fn_800A94C4();
+    if (lbl_80366158.resetRequested) {
+        stopAllMotors();
+        OSResetSystem(TRUE, 0, TRUE);
+        return;
+    }
+    reset = FALSE;
+    if (DVDCheckDisk() && lbl_803CBBA8 == 0) {
+        reset = TRUE;
+    }
+    reset = (reset == FALSE);
+    stopAllMotors();
+    OSResetSystem(reset, (fn_80023D3C() ? 2 : 0) | 1, FALSE);
 }
 
 // .text:0x800096DC size:0xC4
