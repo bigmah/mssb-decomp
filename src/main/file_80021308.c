@@ -426,8 +426,12 @@ void fn_80022634(void) {
 }
 
 // .text:0x800227A0 size:0x44
-void fn_800227A0(void) {
-    return;
+void fn_800227A0(DiskFileEntry* entry, void* dst, void* user) {
+    lbl_803716B8.loadedFlags |= 1;
+    lbl_803716B8.loading = 0;
+    lbl_803716B8.loadedFlags |= 2;
+    lbl_803716B8.loadedFlags |= 4;
+    lbl_803716B8.loadedFlags |= 8;
 }
 
 // .text:0x800227E4 size:0x1E8
