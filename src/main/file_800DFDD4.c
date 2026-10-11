@@ -1331,9 +1331,115 @@ void fn_800E40E4(HVQState* state, HVQMCPlane* mc) {
 #endif
 
 // .text:0x800E423C size:0x498
+// NONMATCHING 81%: register allocation and loop shape
+#if NONMATCHING
 void fn_800E423C(HVQM4SeqObj* seq, HVQMCPlane* mc) {
-    return;
+    HVQState* state = seq->state;
+    s32 typeRun = 0;
+    s32 procRun = 0;
+    s32 flag = 0;
+    s32 proc = 0;
+    s32 (*procTable)[3];
+    s32 x;
+    s32 y;
+    s32 i;
+    s16 v;
+    u8 bit;
+
+    if (state->mcbType.buf.ptr != NULL) {
+        HVQ_READBIT(&state->mcbType.buf, bit);
+        flag = bit ? 1 : 0;
+        typeRun = 0;
+        do {
+            v = fn_800E0CC8(&state->mcbType);
+            typeRun += v;
+        } while (v >= 0xFF);
+    }
+    if (state->mcbProc.buf.ptr != NULL) {
+        u8 bit1;
+
+        HVQ_READBIT(&state->mcbProc.buf, bit1);
+        HVQ_READBIT(&state->mcbProc.buf, bit);
+        proc = (bit1 ? 2 : 0) | (bit ? 1 : 0);
+        procRun = 0;
+        do {
+            v = fn_800E0CC8(&state->mcbProc);
+            procRun += v;
+        } while (v >= 0xFF);
+    }
+
+    procTable = lbl_800E82D8;
+    for (y = 0; y < seq->frameHeight; y += 8) {
+        mc[0].dst = mc[0].dstRow;
+        mc[1].dst = mc[1].dstRow;
+        mc[2].dst = mc[2].dstRow;
+        for (x = 0; x < seq->frameWidth; x += 8) {
+            if (procRun == 0) {
+                HVQ_READBIT(&state->mcbProc.buf, bit);
+                procRun = 0;
+                proc = procTable[bit ? 1 : 0][proc];
+                do {
+                    v = fn_800E0CC8(&state->mcbProc);
+                    procRun += v;
+                } while (v >= 0xFF);
+            }
+            procRun--;
+
+            if (proc == 0) {
+                // intra macroblock: DC values per block
+                HVQMCPlane* m = mc;
+                HVQPlaneDesc* plane = state->planes;
+                HVQBitBufTree* dcBuf = state->dcValues;
+
+                for (i = 0; i < 3; i++, m++, plane++, dcBuf++) {
+                    u8 n = plane->blocksPerMB;
+                    u16* blockOffs = plane->blockOffs;
+                    s32 k;
+
+                    for (k = 0; k < n; k++) {
+                        u16 off = *blockOffs++;
+                        s32 sum = 0;
+                        s16 dcMax = state->dcMax;
+                        s16 dcMin = state->dcMin;
+
+                        do {
+                            do {
+                                v = fn_800E0CC8(dcBuf);
+                                sum += v;
+                            } while (dcMin >= v);
+                        } while (v >= dcMax);
+                        m->dcPred += sum;
+                        m->blk[off].value = m->dcPred;
+                    }
+                }
+                fn_800E33AC(state, mc, 0, proc);
+            } else {
+                mc[0].dcPred = 0x7F;
+                mc[1].dcPred = 0x7F;
+                mc[2].dcPred = 0x7F;
+                if (typeRun == 0) {
+                    typeRun = 0;
+                    flag ^= 1;
+                    do {
+                        v = fn_800E0CC8(&state->mcbType);
+                        typeRun += v;
+                    } while (v >= 0xFF);
+                }
+                typeRun--;
+                fn_800E33AC(state, mc, flag, proc);
+            }
+            for (i = 0; i < 3; i++) {
+                mc[i].dst += mc[i].mbStepX;
+                mc[i].blk += mc[i].blkStepX;
+            }
+        }
+        for (i = 0; i < 3; i++) {
+            mc[i].dstRow += mc[i].mbStepY;
+            mc[i].blk = mc[i].blkRow += mc[i].blkStepY;
+        }
+    }
 }
+#endif
 
 // .text:0x800E46D4 size:0x3F4
 void fn_800E46D4(HVQM4SeqObj* seq, u8* dst, u8* ref0, u8* ref1) {
