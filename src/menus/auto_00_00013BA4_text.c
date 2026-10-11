@@ -141,5 +141,21 @@ void fn_2_14164(PortInput* in) {
 
 // .text:0x00014220 size:0x354
 void fn_2_14220(PortInput* in) {
-    return;
+    switch (lbl_2_bss_100B8.page) {
+    case 0:
+        fn_2_14164(in);
+        break;
+    case 1:
+        fn_2_1406C(in);
+        break;
+    case 2:
+        fn_2_13D70(in);
+        break;
+    case 3:
+        fn_2_13CA0(in);
+        break;
+    case 4:
+        fn_2_13BA4(in);
+        break;
+    }
 }
