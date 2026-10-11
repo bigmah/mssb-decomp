@@ -161,3 +161,13 @@ char* fn_1_A210(char* path) {
     return name;
 }
 
+// .text:0x0000A250 size:0x94
+void fn_1_A250(void) {
+    s32 i;
+
+    for (i = 0; i < 11; i++) {
+        lbl_1_common_bss_49A78._24[i] = -1;
+    }
+    lbl_1_common_bss_49A78._0C = -1;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
+}
