@@ -3484,7 +3484,7 @@ void fn_2_4970(u8 team, s32 empty) {
 }
 #endif
 
-// NONMATCHING 70%: plain loops; the original unrolls the unique-position check and the
+// NONMATCHING 85%: plain loops; the original unrolls the unique-position check and the
 // 54-entry star-rating table.
 #if NONMATCHING
 // fn_2_7504, size:0x840
