@@ -134,4 +134,6 @@ void fn_2_5184(u8 team);
 
 void fn_2_EAE0(void);
 
+void fn_2_CCE0(u8 team);
+
 #endif

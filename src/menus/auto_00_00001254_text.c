@@ -1076,3 +1076,32 @@ void fn_2_EAE0(void) {
     }
 }
 #endif
+
+// NONMATCHING 90%: team*4 index recomputed from the raw u8 param (clrlslwi) instead of reusing the clrlwi copy
+#if NONMATCHING
+// fn_2_CCE0, size:0x164
+void fn_2_CCE0(u8 team) {
+    s32 i;
+    if (lbl_2_bss_F468[team + 0x37] != 0) {
+        return;
+    }
+    for (i = 0; i < 9; i++) {
+        s32 v = (s8)(lbl_803C6724 + team * 9)[i + 2];
+        if (v == -1 || v == 0x36) {
+            break;
+        }
+    }
+    if (i == 9) {
+        lbl_2_bss_F468[team + 0x37] = 1;
+        ((s32*)lbl_2_bss_F468)[team + 2] = ((s32*)lbl_2_bss_F468)[team];
+        ((s32*)lbl_2_bss_F468)[team] = 9;
+        lbl_2_bss_F468[team + 0x41] = 0;
+        fn_800625A4(team, 0x14);
+        fn_80050138(1, -1, -1, -1, -1, 0);
+    } else {
+        ((s32*)lbl_2_bss_F468)[team + 2] = ((s32*)lbl_2_bss_F468)[team];
+        ((s32*)lbl_2_bss_F468)[team] = (s8)(lbl_803C6724 + team * 9)[i + 0x14];
+        fn_800625A4(team, 0xE);
+    }
+}
+#endif
