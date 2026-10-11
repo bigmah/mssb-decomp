@@ -6,7 +6,8 @@
 
 // Globals owned by other units (only the fields used here).
 typedef struct GameSettingsView {
-    /*0x00*/ u8 _00[0x7];
+    /*0x00*/ u8 _00[0x6];
+    /*0x06*/ u8 _06;
     /*0x07*/ u8 GameModeSelected;
     /*0x08*/ u8 _08;
     /*0x09*/ u8 StadiumID;
@@ -153,6 +154,18 @@ extern u8* lbl_803CBC24;
 extern u16 lbl_800EE930[];
 extern u16 lbl_803CB798[4];
 extern u16 lbl_803CB7A0[4];
+typedef struct Unk80366158 {
+    /*0x00*/ u8 _00[0x28];
+    /*0x28*/ u8 _28;
+} Unk80366158;
+
+extern Unk80366158 lbl_80366158;
+extern f32 fn_800B4A44(CharModel* model, u16 joint);
+extern f32 fn_800B4C40(CharModel* model);
+extern s32 fn_8004AD54(u8 stadium, u8 kind);
+extern void fn_8004B208(CharActor* actor, s16 anim, s32 a, f32 t);
+extern CharSlotList* ActorObjectInitTable(s32 count);
+extern void fn_800BDC88(CharSlotList* list, u16 first, u16 last, void* layout, s32 a, s32 b);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -2403,7 +2416,7 @@ void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, 
 }
 
 // .text:0x8001BA44 size:0x40C
-void fn_8001BA44(void) {
+void fn_8001BA44(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
     return;
 }
 
@@ -2983,9 +2996,9 @@ void fn_8001F228(void) {
         lbl_8036E548._2D6A[i] = -1;
     }
     lbl_8036E548.trail = NULL;
-    lbl_8036E548._2D94[0] = 0;
-    lbl_8036E548._2D94[1] = 0;
-    lbl_8036E548._2D94[2] = 0;
+    lbl_8036E548.trail2 = NULL;
+    lbl_8036E548._2D98 = 0;
+    lbl_8036E548.trailFile = NULL;
     lbl_8036E548._307C = 0;
     lbl_8036E548._3085 = 0;
     lbl_8036E548.callback = NULL;
@@ -3040,9 +3053,50 @@ void challengeMapMaybe(void) {
 }
 
 // .text:0x8001F5E8 size:0x2BC
+// NONMATCHING 70%: original reloads the relocated trail pointers and indexes the trail array; ours keeps them in registers
+#if NONMATCHING
 void fn_8001F5E8(void) {
-    return;
+    u32* file;
+    void* layout;
+    void* geo;
+    void* tex;
+    s32 count = 30;
+    s32 i;
+
+    lbl_8036E548._3078 = count;
+    // TODO type: file header of offsets, relocated here.
+    file = lbl_8036E548.trailFile;
+    lbl_8036E548.trailLayout = (u8*)file + file[0];
+    lbl_8036E548.trailGeo = (u8*)file + file[1];
+    lbl_8036E548.trailTex = (u8*)file + file[2];
+    layout = lbl_8036E548.trailLayout;
+    geo = lbl_8036E548.trailGeo;
+    tex = lbl_8036E548.trailTex;
+    LoadActorLayout(layout);
+    convertGeometryAndSknHeader(geo, NULL);
+    haveActLayoutPointToGeoHeader(layout, geo);
+    convertTextureHeader(tex);
+    fn_800BD190(geo, tex);
+    lbl_8036E548.slots68 = ActorObjectInitTable(count);
+    for (i = 0; i < count; i++) {
+        fn_800BDC88(lbl_8036E548.slots68, i, i, lbl_8036E548.trailLayout, 0, 0);
+        fn_800BD548(&lbl_8036E548.slots68->slots[i], 4, lbl_8036E548.lights[0], lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+        CTRLSetTranslation(&lbl_8036E548.slots68->slots[i].ctrl, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(&lbl_8036E548.slots68->slots[i].ctrl, 0.0f, 0.0f, 0.0f);
+    }
+    lbl_8036E548.trail2 = _OSAllocFromHeap(0x20, count * sizeof(CharTrail));
+    for (i = 0; i < count; i++) {
+        lbl_8036E548.trail2[i]._04[0] = 0.0f;
+        lbl_8036E548.trail2[i]._04[1] = 0.0f;
+        lbl_8036E548.trail2[i]._04[2] = 0.0f;
+        lbl_8036E548.trail2[i]._04[3] = 0.0f;
+        lbl_8036E548.trail2[i]._04[4] = 0.0f;
+        lbl_8036E548.trail2[i]._04[5] = 0.0f;
+        lbl_8036E548.trail2[i]._26 = 0;
+        lbl_8036E548.trail2[i]._00 = 0;
+    }
 }
+#endif
 
 // .text:0x8001F8A4 size:0x3A8
 void fn_8001F8A4(void) {

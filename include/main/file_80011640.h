@@ -106,7 +106,7 @@ typedef struct CharAnimBanks {
 } CharAnimBanks;
 
 typedef struct CharTrail {
-    /*0x00*/ u8 _00[0x4];
+    /*0x00*/ u32 _00;
     /*0x04*/ f32 _04[6];
     /*0x1C*/ u8 _1C[0xA];
     /*0x26*/ u8 _26;
@@ -157,7 +157,8 @@ typedef struct CharActor {
     /*0x270*/ u8 _270[0x3];
     /*0x273*/ u8 _273;
     /*0x274*/ u8 _274;
-    /*0x275*/ u8 _275[0x2];
+    /*0x275*/ u8 _275;
+    /*0x276*/ u8 _276;
     /*0x277*/ u8 _277;
     /*0x278*/ u8 _278;
     /*0x279*/ u8 _279[0x3];
@@ -229,8 +230,13 @@ typedef struct CharMgr {
     /*0x2D8E*/ u8 _2D8E;
     /*0x2D8F*/ u8 _2D8F;
     /*0x2D90*/ CharTrail* trail; // [25]
-    /*0x2D94*/ u32 _2D94[3];
-    /*0x2DA0*/ u8 _2DA0[0x3078 - 0x2DA0];
+    /*0x2D94*/ CharTrail* trail2; // [30]
+    /*0x2D98*/ u32 _2D98;
+    /*0x2D9C*/ u32* trailFile;
+    /*0x2DA0*/ void* trailLayout;
+    /*0x2DA4*/ void* trailGeo;
+    /*0x2DA8*/ void* trailTex;
+    /*0x2DAC*/ u8 _2DAC[0x3078 - 0x2DAC];
     /*0x3078*/ s16 _3078;
     /*0x307A*/ u8 _307A;
     /*0x307B*/ u8 _307B;
@@ -365,6 +371,10 @@ void fn_8001A3FC(s32 arg);
 void fn_800145F8(s32 arg);
 void fn_80018DEC(s32 arg);
 void fn_80018270(s32 mode);
+
+void fn_8001C234(u32* doneMask);
+void fn_8001F5E8(void);
+void fn_8001BA44(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
 
 void fn_8001B200(void);
 
