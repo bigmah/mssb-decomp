@@ -69,5 +69,6 @@ void fn_3_10F91C(void);
 void fn_3_10F684(void);
 void fn_3_10722C(void);
 void fn_3_1084B4(void);
+void fn_3_10C81C(void);
 
 #endif

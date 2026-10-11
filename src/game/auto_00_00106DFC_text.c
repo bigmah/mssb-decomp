@@ -8,7 +8,7 @@ extern void fn_8004CC18(void);
 extern u8 lbl_3_data_B060[];
 extern void fn_800203E0(u8 scene, s8 variant);
 extern void fn_3_10C81C(void);
-extern void fn_3_E1370(s32);
+extern void fn_3_E1370(int mode);
 extern s32 fn_80016F7C(void);
 extern s32 fn_3_90DD8(void);
 extern void fn_8003A540(s32);
@@ -1808,3 +1808,121 @@ void fn_3_1084B4(void) {
         break;
     }
 }
+
+extern void fn_80011B64(s32 index);
+extern s32 fn_80016710(u8 kind, s32 index);
+
+typedef struct {
+    s32 port;
+    s32 timer;
+} PortTimer;
+
+// NONMATCHING 93%: original passes the s8 kind to fn_80016710 sign-extended (no u8 prototype); saved-reg numbering and the else-branch base reloads differ
+#if NONMATCHING
+// fn_3_10C81C, size:0x404
+void fn_3_10C81C(void) {
+    PortTimer ents[4];
+    s32 count;
+    s32 n;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 done;
+    s8 cur;
+    s32 index;
+    s8 a;
+
+    count = 4;
+    for (;;) {
+        if (g_d_GameSettings[7] == 2) {
+            count = 1;
+        }
+        n = 0;
+        for (i = 0; i < count; i++) {
+            ents[i].port = -1;
+            if (*(s8*)(g_Minigame + 0x1A0C) != i) {
+                a = g_Minigame[0x19E8 + i * 9];
+                if (a != -1 && (a != *(s8*)(g_Minigame + 0x19EA + i * 9) || *(s8*)(g_Minigame + 0x19EC + i * 9) != g_Minigame[0x1A17 + i])) {
+                    g_Minigame[0x19EF + i * 9] = 0;
+                    if (*(u16*)(g_Minigame + 0x19D2 + i * 2) >= 0x14 || g_Minigame[0x19DE] == 4) {
+                        ents[n].port = i;
+                        ents[n].timer = *(u16*)(g_Minigame + 0x19D2 + i * 2);
+                        n++;
+                        g_Minigame[0x19ED + i * 9] = g_Minigame[0x1A17 + i];
+                    }
+                }
+            }
+        }
+        for (i = 0; i < n - 1; i++) {
+            for (j = i + 1; j < n; j++) {
+                s32 t = ents[i].timer;
+                if (t < ents[j].timer) {
+                    s32 p = ents[i].port;
+                    ents[i].port = ents[j].port;
+                    ents[i].timer = ents[j].timer;
+                    ents[j].port = p;
+                    ents[j].timer = t;
+                }
+            }
+        }
+        *(s8*)(g_Minigame + 0x1A0F) = -1;
+        *(s8*)(g_Minigame + 0x1A10) = -1;
+        *(s8*)(g_Minigame + 0x1A11) = -1;
+        *(s8*)(g_Minigame + 0x1A12) = -1;
+        k = 0;
+        if (*(s8*)(g_Minigame + 0x1A0C) >= 0) {
+            g_Minigame[0x1A0F] = g_Minigame[0x1A0C];
+            k = 1;
+        }
+        {
+            u8* dst = g_Minigame + k;
+            PortTimer* src = ents;
+            for (i = n; i > 0; i--) {
+                dst[0x1A0F] = src->port;
+                src++;
+                dst++;
+            }
+        }
+        if (*(s8*)(g_Minigame + 0x1A0F) < 0) {
+            break;
+        }
+        cur = g_Minigame[0x1A0F];
+        index = cur;
+        if (g_d_GameSettings[7] == 2) {
+            index = 9;
+        }
+        if (g_Minigame[0x1A1B] == 0) {
+            g_Minigame[0x1A1B] = 1;
+            fn_80011B64(index);
+        }
+        if (*(s8*)(g_Minigame + 0x19EB + cur * 9) >= 0) {
+            done = fn_80016710(*(s8*)(g_Minigame + 0x19EB + cur * 9), index);
+        } else {
+            done = fn_80016710(*(s8*)(g_Minigame + 0x19E8 + cur * 9), index);
+        }
+        if (done != 0) {
+            g_Minigame[0x19EA + cur * 9] = g_Minigame[0x19EB + cur * 9];
+            *(s8*)(g_Minigame + 0x19EB + cur * 9) = -1;
+            lbl_8036E548[0x2D77] = 0;
+            g_Minigame[0x19EC + cur * 9] = g_Minigame[0x19ED + cur * 9];
+            *(s8*)(g_Minigame + 0x1A0C) = -1;
+            *(s8*)(g_Minigame + 0x1A0F) = -1;
+            g_Minigame[0x1A13 + cur] = 0;
+            g_Minigame[0x1A1B] = 0;
+            fn_3_E1370(3);
+            continue;
+        }
+        if (*(s8*)(g_Minigame + 0x19EB + cur * 9) < 0) {
+            g_Minigame[0x19EB + cur * 9] = g_Minigame[0x19E8 + cur * 9];
+        }
+        *(s8*)(g_Minigame + 0x19EA + cur * 9) = -1;
+        g_Minigame[0x1A0C] = cur;
+        break;
+    }
+    for (i = 0; i < 4; i++) {
+        if (g_Minigame[0x1A13 + i] != 0 && *(s8*)(g_Minigame + 0x19E8 + i * 9) == *(s8*)(g_Minigame + 0x19EA + i * 9)) {
+            g_Minigame[0x1A13 + i] = 0;
+        }
+    }
+}
+#endif
