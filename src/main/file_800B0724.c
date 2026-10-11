@@ -237,9 +237,21 @@ SceneTask* fn_800B0A5C_insertQueue(void* draw, u16 priority) {
 }
 
 // .text:0x800B0B2C size:0xBC
+// NONMATCHING 90%: register allocation only (inlined resetAllDrawingStructs uses r6/r7/r5 instead of r5/r6/r3)
+#if NONMATCHING
+// resetAllDrawingStructs, then points every list's sentinels at nop_function.
 void resetAllDrawingStructs_tonop(void) {
-    return;
+    SceneTask* slot;
+    s32 count;
+    resetAllDrawingStructs();
+    slot = lbl_803C7A24;
+    count = 6;
+    do {
+        slot->func = nop_function;
+        slot++;
+    } while (--count != 0);
 }
+#endif
 
 // .text:0x800B0CB8 size:0x70
 // Task functions are called with a pointer to caller-stack scratch space.
