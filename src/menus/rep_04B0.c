@@ -834,7 +834,10 @@ void fn_2_16460(void) {
 
 // .text:0x00016664 size:0x68
 void fn_2_16664(void) {
-    return;
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        LITXForm(lbl_8036E548.lights[i], lbl_2_bss_10164.view);
+    }
 }
 
 // .text:0x000166CC size:0x58
