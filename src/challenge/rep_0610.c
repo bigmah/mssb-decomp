@@ -2749,3 +2749,132 @@ void fn_1_10044(void) {
     }
 }
 #endif
+
+extern f32 lbl_1_rodata_7428;
+extern f32 lbl_1_rodata_742C;
+extern f32 lbl_1_rodata_7434;
+extern f32 lbl_1_rodata_743C;
+extern f32 lbl_1_rodata_7438;
+
+// .text:0x10E2C size:0x430
+// Draws a small axis gizmo (22 line vertices) at the given model matrix.
+// NONMATCHING ~99%: one stw/lis scheduling swap near the second constant group
+#if NONMATCHING
+void fn_1_10E2C(void* model, f32 (*view)[4], u32 colorX, u32 colorY, u32 colorZ) {
+    GXCullMode cullMode;
+    Mtx matrix;
+
+    GXGetCullMode(&cullMode);
+    PSMTXConcat(view, (f32(*)[4])model, matrix);
+    GXLoadPosMtxImm(matrix, 0);
+    GXSetCurrentMtx(0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(9, 1);
+    GXSetVtxDesc(0xB, 1);
+    GXSetVtxAttrFmt(0, 9, 1, 4, 0);
+    GXSetVtxAttrFmt(0, 0xB, 1, 5, 0);
+    GXSetNumTevStages(1);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetTevOp(0, 4);
+    GXSetTevOrder(0, 0xFF, 0xFF, 4);
+    GXSetChanCtrl(0, 0, 1, 1, 0, 0, 2);
+    GXSetChanCtrl(2, 0, 1, 1, 0, 0, 2);
+    GXSetBlendMode(1, 4, 5, 3);
+    GXSetCullMode(0);
+    GXSetZMode(1, 7, 1);
+    GXSetLineWidth(7, 0);
+    GXBegin(0xA8, 0, 0x16);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7428;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_742C;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7430;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_742C;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7428;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_742C;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7428;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7430;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7428;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7428;
+    GXColor1u32(colorX);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorY);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7434;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorY);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7438;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorY);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7434;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorY);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_743C;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorY);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7434;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorY);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorZ);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7434;
+    GXColor1u32(colorZ);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7438;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorZ);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7434;
+    GXColor1u32(colorZ);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_743C;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXColor1u32(colorZ);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7394;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7434;
+    GXColor1u32(colorZ);
+    GXSetLineWidth(6, 0);
+    GXSetCullMode(cullMode);
+    GXSetZMode(1, 3, 1);
+}
+#endif
