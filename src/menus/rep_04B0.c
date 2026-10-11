@@ -783,9 +783,54 @@ void fn_2_1641C(void) {
 }
 
 // .text:0x00016460 size:0x204
-void fn_2_16460(void) {
-    return;
+// NONMATCHING 90%: the original keeps &lbl_2_data_19E8 in r31 from the prologue on;
+// ours rematerialises it after the calls (also shifts r29-r31)
+#if NONMATCHING
+static inline void copyVec(Vec* dst, Vec* src) {
+    dst->x = src->x;
+    dst->y = src->y;
+    dst->z = src->z;
 }
+
+static inline void setMenuCamera(Vec* eye, Vec* target) {
+    camera_803c639c_s* cam;
+    fn_80052D70();
+    cam = fn_80052768_getCamera(0);
+    copyVec(&cam->eye, eye);
+    copyVec(&cam->target, target);
+    fn_80052968();
+}
+
+// Orbit the menu camera and rebuild its view matrix.
+void fn_2_16460(void) {
+    Vec angle;
+    Vec offset = {0.0f, 0.0f, 100.0f};
+    Mtx rotX;
+    Mtx rotY;
+    Mtx m;
+    f32 c;
+    f32 s;
+
+    angle.x = lbl_2_bss_1010C.rotX;
+    angle.y = lbl_2_bss_1010C.rotY;
+    angle.z = 0.0f;
+    PSVECScale(&angle, 0.0000958738f, &angle);
+    PSMTXRotRad(rotX, 'X', angle.x);
+    PSMTXRotRad(rotY, 'Y', angle.y);
+    s = rotY[0][2];
+    c = rotY[0][0];
+    PSMTXConcat(rotY, rotX, m);
+    PSMTXMultVec(m, &offset, &lbl_2_bss_1010C.target);
+    lbl_2_bss_1010C.eye.x += lbl_2_bss_1010C.dolly * s - lbl_2_bss_1010C.strafe * c;
+    lbl_2_bss_1010C.eye.z += lbl_2_bss_1010C.dolly * c + lbl_2_bss_1010C.strafe * s;
+    lbl_2_bss_1010C.target.x += lbl_2_bss_1010C.eye.x;
+    lbl_2_bss_1010C.target.y += lbl_2_bss_1010C.eye.y;
+    lbl_2_bss_1010C.target.z += lbl_2_bss_1010C.eye.z;
+
+    setMenuCamera(&lbl_2_data_19E8.eye, &lbl_2_data_19E8.target);
+    makeLookAtMatrix(lbl_2_bss_1010C.view, &lbl_2_bss_1010C.eye, &lbl_2_data_19E8.up, &lbl_2_bss_1010C.target);
+}
+#endif
 
 // .text:0x00016664 size:0x68
 void fn_2_16664(void) {
