@@ -85,6 +85,16 @@ typedef struct CircleElem {
     /* 0x29 */ u8 unk29_b1 : 7;
 } CircleElem;
 
+// Circle element (screen-space variant).
+typedef struct Circle2DElem {
+    /* 0x00 */ u8 pad0[0x14];
+    /* 0x14 */ s16 x;
+    /* 0x16 */ s16 y;
+    /* 0x18 */ u8 pad18[0xD];
+    /* 0x25 */ u8 hidden : 1;
+    /* 0x25 */ u8 unk25_b1 : 7;
+} Circle2DElem;
+
 // Quad being assembled for drawing.
 typedef struct QuadState {
     /* 0x00 */ QuadVtx v[4];
@@ -110,6 +120,7 @@ void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCor
 void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void fn_8000E030(CircleElem* elem, Mtx mtx, SpriteDrawParams* params);
+void fn_8000E2D4(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 

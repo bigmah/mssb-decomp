@@ -3,6 +3,7 @@
 
 // main/file_800B0724
 void fn_800B12DC(QuadVtx* verts, s32 count); // draw triangle fan
+void fn_800B13C0(Vec* pos, u32* colors, s32 count); // draw triangle fan
 
 // Copy four transformed quad corners (in the given order) into the vertex positions.
 #define SET_QUAD_POS(a, b, c, d)                          \
@@ -122,9 +123,72 @@ void fn_8000E030(CircleElem* elem, Mtx mtx, SpriteDrawParams* params) {
 #endif
 
 // .text:0x8000E2D4 size:0x490
-void fn_8000E2D4(void) {
-    return;
+// NONMATCHING: ~75% (with w left uninitialized as in the original): scheduling and float register allocation differ
+#if NONMATCHING
+void fn_8000E2D4(Circle2DElem* elem, Mtx mtx, SpriteDrawParams* params) {
+    Vec pos[257];
+    u32 colors[257];
+    Vec* p;
+    u32* c;
+    s32 i;
+    s32 n;
+    s32 step;
+    s16 angle;
+    f32 x;
+    f32 y;
+    f32 w = 1.0f; // the original reads an uninitialized register here
+    f32 px;
+    f32 py;
+    f32 a;
+    f32 s;
+
+    if (!elem->hidden || params->arcSegments != 0) {
+        for (p = pos, i = 0; i < 257; i++, p++) {
+            p->x = 0.0f;
+            p->y = 0.0f;
+            p->z = 0.0f;
+        }
+        colors[0] = params->color[0];
+        angle = 0;
+        y = 128 - elem->y;
+        x = 128 - elem->x;
+        pos[0].x = (s32)(mtx[0][0] * x + mtx[0][1] * y + mtx[0][3] * w);
+        pos[0].y = (s32)(mtx[1][0] * x + mtx[1][1] * y + mtx[1][3] * w);
+        pos[0].z = (s32)(mtx[2][0] * x + mtx[2][1] * y + mtx[2][3] * w);
+        colors[1] = params->color[1];
+        step = 0x10000 / params->segments;
+        pos[1].x = (s32)(mtx[0][0] * (128.0f + x) + mtx[0][1] * (128.0f + y) + mtx[0][3] * w);
+        pos[1].y = (s32)(mtx[1][0] * (128.0f + x) + mtx[1][1] * (128.0f + y) + mtx[1][3] * w);
+        pos[1].z = (s32)(mtx[2][0] * (128.0f + x) + mtx[2][1] * (128.0f + y) + mtx[2][3] * w);
+        n = params->segments;
+        if (n != params->arcSegments) {
+            n = params->arcSegments + 1;
+        }
+        p = &pos[n];
+        c = &colors[n];
+        do {
+            angle -= step;
+            a = 0.0000958738f * angle;
+            s = sin(a);
+            py = 128.0f * s + y;
+            px = 128.0f * (f32)cos(a) + x;
+            p->x = (s32)(mtx[0][0] * px + mtx[0][1] * py + mtx[0][3] * w);
+            p->y = (s32)(mtx[1][0] * px + mtx[1][1] * py + mtx[1][3] * w);
+            p->z = (s32)(mtx[2][0] * px + mtx[2][1] * py + mtx[2][3] * w);
+            p--;
+            *c = params->color[1];
+            c--;
+        } while (--n);
+        if (params->segments == params->arcSegments) {
+            pos[params->arcSegments + 1].x = pos[1].x;
+            pos[params->arcSegments + 1].y = pos[1].y;
+            pos[params->arcSegments + 1].z = pos[1].z;
+            colors[params->arcSegments + 1] = params->color[1];
+        }
+        fn_800B13C0(pos, colors, params->arcSegments + 2);
+    }
 }
+#endif
 
 // .text:0x8000E764 size:0x58
 void fn_8000E764(f32 angle, Vec2f* out) {
