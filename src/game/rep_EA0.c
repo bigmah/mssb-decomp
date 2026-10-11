@@ -278,7 +278,92 @@ void fn_3_69184(void) {
 // Ball landing marker.
 // .text:0x000692E0 size:0x318 mapped:0x806A8374
 void fn_3_692E0(void) {
-    return;
+    VecSrcDst ray;
+    CollisionStruct coll;
+    CharTrail* marker;
+    s32 idx;
+    u32 hit;
+    f32 height;
+    f32 rot;
+    f32 scale;
+
+    lbl_8036E548.trail[2]._26 = 0;
+    lbl_8036E548.trail[3]._26 = 0;
+    if (g_Stats.replayInd != 0) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected == GAME_TYPE_TOY_FIELD) {
+        return;
+    }
+    if (g_Minigame.GameMode_MiniGame != 0) {
+        return;
+    }
+    if (g_Ball.pauseBallMovementWhenInPlant != 0 || g_Ball.frameCountdownAfterLeavingPlant != 0) {
+        return;
+    }
+    if (g_Ball.deadBallReason != 0) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected != GAME_TYPE_PRACTICE &&
+        lbl_800E8754.port[g_GameLogic.teams[g_GameLogic.teamFielding]]._4 == 0) {
+        return;
+    }
+    if (g_GameLogic.sceneID != SCENE_ID_LIVE_BALL) {
+        return;
+    }
+    if (g_FieldingLogic._107 != 0) {
+        return;
+    }
+    if (g_Ball.AtBat_ContactResult != 0) {
+        return;
+    }
+    if (g_Ball.maxYOfHit < 2.0f) {
+        return;
+    }
+    if (g_Ball.currentStarSwing2 == 11 || g_Ball.currentStarSwing2 == 12) {
+        return;
+    }
+    if (g_Ball.warioWaluGarlicIsActive != 0) {
+        return;
+    }
+
+    if (g_FieldingLogic._144 != 0) {
+        if (g_d_GameSettings.GameModeSelected == GAME_TYPE_PRACTICE &&
+            (g_Practice.practiceType_2 == 1 || g_Practice.practiceLevel == 4)) {
+            idx = 2;
+        } else {
+            idx = 3;
+        }
+    } else {
+        idx = 2;
+    }
+    marker = &lbl_8036E548.trail[idx];
+    marker->_26 = 1;
+    ray.src.x = g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x;
+    ray.src.y = -1.0f;
+    ray.src.z = g_Ball.physicsSubstruct.hitLandingSpotDistFromHome;
+    ray.dst.x = g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x;
+    ray.dst.y = 1.0f;
+    ray.dst.z = g_Ball.physicsSubstruct.hitLandingSpotDistFromHome;
+    hit = checkCollision(&ray, &coll, 0, FALSE);
+    if (hit == BALL_COLLISION_TYPE_GRASS || hit == BALL_COLLISION_TYPE_DIRT ||
+        (u32)(hit - BALL_COLLISION_TYPE_ROUGH_TERRAIN) <= 1 || hit == 0x32) {
+        marker->_04[1] = coll.position.y - 0.06f;
+    } else {
+        marker->_04[1] = -0.06f;
+    }
+    marker->_04[0] = g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.x;
+    marker->_04[2] = g_Ball.physicsSubstruct.ballLandingSpotOrHeldSpot.z;
+    rot = marker->_04[4];
+    height = 30.0f - g_Ball.AtBat_Contact_BallPos.y;
+    if (height < 1.0f) {
+        height = 1.0f;
+    }
+    height *= 0.003f;
+    marker->_04[4] = fn_3_9FEA8(rot + height);
+    scale = LinearInterpolateToNewRange((f32)g_Ball.framesUntilBallHitsGround, 0.0f, 120.0f, lbl_3_data_6840[0],
+                                        lbl_3_data_6840[1]);
+    fn_8001D148(idx, scale, scale, scale);
 }
 
 // Ball shadow.
