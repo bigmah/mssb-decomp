@@ -117,6 +117,7 @@ void fn_8003C00C(void);
 s32 fn_80040FE0(SaveImage* img);
 u8 fn_80041074(SaveImage* img, s32 length, u32 mask);
 void fn_80041150(u8 mask, u8 slot);
+s32 fn_80041348(void);
 void fn_8004153C(void);
 
 void fn_8003A848(u8 red, u8 green, u8 blue);

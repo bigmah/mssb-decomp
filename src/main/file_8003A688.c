@@ -302,9 +302,48 @@ void fn_80041150(u8 mask, u8 slot) {
 
 // .text:0x80041348 size:0x1F4
 // Sanity-checks the loaded challenge save; returns 0 if it is corrupt.
-void fn_80041348(void) {
-    return;
+// NONMATCHING 96%: duplicate-id loop keeps &teams[i] as a separate base register in the original (r6 = r7 + 0x40B8)
+#if NONMATCHING
+s32 fn_80041348(void) {
+    s32 ok = 1;
+    s32 i;
+    s32 j;
+
+    if (gChallengeState._1606 != 0 && gChallengeState._441B == 0) {
+        for (i = 0; i < 9; i++) {
+            for (j = 0; j < 9; j++) {
+                if (gChallengeState.teams[i].id == gChallengeState.teams[j].id && i != j) {
+                    ok = 0;
+                }
+            }
+        }
+        if (gChallengeState._4415 >= 4) {
+            ok = 0;
+        }
+        if (gChallengeState._43BC >= 0 && gChallengeState._43BC <= 1000) {
+            return ok;
+        }
+        return 0;
+    }
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            if (gChallengeState.teams[i].id == gChallengeState.teams[j].id && i != j) {
+                ok = 0;
+            }
+        }
+    }
+    if (gChallengeState._4415 >= 4) {
+        ok = 0;
+    }
+    if (gChallengeState._43BC < 0 || gChallengeState._43BC > 1000) {
+        ok = 0;
+    }
+    if (gChallengeState._441C >= 6) {
+        return 0;
+    }
+    return ok;
 }
+#endif
 
 // .text:0x8004153C size:0x40
 void fn_8004153C(void) {
