@@ -23,6 +23,6 @@ void fn_3_1680D4(void) {
 }
 
 // .text:0x001682AC size:0x168 mapped:0x807A7340
-void fn_3_1682AC(void) {
+void fn_3_1682AC(struct CharActor* actor, s32 anim) {
     return;
 }

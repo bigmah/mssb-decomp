@@ -26,7 +26,9 @@ typedef struct RepFielder {
     /*0x084*/ f32 distToFielder[9];
     /*0x0A8*/ f32 distToBase[4];
     /*0x0B8*/ f32 _0B8;
-    /*0x0BC*/ u8 _0BC[0x120 - 0xBC];
+    /*0x0BC*/ u8 _0BC[0xF4 - 0xBC];
+    /*0x0F4*/ f32 catchHeight;
+    /*0x0F8*/ u8 _0F8[0x120 - 0xF8];
     /*0x120*/ f32 _120;
     /*0x124*/ f32 _124;
     /*0x128*/ u8 _128[0x174 - 0x128];
@@ -82,7 +84,9 @@ extern RepFielder g_Fielders[9];
 // g_RunningLogic (0x20 bytes); only the fields used here.
 typedef struct RepRunningLogic {
     /*0x00*/ s16 _00; // one nibble per base
-    /*0x02*/ u8 _02[0x20 - 0x2];
+    /*0x02*/ s16 _02;
+    /*0x04*/ s16 _04; // one nibble per base
+    /*0x06*/ u8 _06[0x20 - 0x6];
 } RepRunningLogic;
 
 extern RepRunningLogic g_RunningLogic;
@@ -145,7 +149,7 @@ int fn_3_AABF8(void);
 void fn_3_AAC84(f32* x, f32* z);
 void fn_3_AAFF0(f32* x, f32* z);
 void fn_3_AB554(void);
-void fn_3_AB5B0(void);
+void fn_3_AB5B0(s32 maxFrames, f32* outAngle, f32* speed);
 void fn_3_ABDD0(void);
 
 #endif // !__GAME_rep_18E8_H_

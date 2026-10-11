@@ -6,6 +6,8 @@
 #include "game/rep_D0.h"
 #include "game/auto_00_0005985C_text.h"
 #include "main/file_8004207C.h"
+#include "main/file_80011640.h"
+#include "game/auto_00_00167CC4_text.h"
 #include "header_rep_data.h"
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 
@@ -101,6 +103,15 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern const f32 lbl_3_rodata_1A5C;
+extern const f32 lbl_3_rodata_1A60;
+extern const f32 lbl_3_rodata_1A64;
+extern const f32 lbl_3_rodata_1A68;
+extern const f32 lbl_3_rodata_1A6C;
+extern const f32 lbl_3_rodata_1A70;
+extern const f32 lbl_3_rodata_1A74;
+extern const f32 lbl_3_rodata_1A78;
+extern f32 lbl_3_data_4760[3]; // throw tuning: lift, speed factors
 extern const f32 lbl_3_rodata_1A1C;
 extern const f32 lbl_3_rodata_1A20;
 extern const f32 lbl_3_rodata_1A24;
@@ -2921,9 +2932,239 @@ void fn_3_AB554(void) {
 }
 
 // .text:0x000AB5B0 size:0x820 mapped:0x806EA644
-void fn_3_AB5B0(void) {
-    return;
+// Searches for a throw angle that makes the ball reach the throw target at a catchable height.
+// NONMATCHING 96.8%: float register allocation differs (the original keeps 0.0f in f31 across the search loop)
+#if NONMATCHING
+void fn_3_AB5B0(s32 maxFrames, f32* outAngle, f32* speedPtr) {
+    f32 drag;
+    f32 x;
+    f32 best;
+    s32 result;
+    f32 spd;
+    s32 prev;
+    f32 over;
+    f32 maxH;
+    f32 t;
+    f32 dx;
+    f32 dz;
+    f32 prevBestAng;
+    f32 bestAng;
+    f32 dist;
+    f32 angle;
+    f32 b;
+    f32 a;
+    f32 step;
+    s32 iter;
+    s32 retries;
+    f32 vx;
+    f32 vy;
+    f32 lift;
+    f32 y;
+    f32 minH;
+    s32 frames;
+
+    drag = lbl_3_rodata_1958 - (f32)g_Ball.airResistance / lbl_3_rodata_1A60;
+    spd = *speedPtr;
+    g_FieldingLogic._141 = 0;
+    best = lbl_3_rodata_1A5C;
+    result = 0;
+    lift = lbl_3_rodata_193C;
+    prev = 0;
+    minH = lbl_3_rodata_19A0;
+    if (checkFieldingStat(g_GameLogic.teamFielding, g_Fielders[g_Ball.fielderWBallIndex].rosterID, 4)) {
+        if (g_FieldingLogic._0C4 == 0) {
+            if (g_RunningLogic._04 & 0x1000) {
+                g_FieldingLogic._140 = 1;
+                g_FieldingLogic._141 = 1;
+                playSoundEffect(0x1A8);
+            }
+        } else if (g_FieldingLogic._0C4 == 0 && (g_RunningLogic._04 & 0x1100)) {
+            g_FieldingLogic._140 = 1;
+            g_FieldingLogic._141 = 1;
+            playSoundEffect(0x1A8);
+        }
+    }
+    maxH = g_Fielders[g_FieldingLogic._0D0[g_FieldingLogic._0C4]].catchHeight - lbl_3_rodata_19A0;
+    t = lbl_3_rodata_19B0 * maxH;
+    if (lbl_3_rodata_19A0 < t) {
+        minH = t;
+    }
+    dx = g_Ball.throwTarget.x - g_Ball.AtBat_Contact_BallPos.x;
+    dz = g_Ball.throwTarget.z - g_Ball.AtBat_Contact_BallPos.z;
+    a = dx * dx;
+    b = dz * dz;
+    dist = a + b;
+    SQRT_L(dist);
+    angle = lbl_3_rodata_193C;
+    bestAng = angle;
+    step = lbl_3_rodata_1A64;
+    if (g_FieldingLogic.throwSpeedType <= 6) {
+        if (g_FieldingLogic._12D == 0) {
+            if (g_FieldingLogic.throwSpeedType != 0) {
+                g_FieldingLogic.throwSpeedType--;
+            }
+        } else if (g_FieldingLogic._12D == 2 && g_FieldingLogic.throwSpeedType < 6) {
+            g_FieldingLogic.throwSpeedType++;
+        }
+    }
+    switch (g_FieldingLogic.throwSpeedType) {
+    case 0:
+        spd *= lbl_3_rodata_1970;
+        break;
+    case 1:
+        spd *= lbl_3_rodata_19EC;
+        break;
+    case 2:
+        spd *= lbl_3_rodata_1A34;
+        break;
+    case 4:
+        spd *= lbl_3_rodata_1A58;
+        break;
+    case 5:
+        spd *= lbl_3_rodata_1968;
+        break;
+    case 6:
+        spd *= lbl_3_rodata_1990;
+        break;
+    case 7:
+        spd = lbl_3_rodata_197C;
+        if (dist < lbl_3_rodata_19F0) {
+            spd = lbl_3_rodata_19B4;
+        } else if (dist < lbl_3_rodata_1A0C) {
+            spd = lbl_3_rodata_1A68;
+        }
+        break;
+    case 8:
+        angle = lbl_3_rodata_1A24;
+        spd = lbl_3_rodata_19AC;
+        bestAng = angle;
+        break;
+    case 9:
+        spd = lbl_3_rodata_1A6C;
+        break;
+    }
+    if (g_FieldingLogic._13D != 0) {
+        lift = lbl_3_data_4760[0];
+        if (g_FieldingLogic._107 == 2 && g_Ball.fielderWBallIndex == 1 && g_Ball.framesSinceHit <= 0x82) {
+            spd *= lbl_3_data_4760[1];
+        }
+    }
+    if (g_FieldingLogic._140 != 0) {
+        spd *= lbl_3_data_4760[2];
+    }
+    iter = 0;
+    retries = 0;
+    do {
+        // simulate the throw at this angle
+        vx = spd * (f32)cos(angle);
+        vy = spd * (f32)sin(angle);
+        y = g_Ball.AtBat_Contact_BallPos.y;
+        x = lbl_3_rodata_193C;
+        for (frames = 0; frames < 900;) {
+            frames++;
+            vx *= drag;
+            vy = (vy - g_Ball.physicsSubstruct.gravity + lift) * drag;
+            x += vx;
+            y += vy;
+            if (x > dist) {
+                if (y < minH) {
+                    result = 2;
+                } else if (y < maxH) {
+                    result = 3;
+                } else {
+                    result = 4;
+                }
+                break;
+            }
+            if (y < lbl_3_rodata_193C) {
+                result = 1;
+                break;
+            }
+        }
+        if (frames < maxFrames && retries < 5 && result != 1) {
+            // too slow: aim higher with less speed
+            angle += step;
+            g_FieldingLogic._140 = 0;
+            retries++;
+            spd *= lbl_3_rodata_1A58;
+            g_FieldingLogic._141 = 0;
+            continue;
+        }
+        if (result == 1) {
+            // lands short
+            if (prev >= 2) {
+                break;
+            }
+            over = x - dist;
+            if (over > best) {
+                bestAng = angle;
+                best = over;
+                angle += step;
+            } else {
+                angle = lbl_3_rodata_19B0 * (bestAng + angle);
+            }
+        } else if (result == 2) {
+            // arrives too low
+            if (prev <= 1) {
+                bestAng = angle;
+                angle += step;
+                step *= lbl_3_rodata_1A70;
+            } else if (prev == 4) {
+                t = prevBestAng + angle;
+                bestAng = angle;
+                step *= lbl_3_rodata_1A70;
+                angle = lbl_3_rodata_19B0 * t;
+            } else {
+                if (!(y > best)) {
+                    break;
+                }
+                bestAng = angle;
+                angle += step;
+            }
+            best = y;
+        } else if (result == 3) {
+            // catchable
+            bestAng = angle;
+            break;
+        } else if (result == 4) {
+            // arrives too high
+            if (prev <= 2) {
+                bestAng = angle;
+                if (iter == 0) {
+                    angle -= step;
+                } else {
+                    angle = lbl_3_rodata_19B0 * (prevBestAng + angle);
+                }
+            } else {
+                if (!(y < best)) {
+                    break;
+                }
+                bestAng = angle;
+                angle -= step;
+                step *= lbl_3_rodata_1A70;
+            }
+            best = y;
+        }
+        prevBestAng = bestAng;
+        prev = result;
+    } while (++iter < 12);
+    if (result == 1) {
+        over = dist - x;
+        if (over > lbl_3_rodata_1A74 && over < lbl_3_rodata_1A38 && g_FieldingLogic._0C4 == 0 &&
+            g_Ball.ballAngleFromHome > 0x3B8 && g_Ball.ballAngleFromHome < 0x448) {
+            bestAng += lbl_3_rodata_1A78;
+        }
+        frames = 600;
+    }
+    *outAngle = bestAng;
+    *speedPtr = spd;
+    g_Ball.framesUntilThrowReachesDest = frames;
+    g_Ball.throwTimeEstimatesCompleteInd = 0;
+    if (g_FieldingLogic._140 != 0) {
+        fn_3_1682AC(lbl_8036E548.active[g_Ball.fielderWBallIndex], 4);
+    }
 }
+#endif
 
 // .text:0x000ABDD0 size:0xC28 mapped:0x806EAE64
 void fn_3_ABDD0(void) {
