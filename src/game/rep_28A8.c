@@ -82,8 +82,9 @@ void fn_3_D9EA0(void) {
     return;
 }
 
-// ~95%: only GPR order of loop-invariants differs (orig range=r29,t+4=r28,t=r27; ours t=r29,t+4=r28,range=r27)
+// NONMATCHING 99%: only GPR order of loop invariants differs (orig range=r29, t=r27; ours swapped); decl orders tried
 // .text:0x000DA640 size:0x1F4 mapped:0x807196D4
+#if NONMATCHING
 void fn_3_DA640(s32 n, s32 idx) {
     f32 maxr;
     f32 sx, sy;
@@ -117,6 +118,7 @@ void fn_3_DA640(s32 n, s32 idx) {
         *(f32*)(g_Minigame + i * 0xC + 0x1184) = RandomF32_Game_Range(lbl_3_rodata_2928, lbl_3_rodata_292C);
     }
 }
+#endif
 
 // .text:0x000DA834 size:0x1A0C mapped:0x807198C8
 void fn_3_DA834(void) {
