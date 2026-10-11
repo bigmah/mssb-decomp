@@ -4,7 +4,9 @@
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
 
-void fn_3_132EDC(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2);
+struct DODisplayObj;
+
+void fn_3_132EDC(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map, u8* c1, u8* c2, MtxPtr camera);
 void fn_3_1330E4(void);
 void fn_3_133200(void);
 void fn_3_133320(void);
@@ -76,7 +78,7 @@ void fn_3_13A0AC(void);
 void fn_3_13A724(void);
 void fn_3_13A89C(void);
 void fn_3_13AA78(void);
-void fn_3_13ACB4(f32* p);
+void fn_3_13ACB4(struct _CollisionStruct* c);
 void fn_3_13ADC0(f32* out, f32* a, f32* b);
 void fn_3_13AE1C(void);
 void fn_3_13AFE4(void);

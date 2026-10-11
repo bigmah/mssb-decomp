@@ -12,6 +12,7 @@
 
 
 #include "static/UnknownHomes_Static.h"
+#include "main/file_800B993C.h"
 extern u8 lbl_3_data_21AF0[];
 extern u8 lbl_3_data_88DC[];
 extern f64 lbl_3_rodata_3698;
@@ -101,7 +102,7 @@ static s16 lbl_3_bss_B702;
 static u8 s_B700;
 
 // .text:0x00132EDC size:0x208
-void fn_3_132EDC(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
+void fn_3_132EDC(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map, u8* c1, u8* c2, MtxPtr camera) {
     s32 v;
     s32 i;
     s_cnt += (lbl_80366158[0x28] == 0);
@@ -1144,11 +1145,11 @@ void fn_3_13688C(Obj136* o) {
                 fn_800115C8((s8)sel);
                 ((s8*)G8)[0x1D6D] = -1;
             }
-            *(f32**)(G8 + 0x1D4C) = &lbl_3_data_21AF8[5];
+            g_Minigame.starDashRelated_0_5Or1_5 = &lbl_3_data_21AF8[5];
             fn_3_90064(0x2F5);
             fn_3_1695A4((s8)sel, 0);
         } else {
-            *(f32**)(G8 + 0x1D4C) = &lbl_3_data_21AF8[4];
+            g_Minigame.starDashRelated_0_5Or1_5 = &lbl_3_data_21AF8[4];
             fn_3_90064(0x2F6);
             fn_3_16C394(sel);
         }
@@ -2207,10 +2208,153 @@ void fn_3_13A048(int i, int j) {
     }
 }
 
-// .text:0x0013A0AC size:0x678 mapped:0x80779140
-void fn_3_13A0AC(void) {
-    return;
+static inline void aim_13A724(void);
+static inline void reflect3(f32* out, f32* a, f32* b) {
+    f32 d = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]);
+    d = d * lbl_3_rodata_3638;
+    out[0] = a[0] - d * b[0];
+    out[1] = a[1] - d * b[1];
+    out[2] = a[2] - d * b[2];
 }
+// Bounce the flight arc (start 0x6F4, end 0x70C) off a wall hit
+static inline void bounceArc(CollisionStruct* c) {
+    Vec n;
+    Vec d;
+    n.x = -c->normal.z;
+    n.y = 0.0f;
+    n.z = c->normal.x;
+    d.x = c->position.x - g_Minigame._6F4;
+    d.y = 0.0f;
+    d.z = c->position.z - g_Minigame._6FC;
+    if (d.x * n.x + d.z * n.z > lbl_3_rodata_35D0) {
+        n.x *= lbl_3_rodata_3648;
+        n.z *= lbl_3_rodata_3648;
+    }
+    reflect3(&d.x, &d.x, &n.x);
+    n.x *= lbl_3_rodata_3648;
+    n.z *= lbl_3_rodata_3648;
+    g_Minigame._6F4 = c->position.x + d.x;
+    g_Minigame._6FC = c->position.z + d.z;
+    d.x = c->position.x - g_Minigame._70C;
+    d.y = 0.0f;
+    d.z = c->position.z - g_Minigame._714;
+    reflect3(&d.x, &d.x, &n.x);
+    g_Minigame._70C = c->position.x + d.x;
+    g_Minigame._714 = c->position.z + d.z;
+    g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._70C + g_Minigame._6F4);
+    g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._714 + g_Minigame._6FC);
+}
+// .text:0x0013A0AC size:0x678 mapped:0x80779140
+extern f32 lbl_3_rodata_36CC;
+extern void fn_3_28E4(Vec* out, Vec* points, int count, f32 frame);
+extern void fn_3_1608F0(s32 kind, s32 value, s32 extra);
+extern void fn_80011604(s8 index, DOTevHook value);
+typedef struct Bss37400View3520 {
+    /*0x00*/ u8 _00[0x40];
+    /*0x40*/ s16 humanPlayer;
+} Bss37400View3520;
+extern Bss37400View3520 lbl_3_common_bss_37400;
+// NONMATCHING 94%: the inlined wall bounce is scheduled differently (float regs, store order)
+#if NONMATCHING
+// Ball in flight along the arc 0x6F4 -> 0x700 -> 0x70C; bounces off walls, lands,
+// or is caught by the nearest fielder.
+void fn_3_13A0AC(void) {
+    VecSrcDst seg;
+    CollisionStruct col;
+    f32 best, d;
+    s32 sel, k;
+    g_Minigame._724++;
+    g_Minigame._726++;
+    if (g_Minigame.turnOverStatus != 0) {
+        g_Minigame._72A = 0;
+        return;
+    }
+    if (g_Minigame._724 > lbl_3_data_21A30[0]) {
+        g_Minigame._72A = 0;
+        fn_3_14E988(4);
+        return;
+    }
+    seg.src.x = g_Minigame._6E8;
+    seg.src.y = -(lbl_3_data_21A14[2] * lbl_3_rodata_36C8);
+    seg.src.z = g_Minigame._6F0;
+    fn_3_28E4((Vec*)&g_Minigame._6E8, (Vec*)&g_Minigame._6F4, 3, (f32)g_Minigame._726 / (f32)g_Minigame._728);
+    seg.dst.x = g_Minigame._6E8;
+    seg.dst.y = -(lbl_3_data_21A14[2] * lbl_3_rodata_36C8);
+    seg.dst.z = g_Minigame._6F0;
+    if ((u32)checkCollision(&seg, &col, 0, 0) == 5) {
+        Vec n;
+        Vec d;
+        n.x = -col.normal.z;
+        n.y = 0.0f;
+        n.z = col.normal.x;
+        d.x = col.position.x - g_Minigame._6F4;
+        d.y = 0.0f;
+        d.z = col.position.z - g_Minigame._6FC;
+        if (d.x * n.x + d.z * n.z > lbl_3_rodata_35D0) {
+            n.x *= lbl_3_rodata_3648;
+            n.z *= lbl_3_rodata_3648;
+        }
+        g_Minigame._6E8 = col.position.x;
+        reflect3(&d.x, &d.x, &n.x);
+        n.x *= lbl_3_rodata_3648;
+        n.z *= lbl_3_rodata_3648;
+        g_Minigame._6F4 = col.position.x + d.x;
+        g_Minigame._6FC = col.position.z + d.z;
+        d.x = col.position.x - g_Minigame._70C;
+        d.y = 0.0f;
+        d.z = col.position.z - g_Minigame._714;
+        reflect3(&d.x, &d.x, &n.x);
+        g_Minigame._70C = col.position.x + d.x;
+        g_Minigame._714 = col.position.z + d.z;
+        g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._70C + g_Minigame._6F4);
+        g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._714 + g_Minigame._6FC);
+        g_Minigame._6F0 = seg.src.z;
+    }
+    if (g_Minigame._6EC <= lbl_3_data_21A14[4]) {
+        // landed: start a new arc from here
+        g_Minigame._6EC = lbl_3_data_21A14[4];
+        g_Minigame._72B++;
+        aim_13A724();
+    }
+    best = lbl_3_rodata_36CC;
+    k = 0;
+    sel = -1;
+    for (; k < 4; k++) {
+        s32 fi = G8[0x18F8 + k];
+        u8* f;
+        if ((s8)fi < 0) {
+            continue;
+        }
+        f = (u8*)&g_Fielders[(s8)fi];
+        if (*(f32*)(f + 0x16C) + *(f32*)(f + 0xC) < g_Minigame._6EC - lbl_3_data_21A14[5]) {
+            continue;
+        }
+        d = dolsqrtf2(SQ(g_Minigame._6E8 - *(f32*)(f + 0)) + SQ(g_Minigame._6F0 - *(f32*)(f + 8)));
+        if (d < lbl_3_data_21A14[5] + lbl_3_data_47BC[f[0x1C9]] && d < best) {
+            best = d;
+            sel = k;
+        }
+    }
+    if (sel >= 0) {
+        g_Minigame.miniGameCurrentPoints[sel] += lbl_3_data_21A30[5];
+        g_Minigame._72A = 0;
+        g_Minigame._1D6D = sel;
+        g_Minigame._1D56 = lbl_3_data_21A30[1];
+        fn_3_14E988(4);
+        if ((s8)g_Minigame.playerIDWithPowerup[0] == sel) {
+            fn_800115C8((s8)sel);
+            if (g_Minigame.starDashRelated_0_5Or1_5 == &lbl_3_data_21AF8[5]) {
+                ((s8*)g_Minigame.playerIDWithPowerup)[0] = -1;
+            }
+        }
+        fn_3_150010(sel);
+        fn_80011604(sel, fn_3_132EDC);
+        if (g_d_GameSettings.exhibitionMatchInd == 0 && sel == lbl_3_common_bss_37400.humanPlayer) {
+            fn_3_1608F0(3, 0, 0);
+        }
+    }
+}
+#endif
 
 // .text:0x0013A724 size:0x178 mapped:0x807797B8
 static inline void aim_13A724(void) {
@@ -2286,34 +2430,8 @@ void fn_3_13AA78(void) {
 #pragma dont_inline on
 
 // .text:0x0013ACB4 size:0x10C mapped:0x80779D48
-void fn_3_13ACB4(f32* p) {
-    f32 d;
-    f32 dz = p[2] - g_Minigame._6FC;
-    f32 nx = -p[5];
-    f32 nz = p[3];
-    f32 dx = p[0] - g_Minigame._6F4;
-    if (dx * nx + dz * nz > lbl_3_rodata_35D0) {
-        nx *= lbl_3_rodata_3648;
-        nz *= lbl_3_rodata_3648;
-    }
-    d = lbl_3_rodata_35D0 + dx * nx;
-    d = (d + dz * nz) * lbl_3_rodata_3638;
-    dx = dx - d * nx;
-    dz = dz - d * nz;
-    nx *= lbl_3_rodata_3648;
-    nz *= lbl_3_rodata_3648;
-    g_Minigame._6F4 = p[0] + dx;
-    g_Minigame._6FC = p[2] + dz;
-    dz = p[2] - g_Minigame._714;
-    dx = p[0] - g_Minigame._70C;
-    d = lbl_3_rodata_35D0 + dx * nx;
-    d = (d + dz * nz) * lbl_3_rodata_3638;
-    dx = dx - d * nx;
-    dz = dz - d * nz;
-    g_Minigame._70C = p[0] + dx;
-    g_Minigame._714 = p[2] + dz;
-    g_Minigame._700 = lbl_3_rodata_36C8 * (g_Minigame._70C + g_Minigame._6F4);
-    g_Minigame._708 = lbl_3_rodata_36C8 * (g_Minigame._714 + g_Minigame._6FC);
+void fn_3_13ACB4(CollisionStruct* c) {
+    bounceArc(c);
 }
 
 // .text:0x0013ADC0 size:0x5C mapped:0x80779E54

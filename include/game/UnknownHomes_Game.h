@@ -2404,7 +2404,7 @@ typedef struct _MiniGameStruct {
     /*0x1D40*/ f32 _1D40;
     /*0x1D44*/ f32 _1D44;
     /*0x1D48*/ f32 _1D48;
-    /*0x1D4C*/ f32 starDashRelated_0_5Or1_5;
+    /*0x1D4C*/ f32* starDashRelated_0_5Or1_5; // points at the speed multiplier (0.5 or 1.5)
     /*0x1D50*/ s16 _1D50;
     /*0x1D52*/ s16 _1D52;
     /*0x1D54*/ s16 _1D54;
