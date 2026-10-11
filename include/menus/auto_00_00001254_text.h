@@ -98,4 +98,6 @@ void fn_2_6784(void);
 
 void fn_2_87A8(void);
 
+void fn_2_11EA8(void);
+
 #endif

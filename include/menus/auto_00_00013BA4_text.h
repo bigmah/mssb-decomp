@@ -22,7 +22,9 @@ typedef struct DebugMenuState {
     /*0x2D*/ u8 _2D; // used length of _14/_1C
     /*0x2E*/ u8 _2E[2];
     /*0x30*/ u8 _30[2];
-    /*0x32*/ u8 _32[0x46 - 0x32];
+    /*0x32*/ u8 _32[0x40 - 0x32];
+    /*0x40*/ u8 _40[2]; // per team
+    /*0x42*/ u8 _42[4];
     /*0x46*/ u8 _46[5]; // see fn_2_16A34
     /*0x4B*/ s8 _4B;
     /*0x4C*/ u8 settingSel; // page 1: index into g_d_GameSettings._1A

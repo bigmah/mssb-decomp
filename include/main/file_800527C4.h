@@ -20,7 +20,9 @@ typedef struct CharJointMapObj {
 
 // lbl_8036E548 (character actors and models), only the fields used here.
 typedef struct CharModelTable {
-    /*0x0000*/ u8 _0000[0x2C50];
+    /*0x0000*/ u8 _0000[0xE56];
+    /*0x0E56*/ s8 _0E56; // compared with lbl_8034E9A0.captain[0] (fn_2_12F88)
+    /*0x0E57*/ u8 _0E57[0x2C50 - 0xE57];
     /*0x2C50*/ CharJointMapObj* chars[13];
 } CharModelTable;
 

@@ -10,6 +10,9 @@
 #include "menus/rep_0568.h"
 #include "menus/auto_00_00071EC4_text.h"
 #include "menus/auto_00_00016870_text.h"
+#include "menus/auto_00_00000D08_text.h"
+#include "menus/auto_00_00001254_text.h"
+#include "menus/auto_00_000194BC_text.h"
 #include "Dolphin/os.h"
 #include <string.h>
 
@@ -152,7 +155,7 @@ void fn_2_123CC(void) {
         fn_800625A4(0, 8);
         fn_800625A4(1, 8);
     }
-    lbl_2_bss_100B4 = 0;
+    lbl_2_bss_100B4._0 = 0;
     lbl_8034E9A0._472A = 0xFF;
 }
 #endif
@@ -197,7 +200,7 @@ void fn_2_12A70(void) {
     }
     if (lbl_2_bss_100B8._10[0] != 0 && lbl_2_bss_100B8._10[1] != 0) {
         if (g_d_GameSettings.GameModeSelected != 5) {
-            lbl_2_bss_100B4 = 1;
+            lbl_2_bss_100B4._0 = 1;
         }
         lbl_803CBBCC->step = 4;
         if (g_d_GameSettings._10 == 0) {
@@ -284,6 +287,229 @@ void fn_2_12CD8(void) {
 #endif
 
 // .text:0x00012F88 size:0xC1C
+// NONMATCHING 97.6%: inlines the equivalent fn_2_12238/fn_2_12CD8; case 5 result tests merged
+#if NONMATCHING
 void fn_2_12F88(void) {
-    return;
+    u16 scene;
+    s32 result;
+    s32 team;
+    s32 slot;
+
+    switch (lbl_803CBBCC->step) {
+    case 0:
+        if (lbl_803CBBCC->prevScene == 12 && g_d_GameSettings.GameModeSelected == 5 && lbl_803C66B0.active[0] != 0) {
+            break;
+        }
+        fn_2_123CC();
+        lbl_803CBBCC->step++;
+        // fallthrough
+    case 1:
+        lbl_803CBBCC->step = 2;
+        fn_2_12CD8();
+        fn_2_738C8();
+        scene = lbl_803CBBCC->prevScene;
+        if (scene == 5 || (scene == 12 && g_d_GameSettings.GameModeSelected == 5)) {
+            fn_2_1641C();
+        }
+        changeScene(1, 6);
+        break;
+    case 2:
+        fn_2_12B60();
+        fn_2_14790();
+        fn_2_12A70();
+        break;
+    case 4:
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            if (lbl_2_bss_100B8._40[0] == 0 || lbl_2_bss_100B8._40[1] == 0 || lbl_803C66B0.active[0] != 0 ||
+                lbl_803C66B0.active[1] != 0) {
+                break;
+            }
+            fn_800625A4(0, 7);
+            fn_800625A4(1, 7);
+        } else {
+            if (lbl_2_bss_100B8._40[0] == 0) {
+                break;
+            }
+            lbl_2_bss_100B4._0 = 1;
+            lbl_803CBCD8._5 = 1;
+            lbl_8034E9A0._48B1 = 1;
+            changeScene(3, 6);
+        }
+        lbl_803CBBCC->step = 5;
+        break;
+    case 5:
+        if (lbl_2_bss_100B4._1 != 0) {
+            break;
+        }
+        if (lbl_803297E0._CF5F != 0) {
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                result = fn_8004D93C(0);
+            } else {
+                result = fn_8004EE84(0);
+            }
+        } else {
+            if (g_d_GameSettings.GameModeSelected == 5) {
+                result = fn_8004D93C(1);
+            } else {
+                result = fn_8004EE84(2);
+            }
+        }
+        if (result == 0) {
+            break;
+        }
+        lbl_803CBBCC->step = 6;
+        // fallthrough
+    case 6:
+        if (g_d_GameSettings.GameModeSelected != 5 && fn_80062578() == 0) {
+            break;
+        }
+        if (lbl_803C66B0.active[0] != 0 || lbl_803C66B0.active[1] != 0) {
+            break;
+        }
+        if (lbl_803297E0._CF5F != 0) {
+            fn_2_19F2C();
+            lbl_8034E9A0._48AD = 1;
+            lbl_803C66B0.steps[0][0] = 0;
+            memset(&lbl_803C66B0.steps[0][1], 0, 6);
+            lbl_8034E9A0._4755 = 3;
+            fn_80062A74();
+            fn_80021410();
+            fn_80035CA4(15);
+            fn_80035CA4(18);
+            fn_80035CA4(9);
+            fn_80035CA4(6);
+            lbl_8034E9A0._48AF = 1;
+            lbl_8034E9A0._48B1 = 1;
+            lbl_8034E978._26 = 1;
+            lbl_803297E0._CF5F = 0;
+            fn_2_11A0(4);
+            break;
+        }
+        lbl_8034E9A0._48AD = 1;
+        lbl_803C66B0.steps[0][0] = 0;
+        memset(&lbl_803C66B0.steps[0][1], 0, 6);
+        lbl_8034E9A0._4755 = 3;
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            lbl_8034E9A0._472A = 0;
+            fn_800AD038(lbl_8034E9A0.heapMarkA[0]);
+            fn_2_19F2C();
+            for (team = 0; team < 2; team++) {
+                for (slot = 0; slot < 9; slot++) {
+                    if (slot == 0) {
+                        lbl_803C6724.picks[team][slot] = lbl_8034E9A0.captain[team];
+                    } else {
+                        lbl_803C6724.picks[team][slot] = -1;
+                    }
+                }
+            }
+            fn_80021AC0(0, 0);
+            fn_80021AC0(1, 0);
+            fn_8006496C();
+            fn_2_11A0(10);
+        } else {
+            lbl_8034E9A0._48AF = 1;
+            fn_8006496C();
+            if (lbl_8036E548._0E56 != lbl_8034E9A0.captain[0]) {
+                lbl_2_bss_100B8._14[0] = 1;
+            }
+            fn_2_11EA8();
+            changeScene(4, 6);
+            lbl_8034E9A0._48B2 = 1;
+            lbl_8034E978._26 = 1;
+            lbl_8034E9A0._48AF = 1;
+            fn_800AD038(lbl_8034E9A0.heapMarkA[0]);
+            fn_2_19F2C();
+            fn_80062A74();
+            fn_80035B50(15);
+            fn_80035B50(18);
+            fn_80035B50(9);
+            fn_80035B50(6);
+            fn_800AD054(lbl_8034E9A0.heapMarkB[0], lbl_8034E9A0.heapMarkB[1]);
+            fn_80021410();
+            fn_800ACFB0(lbl_800EF808._098);
+            lbl_800E877C._30 = 0;
+            lbl_800E877C._32 = 0;
+            fn_2_11A0(16);
+        }
+        break;
+    case 8:
+        if (lbl_2_bss_100B4._1 != 0) {
+            break;
+        }
+        lbl_2_bss_100B8._40[0] = 1;
+        lbl_2_bss_100B8._40[1] = 1;
+        if (lbl_803C66B0.active[0] != 0 || lbl_803C66B0.active[1] != 0) {
+            break;
+        }
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            result = fn_8004D93C(0);
+        } else {
+            result = fn_8004EE84(0);
+        }
+        if (result == 0) {
+            break;
+        }
+        lbl_803CBBCC->step = 9;
+        // fallthrough
+    case 9:
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            if (lbl_803C50E8._47 != 0) {
+                lbl_8034E978._26 = 1;
+            }
+            lbl_8034E9A0._48B1 = 1;
+            lbl_803CBCD8._5 = 1;
+            fn_800AD038(lbl_8034E9A0.heapMarkA[0]);
+            fn_2_11A0(12);
+        } else {
+            lbl_8034E978._26 = 1;
+            fn_80021AC4();
+            lbl_8034E9A0._48AD = 1;
+            lbl_8034E9A0._4755 = 3;
+            lbl_803C66B0.steps[0][0] = 0;
+            lbl_803C66B0.portOf[1] = 0;
+            lbl_803C66B0.portOf[0] = 0;
+            lbl_8034E9A0._472A = 0xFF;
+            lbl_8034E9A0._48AF = 1;
+            lbl_8034E9A0._48B1 = 1;
+            memset(&lbl_803C66B0.steps[0][1], 0, 6);
+            lbl_8034E978._26 = 1;
+            fn_800AD038(lbl_8034E9A0.heapMarkA[0]);
+            g_d_GameSettings._10 = 0;
+            fn_2_11A0(5);
+        }
+        break;
+    case 10:
+        fn_800B0A5C_insertQueue(fn_8004D0F0, 0x3000);
+        lbl_803CBBCC->step = 11;
+        break;
+    case 11:
+        switch (fn_8004CA6C(lbl_8034E9A0.input[(s8)lbl_8034E9A0.ports[lbl_803CBD24.team]].pressed)) {
+        case 1:
+            fn_8004CC2C();
+            break;
+        case 2:
+            fn_8004CC2C();
+            break;
+        case 3:
+            fn_8006496C();
+            lbl_2_bss_100B8._40[0] = 1;
+            lbl_2_bss_100B8._40[1] = 1;
+            fn_800625A4(0, 7);
+            fn_800625A4(1, 7);
+            lbl_2_bss_100B4._0 = 1;
+            lbl_803CBD24.team = 0;
+            lbl_2_bss_100B8._40[1] = 1;
+            lbl_2_bss_100B8._40[0] = 1;
+            changeScene(15, 6);
+            lbl_803CBBCC->step = 5;
+            break;
+        case 4:
+            lbl_803CBD24.team = 0;
+            lbl_803CBBCC->step = 2;
+            lbl_803297E0._CF5F = 0;
+            break;
+        }
+        break;
+    }
 }
+#endif

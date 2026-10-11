@@ -5,6 +5,7 @@
 #include "Dolphin/mtx.h"
 #include "game/UnknownHomes_Game.h"
 #include "main/file_80069BDC.h"
+#include "main/menu_globals.h"
 
 // Character-select / team-setup state at 0x8034E9A0 (size 0x4C28).
 // Only the fields used so far are named.
@@ -28,7 +29,9 @@ typedef struct CharSelectState {
     /*0x4711*/ u8 _4711[0x4729 - 0x4711];
     /*0x4729*/ u8 _4729;
     /*0x472A*/ u8 _472A;
-    /*0x472B*/ u8 _472B[0x4755 - 0x472B];
+    /*0x472B*/ u8 _472B;
+    /*0x472C*/ PortInput input[4];
+    /*0x4744*/ u8 _4744[0x4755 - 0x4744];
     /*0x4755*/ u8 _4755;
     /*0x4756*/ u8 _4756;
     /*0x4757*/ u8 charFlag[0x36]; // per character id
@@ -37,7 +40,11 @@ typedef struct CharSelectState {
     /*0x489B*/ u8 _489B[0x48AD - 0x489B];
     /*0x48AD*/ u8 _48AD;
     /*0x48AE*/ u8 _48AE;
-    /*0x48AF*/ u8 _48AF[0x4C28 - 0x48AF];
+    /*0x48AF*/ u8 _48AF;
+    /*0x48B0*/ u8 _48B0;
+    /*0x48B1*/ u8 _48B1;
+    /*0x48B2*/ u8 _48B2;
+    /*0x48B3*/ u8 _48B3[0x4C28 - 0x48B3];
 } CharSelectState; // size: 0x4C28
 
 extern CharSelectState lbl_8034E9A0;
