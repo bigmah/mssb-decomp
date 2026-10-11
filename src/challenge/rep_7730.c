@@ -2,6 +2,9 @@
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/gx.h"
+#include "main/file_800BD8C4.h"
+#include "C3/control.h"
+#include "stl/math.h"
 
 // POOL BEGIN (high-to-low; memory order is the reverse)
 static Mtx44 lbl_1_bss_47010;
@@ -23,7 +26,7 @@ static u32 lbl_1_bss_6E24[8];
 static u8 lbl_1_bss_6D48[0xDC];
 static f32 lbl_1_bss_6BF4[0x154 / 4];
 static f32 lbl_1_bss_6BE4[4];
-static u8* lbl_1_bss_6BE0[1];
+static ActorObjectTable* lbl_1_bss_6BE0[1];
 static s32 lbl_1_bss_6BDC;
 static s32 lbl_1_bss_6BD8;
 // POOL END
@@ -799,12 +802,10 @@ extern void LITInitAttn(void*, f32, f32, f32, f32, f32, f32);
 extern void LITInitPos(void*, f32, f32, f32);
 extern void LITInitDir(void*, f32, f32, f32);
 extern void LITInitColor(void*, ChallengeLightColor);
-extern u8* ActorObjectInitTable(u16);
 extern void LoadActorLayout(void*);
 extern void convertGeometryAndSknHeader(void*, s32);
-extern void fn_800BDC88(u8*, s32, s32, void*, s32, s32);
 extern void fn_800B2C08(void*, s32);
-extern void fn_800BD548(u8*, s32, ...);
+extern void fn_800BD548(ActorObject*, s32, ...);
 
 extern const f32 lbl_1_rodata_77E4_s;
 // 99.8%: LITInitPos: orig `lis r3,7840; lis r4,6FA4; addi r3,r4` (float const lis first), ours swaps r3/r4
@@ -812,7 +813,7 @@ extern const f32 lbl_1_rodata_77E4_s;
 void fn_1_20E00(u8* obj) {
     ChallengeLightColor color = lbl_1_rodata_77B0;
     u8* data;
-    s32 i;
+    u16 i;
     u8* layout;
     u8* geo;
 
@@ -828,10 +829,10 @@ void fn_1_20E00(u8* obj) {
     LoadActorLayout(layout);
     convertGeometryAndSknHeader(geo, 0);
     haveActLayoutPointToGeoHeader(layout, geo);
-    for (i = 0; (u16)i < 20; i++) {
+    for (i = 0; i < 20; i++) {
         fn_800BDC88(lbl_1_bss_6BE0[0], i, i, layout, 0, 0);
-        fn_800B2C08(*(void**)(lbl_1_bss_6BE0[0] + (u16)i * 0x90 + 0x34), 0);
-        fn_800BD548(lbl_1_bss_6BE0[0] + (u16)i * 0x90 + 0x34, 1, lbl_1_bss_6FA4[0]);
+        fn_800B2C08(lbl_1_bss_6BE0[0]->objects[i].actor, 0);
+        fn_800BD548(&lbl_1_bss_6BE0[0]->objects[i], 1, lbl_1_bss_6FA4[0]);
     }
 }
 
@@ -1209,4 +1210,57 @@ void fn_1_21040(void) {
         GXWGFifo.f32 = pos;
         GXWGFifo.u32 = color;
     }
+}
+
+extern const f64 lbl_1_rodata_7828;
+extern const f64 lbl_1_rodata_7830;
+extern const f64 lbl_1_rodata_7838;
+extern Vec lbl_1_data_104D0;
+
+// .text:0x20950 size:0x288
+void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera) {
+    ActorObject* obj;
+    s32 i;
+    Vec delta;
+    Vec mid;
+    Quaternion rot;
+    Quaternion align;
+    Mtx mtx;
+    f32 angle;
+    f32 zero;
+
+    i = 20;
+    while (i-- != 0) {
+        obj = &lbl_1_bss_6BE0[0]->objects[i];
+        obj->animateBones = i < count;
+        if (i < count) {
+            PSVECSubtract(&points[i + 1].position, &points[i].position, &delta);
+            PSVECScale(&delta, lbl_1_rodata_7814[0], &mid);
+            PSVECAdd(&points[i].position, &mid, &mid);
+            CTRLSetTranslation((Control*)obj->worldControl, mid.x, -mid.y, mid.z);
+            if (PSVECMag(&delta)) {
+                PSVECNormalize(&delta, &delta);
+                delta.y = -delta.y;
+                mid.x = lbl_1_rodata_77E4;
+                mid.y = lbl_1_rodata_77D8;
+                mid.z = lbl_1_rodata_77D8;
+                C_QUATRotAxisRad(&rot, &mid,
+                    lbl_1_rodata_7828 * (lbl_1_rodata_7830 + (i & 1)) / lbl_1_rodata_7838);
+                angle = acos(PSVECDotProduct(&delta, &mid));
+                PSVECCrossProduct(&mid, &delta, &mid);
+                if (PSVECMag(&mid)) {
+                    C_QUATRotAxisRad(&align, &mid, angle);
+                    PSQUATMultiply(&align, &rot, &rot);
+                }
+                CTRLSetQuat((Control*)obj->worldControl, rot.x, rot.y, rot.z, rot.w);
+            }
+            CTRLSetScale((Control*)obj->worldControl, lbl_1_data_104D0.x, lbl_1_data_104D0.y, lbl_1_data_104D0.z);
+            fn_800BDA24(obj);
+        }
+        zero = *(volatile f32*)&lbl_1_rodata_77D8;
+        PSMTXTrans(mtx, zero, zero, zero);
+        PSMTXConcat(camera, mtx, mtx);
+        obj->actor->flags98 |= 3;
+    }
+    fn_800BD670(lbl_1_bss_6BE0[0], (u32)camera);
 }

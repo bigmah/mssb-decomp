@@ -184,5 +184,6 @@ void fn_1_24410(void);
 
 void fn_1_1D694(u8* obj);
 void fn_1_21040(void);
+void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera);
 
 #endif
