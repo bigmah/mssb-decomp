@@ -23,6 +23,10 @@ void fn_2_EC34(void);
 
 u32 fn_2_1554(void);
 
+s32 fn_2_14F8(s32 lo, s32 hi); // random integer in [lo, hi]
+
+void fn_2_1A88(void);
+
 void fn_2_1328(u32* value, u16 increment);
 
 void fn_2_12A0(s16* value, s32 increment);
