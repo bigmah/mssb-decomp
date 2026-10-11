@@ -1608,3 +1608,30 @@ void fn_2_4D378(void) {
     }
 }
 #endif
+
+extern s32 fn_2_68690(s32 index);
+
+// fn_2_4D67C, size:0x2E4
+// NONMATCHING 95%: same first-loop `li` vs `mr r4,r6` offset init as fn_2_4D378, shifting registers
+#if NONMATCHING
+void fn_2_4D67C(void) {
+    s32 i;
+    s32 j;
+    s32 result;
+    *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = -1;
+    result = fn_2_68690(0);
+    lbl_2_bss_1A8248[0][0x441E] = result;
+    lbl_2_bss_1A8248[0][0x4420] = result - 2;
+    for (i = 0; i < 0x36; i++) {
+        MenuRosterSlot* e = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];
+        e->_07 = e->_06;
+    }
+    for (i = 0; i < 0x36; i++) {
+        MenuRosterSlot* slot = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];
+        for (j = 0; j < 10; j++) {
+            slot->_1D[j * 2] = slot->_09[j * 2];
+            slot->_1D[j * 2 + 1] = slot->_09[j * 2 + 1];
+        }
+    }
+}
+#endif
