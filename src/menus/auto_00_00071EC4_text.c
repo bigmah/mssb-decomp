@@ -2016,3 +2016,53 @@ void fn_2_72E54(u8* o) {
     }
 }
 #endif
+
+// lbl_803C6724: per-team roster (+2) and field position (+0x14) tables.
+typedef struct TeamTbl {
+    /*0x00*/ u8 _00[2];
+    /*0x02*/ s8 roster[2][9];
+    /*0x14*/ s8 pos[2][9];
+} TeamTbl;
+
+#define TEAM_TBL ((TeamTbl*)lbl_803C6724)
+
+// fn_2_7E194, size:0x1EC
+// NONMATCHING 94%: unrolled roster search addresses each entry from the base instead of a walking pointer
+#if NONMATCHING
+void fn_2_7E194(s32 o, s32 index) {
+    u8* e = lbl_803C66B0 + index;
+    s32 n;
+    s32 k;
+    s8 pos;
+    s32 player;
+    s32 j;
+    if ((*(e += 0xD) == 1) ? 1 : 0) {
+        n = 0;
+        k = 0;
+        k++;
+        n += fn_80042DA8(o, index + 0x1C, 0xA) != 0;
+        k++;
+        n += fn_80042DA8(o, index + 0x6A, 0xA) != 0;
+        k++;
+        n += fn_80042DA8(o, index + 0x89, 5) != 0;
+        if (g_d_GameSettings._10 == 0 && index == 0) {
+            // team 1 roster (+2) / field positions (+0x14), 9 entries each
+            {
+            TeamTbl* tt = TEAM_TBL;
+            player = *(s32*)(lbl_8034E9A0 + 0x46E4);
+            for (j = 0; j < 9; j++) {
+                if (tt->roster[1][j] == player) {
+                    pos = tt->pos[1][j];
+                }
+            }
+            }
+            k++;
+            n += fn_80042DA8(o, pos + 0x3D, 0x14) != 0;
+        }
+        if (n == k) {
+            fn_80062674(index);
+            *e = 2;
+        }
+    }
+}
+#endif
