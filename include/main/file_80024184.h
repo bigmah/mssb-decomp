@@ -61,6 +61,7 @@ s32 fn_800247E4(s32 x, s32 y, s32 width, s32 bytesPerTexel);
 s32 challengeStarRelatedInd(s32 team, s32 mission);
 u32 multBottomBits_asFloat(u32 color, u32 scale);
 u32 byteWiseMultiply(u32 scale, u32 color);
+s32 LERPToNewRange_Float(s32 value, s32 inMin, s32 inMax, s32 outMin, s32 outMax);
 f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 
 #endif

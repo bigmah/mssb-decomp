@@ -278,9 +278,21 @@ u32 byteWiseMultiply(u32 scale, u32 color) {
 #endif
 
 // .text:0x80024B00 size:0xB4
-void LERPToNewRange_Float(void) {
-    return;
+// NONMATCHING 99%: f1/f2 swapped between the 0.0 constant and the int-to-float magic
+#if NONMATCHING
+s32 LERPToNewRange_Float(s32 value, s32 inMin, s32 inMax, s32 outMin, s32 outMax) {
+    f32 t;
+    f32 range = inMax - inMin;
+
+    if (lbl_803CC5A0 == range) {
+        t = lbl_803CC5A4;
+    } else {
+        t = (value - inMin) / range;
+        t = t > lbl_803CC5A4 ? lbl_803CC5A4 : (t < lbl_803CC5A0 ? lbl_803CC5A0 : t);
+    }
+    return outMin + (s32)(t * (outMax - outMin));
 }
+#endif
 
 // .text:0x80024BB4 size:0x50
 f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax) {
