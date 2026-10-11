@@ -146,8 +146,19 @@ void ANIMGetTrackFromSequence(void) {
 }
 
 // .text:0x800B4FEC size:0xA0
-void ANIMGetSequence(void) {
-    return;
+ANIMSequences* ANIMGetSequence(ANIMBank* animBank, char* sequenceName, u16 seqNum) {
+    u32 i;
+
+    if (sequenceName != NULL) {
+        for (i = 0; i < animBank->numSequences; i++) {
+            if (Strcmp(animBank->animSequences[i].sequenceName, sequenceName) == 0) {
+                return &animBank->animSequences[i];
+            }
+        }
+    } else if (animBank == NULL) {
+        return NULL;
+    }
+    return &animBank->animSequences[seqNum];
 }
 
 // .text:0x800B508C size:0xE0
