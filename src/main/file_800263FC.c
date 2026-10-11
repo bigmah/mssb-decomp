@@ -645,13 +645,13 @@ void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm) {
 #endif
 
 // .text:0x8002E3DC size:0x44C
-void fn_8002E3DC(void) {
-    return;
+s32 fn_8002E3DC(Emitter* e) {
+    return 0;
 }
 
 // .text:0x8002E828 size:0x478
-void fn_8002E828(void) {
-    return;
+s32 fn_8002E828(Emitter* e) {
+    return 0;
 }
 
 // .text:0x8002ECA0 size:0x50C
@@ -665,7 +665,7 @@ s32 fn_8002F1AC(Vec* pos, s32 id) {
     Particle* p;
     if (e != NULL && lbl_80366158._28 == 0) {
         for (p = e->particles; p != NULL; p = p->next) {
-            if (p->u.t6.id == id) {
+            if (p->u.t6.unk20 == id) {
                 memcpy(&p->pos, pos, sizeof(Vec));
                 p->life++;
                 return 1;
@@ -806,9 +806,41 @@ void fn_80032064(Vec* pos, ParticleParamsB* prm) {
 #endif
 
 // .text:0x80032284 size:0x268
-void fn_80032284(void) {
-    return;
+// NONMATCHING 98%: r6/r7 swapped and one store scheduled differently in the inlined emitter allocation
+#if NONMATCHING
+void fn_80032284(Vec* pos) {
+    ParticleParams prm;
+    Emitter* e;
+    Particle* p;
+    f32 size;
+
+    memcpy(&prm, &lbl_800F787C, sizeof(ParticleParams));
+    prm.unk10 = 0xFF;
+    prm.tex = lbl_803CBD0C;
+    prm.size = 500000;
+    prm.unkC = 700000;
+    prm.life = 0x20;
+    e = NewEmitter(fn_8002E3DC, 0x80, 0, 1, 1, 7);
+    if (e != NULL) {
+        e->tex = prm.tex;
+        p = e->particles;
+        p->pos.x = pos->x;
+        p->pos.y = pos->y;
+        p->pos.z = pos->z;
+        p->color.rgba = 0xFFFFFF00;
+        p->color.c.a = prm.unk10;
+        p->u.t6.unk18 = prm.unk10;
+        p->u.t6.unk1C = p->life = prm.life;
+        p->u.t6.unk20 = prm.life / 2;
+        size = (f32)prm.size / 100000.0f;
+        p->u.t6.unk10 = size;
+        p->sizeY = size;
+        p->sizeX = size;
+        p->u.t6.unk14 = (f32)prm.unkC / 100000.0f;
+        p->texIndex = prm.texIndex;
+    }
 }
+#endif
 
 // .text:0x800324EC size:0x3F4
 void fn_800324EC(void) {
