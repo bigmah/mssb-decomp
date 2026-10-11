@@ -167,9 +167,158 @@ u8 fn_3_6E1D4(u8 v) {
 }
 
 // .text:0x0006E24C size:0x968 mapped:0x806AD2E0
-void fn_3_6E24C(void) {
-    return;
+// setInMemFielderConstants: fills g_Fielders[fielderIdx] from the fielding team's roster entry.
+extern InMemFielderView g_Fielders[9];
+extern f32 lbl_3_data_4640[2][22]; // fielder max velocity by speed/10 ([1] in game mode 6)
+extern s16 lbl_3_data_79B4[55][8]; // reach per character (x0.01), row 54 = minimums
+extern s16 lbl_3_data_7F10[54];
+
+static inline u32 fielderAbilities(int rosterID) {
+    int team = g_GameLogic.teamFielding;
+    if (g_d_GameSettings.minigamesEnabled) {
+        team = 0;
+    }
+    return inMemRoster[team][rosterID].stats.FieldingStats;
 }
+
+// NONMATCHING 99%: the original keeps &g_GameLogic in r30 for the captain check instead of
+// re-materializing it, and schedules the reach loads slightly differently
+#if NONMATCHING
+void fn_3_6E24C(int rosterID, int fielderIdx) {
+    int index;
+    f32 r2;
+    f32 third;
+    InMemFielderView* f = &g_Fielders[fielderIdx];
+    CharacterStats* char_stats = &inMemRoster[g_GameLogic.teamFielding][rosterID];
+    ChallengeTrackingStruct* starMissions = starMissionCompletionTracker;
+    s16 charID;
+
+    if (g_d_GameSettings.GameModeSelected == GAME_TYPE_PRACTICE) {
+        if (g_Practice.practiceType_2 == 0 || g_Practice.practiceType_2 == 1 || g_Practice.practiceType_2 == 2 ||
+            g_Practice.practiceType_2 == 3) {
+            char_stats = &inMemRoster[g_GameLogic.teamFielding][fielderIdx];
+        }
+    } else if (g_d_GameSettings.minigamesEnabled) {
+        char_stats = &inMemRoster[0][g_Minigame.minigameControlStruct[0].characterIndex[rosterID]];
+    }
+
+    f->rosterID = rosterID;
+    f->charID = charID = char_stats->stats.CharID;
+    f->handedness = char_stats->stats.FieldingArm;
+    f->weight = char_stats->stats.Weight;
+    f->aiLevel = g_GameLogic.AIDifficulty0Special3Weak[g_GameLogic.awayTeamBattingInd_battingTeam];
+
+    if (fielderAbilities(f->rosterID) >> 7 & 1) { // FIELDING_ABILITIES_MAGICAL_CATCH
+        f->catchType = 5;
+    } else {
+        f->catchType = f->weight;
+    }
+
+    if (!g_d_GameSettings.exhibitionMatchInd) {
+        f->starMissionCharID = -1;
+        for (index = 0; index < 54; index++) {
+            if ((f->charID == index) && (starMissions[index].variantClassification <= 3)) {
+                f->starMissionCharID = index;
+                break;
+            }
+        }
+    }
+
+    if (g_d_GameSettings.minigamesEnabled) {
+        s8 idx = g_Minigame.minigameControlStruct[0].characterIndex[rosterID];
+        if (g_Minigame.minigameControlStruct[0].battingHandedness[idx] != 0) {
+            f->aiLevel = aILevel[g_Minigame.minigameControlStruct[0].aIStrength[idx]];
+        }
+    }
+
+    if (g_GameLogic.Team_CaptainRosterLoc[g_GameLogic.teamFielding] == f->rosterID) {
+        f->opponentIdx = 0;
+    } else {
+        f->opponentIdx = ++g_GameLogic.rosterLoc_skippingCap;
+    }
+
+    if (g_d_GameSettings.minigamesEnabled) {
+        if (g_Minigame.battingHandedness[rosterID] <= 1) {
+            f->handedness = 0;
+        } else {
+            f->handedness = 1;
+        }
+    }
+
+    f->speed = char_stats->stats.Speed;
+    if (f->speed > 200) {
+        f->speed = 200;
+    }
+    {
+        u8 spd = f->speed;
+        s32 lo = (spd / 10) * 10;
+        s32 hi = lo + 10;
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            f->maxVelocity = LinearInterpolateToNewRange(spd, lo, hi, lbl_3_data_4640[1][lo / 10], lbl_3_data_4640[1][hi / 10]);
+        } else {
+            f->maxVelocity = LinearInterpolateToNewRange(spd, lo, hi, lbl_3_data_4640[0][lo / 10], lbl_3_data_4640[0][hi / 10]);
+        }
+    }
+    f->velocityPerWeight = f->maxVelocity / f->_1D1;
+
+    f->throwingArm = char_stats->stats.ThrowingArm;
+    {
+        s32 lo = (f->throwingArm / 10) * 10;
+        s32 hi = lo + 10;
+        f->throwStrength = LERPToNewRange_Float(f->throwingArm, lo, hi, lbl_3_data_4744[lo / 10], lbl_3_data_4744[hi / 10]);
+    }
+    if (f->throwStrength > 200) {
+        f->throwStrength = 200;
+    }
+
+    f->characterClass = char_stats->stats.CharacterClass;
+    f->wallAbility = 0;
+    if (fielderAbilities(f->rosterID) & FIELDING_ABILITIES_WALL_SPLAT) {
+        f->wallAbility = 1;
+    } else {
+        if (fielderAbilities(f->rosterID) >> 1 & 1) { // FIELDING_ABILITIES_WALL_JUMP
+            f->wallAbility = 2;
+        } else {
+            if (fielderAbilities(f->rosterID) & FIELDING_ABILITIES_CLAMBER) {
+                f->wallAbility = 3;
+            }
+        }
+    }
+
+    f->superJump = 0;
+    if (fielderAbilities(f->rosterID) & FIELDING_ABILITIES_SUPER_JUMP) {
+        f->superJump = 1;
+    }
+
+    f->reach[0] = 0.01f * lbl_3_data_79B4[charID][0] * charSizeMultipliers[charID][0];
+    f->reach[1] = 0.01f * lbl_3_data_79B4[charID][1] * charSizeMultipliers[charID][0];
+    f->reach[2] = 0.01f * lbl_3_data_79B4[charID][2] * charSizeMultipliers[charID][0];
+    f->reach[3] = 0.01f * lbl_3_data_79B4[charID][3] * charSizeMultipliers[charID][0];
+    f->reach[6] = 0.01f * lbl_3_data_79B4[charID][5] * charSizeMultipliers[charID][0];
+    r2 = 0.01f * lbl_3_data_79B4[charID][2] * charSizeMultipliers[charID][0];
+    third = r2 / 3.0f;
+    f->reach[7] = 0.01f * lbl_3_data_79B4[charID][6] * charSizeMultipliers[charID][0];
+    f->reach[8] = 0.01f * lbl_3_data_79B4[charID][7] * charSizeMultipliers[charID][0];
+    f->reach[4] = r2 + third;
+    f->reach[5] = r2 - third;
+    if (f->reach[0] < 0.01f * lbl_3_data_79B4[54][0]) {
+        f->reach[0] = 0.01f * lbl_3_data_79B4[54][0];
+    }
+    if (f->reach[3] < 0.01f * lbl_3_data_79B4[54][1]) {
+        f->reach[3] = 0.01f * lbl_3_data_79B4[54][1];
+    }
+    if (f->reach[6] < 0.01f * lbl_3_data_79B4[54][3]) {
+        f->reach[6] = 0.01f * lbl_3_data_79B4[54][3];
+    }
+    if (f->reach[7] < 0.01f * lbl_3_data_79B4[54][4]) {
+        f->reach[7] = 0.01f * lbl_3_data_79B4[54][4];
+    }
+    if (f->reach[8] < 0.01f * lbl_3_data_79B4[54][5]) {
+        f->reach[8] = 0.01f * lbl_3_data_79B4[54][5];
+    }
+    f->_16C = 0.01f * lbl_3_data_7F10[charID] * charSizeMultipliers[charID][0];
+}
+#endif
 
 // .text:0x0006EBB4 size:0x368 mapped:0x806ADC48
 // setInMemPitcherConstants: pitcher counterpart of setInMemBatterConstants.
