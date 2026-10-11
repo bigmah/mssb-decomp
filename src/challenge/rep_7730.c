@@ -1624,3 +1624,65 @@ void fn_1_25C68(void) {
     q[0x2C] = 0;
 }
 #endif
+
+extern const f32 lbl_1_rodata_7800;
+
+static inline void fn_1_1E290_adjust(f32* value, u16 held, s32 decrease) {
+    f32 v;
+    f32 step;
+    step = lbl_1_rodata_77F8;
+    v = *value;
+    if (held & 0x40) {
+        step = lbl_1_rodata_77FC;
+    } else if (held & 0x20) {
+        step = lbl_1_rodata_7800;
+    }
+    if (decrease) {
+        step = -step;
+    }
+    v += step;
+    if (v < lbl_1_rodata_7804) {
+        v = lbl_1_rodata_7804;
+    }
+    if (v > lbl_1_rodata_7808[0]) {
+        v = lbl_1_rodata_7808[0];
+    }
+    *value = v;
+}
+
+// .text:0x1E290 size:0x340
+s16 fn_1_1E290(s16 sel, u16 held, u16 pressed, u16 repeat) {
+    if (sel < 0 || sel >= 3) {
+        return sel;
+    }
+    if (repeat & 1) {
+        switch (sel) {
+        case 0:
+            fn_1_1E290_adjust(&lbl_1_bss_6BF4.angVel.x, held, 1);
+            break;
+        case 1:
+            fn_1_1E290_adjust(&lbl_1_bss_6BF4.angVel.y, held, 1);
+            break;
+        case 2:
+            fn_1_1E290_adjust(&lbl_1_bss_6BF4.angVel.z, held, 1);
+            break;
+        }
+    } else if (repeat & 2) {
+        switch (sel) {
+        case 0:
+            fn_1_1E290_adjust(&lbl_1_bss_6BF4.angVel.x, held, 0);
+            break;
+        case 1:
+            fn_1_1E290_adjust(&lbl_1_bss_6BF4.angVel.y, held, 0);
+            break;
+        case 2:
+            fn_1_1E290_adjust(&lbl_1_bss_6BF4.angVel.z, held, 0);
+            break;
+        }
+    } else if (repeat & 8) {
+        sel--;
+    } else if (repeat & 4) {
+        sel++;
+    }
+    return sel;
+}
