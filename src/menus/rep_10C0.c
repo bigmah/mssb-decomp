@@ -186,6 +186,51 @@ void fn_2_92CB0(MenuCamera* cam) {
     }
 }
 
+// fn_2_92F2C, size:0x3B0
+// NONMATCHING 97%: float constant loads (-256, 1/256, 1/1024, u8->f32 bias) get swapped f-regs and one addi/@l addressing difference
+#if NONMATCHING
+void fn_2_92F2C(MenuCamera* cam) {
+    Vec up = lbl_2_rodata_1128;
+    Vec angles;
+    Vec offset = lbl_2_rodata_1134;
+    Mtx rotX;
+    Mtx rotY;
+    Mtx rot;
+    f32 c;
+    f32 s;
+
+    if (!(lbl_803C77B8[WORK->padIndex].held & 0x10)) {
+        cam->rotX -= lbl_803C77B8[WORK->padIndex].sticks.substickY;
+        cam->rotY += lbl_803C77B8[WORK->padIndex].sticks.substickX;
+        cam->strafe = lbl_803C77B8[WORK->padIndex].sticks.stickX / lbl_2_rodata_1148;
+        cam->advance = lbl_803C77B8[WORK->padIndex].sticks.stickY * lbl_2_rodata_114C;
+        cam->pos.y += lbl_803C77B8[WORK->padIndex].analog.triggerRight * lbl_2_rodata_1150;
+        cam->pos.y -= lbl_803C77B8[WORK->padIndex].analog.triggerLeft * lbl_2_rodata_1150;
+    }
+    if (lbl_803C77B8[WORK->padIndex].repeat & 0x800) {
+        cam->fov -= lbl_2_rodata_1140;
+    } else if (lbl_803C77B8[WORK->padIndex].repeat & 0x400) {
+        cam->fov += lbl_2_rodata_1140;
+    }
+    angles.x = cam->rotX;
+    angles.y = cam->rotY;
+    angles.z = lbl_2_rodata_1144;
+    PSVECScale(&angles, lbl_2_rodata_1154, &angles);
+    PSMTXRotRad(rotX, 'X', angles.x);
+    PSMTXRotRad(rotY, 'Y', angles.y);
+    s = rotY[0][2];
+    c = rotY[0][0];
+    PSMTXConcat(rotY, rotX, rot);
+    PSMTXMultVec(rot, &offset, &cam->target);
+    cam->pos.x += cam->advance * s - cam->strafe * c;
+    cam->pos.z += cam->advance * c + cam->strafe * s;
+    cam->target.x += cam->pos.x;
+    cam->target.y += cam->pos.y;
+    cam->target.z += cam->pos.z;
+    makeLookAtMatrix(cam->view, &cam->pos, &up, &cam->target);
+}
+#endif
+
 // fn_2_93BF8, size:0x6C
 void fn_2_93BF8(MenuCamera* cam) {
     switch (WORK->cameraMode) {
