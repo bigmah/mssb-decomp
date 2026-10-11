@@ -283,7 +283,6 @@ void fn_2_8D024(void) {
 extern u8* lbl_803CC1B8;
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_2_data_2FE48[];
-extern void fn_2_8C910(void);
 extern void fn_2_8B418(void);
 extern void fn_80052D70(void);
 
@@ -494,3 +493,58 @@ void fn_2_8CD58(s32 index, s32 anim, u8 loop, u8 face, s16 time, u8 eyes, u8 fra
     fn_8001B308(index, eyes);
     actor->faceMode = face;
 }
+
+#include "C3/anim.h"
+
+// Relocated resource pointers at lbl_2_bss_340140 + 0x2DA0: 19 x (actor layout, geometry, textures).
+#define MENU_RES(i) (*(u8**)(lbl_2_bss_340140 + (i) * 4 + 0x2DA0))
+// Animation banks at lbl_2_bss_3401BC + 0xC, indexed like the menu slots.
+#define MENU_ANIM_BANK(i) (*(ANIMBank**)(lbl_2_bss_3401BC + (i) * 4 + 0xC))
+
+// NONMATCHING 83%: original folds the i<57 precheck of the unrolled first loop and swaps r30/r31 (i/file)
+#if NONMATCHING
+// .text:0x8C910 size:0x378
+void fn_2_8C910(void) {
+    s32 i;
+    s32 j;
+    u8* file;
+    *(u16*)(lbl_2_bss_340140 + 0x3078) = 0;
+    file = *(u8**)(lbl_2_bss_340140 + 0x2D9C);
+    for (i = 0; i < 19 * 3; i++) {
+        MENU_RES(i) = file + ((s32*)file)[i];
+    }
+    for (j = 0; j < 7; j++, i++) {
+        MENU_ANIM_BANK(1 + j) = (ANIMBank*)(file + ((s32*)file)[i]);
+        ANIMGet(MENU_ANIM_BANK(1 + j));
+    }
+    for (j = 0; j < 2; j++, i++) {
+        MENU_ANIM_BANK(8 + j) = (ANIMBank*)(file + ((s32*)file)[i]);
+        ANIMGet(MENU_ANIM_BANK(8 + j));
+    }
+    MENU_ANIM_BANK(10) = (ANIMBank*)(file + ((s32*)file)[i]);
+    ANIMGet(MENU_ANIM_BANK(10));
+    MENU_ANIM_BANK(11) = (ANIMBank*)(file + ((s32*)file)[i + 1]);
+    ANIMGet(MENU_ANIM_BANK(11));
+    MENU_ANIM_BANK(12) = (ANIMBank*)(file + ((s32*)file)[i + 2]);
+    ANIMGet(MENU_ANIM_BANK(12));
+    MENU_ANIM_BANK(13) = (ANIMBank*)(file + ((s32*)file)[i + 3]);
+    ANIMGet(MENU_ANIM_BANK(13));
+    MENU_ANIM_BANK(14) = (ANIMBank*)(file + ((s32*)file)[i + 4]);
+    ANIMGet(MENU_ANIM_BANK(14));
+    MENU_ANIM_BANK(15) = (ANIMBank*)(file + ((s32*)file)[i + 5]);
+    ANIMGet(MENU_ANIM_BANK(15));
+    MENU_ANIM_BANK(16) = (ANIMBank*)(file + ((s32*)file)[i + 6]);
+    ANIMGet(MENU_ANIM_BANK(16));
+    for (j = 0; j < 19; j++) {
+        u8* e = lbl_2_bss_340140 + j * 0xC;
+        u8* a = *(u8**)(e + 0x2DA0);
+        u8* g = *(u8**)(e + 0x2DA4);
+        u8* x = *(u8**)(e + 0x2DA8);
+        LoadActorLayout(a);
+        convertGeometryAndSknHeader(g, 0);
+        haveActLayoutPointToGeoHeader(a, g);
+        convertTextureHeader(x);
+        fn_800BD190((struct GQRValueGroups*)g, (s32)x);
+    }
+}
+#endif

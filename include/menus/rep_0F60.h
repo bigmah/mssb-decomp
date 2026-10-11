@@ -91,4 +91,6 @@ void fn_2_8DCD8(void);
 
 void fn_2_8CD58(s32 index, s32 anim, u8 loop, u8 face, s16 time, u8 eyes, u8 frames);
 
+void fn_2_8C910(void);
+
 #endif
