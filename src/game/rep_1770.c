@@ -11,7 +11,72 @@ extern void playSoundEffect(int);
 
 // .text:0x000993A8 size:0x3C4 mapped:0x806D843C
 void fn_3_993A8(void) {
-    return;
+    HudTask* task = HUD_TASK;
+    s32 level = 0;
+    LayoutObj* o;
+    if (lbl_3_common_bss_32724.hudOff == 0 && lbl_3_common_bss_32724._A7 != 0) {
+        if (g_Batter.chargeStatus != 0) {
+            if (g_Batter.chargeUp < 1.0f) {
+                HUD_OBJ(task, 2)->_64 = 0x49;
+                level = 75.0f * g_Batter.chargeUp;
+            } else {
+                HUD_OBJ(task, 2)->_64 = 0x48;
+                level = (s32)(31.0f * g_Batter.chargeDown) + 75;
+            }
+            if (g_Batter.chargeDown >= 1.0f) {
+                HUD_OBJ(task, 3)->_5C = 0x6A << 16;
+                o = HUD_OBJ(task, 2);
+                if ((o->_5C >> 16) < 0x6A) {
+                    o->_5C = 0x6A << 16;
+                } else {
+                    o->_68 = 1;
+                }
+                level = 0x6A;
+            } else {
+                HUD_OBJ(task, 3)->_5C = level << 16;
+                HUD_OBJ(task, 2)->_5C = 0;
+                HUD_OBJ(task, 2)->_68 = 0;
+            }
+        } else {
+            HUD_OBJ(task, 3)->_5C = 0;
+            HUD_OBJ(task, 3)->_68 = 0;
+            HUD_OBJ(task, 2)->_5C = 0;
+        }
+        if (g_Batter.chargeStatus != 0) {
+            HUD_OBJ(task, 5)->_68 = 0;
+            if (g_Batter.swingInd != 0 && g_Batter.chargeDown >= 1.0f) {
+                o = HUD_OBJ(task, 5);
+                if ((o->_5C >> 16) < 0x6A) {
+                    o->_5C = 0x6A << 16;
+                } else {
+                    o->_68 = 1;
+                }
+            } else {
+                HUD_OBJ(task, 5)->_5C = (level + 10) << 16;
+            }
+        } else {
+            if ((HUD_OBJ(task, 5)->_5C >> 16) < 10) {
+                HUD_OBJ(task, 5)->_68 = 1;
+            } else {
+                HUD_OBJ(task, 5)->_5C = 10 << 16;
+                HUD_OBJ(task, 5)->_68 = 0;
+            }
+        }
+        if (g_Batter.chargeStatus != 0 && g_Batter.swingInd != 0) {
+            if (task->state == 0) {
+                HUD_OBJ(task, 6)->flags |= 2;
+                HUD_OBJ(task, 6)->_5C = level << 16;
+                HUD_OBJ(task, 7)->_5C = 0;
+                HUD_OBJ(task, 7)->_68 = 1;
+                task->state = 1;
+            }
+        } else {
+            HUD_OBJ(task, 6)->flags &= ~2;
+            task->state = 0;
+        }
+    } else {
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+    }
 }
 
 // .text:0x0009976C size:0xAC mapped:0x806D8800
