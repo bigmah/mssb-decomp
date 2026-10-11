@@ -25,9 +25,65 @@ extern void fn_80068720(s32);
 extern void fn_8001F228(void);
 extern void fn_80021410(void);
 extern void fn_2_54474(void);
+extern void fn_8004B1B8(u32 value);
+extern u8 lbl_803C6CF8[];
+
+// Archive loaded from ARAM by fn_2_1B1BC (lbl_2_bss_1034C).
+typedef struct MenuArchive {
+    /*0x0*/ u8 _0[4];
+    /*0x4*/ u32 firstOffset;
+    /*0x8*/ u32* data; // offset table; entries are relocated in place
+} MenuArchive;
+extern MenuArchive* lbl_2_data_4BA0;
+extern u8 lbl_2_bss_1034C[];
+extern u8 lbl_2_data_4B90[]; // ARAM load instructions
 extern u8 lbl_2_bss_1A8250[]; // menu work buffer that lbl_2_bss_1A824C points at
 extern u8 lbl_8034E9A0[];
 extern void* memset(void*, int, unsigned long);
+
+// NONMATCHING 87%: the original keeps the relocation loop (count 1, index 0) as a real loop; CW folds and unrolls ours
+#if NONMATCHING
+// Turn the first `count` offsets of an archive into pointers; returns entry `index`.
+static inline void* relocateArchive(u32* data, s32 index, s32 count) {
+    void* entry = (u8*)data + data[index];
+    u32* p = data + count;
+    while (count-- != 0) {
+        p--;
+        *p += (u32)data; // TODO: 32-bit file offsets relocated in place
+    }
+    return entry;
+}
+
+// fn_2_1B1BC, size:0x158
+void fn_2_1B1BC(void) {
+    u8* o = lbl_803CC1B8;
+    u8* q;
+    switch ((s8)o[0x28]) {
+    case 0:
+        lbl_2_data_4BA0 = (MenuArchive*)lbl_2_bss_1034C;
+        lbl_2_data_4BA0->data = (u32*)ARAMTransfer(lbl_2_data_4B90, 0, 0, 0);
+        o[0x28] = 1;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            o[0x28] = 2;
+        }
+        break;
+    case 2:
+        convertTextureHeader(relocateArchive(lbl_2_data_4BA0->data, 0, 1));
+        lbl_2_data_4BA0->firstOffset = lbl_2_data_4BA0->data[0];
+        fn_8004B1B8(lbl_2_data_4BA0->firstOffset);
+        o[0x28] = 3;
+        break;
+    case 3:
+        q = *(u8**)(o + 0xC);
+        *(s16*)(q + 0x10) = 1;
+        fn_800B0A14_removeQueue(q);
+        o[0x28] = 0;
+        break;
+    }
+}
+#endif
 
 // fn_2_1B314, size:0x218
 void fn_2_1B314(void) {
