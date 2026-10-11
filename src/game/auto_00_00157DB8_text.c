@@ -38,6 +38,7 @@ extern PracticeTutorBss lbl_3_common_bss_34C90;
 extern void fn_3_8A350(void);
 extern void fn_3_F7B8(void);
 extern void fn_3_59338(void);
+extern u16 lbl_3_data_BA5C[10];
 
 // Sprite idx of lbl_80371C30. As a helper (rather than indexing directly) the index
 // is summed before scaling, as some of the original functions do.
@@ -987,3 +988,89 @@ end:
     fn_800B0A14_removeQueue(fn_80034CEC(o));
 }
 #endif
+
+// .text:0x00158B64 size:0x480
+void fn_3_158B64(void) {
+    PracticeMsgTask* o;
+    s32 shown;
+    LayoutObj* obj;
+    u32 frame;
+    s16 idx;
+
+    shown = 0;
+    o = lbl_803CC1B8[0];
+    if (lbl_3_common_bss_32724._96 == 0 && (g_Practice.tutorialState != 2 || g_Practice.practiceState != 3)) {
+        if (o->state == 0) {
+            o->state++;
+            idx = g_Practice.laukituTextChannelIndex = fn_8000F988((LayoutGroup*)o, 9, 0, 5, 0, 0);
+            lbl_80366B18.entries[idx].hAlign = 0;
+            lbl_80366B18.entries[idx].vAlign = 1;
+            fn_8000FD9C(idx, 2, 0);
+            idx = g_Practice.diagramTextChannelIndex = fn_8000F988((LayoutGroup*)o, 0xA, 0, 5, 0, 0);
+            lbl_80366B18.entries[idx].hAlign = 1;
+            lbl_80366B18.entries[idx].vAlign = 1;
+        }
+        if (g_Practice.instructionComplete_readyToAdvance != 0 || g_Practice.allInstructionsComplete != 0) {
+            lbl_80371C30[o->baseIdx + 7].obj->flags |= 2;
+        } else {
+            lbl_80371C30[o->baseIdx + 7].obj->flags &= ~2;
+        }
+        obj = lbl_80371C30[o->baseIdx].obj;
+        frame = obj->_5C >> 16;
+        if (g_Practice.textRelatedIndicator != 0) {
+            if ((s32)frame <= 0xF) {
+                obj->_68 = 1;
+            } else if (obj->_69 == 2) {
+                shown = 1;
+            }
+        } else if ((s32)frame > 0xF) {
+            obj->_68 = 4;
+        } else if ((s32)frame < 0xF) {
+            obj->_68 = 1;
+        } else {
+            obj->_68 = 0;
+        }
+        if (g_Practice.maybeControlFlag1 != 0 && shown != 0) {
+            lbl_80371C30[o->baseIdx + 8].obj->_64 = lbl_3_data_BA5C[g_Practice.maybeControlFlag1];
+            lbl_80371C30[o->baseIdx + 8].obj->flags |= 2;
+            lbl_80371C30[o->baseIdx + 4].obj->_68 = 1;
+            lbl_80371C30[o->baseIdx + 5].obj->_68 = 1;
+            shown = lbl_80371C30[o->baseIdx + 4].obj->_69 == 2; // the original reuses the flag here
+            if (shown) {
+                lbl_80371C30[o->baseIdx + 10].obj->color = (lbl_80371C30[o->baseIdx + 10].obj->color & ~0xFF) | 0xFF;
+            } else {
+                lbl_80371C30[o->baseIdx + 10].obj->color &= ~0xFF;
+            }
+        } else {
+            lbl_80371C30[o->baseIdx + 8].obj->flags &= ~2;
+            lbl_80371C30[o->baseIdx + 4].obj->_68 = 4;
+            lbl_80371C30[o->baseIdx + 5].obj->_68 = 4;
+            lbl_80371C30[o->baseIdx + 10].obj->color &= ~0xFF;
+        }
+        lbl_80371C30[o->baseIdx + 6].obj->_5C = g_Practice.maybeControlFlag2 << 16;
+        if (g_Practice.lakituTextIndex >= 0) {
+            g_Practice.lakituTextIndex_stored = g_Practice.lakituTextIndex;
+            g_Practice.lakituTextIndex = -1;
+            fn_8000FE08(g_Practice.laukituTextChannelIndex, 5, g_Practice.lakituTextIndex_stored);
+        }
+        if (g_Practice.diagramTitleTextIndex >= 0) {
+            g_Practice.diagramTitleTextIndex_stored = g_Practice.diagramTitleTextIndex;
+            g_Practice.diagramTitleTextIndex = -1;
+            fn_8000FE08(g_Practice.diagramTextChannelIndex, 5, g_Practice.diagramTitleTextIndex_stored);
+        }
+        g_Practice.currentMessageDoneTyping = lbl_80366B18.entries[g_Practice.laukituTextChannelIndex].finished;
+        return;
+    }
+    g_Practice.currentMessageDoneTyping = 1;
+    if (g_Practice.laukituTextChannelIndex >= 0) {
+        fn_8000FEE8(g_Practice.laukituTextChannelIndex);
+    }
+    if (g_Practice.diagramTextChannelIndex >= 0) {
+        fn_8000FEE8(g_Practice.diagramTextChannelIndex);
+    }
+    if (g_Practice.laukituTextChannelIndex >= 0 || g_Practice.diagramTextChannelIndex >= 0) {
+        fn_8000F8F4((LayoutGroup*)o);
+    }
+    lbl_8034E978._26 = 1;
+    fn_800B0A14_removeQueue(fn_80034CEC(o));
+}
