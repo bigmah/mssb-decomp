@@ -86,6 +86,17 @@ typedef struct {
     u8 stageCount;
 } ChallengeTextureStages;
 
+typedef struct {
+    /* 0x00 */ Mtx view;
+    /* 0x30 */ u16 unk30;
+    /* 0x32 */ u16 unk32;
+    /* 0x34 */ u8 pad34[4];
+    /* 0x38 */ f32 unk38;
+    /* 0x3C */ Vec target;
+    /* 0x48 */ Vec camera;
+    /* 0x54 */ u8 pad54[0x34];
+} ChallengeCameraState; // size 0x88
+
 void fn_1_1DE5C(void);
 
 void fn_1_1E8C0(s32 index);
@@ -185,5 +196,6 @@ void fn_1_24410(void);
 void fn_1_1D694(u8* obj);
 void fn_1_21040(void);
 void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera);
+void fn_1_23804(s32 arg0, s32 arg1, s32 rows, s32 cols, f32 arg4, f32 arg5);
 
 #endif

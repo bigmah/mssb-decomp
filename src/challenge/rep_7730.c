@@ -11,8 +11,8 @@ static Mtx44 lbl_1_bss_47010;
 static ChallengeCurveTiming lbl_1_bss_45868;
 static u8 lbl_1_bss_45890[0x17A8 - 0x28];
 static ChallengePathNode lbl_1_bss_43F68[100];
-static u8 lbl_1_bss_43EE0[0x88];
-static f32 lbl_1_bss_F6E0[0x34800 / 4];
+static ChallengeCameraState lbl_1_bss_43EE0;
+static Vec lbl_1_bss_F6E0[160][112];
 static u8 lbl_1_bss_76E0[0x8000];
 static f32 lbl_1_bss_74E0[0x200 / 4];
 static ChallengeCurvePoint lbl_1_bss_6FE0[20];
@@ -939,7 +939,7 @@ void fn_1_22644(void) {
     fn_800AD038(lbl_80366158[2]);
     q[0x25] = 0;
     fn_1_22DF4((ChallengeCurveDrawing*)lbl_803CC1B8[0]);
-    fn_1_23AD8(lbl_1_bss_47010, (Vec*)(lbl_1_bss_43EE0 + 0x48), (Vec*)(lbl_1_bss_43EE0 + 0x3C));
+    fn_1_23AD8(lbl_1_bss_47010, &lbl_1_bss_43EE0.camera, &lbl_1_bss_43EE0.target);
     *(void (**)(void))lbl_803CC1B8[0] = fn_1_225B8;
 }
 
@@ -1067,10 +1067,10 @@ void fn_1_24410(void) {
     s32 i;
     s32 j;
 
-    fn_1_23AD8(lbl_1_bss_47010, (Vec*)(lbl_1_bss_43EE0 + 0x48), (Vec*)(lbl_1_bss_43EE0 + 0x3C));
-    *(u16*)(lbl_1_bss_43EE0 + 0x30) = 0;
-    *(f32*)(lbl_1_bss_43EE0 + 0x38) = (&lbl_1_rodata_77D8)[0];
-    *(u16*)(lbl_1_bss_43EE0 + 0x32) = 0;
+    fn_1_23AD8(lbl_1_bss_47010, &lbl_1_bss_43EE0.camera, &lbl_1_bss_43EE0.target);
+    lbl_1_bss_43EE0.unk30 = 0;
+    lbl_1_bss_43EE0.unk38 = (&lbl_1_rodata_77D8)[0];
+    lbl_1_bss_43EE0.unk32 = 0;
     q[0x27] = 0x40;
     q[0x29] = 0x40;
     q[0x28] = 0x40;
@@ -1264,3 +1264,86 @@ void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera) {
     }
     fn_800BD670(lbl_1_bss_6BE0[0], (u32)camera);
 }
+
+extern const f32 lbl_1_rodata_7894;
+extern const f32 lbl_1_rodata_7898;
+
+// NONMATCHING 96%: register coloring only; orig reuses the cols param register for the inner counter (r30) and keeps a copy in r31
+// .text:0x23804 size:0x2D4
+#if NONMATCHING
+void fn_1_23804(s32 arg0, s32 arg1, s32 rows, s32 cols, f32 arg4, f32 arg5) {
+    Vec* rowBase;
+    Vec* p;
+    s32 c;
+    s32 odd;
+
+    GXSetProjection(lbl_1_bss_47010, GX_PERSPECTIVE);
+    GXClearVtxDesc();
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXLoadPosMtxImm(lbl_1_bss_43EE0.view, 0);
+    GXSetCurrentMtx(0);
+    rowBase = &lbl_1_bss_F6E0[0][rows];
+    while (rowBase--, --rows != 0) {
+        c = cols;
+        GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT0, cols * 2);
+        odd = rows & 1;
+        while (c-- != 0) {
+            p = &rowBase[c * 112];
+            GXWGFifo.f32 = p[0].x;
+            GXWGFifo.f32 = p[0].z;
+            GXWGFifo.f32 = p[0].y;
+            GXWGFifo.u32 = odd ? 0xFFFFFFFF : 0x0000FFFF;
+            GXWGFifo.f32 = p[-1].x;
+            GXWGFifo.f32 = p[-1].z;
+            GXWGFifo.f32 = p[-1].y;
+            if (odd) {
+                GXWGFifo.u32 = 0x0000FFFF;
+            } else {
+                GXWGFifo.u32 = 0xFFFFFFFF;
+            }
+        }
+    }
+    GXBegin(GX_LINESTRIP, GX_VTXFMT0, 8);
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7894;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7894;
+    GXWGFifo.u32 = 0xFF0000FF;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7894;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7898;
+    GXWGFifo.u32 = 0xFF0000FF;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7894;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7898;
+    GXWGFifo.u32 = 0x0000FFFF;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7898;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7898;
+    GXWGFifo.u32 = 0x0000FFFF;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7898;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7898;
+    GXWGFifo.u32 = 0xFF0000FF;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7898;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7894;
+    GXWGFifo.u32 = 0xFF0000FF;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7898;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7894;
+    GXWGFifo.u32 = 0x0000FFFF;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7894;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
+    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_7894;
+    GXWGFifo.u32 = 0x0000FFFF;
+}
+#endif
