@@ -6147,3 +6147,118 @@ void fn_2_338D4(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 #endif
+
+// fn_2_2926C, size:0x618
+// NONMATCHING 99%: flag byte is not sign-extended (only compared with 0/1, so same behaviour)
+#if NONMATCHING
+void fn_2_2926C(MenuTableContext* menu, MenuItemState* item) {
+    s32 flag;
+    u8 id;
+    s32 current;
+    s32 saved;
+    s16 state = fn_2_53BC8(item);
+    if (state != -1) {
+        item->state = state;
+    }
+    switch (item->state) {
+    case 0: {
+        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+        *(u32*)(object + 0x54) &= ~2U;
+        item->state = 38;
+        break;
+    }
+    case 2:
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        if (lbl_2_bss_1A824C[0][0x1978F6] == 0) {
+            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2C;
+            if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
+                if ((s32)lbl_2_bss_1A8248[0x444D + lbl_800E869C[item->unk10]] == 1) {
+                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x54) |= 2;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                } else {
+                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x54) &= ~2U;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                }
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        } else {
+            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2F;
+            if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
+                id = lbl_800E869C[item->unk10];
+                flag = lbl_2_bss_1A8248[0x44B9 + id];
+                current = fn_8006CDC0(id);
+                saved = fn_2_44E2C(id);
+                if (flag == 1 && current == saved) {
+                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x54) |= 2;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                } else if (flag == 0 && current == saved) {
+                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x54) |= 2;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                } else {
+                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                    *(u32*)(object + 0x54) &= ~2U;
+                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                }
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        }
+        item->state = 37;
+        break;
+    case 8:
+        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2F;
+        if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
+            id = lbl_800E869C[item->unk10];
+            flag = lbl_2_bss_1A8248[0x44B9 + id];
+            current = fn_8006CDC0(id);
+            saved = fn_2_44E2C(id);
+            if (flag == 1 && current == saved) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            } else if (flag == 0 && current == saved) {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) |= 2;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            } else {
+                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+                *(u32*)(object + 0x54) &= ~2U;
+                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            }
+        } else {
+            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        }
+        item->state = 37;
+        break;
+    case 5:
+        item->timer = 0x28;
+        item->state = 6;
+        break;
+    case 6: {
+        s16 previous = item->timer;
+        item->timer = previous - 1;
+        if (previous <= 0) {
+            u8* object;
+            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            object = lbl_80371C30[menu->firstIndex + item->offset].object;
+            *(u32*)(object + 0x54) &= ~2U;
+        }
+        break;
+    }
+    case 37:
+        break;
+    }
+}
+#endif
