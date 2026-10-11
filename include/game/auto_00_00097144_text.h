@@ -101,6 +101,21 @@ typedef struct HudTask {
 #define HUD_TASK ((HudTask*)lbl_803CC1B8)
 #define HUD_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
 
+// Pause menu item layouts (lbl_3_data_D860), indexed by GamePauseState.layout.
+typedef struct PauseLayout {
+    /*0x0*/ u16 count; // number of items
+    /*0x2*/ u16 frame; // background frame
+    /*0x4*/ u16 items[7]; // item label frames
+} PauseLayout; // size: 0x12
+
+// Pause menu geometry per item count (lbl_3_data_D7E8), indexed by count - 2.
+typedef struct PauseGeom {
+    /*0x0*/ u16 frameA;
+    /*0x2*/ u16 frameB;
+    /*0x4*/ u16 openFrame; // frame of slot 1 at which the menu is fully open
+    /*0x6*/ u16 itemY[7];
+} PauseGeom; // size: 0x14
+
 // Mirror of SavedSettings (main/file_8004207C.h, lbl_800E8754).
 typedef struct HudPortSettings {
     /*0x0*/ u8 _0;

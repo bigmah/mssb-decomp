@@ -10,7 +10,10 @@ extern u8 lbl_3_data_D9E4[];
 extern u8 lbl_3_data_DA50[];
 extern u8 lbl_3_common_bss_37400[];
 extern u16 lbl_3_data_DA44[2][3];
-extern u16 lbl_3_data_E0D0[8]; // frame per option, [simple layout][option]
+extern u16 lbl_3_data_E0D0[8];
+extern PauseLayout lbl_3_data_D860[];
+extern PauseGeom lbl_3_data_D7E8[];
+extern u8 lbl_3_data_D9B8[][7]; // per item count - 2: slot-1 frame at which each item appears // frame per option, [simple layout][option]
 
 extern void fn_3_96CA4(void);
 extern void fn_3_95970(void);
@@ -383,9 +386,52 @@ void fn_3_98434(void) {
 }
 
 // .text:0x0009894C size:0x2D4 mapped:0x806D79E0
+// NONMATCHING 96%: geom pointer copied to a second reg (mr r27) and add operand order in the item loop
+#if NONMATCHING
 void fn_3_9894C(void) {
-    return;
+    HudTask* task = HUD_TASK;
+    s32 i;
+    s32 anim;
+    u16 count;
+    PauseGeom* geom;
+
+    fn_80034E20(task, lbl_3_data_D648);
+    if ((g_d_GameSettings.minigamesEnabled == 0 && g_GameLogic.gameStatus == 0xB) ||
+        (g_d_GameSettings.GameModeSelected == 6 && g_GameLogic.gameStatus == 0xB) ||
+        (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.pauseInd != 0)) {
+        HUD_OBJ(task, 0)->flags &= ~2;
+    }
+    count = lbl_3_data_D860[lbl_3_common_bss_34C90.layout].count;
+    geom = &lbl_3_data_D7E8[count - 2];
+    HUD_OBJ(task, 1)->_64 = geom->frameA;
+    HUD_OBJ(task, 2)->_64 = geom->frameB;
+    HUD_OBJ(task, 2)->_5C = lbl_3_data_D860[lbl_3_common_bss_34C90.layout].frame << 16;
+    for (i = 0; i < count; i++) {
+        HUD_OBJ(task, i + 3)->_72 = geom->itemY[i];
+        HUD_OBJ(task, i + 3)->flags |= 2;
+        HUD_OBJ(task, i + 3)->_68 = 1;
+        anim = lbl_3_data_D860[lbl_3_common_bss_34C90.layout].items[i];
+        if (g_d_GameSettings.exhibitionMatchInd == 0 && anim == 3) {
+            anim = 0x12;
+        }
+        fn_800363D8(task, i + 3, 1, 0xCF, anim);
+    }
+    if (g_d_GameSettings.GameModeSelected == 2) {
+        if (g_Practice._19F != 0) {
+            HUD_OBJ(task, 0)->flags &= ~2;
+        } else if (g_Practice._1C7 != 0) {
+            HUD_OBJ(task, 0)->layer = 5;
+        }
+    }
+    lbl_3_common_bss_34C90.itemsState = 0;
+    task->state = 0;
+    task->_1E = count;
+    task->_20 = 0xFF;
+    task->timer = 0;
+    lbl_3_common_bss_32724.pauseMenuShown = 1;
+    HUD_TASK->func = fn_3_98434;
 }
+#endif
 
 // .text:0x00098C20 size:0x1C0 mapped:0x806D7CB4
 void fn_3_98C20(void) {
