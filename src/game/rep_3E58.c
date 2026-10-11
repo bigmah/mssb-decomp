@@ -292,8 +292,65 @@ void fn_3_167178(void) {
 }
 
 // .text:0x001674D0 size:0x3D8 mapped:0x807A6564
+// While the actor's swing animation (0x1A/0x1B) runs before the ball is hit, puffs five
+// sparkles around joint 0x2F, pushed further out each frame.
 void fn_3_1674D0(void) {
-    return;
+    SparkleTask* task = lbl_803CC1B8;
+    void* q;
+    s16 anim;
+
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
+        return;
+    }
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
+        return;
+    }
+    q = task->actor;
+    anim = task->actor->anim[0];
+    if (anim == 0x1B || anim == 0x1A) {
+        if (g_Ball.ballState == 0) {
+            Vec pos = {0.0f, 0.0f, 0.0f};
+            Vec dir;
+            Vec off;
+            Mtx inv;
+            ParticleParamsF prm;
+            u32 i;
+
+            fn_8001B728(task->actor->index, 0x2F, &pos);
+            dir.x = -1.0f * -sinf_kludge(-task->actor->rot.y);
+            dir.z = -1.0f * cosf_kludge(-task->actor->rot.y);
+            dir.y = -g_Ball.AtBat_Contact_BallPos.y - pos.y;
+            dir.x = 5.0f * dir.x * (task->_18 / 10.0f);
+            dir.z = 5.0f * dir.z * (task->_18 / 10.0f);
+            dir.y = dir.y * (task->_18 / 10.0f);
+            PSVECAdd(&dir, &pos, &dir);
+            memcpy(&prm, &lbl_3_data_28508, sizeof(ParticleParamsF));
+            prm.tex = lbl_803CBD0C;
+            PSMTXInverse(fn_80052768_getCamera(0)->view, inv);
+            for (i = 0; i < 5; i++) {
+                off.x = 0.5f * (2.0f * (RANDF() - 0.5f));
+                off.y = 0.5f * (2.0f * (RANDF() - 0.5f));
+                off.z = 0.0f;
+                PSMTXMultVecSR(inv, &off, &off);
+                PSVECAdd(&off, &dir, &off);
+                memcpy(&prm.pos, &off, sizeof(Vec));
+                prm.r = rand() % 256;
+                prm.g = rand() % 256;
+                prm.b = rand() % 256;
+                fn_80026998(&prm);
+            }
+        } else {
+            fn_800B0A14_removeQueue(&g_Ball);
+        }
+        task->done = TRUE;
+        task->_18++;
+        return;
+    }
+    if (task->done) {
+        fn_800B0A14_removeQueue(q);
+    }
 }
 
 // .text:0x001678A8 size:0x41C mapped:0x807A693C
