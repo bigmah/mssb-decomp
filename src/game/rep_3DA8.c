@@ -1,6 +1,7 @@
 #include "game/rep_3DA8.h"
 #include "header_rep_data.h"
 #include "game/UnknownHomes_Game.h"
+#include "Dolphin/rand.h"
 
 extern u8 lbl_3_common_bss_37400[];
 typedef struct {
@@ -273,6 +274,57 @@ void fn_3_163D34(void) {
         }
     }
 }
+
+// Hands out the mission's bonus scout flags one at a time, round-robin from a
+// random roster slot, recording each award for the results screen.
+// NONMATCHING 98%: register allocation only (inlined fn_3_163D34/fn_3_163BD4/fn_3_163948 copies)
+// .text:0x00163E94 size:0x578
+#if NONMATCHING
+void fn_3_163E94(void) {
+    s16 ids[9];
+    s32 i;
+    u8 a;
+    u8 b;
+    s32 bonus;
+    s32 r;
+    s32 id;
+    s32 m;
+    u8* q = lbl_3_common_bss_37400;
+    ChallengeTrackingStruct* e;
+    ChallengeTrackingStruct* t = starMissionCompletionTracker;
+    a = *((u8*)starMissionCompletionTracker + 0x441C);
+    b = *((u8*)starMissionCompletionTracker + 0x4415);
+    bonus = lbl_80109420[q[0x46]].v;
+    for (i = 0; i < 9; i++) {
+        ids[i] = inMemRoster[1][i].stats.CharID;
+    }
+    fn_3_163D34();
+    i = rand() % 9;
+    r = fn_3_163BD4();
+    if (bonus > 0 && r) {
+        while (bonus > 0) {
+            id = ids[i];
+            if (id != -1) {
+                m = q[i * 2 + 1];
+                e = &t[id];
+                if ((s8)m != 0 && (s8)q[i * 2] < (s8)m) {
+                    bonus--;
+                    q[i * 5 + 0x13] = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
+                    q[i * 5 + 0x12] = e->scoutFlagsAchieved;
+                    q[i * 5 + 0x14]++;
+                    q[i * 5 + 0x15] = 1;
+                    q[i * 5 + 0x16] = id;
+                    q[i * 2]++;
+                }
+            }
+            i = (i + 1) % 9;
+            if (!fn_3_163948()) {
+                break;
+            }
+        }
+    }
+}
+#endif
 
 // .text:0x0016440C size:0x148
 void fn_3_16440C(s32 id) {
