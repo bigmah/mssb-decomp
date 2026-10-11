@@ -276,10 +276,82 @@ void DoEulerAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
 }
 #endif
 
+// NONMATCHING 91%: keyframe-time compare branch shape, float register allocation
 // .text:0x800B71C0 size:0x558
+#if NONMATCHING
 void DoQuatAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
-    return;
+    Quaternion result;
+    Quaternion quat0;
+    Quaternion quat1;
+    Quaternion ctrlCur;
+    Quaternion ctrlNext;
+    f32 easeIn;
+    f32 easeOut;
+    u32 vecSize;
+    u8 compType;
+    u8 interp;
+    u32 offset;
+    f32 t;
+    f32 squadT;
+
+    compType = pipe->currentTrack->quantizeInfo >> 4;
+    vecSize = GetCompSize(compType) * 3;
+
+    // The quaternion follows the scale and scale quaternion in the setting data.
+    offset = 0;
+    if (pipe->currentTrack->animType & ANIM_SCALE) {
+        offset = GetCompSize(compType) * 3;
+        if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
+            offset += GetCompSize(compType) * 4;
+        }
+    }
+
+    GetData(lbl_803CBB50, cur->setting + offset, &quat0.x, 4, lbl_803CBB48);
+    GetData(lbl_803CBB50, next->setting + offset, &quat1.x, 4, lbl_803CBB48);
+
+    t = GetInterpTime(pipe, cur, next);
+    squadT = t;
+
+    offset = 0;
+    if (pipe->currentTrack->animType & ANIM_SCALE) {
+        interp = (pipe->currentTrack->interpolationType >> 2) & 3;
+        if (interp == ANIM_INTERP_BEZIER) {
+            offset = vecSize * 2;
+        }
+        if (interp == ANIM_INTERP_HERMITE) {
+            offset = vecSize * 2 + 4;
+        }
+    }
+
+    switch ((pipe->currentTrack->interpolationType >> 4) & 7) {
+    case ANIM_INTERP_NONE:
+        result.x = quat0.x;
+        result.y = quat0.y;
+        result.z = quat0.z;
+        result.w = quat0.w;
+        break;
+    case ANIM_INTERP_SQUAD_EASE:
+        GetData(lbl_803CBB51, next->interpolation + (offset + 0x10), &easeOut, 1, lbl_803CBB4C);
+        GetData(lbl_803CBB51, cur->interpolation + (offset + 0x12), &easeIn, 1, lbl_803CBB4C);
+        t = EaseTime(t, easeIn, easeOut);
+        squadT = t;
+        // fallthrough
+    case ANIM_INTERP_SQUAD:
+        GetData(lbl_803CBB50, cur->interpolation + (offset + 8), &ctrlCur.x, 4, lbl_803CBB48);
+        GetData(lbl_803CBB50, next->interpolation + offset, &ctrlNext.x, 4, lbl_803CBB48);
+        Squad(&quat0, &ctrlCur, &ctrlNext, &quat1, &result, squadT);
+        break;
+    case ANIM_INTERP_SLERP:
+        QuatSlerp(&quat0, &quat1, &result, t);
+        break;
+    default:
+        OSPanic("animPipe.c", 225, "Unknown pInterpolation pSetting!");
+        break;
+    }
+
+    CTRLSetQuat(pipe->control, result.x, result.y, result.z, result.w);
 }
+#endif
 
 // .text:0x800B7718 size:0x288
 void ANIMTick(struct ANIMPipe* pipe, u8 arg1) {
