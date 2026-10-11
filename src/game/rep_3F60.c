@@ -83,8 +83,49 @@ void fn_3_168414(EffectNode* node) {
 // NONMATCHING 76%: same pooled lbl_3_data_285A8 anchor as fn_3_168DFC (addi base,0x36C; lbzx/stbx) changes scheduling
 #if NONMATCHING
 // .text:0x00168704 size:0x228 mapped:0x807A7798
+// Queues the effect node of the task's actor (at its joint) while flag bit 1 stays set.
 void fn_3_168704(void) {
-    return;
+    EffectTask* task = lbl_803CC1B8;
+    EffectData* d = &lbl_3_data_285A8;
+    EffectNode* node;
+    CharActor* actor;
+    u8 idx;
+
+    if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
+        // removeQueue ignores its argument; the original passes whatever is in r3.
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (d->shown[task->actor] != 0) {
+        if (lbl_80366158._28 != 0) {
+            d->flags[task->actor] &= ~1;
+        }
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    if (!(d->flags[task->actor] & 2)) {
+        d->flags[task->actor] &= ~1;
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    d->shown[task->actor] = 1;
+    idx = task->actor;
+    node = &d->nodes[idx][lbl_803CBBC0];
+    node->draw = fn_3_168414;
+    actor = lbl_8036E548.active[idx];
+    node->frame = task->frame;
+    getAnimRelatedCoordinates(task->actor, d->joints[1], &node->pos);
+    node->pos.y += FIXED(d->kindYOfs[actor->kind]);
+    node->scale = FIXED(d->params[0x34 / 4]);
+    node->objIdx = task->objIdx;
+    node->animIdx = task->animIdx;
+    node->animIdx2 = task->animIdx2;
+    node->ofsIdx = task->ofsIdx;
+    if (lbl_80366158._28 == 0) {
+        task->frame++;
+    }
+    fn_800A7D4C(0, node);
+    task->frame %= 60;
 }
 #endif
 
