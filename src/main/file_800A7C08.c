@@ -2542,7 +2542,7 @@ void fn_800AD914(ThpPlayer* p) {
 
 // .text:0x800AD95C size:0x98
 void fn_800AD95C(ThpPlayer* p, u8 flags) {
-    return;
+    ThpResume(p, flags);
 }
 
 // .text:0x800AD9F4 size:0x108
