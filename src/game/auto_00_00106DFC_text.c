@@ -43,7 +43,15 @@ extern u8 inMemRoster[];
 extern void fn_80062A74(void);
 extern void fn_80062A94(void);
 extern void fn_3_10B27C(void);
-extern void fn_8006C398(void);
+// Raw input for the stat-total calculation (see include/main/file_80069BDC.h).
+typedef struct StatInput {
+    /*0x00*/ s16 vals[6];
+    /*0x0C*/ u8 order[6];
+    /*0x12*/ u8 _12;
+    /*0x13*/ u8 _13;
+    /*0x14*/ u8 _14[2];
+} StatInput; // size: 0x16
+extern void fn_8006C398(StatInput* in);
 extern void fn_3_1079C8(u8*, s32);
 extern u8 lbl_8034E9A0[];
 extern u8 lbl_800E86F0[];
@@ -432,40 +440,6 @@ void fn_3_10C450(s32 a, s32 b) {
     }
 }
 
-// fn_3_10754C, size:0x140
-typedef struct { u8 p[0x24]; s16 v; u8 q[0x7A]; } RosT;
-void fn_3_10754C(u8* dst) {
-    u8 buf[0x10];
-    s32 i;
-    u32 k;
-    fn_8006C398();
-    if (g_Minigame[0x1A3C] != 0 && *(s8*)(g_Minigame + 0x1908) >= 0 && *(s8*)(g_Minigame + 0x1908) < 4) {
-        i = 0;
-        do {
-            ((s16*)dst)[i] = *(s16*)(g_Minigame + 0x1E10 + i * 2);
-            i++;
-        } while ((u32)i < 6);
-        i = 0;
-        do {
-            dst[i + 0xC] = g_Minigame[0x1E1C + i];
-            i++;
-        } while ((u32)i < 6);
-        fn_3_1079C8(buf, 1);
-        k = 0;
-        do {
-            if (*(s8*)(g_Minigame + 0x1908) == buf[k * 2]) {
-                dst[0x12] = buf[k * 2 + 1];
-            }
-            k++;
-        } while (k < g_Minigame[0x1906]);
-        {
-        RosT* r = (RosT*)inMemRoster;
-        dst[0x13] = g_Minigame[0x1E22 + *(s8*)(g_Minigame + 0x1908)];
-        dst[0x14] = r[*(s8*)(g_Minigame + 0x18CC + *(s8*)(g_Minigame + 0x1908))].v;
-        }
-    }
-}
-
 // fn_3_107784, size:0x17C
 void fn_3_107784(void) {
     switch (g_GameLogic[0x125]) {
@@ -688,6 +662,40 @@ void fn_3_10C7A4(void) {
         fn_80011BE4(i);
         g_Minigame[0x19E9 + i * 9] = 0;
         *(s8*)(g_Minigame + 0x19EA + i * 9) = -1;
+    }
+}
+
+// fn_3_10754C, size:0x140
+typedef struct { u8 p[0x24]; s16 v; u8 q[0x7A]; } RosT;
+void fn_3_10754C(StatInput* dst) {
+    u8 buf[8];
+    s32 i;
+    u32 k;
+    fn_8006C398(dst);
+    if (g_Minigame[0x1A3C] != 0 && *(s8*)(g_Minigame + 0x1908) >= 0 && *(s8*)(g_Minigame + 0x1908) < 4) {
+        i = 0;
+        do {
+            dst->vals[i] = *(s16*)(g_Minigame + 0x1E10 + i * 2);
+            i++;
+        } while ((u32)i < 6);
+        i = 0;
+        do {
+            dst->order[i] = g_Minigame[0x1E1C + i];
+            i++;
+        } while ((u32)i < 6);
+        fn_3_1079C8(buf, 1);
+        k = 0;
+        do {
+            if (*(s8*)(g_Minigame + 0x1908) == buf[k * 2]) {
+                dst->_12 = buf[k * 2 + 1];
+            }
+            k++;
+        } while (k < g_Minigame[0x1906]);
+        {
+        RosT* r = (RosT*)inMemRoster;
+        dst->_13 = g_Minigame[0x1E22 + *(s8*)(g_Minigame + 0x1908)];
+        dst->_14[0] = r[*(s8*)(g_Minigame + 0x18CC + *(s8*)(g_Minigame + 0x1908))].v;
+        }
     }
 }
 
@@ -1456,6 +1464,42 @@ void fn_3_10FBE4(void) {
         fn_3_5A6D4(0x1B);
     } else {
         fn_3_5A6D4(0x1B);
+    }
+}
+#endif
+extern s16 fn_8006C13C(StatInput* in);
+extern s16 lbl_80109410[8];
+
+// NONMATCHING 90%: original hoists g_Minigame+0x18CC / inMemRoster+0x24 into saved regs shared with the inlined fn_3_10754C
+#if NONMATCHING
+// fn_3_109DE0, size:0x23C
+void fn_3_109DE0(MinigameScore* out) {
+    StatInput stat;
+    s32 lim;
+    memset(out, 0, sizeof(MinigameScore));
+    if (g_Minigame[0x1907] == 1) {
+        {
+        RosT* r = (RosT*)inMemRoster;
+        out->_6 = r[*(s8*)(g_Minigame + 0x18CC + *(s8*)(g_Minigame + 0x1908))].v;
+        }
+        if (g_Minigame[0x1A3C] != 0) {
+            fn_3_10754C(&stat);
+            out->score = fn_8006C13C(&stat);
+            out->_4 = 0;
+            return;
+        }
+        out->score = *(s16*)(g_Minigame + 0x1890 + *(s8*)(g_Minigame + 0x1908) * 2);
+        if (out->score > lbl_80109410[g_Minigame[0x1A2A]]) {
+            out->score = lbl_80109410[g_Minigame[0x1A2A]];
+        }
+        if (g_Minigame[0x1A2A] == 1) {
+            out->_4 = *(s16*)(g_Minigame + 0x1A8E + *(s8*)(g_Minigame + 0x1908) * 2);
+            if (out->_4 > 999) {
+                out->_4 = 999;
+            }
+        } else {
+            out->_4 = 0;
+        }
     }
 }
 #endif

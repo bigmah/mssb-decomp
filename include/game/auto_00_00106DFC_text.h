@@ -9,6 +9,12 @@ typedef struct {
     s16 pad;
 } RankEnt;
 
+typedef struct {
+    /*0x0*/ s32 score;
+    /*0x4*/ s16 _4;
+    /*0x6*/ s16 _6;
+} MinigameScore; // size: 0x8
+
 void fn_3_106EB0(void);
 void fn_3_107078(void);
 void fn_3_10F550(s8 a, s16 b);
@@ -39,7 +45,8 @@ s32 fn_3_107D34(u8* a, u8* b);
 s32 fn_3_10F564(void);
 void fn_3_10C58C(void);
 void fn_3_107784(void);
-void fn_3_10754C(u8* dst);
+struct StatInput;
+void fn_3_10754C(struct StatInput* dst);
 void fn_3_10C450(s32 a, s32 b);
 void fn_3_10F5BC(void);
 void fn_3_10F1D4(void);
@@ -57,5 +64,6 @@ void fn_3_1104D4(void);
 void fn_3_10F3D8(void);
 void fn_3_106ED4(void);
 void fn_3_10FBE4(void);
+void fn_3_109DE0(MinigameScore* out);
 
 #endif
