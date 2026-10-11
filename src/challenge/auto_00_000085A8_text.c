@@ -131,6 +131,31 @@ void fn_1_88D0(void) {
     }
 }
 
+// .text:0x00008A90 size:0xFC
+void fn_1_8A90(void) {
+    ChTaskHeader* task = lbl_803CC1B8;
+
+    if (lbl_803C77B8._02 & 8) {
+        if (--lbl_1_common_bss_47674.menuSel < 0) {
+            lbl_1_common_bss_47674.menuSel = 1;
+        }
+    } else if (lbl_803C77B8._02 & 4) {
+        if (++lbl_1_common_bss_47674.menuSel == 2) {
+            lbl_1_common_bss_47674.menuSel = 0;
+        }
+    } else if (lbl_803C77B8._02 & 0x100) {
+        if (lbl_1_common_bss_47674.menuSel == 0) {
+            task->func = fn_1_9AB0;
+        } else {
+            task->func = fn_1_88D0;
+        }
+    } else if (lbl_803C77B8._02 & 0x200) {
+        lbl_1_common_bss_47674.step = 0;
+        fn_80035CA4(6);
+        task->parent->result = 1;
+    }
+}
+
 // .text:0x00008B8C size:0x4
 void fn_1_8B8C(void) {
     return;
