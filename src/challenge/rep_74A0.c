@@ -17,7 +17,6 @@ extern void fn_1_1CBE4(u8* object);
 extern u8 lbl_80366158[];
 extern ChallengeRosterQueue* lbl_803CC1B8;
 extern u8 lbl_1_bss_69FC[];
-extern void fn_1_19D60(struct DODisplayObj*, s32);
 extern ChallengeConfettiConfig lbl_1_data_FB24;
 extern const f32 lbl_1_rodata_7578;
 extern const f32 lbl_1_rodata_757C;
@@ -57,7 +56,7 @@ void fn_1_1A774(void) {
 #pragma opt_loop_invariants reset
 
 // fn_1_1A290, size:0x124
-void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode) {
+void fn_1_1A290(ChallengeDrawCollection* collection, MtxPtr camera) {
     u16 index;
 
     GXSetZMode(1, GX_LEQUAL, 1);
@@ -66,7 +65,7 @@ void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode) {
     for (index = 0; index < collection->count; index++) {
         ChallengeActorDrawing* drawing = &collection->nodes[index].drawing;
         if (drawing->actor != NULL && collection->nodes[index].visible != 0) {
-            fn_1_1A1EC(drawing, mode);
+            fn_1_1A1EC(drawing, camera);
         }
     }
 }
@@ -86,7 +85,7 @@ void fn_1_18E04(ChallengeConfetti* piece, f32 degrees) {
 }
 
 // fn_1_1A1EC, size:0xA4
-void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode) {
+void fn_1_1A1EC(ChallengeActorDrawing* drawing, MtxPtr camera) {
     ChallengeDrawActor* actor = drawing->actor;
     if (drawing->prepare != NULL) {
         drawing->prepare(drawing);
@@ -94,13 +93,13 @@ void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode) {
     if (actor->display != NULL) {
         fn_800B2D5C(actor);
         GXInvalidateVtxCache();
-        fn_1_19D60(actor->display, mode);
+        fn_1_19D60(actor->display, camera);
     } else {
         for (actor = actor->children; actor != NULL; actor = actor->next) {
             if (actor->display != NULL) {
                 DOSetWorldMatrix(actor->display, actor->worldMatrix);
             }
-            fn_1_19D60(actor->display, mode);
+            fn_1_19D60(actor->display, camera);
         }
     }
 }
@@ -145,14 +144,14 @@ s32 fn_1_19D1C(u8 value) {
 
 // fn_1_1D514, size:0x7C
 void fn_1_1D514(void) {
-    u8* b = (u8*)&lbl_1_bss_69F0;
+    u8* b = (u8*)&lbl_1_bss_69F0; // TODO type: ChallengeBoneSelection fields (typed pointer changes scheduling)
     fn_800AD038(*(void**)(lbl_80366158 + 8));
     lbl_803CC1B8->state = 0;
     lbl_803CC1B8->update = (void (*)(u8*))fn_1_1D470;
-    b[6] = 0xFF;
-    b[7] = 0xFF;
-    b[8] = 0xFF;
-    b[9] = 0xFF;
+    b[6] = 0xFF; // matAlpha
+    b[7] = 0xFF; // matBlue
+    b[8] = 0xFF; // matGreen
+    b[9] = 0xFF; // matRed
     b[5] = 0;
     b[3] = 0;
 }
@@ -669,3 +668,125 @@ void fn_1_1994C(void) {
     }
 }
 #endif
+
+// fn_1_19D60, size:0x48C
+// Draw a display object with a flat material colour (no textures/lighting).
+void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera) {
+    Mtx mtx;
+    GXVtxDescList desc[28];
+    GXColor color;
+    TextureData* tex;
+    DisplayStateList* state;
+    s32 compSize;
+    s32 i;
+    s32 j;
+    s32 n;
+    s32 attr;
+    s32 shift;
+    u32 type;
+
+    color.r = lbl_1_bss_69F0.matRed;
+    color.g = lbl_1_bss_69F0.matGreen;
+    color.b = lbl_1_bss_69F0.matBlue;
+    color.a = lbl_1_bss_69F0.matAlpha;
+    GXSetChanMatColor(GX_COLOR0A0, color);
+    GXSetNumChans(1);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_RASC, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_RASA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+
+    PSMTXConcat(camera, dispObj->worldMatrix, mtx);
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+
+    switch ((u8)(dispObj->positionData->quantizeInfo >> 4)) {
+    case GX_U8:
+    case GX_S8:
+        compSize = 1;
+        break;
+    case GX_U16:
+    case GX_S16:
+        compSize = 2;
+        break;
+    case GX_F32:
+        compSize = 4;
+        break;
+    default:
+        compSize = 0;
+        break;
+    }
+    GXSetArray(GX_VA_POS, dispObj->positionData->positionArray, (u8)(dispObj->positionData->compCount * compSize));
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, dispObj->positionData->quantizeInfo >> 4,
+                    dispObj->positionData->quantizeInfo & 0xF);
+
+    if (dispObj->textureData != NULL) {
+        for (i = 0; i < dispObj->numTextureChannels; i++) {
+            tex = &dispObj->textureData[i];
+            switch ((u8)(tex->quantizeInfo >> 4)) {
+            case GX_U8:
+            case GX_S8:
+                compSize = 1;
+                break;
+            case GX_U16:
+            case GX_S16:
+                compSize = 2;
+                break;
+            case GX_F32:
+                compSize = 4;
+                break;
+            default:
+                compSize = 0;
+                break;
+            }
+            GXSetArray(GX_VA_TEX0 + i, tex->textureCoordArray, (u8)(tex->compCount * compSize));
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0 + i, GX_TEX_ST, dispObj->textureData[i].quantizeInfo >> 4,
+                            dispObj->textureData[i].quantizeInfo & 0xF);
+            GXSetTexCoordGen2(i, GX_MTX2x4, GX_TG_TEX0 + i, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+        }
+    }
+
+    state = dispObj->displayData->displayStateList;
+    for (j = 0; j < dispObj->displayData->numStateEntries; j++) {
+        switch (state->id) {
+        case 2: // vertex descriptors
+            GXClearVtxDesc();
+            n = 0;
+            type = state->setting & 3;
+            if (type != 0) {
+                desc[0].mType = type;
+                n = 1;
+                desc[0].mAttr = GX_VA_PNMTXIDX;
+            }
+            for (attr = GX_VA_POS, shift = 2; attr < GX_VA_TEX7 + 1; attr++, shift += 2) {
+                type = (state->setting >> shift) & 3;
+                if (type != 0) {
+                    desc[n].mAttr = attr;
+                    n++;
+                    desc[n - 1].mType = type;
+                }
+            }
+            type = (state->setting >> 26) & 3;
+            if (type != 0) {
+                desc[n].mAttr = attr;
+                desc[n].mType = type;
+                n++;
+            }
+            desc[n].mAttr = GX_VA_NULL;
+            GXSetVtxDescv(desc);
+            break;
+        case 1: // texture: ignored (flat colour)
+            break;
+        case 3: // callback: ignored
+            break;
+        }
+        if (state->primitiveList != NULL) {
+            GXCallDisplayList(state->primitiveList, state->listSize);
+        }
+        state++;
+    }
+}

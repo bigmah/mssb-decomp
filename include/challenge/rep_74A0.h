@@ -39,8 +39,15 @@ typedef struct {
 typedef struct {
     u16 selectedBone;
     u8 selectedActor;
-    u8 padding03[0x189];
-    Mtx matrix;
+    u8 _03;
+    u8 _04;
+    u8 _05;
+    u8 matAlpha; // material colour for fn_1_19D60, stored a, b, g, r
+    u8 matBlue;
+    u8 matGreen;
+    u8 matRed;
+    u8 padding0A[0x182];
+    Mtx matrix; // lbl_1_bss_6B7C (camera view)
 } ChallengeBoneSelection;
 
 typedef struct {
@@ -139,11 +146,13 @@ s32 fn_1_19D1C(u8 value);
 
 void fn_1_1D470(void);
 
-void fn_1_1A1EC(ChallengeActorDrawing* drawing, s32 mode);
+void fn_1_1A1EC(ChallengeActorDrawing* drawing, MtxPtr camera);
 
 void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 
-void fn_1_1A290(ChallengeDrawCollection* collection, s32 mode);
+void fn_1_1A290(ChallengeDrawCollection* collection, MtxPtr camera);
+
+void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera);
 
 void fn_1_1A774(void);
 
