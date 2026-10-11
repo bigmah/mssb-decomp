@@ -12,5 +12,5 @@ Everything else. One pattern per line, so `grep -i <keyword> docs/patterns/*.md`
 - **Symbol splits fix pooled-base reloc differences:** when a `sym+0xC` reloc is folded by CW but the original has a separate symbol, split it in symbols.txt (menus fn_2_B508, fn_2_6784).
 - **Never let `fnvariants` hit the shell timeout:** an interrupted run leaves a variant in the source; run it in the background.
 - **Stale-r3 result:** `sndFXCtrl(vid, 0x5B, x)` after `sndFXStartEx(...)` passes the first call result.
-- **`targsupp.c` cannot be split into separate `ASM` functions:** `-func_align 16` pads each, so the shasum fails. The `entry` labels inside one function are why the four TRK stubs show 0% in the report; leave it.
+- **`targsupp` TRK stubs show 0% (one `ASM` function with `entry` labels; separate C `ASM` functions get padded by `-func_align 16` or dead-stripped):** write it as `targsupp.s` with `.balign 16` and four `.fn` blocks; mwld keeps them and the shasum passes.
 - **`x = tbl[off + base[idx2]++]` as one statement** gives the original schedule; separate `n = base[..]; base[..] = n + 1` does not (fn_3_10768C).
