@@ -1,0 +1,33 @@
+#include "game/auto_00_000FBCD0_text.h"
+#include "game/UnknownHomes_Game.h"
+#include "static/UnknownHomes_Static.h"
+
+// .text:0x000FBCD0 size:0x88 mapped:0x8073AD64
+void fn_3_FBCD0(void) {
+    return;
+}
+
+// .text:0x000FBD58 size:0x18 mapped:0x8073ADEC
+void fn_3_FBD58(void) {
+    return;
+}
+
+// .text:0x000FBD70 size:0x3C mapped:0x8073AE04
+void fn_3_FBD70(void) {
+    return;
+}
+
+// .text:0x000FBDAC size:0x78 mapped:0x8073AE40
+void fn_3_FBDAC(int p0) {
+    return;
+}
+
+// .text:0x000FBE24 size:0x4D8 mapped:0x8073AEB8
+void fn_3_FBE24(void) {
+    return;
+}
+
+// .text:0x000FC2FC size:0x14C mapped:0x8073B390
+void fn_3_FC2FC(void) {
+    return;
+}
