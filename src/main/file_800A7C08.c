@@ -2544,9 +2544,21 @@ void fn_800AD500(ThpPlayer* p, u8* work) {
 }
 
 // .text:0x800AD6BC size:0xC4
+// NONMATCHING 78%: the size terms are computed and summed in a different order
+#if NONMATCHING
 u32 fn_800AD6BC(ThpPlayer* p) {
-    return 0;
+    u32 mcus = p->video.mcuX * p->video.mcuY;
+    u32 readBufSize = p->readBufSize;
+    u32 pixels = p->video.width * p->video.height;
+    u32 audioBufSize = OSRoundUp32B(p->audioBufSize);
+    u32 texSize = pixels << (p->format + 1);
+    u32 audioBlocks = lbl_803CBAE4 * ((audioBufSize + (lbl_803CBAE4 - 1)) / lbl_803CBAE4);
+    u32 audioSize = audioBlocks * 0x1C;
+    u32 total = OSRoundUp32B(readBufSize) + OSRoundUp32B(texSize) * 2 + audioBufSize + audioSize +
+                OSRoundUp32B(pixels * (mcus + 2) / mcus) * 6;
+    return total + OSRoundUp32B(fn_800E4B1C(&p->video));
 }
+#endif
 
 // .text:0x800AD780 size:0xB0
 BOOL fn_800AD780(ThpPlayer* p) {
