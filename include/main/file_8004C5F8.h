@@ -153,6 +153,8 @@ s16 fn_8004E62C(s32 p, s32 unused, s32 pressed, u16 dirs);
 
 void fn_800506E8(s8 owner, s32 entry, s32 set);
 
+s16 fn_80050760(s32 p, s32 unused, s32 pressed, u16 dirs, s32 mode);
+
 void fn_8005240C(CharActor* actor, AnimCtl* anim);
 
 void fn_80052634(CharActor* actor, AnimCtl* anim);
