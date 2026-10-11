@@ -96,7 +96,7 @@ void fn_2_65850(void);
 void fn_2_65A00(void);
 void fn_2_65C84(void);
 void fn_2_65E50(void);
-void fn_2_66038(void);
+void fn_2_66038(MenuTask* task, MenuItem* item);
 void fn_2_66188(MenuTask* task, MenuItem* item);
 void fn_2_6633C(void);
 void fn_2_665C0(void);
