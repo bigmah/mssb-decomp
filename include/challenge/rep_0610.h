@@ -122,4 +122,6 @@ void fn_1_126CC(void);
 
 void fn_1_179CC(void);
 
+void fn_1_12820(void* table, void* matrix);
+
 #endif

@@ -2039,3 +2039,59 @@ void fn_1_179CC(void) {
     }
 }
 #endif
+
+#include "main/file_800BD8C4.h"
+extern GXColor lbl_1_rodata_72FC;
+
+// .text:0x12820 size:0x1B0
+// NONMATCHING ~96%: saved-register allocation only (table/matrix/object/base rotated)
+#if NONMATCHING
+void fn_1_12820(void* tableArg, void* matrixArg) {
+    u16 i;
+    ActorObject* object;
+    f32 (*matrix)[4] = matrixArg;
+    u8* row;
+    u8 lastAlpha = 0xFF;
+    ActorObjectTable* table = tableArg;
+    u8* entry;
+    u8* data;
+    u8 alpha;
+    Mtx transform;
+    Mtx44 projection;
+    GXColor color;
+
+    color = lbl_1_rodata_72FC;
+    C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
+                 lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
+                 lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
+    GXSetProjection(projection, GX_PERSPECTIVE);
+    GXSetZMode(1, GX_LEQUAL, 1);
+    GXSetCullMode(GX_CULL_BACK);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+    GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
+    for (i = 0; i < table->count; i++) {
+        entry = (u8*)table + i * 0x90;
+        object = (ActorObject*)(entry + 0x34);
+        row = lbl_8036E548 + i * 0x27C;
+        data = row + 0xC04;
+        if (object->actor == NULL) continue;
+        object->actor->flags98 = 0xFF;
+        if (entry[0xA0] == 0) continue;
+        alpha = data[0x277];
+        if (lastAlpha != alpha) {
+            lastAlpha = alpha;
+            if (0xFF - alpha != 0) {
+                color.a = alpha;
+                if (alpha == 0) continue;
+                fn_800BD2CC(1, color);
+            } else {
+                color.a = 0xFF;
+                fn_800BD2CC(0, color);
+            }
+        }
+        PSMTXTrans(transform, *(f32*)(row + 0xC38), *(f32*)(row + 0xC3C), *(f32*)(row + 0xC40));
+        PSMTXConcat(matrix, transform, transform);
+        fn_800BDA94(object, transform);
+    }
+}
+#endif
