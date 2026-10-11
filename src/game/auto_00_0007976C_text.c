@@ -15,6 +15,65 @@ extern s32 fn_3_6C938(s32, s32);
 
 #pragma dont_inline on
 
+// fn_3_7976C, size:0x294
+// Decides whether the batter is credited (1), not credited (0) or undecided (-1).
+void fn_3_7976C(void) {
+    s32 force = 0;
+    s32 result = -1;
+    s32 i;
+    s32 j;
+
+    if (g_FieldingLogic._107 != 0) {
+        lbl_3_common_bss_32A94._22 = 0;
+        return;
+    }
+    if (g_Ball.ballInitialHitDoneInd != 0 && g_Ball.AtBat_ContactResult != 0 && g_Ball.AtBat_ContactResult != -1) {
+        if (g_Ball.AtBat_ContactResult == 3 || g_FieldingLogic._108 == 2) {
+            result = 0;
+        } else if (g_Ball.deadBallReason == 1 || g_Ball.deadBallReason == 3) {
+            result = 1;
+        } else {
+            for (i = 0; i < 4; i++) {
+                if (g_Runners[i].forceOutCd == 1) {
+                    force = 1;
+                }
+                if (g_Runners[i].forceOutCd == 2) {
+                    force = 2;
+                }
+            }
+            if (force == 2) {
+                result = 0;
+            } else if (force == 0) {
+                if (lbl_3_common_bss_32A94.baseOccupied[0] == 2 && g_Runners[0].runnerOnFieldOrOutOrScored == 1) {
+                    result = 1;
+                }
+                if (g_Ball.fielderWithBallIndexStored2 >= 0 && g_Ball.fielderWithBallIndexStored2 <= 5 &&
+                    (s8)g_Ball.ballZoneWhenCaught <= 1 && result == 1) {
+                    for (j = 1; j < 4; j++) {
+                        if (g_Runners[j].runnerOnFieldOrOutOrScored == 2) {
+                            result = 0;
+                            goto done;
+                        }
+                    }
+                    // Undecided while a runner is still short of a base.
+                    for (i = 1; i < 4; i++) {
+                        if (g_Runners[i].runnerOnFieldOrOutOrScored != 0 && g_Runners[i].baseStandingOn < 0 &&
+                            g_Runners[i].runnerOnFieldOrOutOrScored != 3 &&
+                            g_Runners[i].currentBase <= g_Runners[i].startingBase_baseAchieved) {
+                            break;
+                        }
+                    }
+                    if (i < 4) {
+                        result = -1;
+                    }
+                }
+            }
+        }
+    }
+done:
+    lbl_3_common_bss_32A94._22 = result;
+}
+
 // fn_3_79A00, size:0xCC
 void fn_3_79A00(void) {
     s8* b = (s8*)&lbl_3_common_bss_32A94;
