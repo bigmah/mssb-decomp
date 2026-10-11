@@ -2,6 +2,7 @@
 #include "C3/geoPalette.h"
 #include "Dolphin/os.h"
 #include "string.h"
+#include "stl/math.h"
 
 #pragma dont_inline on
 
@@ -18,6 +19,8 @@ extern FogState lbl_80111700; // current fog settings
 extern MtxPtr lbl_803CC204;   // skin matrix array for the current DOVARenderSkin call
 extern MtxPtr lbl_803CC208;   // skin inverse-transpose matrix array
 
+extern char lbl_800E7E84[]; // "Error: DODefaultUserTevMode: Cannot override tev mode AND use default user tev mode function.\n"
+extern char lbl_800E7EE4[]; // "Warning: DODefaultUserTevMode: Unknown user tev mode %d\n"
 extern char lbl_800E7F58[]; // "DOVARender: Invalid component count for normals %d\n"
 extern char lbl_800E7F8C[]; // "Display object id %d is greater than number of objects %d"
 
@@ -101,10 +104,82 @@ void fn_800B9EA8(void) {
     return;
 }
 
+#pragma dont_inline off
 // .text:0x800BA44C size:0x3FC
-void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* tevStage, u8* texCoord) {
-    return;
+void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* texGenCount, u8* tevStage) {
+    Mtx m;
+    GXTevStageID stage;
+    GXTexCoordID coord;
+    GXTexMapID map;
+    GXTevColorArg rasColor;
+    GXTevAlphaArg rasAlpha;
+    GXChannelID chan;
+    f32 x;
+    f32 y;
+    f32 len;
+    f32 scroll;
+
+    if (dispObj->unk17 != 0) {
+        OSReport(lbl_800E7E84);
+        return;
+    }
+    map = coord = stage = *tevStage;
+    if (stage == 0) {
+        rasColor = GX_CC_RASC;
+        rasAlpha = GX_CA_RASA;
+        chan = GX_COLOR0A0;
+    } else {
+        rasColor = GX_CC_CPREV;
+        rasAlpha = GX_CA_APREV;
+        chan = GX_COLOR_NULL;
+    }
+    switch (type) {
+    case 9: // texture + raster
+        GXSetTevOrder(stage, coord, map, chan);
+        GXSetTevColorIn(stage, GX_CC_TEXC, GX_CC_ZERO, GX_CC_ZERO, rasColor);
+        GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, rasAlpha);
+        GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        break;
+    case 10: // raster - texture
+        GXSetTevOrder(stage, coord, map, chan);
+        GXSetTevColorIn(stage, GX_CC_TEXC, GX_CC_ZERO, GX_CC_ZERO, rasColor);
+        GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, rasAlpha);
+        GXSetTevColorOp(stage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        break;
+    case 11: // texture modulated by raster, with the texture scrolled by the angle of (x, y)
+        x = ((f32*)data)[8]; // TODO type
+        y = ((f32*)data)[9];
+        if (x == 0.0f && y == 0.0f) {
+            GXSetTexCoordGen2(coord, GX_TG_MTX2X4, GX_TG_TEX0 + *tevStage, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+        } else {
+            len = dolsqrtf2(x * x + y * y);
+            scroll = 0.159154f * (f32)asin(y / len);
+            if (x < 0.0f) {
+                scroll = 0.5f - scroll;
+            }
+            PSMTXIdentity(m);
+            m[0][0] = 2.0f;
+            m[0][3] = -scroll;
+            GXLoadTexMtxImm(m, GX_TEXMTX0 + *tevStage * 3, GX_MTX3x4);
+            GXSetTexCoordGen2(coord, GX_TG_MTX3X4, GX_TG_TEX0 + *tevStage, GX_TEXMTX0 + *tevStage * 3, GX_FALSE,
+                              GX_PTIDENTITY);
+        }
+        GXSetTevOrder(stage, coord, map, chan);
+        GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_APREV, rasColor);
+        GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_KONST);
+        GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        break;
+    default:
+        OSReport(lbl_800E7EE4, type);
+        return;
+    }
+    (*texGenCount)++;
+    (*tevStage)++;
 }
+#pragma dont_inline on
 
 // .text:0x800BA848 size:0x12E4
 void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxPtr camera) {

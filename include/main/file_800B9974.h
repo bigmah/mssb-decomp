@@ -75,7 +75,7 @@ void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr came
 
 void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a);
 
-void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* tevStage, u8* texCoord);
+void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, void* data, u8* texGenCount, u8* tevStage);
 
 void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* layout);
 
