@@ -851,6 +851,21 @@ void fn_2_166CC(void) {
 }
 
 // .text:0x00016724 size:0x14C
+// Reset the menu camera and set the projections.
 void fn_2_16724(void) {
-    return;
+    Mtx44 proj;
+
+    lbl_2_bss_1010C.eye.x = lbl_2_data_20EC.x;
+    lbl_2_bss_1010C.eye.y = lbl_2_data_20EC.y;
+    lbl_2_bss_1010C.eye.z = lbl_2_data_20EC.z;
+    lbl_2_bss_1010C.target.x = 0.0f;
+    lbl_2_bss_1010C.target.y = 0.0f;
+    lbl_2_bss_1010C.target.z = 10.0f;
+    C_MTXFrustum(proj, -0.175f, 0.175f, 0.25f, -0.25f, 1.0f, 512.0f);
+    GXSetProjection(proj, GX_PERSPECTIVE);
+    fn_800B806C(0, -240.0f, 240.0f, -320.0f, 320.0f, -512.0f, -1.0f, 1280.0f);
+    lbl_2_bss_1010C._54 = 0;
+    lbl_2_bss_1010C.dolly = 0.0f;
+    lbl_2_bss_1010C.rotX = 0;
+    lbl_2_bss_1010C.rotY = 0;
 }
