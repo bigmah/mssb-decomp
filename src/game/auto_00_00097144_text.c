@@ -2,6 +2,11 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/stl.h"
+#include "game/rep_16B8.h"
+#include "game/auto_00_0009143C_text.h"
+#include "game/auto_00_0009C578_text.h"
+#include "game/auto_00_000EA340_text.h"
+#include "game/auto_00_0015C5F4_text.h"
 
 extern s16 lbl_3_data_BE50[][4];  // TODO type: 8-byte entries, first field read here
 extern u8 lbl_3_data_D648[];      // sprite descriptors for fn_80034E20
@@ -15,9 +20,6 @@ extern PauseLayout lbl_3_data_D860[];
 extern PauseGeom lbl_3_data_D7E8[];
 extern u8 lbl_3_data_D9B8[][7]; // per item count - 2: slot-1 frame at which each item appears // frame per option, [simple layout][option]
 
-extern void fn_3_96CA4(void);
-extern void fn_3_95970(void);
-extern void fn_3_91A60(void);
 
 // .text:0x00097144 size:0x15C mapped:0x806D61D8
 void fn_3_97144(void) {
@@ -95,7 +97,87 @@ void fn_3_972C8(void) {
 
 // .text:0x000973EC size:0x414 mapped:0x806D6480
 void fn_3_973EC(void) {
-    return;
+    if (lbl_3_common_bss_32724.hudOff != 0) {
+        return;
+    }
+    if (g_Stats.replayInd != 0) {
+        lbl_3_common_bss_32724._A7 = 0;
+    } else {
+        fn_3_97144();
+        if (lbl_3_common_bss_32724._C7 == 0 && g_GameLogic.hudElementLoadingInd != 0) {
+            fn_800B0A5C_insertQueue(fn_3_9669C, 2);
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                fn_800B0A5C_insertQueue(fn_3_ED574, 2);
+            }
+        }
+        fn_3_9C578();
+        fn_3_9143C();
+        if (lbl_3_common_bss_32724._B4 == 1) {
+            lbl_3_common_bss_32724._B4 = 2;
+            fn_800B0A5C_insertQueue(fn_3_952DC, 2);
+            if (lbl_3_common_bss_37400[0x47] == 2) { // TODO type
+                fn_800B0A5C_insertQueue(fn_3_94BC4, 2);
+            }
+        }
+        if (g_d_GameSettings.exhibitionMatchInd == 0 && g_GameLogic.gameStatus == 1 && lbl_3_common_bss_32724._B3 == 1 &&
+            g_UnkSound_32718._07 == 0) {
+            fn_800B0A5C_insertQueue(fn_3_95124, 2);
+            fn_800B0A5C_insertQueue(fn_3_94BC4, 2);
+            lbl_3_common_bss_32724._B3 = 2;
+        }
+        if (g_GameLogic.gameStatus == 5) {
+            if (g_GameLogic._125 == 0) {
+                fn_800B0A5C_insertQueue(fn_3_94760, 2);
+            }
+        } else if (g_GameLogic.gameStatus == 3) {
+            if (g_GameLogic._125 == 0) {
+                fn_800B0A5C_insertQueue(fn_3_91FC4, 2);
+                fn_800B0A5C_insertQueue(fn_3_91D1C, 2);
+                lbl_3_common_bss_32724._CF = g_Scores.inning;
+                lbl_3_common_bss_32724._D0 = g_Scores._AD;
+            }
+            if (g_GameLogic._125 == 9) {
+                lbl_3_common_bss_32724._CD = 1;
+            }
+        } else if (g_GameLogic.gameStatus == 9) {
+            if (g_GameLogic._125 == 0) {
+                fn_800B0A5C_insertQueue(fn_3_94194, 2);
+            }
+        } else if (g_GameLogic.gameStatus == 0xB) {
+            fn_3_99064();
+        } else if (g_GameLogic.gameStatus == 0xE) {
+            fn_3_15F410();
+        } else if (g_GameLogic.gameStatus == 0x16) {
+            if (lbl_3_common_bss_32724._AD != 0) {
+                if (g_d_GameSettings.exhibitionMatchInd == 0) {
+                    fn_800B0A5C_insertQueue(fn_3_953FC, 2);
+                    fn_800B0A5C_insertQueue(fn_3_94BC4, 2);
+                } else {
+                    fn_800B0A5C_insertQueue(fn_3_9551C, 2);
+                }
+                playSoundEffect(0x1A7);
+                lbl_3_common_bss_32724._AD = 0;
+            }
+        } else if (g_GameLogic.gameStatus == 0x17) {
+            if (g_GameLogic._125 == 2) {
+                fn_800B0A5C_insertQueue(fn_3_94930, 2);
+            }
+        } else if (g_GameLogic.gameStatus == 0x13) {
+            if (g_GameLogic._125 == 1 && lbl_3_common_bss_32724._C5 == 0) {
+                fn_800B0A5C_insertQueue(fn_3_93544, 2);
+                lbl_3_common_bss_32724._C5 = 1;
+            }
+        }
+        if (g_Stats.replayInd == 0 && g_Stats._39 != 0 && lbl_3_common_bss_32724._B2 == 0 && g_GameLogic.playOver == 0 &&
+            g_GameLogic.gameStatus == 2) {
+            fn_800B0A5C_insertQueue(fn_3_91B50, 2);
+            lbl_3_common_bss_32724._B2 = 1;
+        }
+    }
+    if (lbl_3_common_bss_32724._B0 == 0 && lbl_3_common_bss_32724._B1 != 0) {
+        fn_800B0A5C_insertQueue(fn_3_91C70, 2);
+    }
+    lbl_3_common_bss_32724._99 = 0;
 }
 
 // .text:0x00097800 size:0xDC mapped:0x806D6894
@@ -659,7 +741,36 @@ void fn_3_99064(void) {
     }
     if (lbl_3_common_bss_34C90.menu == 4 || lbl_3_common_bss_34C90.menu == 0xB || lbl_3_common_bss_34C90.menu == 0xE ||
         (u8)(lbl_3_common_bss_34C90.menu - 7) <= 1 || lbl_3_common_bss_34C90.menu == 0xF) {
-        fn_3_98EA8();
+        if (lbl_3_common_bss_34C90.state == 2) {
+            fn_800B0A5C_insertQueue(fn_80053FE8, 2);
+            memset(&lbl_8034E978, 0, sizeof(lbl_8034E978));
+            switch (lbl_803297E0._CFA2[lbl_3_common_bss_34C90.team]) {
+            case 0:
+                lbl_8034E978.menu = g_d_GameSettings.GameModeSelected == 5 ? 0x1C : 8;
+                lbl_8034E978.prevTrack = lbl_8034E978.track;
+                lbl_8034E978.track = lbl_800FEF70[g_d_GameSettings.GameModeSelected == 5 ? 0x1C : 8].track;
+                break;
+            case 1:
+                lbl_8034E978.menu = 0xA;
+                lbl_8034E978.prevTrack = lbl_8034E978.track;
+                lbl_8034E978.track = lbl_800FEF70[0xA].track;
+                break;
+            case 2:
+                lbl_8034E978.menu = 0x1E;
+                lbl_8034E978.prevTrack = lbl_8034E978.track;
+                lbl_8034E978.track = lbl_800FEF70[0x1E].track;
+                break;
+            case 3:
+                lbl_8034E978.menu = 0x1F;
+                lbl_8034E978.prevTrack = lbl_8034E978.track;
+                lbl_8034E978.track = lbl_800FEF70[0x1F].track;
+                break;
+            }
+            fn_800486E0(0, g_GameLogic.teams[lbl_3_common_bss_34C90.team], lbl_3_common_bss_34C90.team);
+        }
+        if (lbl_3_common_bss_34C90.state == 5) {
+            lbl_8034E978._26 = 1;
+        }
     }
     if ((lbl_3_common_bss_34C90.menu == 6 || lbl_3_common_bss_34C90.menu == 0xD) && lbl_3_common_bss_34C90.state == 2) {
         fn_800B0A5C_insertQueue(fn_3_983B8, 2);

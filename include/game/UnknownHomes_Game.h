@@ -2781,6 +2781,9 @@ typedef struct {
     /* 0x0024 */ u32 playFrameCounter;
     artificial_padding(0x24, 0x36, u32);
     /* 0x0036 */ u8 replayInd;
+    /* 0x0037 */ u8 _37;
+    /* 0x0038 */ u8 _38;
+    /* 0x0039 */ u8 _39;
 } g_Stats_s; // size: 0x4634
 
 // 0x8088a7e4
