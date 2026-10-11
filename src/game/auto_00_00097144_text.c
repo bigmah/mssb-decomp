@@ -16,7 +16,39 @@ extern void fn_3_91A60(void);
 
 // .text:0x00097144 size:0x15C mapped:0x806D61D8
 void fn_3_97144(void) {
-    return;
+    BOOL started = FALSE;
+
+    if (g_GameLogic.gameStatus == 3 || (u8)(g_GameLogic.gameStatus - 0x13) <= 4 || g_GameLogic.gameStatus == 0x18) {
+        g_UnkSound_32718._02 = 0;
+        g_UnkSound_32718._03 = 0;
+        g_UnkSound_32718._04 = 0;
+        g_UnkSound_32718._05 = 0;
+        g_UnkSound_32718._06 = 0;
+        return;
+    }
+    if (g_UnkSound_32718._07 == 0) {
+        if (g_UnkSound_32718._02 != 0) {
+            if (g_Stats.replayInd == 0) {
+                started = TRUE;
+                g_UnkSound_32718._07 = g_UnkSound_32718._02;
+                g_UnkSound_32718._02 = g_UnkSound_32718._03;
+                g_UnkSound_32718._03 = g_UnkSound_32718._04;
+                g_UnkSound_32718._04 = g_UnkSound_32718._05;
+                g_UnkSound_32718._05 = g_UnkSound_32718._06;
+                g_UnkSound_32718._06 = 0;
+                g_UnkSound_32718._00 = 0;
+            }
+            sndFXKeyOff(lbl_3_common_bss_34C58._1C);
+        }
+    } else {
+        g_UnkSound_32718._00++;
+        if (g_UnkSound_32718._02 != 0 && g_UnkSound_32718._00 < 0x3C) {
+            g_UnkSound_32718._00 = 0x3C;
+        }
+    }
+    if (lbl_3_data_BE50[g_UnkSound_32718._07][0] >= 0 && started) {
+        fn_800B0A5C_insertQueue(fn_3_96CA4, 2);
+    }
 }
 
 // .text:0x000972A0 size:0x28 mapped:0x806D6334
