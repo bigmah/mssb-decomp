@@ -426,15 +426,6 @@ void fn_3_B777C(u8 state) {
     g_Practice.maybeCommandData[2] = 0;
 }
 
-// fn_3_B5D4C, size:0x2C
-void fn_3_B5D4C(u8 type) {
-    g_Practice.practiceType_1 = type;
-    g_Practice.practiceState = 0;
-    lbl_3_common_bss_34C90[0x1D2] = 0;
-    g_Practice.practiceMenu_framesOnCurrMenuScreen = 0;
-    g_Practice.framesInCurrTransitionState = 0;
-}
-
 // fn_3_B6B70, size:0x34
 void fn_3_B6B70(void) {
     *((u8*)&g_Practice + 0x1DB) = 0;
@@ -903,6 +894,15 @@ void fn_3_B7184(void) {
 }
 
 #pragma dont_inline off
+// fn_3_B5D4C, size:0x2C
+void fn_3_B5D4C(u8 type) {
+    g_Practice.practiceType_1 = type;
+    g_Practice.practiceState = 0;
+    lbl_3_common_bss_34C90[0x1D2] = 0;
+    g_Practice.practiceMenu_framesOnCurrMenuScreen = 0;
+    g_Practice.framesInCurrTransitionState = 0;
+}
+
 // fn_3_B6E98, size:0xD4
 void fn_3_B6E98(void) {
     fn_3_5F720();
@@ -1303,7 +1303,7 @@ void fn_3_B43E8(void) {
         g_Practice._1DA = 1;
         fn_3_5A6D4(5);
         fn_3_B3CAC(0xA);
-        fn_3_B5D4C(0);
+        ((void (*)(u8))fn_3_B5D4C)(0); // cast: not inlined in the original
         fn_3_B3FE8();
         break;
     }
@@ -1311,7 +1311,7 @@ void fn_3_B43E8(void) {
 #endif
 
 // .text:0x000B4C40 size:0x450
-// NONMATCHING 88%: case 6 inlines fn_3_B5D4C(5) in the original; rest is scheduling/regalloc in case 0.
+// NONMATCHING 99.9%: case 1 base/index registers swapped (r5/r6) around the charId store.
 #if NONMATCHING
 void fn_3_B4C40(void) {
     s32 i;
@@ -1335,10 +1335,10 @@ void fn_3_B4C40(void) {
         for (i = 0; i < 4; i++) {
             CharacterStats* cs;
             MG_CHARSEL[i]._2 = -1;
-            cs = &lbl_8034E9A0[MG_CHARSEL[i].charId];
-            g_Minigame.battingHandedness[i] = cs->stats.FieldingArm * 2 + cs->stats.BattingStance;
             MG_CHARSEL[i].chosen = 0;
             MG_SEL_TIMER[i] = 0x14;
+            cs = &lbl_8034E9A0[MG_CHARSEL[i].charId];
+            g_Minigame.battingHandedness[i] = cs->stats.FieldingArm * 2 + cs->stats.BattingStance;
         }
         lbl_8036E548[0x2D77] = 0;
         lbl_8036E548[0x307A] = 5;
@@ -1368,7 +1368,10 @@ void fn_3_B4C40(void) {
         break;
     case 2:
         fn_3_B49D4();
-        fn_3_B4124(0, 0, MG_CHARSEL[g_Practice.homeAway].charId, g_Minigame.battingHandedness[g_Practice.homeAway]);
+        {
+            MgSelView* v = (MgSelView*)&g_Minigame;
+            fn_3_B4124(0, 0, v->sel[g_Practice.homeAway].charId, g_Minigame.battingHandedness[g_Practice.homeAway]);
+        }
         lbl_3_common_bss_34C58._2C = 0;
         break;
     case 3:
