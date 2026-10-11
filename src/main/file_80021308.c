@@ -343,9 +343,41 @@ void* fn_80021BBC(s32 index, void* dst) {
 }
 
 // .text:0x80021CA4 size:0x3A8
-void fn_80021CA4(void) {
-    return;
+// NONMATCHING 80%: the original addresses its data tables through one pooled base (lbl_800EFBE8,
+// defined in this TU); with extern data we get a separate lis/addi per table.
+#if NONMATCHING
+void* fn_80021CA4(s32 index, s32 variant, void* dst) {
+    s32 base;
+    s32 first;
+    s32 second;
+    s8* pair;
+
+    if (index < 0 || index >= 0x36) {
+        return NULL;
+    }
+    if (variant < 0 || variant >= 6) {
+        return NULL;
+    }
+    base = index * 7;
+    pair = lbl_800F71D8.variantFiles[lbl_800F71D8.variantSet[index]][variant];
+    first = base + pair[0];
+    second = base + pair[1];
+    if (dst == NULL) {
+        dst = _OSAllocFromHeap(0x20, ((DISK_FILE_SIZE(&lbl_800EFD38[first + 0x36]) + 0x1F) & ~0x1F) +
+                                         ((DISK_FILE_SIZE(&lbl_800EFD38[second + 0x36]) + 0x1F) & ~0x1F));
+    }
+    if (lbl_803716B8.loadedFlags & 2) {
+        aramQueuePush(&lbl_800EFD38[first + 0x36], dst, 3, lbl_803716B8.aramAddrs[1][first],
+                      (AramQueueCallback)fn_8002244C, (void*)((first << 16) | second));
+    } else {
+        aramQueuePush(&lbl_800F5D98[variant + index * 6], dst, 0, 0, fn_80022620, NULL);
+    }
+    lbl_803716B8.keepTask = 1;
+    fn_800B0A5C_insertQueue(fn_80022634, 0);
+    aramQueueUpdate();
+    return dst;
 }
+#endif
 
 // .text:0x8002204C size:0x400
 void fn_8002204C(void) {
