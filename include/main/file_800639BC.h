@@ -56,5 +56,6 @@ BOOL fn_80068514(u32 frames, u8 target);
 BOOL fn_8006862C(u32 frames, u8 target);
 BOOL fn_800697B0(void);
 void fn_80069854(void);
+s32 fn_800698F8(s32 charId);
 
 #endif

@@ -417,8 +417,60 @@ void fn_80069854(void) {
 }
 
 // .text:0x800698F8 size:0x170
-void fn_800698F8(void) {
-    return;
+s32 fn_800698F8(s32 charId) {
+    s32 i;
+
+    for (i = 0; i < 32; i++) {
+        if (lbl_80108DB8[i] == charId) {
+            if (i == 17 && lbl_8034E9A0._48AE != 0) {
+                i = 32;
+            }
+            lbl_8034E9A0._48AE = 0;
+            return i;
+        }
+    }
+    if (i == 32) {
+        for (i = 0; i < 22; i++) {
+            if (lbl_80108DDC[i] == charId) {
+                switch (i) {
+                case 0: case 1:
+                    charId = 0x15;
+                    break;
+                case 2: case 3:
+                    charId = 0x16;
+                    break;
+                case 4: case 5: case 6: case 7:
+                    charId = 0xD;
+                    break;
+                case 8: case 9: case 10:
+                    charId = 0x19;
+                    break;
+                case 11:
+                    charId = 0xC;
+                    break;
+                case 12:
+                    charId = 0x14;
+                    break;
+                case 13: case 14: case 15: case 16:
+                    charId = 0x10;
+                    break;
+                case 17: case 18: case 19:
+                    charId = 0x1F;
+                    break;
+                case 20: case 21:
+                    charId = 0x17;
+                    break;
+                }
+                lbl_8034E9A0._48AE = 0;
+                return charId;
+            }
+        }
+        if (i == 22) {
+            OSPanic("mb_subfunc.c", 0x95, "The character doesn't exist");
+        }
+    }
+    OSPanic("mb_subfunc.c", 0x99, "//OZ 戻り値がありません\n");
+    return 0;
 }
 
 // .text:0x80069A68 size:0x30
