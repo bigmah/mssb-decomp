@@ -33,12 +33,30 @@ extern const f32 lbl_2_rodata_5E0;
 extern const f32 lbl_2_rodata_5E4;
 extern const f32 lbl_2_rodata_5E8;
 extern void fn_800BDA94(CharSlot* slot, MtxPtr view);
-extern u8 lbl_8034E9A0[];
+// lbl_8034E9A0 (character select state, cf. CharSelectState in main/file_800639BC.h).
+typedef struct MenuRosterChar {
+    /*0x00*/ u8 _00[0x24];
+    /*0x24*/ s16 charId;
+    /*0x26*/ u8 _26[0xA0 - 0x26];
+} MenuRosterChar; // size: 0xA0
+typedef struct MenuCharSelect {
+    /*0x0000*/ MenuRosterChar roster[6][9];
+    /*0x21C0*/ u8 _21C0[0x4701 - 0x21C0];
+    /*0x4701*/ u8 _4701;
+} MenuCharSelect;
+extern MenuCharSelect lbl_8034E9A0;
 extern u8* lbl_803CBBCC[];
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_803C66B0[];
 extern u8 lbl_2_bss_100B4[];
-extern u8 lbl_2_data_241C[];
+// ARAM load descriptors of the menu character models (AssetLoadInstructions).
+typedef struct MenuAssetInfo {
+    /*0x0*/ u32 _0;
+    /*0x4*/ u32 sizeInfo; // low 28 bits: size
+    /*0x8*/ u32 diskLocation;
+    /*0xC*/ u32 compressedSize;
+} MenuAssetInfo;
+extern MenuAssetInfo lbl_2_data_241C[];
 extern s32 ARAMTransfer(void*, int, int, int);
 extern void fn_2_16F78(u8);
 extern void fn_2_14BB8(u8, s32);
@@ -109,7 +127,7 @@ void fn_2_18FBC(void) {
     q = fn_800B0A5C_insertQueue(fn_2_188EC, 0x6000);
     lbl_2_bss_100B8[0x19] = 0;
     lbl_2_bss_100B8[0x1B] = 1;
-    if (lbl_8034E9A0[0x4701] == 0) {
+    if (lbl_8034E9A0._4701 == 0) {
         for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
             ((s8*)lbl_2_bss_100B8)[i + 0x27] = -1;
         }
@@ -180,7 +198,7 @@ void fn_2_18148(MenuCharLoadTask* task) {
         task->step++;
         break;
     case 1:
-        ARAMTransfer(lbl_2_data_241C + (s8)task->charId[task->index] * 0x10, (s32)task->actor->files, 0, 0); // TODO type: ARAM dest address
+        ARAMTransfer(&lbl_2_data_241C[(s8)task->charId[task->index]], (s32)task->actor->files, 0, 0); // TODO type: ARAM dest address
         task->step++;
         break;
     case 2:
@@ -360,6 +378,36 @@ void fn_2_19224(CharSlotList* list, MtxPtr view) {
         slot->_59 = 0;
         slot->_5A = 0;
         slot->_5B &= 1;
+    }
+}
+
+// fn_2_17C88, size:0x250
+// Allocates one model file buffer per menu actor, big enough for the largest
+// character model.
+void fn_2_17C88(void) {
+    u32 size;
+    s32 i;
+    s32 j;
+    u32 maxSize = 0;
+    s32 n;
+    u32 bufSize;
+
+    for (i = 0; i < 12; i++) {
+        for (j = 0; j < 9; j++) {
+            if (i * 9 + j == 0x35) {
+                goto done;
+            }
+            size = lbl_2_data_241C[lbl_8034E9A0.roster[i][j].charId].sizeInfo & 0x0FFFFFFF;
+            if (maxSize < size) {
+                maxSize = size;
+            }
+        }
+    }
+done:
+    bufSize = (maxSize + 0x1F) & ~0x1F;
+    lbl_8036E548.fileBuf = _OSAllocFromHeap(0x20, bufSize * lbl_2_bss_100B8[0x2D]);
+    for (n = 0; n < lbl_2_bss_100B8[0x2D]; n++) {
+        lbl_8036E548.actors[n].files = (void**)(lbl_8036E548.fileBuf + bufSize * (u32)n);
     }
 }
 
