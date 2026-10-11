@@ -1,12 +1,17 @@
 #include "main/file_8000F150.h"
+#include "static/UnknownHomes_Static.h"
+
+extern u16 lbl_80366218[];
+extern void* lbl_803CBBE8;
+extern u8 lbl_800E9920[];
 
 // .text:0x8000F150 size:0x298
-void fn_8000F150(void) {
+void fn_8000F150(void* arg) {
     return;
 }
 
 // .text:0x8000F3E8 size:0xA4
-void fn_8000F3E8(void) {
+void fn_8000F3E8(s32 arg) {
     return;
 }
 
@@ -16,47 +21,47 @@ void somethingSetTexturePointer(void) {
 }
 
 // .text:0x8000F4B8 size:0x7C
-void fn_8000F4B8(void) {
+void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d) {
     return;
 }
 
 // .text:0x8000F534 size:0x3C0
-void fn_8000F534(void) {
+void fn_8000F534(void* object, s32 visible) {
     return;
 }
 
 // .text:0x8000F8F4 size:0x94
-void fn_8000F8F4(void) {
+void fn_8000F8F4(LayoutGroup* group) {
     return;
 }
 
 // .text:0x8000F988 size:0x114
-void fn_8000F988(void) {
-    return;
+s32 fn_8000F988(LayoutGroup* group, s32 index, u16 arg2, s32 table, s32 msg, s32 shadow) {
+    return 0;
 }
 
 // .text:0x8000FA9C size:0x2B8
-void fn_8000FA9C(void) {
-    return;
+s32 fn_8000FA9C(s32 index) {
+    return 0;
 }
 
 // .text:0x8000FD54 size:0x24
-void fn_8000FD54(void) {
+void fn_8000FD54(s32 index, s16 a, s16 b, s16 c, s16 d) {
     return;
 }
 
 // .text:0x8000FD78 size:0x24
-void fn_8000FD78(void) {
+void fn_8000FD78(s32 index, s16 a, s16 b, s16 c, s16 d) {
     return;
 }
 
 // .text:0x8000FD9C size:0x6C
-void fn_8000FD9C(void) {
+void fn_8000FD9C(s32 index, s32 speed, s32 limit) {
     return;
 }
 
 // .text:0x8000FE08 size:0x4C
-void fn_8000FE08(void) {
+void fn_8000FE08(s32 index, s32 table, s32 msg) {
     return;
 }
 
@@ -66,27 +71,29 @@ void fn_8000FE54(void) {
 }
 
 // .text:0x8000FEE8 size:0x1C
-void fn_8000FEE8(void) {
-    return;
+void fn_8000FEE8(s32 index) {
+    lbl_80366B18.entries[index].state = 0;
 }
 
 // .text:0x8000FF04 size:0x1A0
-void fn_8000FF04(void) {
-    return;
+s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSize) {
+    return 0;
 }
 
 // .text:0x800100A4 size:0x3F4
-void fn_800100A4(void) {
+void fn_800100A4(s32 x, s32 y, u16 s, u16 t, u16 w, u32 color, s32 kind, MtxPtr mtx) {
     return;
 }
 
 // .text:0x80010498 size:0xA94
-void DrawText(void) {
+#if NONMATCHING
+void DrawText(s32 index) {
     return;
 }
+#endif
 
 // .text:0x80010F2C size:0x74
-void DrawTextOnCondition(void) {
+void DrawTextOnCondition(s32 layer) {
     return;
 }
 
@@ -106,22 +113,22 @@ void fn_80011140(void) {
 }
 
 // .text:0x800111B4 size:0x24
-void fn_800111B4(void) {
+void fn_800111B4(MsgTable* table) {
     return;
 }
 
 // .text:0x800111D8 size:0x24
-void fn_800111D8(void) {
-    return;
+void** fn_800111D8(void* actor) {
+    return 0;
 }
 
 // .text:0x800111FC size:0x15C
-void fn_800111FC(void) {
-    return;
+void* fn_800111FC(void* actor, s32 second) {
+    return 0;
 }
 
 // .text:0x80011358 size:0x110
-void fn_80011358(void) {
+void fn_80011358(s8 index, s32 kind) {
     return;
 }
 
