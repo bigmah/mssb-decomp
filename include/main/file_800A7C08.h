@@ -168,12 +168,89 @@ typedef struct CardMountTask {
     /*0x19*/ u8 mode; // 1 = use the async CARD calls
 } CardMountTask;
 
+// Format, delete-file and file-exists/free-space tasks.
+typedef struct CardNameTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct Task* prev;
+    /*0x08*/ struct Task* next;
+    /*0x0C*/ struct Task* parent;
+    /*0x10*/ s16 result;
+    /*0x12*/ u16 priority;
+    /*0x14*/ s32 step;
+    /*0x18*/ u8 chan;
+    /*0x19*/ u8 mode;
+    /*0x1A*/ s16 arg; // file-exists flag (fn_800AA44C) or blocks needed (fn_800AB534)
+    /*0x1C*/ char* fileName;
+    /*0x20*/ u8 outcome;
+} CardNameTask;
+
+// Load task (fn_800AAA70); fn_800ABBD0 runs as its child and uses the file fields.
+typedef struct CardFileTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct Task* prev;
+    /*0x08*/ struct Task* next;
+    /*0x0C*/ struct Task* parent;
+    /*0x10*/ s16 result;
+    /*0x12*/ u16 priority;
+    /*0x14*/ CARDFileInfo fileInfo;
+    /*0x28*/ s32 step;
+    /*0x2C*/ void* buffer;
+    /*0x30*/ s32 length;
+    /*0x34*/ char* fileName;
+    /*0x38*/ s32 fileNo;
+    /*0x3C*/ u8 chan;
+    /*0x3D*/ u8 mode;
+} CardFileTask;
+
+// Save task (fn_800AAFEC); fn_800ABF44 runs as its child.
+typedef struct CardWriteTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct Task* prev;
+    /*0x08*/ struct Task* next;
+    /*0x0C*/ struct Task* parent;
+    /*0x10*/ s16 result;
+    /*0x12*/ u16 priority;
+    /*0x14*/ CARDFileInfo fileInfo;
+    /*0x28*/ s32 step;
+    /*0x2C*/ void* buffer;
+    /*0x30*/ s32 length;
+    /*0x34*/ s32 fileNo;
+    /*0x38*/ u8 chan;
+    /*0x39*/ u8 mode;
+    /*0x3A*/ u8 permissions;
+} CardWriteTask;
+
+// Load/save request passed to fn_800AA930 / fn_800AAEE4.
+typedef struct CardRequest {
+    /*0x00*/ char* fileName;
+    /*0x04*/ void* buffer;
+    /*0x08*/ s32 length; // multiple of CARD_READ_SIZE
+    /*0x0C*/ u8 chan;
+    /*0x0D*/ u8 mode;
+    /*0x0E*/ u8 permissions; // 0 = CARD_ATTR_PUBLIC
+    /*0x0F*/ u8 _0F;
+    /*0x10*/ u8 (*verify)(void* buffer, s32 length, u32 arg); // returns CARD_STATUS_READY if OK
+    /*0x14*/ u32 verifyArg;
+    /*0x18*/ u32 flags; // bit 0: skip the CRC
+} CardRequest;
+
+// Start of every save buffer.
+typedef struct CardSaveHeader {
+    /*0x00*/ char comment[2][0x20];
+    /*0x40*/ u16 crc; // CRC-16 of everything after the header
+    /*0x42*/ u16 _42;
+} CardSaveHeader;
+
 typedef struct CardSlot {
     /*0x00*/ u64 serial;
     /*0x08*/ s32 probeResult;
-    /*0x0C*/ s32 memSize;
+    /*0x0C*/ s32 memSize; // megabits
     /*0x10*/ s32 sectorSize;
-    /*0x14*/ u8 _14[0x14];
+    /*0x14*/ s32 blocksFree;
+    /*0x18*/ s32 bytesFree;
+    /*0x1C*/ s32 filesFree;
+    /*0x20*/ s32 blocksTotal;
+    /*0x24*/ u8 _24[4];
 } CardSlot;
 
 // Memory card state (lbl_803C7838).
@@ -182,7 +259,8 @@ typedef struct CardSystem {
     /*0x50*/ s32 lastResult;
     /*0x54*/ u8 status; // CARD_STATUS_* or an error code
     /*0x55*/ u8 op;     // current operation
-    /*0x56*/ u8 _56[2];
+    /*0x56*/ u8 hasBanner;
+    /*0x57*/ u8 iconCount;
     /*0x58*/ s32 xferred;
     /*0x5C*/ s8 progress; // percent
     /*0x5D*/ u8 _5D[3];
@@ -250,5 +328,23 @@ void fn_800ABB60(void);
 void fn_800ACCE8(void);
 void fn_800ACD44(void);
 void fn_800ACD64(s32 result);
+void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial);
+void fn_800AA44C(void);
+void fn_800AA930(CardRequest* req, u64 serial);
+void fn_800AAA70(void);
+void fn_800AAEE4(CardRequest* req, u64 serial);
+void fn_800AAFEC(void);
+void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial);
+void fn_800AB534(void);
+void fn_800ABBD0(void);
+void fn_800ABF44(void);
+void fn_800ACF14(void* block);
+void* fn_800ACF34(s32 align, s32 size);
+void fn_800ACF78(void* block, s32 size);
+void fn_800ACFB0(void* block);
+void* _OSAllocFromHeap(s32 align, s32 size);
+void fn_800AD01C(void* hi);
+void fn_800AD038(void* lo);
+void fn_800AD054(void* lo, void* hi);
 
 #endif

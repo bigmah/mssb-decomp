@@ -7,6 +7,7 @@
 #include "Dolphin/ai.h"
 #include "Dolphin/pad.h"
 #include "stl/mem.h"
+#include "stl/string.h"
 #include "main/file_800B0724.h"
 
 extern OSThread* GXSetCurrentGXThread(void);
@@ -819,6 +820,19 @@ extern CARDStat lbl_802EF330;
 extern u16 lbl_800E7800[256];         // CRC-16 table
 extern char lbl_803CCEE0[8];          // OSPanic file name
 extern char lbl_800E7B28[];           // OSPanic message
+extern const char lbl_800E7A00[];     // "MemoryCard FileName Error!!"
+extern const char lbl_800E7A1C[];     // "MemoryCard LoadSize Error!!"
+extern const char lbl_800E7A38[];     // "MemoryCard SaveSize Error!!" and further messages
+extern char lbl_802EF2D0[CARD_FILENAME_MAX]; // file name of the current card task
+extern CardSaveHeader lbl_802EF2F0;   // header copied to the start of every save
+extern u32 lbl_803CC158;              // verify callback argument
+extern u8 (*lbl_803CC15C)(void* buffer, s32 length, u32 arg);
+extern u32 lbl_803CC160;              // CardRequest.flags
+extern u8* lbl_803CC164;              // end of the save data in the save buffer
+extern s32 lbl_803CC168;              // CARDGetXferredBytes at the start of a transfer
+extern u8* lbl_803CC16C;              // save buffer
+extern s32 CARDSetAttributes(s32 chan, s32 fileNo, u8 attr);
+extern s32 CARDSetAttributesAsync(s32 chan, s32 fileNo, u8 attr, CARDCallback callback);
 
 extern s32 CARDGetResultCode(s32 chan);
 extern s32 CARDGetXferredBytes(s32 chan);
@@ -838,6 +852,153 @@ static inline s32 CardStatusClass(void) {
         return 1;
     }
     return 2;
+}
+
+// Steps 0-3 shared by the memory card tasks: probe the slot, mount it and check it.
+static inline void CardMountSteps(s32* step, u8 chan, u8 mode, s32 errorStep) {
+    s32 res;
+    s32 cls;
+    BOOL busy;
+
+    switch (*step) {
+    case 0:
+        fn_800ACD64(CARDUnmount(chan));
+        fn_800ACD64(lbl_803C7838.slots[chan].probeResult);
+        cls = CardStatusClass();
+        if (cls == 1) {
+            fn_800ACD64(lbl_803C7838.slots[chan].sectorSize == 0x2000 ? CARD_RESULT_READY
+                                                                     : CARD_RESULT_BAD_SECTOR_SIZE);
+            cls = CardStatusClass();
+        }
+        switch (cls) {
+        case 1:
+            *step = 1;
+            break;
+        case 2:
+            *step = errorStep;
+            break;
+        }
+        break;
+    case 1:
+        if (mode == 1) {
+            res = CARDMountAsync(chan, &lbl_802EF3A0, NULL, NULL);
+            if (res == CARD_RESULT_BUSY) {
+                busy = TRUE;
+            } else {
+                fn_800ACD64(res);
+                busy = FALSE;
+            }
+        } else {
+            fn_800ACD64(CARDMount(chan, &lbl_802EF3A0, NULL));
+            busy = FALSE;
+        }
+        if (!busy) {
+            *step = 2;
+        }
+        break;
+    case 2:
+        fn_800ACD64(CARDGetResultCode(chan));
+        switch (lbl_803C7838.status) {
+        case CARD_STATUS_BUSY:
+            break;
+        case 1:
+        case 2:
+        case CARD_STATUS_READY:
+            *step = 3;
+            break;
+        default:
+            *step = errorStep;
+            break;
+        }
+        break;
+    case 3:
+        if (mode == 1) {
+            res = CARDCheckAsync(chan, NULL);
+            if (res == CARD_RESULT_BUSY) {
+                busy = TRUE;
+            } else {
+                fn_800ACD64(res);
+                busy = FALSE;
+            }
+        } else {
+            fn_800ACD64(CARDCheck(chan));
+            busy = FALSE;
+        }
+        if (!busy) {
+            *step = 4;
+        }
+        break;
+    }
+}
+
+// Step 4: wait for CARDCheck; ready goes to step 5, failure to errorStep.
+static inline void CardCheckResultStep(s32* step, u8 chan, s32 errorStep) {
+    fn_800ACD64(CARDGetResultCode(chan));
+    switch (lbl_803C7838.status) {
+    case CARD_STATUS_BUSY:
+        break;
+    case CARD_STATUS_READY:
+        *step = 5;
+        break;
+    default:
+        *step = errorStep;
+        break;
+    }
+}
+
+// Step 5: the card in the slot must carry the expected (nonzero) serial number.
+static inline void CardSerialStep(s32* step, u8 chan, s32 errorStep) {
+    u64 serial;
+    s32 res;
+
+    if (lbl_803C7838.status == CARD_STATUS_READY) {
+        serial = 0;
+        res = CARDGetSerialNo(chan, &serial);
+        lbl_803C7838.slots[chan].serial = serial;
+        if (res != CARD_RESULT_BUSY) {
+            if (lbl_803C7838.slots[chan].serial != 0 && lbl_803C7838.slots[chan].serial == lbl_802EF2C0[chan]) {
+                *step = 6;
+            } else {
+                lbl_803C7838.status = CARD_STATUS_SERIAL_MISMATCH;
+                *step = errorStep;
+            }
+        }
+    } else {
+        *step = errorStep;
+    }
+}
+
+// Opens and closes `fileName` to see whether it exists. Returns 0 if it does (status 8),
+// 1 if it does not, 2 on error.
+static inline s32 CardFileExists(u8 chan, char* fileName) {
+    char name[CARD_FILENAME_MAX + 1];
+    CARDFileInfo fileInfo;
+    s32 res;
+
+    strncpy(name, fileName, CARD_FILENAME_MAX);
+    name[CARD_FILENAME_MAX] = '\0';
+    if (strlen(name) >= CARD_FILENAME_MAX) {
+        OSPanic(lbl_803CCEE0, 0x1FE, lbl_800E7A00);
+    }
+    res = CARDOpen(chan, fileName, &fileInfo);
+    switch (res) {
+    case CARD_RESULT_READY:
+        lbl_803C7838.status = 8;
+        CARDClose(&fileInfo);
+        return 0;
+    case CARD_RESULT_NOFILE:
+        return 1;
+    default:
+        fn_800ACD64(res);
+        return 2;
+    }
+}
+
+// Final step of a task: report to the parent task and remove this one.
+static inline void CardTaskFinish(s16 result) {
+    Task* parent = lbl_803CC1B8->parent;
+    parent->result = result;
+    fn_800B0A14_removeQueue(parent);
 }
 
 // .text:0x800A9864 size:0x98
@@ -1066,8 +1227,26 @@ void fn_800A9ECC(void) {
 }
 
 // .text:0x800AA34C size:0x100
-void fn_800AA34C(void) {
-    return;
+void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial) {
+    char name[CARD_FILENAME_MAX + 1];
+    CardNameTask* task;
+
+    lbl_803C7838.op = 5;
+    strncpy(name, fileName, CARD_FILENAME_MAX);
+    name[CARD_FILENAME_MAX] = '\0';
+    if (strlen(name) >= CARD_FILENAME_MAX) {
+        OSPanic(lbl_803CCEE0, 0xA6A, lbl_800E7A00);
+    }
+    task = fn_800B0A5C_insertQueue(fn_800AA44C, 0xFF);
+    memset(&task->step, 0, sizeof(((Task*)0)->data));
+    task->chan = chan;
+    task->mode = mode;
+    task->fileName = lbl_802EF2D0;
+    memcpy(task->fileName, fileName, CARD_FILENAME_MAX);
+    if (setSerial) {
+        lbl_802EF2C0[chan] = serial;
+    }
+    lbl_803CC1B8->result = 0;
 }
 
 // .text:0x800AA44C size:0x4E4
@@ -1076,7 +1255,7 @@ void fn_800AA44C(void) {
 }
 
 // .text:0x800AA930 size:0x140
-void fn_800AA930(void) {
+void fn_800AA930(CardRequest* req, u64 serial) {
     return;
 }
 
@@ -1086,7 +1265,7 @@ void fn_800AAA70(void) {
 }
 
 // .text:0x800AAEE4 size:0x108
-void fn_800AAEE4(void) {
+void fn_800AAEE4(CardRequest* req, u64 serial) {
     return;
 }
 
@@ -1096,7 +1275,7 @@ void fn_800AAFEC(void) {
 }
 
 // .text:0x800AB474 size:0xC0
-void fn_800AB474(void) {
+void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial) {
     return;
 }
 
