@@ -708,7 +708,7 @@ void fn_2_C698(u8 a, s32 b) {
 
 // fn_2_1DC8, size:0x168
 void fn_2_1DC8(void) {
-    switch (*(u32*)lbl_2_bss_F468) {
+    switch (*(u32*)lbl_2_bss_F410) {
     case 0:
         lbl_8034E9A0[0x4708] = 0;
         ((u8*)&g_d_GameSettings)[7] = 0;
