@@ -118,8 +118,116 @@ void fn_800B3A78(GameActor* actor, Mtx camera, u8 numLights, ...) {
 }
 
 // .text:0x800B3C04 size:0x31C
-void fn_800B3C04(void) {
-    return;
+// Visibility test: 3 if a display object is in view, 2 if only the actor's
+// fallback box is, 0 otherwise.
+u8 fn_800B3C04(void* frustum, GameActor* actor, Mtx camera) {
+    Vec pos;
+    Mtx m;
+    Vec box[8];
+    GameBone* bone;
+    struct DODisplayObj* obj;
+    u8 result;
+
+    result = 0;
+    bone = (GameBone*)actor->drawPriorityList.Head;
+    pos = lbl_800E7D28;
+    if (actor->skinObject != NULL) {
+        PSMTXCopy(actor->forwardMtxArray[actor->rootBone], m);
+        PSMTXMultVec(m, &pos, &pos);
+        PSMTXConcat(camera, m, m);
+        obj = actor->skinObject;
+        box[0].x = 1.2f * obj->bounds[1];
+        box[0].y = obj->bounds[3] - pos.y;
+        box[0].z = 1.2f * obj->bounds[4];
+        box[1].x = 1.2f * obj->bounds[0];
+        box[1].y = obj->bounds[3] - pos.y;
+        box[1].z = 1.2f * obj->bounds[4];
+        box[2].x = 1.2f * obj->bounds[0];
+        box[2].y = obj->bounds[3] - pos.y;
+        box[2].z = 1.2f * obj->bounds[5];
+        box[3].x = 1.2f * obj->bounds[1];
+        box[3].y = obj->bounds[3] - pos.y;
+        box[3].z = 1.2f * obj->bounds[5];
+        box[4].x = 1.2f * obj->bounds[1];
+        box[4].y = obj->bounds[2] - pos.y;
+        box[4].z = 1.2f * obj->bounds[4];
+        box[5].x = 1.2f * obj->bounds[0];
+        box[5].y = obj->bounds[2] - pos.y;
+        box[5].z = 1.2f * obj->bounds[4];
+        box[6].x = 1.2f * obj->bounds[0];
+        box[6].y = obj->bounds[2] - pos.y;
+        box[6].z = 1.2f * obj->bounds[5];
+        box[7].x = 1.2f * obj->bounds[1];
+        box[7].y = obj->bounds[2] - pos.y;
+        box[7].z = 1.2f * obj->bounds[5];
+        if (fn_800B7D3C(frustum, box, m)) {
+            if (actor->flags & 0x24) {
+                fn_800BEA04(pos);
+            }
+            return 3;
+        }
+        box[0].x = -2.0f;
+        box[0].z = 2.0f;
+        box[1].x = 2.0f;
+        box[1].z = 2.0f;
+        box[2].x = 2.0f;
+        box[2].z = -2.0f;
+        box[3].x = -2.0f;
+        box[3].z = -2.0f;
+        box[4].x = -2.0f;
+        box[4].z = 2.0f;
+        box[5].x = 2.0f;
+        box[5].z = 2.0f;
+        box[6].x = 2.0f;
+        box[6].z = -2.0f;
+        box[7].x = -2.0f;
+        box[7].z = -2.0f;
+        if (fn_800B7D3C(frustum, box, m)) {
+            result = 2;
+        }
+    }
+    for (; bone != NULL; bone = (GameBone*)bone->drawPriorityLink.Next) {
+        obj = bone->dispObj;
+        if (obj == NULL) {
+            continue;
+        }
+        box[0].x = obj->bounds[1];
+        box[0].y = obj->bounds[3];
+        box[0].z = obj->bounds[4];
+        box[1].x = obj->bounds[0];
+        box[1].y = obj->bounds[3];
+        box[1].z = obj->bounds[4];
+        box[2].x = obj->bounds[0];
+        box[2].y = obj->bounds[3];
+        box[2].z = obj->bounds[5];
+        box[3].x = obj->bounds[1];
+        box[3].y = obj->bounds[3];
+        box[3].z = obj->bounds[5];
+        box[4].x = obj->bounds[1];
+        box[4].y = obj->bounds[2];
+        box[4].z = obj->bounds[4];
+        box[5].x = obj->bounds[0];
+        box[5].y = obj->bounds[2];
+        box[5].z = obj->bounds[4];
+        box[6].x = obj->bounds[0];
+        box[6].y = obj->bounds[2];
+        box[6].z = obj->bounds[5];
+        box[7].x = obj->bounds[1];
+        box[7].y = obj->bounds[2];
+        box[7].z = obj->bounds[5];
+        PSMTXConcat(camera, obj->worldMatrix, m);
+        if (fn_800B7D3C(frustum, box, m)) {
+            if (actor->flags & 0x24) {
+                PSMTXMultVec(obj->worldMatrix, &pos, &pos);
+                fn_800BEA04(pos);
+            }
+            return 3;
+        }
+    }
+    if (result != 0 && (actor->flags & 4)) {
+        fn_800BEA04(pos);
+    }
+    return result;
 }
 
 // .text:0x800B3F20 size:0x128
