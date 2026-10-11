@@ -2822,3 +2822,100 @@ void fn_2_6F104(MenuEntry* owner) {
     }
 }
 #endif
+
+// Per-fielder (ids 2..6) location-choice counts and fallback home locations.
+extern s16 lbl_2_data_3C20[];
+extern s16 lbl_2_data_3ED4[];
+
+// .text:0x6E1D0 size:0x678
+void fn_2_6E1D0(MenuEntry* owner) {
+    s32 id;
+    s32 other;
+    s16 location;
+    s32 count;
+    s16* choices;
+    s16 choice;
+    s32 mode;
+    s32 who;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    id = owner->objectId;
+    other = *(s32*)((u8*)lbl_2_bss_1A8248[0] + 0x1690);
+    fn_2_68F08(owner->objectId, 1);
+    count = lbl_2_data_3C20[id - 2];
+    choices = lbl_2_data_3C2C[id - 2];
+    choice = rand() % count;
+    if (owner->flagCF == -1) {
+        choice = 0;
+        owner->flagCF = 0;
+    } else {
+        location = choices[choice];
+        if (location == owner->locationIndex) {
+            choice ^= 1;
+        }
+    }
+    location = choices[choice];
+    lbl_2_bss_1A8248[0]->entries[id].targetLocation = location;
+    memcpy(&owner->target, &lbl_2_data_2EA4[lbl_2_bss_1A8248[0]->entries[id].targetLocation], sizeof(Vec));
+    pz = owner->target.z;
+    px = owner->target.x;
+    entry = &lbl_2_bss_1A8248[0]->entries[id];
+    entry->previousPosition.x = px;
+    entry->previousPosition.z = pz;
+    dx = px - entry->position.x;
+    dz = pz - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+    owner->mode = 13;
+    fn_2_69E1C(id);
+    fn_2_68FBC(id, 0);
+    if (id >= 2 && id <= 6 && (mode = *(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DD), who = *(s8*)((u8*)lbl_2_bss_1A8248[0] + 0x16DC), mode == 1) && who == id) {
+        fn_2_68FBC(id, 1);
+        owner->flagC4 = 2;
+        owner->flagCB = 0;
+        owner->state = 4;
+        return;
+    }
+    if ((u8)fn_2_68C80(id, other)) {
+        if (id == 1) {
+            fn_2_68FBC(id, 1);
+            owner->flagC4 = 2;
+            owner->flagCB = 0;
+            owner->state = 3;
+            return;
+        }
+        if (id >= 2 && id <= 6) {
+            if ((lbl_2_bss_1A8248[0]->entries[id].locationIndex == location &&
+                 lbl_2_bss_1A8248[0]->entries[id].targetLocation == location) ||
+                (lbl_2_bss_1A8248[0]->entries[id].locationIndex == lbl_2_data_3ED4[id - 2] &&
+                 lbl_2_bss_1A8248[0]->entries[id].targetLocation == lbl_2_data_3ED4[id - 2])) {
+                if (owner->_50 <= lbl_2_rodata_B70) {
+                    owner->timer = 0x78;
+                    fn_2_68FBC(id, 1);
+                    owner->mode = 9;
+                    owner->_50 = lbl_2_rodata_B58;
+                    owner->_38 = lbl_2_rodata_B58;
+                    owner->flagCF = 0;
+                    owner->state = 2;
+                    return;
+                }
+            }
+            owner->flagCB = 0;
+            owner->flagCF = -1;
+            owner->state = 0;
+        }
+    } else {
+        owner->flagCB = -1;
+        owner->state = 1;
+    }
+}
