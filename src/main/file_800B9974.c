@@ -236,6 +236,6 @@ void LITInitPos(Light* light, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x800BD3CC size:0x20
-void LITInitAttn(void) {
-    return;
+void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2) {
+    GXInitLightAttn(&light->lt_obj, a0, a1, a2, k0, k1, k2);
 }
