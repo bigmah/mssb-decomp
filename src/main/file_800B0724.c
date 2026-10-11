@@ -504,8 +504,8 @@ void fn_800B12DC(QuadVtx* verts, s32 count) {
 }
 
 // .text:0x800B1314 size:0x3C
-void fn_800B1314(void) {
-    return;
+void fn_800B1314(QuadVtx* verts, SpriteTexInfo* tex, u16 width, u16 height) {
+    DrawSprite(GX_QUADS, verts, 4, tex, width, height);
 }
 
 // .text:0x800B1350 size:0x38
