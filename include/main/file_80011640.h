@@ -68,7 +68,11 @@ typedef struct CharPart {
 
 typedef struct CharParts {
     /*0x00*/ CharPart part[2];
-    /*0xC8*/ u8 _C8[0x8];
+    /*0xC8*/ void* tex;
+    /*0xCC*/ u8 _CC;
+    /*0xCD*/ u8 _CD;
+    /*0xCE*/ u8 _CE;
+    /*0xCF*/ s8 _CF;
     /*0xD0*/ s8 _D0;
     /*0xD1*/ s8 _D1;
     /*0xD2*/ u8 _D2[0x2];
@@ -281,6 +285,9 @@ s32 fn_80016B60(CharActor* actor);
 void challengeMapMaybe(void);
 
 void fn_8001FC4C(CharActor* actor);
+
+void fn_800126EC(CharPart* part, void* tex, u8* fileIdx);
+u8 LoadModel(CharActor* actor);
 
 void fn_8001B200(void);
 

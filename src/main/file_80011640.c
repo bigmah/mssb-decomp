@@ -75,6 +75,15 @@ extern void fn_800637D4(CharActor* actor, CharSlot* slot);
 extern void fn_8004BD6C(CharActor* actor, CharSlot* slot);
 extern void fn_80052634(CharActor* actor, CharSlot* slot);
 extern void fn_80062ED4(CharActor* actor, CharSlot* slot);
+extern void fn_800238E0(CharSlotList* list, u8 first, u8 last, void* layout);
+extern void fn_80021CA4(s32 id, s32 kind, void** files);
+extern void OSPanic(const char* file, int line, const char* msg, ...);
+extern u8 lbl_803CB7B4[8];
+extern u8 lbl_803CB7C4[4];
+extern s16 lbl_800EEAAC[];
+extern CharPart* lbl_803CBC10;
+extern u8 lbl_803CBC14;
+extern u8 lbl_803CBC15;
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -290,8 +299,25 @@ void fn_80011CA8(void) {
 }
 
 // .text:0x800126EC size:0x10C
-void fn_800126EC(void) {
-    return;
+void fn_800126EC(CharPart* part, void* tex, u8* fileIdx) {
+    void* layout;
+    void* geo;
+    CharSlot* slot;
+
+    slot = &lbl_8036E548.partSlots->slots[part->slot];
+    layout = part->files[fileIdx[0]];
+    geo = part->files[fileIdx[1]];
+    LoadActorLayout(layout);
+    convertGeometryAndSknHeader(geo, NULL);
+    haveActLayoutPointToGeoHeader(layout, geo);
+    fn_800BD190(geo, tex);
+    fn_800238E0(lbl_8036E548.partSlots, part->slot, part->slot, layout);
+    if (part->files[2] != NULL) {
+        fn_80025DDC(part->files[fileIdx[2]]);
+        fn_80025C58(part->files[fileIdx[2]], (ShapeModel**)&slot->model);
+    }
+    part->player.set = part->files[fileIdx[3]];
+    fn_80025FFC(part->files[fileIdx[2]], &part->player);
 }
 
 // .text:0x800127F8 size:0x398
