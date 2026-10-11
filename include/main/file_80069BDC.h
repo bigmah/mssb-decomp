@@ -90,7 +90,9 @@ typedef struct ChallengeState {
     /*0x40B8*/ ChallengeTeamEntry teams[9]; // ids must be unique
     /*0x40EE*/ u8 _40EE[0x43BC - 0x40EE];
     /*0x43BC*/ s16 _43BC; // 0..1000
-    /*0x43BE*/ u8 _43BE[0x4415 - 0x43BE];
+    /*0x43BE*/ u8 _43BE[0x43D6 - 0x43BE];
+    /*0x43D6*/ u8 _43D6[0x36]; // per character id (fn_3_12A910: star icon shown)
+    /*0x440C*/ u8 _440C[0x4415 - 0x440C];
     /*0x4415*/ u8 _4415;
     /*0x4416*/ u8 _4416;
     /*0x4417*/ u8 _4417[0x441B - 0x4417];

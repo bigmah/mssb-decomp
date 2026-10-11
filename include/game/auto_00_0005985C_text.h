@@ -93,7 +93,7 @@ void fn_3_59918(s32 x, s32 unused);
 void fn_3_5EE58(void);
 void fn_3_5EFEC(void);
 void fn_3_5F7A8(void);
-s32 fn_3_5B380(void);
+s32 fn_3_5B380(u16 buttons);
 void fn_3_5B0C4(void);
 void fn_3_5B41C(void);
 void fn_3_5FF10(void);

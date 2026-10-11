@@ -90,21 +90,7 @@ typedef struct MinigameFielderView {
 
 void fn_3_59918(s32 x, s32 unused);
 
-// View of lbl_3_common_bss_34C90 (minigame pause / quit state), only the fields used here.
-typedef struct MinigameBss34C90View {
-    /*0x000*/ s32 port; // controller that paused
-    /*0x004*/ u16 buttonInput;
-    /*0x006*/ u16 newButtonInput;
-    /*0x008*/ s16 _08;
-    /*0x00A*/ u8 _0A[2];
-    /*0x00C*/ s16 pauseFrames;
-    /*0x00E*/ u8 _0E[4];
-    /*0x012*/ s16 _12;
-    /*0x014*/ u8 _14[0x1D2 - 0x14];
-    /*0x1D2*/ u8 _1D2;
-    /*0x1D3*/ u8 _1D3[2];
-    /*0x1D5*/ u8 paused;
-} MinigameBss34C90View;
+// lbl_3_common_bss_34C90 is PauseMenuState (game/auto_00_000AC9F8_text.h).
 
 // Points awarded per turn result (lbl_3_data_18BB8).
 typedef struct MinigamePointsAward {
