@@ -20,6 +20,7 @@ extern MenuWorkBuf* lbl_2_bss_1A824C;
 extern UnlockFlags* lbl_2_bss_1A8244;
 extern MenuSaveView* lbl_2_bss_1A8248;
 extern s8 lbl_2_bss_A168;
+extern MenuSaveProgress lbl_80354768;
 extern s8 lbl_2_bss_A169;
 extern void fn_2_93C64(void);
 // lbl_803CC1B8 (SceneTask*, main/file_80069BDC.h) is the running menu task.
@@ -156,7 +157,90 @@ void fn_2_5979C(void) {
 
 // .text:0x00059CF8 size:0x52C
 void fn_2_59CF8(void) {
-    return;
+    MenuTask* task = CUR_TASK;
+    MenuSaveProgress* save = &lbl_80354768;
+    s32 i;
+    s32 j;
+    switch (task->step) {
+    case 0:
+        lbl_2_bss_1A824C->subSelection = 0;
+        lbl_2_bss_1A824C->selection = 0;
+        task->step = 1;
+        break;
+    case 1:
+        fn_2_1FFC4(3);
+        for (i = 0; i < 3; i++) {
+            fn_2_1FF10(i);
+            switch (i) {
+            case 0:
+                if (lbl_2_bss_1A824C->selection == i &&
+                    ((MENU_PAD.down & 0x100) || MENU_PADS[0].sticks.substickY > 0x32)) {
+                    task->step = 3;
+                }
+                break;
+            case 1:
+                if (lbl_2_bss_1A824C->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A824C->_19784A = 1;
+                    lbl_2_bss_1A824C->_197846 = 0;
+                    lbl_2_bss_1A824C->_197845 = 1;
+                    lbl_2_bss_A168 = 1;
+                    task->step = 2;
+                }
+                break;
+            case 2:
+                if (lbl_2_bss_1A824C->selection == i && (MENU_PAD.down & 3)) {
+                    if (save->unlocked[0] == 0) {
+                        for (j = 0; j < 0x36; j++) {
+                            save->unlocked[j] = 1;
+                        }
+                    } else if (save->unlocked[0] == 1) {
+                        for (j = 0; j < 0x36; j++) {
+                            save->unlocked[j] = 0;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        if ((MENU_PAD.down & 0x200) || MENU_PADS[0].sticks.substickY > 0x32) {
+            task->step = 3;
+        }
+        break;
+    case 2:
+        fn_2_1FF14(1);
+        for (i = 0; i < 1; i++) {
+            fn_2_1FF0C(i);
+            switch (i) {
+            case 0:
+                if (lbl_2_bss_1A824C->subSelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 0x200) {
+                        lbl_2_bss_1A824C->_19784A = 0;
+                        lbl_2_bss_1A824C->_197846 = 0;
+                        lbl_2_bss_1A824C->subSelection = 0;
+                        lbl_2_bss_1A824C->_197845 = 0;
+                        task->step = 1;
+                    } else if (down & 0x100) {
+                        lbl_2_bss_A168 ^= 1;
+                    } else if (down & 0x1000) {
+                        fn_2_93C64();
+                    }
+                    if (lbl_2_bss_A168 != 0) {
+                        fn_2_489DC();
+                    }
+                }
+                break;
+            }
+        }
+        break;
+    case 3: {
+        MenuTask* parent = task->parent;
+        parent->signal = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->step = 0;
+        break;
+    }
+    }
 }
 
 // .text:0x0005A224 size:0xC30

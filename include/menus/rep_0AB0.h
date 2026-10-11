@@ -109,6 +109,13 @@ typedef struct MenuSaveView {
     /*0x2208*/ MenuModelParam modelParams[29];
 } MenuSaveView;
 
+// Same layout as SaveProgress (lbl_80354768) in main/file_8003A688.h, which can't be
+// included together with main/file_8004207C.h (both declare lbl_8034E9A0).
+typedef struct MenuSaveProgress {
+    /*0x0000*/ u8 challenge[3][0x4508];
+    /*0xCF18*/ u8 unlocked[0x36]; // per character id
+} MenuSaveProgress;
+
 void fn_2_5979C(void);
 void fn_2_59CF8(void);
 void fn_2_5A224(void);
