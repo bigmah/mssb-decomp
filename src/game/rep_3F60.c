@@ -175,8 +175,43 @@ void fn_3_168CD8(CharActor* actor, f32 frame) {
 // NONMATCHING 87%: the original reaches lbl_3_data_285A8 fields through a pooled data anchor (addi base,0x360; lbzx); ours folds the offset (lbzu)
 #if NONMATCHING
 // .text:0x00168DFC size:0x1A4 mapped:0x807A7E90
+// Queues the task's effect node at a fixed position until its animation has run once.
 void fn_3_168DFC(void) {
-    return;
+    EffectTask* task = lbl_803CC1B8;
+    EffectData* d = &lbl_3_data_285A8;
+    EffectNode* node;
+    u8* shown;
+    u8 idx;
+
+    if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
+        // removeQueue ignores its argument; the original passes whatever is in r3.
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    shown = d->shown;
+    if (shown[task->actor] != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    shown[task->actor] = 1;
+    idx = task->actor;
+    node = &d->nodes[idx][lbl_803CBBC0];
+    node->draw = fn_3_168A6C;
+    node->frame = task->frame;
+    node->pos.x = task->pos.x;
+    node->pos.y = task->pos.y + FIXED(d->kindYOfs[lbl_8036E548.active[idx]->kind]);
+    node->pos.z = task->pos.z;
+    node->scale = task->scale;
+    node->objIdx = task->objIdx;
+    node->animIdx = task->animIdx;
+    node->ofsIdx = task->ofsIdx;
+    if (lbl_80366158._28 == 0) {
+        task->frame++;
+    }
+    fn_800A7D4C(0, node);
+    if (task->frame >= lbl_3_common_bss_35154.anim[task->animIdx].state.seqs[0].hdr.length) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+    }
 }
 #endif
 
