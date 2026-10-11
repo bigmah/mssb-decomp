@@ -2,6 +2,7 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/GameSettings.h"
 #include "game/rep_1838.h"
+#include "Dolphin/rand.h"
 #include "header_rep_data.h"
 #include "stl/math.h"
 
@@ -26,7 +27,9 @@ extern Fielder540 g_Fielders[9];
 extern u8 lbl_3_data_450C[];
 extern f32 lbl_3_data_4428[];
 extern f32 lbl_3_data_4930[];
-extern f32 lbl_3_data_45FC; // default ball gravity // fielding tuning floats
+extern f32 lbl_3_data_45FC; // default ball gravity
+extern f32 lbl_3_data_45F4[2]; // ground y for bounces [normal, game mode 6]
+extern u8 lbl_3_data_4600; // default air resistance // fielding tuning floats
 extern int fn_3_B7D6C(f32, f32);
 extern void fn_3_8FF5C(s32, void*, f32, f32, f32);
 extern u8 lbl_800E8558[];
@@ -1427,5 +1430,61 @@ void fn_3_F9F8(void) {
 
 // .text:0x0000FBA8 size:0x3A4 mapped:0x8064EC3C
 void fn_3_FBA8(void) {
-    return;
+    s32 i;
+    s32 t;
+    g_Ball.AtBat_Contact_BallPos.x = *(f32*)(lbl_3_data_450C + 0);
+    g_Ball.AtBat_Contact_BallPos.y = 0.0f;
+    g_Ball.AtBat_Contact_BallPos.z = *(f32*)(lbl_3_data_450C + 4);
+    if (g_Minigame.GameMode_MiniGame == 6) {
+        g_Ball.AtBat_Contact_BallPos.x = 0.0f;
+        g_Ball.AtBat_Contact_BallPos.z = 0.0f;
+        g_Ball.AtBat_Contact_BallPos.y = 1.0f;
+    }
+    for (i = 0; i < 0x3C; i++) {
+        BALL_PAST(i).x = g_Ball.AtBat_Contact_BallPos.x;
+        BALL_PAST(i).y = g_Ball.AtBat_Contact_BallPos.y;
+        BALL_PAST(i).z = g_Ball.AtBat_Contact_BallPos.z;
+    }
+    g_Ball.physicsSubstruct.acceleration.x = 0.0f;
+    g_Ball.physicsSubstruct.acceleration.y = 0.0f;
+    g_Ball.physicsSubstruct.acceleration.z = 0.0f;
+    g_Ball.physicsSubstruct.velocity.x = 0.0f;
+    g_Ball.physicsSubstruct.velocity.y = 0.0f;
+    g_Ball.physicsSubstruct.velocity.z = 0.0f;
+    g_Ball.physicsSubstruct.acceleration.x = 0.0f;
+    g_Ball.physicsSubstruct.acceleration.y = 0.0f;
+    g_Ball.physicsSubstruct.acceleration.z = 0.0f;
+    g_Ball.offsetWhilePickedUpHistory[0].x = 0.0f;
+    g_Ball.offsetWhilePickedUpHistory[0].y = 0.0f;
+    g_Ball.offsetWhilePickedUpHistory[0].z = 0.0f;
+    g_Ball.physicsSubstruct.gravity = lbl_3_data_45FC;
+    g_Ball.airResistance = lbl_3_data_4600;
+    g_Ball.fielderWBallIndex = -1;
+    g_Ball.ballState = 0;
+    g_Ball.AtBat_ContactResult = 0;
+    g_Ball.ballInitialHitDoneInd = 0;
+    g_Ball.fairBallInd = -1;
+    g_Ball.ballStoppingCode1ReallySlow2Stopped = 0;
+    g_Ball.framesSinceHit = -1;
+    g_Ball.timeSinceBallPickedUp = -1;
+    g_Ball.matchFramesAndBallAngle.framesSinceLastThrow = -1;
+    g_Ball.framesSinceBallHitGroundOrWasCaught = -1;
+    g_Ball.Hit_HorizontalPower = 0x6E;
+    g_Ball.Hit_VerticalAngle = 0x18D;
+    g_Ball.Hit_HorizontalAngle = 0x272;
+    g_FieldingLogic._0C4 = -1;
+    g_FieldingLogic._0C6 = -1;
+    g_Strikes.outs = 0;
+    g_Strikes.strikes = 0;
+    g_Strikes.balls = 0;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        g_Ball.groundYForBounces = lbl_3_data_45F4[1];
+    } else {
+        g_Ball.groundYForBounces = lbl_3_data_45F4[0];
+    }
+    // same as fn_3_10030 (`- (-t)` keeps the original add operand order)
+    t = ((lbl_3_data_228.counter % 10) + 1) * (g_Ball.StaticRandomInt1 * rand());
+    g_Ball.StaticRandomInt1 = (rand() * 16 - (-t) + (s32)(lbl_3_data_228.counter >> 1) + g_d_GameSettings.FrameCountWhileNotAtMainMenu) & 0x7FFF;
+    t = ((lbl_3_data_228.counter % 10) + 1) * ((g_Ball.StaticRandomInt2 + 1) * rand());
+    g_Ball.StaticRandomInt2 = (rand() * 8 - (-t) + (s32)(lbl_3_data_228.counter >> 1) + (g_d_GameSettings.FrameCountWhileNotAtMainMenu >> 1)) & 0x7FFF;
 }

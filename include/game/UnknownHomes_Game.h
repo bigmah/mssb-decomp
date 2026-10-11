@@ -2838,7 +2838,8 @@ typedef struct {
     /* 0x0BC */ s16 _0BC;
     u8 _0BE[0xC4 - 0xBE];
     /* 0x0C4 */ s16 _0C4; // base the play is at (runner index)
-    u8 _0C6[0xCC - 0xC6];
+    /* 0x0C6 */ s16 _0C6;
+    u8 _0C8[0xCC - 0xC8];
     /* 0x0CC */ s16 _0CC;
     u8 _0CE[0xE4 - 0xCE];
     /* 0x0E4 */ s16 _0E4;
