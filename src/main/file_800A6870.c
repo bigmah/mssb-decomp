@@ -1,23 +1,117 @@
 #include "main/file_800A6870.h"
+#include "Dolphin/gx.h"
+
+// dvdsys.c
+
+// Same object as lbl_803C7420_s in file_80008E00.c; only the fields used here.
+typedef struct {
+    /*0x000*/ u8 _000[0x5C];
+    /*0x05C*/ OSThreadQueue retraceQueue; // woken every frame
+    /*0x064*/ u8 _064[0x31C];
+    /*0x380*/ OSThreadQueue queue380;
+    /*0x388*/ u8 _388[0xF];
+    /*0x397*/ u8 _397;
+} SysBlock_803C7420; // size: 0x398
+extern SysBlock_803C7420 lbl_803C7420;
+
+typedef struct {
+    /*0x0000*/ u8 stacks[2][0x1000]; // [0]: read thread, [1]: monitor thread
+    /*0x2000*/ DVDFileInfo fileInfo;
+} DvdSysWork; // size: 0x2040
+extern DvdSysWork lbl_802EAF80;
+
+typedef struct {
+    /*0x000*/ u8 grid[0x150]; // (x, y) byte pairs
+    /*0x150*/ GXTlutObj tlut;
+    /*0x15C*/ GXTexObj tex;
+} Grid_802ECFC0; // size: 0x180
+extern Grid_802ECFC0 lbl_802ECFC0;
+
+extern DriveStatusCallback lbl_8010F420[16];
+extern u8 lbl_8010F460[]; // 128x128 C4 texture
+extern u8 lbl_80110060[]; // 16-entry RGB5A3 palette
+
+// "\nDecode Error Retry : EntryNo%d %x Err:%d\n", "dvdsys.c", and two SJIS panic messages
+extern char lbl_800E7730[];
+#define STR_DECODE_ERROR (lbl_800E7730)
+#define STR_DVDSYS_C (lbl_800E7730 + 0x2C)
+#define STR_NEED_DEST (lbl_800E7730 + 0x38)
+#define STR_NEED_ARAM_ADDR (lbl_800E7730 + 0x68)
+
+extern void* fn_800ACF34(s32 align, u32 size); // alloc
+extern void fn_800ACF14(void* p); // free
+extern void* _OSAllocFromHeap(s32 align, u32 size);
+extern void ARQRemoveOwnerRequest(u32 owner);
+
+#define DVDSYS_ARQ_OWNER 2000
+#define ALIGN32(x) (((x) + 0x1F) & ~0x1F)
+
+// state and idle are stored together with one halfword store in the original.
+#if NONMATCHING
+#define SET_STATE_IDLE(st, idl) (lbl_803C6CF8.state = (st), lbl_803C6CF8.idle = (idl))
+#else
+#define SET_STATE_IDLE(st, idl) (*(u16*)&lbl_803C6CF8.state = (u16)(((st) << 8) | (idl)))
+#endif
+
+static inline void CancelTransfer(void) {
+    DVDCBCallback cb;
+
+    lbl_803C6CF8.state = DVDSYS_STATE_NONE;
+    lbl_803C6CF8.driveStatus = 0;
+    if (lbl_803C6CF8.idle != 1) {
+        if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_LZ_TO_RAM || lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
+            cb = fn_800A75EC;
+        } else {
+            cb = fn_800A7670;
+        }
+        DVDCancelAsync(&lbl_803C6CF8.fileInfo->cBlock, cb);
+        ARQRemoveOwnerRequest(DVDSYS_ARQ_OWNER);
+    }
+}
+
+static inline void PostAramRead(void) {
+    ARQPostRequest(&lbl_803C6CF8.arqRequests[lbl_803C6CF8.arqIndex], DVDSYS_ARQ_OWNER, ARAM_DIR_ARAM_TO_MRAM, 0,
+                   lbl_803C6CF8.aramCur, (u32)lbl_803C6CF8.readPos, ALIGN32(lbl_803C6CF8.chunkSize), fn_800A68D4);
+    lbl_803C6CF8.arqIndex = (lbl_803C6CF8.arqIndex + 1) % 4;
+    lbl_803C6CF8.aramCur += ALIGN32(lbl_803C6CF8.chunkSize);
+}
+
+static inline void ReadRingChunk(void) {
+    s32 len;
+
+    if (lbl_803C6CF8.writePos >= lbl_803C6CF8.readPos) {
+        len = lbl_803C6CF8.bufEnd - lbl_803C6CF8.writePos;
+    } else {
+        len = lbl_803C6CF8.readPos - lbl_803C6CF8.writePos;
+    }
+    if (len > lbl_803C6CF8.remaining) {
+        len = lbl_803C6CF8.remaining;
+    }
+    len = (len < 0x4000) ? len : 0x4000;
+    if (len != 0) {
+        DVDReadAsyncPrio(lbl_803C6CF8.fileInfo, lbl_803C6CF8.writePos, len,
+                         lbl_803C6CF8.diskOffset + lbl_803C6CF8.bytesRead, fn_800A6F94, 2);
+    }
+}
 
 // .text:0x800A6870 size:0x20
-void fn_800A6870(void) {
-    return;
+u32 fn_800A6870(u8 enable, u32 limit) {
+    return 0;
 }
 
 // .text:0x800A6890 size:0x44
-void fn_800A6890(void) {
+void fn_800A6890(u32 request) {
     return;
 }
 
 // .text:0x800A68D4 size:0x2C
-void fn_800A68D4(void) {
+void fn_800A68D4(u32 request) {
     return;
 }
 
 // .text:0x800A6900 size:0x380
-void fn_800A6900(void) {
-    return;
+void* fn_800A6900(void* arg) {
+    return 0;
 }
 
 // .text:0x800A6C80 size:0x90
@@ -26,33 +120,33 @@ void fn_800A6C80(void) {
 }
 
 // .text:0x800A6D10 size:0x114
-void fn_800A6D10(void) {
+void fn_800A6D10(s32 consumed) {
     return;
 }
 
 // .text:0x800A6E24 size:0x170
-void fn_800A6E24(void) {
+void fn_800A6E24(AssetLoadInstructions* instr, u8* ringBuf, s32 ringSize) {
     return;
 }
 
 // .text:0x800A6F94 size:0x148
-void fn_800A6F94(void) {
+void fn_800A6F94(s32 result, DVDFileInfo* fileInfo) {
     return;
 }
 
 // .text:0x800A70DC size:0x430
-void ARAMTransfer(void) {
-    return;
+void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr) {
+    return 0;
 }
 
 // .text:0x800A750C size:0x38
-void fn_800A750C(void) {
-    return;
+BOOL fn_800A750C(void* unused, DVDFileInfo* fileInfo) {
+    return 0;
 }
 
 // .text:0x800A7544 size:0x24
-void ConvertPathToEntryNum(void) {
-    return;
+s32 ConvertPathToEntryNum(void* file) {
+    return 0;
 }
 
 // .text:0x800A7568 size:0x84
@@ -61,12 +155,12 @@ void fn_800A7568(void) {
 }
 
 // .text:0x800A75EC size:0x84
-void fn_800A75EC(void) {
+void fn_800A75EC(s32 result, DVDCommandBlock* block) {
     return;
 }
 
 // .text:0x800A7670 size:0x4C
-void fn_800A7670(void) {
+void fn_800A7670(s32 result, DVDCommandBlock* block) {
     return;
 }
 
@@ -76,13 +170,18 @@ void fn_800A76BC(void) {
 }
 
 // .text:0x800A77A0 size:0x2E0
-void fn_800A77A0(void) {
-    return;
+void* fn_800A77A0(void* arg) {
+    return 0;
 }
 
 // .text:0x800A7A80 size:0x54
-void fn_800A7A80(void) {
-    return;
+void fn_800A7A80(s32 result, DVDFileInfo* fileInfo) {
+    if (result == -3) {
+        lbl_803C6CF8.remaining = 0;
+        lbl_803C6CF8.chunkSize = 0;
+    } else if (result != -1) {
+        OSResumeThread(&lbl_803C6CF8.readThread);
+    }
 }
 
 // fn_800A7AD4, size:0x4
@@ -95,6 +194,6 @@ void fn_800A7AD8(void) {
 }
 
 // .text:0x800A7BAC size:0x5C
-void fn_800A7BAC(void) {
+void fn_800A7BAC(u8 flag) {
     return;
 }
