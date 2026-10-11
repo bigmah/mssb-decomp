@@ -42,5 +42,8 @@ void fn_2_18748(void);
 
 void fn_2_16DA8(void);
 void fn_2_16F0C(u8 index);
+void fn_2_190DC(struct CharSlotList* list, MtxPtr view);
+
+void fn_2_19224(struct CharSlotList* list, MtxPtr view);
 
 #endif

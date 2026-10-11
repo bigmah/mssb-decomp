@@ -45,6 +45,13 @@ extern void fn_2_14BB8(u8, s32);
 
 #include "static/UnknownHomes_Static.h"
 
+extern void ACTSetAnimation(void* act, void* bank, s32 a, u16 anim, f32 frame, f32 speed);
+extern void fn_800B4CA0(CharModel* model, f32 v);
+extern void fn_800B4C04(CharModel* model, f32 v);
+extern void fn_800B4AFC(CharModel* model, u8 loop);
+extern void Set_FUN_800b2b6c(CharModel* model, void* p);
+extern void fn_800BDA24(CharSlot* slot);
+
 
 // fn_2_190B8, size:0x24
 void fn_2_190B8(u8* object) {
@@ -273,4 +280,82 @@ void fn_2_16F0C(u8 index) {
         lbl_8036E548.partsPool[index]._CD = actor->_265[0];
     }
     actor->parts = &lbl_8036E548.partsPool[index];
+}
+
+// fn_2_190DC, size:0x148
+void fn_2_190DC(CharSlotList* list, MtxPtr view) {
+    u16 i;
+    CharSlot* slot;
+    u8 flags;
+    for (i = 0; i < list->count; i++) {
+        if (&lbl_8036E548.trail2[i] == NULL) {
+            continue;
+        }
+        slot = &list->slots[i];
+        if (slot->model == NULL) {
+            continue;
+        }
+        if (slot->_58 != 0) {
+            ACTSetAnimation(slot->model, slot->act, 0, slot->animId, 0.0f, slot->_60);
+        }
+        if (slot->_59 != 0) {
+            fn_800B4CA0(slot->model, slot->_5C);
+        }
+        if (slot->_5A != 0) {
+            fn_800B4C04(slot->model, slot->_54);
+        }
+        flags = slot->_5B;
+        if (flags & 2) {
+            fn_800B4AFC(slot->model, flags & 1);
+        }
+        Set_FUN_800b2b6c(slot->model, slot->mirror);
+        if (slot->_6C != 0) {
+            fn_800BDA24(slot);
+        }
+        slot->model->flags = 1;
+        slot->_58 = 0;
+        slot->_59 = 0;
+        slot->_5A = 0;
+        slot->_5B &= 1;
+    }
+}
+
+// fn_2_19224, size:0x158
+void fn_2_19224(CharSlotList* list, MtxPtr view) {
+    u16 i;
+    CharActor* actor;
+    CharSlot* slot;
+    u8 flags;
+    for (i = 0; i < list->count; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor == NULL || actor->mode[0] == 0) {
+            continue;
+        }
+        slot = &list->slots[i];
+        if (slot->model == NULL) {
+            continue;
+        }
+        if (slot->_58 != 0) {
+            ACTSetAnimation(slot->model, slot->act, 0, slot->animId, 0.0f, slot->_60);
+        }
+        if (slot->_59 != 0) {
+            fn_800B4CA0(slot->model, slot->_5C);
+        }
+        if (slot->_5A != 0) {
+            fn_800B4C04(slot->model, slot->_54);
+        }
+        flags = slot->_5B;
+        if (flags & 2) {
+            fn_800B4AFC(slot->model, flags & 1);
+        }
+        Set_FUN_800b2b6c(slot->model, slot->mirror);
+        if (slot->_6C != 0) {
+            fn_800BDA24(slot);
+        }
+        slot->model->flags = 1;
+        slot->_58 = 0;
+        slot->_59 = 0;
+        slot->_5A = 0;
+        slot->_5B &= 1;
+    }
 }
