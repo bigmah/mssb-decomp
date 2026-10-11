@@ -104,7 +104,7 @@ void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCor
     lbl_80366188.v[3].pos.x = q.pt[2].pos.x;
     lbl_80366188.v[3].pos.y = q.pt[2].pos.y;
     lbl_80366188.v[3].pos.z = q.pt[2].pos.z;
-    lbl_80366188.perCornerColor = ((elem->flags >> 4) & 1) | (perCorner | ((elem->type & 0xF) == 2));
+    lbl_80366188.perCornerColor = elem->perCorner | (perCorner | (elem->type == 2));
     if (lbl_80366188.perCornerColor) {
         lbl_80366188.v[1].color = params->color[3];
         lbl_80366188.v[2].color = params->color[2];
@@ -165,9 +165,52 @@ void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawPa
 #endif
 
 // .text:0x8000EC0C size:0x310
-void fn_8000EC0C(void) {
-    return;
+// NONMATCHING: matches except .sdata2 constant names (unit needs an .sdata2 split)
+#if NONMATCHING
+void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner) {
+    SpriteQuad q;
+    SpriteTexInfo* tex;
+    f32 x = 0.0f;
+    f32 y = 0.0f;
+
+    tex = &bank->tex[bank->tex[elem->texIdx].texIndex];
+    lbl_803CBBD8 = tex;
+    q.xy[0][0] = x;
+    q.xy[0][1] = y;
+    q.xy[1][0] = x + tex->width;
+    q.xy[1][1] = y;
+    q.xy[2][0] = x;
+    q.xy[2][1] = y + tex->height;
+    q.xy[3][0] = q.xy[1][0];
+    q.xy[3][1] = q.xy[2][1];
+    AddVec2iToQuad(&q, mtx, params);
+    lbl_80366188.unk7E = 0;
+    lbl_80366188.elem = elem;
+    lbl_80366188.v[0].color = params->color[0];
+    lbl_80366188.v[1].color = params->color[1];
+    lbl_80366188.v[2].color = params->color[2];
+    lbl_80366188.v[3].color = params->color[3];
+    if (elem->flipX && elem->flipY) {
+        SET_QUAD_POS(3, 1, 0, 2);
+    } else if (elem->flipX) {
+        SET_QUAD_POS(1, 3, 2, 0);
+    } else if (elem->flipY) {
+        SET_QUAD_POS(2, 0, 1, 3);
+    } else {
+        SET_QUAD_POS(0, 2, 3, 1);
+    }
+    lbl_80366188.v[0].s = 0;
+    lbl_80366188.v[0].t = 0;
+    lbl_80366188.v[1].s = 0;
+    lbl_80366188.v[1].t = 1;
+    lbl_80366188.v[2].s = 1;
+    lbl_80366188.v[2].t = 1;
+    lbl_80366188.v[3].s = 1;
+    lbl_80366188.v[3].t = 0;
+    lbl_80366188.bank = bank;
+    lbl_80366188.perCornerColor = perCorner | elem->perCorner;
 }
+#endif
 
 // .text:0x8000EF1C size:0x234
 // NONMATCHING ~85%: saved-register/scheduling differences; float constants

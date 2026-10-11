@@ -52,8 +52,13 @@ typedef struct SpriteBank {
 
 // Generic sprite element header.
 typedef struct SpriteElem {
-    /* 0x00 */ u8 type; // low nibble
-    /* 0x01 */ u8 flags; // bit 7: flip x, bit 6: flip y, bit 4: per-corner colors
+    /* 0x00 */ u8 unk0_b0 : 4;
+    /* 0x00 */ u8 type : 4;
+    /* 0x01 */ u8 flipX : 1;
+    /* 0x01 */ u8 flipY : 1;
+    /* 0x01 */ u8 unk1_b2 : 1;
+    /* 0x01 */ u8 perCorner : 1; // per-corner vertex colors
+    /* 0x01 */ u8 unk1_b4 : 4;
     /* 0x02 */ u16 texIdx;
 } SpriteElem;
 
@@ -90,6 +95,7 @@ extern SpriteTexInfo* lbl_803CBBD8;
 
 void fn_8000E7BC(SpriteElem* elem, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
+void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* params, s32 perCorner);
 void fn_8000E764(f32 angle, Vec2f* out);
 void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params);
 
