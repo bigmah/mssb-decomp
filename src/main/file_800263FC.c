@@ -829,9 +829,31 @@ s32 fn_80028F48(Emitter* e) {
 #endif
 
 // .text:0x8002955C size:0x294
-void fn_8002955C(void) {
-    return;
+// NONMATCHING 98%: register allocation in the inlined allocations
+#if NONMATCHING
+void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm) {
+    Emitter tmp;
+    Emitter* e = FindEmitter(NULL, 12);
+    Emitter* t;
+    Particle* last;
+
+    if (e != NULL) {
+        t = AllocParticles(&tmp, prm->unk8, 1);
+        if (t != NULL) {
+            fn_800297F0(t, pos, axis, prm);
+            for (last = e->particles; last->next != NULL; last = last->next) {
+            }
+            last->next = t->particles;
+            e->count += t->count;
+        }
+    } else {
+        e = NewEmitter(fn_80028F48, 0x80, 0, prm->unk8, 1, 12);
+        if (e != NULL) {
+            fn_800297F0(e, pos, axis, prm);
+        }
+    }
 }
+#endif
 
 // .text:0x800297F0 size:0x4D8
 void fn_800297F0(void) {
