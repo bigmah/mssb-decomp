@@ -1,6 +1,39 @@
 #include "game/auto_00_0011D3AC_text.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "static/GameSettings.h"
+#include "game/auto_00_000E911C_text.h"
+#include "game/rep_1838.h"
+
+extern MinigameAssets lbl_3_common_bss_32724;
+extern MinigameCharMgrAssets lbl_8036E548;
+extern PasswordSlot lbl_80371C30[];
+extern void* lbl_803CC1B8; // current queue task
+extern u8 lbl_803C6CF8[];  // ARAMLoader; [0x715]: transfer done
+extern u8 lbl_3_common_bss_34C90[];
+extern u8 lbl_800EFBA4[];
+extern u8 lbl_3_data_225F0[];        // ARAM load instructions at +0x10
+extern u8 lbl_3_data_25464[];        // sprite descriptors (fn_80034E20)
+extern u8 lbl_3_data_25A24[];
+extern u8 lbl_3_data_25EE4[];
+extern u8 lbl_3_data_26254[];
+extern u8 lbl_3_data_261C4[9][16];   // password digit substitution tables
+extern u16 lbl_3_data_81FC[];        // sound ids
+
+extern void LoadActorLayout(void* layout);
+extern void convertGeometryAndSknHeader(void* geometry, void* skin);
+extern void fn_80034E20(void* group, void* descs);
+extern void fn_3_109DE0(PasswordRecord* out);
+extern s32 fn_3_107988(u32 pick);
+extern s32 fn_3_107C88(void);
+extern u8 fn_3_107CD0(void);
+extern s32 fn_3_90064(s32 id);
+extern s32 sndFXKeyOff(s32 voice);
+extern s32 sndFXCtrl(s32 voice, u8 ctrl, u8 value);
+extern s32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
+
+#define MG11D3 ((MG11D3View*)&g_Minigame)
+#define SPRITE(task, n) (lbl_80371C30[(task)->baseIdx + (n)].obj)
 
 // .text:0x0011D3AC size:0x2F4 mapped:0x8075C440
 void fn_3_11D3AC(void) {
@@ -29,7 +62,9 @@ void fn_3_11DDC4(void) {
 
 // .text:0x0011DE80 size:0x4C mapped:0x8075CF14
 void fn_3_11DE80(void) {
-    return;
+    if (g_GameLogic._125 == 0) {
+        MG11D3->rouletteTask = fn_800B0A5C_insertQueue(fn_3_11DECC, 2);
+    }
 }
 
 // .text:0x0011DECC size:0x43C mapped:0x8075CF60
