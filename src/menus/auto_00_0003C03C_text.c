@@ -1929,3 +1929,22 @@ void fn_2_468DC(void) {
         e[5] = (*(u8**)e)[1];
     }
 }
+
+extern s16 lbl_2_data_36EC[];
+
+// fn_2_42490, size:0x1A8
+void fn_2_42490(void) {
+    s32 i;
+    s32 n;
+    for (i = 0; i < 20; i++) {
+        (lbl_2_bss_1A824C[0] + 0x1978DB)[i] = 0;
+    }
+    n = 0;
+    for (i = 0; i < 20; i++) {
+        if ((s8)lbl_2_bss_1A824C[0][i + 0x1978C7] == 0 && (s8)lbl_2_bss_1A8248[0][i + 0x43C2] == 1 &&
+            lbl_2_data_36EC[i] == 1) {
+            lbl_2_bss_1A824C[0][n++ + 0x1978DB] = i;
+        }
+    }
+    lbl_2_bss_1A824C[0][0x1978EF] = n;
+}
