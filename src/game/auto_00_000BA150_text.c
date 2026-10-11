@@ -14,6 +14,14 @@ void fn_3_BA150(void) {
 
 // .text:0x000BA174 size:0x2C mapped:0x806F9208
 s32 fn_3_BA174(void* key, void* elem) {
+    SortKeyEntry* a = key;
+    SortKeyEntry* b = elem;
+    if (a->key < b->key) {
+        return 1;
+    }
+    if (a->key > b->key) {
+        return -1;
+    }
     return 0;
 }
 
