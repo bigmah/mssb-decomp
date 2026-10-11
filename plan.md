@@ -1,17 +1,19 @@
 # Plan: matching the rest of Mario Superstar Baseball
 
-## Where we are (2026-10-05)
+## Where we are (2026-10-10)
 
-| Module | Code | Matched | Unmatched functions by size (≤64B / ≤256B / ≤1KB / >1KB) |
-|---|---|---|---|
-| `main.dol` SDK, MSL, Runtime, TRK | 230 KB | 99.5% | ~5 left |
-| `main.dol` MusyX | 128 KB | 55.6% | 90 left, many at 95%+ |
-| `main.dol` game code (unsplit `auto_*`) | 549 KB | 0% | 241 / 316 / 332 / 153 |
-| `game.rel` | 1.5 MB | 3.1% (148 / 2406) | 211 / 625 / 1002 / 420 |
-| `menus.rel` | 618 KB | 0% | 240 / 293 / 569 / 131 |
-| `challenge.rel` | 171 KB | 0% | 68 / 96 / 137 / 48 |
+| Module | Code | Matched (functions) | Unmatched functions by size (≤64B / ≤256B / ≤1KB / >1KB) | At ≥95% |
+|---|---|---|---|---|
+| `main.dol` SDK, MSL, Runtime, TRK | 230 KB | ~99.5% | 4 / 2 / 4 / 0 | 1 |
+| `main.dol` MusyX | 128 KB | — | 0 / 0 / 2 / 5 | 3 |
+| `main.dol` game code (unsplit `auto_*`) | 549 KB | — | 133 / 296 / 331 / 153 | 0 |
+| `game.rel` | 1.5 MB | 28.4% (1455 / 2406) | 37 / 83 / 429 / 402 | 75 |
+| `menus.rel` | 618 KB | 33.7% (831 / 1233) | 9 / 45 / 226 / 122 | 3 |
+| `challenge.rel` | 171 KB | 26.0% (198 / 349) | 14 / 22 / 68 / 47 | 6 |
 
-Overall: **~11% of code matched, 0 game files linked.**
+Overall: **32.0% of code matched (4045 / 6479 functions), 7.9% linked (178 / 1334 files, all in `main.dol`), data 0.35%.** No REL file is linked yet.
+
+The easy tail is gone: about 730 functions over 1 KB hold **two-thirds of the remaining code (1.46 MB of 2.18 MB)**. The small ones that remain are mostly the `main.dol` `auto_*` units, which still need splitting into source files (Phase 4).
 
 Most of `src/game/*.c` already exists, but almost all of it is **stubs** (`void fn_3_XXXX(void) { return; }`) with the address and size in a comment. So the file layout is done; the bodies are not. About 640 `game.rel` functions are not in any source file yet (`game/auto_*` units).
 
@@ -294,6 +296,21 @@ Add new patterns to this list as we find them.
 - **Defining a same-unit function that matched callers already call (fn_2_87A8 into fn_2_6484):** this unit has no `#pragma dont_inline`, so once the callee's body exists, deferred inlining pulls it into earlier matched callers and they stop matching. Change those calls to `((void (*)(void))fn)()` in the same commit. Call `fn_2_1D54`/`fn_2_1C34` from new code the same way when the original keeps the `bl`.
 - **A big `if`-ladder body as a `static inline` helper (fn_2_87A8):** written inline in the function, the ladder put `prev`/the table base in r6/r5 the wrong way round. Moving it into `static inline void work(s32 prev)`, called after the guard, gave the original allocation. `pad = (u8*)&lbl_803C77B8; pad += idx * 0x20;` (two statements) matched `add r3, base, off`.
 - **Near misses (menus 1254):** fn_2_14F8 (rand range; only lo r8 vs r7 and the rand-temp registers), fn_2_348C (54-entry flag loop as a `static inline set(u8 c, s32 f)` helper; c/f swap r6/r12 left; fn_2_2FC0 inlines the same loop), fn_2_5184 (prologue `clrlwi r31,r3` scheduled before `mr r29,r3`; body matches with `*(s8*)(row+2)` compare/arg and `(s8)row[2]` index), fn_2_CCE0 (team/i swap r9/r10; `u8 team = arg` from an `s32 arg` gives the right `clrlwi r3,r3` at the calls), fn_2_323C (case 4 `lbl_2_bss_3A0[0] = 0` folds to `stb @l(rX)` where the original keeps `addi; stb 0`), fn_2_1A88 (the 3-pad scan rebases with `addi r4,r4,0x40`), fn_2_B324 (store order matches with a `k` outer / `t = 1,0` inner order; pointer registers rotated), fn_2_A1A0 (the original computes `i + 2` once and `addi r4, r10, 9; lbz 2(r4)` for team 1), fn_2_EAE0 (infinite `fn_2_1D54` loop with 5 saved registers, `bne compute; b call` select).
+
+## Token efficiency (agent cost)
+
+Most of the remaining work is large functions, and agent tokens are now the main cost. Each item below is a fix that pays off on every later function. Do them roughly in this order.
+
+1. **Compact tool output.** `fndiff`/`fnstart`/`fnvariants` currently dump whole listings, and agents call them dozens of times per function. Make the default output: the match %, a one-line diagnosis (`regalloc only`, `instruction order`, `missing/extra insns`, `branch/CFG`), and only the first N differing hunks with ±3 lines of context. Put full listings behind `--full`. `fnstart` should print the m2c draft plus a short asm summary (size, calls, globals touched), not the full asm, unless asked.
+2. **Shrink this file.** `plan.md` is ~200 KB (~57k tokens), almost all of it "Matching patterns" bullets (split across two places: under Workflow, and appended under Coordination). Every agent that reads it pays for all of it. Move the patterns to `docs/patterns/` (one file per topic: regalloc, floats, loops, inlining, globals/arrays, control flow, compares) and keep here a short index: one line per topic with grep keywords. Update `AGENTS.md` to say "grep `docs/patterns/` for your symptom; don't read it all" and to add new patterns there. Do this when no agent branches are mid-flight, because they append to `plan.md`.
+3. **Route work by difficulty.** Run functions ≤256 B, and most ≤1 KB ones, on a cheaper model with a hard budget (e.g. 25 tool calls) before giving up. Keep the strongest model for >1 KB functions and for functions a cheaper agent left unmatched. Record the stopping point as a `// NN%: <why>` comment so the next attempt doesn't start over.
+4. **Near-misses go to the permuter, not agents.** For ≥95% functions whose diff is only register allocation or instruction order (88 at ≥95% right now), run decomp-permuter (CPU time, not tokens). Agents only look at them again if the permuter fails and the diff shows real structure differences.
+5. **Types first (Phase 2) before the >1 KB functions.** Large functions are mostly expensive because of unknown struct fields. One agent mapping a module's core structs is cheaper than every agent rediscovering offsets.
+6. **Less overhead per function:**
+   - Full `ninja` once per batch or unit, not after every function; always pipe it to `tail -20`. Between full builds, `fnvariants --also <callers>` catches inline breakage.
+   - New worktrees must start from `main` (`tools/setup.py` or the worktree recipe should do it); old bases cost agents turns on `git reset`.
+   - Keep one agent on one unit for a long session (warm prompt cache) instead of a fresh agent per function.
+7. **Script the mechanical parts.** Data is at 0.35% and no REL file is linked. Rodata/data splits, `.data` declarations, and flipping fully matched units to `Matching` (with a sha1 check) should be a Python tool, not agent work.
 
 ## Phases
 
