@@ -270,5 +270,13 @@ void fn_80021228(u8 mode) {
 
 // .text:0x8002128C size:0x7C
 void fn_8002128C(u8 mode) {
-    return;
+    u8 set = mode ? mode : 1;
+    lbl_800EF808.outputModeSet = set;
+    if (OSGetSoundMode() == 0) {
+        mode = 0;
+    } else if (mode != 2) {
+        mode = 1;
+    }
+    lbl_800EF808.outputMode = mode;
+    sndOutputMode(mode);
 }
