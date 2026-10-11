@@ -22,7 +22,15 @@ void fn_3_6C42C(void) {
 
 // .text:0x0006C454 size:0x78 mapped:0x806AB4E8
 void fn_3_6C454(void) {
-    return;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if (lbl_8036E548.actors[i + 9] != NULL) {
+            lbl_8036E548.actors[i + 9]->_25D = 0;
+        }
+    }
+    fn_3_6A25C();
+    fn_3_6A250();
 }
 
 // .text:0x0006C4CC size:0x4 mapped:0x806AB560
